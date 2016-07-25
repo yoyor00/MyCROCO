@@ -18,7 +18,7 @@
 #undef  CANYON_B        /* Canyon_B Example */
 #undef  EQUATOR         /* Equator Example  */
 #undef  ACOUS           /* Acoustic wave test case */
-#undef  GRAV_ADJ        /* Graviational Adjustment Example */
+#define  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  INNERSHELF      /* Inner Shelf Example */
 #undef  RIVER           /* River run-off Example */
@@ -37,7 +37,7 @@
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
 #undef  S2DV            /* 2D Vertical Section Application */
-#define REGIONAL        /* REGIONAL Applications */
+#undef REGIONAL        /* REGIONAL Applications */
 
 
 #if defined REGIONAL
@@ -438,8 +438,11 @@
 !
 */
 # undef  OPENMP
-# define MPI
-# define NBQ
+# undef MPI
+# define LAGRANGIAN
+# define OUTPUT_HZ
+# define GRAV_ADJ_SOLITON
+# undef NBQ
 # ifdef NBQ
 #  define GRAV_ADJ_SOLITON
 #  define NBQ_IMP
@@ -450,7 +453,9 @@
 # define NEW_S_COORD
 # define UV_ADV
 # define TS_HADV_WENO5
+#if !defined LAGRANGIAN
 # define TS_VADV_WENO5
+#endif
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
