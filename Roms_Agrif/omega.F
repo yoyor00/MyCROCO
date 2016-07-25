@@ -104,6 +104,13 @@
 # include "compute_auxiliary_bounds.h"
 !
 !--------------------------------------------------------
+#if defined LAGRANGIAN
+       We=0.
+# ifdef VADV_ADAPT_IMP
+       Wi=0.
+#endif
+       return
+#endif
 !
 # ifdef VADV_ADAPT_IMP
       gamma = 0.08333333333333
