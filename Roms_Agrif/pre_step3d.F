@@ -31,7 +31,7 @@
      &                                            A2d(1,4,trd), 
 # endif           
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
-# ifndef NBQ
+# if (!defined NBQ) && (!defined LAGRANGIAN)
      &                                          , A3d(1,3,trd)
 # endif
      &                                                        )
@@ -44,7 +44,7 @@
      &                                                       WC, 
 # endif     
      &                                               FX,FE,WORK
-# ifndef NBQ
+# if (!defined NBQ) && (!defined LAGRANGIAN)
      &                                                 ,Hz_half
 # endif
      &                                                         )  
@@ -89,7 +89,7 @@
 # ifdef VADV_ADAPT_IMP      
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
-# ifndef NBQ
+# if (!defined NBQ) && (!defined LAGRANGIAN)
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
 # endif
 # ifdef WET_DRY
@@ -188,6 +188,71 @@
           enddo
         enddo
       enddo
+      
+#if defined LAGRANGIAN
+!
+!  Set lateral boundary conditions for Hz_half
+!
+#  ifndef EW_PERIODIC
+      if (WESTERN_EDGE) then
+        do k=1,N
+          do j=Jstr,Jend
+            Hz_half(0,j,k)=Hz_half(1,j,k)
+          enddo
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do k=1,N
+          do j=Jstr,Jend
+            Hz_half(LOCALLM+1,j,k)=Hz_half(LOCALLM,j,k)
+          enddo
+        enddo
+      endif
+#  endif
+#  ifndef NS_PERIODIC
+      if (SOUTHERN_EDGE) then
+        do k=1,N
+          do i=Istr,Iend
+            Hz_half(i,0,k)=Hz_half(i,1,k)
+          enddo
+        enddo
+      endif
+      if (NORTHERN_EDGE) then
+        do k=1,N
+          do i=Istr,Iend
+            Hz_half(i,LOCALMM+1,k)=Hz_half(i,LOCALMM,k)
+          enddo
+        enddo
+      endif
+#  endif
+#  ifndef EW_PERIODIC
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        do k=1,N
+          Hz_half(0,0,k)=Hz_half(1,1,k)
+        enddo
+      endif
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        do k=1,N
+          Hz_half(0,LOCALMM+1,k)=Hz_half(1,LOCALMM,k)
+        enddo
+      endif
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        do k=1,N
+          Hz_half(LOCALLM+1,0,k)=Hz_half(LOCALLM,1,k)
+        enddo
+      endif
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        do k=1,N
+          Hz_half(LOCALLM+1,LOCALMM+1,k)=
+     &                     Hz_half(LOCALLM,LOCALMM,k)
+        enddo
+      endif
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz_half(START_2D_ARRAY,1))
+#  endif
+#endif
 !
 !--------------------------------------------------------------------
 !
@@ -1035,6 +1100,7 @@
         enddo
       enddo
 # endif
+
 !
 # undef IU_RANGE
 # undef JU_RANGE

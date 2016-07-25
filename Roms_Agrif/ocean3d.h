@@ -36,13 +36,15 @@
       common /grid_Wi/Wi
 # endif  
 
+#if (defined NBQ) || (defined LAGRANGIAN)
+      real Hz_half(GLOBAL_2D_ARRAY,N)
+      common /grid_Hz_half/Hz_half
+#endif
 # ifdef NBQ
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
       real Hzr(GLOBAL_2D_ARRAY,N)
       common /grid_Hzr/Hzr
-      real Hz_half(GLOBAL_2D_ARRAY,N)
-      common /grid_Hz_half/Hz_half
       real Hz_half_bak(GLOBAL_2D_ARRAY,N)
       common /grid_Hz_half_bak/Hz_half_bak
       real dHzdt(GLOBAL_2D_ARRAY,N)

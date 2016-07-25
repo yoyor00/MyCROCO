@@ -723,6 +723,13 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+#if defined LAGRANGIAN
+      do tile=my_first,my_last
+        call set_depth_lagrangian (tile, .TRUE.)
+      enddo
+C$OMP BARRIER
+#endif
+
       do tile=my_first,my_last
 
 # ifdef NBQ_CONS2
@@ -763,6 +770,13 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+#if defined LAGRANGIAN
+      do tile=my_first,my_last
+        call set_depth_lagrangian (tile, .FALSE.)
+      enddo
+C$OMP BARRIER
+#endif
 
 #endif /* SOLVE3D */
 !

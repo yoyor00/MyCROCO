@@ -135,6 +135,7 @@ C$    integer omp_get_thread_num
 # endif
 
 # ifdef SOLVE3D
+# if !defined LAGRANGIAN
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
@@ -225,6 +226,162 @@ C$    integer omp_get_thread_num
 
 #   endif
 #  endif 
+
+#endif
+      return
+      end
+      
+      subroutine set_depth_lagrangian (tile, resetHz)
+      implicit none
+#include "param.h"
+      integer tile, trd
+      logical resetHz
+C$    integer omp_get_thread_num
+#include "compute_tile_bounds.h"
+      call set_depth_lagrangian_tile (resetHz,Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine set_depth_lagrangian_tile (resetHz,Istr,Iend,Jstr,Jend)
+!
+!-----------------------------------------------------------------------------
+! Compute Hz(n+1) from Hz(n) by integrating the horizontal continuity equation
+! Lagrangian vertical coordinates
+!-----------------------------------------------------------------------------
+!
+      implicit none
+      integer Istr,Iend,Jstr,Jend, i,j,k
+      logical resetHz
+
+# include "param.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
+# include "coupling.h"
+# include "scalars.h"
+
+!
+# include "compute_auxiliary_bounds.h"
+!
+# ifdef EW_PERIODIC
+#  define I_RANGE Istr,Iend
+# else
+#  define I_RANGE IstrR,IendR
+# endif
+# ifdef NS_PERIODIC
+#  define J_RANGE Jstr,Jend
+# else
+#  define J_RANGE JstrR,JendR
+# endif
+!
+!---------------------------------------------------------
+!
+
+!---------------------------------------------------------
+!  Integrate divergence of horizontal mass fluxes
+!---------------------------------------------------------
+        if (resetHz) then
+          Hz_bak = Hz
+        endif
+        
+        do k=1,N,+1
+         do j=Jstr,Jend
+          do i=Istr,Iend
+            Hz(i,j,k)=Hz_bak(i,j,k)-dt*(Huon(i+1,j,k)-Huon(i,j,k)
+     &                            +Hvom(i,j+1,k)-Hvom(i,j,k))
+     &                            *pm(i,j)*pn(i,j)
+          enddo
+        enddo
+      enddo
+!
+!  Set lateral boundary conditions for Hz
+!
+#  ifndef EW_PERIODIC
+      if (WESTERN_EDGE) then
+        do k=1,N
+          do j=Jstr,Jend
+            Hz(0,j,k)=Hz(1,j,k)
+          enddo
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do k=1,N
+          do j=Jstr,Jend
+            Hz(LOCALLM+1,j,k)=Hz(LOCALLM,j,k)
+          enddo
+        enddo
+      endif
+#  endif
+#  ifndef NS_PERIODIC
+      if (SOUTHERN_EDGE) then
+        do k=1,N
+          do i=Istr,Iend
+            Hz(i,0,k)=Hz(i,1,k)
+          enddo
+        enddo
+      endif
+      if (NORTHERN_EDGE) then
+        do k=1,N
+          do i=Istr,Iend
+            Hz(i,LOCALMM+1,k)=Hz(i,LOCALMM,k)
+          enddo
+        enddo
+      endif
+#  endif
+#  ifndef EW_PERIODIC
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        do k=1,N
+          Hz(0,0,k)=Hz(1,1,k)
+        enddo
+      endif
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        do k=1,N
+          Hz(0,LOCALMM+1,k)=Hz(1,LOCALMM,k)
+        enddo
+      endif
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        do k=1,N
+          Hz(LOCALLM+1,0,k)=Hz(LOCALLM,1,k)
+        enddo
+      endif
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        do k=1,N
+          Hz(LOCALLM+1,LOCALMM+1,k)=
+     &                     Hz(LOCALLM,LOCALMM,k)
+        enddo
+      endif
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+#  endif
+
+
+      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+        do i=I_RANGE            !!!          with omega.F
+            z_w(i,j,0)=-h(i,j)
+          enddo
+         enddo
+        
+        do k=1,N,+1
+      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+        do i=I_RANGE            !!!          with omega.F
+          z_w(i,j,k)=z_w(i,j,k-1)+Hz(i,j,k)
+          enddo
+        enddo
+       enddo 
+       
+        do k=1,N,+1
+      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+        do i=I_RANGE            !!!          with omega.F
+          z_r(i,j,k)=0.5*(z_w(i,j,k-1)+z_w(i,j,k))
+          enddo
+        enddo
+       enddo
+
+#  undef I_RANGE
+#  undef J_RANGE
+
       return
       end
 !
@@ -485,7 +642,11 @@ C$    integer omp_get_thread_num
         enddo
         do k=1,N
           do i=IU_RANGE
+#if !defined LAGRANGIAN
             DC(i,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+#else
+            DC(i,k)=0.5*(Hz_half(i,j,k)+Hz_half(i-1,j,k))*on_u(i,j)
+#endif
             DC(i,0)=DC(i,0)+DC(i,k)
             FC(i,0)=FC(i,0)+DC(i,k)*u(i,j,k,nrhs)
           enddo
@@ -522,7 +683,11 @@ C$    integer omp_get_thread_num
         enddo
         do k=1,N
           do i=IV_RANGE
+#if !defined LAGRANGIAN
             DC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+#else
+            DC(i,k)=0.5*(Hz_half(i,j,k)+Hz_half(i,j-1,k))*om_v(i,j)
+#endif
             DC(i,0)=DC(i,0)+DC(i,k)
             FC(i,0)=FC(i,0)+DC(i,k)*v(i,j,k,nrhs)
           enddo
