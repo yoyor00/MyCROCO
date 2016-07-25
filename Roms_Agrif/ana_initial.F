@@ -55,6 +55,7 @@ C$    integer omp_get_thread_num
 #ifdef BASIN
       real cff1,cff2
 #endif
+
 #ifdef INTERNAL
       real cff
 #endif
@@ -307,6 +308,56 @@ C$    integer omp_get_thread_num
 #  endif /* RIP */
 !
       endif   !nrrec.eq.0.
+      
+!
+!----------------------------------------------------------------------
+!  Set initial conditions for layers thicknesses [m]
+!----------------------------------------------------------------------
+!
+
+#ifdef LAGRANGIAN
+      if (nrrec.eq.0) then
+#ifdef GRAV_ADJ
+#ifdef GRAV_ADJ_SOLITON
+! N = 2        
+        depth=h(1,1)
+        gam=0.9
+        del=0.3
+          do j=JR_RANGE
+            do i=IR_RANGE
+            zint=depth*(del-1)+gam*del*depth*(2*xr(i,j)/xl - 1)
+            Hz(i,j,1) = zint+depth
+            Hz(i,j,2) = depth-Hz(i,j,1)
+          enddo
+        enddo
+#endif
+#endif
+          
+          do j=JR_RANGE
+            do i=IR_RANGE
+              z_w(i,j,0)=-h(i,j)
+            enddo
+          enddo
+        
+          do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+             z_w(i,j,k)=z_w(i,j,k-1)+Hz(i,j,k)
+            enddo
+           enddo
+          enddo 
+       
+          do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+             z_r(i,j,k)=0.5*(z_w(i,j,k-1)+z_w(i,j,k))
+            enddo
+           enddo
+          enddo
+
+      endif   !  nrrec.eq.0.
+#endif
+
 !
 !----------------------------------------------------------------------
 !  Set initial conditions for potential temperature [degC] and
@@ -423,7 +474,7 @@ C$    integer omp_get_thread_num
 
 #  elif defined GRAV_ADJ
 #   ifdef GRAV_ADJ_SOLITON
-#    define HORN_PROFILE
+#    undef HORN_PROFILE
 #    ifdef HORN_PROFILE
 !
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
@@ -453,6 +504,7 @@ C$    integer omp_get_thread_num
            enddo
         enddo
 #    else
+#if !defined LAGRANGIAN
         depth=h(1,1)
         gam=0.9
         del=0.3
@@ -468,6 +520,18 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
+#else
+! N=2
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            t(i,j,1,1,itemp) = 5/Tcoef
+            t(i,j,2,1,itemp) = 10/Tcoef
+            do k=1,N
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+            enddo
+          enddo
+        enddo
+#endif
 #    endif /* HORN_PROFILE */ 
 #   else
         do k=1,N
@@ -1051,6 +1115,14 @@ C$    integer omp_get_thread_num
      &                        u(START_2D_ARRAY,1,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,1))
+#ifdef LAGRANGIAN
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                        z_w(START_2D_ARRAY,0))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        z_r(START_2D_ARRAY,1))
+#endif
 #  endif /* SOLVE3D */
 # endif /* ANA_INITIAL */
 # ifdef SOLVE3D
