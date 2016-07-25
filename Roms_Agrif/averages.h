@@ -32,13 +32,20 @@
 # ifdef SOLVE3D
       real u_avg(GLOBAL_2D_ARRAY,N)
       real v_avg(GLOBAL_2D_ARRAY,N)
+#ifdef OUTPUT_HZ
+      real Hz_avg(GLOBAL_2D_ARRAY,N)
+#endif
       real t_avg(GLOBAL_2D_ARRAY,N,NT)
       real rho_avg(GLOBAL_2D_ARRAY,N)
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
       real w_avg(GLOBAL_2D_ARRAY,N)
       common /avg_u/u_avg /avg_v/v_avg /avg_t/t_avg
+#ifdef OUTPUT_HZ
+     &       /avg_Hz/Hz_avg
+#endif
      &       /avg_rho/rho_avg /avg_omega/omega_avg
      &       /avg_w/w_avg
+
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
 #  ifdef LMD_SKPP

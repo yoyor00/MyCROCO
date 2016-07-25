@@ -20,6 +20,7 @@
 ! indxUb,indxVb   vertically integrated 2D U,V-momentum components
 !
 ! indxU,indxV     3D U- and V-momenta.
+! indxHz           3D layers thicknesses
 ! indxT,indxS,.., indxZoo  tracers (temperature, salinity,
 !                 biological tracers.
 ! indxSAND,indxGRAV...
@@ -126,7 +127,13 @@
 #endif
 #ifdef SOLVE3D
       integer indxU, indxV, indxT
-      parameter (indxU=6, indxV=7, indxT=8)
+      parameter (indxU=6, indxV=7)
+#ifdef OUTPUT_HZ
+      integer indxHz
+      parameter (indxHz=8, indxT=9)
+#else
+      parameter (indxT=8)
+#endif
 
 # ifdef SALINITY
       integer indxS
@@ -689,6 +696,9 @@
       integer hisAOU, hisWIND10
 #  endif
 # endif  /* BIOLOGY */
+#ifdef OUTPUT_HZ
+      integer hisHz
+#endif
       integer hisT(NT)
 # ifdef SEDIMENT
       integer hisSed(NST+2
@@ -759,6 +769,9 @@
       integer avgAOU, avgWIND10
 #  endif
 # endif  /* BIOLOGY */
+#ifdef OUTPUT_HZ
+      integer avgHz
+#endif
       integer avgT(NT)
 #  ifdef BULK_FLUX
       integer avgShflx_rlw
@@ -889,6 +902,9 @@
 # endif
 #ifdef SOLVE3D
      &      , hisU,    hisV,     hisT,    hisR
+#ifdef OUTPUT_HZ
+     &      , hisHz
+#endif
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
@@ -985,6 +1001,9 @@
      &      , avgShflx, avgSwflx, avgShflx_rsw
 # ifdef SOLVE3D
      &      , avgU,    avgV,     avgT,     avgR
+#ifdef OUTPUT_HZ
+     &      , avgHz
+#endif
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
      &      , avgHbl,  avgHbbl

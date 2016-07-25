@@ -144,6 +144,9 @@ C$    integer omp_get_thread_num
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
             w_avg(i,j,k)=init
+#ifdef OUTPUT_HZ
+            Hz_avg(i,j,k)=init
+#endif
 # endif
 # ifdef MRL_WCI
             ust(i,j,k)=init

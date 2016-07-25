@@ -720,6 +720,9 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
+#ifdef OUTPUT_HZ
+     &                    , wrthis(indxHz)
+#endif
      &                    , (wrthis(itrc), itrc=indxT,indxT+NT-1) 
 #endif
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
@@ -981,6 +984,9 @@ c        close(testunit)
      &                                    ,  wrtavg(indxVb)
 # ifdef SOLVE3D
      &                    ,  wrtavg(indxU),  wrtavg(indxV)
+#ifdef OUTPUT_HZ
+     &                    , wrtavg(indxHz)
+#endif
      &                    , (wrtavg(itrc), itrc=indxT,indxT+NT-1)
 # endif
         if ( wrtavg(indxZ) .or. wrtavg(indxUb) .or. wrtavg(indxVb)

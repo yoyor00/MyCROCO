@@ -67,6 +67,7 @@
 # define vidVb hisVb
 # define vidU hisU
 # define vidV hisV
+# define vidHz hisHz
 # define vidT hisT
 # define vidR hisR
 # define vidO hisO
@@ -149,6 +150,7 @@
 # define vidVb avgVb
 # define vidU avgU
 # define vidV avgV
+# define vidHz avgHz
 # define vidT avgT
 # define vidR avgR
 # define vidO avgO
@@ -585,6 +587,39 @@
           call nf_add_attribute(ncid, vidV, indxV, 5, NF_FOUT, ierr)
 
         endif
+        
+!
+! Layers thicknesses
+!
+
+#ifdef OUTPUT_HZ
+          if (wrt(indxHz)) then
+            lvar=lenstr(vname(1,indxHz))
+            ierr=nf_def_var (ncid, vname(1,indxHz)(1:lvar),
+     &                             NF_REAL, 4, r3dgrd, vidHz)
+# ifndef AVRH
+            lvar=lenstr(vname(2,indxHz))
+            ierr=nf_put_att_text (ncid, vidHz, 'long_name',
+     &                         lvar, vname(2,indxHz)(1:lvar))
+# else
+            text='averaged '/ /vname(2,indxHz)
+            lvar=lenstr(text)
+            ierr=nf_put_att_text (ncid, vidHz, 'long_name',
+     &                                          lvar, text(1:lvar))
+# endif
+            lvar=lenstr(vname(3,indxHz))
+            ierr=nf_put_att_text (ncid, vidHz, 'units', lvar,
+     &                               vname(3,indxHz)(1:lvar))
+            lvar=lenstr(vname(4,indxHz))
+            ierr=nf_put_att_text (ncid, vidHz, 'field', lvar,
+     &                               vname(4,indxHz)(1:lvar))
+
+            call nf_add_attribute(ncid,vidHz,indxHz,5,
+     &           NF_REAL, ierr)
+
+            endif
+#endif
+
 !
 ! Tracer variables.
 !

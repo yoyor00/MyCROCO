@@ -573,6 +573,20 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
      &        record,v3dvar,type)   
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
+      
+!
+!     Layers thicknesses
+!
+
+#ifdef OUTPUT_HZ
+      if (wrthis(indxHz)) then
+            workr = Hz
+            call fillvalue3d(workr,ncidhis,hisHz,
+     &           indxHz,record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtHz  ' MYID
+      endif
+#endif
+
 !     
 !     Tracer variables.
 !     

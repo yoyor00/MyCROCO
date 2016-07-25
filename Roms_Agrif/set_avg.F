@@ -220,6 +220,17 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#ifdef OUTPUT_HZ
+        if (wrtavg(indxHz)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Hz_avg(i,j,k)=cff*(cff1*Hz_avg(i,j,k)+Hz(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+#endif
         do itrc=1,NT
           if (wrtavg(indxT+itrc-1)) then
             do k=1,N

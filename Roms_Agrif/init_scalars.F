@@ -413,7 +413,22 @@ CR      write(stdout,'(1x,A,I3)') 'indxV = ',indxV
 !      vname(6,indxV)='x_v y_v                                     '
 #endif
       vname(7,indxV)='                                            '
-                
+
+#ifdef OUTPUT_HZ
+CR      write(stdout,'(1x,A,I3)') 'indxHz = ',indxHz
+      vname(1,indxHz)='Hz                                          '
+      vname(2,indxHz)='layer thickness                             '
+      vname(3,indxHz)='meter                                       '
+      vname(4,indxHz)='layer thickness, scalar, series             '
+      vname(5,indxHz)='cell_thickness                              '
+#ifdef SPHERICAL
+      vname(6,indxHz)='lat_rho lon_rho                             '
+#else
+      vname(6,indxHz)='x_rho y_rho                                 '
+#endif
+      vname(7,indxHz)='                                            '
+#endif
+
 CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(1,indxT)='temp                                        '
       vname(2,indxT)='potential temperature                       '

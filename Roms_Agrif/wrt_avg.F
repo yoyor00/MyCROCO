@@ -206,6 +206,20 @@ CR      write(*,*) 'wrt_avg:  wrtU' MYID
          call fillvalue3d(workr,ncidavg,avgV,indxV,record,v3dvar,type)   
 CR      write(*,*) 'wrt_avg:  wrtV' MYID
       endif
+      
+!
+!     Layers thicknesses
+!
+
+#ifdef OUTPUT_HZ
+      if (wrtavg(indxHz)) then
+            workr = Hz_avg
+            call fillvalue3d(workr,ncidavg,avgHz,
+     &           indxHz,record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtHz  ' MYID
+      endif
+#endif
+
 !     
 !     Tracer variables.
 !     
