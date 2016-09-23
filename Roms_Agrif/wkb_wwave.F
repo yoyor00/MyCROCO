@@ -457,7 +457,8 @@ C$OMP BARRIER
 ! Solve primary wavenumber equation
 !---------------------------------------------------------------------
 !
-      cff=0.5
+      cff=10*0.5                          ! smoothing coefficient
+!
       do j=jstr,jend
         do i=istr,iend
 # ifdef MRL_CEW
@@ -485,12 +486,10 @@ C$OMP BARRIER
      &                                               +0.25*rke(i,j)
      &               *(kvx(i,j)+kvx(i+1,j)+kvx(i,j+1)+kvx(i+1,j+1))
 # endif
-
 # ifdef ADD_DIFF
      &           -cff*on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
      &           -cff*om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1))
 # endif
-
      &                                                            )
           wke(i,j,wnew) =wke(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*om_r(i,j)*(Dstp(i,j+1)-Dstp(i,j-1))
@@ -504,12 +503,10 @@ C$OMP BARRIER
      &                                               +0.25*rkx(i,j)
      &               *(kue(i,j)+kue(i+1,j)+kue(i,j+1)+kue(i+1,j+1))
 # endif
-
 # ifdef ADD_DIFF
      &           -cff*on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
      &           -cff*om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1))
 # endif
-
      &                                                            )
 # ifdef MASKING
           wkx(i,j,wnew) =wkx(i,j,wnew)*rmask(i,j)
@@ -544,14 +541,12 @@ C$OMP BARRIER
         do i=istr,iend
           wac(i,j,wnew) =wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                 *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
-
 # ifdef ADD_DIFF
      &                           -cff*on_r(i,j)*(wac(i+1,j,wprv)
      &                        -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
      &                           -cff*om_r(i,j)*(wac(i,j+1,wprv)
      &                        -2.*wac(i,j,wprv)+wac(i,j-1,wprv))
 # endif
-
      &                          ) +wsb(i,j,wstp)+wfc(i,j,wstp) )
 # ifdef MASKING
           wac(i,j,wnew) =wac(i,j,wnew)*rmask(i,j)

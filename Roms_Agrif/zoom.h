@@ -185,11 +185,14 @@
       integer tspongeid, uspongeid, vspongeid
 # ifdef WKB_WWAVE
       integer wacid,warid,wkxid,wkeid
+      integer hrmid,frqid,wsbid,wvnid,wcgid
 # endif
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
      &  tspongeid, uspongeid, vspongeid, rmaskid
 # ifdef WKB_WWAVE
      &  ,wacid,warid,wkxid,wkeid
+     &  ,hrmid,frqid,wsbid,wvnid,wcgid
+     
 # endif
       integer updatezetaid, updateubarid, updatevbarid
       integer updateduavg2id, updatedvavg2id
