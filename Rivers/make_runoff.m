@@ -144,7 +144,7 @@ if plotting==1
   m_proj('mercator',...
        'lon',[lonmin lonmax],...
        'lat',[latmin latmax]);
-  m_pcolor(lon,lat,mask)
+  m_pcolor(lon,lat,mask); shading flat
   m_grid('box','fancy','xtick',5,'ytick',5,'tickdir','out');
   set(findobj('tag','m_grid_color'),'facecolor','white');
   hold on
