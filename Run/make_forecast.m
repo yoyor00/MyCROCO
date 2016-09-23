@@ -61,8 +61,8 @@ if add_tides_fcst==1
   %add_tidal_data(tidename,grdname,frcname,Ntides,tidalrank,...
   %               Ymin,Mmin,Dmin,Hmin,Min_min,Smin,coastfileplot)
    [Y,M,d,h,mi,s] = datevec(date);
-   add_tides(tidename,grdname,frcname,Ntides,tidalrank,...
-                                  Yorig,Y,M,coastfileplot)
+   add_tidal_data(tidename,grdname,frcname,Ntides,tidalrank,...
+                                       Yorig,Y,M,coastfileplot)
 
 end
 %
