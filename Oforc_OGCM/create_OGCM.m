@@ -34,7 +34,7 @@ function create_OGCM(fname,lonT,latT,lonU,latU,lonV,latV,depth,time,...
 missval=NaN;
 disp('    Create the OGCM file')
 nc=netcdf(fname,'clobber');
-redef(nc);
+%redef(nc);
 nc('lonT')=length(lonT);
 nc('latT')=length(latT);
 nc('lonU')=length(lonU);
@@ -109,7 +109,7 @@ nc{'depth'}.units='meters';
 nc{'time'}=ncdouble('time') ;
 eval(['nc{''time''}.units = ncchar(''days since 1-Jan-',num2str(Yorig),' 00:00:0.0'');'])
 eval(['nc{''time''}.units = ''days since 1-Jan-',num2str(Yorig),' 00:00:0.0'';'])
-endef(nc);
+%endef(nc);
 %
 % File the file
 %
