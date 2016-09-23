@@ -202,8 +202,8 @@ if makefrc==1 | makeblk==1
                 disp(['=============='])
                 %add_tidal_data(tidename,grdname,frcname,Ntides,tidalrank,...
                 %    Y,M,Dmin,Hmin,Min_min,Smin,coastfileplot)
-                add_tides(tidename,grdname,frcname,Ntides,tidalrank,...
-                                               Yorig,Y,M,coastfileplot)
+                add_tidal_data(tidename,grdname,frcname,Ntides,tidalrank,...
+                                                    Yorig,Y,M,coastfileplot)
             end
             %
             % Open the ROMS forcing files
