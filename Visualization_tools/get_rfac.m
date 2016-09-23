@@ -32,6 +32,8 @@ function [lat,lon,mask,r]=get_rfact(hisfile,gridfile,tindex,coef)
 [lat,lon,mask]=read_latlonmask(gridfile,'r');
 nc=netcdf(gridfile);
 h=nc{'h'}(:);
+hmin=min(min(h));
+if hmin<0, h=h-hmin+1; end
 close(nc)
 [M,L]=size(h);
 Mm=M-1;
