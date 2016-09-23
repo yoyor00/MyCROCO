@@ -1679,6 +1679,7 @@ C$OMP BARRIER
 # include "param.h"
 # include "wkb_wwave.h"
 # include "scalars.h"
+# include "zoom.h"
 
        integer i1,i2,j1,j2
        logical before
@@ -1688,7 +1689,7 @@ C$OMP BARRIER
        tabres(i1:i2,j1:j2) = 
      &               wac(i1:i2,j1:j2,2)
        else
-       dWactinterp(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+       dWactinterp(i1:i2,j1:j2)=tabres(i1:i2,j1:j2)
        endif
       return
       end       
@@ -1698,6 +1699,7 @@ C$OMP BARRIER
 # include "param.h"
 # include "wkb_wwave.h"
 # include "scalars.h"
+# include "zoom.h"
 
        integer i1,i2,j1,j2
        logical before
@@ -1707,7 +1709,7 @@ C$OMP BARRIER
        tabres(i1:i2,j1:j2) = 
      &               war(i1:i2,j1:j2,2)
        else
-         dWartinterp(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+         dWartinterp(i1:i2,j1:j2)=tabres(i1:i2,j1:j2)
        endif
       return
       end       
@@ -1717,6 +1719,7 @@ C$OMP BARRIER
 # include "param.h"
 # include "wkb_wwave.h"
 # include "scalars.h"
+# include "zoom.h"
 
        integer i1,i2,j1,j2
        logical before
@@ -1726,7 +1729,7 @@ C$OMP BARRIER
        tabres(i1:i2,j1:j2) = 
      &               wkx(i1:i2,j1:j2,2)
        else
-         dWkxtinterp(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+         dWkxtinterp(i1:i2,j1:j2)=tabres(i1:i2,j1:j2)
        endif
       return
       end       
@@ -1735,6 +1738,7 @@ C$OMP BARRIER
 # include "param.h"
 # include "wkb_wwave.h"
 # include "scalars.h"
+# include "zoom.h"
 
        integer i1,i2,j1,j2
        logical before
@@ -1744,7 +1748,7 @@ C$OMP BARRIER
        tabres(i1:i2,j1:j2) = 
      &               wke(i1:i2,j1:j2,2)
        else
-       dWketinterp(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+       dWketinterp(i1:i2,j1:j2)=tabres(i1:i2,j1:j2)
        endif
       return
       end       

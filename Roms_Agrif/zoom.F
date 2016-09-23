@@ -168,10 +168,11 @@
      &gradconstraints
       integer :: irhot   
       external hinterp, updateh, updatermask
-      external initzeta,initubar,initvbar
+      external initzeta,initubar,initvbar,inith
       external initu,initv,initt
 # ifdef WKB_WWAVE
       external initwac,initwkx,initwke,initwar
+      external inithrm,initfrq,initwcg,initwsb,initwvn
 # endif
 !$AGRIF_DO_NOT_TREAT
        integer isens
@@ -332,6 +333,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1 
         call ana_grid (tile) 
       enddo
+        call Agrif_Init_Variable(hid,procname=inith)
 # else
 !
 !  Read grid from GRID NetCDF file 
@@ -668,20 +670,30 @@ CR      write(*,*) ' -2' MYID
 !----------------------------------------------------------------------
 !
 # ifdef WKB_WWAVE
-        call Agrif_Set_interp(wacid,interp=Agrif_ppm)
-        call Agrif_Init_Variable(wacid,procname=initwac)
-        call Agrif_Set_interp(wkxid,interp=Agrif_ppm)
-        call Agrif_Init_Variable(wkxid,procname=initwkx)
-        call Agrif_Set_interp(wkeid,interp=Agrif_ppm)
-        call Agrif_Init_Variable(wkeid,procname=initwke)
+      call Agrif_Set_interp(wacid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wacid,procname=initwac)
+      call Agrif_Set_interp(wkxid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wkxid,procname=initwkx)
+      call Agrif_Set_interp(wkeid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wkeid,procname=initwke)
+        
+      call Agrif_Set_interp(hrmid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(hrmid,procname=inithrm)
+      call Agrif_Set_interp(frqid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(frqid,procname=initfrq)
+      call Agrif_Set_interp(wsbid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wsbid,procname=initwsb)
+      call Agrif_Set_interp(wvnid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wvnid,procname=initwvn)
+      call Agrif_Set_interp(wcgid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wcgid,procname=initwcg)
 #  ifdef WAVE_ROLLER
-        call Agrif_Set_interp(warid,interp=Agrif_ppm)
-        call Agrif_Init_Variable(warid,procname=initwar)
+      call Agrif_Set_interp(warid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(warid,procname=initwar)
 #  endif
-
 C$OMP BARRIER
 C$OMP MASTER
-        MPI_master_only write(stdout,'(/1x,A/)')
+      MPI_master_only write(stdout,'(/1x,A/)')
      &     'WKB: started child wave computation.'
 C$OMP END MASTER
       wkb_agrif_done=.FALSE.
@@ -689,13 +701,13 @@ C$OMP END MASTER
       winfo=1
       iwave=1
       thwave=1.D+10
-# ifndef ANA_BRY_WKB
+#  ifndef ANA_BRY_WKB
 C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_bry_wkb (tile)
-      enddo
-# endif
-# ifdef MRL_CEW
+!      do tile=0,NSUB_X*NSUB_E-1
+!        call set_bry_wkb (tile)
+!      enddo
+#  endif
+#  ifdef MRL_CEW
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call wkb_cew_prep (tile)
@@ -717,7 +729,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 C$OMP BARRIER
 #  endif
-      do while (iwave.le.50000.and.thwave.ge.1.D-10)
+      do while (iwave.le.1000.and.thwave.ge.1.D-10)
         wstp=wnew
         wnew=wstp+1
         if (wnew.ge.3) wnew=1
@@ -729,17 +741,20 @@ C$OMP PARALLEL DO PRIVATE(tile)
         iwave=iwave+1
         thwave=max(av_wac,av_wkn)
       enddo
+
 #  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')
 C$OMP END MASTER
 #  endif
+
       first_time=0
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call mrl_wci (tile)
       enddo
+
 C$OMP BARRIER
 C$OMP MASTER
         MPI_master_only write(stdout,'(/1x,A/)')
@@ -1311,6 +1326,18 @@ CR      write(*,*) '  0' MYID
      &   (/i1t,j1t/),(/i2t,j2t/),wkxid)
          call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),wkeid)
+
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),hrmid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),frqid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),wsbid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),wvnid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),wcgid)
+
 # ifdef WAVE_ROLLER
          call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),warid)
@@ -1356,11 +1383,35 @@ CR      write(*,*) '  0' MYID
 
 #ifdef WKB_WWAVE
          call Agrif_Set_bc(wacid,(/0,0/))
+         call Agrif_Set_interp(wacid,interp=Agrif_ppm)
          call Agrif_Set_bcinterp(wacid,interp=Agrif_ppm)
          call Agrif_Set_bc(wkxid,(/0,0/))
-         call Agrif_Set_bcinterp(wkxid,interp=Agrif_ppm)
+          call Agrif_Set_interp(wkxid,interp=Agrif_ppm)
+          call Agrif_Set_bcinterp(wkxid,interp=Agrif_ppm)
          call Agrif_Set_bc(wkeid,(/0,0/))
          call Agrif_Set_bcinterp(wkeid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wkeid,interp=Agrif_ppm)
+
+         call Agrif_Set_bc(hrmid,(/0,0/))
+         call Agrif_Set_bcinterp(hrmid,interp=Agrif_ppm)
+         call Agrif_Set_interp(hrmid,interp=Agrif_ppm)
+         
+         call Agrif_Set_bc(frqid,(/0,0/))
+         call Agrif_Set_bcinterp(frqid,interp=Agrif_ppm)
+         call Agrif_Set_interp(frqid,interp=Agrif_ppm)
+
+         call Agrif_Set_bc(wsbid,(/0,0/))
+         call Agrif_Set_bcinterp(wsbid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wsbid,interp=Agrif_ppm)
+
+         call Agrif_Set_bc(wvnid,(/0,0/))
+         call Agrif_Set_bcinterp(wvnid,interp=Agrif_ppm)
+          call Agrif_Set_interp(wvnid,interp=Agrif_ppm)
+        
+         call Agrif_Set_bc(wcgid,(/0,0/))
+         call Agrif_Set_bcinterp(wcgid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wcgid,interp=Agrif_ppm)
+
 # ifdef WAVE_ROLLER
          call Agrif_Set_bc(warid,(/0,0/))
          call Agrif_Set_bcinterp(warid,interp=Agrif_ppm)
@@ -1376,6 +1427,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bc(vid,(/0,0/))
         
         call Agrif_Set_bcinterp(hid,   interp=AGRIF_linear)        
+        call Agrif_Set_interp(hid,   interp=AGRIF_linear)        
         call Agrif_Set_bcinterp(zetaid,interp=Agrif_lagrange)        
         call Agrif_Set_bcinterp(ubarid,interp1=Agrif_lagrange,
      &                                 interp2=Agrif_ppm)
@@ -1769,6 +1821,112 @@ CR      write(*,*) '  0' MYID
        endif
       return
       end
+
+
+      subroutine inithrm(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = hrm(i,j,2)
+       enddo
+       enddo
+       else
+       hrm(i1:i2,j1:j2,1)=tabres
+       hrm(i1:i2,j1:j2,2)=tabres
+       endif
+      return
+      end
+      
+      subroutine initfrq(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = frq(i,j,2)
+       enddo
+       enddo
+       else
+       frq(i1:i2,j1:j2,1)=tabres
+       frq(i1:i2,j1:j2,2)=tabres
+       endif
+      return
+      end
+      subroutine initwsb(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = wsb(i,j,2)
+       enddo
+       enddo
+       else
+       wsb(i1:i2,j1:j2,1)=tabres
+       wsb(i1:i2,j1:j2,2)=tabres
+       endif
+      return
+      end
+      
+       subroutine initwvn(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = wvn(i,j,2)
+       enddo
+       enddo
+       else
+       wvn(i1:i2,j1:j2,1)=tabres
+       wvn(i1:i2,j1:j2,2)=tabres
+       endif
+      return
+      end
+     
+      subroutine initwcg(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = wcg(i,j,2)
+       enddo
+       enddo
+       else
+       wcg(i1:i2,j1:j2,1)=tabres
+       wcg(i1:i2,j1:j2,2)=tabres
+       endif
+      return
+      end
+
       
 #  ifdef WAVE_ROLLER
       subroutine initwar(tabres,i1,i2,j1,j2,before)
@@ -2048,6 +2206,29 @@ CR      write(*,*) '  0' MYID
                     
       Return
       End Subroutine Agrif_Before_Regridding
+      subroutine inith(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "scalars.h"
+# include "zoom.h"
+# include "ocean3d.h"
+# include "coupling.h"
+
+       integer i1,i2,j1,j2
+       real tabres(i1:i2,j1:j2)
+       logical before
+        write(*,*) i1,i2
+       if (before) then
+         tabres = h(i1:i2,j1:j2)
+       else
+         h(i1:i2,j1:j2) = tabres
+       endif
+
+      return
+      end
+
 
       subroutine initzeta(tabres,i1,i2,j1,j2,before)
       implicit none
