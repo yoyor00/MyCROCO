@@ -5,7 +5,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=../Roms_Agrif
+SOURCE=../OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 #
@@ -104,7 +104,7 @@ mkdir $SCRDIR
 #
 # AGRIF sources directory
 #
-AGRIF_SRC=${SOURCE}/AGRIF
+AGRIF_SRC=${SOURCE}/../AGRIF
 #
 # copy SOURCE code
 #
@@ -117,13 +117,13 @@ AGRIF_SRC=${SOURCE}/AGRIF
 /bin/cp -f ${SOURCE}/jobcomp $SCRDIR
 /bin/cp -f ${SOURCE}/amr.in $SCRDIR
 /bin/cp -RLf ${AGRIF_SRC} $SCRDIR
-/bin/cp -f ${SOURCE}/XIOS/*.F $SCRDIR
-/bin/cp -f ${SOURCE}/PISCES/* $SCRDIR
-/bin/cp -f ${SOURCE}/PISCES/kRGB61* $RUNDIR
+/bin/cp -f ${SOURCE}/../XIOS/*.F $SCRDIR
+/bin/cp -f ${SOURCE}/../PISCES/* $SCRDIR
+/bin/cp -f ${SOURCE}/../PISCES/kRGB61* $RUNDIR
 if [[ -e "namelist_pisces" ]] ; then
 	echo "  file namelist_pisces exists in Run directory"
 else
-	/bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+	/bin/cp -f ${SOURCE}/../PISCES/namelist_pisces* $RUNDIR
 	echo "  file namelist_pisces copied from source directory"
 fi
 #
