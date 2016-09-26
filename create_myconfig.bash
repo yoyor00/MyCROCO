@@ -48,32 +48,35 @@ if [[ $copy_tag == 1 ]] ; then
     echo '=> Copy the file from '$SOURCES_DIR ' and ' $TOOLS_DIR 
     echo '   needed to setup your own simulations'
     echo '         '
-    
+    mkdir 
     
     cd $MY_CONFIG_PATH'/'$MY_CONFIG_NAME
-    
+    mkdir OCEAN XIOS Misc TEST_CASES NAMELIST_OANALYSIS
     
     #OCEAN
-    cp -Rf $SOURCES_DIR/OCEAN/jobcomp .
-    cp -Rf $SOURCES_DIR/OCEAN/param.h . 
-    cp -Rf $SOURCES_DIR/OCEAN/cppdefs.h . 
-    cp -Rf $SOURCES_DIR/OCEAN/roms.in . 
-    cp -Rf $SOURCES_DIR/OCEAN/roms.in.1 . 
-    cp -Rf $SOURCES_DIR/OCEAN/roms_inter.in .
-    cp -Rf $SOURCES_DIR/OCEAN/sediment.in .
-    cp -Rf $SOURCES_DIR/OCEAN/roms_forecast.in .
-    cp -Rf $SOURCES_DIR/OCEAN/roms_hindcast.in .
-    cp -Rf $SOURCES_DIR/OCEAN/roms_stations.in .
+    DIRO='OCEAN'
+    cp -Rf $SOURCES_DIR/$DIRO/jobcomp $./
+    cp -Rf $SOURCES_DIR/$DIRO/param.h $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/cppdefs.h $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/roms.in $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/roms.in.1 $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/roms_inter.in $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/sediment.in $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/roms_forecast.in $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/roms_hindcast.in $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/roms_stations.in $DIRO/
     
     # TEST_CASE + NAMELIST_OANALYSIS
-    cp -Rf $SOURCES_DIR/OCEAN/TEST_CASES .
-    cp -Rf $SOURCES_DIR/OCEAN/NAMELIST_OANALYSIS .
+    cp -Rf $SOURCES_DIR/Run/TEST_CASES TEST_CASES
+    cp -Rf $SOURCES_DIR/Run/NAMELIST_OANALYSIS NAMELIST_OANALYSIS/
+    cp -Rf $SOURCES_DIR/Run/Plurimonths_scripts .
     
     # XIOS
-    cp -Rf $SOURCES_DIR/XIOS/domain_def.xml .
-    cp -Rf $SOURCES_DIR/XIOS/field_def.xml_full .
-    cp -Rf $SOURCES_DIR/XIOS/xios_launch.file .
-    cp -Rf $SOURCES_DIR/XIOS/README_XIOS .
+    DIRO='XIOS'
+    cp -Rf $SOURCES_DIR/$DIRO/domain_def.xml $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/field_def.xml_full $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/xios_launch.file $DIRO/
+    cp -Rf $SOURCES_DIR/$DIRO/README_$DIRO $DIRO/
  
     echo '=> Copy from '$SOURCES_DIR ' done'
     echo '         '
@@ -81,9 +84,12 @@ if [[ $copy_tag == 1 ]] ; then
     # for romstools in matlab
     cp -Rf $TOOLS_DIR/start.m .
     cp -Rf $TOOLS_DIR/romstools_param.m .
-    cp -Rf $TOOLS_DIR/Misc/town.dat .
+    cp -Rf $TOOLS_DIR/Misc/town.dat Misc/
     #
     cd -
+	 
+    cp create_myconfig.bash $MY_CONFIG_PATH'/'$MY_CONFIG_NAME
+
     #
     echo '=> Copy from '$TOOLS_DIR ' done'
     
