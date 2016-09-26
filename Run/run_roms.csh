@@ -202,6 +202,10 @@ while ($NY != $NY_END)
       $MV -f ${MODEL}_his.nc${ENDF} ${MODEL}_his_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_rst.nc${ENDF} ${MODEL}_rst_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_avg.nc${ENDF} ${MODEL}_avg_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_dia.nc${ENDF} ${MODEL}_dia_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MODEL}_dia_avg_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_diaM.nc${ENDF} ${MODEL}_diaM_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_diaM_avg.nc${ENDF} ${MODEL}_diaM_avg_${TIME}.nc${ENDF}
       @ LEVEL++
     end
     @ NM++
@@ -209,6 +213,7 @@ while ($NY != $NY_END)
   @ NY++
 end
 #
+
 #############################################################
 
 
