@@ -5,10 +5,10 @@
 #
 # set source, compilation and run directories
 #
-ROOT_DIR=/home/gcambon/croco
-SOURCE=$ROOT_DIR/OCEAN
+SOURCE=$HOME/croco/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
+ROOT_DIR=$SOURCE/..
 echo "============================"
 #
 # determine operating system
