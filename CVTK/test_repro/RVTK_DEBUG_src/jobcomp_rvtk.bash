@@ -5,11 +5,8 @@
 #
 # set source, compilation and run directories
 #
-
-SOURCE=$HOME/croco/OCEAN
-
-echo "============================"
-echo "SOURCE_ROMS_AGRIF="$SOURCE
+ROOT_DIR=/home/gcambon/croco
+SOURCE=$ROOT_DIR/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 echo "============================"
@@ -76,6 +73,7 @@ fi
 #NETCDFINC="-I/usr/local/include"
 NETCDFLIB=$(nf-config --flibs)
 NETCDFINC=-I$(nf-config --includedir)
+
 #
 # set MPI directories if needed
 #
@@ -110,26 +108,27 @@ mkdir $SCRDIR
 #
 # AGRIF sources directory
 #
-AGRIF_SRC=${SOURCE}/../AGRIF
+AGRIF_SRC=${ROOT_DIR}/AGRIF
 #
 # copy SOURCE code
 #
 /bin/cp -f ${SOURCE}/*.F90 $SCRDIR
-/bin/cp -f ${SOURCE}/*.F $SCRDIR
-/bin/cp -f ${SOURCE}/*.h $SCRDIR
+/bin/cp -f ${SOURCE}/*.h90 $SCRDIR
+/bin/cp -f ${SOURCE}/*.F   $SCRDIR
+/bin/cp -f ${SOURCE}/*.h   $SCRDIR
 /bin/cp -f ${SOURCE}/Make* $SCRDIR
 /bin/cp -f ${SOURCE}/testkeys.F $SCRDIR
 /bin/cp -f ${SOURCE}/jobcomp $SCRDIR
 /bin/cp -f ${SOURCE}/amr.in $SCRDIR
 /bin/cp -RLf ${AGRIF_SRC} $SCRDIR
-/bin/cp -f ${SOURCE}/../XIOS/*.F $SCRDIR
-/bin/cp -f ${SOURCE}/../PISCES/* $SCRDIR
-/bin/cp -f ${SOURCE}/../PISCES/kRGB61.txt $RUNDIR
-if [[ -e "namelist.trc.sms" ]] ; then
-	echo "  file namelist.trc.sms exists in Run directory"
+/bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
+/bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
+/bin/cp -f ${ROTT_DIR}/PISCES/kRGB61* $RUNDIR
+if [[ -e "namelist_pisces" ]] ; then
+	echo "  file namelist_pisces exists in Run directory"
 else
-	/bin/cp -f ${SOURCE}/../PISCES/namelist.trc.sms* $RUNDIR
-	echo "  file namelist.trc.sms copied from source directory"
+	/bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+	echo "  file namelist_pisces copied from source directory"
 fi
 #
 # overwrite with local files
@@ -247,6 +246,17 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	CFT1="$MPIF90"
 fi
 #
+# determine if NBQ related solvers (BLAS/LAPACK) are required
+#
+unset COMPILENBQ
+echo "Checking COMPILENBQ..."
+if $($CPP1 testkeys.F | grep -i -q nbqisdefined) ; then
+	echo " => NBQ activated"
+	COMPILENBQ=TRUE
+	LDFLAGS1="-lblas -llapack $LDFLAGS1"
+	FFLAGS1="$FFLAGS1 -ffree-line-length-none"
+fi
+#
 # determine if XIOS compilation is required
 #
 unset COMPILEXIOS
@@ -342,7 +352,7 @@ if [[ $COMPILEAGRIF ]] ; then
 	mkdir AGRIF_MODELFILES
 	mkdir AGRIF_INC
 	cd ..
-	for i in *.h ; do
+	for i in *.h *.h90 ; do
 		echo $i
 		cat cppdefs.h $i | cpp -P | grep -v -e ! -e '#' -e % -e '*' > ROMSFILES/$i
 	done
