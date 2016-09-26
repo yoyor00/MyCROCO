@@ -2,7 +2,7 @@
 
 # GIT code update
 #-----------------
-SOURCE_ROMS=$HOME/GIT/croco/Roms_Agrif
+SOURCE_ROMS=$HOME/GIT/croco
 echo
 echo "SOURCE_ROMS="$SOURCE_ROMS
 echo 
