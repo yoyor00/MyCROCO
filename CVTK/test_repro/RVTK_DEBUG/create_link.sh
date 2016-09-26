@@ -55,8 +55,8 @@ cd ../
 #--
 echo '==============='
 echo 'Process slurm files eventually needed'
-#ln -sf ${dir_home}/*.pbs .
-ln -sf ${dir_home}/*.slurm .
+cp -sf ${dir_home}/*.pbs .
+cp -sf ${dir_home}/*.slurm .
 
 echo '  '
 echo 'Well done: Finish linking'
