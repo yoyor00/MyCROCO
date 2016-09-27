@@ -2,7 +2,7 @@
 
 # GIT code update
 #-----------------
-SOURCE_ROMS=$HOME/GIT/croco
+SOURCE_ROMS=$HOME/GIT/croco/OCEAN
 echo
 echo "SOURCE_ROMS="$SOURCE_ROMS
 echo 
