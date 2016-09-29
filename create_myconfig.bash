@@ -11,10 +11,10 @@
 # G. Cambon : Sept. 2016
 #-----------------------------------------------------------------------------------
 
-SOURCES_DIR='/home/gcambon/GIT_utd/croco'
-TOOLS_DIR='/home/gcambon/GIT_utd/croco_tools'
+SOURCES_DIR=$HOME'/GIT/croco'
+TOOLS_DIR=$HOME'/GIT/croco_tools'
 
-MY_CONFIG_PATH='/local/tmp/2/gcambon/CONFIGS/'
+MY_CONFIG_PATH='/work/crocodev/CONFIGS/'
 MY_CONFIG_NAME='BENGUELA_LR'
 
 #
@@ -50,7 +50,7 @@ if [[ $copy_tag == 1 ]] ; then
     echo '         '
     
     cd $MY_CONFIG_PATH'/'$MY_CONFIG_NAME
-    mkdir Misc TEST_CASES NAMELIST_OANALYSIS
+    mkdir Misc TEST_CASES NAMELIST_OANALYSIS ROMS_FILES
     
     #OCEAN
     DIRO='OCEAN'
