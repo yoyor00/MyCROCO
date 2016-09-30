@@ -160,7 +160,9 @@ if [[ $OS == Linux ]] ; then           # ===== LINUX =====
 	if [[ $LINUX_FC == ifort || $LINUX_FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-		FFLAGS1="-O1 -72 -fno-alias -i4 -r8 -mcmodel=large -fp-model precise"
+                FFLAGS1="-O0 -g -72 -fno-alias -i4 -r8 -fp-model precise"
+                #FFLAGS1="-O0 -g -72 -fno-alias -i4 -r8 -mcmodel=large -shared-intel -fp-model precise"
+                #FFLAGS1="-O1 -72 -fno-alias -i4 -r8 -fp-model precise"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $LINUX_FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
