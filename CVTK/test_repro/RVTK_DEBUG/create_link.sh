@@ -58,6 +58,9 @@ echo 'Process slurm files eventually needed'
 cp -sf ${dir_home}/*.pbs .
 cp -sf ${dir_home}/*.slurm .
 
+cp -Rf jobcomp_rvtk.bash.BACK jobcomp_rvtk.bash
+cp -Rf git_process.bash.BACK git_process.bash
+
 echo '  '
 echo 'Well done: Finish linking'
 echo '============================================================='
