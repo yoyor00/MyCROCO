@@ -5,7 +5,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=$HOME/croco/OCEAN
+SOURCE=../../croco/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -43,25 +43,6 @@ fi
 #
 # set NETCDF directories
 #
-if [[ $OS == Linux ]] ; then
-  if [[ $LINUX_FC == g77 ]] ; then
-    if [[ $BITS == THIRTYTWO ]] ; then
-      NETCDFLIB=-L../../netcdf_g77/
-      NETCDFINC=-I../../netcdf_g77/
-    fi
-  elif [[ $LINUX_FC == ifort || $LINUX_FC == gfortran ]] ; then
-    if [[ $BITS == THIRTYTWO ]] ; then
-      NETCDFLIB=-L../../netcdf_ifc/
-      NETCDFINC=-I../../netcdf_ifc/
-    else
-      NETCDFLIB=-L../../netcdf_x86_64
-      NETCDFINC=-I../../netcdf_x86_64
-    fi
-  fi
-  NETCDFLIB="$NETCDFLIB -lnetcdf"
-fi
-#
-# If needed set your own NETCDF directories
 #-----------------------------------------------------------
 # Use : 
 #-lnetcdf           : version netcdf-3.6.3                --
@@ -84,7 +65,7 @@ MPIINC="-I/usr/local/include"
 #
 # set OASIS-MCT (or OASIS3) directories if needed
 #
-PRISM_ROOT_DIR=../../oasis3-mct/compile_oa3-mct
+PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 
 #
 # set XIOS directory if needed
