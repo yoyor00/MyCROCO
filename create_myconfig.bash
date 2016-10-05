@@ -11,10 +11,10 @@
 # G. Cambon : Sept. 2016
 #-----------------------------------------------------------------------------------
 
-SOURCES_DIR=$HOME'/GIT/croco'
-TOOLS_DIR=$HOME'/GIT/croco_tools'
+SOURCES_DIR='../../croco'
+TOOLS_DIR='../../croco_tools'
 
-MY_CONFIG_PATH='/work/crocodev/CONFIGS/'
+MY_CONFIG_PATH='../CONFIGS/'
 MY_CONFIG_NAME='BENGUELA_LR'
 
 #
