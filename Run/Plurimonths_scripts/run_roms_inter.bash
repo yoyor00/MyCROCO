@@ -268,7 +268,7 @@ while [ $NY != $NY_END ]; do
 #  COMPUTE
 #
     date
-#    ./$CODFILE  ${MODEL}_${TIME}_inter.in > ${MODEL}_${TIME}.out
+    ./$CODFILE  ${MODEL}_${TIME}_inter.in > ${MODEL}_${TIME}.out
     date
 #
 # Test if the month has finised properly
