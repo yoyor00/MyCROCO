@@ -54,9 +54,9 @@ echo
 #=============================================================================================
 # Bulk or not in case of REGIONAL  [ 'OFF ON' ]
 #
-#LIST_BULK_FLUXFLAG='OFF ON'
+LIST_BULK_FLUXFLAG='OFF ON'
 #LIST_BULK_FLUXFLAG='OFF'
-LIST_BULK_FLUXFLAG='ON'
+#LIST_BULK_FLUXFLAG='ON'
 echo 'Bulk flux testing: '$LIST_BULK_FLUXFLAG
 echo ' '
 #=============================================================================================
@@ -77,9 +77,9 @@ echo
 #=============================================================================================
 # Type of Nesting (in case of VORTEX OR BENGUELA_LR/VHR) [ 'OFF 1W 2W' ]
 #
-LIST_AGRIFFLAG='OFF'
+#LIST_AGRIFFLAG='OFF'
 #LIST_AGRIFFLAG='OFF 1W'
-#LIST_AGRIFFLAG='OFF 1W 2W'
+LIST_AGRIFFLAG='OFF 1W 2W'
 echo 'Agrif type testing: '$LIST_AGRIFFLAG
 echo ' '
 #=============================================================================================
