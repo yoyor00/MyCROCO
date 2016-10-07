@@ -180,8 +180,10 @@ cppcheck: cppcheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
 srcscheck: srcscheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
+	rm -f check_srcs.F
 checkkwds: checkkwds.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
+	rm -f setup_kwds.F
 checkdefs: check_switches1.F setup_kwds.F
 
 check_switches1.F: cppcheck cppdefs.h
