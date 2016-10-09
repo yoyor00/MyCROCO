@@ -407,10 +407,10 @@ sed -f flags.tmp Makedefs.generic > Makedefs
 rm -f flags.tmp
 
 #
-# compile roms
+# compile croco
 #
 $MAKE 
-mv roms $RUNDIR
+mv croco $RUNDIR
 #
 # Compile ncjoin and partit
 #

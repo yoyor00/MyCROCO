@@ -25,7 +25,7 @@ set SCRATCHDIR=`pwd`/SCRATCH
 set INPUTDIR=`pwd`
 set MSSDIR=`pwd`/ROMS_FILES
 set MSSOUT=`pwd`/ROMS_FILES
-set CODFILE=roms
+set CODFILE=croco
 set AGRIF_FILE=AGRIF_FixedGrids.in
 #
 set BULK_FILES=1

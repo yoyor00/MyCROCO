@@ -6,7 +6,7 @@
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 # 
-# ROMS_AGRIF website : http://roms.mpl.ird.fr
+# ROMS_AGRIF website : http://croco.mpl.ird.fr
 #======================================================================
 #
 #---------------------------------------------------------------------
@@ -133,9 +133,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
     date
     sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
     /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-    /bin/mv roms roms_serial_${EXAMPLE}.exe
+    /bin/mv croco croco_serial_${EXAMPLE}.exe
     echo RUN SERIAL $EXAMPLE
-    time ./roms_serial_${EXAMPLE}.exe > serial_${EXAMPLE}.log
+    time ./croco_serial_${EXAMPLE}.exe > serial_${EXAMPLE}.log
     date
     echo TEST SERIAL $EXAMPLE
     for WORD in  $LIST_WORDS ; do
@@ -176,9 +176,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_omp1X2_${EXAMPLE}.exe
+	    /bin/mv croco croco_omp1X2_${EXAMPLE}.exe
 	    echo RUN OPENMP 1X2 $EXAMPLE
-	    time ./roms_omp1X2_${EXAMPLE}.exe > openmp1X2_${EXAMPLE}.log
+	    time ./croco_omp1X2_${EXAMPLE}.exe > openmp1X2_${EXAMPLE}.log
 	    date
 	    echo TEST OPENMP 1X2  $EXAMPLE
 	    for WORD in $LIST_WORDS ; do
@@ -209,9 +209,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_omp2X1_${EXAMPLE}.exe
+	    /bin/mv croco croco_omp2X1_${EXAMPLE}.exe
 	    echo RUN OPENMP 2X1 $EXAMPLE
-	    time ./roms_omp2X1_${EXAMPLE}.exe > openmp2X1_${EXAMPLE}.log
+	    time ./croco_omp2X1_${EXAMPLE}.exe > openmp2X1_${EXAMPLE}.log
 	    date
 	    echo TEST OPENMP 2X1 $EXAMPLE
 	    for WORD in  $LIST_WORDS ; do
@@ -245,9 +245,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp2X2_${EXAMPLE}.exe
+		/bin/mv croco croco_omp2X2_${EXAMPLE}.exe
 		echo RUN OPENMP 2X2 $EXAMPLE
-		time ./roms_omp2X2_${EXAMPLE}.exe > openmp2X2_${EXAMPLE}.log
+		time ./croco_omp2X2_${EXAMPLE}.exe > openmp2X2_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 2X2 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -280,9 +280,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp1X4_${EXAMPLE}.exe
+		/bin/mv croco croco_omp1X4_${EXAMPLE}.exe
 		echo RUN OPENMP 1X4 $EXAMPLE
-		time ./roms_omp1X4_${EXAMPLE}.exe > openmp1X4_${EXAMPLE}.log
+		time ./croco_omp1X4_${EXAMPLE}.exe > openmp1X4_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 1X4 $EXAMPLE
 		for WORD in $LIST_WORDS ; do
@@ -314,9 +314,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp4X1_${EXAMPLE}.exe
+		/bin/mv croco croco_omp4X1_${EXAMPLE}.exe
 		echo RUN OPENMP 4X1 $EXAMPLE
-		time ./roms_omp4X1_${EXAMPLE}.exe > openmp4X1_${EXAMPLE}.log
+		time ./croco_omp4X1_${EXAMPLE}.exe > openmp4X1_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 4X1 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -348,9 +348,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp2X4_${EXAMPLE}.exe
+		/bin/mv croco croco_omp2X4_${EXAMPLE}.exe
 		echo RUN OPENMP 2X4 $EXAMPLE
-		time ./roms_omp2X4_${EXAMPLE}.exe > openmp2X4_${EXAMPLE}.log
+		time ./croco_omp2X4_${EXAMPLE}.exe > openmp2X4_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 2X4 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -382,9 +382,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp4X2_${EXAMPLE}.exe
+		/bin/mv croco croco_omp4X2_${EXAMPLE}.exe
 		echo RUN OPENMP 4X2 $EXAMPLE
-		time ./roms_omp4X2_${EXAMPLE}.exe > openmp4X2_${EXAMPLE}.log
+		time ./croco_omp4X2_${EXAMPLE}.exe > openmp4X2_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 4X2 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -418,9 +418,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp1X8_${EXAMPLE}.exe
+		/bin/mv croco croco_omp1X8_${EXAMPLE}.exe
 		echo RUN OPENMP 1X8 $EXAMPLE
-		time ./roms_omp1X8_${EXAMPLE}.exe > openmp1X8_${EXAMPLE}.log
+		time ./croco_omp1X8_${EXAMPLE}.exe > openmp1X8_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 1X8 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -453,9 +453,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp8X1_${EXAMPLE}.exe
+		/bin/mv croco croco_omp8X1_${EXAMPLE}.exe
 		echo RUN OPENMP 8X1 $EXAMPLE
-		time ./roms_omp8X1_${EXAMPLE}.exe > openmp8X1_${EXAMPLE}.log
+		time ./croco_omp8X1_${EXAMPLE}.exe > openmp8X1_${EXAMPLE}.log
 		date
 		echo TEST OPENMP 8X1 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -512,9 +512,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_mpi1X2_${EXAMPLE}.exe
+	    /bin/mv croco croco_mpi1X2_${EXAMPLE}.exe
 	    echo RUN MPI 1X2 $EXAMPLE
-	    time $MPIRUN -np 2 ./roms_mpi1X2_${EXAMPLE}.exe > mpi1X2_${EXAMPLE}.log
+	    time $MPIRUN -np 2 ./croco_mpi1X2_${EXAMPLE}.exe > mpi1X2_${EXAMPLE}.log
 	    date
 	    echo TEST MPI 1X2 $EXAMPLE
 	    for WORD in  $LIST_WORDS  ; do
@@ -544,9 +544,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms ./roms_mpi2X1_${EXAMPLE}.exe
+	    /bin/mv croco ./croco_mpi2X1_${EXAMPLE}.exe
 	    echo RUN MPI 2X1 $EXAMPLE
-	    time $MPIRUN -np 2 ./roms_mpi2X1_${EXAMPLE}.exe > mpi2X1_${EXAMPLE}.log
+	    time $MPIRUN -np 2 ./croco_mpi2X1_${EXAMPLE}.exe > mpi2X1_${EXAMPLE}.log
 	    date
 	    echo TEST MPI 2X1 $EXAMPLE
 
@@ -579,9 +579,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi2X2_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi2X2_${EXAMPLE}.exe
 		echo RUN MPI 2X2 $EXAMPLE
-		time $MPIRUN -np 4 ./roms_mpi2X2_${EXAMPLE}.exe > mpi2X2_${EXAMPLE}.log
+		time $MPIRUN -np 4 ./croco_mpi2X2_${EXAMPLE}.exe > mpi2X2_${EXAMPLE}.log
 		date
 		echo TEST MPI 2X2 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -613,9 +613,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi1X4_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi1X4_${EXAMPLE}.exe
 		echo RUN MPI 1X4 $EXAMPLE
-		time $MPIRUN -np 4 ./roms_mpi1X4_${EXAMPLE}.exe > mpi1X4_${EXAMPLE}.log
+		time $MPIRUN -np 4 ./croco_mpi1X4_${EXAMPLE}.exe > mpi1X4_${EXAMPLE}.log
 		date
 		echo TEST MPI 1X4 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do
@@ -645,9 +645,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi4X1_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi4X1_${EXAMPLE}.exe
 		echo RUN MPI 4X1 $EXAMPLE
-		time $MPIRUN -np 4 ./roms_mpi4X1_${EXAMPLE}.exe > mpi4X1_${EXAMPLE}.log
+		time $MPIRUN -np 4 ./croco_mpi4X1_${EXAMPLE}.exe > mpi4X1_${EXAMPLE}.log
 		date
 		echo TEST MPI 4X1 $EXAMPLE
 
@@ -677,9 +677,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi2X4_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi2X4_${EXAMPLE}.exe
 		echo RUN MPI 2X4 $EXAMPLE
-		time $MPIRUN -np 8 ./roms_mpi2X4_${EXAMPLE}.exe > mpi2X4_${EXAMPLE}.log
+		time $MPIRUN -np 8 ./croco_mpi2X4_${EXAMPLE}.exe > mpi2X4_${EXAMPLE}.log
 		date
 		echo TEST MPI 2X4 $EXAMPLE
 		for WORD in  $LIST_WORDS  ; do
@@ -708,9 +708,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi4X2_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi4X2_${EXAMPLE}.exe
 		echo RUN MPI 4X2 $EXAMPLE
-		time $MPIRUN -np 8 ./roms_mpi4X2_${EXAMPLE}.exe > mpi4X2_${EXAMPLE}.log
+		time $MPIRUN -np 8 ./croco_mpi4X2_${EXAMPLE}.exe > mpi4X2_${EXAMPLE}.log
 		date
 		echo TEST MPI 4X2 $EXAMPLE
 
@@ -744,9 +744,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi1X8_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi1X8_${EXAMPLE}.exe
 		echo RUN MPI 1X8 $EXAMPLE
-		time $MPIRUN -np 8 ./roms_mpi1X8_${EXAMPLE}.exe > mpi1X8_${EXAMPLE}.log
+		time $MPIRUN -np 8 ./croco_mpi1X8_${EXAMPLE}.exe > mpi1X8_${EXAMPLE}.log
 		date
 		echo TEST MPI 1X8 $EXAMPLE
 
@@ -777,9 +777,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi8X1_${EXAMPLE}.exe
+		/bin/mv croco croco_mpi8X1_${EXAMPLE}.exe
 		echo RUN MPI 8X1 $EXAMPLE
-		time $MPIRUN -np 8 ./roms_mpi8X1_${EXAMPLE}.exe > mpi8X1_${EXAMPLE}.log
+		time $MPIRUN -np 8 ./croco_mpi8X1_${EXAMPLE}.exe > mpi8X1_${EXAMPLE}.log
 		date
 		echo TEST MPI 8X1 $EXAMPLE
 		for WORD in  $LIST_WORDS ; do

@@ -22,7 +22,7 @@ SCRATCHDIR=`pwd`/SCRATCH
 INPUTDIR=`pwd`
 MSSDIR=`pwd`/ROMS_FILES
 MSSOUT=`pwd`/ROMS_FILES
-CODFILE=roms
+CODFILE=croco
 AGRIF_FILE=AGRIF_FixedGrids.in
 #
 # Model time step [seconds]

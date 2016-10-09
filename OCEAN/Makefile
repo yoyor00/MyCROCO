@@ -145,7 +145,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
  OBJS = $(RCS:.f=.o)
  OBJS90 = $(RCS90:.f90=.o)
 
- SBIN = roms
+ SBIN = croco
 
  AMRRCS=$(AMRSRCS:.F=.f)
 

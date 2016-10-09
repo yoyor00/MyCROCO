@@ -1,16 +1,11 @@
 #!/bin/bash
-
-# Scripts to setup your own croco configuration.
-# 
-# What is does : 
-#   - Copy the original croco/Run with cppdefs.h, param.h and *.in files needed
-#   - Copy the original romstools_param.m and start.m file from croco_tools/
-#   - Copy the original run_roms*.bash file from croco_tools/Pluriannual_scripts/
-#   - 
 #
 # G. Cambon : Sept. 2016
-#-----------------------------------------------------------------------------------
+#
 
+#==========================================================================================
+# BEGIN USER SECTION
+#
 SOURCES_DIR='../../croco'
 TOOLS_DIR='../../croco_tools'
 
@@ -20,6 +15,44 @@ MY_CONFIG_NAME='BENGUELA_LR'
 #
 # END USER SECTION
 #==========================================================================================
+
+
+while getopts :h V
+do
+  case $V in
+    (h) echo "";
+    echo " Script to setup your own croco configuration.";
+    echo " ";
+    echo " What is does :";
+    echo " - Copy the original croco/Run with cppdefs.h, param.h and *.in files needed";
+    echo " - Copy the original romstools_param.m and start.m file from croco_tools/";
+    echo " - Copy the original run_roms*.bash file from croco_tools/Pluriannual_scripts/";
+    echo "";
+    echo "Edit the USER SECTION of the script to define the following variables :";
+    echo " - SOURCES_DIR     : location of croco directory";
+    echo " - TOOLS_DIR       : location of croco_tools directory";
+    echo " - MY_CONFIG_PATH  : location of the repository to store the configuration";
+    echo " - MY_CONFIG_NAME  : name of the configuration ";    
+    exit 0;;
+  esac
+done
+
+# Check if source are there
+if [ ! -d $SOURCES_DIR ]; then 
+	echo 'Directory for croco not found ...'
+	echo 'Check the SOURCES_DIR variable ...'
+	echo 'Exiting ...'
+   exit 1
+fi
+
+# Check if tools are there
+if [ ! -d $TOOLS_DIR ]; then 
+	echo 'Directory for croco_tools not found ...'
+	echo 'Check the TOOLS_DIR variable ...'
+	echo 'Exiting ...'
+   exit 2
+fi
+ 
 # Create the directory
 if [ ! -d $MY_CONFIG_PATH ]; then 
     mkdir $MY_CONFIG_PATH
@@ -73,8 +106,8 @@ if [[ $copy_tag == 1 ]] ; then
     cp -Rf $SOURCES_DIR/$DIRO/README_XIOS .
 
     # TEST_CASE + NAMELIST_OANALYSIS
-    cp -Rf $SOURCES_DIR/Run/TEST_CASES .
-    cp -Rf $SOURCES_DIR/Run/NAMELIST_OANALYSIS .
+    cp -Rf $SOURCES_DIR/Run/TEST_CASES TEST_CASES
+    cp -Rf $SOURCES_DIR/Run/NAMELIST_OANALYSIS NAMELIST_OANALYSIS
     cp -Rf $SOURCES_DIR/Run/Plurimonths_scripts/*.bash .
     
     echo '=> Copy from '$SOURCES_DIR ' done'

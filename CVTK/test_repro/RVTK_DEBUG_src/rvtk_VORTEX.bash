@@ -194,9 +194,9 @@ do
 	date
 	sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	/bin/mv roms roms_serial_${EXAMPLE}_${AGRIFFLAG}.exe
+	/bin/mv croco croco_serial_${EXAMPLE}_${AGRIFFLAG}.exe
 	echo RUN SERIAL $EXAMPLE
-	time ./roms_serial_${EXAMPLE}_${AGRIFFLAG}.exe > serial_${EXAMPLE}_${AGRIFFLAG}.log
+	time ./croco_serial_${EXAMPLE}_${AGRIFFLAG}.exe > serial_${EXAMPLE}_${AGRIFFLAG}.log
 	date
 	echo TEST SERIAL $EXAMPLE AGRIF: $AGRIFFLAG
 	for  WORD in $LIST_WORDS
@@ -232,9 +232,9 @@ do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_omp1X2_${EXAMPLE}_${AGRIFFLAG}.exe
+	    /bin/mv croco croco_omp1X2_${EXAMPLE}_${AGRIFFLAG}.exe
 	    echo RUN OPENMP 1X2 $EXAMPLE
-	    time ./roms_omp1X2_${EXAMPLE}_${AGRIFFLAG}.exe > openmp1X2_${EXAMPLE}_${AGRIFFLAG}.log
+	    time ./croco_omp1X2_${EXAMPLE}_${AGRIFFLAG}.exe > openmp1X2_${EXAMPLE}_${AGRIFFLAG}.log
 	    date
 	    echo TEST OPENMP 1X2  $EXAMPLE AGRIF: $AGRIFFLAG
 	    for WORD in $LIST_WORDS 
@@ -261,9 +261,9 @@ do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_omp2X1_${EXAMPLE}_${AGRIFFLAG}.exe
+	    /bin/mv croco croco_omp2X1_${EXAMPLE}_${AGRIFFLAG}.exe
 	    echo RUN OPENMP 2X1 $EXAMPLE
-	    time ./roms_omp2X1_${EXAMPLE}_${AGRIFFLAG}.exe > openmp2X1_${EXAMPLE}_${AGRIFFLAG}.log
+	    time ./croco_omp2X1_${EXAMPLE}_${AGRIFFLAG}.exe > openmp2X1_${EXAMPLE}_${AGRIFFLAG}.log
 	    date
 	    echo TEST OPENMP 2X1 $EXAMPLE AGRIF: $AGRIFFLAG
 	    for WORD in $LIST_WORDS 
@@ -292,9 +292,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp2X2_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_omp2X2_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN OPENMP 2X2 $EXAMPLE
-		time ./roms_omp2X2_${EXAMPLE}_${AGRIFFLAG}.exe > openmp2X2_${EXAMPLE}_${AGRIFFLAG}.log
+		time ./croco_omp2X2_${EXAMPLE}_${AGRIFFLAG}.exe > openmp2X2_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST OPENMP 2X2 $EXAMPLE AGRIF: $AGRIFFLAG
 		for WORD in $LIST_WORDS 
@@ -321,9 +321,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp1X4_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_omp1X4_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN OPENMP 1X4 $EXAMPLE
-		time ./roms_omp1X4_${EXAMPLE}_${AGRIFFLAG}.exe > openmp1X4_${EXAMPLE}_${AGRIFFLAG}.log
+		time ./croco_omp1X4_${EXAMPLE}_${AGRIFFLAG}.exe > openmp1X4_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST OPENMP 1X4 $EXAMPLE AGRIF: $AGRIFFLAG
 		for WORD in $LIST_WORDS 
@@ -350,9 +350,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp4X1_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_omp4X1_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN OPENMP 4X1 $EXAMPLE
-		time ./roms_omp4X1_${EXAMPLE}_${AGRIFFLAG}.exe > openmp4X1_${EXAMPLE}_${AGRIFFLAG}.log
+		time ./croco_omp4X1_${EXAMPLE}_${AGRIFFLAG}.exe > openmp4X1_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST OPENMP 4X1 $EXAMPLE AGRIF: $AGRIFFLAG
 		for WORD in $LIST_WORDS
@@ -378,9 +378,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp2X4_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_omp2X4_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN OPENMP 2X4 $EXAMPLE
-		time ./roms_omp2X4_${EXAMPLE}_${AGRIFFLAG}.exe > openmp2X4_${EXAMPLE}_${AGRIFFLAG}.log
+		time ./croco_omp2X4_${EXAMPLE}_${AGRIFFLAG}.exe > openmp2X4_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST OPENMP 2X4 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS 
@@ -406,9 +406,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_omp4X2_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_omp4X2_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN OPENMP 4X2 $EXAMPLE
-		time ./roms_omp4X2_${EXAMPLE}_${AGRIFFLAG}.exe > openmp4X2_${EXAMPLE}_${AGRIFFLAG}.log
+		time ./croco_omp4X2_${EXAMPLE}_${AGRIFFLAG}.exe > openmp4X2_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST OPENMP 4X2 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS
@@ -435,9 +435,9 @@ do
 		    date
 		    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		    /bin/mv roms roms_omp1X8_${EXAMPLE}_${AGRIFFLAG}.exe
+		    /bin/mv croco croco_omp1X8_${EXAMPLE}_${AGRIFFLAG}.exe
 		    echo RUN OPENMP 1X8 $EXAMPLE
-		    time ./roms_omp1X8_${EXAMPLE}_${AGRIFFLAG}.exe > openmp1X8_${EXAMPLE}_${AGRIFFLAG}.log
+		    time ./croco_omp1X8_${EXAMPLE}_${AGRIFFLAG}.exe > openmp1X8_${EXAMPLE}_${AGRIFFLAG}.log
 		    date
 		    echo TEST OPENMP 1X8 $EXAMPLE AGRIF: $AGRIFFLAG
 		    for  WORD in $LIST_WORDS 
@@ -463,9 +463,9 @@ do
 		    date
 		    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		    /bin/mv roms roms_omp8X1_${EXAMPLE}_${AGRIFFLAG}.exe
+		    /bin/mv croco croco_omp8X1_${EXAMPLE}_${AGRIFFLAG}.exe
 		    echo RUN OPENMP 8X1 $EXAMPLE
-		    time ./roms_omp8X1_${EXAMPLE}_${AGRIFFLAG}.exe > openmp8X1_${EXAMPLE}_${AGRIFFLAG}.log
+		    time ./croco_omp8X1_${EXAMPLE}_${AGRIFFLAG}.exe > openmp8X1_${EXAMPLE}_${AGRIFFLAG}.log
 		    date
 		    echo TEST OPENMP 8X1 $EXAMPLE AGRIF: $AGRIFFLAG
 		    for  WORD in $LIST_WORDS 
@@ -509,9 +509,9 @@ do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_mpi1X2_${EXAMPLE}_${AGRIFFLAG}.exe
+	    /bin/mv croco croco_mpi1X2_${EXAMPLE}_${AGRIFFLAG}.exe
 	    echo RUN MPI 1X2 $EXAMPLE
-	    time $MPIRUN -np 2 ./roms_mpi1X2_${EXAMPLE}_${AGRIFFLAG}.exe > mpi1X2_${EXAMPLE}_${AGRIFFLAG}.log
+	    time $MPIRUN -np 2 ./croco_mpi1X2_${EXAMPLE}_${AGRIFFLAG}.exe > mpi1X2_${EXAMPLE}_${AGRIFFLAG}.log
 	    echo "MPIRUN="$MPIRUN
 	    date
 	    echo TEST MPI 1X2 $EXAMPLE AGRIF: $AGRIFFLAG
@@ -536,9 +536,9 @@ do
 	    date
 	    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 	    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-	    /bin/mv roms roms_mpi2X1_${EXAMPLE}_${AGRIFFLAG}.exe
+	    /bin/mv croco croco_mpi2X1_${EXAMPLE}_${AGRIFFLAG}.exe
 	    echo RUN MPI 2X1 $EXAMPLE
-	    time $MPIRUN -np 2 ./roms_mpi2X1_${EXAMPLE}_${AGRIFFLAG}.exe > mpi2X1_${EXAMPLE}_${AGRIFFLAG}.log
+	    time $MPIRUN -np 2 ./croco_mpi2X1_${EXAMPLE}_${AGRIFFLAG}.exe > mpi2X1_${EXAMPLE}_${AGRIFFLAG}.log
 	    date
 	    echo TEST MPI 2X1 $EXAMPLE AGRIF: $AGRIFFLAG
 	    for  WORD in $LIST_WORDS 
@@ -563,9 +563,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi2X2_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_mpi2X2_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN MPI 2X2 $EXAMPLE
-		time $MPIRUN -np 4 ./roms_mpi2X2_${EXAMPLE}_${AGRIFFLAG}.exe > mpi2X2_${EXAMPLE}_${AGRIFFLAG}.log
+		time $MPIRUN -np 4 ./croco_mpi2X2_${EXAMPLE}_${AGRIFFLAG}.exe > mpi2X2_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST MPI 2X2 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS 
@@ -590,9 +590,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi1X4_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_mpi1X4_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN MPI 1X4 $EXAMPLE
-		time $MPIRUN -np 4 ./roms_mpi1X4_${EXAMPLE}_${AGRIFFLAG}.exe > mpi1X4_${EXAMPLE}_${AGRIFFLAG}.log
+		time $MPIRUN -np 4 ./croco_mpi1X4_${EXAMPLE}_${AGRIFFLAG}.exe > mpi1X4_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST MPI 1X4 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS 
@@ -616,9 +616,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi4X1_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_mpi4X1_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN MPI 4X1 $EXAMPLE
-		time $MPIRUN -np 4 ./roms_mpi4X1_${EXAMPLE}_${AGRIFFLAG}.exe > mpi4X1_${EXAMPLE}_${AGRIFFLAG}.log
+		time $MPIRUN -np 4 ./croco_mpi4X1_${EXAMPLE}_${AGRIFFLAG}.exe > mpi4X1_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST MPI 4X1 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS 
@@ -642,9 +642,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi2X4_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_mpi2X4_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN MPI 2X4 $EXAMPLE
-		time $MPIRUN -np 8 ./roms_mpi2X4_${EXAMPLE}_${AGRIFFLAG}.exe > mpi2X4_${EXAMPLE}_${AGRIFFLAG}.log
+		time $MPIRUN -np 8 ./croco_mpi2X4_${EXAMPLE}_${AGRIFFLAG}.exe > mpi2X4_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST MPI 2X4 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS 
@@ -668,9 +668,9 @@ do
 		date
 		sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		/bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		/bin/mv roms roms_mpi4X2_${EXAMPLE}_${AGRIFFLAG}.exe
+		/bin/mv croco croco_mpi4X2_${EXAMPLE}_${AGRIFFLAG}.exe
 		echo RUN MPI 4X2 $EXAMPLE
-		time $MPIRUN -np 8 ./roms_mpi4X2_${EXAMPLE}_${AGRIFFLAG}.exe > mpi4X2_${EXAMPLE}_${AGRIFFLAG}.log
+		time $MPIRUN -np 8 ./croco_mpi4X2_${EXAMPLE}_${AGRIFFLAG}.exe > mpi4X2_${EXAMPLE}_${AGRIFFLAG}.log
 		date
 		echo TEST MPI 4X2 $EXAMPLE AGRIF: $AGRIFFLAG
 		for  WORD in $LIST_WORDS  
@@ -695,9 +695,9 @@ do
 		    date
 		    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		    /bin/mv roms roms_mpi1X8_${EXAMPLE}_${AGRIFFLAG}.exe
+		    /bin/mv croco croco_mpi1X8_${EXAMPLE}_${AGRIFFLAG}.exe
 		    echo RUN MPI 1X8 $EXAMPLE
-		    time $MPIRUN -np 8 ./roms_mpi1X8_${EXAMPLE}_${AGRIFFLAG}.exe > mpi1X8_${EXAMPLE}_${AGRIFFLAG}.log
+		    time $MPIRUN -np 8 ./croco_mpi1X8_${EXAMPLE}_${AGRIFFLAG}.exe > mpi1X8_${EXAMPLE}_${AGRIFFLAG}.log
 		    date
 		    echo TEST MPI 1X8 $EXAMPLE AGRIF: $AGRIFFLAG
 		    for  WORD in $LIST_WORDS 
@@ -721,9 +721,9 @@ do
 		    date
 		    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
 		    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-		    /bin/mv roms roms_mpi8X1_${EXAMPLE}_${AGRIFFLAG}.exe
+		    /bin/mv croco croco_mpi8X1_${EXAMPLE}_${AGRIFFLAG}.exe
 		    echo RUN MPI 8X1 $EXAMPLE
-		    time $MPIRUN -np 8 ./roms_mpi8X1_${EXAMPLE}_${AGRIFFLAG}.exe > mpi8X1_${EXAMPLE}_${AGRIFFLAG}.log
+		    time $MPIRUN -np 8 ./croco_mpi8X1_${EXAMPLE}_${AGRIFFLAG}.exe > mpi8X1_${EXAMPLE}_${AGRIFFLAG}.log
 		    date
 		    echo TEST MPI 8X1 $EXAMPLE AGRIF: $AGRIFFLAG
 		    for  WORD in $LIST_WORDS 
