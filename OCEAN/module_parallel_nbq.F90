@@ -23,9 +23,8 @@ module module_parallel_nbq
          integer ::  comm2d                 !COMMUNICATEUR GLOBAL
          integer ::  rank
          integer,dimension(10)                      ::  tvoisin         !LE NUMERO DES VOISINS DANS L'ORDRE(O,E,S,N)
-  end type infopar_croco
+  end type
 
-  
   type (infopar_croco) :: par
   type (echblock),dimension(10) :: ech_qdm_nbq, ech_div_nbq, ech_rhs2_nh
   type (echblock),dimension(10) :: ech_qdmU_nbq, ech_qdmV_nbq, ech_qdmW_nbq
@@ -48,7 +47,33 @@ module module_parallel_nbq
   integer 				:: sz1, sz2, sz3, sz4, sz5, sz6
   logical,save 				:: doalloc=.TRUE.
  
+      integer,dimension(8),parameter ::  lvoisin  =    (/ ouest,   est,   nord,  sud,        sudouest, sudest, nordouest, nordest /)
+      integer,dimension(10),parameter :: tagqdm_Send = (/ 55000, 55010, 56010, 56000, 0, 0,  155000, 515010,    516000, 516010  /)
+      integer,dimension(10),parameter :: tagqdm_Recv = (/ 55010, 55000, 56000, 56010, 0, 0,  516010, 516000,    515010, 155000  /)
+      integer,dimension(10),parameter :: tagdiv_Send = (/ 75000, 75010, 76010, 76000, 0, 0,  255000, 715010,    716000, 716010  /)
+      integer,dimension(10),parameter :: tagdiv_Recv = (/ 75010, 75000, 76000, 76010, 0, 0,  716010, 716000,    715010, 255000  /)
+      integer,dimension(10),parameter :: tagrhs_Send = (/ 85000, 85010, 86010, 86000, 0, 0,  355000, 815010,    816000, 816010  /)
+      integer,dimension(10),parameter :: tagrhs_Recv = (/ 85010, 85000, 86000, 86010, 0, 0,  816010, 816000,    815010, 355000  /)
+      integer,dimension(10),parameter :: tagqdmU_Send= (/ 55001, 55011, 56011, 56001, 0, 0,  155001, 515011,    516001, 516011  /)
+      integer,dimension(10),parameter :: tagqdmU_Recv= (/ 55011, 55001, 56001, 56011, 0, 0,  516011, 516001,    515011, 155001  /)
+      integer,dimension(10),parameter :: tagqdmV_Send= (/ 55002, 55012, 56012, 56002, 0, 0,  155002, 515012,    516002, 516012  /)
+      integer,dimension(10),parameter :: tagqdmV_Recv= (/ 55012, 55002, 56002, 56012, 0, 0,  516012, 516002,    515012, 155002  /)
+      integer,dimension(10),parameter :: tagqdmW_Send= (/ 55003, 55013, 56013, 56003, 0, 0,  155003, 515013,    516003, 516013  /)
+      integer,dimension(10),parameter :: tagqdmW_Recv= (/ 55013, 55003, 56003, 56013, 0, 0,  516013, 516003,    515013, 155003  /)
+
+      integer :: nbreq_qdm=1,nbreq_mv=1,nbreq_rhs=1
+      integer :: nbreq_qdmU=1,  nbreq_qdmV=1,  nbreq_qdmW=1
+
+      ! Pour les echanges :: qdm et mv 
+      integer,dimension(18) :: tabreq_qdm,tabreq_mv,tabreq_rhs
+      integer,dimension(18) :: tabreq_qdmU, tabreq_qdmV, tabreq_qdmW
  
+      ! Persistants messages
+      integer,dimension(0:2) :: p_nbreq_qdmU=1, p_nbreq_qdmV=1, p_nbreq_qdmW=1 
+      integer,dimension(0:1) :: p_nbreq_mv=1
+      integer,dimension(80,0:2) :: p_tabreq_qdmU, p_tabreq_qdmV, p_tabreq_qdmW
+      integer,dimension(80,0:1) :: p_tabreq_mv
+
 contains 
 
 !-------------------------------------------------------------------------------------
@@ -846,10 +871,149 @@ subroutine create_echange_div_nbq_a(imax,jmax,kmax)
 end subroutine create_echange_div_nbq_a
 !--------------------------------------------------------------------------
 
+!--------------------------------------------------------------------------
+! Initialise Persistant Communications
+subroutine  Persistant_init
+      use module_nbq, only : qdm_nbq_a, div_nbq_a
+  integer :: bcl, szsend, szrecv, vois, vnnew_nbq, coef
 
+  szsend=0
+  szrecv=0
+! Init qdmU exchange-----------------------------------------------------------
+          do vnnew_nbq=0,2
+	  coef=(vnnew_nbq+1)*10
+	  p_nbreq_qdmU(vnnew_nbq)=1
+  	  do bcl=1, 8
+	   vois=lvoisin(bcl)
+	   if (par%tvoisin(vois) /= mpi_proc_null) then 
+	   call MPI_TYPE_SIZE(ech_qdmU_nbq(vois)%send, szsend,ierr)
+	   call MPI_TYPE_SIZE(ech_qdmU_nbq(vois)%recv, szrecv,ierr) 
+ 	   !print *,par%rank,"szsend=",szsend," voisin",par%tvoisin(vois),"  --",MPI_PROC_NULL
+ 	   !print *,par%rank,"szrecv=",szrecv," voisin",par%tvoisin(vois)
+	   if (szsend >0) then
+	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
+			     tagqdmU_Recv(vois)*coef, par%comm2d, &
+			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
+	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%send, par%tvoisin(vois), &
+			     tagqdmU_Send(vois)*coef, par%comm2d, &
+			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
+  	   endif
+           endif
+	  enddo
+	  p_nbreq_qdmU(vnnew_nbq)= p_nbreq_qdmU(vnnew_nbq)-1
+	  enddo
+!--------------------------------------------------------------------------------------
+
+! Init qdmV exchange-----------------------------------------------------------
+          do vnnew_nbq=0,2
+	  coef=(vnnew_nbq+1)*10
+	  p_nbreq_qdmV(vnnew_nbq)=1
+  	  do bcl=1, 8
+	   vois=lvoisin(bcl)
+	   if (par%tvoisin(vois) /= mpi_proc_null) then 
+	   call MPI_TYPE_SIZE(ech_qdmV_nbq(vois)%send, szsend,ierr)
+	   call MPI_TYPE_SIZE(ech_qdmV_nbq(vois)%recv, szrecv,ierr) 
+! 	   print *,par%rank,"szsend=",szsend," voisin",bcl
+	   if (szsend >0) then
+	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
+			     tagqdmV_Recv(vois)*coef, par%comm2d, &
+			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
+	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%send, par%tvoisin(vois), &
+			     tagqdmV_Send(vois)*coef, par%comm2d, &
+			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
+  	   endif
+           endif
+	  enddo
+	  p_nbreq_qdmV(vnnew_nbq)= p_nbreq_qdmV(vnnew_nbq)-1
+	  enddo
+!--------------------------------------------------------------------------------------
+
+! Init qdmW exchange-----------------------------------------------------------
+          do vnnew_nbq=0,2
+	  coef=(vnnew_nbq+1)*10
+	  p_nbreq_qdmW(vnnew_nbq)=1
+  	  do bcl=1, 8
+	   vois=lvoisin(bcl)
+	   if (par%tvoisin(vois) /= mpi_proc_null) then 
+	   call MPI_TYPE_SIZE(ech_qdmW_nbq(vois)%send, szsend,ierr)
+	   call MPI_TYPE_SIZE(ech_qdmW_nbq(vois)%recv, szrecv,ierr) 
+! 	   print *,par%rank,"szsend=",szsend," voisin",bcl
+	   if (szsend >0) then
+	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
+			     tagqdmW_Recv(vois)*coef, par%comm2d, &
+			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
+	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%send, par%tvoisin(vois), &
+			     tagqdmW_Send(vois)*coef, par%comm2d, &
+			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
+  	   endif
+           endif
+	  enddo
+	  p_nbreq_qdmW(vnnew_nbq)= p_nbreq_qdmW(vnnew_nbq)-1
+	  enddo
+!--------------------------------------------------------------------------------------
+
+! Init DIV exchange-----------------------------------------------------------
+          do vnnew_nbq=0,1 !!! dnrhs_nbq in [0,1]
+	  coef=(vnnew_nbq+1)*10
+	  p_nbreq_mv(vnnew_nbq)=1
+  	  do bcl=1, 8
+	   vois=lvoisin(bcl)
+	   if (par%tvoisin(vois) /= mpi_proc_null) then 
+	   call MPI_TYPE_SIZE(ech_div_nbq(vois)%send, szsend,ierr)
+	   call MPI_TYPE_SIZE(ech_div_nbq(vois)%recv, szrecv,ierr) 
+! 	   print *,par%rank,"szsend=",szsend," voisin",bcl
+	   if (szsend >0) then
+	      call MPI_RECV_INIT(div_nbq_a(1,vnnew_nbq),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
+			     tagdiv_Recv(vois)*coef, par%comm2d, &
+			     p_tabreq_mv(p_nbreq_mv(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_mv(vnnew_nbq)=p_nbreq_mv(vnnew_nbq)+1
+	      call MPI_SEND_INIT(div_nbq_a(1,vnnew_nbq),  1, ech_div_nbq(vois)%send, par%tvoisin(vois), &
+			     tagdiv_Send(vois)*coef, par%comm2d, &
+			     p_tabreq_mv(p_nbreq_mv(vnnew_nbq),vnnew_nbq), ierr)
+	      p_nbreq_mv(vnnew_nbq)=p_nbreq_mv(vnnew_nbq)+1
+  	   endif
+           endif
+	  enddo
+	  p_nbreq_mv(vnnew_nbq)= p_nbreq_mv(vnnew_nbq)-1
+	  enddo
+!--------------------------------------------------------------------------------------
+
+
+! 	  call MPI_Barrier(MPI_COMM_WORLD,ierr)
+!           call mpi_Finalize(ierr)
+!           stop 'toto'
+          
+          
+end subroutine  Persistant_init 	  
+!--------------------------------------------------------------------------
+      
 end module module_parallel_nbq
 
 #else
- module module_parallel_nbq_empty
- end module
+ module module_parallel_nbq
+  implicit none
+  integer, parameter :: ouest=1,est=2,nord=3,sud=4,haut=5,bas=6
+  integer, parameter :: sudouest=7,sudest=8,nordouest=9,nordest=10
+  integer, parameter :: ouestest=1,nordsud=2
+
+  integer,parameter :: MPI_PROC_NULL=-2
+
+  type infopar_croco
+         integer ::  comm2d                 !COMMUNICATEUR GLOBAL
+         integer ::  rank
+         integer,dimension(10)                      ::  tvoisin
+  end type 
+
+!  integer,dimension(8),parameter :: liste_voisin = &
+!      (/ ouest, est, nord, sud, sudouest, sudest, nordouest, nordest /)
+  integer :: ierr,mynode
+  type(infopar_croco) :: par
+
+ end module module_parallel_nbq
 #endif
