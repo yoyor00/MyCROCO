@@ -75,7 +75,7 @@ export MSSDIR=${RUNDIR}/ROMS_FILES
 export MSSOUT=${RUNDIR}/FORECAST
 #
 export MODEL=roms
-export CODFILE=roms
+export CODFILE=croco
 export EXEC="mpirun -np 2"
 #
 export GRDFILE=${MODEL}_grd.nc
