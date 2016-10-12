@@ -11,14 +11,14 @@
 % de la Marine.
 %
 %
-%  This file is part of ROMSTOOLS
+%  This file is part of CROCOTOOLS
 %
-%  ROMSTOOLS is free software; you can redistribute it and/or modify
+%  CROCOTOOLS is free software; you can redistribute it and/or modify
 %  it under the terms of the GNU General Public License as published
 %  by the Free Software Foundation; either version 2 of the License,
 %  or (at your option) any later version.
 %
-%  ROMSTOOLS is distributed in the hope that it will be useful, but
+%  CROCOTOOLS is distributed in the hope that it will be useful, but
 %  WITHOUT ANY WARRANTY; without even the implied warranty of
 %  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %  GNU General Public License for more details.
@@ -42,7 +42,7 @@ jj    = 600;      % location of validation (over the shelf)
 valid = 0;        % 1: valid against forcing data
 %======================================================================
 %
-%  Process ROMS solutions
+%  Process CROCO solutions
 %
 nc=netcdf(gname);
 h=squeeze(nc{'h'}(:));

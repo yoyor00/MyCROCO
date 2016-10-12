@@ -3,16 +3,16 @@
 %  Make plot from the results of the SHOREFACE test case
 % 
 %  Further Information:  
-%  http://www.romsagrif.org/
+%  http://www.crocoagrif.org/
 %  
-%  This file is part of ROMSTOOLS
+%  This file is part of CROCOTOOLS
 %
-%  ROMSTOOLS is free software; you can redistribute it and/or modify
+%  CROCOTOOLS is free software; you can redistribute it and/or modify
 %  it under the terms of the GNU General Public License as published
 %  by the Free Software Foundation; either version 2 of the License,
 %  or (at your option) any later version.
 %
-%  ROMSTOOLS is distributed in the hope that it will be useful, but
+%  CROCOTOOLS is distributed in the hope that it will be useful, but
 %  WITHOUT ANY WARRANTY; without even the implied warranty of
 %  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %  GNU General Public License for more details.
@@ -35,7 +35,7 @@ close all
 %
 % --- model params ---
 %
-fname     = 'thacker_his.nc';  % roms file name
+fname     = 'thacker_his.nc';  % croco file name
 %fname     = 'thacker_his_1D_ndtfast40.nc';
 g         = 9.81;                  % gravity acceleration (m^2/s)
 x0        = 101;

@@ -2,7 +2,7 @@
 %
 %     ---             INNERSHELF Test Case                ---     
 %     --- Compare Ekman 2D theorical model solution with  ---
-%     --- ROMS numerical solution : vg, psi/|Uek| & v     ---
+%     --- CROCO numerical solution : vg, psi/|Uek| & v     ---
 %
 % References:
 %
@@ -15,14 +15,14 @@
 %  geostrophic onshore flow. Journal of Marine Research, 68, 37-62.
 %
 %  
-%  This file is part of ROMSTOOLS
+%  This file is part of CROCOTOOLS
 %
-%  ROMSTOOLS is free software; you can redistribute it and/or modify
+%  CROCOTOOLS is free software; you can redistribute it and/or modify
 %  it under the terms of the GNU General Public License as published
 %  by the Free Software Foundation; either version 2 of the License,
 %  or (at your option) any later version.
 %
-%  ROMSTOOLS is distributed in the hope that it will be useful, but
+%  CROCOTOOLS is distributed in the hope that it will be useful, but
 %  WITHOUT ANY WARRANTY; without even the implied warranty of
 %  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %  GNU General Public License for more details.
@@ -40,7 +40,7 @@ close all
 %
 % --- model params ---
 %
-fname  = 'inner_avg.nc';  % roms file name
+fname  = 'inner_avg.nc';  % croco file name
 tauy   = 0.07;            % alongshore wind-stress (Pa)
 taux   = 0;               % onshore wind-stress (Pa)
 ug0    = 2;               % onshore geostrophic flow (cm/s)
