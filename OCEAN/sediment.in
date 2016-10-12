@@ -1,5 +1,5 @@
 1  Stitle (a80)
-ROMS - Sediment - Test
+CROCO - Sediment - Test
 
 2  Sd(1-NST), CSED, SRHO,  WSED,  ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
       0.125   9.9   2650.  9.4    25.0e-5  0.05    0.14    0.4  0.4

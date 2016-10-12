@@ -22,8 +22,8 @@ else
   echo "unkbown operating system" 1>&2
 fi
 #
-export TOOLSDIR=$HOME/Roms_tools/Forecast_tools
-export RUNDIR=${HOME}/Roms_tools/Run
+export TOOLSDIR=$HOME/croco_tools/Forecast_tools
+export RUNDIR=${HOME}/croco_tools/Run
 export MATLAB=/usr/local/bin/matlab
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/loaddap-3.5.2/lib
 
@@ -41,7 +41,7 @@ export DATESTR=`date +%Y-%m-%d`
 echo Start forecast 
 date
 #
-# Get forcing Files from DODS SERVER and process them for ROMS
+# Get forcing Files from DODS SERVER and process them for CROCO
 # PRE_PROCESS=1 ==> do the work (0 otherwise)
 #
 export PRE_PROCESS=1
@@ -71,10 +71,10 @@ export ONERUN=1
 #
 export SCRATCHDIR=${RUNDIR}/SCRATCH
 export INPUTDIR=${RUNDIR}
-export MSSDIR=${RUNDIR}/ROMS_FILES
+export MSSDIR=${RUNDIR}/CROCO_FILES
 export MSSOUT=${RUNDIR}/FORECAST
 #
-export MODEL=roms
+export MODEL=croco
 export CODFILE=croco
 export EXEC="mpirun -np 2"
 #
@@ -197,7 +197,7 @@ else
   #
   echo Hindcast run  
   # Don't forget to modify NRPFRST and NRREC 
-  # in roms_hindcast.in and roms_forecast.in
+  # in croco_hindcast.in and croco_forecast.in
   date
   $EXEC $CODFILE ${MODEL}_hindcast.in > ${MODEL}_hindcast_${DATESTR}.out
   #
@@ -205,9 +205,9 @@ else
     echo 'ITERATION ITERATION'
     $LN -sf $TOOLSDIR/iteration.m iteration.m
     $LN -sf $RUNDIR/start.m start.m
-    $LN -sf $RUNDIR/romstools_param.m romstools_param.m
+    $LN -sf $RUNDIR/crocotools_param.m crocotools_param.m
     $MATLAB  -nodisplay < iteration.m > iteration.out
-    rm -f iteration.m start.m romstools_param.m
+    rm -f iteration.m start.m crocotools_param.m
   fi
   #
   date

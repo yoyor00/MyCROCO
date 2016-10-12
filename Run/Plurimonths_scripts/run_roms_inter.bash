@@ -20,11 +20,11 @@ MV=/bin/mv
 #  Define files and run parameters
 ########################################################
 #
-MODEL=roms
+MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 INPUTDIR=`pwd`
-MSSDIR=`pwd`/ROMS_FILES
-MSSOUT=`pwd`/ROMS_FILES
+MSSDIR=`pwd`/CROCO_FILES
+MSSOUT=`pwd`/CROCO_FILES
 CODFILE=croco
 AGRIF_FILE=AGRIF_FixedGrids.in
 #
