@@ -42,7 +42,7 @@
 !
 !  Ref: Uchiyama, McWilliams and Shchepetkin (2010, Ocean Modelling).
 !  
-!  Adapted to ROMS_AGRIF by R. Benshila & P. Marchesiello, 2013
+!  Adapted to CROCO by R. Benshila & P. Marchesiello, 2013
 !======================================================================
 !
       implicit none

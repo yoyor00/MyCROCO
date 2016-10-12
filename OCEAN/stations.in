@@ -1,5 +1,5 @@
 1  STAtitle (a80)
-ROMS_AGRIF  - Station Location
+CROCO  - Station Location
 2  STAt0,  STAx0,  STAy0,  STAz0, STgrd, STAcoor
     0.0    -78.    -11.    -5.0     0       1 
     0.0    -78.5   -10.    -5.0     0       1

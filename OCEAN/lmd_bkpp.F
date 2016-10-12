@@ -1,12 +1,12 @@
 ! $Id: lmd_bkpp.F 1526 2014-04-16 14:09:11Z marchesiello $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 !
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"

@@ -1,12 +1,12 @@
 ! $Id: read_inp.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -56,57 +56,57 @@
 
 ! (override default). NOTE: The usage of the executable should
 ! be either 
-!           roms
+!           croco
 !        or
-!           roms startup_file_name
+!           croco startup_file_name
 !
-! WITHOUT the UNIX redirection (<): roms<startup_file like it
+! WITHOUT the UNIX redirection (<): croco<startup_file like it
 ! used to be.
 !
 #if defined BASIN
-      fname='TEST_CASES/roms.in.Basin'
+      fname='TEST_CASES/croco.in.Basin'
 #elif defined CANYON_A
-      fname='TEST_CASES/roms.in.Canyon_A'
+      fname='TEST_CASES/croco.in.Canyon_A'
 #elif defined CANYON_B
-      fname='TEST_CASES/roms.in.Canyon_B'
+      fname='TEST_CASES/croco.in.Canyon_B'
 #elif defined EQUATOR
-      fname='TEST_CASES/roms.in.Equator'
+      fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
-      fname='TEST_CASES/roms.in.Grav_adj'
+      fname='TEST_CASES/croco.in.Grav_adj'
 #elif defined INNERSHELF
-      fname='TEST_CASES/roms.in.Innershelf'
+      fname='TEST_CASES/croco.in.Innershelf'
 #elif defined INTERNAL
-      fname='TEST_CASES/roms.in.Internal'
+      fname='TEST_CASES/croco.in.Internal'
 #elif defined OVERFLOW
-      fname='TEST_CASES/roms.in.Overflow'
+      fname='TEST_CASES/croco.in.Overflow'
 #elif defined RIVER
-      fname='TEST_CASES/roms.in.River'
+      fname='TEST_CASES/croco.in.River'
 #elif defined SEAMOUNT
-      fname='TEST_CASES/roms.in.Seamount'
+      fname='TEST_CASES/croco.in.Seamount'
 #elif defined SHELFRONT
-      fname='TEST_CASES/roms.in.Shelfront'
+      fname='TEST_CASES/croco.in.Shelfront'
 #elif defined SOLITON
-      fname='TEST_CASES/roms.in.Soliton'
+      fname='TEST_CASES/croco.in.Soliton'
 #elif defined UPWELLING
-      fname='TEST_CASES/roms.in.Upwelling'
+      fname='TEST_CASES/croco.in.Upwelling'
 #elif defined VORTEX
-      fname='TEST_CASES/roms.in.Vortex'
+      fname='TEST_CASES/croco.in.Vortex'
 #elif defined JET
-      fname='TEST_CASES/roms.in.Jet'
+      fname='TEST_CASES/croco.in.Jet'
 #elif defined SHOREFACE
-      fname='TEST_CASES/roms.in.ShoreFace'
+      fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
-      fname='TEST_CASES/roms.in.Rip'
+      fname='TEST_CASES/croco.in.Rip'
 #elif defined THACKER
-      fname='TEST_CASES/roms.in.Thacker'
+      fname='TEST_CASES/croco.in.Thacker'
 #elif defined TANK
 # ifdef NBQ
-      fname='TEST_CASES/roms.in.Tank'
+      fname='TEST_CASES/croco.in.Tank'
 # else
-      fname='TEST_CASES/roms.in.Tank_nbq'
+      fname='TEST_CASES/croco.in.Tank_nbq'
 # endif
 #elif defined REGIONAL
-      fname='roms.in'
+      fname='croco.in'
 #else
       fname='no_startup_file'
 #endif
