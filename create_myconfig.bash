@@ -25,8 +25,8 @@ do
     echo " ";
     echo " What is does :";
     echo " - Copy the original croco/Run with cppdefs.h, param.h and *.in files needed";
-    echo " - Copy the original romstools_param.m and start.m file from croco_tools/";
-    echo " - Copy the original run_roms*.bash file from croco_tools/Pluriannual_scripts/";
+    echo " - Copy the original crocotools_param.m and start.m file from croco_tools/";
+    echo " - Copy the original run_croco*.bash file from croco_tools/Pluriannual_scripts/";
     echo "";
     echo "Edit the USER SECTION of the script to define the following variables :";
     echo " - SOURCES_DIR     : location of croco directory";
@@ -83,20 +83,20 @@ if [[ $copy_tag == 1 ]] ; then
     echo '         '
     
     cd $MY_CONFIG_PATH'/'$MY_CONFIG_NAME
-    mkdir Misc TEST_CASES NAMELIST_OANALYSIS ROMS_FILES
+    mkdir Misc TEST_CASES NAMELIST_OANALYSIS CROCO_FILES
     
     #OCEAN
     DIRO='OCEAN'
     cp -Rf $SOURCES_DIR/$DIRO/jobcomp .
     cp -Rf $SOURCES_DIR/$DIRO/param.h .
     cp -Rf $SOURCES_DIR/$DIRO/cppdefs.h .
-    cp -Rf $SOURCES_DIR/$DIRO/roms.in .
-    cp -Rf $SOURCES_DIR/$DIRO/roms.in.1 .
-    cp -Rf $SOURCES_DIR/$DIRO/roms_inter.in .
+    cp -Rf $SOURCES_DIR/$DIRO/croco.in .
+    cp -Rf $SOURCES_DIR/$DIRO/croco.in.1 .
+    cp -Rf $SOURCES_DIR/$DIRO/croco_inter.in .
     cp -Rf $SOURCES_DIR/$DIRO/sediment.in .
-    cp -Rf $SOURCES_DIR/$DIRO/roms_forecast.in Misc/
-    cp -Rf $SOURCES_DIR/$DIRO/roms_hindcast.in Misc/
-    cp -Rf $SOURCES_DIR/$DIRO/roms_stations.in Misc/
+    cp -Rf $SOURCES_DIR/$DIRO/croco_forecast.in Misc/
+    cp -Rf $SOURCES_DIR/$DIRO/croco_hindcast.in Misc/
+    cp -Rf $SOURCES_DIR/$DIRO/croco_stations.in Misc/
     
     # XIOS
     DIRO='XIOS'
@@ -113,9 +113,9 @@ if [[ $copy_tag == 1 ]] ; then
     echo '=> Copy from '$SOURCES_DIR ' done'
     echo '         '
     # Link the files from croco_tools/
-    # for romstools in matlab
+    # for crocotools in matlab
     cp -Rf $TOOLS_DIR/start.m .
-    cp -Rf $TOOLS_DIR/romstools_param.m .
+    cp -Rf $TOOLS_DIR/crocotools_param.m .
     cp -Rf $TOOLS_DIR/Misc/town.dat Misc/
     #
 

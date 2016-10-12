@@ -248,18 +248,18 @@ fi
 #
 cd $INPUTDIR
 
-$LN -sf $TOOLSDIR/plot_forecast_roms.m plot_forecast_roms.m
+$LN -sf $TOOLSDIR/plot_forecast_croco.m plot_forecast_croco.m
 $LN -sf $TOOLSDIR/plot_quick_forecast.m plot_quick_forecast.m
 
 # Production plot
 #
-$MATLAB  -batch -nodisplay < plot_forecast_roms.m >  plot_forecast_roms.out
+$MATLAB  -batch -nodisplay < plot_forecast_croco.m >  plot_forecast_croco.out
 
 # Quick plot
 #
 #$MATLAB  -batch -nodisplay < plot_quick_forecast.m >  plot_quick_forecast.out
 
-rm -f plot_forecast_roms.m plot_quick_forecast.m
+rm -f plot_forecast_croco.m plot_quick_forecast.m
 
 echo Forecast finished
 date

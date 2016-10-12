@@ -1,21 +1,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Build a ROMS RIP configuration.
+%  Build a CROCO RIP configuration.
 %  Create a grid file for the Rip Current experiment
 %  (for the parent and the child grid).
 %  This file is based on make_vortex.m 
 % 
 %  Further Information:  
-%  http://www.brest.ird.fr/Roms_tools/
+%  http://www.croco-ocean.org
 %  
-%  This file is part of ROMSTOOLS
+%  This file is part of CROCOTOOLS
 %
-%  ROMSTOOLS is free software; you can redistribute it and/or modify
+%  CROCOTOOLS is free software; you can redistribute it and/or modify
 %  it under the terms of the GNU General Public License as published
 %  by the Free Software Foundation; either version 2 of the License,
 %  or (at your option) any later version.
 %
-%  ROMSTOOLS is distributed in the hope that it will be useful, but
+%  CROCOTOOLS is distributed in the hope that it will be useful, but
 %  WITHOUT ANY WARRANTY; without even the implied warranty of
 %  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %  GNU General Public License for more details.
@@ -134,8 +134,8 @@ nc.title = ncchar(title);
 nc.title = title;
 nc.date = ncchar(date);
 nc.date = date;
-nc.type = ncchar('ROMS grid file');
-nc.type = 'ROMS grid file';
+nc.type = ncchar('CROCO grid file');
+nc.type = 'CROCO grid file';
 %
 %  fill the grid file
 %
@@ -244,8 +244,8 @@ nc.title = ncchar(file_title);
 nc.title = file_title;
 nc.date = ncchar(date);
 nc.date = date;
-nc.type = ncchar('ROMS grid file');
-nc.type = 'ROMS grid file';
+nc.type = ncchar('CROCO grid file');
+nc.type = 'CROCO grid file';
 %
 %  fill the grid file
 %

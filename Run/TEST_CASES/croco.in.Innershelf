@@ -39,11 +39,11 @@ auxiliary_averages:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr W
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                F         5760        -1
-                                    roms_diags.nc
+                                    croco_diags.nc
 
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
           T            1           576          0
-                                                roms_diags_avg.nc
+                                                croco_diags_avg.nc
 
 stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
           T        24   0
