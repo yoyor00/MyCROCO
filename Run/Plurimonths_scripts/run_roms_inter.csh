@@ -20,11 +20,11 @@ set MV=/bin/mv
 #  Define files and run parameters
 ########################################################
 #
-set MODEL=roms
+set MODEL=croco
 set SCRATCHDIR=`pwd`/SCRATCH
 set INPUTDIR=`pwd`
-set MSSDIR=`pwd`/ROMS_FILES
-set MSSOUT=`pwd`/ROMS_FILES
+set MSSDIR=`pwd`/CROCO_FILES
+set MSSOUT=`pwd`/CROCO_FILES
 set CODFILE=croco
 set AGRIF_FILE=AGRIF_FixedGrids.in
 #
