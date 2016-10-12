@@ -1,12 +1,12 @@
 ! $Id: lmd_skpp2005.F 1526 2014-04-16 14:09:11Z marchesiello $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 !
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -39,7 +39,7 @@
 !    Modeling and Applications, La. Jolla, CA, October 24
 !    <http://www.myroms.org/Workshops/ROMS2005/Nonlinear/AlexanderShchepetkin.pdf>
 !
-!  * Jan 2012, F. Lemarié: implements KPP2005 in ROMS_AGRIF
+!  * Jan 2012, F. Lemarié: implements KPP2005 in CROCO
 !  * Feb 2012, P. Marchesiello: Adds bottom condition of K profile in case
 !              hbl reaches the bottom
 !

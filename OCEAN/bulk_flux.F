@@ -1,12 +1,12 @@
 ! $Id: bulk_flux.F 1531 2014-04-17 15:05:26Z marchesiello $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -350,8 +350,8 @@
 !     from measurements during ASGAMAGE. Bound.-Layer Meteor., 103,    !
 !     409-438.                                                         !
 !
-!  Modified for ROMS_AGRIF by Fred marin (2008)
-!  Modified for ROMS_AGRIF by P. Marchesiello (2009)
+!  Modified for CROCO by Fred marin (2008)
+!  Modified for CROCO by P. Marchesiello (2009)
 !                                                                      !
 !=======================================================================
 !

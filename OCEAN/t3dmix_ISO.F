@@ -1,12 +1,12 @@
 ! $Id: t3dmix_ISO.F 1466 2014-02-06 17:37:07Z marchesiello $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -126,8 +126,8 @@
 !
 !  * 1998,     A. Shchepetkin: first implementation of explicit operators
 !  * Mar 2012, F. Lemarié: refines TRIADS/SWTRIADS operators and implements 
-!              MSC techniques in ROMS_AGRIF
-!  * Mai 2012, P. Marchesiello: corrections and adjustment to ROMS_AGRIF 
+!              MSC techniques in CROCO
+!  * Mai 2012, P. Marchesiello: corrections and adjustment to CROCO 
 !              CPP choices 
 !
 !========================================================================
