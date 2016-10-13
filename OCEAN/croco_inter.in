@@ -5,27 +5,27 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
 S-coord: THETA_S,   THETA_B,    Hc (m)
            6.0d0      0.0d0      10.0d0
 grid:  filename
-                          roms_grd.nc
+                          croco_grd.nc
 forcing: filename
-                          roms_frc.nc
+                          croco_frc.nc
 bulk_forcing: filename
-                          roms_blk.nc
+                          croco_blk.nc
 climatology: filename
-                          roms_clm.nc
+                          croco_clm.nc
 boundary: filename
-                          roms_bry.nc
+                          croco_bry.nc
 initial: NRREC  filename
           1 
-                          roms_ini.nc
+                          croco_ini.nc
 restart:          NRST, NRPFRST / filename
                   NUMTIMES   -1
-                          roms_rst.nc
+                          croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T     NUMTIMES     0
-                          roms_his.nc
+                          croco_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      72     0
-                          roms_avg.nc
+                          croco_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   30*T
@@ -70,11 +70,11 @@ nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        72         0
-                                   roms_dia.nc
+                                   croco_dia.nc
 
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           72            0
-                                 roms_dia_avg.nc
+                                 croco_dia_avg.nc
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             30*T
@@ -90,11 +90,11 @@ diag2D_average_fields:    diag_tracers2D_avg(1:NT)
 
 diagnosticsM:   ldefdiaM   nwrtdiaM    nrpfdiaM /filename
                    T          72          0
-                                 roms_diaM.nc
+                                 croco_diaM.nc
 
 diagM_avg: ldefdiaM_avg  ntsdiaM_avg  nwrtdiaM_avg  nprfdiaM_avg /filename
                T          1           72            0
-                                 roms_diaM_avg.nc
+                                 croco_diaM_avg.nc
 
 diagM_history_fields: diag_momentum(1:2)
                             T T
@@ -104,11 +104,11 @@ diagM_average_fields: diag_momentum_avg(1:2)
 
 diagnostics_bio:   ldefdiabio   nwrtdiabio    nrpfdiabio /filename
                         T          72             0
-                                 roms_diabio.nc
+                                 croco_diabio.nc
 
 diagbio_avg: ldefdiabio_avg  ntsdiabio_avg  nwrtdiabio_avg  nprfdiabio_avg /filename
                   T              1              72              0
-                                 roms_diabio_avg.nc
+                                 croco_diabio_avg.nc
 
 diagbioFlux_history_fields:    wrtdiabioFlux 
                                  50*T 
@@ -129,7 +129,7 @@ diagbioGasExc_average_fields:  wrtdiabioGasExc_avg
 			         50*T
 	
 biology:   forcing file
-           roms_frcbio.nc
+           croco_frcbio.nc
 
 sediments: input file
            sediment.in
@@ -159,7 +159,7 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
                   3    40     0    200.            T T      5. 0.
 
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
-                                  CROCO_FILES/roms_runoff.nc
+                                  CROCO_FILES/croco_runoff.nc
                  2
                         24  35  0  -1   30*T   5.0  0.0
                         35  13  1  -1   30*T   5.0  0.0

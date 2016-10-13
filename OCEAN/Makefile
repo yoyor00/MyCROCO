@@ -209,7 +209,7 @@ mymodules: $(MOBJS) $(AMROBJS)
 # ====== == ====== === =====
 #
 tarfile:
-	tar cvf roms.tar Make* *.h *.F *.F90 *.in *.in.*
+	tar cvf croco.tar Make* *.h *.F *.F90 *.in *.in.*
 #
 # Cleaning:
 # =========
