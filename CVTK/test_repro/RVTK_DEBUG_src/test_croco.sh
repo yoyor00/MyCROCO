@@ -29,10 +29,10 @@ fi
 #
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
-eval "SOURCE_ROMS=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+eval "SOURCE_CROCO=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
 rm -f tmp1 tmp2
 echo
-echo 'SOURCE_ROMS='$SOURCE_ROMS
+echo 'SOURCE_CROCO='$SOURCE_CROCO
 
 #
 # Get compilator
@@ -82,7 +82,7 @@ echo 'MPIRUN='$MPIRUN
 #if [[ $do_gitupdate == on ]]; then
 #    echo
 #    echo "PROCESS GIT UPDATE"
-#    cd  $SOURCE_ROMS/..
+#    cd  $SOURCE_CROCO/..
 #    /usr/bin/git pull 
 #    cd -
 #    echo "GIT UPDATE DONE"
@@ -93,7 +93,7 @@ echo 'MPIRUN='$MPIRUN
 
 # Get revision of sources
 #-------------------------
-#./gitinfo.sh $SOURCE_ROMS > gitinfos
+#./gitinfo.sh $SOURCE_CROCO > gitinfos
 numrev0=`sed -n '/revision/{n;p;}' gitinfos`
 numrev=`echo $numrev0 | tr -d [:blank:]`
 echo
