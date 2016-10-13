@@ -113,7 +113,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 # copy SOURCE code
 #
 /bin/cp -f ${SOURCE}/*.F90 $SCRDIR
-/bin/cp -f ${SOURCE}/*.h90 $SCRDIR
+[ ! -z "$(ls ${SOURCE}/*.h90 2>/dev/null)" ] && /bin/cp -f ${SOURCE}/*.h90 $SCRDIR
 /bin/cp -f ${SOURCE}/*.F   $SCRDIR
 /bin/cp -f ${SOURCE}/*.h   $SCRDIR
 /bin/cp -f ${SOURCE}/Make* $SCRDIR
@@ -123,27 +123,27 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 /bin/cp -RLf ${AGRIF_SRC} $SCRDIR
 /bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
 /bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
-/bin/cp -f ${ROTT_DIR}/PISCES/kRGB61* $RUNDIR
+/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 if [[ -e "namelist_pisces" ]] ; then
 	echo "  file namelist_pisces exists in Run directory"
 else
-	/bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+	/bin/cp -f ${ROOTDIR}/PISCES/namelist_pisces* $RUNDIR
 	echo "  file namelist_pisces copied from source directory"
 fi
 #
 # overwrite with local files
 #
-/bin/cp -f *.F90 $SCRDIR
-/bin/cp -f *.F $SCRDIR
-/bin/cp -f *.h $SCRDIR
-/bin/cp -f Make* $SCRDIR
+[ ! -z "$(ls *.F90 2>/dev/null)" ] && /bin/cp -f *.F90 $SCRDIR
+[ ! -z "$(ls *.F 2>/dev/null)" ] && /bin/cp -f *.F $SCRDIR
+[ ! -z "$(ls *.h 2>/dev/null)" ] && /bin/cp -f *.h $SCRDIR
+[ ! -z "$(ls Make* 2>/dev/null)" ] && /bin/cp -f Make* $SCRDIR
 #
 #
-# RVTK  files  DEBUG CPP KEYS
+# CVTK  files  DEBUG CPP KEYS
 #
-/bin/cp -f cppdefs_dev_bak1.h ${SCRDIR}/cppdefs_dev.h
-/bin/cp -f param_bak1.h ${SCRDIR}/param.h
-/bin/cp -f cppdefs_bak1.h ${SCRDIR}/cppdefs.h
+[ -f  cppdefs_dev_bak1.h ] && /bin/cp -f cppdefs_dev_bak1.h ${SCRDIR}/cppdefs_dev.h
+[ -f  param_bak1.h ] && /bin/cp -f param_bak1.h ${SCRDIR}/param.h
+[ -f  cppdefs_bak1.h ] && /bin/cp -f cppdefs_bak1.h ${SCRDIR}/cppdefs.h
 #
 # Change directory
 #

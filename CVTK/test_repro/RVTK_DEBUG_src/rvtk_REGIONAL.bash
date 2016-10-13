@@ -6,11 +6,11 @@
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 # 
-# ROMS_AGRIF website : http://croco.mpl.ird.fr
+# ROMS_AGRIF website : http://www.croco-ocean.org
 #======================================================================
 #
 #---------------------------------------------------------------------
-# Script to Run RVTK DEBUG procedure managing parallelization type 
+# Script to Run CVTK DEBUG procedure managing parallelization type 
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX and REGIONAL
 #--------------------------------------------------------------------
@@ -19,10 +19,10 @@ echo "================================"
 echo "MPIRUN COMMAND: "$MPIRUN
 echo "================================"
 echo "Remove *.exe* *.log* "
-/bin/rm *.exe*
-/bin/rm *.log*
+[ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
+[ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
 echo "Remove the CHECKFILE"
-/bin/rm check_file
+[ -f check_file ] && /bin/rm check_file
 echo " "
 echo "Remove AGRIF_FixedGrids.in"
 /bin/rm -f AGRIF_FixedGrids.in 
@@ -38,7 +38,7 @@ ADDTEST='ON'
 # Type of parallelization
 #
 COMPOMP='ON'
-COMPMPI='OFF'
+COMPMPI='ON'
 echo ' '
 #
 echo 'OpenMP testing: '$COMPOMP
@@ -47,8 +47,8 @@ echo ' '
 #=============================================================================================
 # Psource or not in case of REGIONAL [ 'ON OFF' ]
 #
-#LIST_PSOURCEFLAG='OFF ON'
-LIST_PSOURCEFLAG='OFF'
+LIST_PSOURCEFLAG='OFF ON'
+#LIST_PSOURCEFLAG='OFF'
 echo 'Psource testing: '$LIST_PSOURCEFLAG
 echo
 #=============================================================================================
@@ -62,16 +62,15 @@ echo ' '
 #=============================================================================================
 # Tides or not in case of REGIONAL [ 'ON OFF' ]
 #
-#LIST_TIDESFLAG='OFF ON'
-LIST_TIDESFLAG='OFF'
+LIST_TIDESFLAG='OFF ON'
+#LIST_TIDESFLAG='OFF'
 echo 'Tides testing: '$LIST_TIDESFLAG
 echo
 #=============================================================================================
 # Lateral forcing CLIM or BRY in case of REGIONAL  [ 'BRY CLM' ]
 #
-#LIST_OBCFLAG='CLM BRY'
+LIST_OBCFLAG='CLM BRY'
 #LIST_OBCFLAG='BRY'
-LIST_OBCFLAG='CLM'
 echo 'Lateral forcing type testing: '$LIST_OBCFLAG
 echo
 #=============================================================================================
@@ -87,7 +86,7 @@ echo ' '
 #
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
-eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
 echo
@@ -100,9 +99,9 @@ echo
 #
 # Replace with local files if any ### PAT
 #
-/bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
-/bin/cp cppdefs.h cppdefs_bak1.h
-/bin/cp param.h param_bak0.h
+[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
+[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
+[ -f param.h ] && /bin/cp param.h param_bak0.h
 #
 #=============================================================================================
 # Title
@@ -133,7 +132,7 @@ for KEY in $LIST_KEY
 #
 echo " "
 echo "============================================"
-echo " TEST RVTK_DEBUG [cppdefs_dev.h] "
+echo " TEST CVTK_DEBUG [cppdefs_dev.h] "
 echo "============================================"
 sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_bak1.h > cppdefs_dev_bak2.h
 /bin/mv cppdefs_dev_bak2.h cppdefs_dev_bak1.h
@@ -251,7 +250,7 @@ for EXAMPLE in $LIST_EXAMPLE
 	    echo "======================"
 	    echo SERIAL TESTS
 	    echo "Remove the CHECKFILE"
-	    /bin/rm check_file
+       [ -f check_file ] && /bin/rm check_file
 	    echo " "
 
 	    echo "Undef NPP > 1"
@@ -861,8 +860,8 @@ for EXAMPLE in $LIST_EXAMPLE
 #----------------------------------------------------------------
 # Cleaning
 echo " "
-echo "End of the RVTK PROCEDURE"
+echo "End of the CVTK PROCEDURE"
 echo "CLEANING CHECK FILE"
 #/bin/rm cppdefs_bak1.h param_bak0.h param_bak1.h
-/bin/rm -f *.nc* 
-/bin/rm -f check_file
+[ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
+[ -f check_file ] && /bin/rm -f check_file

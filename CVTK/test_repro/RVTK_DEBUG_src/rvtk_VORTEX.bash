@@ -10,7 +10,7 @@
 #======================================================================
 #
 #---------------------------------------------------------------------
-# Script to Run RVTK DEBUG procedure managing parallelization type 
+# Script to Run CVTK DEBUG procedure managing parallelization type 
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX
 #--------------------------------------------------------------------
@@ -19,12 +19,12 @@ echo "MPIRUN COMMAND: "$MPIRUN
 echo "======================================"
 echo
 echo "Remove *.exe* *.log* "
-/bin/rm *.exe*
-/bin/rm *.log*
+[ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
+[ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
 echo
 echo "Remove CHECKFILE"
 echo
-/bin/rm check_file
+[ -f check_file ] && /bin/rm check_file
 echo
 echo "Remove AGRIF_FixedGrids.in"
 echo
@@ -62,7 +62,7 @@ echo
 #
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
-eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
 echo
@@ -75,9 +75,9 @@ echo
 #
 # Replace with local files if any ### PAT
 #
-/bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
-/bin/cp cppdefs.h cppdefs_bak1.h
-/bin/cp param.h param_bak0.h
+[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
+[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
+[ -f param.h ] && /bin/cp param.h param_bak0.h
 #
 #=============================================================================================
 # Title
@@ -110,7 +110,7 @@ done
 #
 echo " "
 echo "============================================"
-echo "TEST RVTK_DEBUG [cppdefs_dev.h]  "
+echo "TEST CVTK_DEBUG [cppdefs_dev.h]  "
 echo "============================================"
 sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_bak1.h > cppdefs_dev_bak2.h
 /bin/mv cppdefs_dev_bak2.h cppdefs_dev_bak1.h
@@ -743,8 +743,8 @@ done  #boucle sur les cas tests VORTEX LIST EXAMPLE not needed in fact ...
 #----------------------------------------------------------------
 # Cleaning
 echo " "
-echo "End of the RVTK PROCEDURE"
+echo "End of the CVTK PROCEDURE"
 echo "CLEANING CHECK FILE"
 #/bin/rm cppdefs_bak1.h param_bak0.h param_bak1.h
-/bin/rm -f *.nc*
-/bin/rm -f check_file
+[ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
+[ -f check_file ] && /bin/rm -f check_file

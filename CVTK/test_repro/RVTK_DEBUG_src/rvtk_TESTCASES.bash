@@ -6,11 +6,11 @@
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 # 
-# ROMS_AGRIF website : http://croco.mpl.ird.fr
+# ROMS_AGRIF website : http://www.croco-ocean.org
 #======================================================================
 #
 #---------------------------------------------------------------------
-# Script to Run RVTK DEBUG procedure managing parallelization type 
+# Script to Run CVTK DEBUG procedure managing parallelization type 
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX and REGIONAL
 #--------------------------------------------------------------------
@@ -18,15 +18,16 @@ echo "==========================="
 echo "MPIRUN COMMAND: "$MPIRUN
 echo "==========================="
 echo "Remove *.exe* *.log* "
-/bin/rm *.exe*
-/bin/rm *.log*
+[ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
+[ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
 echo "Remove the CHECKFILE"
-/bin/rm check_file
+[ -f check_file ] && /bin/rm check_file
 echo " "
 #
 # Lists
 #
-#LIST_EXAMPLE='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING INTERNAL SHOREFACE THACKER JET'
+LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET KH_INST OVERFLOW RIP S2DV SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
+LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET OVERFLOW RIP SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
 LIST_EXAMPLE='SOLITON'
 LIST_KEY='MPI OPENMP REGIONAL ETALON_CHECK'
 LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN'
@@ -47,7 +48,7 @@ echo 'MPI    testing: '$COMPMPI
 #
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
-eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
 echo ' '
@@ -61,9 +62,9 @@ echo ' '
 #
 # Replace with local files if any ### PAT
 #
-#/bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
-#/bin/cp cppdefs.h cppdefs_bak1.h
-#/bin/cp param.h param_bak0.h
+#[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
+#[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
+#[ -f param.h ] && /bin/cp param.h param_bak0.h
 #
 # Title
 #
@@ -91,7 +92,7 @@ done
 #
 echo " "
 echo "============================================"
-echo "TEST RVTK_DEBUG [cppdefs_dev.h] "
+echo "TEST CVTK_DEBUG [cppdefs_dev.h] "
 echo "============================================"
 sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_bak1.h > cppdefs_dev_bak2.h
 /bin/mv cppdefs_dev_bak2.h cppdefs_dev_bak1.h
@@ -105,7 +106,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
     echo "======================"
     echo SERIAL TESTS
     echo "Remove the CHECKFILE"
-    /bin/rm check_file
+     [ -f check_file ] && /bin/rm check_file
     echo " "
     
     echo "Undef NPP > 1"
@@ -139,9 +140,9 @@ for EXAMPLE in $LIST_EXAMPLE ; do
     date
     echo TEST SERIAL $EXAMPLE
     for WORD in  $LIST_WORDS ; do
-	grep --binary-files=text $WORD serial_${EXAMPLE}.log
+	 grep --binary-files=text $WORD serial_${EXAMPLE}.log
     done
-    /bin/rm *.nc
+    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 
     if  [ ${COMPOMP} == 'ON' ] ; then
 	##############################################################################
@@ -164,8 +165,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	#
 	
 	echo "--------------------------"
-	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
-	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
+	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL'  || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' ||  "${EXAMPLE}" == 'TANK' ]] ; then
 	    
 	else 
 	    echo COMPILE OPENMP 1X2 $EXAMPLE
@@ -185,7 +185,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		grep --binary-files=text $WORD openmp1X2_${EXAMPLE}.log
 	    done
 	fi
-	/bin/rm *.nc
+	[ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 
 	#------------------------------------------------------------------------------
 	echo "======================"
@@ -218,7 +218,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		grep --binary-files=text $WORD openmp2X1_${EXAMPLE}.log
 	    done
 	fi
-	/bin/rm *.nc
+	[ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 
 	#------------------------------------------------------------------------------
 	if [ $ADDTEST == 'ON' ]; then
@@ -233,7 +233,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=2
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'OVERFLOW' ]] ; then
+	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'OVERFLOW' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 		
@@ -255,7 +255,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		done
 		
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------------------------
 	    echo "======================"
 	    echo OPEN-MP 1X4 NPP=4 TESTS
@@ -268,7 +268,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=4
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -289,7 +289,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD openmp1X4_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------------------------
 	    echo "======================"
 	    echo OPEN-MP 4X1 NPP=4 TESTS
@@ -323,7 +323,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD openmp4X1_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------------------------
 	    echo "======================"
 	    echo OPEN-MP 2X4 NPP=8 TESTS
@@ -336,7 +336,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE} == 'RIP'" || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE} == 'RIP'" || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -357,7 +357,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD openmp2X4_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------------------------
 	    echo "======================"
 	    echo OPEN-MP 4X2 NPP=2 TESTS
@@ -370,7 +370,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -391,7 +391,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD openmp4X2_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 
 	    #----------------------------------------------------------------------------------
 
@@ -406,7 +406,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -427,7 +427,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD openmp1X8_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------------------------
 	    echo "======================"
 	    echo OPEN-MP 8X1 NPP=8 TESTS
@@ -441,7 +441,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    #
 
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
+	    if [[ "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -462,7 +462,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD openmp8X1_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    
 	    #-----------------------------------------------------------------------------------------------
 	fi #-> $ADDTEST == 'ON'
@@ -500,7 +500,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	#
 
 	echo '----------------'
-	if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	 if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}"== 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
 
 	else 
@@ -521,7 +521,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		grep --binary-files=text $WORD mpi1X2_${EXAMPLE}.log
 	    done
 	fi
-	/bin/rm *.nc
+	[ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	#----------------------------------------------------------------
 	echo "============="
 	echo MPI 2X1 TESTS
@@ -555,7 +555,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    done
 	fi
 
-	/bin/rm *.nc
+	[ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	#----------------------------------------------------------------
 	if [ $ADDTEST == 'ON' ] ; then
 	    echo "============="
@@ -567,7 +567,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=2'/' < param_bak0.h > param_bak1.h
 
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'SHELFRONT'|| "${EXAMPLE}" == 'OVERFLOW' ]] ; then
+	     if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'SHELFRONT'|| "${EXAMPLE}" == 'OVERFLOW' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -589,7 +589,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		done
 	    fi
 
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------
 	    echo "============="
 	    echo MPI 1X4 TESTS
@@ -601,7 +601,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    #
 
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -622,7 +622,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD mpi1X4_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------
 	    echo "============="
 	    echo MPI 4X1 TESTS
@@ -655,7 +655,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD mpi4X1_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------
 	    echo '=============='
 	    echo MPI 2X4 TESTS
@@ -665,7 +665,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=4'/' < param_bak0.h > param_bak1.h
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -686,7 +686,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD mpi2X4_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------
 	    echo '=============='
 	    echo MPI 4X2 TESTS
@@ -696,7 +696,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=4,\ NP_ETA=2'/' < param_bak0.h > param_bak1.h
 	    echo '----------------'
-	    if [[  "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[  "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -718,7 +718,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD mpi4X2_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------
 
 	    echo '=============='
@@ -732,7 +732,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' ]] ; then
+	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF'  || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -754,7 +754,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD mpi1X8_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    #----------------------------------------------------------------
 	    #----------------------------------------------------------------
 	    echo '=============='
@@ -765,7 +765,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=8,\ NP_ETA=1'/' < param_bak0.h > param_bak1.h
 	    echo '----------------'
-	    if [[  "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'JET' ]] ; then
+	    if [[  "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'ACOUS' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -786,7 +786,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 		    grep --binary-files=text $WORD mpi8X1_${EXAMPLE}.log
 		done
 	    fi
-	    /bin/rm *.nc
+	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    echo "Fin Cas Test "$EXAMPLE
 	    #----------------------------------------------------------------
 
@@ -800,6 +800,6 @@ done   #boucle sur les cas tests
 #----------------------------------------------------------------
 # Cleaning
 echo " "
-echo "End of the RVTK PROCEDURE"
+echo "End of the CVTK PROCEDURE"
 echo "CLEANING"
 #/bin/rm cppdefs_bak1.h param_bak0.h param_bak1.h
