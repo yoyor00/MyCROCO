@@ -1,8 +1,39 @@
 #!/bin/bash
 #
 ########################################################
-#  Define environment variables for XEON
+#  Define files and run parameters
 ########################################################
+#
+# Name used for the input files. For example croco_grd.nc
+MODEL=croco
+
+# Scratch directory where the model is run
+SCRATCHDIR=`pwd`/SCRATCH
+
+# Input directory where the croco_inter.in input file is located
+INPUTDIR=`pwd`
+
+# AGRIF input file which defines the position of child grids
+AGRIF_FILE=AGRIF_FixedGrids.in
+
+# Directory where the croco input NetCDF files (croco_grd.nc, ...) are stored
+MSSDIR=`pwd`/CROCO_FILES
+
+# Directory where the croco output and restart NetCDF files (croco_his.nc, ...) are stored
+MSSOUT=`pwd`/CROCO_FILES
+
+# CROCO executable
+CODFILE=croco
+
+# number of processors for MPI run
+NBPROCS=8
+
+# command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
+RUNCMD='./'
+#RUNCMD="mpirun -np $NBPROCS "
+
+#  Define environment variables for OPENMP
+#
 OMP_SCHEDULE=static
 OMP_NUM_THREADS=2
 OMP_DYNAMIC=false
@@ -10,23 +41,9 @@ OMP_NESTED=false
 KMP_LIBRARY=throughput
 KMP_STACKSIZE=2m
 KMP_DUPLICATE_LIB_OK=TRUE
+
 #
-#unalias cp
-#unalias mv
-#limit coredumpsize unlimited
-CP=/bin/cp
-MV=/bin/mv
-########################################################
-#  Define files and run parameters
-########################################################
-#
-MODEL=croco
-SCRATCHDIR=`pwd`/SCRATCH
-INPUTDIR=`pwd`
-MSSDIR=`pwd`/CROCO_FILES
-MSSOUT=`pwd`/CROCO_FILES
-CODFILE=croco
-AGRIF_FILE=AGRIF_FixedGrids.in
+# Define which type of inputs are used
 #
 BULK_FILES=1
 FORCING_FILES=0
@@ -48,6 +65,10 @@ OGCM=SODA
 # Model time step [seconds]
 #
 DT=3600
+#
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+#
+NFAST=60
 #
 # Number total of grid levels (1: No child grid)
 #
@@ -71,6 +92,14 @@ RSTFLAG=0
 #
 TIME_SCHED=1
 #
+#unalias cp
+#unalias mv
+#limit coredumpsize unlimited
+CP=/bin/cp
+MV=/bin/mv
+#
+########################################################
+#  END USER CHANGE
 ########################################################
 #
 if [[ $TIME_SCHED == 0 ]]; then
@@ -86,6 +115,10 @@ BLKFILE=${MODEL}_blk
 INIFILE=${MODEL}_ini
 CLMFILE=${MODEL}_clm
 BRYFILE=${MODEL}_bry
+#
+if [ ! -e $MSSOUT ] ; then
+ mkdir $MSSOUT
+fi
 #
 if [[ $RSTFLAG != 0 ]]; then
   NY=$NY_START
@@ -112,6 +145,9 @@ fi
 #
 # Get the code
 #
+if [ ! -e $SCRATCHDIR ] ; then
+ mkdir $SCRATCHDIR
+fi
 cd $SCRATCHDIR
 echo "Getting $CODFILE from $INPUTDIR"
 $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
@@ -261,14 +297,14 @@ while [ $NY != $NY_END ]; do
 	NUMTIMES=$((3 * NUMTIMES))
       fi
       echo "USING NUMTIMES = $NUMTIMES"
-      sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
+      sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
       LEVEL=$((LEVEL + 1))
     done
 #
 #  COMPUTE
 #
     date
-    ./$CODFILE  ${MODEL}_${TIME}_inter.in > ${MODEL}_${TIME}.out
+    ${RUNCMD}$CODFILE  ${MODEL}_${TIME}_inter.in > ${MODEL}_${TIME}.out
     date
 #
 # Test if the month has finised properly
@@ -298,9 +334,9 @@ while [ $NY != $NY_END ]; do
         ENDF=.${LEVEL}
       fi
 	  $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}.nc${ENDF}
-	  $MV -f ${MODEL}_his.nc${ENDF} ${MODEL}_his_${TIME}.nc${ENDF}
-	  $MV -f ${MODEL}_rst.nc${ENDF} ${MODEL}_rst_${TIME}.nc${ENDF}
-	  $MV -f ${MODEL}_avg.nc${ENDF} ${MODEL}_avg_${TIME}.nc${ENDF}
+	  $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
+	  $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
+	  $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
       LEVEL=$((LEVEL + 1))
     done
     NM=$((NM + 1))

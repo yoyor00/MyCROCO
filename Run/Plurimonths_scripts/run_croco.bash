@@ -1,7 +1,39 @@
 #!/bin/bash
 ########################################################
-#  Define environment variables for XEON
+#  Define files and run parameters
 ########################################################
+#
+# Name used for the input files. For example croco_grd.nc
+MODEL=croco
+
+# Scratch directory where the model is run
+SCRATCHDIR=`pwd`/SCRATCH
+
+# Input directory where the croco_inter.in input file is located
+INPUTDIR=`pwd`
+
+# AGRIF input file which defines the position of child grids
+AGRIF_FILE=AGRIF_FixedGrids.in
+
+# Directory where the croco input NetCDF files (croco_grd.nc, ...) are stored
+MSSDIR=`pwd`/CROCO_FILES
+
+# Directory where the croco output and restart NetCDF files (croco_his.nc, ...) are stored
+MSSOUT=`pwd`/CROCO_FILES
+
+# CROCO executable
+CODFILE=croco
+
+# number of processors for MPI run
+NBPROCS=8
+
+# command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
+RUNCMD='./'
+#RUNCMD="mpirun -np $NBPROCS "
+
+#
+#  Define environment variables for OPENMP
+#
 OMP_SCHEDULE=static
 OMP_NUM_THREADS=2
 OMP_DYNAMIC=false
@@ -9,22 +41,7 @@ OMP_NESTED=false
 KMP_LIBRARY=throughput
 KMP_STACKSIZE=2m
 KMP_DUPLICATE_LIB_OK=TRUE
-#unalias cp
-#unalias mv
-#limit coredumpsize unlimited
-CP=/bin/cp
-MV=/bin/mv
-########################################################
-#  Define files and run parameters
-########################################################
-MODEL=croco
-SCRATCHDIR=`pwd`/SCRATCH
-INPUTDIR=`pwd`
-MSSDIR=`pwd`/CROCO_FILES
-MSSOUT=`pwd`/CROCO_FILES
-CODFILE=croco
-AGRIF_FILE=AGRIF_FixedGrids.in
-#
+
 # Model time step [seconds]
 #
 DT=3600
@@ -46,6 +63,16 @@ NY_START=1
 NY_END=10
 NM_START=1
 NM_END=12
+#
+#unalias cp
+#unalias mv
+#limit coredumpsize unlimited
+CP=/bin/cp
+MV=/bin/mv
+#
+########################################################
+#  END USER CHANGE
+########################################################
 #
 if [[ $TIME_SCHED == 0 ]]; then
   NM_START=1
@@ -185,7 +212,7 @@ while [[ $NY != $NY_END ]]; do
 #  COMPUTE
 #
     date
-    ./$CODFILE  ${MODEL}.in > ${MODEL}_${TIME}.out
+    ${RUNCMD}$CODFILE  ${MODEL}.in > ${MODEL}_${TIME}.out
     date
 #
 # Test if the month has finised properly
@@ -207,9 +234,10 @@ while [[ $NY != $NY_END ]]; do
         ENDF=.${LEVEL}
       fi
       $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}${ENDF}
-      $MV -f ${MODEL}_his.nc${ENDF} ${MODEL}_his_${TIME}.nc${ENDF}
-      $MV -f ${MODEL}_rst.nc${ENDF} ${MODEL}_rst_${TIME}.nc${ENDF}
-      $MV -f ${MODEL}_avg.nc${ENDF} ${MODEL}_avg_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}${MODEL}_his_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}${MODEL}_rst_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}${MODEL}_avg_${TIME}.nc${ENDF}
+
       LEVEL=$((LEVEL + 1))
     done
     NM=$((NM + 1))
