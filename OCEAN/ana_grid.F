@@ -274,11 +274,11 @@ C$    integer omp_get_thread_num
 ! Child grid dimension
 !
         Length_XI=
-     &       Agrif_Parent_xp(Agrif_Ix()+Lm/Agrif_IRhox(),Agrif_Iy())
-     &      -Agrif_Parent_xp(Agrif_Ix(),Agrif_Iy())
+     &       Agrif_Parent ( xp(Agrif_Ix()+Lm/Agrif_IRhox(),Agrif_Iy()) )
+     &     - Agrif_Parent ( xp(Agrif_Ix(),Agrif_Iy()) )
         Length_ETA=
-     &       Agrif_Parent_yp(Agrif_Ix(),Agrif_Iy()+Mm/Agrif_IRhoy())
-     &      -Agrif_Parent_yp(Agrif_Ix(),Agrif_Iy())
+     &       Agrif_Parent ( yp(Agrif_Ix(),Agrif_Iy()+Mm/Agrif_IRhoy()) )
+     &      -Agrif_Parent ( yp(Agrif_Ix(),Agrif_Iy()) )
       endif
 # endif /* AGRIF */
 !
