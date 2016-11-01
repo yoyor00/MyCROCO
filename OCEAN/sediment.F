@@ -127,7 +127,7 @@ C$OMP BARRIER
      &                        A2d(1,3,trd), A2d(1,4,trd),
      &                        A2d(1,5,trd), A2d(1,6,trd),
      &                        A2d(1,7,trd), A2d(1,8,trd),
-     &                        A2d(1,9,trd),
+     &                        A2d(1,9,trd), A2d(1,10,trd),
      &                        B2d(1,trd) )
 C$OMP BARRIER
       call sed_fluxes_tile (Istr,Iend,Jstr,Jend,A2d(1,1,trd))
@@ -1084,12 +1084,13 @@ C$OMP BARRIER
 !
       subroutine sed_settling_tile (Istr,Iend,Jstr,Jend,
      &                              Hz_inv,Hz_inv2,Hz_inv3,qc,
-     &                              FC,qR,qL,WR,WL,ksource) 
+     &                              FC,qR,qL,WR,WL,tau_w,ksource) 
 !
       implicit none
 #  include "param.h"
 #  include "ocean3d.h"
 #  include "sediment.h"
+#  include "bbl.h"
 #  include "scalars.h"
 #  include "grid.h"
    
@@ -1103,10 +1104,32 @@ C$OMP BARRIER
      &         qL(PRIVATE_1D_SCRATCH_ARRAY,N),  
      &         WR(PRIVATE_1D_SCRATCH_ARRAY,N), 
      &         WL(PRIVATE_1D_SCRATCH_ARRAY,N)
+      real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
       integer  ksource(PRIVATE_1D_SCRATCH_ARRAY,N),
      &         ised,indx,i,j,k,ks  
       real dltR, dltL,cff,cffR,cffL,cu
-
+!
+!-----------------------------------------------------------------------
+!  Compute bottom skin-friction stress due to combined maximum wave
+!  and current interaction
+!-----------------------------------------------------------------------
+!
+#  ifdef BBL
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          tau_w(i,j)=sqrt( bustrcwmax(i,j)**2
+     &                    +bvstrcwmax(i,j)**2)
+#  else
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          tau_w(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2
+     &                        +(bvstr(i,j)+bvstr(i,j+1))**2)
+#  endif
+#  ifdef WET_DRY
+          tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
+#  endif
+        enddo
+      enddo
       do j=Jstr,Jend                        ! Auxiliary step: save   
         do k=1,N                            ! inverses of grid box 
           do i=Istr,Iend                    ! heights to avoid
@@ -1269,7 +1292,9 @@ C$OMP BARRIER
      &             -(1.5-cu)*(qR(i,ks)+qL(i,ks)-2.*qc(i,ks))  ))
             enddo
           enddo
+          cff=1/tau_cd(ised)
           do i=Istr,Iend
+            FC(i,0)=FC(i,0)*min(1.,REAL(int(cff*tau_w(i,j))))
             do k=1,N,+1
                t(i,j,k,nnew,indx)=qc(i,k)
      &                   +(FC(i,k)-FC(i,k-1))*Hz_inv(i,k) 
