@@ -210,7 +210,7 @@
 !         if Dwave is dir waves travel TO N:
 !         phicw=pi/2.0 +Dwave(i,j)-angler(i,j)-phic
 !
-          if (Ucur.ne.0.0) then
+          if (Ucur .ne. 0.0) then
             phic=ATAN2(Vcur,Ucur)
           else
             phic=(pi/2.0)*SIGN(1.0,Vcur)
@@ -332,7 +332,7 @@
 
 ! check median grain diameter
 
-             if (d50.ge.0.063d-3) then
+            if (d50.ge.0.063d-3) then
     
 !enhanced skin stress if pre-exisiting ripples (Nielsen, 1986)
               rhmax=0.8*rlen/pi
@@ -344,18 +344,16 @@
 ! local transp.
                 rhgt = (19.6*(SQRT(tau_cws/tau_cb))+20.9)*d50
                 rlen = rhgt/0.12
-              else 
-     &          if ((tau_cws.ge.tau_cb).and.(tau_cwb.lt.tau_bf)) then 
+              elseif ((tau_cws.ge.tau_cb).and.(tau_cwb.lt.tau_bf)) then
 ! bed load in eq. range
-                  rhgt = (22.15*(SQRT(tau_cwb/tau_cb))+6.38)*d50
-                  rlen = rhgt/0.12
-              else 
-     &          if ((tau_cwb.ge.tau_bf).and.(tau_cwb.lt.tau_up)) then 
+                rhgt = (22.15*(SQRT(tau_cwb/tau_cb))+6.38)*d50
+                rlen = rhgt/0.12
+              elseif ((tau_cwb.ge.tau_bf).and.(tau_cwb.lt.tau_up)) then
 ! break off regime
-                  rlen = 535.*d50
-                  rhgt = 0.15*rlen*(SQRT(tau_up)-SQRT(tau_cwb))/
-     &                             (SQRT(tau_up)-SQRT(tau_bf )) 
-              else if  (tau_cwb.ge.tau_up) then 
+                rlen = 535.*d50
+                rhgt = 0.15*rlen*(SQRT(tau_up)-SQRT(tau_cwb))/
+     &                           (SQRT(tau_up)-SQRT(tau_bf )) 
+              elseif  (tau_cwb.ge.tau_up) then 
 ! sheet flow, plane bed
                 rlen = 0.0
                 rhgt = 0.0
