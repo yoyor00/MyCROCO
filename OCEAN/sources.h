@@ -18,6 +18,9 @@
 ! Qshape     Nondimensional shape function to distribute mass
 !             ass point Sources/Sinks vertically.
 !
+      real Qbar0(Msrc)
+      common /sources_Qbar0/ Qbar0
+
       real Qbar(Msrc)
       common /sources_Qbar/ Qbar
 

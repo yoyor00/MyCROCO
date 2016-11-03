@@ -185,7 +185,7 @@
 
 # ifdef WKB_WWAVE
 !
-! Wave parameters from WKB model
+! Wave parameters from WKB model --------------------------------------
 !
           fr(i,j) =frq(i,j,wnew)
           wh(i,j) =wave_ramp*hrm(i,j,wnew)
@@ -216,9 +216,13 @@
 #  endif
 
 # else    /* ifndef WKB_WWAVE */
-
+!
+! Wave parameters from outside sources ---------------------------------
+!
+          wh(i,j) =wave_ramp*min(whrm(i,j),0.5*Dstp(i,j)) ! crudely simulate 
+                                                          ! breaking for low
+                                                          ! resolution data
           fr(i,j) =wfrq(i,j)
-          wh(i,j) =wave_ramp*whrm(i,j)
           inv_f(i,j) =1.0/max(fr(i,j),eps)
           khd = Dstp(i,j)*(fr(i,j)**2)*inv_g
 #  ifdef KH_SOULSBY
@@ -239,27 +243,32 @@
 #  endif
           kD(i,j) =kh
           kw(i,j) =kh*inv_d(i,j)
-
-#  if defined ANA_WWAVE || defined OW_COUPLING
+!
+! Wave breaking (btg=0.8, gam=0.4)
+!
+#  ifdef WAVE_OFFLINE_BREAKING
+          ebrk(i,j) =wramp2*Eb(i,j)              ! epsilon_b (m3/s3)
+#  else
+#   define WAVE_BREAK_TG86
 #   ifdef WAVE_BREAK_TG86
           cff=3.0/16.0*sqrt(pi)*g*(0.8**3)/(0.4**4)/(2.0*pi)
-          Eb(i,j)=cff/(Dstp(i,j)**5)*(Hrms**7)  ! ep_b/rho/sigma
-          ebrk(i,j) =wramp2*Eb(i,j)
+          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7)  ! ep_b/rho/sigma
 #   elif defined WAVE_BREAK_TG86A
           cff=3.0/16.0*sqrt(pi)*g*(0.8**3)/(0.4**2)/(2.0*pi)
-          cff1=Hrms/(0.4*Dstp(i,j))
-          Eb(i,j)=cff/(Dstp(i,j)**3)*(Hrms**5)*
-     &                                    (1.0-(1.0+cff1**2)**(-2.5))
+          cff1=wh(i,j)/(0.4*Dstp(i,j))
+          ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
+     &                           (1.0-(1.0+cff1**2)**(-2.5))
 #   elif defined WAVE_BREAK_CT93
           cff=3.0/16.0*sqrt(pi)*g*(0.8**3)/(2.0*pi)
-          cff1=Hrms/(0.4*Dstp(i,j))
-          Eb(i,j)=cff/Dstp(i,j)*(Hrms**3)
+          cff1=wh(i,j)/(0.4*Dstp(i,j))
+          ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
      &              *( 1.0+tanh(8.0*(cff1-1.0)) )*
      &               ( 1.0-(1.0+cff1**2)**(-2.5) )
 #   endif  
-#  endif  /* ANA_WWAVE */
-          ebrk(i,j) =wramp2*Eb(i,j)              ! epsilon_b (m3/s3)
-#  ifdef WAVE_ROLLER
+          ebrk(i,j) =wramp2*ebrk(i,j)            ! epsilon_b (m3/s3)
+#  endif
+!
+#  ifdef WAVE_OFFLINE_ROLLER
           erol(i,j) =wramp2*0.5762*Dstp(i,j)*    ! epsilon_r (m3/s3)
      &               whrm(i,j)*wvqb(i,j)*        ! 0.5762=0.06*sinb*g^2
      &               kw(i,j)*inv_f(i,j)          ! Nairn et al (1991)
@@ -267,16 +276,30 @@
 #  else
           cff =ebrk(i,j)
 #  endif
+          brk(i,j) =cff*kw(i,j)*inv_f(i,j)       ! 2DH breaking term
+!
+! Wave friction
+!
+#  ifdef WAVE_OFFLINE_FRICTION
           frc(i,j) =wramp2*wved(i,j)*kw(i,j)
      &                           *inv_f(i,j)     ! 2DH friction term
-          brk(i,j) =cff*kw(i,j)*inv_f(i,j)       ! 2DH breaking term
+#  else
+          abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
+          urms=fr(i,j)*abot
+          fw=1.39*(Zob/max(abot,eps))**0.52      ! Soulsby (1995)
+          cff=cfrc*fw*urms**3                    ! ep_d/rho
+          frc(i,j) =wramp2*cff*kw(i,j)
+     &                        *inv_f(i,j)        ! 2DH friction term
+#  endif
+!
+! Wave action
+!
           act(i,j) =inv_f(i,j)*( 
      &                      0.125*g*(wh(i,j)**2) ! wave action density
-#  ifdef WAVE_ROLLER
+#  ifdef WAVE_OFFLINE_ROLLER
      &          +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
 #  endif
      &                                                   )
-
 # endif   /* ifdef WKB_WWAVE */
 
           stk(i,j) =act(i,j)*kw(i,j)*inv_d(i,j)  ! depth-averaged Stokes
@@ -327,8 +350,8 @@
 # endif
 # ifdef WKB_WWAVE
           cff = wramp2*wfc(i,j,wnew)
-# elif defined WAVE_OFFLINE 
-          cff = wramp2*wved(i,j)*inv_f(i,j)
+# else
+          cff = wramp2*frc(i,j)/kw(i,j)
 # endif
           wdrg(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3) 
           wbst(i,j)=cff*kw(i,j)       ! e_d stress (m2/s2) for KPP

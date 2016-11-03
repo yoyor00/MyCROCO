@@ -585,11 +585,13 @@ C$    integer omp_get_thread_num
           wwag(i,j,1)=init
           wwdg(i,j,1)=init
           wwpg(i,j,1)=init
-          wweb(i,j,1)=init
           wwag(i,j,2)=init
           wwdg(i,j,2)=init
           wwpg(i,j,2)=init
+#  ifdef MRL_WCI
+          wweb(i,j,1)=init
           wweb(i,j,2)=init
+#  endif
 # endif
         enddo
       enddo

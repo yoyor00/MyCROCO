@@ -298,6 +298,33 @@ C$    trd=omp_get_thread_num()
       enddo
 #undef IV_EXT_RANGE
 
+!
+! Apply point sources for river runoff simulations
+!
+#ifdef PSOURCE
+      do is=1,Nsrc 
+# ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+# else
+        i=Isrc(is)
+        j=Jsrc(is)
+# endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.0) then
+            urhs(i,j)=2.*Qbar(is)/( on_u(i,j)
+     &                             *(Drhs(i-1,j)+Drhs(i,j)) )
+            DUon(i,j)=Qbar(is)
+          else
+            vrhs(i,j)=2.*Qbar(is)/( om_v(i,j)
+     &                             *(Drhs(i,j-1)+Drhs(i,j)) )
+            DVom(i,j)=Qbar(is)
+          endif
+        endif
+      enddo
+#endif
+
 #ifdef M2_HADV_UP3
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,

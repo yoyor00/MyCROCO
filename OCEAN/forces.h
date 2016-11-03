@@ -558,12 +558,10 @@
       real Eb  (GLOBAL_2D_ARRAY)
       common /wwf_wwhrm/wwhrm /wwf_wwdrx/wwdrx /wwf_wwdre/wwdre
      &       /wwf_wweb/wweb /forces_Eb/Eb
-#   if defined WAVE_OFFLINE || defined OW_COUPLING
       real wved(GLOBAL_2D_ARRAY)
       real wwed(GLOBAL_2D_ARRAY,2)
       common /forces_wved/wved /wwf_wwed/wwed
-#   endif /* WAVE_OFFLINE */
-#   if defined WAVE_OFFLINE && defined WAVE_ROLLER
+#   if defined WAVE_OFFLINE && defined WAVE_OFFLINE_ROLLER
       real wvqb(GLOBAL_2D_ARRAY)
       real wwqb(GLOBAL_2D_ARRAY,2)
       common /forces_wvqb/wvqb /wwf_wwqb/wwqb

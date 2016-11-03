@@ -215,14 +215,8 @@
           else
             phic=(pi/2.0)*SIGN(1.0,Vcur)
           endif
-# ifdef WKB_WWAVE
-          phicw=Dwave(i,j)-phic
-# else
-          phicw=(3.0*pi)/2.0 -Dwave(i,j)-phic
-# endif
-# ifdef CURVGRID
-     &                                  -angler(i,j)
-# endif
+          phicw=Dwave(i,j)-phic  ! Dwave must be in cartesian convention
+!
 !---------------------------------------------------------------------
 !  Determine skin roughness from sediment size and
 !  set default logarithmic profile consistent with current-only case
@@ -232,6 +226,7 @@
 ! Since most parameterizations have been derived ignoring multiple grain sizes, 
 ! we apply this single d50 also in the case of mixed beds. 
 !---------------------------------------------------------------------
+!
 #if defined ANA_BSEDIM || defined SEDIMENT
 
           d50 = Ssize(i,j)             ! [m]
