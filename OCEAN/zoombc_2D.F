@@ -1615,15 +1615,15 @@ C$OMP MASTER
       Agrif_SpecialValue = 0.
    
       Call Agrif_Bc_variable(wacid,
-     &   procname=wacinterp)
+     &   procname=wacinterp,calledweight=1.)
 #ifdef WAVE_ROLLER
       Call Agrif_Bc_variable(warid,
      &   procname=warinterp)
 #endif
       Call Agrif_Bc_variable(wkxid,
-     &   procname=wkxinterp)
+     &   procname=wkxinterp,calledweight=1.)
       Call Agrif_Bc_variable(wkeid,
-     &   procname=wkeinterp)
+     &   procname=wkeinterp,calledweight=1.)
        Agrif_UseSpecialValue = .false.
 
 C$OMP END MASTER

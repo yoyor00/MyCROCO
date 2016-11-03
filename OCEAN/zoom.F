@@ -172,13 +172,13 @@
       external initu,initv,initt
 # ifdef WKB_WWAVE
       external initwac,initwkx,initwke
-#  ifdef WAVE_ROLLER
+#  ifdef WAVE_ROLLER      
       external initwar
-#  endif
+#  endif      
 # endif
 !$AGRIF_DO_NOT_TREAT
-      integer isens
-      common/interph/isens
+       integer isens
+       common/interph/isens
 !$AGRIF_END_DO_NOT_TREAT     
 
 # ifdef MPI
@@ -677,13 +677,13 @@ C$OMP MASTER
       MPI_master_only write(stdout,'(/1x,A/)')
      &     'WKB: started child wave computation.'
 C$OMP END MASTER
-      wkb_agrif_done=.FALSE.
+      wkb_agrif_done=.TRUE.
       call Agrif_Init_Variable(wacid,procname=initwac)
       call Agrif_Init_Variable(wkxid,procname=initwkx)
       call Agrif_Init_Variable(wkeid,procname=initwke)        
 #  ifdef WAVE_ROLLER
       call Agrif_Init_Variable(warid,procname=initwar)
-#  endif
+#  endif     
       iic=0
       winfo=1
       iwave=1
@@ -772,7 +772,6 @@ CR      write(*,*) '  0' MYID
 
  99   continue
  100  continue
- 
       next_kstp=kstp
       time_start=time
 
@@ -1356,7 +1355,7 @@ CR      write(*,*) '  0' MYID
      &   (/i2t,j2v,N/),vspongeid)     
              
 
-# ifdef WKB_WWAVE
+#ifdef WKB_WWAVE
          call Agrif_Set_bc(wacid,(/0,0/))
          call Agrif_Set_bcinterp(wacid,interp=Agrif_ppm)
          call Agrif_Set_interp(wacid,interp=Agrif_ppm)
@@ -1366,12 +1365,12 @@ CR      write(*,*) '  0' MYID
          call Agrif_Set_bc(wkeid,(/0,0/))
          call Agrif_Set_bcinterp(wkeid,interp1=Agrif_ppm)
          call Agrif_Set_interp(wkeid,interp1=Agrif_ppm)
-#  ifdef WAVE_ROLLER
+# ifdef WAVE_ROLLER
          call Agrif_Set_bc(warid,(/0,0/))
          call Agrif_Set_bcinterp(warid,interp=Agrif_ppm)
          call Agrif_Set_interp(warid,interp=Agrif_ppm)
-#  endif
-# endif 
+# endif
+#endif 
         call Agrif_Set_bc(hid,(/0,0/)) 
         call Agrif_Set_bc(zetaid,(/-1,0/))     
         call Agrif_Set_bc(ubarid,(/0,0/))
@@ -1405,20 +1404,20 @@ CR      write(*,*) '  0' MYID
       call Agrif_Set_UpdateType(rmaskid,update=
      &Agrif_Update_Average)
      
-# if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX        
+#if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX        
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_full_weighting)
-# endif
+#endif
 
-# if defined AGRIF_UPDATE_MIX_HIGH
+#if defined AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_4rdorder)
-# endif
+#endif
 
-# if defined AGRIF_UPDATE_AVERAGE || defined AGRIF_UPDATE_MIX_LOW
+#if defined AGRIF_UPDATE_AVERAGE || defined AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_Average)
-# endif
+#endif
 
       end subroutine declare_zoom_variables
 !
@@ -1760,7 +1759,7 @@ CR      write(*,*) '  0' MYID
 # ifdef WKB_WWAVE
       subroutine initwac(tabres,i1,i2,j1,j2,before)
       implicit none
-#  include "wkb_wwave.h"
+# include "wkb_wwave.h"
        integer i1,i2,j1,j2
        logical before
        real tabres(i1:i2,j1:j2)
@@ -1783,7 +1782,7 @@ CR      write(*,*) '  0' MYID
 #  ifdef WAVE_ROLLER
       subroutine initwar(tabres,i1,i2,j1,j2,before)
       implicit none
-#   include "wkb_wwave.h"
+# include "wkb_wwave.h"
        integer i1,i2,j1,j2
        logical before
        real tabres(i1:i2,j1:j2)
@@ -1806,7 +1805,7 @@ CR      write(*,*) '  0' MYID
    
       subroutine initwkx(tabres,i1,i2,j1,j2,before)
       implicit none
-#  include "wkb_wwave.h"
+# include "wkb_wwave.h"
        integer i1,i2,j1,j2
        logical before
        real tabres(i1:i2,j1:j2)
@@ -1828,7 +1827,7 @@ CR      write(*,*) '  0' MYID
     
       subroutine initwke(tabres,i1,i2,j1,j2,before)
       implicit none
-#  include "wkb_wwave.h"
+# include "wkb_wwave.h"
        integer i1,i2,j1,j2
        logical before
        real tabres(i1:i2,j1:j2)

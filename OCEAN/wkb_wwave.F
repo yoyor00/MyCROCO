@@ -330,9 +330,9 @@
 #   ifdef WKB_OBC_SOUTH
         if (SOUTHERN_EDGE) then
           do i=istr-1,iend+1
-            wacbry_south(j)=wac(i,jstr-1,1)
-            wkxbry_south(j)=wkx(i,jstr-1,1)
-            wkebry_south(j)=wke(i,jstr-1,1)
+            wacbry_south(i)=wac(i,jstr-1,1)
+            wkxbry_south(i)=wkx(i,jstr-1,1)
+            wkebry_south(i)=wke(i,jstr-1,1)
           enddo
         endif
 #   endif  /* WKB_OBC_SOUTH */
@@ -380,6 +380,36 @@
 #  endif
           enddo
         enddo
+#  ifdef AGRIF
+        if (EASTERN_EDGE) then
+          do j=jstr-1,jend+1
+            wacbry_east(j)=wac(iendR,j,1)
+            wkxbry_east(j)=wkx(iendR,j,1)
+            wkebry_east(j)=wke(iendR,j,1)
+          enddo
+        endif
+        if (WESTERN_EDGE) then
+          do j=jstr-1,jend+1
+            wacbry_west(j)=wac(istr-1,j,1)
+            wkxbry_west(j)=wkx(istr-1,j,1)
+            wkebry_west(j)=wke(istr-1,j,1)
+          enddo
+        endif
+        if (SOUTHERN_EDGE) then
+          do i=istr-1,iend+1
+            wacbry_south(i)=wac(i,jstr-1,1)
+            wkxbry_south(i)=wkx(i,jstr-1,1)
+            wkebry_south(i)=wke(i,jstr-1,1)
+          enddo
+        endif
+        if (NORTHERN_EDGE) then
+          do i=istr-1,iend+1
+            wacbry_north(i)=wac(i,jendR,1)
+            wkxbry_north(i)=wkx(i,jendR,1)
+            wkebry_north(i)=wke(i,jendR,1)
+          enddo
+        endif
+# endif        
       endif 
 !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
