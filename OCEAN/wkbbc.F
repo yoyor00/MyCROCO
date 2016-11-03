@@ -70,7 +70,7 @@
 # ifdef CHILD
       IF(.NOT. wkb_agrif_done)THEN
       call wkbbc_interp_tile(Istr,Iend,Jstr,Jend)
-      wkb_agrif_done=.FALSE.
+      wkb_agrif_done=.TRUE.
       ENDIF
 # endif
 !

@@ -274,11 +274,11 @@ C$    integer omp_get_thread_num
 ! Child grid dimension
 !
         Length_XI=
-     &       Agrif_Parent ( xp(Agrif_Ix()+Lm/Agrif_IRhox(),Agrif_Iy()) )
-     &     - Agrif_Parent ( xp(Agrif_Ix(),Agrif_Iy()) )
+     &       Agrif_Parent ( xp,Agrif_Ix()+Lm/Agrif_IRhox(),Agrif_Iy() )
+     &     - Agrif_Parent ( xp,Agrif_Ix(),Agrif_Iy() )
         Length_ETA=
-     &       Agrif_Parent ( yp(Agrif_Ix(),Agrif_Iy()+Mm/Agrif_IRhoy()) )
-     &      -Agrif_Parent ( yp(Agrif_Ix(),Agrif_Iy()) )
+     &       Agrif_Parent ( yp,Agrif_Ix(),Agrif_Iy()+Mm/Agrif_IRhoy() )
+     &      -Agrif_Parent ( yp,Agrif_Ix(),Agrif_Iy() )
       endif
 # endif /* AGRIF */
 !
@@ -302,6 +302,13 @@ C$    integer omp_get_thread_num
 # if defined INTERNAL || defined THACKER
       x0=x0-0.5*Length_XI
       y0=y0-0.5*Length_ETA  
+# endif
+
+# ifdef AGRIF
+      if( .not. Agrif_Root() ) then
+        x0=Agrif_Parent ( xp,Agrif_Ix(),Agrif_Iy() )
+        y0=Agrif_Parent ( yp,Agrif_Ix(),Agrif_Iy() )
+      endif
 # endif
 
 CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,

@@ -59,7 +59,8 @@
       real wamp, wh, cfrq, cdir, Btg, gamw, khd, kw, kr, ks,
      &     ho, dd, co, cgo, dsup
       real, parameter :: eps=1.e-10, 
-     &                   khmax=20.D0     ! deep-water limit for k*h
+     &                   khmax=20.     ! deep-water limit for k*h
+      logical :: ana_ini_wkb
 #if defined MPI 
       include 'mpif.h'
 # include "mpi_roms.h"
@@ -174,11 +175,18 @@
       if (iwave.eq.1) then
 !
 # define ANA_INI_WKB
-# ifdef ANA_INI_WKB
 
-#  if defined AGRIF
-        if( AGRIF_Root() ) then
+# ifdef ANA_INI_WKB
+#  ifndef AGRIF 
+#  define ana_ini_wkb .true.
+#  else
+#  define ana_ini_wkb Agrif_Root()
 #  endif
+# else
+#  define ana_ini_wkb .false.
+# endif
+
+      if( ana_ini_wkb ) then
 
 #  ifdef WKB_OBC_WEST
         ho=h(1,1)+zeta(1,1,knew)         !+wkb_tide       ! offshore depth
@@ -217,13 +225,17 @@
          wkb_bry(1)=wacbry_west(1) 
          wkb_bry(2)=wkxbry_west(1)
          wkb_bry(3)=wkebry_west(1)
+#    ifdef MPI 
          prc = 0
+#    endif         
 #   endif
 #   ifdef WKB_OBC_EAST
          wkb_bry(1)=wacbry_east(1) 
          wkb_bry(2)=wkxbry_east(1)
          wkb_bry(3)=wkebry_east(1)
+#    ifdef MPI 
          prc = NP_XI-1
+#    endif
 #   endif
 #   ifdef MPI
         call MPI_Bcast(wkb_bry, 3, MPI_DOUBLE_PRECISION,
@@ -293,7 +305,6 @@
                                 ! S (\ep_b/rho, wave dissipation)
           enddo
         enddo
-
 !
 !  Boundary fields
 !
@@ -335,12 +346,9 @@
         endif
 #   endif  /* WKB_OBC_NORTH */
 #  endif /* ANA_BRY_WKB */
-#  ifdef AGRIF
-        endif
-#  endif
 
-# else /* !ANA_INI_WKB */
-
+      else  ! ana_ini_wkb
+         
         do j=jstrR,jendR
           do i=istrR,iendR
             kk=max(sqrt(wkx(i,j,wstp)**2+wke(i,j,wstp)**2),eps)
@@ -372,7 +380,7 @@
 #  endif
           enddo
         enddo
-# endif /* ANA_INI_WKB */
+      endif 
 !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         do k=1,2
