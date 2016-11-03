@@ -529,7 +529,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !     
       do itrc=1,NST
-         indxWrk=indxBFRA+itrc-1
+         indxWrk=indxBFRA(1)+itrc-1
 !         if (wrtavg(indxWrk)) then
             worksed_frac=bed_frac_avg(:,:,:,itrc)
             call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+2),

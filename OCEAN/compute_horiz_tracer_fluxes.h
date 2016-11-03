@@ -40,7 +40,7 @@
 #   define UP5_MASKING
 #  endif
 !
-            cdif=0.2 
+            cdif=1.0 
 #  include "t3dadv_order5.h"
 !
 #  undef FLUX5

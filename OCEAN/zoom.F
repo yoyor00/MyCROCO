@@ -711,7 +711,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 C$OMP BARRIER
 #  endif
-      do while (iwave.le.1000.and.thwave.ge.1.D-10)
+      do while (iwave.le.1000.and.thwave.ge.1.D-5)
         wstp=wnew
         wnew=wstp+1
         if (wnew.ge.3) wnew=1

@@ -16,13 +16,13 @@
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
       implicit none
-#include "param.h" 
-#include "scalars.h"
-#include "ncscrum.h"
-#include "forces.h"
+# include "param.h" 
+# include "scalars.h"
+# include "ncscrum.h"
+# include "forces.h"
       real cff
       integer i,ierr, lstr,lvar, lenstr, nf_fread, advance_cycle
-#include "netcdf.inc"
+# include "netcdf.inc"
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
 !================  variables and dimensions. Check for consistency.
@@ -110,7 +110,8 @@
 
 
 ! Check if breaking present, and if so, if field or scalar series
-# if defined WAVE_OFFLINE && defined MRL_WCI     
+
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING   
       lvar=lenstr(vname(1,indxWEB))
         ierr=nf_inq_varid (ncidfrc,vname(1,indxWEB)(1:lvar),wwe_id)
         if (ierr .eq. nf_noerr) then
@@ -219,7 +220,7 @@
           goto 99                                         !--> ERROR
         endif       
 
-#  if defined WAVE_OFFLINE && defined MRL_WCI     
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING    
 ! Read breaking dissipation
 
         if (wwegrd.eq.1.) then
@@ -233,13 +234,13 @@
           write(stdout,6) 'wind-wave breaking', ww_rec
           goto 99                                         !--> ERROR
         endif       
-#endif           
+# endif           
        itww=i
        write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 'GET_WWAVE --',
      &              'Read wind wave input data for time =', cff
-#ifdef MPI
+# ifdef MPI
      &                                                      , mynode
-#endif
+# endif
       if (ntww.gt.1) goto 1
       if (ntww.eq.1) return 
 !
@@ -276,9 +277,9 @@
 !
       subroutine set_wwave (tile)
       implicit none
-#include "param.h"
+# include "param.h"
       integer tile 
-#include "compute_tile_bounds.h"
+# include "compute_tile_bounds.h"
 !
       call set_wwave_tile (Istr,Iend,Jstr,Jend)
       return
@@ -300,7 +301,7 @@
 # ifdef BBL_OFFLINE
      &                                            , ab, orb_vel
 # endif
-# if !defined WAVE_OFFLINE && defined MRL_WCI
+# ifdef MRL_WCI
      &                                          , Btg, Gtg, sbc
 # endif
       parameter (eps = 1.0d-10, m2p=1.2804973111, isr2=0.70710678)
@@ -338,7 +339,7 @@
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
             wwP=wwp_scale*wwpp(itww)
-# if defined WAVE_OFFLINE && defined MRL_WCI     
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING    
             wwe=wwe_scale*wwep(itww)
 # endif
           
@@ -352,7 +353,7 @@
 
                 Pwave(i,j)=(wwpgrd)*wwp_scale*wwpg(i,j,itww) +
      &                     (1.-wwpgrd)*wwP
-# if defined WAVE_OFFLINE && defined MRL_WCI     
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
                 Eb(i,j)   =(wwegrd)*wwe_scale*wweb(i,j,itww) +
      &                     (1.-wwegrd)*wwe
 # endif
@@ -385,10 +386,10 @@
         wwA=fac1*wwap(it1)+fac2*wwap(it2)
         wwD=fac3*wwdp(it1)+fac4*wwdp(it2)
         wwP=fac5*wwpp(it1)+fac6*wwpp(it2)
-# if defined WAVE_OFFLINE && defined MRL_WCI     
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
         wwe=fac7*wwep(it1)+fac8*wwep(it2)
 # endif        
-      do j=JstrR,JendR
+        do j=JstrR,JendR
           do i=IstrR,IendR
             Awave(i,j)=wwagrd*(fac1*wwag(i,j,it1)+fac2*wwag(i,j,it2))
      &                +(1.-wwagrd)*wwA
@@ -398,94 +399,95 @@
 
             Pwave(i,j)=wwpgrd*(fac5*wwpg(i,j,it1)+fac6*wwpg(i,j,it2))
      &                +(1.-wwpgrd)*wwP
-
-# if defined WAVE_OFFLINE && defined MRL_WCI     
+# if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
             Eb(i,j)   =wwegrd*(fac7*wweb(i,j,it1)+fac8*wweb(i,j,it2))
      &                +(1.-wwegrd)*wwe
 # endif        
           enddo
         enddo
-
 !
-! Compute anyway variables for wave current interactions
+!  Convert wave direction Dwave to Cartesian convention
 !
+!  Wave direction conventions:
+!  - Cartesian convention (CROCO): 
+!          the direction to where the vector points, 
+!          measured counterclockwise from the positive x-axis
+!          of the model grid (must account for grid angle)
+!  - Meteorological convention (i.e., ECMWF data ...): 
+!          the direction where the waves come from, 
+!          measured clockwise from geographic North.
+!  - Oceanographic convention: 
+!          the direction where the waves travel to, 
+!          measured clockwise from geographic North.
+!
+        do j=jstrR,jendR
+          do i=istrR,iendR
+# ifndef SHOREFACE
+!           Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+# endif
+# ifdef CURVGRID
+            Dwave(i,j)=Dwave(i,j)-angler(i,j)
+# endif
+          enddo
+        enddo
+!
+! Compute variables for wave current interactions
+!
+# ifdef MRL_WCI
         do j=jstrR,jendR
           do i=istrR,iendR
             Dstp=max(h(i,j),eps)
             cfrq=2.0*pi/max(Pwave(i,j)*m2p,0.1D0) ! mean to peak period
-            wdir=Dwave(i,j)           ! 
-!           wdir=0.5*pi+Dwave(i,j,)   ! if wdir is dir waves travel TO
-!           wdir=Dwave(i,j)-1.5*pi    ! wdir is dir waves travel FROM N
-# ifdef CURVGRID
-     &                    -angler(i,j)
-# endif            
+            wdir=Dwave(i,j)            ! Dwave=0 when waves to E (CROCO)
             xdir=cos(wdir)
             ydir=sin(wdir)
-# if defined MRL_WCI
             wwfrq(i,j)=cfrq
-#  ifdef MASKING
-     &                             *rmask(i,j)
-#  endif
-# endif
-
-# ifdef MRL_WCI
             wwhrm(i,j) =2.0*Awave(i,j)*isr2 ! Hsig to Hrms conversion
             wwdrx(i,j) =xdir
             wwdre(i,j) =ydir
-#  ifndef WAVE_OFFLINE
-            Eb(i,j) =sbc*cfrq*((0.7071*wwhrm(i,j))**7)/
-     &                    max(Dstp**5,eps)   ! 0.7071 = 1/sqrt(2): Hsig -> Hrms
+!            Eb(i,j) =sbc*cfrq*((0.7071*wwhrm(i,j))**7)/
+!     &                    max(Dstp**5,eps)   ! 0.7071 = 1/sqrt(2): Hsig -> Hrms
 #  endif
 #  ifdef MASKING
-              wwhrm(i,j) = wwhrm(i,j)*rmask(i,j)
-              wwdrx(i,j) = wwdrx(i,j)*rmask(i,j)
-              wwdre(i,j) = wwdre(i,j)*rmask(i,j)
-              Eb   (i,j) = Eb   (i,j)*rmask(i,j)
-#   if defined WAVE_OFFLINE && defined WAVE_FRICTION
-              wwed(i,j,1)  = wwed(i,j,1)*rmask(i,j)
+            wwfrq(i,j) = wwfrq(i,j)*rmask(i,j)
+            wwhrm(i,j) = wwhrm(i,j)*rmask(i,j)
+            wwdrx(i,j) = wwdrx(i,j)*rmask(i,j)
+            wwdre(i,j) = wwdre(i,j)*rmask(i,j)
+            Eb   (i,j) = Eb   (i,j)*rmask(i,j)
+#   ifdef WAVE_OFFLINE_FRICTION
+            wwed(i,j,1)  = wwed(i,j,1)*rmask(i,j)
 #   endif
-#   if defined WAVE_OFFLINE && defined WAVE_ROLLER
-              wwqb(i,j,1)  = wwqb(i,j,1)*rmask(i,j)
+#   ifdef WAVE_OFFLINE_ROLLER
+            wwqb(i,j,1)  = wwqb(i,j,1)*rmask(i,j)
 #   endif
 #  endif
-# endif         
           enddo
         enddo
-
-# if !defined MRL_WCI && defined BBL && defined WAVE_RAMP
-      wramp =tanh(3.0*dt*sec2day*float(iic-ntstart))
-# else
-      wramp =1.0
-# endif
         do j=jstrR,jendR
           do i=istrR,iendR
-# if defined MRL_WCI
             wfrq(i,j)=wwfrq(i,j)
-            whrm(i,j)=wramp*wwhrm(i,j)
+            whrm(i,j)=wwhrm(i,j)
             wdrx(i,j)=wwdrx(i,j)
             wdre(i,j)=wwdre(i,j)
-            Eb  (i,j)=wramp*Eb(i,j)
-#  if defined WAVE_OFFLINE
-#   if defined  WAVE_FRICTION
+            Eb  (i,j)=Eb(i,j)
+#  ifdef WAVE_OFFLINE_FRICTION
             wved(i,j)=wwed(i,j,1)
-#   else
+#  else
             wved(i,j)=0.0
-#   endif
 #  endif
-#  if defined WAVE_OFFLINE && defined WAVE_ROLLER
+#  ifdef WAVE_OFFLINE_ROLLER
             wvqb(i,j)=wwqb(i,j,1)
 #  endif
-# endif
           enddo
         enddo
+# endif /* MRL_WCI */
+
       endif
-      
-      
 !
 ! Unable to set-up wind wave fields:
 ! Complain about the error and signal to quit (ONE THREAD ONLY).
 !
-      
       if ((ww_cycle.gt.0.) .and. (fac1.lt.0..or.fac2.lt.0.)) then
         if (ZEROTH_TILE) then
           write(stdout,1) 'wwv_time', tdays, wwv_time(it2)*sec2day  
@@ -495,7 +497,6 @@
           may_day_flag=2
         endif
       endif
-!      wwfrq(:,:,itww) = Pwave(:,:) 
       return
       end
 #else
