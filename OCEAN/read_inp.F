@@ -1803,11 +1803,81 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif /* AVERAGES */
 #endif /* MRL_WCI */
 
-#ifdef OW_COUPLING
+#ifdef MRL_WCI 
+# ifdef WKB_WWAVE
+!
+! WKB wave history fields
+!
+      elseif (keyword(1:kwlen).eq.'wave_history_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
+        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
+     &    'Fields to be saved in WKB wave history  (T/F)',
+     &    wrthis(indxHRM), 'write HRM  wave height (m)',
+     &    wrthis(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
+     &    wrthis(indxWAC), 'write WAC  primary wave action (m3/s)',
+     &    wrthis(indxWKX), 'write WKX  wavenumber  xi-dir component',
+     &    wrthis(indxWKE), 'write WKE  wavenumber eta-dir component',
+     &    wrthis(indxEPB), 'write EPB  breaking dissipation (m3/s3)',
+     &    wrthis(indxEPD), 'write EPD  frictional dissipation (m3/s3)',
+     &    wrthis(indxWAR), 'write WAR  roller wave action (m3/s)',
+     &    wrthis(indxEPR), 
+     &              'write EPR  roller dissipation (m3/s3): [0,1]'
+#  ifdef AVERAGES
+!
+! WKB wave average field follows its history field.
+!
+#   ifndef WAVE_ROLLER
+        do i=1,7
+#   else
+        do i=1,9
+#   endif
+          wrtavg(indxHRM+i-1)=wrthis(indxHRM+i-1)
+        enddo
+#  endif
+!
+! WKB primary waves and empirical breaking model parameters
+!
+      elseif (keyword(1:kwlen).eq.'wkb_wwave') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wkb_amp,wkb_ang,wkb_prd,wkb_tide,wkb_btg,
+     &                       wkb_gam
+        MPI_master_only write(stdout,
+     &             '(/1x,A,4(/3x,f10.4,2x,A),/3x,A,2(/3x,f10.4,2x,A))')
+     &    'Primary waves and breaking parameters for WKB wave model',
+     &   wkb_amp,   'wkb_amp    offshore wave amplitude [m]',
+     &   wkb_ang,   'wkb_ang    offshore wave angle [deg]',
+     &   wkb_prd,   'wkb_prd    offshore wave period [s]',
+     &   wkb_tide,  'wkb_tide   constant offshore water level [m]',
+#   ifdef WAVE_BREAK_TG86
+     &  'breaking model (Thornton & Guza, 1983a) is specifield.',
+#   elif defined WAVE_BREAK_TG86A
+     &  'breaking model (Thornton & Guza, 1983b) is specifield.',
+#   elif defined WAVE_BREAK_CT93
+     &  'breaking model (Church & Thornton, 1993) is specifield.',
+#   else
+     &  'breaking model (Church & Thornton, 1993) is default.',
+#   endif
+     &   wkb_btg,   'wkb_btg    B parameter',
+     &   wkb_gam,   'wkb_gam    gamma paramemer (Hrms/h ratio)'
+
+#  ifdef WAVE_ROLLER
+!
+! Svendsen's surface roller model parameters
+!
+      elseif (keyword(1:kwlen).eq.'wkb_roller') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wkb_rsb, wkb_roller
+        MPI_master_only write(stdout,'(/1x,A,2(/3x,f10.4,2x,A))')
+     &  'Svenden (1984) surface roller model parameters.',
+     &   wkb_rsb,   'wkb_rsb     sin(beta) roller dissipation',
+     &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
+#  endif
+# else
 !
 ! coupled wave history fields
 !
-      elseif (keyword(1:kwlen).eq.'wkb_history_fields') then
+      elseif (keyword(1:kwlen).eq.'wave_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
         MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
@@ -1823,78 +1893,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    wrthis(indxEPR),
      &              'write RDSP  roller dissipation (m3/s3): [0,1]'
 
-#endif /* OW_COUPLING */
- 
-#ifdef WKB_WWAVE
-!
-! WKB wave history fields
-!
-      elseif (keyword(1:kwlen).eq.'wkb_history_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
-        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
-     &    'Fields to be saved in WKB wave history  (T/F)',
-     &    wrthis(indxHRM), 'write HRM  wave height (m)',
-     &    wrthis(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
-     &    wrthis(indxWAC), 'write WAC  primary wave action (m3/s)',
-     &    wrthis(indxWKX), 'write WKX  wavenumber  xi-dir component',
-     &    wrthis(indxWKE), 'write WKE  wavenumber eta-dir component',
-     &    wrthis(indxEPB), 'write EPB  breaking dissipation (m3/s3)',
-     &    wrthis(indxEPD), 'write EPD  frictional dissipation (m3/s3)',
-     &    wrthis(indxWAR), 'write WAR  roller wave action (m3/s)',
-     &    wrthis(indxEPR), 
-     &              'write EPR  roller dissipation (m3/s3): [0,1]'
-# ifdef AVERAGES
-!
-! WKB wave average field follows its history field.
-!
-#  ifndef WAVE_ROLLER
-        do i=1,7
-#  else
-        do i=1,9
-#  endif
-          wrtavg(indxHRM+i-1)=wrthis(indxHRM+i-1)
-        enddo
-# endif
-!
-! WKB primary waves and empirical breaking model parameters
-!
-      elseif (keyword(1:kwlen).eq.'wkb_wwave') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wkb_amp,wkb_ang,wkb_prd,wkb_tide,wkb_btg,
-     &                       wkb_gam
-        MPI_master_only write(stdout,
-     &             '(/1x,A,4(/3x,f10.4,2x,A),/3x,A,2(/3x,f10.4,2x,A))')
-     &    'Primary waves and breaking parameters for WKB wave model',
-     &   wkb_amp,   'wkb_amp    offshore wave amplitude [m]',
-     &   wkb_ang,   'wkb_ang    offshore wave angle [deg]',
-     &   wkb_prd,   'wkb_prd    offshore wave period [s]',
-     &   wkb_tide,  'wkb_tide   constant offshore water level [m]',
-#  ifdef WAVE_BREAK_TG86
-     &  'breaking model (Thornton & Guza, 1983a) is specifield.',
-#  elif defined WAVE_BREAK_TG86A
-     &  'breaking model (Thornton & Guza, 1983b) is specifield.',
-#  elif defined WAVE_BREAK_CT93
-     &  'breaking model (Church & Thornton, 1993) is specifield.',
-#  else
-     &  'breaking model (Church & Thornton, 1993) is default.',
-#  endif
-     &   wkb_btg,   'wkb_btg    B parameter',
-     &   wkb_gam,   'wkb_gam    gamma paramemer (Hrms/h ratio)'
-
-# ifdef WAVE_ROLLER
-!
-! Svendsen's surface roller model parameters
-!
-      elseif (keyword(1:kwlen).eq.'wkb_roller') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wkb_rsb, wkb_roller
-        MPI_master_only write(stdout,'(/1x,A,2(/3x,f10.4,2x,A))')
-     &  'Svenden (1984) surface roller model parameters.',
-     &   wkb_rsb,   'wkb_rsb     sin(beta) roller dissipation',
-     &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
-# endif
-#endif  /* WKB_WWAVE */
+# endif /* WKB_WWAVE */
+#endif /* MRL_WCI */
 
 #ifdef ANA_PSOURCE
 !

@@ -481,7 +481,6 @@
      &           indxMPrscrt=indxMvf+8,indxMsbk=indxMvf+10,
      &           indxMbwf=indxMvf+12,indxMfrc=indxMvf+14) 
 # endif
-# if defined WKB_WWAVE || defined OW_COUPLING
       integer indxHRM,indxFRQ,indxWAC, indxWKX,indxWKE, indxEPB
      &       ,indxEPD,indxWAR,indxEPR
       parameter (indxHRM=indxSUP+30,
@@ -489,7 +488,6 @@
      &           indxWKX=indxHRM+3, indxWKE=indxHRM+4,
      &           indxEPB=indxHRM+5, indxEPD=indxHRM+6,
      &           indxWAR=indxHRM+7, indxEPR=indxHRM+8 )
-# endif
 #endif  /* MRL_WCI */
 
 #ifdef PSOURCE_NCFILE
@@ -639,11 +637,9 @@
 #ifdef BBL
       integer rstBBL(2)
 #endif
-#if defined WKB_WWAVE || defined OW_COUPLING
+#ifdef MRL_WCI
       integer rstWKB(3),hisWKB(9)
       common /ncvars/ rstWKB,hisWKB
-#endif
-#ifdef MRL_WCI
       integer hisSUP, hisUST2D, hisVST2D
       common /ncvars/ hisSUP, hisUST2D, hisVST2D
 # ifdef SOLVE3D
