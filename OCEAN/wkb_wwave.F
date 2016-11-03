@@ -595,8 +595,14 @@ C$OMP BARRIER
       do j=jstr,jend
         do i=istr,iend
           war(i,j,wnew) =war(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
-     &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1))
-     &                -wkb_roller*wsb(i,j,wstp)+wsr(i,j,wstp) )
+     &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
+# ifdef ADD_DIFF
+     &                           -cff*on_r(i,j)*(war(i+1,j,wprv)
+     &                        -2.*war(i,j,wprv)+war(i-1,j,wprv))
+     &                           -cff*om_r(i,j)*(war(i,j+1,wprv)
+     &                        -2.*war(i,j,wprv)+war(i,j-1,wprv))
+# endif
+     &                )-wkb_roller*wsb(i,j,wstp)+wsr(i,j,wstp) )
 #  ifdef MASKING
           war(i,j,wnew) =war(i,j,wnew)*rmask(i,j)
 #  endif
