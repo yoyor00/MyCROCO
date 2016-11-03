@@ -31,13 +31,13 @@
 #undef  INTERNAL        /* Internal Tide Example */
 #undef  IGW             /* COMODO Internal Tide Example */
 #undef  JET             /* Baroclinic Jet Example */
-#define  RIP             /* Rip Current Test Case */
+#undef  RIP             /* Rip Current Test Case */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
 #undef  S2DV            /* 2D Vertical Section Application */
-#undef REGIONAL        /* REGIONAL Applications */
+#define REGIONAL        /* REGIONAL Applications */
 
 
 #if defined REGIONAL
@@ -947,8 +947,6 @@
 !
 # undef  OPENMP
 # undef  MPI
-# define AGRIF
-# define AGRIF_2WAY
 # define SOLVE3D
 # define UV_ADV
 # undef  VADV_ADAPT_IMP
@@ -969,8 +967,12 @@
 # define ANA_SST
 # define ANA_BTFLUX
 # undef  ANA_TIDES
+# if !defined BISCA && !defined ANA_TIDES
+#  define NS_PERIODIC
+# else
 #  define OBC_NORTH
 #  define OBC_SOUTH
+# endif
 # define OBC_WEST
 # define SPONGE
 # ifdef ANA_TIDES
