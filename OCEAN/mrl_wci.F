@@ -83,7 +83,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,
-     &   a_frc,kfrc,Hrms,
+     &   a_frc,kfrc,Hrms,urms,fw,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -219,12 +219,14 @@
 !
 ! Wave parameters from outside sources ---------------------------------
 !
-          wh(i,j) =wave_ramp*min(whrm(i,j),0.5*Dstp(i,j)) ! crudely simulate 
-                                                          ! breaking for low
-                                                          ! resolution data
-          fr(i,j) =wfrq(i,j)
-          inv_f(i,j) =1.0/max(fr(i,j),eps)
-          khd = Dstp(i,j)*(fr(i,j)**2)*inv_g
+          
+          whrm(i,j)=min(whrm(i,j),0.5*Dstp(i,j))   ! crudely simulate 
+                                                   ! breaking for low
+                                                   ! resolution data
+          wh(i,j)=wave_ramp*whrm(i,j)
+          fr(i,j)=wfrq(i,j)
+          inv_f(i,j)=1.0/max(fr(i,j),eps)
+          khd=Dstp(i,j)*(fr(i,j)**2)*inv_g
 #  ifdef KH_SOULSBY
           if (khd.ge.1.0D0) then        ! explicit wavenumber estimator
            kh=khd
@@ -270,7 +272,7 @@
 !
 #  ifdef WAVE_OFFLINE_ROLLER
           erol(i,j) =wramp2*0.5762*Dstp(i,j)*    ! epsilon_r (m3/s3)
-     &               whrm(i,j)*wvqb(i,j)*        ! 0.5762=0.06*sinb*g^2
+     &               wh(i,j)*wvqb(i,j)*        ! 0.5762=0.06*sinb*g^2
      &               kw(i,j)*inv_f(i,j)          ! Nairn et al (1991)
           cff =(1.-wkb_roller)*ebrk(i,j)+erol(i,j)
 #  else
@@ -287,7 +289,7 @@
           abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
           fw=1.39*(Zob/max(abot,eps))**0.52      ! Soulsby (1995)
-          cff=cfrc*fw*urms**3                    ! ep_d/rho
+          cff=0.5/sqrt(pi)*fw*urms**3                    ! ep_d/rho
           frc(i,j) =wramp2*cff*kw(i,j)
      &                        *inv_f(i,j)        ! 2DH friction term
 #  endif
@@ -300,7 +302,7 @@
      &          +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
 #  endif
      &                                                   )
-# endif   /* ifdef WKB_WWAVE */
+# endif   /* WKB_WWAVE */
 
           stk(i,j) =act(i,j)*kw(i,j)*inv_d(i,j)  ! depth-averaged Stokes
 # ifdef MASKING
