@@ -1604,6 +1604,9 @@ C$OMP BARRIER
 !          
 # include "compute_auxiliary_bounds.h"
 
+C$OMP BARRIER
+C$OMP MASTER
+
       dWactinterp = 0.
       dWarinterp  = 0.
       dWkxtinterp = 0.
@@ -1622,6 +1625,9 @@ C$OMP BARRIER
       Call Agrif_Bc_variable(wkeid,
      &   procname=wkeinterp)
        Agrif_UseSpecialValue = .false.
+
+C$OMP END MASTER
+C$OMP BARRIER
 
 #  ifdef AGRIF_OBC_SOUTH
        if (SOUTHERN_EDGE) then
