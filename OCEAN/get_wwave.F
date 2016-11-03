@@ -301,9 +301,9 @@
 # ifdef BBL_OFFLINE
      &                                            , ab, orb_vel
 # endif
-# ifdef MRL_WCI
-     &                                          , Btg, Gtg, sbc
-# endif
+!# ifdef MRL_WCI
+!     &                                          , Btg, Gtg, sbc
+!# endif
       parameter (eps = 1.0d-10, m2p=1.2804973111, isr2=0.70710678)
 
 !
@@ -446,20 +446,19 @@
             wwhrm(i,j) =2.0*Awave(i,j)*isr2 ! Hsig to Hrms conversion
             wwdrx(i,j) =xdir
             wwdre(i,j) =ydir
-!            Eb(i,j) =sbc*cfrq*((0.7071*wwhrm(i,j))**7)/
-!     &                    max(Dstp**5,eps)   ! 0.7071 = 1/sqrt(2): Hsig -> Hrms
-#  endif
 #  ifdef MASKING
             wwfrq(i,j) = wwfrq(i,j)*rmask(i,j)
             wwhrm(i,j) = wwhrm(i,j)*rmask(i,j)
             wwdrx(i,j) = wwdrx(i,j)*rmask(i,j)
             wwdre(i,j) = wwdre(i,j)*rmask(i,j)
+#   ifdef WAVE_OFFLINE_BREAKING
             Eb   (i,j) = Eb   (i,j)*rmask(i,j)
+#   endif
 #   ifdef WAVE_OFFLINE_FRICTION
-            wwed(i,j,1)  = wwed(i,j,1)*rmask(i,j)
+            wwed(i,j,1) = wwed(i,j,1)*rmask(i,j)
 #   endif
 #   ifdef WAVE_OFFLINE_ROLLER
-            wwqb(i,j,1)  = wwqb(i,j,1)*rmask(i,j)
+            wwqb(i,j,1) = wwqb(i,j,1)*rmask(i,j)
 #   endif
 #  endif
           enddo
@@ -470,7 +469,6 @@
             whrm(i,j)=wwhrm(i,j)
             wdrx(i,j)=wwdrx(i,j)
             wdre(i,j)=wwdre(i,j)
-            Eb  (i,j)=Eb(i,j)
 #  ifdef WAVE_OFFLINE_FRICTION
             wved(i,j)=wwed(i,j,1)
 #  else
