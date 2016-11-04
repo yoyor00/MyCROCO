@@ -351,26 +351,27 @@
          
         do j=jstrR,jendR
           do i=istrR,iendR
+            Dstp(i,j)=h(i,j)+zeta(i,j,knew)
             kk=max(sqrt(wkx(i,j,wstp)**2+wke(i,j,wstp)**2),eps)
-            kh=min(kk*h(i,j),khmax)
+            kh=min(kk*Dstp(i,j),khmax)
             nw=0.5*(1.0+2.0*kh/max(sinh(2.0*kh),eps))
             wvn(i,j,wstp)=kk
             frq(i,j,wstp)=sqrt(g*kk*tanh(kh))
             wcg(i,j,wstp)=frq(i,j,wstp)/max(kk**2,eps)*nw  ! cg/k
             hrm(i,j,wstp)=sqrt(peg*max(wac(i,j,wstp),0.0)*frq(i,j,wstp))
 #  ifdef WAVE_BREAK_TG86
-            wsb(i,j,wstp)=sbc/(h(i,j)**5)*(hrm(i,j,wstp)**7) ! ep_b/rho/sigma
+            wsb(i,j,wstp)=sbc/(Dstp(i,j)**5)*(hrm(i,j,wstp)**7) ! ep_b/rho/sigma
 #  elif defined WAVE_BREAK_TG86A
-            cff1=hrm(i,j,wstp)/(wkb_gam*h(i,j))
-            wsb(i,j,wstp)=sbc/(h(i,j)**3)*(hrm(i,j,wstp)**5)
+            cff1=hrm(i,j,wstp)/(wkb_gam*Dstp(i,j))
+            wsb(i,j,wstp)=sbc/(Dstp(i,j)**3)*(hrm(i,j,wstp)**5)
      &                           *(1.0-(1.0+cff1**2)**(-2.5))
 #  elif defined WAVE_BREAK_CT93
-            cff1=hrm(i,j,wstp)/(wkb_gam*h(i,j))
-            wsb(i,j,wstp)=sbc/h(i,j)*(hrm(i,j,wstp)**3)
+            cff1=hrm(i,j,wstp)/(wkb_gam*Dstp(i,j))
+            wsb(i,j,wstp)=sbc/Dstp(i,j)*(hrm(i,j,wstp)**3)
      &      *( 1.0+tanh(8.0*(cff1-1.0)) )*( 1.0-(1.0+cff1**2)**(-2.5) )
 #  elif defined WAVE_BREAK_R93
-            cff1=hrm(i,j,wstp)/(wkb_gam*h(i,j))
-            wsb(i,j,wstp)=sbc/h(i,j)*hrm(i,j,wstp)**3*cff1**4
+            cff1=hrm(i,j,wstp)/(wkb_gam*Dstp(i,j))
+            wsb(i,j,wstp)=sbc/Dstp(i,j)*hrm(i,j,wstp)**3*cff1**4
      &       *(1 -exp (-cff1**5 ) )
 #  endif
 #  ifdef WAVE_ROLLER

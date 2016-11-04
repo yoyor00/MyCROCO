@@ -85,6 +85,7 @@ C$    integer omp_get_thread_num
               zeta(i,j,4)=zeta(i,j,1)
               wetdry(i,j)=0.
             ENDIF
+            rmask_wet(i,j)=wetdry(i,j)
 # endif
 # ifdef SOLVE3D
 #  ifdef NEW_S_COORD 

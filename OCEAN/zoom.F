@@ -676,7 +676,6 @@ C$OMP BARRIER
 C$OMP MASTER
       MPI_master_only write(stdout,'(/1x,A/)')
      &     'WKB: started child wave computation.'
-C$OMP END MASTER
       wkb_agrif_done=.TRUE.
       call Agrif_Init_Variable(wacid,procname=initwac)
       call Agrif_Init_Variable(wkxid,procname=initwkx)
@@ -684,6 +683,8 @@ C$OMP END MASTER
 #  ifdef WAVE_ROLLER
       call Agrif_Init_Variable(warid,procname=initwar)
 #  endif     
+C$OMP END MASTER
+C$OMP BARRIER
       iic=0
       winfo=1
       iwave=1
