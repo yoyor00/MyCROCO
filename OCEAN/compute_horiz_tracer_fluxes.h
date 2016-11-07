@@ -30,7 +30,7 @@
 #   undef  UP5_MASKING
 #  elif defined TS_HADV_WENO5
 #   define FLUX5 flux5_weno
-#   define FLUX3 flux3
+#   define FLUX3 flux3_weno
 #   define FLUX2 flux1
 #   define UP5_MASKING
 #  else
