@@ -39,7 +39,7 @@
 **                                                                  **
 ** Parameters for sediment model:                                   **
 **                                                                  **
-**  Csed     Sediment concentration (mg/l), used during analytical  **
+**  Csed     Sediment concentration (kg/m3), used during analytical **
 **             initialization.                                      **
 **  Erate    Surface erosion rate (kg/m2/s).                        **
 **  Sd       Sediment grain diameter per size class (m).            **

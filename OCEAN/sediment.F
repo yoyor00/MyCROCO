@@ -2233,7 +2233,7 @@ C$OMP BARRIER
      
            MPI_master_only write(stdout,'(7(/f10.5,2x,A))')
      &     Sd(i),    'Sd      Median sediment grain diameter (mm).',
-     &     Csed(i),  'Csed    Analyt. init. of sed. conc. (mg/l).',
+     &     Csed(i),  'Csed    Analyt. init. of sed. conc. (kg/m3).',
      &     Srho(i),  'Srho    Sediment grain density (kg/m3).',
      &     Wsed(i),  'Wsed    Particle settling velocity (mm/s).',
      &     Erate(i), 'Erate   Surface erosion rate (kg/(m2s)).',
