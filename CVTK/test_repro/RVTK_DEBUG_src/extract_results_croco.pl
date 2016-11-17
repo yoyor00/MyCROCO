@@ -71,7 +71,7 @@ while(<FILEIN>) {
   # print file header
   if (!$start) {
     print "AAAAAAAAAAAA\n";
-    if (/^\s*TEST\s*RVTK_DEBUG/) {
+    if (/^\s*TEST\s*CVTK_DEBUG/) {
       $start = 1;
     }
     else {
