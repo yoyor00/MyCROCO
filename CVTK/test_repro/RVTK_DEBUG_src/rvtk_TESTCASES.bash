@@ -14,9 +14,10 @@
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX and REGIONAL
 #--------------------------------------------------------------------
-echo "==========================="
+
+echo "================================"
 echo "MPIRUN COMMAND: "$MPIRUN
-echo "==========================="
+echo "================================"
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
 [ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
@@ -33,7 +34,6 @@ LIST_KEY='MPI OPENMP REGIONAL ETALON_CHECK'
 LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN'
 # 1x4 4x1 2x2 1X8 and 8X1 additional tests
 ADDTEST='ON'
-#
 # Type of parallelization
 #
 COMPOMP='ON'
@@ -51,8 +51,7 @@ sed -n '$p' tmp1 > tmp2
 SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
-echo ' '
-
+echo
 #
 # Get updated files
 #
@@ -62,40 +61,45 @@ echo ' '
 #
 # Replace with local files if any ### PAT
 #
-#[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
-#[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
-#[ -f param.h ] && /bin/cp param.h param_bak0.h
+[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
+[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
+[ -f param.h ] && /bin/cp param.h param_bak0.h
 #
+#=============================================================================================
 # Title
-#
 echo TESTS OF $LIST_EXAMPLE
 #
 # Undef all examples
 #
-for EXAMPLE in $LIST_EXAMPLE ; do
-    echo undef $EXAMPLE
-    sed 's/'define\ $EXAMPLE'/'undef\ $EXAMPLE'/'  cppdefs_bak1.h > cppdefs_bak2.h
-    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-done
-#
+for EXAMPLE in $LIST_EXAMPLE 
+  do
+  echo undef $EXAMPLE
+  sed 's/'define\ \ \*$EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
+  /bin/mv cppdefs_bak2.h cppdefs_bak1.h
+  done
 # Undef AGRIF, MPI, OPENMP etc..
 #
 echo " "
 echo "UNDEF THE KEYS IN LIST_KEYS"
-for KEY in  $LIST_KEY ; do
-    echo undef $KEY
-    sed 's/'define\ $KEY'/'undef\ $KEY'/'  cppdefs_bak1.h > cppdefs_bak2.h
-    /bin/mv cppdefs_bak2.h cppdefs_bak1.h
-done
+for KEY in $LIST_KEY
+  do
+  echo undef $KEY
+  sed 's/'define\ \ \*$KEY'/'undef\ $KEY'/' < cppdefs_bak1.h > cppdefs_bak2.h
+  /bin/mv cppdefs_bak2.h cppdefs_bak1.h
+  done
+#
+#=============================================================================================
 #
 # Define DEBUG keys
 #
 echo " "
 echo "============================================"
-echo "TEST CVTK_DEBUG [cppdefs_dev.h] "
+echo " TEST CVTK_DEBUG [cppdefs_dev.h] "
 echo "============================================"
 sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_bak1.h > cppdefs_dev_bak2.h
 /bin/mv cppdefs_dev_bak2.h cppdefs_dev_bak1.h
+#
+#=============================================================================================
 echo " "
 echo "Debut de la boucle sur les cas tests"
 for EXAMPLE in $LIST_EXAMPLE ; do
