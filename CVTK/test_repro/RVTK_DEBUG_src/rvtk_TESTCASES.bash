@@ -29,7 +29,7 @@ echo " "
 #
 LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET KH_INST OVERFLOW RIP S2DV SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
 LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET OVERFLOW RIP SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
-LIST_EXAMPLE='SOLITON'
+#LIST_EXAMPLE='SOLITON'
 LIST_KEY='MPI OPENMP REGIONAL ETALON_CHECK'
 LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN'
 # 1x4 4x1 2x2 1X8 and 8X1 additional tests
@@ -170,7 +170,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	
 	echo "--------------------------"
 	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL'  || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' ||  "${EXAMPLE}" == 'TANK' ]] ; then
-	    
+	  echo 'SKIP THIS TEST CASE ' $EXAMPLE  
 	else 
 	    echo COMPILE OPENMP 1X2 $EXAMPLE
 	    sed 's/'undef\ $EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h > cppdefs_bak2.h
@@ -504,7 +504,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	#
 
 	echo '----------------'
-	 if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}"== 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	 if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
 	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
 
 	else 
