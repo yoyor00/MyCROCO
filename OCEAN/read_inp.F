@@ -101,9 +101,21 @@
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined TANK
 # ifdef NBQ
-      fname='TEST_CASES/croco.in.Tank'
-# else
       fname='TEST_CASES/croco.in.Tank_nbq'
+# else
+      fname='TEST_CASES/croco.in.Tank'
+# endif
+#elif defined SWASH
+# ifdef NBQ
+      fname='TEST_CASES/croco.in.Swash_nbq'
+# else
+      fname='TEST_CASES/croco.in.Swash'
+# endif
+#elif defined IGW
+# ifdef NBQ
+      fname='TEST_CASES/croco.in.IGW_nbq'
+# else
+      fname='TEST_CASES/croco.in.IGW'
 # endif
 #elif defined REGIONAL
       fname='croco.in'
