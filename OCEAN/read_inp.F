@@ -72,7 +72,11 @@
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
+# ifdef NBQ
+      fname='TEST_CASES/croco.in.Grav_adj_nbq'
+# else
       fname='TEST_CASES/croco.in.Grav_adj'
+# endif
 #elif defined INNERSHELF
       fname='TEST_CASES/croco.in.Innershelf'
 #elif defined INTERNAL
