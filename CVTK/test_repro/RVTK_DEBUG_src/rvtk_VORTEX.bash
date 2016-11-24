@@ -39,11 +39,11 @@ LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN GRID#'
 ADDTEST='ON'
 # 1X8 and 8X1 additional tests / need ADDTEST='ON' to be activated
 # DO NOT ACTIVATE in default VORTEX test case : not enought grid points.
-ADDTEST_8TILING='OFF'
+ADDTEST_8TILING='ON'
 #=============================================================================================
 # Type of parallelization
 #
-COMPOMP='OFF'
+COMPOMP='ON'
 COMPMPI='ON'
 #
 echo 'OpenMP testing: '$COMPOMP
@@ -52,9 +52,9 @@ echo
 #=============================================================================================
 # Type of Nesting (in case of VORTEX OR BENGUELA_LR/VHR)
 #
-#LIST_AGRIFFLAG='OFF 1W 2W'
+LIST_AGRIFFLAG='OFF 1W 2W'
 #LIST_AGRIFFLAG='OFF 2W'
-LIST_AGRIFFLAG='OFF'
+#LIST_AGRIFFLAG='OFF'
 echo 'Agrif type testing: '$LIST_AGRIFFLAG
 echo
 #=============================================================================================

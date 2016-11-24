@@ -37,7 +37,7 @@ ADDTEST='ON'
 # Type of parallelization
 #
 COMPOMP='ON'
-COMPMPI='OFF'
+COMPMPI='ON'
 echo ' '
 #
 echo 'OpenMP testing: '$COMPOMP
