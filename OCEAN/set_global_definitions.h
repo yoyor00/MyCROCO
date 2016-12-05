@@ -29,11 +29,16 @@
  zones are always provided on the each side. These data for these
  two ghost zones is then exchanged by message passing. 
 */
-#if defined TS_HADV_UP5 || defined TS_HADV_C6 \
-    || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5
+#if defined TS_HADV_UP5   || defined TS_HADV_C6 || \
+    defined TS_HADV_WENO5 || defined BIO_HADV_WENO5
 # define THREE_GHOST_POINTS
 # define THREE_GHOST_POINTS_TS
-# undef  THREE_GHOST_POINTS_UV
+#endif
+
+#if defined UV_HADV_UP5   || defined UV_HADV_C6 || \
+    defined UV_HADV_WENO5 
+# define THREE_GHOST_POINTS
+# define THREE_GHOST_POINTS_UV
 #endif
 
 #ifdef THREE_GHOST_POINTS
