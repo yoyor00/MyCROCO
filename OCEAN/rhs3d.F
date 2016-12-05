@@ -32,24 +32,22 @@
      &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-# ifdef MPI
-     &                   ,imin,imax,jmin,jmax
-# endif
+     &       ,imin,imax,jmin,jmax
 # include "param.h"
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
 # endif
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),
-     &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),  cff,cff1,cff2,
-     &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  cffX,
-     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  cffE,      
-     &     wrk1(PRIVATE_2D_SCRATCH_ARRAY),    curvX,
-     &     wrk2(PRIVATE_2D_SCRATCH_ARRAY),    curvE,
-     &      UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &      UFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &      VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &      VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
+     &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
+     &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
+     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,      
+     &   wrk1(PRIVATE_2D_SCRATCH_ARRAY),     curvX,
+     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),     curvE,
+     &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
+     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
+     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -63,12 +61,63 @@
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
 !
+!--------------------------------------------------------------------
+! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
+! used in UP5 and C6 advection schemes (and order degradation near 
+! land masks). cdiff is part of laplacian diffusion in flux1 (used 
+! near mask): 
+!    0 --> flux1=flux2 (second order C2 advection scheme)
+!    1 --> flux1 gives 1st order monotonic UP1 advection scheme
+!--------------------------------------------------------------------
+!
+# if defined UV_HADV_UP5 ||  defined UV_HADV_C6 || defined UV_HADV_WENO5
+
+      REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
+      REAL    :: ua, vel, cdiff, cdif
+      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
+      REAL    :: flx2, flx3, flx4, flx5
+      REAL    :: mask0, mask1, mask2, mask3
+
+      flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
+
+      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
+     &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
+
+      flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
+     &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+
+      flux3(q_im2, q_im1, q_i, q_ip1, ua) =
+     &      flux4(q_im2, q_im1, q_i, q_ip1, ua) +
+     &      sign(1.,ua)*((q_ip1 -
+     &      q_im2)-3.*(q_i-q_im1))/12.0
+
+      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
+     &      ( 37.*(q_i+q_im1) - 8.*(q_ip1+q_im2)
+     &      +(q_ip2+q_im3) )/60.0
+
+      flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
+     &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+     &      -sign(1.,ua)*( 
+     &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
+# endif
+# if  defined UV_HADV_WENO5
+      REAL    :: flux3_weno, flux5_weno
+# endif
+!
 # include "compute_auxiliary_bounds.h"
 !
 #ifdef MASKING
 # define SWITCH *
 #else
 # define SWITCH !
+#endif
+!
+#ifdef MPI
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
+#else
+# define LOCALLM Lm
+# define LOCALMM Mm
 #endif
 !
 # ifdef BODYFORCE
@@ -276,11 +325,65 @@
 !
 !======================================================================
 !
-#  if !(defined UV_HADV_UP3 || defined UV_HADV_C4 || defined UV_HADV_C2)
+#  if !(defined UV_HADV_UP3 || defined UV_HADV_C4  || \
+        defined UV_HADV_C2  || defined UV_HADV_UP5 || \
+        defined UV_HADV_C6  || defined UV_HADV_WENO5)
 #   define UV_HADV_UP3
 #  endif
 
-#  if defined UV_HADV_UP3 || defined UV_HADV_C4
+#  if defined UV_HADV_UP5 || defined UV_HADV_C6 || defined UV_HADV_WENO5
+!
+!----------------------------------------------------------------------
+! 5th or 6th order or WENO5 advection schemes
+!----------------------------------------------------------------------
+!
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux2
+#   undef  UP5_MASKING
+!
+          cdif=0. 
+#   include "uhadv_order5.h"
+#   include "vhadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        else                 ! corrector
+
+#   ifdef UV_HADV_C6
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+#    undef  UP5_MASKING
+#   elif defined UV_HADV_WENO5
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
+#    define UP5_MASKING
+          cdif=1.
+#   else
+#    define FLUX5 flux5
+#    define FLUX3 flux3
+#    define FLUX2 flux1
+#    undef  UP5_MASKING
+          cdif=0.5
+#   endif
+!
+#   include "uhadv_order5.h"
+#   include "vhadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP5_MASKING
+
+        endif
+!
+#  elif defined UV_HADV_UP3 || defined UV_HADV_C4
 !
 !----------------------------------------------------------
 ! Fourth or Third order advection scheme (default)

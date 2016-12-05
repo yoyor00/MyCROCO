@@ -183,10 +183,16 @@
 #ifdef UV_HADV_UP3     /* Check if options are defined in cppdefs.h */
 #elif defined UV_HADV_C4
 #elif defined UV_HADV_C2
+#elif defined UV_HADV_UP5
+#elif defined UV_HADV_C6
+#elif defined UV_HADV_WENO5
 #else
 # define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
 # undef  UV_HADV_C4        /* 4th-order centered lateral advection */
 # undef  UV_HADV_C2        /* 2nd-order centered lateral advection */
+# undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
+# undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
+# undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
 #endif
 /* 
    UV DIFFUSION: set default orientation

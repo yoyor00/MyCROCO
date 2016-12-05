@@ -104,17 +104,22 @@
 # define SALINITY
 # define NONLIN_EOS
 # define SPLIT_EOS
+                      /* Lateral Momentum Advection (default UP3) */
+# define UV_HADV_UP3
+# undef  UV_HADV_UP5
+# undef  UV_HADV_C4
+# undef  UV_HADV_WENO5
+                      /* Lateral Explicit Momentum Mixing */
+# undef  UV_VIS2
+# ifdef UV_VIS2
+#  define UV_VIS_SMAGO
+# endif
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
 # define TS_HADV_RSUP3
 # undef  TS_HADV_UP5
 # undef  TS_HADV_C4
 # undef  TS_HADV_WENO5
-                      /* Lateral Explicit Momentum Mixing */
-# undef  UV_VIS2
-# ifdef UV_VIS2
-#  define UV_VIS_SMAGO
-# endif
                       /* Lateral Explicit Tracer Mixing */
 # undef  TS_DIF2
 # undef  TS_DIF4
