@@ -183,16 +183,10 @@
 #ifdef UV_HADV_UP3     /* Check if options are defined in cppdefs.h */
 #elif defined UV_HADV_C4
 #elif defined UV_HADV_C2
-#elif defined UV_HADV_UP5
-#elif defined UV_HADV_C6
-#elif defined UV_HADV_WENO5
 #else
 # define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
 # undef  UV_HADV_C4        /* 4th-order centered lateral advection */
 # undef  UV_HADV_C2        /* 2nd-order centered lateral advection */
-# undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
-# undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
-# undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
 #endif
 /* 
    UV DIFFUSION: set default orientation
@@ -365,6 +359,9 @@
 # endif
 # define SPONGE_DIF2
 # define SPONGE_VIS2
+# ifdef SEDIMENT
+#  define SPONGE_SED
+# endif
 #endif
 
 /*
@@ -418,7 +415,9 @@
 #   undef  WKB_KZ_FILTER
 #   undef  WKB_TIME_FILTER
 #  endif
-#  define ANA_BRY_WKB
+#  if defined SHOREFACE || (defined RIP && !defined BISCA)
+#   define ANA_BRY_WKB
+#  endif
 # endif
 #endif
 
@@ -504,7 +503,7 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-# define MOVING_BATHY
+# undef MOVING_BATHY
 #endif
 
 /*

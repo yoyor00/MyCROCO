@@ -171,7 +171,7 @@
           rlen = Lripple(i,j)
           rhgt = Hripple(i,j)
 # ifdef SOLVE3D
-          rhow = rho(i,j,1)+1000.0
+          rhow = rho(i,j,1)+rho0
           visk = 1.3e-3/rhow         ! kinem. viscosity
 # else
           visk = 1.3e-3/rho0
@@ -195,6 +195,10 @@
 # ifdef MASKING
      &                                   *rmask(i,j)
 # endif
+# ifdef WET_DRY
+     &                                   *rmask_wet(i,j)
+# endif
+
 !
 !  Compute bottom current magnitude at RHO-points.
 !
@@ -203,6 +207,9 @@
           Umag(i,j)=SQRT(Ucur*Ucur+Vcur*Vcur)
 # ifdef MASKING
      &                                   *rmask(i,j)
+# endif
+# ifdef WET_DRY
+     &                                   *rmask_wet(i,j)
 # endif
 !
 !  Compute angle between currents and waves (radians)
@@ -227,13 +234,13 @@
 ! we apply this single d50 also in the case of mixed beds. 
 !---------------------------------------------------------------------
 !
-#if defined ANA_BSEDIM || defined SEDIMENT
+# if defined ANA_BSEDIM || defined SEDIMENT
 
           d50 = Ssize(i,j)             ! [m]
           tau_cb = taucb(i,j)          ! [m^2/s^2]
-# ifdef ANA_BSEDIM
+#  ifdef ANA_BSEDIM
      &      /rhow
-# endif
+#  endif
           wset = w_set(i,j)            ! [m/s]
           rhosed = Sdens(i,j)/rhow     ! [ ] relative density
           

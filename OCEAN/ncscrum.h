@@ -764,7 +764,14 @@
       integer avgSST_skin
 #  endif
 #  ifdef SEDIMENT
-      integer avgSed(NST+2)
+      integer avgSed(NST+2
+#  ifdef SUSPLOAD
+     &      +2*NST
+#   endif
+#  ifdef BEDLOAD
+     &      +2*NST
+#   endif
+     & )
 #  endif
 # endif
 # ifdef BBL

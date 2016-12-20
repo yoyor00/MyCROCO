@@ -536,6 +536,42 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
      &           indxWrk,record,b3dvar,type)
 !         endif
       enddo
+#   ifdef SUSPLOAD
+      do itrc=1,NST
+         indxWrk=indxDFLX(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            work2d=settling_flux_avg(:,:,itrc)/dt
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+NST),
+     &           indxWrk,record,r2dvar,type)
+!         endif
+      enddo
+      do itrc=1,NST
+         indxWrk=indxEFLX(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            work2d=ero_flux_avg(:,:,itrc)/dt
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+2*NST),
+     &           indxWrk,record,r2dvar,type)
+!         endif
+      enddo
+#   endif
+#   ifdef BEDLOAD
+      do itrc=1,NST
+         indxWrk=indxBDLU(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            work2d=bedldu_avg(:,:,itrc)
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+3*NST),
+     &           indxWrk,record,r2dvar,type)
+!         endif
+      enddo
+      do itrc=1,NST
+         indxWrk=indxBDLV(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            work2d=bedldv_avg(:,:,itrc)
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+4*NST),
+     &           indxWrk,record,r2dvar,type)
+!         endif
+      enddo
+#   endif
 #  endif /* SEDIMENT */
 !
 # endif /* SOLVE3D */

@@ -986,7 +986,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
          indxWrk=indxDFLX(1)+itrc-1
          if (wrthis(indxWrk)) then
-            work2d=settling_flux(:,:,itrc)
+            work2d=settling_flux(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
      &           indxWrk,record,r2dvar,type)
          endif
@@ -994,7 +994,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
          indxWrk=indxEFLX(1)+itrc-1
          if (wrthis(indxWrk)) then
-            work2d=ero_flux(:,:,itrc)
+            work2d=ero_flux(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+2*NST),
      &           indxWrk,record,r2dvar,type)
          endif

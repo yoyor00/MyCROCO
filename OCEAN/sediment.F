@@ -231,6 +231,7 @@ C$OMP BARRIER
 #   include "wkb_wwave.h"
 #  endif
 #  include "bbl.h"
+#  include "mixing.h"
 #  include "compute_auxiliary_bounds.h"
 
 #  ifdef EW_PERIODIC
@@ -739,7 +740,10 @@ C$OMP BARRIER
           do i=Istr,Iend
             cff=(FX(i+1,j)-FX(i,j)+                           
      &           FE(i,j+1)-FE(i,j))*pm(i,j)*pn(i,j)
-#  define DIFF_BED
+#  ifdef SPONGE_SED
+     &                             *cff_sponge(i,j)
+#  endif
+#  undef DIFF_BED
 #  ifdef DIFF_BED
      &                    -dt*pm(i,j)*pn(i,j)*1.e-2 MORPH_FAC
      &                                       *(0.5*on_r(i,j)*(
@@ -772,18 +776,18 @@ C$OMP BARRIER
         enddo
 !
 !-----------------------------------------------------------------------
-!  Output bedload fluxes.
+!  Output bedload transports [kg/m2/s].
 !-----------------------------------------------------------------------
 !
-        cff=0.5/dt
-        do j=JstrR,JendR
-          do i=Istr,IendR
-            bedldu(i,j,ised)=FX(i,j)*(pn(i-1,j)+pn(i,j))*cff
+        cff=1./dt
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            bedldu(i,j,ised)=(FX(i,j)-FX(i+1,j))*pm(i,j)*pn(i,j)*cff
           enddo
         enddo
-        do j=Jstr,JendR
-          do i=IstrR,IendR
-            bedldv(i,j,ised)=FE(i,j)*(pm(i,j-1)+pm(i,j))*cff
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            bedldv(i,j,ised)=(FE(i,j)-FE(i,j+1))*pm(i,j)*pn(i,j)*cff
           enddo
         enddo
 !
@@ -1093,6 +1097,7 @@ C$OMP BARRIER
 #  include "bbl.h"
 #  include "scalars.h"
 #  include "grid.h"
+#  include "mixing.h"
    
       integer Istr,Iend,Jstr,Jend
       real Hz_inv(PRIVATE_1D_SCRATCH_ARRAY,N),  
@@ -1292,14 +1297,20 @@ C$OMP BARRIER
      &             -(1.5-cu)*(qR(i,ks)+qL(i,ks)-2.*qc(i,ks))  ))
             enddo
           enddo
-          cff=1/tau_cd(ised)
+          cff=1/tau_cd(ised) 
           do i=Istr,Iend
-            FC(i,0)=FC(i,0)*min(1.,REAL(int(cff*tau_w(i,j))))
+            !FC(i,0)=FC(i,0)*min(1.,REAL(int(cff*tau_w(i,j))))
             do k=1,N,+1
                t(i,j,k,nnew,indx)=qc(i,k)
      &                   +(FC(i,k)-FC(i,k-1))*Hz_inv(i,k) 
+#  ifdef SPONGE_SED
+     &                                       *cff_sponge(i,j)
+#  endif
             enddo   
             settling_flux(i,j,ised)=FC(i,0)
+#  ifdef SPONGE_SED
+     &                                       *cff_sponge(i,j)
+#  endif
           enddo   
         enddo   
       enddo     ! j   lood    
@@ -1340,6 +1351,7 @@ C$OMP BARRIER
 #  include "sediment.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+#  include "mixing.h"
       integer Istr,Iend,Jstr,Jend
       integer i,j,ised
       integer indx
@@ -1424,12 +1436,16 @@ C$OMP BARRIER
      &            MIN(MAX(0.,cff2*(cff*tau_w(i,j)-1.)),      
      &                MIN(cff3*bot_thick(i,j) MORPH_FAC ,cff4)+
      &                settling_flux(i,j,ised))
+            ero_flux(i,j,ised)=ero_flux(i,j,ised)
+#  ifdef SPONGE_SED
+     &                             *cff_sponge(i,j)
+#  endif
 !
 !  Update global tracer variables (m Tunits for nnew indx, Tuints for 3)
 !  for erosive flux.
 !                        
             t(i,j,1,nnew,indx)=t(i,j,1,nnew,indx)+ero_flux(i,j,ised)
-     &                                                 *1./Hz(i,j,1)
+     &                                                    /Hz(i,j,1)
           enddo  ! i loop
         enddo    ! ised loop 
       enddo      ! j loop 
@@ -1637,8 +1653,9 @@ C$OMP BARRIER
 !
 !  Set new top layer parameters.
 !
+              k=min(NLAY,2) ! for compilation if NLAY=1
               do ised=1,NST
-                bed_mass(i,j,2,nnew,ised)=MAX(bed_mass(i,j,2,nnew,ised)-
+                bed_mass(i,j,k,nnew,ised)=MAX(bed_mass(i,j,k,nnew,ised)-
      &                                        dep_mass(i,ised),0.)
                 bed_mass(i,j,1,nnew,ised)=dep_mass(i,ised)
               enddo

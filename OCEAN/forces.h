@@ -512,7 +512,7 @@
       real Pwave(GLOBAL_2D_ARRAY)
       common /bbl_Awave/Awave /bbl_Dwave/Dwave /bbl_Pwave/Pwave
 
-# if !defined ANA_WWAVE && !defined WKB_WWAVE
+# ifdef WAVE_OFFLINE
 !--------------------------------------------------------------------
 !  Eb    |                    | breaking dissipation [m3/s3]
 !  wved  |  for present time  | frictional dissipation [m3/s3]
@@ -542,10 +542,8 @@
       real wwfrq(GLOBAL_2D_ARRAY)
       common /wwf_wwfrq/wwfrq
 #  ifdef BBL_OFFLINE 
-#   ifdef WAVE_OFFLINE
       real wwub(GLOBAL_2D_ARRAY,2)
       common /wwf_wwub/wwub
-#   endif /* WAVE_OFFLINE */
       real wwuob(GLOBAL_2D_ARRAY,2)
       real wwvob(GLOBAL_2D_ARRAY,2)
       common /wwf_wwuob/wwuob /wwf_wwvob/wwvob
@@ -561,7 +559,7 @@
       real wved(GLOBAL_2D_ARRAY)
       real wwed(GLOBAL_2D_ARRAY,2)
       common /forces_wved/wved /wwf_wwed/wwed
-#   if defined WAVE_OFFLINE && defined WAVE_OFFLINE_ROLLER
+#   ifdef WAVE_OFFLINE_ROLLER
       real wvqb(GLOBAL_2D_ARRAY)
       real wwqb(GLOBAL_2D_ARRAY,2)
       common /forces_wvqb/wvqb /wwf_wwqb/wwqb
@@ -572,10 +570,10 @@
      &                 wwagrd,   wwdgrd,    wwpgrd, wwegrd
       integer ww_ncycle,  ww_rec,  itww
      &        ,ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
-#   if defined BBL && defined WAVE_OFFLINE
+#   ifdef BBL
      &       ,wwu_id
 #   endif 
-#   if defined MRL_WCI && defined WAVE_OFFLINE
+#   ifdef MRL_WCI
      &       ,wwe_id, wwq_id, wwf_id
 #   endif
       common /wwdat/ ww_cycle, wwv_time
@@ -584,17 +582,13 @@
      &       ,wwagrd,   wwdgrd,    wwpgrd, wwegrd
      &       ,ww_ncycle,  ww_rec,  itww
      &       ,ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
-#   if defined BBL && defined WAVE_OFFLINE
+#   ifdef BBL
      &       ,wwu_id
 #   endif
-#   if defined MRL_WCI && defined WAVE_OFFLINE
+#   ifdef MRL_WCI
      &       ,wwe_id, wwq_id, wwf_id
 #   endif
-# elif defined MRL_WCI
-      real Eb(GLOBAL_2D_ARRAY)
-      real wved(GLOBAL_2D_ARRAY)
-      common /forces_Eb/Eb /forces_wved/wved
-# endif /* ANA_WWAVE && !WKB_WWAVE */
+# endif /* WAVE_OFFLINE */
 #endif /* BBL || MRL_WCI */
 
 

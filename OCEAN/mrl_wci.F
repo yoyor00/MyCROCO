@@ -272,7 +272,7 @@
 !
 #  ifdef WAVE_OFFLINE_ROLLER
           erol(i,j) =wramp2*0.5762*Dstp(i,j)*    ! epsilon_r (m3/s3)
-     &               wh(i,j)*wvqb(i,j)*        ! 0.5762=0.06*sinb*g^2
+     &               wh(i,j)*wvqb(i,j)*          ! 0.5762=0.06*sinb*g^2
      &               kw(i,j)*inv_f(i,j)          ! Nairn et al (1991)
           cff =(1.-wkb_roller)*ebrk(i,j)+erol(i,j)
 #  else
@@ -289,7 +289,7 @@
           abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
           fw=1.39*(Zob/max(abot,eps))**0.52      ! Soulsby (1995)
-          cff=0.5/sqrt(pi)*fw*urms**3                    ! ep_d/rho
+          cff=0.5/sqrt(pi)*fw*urms**3            ! ep_d/rho
           frc(i,j) =wramp2*cff*kw(i,j)
      &                        *inv_f(i,j)        ! 2DH friction term
 #  endif
@@ -875,7 +875,7 @@
 !  which is required to reproduce Xu & Bowen (1994) and Lentz et al.
 !  (2008).
 !
-# define LH53_STREAMING
+#  define LH53_STREAMING
 #  ifdef WAVE_STREAMING
 #   ifdef WAVE_BODY_STREAMING
 #    undef LH53_STREAMING
@@ -886,25 +886,25 @@
         do i=istr-1,iend+1
 #   ifndef LH53_STREAMING
           abot  =wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
-          delta =0.160455*((abot/Zob)**0.83)*Zob  ! BBL thickness
+          delta =0.160455*((abot/Zob)**0.83)*0.1*Zob  ! BBL thickness
           inv_k =min(max(a_frc*delta,eps),Dstp(i,j))
-          kfrc  =1.0/inv_k         ! vertical scale for wave friction
+          kfrc  =1./inv_k          ! vertical scale for wave friction
 #    ifdef FF_FUNC1
           fn1   =3.*(exp(-2.*kfrc*Dstp(i,j))+exp(-4.*kfrc*Dstp(i,j)))
           fn2   =exp(-6.*kfrc*Dstp(i,j))
           fb1   =c4o3*inv_k        ! fb1: at z=-h (z_w at k=0)
           fb2   =c4o3*inv_k*(fn1+2.*fn2)/(1.+fn1+fn2)
           intfb =fb2-fb1           ! intfb = \int^D gb(z') dz'
-          fb0   =1.D0/intfb        ! 1/[\int^D gb(z') dz']
+          fb0   =1./intfb          ! 1/[\int^D gb(z') dz']
 #    elif defined FF_FUNC2
           fn1   =exp(-2.*kfrc*Dstp(i,j))
           fb1   =inv_k
           fb2   =2.*inv_k*fn1/(1.+fn1)
           intfb =fb2-fb1
-          fb0   =1.D0/intfb
+          fb0   =1./intfb
 #    elif defined FF_FUNC3
-          fb1   =1.0-exp(-2.*kfrc*Dstp(i,j))
-          fb0   =1.D0/(exp(-2.*kfrc*Dstp(i,j))-1.0)
+          fb1   =1.-exp(-2.*kfrc*Dstp(i,j))
+          fb0   =1./(exp(-2.*kfrc*Dstp(i,j))-1.0)
 #    endif
           do k=1,N,+1              ! <-- irreversible
 #    ifdef FF_FUNC1

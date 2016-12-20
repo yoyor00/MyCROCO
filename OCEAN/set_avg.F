@@ -60,7 +60,7 @@ C$    integer omp_get_thread_num
 !
       implicit none
 # include "param.h"
-      integer Istr,Iend,Jstr,Jend, i,j, ilc, iout
+      integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
       real cff, cff1, eps, stf_cff
       parameter (eps=1.D-20)
       parameter(stf_cff=86400/0.01)
@@ -532,14 +532,14 @@ C$    integer omp_get_thread_num
                 enddo
               enddo
             enddo
-          endif	
+          endif
           if (wrtavg(indxWIND10)) then
               do j=JstrR,JendR
                 do i=IstrR,IendR
                   wind10_avg(i,j)=cff*( cff1*wind10_avg(i,j)+wind10(i,j) )
                 enddo
               enddo
-          endif	  	
+          endif
 #   endif
 #  endif /* BIOLOGY */
 #  ifdef SEDIMENT
@@ -558,9 +558,60 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
+#   ifdef SUSPLOAD
+      do itrc=1,NST
+         indxWrk=indxDFLX(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                settling_flux_avg(i,j,itrc)=
+     &                           cff*( cff1*settling_flux_avg(i,j,itrc)
+     &                                     +settling_flux(i,j,itrc) )
+              enddo
+            enddo
+!         endif
+      enddo
+      do itrc=1,NST
+         indxWrk=indxEFLX(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                ero_flux_avg(i,j,itrc)=
+     &                           cff*( cff1*ero_flux_avg(i,j,itrc)
+     &                                     +ero_flux(i,j,itrc) )
+              enddo
+            enddo
+!         endif
+      enddo
+#   endif
+#   ifdef BEDLOAD
+      do itrc=1,NST
+         indxWrk=indxBDLU(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                bedldu_avg(i,j,itrc)=
+     &                           cff*( cff1*bedldu_avg(i,j,itrc)
+     &                                     +bedldu(i,j,itrc)   )
+              enddo
+            enddo
+!         endif
+      enddo
+      do itrc=1,NST
+         indxWrk=indxBDLV(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                bedldv_avg(i,j,itrc)=
+     &                           cff*( cff1*bedldv_avg(i,j,itrc)
+     &                                     +bedldv(i,j,itrc)   )
+              enddo
+            enddo
+!         endif
+      enddo
+#   endif
 #  endif /* SEDIMENT */
 # endif /* SOLVE3D */
-
 
 # ifdef WKB_WWAVE
         iout=wstp

@@ -632,12 +632,15 @@ C$OMP BARRIER
 !
 !  Spinup: intergrate wave model to equilibrium
 !
-      do while (iwave.le.10000.and.thwave.ge.1.D-5)
+      do while (iwave.le.20000.and.thwave.ge.1.D-5)
         wstp=wnew
         wnew=wstp+1
         if (wnew.ge.3) wnew=1
 C$OMP PARALLEL DO PRIVATE(tile)
         do tile=0,NSUB_X*NSUB_E-1
+# ifdef WAVE_OFFLINE
+          if (iwave.eq.1) call set_wwave(tile)
+# endif
           call wkb_wwave (tile)
         enddo
         call wkb_diag (0)
