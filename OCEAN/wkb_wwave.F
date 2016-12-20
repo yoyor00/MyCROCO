@@ -281,34 +281,34 @@
               cff2=2.0*wamp*ks*kr
               wh = min(cff1,cff2)
 #  ifdef MASKING
-     &                            rmask(i,j)
+     &                            *rmask(i,j)
 #  endif
 #  ifdef WET_DRY
-     &                            rmask_wet(i,j)
+     &                            *rmask_wet(i,j)
 #  endif
               dsup=-0.125*(wh**2)*kw/sinh(2.*kw*dd) ! wave set-up
             enddo
             do k=1,2
               hrm(i,j,k)=wh*2.0
 #  ifdef MASKING
-     &                            rmask(i,j)
+     &                            *rmask(i,j)
 #  endif
 #  ifdef WET_DRY
-     &                            rmask_wet(i,j)
+     &                            *rmask_wet(i,j)
 #  endif
               wkx(i,j,k)=kw*cosw
 #  ifdef MASKING
-     &                            rmask(i,j)
+     &                            *rmask(i,j)
 #  endif
 #  ifdef WET_DRY
-     &                            rmask_wet(i,j)
+     &                            *rmask_wet(i,j)
 #  endif
               wke(i,j,k)=kw*sinw
 #  ifdef MASKING
-     &                            rmask(i,j)
+     &                            *rmask(i,j)
 #  endif
 #  ifdef WET_DRY
-     &                            rmask_wet(i,j)
+     &                            *rmask_wet(i,j)
 #  endif
               frq(i,j,k)=cfrq
               wcg(i,j,k)=nw*cw/kw
