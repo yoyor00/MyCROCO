@@ -891,22 +891,28 @@
 !--------------------------------------------------------------------
 !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nnew))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nnew))
+#  else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                                 u(START_2D_ARRAY,1,nnew))
+     &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                                 v(START_2D_ARRAY,1,nnew))
-
+     &                        v(START_2D_ARRAY,1,nnew)) 
+#  endif
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
-     &                                   Huon(START_2D_ARRAY,1))
+     &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend, 
-     &                                   Hvom(START_2D_ARRAY,1))
+     &                        Hvom(START_2D_ARRAY,1))
 
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                                   ubar(START_2D_ARRAY,knew))
+     &                        ubar(START_2D_ARRAY,knew))
 
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                                   vbar(START_2D_ARRAY,knew))
-#   if defined TS_MIX_ISO || defined TS_MIX_GEO
+     &                        vbar(START_2D_ARRAY,knew))
+#  if defined TS_MIX_ISO || defined TS_MIX_GEO
       call exchange_u3d_tile (istr,iend,jstr,jend, dRdx  )
       call exchange_v3d_tile (istr,iend,jstr,jend, dRde  )
 #  endif

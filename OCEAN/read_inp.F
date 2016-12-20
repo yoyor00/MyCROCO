@@ -72,7 +72,11 @@
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
+# ifdef NBQ
+      fname='TEST_CASES/croco.in.Grav_adj_nbq'
+# else
       fname='TEST_CASES/croco.in.Grav_adj'
+# endif
 #elif defined INNERSHELF
       fname='TEST_CASES/croco.in.Innershelf'
 #elif defined INTERNAL
@@ -101,9 +105,21 @@
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined TANK
 # ifdef NBQ
-      fname='TEST_CASES/croco.in.Tank'
-# else
       fname='TEST_CASES/croco.in.Tank_nbq'
+# else
+      fname='TEST_CASES/croco.in.Tank'
+# endif
+#elif defined SWASH
+# ifdef NBQ
+      fname='TEST_CASES/croco.in.Swash_nbq'
+# else
+      fname='TEST_CASES/croco.in.Swash'
+# endif
+#elif defined IGW
+# ifdef NBQ
+      fname='TEST_CASES/croco.in.IGW_nbq'
+# else
+      fname='TEST_CASES/croco.in.IGW'
 # endif
 #elif defined REGIONAL
       fname='croco.in'

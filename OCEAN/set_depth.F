@@ -320,18 +320,18 @@ C$    integer omp_get_thread_num
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
-     &                                         Huon(START_2D_ARRAY,1))
+     &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend, 
-     &                                         Hvom(START_2D_ARRAY,1))
+     &                        Hvom(START_2D_ARRAY,1))
 #   if defined UV_VIS4 && defined UV_MIX_GEO
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                                         z_u(START_2D_ARRAY,1))
+     &                        z_u(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                                         z_v(START_2D_ARRAY,1))
+     &                        z_v(START_2D_ARRAY,1))
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                                         dz_u(START_2D_ARRAY,1))
+     &                        dz_u(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                                         dz_v(START_2D_ARRAY,1))
+     &                        dz_v(START_2D_ARRAY,1))
 #   endif
 #  endif
       return
@@ -561,13 +561,20 @@ C$    integer omp_get_thread_num
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                                    Huon(START_2D_ARRAY,1))
+     &                        Huon(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hvom(START_2D_ARRAY,1))
+#   ifdef THREE_GHOST_POINTS_UV  
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nrhs))
+#   else      
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                                  u(START_2D_ARRAY,1,nrhs))
+     &                        u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                                    Hvom(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                                  v(START_2D_ARRAY,1,nrhs))
+     &                        v(START_2D_ARRAY,1,nrhs))
+#   endif
 #  endif
 # endif /* SOLVE3D */
       return

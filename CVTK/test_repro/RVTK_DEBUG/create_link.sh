@@ -45,6 +45,9 @@ ln -sf ${dir_home}/VORTEX/vortex_*.nc* .
 #--
 ln -sf ${dir_home}/SHOREFACE/croco.in* .
 ln -sf ${dir_home}/SHOREFACE/shoreface*.nc .
+#--
+ln -sf ${dir_home}/IGW/croco.in* .
+ln -sf ${dir_home}/IGW/igw*.nc .
 
 cd ../
 

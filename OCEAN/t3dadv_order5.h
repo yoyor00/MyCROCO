@@ -46,7 +46,11 @@
           imax=Lm-1
 #   endif
 #  endif
-
+!
+!----------------------------------------------------------------------
+!  j loop: FE
+!----------------------------------------------------------------------
+!
           DO j = Jstr,Jend+1  !j_loop_y_flux_5
                                                   !
             IF ( j.ge.jmin .and. j.le.jmax ) THEN ! use full stencil
@@ -138,7 +142,11 @@
               ENDDO
             ENDIF
           ENDDO ! j_loop_y_flux_5
-
+!
+!----------------------------------------------------------------------
+!  i loop: FX
+!----------------------------------------------------------------------
+!
           DO i = Istr,Iend+1  !i_loop_x_flux_5
                                                   !
             IF ( i.ge.imin .and. i.le.imax ) THEN ! use full stencil
