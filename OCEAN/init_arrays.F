@@ -581,7 +581,7 @@ C$    integer omp_get_thread_num
           srflxg(i,j,1)=init
           srflxg(i,j,2)=init
 # endif
-# if (defined BBL || define MRL_WCI) && defined WAVE_OFFLINE
+# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
           wwag(i,j,1)=init
           wwdg(i,j,1)=init
           wwpg(i,j,1)=init
