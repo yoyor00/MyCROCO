@@ -1,12 +1,12 @@
 ! $Id: param.h 1619 2015-01-07 13:53:03Z marchesiello $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 ! 
-! CROCO website : http://www.croco-ocean.org
+! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
 !----------------------------------------------------------------------
@@ -37,8 +37,12 @@
 #elif defined EQUATOR
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
 #elif defined KH_INST 
+# ifndef KH_INSTY
       parameter (LLm0=256,  MMm0=1,    N=256)   
-#elif defined ACOUS 
+# else
+      parameter (LLm0=1,  MMm0=256,    N=256)   
+# endif
+#elif defined ACOUSTIC 
       parameter (LLm0=64,   MMm0=1,    N=64)  
 #elif defined GRAV_ADJ
 # ifdef NBQ
@@ -60,9 +64,17 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
-      parameter (LLm0=256, MMm0=3,    N=40)
+!      parameter (LLm0=256, MMm0=3,    N=40)	! true 2DV
+#elif defined REGIONAL_NBQ
+       parameter (LLm0=256, MMm0=119,  N=80)
 #elif defined IGW
+# ifndef NBQ
+!      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
        parameter (LLm0=878, MMm0=3,    N=40)
+!      parameter (LLm0=878, MMm0=3,    N=20)
+# else
+       parameter (LLm0=256, MMm0=3,    N=40)
+# endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
 #elif defined RIVER
@@ -184,7 +196,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=13, NP_ETA=12, NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -227,7 +239,7 @@
 # if defined IGW || defined S2DV
       parameter (Ntides=1)
 # else
-      parameter (Ntides=8)
+      parameter (Ntides=1)
 # endif
 #endif
 #ifdef WET_DRY

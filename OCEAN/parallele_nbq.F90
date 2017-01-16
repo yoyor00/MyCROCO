@@ -55,12 +55,9 @@
       integer :: kmax,imax,jmax
 #define LOCALLM Lmmpi
 #define LOCALMM Mmmpi
-       
+
       imax=LOCALLM+1
       jmax=LOCALMM+1
-     
-
-
 ! MPI_RSEND_INIT(buf, count, datatype, dest, tag, comm, request)
       if (ichoix.eq.5) then
 !****************************************************************************************
@@ -181,9 +178,15 @@
 !****************************************************************************************
 ! Echanges des variables "boucle NBQ" divergence :: ENVOIE
 !****************************************************************************************
+#ifndef NBQ_IMPIJK
 	  if (p_nbreq_mv(dnrhs_nbq)> 0 ) call MPI_STARTALL(p_nbreq_mv(dnrhs_nbq), &
 			    p_tabreq_mv(1:p_nbreq_mv(vnnew_nbq),dnrhs_nbq), &
 			    ierr)
+#else
+	  if (p_nbreq_mv(dnnew_nbq)> 0 ) call MPI_STARTALL(p_nbreq_mv(dnnew_nbq), &
+			    p_tabreq_mv(1:p_nbreq_mv(dnnew_nbq),dnnew_nbq), &
+			    ierr)
+#endif
       endif
       if (ichoix.eq.17) then
 !****************************************************************************************
@@ -194,9 +197,15 @@
 !----------------------------------------------------------------------------------------
         !print *,"waitall 7"
 	tstatus=0
+#ifndef NBQ_IMPIJK
 	if (p_nbreq_mv(dnrhs_nbq)> 0 ) CALL MPI_WAITALL(p_nbreq_mv(dnrhs_nbq), &
 			     p_tabreq_mv(1:p_nbreq_mv(dnrhs_nbq),dnrhs_nbq), &
 			     tstatus(:,1:p_nbreq_mv(dnrhs_nbq)), IERR)   
+#else
+	if (p_nbreq_mv(dnnew_nbq)> 0 ) CALL MPI_WAITALL(p_nbreq_mv(dnnew_nbq), &
+			     p_tabreq_mv(1:p_nbreq_mv(dnnew_nbq),dnnew_nbq), &
+			     tstatus(:,1:p_nbreq_mv(dnnew_nbq)), IERR)   
+#endif
         !print *,"waitall mv OK"
 
       endif

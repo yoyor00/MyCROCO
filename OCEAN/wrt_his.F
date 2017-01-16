@@ -140,7 +140,19 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     
       if (wrthis(indxZ)) then
 #ifdef NBQ     
-         work2d=zeta(:,:,fast_indx_out) - h(:,:)
+!        work2d=  zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out)
+
+         work2d=zeta(:,:,fast_indx_out)
+     &            /rhobar_nbq(:,:,fast_indx_out)
+     &         -h(:,:)   
+!         if (mynode.eq.0) then
+!                  write(6,*) 'w1',zeta(istr-1,1,fast_indx_out)
+!     &                           ,zeta(istr,1,fast_indx_out)
+!     &                           ,zeta(istr+1,1,fast_indx_out)
+!                  write(6,*) 'w2',rhobar_nbq(istr-1,1,fast_indx_out)
+!     &                           ,rhobar_nbq(istr,1,fast_indx_out)
+!     &                           ,rhobar_nbq(istr+1,1,fast_indx_out)
+!                  endif
 #else
          work2d=zeta(:,:,fast_indx_out)
 #endif
@@ -632,7 +644,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
          do k=1,N
             do j=0,Mm+1
                do i=0,Lm+1
-                  workr(i,j,k)=0.5*(wz(i,j,k,nstp)+wz(i,j,k-1,nstp))
+                  workr(i,j,k)=wz(i,j,k,nstp)
                enddo
             enddo
          enddo

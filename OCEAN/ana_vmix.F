@@ -86,7 +86,9 @@
       enddo
 # elif defined VORTEX || defined INTERNAL || defined EQUATOR \
                       || defined JET      || defined SHOREFACE \
-                      || defined IGW
+                      || defined IGW      || defined S2DV \
+                      || defined REGIONAL_NBQ
+
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend

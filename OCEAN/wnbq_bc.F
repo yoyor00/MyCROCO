@@ -168,11 +168,11 @@
 #    endif
 #    ifdef MASKING
             qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_b_j,nnew)
-     &                                             *rmask(Istr-1,j)
+     &                                            *rmask(Istr-1,j)
 #    endif
 #    ifdef WET_DRY
             qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_b_j,nnew)
-     &                                             *rmask_wet(Istr-1,j)
+     &                                          *rmask_wet(Istr-1,j)
 #    endif
           enddo
         enddo
@@ -560,11 +560,11 @@
 #     endif
 #    endif
 #    ifdef MASKING
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)*rmask(i,Jend+1)
+          qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)*rmask(i,Jend+1)
 #    endif
 #    ifdef WET_DRY
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)
-     &                                             *rmask_wet(i,Jend+1)
+          qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)
+     &                                           *rmask_wet(i,Jend+1)
 #    endif
           enddo
         enddo

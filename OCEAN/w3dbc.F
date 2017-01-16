@@ -71,8 +71,8 @@
 ! Interpolations of the parent values to get wbry_east or wclm
 !
 # if defined W_FRC_BRY || defined WCLIMATOLOGY
-      tau_in=dt*tauM_in
-      tau_out=dt*tauM_out
+      tau_in=dt*tauM_in/100.
+      tau_out=dt*tauM_out/100.
 # endif
 !
 # ifndef EW_COM_PERIODIC

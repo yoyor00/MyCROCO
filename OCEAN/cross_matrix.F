@@ -1,12 +1,12 @@
 ! $Id: cross_matrix.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 ! 
-! CROCO website : http://www.croco-ocean.org
+! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
 ! This is "cross_matrix": analyzer of dependencies to build
@@ -181,9 +181,11 @@
         j=j-1
         size=j-i+1
       do k=1,size
-      modname(k:k)=ctoupper(string(i+k-1:i+k-1))
+!       modname(k:k)=ctoupper(string(i+k-1:i+k-1))
+	modname(k:k)=string(i+k-1:i+k-1)
       end do
-      modname(size+1:size+4)='.mod'
+!       modname(size+1:size+4)='.mod'
+       modname(size+1:size+4)='.F90'
               
         size=size+4
               new_name=.true.             ! encountered name does 

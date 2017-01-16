@@ -131,19 +131,16 @@
 */
 #ifdef NBQ
 # define M2FILTER_NONE
-# undef  M2FILTER_POWER
-# define VAR_RHO_2D
-# undef  NBQ_REINIT
-# undef  TRACETXT
-# undef  NBQ_OUT
-# define NBQ_CONS5
-# define NBQ_CONS6
+# undef M2FILTER_POWER
+# undef VAR_RHO_2D
+# undef TRACETXT
+# undef NBQ_OUT
 # define HZR Hzr
-# define OBC_NBQ
+!# define OBC_NBQ
 # ifdef OBC_NBQ
-#  define OBC_NBQORLANSKI
+#  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED
-#  define NBQ_FRC_BRY
+#  undef  NBQ_FRC_BRY
 #  define W_FRC_BRY
 # endif
 #else

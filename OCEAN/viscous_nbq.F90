@@ -44,6 +44,9 @@
 !*******************************************************************
        
         visc2_nbq_a(1:neqmom_nh(0)) = visc2_nbq
+        csvisc1_nbq  = dtnbq * soundspeed2_nbq + visc2_nbq
+        csvisc2_nbq  = dtnbq * soundspeed2_nbq / csvisc1_nbq 
+       
 
       endif
 
@@ -75,6 +78,62 @@
     
       endif
 
+      if (icall.eq.2) then
+!*******************************************************************
+!*******************************************************************
+!               Seconde viscosite:
+!
+! Attention: telle que codee actuellement la seconde viscosite
+!            est appliquee sur la qdm et non la vitesse comme cela
+!            devrait etre le cas pour la version moleculaire !
+!            (normalisation par rho dans main_nbq)
+!           On "gagne" ainsi un produit MAT*VECT dans la boucle NBQ
+!           On conserve toutefois la divergence calculee sur l'ancienne
+!           grille... soit probleme potentiel!
+!
+!*******************************************************************
+!*******************************************************************
+
+         indm_v=momi_nh(neqcont_nh+1)+1
+         call amux(                                                 &
+              neqmom_nh(0)                                          &
+             ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+             ,rhsd2_nbq(1:neqmom_nh(0))                             &
+             ,momv_nh(1:indm_v)                                     &
+             ,momj_nh(1:indm_v)                                     &
+             ,momi_nh(1:neqcont_nh+1)                               &
+                 )   
+    
+      endif
+
+      if (icall.eq.12) then
+!*******************************************************************
+!*******************************************************************
+!               Seconde viscosite:
+!
+! Attention: telle que codee actuellement la seconde viscosite
+!            est appliquee sur la qdm et non la vitesse comme cela
+!            devrait etre le cas pour la version moleculaire !
+!            (normalisation par rho dans main_nbq)
+!           On "gagne" ainsi un produit MAT*VECT dans la boucle NBQ
+!           On conserve toutefois la divergence calculee sur l'ancienne
+!           grille... soit probleme potentiel!
+!
+!*******************************************************************
+!*******************************************************************
+         return
+         indm_v=momi_nh(neqcont_nh+1)
+         call amux(                                                 &
+              neqmom_nh(0)                                          &
+             ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+             ,rhsd2_nbq(1:neqmom_nh(0))                             &
+             ,momv_nh(1:indm_v)                                     &
+             ,momj_nh(1:indm_v)                                     &
+             ,momi_nh(1:neqcont_nh+1)                               &
+                 )   
+   !    rhsd2_nbq = 0.
+    
+      endif
 
       end subroutine viscous_nbq
 

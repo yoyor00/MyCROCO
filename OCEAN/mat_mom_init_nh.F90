@@ -28,14 +28,8 @@
 
       nzmimp_nbq   = 1
       nzmom_nh     = 1
-      nindkun_nbq  = 0
       neqmimp_nbq = 0
-      
-#ifdef NBQ_CONS0
-      corri_nh = 1
-      corrj_nh = 1
-      corrv_nh = 0.
-#endif
+
 
       momi_nh = 1
       momj_nh = 1
@@ -236,14 +230,8 @@
 !.......point p(i,j,k+1):
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k+1)
-#ifdef NBQ_CONS7
-        momv_nh(nzmom_nh)    = -1. * float(mijk2lq_nh(i,j,k+1)) &
-                                   * float(mijk2lq_nh(i,j,k))   &
-                              / Hzr_half_nbq(i,j,k+1)
-#else
         momv_nh(nzmom_nh)    = -1. * float(mijk2lq_nh(i,j,k+1)) &
                                    * float(mijk2lq_nh(i,j,k)) 
-#endif
         nzmom_nh             = nzmom_nh  + mijk2lq_nh(i,j,k+1)  &
                                    * float(mijk2lq_nh(i,j,k))
 
@@ -251,12 +239,7 @@
 !.......point p(i,j,k):
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
-#ifdef NBQ_CONS7
-        momv_nh(nzmom_nh)    = 1. * float(mijk2lq_nh(i,j,k))  &
-                               / Hzr_half_nbq(i,j,k)
-#else
         momv_nh(nzmom_nh)    = 1. * float(mijk2lq_nh(i,j,k))
-#endif
         nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
 
       enddo
@@ -312,48 +295,6 @@
 
 !.....End of last line:
       mimpi_nbq(neqmimp_nbq+1) = nzmimp_nbq   
-
-      
-
-!*******************************************************************
-!.....Correction temporelle:
-!XA   http://poc.obs-mip.fr/auclair/WOcean.fr/SNH/Restricted/NH-NBQ/Html_pages/Couplage_Numerique.htm
-!     on stocke la matrice qui sert dans l equation pour rho_nbq (M_corr ! dans le document)
-!     coherence car c est une matrice qui va etre multipliee par un rho
-!******************************************************************* 
-
-#ifdef NBQ_CONS0
-      nzcorr_nh = 1
-
-      do l_nh = 1,neqcont_nh
-       i = l2iq_nh (l_nh)
-       j = l2jq_nh (l_nh)
-       k = l2kq_nh (l_nh)
-
-!......caracteristiques de l equation:
-       corri_nh  (l_nh) = nzcorr_nh
-
-       if (k.lt.N) then
-!......Point rh(i,j,k+1)
-          corrj_nh(nzcorr_nh)   = ijk2lq_nh (i,j,k+1)
-          nzcorr_nh             = nzcorr_nh + mijk2lq_nh(i,j,k+1)
-       endif
-
-!......Point rh(i,j,k)
-       corrj_nh(nzcorr_nh)   = ijk2lq_nh (i,j,k)
-       nzcorr_nh             = nzcorr_nh + mijk2lq_nh(i,j,k)
-
-!......Point rh(i,j,k-1)
-       if (k.gt.1) then
-          corrj_nh(nzcorr_nh)   = ijk2lq_nh (i,j,k-1)
-          nzcorr_nh             = nzcorr_nh + mijk2lq_nh(i,j,k-1)
-       endif
-
-      enddo
-
-!.....End of last line:
-      corri_nh  (neqcont_nh+1) = nzcorr_nh
-#endif
 
 !.....Tests matrix size:
       if (neqmom_nh(0).gt.nmv_nh) then

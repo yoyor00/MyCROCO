@@ -215,15 +215,15 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # elif defined TANK
-      cff=1./(0.03686)**2
-      cff1=2.+0.001*sin(2.*pi/10.5*time)
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          dh(i,j)=0.394-0.1*exp(-cff*((xr(i,j)-cff1)**2+
-     &                                (yr(i,j)-el*0.5)**2)) 
-     &                                              -h(i,j)
-        enddo
-      enddo
+       cff=1./(0.03686)**2
+       cff1=2.+0.001*sin(2.*pi/10.5*time)
+       do j=JstrR,JendR
+         do i=IstrR,IendR
+           dh(i,j)=0.394-0.1*exp(-cff*((xr(i,j)-cff1)**2+
+      &                                (yr(i,j)-el*0.5)**2)) 
+      &                                              -h(i,j)
+         enddo
+       enddo
 
 # else
         dh(:,:) =??? 
@@ -826,7 +826,7 @@ C$    integer  trd, omp_get_thread_num
 # include "sediment.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    cff,cff1
-# ifdef IGW
+# if defined IGW || defined S2DV
       real    sig,rhom,depth
 # endif  
 !
@@ -1297,12 +1297,12 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
-            unbqclm(i,j,k)=0.5*rho0*(Hz(i,j,k)+Hz(i-1,j,k)*uclm(i,j,k)
+            unbqclm(i,j,k)=0.5*rho0*(Hz(i,j,k)+Hz(i-1,j,k))*uclm(i,j,k)
           enddo
         enddo
         do j=JV_RANGE
           do i=IV_RANGE
-            vnbqclm(i,j,k)=0.5*rho0*(Hz(i,j,k)+Hz(i,j-1,k)*vclm(i,j,k)
+            vnbqclm(i,j,k)=0.5*rho0*(Hz(i,j,k)+Hz(i,j-1,k))*vclm(i,j,k)
           enddo
         enddo
         do j=JstrR,JendR

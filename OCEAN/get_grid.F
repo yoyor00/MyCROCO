@@ -306,36 +306,7 @@
         write(stdout,1) 'mask_rho', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
-#  ifdef NBQ
-      IstrR=0
-      JstrR=0
-      IendR=LOCALLM+1
-      JendR=LOCALMM+1
-#   ifndef NS_PERIODIC
-#    ifndef OBC_SOUTH
-      do i=IstrR,IendR
-        rmask(i,0)=0.
-      enddo
-#    endif
-#    ifndef OBC_NORTH
-      do i=IstrR,IendR
-        rmask(i,LOCALMM+1)=0.
-      enddo
-#    endif
-#   endif
-#   ifndef EW_PERIODIC
-#    ifndef OBC_WEST
-      do j=JstrR,JendR
-        rmask(0,j)=0.
-      enddo
-#    endif
-#    ifndef OBC_EAST
-      do j=JstrR,JendR
-        rmask(LOCALLM+1,j)=0.
-      enddo
-#    endif
-#   endif
-#  endif /* NBQ */
+
 # endif /* MASKING */
       ierr=nf_close(ncid)
       return                                      !--> NORMAL RETURN

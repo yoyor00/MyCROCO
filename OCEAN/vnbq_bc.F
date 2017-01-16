@@ -1,12 +1,12 @@
 ! $Id: vnbq_bc.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 ! 
-! CROCO website : http://www.croco-ocean.org
+! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
 #ifndef CHILD
@@ -72,6 +72,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
       real    grad(PRIVATE_2D_SCRATCH_ARRAY), cff,eps,
      &        cx,cy, dft,dfx,dfy, tau,tau_in,tau_out
       parameter (eps=1.E-20)
+      double precision :: mask1_v,mask2_v
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -86,8 +87,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
       tau_out=dt*tauM_out
 # endif
 !
-# define nnew vnnew_nbq
-# define nstp vnstp_nbq
+!# define nnew 2
+!# define nstp 1
 !
 # ifndef NS_COM_PERIODIC
 !
@@ -102,16 +103,28 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 
             l_b_i     = ijk2lmom_nh(i  ,Jstr  ,k,2)
             l_b_im1   = ijk2lmom_nh(i-1,Jstr  ,k,2)
+            if (l_b_im1.eq.0) then
+               l_b_im1 = l_b_i
+               mask1_v = 0.
+            else
+               mask1_v = 1.
+            endif
             l_bm1_i   = ijk2lmom_nh(i  ,Jstr+1,k,2)
             l_bm1_im1 = ijk2lmom_nh(i-1,Jstr+1,k,2)
+            if (l_bm1_im1.eq.0) then
+               l_bm1_im1 = l_bm1_i
+               mask2_v = 0.
+            else
+               mask2_v = 1.
+            endif
 
-            grad(i,Jstr  )=(qdm_nbq_a(l_b_i  ,nstp)
-     &                     -qdm_nbq_a(l_b_im1,nstp))
+            grad(i,Jstr  )=(qdm_nbq_a(l_b_i  ,vnstp_nbq)
+     &                     -qdm_nbq_a(l_b_im1,vnstp_nbq)*mask1_v)
 #    ifdef MASKING
      &                              *pmask(i  ,Jstr)
 #    endif
-            grad(i,Jstr+1)=(qdm_nbq_a(l_bm1_i  ,nstp)
-     &                     -qdm_nbq_a(l_bm1_im1,nstp))
+            grad(i,Jstr+1)=(qdm_nbq_a(l_bm1_i  ,vnstp_nbq)
+     &                     -qdm_nbq_a(l_bm1_im1,vnstp_nbq)*mask2_v)
 #    ifdef MASKING
      &                                *pmask(i,Jstr+1)
 #    endif
@@ -122,8 +135,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             l_bm1_i   = ijk2lmom_nh(i  ,Jstr+1,k,2)
             l_bm2_i   = ijk2lmom_nh(i  ,Jstr+2,k,2)
 
-            dft=qdm_nbq_a(l_bm1_i,nstp)-qdm_nbq_a(l_bm1_i,nnew)
-            dfx=qdm_nbq_a(l_bm1_i,nnew)-qdm_nbq_a(l_bm2_i,nnew)
+           dft=qdm_nbq_a(l_bm1_i,vnstp_nbq)-qdm_nbq_a(l_bm1_i,vnnew_nbq)
+           dfx=qdm_nbq_a(l_bm1_i,vnnew_nbq)-qdm_nbq_a(l_bm2_i,vnnew_nbq)
 
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
@@ -151,24 +164,29 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             cy=min(cff,max(dft*dfy,-cff))
 #    endif
  
-            qdm_nbq_a(l_b_i,nnew)=( cff*qdm_nbq_a(l_b_i  ,nstp)
-     &                              +cx*qdm_nbq_a(l_bm1_i,nnew)
+           qdm_nbq_a(l_b_i,vnnew_nbq)=( cff*qdm_nbq_a(l_b_i  ,vnstp_nbq)
+     &                              +cx*qdm_nbq_a(l_bm1_i,vnnew_nbq)
      &                               -max(cy,0.)*grad(i  ,Jstr)
      &                               -min(cy,0.)*grad(i+1,Jstr)
      &                                               )/(cff+cx)
 #    if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            qdm_nbq_a(l_b_i,nnew)=(1.-tau)*qdm_nbq_a(l_b_i,nnew)
+          qdm_nbq_a(l_b_i,vnnew_nbq)=(1.-tau)*qdm_nbq_a(l_b_i,vnnew_nbq)
 #     ifdef NBQ_FRC_BRY
      &                                   +tau*vnbqbry_south(i,k)
 #     else     
-     &                                    +tau*vnbqclm(i,Jstr,k)
+!    &                                    +tau*vnbqclm(i,Jstr,k)
+     &                                    +tau*(
+     &                      vnbqclm(i,Jstr,k)    
+     &   +vbclm(i,Jstr)*hz_half(i,Jstr,k)
+     &                                         )
 #     endif
 #    endif
 #    ifdef MASKING
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)*vmask(i,Jstr)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=qdm_nbq_a(l_b_i,vnnew_nbq)
+     &           *vmask(i,Jstr)
 #    endif
 #    ifdef WET_DRY
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=qdm_nbq_a(l_b_i,vnnew_nbq)
      &                                             *vmask_wet(i,Jstr)
 #    endif
           enddo
@@ -180,9 +198,9 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do i=Istr,Iend
             l_b_i     = ijk2lmom_nh(i  ,Jstr  ,k,2)
 #    ifdef NBQ_FRC_BRY
-            qdm_nbq_a(l_b_i,nnew)=vnbqbry_south(i,k)        ! specified
+            qdm_nbq_a(l_b_i,vnnew_nbq)=vnbqbry_south(i,k)        ! specified
 #    else
-            qdm_nbq_a(l_b_i,nnew)=vnbqclm(i,Jstr,k)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=vnbqclm(i,Jstr,k)
 #    endif
 #    ifdef MASKING
      &                               *vmask(i,Jstr)
@@ -199,7 +217,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do i=Istr,Iend
             l_b_i     = ijk2lmom_nh(i  ,Jstr  ,k,2)
             l_bm1_i   = ijk2lmom_nh(i  ,Jstr+1,k,2)
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_bm1_i,nnew)  ! gradient (default)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=qdm_nbq_a(l_bm1_i,vnnew_nbq)  ! gradient (default)
 #    ifdef MASKING
      &                                     *vmask(i,Jstr)
 #    endif
@@ -213,7 +231,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !        do k=1,N                                     ! Southern edge closed
 !          do i=Istr,Iend                             ! ======== ==== ======
 !            l_b_i     = ijk2lmom_nh(i  ,Jstr  ,k,2)  !  (no-flux: default)
-!            qdm_nbq_a(l_b_i,nnew)=0.
+!            qdm_nbq_a(l_b_i,vnnew_nbq)=0.
 !          enddo
 !        enddo
 #  endif              /* OBC_COM_SOUTH */
@@ -230,16 +248,28 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 
             l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,2)
             l_b_im1   = ijk2lmom_nh(i-1,Jend+1,k,2)
+            if (l_b_im1.eq.0) then
+               l_b_im1 = l_b_i
+               mask1_v = 0.
+            else
+               mask1_v = 1.
+            endif
             l_bm1_i   = ijk2lmom_nh(i  ,Jend  ,k,2)
             l_bm1_im1 = ijk2lmom_nh(i-1,Jend  ,k,2)
+            if (l_bm1_im1.eq.0) then
+               l_bm1_im1 = l_bm1_i
+               mask1_v = 0.
+            else
+               mask1_v = 1.
+            endif
 
-            grad(i,Jend  )=(qdm_nbq_a(l_bm1_j  ,nstp)
-     &                     -qdm_nbq_a(l_bm1_im1,nstp))
+            grad(i,Jend  )=(qdm_nbq_a(l_bm1_j  ,vnstp_nbq)
+     &                     -qdm_nbq_a(l_bm1_im1,vnstp_nbq)*mask1_v)
 #    ifdef MASKING
      &                                  *pmask(i,Jend)
 #    endif
-            grad(i,Jend+1)=(qdm_nbq_a(l_b_j  ,nstp)
-     &                     -qdm_nbq_a(l_b_im1,nstp))
+            grad(i,Jend+1)=(qdm_nbq_a(l_b_j  ,vnstp_nbq)
+     &                     -qdm_nbq_a(l_b_im1,vnstp_nbq)*mask2_v)
 #    ifdef MASKING
      &                                 *pmask(i,Jend+1)
 #    endif
@@ -250,8 +280,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             l_bm1_i   = ijk2lmom_nh(i  ,Jend  ,k,2)
             l_bm2_i   = ijk2lmom_nh(i  ,Jend-1,k,2)
 
-            dft=qdm_nbq_a(l_bm1_i,nstp)-qdm_nbq_a(l_bm1_i,nnew)
-            dfx=qdm_nbq_a(l_bm1_i,nnew)-qdm_nbq_a(l_bm2_i,nnew)
+           dft=qdm_nbq_a(l_bm1_i,vnstp_nbq)-qdm_nbq_a(l_bm1_i,vnnew_nbq)
+           dfx=qdm_nbq_a(l_bm1_i,vnnew_nbq)-qdm_nbq_a(l_bm2_i,vnnew_nbq)
 
             if (dfx*dft .lt. 0.) then
               dft=0.                       ! <-- cancel cx, if inflow
@@ -279,24 +309,29 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             cy=min(cff,max(dft*dfy,-cff))
 #    endif
  
-            qdm_nbq_a(l_b_i,nnew)=( cff*qdm_nbq_a(l_b_i  ,nstp)
-     &                              +cx*qdm_nbq_a(l_bm1_i,nnew)
+           qdm_nbq_a(l_b_i,vnnew_nbq)=( cff*qdm_nbq_a(l_b_i  ,vnstp_nbq)
+     &                              +cx*qdm_nbq_a(l_bm1_i,vnnew_nbq)
      &                             -max(cy,0.)*grad(i  ,Jend+1)
      &                             -min(cy,0.)*grad(i+1,Jend+1)
      &                                               )/(cff+cx)
 #    if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            qdm_nbq_a(l_b_i,nnew)=(1.-tau)*qdm_nbq_a(l_b_i,nnew)
+          qdm_nbq_a(l_b_i,vnnew_nbq)=(1.-tau)*qdm_nbq_a(l_b_i,vnnew_nbq)
 #     ifdef NBQ_FRC_BRY
      &                                   +tau*vnbqbry_north(i,k)
 #     else     
-     &                                  +tau*vnbqclm(i,Jend+1,k)
+!    &                                  +tau*vnbqclm(i,Jend+1,k)
+     &                                  +tau* (
+     &              vnbqclm(i,Jend+1,k)  
+     &            + vbclm(i,Jend+1)*hz_half(i,Jend+1,k)
+     &                                        )       
 #     endif
 #    endif
 #    ifdef MASKING
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)*vmask(i,Jend+1)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=qdm_nbq_a(l_b_i,vnnew_nbq)
+     &        *vmask(i,Jend+1)
 #    endif
 #    ifdef WET_DRY
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_b_i,nnew)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=qdm_nbq_a(l_b_i,vnnew_nbq)
      &                                             *vmask_wet(i,Jend+1)
 #    endif
           enddo
@@ -309,9 +344,9 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do i=Istr,Iend
             l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,2)
 #    ifdef NBQ_FRC_BRY
-            qdm_nbq_a(l_b_i,nnew)=vnbqbry_north(i,k)      ! specified
+            qdm_nbq_a(l_b_i,vnnew_nbq)=vnbqbry_north(i,k)      ! specified
 #    else
-            qdm_nbq_a(l_b_i,nnew)=vnbqclm(i,Jend+1,k)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=vnbqclm(i,Jend+1,k)
 #    endif
 #    ifdef MASKING
      &                               *vmask(i,Jend+1)
@@ -328,7 +363,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !                                           ======== ==== ======== ==
             l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,2)
             l_bm1_i   = ijk2lmom_nh(i  ,Jend  ,k,2)
-            qdm_nbq_a(l_b_i,nnew)=qdm_nbq_a(l_bm1_i,nnew) ! gradient (default)
+            qdm_nbq_a(l_b_i,vnnew_nbq)=qdm_nbq_a(l_bm1_i,vnnew_nbq) ! gradient (default)
 #    ifdef MASKING
      &                                   *vmask(i,Jend+1)
 #    endif
@@ -342,7 +377,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !        do k=1,N                                    ! Northern edge closed
 !          do i=Istr,Iend                            ! ======== ==== ======
 !            l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,2) !   (no-flux: default)
-!            qdm_nbq_a(l_b_i,nnew)=0.
+!            qdm_nbq_a(l_b_i,vnnew_nbq)=0.
 !          enddo
 !        enddo
 #  endif
@@ -365,10 +400,10 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             l_bm1_j   = ijk2lmom_nh(Istr  ,j  ,k,2)
             l_bm1_jp1 = ijk2lmom_nh(Istr  ,j+1,k,2)
 
-            grad(Istr-1,j)=qdm_nbq_a(l_b_jp1  ,nstp)
-     &                    -qdm_nbq_a(l_b_j    ,nstp)
-            grad(Istr  ,j)=qdm_nbq_a(l_bm1_jp1,nstp)
-     &                    -qdm_nbq_a(l_bm1_j  ,nstp)
+            grad(Istr-1,j)=qdm_nbq_a(l_b_jp1  ,vnstp_nbq)
+     &                    -qdm_nbq_a(l_b_j    ,vnstp_nbq)
+            grad(Istr  ,j)=qdm_nbq_a(l_bm1_jp1,vnstp_nbq)
+     &                    -qdm_nbq_a(l_bm1_j  ,vnstp_nbq)
           enddo
           do j=JstrV,Jend
 
@@ -376,8 +411,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             l_bm1_j   = ijk2lmom_nh(Istr  ,j  ,k,2)
             l_bm2_j   = ijk2lmom_nh(Istr+1,j  ,k,2)
 
-            dft=qdm_nbq_a(l_bm1_j,nstp)-qdm_nbq_a(l_bm1_j,nnew)
-            dfx=qdm_nbq_a(l_bm1_j,nnew)-qdm_nbq_a(l_bm2_j,nnew)
+           dft=qdm_nbq_a(l_bm1_j,vnstp_nbq)  -qdm_nbq_a(l_bm1_j,vnnew_nbq)
+           dfx=qdm_nbq_a(l_bm1_j,vnnew_nbq)  -qdm_nbq_a(l_bm2_j,vnnew_nbq)
  
             if (dfx*dft .lt. 0.) then
               dft=0.                       ! <-- cancel cx, if inflow
@@ -404,25 +439,26 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 #    else
             cy=min(cff,max(dft*dfy,-cff))
 #    endif
-            qdm_nbq_a(l_b_j,nnew)=( cff*qdm_nbq_a(l_b_j  ,nstp)
-     &                              +cx*qdm_nbq_a(l_bm1_j,nnew)
+          qdm_nbq_a(l_b_j,vnnew_nbq)=( cff*qdm_nbq_a(l_b_j  ,vnstp_nbq)
+     &                              +cx*qdm_nbq_a(l_bm1_j,vnnew_nbq)
      &                             -max(cy,0.)*grad(Istr-1,j-1)
      &                             -min(cy,0.)*grad(Istr-1,j  )
      &                                               )/(cff+cx)
 #    if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            qdm_nbq_a(l_b_j,nnew)=(1.-tau)*qdm_nbq_a(l_b_j,nnew)
+          qdm_nbq_a(l_b_j,vnnew_nbq)=(1.-tau)*qdm_nbq_a(l_b_j,vnnew_nbq)
 #     ifdef NBQ_FRC_BRY
      &                                    +tau*vnbqbry_west(j,k)
 #     else
-     &                                  +tau*vnbqclm(Istr-1,j,k)
+!    &                                  +tau*vnbqclm(Istr-1,j,k)
+     &         +tau*v(Istr-1,j,k,nnew)
 #     endif
 #    endif
 #    ifdef MASKING
-            qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_b_j,nnew)
-     &                                             *vmask(Istr-1,j)
+            qdm_nbq_a(l_b_j,vnnew_nbq)=qdm_nbq_a(l_b_j,vnnew_nbq)
+     &              *vmask(Istr-1,j)
 #    endif
 #    ifdef WET_DRY
-            qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_b_j,nnew)
+            qdm_nbq_a(l_b_j,vnnew_nbq)=qdm_nbq_a(l_b_j,vnnew_nbq)
      &                                             *vmask_wet(Istr-1,j)
 #    endif
           enddo
@@ -435,9 +471,9 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do j=JstrV,Jend
             l_b_j     = ijk2lmom_nh(Istr-1,j  ,k,2)
 #    ifdef NBQ_FRC_BRY
-            qdm_nbq_a(l_b_j,nnew)=vnbqbry_west(j,k)       ! specified
+            qdm_nbq_a(l_b_j,vnnew_nbq)=vnbqbry_west(j,k)       ! specified
 #    else
-            qdm_nbq_a(l_b_j,nnew)=vnbqclm(Istr-1,j,k)
+            qdm_nbq_a(l_b_j,vnnew_nbq)=vnbqclm(Istr-1,j,k)
 #    endif
 #    ifdef MASKING
      &                               *vmask(Istr-1,j)
@@ -454,7 +490,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do j=JstrV,Jend
             l_b_j     = ijk2lmom_nh(Istr-1,j  ,k,2)
             l_bm1_j   = ijk2lmom_nh(Istr  ,j  ,k,2)
-            qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_bm1_j,nnew) ! gradient (default)
+            qdm_nbq_a(l_b_j,vnnew_nbq)=qdm_nbq_a(l_bm1_j,vnnew_nbq) ! gradient (default)
+!           qdm_nbq_a(l_b_j,vnnew_nbq)=v(Istr-1,j,k,nnew) ! gradient (default)
 #    ifdef MASKING
      &                                   *vmask(Istr-1,j)
 #    endif
@@ -474,7 +511,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !          do j=J_RANGE                  ! =====   no-slip (gamma2=-1)
 !            l_b_j     = ijk2lmom_nh(Istr-1,j  ,k,2)
 !            l_bm1_j   = ijk2lmom_nh(Istr  ,j  ,k,2)
-!            qdm_nbq_a(l_b_j,nnew)=gamma2*qdm_nbq_a(l_bm1_j,nnew)
+!            qdm_nbq_a(l_b_j,vnnew_nbq)=gamma2*qdm_nbq_a(l_bm1_j,vnnew_nbq)
 !#   ifdef MASKING
 !     &                                          *vmask(Istr-1,j)
 !#   endif
@@ -498,10 +535,10 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             l_bm1_j   = ijk2lmom_nh(Iend  ,j  ,k,2)
             l_bm1_jp1 = ijk2lmom_nh(Iend  ,j+1,k,2)
 
-            grad(Iend+1,j)=qdm_nbq_a(l_b_jp1  ,nstp)
-     &                    -qdm_nbq_a(l_b_j    ,nstp)
-            grad(Iend  ,j)=qdm_nbq_a(l_bm1_jp1,nstp)
-     &                    -qdm_nbq_a(l_bm1_j  ,nstp)
+            grad(Iend+1,j)=qdm_nbq_a(l_b_jp1  ,vnstp_nbq)
+     &                    -qdm_nbq_a(l_b_j    ,vnstp_nbq)
+            grad(Iend  ,j)=qdm_nbq_a(l_bm1_jp1,vnstp_nbq)
+     &                    -qdm_nbq_a(l_bm1_j  ,vnstp_nbq)
           enddo
           do j=JstrV,Jend
 
@@ -509,8 +546,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             l_bm1_j   = ijk2lmom_nh(Iend  ,j  ,k,2)
             l_bm2_j   = ijk2lmom_nh(Iend-1,j  ,k,2)
 
-            dft=qdm_nbq_a(l_bm1_j,nstp)-qdm_nbq_a(l_bm1_j,nnew)
-            dfx=qdm_nbq_a(l_bm1_j,nnew)-qdm_nbq_a(l_bm2_j,nnew)
+            dft=qdm_nbq_a(l_bm1_j,vnstp_nbq)  -qdm_nbq_a(l_bm1_j,vnnew_nbq)
+            dfx=qdm_nbq_a(l_bm1_j,vnnew_nbq)  -qdm_nbq_a(l_bm2_j,vnnew_nbq)
  
             if (dfx*dft .lt. 0.) then
               dft=0.                       ! <-- cancel cx, if inflow
@@ -538,25 +575,26 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
             cy=min(cff,max(dft*dfy,-cff))
 #    endif
  
-            qdm_nbq_a(l_b_j,nnew)=( cff*qdm_nbq_a(l_b_j  ,nstp)
-     &                              +cx*qdm_nbq_a(l_bm1_j,nnew)
+           qdm_nbq_a(l_b_j,vnnew_nbq)=( cff*qdm_nbq_a(l_b_j  ,vnstp_nbq)
+     &                              +cx*qdm_nbq_a(l_bm1_j,vnnew_nbq)
      &                             -max(cy,0.)*grad(Iend+1,j-1)
      &                             -min(cy,0.)*grad(Iend+1,j  )
      &                                               )/(cff+cx)
 #    if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            qdm_nbq_a(l_b_j,nnew)=(1.-tau)*qdm_nbq_a(l_b_j,nnew)
+          qdm_nbq_a(l_b_j,vnnew_nbq)=(1.-tau)*qdm_nbq_a(l_b_j,vnnew_nbq)
 #     ifdef NBQ_FRC_BRY
      &                                    +tau*vnbqbry_east(j,k)
 #     else     
-     &                                  +tau*vnbqclm(Iend+1,j,k)
+!    &                                  +tau*vnbqclm(Iend+1,j,k)
+     &         +tau*v(Iend+1,j,k,nnew)
 #     endif
 #    endif
 #    ifdef MASKING
-            qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_b_j,nnew)
-     &                                             *vmask(Iend+1,j)
+            qdm_nbq_a(l_b_j,vnnew_nbq)=qdm_nbq_a(l_b_j,vnnew_nbq)
+     &                     *vmask(Iend+1,j)
 #    endif
 #    ifdef WET_DRY
-           qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_b_j,nnew)
+           qdm_nbq_a(l_b_j,vnnew_nbq)=qdm_nbq_a(l_b_j,vnnew_nbq)
      &                                             *vmask_wet(Iend+1,j)
 #    endif
           enddo
@@ -569,9 +607,9 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do j=Jstr,Jend
             l_b_j     = ijk2lmom_nh(Iend+1,j  ,k,2)
 #    ifdef NBQ_FRC_BRY
-            qdm_nbq_a(l_b_j,nnew)=vnbqbry_east(j,k)       ! specified
+            qdm_nbq_a(l_b_j,vnnew_nbq)=vnbqbry_east(j,k)       ! specified
 #    else
-            qdm_nbq_a(l_b_j,nnew)=vnbqclm(Iend+1,j,k)
+            qdm_nbq_a(l_b_j,vnnew_nbq)=vnbqclm(Iend+1,j,k)
 #    endif
 #    ifdef MASKING
      &                               *vmask(Iend+1,j)
@@ -588,7 +626,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do j=Jstr,Jend
             l_b_j     = ijk2lmom_nh(Iend+1,j  ,k,2)
             l_bm1_j   = ijk2lmom_nh(Iend  ,j  ,k,2)
-           qdm_nbq_a(l_b_j,nnew)=qdm_nbq_a(l_bm1_j,nnew) ! gradient (default)
+           qdm_nbq_a(l_b_j,vnnew_nbq)=qdm_nbq_a(l_bm1_j,vnnew_nbq) ! gradient (default)
+!          qdm_nbq_a(l_b_j,vnnew_nbq)=v(Iend+1,j,k,nnew) ! gradient (default)
 #    ifdef MASKING
      &                                  *vmask(Iend+1,j)
 #    endif
@@ -608,7 +647,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !          do j=J_RANGE                  ! ====    no-slip (gamma2=-1)
 !            l_b_j     = ijk2lmom_nh(Iend+1,j  ,k,2)
 !            l_bm1_j   = ijk2lmom_nh(Iend  ,j  ,k,2)
-!            qdm_nbq_a(l_b_j,nnew)=gamma2*qdm_nbq_a(l_bm1_j,nnew)
+!            qdm_nbq_a(l_b_j,vnnew_nbq)=gamma2*qdm_nbq_a(l_bm1_j,vnnew_nbq)
 !#   ifdef MASKING
 !     &                                          *vmask(Iend+1,j)
 !#   endif
@@ -628,8 +667,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           l_c     = ijk2lmom_nh(Istr-1,Jstr  ,k,2)
           l_c_jm1 = ijk2lmom_nh(Istr-1,Jstr+1,k,2)
           l_c_im1 = ijk2lmom_nh(Istr  ,Jstr  ,k,2)
-          qdm_nbq_a(l_c,nnew)=0.5*(qdm_nbq_a(l_c_jm1,nnew)
-     &                            +qdm_nbq_a(l_c_im1,nnew))
+          qdm_nbq_a(l_c,vnnew_nbq)=0.5*(qdm_nbq_a(l_c_jm1,vnnew_nbq)
+     &                            +qdm_nbq_a(l_c_im1,vnnew_nbq))
 #  ifdef MASKING
      &                                  *vmask(Istr-1,Jstr)
 #  endif
@@ -642,8 +681,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           l_c     = ijk2lmom_nh(Iend+1,Jstr  ,k,2)
           l_c_jm1 = ijk2lmom_nh(Iend  ,Jstr+1,k,2)
           l_c_im1 = ijk2lmom_nh(Iend  ,Jstr  ,k,2)
-          qdm_nbq_a(l_c,nnew)=0.5*(qdm_nbq_a(l_c_jm1,nnew)
-     &                            +qdm_nbq_a(l_c_im1,nnew))
+          qdm_nbq_a(l_c,vnnew_nbq)=0.5*(qdm_nbq_a(l_c_jm1,vnnew_nbq)
+     &                            +qdm_nbq_a(l_c_im1,vnnew_nbq))
 #  ifdef MASKING
      &                                  *vmask(Iend+1,Jstr)
 #  endif
@@ -656,8 +695,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           l_c     = ijk2lmom_nh(Istr-1,Jend+1,k,2)
           l_c_jm1 = ijk2lmom_nh(Istr-1,Jend  ,k,2)
           l_c_im1 = ijk2lmom_nh(Istr  ,Jend+1,k,2)
-          qdm_nbq_a(l_c,nnew)=0.5*(qdm_nbq_a(l_c_jm1,nnew)
-     &                            +qdm_nbq_a(l_c_im1,nnew))
+          qdm_nbq_a(l_c,vnnew_nbq)=0.5*(qdm_nbq_a(l_c_jm1,vnnew_nbq)
+     &                            +qdm_nbq_a(l_c_im1,vnnew_nbq))
 #  ifdef MASKING
      &                                *vmask(Istr-1,Jend+1)
 #  endif
@@ -670,8 +709,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           l_c     = ijk2lmom_nh(Iend+1,Jend+1,k,2)
           l_c_jm1 = ijk2lmom_nh(Iend+1,Jend  ,k,2)
           l_c_im1 = ijk2lmom_nh(Iend  ,Jend+1,k,2)
-          qdm_nbq_a(l_c,nnew)=0.5*(qdm_nbq_a(l_c_jm1,nnew)
-     &                            +qdm_nbq_a(l_c_im1,nnew))
+          qdm_nbq_a(l_c,vnnew_nbq)=0.5*(qdm_nbq_a(l_c_jm1,vnnew_nbq)
+     &                            +qdm_nbq_a(l_c_im1,vnnew_nbq))
 #  ifdef MASKING
      &                                *vmask(Iend+1,Jend+1)
 #  endif
@@ -679,8 +718,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
       endif
 # endif
 
-# undef nnew
-# undef nstp
+!# undef nnew
+!# undef nstp
 
       return
       end

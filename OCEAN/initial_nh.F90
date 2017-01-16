@@ -82,7 +82,8 @@
         slip_nbq = 0
 
         iteration_nbq_max=ndtnbq
-        soundspeed_nbq=csound_nbq !!! pseudoacoustic speed for tank
+        soundspeed_nbq =csound_nbq !!! pseudoacoustic speed for tank
+        soundspeed2_nbq=csound_nbq**2
 !       cw_int_nbq=soundspeed_nbq !!! ~ 2-10 sqrt(gH)_max
         cw_int_nbq=sqrt(9.81*4000.) !soundspeed_nbq !!! ~ 2-10 sqrt(gH)_max
 
@@ -166,7 +167,9 @@
 !... Initializes Acoustic waves:
 !----------------------------------------------------------------------
 !
-!        call density_nbq(10)
+#ifdef ACOUSTIC
+         call density_nbq(10)
+#endif
 
 
        endif     ! icall == 1
@@ -182,34 +185,25 @@
           call rho_eos
 
 !.........Initialize NBQ density field:
-# ifdef NBQ_CONS7
-          stop 'initial_nh !!!!!!!!'
-!         do l_nbq=1,neqcont_nh
-!            i = l2iq_nh(l_nbq)
-!            j = l2jq_nh(l_nbq)
-!            k = l2kq_nh(l_nbq)
-!            rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)*Hzr(i,j,k) 
-!         enddo
-# else
 !         do l_nbq=1,neqcont_nh
 !            i = l2iq_nh(l_nbq)
 !            j = l2jq_nh(l_nbq)
 !            k = l2kq_nh(l_nbq)
 !            rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
 !         enddo
-# endif
 
+# ifndef NBQ_VOL
 !.........Initialize NBQ density field:
-          do l_nbq=1,neqcont_nh
-            i = l2iq_nh(l_nbq)
-            j = l2jq_nh(l_nbq)
-            k = l2kq_nh(l_nbq)
-!           rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
-            rhp_bq_a(l_nbq,0:2)  = rho(i,j,k)
-            rho_nbq_ext(i,j,k)   = (rho0+rho(i,j,k))/rho0
-            rho_nbq_avg1(i,j,k)  = (rho0+rho(i,j,k))/rho0
-            rho_nbq_avg2(i,j,k)  = (rho0+rho(i,j,k))/rho0
-          enddo
+           do l_nbq=1,neqcont_nh
+             i = l2iq_nh(l_nbq)
+             j = l2jq_nh(l_nbq)
+             k = l2kq_nh(l_nbq)
+!!           rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
+             rhp_bq_a(l_nbq,0:2)  = rho(i,j,k)
+             rho_nbq_ext(i,j,k)   = (rho0+rho(i,j,k))/rho0
+             rho_nbq_avg1(i,j,k)  = (rho0+rho(i,j,k))/rho0
+             rho_nbq_avg2(i,j,k)  = (rho0+rho(i,j,k))/rho0
+           enddo
 
           rhobar_nbq     (:,:,:)=1.
           rhobar_nbq_avg1(:,:  )=1.
@@ -220,17 +214,16 @@
              rhobar_nbq(i,j,:)   = 0.
           enddo
           enddo
-
-          do j=jstrq_nh-1,jendq_nh+1
-          do i=istrq_nh-1,iendq_nh+1
-          do k=1,N
-             work2d(i,j)         = work2d(i,j)+Hzr(i,j,k)
-             rhobar_nbq(i,j,:)   = rhobar_nbq(i,j,:)+     &
-                                rho(i,j,k)*Hzr(i,j,k)
-          enddo
-          enddo
-          enddo
-!
+           do j=jstrq_nh-1,jendq_nh+1
+           do i=istrq_nh-1,iendq_nh+1
+           do k=1,N
+              work2d(i,j)         = work2d(i,j)+Hzr(i,j,k)
+              rhobar_nbq(i,j,:)   = rhobar_nbq(i,j,:)+     &
+                                 rho(i,j,k)*Hzr(i,j,k)
+           enddo
+           enddo
+           enddo
+ 
 !.......Rho0 added subsequently for added precision
  
         do j=jstrq_nh-1,jendq_nh+1
@@ -240,6 +233,17 @@
            rhobar_nbq_avg1(i,j)= rhobar_nbq(i,j,1) 
         enddo
         enddo
+
+# else
+!!        rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
+          rhp_bq_a  = 0.
+          rho_nbq_ext  = 1.
+          rho_nbq_avg1  = 1.
+          rho_nbq_avg2 = 1.
+          rhobar_nbq     (:,:,:)=1.
+          rhobar_nbq_avg1(:,:  )=1.
+# endif
+        
 
 !.......Some remaining initializations:
         rhssum_nbq_a(:)     = 0.d0

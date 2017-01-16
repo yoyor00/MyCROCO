@@ -97,6 +97,9 @@
 
 !       ilc=iic   ! number of time step since start
        ilc=1+iic-ntstart   ! number of time step since restart
+       ! To be conform with clasic (no xios) croco file first 
+       ! time step must be writen
+       if (ilc == 0) ilc=1
        CALL xios_update_calendar(ilc)
 
 !      call xios_send_field("scrum_time",time)
@@ -141,6 +144,9 @@
       call xios_send_field("Tcline",zz(:,:,1))
       zz(:,:,1)=REAL(Vtransform)
       call xios_send_field("Vtransform",zz(:,:,1))
+#ifdef NBQ
+      call xios_send_field("levels_rho",z_r(:,:,:))
+#endif
 # endif
 !
 ! Bathymetry.
@@ -184,7 +190,7 @@
 # endif
 
 # ifdef NBQ     
-      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:) - h(:,:)
+      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out) - h(:,:)
 # else
       work2d=zeta(:,:,fast_indx_out)
 # endif

@@ -19,6 +19,8 @@
 
 # include "def_bounds.h"
 
+      integer :: i1,i2,j1,j2,i,j
+
 !******************************************************************************************
 ! Inner MPI domain:
 ! cf: http://poc.obs-mip.fr/auclair/WOcean.fr/SNH/Restricted/NH-NBQ/Html_pages/Algebrique_Numerotation_Base.htm
@@ -27,6 +29,7 @@
 !*******************************************************************
 !     Definitions: *_INTER_NBQ logical variables
 !*******************************************************************
+
 
 # ifdef MPI 
 
@@ -57,7 +60,8 @@
        endif
 #  endif
 
-# endif  ! MPI
+# endif 
+
 
 !*******************************************************************
 !     NH domain:  mass grid-points
@@ -99,6 +103,114 @@
       endif
 # endif
 
+#ifdef MASKING
+!*******************************************************************
+! Grid-mask for NBQ-use
+!*******************************************************************
+
+      rmask_nbq(Istr_nh:Iend_nh  ,Jstr_nh:Jend_nh)   = rmask(Istr_nh:Iend_nh  ,Jstr_nh:Jend_nh)
+      umask_nbq(Istru_nh:Iendu_nh,Jstru_nh:Jendu_nh) = umask(Istru_nh:Iendu_nh,Jstru_nh:Jendu_nh)
+      vmask_nbq(Istrv_nh:Iendv_nh,Jstrv_nh:Jendv_nh) = vmask(Istrv_nh:Iendv_nh,Jstrv_nh:Jendv_nh)
+
+!  Exchange Grid
+      call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  &
+                        rmask_nbq(START_2D_ARRAY))
+      call exchange_u2d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
+                        umask_nbq(START_2D_ARRAY))
+      call exchange_v2d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
+                        vmask_nbq(START_2D_ARRAY))
+
+      i1 = istr_nh
+      i2 = iend_nh
+      do j=jstr_nh-1,jend_nh+1
+         if (WESTERN_EDGE) then
+            rmask_nbq(i1-1,j) = rmask_nbq(i1,j)
+         else
+            rmask_nbq(i1-1,j) = rmask_nbq(i1-1,j) * rmask_nbq(i1,j)
+         endif
+         if (EASTERN_EDGE) then
+            rmask_nbq(i2+1,j) = rmask_nbq(i2,j)
+         else
+            rmask_nbq(i2+1,j) = rmask_nbq(i2+1,j) * rmask_nbq(i2,j)
+        endif
+      enddo
+
+      j1 = jstr_nh
+      j2 = jend_nh
+      do i=istr_nh-1,iend_nh+1
+        if (SOUTHERN_EDGE) then
+           rmask_nbq(i,j1-1) = rmask_nbq(i,j1)
+        else
+           rmask_nbq(i,j1-1) = rmask_nbq(i,j1-1) * rmask_nbq(i,j1)
+        endif
+        if (NORTHERN_EDGE) then
+           rmask_nbq(i,j2+1) = rmask_nbq(i,j2)
+        else
+           rmask_nbq(i,j2+1) = rmask_nbq(i,j2+1) * rmask_nbq(i,j2)
+        endif
+      enddo
+
+      i1 = istru_nh
+      i2 = iendu_nh
+      do j=jstru_nh-1,jendu_nh+1
+         if (WESTERN_EDGE) then
+            umask_nbq(i1-1,j) = umask_nbq(i1,j)
+         else
+            umask_nbq(i1-1,j) = umask_nbq(i1-1,j) * umask_nbq(i1,j)
+         endif
+         if (EASTERN_EDGE) then
+            umask_nbq(i2+1,j) = umask_nbq(i2,j)
+         else
+            umask_nbq(i2+1,j) = umask_nbq(i2+1,j) * umask_nbq(i2,j)
+         endif
+      enddo
+
+      j1 = jstru_nh
+      j2 = jendu_nh
+      do i=istru_nh-1,iendu_nh+1
+        if (SOUTHERN_EDGE) then
+           umask_nbq(i,j1-1) = umask_nbq(i,j1)
+        else
+           umask_nbq(i,j1-1) = umask_nbq(i,j1-1) * umask_nbq(i,j1)
+        endif
+        if (NORTHERN_EDGE) then
+           umask_nbq(i,j2+1) = umask_nbq(i,j2)  
+        else
+           umask_nbq(i,j2+1) = umask_nbq(i,j2+1) * umask_nbq(i,j2)
+        endif
+      enddo
+
+      i1 = istrv_nh
+      i2 = iendv_nh
+      do j=jstrv_nh-1,jendv_nh+1
+         if (WESTERN_EDGE) then
+            vmask_nbq(i1-1,j) = vmask_nbq(i1,j)
+         else
+            vmask_nbq(i1-1,j) = vmask_nbq(i1-1,j) * vmask_nbq(i1,j)
+         endif
+         if (EASTERN_EDGE) then
+            vmask_nbq(i2+1,j) = vmask_nbq(i2,j)
+         else
+            vmask_nbq(i2+1,j) = vmask_nbq(i2+1,j) * vmask_nbq(i2,j)
+         endif
+      enddo
+
+      j1 = jstrv_nh
+      j2 = jendv_nh
+      do i=istrv_nh-1,iendv_nh+1
+        if (SOUTHERN_EDGE) then
+           vmask_nbq(i,j1-1) = vmask_nbq(i,j1)
+        else
+           vmask_nbq(i,j1-1) = vmask_nbq(i,j1-1) * vmask_nbq(i,j1)
+        endif
+        if (NORTHERN_EDGE) then
+           vmask_nbq(i,j2+1) = vmask_nbq(i,j2)
+        else
+           vmask_nbq(i,j2+1) = vmask_nbq(i,j2+1) * vmask_nbq(i,j2)
+        endif 
+      enddo
+#endif
+
       return
 
       end subroutine grid_def_nh
@@ -107,4 +219,4 @@
         subroutine grid_def_nh_empty
         return
         end 
-#endif /* NBQ */
+#endif

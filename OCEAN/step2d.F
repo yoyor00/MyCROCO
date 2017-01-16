@@ -389,9 +389,7 @@ C$OMP END MASTER
           zeta_new(i,j)=zeta(i,j,kstp) + dtfast*pm(i,j)*pn(i,j)
      &                                   *(DUon(i,j)-DUon(i+1,j  )
      &                                    +DVom(i,j)-DVom(i  ,j+1))
-#ifdef NBQ_CONS4
-     &        - rhscine_nh(l_nh,2)*dtfast/rho0
-#endif
+
 #ifdef ZONAL_NUDGING
           zeta(i,j,knew)=zeta_new(i,j)
 #endif
@@ -436,7 +434,9 @@ C$OMP END MASTER
 #ifdef NBQ
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+ 	  zeta_new(i,j)=zeta_new(i,j) -h(i,j)
+          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016	! PATCH LR
+ 	  zeta_new(i,j)=zeta_new(i,j) +h(i,j)
           Dnew(i,j)=zeta_new(i,j)
           zwrk(i,j)=cff0*zeta_new(i,j) /rhobar_nbq(i,j,knew)
      &             +cff1*zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
@@ -595,9 +595,6 @@ C$OMP END MASTER
       endif
 #endif
 
-#ifdef NBQ_CONSOUT
-      if (cff1.ne.0) call consout_nbq(20)
-#endif
 !
 !
 !======================================================================
@@ -1409,7 +1406,19 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
       endif
 
 # define WORK UFx
-      call step3d_nbq (Istr,Iend,Jstr,Jend, WORK)
+# ifdef NBQ_LF
+!     call step3d_lf_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_FB
+      call step3d_fb_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_RK2
+!     call step3d_rk2_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_RK3
+!     call step3d_rk3_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_RK3b
+!     call step3d_rk3b_nbq (Istr,Iend,Jstr,Jend, WORK)
+# else
+!     call step3d_imp_nbq (Istr,Iend,Jstr,Jend, WORK)
+# endif
 # undef WORK
 
 !
@@ -1758,24 +1767,40 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
+#  ifndef NBQ
           Dnew(Istr-1,j)=h(Istr-1,j)+zeta(Istr-1,j,knew)
+#  else
+          Dnew(Istr-1,j)=zeta(Istr-1,j,knew)
+#  endif
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=Jstr-1,JendR
+#  ifndef NBQ
           Dnew(Iend+1,j)=h(Iend+1,j)+zeta(Iend+1,j,knew)
+#  else
+          Dnew(Iend+1,j)=zeta(Iend+1,j,knew)
+#  endif
         enddo
       endif
 # endif
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=Istr-1,IendR
+#  ifndef NBQ
           Dnew(i,Jstr-1)=h(i,Jstr-1)+zeta(i,Jstr-1,knew)
+#  else
+          Dnew(i,Jstr-1)=zeta(i,Jstr-1,knew)
+#  endif
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=Istr-1,IendR
+#  ifndef NBQ
           Dnew(i,Jend+1)=h(i,Jend+1)+zeta(i,Jend+1,knew)
+#  else
+          Dnew(i,Jend+1)=zeta(i,Jend+1,knew)
+#  endif
         enddo
       endif
 # endif

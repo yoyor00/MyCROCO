@@ -71,6 +71,9 @@ C$    integer omp_get_thread_num
 #include "ocean2d.h"
 #include "scalars.h"
 #include "zoom.h"
+#ifdef NBQ
+# include "nbq.h"
+#endif 
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -223,7 +226,9 @@ C$    trd=omp_get_thread_num()
 !                                            ======= ==== ======= ==
         do i=Istr,Iend
 #   ifdef NBQ
-          cff=0.5*(zeta(i,Jstr,kstp)+zeta(i,Jstr-1,kstp))
+!         cff=0.5*(zeta(i,Jstr,kstp)+zeta(i,Jstr-1,kstp))
+          cff=0.5*(zeta(i,Jstr  ,kstp)/rhobar_nbq(Istr  ,j,kstp)
+     &            +zeta(i,Jstr-1,kstp)/rhobar_nbq(Istr  ,j,kstp))
 #   else
           cff=0.5*(h(i,Jstr-1)+h(i,Jstr)
      &            +zeta(i,Jstr,kstp)+zeta(i,Jstr-1,kstp))
@@ -236,14 +241,29 @@ C$    trd=omp_get_thread_num()
 !          else
 !            zx=(0.5*zeta(i,Jstr,kstp)+(cx-0.5)*zeta(i,Jstr,knew))/cx
 !          endif
-
+#   ifndef NBQ
           zx=(0.5+cx)*zeta(i,jstr,kstp)+(0.5-cx)*zeta(i,jstr-1,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(i,jstr,knew) +cx*zeta(i,jstr-1,kstp)
      &                               -(1.+cx)*zeta(i,jstr,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
-  
+#   else
+          zx=(0.5+cx)*(zeta(i,jstr  ,kstp)/rhobar_nbq(i,jstr  ,kstp)
+     &                   -h(i,jstr))
+     &      +(0.5-cx)*(zeta(i,jstr-1,kstp)/rhobar_nbq(i,jstr-1,kstp)
+     &                   -h(i,jstr-1))
+
+          if (cx .gt. 0.292893218813452) then
+            zx=zx + ( zeta(i,jstr  ,knew)/rhobar_nbq(i,jstr,knew)
+     &                  -h(i,jstr)
+     &           +cx*(zeta(i,jstr-1,kstp)/rhobar_nbq(i,jstr-1,kstp)
+     &                  -h(i,jstr-1))
+     &      -(1.+cx)*(zeta(i,jstr  ,kstp)/rhobar_nbq(i,jstr  ,kstp)
+     &                  -h(i,jstr))
+     &                           )*(1.-0.292893218813452/cx)**2
+          endif
+#   endif
           vbar(i,Jstr,knew)= 0.5*( (1.-cx)*vbar(i,Jstr,kstp)
      &                                     +cx*vbar(i,Jstr+1,kstp)
 #   ifdef M2_FRC_BRY
@@ -256,6 +276,9 @@ C$    trd=omp_get_thread_num()
      &                                           -zetabry_south(i)
 #   elif defined ZCLIMATOLOGY
      &                                              -ssh(i,Jstr-1)
+#    ifdef NBQ
+     &                                              +h(i,Jstr-1)
+#    endif
 #   endif
      &                           ) ) !*grad(i,Jstr)
 #   ifdef MASKING
@@ -389,7 +412,9 @@ C$    trd=omp_get_thread_num()
 !                                            ======= ==== ======= ==
         do i=Istr,Iend
 #   ifdef NBQ
-          cff=0.5*(zeta(i,Jend,kstp)+zeta(i,Jend+1,kstp))
+!         cff=0.5*(zeta(i,Jend,kstp)+zeta(i,Jend+1,kstp))
+          cff=0.5*(zeta(i,Jend  ,kstp)/rhobar_nbq(i,Jend  ,kstp)
+     &            +zeta(i,Jend+1,kstp)/rhobar_nbq(i,Jend+1,kstp))
 #   else
           cff=0.5*(h(i,Jend)+h(i,Jend+1)+
      &             zeta(i,Jend,kstp)+zeta(i,Jend+1,kstp))
@@ -402,13 +427,28 @@ C$    trd=omp_get_thread_num()
 !          else
 !            zx=(0.5*zeta(i,Jend,kstp)+(cx-0.5)*zeta(i,Jend,knew))/cx
 !          endif
-  
+#   ifndef NBQ
           zx=(0.5+cx)*zeta(i,jend,kstp)+(0.5-cx)*zeta(i,jend+1,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(i,jend,knew) +cx*zeta(i,jend+1,kstp)
      &                               -(1.+cx)*zeta(i,jend,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
+#   else
+          zx=(0.5+cx)*(zeta(i,jend  ,kstp)/rhobar_nbq(i,jend  ,kstp)
+     &                   -h(i,jend))
+     &      +(0.5-cx)*(zeta(i,jend+1,kstp)/rhobar_nbq(i,jend+1,kstp)
+     &                   -h(i,jend+1))
+          if (cx .gt. 0.292893218813452) then
+            zx=zx + ( zeta(i,jend  ,knew)/rhobar_nbq(i,jend  ,knew)
+     &                  -h(i,jend)
+     &           +cx*(zeta(i,jend+1,kstp)/rhobar_nbq(i,jend+1,kstp)
+     &                  -h(i,jend+1))
+     &       -(1.+cx)*(zeta(i,jend  ,kstp)/rhobar_nbq(i,jend  ,kstp)
+     &                  -h(i,jend))
+     &                           )*(1.-0.292893218813452/cx)**2
+          endif
+#   endif
 
           vbar(i,Jend+1,knew)= 0.5*( (1.-cx)*vbar(i,Jend+1,kstp)
      &                                       +cx*vbar(i,Jend,kstp)
@@ -422,6 +462,9 @@ C$    trd=omp_get_thread_num()
      &                                          -zetabry_north(i)
 #   elif defined ZCLIMATOLOGY
      &                                               -ssh(i,Jend) 
+#    ifdef NBQ
+     &                                                 +h(i,Jend)
+#    endif
 #   endif
      &                            ) )  !*grad(i,Jend+1)
 #   ifdef MASKING

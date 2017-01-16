@@ -131,10 +131,6 @@ C$    integer omp_get_thread_num
 # endif
       endif   !  iic==0
 
-# ifdef NBQ_CONSOUT
-      call consout_nbq(10)
-# endif
-
 # ifdef SOLVE3D
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
@@ -197,13 +193,6 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-
-#  ifdef NBQ_CONS5
-      call cons_nbq(30)
-#  endif
-#  ifdef NBQ_CONSOUT
-      call consout_nbq(11)
-#  endif
 
 #  undef I_RANGE
 #  undef J_RANGE

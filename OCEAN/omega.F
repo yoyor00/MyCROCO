@@ -139,22 +139,15 @@
           We(i,j,0)=cmorph*om_r(i,j)*on_r(i,j)*dh(i,j)/dt
 # else
           We(i,j,0)=0.
-#  ifdef NBQ_CONS2
-          We2(i,j,0)=0.
-#  endif
 # endif
+          wrk(i)=0.
         enddo
         do k=1,N,+1
           do i=Istr,Iend
             We(i,j,k)=We(i,j,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-# ifdef NBQ_CONS1
-     &                     -dHzdt(i,j,k)*om_r(i,j)*on_r(i,j)
-# endif
-# ifdef NBQ_CONS2
-            We2(i,j,k)=We2(i,j,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
-     &                              -Hvom(i,j+1,k)+Hvom(i,j,k)
-# endif
+     &         -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)*om_r(i,j)*on_r(i,j)
+            wrk(i)=wrk(i)+Hz(i,j,k)
 !
 !---------------------------------------------------------
 !  Compute the horizontal Courant number
@@ -173,11 +166,13 @@
 !---------------------------------------------------------
 !
         do i=Istr,Iend
-          wrk(i)=We(i,j,N)/(z_w(i,j,N)-z_w(i,j,0))
+          wrk2(i)=0.
+          wrk(i)=We(i,j,N)/wrk(i)
         enddo
-        do k=N-1,1,-1
+        do k=1,N-1,+1
           do i=Istr,Iend
-            We(i,j,k)=We(i,j,k)-wrk(i)*(z_w(i,j,k)-z_w(i,j,0))
+            wrk2(i)=wrk2(i)+Hz(i,j,k)
+            We(i,j,k)=We(i,j,k)-wrk(i)*wrk2(i)
           enddo
         enddo
         do i=Istr,Iend
@@ -187,19 +182,6 @@
 # endif
         enddo
                
-# ifdef NBQ_CONS2
-        do i=Istr,Iend
-          dzdt_nbq(i,j,N) = (We2(i,j,N)*pm(i,j)*pn(i,j)
-     &                        - (z_w(i,j,N)-z_w(i,j,0))*drhobardt(i,j))
-     &                        / rhobar_nbq_int(i,j)
-        enddo
-        do k=N-1,1,-1 
-          do i=Istr,Iend
-            dzdt_nbq(i,j,k) =  dzdt_nbq(i,j,N)*(z_w(i,j,k)-z_w(i,j,0))
-     &                                        /(z_w(i,j,N)-z_w(i,j,0))  
-          enddo
-        enddo
-# endif /* NBQ_CONS2 */
 !
 #ifdef VADV_ADAPT_IMP
 !---------------------------------------------------------

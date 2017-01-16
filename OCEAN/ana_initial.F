@@ -48,17 +48,21 @@ C$    integer omp_get_thread_num
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
+#ifdef KH_INST 
+      real rho1_exp,rho2_exp,h1_exp, Lt
+      real d(0:N)
+# endif
 #ifdef GRAV_ADJ_SOLITON
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
-# endif
+#endif
 #ifdef BASIN
       real cff1,cff2
 #endif
 #ifdef INTERNAL
       real cff
 #endif
-#ifdef IGW
+#if defined IGW || defined S2DV || defined REGIONAL_NBQ 
       real    cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
@@ -73,6 +77,9 @@ C$    integer omp_get_thread_num
 #ifdef RIP
       integer iper
       real xper,yper,xx,yy,xs,db,eps
+#endif
+#ifdef KH_INST 
+      real zint,depth,dz,gam,del,hint,du,drho
 #endif
 #ifdef GRAV_ADJ_SOLITON
       real zint,depth,dz,gam,del
@@ -143,6 +150,14 @@ C$    integer omp_get_thread_num
             fac=cff2 * (2.*cff3/(1.+cff3*cff3))**2
             vbar(i,j,1)=2.*fac*y*(-2.*cff1*tanh(cff1*x))
      &                                    *exp(-0.5*y*y)
+          enddo
+        enddo
+
+# elif defined KH_INST 
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=0.
+            zeta(i,j,2)=0.
           enddo
         enddo
 
@@ -263,6 +278,47 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 
+#  elif defined KH_INST
+        du = 1.
+        ubar=0.
+        vbar=0.
+        v   =0.
+! #ifdef MPI
+!        if (mynode.eq.0) open(unit=10,file='profil_u.dat')
+! #else
+!        open(unit=10,file='profil_u.dat')
+! #endif
+
+        do j=lbound(u,2),ubound(u,2)
+          do i=lbound(u,1),ubound(u,1)
+            hint = 0.
+            do k=1,N
+              u(i,j,k,:)  = du * (0. 
+     &         - tanh(( 
+     &             	z_r(i,j,k)
+     &             	+0.5*h(i,j)   
+     &             	+ 5.*sin(2.*3.14159265/286.*xr(i,j))
+     &               ) / 10. )     
+     &                           ) 
+              ubar(i,j,:) = ubar(i,j,:) + hz(i,j,k)   ! Hzr pas initialise... 
+     &                                  * u(i,j,k,1)
+              hint = hint               + hz(i,j,k)
+!  #ifdef MPI
+!               if (mynode.eq.0.and.i.eq.4.and.j.eq.1)
+!      &           write (10,*) 0.5*(z_r(i,j,k)+z_r(i-1,j,k)),u(i,j,k,1)
+!  #else
+!               if (i.eq.4.and.j.eq.1)
+!      &           write (10,*) 0.5*(z_r(i,j,k)+z_r(i-1,j,k)),u(i,j,k,1)
+!  #endif
+            enddo
+            ubar(i,j,:) = ubar(i,j,:) / hint
+          enddo
+        enddo
+! #ifdef MPI
+!        if (mynode.eq.0) close(10) 
+! #else
+!        close(10)
+! #endif
 #  else
         do k=1,N
           do j=JR_RANGE
@@ -421,6 +477,104 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 
+#  elif defined KH_INST
+#   define TH_PROFILE
+#   undef HORN_PROFILE
+
+#ifdef TH_PROFILE
+#ifdef MPI
+        if (mynode.eq.0) open(unit=10,file='CROCO_OUT/profil_rho.dat')
+#else
+        open(unit=10,file='CROCO_OUT/profil_rho.dat')
+#endif
+
+        drho=1.2
+        do j=lbound(t,2),ubound(t,2)
+           do i=lbound(t,1),ubound(t,1)
+              do k=1,N
+                 t(i,j,k,1,itemp) = 13. - ( 
+     &            + drho * (
+     &             0.5 - dtanh((  z_r(1,1,k)+0.5*h(1,1)
+!    &                          +10.1  *sin(2.*3.14159265/286.*xr(i,j))
+     &                         )/ 10.      ) 
+     &                     )
+!    &                  +1.e-6*sin(2.*3.14159265/286.*xr(i,j))
+!    &                  *exp(-(  z_r(i,j,k)+0.5*h(i,j))**2 / 20.2**2)
+     &                                    )  / Tcoef
+                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+#ifdef MPI
+                 if (mynode.eq.0.and.i.eq.4.and.j.eq.1) 
+     &              write(10,*) z_r(i,j,k),t(i,j,k,1,itemp)
+#else
+                 if (i.eq.4.and.j.eq.1) 
+     &              write(10,*) z_r(i,j,k),t(i,j,k,1,itemp)
+#endif
+              enddo
+           enddo
+        enddo
+
+#ifdef MPI
+        if (mynode.eq.0) close(10)
+#else
+        close(10)
+#endif
+#endif
+
+#   ifdef HORN_PROFILE
+!
+!  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
+!  The degeneration of large-scale interfacial gravity waves in lakes. 
+!  J. Fluid Mech., 434:181-207.
+!  --> initialy setup with variable salinity in the tank experiment of 
+!      Horn et al (2001); the conversion to temperature variations 
+!      through linear EOS gives unrealistic range
+!
+        rho1_exp = R0 - 1.  ! * 0.7286 /2.
+        rho2_exp = R0 + 1.  ! * 0.7286 /2.
+        h1_exp = 0.5 * h(1,1)
+        amp_exp = 0.0391
+        Lt=6.
+        do j=JR_RANGE
+           do i=IR_RANGE
+             do k=1,N
+                 d(k)=0.5*(rho1_exp+rho2_exp)               
+     &              + 0.5*(rho2_exp-rho1_exp)
+     &                   *tanh(exp(1.)*(-h1_exp 
+!    &                          -2.*amp_exp*(xr(i,j)-Lt/2.)/Lt 
+     &                          +abs(z_r(i,j,k)))/(0.015/2.))   ! 0.005=dz_q   
+                 t(i,j,k,1,itemp) = 13. - ( d(k) - R0 )  / Tcoef
+                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+              enddo
+           enddo
+        enddo
+!#   else
+!        depth=h(1,1)
+!        gam=0.9
+!        del=0.3
+!        dz=2*(z_r(1,1,2)-z_r(1,1,1));
+!        do j=JstrR,JendR
+!          do i=IstrR,IendR
+!            zint=depth*(del-1)+gam*del*depth*(2*xr(i,j)/xl - 1)
+!            do k=1,N
+!              t(i,j,k,1,itemp)=0.5*(5/Tcoef+10/Tcoef)
+!     &                        -0.5*(5/Tcoef-10/Tcoef)
+!     &                            *tanh((z_r(i,j,k)-zint)/dz);
+!              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+!            enddo
+!          enddo
+!        enddo
+#   endif /* HORN_PROFILE */ 
+#  elif defined ACOUSTIC 
+
+        do j=JstrR,JendR
+           do i=IstrR,IendR
+              do k=1,N
+                 t(i,j,k,1,itemp) = 13./Tcoef
+                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+              enddo
+           enddo
+        enddo
+
 #  elif defined GRAV_ADJ
 #   ifdef GRAV_ADJ_SOLITON
 #    define HORN_PROFILE
@@ -438,7 +592,6 @@ C$    integer omp_get_thread_num
         h1_exp = 0.7 * h(1,1)
         amp_exp = 0.0391
         Lt=6.
-        !write(6,*) h(1,1),h1_exp,R0,Tcoef
         do j=JstrR,JendR
            do i=IstrR,IendR
               do k=1,N
@@ -540,7 +693,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 
-#  elif defined IGW
+#  elif defined IGW || defined S2DV || defined REGIONAL_NBQ
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N
