@@ -49,13 +49,23 @@
          <field id="bostr" long_name="Kinematic bottom stress" unit="N/m2" />
          <field id="wstr" long_name="Kinematic wind stress" unit="N/m2" />
          <field id="temp" long_name="potential temperature" unit="Celsius" grid_ref="rho_3D" />
+
 #ifdef SALINITY
          <!-- SALINITY --> 
          <field id="salt" long_name="salinity" unit="PSU" grid_ref="rho_3D" />
          <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
          <!--  END SALINITY --> 
 #endif
+
          <field id="w" long_name="vertical velocity" unit="meter second-1" grid_ref="rho_3D"/>
+         <field id="levels_rho" long_name="levels depths (rho)" standard_name="levels depths (rho)" unit="m" grid_ref="rho_3D" />
+         <field id="levels_w" long_name="levels depths (w)" standard_name="levels depths (w)" unit="m" grid_ref="w_3D" />
+
+#ifdef NBQ
+         <field id="w_nbq" long_name="vertical velocity" unit="meter second-1" grid_ref="w_3D"/>
+         <field id="rho_nbq" long_name="NBQ-density anomaly" unit="kg meter-3" grid_ref="rho_3D"/>
+#endif
+
 #ifdef LMD_SKPP
          <field id="hbl" long_name="depth of planetary boundary layer" unit="meter" />
 #endif
