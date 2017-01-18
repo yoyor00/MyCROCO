@@ -186,8 +186,6 @@
 
       indx=3-nstp    !--> time index for target arrays;
 
-      if (mynode==104) write(6,*) iic
-!
 # ifdef UV_MIX_S_SPONGE
 !
 !====================================================================
@@ -703,8 +701,6 @@
           wz(i,j,N,indx)=wz(i,j,N,indx)+dt*cff1*(FX(i+1,j)-FX(i,j)
      &                                         + FE(i,j+1)-FE(i,j))
            
-      if (mynode==104) write(6,*) '=======>',dt*cff1,(FX(i+1,j)-FX(i,j)
-     &                           +FE(i,j+1)-FE(i,j))
         enddo
       enddo
 #  undef FX 

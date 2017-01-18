@@ -252,6 +252,16 @@
 
        endif 
 
+       if (icall == 3) then
+!**********************************************************************
+!
+!               NBQ initializations (PART II)
+!
+!**********************************************************************
+           div_nbq_a=0.D0
+           rhsd2_nbq=0.D0
+       endif
+      
 
       return
       end subroutine initial_nh

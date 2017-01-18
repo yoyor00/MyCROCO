@@ -62,7 +62,7 @@
          do j=jstr_n,jend_n
          do k=1,N    
 #  ifdef MASKING
-            if (umask_nbq(i,j)*umask_nbq(i+1,j).ne.0) then
+            if (umask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,1)  = nzuvw_n
@@ -87,7 +87,7 @@
          do i=istru_nh,iendu_nh
          do k=1,N    
 #  ifdef MASKING
-            if (umask_nbq(i,j)*umask_nbq(i,j+1).ne.0) then
+            if (umask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,1)  = nzuvw_n
@@ -452,7 +452,7 @@
          do j=jstr_n,jend_n
          do k=1,N                 
 #  ifdef MASKING
-            if (umask_nbq(i,j)*umask_nbq(i-1,j).ne.0) then
+            if (umask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,1)  = nzuvw_n
@@ -476,7 +476,7 @@
          do i=istru_nh,iendu_nh
          do k=1,N    
 #  ifdef MASKING
-            if (umask_nbq(i,j)*umask_nbq(i,j-1).ne.0) then
+            if (umask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,1)  = nzuvw_n
@@ -529,7 +529,7 @@
          do j=jstr_n,jend_n
          do k=1,N    
 #  ifdef MASKING
-            if (vmask_nbq(i,j)*vmask_nbq(i+1,j).ne.0) then
+            if (vmask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,2)  = nzuvw_n
@@ -553,7 +553,7 @@
          do i=istr_nh,iend_nh
          do k=1,N 
 #  ifdef MASKING
-            if (vmask_nbq(i,j)*vmask_nbq(i,j+1).ne.0) then
+            if (vmask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,2)  = nzuvw_n
@@ -888,7 +888,7 @@
          do j=jstr_n,jend_n
          do k=1,N    
 #  ifdef MASKING
-            if (vmask_nbq(i,j)*vmask_nbq(i-1,j).ne.0) then
+            if (vmask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,2)  = nzuvw_n
@@ -914,7 +914,7 @@
          do k=1,N
 
 #  ifdef MASKING
-            if (vmask_nbq(i,j)*vmask_nbq(i,j-1).ne.0) then
+            if (vmask_nbq(i,j).ne.0) then
 #  endif
                nzuvw_n               = nzuvw_n + 1 
                ijk2lmom_nh(i,j,k,2)  = nzuvw_n
@@ -968,7 +968,7 @@
          do j=jstr_n,jend_n
          do k=0,N    
 #  ifdef MASKING
-            if (rmask_nbq(i,j)*rmask_nbq(i+1,j).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #  endif
              nzuvw_n               = nzuvw_n + 1 
              ijk2lmom_nh(i,j,k,3)  = nzuvw_n
@@ -993,7 +993,7 @@
          do i=istr_nh,iend_nh
          do k=0,N    
 #  ifdef MASKING
-            if (rmask_nbq(i,j)*rmask_nbq(i,j+1).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #  endif
              nzuvw_n               = nzuvw_n + 1 
              ijk2lmom_nh(i,j,k,3)  = nzuvw_n
@@ -1223,7 +1223,7 @@
          do j=jstr_n,jend_n
          do k=0,N    
 #  ifdef MASKING
-            if (rmask_nbq(i,j)*rmask_nbq(i-1,j).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #  endif
              nzuvw_n               = nzuvw_n + 1 
              ijk2lmom_nh(i,j,k,3)  = nzuvw_n
@@ -1248,7 +1248,7 @@
          do i=istr_nh,iend_nh
          do k=0,N    
 #  ifdef MASKING
-            if (rmask_nbq(i,j)*rmask_nbq(i,j-1).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #  endif
              nzuvw_n               = nzuvw_n + 1 
              ijk2lmom_nh(i,j,k,3)  = nzuvw_n

@@ -43,8 +43,21 @@
 !  Fill external and internal forcing terms
 !*******************************************************************
 !
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
+                                       ruint_nbq(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
+                        ruext_nbq(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
+                                       rvint_nbq(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
+                        rvext_nbq(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  &
+                                       rwint_nbq(START_2D_ARRAY,0))
+
+#endif
 !       do l_nbq = nequ_nh(2)+1,nequ_nh(5)
-        do l_nbq = nequ_nh(1)+1,nequ_nh(6)
+        do l_nbq = 1,nequ_nh(7)
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
@@ -52,7 +65,7 @@
         enddo
 
 !       do l_nbq = neqv_nh(2)+1,neqv_nh(5)  
-        do l_nbq = neqv_nh(1)+1,neqv_nh(6)  
+        do l_nbq = nequ_nh(7)+1,neqv_nh(7)  
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
@@ -60,7 +73,7 @@
         enddo
 
 !       do l_nbq = neqw_nh(2)+1,neqw_nh(5)
-        do l_nbq = neqw_nh(1)+1,neqw_nh(6)
+        do l_nbq = neqv_nh(7)+1,neqw_nh(7)
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
@@ -74,13 +87,14 @@
 !*******************************************************************
 !
         cff=1/(rho0*real(ndtnbq))
+!#ifdef toto
 !        
 ! X-direction:
 !
         rubar_nbq(:,:)=0.
 !       do l_nbq = nequ_nh(2)+1,nequ_nh(5)
-        do l_nbq = nequ_nh(1)+1,nequ_nh(6)
-!       do l_nbq = 1,nequ_nh(7)
+!        do l_nbq = nequ_nh(1)+1,nequ_nh(6)
+        do l_nbq = 1,nequ_nh(7)
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
@@ -97,13 +111,20 @@
       call exchange_u2d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
                         rubar_nbq(START_2D_ARRAY))
 #endif
+ !     rubar_nbq=0.
+ !     ru_nbq_ext=0.
+
+#ifdef RVTK_DEBUG
+       call check_tab3d(ru_nbq_ext(:,:,1:N),'ru_nbq_ext (ru_nbq)','u')
+       call check_tab2d(rubar_nbq(:,:),'rubar_nbq (ru_nbq)','u')
+#endif    
 !
 ! Y-direction:
 !
         rvbar_nbq(:,:)=0.
 !       do l_nbq = neqv_nh(2)+1,neqv_nh(5)  
-        do l_nbq = neqv_nh(1)+1,neqv_nh(6)  
-!       do l_nbq = nequ_nh(7)+1,neqv_nh(7)  
+!       do l_nbq = neqv_nh(1)+1,neqv_nh(6)  
+        do l_nbq = nequ_nh(7)+1,neqv_nh(7)  
             i=l2imom_nh(l_nbq)
             j=l2jmom_nh(l_nbq)
             k=l2kmom_nh(l_nbq)
@@ -119,12 +140,18 @@
       call exchange_v2d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
                         rvbar_nbq(START_2D_ARRAY))
 #endif
+
+#ifdef RVTK_DEBUG
+       call check_tab3d(rv_nbq_ext(:,:,1:N),'rv_nbq_ext (ru_nbq)','v')
+       call check_tab2d(rvbar_nbq(:,:),'rvbar_nbq (ru_nbq)','v')
+#endif    
+
 !    
 ! Z-direction:
 !
 !       do l_nbq = neqw_nh(2)+1,neqw_nh(5)
-        do l_nbq = neqw_nh(1)+1,neqw_nh(6)
-!       do l_nbq = neqv_nh(7)+1,neqw_nh(7)
+!       do l_nbq = neqw_nh(1)+1,neqw_nh(6)
+        do l_nbq = neqv_nh(7)+1,neqw_nh(7)
             i = l2imom_nh (l_nbq)
             j = l2jmom_nh (l_nbq)
             k = l2kmom_nh (l_nbq)
@@ -137,6 +164,10 @@
                                        rw_nbq_ext(START_2D_ARRAY,0)) 
 
 #endif
+#ifdef RVTK_DEBUG
+       call check_tab3d(rw_nbq_ext(:,:,0:N),'rw_nbq_ext (ru_nbq)','v')
+#endif    
+
 
       elseif (icall.eq.6) then
 !

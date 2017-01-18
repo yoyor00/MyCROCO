@@ -59,8 +59,8 @@
 !-------------------------------------------------------------------
 !       Initialization of various test-cases
 !-------------------------------------------------------------------
-!
-        call initial_nh (3)
+!       
+        if (iif.eq.1.and.iic==1) call initial_nh (3)
 !
 !-------------------------------------------------------------------
 !  Get internal and external forcing terms for nbq equations:
@@ -107,9 +107,9 @@
 !
 !  XI-Direction:
 !
-        do l_nbq = nequ_nh(1)+1,nequ_nh(6)
+        do l_nbq = 1,nequ_nh(7)
           dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                      &
-                            - visc2_nbq_a(l_nbq) * rhsd2_nbq(l_nbq)  
+                            - visc2_nbq * rhsd2_nbq(l_nbq) 
           qdm_nbq_a(l_nbq,vnnew_nbq) = qdm_nbq_a(l_nbq,vnrhs_nbq)  + dtnbq*(           &
                                        dum_s                                           &
                                   + dqdmdt_nbq_a(l_nbq)                     )  
@@ -119,8 +119,9 @@
 !  U-momentum open boundary conditions
 !
 # ifdef OBC_NBQ
-         call unbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
+          call unbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
+          
 !
 !  Message passing: Send U (51) 
 !
@@ -129,19 +130,19 @@
 !
 !  ETA-Direction:
 !
-         do l_nbq = neqv_nh(1)+1,neqv_nh(6)  
-           dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                       &
+         do l_nbq = nequ_nh(7)+1,neqv_nh(7)  
+           dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                      &
                              - visc2_nbq * rhsd2_nbq(l_nbq) 
            qdm_nbq_a(l_nbq,vnnew_nbq) = qdm_nbq_a(l_nbq,vnrhs_nbq)  + dtnbq*(            &
                                 dum_s                                                    &
-                              + dqdmdt_nbq_a(l_nbq)                          )  
+                              + dqdmdt_nbq_a(l_nbq)                        )  
            rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)  +  dum_s    
          enddo 
 !
 !  V-momentum open boundary conditions
 !
 # ifdef OBC_NBQ
-           call vnbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
+            call vnbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
 !
 !  Message passing: Send V (52) 
@@ -159,7 +160,7 @@
 !
 !  Z-Direction: Explicit
 !
-           do l_nbq = neqw_nh(1)+1,neqw_nh(6)
+           do l_nbq = neqv_nh(7)+1,neqw_nh(7)
              dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                   &
                                - visc2_nbq * rhsd2_nbq(l_nbq)
              qdm_nbq_a(l_nbq,vnnew_nbq) = qdm_nbq_a(l_nbq,vnrhs_nbq)  + dtnbq*(        &
@@ -194,6 +195,7 @@
         call parallele_nbq(152)    
 # endif 
         call parallele_nbq(153)     
+
 !
 !-------------------------------------------------------------------
 !      Compute divergence term (AMUX):
@@ -211,6 +213,7 @@
 
 !  Receive
         call parallele_nbq(17) 
+
 !
 !-------------------------------------------------------------------
 !      Compute Second viscosity (product mat*vect):
@@ -234,7 +237,14 @@
         do l_nbq=1,neqcont_nh
           rhp_nbq_a(l_nbq,rnnew_nbq) = rhp_nbq_a(l_nbq,rnrhs_nbq)         &
                              - div_nbq_a(l_nbq,dnrhs_nbq) * dtnbq 
+  !        i     = l2iq_nh (l_nbq)
+  !        j     = l2jq_nh (l_nbq)
+  !        k     = l2kq_nh (l_nbq)
+  !        if (i==13.and.j==6) rhp_nbq_a(l_nbq,rnnew_nbq) = 0.
+  !        if (i==14.and.j==6) rhp_nbq_a(l_nbq,rnnew_nbq) = 0.
+          
         enddo
+
 !
 !-------------------------------------------------------------------
 !      Density open boundary conditions
@@ -277,10 +287,6 @@
 #endif      
       call density_nbq(20)
 
-#ifdef RVTK_DEBUG
-      call check_tab3d(rho_nbq_ext(:,:,1:N),'rho_nbq_ext step3d_nbq','r')
-      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq step3d_nbq','r')
-#endif    
    
       end subroutine step3d_fb_nbq
 

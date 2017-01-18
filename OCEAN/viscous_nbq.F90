@@ -29,6 +29,9 @@
       use module_nbq
       implicit none
 # include "param_F90.h"
+# include "scalars_F90.h"
+# include "ocean2d.h"
+# include "ocean3d.h"
 # include "grid.h"
 # include "nbq.h"
 
@@ -67,6 +70,7 @@
 !*******************************************************************
 
          indm_v=momi_nh(neqcont_nh+1)+1
+         rhsd2_nbq=0.
          call amux(                                                 &
               neqmom_nh(0)                                          &
              ,div_nbq_a(1:neqcont_nh,dnstp_nbq)                     &    ! div decentree (0)
@@ -95,6 +99,7 @@
 !*******************************************************************
 
          indm_v=momi_nh(neqcont_nh+1)+1
+         rhsd2_nbq=0.D0
          call amux(                                                 &
               neqmom_nh(0)                                          &
              ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
@@ -102,8 +107,7 @@
              ,momv_nh(1:indm_v)                                     &
              ,momj_nh(1:indm_v)                                     &
              ,momi_nh(1:neqcont_nh+1)                               &
-                 )   
-    
+                 )      
       endif
 
       if (icall.eq.12) then
@@ -123,6 +127,7 @@
 !*******************************************************************
          return
          indm_v=momi_nh(neqcont_nh+1)
+         rhsd2_nbq=0.
          call amux(                                                 &
               neqmom_nh(0)                                          &
              ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)

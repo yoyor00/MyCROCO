@@ -125,8 +125,24 @@
         enddo
         enddo
 
-!      rhobar_nbq=1.
-!      rho_nbq_ext=1.
+
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!        call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew))
+!        call exchange_r3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
+!                               ,rho_nbq_ext(START_2D_ARRAY,1))
+#endif
+
+        
+
+   !    rhobar_nbq=1.
+   !    rho_nbq_ext=1.
+
+#ifdef RVTK_DEBUG
+      call check_tab3d(rho_nbq_ext(:,:,1:N),'rho_nbq_ext (density_nbq)','r')
+      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq (density_nbq)','r')
+#endif    
+
+
 
 #endif
 

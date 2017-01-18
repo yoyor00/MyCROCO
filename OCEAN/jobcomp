@@ -411,7 +411,7 @@ rm -f flags.tmp
 # compile croco
 #
 $MAKE depend
-$MAKE -j 4
+$MAKE -j 6
 #$MAKE
 mv croco $RUNDIR
 #

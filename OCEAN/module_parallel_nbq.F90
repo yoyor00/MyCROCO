@@ -262,9 +262,6 @@ end subroutine 	borne_echange_qdm_nbq_a
 subroutine get_index_ghost_qdm_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
   use module_nh , only  : ijk2lmom_nh
-#ifdef MASKING
-  use module_nbq , only : umask_nbq, vmask_nbq, rmask_nbq
-#endif
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
@@ -278,11 +275,7 @@ subroutine get_index_ghost_qdm_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-#ifdef MASKING
-           if (umask_nbq(i+di,j+dj)==1) then  
-#else
            if (l_nbq>0) then  
-#endif
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -294,11 +287,7 @@ subroutine get_index_ghost_qdm_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-#ifdef MASKING
-           if (vmask_nbq(i+di,j+dj)==1) then  
-#else
            if (l_nbq>0) then  
-#endif
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -310,11 +299,7 @@ subroutine get_index_ghost_qdm_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-#ifdef MASKING
-           if (rmask_nbq(i+di,j+dj)==1) then  
-#else
            if (l_nbq>0) then  
-#endif
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -351,7 +336,7 @@ subroutine getblocks_qdm_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,bloc
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdm_nbq_a(0,0,ideb_r, ifin_r,  &
+   call get_index_ghost_qdm_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -414,9 +399,6 @@ end subroutine create_echange_qdm_nbq_a
 subroutine get_index_ghost_qdmU_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
   use module_nh  , only : ijk2lmom_nh
-#ifdef MASKING
-  use module_nbq , only : umask_nbq
-#endif
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
@@ -429,11 +411,7 @@ subroutine get_index_ghost_qdmU_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, 
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-#ifdef MASKING
-          if (umask_nbq(i+di,j+dj)==1) then
-#else
            if (l_nbq>0) then  
-#endif
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -469,7 +447,7 @@ subroutine getblocks_qdmU_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,blo
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdmU_nbq_a(0,0,ideb_r, ifin_r,  &
+   call get_index_ghost_qdmU_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -531,9 +509,6 @@ end subroutine create_echange_qdmU_nbq_a
 subroutine get_index_ghost_qdmV_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
   use module_nh ,  only : ijk2lmom_nh
-#ifdef MASKING
-  use module_nbq , only : vmask_nbq
-#endif
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
@@ -546,12 +521,7 @@ subroutine get_index_ghost_qdmV_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, 
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-!              write(200+par%rank,*) i,j,k," ---",ii," -- ",l_nbq
-#ifdef MASKING
-          if (vmask_nbq(i+di,j+dj)==1) then
-#else
            if (l_nbq>0) then  
-#endif
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -587,7 +557,7 @@ subroutine getblocks_qdmV_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,blo
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdmV_nbq_a(0,0,ideb_r, ifin_r,  &
+   call get_index_ghost_qdmV_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -649,9 +619,6 @@ end subroutine create_echange_qdmV_nbq_a
 subroutine get_index_ghost_qdmW_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
   use module_nh ,  only : ijk2lmom_nh
-#ifdef MASKING
-  use module_nbq , only : rmask_nbq
-#endif
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
@@ -664,11 +631,7 @@ subroutine get_index_ghost_qdmW_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, 
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-#ifdef MASKING
-          if (rmask_nbq(i+di,j+dj)==1) then
-#else
            if (l_nbq>0) then  
-#endif
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -704,7 +667,7 @@ subroutine getblocks_qdmW_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,blo
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdmW_nbq_a(0,0,ideb_r, ifin_r,  &
+   call get_index_ghost_qdmW_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -882,9 +845,6 @@ end subroutine 	borne_echange_div_nbq_a
 subroutine get_index_ghost_div_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
   use module_nh  , only : ijk2lq_nh
-#ifdef MASKING
-  use module_nbq , only : rmask_nbq
-#endif
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
@@ -897,18 +857,13 @@ subroutine get_index_ghost_div_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
         do k=kdeb(var),kfin(var)
            do j=jdeb(var),jfin(var)
               l_nbq=ijk2lq_nh(i,j,k)
-#ifdef MASKING
-              if (rmask_nbq(i+di,j+dj)==1) then
-#else
            if (l_nbq>0) then  
-#endif
                   ii=ii+1
                   l_index(ii)=l_nbq  
               endif
            enddo    
         enddo
       enddo
-!      write(3200+par%rank,*)
 end subroutine get_index_ghost_div_nbq_a
 !--------------------------------------------------------------------------
 
@@ -939,7 +894,7 @@ subroutine getblocks_div_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,bloc
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)  
    else
-   call get_index_ghost_div_nbq_a(0,0,ideb_r, ifin_r,  &
+   call get_index_ghost_div_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -1022,11 +977,13 @@ subroutine  Persistant_init
            if (szsend /= szrecv) then
               print *,"Attention U : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
            endif
-	   if ( (szsend >0).and.(szrecv>0) ) then
+	   if ( szrecv>0 ) then
 	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmU_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
+           endif
+	   if (szsend >0) then
 	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmU_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
@@ -1050,11 +1007,13 @@ subroutine  Persistant_init
            if (szsend /= szrecv) then
               print *,"Attention V : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
            endif
-	   if ((szsend >0).and.(szrecv>0) ) then
+	   if (szrecv>0)  then
 	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmV_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
+           endif
+	   if (szsend >0) then
 	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmV_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
@@ -1078,11 +1037,13 @@ subroutine  Persistant_init
            if (szsend /= szrecv) then
               print *,"Attention W : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
            endif
-	   if ( (szsend >0).and.(szrecv>0) ) then
+	   if (szrecv>0) then
 	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmW_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
+           endif
+	   if (szsend >0) then
 	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmW_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
@@ -1106,11 +1067,13 @@ subroutine  Persistant_init
            if (szsend /= szrecv) then
               print *,"Attention DIV : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
            endif
-	   if ( (szsend >0).and.(szrecv>0) ) then
+	   if (szrecv>0) then
 	      call MPI_RECV_INIT(div_nbq_a(1,dnnew_nbq),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagdiv_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_mv(p_nbreq_mv(dnnew_nbq),dnnew_nbq), ierr)
 	      p_nbreq_mv(dnnew_nbq)=p_nbreq_mv(dnnew_nbq)+1
+           endif
+	   if (szsend >0) then
 	      call MPI_SEND_INIT(div_nbq_a(1,dnnew_nbq),  1, ech_div_nbq(vois)%send, par%tvoisin(vois), &
 			     tagdiv_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_mv(p_nbreq_mv(dnnew_nbq),dnnew_nbq), ierr)

@@ -98,8 +98,8 @@
                   do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)     
                     i0 = i+iminmpi-1
                     if (tabread(i0,j0)/=tab(i,j)) then
-                       write(*,'(A,A,2x,4i4,3e20.12)')'BUGBIN = ',
-     &                 comment,i0,j0,i,j,
+                       write(*,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
+     &                 comment,mynode,i0,j0,i,j,
      &                 tabread(i0,j0),tab(i,j),
      &                 abs(tabread(i0,j0)-tab(i,j))
 !                       print *,'iif = ',iif,iic
@@ -216,9 +216,9 @@
                 do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)     
                     i0 = i+iminmpi-1
                      if (tabread(i0,j0,k)/=tab(i,j,k)) then
-                       write(*,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
+                       write(*,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
      &                 comment,
-     &                 i0,j0,i,j,k,
+     &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),
      &                 abs(tabread(i0,j0,k)-tab(i,j,k))
 !                      print *,'iif = ',iif,iic
