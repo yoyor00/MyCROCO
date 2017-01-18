@@ -406,12 +406,6 @@ rm -f flags.tmp
 #
 # compile croco
 #
-<<<<<<< HEAD
-$MAKE depend
-$MAKE -j 6
-#$MAKE
-=======
 $MAKE 
->>>>>>> 34aaa201a55744918e586902a2baa92204c60633
 mv croco $RUNDIR
 #
