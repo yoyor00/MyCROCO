@@ -36,8 +36,9 @@
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
-#undef  REGIONAL        /* REGIONAL Applications */
-#define REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
+#undef  S2DV            /* S2DV sections */ 
+#define REGIONAL        /* REGIONAL Applications */
+#undef  REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
 
 
 #if defined REGIONAL
@@ -387,15 +388,18 @@
 !
 */
 # undef  OPENMP
+# define KH_INST2D
+# undef  KH_INST3D
 # undef  KH_INSTY
 # define MPI
 # define NBQ
+# define XIOS 
 # ifdef NBQ
-#  define NBQ_OBC
+#  undef  OBC_NBQ
 #  undef  NBQ_VOL
 #  undef  NBQ_IMP
-#  undef  NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
+#  define NBQ_IMP_LU
+#  define NBQ_IMP_TRIDIAG
 #  undef  NBQ_IMPIJK 
 #  define NBQ_FB
 #  undef  NBQ_LF
@@ -403,8 +407,13 @@
 #  undef  NBQ_RK3
 #  undef  NBQ_RK3b
 # endif
+# undef  MASKING 
+# undef  OBC_EAST
+# undef  OBC_WEST
+# undef  OBC_SOUTH
+# undef  OBC_NORTH
 # define UV_VIS2
-# undef SALINITY
+# define SALINITY
 # define UV_MIX_S
 # define UV_VIS_SMAGO
 # define SOLVE3D
@@ -418,13 +427,14 @@
 # define ANA_STFLUX
 # define ANA_SRFLUX
 # define ANA_BTFLUX
-# undef ANA_SSFLUX
-# undef ANA_BSFLUX
+# define ANA_SSFLUX
+# define ANA_BSFLUX
 # ifndef KH_INSTY
 #  define EW_PERIODIC
 # else
 #  define NS_PERIODIC
 # endif
+
 #elif defined ACOUSTIC 
 /*
 !                       ACOUSTIC WAVE TESTCASE 
@@ -472,6 +482,7 @@
 # undef  OPENMP
 # define MPI
 # define NBQ
+# undef  XIOS 
 # ifdef NBQ
 #  define GRAV_ADJ_SOLITON
 #  define NBQ_FB
@@ -585,20 +596,21 @@
 # undef OPENMP		/* <--  debug mode */
 # define MPI		/* <--  debug mode */
                       /* I/O server */
-# undef XIOS
+# define XIOS
                       /* Equation of State */
-# undef SALINITY
+# undef  SALINITY
                       /* Open Boundary Conditions */
 # ifdef TIDES
 #   define TIDERAMP
 #   define SSH_TIDES
-#   define POT_TIDES
+#   undef  POT_TIDES
 #   define UV_TIDES 
 # endif
-# undef OBC_EAST
+# define OBC_EAST
 # define OBC_WEST
-# undef OBC_SOUTH
-# define OBC_NORTH
+# undef  OBC_SOUTH
+# undef  OBC_NORTH
+# define NS_PERIODIC
                      /* Model dynamics */
 # define SOLVE3D 
 # define UV_ADV
@@ -613,7 +625,7 @@
                       /* Grid configuration */
 # define SPHERICAL
 # define CURVGRID
-# define MASKING
+# undef  MASKING
 # define NEW_S_COORD
 # undef  WET_DRY
                       /* Non-Boussinesq */
@@ -632,6 +644,7 @@
 # endif
                       /* Sponge layers for UV and TS */
 # define SPONGE
+# define ANA_VMIX
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_SRFLUX
@@ -644,10 +657,12 @@
 # define M2CLIMATOLOGY		/* <--  needed for tides forcing */
 # define M3CLIMATOLOGY
 # define TCLIMATOLOGY
+# define ANA_INITIAL
 # define ANA_SSH		/* <--  needed for z forcing initialisation to 0 */
 # define ANA_M2CLIMA		/* <--  needed for barotropic forcing initialisation to 0  */
 # define ANA_M3CLIMA
 # define ANA_TCLIMA
+# define EXPERIMENT3
 # define M2NUDGING
 # define M3NUDGING
 # define TNUDGING
@@ -665,8 +680,9 @@
                       /* Parallelization */
 # undef OPENMP		/* <--  debug mode */
 # define MPI		/* <--  debug mode */
+!# undef MPI		/* <--  debug mode */
                       /* I/O server */
-# define XIOS
+# undef XIOS
                       /* Equation of State */
 # define SALINITY
                       /* Open Boundary Conditions */
@@ -1239,9 +1255,9 @@
 ! free-surface flows. 
 ! Int. J. Numer. Methods Fluids 42, 929–952.
 */
-# undef  TANKY
-# define  XIOS
-# define  MPI
+# define  TANKY
+# undef  XIOS
+# define MPI
 # define  NBQ
 # ifdef NBQ
 #  undef  IMP_SLOW

@@ -974,9 +974,9 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_qdmU_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_qdmU_nbq(vois)%recv, szrecv,ierr) 
-           if (szsend /= szrecv) then
-              print *,"Attention U : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
-           endif
+!          if (szsend /= szrecv) then
+!             print *,"Attention U : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
 	   if ( szrecv>0 ) then
 	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmU_Recv(vois)*coef, par%comm2d, &
@@ -1004,9 +1004,9 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_qdmV_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_qdmV_nbq(vois)%recv, szrecv,ierr) 
-           if (szsend /= szrecv) then
-              print *,"Attention V : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
-           endif
+!          if (szsend /= szrecv) then
+!             print *,"Attention V : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
 	   if (szrecv>0)  then
 	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmV_Recv(vois)*coef, par%comm2d, &
@@ -1034,9 +1034,9 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_qdmW_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_qdmW_nbq(vois)%recv, szrecv,ierr) 
-           if (szsend /= szrecv) then
-              print *,"Attention W : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
-           endif
+!          if (szsend /= szrecv) then
+!             print *,"Attention W : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
 	   if (szrecv>0) then
 	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmW_Recv(vois)*coef, par%comm2d, &
@@ -1064,9 +1064,9 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_div_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_div_nbq(vois)%recv, szrecv,ierr) 
-           if (szsend /= szrecv) then
-              print *,"Attention DIV : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
-           endif
+!          if (szsend /= szrecv) then
+!             print *,"Attention DIV : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
 	   if (szrecv>0) then
 	      call MPI_RECV_INIT(div_nbq_a(1,dnnew_nbq),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagdiv_Recv(vois)*coef, par%comm2d, &

@@ -12,7 +12,6 @@
 #include "cppdefs.h"
 
       subroutine ana_initial (tile)
-
       implicit none
 #include "param.h"
        integer tile, trd
@@ -31,6 +30,10 @@ C$    integer omp_get_thread_num
 !
 #ifdef AGRIF
       use Agrif_Util
+#endif
+#ifdef KH_INST
+      use module_nh
+      use module_nbq
 #endif
       implicit none
 #include "param.h"
@@ -79,7 +82,8 @@ C$    integer omp_get_thread_num
       real xper,yper,xx,yy,xs,db,eps
 #endif
 #ifdef KH_INST 
-      real zint,depth,dz,gam,del,hint,du,drho
+      real zu0,zr0,zint,depth,dz,gam,del,hint,du,drho
+      real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
 #ifdef GRAV_ADJ_SOLITON
       real zint,depth,dz,gam,del
@@ -279,46 +283,311 @@ C$    integer omp_get_thread_num
         enddo
 
 #  elif defined KH_INST
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+!     &                        z_w(START_2D_ARRAY,0))
+!      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!     &                        z_r(START_2D_ARRAY,1))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                        xr(START_2D_ARRAY))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                        yr(START_2D_ARRAY))
+!      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!     &                        Hz(START_2D_ARRAY,1))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
+#   endif 
+
+!******************************
+! KH_INST: Initial Version
+!     (no initialization)
+!******************************
+#    undef KH_INST_INITVERSION
+
+#    ifdef KH_INST_INITVERSION
+
         du = 1.
         ubar=0.
         vbar=0.
+        u   =0.
         v   =0.
-! #ifdef MPI
-!        if (mynode.eq.0) open(unit=10,file='profil_u.dat')
-! #else
-!        open(unit=10,file='profil_u.dat')
-! #endif
 
-        do j=lbound(u,2),ubound(u,2)
-          do i=lbound(u,1),ubound(u,1)
+        do j=JR_RANGE
+        do i=IU_RANGE
+!        do j=lbound(u,2),ubound(u,2)
+!        do i=lbound(u,1),ubound(u,1)
             hint = 0.
             do k=1,N
-              u(i,j,k,:)  = du * (0. 
+              u(i,j,k,1)  = du * (0. 
      &         - tanh(( 
      &             	z_r(i,j,k)
      &             	+0.5*h(i,j)   
      &             	+ 5.*sin(2.*3.14159265/286.*xr(i,j))
      &               ) / 10. )     
      &                           ) 
-              ubar(i,j,:) = ubar(i,j,:) + hz(i,j,k)   ! Hzr pas initialise... 
+              u(i,j,k,2)  = u(i,j,k,1)
+              u(i,j,k,3)  = u(i,j,k,1)
+
+              ubar(i,j,1) = ubar(i,j,1) + 0.5*(hz(i,j,k)+hz(i-1,j,k))   ! Hzr pas initialise... 
      &                                  * u(i,j,k,1)
-              hint = hint               + hz(i,j,k)
-!  #ifdef MPI
-!               if (mynode.eq.0.and.i.eq.4.and.j.eq.1)
-!      &           write (10,*) 0.5*(z_r(i,j,k)+z_r(i-1,j,k)),u(i,j,k,1)
-!  #else
-!               if (i.eq.4.and.j.eq.1)
-!      &           write (10,*) 0.5*(z_r(i,j,k)+z_r(i-1,j,k)),u(i,j,k,1)
-!  #endif
+              hint = hint               + 0.5*(hz(i,j,k)+hz(i-1,j,k))
+
             enddo
-            ubar(i,j,:) = ubar(i,j,:) / hint
+            ubar(i,j,1) = ubar(i,j,1) / hint
+            ubar(i,j,2) = ubar(i,j,1)
+            ubar(i,j,3) = ubar(i,j,1)
+        enddo
+        enddo
+
+#    ifdef RVTK_DEBUG
+        call check_tab2d(xr(:,:),'xr ana_initial','r')
+#    endif
+
+!******************************
+! KH_INST: 2D Version
+!******************************
+#   elif defined KH_INST2D
+
+! PARAMETERS
+        du = 1.
+!       du = 0.5
+
+        ubar=0.
+        vbar=0.
+        u   =0.
+        v   =0.
+
+        do j=JR_RANGE
+        do i=IU_RANGE
+!        do j=lbound(u,2),ubound(u,2)
+!        do i=lbound(u,1),ubound(u,1)
+
+        depth=h(i,j)
+!
+! TRADITIONAL KH INSTABILITY : VELOCITY AND DENSITY SHEARS AT SAME DEPTHS (zu0=zr0)
+        zu0=-0.5*depth
+        hu0=10.
+! SHIFTED PROFILE FOR THERMOCLINE ENTRAINMENT STUDIES
+!       zu0=-0.4*depth
+!       hu0=10.
+! PERTURBATION 
+! PARAMETERS
+        hup0=0.15*depth
+!
+
+            hint = 0.
+            do k=1,N
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! PELLETIER ET AL CONFIG
+! LINEAR SHEAR WITHIN MIXED LAYER
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             u(i,j,k,1)  = du * 
+     &           ( - tanh( ( z_r(i,j,k)-zu0 ) / hu0 )  )
+
+!ajout d'une perturbation
+             u(i,j,k,1)  = u(i,j,k,1)+0.01*du * 
+     &                 (-2.*tanh( ( z_r(i,j,k)-zu0  
+     &                        ) / hup0 ) )*
+     &                 (1-tanh( ( z_r(i,j,k)-zu0  
+     &                          ) / hup0 )**2. )
+     &                *(
+!    &                 1.*sin( 2.*3.14159265/xl*xr(i,j))
+     &               + 1.*sin( 4.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin( 6.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin( 8.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin(10.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin(12.*3.14159265/xl*xr(i,j))
+     &                 )
+              u(i,j,k,2)  = u(i,j,k,1)
+              u(i,j,k,3)  = u(i,j,k,1)
+
+! Calcul vitesse barotrope
+!             ubar(i,j,1) = ubar(i,j,1) + hz(i,j,k)   ! Hzr pas initialise... 
+!    &                                  * u(i,j,k,1)
+!             hint = hint               + hz(i,j,k)
+
+              ubar(i,j,1) = ubar(i,j,1) + 0.5*(hz(i,j,k)+hz(i-1,j,k))   ! Hzr pas initialise... 
+     &                                  * u(i,j,k,1)
+              hint = hint               + 0.5*(hz(i,j,k)+hz(i-1,j,k))
+            enddo
+            ubar(i,j,1) = ubar(i,j,1) / hint
+            ubar(i,j,2) = ubar(i,j,1)
+            ubar(i,j,3) = ubar(i,j,1)
           enddo
         enddo
-! #ifdef MPI
-!        if (mynode.eq.0) close(10) 
-! #else
-!        close(10)
-! #endif
+#    ifdef NBQ
+!ajout perturbation sur W
+        do j=lbound(t,2),ubound(t,2)
+           do i=lbound(t,1),ubound(t,1)
+              do k=0,N
+!                wz(i,j,k,:) = 0.0*du * 
+                 wz(i,j,k,:) = -0.01*du * 
+     &                         hup0 * 
+     &                 (1-tanh( ( z_w(i,j,k)-zu0  
+     &                        ) / hup0 )**2.    )
+     &                *(3.14159265/xl)*(
+!    &                  2.*cos( 2.*3.14159265/xl*xp(i,j))
+     &               +  4.*cos( 4.*3.14159265/xl*xp(i,j))
+!    &               +  6.*cos( 6.*3.14159265/xl*xp(i,j))
+!    &               +  8.*cos( 6.*3.14159265/xl*xp(i,j))
+!    &               + 10.*cos(10.*3.14159265/xl*xp(i,j))
+!    &               + 12.*cos(12.*3.14159265/xl*xp(i,j))
+     &                 )
+            enddo
+          enddo
+        enddo
+#    endif
+
+!******************************
+! KH_INST: 3D Version
+!******************************
+#   else
+
+        ubar=0.
+        vbar=0.
+        u   =0.
+        v   =0.
+! PARAMETERS
+        du = 1.
+!       do j=lbound(u,2),ubound(u,2)
+!       do i=lbound(u,1),ubound(u,1)
+        do j=JR_RANGE
+        do i=IU_RANGE
+! PARAMETERS
+        depth=h(i,j)
+!
+! TRADITIONAL KH INSTABILITY : VELOCITY AND DENSITY SHEARS AT SAME DEPTHS (zu0=zr0)
+!       zu0=-0.5*depth
+        zu0=-0.45*depth
+        hu0=10.
+! SHIFTED PROFILE FOR THERMOCLINE ENTRAINMENT STUDIES
+!       zu0=-0.4*depth
+!       hu0=10.
+! PERTURBATION 
+        hup0=0.15*depth
+!
+! PERTURBATION 3D
+!       eps3D=0.
+        eps3D=0.2
+
+            hint = 0.
+            do k=1,N
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! PELLETIER ET AL CONFIG
+! LINEAR SHEAR WITHIN MIXED LAYER
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             u(i,j,k,1)  = du * 
+     &           ( - tanh( ( z_r(i,j,k)-zu0 ) / hu0 )  )
+!ajout d'une perturbation
+             u(i,j,k,1)  = u(i,j,k,1)+0.01*du * 
+     &                 (-2.*tanh( ( z_r(i,j,k)-zu0  
+     &                        ) / hup0 ) )*
+     &                 (1-tanh( ( z_r(i,j,k)-zu0  
+     &                          ) / hup0 )**2. )
+     &                *(
+!    &                 1.*sin( 2.*3.14159265/xl*xr(i,j))
+     &               + 1.*sin( 4.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin( 6.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin( 8.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin(10.*3.14159265/xl*xr(i,j))
+!    &               + 1.*sin(12.*3.14159265/xl*xr(i,j))
+     &                 )
+     &                 *(1.+eps3D*(
+!    &                 1.*sin( 2.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin( 4.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin( 6.*3.14159265/el*yr(i,j))
+     &               + 1.*sin( 8.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin(10.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin(12.*3.14159265/el*yr(i,j))
+     &                             )
+     &                 )
+              u(i,j,k,2)  = u(i,j,k,1)
+              u(i,j,k,3)  = u(i,j,k,1)
+
+! Calcul vitesse barotrope
+              ubar(i,j,1) = ubar(i,j,1) + 0.5*(hz(i,j,k)+hz(i-1,j,k))   ! Hzr pas initialise... 
+     &                                  * u(i,j,k,1)
+              hint = hint               + 0.5*(hz(i,j,k)+hz(i-1,j,k))
+            enddo
+            ubar(i,j,1) = ubar(i,j,1) / hint
+            ubar(i,j,2) = ubar(i,j,1)
+            ubar(i,j,3) = ubar(i,j,1)
+          enddo
+        enddo
+#    ifdef NBQ
+!ajout perturbation sur W
+        do j=lbound(t,2),ubound(t,2)
+           do i=lbound(t,1),ubound(t,1)
+              do k=0,N
+!                wz(i,j,k,:) = 0.0*du * 
+                 wz(i,j,k,:) = -0.01*du * 
+     &                         hup0 * 
+     &                 (1-tanh( ( z_w(1,1,k)-zu0  
+     &                        ) / hup0 )**2.    )
+     &                *(3.14159265/xl)*(
+!    &                  2.*cos( 2.*3.14159265/xl*xp(i,j))
+     &               +  4.*cos( 4.*3.14159265/xl*xp(i,j))
+!    &               +  6.*cos( 6.*3.14159265/xl*xp(i,j))
+!    &               +  8.*cos( 6.*3.14159265/xl*xp(i,j))
+!    &               + 10.*cos(10.*3.14159265/xl*xp(i,j))
+!    &               + 12.*cos(12.*3.14159265/xl*xp(i,j))
+     &                 )
+     &                 *(1.+eps3D*(
+!    &                 1.*sin( 2.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin( 4.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin( 6.*3.14159265/el*yr(i,j))
+     &               + 1.*sin( 8.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin(10.*3.14159265/el*yr(i,j))
+!    &               + 1.*sin(12.*3.14159265/el*yr(i,j))
+     &                             )
+     &                 )
+            enddo
+          enddo
+        enddo
+#    endif
+
+#   endif
+
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 u(START_2D_ARRAY,1,1))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 ubar(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 u(START_2D_ARRAY,1,2))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 ubar(START_2D_ARRAY,2))
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 u(START_2D_ARRAY,1,3))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 ubar(START_2D_ARRAY,3))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,       
+     &                                 v(START_2D_ARRAY,1,1))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 vbar(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,       
+     &                                 v(START_2D_ARRAY,1,2))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 vbar(START_2D_ARRAY,2))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,       
+     &                                 v(START_2D_ARRAY,1,3))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   
+     &                                 vbar(START_2D_ARRAY,3))
+#    ifdef S2DV
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                                 wz(START_2D_ARRAY,0,1))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                                 wz(START_2D_ARRAY,0,2))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                                 wz(START_2D_ARRAY,0,3))
+#    endif
+#   endif
+
+
+!******************************
+! KH_INST: end
+!******************************
 #  else
         do k=1,N
           do j=JR_RANGE
@@ -482,19 +751,21 @@ C$    integer omp_get_thread_num
 #   undef HORN_PROFILE
 
 #ifdef TH_PROFILE
-#ifdef MPI
-        if (mynode.eq.0) open(unit=10,file='CROCO_OUT/profil_rho.dat')
-#else
-        open(unit=10,file='CROCO_OUT/profil_rho.dat')
-#endif
+#    undef KH_INST_INITVERSION
+
+!******************************
+! KH_INST: Initial Version
+!     (no initialization)
+!******************************
+#   ifdef KH_INST_INITVERSION
 
         drho=1.2
-        do j=lbound(t,2),ubound(t,2)
-           do i=lbound(t,1),ubound(t,1)
+        do j=JstrR,JendR
+           do i=IstrR,IendR
               do k=1,N
                  t(i,j,k,1,itemp) = 13. - ( 
      &            + drho * (
-     &             0.5 - dtanh((  z_r(1,1,k)+0.5*h(1,1)
+     &             0.5 - dtanh((  z_r(i,j,k)+0.5*h(i,j)
 !    &                          +10.1  *sin(2.*3.14159265/286.*xr(i,j))
      &                         )/ 10.      ) 
      &                     )
@@ -502,22 +773,177 @@ C$    integer omp_get_thread_num
 !    &                  *exp(-(  z_r(i,j,k)+0.5*h(i,j))**2 / 20.2**2)
      &                                    )  / Tcoef
                  t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-#ifdef MPI
-                 if (mynode.eq.0.and.i.eq.4.and.j.eq.1) 
-     &              write(10,*) z_r(i,j,k),t(i,j,k,1,itemp)
-#else
-                 if (i.eq.4.and.j.eq.1) 
-     &              write(10,*) z_r(i,j,k),t(i,j,k,1,itemp)
-#endif
+                 t(i,j,k,3,itemp) = t(i,j,k,1,itemp)
               enddo
            enddo
         enddo
 
-#ifdef MPI
-        if (mynode.eq.0) close(10)
-#else
-        close(10)
-#endif
+!******************************
+! KH_INST: 2D Version
+!******************************
+#   elif defined KH_INST2D
+
+! PARAMETERS
+! TRADITIONAL KH INSTABILITY : VELOCITY AND DENSITY SHEARS AT SAME DEPTHS (zu0=zr0)
+!
+        drho=1.2
+!       zr0=zu0
+        zr0=-0.5*depth
+!       zr0=-0.2*depth
+        htemp0=10.
+        hsalt0=10.
+!       hsalt0=20.
+!
+        do j=JstrR,JendR
+           do i=IstrR,IendR
+              do k=1,N
+! TRADITIONAL KH INSTABILITY PROFILE
+                 t(i,j,k,1,itemp) = 
+     &             13.+ 1.0*drho * (
+!    &             13.+ 0.5*drho * (
+!    &             13.- 0.5*drho * (
+     &                0.1*(z_r(i,j,k)-zr0)/depth+ !+strat lin
+     &                   dtanh( (z_r(i,j,k)-zr0)/htemp0 ) 
+     &                                    )  / Tcoef
+!
+                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+                 t(i,j,k,3,itemp) = t(i,j,k,1,itemp)
+              enddo
+           enddo
+        enddo
+#    ifdef SALINITY
+
+        do j=JstrR,JendR
+           do i=IstrR,IendR
+              do k=1,N
+                 t(i,j,k,1,isalt) =   
+! TRADITIONAL KH INSTABILITY PROFILE
+!    &           t(i,j,k,1,itemp)
+!    &               35.- 0.5*drho*( 
+!    &               35.- 1.5*drho*( 
+!    &                   0.1*(z_r(i,j,k)-zr0)/depth+ !+strat lin
+!    &                   dtanh( (z_r(i,j,k)-zr0)/ hsalt0 ) 
+!    &                              )  / Scoef
+!
+     &            + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(i,j,k)-zr0)/hsalt0 ) )**2.
+!    &                     )/Scoef      
+     &                     )
+!
+! ANOMALY CONCENTRATED AT MID DEPTH, PASSIVE TRACER
+!    &            + 0.05 *drho* (
+!    &              1. - (dtanh( (z_r(i,j,k)-zr0)/hsalt0 ) )**2.
+!    &                     )
+!
+                 t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
+                 t(i,j,k,3,isalt) = t(i,j,k,1,isalt)
+              enddo
+           enddo
+        enddo
+#    endif
+
+!******************************
+! KH_INST: 3D Version
+!******************************
+#   else
+! PARAMETERS
+! TRADITIONAL KH INSTABILITY : VELOCITY AND DENSITY SHEARS AT SAME DEPTHS (zu0=zr0)
+!
+        drho=1.2
+!       zr0=zu0
+        zr0=-0.5*depth
+!       zr0=-0.2*depth
+        htemp0=10.
+        hsalt0=10.
+!       hsalt0=20.
+!
+        do j=JstrR,JendR
+           do i=IstrR,IendR
+              do k=1,N
+! TRADITIONAL KH INSTABILITY PROFILE
+                 t(i,j,k,1,itemp) = 
+     &             13.+ 1.0*drho * (
+!    &             13.+ 0.5*drho * (
+!    &             13.- 0.5*drho * (
+     &                0.1*(z_r(i,j,k)-zr0)/depth+ !+strat lin
+     &                   dtanh( (z_r(i,j,k)-zr0)/htemp0 ) 
+     &                                    )  / Tcoef
+!
+                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+                 t(i,j,k,3,itemp) = t(i,j,k,1,itemp)
+              enddo
+           enddo
+        enddo
+
+#   endif
+
+#   ifdef SALINITY
+
+        do j=JstrR,JendR
+           do i=IstrR,IendR
+              do k=1,N
+                 t(i,j,k,1,isalt) =   
+! TRADITIONAL KH INSTABILITY PROFILE
+!    &           t(i,j,k,1,itemp)
+!    &               35.- 0.5*drho*( 
+!    &               35.- 1.5*drho*( 
+!    &                   0.1*(z_r(i,j,k)-zr0)/depth+ !+strat lin
+!    &                   dtanh( (z_r(i,j,k)-zr0)/ hsalt0 ) 
+!    &                              )  / Scoef
+!
+     &            + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(i,j,k)-zr0)/hsalt0 ) )**2.
+!    &                     )/Scoef      
+     &                     )
+!
+! ANOMALY CONCENTRATED AT MID DEPTH, PASSIVE TRACER
+!    &            + 0.05 *drho* (
+!    &              1. - (dtanh( (z_r(i,j,k)-zr0)/hsalt0 ) )**2.
+!    &                     )
+!
+                 t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
+                 t(i,j,k,3,isalt) = t(i,j,k,1,isalt)
+              enddo
+           enddo
+        enddo
+
+#   endif
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI2
+#    ifdef THREE_GHOST_POINTS_TS
+        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,1,itemp))
+        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,2,itemp))
+        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,3,itemp))
+#    else
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,1,itemp))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,2,itemp))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,3,itemp))
+#    endif
+#    ifdef SALINITY
+#     ifdef THREE_GHOST_POINTS_TS
+        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,1,isalt))
+        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,2,isalt))
+        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,3,isalt))
+#     else
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,1,isalt))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,2,isalt))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,3,isalt))
+#     endif
+#    endif
+#   endif
+
 #endif
 
 #   ifdef HORN_PROFILE
@@ -1227,6 +1653,16 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 #endif
+
+#   ifdef RVTK_DEBUG
+      call check_tab3d(u(:,:,:,1),'u(1) ana_initial','u')
+      call check_tab2d(ubar(:,:,1),'ubar(1) ana_initial','u')
+      call check_tab3d(u(:,:,:,2),'u(2) ana_initial','u')
+      call check_tab2d(ubar(:,:,2),'ubar(2) ana_initial','u')
+      call check_tab3d(u(:,:,:,3),'u(3) ana_initial','u')
+      call check_tab2d(ubar(:,:,3),'ubar(3) ana_initial','u')
+#   endif    
+
 
 #undef IR_RANGE
 #undef IU_RANGE

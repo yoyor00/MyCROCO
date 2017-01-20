@@ -61,7 +61,7 @@
 !
 !       call density_nbq(4)
 !
-#  ifdef ACOUS
+#  ifdef ACOUSTIC
       if (iic.eq.1) call density_nbq(10)  ! Initialize Acoustic waves
 #  endif
 
@@ -154,7 +154,7 @@
 !      Acoustic wave emission
 !-------------------------------------------------------------------
 !
-# ifdef ACOUS
+# ifdef ACOUSTIC
         call density_nbq(11)
 # endif
 !

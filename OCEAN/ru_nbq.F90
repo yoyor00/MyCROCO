@@ -79,7 +79,7 @@
            k=l2kmom_nh(l_nbq)
            dqdmdt_nbq_a(l_nbq)=rho0*rwint_nbq(i,j,k)
         enddo
-       
+
       elseif (icall.eq.2) then
 !
 !*******************************************************************
@@ -87,7 +87,6 @@
 !*******************************************************************
 !
         cff=1/(rho0*real(ndtnbq))
-!#ifdef toto
 !        
 ! X-direction:
 !
@@ -111,8 +110,6 @@
       call exchange_u2d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
                         rubar_nbq(START_2D_ARRAY))
 #endif
- !     rubar_nbq=0.
- !     ru_nbq_ext=0.
 
 #ifdef RVTK_DEBUG
        call check_tab3d(ru_nbq_ext(:,:,1:N),'ru_nbq_ext (ru_nbq)','u')
@@ -165,7 +162,7 @@
 
 #endif
 #ifdef RVTK_DEBUG
-       call check_tab3d(rw_nbq_ext(:,:,0:N),'rw_nbq_ext (ru_nbq)','v')
+       call check_tab3d(rw_nbq_ext(:,:,0:N),'rw_nbq_ext (ru_nbq)','w')
 #endif    
 
 

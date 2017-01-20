@@ -260,6 +260,23 @@
 !**********************************************************************
            div_nbq_a=0.D0
            rhsd2_nbq=0.D0
+
+# ifdef KH_INST
+      if (iic.eq.1.and.iif.eq.1) then
+        do l_nbq = nequ_nh(1)+1,nequ_nh(6)
+          i=l2imom_nh(l_nbq)
+          j=l2jmom_nh(l_nbq)
+          k=l2kmom_nh(l_nbq)
+          qdm_nbq_a(l_nbq,vnnew_nbq)=(rho0+0.5*(rho(i,j,k)+rho(i-1,j,k))) &
+                                     *u(i,j,k,nrhs)*hz_half(i,j,k)
+        enddo
+        call parallele_nbq(51)
+        call parallele_nbq(151)
+        qdm_nbq_a(:,vnrhs_nbq)=qdm_nbq_a(:,vnnew_nbq)
+        qdm_nbq_a(:,vnstp_nbq)=qdm_nbq_a(:,vnnew_nbq)
+      endif
+# endif
+
        endif
       
 

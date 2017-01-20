@@ -62,6 +62,29 @@
 
        open(unit=10,file=name_o)
 
+#ifdef OBC_WEST
+        write (10,*) 'OBC_WEST CPP key is true'
+#else
+        write (10,*) 'OBC_WEST CPP key is false'
+#endif
+#ifdef OBC_EAST) then
+        write (10,*) 'OBC_EAST CPP key is true'
+#else
+        write (10,*) 'OBC_EAST CPP key is false'
+#endif
+#ifdef OBC_NORTH) then
+        write (10,*) 'OBC_NORTH CPP key is true'
+#else
+        write (10,*) 'OBC_NORTH CPP key is false'
+#endif
+#ifdef OBC_SOUTH) then
+        write (10,*) 'OBC_SOUTH CPP key is true'
+#else
+        write (10,*) 'OBC_SOUTH CPP key is false'
+#endif
+        write (10,*)
+
+
 #ifdef MPI
        if (WEST_INTER) then
         write (10,*) 'WEST_INTER is true'
@@ -116,6 +139,30 @@
        else
         write (10,*) 'NORTH_INTER_NBQ is false'
        endif
+
+       write (10,*) 
+
+       if (WESTERN_EDGE) then
+        write (10,*) 'WESTERN_EDGE is true'
+       else
+        write (10,*) 'WESTERN_EDGE is false'
+       endif
+       if (EASTERN_EDGE) then
+        write (10,*) 'EASTERN_EDGE is true'
+       else
+        write (10,*) 'EASTERN_EDGE is false'
+       endif
+       if (NORTHERN_EDGE) then
+        write (10,*) 'NORTHERN_EDGE is true'
+       else
+        write (10,*) 'NORTHERN_EDGE is false'
+       endif
+       if (SOUTHERN_EDGE) then
+        write (10,*) 'SOUTHERN_EDGE is true'
+       else
+        write (10,*) 'SOUTHERN_EDGE is false'
+       endif
+
        write (10,*) 
 #endif
 

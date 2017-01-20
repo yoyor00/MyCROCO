@@ -131,7 +131,8 @@
 #  else
 #   if defined OBC_WEST
             rmask_nbq(i1-1,j) = rmask_nbq(i1,j)
-#   elif defined OBC_EAST
+#   endif
+#   if defined OBC_EAST
             rmask_nbq(i2+1,j) = rmask_nbq(i2,j)
 #   endif
 #  endif
@@ -146,7 +147,8 @@
 #  else
 #   if defined OBC_SOUTH
            rmask_nbq(i,j1-1) = rmask_nbq(i,j1)
-#   elif defined OBC_NORTH
+#   endif
+#   if defined OBC_NORTH
            rmask_nbq(i,j2+1) = rmask_nbq(i,j2)
 #   endif
 #  endif
@@ -161,7 +163,8 @@
 #  else
 #   if defined OBC_WEST
             umask_nbq(i1-1,j) = umask_nbq(i1,j)
-#   elif defined OBC_EAST
+#   endif
+#   if defined OBC_EAST
             umask_nbq(i2+1,j) = umask_nbq(i2,j)
 #   endif
 #  endif
@@ -176,7 +179,8 @@
 #  else
 #   if defined OBC_SOUTH
            umask_nbq(i,j1-1) = umask_nbq(i,j1)
-#   elif defined OBC_NORTH
+#   endif
+#   if defined OBC_NORTH
            umask_nbq(i,j2+1) = umask_nbq(i,j2)
 #   endif
 #  endif
@@ -191,7 +195,8 @@
 #  else
 #   if defined OBC_WEST
             vmask_nbq(i1-1,j) = vmask_nbq(i1,j)
-#   elif defined OBC_EAST
+#   endif
+#   if defined OBC_EAST
             vmask_nbq(i2+1,j) = vmask_nbq(i2,j)
 #   endif
 #  endif
@@ -206,7 +211,8 @@
 #  else
 #   if defined OBC_SOUTH
            vmask_nbq(i,j1-1) = vmask_nbq(i,j1)
-#   elif defined OBC_NORTH
+#   endif
+#   if defined OBC_NORTH
            vmask_nbq(i,j2+1) = vmask_nbq(i,j2)
 #   endif
 #  endif
