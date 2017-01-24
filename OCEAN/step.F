@@ -459,6 +459,7 @@ C$OMP MASTER
 
       nrhs=3
       nnew=3-nstp
+
 #ifdef ONLINE_ANALYSIS
       call croco_oa(1)
 #endif

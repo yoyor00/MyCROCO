@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef OA
+#ifdef ONLINE_ANALYSIS 
 !======================================================================
 ! Croco interface for Online Analysis (OA)
 !======================================================================
@@ -64,8 +64,8 @@
 ! Initializations
 !**********************************************************************
 
-       dum1_c="NAMELIST"
-       dum2_c="OUT_OA"
+       dum1_c="INPUT"
+       dum2_c="OUTPUT"
 
 #ifndef MASKING
        maskr_c = 1.

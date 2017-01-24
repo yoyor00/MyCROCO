@@ -4403,12 +4403,13 @@ CONTAINS
 
        character(len=250) :: file_hist
 
-
+#ifdef MPI
       if (mynode.ne.0) return
+#endif
 
 !---->Fichier de sortie:
 
-      file_hist = trim(directory_out) // txtslash // 'history_oa'
+      file_hist = trim(directory_out) // txtslash // 'history_oa.dat'
 
       !write(6,*) file_hist
 
