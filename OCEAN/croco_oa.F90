@@ -54,10 +54,9 @@
         ,jend_oa                                                       
 
        istr_oa  = 1
-       iend_oa  = LOCALLM
+       iend_oa  = Lm 
        jstr_oa  = 1
-       jend_oa  = LOCALMM 
-
+       jend_oa  = Mm 
 
       if (icall==0) then
 !**********************************************************************
@@ -67,7 +66,7 @@
        dum1_c="INPUT"
        dum2_c="OUTPUT"
 
-#ifndef MASKING
+#ifndef MASKING2
        maskr_c = 1.
        masku_c = 1.
        maskv_c = 1.
@@ -75,20 +74,20 @@
 #else
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          maskr_c(i,j,1:N)  =maskr(i,j)
-          maskf_c(i,j,1:N)  =maskr(i,j)
+          maskr_c(i,j,1:N)  =rmask(i,j)
+          maskf_c(i,j,1:N)  =rmask(i,j)
        enddo
        enddo
 
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          masku_c(i,j,1:N)=masku(i,j)
+          masku_c(i,j,1:N)=umask(i,j)
        enddo
        enddo
 
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          maskv_c(i,j,1:N)=maskv(i,j)
+          maskv_c(i,j,1:N)=vmask(i,j)
        enddo
        enddo
 #endif
@@ -128,13 +127,13 @@
        directory_in_oa =dum1_c                         &
       ,directory_out_oa=dum2_c                         &
       ,io_unit_oa=67                                   &
-      ,iic_oa=iic                                 &
+      ,iic_oa=iic                                      &
       ,kount0=ntstart                                  &
-      ,nt_max=ntimes                                       &   
-      ,dti=dt                                       &
+      ,nt_max=ntimes                                   &   
+      ,dti=dt                                          &
 
-      ,imin=istr_oa, imax=iend_oa                    &
-      ,jmin=jstr_oa, jmax=jend_oa                    &
+      ,imin=istr_oa, imax=iend_oa                      &
+      ,jmin=jstr_oa, jmax=jend_oa                      &
       ,kmin=1,        kmax=N                           & 
 
 #ifdef SPHERICAL
@@ -257,8 +256,6 @@
 !**********************************************************************
 
 !      u_test=23*cos(2.*3.14159/500.*dt*real(iic)) !!-cos(2*3.14159/50.*dt*real(iic))
-!      if (mynode.eq.0) write (6,*) iic,dt*real(iic),23*cos(2.*3.14159/500.*dt*real(iic)) &
-!          ,2.*3.14159/500.*dt*real(iic)
       do i=istr_oa,iend_oa
       do j=jstr_oa,jend_oa
       do k=1,N

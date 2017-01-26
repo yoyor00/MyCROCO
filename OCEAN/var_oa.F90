@@ -1,7 +1,7 @@
-#ifdef SOLVE3D
-
 
 #include "cppdefs.h"
+
+#ifdef SOLVE3D
 
 !------------------------------------------------------------------------------
 ! PROCEDURE

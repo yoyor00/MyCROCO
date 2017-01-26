@@ -348,6 +348,9 @@ CONTAINS
          nzvc_oa(ic_s) = 1
       enddo
 
+!..... No energy variable so far!
+      des_oa=0.
+
 !     From 100 to XXX => configuration including several variables
 !     TODO : parameters max_single_oa_var_index = 99, min_mixed_oa_var_index = 100
       nzvc_oa(100) = 2 
@@ -945,8 +948,6 @@ CONTAINS
               (lat_oa(1,nzv_oa).gt.lat_t(imax,jmax).and.             &
               lat_oa(2,nzv_oa).gt.lat_t(imax,jmax))).and.              &
               (swt_d_oa(nzv_oa).eq.1.or.swt_d_oa(nzv_oa).eq.3) ) then
-     !      write(6,*) nzv_oa,lat_oa(1,nzv_oa),lat_oa(2,nzv_oa)
-     !      write(6,*) lat_t(imin,jmin),lat_t(imax,jmax)
             write (6,*) " lat_oa hors bornes!"
             stop
          endif
@@ -1353,6 +1354,7 @@ CONTAINS
 
       implicit none
 
+
       !> Grid index range for the analysis of fields passed in argument to the OA module 
       !! Fields are analysed inside grid point domain [imin,imax]x[jmin,jmax]x[kmin,kmax]:
       integer, intent(in) :: &
@@ -1470,9 +1472,8 @@ CONTAINS
             !STDALONE TODO CHECK msk_g = mask_f(i,j,kmax+1) 
                      msk_g = mask_f(i,j,kmax) 
                   endif
-
                   if (                                                &
-                       msk_g.eq.1             .and.                   &
+                       msk_g.eq.1              .and.                  &
                        lat_g.ge.lat_oa(1,iv_g) .and.                  &
                        lat_g.le.lat_oa(2,iv_g) .and.                  &
                        lon_g.ge.lon_oa(1,iv_g) .and.                  &
@@ -2573,8 +2574,8 @@ CONTAINS
       !STDALONE          )
 
       allocate (                                                      &
-       var2d_oa( imin:imax, jmin:jmax, nzupd2d_oa )                   &
-      ,var3d_oa( imin:imax, jmin:jmax, kmin:kmax, nzupd3d_oa )        &
+       var2d_oa( imin-1:imax+1, jmin-1:jmax+1, nzupd2d_oa )                   &
+      ,var3d_oa( imin-1:imax+1, jmin-1:jmax+1, kmin:kmax, nzupd3d_oa )        &
                )
 
       var3d_oa(:,:,:,:) = ( 0.D0, 0.D0 )
@@ -2652,6 +2653,8 @@ CONTAINS
 !      use module_oa_upd
 
       implicit none
+#include "param_F90.h"
+#include "scalars_F90.h"
 
       integer, intent(in) :: ichoix
 
@@ -2758,7 +2761,6 @@ CONTAINS
 
       do ic_m = 1 , nzc_oa
       do iv_m = begc_oa(ic_m),begc_oa(ic_m+1)-1
-    !    write(6,*) 'iv_m=======',iv_m,tv_oa(iv_m)
          !STDALONE to call main_oa at specific location for composite varaible confguration
          if (present(ivar_m)) then
             ifl_test_composite = tv_oa(iv_m).eq.ivar_m
@@ -2769,26 +2771,21 @@ CONTAINS
 !---------------------------------------------------------------------------
 !.....periodes discretisees:
 !---------------------------------------------------------------------------
- !    write(6,*) 'ici1'
 
      period_of_analysis_case : if (dori_oa(iv_m).eq.1) then
 
-!     write(6,*) 'ici2',begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
       time_of_analysis_loop : do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
 
-!     write(6,*) 'ici3',iic_oa,kountv_oa(1,lt_m),kountv_oa(2,lt_m)
 !.....test pour le calcul:
        time_domain_test : if (iic_oa.ge.kountv_oa(1,lt_m).and.iic_oa.le.kountv_oa(2,lt_m)            &
                                 .and.mod( int((iic_oa-kountv_oa(1,lt_m)),kind=8)  ,                       &
                                                                             resv_oa(per_t2p_oa(lt_m))).eq.0    &
                                                     .and.(ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)               &! calling main_oa for particular variable
                              ) then
-  !   write(6,*) 'ici4',kountv_oa(2,lt_m)
 
 !........allocation if necessary (if variable isn't allocated yet, it is done.., at user-specified kount):
 
           if (tallocated_oa(lt_m).eq.-1) then
-        !   write(6,*) 'allocation',lt_m,ic_m,iv_m
             call allocate_win_oa ( lt_m, ic_m, iv_m,                                          &
                                    begvs3d_oa(begvs_oa(iv_m+1)) - begvs3d_oa(begvs_oa(iv_m)), &
                                    iic_oa )
@@ -2798,7 +2795,6 @@ CONTAINS
 !........precalcul de l'indice temporel prenant en compte la translation (u):
 
          kpt_m =  iic_oa - ( int((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2) )
-   !     write(6,*) 'coucou5',kpt_m
 
 !........precalcul de psi:
 
@@ -2810,7 +2806,6 @@ CONTAINS
                ,real(kpt_m)* dti                                              &
                ,dti*resv_oa(per_t2p_oa(lt_m))                                 &           
                ,fb_oa,fc_oa  ) 
-     !   write(6,*) 'coucou6',psi_m,begvs_oa(iv_m),begvs_oa(iv_m+1)-1
 
 
 !........boucle spatiale:
@@ -2818,11 +2813,9 @@ CONTAINS
            horizontal_space_loop : do ls_m = begvs_oa(iv_m),begvs_oa(iv_m+1)-1
             i_m = l2i_oa(ls_m)
             j_m = l2j_oa(ls_m)
-     !   write(6,*) 'coucou7',begvs3d_oa(ls_m),begvs3d_oa(ls_m+1)-1
 
             vertical_space_loop : do ls1_m = begvs3d_oa(ls_m),begvs3d_oa(ls_m+1)-1
             k_m = kmin3d_oa(ls_m) + (ls1_m - begvs3d_oa(ls_m))* dk_oa(iv_m)
-        !   write(6,*) 'coucou1',tv_oa(iv_m),ichoix 
             tmp =  var_oa( tv_oa(iv_m)                                       &
                                    ,ichoix                                       &
                                    ,i_m                                          &
@@ -2925,11 +2918,12 @@ CONTAINS
 
       do la_m = 1,nmsimult_oa
          if ( associated(wf_oa(la_m)%coef) ) then
+
          if ((kountv_oa(2,wf_oa(la_m)%t_indice).le.iic_oa.or.iic_oa.eq.nt_max-1)      &
            .and.(ichoix.eq.cnb_oa(wf_oa(la_m)%variable).or.ichoix.lt.0)         &
            .and.(ichoix.eq.des_oa(wf_oa(la_m)%variable)                          &
                  .or.des_oa(wf_oa(la_m)%variable).eq.0)                          &
-                 ) then                           
+                 ) then                
             call subsave_oa ( la_m )                           
             call deallocate_win_oa(wf_oa(la_m)%t_indice)
          endif
@@ -3611,6 +3605,10 @@ CONTAINS
 !      use module_oa_upd      !var3d_oa
 
       implicit none
+
+#include "param_F90.h"
+#include "scalars_F90.h"
+ 
 !TODO intent(in)
       integer                                                         &
        i_u                                                            &
@@ -4410,8 +4408,6 @@ CONTAINS
 !---->Fichier de sortie:
 
       file_hist = trim(directory_out) // txtslash // 'history_oa.dat'
-
-      !write(6,*) file_hist
 
       if (ichoix.eq.1) then
 !*******************************************************************************
