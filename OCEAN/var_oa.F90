@@ -1,7 +1,7 @@
 
 #include "cppdefs.h"
 
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined ONLINE_ANALYSIS
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
