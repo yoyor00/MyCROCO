@@ -67,17 +67,17 @@
 #else
         write (10,*) 'OBC_WEST CPP key is false'
 #endif
-#ifdef OBC_EAST) then
+#ifdef OBC_EAST 
         write (10,*) 'OBC_EAST CPP key is true'
 #else
         write (10,*) 'OBC_EAST CPP key is false'
 #endif
-#ifdef OBC_NORTH) then
+#ifdef OBC_NORTH 
         write (10,*) 'OBC_NORTH CPP key is true'
 #else
         write (10,*) 'OBC_NORTH CPP key is false'
 #endif
-#ifdef OBC_SOUTH) then
+#ifdef OBC_SOUTH
         write (10,*) 'OBC_SOUTH CPP key is true'
 #else
         write (10,*) 'OBC_SOUTH CPP key is false'
