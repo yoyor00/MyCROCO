@@ -110,7 +110,7 @@
            i     = l2iq_nh (l_nbq)
            j     = l2jq_nh (l_nbq)
            k     = l2kq_nh (l_nbq)
-           rho_nbq_ext(i,j,k)  = rhp_nbq_a(l_nbq,rnstp_nbq)+rho(i,j,k)                                  
+           rho_nbq_ext(i,j,k)  = rhp_nbq_a(l_nbq,rnrhs_nbq)+rho(i,j,k)                                  
            work2d(i,j)         = work2d(i,j)+Hzr_half_nbq(i,j,k)
            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)                           &
                                + rho_nbq_ext(i,j,k)*Hzr_half_nbq(i,j,k)
