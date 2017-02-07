@@ -71,6 +71,7 @@
         ,nnz_nh         (10)                                          &
         ,nzeq_nh                                                      &
         ,nzcont_nh                                                    &
+        ,nzcontz_nh                                                    &
         ,nzmom_nh                                                     &   
         ,neqcont_nh                                                   &  
         ,neqmom_nh      (0:3)                                         &
@@ -82,7 +83,10 @@
       integer,dimension(:),allocatable ::                             &        
          conti_nh                                                     &   
         ,cont_nnz_nh                                                  & 
-        ,contj_nh      
+        ,contj_nh                                                     & 
+        ,contz_nnz_nh                                                  & 
+        ,contzi_nh                                                    &   
+        ,contzj_nh      
 
 
 !**********************************************************************
@@ -122,10 +126,9 @@
         
       double precision, dimension(:), allocatable      ::             &
          contv_nh       &  
+        ,contzv_nh      &  
         ,momv_nh        &  
-        ,momvg_nh       &  
-        ,rhs1_nh        &  
-        ,rhs2_nh      
+        ,momvg_nh      
 
       double precision, dimension(:,:), allocatable    ::             &
          coriolis_nh_t                                                
@@ -136,11 +139,7 @@
         ,coefa_v        &  
         ,coefb_v        &  
         ,gdepth_u       &  
-        ,gdepth_v       
-
-        
-      double precision, dimension(:,:,:,:), allocatable     ::        &
-         div_nh_t          
+        ,gdepth_v              
 
       double precision                                                &
          time_omp_nh    (100)                                        
@@ -178,10 +177,11 @@
 
 ! Variables communes SNH / SNBQ
          allocate(conti_nh        (nmq_nh)                   )  
-
-
+         allocate(contzi_nh        (nmq_nh)                   )  
          allocate(cont_nnz_nh     (nmq_nh)                   )  
+         allocate(contz_nnz_nh     (nmq_nh)                   )  
          allocate(contj_nh        (nmcont_nh)                )  
+         allocate(contzj_nh       (nmcont_nh)                )  
          allocate(l2iq_nh         (nmq_nh)                   ) 
          allocate(l2jq_nh         (nmq_nh)                   ) 
          allocate(l2kq_nh         (nmq_nh)                   )  
@@ -195,10 +195,9 @@
          allocate(ijk2lmom_nh     (GLOBAL_2D_ARRAY,0:N+1,3)  )   
          allocate(mijk2lmom_nh    (GLOBAL_2D_ARRAY,0:N+1,3)  )
          allocate(contv_nh        (0:nmcont_nh)              ) 
+         allocate(contzv_nh       (0:nmcont_nh)              ) 
          allocate(momv_nh         (nmmom_nh)                 )  
          allocate(momvg_nh        (nmmom_nh)                 ) 
-         allocate(rhs1_nh         (nmv_nh)                   )  
-         allocate(rhs2_nh         (nmq_nh)                   )  
          allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )  
          allocate(coefa_u         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_u         (GLOBAL_2D_ARRAY,0:N+1)    ) 
@@ -206,7 +205,6 @@
          allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(gdepth_u        (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    )  
-         allocate(div_nh_t        (GLOBAL_2D_ARRAY,0:N,2)    )  
 
          end subroutine alloc_module_nh
 

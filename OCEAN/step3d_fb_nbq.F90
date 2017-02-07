@@ -19,7 +19,7 @@
 !    Algorithme_NBQ.htm      --> SNBQ algorithm:               
 !    Algebrique_SNBQ.htm     --> SNBQ algebric representation
 !    Couplage_Numerique.htm  --> Numerical coupling
-!    Couplage_Modes_SNBQ.htm --> Coupling:
+!    
 !    Couplage_Split_NBQ.htm  --> Coupling Splitting
 !
 ! REVISION HISTORY:
@@ -86,7 +86,6 @@
 !*******************************************************************
 
       do iteration_nbq=1,iteration_nbq_max
-
 !
 !-------------------------------------------------------------------
 !      Compute pressure gradient and gravity terms (AMUX)
@@ -96,57 +95,34 @@
         call ru_nbq(6)
 !
 !-------------------------------------------------------------------
-!      Horizontal Momentum equation: leapfrog time stepping
+!      Horizontal Momentum equation: 
 !         If explicit: (x,y,z) is dealt with here
 !-------------------------------------------------------------------
 !
-!  XI-Direction:
+!  XI- and ETA-Directions:
 !
-        do l_nbq = 1,nequ_nh(7)
-          dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                      &
-                            - visc2_nbq * rhsd2_nbq(l_nbq) 
-          qdm_nbq_a(l_nbq,vnnew_nbq) = qdm_nbq_a(l_nbq,vnrhs_nbq)  + dtnbq*(           &
-                                       dum_s                                           &
-                                  + dqdmdt_nbq_a(l_nbq)                     )  
-          rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)  +  dum_s        
-        enddo 
+        qdm_nbq_a(1:neqv_nh(7)) = qdm_nbq_a          (1:neqv_nh(7))       &
+                                + dtnbq* rhs1_nbq    (1:neqv_nh(7))       &                                        
+                                + dtnbq*dqdmdt_nbq_a (1:neqv_nh(7))
 !
 !  U-momentum open boundary conditions
 !
 # ifdef OBC_NBQ
-          call unbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
+           call unbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
+           call vnbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
           
 !
 !  Message passing: Send U (51) 
 !
         call parallele_nbq(51)
-!       call parallele_nbq(151)
-!
-!  ETA-Direction:
-!
-         do l_nbq = nequ_nh(7)+1,neqv_nh(7)  
-           dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                      &
-                             - visc2_nbq * rhsd2_nbq(l_nbq) 
-           qdm_nbq_a(l_nbq,vnnew_nbq) = qdm_nbq_a(l_nbq,vnrhs_nbq)  + dtnbq*(            &
-                                dum_s                                                    &
-                              + dqdmdt_nbq_a(l_nbq)                        )  
-           rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)  +  dum_s    
-         enddo 
-!
-!  V-momentum open boundary conditions
-!
-# ifdef OBC_NBQ
-            call vnbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
-# endif
 !
 !  Message passing: Send V (52) 
 !
          call parallele_nbq(52)
-!        call parallele_nbq(152)
 !
 !-------------------------------------------------------------------
-!      Vertical Momentum equation: leapfrog time stepping
+!      Vertical Momentum equation: 
 !         If explicit: (x,y,z) is dealt with here
 !         If implicit: (x,y)   only
 !-------------------------------------------------------------------
@@ -155,19 +131,19 @@
 !
 !  Z-Direction: Explicit
 !
-           do l_nbq = neqv_nh(7)+1,neqw_nh(7)
-             dum_s =             soundspeed2_nbq  * rhs1_nbq (l_nbq)                   &
-                               - visc2_nbq * rhsd2_nbq(l_nbq)
-             qdm_nbq_a(l_nbq,vnnew_nbq) = qdm_nbq_a(l_nbq,vnrhs_nbq)  + dtnbq*(        &
-                                  dum_s                                                &
-                                + dqdmdt_nbq_a(l_nbq)                          )  
-             rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)  +  dum_s
-           enddo 
+          qdm_nbq_a(neqv_nh(7)+1:neqw_nh(7)) = qdm_nbq_a(neqv_nh(7)+1:neqw_nh(7))               &
+                                    + dtnbq*rhs1_nbq    (neqv_nh(7)+1:neqw_nh(7))               &                     
+                                    + dtnbq*dqdmdt_nbq_a(neqv_nh(7)+1:neqw_nh(7))         
+             
+          rhssum_nbq_a(1:neqw_nh(7)) = rhssum_nbq_a(1:neqw_nh(7))  +  rhs1_nbq (1:neqw_nh(7))  
+   
 # else
-           call parallele_nbq(151)  ! u only 
-           call parallele_nbq(152)  ! v only 
-!          Receive:
-           call implicit_nbq (2)
+          rhssum_nbq_a(1:neqv_nh(7)) = rhssum_nbq_a(1:neqv_nh(7))  +  rhs1_nbq (1:neqv_nh(7))    
+
+          call parallele_nbq(151)  ! u only 
+          call parallele_nbq(152)  ! v only 
+
+          call implicit_nbq (2)
 # endif
 !
 !      Vertical momentum open boundary conditions
@@ -211,13 +187,6 @@
 
 !
 !-------------------------------------------------------------------
-!      Compute Second viscosity (product mat*vect):
-!            div_nbq_a ==> rhsd2_nbq
-!-------------------------------------------------------------------
-!
-        call viscous_nbq (2)
-!
-!-------------------------------------------------------------------
 !      Acoustic wave emission
 !-------------------------------------------------------------------
 !
@@ -226,20 +195,10 @@
 #  endif
 !
 !-------------------------------------------------------------------
-!      Mass equation: leapfrog time stepping:
+!      Mass equation: 
 !-------------------------------------------------------------------
 !
-        do l_nbq=1,neqcont_nh
-          rhp_nbq_a(l_nbq,rnnew_nbq) = rhp_nbq_a(l_nbq,rnrhs_nbq)         &
-                             - div_nbq_a(l_nbq,dnrhs_nbq) * dtnbq 
-  !        i     = l2iq_nh (l_nbq)
-  !        j     = l2jq_nh (l_nbq)
-  !        k     = l2kq_nh (l_nbq)
-  !        if (i==13.and.j==6) rhp_nbq_a(l_nbq,rnnew_nbq) = 0.
-  !        if (i==14.and.j==6) rhp_nbq_a(l_nbq,rnnew_nbq) = 0.
-          
-        enddo
-
+        rhp_nbq_a(1:neqcont_nh) = rhp_nbq_a(1:neqcont_nh) - div_nbq_a(1:neqcont_nh) 
 !
 !-------------------------------------------------------------------
 !      Density open boundary conditions
@@ -248,16 +207,6 @@
 # ifdef OBC_NBQ
 !        call rnbq_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
-!
-!-------------------------------------------------------------------
-!       Mass equation: switch time indices (move forward)
-!-------------------------------------------------------------------
-!
-        call density_nbq(7)
-
-!.......1st iteration NBQ: treats NBQ
-!        Momentum equation: switch time indices (move forward)
-         call ru_nbq(7)
 !
 !*******************************************************************
 !*******************************************************************

@@ -383,9 +383,9 @@ C$OMP END MASTER
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-#ifdef NBQ
-          l_nh=ijk2lq_nh(i,j,N)
-#endif
+!#ifdef NBQ
+!          l_nh=ijk2lq_nh(i,j,N)
+!#endif
           zeta_new(i,j)=zeta(i,j,kstp) + dtfast*pm(i,j)*pn(i,j)
      &                                   *(DUon(i,j)-DUon(i+1,j  )
      &                                    +DVom(i,j)-DVom(i  ,j+1))
@@ -434,14 +434,18 @@ C$OMP END MASTER
 #ifdef NBQ
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
- 	  zeta_new(i,j)=zeta_new(i,j) -h(i,j)
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016	! PATCH LR
- 	  zeta_new(i,j)=zeta_new(i,j) +h(i,j)
+#ifdef MASKING
+ 	  zeta_new(i,j)=(zeta_new(i,j) -h(i,j))* rmask(i,j)+h(i,j)
+#endif
+!          zeta_new(i,j)=zeta_new(i,j) -h(i,j)
+!          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016       ! PATCH LR
+!          zeta_new(i,j)=zeta_new(i,j) +h(i,j)
+
           Dnew(i,j)=zeta_new(i,j)
-          zwrk(i,j)=cff0*zeta_new(i,j) /rhobar_nbq(i,j,knew)
-     &             +cff1*zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
-     &             +cff2*zeta(i,j,kbak)/rhobar_nbq(i,j,kbak)
-     &             +cff3*zeta(i,j,kold)/rhobar_nbq(i,j,kold)
+          zwrk(i,j)=cff0*zeta_new(i,j)  /rhobar_nbq(i,j,knew)
+     &             +cff1*zeta(i,j,kstp) /rhobar_nbq(i,j,kstp)
+     &             +cff2*zeta(i,j,kbak) /rhobar_nbq(i,j,kbak)
+     &             +cff3*zeta(i,j,kold) /rhobar_nbq(i,j,kold)
      &             -h(i,j)
 # if defined VAR_RHO_2D && defined SOLVE3D
           rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
@@ -1248,7 +1252,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           do j=Jstr,Jend
             do i=IstrU,Iend
               cff=ruint_nbq(i,j,k)
-              ruint_nbq(i,j,k)=cff1*cff 
+              ruint_nbq(i,j,k)=cff1*cff
      &                       + cff2*ruint_bak_nbq(i,j,k,3-nstp)
      &                       + cff3*ruint_bak_nbq(i,j,k,nstp)
               ruint_bak_nbq(i,j,k,nstp)=cff
@@ -1433,32 +1437,32 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               rhobar_nbq_avg1(i,j)=cff1*rhobar_nbq(i,j,knew)
             enddo
           enddo 
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=Istr,Iend
                 rho_nbq_avg1(i,j,k)=cff1*rho_nbq_ext(i,j,k)
                 rho_nbq_avg2(i,j,k)=cff2*rho_nbq_ext(i,j,k)
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=IstrU,Iend
                 ru_nbq_avg1(i,j,k)=cff1*ru_nbq_ext(i,j,k)
                 ru_nbq_avg2(i,j,k)=cff2*ru_nbq_ext(i,j,k)
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=JstrV,Jend
+          do k=1,N
               do i=Istr,Iend
                 rv_nbq_avg1(i,j,k)=cff1*rv_nbq_ext(i,j,k)
                 rv_nbq_avg2(i,j,k)=cff2*rv_nbq_ext(i,j,k)
               enddo
             enddo 
           enddo
-          do k=0,N
             do j=Jstr,Jend
+          do k=0,N
               do i=Istr,Iend
                 rw_nbq_avg1(i,j,k)=cff1*rw_nbq_ext(i,j,k)
                 rw_nbq_avg2(i,j,k)=cff2*rw_nbq_ext(i,j,k)
@@ -1472,8 +1476,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &                              +cff1*rhobar_nbq(i,j,knew)
             enddo
           enddo 
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=Istr,Iend
                 rho_nbq_avg1(i,j,k)=rho_nbq_avg1(i,j,k)
      &                              +cff1*rho_nbq_ext(i,j,k)
@@ -1482,8 +1486,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=IstrU,Iend
                  ru_nbq_avg1(i,j,k)=ru_nbq_avg1(i,j,k)
      &                              +cff1*ru_nbq_ext(i,j,k)
@@ -1492,8 +1496,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=JstrV,Jend
+          do k=1,N
               do i=Istr,Iend
                  rv_nbq_avg1(i,j,k)=rv_nbq_avg1(i,j,k)
      &                              +cff1*rv_nbq_ext(i,j,k)
@@ -1502,8 +1506,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=0,N
             do j=Jstr,Jend
+          do k=0,N
               do i=Istr,Iend
                  rw_nbq_avg1(i,j,k)=rw_nbq_avg1(i,j,k)
      &                              +cff1*rw_nbq_ext(i,j,k)

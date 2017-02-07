@@ -49,6 +49,7 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)         
        l1_nh = cont_nnz_nh(l_nh)
+       l2_nh = contz_nnz_nh(l_nh)
 
 !-----------------------------
 !....... u(i,j,k):
@@ -129,9 +130,9 @@
 !-----------------------------
 !....... w(i,j,k):
 !-----------------------------
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k)
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k,3)
+        contzv_nh(l2_nh) = 1. / Hzw_half_nbq(i,j,k)                     &
+                              / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)
 
 !-----------------------------
 !....... w(i,j,k-1): 
@@ -150,6 +151,7 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)      
        l1_nh = cont_nnz_nh(l_nh)
+       l2_nh = contz_nnz_nh(l_nh)
 
 !-----------------------------
 !....... u(i,j,k):
@@ -270,16 +272,16 @@
 !-----------------------------
 !....... w(i,j,k):
 !-----------------------------
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k)
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k,3)
+        contzv_nh(l2_nh) = 1. / Hzw_half_nbq(i,j,k)                     &
+                              / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)
  
 !-----------------------------
 !....... w(i,j,k-1):
 !-----------------------------
-        contv_nh(l1_nh) = -1. / Hzw_half_nbq(i,j,k-1)                   &
-                              / Hzr_half_nbq(i,j,k)
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,3)
+        contzv_nh(l2_nh) = -1. / Hzw_half_nbq(i,j,k-1)                  &
+                               / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k-1,3)
 
         enddo
 
@@ -294,6 +296,7 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)    
        l1_nh = cont_nnz_nh(l_nh)  
+       l2_nh = contz_nnz_nh(l_nh)  
 
 !-----------------------------
 !....... u(i,j,k):
@@ -394,18 +397,22 @@
 !-----------------------------
 !.......point w(i,j,k):
 !-----------------------------
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k)
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k,3)
+        contzv_nh(l2_nh) = 1. / Hzw_half_nbq(i,j,k)                     &
+                              / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)
 
 !-----------------------------
 !....... w(i,j,k-1):
 !-----------------------------
-        contv_nh(l1_nh) = -1. / Hzw_half_nbq(i,j,k-1)                   &
-                              / Hzr_half_nbq(i,j,k)
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,3)
+        contzv_nh(l2_nh) = -1. / Hzw_half_nbq(i,j,k-1)                  &
+                               / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k-1,3)
         
       enddo
+    
+      contv_nh (1:nzcont_nh)  =  contv_nh (1:nzcont_nh)  * dtnbq
+      contzv_nh(1:nzcontz_nh) =  contzv_nh(1:nzcontz_nh) * dtnbq
+       
 
       if (ifl_nbq.eq.1) then
 !***********************************************************
@@ -437,6 +444,8 @@
        l1imp_nbq = l1imp_nbq + mijk2lmom_nh(i,j,k-1,3)
 
       enddo
+
+
       endif
 
       return

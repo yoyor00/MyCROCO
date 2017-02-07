@@ -25,7 +25,7 @@ module module_parallel_nbq
          integer,dimension(10)                      ::  tvoisin         !LE NUMERO DES VOISINS DANS L'ORDRE(O,E,S,N)
   end type infopar_croco
 
-  
+!  
   type (infopar_croco) :: par
   type (echblock),dimension(10) :: ech_qdm_nbq, ech_div_nbq, ech_rhs2_nh
   type (echblock),dimension(10) :: ech_qdmU_nbq, ech_qdmV_nbq, ech_qdmW_nbq
@@ -355,7 +355,7 @@ subroutine create_echange_qdm_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -465,7 +465,7 @@ subroutine create_echange_qdmU_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -575,7 +575,7 @@ subroutine create_echange_qdmV_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -685,7 +685,7 @@ subroutine create_echange_qdmW_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -912,7 +912,7 @@ subroutine create_echange_div_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" divergence :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh
 !  use module_nbq
   use module_qsort
   implicit none
@@ -966,7 +966,7 @@ subroutine  Persistant_init
   szsend=0
   szrecv=0
 ! Init qdmU exchange-----------------------------------------------------------
-          do vnnew_nbq=0,2
+          do vnnew_nbq=1,1
 	  coef=(vnnew_nbq+1)*10
 	  p_nbreq_qdmU(vnnew_nbq)=1
   	  do bcl=1, 8
@@ -978,13 +978,13 @@ subroutine  Persistant_init
 !             print *,"Attention U : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
 !          endif
 	   if ( szrecv>0 ) then
-	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
+	      call MPI_RECV_INIT(qdm_nbq_a(1),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmU_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
            endif
 	   if (szsend >0) then
-	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%send, par%tvoisin(vois), &
+	      call MPI_SEND_INIT(qdm_nbq_a(1),  1, ech_qdmU_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmU_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
@@ -996,7 +996,7 @@ subroutine  Persistant_init
 !--------------------------------------------------------------------------------------
 
 ! Init qdmV exchange-----------------------------------------------------------
-          do vnnew_nbq=0,2
+          do vnnew_nbq=1,1
 	  coef=(vnnew_nbq+1)*10
 	  p_nbreq_qdmV(vnnew_nbq)=1
   	  do bcl=1, 8
@@ -1008,13 +1008,13 @@ subroutine  Persistant_init
 !             print *,"Attention V : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
 !          endif
 	   if (szrecv>0)  then
-	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
+	      call MPI_RECV_INIT(qdm_nbq_a(1),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmV_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
            endif
 	   if (szsend >0) then
-	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%send, par%tvoisin(vois), &
+	      call MPI_SEND_INIT(qdm_nbq_a(1),  1, ech_qdmV_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmV_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
@@ -1026,7 +1026,7 @@ subroutine  Persistant_init
 !--------------------------------------------------------------------------------------
 
 ! Init qdmW exchange-----------------------------------------------------------
-          do vnnew_nbq=0,2
+          do vnnew_nbq=1,1
 	  coef=(vnnew_nbq+1)*10
 	  p_nbreq_qdmW(vnnew_nbq)=1
   	  do bcl=1, 8
@@ -1038,13 +1038,13 @@ subroutine  Persistant_init
 !             print *,"Attention W : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
 !          endif
 	   if (szrecv>0) then
-	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
+	      call MPI_RECV_INIT(qdm_nbq_a(1),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmW_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
            endif
 	   if (szsend >0) then
-	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%send, par%tvoisin(vois), &
+	      call MPI_SEND_INIT(qdm_nbq_a(1),  1, ech_qdmW_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmW_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
@@ -1056,7 +1056,7 @@ subroutine  Persistant_init
 !--------------------------------------------------------------------------------------
 
 ! Init DIV exchange-----------------------------------------------------------
-          do dnnew_nbq=0,2 !!! dnnew_nbq in [0->2]
+          do dnnew_nbq=1,1 !0,2 !!! dnnew_nbq in [0->2]
 	  coef=(dnnew_nbq+1)*10
 	  p_nbreq_mv(dnnew_nbq)=1
   	  do bcl=1, 8
@@ -1068,13 +1068,13 @@ subroutine  Persistant_init
 !             print *,"Attention DIV : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
 !          endif
 	   if (szrecv>0) then
-	      call MPI_RECV_INIT(div_nbq_a(1,dnnew_nbq),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
+	      call MPI_RECV_INIT(div_nbq_a(1),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagdiv_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_mv(p_nbreq_mv(dnnew_nbq),dnnew_nbq), ierr)
 	      p_nbreq_mv(dnnew_nbq)=p_nbreq_mv(dnnew_nbq)+1
            endif
 	   if (szsend >0) then
-	      call MPI_SEND_INIT(div_nbq_a(1,dnnew_nbq),  1, ech_div_nbq(vois)%send, par%tvoisin(vois), &
+	      call MPI_SEND_INIT(div_nbq_a(1),  1, ech_div_nbq(vois)%send, par%tvoisin(vois), &
 			     tagdiv_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_mv(p_nbreq_mv(dnnew_nbq),dnnew_nbq), ierr)
 	      p_nbreq_mv(dnnew_nbq)=p_nbreq_mv(dnnew_nbq)+1

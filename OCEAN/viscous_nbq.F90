@@ -73,7 +73,8 @@
          rhsd2_nbq=0.
          call amux(                                                 &
               neqmom_nh(0)                                          &
-             ,div_nbq_a(1:neqcont_nh,dnstp_nbq)                     &    ! div decentree (0)
+!              ,div_nbq_a(1:neqcont_nh,dnstp_nbq)                     &    ! div decentree (0)
+             ,div_nbq_a(1:neqcont_nh)                     &    ! div decentree (0)
              ,rhsd2_nbq(1:neqmom_nh(0))                             &
              ,momv_nh(1:indm_v)                                     &
              ,momj_nh(1:indm_v)                                     &
@@ -99,15 +100,29 @@
 !*******************************************************************
 
          indm_v=momi_nh(neqcont_nh+1)+1
-         rhsd2_nbq=0.D0
+!         rhsd2_nbq=0.D0
+
+#ifndef NBQ_IMP
          call amux(                                                 &
               neqmom_nh(0)                                          &
-             ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+!            ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+             ,div_nbq_a(1:neqcont_nh)                     &    ! div decentree (0)
              ,rhsd2_nbq(1:neqmom_nh(0))                             &
              ,momv_nh(1:indm_v)                                     &
              ,momj_nh(1:indm_v)                                     &
              ,momi_nh(1:neqcont_nh+1)                               &
-                 )      
+                 )  
+#else
+         call amux(                                                 &
+              neqmom_nh(1)+neqmom_nh(2)                             &
+!            ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+             ,div_nbq_a(1:neqcont_nh)                     &    ! div decentree (0)
+             ,rhsd2_nbq(1:neqmom_nh(0))                             &
+             ,momv_nh(1:indm_v)                                     &
+             ,momj_nh(1:indm_v)                                     &
+             ,momi_nh(1:neqcont_nh+1)                               &
+                 )  
+#endif
       endif
 
       if (icall.eq.12) then
@@ -130,7 +145,8 @@
          rhsd2_nbq=0.
          call amux(                                                 &
               neqmom_nh(0)                                          &
-             ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+!              ,div_nbq_a(1:neqcont_nh,dnrhs_nbq)                     &    ! div decentree (0)
+             ,div_nbq_a(1:neqcont_nh)                     &    ! div decentree (0)
              ,rhsd2_nbq(1:neqmom_nh(0))                             &
              ,momv_nh(1:indm_v)                                     &
              ,momj_nh(1:indm_v)                                     &

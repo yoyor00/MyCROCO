@@ -488,8 +488,8 @@
       endif 
 
 #ifdef NBQ
-      qdm_u_ext(:,:,0) = 0.
-      qdm_v_ext(:,:,0) = 0.
+      qdm_u_ext(:,:) = 0.
+      qdm_v_ext(:,:) = 0.
 #endif
 
       do j=Jstr,Jend
@@ -578,7 +578,7 @@
               qdm_u(i,j,k,1) = 0.
               qdm_u(i,j,k,2) = u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
               ruint_nbq(i,j,k) = qdm_u(i,j,k,2)/dt
-              qdm_u_ext(i,j,0) = qdm_u_ext(i,j,0) + ruint_nbq(i,j,k)
+              qdm_u_ext(i,j) = qdm_u_ext(i,j) + ruint_nbq(i,j,k)
 # endif
 
               u(i,j,k,indx)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
@@ -590,7 +590,7 @@
           do k=1,N
             do i=IstrU,Iend
                ruint_nbq(i,j,k)=ruint_nbq(i,j,k)
-     &            - qdm_u_ext(i,j,0) *(Hz(i,j,k)+Hz(i-1,j,k))
+     &            - qdm_u_ext(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
      &                               /(Zt_avg1(i,j)+Zt_avg1(i-1,j))
             enddo
           enddo
@@ -620,7 +620,7 @@
      &                                            Hz(i-1,j,k))
               ruint_nbq(i,j,k) = (qdm_u(i,j,k,2)-qdm_u(i,j,k,1))/dt
      &                           -DC(i,0)*ru_nbq_avg2(i,j,k)
-              qdm_u_ext(i,j,0) =  qdm_u_ext(i,j,0) + ruint_nbq(i,j,k)
+              qdm_u_ext(i,j) =  qdm_u_ext(i,j) + ruint_nbq(i,j,k)
 # else
               u(i,j,k,nnew)=( cff1*u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
      &                                              Hz(i-1,j,k))
@@ -641,7 +641,7 @@
           do k=1,N
             do i=IstrU,Iend
                ruint_nbq(i,j,k)=ruint_nbq(i,j,k)
-     &            - qdm_u_ext(i,j,0) *(Hz(i,j,k)+Hz(i-1,j,k))
+     &            - qdm_u_ext(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
      &                               /(Zt_avg1(i,j)+Zt_avg1(i-1,j))
             enddo
           enddo
@@ -684,7 +684,7 @@
      &                                           +Hz(i,j-1,k))
               rvint_nbq(i,j,k) = qdm_v(i,j,k,2)/dt
 
-              qdm_v_ext(i,j,0) = qdm_v_ext(i,j,0) + rvint_nbq(i,j,k)
+              qdm_v_ext(i,j) = qdm_v_ext(i,j) + rvint_nbq(i,j,k)
 # endif
                 v(i,j,k,indx)=v(i,j,k,nstp)*0.5*(Hz(i,j  ,k)+
      &                                           Hz(i,j-1,k))
@@ -695,7 +695,7 @@
           do k=1,N
             do i=Istr,Iend
                rvint_nbq(i,j,k)=rvint_nbq(i,j,k)
-     &            - qdm_v_ext(i,j,0) *(Hz(i,j,k)+Hz(i,j-1,k))
+     &            - qdm_v_ext(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
      &                               /(Zt_avg1(i,j)+Zt_avg1(i,j-1))
             enddo
           enddo
@@ -726,7 +726,7 @@
      &                                            Hz(i,j-1,k))
               rvint_nbq(i,j,k) = (qdm_v(i,j,k,2)-qdm_v(i,j,k,1))/dt
      &                           -DC(i,0)*rv_nbq_avg2(i,j,k)
-              qdm_v_ext(i,j,0) =  qdm_v_ext(i,j,0) + rvint_nbq(i,j,k)
+              qdm_v_ext(i,j) =  qdm_v_ext(i,j) + rvint_nbq(i,j,k)
 # else
                 v(i,j,k,nnew)=( cff1*v(i,j,k,nstp)*0.5*(Hz(i,j,k)+
      &                                                Hz(i,j-1,k))
@@ -745,7 +745,7 @@
           do k=1,N
             do i=Istr,Iend
                rvint_nbq(i,j,k)=rvint_nbq(i,j,k)
-     &            - qdm_v_ext(i,j,0) *(Hz(i,j,k)+Hz(i,j-1,k))
+     &            - qdm_v_ext(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
      &                               /(Zt_avg1(i,j)+Zt_avg1(i,j-1))
             enddo
           enddo

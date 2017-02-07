@@ -61,13 +61,16 @@
 ! Initialisations
 !*******************************************************************************
 
-      qdmimp_nbq  = 0. 
-      pdv_nbq     = 0.
-      puv_nbq     = 0.
-      plv_nbq     = 0.
+!     qdmimp_nbq  = 0. 
+!     pdv_nbq     = 0.
+!     puv_nbq     = 0.
+!     plv_nbq     = 0.
+
+# ifdef NBQ_IMP_TRIDIAG
       pdvsave_nbq = 0.
       puvsave_nbq = 0.
       plvsave_nbq = 0.
+#endif
 
       endif ! icall == 0
 
@@ -90,7 +93,6 @@
             ,cimpi_nbq                                             &
                 )
      
-
 # ifdef NBQ_IMP_LU
       if (neqmimp_nbq.ne.0) then
       call dgttrf (                            &
@@ -111,40 +113,18 @@
 !   RHS 
 !*******************************************************************************
 
-#ifdef IMP_SLOW
-!.......QDM pour le RHS: terme CONTxQDM
-!                        qdm_z must 0 here
-        qdmimp_nbq(1:neqmom_nh(1)+neqmom_nh(2))=qdm_nbq_a(1:neqmom_nh(1)+neqmom_nh(2),vnnew_nbq) 
-
 !.......Produit MatxVect: CONTxQDM
         call amux                (                                   &
                neqcont_nh                                            &
-              ,qdmimp_nbq(1)                                         &
-              ,rhsimp2_nbq(1)                                        &
+              ,qdm_nbq_a(1:neqmom_nh(1)+neqmom_nh(2))      &
+              ,div_nbq_a(1)                                          &
               ,contv_nh(1)                                           &
               ,contj_nh(1)                                           &
               ,conti_nh(1)       )
 
-        rhsimp2_nbq(1:neqcimp_nbq)=  csvisc2_nbq                    &   
-                             * rhp_nbq_a(1:neqcimp_nbq,rnrhs_nbq)   &
-                             - dtnbq*rhsimp2_nbq(1:neqcimp_nbq)  
-#else
+        rhsimp2_nbq(1:neqcimp_nbq)=+ csvisc2_nbq * rhp_nbq_a(1:neqcimp_nbq)   &
+                                   - div_nbq_a(1:neqcimp_nbq)  
 
-   qdmimp_nbq(1:neqmom_nh(1)+neqmom_nh(2))=qdm_nbq_a(1:neqmom_nh(1)+neqmom_nh(2),vnnew_nbq) 
-   do l_nbq = 1, neqcont_nh 
-     t_i = 0.0D+00
-     do l1_nbq = conti_nh(l_nbq), conti_nh(l_nbq+1)-1
-       t_i = t_i + contv_nh(l1_nbq) * qdmimp_nbq(contj_nh(l1_nbq))
-     end do
-     rhsimp2_nbq(l_nbq) = csvisc2_nbq * rhp_nbq_a(l_nbq,rnrhs_nbq)   &
-                         -dtnbq*t_i
-   end do
-!        rhsimp2_nbq(1:neqcimp_nbq)=  csvisc2_nbq                    &   
-!                             * rhp_nbq_a(1:neqcimp_nbq,rnrhs_nbq)   &
-!                            -dtnbq*rhsimp2_nbq(1:neqcimp_nbq)  
-#endif
-
-#ifdef IMP_SLOW
 !.......RHS = MOMxRHS(cont) 
         call amux(                                                  &
                neqmimp_nbq                                          &
@@ -160,18 +140,8 @@
 
        rhsimp_nbq(1:neqmimp_nbq) = rhsimp_nbq(1:neqmimp_nbq)             &
        + dtnbq * dqdmdt_nbq_a(neqmom_nh(1)+neqmom_nh(2)+1:neqmom_nh(0))  &
-       + qdm_nbq_a(neqmom_nh(1)+neqmom_nh(2)+1:neqmom_nh(0),vnrhs_nbq)   
-#else
-   do l_nbq = 1, neqmimp_nbq 
-     t_i = 0.0D+00
-     do l1_nbq = mimpi_nbq(l_nbq), mimpi_nbq(l_nbq+1)-1
-       t_i = t_i + mimpv_nbq(l1_nbq) * rhsimp2_nbq(mimpj_nbq(l1_nbq))
-     end do
-     rhsimp_nbq(l_nbq) = t_i &
-       + dtnbq * dqdmdt_nbq_a(neqmom_nh(1)+neqmom_nh(2)+l_nbq)  &
-       + qdm_nbq_a(neqmom_nh(1)+neqmom_nh(2)+l_nbq,vnrhs_nbq)   
-   end do
-#endif
+       + qdm_nbq_a(neqmom_nh(1)+neqmom_nh(2)+1:neqmom_nh(0))   
+
      
 !*******************************************************************************
 ! Inversion du systeme implicite
@@ -235,13 +205,13 @@
                    
 !.....Recopie de la solution implicite pour w (update) et calcul rhs (sum)
       
-!     do l_nbq = neqw_nh(1)+1,neqw_nh(6) 
-      do l_nbq = neqv_nh(7)+1,neqw_nh(7) 
-         qdm_nbq_a(l_nbq,vnnew_nbq) = rhsimp_nbq(l_nbq-(neqmom_nh(1)+neqmom_nh(2)))  
+!!     do l_nbq = neqw_nh(1)+1,neqw_nh(6) 
+       do l_nbq = neqv_nh(7)+1,neqw_nh(7) 
          rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)                                    &
-              + (qdm_nbq_a(l_nbq,vnnew_nbq)-qdm_nbq_a(l_nbq,vnrhs_nbq)) / dtnbq   &
+              + (rhsimp_nbq(l_nbq-(neqmom_nh(1)+neqmom_nh(2))) -qdm_nbq_a(l_nbq)) / dtnbq   &
               - dqdmdt_nbq_a(l_nbq)   
-      enddo
+         qdm_nbq_a(l_nbq) = rhsimp_nbq(l_nbq-(neqmom_nh(1)+neqmom_nh(2)))  
+      enddo    
 
       endif
       

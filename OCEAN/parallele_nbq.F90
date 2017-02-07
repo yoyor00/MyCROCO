@@ -39,7 +39,7 @@
 !      use module_parallele
 !      use module_principal , only :  mask_u, mask_v, mask_t, imax, jmax, kmax &
 !			  , iteration3d, iteration2d
-      use module_nh , only : ijk2lmom_nh, time_omp_nh, ijk2lq_nh, rhs2_nh
+      use module_nh , only : ijk2lmom_nh, time_omp_nh, ijk2lq_nh
       use module_nbq
       use module_parallel_nbq
 !      use module_profile
@@ -71,10 +71,10 @@
 	   call MPI_TYPE_SIZE(ech_qdm_nbq(vois)%recv, szrecv,ierr) 
            call MPI_TYPE_GET_EXTENT(ech_qdm_nbq(vois)%send, debsend, szsend, ierr)
            call MPI_TYPE_GET_EXTENT(ech_qdm_nbq(vois)%recv, debrecv, szrecv, ierr)
-            call MPI_IRECV(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdm_nbq(vois)%recv, par%tvoisin(vois), &
+            call MPI_IRECV(qdm_nbq_a(1),  1, ech_qdm_nbq(vois)%recv, par%tvoisin(vois), &
 	      tagqdm_Recv(vois), par%comm2d, tabreq_qdm(nbreq_qdm), ierr)
  	     nbreq_qdm=nbreq_qdm+1
- 	     call MPI_IRSEND(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdm_nbq(vois)%send, par%tvoisin(vois), &
+ 	     call MPI_IRSEND(qdm_nbq_a(1),  1, ech_qdm_nbq(vois)%send, par%tvoisin(vois), &
                tagqdm_Send(vois), par%comm2d, tabreq_qdm(nbreq_qdm), ierr)
   	     nbreq_qdm=nbreq_qdm+1	
            endif
@@ -218,18 +218,18 @@
 !****************************************************************************************
 ! !.....Echanges de RHS2_NH contenant la condition cinematique au fond:
 !****************************************************************************************
-	  nbreq_rhs=1
-	  do bcl=1,8
-	   vois=lvoisin(bcl)
-	   if (par%tvoisin(vois) /= mpi_proc_null) then 
-            call MPI_IRECV(rhs2_nh(1),  1, ech_rhs2_nh(vois)%recv, par%tvoisin(vois), &
-	      tagrhs_Recv(vois), par%comm2d, tabreq_rhs(nbreq_rhs), ierr)
- 	     nbreq_rhs=nbreq_rhs+1
- 	     call MPI_IRSEND(rhs2_nh(1),  1, ech_rhs2_nh(vois)%send, par%tvoisin(vois), &
-               tagrhs_Send(vois), par%comm2d, tabreq_rhs(nbreq_rhs), ierr)
-  	     nbreq_rhs=nbreq_rhs+1	
-           endif  
-	  enddo
+!	  nbreq_rhs=1
+!	  do bcl=1,8
+!	   vois=lvoisin(bcl)
+!	   if (par%tvoisin(vois) /= mpi_proc_null) then 
+!            call MPI_IRECV(rhs2_nh(1),  1, ech_rhs2_nh(vois)%recv, par%tvoisin(vois), &
+!	      tagrhs_Recv(vois), par%comm2d, tabreq_rhs(nbreq_rhs), ierr)
+! 	     nbreq_rhs=nbreq_rhs+1
+! 	     call MPI_IRSEND(rhs2_nh(1),  1, ech_rhs2_nh(vois)%send, par%tvoisin(vois), &
+!               tagrhs_Send(vois), par%comm2d, tabreq_rhs(nbreq_rhs), ierr)
+!  	     nbreq_rhs=nbreq_rhs+1	
+!           endif  
+!	  enddo
       endif
       if (ichoix.eq.18) then
 !****************************************************************************************
@@ -238,11 +238,11 @@
 !----------------------------------------------------------------------------------------
 !  Salle d'attente
 !----------------------------------------------------------------------------------------
-	nbreq_rhs = nbreq_rhs-1
-	CALL MPI_WAITALL(nbreq_rhs, tabreq_rhs(1:nbreq_rhs), tstatus(:,1:nbreq_rhs), IERR)   
-        nbreq_rhs=0
-      !print *,"waitall rhs OK."
-      endif
+!	nbreq_rhs = nbreq_rhs-1
+!	CALL MPI_WAITALL(nbreq_rhs, tabreq_rhs(1:nbreq_rhs), tstatus(:,1:nbreq_rhs), IERR)   
+!        nbreq_rhs=0
+!      !print *,"waitall rhs OK."
+       endif
 !****************************************************************************************
 !****************************************************************************************
 

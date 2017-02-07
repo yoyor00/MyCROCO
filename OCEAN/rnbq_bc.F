@@ -32,7 +32,7 @@
 #  endif
 !
 ! Set lateral boundary conditions for W-component momentum
-! rhp_nbq_a(W_index,2) for the parent grid.
+! rhp_nbq_a(W_index) for the parent grid.
 !
 # endif /* NBQ */
 #else
@@ -43,7 +43,7 @@
       subroutine rnbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
 !
 ! Set lateral boundary conditions for W-component momentum
-! rhp_nbq_a(W_index,2) for the child grid.
+! rhp_nbq_a(W_index) for the child grid.
 !
 # endif /* NBQ */
 #endif /* CHILD */
@@ -106,13 +106,13 @@
             l_bm1_j   = ijk2lq_nh(Istr  ,j  ,k)
             l_bm1_jm1 = ijk2lq_nh(Istr  ,j-1,k)
 
-            grad(Istr-1,j)=(rhp_nbq_a(l_b_j  ,nstp)
-     &                     -rhp_nbq_a(l_b_jm1,nstp))
+            grad(Istr-1,j)=(rhp_nbq_a(l_b_j  )
+     &                     -rhp_nbq_a(l_b_jm1))
 #   ifdef MASKING
      &                              *vmask(Istr-1,j)
 #   endif
-            grad(Istr  ,j)=(rhp_nbq_a(l_bm1_j  ,nstp)
-     &                     -rhp_nbq_a(l_bm1_jm1,nstp))
+            grad(Istr  ,j)=(rhp_nbq_a(l_bm1_j  )
+     &                     -rhp_nbq_a(l_bm1_jm1))
 #   ifdef MASKING
      &                                  *vmask(Istr,j)
 #   endif
@@ -123,8 +123,8 @@
             l_bm1_j   = ijk2lq_nh(Istr  ,j,k)
             l_bm2_j   = ijk2lq_nh(Istr+1,j,k)
 
-            dft=rhp_nbq_a(l_bm1_j,nstp)-rhp_nbq_a(l_bm1_j,nnew)
-            dfx=rhp_nbq_a(l_bm1_j,nnew)-rhp_nbq_a(l_bm2_j,nnew)
+            dft=rhp_nbq_a(l_bm1_j)-rhp_nbq_a(l_bm1_j)
+            dfx=rhp_nbq_a(l_bm1_j)-rhp_nbq_a(l_bm2_j)
 
             if (dfx*dft .lt. 0.) then
               dft=0.                       ! <-- cancel cx, if inflow
@@ -152,13 +152,13 @@
             cy=min(cff,max(dft*dfy,-cff))
 #   endif
  
-            rhp_nbq_a(l_b_j,nnew)=( cff*rhp_nbq_a(l_b_j  ,nstp)
-     &                              +cx*rhp_nbq_a(l_bm1_j,nnew)
+            rhp_nbq_a(l_b_j)=( cff*rhp_nbq_a(l_b_j  )
+     &                              +cx*rhp_nbq_a(l_bm1_j)
      &                             -max(cy,0.)*grad(Istr-1,j  )
      &                             -min(cy,0.)*grad(Istr-1,j+1)
      &                                               )/(cff+cx)
 #   if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            rhp_nbq_a(l_b_j,nnew)=(1.-tau)*rhp_nbq_a(l_b_j,nnew)
+            rhp_nbq_a(l_b_j)=(1.-tau)*rhp_nbq_a(l_b_j)
 #    ifdef NBQ_FRC_BRY
      &                                    +tau*rnbqbry_west(j,k)
 #    else     
@@ -166,7 +166,7 @@
 #    endif
 #   endif
 #   ifdef MASKING
-            rhp_nbq_a(l_b_j,nnew)=rhp_nbq_a(l_b_j,nnew)*rmask(Istr-1,j)
+            rhp_nbq_a(l_b_j)=rhp_nbq_a(l_b_j)*rmask(Istr-1,j)
 #   endif
           enddo
         enddo
@@ -178,9 +178,9 @@
           do j=Jstr,Jend
             l_b_j     = ijk2lq_nh(Istr-1,j  ,k)
 #   ifdef NBQ_FRC_BRY
-            rhp_nbq_a(l_b_j,nnew)=rnbqbry_west(j,k)         ! specified
+            rhp_nbq_a(l_b_j)=rnbqbry_west(j,k)         ! specified
 #   else
-            rhp_nbq_a(l_b_j,nnew)=rnbqclm(Istr-1,j,k)
+            rhp_nbq_a(l_b_j)=rnbqclm(Istr-1,j,k)
 #   endif
 #   ifdef MASKING
      &                               *rmask(Istr-1,j)
@@ -194,7 +194,7 @@
 !          do j=Jstr,Jend
 !            l_b_j     = ijk2lq_nh(Istr-1,j  ,k)
 !            l_bm1_j   = ijk2lq_nh(Istr  ,j  ,k)
-!            rhp_nbq_a(l_b_j,nnew)=rhp_nbq_a(l_bm1_j,nnew) ! Gradient: default
+!            rhp_nbq_a(l_b_j)=rhp_nbq_a(l_bm1_j) ! Gradient: default
 !#   ifdef MASKING
 !     &                                     *rmask(Istr,j)
 !#   endif
@@ -216,13 +216,13 @@
             l_bm1_j     = ijk2lq_nh(Iend  ,j  ,k)
             l_bm1_jm1   = ijk2lq_nh(Iend  ,j-1,k)
 
-            grad(Iend  ,j)=(rhp_nbq_a(l_bm1_j  ,nstp)
-     &                     -rhp_nbq_a(l_bm1_jm1,nstp))
+            grad(Iend  ,j)=(rhp_nbq_a(l_bm1_j  )
+     &                     -rhp_nbq_a(l_bm1_jm1))
 #   ifdef MASKING
      &                                *vmask(Iend  ,j)
 #   endif
-            grad(Iend+1,j)=(rhp_nbq_a(l_b_j  ,nstp)
-     &                     -rhp_nbq_a(l_b_jm1,nstp))
+            grad(Iend+1,j)=(rhp_nbq_a(l_b_j  )
+     &                     -rhp_nbq_a(l_b_jm1))
 #   ifdef MASKING
      &                              *vmask(Iend+1,j)
 #   endif
@@ -233,8 +233,8 @@
             l_bm1_j   = ijk2lq_nh(Iend  ,j,k)
             l_bm2_j   = ijk2lq_nh(Iend-1,j,k)
 
-            dft=rhp_nbq_a(l_bm1_j,nstp)-rhp_nbq_a(l_bm1_j,nnew)
-            dfx=rhp_nbq_a(l_bm1_j,nnew)-rhp_nbq_a(l_bm2_j,nnew)
+            dft=rhp_nbq_a(l_bm1_j)-rhp_nbq_a(l_bm1_j)
+            dfx=rhp_nbq_a(l_bm1_j)-rhp_nbq_a(l_bm2_j)
  
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
@@ -262,13 +262,13 @@
             cy=min(cff,max(dft*dfy,-cff))
 #   endif
  
-            rhp_nbq_a(l_b_j,nnew)=( cff*rhp_nbq_a(l_b_j  ,nstp)
-     &                              +cx*rhp_nbq_a(l_bm1_j,nnew)
+            rhp_nbq_a(l_b_j)=( cff*rhp_nbq_a(l_b_j  )
+     &                              +cx*rhp_nbq_a(l_bm1_j)
      &                             -max(cy,0.)*grad(Iend+1,j  )
      &                             -min(cy,0.)*grad(Iend+1,j+1)
      &                                               )/(cff+cx)
 #   if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            rhp_nbq_a(l_b_j,nnew)=(1.-tau)*rhp_nbq_a(l_b_j,nnew)
+            rhp_nbq_a(l_b_j)=(1.-tau)*rhp_nbq_a(l_b_j)
 #    ifdef NBQ_FRC_BRY
      &                                    +tau*rnbqbry_east(j,k)
 #    else     
@@ -276,7 +276,7 @@
 #    endif
 #   endif
 #   ifdef MASKING
-            rhp_nbq_a(l_b_j,nnew)=rhp_nbq_a(l_b_j,nnew)*rmask(Iend+1,j)
+            rhp_nbq_a(l_b_j)=rhp_nbq_a(l_b_j)*rmask(Iend+1,j)
 #   endif
           enddo
         enddo
@@ -288,9 +288,9 @@
           do j=Jstr,Jend
             l_b_j     = ijk2lq_nh(Iend+1,j,k)
 #   ifdef NBQ_FRC_BRY
-             rhp_nbq_a(l_b_j,nnew)=rnbqbry_east(j,k)       ! specified
+             rhp_nbq_a(l_b_j)=rnbqbry_east(j,k)       ! specified
 #   else
-             rhp_nbq_a(l_b_j,nnew)=rnbqclm(Iend+1,j,k)
+             rhp_nbq_a(l_b_j)=rnbqclm(Iend+1,j,k)
 #   endif
 #   ifdef MASKING
      &                                *rmask(Iend+1,j)
@@ -304,7 +304,7 @@
 !          do j=Jstr,Jend
 !            l_b_j     = ijk2lq_nh(Iend+1,j,k)
 !            l_bm1_j   = ijk2lq_nh(Iend  ,j,k)
-!            rhp_nbq_a(l_b_j,nnew)=rhp_nbq_a(l_bm1_j,nnew)  ! gradient (default)
+!            rhp_nbq_a(l_b_j)=rhp_nbq_a(l_bm1_j)  ! gradient (default)
 !#   ifdef MASKING
 !     &                                   *rmask(Iend+1,j)
 !#   endif
@@ -329,13 +329,13 @@
             l_bm1_i   = ijk2lq_nh(i  ,Jstr  ,k)
             l_bm1_im1 = ijk2lq_nh(i-1,Jstr  ,k)
 
-            grad(i,Jstr-1)=(rhp_nbq_a(l_b_i  ,nstp)
-     &                     -rhp_nbq_a(l_b_im1,nstp))
+            grad(i,Jstr-1)=(rhp_nbq_a(l_b_i  )
+     &                     -rhp_nbq_a(l_b_im1))
 #   ifdef MASKING
      &                              *pmask(i  ,Jstr)
 #   endif
-            grad(i,Jstr  )=(rhp_nbq_a(l_bm1_i  ,nstp)
-     &                     -rhp_nbq_a(l_bm1_im1,nstp))
+            grad(i,Jstr  )=(rhp_nbq_a(l_bm1_i  )
+     &                     -rhp_nbq_a(l_bm1_im1))
 #   ifdef MASKING
      &                                *pmask(i,Jstr+1)
 #   endif
@@ -346,8 +346,8 @@
             l_bm1_i   = ijk2lq_nh(i  ,Jstr  ,k)
             l_bm2_i   = ijk2lq_nh(i  ,Jstr+1,k)
 
-            dft=rhp_nbq_a(l_bm1_i,nstp)-rhp_nbq_a(l_bm1_i,nnew)
-            dfx=rhp_nbq_a(l_bm1_i,nnew)-rhp_nbq_a(l_bm2_i,nnew)
+            dft=rhp_nbq_a(l_bm1_i)-rhp_nbq_a(l_bm1_i)
+            dfx=rhp_nbq_a(l_bm1_i)-rhp_nbq_a(l_bm2_i)
 
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
@@ -375,13 +375,13 @@
             cy=min(cff,max(dft*dfy,-cff))
 #   endif
  
-            rhp_nbq_a(l_b_i,nnew)=( cff*rhp_nbq_a(l_b_i  ,nstp)
-     &                              +cx*rhp_nbq_a(l_bm1_i,nnew)
+            rhp_nbq_a(l_b_i)=( cff*rhp_nbq_a(l_b_i  )
+     &                              +cx*rhp_nbq_a(l_bm1_i)
      &                             -max(cy,0.)*grad(i  ,Jstr-1)
      &                             -min(cy,0.)*grad(i+1,Jstr-1)
      &                                               )/(cff+cx)
 #   if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            rhp_nbq_a(l_b_i,nnew)=(1.-tau)*rhp_nbq_a(l_b_i,nnew)
+            rhp_nbq_a(l_b_i)=(1.-tau)*rhp_nbq_a(l_b_i)
 #    ifdef NBQ_FRC_BRY
      &                                   +tau*rnbqbry_south(i,k)
 #    else     
@@ -389,7 +389,7 @@
 #    endif
 #   endif
 #   ifdef MASKING
-            rhp_nbq_a(l_b_i,nnew)=rhp_nbq_a(l_b_i,nnew)*rmask(i,Jstr-1)
+            rhp_nbq_a(l_b_i)=rhp_nbq_a(l_b_i)*rmask(i,Jstr-1)
 #   endif
           enddo
         enddo
@@ -400,9 +400,9 @@
           do i=Istr,Iend
             l_b_i     = ijk2lq_nh(i  ,Jstr-1,k)
 #   ifdef NBQ_FRC_BRY
-            rhp_nbq_a(l_b_i,nnew)=rnbqbry_south(i,k)        ! specified
+            rhp_nbq_a(l_b_i)=rnbqbry_south(i,k)        ! specified
 #   else
-            rhp_nbq_a(l_b_i,nnew)=rnbqclm(i,Jstr-1,k)
+            rhp_nbq_a(l_b_i)=rnbqclm(i,Jstr-1,k)
 #   endif
 #   ifdef MASKING
      &                               *rmask(i,Jstr-1)
@@ -416,7 +416,7 @@
 !          do i=Istr,Iend
 !            l_b_i     = ijk2lq_nh(i  ,Jstr-1,k)
 !            l_bm1_i   = ijk2lq_nh(i  ,Jstr  ,k)
-!            rhp_nbq_a(l_b_i,nnew)=rhp_nbq_a(l_bm1_i,nnew)  ! gradient (default)
+!            rhp_nbq_a(l_b_i)=rhp_nbq_a(l_bm1_i)  ! gradient (default)
 !#   ifdef MASKING
 !     &                                   *rmask(i,Jstr-1)
 !#   endif
@@ -438,13 +438,13 @@
             l_bm1_i   = ijk2lq_nh(i  ,Jend  ,k)
             l_bm1_im1 = ijk2lq_nh(i-1,Jend  ,k)
 
-            grad(i,Jend  )=(rhp_nbq_a(l_bm1_j  ,nstp)
-     &                     -rhp_nbq_a(l_bm1_im1,nstp))
+            grad(i,Jend  )=(rhp_nbq_a(l_bm1_j  )
+     &                     -rhp_nbq_a(l_bm1_im1))
 #   ifdef MASKING
      &                                  *umask(i,Jend)
 #   endif
-            grad(i,Jend+1)=(rhp_nbq_a(l_b_j  ,nstp)
-     &                     -rhp_nbq_a(l_b_im1,nstp))
+            grad(i,Jend+1)=(rhp_nbq_a(l_b_j  )
+     &                     -rhp_nbq_a(l_b_im1))
 #   ifdef MASKING
      &                              *umask(i,Jend+1)
 #   endif
@@ -455,8 +455,8 @@
             l_bm1_i   = ijk2lq_nh(i  ,Jend  ,k)
             l_bm2_i   = ijk2lq_nh(i  ,Jend-1,k)
 
-            dft=rhp_nbq_a(l_bm1_i,nstp)-rhp_nbq_a(l_bm1_i,nnew)
-            dfx=rhp_nbq_a(l_bm1_i,nnew)-rhp_nbq_a(l_bm2_i,nnew)
+            dft=rhp_nbq_a(l_bm1_i)-rhp_nbq_a(l_bm1_i)
+            dfx=rhp_nbq_a(l_bm1_i)-rhp_nbq_a(l_bm2_i)
 
             if (dfx*dft .lt. 0.) then
               dft=0.                       ! <-- cancel cx, if inflow
@@ -484,13 +484,13 @@
             cy=min(cff,max(dft*dfy,-cff))
 #   endif
  
-            rhp_nbq_a(l_b_i,nnew)=( cff*rhp_nbq_a(l_b_i  ,nstp)
-     &                              +cx*rhp_nbq_a(l_bm1_i,nnew)
+            rhp_nbq_a(l_b_i)=( cff*rhp_nbq_a(l_b_i)
+     &                              +cx*rhp_nbq_a(l_bm1_i)
      &                             -max(cy,0.)*grad(i  ,Jend+1)
      &                             -min(cy,0.)*grad(i+1,Jend+1)
      &                                               )/(cff+cx)
 #   if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-            rhp_nbq_a(l_b_i,nnew)=(1.-tau)*rhp_nbq_a(l_b_i,nnew)
+            rhp_nbq_a(l_b_i)=(1.-tau)*rhp_nbq_a(l_b_i)
 #    ifdef NBQ_FRC_BRY
      &                                   +tau*rnbqbry_north(i,k)
 #    else     
@@ -498,7 +498,7 @@
 #    endif
 #   endif
 #   ifdef MASKING
-            rhp_nbq_a(l_b_i,nnew)=rhp_nbq_a(l_b_i,nnew)*rmask(i,Jend+1)
+            rhp_nbq_a(l_b_i)=rhp_nbq_a(l_b_i)*rmask(i,Jend+1)
 #   endif
           enddo
         enddo
@@ -510,9 +510,9 @@
           do i=Istr,Iend
             l_b_i     = ijk2lq_nh(i  ,Jend+1,k)
 #   ifdef NBQ_FRC_BRY
-            rhp_nbq_a(l_b_i,nnew)=rnbqbry_north(i,k)      ! specified
+            rhp_nbq_a(l_b_i)=rnbqbry_north(i,k)      ! specified
 #   else
-            rhp_nbq_a(l_b_i,nnew)=rnbqclm(i,Jend+1,k)
+            rhp_nbq_a(l_b_i)=rnbqclm(i,Jend+1,k)
 #   endif
 #   ifdef MASKING
      &                               *rmask(i,Jend+1)
@@ -526,7 +526,7 @@
 !                                           ======== ==== ======== ==
 !            l_b_i     = ijk2lq_nh(i  ,Jend+1,k)
 !            l_bm1_i   = ijk2lq_nh(i  ,Jend  ,k)
-!            rhp_nbq_a(l_b_i,nnew)=rhp_nbq_a(l_bm1_i,nnew) ! gradient (default)
+!            rhp_nbq_a(l_b_i)=rhp_nbq_a(l_bm1_i) ! gradient (default)
 !#   ifdef MASKING
 !     &                                   *rmask(i,Jend+1)
 !#   endif
@@ -545,8 +545,8 @@
           l_c     = ijk2lq_nh(Istr-1,Jstr-1,k)
           l_c_im1 = ijk2lq_nh(Istr  ,Jstr-1,k)
           l_c_jm1 = ijk2lq_nh(Istr-1,Jstr  ,k)
-          rhp_nbq_a(l_c,nnew)=0.5*(rhp_nbq_a(l_c_im1,nnew)
-     &                            +rhp_nbq_a(l_c_jm1,nnew))
+          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
+     &                            +rhp_nbq_a(l_c_jm1))
 #  ifdef MASKING
      &                                *rmask(Istr-1,Jstr-1)
 #  endif
@@ -559,8 +559,8 @@
           l_c     = ijk2lq_nh(Iend+1,Jstr-1,k)
           l_c_im1 = ijk2lq_nh(Iend  ,Jstr-1,k)
           l_c_jm1 = ijk2lq_nh(Iend+1,Jstr  ,k)
-          rhp_nbq_a(l_c,nnew)=0.5*(rhp_nbq_a(l_c_im1,nnew)
-     &                            +rhp_nbq_a(l_c_jm1,nnew))
+          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
+     &                            +rhp_nbq_a(l_c_jm1))
 #  ifdef MASKING
      &                                *rmask(Iend+1,Jstr-1)
 #  endif
@@ -573,8 +573,8 @@
           l_c     = ijk2lq_nh(Istr-1,Jend+1,k)
           l_c_im1 = ijk2lq_nh(Istr  ,Jend+1,k)
           l_c_jm1 = ijk2lq_nh(Istr-1,Jend  ,k)
-          rhp_nbq_a(l_c,nnew)=0.5*(rhp_nbq_a(l_c_im1,nnew)
-     &                            +rhp_nbq_a(l_c_jm1,nnew))
+          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
+     &                            +rhp_nbq_a(l_c_jm1))
 #  ifdef MASKING
      &                                *rmask(Istr-1,Jend+1)
 #  endif
@@ -587,8 +587,8 @@
           l_c     = ijk2lq_nh(Iend+1,Jend+1,k)
           l_c_im1 = ijk2lq_nh(Iend  ,Jend+1,k)
           l_c_jm1 = ijk2lq_nh(Iend+1,Jend  ,k)
-          rhp_nbq_a(l_c,nnew)=0.5*(rhp_nbq_a(l_c_im1,nnew)
-     &                            +rhp_nbq_a(l_c_jm1,nnew))
+          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
+     &                            +rhp_nbq_a(l_c_jm1))
 #  ifdef MASKING
      &                                *rmask(Iend+1,Jend+1)
 #  endif

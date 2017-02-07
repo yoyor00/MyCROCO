@@ -59,20 +59,33 @@
 !  Initialize density perturbation and momentum arrays
 !----------------------------------------------------------------------
 !
-        rhp_nbq_a(:,:) = 0.0
-        qdm_nbq_a(:,:) = 0.0
+        rhp_nbq_a(:) = 0.0
+        qdm_nbq_a(:) = 0.0
         rhobar_nbq  = 1.
 
-        vnnew_nbq = 2
-        vnrhs_nbq = 1
-        vnstp_nbq = 0
 
-        rnnew_nbq = 2
-        rnrhs_nbq = 1
-        rnstp_nbq = 0
+        
+          vnnew_nbq = 1
+          vnrhs_nbq = 1
+          vnstp_nbq = 1
 
-        dnrhs_nbq = 1
-        dnstp_nbq = 0
+          rnnew_nbq = 1
+          rnrhs_nbq = 1
+          rnstp_nbq = 1
+
+          dnrhs_nbq = 1
+          dnstp_nbq = 1
+
+!         vnnew_nbq = 2
+!         vnrhs_nbq = 1
+!         vnstp_nbq = 0
+
+!         rnnew_nbq = 2
+!         rnrhs_nbq = 1
+!         rnstp_nbq = 0
+
+!         dnrhs_nbq = 1
+!         dnstp_nbq = 0
 
 !----------------------------------------------------------------------
 !  Initialize parameters: should be done in a NH-namelist
@@ -139,6 +152,7 @@
 !... Initialize implicit matrix
 # ifdef NBQ_IMP
       if ( ifl_imp_nbq.eq.1 )  call implicit_nbq(-1)
+      ! Ya pas de -1 dans implicit_nbq
 # endif
 !
 !----------------------------------------------------------------------
@@ -198,8 +212,8 @@
              i = l2iq_nh(l_nbq)
              j = l2jq_nh(l_nbq)
              k = l2kq_nh(l_nbq)
-!!           rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
-             rhp_bq_a(l_nbq,0:2)  = rho(i,j,k)
+!!           rhp_nbq_a(l_nbq) = rho(i,j,k)
+!             rhp_bq_a(l_nbq)  = rho(i,j,k)
              rho_nbq_ext(i,j,k)   = (rho0+rho(i,j,k))/rho0
              rho_nbq_avg1(i,j,k)  = (rho0+rho(i,j,k))/rho0
              rho_nbq_avg2(i,j,k)  = (rho0+rho(i,j,k))/rho0
@@ -236,7 +250,7 @@
 
 # else
 !!        rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
-          rhp_bq_a  = 0.
+!          rhp_bq_a  = 0.
           rho_nbq_ext  = 1.
           rho_nbq_avg1  = 1.
           rho_nbq_avg2 = 1.
@@ -247,8 +261,8 @@
 
 !.......Some remaining initializations:
         rhssum_nbq_a(:)     = 0.d0
-        div_nbq_a   (:,:)   = 0.d0
-        qdm_v_ext   (:,:,:) = 0.d0  ! TO BE FINISHED
+!         div_nbq_a   (:,:)   = 0.d0
+        div_nbq_a   (:)   = 0.d0
 
        endif 
 
@@ -267,13 +281,11 @@
           i=l2imom_nh(l_nbq)
           j=l2jmom_nh(l_nbq)
           k=l2kmom_nh(l_nbq)
-          qdm_nbq_a(l_nbq,vnnew_nbq)=(rho0+0.5*(rho(i,j,k)+rho(i-1,j,k))) &
+          qdm_nbq_a(l_nbq)=(rho0+0.5*(rho(i,j,k)+rho(i-1,j,k))) &
                                      *u(i,j,k,nrhs)*hz_half(i,j,k)
         enddo
         call parallele_nbq(51)
         call parallele_nbq(151)
-        qdm_nbq_a(:,vnrhs_nbq)=qdm_nbq_a(:,vnnew_nbq)
-        qdm_nbq_a(:,vnstp_nbq)=qdm_nbq_a(:,vnnew_nbq)
       endif
 # endif
 
