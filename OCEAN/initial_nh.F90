@@ -59,12 +59,17 @@
 !  Initialize density perturbation and momentum arrays
 !----------------------------------------------------------------------
 !
-        rhp_nbq_a(:) = 0.0
-        qdm_nbq_a(:) = 0.0
+# ifndef NBQ_IJK
+        rhp_nbq_a = 0.0
+        qdm_nbq_a = 0.0
+# else 
+        rho_nbq  = 0.0
+        qdmu_nbq = 0.0
+        qdmv_nbq = 0.0
+        qdmw_nbq = 0.0
+# endif
         rhobar_nbq  = 1.
 
-
-        
           vnnew_nbq = 1
           vnrhs_nbq = 1
           vnstp_nbq = 1
@@ -75,17 +80,6 @@
 
           dnrhs_nbq = 1
           dnstp_nbq = 1
-
-!         vnnew_nbq = 2
-!         vnrhs_nbq = 1
-!         vnstp_nbq = 0
-
-!         rnnew_nbq = 2
-!         rnrhs_nbq = 1
-!         rnstp_nbq = 0
-
-!         dnrhs_nbq = 1
-!         dnstp_nbq = 0
 
 !----------------------------------------------------------------------
 !  Initialize parameters: should be done in a NH-namelist
@@ -140,9 +134,14 @@
 !----------------------------------------------------------------------
 !
 # ifdef NBQ_IMP
+#  ifndef NBQ_IJK
       if ( ifl_imp_nbq.eq.1 ) call implicit_nbq(0) 
+#  else
+      if ( ifl_imp_nbq.eq.1 ) call implicitijk_nbq(0) 
+#  endif
 # endif
          
+# ifndef NBQ_IJK
 !... Initialize momentum equations matrix (mom):
       call mat_mom_init_nh
 
@@ -150,9 +149,10 @@
       call mat_cont_init_nh
 
 !... Initialize implicit matrix
-# ifdef NBQ_IMP
+#  ifdef NBQ_IMP
       if ( ifl_imp_nbq.eq.1 )  call implicit_nbq(-1)
       ! Ya pas de -1 dans implicit_nbq
+#  endif
 # endif
 !
 !----------------------------------------------------------------------
@@ -175,13 +175,18 @@
 !... Set second viscosity coefficient:
 !----------------------------------------------------------------------
 !
+# ifndef NBQ_IJK
          call viscous_nbq(0)
+# else
+        csvisc1_nbq  = dtnbq * soundspeed2_nbq + visc2_nbq
+        csvisc2_nbq  = dtnbq * soundspeed2_nbq / csvisc1_nbq 
+# endif
 !
 !----------------------------------------------------------------------
 !... Initializes Acoustic waves:
 !----------------------------------------------------------------------
 !
-#ifdef ACOUSTIC
+#if defined ACOUSTIC && !defined NBQ_IJK
          call density_nbq(10)
 #endif
 
@@ -260,9 +265,17 @@
         
 
 !.......Some remaining initializations:
-        rhssum_nbq_a(:)     = 0.d0
-!         div_nbq_a   (:,:)   = 0.d0
-        div_nbq_a   (:)   = 0.d0
+# ifndef NBQ_IJK
+        rhssum_nbq_a   = 0.d0
+        div_nbq_a      = 0.d0
+        divz_nbq_a     = 0.d0
+# else
+        rhssumu_nbq    = 0.d0
+        rhssumv_nbq    = 0.d0
+        rhssumw_nbq    = 0.d0
+        div_nbq        = 0.d0
+        divz_nbq       = 0.d0
+# endif
 
        endif 
 
@@ -272,8 +285,10 @@
 !               NBQ initializations (PART II)
 !
 !**********************************************************************
+# ifndef NBQ_IJK
            div_nbq_a=0.D0
            rhsd2_nbq=0.D0
+# endif
 
 # ifdef KH_INST
       if (iic.eq.1.and.iif.eq.1) then

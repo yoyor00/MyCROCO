@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
 
       subroutine ru_nbq(icall)
 

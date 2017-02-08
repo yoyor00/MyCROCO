@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined NBQ && defined NBQ_IMP
+#if defined NBQ && defined NBQ_IMP && !defined NBQ_IJK
 !
 !======================================================================
 !                      NBQ-Mode for NH-modeling

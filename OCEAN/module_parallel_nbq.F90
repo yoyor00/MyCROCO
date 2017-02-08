@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined NBQ && defined MPI
+#if defined NBQ && defined MPI && !defined NBQ_IJK
 
 module module_parallel_nbq
 !------------------------------------------------------------------------------

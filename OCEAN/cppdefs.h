@@ -35,10 +35,10 @@
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
-#undef  TANK            /* Tank Example */
+#define TANK            /* Tank Example */
 #undef  S2DV            /* S2DV sections */ 
-#define REGIONAL        /* REGIONAL Applications */
-#undef  REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
+#undef  REGIONAL        /* REGIONAL Applications */
+#undef REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
 
 
 #if defined REGIONAL
@@ -590,7 +590,7 @@
 */
                       /* Applications */
 # define TIDES
-# define NBQ
+# undef  NBQ
 # undef  OA
                       /* Parallelization */
 # undef OPENMP		/* <--  debug mode */
@@ -1255,13 +1255,14 @@
 ! free-surface flows. 
 ! Int. J. Numer. Methods Fluids 42, 929–952.
 */
-# define  TANKY
+# undef  TANKY
 # undef  XIOS
-# define MPI
-# define  NBQ
+# undef  MPI
+# define NBQ
+# define NBQ_IJK 
 # ifdef NBQ
 #  undef  IMP_SLOW
-#  undef NBQ_VOL
+#  undef  NBQ_VOL
 #  undef NBQ_IMP
 #  undef NBQ_IMP_LU
 #  undef  NBQ_IMP_TRIDIAG
