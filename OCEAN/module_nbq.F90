@@ -87,7 +87,7 @@
       ,divz_nbq_a    
   	
 !.....NBQ implicit
-#ifdef NBQ_IMPIJK
+# ifdef NBQ_IMPIJK
       integer,dimension(:),allocatable     ::                         &
        impi_nbq     					              & 
       ,impj_nbq     				
@@ -98,7 +98,7 @@
 
       double precision,dimension(:),allocatable     ::                &
        impv_nbq        					         
-#endif  					             
+# endif  					             
 
  !....Tableaux de travail NBQ:
       double precision,dimension(:),allocatable    ::                 &
