@@ -80,6 +80,11 @@
         ,neqv_nh        (0:7)                                         &
         ,neqw_nh        (0:7)                                      
         
+#ifndef NBQ_IJK
+      integer, dimension(:), allocatable     ::                       &
+         momi_nh                                                      &  
+        ,momj_nh  
+
       integer,dimension(:),allocatable ::                             &        
          conti_nh                                                     &   
         ,cont_nnz_nh                                                  & 
@@ -87,6 +92,7 @@
         ,contz_nnz_nh                                                  & 
         ,contzi_nh                                                    &   
         ,contzj_nh      
+#endif         
 
 
 !**********************************************************************
@@ -108,9 +114,7 @@
         ,l2kq_nh        &  
         ,l2imom_nh      &  
         ,l2jmom_nh      &  
-        ,l2kmom_nh      &  
-        ,momi_nh        &  
-        ,momj_nh           
+        ,l2kmom_nh      
         
       integer, dimension(:,:,:), allocatable    ::                    &
          ijk2lq_nh      &  
@@ -124,11 +128,13 @@
 !.....Tableaux: double precision
 !**********************************************************************                                            
         
+#ifndef NBQ_IJK
       double precision, dimension(:), allocatable      ::             &
          contv_nh       &  
         ,contzv_nh      &  
         ,momv_nh        &  
         ,momvg_nh      
+#endif
 
       double precision, dimension(:,:), allocatable    ::             &
          coriolis_nh_t                                                
@@ -176,28 +182,30 @@
          nmmom_nh  = nmv_nh*ntmom_nh
 
 ! Variables communes SNH / SNBQ
+#ifndef NBQ_IJK
          allocate(conti_nh        (nmq_nh)                   )  
          allocate(contzi_nh        (nmq_nh)                   )  
          allocate(cont_nnz_nh     (nmq_nh)                   )  
          allocate(contz_nnz_nh     (nmq_nh)                   )  
          allocate(contj_nh        (nmcont_nh)                )  
-         allocate(contzj_nh       (nmcont_nh)                )  
+         allocate(contzj_nh       (nmcont_nh)                )    
+         allocate(momi_nh         (nmv_nh)                   )  
+         allocate(momj_nh         (nmmom_nh)                 ) 
+         allocate(momv_nh         (nmmom_nh)                 )  
+         allocate(momvg_nh        (nmmom_nh)                 )  
+         allocate(contv_nh        (0:nmcont_nh)              ) 
+         allocate(contzv_nh       (0:nmcont_nh)              ) 
+#endif
          allocate(l2iq_nh         (nmq_nh)                   ) 
          allocate(l2jq_nh         (nmq_nh)                   ) 
          allocate(l2kq_nh         (nmq_nh)                   )  
          allocate(l2imom_nh       (nmv_nh)                   )  
          allocate(l2jmom_nh       (nmv_nh)                   )  
-         allocate(l2kmom_nh       (nmv_nh)                   )   
-         allocate(momi_nh         (nmv_nh)                   )  
-         allocate(momj_nh         (nmmom_nh)                 )  
+         allocate(l2kmom_nh       (nmv_nh)                   ) 
          allocate(ijk2lq_nh       (GLOBAL_2D_ARRAY,0:N+1)    )   
          allocate(mijk2lq_nh      (GLOBAL_2D_ARRAY,0:N+1)    )
          allocate(ijk2lmom_nh     (GLOBAL_2D_ARRAY,0:N+1,3)  )   
          allocate(mijk2lmom_nh    (GLOBAL_2D_ARRAY,0:N+1,3)  )
-         allocate(contv_nh        (0:nmcont_nh)              ) 
-         allocate(contzv_nh       (0:nmcont_nh)              ) 
-         allocate(momv_nh         (nmmom_nh)                 )  
-         allocate(momvg_nh        (nmmom_nh)                 ) 
          allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )  
          allocate(coefa_u         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_u         (GLOBAL_2D_ARRAY,0:N+1)    ) 

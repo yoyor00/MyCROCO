@@ -194,12 +194,14 @@
        write(10,*) 'DNum(w) :'
        write(10,*) neqw_nh(1)-neqv_nh(7),(neqw_nh(k+1)-neqw_nh(k),k=1,6)
        write(10,*)
+#ifndef NBQ_IJK
        write(10,*) 'Mat Mom  :'
        write(10,*) (momi_nh(nequ_nh(k)+1),k=1,7)
        write(10,*) (momi_nh(neqv_nh(k)+1),k=1,7)
        write(10,*) (momi_nh(neqw_nh(k)+1),k=1,5)
        write(10,*) 'Mat Cont :'
        write(10,*) (conti_nh(neqq_nh(k)+1),k=1,7)
+#endif
 
 !......Q-Points:
        write(10,*)   
