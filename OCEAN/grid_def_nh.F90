@@ -57,7 +57,7 @@
        endif
 #  endif
 
-# endif  ! MPI
+# endif  /* MPI */
 
 !*******************************************************************
 !     NH domain:  mass grid-points
