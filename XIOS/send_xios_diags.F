@@ -307,7 +307,7 @@
          i = l2iq_nh (l_nbq)
          j = l2jq_nh (l_nbq)
          k = l2kq_nh (l_nbq)
-         workr(i,j,k) = rhp_nbq_a(l_nbq,rnstp_nbq)
+         workr(i,j,k) = rhp_nbq_a(l_nbq)
       enddo
       call xios_send_field("rho_nbq",workr)
 
