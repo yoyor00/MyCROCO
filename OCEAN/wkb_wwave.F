@@ -12,7 +12,7 @@
 
 # define ADD_DIFF
 # ifdef ADD_DIFF
-#  undef  ADD_DIFFX
+#  define ADD_DIFFX
 #  define ADD_DIFFY
 # endif
 
@@ -591,7 +591,7 @@ C$OMP BARRIER
      &               *(kvx(i,j)+kvx(i+1,j)+kvx(i,j+1)+kvx(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &           -cff*( 
+     &           -cff*(0.5+0.5*(tanh(Dstp(i,j)-10.)))*( 
 #  ifdef ADD_DIFFX
      &                on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
 #  endif
@@ -614,7 +614,7 @@ C$OMP BARRIER
      &               *(kue(i,j)+kue(i+1,j)+kue(i,j+1)+kue(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &           -cff*(
+     &           -cff*(0.5+0.5*(tanh(Dstp(i,j)-10.)))*(
 #  ifdef ADD_DIFFX
      &                on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
 #  endif
@@ -662,7 +662,7 @@ C$OMP BARRIER
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                 *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
 # ifdef ADD_DIFF
-     &                  -cff*(
+     &           -cff*(0.5+0.5*(tanh(Dstp(i,j)-10.)))*(
 #  ifdef ADD_DIFFX
      &                               on_r(i,j)*(wac(i+1,j,wprv)
      &                        -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
