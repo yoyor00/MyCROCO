@@ -90,19 +90,19 @@
 !-----------------------------
 !.......point p(i-1,j,k+1):
 !-----------------------------
-        momv_nh(l1_nh) = b_m * coefb_u(i-1,j,k)
+        momv_nh(l1_nh) = b_m * coefb_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k+1)
 
 !-----------------------------
 !.......point p(i-1,j,k):
 !-----------------------------
-        momv_nh(l1_nh) = - a_m  - b_m * coefb_u(i-1,j,k)
+        momv_nh(l1_nh) = - a_m  - b_m * coefb_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k)
 
 !-----------------------------
 !.......point p(i-1,j,k-1):
 !-----------------------------
-        momv_nh(l1_nh) = - b_m * coefa_u(i-1,j,k)
+        momv_nh(l1_nh) = - b_m * coefa_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k-1)
       enddo
 
@@ -145,20 +145,20 @@
 !-----------------------------
 !.......point p(i-1,j,k+1):
 !-----------------------------
-        momv_nh(l1_nh) = b_m * coefb_u(i-1,j,k)
+        momv_nh(l1_nh) = b_m * coefb_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k+1)
 
 !-----------------------------
 !.......point p(i-1,j,k):
 !-----------------------------
         momv_nh(l1_nh) = - a_m  + b_m *                          &
-                            (coefa_u(i-1,j,k) - coefb_u(i-1,j,k))
+                            (coefa_u(i,j,k) - coefb_u(i,j,k))
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k)
 
 !-----------------------------
 !.......point p(i-1,j,k-1):
 !-----------------------------
-        momv_nh(l1_nh) = - b_m * coefa_u(i-1,j,k)
+        momv_nh(l1_nh) = - b_m * coefa_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k-1)
       enddo
 
@@ -202,21 +202,21 @@
 !-----------------------------
 !.......point p(i-1,j,k+1):
 !-----------------------------
-        momv_nh(l1_nh) = b_m * coefb_u(i-1,j,k)
+        momv_nh(l1_nh) = b_m * coefb_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k+1)
 
 !-----------------------------
 !.......point p(i-1,j,k):
 !-----------------------------
         momv_nh(l1_nh) = - a_m                                      &
-                             + b_m * coefa_u(i-1,j,k)               &
-                             - gdepth_u(i,j,k+1) * coefb_u(i-1,j,k+1)
+                             + b_m * coefa_u(i,j,k)               &
+                             - gdepth_u(i,j,k+1) * coefb_u(i,j,k+1)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k)
 
 !-----------------------------
 !.......point p(i-1,j,k-1):
 !-----------------------------
-        momv_nh(l1_nh) = - b_m * coefa_u(i-1,j,k)
+        momv_nh(l1_nh) = - b_m * coefa_u(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i-1,j,k-1)
       enddo
 
@@ -302,19 +302,19 @@
 !-----------------------------
 !.......point p(i,j-1,k+1):
 !-----------------------------
-        momv_nh(l1_nh) = b_m * coefb_v(i,j-1,k)
+        momv_nh(l1_nh) = b_m * coefb_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k+1)
 
 !-----------------------------
 !.......point p(i,j-1,k):
 !-----------------------------
-        momv_nh(l1_nh) = - a_m - b_m * coefb_v(i,j-1,k)
+        momv_nh(l1_nh) = - a_m - b_m * coefb_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k)
 
 !-----------------------------
 !.......point p(i,j-1,k-1):
 !-----------------------------
-        momv_nh(l1_nh) = - b_m * coefa_v(i,j-1,k)
+        momv_nh(l1_nh) = - b_m * coefa_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k-1)
       enddo
 
@@ -357,20 +357,20 @@
 !-----------------------------
 !.......point p(i,j-1,k+1):
 !-----------------------------
-        momv_nh(l1_nh) = b_m * coefb_v(i,j-1,k)
+        momv_nh(l1_nh) = b_m * coefb_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k+1)
 
 !-----------------------------
 !.......point p(i,j-1,k):
 !-----------------------------
         momv_nh(l1_nh) = - a_m + b_m                                &
-                            * ( coefa_v(i,j-1,k) - coefb_v(i,j-1,k))
+                            * ( coefa_v(i,j,k) - coefb_v(i,j,k))
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k)
 
 !-----------------------------
 !.......point p(i,j-1,k-1):
 !-----------------------------
-        momv_nh(l1_nh) = - b_m * coefa_v(i,j-1,k)
+        momv_nh(l1_nh) = - b_m * coefa_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k-1)
 
       enddo
@@ -414,20 +414,20 @@
 !-----------------------------
 !.......point p(i,j-1,k+1):
 !-----------------------------
-        momv_nh(l1_nh) = b_m * coefb_v(i,j-1,k)
+        momv_nh(l1_nh) = b_m * coefb_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k+1)
 
 !-----------------------------
 !.......point p(i,j-1,k):
 !-----------------------------
-        momv_nh(l1_nh) = - a_m + b_m * coefa_v(i,j-1,k)            &
-                             - gdepth_v(i,j,k+1) * coefb_v(i,j-1,k+1)
+        momv_nh(l1_nh) = - a_m + b_m * coefa_v(i,j,k)            &
+                             - gdepth_v(i,j,k+1) * coefb_v(i,j,k+1)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k)
 
 !-----------------------------
 !.......point p(i,j-1,k-1):
 !-----------------------------
-        momv_nh(l1_nh) = - b_m * coefa_v(i,j-1,k)
+        momv_nh(l1_nh) = - b_m * coefa_v(i,j,k)
         l1_nh = l1_nh + mijk2lq_nh(i,j-1,k-1)
 
       enddo

@@ -115,10 +115,9 @@
             k=1
             dum_s =       - (0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k)))* pm_u(i,j)        &
                             *(div_nbq(i,j,k) - div_nbq(i-1,j,k))                                &
-                          + gdepth_u(i,j,k) * coefb_u(i  ,j,k) * ( div_nbq(i  ,j,k+1) -  div_nbq(i  ,j,k) ) &
-                          + gdepth_u(i,j,k) * coefb_u(i-1,j,k) * ( div_nbq(i-1,j,k+1) -  div_nbq(i-1,j,k) ) &
-                          - gdepth_u(i,j,k) * coefa_u(i  ,j,k) *   div_nbq(i  ,j,k-1)                       &  
-                          - gdepth_u(i,j,k) * coefa_u(i-1,j,k) *   div_nbq(i-1,j,k-1)      
+                          + gdepth_u(i,j,k) * coefb_u(i  ,j,k) * ( div_nbq(i  ,j,k+1) -  div_nbq(i  ,j,k)   &
+                                                                 + div_nbq(i-1,j,k+1) -  div_nbq(i-1,j,k) ) &
+                          - gdepth_u(i,j,k) * coefa_u(i  ,j,k) * ( div_nbq(i  ,j,k-1) + div_nbq(i-1,j,k-1) )    
 
             rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
             qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                                   & 
@@ -127,10 +126,10 @@
             do k=2,N-1
                dum_s =       - (0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)    &
                                *(div_nbq(i,j,k) - div_nbq(i-1,j,k))                             &
-                             + gdepth_u(i,j,k) * coefb_u(i  ,j,k) * ( div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k) )   &
-                             + gdepth_u(i,j,k) * coefb_u(i-1,j,k) * ( div_nbq(i-1,j,k+1) - div_nbq(i-1,j,k) )   &
-                             + gdepth_u(i,j,k) * coefa_u(i  ,j,k) * ( div_nbq(i  ,j,k  ) - div_nbq(i  ,j,k-1) ) &  
-                             + gdepth_u(i,j,k) * coefa_u(i-1,j,k) * ( div_nbq(i-1,j,k  ) - div_nbq(i-1,j,k-1) ) 
+                             + gdepth_u(i,j,k) * coefb_u(i  ,j,k) * ( div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k)     &
+                                                                    + div_nbq(i-1,j,k+1) - div_nbq(i-1,j,k) )   &
+                             + gdepth_u(i,j,k) * coefa_u(i  ,j,k) * ( div_nbq(i  ,j,k  ) - div_nbq(i  ,j,k-1)   &  
+                                                                    + div_nbq(i-1,j,k  ) - div_nbq(i-1,j,k-1) ) 
 
               rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
               qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                                   & 
@@ -140,10 +139,9 @@
             k=N
             dum_s =       - (0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)        &
                             *(div_nbq(i,j,k) - div_nbq(i-1,j,k))                                 &
-                          + gdepth_u(i,j,k) * coefa_u(i  ,j,k) * ( div_nbq(i  ,j,k  ) - div_nbq(i  ,j,k-1) ) &  
-                          + gdepth_u(i,j,k) * coefa_u(i-1,j,k) * ( div_nbq(i-1,j,k  ) - div_nbq(i-1,j,k-1) ) &
-                          - gdepth_u(i,j,k+1) * (  coefb_u(i  ,j,k+1) * div_nbq(i  ,j,k)         &
-                                                 + coefb_u(i-1,j,k+1) * div_nbq(i-1,j,k) )     
+                          + gdepth_u(i,j,k  ) * coefa_u(i  ,j,k  ) * ( div_nbq(i  ,j,k  ) - div_nbq(i  ,j,k-1)   &  
+                                                                     + div_nbq(i-1,j,k  ) - div_nbq(i-1,j,k-1) ) &
+                          - gdepth_u(i,j,k+1) * coefb_u(i  ,j,k+1) * ( div_nbq(i  ,j,k  ) + div_nbq(i-1,j,k) )     
             rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
             qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                                   & 
                             + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))
