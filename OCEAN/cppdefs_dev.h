@@ -274,6 +274,10 @@
 # define TS_DIF4       /*         Hyperdiffusion  with         */
 # undef  TS_MIX_GEO    /*        Geopotential rotation         */
 # define TS_MIX_ISO    /*     or Isopycnal    rotation         */
+#  if defined GLS_MIX2017 || defined GLS_MIXING
+#   undef  TS_MIX_ISO
+#   define TS_MIX_GEO
+#  endif
 #endif
 #ifdef TS_HADV_RSUP5   /*    Pseudo RS 5th-order scheme is:    */
 # define TS_HADV_C6    /*    6th-order centered advection      */

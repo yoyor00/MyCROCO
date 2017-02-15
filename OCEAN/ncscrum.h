@@ -664,8 +664,8 @@
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
-# ifdef GLS_MIXING
-     &      , hisAkk, hisAkp, hisTke, hisGls, hisLsc
+# if defined GLS_MIXING || defined GLS_MIX2017
+     &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
      &      , hisShflx_rlw
@@ -741,8 +741,8 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
-# ifdef GLS_MIXING
-     &      , avgAkk, avgAkp, avgTke, avgGls, avgLsc
+# if defined GLS_MIXING || defined GLS_MIX2017
+     &      , avgTke, avgGls, avgLsc
 # endif
 # ifdef BIOLOGY
      &      , avgHel
@@ -888,8 +888,8 @@
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
-# ifdef GLS_MIXING
-     &      , hisAkk, hisAkp, hisTke, hisGls, hisLsc
+# if defined GLS_MIXING || defined GLS_MIX2017
+     &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
      &      , hisShflx_rlw
@@ -984,8 +984,8 @@
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
      &      , avgHbl,  avgHbbl
-#  ifdef GLS_MIXING
-     &      , avgAkk, avgAkp, avgTke, avgGls, avgLsc
+#  if defined GLS_MIXING || defined GLS_MIX2017
+     &      , avgTke, avgGls, avgLsc
 #  endif
 #  ifdef BIOLOGY
      &      , avgHel
