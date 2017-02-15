@@ -1601,9 +1601,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'sponge') then
          call cancel_kwd (keyword(1:kwlen), ierr)	
-	     MPI_master_only write(stdout,'(/,1x,A,/,25x,A,/)')
-     &   'SPONGE_GRID is defined: x_sponge parameter  (sponge/nudging layer)',
-     &   'is set generically in set_nudgcof.F routine'
+	     MPI_master_only write(stdout,'(/,1x,A,/,25x,A/)')
+     &   'SPONGE_GRID is defined: x_sponge parameter in sponge/nudging',
+     &   'layer is set generically in set_nudgcof.F routine'
 #endif
 !
 #if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
