@@ -77,6 +77,9 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined PLUME
+      parameter (LLm0=200,   MMm0=200,   N=100)        
+!      parameter (LLm0=80,   MMm0=80,   N=100) 
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
 #elif defined SEAMOUNT

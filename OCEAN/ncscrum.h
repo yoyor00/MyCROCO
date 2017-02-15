@@ -298,17 +298,13 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkt+6)
 # endif
-# ifdef GLS_MIXING
-      integer indxAkk
-      parameter (indxAkk=indxAkt+7)
-      integer indxAkp
-      parameter (indxAkp=indxAkt+8)
+# if defined GLS_MIXING || defined GLS_MIX2017
       integer indxTke
-      parameter (indxTke=indxAkt+9)
+      parameter (indxTke=indxAkt+7)
       integer indxGls
-      parameter (indxGls=indxAkt+10)
+      parameter (indxGls=indxAkt+8)
       integer indxLsc
-      parameter (indxLsc=indxAkt+11)
+      parameter (indxLsc=indxAkt+9)
 # endif
 #endif
 

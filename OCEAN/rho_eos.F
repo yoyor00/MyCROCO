@@ -154,7 +154,8 @@
 #  include "coupling.h"
 #  include "scalars.h"
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined GLS_MIX2017
 #   include "mixing.h"
 #  endif
 !
@@ -235,7 +236,8 @@
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined GLS_MIX2017
 #   ifndef SPLIT_EOS
             dpth=z_w(i,j,N)-z_w(i,j,k)
             K_up(i,k)=K0+dpth*(K1+K2*dpth)
@@ -278,7 +280,8 @@
           enddo
         enddo
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined GLS_MIX2017
         do i=istrR,iendR
           bvf(i,j,N)=bvf(i,j,N-1)
           bvf(i,j,0)=bvf(i,j,  1)
@@ -341,7 +344,8 @@
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined GLS_MIX2017
         cff=g/rho0
         do k=1,N-1
           do i=IstrR,IendR

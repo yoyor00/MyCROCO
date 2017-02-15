@@ -966,20 +966,16 @@ c        close(testunit)
 !
 ! Switches for GLS fields to be saved into history file.
 !
-# ifdef GLS_MIXING
+#if defined GLS_MIXING || defined GLS_MIX2017
       elseif (keyword(1:kwlen).eq.'gls_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wrthis(indxAkk),  wrthis(indxAkp)
-     &                    ,  wrthis(indxTke),  wrthis(indxGls)
+        read(input,*,err=95) wrthis(indxTke),  wrthis(indxGls)
      &                    ,  wrthis(indxLsc)
-        if ( wrthis(indxAkk) .or. wrthis(indxAkp) .or. wrthis(indxTke)
-     &                       .or. wrthis(indxGls) .or. wrthis(indxLsc)
+        if (wrthis(indxTke) .or. wrthis(indxGls) .or. wrthis(indxLsc)
      &     ) wrthis(indxTime)=.true.
 
         MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &    'Fields to be saved in history file: (T/F)'
-     &   , wrthis(indxAkk), 'write Akk ', 'vertical diffusion for TKE.'
-     &   , wrthis(indxAkp), 'write Akp ', 'vertical diffusion for GLS.'
      &   , wrthis(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
      &   , wrthis(indxGls), 'write GLS ', 'generic length scale.'
      &   , wrthis(indxLsc), 'write Lscale ', 
@@ -1214,20 +1210,17 @@ c        close(testunit)
 !
 ! Switches for GLS fields to be saved into history file.
 !
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined GLS_MIX2017
       elseif (keyword(1:kwlen).eq.'gls_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wrtavg(indxAkk),  wrtavg(indxAkp)
-     &                    ,  wrtavg(indxTke),  wrtavg(indxGls)
-     &                    ,  wrtavg(indxLsc)
+        read(input,*,err=95) wrtavg(indxTke),  wrtavg(indxGls)
+     &                    ,  wrtavg(indxLsc)       
         if ( wrtavg(indxAkk) .or. wrtavg(indxAkp) .or. wrtavg(indxTke)
      &                       .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
      &     ) wrtavg(indxTime)=.true.
 
         MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &    'Fields to be saved in average file: (T/F)'
-     &   , wrtavg(indxAkk), 'write Akk ', 'vertical diffusion for TKE.'
-     &   , wrtavg(indxAkp), 'write Akp ', 'vertical diffusion for GLS.'
      &   , wrtavg(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
      &   , wrtavg(indxGls), 'write GLS ', 'generic length scale.'
      &   , wrtavg(indxLsc), 'write Lscale ', 
@@ -1547,7 +1540,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         enddo
 
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !

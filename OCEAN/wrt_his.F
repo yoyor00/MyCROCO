@@ -729,26 +729,6 @@ CR      write(*,*) 'wrt_his:  wrtAkt' MYID
 CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
 # endif
-# ifdef GLS_MIXING
-!     
-!     Write out vertical diffusion coefficient for TKE.
-!     
-      if (wrthis(indxAkk)) then
-         work=Akk
-         call fillvalue3d_w(work,ncidhis,hisAkk,indxAkk,
-     &        record,w3dvar,type)
-CR      write(*,*) 'wrt_his:  wrtAkk' MYID
-      endif
-!     
-!     Write out vertical diffusion coefficient for GLS.
-!     
-      if (wrthis(indxAkp)) then
-         work=Akp
-         call fillvalue3d_w(work,ncidhis,hisAkp,indxAkp,
-     &        record,w3dvar,type)
-CR      write(*,*) 'wrt_his:  wrtAkp' MYID
-      endif
-# endif
 
 # ifdef LMD_SKPP
 !     
@@ -776,12 +756,16 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIX2017 || defined GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     
       if (wrthis(indxTke)) then
+#ifdef GLS_MIXING
          work=tke(:,:,:,nstp)
+#else
+         work=trb(:,:,:,nstp,itke)       
+#endif
          call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
@@ -790,7 +774,11 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
 !     Write out generic length scale
 !     
       if (wrthis(indxGls)) then
+#ifdef GLS_MIXING
          work=gls(:,:,:,nstp)
+#else
+         work=trb(:,:,:,nstp,igls) 
+#endif
          call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID

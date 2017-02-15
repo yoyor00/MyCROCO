@@ -1400,7 +1400,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxHbbl =',indxHbbl
       vname(6,indxHbbl)='lat_rho lon_rho                          '
       vname(7,indxHbbl)='                                         '
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined GLS_MIX2017
 CR      write(stdout,'(1x,A,I3)') 'indxTke =',indxTke   
       vname(1,indxTke)='tke                                       '
       vname(2,indxTke)='turbulent kinetic energy                  '
@@ -1428,24 +1428,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxLscale =',indxLscale
      &                               / /  '_at_w_location         '
       vname(6,indxLsc)='lat_rho lon_rho                           '
       vname(7,indxLsc)='                                          ' 
-CR      write(stdout,'(1x,A,I3)') 'indxAkk =',indxAkk          
-      vname(1,indxAkk)='AKk                                       '
-      vname(2,indxAkk)='TKE vertical diffusion coefficient        '
-      vname(3,indxAkk)='meter2 second-1                           '
-      vname(4,indxAkk)='AKk, scalar, series                       '
-      vname(5,indxAkk)='ocean_vertical_TKE_diffusivity_'
-     &                 / / '_at_w_location                        '
-      vname(6,indxAkk)='lat_rho lon_rho                           '
-      vname(7,indxAkk)='                                          '
-CR      write(stdout,'(1x,A,I3)') 'indxAkp =',indxAkp          
-      vname(1,indxAkp)='AKp                                       '
-      vname(2,indxAkp)='GLS vertical diffusion coefficient        '
-      vname(3,indxAkp)='meter2 second-1                           '
-      vname(4,indxAkp)='AKp, scalar, series                       '
-      vname(5,indxAkp)='ocean_vertical_GLS_diffusivity_'
-     &                 / / '_at_w_location                        '
-      vname(6,indxAkp)='lat_rho lon_rho                           '
-      vname(7,indxAkp)='                                          '
 # endif /* GLS_MIXING */
 
 # if defined BIOLOGY && !defined PISCES
