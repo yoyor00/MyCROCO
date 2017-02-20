@@ -561,7 +561,7 @@ C$OMP BARRIER
 ! Solve primary wavenumber equation
 !---------------------------------------------------------------------
 !
-      cff=5.e3/grdmax*0.5                 ! smoothing coefficient
+      cff=2.*5.e3/grdmax*0.5                 ! smoothing coefficient
 !
       do j=jstr,jend
         do i=istr,iend
@@ -918,13 +918,13 @@ C$OMP BARRIER
         cff1=1.0
       endif
 # endif
-      do j=jstrR,jendR
-        do i=istrR,iendR
+      do j=Jstr,Jend
+        do i=Istr,Iend
 # ifdef SOLVE3D
           wlen=pi/wvn(i,j,wnew)  ! L/2 = (2*pi/k)/2
           if (h(i,j)+zeta(i,j,knew).le.wlen) then
-            wrk1(i,j)=ubar(i,j,knew)
-            wrk2(i,j)=vbar(i,j,knew)
+            wrk1(i,j)=0.5*(ubar(i,j,knew)+ubar(i+1,j,knew))
+            wrk2(i,j)=0.5*(vbar(i,j,knew)+vbar(i,j+1,knew))
           else
             uave=0.D0
             vave=0.D0
@@ -933,12 +933,12 @@ C$OMP BARRIER
             do k=N,1,-1
               dep = zeta(i,j,knew)-z_w(i,j,k)
               if (k.eq.N.or.dep.le.wlen) then
-                cff3=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-                cff4=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-                uave=uave+cff3*u(i,j,k,nrhs)
-                vave=vave+cff4*v(i,j,k,nrhs)
-                udep=udep+cff3
-                vdep=vdep+cff4
+                uave=uave+0.5*Hz(i,j,k)*(u(i  ,j,k,nrhs)
+     &                                  +u(i+1,j,k,nrhs))
+                vave=vave+0.5*Hz(i,j,k)*(v(i,j,k,nrhs)
+     &                                  +v(i,j+1,k,nrhs))
+                udep=udep+Hz(i,j,k)
+                vdep=udep
               endif
             enddo
             wrk1(i,j)=uave/udep
@@ -946,8 +946,8 @@ C$OMP BARRIER
           endif
           wrk3(i,j)=zeta(i,j,knew)
 # else
-          wrk1(i,j)=ubar(i,j,knew)
-          wrk2(i,j)=vbar(i,j,knew)
+          wrk1(i,j)=0.5*(ubar(i,j,knew)+ubar(i+1,j,knew))
+          wrk2(i,j)=0.5*(vbar(i,j,knew)+vbar(i,j+1,knew))
           wrk3(i,j)=zeta(i,j,knew)
 # endif
 # ifdef WKB_TIME_FILTER
