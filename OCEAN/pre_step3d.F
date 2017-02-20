@@ -196,8 +196,8 @@
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)/
-     &                          (1.5*rho_nbq_avg1(i,j,k)
-     &                          -0.5*rho_nbq_avg2(i,j,k))
+     &                          (2.*rho_nbq_avg1(i,j,k)
+     &                          -rho_nbq_avg2(i,j,k))
           enddo
         enddo
       enddo
@@ -309,22 +309,26 @@
           Hzw_half_nbq(i,j,0  )=z_r(i,j,1)-z_w(i,j,0)
           Hzw_half_nbq(i,j,N  )=z_w(i,j,N)-z_r(i,j,N)
           zw_half_nbq(i,j,1)   =zw_half_nbq(i,j,0)+Hzr_half_nbq(i,j,1)
-          Hzw_half_nbq(i,j,1)  =z_r(i,j,2)-z_r(i,j,1)
-          zw_half_nbq(i,j,N)   =zw_half_nbq(i,j,N-1)+Hzr_half_nbq(i,j,N)
-          zr_half_nbq(i,j,N)   =zr_half_nbq(i,j,N-1)
-     &                  +0.5*(Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i,j,N-1))
         enddo
       enddo
-      do k=2,N-1
+      do k=2,N
         do j=jmin,jmax
           do i=imin,imax
             zw_half_nbq(i,j,k)=zw_half_nbq(i,j,k-1)+Hzr_half_nbq(i,j,k)
             zr_half_nbq(i,j,k)=zr_half_nbq(i,j,k-1)
      &                  +0.5*(Hzr_half_nbq(i,j,k)+Hzr_half_nbq(i,j,k-1))
+          enddo
+        enddo
+      enddo
+	  
+      do k=1,N-1
+        do j=jmin,jmax
+          do i=imin,imax
             Hzw_half_nbq(i,j,k)=z_r(i,j,k+1)-z_r(i,j,k)
           enddo
         enddo
       enddo
+	  
 # endif /* NBQ */
 !
 !--------------------------------------------------------------------
