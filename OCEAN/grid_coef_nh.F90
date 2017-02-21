@@ -125,6 +125,16 @@
         enddo
         enddo
         enddo
+        
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,gdepth_u(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,gdepth_v(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv_u(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv_v(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,Hzr_half_nbq_inv(START_2D_ARRAY,1))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv(START_2D_ARRAY,1))
+#endif
+
 #endif
 
 !**********************************************************************

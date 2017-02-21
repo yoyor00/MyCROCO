@@ -16,6 +16,9 @@
                          , A3d(1,1,trd), A3d(1,2,trd)        &
                          , A3d(1,3,trd), A3d(1,4,trd)        &
 #endif
+#ifdef NONLIN_EOS
+                         , A2d(1,1,trd), A2d(1,2,trd)        &
+#endif
                          )
 	  
 	  end subroutine initial_nh
@@ -24,6 +27,9 @@
 #if defined NBQ_IJK
                                ,Hzw_half_nbq_inv, Hzr_half_nbq_inv     &
                                ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v  &
+#endif
+#ifdef NONLIN_EOS
+                               ,K_up, K_dw                             &
 #endif
                                )
 !**********************************************************************
@@ -58,11 +64,16 @@
 	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
 	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   	   
 #endif
-
+#ifdef NONLIN_EOS      
+      real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), ! work arrays for call to nonlinear EOS
+     &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+#endif  
 
 
       integer :: i,j,k,ierr
       integer :: icall
+
+   
 
       if (icall.eq.1) then
 !**********************************************************************
@@ -155,7 +166,7 @@
 !    Initializes NBQ exchange (ikl2l_xxx is needed)
 !----------------------------------------------------------------------
 !
-# ifdef MPI 
+# if defined MPI && !defined NBQ_IJK
       call MPI_nbq_Setup(Lmmpi,Mmmpi,N)
 # endif
 !
@@ -242,7 +253,12 @@
 !**********************************************************************
 
 !.........EOS to compute rho (ifnot already done):
-          call rho_eos
+
+# ifdef NONLIN_EOS
+          call rho_eos_tile(Istr,Iend,Jstr,Jend,K_up,K_dw)
+#else
+          call rho_eos_tile(Istr,Iend,Jstr,Jend)
+#endif
 
 !.........Initialize NBQ density field:
 !         do l_nbq=1,neqcont_nh
@@ -315,7 +331,6 @@
         rhssumv_nbq    = 0.d0
         rhssumw_nbq    = 0.d0
         div_nbq        = 0.d0
-        divz_nbq       = 0.d0
 # endif
 
        endif 

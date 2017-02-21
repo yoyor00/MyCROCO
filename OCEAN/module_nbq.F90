@@ -309,12 +309,11 @@
 
 
 #ifdef NBQ_IJK
-       allocate(  qdmu_nbq          (GLOBAL_2D_ARRAY,0:N+1) ) ! A AJUSTER
-       allocate(  qdmv_nbq          (GLOBAL_2D_ARRAY,0:N+1) )
-       allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N+1) )
-       allocate(  div_nbq           (GLOBAL_2D_ARRAY,0:N+1) )
-       allocate(  divz_nbq          (GLOBAL_2D_ARRAY,0:N+1) )
-       allocate(  rho_nbq           (GLOBAL_2D_ARRAY,0:N+1) )
+       allocate(  qdmu_nbq          (GLOBAL_2D_ARRAY,N) ) ! A AJUSTER
+       allocate(  qdmv_nbq          (GLOBAL_2D_ARRAY,N) )
+       allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N) )
+       allocate(  div_nbq           (GLOBAL_2D_ARRAY,N) )
+       allocate(  rho_nbq           (GLOBAL_2D_ARRAY,N) )
        allocate(  rhssumu_nbq       (GLOBAL_2D_ARRAY,1:N)   )
        allocate(  rhssumv_nbq       (GLOBAL_2D_ARRAY,1:N)   )
        allocate(  rhssumw_nbq       (GLOBAL_2D_ARRAY,0:N)   )

@@ -69,10 +69,9 @@
       real :: dum_s
       double precision :: a_m,b_m
 	  integer :: k1,k2
-# ifndef MPI
-      integer mynode
-      mynode=0
-# endif
+
+#include "compute_auxiliary_bounds.h"
+
 # undef DEBUG
 
 !
@@ -98,12 +97,20 @@
       if (iif.eq.1.and.ifl_imp_nbq.eq.1) call implicitijk_nbq (1)
 # endif
 !
+
+       do j=Jstr_nh,Jend_nh
+         do i=Istr_nh,Iend_nh
+			WORK(i,j)=pm(i,j)*pn(i,j)
+		 enddo
+	   enddo
+		   
 !*******************************************************************
 !*******************************************************************
 !              NBQ mode iteration (main loop)
 !*******************************************************************
 !*******************************************************************
 
+		   
       do iteration_nbq=1,iteration_nbq_max
 
 !
@@ -111,9 +118,9 @@
 !
 !-------------------------------------------------------------------
 
-        do j=Jstr_nh,Jend_nh
-          do k=1,N
-            do i=Istr_nh,Iend_nh
+        do k=1,N
+          do j=JstrV-1,Jend
+            do i=IstrU-1,Iend
               div_nbq(i,j,k)=-visc2_nbq*div_nbq(i,j,k)     &
                              +soundspeed2_nbq*rho_nbq(i,j,k)
             enddo
@@ -138,48 +145,47 @@
 		  k1=k2
 		  k2=3-k1
 		  if (k.eq.0 .or. k.eq.N) then ! Bottom/Top Boundary conditions
-		    do j=JstrU_nh,JendU_nh
-			  do i=IstrU_nh,IendU_nh
+            do j=Jstr,Jend
+              do i=IstrU,Iend
 			    ddiv_nbqdz_u(i,j,k2)=0.
 			  enddo
 			enddo
-			do j=JstrV_nh,JendV_nh
-			  do i=IstrV_nh,IendV_nh
+            do j=JstrV,Jend
+              do i=Istr,Iend
 			    ddiv_nbqdz_v(i,j,k2)=0.
 			  enddo
 			enddo
 		  else
-		    do j=Jstr_nh,Jend_nh
-			  do i=Istr_nh,Iend_nh
+          do j=JstrV-1,Jend
+            do i=IstrU-1,Iend
 			    ddiv_nbqdz(i,j)=div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k)
 			  enddo
 			enddo
-			do j=JstrU_nh,JendU_nh
-			  do i=IstrU_nh,IendU_nh
-			    ddiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i-1,j))
+            do j=Jstr,Jend
+              do i=IstrU,Iend
+			    ddiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i-1,j))              
 			  enddo
 			enddo
-			do j=JstrV_nh,JendV_nh
-			  do i=IstrV_nh,IendV_nh
+            do j=JstrV,Jend
+              do i=Istr,Iend
 			    ddiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i,j-1))
 			  enddo
 			enddo
 		  endif
 		  if (k.gt.0) then
-		    do j=JstrU_nh,JendU_nh
-			  do i=IstrU_nh,IendU_nh
+            do j=Jstr,Jend
+              do i=IstrU,Iend
 			    dum_s=gdepth_u(i,j,k)*(ddiv_nbqdz_u(i,j,k2)+ddiv_nbqdz_u(i,j,k1)) &   ! dZdx * (d(delta p)dz)_u
 				         -(div_nbq(i,j,k)-div_nbq(i-1,j,k))                           ! - d(delta p)dx
 				dum_s=dum_s*(0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)
 
                 rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
                 qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                             & 
-                            + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))
-							
+                            + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))		
 			  enddo
 			enddo
-		    do j=JstrV_nh,JendV_nh
-			  do i=IstrV_nh,IendV_nh
+            do j=JstrV,Jend
+              do i=Istr,Iend
 			    dum_s=gdepth_v(i,j,k)*(ddiv_nbqdz_v(i,j,k2)+ddiv_nbqdz_v(i,j,k1)) &   ! dZdy * (d(delta p)dz)_v
 				         -(div_nbq(i,j,k)-div_nbq(i,j-1,k))                           ! - d(delta p)dy
 				dum_s=dum_s*(0.5*(Hzr_half_nbq(i,j-1,k)+Hzr_half_nbq(i,j,k))) * pn_v(i,j)
@@ -214,6 +220,20 @@
 !
 !       call parallele_nbq(52)   ! TBD
 !
+
+!--------------------------------------------------------------------
+! Exchange periodic boundaries and computational margins.
+!--------------------------------------------------------------------
+!
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,qdmu_nbq(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,qdmv_nbq(START_2D_ARRAY,1))
+#endif
+     
+#ifdef RVTK_DEBUG
+       call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
+       call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
+#endif  
 !-------------------------------------------------------------------
 !      Vertical Momentum equation: 
 !         If explicit: (x,y,z) is dealt with here
@@ -294,12 +314,6 @@
 !      Mass equation: 
 !-------------------------------------------------------------------
 !
-
-           do j=Jstr_nh,Jend_nh
-             do i=Istr_nh,Iend_nh
-			   WORK(i,j)=pm(i,j)*pn(i,j)
-			 enddo
-		   enddo
 		   
 
 #define dZdxq_u zwrk1
@@ -353,7 +367,7 @@
           if (k.gt.0) then
 		    do j=Jstr_nh,Jend_nh
 		      do i=Istr_nh,Iend_nh+1
-			    FX(i,j)=-pm_u(i,j)*(dZdxq_w(i,j,k2)-dZdxq_w(i,j,k1))
+			    FX(i,j)=-pm_u(i,j)*(dZdxq_w(i,j,k2)-dZdxq_w(i,j,k1))                
               enddo
             enddo
 		    do j=Jstr_nh,Jend_nh+1
@@ -362,8 +376,8 @@
               enddo
             enddo			
 		    do j=Jstr_nh,Jend_nh
-		      do i=Istr_nh,Iend_nh+1
-			    div_nbq(i,j,k)=FX(i,j)+FX(i+1,j)+FY(i,j)+FY(i,j+1)
+		      do i=Istr_nh,Iend_nh
+			    div_nbq(i,j,k)=FX(i,j)+FX(i+1,j)+FY(i,j)+FY(i,j+1)                 
               enddo
             enddo
           endif
@@ -386,7 +400,7 @@
 			     FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
                enddo	
                do i=Istr_nh,Iend_nh
-			     div_nbq(i,j,k)=div_nbq(i,j,k)+FC(i,k)-FC(i,k-1)
+			     div_nbq(i,j,k)=div_nbq(i,j,k)+FC(i,k)-FC(i,k-1)                
                enddo
              enddo
            enddo 
@@ -415,10 +429,19 @@
                  div_nbq(i,j,k)=(div_nbq(i,j,k)                                    &
 				                 +WORK(i,j)*(FX(i+1,j)-FX(i,j)+FY(i,j+1)-FY(i,j))  &
 								 )*Hzr_half_nbq_inv(i,j,k)
-                 rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * div_nbq(i,j,k)  
+                 rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * div_nbq(i,j,k)
                enddo
              enddo
            enddo
+
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,div_nbq(START_2D_ARRAY,1))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,rho_nbq(START_2D_ARRAY,1))
+# endif
+           
+#ifdef RVTK_DEBUG
+       call check_tab3d(rho_nbq,'rho_nbq','r')
+#endif           
 
 !
 !-------------------------------------------------------------------
@@ -443,8 +466,8 @@
       call ruijk_nbq(2)
 
 #ifdef RVTK_DEBUG
-!       call check_tab2d(rubar_nbq(:,:),'rubar_nbq step3d_nbq','u')
-!       call check_tab2d(rvbar_nbq(:,:),'rvbar_nbq step3d_nbq','v')
+       call check_tab2d(rubar_nbq,'rubar_nbq step3d_nbq','uint')
+       call check_tab2d(rvbar_nbq,'rvbar_nbq step3d_nbq','vint')
 !       call check_tab3d(rw_nbq_ext(:,:,0:N),'rw_nbq_ext step3d_nbq','r')
 #endif      
       call densityijk_nbq(20)
