@@ -66,8 +66,8 @@
         rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0.
 !       work2d    (istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1)=0.
 
-         do j=jstrq_nh-1,jendq_nh+1
-           do k=1,N
+         do k=1,N
+           do j=jstrq_nh-1,jendq_nh+1
              do i=istrq_nh-1,iendq_nh+1          
                rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)                           &
                     +(rho_nbq(i,j,k)+rho(i,j,k))/rho0 *Hzr_half_nbq(i,j,k)

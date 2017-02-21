@@ -62,8 +62,8 @@
 ! X-direction:
 !
         rubar_nbq(:,:)=0.
-        do j=JstrU_nh,JendU_nh
-          do k=1,N              
+        do k=1,N         
+          do j=JstrU_nh,JendU_nh   
             do i=IstrU_nh,IendU_nh
               ru_nbq_ext (i,j,k) = cff*rhssumu_nbq(i,j,k)*on_u(i,j)*om_u(i,j)
               rhssumu_nbq(i,j,k) = 0.
@@ -90,8 +90,8 @@
 !    
 ! Z-direction:
 !
-        do j=Jstr_nh,Jend_nh
-          do k=0,N              
+        do k=0,N 
+          do j=Jstr_nh,Jend_nh             
             do i=Istr_nh,Iend_nh
               rw_nbq_ext (i,j,k) = cff*rhssumw_nbq(i,j,k)*on_r(i,j)*om_r(i,j)
               rhssumw_nbq(i,j,k) = 0.
