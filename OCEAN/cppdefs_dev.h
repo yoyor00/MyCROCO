@@ -39,7 +39,9 @@
    Activate the RVTK_DEBUG procedure that will compare the results
    serial and multi-processor result by comparing binary file
 */
+#ifndef RVTK_DEBUG
 #undef RVTK_DEBUG
+#endif
 
 /*
     Constant tracer option (for debugging)
@@ -118,8 +120,7 @@
 */
 #if defined SOLVE3D
 # define VAR_RHO_2D
-# if !defined NONLIN_EOS && !defined RVTK_DEBUG &&\
-     !defined INNERSHELF
+# if !defined NONLIN_EOS && !defined INNERSHELF
 #  define RESET_RHO0
 # endif
 #endif

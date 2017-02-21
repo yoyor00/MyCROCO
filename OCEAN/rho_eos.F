@@ -552,6 +552,8 @@ C$OMP CRITICAL (rho_cr_rgn)
         rho0=1000. + mrho
 #  endif
 
+        rho0 = nint(rho0*1.d12,kind=8)/1.d12 ! round rho0 to 12 digits
+
         MPI_master_only write(stdout,'(F10.4,2x,A,1x,A/)')
      &        rho0, 'rho0     Reset Boussinesq approximation',
      &                                 'mean density, kg/m3.'
