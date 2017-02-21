@@ -14,16 +14,16 @@
       call initial_nh_tile (icall, Istr,Iend,Jstr,Jend       &
 #if defined NBQ_IJK
                          , A3d(1,1,trd), A3d(1,2,trd)        &
-                         , A3d(1,3,trd)                      &
+                         , A3d(1,3,trd), A3d(1,4,trd)        &
 #endif
                          )
 	  
 	  end subroutine initial_nh
 	  
-      subroutine initial_nh_tile (icall, Istr,Iend,Jstr,Jend         &
+      subroutine initial_nh_tile (icall, Istr,Iend,Jstr,Jend           &
 #if defined NBQ_IJK
-                               ,Hzw_half_nbq_inv, Hzr_half_nbq_inv   &
-                               ,Hzw_half_nbq_inv_u                   &
+                               ,Hzw_half_nbq_inv, Hzr_half_nbq_inv     &
+                               ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v  &
 #endif
                                )
 !**********************************************************************
@@ -54,8 +54,9 @@
 
 #if defined NBQ_IJK
        real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
+	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
+	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   	   
 #endif
 
 
@@ -162,9 +163,10 @@
 !... Initializes Grid-coef
 !----------------------------------------------------------------------
 !
-      call grid_coef_nh(                                                            &
+      call grid_coef_nh(                                         &
 #if defined NBQ_IJK
-         Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv,Hzw_half_nbq_inv_u   &
+         Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv   &
+         ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v                  &
 #endif
          )
 !
