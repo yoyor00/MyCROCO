@@ -1,7 +1,12 @@
 #include "cppdefs.h"
 #ifdef NBQ
 
-      subroutine grid_coef_nh
+      subroutine grid_coef_nh(                                                      &
+#if defined NBQ_IJK
+         Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv,                     &
+		 Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v                                     &
+#endif
+         )
 
 !**********************************************************************
 !
@@ -16,10 +21,20 @@
 # endif
       implicit none
 
+#if defined NBQ_IJK	  
+	  integer :: Istr,Iend,Jstr,Jend
+#endif
 # include "param_F90.h"
 # include "grid.h"
 # include "ocean3d.h"
 # include "nbq.h"
+
+#if defined NBQ_IJK
+       real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
+       real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
+       real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#endif
 
 #include "def_bounds.h"
 
@@ -78,6 +93,39 @@
         enddo
         enddo
 
+#if defined NBQ_IJK
+        do k=1,N
+        do j=jstr_nh,jend_nh
+        do i=istr_nh,iend_nh
+          Hzr_half_nbq_inv(i,j,k)=1.d0/Hzr_half_nbq(i,j,k)
+        enddo
+        enddo
+        enddo
+
+        do k=0,N
+        do j=jstr_nh,jend_nh
+        do i=istr_nh,iend_nh
+          Hzw_half_nbq_inv(i,j,k)=1.d0/Hzw_half_nbq(i,j,k)  
+        enddo
+        enddo
+        enddo
+		
+        do k=0,N
+        do j=jstr_nh,jend_nh
+        do i=istru_nh,iendu_nh
+          Hzw_half_nbq_inv_u(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i-1,j,k))		  
+        enddo
+        enddo
+        enddo
+
+        do k=0,N
+        do j=jstrv_nh,jendv_nh
+        do i=istr_nh,iend_nh
+          Hzw_half_nbq_inv_v(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i,j-1,k))		  
+        enddo
+        enddo
+        enddo
+#endif
 
 !**********************************************************************
 !

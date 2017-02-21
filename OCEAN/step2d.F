@@ -32,6 +32,11 @@ C$    trd=omp_get_thread_num()
      &                    , A2d(1,10,trd), A2d(1,11,trd) 
      &                    , A2d(1,12,trd), A2d(1,13,trd)     
 #endif
+#if defined NBQ && defined NBQ_IJK
+     &                    , A3d(1,1,trd), A3d(1,2,trd)
+     &                    , A3d(1,3,trd), A3d(1,4,trd)
+     &                    , A2d(1,14,trd)                     ! A2d(:,14-25,trd) used as working arrays for NBQ
+#endif
      &                    )
 
       return
@@ -46,6 +51,11 @@ C$    trd=omp_get_thread_num()
 #else                           
      &                          ,urhs,vrhs 
      &                          ,DUon,DVom
+#endif
+#if defined NBQ && defined NBQ_IJK
+     &                          ,Hzw_half_nbq_inv, Hzr_half_nbq_inv 
+     &                          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
+     &                          ,work_nbq
 #endif
      &                          )
 
@@ -132,6 +142,13 @@ C$    trd=omp_get_thread_num()
      &         vrhs(PRIVATE_2D_SCRATCH_ARRAY),
      &         DUon(PRIVATE_2D_SCRATCH_ARRAY),
      &         DVom(PRIVATE_2D_SCRATCH_ARRAY)
+#endif
+#if defined NBQ && defined NBQ_IJK
+       real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
+	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real work_nbq(PRIVATE_2D_SCRATCH_ARRAY,11)
 #endif
 #ifdef M2FILTER_NONE
       real :: myepsilon,mybeta,myalpha,mygamma
@@ -1400,7 +1417,13 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 ! Resolve 3D NBQ equation for ndtnbq time steps
 !
       if (FIRST_2D_STEP) then
-        call grid_coef_nh
+        call grid_coef_nh(
+#if defined NBQ_IJK
+     &   Istr,Iend,Jstr,Jend,
+     &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
+     &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v
+#endif
+     &   )
 # ifndef NBQ_IJK
         call mat_mom_nh
         call mat_cont_nh
@@ -1413,7 +1436,14 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 # elif defined NBQ_FB && !defined NBQ_IJK
       call step3d_fb_nbq (Istr,Iend,Jstr,Jend, WORK)
 # elif defined NBQ_FB && defined NBQ_IJK
-      call step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK)
+      call step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK
+     &     ,Hzw_half_nbq_inv,Hzr_half_nbq_inv
+     &     ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
+     &     ,work_nbq(1,1,1), work_nbq(1,1,3)
+     &     ,work_nbq(1,1,5), work_nbq(1,1,7)
+     &     ,work_nbq(1,1,9),work_nbq(1,1,10)
+     &     ,work_nbq(1,1,11)
+     &     )
 # elif defined NBQ_RK2
 !     call step3d_rk2_nbq (Istr,Iend,Jstr,Jend, WORK)
 # elif defined NBQ_RK3

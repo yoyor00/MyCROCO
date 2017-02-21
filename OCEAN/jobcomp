@@ -173,6 +173,10 @@ elif [[ $OS == Darwin ]] ; then        # ===== DARWIN =====
 		FFLAGS1="-O2 -r8 -i4 -g -72"
 #		FFLAGS1="-O0 -g -traceback -debug all -r8 -i4 -g -72"
 	fi
+elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
+        CPP1="cpp -traditional -DLinux"
+        CFT1="gfortran"
+        FFLAGS1="-O4 -fdefault-real-8 -fdefault-double-8 -march=native -mtune=native"
 elif [[ $OS == AIX ]] ; then           # ===== IBM =====
 	CPP1="/lib/cpp"
 	CFT1="xlf95 -I$HOME/include/"
@@ -378,6 +382,8 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
     		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi
+        elif [[ $OS == CYGWIN_NT-10.0 ]] ; then
+                FFLAGS1=="$FFLAGS1 -fopenmp"
 	elif [[ $OS == AIX ]] ; then
 		FFLAGS1="$FFLAGS1 -qsmp=omp"
 		CFT1="xlf95_r"

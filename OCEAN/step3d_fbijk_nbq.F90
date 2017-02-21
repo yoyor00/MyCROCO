@@ -30,7 +30,11 @@
 !
 !======================================================================
 !
-      subroutine step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK)
+      subroutine step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK, &
+	    Hzw_half_nbq_inv,Hzr_half_nbq_inv,                    &
+		Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v,               &
+        zwrk1,zwrk2,zwrk3,zwrk4,zwrk5,FC,FX            &
+		)
 
       use module_nh 
       use module_nbq
@@ -43,13 +47,28 @@
 # include "ocean3d.h"
 # include "grid.h"
 # include "nbq.h"
+
+      integer Istr,Iend,Jstr,Jend,i,j,k
+      real WORK(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
+      real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
+      real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+      real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	  
+	  real zwrk1(PRIVATE_2D_SCRATCH_ARRAY,2)
+	  real zwrk2(PRIVATE_2D_SCRATCH_ARRAY,2)
+	  real zwrk3(PRIVATE_2D_SCRATCH_ARRAY,2)
+	  real zwrk4(PRIVATE_2D_SCRATCH_ARRAY,2)	  
+	  real zwrk5(PRIVATE_2D_SCRATCH_ARRAY)
+	  real FC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+	  real FX(PRIVATE_2D_SCRATCH_ARRAY)
+	   
 # ifdef MPI
       include 'mpif.h'
 # endif
-      integer Istr,Iend,Jstr,Jend,i,j,k
-      real    WORK(PRIVATE_2D_SCRATCH_ARRAY)
+
       real :: dum_s
       double precision :: a_m,b_m
+	  integer :: k1,k2
 # ifndef MPI
       integer mynode
       mynode=0
@@ -61,7 +80,7 @@
 !       Initialization of various test-cases
 !-------------------------------------------------------------------
 !       
-        if (iif==1.and.iic==1) call initial_nh (3)
+        if (iif==1.and.iic==1) call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
 !
 !-------------------------------------------------------------------
 !  Get internal and external forcing terms for nbq equations:
@@ -107,47 +126,77 @@
 !         If explicit: (x,y,z) is dealt with here
 !-------------------------------------------------------------------
 !
-!  XI- and ETA-Directions:    ETA-directions  ====> TBD
+!  XI- and ETA-Directions:
 !
-        do j=JstrU_nh,JendU_nh
-          do i=IstrU_nh,IendU_nh
 
-            k=1
-            dum_s =       - (0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k)))* pm_u(i,j)        &
-                            *(div_nbq(i,j,k) - div_nbq(i-1,j,k))                                &
-                          + gdepth_u(i,j,k) * coefb_u(i  ,j,k) * ( div_nbq(i  ,j,k+1) -  div_nbq(i  ,j,k)   &
-                                                                 + div_nbq(i-1,j,k+1) -  div_nbq(i-1,j,k) ) &
-                          - gdepth_u(i,j,k) * coefa_u(i  ,j,k) * ( div_nbq(i  ,j,k-1) + div_nbq(i-1,j,k-1) )    
+#define ddiv_nbqdz_u zwrk1
+#define ddiv_nbqdz_v zwrk2
+#define ddiv_nbqdz zwrk5
 
-            rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
-            qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                                   & 
+        k2 = 1
+		do k=0,N
+		  k1=k2
+		  k2=3-k1
+		  if (k.eq.0 .or. k.eq.N) then ! Bottom/Top Boundary conditions
+		    do j=JstrU_nh,JendU_nh
+			  do i=IstrU_nh,IendU_nh
+			    ddiv_nbqdz_u(i,j,k2)=0.
+			  enddo
+			enddo
+			do j=JstrV_nh,JendV_nh
+			  do i=IstrV_nh,IendV_nh
+			    ddiv_nbqdz_v(i,j,k2)=0.
+			  enddo
+			enddo
+		  else
+		    do j=Jstr_nh,Jend_nh
+			  do i=Istr_nh,Iend_nh
+			    ddiv_nbqdz(i,j)=div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k)
+			  enddo
+			enddo
+			do j=JstrU_nh,JendU_nh
+			  do i=IstrU_nh,IendU_nh
+			    ddiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i-1,j))
+			  enddo
+			enddo
+			do j=JstrV_nh,JendV_nh
+			  do i=IstrV_nh,IendV_nh
+			    ddiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i,j-1))
+			  enddo
+			enddo
+		  endif
+		  if (k.gt.0) then
+		    do j=JstrU_nh,JendU_nh
+			  do i=IstrU_nh,IendU_nh
+			    dum_s=gdepth_u(i,j,k)*(ddiv_nbqdz_u(i,j,k2)+ddiv_nbqdz_u(i,j,k1)) &   ! dZdx * (d(delta p)dz)_u
+				         -(div_nbq(i,j,k)-div_nbq(i-1,j,k))                           ! - d(delta p)dx
+				dum_s=dum_s*(0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)
+
+                rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
+                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                             & 
                             + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))
+							
+			  enddo
+			enddo
+		    do j=JstrV_nh,JendV_nh
+			  do i=IstrV_nh,IendV_nh
+			    dum_s=gdepth_v(i,j,k)*(ddiv_nbqdz_v(i,j,k2)+ddiv_nbqdz_v(i,j,k1)) &   ! dZdy * (d(delta p)dz)_v
+				         -(div_nbq(i,j,k)-div_nbq(i,j-1,k))                           ! - d(delta p)dy
+				dum_s=dum_s*(0.5*(Hzr_half_nbq(i,j-1,k)+Hzr_half_nbq(i,j,k))) * pn_v(i,j)
 
-            do k=2,N-1
-               dum_s =       - (0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)    &
-                               *(div_nbq(i,j,k) - div_nbq(i-1,j,k))                             &
-                             + gdepth_u(i,j,k) * coefb_u(i  ,j,k) * ( div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k)     &
-                                                                    + div_nbq(i-1,j,k+1) - div_nbq(i-1,j,k) )   &
-                             + gdepth_u(i,j,k) * coefa_u(i  ,j,k) * ( div_nbq(i  ,j,k  ) - div_nbq(i  ,j,k-1)   &  
-                                                                    + div_nbq(i-1,j,k  ) - div_nbq(i-1,j,k-1) ) 
+                rhssumv_nbq(i,j,k) = rhssumv_nbq(i,j,k) + dum_s
+                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k)                                             & 
+                            + dtnbq * ( dum_s +  rho0*(rvint_nbq(i,j,k)+rvext_nbq(i,j,k)))
+							
+			  enddo
+			enddo
+		  endif
+		enddo
 
-              rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
-              qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                                   & 
-                              + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))
-            enddo
+#undef ddiv_nbqdz_u
+#undef ddiv_nbqdz_v
+#undef ddiv_nbqdz
 
-            k=N
-            dum_s =       - (0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)        &
-                            *(div_nbq(i,j,k) - div_nbq(i-1,j,k))                                 &
-                          + gdepth_u(i,j,k  ) * coefa_u(i  ,j,k  ) * ( div_nbq(i  ,j,k  ) - div_nbq(i  ,j,k-1)   &  
-                                                                     + div_nbq(i-1,j,k  ) - div_nbq(i-1,j,k-1) ) &
-                          - gdepth_u(i,j,k+1) * coefb_u(i  ,j,k+1) * ( div_nbq(i  ,j,k  ) + div_nbq(i-1,j,k) )     
-            rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
-            qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                                   & 
-                            + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))
-
-          enddo
-        enddo
 !
 !  U-momentum open boundary conditions
 !
@@ -176,15 +225,21 @@
 !  Z-Direction: Explicit
 !
         do j=Jstr_nh,Jend_nh
-          do k=1,N
+          do k=1,N-1
             do i=Istr_nh,Iend_nh                                                               
-               dum_s =   float(mijk2lq_nh(i,j,k))                                          &
-                      * (div_nbq(i,j,k) - div_nbq(i,j,k+1) * float(mijk2lq_nh(i,j,k+1)))
+               dum_s =   div_nbq(i,j,k) - div_nbq(i,j,k+1)
                rhssumw_nbq(i,j,k) = rhssumw_nbq(i,j,k) + dum_s                              
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
                 + dtnbq * ( dum_s + rho0 * rwint_nbq(i,j,k) )
              enddo             
            enddo
+          k=N
+            do i=Istr_nh,Iend_nh                                                               
+               dum_s =   div_nbq(i,j,k)
+               rhssumw_nbq(i,j,k) = rhssumw_nbq(i,j,k) + dum_s                              
+               qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
+                + dtnbq * ( dum_s + rho0 * rwint_nbq(i,j,k) )
+             enddo             		   
         enddo
         
 # else
@@ -239,155 +294,130 @@
 !      Mass equation: 
 !-------------------------------------------------------------------
 !
+
            do j=Jstr_nh,Jend_nh
-              do i=Istr_nh,Iend_nh
-                 k=1
-#  ifndef NBQ_IMP
-                 div_nbq(i,j,k) =                                       &
-                        +  (- on_u(i,j)*pm(i,j)*pn(i,j)                 &
-                          - coefb_u(i,j,k) * gdepth_u(i,j,k)            &
-                          / (0.5*( Hzr_half_nbq(i-1,j,k) +              &
-                                    Hzr_half_nbq(i,j,k) ) )  )          &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k)       &
-                              * mijk2lmom_nh(i,j,k,1)                   &
+             do i=Istr_nh,Iend_nh
+			   WORK(i,j)=pm(i,j)*pn(i,j)
+			 enddo
+		   enddo
+		   
 
-                         - coefa_u(i,j,k+1) * gdepth_u(i,j,k+1)         &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k+1)+              &
-                                  Hzr_half_nbq(i,j,k+1)))               &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k+1)     & 
-                              * mijk2lmom_nh(i,j,k+1,1)                 &
+#define dZdxq_u zwrk1
+#define dZdxq_w zwrk2
+#define dZdyq_v zwrk3
+#define dZdyq_w zwrk4
+#define FY zwrk5
 
-                         + ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
-                          - coefb_u(i+1,j,k) * gdepth_u(i+1,j,k)        &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))   )           &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k)     &
-                              * mijk2lmom_nh(i+1,j,k,1)                 &
+        k2 = 1
+		do k=0,N
+		  k1=k2
+		  k2=3-k1
 
-                        - coefa_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)      &
-                          / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
-                                  Hzr_half_nbq(i+1,j,k+1)))             &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k+1)   &
-                              * mijk2lmom_nh(i+1,j,k+1,1)   
-# endif            
+		  if (k.lt.N) then
+		     do j=Jstr_nh,Jend_nh
+		       do i=Istr_nh,Iend_nh+1
+		         dZdxq_u(i,j,k2)=gdepth_u(i,j,k+1)*qdmu_nbq(i,j,k+1)    ! (dZdx * (rho u))_u
+		       enddo
+		     enddo
+		     do j=Jstr_nh,Jend_nh+1
+		       do i=Istr_nh,Iend_nh
+		         dZdyq_v(i,j,k2)=gdepth_v(i,j,k+1)*qdmv_nbq(i,j,k+1)    ! (dZdy * (rho v))_v
+		       enddo
+		     enddo			 
+		  endif
 
-                 divz_nbq(i,j,k) =                                      &
-                        + 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k) * qdmw_nbq(i,j,k)    &
-                              * mijk2lmom_nh(i,j,k,3)  
-                                
-                 div_nbq(i,j,k) = div_nbq(i,j,k) + divz_nbq(i,j,k)
+		  if (k.eq.0 .or. k.eq.N) then	! Bottom/Top boundary conditions	  
+		   do j=Jstr_nh,Jend_nh
+		     do i=Istr_nh,Iend_nh+1
+		       dZdxq_w(i,j,k2)=0.5*(zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)*Hzr_half_nbq_inv(i,j,1)
+		     enddo
+		   enddo
+		   do j=Jstr_nh,Jend_nh+1
+		     do i=Istr_nh,Iend_nh
+		       dZdyq_w(i,j,k2)=0.5*(zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1)*Hzr_half_nbq_inv(i,j,1)
+		     enddo
+		   enddo		   
+		  else
+		    do j=Jstr_nh,Jend_nh
+		      do i=Istr_nh,Iend_nh+1
+			     dZdxq_w(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dZdxq_u(i,j,k1)+dZdxq_u(i,j,k2)) ! (dZdx * (rho u))_uw/Hzw_u
+              enddo 
+            enddo
+			do j=Jstr_nh,Jend_nh+1
+		      do i=Istr_nh,Iend_nh
+			     dZdyq_w(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dZdyq_v(i,j,k1)+dZdyq_v(i,j,k2)) ! (dZdy * (rho v))_uw/Hzw_v
+              enddo 
+            enddo
+          endif
 
-                 rho_nbq(i,j,k) = rho_nbq(i,j,k)                        &
-                      - dtnbq * div_nbq(i,j,k)
-                               
-                 do k=2,N-1
-#  ifndef NBQ_IMP
-                    div_nbq(i,j,k) =                                    &
-                        +  ( - on_u(i,j)*pm(i,j)*pn(i,j)                &
-                          - ( coefb_u(i,j,k) - coefa_u(i,j,k) )         &
-                          * gdepth_u(i,j,k)                             &
-                          / (0.5*( Hzr_half_nbq(i-1,j,k) +              &
-                                    Hzr_half_nbq(i,j,k) ) )  )          &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k)       &
-                              * mijk2lmom_nh(i,j,k,1)                   &
-
-                         - coefa_u(i,j,k+1) * gdepth_u(i,j,k+1)         &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k+1)+              &
-                                  Hzr_half_nbq(i,j,k+1)))               &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k+1)     & 
-                             * mijk2lmom_nh(i,j,k+1,1)                  &
-
-                         + coefb_u(i,j,k-1) * gdepth_u(i,j,k-1)         &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k-1)+              &
-                                  Hzr_half_nbq(i,j,k-1)))               &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k-1)     & 
-                              * mijk2lmom_nh(i,j,k-1,1)                 &
-
-                         + ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
-                          - ( coefb_u(i+1,j,k) - coefa_u(i+1,j,k) )     &
-                            * gdepth_u(i+1,j,k)                         &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))   )           &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k)     &
-                              * mijk2lmom_nh(i+1,j,k,1)                 &
-
-                        - coefa_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)      &
-                          / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
-                                  Hzr_half_nbq(i+1,j,k+1)))             &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k+1)   &
-                              * mijk2lmom_nh(i+1,j,k+1,1)               &
-
-                        + coefb_u(i+1,j,k-1) * gdepth_u(i+1,j,k-1)      &
-                          / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
-                                  Hzr_half_nbq(i+1,j,k-1)))             & 
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k-1)   &
-                              * mijk2lmom_nh(i+1,j,k-1,1)   
-# endif
-
-                    divz_nbq(i,j,k) =                                   &
-                        + 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k) * qdmw_nbq(i,j,k)    &
-                              * mijk2lmom_nh(i,j,k,3)                   &
-
-                        - 1. / Hzw_half_nbq(i,j,k-1)                    &
-                             / Hzr_half_nbq(i,j,k) * qdmw_nbq(i,j,k-1)  &
-                             * mijk2lmom_nh(i,j,k-1,3)  
-
-                    div_nbq(i,j,k) = div_nbq(i,j,k) + divz_nbq(i,j,k)
-                     rho_nbq(i,j,k) = rho_nbq(i,j,k)                     &
-                      - dtnbq * div_nbq(i,j,k)
-
-                 enddo
-
-                 k=N
-
-#  ifndef NBQ_IMP
-                 div_nbq(i,j,k) = &
-                        +  ( - on_u(i,j)*pm(i,j)*pn(i,j)                &
-                          + ( coefa_u(i,j,k)   * gdepth_u(i,j,k)        &
-                            - coefb_u(i,j,k+1) * gdepth_u(i,j,k+1) )    &
-                          / (0.5*( Hzr_half_nbq(i-1,j,k) +              &
-                                    Hzr_half_nbq(i,j,k) ) )  )          &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k)       &
-                              * mijk2lmom_nh(i,j,k,1)                   &
-
-                         + coefb_u(i,j,k-1) * gdepth_u(i,j,k-1)         &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k-1)+              &
-                                  Hzr_half_nbq(i,j,k-1)))               &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i,j,k-1)     & 
-                              * mijk2lmom_nh(i,j,k-1,1)                 &
-
-                         + ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
-                           + ( coefa_u(i+1,j,k)   * gdepth_u(i+1,j,k)   &
-                            - coefb_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)) &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))   )           &
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k)     &
-                              * mijk2lmom_nh(i+1,j,k,1)                 &
-
-                        + coefb_u(i+1,j,k-1) * gdepth_u(i+1,j,k-1)      &
-                          / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
-                                  Hzr_half_nbq(i+1,j,k-1)))             & 
-                          / Hzr_half_nbq(i,j,k) * qdmu_nbq(i+1,j,k-1)   &
-                              * mijk2lmom_nh(i+1,j,k-1,1)  
-#endif            
-                 divz_nbq(i,j,k) =                                      &
-                        + 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k) * qdmw_nbq(i,j,k)    &
-                              * mijk2lmom_nh(i,j,k,3)                   &
-
-                        - 1. / Hzw_half_nbq(i,j,k-1)                    &
-                              / Hzr_half_nbq(i,j,k) * qdmw_nbq(i,j,k-1) &
-                              * mijk2lmom_nh(i,j,k-1,3) 
-
-                 div_nbq(i,j,k) = div_nbq(i,j,k) + divz_nbq(i,j,k)
-
-                 rho_nbq(i,j,k) = rho_nbq(i,j,k)                        &
-                      - dtnbq *  div_nbq(i,j,k)
-
-
+          if (k.gt.0) then
+		    do j=Jstr_nh,Jend_nh
+		      do i=Istr_nh,Iend_nh+1
+			    FX(i,j)=-pm_u(i,j)*(dZdxq_w(i,j,k2)-dZdxq_w(i,j,k1))
               enddo
+            enddo
+		    do j=Jstr_nh,Jend_nh+1
+		      do i=Istr_nh,Iend_nh
+			    FY(i,j)=-pn_v(i,j)*(dZdyq_w(i,j,k2)-dZdyq_w(i,j,k1))
+              enddo
+            enddo			
+		    do j=Jstr_nh,Jend_nh
+		      do i=Istr_nh,Iend_nh+1
+			    div_nbq(i,j,k)=FX(i,j)+FX(i+1,j)+FY(i,j)+FY(i,j+1)
+              enddo
+            enddo
+          endif
+		enddo		 
+
+#undef dZdxq_u
+#undef dZdxq_w
+#undef zwrk5
+
+
+#define FY zwrk5
+			   
+			   
+           do j=Jstr_nh,Jend_nh
+             do i=Istr_nh,Iend_nh
+			   FC(i,0)=0.                 ! Bottom boundary condition
+             enddo
+		     do k=1,N
+               do i=Istr_nh,Iend_nh
+			     FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
+               enddo	
+               do i=Istr_nh,Iend_nh
+			     div_nbq(i,j,k)=div_nbq(i,j,k)+FC(i,k)-FC(i,k-1)
+               enddo
+             enddo
+           enddo 
+
+           do k=1,N
+             do j=Jstr_nh,Jend_nh		   
+               do i=Istr_nh,Iend_nh+1
+                 FX(i,j)=on_u(i,j)* qdmu_nbq(i,j,k)
+#ifdef MASKING
+                 FX(i,j) = FX(i,j) * umask(i,j)
+#endif
+               enddo
+              enddo	
+			  
+             do j=Jstr_nh,Jend_nh+1		   
+               do i=Istr_nh,Iend_nh
+                 FY(i,j)=om_v(i,j)* qdmv_nbq(i,j,k)
+#ifdef MASKING
+                 FY(i,j) = FY(i,j) * vmask(i,j)
+#endif
+               enddo
+              enddo
+
+             do j=Jstr_nh,Jend_nh		   
+               do i=Istr_nh,Iend_nh			   
+                 div_nbq(i,j,k)=(div_nbq(i,j,k)                                    &
+				                 +WORK(i,j)*(FX(i+1,j)-FX(i,j)+FY(i,j+1)-FY(i,j))  &
+								 )*Hzr_half_nbq_inv(i,j,k)
+                 rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * div_nbq(i,j,k)  
+               enddo
+             enddo
            enddo
 
 !

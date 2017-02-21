@@ -1,6 +1,31 @@
 #include "cppdefs.h"
 #ifdef NBQ
-      subroutine initial_nh (icall)
+
+      subroutine initial_nh (tile, icall)
+      implicit none
+      integer tile, icall, trd
+#include "param.h"
+#include "private_scratch.h"
+!$    integer omp_get_thread_num
+#include "compute_tile_bounds.h"
+      trd=0
+!$    trd=omp_get_thread_num()
+      
+      call initial_nh_tile (icall, Istr,Iend,Jstr,Jend       &
+#if defined NBQ_IJK
+                         , A3d(1,1,trd), A3d(1,2,trd)        &
+                         , A3d(1,3,trd)                      &
+#endif
+                         )
+	  
+	  end subroutine initial_nh
+	  
+      subroutine initial_nh_tile (icall, Istr,Iend,Jstr,Jend         &
+#if defined NBQ_IJK
+                               ,Hzw_half_nbq_inv, Hzr_half_nbq_inv   &
+                               ,Hzw_half_nbq_inv_u                   &
+#endif
+                               )
 !**********************************************************************
 !
 !                 NH and NBQ initialization
@@ -14,6 +39,8 @@
       use module_tracetxt_out
 # endif
       implicit none
+	  integer :: Istr, Iend, Jstr, Jend
+
 # ifdef MPI      
       include 'mpif.h' !-------
 # endif      
@@ -24,6 +51,14 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "nbq.h"
+
+#if defined NBQ_IJK
+       real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
+#endif
+
+
 
       integer :: i,j,k,ierr
       integer :: icall
@@ -127,7 +162,11 @@
 !... Initializes Grid-coef
 !----------------------------------------------------------------------
 !
-      call grid_coef_nh
+      call grid_coef_nh(                                                            &
+#if defined NBQ_IJK
+         Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv,Hzw_half_nbq_inv_u   &
+#endif
+         )
 !
 !----------------------------------------------------------------------
 !... Initialize NBQ "implicit" scheme 
@@ -308,7 +347,7 @@
       
 
       return
-      end subroutine initial_nh
+      end subroutine initial_nh_tile
 #else
       subroutine initial_nh_empty
       return

@@ -335,7 +335,10 @@ CR      write(*,*)  ' -5' MYID
 !----------------------------------------------------------------------
 !
 #ifdef NBQ
-      call initial_nh(1)
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nh(tile,1)
+      enddo	  
 # endif
 !
 !----------------------------------------------------------------------
@@ -364,7 +367,11 @@ CR      write(*,*)  ' -3' MYID
 !----------------------------------------------------------------------
 !
 #ifdef NBQ
-      call initial_nh(2)
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nh(tile,2)
+      enddo	  
+
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
