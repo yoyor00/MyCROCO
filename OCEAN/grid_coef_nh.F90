@@ -17,7 +17,7 @@
       use module_nh
       use module_nbq
 # ifdef MPI
-      use module_parallel_nbq, only : mynode,ierr,par,OUEST,EST
+      use module_parallel_nbq, only : ierr,par,OUEST,EST
 # endif
       implicit none
 
@@ -25,6 +25,7 @@
 	  integer :: Istr,Iend,Jstr,Jend
 #endif
 # include "param_F90.h"
+# include "scalars_F90.h"
 # include "grid.h"
 # include "ocean3d.h"
 # include "nbq.h"
@@ -36,18 +37,17 @@
        real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 #endif
 
-#include "def_bounds.h"
-
-
       integer :: i,j,k,it
       double precision :: val1, val2
 
+#include "compute_auxiliary_bounds.h"
+      
 !**********************************************************************
 !    Initialisations and updates
 !**********************************************************************
         do k=1,N
           do j=jstr_nh ,jend_nh
-          do i=istru_nh,iendu_nh
+          do i=istru_nh,iend_nh+1
               gdepth_u(i,j,k) = zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)
               coefa_u(i,j,k)  = 0.25*pm_u(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i-1,j,k ))/  &
@@ -58,7 +58,7 @@
           enddo
           enddo
 
-          do j=jstrv_nh,jendv_nh
+          do j=jstrv_nh,jend_nh+1
           do i=istr_nh ,iend_nh
               gdepth_v(i,j,k) = zr_half_nbq(i,j,k)-zr_half_nbq(i ,j-1,k)
               coefa_v(i,j,k)  = 0.25*pn_v(i,j)*                        &
@@ -72,7 +72,7 @@
         enddo 
         
         do j = jstr_nh ,jend_nh
-        do i = istru_nh,iendu_nh
+        do i = istru_nh,iend_nh+1
             gdepth_u(i,j,0)   = zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0)
             gdepth_u(i,j,N+1) = zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N)
             coefa_u(i,j,0)    = 0.5 * pm_u(i,j) * real (slip_nbq)  
@@ -82,7 +82,7 @@
         enddo
         enddo
 
-        do j = jstrv_nh,jendv_nh
+        do j = jstrv_nh,jend_nh+1
         do i = istr_nh ,iend_nh
             gdepth_v(i,j,0)   = zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0)
             gdepth_v(i,j,N+1) = zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N)
@@ -95,16 +95,16 @@
 
 #if defined NBQ_IJK
         do k=1,N
-        do j=jstr_nh,jend_nh
-        do i=istr_nh,iend_nh
+        do j=jstr_nh-1,jend_nh+1
+        do i=istr_nh-1,iend_nh+1
           Hzr_half_nbq_inv(i,j,k)=1.d0/Hzr_half_nbq(i,j,k)
         enddo
         enddo
         enddo
 
         do k=0,N
-        do j=jstr_nh,jend_nh
-        do i=istr_nh,iend_nh
+        do j=jstr_nh-1,jend_nh+1
+        do i=istr_nh-1,iend_nh+1
           Hzw_half_nbq_inv(i,j,k)=1.d0/Hzw_half_nbq(i,j,k)  
         enddo
         enddo
@@ -112,28 +112,19 @@
 		
         do k=0,N
         do j=jstr_nh,jend_nh
-        do i=istru_nh,iendu_nh
-          Hzw_half_nbq_inv_u(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i-1,j,k))		  
+        do i=istru_nh,iend_nh+1
+          Hzw_half_nbq_inv_u(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i-1,j,k))         
         enddo
         enddo
         enddo
-
+              
         do k=0,N
-        do j=jstrv_nh,jendv_nh
+        do j=jstrv_nh,jend_nh+1
         do i=istr_nh,iend_nh
           Hzw_half_nbq_inv_v(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i,j-1,k))		  
         enddo
         enddo
         enddo
-        
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,gdepth_u(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,gdepth_v(START_2D_ARRAY,1))
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv_u(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv_v(START_2D_ARRAY,1))
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,Hzr_half_nbq_inv(START_2D_ARRAY,1))
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv(START_2D_ARRAY,1))
-#endif
 
 #endif
 
