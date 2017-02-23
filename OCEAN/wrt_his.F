@@ -209,9 +209,13 @@ CR      write(*,*) 'wrt_his:  bostr' MYID
       if (wrthis(indxWstr)) then
          do j=1,Mm
             do i=1,Lm
-               work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
+#ifdef OA_COUPLING
+              work2d2(i,j)=smstr(i,j)*rho0
+#else
+              work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                              +(svstr(i,j)+svstr(i,j+1))**2)
      &                                                       *rho0
+#endif
             enddo
          enddo
 !        write(*,*)'WSTR : work2d2(:,5)=',work2d2(:,5)
