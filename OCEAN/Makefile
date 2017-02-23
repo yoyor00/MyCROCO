@@ -107,7 +107,7 @@ include Makedefs
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
-	cpl_prism_get.F 	cpl_prism_getvar.F cpl_prism_grid.F\
+	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
 	module_nh.F90		module_nbq.F90		module_qsort.F90\
