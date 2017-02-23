@@ -25,8 +25,6 @@
 # endif
       IMPLICIT NONE
 
-#include "cppdefs.h"
-
 # include "param.h"
 # include "scalars.h"
 # include "ocean3d.h"

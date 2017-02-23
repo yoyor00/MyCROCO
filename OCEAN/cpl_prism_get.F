@@ -262,7 +262,7 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                wdre = rmask * tab_t_tmp 
             endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
@@ -274,7 +274,7 @@
 !               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_ubr : rms amplitude of orbital bottom velocity of the waves (m/s)
 !        not tested/performed yet
@@ -310,7 +310,7 @@
 !               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_tauox : x-component of the wave-ocean momentum flux (tauox in m2.s-2)
 !        not tested/performed yet
@@ -334,7 +334,7 @@
 !               sustr  = tab_t_tmp / rho0
 !#endif   
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_tauoy : y-component of the wave-ocean momentum flux (tauoy in m2.s-2)
 !        not tested/performed yet
@@ -382,7 +382,7 @@
 !               sustr  = tab_t_tmp / rho0
 !#endif   
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_tauwy : Net wave-supported stress, y-component (tauwiy in m2.s-2)
 !        not tested/performed yet
@@ -406,9 +406,9 @@
 !               svstr = tab_t_tmp(:,:) / rho0
 !#endif 
 !            endif
-         end if
+         endif
 !-------------------------------------------------
-# endif
+#endif
       END DO 
 !-------------------------------------------------
 !
@@ -423,6 +423,7 @@
          case not coded...
 #endif 
       ENDIF
+#endif
       
 !	
 #else 
