@@ -33,8 +33,8 @@
       common /exchange_fields_oasis3/ srcv_clname,ssnd_clname,
      &                                srcv_nid   ,ssnd_nid
 
-      INTEGER :: oasis_time
-      common /exchange_times_oasis3/ oasis_time
+      INTEGER :: oasis_time, oasis_runtime
+      common /exchange_times_oasis3/ oasis_time, oasis_runtime
 
       REAL cplmsk(GLOBAL_2D_ARRAY,0:nmaxatm)
       common /coupling_mask/cplmsk
