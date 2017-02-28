@@ -1,4 +1,4 @@
-! $Id: vnbq_bc.F 1458 2014-02-03 15:01:25Z gcambon $
+! $Id: vnbqijk_bc.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
@@ -9,27 +9,29 @@
 ! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
+
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# if defined NBQ && !defined NBQ_IJK
-      subroutine vnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
+
+# if defined NBQ && defined NBQ_IJK
+      subroutine vnbqijk_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
       if (AGRIF_Root()) then
-        call vnbq_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
+        call vnbqijk_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
       else
-        call vnbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
-c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+        call vnbqijk_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
+c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
       endif
       return
       end
 !
 ! PARENT
 !
-      subroutine vnbq_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
+      subroutine vnbqijk_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
 #  endif
 !
 ! Set lateral boundary conditions for V-component momentum
@@ -37,18 +39,18 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 # endif /* NBQ */
 #else
-# if defined NBQ && !defined NBQ_IJK
+# if defined NBQ && defined NBQ_IJK
 !
 ! CHILD
 !
-      subroutine vnbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
+      subroutine vnbqijk_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
 !
 ! Set lateral boundary conditions for V-component momentum
 ! qdm_nbq_a(V_index,2) for the child grid.
 !
 # endif /* NBQ */
 #endif /* CHILD */
-# if defined NBQ && !defined NBQ_IJK
+# if defined NBQ && defined NBQ_IJK
 !
 ! Common Code
 !
@@ -79,7 +81,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 ! Interpolations of the parent values to get vnbqbry_east or vnbqclm
 !
 # ifdef CHILD
-      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQNUDGING
@@ -215,9 +217,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !                                           ======== ==== ======== ==
         do k=1,N
           do i=Istr,Iend
-            l_b_i     = ijk2lmom_nh(i  ,Jstr  ,k,2)
-            l_bm1_i   = ijk2lmom_nh(i  ,Jstr+1,k,2)
-            qdm_nbq_a(l_b_i)=qdm_nbq_a(l_bm1_i)  ! gradient (default)
+            qdmv_nbq(i,Jstr,k)=qdmv_nbq(i,Jstr+1,k)
 #    ifdef MASKING
      &                                     *vmask(i,Jstr)
 #    endif
@@ -226,6 +226,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 #    endif
           enddo
         enddo
+      
 #   endif
 !#  else
 !        do k=1,N                                     ! Southern edge closed
@@ -361,9 +362,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do i=Istr,Iend
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
-            l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,2)
-            l_bm1_i   = ijk2lmom_nh(i  ,Jend  ,k,2)
-            qdm_nbq_a(l_b_i)=qdm_nbq_a(l_bm1_i) ! gradient (default)
+            qdmv_nbq(i,Jend+1,k)=qdmv_nbq(i,Jend,k)
 #    ifdef MASKING
      &                                   *vmask(i,Jend+1)
 #    endif
@@ -372,6 +371,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 #    endif
           enddo
         enddo
+      
 #   endif
 !#  else
 !        do k=1,N                                    ! Northern edge closed
@@ -488,10 +488,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=JstrV,Jend
-            l_b_j     = ijk2lmom_nh(Istr-1,j  ,k,2)
-            l_bm1_j   = ijk2lmom_nh(Istr  ,j  ,k,2)
-            qdm_nbq_a(l_b_j)=qdm_nbq_a(l_bm1_j) ! gradient (default)
-!           qdm_nbq_a(l_b_j)=v(Istr-1,j,k,nnew) ! gradient (default)
+            qdmv_nbq(Istr-1,j,k)=qdmv_nbq(Istr,j,k)
 #    ifdef MASKING
      &                                   *vmask(Istr-1,j)
 #    endif
@@ -499,7 +496,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
      &                               *vmask_wet(Istr-1,j)
 #    endif
           enddo
-        enddo
+        enddo      
 #   endif
 !#  else
 !#   ifdef NS_COM_PERIODIC
@@ -624,10 +621,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=Jstr,Jend
-            l_b_j     = ijk2lmom_nh(Iend+1,j  ,k,2)
-            l_bm1_j   = ijk2lmom_nh(Iend  ,j  ,k,2)
-           qdm_nbq_a(l_b_j)=qdm_nbq_a(l_bm1_j) ! gradient (default)
-!          qdm_nbq_a(l_b_j)=v(Iend+1,j,k,nnew) ! gradient (default)
+            qdmv_nbq(Iend+1,j,k)=qdmv_nbq(Iend,j,k)
 #    ifdef MASKING
      &                                  *vmask(Iend+1,j)
 #    endif
@@ -635,7 +629,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
      &                              *vmask_wet(Iend+1,j)
 #    endif
           enddo
-        enddo
+        enddo      
 #   endif
 !#  else
 !#   ifdef NS_COM_PERIODIC
@@ -660,15 +654,12 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
  
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
- 
+      
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Istr-1,Jstr  ,k,2)
-          l_c_jm1 = ijk2lmom_nh(Istr-1,Jstr+1,k,2)
-          l_c_im1 = ijk2lmom_nh(Istr  ,Jstr  ,k,2)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_jm1)
-     &                            +qdm_nbq_a(l_c_im1))
+          qdmv_nbq(Istr-1,Jstr,k)=0.5*(qdmv_nbq(Istr-1,Jstr+1,k)
+     &                                +qdmv_nbq(Istr,Jstr,k))
 #  ifdef MASKING
      &                                  *vmask(Istr-1,Jstr)
 #  endif
@@ -678,11 +669,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Iend+1,Jstr  ,k,2)
-          l_c_jm1 = ijk2lmom_nh(Iend  ,Jstr+1,k,2)
-          l_c_im1 = ijk2lmom_nh(Iend  ,Jstr  ,k,2)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_jm1)
-     &                            +qdm_nbq_a(l_c_im1))
+          qdmv_nbq(Iend+1,Jstr,k)=0.5*(qdmv_nbq(Iend,Jstr+1,k)
+     &                                +qdmv_nbq(Iend,Jstr,k))
 #  ifdef MASKING
      &                                  *vmask(Iend+1,Jstr)
 #  endif
@@ -692,11 +680,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Istr-1,Jend+1,k,2)
-          l_c_jm1 = ijk2lmom_nh(Istr-1,Jend  ,k,2)
-          l_c_im1 = ijk2lmom_nh(Istr  ,Jend+1,k,2)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_jm1)
-     &                            +qdm_nbq_a(l_c_im1))
+          qdmv_nbq(Istr-1,Jend+1,k)=0.5*(qdmv_nbq(Istr-1,Jend,k)
+     &                                  +qdmv_nbq(Istr  ,Jend+1,k))     
 #  ifdef MASKING
      &                                *vmask(Istr-1,Jend+1)
 #  endif
@@ -706,11 +691,8 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Iend+1,Jend+1,k,2)
-          l_c_jm1 = ijk2lmom_nh(Iend+1,Jend  ,k,2)
-          l_c_im1 = ijk2lmom_nh(Iend  ,Jend+1,k,2)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_jm1)
-     &                            +qdm_nbq_a(l_c_im1))
+          qdmv_nbq(Iend+1,Jend+1,k)=0.5*(qdmv_nbq(Iend+1,Jend,k)
+     &                                  +qdmv_nbq(Iend  ,Jend+1,k))          
 #  ifdef MASKING
      &                                *vmask(Iend+1,Jend+1)
 #  endif
@@ -725,17 +707,17 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
       end
 #else
 # ifndef CHILD
-      subroutine vnbq_bc_parent_empty
+      subroutine vnbqijk_bc_parent_empty
       end
 # else
-      subroutine vnbq_bc_child_empty
+      subroutine vnbqijk_bc_child_empty
       end
 # endif
 #endif /* NBQ */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF
-#  include "vnbq_bc.F"
+#  include "vnbqijk_bc.F"
 # endif
 # undef CHILD
 #endif  /* !CHILD */

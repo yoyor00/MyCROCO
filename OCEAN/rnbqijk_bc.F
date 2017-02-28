@@ -1,4 +1,4 @@
-! $Id: rnbq_bc.F 1458 2014-02-03 15:01:25Z gcambon $
+! $Id: rnbqijk_bc.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -12,23 +12,23 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# if defined NBQ && !defined NBQ_IJK
-      subroutine rnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
+# if defined NBQ && defined NBQ_IJK
+      subroutine rnbqijk_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
       if (AGRIF_Root()) then
-        call rnbq_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
+        call rnbqijk_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
       else
-        call rnbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
+        call rnbqijk_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
       endif
       return
       end
 !
 ! PARENT
 !
-      subroutine rnbq_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
+      subroutine rnbqijk_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
 #  endif
 !
 ! Set lateral boundary conditions for W-component momentum
@@ -36,18 +36,18 @@
 !
 # endif /* NBQ */
 #else
-# if defined NBQ && !defined NBQ_IJK
+# if defined NBQ && defined NBQ_IJK
 !
 ! CHILD
 !
-      subroutine rnbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
+      subroutine rnbqijk_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
 !
 ! Set lateral boundary conditions for W-component momentum
 ! rhp_nbq_a(W_index) for the child grid.
 !
 # endif /* NBQ */
 #endif /* CHILD */
-# if defined NBQ && !defined NBQ_IJK
+# if defined NBQ && defined NBQ_IJK
 !
 ! Common Code
 !
@@ -80,7 +80,7 @@
 ! Interpolations of the parent values to get rnbqbry_east or rnbqclm
 !
 # ifdef CHILD
-      call rnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call rnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQNUDGING
@@ -187,19 +187,17 @@
 #   endif
           enddo
         enddo
-!#  else
-!                                            Western edge gradient BC
-!                                            ======= ==== ======== ==
-!        do k=1,N
-!          do j=Jstr,Jend
-!            l_b_j     = ijk2lq_nh(Istr-1,j  ,k)
-!            l_bm1_j   = ijk2lq_nh(Istr  ,j  ,k)
-!            rhp_nbq_a(l_b_j)=rhp_nbq_a(l_bm1_j) ! Gradient: default
-!#   ifdef MASKING
-!     &                                     *rmask(Istr,j)
-!#   endif
-!          enddo
-!        enddo
+#  else
+!                                           Western edge gradient BC
+!                                           ======= ==== ======== ==
+       do k=1,N
+         do j=Jstr,Jend
+             rho_nbq(Istr-1,j,k)=rho_nbq(Istr,j,k)
+#   ifdef MASKING
+     &                                     *rmask(Istr,j)
+#   endif
+         enddo
+       enddo
 # endif              /* OBC_COM_WEST */
       endif         !<-- WESTERN_EDGE
 !
@@ -297,19 +295,20 @@
 #   endif
           enddo
         enddo
-!#  else
+#   else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
-!        do k=1,N
-!          do j=Jstr,Jend
-!            l_b_j     = ijk2lq_nh(Iend+1,j,k)
-!            l_bm1_j   = ijk2lq_nh(Iend  ,j,k)
-!            rhp_nbq_a(l_b_j)=rhp_nbq_a(l_bm1_j)  ! gradient (default)
-!#   ifdef MASKING
-!     &                                   *rmask(Iend+1,j)
-!#   endif
-!          enddo
-!        enddo
+        do k=1,N
+          do j=Jstr,Jend
+            rho_nbq(Iend+1,j,k)=rho_nbq(Iend,j,k)
+#    ifdef MASKING
+     &                                   *rmask(Iend+1,j)
+#    endif
+#    ifdef WET_DRY
+     &                               *rmask_wet(Iend+1,j)
+#    endif
+          enddo
+        enddo
 #  endif            /* OBC_COM_EAST */
       endif         !<-- EASTERN_EDGE
 # endif             /* !EW_COM_PERIODIC */
@@ -409,19 +408,20 @@
 #   endif
           enddo
         enddo
-!#  else
+#   else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
-!        do k=1,N
-!          do i=Istr,Iend
-!            l_b_i     = ijk2lq_nh(i  ,Jstr-1,k)
-!            l_bm1_i   = ijk2lq_nh(i  ,Jstr  ,k)
-!            rhp_nbq_a(l_b_i)=rhp_nbq_a(l_bm1_i)  ! gradient (default)
-!#   ifdef MASKING
-!     &                                   *rmask(i,Jstr-1)
-!#   endif
-!          enddo
-!        enddo
+        do k=1,N
+          do i=Istr,Iend
+            rho_nbq(i,Jstr-1,k)=rho_nbq(i,Jstr,k)
+#    ifdef MASKING
+     &                                   *rmask(i,Jstr-1)
+#    endif
+#    ifdef WET_DRY
+     &                               *rmask_wet(i,Jstr-1)
+#    endif
+          enddo
+        enddo
 #  endif              /* OBC_COM_SOUTH */
       endif         !<-- SOUTHERN_EDGE
 !
@@ -519,19 +519,20 @@
 #   endif
           enddo
         enddo
-!#  else
-!        do k=1,N
-!          do i=Istr,Iend
+#   else
+        do k=1,N
+          do i=Istr,Iend
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
-!            l_b_i     = ijk2lq_nh(i  ,Jend+1,k)
-!            l_bm1_i   = ijk2lq_nh(i  ,Jend  ,k)
-!            rhp_nbq_a(l_b_i)=rhp_nbq_a(l_bm1_i) ! gradient (default)
-!#   ifdef MASKING
-!     &                                   *rmask(i,Jend+1)
-!#   endif
-!          enddo
-!        enddo
+            rho_nbq(i,Jend+1,k)=rho_nbq(i,Jend,k)
+#    ifdef MASKING
+     &                                   *rmask(i,Jend+1)
+#    endif
+#    ifdef WET_DRY
+     &                               *rmask_wet(i,Jend+1)
+#    endif
+          enddo
+        enddo
 #  endif
       endif     !<--  NORTHERN_EDGE
 # endif          /* !NS_COM_PERIODIC */
@@ -542,11 +543,8 @@
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lq_nh(Istr-1,Jstr-1,k)
-          l_c_im1 = ijk2lq_nh(Istr  ,Jstr-1,k)
-          l_c_jm1 = ijk2lq_nh(Istr-1,Jstr  ,k)
-          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
-     &                            +rhp_nbq_a(l_c_jm1))
+          rho_nbq(Istr-1,Jstr-1,k)=0.5*(rho_nbq(Istr,Jstr-1,k)
+     &                                  +rho_nbq(Istr-1,Jstr,k))
 #  ifdef MASKING
      &                                *rmask(Istr-1,Jstr-1)
 #  endif
@@ -556,11 +554,8 @@
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lq_nh(Iend+1,Jstr-1,k)
-          l_c_im1 = ijk2lq_nh(Iend  ,Jstr-1,k)
-          l_c_jm1 = ijk2lq_nh(Iend+1,Jstr  ,k)
-          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
-     &                            +rhp_nbq_a(l_c_jm1))
+          rho_nbq(Iend+1,Jstr-1,k)=0.5*(rho_nbq(Iend,Jstr-1,k)
+     &                                  +rho_nbq(Iend+1,Jstr,k))  
 #  ifdef MASKING
      &                                *rmask(Iend+1,Jstr-1)
 #  endif
@@ -570,11 +565,8 @@
 # if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lq_nh(Istr-1,Jend+1,k)
-          l_c_im1 = ijk2lq_nh(Istr  ,Jend+1,k)
-          l_c_jm1 = ijk2lq_nh(Istr-1,Jend  ,k)
-          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
-     &                            +rhp_nbq_a(l_c_jm1))
+          rho_nbq(Istr-1,Jend+1,k)=0.5*(rho_nbq(Istr  ,Jend+1,k)
+     &                                  +rho_nbq(Istr-1,Jend,k)) 
 #  ifdef MASKING
      &                                *rmask(Istr-1,Jend+1)
 #  endif
@@ -584,11 +576,8 @@
 # if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lq_nh(Iend+1,Jend+1,k)
-          l_c_im1 = ijk2lq_nh(Iend  ,Jend+1,k)
-          l_c_jm1 = ijk2lq_nh(Iend+1,Jend  ,k)
-          rhp_nbq_a(l_c)=0.5*(rhp_nbq_a(l_c_im1)
-     &                            +rhp_nbq_a(l_c_jm1))
+          rho_nbq(Iend+1,Jend+1,k)=0.5*(rho_nbq(Iend  ,Jend+1,k)
+     &                                  +rho_nbq(Iend+1,Jend,k))  
 #  ifdef MASKING
      &                                *rmask(Iend+1,Jend+1)
 #  endif
@@ -603,17 +592,17 @@
       end
 #else
 # ifndef CHILD
-      subroutine rnbq_bc_parent_empty
+      subroutine rnbqijk_bc_parent_empty
       end
 # else
-      subroutine rnbq_bc_child_empty
+      subroutine rnbqijk_bc_child_empty
       end
 # endif
 #endif /* NBQ */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF
-#  include "rnbq_bc.F"
+#  include "rnbqijk_bc.F"
 # endif
 # undef CHILD
 #endif  /* !CHILD */

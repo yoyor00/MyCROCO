@@ -2,9 +2,9 @@
 #ifdef NBQ
 
       subroutine initial_nh (tile, icall)
+      use module_param
       implicit none
       integer tile, icall, trd
-#include "param.h"
 #include "private_scratch.h"
 !$    integer omp_get_thread_num
 #include "compute_tile_bounds.h"
@@ -65,8 +65,8 @@
 	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   	   
 #endif
 #ifdef NONLIN_EOS      
-      real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), ! work arrays for call to nonlinear EOS
-     &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+      real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N)   
+      real K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! work arrays for call to nonlinear EOS
 #endif  
 
 
@@ -180,6 +180,7 @@
          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v                  &
 #endif
          )
+
 !
 !----------------------------------------------------------------------
 !... Initialize NBQ "implicit" scheme 
@@ -187,9 +188,7 @@
 !
 # ifdef NBQ_IMP
 #  ifndef NBQ_IJK
-      if ( ifl_imp_nbq.eq.1 ) call implicit_nbq(0) 
-#  else
-      if ( ifl_imp_nbq.eq.1 ) call implicitijk_nbq(0) 
+      if ( ifl_imp_nbq.eq.1 ) call implicit_nbq(0)
 #  endif
 # endif
          

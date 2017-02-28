@@ -1,4 +1,4 @@
-! $Id: unbq_bc.F 1458 2014-02-03 15:01:25Z gcambon $
+! $Id: unbqijk_bc.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
@@ -12,23 +12,23 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# if defined NBQ && !defined NBQ_IJK
-      subroutine unbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
+# if defined NBQ && defined NBQ_IJK
+      subroutine unbqijk_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
       if (AGRIF_Root()) then
-        call unbq_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
+        call unbqijk_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
       else
-        call unbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
+        call unbqijk_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
       endif
       return
       end
 !
 ! PARENT
 !
-      subroutine unbq_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
+      subroutine unbqijk_bc_parent_tile (Istr,Iend,Jstr,Jend,grad)
 #  endif
 !
 ! Set lateral boundary conditions for U-component momentum
@@ -36,18 +36,18 @@
 !
 # endif /* NBQ */
 #else
-# if defined NBQ && !defined NBQ_IJK
+# if defined NBQ && defined NBQ_IJK
 !
 ! CHILD
 !
-      subroutine unbq_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
+      subroutine unbqijk_bc_child_tile (Istr,Iend,Jstr,Jend,grad)
 !
 ! Set lateral boundary conditions for U-component momentum
 ! qdm_nbq_a(U_index,2) for the child grid.
 !
 # endif /* NBQ */
 #endif /* CHILD */
-#if defined NBQ && !defined NBQ_IJK
+#if defined NBQ && defined NBQ_IJK
 !
 ! Common Code
 !
@@ -66,6 +66,7 @@
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
+#include "nbq.h"
       integer Istr,Iend,Jstr,Jend, i,j,k,
      &        l_b_j,l_b_jm1,l_bm1_j,l_bm1_jm1,l_bm2_j,
      &        l_b_i,l_b_ip1,l_bm1_i,l_bm1_ip1,l_bm2_i,
@@ -81,7 +82,7 @@
 ! Interpolations of the parent values to get unbqbry_east or unbqclm
 !
 # ifdef CHILD
-      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call unbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQNUDGING
@@ -222,10 +223,7 @@
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=Jstr,Jend
-            l_b_j     = ijk2lmom_nh(Istr  ,j  ,k,1)
-            l_bm1_j   = ijk2lmom_nh(Istr+1,j  ,k,1)
-            qdm_nbq_a(l_b_j)=qdm_nbq_a(l_bm1_j) ! Gradient: default
-!           qdm_nbq_a(l_b_j)=u(Istr,j,k,nnew)*rho0 ! Gradient: default
+            qdmu_nbq(Istr,j,k)=qdmu_nbq(Istr+1,j,k)
 #    ifdef MASKING
      &                                     *umask(Istr,j)
 #    endif
@@ -372,10 +370,7 @@
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=Jstr,Jend
-            l_b_j     = ijk2lmom_nh(Iend+1,j,k,1)
-            l_bm1_j   = ijk2lmom_nh(Iend  ,j,k,1)
-            qdm_nbq_a(l_b_j)=qdm_nbq_a(l_bm1_j)  ! gradient (default)
-!           qdm_nbq_a(l_b_j)=u(Iend+1,j,k,nnew)*rho0  ! gradient (default)
+            qdmu_nbq(Iend+1,j,k) = qdmu_nbq(Iend,j,k)
 #    ifdef MASKING
      &                                   *umask(Iend+1,j)
 #    endif
@@ -502,9 +497,7 @@
 !                                           ======== ==== ======== ==
         do k=1,N
           do i=IstrU,Iend
-            l_b_i     = ijk2lmom_nh(i  ,Jstr-1,k,1)
-            l_bm1_i   = ijk2lmom_nh(i  ,Jstr  ,k,1)
-            qdm_nbq_a(l_b_i)=qdm_nbq_a(l_bm1_i) ! gradient (default)
+            qdmu_nbq(i,Jstr-1,k)=qdmu_nbq(i,Jstr,k)
 #    ifdef MASKING
      &                                   *umask(i,Jstr-1)
 #    endif
@@ -637,9 +630,7 @@
 !                                           ======== ==== ======== ==
         do k=1,N
           do i=IstrU,Iend
-            l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,1)
-            l_bm1_i   = ijk2lmom_nh(i  ,Jend  ,k,1)
-            qdm_nbq_a(l_b_i)=qdm_nbq_a(l_bm1_i)  ! gradient (default)
+            qdmu_nbq(i,Jend+1,k)=qdmu_nbq(i,Jend,k)
 #    ifdef MASKING
      &                                   *umask(i,Jend+1)
 #    endif
@@ -676,11 +667,8 @@
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Istr  ,Jstr-1,k,1)
-          l_c_im1 = ijk2lmom_nh(Istr+1,Jstr-1,k,1)
-          l_c_jm1 = ijk2lmom_nh(Istr  ,Jstr  ,k,1)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_im1)
-     &                            +qdm_nbq_a(l_c_jm1))
+          qdmu_nbq(Istr,Jstr-1,k)=0.5*(qdmu_nbq(Istr,Jstr,k)
+     &                                +qdmu_nbq(Istr+1,Jstr-1,k))
 #  ifdef MASKING
      &                                  *umask(Istr,Jstr-1)
 #  endif
@@ -690,11 +678,8 @@
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Iend+1,Jstr-1,k,1)
-          l_c_im1 = ijk2lmom_nh(Iend  ,Jstr-1,k,1)
-          l_c_jm1 = ijk2lmom_nh(Iend+1,Jstr  ,k,1)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_im1)
-     &                            +qdm_nbq_a(l_c_jm1))
+          qdmu_nbq(Iend+1,Jstr-1,k)=0.5*(qdmu_nbq(Iend+1,Jstr,k)
+     &                                  +qdmu_nbq(Iend,Jstr-1,k))
 #  ifdef MASKING
      &                                *umask(Iend+1,Jstr-1)
 #  endif
@@ -704,11 +689,8 @@
 # if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Istr  ,Jend+1,k,1)
-          l_c_im1 = ijk2lmom_nh(Istr+1,Jend+1,k,1)
-          l_c_jm1 = ijk2lmom_nh(Istr  ,Jend  ,k,1)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_im1)
-     &                            +qdm_nbq_a(l_c_jm1))
+          qdmu_nbq(Istr,Jend+1,k)=0.5*(qdmu_nbq(Istr+1,Jend+1,k)
+     &                                  +qdmu_nbq(Istr,Jend,k))
 #  ifdef MASKING
      &                                  *umask(Istr,Jend+1)
 #  endif
@@ -718,11 +700,8 @@
 # if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          l_c     = ijk2lmom_nh(Iend+1,Jend+1,k,1)
-          l_c_im1 = ijk2lmom_nh(Iend  ,Jend+1,k,1)
-          l_c_jm1 = ijk2lmom_nh(Iend+1,Jend  ,k,1)
-          qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_im1)
-     &                            +qdm_nbq_a(l_c_jm1))
+          qdmu_nbq(Iend+1,Jend+1,k)=0.5*(qdmu_nbq(Iend,Jend+1,k)
+     &                                  +qdmu_nbq(Iend+1,Jend,k)) 
 #  ifdef MASKING
      &                                *umask(Iend+1,Jend+1)
 #  endif
@@ -737,17 +716,17 @@
       end
 #else
 # ifndef CHILD
-      subroutine unbq_bc_parent_empty
+      subroutine unbqijk_bc_parent_empty
       end
 # else
-      subroutine unbq_bc_child_empty
+      subroutine unbqijk_bc_child_empty
       end
 # endif
 #endif /* NBQ */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF
-#  include "unbq_bc.F"
+#  include "unbqijk_bc.F"
 # endif
 # undef CHILD
 #endif  /* !CHILD */

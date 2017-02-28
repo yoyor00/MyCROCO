@@ -9,7 +9,8 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-      SUBROUTINE cpl_prism_getvar(prcv_id, prcv_name, tab_t_tmp, rcvtime, iok)    
+      SUBROUTINE cpl_prism_getvar(prcv_id, prcv_name, tab_t_tmp,
+     &                            rcvtime, iok)    
       
 !     !---------------------------------------------------------------------
 !     !              ***  ROUTINE cpl_prism_getvar  ***

@@ -138,13 +138,17 @@
 
       double precision, dimension(:,:), allocatable    ::             &
          coriolis_nh_t                                                
-        
+
+#ifndef NBQ_IJK         
       double precision, dimension(:,:,:), allocatable   ::            &
          coefa_u        &  
         ,coefb_u        &  
         ,coefa_v        &  
-        ,coefb_v        &  
-        ,gdepth_u       &  
+        ,coefb_v
+#endif
+
+      double precision, dimension(:,:,:), allocatable   ::            &
+         gdepth_u       &  
         ,gdepth_v              
 
       double precision                                                &
@@ -206,11 +210,14 @@
          allocate(mijk2lq_nh      (GLOBAL_2D_ARRAY,0:N+1)    )
          allocate(ijk2lmom_nh     (GLOBAL_2D_ARRAY,0:N+1,3)  )   
          allocate(mijk2lmom_nh    (GLOBAL_2D_ARRAY,0:N+1,3)  )
-         allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )  
+         allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )
+
+#ifndef NBQ_IJK         
          allocate(coefa_u         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_u         (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(coefa_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
-         allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
+         allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    ) 
+#endif         
          allocate(gdepth_u        (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    )  
 

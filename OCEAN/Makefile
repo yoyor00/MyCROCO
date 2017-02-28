@@ -105,6 +105,7 @@ include Makedefs
 \
 	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
+    unbqijk_bc.F vnbqijk_bc.F wnbqijk_bc.F rnbqijk_bc.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F 	cpl_prism_getlistvals.F
@@ -120,7 +121,6 @@ include Makedefs
 	implicit_nbq.F90        amub2_tri.F90	        numuvw_nh.F90\
 	grid_def_nh.F90		grid_exchange.F90	step3d_fbijk_nbq.F90\
 	consout_nbq.F90		ruijk_nbq.F90		densityijk_nbq.F90\
-	implicitijk_nbq.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\

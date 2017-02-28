@@ -297,11 +297,6 @@
        allocate(  qdm_u_ext             (GLOBAL_2D_ARRAY)  )
        allocate(  qdm_v_ext             (GLOBAL_2D_ARRAY)  )
 
-!.....Variables mode INT:
-       allocate(  qdm_u             (GLOBAL_2D_ARRAY,0:N+1,1:2)  )
-       allocate(  qdm_v             (GLOBAL_2D_ARRAY,0:N+1,1:2)  )
-       allocate(  qdm_w             (GLOBAL_2D_ARRAY,0:N+1,1:2) )
-
 
        allocate(rmask_nbq(GLOBAL_2D_ARRAY))
        allocate(umask_nbq(GLOBAL_2D_ARRAY))
@@ -314,8 +309,8 @@
        allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N) )
        allocate(  div_nbq           (GLOBAL_2D_ARRAY,N) )
        allocate(  rho_nbq           (GLOBAL_2D_ARRAY,N) )
-       allocate(  rhssumu_nbq       (GLOBAL_2D_ARRAY,1:N)   )
-       allocate(  rhssumv_nbq       (GLOBAL_2D_ARRAY,1:N)   )
+       allocate(  rhssumu_nbq       (GLOBAL_2D_ARRAY,N)   )
+       allocate(  rhssumv_nbq       (GLOBAL_2D_ARRAY,N)   )
        allocate(  rhssumw_nbq       (GLOBAL_2D_ARRAY,0:N)   )
 
 # ifdef NBQ_IMP

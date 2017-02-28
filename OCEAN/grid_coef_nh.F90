@@ -40,7 +40,9 @@
       integer :: i,j,k,it
       double precision :: val1, val2
 
+#if defined NBQ_IJK
 #include "compute_auxiliary_bounds.h"
+#endif
       
 !**********************************************************************
 !    Initialisations and updates
@@ -49,24 +51,28 @@
           do j=jstr_nh ,jend_nh
           do i=istru_nh,iend_nh+1
               gdepth_u(i,j,k) = zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)
+#if !defined NBQ_IJK              
               coefa_u(i,j,k)  = 0.25*pm_u(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i-1,j,k ))/  &
                      (Hzw_half_nbq(i,j,k-1)+Hzw_half_nbq(i-1,j,k-1))
               coefb_u(i,j,k)  = 0.25*pm_u(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i-1,j,k ))/   &
                      (Hzw_half_nbq(i,j,k  )+Hzw_half_nbq(i-1,j,k  ))
+#endif
           enddo
           enddo
 
           do j=jstrv_nh,jend_nh+1
           do i=istr_nh ,iend_nh
               gdepth_v(i,j,k) = zr_half_nbq(i,j,k)-zr_half_nbq(i ,j-1,k)
+#if !defined NBQ_IJK 
               coefa_v(i,j,k)  = 0.25*pn_v(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i,j-1,k ))/  &
                      (Hzw_half_nbq(i,j,k-1)+Hzw_half_nbq(i,j-1,k-1))
               coefb_v(i,j,k)  = 0.25*pn_v(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i,j-1,k ))/  &
                      (Hzw_half_nbq(i,j,k  )+Hzw_half_nbq(i,j-1,k  ))
+#endif
           enddo
           enddo
         enddo 
@@ -75,10 +81,12 @@
         do i = istru_nh,iend_nh+1
             gdepth_u(i,j,0)   = zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0)
             gdepth_u(i,j,N+1) = zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N)
+#if !defined NBQ_IJK 
             coefa_u(i,j,0)    = 0.5 * pm_u(i,j) * real (slip_nbq)  
             coefa_u(i,j,1)    = 0. 
             coefb_u(i,j,N)    = 0.     
-            coefb_u(i,j,N+1)  = 0.5 * pm_u(i,j)  
+            coefb_u(i,j,N+1)  = 0.5 * pm_u(i,j)
+#endif            
         enddo
         enddo
 
@@ -86,10 +94,12 @@
         do i = istr_nh ,iend_nh
             gdepth_v(i,j,0)   = zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0)
             gdepth_v(i,j,N+1) = zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N)
+#if !defined NBQ_IJK 
             coefa_v(i,j,0)    = 0.5 * pn_v(i,j) * real (slip_nbq) 
             coefa_v(i,j,1)    = 0.                    
             coefb_v(i,j,N)    = 0.        
-            coefb_v(i,j,N+1)  = 0.5 * pn_v(i,j)  
+            coefb_v(i,j,N+1)  = 0.5 * pn_v(i,j)
+#endif
         enddo
         enddo
 
