@@ -207,9 +207,9 @@
       
 !!     do l_nbq = neqw_nh(1)+1,neqw_nh(6) 
        do l_nbq = neqv_nh(7)+1,neqw_nh(7) 
-         rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)                                    &
-              + (rhsimp_nbq(l_nbq-(neqmom_nh(1)+neqmom_nh(2))) -qdm_nbq_a(l_nbq)) / dtnbq   &
-              - dqdmdt_nbq_a(l_nbq)   
+!         rhssum_nbq_a(l_nbq) = rhssum_nbq_a(l_nbq)                                    &
+!              + (rhsimp_nbq(l_nbq-(neqmom_nh(1)+neqmom_nh(2))) -qdm_nbq_a(l_nbq)) / dtnbq   &
+!              - dqdmdt_nbq_a(l_nbq)   
          qdm_nbq_a(l_nbq) = rhsimp_nbq(l_nbq-(neqmom_nh(1)+neqmom_nh(2)))  
       enddo    
 

@@ -322,7 +322,7 @@
 
 !.......Some remaining initializations:
 # ifndef NBQ_IJK
-        rhssum_nbq_a   = 0.d0
+!       rhssum_nbq_a   = 0.d0
         div_nbq_a      = 0.d0
         divz_nbq_a     = 0.d0
 # else

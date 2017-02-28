@@ -21,9 +21,9 @@
 # endif
       implicit none
 
-#if defined NBQ_IJK	  
+!#if defined NBQ_IJK	  
 	  integer :: Istr,Iend,Jstr,Jend
-#endif
+!#endif
 # include "param_F90.h"
 # include "scalars_F90.h"
 # include "grid.h"

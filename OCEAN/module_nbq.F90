@@ -77,11 +77,12 @@
 #ifndef NBQ_IJK 
  !....Variables algébriques mode NBQ:
       double precision,dimension(:),allocatable     ::                &
-       dqdmdt_nbq_a      					      &   
-      ,rhssum_nbq_a       				                
+       dqdmdt_nbq_a      					  !    &   
+!      ,rhssum_nbq_a       				                
 
       double precision,dimension(:),allocatable     ::                &
-       qdm_nbq_a           				      	      &        
+       qdm_nbq_a           				      	      &       
+      ,qdm0_nbq_a           				      	      &        
       ,rhp_nbq_a           				              &        
       ,div_nbq_a               				              &        
       ,divz_nbq_a    
@@ -244,8 +245,9 @@
  !....Variables algébriques mode NBQ:
        allocate(  dqdmdt_nbq_a      (1:nmv_nbq)  )
        allocate(  qdm_nbq_a         (0:nmv_nbq)  )
+       allocate(  qdm0_nbq_a         (0:nmv_nbq)  )
        allocate(  rhp_nbq_a         (1:nmq_nbq)  )
-       allocate(  rhssum_nbq_a      (1:nmv_nbq)  )        
+!      allocate(  rhssum_nbq_a      (1:nmv_nbq)  )        
        allocate(  div_nbq_a         (1:nmq_nbq)  )        
        allocate(  divz_nbq_a         (1:nmq_nbq)  )  
  

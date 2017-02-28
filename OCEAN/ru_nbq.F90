@@ -81,6 +81,8 @@
            dqdmdt_nbq_a(l_nbq)=rho0*rwint_nbq(i,j,k)
          enddo
         endif
+
+        qdm0_nbq_a(1:neqw_nh(7))=qdm_nbq_a(1:neqw_nh(7))
        
       elseif (icall.eq.2) then
 !
@@ -88,7 +90,8 @@
 !  Prepare feedback of NBQ rhs terms to external equations
 !*******************************************************************
 !
-        cff=1/(rho0*real(ndtnbq))
+        cff=1./(rho0*real(ndtnbq))
+       
 !        
 ! X-direction:
 !
@@ -99,8 +102,10 @@
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
-           ru_nbq_ext(i,j,k)   = cff*rhssum_nbq_a(l_nbq)*on_u(i,j)*om_u(i,j)
-           rhssum_nbq_a(l_nbq) = 0.
+           ru_nbq_ext(i,j,k)   = cff*on_u(i,j)*om_u(i,j)   &
+                * ((qdm_nbq_a(l_nbq)-qdm0_nbq_a(l_nbq))/dtnbq &
+                - dqdmdt_nbq_a(l_nbq)*real(ndtnbq))
+!           rhssum_nbq_a(l_nbq) = 0.
            rubar_nbq(i,j)      = rubar_nbq(i,j)+ru_nbq_ext(i,j,k)
         enddo
         
@@ -128,8 +133,10 @@
             i=l2imom_nh(l_nbq)
             j=l2jmom_nh(l_nbq)
             k=l2kmom_nh(l_nbq)
-            rv_nbq_ext(i,j,k)   = cff*rhssum_nbq_a(l_nbq)*on_v(i,j)*om_v(i,j)
-            rhssum_nbq_a(l_nbq) = 0.
+            rv_nbq_ext(i,j,k)   = cff*on_v(i,j)*om_v(i,j)   &
+                * ((qdm_nbq_a(l_nbq)-qdm0_nbq_a(l_nbq))/dtnbq &
+                - dqdmdt_nbq_a(l_nbq)*real(ndtnbq))
+!            rhssum_nbq_a(l_nbq) = 0.
             rvbar_nbq(i,j)      = rvbar_nbq(i,j)+rv_nbq_ext(i,j,k)
         enddo
 
@@ -155,8 +162,13 @@
             i = l2imom_nh (l_nbq)
             j = l2jmom_nh (l_nbq)
             k = l2kmom_nh (l_nbq)
-            rw_nbq_ext(i,j,k)   = cff*rhssum_nbq_a(l_nbq)*on_r(i,j)*om_r(i,j)
-            rhssum_nbq_a(l_nbq) = 0.
+!           write(200,*) rhssum_nbq_a(l_nbq)
+!           write(201,*) (qdm_nbq_a(l_nbq)-qdm0_nbq_a(l_nbq))/dtnbq &
+!              -dqdmdt_nbq_a(l_nbq)*real(ndtnbq)
+            rw_nbq_ext(i,j,k)   = cff*on_r(i,j)*om_r(i,j)   &
+                * ((qdm_nbq_a(l_nbq)-qdm0_nbq_a(l_nbq))/dtnbq &
+                - dqdmdt_nbq_a(l_nbq)*real(ndtnbq))
+!            rhssum_nbq_a(l_nbq) = 0.
         enddo
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
