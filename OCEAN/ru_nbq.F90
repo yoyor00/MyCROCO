@@ -61,7 +61,7 @@
             i=l2imom_nh(l_nbq)
             j=l2jmom_nh(l_nbq)
             k=l2kmom_nh(l_nbq)
-            dqdmdt_nbq_a(l_nbq)=rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k))
+            dqdmdt_nbq_a(l_nbq)=ruint_nbq(i,j,k)+ruext_nbq(i,j,k)
          enddo
 
 !       do l_nbq = neqv_nh(2)+1,neqv_nh(5)  
@@ -69,7 +69,7 @@
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
-           dqdmdt_nbq_a(l_nbq)=rho0*(rvint_nbq(i,j,k)+rvext_nbq(i,j,k))
+           dqdmdt_nbq_a(l_nbq)=rvint_nbq(i,j,k)+rvext_nbq(i,j,k)
         enddo
 
         if (iif==1) then
@@ -78,7 +78,7 @@
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
-           dqdmdt_nbq_a(l_nbq)=rho0*rwint_nbq(i,j,k)
+           dqdmdt_nbq_a(l_nbq)=rwint_nbq(i,j,k)
          enddo
         endif
 
@@ -90,7 +90,7 @@
 !  Prepare feedback of NBQ rhs terms to external equations
 !*******************************************************************
 !
-        cff=1./(rho0*real(ndtnbq))
+        cff=1./real(ndtnbq)
        
 !        
 ! X-direction:

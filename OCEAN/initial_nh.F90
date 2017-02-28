@@ -274,10 +274,10 @@
              j = l2jq_nh(l_nbq)
              k = l2kq_nh(l_nbq)
 !!           rhp_nbq_a(l_nbq) = rho(i,j,k)
-!             rhp_bq_a(l_nbq)  = rho(i,j,k)
-             rho_nbq_ext(i,j,k)   = (rho0+rho(i,j,k))/rho0
-             rho_nbq_avg1(i,j,k)  = (rho0+rho(i,j,k))/rho0
-             rho_nbq_avg2(i,j,k)  = (rho0+rho(i,j,k))/rho0
+!            rhp_bq_a(l_nbq)  = rho(i,j,k)
+             rho_nbq_ext(i,j,k)   = 1.+rho(i,j,k)
+             rho_nbq_avg1(i,j,k)  = 1.+rho(i,j,k)
+             rho_nbq_avg2(i,j,k)  = 1.+rho(i,j,k)
            enddo
 
           rhobar_nbq     (:,:,:)=1.
@@ -303,8 +303,8 @@
  
         do j=jstrq_nh-1,jendq_nh+1
         do i=istrq_nh-1,iendq_nh+1
-           rhobar_nbq(i,j,:)   = (rhobar_nbq(i,j,:)/work2d(i,j) + rho0)  &
-                                 / rho0
+           rhobar_nbq(i,j,:)   = rhobar_nbq(i,j,:)/work2d(i,j) + 1.  
+                                 
            rhobar_nbq_avg1(i,j)= rhobar_nbq(i,j,1) 
         enddo
         enddo
@@ -351,7 +351,7 @@
           i=l2imom_nh(l_nbq)
           j=l2jmom_nh(l_nbq)
           k=l2kmom_nh(l_nbq)
-          qdm_nbq_a(l_nbq)=(rho0+0.5*(rho(i,j,k)+rho(i-1,j,k))) &
+          qdm_nbq_a(l_nbq)=(1.+0.5*(rho(i,j,k)+rho(i-1,j,k))/rho0) &
                                      *u(i,j,k,nrhs)*hz_half(i,j,k)
         enddo
         call parallele_nbq(51)
