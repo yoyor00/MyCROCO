@@ -129,8 +129,8 @@
      &                    + 12.0*a5*ab3*(    a3*a3-a2*a2)* nb        
      &                    + 12.0*   ab5*(3.0*a3*a3-a2*a2)*nn*nb          )
        PARAMETER( sf_d4 = 48.0*a5*a5*ab3*ab3*nn + 36.0*a5*ab3*ab5*nn*nn )
-       PARAMETER( sf_d5 = 3.0*(a2*a2-3.0*a3*a3)*(ab1*ab1-ab2*ab2)*nn    )
-
+       PARAMETER( sf_d5 = 3.0*(a2*a2-3.0*a3*a3)
+     &                       *(ab1*ab1-ab2*ab2)*nn    )
        PARAMETER( sf_n0  = 36.0*a1*nn*nn*nb*nb )
        PARAMETER( sf_n1  = - 12.0*a5*ab3*(ab1+ab2)*nn*nn           
      &                    + 8.0*a5*ab3*(6.0*a1-a2-3.0*a3)*nn*nb     

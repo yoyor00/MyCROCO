@@ -369,17 +369,21 @@ c++ # define CANUTO_A
                   cff         = 0.5*( trb( i,j,N-1,nnew,itke )
      &                            +   trb( i,j,N  ,nnew,itke ) )  
                   lgthsc      = vonKar*(0.5*Hz(i,j,N)+z0_s)
-                  trb_sfc     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)*(cff**rm))
-                  flux_top    = - rn*cm0**(rp+1.)*vonKar*OneOverSig(igls)     
-     &                                      *(cff**(rm+0.5))*(lgthsc**rn)
+                  trb_sfc     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
+     &                                                 *(cff**rm))
+                  flux_top    = -rn*cm0**(rp+1.)
+     &                             *vonKar*OneOverSig(igls)
+     &                             *(cff**(rm+0.5))*(lgthsc**rn)
                   ! bottom
                   z0_b        = MAX( Zob , 1.E-04 )
                   cff         = 0.5*( trb( i,j,  1,nnew,itke )  
      &                            +   trb( i,j,  0,nnew,itke ) )
                   lgthsc      = vonKar*(0.5*Hz(i,j,1)+z0_b)
-                  trb_bot     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)*(cff**rm)) 
-                  flux_bot    = -rn*cm0**(rp+1.)*vonKar*OneOverSig(igls)   
-     &                                     *(cff**(rm+0.5))*(lgthsc**rn)               
+                  trb_bot     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
+     &                                               *(cff**rm)) 
+                  flux_bot    =-rn*cm0**(rp+1.)
+     &                          *vonKar*OneOverSig(igls)
+     &                          *(cff**(rm+0.5))*(lgthsc**rn)
                   ! finalize
                   RH( i,  1 ) = RH(i,  1) + dt*flux_bot
                   RH( i,N-1 ) = RH(i,N-1) + dt*flux_top
