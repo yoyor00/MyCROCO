@@ -2,7 +2,7 @@ title:
         SHOREFACE Example 
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                14400       2.5        60   10
+                14400     2.5      60      50
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0.0d0      1.e16
@@ -17,7 +17,7 @@ sediments: input file
            sediment.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
-                         F         F         F  F
+                         T         T         T T 10*T
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      F      F       F      F     F     F
@@ -47,11 +47,25 @@ primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
 auxiliary_averages:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
                        T   F    T   F    T    F   F      F       F   F    F     20*F
 
+diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
+                  T        1440         0
+                                 shoreface_dia.nc
+
+diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
+               T          1           1440            0
+                                 shoreface_dia_avg.nc
+
+diag3D_history_fields:    diag_tracers3D(1:NT) 
+                            30*T
+
+diag3D_average_fields:    diag_tracers3D_avg(1:NT)
+                            30*T
+
 rho0:
       1024.4
 
 bottom_drag:     RDRG(m/s),      RDRG2,   Zob [m],  Cdb_min, Cdb_max
-                   0.0          0.0015     0.        0.       0.
+                   0.0           0.0      1.e-3      1.e-4   1.e-1
 
 gamma2:
                  1.

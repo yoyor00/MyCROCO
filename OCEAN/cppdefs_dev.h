@@ -506,7 +506,7 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-# define MOVING_BATHY
+# undef MOVING_BATHY
 #endif
 
 /*
