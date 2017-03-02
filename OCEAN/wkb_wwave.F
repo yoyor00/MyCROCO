@@ -300,15 +300,9 @@
 #  ifdef MASKING
      &                            *rmask(i,j)
 #  endif
-#  ifdef WET_DRY
-     &                            *rmask_wet(i,j)
-#  endif
               wke(i,j,k)=kw*sinw
 #  ifdef MASKING
      &                            *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                            *rmask_wet(i,j)
 #  endif
               frq(i,j,k)=cfrq
               wcg(i,j,k)=nw*cw/kw
@@ -561,7 +555,7 @@ C$OMP BARRIER
 ! Solve primary wavenumber equation
 !---------------------------------------------------------------------
 !
-      cff=2.*5.e3/grdmax*0.5                 ! smoothing coefficient
+      cff=100.                 ! smoothing coefficient
 !
       do j=jstr,jend
         do i=istr,iend
@@ -591,7 +585,7 @@ C$OMP BARRIER
      &               *(kvx(i,j)+kvx(i+1,j)+kvx(i,j+1)+kvx(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &           -cff*(0.5+0.5*(tanh(Dstp(i,j)-10.)))*( 
+     &           -cff*( 0.6+0.5*(tanh(Dstp(i,j)-10.)))*( 
 #  ifdef ADD_DIFFX
      &                on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
 #  endif
@@ -614,7 +608,7 @@ C$OMP BARRIER
      &               *(kue(i,j)+kue(i+1,j)+kue(i,j+1)+kue(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &           -cff*(0.5+0.5*(tanh(Dstp(i,j)-10.)))*(
+     &           -cff*( 0.6+0.5*(tanh(Dstp(i,j)-10.)))*(
 #  ifdef ADD_DIFFX
      &                on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
 #  endif
@@ -662,7 +656,7 @@ C$OMP BARRIER
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                 *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
 # ifdef ADD_DIFF
-     &           -cff*(0.5+0.5*(tanh(Dstp(i,j)-10.)))*(
+     &           -cff*( 0.6+0.5*(tanh(Dstp(i,j)-10.)))*(
 #  ifdef ADD_DIFFX
      &                               on_r(i,j)*(wac(i+1,j,wprv)
      &                        -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
@@ -725,7 +719,7 @@ C$OMP BARRIER
         do i=istr,iend
           war(i,j,wnew) =war(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
-# ifdef ADD_DIFF
+# ifdef ADD_DIFF0
      &                           -cff*on_r(i,j)*(war(i+1,j,wprv)
      &                        -2.*war(i,j,wprv)+war(i-1,j,wprv))
      &                           -cff*om_r(i,j)*(war(i,j+1,wprv)
