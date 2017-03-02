@@ -116,8 +116,8 @@
 #  define UV_VIS_SMAGO
 # endif
                       /* Lateral Tracer Advection (default UP3) */
-# undef  TS_HADV_UP3
-# define TS_HADV_RSUP3
+# define  TS_HADV_UP3
+# undef TS_HADV_RSUP3
 # undef  TS_HADV_UP5
 # undef  TS_HADV_C4
 # undef  TS_HADV_WENO5
@@ -133,9 +133,9 @@
 # undef  BODYFORCE
 
 # undef BVF_MIXING
-# undef LMD_MIXING
+# define LMD_MIXING
 # undef GLS_MIXING
-# define GLS_MIX2017  /* <---- Warning: option still under testing */
+# undef GLS_MIX2017  /* <---- Warning: option still under testing */
 
 # ifdef LMD_MIXING
 #  define LMD_SKPP

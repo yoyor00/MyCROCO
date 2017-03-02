@@ -1,6 +1,6 @@
 #include "cppdefs.h"
-#if defined NBQ && defined MPI
-
+#ifdef NBQ
+# ifdef MPI
 module module_parallel_nbq
 !------------------------------------------------------------------------------
 !                       NBQ Module for MPI-exchanges
@@ -1096,7 +1096,7 @@ end subroutine  Persistant_init
       
 end module module_parallel_nbq
 
-#else
+#  else
  module module_parallel_nbq
   implicit none
   integer, parameter :: ouest=1,est=2,nord=3,sud=4,haut=5,bas=6
@@ -1118,4 +1118,8 @@ end module module_parallel_nbq
   integer :: ierr,mynode
 
  end module module_parallel_nbq
+#  endif
+#else
+     module module_parallel_nbq_empty
+     end module module_parallel_nbq_empty
 #endif
