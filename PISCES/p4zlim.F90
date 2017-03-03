@@ -42,13 +42,6 @@ MODULE p4zlim
      xkdoc     = 417.E-6    ,  &  !:
      caco3r    = 0.3              !:
 
-
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zlim.F90 1808 2010-03-11 09:17:56Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_lim( kt, jnt )

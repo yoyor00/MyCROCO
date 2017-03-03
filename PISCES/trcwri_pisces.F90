@@ -31,16 +31,15 @@ CONTAINS
       !!
       !! ** Purpose :   output passive tracers fields 
       !!---------------------------------------------------------------------
-      CHARACTER (len=20)   :: cltra, cltras
-      REAL(wp)             :: zrfact
-      INTEGER              :: ji, jj, jk, jn
+      CHARACTER (len=20)   :: cltra
+      INTEGER              :: jn
       !!---------------------------------------------------------------------
  
       DO jn = jp_pcs0, jp_pcs1
-         zrfact = 1.0
          cltra = TRIM( ctrcnm(jn) )                  ! short title for tracer
-         CALL iom_put( cltra, trn(:,:,:,jn) * zrfact )
+         CALL iom_put( cltra, MAX(0., trn(:,:,:,jn) ) )
       END DO
+
 # if defined key_trc_diaadd
       CALL iom_put( "Cflx"    , trc2d(:,:,jp_flxco2)   )
       CALL iom_put( "Oflx"    , trc2d(:,:,jp_flxo2)    )
@@ -52,7 +51,10 @@ CONTAINS
       CALL iom_put( "EPCAL100", trc2d(:,:,jp_sinkcal)  )
       CALL iom_put( "Heup"    , trc2d(:,:,jp_heup)     )
       CALL iom_put( "Nfix"    , trc2d(:,:,jp_nfix)     )
-      CALL iom_put( "Irondep" , trc2d(:,:,jp_irondep)  ) 
+      CALL iom_put( "No3dep"  , trc2d(:,:,jp_no3dep)   ) 
+      CALL iom_put( "Nh4dep"  , trc2d(:,:,jp_nh4dep)   ) 
+      CALL iom_put( "Sildep"  , trc2d(:,:,jp_sildep)   ) 
+      CALL iom_put( "Po4dep"  , trc2d(:,:,jp_po4dep)   ) 
       !
       CALL iom_put( "PH"      , trc3d(:,:,:,jp_hi)     )
       CALL iom_put( "CO3"     , trc3d(:,:,:,jp_co3)    )
@@ -67,10 +69,15 @@ CONTAINS
       CALL iom_put( "PFeD"    , trc3d(:,:,:,jp_pfed)   )
       CALL iom_put( "PPNEWo2" , trc3d(:,:,:,jp_pnewo2) )
       CALL iom_put( "PPRego2" , trc3d(:,:,:,jp_prego2) )
-      CALL iom_put( "GRAZ"    , trc3d(:,:,:,jp_grazt)  )
-      CALL iom_put( "Nito2"   , trc3d(:,:,:,jp_nitro2) )
-      CALL iom_put( "Nremino2", trc3d(:,:,:,jp_remino2))
+      CALL iom_put( "Grazing" , trc3d(:,:,:,jp_grapoc)  )
+      CALL iom_put( "Grazing2", trc3d(:,:,:,jp_grapoc2) )
+      CALL iom_put( "MicroZo2", trc3d(:,:,:,jp_mico2 )  )
+      CALL iom_put( "MesoZo2" , trc3d(:,:,:,jp_meso2 )  )
+      CALL iom_put( "Nitrifo2", trc3d(:,:,:,jp_nitrifo2) )
+      CALL iom_put( "Remino2" , trc3d(:,:,:,jp_remino2))
       CALL iom_put( "Nfixo2"  , trc3d(:,:,:,jp_nfixo2) )
+      CALL iom_put( "Irondep" , trc3d(:,:,:,jp_irondep)  ) 
+      CALL iom_put( "Ironsed" , trc3d(:,:,:,jp_ironsed) )
 #endif
       !
    END SUBROUTINE trc_wri_pisces

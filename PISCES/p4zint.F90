@@ -28,13 +28,6 @@ MODULE p4zint
    REAL(wp) :: &
       xksilim = 16.5E-6        ! Half-saturation constant for the computation of the Si half-saturation constant
 
-
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zint.F90 1753 2009-11-25 12:35:09Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_int

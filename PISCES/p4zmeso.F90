@@ -46,13 +46,6 @@ MODULE p4zmeso
       epsher2  = 0.33    ,  &  !:   
       grazflux = 5.E3 
 
-
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zmeso.F90 1830 2010-04-12 13:03:51Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_meso( kt,jnt )
@@ -340,7 +333,21 @@ CONTAINS
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               trc3d(ji,jj,K,jp_grazt) = grazing(ji,jj,jk) * zrfact2 * tmask(ji,jj,K) !  Total grazing of phyto by zoo
+               trc3d(ji,jj,K,jp_grapoc2) = ( zgrazd(ji,jj,jk) + zgrazz  (ji,jj,jk) + zgrazn(ji,jj,jk) &
+                     &                     + zgrazpoc(ji,jj,jk) + zgrazffe(ji,jj,jk)  ) &
+                     &                    * zrfact2 * tmask(ji,jj,K) !  grazing of phyto by mesozoo
+            END DO
+         END DO
+      END DO
+      
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               trc3d(ji,jj,K,jp_meso2) = ( zgrazd(ji,jj,jk) + zgrazz(ji,jj,jk) + zgrazn(ji,jj,jk) &
+                     &                   + zgrazpoc(ji,jj,jk) + zgrazffe(ji,jj,jk) )      &
+                     &                    * ( 1. - epsher2 - unass2 ) &
+                     &                    * (-o2ut) * sigma2  & 
+                     &                    * zrfact2 * tmask(ji,jj,K) ! o2 consumption by Mesozoo
             END DO
          END DO
       END DO

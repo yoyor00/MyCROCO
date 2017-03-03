@@ -143,11 +143,6 @@ MODULE p4zche
    DATA devk4 / -3.08E-3 , 1.13E-3   , -2.84E-3, -5.13E-3   , -11.76E-3 /   
    DATA devk5 / 0.0877E-3, -0.1475E-3,  0.     , 0.0794E-3  , 0.3692E-3 /
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zche.F90 1808 2010-03-11 09:17:56Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
 
 CONTAINS
 

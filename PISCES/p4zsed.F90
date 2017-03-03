@@ -38,37 +38,42 @@ MODULE p4zsed
 
    !! * Shared module variables
    LOGICAL, PUBLIC ::    &
-     ln_dustfer  = .FALSE.      ,  &  !:
+     ln_dust     = .FALSE.      ,  &  !:
      ln_river    = .FALSE.      ,  &  !:
      ln_ndepo    = .FALSE.      ,  &  !:
-     ln_sedinput = .FALSE.            !:
+     ln_sedinput = .FALSE.      ,  &  !:
+     ln_sedmeta  = .FALSE.            !:
 
    REAL(wp), PUBLIC ::   &
      sedfeinput = 1.E-9   ,  &  !:
-     dustsolub  = 0.014         !:
+     dustsolub  = 0.014   ,  &  !:
+     mfrac      = 0.035   ,  &  ! Fe mineral fraction of dust
+     wdust      =  2.0    ,  &  ! Dust sinking speed 
+     concfediaz = 1.E-10  ,  &  !: Diazotrophs half-saturation Cste for Iron
+     diazolight = 50      ,  &  !: Diazotrophs sensitivity to light (W/m2)
+     nitrfix    = 1.E-7         !:
 
    !! * Module variables
 !   INTEGER ::                   &
 !     ryyss,                     &  !: number of seconds per year
 !     rmtss                         !: number of seconds per month
 
+   REAL(wp), PUBLIC   ::  year2daydta                 
    INTEGER ::                   &
       numdust,                  &  !: logical unit for surface fluxes data
       nflx1 , nflx2,            &  !: first and second record used
       nflx11, nflx12      ! ???
    REAL(wp), DIMENSION(:,:,:), PUBLIC, ALLOCATABLE, SAVE ::    &  !:
-     dustmo                                !: 2 consecutive set of dust fields 
+     dustmo, no3depmo, nh4depmo, ironsed                                !: 2 consecutive set of dust fields 
+   REAL(wp), DIMENSION(:,:,:), PUBLIC, ALLOCATABLE, SAVE ::    &  !:
+     cmask
    REAL(wp), DIMENSION(:,:), ALLOCATABLE, SAVE   ::    &
-     rivinp, cotdep, nitdep, dust, sidep
+     rivinp, cotdep, dust,  &
+     no3dep, nh4dep, po4dep, sidep
    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, SAVE  ::   &
-     ironsed, nitrpot, irondep
+      nitrpot, irondep
    REAL(wp) :: sumdepsi, rivalkinput, rivpo4input, nitdepinput
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Header:$ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
 
 CONTAINS
 
@@ -87,38 +92,61 @@ CONTAINS
 !      INTEGER  ::   ikt
 #if ! defined key_sed
       REAL(wp) ::   zsumsedsi, zsumsedpo4, zsumsedcal
+      REAL(wp) ::   zrivsil, zrivalk, zrivno3
 #endif
-      REAL(wp) ::   zconctmp , znitrpottot
-      REAL(wp) ::   zlim, zconctmp2, zfact, zmsk
+      REAL(wp) :: zconctmp, zws3, zws4, zwsc 
+      REAL(wp) :: zlim, zconctmp2, zfact, zmsk
       REAL(wp) :: zrfact2
+      REAL(wp) :: zo2, zno3, zflx, zpdenit, z1pdenit, zdenitt, zolimit
+      REAL(wp) :: zsiloss, zcaloss, zfactcal, zdep, zwstpoc
+      REAL(wp) :: ztrfer, ztrpo4, zwdust, zlight
+      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zdenit2d, zbureff
+      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: zno3dep,znh4dep
       CHARACTER (len=25) :: charout
       !!---------------------------------------------------------------------
 
-      IF( (jnt == 1) .and. ( ln_dustfer ) )  CALL p4z_sbc( kt )
+      IF( (jnt == 1) .and. ( ln_dust .OR. ln_ndepo ) )  CALL p4z_sbc( kt )
 
+      DO jj = JRANGE
+         DO ji = IRANGE
+            zno3dep(ji,jj) = 0.
+            znh4dep(ji,jj) = 0.
+         END DO
+      END DO
       ! Iron and Si deposition at the surface
       ! -------------------------------------
-      IF( ln_dustfer ) THEN
+      IF( ln_dust ) THEN
          DO jj = JRANGE
             DO ji = IRANGE
-               irondep(ji,jj,1) = ( dustsolub * dust(ji,jj) &
-                  &     / ( 55.85 * rmtss ) + 3.e-10 / ryyss )   &
-               &        * rfact2 / fse3t(ji,jj,KSURF)
-               sidep  (ji,jj)   = 8.8 * 0.075 * dust(ji,jj) &
-               &     * rfact2 / ( fse3t(ji,jj,KSURF) * 28.1 * rmtss )
-               !
+               irondep(ji,jj,1) = ( dustsolub * mfrac * dust(ji,jj) &
+                  &               / ( 55.85 * rmtss ) + 3.e-10 / ryyss )   &
+                  &               * rfact2 / fse3t(ji,jj,KSURF)
+                  !
+               sidep  (ji,jj)   = 8.8 * 0.075  &
+                  &              * mfrac * dust(ji,jj) / 28.1 / rmtss    &
+                  &              * rfact2 / fse3t(ji,jj,KSURF) 
+                  !
+               po4dep (ji,jj)   = 0.1 * 0.021  &
+                  &              * mfrac * dust(ji,jj) / 31. / rmtss    &
+                  &              / po4r                                 &
+                  &              * rfact2 / fse3t(ji,jj,KSURF) 
+                  !
                tra(ji,jj,1,jpsil) = tra(ji,jj,1,jpsil) + sidep (ji,jj)
+               tra(ji,jj,1,jppo4) = tra(ji,jj,1,jppo4) + po4dep(ji,jj)
                tra(ji,jj,1,jpfer) = tra(ji,jj,1,jpfer) + irondep(ji,jj,1)
             END DO
           END DO
 
           ! Iron solubilization of particles in the water column
           ! ----------------------------------------------------
+          ! dust in kg/m2/s ---> 1/55.85 to put in mol/Fe
+          !  wdust in m/j
+          zwdust = 0.03 * rday / ( wdust * 55.85 ) / ( 270. * rday )
           DO jk = KRANGEL
              DO jj = JRANGE
                 DO ji = IRANGE
-                   irondep(ji,jj,jk) = dust(ji,jj) &
-             &            / ( 10. * 55.85 * rmtss ) * rfact2 * 1.e-4
+                   irondep(ji,jj,jk) = dust(ji,jj) * mfrac * zwdust * rfact2 &
+                   &                  * EXP( -fsdept(ji,jj,K) / 540. )
                    tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) + irondep(ji,jj,jk)
                 END DO
              END DO
@@ -144,8 +172,14 @@ CONTAINS
       IF( ln_ndepo ) THEN
          DO jj = JRANGE
             DO ji = IRANGE
-               tra(ji,jj,1,jpno3) = tra(ji,jj,1,jpno3) + nitdep(ji,jj) * rfact2
-               tra(ji,jj,1,jptal) = tra(ji,jj,1,jptal) - rno3 * nitdep(ji,jj) * rfact2
+               ! conversion from KgN/m2/month to molC/L/s
+               zfact = rfact2 / rno3 / ( 14. * rmtss ) / fse3t(ji,jj,KSURF)
+               zno3dep(ji,jj) =  zfact * no3dep(ji,jj) 
+               znh4dep(ji,jj) =  zfact * nh4dep(ji,jj) 
+               !
+               tra(ji,jj,1,jpno3) = tra(ji,jj,1,jpno3) + zno3dep(ji,jj) 
+               tra(ji,jj,1,jpnh4) = tra(ji,jj,1,jpnh4) + znh4dep(ji,jj) 
+               tra(ji,jj,1,jptal) = tra(ji,jj,1,jptal) + rno3 * ( znh4dep(ji,jj) - zno3dep(ji,jj) )
             END DO
          END DO
       ENDIF
@@ -166,29 +200,53 @@ CONTAINS
 
 
 #if ! defined key_sed
-      ! Initialisation of variables used to compute Sinking Speed
-      zsumsedsi  = 0.e0
-      zsumsedpo4 = 0.e0
-      zsumsedcal = 0.e0
-
       ! Loss of biogenic silicon, Caco3 organic carbon in the sediments. 
       ! First, the total loss is computed.
       ! The factor for calcite comes from the alkalinity effect
       ! -------------------------------------------------------------
+
+      ! Initialisation of variables used to compute Sinking Speed
+      zsumsedsi  = 0.e0
+      zsumsedpo4 = 0.e0
+      zsumsedcal = 0.e0
       DO jj = JRANGE
          DO ji = IRANGE
             zfact = e1t(ji,jj) * e2t(ji,jj) / rday * tmask_i(ji,jj)
+            zws3  = zfact * wsbio3(ji,jj,ikt)
+            zws4  = zfact * wsbio4(ji,jj,ikt)
+            zwsc  = zfact * wscal (ji,jj,ikt)
 # if defined key_kriest
-            zsumsedsi  = zsumsedsi  + zfact *  trn(ji,jj,KSED,jpdsi) * wscal (ji,jj,ikt)
-            zsumsedpo4 = zsumsedpo4 + zfact *  trn(ji,jj,KSED,jppoc) * wsbio3(ji,jj,ikt)
+            zsumsedsi  = zsumsedsi  + trn(ji,jj,KSED,jpdsi) * zwsc
+            zsumsedpo4 = zsumsedpo4 + trn(ji,jj,KSED,jppoc) * zws3
 # else
-            zsumsedsi  = zsumsedsi  + zfact *  trn(ji,jj,KSED,jpdsi) * wsbio4(ji,jj,ikt)
-            zsumsedpo4 = zsumsedpo4 + zfact *( trn(ji,jj,KSED,jpgoc) * wsbio4(ji,jj,ikt)   &
-               &       + trn(ji,jj,KSED,jppoc) * wsbio3(ji,jj,ikt) )
+            zsumsedsi  = zsumsedsi  + trn(ji,jj,KSED,jpdsi) * zws4
+            zsumsedpo4 = zsumsedpo4 + ( trn(ji,jj,KSED,jpgoc) * zws4   &
+               &                      + trn(ji,jj,KSED,jppoc) * zws3 )
 # endif
-            zsumsedcal = zsumsedcal + zfact *  trn(ji,jj,KSED,jpcal) * wscal (ji,jj,ikt) * 2.e0
          END DO
       END DO
+      IF( .NOT. ln_sedmeta ) THEN
+         !
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zfact = e1t(ji,jj) * e2t(ji,jj) / rday * tmask_i(ji,jj)
+               zwsc  = zfact * wscal(ji,jj,ikt)
+               zsumsedcal = zsumsedcal + trn(ji,jj,KSED,jpcal) * zwsc * 2.e0
+            END DO
+         END DO
+         !
+      ELSE
+         ! For calcite, burial efficiency is made a function of saturation
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zfact      = e1t(ji,jj) * e2t(ji,jj) / rday * tmask_i(ji,jj)
+               zwsc       = zfact * wscal (ji,jj,ikt)
+               zfactcal   = MIN( excess(ji,jj,ikt), 0.2 )
+               zfactcal   = MIN( 1., 1.3 * ( 0.2 - zfactcal ) / ( 0.4 - zfactcal ) )
+               zsumsedcal = zsumsedcal + trn(ji,jj,KSED,jpcal) * zwsc * 2.e0 * zfactcal
+            END DO
+         END DO
+      ENDIF
 
       IF( lk_mpp ) THEN
          CALL mpp_sum( zsumsedsi  )   ! sums over the global domain
@@ -198,77 +256,217 @@ CONTAINS
 
 #endif
 
-      ! Then this loss is scaled at each bottom grid cell for
-      ! equilibrating the total budget of silica in the ocean.
-      ! Thus, the amount of silica lost in the sediments equal
-      ! the supply at the surface (dust+rivers)
+      IF( .NOT. ln_sedmeta ) THEN
+        ! Then this loss is scaled at each bottom grid cell for
+        ! equilibrating the total budget of silica in the ocean.
+        ! Thus, the amount of silica lost in the sediments equal
+        ! the supply at the surface (dust+rivers)
+        ! ------------------------------------------------------
+
+        DO jj = JRANGE
+           DO ji = IRANGE
+              zconctmp = trn(ji,jj,KSED,jpdsi) * xstep / fse3t(ji,jj,KSED)   &
+# if ! defined key_kriest
+     &               * wscal (ji,jj,ikt)
+# else
+     &               * wsbio4(ji,jj,ikt)
+# endif
+              tra(ji,jj,ikt,jpdsi) = tra(ji,jj,ikt,jpdsi) - zconctmp
+
+#if ! defined key_sed
+              tra(ji,jj,ikt,jpsil) = tra(ji,jj,ikt,jpsil) + zconctmp   &
+                &      * 0.98
+!                &      * ( 1.- ( sumdepsi + rivalkinput / ryyss / 6. ) / zsumsedsi )
+#endif
+           END DO
+        END DO
+
+        DO jj = JRANGE
+           DO ji = IRANGE
+              zconctmp = trn(ji,jj,KSED,jpcal) * wscal(ji,jj,ikt) * xstep / fse3t(ji,jj,KSED)
+              tra(ji,jj,ikt,jpcal) = tra(ji,jj,ikt,jpcal) - zconctmp
+
+#if ! defined key_sed
+              tra(ji,jj,ikt,jptal) = tra(ji,jj,ikt,jptal) + zconctmp   &
+                 &   * 0.85 * 2.0
+!                 &   * ( 1.- ( rivalkinput / ryyss ) / zsumsedcal ) * 2.e0
+              tra(ji,jj,ikt,jpdic) = tra(ji,jj,ikt,jpdic) + zconctmp   &
+                 &   * 0.85
+!                 &   * ( 1.- ( rivalkinput / ryyss ) / zsumsedcal )
+#endif
+           END DO
+        END DO
+
+        DO jj = JRANGE
+           DO ji = IRANGE
+              zfact = xstep / fse3t(ji,jj,KSED)
+              zws3 = wsbio3(ji,jj,ikt) * zfact
+              zws4 = wsbio4(ji,jj,ikt) * zfact
+# if ! defined key_kriest
+              zconctmp  = trn(ji,jj,KSED,jpgoc)
+              zconctmp2 = trn(ji,jj,KSED,jppoc)
+              tra(ji,jj,ikt,jpgoc) = tra(ji,jj,ikt,jpgoc) - zconctmp  * zws4
+              tra(ji,jj,ikt,jppoc) = tra(ji,jj,ikt,jppoc) - zconctmp2 * zws3
+#if ! defined key_sed
+              tra(ji,jj,ikt,jpdoc) = tra(ji,jj,ikt,jpdoc)    &
+                &                  + ( zconctmp * zws4 + zconctmp2 * zws3 )  &
+                &                    * 0.92
+!              &                 * ( 1.- rivpo4input / (ryyss * zsumsedpo4 ) )
+#endif
+              tra(ji,jj,ikt,jpbfe) = tra(ji,jj,ikt,jpbfe) - trn(ji,jj,KSED,jpbfe) * zws4
+              tra(ji,jj,ikt,jpsfe) = tra(ji,jj,ikt,jpsfe) - trn(ji,jj,KSED,jpsfe) * zws3
+
+# else
+              zconctmp  = trn(ji,jj,KSED,jpnum)
+              zconctmp2 = trn(ji,jj,KSED,jppoc)
+              tra(ji,jj,ikt,jpnum) = tra(ji,jj,ikt,jpnum) - zconctmp  * zws4
+              tra(ji,jj,ikt,jppoc) = tra(ji,jj,ikt,jppoc) - zconctmp2 * zws3
+#if ! defined key_sed
+              tra(ji,jj,ikt,jpdoc) = tra(ji,jj,ikt,jpdoc) + zconctmp2 * zws3 &
+                             &       * 0.92
+!                             &      * ( 1.- rivpo4input / (ryyss * zsumsedpo4 ) )
+#endif
+              tra(ji,jj,ikt,jpsfe) = tra(ji,jj,ikt,jpsfe) - trn(ji,jj,KSED,jpsfe) * zws3
+
+# endif
+           END DO
+        END DO
+
+        ! Potential nitrogen fixation dependant on temperature and iron
+        ! -------------------------------------------------------------
+
+        DO jk = KRANGE
+           DO jj = JRANGE
+              DO ji = IRANGE
+                 zlim = ( 1.- xnanono3(ji,jj,jk) - xnanonh4(ji,jj,jk) )
+                 IF( zlim <= 0.2 )   zlim = 0.01
+                 nitrpot(ji,jj,jk) = MAX( 0.e0, ( 0.6 * tgfunc(ji,jj,jk) - 2.15 ) / rday )   &
+                 &                  * zlim * rfact2 * trn(ji,jj,K,jpfer)   &
+                 &                  / ( conc3 + trn(ji,jj,K,jpfer) ) &
+                 &                  * ( 1.- EXP( -etot(ji,jj,jk) / diazolight) )
+              END DO
+           END DO
+        END DO
+
+
+        DO jk = KRANGE
+           DO jj = JRANGE
+              DO ji = IRANGE
+                 zfact = nitrpot(ji,jj,jk) * nitrfix
+                 tra(ji,jj,jk,jpnh4) = tra(ji,jj,jk,jpnh4) + zfact
+                 tra(ji,jj,jk,jpoxy) = tra(ji,jj,jk,jpoxy) + zfact   * o2nit
+                 tra(ji,jj,jk,jppo4) = tra(ji,jj,jk,jppo4) + 30./ 46.* zfact
+              END DO
+           END DO
+        END DO
+       !
+     ELSE
+
+       ! Computation of the sediment denitrification proportion:
+       ! The metamodel from midlleburg (2006) is being used
+       ! Computation of the fraction of organic matter that is permanently buried from Dunne's model
+       ! -------------------------------------------------------
+
+       DO jj = JRANGE
+          DO ji = IRANGE
+# if defined key_kriest
+             zflx =    trn(ji,jj,KSED,jppoc) * wsbio3(ji,jj,ikt)   * 1E3 * 1E6 / 1E4
+# else
+             zflx = (  trn(ji,jj,KSED,jpgoc) * wsbio4(ji,jj,ikt)   &
+                &    + trn(ji,jj,KSED,jppoc) * wsbio3(ji,jj,ikt) )  * 1E3 * 1E6 / 1E4
+#endif
+             zflx  = LOG10( MAX( 1E-3, zflx ) )
+             zo2   = LOG10( MAX( 10. , trn(ji,jj,KSED,jpoxy) * 1E6 ) )
+             zno3  = LOG10( MAX( 1.  , trn(ji,jj,KSED,jpno3) * 1E6 * rno3 ) )
+             zdep  = LOG10( fsdepw(ji,jj,ikt+1) )
+             zdenit2d(ji,jj) = -2.2567 - 1.185 * zflx - 0.221 * zflx**2 &
+                &              - 0.3995 * zno3 * zo2  + 1.25 * zno3    &
+             &                 + 0.4721 * zo2 - 0.0996 * zdep + 0.4256 * zflx * zo2
+             zdenit2d(ji,jj) = 10.0**( zdenit2d(ji,jj) )
+             !
+# if defined key_kriest
+             zflx = (  trn(ji,jj,KSED,jppoc) * wsbio3(ji,jj,ikt) * 1E6
+#else
+             zflx = (  trn(ji,jj,KSED,jpgoc) * wsbio4(ji,jj,ikt)   &
+               &     + trn(ji,jj,KSED,jppoc) * wsbio3(ji,jj,ikt) ) * 1E6
+#endif
+             zbureff(ji,jj) = 0.013 + 0.53 * zflx**2 / ( 7.0 + zflx )**2
+          END DO
+       END DO 
+
+
+      ! This loss is scaled at each bottom grid cell for equilibrating the total budget of silica in the ocean.
+      ! Thus, the amount of silica lost in the sediments equal the supply at the surface (dust+rivers)
       ! ------------------------------------------------------
+#if ! defined key_sed
+      zrivsil =  1. - ( sumdepsi + rivalkinput / ryyss ) &
+          &     / ( zsumsedsi + rtrn )
+#endif
 
       DO jj = JRANGE
          DO ji = IRANGE
-            zconctmp = trn(ji,jj,KSED,jpdsi) * xstep / fse3t(ji,jj,KSED)   &
-# if ! defined key_kriest
-     &             * wscal (ji,jj,ikt)
+            zdep = xstep / fse3t(ji,jj,KSED) 
+            zws4 = wsbio4(ji,jj,ikt) * zdep
+            zwsc = wscal (ji,jj,ikt) * zdep
+# if defined key_kriest
+            zsiloss = trn(ji,jj,KSED,jpdsi) * zws4
 # else
-     &             * wsbio4(ji,jj,ikt)
+            zsiloss = trn(ji,jj,KSED,jpdsi) * zwsc
 # endif
-            tra(ji,jj,ikt,jpdsi) = tra(ji,jj,ikt,jpdsi) - zconctmp
-
+            zcaloss = trn(ji,jj,KSED,jpcal) * zwsc
+            !
+            tra(ji,jj,ikt,jpdsi) = tra(ji,jj,ikt,jpdsi) - zsiloss
+            tra(ji,jj,ikt,jpcal) = tra(ji,jj,ikt,jpcal) - zcaloss
 #if ! defined key_sed
-            tra(ji,jj,ikt,jpsil) = tra(ji,jj,ikt,jpsil) + zconctmp   &
-             &      * 0.98
-!             &      * ( 1.- ( sumdepsi + rivalkinput / ryyss / 6. ) / zsumsedsi )
+            tra(ji,jj,ikt,jpsil) = tra(ji,jj,ikt,jpsil) + zsiloss * zrivsil 
+            zfactcal = MIN( excess(ji,jj,ikt), 0.2 )
+            zfactcal = MIN( 1., 1.3 * ( 0.2 - zfactcal ) / ( 0.4 - zfactcal ) )
+            zrivalk  =  1. - ( rivalkinput / ryyss ) * zfactcal / ( zsumsedcal + rtrn )
+            tra(ji,jj,ikt,jptal) =  tra(ji,jj,ikt,jptal) + zcaloss * zrivalk * 2.0
+            tra(ji,jj,ikt,jpdic) =  tra(ji,jj,ikt,jpdic) + zcaloss * zrivalk
 #endif
          END DO
       END DO
 
-      DO jj = JRANGE
-         DO ji = IRANGE
-            zconctmp = trn(ji,jj,KSED,jpcal) * wscal(ji,jj,ikt) * xstep / fse3t(ji,jj,KSED)
-            tra(ji,jj,ikt,jpcal) = tra(ji,jj,ikt,jpcal) - zconctmp
 
-#if ! defined key_sed
-            tra(ji,jj,ikt,jptal) = tra(ji,jj,ikt,jptal) + zconctmp   &
-               &   * 0.85 * 2.0
-!               &   * ( 1.- ( rivalkinput / ryyss ) / zsumsedcal ) * 2.e0
-            tra(ji,jj,ikt,jpdic) = tra(ji,jj,ikt,jpdic) + zconctmp   &
-               &   * 0.85
-!               &   * ( 1.- ( rivalkinput / ryyss ) / zsumsedcal )
-#endif
-         END DO
-      END DO
 
       DO jj = JRANGE
          DO ji = IRANGE
-            zfact = xstep / fse3t(ji,jj,KSED)
+            zdep = xstep / fse3t(ji,jj,KSED) 
+            zws4 = wsbio4(ji,jj,ikt) * zdep
+            zws3 = wsbio3(ji,jj,ikt) * zdep
+            zrivno3 = 1. - zbureff(ji,jj)
 # if ! defined key_kriest
-            zconctmp  = trn(ji,jj,KSED,jpgoc)
-            zconctmp2 = trn(ji,jj,KSED,jppoc)
-            tra(ji,jj,ikt,jpgoc) = tra(ji,jj,ikt,jpgoc) - zconctmp  * wsbio4(ji,jj,ikt) * zfact
-            tra(ji,jj,ikt,jppoc) = tra(ji,jj,ikt,jppoc) - zconctmp2 * wsbio3(ji,jj,ikt) * zfact
-#if ! defined key_sed
-            tra(ji,jj,ikt,jpdoc) = tra(ji,jj,ikt,jpdoc)    &
-            &      + ( zconctmp  * wsbio4(ji,jj,ikt) + zconctmp2 * wsbio3(ji,jj,ikt) ) * zfact   &
-            &       * 0.92
-!            &      * ( 1.- rivpo4input / (ryyss * zsumsedpo4 ) )
-#endif
-            tra(ji,jj,ikt,jpbfe) = tra(ji,jj,ikt,jpbfe) - trn(ji,jj,KSED,jpbfe) * wsbio4(ji,jj,ikt) * zfact
-            tra(ji,jj,ikt,jpsfe) = tra(ji,jj,ikt,jpsfe) - trn(ji,jj,KSED,jpsfe) * wsbio3(ji,jj,ikt) * zfact
-
+            tra(ji,jj,ikt,jpgoc) = tra(ji,jj,ikt,jpgoc) - trn(ji,jj,KSED,jpgoc) * zws4 
+            tra(ji,jj,ikt,jppoc) = tra(ji,jj,ikt,jppoc) - trn(ji,jj,KSED,jppoc) * zws3
+            tra(ji,jj,ikt,jpbfe) = tra(ji,jj,ikt,jpbfe) - trn(ji,jj,KSED,jpbfe) * zws4
+            tra(ji,jj,ikt,jpsfe) = tra(ji,jj,ikt,jpsfe) - trn(ji,jj,KSED,jpsfe) * zws3
+            zwstpoc              = trn(ji,jj,KSED,jpgoc) * zws4 + trn(ji,jj,KSED,jppoc) * zws3
 # else
-            zconctmp  = trn(ji,jj,KSED,jpnum)
-            zconctmp2 = trn(ji,jj,KSED,jppoc)
-            tra(ji,jj,ikt,jpnum) = tra(ji,jj,ikt,jpnum) - zconctmp  * wsbio4(ji,jj,ikt) * zfact
-            tra(ji,jj,ikt,jppoc) = tra(ji,jj,ikt,jppoc) - zconctmp2 * wsbio3(ji,jj,ikt) * zfact
-#if ! defined key_sed
-            tra(ji,jj,ikt,jpdoc) = tra(ji,jj,ikt,jpdoc)    &
-            &      + ( zconctmp2 * wsbio3(ji,jj,ikt) ) * zfact &
-            &       * 0.92
-!            &      * ( 1.- rivpo4input / (ryyss * zsumsedpo4 ) )
-#endif
-            tra(ji,jj,ikt,jpsfe) = tra(ji,jj,ikt,jpsfe) - trn(ji,jj,KSED,jpsfe) * wsbio3(ji,jj,ikt) * zfact
-
+            tra(ji,jj,ikt,jpnum) = tra(ji,jj,ikt,jpnum) - trn(ji,jj,KSED,jpnum) * zws4 
+            tra(ji,jj,ikt,jppoc) = tra(ji,jj,ikt,jppoc) - trn(ji,jj,KSED,jppoc) * zws3
+            tra(ji,jj,ikt,jpsfe) = tra(ji,jj,ikt,jpsfe) - trn(ji,jj,KSED,jpsfe) * zws3
+            zwstpoc = trn(ji,jj,KSED,jppoc) * zws3 
 # endif
+
+#if ! defined key_sed
+            ! The 0.5 factor in zpdenit and zdenitt is to avoid negative NO3 concentration after both denitrification
+            ! in the sediments and just above the sediments. Not very clever, but simpliest option.
+            zpdenit  = MIN( 0.5 * ( trn(ji,jj,KSED,jpno3) - rtrn ) / rdenit &
+               &          , zdenit2d(ji,jj) * zwstpoc * zrivno3 )
+            z1pdenit = zwstpoc * zrivno3 - zpdenit
+            zolimit = MIN( ( trn(ji,jj,KSED,jpoxy) - rtrn ) / o2ut &
+               &         , z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
+            zdenitt = MIN(  0.5 * ( trn(ji,jj,KSED,jpno3) - rtrn ) / rdenit &
+               &         , z1pdenit * nitrfac(ji,jj,ikt) )
+            tra(ji,jj,ikt,jpdoc) = tra(ji,jj,ikt,jpdoc) + z1pdenit - zolimit - zdenitt
+            tra(ji,jj,ikt,jppo4) = tra(ji,jj,ikt,jppo4) + zpdenit + zolimit + zdenitt
+            tra(ji,jj,ikt,jpnh4) = tra(ji,jj,ikt,jpnh4) + zpdenit + zolimit + zdenitt
+            tra(ji,jj,ikt,jpno3) = tra(ji,jj,ikt,jpno3) - rdenit * (zpdenit + zdenitt)
+            tra(ji,jj,ikt,jpoxy) = tra(ji,jj,ikt,jpoxy) - zolimit * o2ut
+            tra(ji,jj,ikt,jptal) = tra(ji,jj,ikt,jptal) + rno3 * (zolimit + (1.+rdenit) * (zpdenit + zdenitt) )
+            tra(ji,jj,ikt,jpdic) = tra(ji,jj,ikt,jpdic) + zpdenit + zolimit + zdenitt
+#endif
          END DO
       END DO
 
@@ -281,24 +479,16 @@ CONTAINS
             DO ji = IRANGE
                zlim = ( 1.- xnanono3(ji,jj,jk) - xnanonh4(ji,jj,jk) )
                IF( zlim <= 0.2 )   zlim = 0.01
-               nitrpot(ji,jj,jk) = MAX( 0.e0, ( 0.6 * tgfunc(ji,jj,jk) - 2.15 ) / rday )   &
-               &                  * zlim * rfact2 * trn(ji,jj,K,jpfer)   &
-               &                  / ( conc3 + trn(ji,jj,K,jpfer) ) &
-               &                  * ( 1.- EXP( -etot(ji,jj,jk) / 50.) )
+               zfact = zlim * rfact2
+               ztrfer = trn(ji,jj,K,jpfer) / ( concfediaz + trn(ji,jj,K,jpfer) )
+               ztrpo4 = trn(ji,jj,K,jppo4) / ( concnnh4   + trn(ji,jj,K,jppo4) ) 
+               zlight =  ( 1.- EXP( -etot(ji,jj,jk) / diazolight ) ) 
+               nitrpot(ji,jj,jk) =  MAX( 0.e0, ( 0.6 * tgfunc(ji,jj,jk) - 2.15 ) / rday )   &
+                 &                *  zfact * MIN( ztrfer, ztrpo4 ) * zlight
             END DO
          END DO 
       END DO
 
-      znitrpottot = 0.e0
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               znitrpottot = znitrpottot + nitrpot(ji,jj,jk) * cvol(ji,jj,K)
-            END DO
-         END DO
-      END DO
-
-      IF( lk_mpp )   CALL mpp_sum( znitrpottot )  ! sum over the global domain
 
       ! Nitrogen change due to nitrogen fixation
       ! ----------------------------------------
@@ -306,21 +496,29 @@ CONTAINS
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               zfact = nitrpot(ji,jj,jk) * 1.e-7
-               tra(ji,jj,jk,jpnh4) = tra(ji,jj,jk,jpnh4) + zfact
-               tra(ji,jj,jk,jpoxy) = tra(ji,jj,jk,jpoxy) + zfact   * o2nit
-               tra(ji,jj,jk,jppo4) = tra(ji,jj,jk,jppo4) + 30./ 46.* zfact
+               zfact = nitrpot(ji,jj,jk) * nitrfix
+               tra(ji,jj,jk,jpnh4) = tra(ji,jj,jk,jpnh4) +             zfact
+               tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) + rno3      * zfact
+               tra(ji,jj,jk,jpoxy) = tra(ji,jj,jk,jpoxy) + o2nit     * zfact 
+               tra(ji,jj,jk,jppo4) = tra(ji,jj,jk,jppo4) + concdnh4 / ( concdnh4 + trn(ji,jj,K,jppo4) ) &
+               &                     * 0.002 * trn(ji,jj,K,jpdoc) * xstep
             END DO
          END DO
       END DO
+
+
+     ENDIF
 
 #if defined key_trc_diaadd
         zrfact2 = 1.e+3 * rfact2r
         DO jj = JRANGE
            DO ji = IRANGE
               zmsk = zrfact2 * fse3t(ji,jj,KSURF) * tmask(ji,jj,KSURF)
-              trc2d(ji,jj,jp_irondep)  = irondep(ji,jj,1) * zmsk                ! iron deposition      
-              trc2d(ji,jj,jp_nfix   )  = nitrpot(ji,jj,1) * zmsk * 1.e-7        ! nitrogen fixation at surface
+              trc2d(ji,jj,jp_sildep)   = sidep(ji,jj)  * zmsk                ! iron deposition      
+              trc2d(ji,jj,jp_po4dep)   = po4dep(ji,jj) * po4r * zmsk                ! iron deposition      
+              trc2d(ji,jj,jp_no3dep )  = zno3dep(ji,jj) * rno3 * zmsk                ! iron deposition      
+              trc2d(ji,jj,jp_nh4dep )  = znh4dep(ji,jj) * rno3 * zmsk                ! iron deposition      
+              trc2d(ji,jj,jp_nfix   )  = nitrpot(ji,jj,1) * rno3 * zmsk * nitrfix       ! nitrogen fixation at surface
            END DO
         END DO
 
@@ -328,7 +526,9 @@ CONTAINS
            DO jj = JRANGE
               DO ji = IRANGE
                  zmsk = zrfact2 * fse3t(ji,jj,K) * tmask(ji,jj,K)
-                 trc3d(ji,jj,K,jp_nfixo2 ) = nitrpot(ji,jj,jk) * zmsk * 1.e-7 * o2nit  ! O2 production by Nfix
+                 trc3d(ji,jj,K,jp_nfixo2 )  = nitrpot(ji,jj,jk) * rno3 * zmsk * nitrfix * o2nit  ! O2 production by Nfix
+                 trc3d(ji,jj,K,jp_irondep)  = irondep(ji,jj,jk) * zmsk                ! iron flux from dust
+                 trc3d(ji,jj,K,jp_ironsed ) = ironsed(ji,jj,jk) * 1e+3 * tmask(ji,jj,K)  ! iron from  sediment
              END DO
            END DO
         ENDDO
@@ -348,7 +548,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_sed_alloc  ***
       !!----------------------------------------------------------------------
-      INTEGER ::   ierr(5)        ! Local variables
+      INTEGER ::   ierr(7)        ! Local variables
 
       ierr(:) = 0
       !
@@ -357,10 +557,11 @@ CONTAINS
 #else
       ALLOCATE( dust(PRIV_2D_BIOARRAY), STAT= ierr(1) )
 #endif
-      ALLOCATE( irondep(PRIV_3D_BIOARRAY),sidep(PRIV_2D_BIOARRAY), STAT= ierr(2) )
-      ALLOCATE( rivinp(PRIV_2D_BIOARRAY), cotdep(PRIV_2D_BIOARRAY), STAT=ierr(3) )
-      ALLOCATE( nitdep(PRIV_2D_BIOARRAY), STAT=ierr(4) )
-      ALLOCATE( nitrpot(PRIV_3D_BIOARRAY), ironsed(PRIV_3D_BIOARRAY), STAT=ierr(5) )
+      ALLOCATE( irondep(PRIV_3D_BIOARRAY),po4dep(PRIV_2D_BIOARRAY), STAT= ierr(2) )
+      ALLOCATE( sidep(PRIV_2D_BIOARRAY), STAT= ierr(3) )
+      ALLOCATE( no3dep(PRIV_2D_BIOARRAY), nh4dep(PRIV_2D_BIOARRAY), STAT=ierr(4) )
+      ALLOCATE( rivinp(PRIV_2D_BIOARRAY), cotdep(PRIV_2D_BIOARRAY), STAT=ierr(6) )
+      ALLOCATE( nitrpot(PRIV_3D_BIOARRAY), ironsed(PRIV_3D_BIOARRAY), STAT=ierr(7) )
       !
       p4z_sed_alloc = MAXVAL( ierr )
       !
@@ -481,8 +682,13 @@ CONTAINS
       REAL    :: zpdtan, zpdtmo, zdemi, zt
       REAL    :: zxy, zjulian, zsec
 
+      IF( kt == nit000 .AND. lwp ) THEN
+        WRITE(numout,*) ' '
+        WRITE(numout,*) ' Number of days per year in file year2daydta = ', year2daydta 
+        WRITE(numout,*) ' '
+      ENDIF
 
-      zpdtan = ryyss / rdt
+      zpdtan = ( year2daydta * day2sec ) / rdt
       zpdtmo = zpdtan / float( jpmois )
       zdemi  = zpdtmo / 2.
       zt     = ( float( kt ) + zdemi) / zpdtmo
@@ -491,7 +697,6 @@ CONTAINS
       !  recherche de l'indice des enregistrements
       !  du modele dynamique encadrant le pas de temps kt.
       !  --------------------------------------------------
-      irec1 = zt - float(int ( zt ) )
       irec1 = int( zt )
       irec2 = irec1 + 1
       irec1 = MOD( irec1, jpmois )
@@ -499,22 +704,28 @@ CONTAINS
       irec2 = MOD( irec2, jpmois )
       IF ( irec2 == 0 ) irec2 = jpmois
 
-
+      zxy = zt - float(int ( zt ) )
       !
-      ! Interpolation of dust deposition
-      ! --------------------------------
-      zjulian = FLOAT( nday_year )
-      CALL ju2ymds( zjulian, nyear, nmonth, nday, zsec)
-
-      i15 = nday_year / 16
-      zxy = FLOAT( nday_year + 15 - 30 * i15 ) / 30
-      DO jj = JRANGE
-         DO ji = IRANGE
-            dust(ji,jj) = ( 1. - zxy ) * dustmo(ji,jj,irec1)  &
-            &                  + zxy   * dustmo(ji,jj,irec2)
-        END DO
-      END DO
-
+      IF( ln_dust ) THEN
+         DO jj = JRANGE
+            DO ji = IRANGE
+               dust(ji,jj) = ( 1. - zxy ) * dustmo(ji,jj,irec1)  &
+                  &               + zxy   * dustmo(ji,jj,irec2)
+            END DO
+          END DO
+      ENDIF
+      !
+      IF( ln_ndepo ) THEN
+         DO jj = JRANGE
+            DO ji = IRANGE
+               no3dep(ji,jj) = ( 1. - zxy ) * no3depmo(ji,jj,irec1)  &
+                 &                  + zxy   * no3depmo(ji,jj,irec2)
+               !
+               nh4dep(ji,jj) = ( 1. - zxy ) * nh4depmo(ji,jj,irec1)  &
+                 &                   + zxy  * nh4depmo(ji,jj,irec2)
+            END DO
+          END DO
+      ENDIF
 #endif
 
    END SUBROUTINE p4z_sbc
@@ -532,7 +743,9 @@ CONTAINS
       !! ** input   :   external netcdf files
       !!
       !!----------------------------------------------------------------------
-      NAMELIST/nampissed/ ln_dustfer, ln_river, ln_ndepo, ln_sedinput, sedfeinput, dustsolub
+      NAMELIST/nampissed/ ln_dust, ln_river, ln_ndepo, ln_sedinput, &
+         &                sedfeinput, dustsolub, wdust, mfrac, &
+         &                nitrfix, diazolight, ln_sedmeta, concfediaz
 
 
       REWIND( numnatp )                     ! read numnatp
@@ -542,12 +755,18 @@ CONTAINS
          WRITE(numout,*) ' '
          WRITE(numout,*) ' Namelist : nampissed '
          WRITE(numout,*) ' ~~~~~~~~~~~~~~~~~ '
-         WRITE(numout,*) '    Dust input from the atmosphere           ln_dustfer  = ', ln_dustfer
-         WRITE(numout,*) '    River input of nutrients                 ln_river    = ', ln_river
-         WRITE(numout,*) '    Atmospheric deposition of N              ln_ndepo    = ', ln_ndepo
-         WRITE(numout,*) '    Fe input from sediments                  ln_sedinput = ', ln_sedinput
-         WRITE(numout,*) '    Coastal release of Iron                  sedfeinput  =', sedfeinput
-         WRITE(numout,*) '    Solubility of the dust                   dustsolub   =', dustsolub
+         WRITE(numout,*) '    Dust input from the atmosphere                         ln_dust  = ', ln_dust
+         WRITE(numout,*) '    River input of nutrients                               ln_river    = ', ln_river
+         WRITE(numout,*) '    Atmospheric deposition of N                            ln_ndepo    = ', ln_ndepo
+         WRITE(numout,*) '    Fe input from sediments                                ln_sedinput = ', ln_sedinput
+         WRITE(numout,*) '    Coastal release of Iron                                sedfeinput  = ', sedfeinput
+         WRITE(numout,*) '    Solubility of the dust                                 dustsolub   = ', dustsolub
+         WRITE(numout,*) '    Fe Mineral fraction of the dust                        mfrac       = ', mfrac
+         WRITE(numout,*) '     Dust sinking speed                                    wdust       = ', wdust
+         WRITE(numout,*) '    nitrogen fixation sensitivty to light                  diazolight  = ', diazolight
+         WRITE(numout,*) '    nitrogen fixation rate                                 nitrfix     = ', nitrfix
+         WRITE(numout,*) '    New sediment param : metamodel from midlleburg (y/n)   ln_sedmeta  = ', ln_sedmeta
+         WRITE(numout,*) '    fe half-saturation cste for diazotrophs                concfediaz  = ', concfediaz
       ENDIF
 
 
@@ -575,7 +794,6 @@ CONTAINS
       REAL(wp) ::   zcoef
       REAL(wp) ::   expide, denitide,zmaskt
       REAL(wp) , DIMENSION(PRIV_2D_BIOARRAY)     ::   riverdoc, river, ndepo
-      REAL(wp) , DIMENSION(PRIV_3D_BIOARRAY) ::   cmask
       REAL(wp) , DIMENSION(PRIV_2D_BIOARRAY,jpmois)    ::   zdustmo
 
       DO jk = KRANGE
@@ -589,13 +807,16 @@ CONTAINS
      END DO
      DO jj = JRANGE
         DO ji = IRANGE
-             sidep(ji,jj) = 0.e0          
+             sidep (ji,jj) = 0.e0          
+             po4dep(ji,jj) = 0.e0          
+             no3dep(ji,jj) = 0.e0
+             nh4dep(ji,jj) = 0.e0
         END DO
      END DO
 
       ! Dust input from the atmosphere
       ! ------------------------------
-      IF( ln_dustfer ) THEN 
+      IF( ln_dust ) THEN 
 !         IF(lwp) WRITE(numout,*) '    Initialize dust input from atmosphere '
 !         IF(lwp) WRITE(numout,*) '    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 !         CALL iom_open ( 'dust.orca.nc', numdust )
@@ -677,17 +898,12 @@ CONTAINS
 !         CALL iom_get  ( numdep, jpdom_data, 'ndep', ndepo(:,:), jpan )
 !         CALL iom_close( numdep )
 !      
-         DO jj = JRANGE
-            DO ji = IRANGE               
-               ndepo(ji,jj) = 0.
-            END DO
-         END DO
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zcoef         = 14E6*ryyss*fse3t(ji,jj,KSURF) 
-               nitdep(ji,jj) = 7.6 * ndepo(ji,jj) / ( zcoef + rtrn )
-            END DO
-         END DO
+!         DO jj = JRANGE
+!            DO ji = IRANGE
+!               zcoef         = 14E6*ryyss*fse3t(ji,jj,KSURF) 
+!               nitdep(ji,jj) = 7.6 * ndepo(ji,jj) / ( zcoef + rtrn )
+!            END DO
+!         END DO
          nitdepinput = 0.e0
 !         DO jj = JRANGE
 !            DO ji = IRANGE
@@ -700,22 +916,15 @@ CONTAINS
          nitdepinput = 0.e0
       ENDIF
 
-      ! Coastal and island masks
-      ! ------------------------
-      IF( ln_sedinput ) THEN     
-!         IF(lwp) WRITE(numout,*) '    Computation of an island mask to enhance coastal supply of iron'
-!         IF(lwp) WRITE(numout,*) '    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-!         IF(lwp) WRITE(numout,*) '       from bathy.orca.nc file '
-!         CALL iom_open ( 'bathy.orca.nc', numbath )
-!         CALL iom_get  ( numbath, jpdom_data, 'bathy', cmask(:,:,:), jpan )
-!         CALL iom_close( numbath )
-         !
+      ! Iron input from sediment
+      IF( ln_sedinput ) THEN
+
          DO jj = JRANGE
             DO ji = IRANGE
                cmask(ji,jj,jpk) = 1
             ENDDO
          ENDDO
-         DO jk = KRANGE-1
+         DO jk = 2, N
             DO jj = JRANGE-1
                DO ji = IRANGE-1
                   IF( tmask(ji,jj,K) /= 0. ) THEN
@@ -730,7 +939,7 @@ CONTAINS
             DO jj = JRANGE
                DO ji = IRANGE
                   expide   = MIN( 8.,( fsdept(ji,jj,K) / 500. )**(-1.5) )
-                  denitide = -0.9543 + 0.7662 * LOG( expide ) - 0.235 * LOG( expide )**2
+                  denitide = -0.9543 + 0.7662 * LOG( expide ) - 0.235 * LOG(expide )**2
                   cmask(ji,jj,jk) = cmask(ji,jj,jk) * MIN( 1., EXP( denitide ) / 0.5 )
                END DO
             END DO
@@ -741,7 +950,7 @@ CONTAINS
         DO jk = KRANGE
            DO jj = JRANGE
               DO ji = IRANGE
-                 ironsed(ji,jj,jk) = sedfeinput * cmask(ji,jj,jk) / ( fse3t(ji,jj,K) * rday )
+                 ironsed(ji,jj,jk) = sedfeinput * cmask(ji,jj,jk) / (fse3t(ji,jj,K) * rday )
               END DO
           END DO
          END DO
@@ -749,132 +958,6 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE p4z_sed_init
-
-   
-      SUBROUTINE ju2ymds (julian,year,month,day,sec)
-      !!----------------------------------------------------------------------
-      !!                     ***  ROUTINE ymds2ju  ***
-      !!
-      !! ** Purpose :   send back the date corresponding to the given julian day
-      !!
-      !! ** Method  :   
-      !!
-      !! ** History :   R. Benshila, adaptation for CROCO 
-      !!                IPSL       , original version  
-      !!
-      !!---------------------------------------------------------------------
-      IMPLICIT NONE
-  !
-      REAL,INTENT(IN) :: julian
-      INTEGER,INTENT(OUT) :: year,month,day
-          REAL,INTENT(OUT)    :: sec
-  !
-      INTEGER :: julian_day
-      REAL    :: julian_sec
-      REAL,PARAMETER :: one_day = 86400.0
-      !---------------------------------------------------------------------
-      !! 
-      julian_day = INT(julian)
-      julian_sec = (julian-julian_day)*one_day
-      !
-      CALL ju2ymds_internal(julian_day,julian_sec,year,month,day,sec)
-      ! 
-     END SUBROUTINE ju2ymds
-
-
-      SUBROUTINE ju2ymds_internal (julian_day,julian_sec,year, month,day,sec)
-         !---------------------------------------------------------------------
-          !- This subroutine computes from the julian day the year,
-          !- month, day and seconds
-      !-
-          !- In 1968 in a letter to the editor of Communications of the ACM
-          !- (CACM, volume 11, number 10, October 1968, p.657) Henry F. Fliegel
-          !- and Thomas C. Van Flandern presented such an algorithm.
-          !-
-          !- See also :
-          !http://www.magnet.ch/serendipity/hermetic/cal_stud/jdn.htm
-          !-
-          !- In the case of the Gregorian calendar we have chosen to use
-          !- the Lilian day numbers. This is the day counter which starts
-      !- on the 15th October 1582. This is the day at which Pope
-          !- Gregory XIII introduced the Gregorian calendar.
-          !- Compared to the true Julian calendar, which starts some 7980
-          !- years ago, the Lilian days are smaler and are dealt with easily
-      !- on 32 bit machines. With the true Julian days you can only the
-          !- fraction of the day in the real part to a precision of a 1/4 of
-          !- a day with 32 bits.
-          !---------------------------------------------------------------------
-          IMPLICIT NONE
-      !
-          INTEGER,INTENT(IN) :: julian_day
-          REAL,INTENT(IN)    :: julian_sec
-          INTEGER,INTENT(OUT) :: year,month,day
-          REAL,INTENT(OUT)    :: sec
-          !
-          INTEGER :: l,n,i,jd,j,d,m,y,ml
-          INTEGER :: add_day
-          REAL :: eps_day
-          REAL,PARAMETER :: one_day = 86400.0
-!          REAL,PARAMETER :: one_year = 365.2425
-          REAL,PARAMETER :: one_year = 365.
-          INTEGER :: mon_len(12)=(/31,28,31,30,31,30,31,31,30,31,30,31/)
-      !---------------------------------------------------------------------
-      !  
-      eps_day = SPACING(one_day)
-          !
-          jd = julian_day
-          sec = julian_sec
-          IF (sec > (one_day-eps_day)) THEN
-            add_day = INT(sec/one_day)
-            sec = sec-add_day*one_day
-            jd = jd+add_day
-          ENDIF
-          IF (sec < -eps_day) THEN
-             sec = sec+one_day
-            jd = jd-1
-         ENDIF  !
-      IF ( (one_year > 365.0).AND.(one_year < 366.0) ) THEN
-             !-- Gregorian
-             jd = jd+2299160
-             !
-             l = jd+68569
-             n = (4*l)/146097
-             l = l-(146097*n+3)/4
-             i = (4000*(l+1))/1461001
-             l = l-(1461*i)/4+31
-             j = (80*l)/2447
-             d = l-(2447*j)/80
-             l = j/11
-             m = j+2-(12*l)
-             y = 100*(n-49)+i+l
-       ELSEIF (    (ABS(one_year-365.0) <= EPSILON(one_year)) &
-     &  .OR.(ABS(one_year-366.0) <= EPSILON(one_year)) ) THEN
-           !-- No leap or All leap
-           y = jd/NINT(one_year)
-           l = jd-y*NINT(one_year)
-           m = 1
-           ml = 0
-         DO WHILE (ml+mon_len(m) <= l)
-            ml = ml+mon_len(m)
-            m = m+1
-         ENDDO
-!           d = l-ml+1
-           d = l-ml
-      ELSE
-        !-- others
-        ml = NINT(one_year/12.)
-        y = jd/NINT(one_year)
-        l = jd-y*NINT(one_year)
-        m = (l/ml)+1
-!        d = l-(m-1)*ml+1
-        d = l-(m-1)*ml
-      ENDIF
-      !
-      day = d
-      month = m
-      year = y
-      !
-    END SUBROUTINE ju2ymds_internal
 
 #else
    !!======================================================================
