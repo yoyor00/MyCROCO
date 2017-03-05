@@ -73,10 +73,10 @@
         do k=1,N
         do i=istrq_nh-1,iendq_nh+1     
            l_nbq=ijk2lq_nh(i,j,k)
-           rho_nbq_ext(i,j,k)  = 1.D0 + rhp_nbq_a(l_nbq)+rho(i,j,k)   
+           rho_nbq_ext(i,j,k)  = 1.D0 + rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0   
            work2d(i,j)         = work2d(i,j)+Hzr_half_nbq(i,j,k)
            rhobar_nbq(i,j,knew)= 1./float(N)+ rhobar_nbq(i,j,knew) &
-               +(rhp_nbq_a(l_nbq)+rho(i,j,k))*Hzr_half_nbq(i,j,k) 
+               +(rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0)*Hzr_half_nbq(i,j,k) 
          enddo
          enddo
          enddo
@@ -99,8 +99,8 @@
            k     = l2kq_nh (l_nbq)                    
 !          work2d(i,j)         = work2d(i,j)+Hzr_half_nbq(i,j,k)
            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)                           &
-                     +(rhp_nbq_a(l_nbq)+rho(i,j,k)) *Hzr_half_nbq(i,j,k)
-           rho_nbq_ext(i,j,k)  = 1.+rhp_nbq_a(l_nbq)+rho(i,j,k)      
+                     +(rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0) *Hzr_half_nbq(i,j,k)
+           rho_nbq_ext(i,j,k)  = 1.+rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0      
          enddo
 !
 !.......Rho0 added subsequently for added precision 

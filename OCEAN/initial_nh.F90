@@ -275,9 +275,9 @@
              k = l2kq_nh(l_nbq)
 !!           rhp_nbq_a(l_nbq) = rho(i,j,k)
 !            rhp_bq_a(l_nbq)  = rho(i,j,k)
-             rho_nbq_ext(i,j,k)   = 1.+rho(i,j,k)
-             rho_nbq_avg1(i,j,k)  = 1.+rho(i,j,k)
-             rho_nbq_avg2(i,j,k)  = 1.+rho(i,j,k)
+             rho_nbq_ext(i,j,k)   = 1.+rho(i,j,k)/rho0
+             rho_nbq_avg1(i,j,k)  = 1.+rho(i,j,k)/rho0
+             rho_nbq_avg2(i,j,k)  = 1.+rho(i,j,k)/rho0
            enddo
 
           rhobar_nbq     (:,:,:)=1.
@@ -294,7 +294,7 @@
            do k=1,N
               work2d(i,j)         = work2d(i,j)+Hzr(i,j,k)
               rhobar_nbq(i,j,:)   = rhobar_nbq(i,j,:)+     &
-                                 rho(i,j,k)*Hzr(i,j,k)
+                                 rho(i,j,k)*Hzr(i,j,k)/rho0
            enddo
            enddo
            enddo
