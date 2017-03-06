@@ -64,9 +64,9 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
-!      parameter (LLm0=256, MMm0=3,    N=40)	! true 2DV
+       parameter (LLm0=416, MMm0=3,    N=20)	! true 2DV
 #elif defined REGIONAL_NBQ
-       parameter (LLm0=256, MMm0=119,  N=80)
+       parameter (LLm0=198, MMm0=198,  N=10)
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -128,7 +128,7 @@
 #  ifndef TANKY
       parameter (LLm0=50,   MMm0=1,    N=50)   ! 20 cm resolution
 #  else
-      parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
+      parameter (LLm0=1,    MMm0=30,   N=10)   ! 20 cm resolution
 #  endif
 # else
       parameter (LLm0=4000,   MMm0=1,  N=30)  !  1 mm resolution
@@ -196,7 +196,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=13, NP_ETA=12, NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=4, NP_ETA=1, NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP

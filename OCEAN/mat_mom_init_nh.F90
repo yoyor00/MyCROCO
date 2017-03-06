@@ -53,8 +53,11 @@
          k = l2kmom_nh(l_nh)
          momi_nh  (l_nh)      = nzmom_nh 
          momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
+! 	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh), "OBC_NH_WEST" 
          nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
+! !      !write(200,*) ""
       enddo
+!      !write(200,*) ""
 #endif
 
 !-------------------------------------------------------------------
@@ -68,43 +71,51 @@
          momi_nh  (l_nh)     = nzmom_nh 
 
 !-----------------------------
-!.......point p(i,j,k+1):
+!.......point p(i-1,j,k-1):---- 1
 !-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k+1)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k+1)
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i-1,j,k-1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"1 p(i-1,j,k-1)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i-1,j,k-1) 
 
 !-----------------------------
-!.......point p(i,j,k):
-!-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k)
-
-!-----------------------------
-!.......point p(i,j,k-1):
+!.......point p(i,j,k-1):---- 2
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k-1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"1 p(i,j,k-1)" 
         nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k-1)
 
 !-----------------------------
-!.......point p(i-1,j,k+1):
-!-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i-1,j,k+1)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i-1,j,k+1)
-
-!-----------------------------
-!.......point p(i-1,j,k):
+!.......point p(i-1,j,k):---- 3
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i-1,j,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"1 p(i-1,j,k)" 
         nzmom_nh             = nzmom_nh + mijk2lq_nh(i-1,j,k)
 
 !-----------------------------
-!.......point p(i-1,j,k-1):
+!.......point p(i,j,k):---- 4
 !-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i-1,j,k-1)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i-1,j,k-1) 
-      enddo 
-      enddo 
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"1 p(i,j,k)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k)
 
+!-----------------------------
+!.......point p(i-1,j,k+1):---- 5
+!-----------------------------
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i-1,j,k+1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"1 p(i-1,j,k+1)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i-1,j,k+1)
+
+!-----------------------------
+!.......point p(i,j,k+1):---- 6
+!-----------------------------
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k+1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh)," 1 p(i,j,k+1)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k+1)
+	
+!      !write(200,*) ""
+      enddo 
+      enddo 
+!      !write(200,*) ""
 #ifdef OBC_NH_EAST
 !-------------------------------------------------------------------
 !.....Boundary condition (iendu_nh+1):
@@ -115,8 +126,11 @@
          k = l2kmom_nh(l_nh)
          momi_nh  (l_nh)     = nzmom_nh 
          momj_nh(nzmom_nh)   = ijk2lq_nh (i-1,j,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"OBC_NH_EAST"
          nzmom_nh            = nzmom_nh + mijk2lq_nh(i-1,j,k) 
+!      !write(200,*) ""
       enddo
+!      !write(200,*) ""
 #else
       momi_nh(nequ_nh(5)+1:nequ_nh(6))=nzmom_nh
 #endif
@@ -140,8 +154,11 @@
          k = l2kmom_nh(l_nh)
         momi_nh  (l_nh)     = nzmom_nh
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"OBC_NH_SOUTH"
         nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
+!      !write(200,*) ""
       enddo
+!      !write(200,*) ""
 #else
       momi_nh(neqv_nh(1)+1:neqv_nh(2))=nzmom_nh
 
@@ -158,42 +175,51 @@
          momi_nh  (l_nh)     = nzmom_nh 
 
 !-----------------------------
-!.......point p(i,j,k+1):
+!.......point p(i,j-1,k-1):---- 1
 !-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k+1)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k+1) 
-
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j-1,k-1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"2 p(i,j-1,k-1)"
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j-1,k-1) 
+        
 !-----------------------------
-!.......point p(i,j,k):
-!-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
-
-!-----------------------------
-!.......point p(i,j,k-1):
+!.......point p(i,j,k-1):---- 2
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k-1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"2 p(i,j,k-1)" 
         nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k-1) 
 
 !-----------------------------
-!.......point p(i,j-1,k+1):
-!-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j-1,k+1)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j-1,k+1) 
-
-!-----------------------------
-!.......point p(i,j-1,k):
+!.......point p(i,j-1,k):---- 3
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j-1,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"2 p(i,j-1,k)" 
         nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j-1,k) 
 
 !-----------------------------
-!.......point p(i,j-1,k-1):
+!.......point p(i,j,k):---- 4 
 !-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j-1,k-1)
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j-1,k-1) 
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"2  p(i,j,k)"
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
+
+!-----------------------------
+!.......point p(i,j-1,k+1):---- 5
+!-----------------------------
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j-1,k+1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"2 p(i,j-1,k+1)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j-1,k+1) 
+
+!-----------------------------
+!.......point p(i,j,k+1):---- 6
+!-----------------------------
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k+1)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"2 p(i,j,k+1)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k+1) 
+
+!      !write(200,*) ""
        enddo
        enddo
+!      !write(200,*) ""
       
 #ifdef OBC_NH_NORTH
 !-------------------------------------------------------------------
@@ -205,8 +231,11 @@
          k = l2kmom_nh(l_nh)
          momi_nh  (l_nh)      = nzmom_nh 
          momj_nh(nzmom_nh)    = ijk2lq_nh (i,j-1,k)
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"OBC_NH_NORTH" 
          nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j-1,k) 
+!      !write(200,*) ""
        enddo
+!      !write(200,*) ""
 #else
       momi_nh(neqv_nh(5)+1:neqv_nh(6))=nzmom_nh
 #endif
@@ -227,22 +256,27 @@
         momi_nh  (l_nh)     = nzmom_nh
 
 !-----------------------------
-!.......point p(i,j,k+1):
+!.......point p(i,j,k):---- 1
+!-----------------------------
+        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
+        momv_nh(nzmom_nh)    = 1. * float(mijk2lq_nh(i,j,k))
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"3 p(i,j,k)" 
+        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
+
+!-----------------------------
+!.......point p(i,j,k+1):---- 2
 !-----------------------------
         momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k+1)
         momv_nh(nzmom_nh)    = -1. * float(mijk2lq_nh(i,j,k+1)) &
                                    * float(mijk2lq_nh(i,j,k)) 
+	!write(200,*) l_nh,momi_nh  (l_nh),momj_nh(nzmom_nh),"3 p(i,j,k+1)" 
         nzmom_nh             = nzmom_nh  + mijk2lq_nh(i,j,k+1)  &
                                    * float(mijk2lq_nh(i,j,k))
 
-!-----------------------------
-!.......point p(i,j,k):
-!-----------------------------
-        momj_nh(nzmom_nh)    = ijk2lq_nh (i,j,k)
-        momv_nh(nzmom_nh)    = 1. * float(mijk2lq_nh(i,j,k))
-        nzmom_nh             = nzmom_nh + mijk2lq_nh(i,j,k) 
 
+!      !write(200,*) ""
       enddo
+!      !write(200,*) ""
 
 !-------------------------------------------------------------------
 !.....MOM matrix structure when points are added at the northern boundary !
@@ -275,7 +309,7 @@
            j = l2jmom_nh(l_nh)
 
 !-----------------------------
-!........point p(i,j,k+1):
+!........point p(i,j,k+1):---- 1
 !-----------------------------
 
       !     if (k.ne.N) then
@@ -284,7 +318,7 @@
        !    endif
 
 !-----------------------------
-!........point p(i,j,k):
+!........point p(i,j,k):---- 2
 !-----------------------------
            mimpj_nbq(nzmimp_nbq)   = ijk2lq_nh (i,j,k)
            nzmimp_nbq              = nzmimp_nbq + mijk2lq_nh(i,j,k)
@@ -307,6 +341,8 @@
          stop
       endif
 
+!       stop 'toto 1'
+      
       return
       end subroutine mat_mom_init_nh
 #else
