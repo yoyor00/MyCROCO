@@ -135,11 +135,7 @@
                                     + dtnbq*rhs1_nbq    (neqv_nh(7)+1:neqw_nh(7))               &                     
                                     + dtnbq*dqdmdt_nbq_a(neqv_nh(7)+1:neqw_nh(7))         
              
-!         rhssum_nbq_a(1:neqw_nh(7)) = rhssum_nbq_a(1:neqw_nh(7))  +  rhs1_nbq (1:neqw_nh(7))  
-   
 # else
-!         rhssum_nbq_a(1:neqv_nh(7)) = rhssum_nbq_a(1:neqv_nh(7))  +  rhs1_nbq (1:neqv_nh(7))    
-
           call parallele_nbq(151)  ! u only 
           call parallele_nbq(152)  ! v only 
 

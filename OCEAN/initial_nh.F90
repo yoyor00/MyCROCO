@@ -15,6 +15,7 @@
 #if defined NBQ_IJK
                          , A3d(1,1,trd), A3d(1,2,trd)        &
                          , A3d(1,3,trd), A3d(1,4,trd)        &
+                         , A3d(1,6,trd)                      &
 #endif
 #ifdef NONLIN_EOS
                          , A2d(1,1,trd), A2d(1,2,trd)        &
@@ -27,6 +28,7 @@
 #if defined NBQ_IJK
                                ,Hzw_half_nbq_inv, Hzr_half_nbq_inv     &
                                ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v  &
+                               ,work3d_nbq                             &
 #endif
 #ifdef NONLIN_EOS
                                ,K_up, K_dw                             &
@@ -52,17 +54,20 @@
 # endif      
 # include "param_F90.h"
 # include "scalars_F90.h"
+#include "private_scratch.h"
+# include "nbq.h"
 # include "work.h"
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
-# include "nbq.h"
+
 
 #if defined NBQ_IJK
        real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
-	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
-	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   	   
+       real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
+       real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,N,5)	   	   
 #endif
 #ifdef NONLIN_EOS      
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N)   
@@ -154,12 +159,14 @@
 !....NH-Grid definition:
       call grid_def_nh
 
+#if !defined NBQ_IJK
 !... Numbering of pressure points:
       call nump_nh
 !
 
 !... Numbering of velocity points:
       call numuvw_nh
+#endif
 !
 !----------------------------------------------------------------------
 !... MPI Set-up 
@@ -178,6 +185,8 @@
 #if defined NBQ_IJK
          Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv   &
          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v                  &
+         ,work3d_nbq(START_2D_ARRAY,1,1)                         &
+         ,work3d_nbq(START_2D_ARRAY,1,2)                         &
 #endif
          )
 
@@ -269,16 +278,25 @@
 
 # ifndef NBQ_VOL
 !.........Initialize NBQ density field:
-           do l_nbq=1,neqcont_nh
-             i = l2iq_nh(l_nbq)
-             j = l2jq_nh(l_nbq)
-             k = l2kq_nh(l_nbq)
+   !        do l_nbq=1,neqcont_nh
+   !          i = l2iq_nh(l_nbq)
+   !          j = l2jq_nh(l_nbq)
+   !          k = l2kq_nh(l_nbq)
 !!           rhp_nbq_a(l_nbq) = rho(i,j,k)
-!            rhp_bq_a(l_nbq)  = rho(i,j,k)
-             rho_nbq_ext(i,j,k)   = 1.+rho(i,j,k)/rho0
-             rho_nbq_avg1(i,j,k)  = 1.+rho(i,j,k)/rho0
-             rho_nbq_avg2(i,j,k)  = 1.+rho(i,j,k)/rho0
-           enddo
+!             rhp_bq_a(l_nbq)  = rho(i,j,k)
+      !       rho_nbq_ext(i,j,k)   = (rho0+rho(i,j,k))/rho0
+      !       rho_nbq_avg1(i,j,k)  = (rho0+rho(i,j,k))/rho0
+!             rho_nbq_avg2(i,j,k)  = (rho0+rho(i,j,k))/rho0
+    !       enddo
+
+          do k=1,N
+          do j=jstrq_nh-1,jendq_nh+1
+          do i=istrq_nh-1,iendq_nh+1
+             rho_nbq_ext(i,j,k)   = (rho0+rho(i,j,k))/rho0
+             rho_nbq_avg1(i,j,k)  = (rho0+rho(i,j,k))/rho0
+          enddo
+          enddo
+          enddo     
 
           rhobar_nbq     (:,:,:)=1.
           rhobar_nbq_avg1(:,:  )=1.
@@ -294,7 +312,7 @@
            do k=1,N
               work2d(i,j)         = work2d(i,j)+Hzr(i,j,k)
               rhobar_nbq(i,j,:)   = rhobar_nbq(i,j,:)+     &
-                                 rho(i,j,k)*Hzr(i,j,k)/rho0
+                                 rho(i,j,k)*Hzr(i,j,k) 
            enddo
            enddo
            enddo
@@ -303,9 +321,10 @@
  
         do j=jstrq_nh-1,jendq_nh+1
         do i=istrq_nh-1,iendq_nh+1
-           rhobar_nbq(i,j,:)   = rhobar_nbq(i,j,:)/work2d(i,j) + 1.  
-                                 
+           rhobar_nbq(i,j,:)   = (rhobar_nbq(i,j,:)/work2d(i,j) + rho0)  &
+                                 / rho0
            rhobar_nbq_avg1(i,j)= rhobar_nbq(i,j,1) 
+
         enddo
         enddo
 
@@ -322,13 +341,9 @@
 
 !.......Some remaining initializations:
 # ifndef NBQ_IJK
-!       rhssum_nbq_a   = 0.d0
         div_nbq_a      = 0.d0
         divz_nbq_a     = 0.d0
 # else
-        rhssumu_nbq    = 0.d0
-        rhssumv_nbq    = 0.d0
-        rhssumw_nbq    = 0.d0
         div_nbq        = 0.d0
 # endif
 

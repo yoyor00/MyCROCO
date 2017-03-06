@@ -60,6 +60,7 @@
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
+# include "nbq.h"
 # include "climat.h"
 # include "scalars.h"
 # include "boundary.h"  

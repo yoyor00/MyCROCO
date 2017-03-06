@@ -1,4 +1,5 @@
 #include "cppdefs.h"
+#undef UV_VADV_SPLINES
 #if defined SOLVE3D && defined NBQ
 
       subroutine rhs3d_w_nh(tile)

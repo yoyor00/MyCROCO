@@ -108,6 +108,7 @@
 !**********************************************************************
 !.....Tableaux "integer"
 !**********************************************************************
+#ifndef NBQ_IJK
       integer, dimension(:), allocatable     ::                       &
          l2iq_nh        &  
         ,l2jq_nh        &  
@@ -115,14 +116,15 @@
         ,l2imom_nh      &  
         ,l2jmom_nh      &  
         ,l2kmom_nh      
-        
+
       integer, dimension(:,:,:), allocatable    ::                    &
-         ijk2lq_nh      &  
-        ,mijk2lq_nh        
+         ijk2lq_nh     &
+        ,mijk2lq_nh
 
       integer, dimension(:,:,:,:), allocatable  ::                    &
          ijk2lmom_nh    &  
-        ,mijk2lmom_nh      
+        ,mijk2lmom_nh
+#endif
 
 !**********************************************************************
 !.....Tableaux: double precision
@@ -145,11 +147,10 @@
         ,coefb_u        &  
         ,coefa_v        &  
         ,coefb_v
-#endif
-
       double precision, dimension(:,:,:), allocatable   ::            &
          gdepth_u       &  
         ,gdepth_v              
+#endif
 
       double precision                                                &
          time_omp_nh    (100)                                        
@@ -199,17 +200,22 @@
          allocate(momvg_nh        (nmmom_nh)                 )  
          allocate(contv_nh        (0:nmcont_nh)              ) 
          allocate(contzv_nh       (0:nmcont_nh)              ) 
-#endif
+
          allocate(l2iq_nh         (nmq_nh)                   ) 
          allocate(l2jq_nh         (nmq_nh)                   ) 
          allocate(l2kq_nh         (nmq_nh)                   )  
          allocate(l2imom_nh       (nmv_nh)                   )  
          allocate(l2jmom_nh       (nmv_nh)                   )  
          allocate(l2kmom_nh       (nmv_nh)                   ) 
-         allocate(ijk2lq_nh       (GLOBAL_2D_ARRAY,0:N+1)    )   
+
+         allocate(ijk2lq_nh       (GLOBAL_2D_ARRAY,0:N+1)    )
          allocate(mijk2lq_nh      (GLOBAL_2D_ARRAY,0:N+1)    )
+
+
          allocate(ijk2lmom_nh     (GLOBAL_2D_ARRAY,0:N+1,3)  )   
          allocate(mijk2lmom_nh    (GLOBAL_2D_ARRAY,0:N+1,3)  )
+#endif
+
          allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )
 
 #ifndef NBQ_IJK         
@@ -217,9 +223,9 @@
          allocate(coefb_u         (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(coefa_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    ) 
-#endif         
          allocate(gdepth_u        (GLOBAL_2D_ARRAY,0:N+1)    ) 
-         allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    )  
+         allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    ) 
+#endif           
 
          end subroutine alloc_module_nh
 

@@ -77,12 +77,11 @@
 #ifndef NBQ_IJK 
  !....Variables algébriques mode NBQ:
       double precision,dimension(:),allocatable     ::                &
-       dqdmdt_nbq_a      					  !    &   
-!      ,rhssum_nbq_a       				                
+       dqdmdt_nbq_a      					    
 
       double precision,dimension(:),allocatable     ::                &
-       qdm_nbq_a           				      	      &       
-      ,qdm0_nbq_a           				      	      &        
+       qdm_nbq_a           				      	      &        
+      ,qdm0_nbq_a                                     &
       ,rhp_nbq_a           				              &        
       ,div_nbq_a               				              &        
       ,divz_nbq_a    
@@ -133,7 +132,7 @@
 
 #endif
      
-#ifdef NBQ_IMP
+#if defined NBQ_IMP && !defined NBQ_IJK
       double precision,dimension(:), allocatable ::                   &
       rhsimp_nbq                                                      &
      ,pdv_nbq       				                      &
@@ -147,33 +146,17 @@
 !.....Variables mode EXT:  
       double precision,dimension(:,:),allocatable   ::                &        
        qdm_u_ext               				              &         
-      ,qdm_v_ext               			                           
-
-!.....Variables mode INT:
-      double precision,dimension(:,:,:,:),allocatable   ::            &   
-       qdm_u               				              &         
-      ,qdm_v               			                      &        
-      ,qdm_w                      
+      ,qdm_v_ext               			                                   
 
       real,dimension(:,:),allocatable :: rmask_nbq,umask_nbq,vmask_nbq
 
 #ifdef NBQ_IJK 
-      double precision,dimension(:,:,:),allocatable     ::            &
-       qdmu_nbq                                                       &
-      ,qdmv_nbq                                                       &
-      ,qdmw_nbq                                                       &
-      ,div_nbq                                                        &     
-      ,divz_nbq                                                       &     
-      ,rhssumu_nbq                                                    &     
-      ,rhssumv_nbq                                                    &     
-      ,rhssumw_nbq                                                    &    
-      ,rho_nbq                                                      
-  
-# ifdef NBQ_IMP
-      double precision,dimension(:,:,:),allocatable     ::            &
-       rhsijk_nbq                                            
-# endif
-
+   !   double precision,dimension(:,:,:),allocatable     ::            &
+       !qdmu_nbq                                                       &
+    !  qdmv_nbq                                                       &
+     ! ,qdmw_nbq                                     !                  &
+      !,div_nbq                                                        &
+      !,rho_nbq                                                      
 #endif
 
 !.....MPI Exchanges:
@@ -245,9 +228,8 @@
  !....Variables algébriques mode NBQ:
        allocate(  dqdmdt_nbq_a      (1:nmv_nbq)  )
        allocate(  qdm_nbq_a         (0:nmv_nbq)  )
-       allocate(  qdm0_nbq_a         (0:nmv_nbq)  )
-       allocate(  rhp_nbq_a         (1:nmq_nbq)  )
-!      allocate(  rhssum_nbq_a      (1:nmv_nbq)  )        
+       allocate(  qdm0_nbq_a        (0:nmv_nbq)  )
+       allocate(  rhp_nbq_a         (1:nmq_nbq)  )       
        allocate(  div_nbq_a         (1:nmq_nbq)  )        
        allocate(  divz_nbq_a         (1:nmq_nbq)  )  
  
@@ -286,7 +268,7 @@
 
 #endif
 
-#ifdef NBQ_IMP
+#if defined NBQ_IMP && !defined NBQ_IJK
        allocate(rhsimp_nbq       (nmv_nbq)      ) 
        allocate(pdv_nbq          (nmv_nbq)      )
        allocate(puv_nbq          (nmv_nbq)      )
@@ -306,19 +288,11 @@
 
 
 #ifdef NBQ_IJK
-       allocate(  qdmu_nbq          (GLOBAL_2D_ARRAY,N) ) ! A AJUSTER
-       allocate(  qdmv_nbq          (GLOBAL_2D_ARRAY,N) )
-       allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N) )
-       allocate(  div_nbq           (GLOBAL_2D_ARRAY,N) )
-       allocate(  rho_nbq           (GLOBAL_2D_ARRAY,N) )
-       allocate(  rhssumu_nbq       (GLOBAL_2D_ARRAY,N)   )
-       allocate(  rhssumv_nbq       (GLOBAL_2D_ARRAY,N)   )
-       allocate(  rhssumw_nbq       (GLOBAL_2D_ARRAY,0:N)   )
-
-# ifdef NBQ_IMP
-       allocate(  rhsijk_nbq        (GLOBAL_2D_ARRAY,0:N+1) )
-# endif
-
+  !     allocate(  qdmu_nbq          (GLOBAL_2D_ARRAY,N) ) ! A AJUSTER
+   !    allocate(  qdmv_nbq          (GLOBAL_2D_ARRAY,N) )
+   !    allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N) )
+  !     allocate(  div_nbq           (GLOBAL_2D_ARRAY,N) )
+  !     allocate(  rho_nbq           (GLOBAL_2D_ARRAY,N) )
 #endif
 
 

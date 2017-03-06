@@ -61,7 +61,7 @@
             i=l2imom_nh(l_nbq)
             j=l2jmom_nh(l_nbq)
             k=l2kmom_nh(l_nbq)
-            dqdmdt_nbq_a(l_nbq)=ruint_nbq(i,j,k)+ruext_nbq(i,j,k)
+            dqdmdt_nbq_a(l_nbq)=ruint_nbq(i,j,k)
          enddo
 
 !       do l_nbq = neqv_nh(2)+1,neqv_nh(5)  
@@ -69,7 +69,7 @@
            i=l2imom_nh(l_nbq)
            j=l2jmom_nh(l_nbq)
            k=l2kmom_nh(l_nbq)
-           dqdmdt_nbq_a(l_nbq)=rvint_nbq(i,j,k)+rvext_nbq(i,j,k)
+           dqdmdt_nbq_a(l_nbq)=rvint_nbq(i,j,k)
         enddo
 
         if (iif==1) then
@@ -105,7 +105,7 @@
            ru_nbq_ext(i,j,k)   = cff*on_u(i,j)*om_u(i,j)   &
                 * ((qdm_nbq_a(l_nbq)-qdm0_nbq_a(l_nbq))/dtnbq &
                 - dqdmdt_nbq_a(l_nbq)*real(ndtnbq))
-!           rhssum_nbq_a(l_nbq) = 0.
+
            rubar_nbq(i,j)      = rubar_nbq(i,j)+ru_nbq_ext(i,j,k)
         enddo
         
@@ -136,7 +136,7 @@
             rv_nbq_ext(i,j,k)   = cff*on_v(i,j)*om_v(i,j)   &
                 * ((qdm_nbq_a(l_nbq)-qdm0_nbq_a(l_nbq))/dtnbq &
                 - dqdmdt_nbq_a(l_nbq)*real(ndtnbq))
-!            rhssum_nbq_a(l_nbq) = 0.
+
             rvbar_nbq(i,j)      = rvbar_nbq(i,j)+rv_nbq_ext(i,j,k)
         enddo
 

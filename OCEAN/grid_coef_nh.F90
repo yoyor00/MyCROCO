@@ -4,7 +4,8 @@
       subroutine grid_coef_nh(                                                      &
 #if defined NBQ_IJK
          Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv,                     &
-		 Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v                                     &
+		 Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,                            &
+                 Hzu_half_qdmu,Hzv_half_qdmv                                        &
 #endif
          )
 
@@ -21,11 +22,12 @@
 # endif
       implicit none
 
-!#if defined NBQ_IJK	  
+#if defined NBQ_IJK	  
 	  integer :: Istr,Iend,Jstr,Jend
-!#endif
+#endif
 # include "param_F90.h"
 # include "scalars_F90.h"
+#include "private_scratch.h"
 # include "grid.h"
 # include "ocean3d.h"
 # include "nbq.h"
@@ -35,6 +37,8 @@
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
        real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,N)
+       real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,N)
 #endif
 
       integer :: i,j,k,it
@@ -47,32 +51,31 @@
 !**********************************************************************
 !    Initialisations and updates
 !**********************************************************************
+#if !defined NBQ_IJK
         do k=1,N
           do j=jstr_nh ,jend_nh
           do i=istru_nh,iend_nh+1
               gdepth_u(i,j,k) = zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)
-#if !defined NBQ_IJK              
+              
               coefa_u(i,j,k)  = 0.25*pm_u(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i-1,j,k ))/  &
                      (Hzw_half_nbq(i,j,k-1)+Hzw_half_nbq(i-1,j,k-1))
               coefb_u(i,j,k)  = 0.25*pm_u(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i-1,j,k ))/   &
                      (Hzw_half_nbq(i,j,k  )+Hzw_half_nbq(i-1,j,k  ))
-#endif
           enddo
           enddo
 
           do j=jstrv_nh,jend_nh+1
           do i=istr_nh ,iend_nh
               gdepth_v(i,j,k) = zr_half_nbq(i,j,k)-zr_half_nbq(i ,j-1,k)
-#if !defined NBQ_IJK 
+ 
               coefa_v(i,j,k)  = 0.25*pn_v(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i,j-1,k ))/  &
                      (Hzw_half_nbq(i,j,k-1)+Hzw_half_nbq(i,j-1,k-1))
               coefb_v(i,j,k)  = 0.25*pn_v(i,j)*                        &
                      (Hzr_half_nbq(i,j,k  )+Hzr_half_nbq(i,j-1,k ))/  &
                      (Hzw_half_nbq(i,j,k  )+Hzw_half_nbq(i,j-1,k  ))
-#endif
           enddo
           enddo
         enddo 
@@ -81,12 +84,11 @@
         do i = istru_nh,iend_nh+1
             gdepth_u(i,j,0)   = zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0)
             gdepth_u(i,j,N+1) = zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N)
-#if !defined NBQ_IJK 
+
             coefa_u(i,j,0)    = 0.5 * pm_u(i,j) * real (slip_nbq)  
             coefa_u(i,j,1)    = 0. 
             coefb_u(i,j,N)    = 0.     
             coefb_u(i,j,N+1)  = 0.5 * pm_u(i,j)
-#endif            
         enddo
         enddo
 
@@ -94,14 +96,14 @@
         do i = istr_nh ,iend_nh
             gdepth_v(i,j,0)   = zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0)
             gdepth_v(i,j,N+1) = zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N)
-#if !defined NBQ_IJK 
+            
             coefa_v(i,j,0)    = 0.5 * pn_v(i,j) * real (slip_nbq) 
             coefa_v(i,j,1)    = 0.                    
             coefb_v(i,j,N)    = 0.        
             coefb_v(i,j,N+1)  = 0.5 * pn_v(i,j)
+        enddo
+        enddo
 #endif
-        enddo
-        enddo
 
 #if defined NBQ_IJK
         do k=1,N
@@ -111,6 +113,28 @@
         enddo
         enddo
         enddo
+
+        do k=1,N
+        do j=jstr_nh,jend_nh
+        do i=istru_nh,iend_nh+1
+          Hzu_half_qdmu(i,j,k)=0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))*pm_u(i,j)   
+#if defined MASKING
+          Hzu_half_qdmu(i,j,k) = Hzu_half_qdmu(i,j,k) * umask(i,j)
+#endif  
+        enddo
+        enddo
+        enddo 
+
+        do k=1,N
+        do j=jstrv_nh,jend_nh+1
+        do i=istr_nh,iend_nh
+          Hzv_half_qdmv(i,j,k)=0.5*(Hzr_half_nbq(i,j-1,k)+Hzr_half_nbq(i,j,k))*pn_v(i,j)   
+#if defined MASKING
+          Hzv_half_qdmv(i,j,k) = Hzv_half_qdmv(i,j,k) * vmask(i,j)
+#endif  
+        enddo
+        enddo
+        enddo 
 
         do k=0,N
         do j=jstr_nh-1,jend_nh+1
@@ -135,6 +159,9 @@
         enddo
         enddo
         enddo
+
+             
+
 
 #endif
 

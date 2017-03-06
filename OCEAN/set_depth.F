@@ -12,17 +12,32 @@
 #include "cppdefs.h"
 #if defined SOLVE3D || defined WET_DRY
 
-      subroutine set_depth (tile)
+      subroutine set_depth (tile
+#ifdef NBQ
+     &   ,resetfromrhobar
+#endif
+     &   )
       implicit none
 # include "param.h"
       integer tile, trd
+#ifdef NBQ
+      integer resetfromrhobar
+#endif  
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-      call set_depth_tile (Istr,Iend,Jstr,Jend)
+      call set_depth_tile (Istr,Iend,Jstr,Jend
+#ifdef NBQ
+     &   ,resetfromrhobar
+#endif
+     &   )
       return
       end
 
-      subroutine set_depth_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_depth_tile (Istr,Iend,Jstr,Jend
+#ifdef NBQ
+     &   ,resetfromrhobar
+#endif
+     &   )
 !
 !----------------------------------------------------------------------
 ! Create S-coordinate system: based on model topography h(i,j),
@@ -34,6 +49,9 @@ C$    integer omp_get_thread_num
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
+#ifdef NBQ
+      integer resetfromrhobar
+#endif      
       real cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
 # include "param.h"
 # include "grid.h"
@@ -94,6 +112,7 @@ C$    integer omp_get_thread_num
             hinv(i,j)=1./h(i,j) 
 #  endif
             Zt_avg1(i,j)=zeta(i,j,1)    
+          
 #  ifdef NBQ
             if (zeta(i,j,1).eq.0.) then     ! Set Zt_avg1 and rhobar_nbq_avg1
               Zt_avg1(i,j) = h(i,j)         ! before call to ana_initial (zeta=0)
@@ -101,16 +120,15 @@ C$    integer omp_get_thread_num
               zeta(i,j,2)  = zeta(i,j,1)
               zeta(i,j,3)  = zeta(i,j,1)
               zeta(i,j,4)  = zeta(i,j,1)
-            else
-             if (zeta(i,j,1).eq.h(i,j).and.rhobar_nbq(i,j,1).ne.1.) then
-              Zt_avg1(i,j) = rhobar_nbq(i,j,1)*h(i,j)
+            elseif (resetfromrhobar == 1) then ! Here zeta is zeta + h
+              Zt_avg1(i,j) = zeta(i,j,1)*rhobar_nbq(i,j,1)
               zeta(i,j,1)  = Zt_avg1(i,j)
               zeta(i,j,2)  = zeta(i,j,1)
               zeta(i,j,3)  = zeta(i,j,1)
               zeta(i,j,4)  = zeta(i,j,1)
-             endif
             endif
-#  endif
+
+#  endif 
 # endif /* SOLVE3D */
           enddo
         enddo

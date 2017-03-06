@@ -85,7 +85,7 @@
         enddo
       enddo
 
-# define NBQ_WDIF
+# undef NBQ_WDIF
 # ifdef NBQ_WDIF
 !
 !====================================================================     
@@ -163,6 +163,23 @@
       enddo
 #endif
 #undef NBQ_WDIF
+
+      do j=Jstr,Jend
+      do i=Istr,Iend
+      wz(i,j,N,nnew)=0.5*(
+     &  u(i,j,N,nnew)*(z_w(i,j,N)-z_w(i-1,j,N))*pm_u(i,j)
+     & +u(i+1,j,N,nnew)*(z_w(i+1,j,N)-z_w(i,j,N))*pm_u(i+1,j)
+     & +v(i,j,N,nnew)*(z_w(i,j,N)-z_w(i,j-1,N))*pn_v(i,j)
+     & +v(i,j+1,N,nnew)*(z_w(i,j+1,N)-z_w(i,j,N))*pn_v(i,j+1))
+     & + (z_w(i,j,N)-zw_half_nbq(i,j,N))/(0.5*dt)
+
+      wz(i,j,0,nnew)=-0.5*(
+     &  u(i,j,1,nnew)*(z_w(i,j,0)-z_w(i-1,j,0))*pm_u(i,j)
+     & +u(i+1,j,1,nnew)*(z_w(i+1,j,0)-z_w(i,j,0))*pm_u(i+1,j)
+     & +v(i,j,1,nnew)*(z_w(i,j,0)-z_w(i,j-1,0))*pn_v(i,j)
+     & +v(i,j+1,1,nnew)*(z_w(i,j+1,0)-z_w(i,j,0))*pn_v(i,j+1))
+      enddo
+      enddo
 
 !
 !--------------------------------------------------------------------

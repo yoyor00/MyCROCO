@@ -201,7 +201,7 @@
        write(10,*) (momi_nh(neqw_nh(k)+1),k=1,5)
        write(10,*) 'Mat Cont :'
        write(10,*) (conti_nh(neqq_nh(k)+1),k=1,7)
-#endif
+
 
 !......Q-Points:
        write(10,*)   
@@ -359,6 +359,7 @@
              write(10,'(80I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,iend_nh+1) 
           enddo
        endif
+#endif
 
 #ifdef MASKING
 !......Masks:
@@ -472,8 +473,8 @@
              write(10,'(80I1)') (int(vmask_nbq(i,j)),i=istrv_nh-1,iendv_nh+1) 
           enddo
        endif
-#endif
 
+#endif
       close(10)
       
 !      call mpi_finalize(ierrmpi_o)

@@ -71,7 +71,7 @@
              do i=istrq_nh-1,iendq_nh+1
                rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k) *Hzr_half_nbq(i,j,k)
 #if !defined M2FILTER_NONE
-               rho_nbq_ext(i,j,k)  = 1.+(rho_nbq(i,j,k)+rho(i,j,k)  )/rho0
+               rho_nbq_ext(i,j,k)  = 1.+ rho_nbq(i,j,k)+rho(i,j,k)/rho0
 #endif               
              enddo  
            enddo  
@@ -81,7 +81,7 @@
 !      
          do j=jstrq_nh-1,jendq_nh+1
            do i=istrq_nh-1,iendq_nh+1
-             rhobar_nbq(i,j,knew) = 1.+(1./rho0)*(rhobar_nbq_int(i,j)+rhobar_nbq(i,j,knew)) & 
+             rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq_int(i,j)+rhobar_nbq(i,j,knew)) & 
                 / (zw_half_nbq(i,j,N)-zw_half_nbq(i,j,0))
            enddo
          enddo

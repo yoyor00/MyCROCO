@@ -1086,19 +1086,21 @@ C$    integer omp_get_thread_num
           do i=IstrR,IendR
             rho_nbq_ext(i,j,k)=1.
             rho_nbq_avg1(i,j,k)=1.
-            rho_nbq_avg2(i,j,k)=1.
-            ruext_nbq(i,j,k)=init
-            rvext_nbq(i,j,k)=init
+!            rho_nbq_avg2(i,j,k)=1.
+!            ruext_nbq(i,j,k)=init
+!            rvext_nbq(i,j,k)=init
             ru_nbq_ext(i,j,k)=init
-            ru_nbq_avg1(i,j,k)=init
-            ru_nbq_avg2(i,j,k)=init
             rv_nbq_ext(i,j,k)=init
+#if !defined M2FILTER_NONE
+            ru_nbq_avg1(i,j,k)=init
             rv_nbq_avg1(i,j,k)=init
+#endif
+            ru_nbq_avg2(i,j,k)=init
             rv_nbq_avg2(i,j,k)=init
             ruint_nbq(i,j,k)=init
             rvint_nbq(i,j,k)=init
-            ruint_bak_nbq(i,j,k,1:2)=init
-            rvint_bak_nbq(i,j,k,1:2)=init
+           ! ruint_bak_nbq(i,j,k)=init
+           ! rvint_bak_nbq(i,j,k)=init
           enddo
         enddo
       enddo
@@ -1108,10 +1110,12 @@ C$    integer omp_get_thread_num
             wz(i,j,k,1)=init
             wz(i,j,k,2)=init
             rw_nbq_ext(i,j,k)=init
+#if !defined M2FILTER_NONE
             rw_nbq_avg1(i,j,k)=init
+#endif
             rw_nbq_avg2(i,j,k)=init
             rwint_nbq(i,j,k)=init
-            rwint_bak_nbq(i,j,k,1:2)=init
+           ! rwint_bak_nbq(i,j,k)=init
           enddo
         enddo
       enddo

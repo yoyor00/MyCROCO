@@ -60,7 +60,8 @@
 !  Prepare feedback of NBQ rhs terms to external equations
 !*******************************************************************
 !
-        cff=1./(rho0*real(ndtnbq))
+          
+        cff=1./(real(ndtnbq))
      
 !        
 ! X-direction:
@@ -69,8 +70,9 @@
         do k=1,N         
           do j=JstrU_nh,JendU_nh   
             do i=IstrU_nh,IendU_nh
-              ru_nbq_ext (i,j,k) = cff*rhssumu_nbq(i,j,k)*on_u(i,j)*om_u(i,j)
-              rhssumu_nbq(i,j,k) = 0.
+              ru_nbq_ext(i,j,k) = ((qdmu_nbq(i,j,k)-ru_nbq_ext(i,j,k))/dtfast     &
+                                       -ruint_nbq(i,j,k))  &
+                                     *on_u(i,j)*om_u(i,j)
               rubar_nbq(i,j)     = rubar_nbq(i,j)+ru_nbq_ext(i,j,k)             
             enddo
           enddo
@@ -94,22 +96,21 @@
         do k=1,N         
           do j=JstrV_nh,JendV_nh   
             do i=IstrV_nh,IendV_nh
-              rv_nbq_ext (i,j,k) = cff*rhssumv_nbq(i,j,k)*om_v(i,j)*on_v(i,j)
-              rhssumv_nbq(i,j,k) = 0.
+              rv_nbq_ext(i,j,k) = ((qdmv_nbq(i,j,k)-rv_nbq_ext(i,j,k))/dtfast     &
+                                       -rvint_nbq(i,j,k))  &
+                                     *on_v(i,j)*om_v(i,j)
               rvbar_nbq(i,j)     = rvbar_nbq(i,j)+rv_nbq_ext(i,j,k)
             enddo
           enddo
         enddo
-        
 
-#ifdef M2FILTER_NONE
-        if (LAST_2D_STEP) then
-#endif 
-        
 !    
 ! Z-direction:
 !
 
+#ifdef M2FILTER_NONE
+        if (LAST_2D_STEP) then
+#endif 
         do j=Jstr_nh,Jend_nh             
           do i=Istr_nh,Iend_nh
             WORK(i,j) = cff*on_r(i,j)*om_r(i,j)
@@ -119,7 +120,7 @@
         do k=0,N 
           do j=Jstr_nh,Jend_nh             
             do i=Istr_nh,Iend_nh
-              rw_nbq_ext (i,j,k) = ((qdmw_nbq(i,j,k)-rw_nbq_ext(i,j,k))/dtnbq-ndtnbq*rho0*rwint_nbq(i,j,k))*WORK(i,j)
+              rw_nbq_ext (i,j,k) = ((qdmw_nbq(i,j,k)-rw_nbq_ext(i,j,k))/dtnbq-ndtnbq*rwint_nbq(i,j,k))*WORK(i,j)
             enddo
           enddo
         enddo

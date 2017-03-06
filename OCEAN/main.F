@@ -39,9 +39,11 @@
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
+#include "nbq.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
+#include "ocean2d.h"
 #include "mpi_roms.h"
 #ifdef FLOATS
 # include "floats.h"
@@ -258,6 +260,7 @@ CR      write(*,*) ' -9' MYID
 !
 !  Set fast-time averaging for coupling of split-explicit baroropic mode.
 !
+
       call set_weights 
 CR      write(*,*) ' -8' MYID 
 !
@@ -267,7 +270,11 @@ CR      write(*,*) ' -8' MYID
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
+        call set_depth (tile
+#ifdef NBQ
+     &      ,0
+#endif
+     & )
       enddo
 CR      write(*,*) ' -7' MYID
 !
@@ -325,7 +332,11 @@ CR      write(*,*) ' -6' MYID
 #if defined  SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
+        call set_depth (tile
+#ifdef NBQ
+     &      ,0
+#endif
+     & )
       enddo
 CR      write(*,*)  ' -5' MYID
 #endif
@@ -374,7 +385,12 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
+        call set_depth (tile,1)
+      enddo
+      
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_HUV (tile)
       enddo
 #endif
 !

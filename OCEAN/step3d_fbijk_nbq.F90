@@ -31,10 +31,11 @@
 !
 !======================================================================
 !
-      subroutine step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK, &
+      subroutine step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK,     &
 	    Hzw_half_nbq_inv,Hzr_half_nbq_inv,                    &
-		Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v,               &
-        zwrk1,zwrk2,zwrk3,zwrk4,zwrk5,FC,FX            &
+		Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v,            &
+        zwrk1,zwrk2,zwrk3,zwrk4,zwrk5,FC,FX,                      &
+        Hzu_half_qdmu,Hzv_half_qdmv                               &
 		)
 
       use module_nh 
@@ -55,13 +56,15 @@
       real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
       real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
       real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	  
-	  real zwrk1(PRIVATE_2D_SCRATCH_ARRAY,2)
-	  real zwrk2(PRIVATE_2D_SCRATCH_ARRAY,2)
-	  real zwrk3(PRIVATE_2D_SCRATCH_ARRAY,2)
-	  real zwrk4(PRIVATE_2D_SCRATCH_ARRAY,2)	  
-	  real zwrk5(PRIVATE_2D_SCRATCH_ARRAY)
-	  real FC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
-	  real FX(PRIVATE_2D_SCRATCH_ARRAY)
+      real zwrk1(PRIVATE_2D_SCRATCH_ARRAY,2)
+      real zwrk2(PRIVATE_2D_SCRATCH_ARRAY,2)
+      real zwrk3(PRIVATE_2D_SCRATCH_ARRAY,2)
+      real zwrk4(PRIVATE_2D_SCRATCH_ARRAY,2)	  
+      real zwrk5(PRIVATE_2D_SCRATCH_ARRAY)
+      real FC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+      real FX(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,N)
+      real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,N)
       real DC(PRIVATE_1D_SCRATCH_ARRAY,N)
       real CF(PRIVATE_1D_SCRATCH_ARRAY,N)
 	   
@@ -84,25 +87,23 @@
 !-------------------------------------------------------------------
 !       
         if (iif==1.and.iic==1) call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
-        
-         cff1=0.
-         cff2=0.
-         cff3=0.
 
-         do k=1,N
-         do j=Jstr,Jend
-         do i=Istr,Iend
-         if (rmask(i,j)*soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k) > cff1) then
-  !       print *,'VAL = ',i,j,k,soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k),Hzr_half_nbq(i,j,k)
-  !       print *,'spped = ',soundspeed_nbq,dtnbq
-         endif
-         cff1=max(cff1,rmask(i,j)*soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k))
-         cff2=max(cff2,umask(i,j)*soundspeed_nbq*dtnbq*pm_u(i,j))
-         cff3=max(cff3,vmask(i,j)*soundspeed_nbq*dtnbq*pn_v(i,j))
-         enddo
-         enddo
-         enddo
- !        print *,'cff1 = ',iif,cff1, cff2, cff3,maxval(abs(ruext_nbq)),cff4
+        if (iic==1.and.(iif==1)) div_nbq=0.
+        
+         ! cff1=0.
+         ! cff2=0.
+         ! cff3=0.
+
+         ! do k=1,N
+         ! do j=Jstr,Jend
+         ! do i=Istr,Iend
+         ! cff1=max(cff1,rmask(i,j)*soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k))
+         ! cff2=max(cff2,umask(i,j)*soundspeed_nbq*dtnbq*pm_u(i,j))
+         ! cff3=max(cff3,vmask(i,j)*soundspeed_nbq*dtnbq*pn_v(i,j))
+         ! enddo
+         ! enddo
+         ! enddo
+         ! print *,'cff1 = ',iif,cff1, cff2, cff3
 
 !
 !-------------------------------------------------------------------
@@ -126,7 +127,7 @@
          do i=Istr_nh,Iend_nh
 			WORK(i,j)=pm(i,j)*pn(i,j)
 		 enddo
-	   enddo
+       enddo
 
 !*******************************************************************
 !*******************************************************************
@@ -134,6 +135,22 @@
 !*******************************************************************
 !*******************************************************************
 
+         do k=1,N         
+          do j=JstrU_nh,JendU_nh   
+            do i=IstrU_nh,IendU_nh
+              ru_nbq_ext (i,j,k) = qdmu_nbq(i,j,k)      
+            enddo
+          enddo
+         enddo
+         
+         do k=1,N         
+          do j=JstrV_nh,JendV_nh   
+            do i=IstrV_nh,IendV_nh
+              rv_nbq_ext (i,j,k) = qdmv_nbq(i,j,k)      
+            enddo
+          enddo
+        enddo         
+               
 #ifdef M2FILTER_NONE
         if (LAST_2D_STEP) then
 #endif
@@ -154,9 +171,7 @@
 !*******************************************************************
 !*******************************************************************
 
-		   
       do iteration_nbq=1,iteration_nbq_max
-
 !
 !-------------------------------------------------------------------
 !
@@ -209,54 +224,44 @@
             else
               do j=JstrV-1,Jend
                 do i=IstrU-1,Iend
-			      ddiv_nbqdz(i,j)=div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k)
-			    enddo
-			  enddo            
+                  ddiv_nbqdz(i,j)=div_nbq(i  ,j,k+1) - div_nbq(i  ,j,k)
+                enddo
+              enddo            
             endif
             do j=Jstr,Jend
               do i=IstrU,Iend
-			    ddiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i-1,j))              
-			  enddo
-			enddo
+               ddiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i-1,j))              
+              enddo
+            enddo
             do j=JstrV,Jend
               do i=Istr,Iend
-			    ddiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i,j-1))
-			  enddo
-			enddo            
-		  endif
-		  if (k.gt.0) then
+                ddiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(ddiv_nbqdz(i,j)+ddiv_nbqdz(i,j-1))
+              enddo
+            enddo            
+            endif
+            if (k.gt.0) then
             do j=Jstr,Jend
               do i=IstrU,Iend
-			    dum_s=gdepth_u(i,j,k)*(ddiv_nbqdz_u(i,j,k2)+ddiv_nbqdz_u(i,j,k1)) &   ! dZdx * (d(delta p)dz)_u
+			    dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)) &
+                       *(ddiv_nbqdz_u(i,j,k2)+ddiv_nbqdz_u(i,j,k1)) &   ! dZdx * (d(delta p)dz)_u
 				         -(div_nbq(i,j,k)-div_nbq(i-1,j,k))                           ! - d(delta p)dx
-				dum_s=dum_s*(0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))) * pm_u(i,j)
 
-                rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) + dum_s
-                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k)                                             & 
-                            + dtnbq * ( dum_s +  rho0*(ruint_nbq(i,j,k)+ruext_nbq(i,j,k)))
-#if defined MASKING
-                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) * umask(i,j)
-                rhssumu_nbq(i,j,k) = rhssumu_nbq(i,j,k) * umask(i,j)
-#endif                       
-			  enddo
-			enddo
+                dum_s=dum_s*Hzu_half_qdmu(i,j,k)
+                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k))               
+              enddo
+            enddo
             do j=JstrV,Jend
               do i=Istr,Iend
-			    dum_s=gdepth_v(i,j,k)*(ddiv_nbqdz_v(i,j,k2)+ddiv_nbqdz_v(i,j,k1)) &   ! dZdy * (d(delta p)dz)_v
+			    dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i,j-1,k)) &
+                       *(ddiv_nbqdz_v(i,j,k2)+ddiv_nbqdz_v(i,j,k1)) &   ! dZdy * (d(delta p)dz)_v
 				         -(div_nbq(i,j,k)-div_nbq(i,j-1,k))                           ! - d(delta p)dy
-				dum_s=dum_s*(0.5*(Hzr_half_nbq(i,j-1,k)+Hzr_half_nbq(i,j,k))) * pn_v(i,j)
 
-                rhssumv_nbq(i,j,k) = rhssumv_nbq(i,j,k) + dum_s
-                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k)                                             & 
-                            + dtnbq * ( dum_s +  rho0*(rvint_nbq(i,j,k)+rvext_nbq(i,j,k)))
-#if defined MASKING
-                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) * vmask(i,j)
-                rhssumv_nbq(i,j,k) = rhssumv_nbq(i,j,k) * vmask(i,j)
-#endif							
-			  enddo
-			enddo
-		  endif
-		enddo
+                dum_s=dum_s*Hzv_half_qdmv(i,j,k)
+                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k))					
+              enddo
+            enddo
+          endif
+        enddo
 
 #undef ddiv_nbqdz_u
 #undef ddiv_nbqdz_v
@@ -311,7 +316,7 @@
             do i=Istr_nh,Iend_nh                                                               
                dum_s =   div_nbq(i,j,k) - div_nbq(i,j,k+1)                           
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-                + dtnbq * ( dum_s + rho0 * rwint_nbq(i,j,k) )
+                + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
 #if defined MASKING
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif            
@@ -321,7 +326,7 @@
             do i=Istr_nh,Iend_nh                                                               
                dum_s =   div_nbq(i,j,k)                              
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-                + dtnbq * ( dum_s + rho0 * rwint_nbq(i,j,k) )
+                + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
 #if defined MASKING
                 qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif               
@@ -379,7 +384,8 @@
 #define dZdyq_v zwrk3
 #define dZdyq_w zwrk4
 #define FY zwrk5
-
+ 
+! X -component 
         k2 = 1
 		do k=0,N
 		  k1=k2
@@ -389,14 +395,10 @@
              kp1 = k + 1
 		     do j=Jstr_nh,Jend_nh
 		       do i=Istr_nh,Iend_nh+1
-		         dZdxq_u(i,j,k2)=gdepth_u(i,j,kp1)*qdmu_nbq(i,j,kp1)    ! (dZdx * (rho u))_u
+		         dZdxq_u(i,j,k2)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i-1,j,kp1)) &
+                       *qdmu_nbq(i,j,kp1)    ! (dZdx * (rho u))_u
 		       enddo
-		     enddo
-		     do j=Jstr_nh,Jend_nh+1
-		       do i=Istr_nh,Iend_nh
-		         dZdyq_v(i,j,k2)=gdepth_v(i,j,kp1)*qdmv_nbq(i,j,kp1)    ! (dZdy * (rho v))_v
-		       enddo
-		     enddo			 
+		     enddo	 
 		  endif
 
 		  if (k.eq.0) then	! Bottom boundary conditions	  
@@ -405,31 +407,16 @@
                 dZdxq_w(i,j,k2)=0.
 		     enddo
 		   enddo
-		   do j=Jstr_nh,Jend_nh+1
-		     do i=Istr_nh,Iend_nh
-               dZdyq_w(i,j,k2)=0.
-		     enddo
-		   enddo
           elseif (k==N) then ! Top boundary conditions
 		   do j=Jstr_nh,Jend_nh
 		     do i=Istr_nh,Iend_nh+1
 		       dZdxq_w(i,j,k2)=-0.5*(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))*qdmu_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
 		     enddo
-		   enddo
-		   do j=Jstr_nh,Jend_nh+1
-		     do i=Istr_nh,Iend_nh
-		       dZdyq_w(i,j,k2)=-0.5*(zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))*qdmv_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
-		     enddo
-		   enddo         
+		   enddo     
           else
 		    do j=Jstr_nh,Jend_nh
 		      do i=Istr_nh,Iend_nh+1
 			     dZdxq_w(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dZdxq_u(i,j,k1)+dZdxq_u(i,j,k2)) ! (dZdx * (rho u))_uw/Hzw_u
-              enddo 
-            enddo
-			do j=Jstr_nh,Jend_nh+1
-		      do i=Istr_nh,Iend_nh
-			     dZdyq_w(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dZdyq_v(i,j,k1)+dZdyq_v(i,j,k2)) ! (dZdy * (rho v))_uw/Hzw_v
               enddo 
             enddo
           endif
@@ -444,6 +431,51 @@
 #endif                
               enddo
             enddo
+		    do j=Jstr_nh,Jend_nh
+		      do i=Istr_nh,Iend_nh
+			    div_nbq(i,j,k)=FX(i,j)+FX(i+1,j)           
+              enddo
+            enddo
+          endif
+		enddo		 
+
+! Y component        
+        k2 = 1
+		do k=0,N
+		  k1=k2
+		  k2=3-k1
+
+		  if (k.lt.N) then
+             kp1 = k + 1
+		     do j=Jstr_nh,Jend_nh+1
+		       do i=Istr_nh,Iend_nh
+		         dZdyq_v(i,j,k2)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i,j-1,kp1)) &
+                       *qdmv_nbq(i,j,kp1)    ! (dZdy * (rho v))_v
+		       enddo
+		     enddo			 
+		  endif
+
+		  if (k.eq.0) then	! Bottom boundary conditions
+		   do j=Jstr_nh,Jend_nh+1
+		     do i=Istr_nh,Iend_nh
+               dZdyq_w(i,j,k2)=0.
+		     enddo
+		   enddo
+          elseif (k==N) then ! Top boundary conditions
+		   do j=Jstr_nh,Jend_nh+1
+		     do i=Istr_nh,Iend_nh
+		       dZdyq_w(i,j,k2)=-0.5*(zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))*qdmv_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
+		     enddo
+		   enddo
+          else
+			do j=Jstr_nh,Jend_nh+1
+		      do i=Istr_nh,Iend_nh
+			     dZdyq_w(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dZdyq_v(i,j,k1)+dZdyq_v(i,j,k2)) ! (dZdy * (rho v))_uw/Hzw_v
+              enddo 
+            enddo
+          endif
+
+          if (k.gt.0) then
 		    do j=Jstr_nh,Jend_nh+1
 		      do i=Istr_nh,Iend_nh
 			    FY(i,j)=-pn_v(i,j)*(dZdyq_w(i,j,k2)-dZdyq_w(i,j,k1))
@@ -454,11 +486,11 @@
             enddo			
 		    do j=Jstr_nh,Jend_nh
 		      do i=Istr_nh,Iend_nh
-			    div_nbq(i,j,k)=FX(i,j)+FX(i+1,j)+FY(i,j)+FY(i,j+1)              
+			    div_nbq(i,j,k)=div_nbq(i,j,k)+FY(i,j)+FY(i,j+1)              
               enddo
             enddo
           endif
-		enddo		 
+		enddo		         
 
 #undef dZdxq_u
 #undef dZdxq_w
@@ -510,7 +542,7 @@
             do i=Istr_nh,Iend_nh                                                               
                dum_s =   FC(i,k) - FC(i,k+1)            
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-                + dtnbq * ( dum_s + rho0 * rwint_nbq(i,j,k) )
+                + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
 #if defined MASKING
                 qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif               
@@ -520,7 +552,7 @@
             do i=Istr_nh,Iend_nh                                                               
                dum_s =   FC(i,k)                              
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-                + dtnbq * ( dum_s + rho0 * rwint_nbq(i,j,k) )
+                + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
 #if defined MASKING
                 qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif              
@@ -571,13 +603,21 @@
 		     do k=1,N
                do i=Istr_nh,Iend_nh
 			     FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
-               enddo	
+               enddo
                do i=Istr_nh,Iend_nh           
-			     div_nbq(i,j,k)=(div_nbq(i,j,k)+FC(i,k)-FC(i,k-1))*Hzr_half_nbq_inv(i,j,k)
-                 rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * div_nbq(i,j,k)
+			     div_nbq(i,j,k)=(div_nbq(i,j,k)+FC(i,k)-FC(i,k-1))             
                enddo
              enddo
            enddo
+           
+           do k=1,N
+             do j=Jstr_nh,Jend_nh
+               do i=Istr_nh,Iend_nh
+                 rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * div_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k) 
+               enddo
+             enddo
+           enddo
+                 
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,div_nbq(START_2D_ARRAY,1))
