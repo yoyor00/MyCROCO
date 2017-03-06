@@ -1985,9 +1985,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
-          read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is),
-     &                                     (Lsrc(is,itrc), itrc=1,NT),
-     &                                    (Tsrc0(is,itrc), itrc=1,NT)
+          read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
+#  ifdef SOLVE3D
+     &                                    ,(Lsrc(is,itrc), itrc=1,NT)
+     &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
+#  endif
           MPI_master_only write(stdout,'(3(/6x,i6,2x,A))')
      &    Isrc(is), 'I point source indice'
      &  , Jsrc(is), 'J point source indice'
@@ -2006,6 +2008,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
            Jsrc_mpi(is,mynode)=-1
           endif
 #  endif
+#  ifdef SOLVE3D
           do itrc=1,NT
             MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
@@ -2018,6 +2021,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                      Tsrc0(is,itrc), 'write Tsrc(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
           enddo
+#  endif
         enddo
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */

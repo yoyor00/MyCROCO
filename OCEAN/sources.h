@@ -30,11 +30,13 @@
       real Qshape(Msrc,N)
       common /source_Qshape/ Qshape
 
+# ifdef SOLVE3D
       real Tsrc(Msrc,N,NT)
       common /source_Tsrc/ Tsrc
 
       real Tsrc0(Msrc,NT)
       common /source_Tsrc0/ Tsrc0
+# endif
 
       real lasrc(Msrc)
       common /source_lasrc/ lasrc

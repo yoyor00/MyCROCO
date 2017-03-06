@@ -1662,7 +1662,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_psource
 !======================================================================
 !
-#if defined PSOURCE && defined ANA_PSOURCE && defined SOLVE3D
+#if defined PSOURCE && defined ANA_PSOURCE
 !
 !----------------------------------------------------------------------
 !  Set analytical tracer and mass point sources and sinks
@@ -1836,6 +1836,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
+# ifdef SOLVE3D
 # ifdef RIVER
       do k=1,N
         do is=1,Nsrc
@@ -2074,9 +2075,10 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif /* BIOLOGY */
+# endif /* SOLVE3D */
       return
       end
-#endif /* PSOURCE && ANA_PSOURCE SOLVE3D */
+#endif /* PSOURCE && ANA_PSOURCE */
 !
 !======================================================================
 !                   subroutine ana_bry

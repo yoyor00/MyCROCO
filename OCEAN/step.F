@@ -329,7 +329,7 @@ C$OMP BARRIER
 
       if (may_day_flag.ne.0) return  !-->  EXIT
 
-# if defined WKB_WWAVE && (defined WKB_UNSTEADY || defined MRL_CEW)
+# if defined WKB_WWAVE && !defined WKB_STEADY
       wkb_agrif_done=.FALSE.
 #  ifdef MRL_CEW
       do tile=my_tile_range
@@ -536,7 +536,7 @@ C$OMP BARRIER
 !
 
 #ifndef SOLVE3D
-# if defined WKB_WWAVE && defined MRL_CEW
+# if defined WKB_WWAVE && !defined WKB_STEADY
         wstp=wnew
         wnew=wstp+1
         if (wnew.ge.3) wnew=1
@@ -587,6 +587,9 @@ C$OMP BARRIER
 #  else
             call set_bry (tile)
 #  endif
+# endif
+# if defined WKB_WWAVE && !defined ANA_BRY_WKB
+          call set_bry_wkb (tile)
 # endif
           enddo
 # ifdef AGRIF

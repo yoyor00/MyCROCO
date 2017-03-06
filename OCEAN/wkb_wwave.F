@@ -11,10 +11,7 @@
 # endif
 
 # define ADD_DIFF
-# ifdef ADD_DIFF
-#  define ADD_DIFFX
-#  define ADD_DIFFY
-# endif
+# undef  WKB_NUDGING
 
       subroutine wkb_wwave (tile)
       implicit none
@@ -80,6 +77,7 @@
 # endif
 # include "boundary.h"
 # include "scalars.h"
+# include "mixing.h"
 # include "compute_auxiliary_bounds.h"
 !
 ! Sort out time-stepping parameters: For now, there are 3 choices,
@@ -555,7 +553,8 @@ C$OMP BARRIER
 ! Solve primary wavenumber equation
 !---------------------------------------------------------------------
 !
-      cff=100.                 ! smoothing coefficient
+      cff1=95.                 ! smoothing coefficient
+      cff2=10.                 !   + depth limitation 
 !
       do j=jstr,jend
         do i=istr,iend
@@ -572,6 +571,9 @@ C$OMP BARRIER
           ay2=cev-abs(cev)
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
+# ifdef ADD_DIFF
+          cff=1/max(rkx(i,j)**2+rke(i,j)**2,eps)
+# endif
           wkx(i,j,wnew)=wkx(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*on_r(i,j)*(Dstp(i+1,j)-Dstp(i-1,j))
      &               +0.5*( ax1*on_u(i  ,j)*(rkx(i  ,j)-rkx(i-1,j))
@@ -585,14 +587,11 @@ C$OMP BARRIER
      &               *(kvx(i,j)+kvx(i+1,j)+kvx(i,j+1)+kvx(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &           -cff*( 0.6+0.5*(tanh(Dstp(i,j)-10.)))*( 
-#  ifdef ADD_DIFFX
+     &                    -cff1*(0.55+0.5*(tanh(Dstp(i,j)-cff2)))*( 
+     &                                    min(1.,cff*rke(i,j)**2)*
      &                on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
-#  endif
-#  ifdef ADD_DIFFY
-     &               +om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1))
-#  endif
-     &                )
+     &                                  + min(1.,cff*rkx(i,j)**2)*
+     &                om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1)) )
 # endif
      &                                                            )
           wke(i,j,wnew) =wke(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
@@ -608,14 +607,11 @@ C$OMP BARRIER
      &               *(kue(i,j)+kue(i+1,j)+kue(i,j+1)+kue(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &           -cff*( 0.6+0.5*(tanh(Dstp(i,j)-10.)))*(
-#  ifdef ADD_DIFFX
+     &                    -cff1*(0.55+0.5*(tanh(Dstp(i,j)-cff2)))*(
+     &                                    min(1.,cff*rke(i,j)**2)*
      &                on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
-#  endif
-#  ifdef ADD_DIFFY
-     &               +om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1))
-#  endif
-     &                )
+     &                                  + min(1.,cff*rkx(i,j)**2)*
+     &                om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1)) )
 # endif
      &                                                            )
 # ifdef MASKING
@@ -653,21 +649,25 @@ C$OMP BARRIER
 !
       do j=jstr,jend
         do i=istr,iend
-          wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
-     &                 *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
 # ifdef ADD_DIFF
-     &           -cff*( 0.6+0.5*(tanh(Dstp(i,j)-10.)))*(
-#  ifdef ADD_DIFFX
+          cff=1/max(rkx(i,j)**2+rke(i,j)**2,eps)
+# endif
+          wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
+     &                   *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
+# ifdef ADD_DIFF
+     &                 -cff1*(0.55+0.5*(tanh(Dstp(i,j)-cff2)))*(
+     &                                 min(1.,cff*rke(i,j)**2)*
      &                               on_r(i,j)*(wac(i+1,j,wprv)
      &                        -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
-#  endif
-#  ifdef ADD_DIFFY
-     &                              +om_r(i,j)*(wac(i,j+1,wprv)
-     &                        -2.*wac(i,j,wprv)+wac(i,j-1,wprv))
-#  endif
-     &                       )
+     &                               + min(1.,cff*rkx(i,j)**2)*
+     &                               om_r(i,j)*(wac(i,j+1,wprv)
+     &                        -2.*wac(i,j,wprv)+wac(i,j-1,wprv)) )
 # endif
-     &                          ) +wsb(i,j,wstp)+wfc(i,j,wstp) )
+     &                            ) +wsb(i,j,wstp)+wfc(i,j,wstp) )
+# ifdef WKB_NUDGING
+     &                                -dtwave/3600*(wac(i,j,wnew)-
+     &                   0.125/(2*pi)*g*(whrm(i,j)**2)*Pwave(i,j))
+# endif
 # ifdef MASKING
           wac(i,j,wnew)=wac(i,j,wnew)*rmask(i,j)
 # endif
@@ -719,7 +719,7 @@ C$OMP BARRIER
         do i=istr,iend
           war(i,j,wnew) =war(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
-# ifdef ADD_DIFF0
+# ifdef ADD_DIFF
      &                           -cff*on_r(i,j)*(war(i+1,j,wprv)
      &                        -2.*war(i,j,wprv)+war(i-1,j,wprv))
      &                           -cff*om_r(i,j)*(war(i,j+1,wprv)
@@ -782,7 +782,7 @@ C$OMP BARRIER
           wsr(i,j,wnew) = c_roller*war(i,j,wnew)     ! ep_r/rho/sigma
      &                    *wvn(i,j,wnew)/max(frq(i,j,wnew)**2,eps)
 # endif
-# if defined BBL || defined MRL_WCI
+# if (defined BBL || defined MRL_WCI) && !defined WAVE_OFFLINE
           cosw = inv_k*wkx(i,j,wnew)            ! cosine wave direction (xi)
           sinw = inv_k*wke(i,j,wnew)            ! sine wave direction (eta)
 #  ifdef BBL
