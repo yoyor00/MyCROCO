@@ -46,12 +46,12 @@
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
                                        ruint_nbq(START_2D_ARRAY,1))
-      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
-                        ruext_nbq(START_2D_ARRAY,1))
+!       call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
+!                         ruext_nbq(START_2D_ARRAY,1))
       call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
                                        rvint_nbq(START_2D_ARRAY,1))
-      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
-                        rvext_nbq(START_2D_ARRAY,1))
+!       call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
+!                         rvext_nbq(START_2D_ARRAY,1))
       call exchange_u3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  &
                                        rwint_nbq(START_2D_ARRAY,0))
 
