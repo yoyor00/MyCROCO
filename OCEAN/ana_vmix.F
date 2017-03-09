@@ -84,19 +84,6 @@
           enddo
         enddo
       enddo
-# elif defined VORTEX || defined INTERNAL || defined EQUATOR \
-                      || defined JET      || defined SHOREFACE \
-                      || defined IGW      || defined S2DV \
-                      || defined REGIONAL_NBQ
-
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            Akv(i,j,k)=Akv_bak
-            Akt(i,j,k,itemp)=Akt_bak(itemp)
-          enddo
-        enddo
-      enddo
 # elif defined SHOREFACE
       do k=1,N-1
         do j=Jstr,Jend
@@ -115,9 +102,11 @@
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend
-            Akv(i,j,k)=???
-            Akt(i,j,k,itemp)=???
-            Akt(i,j,k,isalt)=???
+            Akv(i,j,k)=Akv_bak
+            Akt(i,j,k,itemp)=Akt_bak(itemp)
+#  ifdef SALINITY
+            Akt(i,j,k,isalt)=Akt_bak(isalt)
+#  endif
           enddo
         enddo
       enddo
