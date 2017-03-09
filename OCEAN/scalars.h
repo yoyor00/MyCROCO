@@ -441,9 +441,9 @@
      &     lonmin, lonmax, latmin, latmax
 #endif
 
-      real*QUAD Cu_Adv,  Cu_W, Cu_Nbq_X, Cu_Nbq_Y, Cu_Nbq_Z
+      real*QUAD Cu_Adv3d,  Cu_W, Cu_Nbq_X, Cu_Nbq_Y, Cu_Nbq_Z
       integer i_cx_max, j_cx_max, k_cx_max
-      common /diag_vars/ Cu_Adv,  Cu_W,
+      common /diag_vars/ Cu_Adv3d,  Cu_W,
      &        i_cx_max, j_cx_max, k_cx_max
       real*QUAD volume, avgke, avgpe, avgkp, bc_crss
 

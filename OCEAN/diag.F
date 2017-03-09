@@ -273,7 +273,7 @@ C$OMP CRITICAL (diag_cr_rgn)
 
 # ifdef MAX_ADV_CFL
           if (tile_count.eq.0) then
-             Cu_Adv=my_Cu_Adv
+             Cu_Adv3d=my_Cu_Adv
              Cu_W=my_Cu_W
 #   ifdef NBQ
              Cu_Nbq_X=my_Cu_Nbq_X
@@ -281,8 +281,8 @@ C$OMP CRITICAL (diag_cr_rgn)
              Cu_Nbq_Z=my_Cu_Nbq_Z
 #   endif             
           else
-            if (my_Cu_Adv.gt.Cu_Adv) then
-               Cu_Adv=my_Cu_Adv
+            if (my_Cu_Adv.gt.Cu_Adv3d) then
+               Cu_Advi3d=my_Cu_Adv
                Cu_W=my_Cu_W
             endif
             if(my_Cu_Nbq_X.gt.Cu_Nbq_X)  Cu_Nbq_X = my_Cu_Nbq_X
@@ -303,7 +303,7 @@ C$OMP CRITICAL (diag_cr_rgn)
                   buff(3)=avgpe
 # ifdef SOLVE3D
 #   ifdef MAX_ADV_CFL
-                  buff(4)=Cu_Adv
+                  buff(4)=Cu_Adv3d
                   buff(5)=Cu_W
 #     ifdef NBQ                  
                   buff(6)=Cu_Nbq_X
@@ -322,8 +322,8 @@ C$OMP CRITICAL (diag_cr_rgn)
                   avgpe=avgpe+  buff(3)
 # ifdef SOLVE3D
 #   ifdef MAX_ADV_CFL
-                  if (buff(4).gt.Cu_Adv) then
-                     Cu_Adv=buff(4)
+                  if (buff(4).gt.Cu_Adv3d) then
+                     Cu_Adv3d=buff(4)
                      Cu_W=buff(5)
                   endif
 #     ifdef NBQ  
@@ -354,7 +354,7 @@ C$OMP CRITICAL (diag_cr_rgn)
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
 #  ifdef MAX_ADV_CFL   
-              write(stdout,*) 'CFL_REPORT --  3DADV_INT = ',Cu_adv,
+              write(stdout,*) 'CFL_REPORT --  3DADV_INT = ',Cu_adv3d,
      &         '                 EGW_EXT = ',Cu_max
 #   ifdef NBQ
               write(stdout,*) '               HORIZ_NBQ = ',
