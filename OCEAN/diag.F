@@ -282,7 +282,7 @@ C$OMP CRITICAL (diag_cr_rgn)
 #   endif             
           else
             if (my_Cu_Adv.gt.Cu_Adv3d) then
-               Cu_Advi3d=my_Cu_Adv
+               Cu_Adv3d=my_Cu_Adv
                Cu_W=my_Cu_W
             endif
             if(my_Cu_Nbq_X.gt.Cu_Nbq_X)  Cu_Nbq_X = my_Cu_Nbq_X
