@@ -233,11 +233,12 @@ C$    trd=omp_get_thread_num()
 ! data to compute nonlinear advection terms for the barotropic
 ! momentum equations.
 !
+
 #ifdef M2FILTER_NONE
 # ifdef TANK
          myalpha   = 0.01
 # else
-         myalpha   = 0.5
+         myalpha   = 0.14
 # endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
@@ -474,8 +475,8 @@ C$OMP END MASTER
           zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016	! PATCH LR
  	  zeta_new(i,j)=zeta_new(i,j) +h(i,j)
           Dnew(i,j)=zeta_new(i,j)
-         zwrk(i,j)=cff0*zeta_new(i,j)
-     &  /(2.*rhobar_nbq(i,j,kstp)-rhobar_nbq(i,j,kbak))
+         rhobar_nbq(i,j,knew) = 2.*rhobar_nbq(i,j,kstp)-rhobar_nbq(i,j,kbak)
+         zwrk(i,j)= cff0*zeta_new(i,j) /rhobar_nbq(i,j,knew)
      &             +cff1*zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
      &             +cff2*zeta(i,j,kbak)/rhobar_nbq(i,j,kbak)
      &             +cff3*zeta(i,j,kold)/rhobar_nbq(i,j,kold)
@@ -1586,47 +1587,24 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
          enddo
          
 #if defined M2FILTER_NONE
-     !     do k=1,N
-     !       do j=Jstr,Jend
-     !         do i=Istr,Iend
-     !           rho_nbq_avg2(i,j,k)=0.
-     !         enddo
-     !       enddo 
-     !     enddo
-     
           do k=1,N
             do j=Jstr,Jend
               do i=IstrU,Iend
-#if defined NBQ_IJK
                 ru_nbq_avg2(i,j,k)=qdmu_nbq(i,j,k)
-#else
-                l_nbq=ijk2lmom_nh(i,j,k,1)
-                ru_nbq_avg2(i,j,k)=qdm_nbq_a(l_nbq)
-#endif
               enddo
             enddo 
           enddo
           do k=1,N
             do j=JstrV,Jend
               do i=Istr,Iend
-#if defined NBQ_IJK
                 rv_nbq_avg2(i,j,k)=qdmv_nbq(i,j,k)
-#else
-                l_nbq=ijk2lmom_nh(i,j,k,2)
-                rv_nbq_avg2(i,j,k)=qdm_nbq_a(l_nbq)
-#endif
               enddo
             enddo 
           enddo
           do k=0,N
             do j=Jstr,Jend
               do i=Istr,Iend
-#if defined NBQ_IJK
                 rw_nbq_avg2(i,j,k)=qdmw_nbq(i,j,k)
-#else
-                l_nbq=ijk2lmom_nh(i,j,k,3)
-                rw_nbq_avg2(i,j,k)=qdm_nbq_a(l_nbq)
-#endif
               enddo
             enddo 
           enddo
@@ -1660,7 +1638,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !     call step3d_imp_nbq (Istr,Iend,Jstr,Jend, WORK)
 # endif
 # undef WORK
-     
+
 !
 ! Get filtered rhs terms
 ! and multiply by dx*dy to get units of rho*Hz*dx*dy*ru
@@ -1756,16 +1734,6 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           enddo
         endif ! FIRST_2D_STEP
 #else
-        
-     !     do k=1,N
-     !       do j=Jstr,Jend
-     !         do i=Istr,Iend
-     !           rho_nbq_avg2(i,j,k)=rho_nbq_avg2(i,j,k)
-     !&                              +rho_nbq(i,j,k)
-     !         enddo
-     !       enddo 
-     !     enddo          
-          
         if (LAST_2D_STEP) then
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -1777,33 +1745,19 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               do i=Istr,Iend
                 rho_nbq_avg1(i,j,k)=1.d0+
      &               (rho_nbq(i,j,k)+rho(i,j,k)/rho0  )
-     !           rho_nbq_avg2(i,j,k)=rho_nbq_avg2(i,j,k)/real(nfast)
-     !           rho_nbq_avg2(i,j,k)=1.d0+
-     !&               (rho_nbq_avg2(i,j,k)+rho(i,j,k)/rho0  )
               enddo
             enddo 
           enddo
           do k=1,N
             do j=Jstr,Jend
               do i=IstrU,Iend
-         !       ru_nbq_avg1(i,j,k)=ru_nbq_ext(i,j,k)
-
              ruint_nbq(i,j,k) = ruint_nbq(i,j,k)
      &   -ruext_nbq_2d_old(i,j)*(Hz_half(i-1,j,k)+Hz_half(i,j,k))
-#if defined NBQ_IJK
-         ru_nbq_avg2(i,j,k)=
+
+                ru_nbq_avg2(i,j,k)=
      &   ((qdmu_nbq(i,j,k)-ru_nbq_avg2(i,j,k))/
      &   (dt)-ruint_nbq(i,j,k)-(ruext_nbq_2d_sum(i,j)/nfast)*
      &     (Hz_half(i,j,k)+Hz_half(i-1,j,k)))*on_u(i,j)*om_u(i,j)
-#else
-         l_nbq=ijk2lmom_nh(i,j,k,1)
-         ru_nbq_avg2(i,j,k)=
-     &   ((qdm_nbq_a(l_nbq)-ru_nbq_avg2(i,j,k))/
-     &   (dt)-ruint_nbq(i,j,k)-(ruext_nbq_2d_sum(i,j)/nfast)*
-     &     (Hz_half(i,j,k)+Hz_half(i-1,j,k)))*on_u(i,j)*om_u(i,j)
-#endif
-
-
               enddo
             enddo 
           enddo
@@ -1815,35 +1769,19 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
              rvint_nbq(i,j,k) = rvint_nbq(i,j,k)
      &   -rvext_nbq_2d_old(i,j)*(Hz_half(i,j-1,k)+Hz_half(i,j,k))
 
-#if defined NBQ_IJK
                  rv_nbq_avg2(i,j,k)=
      &   ((qdmv_nbq(i,j,k)-rv_nbq_avg2(i,j,k))/
      &   (dt)-rvint_nbq(i,j,k)-(rvext_nbq_2d_sum(i,j)/nfast)*
      &     (Hz_half(i,j,k)+Hz_half(i,j-1,k)))*on_v(i,j)*om_v(i,j)                 
-#else
-        l_nbq=ijk2lmom_nh(i,j,k,2)
-                 rv_nbq_avg2(i,j,k)=
-     &   ((qdm_nbq_a(l_nbq)-rv_nbq_avg2(i,j,k))/
-     &   (dt)-rvint_nbq(i,j,k)-(rvext_nbq_2d_sum(i,j)/nfast)*
-     &     (Hz_half(i,j,k)+Hz_half(i,j-1,k)))*on_v(i,j)*om_v(i,j)
-#endif
               enddo
             enddo 
           enddo
           do k=0,N
             do j=Jstr,Jend
               do i=Istr,Iend
-         !        rw_nbq_avg1(i,j,k)=rw_nbq_ext(i,j,k)
-#if defined NBQ_IJK
                  rw_nbq_avg2(i,j,k)=
      &   ((qdmw_nbq(i,j,k)-rw_nbq_avg2(i,j,k))/
      &   (dt)-rwint_nbq(i,j,k))*on_r(i,j)*om_r(i,j)
-#else
-         l_nbq=ijk2lmom_nh(i,j,k,3)
-                 rw_nbq_avg2(i,j,k)=
-     &   ((qdm_nbq_a(l_nbq)-rw_nbq_avg2(i,j,k))/
-     &   (dt)-rwint_nbq(i,j,k))*on_r(i,j)*om_r(i,j)
-#endif
               enddo
             enddo 
           enddo        
@@ -1864,8 +1802,6 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 ! done below.
 !-----------------------------------------------------------------------
 !
-
-
 
 #define Dstp DUon
  
@@ -2236,6 +2172,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
       endif
 # endif 
 #endif
+
 !
 !-----------------------------------------------------------------------
 ! Apply point sources for river runoff simulations
@@ -2295,6 +2232,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &                   vst2d(START_2D_ARRAY))
 # endif
 #endif
+
 !
 !-----------------------------------------------------------------------
 !  Debugging ubar,vbar

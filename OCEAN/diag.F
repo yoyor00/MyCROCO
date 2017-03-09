@@ -10,6 +10,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
+# ifdef NBQ
+# define MAX_ADV_CFL
+# endif
 
       subroutine diag (tile)
       implicit none
@@ -23,7 +26,11 @@
       end
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
-!     implicit none
+# if defined NBQ && defined MAX_ADV_CFL
+      use module_nh 
+      use module_nbq
+# endif
+      implicit none     
 #include "param.h" 
 #include "grid.h"
 #ifdef SOLVE3D
@@ -33,6 +40,9 @@
 #endif
 #include "scalars.h"
 #include "mpi_roms.h"
+# if defined NBQ && defined MAX_ADV_CFL
+#include "nbq.h"
+# endif 
       integer Istr,Iend,Jstr,Jend,    i,j,k, NSUB,
      &                                trd, omp_get_thread_num
       real ke2d(PRIVATE_2D_SCRATCH_ARRAY),
@@ -42,9 +52,17 @@
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
-      real*QUAD buff(6)
+      real*QUAD buff(8)
       common /xyz/ buff
 #endif
+
+# ifdef MAX_ADV_CFL
+      real my_Cu_Adv, my_Cu_W, ciV, cx, cw
+#   ifdef NBQ
+      real my_Cu_Nbq_X, my_Cu_Nbq_Y, my_Cu_Nbq_Z
+#   endif
+      integer my_i_cmax, my_j_cmax, my_k_cmax
+# endif
 
 #ifdef ETALON_CHECK
       integer ncheck, nparam, iocheck
@@ -92,6 +110,64 @@
 #  include "etalon_data.h"
 # endif
 #endif
+
+# ifdef MAX_ADV_CFL
+      my_Cu_Adv=0.  ;  my_Cu_W=0.
+#    ifdef NBQ
+      my_Cu_Nbq_X=0.; my_Cu_Nbq_Y=0.; my_Cu_Nbq_Z=0.
+#    endif
+      if (mod(iic-1,ninfo).eq.0) then
+
+      do j=jstr,jend
+        do k=N,1,-1
+          do i=istr,iend
+#  ifdef MASKING
+            ciV=dt*rmask(i,j)*pm(i,j)*pn(i,j)/Hz(i,j,k)
+#  else
+            ciV=dt*pm(i,j)*pn(i,j)/Hz(i,j,k)
+#  endif
+            cw=ciV*( max(We(i,j,k  )
+#  ifdef VADV_ADAPT_IMP     
+     &       +Wi(i,j,k  )
+#  endif     
+     &, 0.)
+     &              -min(We(i,j,k-1)
+#  ifdef VADV_ADAPT_IMP 
+     &      +Wi(i,j,k-1)
+#  endif        
+     &       , 0.) )
+
+            cx=cw+ciV*( max(HUon(i+1,j,k), 0.) -min(HUon(i,j,k), 0.)
+     &                 +max(HVom(i,j+1,k), 0.) -min(HVom(i,j,k), 0.))
+
+            if (cx .gt. my_Cu_Adv) then
+              my_Cu_Adv=cx ; my_Cu_W=cw
+            endif
+
+# ifdef NBQ
+            my_Cu_Nbq_Z=max(my_Cu_Nbq_Z,  
+#   ifdef MASKING
+     &             rmask(i,j) *  
+#   endif
+     &       soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k))
+          my_Cu_Nbq_X=max(my_Cu_Nbq_X,  
+#   ifdef MASKING
+     &             umask(i,j) *  
+#   endif
+     &        soundspeed_nbq*dtnbq*pm_u(i,j))
+          my_Cu_Nbq_Y=max(my_Cu_Nbq_Y,       
+#   ifdef MASKING
+     &             vmask(i,j) *  
+#   endif
+     &        soundspeed_nbq*dtnbq*pn_v(i,j))
+# endif
+              if (Hzr_half_nbq(i,j,k).lt.1.D-10) my_Cu_Nbq_Z=0.D0
+          enddo
+        enddo
+      enddo
+                    
+      endif
+# endif
 
 !
 ! Compute and report volume averaged kinetic, potential and total
@@ -195,6 +271,25 @@ C$OMP CRITICAL (diag_cr_rgn)
           avgke =avgke +my_avgke          ! summation among 
           avgpe =avgpe +my_avgpe          ! the threads
 
+# ifdef MAX_ADV_CFL
+          if (tile_count.eq.0) then
+             Cu_Adv=my_Cu_Adv
+             Cu_W=my_Cu_W
+#   ifdef NBQ
+             Cu_Nbq_X=my_Cu_Nbq_X
+             Cu_Nbq_Y=my_Cu_Nbq_Y
+             Cu_Nbq_Z=my_Cu_Nbq_Z
+#   endif             
+          else
+            if (my_Cu_Adv.gt.Cu_Adv) then
+               Cu_Adv=my_Cu_Adv
+               Cu_W=my_Cu_W
+            endif
+            if(my_Cu_Nbq_X.gt.Cu_Nbq_X)  Cu_Nbq_X = my_Cu_Nbq_X
+            if(my_Cu_Nbq_Y.gt.Cu_Nbq_Y)  Cu_Nbq_X = my_Cu_Nbq_Y
+            if(my_Cu_Nbq_Z.gt.Cu_Nbq_Z)  Cu_Nbq_X = my_Cu_Nbq_Z                        
+          endif
+# endif
           tile_count=tile_count+1         ! This counter identifies
           if (tile_count.eq.NSUB) then    ! the last thread, whoever
             tile_count=0                  ! it is, not always master.
@@ -206,14 +301,38 @@ C$OMP CRITICAL (diag_cr_rgn)
                   buff(1)=volume
                   buff(2)=avgke           ! This is MPI_Reduce
                   buff(3)=avgpe
-                  call MPI_Send (buff,  6, MPI_DOUBLE_PRECISION,
+# ifdef SOLVE3D
+#   ifdef MAX_ADV_CFL
+                  buff(4)=Cu_Adv
+                  buff(5)=Cu_W
+#     ifdef NBQ                  
+                  buff(6)=Cu_Nbq_X
+                  buff(7)=Cu_Nbq_Y
+                  buff(8)=Cu_Nbq_Z
+#     endif                  
+#  endif
+# endif
+                  call MPI_Send (buff,  8, MPI_DOUBLE_PRECISION,
      &                 mynode-step, 17, MPI_COMM_WORLD,      ierr)
                 elseif (mynode .lt. size-step) then
-                  call MPI_Recv (buff,  6, MPI_DOUBLE_PRECISION,
+                  call MPI_Recv (buff,  8, MPI_DOUBLE_PRECISION,
      &                 mynode+step, 17, MPI_COMM_WORLD, status, ierr)
                   volume=volume+buff(1)
                   avgke=avgke+  buff(2)
                   avgpe=avgpe+  buff(3)
+# ifdef SOLVE3D
+#   ifdef MAX_ADV_CFL
+                  if (buff(4).gt.Cu_Adv) then
+                     Cu_Adv=buff(4)
+                     Cu_W=buff(5)
+                  endif
+#     ifdef NBQ  
+                  if(buff(6).gt.Cu_Nbq_X)  Cu_Nbq_X = buff(6)             
+                  if(buff(7).gt.Cu_Nbq_Y)  Cu_Nbq_Y = buff(7)   
+                  if(buff(8).gt.Cu_Nbq_Z)  Cu_Nbq_Z = buff(8)                     
+#     endif                
+#  endif
+# endif
                 endif
                size=step
               if (size.gt.1) goto 1
@@ -234,6 +353,15 @@ C$OMP CRITICAL (diag_cr_rgn)
               trd=omp_get_thread_num()
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
+#  ifdef MAX_ADV_CFL   
+              write(stdout,*) 'CFL_REPORT --  3DADV_INT = ',Cu_adv,
+     &         '                 EGW_EXT = ',Cu_max
+#   ifdef NBQ
+              write(stdout,*) '               HORIZ_NBQ = ',
+     &              max(Cu_Nbq_X,Cu_Nbq_Y),
+     &         '                VERT_NBQ = ',Cu_Nbq_Z
+#   endif   
+#  endif   
 !
 ! Raise may_day_flag to stop computations in the case of blowing up.
 ! [Criterion for blowing up here is the numerical overflow, so that

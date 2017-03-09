@@ -1,4 +1,5 @@
 #include "cppdefs.h"
+# define NBQ_IMP
 #if defined NBQ && defined NBQ_IJK
 
 !
@@ -80,7 +81,7 @@
 #include "compute_auxiliary_bounds.h"
 
 # undef DEBUG
-
+	   
 !
 !-------------------------------------------------------------------
 !       Initialization of various test-cases
@@ -89,22 +90,6 @@
         if (iif==1.and.iic==1) call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
 
         if (iic==1.and.(iif==1)) div_nbq=0.
-        
-         ! cff1=0.
-         ! cff2=0.
-         ! cff3=0.
-
-         ! do k=1,N
-         ! do j=Jstr,Jend
-         ! do i=Istr,Iend
-         ! cff1=max(cff1,rmask(i,j)*soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k))
-         ! cff2=max(cff2,umask(i,j)*soundspeed_nbq*dtnbq*pm_u(i,j))
-         ! cff3=max(cff3,vmask(i,j)*soundspeed_nbq*dtnbq*pn_v(i,j))
-         ! enddo
-         ! enddo
-         ! enddo
-         ! print *,'cff1 = ',iif,cff1, cff2, cff3
-
 !
 !-------------------------------------------------------------------
 !  Get internal and external forcing terms for nbq equations:
@@ -112,17 +97,11 @@
 !  dzdt*rhosurf
 !-------------------------------------------------------------------
 !
-!     call ru_nbq(1)     ! MPI ! TBD
 !
 !------------------------------------------------------------------
 !       Implicit part: system setup
 !-------------------------------------------------------------------
 !
-!# ifdef NBQ_IMP
-!      if (iif.eq.1.and.ifl_imp_nbq.eq.1) call implicitijk_nbq (1)
-!# endif
-!
-
        do j=Jstr_nh,Jend_nh
          do i=Istr_nh,Iend_nh
 			WORK(i,j)=pm(i,j)*pn(i,j)
@@ -180,7 +159,7 @@
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
-              div_nbq(i,j,k)=-visc2_nbq*div_nbq(i,j,k)     &
+              div_nbq(i,j,k)=-visc2_nbq*div_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)      &
                              +soundspeed2_nbq*rho_nbq(i,j,k)
             enddo
           enddo
@@ -276,6 +255,8 @@
        call unbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
        call vnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
+
+
           
 !
 !  Message passing: Send U (51) 
@@ -324,13 +305,22 @@
            enddo
           k=N
             do i=Istr_nh,Iend_nh                                                               
-               dum_s =   div_nbq(i,j,k)                              
-               qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-                + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
+               dum_s =   div_nbq(i,j,N)                              
+               qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N)   &
+                + dtnbq * ( dum_s + rwint_nbq(i,j,N) )
 #if defined MASKING
-                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
+                qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N) * rmask(i,j)
 #endif               
              enddo             		   
+          k=0
+            do i=Istr_nh,Iend_nh                                                               
+               dum_s =  -div_nbq(i,j,1)                              
+               qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0)   &
+                + dtnbq * ( dum_s + rwint_nbq(i,j,0) )
+#if defined MASKING
+                qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
+#endif               
+             enddo  
         enddo
 
 # endif
@@ -404,13 +394,17 @@
 		  if (k.eq.0) then	! Bottom boundary conditions	  
 		   do j=Jstr_nh,Jend_nh
 		     do i=Istr_nh,Iend_nh+1
-                dZdxq_w(i,j,k2)=0.
+                dZdxq_w(i,j,k2)=0.  
+!                dZdxq_w(i,j,k2)= - (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
+!                                 / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1))            
 		     enddo
 		   enddo
           elseif (k==N) then ! Top boundary conditions
 		   do j=Jstr_nh,Jend_nh
 		     do i=Istr_nh,Iend_nh+1
-		       dZdxq_w(i,j,k2)=-0.5*(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))*qdmu_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
+		       dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))   &
+                                *qdmu_nbq(i,j,N)                            &                       
+                              / (hzr_half_nbq(i,j,N)+hzr_half_nbq(i-1,j,N))
 		     enddo
 		   enddo     
           else
@@ -458,13 +452,16 @@
 		  if (k.eq.0) then	! Bottom boundary conditions
 		   do j=Jstr_nh,Jend_nh+1
 		     do i=Istr_nh,Iend_nh
-               dZdyq_w(i,j,k2)=0.
+               dZdyq_w(i,j,k2)=0.   
+!               dZdyq_w(i,j,k2)= - (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
+!		                       / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) )               
 		     enddo
 		   enddo
           elseif (k==N) then ! Top boundary conditions
 		   do j=Jstr_nh,Jend_nh+1
 		     do i=Istr_nh,Iend_nh
-		       dZdyq_w(i,j,k2)=-0.5*(zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))*qdmv_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
+		       dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))*qdmv_nbq(i,j,N) &
+		                       / ( Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i,j-1,N) )
 		     enddo
 		   enddo
           else

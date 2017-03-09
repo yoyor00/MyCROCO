@@ -100,7 +100,7 @@
       if (WESTERN_EDGE) then
 #  ifdef OBC_COM_WEST
 #   ifdef OBC_COM_NBQORLANSKI
-        do k=1,N                             ! Western edge radiation
+        do k=0,N                             ! Western edge radiation
           do j=Jstr,Jend+1                   ! ======= ==== =========
 
             l_b_j     = ijk2lmom_nh(Istr-1,j  ,k,3)
@@ -181,7 +181,7 @@
 #   elif defined OBC_COM_NBQSPECIFIED
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
-        do k=1,N
+        do k=0,N
           do j=Jstr,Jend
             l_b_j     = ijk2lmom_nh(Istr-1,j  ,k,3)
 #    ifdef NBQ_FRC_BRY
@@ -200,7 +200,7 @@
 #   else
 !                                            Western edge gradient BC
 !                                            ======= ==== ======== ==
-        do k=1,N
+        do k=0,N
           do j=Jstr,Jend
             qdmw_nbq(Istr-1,j,k)=qdmw_nbq(Istr,j,k)
 #    ifdef MASKING
@@ -229,7 +229,7 @@
       if (EASTERN_EDGE) then
 #  ifdef OBC_COM_EAST
 #   ifdef OBC_COM_NBQORLANSKI
-        do k=1,N                             ! Eastern edge radiation
+        do k=0,N                             ! Eastern edge radiation
           do j=Jstr,Jend+1                   ! ======= ==== =========
 
             l_b_j       = ijk2lmom_nh(Iend+1,j  ,k,3)
@@ -310,7 +310,7 @@
 #   elif defined OBC_COM_NBQSPECIFIED
 !                                            Eastern edge Specified BC
 !                                            ======= ==== ========= ==
-        do k=1,N
+        do k=0,N
           do j=Jstr,Jend
             l_b_j     = ijk2lmom_nh(Iend+1,j,k,3)
 #    ifdef NBQ_FRC_BRY
@@ -329,7 +329,7 @@
 #   else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
-        do k=1,N
+        do k=0,N
           do j=Jstr,Jend
             qdmw_nbq(Iend+1,j,k)=qdmw_nbq(Iend,j,k)
 #    ifdef MASKING
@@ -361,7 +361,7 @@
       if (SOUTHERN_EDGE) then
 #  ifdef OBC_COM_SOUTH
 #   ifdef OBC_COM_NBQORLANSKI
-        do k=1,N                            ! Southern edge radiation
+        do k=0,N                            ! Southern edge radiation
           do i=Istr,Iend+1                  ! ======== ==== =========
 
             l_b_i     = ijk2lmom_nh(i  ,Jstr-1,k,3)
@@ -440,7 +440,7 @@
 #   elif defined OBC_COM_NBQSPECIFIED
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
-        do k=1,N
+        do k=0,N
           do i=Istr,Iend
             l_b_i     = ijk2lmom_nh(i  ,Jstr-1,k,3)
 #    ifdef NBQ_FRC_BRY
@@ -459,7 +459,7 @@
 #   else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
-        do k=1,N
+        do k=0,N
           do i=Istr,Iend
             qdmw_nbq(i,Jstr-1,k)=qdmw_nbq(i,Jstr,k)
 #    ifdef MASKING
@@ -487,7 +487,7 @@
       if (NORTHERN_EDGE) then
 #  ifdef OBC_COM_NORTH
 #   ifdef OBC_COM_NBQORLANSKI
-        do k=1,N                            ! Northern edge radiation
+        do k=0,N                            ! Northern edge radiation
           do i=Istr,Iend+1                  ! ======== ==== =========
 
             l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,3)
@@ -567,7 +567,7 @@
 #   elif defined OBC_COM_NBQSPECIFIED
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
-        do k=1,N
+        do k=0,N
           do i=Istr,Iend
             l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,3)
 #    ifdef NBQ_FRC_BRY
@@ -584,7 +584,7 @@
           enddo
         enddo
 #   else
-        do k=1,N
+        do k=0,N
           do i=Istr,Iend
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
@@ -614,7 +614,7 @@
  
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
-        do k=1,N
+        do k=0,N
           qdmw_nbq(Istr-1,Jstr-1,k)=0.5*(qdmw_nbq(Istr,Jstr-1,k)
      &                                  +qdmw_nbq(Istr-1,Jstr,k))
 #  ifdef MASKING
@@ -625,7 +625,7 @@
 # endif
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
-        do k=1,N
+        do k=0,N
           qdmw_nbq(Iend+1,Jstr-1,k)=0.5*(qdmw_nbq(Iend,Jstr-1,k)
      &                                  +qdmw_nbq(Iend+1,Jstr,k))     
 #  ifdef MASKING
@@ -636,7 +636,7 @@
 # endif
 # if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
-        do k=1,N
+        do k=0,N
           qdmw_nbq(Istr-1,Jend+1,k)=0.5*(qdmw_nbq(Istr  ,Jend+1,k)
      &                                  +qdmw_nbq(Istr-1,Jend,k)) 
 #  ifdef MASKING
@@ -647,7 +647,7 @@
 # endif
 # if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
-        do k=1,N
+        do k=0,N
           qdmw_nbq(Iend+1,Jend+1,k)=0.5*(qdmw_nbq(Iend  ,Jend+1,k)
      &                                  +qdmw_nbq(Iend+1,Jend,k))     
 #  ifdef MASKING

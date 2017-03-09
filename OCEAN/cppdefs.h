@@ -96,7 +96,7 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# undef  NEW_S_COORD
+# define  NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -116,8 +116,8 @@
 #  define UV_VIS_SMAGO
 # endif
                       /* Lateral Tracer Advection (default UP3) */
-# undef  TS_HADV_UP3
-# define TS_HADV_RSUP3
+# define TS_HADV_UP3
+# undef  TS_HADV_RSUP3
 # undef  TS_HADV_UP5
 # undef  TS_HADV_C4
 # undef  TS_HADV_WENO5
@@ -393,14 +393,14 @@
 # undef  KH_INSTY
 # define MPI
 # define NBQ
-# define XIOS 
 # ifdef NBQ
 #  undef  OBC_NBQ
 #  undef  NBQ_VOL
 #  undef  NBQ_IMP
-#  define NBQ_IMP_LU
-#  define NBQ_IMP_TRIDIAG
+#  undef  NBQ_IMP_LU
+#  undef  NBQ_IMP_TRIDIAG
 #  undef  NBQ_IMPIJK 
+#  define NBQ_IJK
 #  define NBQ_FB
 #  undef  NBQ_LF
 #  undef  NBQ_RK2
@@ -412,10 +412,7 @@
 # undef  OBC_WEST
 # undef  OBC_SOUTH
 # undef  OBC_NORTH
-# define UV_VIS2
 # define SALINITY
-# define UV_MIX_S
-# define UV_VIS_SMAGO
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
@@ -1276,7 +1273,7 @@
 # endif
 # define SOLVE3D
 # undef  MASKING
-# undef  UV_ADV
+# define  UV_ADV
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
