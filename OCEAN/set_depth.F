@@ -10,6 +10,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
+# ifdef NBQ
+#   define FIX_HZ
+# endif
 #if defined SOLVE3D || defined WET_DRY
 
       subroutine set_depth (tile
@@ -67,6 +70,9 @@ C$    integer omp_get_thread_num
 # endif
       real eps
       parameter (eps=1.e-14)
+# if defined NBQ && defined FIX_HZ
+      real correct_hz(PRIVATE_2D_SCRATCH_ARRAY,2)
+#endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -154,6 +160,11 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
 
+# if defined NBQ && defined FIX_HZ
+      correct_hz = 0.
+# endif
+
+
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
 #  ifdef MOVING_BATHY
@@ -206,12 +217,28 @@ C$    integer omp_get_thread_num
 #  ifdef NBQ
             Hzr(i,j,k)=Hz(i,j,k)
             Hz(i,j,k) =Hz(i,j,k)*rho_nbq_avg1(i,j,k)
+# ifdef FIX_HZ
+            correct_hz(i,j,1)=correct_hz(i,j,1)+rho_nbq_avg1(i,j,k)
+            correct_hz(i,j,2)=correct_hz(i,j,2)+Hz(i,j,k)          
+#  endif
             if (rho_nbq_ext(i,j,k).eq.0) stop 'Error set_depth (3)'
 #  endif
           enddo
         enddo
       enddo
 
+# if defined FIX_HZ && defined NBQ
+      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+        do i=I_RANGE
+        do k=1,N        
+          Hz(i,j,k)=Hz(i,j,k)+(Zt_avg1(i,j)-correct_hz(i,j,2))
+     &  / correct_hz(i,j,1)
+        enddo
+        enddo
+       enddo
+# endif
+
+       
 #  undef I_RANGE
 #  undef J_RANGE
 
