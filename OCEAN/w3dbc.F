@@ -85,7 +85,7 @@
 #   ifdef OBC_COM_M3ORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
-        do k=1,N
+        do k=0,N
           do j=Jstr,Jend+1
             grad(Istr-1,j)=( wz(Istr-1,j  ,k,nstp)
      &                      -wz(Istr-1,j-1,k,nstp))

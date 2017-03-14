@@ -311,16 +311,16 @@
                 qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N) * rmask(i,j)
 #endif               
              enddo             		   
-          k=0
 !     ==> To be done          
-!             do i=Istr_nh,Iend_nh                                                               
+             do i=Istr_nh,Iend_nh                                                               
 !                dum_s =  -div_nbq(i,j,1)                              
 !                qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0)   &
 !                 + dtnbq * ( dum_s + rwint_nbq(i,j,0) )
 ! #if defined MASKING
 !                 qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
 ! #endif               
-!              enddo  
+                 qdmw_nbq(i,j,0) = 0.
+              enddo  
         enddo
 
 # endif
