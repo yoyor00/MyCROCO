@@ -96,7 +96,7 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# define  NEW_S_COORD
+# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -116,8 +116,8 @@
 #  define UV_VIS_SMAGO
 # endif
                       /* Lateral Tracer Advection (default UP3) */
-# define  TS_HADV_UP3
-# undef TS_HADV_RSUP3
+# undef  TS_HADV_UP3
+# define TS_HADV_RSUP3
 # undef  TS_HADV_UP5
 # undef  TS_HADV_C4
 # undef  TS_HADV_WENO5
@@ -131,11 +131,10 @@
 # undef  VADV_ADAPT_IMP
                       /* Vertical Mixing */
 # undef  BODYFORCE
-
-# undef BVF_MIXING
+# undef  BVF_MIXING
 # define LMD_MIXING
-# undef GLS_MIXING
-# undef GLS_MIX2017  /* <---- Warning: option still under testing */
+# undef  GLS_MIXING
+# undef  GLS_MIX2017  /* <--- Warning: option still under testing */
 
 # ifdef LMD_MIXING
 #  define LMD_SKPP
@@ -145,7 +144,6 @@
 #  undef  LMD_DDMIX
 #  define LMD_NONLOCAL
 # endif
-
 # ifdef GLS_MIXING
 #  define GLS_KKL
 #  undef  GLS_KOMEGA
@@ -156,20 +154,18 @@
 #  undef  CANUTO_A
 #  undef  ZOS_HSIG
 # endif
-
 # ifdef GLS_MIX2017
-# undef  GLS_KOMEGA
-# define GLS_KEPSILON
-# undef  GLS_GEN
-# define CANUTO_A
-# undef GibLau_78
-# undef MelYam_82
-# undef KanCla_94
-# undef Luyten_96
-# undef CANUTO_B 
-# undef Cheng_02
+#  undef  GLS_KOMEGA
+#  define GLS_KEPSILON
+#  undef  GLS_GEN
+#  define CANUTO_A
+#  undef  GibLau_78
+#  undef  MelYam_82
+#  undef  KanCla_94
+#  undef  Luyten_96
+#  undef  CANUTO_B 
+#  undef  Cheng_02
 # endif
-
                       /* Surface Forcing */
 # undef  BULK_FLUX
 # ifdef BULK_FLUX
@@ -224,7 +220,7 @@
 #  define UV_TIDES
 #  undef  POT_TIDES
 #  define TIDERAMP
-#  define OBC_M2FLATHER
+#  define OBC_M2CHARACT
 # else
 #  undef  OBC_M2SPECIFIED
 #  undef  OBC_M2FLATHER

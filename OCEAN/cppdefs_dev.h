@@ -108,10 +108,17 @@
    Set default time-averaging filter for barotropic fields.
 ======================================================================
 */
-#define  M2FILTER_NONE
-#undef M2FILTER_POWER
-#undef  M2FILTER_COSINE
-#undef  M2FILTER_FLAT
+#ifdef M2FILTER_NONE     /* Check if options are defined in cppdefs.h */
+#elif defined M2FILTER_POWER
+#elif defined M2FILTER_COSINE
+#elif defined M2FILTER_FLAT
+#else
+# undef  M2FILTER_NONE
+# define M2FILTER_POWER
+# undef  M2FILTER_COSINE
+# undef  M2FILTER_FLAT
+#endif
+
 /*
 ======================================================================
    Activate barotropic pressure gradient response to the
@@ -132,12 +139,12 @@
 */
 #ifdef NBQ
 # define M2FILTER_NONE
-# undef M2FILTER_POWER
-# undef VAR_RHO_2D
-# undef TRACETXT
-# undef NBQ_OUT
+# undef  M2FILTER_POWER
+# undef  VAR_RHO_2D
+# undef  TRACETXT
+# undef  NBQ_OUT
 # define HZR Hzr
-!# define OBC_NBQ
+# undef  OBC_NBQ
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED
