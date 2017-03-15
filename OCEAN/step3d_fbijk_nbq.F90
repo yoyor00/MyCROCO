@@ -554,6 +554,9 @@
                 qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif              
              enddo             		   
+          do i=Istr_nh,Iend_nh
+               qdmw_nbq(i,j,0) = 0.
+          enddo
         enddo
  
 ! Tridiagonal inversion 
