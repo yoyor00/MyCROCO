@@ -820,9 +820,9 @@
 !==        
         do k=1,N-1
           do i=Istr,Iend
-            wz(i,j,k,nnew)=( wz( i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
+            wz(i,j,k,nnew)=( wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
      &                                          +dt*pn(i,j)*pm(i,j)
-     &                              *(rw(i,j,k)+0.*rw_nbq_avg1(i,j,k))
+     &                              *(rw(i,j,k)+rw_nbq_avg1(i,j,k))
      &                     )   /  (Hz_half(i,j,k)+Hz_half(i,j,k+1)) 
             rwint_nbq(i,j,k)=pn(i,j)*pm(i,j)*rw(i,j,k)
             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
@@ -875,8 +875,10 @@
            
        do i=Istr,Iend
 !== Special treatment for k=N because the control volume at the top is Hz(N)/2  
-             wz(i,j,N,nnew)=( cff1*wz(i,j,N,nstp)*Hz    (i,j,N)
-     &                       +cff2*wz(i,j,N,indx)*Hz_bak(i,j,N)
+             qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
+             qdm_indx = wz(i,j,N,indx)*Hz_bak(i,j,N)
+             wz(i,j,N,nnew)=( cff1*qdm_nstp
+     &                       +cff2*qdm_indx
      &                       +2.*cdt*pn(i,j)*pm(i,j)
      &                          *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
      &                      )/ Hz_half(i,j,N)                !<-- wz has units m.s-1
