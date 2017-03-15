@@ -12,5 +12,5 @@
 # Misc               #
 ######################
 doc/build
-
 Run/*
+Run/amr.in
