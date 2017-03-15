@@ -6,12 +6,21 @@
 #==========================================================================================
 # BEGIN USER SECTION
 #
-SOURCES_DIR='../../croco'
-TOOLS_DIR='../../croco_tools'
-
-MY_CONFIG_PATH='../CONFIGS/'
+# Get CROCO directory
+#
+cd ..
+CROCO_DIR=`pwd`
+cd -
+#
+SOURCES_DIR=${CROCO_DIR}'/croco/'
+TOOLS_DIR=${CROCO_DIR}'/croco_tools/'
+#
+MY_CONFIG_PATH=${CROCO_DIR}'/CONFIGS/'
+#
+# Name of the configuration directory defined by the user
+#
 MY_CONFIG_NAME='BENGUELA_LR'
-
+#
 #
 # END USER SECTION
 #==========================================================================================
@@ -116,7 +125,7 @@ if [[ $copy_tag == 1 ]] ; then
     # for crocotools in matlab
     cp -Rf $TOOLS_DIR/start.m .
     cp -Rf $TOOLS_DIR/crocotools_param.m .
-    cp -Rf $TOOLS_DIR/Misc/town.dat Misc/
+    cp -Rf $TOOLS_DIR/Town/town.dat Misc/
     #
 
     cp -Rf $SOURCES_DIR/create_myconfig.bash create_myconfig.bash.BCK
