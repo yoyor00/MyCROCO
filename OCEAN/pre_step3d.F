@@ -845,7 +845,8 @@
      &                *(rw(i,j,0)+ rw_nbq_avg1(i,j,0))
      &                     )        /  Hz_half(i,j,1) !<-- wz has units m.s-1
 
-            rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)
+!           rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0) ! ! Francis: switch from k=0 to k=1 here
+            rwint_nbq(i,j,0)=0.
             wz(i,j,0,indx)=wz(i,j,0,nstp)*0.5*Hz(i,j,1) !<-- wz(indx) has units kg.m-1.s-1
         enddo        
 !==       
@@ -890,7 +891,8 @@
      &                       +2.*cdt*pn(i,j)*pm(i,j)
      &                          *(rw(i,j,0)+rw_nbq_avg1(i,j,0))
      &                      )/ Hz_half(i,j,1)                !<-- wz has units m.s-1
-             rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)
+!            rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)  ! ! Francis: switch from k=0 to k=1 here
+             rwint_nbq(i,j,0)=0.
              wz(i,j,0,indx)=wz(i,j,0,nstp)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1
        enddo            
 !==                  

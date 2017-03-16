@@ -204,8 +204,10 @@
 #if defined NBQ_IJK
          Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv   &
          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v                  &
-         ,work3d_nbq(START_2D_ARRAY,1,1)                         &
-         ,work3d_nbq(START_2D_ARRAY,1,2)                         &
+         ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,1)               &
+         ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,2)               &
+!        ,work3d_nbq(START_2D_ARRAY,1,1)                         &
+!        ,work3d_nbq(START_2D_ARRAY,1,2)                         &
 #endif
          )
 

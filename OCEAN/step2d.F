@@ -1561,8 +1561,10 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &   Istr,Iend,Jstr,Jend,
      &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
      &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &   work3d_nbq(START_2D_ARRAY,1,1),
-     &   work3d_nbq(START_2D_ARRAY,1,2)
+     &   work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,1),
+     &   work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,2)
+!    &   work3d_nbq(START_2D_ARRAY,1,1),
+!    &   work3d_nbq(START_2D_ARRAY,1,2)
 #endif
      &   )
 # ifndef NBQ_IJK
@@ -1643,12 +1645,21 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
       call step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK
      &     ,Hzw_half_nbq_inv,Hzr_half_nbq_inv
      &     ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
-     &     ,work_nbq(START_2D_ARRAY,1), work_nbq(START_2D_ARRAY,3)
-     &     ,work_nbq(START_2D_ARRAY,5), work_nbq(START_2D_ARRAY,7)
-     &     ,work_nbq(START_2D_ARRAY,9), work_nbq(START_2D_ARRAY,10)
-     &     ,work_nbq(START_2D_ARRAY,11)
-     &     ,work3d_nbq(START_2D_ARRAY,1,1)
-     &     ,work3d_nbq(START_2D_ARRAY,1,2)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,1)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,3)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,5)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,7)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,9)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,10)
+     &     ,work_nbq(PRIVATE_2D_SCRATCH_ARRAY,11)
+     &     ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,1)
+     &     ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,2)
+!    &     ,work_nbq(START_2D_ARRAY,1), work_nbq(START_2D_ARRAY,3)
+!    &     ,work_nbq(START_2D_ARRAY,5), work_nbq(START_2D_ARRAY,7)
+!    &     ,work_nbq(START_2D_ARRAY,9), work_nbq(START_2D_ARRAY,10)
+!    &     ,work_nbq(START_2D_ARRAY,11)
+!    &     ,work3d_nbq(START_2D_ARRAY,1,1)
+!    &     ,work3d_nbq(START_2D_ARRAY,1,2)
      &     )
 # elif defined NBQ_RK2
 !     call step3d_rk2_nbq (Istr,Iend,Jstr,Jend, WORK)
@@ -1830,7 +1841,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=0,N
+          do k=1,N   ! Francis: switch from k=0 to k=1 here
             do j=Jstr,Jend
               do i=Istr,Iend
          !        rw_nbq_avg1(i,j,k)=rw_nbq_ext(i,j,k)
