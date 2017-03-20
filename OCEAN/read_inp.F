@@ -121,10 +121,8 @@
 # else
       fname='TEST_CASES/croco.in.IGW'
 # endif
-#elif defined REGIONAL
-      fname='croco.in'
 #else
-      fname='no_startup_file'
+      fname='croco.in'
 #endif
 #ifdef MPI
       if (mynode.eq.0 .and. iargc().GT.0) call getarg(1,fname) 
