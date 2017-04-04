@@ -450,13 +450,19 @@
 # undef udZ_x  
 # undef vdZ_y
       
-          DO k=0,N
+          DO k=1,N
              DO i=Istr,Iend
                 rw(i,j,k) = rw(i,j,k)  - FC(i,k+1) + FC(i,k)
 #  ifdef MASKING              
                 rw(i,j,k) = rw(i,j,k) * rmask(i,j)
 #  endif             
              ENDDO
+          ENDDO
+          DO i=Istr,Iend
+             rw(i,j,0) = rw(i,j,0)  + FC(i,0)
+#  ifdef MASKING             
+             rw(i,j,0) = rw(i,j,0) * rmask(i,j)
+#  endif             
           ENDDO
 
        ENDDO
