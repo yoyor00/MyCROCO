@@ -2,8 +2,8 @@
 
 #   define W_HADV
 #   define W_VADV
-#   undef WADV_SPLINES
-#   undef  NBQ_WNOSLIP
+#   define WADV_SPLINES
+#   define NBQ_WNOSLIP
 
 #if defined SOLVE3D && defined NBQ
 
