@@ -11,7 +11,7 @@
 !
       SUBROUTINE cpl_prism_define
 #include "cppdefs.h"
-#ifdef OA_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING
       USE mod_prism             ! OASIS3 prism module
 
       IMPLICIT NONE
