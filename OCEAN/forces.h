@@ -1,12 +1,12 @@
 ! $Id: forces.h 1564 2014-06-24 17:39:21Z gcambon $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 !  This is include file "forces.h"
@@ -20,6 +20,10 @@
       real sustr(GLOBAL_2D_ARRAY)
       real svstr(GLOBAL_2D_ARRAY)
       common /forces_sustr/sustr /forces_svstr/svstr
+#ifdef OA_COUPLING
+      real smstr(GLOBAL_2D_ARRAY)
+      common /forces_smstr/smstr
+#endif
 #ifndef ANA_SMFLUX
 !
 !  tsms      Time of surface momentum stresses.
@@ -36,12 +40,12 @@
 
       real    sustrp(2), svstrp(2), sms_time(2)
       real    sms_cycle, sms_scale 
-      integer itsms, sms_ncycle, sms_rec, lsusgrd  
-      integer lsvsgrd,sms_tid, susid, svsid
-      common /smsdat1/ sustrp, svstrp, sms_time
-      common /smsdat2/ sms_cycle, sms_scale
-      common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
-      common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
+      integer itsms, sms_ncycle, sms_rec, lsusgrd,    
+     &        lsvsgrd,sms_tid, susid, svsid
+       common /smsdat1/ sustrp, svstrp, sms_time
+       common /smsdat2/ sms_cycle, sms_scale
+       common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd,
+     &                  lsvsgrd,sms_tid, susid, svsid
 
 #  undef SMFLUX_DATA
 #endif /* !ANA_SMFLUX */
@@ -72,10 +76,11 @@
       real bmsclen, bms_tstart, bms_tend,  tsbms, sclbms
       integer itbms,      bmstid,busid, bvsid,     tbmsindx
       logical bmscycle,   bms_onerec,   lbusgrd,   lbvsgrd
-      common /bmsdat1/bms_tintrp, bustrp,       bvstrp,    tbms
-      common /bmsdat2/bmsclen,    bms_tstart,   bms_tend,  tsbms,   sclbms
-      common /bmsdat3/itbms,      bmstid,busid, bvsid,     tbmsindx
-      common /bmsdat4/bmscycle,   bms_onerec,   lbusgrd,   lbvsgrd
+      common /bmsdat/
+     &        bms_tintrp, bustrp,       bvstrp,    tbms,
+     &        bmsclen,    bms_tstart,   bms_tend,  tsbms,   sclbms,
+     &        itbms,      bmstid,busid, bvsid,     tbmsindx,
+     &        bmscycle,   bms_onerec,   lbusgrd,   lbvsgrd
 
 #  undef BMFLUX_DATA
 #endif /* !ANA_BMFLUX */
@@ -116,11 +121,11 @@
 
       real stflxp(2,NT), stf_time(2,NT)
       real stf_cycle(NT), stf_scale(NT)
-      integer itstf(NT), stf_ncycle(NT), stf_rec(NT) 
-      integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
-      common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
-      common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
-      common /stfdat3/  stf_tid, stf_id
+      integer itstf(NT), stf_ncycle(NT), stf_rec(NT),   
+     &        lstfgrd(NT), stf_tid(NT), stf_id(NT)
+      common /stfdat/ stflxp,  stf_time, stf_cycle,     stf_scale,
+     &        itstf,     stf_ncycle,     stf_rec,       lstfgrd,
+     &                                   stf_tid,       stf_id
 #   undef STFLUX_DATA
 # endif /* !ANA_STFLUX || !ANA_SSFLUX */
 !
@@ -141,15 +146,16 @@
       real btflxg(GLOBAL_2D_ARRAY,2,NT)
       common /btfdat_btflxg/btflxg
 
-      real sclbtf(NT), btf_tstart(NT), btf_tend(NT)
-      real btfclen(NT), tsbtf(NT)
+      real sclbtf(NT), btf_tstart(NT), btf_tend(NT), 
+     &     btfclen(NT), tsbtf(NT)
       real btf_tintrp(2,NT), btflxp(2,NT),  tbtflx(2,NT)
       integer itbtf(NT), btfid(NT), btftid(NT),tbtfindx(NT)
       logical lbtfgrd(NT), btfcycle(NT), btf_onerec(NT)
-      common /btfdat1/ sclbtf, btf_tstart, btf_tend, btfclen
-      common /btfdat2/ tsbtf,  btf_tintrp,   btflxp,        tbtflx
-      common /btfdat3/ itbtf,  btfid,        btftid,        tbtfindx
-      common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
+      common /btfdat/
+     &        sclbtf,      btf_tstart,   btf_tend,      btfclen,
+     &        tsbtf,       btf_tintrp,   btflxp,        tbtflx,
+     &        itbtf,       btfid,        btftid,        tbtfindx,
+     &        lbtfgrd,     btfcycle,     btf_onerec
 
 #   undef BTFLUX_DATA
 # endif /* !ANA_BTFLUX */
@@ -179,12 +185,12 @@
 
       real    sstp(2), dqdtp(2), sst_time(2)
       real    sst_cycle, scldqdt
-      integer itsst, sst_ncycle, sst_rec,  sst_tid,  sst_id
-      integer dqdt_id,     lsstgrd,   sstunused
+      integer itsst, sst_ncycle, sst_rec,  sst_tid,  sst_id,
+     &        dqdt_id,     lsstgrd,   sstunused
       common /sstdat1/ sstp, dqdtp, sst_time
       common /sstdat2/ sst_cycle, scldqdt
-      common /sstdat3/ itsst, sst_ncycle, sst_rec, sst_tid, sst_id
-      common /sstdat4/ dqdt_id, lsstgrd, sstunused
+      common /sstdat3/ itsst, sst_ncycle, sst_rec, sst_tid, sst_id,
+     &                 dqdt_id, lsstgrd, sstunused
 
 #    undef SST_DATA
 #  endif /* !ANA_SST */
@@ -216,11 +222,12 @@
 
       real sssp(2),  sss_time(2)
       real sss_cycle
-      integer itsss, sss_ncycle, sss_rec,  sss_tid,  sss_id
-      integer lsssgrd,   sssunused
-      common /sssdat1/sssp,  sss_time, sss_cycle
-      common /sssdat2/itsss, sss_ncycle, sss_rec,  sss_tid, sss_id
-      common /sssdat3/lsssgrd,   sssunused
+      integer itsss, sss_ncycle, sss_rec,  sss_tid,  sss_id,
+     &                          lsssgrd,   sssunused
+      common /sssdat/
+     &        sssp,  sss_time,    sss_cycle,
+     &        itsss, sss_ncycle, sss_rec,     sss_tid,   sss_id,
+     &                           lsssgrd,   sssunused
 #   if !defined QCORRECTION
       real dqdtg(GLOBAL_2D_ARRAY,2)
       real    dqdtp(2)
@@ -261,18 +268,18 @@
       real radswbio(GLOBAL_2D_ARRAY)
 # endif
 
-      common /bulk_tair/ tair
-      common /bulk_rhum/ rhum 
-      common /bulk_prate/ prate
-      common /bulk_radlw/ radlw 
-      common /bulk_radsw/ radsw
-      common /bulk_wspd/ wspd
+      common /bulk_tair/tair
+     &       /bulk_rhum/rhum 
+     &       /bulk_prate/prate
+     &       /bulk_radlw/radlw 
+     &       /bulk_radsw/radsw
+     &       /bulk_wspd/wspd
 # ifdef BULK_SM_UPDATE
-      common /bulk_uwnd/ uwnd 
-      common /bulk_vwnd/ vwnd
+     &       /bulk_uwnd/uwnd 
+     &       /bulk_vwnd/vwnd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-      common /bulk_radswbio/ radswbio
+     &       /bulk_radswbio/radswbio
 # endif
 
       real tairg(GLOBAL_2D_ARRAY,2)
@@ -289,62 +296,63 @@
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
 
-      common /bulkdat_tairg/tairg 
-      common /bulkdat_rhumg/rhumg 
-      common /bulkdat_prateg/prateg 
-      common /bulkdat_radlwg/radlwg 
-      common /bulkdat_radswg/radswg 
-      common /bulkdat_wspdg/wspdg 
-# ifdef BULK_SM_UPDATE 
-      common /bulk_uwndg/uwndg 
-      common /bulk_vwndg/vwndg 
+      common /bulkdat_tairg/tairg
+     &       /bulkdat_rhumg/rhumg
+     &       /bulkdat_prateg/prateg
+     &       /bulkdat_radlwg/radlwg
+     &       /bulkdat_radswg/radswg
+     &       /bulkdat_wspdg/wspdg
+# ifdef BULK_SM_UPDATE
+     &       /bulk_uwndg/uwndg
+     &       /bulk_vwndg/vwndg
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-      common /bulkdat_radswbiog/radswbiog
+     &       /bulkdat_radswbiog/radswbiog
 # endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-      real    wspdp(2)
+     &       ,wspdp(2)
 # ifdef BULK_SM_UPDATE
-      real    uwndp(2),vwndp(2)
+     &       ,uwndp(2),vwndp(2)
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-      real    radswbiop(2)
+     &       ,radswbiop(2)
 # endif
       real    bulk_time(2), bulk_cycle
-      integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
-      integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-      integer wspd_id,lwspdgrd
+      integer tair_id,rhum_id,prate_id,radlw_id,radsw_id,
+     &        ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
+     &       ,wspd_id,lwspdgrd
 # ifdef BULK_SM_UPDATE
-      integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+     &       ,uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-      integer radswbio_id,lradswbiogrd
+     &        ,radswbio_id,lradswbiogrd
 # endif
-      integer itbulk,bulk_ncycle,bulk_rec,bulk_tid
-      integer bulkunused
+      integer itbulk,bulk_ncycle,bulk_rec,bulk_tid,
+     &        bulkunused
 
-      common /bulkdat1_for/ tair_id,rhum_id,prate_id,radlw_id,radsw_id
-      common /bulkdat1_grd/ ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-      common /bulkdat1_tim/ itbulk, bulk_ncycle, bulk_rec, bulk_tid
-      common /bulkdat1_uns/ bulkunused
+      common /bulkdat1/
+     &        tair_id,rhum_id,prate_id,radlw_id,radsw_id,
+     &        ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd, 
+     &        itbulk, bulk_ncycle, bulk_rec, bulk_tid, 
+     &        bulkunused
+     &       ,wspd_id,lwspdgrd
 # ifdef BULK_SM_UPDATE
-      common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+     &       ,uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-      common /bulkdat1_bio/ radswbio_id,lradswbiogrd
+     &       ,radswbio_id,lradswbiogrd
 # endif
-      common /bulkdat1_wspd/ wspd_id,lwspdgrd
-
-      common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
-      common /bulkdat2_tim/ bulk_time, bulk_cycle
+      common /bulkdat2/
+     &        tairp,rhump,pratep,radlwp,radswp,
+     &        bulk_time, bulk_cycle
+     &       ,wspdp
 # ifdef BULK_SM_UPDATE
-      common /bulkdat2_wnd/ uwndp,vwndp
+     &       ,uwndp,vwndp
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-      common /bulkdat2_bio/ radswbiop
+     &       ,radswbiop
 # endif
-      common /bulkdat2_wspd/ wspdp 
 #endif /* BULK_FLUX */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
@@ -355,9 +363,9 @@
       real srflx(GLOBAL_2D_ARRAY)
       common /forces_srflx/srflx
 # ifdef ANA_DIURNAL_SW
-      real sin_phi(GLOBAL_2D_ARRAY)
-      real cos_phi(GLOBAL_2D_ARRAY)
-      real tan_phi(GLOBAL_2D_ARRAY)
+      real sin_phi(GLOBAL_2D_ARRAY),  
+     &     cos_phi(GLOBAL_2D_ARRAY), 
+     &     tan_phi(GLOBAL_2D_ARRAY)
       common /diu_srflx/ sin_phi, cos_phi, tan_phi
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
@@ -375,18 +383,22 @@
 
       real srflxp(2),srf_time(2)
       real srf_cycle, srf_scale
-      integer itsrf, srf_ncycle, srf_rec
-      integer lsrfgrd, srf_tid, srf_id 
-      common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
-      common /srfdat2/ itsrf, srf_ncycle, srf_rec, lsrfgrd, srf_tid, srf_id
+      integer itsrf, srf_ncycle, srf_rec, 
+     &        lsrfgrd, srf_tid, srf_id 
+      common /srfdat/
+     &        srflxp, srf_time, srf_cycle, srf_scale,
+     &        itsrf, srf_ncycle, srf_rec, lsrfgrd, srf_tid, srf_id
 
 # ifdef DIURNAL_INPUT_SRFLX
       real srflxbiog(GLOBAL_2D_ARRAY,2)
       common /srfdat_srflxbiog/srflxbiog
 
       real srflxbiop(2)
-      integer srfbio_rec, lsrfbiogrd, srfbio_tid, srfbio_id
-      common /srfbiodat/srflxbiop, lsrfbiogrd, srfbio_tid, srfbio_id
+      integer srfbio_rec, lsrfbiogrd, 
+     &        srfbio_tid, srfbio_id
+      common /srfbiodat/
+     &        srflxbiop,
+     &        lsrfbiogrd, srfbio_tid, srfbio_id
 # endif /*  DIURNAL_INPUT_SRFLX   */
 
 #   undef SRFLUX_DATA
@@ -427,12 +439,9 @@
       real wbst(GLOBAL_2D_ARRAY)
       real wdrx(GLOBAL_2D_ARRAY)
       real wdre(GLOBAL_2D_ARRAY)
-      common /forces_whrm/whrm 
-      common /forces_wdsp/wdsp
-      common /forces_wdrx/wdrx 
-      common /forces_wdre/wdre
-      common /forces_wdrg/wdrg 
-      common /forces_wbst/wbst
+      common /forces_whrm/whrm /forces_wdsp/wdsp 
+     &       /forces_wdrx/wdrx /forces_wdre/wdre 
+     &       /forces_wdrg/wdrg /forces_wbst/wbst
 # ifdef WAVE_ROLLER
       real rdsp(GLOBAL_2D_ARRAY)
       common /forces_rdsp/rdsp
@@ -558,11 +567,8 @@
       real wwdre(GLOBAL_2D_ARRAY)
       real wweb(GLOBAL_2D_ARRAY,2)
       real Eb  (GLOBAL_2D_ARRAY)
-      common /wwf_wwhrm/wwhrm 
-      common /wwf_wwdrx/wwdrx 
-      common /wwf_wwdre/wwdre 
-      common /wwf_wweb/wweb 
-      common /forces_Eb/Eb
+      common /wwf_wwhrm/wwhrm /wwf_wwdrx/wwdrx /wwf_wwdre/wwdre
+     &       /wwf_wweb/wweb /forces_Eb/Eb
 #   if defined WAVE_OFFLINE || defined OW_COUPLING
       real wved(GLOBAL_2D_ARRAY)
       real wwed(GLOBAL_2D_ARRAY,2)
@@ -574,28 +580,28 @@
       common /forces_wvqb/wvqb /wwf_wwqb/wwqb
 #   endif
 #  endif 
-      real ww_cycle,wwv_time(2),wwap(2), wwdp(2),wwpp(2),wwep(2)
-      real wwa_scale, wwd_scale, wwp_scale,wwe_scale
-      real wwagrd,   wwdgrd,    wwpgrd, wwegrd
-      integer ww_ncycle,  ww_rec,  itww
-      integer ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
+      real ww_cycle,wwv_time(2),wwap(2), wwdp(2),wwpp(2),wwep(2),
+     &                 wwa_scale, wwd_scale, wwp_scale,wwe_scale,  
+     &                 wwagrd,   wwdgrd,    wwpgrd, wwegrd
+      integer ww_ncycle,  ww_rec,  itww,
+     &        ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
 #   if defined BBL && defined WAVE_OFFLINE
-      integer wwu_id
-#   endif 
-#   if defined MRL_WCI && defined WAVE_OFFLINE
-      integer wwe_id, wwq_id, wwf_id
-#   endif
-      common /wwdat1/ ww_cycle, wwv_time
-      common /wwdat2/ wwap, wwdp,wwpp,wwep
-      common /wwdat3/ wwa_scale, wwd_scale, wwp_scale,wwe_scale
-      common /wwdat4/ wwagrd, wwdgrd, wwpgrd, wwegrd
-      common /wwdat5/ ww_ncycle, ww_rec, itww
-      common /wwdat6/ ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id 
-#   if defined BBL && defined WAVE_OFFLINE
-      common /wwdat7/ wwu_id
+     &       ,wwu_id
 #   endif
 #   if defined MRL_WCI && defined WAVE_OFFLINE
-      common /wwdat8/ wwe_id, wwq_id, wwf_id
+     &       ,wwe_id, wwq_id, wwf_id
+#   endif
+      common /wwdat/ ww_cycle, wwv_time,
+     &        wwap, wwdp,wwpp,wwep, 
+     &        wwa_scale, wwd_scale, wwp_scale,wwe_scale,  
+     &        wwagrd,   wwdgrd,    wwpgrd, wwegrd,
+     &        ww_ncycle,  ww_rec,  itww, 
+     &        ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
+#   if defined BBL && defined WAVE_OFFLINE
+     &       ,wwu_id
+#   endif
+#   if defined MRL_WCI && defined WAVE_OFFLINE
+     &       ,wwe_id, wwq_id, wwf_id
 #   endif
 # elif defined MRL_WCI
       real Eb(GLOBAL_2D_ARRAY)

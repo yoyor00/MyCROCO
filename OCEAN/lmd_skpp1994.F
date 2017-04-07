@@ -141,8 +141,12 @@
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
+# ifdef OA_COUPLING
+          ustar(i,j)=sqrt(smstr(i,j))
+# else
           ustar(i,j)=sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
      &                         +(0.5*(svstr(i,j)+svstr(i,j+1)))**2))
+# endif
         enddo
       enddo
 !

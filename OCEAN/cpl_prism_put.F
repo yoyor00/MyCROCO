@@ -19,17 +19,11 @@
 !     !----------------------------------------------------------------------
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
-# ifdef OA_MCT
       USE mod_prism             ! OASIS3 prism module
-# else
-      USE mod_prism_put_proto   ! OASIS3 prism module for snding
-# endif
 # ifdef AGRIF
       use Agrif_Util
 # endif
       IMPLICIT NONE
-
-#include "cppdefs.h"
 
 # include "param.h"
 # include "scalars.h"
@@ -37,7 +31,7 @@
 # include "ocean2d.h"
 # include "mpi_roms.h"
       
-      INTEGER    :: sndtime, i, level
+      INTEGER    :: sndtime, i, level, ja
       DOUBLE PRECISION, DIMENSION(Lmmpi,Mmmpi)  :: snd_field 
       CHARACTER*1 clevel
       
@@ -48,76 +42,74 @@
 # endif
       write(clevel,'(i1.1)') level
 !
-      if (level==0) then
-         MPI_master_only 
-     & write(*,*) 'CPL-ROMS : put for parent at time', sndtime
-      else		
-         MPI_master_only 
-     & write(*,*) 'CPL-ROMS : put for child:', level,
-     &  'at time', sndtime
-      endif
+!!$      if (level==0) then
+!!$         MPI_master_only 
+!!$     & write(*,*) 'CPL-ROMS : put for parent at time', sndtime
+!!$      else		
+!!$         MPI_master_only 
+!!$     & write(*,*) 'CPL-ROMS : put for child:', level,
+!!$     &  'at time', sndtime
+!!$      endif
 !      
-      DO i = 1, ksnd
-!-------------------------------------------------
+      DO i = 1, nmaxfld
          if (ssnd_clname(i)=='SRMSSTV'//clevel) then
-            snd_field = dble(t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15 )         
-            call prism_put_proto(ssnd_nid(i), sndtime, 
+            snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15    
+
+      DO ja = 0, nmaxatm
+         if ( ssnd_nid(ja,i) /= -1 ) then
+            call prism_put_proto(ssnd_nid(ja,i), sndtime, 
      &        snd_field, comp_ierror)
-            if ( (comp_ierror == 4) .or.
-     &           (comp_ierror == 5) .or.
-     &           (comp_ierror == 6) .or.
-     &           (comp_ierror == 8) .or.
-     &           (comp_ierror == 9) ) then
-           MPI_master_only write(*,*) 'CPL-ROMS : ',
+            if ( (comp_ierror == OASIS_Sent   ) .or.
+     &           (comp_ierror == OASIS_ToRest ) .or.
+     &           (comp_ierror == OASIS_SentOut) .or.
+     &           (comp_ierror == OASIS_ToRestOut) ) then
+           MPI_master_only write(*,*) 'CPL-ROMS : ',ja,
      & ssnd_clname(i),' sent at time ',sndtime
             endif
          endif
-!-------------------------------------------------
-!        ! ssh : sea surface height (m)
-         if (ssnd_clname(i)=='SRMSSHV'//clevel) then
-            snd_field = dble(zeta(1:Lmmpi,1:Mmmpi,nnew))
-            call prism_put_proto(ssnd_nid(i), sndtime,
+      enddo
+
+         endif
+      
+         if (ssnd_clname(i)=='SRMUOCE'//clevel) then
+            snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+     &                        +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
+
+      DO ja = 0, nmaxatm
+         if ( ssnd_nid(ja,i) /= -1 ) then
+            call prism_put_proto(ssnd_nid(ja,i), sndtime, 
      &        snd_field, comp_ierror)
-            if ( (comp_ierror == 4) .or.
-     &           (comp_ierror == 5) .or.
-     &           (comp_ierror == 6) .or.
-     &           (comp_ierror == 8) .or.
-     &           (comp_ierror == 9) ) then
-           MPI_master_only write(*,*) 'CPL-ROMS : ',
+            if ( (comp_ierror == OASIS_Sent   ) .or.
+     &           (comp_ierror == OASIS_ToRest ) .or.
+     &           (comp_ierror == OASIS_SentOut) .or.
+     &           (comp_ierror == OASIS_ToRestOut) ) then
+           MPI_master_only write(*,*) 'CPL-ROMS : ',ja,
      & ssnd_clname(i),' sent at time ',sndtime
             endif
          endif
-!-------------------------------------------------
-!        ! uz : sea surface zonal currents (m.s-1)
-         if (ssnd_clname(i)=='SRM_UZV'//clevel) then
-            snd_field = dble(u(1:Lmmpi,1:Mmmpi,N,nnew))
-            call prism_put_proto(ssnd_nid(i), sndtime,
+      enddo
+
+         endif
+         
+         if (ssnd_clname(i)=='SRMVOCE'//clevel) then
+            snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+     &                        +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
+
+      DO ja = 0, nmaxatm
+         if ( ssnd_nid(ja,i) /= -1 ) then
+            call prism_put_proto(ssnd_nid(ja,i), sndtime, 
      &        snd_field, comp_ierror)
-            if ( (comp_ierror == 4) .or.
-     &           (comp_ierror == 5) .or.
-     &           (comp_ierror == 6) .or.
-     &           (comp_ierror == 8) .or.
-     &           (comp_ierror == 9) ) then
-           MPI_master_only write(*,*) 'CPL-ROMS : ',
+            if ( (comp_ierror == OASIS_Sent   ) .or.
+     &           (comp_ierror == OASIS_ToRest ) .or.
+     &           (comp_ierror == OASIS_SentOut) .or.
+     &           (comp_ierror == OASIS_ToRestOut) ) then
+           MPI_master_only write(*,*) 'CPL-ROMS : ',ja,
      & ssnd_clname(i),' sent at time ',sndtime
             endif
          endif
-!-------------------------------------------------
-!        ! vz : sea surface meridional currents (m.s-1)
-         if (ssnd_clname(i)=='SRM_VZV'//clevel) then
-            snd_field = dble(v(1:Lmmpi,1:Mmmpi,N,nnew))
-            call prism_put_proto(ssnd_nid(i), sndtime,
-     &        snd_field, comp_ierror)
-            if ( (comp_ierror == 4) .or.
-     &           (comp_ierror == 5) .or.
-     &           (comp_ierror == 6) .or.
-     &           (comp_ierror == 8) .or.
-     &           (comp_ierror == 9) ) then
-           MPI_master_only write(*,*) 'CPL-ROMS : ',
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
+      enddo
+
          endif
-!-------------------------------------------------
       END DO
 #else 
 !---------------------------------------------------------------------------------------
