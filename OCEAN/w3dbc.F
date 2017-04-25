@@ -538,7 +538,7 @@
           do i=Istr,Iend                       ! ======== ==== ======
             wz(i,Jend+1,k,nnew)=wz(i,Jend,k,nnew)
 #ifdef MASKING
-                                *rmask(i,Jend+1)
+     &                           *rmask(i,Jend+1)
 #endif            
           enddo
         enddo

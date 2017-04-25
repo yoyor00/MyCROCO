@@ -227,8 +227,8 @@ C$    trd=omp_get_thread_num()
         do i=Istr,Iend
 #   ifdef NBQ
 !         cff=0.5*(zeta(i,Jstr,kstp)+zeta(i,Jstr-1,kstp))
-          cff=0.5*(zeta(i,Jstr  ,kstp)/rhobar_nbq(Istr  ,j,kstp)
-     &            +zeta(i,Jstr-1,kstp)/rhobar_nbq(Istr  ,j,kstp))
+          cff=0.5*(zeta(i,Jstr  ,kstp)/rhobar_nbq(Istr  ,Jstr,kstp)
+     &            +zeta(i,Jstr-1,kstp)/rhobar_nbq(Istr  ,Jstr-1,kstp))
 #   else
           cff=0.5*(h(i,Jstr-1)+h(i,Jstr)
      &            +zeta(i,Jstr,kstp)+zeta(i,Jstr-1,kstp))
