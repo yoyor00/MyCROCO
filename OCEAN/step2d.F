@@ -222,6 +222,7 @@ C$    trd=omp_get_thread_num()
 # define LOCALMM Mm
 #endif   
 #include "compute_auxiliary_bounds.h"
+
 !
 !======================================================================
 ! AB3 Forward Step: Computes zeta(n+1) and zetarhs
@@ -237,7 +238,7 @@ C$    trd=omp_get_thread_num()
 # ifdef TANK
          myalpha   = 0.01
 # else
-         myalpha   = 0.14
+         myalpha   = 0.5
 # endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
@@ -1084,7 +1085,7 @@ C$OMP END MASTER
 # else
           UFx(i,j)=cff*(vrhs(i,j)+vrhs(i,j+1))
           VFe(i,j)=cff*(urhs(i,j)+urhs(i+1,j))
-# endif
+# endif 
         enddo
       enddo
       do j=Jstr,Jend
@@ -1094,8 +1095,8 @@ C$OMP END MASTER
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
-          rvbar(i,j)=rvbar(i,j)-0.25*(VFe(i,j)+VFe(i,j-1))
-        enddo
+          rvbar(i,j)=rvbar(i,j) -0.25*(VFe(i,j)+VFe(i,j-1))
+        enddo 
       enddo
 #endif
 !
@@ -1536,7 +1537,16 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           rvext_nbq_2d_old(i,j)=rvext_nbq_2d(i,j)
         enddo
       enddo
-#undef rvext_nbq_2d      
+#undef rvext_nbq_2d 
+
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  
+     &                                 ruint_nbq(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  
+     &                                 rvint_nbq(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  
+     &                                 rwint_nbq(START_2D_ARRAY,0))
+#endif     
       
 
 #endif
@@ -1867,6 +1877,19 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           enddo        
         endif
 #endif        
+#endif
+
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   rhobar_nbq_avg1(START_2D_ARRAY))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                   rho_nbq_avg1(START_2D_ARRAY,1))
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
+     &                   ru_nbq_avg2(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
+     &                   rv_nbq_avg2(START_2D_ARRAY,1))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
+     &                   rw_nbq_avg2(START_2D_ARRAY,0))
 #endif
 
 !
@@ -2306,6 +2329,14 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &                   ubar(START_2D_ARRAY,knew))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   vbar(START_2D_ARRAY,knew))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                        DU_avg1(START_2D_ARRAY,nnew))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                        DV_avg1(START_2D_ARRAY,nnew))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                        DU_avg2(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                        DV_avg2(START_2D_ARRAY))
 # if defined MRL_WCI && defined WET_DRY
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   ust2d(START_2D_ARRAY))

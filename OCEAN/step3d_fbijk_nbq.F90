@@ -67,6 +67,7 @@
       real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,N)
       real DC(PRIVATE_1D_SCRATCH_ARRAY,N)
       real CF(PRIVATE_1D_SCRATCH_ARRAY,N)
+      real workr(GLOBAL_2D_ARRAY,0:N)
 	   
 # ifdef MPI
       include 'mpif.h'
@@ -104,7 +105,7 @@
        do j=Jstr_nh,Jend_nh
          do i=Istr_nh,Iend_nh
 			WORK(i,j)=pm(i,j)*pn(i,j)
-		 enddo
+	 enddo
        enddo
 
 !*******************************************************************
@@ -158,7 +159,7 @@
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
-              div_nbq(i,j,k)=-visc2_nbq*div_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)      &
+              div_nbq(i,j,k)=-visc2_nbq*div_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)    &
                              +soundspeed2_nbq*rho_nbq(i,j,k)
             enddo
           enddo
@@ -221,11 +222,11 @@
             do j=Jstr,Jend
               do i=IstrU,Iend
 			    dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)) &
-                       *(ddiv_nbqdz_u(i,j,k2)+ddiv_nbqdz_u(i,j,k1)) &   ! dZdx * (d(delta p)dz)_u
-				         -(div_nbq(i,j,k)-div_nbq(i-1,j,k))                           ! - d(delta p)dx
+                       *(ddiv_nbqdz_u(i,j,k2)+ddiv_nbqdz_u(i,j,k1))         &   ! dZdx * (d(delta p)dz)_u
+				         -(div_nbq(i,j,k)-div_nbq(i-1,j,k))     ! - d(delta p)dx
 
                 dum_s=dum_s*Hzu_half_qdmu(i,j,k)
-                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k))               
+                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k))    
               enddo
             enddo
             do j=JstrV,Jend
@@ -272,7 +273,7 @@
 !--------------------------------------------------------------------
 !
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,qdmu_nbq(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,qdmv_nbq(START_2D_ARRAY,1))
 #endif
@@ -291,6 +292,7 @@
 !
 !  Z-Direction: Explicit
 !
+
         do j=Jstr_nh,Jend_nh
           do k=1,N-1
             do i=Istr_nh,Iend_nh                                                               
@@ -308,7 +310,7 @@
                qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N)   &
                 + dtnbq * ( dum_s + rwint_nbq(i,j,N) )
 #if defined MASKING
-                qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N) * rmask(i,j)
+                qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N) * rmask(i,j) 
 #endif               
              enddo             		   
 !     ==> To be done          
@@ -323,13 +325,17 @@
               enddo  
         enddo
 
+
 # endif
 !
 !      Vertical momentum open boundary conditions
 !
 # ifdef OBC_NBQ
-        call wnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
+!       call wnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,qdmw_nbq(START_2D_ARRAY,0))
+#endif
 !
 !-------------------------------------------------------------------
 !      Message passing 
@@ -595,17 +601,17 @@
         enddo           
         
 #endif
-			   
+			  
            do j=Jstr_nh,Jend_nh
              do i=Istr_nh,Iend_nh
 			   FC(i,0)=0.                 ! Bottom boundary condition
              enddo
-		     do k=1,N
+             do k=1,N
                do i=Istr_nh,Iend_nh
-			     FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
+		     FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
                enddo
                do i=Istr_nh,Iend_nh           
-			     div_nbq(i,j,k)=(div_nbq(i,j,k)+FC(i,k)-FC(i,k-1))             
+	          div_nbq(i,j,k)=(div_nbq(i,j,k)+FC(i,k)-FC(i,k-1))             
                enddo
              enddo
            enddo

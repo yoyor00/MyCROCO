@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 # ifdef NBQ
-#   define FIX_HZ
+#   undef FIX_HZ
 # endif
 #if defined SOLVE3D || defined WET_DRY
 

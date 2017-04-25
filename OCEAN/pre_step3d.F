@@ -347,6 +347,13 @@
           Hzw_half_nbq(i,j,N  )=zw_half_nbq(i,j,N)-zr_half_nbq(i,j,N)
         enddo
       enddo    
+
+        do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          qdmw_nbq(i,j,0)=wz(i,j,0,nstp)*0.5*(Hz(i,j,1))
+        enddo
+        enddo
+
     
 # ifdef NBQ_REINIT_BY_INTERNAL
         do k=1,N
@@ -845,7 +852,7 @@
      &                *(rw(i,j,0)+ rw_nbq_avg1(i,j,0))
      &                     )        /  Hz_half(i,j,1) !<-- wz has units m.s-1
 
-!           rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0) ! ! Francis: switch from k=0 to k=1 here
+ !          rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0) ! ! Francis: switch from k=0 to k=1 here
             rwint_nbq(i,j,0)=0.
             wz(i,j,0,indx)=wz(i,j,0,nstp)*0.5*Hz(i,j,1) !<-- wz(indx) has units kg.m-1.s-1
         enddo        
@@ -891,7 +898,7 @@
      &                       +2.*cdt*pn(i,j)*pm(i,j)
      &                          *(rw(i,j,0)+rw_nbq_avg1(i,j,0))
      &                      )/ Hz_half(i,j,1)                !<-- wz has units m.s-1
-!            rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)  ! ! Francis: switch from k=0 to k=1 here
+ !            rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)  ! ! Francis: switch from k=0 to k=1 here
              rwint_nbq(i,j,0)=0.
              wz(i,j,0,indx)=wz(i,j,0,nstp)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1
        enddo            
@@ -969,7 +976,7 @@
 #  endif
 #  ifdef NBQ    
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))     
+     &                        wz(START_2D_ARRAY,0,nnew))   
 #  endif
 # endif
 !
@@ -995,6 +1002,8 @@
         enddo
       enddo     
 # endif
+
+
 !
 !
 # undef IU_RANGE

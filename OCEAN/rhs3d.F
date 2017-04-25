@@ -33,6 +33,8 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
+      real tvd,cu,rr,rrm,rrp,limiter,Cr,cdt,Cr2
+      integer kp2,kp1,km1
 # include "param.h"
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
@@ -70,7 +72,7 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined UV_HADV_UP5 ||  defined UV_HADV_C6 || defined UV_HADV_WENO5
+# if defined UV_HADV_UP5 ||  defined UV_HADV_C6 || defined UV_HADV_WENO5 || defined UV_VADV_WENO5
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
@@ -100,12 +102,14 @@
      &      -sign(1.,ua)*( 
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-# if  defined UV_HADV_WENO5
+# if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
 # endif
 !
 # include "compute_auxiliary_bounds.h"
 !
+
+
 #ifdef MASKING
 # define SWITCH *
 #else
@@ -327,7 +331,7 @@
 !
 #  if !(defined UV_HADV_UP3 || defined UV_HADV_C4  || \
         defined UV_HADV_C2  || defined UV_HADV_UP5 || \
-        defined UV_HADV_C6  || defined UV_HADV_WENO5)
+        defined UV_HADV_C6  || defined UV_HADV_WENO5 || defined UV_HADV_TVD)
 #   define UV_HADV_UP3
 #  endif
 
@@ -383,7 +387,16 @@
 
         endif
 !
-#  elif defined UV_HADV_UP3 || defined UV_HADV_C4
+#  elif defined UV_HADV_UP3 || defined UV_HADV_C4 || defined UV_HADV_TVD
+
+      if(nnew.eq.3) then
+        cdt =     (1.-2*gamma)*dt                  
+      elseif(FIRST_TIME_STEP) then
+        cdt = 0.5*dt
+      else
+        cdt =dt        
+      endif
+
 !
 !----------------------------------------------------------
 ! Fourth or Third order advection scheme (default)
@@ -445,11 +458,55 @@
 
         do j=Jstr,Jend
           do i=IstrU-1,Iend
-#   ifdef UV_HADV_C4
+#   if defined UV_HADV_C4
             UFx(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
      &                         -0.125*(uxx(i,j)+uxx(i+1,j))
      &                  )*( Huon(i,j,k)+Huon(i+1,j,k)
      &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))
+
+#   elif defined UV_HADV_TVD
+      if(nnew.eq.3) then
+            UFx(i,j)=0.25*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+     &                      *(Huon(i,j,k)+Huon(i+1,j,k))
+      else
+            cff = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
+            cu = ABS(1./om_u(i,j)*cdt*cff/(Hz(i,j,k)*on_u(i,j)))
+
+            rrp= (u(i+2,j,k,nrhs) -u(i+1,j,k,nrhs)) 
+#   ifdef MASKING
+     &         *rmask(i+1,j)
+#   endif             
+            rr = (u(i+1,j,k,nrhs) -u(i ,j,k,nrhs)) 
+#   ifdef MASKING
+     &         *rmask(i,j)
+#   endif
+            rrm= (u(i,j,k,nrhs) -u(i-1 ,j,k,nrhs))
+#   ifdef MASKING
+     &         *rmask(i-1,j)
+#   endif
+            
+        
+        IF (abs(rr).gt.1.e-20) THEN
+         IF (cff.GT.0) THEN
+           Cr=rrm/rr
+         ELSE
+           Cr=rrp/rr
+         ENDIF
+        ELSE
+         IF (cff.GT.0) THEN
+           Cr=Rrm*1.E20
+         ELSE
+           Cr=Rrp*1.E20
+         ENDIF
+        ENDIF
+        Cr=limiter(Cr)
+
+        UFx(i,j) =
+     &   cff*(u(i+1,j,k,nrhs) + u(i,j,k,nrhs) )*0.5
+     &   -ABS(cff)*((1.-Cr)+cu*Cr)
+     &                    *rr*0.5
+     
+       endif 
 #   else
             cffX=u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
             if (cffX.gt.0.) then
@@ -519,11 +576,54 @@
 #   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend
-#   ifdef UV_HADV_C4
+#   if defined UV_HADV_C4
             VFe(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
      &                        -0.125*(vee(i,j)+vee(i,j+1))
      &                  )*( Hvom(i,j,k)+Hvom(i,j+1,k)
      &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))
+
+#   elif defined UV_HADV_TVD
+        if(nnew.eq.3) then
+            VFe(i,j)=0.25*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+     &                       *(Hvom(i,j,k)+Hvom(i,j+1,k))
+         else
+        cff = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
+        cu = ABS(1./on_v(i,j)*cdt*cff/(Hz(i,j,k)*om_v(i,j)))
+
+            rrp= (v(i,j+2,k,nrhs) -v(i,j+1,k,nrhs)) 
+#   ifdef MASKING
+     &         *rmask(i,j+1)
+#   endif
+            rr = (v(i,j+1,k,nrhs) -v(i,j,k,nrhs)) 
+#   ifdef MASKING
+     &         *rmask(i,j)
+#   endif
+            rrm= (v(i,j,k,nrhs) -v(i,j-1,k,nrhs))
+#   ifdef MASKING
+     &         *rmask(i,j-1)
+#   endif
+                    
+        IF (abs(rr).gt.1.e-20) THEN
+         IF (cff.GT.0) THEN
+           Cr=rrm/rr
+         ELSE
+           Cr=rrp/rr
+         ENDIF
+        ELSE
+         IF (cff.GT.0) THEN
+           Cr=Rrm*1.E20
+         ELSE
+           Cr=Rrp*1.E20
+         ENDIF
+        ENDIF
+        Cr=limiter(Cr)
+
+        VFe(i,j) =
+     &   cff*(v(i,j,k,nrhs) + v(i,j+1,k,nrhs) )*0.5
+     &   -ABS(cff)*((1.-Cr)+cu*Cr)
+     &                    *rr*0.5
+       endif
+     
 #   else
             cffE=v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
             if (cffE.gt.0.) then
@@ -593,11 +693,55 @@
         enddo
         do j=Jstr,Jend+1
           do i=IstrU,Iend
-#   ifdef UV_HADV_C4
+#   if defined UV_HADV_C4
             UFe(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
      &                        -0.125*(uee(i,j)+uee(i,j-1))
      &                  )*( Hvom(i,j,k)+Hvom(i-1,j,k)
      &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
+
+#   elif defined UV_HADV_TVD
+      if(nnew.eq.3) then
+            UFe(i,j)=0.25*(u(i,j,k,nrhs)+u(i,j-1,k,nrhs))
+     &                      *( Hvom(i,j,k)+Hvom(i-1,j,k))
+      else
+        cff = 0.5*(Hvom(i,j,k)+Hvom(i-1,j,k))
+        cu = ABS(1./on_u(i,j)*cdt*cff
+     &    /(0.25*( (Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+     &           +(Hz(i-1,j,k)+Hz(i-1,j-1,k))*om_v(i-1,j)) ) )
+
+            rrp= (u(i,j+1,k,nrhs) -u(i,j,k,nrhs)) 
+#   ifdef MASKING
+     &         *pmask(i,j+1)
+#   endif
+            rr = (u(i,j,k,nrhs)-u(i,j-1,k,nrhs)) 
+#   ifdef MASKING
+     &         *pmask(i,j)
+#   endif
+            rrm= (u(i,j-1,k,nrhs)-u(i,j-2,k,nrhs))
+#   ifdef MASKING
+     &         *pmask(i,j-1)
+#   endif
+                    
+        IF (abs(rr).gt.1.e-20) THEN
+         IF (cff.GT.0) THEN
+           Cr=rrm/rr
+         ELSE
+           Cr=rrp/rr
+         ENDIF
+        ELSE
+         IF (cff.GT.0) THEN
+           Cr=Rrm*1.E20
+         ELSE
+           Cr=Rrp*1.E20
+         ENDIF
+        ENDIF
+        Cr=limiter(Cr)
+
+        UFe(i,j) =
+     &   cff*(u(i,j,k,nrhs) + u(i,j-1,k,nrhs) )*0.5
+     &   -ABS(cff)*((1.-Cr)+cu*Cr)
+     &                    *rr*0.5
+        endif
 #   else
             cffX=u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
             cffE=Hvom(i,j,k)+Hvom(i-1,j,k)
@@ -669,11 +813,56 @@
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend+1
-#   ifdef UV_HADV_C4
+#   if defined  UV_HADV_C4
+
             VFx(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
      &                        -0.125*(vxx(i,j)+vxx(i-1,j))
      &                  )*( Huon(i,j,k)+Huon(i,j-1,k)
      &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
+
+#   elif defined UV_HADV_TVD
+      if(nnew.eq.3) then
+            VFx(i,j)=0.25*(v(i,j,k,nrhs)+v(i-1,j,k,nrhs))
+     &                       *(Huon(i,j,k)+Huon(i,j-1,k))
+      else
+            cff = 0.5*(Huon(i,j,k)+Huon(i,j-1,k))
+            cu = ABS(1./om_v(i,j)*cdt*cff
+     &    /(0.25*( (Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+     &           +(Hz(i,j-1,k)+Hz(i-1,j-1,k))*on_u(i,j-1)) ) )
+
+            rrp=( v(i+1,j,k,nrhs) -v(i,j,k,nrhs) )
+#   ifdef MASKING
+     &         *pmask(i+1,j)
+#   endif
+            rr =( v(i,j,k,nrhs) -v(i-1,j,k,nrhs) )
+#   ifdef MASKING
+     &         *pmask(i,j)
+#   endif
+            rrm= (v(i-1,j,k,nrhs) -v(i-2,j,k,nrhs))
+#   ifdef MASKING
+     &         *pmask(i-1,j)
+#   endif
+                    
+        IF (abs(rr).gt.1.e-20) THEN
+         IF (cff.GT.0) THEN
+           Cr=rrm/rr
+         ELSE
+           Cr=rrp/rr
+         ENDIF
+        ELSE
+         IF (cff.GT.0) THEN
+           Cr=Rrm*1.E20
+         ELSE
+           Cr=Rrp*1.E20
+         ENDIF
+        ENDIF
+        Cr=limiter(Cr)
+
+        VFx(i,j) =
+     &   cff*( v(i,j,k,nrhs) + v(i-1,j,k,nrhs) )*0.5
+     &   -ABS(cff)*((1.-Cr)+cu*Cr)
+     &                    *rr*0.5
+       endif
 #   else
             cffE=v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
             cffX=Huon(i,j,k)+Huon(i,j-1,k)
@@ -844,6 +1033,115 @@
 #   endif
           FC(i,N)=0.
         enddo
+
+#  elif defined UV_VADV_TVD
+!
+!----------------------------------------------------------
+!  Compute vertical advective fluxes 
+!  using Second order advection scheme
+!----------------------------------------------------------
+!
+       if(nnew.eq.3) then
+        do k=1,N-1
+          do i=IstrU,Iend
+            FC(i,k)=0.25*(u(i,j,k,nrhs)+u(i,j,k+1,nrhs))
+     &                            *(We(i,j,k)+We(i-1,j,k))
+          enddo
+        enddo
+        do i=IstrU,Iend
+#   ifdef MOVING_BATHY
+          FC(i,0)=0.5*u(i,j,1,nrhs)*
+     &            (We(i  ,j,0)+
+     &             We(i-1,j,0))
+#   else
+          FC(i,0)=0.
+#   endif
+          FC(i,N)=0.
+        enddo
+        else
+        do k=1,N-1
+        kp2=MIN(N,k+2)
+        kp1=MIN(N,k+1)
+        km1=MAX(1,k-1)
+          do i=IstrU,Iend
+            cff = 0.5 *(We(i,j,k)+We(i-1,j,k) )
+            cu = ABS(cff*pm(i,j)*pn(i,j)
+     &      * cdt/Hz(i,j,k) ) 
+            rrp= (u(i,j,kp2,nrhs) -u(i,j,kp1,nrhs)) 
+            rr = (u(i,j,kp1,nrhs) -u(i ,j,k,nrhs)) 
+            rrm= (u(i,j,k  ,nrhs) -u(i ,j,km1,nrhs))            
+     
+        IF (abs(rr).gt.1.e-20) THEN
+         IF (cff.GT.1.e-20) THEN
+           Cr2=rrm/rr
+         ELSE
+           Cr2=rrp/rr
+         ENDIF
+        ELSE
+         IF (cff.GT.1.e-20) THEN
+           Cr2=Rrm*1.E20
+         ELSE
+           Cr2=Rrp*1.E20
+       !  ELSE
+       !    stop  
+         ENDIF
+       ! ELSE
+       !   stop
+        ENDIF
+        Cr=limiter(Cr2)
+
+        FC(i,k) =
+     &   cff*(u(i,j,k,nrhs) + u(i,j,kp1,nrhs) )*0.5
+     &   -ABS(cff)*((1.-Cr)+cu*Cr)
+     &                    *rr*0.5
+         enddo
+        enddo
+
+!        do k=1,N-1
+!          do i=IstrU,Iend
+!            FC(i,k)=0.25*(u(i,j,k,nrhs)+u(i,j,k+1,nrhs))
+!     &                            *(We(i,j,k)+We(i-1,j,k))
+!          enddo
+!        enddo
+!        
+        
+        do i=IstrU,Iend
+#   ifdef MOVING_BATHY
+          FC(i,0)=0.5*u(i,j,1,nrhs)*
+     &            (We(i  ,j,0)+
+     &             We(i-1,j,0))
+#   else
+          FC(i,0)=0.
+#   endif
+          FC(i,N)=0.
+        enddo
+         endif
+#  elif defined UV_VADV_WENO5
+
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+!
+          cdif=0. 
+#   include "uvadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+
+        else                 ! corrector
+
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+          cdif=1.
+!
+#   include "uvadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+
+        endif
+
 #  else
 !
 !----------------------------------------------------------
@@ -985,6 +1283,114 @@
 #   endif
             FC(i,N)=0.
           enddo
+
+#  elif defined UV_VADV_TVD
+!
+!----------------------------------------------------------
+!  Second order advection scheme
+!----------------------------------------------------------
+!
+         if(nnew.eq.3) then
+         do k=1,N-1
+            do i=Istr,Iend
+              FC(i,k)=0.25*(v(i,j,k,nrhs)+v(i,j,k+1,nrhs))
+     &                              *(We(i,j,k)+We(i,j-1,k))
+            enddo
+          enddo
+          do i=Istr,Iend
+#   ifdef MOVING_BATHY
+            FC(i,0)=0.5*v(i,j,1,nrhs)*
+     &              (We(i,j  ,0)+
+     &               We(i,j-1,0))
+#   else
+            FC(i,0)=0.
+#   endif
+            FC(i,N)=0.
+          enddo
+
+          else
+        do k=1,N-1
+        kp2=MIN(N,k+2)
+        kp1=MIN(N,k+1)
+        km1=MAX(1,k-1)
+            do i=Istr,Iend
+              cff = 0.5 *(We(i,j,k)+We(i,j-1,k) )
+              cu = ABS(cff*pm(i,j)*pn(i,j)
+     &      * cdt/Hz(i,j,k) ) 
+
+              rrp= (v(i,j,kp2,nrhs) -v(i,j,kp1,nrhs)) 
+              rr = (v(i,j,kp1,nrhs) -v(i,j,k  ,nrhs)) 
+              rrm= (v(i,j,k  ,nrhs) -v(i,j,km1,nrhs))            
+        
+        IF (abs(rr).gt.1.e-20) THEN
+         IF (cff.GT.1.e-20) THEN
+           Cr2=rrm/rr
+         ELSE
+           Cr2=rrp/rr
+         ENDIF
+        ELSE
+         IF (cff.GT.1.e-20) THEN
+           Cr2=Rrm*1.E20
+         ELSE
+           Cr2=Rrp*1.E20
+  !       else
+  !         stop
+         ENDIF
+  !       else
+  !       stop 
+        ENDIF
+        Cr=limiter(Cr)
+
+        FC(i,k) =
+     &   cff*(v(i,j,k,nrhs) + v(i,j,kp1,nrhs) )*0.5
+     &   -ABS(cff)*((1.-Cr)+cu*Cr)
+     &                    *rr*0.5
+
+
+!          do k=1,N-1
+!            do i=Istr,Iend
+!              FC(i,k)=0.25*(v(i,j,k,nrhs)+v(i,j,k+1,nrhs))
+!     &                              *(We(i,j,k)+We(i,j-1,k))
+            enddo
+          enddo
+         
+          do i=Istr,Iend
+#   ifdef MOVING_BATHY
+            FC(i,0)=0.5*v(i,j,1,nrhs)*
+     &              (We(i,j  ,0)+
+     &               We(i,j-1,0))
+#   else
+            FC(i,0)=0.
+#   endif
+            FC(i,N)=0.
+          enddo
+          endif
+#  elif defined UV_VADV_WENO5
+
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+!
+          cdif=0. 
+#   include "vvadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+
+        else                 ! corrector
+
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+          cdif=1.
+!
+#   include "vvadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+
+        endif
+
 #  else
 !
 !----------------------------------------------------------
@@ -1173,6 +1579,67 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
 
       return
       end
+      
+      function tvd( q_im1,q_i,q_ip1)
+      
+      implicit none
+      real    :: tvd
+      real    :: q_im2, q_im1, q_i, q_ip1
+      real    :: r
+      
+C Upwind        Limiter(Cr)=0.
+C Lax-Wendroff  Limiter(Cr)=1.
+C Min-Mod       Limiter(Cr)=max(0.,min(1.,Cr))
+C Suberbee      Limiter(Cr)=max(0.,max(min(1.,2*Cr),min(2.,Cr)))
+
+       
+       if( (q_ip1-q_i) .ne. 0 )then       
+          r =  (q_i - q_im1)/(q_ip1-q_i)
+       else
+          r =  (q_i - q_im1) *1.e20
+       endif
+
+#ifdef SUPERBEE
+       tvd=max(0.,max(min(1.,2.*r),
+     &                         min(2.,r)))
+#elif defined MINMOD
+       tvd=max(0.,min(1.,r))
+#else
+       tvd=(r+abs(r))/(1+r)
+#endif       
+
+       IF (tvd > 2) then
+       write(*,*) tvd
+       endif
+      
+      end function
+
+      function limiter(toto)
+      
+      implicit none
+      real    :: limiter, toto
+      
+C Upwind        Limiter(Cr)=0.
+C Lax-Wendroff  Limiter(Cr)=1.
+C Min-Mod       Limiter(Cr)=max(0.,min(1.,Cr))
+C Suberbee      Limiter(Cr)=max(0.,max(min(1.,2*Cr),min(2.,Cr)))
+
+       
+#ifdef SUPERBEE
+       limiter=max(0.,max(min(1.,2.*toto),
+     &                         min(2.,toto)))
+#elif defined MINMOD
+       limiter=max(0.,min(1.,toto))
+#else
+       limiter=(toto+abs(toto))/(1+abs(toto))
+#endif       
+
+       IF (limiter > 2) then
+       write(*,*) limiter
+       stop
+       endif
+      end function
+
 #else
       subroutine rhs3d_empty
       end
