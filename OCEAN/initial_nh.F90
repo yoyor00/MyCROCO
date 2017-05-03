@@ -368,12 +368,12 @@
 !        rhssumu_nbq    = 0.d0
 !        rhssumv_nbq    = 0.d0
 !        rhssumw_nbq    = 0.d0
-        div_nbq        = 0.d0
+        thetadiv_nbq        = 0.d0
 # endif
 
        endif 
 
-       if (icall == 3) then
+       if (icall == 3) then 
 !**********************************************************************
 !
 !               NBQ initializations (PART II)
@@ -383,6 +383,14 @@
            div_nbq_a=0.D0
            rhsd2_nbq=0.D0
 # endif
+  !      do k=1,N
+  !        do j=JR_RANGE
+  !          do i=IR_RANGE
+  !             rho_nbq(i,j,k)=hzr_half_nbq(i,j,k)
+  !       !     if (mynode.eq.1) write(6,*)'---<',Hzr_half_nbq(5,1,10)
+  !        enddo
+  !       enddo
+  !      enddo 
 
 # ifdef KH_INST
       if (iic.eq.1.and.iif.eq.1) then

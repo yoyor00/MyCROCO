@@ -1,16 +1,22 @@
 #ifdef NBQ
 
+!      real zeta_nbq(GLOBAL_2D_ARRAY,4)
+!      common /nbq_zeta/zeta_nbq
+
+!      real h_nbq(GLOBAL_2D_ARRAY,1:N,4)
+!      common /nbq_h/h_nbq
+
        real qdmu_nbq(GLOBAL_2D_ARRAY,N)
        common/nbq_qdmu_nbq/qdmu_nbq
 
        real qdmv_nbq(GLOBAL_2D_ARRAY,N)
        common/nbq_qdmv_nbq/qdmv_nbq
 
-       real qdmw_nbq(GLOBAL_2D_ARRAY,0:N)
+       real qdmw_nbq(GLOBAL_2D_ARRAY,-1:N+1)
        common/nbq_qdmw_nbq/qdmw_nbq
        
-       real div_nbq(GLOBAL_2D_ARRAY,N)
-       common/nbq_div_nbq/div_nbq
+       real thetadiv_nbq(GLOBAL_2D_ARRAY,0:N)
+       common/nbq_thetadiv_nbq/thetadiv_nbq
        
        real rho_nbq(GLOBAL_2D_ARRAY,N)
        common/nbq_rho_nbq/rho_nbq
@@ -29,13 +35,8 @@
       real rvint_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_rvint/ rvint_nbq
       real rwint_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_rwint/ rwint_nbq
+      common /nbq_rwint/ rwint_nbq     
 
-      real rubarint_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_rubarint/ rubarint_nbq
-      real rvbarint_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_rvbarint/ rvbarint_nbq
-      
        real Hzr_half_nbq(GLOBAL_2D_ARRAY,0:N+1)
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
        real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
@@ -108,10 +109,6 @@
 !      common /coup_rvint/ rvint_bak_nbq
 !      real rwint_bak_nbq(GLOBAL_2D_ARRAY,0:N)
 !      common /coup_rwint/ rwint_bak_nbq
-
-
-
-
 
  !     real dzdt_nbq(GLOBAL_2D_ARRAY,0:N)
  !     common /grid_dzdt_nbq/ dzdt_nbq

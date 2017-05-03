@@ -364,7 +364,8 @@
                 We_r(i,k) = 0.5d0 * ( We (i,j,k) + We (i,j,k-1) ) 
              ENDDO        
           ENDDO
-          
+         
+#undef WADV_SPLINES 
 #  ifdef WADV_SPLINES          
           DO i=Istr,Iend      
              wz_bot  = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
@@ -372,6 +373,7 @@
 #     ifdef MOVING_BATHY
              wz_bot  =  wz_bot - dh(i,j)     
 #     endif  
+
              cff     =   0.5 / ( Hzw (i,1) + Hzw (i,0) )         !<--- 1 / b(1)
              CF(i,1) =   cff * Hzw(i,0)                          !<--- q(1) = c(1) / b(1)
              FC(i,1) =   cff * (  3.*Hzw(i,0)*wz(i,j,1,nrhs)     
@@ -424,18 +426,22 @@
              ENDDO
           ENDDO
 
-          DO i=Istr,Iend          
-             wz_bot  = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
-     &                         +   vdH_y(i,j) + vdH_y(i,j+1) )  
-#     ifdef MOVING_BATHY
-             wz_bot  =  wz_bot - dh(i,j)     
-#     endif 
-             FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz_bot  )*We_r(i,1)
-             wz_sfc  = pn(i,j)*pm(i,j)*( DUon(i,j)-DUon(i+1,j  )
-     &                               +   DVom(i,j)-DVom(i  ,j+1) )    !
-     &               + 0.5d0 * ( udZ_x(i,j) + udZ_x(i+1,j)
-     &                       +   vdZ_y(i,j) + vdZ_y(i,j+1) )
-             FC(i,N) = 0.5*( wz_sfc + wz(i,j,N-1,nrhs))*We_r(i,N)
+          DO i=Istr,Iend        
+  
+!             wz_bot  = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
+!     &                         +   vdH_y(i,j) + vdH_y(i,j+1) )  
+!#     ifdef MOVING_BATHY
+!             wz_bot  =  wz_bot - dh(i,j)     
+!#     endif 
+           ! FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz_bot  )*We_r(i,1)
+             FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz(i,j,0,nrhs)  )*We_r(i,1)
+
+!             wz_sfc  = pn(i,j)*pm(i,j)*( DUon(i,j)-DUon(i+1,j  )
+!     &                               +   DVom(i,j)-DVom(i  ,j+1) )    !
+!     &               + 0.5d0 * ( udZ_x(i,j) + udZ_x(i+1,j)
+!     &                       +   vdZ_y(i,j) + vdZ_y(i,j+1) )
+!            FC(i,N) = 0.5*( wz_sfc + wz(i,j,N-1,nrhs))*We_r(i,N)
+             FC(i,N) = 0.5*( wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs))*We_r(i,N)
           ENDDO          
 
           DO i=Istr,Iend
@@ -458,12 +464,12 @@
 #  endif             
              ENDDO
           ENDDO
-          DO i=Istr,Iend
-             rw(i,j,0) = rw(i,j,0)  + FC(i,0)
-#  ifdef MASKING             
-             rw(i,j,0) = rw(i,j,0) * rmask(i,j)
-#  endif             
-          ENDDO
+!          DO i=Istr,Iend
+!             rw(i,j,0) = rw(i,j,0)  + FC(i,0)
+!#  ifdef MASKING             
+!             rw(i,j,0) = rw(i,j,0) * rmask(i,j)
+!#  endif             
+!          ENDDO
 
        ENDDO
                      

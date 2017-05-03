@@ -348,42 +348,12 @@
         enddo
       enddo    
 
-        do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
-          qdmw_nbq(i,j,0)=wz(i,j,0,nstp)*0.5*(Hz(i,j,1))
-        enddo
-        enddo
+!      do j=Jstr-1,Jend+1
+!      do i=Istr-1,Iend+1
+!        qdmw_nbq(i,j,0)=wz(i,j,0,nstp)*0.5*(Hz(i,j,1))
+!      enddo
+!      enddo
 
-    
-# ifdef NBQ_REINIT_BY_INTERNAL
-        do k=1,N
-          do j=Jstr-1,Jend+1
-          do i=Istr,Iend+1
-            qdmu_nbq(i,j,k)=u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-          enddo
-          enddo
-          do j=Jstr,Jend+1
-          do i=Istr-1,Iend+1
-            qdmv_nbq(i,j,k)=v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-          enddo
-          enddo
-        enddo
-        
-        do k=1,N-1
-          do j=Jstr-1,Jend+1
-          do i=Istr-1,Iend+1
-            qdmw_nbq(i,j,k)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j,k+1))
-          enddo
-          enddo
-        enddo
-!
-        do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
-          qdmw_nbq(i,j,N)=wz(i,j,N,nstp)*0.5*(Hz(i,j,N))
-          qdmw_nbq(i,j,0)=wz(i,j,0,nstp)*0.5*(Hz(i,j,1))
-        enddo
-        enddo
-# endif
 
 # endif /* NBQ */
 !
@@ -818,13 +788,13 @@
 !----------------------------------------------------------
 !<-- at this point 
 !<-- rw            contains internal 3D advection + Coriolis
-!<-- rw_nbq_avg1   contains NBQ pressure gradient + gravity 
+!<-- rw_nbq_avg1   contains NBQ pressure gradient (+ gravity) 
 !                                        + second viscosity 
 !----------------------------------------------------------
       do j=Jstr,Jend
-!==
+!**************************************
       if (FIRST_TIME_STEP) then
-!==        
+!**************************************
         do k=1,N-1
           do i=Istr,Iend
             wz(i,j,k,nnew)=( wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
@@ -846,19 +816,29 @@
      &                     )        /  Hz_half(i,j,N) !<-- wz has units m.s-1
             rwint_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) !<-- wz(indx) has units kg.m-1.s-1
-!== Special treatment for k=0 because the control volume at the top is Hz(1)/2
-            wz(i,j,0,nnew)=( wz(i,j,0,nstp)*Hz(i,j,1)
-     &                            +dt*pn(i,j)*pm(i,j)
-     &                *(rw(i,j,0)+ rw_nbq_avg1(i,j,0))
-     &                     )        /  Hz_half(i,j,1) !<-- wz has units m.s-1
 
- !          rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0) ! ! Francis: switch from k=0 to k=1 here
+!== Special treatment for k=0 because the control volume at the top is Hz(1)/2
+#  ifdef NBQ_FREESLIP
+!           wz(i,j,0,nnew)=( wz(i,j,0,nstp)*Hz(i,j,1)
+!     &                            +dt*pn(i,j)*pm(i,j)
+!     &                *(rw(i,j,0)+ rw_nbq_avg1(i,j,0))
+!     &                     )        /  Hz_half(i,j,1) !<-- wz has units m.s-1
+!           rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0) ! ! Francis: switch from k=0 to k=1 here
             rwint_nbq(i,j,0)=0.
-            wz(i,j,0,indx)=wz(i,j,0,nstp)*0.5*Hz(i,j,1) !<-- wz(indx) has units kg.m-1.s-1
-        enddo        
-!==       
+            wz(i,j,0,nnew)=  ( u(i,j,1,nnew) * pm_u(i,j) 
+     &                                    * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
+     &                        +v(i,j,1,nnew) * pm_v(i,j) 
+     &                                    * ( z_w(i,j  ,0)-z_w(i,j-1,0) )  )
+            wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1) !<-- wz(indx) has units kg.m-1.s-1
+# else
+            wz(i,j,0,nnew)=0.
+            wz(i,j,0,indx)=0.
+# endif
+        enddo      
+
+!**************************************
       else
-!==      
+!**************************************
         cff1=0.5+gamma
         cff2=0.5-gamma
 !==        
@@ -882,6 +862,7 @@
 
            
        do i=Istr,Iend
+
 !== Special treatment for k=N because the control volume at the top is Hz(N)/2  
              qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
              qdm_indx = wz(i,j,N,indx)*Hz_bak(i,j,N)
@@ -892,15 +873,25 @@
      &                      )/ Hz_half(i,j,N)                !<-- wz has units m.s-1
              rwint_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
              wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   !<-- wz(indx) has units kg.m-1.s-1
+
 !== Special treatment for k=0 because the control volume at the bottom is Hz(1)/2  
-             wz(i,j,0,nnew)=( cff1*wz(i,j,0,nstp)*Hz    (i,j,1)
-     &                       +cff2*wz(i,j,0,indx)*Hz_bak(i,j,1)
-     &                       +2.*cdt*pn(i,j)*pm(i,j)
-     &                          *(rw(i,j,0)+rw_nbq_avg1(i,j,0))
-     &                      )/ Hz_half(i,j,1)                !<-- wz has units m.s-1
- !            rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)  ! ! Francis: switch from k=0 to k=1 here
-             rwint_nbq(i,j,0)=0.
-             wz(i,j,0,indx)=wz(i,j,0,nstp)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1
+#  ifdef NBQ_FREESLIP
+!           wz(i,j,0,nnew)=( cff1*wz(i,j,0,nstp)*Hz    (i,j,1)
+!     &                       +cff2*wz(i,j,0,indx)*Hz_bak(i,j,1)
+!     &                       +2.*cdt*pn(i,j)*pm(i,j)
+!     &                          *(rw(i,j,0)+rw_nbq_avg1(i,j,0))
+!     &                      )/ Hz_half(i,j,1)                !<-- wz has units m.s-1
+!           rwint_nbq(i,j,0)=pn(i,j)*pm(i,j)*rw(i,j,0)  ! ! Francis: switch from k=0 to k=1 here
+            rwint_nbq(i,j,0)=0.
+            wz(i,j,0,nnew)= (  u(i,j,1,nnew) * pm_u(i,j) 
+     &                                    * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
+     &                       + v(i,j,1,nnew) * pm_v(i,j) 
+     &                                    * ( z_w(i,j  ,0)-z_w(i,j-1,0) )  )
+            wz(i,j,0,indx)=wz(i,j,0,nnew)*0.5*Hz(i,j,1)   !<-- wz(indx) has units kg.m-1.s-1 
+#  else
+            wz(i,j,0,nnew)=0.
+            wz(i,j,0,indx)=0.
+#  endif
        enddo            
 !==                  
       endif

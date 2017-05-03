@@ -81,14 +81,16 @@
       !!---------------------------------------------------------------------- 
       !!  Apply right-hand-side
       !!---------------------------------------------------------------------- 
+
       DO j=Jstr,Jend
-         DO k=0,N
+         DO k=1,N
             DO i=Istr,Iend
                wz(i,j,k,nnew)=wz(i,j,k,nnew)
      &                   +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)+rw_nbq_avg2(i,j,k))
             ENDDO
          ENDDO
-      ENDDO    
+      ENDDO  
+  
 
 # define NBQ_WDIF
 # ifdef NBQ_WDIF
@@ -116,7 +118,7 @@
          
          ! Rhs and diagonal term         
          DO k=1,N-1
-            DO i=Istr,Iend
+            DO i=Istr,Iend  
                DC(i,k)=wz(i,j,k,nnew)                                    !<-- rhs
                BC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j,k+1)) - FC(i,k+1) - FC(i,k) !<-- diagonal term                
             ENDDO
@@ -125,39 +127,54 @@
          DO i=Istr,Iend            
             BC(i,N)=0.5*Hz(i,j,N) - FC(i,N+1) - FC(i,N)    !<-- Hz contains rho.Hz
             DC(i,N)=wz(i,j,N,nnew)
-            BC(i,0)=0.5*Hz(i,j,1) - FC(i,  1) - FC(i,0)    !<-- Hz contains rho.Hz
-            DC(i,0)=wz(i,j,0,nnew)                       
+            BC(i,0)=1.  !0.5*Hz(i,j,1) - FC(i,  1) - FC(i,0)    !<-- Hz contains rho.Hz
+#  ifdef NBQ_FREESLIP
+            DC(i,0)=wz(i,j,0,nnew)  
+#  else    
+            DC(i,0)=0.
+#  endif                 
          ENDDO 
         
          ! Gaussian elimination
          DO i=Istr,Iend
-            cff1 = 0.                       
-            cff=1./BC(i,0)         !<-- 1./b(0)
-            CF(i,0)=cff*( FC(i,0)+cff1 )    !<-- q(0) = c(0) / b(0)
-            DC(i,0)=cff*DC(i,0)    !<-- f(0) = f(0) / b(0)
+!           cff1    = 0.               
+!           CF(i,0) = cff*FC(i,1)             !<-- q(0) = c(0) / b(0)
+!           CF(i,0) = cff* FC(i,0)            !<-- q(0) = c(0) / b(0)        
+            cff     = 1.                      !<-- 1./b(0)
+            CF(i,0) = 0.                      !<-- q(0) = c(0) / b(0)
+            DC(i,0) = cff*DC(i,0)             !<-- f(0) = f(0) / b(0)
          ENDDO
          
          DO k=1,N
             DO i=Istr,Iend 
-               cff1=0.
-               cff2=0.              
-               cff=1./(BC(i,k)-( FC(i,k) - cff1 )*CF(i,k-1))
-               CF(i,k)=cff*( FC(i,k+1) + cff2 )
-               DC(i,k)=cff*(DC(i,k)-( FC(i,k) - cff1 )*DC(i,k-1))
+!              cff1    = 0.
+!              cff2    = 0.              
+!              cff     = 1./(BC(i,k)-( FC(i,k) - cff1 )*CF(i,k-1))
+!              CF(i,k) = cff*( FC(i,k+1) + cff2 )
+!              DC(i,k) = cff*(DC(i,k)-( FC(i,k) - cff1 )*DC(i,k-1))
+               cff     = 1./(BC(i,k)-FC(i,k)*CF(i,k-1))
+               CF(i,k) = cff* FC(i,k+1) 
+               DC(i,k) = cff*(DC(i,k)-FC(i,k)*DC(i,k-1))
             ENDDO
          ENDDO
          
-         DO k=N-1,0,-1
+         DO k=N-1,1,-1
             DO i=Istr,Iend
                DC(i,k)=DC(i,k)-CF(i,k)*DC(i,k+1) 
             ENDDO
          ENDDO
          
-         DO k=0,N         
+         DO k=1,N         
             DO i=Istr,Iend
                wz(i,j,k,nnew)=DC(i,k)
             ENDDO
          ENDDO
+
+# ifdef NBQ_FREESLIP || defined NBQ_SBBC
+         do i=Istr,Iend
+          wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
+         enddo
+# endif
 
       ENDDO      ! <-- j
 #else
@@ -169,6 +186,9 @@
         enddo
         do i=Istr,Iend
           wz(i,j,N,nnew)=2.*wz(i,j,N,nnew)/Hz(i,j,N)
+# ifdef NBQ_FREESLIP || defined NBQ_SBBC
+          wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
+# endif
         enddo
       enddo
 #endif

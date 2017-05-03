@@ -63,16 +63,24 @@
 !  Transfer density field to i,j,k array 
 !  and time filter, ready for external mode
 !**********************************************************************
-        rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0.
+        rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0. 
 !       work2d    (istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1)=0.
 
          do k=1,N
            do j=jstrq_nh-1,jendq_nh+1
              do i=istrq_nh-1,iendq_nh+1
-               rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k) *Hzr_half_nbq(i,j,k)
-#if !defined M2FILTER_NONE
+# ifdef NBQ_CONS
+               rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k)  !XXX1
+#  if !defined M2FILTER_NONE
+               rho_nbq_ext(i,j,k)  = 1.+rho_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k) &
+                                       +rho(i,j,k)/rho0
+#  endif           
+# else
+               rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k)*Hzr_half_nbq(i,j,k) !XXX1
+#  if !defined M2FILTER_NONE
                rho_nbq_ext(i,j,k)  = 1.+ rho_nbq(i,j,k)+rho(i,j,k)/rho0
-#endif               
+#  endif           
+# endif     
              enddo  
            enddo  
          enddo
@@ -92,8 +100,8 @@
 !                               ,rho_nbq_ext(START_2D_ARRAY,1))
 # endif
 
-!       rhobar_nbq=1.
-!       rho_nbq_ext=1.
+   !    rhobar_nbq=1.
+   !    rho_nbq_ext=1.
 
 # ifdef RVTK_DEBUG
 !      call check_tab3d(rho_nbq_ext(:,:,1:N),'rho_nbq_ext (density_nbq)','r')
