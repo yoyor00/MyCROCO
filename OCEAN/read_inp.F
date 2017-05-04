@@ -121,8 +121,10 @@
 # else
       fname='TEST_CASES/croco.in.IGW'
 # endif
-#else
+#elif defined REGIONAL
       fname='croco.in'
+#else
+      fname='no_startup_file'
 #endif
 #ifdef MPI
       if (mynode.eq.0 .and. iargc().GT.0) call getarg(1,fname) 
@@ -331,7 +333,7 @@
      &                   'Grid File:', grdname(1:lstr)
 #endif
 
-#if (!defined BULK_FLUX  && !defined ANA_SMFLUX) \
+#if (!defined BULK_FLUX  && !defined ANA_SMFLUX && !defined OA_COUPLING) \
         || (defined TIDES) \
         || (defined MRL_WCI     && !defined ANA_WWAVE   && \
                                    !defined WKB_WWAVE && \
@@ -348,12 +350,13 @@
                                    !defined BULK_FLUX   && !defined BULK_EP) \
         || (defined SALINITY    &&  defined QCORRECTION && \
                                     defined SFLX_CORR   && !defined ANA_SSS) \
-        || (defined LMD_SKPP    && !defined ANA_SRFLUX  && !defined BULK_FLUX) \
+        || (defined LMD_SKPP    && !defined ANA_SRFLUX  && \
+                                   !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
         || (defined BULK_FLUX   && \
                                   (!defined BULK_SMFLUX || !defined BULK_EP)) \
                                    )\
-           )\
-        && !defined OA_COUPLING
+           )
 !
 !
 ! Forcing file name. Check its availability.
@@ -1995,6 +1998,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
            Jsrc_mpi(is,mynode)=-1
           endif
 #  endif
+#  ifdef SOLVE3D
           do itrc=1,NT
             MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
@@ -2007,6 +2011,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                      Tsrc0(is,itrc), 'write Tsrc(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
           enddo
+#  endif
         enddo
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */
