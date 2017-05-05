@@ -337,7 +337,7 @@
         || (defined MRL_WCI     && !defined ANA_WWAVE   && \
                                    !defined WKB_WWAVE && \
                                    !defined OW_COUPLING) \
-        || (defined SOLVE3D     && (\
+        || (defined SOLVE3D && !defined OA_COUPLING    && (\
                                   (!defined ANA_STFLUX  && !defined BULK_FLUX) \
         ||                         !defined ANA_BTFLUX   \
         || (defined BBL         && !defined ANA_BSEDIM  && !defined SEDIMENT) \
@@ -350,8 +350,7 @@
         || (defined SALINITY    &&  defined QCORRECTION && \
                                     defined SFLX_CORR   && !defined ANA_SSS) \
         || (defined LMD_SKPP    && !defined ANA_SRFLUX  && \
-                                   !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
+                                   !defined BULK_FLUX ) \
         || (defined BULK_FLUX   && \
                                   (!defined BULK_SMFLUX || !defined BULK_EP)) \
                                    )\
