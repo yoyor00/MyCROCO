@@ -52,6 +52,7 @@
 !!$      endif
 !      
       DO i = 1, nmaxfld
+      
          if (ssnd_clname(i)=='SRMSSTV'//clevel) then
             snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15    
 
@@ -60,6 +61,25 @@
             call prism_put_proto(ssnd_nid(ja,i), sndtime, 
      &        snd_field, comp_ierror)
             if ( (comp_ierror == OASIS_Sent   ) .or.
+     &           (comp_ierror == OASIS_ToRest ) .or.
+     &           (comp_ierror == OASIS_SentOut) .or.
+     &           (comp_ierror == OASIS_ToRestOut) ) then
+           MPI_master_only write(*,*) 'CPL-ROMS : ',ja,
+     & ssnd_clname(i),' sent at time ',sndtime
+            endif
+         endif  
+      enddo
+         
+         endif
+
+         if (ssnd_clname(i)=='SRMSSHV'//clevel) then
+            snd_field = zeta(1:Lmmpi,1:Mmmpi,nnew)
+            	
+      DO ja = 0, nmaxatm
+         if ( ssnd_nid(ja,i) /= -1 ) then             
+            call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &        snd_field, comp_ierror)
+                 if ( (comp_ierror == OASIS_Sent   ) .or.
      &           (comp_ierror == OASIS_ToRest ) .or.
      &           (comp_ierror == OASIS_SentOut) .or.
      &           (comp_ierror == OASIS_ToRestOut) ) then

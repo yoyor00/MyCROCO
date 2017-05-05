@@ -333,7 +333,8 @@
      &                   'Grid File:', grdname(1:lstr)
 #endif
 
-#if (!defined BULK_FLUX  && !defined ANA_SMFLUX && !defined OA_COUPLING) \
+#if (!defined BULK_FLUX && !defined ANA_SMFLUX && \
+                           !defined OA_COUPLING)  \
         || (defined TIDES) \
         || (defined MRL_WCI     && !defined ANA_WWAVE   && \
                                    !defined WKB_WWAVE && \
