@@ -133,6 +133,9 @@
 #ifdef NBQ
 # define M2FILTER_NONE
 # undef M2FILTER_POWER
+# if !defined NBQ_COUPLE1 && !defined NBQ_COUPLE0
+#  define NBQ_COUPLE1
+# endif
 # undef VAR_RHO_2D
 # undef TRACETXT
 # undef NBQ_OUT

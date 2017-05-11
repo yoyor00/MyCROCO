@@ -149,12 +149,19 @@
       ,qdm_v_ext               			                                   
 
       real,dimension(:,:),allocatable :: rmask_nbq,umask_nbq,vmask_nbq
+#ifdef NBQ_COUPLE0
+!.....Variables mode INT:
+      double precision,dimension(:,:,:,:),allocatable   ::            &   
+       qdm_u2               				              &         
+      ,qdm_v2               			                      &        
+      ,qdm_w2                   
+#endif
 
 #ifdef NBQ_IJK 
-   !   double precision,dimension(:,:,:),allocatable     ::            &
-       !qdmu_nbq                                                       &
-    !  qdmv_nbq                                                       &
-     ! ,qdmw_nbq                                     !                  &
+!      double precision,dimension(:,:,:),allocatable     ::            &
+!       qdmu_nbq                                                       &
+!      ,qdmv_nbq                                                       &
+!      ,qdmw_nbq                                     !                  &
       !,div_nbq                                                        &
       !,rho_nbq                                                      
 #endif
@@ -281,6 +288,12 @@
        allocate(  qdm_u_ext             (GLOBAL_2D_ARRAY)  )
        allocate(  qdm_v_ext             (GLOBAL_2D_ARRAY)  )
 
+#ifdef NBQ_COUPLE0
+!.....Variables mode INT:
+       allocate(  qdm_u2             (GLOBAL_2D_ARRAY,0:N+1,1:2)  )
+       allocate(  qdm_v2             (GLOBAL_2D_ARRAY,0:N+1,1:2)  )
+       allocate(  qdm_w2             (GLOBAL_2D_ARRAY,0:N+1,1:2) )
+#endif
 
        allocate(rmask_nbq(GLOBAL_2D_ARRAY))
        allocate(umask_nbq(GLOBAL_2D_ARRAY))
@@ -289,8 +302,8 @@
 
 #ifdef NBQ_IJK
   !     allocate(  qdmu_nbq          (GLOBAL_2D_ARRAY,N) ) ! A AJUSTER
-   !    allocate(  qdmv_nbq          (GLOBAL_2D_ARRAY,N) )
-   !    allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N) )
+  !     allocate(  qdmv_nbq          (GLOBAL_2D_ARRAY,N) )
+  !     allocate(  qdmw_nbq          (GLOBAL_2D_ARRAY,0:N) )
   !     allocate(  div_nbq           (GLOBAL_2D_ARRAY,N) )
   !     allocate(  rho_nbq           (GLOBAL_2D_ARRAY,N) )
 #endif

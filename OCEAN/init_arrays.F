@@ -1091,7 +1091,7 @@ C$    integer omp_get_thread_num
 !            rvext_nbq(i,j,k)=init
             ru_nbq_ext(i,j,k)=init
             rv_nbq_ext(i,j,k)=init
-#if !defined M2FILTER_NONE
+#if !defined M2FILTER_NONE || defined NBQ_COUPLE0
             ru_nbq_avg1(i,j,k)=init
             rv_nbq_avg1(i,j,k)=init
 #endif

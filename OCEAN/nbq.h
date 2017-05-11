@@ -1,19 +1,26 @@
 #ifdef NBQ
 
-!      real zeta_nbq(GLOBAL_2D_ARRAY,4)
-!      common /nbq_zeta/zeta_nbq
+       real zeta_nbq(GLOBAL_2D_ARRAY,4)
+       common /nbq_zeta/zeta_nbq
 
-!      real h_nbq(GLOBAL_2D_ARRAY,1:N,4)
-!      common /nbq_h/h_nbq
+       real h_nbq(GLOBAL_2D_ARRAY,1:N,4)
+       common /nbq_h/h_nbq
 
        real qdmu_nbq(GLOBAL_2D_ARRAY,N)
        common/nbq_qdmu_nbq/qdmu_nbq
-
        real qdmv_nbq(GLOBAL_2D_ARRAY,N)
        common/nbq_qdmv_nbq/qdmv_nbq
-
        real qdmw_nbq(GLOBAL_2D_ARRAY,-1:N+1)
        common/nbq_qdmw_nbq/qdmw_nbq
+
+# ifdef NBQ_COUPLE0
+       real qdmu2_nbq(GLOBAL_2D_ARRAY,N)
+       common/nbq_qdmu2_nbq/qdmu2_nbq
+       real qdmv2_nbq(GLOBAL_2D_ARRAY,N)
+       common/nbq_qdmv2_nbq/qdmv2_nbq
+       real qdmw2_nbq(GLOBAL_2D_ARRAY,-1:N+1)
+       common/nbq_qdmw2_nbq/qdmw2_nbq
+# endif
        
        real thetadiv_nbq(GLOBAL_2D_ARRAY,0:N)
        common/nbq_thetadiv_nbq/thetadiv_nbq
@@ -80,14 +87,14 @@
 
       real rho_nbq_ext(GLOBAL_2D_ARRAY,N)
       real rho_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
- !     real rho_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
       real rhos_nbq_int(GLOBAL_2D_ARRAY)
       common /nbq_rho_ext/ rho_nbq_ext
       common /avg1_rhonbq/ rho_nbq_avg1
- !     common /avg2_rhonbq/ rho_nbq_avg2
       common /int_rhonbq/ rhos_nbq_int
 
-#if !defined M2FILTER_NONE
+#ifdef NBQ_COUPLE0
+      real rho_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
+      common /avg2_rhonbq/ rho_nbq_avg2
       real ru_nbq_avg1(GLOBAL_2D_ARRAY,N)
       common /avg1_runbq/ ru_nbq_avg1
       real rv_nbq_avg1(GLOBAL_2D_ARRAY,N)
@@ -103,12 +110,19 @@
       real rw_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
       common /avg2_rwnbq/ rw_nbq_avg2
 
-!      real ruint_bak_nbq(GLOBAL_2D_ARRAY,N)
-!      common /coup_ruint/ ruint_bak_nbq
-!      real rvint_bak_nbq(GLOBAL_2D_ARRAY,N)
-!      common /coup_rvint/ rvint_bak_nbq
-!      real rwint_bak_nbq(GLOBAL_2D_ARRAY,0:N)
-!      common /coup_rwint/ rwint_bak_nbq
+#ifdef NBQ_COUPLE0
+      real ruint_bak_nbq(GLOBAL_2D_ARRAY,N,2)
+      common /coup_ruint/ ruint_bak_nbq
+      real rvint_bak_nbq(GLOBAL_2D_ARRAY,N,2)
+      common /coup_rvint/ rvint_bak_nbq
+      real rwint_bak_nbq(GLOBAL_2D_ARRAY,0:N,2)
+      common /coup_rwint/ rwint_bak_nbq
+
+      real ruext_nbq(GLOBAL_2D_ARRAY,N)
+      common /nbq_ruext/ ruext_nbq
+      real rvext_nbq(GLOBAL_2D_ARRAY,N)
+      common /nbq_rvext/ rvext_nbq
+#endif
 
  !     real dzdt_nbq(GLOBAL_2D_ARRAY,0:N)
  !     common /grid_dzdt_nbq/ dzdt_nbq

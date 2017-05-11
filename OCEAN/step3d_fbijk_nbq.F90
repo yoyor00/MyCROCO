@@ -81,7 +81,7 @@
 #include "compute_auxiliary_bounds.h"
 
 # undef DEBUG
-	   
+
 !
 !-------------------------------------------------------------------
 !       Initialization of various test-cases
@@ -114,10 +114,11 @@
 !*******************************************************************
 !*******************************************************************
 
+#ifdef NBQ_COUPLE1 
          do k=1,N         
           do j=JstrU_nh,JendU_nh   
             do i=IstrU_nh,IendU_nh
-              ru_nbq_ext (i,j,k) = qdmu_nbq(i,j,k) 
+               ru_nbq_ext (i,j,k) = qdmu_nbq(i,j,k) 
             enddo
           enddo
          enddo
@@ -125,24 +126,56 @@
          do k=1,N         
           do j=JstrV_nh,JendV_nh   
             do i=IstrV_nh,IendV_nh
-              rv_nbq_ext (i,j,k) = qdmv_nbq(i,j,k) 
+               rv_nbq_ext (i,j,k) = qdmv_nbq(i,j,k) 
             enddo
           enddo
         enddo         
                
-#ifdef M2FILTER_NONE
+# ifdef M2FILTER_NONE
         if (LAST_2D_STEP) then
-#endif
+# endif
         do k=0,N 
           do j=Jstr_nh,Jend_nh             
             do i=Istr_nh,Iend_nh
-              rw_nbq_ext (i,j,k) = qdmw_nbq(i,j,k) 
+               rw_nbq_ext (i,j,k) = qdmw_nbq(i,j,k) 
             enddo
           enddo
         enddo
-#ifdef M2FILTER_NONE        
+# ifdef M2FILTER_NONE        
         endif
-#endif        
+# endif   
+   
+#elif defined NBQ_COUPLE0
+         do k=1,N         
+          do j=JstrU_nh,JendU_nh   
+            do i=IstrU_nh,IendU_nh
+               qdmu2_nbq(i,j,k) = qdmu_nbq(i,j,k) 
+            enddo
+          enddo
+         enddo
+         
+         do k=1,N         
+          do j=JstrV_nh,JendV_nh   
+            do i=IstrV_nh,IendV_nh
+               qdmv2_nbq(i,j,k) = qdmv_nbq(i,j,k) 
+            enddo
+          enddo
+        enddo         
+               
+!#ifdef M2FILTER_NONE
+!        if (LAST_2D_STEP) then
+!#endif
+        do k=0,N 
+          do j=Jstr_nh,Jend_nh             
+            do i=Istr_nh,Iend_nh
+               qdmw2_nbq (i,j,k) = qdmw_nbq(i,j,k) 
+            enddo
+          enddo
+        enddo
+!#ifdef M2FILTER_NONE        
+!        endif
+!#endif   
+#endif     
        
 !*******************************************************************
 !*******************************************************************
@@ -156,7 +189,7 @@
 !       "Pressure - Viscosity" Variable (theta)
 !          whether NBQ_CONS or not: theta does not change
 !-------------------------------------------------------------------
-
+!       thetadiv_nbq=0.
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
@@ -183,6 +216,9 @@
 #define dthetadiv_nbqdz_u zwrk1
 #define dthetadiv_nbqdz_v zwrk2
 #define dthetadiv_nbqdz   zwrk5
+!       dthetadiv_nbqdz_u=0.
+!       dthetadiv_nbqdz_v=0.
+!       dthetadiv_nbqdz=0.
 
         k2 = 1
         do k=0,N
@@ -198,7 +234,7 @@
               do i=Istr,Iend
 	        dthetadiv_nbqdz_v(i,j,k2)=0.
 	      enddo
-    	    enddo
+    	    enddo  
           else
             if (k.eq.N) then ! Top Boundary conditions
               do j=JstrV-1,Jend
@@ -227,22 +263,40 @@
             if (k.gt.0) then
             do j=Jstr,Jend
               do i=IstrU,Iend
+                if (k.ne.N) then 
 		dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)) &
-                       *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))        &   ! dZdx * (d(delta p)dz)_u
-	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                        ! - d(delta p)dx
-
+                       *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))         &   ! dZdx * (d(delta p)dz)_u
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                        ! - d(delta p)dx  
+               else
+		dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)) &
+                       *(dthetadiv_nbqdz_u(i,j,k1))       &   ! dZdx * (d(delta p)dz)_u
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))     &                   ! - d(delta p)dx
+                      +(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N)) &
+                       *dthetadiv_nbqdz_u(i,j,k2)
+                endif
                 dum_s=dum_s*Hzu_half_qdmu(i,j,k)
+# ifdef NBQ_COUPLE1
                 qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k))    
+# elif defined NBQ_COUPLE0
+                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k)  &
+                      + ruext_nbq(i,j,k))    
+# endif
               enddo
             enddo
             do j=JstrV,Jend
               do i=Istr,Iend
+                
 	        dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i,j-1,k)) &
                        *(dthetadiv_nbqdz_v(i,j,k2)+dthetadiv_nbqdz_v(i,j,k1)) &   ! dZdy * (d(delta p)dz)_v
 	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
 
                 dum_s=dum_s*Hzv_half_qdmv(i,j,k)
-                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k))					
+# ifdef NBQ_COUPLE1
+                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k))    		
+# elif defined NBQ_COUPLE0
+                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k)  &
+                      + rvext_nbq(i,j,k))    		
+# endif			
               enddo
             enddo
           endif
@@ -288,7 +342,7 @@
         do j=Jstr_nh,Jend_nh
           do k=1,N-1
             do i=Istr_nh,Iend_nh                                                               
-               dum_s =   thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)                           
+               dum_s =   thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)   
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
                 + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
 #ifdef MASKING
@@ -351,6 +405,10 @@
 !--------------------------- 
 ! X -component 
 !---------------------------
+
+
+!        thetadiv_nbq=0.
+
         k2 = 1
         do k=0,N
           k1=k2
@@ -367,34 +425,34 @@
           endif
 
 	  if (k.eq.0) then	! Bottom boundary conditions
-#  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
               dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
-                               / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1))*pm_u(i,j) 
+                               / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1)) 
 	    enddo
 	    enddo
+#  if defined NBQ_FREESLIP || defined NBQ_SBBC
  	    do j=Jstr_nh,Jend_nh
  	    do i=Istr_nh,Iend_nh         
               qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k2)+dZdxq_w(i+1,j,k2)) &
-                             * Hzr_half_nbq(i,j,1)	  
+                             * Hzr_half_nbq(i,j,1)*pm_u(i,j)	  
 #if defined MASKING
               qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
 #endif 
  	    enddo
  	    enddo 
 #  else 
- 	    do j=Jstr_nh,Jend_nh
- 	    do i=Istr_nh,Iend_nh         	  
-              qdmw_nbq(i,j,0)=0.
- 	    enddo
- 	    enddo 
+! 	    do j=Jstr_nh,Jend_nh
+! 	    do i=Istr_nh,Iend_nh         	  
+!              qdmw_nbq(i,j,0)=0.  
+! 	    enddo
+! 	    enddo 
 #  endif 
-	    do j=Jstr_nh,Jend_nh
-	    do i=Istr_nh,Iend_nh+1
-              dZdxq_w(i,j,k2)= 0.
-	    enddo
-	    enddo
+!	    do j=Jstr_nh,Jend_nh
+!	    do i=Istr_nh,Iend_nh+1
+!              dZdxq_w(i,j,k2)= 0.
+!	    enddo
+!           enddo
 
           elseif (k==N) then ! Top boundary conditions
 
@@ -427,6 +485,7 @@
 
           endif
 
+!.........
           if (k.gt.0) then
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
@@ -463,7 +522,6 @@
           endif
 
           if (k.eq.0) then	! Bottom boundary conditions
-
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
@@ -471,7 +529,6 @@
                                / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) ) *pm_v(i,j)  
 	    enddo
 	    enddo
-
  	    do j=Jstr_nh,Jend_nh
   	    do i=Istr_nh,Iend_nh        
                  qdmw_nbq(i,j,0)=(qdmw_nbq(i,j,0) 	                             &
@@ -482,12 +539,12 @@
 #endif 
   	    enddo
             enddo
-#  else
-  	    do j=Jstr_nh,Jend_nh
-   	    do i=Istr_nh,Iend_nh            
-               qdmw_nbq(i,j,0)=0.
-   	    enddo
-             enddo
+#  else 
+ 	    do j=Jstr_nh,Jend_nh
+ 	    do i=Istr_nh,Iend_nh         	  
+              qdmw_nbq(i,j,0)=0.
+ 	    enddo
+ 	    enddo 
 #  endif
 	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
@@ -645,7 +702,7 @@
            do i=Istr_nh,Iend_nh
              cff=1.d0/(cff1+Hzw_half_nbq_inv(i,j,1)*(Hzr_half_nbq_inv(i,j,1)+Hzr_half_nbq_inv(i,j,2)))
              CF(i,1)=cff*(-Hzw_half_nbq_inv(i,j,2)*Hzr_half_nbq_inv(i,j,2))
-             DC(i,1)=cff*qdmw_nbq(i,j,1)*cff1 
+             DC(i,1)=cff*qdmw_nbq(i,j,1)*cff1  
            enddo
 
 !..........Inner layers:
@@ -678,7 +735,7 @@
              enddo            
            enddo                        
         enddo    
-        
+                      
 #endif
 !
 !-------------------------------------------------------------------
@@ -698,7 +755,8 @@
             do i=Istr_nh,Iend_nh
               FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
             enddo
-            do i=Istr_nh,Iend_nh           
+            do i=Istr_nh,Iend_nh          
+
 	      thetadiv_nbq(i,j,k)=(thetadiv_nbq(i,j,k)+FC(i,k)-FC(i,k-1))             
             enddo
           enddo
@@ -724,7 +782,7 @@
 !           
 #ifdef RVTK_DEBUG
        call check_tab3d(rho_nbq,'rho_nbq','r')
-#endif           
+#endif    
 !
 !-------------------------------------------------------------------
 !      Density open boundary conditions
