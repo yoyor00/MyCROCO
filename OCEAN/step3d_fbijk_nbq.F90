@@ -402,13 +402,13 @@
 #define dZdyq_w zwrk4
 #define FY zwrk5
 
+
 !--------------------------- 
 ! X -component 
 !---------------------------
 
 
 !        thetadiv_nbq=0.
-
         k2 = 1
         do k=0,N
           k1=k2
@@ -435,7 +435,7 @@
  	    do j=Jstr_nh,Jend_nh
  	    do i=Istr_nh,Iend_nh         
               qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k2)+dZdxq_w(i+1,j,k2)) &
-                             * Hzr_half_nbq(i,j,1)*pm_u(i,j)	  
+                             * Hzr_half_nbq(i,j,1)*pm_u(i,j)      
 #if defined MASKING
               qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
 #endif 
@@ -455,12 +455,12 @@
 !           enddo
 
           elseif (k==N) then ! Top boundary conditions
-
+           
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
 	      dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))   &
                       *qdmu_nbq(i,j,N)                                     &                       
-                      / (hzr_half_nbq(i,j,N)+hzr_half_nbq(i-1,j,N))
+                      / (hzr_half_nbq(i,j,N)+hzr_half_nbq(i-1,j,N))  
             enddo
             enddo   
 
@@ -479,7 +479,7 @@
 
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
-	       dZdxq_w(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dZdxq_u(i,j,k1)+dZdxq_u(i,j,k2)) ! (dZdx * (rho u))_uw/Hzw_u
+	       dZdxq_w(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dZdxq_u(i,j,k1)+dZdxq_u(i,j,k2)) 
             enddo 
             enddo
 
@@ -630,13 +630,55 @@
           do i=Istr_nh,Iend_nh			   
             thetadiv_nbq(i,j,k)=(thetadiv_nbq(i,j,k)                          &
 		            +WORK(i,j)*(FX(i+1,j)-FX(i,j)+FY(i,j+1)-FY(i,j))  &
-		                       )
+		                       ) 
 #ifdef MASKING
             thetadiv_nbq(i,j,k) = thetadiv_nbq(i,j,k) * rmask(i,j)
 #endif                              
           enddo
           enddo
         enddo
+
+#ifdef NBQ_DTDRHO
+!---------------------------
+! Time and Bp density variations
+!---------------------------   
+        do j=Jstr_nh,Jend_nh
+         do i=Istr_nh,Iend_nh
+           FC(i,0)=0.              ! Bottom boundary condition
+         enddo
+
+          do k=1,N-1
+            do i=Istr_nh,Iend_nh
+# ifdef NBQ_CONS
+              FC(i,k)=   &
+                 +(z_nbq(i,j,k,nnew)-z_nbq(i,j,k,nstp))/dt &
+                  *0.5*( rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  ) & 
+                        +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1)  &
+                        +rho(i,j,k)/rho0+rho(i,j,k+1)/rho0)
+# else
+              FC(i,k)=   &
+                 +(z_nbq(i,j,k,nnew)-z_nbq(i,j,k,nstp))/dt &
+                  *0.5*( rho_nbq(i,j,k  ) & 
+                        +rho_nbq(i,j,k+1) &
+                        +rho(i,j,k)/rho0+rho(i,j,k+1)/rho0)
+# endif
+            enddo
+            do i=Istr_nh,Iend_nh          
+	      thetadiv_nbq(i,j,k)=(thetadiv_nbq(i,j,k)+FC(i,k)-FC(i,k-1))    
+            enddo
+          enddo
+          k=N
+          do i=Istr_nh,Iend_nh
+              FC(i,k)=    &
+                 + (z_nbq(i,j,k,nnew)-z_nbq(i,j,k,nstp))/dt*rho(i,j,k)/rho0
+          enddo
+          do i=Istr_nh,Iend_nh          
+	      thetadiv_nbq(i,j,k)=(thetadiv_nbq(i,j,k)+FC(i,k)-FC(i,k-1)) &
+                  -(hrho_nbq(i,j,k,nnew)-hrho_nbq(i,j,k,nstp))/dt  
+          enddo
+        enddo
+#endif
+
 !
 !-------------------------------------------------------------------
 ! Implicit Vertical Momentum equation: 
@@ -746,18 +788,16 @@
 !.......Computes fluxes:  
         do j=Jstr_nh,Jend_nh
 
-!         k=0.
          do i=Istr_nh,Iend_nh
            FC(i,0)=0.              ! Bottom boundary condition
          enddo
 
           do k=1,N
             do i=Istr_nh,Iend_nh
-              FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)
+              FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)   
             enddo
             do i=Istr_nh,Iend_nh          
-
-	      thetadiv_nbq(i,j,k)=(thetadiv_nbq(i,j,k)+FC(i,k)-FC(i,k-1))             
+	      thetadiv_nbq(i,j,k)=(thetadiv_nbq(i,j,k)+FC(i,k)-FC(i,k-1))    
             enddo
           enddo
         enddo

@@ -476,7 +476,7 @@ C$OMP END MASTER
  	  zeta_new(i,j)=zeta_new(i,j) +h(i,j)
           Dnew(i,j)=zeta_new(i,j)
           rhobar_nbq(i,j,knew) = 2.*rhobar_nbq(i,j,kstp)-rhobar_nbq(i,j,kbak)
-!         zeta_nbq(i,j,knew)=zeta_new(i,j)/rhobar_nbq(i,j,knew)-h(i,j)
+!          zeta_nbq(i,j,knew)=zeta_new(i,j)/rhobar_nbq(i,j,knew)-h(i,j)
           zwrk(i,j)= cff0*zeta_new(i,j) /rhobar_nbq(i,j,knew)
      &             +cff1*zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
      &             +cff2*zeta(i,j,kbak)/rhobar_nbq(i,j,kbak)
@@ -1616,7 +1616,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !
       if (FIRST_2D_STEP) then	  
         call grid_coef_nh(
-#if defined NBQ_IJK
+# if defined NBQ_IJK
      &   Istr,Iend,Jstr,Jend,
      &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
      &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
@@ -1624,16 +1624,27 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &   work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,2)
 !    &   work3d_nbq(START_2D_ARRAY,1,1),
 !    &   work3d_nbq(START_2D_ARRAY,1,2)
-#endif
+# endif
      &   )
 
-!        do k=1,N
-!          do j=jstrq_nh-1,jendq_nh+1
-!            do i=istrq_nh-1,iendq_nh+1
-!              h_nbq(i,j,k,knew)=Hzr_half_nbq(i,j,k)
-!            enddo  
-!          enddo  
-!        enddo
+# ifdef NBQ_DTDRHO
+        do k=1,N
+          do j=jstrq_nh-1,jendq_nh+1
+            do i=istrq_nh-1,iendq_nh+1
+              hrho_nbq(i,j,k,nnew)=Hzr_half_nbq(i,j,k)*rho(i,j,k)/rho0
+            enddo  
+          enddo  
+        enddo
+        if (iic.le.2) hrho_nbq(:,:,:,nstp)=hrho_nbq(:,:,:,nnew)
+        do k=0,N
+          do j=jstrq_nh-1,jendq_nh+1
+            do i=istrq_nh-1,iendq_nh+1
+              z_nbq(i,j,k,nnew)=zw_half_nbq(i,j,k)
+            enddo
+          enddo  
+        enddo
+        if (iic.eq.1) z_nbq(:,:,:,nstp)=z_nbq(:,:,:,nnew)
+# endif
 
 # ifndef NBQ_IJK
         call mat_mom_nh

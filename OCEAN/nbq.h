@@ -1,10 +1,13 @@
 #ifdef NBQ
 
-       real zeta_nbq(GLOBAL_2D_ARRAY,4)
-       common /nbq_zeta/zeta_nbq
-
-       real h_nbq(GLOBAL_2D_ARRAY,1:N,4)
-       common /nbq_h/h_nbq
+# ifdef NBQ_DTDRHO
+!       real zeta_nbq(GLOBAL_2D_ARRAY,4)
+!       common /nbq_zeta/zeta_nbq
+       real hrho_nbq(GLOBAL_2D_ARRAY,1:N,4)
+       common /nbq_hrho/hrho_nbq
+       real z_nbq(GLOBAL_2D_ARRAY,0:N,4)
+       common /nbq_z/z_nbq
+# endif
 
        real qdmu_nbq(GLOBAL_2D_ARRAY,N)
        common/nbq_qdmu_nbq/qdmu_nbq
