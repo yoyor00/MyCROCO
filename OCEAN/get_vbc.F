@@ -301,7 +301,7 @@
 ! Flux correction to surface salt flux.
 !--------------------------------------------------------------
 !
-#  ifdef SFLX_CORR
+#  if defined SALINITY && defined SFLX_CORR
 #   ifdef ANA_SSS
       call ana_sss_tile (Istr,Iend,Jstr,Jend)
 #   else
