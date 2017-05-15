@@ -235,52 +235,57 @@
 	        dthetadiv_nbqdz_v(i,j,k2)=0.
 	      enddo
     	    enddo  
+          elseif (k.eq.N) then ! Top Boundary conditions
+            do j=JstrV-1,Jend
+              do i=IstrU-1,Iend
+                dthetadiv_nbqdz(i,j)= - thetadiv_nbq(i  ,j,k)
+     	      enddo
+	    enddo
           else
-            if (k.eq.N) then ! Top Boundary conditions
-              do j=JstrV-1,Jend
-                do i=IstrU-1,Iend
-	          dthetadiv_nbqdz(i,j)= - thetadiv_nbq(i  ,j,k)
-		enddo
-	      enddo
-            else
-              do j=JstrV-1,Jend
-                do i=IstrU-1,Iend
-                  dthetadiv_nbqdz(i,j)=thetadiv_nbq(i  ,j,k+1) - thetadiv_nbq(i  ,j,k)
-                enddo
-              enddo            
-            endif
-            do j=Jstr,Jend
-              do i=IstrU,Iend
-               dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i-1,j))              
-              enddo
-            enddo
-            do j=JstrV,Jend
-              do i=Istr,Iend
-                dthetadiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i,j-1))
+            do j=JstrV-1,Jend
+              do i=IstrU-1,Iend
+                dthetadiv_nbqdz(i,j)=thetadiv_nbq(i  ,j,k+1) - thetadiv_nbq(i  ,j,k)
               enddo
             enddo            
-            endif
-            if (k.gt.0) then
+          endif
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i-1,j))              
+            enddo
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              dthetadiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i,j-1))
+            enddo
+          enddo            
+         
+          if (k.gt.0) then
             do j=Jstr,Jend
               do i=IstrU,Iend
-                if (k.ne.N) then 
-		dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)) &
-                       *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))         &   ! dZdx * (d(delta p)dz)_u
-	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                        ! - d(delta p)dx  
-               else
-		dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k)) &
-                       *(dthetadiv_nbqdz_u(i,j,k1))       &   ! dZdx * (d(delta p)dz)_u
-	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))     &                   ! - d(delta p)dx
-                      +(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N)) &
+                if (k.gt.1.and.k.lt.N) then 
+	  	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
+                       *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))          &   ! dZdx * (d(delta p)dz)_u
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+                elseif (k.gt.1) then
+	 	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
+                        *dthetadiv_nbqdz_u(i,j,k1)                                     &   ! dZdx * (d(delta p)dz)_u
+	               -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                    &   ! - d(delta p)dx
+                       +(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))                      &
                        *dthetadiv_nbqdz_u(i,j,k2)
+                else
+	  	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
+                       *2.*dthetadiv_nbqdz_u(i,j,k2)                                   &   ! dZdx * (d(delta p)dz)_u
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
                 endif
+
                 dum_s=dum_s*Hzu_half_qdmu(i,j,k)
 # ifdef NBQ_COUPLE1
                 qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k))    
 # elif defined NBQ_COUPLE0
                 qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k)  &
-                      + ruext_nbq(i,j,k))    
+                       + ruext_nbq(i,j,k))    
 # endif
+
               enddo
             enddo
             do j=JstrV,Jend
@@ -295,7 +300,7 @@
                 qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k))    		
 # elif defined NBQ_COUPLE0
                 qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k)  &
-                      + rvext_nbq(i,j,k))    		
+                                + rvext_nbq(i,j,k))    		
 # endif			
               enddo
             enddo
