@@ -170,7 +170,7 @@
             ENDDO
          ENDDO
 
-# ifdef NBQ_FREESLIP || defined NBQ_SBBC
+# if defined NBQ_FREESLIP || defined NBQ_SBBC
          do i=Istr,Iend
           wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
          enddo
