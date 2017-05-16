@@ -90,6 +90,14 @@
             ENDDO
          ENDDO
       ENDDO  
+
+#ifdef NBQ_FREESLIP
+!      DO j=Jstr,Jend
+!            DO i=Istr,Iend
+!               wz(i,j,0,nnew)=qdmw_nbq(i,j,0)    !*2./Hz(i,j,1)
+!            ENDDO
+!      ENDDO  
+#endif
   
 
 # define NBQ_WDIF
@@ -171,8 +179,8 @@
          ENDDO
 
 # if defined NBQ_FREESLIP || defined NBQ_SBBC
-         do i=Istr,Iend
-          wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
+         do i=Istr,Iend  
+           wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
          enddo
 # endif
 

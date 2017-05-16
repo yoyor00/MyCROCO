@@ -432,35 +432,30 @@
           endif
 
 	  if (k.eq.0) then	! Bottom boundary conditions
+#  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
-              dZdxq_w(i,j,k2)=0.
-      !        dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
-      !                         / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1)) 
+              dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
+                               / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1))
 	    enddo
 	    enddo
-#  if defined NBQ_FREESLIP || defined NBQ_SBBC
  	    do j=Jstr_nh,Jend_nh
  	    do i=Istr_nh,Iend_nh         
-              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k2)+dZdxq_w(i+1,j,k2)) &
-                             * Hzr_half_nbq(i,j,1)*pm_u(i,j)      
+              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k2) *pm_u(i,j) +dZdxq_w(i+1,j,k2) *pm_u(i+1,j) ) &
+                             * Hzr_half_nbq(i,j,1)      
 #if defined MASKING
               qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
 #endif 
  	    enddo
  	    enddo 
 #  else 
-! 	    do j=Jstr_nh,Jend_nh
-! 	    do i=Istr_nh,Iend_nh         	  
-!              qdmw_nbq(i,j,0)=0.  
-! 	    enddo
-! 	    enddo 
+ 	    do j=Jstr_nh,Jend_nh
+ 	    do i=Istr_nh,Iend_nh    
+              dZdxq_w(i,j,k2)=0.     	  
+              qdmw_nbq(i,j,0)=0.  
+ 	    enddo
+ 	    enddo 
 #  endif 
-!	    do j=Jstr_nh,Jend_nh
-!	    do i=Istr_nh,Iend_nh+1
-!              dZdxq_w(i,j,k2)= 0.
-!	    enddo
-!           enddo
 
           elseif (k==N) then ! Top boundary conditions
            
@@ -493,7 +488,6 @@
 
           endif
 
-!.........
           if (k.gt.0) then
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
@@ -533,15 +527,14 @@
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
-              dZdyq_w(i,j,k2)=0.
-        !      dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
-        !                       / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) ) *pm_v(i,j)  
+               dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
+                                / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) ) 
 	    enddo
 	    enddo
  	    do j=Jstr_nh,Jend_nh
   	    do i=Istr_nh,Iend_nh        
-                 qdmw_nbq(i,j,0)=(qdmw_nbq(i,j,0) 	                             &
-                                  +0.5*(dZdyq_w(i,j,k2)+dZdyq_w(i,j+1,k2)) )   & 
+                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0) 	                             &
+                                  +0.5*(dZdyq_w(i,j,k2)*pm_v(i,j)  +dZdyq_w(i,j+1,k2)*pm_v(i,j+1)  )    & 
                                     * Hzr_half_nbq(i,j,1) 
 #if defined MASKING
                  qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
@@ -550,22 +543,19 @@
             enddo
 #  else 
  	    do j=Jstr_nh,Jend_nh
- 	    do i=Istr_nh,Iend_nh         	  
+ 	    do i=Istr_nh,Iend_nh      
+              dZdyq_w(i,j,k2)=0.   	  
               qdmw_nbq(i,j,0)=0.
  	    enddo
  	    enddo 
 #  endif
-	    do j=Jstr_nh,Jend_nh+1
-            do i=Istr_nh,Iend_nh
-              dZdyq_w(i,j,k2)=0.   
-	    enddo
-	    enddo
 
           elseif (k==N) then ! Top boundary conditions
 
             do j=Jstr_nh,Jend_nh+1
 	    do i=Istr_nh,Iend_nh
-              dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))*qdmv_nbq(i,j,N) &
+              dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))       &
+                             * qdmv_nbq(i,j,N)                                 &
                              / ( Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i,j-1,N) )
 	    enddo
 	    enddo
@@ -575,18 +565,20 @@
 	    do i=Istr_nh,Iend_nh
               qdmw_nbq(i,j,N+1)=(qdmw_nbq(i,j,N+1)+0.5*(dZdyq_w(i,j,k2)+dZdyq_w(i,j+1b,k2)))&
                                 * Hzw_half_nbq(i,j,N)
-#if defined MASKING
+#   if defined MASKING
               qdmw_nbq(i,j,N+1) = qdmw_nbq(i,j,N+1) * rmask(i,j)
-#endif 
+#   endif 
 	    enddo
 	    enddo
 #  endif
           else
+
       	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
               dZdyq_w(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dZdyq_v(i,j,k1)+dZdyq_v(i,j,k2)) ! (dZdy * (rho v))_uw/Hzw_v
             enddo 
             enddo
+
           endif
 
           if (k.gt.0) then
@@ -731,13 +723,16 @@
 #endif              
           enddo   
 
-!.........Bottom BC:          		   
-          do i=Istr_nh,Iend_nh   
-     !        FC(i,0)=0.         
-     !        DC(i,0)=0.      
-     !        CF(i,0)=0.
-             qdmw_nbq(i,j,0)=0.
-          enddo
+!.........Bottom BC:       
+!#ifdef NBQ_FREE_SLIP   		   
+!          do i=Istr_nh,Iend_nh   
+!             qdmw_nbq(i,j,0)=0.
+!          enddo	   
+!#else
+!          do i=Istr_nh,Iend_nh   
+!             qdmw_nbq(i,j,0)=0.
+!          enddo
+!#endif
 
         enddo
 
@@ -756,7 +751,8 @@
            do i=Istr_nh,Iend_nh
              cff=1.d0/(cff1+Hzw_half_nbq_inv(i,j,1)*(Hzr_half_nbq_inv(i,j,1)+Hzr_half_nbq_inv(i,j,2)))
              CF(i,1)=cff*(-Hzw_half_nbq_inv(i,j,2)*Hzr_half_nbq_inv(i,j,2))
-             DC(i,1)=cff*qdmw_nbq(i,j,1)*cff1  
+             DC(i,1)=cff*qdmw_nbq(i,j,1)*cff1   &
+                     +qdmw_nbq(i,j,0)*cff*Hzw_half_nbq_inv(i,j,0)*Hzr_half_nbq_inv(i,j,1)
            enddo
 
 !..........Inner layers:
@@ -799,10 +795,16 @@
 
 !.......Computes fluxes:  
         do j=Jstr_nh,Jend_nh
-
+            
+#ifdef NBQ_FREESLIP
          do i=Istr_nh,Iend_nh
-           FC(i,0)=0.              ! Bottom boundary condition
+           FC(i,0)=Hzw_half_nbq_inv(i,j,0) * qdmw_nbq(i,j,0)             ! Bottom boundary condition
          enddo
+#else
+         do i=Istr_nh,Iend_nh
+           FC(i,0)=0.                                                    ! Bottom boundary condition
+         enddo
+#endif
 
           do k=1,N
             do i=Istr_nh,Iend_nh

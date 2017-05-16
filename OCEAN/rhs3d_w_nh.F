@@ -3,7 +3,11 @@
 #   define W_HADV
 #   define W_VADV
 #   define WADV_SPLINES
+# ifndef NBQ_FREESLIP
 #   define NBQ_WNOSLIP
+# else
+#   undef  NBQ_WNOSLIP
+# endif
 
 #if defined SOLVE3D && defined NBQ
 
@@ -343,6 +347,22 @@
              ENDDO
           ENDDO
        ENDIF    
+
+#ifdef NBQ_FREESLIP
+       DO j=Jstr,Jend 
+           DO i=Istr,Iend
+             wz(i,j,0,nnew) = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
+     &                                +   vdH_y(i,j) + vdH_y(i,j+1) ) 
+     &            *0.5*Hz(i,j,1) 
+           ENDDO
+       ENDDO
+#else
+       DO j=Jstr,Jend 
+           DO i=Istr,Iend
+             wz(i,j,0,nnew) = 0.  
+           ENDDO
+       ENDDO
+#endif
 
       !-----------------------------------------------------------------------      
       !  Vertical advection
