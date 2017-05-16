@@ -235,29 +235,31 @@
 	        dthetadiv_nbqdz_v(i,j,k2)=0.
 	      enddo
     	    enddo  
-          elseif (k.eq.N) then ! Top Boundary conditions
-            do j=JstrV-1,Jend
-              do i=IstrU-1,Iend
-                dthetadiv_nbqdz(i,j)= - thetadiv_nbq(i  ,j,k)
-     	      enddo
-	    enddo
           else
-            do j=JstrV-1,Jend
-              do i=IstrU-1,Iend
-                dthetadiv_nbqdz(i,j)=thetadiv_nbq(i  ,j,k+1) - thetadiv_nbq(i  ,j,k)
+            if (k.eq.N) then ! Top Boundary conditions
+              do j=JstrV-1,Jend
+                do i=IstrU-1,Iend
+                  dthetadiv_nbqdz(i,j)= - thetadiv_nbq(i  ,j,k)
+     	        enddo
+	      enddo
+            else
+              do j=JstrV-1,Jend
+                do i=IstrU-1,Iend
+                  dthetadiv_nbqdz(i,j)=thetadiv_nbq(i  ,j,k+1) - thetadiv_nbq(i  ,j,k)
+                enddo
               enddo
-            enddo            
-          endif
-          do j=Jstr,Jend
+            endif  
+            do j=Jstr,Jend
             do i=IstrU,Iend
               dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i-1,j))              
             enddo
-          enddo
-          do j=JstrV,Jend
-            do i=Istr,Iend
-              dthetadiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i,j-1))
             enddo
-          enddo            
+            do j=JstrV,Jend
+              do i=Istr,Iend
+                dthetadiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i,j-1))
+              enddo
+            enddo              
+          endif        
          
           if (k.gt.0) then
             do j=Jstr,Jend
@@ -432,8 +434,9 @@
 	  if (k.eq.0) then	! Bottom boundary conditions
 	    do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
-              dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
-                               / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1)) 
+              dZdxq_w(i,j,k2)=0.
+      !        dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
+      !                         / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1)) 
 	    enddo
 	    enddo
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
@@ -530,8 +533,9 @@
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
-              dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
-                               / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) ) *pm_v(i,j)  
+              dZdyq_w(i,j,k2)=0.
+        !      dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
+        !                       / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) ) *pm_v(i,j)  
 	    enddo
 	    enddo
  	    do j=Jstr_nh,Jend_nh
@@ -729,7 +733,10 @@
 
 !.........Bottom BC:          		   
           do i=Istr_nh,Iend_nh   
-             FC(i,0)=0.            
+     !        FC(i,0)=0.         
+     !        DC(i,0)=0.      
+     !        CF(i,0)=0.
+             qdmw_nbq(i,j,0)=0.
           enddo
 
         enddo
