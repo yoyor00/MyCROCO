@@ -100,7 +100,7 @@
 #  ifdef NBQ_CONS
                rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k)  &  !XXX1
                                     + rho(i,j,k)/rho0*Hzr_half_nbq(i,j,k)
-               rho_nbq_ext(i,j,k)  = 1.+rho_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k) &
+               rho_nbq_ext(i,j,k)  = 1.+rho_nbq(i,j,k)/Hzr_half_nbq(i,j,k) &
                                     + rho(i,j,k)/rho0
 #  else
                rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k)*Hzr_half_nbq(i,j,k)  &  !XXX1
