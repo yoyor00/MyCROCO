@@ -149,13 +149,13 @@
       ,qdm_v_ext               			                                   
 
       real,dimension(:,:),allocatable :: rmask_nbq,umask_nbq,vmask_nbq
-#ifdef NBQ_COUPLE0
+!#ifdef NBQ_COUPLE0
 !.....Variables mode INT:
-      double precision,dimension(:,:,:,:),allocatable   ::            &   
+      double precision,dimension(:,:,:),allocatable   ::            &   
        qdm_u2               				              &         
       ,qdm_v2               			                      &        
       ,qdm_w2                   
-#endif
+!#endif
 
 #ifdef NBQ_IJK 
 !      double precision,dimension(:,:,:),allocatable     ::            &
@@ -288,12 +288,12 @@
        allocate(  qdm_u_ext             (GLOBAL_2D_ARRAY)  )
        allocate(  qdm_v_ext             (GLOBAL_2D_ARRAY)  )
 
-#ifdef NBQ_COUPLE0
+!#ifdef NBQ_COUPLE0
 !.....Variables mode INT:
-       allocate(  qdm_u2             (GLOBAL_2D_ARRAY,0:N+1,1:2)  )
-       allocate(  qdm_v2             (GLOBAL_2D_ARRAY,0:N+1,1:2)  )
-       allocate(  qdm_w2             (GLOBAL_2D_ARRAY,0:N+1,1:2) )
-#endif
+       allocate(  qdm_u2             (GLOBAL_2D_ARRAY,0:N+1)  )
+       allocate(  qdm_v2             (GLOBAL_2D_ARRAY,0:N+1)  )
+       allocate(  qdm_w2             (GLOBAL_2D_ARRAY,0:N+1) )
+!#endif
 
        allocate(rmask_nbq(GLOBAL_2D_ARRAY))
        allocate(umask_nbq(GLOBAL_2D_ARRAY))

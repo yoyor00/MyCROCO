@@ -612,12 +612,11 @@
      &                      )*cff
 # ifdef NBQ
 
-#  ifdef NBQ_COUPLE1
-              ruint_nbq(i,j,k)=DC(i,0)*ru(i,j,k)
-#  elif defined NBQ_COUPLE0
-              qdm_u2(i,j,k,1) = 0.
-              qdm_u2(i,j,k,2) = u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-              ruint_nbq(i,j,k) = qdm_u2(i,j,k,2)/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!              ruint_nbq(i,j,k)=DC(i,0)*ru(i,j,k)
+!#  elif defined NBQ_COUPLE0
+              qdm_u2(i,j,k) = u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+              ruint_nbq(i,j,k) = qdm_u2(i,j,k)/dt
 #  endif
 
               qdm_u_ext(i,j) = qdm_u_ext(i,j) + ruint_nbq(i,j,k)
@@ -661,14 +660,15 @@
      &                       +cdt*DC(i,0)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
      &                                                     )*cff
 
-# ifdef NBQ_COUPLE1
-              ruint_nbq(i,j,k)=DC(i,0)*ru(i,j,k)
-# elif defined NBQ_COUPLE0
-              qdm_u2(i,j,k,1) = qdm_u2(i,j,k,2)
-              qdm_u2(i,j,k,2) = u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
-     &                                            Hz(i-1,j,k))
-              ruint_nbq(i,j,k) = (qdm_u2(i,j,k,2)-qdm_u2(i,j,k,1))/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!              ruint_nbq(i,j,k)=DC(i,0)*ru(i,j,k)
+!# elif defined NBQ_COUPLE0
+              ruint_nbq(i,j,k) =   (
+     &             u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &            -qdm_u2(i,j,k) ) /dt
      &                           -DC(i,0)*ru_nbq_avg2(i,j,k)
+              qdm_u2(i,j,k) = u(i,j,k,nstp)*0.5*(Hz(i,j,k)+
+     &                                            Hz(i-1,j,k))
 # endif
        
               qdm_u_ext(i,j) =  qdm_u_ext(i,j) + ruint_nbq(i,j,k)
@@ -729,12 +729,11 @@
      &                           )*cff
 
 # ifdef NBQ
-#  ifdef NBQ_COUPLE1
-              rvint_nbq(i,j,k)=DC(i,0)*rv(i,j,k)
-#  elif defined NBQ_COUPLE0
-              qdm_v2(i,j,k,1) = 0.
-              qdm_v2(i,j,k,2) = v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-              rvint_nbq(i,j,k) = qdm_v2(i,j,k,2)/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!              rvint_nbq(i,j,k)=DC(i,0)*rv(i,j,k)
+!#  elif defined NBQ_COUPLE0
+              qdm_v2(i,j,k) = v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+              rvint_nbq(i,j,k) = qdm_v2(i,j,k)/dt
 #  endif
               qdm_v_ext(i,j) = qdm_v_ext(i,j) + rvint_nbq(i,j,k)
 # endif
@@ -776,14 +775,15 @@
      &                     +cdt*DC(i,0)*(rv(i,j,k)+rv_nbq_avg1(i,j,k))
      &                                                           )*cff
 
-# ifdef NBQ_COUPLE1
-              rvint_nbq(i,j,k)=DC(i,0)*rv(i,j,k)
-# elif defined NBQ_COUPLE0
-              qdm_v2(i,j,k,1) = qdm_v2(i,j,k,2)
-              qdm_v2(i,j,k,2) = v(i,j,k,nstp)*0.5*(Hz(i,j,k)+
-     &                                            Hz(i,j-1,k))
-              rvint_nbq(i,j,k) = (qdm_v2(i,j,k,2)-qdm_v2(i,j,k,1))/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!              rvint_nbq(i,j,k)=DC(i,0)*rv(i,j,k)
+!# elif defined NBQ_COUPLE0
+              rvint_nbq(i,j,k) = (
+     &            v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+     &           -qdm_v2(i,j,k))/dt
      &                           -DC(i,0)*rv_nbq_avg2(i,j,k)
+              qdm_v2(i,j,k) = v(i,j,k,nstp)*0.5*(Hz(i,j,k)+
+     &                                            Hz(i,j-1,k))
 # endif
 
               qdm_v_ext(i,j) =  qdm_v_ext(i,j) + rvint_nbq(i,j,k)
@@ -847,12 +847,11 @@
      &                              *(rw(i,j,k)+rw_nbq_avg1(i,j,k))
      &                     )   /  (Hz_half(i,j,k)+Hz_half(i,j,k+1)) 
 
-#  ifdef NBQ_COUPLE1
-            rwint_nbq(i,j,k)=pn(i,j)*pm(i,j)*rw(i,j,k)
-#  elif defined NBQ_COUPLE0
-            qdm_w2(i,j,k,1)=0.
-            qdm_w2(i,j,k,2)=wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))/2.
-            rwint_nbq(i,j,k)= qdm_w2(i,j,k,2)/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!            rwint_nbq(i,j,k)=pn(i,j)*pm(i,j)*rw(i,j,k)
+!#  elif defined NBQ_COUPLE0
+            qdm_w2(i,j,k)=wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))/2.
+            rwint_nbq(i,j,k)= qdm_w2(i,j,k)/dt
      &                      - pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,k)
 #  endif
 
@@ -869,13 +868,14 @@
      &                *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
      &                     )        /  Hz_half(i,j,N) !<-- wz has units m.s-1
 
-#  ifdef NBQ_COUPLE1
-            rwint_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
-#  elif defined NBQ_COUPLE0
-            qdm_w2(i,j,N,1)=0.
-            qdm_w2(i,j,N,2)=wz(i,j,N,nstp)*Hz(i,j,N)/2.
-            rwint_nbq(i,j,N)=(qdm_w2(i,j,N,2)-qdm_w2(i,j,N,1))/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!            rwint_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
+!#  elif defined NBQ_COUPLE0
+            rwint_nbq(i,j,N)=(
+     &            wz(i,j,N,nstp)*Hz(i,j,N)/2.
+     &            -qdm_w2(i,j,N))/dt
      &                      - pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,N)
+            qdm_w2(i,j,N)=wz(i,j,N,nstp)*Hz(i,j,N)/2.
 #  endif
 
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) !<-- wz(indx) has units kg.m-1.s-1
@@ -920,14 +920,16 @@
      &                      ) / (Hz_half(i,j,k)+Hz_half(i,j,k+1))  !<-- wz has units m.s-1
 
 
-# ifdef NBQ_COUPLE1
-             rwint_nbq(i,j,k)=pn(i,j)*pm(i,j)*rw(i,j,k)
-# elif defined NBQ_COUPLE0
-             qdm_w2(i,j,k,1)=qdm_w2(i,j,k,2)
-             qdm_w2(i,j,k,2)=wz(i,j,k,nstp)*(Hz(i,j,k  )+
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!             rwint_nbq(i,j,k)=pn(i,j)*pm(i,j)*rw(i,j,k)
+!# elif defined NBQ_COUPLE0
+             rwint_nbq(i,j,k)=(
+     &             wz(i,j,k,nstp)*(Hz(i,j,k  )+
      &                                      Hz(i,j,k+1))/2.
-             rwint_nbq(i,j,k)=(qdm_w2(i,j,k,2)-qdm_w2(i,j,k,1))/dt
+     &             -qdm_w2(i,j,k))/dt
      &                      - pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,k)
+             qdm_w2(i,j,k)=wz(i,j,k,nstp)*(Hz(i,j,k  )+
+     &                                      Hz(i,j,k+1))/2.
 # endif
 
              wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
@@ -948,13 +950,14 @@
      &                          *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
      &                      )/ Hz_half(i,j,N)                !<-- wz has units m.s-1
 
-# ifdef NBQ_COUPLE1
-             rwint_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
-# elif defined NBQ_COUPLE0
-             qdm_w2(i,j,N,1)=qdm_w2(i,j,N,2)
-             qdm_w2(i,j,N,2)=wz(i,j,N,nstp)*Hz(i,j,N)/2.
-             rwint_nbq(i,j,N)=(qdm_w2(i,j,N,2)-qdm_w2(i,j,N,1))/dt
+#  if defined NBQ_COUPLE1 || defined NBQ_COUPLE0
+!             rwint_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
+!# elif defined NBQ_COUPLE0
+             rwint_nbq(i,j,N)=(
+     &           wz(i,j,N,nstp)*Hz(i,j,N)/2.
+     &          -qdm_w2(i,j,N))/dt
      &                      -  pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,N)
+             qdm_w2(i,j,N)=wz(i,j,N,nstp)*Hz(i,j,N)/2.
 # endif
 
              wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   !<-- wz(indx) has units kg.m-1.s-1
