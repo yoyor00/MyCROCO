@@ -143,12 +143,23 @@
       real sina(GLOBAL_2D_ARRAY)
       common /nbq_sina/ sina
 # ifdef NBQ_NODS
-      real dthetadiv_nbqdz_u(GLOBAL_2D_ARRAY,N)
+
+      real dthetadiv_nbqdz_u(GLOBAL_2D_ARRAY,0:N)
       common /nbq_nods1/ dthetadiv_nbqdz_u
-      real dthetadiv_nbqdz_v(GLOBAL_2D_ARRAY,N)
-      common /nbq_nods1/ dthetadiv_nbqdz_v
-      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,N)
-      common /nbq_nods1/ dthetadiv_nbqdz
+      real dthetadiv_nbqdz_v(GLOBAL_2D_ARRAY,0:N)
+      common /nbq_nods2/ dthetadiv_nbqdz_v
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N)
+      common /nbq_nods3/ dthetadiv_nbqdz
+
+      real dZdxq_u(GLOBAL_2D_ARRAY,0:N+1)
+      common /nbq_nods4/ dZdxq_u
+      real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
+      common /nbq_nods5/ dZdxq_w
+      real dZdyq_v(GLOBAL_2D_ARRAY,0:N+1)
+      common /nbq_nods6/ dZdyq_v
+      real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
+      common /nbq_nods7/ dZdyq_w
+
 # endif
 #endif
 

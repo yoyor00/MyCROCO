@@ -218,13 +218,17 @@
 # define dthetadiv_nbqdz   zwrk5
 #endif
 
+# ifdef NBQ_NODS
         k2 = 1
         do k=0,N
           k1=k2
 	  k2=3-k1
+# else
+        do k=0,N
+# endif
 
 # ifdef NBQ_NODS
-          if (iif == 1) then
+          if (iif == 1.and.iteration_nbq==1) then
 # endif
 
           if (k.eq.0) then ! Bottom Boundary conditions
@@ -469,10 +473,12 @@
 !-------------------------------------------------------------------
 !
 
-#define dZdxq_u zwrk1
-#define dZdxq_w zwrk2
-#define dZdyq_v zwrk3
-#define dZdyq_w zwrk4
+#ifndef NBQ_NODS
+# define dZdxq_u zwrk1
+# define dZdxq_w zwrk2
+# define dZdyq_v zwrk3
+# define dZdyq_w zwrk4
+#endif
 #define FY zwrk5
 
 
@@ -480,46 +486,73 @@
 ! X -component 
 !---------------------------
 
-
-!        thetadiv_nbq=0.
+# ifndef NBQ_NODS
         k2 = 1
         do k=0,N
           k1=k2
 	  k2=3-k1
+# else
+        do k=0,N
+# endif
+
+# ifdef NBQ_NODS
+!         if (mod(iif,5)==0.and.iteration_nbq==1) then
+          if (iif==1.and.iteration_nbq==1) then
+#endif
 
           if (k.lt.N) then
              kp1 = k + 1
-!         if (iif==1) then
 	     do j=Jstr_nh,Jend_nh
              do i=Istr_nh,Iend_nh+1
+# ifndef NBQ_NODS
 	       dZdxq_u(i,j,k2)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i-1,j,kp1)) &
                        *qdmu_nbq(i,j,kp1)    ! (dZdx * (rho u))_u
+# else
+	       dZdxq_u(i,j,k)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i-1,j,kp1)) &
+                       *qdmu_nbq(i,j,kp1)    ! (dZdx * (rho u))_u
+# endif
              enddo
              enddo	 
           endif
-!         endif
 
 	  if (k.eq.0) then	! Bottom boundary conditions
+
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh
-	    do i=Istr_nh,Iend_nh+1
+	    do i=Istr_nh,Iend_nh+1 
+# ifndef NBQ_NODS     
               dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
                                / (Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i-1,j,1))
+# else
+              dZdxq_w(i,j,k)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
+                               / (Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i-1,j,1))
+# endif
 	    enddo
 	    enddo
+
  	    do j=Jstr_nh,Jend_nh
- 	    do i=Istr_nh,Iend_nh         
+ 	    do i=Istr_nh,Iend_nh    
+# ifndef NBQ_NODS     
               qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k2) *pm_u(i,j) +dZdxq_w(i+1,j,k2) *pm_u(i+1,j) ) &
                              * Hzr_half_nbq(i,j,1)      
-#if defined MASKING
+# else
+              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k) *pm_u(i,j) +dZdxq_w(i+1,j,k) *pm_u(i+1,j) ) &
+                             * Hzr_half_nbq(i,j,1)      
+# endif
+
+# if defined MASKING
               qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
-#endif 
+# endif 
  	    enddo
  	    enddo 
 #  else 
  	    do j=Jstr_nh,Jend_nh
  	    do i=Istr_nh,Iend_nh    
-              dZdxq_w(i,j,k2)=0.     	  
+# ifndef NBQ_NODS
+              dZdxq_w(i,j,k2)=0.     
+# else	 
+              dZdxq_w(i,j,k)=0.     
+# endif	  
               qdmw_nbq(i,j,0)=0.  
  	    enddo
  	    enddo 
@@ -527,22 +560,30 @@
 
           elseif (k==N) then ! Top boundary conditions
            
-          if (iif==1) then
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
+# ifndef NBQ_NODS
 	      dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))   &
                       *qdmu_nbq(i,j,N)                                     &                       
                       / (Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i-1,j,N))  
+# else
+	      dZdxq_w(i,j,k)= (zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))   &
+                      *qdmu_nbq(i,j,N)                                     &                       
+                      / (Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i-1,j,N))
+# endif  
             enddo
-            enddo   
-          endif
+            enddo  
 
 #  ifdef NBQ_SBBC
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh
-              qdmw_nbq(i,j,N+1)=qdmw_nbq(i,j,N+1)+0.5*(dZdxq_w(i,j,k2)+dZdxq_w(i+1,j,k2))
+# ifndef NBQ_NODS
+!              qdmw_nbq(i,j,N+1)=qdmw_nbq(i,j,N+1)+0.5*(dZdxq_w(i,j,k2)+dZdxq_w(i+1,j,k2))
+# else
+!              qdmw_nbq(i,j,N+1)=qdmw_nbq(i,j,N+1)+0.5*(dZdxq_w(i,j,k)+dZdxq_w(i+1,j,k))
+# endif
 #if defined MASKING
-              qdmw_nbq(i,j,N+1) = qdmw_nbq(i,j,N+1) * rmask(i,j)
+!              qdmw_nbq(i,j,N+1) = qdmw_nbq(i,j,N+1) * rmask(i,j)
 #endif 
             enddo
             enddo   
@@ -552,16 +593,61 @@
 
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
+# ifndef NBQ_NODS
 	       dZdxq_w(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dZdxq_u(i,j,k1)+dZdxq_u(i,j,k2)) 
+# else
+	       dZdxq_w(i,j,k)=Hzw_half_nbq_inv_u(i,j,k)*(dZdxq_u(i,j,k-1)+dZdxq_u(i,j,k)) 
+# endif
             enddo 
             enddo
 
           endif
 
+# ifdef NBQ_NODS
+          else
+	  if (k.eq.0) then	! Bottom boundary conditions
+
+#  if defined NBQ_FREESLIP || defined NBQ_SBBC
+	    do j=Jstr_nh,Jend_nh
+	    do i=Istr_nh,Iend_nh+1 
+              dZdxq_w(i,j,k)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
+                               / (Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i-1,j,1))
+	    enddo
+	    enddo
+
+ 	    do j=Jstr_nh,Jend_nh
+ 	    do i=Istr_nh,Iend_nh    
+              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k) *pm_u(i,j) +dZdxq_w(i+1,j,k) *pm_u(i+1,j) ) &
+                             * Hzr_half_nbq(i,j,1)    
+
+# if defined MASKING
+              qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
+# endif 
+ 	    enddo
+ 	    enddo 
+#  else 
+ 	    do j=Jstr_nh,Jend_nh
+ 	    do i=Istr_nh,Iend_nh    
+              dZdxq_w(i,j,k)=0.     
+              qdmw_nbq(i,j,0)=0.  
+ 	    enddo
+ 	    enddo 
+#  endif 
+          endif
+          endif
+# endif
+
+
           if (k.gt.0) then
+
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
+# ifndef NBQ_NODS
 	      FX(i,j)=-pm_u(i,j)*(dZdxq_w(i,j,k2)-dZdxq_w(i,j,k1))
+# else
+	      FX(i,j)=-pm_u(i,j)*(dZdxq_w(i,j,k)-dZdxq_w(i,j,k-1))
+# endif
+
 #ifdef MASKING
               FX(i,j) = FX(i,j) * umask(i,j)
 #endif                
@@ -572,40 +658,68 @@
 	      thetadiv_nbq(i,j,k)=FX(i,j)+FX(i+1,j)           
             enddo
             enddo
+
           endif
 	enddo	
 	 
 !---------------------------
 ! Y component     
 !---------------------------   
+
+# ifdef NBQ_NODS
         k2 = 1
 	do k=0,N
 	  k1=k2
 	  k2=3-k1
+# else
+        do k=0,N
+# endif
+
+# ifdef NBQ_NODS
+!         if (mod(iif,5)==0.and.iteration_nbq==1) then
+          if (iif==1.and.iteration_nbq==1) then
+#endif
 
 	  if (k.lt.N) then
             kp1 = k + 1
             do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
+# ifndef NBQ_NODS
 	      dZdyq_v(i,j,k2)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i,j-1,kp1)) &
                       *qdmv_nbq(i,j,kp1)    ! (dZdy * (rho v))_v
+# else
+	      dZdyq_v(i,j,k)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i,j-1,kp1)) &
+                      *qdmv_nbq(i,j,kp1)    ! (dZdy * (rho v))_v
+# endif
             enddo
 	    enddo			 
           endif
 
           if (k.eq.0) then	! Bottom boundary conditions
+
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
 	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
+# ifndef NBQ_NODS
                dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
-                                / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) ) 
+                                / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) )
+# else
+               dZdyq_w(i,j,k)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
+                                / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) )
+# endif 
 	    enddo
 	    enddo
  	    do j=Jstr_nh,Jend_nh
-  	    do i=Istr_nh,Iend_nh        
+  	    do i=Istr_nh,Iend_nh   
+# ifndef NBQ_NODS     
                  qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0) 	                             &
                                   +0.5*(dZdyq_w(i,j,k2)*pm_v(i,j)  +dZdyq_w(i,j+1,k2)*pm_v(i,j+1)  )    & 
                                     * Hzr_half_nbq(i,j,1) 
+# else
+                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0) 	                             &
+                                  +0.5*(dZdyq_w(i,j,k)*pm_v(i,j)  +dZdyq_w(i,j+1,k)*pm_v(i,j+1)  )    & 
+                                    * Hzr_half_nbq(i,j,1) 
+# endif 
 #if defined MASKING
                  qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
 #endif 
@@ -613,8 +727,12 @@
             enddo
 #  else 
  	    do j=Jstr_nh,Jend_nh
- 	    do i=Istr_nh,Iend_nh      
-              dZdyq_w(i,j,k2)=0.   	  
+ 	    do i=Istr_nh,Iend_nh    
+# ifndef NBQ_NODS     
+              dZdxq_w(i,j,k2)=0.  
+# else   	   
+              dZdyq_w(i,j,k)=0. 
+# endif  	  
               qdmw_nbq(i,j,0)=0.
  	    enddo
  	    enddo 
@@ -624,19 +742,30 @@
 
             do j=Jstr_nh,Jend_nh+1
 	    do i=Istr_nh,Iend_nh
+# ifndef NBQ_NODS
               dZdyq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))       &
                              * qdmv_nbq(i,j,N)                                 &
                              / ( Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i,j-1,N) )
+# else
+              dZdyq_w(i,j,k)= (zw_half_nbq(i,j,N)-zw_half_nbq(i,j-1,N))       &
+                             * qdmv_nbq(i,j,N)                                 &
+                             / ( Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i,j-1,N) )
+# endif 
 	    enddo
 	    enddo
 
 #  ifdef NBQ_SBBC
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh
-              qdmw_nbq(i,j,N+1)=(qdmw_nbq(i,j,N+1)+0.5*(dZdyq_w(i,j,k2)+dZdyq_w(i,j+1b,k2)))&
-                                * Hzw_half_nbq(i,j,N)
+# ifndef NBQ_NODS
+!              qdmw_nbq(i,j,N+1)=(qdmw_nbq(i,j,N+1)+0.5*(dZdyq_w(i,j,k2)+dZdyq_w(i,j+1,k2)))&
+!                                * Hzw_half_nbq(i,j,N)
+# else
+!              qdmw_nbq(i,j,N+1)=(qdmw_nbq(i,j,N+1)+0.5*(dZdyq_w(i,j,k)+dZdyq_w(i,j+1,k)))&
+!                                * Hzw_half_nbq(i,j,N)
+# endif 
 #   if defined MASKING
-              qdmw_nbq(i,j,N+1) = qdmw_nbq(i,j,N+1) * rmask(i,j)
+!              qdmw_nbq(i,j,N+1) = qdmw_nbq(i,j,N+1) * rmask(i,j)
 #   endif 
 	    enddo
 	    enddo
@@ -645,16 +774,59 @@
 
       	    do j=Jstr_nh,Jend_nh+1
             do i=Istr_nh,Iend_nh
+# ifndef NBQ_NODS
               dZdyq_w(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dZdyq_v(i,j,k1)+dZdyq_v(i,j,k2)) ! (dZdy * (rho v))_uw/Hzw_v
+# else
+              dZdyq_w(i,j,k)=Hzw_half_nbq_inv_v(i,j,k)*(dZdyq_v(i,j,k-1)+dZdyq_v(i,j,k)) ! (dZdy * (rho v))_uw/Hzw_v
+# endif 
             enddo 
             enddo
 
           endif
 
+# ifdef NBQ_NODS
+
+          else
+
+          if (k.eq.0) then	! Bottom boundary conditions
+
+#  if defined NBQ_FREESLIP || defined NBQ_SBBC
+	    do j=Jstr_nh,Jend_nh+1
+            do i=Istr_nh,Iend_nh
+               dZdyq_w(i,j,k)= (zw_half_nbq(i,j,0)-zw_half_nbq(i,j-1,0))*qdmv_nbq(i,j,1) &
+                                / ( Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i,j-1,1) )
+	    enddo
+	    enddo
+ 	    do j=Jstr_nh,Jend_nh
+  	    do i=Istr_nh,Iend_nh   
+                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0) 	                             &
+                                  +0.5*(dZdyq_w(i,j,k)*pm_v(i,j)  +dZdyq_w(i,j+1,k)*pm_v(i,j+1)  )    & 
+                                    * Hzr_half_nbq(i,j,1) 
+#   if defined MASKING
+                 qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
+#   endif 
+  	    enddo
+            enddo
+#  else 
+ 	    do j=Jstr_nh,Jend_nh
+ 	    do i=Istr_nh,Iend_nh    
+              dZdyq_w(i,j,k)=0. 
+              qdmw_nbq(i,j,0)=0.
+ 	    enddo
+ 	    enddo 
+#  endif
+          endif
+          endif
+# endif
+
           if (k.gt.0) then
             do j=Jstr_nh,Jend_nh+1
-            do i=Istr_nh,Iend_nh
+            do i=Istr_nh,Iend_nh 
+# ifndef NBQ_NODS
 	      FY(i,j)=-pn_v(i,j)*(dZdyq_w(i,j,k2)-dZdyq_w(i,j,k1))
+# else
+	      FY(i,j)=-pn_v(i,j)*(dZdyq_w(i,j,k)-dZdyq_w(i,j,k-1))
+# endif 
 #ifdef MASKING
               FY(i,j) = FY(i,j) * vmask(i,j)
 #endif                 
@@ -668,8 +840,13 @@
           endif
 	enddo		         
 
-#undef dZdxq_u
-#undef dZdxq_w
+#ifndef NBQ_NODS 
+#  undef dZdxq_u
+#  undef dZdxq_w
+#  undef dZdyq_v
+#  undef dZdyq_w
+#endif
+
 #undef FY
 
 #define FY zwrk5
