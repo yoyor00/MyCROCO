@@ -218,7 +218,7 @@
 # define dthetadiv_nbqdz   zwrk5
 #endif
 
-# ifdef NBQ_NODS
+# ifndef NBQ_NODS
         k2 = 1
         do k=0,N
           k1=k2
@@ -666,7 +666,7 @@
 ! Y component     
 !---------------------------   
 
-# ifdef NBQ_NODS
+# ifndef NBQ_NODS
         k2 = 1
 	do k=0,N
 	  k1=k2
