@@ -142,6 +142,14 @@
       common /nbq_cosa/ cosa
       real sina(GLOBAL_2D_ARRAY)
       common /nbq_sina/ sina
-
+# ifdef NBQ_NODS
+      real dthetadiv_nbqdz_u(GLOBAL_2D_ARRAY,N)
+      common /nbq_nods1/ dthetadiv_nbqdz_u
+      real dthetadiv_nbqdz_v(GLOBAL_2D_ARRAY,N)
+      common /nbq_nods1/ dthetadiv_nbqdz_v
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,N)
+      common /nbq_nods1/ dthetadiv_nbqdz
+# endif
 #endif
+
   

@@ -88,6 +88,7 @@
 !-------------------------------------------------------------------
 !       
         if (iif==1.and.iic==1) call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
+!       if (iic==1.and.iif==1) thetadiv_nbq=0.
 !
 !-------------------------------------------------------------------
 !  Get internal and external forcing terms for nbq equations:
@@ -187,7 +188,7 @@
 !       "Pressure - Viscosity" Variable (theta)
 !          whether NBQ_CONS or not: theta does not change
 !-------------------------------------------------------------------
-!      
+!       
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
@@ -211,68 +212,131 @@
 !  XI- and ETA-Directions:
 !---------------------------
 
-#define dthetadiv_nbqdz_u zwrk1
-#define dthetadiv_nbqdz_v zwrk2
-#define dthetadiv_nbqdz   zwrk5
+#ifndef NBQ_NODS
+# define dthetadiv_nbqdz_u zwrk1
+# define dthetadiv_nbqdz_v zwrk2
+# define dthetadiv_nbqdz   zwrk5
+#endif
 
         k2 = 1
         do k=0,N
           k1=k2
 	  k2=3-k1
+
+# ifdef NBQ_NODS
+          if (iif == 1) then
+# endif
+
           if (k.eq.0) then ! Bottom Boundary conditions
+
             do j=Jstr,Jend
               do i=IstrU,Iend
+# ifndef NBQ_NODS
 	        dthetadiv_nbqdz_u(i,j,k2)=0.
+# else
+	        dthetadiv_nbqdz_u(i,j,k)=0.
+# endif
 	      enddo
 	    enddo
             do j=JstrV,Jend
               do i=Istr,Iend
+# ifndef NBQ_NODS
 	        dthetadiv_nbqdz_v(i,j,k2)=0.
+# else
+	        dthetadiv_nbqdz_v(i,j,k)=0.
+# endif
 	      enddo
     	    enddo  
+
           else
+
             if (k.eq.N) then ! Top Boundary conditions
+
               do j=JstrV-1,Jend
                 do i=IstrU-1,Iend
+# ifndef NBQ_NODS
                   dthetadiv_nbqdz(i,j)= - thetadiv_nbq(i  ,j,k)
+# else
+                  dthetadiv_nbqdz(i,j,k)= - thetadiv_nbq(i  ,j,k)
+# endif
      	        enddo
 	      enddo
+
             else
+
               do j=JstrV-1,Jend
                 do i=IstrU-1,Iend
+# ifndef NBQ_NODS
                   dthetadiv_nbqdz(i,j)=thetadiv_nbq(i  ,j,k+1) - thetadiv_nbq(i  ,j,k)
+# else
+                  dthetadiv_nbqdz(i,j,k)=thetadiv_nbq(i  ,j,k+1) - thetadiv_nbq(i  ,j,k)
+# endif
                 enddo
               enddo
-            endif  
+
+            endif
+  
             do j=Jstr,Jend
             do i=IstrU,Iend
-              dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i-1,j))              
+# ifndef NBQ_NODS
+              dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i-1,j)) 
+# else
+              dthetadiv_nbqdz_u(i,j,k)=Hzw_half_nbq_inv_u(i,j,k)*(dthetadiv_nbqdz(i,j,k)+dthetadiv_nbqdz(i-1,j,k))    
+# endif          
             enddo
             enddo
             do j=JstrV,Jend
               do i=Istr,Iend
+# ifndef NBQ_NODS
                 dthetadiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(dthetadiv_nbqdz(i,j)+dthetadiv_nbqdz(i,j-1))
+# else
+                dthetadiv_nbqdz_v(i,j,k)=Hzw_half_nbq_inv_v(i,j,k)*(dthetadiv_nbqdz(i,j,k)+dthetadiv_nbqdz(i,j-1,k))
+# endif
               enddo
-            enddo              
+            enddo    
+
+# ifdef NBQ_NODS
+            endif
+# endif          
           endif        
          
           if (k.gt.0) then
             do j=Jstr,Jend
               do i=IstrU,Iend
                 if (k.gt.1.and.k.lt.N) then 
+# ifndef NBQ_NODS
 	  	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
                        *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))          &   ! dZdx * (d(delta p)dz)_u
 	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+# else
+	  	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
+                       *(dthetadiv_nbqdz_u(i,j,k)+dthetadiv_nbqdz_u(i,j,k-1))          &   ! dZdx * (d(delta p)dz)_u
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+# endif
                 elseif (k.gt.1) then
+# ifndef NBQ_NODS
 	 	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
                         *dthetadiv_nbqdz_u(i,j,k1)                                     &   ! dZdx * (d(delta p)dz)_u
 	               -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                    &   ! - d(delta p)dx
                        +(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))                      &
                        *dthetadiv_nbqdz_u(i,j,k2)
+# else
+	 	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
+                        *dthetadiv_nbqdz_u(i,j,k-1)                                     &   ! dZdx * (d(delta p)dz)_u
+	               -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                    &   ! - d(delta p)dx
+                       +(zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))                      &
+                       *dthetadiv_nbqdz_u(i,j,k)
+# endif
                 else
+# ifndef NBQ_NODS
 	  	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
                        *2.*dthetadiv_nbqdz_u(i,j,k2)                                   &   ! dZdx * (d(delta p)dz)_u
 	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+# else
+	  	  dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i-1,j,k))                      &
+                       *2.*dthetadiv_nbqdz_u(i,j,k)                                   &   ! dZdx * (d(delta p)dz)_u
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+# endif
                 endif
 
                 dum_s=dum_s*Hzu_half_qdmu(i,j,k)
@@ -288,10 +352,15 @@
             do j=JstrV,Jend
               do i=Istr,Iend
                 
+# ifndef NBQ_NODS
 	        dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i,j-1,k)) &
                        *(dthetadiv_nbqdz_v(i,j,k2)+dthetadiv_nbqdz_v(i,j,k1)) &   ! dZdy * (d(delta p)dz)_v
 	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
-
+# else
+	        dum_s=(zr_half_nbq(i,j,k)-zr_half_nbq(i,j-1,k)) &
+                       *(dthetadiv_nbqdz_v(i,j,k)+dthetadiv_nbqdz_v(i,j,k-1)) &   ! dZdy * (d(delta p)dz)_v
+	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
+# endif
                 dum_s=dum_s*Hzv_half_qdmv(i,j,k)
 # ifdef NBQ_COUPLE1
                 qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k))    		
@@ -303,10 +372,11 @@
             enddo
           endif
         enddo
-
-#undef dthetadiv_nbqdz_u
-#undef dthetadiv_nbqdz_v
-#undef dthetadiv_nbqdz
+#ifndef NBQ_NODS
+# undef dthetadiv_nbqdz_u
+# undef dthetadiv_nbqdz_v
+# undef dthetadiv_nbqdz
+#endif
 
 
 !---------------------------
@@ -419,6 +489,7 @@
 
           if (k.lt.N) then
              kp1 = k + 1
+!         if (iif==1) then
 	     do j=Jstr_nh,Jend_nh
              do i=Istr_nh,Iend_nh+1
 	       dZdxq_u(i,j,k2)=(zr_half_nbq(i,j,kp1)-zr_half_nbq(i-1,j,kp1)) &
@@ -426,6 +497,7 @@
              enddo
              enddo	 
           endif
+!         endif
 
 	  if (k.eq.0) then	! Bottom boundary conditions
 #  if defined NBQ_FREESLIP || defined NBQ_SBBC
@@ -455,6 +527,7 @@
 
           elseif (k==N) then ! Top boundary conditions
            
+          if (iif==1) then
             do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
 	      dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))   &
@@ -462,6 +535,7 @@
                       / (Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i-1,j,N))  
             enddo
             enddo   
+          endif
 
 #  ifdef NBQ_SBBC
             do j=Jstr_nh,Jend_nh
