@@ -97,7 +97,7 @@ C$    integer omp_get_thread_num
             IF (h(i,j).eq.0.) THEN
               h(i,j)=eps
             END IF
-#  ifdef NBQ
+#  ifdef NBQ_MASS
             IF (zeta(i,j,1) .lt. Dcrit(i,j)) THEN
               zeta(i,j,1)=Dcrit(i,j)
 #  else
@@ -119,7 +119,7 @@ C$    integer omp_get_thread_num
 #  endif
             Zt_avg1(i,j)=zeta(i,j,1)    
           
-#  ifdef NBQ
+#  ifdef NBQ_MASS
             if (zeta(i,j,1).eq.0.) then     ! Set Zt_avg1 and rhobar_nbq_avg1
               Zt_avg1(i,j) = h(i,j)         ! before call to ana_initial (zeta=0)
               zeta(i,j,1)  = Zt_avg1(i,j)
@@ -187,7 +187,7 @@ C$    integer omp_get_thread_num
 #  endif
           do i=I_RANGE
             zetatmp=Zt_avg1(i,j)
-#  ifdef NBQ
+#  ifdef NBQ_MASS
      &              /rhobar_nbq_avg1(i,j)-h(i,j)
             if (rhobar_nbq_avg1(i,j).eq.0) stop 'Error set_depth (1)'
             if (rhobar_nbq(i,j,1).eq.0)    stop 'Error set_depth (2)'
@@ -216,7 +216,9 @@ C$    integer omp_get_thread_num
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 #  ifdef NBQ
             Hzr(i,j,k)=Hz(i,j,k)
+#   ifdef NBQ_MASS
             Hz(i,j,k) =Hz(i,j,k)*rho_nbq_avg1(i,j,k)
+#   endif
 # ifdef FIX_HZ
             correct_hz(i,j,1)=correct_hz(i,j,1)+rho_nbq_avg1(i,j,k)
             correct_hz(i,j,2)=correct_hz(i,j,2)+Hz(i,j,k)          
@@ -461,7 +463,7 @@ C$    integer omp_get_thread_num
      &                                     Hvom(START_2D_ARRAY,1))
 #  endif
       return
-      end
+      end 
 !
 !======================================================================
 !

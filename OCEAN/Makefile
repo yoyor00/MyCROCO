@@ -120,7 +120,7 @@ include Makedefs
 	MPI_setup_nbq.F90	parallele_nbq.F90	output_nbq.F90\
 	implicit_nbq.F90        amub2_tri.F90	        numuvw_nh.F90\
 	grid_def_nh.F90		grid_exchange.F90	step3d_fbijk_nbq.F90\
-	consout_nbq.F90		ruijk_nbq.F90		densityijk_nbq.F90\
+	ruijk_nbq.F90		densityijk_nbq.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\

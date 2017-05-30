@@ -38,7 +38,7 @@
 #define TANK            /* Tank Example */
 #undef  S2DV            /* S2DV sections */ 
 #undef  REGIONAL        /* REGIONAL Applications */
-#undef REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
+#undef  MILES           /* NBQ MILES Applications */ 
 
 
 #if defined REGIONAL
@@ -664,9 +664,9 @@
 # define M3NUDGING
 # define TNUDGING
 
-#elif defined REGIONAL_NBQ
+#elif defined MILES 
 /*
-!            NBQ-REGIONAL APPLICATIONS 
+!            NBQ-MILES APPLICATIONS 
 !                  ============
 !
 */

@@ -1072,8 +1072,10 @@ C$    integer omp_get_thread_num
 # ifdef NBQ
       do j=JstrR,JendR
         do i=IstrR,IendR
+#  ifdef NBQ_MASS
           rhobar_nbq(i,j,:)=1.
           rhobar_nbq_avg1(i,j)=1.
+#  endif
           rubar_nbq(i,j)=init
           rvbar_nbq(i,j)=init
           rufrc_bak(i,j,1:2)=init

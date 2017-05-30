@@ -201,7 +201,7 @@ C$    trd=omp_get_thread_num()
 !                                            Western edge Flather BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ
+#   ifdef NBQ_MASS
           cff=-sqrt(2.*g/(zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp)))
 #   else
           cff=-sqrt(2.*g/(h(Istr-1,j)+h(Istr,j)
@@ -228,7 +228,7 @@ C$    trd=omp_get_thread_num()
 !                                            Western edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ
+#   ifdef NBQ_MASS
 !         cff=0.5*(zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
           cff=0.5*(
      &             zeta(Istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
@@ -245,7 +245,7 @@ c            zx=(0.5+cx)*zeta(Istr,j,kstp)+(0.5-cx)*zeta(Istr-1,j,kstp)
 c          else
 c            zx=(0.5*zeta(Istr,j,kstp)+(cx-0.5)*zeta(Istr,j,knew))/cx
 c          endif
-#   ifndef NBQ
+#   ifndef NBQ_MASS
           zx=(0.5+cx)*zeta(istr,j,kstp)+(0.5-cx)*zeta(istr-1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(istr,j,knew) +cx*zeta(istr-1,j,kstp)
@@ -281,7 +281,7 @@ c          endif
      &                                           -zetabry_west(j)
 #   elif defined ZCLIMATOLOGY
      &                                             -ssh(Istr-1,j)
-#    ifdef NBQ
+#    ifdef NBQ_MASS
      &                                               +h(Istr-1,j)
 #    endif
 #   endif
@@ -409,7 +409,7 @@ c          endif
 !                                            Eastern edge Flather BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ
+#   ifdef NBQ_MASS
           cff=sqrt(2.*g/(zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp)))
 #   else
           cff=sqrt(2.*g/(h(Iend,j)+h(Iend+1,j)+
@@ -436,7 +436,7 @@ c          endif
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ
+#   ifdef NBQ_MASS
 !         cff=0.5*(zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
           cff=0.5*(
      &             zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
@@ -453,7 +453,7 @@ c            zx=(0.5+cx)*zeta(Iend,j,kstp)+(0.5-cx)*zeta(Iend+1,j,kstp)
 c          else
 c            zx=(0.5*zeta(Iend,j,kstp)+(cx-0.5)*zeta(Iend,j,knew))/cx
 c          endif
-#   ifndef NBQ
+#   ifndef NBQ_MASS
           zx=(0.5+cx)*zeta(iend,j,kstp)+(0.5-cx)*zeta(iend+1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(iend,j,knew) +cx*zeta(iend+1,j,kstp)
@@ -488,7 +488,7 @@ c          endif
      &                                           -zetabry_east(j)
 #   elif defined ZCLIMATOLOGY
      &                                               -ssh(Iend,j)
-#    ifdef NBQ
+#    ifdef NBQ_MASS
      &                                                +h(Iend,j)
 #    endif
 #   endif
@@ -616,7 +616,7 @@ c          endif
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
-#   ifdef NBQ
+#   ifdef NBQ_MASS
           cff=sqrt(0.5*g*(zeta(i-1,Jstr-1,kstp)+zeta(i,Jstr-1,kstp)))
 #   else
           cff=sqrt(0.5*g*(h(i-1,Jstr-1)+h(i,Jstr-1)+
@@ -749,7 +749,7 @@ c          endif
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
-#   ifdef NBQ
+#   ifdef NBQ_MASS
           cff=sqrt(0.5*g*(zeta(i-1,Jend+1,kstp)+zeta(i,Jend+1,kstp)))
 #   else
           cff=sqrt(0.5*g*(h(i-1,Jend+1)+h(i,Jend+1)+

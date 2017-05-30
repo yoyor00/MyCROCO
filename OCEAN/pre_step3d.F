@@ -206,8 +206,10 @@
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
-            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)/
-     &                          (rho_nbq_avg1(i,j,k))
+            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
+#  ifdef NBQ_MASS
+     &                         /(rho_nbq_avg1(i,j,k))
+#  endif
 
           enddo
         enddo
@@ -216,9 +218,11 @@
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
-            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)/
-     &                          (2.*rho_nbq_avg1(i,j,k)
+            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
+#   ifdef NBQ_MASS
+     &                         /(2.*rho_nbq_avg1(i,j,k)
      &                          -rho_nbq_avg2(i,j,k))
+#   endif
           enddo
         enddo
       enddo
@@ -631,7 +635,12 @@
             do i=IstrU,Iend
                ruint_nbq(i,j,k)=ruint_nbq(i,j,k)
      &            - qdm_u_ext(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
+# ifdef NBQ_MASS
      &                               /(Zt_avg1(i,j)+Zt_avg1(i-1,j))
+# else
+     &                               /( Zt_avg1(i  ,j)+H(i  ,j)
+     &                                 +Zt_avg1(i-1,j)+H(i-1,j))
+# endif
             enddo
           enddo
 # endif
@@ -654,7 +663,6 @@
      &                                                Hz(i-1,j,k))
               qdm_indx = u(i,j,k,indx)*0.5*(Hz_bak(i,j,k)+
      &                                                Hz_bak(i-1,j,k))
-             
               u(i,j,k,nnew)=( cff1*qdm_nstp
      &                       +cff2*qdm_indx
      &                       +cdt*DC(i,0)*(ru(i,j,k)+ru_nbq_avg1(i,j,k))
@@ -691,7 +699,12 @@
             do i=IstrU,Iend
                ruint_nbq(i,j,k)=ruint_nbq(i,j,k)
      &            - qdm_u_ext(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
+# ifdef NBQ_MASS
      &                               /(Zt_avg1(i,j)+Zt_avg1(i-1,j))
+# else
+     &                               /( Zt_avg1(i  ,j)+H(i  ,j)
+     &                                 +Zt_avg1(i-1,j)+H(i-1,j))
+# endif
             enddo
           enddo
 # endif
@@ -747,7 +760,12 @@
             do i=Istr,Iend
                rvint_nbq(i,j,k)=rvint_nbq(i,j,k)
      &            - qdm_v_ext(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
+# ifdef NBQ_MASS
      &                               /(Zt_avg1(i,j)+Zt_avg1(i,j-1))
+# else
+     &                               /( Zt_avg1(i,j  )+H(i,j  )
+     &                                 +Zt_avg1(i,j-1)+H(i,j-1))
+# endif
             enddo
           enddo
 # endif
@@ -806,7 +824,12 @@
             do i=Istr,Iend
                rvint_nbq(i,j,k)=rvint_nbq(i,j,k)
      &            - qdm_v_ext(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
+# ifdef NBQ_MASS
      &                               /(Zt_avg1(i,j)+Zt_avg1(i,j-1))
+# else
+     &                               /( Zt_avg1(i,j  )+H(i,j  )
+     &                                 +Zt_avg1(i,j-1)+H(i,j-1))
+# endif
             enddo
           enddo
 # endif
@@ -990,7 +1013,14 @@
 !==  
 
 !==
-# endif /* NBQ */     
+# endif /* NBQ */   
+  
+# if defined NBQ && defined M2FILTER_NONE && defined NBQ_COUPLE1
+#  undef ru_nbq_avg1 
+#  undef rv_nbq_avg1 
+#  undef rw_nbq_avg1 
+# endif
+
 !
 !======================================================================
 ! Set PHYSICAL lateral boundary conditions for tracers.

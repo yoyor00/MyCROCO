@@ -65,7 +65,7 @@
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
        parameter (LLm0=416, MMm0=3,    N=20)	! true 2DV
-#elif defined REGIONAL_NBQ
+#elif defined MILES 
        parameter (LLm0=198, MMm0=198,  N=10)
 #elif defined IGW
 # ifndef NBQ

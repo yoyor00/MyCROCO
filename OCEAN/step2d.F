@@ -301,7 +301,7 @@ C$    trd=omp_get_thread_num()
         do i=imin,imax
           Drhs(i,j)=cff1*zeta(i,j,kstp)+cff2*zeta(i,j,kbak)
      &                                 +cff3*zeta(i,j,kold)
-#ifndef NBQ
+#ifndef NBQ_MASS
      &                                             + h(i,j)
 #endif
         enddo
@@ -468,15 +468,18 @@ C$OMP END MASTER
 ! Computes zetarhs to use in mometum equations
 !-----------------------------------------------------------------------
 !
-#ifdef NBQ
+#ifdef NBQ_MASS
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
- 	  zeta_new(i,j)=zeta_new(i,j) -h(i,j)
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016	! PATCH LR
- 	  zeta_new(i,j)=zeta_new(i,j) +h(i,j)
+# ifdef MASKING
+ 	  zeta_new(i,j)=(zeta_new(i,j) -h(i,j))*rmask(i,j)+h(i,j)
+# endif
+! 	  zeta_new(i,j)=zeta_new(i,j) -h(i,j)
+!         zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016	! PATCH LR
+! 	  zeta_new(i,j)=zeta_new(i,j) +h(i,j)
           Dnew(i,j)=zeta_new(i,j)
           rhobar_nbq(i,j,knew) = 2.*rhobar_nbq(i,j,kstp)-rhobar_nbq(i,j,kbak)
-!          zeta_nbq(i,j,knew)=zeta_new(i,j)/rhobar_nbq(i,j,knew)-h(i,j)
+!         zeta_nbq(i,j,knew)=zeta_new(i,j)/rhobar_nbq(i,j,knew)-h(i,j)
           zwrk(i,j)= cff0*zeta_new(i,j) /rhobar_nbq(i,j,knew)
      &             +cff1*zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
      &             +cff2*zeta(i,j,kbak)/rhobar_nbq(i,j,kbak)
@@ -510,7 +513,7 @@ C$OMP END MASTER
 # endif
         enddo
       enddo
-#endif /* NBQ */
+#endif /* NBQ_MASS */
 !
 !-----------------------------------------------------------------------
 ! Load new free-surface values into shared array
@@ -523,7 +526,7 @@ C$OMP END MASTER
         do i=IstrU-1,Iend
           zeta(i,j,knew)=zeta_new(i,j) 
 #if defined WET_DRY && defined MASKING
-# ifdef NBQ
+# ifdef NBQ_MASS
           zeta(i,j,knew)=zeta(i,j,knew)+ 
      &               rhobar_nbq(i,j,knew)*Dcrit(i,j)*(1.-rmask(i,j))
 # else
@@ -676,8 +679,6 @@ C$OMP END MASTER
 #endif
      &                                                              )    
 ! 
-      
-      
           rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
      &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
 #if defined VAR_RHO_2D && defined SOLVE3D
@@ -1353,7 +1354,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 # define rzeta2  VFe
 # define rzetaSA VFx
 
-# ifdef NBQ
+# ifdef NBQ_MASS
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta_new(i,j) /rhobar_nbq(i,j,knew)
@@ -1388,7 +1389,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 #  endif
           enddo
         enddo
-# endif /* NBQ */
+# endif /* NBQ_MASS */
 
         cff=0.5*g
         do j=Jstr,Jend
@@ -1614,7 +1615,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !
 ! Resolve 3D NBQ equation for ndtnbq time steps
 !
-      if (FIRST_2D_STEP) then	  
+      if (FIRST_2D_STEP ) then	  
         call grid_coef_nh(
 # if defined NBQ_IJK
      &   Istr,Iend,Jstr,Jend,
@@ -1655,6 +1656,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 ! Initializes rho_bar
 !-----------------------------      
 !
+# ifdef NBQ_MASS
          do j=jstrq_nh-1,jendq_nh+1
            do i=istrq_nh-1,iendq_nh+1
              rhobar_nbq_int(i,j)= 0.
@@ -1669,6 +1671,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
              enddo  
            enddo  
          enddo
+#  endif
+!       rhobar_nbq_int=1.
 !
 !-----------------------------
 ! Initializes Ru-avg2 variables
@@ -1725,7 +1729,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !     call step3d_lf_nbq (Istr,Iend,Jstr,Jend, WORK)
 # elif defined NBQ_FB && !defined NBQ_IJK
       call step3d_fb_nbq (Istr,Iend,Jstr,Jend, WORK)
-# elif defined NBQ_FB && defined NBQ_IJK
+# elif defined NBQ_FB && defined NBQ_IJK 
       call step3d_fbijk_nbq (Istr,Iend,Jstr,Jend, WORK
      &     ,Hzw_half_nbq_inv,Hzr_half_nbq_inv
      &     ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
@@ -1867,6 +1871,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 ! Finalizes rho-avg1 variables
 !-----------------------------   
 !     
+#ifdef NBQ_MASS
           do j=Jstr,Jend
             do i=Istr,Iend
               rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,knew)
@@ -1875,26 +1880,29 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           do k=1,N
             do j=Jstr,Jend
               do i=Istr,Iend
-#ifdef NBQ_IJK
-# ifdef NBQ_CONS
+# ifdef NBQ_IJK
+#  ifdef NBQ_CONS
                 rho_nbq_avg1(i,j,k)=1.d0+
      &         (rho_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)+rho(i,j,k)/rho0 )   !XXX
-# else
+#  else
                 rho_nbq_avg1(i,j,k)=1.d0+
      &         (rho_nbq(i,j,k)+rho(i,j,k)/rho0 )
-# endif
-#else
+#  endif
+# else
                 l_nbq=ijk2lq_nh(i,j,k)
                 rho_nbq_avg1(i,j,k)=1.d0+
      &               (rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0  )
-#endif
-     !          rho_nbq_avg1(i,j,k)=1.d0
+# endif
+     !           rho_nbq_avg1(i,j,k)=1.d0
      !           rho_nbq_avg2(i,j,k)=rho_nbq_avg2(i,j,k)/real(nfast)
      !           rho_nbq_avg2(i,j,k)=1.d0+
      !&               (rho_nbq_avg2(i,j,k)+rho(i,j,k)/rho0  )
               enddo
             enddo 
           enddo
+#endif
+!          rhobar_nbq_avg1=1.
+!          rho_nbq_avg1=1.
 !
 !-----------------------------
 ! Finalizes Ru_avg2 variables
@@ -1922,8 +1930,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 
               enddo
             enddo 
-          enddo
-     
+          enddo          
 
           do k=1,N
             do j=JstrV,Jend
@@ -1970,16 +1977,20 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 #endif        
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+# ifdef NBQ_MASS
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   rhobar_nbq_avg1(START_2D_ARRAY))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                   rho_nbq_avg1(START_2D_ARRAY,1))
+# endif
+# ifdef NBQ
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
      &                   ru_nbq_avg2(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
      &                   rv_nbq_avg2(START_2D_ARRAY,1))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
      &                   rw_nbq_avg2(START_2D_ARRAY,0))
+# endif
 #endif
 
 !
@@ -2000,7 +2011,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
  
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-#ifdef NBQ
+#ifdef NBQ_MASS
           Dstp(i,j)=zeta(i,j,kstp)
 #else
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
@@ -2241,7 +2252,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
-#  ifndef NBQ
+#  ifndef NBQ_MASS
           Dnew(Istr-1,j)=h(Istr-1,j)+zeta(Istr-1,j,knew)
 #  else
           Dnew(Istr-1,j)=zeta(Istr-1,j,knew)
@@ -2250,7 +2261,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
       endif
       if (EASTERN_EDGE) then
         do j=Jstr-1,JendR
-#  ifndef NBQ
+#  ifndef NBQ_MASS
           Dnew(Iend+1,j)=h(Iend+1,j)+zeta(Iend+1,j,knew)
 #  else
           Dnew(Iend+1,j)=zeta(Iend+1,j,knew)
@@ -2261,7 +2272,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=Istr-1,IendR
-#  ifndef NBQ
+#  ifndef NBQ_MASS
           Dnew(i,Jstr-1)=h(i,Jstr-1)+zeta(i,Jstr-1,knew)
 #  else
           Dnew(i,Jstr-1)=zeta(i,Jstr-1,knew)
@@ -2270,7 +2281,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
       endif
       if (NORTHERN_EDGE) then
         do i=Istr-1,IendR
-#  ifndef NBQ
+#  ifndef NBQ_MASS
           Dnew(i,Jend+1)=h(i,Jend+1)+zeta(i,Jend+1,knew)
 #  else
           Dnew(i,Jend+1)=zeta(i,Jend+1,knew)
@@ -2405,6 +2416,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 #ifndef SOLVE3D
       call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
 #endif
+     
 !
 !-----------------------------------------------------------------------
 !  Exchange boundary information.

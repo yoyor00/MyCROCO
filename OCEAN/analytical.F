@@ -618,7 +618,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #   endif
 
-# ifdef NBQ
+# ifdef NBQ_MASS
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=h(i,j)+ssh(i,j)

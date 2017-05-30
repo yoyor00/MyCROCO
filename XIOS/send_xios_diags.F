@@ -101,6 +101,22 @@
 #  define I_EXT_RANGE Istr-1,Iend+1
 #  define J_EXT_RANGE Jstr-1,Jend+1
 
+#  ifdef EW_PERIODIC 
+#   define IU_RANGE Istr,Iend
+#   define IV_RANGE Istr,Iend
+#  else
+#   define IU_RANGE Istr,IendR
+#   define IV_RANGE IstrR,IendR
+#  endif
+
+#  ifdef NS_PERIODIC 
+#   define JU_RANGE Jstr,Jend
+#   define JV_RANGE Jstr,Jend
+#  else
+#   define JU_RANGE JstrR,JendR
+#   define JV_RANGE Jstr,JendR
+#  endif
+
 
 !       ilc=iic   ! number of time step since start
        ilc=1+iic-ntstart   ! number of time step since restart
@@ -152,7 +168,24 @@
       zz(:,:,1)=REAL(Vtransform)
       call xios_send_field("Vtransform",zz(:,:,1))
       call xios_send_field("levels_rho",z_r(:,:,:))
-      call xios_send_field("levels_w",z_w(:,:,:))
+      call xios_send_field("levels_w"  ,z_w(:,:,:))
+      do k=1,N
+        do j=JstrR,JendR
+          do i=Istr,IendR
+            workr(i,j,k)=0.5*(z_r(i,j,k)+z_r(i-1,j,k))
+          enddo
+        enddo
+      enddo
+      call xios_send_field("levels_u"  ,workr(:,:,:))
+      do k=1,N
+       do j=JV_RANGE
+          do i=IV_RANGE
+            workr(i,j,k)=0.5*(z_r(i,j,k)+z_r(i,j-1,k))
+          enddo
+       enddo
+      enddo
+      call xios_send_field("levels_v"  ,workr(:,:,:))
+      
 # endif
 !
 ! Bathymetry.
@@ -195,7 +228,7 @@
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-# ifdef NBQ     
+# ifdef NBQ_MASS
       work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out) - h(:,:)
 # else
       work2d=zeta(:,:,fast_indx_out)
@@ -292,7 +325,7 @@
      &                    +   Wi(i,j,k)
 #  endif                  
      &                           ) *pm(i,j)*pn(i,j)
-#  ifdef NBQ
+#  ifdef NBQ_MASS
      &                         /rho_nbq_avg1(i,j,k)
 #  endif
             enddo
@@ -302,7 +335,7 @@
 
 #  ifdef NBQ
       call xios_send_field("w_nbq",wz(:,:,:,nstp))
-
+#ifndef NBQ_IJK
       do l_nbq=1,neqcont_nh
          i = l2iq_nh (l_nbq)
          j = l2jq_nh (l_nbq)
@@ -310,6 +343,7 @@
          workr(i,j,k) = rhp_nbq_a(l_nbq)
       enddo
       call xios_send_field("rho_nbq",workr)
+#endif
 
 #  endif
 

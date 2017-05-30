@@ -111,7 +111,7 @@ C$    trd=omp_get_thread_num()
 !                                           Western edge Chapman BC
 !                                           ======= ==== ======= ==
         do j=JstrV-1,Jend
-#  ifdef NBQ
+#  ifdef NBQ_MASS
           cx=dtfast*pm(1,j)*sqrt(g*zeta(1,j,kstp))
 #  else
           cx=dtfast*pm(1,j)*sqrt(g*(h(1,j)+zeta(1,j,kstp)))
@@ -170,7 +170,7 @@ C$    trd=omp_get_thread_num()
 !                                           Eastern edge Chapman BC
 !                                           ======= ==== ======= ==
         do j=JstrV-1,Jend
-#  ifdef NBQ
+#  ifdef NBQ_MASS
           cx=dtfast*pm(Iend,j)*sqrt(g*zeta(Iend,j,kstp))
 #  else
           cx=dtfast*pm(Iend,j)*sqrt(g*(h(Iend,j)+zeta(Iend,j,kstp)))
@@ -233,7 +233,7 @@ C$    trd=omp_get_thread_num()
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU-1,Iend
-#  ifdef NBQ
+#  ifdef NBQ_MASS
           cx=dtfast*pn(i,1)*sqrt(g*zeta(i,1,kstp))
 #  else
           cx=dtfast*pn(i,1)*sqrt(g*(h(i,1)+zeta(i,1,kstp)))
@@ -293,7 +293,7 @@ C$    trd=omp_get_thread_num()
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU-1,Iend
-#  ifdef NBQ
+#  ifdef NBQ_MASS
           cx=dtfast*pn(i,Jend)*sqrt(g*zeta(i,Jend,kstp))
 #  else
           cx=dtfast*pn(i,Jend)*sqrt(g*(h(i,Jend)+zeta(i,Jend,kstp)))
@@ -373,7 +373,7 @@ C$    trd=omp_get_thread_num()
 ! Ensure that water level on boundary cells is above bed elevation.
 !====================================================================
 !
-# ifndef NBQ
+# ifndef NBQ_MASS
 #  ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
         DO j=JstrV-1,Jend
@@ -441,7 +441,7 @@ C$    trd=omp_get_thread_num()
       END IF
 #  endif
 
-# else /* NBQ */
+# else /* NBQ_MASS */
 
 #  ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
@@ -497,7 +497,7 @@ C$    trd=omp_get_thread_num()
         END IF
       END IF
 #  endif
-# endif /* NBQ */
+# endif /* NBQ_MASS */
 #endif /* WET_DRY */
 
 

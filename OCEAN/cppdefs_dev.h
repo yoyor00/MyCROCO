@@ -136,7 +136,7 @@
 # if !defined NBQ_COUPLE1 && !defined NBQ_COUPLE0
 #  define NBQ_COUPLE1
 # endif
-# undef VAR_RHO_2D
+!# undef VAR_RHO_2D
 # undef TRACETXT
 # undef NBQ_OUT
 # define HZR Hzr

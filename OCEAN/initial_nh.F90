@@ -139,7 +139,9 @@
         qdmv_nbq = 0.0
         qdmw_nbq = 0.0
 # endif
+# ifdef NBQ_MASS
         rhobar_nbq  = 1.
+# endif
 
           vnnew_nbq = 1
           vnrhs_nbq = 1
@@ -297,7 +299,7 @@
 !            rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
 !         enddo
 
-# ifndef NBQ_VOL
+# ifdef NBQ_MASS
 !.........Initialize NBQ density field:
 !        do l_nbq=1,neqcont_nh
    !          i = l2iq_nh(l_nbq)
@@ -351,11 +353,13 @@
 # else
 !!        rhp_nbq_a(l_nbq,0:2) = rho(i,j,k)
 !          rhp_bq_a  = 0.
-          rho_nbq_ext  = 1.
-          rho_nbq_avg1  = 1.
-          rho_nbq_avg2 = 1.
-          rhobar_nbq     (:,:,:)=1.
-          rhobar_nbq_avg1(:,:  )=1.
+!          rho_nbq_ext  = 1.
+!          rho_nbq_avg1  = 1.
+#  ifndef NBQ_IJK 
+!          rho_nbq_avg2 = 1.
+#  endif
+!          rhobar_nbq     (:,:,:)=1.
+!          rhobar_nbq_avg1(:,:  )=1.
 # endif
         
 

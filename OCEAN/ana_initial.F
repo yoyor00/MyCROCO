@@ -65,7 +65,7 @@ C$    integer omp_get_thread_num
 #ifdef INTERNAL
       real cff
 #endif
-#if defined IGW || defined S2DV || defined REGIONAL_NBQ 
+#if defined IGW || defined S2DV || defined MILES 
       real    cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
@@ -182,7 +182,7 @@ C$    integer omp_get_thread_num
         enddo
 
 # elif defined TANK
-        ETA0=0.001
+        ETA0=0.1
         Lt=10.
         do j=JR_RANGE
           do i=IR_RANGE
@@ -215,7 +215,7 @@ C$    integer omp_get_thread_num
         enddo
 # endif
 
-# ifdef NBQ
+# ifdef NBQ_MASS
         do j=JR_RANGE
           do i=IR_RANGE
             zeta(i,j,1)=h(i,j)+zeta(i,j,1)
@@ -1119,7 +1119,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 
-#  elif defined IGW || defined S2DV || defined REGIONAL_NBQ
+#  elif defined IGW || defined S2DV || defined MILES 
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N

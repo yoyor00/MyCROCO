@@ -88,8 +88,6 @@
 !-------------------------------------------------------------------
 !       
         if (iif==1.and.iic==1) call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
-
-        if (iic==1.and.(iif==1)) thetadiv_nbq=0.
 !
 !-------------------------------------------------------------------
 !  Get internal and external forcing terms for nbq equations:
@@ -114,7 +112,7 @@
 !*******************************************************************
 !*******************************************************************
 
-#ifdef NBQ_COUPLE1 
+#ifdef NBQ_COUPLE1
          do k=1,N         
           do j=JstrU_nh,JendU_nh   
             do i=IstrU_nh,IendU_nh
@@ -129,7 +127,7 @@
                rv_nbq_ext (i,j,k) = qdmv_nbq(i,j,k) 
             enddo
           enddo
-        enddo         
+        enddo          
                
 # ifdef M2FILTER_NONE
         if (LAST_2D_STEP) then
@@ -189,7 +187,7 @@
 !       "Pressure - Viscosity" Variable (theta)
 !          whether NBQ_CONS or not: theta does not change
 !-------------------------------------------------------------------
-!       thetadiv_nbq=0.
+!      
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
@@ -216,9 +214,6 @@
 #define dthetadiv_nbqdz_u zwrk1
 #define dthetadiv_nbqdz_v zwrk2
 #define dthetadiv_nbqdz   zwrk5
-!       dthetadiv_nbqdz_u=0.
-!       dthetadiv_nbqdz_v=0.
-!       dthetadiv_nbqdz=0.
 
         k2 = 1
         do k=0,N
@@ -312,6 +307,7 @@
 #undef dthetadiv_nbqdz_u
 #undef dthetadiv_nbqdz_v
 #undef dthetadiv_nbqdz
+
 
 !---------------------------
 !  U-momentum open boundary conditions
@@ -436,7 +432,7 @@
 	    do j=Jstr_nh,Jend_nh
 	    do i=Istr_nh,Iend_nh+1
               dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,0)-zw_half_nbq(i-1,j,0))*qdmu_nbq(i,j,1)  &
-                               / (hzr_half_nbq(i,j,1)+hzr_half_nbq(i-1,j,1))
+                               / (Hzr_half_nbq(i,j,1)+Hzr_half_nbq(i-1,j,1))
 	    enddo
 	    enddo
  	    do j=Jstr_nh,Jend_nh
@@ -463,7 +459,7 @@
 	    do i=Istr_nh,Iend_nh+1
 	      dZdxq_w(i,j,k2)= (zw_half_nbq(i,j,N)-zw_half_nbq(i-1,j,N))   &
                       *qdmu_nbq(i,j,N)                                     &                       
-                      / (hzr_half_nbq(i,j,N)+hzr_half_nbq(i-1,j,N))  
+                      / (Hzr_half_nbq(i,j,N)+Hzr_half_nbq(i-1,j,N))  
             enddo
             enddo   
 
@@ -843,7 +839,7 @@
 !-------------------------------------------------------------------
 !
 # ifdef OBC_NBQ
-       call rnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
+!      call rnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
 !
 !*******************************************************************
@@ -864,7 +860,9 @@
 !      call check_tab3d(rw_nbq_ext(:,:,0:N),'rw_nbq_ext step3d_nbq','r')
 #endif  
 !    
+#ifdef NBQ_MASS
       call densityijk_nbq(20)
+#endif
 !
 !  
       end subroutine step3d_fbijk_nbq

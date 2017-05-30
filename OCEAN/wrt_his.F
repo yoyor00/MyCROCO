@@ -60,6 +60,7 @@
 #include "work.h"
 #include "netcdf.inc"
 
+
 #if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
@@ -139,7 +140,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     components in XI-,ETA-directions.
 !     
       if (wrthis(indxZ)) then
-#ifdef NBQ     
+#ifdef NBQ_MASS     
 !        work2d=  zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out)
 
          work2d=zeta(:,:,fast_indx_out)

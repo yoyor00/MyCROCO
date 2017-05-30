@@ -46,9 +46,12 @@
       common /nbq_rvint/ rvint_nbq
       real rwint_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rwint_nbq     
-
+!# ifdef NBQ_MASS
        real Hzr_half_nbq(GLOBAL_2D_ARRAY,0:N+1)
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
+!# else
+!#       define  Hzr_half_nbq Hzr 
+!# endif
        real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
        common /grid_Hzw_half_nbq/ Hzw_half_nbq
 
@@ -66,13 +69,14 @@
       real visc2_nbq
       common /nbq_visc2/ visc2_nbq
 
+# ifdef NBQ_MASS
       real rhobar_nbq(GLOBAL_2D_ARRAY,4)
       common /nbq_rhobar/ rhobar_nbq
       real rhobar_nbq_avg1(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_AVG1/ rhobar_nbq_avg1
-
       real rhobar_nbq_int(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_int/ rhobar_nbq_int
+# endif
 
       real drhobardt(GLOBAL_2D_ARRAY)
       common /nbq_drhobardt/ drhobardt

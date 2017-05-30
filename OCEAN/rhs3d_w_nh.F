@@ -2,12 +2,16 @@
 
 #   define W_HADV
 #   define W_VADV
-#   define WADV_SPLINES
+#   undef WADV_SPLINES
+
 # ifndef NBQ_FREESLIP
 #   define NBQ_WNOSLIP
 # else
 #   undef  NBQ_WNOSLIP
 # endif
+
+
+
 
 #if defined SOLVE3D && defined NBQ
 
@@ -44,6 +48,8 @@
       INTEGER  :: Istr,Iend,Jstr,Jend
       INTEGER  :: i,j,k,kp
       INTEGER  :: imin,imax,jmin,jmax
+      real rr,rrm,rrp,limiter2,Cr,cdt,cu
+      integer kp2,kp1,km1
       !!
 # include "param.h"
       REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
@@ -144,6 +150,13 @@
 # endif
 
 # if defined UV_ADV && defined W_HADV
+      if(nrhs.eq.3) then
+        cdt =     dt                 !<-- Corrector
+      elseif(FIRST_TIME_STEP) then
+        cdt = 0.5*dt
+      else
+        cdt = (1.-2*gamma)*dt        !<-- Predictor
+      endif
       !-----------------------------------------------------------------------      
       !  Horizontal advection
       !----------------------------------------------------------------------- 
@@ -217,11 +230,51 @@
                ELSE
                   cff = lap( i  , j )
                ENDIF            
-               WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
+#  ifdef W_HADV_TVD
+              WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
+     &                               )*Huon_w(i,j,k)
+ 
+# else
+              WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
      &                              -0.25*cff )*Huon_w(i,j,k)
+# endif
             ENDDO    
          ENDDO
-         
+
+#  ifdef W_HADV_TVD
+         DO j=Jstr,Jend
+            DO i=Istr,Iend+1
+             if (k==0 .OR. k==N) then
+             Hzw (i,k  ) = 0.25 * (HZR(i-1,j,k) + HZR(i,j,k))
+             else
+             Hzw (i,k) = 0.25d0 * ( HZR(i,j,k) + HZR(i,j,k+1)
+     &         + HZR(i-1,j,k) + HZR(i-1,j,k+1) )
+             endif
+             cff = Huon_w(i,j,k)
+             cu = pn_u(i,j)*cdt*cff
+     &         /Hzw(i,k)*pm(i,j)
+
+            rrp= (wz(i+1,j,k,nrhs) -wz(i,j,k,nrhs))
+#   ifdef MASKING
+     &         *umask(i+1,j)
+#   endif
+            rr = (wz(i,j,k,nrhs) -wz(i-1 ,j,k,nrhs))
+#   ifdef MASKING
+     &         *umask(i,j)
+#   endif
+            rrm= (wz(i-1,j,k,nrhs) -wz(i-2 ,j,k,nrhs))
+#   ifdef MASKING
+     &         *umask(i-1,j)
+#   endif
+
+        cff1=(cff*(wz(i-1,j,k,nrhs) + wz(i,j,k,nrhs) )
+     &        -ABS(cff)*rr)*0.5
+
+             Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
+             WFx(i,j) = (1-cr)*cff1 + Cr* WFx(i,j)
+             ENDDO
+           ENDDO
+#  endif         
          
          DO j=jmin,jmax+1
             DO i=istr,iend
@@ -257,11 +310,49 @@
                ELSE
                   cff = lap( i , j   )
                ENDIF 
+#  ifdef W_HADV_TVD
+               WFe(i,j)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs)
+     &                               )*Hvom_w(i,j,k)
+#else
                WFe(i,j)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs)
      &                              -0.25*cff )*Hvom_w(i,j,k)
+#endif
             ENDDO
          ENDDO 
          !           
+#  ifdef W_HADV_TVD
+        do j=JstrV-1,Jend
+         do i=Istr,Iend
+             if (k==0 .OR. k==N) then
+             Hzw (i,k  ) = 0.25 * (HZR(i,j,k) + HZR(i,j-1,k))
+             else
+             Hzw (i,k) = 0.25d0 * ( HZR(i,j,k) + HZR(i,j,k+1)
+     &         + HZR(i,j-1,k) + HZR(i,j-1,k+1) )
+             endif
+              cff = Hvom_w(i,j,k)
+             cu = pm_v(i,j)*cdt*cff
+     &         /Hzw(i,k)*pn(i,j)
+
+            rrp= (wz(i,j+1,k,nrhs) -wz(i,j,k,nrhs))
+#   ifdef MASKING
+     &         *vmask(i,j+1)
+#   endif
+            rr = (wz(i,j,k,nrhs) -wz(i,j-1,k,nrhs))
+#   ifdef MASKING
+     &         *vmask(i,j)
+#   endif
+            rrm= (wz(i,j-1,k,nrhs) -wz(i,j-2,k,nrhs))
+#   ifdef MASKING
+     &         *vmask(i,j-1)
+#   endif
+        cff1=(cff*(wz(i,j,k,nrhs) + wz(i,j-1,k,nrhs) )
+     &        -ABS(cff)*rr )*0.5
+          Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
+          WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
+          enddo
+        enddo
+#  endif
+
          DO j=Jstr,Jend
             DO i=Istr,Iend
               rw(i,j,k)= rw(i,j,k) - WFx(i+1,j) + WFx(i,j)
@@ -283,6 +374,7 @@
 # define DVom(i,j) Hvom_w(i,j,0)
 # define udZ_x(i,j) Huon_w(i,j,1)  
 # define vdZ_y(i,j) Hvom_w(i,j,1)
+# define  FC1 lap
        !-----------------------------------------------------------------------      
        !  Bottom boundary condition for wz
        !----------------------------------------------------------------------- 
@@ -295,8 +387,12 @@
 # else
                 udH_x(i,j) = 0. 
 # endif
+# ifdef NBQ_MASS
                 DUon(i,j) = 2.*DU_avg2(i,j) 
      &             / ( rhobar_nbq_avg1(i,j) + rhobar_nbq_avg1(i-1,j) ) 
+# else
+                DUon(i,j) = DU_avg2(i,j) 
+# endif
                 udZ_x(i,j) = u(i,j,N,nrhs) * pm_u(i,j) 
      &                                     * ( z_w(i  ,j,N)-z_w(i-1,j,N) ) 
              ENDDO
@@ -310,8 +406,12 @@
 # else
                 vdH_y(i,j) = 0. 
 # endif
+# ifdef NBQ_MASS
                 DVom(i,j)  = 2.*DV_avg2(i,j)
      &           / ( rhobar_nbq_avg1(i,j) + rhobar_nbq_avg1(i,j-1) )
+# else
+                DVom(i,j)  = DV_avg2(i,j)
+# endif
                 vdZ_y(i,j) = v(i,j,N,nrhs) * pn_v(i,j) 
      &                                     * ( z_w(i,j,N)-z_w(i,j-1,N) ) 
              ENDDO
@@ -325,8 +425,12 @@
 # else
                 udH_x(i,j) = 0.
 # endif
+# ifdef NBQ_MASS
                 DUon(i,j) = 2.*DU_avg1(i,j,nstp) 
      &             / ( rhobar_nbq_avg1(i,j) + rhobar_nbq_avg1(i-1,j) )  
+# else
+                DUon(i,j) = DU_avg1(i,j,nstp) 
+# endif
                 udZ_x(i,j) = u(i,j,N,nstp) * pm_u(i,j) 
      &                                     * ( z_w(i  ,j,N)-z_w(i-1,j,N) ) 
              ENDDO
@@ -340,29 +444,44 @@
 # else
                 vdH_y(i,j) = 0.
 # endif
+# ifdef NBQ_MASS
                 DVom(i,j) = 2.*DV_avg1(i,j,nstp)
      &           / ( rhobar_nbq_avg1(i,j) + rhobar_nbq_avg1(i,j-1) )
+# else
+                DVom(i,j) = DV_avg1(i,j,nstp)
+# endif
+
                 vdZ_y(i,j) = v(i,j,N,nstp) * pn_v(i,j) 
      &                                     * ( z_w(i,j,N)-z_w(i,j-1,N) )      
              ENDDO
           ENDDO
        ENDIF    
 
+
 #ifdef NBQ_FREESLIP
-       DO j=Jstr,Jend 
+       DO j=Jstr,Jend
            DO i=Istr,Iend
              wz(i,j,0,nnew) = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
-     &                                +   vdH_y(i,j) + vdH_y(i,j+1) ) 
-     &            *0.5*Hz(i,j,1) 
+     &                                +   vdH_y(i,j) + vdH_y(i,j+1) )
+     &            *0.5*Hz(i,j,1)
            ENDDO
        ENDDO
 #else
-       DO j=Jstr,Jend 
+       DO j=Jstr,Jend
            DO i=Istr,Iend
-             wz(i,j,0,nnew) = 0.  
+             wz(i,j,0,nnew) = 0.
            ENDDO
        ENDDO
 #endif
+
+
+
+
+
+
+
+
+
 
       !-----------------------------------------------------------------------      
       !  Vertical advection
@@ -443,6 +562,10 @@
           DO k=2,N-1
              DO i=Istr,Iend
                 FC(i,k) = 0.5*(wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs))*We_r(i,k)
+#   ifdef W_VADV_TVD
+                FC1(i,k)=(We_r(i,k)*(wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs) )
+     &   -abs(We_r(i,k))* (wz(i,j,k,nrhs) - wz(i,j,k-1,nrhs) ) )*0.5
+#    endif
              ENDDO
           ENDDO
 
@@ -455,6 +578,10 @@
 !#     endif 
            ! FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz_bot  )*We_r(i,1)
              FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz(i,j,0,nrhs)  )*We_r(i,1)
+#   ifdef W_VADV_TVD
+                FC1(i,1)=(We_r(i,1)*(wz(i,j,1,nrhs) + wz(i,j,0,nrhs)  )
+     &   -abs(We_r(i,1))* (wz(i,j,1,nrhs) - wz(i,j,0,nrhs) ) )*0.5
+#    endif
 
 !             wz_sfc  = pn(i,j)*pm(i,j)*( DUon(i,j)-DUon(i+1,j  )
 !     &                               +   DVom(i,j)-DVom(i  ,j+1) )    !
@@ -462,12 +589,34 @@
 !     &                       +   vdZ_y(i,j) + vdZ_y(i,j+1) )
 !            FC(i,N) = 0.5*( wz_sfc + wz(i,j,N-1,nrhs))*We_r(i,N)
              FC(i,N) = 0.5*( wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs))*We_r(i,N)
+#   ifdef W_VADV_TVD
+                FC1(i,N)=(We_r(i,N)*(wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs) )
+     &   -abs(We_r(i,N))* (wz(i,j,N,nrhs) - wz(i,j,N-1,nrhs) ) )*0.5
+#    endif
           ENDDO          
 
           DO i=Istr,Iend
              FC(i,0  )=0.
              FC(i,N+1)=0.
           ENDDO          
+#   ifdef W_VADV_TVD
+          DO k=1,N
+          kp2=min(N+1,k+2)
+          kp1=min(N+1,k+1)
+          km1=max(1,k-1)
+             DO i=IstrU,Iend
+             cff =We_r(i,k)
+             cu = cff*pm(i,j)*pn(i,j)
+     &           * cdt/Hzw(i,k)
+             rrp= (wz(i,j,kp2,nrhs) -wz(i,j,kp1,nrhs))
+             rr = (wz(i,j,kp1,nrhs) -wz(i ,j,k,nrhs))
+             rrm= (wz(i,j,k  ,nrhs) -wz(i ,j,km1,nrhs))
+             Cr=limiter2(cu,FC(i,k),cff1,rrm,rr,rrp)
+             FC(i,k) = (1-Cr)*FC1(i,k)+Cr* FC(i,k)
+             ENDDO
+          ENDDO
+#   endif
+
 #  endif
 # undef udH_x
 # undef vdH_y   
@@ -475,6 +624,7 @@
 # undef DVom 
 # undef udZ_x  
 # undef vdZ_y
+# undef FC1
       
           DO k=1,N
              DO i=Istr,Iend
@@ -496,6 +646,43 @@
 # endif /* UV_ADV && W_VADV */
       return
       end  
+      
+      function limiter2(nu,hf,lf,rrm,rr,rrp)
+
+      implicit none
+      real    :: cff,limiter2,Rj,nu,hf,lf,rrm,rr,rrp
+      
+C Upwind        Limiter(Cr)=0.
+C Lax-Wendroff  Limiter(Cr)=1.
+C Min-Mod       Limiter(Cr)=max(0.,min(1.,Cr))
+C Suberbee      Limiter(Cr)=max(0.,max(min(1.,2*Cr*(1-nu)/nu),min(2.,Cr)))
+      if (abs(rr).gt.1.e-20) THEN
+        if (nu .gt. 1.e-20) THEN
+          Rj=rrm/rr
+        else
+          Rj=rrp/rr
+        endif
+      else
+        if (nu.gt.1.e-20) then
+          Rj=Rrm*1.E20
+        else
+          Rj=Rrp*1.E20
+        endif
+      endif
+       
+!        limiter=max(0., min(1.,(hf-lf)/rr,(1-abs(nu))/abs(nu)*Rj) )
+      cff=(1-abs(nu))/abs(nu)
+! ajouter la condition de stbilite/tvd Rj => Rj*cff
+#ifdef SUPERBEE
+       limiter2=max(0.,max(min(1.,2.*Rj),
+     &                         min(2.,Rj)))
+#elif defined MINMOD
+       limiter2=max(0.D0,min(1.,Rj))
+#else
+       limiter2=(Rj+abs(Rj))/(1+abs(Rj))
+#endif       
+      end function
+
 #else
       subroutine rhs3d_w_empty
       end

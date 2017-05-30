@@ -57,7 +57,7 @@
       double precision :: t1_d,t2_d
 
       if (icall.eq.20) then
-#ifndef NBQ_VOL
+#ifdef NBQ_MASS
 !
 !**********************************************************************
 !  Transfer density field to i,j,k array 
@@ -126,10 +126,10 @@
 !        call exchange_r3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
 !                               ,rho_nbq_ext(START_2D_ARRAY,1))
 # endif
-
-  !   rhobar_nbq=1.
-  !   rho_nbq_ext=1.
-
+ 
+!       rhobar_nbq=1.
+!       rho_nbq_ext=1.
+  
 # ifdef RVTK_DEBUG
 !      call check_tab3d(rho_nbq_ext(:,:,1:N),'rho_nbq_ext (density_nbq)','r')
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq (density_nbq)','r')
