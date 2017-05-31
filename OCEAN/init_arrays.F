@@ -1086,9 +1086,11 @@ C$    integer omp_get_thread_num
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
+# ifdef NBQ_MASS
             rho_nbq_ext(i,j,k)=1.
             rho_nbq_avg1(i,j,k)=1.
 !            rho_nbq_avg2(i,j,k)=1.
+# endif
 !            ruext_nbq(i,j,k)=init
 !            rvext_nbq(i,j,k)=init
             ru_nbq_ext(i,j,k)=init

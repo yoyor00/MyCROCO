@@ -244,7 +244,9 @@
 #  ifdef W_HADV_TVD
          DO j=Jstr,Jend
             DO i=Istr,Iend+1
-             if (k==0 .OR. k==N) then
+             if (k==0) then
+             Hzw (i,k  ) = 0.25 * (HZR(i-1,j,k+1) + HZR(i,j,k+1))
+             elseif (k==N) then
              Hzw (i,k  ) = 0.25 * (HZR(i-1,j,k) + HZR(i,j,k))
              else
              Hzw (i,k) = 0.25d0 * ( HZR(i,j,k) + HZR(i,j,k+1)
@@ -323,7 +325,9 @@
 #  ifdef W_HADV_TVD
         do j=JstrV-1,Jend
          do i=Istr,Iend
-             if (k==0 .OR. k==N) then
+             if (k==0) then
+             Hzw (i,k  ) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
+             elseif (k==N) then
              Hzw (i,k  ) = 0.25 * (HZR(i,j,k) + HZR(i,j-1,k))
              else
              Hzw (i,k) = 0.25d0 * ( HZR(i,j,k) + HZR(i,j,k+1)

@@ -201,16 +201,15 @@
 !
 !--------------------------------------------------------------------
 !
-# ifdef NBQ
+
+# ifdef NBQ_MASS
+
 #  ifdef NBQ_COUPLE1
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
-#  ifdef NBQ_MASS
      &                         /(rho_nbq_avg1(i,j,k))
-#  endif
-
           enddo
         enddo
       enddo
@@ -219,27 +218,28 @@
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
-#   ifdef NBQ_MASS
      &                         /(2.*rho_nbq_avg1(i,j,k)
      &                          -rho_nbq_avg2(i,j,k))
-#   endif
           enddo
         enddo
       enddo
 #  endif
+# endif
+
+# ifdef NBQ
 !
 !  Set lateral boundary conditions for Hz_half
 !
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
-        do k=0,N
+        do k=1,N
           do j=Jstr,Jend
             Hzr_half_nbq(0,j,k)=Hzr_half_nbq(1,j,k)
           enddo
         enddo
       endif
       if (EASTERN_EDGE) then
-        do k=0,N
+        do k=1,N
           do j=Jstr,Jend
             Hzr_half_nbq(LOCALLM+1,j,k)=Hzr_half_nbq(LOCALLM,j,k)
           enddo
@@ -248,14 +248,14 @@
 #  endif
 #  ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
-        do k=0,N
+        do k=1,N
           do i=Istr,Iend
             Hzr_half_nbq(i,0,k)=Hzr_half_nbq(i,1,k)
           enddo
         enddo
       endif
       if (NORTHERN_EDGE) then
-        do k=0,N
+        do k=1,N
           do i=Istr,Iend
             Hzr_half_nbq(i,LOCALMM+1,k)=Hzr_half_nbq(i,LOCALMM,k)
           enddo
@@ -264,22 +264,22 @@
 #  endif
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
-        do k=0,N
+        do k=1,N
           Hzr_half_nbq(0,0,k)=Hzr_half_nbq(1,1,k)
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
-        do k=0,N
+        do k=1,N
           Hzr_half_nbq(0,LOCALMM+1,k)=Hzr_half_nbq(1,LOCALMM,k)
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
-        do k=0,N
+        do k=1,N
           Hzr_half_nbq(LOCALLM+1,0,k)=Hzr_half_nbq(LOCALLM,1,k)
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
-        do k=0,N
+        do k=1,N
           Hzr_half_nbq(LOCALLM+1,LOCALMM+1,k)=
      &                     Hzr_half_nbq(LOCALLM,LOCALMM,k)
         enddo
@@ -289,6 +289,11 @@
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr_half_nbq(START_2D_ARRAY,1))
 #  endif
+
+# endif /* NBQ_MASS */
+
+# ifdef NBQ
+
 !
 !  Set extended range
 !
@@ -321,7 +326,9 @@
       else
         jmax=Jend+2
       endif
+
 #  endif
+
 !
 !  Compute other vertical grid variables at n+1/2
 !
@@ -330,9 +337,9 @@
            zw_half_nbq(i,j,0)=-h(i,j)
            zr_half_nbq(i,j,1)=zw_half_nbq(i,j,0)
      &                        +0.5*Hzr_half_nbq(i,j,1)
-          Hzr_half_nbq(i,j,0  )=0.
-          Hzr_half_nbq(i,j,N+1)=0.
-          zw_half_nbq(i,j,1)   =zw_half_nbq(i,j,0)+Hzr_half_nbq(i,j,1)
+!          Hzr_half_nbq(i,j,0  )=0.
+!          Hzr_half_nbq(i,j,N+1)=0.
+           zw_half_nbq(i,j,1)   =zw_half_nbq(i,j,0)+Hzr_half_nbq(i,j,1)
         enddo
       enddo
       do k=2,N
@@ -366,8 +373,9 @@
 !      enddo
 !      enddo
 
+#endif  /* NBQ */
 
-# endif /* NBQ */
+
 !
 !--------------------------------------------------------------------
 !  Start computation of the auxiliary tracer field

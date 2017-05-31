@@ -46,12 +46,12 @@
       common /nbq_rvint/ rvint_nbq
       real rwint_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rwint_nbq     
-!# ifdef NBQ_MASS
-       real Hzr_half_nbq(GLOBAL_2D_ARRAY,0:N+1)
+# ifdef NBQ_MASS
+       real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
-!# else
-!#       define  Hzr_half_nbq Hzr 
-!# endif
+# else
+#      define  Hzr_half_nbq Hz_half
+# endif
        real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
        common /grid_Hzw_half_nbq/ Hzw_half_nbq
 
@@ -92,12 +92,14 @@
       real rvbar_nbq(GLOBAL_2D_ARRAY)
       common /nbq_rvbar/ rvbar_nbq
 
+# ifdef NBQ_MASS
       real rho_nbq_ext(GLOBAL_2D_ARRAY,N)
       real rho_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
       real rhos_nbq_int(GLOBAL_2D_ARRAY)
       common /nbq_rho_ext/ rho_nbq_ext
       common /avg1_rhonbq/ rho_nbq_avg1
       common /int_rhonbq/ rhos_nbq_int
+# endif
 
 #ifdef NBQ_COUPLE0
       real rho_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
@@ -142,21 +144,14 @@
       common /nbq_cosa/ cosa
       real sina(GLOBAL_2D_ARRAY)
       common /nbq_sina/ sina
+
 # ifdef NBQ_NODS
 
-      real dthetadiv_nbqdz_u(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_nods1/ dthetadiv_nbqdz_u
-      real dthetadiv_nbqdz_v(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_nods2/ dthetadiv_nbqdz_v
-      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N)
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N,2)
       common /nbq_nods3/ dthetadiv_nbqdz
 
-      real dZdxq_u(GLOBAL_2D_ARRAY,0:N+1)
-      common /nbq_nods4/ dZdxq_u
       real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods5/ dZdxq_w
-      real dZdyq_v(GLOBAL_2D_ARRAY,0:N+1)
-      common /nbq_nods6/ dZdyq_v
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
 

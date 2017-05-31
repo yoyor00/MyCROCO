@@ -214,15 +214,15 @@ C$    integer omp_get_thread_num
 #  endif
             Hz_bak(i,j,k)=Hz(i,j,k)
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
-#  ifdef NBQ
+#  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
-#   ifdef NBQ_MASS
             Hz(i,j,k) =Hz(i,j,k)*rho_nbq_avg1(i,j,k)
-#   endif
-# ifdef FIX_HZ
+#  endif
+# if defined FIX_HZ && defined NBQ
             correct_hz(i,j,1)=correct_hz(i,j,1)+rho_nbq_avg1(i,j,k)
             correct_hz(i,j,2)=correct_hz(i,j,2)+Hz(i,j,k)          
 #  endif
+#  ifdef NBQ_MASS
             if (rho_nbq_ext(i,j,k).eq.0) stop 'Error set_depth (3)'
 #  endif
           enddo
@@ -256,7 +256,7 @@ C$    integer omp_get_thread_num
 #   ifdef MOVING_BATHY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
 #   endif
-#   ifdef NBQ
+#   ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
 
