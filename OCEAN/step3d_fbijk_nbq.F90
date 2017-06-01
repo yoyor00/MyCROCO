@@ -165,9 +165,6 @@
           enddo
         enddo         
                
-!#ifdef M2FILTER_NONE
-!        if (LAST_2D_STEP) then
-!#endif
         do k=0,N 
           do j=Jstr_nh,Jend_nh             
             do i=Istr_nh,Iend_nh
@@ -175,9 +172,6 @@
             enddo
           enddo
         enddo
-!#ifdef M2FILTER_NONE        
-!        endif
-!#endif   
 #endif     
        
 !*******************************************************************
@@ -501,7 +495,7 @@
 !       call wnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
 # endif
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,qdmw_nbq(START_2D_ARRAY,0))
+!     call exchange_w3d_tile (Istr,Iend,Jstr,Jend,qdmw_nbq(START_2D_ARRAY,0))
 #endif
 !-------------------------------------------------------------------
 !      Acoustic wave emission
@@ -1098,9 +1092,13 @@
         enddo
 
 !.......Computes rho_nbq:
+!                 
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,thetadiv_nbq(START_2D_ARRAY,1))
+# endif
         do k=1,N
-        do j=Jstr_nh,Jend_nh
-        do i=Istr_nh,Iend_nh
+        do j=Jstr_nh-1,Jend_nh+1
+        do i=Istr_nh-1,Iend_nh+1
 # ifdef NBQ_CONS
           rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * thetadiv_nbq(i,j,k) !*Hzr_half_nbq_inv(i,j,k) !XXX2
 # else
@@ -1109,10 +1107,10 @@
         enddo
         enddo
         enddo
-!                 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,thetadiv_nbq(START_2D_ARRAY,1))
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,rho_nbq(START_2D_ARRAY,1))
+#  ifdef NBQ_CONS
+!       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,rho_nbq(START_2D_ARRAY,1))
+#  endif
 # endif
 !           
 #ifdef RVTK_DEBUG

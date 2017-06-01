@@ -1585,16 +1585,16 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 #undef rvext_nbq_2d 
 #endif
 
-#ifdef NBQ
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  
-     &                                 ruint_nbq(START_2D_ARRAY,1))
-      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  
-     &                                 rvint_nbq(START_2D_ARRAY,1))
-      call exchange_u3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  
-     &                                 rwint_nbq(START_2D_ARRAY,0))
-# endif     
-#endif     
+!#ifdef NBQ
+!# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!     call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  
+!    &                                 ruint_nbq(START_2D_ARRAY,1))
+!     call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  
+!    &                                 rvint_nbq(START_2D_ARRAY,1))
+!     call exchange_u3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  
+!    &                                 rwint_nbq(START_2D_ARRAY,0))
+!# endif     
+!#endif     
       
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !    FIN
@@ -1984,12 +1984,12 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &                   rho_nbq_avg1(START_2D_ARRAY,1))
 # endif
 # ifdef NBQ
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
-     &                   ru_nbq_avg2(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
-     &                   rv_nbq_avg2(START_2D_ARRAY,1))
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
-     &                   rw_nbq_avg2(START_2D_ARRAY,0))
+!     call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
+!    &                   ru_nbq_avg2(START_2D_ARRAY,1))
+!     call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
+!    &                   rv_nbq_avg2(START_2D_ARRAY,1))
+!     call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
+!    &                   rw_nbq_avg2(START_2D_ARRAY,0))
 # endif
 #endif
 
