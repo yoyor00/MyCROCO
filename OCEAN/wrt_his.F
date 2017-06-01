@@ -627,7 +627,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
      &                       +   Wi(i,j,k)
 #endif                  
      &                              ) *pm(i,j)*pn(i,j)
-#ifdef NBQ
+#ifdef NBQ_MASS
      &                            /rho_nbq_avg1(i,j,k)
 #endif
                enddo
