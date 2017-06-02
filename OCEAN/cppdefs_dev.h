@@ -131,11 +131,15 @@
 ======================================================================
 */
 #ifdef NBQ
+# define NBQ_IJK
+# define NBQ_CONS
+# undef  NBQ_MASS
+# define NBQ_NODS
 # define M2FILTER_NONE
 # undef M2FILTER_POWER
-# if !defined NBQ_COUPLE1 && !defined NBQ_COUPLE0
+!# if !defined NBQ_COUPLE1 && !defined NBQ_COUPLE0
 #  define NBQ_COUPLE1
-# endif
+!# endif
 !# undef VAR_RHO_2D
 # undef TRACETXT
 # undef NBQ_OUT

@@ -140,7 +140,7 @@
 !  Set allocations for non-boussinesq (NBQ) equation arrays
 !----------------------------------------------------------------------
 !
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
       call alloc_module_nh() 
 # ifndef MPI
       MPI_STATUS_SIZE=1

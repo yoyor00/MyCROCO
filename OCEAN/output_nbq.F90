@@ -176,6 +176,8 @@
        write(10,*) 'Grid(v) :'
        write(10,*) istrv_nh,iendv_nh,jstrv_nh,jendv_nh
        write(10,*)
+
+#ifndef NBQ_IJK
        write(10,*) 'Num(q) :'
        write(10,*) neqq_nh(1:7)
        write(10,*) 'Num(u) :'
@@ -194,6 +196,8 @@
        write(10,*) 'DNum(w) :'
        write(10,*) neqw_nh(1)-neqv_nh(7),(neqw_nh(k+1)-neqw_nh(k),k=1,6)
        write(10,*)
+#endif
+
 #ifndef NBQ_IJK
        write(10,*) 'Mat Mom  :'
        write(10,*) (momi_nh(nequ_nh(k)+1),k=1,7)
@@ -361,7 +365,7 @@
        endif
 #endif
 
-#ifdef MASKING
+#if defined MASKING  && !defined NBQ_IJK
 !......Masks:
       write(10,*)  
       write(10,*) 'Rmask_nbq : '

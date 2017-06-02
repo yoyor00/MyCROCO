@@ -16,6 +16,7 @@
 # include "param_F90.h"
 # include "scalars_F90.h"
 # include "grid.h"
+# include "nbq.h"
 
 # include "def_bounds.h"
 
@@ -103,7 +104,7 @@
       endif
 # endif
 
-# ifdef MASKING
+# if defined  MASKING && !defined NBQ_IJK
 !*******************************************************************
 ! Grid-mask for NBQ-use
 !*******************************************************************

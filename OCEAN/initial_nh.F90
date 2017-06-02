@@ -143,17 +143,6 @@
         rhobar_nbq  = 1.
 # endif
 
-          vnnew_nbq = 1
-          vnrhs_nbq = 1
-          vnstp_nbq = 1
-
-          rnnew_nbq = 1
-          rnrhs_nbq = 1
-          rnstp_nbq = 1
-
-          dnrhs_nbq = 1
-          dnstp_nbq = 1
-
 !----------------------------------------------------------------------
 !  Initialize parameters: should be done in a NH-namelist
 !----------------------------------------------------------------------

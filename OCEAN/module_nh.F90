@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
       module module_nh
 
       implicit none
@@ -9,16 +9,6 @@
       TYPE (DMUMPS_STRUC) mumps_par
       integer 		   :: mumps_comm
 # endif
-
-!__________________________________________________________________________
-!
-!                               SNH2012.14      
-!                 Non-Hydrostatic & Non-Boussinesq Kernel Version  
-! Laboratoire d Aerologie, 14 Avenue Edouard Belin, F-31400 Toulouse
-! http://poc.obs-mip.fr/auclair/WOcean.fr/SNH/index_snh_home.htm  
-!
-!__________________________________________________________________________
-
 
 ! debut module ne pas toucher a cette ligne
 
@@ -44,43 +34,20 @@
 !**********************************************************************
 !.....Flags et dimensions "integer"
 !**********************************************************************
-      integer  ::                                                     &
-         istr_nh                                                      &
-        ,jstr_nh                                                      &
-        ,iend_nh                                                      &
-        ,jend_nh                                                      &
-        ,istru_nh                                                     &
-        ,jstru_nh                                                     &
-        ,istrv_nh                                                     &
-        ,jstrv_nh                                                     &
-        ,iendu_nh                                                     &
-        ,jendu_nh                                                     &
-        ,iendv_nh                                                     & 
-        ,jendv_nh                                                     & 
-        ,istrq_nh                                                     &
-        ,iendq_nh                                                     &
-        ,jstrq_nh                                                     &
-        ,jendq_nh
- 
-      integer  ::                                                     &
-         ifl_nh                                                       &
-        ,ifl_solv_nh                                                  &
-        ,l_nh                                                         &
-        ,l1_nh                                                        &
-        ,l2_nh                                                        &
-        ,nnz_nh         (10)                                          &
+
+       integer ::
+         nnz_nh         (10)                                          &
         ,nzeq_nh                                                      &
         ,nzcont_nh                                                    &
-        ,nzcontz_nh                                                    &
+        ,nzcontz_nh                                                   &
         ,nzmom_nh                                                     &   
         ,neqcont_nh                                                   &  
         ,neqmom_nh      (0:3)                                         &
         ,neqq_nh        (0:7)                                         &
         ,nequ_nh        (0:7)                                         &
         ,neqv_nh        (0:7)                                         &
-        ,neqw_nh        (0:7)                                      
+        ,neqw_nh        (0:7)       
         
-#ifndef NBQ_IJK
       integer, dimension(:), allocatable     ::                       &
          momi_nh                                                      &  
         ,momj_nh  
@@ -91,24 +58,22 @@
         ,contj_nh                                                     & 
         ,contz_nnz_nh                                                  & 
         ,contzi_nh                                                    &   
-        ,contzj_nh      
-#endif         
+        ,contzj_nh   
 
 
 !**********************************************************************
 !.....Variables Real
 !**********************************************************************
-      real ::      &
-       period_exp  &
-      ,for_a_exp   &
-      ,dg_exp      &
-      ,hmax_exp    &
-      ,amp_exp
+!      real ::      &
+!       period_exp  &
+!      ,for_a_exp   &
+!      ,dg_exp      &
+!      ,hmax_exp    &
+!      ,amp_exp
 
 !**********************************************************************
 !.....Tableaux "integer"
 !**********************************************************************
-#ifndef NBQ_IJK
       integer, dimension(:), allocatable     ::                       &
          l2iq_nh        &  
         ,l2jq_nh        &  
@@ -124,24 +89,20 @@
       integer, dimension(:,:,:,:), allocatable  ::                    &
          ijk2lmom_nh    &  
         ,mijk2lmom_nh
-#endif
 
 !**********************************************************************
 !.....Tableaux: double precision
 !**********************************************************************                                            
         
-#ifndef NBQ_IJK
       double precision, dimension(:), allocatable      ::             &
          contv_nh       &  
         ,contzv_nh      &  
         ,momv_nh        &  
         ,momvg_nh      
-#endif
 
-      double precision, dimension(:,:), allocatable    ::             &
-         coriolis_nh_t                                                
-
-#ifndef NBQ_IJK         
+!      double precision, dimension(:,:), allocatable    ::             &
+!         coriolis_nh_t                                                
+   
       double precision, dimension(:,:,:), allocatable   ::            &
          coefa_u        &  
         ,coefb_u        &  
@@ -149,11 +110,10 @@
         ,coefb_v
       double precision, dimension(:,:,:), allocatable   ::            &
          gdepth_u       &  
-        ,gdepth_v              
-#endif
+        ,gdepth_v    
 
-      double precision                                                &
-         time_omp_nh    (100)                                        
+!      double precision                                                &
+!         time_omp_nh    (100)                                        
 
 
 ! fin module ne pas toucher a cette ligne
@@ -164,18 +124,18 @@
          implicit none
 
 # include "param_F90.h"
-#include "def_bounds.h"
+# include "def_bounds.h"
 
          integer :: imax,jmax,nbdom_world
 
       imax=LOCALLM
       jmax=LOCALMM
 
-#ifdef MPI
+# ifdef MPI
          nbdom_world=NNODES
-#else
+# else
          nbdom_world=1
-#endif
+# endif
 
          nmq_nh=(imax+4)*(jmax+4)*(N+1)
          nmv_nh=(imax+4)*(jmax+4)*N                &
@@ -187,7 +147,6 @@
          nmmom_nh  = nmv_nh*ntmom_nh
 
 ! Variables communes SNH / SNBQ
-#ifndef NBQ_IJK
          allocate(conti_nh        (nmq_nh)                   )  
          allocate(contzi_nh        (nmq_nh)                   )  
          allocate(cont_nnz_nh     (nmq_nh)                   )  
@@ -214,23 +173,20 @@
 
          allocate(ijk2lmom_nh     (GLOBAL_2D_ARRAY,0:N+1,3)  )   
          allocate(mijk2lmom_nh    (GLOBAL_2D_ARRAY,0:N+1,3)  )
-#endif
 
-         allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )
+!         allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )
 
-#ifndef NBQ_IJK         
          allocate(coefa_u         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_u         (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(coefa_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(gdepth_u        (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    ) 
-#endif           
 
          end subroutine alloc_module_nh
 
         end module module_nh  
 #else
-        module module_nh_empty
+        module module_nh
         end module
 #endif
