@@ -462,7 +462,7 @@
           do j=JstrR,JendR
             zetabry_west(j)=cff1*zetabry_west_dt(j,it1)
      &                     +cff2*zetabry_west_dt(j,it2)
-#   ifdef NBQ
+#   ifdef NBQ_MASS
      &                                      +h(IstrR,j)
 #   endif
           enddo
@@ -506,7 +506,7 @@
           do j=JstrR,JendR
             zetabry_east(j)=cff1*zetabry_east_dt(j,it1)
      &                     +cff2*zetabry_east_dt(j,it2)
-#   ifdef NBQ
+#   ifdef NBQ_MASS
      &                                      +h(IendR,j)
 #   endif
           enddo
@@ -550,7 +550,7 @@
           do i=IstrR,IendR
             zetabry_south(i)=cff1*zetabry_south_dt(i,it1)
      &                      +cff2*zetabry_south_dt(i,it2)
-#   ifdef NBQ
+#   ifdef NBQ_MASS
      &                                        +h(i,JstrR)
 #   endif
           enddo
@@ -594,7 +594,7 @@
           do i=IstrR,IendR
             zetabry_north(i)=cff1*zetabry_north_dt(i,it1)
      &                      +cff2*zetabry_north_dt(i,it2)
-#   ifdef NBQ
+#   ifdef NBQ_MASS
      &                                        +h(i,JendR)
 #   endif
           enddo

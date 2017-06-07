@@ -182,7 +182,7 @@
 #     else     
 !    &                                    +tau*unbqclm(Istr,j,k)
      &                                    +tau*(
-     &       u(Istr,j,k,nnew)*rho0
+     &       u(Istr,j,k,nnew)
 !     &                      unbqclm(Istr,j,k)    
 !     &   +ubclm(Istr,j)*hz_half(Istr,j,k)
      &                                         )
@@ -329,7 +329,7 @@
 #     else     
 !    &                                  +tau*unbqclm(Iend+1,j,k)
      &                                  +tau* (
-     &            u(Iend+1,j,k,nnew)*rho0
+     &            u(Iend+1,j,k,nnew)
 !     &              unbqclm(Iend+1,j,k)  
 !     &            + ubclm(Iend+1,j)*hz_half(Iend+1,j,k)
      &                                        )       
