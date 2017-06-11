@@ -121,10 +121,8 @@
 # else
       fname='TEST_CASES/croco.in.IGW'
 # endif
-#elif defined REGIONAL
-      fname='croco.in'
 #else
-      fname='no_startup_file'
+      fname='croco.in'
 #endif
 #ifdef MPI
       if (mynode.eq.0 .and. iargc().GT.0) call getarg(1,fname) 
@@ -333,7 +331,7 @@
      &                   'Grid File:', grdname(1:lstr)
 #endif
 
-#if (!defined BULK_FLUX  && !defined ANA_SMFLUX) \
+#if (!defined BULK_FLUX  && !defined ANA_SMFLUX && !defined OA_COUPLING) \
         || (defined TIDES) \
         || (defined MRL_WCI     && !defined ANA_WWAVE   && \
                                    !defined WKB_WWAVE && \
@@ -350,12 +348,13 @@
                                    !defined BULK_FLUX   && !defined BULK_EP) \
         || (defined SALINITY    &&  defined QCORRECTION && \
                                     defined SFLX_CORR   && !defined ANA_SSS) \
-        || (defined LMD_SKPP    && !defined ANA_SRFLUX  && !defined BULK_FLUX) \
+        || (defined LMD_SKPP    && !defined ANA_SRFLUX  && \
+                                   !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
         || (defined BULK_FLUX   && \
                                   (!defined BULK_SMFLUX || !defined BULK_EP)) \
                                    )\
-           )\
-        && !defined OA_COUPLING
+           )
 !
 !
 ! Forcing file name. Check its availability.

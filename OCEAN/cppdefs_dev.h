@@ -80,9 +80,8 @@
 # define MRL_WCI
 # undef  WKB_WWAVE
 # undef  WAVE_ROLLER
-# undef  WAVE_FRICTION
-# undef  WAVE_STREAMING
-# undef  WAVE_RAMP
+# define WAVE_STREAMING
+# define  WAVE_RAMP
 #endif
 
 /* 
@@ -495,7 +494,8 @@
 # ifdef BEDLOAD
 #  undef  SLOPE_NEMETH
 #  define SLOPE_LESSER
-#  if (defined WAVE_OFFLINE || defined WKB_WWAVE || defined ANA_WWAVE)
+#  if (defined WAVE_OFFLINE || defined WKB_WWAVE || defined ANA_WWAVE\
+                            || defined OW_COUPLING)
 #   define BEDLOAD_SOULSBY
 #   define Z0_BL  /* Mandatory with BEDLOAD_SOULSBY */
 #   define Z0_RIP
