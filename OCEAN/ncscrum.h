@@ -737,6 +737,9 @@
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
+# ifdef MOVING_BATHY
+     &      , avgHm
+# endif
 # ifdef SOLVE3D
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
@@ -986,6 +989,9 @@
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
+# ifdef MOVING_BATHY
+     &      , avgHm
+# endif
 # ifdef SOLVE3D
      &      , avgU,    avgV,     avgT,     avgR
      &      , avgO,    avgW,     avgVisc,  avgDiff
