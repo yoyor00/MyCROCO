@@ -2785,6 +2785,9 @@
 # undef vidKVF
 # undef vidCALP
 # undef vidKAPS
+# ifdef MOVING_BATHY
+#  undef vidHm
+# endif
 #endif
 
 #ifdef AVERAGES
