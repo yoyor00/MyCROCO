@@ -31,11 +31,11 @@
 
 #ifdef MASKING
       if (typevar2d.eq.r2dvar) then
-         mask2=rmask
+         mask2=rmask_wet
       elseif (typevar2d.eq.u2dvar) then
-         mask2=umask
+         mask2=umask_wet
       elseif (typevar2d.eq.v2dvar)then
-         mask2=vmask
+         mask2=vmask_wet
       endif    
 !
       if (typefile ==filetype_his) then
@@ -102,13 +102,13 @@
 !   
 #ifdef MASKING
       if (typevar3d.eq.r3dvar) then
-         mask2=rmask
+         mask2=rmask_wet
       elseif (typevar3d.eq.w3dvar) then
-         mask2=rmask
+         mask2=rmask_wet
       elseif (typevar3d.eq.u3dvar) then
-         mask2=umask
+         mask2=umask_wet
       elseif (typevar3d.eq.v3dvar) then
-         mask2=vmask
+         mask2=vmask_wet
       endif   
 !
       if (typefile ==filetype_his) then
