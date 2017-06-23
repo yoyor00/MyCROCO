@@ -86,6 +86,7 @@
 !
 !  Tidal currents angle, phase, major and minor ellipse axis.
 !
+        MPI_master_only write(stdout,*)'write Cangle'
         status=nf_inq_varid(ncidfrc,'tide_Cangle',varid)
         status=nf_fread(UV_Tangle(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
@@ -94,6 +95,7 @@
           stop                           !-->  EXIT
         endif
 
+        MPI_master_only write(stdout,*)'write Cphase'
         status=nf_inq_varid(ncidfrc,'tide_Cphase',varid)
         status=nf_fread(UV_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
@@ -102,6 +104,7 @@
           stop                           !-->  EXIT
         endif
 
+        MPI_master_only write(stdout,*)'write Cmax'
         status=nf_inq_varid(ncidfrc,'tide_Cmax',varid)
         status=nf_fread(UV_Tmajor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
@@ -110,6 +113,7 @@
           stop                           !-->  EXIT
         endif
 
+        MPI_master_only write(stdout,*)'write Cmin'
         status=nf_inq_varid(ncidfrc,'tide_Cmin',varid)
         status=nf_fread(UV_Tminor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
