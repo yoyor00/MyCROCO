@@ -18,7 +18,7 @@
       ! Bulk number of variables !
       ! ------------------------ !
       integer nblkvrs
-      parameter(nblkvrs=9)
+      parameter(nblkvrs=10)
       ! --------------------- !
       ! Bulk variable''s names !
       ! --------------------- !

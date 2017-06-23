@@ -817,7 +817,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo
@@ -2026,7 +2026,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo

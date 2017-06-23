@@ -197,7 +197,7 @@ C$    trd=omp_get_thread_num()
 # ifdef TANK
          myalpha   = 0.01
 # else
-         myalpha   = 0.5
+         myalpha   = 0.15
 # endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
@@ -637,6 +637,10 @@ C$OMP END MASTER
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i-1,j) )
 #endif
+#if defined READ_PATM && !defined SOLVE3D
+     &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
+     &                                   *( patm2d(i,j)-patm2d(i-1,j) )
+#endif
      &                                                              )
 ! 
           rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
@@ -653,6 +657,10 @@ C$OMP END MASTER
 #if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i,j-1) )
+#endif
+#if defined READ_PATM && !defined SOLVE3D
+     &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
+     &                                   *( patm2d(i,j)-patm2d(i,j-1) )
 #endif
      &                                                              )
         enddo

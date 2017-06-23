@@ -678,7 +678,7 @@ C$OMP BARRIER
           inv_f= 1.0/max(frq(i,j,wnew),eps)
           urms = 0.5*frq(i,j,wnew)*hrm(i,j,wnew)/max(sinh(khn),eps)
           abot = inv_f*urms
-          fw   = 1.39*(Zob/max(abot,eps))**0.52 ! Soulsby (1995)
+          fw   = 1.39*(Zob(i,j)/max(abot,eps))**0.52 ! Soulsby (1995)
           wfc(i,j,wnew) = cfrc*fw*inv_f*urms**3 ! ep_d/rho/sigma
 # else
           wfc(i,j,wnew) = 0.0

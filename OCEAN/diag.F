@@ -45,7 +45,6 @@
       real*QUAD buff(6)
       common /xyz/ buff
 #endif
-
 #ifdef ETALON_CHECK
       integer ncheck, nparam, iocheck
       parameter (ncheck=6, nparam=4)
@@ -233,6 +232,9 @@ C$OMP CRITICAL (diag_cr_rgn)
               endif
               trd=omp_get_thread_num()
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
+#ifdef CALENDAR 
+              write(stdout,'(a)') tool_sectodat(time)
+#endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
 !
 ! Raise may_day_flag to stop computations in the case of blowing up.

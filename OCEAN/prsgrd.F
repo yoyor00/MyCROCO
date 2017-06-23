@@ -72,6 +72,9 @@ c********************************************************************
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
+# ifdef READ_PATM 
+#  include "forces.h"
+# endif
 # ifdef POT_TIDES
 #  include "tides.h"
 # endif
@@ -178,6 +181,9 @@ c********************************************************************
 # ifdef POT_TIDES
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
 # endif
+#  ifdef READ_PATM 
+         P(i,j,N) = P(i,j,N) + patm2d(i,j)/rho0
+#  endif
         enddo
         do k=N-1,1,-1
           do i=IstrU-1,Iend
@@ -469,6 +475,9 @@ c********************************************************************
 #  ifdef MRL_WCI
 #    include "forces.h"
 #  endif
+# ifdef READ_PATM 
+#  include "forces.h"
+# endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -501,9 +510,12 @@ c********************************************************************
      &     +cff*( (rho(i-1,j,N)-rsurf(i,j))*(z_w(i-1,j,N)-z_r(i,j,N))
      &           +(rsurf(i-1,j)-rho(i,j,N))*(z_w(i,j,N)-z_r(i-1,j,N))
      &                                                              )
-
+    
 #  ifdef POT_TIDES
-                                        - g*(Ptide(i,j)-Ptide(i-1,j))
+     &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
+#  endif
+#  ifdef READ_PATM 
+     &                         - (patm2d(i,j)-patm2d(i-1,j))/rho0
 #  endif
  
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
@@ -572,7 +584,10 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
-                                        - g*(Ptide(i,j)-Ptide(i,j-1))
+     &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
+#  endif
+#  ifdef READ_PATM 
+     &                               - (patm2d(i,j)-patm2d(i,j-1))/rho0
 #  endif
  
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)

@@ -67,7 +67,9 @@
      &  blk_vname(1,bvar)(1:lenstr(blk_vname(1,bvar)))//
      &  '_Y'//bulkyear//'M'//bulkmonth2//'.nc'
       endif
-
+#  ifdef AROME
+        bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))
+#endif
       return
       end
 
@@ -91,7 +93,72 @@
 # include "param.h"
 # include "online.h"
 
-#  ifdef ERA_ECMWF
+#  ifdef AROME
+
+      ! Temperature_height_above_ground
+      blk_vname(1,1)='t2m                                      '
+      blk_vname(2,1)='Temperature                              '
+      blk_vname(3,1)='Kelvin                                   '
+      blk_vname(4,1)='??????                                   '
+
+      ! Specific_humidity 
+      blk_vname(1,2)='hu2m                                     '
+      blk_vname(2,2)='Specific Humidity at surface             '
+      blk_vname(3,2)='Kg/Kg                                    '
+      blk_vname(4,2)='??????                                   '
+
+      ! Precipitation_rate
+      blk_vname(1,3)='prate                                    '
+      blk_vname(2,3)='Precipitation_rate                       '
+      blk_vname(3,3)='kg/m^2/s                                 '
+      blk_vname(4,3)='??????                                   '
+
+      ! Downward_Short-Wave_Rad_Flux_surface
+      blk_vname(1,4)='xxx                                      '
+      blk_vname(2,4)='xxx                                      '
+      blk_vname(3,4)='W/m^2                                    '
+      blk_vname(4,4)='??????                                   '
+
+      ! Net short_Rad_Flux_surface 
+      blk_vname(1,5)='flsolaire                                '
+      blk_vname(2,5)='NET SHORT WAVE                           '
+      blk_vname(3,5)='W/m^2                                    '
+      blk_vname(4,5)='??????                                   '
+
+      ! Downward_Long-Wave_Rad_Flux
+      blk_vname(1,6)='fltherm                                  '
+      blk_vname(2,6)='Downward_Long-Wave_Rad_Flux              '
+      blk_vname(3,6)='W/m^2                                    '
+      blk_vname(4,6)='??????                                   '
+
+      ! Upward_Long-Wave_Rad_Flux_surface
+      blk_vname(1,7)='NOPE                                     '
+      blk_vname(2,7)='??????                                   '
+      blk_vname(3,7)='W/m^2                                    '
+      blk_vname(4,7)='??????                                   '
+
+      ! U-component_of_wind 
+      blk_vname(1,8)='u10m                                     '
+      blk_vname(2,8)='v10m                                     '
+      blk_vname(3,8)='m/s                                      '
+      blk_vname(4,8)='??????                                   '
+
+      ! V-component_of_wind
+      blk_vname(1,9)='v10m                                     '
+      blk_vname(2,9)='v10m                                    '
+      blk_vname(3,9)='m/s                                      '
+      blk_vname(4,9)='??????                                   '
+
+# ifdef READ_PATM
+      ! Atm pressure 
+      blk_vname(1,10)='pmer                                     '
+      blk_vname(2,10)='air_pressure_at_sea_level                '
+      blk_vname(3,10)='Pa                                       '
+      blk_vname(4,10)='??????                                   '
+# endif
+
+
+#  elif ERA_ECMWF
 
       ! Temperature_height_above_ground
       blk_vname(1,1)='T2M                                      '

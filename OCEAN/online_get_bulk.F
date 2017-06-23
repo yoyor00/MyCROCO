@@ -51,7 +51,7 @@
 # include "grid.h"
 # include "online.h"
       integer blkvar_id, imin, imax, jmin, jmax, strt3(3), cnt3(3)
-      integer blk_dimlonid, blk_lonid, blk_dimlatid, blk_latid
+      integer blk_dimlonid, blk_lonid, blk_dimlatid, blk_latid,blk_dimtimeid
       integer iblk, ierr, lvar, lenstr, i, j, NX, NY, tile, subs, trd
       logical firstiter
       real bulkstart, bulkend
@@ -79,7 +79,7 @@
 ! Do not process #7 :  upward longwave is obsolete
 !
         if (blkvar_id.eq.7) goto 10
-#  ifdef ERA_ECMWF
+# if defined ERA_ECMWF || defined AROME
 !
 ! In the case of ERA the net short wave is used
 ! Net Short wave - 5 downward short wave not used
@@ -104,7 +104,7 @@
 ! Open the file
 !
           lvar=lenstr(bulkfilename(blkvar_id))
-      print*, 'Open :',bulkfilename(blkvar_id)(1:lvar)
+!      print*, 'Open :',bulkfilename(blkvar_id)(1:lvar)
           ierr=nf_open(bulkfilename(blkvar_id)(1:lvar), nf_nowrite, 
      &                 ncidbulkO(blkvar_id)) 
           if (ierr. ne. nf_noerr) goto 4            !--> ERROR
@@ -116,16 +116,14 @@
      &                      blk_vname(1,blkvar_id)(1:lvar),
      &                      bulk_varid(blkvar_id))
 !
-! Read Time dimension
-! 
-          ierr=nf_inq_varid(ncidbulkO(blkvar_id),'time', 
-     &                      bulk_tidO(blkvar_id))
-          if (ierr .ne. nf_noerr) goto 99           !--> ERROR
-!
 ! Extract the number of records
 !
-          ierr=nf_inq_dim(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),  
-     &                    dimname, ntbulkO(blkvar_id))
+!          ierr=nf_inq_dim(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),  
+!     &                    dimname, ntbulkO(blkvar_id))
+!   on a une dimension record unlimited donc la commande davant retourne 0
+          ierr=nf_inq_dimid(ncidbulkO(blkvar_id),'time',blk_dimtimeid)
+          ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimtimeid,
+     &                      ntbulkO(blkvar_id))
 !
 ! Read Longitude dimension
 ! 
@@ -144,6 +142,12 @@
 !======= === =============== ======= == === ========== === =============
 ! Define the caracteristics, limits, of the extraction and interpolation
 !======= === =============== ======= == === ========== === =============
+! Read Time dimension
+! 
+          ierr=nf_inq_varid(ncidbulkO(blkvar_id),'time', 
+     &                      bulk_tidO(blkvar_id))
+          if (ierr .ne. nf_noerr) goto 99           !--> ERROR
+!
 !
 ! First time record
 !
@@ -153,6 +157,7 @@
 ! Last time record
           ierr=nf_get_var1_FTYPE(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id), 
      &                           ntbulkO(blkvar_id),bulkend)
+
 !
 ! Length of time vector in seconds
 !
@@ -259,6 +264,8 @@
 ! Computation of the time in seconds for time interpolation
 !
           bulk_timeO(iblk,blkvar_id)=daycfsr*day2sec
+      MPI_master_only print*,'time meteo:',
+     &                tool_sectodat(bulk_timeO(iblk,blkvar_id))
 !
 ! Initialize bulk_timeO(itbulkO(blkvar_id),blkvar_id)
 !

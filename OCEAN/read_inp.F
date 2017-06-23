@@ -229,6 +229,17 @@
          MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
      &   'Start date:', start_date(1:lstr)
 #endif
+#ifdef END_DATE
+!
+! END date
+!
+      elseif (keyword(1:kwlen).eq.'end_date') then
+         call cancel_kwd (keyword(1:kwlen), ierr)
+         read(input,'(A)',err=95) end_date
+         lstr=lenstr(end_date)
+         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'End date:', end_date(1:lstr)
+#endif
 !     
 ! Time-stepping parameters
 !
@@ -1494,11 +1505,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'bottom_drag') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) rdrg, rdrg2, Zob, Cdb_min, Cdb_max
+        read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
         MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
      &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
      &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &      Zob, 'Zob      Bottom roughness for logarithmic law (m).',
+     &      Zobt, 'Zobt      Bottom roughness for logarithmic law (m).',
      &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
      &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
 !

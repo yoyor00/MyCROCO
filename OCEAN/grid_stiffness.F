@@ -135,7 +135,8 @@ C$OMP CRITICAL (grd_stff_cr_rgn)
           rx0=buff(1)
           rx1=buff(2)
 # endif
-          MPI_master_only write(stdout,'(/1x,A,F12.10,2x,A,F14.10/)')
+          !MPI_master_only write(stdout,'(/1x,A,F12.10,2x,A,F14.10/)')
+          MPI_master_only write(stdout,*)
      &     'Maximum grid stiffness ratios:   rx0 =',rx0, 'rx1 =',rx1
         endif
 C$OMP END CRITICAL (grd_stff_cr_rgn)

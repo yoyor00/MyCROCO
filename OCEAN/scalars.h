@@ -34,6 +34,8 @@
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
       real dt, dtfast, time, time2, time_start, tdays
+      real*8 time_mars,time_end,tool_datosec
+      character*19 date,tool_sectodat,end_date
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
@@ -47,6 +49,7 @@
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
      &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &                       time_mars,time_end,date,end_date,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
@@ -93,7 +96,7 @@
 ! Cdb_max  Maximum bottom drag coefficient allowed.
 ! Cdb_min  Minimum bottom drag coefficient to avoid the 
 !                law-of-the-wall to extend indefinitely.
-! Zob      Bottom roughness (m).
+! Zobt      Bottom roughness (m).
 ! 
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
@@ -137,7 +140,7 @@
 !                        the ripple var. is set in ana_bsedim (ifndef SEDIMENT)
 !
       real time_avg, time2_avg, rho0
-     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zob
+     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
@@ -233,7 +236,7 @@
 
       common /scalars_main/
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
-     &           , Zob,       Cdb_min,   Cdb_max
+     &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
@@ -525,6 +528,6 @@
 !   FillValue (Needed if the FILLVAL key is defined)
 !   (See fillvalue.F subroutine)
       real spval
-      parameter (spval=-9999.0)
+      parameter (spval=-999.0)
       logical mask_val
       parameter (mask_val = .true.)

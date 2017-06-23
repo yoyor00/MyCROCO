@@ -711,6 +711,10 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-steping.'
       next_kstp=kstp
       time_start=time
+      time_mars=time
+#ifdef END_DATE
+      time_end=tool_datosec(end_date)
+#endif
 
 ! XIOS (
 !  Clean log output a bit
@@ -733,6 +737,13 @@ CR      write(*,*) '  0' MYID
 #endif
 
       do iicroot=ntstart,ntimes+1
+#ifdef END_DATE
+        MPI_master_only write(*,'(a)') "debut boucle en temps"
+        MPI_master_only write(*,'(a)') tool_sectodat(time)
+        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        MPI_master_only write(*,'(a)') tool_sectodat(time_end)
+        if(time > time_end) goto 99 
+#endif
 
 
 #ifdef SOLVE3D
@@ -754,6 +765,13 @@ CR      write(*,*) '  0' MYID
         enddo
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
+#ifdef END_DATE
+        MPI_master_only write(*,'(a)') "fin boucle en temps"
+        MPI_master_only write(*,'(a)') tool_sectodat(time)
+        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        MPI_master_only write(*,'(a)') tool_sectodat(time_end)
+        if(time > time_end) goto 99 
+#endif
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:

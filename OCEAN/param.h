@@ -165,6 +165,10 @@
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
+#  elif defined MENOR 
+      parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
+#  elif defined SEINE 
+      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -199,7 +203,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=13, NP_ETA=12, NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=8, NP_ETA=7,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -242,7 +246,7 @@
 # if defined IGW || defined S2DV
       parameter (Ntides=1)
 # else
-      parameter (Ntides=1)
+      parameter (Ntides=8)
 # endif
 #endif
 #ifdef WET_DRY
@@ -253,12 +257,12 @@
 # elif defined SWASH
       parameter (D_wetdry=0.05)
 # else
-      parameter (D_wetdry=0.10)
+      parameter (D_wetdry=0.2)
 # endif
 #endif
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources
-      parameter (Msrc=10)        ! ====== == ===== =======
+      parameter (Msrc=1)        ! ====== == ===== =======
 #endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats

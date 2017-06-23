@@ -697,8 +697,8 @@ C$    integer  trd, omp_get_thread_num
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sst(i,j)=???
-          dqdt(i,j)=???
+          sst(i,j)=25
+          dqdt(i,j)=0.
         enddo
       enddo
 # endif
@@ -1587,7 +1587,7 @@ C$    integer  trd, omp_get_thread_num
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1                ! [m2/s2]
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3                ! [m/s]
           Sdens(i,j)=MAX(cff4,1050.)
 # ifdef DEBUG
@@ -1744,10 +1744,15 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
+            !WRITE(stdout,*)'Qshape',i,j,exp(z_r(i,j,k)*cff/Hs),
+     !&           (z_w(i,j,k)-z_w(i,j,k-1))/Hs,Qshape(is,k)
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
+            if (cff2 > 0.0) then
+             Qshape(is,k)=Qshape(is,k)/cff2
+             Qshape(is,k)=1.0/k
+            endif
           enddo
         enddo
 

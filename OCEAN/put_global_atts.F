@@ -18,6 +18,7 @@
 #include "scalars.h"
 #include "ncscrum.h"
 #include "strings.h"
+#include "grid.h"
 
 #ifdef SEDIMENT
 # include "sediment.h"
@@ -398,8 +399,8 @@
 !
 ! Bottom drag coefficients.
 !
-      if (Zob.ne.0.) then
-        ierr=nf_put_att_FTYPE(ncid,nf_global,'Zob',nf_ftype,1,Zob)
+      if (maxval(Zob).ne.0.) then
+        ierr=nf_put_att_FTYPE(ncid,nf_global,'Zob',nf_ftype,1,maxval(Zob))
         ierr=nf_put_att_text (ncid,nf_global,'Zob_expl',46,
      &               'VonKarman/Prandtl log layer : roughness scale')
         ierr=nf_put_att_text (ncid,nf_global,'Zob_units',5,

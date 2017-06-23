@@ -375,7 +375,7 @@ c++ # define CANUTO_A
      &                             *vonKar*OneOverSig(igls)
      &                             *(cff**(rm+0.5))*(lgthsc**rn)
                   ! bottom
-                  z0_b        = MAX( Zob , 1.E-04 )
+                  z0_b        = MAX( Zob(i,j) , 1.E-04 )
                   cff         = 0.5*( trb( i,j,  1,nnew,itke )  
      &                            +   trb( i,j,  0,nnew,itke ) )
                   lgthsc      = vonKar*(0.5*Hz(i,j,1)+z0_b)

@@ -124,7 +124,7 @@
 !-----------------------------------------------------------------------
 !
       Zos_min=max(Zos,0.0001) ! Zos: surface roughness
-      Zob_min=max(Zob,0.0001)
+      Zob_min=max(Zobt,0.0001)
 !
 # if defined CRAIG_BANNER || defined TKE_WAVEDISS
 #  ifdef GLS_KKL

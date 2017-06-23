@@ -1,12 +1,12 @@
 ! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 ! 
-! CROCO website : http://www.croco-ocean.org
+! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
 /*
@@ -17,7 +17,7 @@
 #undef  CANYON_A        /* Canyon_A Example */
 #undef  CANYON_B        /* Canyon_B Example */
 #undef  EQUATOR         /* Equator Example  */
-#undef  ACOUSTIC        /* Acoustic wave test case */
+#undef  ACOUS           /* Acoustic wave test case */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  INNERSHELF      /* Inner Shelf Example */
@@ -36,9 +36,8 @@
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
-#undef  S2DV            /* S2DV sections */ 
+#undef  S2DV            /* 2D Vertical Section Application */
 #define REGIONAL        /* REGIONAL Applications */
-#undef  REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
 
 
 #if defined REGIONAL
@@ -53,10 +52,11 @@
 !
 */
                       /* Configuration Name */
-# define BENGUELA_LR
+# define SEINE 
+# define END_DATE
                       /* Parallelization */
 # undef  OPENMP
-# undef  MPI
+# define  MPI
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
@@ -66,11 +66,11 @@
                       /* I/O server */
 # undef  XIOS
                       /* Open Boundary Conditions */
-# undef  TIDES
-# define OBC_EAST
-# define OBC_WEST
-# define OBC_NORTH
-# define OBC_SOUTH
+# define  TIDES
+# define   OBC_EAST
+# define  OBC_WEST
+# define  OBC_NORTH
+# undef   OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
 # undef  FLOATS
@@ -78,6 +78,7 @@
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
 # undef  BBL
+# define Z0B_VAR
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -95,12 +96,15 @@
 # define CURVGRID
 # define SPHERICAL
 # define MASKING
-# undef  WET_DRY
+# define WET_DRY
 # define NEW_S_COORD
+# define REDUC_SECTION
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
 # define UV_ADV
+# define M2FILTER_NONE
+
                       /* Equation of State */
 # define SALINITY
 # define NONLIN_EOS
@@ -110,31 +114,43 @@
 # undef  UV_HADV_UP5
 # undef  UV_HADV_C4
 # undef  UV_HADV_WENO5
+/* TEST DEV RACHID */
+/*# define UV_HADV_C2
+# define UV_HADV_TVD
+# define UV_VADV_C2
+# define UV_VADV_TVD*/ 
+
                       /* Lateral Explicit Momentum Mixing */
-# undef  UV_VIS2
+# define  UV_VIS2
 # ifdef UV_VIS2
-#  define UV_VIS_SMAGO
+#  undef UV_VIS_SMAGO
 # endif
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
-# define TS_HADV_RSUP3
+# undef  TS_VADV_AKIMA
+# undef  TS_HADV_RSUP3
 # undef  TS_HADV_UP5
 # undef  TS_HADV_C4
-# undef  TS_HADV_WENO5
+# define TS_HADV_WENO5
+# undef TS_VADV_WENO5
                       /* Lateral Explicit Tracer Mixing */
-# undef  TS_DIF2
+# define  TS_DIF2
+# ifdef TS_DIF2
+#   undef TS_DIF_SMAGO
+# endif
 # undef  TS_DIF4
 # undef  TS_MIX_S
                       /* Sponge layers for UV and TS */
-# define SPONGE
+# undef SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
                       /* Vertical Mixing */
 # undef  BODYFORCE
-# undef  BVF_MIXING
-# define LMD_MIXING
-# undef  GLS_MIXING
-# undef  GLS_MIX2017  /* <--- Warning: option still under testing */
+
+# undef BVF_MIXING
+# undef LMD_MIXING
+# undef GLS_MIXING
+# define GLS_MIX2017  /* <---- Warning: option still under testing */
 
 # ifdef LMD_MIXING
 #  define LMD_SKPP
@@ -145,82 +161,102 @@
 #  define LMD_NONLOCAL
 # endif
 # ifdef GLS_MIXING
-#  define GLS_KKL
+#  undef GLS_KKL
 #  undef  GLS_KOMEGA
-#  undef  GLS_KEPSILON
+#  define  GLS_KEPSILON
 #  undef  GLS_GEN
 #  undef  KANTHA_CLAYSON
 #  undef  CRAIG_BANNER
 #  undef  CANUTO_A
 #  undef  ZOS_HSIG
 # endif
+
 # ifdef GLS_MIX2017
-#  undef  GLS_KOMEGA
-#  define GLS_KEPSILON
-#  undef  GLS_GEN
-#  define CANUTO_A
-#  undef  GibLau_78
-#  undef  MelYam_82
-#  undef  KanCla_94
-#  undef  Luyten_96
-#  undef  CANUTO_B 
-#  undef  Cheng_02
+# undef  GLS_KOMEGA
+# define GLS_KEPSILON
+# undef  GLS_GEN
+# define CANUTO_A
+# undef GibLau_78
+# undef MelYam_82
+# undef KanCla_94
+# undef Luyten_96
+# undef CANUTO_B 
+# undef Cheng_02
 # endif
+
                       /* Surface Forcing */
-# undef  BULK_FLUX
+# define  BULK_FLUX
 # ifdef BULK_FLUX
 #  define BULK_FAIRALL
-#  define BULK_LW
-#  define BULK_EP
+#  undef BULK_LW
+#  undef BULK_EP
 #  define BULK_SMFLUX
+#  ifdef BULK_SMFLUX
+#   define BULK_SM_UPDATE
+#  endif
 #  undef  SST_SKIN
-#  undef  ANA_DIURNAL_SW
-#  undef  ONLINE
+#  define  ANA_DIURNAL_SW
+#  define  ONLINE
+#  define AROME
+#  define READ_PATM
 #  undef  ERA_ECMWF
 #  undef  RELATIVE_WIND
 # else
-#  define QCORRECTION
-#  define SFLX_CORR
-#  define ANA_DIURNAL_SW
+#  undef QCORRECTION
+#  undef SFLX_CORR
+#  undef ANA_DIURNAL_SW
 # endif
-                      /* Lateral Forcing */
+# define ANA_SSFLUX   /* surface salinity */
+# define ANA_STFLUX   /* surface temperature */
+
+/* Suppression des termes atmospheriques */
+# undef ANA_SMFLUX   /* surface momentum flux = wind */
+# undef ANA_SRFLUX   /* surface short surface radiative */
+# define ANA_SST
+# define ANA_SSS
+
+# define ANA_TCLIMA
+
+                   /* Lateral Forcing */
 # define CLIMATOLOGY
 # ifdef CLIMATOLOGY
-#  define ZCLIMATOLOGY
-#  define M2CLIMATOLOGY
-#  define M3CLIMATOLOGY
+#  undef ZCLIMATOLOGY
+#  undef M2CLIMATOLOGY
+#  undef M3CLIMATOLOGY
 #  define TCLIMATOLOGY
 
-#  define ZNUDGING
-#  define M2NUDGING
-#  define M3NUDGING
-#  define TNUDGING
+#  undef ZNUDGING
+#  undef M2NUDGING
+#  undef M3NUDGING
+#  undef TNUDGING
 #  undef  ROBUST_DIAG
 # endif
 
-# undef  FRC_BRY
+# define  FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
-#  define M3_FRC_BRY
-#  define T_FRC_BRY
+#  undef M3_FRC_BRY
+#  undef T_FRC_BRY
 # endif
                       /* Bottom Forcing */
 # define ANA_BSFLUX
 # define ANA_BTFLUX
+# undef z0_mars
                       /* Point Sources - Rivers */
 # undef PSOURCE
 # undef PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
-#   define PSOURCE_NCFILE_TS
+#   undef PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
 #  define SSH_TIDES
-#  define UV_TIDES
+#  undef UV_TIDES
 #  undef  POT_TIDES
 #  define TIDERAMP
-#  define OBC_M2CHARACT
+#  define OBC_M2FLATHER
+#  undef OBC_M2CHARACT
 # else
 #  undef  OBC_M2SPECIFIED
 #  undef  OBC_M2FLATHER
@@ -237,8 +273,8 @@
 # undef  DIAGNOSTICS_TS
 # undef  DIAGNOSTICS_UV
 # ifdef DIAGNOSTICS_TS
-#  undef DIAGNOSTICS_TS_ADV
-#  define DIAGNOSTICS_TS_MLD
+#  define DIAGNOSTICS_TS_ADV
+#  undef DIAGNOSTICS_TS_MLD
 # endif
 /*
 !           Applications:
@@ -402,32 +438,12 @@
 !
 */
 # undef  OPENMP
-# define KH_INST2D
-# undef  KH_INST3D
-# undef  KH_INSTY
 # define MPI
 # define NBQ
-# define XIOS 
 # ifdef NBQ
-#  undef  OBC_NBQ
-#  undef  NBQ_VOL
 #  undef  NBQ_IMP
-#  define NBQ_IMP_LU
-#  define NBQ_IMP_TRIDIAG
-#  undef  NBQ_IMPIJK 
-#  define NBQ_FB
-#  undef  NBQ_LF
-#  undef  NBQ_RK2
-#  undef  NBQ_RK3
-#  undef  NBQ_RK3b
 # endif
-# undef  MASKING 
-# undef  OBC_EAST
-# undef  OBC_WEST
-# undef  OBC_SOUTH
-# undef  OBC_NORTH
 # define UV_VIS2
-# define SALINITY
 # define UV_MIX_S
 # define UV_VIS_SMAGO
 # define SOLVE3D
@@ -439,17 +455,10 @@
 # define ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
-# define ANA_SRFLUX
 # define ANA_BTFLUX
-# define ANA_SSFLUX
-# define ANA_BSFLUX
-# ifndef KH_INSTY
-#  define EW_PERIODIC
-# else
-#  define NS_PERIODIC
-# endif
+# define EW_PERIODIC
 
-#elif defined ACOUSTIC 
+#elif defined ACOUS 
 /*
 !                       ACOUSTIC WAVE TESTCASE 
 !                       ======================
@@ -458,17 +467,8 @@
 # define MPI
 # define NBQ
 # ifdef NBQ
-#  undef NBQ_VOL
-#  undef  NBQ_IMP
-#  undef  NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
-#  undef  NBQ_IMPIJK
-#  define NBQ_FB
-#  undef  NBQ_LF
-#  undef  NBQ_RK2
-#  undef  NBQ_RK3
-#  undef  NBQ_RK3b
-#  undef  DEBUG_NBQ 
+#  define NBQ_IMP
+# else
 # endif
 # undef  UV_VIS2
 # define SOLVE3D
@@ -496,15 +496,12 @@
 # undef  OPENMP
 # define MPI
 # define NBQ
-# undef  XIOS 
 # ifdef NBQ
 #  define GRAV_ADJ_SOLITON
-#  define NBQ_FB
 #  define NBQ_IMP
-#  define NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
+# else
+#  define UV_VIS2
 # endif
-# define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
@@ -602,170 +599,51 @@
 !                  ============
 !
 */
-                      /* Applications */
-# define TIDES
-# define NBQ
-# undef  OA
-                      /* Parallelization */
-# undef OPENMP		/* <--  debug mode */
-# define MPI		/* <--  debug mode */
-                      /* I/O server */
-# define XIOS
-                      /* Equation of State */
-# undef  SALINITY
-                      /* Open Boundary Conditions */
-# ifdef TIDES
-#   define TIDERAMP
-#   define SSH_TIDES
-#   undef  POT_TIDES
-#   define UV_TIDES 
-# endif
-# define OBC_EAST
-# define OBC_WEST
-# undef  OBC_SOUTH
-# undef  OBC_NORTH
-# define NS_PERIODIC
-                     /* Model dynamics */
-# define SOLVE3D 
-# define UV_ADV
-# define UV_COR
-                      /* Lateral Explicit Momentum Mixing */
-# define UV_VIS2
-# ifdef UV_VIS
-#   undef UV_VIS_SMAGO
-# endif
-                   /* Semi-implicit Vertical Tracer/Mom Advection */
-# undef  VADV_ADAPT_IMP
-                      /* Grid configuration */
-# define SPHERICAL
-# define CURVGRID
-# undef  MASKING
-# define NEW_S_COORD
-# undef  WET_DRY
-                      /* Non-Boussinesq */
-# ifdef NBQ
-#  undef NBQ_VOL	/* <--  check */
-#  undef NBQ_OUT	/* <-- obsolete */
-#  undef NBQ_DEBUG 	/* <-- alt. key, incl. debug level */
-#  undef NBQ_LF
-#  define NBQ_FB
-#  define NBQ_IMP
-#  define NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
-#  define OBC_NBQ	
-#  define NBQCLIMATOLOGY
-#  define NBQNUDGING
-# endif
-                      /* Sponge layers for UV and TS */
-# define SPONGE
-# define ANA_VMIX
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_SRFLUX
-# define ANA_SSFLUX
-                      /* Bottom Forcing */
-# define ANA_BTFLUX
-# define ANA_BSFLUX
-                      /* Lateral Forcing */
-# define ZCLIMATOLOGY		/* <--  needed for tides forcing */
-# define M2CLIMATOLOGY		/* <--  needed for tides forcing */
-# define M3CLIMATOLOGY
-# define TCLIMATOLOGY
-# define ANA_INITIAL
-# define ANA_SSH		/* <--  needed for z forcing initialisation to 0 */
-# define ANA_M2CLIMA		/* <--  needed for barotropic forcing initialisation to 0  */
-# define ANA_M3CLIMA
-# define ANA_TCLIMA
-# define EXPERIMENT3
-# define M2NUDGING
-# define M3NUDGING
-# define TNUDGING
 
-#elif defined REGIONAL_NBQ
-/*
-!            NBQ-REGIONAL APPLICATIONS 
-!                  ============
-!
-*/
-                      /* Applications */
-# define TIDES
-# define NBQ
-# undef  OA
-                      /* Parallelization */
-# undef OPENMP		/* <--  debug mode */
-# define MPI		/* <--  debug mode */
-!# undef MPI		/* <--  debug mode */
-                      /* I/O server */
-# undef XIOS
-                      /* Equation of State */
-# define SALINITY
-                      /* Open Boundary Conditions */
-# ifdef TIDES
-#   define TIDERAMP
-#   define SSH_TIDES
-#   define POT_TIDES
-#   define UV_TIDES 
+# undef  EXPERIMENT3
+# undef  OPENMP
+# undef  MPI
+# undef  NBQ
+# ifdef NBQ
+#  define NBQ_IMP
 # endif
-# undef OBC_EAST
-# define OBC_WEST
-# undef OBC_SOUTH
-# define OBC_NORTH
-                     /* Model dynamics */
+# define NEW_S_COORD
+# define SALINITY
+# define TIDES
+# define TIDERAMP
+# define SSH_TIDES
+# define UV_TIDES
 # define SOLVE3D 
 # define UV_ADV
 # define UV_COR
-                      /* Lateral Explicit Momentum Mixing */
 # define UV_VIS2
-# ifdef UV_VIS
-#   undef UV_VIS_SMAGO
-# endif
-                   /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
-                      /* Grid configuration */
 # define SPHERICAL
 # define CURVGRID
-# define MASKING
-# define NEW_S_COORD
-# undef  WET_DRY
-                      /* Non-Boussinesq */
-# ifdef NBQ
-#  undef IMP_SLOW
-#  undef NBQ_VOL	/* <--  check */
-#  undef NBQ_OUT	/* <-- obsolete */
-#  undef NBQ_DEBUG 	/* <-- alt. key, incl. debug level */
-#  undef NBQ_LF
-#  define NBQ_FB
-#  define NBQ_IMP
-#  define NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
-#  define OBC_NBQ	
-#  define NBQCLIMATOLOGY
-#  define NBQNUDGING
-# endif
-                      /* Sponge layers for UV and TS */
-# define SPONGE
+# undef  ANA_INITIAL
 # define ANA_VMIX
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_SRFLUX
 # define ANA_SSFLUX
-                      /* Bottom Forcing */
 # define ANA_BTFLUX
 # define ANA_BSFLUX
-                      /* Lateral Forcing */
-# define ZCLIMATOLOGY		/* <--  needed for tides forcing */
-# define M2CLIMATOLOGY		/* <--  needed for tides forcing */
+# define NS_PERIODIC
+# undef  OBC_EAST
+# define OBC_WEST
+# define SPONGE
+# define ANA_SSH
+# define ANA_M2CLIMA
+# define ANA_M3CLIMA
+# undef  ANA_TCLIMA
+# define ZCLIMATOLOGY
+# define M2CLIMATOLOGY
 # define M3CLIMATOLOGY
 # define TCLIMATOLOGY
-# define ANA_INITIAL
-# define ANA_SSH		/* <--  needed for z forcing initialisation to 0 */
-# define ANA_M2CLIMA		/* <--  needed for barotropic forcing initialisation to 0  */
-# define ANA_M3CLIMA
-# define ANA_TCLIMA
-# define EXPERIMENT3
 # define M2NUDGING
 # define M3NUDGING
 # define TNUDGING
+# undef  ONLINE_ANALYSIS
 
 #elif defined IGW
 /*
@@ -938,72 +816,6 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 
-#elif defined  PLUME
-/*
-!----------------------
-! BASIC OPTIONS
-!----------------------
-*/
-                      /* Parallelization */
-# define OPENMP
-# undef  MPI
-# undef  OBC_EAST
-# undef  OBC_WEST
-# undef  OBC_NORTH
-# undef  OBC_SOUTH
-# undef  AUTOTILING
-# undef  ETALON_CHECK
-                      /* Grid configuration */
-# define NEW_S_COORD
-                      /* Analytical intial + Forcing */
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_SSFLUX
-# define ANA_SRFLUX
-                      /* Bottom Forcing */
-# define ANA_BSFLUX
-# define ANA_BTFLUX
-                      /* Model dynamics */
-# define SOLVE3D
-# define UV_COR
-# define UV_ADV
-                      /* Equation of State */
-# define SALINITY
-# define NONLIN_EOS
-# define SPLIT_EOS
-                      /* Lateral Tracer Advection (default UP3) */
-# define  TS_HADV_UP3
-                      /* Sponge layers for UV and TS */
-# define  SPONGE
-                      /* Semi-implicit Vertical Tracer/Mom Advection */
-# undef  LMD_MIXING
-# define GLS_MIX2017
-
-# ifdef LMD_MIXING
-#  define LMD_SKPP
-#  define LMD_BKPP
-#  define LMD_RIMIX
-#  define LMD_CONVEC
-#  undef  LMD_DDMIX
-#  define LMD_NONLOCAL
-#  undef  MLCONVEC
-# endif
-
-# ifdef GLS_MIX2017
-# undef  GLS_KOMEGA
-# define GLS_KEPSILON
-# undef  GLS_GEN
-# define CANUTO_A
-# undef GibLau_78
-# undef MelYam_82
-# undef KanCla_94
-# undef Luyten_96
-# undef CANUTO_B
-# undef Cheng_02
-# endif
-
 #elif defined UPWELLING
 /*
 !                       Upwelling Example
@@ -1071,21 +883,7 @@
 !                       ========== === =======
 */
 # define ANA_JET
-# define  MPI
-# define NBQ
-# ifdef NBQ
-#  define NBQ_OBC
-#  define NBQ_VOL
-#  undef NBQ_IMP
-#  undef NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
-#  undef  NBQ_IMPIJK 
-#  define NBQ_FB
-#  undef  NBQ_LF
-#  undef  NBQ_RK2
-#  undef  NBQ_RK3
-#  undef  NBQ_RK3b
-# endif
+# undef  MPI
 # undef  AGRIF
 # undef  AGRIF_2WAY
 # define SOLVE3D
@@ -1169,25 +967,9 @@
 #  define WAVE_STREAMING
 #  define WAVE_RAMP
 # endif
-
 # define LMD_MIXING
 # define LMD_SKPP
 # define LMD_BKPP
-# undef GLS_MIX2017
-# ifdef GLS_MIX2017
-#  undef  GLS_KOMEGA
-#  define GLS_KEPSILON
-#  undef  GLS_GEN
-#  define CANUTO_A
-#  undef GibLau_78
-#  undef MelYam_82
-#  undef KanCla_94
-#  undef Luyten_96
-#  undef CANUTO_B 
-#  undef Cheng_02
-# endif
-
-
 # undef  BBL
 # undef  SEDIMENT
 # ifdef SEDIMENT
@@ -1351,23 +1133,10 @@
 ! free-surface flows. 
 ! Int. J. Numer. Methods Fluids 42, 929–952.
 */
-# define  TANKY
-# undef  XIOS
-# define MPI
-# define  NBQ
+# undef  MPI
+# define NBQ
 # ifdef NBQ
-#  undef  IMP_SLOW
-#  undef NBQ_VOL
-#  undef NBQ_IMP
-#  undef NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
-#  undef  NBQ_IMPIJK 
-#  define NBQ_FB
-#  undef  NBQ_LF
-#  undef  NBQ_RK2
-#  undef  NBQ_RK3
-#  undef  NBQ_RK3b
-#  undef  DEBUG_NBQ
+#  undef  NBQ_IMP
 # endif
 # define SOLVE3D
 # undef  MASKING
