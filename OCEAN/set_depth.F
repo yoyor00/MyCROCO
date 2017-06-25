@@ -127,6 +127,8 @@ C$    integer omp_get_thread_num
      &                        zeta(START_2D_ARRAY,3))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                        zeta(START_2D_ARRAY,4))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,wetdry)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,rmask_wet)
 #  endif
 # endif
       endif   !  iic==0
