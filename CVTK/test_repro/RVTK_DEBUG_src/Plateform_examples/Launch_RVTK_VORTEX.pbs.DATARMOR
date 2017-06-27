@@ -12,12 +12,10 @@ echo $PBS_O_LOGNAME
 
 #Chargement des modules nécessaires à l'exécution du script (et uniquement ces modules)
 #--------------------------------------------------------------------------------------
+
 source $MODULESHOME/init/bash
 module purge
-#source $HOME/.cshrc.caparmor
-module load intel-comp/2015.3.187
-module load intel-mpi/5.0.3.048
-module load netcdf-intel/3.6.3-11.1.073
+module load NETCDF/4.3.3.1-mpt-intel2016
 module list
 
 # Define $CC for AGRIF/conv compilation
