@@ -13,6 +13,7 @@ ln -sf CROCO_FILES_VHR CROCO_FILES
 ln -sf ${dir_home}/VHR .
 ln -sf ${dir_home}/JET .
 ln -sf ${dir_home}/VORTEX .
+ln -sf ${dir_home}/RIP .
 ln -sf ${dir_home}/SHOREFACE .
 
 echo '==============='
@@ -53,8 +54,9 @@ cd ../
 
 #--
 echo '==============='
-echo 'Process slurm/pbs files eventually needed'
-cp -sf ${dir_home}/*.datarmor.pbs .
+echo 'Process slurm files eventually needed'
+cp -sf ${dir_home}/*.pbs .
+cp -sf ${dir_home}/*.slurm .
 
 cp -Rf jobcomp_rvtk.bash.BACK jobcomp_rvtk.bash
 cp -Rf git_process.bash.BACK git_process.bash
