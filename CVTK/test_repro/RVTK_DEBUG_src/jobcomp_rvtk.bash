@@ -2,14 +2,31 @@
 ####################################################
 #               COMPILATION JOB                    #
 ####################################################
+
+# This script assumes default compilation options, to
+# change those options : 
+# it can either be  edited to add your own options
+# or take into account the following 
+# environment variables for compilation choices :
+#
+# CROCO_NETCDFLIB      : netcdf library
+# CROCO_NETCDFINC      : netcdf include 
+# CROCO_PRISM_ROOT_DIR : OASIS-MCT directory 
+# CROCO_XIOS_ROOT_DIR  : XIOS directory
+#
+# CROCO_CFT1           : compiler
+# CROCO_FFLAGS1        : compilation otpions
+#
+# Note that environment variables overwrite hard-coded
+# options
+
 #
 # set source, compilation and run directories
 #
-SOURCE=$HOME/croco/OCEAN
+SOURCE=../../croco/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
-echo "============================"
 #
 # determine operating system
 #
@@ -21,7 +38,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 if [[ $OS == Linux ]] ; then
 
-	LINUX_FC=ifort
+	LINUX_FC=gfortran
 #
 #	set 32 or 64 Bits executable
 #
@@ -44,24 +61,6 @@ fi
 #
 # set NETCDF directories
 #
-if [[ $OS == Linux ]] ; then
-  if [[ $LINUX_FC == g77 ]] ; then
-    if [[ $BITS == THIRTYTWO ]] ; then
-      NETCDFLIB="-L../../netcdf_g77 -lnetcdf"
-      NETCDFINC="-I../../netcdf_g77"
-    fi
-  elif [[ $LINUX_FC == ifort || $LINUX_FC == gfortran ]] ; then
-    if [[ $BITS == THIRTYTWO ]] ; then
-      NETCDFLIB="-L../../netcdf_ifc -lnetcdf"
-      NETCDFINC="-I../../netcdf_ifc"
-    else
-      NETCDFLIB="-L../../netcdf_x86_64 -lnetcdf"
-      NETCDFINC="-I../../netcdf_x86_64"
-    fi
-  fi
-fi
-#
-# If needed set your own NETCDF directories
 #-----------------------------------------------------------
 # Use : 
 #-lnetcdf           : version netcdf-3.6.3                --
@@ -78,21 +77,18 @@ NETCDFINC=-I$(nf-config --includedir)
 # set MPI directories if needed
 #
 MPIF90="/usr/local/bin/mpif90"
-MPILIB="-L/usr/local/lib -lmpi"
-MPIINC="-I/usr/local/include"
+MPILIB=""
+MPIINC=""
 
-echo 'NETCDFLIB='$NETCDFLIB
-echo 'NETCDFINC='$NETCDFINC
-echo ' '
 #
 # set OASIS-MCT (or OASIS3) directories if needed
 #
-PRISM_ROOT_DIR=../../oasis3-mct/compile_oa3-mct
+PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 
 #
 # set XIOS directory if needed
 #
-XIOS_ROOT_DIR=$HOME/XIOS
+XIOS_ROOT_DIR=$HOME/xios-1.0
 #
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -113,7 +109,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 # copy SOURCE code
 #
 /bin/cp -f ${SOURCE}/*.F90 $SCRDIR
-[ ! -z "$(ls ${SOURCE}/*.h90 2>/dev/null)" ] && /bin/cp -f ${SOURCE}/*.h90 $SCRDIR
+/bin/cp -f ${SOURCE}/*.h90 $SCRDIR
 /bin/cp -f ${SOURCE}/*.F   $SCRDIR
 /bin/cp -f ${SOURCE}/*.h   $SCRDIR
 /bin/cp -f ${SOURCE}/Make* $SCRDIR
@@ -123,27 +119,22 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 /bin/cp -RLf ${AGRIF_SRC} $SCRDIR
 /bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
 /bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+/bin/cp -f ${ROTT_DIR}/PISCES/kRGB61* $RUNDIR
 if [[ -e "namelist_pisces" ]] ; then
 	echo "  file namelist_pisces exists in Run directory"
 else
-	/bin/cp -f ${ROOTDIR}/PISCES/namelist_pisces* $RUNDIR
+	/bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
 	echo "  file namelist_pisces copied from source directory"
 fi
 #
 # overwrite with local files
 #
-[ ! -z "$(ls *.F90 2>/dev/null)" ] && /bin/cp -f *.F90 $SCRDIR
-[ ! -z "$(ls *.F 2>/dev/null)" ] && /bin/cp -f *.F $SCRDIR
-[ ! -z "$(ls *.h 2>/dev/null)" ] && /bin/cp -f *.h $SCRDIR
-[ ! -z "$(ls Make* 2>/dev/null)" ] && /bin/cp -f Make* $SCRDIR
-#
-#
-# CVTK  files  DEBUG CPP KEYS
-#
-[ -f  cppdefs_dev_bak1.h ] && /bin/cp -f cppdefs_dev_bak1.h ${SCRDIR}/cppdefs_dev.h
-[ -f  param_bak1.h ] && /bin/cp -f param_bak1.h ${SCRDIR}/param.h
-[ -f  cppdefs_bak1.h ] && /bin/cp -f cppdefs_bak1.h ${SCRDIR}/cppdefs.h
+/bin/cp -f *.F90 $SCRDIR
+/bin/cp -f *.h90 $SCRDIR
+/bin/cp -f *.F $SCRDIR
+/bin/cp -f *.h $SCRDIR
+/bin/cp -f Make* $SCRDIR
+/bin/cp -f jobcomp $SCRDIR
 #
 # Change directory
 #
@@ -151,8 +142,8 @@ cd $SCRDIR
 #
 # generates LDFLAGS1 according to users notifications
 #
-LDFLAGS1="$NETCDFLIB"
-CPPFLAGS1="$NETCDFINC -IROMSFILES/AGRIF_INC"
+LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
+CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -IROMSFILES/AGRIF_INC"
 #
 # Set compilation options
 #
@@ -160,16 +151,14 @@ if [[ $OS == Linux ]] ; then           # ===== LINUX =====
 	if [[ $LINUX_FC == ifort || $LINUX_FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-                FFLAGS1="-O0 -g -72 -fno-alias -i4 -r8 -fp-model precise"
-                #FFLAGS1="-O0 -g -72 -fno-alias -i4 -r8 -mcmodel=large -shared-intel -fp-model precise"
-                #FFLAGS1="-O1 -72 -fno-alias -i4 -r8 -fp-model precise"
-		LDFLAGS1="$LDFLAGS1"
+		FFLAGS1="-O3 -w90 -w95 -cm -72 -fno-alias -i4 -r8 -fp-model precise"
+		LDFLAGS1="-Vaxlib $LDFLAGS1"
 	elif [[ $LINUX_FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-#		 FFLAGS1="-O1 -fdefault-real-8 -fdefault-double-8 -mcmodel=medium"
-	        FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
- 			-fbounds-check -finit-real=nan -finit-integer=8888"
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -mcmodel=medium"
+#		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+#			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == Darwin ]] ; then        # ===== DARWIN =====
@@ -184,6 +173,10 @@ elif [[ $OS == Darwin ]] ; then        # ===== DARWIN =====
 		FFLAGS1="-O2 -r8 -i4 -g -72"
 #		FFLAGS1="-O0 -g -traceback -debug all -r8 -i4 -g -72"
 	fi
+elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
+        CPP1="cpp -traditional -DLinux"
+        CFT1="gfortran"
+        FFLAGS1="-O4 -fdefault-real-8 -fdefault-double-8 -march=native -mtune=native"
 elif [[ $OS == AIX ]] ; then           # ===== IBM =====
 	CPP1="/lib/cpp"
 	CFT1="xlf95 -I$HOME/include/"
@@ -245,8 +238,14 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	LDFLAGS1="$LDFLAGS1 $MPILIB"
 	CPPFLAGS1="$CPPFLAGS1 $MPIINC"
 	FFLAGS1="$FFLAGS1 $MPIINC"
-	CFT1="$MPIF90"
+	CFT1="${MPIF90}"
 fi
+
+#
+# Take environment variables for compiler and options
+#
+FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
+CFT1=${CROCO_CFT1-$CFT1}
 #
 # determine if NBQ related solvers (BLAS/LAPACK) are required
 #
@@ -263,6 +262,7 @@ fi
 #
 unset COMPILEXIOS
 echo "Checking COMPILEXIOS..."
+XIOS_ROOT_DIR=${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         echo " => XIOS activated"
         COMPILEXIOS=TRUE
@@ -277,6 +277,7 @@ fi
 #
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
+PRISM_ROOT_DIR=${PRISM_XIOS_ROOT_DIR-$PRISM_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
     echo " => OASIS activated"
     CHAN=MPI1
@@ -381,6 +382,8 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
     		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi
+        elif [[ $OS == CYGWIN_NT-10.0 ]] ; then
+                FFLAGS1=="$FFLAGS1 -fopenmp"
 	elif [[ $OS == AIX ]] ; then
 		FFLAGS1="$FFLAGS1 -qsmp=omp"
 		CFT1="xlf95_r"
@@ -412,8 +415,3 @@ rm -f flags.tmp
 $MAKE 
 mv croco $RUNDIR
 #
-# Compile ncjoin and partit
-#
-#$MAKE ncjoin
-#$MAKE partit
-#mv partit ncjoin $RUNDIR

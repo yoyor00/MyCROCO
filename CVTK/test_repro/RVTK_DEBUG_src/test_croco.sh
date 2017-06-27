@@ -63,7 +63,8 @@ fi
 # export LD_LIBRARY_PATH=/usr/local/lib
 #fi
 
-export MPIRUN=`which mpirun`
+#export MPIRUN=`which mpirun`
+export MPIRUN=$MPI_LAUNCH
 export RVTK_DIR=`pwd`
 echo 'TESTING processed in RVTK_DIR='$RVTK_DIR
 echo
