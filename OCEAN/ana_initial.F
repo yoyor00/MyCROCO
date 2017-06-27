@@ -1669,14 +1669,14 @@ C$    integer omp_get_thread_num
 # endif
 #endif
 
-#   ifdef RVTK_DEBUG
-      call check_tab3d(u(:,:,:,1),'u(1) ana_initial','u')
-      call check_tab2d(ubar(:,:,1),'ubar(1) ana_initial','u')
-      call check_tab3d(u(:,:,:,2),'u(2) ana_initial','u')
-      call check_tab2d(ubar(:,:,2),'ubar(2) ana_initial','u')
-      call check_tab3d(u(:,:,:,3),'u(3) ana_initial','u')
-      call check_tab2d(ubar(:,:,3),'ubar(3) ana_initial','u')
-#   endif    
+!#   ifdef RVTK_DEBUG
+!      call check_tab3d(u(:,:,:,1),'u(1) ana_initial','u')
+!      call check_tab2d(ubar(:,:,1),'ubar(1) ana_initial','u')
+!      call check_tab3d(u(:,:,:,2),'u(2) ana_initial','u')
+!      call check_tab2d(ubar(:,:,2),'ubar(2) ana_initial','u')
+!      call check_tab3d(u(:,:,:,3),'u(3) ana_initial','u')
+!      call check_tab2d(ubar(:,:,3),'ubar(3) ana_initial','u')
+!#   endif    
 
 
 #undef IR_RANGE
