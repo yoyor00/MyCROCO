@@ -3,7 +3,7 @@ echo '============================================================='
 echo 'Create the link between RVTK_DEBUG/ dir . and RVTK_DEBUG_src/'
 echo '  '
 
-dir_home=$PWD/../RVTK_DEBUG_src
+dir_home=$HOME/GIT/croco/CVTK/test_repro/RVTK_DEBUG_src
 
 mkdir TEST_CASES
 
