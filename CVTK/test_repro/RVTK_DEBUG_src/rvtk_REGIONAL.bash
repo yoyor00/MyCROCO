@@ -93,9 +93,9 @@ echo
 #
 # Get updated files
 ##
-#/bin/cp ${SOURCE}/cppdefs_dev.h cppdefs_dev_bak1.h 
-#/bin/cp ${SOURCE}/cppdefs.h cppdefs_bak1.h
-#/bin/cp ${SOURCE}/param.h param_bak0.h
+/bin/cp ${SOURCE}/cppdefs_dev.h cppdefs_dev_bak1.h 
+/bin/cp ${SOURCE}/cppdefs.h cppdefs_bak1.h
+/bin/cp ${SOURCE}/param.h param_bak0.h
 ##
 # Replace with local files if any ### PAT
 #

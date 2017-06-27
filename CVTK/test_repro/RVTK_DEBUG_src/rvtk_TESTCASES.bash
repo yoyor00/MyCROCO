@@ -62,9 +62,9 @@ echo
 #
 # Replace with local files if any ### PAT
 #
-[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
-[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
-[ -f param.h ] && /bin/cp param.h param_bak0.h
+#[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
+#[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
+#[ -f param.h ] && /bin/cp param.h param_bak0.h
 #
 #=============================================================================================
 # Title
