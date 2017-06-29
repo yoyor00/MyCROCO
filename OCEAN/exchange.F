@@ -79,16 +79,18 @@
 
 #  ifdef NBQ 
 
+#  undef KSTART
 #  define KSTART 0
 #  define exchange_3d_tile_init_nbq exchange_r3d_tile_init_nbq
-#  define exchange_3d_3pts_tile exchange_r3d_3pts_tile_init_nbq
+#  define exchange_3d_3pts_tile_init_nbq exchange_r3d_3pts_tile_init_nbq
 #  define JSTART JstrR
 #  define ISTART IstrR
 #  include "exchange_3d_tile_init_nbq.h"
 #  undef ISTART
 #  undef JSTART
-#  undef exchange_3d_tile
-#  undef exchange_3d_3pts_tile
+#  undef exchange_3d_tile_init_nbq
+#  undef exchange_3d_3pts_tile_init_nbq
+#  undef KSTART
 #  define KSTART 1
 
 #  define exchange_3d_tile_init_nbq exchange_u3d_tile_init_nbq
@@ -111,16 +113,19 @@
 #  undef exchange_3d_tile_init_nbq
 #  undef exchange_3d_3pts_tile_init_nbq
 
+
+#  undef KSTART
 #  define KSTART 0
 #  define exchange_3d_tile_nbq exchange_r3d_tile_nbq
-#  define exchange_3d_3pts_tile exchange_r3d_3pts_tile_nbq
+#  define exchange_3d_3pts_tile_nbq  exchange_r3d_3pts_tile_nbq
 #  define JSTART JstrR
 #  define ISTART IstrR
 #  include "exchange_3d_tile_nbq.h"
 #  undef ISTART
 #  undef JSTART
-#  undef exchange_3d_tile
-#  undef exchange_3d_3pts_tile
+#  undef exchange_3d_tile_nbq 
+#  undef exchange_3d_3pts_tile_nbq 
+#  undef KSTART
 #  define KSTART 1
 
 #  define exchange_3d_tile_nbq exchange_u3d_tile_nbq
