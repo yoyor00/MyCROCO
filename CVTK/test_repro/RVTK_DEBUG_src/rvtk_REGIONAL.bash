@@ -38,7 +38,7 @@ ADDTEST='OFF'
 # Type of parallelization
 #
 COMPOMP='ON'
-COMPMPI='OFF'
+COMPMPI='ON'
 echo ' '
 #
 echo 'OpenMP testing: '$COMPOMP
@@ -90,13 +90,18 @@ SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
 echo
+
+SOURCE_CVTK=${SOURCE}/../CVTK/test_repro/RVTK_DEBUG_src
+echo 'Sources CVTK tests: '$SOURCE_CVTK
+echo ' '
 #
 # Get updated files
-##
-/bin/cp ${SOURCE}/cppdefs_dev.h cppdefs_dev_bak1.h 
-/bin/cp ${SOURCE}/cppdefs.h cppdefs_bak1.h
-/bin/cp ${SOURCE}/param.h param_bak0.h
-##
+#
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_bak1.h 
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h
+/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h
+#
+
 # Replace with local files if any ### PAT
 #
 #[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
