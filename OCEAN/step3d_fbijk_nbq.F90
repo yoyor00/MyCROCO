@@ -75,7 +75,7 @@
 
       real :: dum_s
       double precision :: a_m,b_m
-	  integer :: k1, k2, kp1
+	  integer :: k1, k2, kp1,iv
       real :: cff1, cff2, cff3, cff
 
 #include "compute_auxiliary_bounds.h"
@@ -91,7 +91,17 @@
 !       Initialization of various test-cases
 !-------------------------------------------------------------------
 !       
-        if (iif==1.and.iic==1) call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
+        if (iif==1.and.iic==1) then
+	    call initial_nh_tile (3,Istr,Iend,Jstr,Jend)
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+ 	    call exchange_u3d_tile_init_nbq(1,Istr,Iend,Jstr,Jend, &
+ 		qdmu_nbq(START_2D_ARRAY,1))
+ 	    call exchange_v3d_tile_init_nbq(2,Istr,Iend,Jstr,Jend, &
+ 		qdmv_nbq(START_2D_ARRAY,1))
+	    call exchange_r3d_tile_init_nbq(3,Istr,Iend,Jstr,Jend, &
+		thetadiv_nbq(START_2D_ARRAY,0))
+# endif		
+	endif
 !       if (iic==1.and.iif==1) thetadiv_nbq=0.
 !
 !-------------------------------------------------------------------
@@ -433,10 +443,9 @@
 ! Exchange periodic boundaries and computational margins.
 !--------------------------------------------------------------------
 !
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,qdmu_nbq(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,qdmv_nbq(START_2D_ARRAY,1))
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+     call exchange_u3d_tile_nbq (1,Istr,Iend,Jstr,Jend,qdmu_nbq(START_2D_ARRAY,1))
+     call exchange_v3d_tile_nbq (2,Iend,Jstr,Jend,qdmv_nbq(START_2D_ARRAY,1))
 # endif
 
 # ifdef RVTK_DEBUG
@@ -1094,8 +1103,9 @@
 !.......Computes rho_nbq:
 !                 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,thetadiv_nbq(START_2D_ARRAY,1))
+        call exchange_r3d_tile_nbq (3,Istr,Iend,Jstr,Jend,thetadiv_nbq(START_2D_ARRAY,0))
 # endif
+
         do k=1,N
         do j=Jstr_nh-1,Jend_nh+1
         do i=Istr_nh-1,Iend_nh+1

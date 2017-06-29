@@ -95,7 +95,7 @@ include Makedefs
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
+	autotiling.F	MessPass3D_nbq.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -105,7 +105,7 @@ include Makedefs
 \
 	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
-    unbqijk_bc.F vnbqijk_bc.F wnbqijk_bc.F rnbqijk_bc.F\
+	unbqijk_bc.F vnbqijk_bc.F wnbqijk_bc.F rnbqijk_bc.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F 	cpl_prism_getlistvals.F
