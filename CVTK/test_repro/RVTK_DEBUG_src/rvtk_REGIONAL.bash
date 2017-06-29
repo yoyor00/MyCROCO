@@ -34,7 +34,7 @@ LIST_EXAMPLE='REGIONAL'
 LIST_KEY='PSOURCE FRC_BRY CLIMATOLOGY TIDES AGRIF AGRIF_2WAY BULK_FLUX MPI OPENMP REGIONAL BENGUELA_LR ETALON_CHECK'
 LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN GRID#'
 # 2x2 1x4 4x1 1X8 and 8X1 additional tests
-ADDTEST='OFF'
+ADDTEST='ON'
 # Type of parallelization
 #
 COMPOMP='ON'
@@ -47,38 +47,38 @@ echo ' '
 #=============================================================================================
 # Psource or not in case of REGIONAL [ 'ON OFF' ]
 #
-#LIST_PSOURCEFLAG='OFF ON'
-LIST_PSOURCEFLAG='OFF'
+LIST_PSOURCEFLAG='OFF ON'
+#LIST_PSOURCEFLAG='OFF'
 echo 'Psource testing: '$LIST_PSOURCEFLAG
 echo
 #=============================================================================================
 # Bulk or not in case of REGIONAL  [ 'OFF ON' ]
 #
-#LIST_BULK_FLUXFLAG='OFF ON'
-LIST_BULK_FLUXFLAG='OFF'
+LIST_BULK_FLUXFLAG='OFF ON'
+#LIST_BULK_FLUXFLAG='OFF'
 #LIST_BULK_FLUXFLAG='ON'
 echo 'Bulk flux testing: '$LIST_BULK_FLUXFLAG
 echo ' '
 #=============================================================================================
 # Tides or not in case of REGIONAL [ 'ON OFF' ]
 #
-#LIST_TIDESFLAG='OFF ON'
-LIST_TIDESFLAG='OFF'
+LIST_TIDESFLAG='OFF ON'
+#LIST_TIDESFLAG='OFF'
 echo 'Tides testing: '$LIST_TIDESFLAG
 echo
 #=============================================================================================
 # Lateral forcing CLIM or BRY in case of REGIONAL  [ 'BRY CLM' ]
 #
-#LIST_OBCFLAG='CLM BRY'
-LIST_OBCFLAG='BRY'
+LIST_OBCFLAG='CLM BRY'
+#LIST_OBCFLAG='BRY'
 echo 'Lateral forcing type testing: '$LIST_OBCFLAG
 echo
 #=============================================================================================
 # Type of Nesting (in case of VORTEX OR BENGUELA_LR/VHR) [ 'OFF 1W 2W' ]
 #
-LIST_AGRIFFLAG='OFF'
+#LIST_AGRIFFLAG='OFF'
 #LIST_AGRIFFLAG='OFF 1W'
-#LIST_AGRIFFLAG='OFF 1W 2W'
+LIST_AGRIFFLAG='OFF 1W 2W'
 echo 'Agrif type testing: '$LIST_AGRIFFLAG
 echo ' '
 #=============================================================================================
