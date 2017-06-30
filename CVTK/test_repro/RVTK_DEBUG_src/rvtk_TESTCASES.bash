@@ -12,19 +12,24 @@
 #---------------------------------------------------------------------
 # Script to Run CVTK DEBUG procedure managing parallelization type 
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
-# VORTEX and REGIONAL
+# TESTCASES
 #--------------------------------------------------------------------
-
-echo "================================"
+echo "======================================"
 echo "MPIRUN COMMAND: "$MPIRUN
-echo "================================"
+echo "======================================"
+echo
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
 [ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
-echo "Remove the CHECKFILE"
+echo
+echo "Remove CHECKFILE"
+echo
 [ -f check_file ] && /bin/rm check_file
-echo " "
-#
+echo
+echo "Remove AGRIF_FixedGrids.in"
+echo
+/bin/rm -f AGRIF_FixedGrids.in 
+#=============================================================================================
 # Lists
 #
 #LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET KH_INST OVERFLOW RIP S2DV SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
@@ -38,8 +43,7 @@ ADDTEST='ON'
 # Type of parallelization
 #
 COMPOMP='ON'
-COMPMPI='OFF'
-echo ' '
+COMPMPI='ON'
 #
 echo 'OpenMP testing: '$COMPOMP
 echo 'MPI    testing: '$COMPMPI
@@ -49,17 +53,22 @@ echo 'MPI    testing: '$COMPMPI
 #
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
-SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
+eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
 echo
+
+SOURCE_CVTK=${SOURCE}/../CVTK/test_repro/RVTK_DEBUG_src
+echo 'Sources CVTK tests: '$SOURCE_CVTK
+echo ' '
 #
 # Get updated files
 #
-/bin/cp ${SOURCE}/cppdefs_dev.h cppdefs_dev_bak1.h 
-/bin/cp ${SOURCE}/cppdefs.h cppdefs_bak1.h
-/bin/cp ${SOURCE}/param.h param_bak0.h
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_bak1.h 
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h
+/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h
 #
+
 # Replace with local files if any ### PAT
 #
 #[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 

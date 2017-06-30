@@ -2,8 +2,6 @@
 #PBS -N RVTK_VORTEX
 #PBS -q mpi_1
 #PBS -l walltime=10:00:00
-#PBS -l select=1:ncpus=8:mpiprocs=8
-#PBS -l cput=48:00:00
 #PBS -j oe 
 #PBS -M gildas.cambon@ird.fr -m abe
 
