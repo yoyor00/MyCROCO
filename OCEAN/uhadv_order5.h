@@ -50,20 +50,26 @@
 !  j loop: UFe
 !----------------------------------------------------------------------
 !
+
           DO j = Jstr,Jend+1  !j_loop_y_flux_5
                                                   !
             IF ( j.ge.jmin .and. j.le.jmax ) THEN ! use full stencil
                                                   !
               DO i = IstrU,Iend
-                vel = 0.5*(Hvom(i-1,j,k)+Hvom(i,j,k))
+                vel = FLUX6(Hvom(i-3,j,k),Hvom(i-2,j,k),Hvom(i-1,j,k),
+     &                      Hvom(i  ,j,k),Hvom(i+1,j,k),Hvom(i+2,j,k),1.)
+!               vel = 0.5*(Hvom(i-1,j,k)+Hvom(i,j,k))
                 flx5 = vel*FLUX5(
      &             u(i,j-3,k,nrhs), u(i,j-2,k,nrhs), 
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs),
      &             u(i,j+1,k,nrhs), u(i,j+2,k,nrhs), vel )
 #  ifdef MASKING
+                vel = FLUX4(Hvom(i-2,j,k),Hvom(i-1,j,k),
+     &                      Hvom(i  ,j,k),Hvom(i+1,j,k),1.)
                 flx3 = vel*FLUX3(
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs), vel ) 
+                vel = 0.5*(Hvom(i-1,j,k)+Hvom(i,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs), vel, cdif)
 #   ifdef UP5_MASKING
@@ -101,11 +107,14 @@
             ELSE IF ( j.eq.jmin-1 .and. jmax.ge.jmin ) THEN  ! 3rd of 4th order flux 2 in
                                                              ! from south boundary
               DO i = IstrU,Iend
-                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
+!               vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
+                vel = FLUX4(Hvom(i-2,j,k),Hvom(i-1,j,k),
+     &                      Hvom(i  ,j,k),Hvom(i+1,j,k),1.)
                 flx3 = vel*FLUX3(
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs), vel )
 #  ifdef MASKING
+                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs), vel, cdif)
                 mask1=umask(i,j-2)*umask(i,j+1)
@@ -126,11 +135,14 @@
             ELSE IF ( j.eq.jmax+1 ) THEN  ! 3rd or 4th order flux 2 in from
                                           ! north boundary
               DO i = IstrU,Iend
-                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
+!               vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
+                vel = FLUX4(Hvom(i-2,j,k),Hvom(i-1,j,k),
+     &                      Hvom(i  ,j,k),Hvom(i+1,j,k),1.)
                 flx3 = vel*FLUX3(
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs), vel )
 #  ifdef MASKING
+                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs), vel, cdif)
                 mask1=umask(i,j-2)*umask(i,j+1)
@@ -151,15 +163,20 @@
             IF ( i.ge.imin .and. i.le.imax ) THEN ! use full stencil
                                                   !
               DO j = Jstr,Jend
-                vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
+                vel = FLUX6(Huon(i-2,j,k),Huon(i-1,j,k),Huon(i  ,j,k),
+     &                      Huon(i+1,j,k),Huon(i+2,j,k),Huon(i+3,j,k),1.)        
+!               vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
                 flx5 = vel*FLUX5(
      &             u(i-2,j,k,nrhs), u(i-1,j,k,nrhs),
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs),
      &             u(i+2,j,k,nrhs), u(i+3,j,k,nrhs), vel )
 #  ifdef MASKING
+                vel = FLUX4(Huon(i-1,j,k),Huon(i  ,j,k),
+     &                      Huon(i+1,j,k),Huon(i+2,j,k),1.)    
                 flx3 = vel*FLUX3(
      &             u(i-1,j,k,nrhs), u(i  ,j,k,nrhs),
-     &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs), vel )
+     &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs), vel )       
+                vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
                 flx2 = vel*FLUX2(
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs), vel, cdif)
 #   ifdef UP5_MASKING
@@ -197,11 +214,14 @@
             ELSE IF ( i.eq.imin-1 .and. imax.ge.imin ) THEN  ! 3rd of 4th order flux 2 in
                                                              ! from south boundary
               DO j = Jstr,Jend
-                vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
+!               vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
+                vel = FLUX4(Huon(i-1,j,k),Huon(i  ,j,k),
+     &                      Huon(i+1,j,k),Huon(i+2,j,k),1.)    
                 flx3 = vel*FLUX3(
      &             u(i-1,j,k,nrhs), u(i  ,j,k,nrhs),
      &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs), vel )
 #  ifdef MASKING
+                vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
                 flx2 = vel*FLUX2(
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs), vel, cdif)
                 mask1=umask(i-1,j)*umask(i+2,j)
@@ -222,11 +242,14 @@
             ELSE IF ( i.eq.imax+1 ) THEN  ! 3rd or 4th order flux 2 in from
                                           ! north boundary
               DO j = Jstr,Jend
-                vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
+!               vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
+                vel = FLUX4(Huon(i-1,j,k),Huon(i  ,j,k),
+     &                      Huon(i+1,j,k),Huon(i+2,j,k),1.)  
                 flx3 = vel*FLUX3(
      &             u(i-1,j,k,nrhs), u(i  ,j,k,nrhs),
      &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs),  vel )
 #  ifdef MASKING
+                vel = 0.5*(Huon(i,j,k)+Huon(i+1,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j,k,nrhs), u(i+1,j,k,nrhs), vel, cdif)
                 mask1=umask(i-1,j)*umask(i+2,j)
