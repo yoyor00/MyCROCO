@@ -26,12 +26,12 @@
 #   endif
 #  endif
 #  ifdef EW_PERIODIC
-          imin=0
+          imin=1
           imax=LOCALLM+1
 #  else
 #   ifdef MPI
           if (WEST_INTER) then
-            imin=0
+            imin=1
           else
             imin=3
           endif
