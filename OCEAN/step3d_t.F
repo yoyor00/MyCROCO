@@ -76,8 +76,9 @@
 # define SWITCH !
 #endif
 !
-# if defined TS_HADV_UP5 || defined TS_HADV_C6 \
-      || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5
+# if defined TS_HADV_UP5 || defined TS_HADV_C6 || \
+     defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+     defined TS_VADV_WENO5
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -823,7 +824,8 @@
 !======================================================================
 !
 # if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
-     defined TS_VADV_WENO5 || defined UV_HADV_WENO5
+     defined TS_VADV_WENO5 || defined UV_HADV_WENO5 || \
+     defined UV_VADV_WENO5
 !    
       function flux5_weno(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
 !

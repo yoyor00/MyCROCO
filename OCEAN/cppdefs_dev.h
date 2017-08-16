@@ -182,10 +182,16 @@
 #ifdef UV_HADV_UP3     /* Check if options are defined in cppdefs.h */
 #elif defined UV_HADV_C4
 #elif defined UV_HADV_C2
+#elif defined UV_HADV_UP5
+#elif defined UV_HADV_C6
+#elif defined UV_HADV_WENO5
 #else
 # define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
 # undef  UV_HADV_C4        /* 4th-order centered lateral advection */
 # undef  UV_HADV_C2        /* 2nd-order centered lateral advection */
+# undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
+# undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
+# undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
 #endif
 /* 
    UV DIFFUSION: set default orientation
@@ -221,9 +227,11 @@
 ======================================================================
 */
 #ifdef UV_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
+#elif defined UV_VADV_WENO5
 #elif defined UV_VADV_C2
 #else
 # define UV_VADV_SPLINES   /* Splines vertical advection             */
+# undef  UV_VADV_WENO5     /* 5th-order WENOZ vertical advection  */
 # undef  UV_VADV_C2        /* 2nd-order centered vertical advection  */
 #endif
 
@@ -258,11 +266,11 @@
 /* 
   Options for split-rotated advection-diffusion schemes
 */
-#ifdef TS_HADV_C4      /* 4th-order centered advection with:  */
-# define TS_DIF2       /*   + Laplacian Diffusion             */
-# undef  TS_DIF4       /*                                     */
-# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity         */
-# define TS_MIX_ISO    /*   + Isopycnal rotation              */ 
+#ifdef TS_HADV_C4      /* 4th-order centered advection with:   */
+# define TS_DIF2       /*   + Laplacian Diffusion              */
+# undef  TS_DIF4       /*                                      */
+# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
+# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
 #endif 
 #ifdef TS_HADV_RSUP3   /*  Rotated-Split 3rd-order scheme is:  */
 # define TS_HADV_C4    /*    4th-order centered advection      */
@@ -332,8 +340,8 @@
 #elif defined TS_VADV_WENO5
 #elif defined TS_VADV_C2
 #else
-# undef  TS_VADV_SPLINES   /* Splines vertical advection            */
-# define TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
+# define TS_VADV_SPLINES   /* Splines vertical advection            */
+# undef  TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
 # undef  TS_VADV_WENO5     /* 5th-order WENOZ vertical advection    */
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
