@@ -29,9 +29,9 @@
 !
       integer Npts,ipts,jpts
 # ifndef MP_3PTS
-      parameter (Npts=3)
-# else
       parameter (Npts=2)
+# else
+      parameter (Npts=3)
 # endif
       real A(GLOBAL_2D_ARRAY)
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE

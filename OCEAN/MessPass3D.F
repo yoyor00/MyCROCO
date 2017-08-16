@@ -31,9 +31,9 @@
 !
       integer Npts,ipts,jpts
 # ifndef MP_3PTS
-      parameter (Npts=3)
-# else
       parameter (Npts=2)
+# else
+      parameter (Npts=3)
 # endif
       integer nmax
       real A(GLOBAL_2D_ARRAY,nmax)
