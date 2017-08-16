@@ -70,7 +70,8 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined UV_HADV_UP5 ||  defined UV_HADV_C6 || defined UV_HADV_WENO5
+# if defined UV_HADV_UP5 ||  defined UV_HADV_C6 || \
+     defined UV_HADV_WENO5 || defined UV_VADV_WENO5
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
@@ -100,7 +101,7 @@
      &      -sign(1.,ua)*( 
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
-# if  defined UV_HADV_WENO5
+# if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
 # endif
 !
@@ -345,8 +346,8 @@
 #   undef  UP5_MASKING
 !
           cdif=0. 
-#   include "uhadv_order5.h"
-#   include "vhadv_order5.h"
+#   include "u_hadv_order5.h"
+#   include "v_hadv_order5.h"
 !
 #   undef FLUX5
 #   undef FLUX3
@@ -373,8 +374,8 @@
           cdif=0.5
 #   endif
 !
-#   include "uhadv_order5.h"
-#   include "vhadv_order5.h"
+#   include "u_hadv_order5.h"
+#   include "v_hadv_order5.h"
 !
 #   undef FLUX5
 #   undef FLUX3
@@ -821,6 +822,40 @@
           FC(i,0)=0.
 #   endif
         enddo
+#  elif defined UV_VADV_WENO5
+!
+!----------------------------------------------------------
+! Compute vertical advective fluxes 
+! using 5th-order WENO scheme
+!----------------------------------------------------------
+!
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux1
+!
+          cdif=0.
+#   include "u_vadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        else                 ! corrector
+
+#   define FLUX5 flux5_weno
+#   define FLUX3 flux3_weno
+#   define FLUX2 flux1
+!
+          cdif=1.
+#   include "u_vadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        endif
 #  elif defined UV_VADV_C2
 !
 !----------------------------------------------------------
@@ -963,6 +998,41 @@
             FC(i,0)=0.
 #   endif
           enddo
+#  elif defined UV_VADV_WENO5
+!
+!----------------------------------------------------------
+! Compute vertical advective fluxes 
+! using 5th-order WENO scheme
+!----------------------------------------------------------
+!
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux1
+!
+          cdif=0.
+#   include "v_vadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        else                 ! corrector
+
+#   define FLUX5 flux5_weno
+#   define FLUX3 flux3_weno
+#   define FLUX2 flux1
+!
+          cdif=1.
+#   include "v_vadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        endif
+
 #  elif defined UV_VADV_C2
 !
 !----------------------------------------------------------

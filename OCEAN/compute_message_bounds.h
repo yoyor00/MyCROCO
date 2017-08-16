@@ -12,8 +12,8 @@
       integer imin,imax,ishft, jmin,jmax,jshft
 # ifdef EW_PERIODIC
       if (NP_XI.eq.1) then                ! This means that if there
-        imin=Istr-2                       ! is no partition in XI- 
-        imax=Iend+2                       ! direction, then periodic 
+        imin=Istr-Npts                    ! is no partition in XI- 
+        imax=Iend+Npts                    ! direction, then periodic 
       else                                ! margins are included into
         imin=Istr                         ! the message; 
         imax=Iend                         ! otherwise strip them out.
@@ -34,8 +34,8 @@
 
 # ifdef NS_PERIODIC
       if (NP_ETA.eq.1) then               ! This means that if there
-        jmin=Jstr-2                       ! is no partition in ETA-
-        jmax=Jend+2                       ! direction, then periodic
+        jmin=Jstr-Npts                    ! is no partition in ETA-
+        jmax=Jend+Npts                    ! direction, then periodic
       else                                ! margins are included into 
         jmin=Jstr                         ! the message;
         jmax=Jend                         ! otherwise strip them out.

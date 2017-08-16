@@ -29,9 +29,9 @@
 !
       integer Npts,ipts,jpts
 # ifndef MP_3PTS
-      parameter (Npts=2)
-# else
       parameter (Npts=3)
+# else
+      parameter (Npts=2)
 # endif
       real A(GLOBAL_2D_ARRAY)
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
@@ -42,9 +42,9 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &     buf_snd1(Npts*Npts),     buf_snd3(Npts*Npts), 
      &     buf_rev1(Npts*Npts),     buf_rev3(Npts*Npts)
       integer sub_X,size_X, sub_E,size_E
-#if ! defined AGRIF      
-      parameter (sub_X=Lm,  size_X=7+Npts*sub_X, 
-     &           sub_E=Mm,  size_E=7+Npts*sub_E)
+#ifndef AGRIF      
+      parameter (sub_X=Lm,  size_X=Npts*(sub_X+2*Npts)-1, 
+     &           sub_E=Mm,  size_E=Npts*(sub_E+2*Npts)-1)
       real ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
@@ -56,25 +56,14 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &     jbuf_sndW, jbuf_sndE,
      &     jbuf_revW, jbuf_revE
 #endif
-c**
-c      common /buffers_2D/
-c     &     buf_snd4,     ibuf_sndN,     buf_snd2,
-c     &     buf_rev4,     ibuf_revN,     buf_rev2,
-c
-c     &    jbuf_sndW,                    jbuf_sndE,
-c     &    jbuf_revW,                    jbuf_revE,
-c
-c     &     buf_snd1,     ibuf_sndS,     buf_snd3,
-c     &     buf_rev1,     ibuf_revS,     buf_rev3
-c**
 !
 # include "compute_message_bounds.h"
 
 # ifdef AGRIF
          sub_X=Lm
-         size_X=7+Npts*sub_X
+         size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
          sub_E=Mm
-         size_E=7+Npts*sub_E
+         size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
          Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
