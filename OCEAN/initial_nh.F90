@@ -15,7 +15,11 @@
 #if defined NBQ_IJK
                          , A3d(1,1,trd), A3d(1,2,trd)        &
                          , A3d(1,3,trd), A3d(1,4,trd)        &
+#ifdef NBQ_ZETAW
+                         , A3d(1,5,trd), A3d(1,6,trd)        &
+#else
                          , A3d(1,6,trd)                      &
+#endif
 #endif
 #ifdef NONLIN_EOS
                          , A2d(1,1,trd), A2d(1,2,trd)        &
@@ -28,7 +32,11 @@
 #if defined NBQ_IJK
                                ,Hzw_half_nbq_inv, Hzr_half_nbq_inv     &
                                ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v  &
+#ifdef NBQ_ZETAW
+                               ,Hzu_half_qdmu,Hzv_half_qdmv            &  
+#else
                                ,work3d_nbq                             &
+#endif
 #endif
 #ifdef NONLIN_EOS
                                ,K_up, K_dw                             &
@@ -62,11 +70,17 @@
 # include "ocean3d.h"
 
 #if defined NBQ_IJK
+# ifdef NBQ_ZETAW
+       real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
        real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
 	   real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   
-	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)	   	   
+	   real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# ifndef NBQ_ZETAW	   	   
        real work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,N,5)	
+#endif
 #endif
 #ifdef NONLIN_EOS      
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N)   
@@ -191,17 +205,32 @@
 !... Initializes Grid-coef
 !----------------------------------------------------------------------
 !
+      Hzw_half_nbq_inv  =1.e-30
+      Hzr_half_nbq_inv  =1.e-30
+      Hzw_half_nbq_inv_u=1.e-30
+      Hzw_half_nbq_inv_v=1.e-30           
+#ifdef NBQ_ZETAW  
+      Hzu_half_qdmu     =0.
+      Hzv_half_qdmv     =0.
       call grid_coef_nh(                                         &
-#if defined NBQ_IJK
+# if defined NBQ_IJK
+         Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv   &
+         ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v                  &
+         ,Hzu_half_qdmu, Hzv_half_qdmv                           &
+# endif
+         )
+#else
+      call grid_coef_nh(                                         &
+# if defined NBQ_IJK
          Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv   &
          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v                  &
          ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,1)               &
          ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,2)               &
 !        ,work3d_nbq(START_2D_ARRAY,1,1)                         &
 !        ,work3d_nbq(START_2D_ARRAY,1,2)                         &
-#endif
+# endif
          )
-
+#endif
 !
 !----------------------------------------------------------------------
 !... Initialize NBQ "implicit" scheme 
@@ -380,20 +409,35 @@
   !        do j=JR_RANGE
   !          do i=IR_RANGE
   !             rho_nbq(i,j,k)=hzr_half_nbq(i,j,k)
-  !       !     if (mynode.eq.1) write(6,*)'---<',Hzr_half_nbq(5,1,10)
   !        enddo
   !       enddo
   !      enddo 
-
+# ifdef NBQ_IJK
+        qdmu_nbq=0.
+        qdmv_nbq=0.
+        qdmw_nbq=0.
+!        ru_int_nbq=0.
+!        rv_int_nbq=0.
+!        rw_int_nbq=0.
+         rho_nbq=0.
+#  ifdef NBQ_ZETAW
+        umean_nbq=0.
+        vmean_nbq=0.
+        wmean_nbq=0.
+#  else
+        zr_half_nbq=0.
+        zw_half_nbq=0.
+#  endif
+# endif
 # ifdef KH_INST
-      if (iic.eq.1.and.iif.eq.1) then
+      if (iic.le.1.and.iif.le.1) then
 #  ifdef NBQ_IJK
 
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              qdmu_nbq(i,j,k)=(1.+0.25*(rho(i,j,k)+rho(i-1,j,k))/rho0) &
-                               *u(i,j,k,nrhs)*(hz_half(i,j,k)+hz_half(i-1,j,k))
+              qdmu_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i-1,j,k))/rho0) &
+                   *0.5*u(i,j,k,nrhs)*(hz(i,j,k)+hz(i-1,j,k))
           enddo
          enddo
         enddo

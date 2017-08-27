@@ -79,6 +79,9 @@ C$    integer omp_get_thread_num
           zeta(i,j,2)=init
           zeta(i,j,3)=init
           zeta(i,j,4)=init
+#ifdef NBQ_ZETAW
+          zetaw_nbq(i,j)=init
+#endif
 !
           ubar(i,j,1)=init
           ubar(i,j,2)=init
@@ -1101,8 +1104,8 @@ C$    integer omp_get_thread_num
 #endif
             ru_nbq_avg2(i,j,k)=init
             rv_nbq_avg2(i,j,k)=init
-            ruint_nbq(i,j,k)=init
-            rvint_nbq(i,j,k)=init
+            ru_int_nbq(i,j,k)=init
+            rv_int_nbq(i,j,k)=init
            ! ruint_bak_nbq(i,j,k)=init
            ! rvint_bak_nbq(i,j,k)=init
           enddo
@@ -1118,7 +1121,7 @@ C$    integer omp_get_thread_num
             rw_nbq_avg1(i,j,k)=init
 #endif
             rw_nbq_avg2(i,j,k)=init
-            rwint_nbq(i,j,k)=init
+            rw_int_nbq(i,j,k)=init
            ! rwint_bak_nbq(i,j,k)=init
           enddo
         enddo

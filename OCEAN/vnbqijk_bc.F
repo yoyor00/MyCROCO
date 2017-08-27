@@ -92,6 +92,7 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 !# define nnew 2
 !# define nstp 1
+!# define OBC_COM_NBQORLANSKI
 !
 # ifndef NS_COM_PERIODIC
 !
@@ -489,13 +490,19 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=JstrV,Jend
-            qdmv_nbq(Istr-1,j,k)=qdmv_nbq(Istr,j,k)
+            qdmv_nbq(Istr-1,j,k)=v(Istr-1,j,k,nrhs)
+     &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr,j-1,k))
+!            do i=Istr,Istr+10
+!            qdmv_nbq(I,j,k)=qdmv_nbq(I,j,k)
+!     &            -0.1*real(istr+10-i)**2*(qdmv_nbq(I,j,k)-v(I,j,k,3-nstp))
+!     &            /100.
 #    ifdef MASKING
-     &                                   *vmask(Istr-1,j)
+     &                                   *vmask(Istr,j)
 #    endif
 #    ifdef WET_DRY
-     &                               *vmask_wet(Istr-1,j)
+     &                               *vmask_wet(Istr,j)
 #    endif
+!          enddo
           enddo
         enddo      
 #   endif
@@ -622,13 +629,19 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=Jstr,Jend
-            qdmv_nbq(Iend+1,j,k)=qdmv_nbq(Iend,j,k)
+            qdmv_nbq(Iend+1,j,k)=v(Iend+1,j,k,nrhs)
+     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend+1,j-1,k))
+!            do i=Iend-9,Iend+1
+!            qdmv_nbq(I,j,k)=qdmv_nbq(I,j,k)
+!     &            -0.1*real(i-Iend+9)**2*(qdmv_nbq(I,j,k)-v(I,j,k,3-nstp))
+!     &            /100.
 #    ifdef MASKING
      &                                  *vmask(Iend+1,j)
 #    endif
 #    ifdef WET_DRY
      &                              *vmask_wet(Iend+1,j)
 #    endif
+!          enddo
           enddo
         enddo      
 #   endif

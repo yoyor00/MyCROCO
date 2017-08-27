@@ -237,6 +237,7 @@
       elseif (keyword(1:kwlen).eq.'time_stepping') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ntimes,dt,ndtfast, ninfo
+
         MPI_master_only write(stdout,
      & '(I10,2x,A,1x,A /F10.2,2x,A,2(/I10,2x,A,1x,A)/F10.4,2x,A)')
      &    ntimes,  'ntimes   Total number of timesteps for',
@@ -271,8 +272,12 @@
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
      &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
      &                                      'compressible fluids.'
-
+# ifndef NBQ_ZETAW
         dtnbq=dtfast/float(ndtnbq)     ! set nbq time step.
+# else
+        dtnbq=dtfast
+        ndtnbq=1
+# endif
 #endif
 
 #ifdef SOLVE3D

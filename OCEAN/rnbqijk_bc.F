@@ -194,9 +194,14 @@
        do k=1,N
          do j=Jstr,Jend
              rho_nbq(Istr-1,j,k)=rho_nbq(Istr,j,k)
+   !         do i=Istr,Istr+10
+   !         rho_nbq(I,j,k)=rho_nbq(i,j,k)
+   !  &            -0.1*real(istr+10-i)**2*(rho_nbq(I,j,k)-0.)
+   !  &            /100.
 #   ifdef MASKING
-     &                                     *rmask(Istr,j)
+     &                                     *rmask(istr,j)
 #   endif
+      !   enddo
          enddo
        enddo
 # endif              /* OBC_COM_WEST */
@@ -302,12 +307,17 @@
         do k=1,N
           do j=Jstr,Jend
             rho_nbq(Iend+1,j,k)=rho_nbq(Iend,j,k)
+!            do i=Iend-9,Iend+1
+!            rho_nbq(I,j,k)=rho_nbq(i,j,k)
+!     &            -0.1*real(i-iend+9)**2*(rho_nbq(I,j,k)-0.)
+!     &            /100.
 #    ifdef MASKING
      &                                   *rmask(Iend+1,j)
 #    endif
 #    ifdef WET_DRY
      &                               *rmask_wet(Iend+1,j)
 #    endif
+      !    enddo
           enddo
         enddo
 #  endif            /* OBC_COM_EAST */

@@ -110,7 +110,11 @@
 #  include "etalon_data.h"
 # endif
 #endif
-
+!
+#ifndef NBQ_MASS
+#  define Hzr_half_nbq Hz
+#endif
+!
 # ifdef MAX_ADV_CFL
       my_Cu_Adv=0.  ;  my_Cu_W=0.
 #    ifdef NBQ
@@ -149,7 +153,8 @@
 #   ifdef MASKING
      &             rmask(i,j) *  
 #   endif
-     &       soundspeed_nbq*dtnbq/Hzr_half_nbq(i,j,k))
+     &       soundspeed_nbq*dtnbq
+     &       /max(1.d-30,Hzr_half_nbq(i,j,k)))
           my_Cu_Nbq_X=max(my_Cu_Nbq_X,  
 #   ifdef MASKING
      &             umask(i,j) *  

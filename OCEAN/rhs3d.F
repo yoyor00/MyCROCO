@@ -1332,7 +1332,7 @@ C Suberbee      Limiter(Cr)=max(0.,max(min(1.,2*Cr*(1-nu)/nu),min(2.,Cr)))
       endif
        
 !        limiter=max(0., min(1.,(hf-lf)/rr,(1-abs(nu))/abs(nu)*Rj) )
-      cff=(1-nu)/nu
+      cff=(1-nu)/max(nu,1.e-30)
 ! ajouter la condition de stbilite/tvd Rj => Rj*cff
 #ifdef SUPERBEE
        limiter=max(0.,max(min(1.,2.*Rj),

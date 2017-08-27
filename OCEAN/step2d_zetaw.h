@@ -1,0 +1,269 @@
+!***********************************************************************
+! s-grid evolves with external mode (NH)
+!    step 2: grid at n+1
+!***********************************************************************
+
+#  define zwrk UFx
+#  define rzeta  UFe
+#  define rzeta2  VFe
+#  define rzetaSA VFx
+!
+!-----------------------------------------------------------------------
+! Computes zeta(n+1)
+!-----------------------------------------------------------------------
+!
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+         zeta(i,j,knew)=
+     &    zeta(i,j,kstp)
+#  ifdef NBQ_MASS
+     &    /rhobar_nbq(i,j,kstp)
+     &    -h(i,j)
+#  endif
+     &        +dtfast*(
+ !   &    +wmean_nbq(i,j,knew2)
+     &    +cff4*wmean_nbq(i,j,knew2)
+     &    +cff5*wmean_nbq(i,j,kstp2)
+     &    +cff6*wmean_nbq(i,j,kbak2)
+     &    +cff7*wmean_nbq(i,j,kold2)
+     &    -0.5*(umean_nbq(i  ,j)
+     &          *(zetaw_nbq(i,j)-zetaw_nbq(i-1,j))*pm_u(i,j)
+     &         +umean_nbq(i+1,j)
+     &          *(zetaw_nbq(i+1,j)-zetaw_nbq(i,j))*pm_u(i+1,j) )
+     &    -0.5*(vmean_nbq(i  ,j)
+     &          *(zetaw_nbq(i,j)-zetaw_nbq(i,j-1))*pm_v(i,j)
+     &         +vmean_nbq(i+1,j)
+     &          *(zetaw_nbq(i,j+1)-zetaw_nbq(i,j))*pm_v(i,j+1) )
+     &         )
+        enddo
+      enddo
+
+!# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                   zetaw_nbq(START_2D_ARRAY))
+!# endif
+
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+           zetaw_nbq(i,j)=zeta(i,j,knew)
+#  ifdef NBQ_MASS
+           zeta_new(i,j)=(zeta(i,j,knew)+h(i,j)) *rhobar_nbq(i,j,knew)  
+#  endif
+         zeta_new(i,j)=zeta(i,j,knew)
+        enddo
+      enddo
+
+!
+!-----------------------------------------------------------------------
+! Add nudging terms
+!-----------------------------------------------------------------------
+!
+#  ifdef ZNUDGING
+#   ifdef ZONAL_NUDGING
+      if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
+        if (FIRST_2D_STEP) then
+          call zonavg_2d(Istr,Iend,Jstr,Jend,
+     &                   zeta(START_2D_ARRAY,knew),zetazon)
+        endif
+      endif
+      if (iic.eq.ntstart) then
+        if (FIRST_2D_STEP) then
+          call zonavg_2d(Istr,Iend,Jstr,Jend,
+     &                   ssh(START_2D_ARRAY),sshzon)
+        endif
+      endif
+#   endif  /* ZONAL_NUDGING */
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          zeta_new(i,j)=zeta_new(i,j) + dtfast*Znudgcof(i,j)
+#   ifdef ZONAL_NUDGING
+     &                                 *(sshzon(j)-zetazon(j))
+#   else
+     &                                 *(ssh(i,j)-zeta_new(i,j))
+#   endif /* ZONAL_NUDGING */
+        enddo
+      enddo
+#  endif /* ZNUDGING */
+!
+!-----------------------------------------------------------------------
+! Computes zetarhs to use in momentum equations
+!-----------------------------------------------------------------------
+!
+#  ifdef NBQ_MASS
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+
+#   ifdef MASKING
+ 	  zeta_new(i,j)=(zeta_new(i,j) -h(i,j))*rmask(i,j)+h(i,j)
+#   endif
+          Dnew(i,j)=zeta_new(i,j)
+        enddo
+      enddo
+#  else
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+    !      zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+          Dnew(i,j)=zeta_new(i,j)+h(i,j)
+        enddo
+      enddo
+#  endif /* NBQ_MASS */
+!
+!-----------------------------------------------------------------------
+! Load new free-surface values into shared array
+! Modify new free-surface to ensure that depth is > Dcrit for masked
+! cells.
+!-----------------------------------------------------------------------
+!
+
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+
+          zeta(i,j,knew)=zeta_new(i,j) 
+
+#  if defined WET_DRY && defined MASKING
+#   ifdef NBQ_MASS
+          zeta(i,j,knew)=zeta(i,j,knew)+ 
+     &               rhobar_nbq(i,j,knew)*Dcrit(i,j)*(1.-rmask(i,j))
+#   else
+          zeta(i,j,knew)=zeta(i,j,knew)+ 
+     &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
+#   endif
+#  endif
+        enddo
+      enddo 
+!
+!-----------------------------------------------------------------------
+! Load rhs values into additional AGRIF shared array for nesting
+!-----------------------------------------------------------------------
+! 
+#  ifdef AGRIF
+      if (FIRST_2D_STEP) then
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+            Zt_avg3(i,j,0)=zeta(i,j,kstp)       
+          enddo
+        enddo 
+        do j=JstrR,JendR
+          do i=Istr,IendR
+          du_avg3(i,j,0)  = DUon(i,j)
+          enddo
+        enddo 
+        do j=Jstr,JendR
+          do i=IstrR,IendR
+          dv_avg3(i,j,0)  = DVom(i,j)
+          enddo
+        enddo 
+      endif
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   Zt_avg3(START_2D_ARRAY,0))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   du_avg3(START_2D_ARRAY,0))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   dv_avg3(START_2D_ARRAY,0))
+#   endif
+
+#   ifdef RVTK_DEBUG_ADVANCED
+       if (.not.agrif_Root()) then
+C$OMP BARRIER
+C$OMP MASTER
+       call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (index 0) step2d','r')
+       call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (index 0) step2d','u')
+       call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (index 0) step2d','v')
+C$OMP END MASTER  
+       endif
+#   endif  
+#  endif /* AGRIF */   
+!
+!-----------------------------------------------------------------------
+! Compute wet/dry masks
+!-----------------------------------------------------------------------
+!
+#  ifdef WET_DRY
+      call wetdry_tile (Istr,Iend,Jstr,Jend)
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   zeta(START_2D_ARRAY,knew))
+!! Following exchange necessary with WENO5!
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                   zetaw_nbq(START_2D_ARRAY))
+#  endif      
+!
+!-----------------------------------------------------------------------
+! Debug zeta
+!-----------------------------------------------------------------------
+!
+!#  ifdef RVTK_DEBUG_ADVANCED
+!C$OMP BARRIER
+!C$OMP MASTER
+!       call check_tab2d(zeta(:,:,knew),'zeta step2d #2','r')
+!C$OMP END MASTER       
+!#  endif       
+!
+!-----------------------------------------------------------------------
+! Set boundary conditions for the free-surface
+!-----------------------------------------------------------------------
+!
+      call zetabc_tile (Istr,Iend,Jstr,Jend)
+
+#  ifdef NBQ_MASS
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+           stop 'coucou'
+        enddo
+      enddo
+#  else
+      do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
+        do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
+          zetaw_nbq(i,j) = zeta(i,j,knew) !- h(i,j) 
+        enddo
+      enddo
+#  endif /* NBQ_MASS */
+!
+!----------------------------------------------------------------------
+! Compute time averaged fields over all short timesteps.
+!
+! Reset/initialise arrays for averaged fields during the first
+! barotropic time step; Accumulate averages after that. Include
+! physical boundary points, but not periodic ghost points or
+! computation  MPI computational margins.
+!----------------------------------------------------------------------
+!
+#  ifdef SOLVE3D
+      cff1=weight(1,iif)
+      cff2=weight(2,iif)
+      if (FIRST_2D_STEP) then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Zt_avg1(i,j)=cff1*zeta(i,j,knew)
+          enddo
+        enddo 
+      else
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew)
+          enddo
+        enddo
+      endif
+
+!
+!-----------------------------------------------------------------------
+! Update Grid:
+!-----------------------------------------------------------------------
+!
+       if ((iic.eq.1.and.iif==1)
+     &     NSTEP_GRID
+     &     .or.iif.eq.nfast) then
+        flag_grid=1
+        call set_depth_tile(Istr,Iend,Jstr,Jend
+     &   ,resetfromrhobar
+     &   ) 
+
+#include "step2d_grid_ext.h"
+        endif
+
+#  endif /* SOLVE3D */
+
+
