@@ -35,10 +35,10 @@
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
-#define TANK            /* Tank Example */
+#undef  TANK            /* Tank Example */
 #undef  S2DV            /* S2DV sections */ 
-#undef  REGIONAL        /* REGIONAL Applications */
-#undef  MILES           /* NBQ MILES Applications */ 
+#define REGIONAL        /* REGIONAL Applications */
+#undef  REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
 
 
 #if defined REGIONAL
@@ -96,7 +96,7 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# define  NEW_S_COORD
+# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -116,8 +116,8 @@
 #  define UV_VIS_SMAGO
 # endif
                       /* Lateral Tracer Advection (default UP3) */
-# define TS_HADV_UP3
-# undef  TS_HADV_RSUP3
+# undef  TS_HADV_UP3
+# define TS_HADV_RSUP3
 # undef  TS_HADV_UP5
 # undef  TS_HADV_C4
 # undef  TS_HADV_WENO5
@@ -134,6 +134,8 @@
 # undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
+# undef  GLS_MIX2017  /* <--- Warning: option still under testing */
+
 # ifdef LMD_MIXING
 #  define LMD_SKPP
 #  define LMD_BKPP
@@ -151,6 +153,18 @@
 #  undef  CRAIG_BANNER
 #  undef  CANUTO_A
 #  undef  ZOS_HSIG
+# endif
+# ifdef GLS_MIX2017
+#  undef  GLS_KOMEGA
+#  define GLS_KEPSILON
+#  undef  GLS_GEN
+#  define CANUTO_A
+#  undef  GibLau_78
+#  undef  MelYam_82
+#  undef  KanCla_94
+#  undef  Luyten_96
+#  undef  CANUTO_B 
+#  undef  Cheng_02
 # endif
                       /* Surface Forcing */
 # undef  BULK_FLUX
@@ -206,7 +220,7 @@
 #  define UV_TIDES
 #  undef  POT_TIDES
 #  define TIDERAMP
-#  define OBC_M2FLATHER
+#  define OBC_M2CHARACT
 # else
 #  undef  OBC_M2SPECIFIED
 #  undef  OBC_M2FLATHER
@@ -393,14 +407,14 @@
 # undef  KH_INSTY
 # define MPI
 # define NBQ
+# define XIOS 
 # ifdef NBQ
 #  undef  OBC_NBQ
 #  undef  NBQ_VOL
 #  undef  NBQ_IMP
-#  undef  NBQ_IMP_LU
-#  undef  NBQ_IMP_TRIDIAG
+#  define NBQ_IMP_LU
+#  define NBQ_IMP_TRIDIAG
 #  undef  NBQ_IMPIJK 
-#  define NBQ_IJK
 #  define NBQ_FB
 #  undef  NBQ_LF
 #  undef  NBQ_RK2
@@ -412,7 +426,10 @@
 # undef  OBC_WEST
 # undef  OBC_SOUTH
 # undef  OBC_NORTH
+# define UV_VIS2
 # define SALINITY
+# define UV_MIX_S
+# define UV_VIS_SMAGO
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
@@ -587,7 +604,7 @@
 */
                       /* Applications */
 # define TIDES
-# undef  NBQ
+# define NBQ
 # undef  OA
                       /* Parallelization */
 # undef OPENMP		/* <--  debug mode */
@@ -664,9 +681,9 @@
 # define M3NUDGING
 # define TNUDGING
 
-#elif defined MILES 
+#elif defined REGIONAL_NBQ
 /*
-!            NBQ-MILES APPLICATIONS 
+!            NBQ-REGIONAL APPLICATIONS 
 !                  ============
 !
 */
@@ -921,6 +938,72 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 
+#elif defined  PLUME
+/*
+!----------------------
+! BASIC OPTIONS
+!----------------------
+*/
+                      /* Parallelization */
+# define OPENMP
+# undef  MPI
+# undef  OBC_EAST
+# undef  OBC_WEST
+# undef  OBC_NORTH
+# undef  OBC_SOUTH
+# undef  AUTOTILING
+# undef  ETALON_CHECK
+                      /* Grid configuration */
+# define NEW_S_COORD
+                      /* Analytical intial + Forcing */
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+                      /* Bottom Forcing */
+# define ANA_BSFLUX
+# define ANA_BTFLUX
+                      /* Model dynamics */
+# define SOLVE3D
+# define UV_COR
+# define UV_ADV
+                      /* Equation of State */
+# define SALINITY
+# define NONLIN_EOS
+# define SPLIT_EOS
+                      /* Lateral Tracer Advection (default UP3) */
+# define  TS_HADV_UP3
+                      /* Sponge layers for UV and TS */
+# define  SPONGE
+                      /* Semi-implicit Vertical Tracer/Mom Advection */
+# undef  LMD_MIXING
+# define GLS_MIX2017
+
+# ifdef LMD_MIXING
+#  define LMD_SKPP
+#  define LMD_BKPP
+#  define LMD_RIMIX
+#  define LMD_CONVEC
+#  undef  LMD_DDMIX
+#  define LMD_NONLOCAL
+#  undef  MLCONVEC
+# endif
+
+# ifdef GLS_MIX2017
+# undef  GLS_KOMEGA
+# define GLS_KEPSILON
+# undef  GLS_GEN
+# define CANUTO_A
+# undef GibLau_78
+# undef MelYam_82
+# undef KanCla_94
+# undef Luyten_96
+# undef CANUTO_B
+# undef Cheng_02
+# endif
+
 #elif defined UPWELLING
 /*
 !                       Upwelling Example
@@ -1086,9 +1169,25 @@
 #  define WAVE_STREAMING
 #  define WAVE_RAMP
 # endif
+
 # define LMD_MIXING
 # define LMD_SKPP
 # define LMD_BKPP
+# undef GLS_MIX2017
+# ifdef GLS_MIX2017
+#  undef  GLS_KOMEGA
+#  define GLS_KEPSILON
+#  undef  GLS_GEN
+#  define CANUTO_A
+#  undef GibLau_78
+#  undef MelYam_82
+#  undef KanCla_94
+#  undef Luyten_96
+#  undef CANUTO_B 
+#  undef Cheng_02
+# endif
+
+
 # undef  BBL
 # undef  SEDIMENT
 # ifdef SEDIMENT
@@ -1254,12 +1353,11 @@
 */
 # undef  TANKY
 # undef  XIOS
-# undef  MPI
-# define NBQ
-# define NBQ_IJK 
+# undef MPI
+# define  NBQ
 # ifdef NBQ
 #  undef  IMP_SLOW
-#  undef  NBQ_VOL
+#  undef NBQ_VOL
 #  undef NBQ_IMP
 #  undef NBQ_IMP_LU
 #  undef  NBQ_IMP_TRIDIAG
@@ -1273,7 +1371,7 @@
 # endif
 # define SOLVE3D
 # undef  MASKING
-# define  UV_ADV
+# undef  UV_ADV
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL

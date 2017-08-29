@@ -117,6 +117,9 @@
 #  include "forces.h"
 #  include "scalars.h"
       integer itrc, Istr,Iend,Jstr,Jend, i,j
+# if defined PLUME 
+      real rr
+# endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -129,6 +132,12 @@
         do j=JstrR,JendR
           do i=IstrR,IendR
             btflx(i,j,itemp)=0.
+# if defined PLUME 
+            rr = sqrt((xr(i,j)-0.5*xl)**2+(yr(i,j)-0.5*el)**2)
+            if (rr.le.2.5e3) then
+              btflx(i,j,itemp)=0.001
+            endif
+# endif
           enddo
         enddo
 !

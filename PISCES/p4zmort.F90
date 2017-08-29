@@ -37,13 +37,6 @@ MODULE p4zmort
      mprat2 = 0.01     ,  &  !:
      mpratm = 0.01           !:
 
-
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zmort.F90 1808 2010-03-11 09:17:56Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_mort( kt, jnt )

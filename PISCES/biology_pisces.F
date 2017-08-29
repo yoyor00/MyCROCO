@@ -58,9 +58,9 @@ C       implicit none
      &        = trn(i,j,K,jppo4) / po4r
             ENDDO
          ENDDO
-      ENDDO
+       ENDDO
 
-      CALL trc_sms_pisces( iic )
+       CALL trc_sms_pisces( iic )
 
       DO jn = 1, jptra
          DO jk = KRANGE

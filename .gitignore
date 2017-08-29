@@ -12,5 +12,7 @@
 # Misc               #
 ######################
 doc/build
-
 Run/*
+Run/amr.in
+
+OCEAN.bak/cpl_prism_getlistvals.F

@@ -33,11 +33,6 @@ MODULE p4zbio
    !!* Substitution
 #  include "ocean2pisces.h90"
 #  include "top_substitute.h90"
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zbio.F90 1808 2010-03-11 09:17:56Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
 
 CONTAINS
 

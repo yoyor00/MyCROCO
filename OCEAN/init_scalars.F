@@ -1400,7 +1400,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxHbbl =',indxHbbl
       vname(6,indxHbbl)='lat_rho lon_rho                          '
       vname(7,indxHbbl)='                                         '
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined GLS_MIX2017
 CR      write(stdout,'(1x,A,I3)') 'indxTke =',indxTke   
       vname(1,indxTke)='tke                                       '
       vname(2,indxTke)='turbulent kinetic energy                  '
@@ -1428,24 +1428,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxLscale =',indxLscale
      &                               / /  '_at_w_location         '
       vname(6,indxLsc)='lat_rho lon_rho                           '
       vname(7,indxLsc)='                                          ' 
-CR      write(stdout,'(1x,A,I3)') 'indxAkk =',indxAkk          
-      vname(1,indxAkk)='AKk                                       '
-      vname(2,indxAkk)='TKE vertical diffusion coefficient        '
-      vname(3,indxAkk)='meter2 second-1                           '
-      vname(4,indxAkk)='AKk, scalar, series                       '
-      vname(5,indxAkk)='ocean_vertical_TKE_diffusivity_'
-     &                 / / '_at_w_location                        '
-      vname(6,indxAkk)='lat_rho lon_rho                           '
-      vname(7,indxAkk)='                                          '
-CR      write(stdout,'(1x,A,I3)') 'indxAkp =',indxAkp          
-      vname(1,indxAkp)='AKp                                       '
-      vname(2,indxAkp)='GLS vertical diffusion coefficient        '
-      vname(3,indxAkp)='meter2 second-1                           '
-      vname(4,indxAkp)='AKp, scalar, series                       '
-      vname(5,indxAkp)='ocean_vertical_GLS_diffusivity_'
-     &                 / / '_at_w_location                        '
-      vname(6,indxAkp)='lat_rho lon_rho                           '
-      vname(7,indxAkp)='                                          '
 # endif /* GLS_MIXING */
 
 # if defined BIOLOGY && !defined PISCES
@@ -3276,14 +3258,41 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
         vname(4,indxbioFlux+Nprorego2-1)=
      &     'PPRego2         , scalar, series           '
 
-        vname(1,indxbioFlux+Ngraztot-1)=   
-     &     'GRAZ                                       '
-        vname(2,indxbioFlux+Ngraztot-1)=
-     &     'Total  Grazing                             '
-        vname(3,indxbioFlux+Ngraztot-1)=
+        vname(1,indxbioFlux+Ngrapoc-1)=   
+     &     'grapoc                                       '
+        vname(2,indxbioFlux+Ngrapoc-1)=
+     &     'Grazing by microzoo                        '
+        vname(3,indxbioFlux+Ngrapoc-1)=
      &     'molC/m3/s                                  '
-        vname(4,indxbioFlux+Ngraztot-1)=
-     &     'GRAZ          , scalar, series             '
+        vname(4,indxbioFlux+Ngrapoc-1)=
+     &     'grapoc          , scalar, series             '
+
+        vname(1,indxbioFlux+Ngrapoc2-1)=   
+     &     'grapoc2                                       '
+        vname(2,indxbioFlux+Ngrapoc2-1)=
+     &     'Grazing by mesozoo                        '
+        vname(3,indxbioFlux+Ngrapoc2-1)=
+     &     'molC/m3/s                                  '
+        vname(4,indxbioFlux+Ngrapoc2-1)=
+     &     'grapoc2          , scalar, series             '
+
+        vname(1,indxbioFlux+Nmico2-1)=   
+     &     'mico2                                       '
+        vname(2,indxbioFlux+Nmico2-1)=
+     &     'O2 comsumption by microzoo                        '
+        vname(3,indxbioFlux+Nmico2-1)=
+     &     'molC/m3/s                                  '
+        vname(4,indxbioFlux+Nmico2-1)=
+     &     'mico2          , scalar, series             '
+
+        vname(1,indxbioFlux+Nmeso2-1)=   
+     &     'meso2                                       '
+        vname(2,indxbioFlux+Nmeso2-1)=
+     &     'O2 comsumption by mesozoo                        '
+        vname(3,indxbioFlux+Nmeso2-1)=
+     &     'molC/m3/s                                  '
+        vname(4,indxbioFlux+Nmeso2-1)=
+     &     'meso2          , scalar, series             '
 
         vname(1,indxbioFlux+Nnitrifo2-1)=
      &     'NitO2                                      '
@@ -3294,9 +3303,15 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
         vname(4,indxbioFlux+Nnitrifo2-1)=
      &     'NitO2         , scalar, series             '
 
+        vname(1,indxbioFlux+Nremino2-1)=
+     &     'ReminO2                                      '
+        vname(2,indxbioFlux+Nremino2-1)=
+     &     'o2 consumption by remineralisation            '
+        vname(3,indxbioFlux+Nremino2-1)=
+     &     'molC/m3/s                                  '
+        vname(4,indxbioFlux+Nremino2-1)=
+     &     'ReminO2         , scalar, series             '
 
-      write(stdout,'(1x,A,I3)') 'indxbioFlux(Nfixo2)='
-     &                          ,indxbioFlux+Nfixo2-1
         vname(1,indxbioFlux+Nfixo2-1)=
      &     'NFixo2                                      '
         vname(2,indxbioFlux+Nfixo2-1)=
@@ -3305,6 +3320,24 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nfixo2-1)=
      &     'NFixo2         , scalar, series             ' 
+
+      vname(1,indxbioFlux+Nirondep-1)=
+     &     'Irondep                         '  
+      vname(2,indxbioFlux+Nirondep-1)=
+     &     'Iron flux from dust    '  
+      vname(3,indxbioFlux+Nirondep-1)=
+     &     'molFe/m3/s                      '  
+      vname(4,indxbioFlux+Nirondep-1)=
+     &     'Irondep           , scalar, series'  
+
+        vname(1,indxbioFlux+Nironsed-1)=
+     &     'Nironsed                                      '
+        vname(2,indxbioFlux+Nironsed-1)=
+     &     'Iron from sediment                        '
+        vname(3,indxbioFlux+Nironsed-1)=
+     &     'molC/m3/s                                  '
+        vname(4,indxbioFlux+Nironsed-1)=
+     &     'Nironsed         , scalar, series             ' 
 
       write(stdout,'(1x,A,I3)') 'indxbioVSink(Nfld)='
      &                          ,indxbioVSink+Nfld-1
@@ -3391,14 +3424,41 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
       vname(4,indxbioVSink+Nheup-1)=
      &     'Heup            , scalar, series'  
 
-      vname(1,indxbioVSink+Nirondep-1)=
-     &     'Irondep                         '  
-      vname(2,indxbioVSink+Nirondep-1)=
-     &     'Iron surface deposition flux    '  
-      vname(3,indxbioVSink+Nirondep-1)=
-     &     'molFe/m2/s                      '  
-      vname(4,indxbioVSink+Nirondep-1)=
-     &     'Irondep           , scalar, series'  
+      vname(1,indxbioVSink+Nsildep-1)=
+     &     'Sildep                         '  
+      vname(2,indxbioVSink+Nsildep-1)=
+     &     'Silicate surface deposition flux    '  
+      vname(3,indxbioVSink+Nsildep-1)=
+     &     'molSi/m2/s                      '  
+      vname(4,indxbioVSink+Nsildep-1)=
+     &     'Sildep           , scalar, series'  
+
+      vname(1,indxbioVSink+Npo4dep-1)=
+     &     'Po4dep                         '  
+      vname(2,indxbioVSink+Npo4dep-1)=
+     &     'Phosphorus surface deposition flux    '  
+      vname(3,indxbioVSink+Npo4dep-1)=
+     &     'molP/m2/s                      '  
+      vname(4,indxbioVSink+Npo4dep-1)=
+     &     'Po4dep           , scalar, series'  
+
+      vname(1,indxbioVSink+Nno3dep-1)=
+     &     'No3dep                         '  
+      vname(2,indxbioVSink+Nno3dep-1)=
+     &     'Nitrate surface deposition flux    '  
+      vname(3,indxbioVSink+Nno3dep-1)=
+     &     'molN/m2/s                      '  
+      vname(4,indxbioVSink+Nno3dep-1)=
+     &     'No3dep           , scalar, series'  
+
+      vname(1,indxbioVSink+Nnh4dep-1)=
+     &     'Nh4dep                         '  
+      vname(2,indxbioVSink+Nnh4dep-1)=
+     &     'Nitrate surface deposition flux    '  
+      vname(3,indxbioVSink+Nnh4dep-1)=
+     &     'molN/m2/s                      '  
+      vname(4,indxbioVSink+Nnh4dep-1)=
+     &     'Nh4dep           , scalar, series'  
 
       write(stdout,'(1x,A,I3)') 'indxbioVSink(Nnitrpot)='
      &                          ,indxbioVSink+Nnitrpot-1
@@ -3410,7 +3470,6 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                       '  
       vname(4,indxbioVSink+Nnitrpot-1)=
      &     'Nfix            , scalar, series'       
-
 #  endif
 # endif /* PISCES */
 #endif /* DIAGNOSTICS_BIO */

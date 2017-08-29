@@ -1,12 +1,12 @@
 ! $Id: param.h 1619 2015-01-07 13:53:03Z marchesiello $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 !----------------------------------------------------------------------
@@ -77,6 +77,9 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined PLUME
+      parameter (LLm0=200,   MMm0=200,   N=100)        
+!      parameter (LLm0=80,   MMm0=80,   N=100) 
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
 #elif defined SEAMOUNT
@@ -395,6 +398,15 @@
       parameter (Agrif_lev_sedim=0)
 # endif
 
+# ifdef GLS_MIX2017
+      integer NGLS
+      parameter(NGLS=2)
+      integer itke
+      parameter(itke=1)
+      integer igls
+      parameter(igls=2)     
+# endif
+
 #endif /* SOLVE3D */
 
 !
@@ -429,11 +441,15 @@
      &          , Nhi,Nco3,Naksp,Netot,Nprorca
      &          , Nprorcad,Npronew,Npronewd
      &          , Nprobsi,Nprofed,Nprofen
-     &          , Ngraztot,Nnitrifo2,Nfixo2,Nremino2
+     &          , Ngrapoc,Ngrapoc2
+     &          , Nmico2,Nmeso2
+     &          , Nnitrifo2,Nfixo2,Nremino2
      &          , Npronewo2,Nprorego2
      &          , Nfld,Nflu16,Nkgco2,Natcco2,Nsinking
-     &          , Nsinkfer,Nsinksil
-     &          , Nsinkcal,Nheup,Nirondep,Nnitrpot
+     &          , Nsinkfer,Nsinksil,Nironsed
+     &          , Nsinkcal,Nheup,Nnitrpot
+     &          , Nirondep,Nsildep,Npo4dep
+     &          , Nno3dep,Nnh4dep
 #    endif
 #   endif
      &          , NumFluxTerms,NumVSinkTerms,NumGasExcTerms
@@ -540,7 +556,7 @@
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
      &            iNH4_=iDIC_+23)
 #   ifdef key_trc_diaadd
-       parameter (Nhi       = 1,
+      parameter (Nhi       = 1,
      &            Nco3      = 2,
      &            Naksp     = 3,
      &            Netot     = 4,
@@ -549,15 +565,20 @@
      &            Npronew   = 7,
      &            Npronewd  = 8,
      &            Nprobsi   = 9,
-     &            Nprofed   = 10,
-     &            Nprofen   = 11,
+     &            Nprofen   = 10,
+     &            Nprofed   = 11,
      &            Npronewo2 = 12,
      &            Nprorego2 = 13,
-     &            Ngraztot  = 14,
-     &            Nnitrifo2 = 15,
-     &            Nremino2  = 16,
-     &            Nfixo2    = 17,
-     &            NumFluxTerms = Nfixo2)
+     &            Ngrapoc   = 14,
+     &            Ngrapoc2  = 15,
+     &            Nmico2    = 16,
+     &            Nmeso2    = 17,
+     &            Nnitrifo2 = 18,
+     &            Nremino2  = 19,
+     &            Nfixo2    = 20,
+     &            Nirondep  = 21,
+     &            Nironsed  = 22,
+     &            NumFluxTerms = Nironsed)
 
        parameter (Nfld      = 1,
      &            Nflu16    = 2,
@@ -568,8 +589,11 @@
      &            Nsinksil  = 7,
      &            Nsinkcal  = 8,
      &            Nheup     = 9,
-     &            Nirondep  = 10,
-     &            Nnitrpot  = 11,
+     &            Nsildep   = 10,
+     &            Npo4dep   = 11,
+     &            Nno3dep   = 12,
+     &            Nnh4dep   = 13,
+     &            Nnitrpot  = 14,
      &            NumGasExcTerms = 0,
      &            NumVSinkTerms = Nnitrpot)
 #   else

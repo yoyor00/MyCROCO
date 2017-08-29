@@ -76,8 +76,6 @@
 # define vidAkv hisAkv
 # define vidAkt hisAkt
 # define vidAks hisAks
-# define vidAkk hisAkk
-# define vidAkp hisAkp
 # define vidHbl hisHbl
 # define vidHbbl hisHbbl
 # define vidTke hisTke
@@ -158,8 +156,6 @@
 # define vidAkv avgAkv
 # define vidAkt avgAkt
 # define vidAks avgAks
-# define vidAkk avgAkk
-# define vidAkp avgAkp
 # define vidHbl avgHbl
 # define vidHbbl avgHbbl
 # define vidTke avgTke
@@ -994,64 +990,7 @@
 
         endif
 # endif
-# ifdef GLS_MIXING
-!
-! Vertical diffusion coefficient for TKE.
-!
-        if (wrt(indxAkk)) then
-          lvar=lenstr(vname(1,indxAkk))
-          ierr=nf_def_var (ncid, vname(1,indxAkk)(1:lvar),
-     &                              NF_FOUT, 4, w3dgrd, vidAkk)
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxAkk))
-          ierr=nf_put_att_text (ncid, vidAkk, 'long_name', lvar,
-     &                                  vname(2,indxAkk)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxAkk)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidAkk, 'long_name', lvar,
-     &                                              text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxAkk))
-          ierr=nf_put_att_text (ncid, vidAkk, 'units',     lvar,
-     &                                  vname(3,indxAkk)(1:lvar))
-          lvar=lenstr(vname(4,indxAkk))
-          ierr=nf_put_att_text (ncid, vidAkk, 'field',     lvar,
-     &                                  vname(4,indxAkk)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAkk, indxAkk, 5, NF_FOUT, 
-     &                                                             ierr)
-
-        endif
-!
-! Vertical diffusion coefficient for GLS.
-!
-        if (wrt(indxAkp)) then
-          lvar=lenstr(vname(1,indxAkp))
-          ierr=nf_def_var (ncid, vname(1,indxAkp)(1:lvar),
-     &                              NF_FOUT, 4, w3dgrd, vidAkp)
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxAkp))
-          ierr=nf_put_att_text (ncid, vidAkp, 'long_name', lvar,
-     &                                  vname(2,indxAkp)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxAkp)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidAkp, 'long_name', lvar,
-     &                                              text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxAkp))
-          ierr=nf_put_att_text (ncid, vidAkp, 'units',     lvar,
-     &                                  vname(3,indxAkp)(1:lvar))
-          lvar=lenstr(vname(4,indxAkp))
-          ierr=nf_put_att_text (ncid, vidAkp, 'field',     lvar,
-     &                                  vname(4,indxAkp)(1:lvar))
-
-          call nf_add_attribute(ncid, vidAkp, indxAkp, 5, NF_FOUT, 
-     &                                                             ierr)
-
-        endif
-# endif /* GLS_MIXING */
 
 # ifdef LMD_SKPP
 !
@@ -1114,7 +1053,7 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined GLS_MIX2017
 !
 ! Turbulent Kinetic Energy.
 !
@@ -2244,30 +2183,7 @@
           endif
         endif
 # endif
-# ifdef GLS_MIXING
-!
-! Vertical diffusion coefficient for TKE.
-!
-        if (wrt(indxAkk)) then
-          lvar=lenstr(vname(1,indxAkk))
-          ierr=nf_inq_varid (ncid,vname(1,indxAkk)(1:lvar), vidAkk)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxAkk)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-!
-! Vertical diffusion coefficient for GLS.
-!
-        if (wrt(indxAkp)) then
-          lvar=lenstr(vname(1,indxAkp))
-          ierr=nf_inq_varid (ncid,vname(1,indxAkp)(1:lvar), vidAkp)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxAkp)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-# endif
+
 
 # ifdef LMD_SKPP
 !
@@ -2296,7 +2212,7 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined GLS_MIX2017
 !
 ! Turbulent Kinetic Energy.
 !
@@ -2738,8 +2654,6 @@
 #undef vidAkv
 #undef vidAkt
 #undef vidAks
-#undef vidAkk
-#undef vidAkp
 #undef vidHbl
 #undef vidHbbl
 #undef vidTke

@@ -46,12 +46,6 @@ MODULE p4zrem
 
    REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE, SAVE ::   denitr       !: denitrification array
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zrem.F90 1808 2010-03-11 09:17:56Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_rem(kt, jnt)
@@ -72,7 +66,7 @@ CONTAINS
 #if ! defined key_kriest
       REAL(wp) ::   zofer2, zdenom, zdenom2
 #endif
-      REAL(wp) ::   zlamfac, zrfact2, zmsk
+      REAL(wp) ::   zlamfac, zrfact2, zmsk, zdep, zdepmin
       REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: ztempbac
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zdepbac, zfesatur, zolimi, zonitr
       CHARACTER (len=25) :: charout
@@ -106,24 +100,24 @@ CONTAINS
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               IF( fsdept(ji,jj,K) < 120. ) THEN
+               zdep = MAX( hmld(ji,jj), heup(ji,jj) )
+               IF( fsdept(ji,jj,K) < zdep ) THEN
                   zdepbac(ji,jj,jk) = MIN( 0.7 * ( trn(ji,jj,K,jpzoo)   &
                      &               + 2.* trn(ji,jj,K,jpmes) ), 4.e-6 )
                   ztempbac(ji,jj)   = zdepbac(ji,jj,jk)
                ELSE
-                  zdepbac(ji,jj,jk) = MIN( 1., 120./ fsdept(ji,jj,K) ) * ztempbac(ji,jj)
+                  zdepmin = MIN( 1., zdep / fsdept(ji,jj,K) )
+                  zdepbac (ji,jj,jk) = zdepmin**0.683 * ztempbac(ji,jj)
                ENDIF
             END DO
          END DO
       END DO
 
+!    DENITRIFICATION FACTOR COMPUTED FROM O2 LEVELS
+!    ----------------------------------------------
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-
-!    DENITRIFICATION FACTOR COMPUTED FROM O2 LEVELS
-!    ----------------------------------------------
-
                nitrfac(ji,jj,jk) = MAX(  0.e0, 0.4 * ( 6.e-6  - trn(ji,jj,K,jpoxy) )    &
                   &                                / ( oxymin + trn(ji,jj,K,jpoxy) )  )
                !
@@ -147,7 +141,8 @@ CONTAINS
                   &            * facvol(ji,jj,jk)              &
 # endif
                   &            * zdepbac(ji,jj,jk)
-               zremik = MAX( zremik, 5.5e-4 * xstep )
+!               zremik = MAX( zremik, 5.5e-4 * xstep )
+               zremik = MAX( zremik, 2.74e-4 * xstep )
 
 !     Ammonification in oxic waters with oxygen consumption
 !     -----------------------------------------------------

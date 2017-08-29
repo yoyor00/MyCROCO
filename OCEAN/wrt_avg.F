@@ -307,26 +307,6 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
       endif
 #    endif /* SALINITY */
 #  endif  /* AVERAGES_K */
-#  ifdef GLS_MIXING
-!     
-!     Write out vertical diffusion coefficient for TKE.
-!     
-      if (wrtavg(indxAkk)) then
-         work=Akk_avg
-         call fillvalue3d_w(work,ncidavg,avgAkk,indxAkk,
-     &        record,w3dvar,type)
-CR      write(*,*) 'wrt_avg:  wrtAkk' MYID
-      endif
-!     
-!     Write out vertical diffusion coefficient for GLS.
-!     
-      if (wrtavg(indxAkp)) then
-         work=Akp_avg
-         call fillvalue3d_w(work,ncidavg,avgAkp,indxAkp,
-     &        record,w3dvar,type)
-CR      write(*,*) 'wrt_avg:  wrtAkp' MYID
-      endif
-# endif
 
 # ifdef LMD_SKPP
 !     
@@ -350,7 +330,8 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
       endif
 CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 # endif
-# ifdef GLS_MIXING
+
+# if defined GLS_MIXING || defined GLS_MIX2017
 !     
 !     Write out turbulent kinetic energy.
 !     
@@ -529,7 +510,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !     
       do itrc=1,NST
-         indxWrk=indxBFRA+itrc-1
+         indxWrk=indxBFRA(1)+itrc-1
 !         if (wrtavg(indxWrk)) then
             worksed_frac=bed_frac_avg(:,:,:,itrc)
             call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+2),

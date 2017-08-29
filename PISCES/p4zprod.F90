@@ -52,12 +52,6 @@ MODULE p4zprod
       rpis180                    ,  &  !: rpi / 180
       tpp                              !: Total primary production
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zprod.F90 2504 2010-12-23 08:18:45Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_prod( kt , jnt )

@@ -72,4 +72,29 @@
          <!-- END  --> 
      </field_group>
 
+       <field_group id="grid_fields" operation="once">
+        <field field_ref="hc"         name= "hc" />
+        <field field_ref="theta_s"    name= "theta_s" />
+        <field field_ref="theta_b"    name= "theta_b" />
+        <field field_ref="Tcline"     name= "Tcline" />
+        <field field_ref="Vtransform" name= "Vtransform" />
+        <field field_ref="h"          name= "h" />
+        <field field_ref="f"          name= "f" />
+        <field field_ref="pm"         name= "pm" />
+        <field field_ref="pn"         name= "pn" />
+        <field field_ref="lon_rho"    name= "lon_rho" />
+        <field field_ref="lat_rho"    name= "lat_rho" />
+        <field field_ref="lon_u"      name= "lon_u" />
+        <field field_ref="lat_u"      name= "lat_u" />
+        <field field_ref="lon_v"      name= "lon_v" />
+        <field field_ref="lat_v"      name= "lat_v" />
+        <field field_ref="angle"      name= "angle" />
+        <field field_ref="mask_rho"   name= "mask_rho"  />
+        <field field_ref="Cs_r"       name= "Cs_r" />
+        <field field_ref="Cs_w"       name= "Cs_w" />
+        <field field_ref="sc_r"       name= "sc_r" />
+        <field field_ref="sc_w"       name= "sc_w" />
+      </field_group>
+
+
    </field_definition>

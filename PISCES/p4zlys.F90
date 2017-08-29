@@ -39,12 +39,6 @@ MODULE p4zlys
 
 !   INTEGER ::  rmtss          !: number of seconds per month
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zlys.F90 1830 2010-04-12 13:03:51Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_lys( kt, jnt )
@@ -137,7 +131,8 @@ CONTAINS
                zomegaca = ( calcon * zco3(ji,jj,jk) ) / aksp(ji,jj,jk)
 
                ! SET DEGREE OF UNDER-/SUPERSATURATION
-               zexcess0 = MAX( 0., ( 1.- zomegaca ) )
+               excess(ji,jj,jk) = 1. - zomegaca
+               zexcess0 = MAX( 0., excess(ji,jj,jk) )
                zexcess  = zexcess0**nca
 
                ! AMOUNT CACO3 (12C) THAT RE-ENTERS SOLUTION

@@ -834,7 +834,10 @@ C$OMP BARRIER
         call omega (tile)
 
 # ifdef GLS_MIXING
-        call step3d_gls (tile)
+        call step3d_gls  (tile)
+# endif
+# ifdef GLS_MIX2017
+        call gls_mix2017 (tile)
 # endif
         call step3d_t (tile)
 # ifdef SEDIMENT

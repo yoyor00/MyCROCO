@@ -108,10 +108,17 @@
    Set default time-averaging filter for barotropic fields.
 ======================================================================
 */
-#define  M2FILTER_NONE
-#undef  M2FILTER_POWER
-#undef  M2FILTER_COSINE
-#undef  M2FILTER_FLAT
+#ifdef M2FILTER_NONE     /* Check if options are defined in cppdefs.h */
+#elif defined M2FILTER_POWER
+#elif defined M2FILTER_COSINE
+#elif defined M2FILTER_FLAT
+#else
+# undef  M2FILTER_NONE
+# define M2FILTER_POWER
+# undef  M2FILTER_COSINE
+# undef  M2FILTER_FLAT
+#endif
+
 /*
 ======================================================================
    Activate barotropic pressure gradient response to the
@@ -132,19 +139,16 @@
 */
 #ifdef NBQ
 # define NBQ_IJK
+# define NBQ_IMPIJK
 # define NBQ_CONS
 # undef  NBQ_MASS
 # define NBQ_NODS
 # define M2FILTER_NONE
 # undef M2FILTER_POWER
-!# if !defined NBQ_COUPLE1 && !defined NBQ_COUPLE0
 #  define NBQ_COUPLE1
-!# endif
-!# undef VAR_RHO_2D
 # undef TRACETXT
 # undef NBQ_OUT
 # define HZR Hzr
-!# define OBC_NBQ
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED
@@ -282,6 +286,10 @@
 # define TS_DIF4       /*         Hyperdiffusion  with         */
 # undef  TS_MIX_GEO    /*        Geopotential rotation         */
 # define TS_MIX_ISO    /*     or Isopycnal    rotation         */
+#  if defined GLS_MIX2017 || defined GLS_MIXING
+#   undef  TS_MIX_ISO
+#   define TS_MIX_GEO
+#  endif
 #endif
 #ifdef TS_HADV_RSUP5   /*    Pseudo RS 5th-order scheme is:    */
 # define TS_HADV_C6    /*    6th-order centered advection      */
@@ -437,7 +445,7 @@
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
-# undef LMD_BKPP2005
+# define LMD_BKPP2005
 #endif
 
 /*
@@ -509,7 +517,7 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-# define MOVING_BATHY
+# undef MOVING_BATHY
 #endif
 
 /*

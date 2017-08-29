@@ -36,12 +36,6 @@ MODULE p4zopt
 
    REAL(wp), DIMENSION(3,61), PUBLIC ::   xkrgb  !: tabulated attenuation coefficients for RGB absorption
    
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zopt.F90 1830 2010-04-12 13:03:51Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_opt(kt, jnt)

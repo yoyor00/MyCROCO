@@ -72,7 +72,7 @@
 # define rpi           pi
 
 # define jpk   N
-# define ikt   jpk-1
+# define ikt   jpk
 # define PRIV_3D_BIOARRAY Istrp:Iendp,Jstrp:Jendp,1:jpk
 # define PRIV_2D_BIOARRAY Istrp:Iendp,Jstrp:Jendp
 
@@ -92,7 +92,10 @@
 # define   jp_sinksil     Nsinksil 
 # define   jp_sinkcal     Nsinkcal
 # define   jp_heup        Nheup
-# define   jp_irondep     Nirondep
+# define   jp_sildep      Nsildep
+# define   jp_po4dep      Npo4dep
+# define   jp_no3dep      Nno3dep
+# define   jp_nh4dep      Nnh4dep
 # define   jp_nfix        Nnitrpot
 # define   jp_pisces_2d   NumVSinkTerms
 
@@ -109,10 +112,15 @@
 # define   jp_pfen        Nprofen
 # define   jp_pnewo2      Npronewo2
 # define   jp_prego2      Nprorego2
-# define   jp_grazt       Ngraztot
-# define   jp_nitro2      Nnitrifo2
+# define   jp_grapoc      Ngrapoc
+# define   jp_grapoc2     Ngrapoc2
+# define   jp_mico2       Nmico2
+# define   jp_meso2       Nmeso2
+# define   jp_nitrifo2    Nnitrifo2
 # define   jp_remino2     Nremino2
 # define   jp_nfixo2      Nfixo2
+# define   jp_irondep     Nirondep
+# define   jp_ironsed     Nironsed
 # define   jp_pisces_3d   NumFluxTerms
 
 # define trc2d(i,j,l)      bioVSink(i,j,l)

@@ -262,18 +262,18 @@
       real radswbio(GLOBAL_2D_ARRAY)
 # endif
 
-      common /bulk_tair/tair
-     &       /bulk_rhum/rhum 
-     &       /bulk_prate/prate
-     &       /bulk_radlw/radlw 
-     &       /bulk_radsw/radsw
-     &       /bulk_wspd/wspd
+      common /bulk_tair/ tair
+      common /bulk_rhum/ rhum 
+      common /bulk_prate/ prate
+      common /bulk_radlw/ radlw 
+      common /bulk_radsw/ radsw
+      common /bulk_wspd/ wspd
 # ifdef BULK_SM_UPDATE
-     &       /bulk_uwnd/uwnd 
-     &       /bulk_vwnd/vwnd
+      common /bulk_uwnd/ uwnd 
+      common /bulk_vwnd/ vwnd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       /bulk_radswbio/radswbio
+      common /bulk_radswbio/ radswbio
 # endif
 
       real tairg(GLOBAL_2D_ARRAY,2)
@@ -290,63 +290,62 @@
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
 
-      common /bulkdat_tairg/tairg
-     &       /bulkdat_rhumg/rhumg
-     &       /bulkdat_prateg/prateg
-     &       /bulkdat_radlwg/radlwg
-     &       /bulkdat_radswg/radswg
-     &       /bulkdat_wspdg/wspdg
+      common /bulkdat_tairg/tairg 
+      common /bulkdat_rhumg/rhumg 
+      common /bulkdat_prateg/prateg 
+      common /bulkdat_radlwg/radlwg 
+      common /bulkdat_radswg/radswg 
+      common /bulkdat_wspdg/wspdg 
 # ifdef BULK_SM_UPDATE 
-     &       /bulk_uwndg/uwndg
-     &       /bulk_vwndg/vwndg
+      common /bulk_uwndg/uwndg 
+      common /bulk_vwndg/vwndg 
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       /bulkdat_radswbiog/radswbiog
+      common /bulkdat_radswbiog/radswbiog
 # endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-     &       ,wspdp(2)
+      real    wspdp(2)
 # ifdef BULK_SM_UPDATE
-     &       ,uwndp(2),vwndp(2)
+      real    uwndp(2),vwndp(2)
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       ,radswbiop(2)
+      real    radswbiop(2)
 # endif
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
-     & 	     ,ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd 
-     &       ,wspd_id,lwspdgrd
+      integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
+      integer wspd_id,lwspdgrd
 # ifdef BULK_SM_UPDATE
-     &       ,uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+      integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &        ,radswbio_id,lradswbiogrd
+      integer radswbio_id,lradswbiogrd
 # endif
       integer itbulk,bulk_ncycle,bulk_rec,bulk_tid
-     &        ,bulkunused
+      integer bulkunused
 
-      common /bulkdat1/
-     &        tair_id,rhum_id,prate_id,radlw_id,radsw_id
-     &        ,ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-     &        ,itbulk, bulk_ncycle, bulk_rec, bulk_tid
-     &        ,bulkunused
-     &        ,wspd_id,lwspdgrd
+      common /bulkdat1_for/ tair_id,rhum_id,prate_id,radlw_id,radsw_id
+      common /bulkdat1_grd/ ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
+      common /bulkdat1_tim/ itbulk, bulk_ncycle, bulk_rec, bulk_tid
+      common /bulkdat1_uns/ bulkunused
 # ifdef BULK_SM_UPDATE
-     &       ,uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+      common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       ,radswbio_id,lradswbiogrd
+      common /bulkdat1_bio/ radswbio_id,lradswbiogrd
 # endif
-      common /bulkdat2/
-     &        tairp,rhump,pratep,radlwp,radswp
-     &       ,bulk_time, bulk_cycle
-     &       ,wspdp
+      common /bulkdat1_wspd/ wspd_id,lwspdgrd
+
+      common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
+      common /bulkdat2_tim/ bulk_time, bulk_cycle
 # ifdef BULK_SM_UPDATE
-     &       ,uwndp,vwndp
+      common /bulkdat2_wnd/ uwndp,vwndp
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       ,radswbiop
+      common /bulkdat2_bio/ radswbiop
 # endif
+      common /bulkdat2_wspd/ wspdp 
 #endif /* BULK_FLUX */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
@@ -430,9 +429,12 @@
       real wbst(GLOBAL_2D_ARRAY)
       real wdrx(GLOBAL_2D_ARRAY)
       real wdre(GLOBAL_2D_ARRAY)
-      common /forces_whrm/whrm /forces_wdsp/wdsp 
-     &       /forces_wdrx/wdrx /forces_wdre/wdre 
-     &       /forces_wdrg/wdrg /forces_wbst/wbst
+      common /forces_whrm/whrm 
+      common /forces_wdsp/wdsp
+      common /forces_wdrx/wdrx 
+      common /forces_wdre/wdre
+      common /forces_wdrg/wdrg 
+      common /forces_wbst/wbst
 # ifdef WAVE_ROLLER
       real rdsp(GLOBAL_2D_ARRAY)
       common /forces_rdsp/rdsp
@@ -558,8 +560,11 @@
       real wwdre(GLOBAL_2D_ARRAY)
       real wweb(GLOBAL_2D_ARRAY,2)
       real Eb  (GLOBAL_2D_ARRAY)
-      common /wwf_wwhrm/wwhrm /wwf_wwdrx/wwdrx /wwf_wwdre/wwdre
-     &       /wwf_wweb/wweb /forces_Eb/Eb
+      common /wwf_wwhrm/wwhrm 
+      common /wwf_wwdrx/wwdrx 
+      common /wwf_wwdre/wwdre 
+      common /wwf_wweb/wweb 
+      common /forces_Eb/Eb
 #   if defined WAVE_OFFLINE || defined OW_COUPLING
       real wved(GLOBAL_2D_ARRAY)
       real wwed(GLOBAL_2D_ARRAY,2)
@@ -571,28 +576,28 @@
       common /forces_wvqb/wvqb /wwf_wwqb/wwqb
 #   endif
 #  endif 
-      real ww_cycle,wwv_time(2),wwap(2), wwdp(2),wwpp(2),wwep(2),
-     &                 wwa_scale, wwd_scale, wwp_scale,wwe_scale,
-     &                 wwagrd,   wwdgrd,    wwpgrd, wwegrd
+      real ww_cycle,wwv_time(2),wwap(2), wwdp(2),wwpp(2),wwep(2)
+      real wwa_scale, wwd_scale, wwp_scale,wwe_scale
+      real wwagrd,   wwdgrd,    wwpgrd, wwegrd
       integer ww_ncycle,  ww_rec,  itww
-     &        ,ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
+      integer ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
 #   if defined BBL && defined WAVE_OFFLINE
-     &       ,wwu_id
+      integer wwu_id
 #   endif 
 #   if defined MRL_WCI && defined WAVE_OFFLINE
-     &       ,wwe_id, wwq_id, wwf_id
+      integer wwe_id, wwq_id, wwf_id
 #   endif
-      common /wwdat/ ww_cycle, wwv_time
-     &       ,wwap, wwdp,wwpp,wwep
-     &       ,wwa_scale, wwd_scale, wwp_scale,wwe_scale
-     &       ,wwagrd,   wwdgrd,    wwpgrd, wwegrd
-     &       ,ww_ncycle,  ww_rec,  itww
-     &       ,ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
+      common /wwdat1/ ww_cycle, wwv_time
+      common /wwdat2/ wwap, wwdp,wwpp,wwep
+      common /wwdat3/ wwa_scale, wwd_scale, wwp_scale,wwe_scale
+      common /wwdat4/ wwagrd, wwdgrd, wwpgrd, wwegrd
+      common /wwdat5/ ww_ncycle, ww_rec, itww
+      common /wwdat6/ ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id 
 #   if defined BBL && defined WAVE_OFFLINE
-     &       ,wwu_id
+      common /wwdat7/ wwu_id
 #   endif
 #   if defined MRL_WCI && defined WAVE_OFFLINE
-     &       ,wwe_id, wwq_id, wwf_id
+      common /wwdat8/ wwe_id, wwq_id, wwf_id
 #   endif
 # elif defined MRL_WCI
       real Eb(GLOBAL_2D_ARRAY)

@@ -41,13 +41,6 @@ MODULE p4zmicro
       sigma1  = 0.6       ,  &  !:
       epsher  = 0.33
 
-
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zmicro.F90 1830 2010-04-12 13:03:51Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
    SUBROUTINE p4z_micro( kt,jnt )
@@ -64,6 +57,7 @@ CONTAINS
       REAL(wp) :: zgraze  , zdenom  , zdenom2
       REAL(wp) :: zfact   , zstep   , zinano , zidiat, zipoc
       REAL(wp) :: zgrarem, zgrafer, zgrapoc, zprcaca, zmortz
+      REAL(wp) :: zrfact2
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zrespz,ztortz
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zgrazp, zgrazm, zgrazsd
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zgrazmf, zgrazsf, zgrazpf
@@ -199,7 +193,7 @@ CONTAINS
 
       DO jk = KRANGE
          DO jj = JRANGE
-            DO ji = IRANGE
+            DO ji =  IRANGE
 
                zmortz = ztortz(ji,jj,jk) + zrespz(ji,jj,jk)
                tra(ji,jj,jk,jpzoo) = tra(ji,jj,jk,jpzoo) - zmortz  &
@@ -235,6 +229,30 @@ CONTAINS
          END DO
       END DO
       !
+#if defined key_trc_diaadd
+      zrfact2 = 1.e3 * rfact2r
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               trc3d(ji,jj,K,jp_grapoc) = ( zgrazp(ji,jj,jk) + zgrazm(ji,jj,jk) + zgrazsd(ji,jj,jk) ) &
+                  &                        * zrfact2 * tmask(ji,jj,K) !  grazing of phyto by microzoo
+            END DO
+         END DO
+      END DO
+      
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               trc3d(ji,jj,K,jp_mico2) = (  zgrazp(ji,jj,jk) + zgrazm(ji,jj,jk) &
+                  &                         + zgrazsd(ji,jj,jk)  ) &
+                  &                         * ( 1.- epsher - unass ) &
+                  &                         * (-o2ut) * sigma1   &
+                  &                         * zrfact2 * tmask(ji,jj,K)   ! o2 consumption by Microzoo
+            END DO
+         END DO
+      END DO
+#endif
+
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('micro')")
          CALL prt_ctl_trc_info(charout)

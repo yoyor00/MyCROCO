@@ -124,7 +124,7 @@
 ! If BULK_FLUX is defined, radsw copies to srflx in get_bulk
 !
 #  ifndef BULK_FLUX
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
 #    ifndef ANA_SRFLUX
       call get_srflux
 #    endif
@@ -246,7 +246,7 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
 #    ifdef ANA_SRFLUX
       call ana_srflux_tile (Istr,Iend,Jstr,Jend)
 #    else
@@ -325,7 +325,7 @@
 ! Diurnal modulation of surface solar shortwave radiation flux
 !---------------------------------------------------------------
 !
-#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
 #   ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 #   endif

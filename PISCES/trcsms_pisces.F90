@@ -58,7 +58,8 @@ CONTAINS
       IF( ndayflxtr /= nday_year ) THEN      ! New days
          !
         IF(lwp) write(numout,*)
-        IF(lwp) write(numout,*) ' New chemical constants and various rates for biogeochemistry at new day : ', nday_year
+        IF(lwp) write(numout,*) ' New chemical constants and various rates for biogeochemistry at new day : ', &
+                                 &  nday_year
         IF(lwp) write(numout,*) '~~~~~~'
         ndayflxtr = nday_year
 
@@ -72,7 +73,7 @@ CONTAINS
          !
          CALL p4z_bio (kt, jnt )    ! Compute soft tissue production (POC)
          CALL p4z_sed (kt, jnt )    ! compute soft tissue remineralisation
-          CALL p4z_lys( kt, jnt )    ! Compute CaCO3 saturation
+         CALL p4z_lys( kt, jnt )    ! Compute CaCO3 saturation
          CALL p4z_flx( kt, jnt )    ! Compute surface fluxes
          !
          !                             ! test if tracers concentrations fall below 0.
