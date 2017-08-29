@@ -646,8 +646,10 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
+# ifndef NBQ_ZETAW
        call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
        call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
+# endif
 C$OMP END MASTER       
 #endif
 
@@ -710,9 +712,11 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
+# if ! defined NBQ_ZETAW
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
+# endif
 
 C$OMP BARRIER
 

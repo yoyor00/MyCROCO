@@ -40,7 +40,8 @@
    serial and multi-processor result by comparing binary file
 */
 #ifndef RVTK_DEBUG
-#undef RVTK_DEBUG
+# undef RVTK_DEBUG
+# undef RVTK_DEBUG_ADVANCED
 #endif
 
 /*
@@ -138,23 +139,37 @@
 ======================================================================
 */
 #ifdef NBQ
+# define M2FILTER_NONE
+# undef M2FILTER_POWER
 # define NBQ_IJK
 # define NBQ_IMPIJK
 # define NBQ_CONS
 # undef  NBQ_MASS
 # define NBQ_NODS
-# define M2FILTER_NONE
-# undef M2FILTER_POWER
-#  define NBQ_COUPLE1
+# define NBQ_COUPLE1
+# undef VAR_RHO_2D
+# undef RESET_RHO0
 # undef TRACETXT
-# undef NBQ_OUT
 # define HZR Hzr
+
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED
 #  undef  NBQ_FRC_BRY
 #  define W_FRC_BRY
 # endif
+
+# ifdef NBQ_PERF
+#  define NBQ_IJK 
+#  define NBQ_ZETAW
+#  undef  NBQ_MASS
+#  define NBQ_NODS
+#  undef  NBQ_OUT
+#  define NBQ_IMP
+#  undef  NBQ_NOCOUPLING
+#  undef  NBQ_DTDRHO 
+# endif
+
 #else
 # define HZR Hz
 #endif

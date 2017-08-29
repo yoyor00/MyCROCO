@@ -63,7 +63,7 @@
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       !!    
-      REAL     :: gamma, epsil, cff, cff1, cff2, cff3, cff4, Omeg_r
+      REAL     :: gamma, epsil, cff, cff1, cff2, cff3, Omeg_r
       REAL     :: wz_bot,wz_sfc
       PARAMETER (gamma=0.25  )
       PARAMETER (epsil=1.E-16)

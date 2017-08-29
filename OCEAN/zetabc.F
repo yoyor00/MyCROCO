@@ -83,6 +83,8 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,15+9*NWEIGHT))
 #endif
 ! 
+#define OBC_COM_ZCHAPMAN
+!#define OBC_COM_ZORLANSKI
 #ifndef EW_COM_PERIODIC
 !
 !====================================================================

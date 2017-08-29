@@ -182,7 +182,7 @@ C$    integer omp_get_thread_num
         enddo
 
 # elif defined TANK
-        ETA0=0.1
+        ETA0=0.001
         Lt=10.
         do j=JR_RANGE
           do i=IR_RANGE
@@ -339,6 +339,7 @@ C$    integer omp_get_thread_num
         enddo
         enddo
 
+
 #    ifdef RVTK_DEBUG
         call check_tab2d(xr(:,:),'xr ana_initial','r')
 #    endif
@@ -349,7 +350,7 @@ C$    integer omp_get_thread_num
 #   elif defined KH_INST2D
 
 ! PARAMETERS
-        du = 1.
+        du = 2.
 !       du = 0.5
 
         ubar=0.
@@ -374,6 +375,7 @@ C$    integer omp_get_thread_num
 ! PARAMETERS
         hup0=0.15*depth
 !
+
 
             hint = 0.
             do k=1,N
@@ -415,6 +417,7 @@ C$    integer omp_get_thread_num
             ubar(i,j,3) = ubar(i,j,1)
           enddo
         enddo
+         
 #    ifdef NBQ
 !ajout perturbation sur W
         do j=lbound(t,2),ubound(t,2)
@@ -1134,7 +1137,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 
-#  elif defined IGW || defined S2DV || defined MILES 
+#  elif defined IGW || defined S2DV || defined MILES
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N

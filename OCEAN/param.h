@@ -66,7 +66,7 @@
 #elif defined S2DV 
        parameter (LLm0=416, MMm0=3,    N=20)	! true 2DV
 #elif defined MILES 
-       parameter (LLm0=198, MMm0=198,  N=10)
+       parameter (LLm0=408, MMm0=523,  N=20)
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -199,7 +199,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=4, NP_ETA=1, NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=2, NP_ETA=1, NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -242,7 +242,7 @@
 # if defined IGW || defined S2DV
       parameter (Ntides=1)
 # else
-      parameter (Ntides=1)
+      parameter (Ntides=2)
 # endif
 #endif
 #ifdef WET_DRY
@@ -296,7 +296,7 @@
 #if !defined NBQ
       parameter (NSA=28)
 #else
-      parameter (NSA=31)
+      parameter (NSA=35)
 #endif
       common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
 #else
@@ -305,7 +305,7 @@
 #if !defined NBQ
       parameter (NSA=28)
 #else
-      parameter (NSA=31)
+      parameter (NSA=35)
 #endif
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)

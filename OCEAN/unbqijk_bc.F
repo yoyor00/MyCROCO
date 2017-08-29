@@ -92,6 +92,7 @@
 !
 !# define nnew 2
 !# define nstp 1
+!# define OBC_COM_NBQORLANSKI
 !
 # ifndef EW_COM_PERIODIC
 !
@@ -223,13 +224,27 @@
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=Jstr,Jend
-            qdmu_nbq(Istr,j,k)=qdmu_nbq(Istr+1,j,k)
+!            do i=Istr,Istr+10
+             qdmu_nbq(Istr,j,k)=u(Istr,j,k,nrhs)
+     &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr-1,j,k))
+! Attention: ceci est temporaire... u(...indx) n'est pas à jour sur les frontières...
+!            d'où la multiplication par rho*h
+             
+!            qdmu_nbq(I,j,k)=qdmu_nbq(I,j,k)
+!     &            -0.1*real(istr+10-i)**2*(qdmu_nbq(I,j,k)-u(I,j,k,3-nstp))
+!     &            /100.
 #    ifdef MASKING
      &                                     *umask(Istr,j)
 #    endif
 #    ifdef WET_DRY
      &                                 *umask_wet(Istr,j)
-#    endif
+#    endif 
+!            if (mynode.le.10) then
+!            write(6,*)mynode,iic,iif
+!     &   ,qdmu_nbq(Istr,j,k),u(Istr+1,j,k,3-nstp)
+!     &    ,u(Istr+1,j,k,nnew),u(Istr+1,j,k,nrhs)
+!            endif
+!           enddo
           enddo
         enddo
 #   endif
@@ -370,13 +385,19 @@
 !                                            ======= ==== ======== ==
         do k=1,N
           do j=Jstr,Jend
-            qdmu_nbq(Iend+1,j,k) = qdmu_nbq(Iend,j,k)
+            qdmu_nbq(Iend+1,j,k) = u(Iend+1,j,k,nrhs)
+     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend,j,k))
+!            do i=Iend-9,Iend+1
+!            qdmu_nbq(I,j,k)=qdmu_nbq(I,j,k)
+!     &            -0.1*real(i-Iend+9)**2*(qdmu_nbq(I,j,k)-u(I,j,k,3-nstp))
+!     &            /100.
 #    ifdef MASKING
      &                                   *umask(Iend+1,j)
 #    endif
 #    ifdef WET_DRY
      &                               *umask_wet(Iend+1,j)
 #    endif
+!          enddo
           enddo
         enddo
 #   endif

@@ -193,7 +193,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_sponge_r(i,j)=(0.01/(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+          visc2_sponge_r(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef UV_VIS4
           visc4_sponge_r(i,j)=visc2_sponge_r(i,j)/(pm(i,j)*pn(i,j))
 #   endif

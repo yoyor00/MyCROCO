@@ -43,15 +43,15 @@
       if (icall.eq.1) then      
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 !      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
-!                                       ruint_nbq(START_2D_ARRAY,1))
+!                                       ru_int_nbq(START_2D_ARRAY,1))
 !      call exchange_u3d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
 !                        ruext_nbq(START_2D_ARRAY,1))
 !      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
-!                                       rvint_nbq(START_2D_ARRAY,1))
+!                                       rv_int_nbq(START_2D_ARRAY,1))
 !      call exchange_u3d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
 !                        rvext_nbq(START_2D_ARRAY,1))
 !      call exchange_u3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  &
-!                                       rwint_nbq(START_2D_ARRAY,0))
+!                                       rw_int_nbq(START_2D_ARRAY,0))
 #endif
 
       elseif (icall.eq.2) then
@@ -62,6 +62,7 @@
 !
         cff=1./(real(ndtnbq)) 
      
+#ifndef NBQ_ZETAW
 !        
 ! X-direction:
 !
@@ -69,15 +70,9 @@
         do k=1,N         
           do j=JstrU_nh,JendU_nh   
             do i=IstrU_nh,IendU_nh
-#ifdef NBQ_COUPLE1
               ru_nbq_ext(i,j,k) = ((qdmu_nbq(i,j,k)-ru_nbq_ext(i,j,k))/dtfast     &
-                                       -ruint_nbq(i,j,k))  &
+                                       -ru_int_nbq(i,j,k))  &
                                      *on_u(i,j)*om_u(i,j)
-#elif defined NBQ_COUPLE0
-              ru_nbq_ext(i,j,k) = ((qdmu_nbq(i,j,k)-qdmu2_nbq(i,j,k))/dtfast     &
-                     -ruint_nbq(i,j,k)-ruext_nbq(i,j,k))  & 
-                                     *on_u(i,j)*om_u(i,j)
-#endif
               rubar_nbq(i,j)     = rubar_nbq(i,j)+ru_nbq_ext(i,j,k)  
             enddo
           enddo
@@ -103,25 +98,17 @@
         do k=1,N         
           do j=JstrV_nh,JendV_nh    
             do i=IstrV_nh,IendV_nh
-#ifdef NBQ_COUPLE1
               rv_nbq_ext(i,j,k) = ((qdmv_nbq(i,j,k)-rv_nbq_ext(i,j,k))/dtfast     &
-                                       -rvint_nbq(i,j,k))  &
+                                       -rv_int_nbq(i,j,k))  &
                                      *on_v(i,j)*om_v(i,j)
-#elif defined NBQ_COUPLE0
-              rv_nbq_ext(i,j,k) = ((qdmv_nbq(i,j,k)-qdmv2_nbq(i,j,k))/dtfast     &
-                       -rvint_nbq(i,j,k)-rvext_nbq(i,j,k))  &
-                                     *on_v(i,j)*om_v(i,j)
-#endif
               rvbar_nbq(i,j)     = rvbar_nbq(i,j)+rv_nbq_ext(i,j,k)
             enddo
           enddo
         enddo
-
+#endif
 !    
 ! Z-direction:
 !
-
-#ifdef NBQ_COUPLE1
 
 # ifdef M2FILTER_NONE
         if (LAST_2D_STEP) then
@@ -136,24 +123,13 @@
           do j=Jstr_nh,Jend_nh             
             do i=Istr_nh,Iend_nh
 
-              rw_nbq_ext (i,j,k) = ((qdmw_nbq(i,j,k)-rw_nbq_ext(i,j,k))/dtnbq-ndtnbq*rwint_nbq(i,j,k))*WORK(i,j)
+              rw_nbq_ext (i,j,k) = ((qdmw_nbq(i,j,k)-rw_nbq_ext(i,j,k))/dtnbq-ndtnbq*rw_int_nbq(i,j,k))*WORK(i,j)
             enddo
           enddo
         enddo
 # ifdef M2FILTER_NONE        
         endif
 # endif 
-#elif defined NBQ_COUPLE0  
-        do k=0,N 
-          do j=Jstr_nh,Jend_nh             
-            do i=Istr_nh,Iend_nh
-              rw_nbq_ext (i,j,k) = ((qdmw_nbq(i,j,k)-qdmw2_nbq(i,j,k))/dtfast &
-                            -rwint_nbq(i,j,k))*on_r(i,j)*om_r(i,j)
-
-            enddo
-          enddo
-        enddo
-#endif   
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 !      call exchange_r3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  &        ! TBD

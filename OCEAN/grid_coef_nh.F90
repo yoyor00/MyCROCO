@@ -3,11 +3,13 @@
 
       subroutine grid_coef_nh(                                                      &
 #if defined NBQ_IJK
-         Istr,Iend,Jstr,Jend,Hzw_half_nbq_inv,Hzr_half_nbq_inv,                     &
-		 Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,                            &
-                 Hzu_half_qdmu,Hzv_half_qdmv                                        &
+         Istr,Iend,Jstr,Jend  &
+                ,Hzw_half_nbq_inv,Hzr_half_nbq_inv                                  &
+		,Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v                             &
+		,Hzu_half_qdmu, Hzv_half_qdmv                                       &
 #endif
          )
+      !           Hzu_half_qdmu,Hzv_half_qdmv                                        &
 
 !**********************************************************************
 !
@@ -37,8 +39,8 @@
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
        real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-       real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,N)
-       real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,N)
+       real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+       real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 #endif
 
       integer :: i,j,k,it
@@ -47,7 +49,12 @@
 #if defined NBQ_IJK
 #include "compute_auxiliary_bounds.h"
 #endif
-      
+!
+#ifndef NBQ_MASS
+#  define Hzr_half_nbq Hz
+#endif
+!
+!
 !**********************************************************************
 !    Initialisations and updates
 !**********************************************************************
@@ -109,7 +116,10 @@
         do k=1,N
         do j=jstr_nh-1,jend_nh+1
         do i=istr_nh-1,iend_nh+1
-          Hzr_half_nbq_inv(i,j,k)=1.d0/Hzr_half_nbq(i,j,k)
+          Hzr_half_nbq_inv(i,j,k)=1.d0/max(1.e-30,Hzr_half_nbq(i,j,k))
+# ifdef MASKING
+          Hzr_half_nbq_inv(i,j,k)=Hzr_half_nbq_inv(i,j,k)*rmask(i,j)
+# endif
         enddo
         enddo
         enddo
@@ -124,7 +134,6 @@
         enddo
         enddo
         enddo 
-
         do k=1,N
         do j=jstrv_nh,jend_nh+1
         do i=istr_nh,iend_nh
@@ -139,7 +148,10 @@
         do k=0,N
         do j=jstr_nh-1,jend_nh+1
         do i=istr_nh-1,iend_nh+1
-          Hzw_half_nbq_inv(i,j,k)=1.d0/Hzw_half_nbq(i,j,k)  
+          Hzw_half_nbq_inv(i,j,k)=1.d0/max(1.e-30,Hzw_half_nbq(i,j,k)) 
+# ifdef MASKING
+          Hzw_half_nbq_inv(i,j,k)=Hzw_half_nbq_inv(i,j,k)*rmask(i,j)
+# endif
         enddo
         enddo
         enddo
@@ -147,7 +159,10 @@
         do k=0,N
         do j=jstr_nh,jend_nh
         do i=istru_nh,iend_nh+1
-          Hzw_half_nbq_inv_u(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i-1,j,k))         
+          Hzw_half_nbq_inv_u(i,j,k)=0.25d0*2.d0/max(1.e-30,Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i-1,j,k)) 
+# if defined MASKING
+          Hzw_half_nbq_inv_u(i,j,k)=Hzw_half_nbq_inv_u(i,j,k) *umask(i,j)   
+# endif      
         enddo
         enddo
         enddo
@@ -155,13 +170,13 @@
         do k=0,N
         do j=jstrv_nh,jend_nh+1
         do i=istr_nh,iend_nh
-          Hzw_half_nbq_inv_v(i,j,k)=0.25d0*2.d0/(Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i,j-1,k))		  
+          Hzw_half_nbq_inv_v(i,j,k)=0.25d0*2.d0/max(1.e-30,Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i,j-1,k)) 
+# if defined MASKING	
+          Hzw_half_nbq_inv_v(i,j,k)= Hzw_half_nbq_inv_v(i,j,k)*vmask(i,j)
+# endif      	  
         enddo
         enddo
-        enddo
-
-             
-
+        enddo          
 
 #endif
 

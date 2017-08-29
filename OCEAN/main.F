@@ -687,6 +687,19 @@ C$OMP MASTER
      &     'WKB: completed steady wave computation.'
 C$OMP END MASTER
 #endif /* WKB_WWAVE */
+
+!
+!----------------------------------------------------------------------
+!  Set initial Non-boussinesq variables PART3
+!----------------------------------------------------------------------
+!
+#ifdef NBQ
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nh(tile,3)
+      enddo     
+# endif
+
 !
 !----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files

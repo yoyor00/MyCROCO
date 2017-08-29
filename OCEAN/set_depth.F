@@ -117,7 +117,7 @@ C$    integer omp_get_thread_num
 #  else
             hinv(i,j)=1./h(i,j) 
 #  endif
-            Zt_avg1(i,j)=zeta(i,j,1)    
+            Zt_avg1(i,j)=zeta(i,j,1)     
           
 #  ifdef NBQ_MASS
             if (zeta(i,j,1).eq.0.) then     ! Set Zt_avg1 and rhobar_nbq_avg1
@@ -138,6 +138,12 @@ C$    integer omp_get_thread_num
 # endif /* SOLVE3D */
           enddo
         enddo
+
+!        do j=Jstr,Jend
+!          do i=Istr,Iend
+!            zetaw_nbq(i,j)=zeta(i,j,1)-h(i,j)
+!          enddo
+!        enddo
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
@@ -164,7 +170,6 @@ C$    integer omp_get_thread_num
       correct_hz = 0.
 # endif
 
-
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
 #  ifdef MOVING_BATHY
@@ -186,14 +191,26 @@ C$    integer omp_get_thread_num
           cff1_r=Cs_r(k)
 #  endif
           do i=I_RANGE
+
+#  ifndef NBQ_MASS
+#   ifdef NBQ_ZETAW
+            zetatmp=zetaw_nbq(i,j)
+#   else
             zetatmp=Zt_avg1(i,j)
-#  ifdef NBQ_MASS
+#   endif
+#  else
+#   ifdef NBQ_ZETAW
+!           zetatmp=zeta(i,j,knew)-h(i,j) !zetaw_nbq(i,j) !/rhobar_nbq(i,j,knew)-h(i,j)  ! TO BE EXPLAINED
+            zetatmp=zetaw_nbq(i,j) !/rhobar_nbq(i,j,knew)-h(i,j)
+#   else
+            zetatmp=Zt_avg1(i,j)
      &              /rhobar_nbq_avg1(i,j)-h(i,j)
             if (rhobar_nbq_avg1(i,j).eq.0) stop 'Error set_depth (1)'
             if (rhobar_nbq(i,j,1).eq.0)    stop 'Error set_depth (2)'
-#   if defined MASKING && !defined WET_DRY
-            zetatmp=zetatmp*rmask(i,j)
 #   endif
+#  endif
+#  if defined MASKING && !defined WET_DRY
+            zetatmp=zetatmp*rmask(i,j)
 #  endif
             z_w0=cff_w+cff1_w*h(i,j) 
             z_r0=cff_r+cff1_r*h(i,j)            
@@ -212,16 +229,24 @@ C$    integer omp_get_thread_num
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
+#  ifdef NBQ_ZETAW
+            if (iif==nfast) Hz_bak(i,j,k)=Hz(i,j,k)
+#  else
             Hz_bak(i,j,k)=Hz(i,j,k)
+#  endif
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
+#   ifdef NBQ_ZETAW
+            Hz(i,j,k) =Hz(i,j,k)*rho_nbq_ext(i,j,k)
+#   else
             Hz(i,j,k) =Hz(i,j,k)*rho_nbq_avg1(i,j,k)
+#   endif
 #  endif
-# if defined FIX_HZ && defined NBQ
-            correct_hz(i,j,1)=correct_hz(i,j,1)+rho_nbq_avg1(i,j,k)
-            correct_hz(i,j,2)=correct_hz(i,j,2)+Hz(i,j,k)          
-#  endif
+!# if defined FIX_HZ && defined NBQ
+!            correct_hz(i,j,1)=correct_hz(i,j,1)+rho_nbq_avg1(i,j,k)
+!            correct_hz(i,j,2)=correct_hz(i,j,2)+Hz(i,j,k)          
+!#  endif
 #  ifdef NBQ_MASS
             if (rho_nbq_ext(i,j,k).eq.0) stop 'Error set_depth (3)'
 #  endif
@@ -229,16 +254,17 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-# if defined FIX_HZ && defined NBQ
-      do j=J_RANGE              !!! WARNING: Setting must be consistent 
-        do i=I_RANGE
-        do k=1,N        
-          Hz(i,j,k)=Hz(i,j,k)+(Zt_avg1(i,j)-correct_hz(i,j,2))
-     &  / correct_hz(i,j,1)
-        enddo
-        enddo
-       enddo
-# endif
+!# if defined FIX_HZ && defined NBQ
+!      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+!        do i=I_RANGE
+!        do k=1,N        
+!          Hz(i,j,k)=Hz(i,j,k)+(Zt_avg1(i,j)-correct_hz(i,j,2))
+!     &  / correct_hz(i,j,1)
+!        enddo
+!        enddo
+!       enddo
+!       stop 'FIX in set_depth!'
+!# endif
 
        
 #  undef I_RANGE

@@ -1,3 +1,4 @@
+
 #ifdef NBQ
                             
       
@@ -91,16 +92,16 @@
        
       real thetadiv_nbq(GLOBAL_2D_ARRAY,0:N)
       common/nbq_thetadiv_nbq/thetadiv_nbq
-       
+
+      real ru_int_nbq(GLOBAL_2D_ARRAY,N)
+      common /nbq_ruint/ ru_int_nbq
+      real rv_int_nbq(GLOBAL_2D_ARRAY,N)
+      common /nbq_rvint/ rv_int_nbq
+      real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
+      common /nbq_rwint/ rw_int_nbq   
+
       real rho_nbq(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_nbq/rho_nbq
-       
-      real ruint_nbq(GLOBAL_2D_ARRAY,N)
-      common /nbq_ruint/ ruint_nbq
-      real rvint_nbq(GLOBAL_2D_ARRAY,N)
-      common /nbq_rvint/ rvint_nbq
-      real rwint_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /nbq_rwint/ rwint_nbq   
 
       real ru_nbq_ext(GLOBAL_2D_ARRAY,N)
       common /nbq_ru_ext/ ru_nbq_ext
@@ -116,6 +117,7 @@
       real rw_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
       common /avg2_rwnbq/ rw_nbq_avg2
 
+       
 !**********************************************************************
       real e(GLOBAL_2D_ARRAY)
       common /nbq_e/ e
@@ -137,19 +139,21 @@
       common /nbq_rvbar/ rvbar_nbq
 
 !**********************************************************************
-       real qdm_u2 (GLOBAL_2D_ARRAY,0:N+1)
-       common /nbq_u2/ qdm_u2  
-       real qdm_v2 (GLOBAL_2D_ARRAY,0:N+1)
-       common /nbq_v2/ qdm_v2  
-       real qdm_w2 (GLOBAL_2D_ARRAY,0:N+1) 
-       common /nbq_w2/ qdm_w2
 
+!     real qdm_u2 (GLOBAL_2D_ARRAY,0:N+1)
+!     common /nbq_u2/ qdm_u2  
+!     real qdm_v2 (GLOBAL_2D_ARRAY,0:N+1)
+!     common /nbq_v2/ qdm_v2  
+!     real qdm_w2 (GLOBAL_2D_ARRAY,0:N+1) 
+!     common /nbq_w2/ qdm_w2
       real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
       common /grid_Hzw_half_nbq/ Hzw_half_nbq
+# ifndef NBQ_ZETAW
       real zr_half_nbq(GLOBAL_2D_ARRAY,N)
       common /grid_zr_half_nbq/ zr_half_nbq
       real zw_half_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /grid_zw_half_nbq/ zw_half_nbq            
+      common /grid_zw_half_nbq/ zw_half_nbq     
+# endif    
 
 !**********************************************************************
 # ifndef NBQ_IJK
@@ -167,8 +171,8 @@
 # ifdef NBQ_MASS
        real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
-# else
-#      define  Hzr_half_nbq Hz_half
+!# else
+!#  define Hzr_half_nbq Hz
 # endif
 
   
@@ -197,36 +201,44 @@
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
 # endif
-  
-!**********************************************************************
-# ifdef NBQ_COUPLE0
-      real ruint_bak_nbq(GLOBAL_2D_ARRAY,N,2)
-      common /coup_ruint/ ruint_bak_nbq
-      real rvint_bak_nbq(GLOBAL_2D_ARRAY,N,2)
-      common /coup_rvint/ rvint_bak_nbq
-      real rwint_bak_nbq(GLOBAL_2D_ARRAY,0:N,2)
-      common /coup_rwint/ rwint_bak_nbq
 
-      real ruext_nbq(GLOBAL_2D_ARRAY,N)
-      common /nbq_ruext/ ruext_nbq
-      real rvext_nbq(GLOBAL_2D_ARRAY,N)
-      common /nbq_rvext/ rvext_nbq
-      real qdmu2_nbq(GLOBAL_2D_ARRAY,N)
-      common/nbq_qdmu2_nbq/qdmu2_nbq
-      real qdmv2_nbq(GLOBAL_2D_ARRAY,N)
-      common/nbq_qdmv2_nbq/qdmv2_nbq
-      real qdmw2_nbq(GLOBAL_2D_ARRAY,0:N)
-      common/nbq_qdmw2_nbq/qdmw2_nbq
-      real rho_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
-      common /avg2_rhonbq/ rho_nbq_avg2
-      real ru_nbq_avg1(GLOBAL_2D_ARRAY,N)
-      common /avg1_runbq/ ru_nbq_avg1
-      real rv_nbq_avg1(GLOBAL_2D_ARRAY,N)
-      common /avg1_rvnbq/ rv_nbq_avg1
-      real rw_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
-      common /avg1_rwnbq/ rw_nbq_avg1
-# endif
-  
+!**********************************************************************
+# ifdef NBQ_ZETAW
+      real wmean_nbq(GLOBAL_2D_ARRAY,4)
+      common /nbq_wmean/wmean_nbq
+      real umean_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_umean/umean_nbq
+      real vmean_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_vmean/vmean_nbq
+      real zetaw_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_zetaw/zetaw_nbq
+      integer :: knew2,kstp2,kbak2,kold2
+      common /gridext1/knew2,kstp2,kbak2,kold2   
+      real cff4
+      common /com_cff4/ cff4
+      real cff5
+      common /com_cff5/ cff5
+      real cff6
+      common /com_cff6/ cff6
+      real cff7
+      common /com_cff7/ cff7
+      integer flag_grid
+      common /grid_flag/ flag_grid
+      integer IstrU2,JstrV2
+      integer IstrR2,IendR2
+      integer JstrR2,JendR2
+
+#  if !defined NBQ_NODS
+      real dthetadiv_nbqdz(GLOBAL_2D_ARRAY)
+      common /nbq_nods3/ dthetadiv_nbqdz
+      real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
+      common /nbq_nods5/ dZdxq_w
+      real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
+      common /nbq_nods7/ dZdyq_w
+#   endif
+
+#  endif
+
 !**********************************************************************
 # ifdef NBQ_DTDRHO
       real hrho_nbq(GLOBAL_2D_ARRAY,1:N,4)
@@ -234,6 +246,7 @@
       real z_nbq(GLOBAL_2D_ARRAY,0:N,4)
       common /nbq_z/z_nbq
 # endif
+
 
 #endif
 

@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined NBQ && defined NBQ_IJK
+#if defined NBQ && defined NBQ_IJK && ! defined NBQ_ZETAW
 
 !
 !======================================================================
@@ -83,6 +83,9 @@
 # ifdef NBQ_NODS
 #  define NSTEP_DS mod(iic,10)==0.and.iif==1.and.iteration_nbq==1
 # endif
+!
+#  define Hzr_half_nbq Hz
+!
 
 # undef DEBUG
 
@@ -117,7 +120,6 @@
 !*******************************************************************
 !*******************************************************************
 
-#ifdef NBQ_COUPLE1
          do k=1,N         
           do j=JstrU_nh,JendU_nh   
             do i=IstrU_nh,IendU_nh
@@ -147,32 +149,6 @@
 # ifdef M2FILTER_NONE        
         endif
 # endif   
-   
-#elif defined NBQ_COUPLE0
-         do k=1,N         
-          do j=JstrU_nh,JendU_nh   
-            do i=IstrU_nh,IendU_nh
-               qdmu2_nbq(i,j,k) = qdmu_nbq(i,j,k) 
-            enddo
-          enddo
-         enddo
-         
-         do k=1,N         
-          do j=JstrV_nh,JendV_nh   
-            do i=IstrV_nh,IendV_nh
-               qdmv2_nbq(i,j,k) = qdmv_nbq(i,j,k) 
-            enddo
-          enddo
-        enddo         
-               
-        do k=0,N 
-          do j=Jstr_nh,Jend_nh             
-            do i=Istr_nh,Iend_nh
-               qdmw2_nbq (i,j,k) = qdmw_nbq(i,j,k) 
-            enddo
-          enddo
-        enddo
-#endif     
        
 !*******************************************************************
 !*******************************************************************
@@ -343,12 +319,7 @@
                 endif
 
                 dum_s=dum_s*Hzu_half_qdmu(i,j,k)
-# ifdef NBQ_COUPLE1
-                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k))    
-# elif defined NBQ_COUPLE0
-                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ruint_nbq(i,j,k)  &
-                       + ruext_nbq(i,j,k))    
-# endif
+                qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ru_int_nbq(i,j,k))   
 
               enddo
             enddo
@@ -402,12 +373,7 @@
                 endif
                 
                 dum_s=dum_s*Hzv_half_qdmv(i,j,k)
-# ifdef NBQ_COUPLE1
-                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k))    		
-# elif defined NBQ_COUPLE0
-                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rvint_nbq(i,j,k)  &
-                                + rvext_nbq(i,j,k))    		
-# endif			
+                qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rv_int_nbq(i,j,k))    
               enddo
             enddo
           endif
@@ -458,7 +424,7 @@
             do i=Istr_nh,Iend_nh                                                               
                dum_s =   thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)   
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-                + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
+                + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #ifdef MASKING
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif            
@@ -468,7 +434,7 @@
           do i=Istr_nh,Iend_nh                                                               
                dum_s =   thetadiv_nbq(i,j,N)                              
                qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N)   &
-                + dtnbq * ( dum_s + rwint_nbq(i,j,N) )
+                + dtnbq * ( dum_s + rw_int_nbq(i,j,N) )
 #ifdef MASKING
                 qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N) * rmask(i,j) 
 #endif               
@@ -478,7 +444,7 @@
 !          do i=Istr_nh,Iend_nh                                                               
 !                dum_s =  0.  !-thetadiv_nbq(i,j,1)                              
 !                qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0)   &
-!                 + dtnbq * ( dum_s + rwint_nbq(i,j,0) )
+!                 + dtnbq * ( dum_s + rw_int_nbq(i,j,0) )
 !#ifdef MASKING
 !                 qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
 !#endif               
@@ -980,7 +946,7 @@
             do i=Istr_nh,Iend_nh                                                               
               dum_s =   FC(i,k) - FC(i,k+1)            
               qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-               + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
+               + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #if defined MASKING
               qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif               
@@ -992,7 +958,7 @@
           do i=Istr_nh,Iend_nh                                                               
             dum_s =   FC(i,k)                              
             qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   &
-              + dtnbq * ( dum_s + rwint_nbq(i,j,k) )
+              + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #if defined MASKING
              qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif              
