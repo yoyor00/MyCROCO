@@ -80,7 +80,7 @@ C$    integer omp_get_thread_num
           zeta(i,j,3)=init
           zeta(i,j,4)=init
 #ifdef NBQ_ZETAW
-          zetaw_nbq(i,j)=init
+          zetaw_nbq(i,j,:)=init
 #endif
 !
           ubar(i,j,1)=init

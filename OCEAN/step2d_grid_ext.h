@@ -19,14 +19,14 @@
 !==================================
 # ifdef NBQ_MASS
 !==================================
-      do k=1,N
-        do j=JstrV-1,Jend
-          do i=IstrU-1,Iend
-            Hzr_half_nbq(i,j,k)=Hz(i,j,k)
-     &                         /rho_nbq_ext(i,j,k)
-          enddo
-        enddo
-      enddo
+!      do k=1,N
+!        do j=JstrV-1,Jend
+!          do i=IstrU-1,Iend
+!            Hzr(i,j,k)=Hz(i,j,k)
+!     &                         /rho_nbq_ext(i,j,k)
+!          enddo
+!        enddo
+!      enddo
 !
 !  Set lateral boundary conditions for Hz
 !
@@ -34,14 +34,14 @@
       if (WESTERN_EDGE) then
         do k=1,N
           do j=Jstr,Jend
-            Hzr_half_nbq(0,j,k)=Hzr_half_nbq(1,j,k)
+            Hzr(0,j,k)=Hzr(1,j,k)
           enddo
         enddo
       endif
       if (EASTERN_EDGE) then
         do k=1,N
           do j=Jstr,Jend
-            Hzr_half_nbq(LOCALLM+1,j,k)=Hzr_half_nbq(LOCALLM,j,k)
+            Hzr(LOCALLM+1,j,k)=Hzr(LOCALLM,j,k)
           enddo
         enddo
       endif
@@ -50,14 +50,14 @@
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=Istr,Iend
-            Hzr_half_nbq(i,0,k)=Hzr_half_nbq(i,1,k)
+            Hzr(i,0,k)=Hzr(i,1,k)
           enddo
         enddo
       endif
       if (NORTHERN_EDGE) then
         do k=1,N
           do i=Istr,Iend
-            Hzr_half_nbq(i,LOCALMM+1,k)=Hzr_half_nbq(i,LOCALMM,k)
+            Hzr(i,LOCALMM+1,k)=Hzr(i,LOCALMM,k)
           enddo
         enddo
       endif
@@ -65,29 +65,29 @@
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          Hzr_half_nbq(0,0,k)=Hzr_half_nbq(1,1,k)
+          Hzr(0,0,k)=Hzr(1,1,k)
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          Hzr_half_nbq(0,LOCALMM+1,k)=Hzr_half_nbq(1,LOCALMM,k)
+          Hzr(0,LOCALMM+1,k)=Hzr(1,LOCALMM,k)
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
-          Hzr_half_nbq(LOCALLM+1,0,k)=Hzr_half_nbq(LOCALLM,1,k)
+          Hzr(LOCALLM+1,0,k)=Hzr(LOCALLM,1,k)
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=1,N
-          Hzr_half_nbq(LOCALLM+1,LOCALMM+1,k)=
-     &                     Hzr_half_nbq(LOCALLM,LOCALMM,k)
+          Hzr(LOCALLM+1,LOCALMM+1,k)=
+     &                     Hzr(LOCALLM,LOCALMM,k)
         enddo
       endif
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Hzr_half_nbq(START_2D_ARRAY,1))
+     &                        Hzr(START_2D_ARRAY,1))
 #  endif
 
 !==================================
@@ -138,16 +138,16 @@
         do i=imin,imax
            z_w(i,j,0)=-h(i,j)
            z_r(i,j,1)=z_w(i,j,0)
-     &                        +0.5*Hzr_half_nbq(i,j,1)
-           z_w(i,j,1)   =z_w(i,j,0)+Hzr_half_nbq(i,j,1)
+     &                        +0.5*Hzr(i,j,1)
+           z_w(i,j,1)   =z_w(i,j,0)+Hzr(i,j,1)
         enddo
       enddo
       do k=2,N
         do j=jmin,jmax
           do i=imin,imax
-            z_w(i,j,k)=z_w(i,j,k-1)+Hzr_half_nbq(i,j,k)
+            z_w(i,j,k)=z_w(i,j,k-1)+Hzr(i,j,k)
             z_r(i,j,k)=z_r(i,j,k-1)
-     &                 +0.5*(Hzr_half_nbq(i,j,k)+Hzr_half_nbq(i,j,k-1))
+     &                 +0.5*(Hzr(i,j,k)+Hzr(i,j,k-1))
           enddo
         enddo
       enddo

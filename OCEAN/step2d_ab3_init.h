@@ -172,6 +172,7 @@ C$OMP END MASTER
 #else
 !         urhs(i,j)=cff4*ubar(i,j,kstp2) +cff5*ubar(i,j,kbak2)
 !    &                                   +cff6*ubar(i,j,kold2)
+        !   urhs(i,j)=DU_nbq(i,j)    !ubar(i,j,kstp2)
             urhs(i,j)=ubar(i,j,kstp2)
 #endif
 #if defined MRL_WCI && defined MASKING
@@ -195,6 +196,7 @@ C$OMP END MASTER
 !         vrhs(i,j)=cff4*vbar(i,j,kstp2) +cff5*vbar(i,j,kbak2)
 !    &                                   +cff6*vbar(i,j,kold2)
 
+         !  vrhs(i,j)=DV_nbq(i,j)   !vbar(i,j,kstp2)
             vrhs(i,j)=vbar(i,j,kstp2)
 #endif
 #if defined MRL_WCI && defined MASKING

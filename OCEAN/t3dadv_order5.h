@@ -5,8 +5,11 @@
 !
 !===============================================================
 !
-
-#  ifdef MPI
+#  ifdef NS_PERIODIC
+          jmin=1
+          jmax=LOCALMM+1
+#  else
+#   ifdef MPI
           if (SOUTH_INTER) then
             jmin=1
           else
@@ -17,16 +20,16 @@
           else
             jmax=Mmmpi-1
           endif
-#  else
-#   ifdef NS_PERIODIC
-          jmin=1
-          jmax=Mm+1
 #   else
           jmin=3
           jmax=Mm-1
 #   endif
 #  endif
-#  ifdef MPI
+#  ifdef EW_PERIODIC
+          imin=1
+          imax=LOCALLM+1
+#  else
+#   ifdef MPI
           if (WEST_INTER) then
             imin=1
           else
@@ -37,10 +40,6 @@
           else
             imax=Lmmpi-1
           endif
-#  else
-#   ifdef EW_PERIODIC
-          imin=1
-          imax=Lm+1
 #   else
           imin=3
           imax=Lm-1

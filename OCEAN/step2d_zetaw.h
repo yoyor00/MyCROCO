@@ -12,14 +12,38 @@
 ! Computes zeta(n+1)
 !-----------------------------------------------------------------------
 !
+      if (iic==1.and.iif==1) then
+#ifdef NBQ_MASS
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-         zeta(i,j,knew)=
-     &    zeta(i,j,kstp)
-#  ifdef NBQ_MASS
-     &    /rhobar_nbq(i,j,kstp)
-     &    -h(i,j)
-#  endif
+           zetaw_nbq(i,j,:)=zeta(i,j,:)-h(i,j)
+        enddo
+      enddo
+#else
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+           zetaw_nbq(i,j,:)=zeta(i,j,:)
+        enddo
+      enddo
+#endif
+      endif
+
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+      if (iic==1.and.iif==1) then
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   zetaw_nbq(START_2D_ARRAY,kstp2))
+      endif
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                   zetaw_nbq(START_2D_ARRAY,knew2))
+# endif
+  !    cff4=1.
+  !    cff5=0.
+  !    cff6=0.
+  !    cff7=0.
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+         zeta (i,j,knew2)=
+     &    ( zeta(i,j,kstp2)
      &        +dtfast*(
  !   &    +wmean_nbq(i,j,knew2)
      &    +cff4*wmean_nbq(i,j,knew2)
@@ -27,29 +51,60 @@
      &    +cff6*wmean_nbq(i,j,kbak2)
      &    +cff7*wmean_nbq(i,j,kold2)
      &    -0.5*(umean_nbq(i  ,j)
-     &          *(zetaw_nbq(i,j)-zetaw_nbq(i-1,j))*pm_u(i,j)
+     &          *(zetaw_nbq(i  ,j,kstp2)
+     &           -zetaw_nbq(i-1,j,kstp2))*pm_u(i,j)
+#ifdef MASKING
+     &         *rmask(i,j)*rmask(i-1,j)
+#endif
      &         +umean_nbq(i+1,j)
-     &          *(zetaw_nbq(i+1,j)-zetaw_nbq(i,j))*pm_u(i+1,j) )
+     &          *(zetaw_nbq(i+1,j,kstp2)
+     &         -zetaw_nbq(i  ,j,kstp2))*pm_u(i+1,j) 
+#ifdef MASKING
+     &         *rmask(i,j)*rmask(i+1,j)
+#endif
+     &          )
+#ifdef MASKING
+     &         *umask(i,j)*umask(i+1,j)
+#endif
+
      &    -0.5*(vmean_nbq(i  ,j)
-     &          *(zetaw_nbq(i,j)-zetaw_nbq(i,j-1))*pm_v(i,j)
-     &         +vmean_nbq(i+1,j)
-     &          *(zetaw_nbq(i,j+1)-zetaw_nbq(i,j))*pm_v(i,j+1) )
+     &          *(zetaw_nbq(i,j  ,kstp2) 
+     &           -zetaw_nbq(i,j-1,kstp2))*pm_v(i,j)
+#ifdef MASKING
+     &         *rmask(i,j)*rmask(i,j-1)
+#endif
+     &         +vmean_nbq(i,j+1)
+     &          *(zetaw_nbq(i,j+1,kstp2)
+     &         -zetaw_nbq(i,j  ,kstp2))*pm_v(i,j+1) 
+#ifdef MASKING
+     &         *rmask(i,j)*rmask(i,j+1)
+#endif
      &         )
+#ifdef MASKING
+     &         *vmask(i,j)*vmask(i,j+1)
+#endif
+     &         ) )
+#ifdef MASING
+     &         *rmask(i,j)
+#endif
         enddo
       enddo
 
-!# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-!     &                   zetaw_nbq(START_2D_ARRAY))
-!# endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   zeta(START_2D_ARRAY,knew2))
+# endif
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-           zetaw_nbq(i,j)=zeta(i,j,knew)
 #  ifdef NBQ_MASS
-           zeta_new(i,j)=(zeta(i,j,knew)+h(i,j)) *rhobar_nbq(i,j,knew)  
+           zetaw_nbq(i,j,knew2)=(zeta(i,j,knew2)
+     &                     -h(i,j))
+     &               *rhobar_nbq(i,j,knew2)
+#  else
+           zetaw_nbq(i,j,knew2)=zeta(i,j,knew2)
 #  endif
-         zeta_new(i,j)=zeta(i,j,knew)
+           zeta_new(i,j)=zeta(i,j,knew2)
         enddo
       enddo
 
@@ -63,7 +118,7 @@
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
-     &                   zeta(START_2D_ARRAY,knew),zetazon)
+     &                   zeta(START_2D_ARRAY,knew2),zetazon)
         endif
       endif
       if (iic.eq.ntstart) then
@@ -102,7 +157,7 @@
 #  else
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-    !      zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
           Dnew(i,j)=zeta_new(i,j)+h(i,j)
         enddo
       enddo
@@ -115,22 +170,22 @@
 !-----------------------------------------------------------------------
 !
 
+#  if defined WET_DRY && defined MASKING
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 
-          zeta(i,j,knew)=zeta_new(i,j) 
+!         zeta(i,j,knew)=zeta_new(i,j) 
 
-#  if defined WET_DRY && defined MASKING
 #   ifdef NBQ_MASS
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &               rhobar_nbq(i,j,knew)*Dcrit(i,j)*(1.-rmask(i,j))
+          zeta(i,j,knew2)=zeta(i,j,knew2)+ 
+     &               rhobar_nbq(i,j,knew2)*Dcrit(i,j)*(1.-rmask(i,j))
 #   else
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
+          zeta(i,j,knew2)=zeta(i,j,knew2)+ 
      &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
 #   endif
-#  endif
         enddo
       enddo 
+#  endif
 !
 !-----------------------------------------------------------------------
 ! Load rhs values into additional AGRIF shared array for nesting
@@ -185,10 +240,10 @@ C$OMP END MASTER
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                   zeta(START_2D_ARRAY,knew))
+     &                   zeta(START_2D_ARRAY,knew2))
 !! Following exchange necessary with WENO5!
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-!     &                   zetaw_nbq(START_2D_ARRAY))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   zetaw_nbq(START_2D_ARRAY,knew2))   ! AJOUTE!!!!!
 #  endif      
 !
 !-----------------------------------------------------------------------
@@ -209,15 +264,20 @@ C$OMP END MASTER
       call zetabc_tile (Istr,Iend,Jstr,Jend)
 
 #  ifdef NBQ_MASS
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-           stop 'coucou'
+!!      do j=JstrV-1,Jend
+!!        do i=IstrU-1,Iend
+!!           stop 'coucou'
+!!        enddo
+!!      enddo
+      do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
+        do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
+          zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) - h(i,j) 
         enddo
       enddo
 #  else
       do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
         do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
-          zetaw_nbq(i,j) = zeta(i,j,knew) !- h(i,j) 
+          zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) !- h(i,j) 
         enddo
       enddo
 #  endif /* NBQ_MASS */
@@ -237,13 +297,13 @@ C$OMP END MASTER
       if (FIRST_2D_STEP) then
         do j=JstrR,JendR
           do i=IstrR,IendR
-            Zt_avg1(i,j)=cff1*zeta(i,j,knew)
+            Zt_avg1(i,j)=cff1*zeta(i,j,knew2)
           enddo
         enddo 
       else
         do j=JstrR,JendR
           do i=IstrR,IendR
-            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew)
+            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew2)
           enddo
         enddo
       endif
@@ -262,6 +322,7 @@ C$OMP END MASTER
      &   ) 
 
 #include "step2d_grid_ext.h"
+
         endif
 
 #  endif /* SOLVE3D */

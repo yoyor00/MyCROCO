@@ -177,6 +177,10 @@
 
   
 !**********************************************************************
+      real DU_nbq  (GLOBAL_2D_ARRAY)
+      common /nbq_DU_nbq/ DU_nbq
+      real DV_nbq  (GLOBAL_2D_ARRAY)
+      common /nbq_DV_nbq/ DV_nbq
 # ifdef NBQ_MASS
       real rho_nbq_ext (GLOBAL_2D_ARRAY,N)
       real rho_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
@@ -210,7 +214,7 @@
       common /nbq_umean/umean_nbq
       real vmean_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vmean/vmean_nbq
-      real zetaw_nbq(GLOBAL_2D_ARRAY)
+      real zetaw_nbq(GLOBAL_2D_ARRAY,4)
       common /nbq_zetaw/zetaw_nbq
       integer :: knew2,kstp2,kbak2,kold2
       common /gridext1/knew2,kstp2,kbak2,kold2   
@@ -247,7 +251,24 @@
       common /nbq_z/z_nbq
 # endif
 
+# ifdef NBQ_DTDRHO2
+      real zr_nbq(GLOBAL_2D_ARRAY,N,4)
+      common /nbq_zr/zr_nbq
+      real z_nbq(GLOBAL_2D_ARRAY,0:N,4)
+      common /nbq_z/z_nbq
 
-#endif
+#  if defined NBQ_ZETAW && defined NBQ_MASS
+      real rho_bak(GLOBAL_2D_ARRAY,N)
+      common/nbq_rho_bak/rho_bak
+#  endif
+
+# endif
+
+# ifdef NBQ_DTDRHO2B
+      real Hz_bak2(GLOBAL_2D_ARRAY,1:N)
+      common /nbq_H_bak2/ Hz_bak2
+# endif
+
+#endif /* NBQ */
 
   

@@ -89,6 +89,11 @@ C$    integer omp_get_thread_num
 #  define J_RANGE JstrR,JendR
 # endif
 !
+#ifdef NBQ_ZETAW
+      if (kbak2==0) kbak2=knew
+      if (kstp2==0) kstp2=knew
+      if (knew2==0) knew2=knew
+#endif
       if (iic.eq.0) then  ! During initialization and /or restart: copy initial
         do j=J_RANGE      ! free surface field into array for holding fast-time
           do i=I_RANGE    ! averaged free surface.
@@ -107,6 +112,7 @@ C$    integer omp_get_thread_num
               zeta(i,j,2)=zeta(i,j,1)
               zeta(i,j,3)=zeta(i,j,1)
               zeta(i,j,4)=zeta(i,j,1)
+              zetaw_nbq(i,j,:)=zeta(i,j,1)
               wetdry(i,j)=0.
             ENDIF
             rmask_wet(i,j)=wetdry(i,j)
@@ -126,24 +132,20 @@ C$    integer omp_get_thread_num
               zeta(i,j,2)  = zeta(i,j,1)
               zeta(i,j,3)  = zeta(i,j,1)
               zeta(i,j,4)  = zeta(i,j,1)
+              zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
             elseif (resetfromrhobar == 1) then ! Here zeta is zeta + h
               Zt_avg1(i,j) = zeta(i,j,1)*rhobar_nbq(i,j,1)
               zeta(i,j,1)  = Zt_avg1(i,j)
               zeta(i,j,2)  = zeta(i,j,1)
               zeta(i,j,3)  = zeta(i,j,1)
               zeta(i,j,4)  = zeta(i,j,1)
+         !!     zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
             endif
 
 #  endif 
 # endif /* SOLVE3D */
           enddo
         enddo
-
-!        do j=Jstr,Jend
-!          do i=Istr,Iend
-!            zetaw_nbq(i,j)=zeta(i,j,1)-h(i,j)
-!          enddo
-!        enddo
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
@@ -172,6 +174,7 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
+
 #  ifdef MOVING_BATHY
           h(i,j)=h(i,j)+dh(i,j)
 #  endif
@@ -194,14 +197,13 @@ C$    integer omp_get_thread_num
 
 #  ifndef NBQ_MASS
 #   ifdef NBQ_ZETAW
-            zetatmp=zetaw_nbq(i,j)
+            zetatmp=zetaw_nbq(i,j,knew2)
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
 #  else
 #   ifdef NBQ_ZETAW
-!           zetatmp=zeta(i,j,knew)-h(i,j) !zetaw_nbq(i,j) !/rhobar_nbq(i,j,knew)-h(i,j)  ! TO BE EXPLAINED
-            zetatmp=zetaw_nbq(i,j) !/rhobar_nbq(i,j,knew)-h(i,j)
+            zetatmp=zetaw_nbq(i,j,knew2)
 #   else
             zetatmp=Zt_avg1(i,j)
      &              /rhobar_nbq_avg1(i,j)-h(i,j)
@@ -229,16 +231,31 @@ C$    integer omp_get_thread_num
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
+
+
 #  ifdef NBQ_ZETAW
-            if (iif==nfast) Hz_bak(i,j,k)=Hz(i,j,k)
+
+#   ifdef NBQ_GRIDEXT 
+            if (iif==1) Hz_bak(i,j,k)=Hz(i,j,k)
+#   else
+            Hz_bak(i,j,k)=Hz(i,j,k)
+#   endif
+
+#   ifdef NBQ_DTDRHO2B
+            Hz_bak2(i,j,k)=Hz(i,j,k)
+#   endif
 #  else
             Hz_bak(i,j,k)=Hz(i,j,k)
-#  endif
+#  endif 
+
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
+
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
 #   ifdef NBQ_ZETAW
-            Hz(i,j,k) =Hz(i,j,k)*rho_nbq_ext(i,j,k)
+            Hz(i,j,k) = Hz(i,j,k) 
+     &                 *(1.+rho(i,j,k)/rho0)
+     &                     +rho_nbq(i,j,k) 
 #   else
             Hz(i,j,k) =Hz(i,j,k)*rho_nbq_avg1(i,j,k)
 #   endif
@@ -253,6 +270,15 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+
+!
+      if (iic==0.or.(iic==1.and.iif==1)) then
+         Hz_bak =Hz
+#  ifdef NBQ_DTDRHO2B
+         Hz_bak2=Hz
+#  endif
+
+      endif
 
 !# if defined FIX_HZ && defined NBQ
 !      do j=J_RANGE              !!! WARNING: Setting must be consistent 
@@ -275,18 +301,24 @@ C$    integer omp_get_thread_num
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_r(START_2D_ARRAY,1))
+# ifdef NBQ_DTDRHO2
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
+#  ifdef NBQ_DTDRHO2B
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz_bak2(START_2D_ARRAY,1))
+#  endif
+# endif
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
 #   ifdef MOVING_BATHY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
 #   endif
-#   ifdef NBQ_MASS
+!#   ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
 
-#   endif
+!#   endif
 #  endif 
       return
       end

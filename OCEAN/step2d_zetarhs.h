@@ -19,7 +19,9 @@
 !***********************************************************************
 # else 
 !***********************************************************************
-           zwrk(i,j)= zeta(i,j,kstp2)/rhobar_nbq(i,j,kstp2)-h(i,j)
+       !   rhobar_nbq(i,j,knew2) = 2.*rhobar_nbq(i,j,kstp2)-rhobar_nbq(i,j,kbak2)
+       !    zwrk(i,j)= zeta(i,j,kstp2)/rhobar_nbq(i,j,kstp2)-h(i,j)
+           zwrk(i,j)=zetaw_nbq(i,j,kstp2)
 !          zwrk(i,j)= 
 !     &              +cff4*zeta(i,j,kstp2)/rhobar_nbq(i,j,kstp2)
 !     &              +cff5*zeta(i,j,kbak2)/rhobar_nbq(i,j,kbak2)
@@ -67,7 +69,8 @@
 !*********************************************************************** 
 # else
 !***********************************************************************
-          zetaw_nbq(i,j)= zetaw_nbq(i,j) SWITCH rmask(i,j)
+          zetaw_nbq(i,j,knew2)= zetaw_nbq(i,j,knew2)
+     &            SWITCH rmask(i,j)   ! Utilité ?????
           Dnew(i,j)=zeta(i,j,kstp2)+h(i,j)            
 !         Dnew(i,j)=zeta_new(i,j)+h(i,j)            
           zwrk(i,j)=zeta(i,j,kstp2) SWITCH rmask(i,j)  

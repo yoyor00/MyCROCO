@@ -53,6 +53,7 @@
 #ifndef NBQ_MASS
 #  define Hzr_half_nbq Hz
 #endif
+
 !
 !
 !**********************************************************************
@@ -116,7 +117,7 @@
         do k=1,N
         do j=jstr_nh-1,jend_nh+1
         do i=istr_nh-1,iend_nh+1
-          Hzr_half_nbq_inv(i,j,k)=1.d0/max(1.e-30,Hzr_half_nbq(i,j,k))
+          Hzr_half_nbq_inv(i,j,k)=1.d0/max(1.e-30,Hzr(i,j,k))
 # ifdef MASKING
           Hzr_half_nbq_inv(i,j,k)=Hzr_half_nbq_inv(i,j,k)*rmask(i,j)
 # endif
@@ -127,7 +128,7 @@
         do k=1,N
         do j=jstr_nh,jend_nh
         do i=istru_nh,iend_nh+1
-          Hzu_half_qdmu(i,j,k)=0.5*(Hzr_half_nbq(i-1,j,k)+Hzr_half_nbq(i,j,k))*pm_u(i,j)   
+          Hzu_half_qdmu(i,j,k)=0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)   
 #if defined MASKING
           Hzu_half_qdmu(i,j,k) = Hzu_half_qdmu(i,j,k) * umask(i,j)
 #endif  
@@ -137,7 +138,7 @@
         do k=1,N
         do j=jstrv_nh,jend_nh+1
         do i=istr_nh,iend_nh
-          Hzv_half_qdmv(i,j,k)=0.5*(Hzr_half_nbq(i,j-1,k)+Hzr_half_nbq(i,j,k))*pn_v(i,j)   
+          Hzv_half_qdmv(i,j,k)=0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)   
 #if defined MASKING
           Hzv_half_qdmv(i,j,k) = Hzv_half_qdmv(i,j,k) * vmask(i,j)
 #endif  

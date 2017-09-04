@@ -23,8 +23,8 @@
             do j=Jstr,Jend
               do i=Istr,Iend
 #  ifdef NBQ_IJK
-                rho_nbq_avg1(i,j,k)=1.d0+
-     &         (rho_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)+rho(i,j,k)/rho0 )   !XXX
+                rho_nbq_avg1(i,j,k)=1.d0
+     &        + (rho_nbq(i,j,k)/Hzr(i,j,k)+rho(i,j,k)/rho0 )   !XXX
 #  else
                 l_nbq=ijk2lq_nh(i,j,k)
                 rho_nbq_avg1(i,j,k)=1.d0+

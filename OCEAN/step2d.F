@@ -249,9 +249,11 @@ C$    trd=omp_get_thread_num()
       real CF(PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
       real WORK(PRIVATE_2D_SCRATCH_ARRAY)
       real dum_s
+      real sum_r(PRIVATE_2D_SCRATCH_ARRAY)
 !
 #ifndef NBQ_MASS
 #  define Hzr_half_nbq Hz
+#  define Hzr Hz
 #endif
 !
 #ifdef MASKING
@@ -313,8 +315,11 @@ C$    trd=omp_get_thread_num()
 ! Grid computations:
 !---------------------------------------
 !
-!# define NSTEP_GRID .or.mod(iif,1)==0
-# define NSTEP_GRID .or.mod(iif,nfast)==0
+# ifdef NBQ_GRIDEXT
+#  define NSTEP_GRID .or.mod(iif,1)==0
+# else
+#  define NSTEP_GRID .or.mod(iif,nfast)==0
+# endif
 !
 !======================================================================
 !======================================================================
@@ -440,6 +445,7 @@ C$    trd=omp_get_thread_num()
 !---------------------------------------
 !
 #include "step2d_zetarhs.h"
+         
 !
 !---------------------------------------
 ! Update Zeta (ifnot NBQ_ZETAW)
@@ -532,7 +538,7 @@ C$    trd=omp_get_thread_num()
 !-----------------------------------------------------------------------
 !     
 # ifdef NBQ_ZETAW
-#  include "step3d_nbq_zetaw.h"
+!#  include "step3d_nbq_zetaw.h"
 # else
 #  include "step3d_nbq_zeta2d.h"
 #endif
@@ -546,6 +552,7 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !======================================================================
       
+
 !
 !---------------------------------------
 !  AM4 Coef.
@@ -578,6 +585,11 @@ C$    trd=omp_get_thread_num()
    !    cff6= 0.
    !    cff7= 0.
 #endif
+# ifdef NBQ_ZETAW
+#  include "step3d_nbq_zetaw.h"
+# else
+!#  include "step3d_nbq_zeta2d.h"
+#endif
 !
 !-----------------------------------------------------------------------
 ! Computes new zeta and update grid
@@ -585,7 +597,7 @@ C$    trd=omp_get_thread_num()
 !-----------------------------------------------------------------------
 !
 # ifdef NBQ_ZETAW
-#  include "step2d_zetaw.h"   
+!#  include "step2d_zetaw.h"   
 # endif
 !
 !-----------------------------------------------------------------------
@@ -727,9 +739,10 @@ C$    trd=omp_get_thread_num()
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
+!       call check_tab2d(zeta(:,:,knew2),'zeta step2d #2','r')
 #ifndef NBQ_ZETAW
-       call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step2d #2','v')
+       call check_tab2d(ubar(:,:,knew2),'ubar step2d #2','u')
+       call check_tab2d(vbar(:,:,knew2),'vbar step2d #2','v')
 #endif
 C$OMP END MASTER       
 #endif   
@@ -741,6 +754,37 @@ C$OMP END MASTER
 #ifdef AGRIF
 # include "step2d_extint_avg12_part2.h"    
 #endif /* AGRIF */
+
+#ifdef NBQ_TRACERS
+       if (iif==nfast) then
+       do j=jstr,jend
+       do i=istr,iend
+           dum_s=0.
+           do k=1,N
+             dum_s=dum_s+
+     &           hz(i,j,k)-hz_bak(i,j,k)
+            enddo
+            do k=1,N
+             hz(i,j,k)=hz(i,j,k)
+     &         -(dum_s
+     &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
+     &             +DV_avg2(i,j+1)-DV_avg2(i,j)
+     &               )*pm(i,j)*pn(i,j)
+     &        *dt)
+     &                /(z_w(i,j,N)-z_w(i,j,0))
+     &                *(z_w(i,j,k)-z_w(i,j,k-1))
+#ifdef MASKING
+     &        *rmask(i,j)
+#endif
+             enddo
+       enddo
+       enddo
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+#  endif 
+       endif
+#endif
 !
 !      
 !======================================================================
