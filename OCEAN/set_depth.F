@@ -272,13 +272,14 @@ C$    integer omp_get_thread_num
       enddo
 
 !
+#  ifdef NBQ_ZETAW
       if (iic==0.or.(iic==1.and.iif==1)) then
          Hz_bak =Hz
-#  ifdef NBQ_DTDRHO2B
+#   ifdef NBQ_DTDRHO2B
          Hz_bak2=Hz
-#  endif
-
+#   endif
       endif
+#  endif
 
 !# if defined FIX_HZ && defined NBQ
 !      do j=J_RANGE              !!! WARNING: Setting must be consistent 
@@ -314,11 +315,11 @@ C$    integer omp_get_thread_num
 #   ifdef MOVING_BATHY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
 #   endif
-!#   ifdef NBQ_MASS
+#   ifdef NBQ
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
 
-!#   endif
+#   endif
 #  endif 
       return
       end

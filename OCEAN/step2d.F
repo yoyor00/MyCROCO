@@ -227,7 +227,7 @@ C$    trd=omp_get_thread_num()
 #ifdef NBQ_ZETAW
       integer resetfromrhobar
 #endif  	  
-
+#ifdef NBQ
       real dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2) 
       real dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2) 
       real dthetadiv_nbqdz_w(PRIVATE_2D_SCRATCH_ARRAY,2) 
@@ -250,6 +250,7 @@ C$    trd=omp_get_thread_num()
       real WORK(PRIVATE_2D_SCRATCH_ARRAY)
       real dum_s
       real sum_r(PRIVATE_2D_SCRATCH_ARRAY)
+#endif
 !
 #ifndef NBQ_MASS
 #  define Hzr_half_nbq Hz
@@ -329,9 +330,10 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !======================================================================
 !
+#ifdef NBQ_ZETAW
          if (IstrU.gt.Iend) then
             do j=Jstr,Jend
-	    do i=Istr,Iend+1
+       	    do i=Istr,Iend+1
                 FX(i,j)=0.
             enddo
             enddo
@@ -343,6 +345,7 @@ C$    trd=omp_get_thread_num()
             enddo
             enddo
          endif
+#endif
 !
 !======================================================================
 !======================================================================
@@ -720,10 +723,12 @@ C$    trd=omp_get_thread_num()
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        DV_avg1(START_2D_ARRAY,nnew))
 #endif
+#ifdef NBQ
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        DU_avg2(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        DV_avg2(START_2D_ARRAY))
+#endif
 # if defined MRL_WCI && defined WET_DRY
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   ust2d(START_2D_ARRAY))

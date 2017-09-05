@@ -156,7 +156,7 @@ C$OMP END MASTER
      &                   ubar(START_2D_ARRAY,kstp2))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   vbar(START_2D_ARRAY,kstp2))
-#  else
+#  elif defined NBQ
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   ubar(START_2D_ARRAY,kstp))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,

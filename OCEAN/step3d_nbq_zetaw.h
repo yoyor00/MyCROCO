@@ -66,6 +66,16 @@
        endif
 #endif
 
+!-------------------------------------------------------------------
+!      Acoustic wave emission
+!-------------------------------------------------------------------
+!
+#  if defined ACOUSTIC && defined NBQ_IJK
+       if (iic==1.and.iif==1) then
+          call densityijk_nbq(10)      
+       endif
+#  endif
+
 # undef DEBUG
 !
 !-------------------------------------------------------------------
@@ -485,13 +495,6 @@
 # endif  /* NBQ_IMP */
 
 
-!-------------------------------------------------------------------
-!      Acoustic wave emission
-!-------------------------------------------------------------------
-!
-!#  ifdef ACOUSTIC
-!      call density_nbq(11)       ! TBD
-!#  endif
 !
 !-------------------------------------------------------------------
 !      Mass equation (1): DX(p+1) ==> thetadiv_nbq
@@ -955,7 +958,7 @@
          do i=Istr,Iend
            FC(i,0)=0.              ! Bottom boundary condition
 # ifdef NBQ_MASS
-           DC(i,0)=rho(i,j,1)/rho0*0.
+           DC(i,0)=rho(i,j,1)/rho0
 # endif
          enddo
 
@@ -965,7 +968,9 @@
      &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtfast 
      &          *0.5*( rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )  
      &                +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1) )
+# ifdef NBQ_MASS
               DC(i,k)=0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0
+# endif
                 
 
        thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)+(FC(i,k)-FC(i,k-1)) 
@@ -984,7 +989,9 @@
      &               *(
      &                rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k)
      &              )
+# ifdef NBQ_MASS
               DC(i,N)=rho(i,j,N) /rho0
+# endif
           thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)+(FC(i,k)-FC(i,k-1)) 
 # ifdef NBQ_MASS
      &          -Hzr(i,j,k)*(rho(i,j,k)-rho_bak(i,j,k))/rho0/dt
@@ -1048,7 +1055,6 @@
 !# endif
 
         enddo
-
 
 !--------------------------- 
 ! Gaussian Elimination:
@@ -1226,13 +1232,13 @@
             do i=Istr,Iend
               FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)   
 	      thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)
-     &                       +FC(i,k)-FC(i,k-1)  
+     &                           +FC(i,k)-FC(i,k-1)  
             enddo
           enddo
             do i=Istr,Iend
               FC(i,N)=Hzw_half_nbq_inv(i,j,N) * qdmw_nbq(i,j,N)  
 	      thetadiv_nbq(i,j,N)=thetadiv_nbq(i,j,N)
-     &                       +FC(i,N)-FC(i,N-1)    
+     &                           +FC(i,N)-FC(i,N-1)    
             enddo
         enddo
 
@@ -1250,6 +1256,13 @@
          enddo
          enddo
          enddo
+!-------------------------------------------------------------------
+!      Acoustic wave emission
+!-------------------------------------------------------------------
+!
+#  if defined ACOUSTIC && defined NBQ_IJK
+       call densityijk_nbq(11)       
+#  endif
 
 #ifdef NBQ_DTDRHO2
 	  do j=JstrR2,JendR2

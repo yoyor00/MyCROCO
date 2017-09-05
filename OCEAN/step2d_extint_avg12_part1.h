@@ -11,6 +11,8 @@
             Zt_avg1(i,j)=cff1*zeta(i,j,knew)
             DU_avg1(i,j,nnew)=0.
             DV_avg1(i,j,nnew)=0.
+            DU_avg2(i,j)=cff2*DUon(i,j)
+            DV_avg2(i,j)=cff2*DVom(i,j)
           enddo
         enddo 
       else

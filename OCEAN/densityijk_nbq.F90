@@ -42,6 +42,7 @@
       use module_nbq                      ! #NBQ#
       implicit none
       integer :: icall, i,j ,k, k1,indm_d
+      integer Istr,Iend,Jstr,Jend
 
 # include "param_F90.h"
 # include "scalars_F90.h"
@@ -55,6 +56,8 @@
       real    :: dist_d,rho_sum
 
       double precision :: t1_d,t2_d
+
+!#include "compute_tile_bounds.h"
 
       if (icall.eq.20) then
 # ifdef NBQ_MASS
@@ -123,7 +126,7 @@
       elseif (icall.eq.61) then
       elseif (icall.eq.7) then
 
-# ifdef ACOUSTIC
+# if defined ACOUSTIC  && defined NBQ_IJK
       elseif (icall.eq.10) then
 !
 !*******************************************************************
@@ -131,9 +134,10 @@
 !*******************************************************************
           period_exp = 0.025/2.
           for_a_exp  = 2.5
-          amp_exp = 1.e-3
-          hmax_exp = 128.
-          dg_exp = 2.
+          amp_exp    = 1.e-2
+          hmax_exp   = 128.
+          dg_exp     = 2.
+          time_nbq = 0. 
 
       elseif (icall.eq.11) then
 !
@@ -141,23 +145,30 @@
 !......Acoustic waves: Forcing
 !*******************************************************************
 !
-        time_nbq = time_nbq + 0.5*dtnbq
+        time_nbq = time_nbq + dtfast
 
-        do l_nbq = 1 , neqcont_nh 
+        do k=1,N
+      !  do j=Jstr-1,Jend+1
+      !  do i=Istr-1,Iend+1
+         do j=jstrq_nh-1,jendq_nh+1
+           do i=istrq_nh-1,iendq_nh+1
 
-          i=l2iq_nh(l_nbq)
-          j=l2jq_nh(l_nbq)
-          k=l2kq_nh(l_nbq)
+             dist_d=sqrt((xr(i,j)-xl/2.)**2+(0.*(yr(i,j)-el/2.))**2    & 
+                               +(abs(z_w(i,j,k))-hmax_exp/2.)**2)
 
-          dist_d=sqrt((xr(i,j)-xl/2.)**2+(0.*(yr(i,j)-el/2.))**2       &
-                              +(abs(z_r(i,j,k))-hmax_exp/2.)**2)
-!         if (dist_d.le.for_a_exp(1)) then
-!              div_nbq_a(l_nbq,dnrhs_nbq) = div_nbq_a(l_nbq,dnrhs_nbq)   &
-             div_nbq_a(l_nbq) = div_nbq_a(l_nbq)   &
-                        +amp_exp*sin(2*acos(-1.)*time_nbq/period_exp)  &
-                                        *exp(-dist_d**2/for_a_exp**2)
-!         endif
+             rho_nbq(i,j,k)=rho_nbq(i,j,k)+amp_exp                       &
+                                          *sin(2*acos(-1.)*time_nbq/period_exp)   &  
+                                          *exp(-dist_d**2/for_a_exp**2)  &
+#  ifdef NBQ_MASS
+                        *Hzr(i,j,k)
+#  else
+                        *Hz(i,j,k)
+#  endif
+
+            enddo
+          enddo
         enddo
+
 # endif /* ACOUSTIC */
 
       endif  ! icall

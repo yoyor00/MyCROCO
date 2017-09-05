@@ -269,6 +269,23 @@
       common /nbq_H_bak2/ Hz_bak2
 # endif
 
+!**********************************************************************
+# if defined ACOUSTIC && defined NBQ_IJK
+
+      real  period_exp  
+      common/ACOUS1/period_exp
+      real  for_a_exp   
+      common/ACOUS2/for_a_exp
+      real  dg_exp     
+      common/ACOUS3/dg_exp 
+      real  hmax_exp    
+      common/ACOUS4/hmax_exp
+      real  amp_exp
+      common/ACOUS4/amp_exp
+
+#endif
+
+
 #endif /* NBQ */
 
   

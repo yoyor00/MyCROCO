@@ -58,7 +58,9 @@
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-      !   zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+# ifndef NBQ
+          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+# endif
 
 !***********************************************************************
 # ifndef NBQ_ZETAW

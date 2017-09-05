@@ -33,31 +33,37 @@
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-!          DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
-!     &        +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
-!#ifdef SOLVE3D
-!# ifdef NBQ
-!     &              *(rubar(i,j)+rufrc(i,j)+rubar_nbq(i,j))
-!# else
-!     &                             *(rubar(i,j)+rufrc(i,j))
-!# endif
-!#else
-!     &                          *rubar(i,j)+cff2*sustr(i,j)
-!# ifdef MRL_WCI
-!     &                                    +cff2*brk2dx(i,j)
-!#  ifdef WAVE_STREAMING
-!     &                                    +cff2*frc2dx(i,j)
-!#  endif
-!# endif
-!#endif
-!     &                                                    )
-!#ifdef MASKING
-!     &                                         *umask(i,j)
-!#endif
+
+#ifndef NBQ_ZETAW
+          DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
+     &        +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
+# ifdef SOLVE3D
+#  ifdef NBQ
+     &              *(rubar(i,j)+rufrc(i,j)+rubar_nbq(i,j))
+#  else
+     &                             *(rubar(i,j)+rufrc(i,j))
+#  endif
+# else
+     &                          *rubar(i,j)+cff2*sustr(i,j)
+#  ifdef MRL_WCI
+     &                                    +cff2*brk2dx(i,j)
+#   ifdef WAVE_STREAMING
+     &                                    +cff2*frc2dx(i,j)
+#   endif
+#  endif
+# endif
+     &                                                    )
+# ifdef MASKING
+     &                                         *umask(i,j)
+# endif
+
+#else
 
           DUnew=DU_nbq(i,j) *2.
-#ifdef MASKING
+# ifdef MASKING
      &                                         *umask(i,j)
+# endif
+
 #endif
 
 #ifdef WET_DRY
@@ -83,31 +89,36 @@
   
       do j=JstrV,Jend
         do i=Istr,Iend
-!          DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
-!     &        +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
-!#ifdef SOLVE3D
-!# ifdef NBQ
-!     &              *(rvbar(i,j)+rvfrc(i,j)+rvbar_nbq(i,j))
-!# else
-!     &                             *(rvbar(i,j)+rvfrc(i,j))
-!# endif
-!#else
-!     &                          *rvbar(i,j)+cff2*svstr(i,j)
-!# ifdef MRL_WCI
-!     &                                    +cff2*brk2de(i,j)
-!#  ifdef WAVE_STREAMING
-!     &                                    +cff2*frc2de(i,j)
-!#  endif
-!# endif
-!#endif
-!     &                                                    )
-!#ifdef MASKING
-!     &                                         *vmask(i,j)
-!#endif
 
-          DVnew=DV_nbq(i,j) *2.
-#ifdef MASKING
+#ifndef NBQ_ZETAW
+          DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
+     &        +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
+# ifdef SOLVE3D
+#  ifdef NBQ
+     &              *(rvbar(i,j)+rvfrc(i,j)+rvbar_nbq(i,j))
+#  else
+     &                             *(rvbar(i,j)+rvfrc(i,j))
+#  endif
+# else
+     &                          *rvbar(i,j)+cff2*svstr(i,j)
+#  ifdef MRL_WCI
+     &                                    +cff2*brk2de(i,j)
+#   ifdef WAVE_STREAMING
+     &                                    +cff2*frc2de(i,j)
+#   endif
+#  endif
+# endif
+     &                                                    )
+# ifdef MASKING
      &                                         *vmask(i,j)
+# endif
+
+#else
+          DVnew=DV_nbq(i,j) *2.
+# ifdef MASKING
+     &                                         *vmask(i,j)
+# endif
+
 #endif
 
 #ifdef WET_DRY
