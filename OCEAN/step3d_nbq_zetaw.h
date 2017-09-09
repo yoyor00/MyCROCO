@@ -163,7 +163,6 @@
 !               theta does not change
 !-------------------------------------------------------------------
 !       
-
         do k=1,N
           do j=JstrV2-1,Jend
             do i=IstrU2-1,Iend
@@ -173,7 +172,6 @@
             enddo
           enddo
         enddo
-
 !
 !-------------------------------------------------------------------
 !      Horizontal Momentum equation: 
@@ -1014,8 +1012,9 @@
         do j=Jstr,Jend
           do k=1,N
             do i=Istr,Iend
-               FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq 
-     &                   * thetadiv_nbq(i,j,k) )  !XXX5
+               FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k)
+     &         - (soundspeed2_nbq*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k) 
+     &                   )
      &                   * Hzr_half_nbq_inv(i,j,k) 
             enddo
           enddo    
