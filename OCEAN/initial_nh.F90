@@ -435,11 +435,50 @@
 
         do k=1,N
           do j=JR_RANGE
-            do i=IR_RANGE
+            do i=IU_RANGE
+#ifdef NBQ_MASS
               qdmu_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i-1,j,k))/rho0) &
                    *0.5*u(i,j,k,nrhs)*(hz(i,j,k)+hz(i-1,j,k))
+#else
+              qdmu_nbq(i,j,k)=0.5*u(i,j,k,nrhs)*(hz(i,j,k)+hz(i-1,j,k))
+#endif
           enddo
          enddo
+        enddo
+
+        do k=1,N-1
+          do j=JR_RANGE
+            do i=IR_RANGE
+#ifdef NBQ_MASS
+              qdmw_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0) &
+                 *0.5*wz(i,j,k,nrhs)*(hz(i,j,k)+hz(i,j,k+1))
+#else
+              qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*(hz(i,j,k)+hz(i,j,k+1))
+#endif
+          enddo
+         enddo
+        enddo
+        k=0 
+        do j=JR_RANGE 
+          do i=IR_RANGE
+#ifdef NBQ_MASS
+            qdmw_nbq(i,j,k)=(1.+rho(i,j,k+1)/rho0) &
+                 *0.5*wz(i,j,k,nrhs)*hz(i,j,k+1)
+#else
+            qdmw_nbq(i,j,k)= 0.5*wz(i,j,k,nrhs)*hz(i,j,k+1)
+#endif
+          enddo
+        enddo
+        k=N 
+        do j=JR_RANGE
+          do i=IR_RANGE
+#ifdef NBQ_MASS
+            qdmw_nbq(i,j,k)=(1.+rho(i,j,k)/rho0) &
+                 *0.5*wz(i,j,k,nrhs)*hz(i,j,k)
+#else
+            qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*hz(i,j,k)
+#endif
+          enddo
         enddo
 #  else
         do l_nbq = nequ_nh(1)+1,nequ_nh(6)
