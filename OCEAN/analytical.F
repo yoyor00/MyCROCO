@@ -1805,7 +1805,7 @@ C$    integer  trd, omp_get_thread_num
              Tsrc0(is,itemp)=5.
           endif
           if (.not.got_tsrc(isalt)) then
-             Tsrc0(is,itemp)=2.
+             Tsrc0(is,isalt)=2.
           endif
 #  endif
           Tsrc(is,k,itemp)=Tsrc0(is,itemp)
