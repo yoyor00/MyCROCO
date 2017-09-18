@@ -144,13 +144,31 @@
 # define NBQ_IJK
 # define NBQ_IMPIJK
 # define NBQ_CONS
-# undef  NBQ_MASS
-# define NBQ_NODS
 # define NBQ_COUPLE1
 # undef VAR_RHO_2D
 # undef RESET_RHO0
 # undef TRACETXT
 # define HZR Hzr
+# define NBQ_ZETAW
+/*
+======================================================================
+   Activate NBQ Precise or Performance mode ======================================================================
+*/
+#ifdef NBQ_PRECISE
+#       define NBQ_MASS                               
+#       define NBQ_DTDRHO2
+#       define NBQ_DTDRHO2B
+#       define NBQ_GRIDEXT
+#       define NBQ_TRACERS
+#       undef  NBQ_NODS
+#else
+#       undef NBQ_MASS
+#       undef NBQ_DTDRHO2
+#       undef NBQ_DTDRHO2B
+#       undef NBQ_GRIDEXT
+#       undef NBQ_TRACERS
+#       define NBQ_NODS
+#endif
 
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI
@@ -159,16 +177,6 @@
 #  define W_FRC_BRY
 # endif
 
-# ifdef NBQ_PERF
-#  define NBQ_IJK 
-#  define NBQ_ZETAW
-#  undef  NBQ_MASS
-#  define NBQ_NODS
-#  undef  NBQ_OUT
-#  define NBQ_IMP
-#  undef  NBQ_NOCOUPLING
-#  undef  NBQ_DTDRHO 
-# endif
 
 #else
 # define HZR Hz
