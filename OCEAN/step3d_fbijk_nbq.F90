@@ -932,11 +932,19 @@
           do k=1,N
             do i=Istr_nh,Iend_nh
 # ifdef NBQ_CONS
-               FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq * thetadiv_nbq(i,j,k) ) & !XXX5
+!               FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq * thetadiv_nbq(i,j,k) ) & !XXX5
+!                        * Hzr_half_nbq_inv(i,j,k) 
+               FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k) &
+              - (soundspeed2_nbq*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k)  &
+                        ) &
                         * Hzr_half_nbq_inv(i,j,k) 
 # else
-               FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq * thetadiv_nbq(i,j,k)   & !XXX5
-                        * Hzr_half_nbq_inv(i,j,k) )
+!              FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq * thetadiv_nbq(i,j,k)   & !XXX5
+!                       * Hzr_half_nbq_inv(i,j,k) )
+               FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k) &
+              - (soundspeed2_nbq*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k)  &
+                        ) &
+                        * Hzr_half_nbq_inv(i,j,k) 
 # endif
             enddo
           enddo    
