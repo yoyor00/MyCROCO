@@ -142,11 +142,10 @@
 # define M2FILTER_NONE
 # undef M2FILTER_POWER
 # define NBQ_IJK
+# define NBQ_IMP
 # define NBQ_IMPIJK
 # define NBQ_CONS
 # define NBQ_COUPLE1
-# undef VAR_RHO_2D
-# undef RESET_RHO0
 # undef TRACETXT
 # define HZR Hzr
 # define NBQ_ZETAW
@@ -159,7 +158,7 @@
 #       define NBQ_DTDRHO2
 #       define NBQ_DTDRHO2B
 #       define NBQ_GRIDEXT
-#       define NBQ_TRACERS
+#       undef NBQ_TRACERS
 #       undef  NBQ_NODS
 #else
 #       undef NBQ_MASS
