@@ -892,7 +892,7 @@
      &                *(rw(i,j,N)+rw_nbq_avg1(i,j,N))
      &                     )        /  Hz_half(i,j,N) !<-- wz has units m.s-1
 
-            rw_int_nbq(i,j,k)=pn(i,j)*pm(i,j)*rw(i,j,k)
+            rw_int_nbq(i,j,N)=pn(i,j)*pm(i,j)*rw(i,j,N)
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) !<-- wz(indx) has units kg.m-1.s-1
 
 !== Special treatment for k=0 because the control volume at the top is Hz(1)/2
