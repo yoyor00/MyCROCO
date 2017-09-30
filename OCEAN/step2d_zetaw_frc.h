@@ -54,6 +54,39 @@
           enddo
         enddo
         endif
+
+        do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              cff=ru_int_nbq(i,j,k)
+              ru_int_nbq(i,j,k)=cff1*cff
+     &                       + cff2*ru_int_bak_nbq(i,j,k,3-nstp)
+     &                       + cff3*ru_int_bak_nbq(i,j,k,nstp)
+              ru_int_bak_nbq(i,j,k,nstp)=cff
+            enddo
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              cff=rv_int_nbq(i,j,k)
+              rv_int_nbq(i,j,k)=cff1*cff
+     &                       + cff2*rv_int_bak_nbq(i,j,k,3-nstp)
+     &                       + cff3*rv_int_bak_nbq(i,j,k,nstp)
+              rv_int_bak_nbq(i,j,k,nstp)=cff
+            enddo
+          enddo
+        enddo
+        do k=0,N
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              cff=rw_int_nbq(i,j,k)
+              rw_int_nbq(i,j,k)=cff1*cff
+     &                       + cff2*rw_int_bak_nbq(i,j,k,3-nstp)
+     &                       + cff3*rw_int_bak_nbq(i,j,k,nstp)
+              rw_int_bak_nbq(i,j,k,nstp)=cff
+            enddo
+          enddo
+        enddo
+
 !
 !==================================
 # else  /*  PRED_COUPLED_MODE */

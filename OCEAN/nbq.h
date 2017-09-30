@@ -100,6 +100,13 @@
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rw_int_nbq   
 
+      real ru_int_bak_nbq(GLOBAL_2D_ARRAY,N,2)
+      common /coup_ru_int/ ru_int_bak_nbq
+      real rv_int_bak_nbq(GLOBAL_2D_ARRAY,N,2)
+      common /coup_rvint/ rv_int_bak_nbq
+      real rw_int_bak_nbq(GLOBAL_2D_ARRAY,0:N,2)
+      common /coup_rw_int/ rw_int_bak_nbq
+
       real rho_nbq(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_nbq/rho_nbq
 
