@@ -160,6 +160,8 @@
 #       define NBQ_GRIDEXT
 #       undef NBQ_TRACERS
 #       undef  NBQ_NODS
+#       undef VAR_RHO_2D
+#       undef RESET_RHO0
 #else
 #       undef NBQ_MASS
 #       undef NBQ_DTDRHO2
@@ -167,6 +169,8 @@
 #       undef NBQ_GRIDEXT
 #       undef NBQ_TRACERS
 #       define NBQ_NODS
+#       undef VAR_RHO_2D
+#       undef RESET_RHO0
 #endif
 
 # ifdef OBC_NBQ
