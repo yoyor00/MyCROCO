@@ -29,52 +29,6 @@
             rvfrc_bak(i,j,nstp)=cff
           enddo
         enddo
-#  ifdef NBQ
-!
-! Extrapolate at n+1/2 internal forcing term for NBQ equations
-! (units of rho*Hz*dudt)
-!
-        do k=1,N
-          do j=Jstr,Jend
-            do i=IstrU,Iend
-              cff=ruint_nbq(i,j,k)
-              ruint_nbq(i,j,k)=cff1*cff
-     &                       + cff2*ruint_bak_nbq(i,j,k,3-nstp)
-     &                       + cff3*ruint_bak_nbq(i,j,k,nstp)
-              ruint_bak_nbq(i,j,k,nstp)=cff
-            enddo
-          enddo
-          do j=JstrV,Jend
-            do i=Istr,Iend
-              cff=rvint_nbq(i,j,k)
-              rvint_nbq(i,j,k)=cff1*cff
-     &                       + cff2*rvint_bak_nbq(i,j,k,3-nstp)
-     &                       + cff3*rvint_bak_nbq(i,j,k,nstp)
-              rvint_bak_nbq(i,j,k,nstp)=cff
-            enddo
-          enddo
-        enddo
-        do k=0,N
-          do j=Jstr,Jend
-            do i=Istr,Iend
-              cff=rwint_nbq(i,j,k)
-              rwint_nbq(i,j,k)=cff1*cff
-     &                       + cff2*rwint_bak_nbq(i,j,k,3-nstp)
-     &                       + cff3*rwint_bak_nbq(i,j,k,nstp)
-              rwint_bak_nbq(i,j,k,nstp)=cff
-            enddo
-          enddo
-        enddo
-
-!       if (FIRST_TIME_STEP) then 
-!         cff2=0.                        ! 
-!         cff1=1.                        !
-!       else                             !
-!         cff2=-0.5
-!         cff1=1.5
-!       endif
-
-#  endif /* NBQ */
 # else
         do j=Jstr,Jend                       ! This version is
           do i=Istr,Iend                     ! designed for coupling
