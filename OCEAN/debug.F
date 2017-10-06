@@ -32,6 +32,9 @@
           real,dimension(:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,i,j,i1,j1,i2,j2
+#ifdef OPENMP
+          integer mynode 
+#endif         
           integer iseq1, iseq2, jseq1, jseq2
           logical mystop
 
@@ -154,6 +157,9 @@
           real,dimension(:,:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,k,i,j,i1,i2,j1,j2
+#ifdef OPENMP
+          integer mynode
+#endif
           integer iseq1, iseq2, jseq1, jseq2 
           logical mystop         
           
@@ -221,7 +227,7 @@
      &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),
      &                 abs(tabread(i0,j0,k)-tab(i,j,k))
-!                      print *,'iif = ',iif,iic
+                      print *,'iif = ',iif,iic
 #ifdef AGRIF
                        print *,'GRID# ',Agrif_CFixed()
 #endif    
@@ -239,7 +245,7 @@
                        if (mystop) then
                        stop
                        endif
-!print *,'DEBUG DE ',comment,' OK'
+            print *,'DEBUG DE ',comment,' OK'
             
             deallocate(tabread)
 #endif          

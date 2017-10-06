@@ -64,9 +64,9 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
-       parameter (LLm0=416, MMm0=3,    N=20)	! true 2DV
-#elif defined MILES 
-       parameter (LLm0=408, MMm0=523,  N=20)
+!      parameter (LLm0=256, MMm0=3,    N=40)	! true 2DV
+#elif defined REGIONAL_NBQ
+       parameter (LLm0=256, MMm0=119,  N=80)
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -131,7 +131,7 @@
 #  ifndef TANKY
       parameter (LLm0=50,   MMm0=1,    N=50)   ! 20 cm resolution
 #  else
-      parameter (LLm0=1,    MMm0=30,   N=10)   ! 20 cm resolution
+      parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 #  endif
 # else
       parameter (LLm0=4000,   MMm0=1,  N=30)  !  1 mm resolution
@@ -200,6 +200,7 @@
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
       parameter (NP_XI=1, NP_ETA=4, NNODES=NP_XI*NP_ETA)
+      !parameter (NP_XI=13, NP_ETA=12, NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -242,7 +243,7 @@
 # if defined IGW || defined S2DV
       parameter (Ntides=1)
 # else
-      parameter (Ntides=2)
+      parameter (Ntides=1)
 # endif
 #endif
 #ifdef WET_DRY
@@ -293,20 +294,12 @@
 
 #if defined AGRIF || defined AUTOTILING
       integer NSA, N2d,N3d,N1dXI,N1dETA
-#if !defined NBQ
       parameter (NSA=28)
-#else
-      parameter (NSA=35)
-#endif
       common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
 #else
       integer NSA, N2d,N3d, size_XI,size_ETA
       integer se,sse, sz,ssz
-#if !defined NBQ
       parameter (NSA=28)
-#else
-      parameter (NSA=35)
-#endif
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)
 # else

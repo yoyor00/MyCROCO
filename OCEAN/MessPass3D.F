@@ -43,10 +43,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer iter, mdii, mdjj
       integer sub_X,size_X, sub_E,size_E, size_Z
 
-# if ! defined AGRIF
+# ifndef AGRIF
       parameter (size_Z=Npts*Npts*(N+1),
-     &     sub_X=(Lm+NSUB_X-1)/NSUB_X,  size_X=Npts*(N+1)*(4+sub_X),
-     &     sub_E=(Mm+NSUB_E-1)/NSUB_E,  size_E=Npts*(N+1)*(4+sub_E))
+     &     sub_X=(Lm+NSUB_X-1)/NSUB_X, size_X=(N+1)*Npts*(sub_X+2*Npts),
+     &     sub_E=(Mm+NSUB_E-1)/NSUB_E, size_E=(N+1)*Npts*(sub_E+2*Npts))
 
       real buf_snd4(size_Z),  ibuf_sndN(size_X),  buf_snd2(size_Z),
      &     buf_rev4(size_Z),  ibuf_revN(size_X),  buf_rev2(size_Z),
@@ -63,27 +63,15 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &     buf_snd1,  ibuf_sndS,  buf_snd3,
      &     buf_rev1,  ibuf_revS,  buf_rev3
 # endif
-
-c**
-c      common /buffers_3D/
-c     &     buf_snd4,     ibuf_sndN,     buf_snd2,
-c     &     buf_rev4,     ibuf_revN,     buf_rev2,
-c
-c     &    jbuf_sndW,                    jbuf_sndE,
-c     &    jbuf_revW,                    jbuf_revE,
-c
-c     &     buf_snd1,     ibuf_sndS,     buf_snd3,
-c     &     buf_rev1,     ibuf_revS,     buf_rev3
-c**
 !
 # include "compute_message_bounds.h"
 
 # ifdef AGRIF
       size_Z=Npts*Npts*(N+1)
       sub_X=(Lm+NSUB_X-1)/NSUB_X
-      size_X=Npts*(N+1)*(4+sub_X)
+      size_X=(N+1)*Npts*(sub_X+2*Npts)
       sub_E=(Mm+NSUB_E-1)/NSUB_E
-      size_E=Npts*(N+1)*(4+sub_E)
+      size_E=(N+1)*Npts*(sub_E+2*Npts)
 
       Allocate(buf_snd4(size_Z),  ibuf_sndN(size_X),  buf_snd2(size_Z),
      &         buf_rev4(size_Z),  ibuf_revN(size_X),  buf_rev2(size_Z),
@@ -93,7 +81,7 @@ c**
      &         buf_rev1(size_Z),  ibuf_revS(size_X),  buf_rev3(size_Z))
 # endif
 !
-      ksize=Npts*Npts*nmax                    ! message sizes for
+      ksize=Npts*Npts*nmax               ! message sizes for
       isize=Npts*ishft*nmax              ! corner messages and sides
       jsize=Npts*jshft*nmax              ! in XI and ETA directions 
 !

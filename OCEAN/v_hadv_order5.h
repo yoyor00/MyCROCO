@@ -55,7 +55,7 @@
             IF ( j.ge.jmin .and. j.le.jmax ) THEN ! use full stencil
                                                   !
               DO i = Istr,Iend
-                vel = FLUX6(Hvom(i,j-2,k),Hvom(i,j-1,k),Hvom(i,j  ,k),
+                vel = flux6(Hvom(i,j-2,k),Hvom(i,j-1,k),Hvom(i,j  ,k),
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),Hvom(i,j+3,k),1.)
 !               vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
                 flx5 = vel*FLUX5(
@@ -63,7 +63,7 @@
      &             v(i,j  ,k,nrhs), v(i,j+1,k,nrhs),
      &             v(i,j+2,k,nrhs), v(i,j+3,k,nrhs), vel )
 #  ifdef MASKING 
-                vel = FLUX4(Hvom(i,j-1,k),Hvom(i,j  ,k),
+                vel = flux4(Hvom(i,j-1,k),Hvom(i,j  ,k),
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),1.)
                 flx3 = vel*FLUX3(
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
@@ -108,7 +108,7 @@
               DO i = Istr,Iend
 
 !               vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
-                vel = FLUX4(Hvom(i,j-1,k),Hvom(i,j,k),
+                vel = flux4(Hvom(i,j-1,k),Hvom(i,j,k),
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),1.)
                 flx3 = vel*FLUX3(
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
@@ -136,7 +136,7 @@
                                           ! north boundary
               DO i = Istr,Iend
 !               vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
-                vel = FLUX4(Hvom(i,j-1,k),Hvom(i,j  ,k),
+                vel = flux4(Hvom(i,j-1,k),Hvom(i,j  ,k),
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),1.)
                 flx3 = vel*FLUX3(
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
@@ -163,16 +163,20 @@
             IF ( i.ge.imin .and. i.le.imax ) THEN ! use full stencil
                                                   !
               DO j = JstrV,Jend
-!               vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
-                vel = FLUX6(Huon(i,j-3,k),Huon(i,j-2,k),Huon(i,j-1,k),
-     &                      Huon(i,j  ,k),Huon(i,j+1,k),Huon(i,j+2,k),1.) 
+                if ( j.ge.jmin .and. j.le.jmax ) then
+                  vel = flux6(Huon(i,j-3,k),Huon(i,j-2,k),Huon(i,j-1,k),
+     &                        Huon(i,j  ,k),Huon(i,j+1,k),Huon(i,j+2,k),1.)
+                else
+                  vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
+                endif
                 flx5 = vel*FLUX5(
      &             v(i-3,j,k,nrhs), v(i-2,j,k,nrhs),
      &             v(i-1,j,k,nrhs), v(i  ,j,k,nrhs),
      &             v(i+1,j,k,nrhs), v(i+2,j,k,nrhs), vel )
 #  ifdef MASKING
-                vel = FLUX4(Huon(i,j-2,k),Huon(i,j-1,k),
-     &                      Huon(i,j,k),Huon(i,j+1,k),1.) 
+!               vel = flux4(Huon(i,j-2,k),Huon(i,j-1,k),
+!     &                      Huon(i,j,k),Huon(i,j+1,k),1.) 
+                vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs), vel )
@@ -214,9 +218,9 @@
             ELSE IF ( i.eq.imin-1 .and. imax.ge.imin ) THEN  ! 3rd of 4th order flux 2 in
                                                              ! from south boundary
               DO j = JstrV,Jend
-!               vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
-                vel = FLUX4(Huon(i,j-2,k),Huon(i,j-1,k),
-     &                      Huon(i,j  ,k),Huon(i,j+1,k),1.) 
+                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
+!               vel = flux4(Huon(i,j-2,k),Huon(i,j-1,k),
+!     &                     Huon(i,j  ,k),Huon(i,j+1,k),1.) 
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs), vel )
@@ -242,9 +246,9 @@
             ELSE IF ( i.eq.imax+1 ) THEN  ! 3rd or 4th order flux 2 in from
                                           ! north boundary
               DO j = JstrV,Jend
-!               vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
-                vel = FLUX4(Huon(i,j-2,k),Huon(i,j-1,k),
-     &                      Huon(i,j  ,k),Huon(i,j+1,k),1.) 
+                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
+!               vel = flux4(Huon(i,j-2,k),Huon(i,j-1,k),
+!     &                     Huon(i,j  ,k),Huon(i,j+1,k),1.) 
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs),  vel )

@@ -459,6 +459,9 @@ C$    integer omp_get_thread_num
         do i=IstrR,IendR
           sustr(i,j)=init
           svstr(i,j)=init
+# ifdef OA_COUPLING
+          smstr(i,j)=init
+# endif
 #ifndef ANA_SMFLUX
           sustrg(i,j,1)=init
           svstrg(i,j,1)=init

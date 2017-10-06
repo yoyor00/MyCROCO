@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,6 +20,10 @@
       real sustr(GLOBAL_2D_ARRAY)
       real svstr(GLOBAL_2D_ARRAY)
       common /forces_sustr/sustr /forces_svstr/svstr
+#ifdef OA_COUPLING
+      real smstr(GLOBAL_2D_ARRAY)
+      common /forces_smstr/smstr
+#endif
 #ifndef ANA_SMFLUX
 !
 !  tsms      Time of surface momentum stresses.

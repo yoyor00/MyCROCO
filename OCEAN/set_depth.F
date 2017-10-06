@@ -17,7 +17,7 @@
 
       subroutine set_depth (tile
 #ifdef NBQ
-     &   ,resetfromrhobar
+     &                     ,resetfromrhobar
 #endif
      &   )
       implicit none
@@ -30,7 +30,7 @@ C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
       call set_depth_tile (Istr,Iend,Jstr,Jend
 #ifdef NBQ
-     &   ,resetfromrhobar
+     &                    ,resetfromrhobar
 #endif
      &   )
       return
@@ -38,7 +38,7 @@ C$    integer omp_get_thread_num
 
       subroutine set_depth_tile (Istr,Iend,Jstr,Jend
 #ifdef NBQ
-     &   ,resetfromrhobar
+     &                          ,resetfromrhobar
 #endif
      &   )
 !
@@ -77,13 +77,11 @@ C$    integer omp_get_thread_num
 # include "compute_auxiliary_bounds.h"
 !
 # ifdef EW_PERIODIC
-!#  define I_RANGE Istr-1,Iend+1 !!! Francis or Cyril ???
 #  define I_RANGE Istr,Iend
 # else
 #  define I_RANGE IstrR,IendR
 # endif
 # ifdef NS_PERIODIC
-!#  define J_RANGE Jstr-1,Jend+1 !!! Francis or Cyril ???
 #  define J_RANGE Jstr,Jend
 # else
 #  define J_RANGE JstrR,JendR
@@ -151,6 +149,10 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
 #  ifdef WET_DRY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_wet)
+#  endif
+#  if defined NBQ || defined WET_DRY 
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                        zeta(START_2D_ARRAY,1))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
@@ -162,6 +164,10 @@ C$    integer omp_get_thread_num
 #  endif
 # endif
       endif   !  iic==0
+
+# ifdef NBQ_CONSOUT
+      call consout_nbq(10)
+# endif
 
 # ifdef SOLVE3D
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -271,6 +277,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
+<<<<<<< HEAD
 !
 #  ifdef NBQ_ZETAW
       if (iic==0.or.(iic==1.and.iif==1)) then
@@ -293,7 +300,6 @@ C$    integer omp_get_thread_num
 !       stop 'FIX in set_depth!'
 !# endif
 
-       
 #  undef I_RANGE
 #  undef J_RANGE
 
@@ -414,10 +420,17 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Huon(START_2D_ARRAY,1))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Hvom(START_2D_ARRAY,1))
+#   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
      &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend, 
      &                        Hvom(START_2D_ARRAY,1))
+#   endif
 #   if defined UV_VIS4 && defined UV_MIX_GEO
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_u(START_2D_ARRAY,1))
@@ -516,10 +529,17 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Huon(START_2D_ARRAY,1))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Hvom(START_2D_ARRAY,1))
+#   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
-     &                                     Huon(START_2D_ARRAY,1))
+     &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                                     Hvom(START_2D_ARRAY,1))
+     &                        Hvom(START_2D_ARRAY,1))
+#   endif
 #  endif
       return
       end 
@@ -610,7 +630,6 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-         
       do j=JV_RANGE
         do i=IV_RANGE
           DC(i,0)=0.
@@ -655,16 +674,20 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Huon(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Hvom(START_2D_ARRAY,1))
 #   ifdef THREE_GHOST_POINTS_UV  
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Huon(START_2D_ARRAY,1))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             Hvom(START_2D_ARRAY,1))
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nrhs))
-#   else      
+#   else
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Huon(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hvom(START_2D_ARRAY,1))
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,

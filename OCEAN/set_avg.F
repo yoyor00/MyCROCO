@@ -179,9 +179,13 @@ C$    integer omp_get_thread_num
           do j=Jstr,Jend
             do i=Istr,Iend
               wstr_avg(i,j)=cff*( cff1*wstr_avg(i,j)+
+# ifdef OA_COUPLING
+     &                         smstr(i,j)*rho0)
+# else
      &                         0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                                 +(svstr(i,j)+svstr(i,j+1))**2)
      &                                                          *rho0)
+# endif
             enddo
           enddo
         endif
