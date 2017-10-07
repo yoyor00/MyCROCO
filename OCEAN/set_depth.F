@@ -277,7 +277,6 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-<<<<<<< HEAD
 !
 #  ifdef NBQ_ZETAW
       if (iic==0.or.(iic==1.and.iif==1)) then
