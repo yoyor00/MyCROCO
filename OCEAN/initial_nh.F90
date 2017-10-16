@@ -260,9 +260,9 @@
 !... ASCII output for NBQ-grid 
 !----------------------------------------------------------------------
 !
-!# ifdef NBQ_OUT
+# ifdef NBQ_OUT
       call output_nbq(1)
-!# endif
+# endif
 !
 !----------------------------------------------------------------------
 !... Initialize matrix products and HIPS:

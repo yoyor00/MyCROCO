@@ -47,8 +47,7 @@
        endif
 
        if (ichoix.eq.1) then
-#ifdef LADIAG
-# ifdef MPI
+#ifdef MPI
       if (mynode.lt.10) then
          write (name_o,'(a,i1,a)') 'OUTPUT/grid_nbq_',mynode,'.dat'
       elseif (mynode.lt.100) then
@@ -56,9 +55,8 @@
       elseif (mynode.lt.1000) then
          write (name_o,'(a,i3,a)') 'OUTPUT/grid_nbq_',mynode,'.dat'
       endif
-# else
+#else
       name_o = 'OUTPUT/grid_nbq_s.dat'
-# endif
 #endif
        open(unit=10,file=name_o)
 
