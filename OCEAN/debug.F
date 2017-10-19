@@ -43,6 +43,10 @@
           integer ierr
 #endif
           
+#if defined OPENMP && !defined MPI
+          mynode=0 
+#endif
+
 #if !defined MPI && !defined OPENMP
           write(107)Lm,Mm
           write(107)lbound(tab)
@@ -163,6 +167,9 @@
           integer iseq1, iseq2, jseq1, jseq2 
           logical mystop         
           
+#if defined OPENMP && !defined MPI
+          mynode=0 
+#endif
 
 #if !defined MPI && !defined OPENMP
           write(107)Lm,Mm
@@ -227,7 +234,7 @@
      &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),
      &                 abs(tabread(i0,j0,k)-tab(i,j,k))
-                      print *,'iif = ',iif,iic
+!                      print *,'iif = ',iif,iic
 #ifdef AGRIF
                        print *,'GRID# ',Agrif_CFixed()
 #endif    
