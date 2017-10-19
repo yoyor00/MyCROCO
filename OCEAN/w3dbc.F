@@ -301,7 +301,7 @@
 #  else           /* alternative to open */
         do k=0,N                                ! Eastern edge closed
           do j=jstr,jend                        ! ======= ==== ======
-            wz(Iend+1,j,k,nnew)=0.              !  (no-flux: default)
+            wz(Iend+1,j,k,nnew)=wz(Iend,j,k,nnew)  !  (no-flux: default)
           enddo
         enddo
 #  endif       /* OBC_COM_EAST */

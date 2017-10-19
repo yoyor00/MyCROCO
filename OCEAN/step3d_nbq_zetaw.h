@@ -126,8 +126,8 @@
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
        if (iic==1.and.iif==1) then
         do k=1,N 
-          do j=Jstr,Jend             
-            do i=Istr,Iend
+          do j=JstrR2,JendR2           
+            do i=IstrR2,IendR2
 		 rho_bak(i,j,k)=rho(i,j,k)
 	    enddo
 	  enddo
@@ -332,8 +332,28 @@
                 DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
                 ru_nbq_ext (i,j,k) = dum_s / work(i,j) 
                 rubar_nbq(i,j)=rubar_nbq(i,j)+ru_nbq_ext(i,j,k)
+
+# ifdef NBQ_NUDGING
+             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))
+     &        +u(i,j,k,nrhs)*hzu_half_qdmu(i,j,k)
+     &        * nudg_coef_nbq(i,j)
+# endif
+
               enddo 
             enddo
+
+# ifndef EW_PERIODIC
+!          if (WESTERN_EDGE) then
+!           do j=Jstr,Jend
+!             DU_nbq(Istr  ,j)=DU_nbq(Istr+1,j)
+!           enddo
+!          endif
+!          if (EASTERN_EDGE) then
+!           do j=Jstr,Jend
+!             DU_nbq(Iend+1,j)=DU_nbq(Iend  ,j)
+!           enddo
+!          endif
+# endif
 
 !...........V-momentum:
             do j=JstrV2,Jend
@@ -393,6 +413,13 @@
                 DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
                 rv_nbq_ext (i,j,k) = dum_s / work(i,j)  
                 rvbar_nbq(i,j)=rvbar_nbq(i,j)+rv_nbq_ext(i,j,k)	
+
+# ifdef NBQ_NUDGING
+             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))
+     &        +v(i,j,k,nrhs)*hzv_half_qdmv(i,j,k)
+     &        * nudg_coef_nbq(i,j)
+# endif
+
               enddo
             enddo
           endif
@@ -422,6 +449,8 @@
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,qdmu_nbq(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,qdmv_nbq(START_2D_ARRAY,1))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,DU_nbq(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,DV_nbq(START_2D_ARRAY))
 # endif
 # ifdef RVTK_DEBUG
       call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
@@ -613,7 +642,7 @@
 !           enddo   
 !#  endif
  
-          else
+           else ! k<>0 & k<>N   ! Inner domain   
 
             do j=Jstr,Jend
 	    do i=Istr,Iend+1
@@ -627,11 +656,11 @@
             enddo 
             enddo
 
-          endif
+	   endif ! k<>0 , k<>N ,  Inner domain 
 
 # ifdef NBQ_NODS
 
-          else
+	  else   ! Update d./ds terms
 
 	  if (k.eq.0) then	! Bottom boundary conditions
 
@@ -650,22 +679,70 @@
      &                         * pm_u(i+1,j) ) 
      &                         * Hzr(i,j,1)    
 
-# if defined MASKING
+#  if defined MASKING
               qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
-# endif 
+#  endif 
  	    enddo
  	    enddo 
-!#  else 
+!#  else   
 ! 	    do j=Jstr,Jend
 ! 	    do i=Istr,Iend    
 !              dZdxq_w(i,j,k)=0.     
 !              qdmw_nbq(i,j,0)=0.  
 ! 	    enddo
 ! 	    enddo 
+
+!  endif NBQ_FREESLIP
 #  endif 
-          endif
-          endif
+!  endif NBQ_FREESLIP
+
+          endif ! k.eq.0
+          endif ! Update d./ds terms
+
+! else NBQ_NODS
+# else
+! else NBQ_NODS
+
+	  if (k.eq.0) then	! Bottom boundary conditions
+
+#  if defined NBQ_FREESLIP || defined NBQ_SBBC
+	    do j=Jstr,Jend
+	    do i=Istr,Iend+1 
+              dZdxq_w(i,j,k2)= (z_w(i,j,0)-z_w(i-1,j,0))
+     &                           * qdmu_nbq(i,j,1)  
+     &                           / (Hzr(i,j,1)+Hzr(i-1,j,1))
+	    enddo
+	    enddo
+
+ 	    do j=Jstr,Jend
+ 	    do i=Istr,Iend    
+              qdmw_nbq(i,j,0)=0.5*(dZdxq_w(i,j,k2) *pm_u(i,j) +dZdxq_w(i+1,j,k2) 
+     &                         * pm_u(i+1,j) ) 
+     &                         * Hzr(i,j,1)    
+
+#  if defined MASKING
+              qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
+#  endif 
+ 	    enddo
+ 	    enddo 
+!#  else   
+! 	    do j=Jstr,Jend
+! 	    do i=Istr,Iend    
+!              dZdxq_w(i,j,k)=0.     
+!              qdmw_nbq(i,j,0)=0.  
+! 	    enddo
+! 	    enddo 
+
+!  endif NBQ_FREESLIP
+#  endif 
+!  endif NBQ_FREESLIP
+
+          endif ! k.eq.0
+
+! endif NBQ_NODS
 # endif
+! endif NBQ_NODS
+
           if (k.gt.0) then
            if (IstrU.le.Iend) then
             do j=Jstr,Jend
@@ -849,7 +926,45 @@
 #  endif
           endif
           endif
+
+! else NBQ_NODS
+# else
+! else NBQ_NODS
+
+          if (k.eq.0) then	! Bottom boundary conditions
+
+#  if defined NBQ_FREESLIP || defined NBQ_SBBC
+	    do j=Jstr,Jend+1
+            do i=Istr,Iend
+               dZdyq_w(i,j,k2)= (z_w(i,j,0)-z_w(i,j-1,0))
+     &                   *qdmv_nbq(i,j,1) 
+     &                   / ( Hzr(i,j,1)+Hzr(i,j-1,1) )
+	    enddo
+	    enddo
+ 	    do j=Jstr,Jend
+  	    do i=Istr,Iend   
+                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0) 	                             
+     &                             +0.5*(dZdyq_w(i,j,k2)*pm_v(i,j)  
+     &                     +dZdyq_w(i,j+1,k2)*pm_v(i,j+1)  )     
+     &                               * Hzr(i,j,1) 
+#   if defined MASKING
+                 qdmw_nbq(i,j,0) = qdmw_nbq(i,j,0) * rmask(i,j)
+#   endif 
+  	    enddo
+            enddo
+!#  else  
+! 	    do j=Jstr,Jend
+! 	    do i=Istr,Iend    
+!              dZdyq_w(i,j,k)=0. 
+!              qdmw_nbq(i,j,0)=0.
+! 	    enddo
+! 	    enddo 
+#  endif
+          endif
+
+! endif NBQ_NODS
 # endif
+! endif NBQ_NODS
 
           if (k.gt.0) then
            if (JstrV.le.Jend) then
@@ -1106,6 +1221,17 @@
              qdmw_nbq(i,j,N)=DC(i,k)   
 !    &            -rho_nbq(i,j,N)*0.5
 !    &                 *9.81*dtnbq        
+
+# ifdef NBQ_NUDGING
+!        if (mynode.lt.5.and.j==2) then
+!            write(6,*) mynode,i,nudg_coef_nbq(i,j),qdmw_nbq(i,j,N)
+!    &         ,wz(i,j,N,nrhs)*hzw_half_nbq(i,j,N)
+!        endif
+             qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-nudg_coef_nbq(i,j))
+     &        +wz(i,j,N,nrhs)*hzw_half_nbq(i,j,N)
+     &        * nudg_coef_nbq(i,j)
+# endif
+
            enddo
            do k=N-1,1,-1
              do i=Istr,Iend
@@ -1114,6 +1240,12 @@
 !    &                 +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
 !    &                *(Hzr(i,j,k)+Hzr(i,j,k+1))
 !    &                 *9.81*dtnbq
+# ifdef NBQ_NUDGING
+             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))
+     &        +wz(i,j,k,nrhs)*hzw_half_nbq(i,j,k)
+     &        * nudg_coef_nbq(i,j)
+# endif
+
              enddo            
            enddo                        
         enddo    
@@ -1252,6 +1384,11 @@
          do j=Jstr-1,Jend+1
          do i=Istr-1,Iend+1
            rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtfast*thetadiv_nbq(i,j,k)    !*Hzr_half_nbq_inv(i,j,k) !XXX2
+# ifdef NBQ_NUDGING
+             rho_nbq(i,j,k)=rho_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))
+     &        +0. * nudg_coef_nbq(i,j)
+# endif
+
          enddo
          enddo
          enddo
@@ -1294,8 +1431,12 @@
 !
 
 #ifdef NBQ_DTDRHO2B
-         do j=Jstr-1,Jend
-         do i=Istr-1,Iend
+         do j=Jstr,Jend
+         do i=Istr,Iend
+    !    do j=JstrR2,JendR2
+    !    do i=IstrR2,IendR2
+    !    do j=max(jstrR2,jstr),min(jendR2,jend)
+    !    do i=max(istrR2,istr),min(iendR2,iend)
          dum_s=0.
          do k=1,N      ! A déplacer au pas de temps interne ?
            dum_s=dum_s
@@ -1304,13 +1445,65 @@
      &              +(qdmv_nbq(i,j+1,k)-qdmv_nbq(i,j,k))*pn(i,j) )
      &              *dtnbq)
          enddo
+
          do k=1,N
-           hz(i,j,k)=hz(i,j,k)
-     &         -dum_s/(z_w(i,j,N)-z_w(i,j,0))
-     &                *(z_w(i,j,k)-z_w(i,j,k-1))
+                hz(i,j,k)=hz(i,j,k)
+     &           -dum_s/(z_w(i,j,N)-z_w(i,j,0))
+     &                 *(z_w(i,j,k)-z_w(i,j,k-1))
+         enddo
+         do k=N,1,-1
+                z_w(i,j,k-1)=z_w(i,j,k)-hz(i,j,k)
+                z_r(i,j,k)=(z_w(i,j,k)+z_w(i,j,k-1))/2.
+         enddo
+
          enddo
          enddo
-         enddo
+
+       do i=istr,iend
+       do k=1,N
+          hz(i,jstrR2,k)=hz(i,jstr,k)
+          hz(i,jendR2,k)=hz(i,jend,k)
+       enddo
+       enddo
+       do j=jstr,jend
+       do k=1,N
+          hz(istrR2,j,k)=hz(istr,j,k)
+          hz(iendR2,j,k)=hz(iend,j,k)
+       enddo
+       enddo
+
+       do i=istr,iend
+       do k=1,N
+          hz(i,jstrR2,k)=hz(i,jstr,k)
+          hz(i,jendR2,k)=hz(i,jend,k)
+           z_w(i,jstrR2,k)=z_w(i,jstr,k)
+           z_w(i,jendR2,k)=z_w(i,jend,k)
+           z_w(i,jend+1,k)=z_w(i,jend,k)
+           z_r(i,jstrR2,k)=z_r(i,jstr,k)
+           z_r(i,jendR2,k)=z_r(i,jend,k)
+           z_r(i,jend+1,k)=z_r(i,jend,k)
+       enddo
+       enddo
+       do j=jstr,jend
+       do k=1,N
+          hz(istrR2,j,k)=hz(istr,j,k)
+          hz(iendR2,j,k)=hz(iend,j,k)
+          z_w(istrR2,j,k)=z_w(istr,j,k)
+          z_w(iendR2,j,k)=z_w(iend,j,k)
+          z_r(istrR2,j,k)=z_r(istr,j,k)
+          z_r(iendR2,j,k)=z_r(iend,j,k)
+           if (.not.EAST_INTER) then
+              hz(iend+1,j,k)=hz(iend,j,k)
+               z_w(iend+1,j,k)=z_w(iend,j,k)
+               z_r(iend+1,j,k)=z_r(iend,j,k)
+           endif
+!           hz(iend,j,k)=hz(iend-1,j,k)
+!           if (.not.WEST_INTER) then
+!           hz(istr,j,k)=hz(istr+1,j,k)
+!           endif
+       enddo
+       enddo
+
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
@@ -1320,8 +1513,8 @@
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
           if (iif==nfast) then
             do k=1,N 
-            do j=Jstr,Jend             
-            do i=Istr,Iend
+            do j=JstrR2,JendR2             
+            do i=IstrR2,IendR2
 	       rho_bak(i,j,k)=rho(i,j,k)
             enddo
             enddo

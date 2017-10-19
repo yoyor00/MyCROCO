@@ -470,7 +470,9 @@ C$    trd=omp_get_thread_num()
 ! computation  MPI computational margins.
 !----------------------------------------------------------------------
 !
+#ifndef NBQ_ZETAW
 # include "step2d_extint_avg12_part1.h"
+#endif
 !
 !-----------------------------------------------------------------------
 ! Computes rhs for momentum equations
@@ -751,6 +753,7 @@ C$OMP MASTER
 #endif
 C$OMP END MASTER       
 #endif   
+
 !
 !-----------------------------------------------------------------------
 !  Apply conservation requirements for nesting
@@ -782,15 +785,51 @@ C$OMP END MASTER
      &        *rmask(i,j)
 #endif
              enddo
+             do k=N,1,-1
+               z_w(i,j,k-1)=z_w(i,j,k)-hz(i,j,k)
+               z_r(i,j,k)=(z_w(i,j,k)+z_w(i,j,k-1))/2.D0
+             enddo
        enddo
        enddo
+       do i=istr,iend
+       do k=1,N
+!          hz(i,jstrR2,k)=hz(i,jstr,k)
+!          hz(i,jendR2,k)=hz(i,jend,k)
+!           z_w(i,jstrR2,k)=z_w(i,jstr,k)
+!           z_w(i,jendR2,k)=z_w(i,jend,k)
+!           z_w(i,jend+1,k)=z_w(i,jend,k)
+!           z_r(i,jstrR2,k)=z_r(i,jstr,k)
+!           z_r(i,jendR2,k)=z_r(i,jend,k)
+!           z_r(i,jend+1,k)=z_r(i,jend,k)
+       enddo
+       enddo
+!      do j=jstr,jend
+!      do k=1,N
+!          hz(istrR2,j,k)=hz(istr,j,k)
+!          hz(iendR2,j,k)=hz(iend,j,k)
+!          z_w(istrR2,j,k)=z_w(istr,j,k)
+!          z_w(iendR2,j,k)=z_w(iend,j,k)
+!          z_r(istrR2,j,k)=z_r(istr,j,k)
+!          z_r(iendR2,j,k)=z_r(iend,j,k)
+!          if (.not.EAST_INTER) then
+!             hz(iend+1,j,k)=hz(iend,j,k)
+!             z_w(iend+1,j,k)=z_w(iend,j,k)
+!             z_r(iend+1,j,k)=z_r(iend,j,k)
+!          endif
+!      enddo
+!      enddo
+
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        z_w(START_2D_ARRAY,0))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        z_r(START_2D_ARRAY,1))
 #  endif 
        endif
 #endif
-!
+
 !      
 !======================================================================
 !======================================================================

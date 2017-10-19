@@ -27,10 +27,17 @@
       cff=0.5*dtfast
 #ifdef SOLVE3D
       cff1=0.5*weight(1,iif)
+      cff2=0.5*weight(2,iif)
 #else
       cff2=2.*dtfast
 #endif
 
+      if (iif==1) then
+         DU_avg1=0.
+         DV_avg1=0.
+         DU_avg2=0.
+         DV_avg2=0.
+      endif
       do j=Jstr,Jend
         do i=IstrU,Iend
 
@@ -79,6 +86,11 @@
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
 #ifdef SOLVE3D
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*on_u(i,j)*( DUnew
+# ifdef MRL_WCI
+     &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+# endif
+     &                                                   )
+          DU_avg2(i,j)=DU_avg2(i,j)+cff2*on_u(i,j)*( DUnew 
 # ifdef MRL_WCI
      &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
 # endif
@@ -134,6 +146,11 @@
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
 #ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
+# ifdef MRL_WCI
+     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+# endif
+     &                                                   )
+          DV_avg2(i,j)=DV_avg2(i,j)+cff2*on_v(i,j)*( DVnew
 # ifdef MRL_WCI
      &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
 # endif
@@ -316,6 +333,7 @@
       endif
 # endif
       cff1=0.5*weight(1,iif)
+      cff2=0.5*weight(2,iif)
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
@@ -326,10 +344,24 @@
      &                                             +ust2d(IstrU-1,j)
 # endif
      &                                             )*on_u(IstrU-1,j)
+          DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)
+     &         +cff2*(Dnew(IstrU-1,j)
+     &         +Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
+# ifdef MRL_WCI
+     &                                             +ust2d(IstrU-1,j)
+# endif
+     &                                             )*on_u(IstrU-1,j)
         enddo
         do j=JstrV,Jend
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)
      &       +cff1*(Dnew(Istr-1,j)
+     &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
+# ifdef MRL_WCI
+     &                                              +vst2d(Istr-1,j)
+# endif
+     &                                              )*om_v(Istr-1,j)
+          DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)
+     &       +cff2*(Dnew(Istr-1,j)
      &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
 # ifdef MRL_WCI
      &                                              +vst2d(Istr-1,j)
@@ -347,10 +379,24 @@
      &                                              +ust2d(Iend+1,j)
 # endif
      &                                              )*on_u(Iend+1,j)
+          DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)
+     &            +cff2*( Dnew(Iend+1,j)
+     &            +Dnew(Iend,j) )*(ubar(Iend+1,j,knew)
+# ifdef MRL_WCI
+     &                                              +ust2d(Iend+1,j)
+# endif
+     &                                              )*on_u(Iend+1,j)
         enddo
         do j=JstrV,Jend
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)
      &        +cff1*( Dnew(Iend+1,j)
+     &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
+# ifdef MRL_WCI
+     &                                              +vst2d(Iend+1,j)
+# endif
+     &                                              )*om_v(Iend+1,j)
+          DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)
+     &        +cff2*( Dnew(Iend+1,j)
      &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
 # ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
@@ -369,10 +415,24 @@
      &                                              +ust2d(i,Jstr-1)
 # endif
      &                                              )*on_u(i,Jstr-1)
+          DU_avg2(i,Jstr-1)=DU_avg2(i,Jstr-1)
+     &        +cff2*( Dnew(i,Jstr-1)
+     &        +Dnew(i-1,Jstr-1) )*(ubar(i,Jstr-1,knew)
+# ifdef MRL_WCI
+     &                                              +ust2d(i,Jstr-1)
+# endif
+     &                                              )*on_u(i,Jstr-1)
         enddo
         do i=IstrR,IendR
           DV_avg1(i,JstrV-1,nnew)=DV_avg1(i,JstrV-1,nnew)
      &         +cff1*(Dnew(i,JstrV-1)
+     &         +Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
+# ifdef MRL_WCI
+     &                                              +vst2d(i,JstrV-1)
+# endif
+     &                                              )*om_v(i,JstrV-1)
+          DV_avg2(i,JstrV-1)=DV_avg2(i,JstrV-1)
+     &         +cff2*(Dnew(i,JstrV-1)
      &         +Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
 # ifdef MRL_WCI
      &                                              +vst2d(i,JstrV-1)
@@ -389,10 +449,24 @@
      &                                               +ust2d(i,Jend+1)
 # endif
      &                                               )*on_u(i,Jend+1)
+          DU_avg2(i,Jend+1)=DU_avg2(i,Jend+1)
+     &        +cff2*( Dnew(i,Jend+1)
+     &        +Dnew(i-1,Jend+1) )*(ubar(i,Jend+1,knew)
+# ifdef MRL_WCI
+     &                                               +ust2d(i,Jend+1)
+# endif
+     &                                               )*on_u(i,Jend+1)
         enddo
         do i=IstrR,IendR
           DV_avg1(i,Jend+1,nnew)=DV_avg1(i,Jend+1,nnew)
      &            +cff1*( Dnew(i,Jend+1)
+     &            +Dnew(i,Jend) )*(vbar(i,Jend+1,knew)
+# ifdef MRL_WCI
+     &                                               +vst2d(i,Jend+1)
+# endif
+     &                                               )*om_v(i,Jend+1)
+          DV_avg2(i,Jend+1)=DV_avg2(i,Jend+1)
+     &            +cff2*( Dnew(i,Jend+1)
      &            +Dnew(i,Jend) )*(vbar(i,Jend+1,knew)
 # ifdef MRL_WCI
      &                                               +vst2d(i,Jend+1)
@@ -442,4 +516,5 @@
 #ifndef SOLVE3D
       call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
 #endif
+
      

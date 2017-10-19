@@ -45,11 +45,11 @@
          zeta (i,j,knew2)=
      &    ( zeta(i,j,kstp2)
      &        +dtfast*(
- !   &    +wmean_nbq(i,j,knew2)
-     &    +cff4*wmean_nbq(i,j,knew2)
-     &    +cff5*wmean_nbq(i,j,kstp2)
-     &    +cff6*wmean_nbq(i,j,kbak2)
-     &    +cff7*wmean_nbq(i,j,kold2)
+     &    +wmean_nbq(i,j,knew2)
+ !   &    +cff4*wmean_nbq(i,j,knew2)
+ !   &    +cff5*wmean_nbq(i,j,kstp2)
+ !   &    +cff6*wmean_nbq(i,j,kbak2)
+ !   &    +cff7*wmean_nbq(i,j,kold2)
      &    -0.5*(umean_nbq(i  ,j)
      &          *(zetaw_nbq(i  ,j,kstp2)
      &           -zetaw_nbq(i-1,j,kstp2))*pm_u(i,j)

@@ -226,6 +226,12 @@
       common /com_cff6/ cff6
       real cff7
       common /com_cff7/ cff7
+      real cff8
+      common /com_cff8/ cff8
+      real cff9
+      common /com_cff9/ cff9
+      real cff10
+      common /com_cff10/ cff10
       integer flag_grid
       common /grid_flag/ flag_grid
       integer IstrU2,JstrV2
@@ -241,6 +247,10 @@
       common /nbq_nods7/ dZdyq_w
 #   endif
 
+#  endif
+#  ifdef NBQ_NUDGING
+      real nudg_coef_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_nudg1/nudg_coef_nbq
 #  endif
 
 !**********************************************************************

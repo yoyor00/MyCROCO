@@ -87,6 +87,21 @@
         cff3=0.013
 #endif
       endif
+
+      if (iif.eq.1) then
+        cff8=1.D0
+        cff9=0.D0
+        cff10=0.D0
+      elseif (iif.eq.1+1) then
+        cff8=1.D0
+        cff9=0.D0
+        cff10=0.D0
+      else
+        cff8= 1.5D0+mybeta
+        cff9=-2.0D0*mybeta-0.5D0
+        cff10= mybeta
+      endif
+
 #endif
 !#endif
 
@@ -135,7 +150,12 @@ C$OMP END MASTER
 #else
 !         Drhs(i,j)=cff1*zeta(i,j,kstp2)+cff2*zeta(i,j,kbak2)
 !    &                                  +cff3*zeta(i,j,kold2)
-           Drhs(i,j)=zeta(i,j,kstp2)
+#ifndef NBQ_AB3
+          Drhs(i,j)=zeta(i,j,kstp2)
+#else
+          Drhs(i,j)=cff8*zeta(i,j,kstp2)+cff9*zeta(i,j,kbak2)
+     &                                 +cff10*zeta(i,j,kold2)
+#endif
 #endif
 #ifndef NBQ_MASS
      &                                             + h(i,j)
@@ -173,7 +193,12 @@ C$OMP END MASTER
 !         urhs(i,j)=cff4*ubar(i,j,kstp2) +cff5*ubar(i,j,kbak2)
 !    &                                   +cff6*ubar(i,j,kold2)
         !   urhs(i,j)=DU_nbq(i,j)    !ubar(i,j,kstp2)
-            urhs(i,j)=ubar(i,j,kstp2)
+#ifndef NBQ_AB3
+          urhs(i,j)=ubar(i,j,kstp2)
+#else
+          urhs(i,j)=cff8*ubar(i,j,kstp2) +cff9*ubar(i,j,kbak2)
+     &                                  +cff10*ubar(i,j,kold2)
+#endif
 #endif
 #if defined MRL_WCI && defined MASKING
           urhs(i,j)=urhs(i,j)*umask(i,j)+ust2d(i,j)*(umask(i,j)-1.0)
@@ -196,8 +221,13 @@ C$OMP END MASTER
 !         vrhs(i,j)=cff4*vbar(i,j,kstp2) +cff5*vbar(i,j,kbak2)
 !    &                                   +cff6*vbar(i,j,kold2)
 
+#ifndef NBQ_AB3
          !  vrhs(i,j)=DV_nbq(i,j)   !vbar(i,j,kstp2)
             vrhs(i,j)=vbar(i,j,kstp2)
+#else
+          vrhs(i,j)=cff8*vbar(i,j,kstp2) +cff9*vbar(i,j,kbak2)
+     &                                  +cff10*vbar(i,j,kold2)
+#endif
 #endif
 #if defined MRL_WCI && defined MASKING
           vrhs(i,j)=vrhs(i,j)*vmask(i,j)+vst2d(i,j)*(vmask(i,j)-1.0)
