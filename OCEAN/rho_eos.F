@@ -10,10 +10,12 @@
 !======================================================================
 !
 #include "cppdefs.h"
-# ifdef RVTK_DEBUG
+#ifdef RVTK_DEBUG
+# undef QUAD
+# undef QuadZero
 # define QUAD 16
 # define QuadZero 0.Q0
-# endif
+#endif
 #ifdef SOLVE3D
 # ifdef NONLIN_EOS
 # define DUKO_2001
