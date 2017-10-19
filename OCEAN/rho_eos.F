@@ -10,6 +10,10 @@
 !======================================================================
 !
 #include "cppdefs.h"
+# ifdef RVTK_DEBUG
+# define QUAD 16
+# define QuadZero 0.Q0
+# endif
 #ifdef SOLVE3D
 # ifdef NONLIN_EOS
 # define DUKO_2001
@@ -552,7 +556,9 @@ C$OMP CRITICAL (rho_cr_rgn)
         rho0=1000. + mrho
 #  endif
 
+#  ifndef RVTK
         rho0 = nint(rho0*1.d12,kind=8)/1.d12 ! round rho0 to 12 digits
+#  endif
 
         MPI_master_only write(stdout,'(F10.4,2x,A,1x,A/)')
      &        rho0, 'rho0     Reset Boussinesq approximation',
