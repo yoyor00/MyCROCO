@@ -552,9 +552,8 @@ C$OMP CRITICAL (rho_cr_rgn)
 #  else
         rho0=1000. + mrho
 #  endif
-        rho0 = nint(rho0*1.d12,kind=8)/1.d12
 
-        rho0 = nint(rho0*1.d12,kind=8)/1.d12 ! round rho0 to 12 digits
+        rho0 = nint(rho0*1.d6,kind=8)/1.d6 ! round rho0 to 6 digits
 
         MPI_master_only write(stdout,'(F10.4,2x,A,1x,A/)')
      &        rho0, 'rho0     Reset Boussinesq approximation',
