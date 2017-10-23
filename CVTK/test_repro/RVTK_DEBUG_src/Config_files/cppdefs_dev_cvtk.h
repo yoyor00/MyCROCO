@@ -233,9 +233,11 @@
 ======================================================================
 */
 #ifdef UV_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
+#elif defined UV_VADV_WENO5
 #elif defined UV_VADV_C2
 #else
 # define UV_VADV_SPLINES   /* Splines vertical advection             */
+# undef  UV_VADV_WENO5     /* 5th-order WENOZ vertical advection  */
 # undef  UV_VADV_C2        /* 2nd-order centered vertical advection  */
 #endif
 
@@ -270,11 +272,11 @@
 /* 
   Options for split-rotated advection-diffusion schemes
 */
-#ifdef TS_HADV_C4      /* 4th-order centered advection with:  */
-# define TS_DIF2       /*   + Laplacian Diffusion             */
-# undef  TS_DIF4       /*                                     */
-# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity         */
-# define TS_MIX_ISO    /*   + Isopycnal rotation              */ 
+#ifdef TS_HADV_C4      /* 4th-order centered advection with:   */
+# define TS_DIF2       /*   + Laplacian Diffusion              */
+# undef  TS_DIF4       /*                                      */
+# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
+# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
 #endif 
 #ifdef TS_HADV_RSUP3   /*  Rotated-Split 3rd-order scheme is:  */
 # define TS_HADV_C4    /*    4th-order centered advection      */
@@ -513,7 +515,10 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-# undef MOVING_BATHY
+# ifdef MOVING_BATHY
+# else
+#  undef MOVING_BATHY
+# endif
 #endif
 
 /*
