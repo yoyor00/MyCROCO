@@ -63,6 +63,7 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
       implicit none
 # include "param.h"
 # include "grid.h"
+# include "ocean2d.h"
 # include "ocean3d.h"
 # include "nbq.h"
 # include "climat.h"
@@ -76,6 +77,7 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
      &        cx,cy, dft,dfx,dfy, tau,tau_in,tau_out
       parameter (eps=1.E-20)
       double precision :: mask1_v,mask2_v
+      real sum_o(PRIVATE_2D_SCRATCH_ARRAY)
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -217,18 +219,33 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 #   else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
+
+        sum_o=0.
         do k=1,N
           do i=Istr,Iend
-            qdmv_nbq(i,Jstr,k)=qdmv_nbq(i,Jstr+1,k)
+!            qdmv_nbq(i,Jstr,k)=qdmv_nbq(i,Jstr+1,k)
+              qdmv_nbq(i,Jstr,k)=v(i,Jstr,k,nrhs)
+     &                      *0.5*(Hz(i,Jstr,k)+ Hz(i,Jstr-1,k))
 #    ifdef MASKING
      &                                     *vmask(i,Jstr)
 #    endif
 #    ifdef WET_DRY
      &                                 *vmask_wet(i,Jstr)
 #    endif
+              sum_o(i,Jstr)=sum_o(i,Jstr)+qdmv_nbq(i,Jstr,k)
           enddo
         enddo
       
+        do k=1,N
+          do i=Istr,Iend
+               qdmv_nbq(i,Jstr,k)=qdmv_nbq(i,Jstr,k)-sum_o(i,Jstr)
+     &                  /float(N)
+     &                 +vbar(i,Jstr,kstp)   
+     &                      *0.5*(Hz(i,Jstr,k)+ Hz(i,Jstr-1,k))
+     &                                             
+          enddo
+        enddo
+
 #   endif
 !#  else
 !        do k=1,N                                     ! Southern edge closed
@@ -360,17 +377,31 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
           enddo
         enddo
 #   else
+        sum_o=0.
         do k=1,N
           do i=Istr,Iend
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
-            qdmv_nbq(i,Jend+1,k)=qdmv_nbq(i,Jend,k)
+!            qdmv_nbq(i,Jend+1,k)=qdmv_nbq(i,Jend,k)
+             qdmv_nbq(i,Jend+1,k)=v(i,Jend+1,k,nrhs)
+     &                      *0.5*(Hz(i,Jstr,k)+ Hz(i,Jstr-1,k))
 #    ifdef MASKING
      &                                   *vmask(i,Jend+1)
 #    endif
 #    ifdef WET_DRY
      &                               *vmask_wet(i,Jend+1)
 #    endif
+              sum_o(i,Jend+1)=sum_o(i,Jend+1)+qdmv_nbq(i,Jend+1,k)
+          enddo
+        enddo
+
+        do k=1,N
+          do i=Istr,Iend
+               qdmv_nbq(i,Jend+1,k)=qdmv_nbq(i,Jend+1,k)-sum_o(i,Jend+1)
+     &                  /float(N)
+     &                 +vbar(i,Jend+1,kstp)   
+     &                      *0.5*(Hz(i,Jend+1,k)+ Hz(i,Jend,k))
+     &                                             
           enddo
         enddo
       
@@ -488,23 +519,32 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 #   else
 !                                            Western edge gradient BC
 !                                            ======= ==== ======== ==
+!       sum_o=0.
         do k=1,N
           do j=JstrV,Jend
-            qdmv_nbq(Istr-1,j,k)=v(Istr-1,j,k,nrhs)
-     &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr,j-1,k))
-!            do i=Istr,Istr+10
-!            qdmv_nbq(I,j,k)=qdmv_nbq(I,j,k)
-!     &            -0.1*real(istr+10-i)**2*(qdmv_nbq(I,j,k)-v(I,j,k,3-nstp))
-!     &            /100.
+!           qdmv_nbq(Istr-1,j,k)=v(Istr-1,j,k,nrhs)
+!    &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr,j-1,k))
+            qdmv_nbq(Istr-1,j,k)=qdmv_nbq(Istr,j,k)
 #    ifdef MASKING
-     &                                   *vmask(Istr,j)
+     &                                   *vmask(Istr-1,j)
 #    endif
 #    ifdef WET_DRY
-     &                               *vmask_wet(Istr,j)
+     &                               *vmask_wet(Istr-1,j)
 #    endif
-!          enddo
+
+!            sum_o(Istr-1,j)=sum_o(Istr-1,j)+qdmv_nbq(Istr-1,j,k)
+!          
           enddo
-        enddo      
+        enddo    
+!        do k=1,N
+!          do j=JstrV,Jend
+!               qdmv_nbq(Istr-1,j,k)=qdmv_nbq(Istr-1,j,k)-sum_o(Istr-1,j)
+!     &                  /float(N)
+!     &                 +vbar(Istr-1,j,kstp)   
+!     &                 *0.5*(Hz(Istr,j,k)+ Hz(Istr,j-1,k))
+!     &                                             
+!          enddo
+!        enddo  
 #   endif
 !#  else
 !#   ifdef NS_COM_PERIODIC
@@ -627,23 +667,31 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 #   else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
+        sum_o=0.
         do k=1,N
           do j=Jstr,Jend
-            qdmv_nbq(Iend+1,j,k)=v(Iend+1,j,k,nrhs)
-     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend+1,j-1,k))
-!            do i=Iend-9,Iend+1
-!            qdmv_nbq(I,j,k)=qdmv_nbq(I,j,k)
-!     &            -0.1*real(i-Iend+9)**2*(qdmv_nbq(I,j,k)-v(I,j,k,3-nstp))
-!     &            /100.
+!           qdmv_nbq(Iend+1,j,k)=v(Iend+1,j,k,nrhs)
+!    &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend+1,j-1,k))
+            qdmv_nbq(Iend+1,j,k)=qdmv_nbq(Iend,j,k)
 #    ifdef MASKING
      &                                  *vmask(Iend+1,j)
 #    endif
 #    ifdef WET_DRY
      &                              *vmask_wet(Iend+1,j)
 #    endif
-!          enddo
+!            sum_o(Iend+1,j)=sum_o(Iend+1,j)+qdmv_nbq(Iend+1,j,k)
+!          
           enddo
         enddo      
+!        do k=1,N
+!          do j=JstrV,Jend
+!               qdmv_nbq(Iend+1,j,k)=qdmv_nbq(Iend+1,j,k)-sum_o(Iend+1,j)
+!     &                  /float(N)
+!     &                 +vbar(Iend+1,j,kstp)   
+!     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend+1,j-1,k))
+!     &                                             
+!          enddo
+!        enddo  
 #   endif
 !#  else
 !#   ifdef NS_COM_PERIODIC
