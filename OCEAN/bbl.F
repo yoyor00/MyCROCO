@@ -318,7 +318,8 @@
 !  using grain + bedload roughness.
 !---------------------------------------------------------------------
             cff1=vonKar/LOG(Zr(i,j)/znotc)
-            tau_c = cff1*cff1*Umag(i,j)*Umag(i,j)    
+            cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
+            tau_c = cff2*Umag(i,j)*Umag(i,j)    
             tau_wb = scf1*((znotc*Fwave)**scf2)*(Ub(i,j)**scf3)
             tau_cw= tau_c*(1.+scf4*((tau_wb/(tau_wb+tau_c))**scf5))
         
@@ -398,7 +399,8 @@
 ! Compute bottom stress components based on total roughness [m/s]^2
 !---------------------------------------------------------------------
             cff1  = vonKar/LOG(Zr(i,j)/znotc)
-            tau_c = cff1*cff1*Umag(i,j)*Umag(i,j)  
+            cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
+            tau_c = cff2*Umag(i,j)*Umag(i,j)  
             tau_w = scf1*((znotc*Fwave)**scf2)*(Ub(i,j)**scf3)
             tau_cw= tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**scf5))
 

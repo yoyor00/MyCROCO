@@ -632,7 +632,7 @@ C$OMP BARRIER
 !
 !  Spinup: intergrate wave model to equilibrium
 !
-      do while (iwave.le.20000.and.thwave.ge.1.D-5)
+      do while (iwave.le.50000.and.thwave.ge.1.D-10)
         wstp=wnew
         wnew=wstp+1
         if (wnew.ge.3) wnew=1

@@ -55,7 +55,7 @@
       real, dimension(3) :: wkb_bry
       real sbc, kh, kk, nw, cg, a0, ax, ax1, ax2, ay, ay1, ay2,
      &     cosw, sinw, cw, dtinv, cxu, cev, orbital, peg,
-     &     inv_k, khn, cff, cff0, cff1, cff2, w1, w2, w3,
+     &     inv_k, khn, cff,cff0,cff1,cff2,cffX,cffE, w1, w2, w3,
      &     dtwave, cfrc, inv_f, urms, abot, fw, c_roller
       real wamp, wh, cfrq, cdir, Btg, gamw, khd, kw, kr, ks,
      &     ho, dd, co, cgo, dsup
@@ -287,7 +287,7 @@
               dsup=-0.125*(wh**2)*kw/sinh(2.*kw*dd) ! wave set-up
             enddo
             do k=1,2
-              hrm(i,j,k)=wh*2.0
+              hrm(i,j,k)=wamp*2.0
 #  ifdef MASKING
      &                            *rmask(i,j)
 #  endif
@@ -553,8 +553,7 @@ C$OMP BARRIER
 ! Solve primary wavenumber equation
 !---------------------------------------------------------------------
 !
-      cff1=95.                 ! smoothing coefficient
-      cff2=10.                 !   + depth limitation 
+      cff=10.                  ! smoothing coefficient
 !
       do j=jstr,jend
         do i=istr,iend
@@ -565,14 +564,17 @@ C$OMP BARRIER
           cxu=cgx(i,j)
           cev=cge(i,j)
 # endif
-          ax1=cxu+abs(cxu)                ! 1st order upwind scheme
+          ax1=cxu+abs(cxu)             ! 1st order upwind scheme
           ax2=cxu-abs(cxu)
           ay1=cev+abs(cev)
           ay2=cev-abs(cev)
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
 # ifdef ADD_DIFF
-          cff=1/max(rkx(i,j)**2+rke(i,j)**2,eps)
+          cff1=0.5+0.5*(tanh(Dstp(i,j)-10.))       ! depth limitation
+          cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
+          cffX=cff*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
+          cffE=cff*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
 # endif
           wkx(i,j,wnew)=wkx(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*on_r(i,j)*(Dstp(i+1,j)-Dstp(i-1,j))
@@ -587,11 +589,8 @@ C$OMP BARRIER
      &               *(kvx(i,j)+kvx(i+1,j)+kvx(i,j+1)+kvx(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &                    -cff1*(0.55+0.5*(tanh(Dstp(i,j)-cff2)))*( 
-     &                                    min(1.,cff*rke(i,j)**2)*
-     &                on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
-     &                                  + min(1.,cff*rkx(i,j)**2)*
-     &                om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1)) )
+     &          -cffX*on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
+     &          -cffE*om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1))
 # endif
      &                                                            )
           wke(i,j,wnew) =wke(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
@@ -607,11 +606,8 @@ C$OMP BARRIER
      &               *(kue(i,j)+kue(i+1,j)+kue(i,j+1)+kue(i+1,j+1))
 # endif
 # ifdef ADD_DIFF
-     &                    -cff1*(0.55+0.5*(tanh(Dstp(i,j)-cff2)))*(
-     &                                    min(1.,cff*rke(i,j)**2)*
-     &                on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
-     &                                  + min(1.,cff*rkx(i,j)**2)*
-     &                om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1)) )
+     &          -cffX*on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
+     &          -cffE*om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1))
 # endif
      &                                                            )
 # ifdef MASKING
@@ -650,18 +646,18 @@ C$OMP BARRIER
       do j=jstr,jend
         do i=istr,iend
 # ifdef ADD_DIFF
-          cff=1/max(rkx(i,j)**2+rke(i,j)**2,eps)
+          cff1=0.5+0.5*(tanh(Dstp(i,j)-10.))       ! depth limitation
+          cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
+          cffX=cff*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
+          cffE=cff*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
 # endif
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                   *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
 # ifdef ADD_DIFF
-     &                 -cff1*(0.55+0.5*(tanh(Dstp(i,j)-cff2)))*(
-     &                                 min(1.,cff*rke(i,j)**2)*
-     &                               on_r(i,j)*(wac(i+1,j,wprv)
-     &                        -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
-     &                               + min(1.,cff*rkx(i,j)**2)*
-     &                               om_r(i,j)*(wac(i,j+1,wprv)
-     &                        -2.*wac(i,j,wprv)+wac(i,j-1,wprv)) )
+     &                           -cffX*on_r(i,j)*(wac(i+1,j,wprv)
+     &                          -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
+     &                           -cffE*om_r(i,j)*(wac(i,j+1,wprv)
+     &                          -2.*wac(i,j,wprv)+wac(i,j-1,wprv))
 # endif
      &                            ) +wsb(i,j,wstp)+wfc(i,j,wstp) )
 # ifdef WKB_NUDGING
@@ -672,7 +668,7 @@ C$OMP BARRIER
           wac(i,j,wnew)=wac(i,j,wnew)*rmask(i,j)
 # endif
 # ifdef WET_DRYXXX
-          wac(i,j,wnew)=wac(i,j,wnew)*rmask_wet(i,j)
+          wac(i,j,wnew)=wac(i,j,wnew)*rmask_wet(i,j) ! unstable
 # endif
         enddo
       enddo           ! <--- discard acx,ace
@@ -719,18 +715,18 @@ C$OMP BARRIER
         do i=istr,iend
           war(i,j,wnew) =war(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
-# ifdef ADD_DIFF
+# ifdef ADD_DIFFXXX
      &                           -cff*on_r(i,j)*(war(i+1,j,wprv)
-     &                        -2.*war(i,j,wprv)+war(i-1,j,wprv))
+     &                         -2.*war(i,j,wprv)+war(i-1,j,wprv))
      &                           -cff*om_r(i,j)*(war(i,j+1,wprv)
-     &                        -2.*war(i,j,wprv)+war(i,j-1,wprv))
+     &                         -2.*war(i,j,wprv)+war(i,j-1,wprv))
 # endif
      &                )-wkb_roller*wsb(i,j,wstp)+wsr(i,j,wstp) )
 #  ifdef MASKING
           war(i,j,wnew) =war(i,j,wnew)*rmask(i,j)
 #  endif
 #  ifdef WET_DRYXXX
-          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j)
+          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j) ! unstable
 #  endif
         enddo
       enddo           ! <--- discard acx,ace

@@ -593,11 +593,14 @@ C$    integer  trd, omp_get_thread_num
       surelev=1.
       do j=JstrR,JendR
         do i=IstrR,IendR
-          ssh(i,j)=zeta(i,j,knew)-mssh
+          ssh(i,j)=zeta(i,j,knew)
      &                +tide_ampli_moy*(1.+tide_ampli_var
      &                *sin(time*omega1))
      &                *sin(time*omega2)
      &                    +time*surelev/31536000.
+# ifndef RVTK_DEBUG
+     &                          - mssh
+# endif
         enddo
       enddo
 # else

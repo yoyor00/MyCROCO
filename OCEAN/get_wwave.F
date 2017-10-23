@@ -294,24 +294,21 @@
       implicit none
 
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2
-      real fac, fac1, fac2, fac3, fac4, fac5, fac6,fac7,fac8, 
-     &     wwA, wwD, wwP, wwe, Dstp,cfrq,wdir
-      real cff,cff1,cff2, kh,khd, eps,xdir,ydir,
+      real    fac, fac1, fac2, fac3, fac4, fac5, fac6,fac7,fac8, 
+     &        wwA, wwD, wwP, wwe, Dstp,cfrq,wdir,hrms
+      real    cff,cff1,cff2, kh,khd,kw, eps,xdir,ydir,
      &                                           wramp,m2p,isr2 
 # ifdef BBL_OFFLINE
      &                                            , ab, orb_vel
 # endif
-!# ifdef MRL_WCI
-!     &                                          , Btg, Gtg, sbc
-!# endif
       parameter (eps = 1.0d-10, m2p=1.2804973111, isr2=0.70710678)
-
 !
 # include "param.h"
 # include "grid.h"
 # include "forces.h"
 # include "scalars.h"
 # include "ocean2d.h"
+# include "ocean3d.h"
 !
 # include "compute_extended_bounds.h"
 !
@@ -432,18 +429,50 @@
           enddo
         enddo
 !
+! Simulate nearshore modifications for low resolution data
+!
+# ifndef SHOREFACE
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
+#  ifdef MEKONG
+!
+! Strong mud bank dissipation formulation: frequency and depth-dependent 
+! dissipation rate is a function akin to that proposed by Bretschneider 
+! and Reid (1954) and Grosskopf (1980): longer and higher waves are more 
+! highly dissipated.
+!
+            hrms=2*Awave(i,j)
+            cfrq=2*pi/Pwave(i,j)
+            khd=Dstp*cfrq*cfrq/g
+            kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
+     &                    +khd*(0.3555555555 + khd*(0.1608465608
+     &                    +khd*(0.0632098765 + khd*(0.0217540484
+     &                                    +khd*0.0065407983)))))) )
+            kw=kh/Dstp
+            Awave(i,j)=Awave(i,j)*
+     &                  (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2 
+#  endif /* MEKONG */
+!
+! Simulate surf-zone dissipation due to depth-induced wave breaking
+!
+            Awave(i,j)=min(0.3*Dstp, Awave(i,j))
+          enddo
+        enddo
+# endif /* SHOREFACE */
+!
 ! Compute variables for wave current interactions
 !
 # ifdef MRL_WCI
         do j=jstrR,jendR
           do i=istrR,iendR
-            Dstp=max(h(i,j),eps)
+            Dstp=max(h(i,j)+z_w(i,j,N),eps)
             cfrq=2.0*pi/max(Pwave(i,j)*m2p,0.1D0) ! mean to peak period
             wdir=Dwave(i,j)            ! Dwave=0 when waves to E (CROCO)
             xdir=cos(wdir)
             ydir=sin(wdir)
-            wwfrq(i,j)=cfrq
-            wwhrm(i,j) =2.0*Awave(i,j)*isr2 ! Hsig to Hrms conversion
+            uwwfrq(i,j)=cfrq
+            wwhrm(i,j) =2.0*Awave(i,j)*isr2    ! Hsig to Hrms conversion
             wwdrx(i,j) =xdir
             wwdre(i,j) =ydir
 #  ifdef MASKING

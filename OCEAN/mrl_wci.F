@@ -886,7 +886,7 @@
         do i=istr-1,iend+1
 #   ifndef LH53_STREAMING
           abot  =wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
-          delta =0.160455*((abot/Zob)**0.83)*0.1*Zob  ! BBL thickness
+          delta =0.160455*((abot/Zob)**0.83)*Zob  ! BBL thickness
           inv_k =min(max(a_frc*delta,eps),Dstp(i,j))
           kfrc  =1./inv_k          ! vertical scale for wave friction
 #    ifdef FF_FUNC1
