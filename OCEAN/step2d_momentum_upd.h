@@ -16,11 +16,7 @@
  
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-#ifdef NBQ_MASS
-          Dstp(i,j)=zeta(i,j,kstp)
-#else
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
-#endif
         enddo
       enddo
 
@@ -295,40 +291,24 @@
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
-#  ifndef NBQ_MASS
           Dnew(Istr-1,j)=h(Istr-1,j)+zeta(Istr-1,j,knew)
-#  else
-          Dnew(Istr-1,j)=zeta(Istr-1,j,knew)
-#  endif
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=Jstr-1,JendR
-#  ifndef NBQ_MASS
           Dnew(Iend+1,j)=h(Iend+1,j)+zeta(Iend+1,j,knew)
-#  else
-          Dnew(Iend+1,j)=zeta(Iend+1,j,knew)
-#  endif
         enddo
       endif
 # endif
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=Istr-1,IendR
-#  ifndef NBQ_MASS
           Dnew(i,Jstr-1)=h(i,Jstr-1)+zeta(i,Jstr-1,knew)
-#  else
-          Dnew(i,Jstr-1)=zeta(i,Jstr-1,knew)
-#  endif
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=Istr-1,IendR
-#  ifndef NBQ_MASS
           Dnew(i,Jend+1)=h(i,Jend+1)+zeta(i,Jend+1,knew)
-#  else
-          Dnew(i,Jend+1)=zeta(i,Jend+1,knew)
-#  endif
         enddo
       endif
 # endif

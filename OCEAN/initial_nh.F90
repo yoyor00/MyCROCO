@@ -393,6 +393,19 @@
         thetadiv_nbq        = 0.d0
 # endif
 
+# ifdef NBQ_MASS
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
+          ,rhobar_nbq(START_2D_ARRAY,1))   
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
+          ,rhobar_nbq(START_2D_ARRAY,2))   
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
+          ,rhobar_nbq(START_2D_ARRAY,3))   
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
+          ,rhobar_nbq(START_2D_ARRAY,4))   
+#  endif
+# endif
+
        endif 
 
        if (icall == 3) then 

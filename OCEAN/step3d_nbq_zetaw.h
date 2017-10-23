@@ -101,7 +101,8 @@
 	    WORK(i,j)=pm(i,j)*pn(i,j)
 	 enddo
        enddo      
-       do j=JstrU_nh,JendU_nh   
+# ifdef toto 
+       do j=Jstr,JendU_nh   
           do i=IstrU_nh,IendU_nh
                rubar_nbq(i,j) = 0 
           enddo
@@ -121,6 +122,12 @@
                DV_nbq(i,j)=0.
           enddo
        enddo
+#endif
+       rubar_nbq=0.
+       rvbar_nbq=0.
+       DU_nbq=0.
+       DV_nbq=0.
+
 
 
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
@@ -197,7 +204,6 @@
 # ifdef NBQ_NODS
           if (NSTEP_DS) then
 # endif
-			
           if (k.eq.0) then ! Bottom Boundary conditions
 	
 	    do j=Jstr,Jend
@@ -1419,6 +1425,14 @@
 
 !
 !-------------------------------------------------------------------
+!      rhobar and rho_avg
+!-------------------------------------------------------------------
+!		
+#ifdef NBQ_MASS
+         call densityijk_nbq(20)
+#endif
+!
+!-------------------------------------------------------------------
 !      Grid !
 !-------------------------------------------------------------------
 !		
@@ -1581,7 +1595,7 @@
 #endif  
 !    
 #ifdef NBQ_MASS
-         call densityijk_nbq(20)
+!         call densityijk_nbq(20)
 #endif
 !        endif
 !

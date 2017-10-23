@@ -627,14 +627,6 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #   endif
 
-# ifdef NBQ_MASS
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=h(i,j)+ssh(i,j)
-        enddo
-      enddo
-# endif
-
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (istr,iend,jstr,jend, ssh(START_2D_ARRAY))
 # endif
@@ -2059,9 +2051,6 @@ C$    integer  trd, omp_get_thread_num
 #   else
           zetabry_west(j)=0.
 #   endif
-#   ifdef NBQ_MASS
-     &                   +h(IstrR,j)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2093,9 +2082,6 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
         do j=JstrR,JendR
           zetabry_east(j)=0.
-#   ifdef NBQ_MASS
-     &                   +h(IendR,j)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2127,9 +2113,6 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
         do i=IstrR,IendR
           zetabry_south(i)=0.
-#   ifdef NBQ_MASS
-     &                   +h(i,JstrR)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2161,9 +2144,6 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
         do i=IstrR,IendR
           zetabry_north(i)=0.
-#   ifdef NBQ_MASS
-     &                   +h(i,JendR)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY

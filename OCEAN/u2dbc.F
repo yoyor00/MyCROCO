@@ -201,12 +201,8 @@ C$    trd=omp_get_thread_num()
 !                                            Western edge Flather BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ_MASS
-          cff=-sqrt(2.*g/(zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp)))
-#   else
           cff=-sqrt(2.*g/(h(Istr-1,j)+h(Istr,j)
      &                   +zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp)))
-#   endif
           ubar(Istr,j,knew)=cff
      &               *(0.5*(zeta(Istr-1,j,knew)+zeta(Istr,j,knew))
 #   ifdef Z_FRC_BRY
@@ -228,15 +224,8 @@ C$    trd=omp_get_thread_num()
 !                                            Western edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ_MASS
-!         cff=0.5*(zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
-          cff=0.5*(
-     &             zeta(Istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
-     &            +zeta(Istr  ,j,kstp)/rhobar_nbq(Istr  ,j,kstp))
-#   else
           cff=0.5*(h(Istr-1,j)+h(Istr,j)+
      &             zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
-#   endif
           hx=sqrt(g/cff)
           cx=dtfast*cff*hx*0.5*(pm(Istr-1,j)+pm(Istr,j))
   
@@ -245,29 +234,12 @@ c            zx=(0.5+cx)*zeta(Istr,j,kstp)+(0.5-cx)*zeta(Istr-1,j,kstp)
 c          else
 c            zx=(0.5*zeta(Istr,j,kstp)+(cx-0.5)*zeta(Istr,j,knew))/cx
 c          endif
-#   ifndef NBQ_MASS
           zx=(0.5+cx)*zeta(istr,j,kstp)+(0.5-cx)*zeta(istr-1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(istr,j,knew) +cx*zeta(istr-1,j,kstp)
      &                               -(1.+cx)*zeta(istr,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
-#   else
-          zx=(0.5+cx)*(zeta(istr  ,j,kstp)/rhobar_nbq(Istr ,j,kstp)                
-     &                   -h(istr  ,j))
-     &      +(0.5-cx)*(zeta(istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
-     &                   -h(istr-1,j))
-
-          if (cx .gt. 0.292893218813452) then
-            zx=zx + (zeta(istr  ,j,knew)/rhobar_nbq(Istr  ,j,knew)                 
-     &                 -h(istr  ,j)
-     &           +cx*(zeta(istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
-     &                  -h(istr-1,j))
-     &      -(1.+cx)*(zeta(istr  ,j,kstp)/rhobar_nbq(Istr  ,j,kstp)
-     &                  -h(istr  ,j))
-     &                           )*(1.-0.292893218813452/cx)**2
-          endif
-#   endif
   
           ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr,j,kstp)
      &                                    +cx*ubar(Istr+1,j,kstp)
@@ -281,9 +253,6 @@ c          endif
      &                                           -zetabry_west(j)
 #   elif defined ZCLIMATOLOGY
      &                                             -ssh(Istr-1,j)
-#    ifdef NBQ_MASS
-     &                                               +h(Istr-1,j)
-#    endif
 #   endif
      &                           )) !*grad(Istr,j)
 #   ifdef MASKING
@@ -409,12 +378,8 @@ c          endif
 !                                            Eastern edge Flather BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ_MASS
-          cff=sqrt(2.*g/(zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp)))
-#   else
           cff=sqrt(2.*g/(h(Iend,j)+h(Iend+1,j)+
      &                   zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp)))
-#   endif
           ubar(Iend+1,j,knew)=cff
      &               *(0.5*( zeta(Iend,j,knew)+zeta(Iend+1,j,knew))
 #   ifdef Z_FRC_BRY
@@ -436,15 +401,8 @@ c          endif
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-#   ifdef NBQ_MASS
-!         cff=0.5*(zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
-          cff=0.5*(
-     &             zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
-     &            +zeta(Iend+1,j,kstp)/rhobar_nbq(Iend+1,j,kstp))
-#   else
           cff=0.5*(h(Iend,j)+h(Iend+1,j)+
      &             zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
-#   endif
           hx=sqrt(g/cff)
           cx=dtfast*cff*hx*0.5*(pm(Iend,j)+pm(Iend+1,j))
   
@@ -453,28 +411,12 @@ c            zx=(0.5+cx)*zeta(Iend,j,kstp)+(0.5-cx)*zeta(Iend+1,j,kstp)
 c          else
 c            zx=(0.5*zeta(Iend,j,kstp)+(cx-0.5)*zeta(Iend,j,knew))/cx
 c          endif
-#   ifndef NBQ_MASS
           zx=(0.5+cx)*zeta(iend,j,kstp)+(0.5-cx)*zeta(iend+1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(iend,j,knew) +cx*zeta(iend+1,j,kstp)
      &                               -(1.+cx)*zeta(iend,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
-#   else
-          zx=(0.5+cx)*(zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
-     &                   -h(Iend  ,j))
-     &      +(0.5-cx)*(zeta(Iend+1,j,kstp)/rhobar_nbq(Iend+1,j,kstp)
-     &                   -h(Iend+1,j))
-          if (cx .gt. 0.292893218813452) then
-            zx=zx +(zeta(iend  ,j,knew)/rhobar_nbq(Iend  ,j,knew)
-     &                -h(iend  ,j)
-     &          +cx*(zeta(Iend+1,j,kstp)/rhobar_nbq(Iend+1,j,kstp)
-     &                 -h(Iend+1,j))
-     &     -(1.+cx)*(zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
-     &                 -h(Iend  ,j))
-     &                           )*(1.-0.292893218813452/cx)**2
-          endif
-#   endif
   
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
      &                                        +cx*ubar(Iend,j,kstp)
@@ -488,9 +430,6 @@ c          endif
      &                                           -zetabry_east(j)
 #   elif defined ZCLIMATOLOGY
      &                                               -ssh(Iend,j)
-#    ifdef NBQ_MASS
-     &                                                +h(Iend,j)
-#    endif
 #   endif
      &                             )) !*grad(Iend+1,j)
 #   ifdef MASKING
@@ -616,12 +555,8 @@ c          endif
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
-#   ifdef NBQ_MASS
-          cff=sqrt(0.5*g*(zeta(i-1,Jstr-1,kstp)+zeta(i,Jstr-1,kstp)))
-#   else
           cff=sqrt(0.5*g*(h(i-1,Jstr-1)+h(i,Jstr-1)+
      &                    zeta(i-1,Jstr-1,kstp)+zeta(i,Jstr-1,kstp)))
-#   endif
           cx=dtfast*0.5*cff*(pn(i-1,Jstr-1)+pn(i,Jstr-1))
           ubar(i,Jstr-1,knew)=(ubar(i,Jstr-1,kstp)
      &                         +cx*ubar(i,Jstr,knew) )/(1.+cx)     
@@ -749,12 +684,8 @@ c          endif
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
-#   ifdef NBQ_MASS
-          cff=sqrt(0.5*g*(zeta(i-1,Jend+1,kstp)+zeta(i,Jend+1,kstp)))
-#   else
           cff=sqrt(0.5*g*(h(i-1,Jend+1)+h(i,Jend+1)+
      &                    zeta(i-1,Jend+1,kstp)+zeta(i,Jend+1,kstp)))
-#   endif
           cx=dtfast*0.5*cff*(pn(i-1,Jend+1)+pn(i,Jend+1))
      &                    
           ubar(i,Jend+1,knew)=(ubar(i,Jend+1,kstp)

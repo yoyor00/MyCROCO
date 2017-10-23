@@ -244,6 +244,7 @@ C$    trd=omp_get_thread_num()
       real FC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
       real FX(PRIVATE_2D_SCRATCH_ARRAY) 
 	  integer :: k1, k2, kp1
+      integer i1_a,i2_a,j1_a,j2_a
 
       real DC(PRIVATE_1D_SCRATCH_ARRAY,0:N+1) 
       real CF(PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
@@ -307,6 +308,7 @@ C$    trd=omp_get_thread_num()
 # ifdef NBQ_NODS
 #  if defined NBQ_IMP && defined NBQ_ZETAW
 #   define NSTEP_DS mod(iic,1000)==1.and.iif==1
+!#   define NSTEP_DS mod(iic,10)==1
 #  else
 #   define NSTEP_DS mod(iic,200)==1.and.iif==1
 #  endif
@@ -765,16 +767,39 @@ C$OMP END MASTER
 
 #ifdef NBQ_TRACERS
        if (iif==nfast) then
-       do j=jstr,jend
-       do i=istr,iend
+#ifdef MPI
+       if (mynode==0) then
+         i1_a=istr+1
+         i2_a=iend
+         j1_a=jstr
+         j2_a=jend
+       elseif (mynode==35) then
+         i1_a=istr
+         i2_a=iend-1
+         j1_a=jstr
+         j2_a=jend
+       else
+         i1_a=istr
+         i2_a=iend
+         j1_a=jstr
+         j2_a=jend
+       endif
+#else
+         i1_a=istr
+         i2_a=iend
+         j1_a=jstr
+         j2_a=jend
+#endif
+       do j=j1_a,j2_a
+       do i=i1_a,i2_a
            dum_s=0.
            do k=1,N
              dum_s=dum_s+
      &           hz(i,j,k)-hz_bak(i,j,k)
             enddo
             do k=1,N
-             hz(i,j,k)=hz(i,j,k)
-     &         -(dum_s
+
+             Hz_corr(i,j,k)=(dum_s
      &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
      &             +DV_avg2(i,j+1)-DV_avg2(i,j)
      &               )*pm(i,j)*pn(i,j)
@@ -784,11 +809,23 @@ C$OMP END MASTER
 #ifdef MASKING
      &        *rmask(i,j)
 #endif
+
+             hz(i,j,k)=hz(i,j,k)
+     &         -(dum_s
+     &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
+     &             +DV_avg2(i,j+1)-DV_avg2(i,j)
+     &               )*pm(i,j)*pn(i,j)
+     &        *dt) / float(N)
+!    &                /(z_w(i,j,N)-z_w(i,j,0))
+!    &                *(z_w(i,j,k)-z_w(i,j,k-1))
+#ifdef MASKING
+     &        *rmask(i,j)
+#endif
              enddo
-             do k=N,1,-1
-               z_w(i,j,k-1)=z_w(i,j,k)-hz(i,j,k)
-               z_r(i,j,k)=(z_w(i,j,k)+z_w(i,j,k-1))/2.D0
-             enddo
+!            do k=N,1,-1
+!              z_w(i,j,k-1)=z_w(i,j,k)-hz(i,j,k)
+!              z_r(i,j,k)=(z_w(i,j,k)+z_w(i,j,k-1))/2.D0
+!            enddo
        enddo
        enddo
        do i=istr,iend
@@ -803,21 +840,24 @@ C$OMP END MASTER
 !           z_r(i,jend+1,k)=z_r(i,jend,k)
        enddo
        enddo
-!      do j=jstr,jend
-!      do k=1,N
+       do j=jstr,jend
+       do k=1,N
 !          hz(istrR2,j,k)=hz(istr,j,k)
 !          hz(iendR2,j,k)=hz(iend,j,k)
 !          z_w(istrR2,j,k)=z_w(istr,j,k)
 !          z_w(iendR2,j,k)=z_w(iend,j,k)
 !          z_r(istrR2,j,k)=z_r(istr,j,k)
 !          z_r(iendR2,j,k)=z_r(iend,j,k)
-!          if (.not.EAST_INTER) then
-!             hz(iend+1,j,k)=hz(iend,j,k)
+
+# ifndef EW_PERIODIC
+       if (EASTERN_EDGE) then
+              hz(iend+1,j,k)=hz(iend,j,k)
 !             z_w(iend+1,j,k)=z_w(iend,j,k)
 !             z_r(iend+1,j,k)=z_r(iend,j,k)
-!          endif
-!      enddo
-!      enddo
+       endif
+#endif
+       enddo
+       enddo
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,

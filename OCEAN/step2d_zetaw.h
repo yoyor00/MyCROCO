@@ -13,19 +13,11 @@
 !-----------------------------------------------------------------------
 !
       if (iic==1.and.iif==1) then
-#ifdef NBQ_MASS
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-           zetaw_nbq(i,j,:)=zeta(i,j,:)-h(i,j)
-        enddo
-      enddo
-#else
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-           zetaw_nbq(i,j,:)=zeta(i,j,:)
-        enddo
-      enddo
-#endif
+         do j=JstrV-1,Jend
+            do i=IstrU-1,Iend
+               zetaw_nbq(i,j,:)=zeta(i,j,:)
+            enddo
+         enddo
       endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
@@ -45,11 +37,14 @@
          zeta (i,j,knew2)=
      &    ( zeta(i,j,kstp2)
      &        +dtfast*(
+# ifdef NBQ_AM4
+     &    +cff4*wmean_nbq(i,j,knew2)
+     &    +cff5*wmean_nbq(i,j,kstp2)
+     &    +cff6*wmean_nbq(i,j,kbak2)
+     &    +cff7*wmean_nbq(i,j,kold2)
+# else
      &    +wmean_nbq(i,j,knew2)
- !   &    +cff4*wmean_nbq(i,j,knew2)
- !   &    +cff5*wmean_nbq(i,j,kstp2)
- !   &    +cff6*wmean_nbq(i,j,kbak2)
- !   &    +cff7*wmean_nbq(i,j,kold2)
+# endif
      &    -0.5*(umean_nbq(i  ,j)
      &          *(zetaw_nbq(i  ,j,kstp2)
      &           -zetaw_nbq(i-1,j,kstp2))*pm_u(i,j)
@@ -97,13 +92,13 @@
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-#  ifdef NBQ_MASS
-           zetaw_nbq(i,j,knew2)=(zeta(i,j,knew2)
-     &                     -h(i,j))
-     &               *rhobar_nbq(i,j,knew2)
-#  else
+!#  ifdef NBQ_MASS
+!           zetaw_nbq(i,j,knew2)=(zeta(i,j,knew2)
+!     &                     -h(i,j))
+!     &               *rhobar_nbq(i,j,knew2)
+!#  else
            zetaw_nbq(i,j,knew2)=zeta(i,j,knew2)
-#  endif
+!#  endif
            zeta_new(i,j)=zeta(i,j,knew2)
         enddo
       enddo
@@ -148,10 +143,8 @@
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 
-#   ifdef MASKING
- 	  zeta_new(i,j)=(zeta_new(i,j) -h(i,j))*rmask(i,j)+h(i,j)
-#   endif
-          Dnew(i,j)=zeta_new(i,j)
+ 	  zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+          Dnew(i,j)=(zeta_new(i,j)+h(i,j))*rhobar_nbq(i,j,knew2)
         enddo
       enddo
 #  else
@@ -176,13 +169,13 @@
 
 !         zeta(i,j,knew)=zeta_new(i,j) 
 
-#   ifdef NBQ_MASS
-          zeta(i,j,knew2)=zeta(i,j,knew2)+ 
-     &               rhobar_nbq(i,j,knew2)*Dcrit(i,j)*(1.-rmask(i,j))
-#   else
+!#   ifdef NBQ_MASS
+!          zeta(i,j,knew2)=zeta(i,j,knew2)+ 
+!     &               rhobar_nbq(i,j,knew2)*Dcrit(i,j)*(1.-rmask(i,j))
+!#   else
           zeta(i,j,knew2)=zeta(i,j,knew2)+ 
      &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-#   endif
+!#   endif
         enddo
       enddo 
 #  endif
@@ -263,24 +256,24 @@ C$OMP END MASTER
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
 
-#  ifdef NBQ_MASS
+!#  ifdef NBQ_MASS
 !!      do j=JstrV-1,Jend
 !!        do i=IstrU-1,Iend
 !!           stop 'coucou'
 !!        enddo
 !!      enddo
-      do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
-        do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
-          zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) - h(i,j) 
-        enddo
-      enddo
-#  else
+!      do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
+!        do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
+!          zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) - h(i,j) 
+!        enddo
+!      enddo
+!#  else
       do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
         do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
           zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) !- h(i,j) 
         enddo
       enddo
-#  endif /* NBQ_MASS */
+!#  endif /* NBQ_MASS */
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.

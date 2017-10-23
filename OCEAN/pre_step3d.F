@@ -666,12 +666,8 @@
             do i=IstrU,Iend
                ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
      &            - qdm_u_ext(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
-# ifdef NBQ_MASS
-     &                               /(Zt_avg1(i,j)+Zt_avg1(i-1,j))
-# else
      &                               /( Zt_avg1(i  ,j)+H(i  ,j)
      &                                 +Zt_avg1(i-1,j)+H(i-1,j))
-# endif
             enddo
           enddo
 # endif
@@ -723,12 +719,8 @@
             do i=IstrU,Iend
                ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
      &            - qdm_u_ext(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
-# ifdef NBQ_MASS
-     &                               /(Zt_avg1(i,j)+Zt_avg1(i-1,j))
-# else
      &                               /( Zt_avg1(i  ,j)+H(i  ,j)
      &                                 +Zt_avg1(i-1,j)+H(i-1,j))
-# endif
             enddo
           enddo
 # endif
@@ -779,12 +771,8 @@
             do i=Istr,Iend
                rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
      &            - qdm_v_ext(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
-# ifdef NBQ_MASS
-     &                               /(Zt_avg1(i,j)+Zt_avg1(i,j-1))
-# else
      &                               /( Zt_avg1(i,j  )+H(i,j  )
      &                                 +Zt_avg1(i,j-1)+H(i,j-1))
-# endif
             enddo
           enddo
 # endif
@@ -835,12 +823,8 @@
             do i=Istr,Iend
                rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
      &            - qdm_v_ext(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
-# ifdef NBQ_MASS
-     &                               /(Zt_avg1(i,j)+Zt_avg1(i,j-1))
-# else
      &                               /( Zt_avg1(i,j  )+H(i,j  )
      &                                 +Zt_avg1(i,j-1)+H(i,j-1))
-# endif
             enddo
           enddo
 # endif

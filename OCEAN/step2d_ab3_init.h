@@ -141,27 +141,53 @@ C$OMP END MASTER
 # define JU_EXT_RANGE max(Jstr-2,0),min(Jend+2,Mm+1)
 #endif
 !
+#ifndef NBQ
       do j=jmin,jmax
         do i=imin,imax
-#ifndef NBQ_ZETAW
-          Drhs(i,j)=cff1*zeta(i,j,kstp)+cff2*zeta(i,j,kbak)
-     &                                 +cff3*zeta(i,j,kold)
-!         Drhs(i,j)=zeta(i,j,kstp)
-#else
-!         Drhs(i,j)=cff1*zeta(i,j,kstp2)+cff2*zeta(i,j,kbak2)
-!    &                                  +cff3*zeta(i,j,kold2)
-#ifndef NBQ_AB3
-          Drhs(i,j)=zeta(i,j,kstp2)
-#else
-          Drhs(i,j)=cff8*zeta(i,j,kstp2)+cff9*zeta(i,j,kbak2)
-     &                                 +cff10*zeta(i,j,kold2)
-#endif
-#endif
-#ifndef NBQ_MASS
-     &                                             + h(i,j)
-#endif
+          Drhs(i,j)= cff1*(zeta(i,j,kstp)+h(i,j))
+     &              +cff2*(zeta(i,j,kbak)+h(i,j))
+     &              +cff3*(zeta(i,j,kold)+h(i,j))
         enddo
       enddo
+#else /* NBQ */
+      do j=jmin,jmax
+        do i=imin,imax
+# ifdef NBQ_MASS
+#  ifndef NBQ_ZETAW
+          Drhs(i,j)= cff1*(zeta(i,j,kstp)+h(i,j))*rhobar_nbq(i,j,kstp)
+     &              +cff2*(zeta(i,j,kbak)+h(i,j))*rhobar_nbq(i,j,kbak)
+     &              +cff3*(zeta(i,j,kold)+h(i,j))*rhobar_nbq(i,j,kold)
+#  else /*  ! NBQ_ZETAW */
+#   ifndef NBQ_AB3
+          Drhs(i,j)=(zeta(i,j,kstp2)+h(i,j)) *rhobar_nbq(i,j,kstp2)
+#   else
+          Drhs(i,j)= cff8 *(zeta(i,j,kstp2)+h(i,j))
+     &                    *rhobar_nbq(i,j,kstp2)
+     &              +cff9 *(zeta(i,j,kbak2)+h(i,j))
+     &                    *rhobar_nbq(i,j,kbak2)
+     &              +cff10*(zeta(i,j,kold2)+h(i,j))
+     &                    *rhobar_nbq(i,j,kold2)
+#   endif
+#  endif /* NBQ_ZETAW */
+# else /* ! NBQ_MASS */
+#  ifndef NBQ_ZETAW
+          Drhs(i,j)= cff1*(zeta(i,j,kstp)+h(i,j))
+     &              +cff2*(zeta(i,j,kbak)+h(i,j))
+     &              +cff3*(zeta(i,j,kold)+h(i,j))
+#  else /*  ! NBQ_ZETAW */
+#   ifndef NBQ_AB3
+          Drhs(i,j)=(zeta(i,j,kstp2)+h(i,j)) 
+#   else
+          Drhs(i,j)= cff8 *(zeta(i,j,kstp2)+h(i,j))
+     &              +cff9 *(zeta(i,j,kbak2)+h(i,j))
+     &              +cff10*(zeta(i,j,kold2)+h(i,j))
+#   endif
+#  endif /* NBQ_ZETAW */
+# endif /* NBQ_MASS */
+        enddo
+      enddo
+#endif /* NBQ */
+
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER

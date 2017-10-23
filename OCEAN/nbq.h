@@ -295,6 +295,8 @@
 
 #endif
 
+      real  Hz_corr(GLOBAL_2D_ARRAY,N) 
+      common/corr_Hz/Hz_corr
 
 #endif /* NBQ */
 

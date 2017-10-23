@@ -1881,11 +1881,7 @@ C$    integer omp_get_thread_num
 !
       do j=Jstr,Jend
         do i=Istr,Iend
-#  ifdef NBQ_MASS
-          zeta(i,j,tndx)=h(i,j)-P(i,j,1)/g
-#  else
           zeta(i,j,tndx)=-P(i,j,1)/g
-#  endif
         enddo
       enddo
 !
@@ -1896,11 +1892,7 @@ C$    integer omp_get_thread_num
       do j=Jstr,Jend
         do i=Istr,Iend
            cff1=1./(pm(i,j)*pn(i,j))
-#  ifdef NBQ_MASS
-           mssh=mssh+cff1*(zeta(i,j,tndx)-h(i,j))
-#  else
            mssh=mssh+cff1*zeta(i,j,tndx)
-#  endif
            area=area+cff1
         enddo
       enddo
@@ -2058,14 +2050,9 @@ C$    integer omp_get_thread_num
       enddo
       do j=Jstr,Jend
         do i=Istr,Iend
-#  ifdef NBQ_MASS
-          ubar(i,j,tndx) = ubar(i,j,tndx) /
-     &                  ( 0.5*(zeta(i,j,tndx)+zeta(i-1,j,tndx)))
-#  else
           ubar(i,j,tndx) = ubar(i,j,tndx) /
      &                  ( 0.5*(zeta(i,j,tndx)+zeta(i-1,j,tndx))
      &                  + 0.5*(h(i,j)+h(i-1,j)) )
-#  endif
         enddo
       enddo
 !
@@ -2082,14 +2069,9 @@ C$    integer omp_get_thread_num
       enddo
       do j=Jstr,Jend
         do i=Istr,Iend
-#  ifdef NBQ_MASS
-          vbar(i,j,tndx) = vbar(i,j,tndx) / 
-     &                ( 0.5*(zeta(i,j,tndx)+zeta(i,j-1,tndx)))
-#  else
           vbar(i,j,tndx) = vbar(i,j,tndx) / 
      &                ( 0.5*(zeta(i,j,tndx)+zeta(i,j-1,tndx))
      &                + 0.5*(h(i,j)+h(i,j-1)) )
-#  endif
         enddo
       enddo
 

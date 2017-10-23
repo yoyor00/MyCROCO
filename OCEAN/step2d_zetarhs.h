@@ -20,8 +20,8 @@
 # else 
 !***********************************************************************
        !   rhobar_nbq(i,j,knew2) = 2.*rhobar_nbq(i,j,kstp2)-rhobar_nbq(i,j,kbak2)
-       !    zwrk(i,j)= zeta(i,j,kstp2)/rhobar_nbq(i,j,kstp2)-h(i,j)
-           zwrk(i,j)=zetaw_nbq(i,j,kstp2)
+       !   zwrk(i,j)= zeta(i,j,kstp2)/rhobar_nbq(i,j,kstp2)-h(i,j)
+           zwrk(i,j)=zeta(i,j,kstp2)
 !          zwrk(i,j)= 
 !     &              +cff4*zeta(i,j,kstp2)/rhobar_nbq(i,j,kstp2)
 !     &              +cff5*zeta(i,j,kbak2)/rhobar_nbq(i,j,kbak2)
@@ -29,10 +29,10 @@
 !     &              -h(i,j)
 
 #  ifdef MASKING
-          Dnew(i,j)=(zeta(i,j,kstp2)-h(i,j))*rmask(i,j)+h(i,j)
+          Dnew(i,j)=(zeta(i,j,kstp2)*rmask(i,j)+h(i,j))*rhobar_nbq(i,j,kstp2)  ! CAUTION: rhobar_nbq must 1 on Mask !!
           zwrk(i,j)=zwrk(i,j)*rmask(i,j)
 #  else
-          Dnew(i,j)=zeta(i,j,kstp2)
+          Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))*rhobar_nbq(i,j,kstp2)
 #  endif
 
 !***********************************************************************
@@ -52,7 +52,7 @@
 !
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-#else /* NBQ_MASS */
+#else /* ! NBQ_MASS */
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !
@@ -73,8 +73,8 @@
 !***********************************************************************
           zetaw_nbq(i,j,knew2)= zetaw_nbq(i,j,knew2)
      &            SWITCH rmask(i,j)   ! Utilité ?????
-          Dnew(i,j)=zeta(i,j,kstp2)+h(i,j)            
-!         Dnew(i,j)=zeta_new(i,j)+h(i,j)            
+!         Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))*rhobar_nbq(i,j,kstp2)
+          Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))
           zwrk(i,j)=zeta(i,j,kstp2) SWITCH rmask(i,j)  
 !         zwrk(i,j)=zeta_new(i,j) SWITCH rmask(i,j)  
 !          zwrk(i,j)= cff4*zeta(i,j,kstp2)

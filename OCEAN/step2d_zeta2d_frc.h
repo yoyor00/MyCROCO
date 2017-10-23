@@ -51,28 +51,28 @@
 # define rzeta2  VFe
 # define rzetaSA VFx
 
-# ifdef NBQ_MASS
-        do j=JstrV-1,Jend
-          do i=IstrU-1,Iend
-            zwrk(i,j)=zeta_new(i,j) /rhobar_nbq(i,j,knew)
-     &               -zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
-#  if defined VAR_RHO_2D && defined SOLVE3D
-            rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
-            rzeta2(i,j)=rzeta(i,j)*
-     &          (( zeta_new(i,j) /rhobar_nbq(i,j,knew)
-     &            +zeta(i,j,kstp)/rhobar_nbq(i,j,kstp) )
-     &            -2.*h(i,j))
-            rzetaSA(i,j)=zwrk(i,j)*(rhoS(i,j)-rhoA(i,j))
-#  else
-            rzeta(i,j)=zwrk(i,j)
-            rzeta2(i,j)=zwrk(i,j)*
-     &           ((zeta_new(i,j) /rhobar_nbq(i,j,knew)
-     &            +zeta(i,j,kstp)/rhobar_nbq(i,j,kstp))
-     &            -2.*h(i,j))
-#  endif
-          enddo
-        enddo
-# else
+!# ifdef NBQ_MASS
+!        do j=JstrV-1,Jend
+!          do i=IstrU-1,Iend
+!            zwrk(i,j)=zeta_new(i,j) /rhobar_nbq(i,j,knew)
+!     &               -zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
+!#  if defined VAR_RHO_2D && defined SOLVE3D
+!            rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
+!            rzeta2(i,j)=rzeta(i,j)*
+!     &          (( zeta_new(i,j) /rhobar_nbq(i,j,knew)
+!     &            +zeta(i,j,kstp)/rhobar_nbq(i,j,kstp) )
+!     &            -2.*h(i,j))
+!            rzetaSA(i,j)=zwrk(i,j)*(rhoS(i,j)-rhoA(i,j))
+!#  else
+!            rzeta(i,j)=zwrk(i,j)
+!            rzeta2(i,j)=zwrk(i,j)*
+!     &           ((zeta_new(i,j) /rhobar_nbq(i,j,knew)
+!     &            +zeta(i,j,kstp)/rhobar_nbq(i,j,kstp))
+!     &            -2.*h(i,j))
+!#  endif
+!          enddo
+!        enddo
+!# else
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta_new(i,j)-zeta(i,j,kstp)
@@ -86,7 +86,7 @@
 #  endif
           enddo
         enddo
-# endif /* NBQ_MASS */
+!# endif /* NBQ_MASS */
 
         cff=0.5*g
         do j=Jstr,Jend

@@ -34,7 +34,7 @@
 #   endif
           enddo
         enddo
-#  else 
+#  else /* NBQ_ZETAW */
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta_new(i,j) 
@@ -56,8 +56,10 @@
 
           enddo
         enddo
-#  endif 
-# else
+#  endif  /* NBQ_ZETAW */
+
+# else   /* NBQ_MASS */
+
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta_new(i,j)-zeta(i,j,kstp)

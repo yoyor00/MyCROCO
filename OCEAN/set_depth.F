@@ -100,13 +100,13 @@ C$    integer omp_get_thread_num
             IF (h(i,j).eq.0.) THEN
               h(i,j)=eps
             END IF
-#  ifdef NBQ_MASS
-            IF (zeta(i,j,1) .lt. Dcrit(i,j)) THEN
-              zeta(i,j,1)=Dcrit(i,j)
-#  else
+!#  ifdef NBQ_MASS
+!            IF (zeta(i,j,1) .lt. Dcrit(i,j)) THEN
+!              zeta(i,j,1)=Dcrit(i,j)
+!#  else
             IF (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) THEN
               zeta(i,j,1)=Dcrit(i,j)-h(i,j)
-#  endif
+!#  endif
               zeta(i,j,2)=zeta(i,j,1)
               zeta(i,j,3)=zeta(i,j,1)
               zeta(i,j,4)=zeta(i,j,1)
@@ -123,24 +123,24 @@ C$    integer omp_get_thread_num
 #  endif
             Zt_avg1(i,j)=zeta(i,j,1)     
           
-#  ifdef NBQ_MASS
-            if (zeta(i,j,1).eq.0.) then     ! Set Zt_avg1 and rhobar_nbq_avg1
-              Zt_avg1(i,j) = h(i,j)         ! before call to ana_initial (zeta=0)
-              zeta(i,j,1)  = Zt_avg1(i,j)
-              zeta(i,j,2)  = zeta(i,j,1)
-              zeta(i,j,3)  = zeta(i,j,1)
-              zeta(i,j,4)  = zeta(i,j,1)
-              zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
-            elseif (resetfromrhobar == 1) then ! Here zeta is zeta + h
-              Zt_avg1(i,j) = zeta(i,j,1)*rhobar_nbq(i,j,1)
-              zeta(i,j,1)  = Zt_avg1(i,j)
-              zeta(i,j,2)  = zeta(i,j,1)
-              zeta(i,j,3)  = zeta(i,j,1)
-              zeta(i,j,4)  = zeta(i,j,1)
-         !!     zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
-            endif
-
-#  endif 
+!#  ifdef NBQ_MASS
+!            if (zeta(i,j,1).eq.0.) then     ! Set Zt_avg1 and rhobar_nbq_avg1
+!              Zt_avg1(i,j) = h(i,j)         ! before call to ana_initial (zeta=0)
+!              zeta(i,j,1)  = Zt_avg1(i,j)
+!              zeta(i,j,2)  = zeta(i,j,1)
+!              zeta(i,j,3)  = zeta(i,j,1)
+!              zeta(i,j,4)  = zeta(i,j,1)
+!              zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
+!            elseif (resetfromrhobar == 1) then ! Here zeta is zeta + h
+!              Zt_avg1(i,j) = zeta(i,j,1)*rhobar_nbq(i,j,1)
+!              zeta(i,j,1)  = Zt_avg1(i,j)
+!              zeta(i,j,2)  = zeta(i,j,1)
+!              zeta(i,j,3)  = zeta(i,j,1)
+!              zeta(i,j,4)  = zeta(i,j,1)
+!         !!     zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
+!            endif!
+!
+!#  endif 
 # endif /* SOLVE3D */
           enddo
         enddo
@@ -201,22 +201,23 @@ C$    integer omp_get_thread_num
 #  endif
           do i=I_RANGE
 
-#  ifndef NBQ_MASS
+!#  ifndef NBQ_MASS
 #   ifdef NBQ_ZETAW
             zetatmp=zetaw_nbq(i,j,knew2)
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
-#  else
-#   ifdef NBQ_ZETAW
-            zetatmp=zetaw_nbq(i,j,knew2)
-#   else
-            zetatmp=Zt_avg1(i,j)
-     &              /rhobar_nbq_avg1(i,j)-h(i,j)
-            if (rhobar_nbq_avg1(i,j).eq.0) stop 'Error set_depth (1)'
-            if (rhobar_nbq(i,j,1).eq.0)    stop 'Error set_depth (2)'
-#   endif
-#  endif
+!#  else
+!#   ifdef NBQ_ZETAW
+!            zetatmp=zetaw_nbq(i,j,knew2)
+!#   else
+!            zetatmp=Zt_avg1(i,j)
+!     &              /rhobar_nbq_avg1(i,j)-h(i,j)
+!            if (rhobar_nbq_avg1(i,j).eq.0) stop 'Error set_depth (1)'
+!            if (rhobar_nbq(i,j,1).eq.0)    stop 'Error set_depth (2)'
+!#   endif
+!#  endif
+
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif

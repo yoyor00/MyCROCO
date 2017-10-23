@@ -11,13 +11,13 @@
         do i=IstrU-1,Iend
           zeta(i,j,knew)=zeta_new(i,j) 
 #if defined WET_DRY && defined MASKING
-# ifdef NBQ_MASS
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &               rhobar_nbq(i,j,knew)*Dcrit(i,j)*(1.-rmask(i,j))
-# else
+!# ifdef NBQ_MASS
+!          zeta(i,j,knew)=zeta(i,j,knew)+ 
+!     &               rhobar_nbq(i,j,knew)*Dcrit(i,j)*(1.-rmask(i,j))
+!# else
           zeta(i,j,knew)=zeta(i,j,knew)+ 
      &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-# endif
+!# endif
 #endif
         enddo
       enddo 
