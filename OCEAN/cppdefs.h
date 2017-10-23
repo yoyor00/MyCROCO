@@ -37,8 +37,7 @@
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
 #undef  S2DV            /* S2DV sections */ 
-#define REGIONAL        /* REGIONAL Applications */
-#undef  REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
+#undef REGIONAL        /* REGIONAL Applications */
 
 
 #if defined REGIONAL
@@ -53,10 +52,12 @@
 !
 */
                       /* Configuration Name */
-# define BENGUELA_LR
+# define RVTK_DEBUG
+
+# define BENGUELA_VHR
                       /* Parallelization */
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
@@ -66,7 +67,7 @@
                       /* I/O server */
 # undef  XIOS
                       /* Open Boundary Conditions */
-# undef  TIDES
+# undef TIDES
 # define OBC_EAST
 # define OBC_WEST
 # define OBC_NORTH
@@ -167,7 +168,7 @@
 #  undef  Cheng_02
 # endif
                       /* Surface Forcing */
-# undef  BULK_FLUX
+# undef BULK_FLUX
 # ifdef BULK_FLUX
 #  define BULK_FAIRALL
 #  define BULK_LW
@@ -184,7 +185,7 @@
 #  define ANA_DIURNAL_SW
 # endif
                       /* Lateral Forcing */
-# define CLIMATOLOGY
+# undef CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
@@ -198,7 +199,7 @@
 #  undef  ROBUST_DIAG
 # endif
 
-# undef  FRC_BRY
+# define FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
@@ -212,7 +213,7 @@
 # undef PSOURCE
 # undef PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
-#   define PSOURCE_NCFILE_TS
+#   undef PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
@@ -317,7 +318,7 @@
 !                       ===== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
@@ -336,7 +337,7 @@
 !                       ===== ====== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define SOLVE3D
@@ -353,7 +354,7 @@
 !                       ====== ====== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define SOLVE3D
@@ -373,7 +374,7 @@
 ! The Thermal Structure of the Upper Ocean, J.Phys.Oceanogr., 34, 888-902.
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
@@ -401,7 +402,7 @@
 !                       ================ =========== =======
 !
 */
-# undef  OPENMP
+# undef OPENMP
 # define KH_INST2D
 # undef  KH_INST3D
 # undef  KH_INSTY
@@ -454,7 +455,7 @@
 !                       ACOUSTIC WAVE TESTCASE 
 !                       ======================
 */
-# undef  OPENMP
+# undef OPENMP
 # define MPI
 # define NBQ
 # ifdef NBQ
@@ -493,9 +494,9 @@
 !  J. Fluid Mech., 434:181-207. 
 !
 */
-# undef  OPENMP
+# undef OPENMP
 # define MPI
-# define NBQ
+# undef NBQ
 # undef  XIOS 
 # ifdef NBQ
 #  define GRAV_ADJ_SOLITON
@@ -521,8 +522,8 @@
 !                       Inner Shelf Example
 !                       ===== ===== =======
 */
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # define INNERSHELF_EKMAN
 # define INNERSHELF_APG
 # define SOLVE3D
@@ -565,8 +566,8 @@
 ! tidal conversion at steep oceanic ridges, J. Phys. Oceanogr., 36, 1072-1084.  
 */
 # undef  ETALON_CHECK
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # define SOLVE3D
 # define UV_COR
 # define UV_ADV
@@ -603,7 +604,7 @@
 !
 */
                       /* Applications */
-# define TIDES
+# undef TIDES
 # define NBQ
 # undef  OA
                       /* Parallelization */
@@ -688,13 +689,13 @@
 !
 */
                       /* Applications */
-# define TIDES
+# undef TIDES
 # define NBQ
 # undef  OA
                       /* Parallelization */
 # undef OPENMP		/* <--  debug mode */
 # define MPI		/* <--  debug mode */
-!# undef MPI		/* <--  debug mode */
+!# define MPI		/* <--  debug mode */
                       /* I/O server */
 # undef XIOS
                       /* Equation of State */
@@ -777,14 +778,14 @@
 */
 
 # define EXPERIMENT3
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # undef  NBQ
 # ifdef NBQ
 #  define NBQ_IMP
 # endif
 # define NEW_S_COORD
-# define TIDES
+# undef TIDES
 # define TIDERAMP
 # define SSH_TIDES
 # define UV_TIDES
@@ -826,7 +827,7 @@
 !                       ==========================
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define SOLVE3D
 # define UV_ADV
 # define UV_COR
@@ -848,7 +849,7 @@
 # define LMD_BKPP
 # define LMD_RIMIX
 # define LMD_CONVEC
-# define PSOURCE
+# undef PSOURCE
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # define FLOATS
@@ -867,7 +868,7 @@
 !                       ======== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define SOLVE3D
@@ -889,7 +890,7 @@
 !                       ===== ===== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define SOLVE3D
@@ -910,7 +911,7 @@
 !                       ========== ====== ==== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_COR
 # define UV_ADV
 # define ANA_GRID
@@ -925,7 +926,7 @@
 !                       ====================== =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
@@ -945,8 +946,8 @@
 !----------------------
 */
                       /* Parallelization */
-# define OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # undef  OBC_EAST
 # undef  OBC_WEST
 # undef  OBC_NORTH
@@ -1010,7 +1011,7 @@
 !                       ========= =======
 */
 # undef OPENMP
-# undef MPI
+# define MPI
 # define SOLVE3D
 # define UV_COR
 # define UV_ADV
@@ -1038,10 +1039,10 @@
 !                       Baroclinic Vortex Example (TEST AGRIF)
 !                       ========== ====== ======= ===== ======
 */
-# undef  OPENMP
-# undef  MPI
-# define AGRIF
-# define AGRIF_2WAY
+# undef OPENMP
+# define MPI
+# undef AGRIF
+# undef AGRIF_2WAY
 # undef  NBQ
 # define SOLVE3D
 # define UV_COR
@@ -1071,8 +1072,8 @@
 !                       ========== === =======
 */
 # define ANA_JET
-# define  MPI
-# define NBQ
+# define MPI
+# undef NBQ
 # ifdef NBQ
 #  define NBQ_OBC
 #  define NBQ_VOL
@@ -1102,7 +1103,7 @@
 # define ANA_BTFLUX
 # define ANA_VMIX
 # define EW_PERIODIC
-# define CLIMATOLOGY
+# undef CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
@@ -1140,8 +1141,8 @@
 !      vortex force formalism: Application to the surf zone.
 !      Ocean Modelling Vol. 34:1-2, pp.16-35.
 */
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # define SOLVE3D
 # define UV_ADV
 # undef  MASKING
@@ -1219,8 +1220,8 @@
 #  define RIP_TOPO_2D
 # endif
 !
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # define SOLVE3D
 # define UV_ADV
 # undef  VADV_ADAPT_IMP
@@ -1290,8 +1291,8 @@
 !                       ===== ====== ===== =======
 !
 */
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # define SOLVE3D
 # undef  NBQ
 # define UV_ADV
@@ -1326,8 +1327,8 @@
 ! shallow-water wave equations. 
 ! J. Fluid Mech., 107, 499–508.
 */
-# undef  OPENMP
-# undef  MPI
+# undef OPENMP
+# define MPI
 # define THACKER_2DV
 # define SOLVE3D
 # define UV_COR
