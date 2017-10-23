@@ -471,7 +471,7 @@
             wdir=Dwave(i,j)            ! Dwave=0 when waves to E (CROCO)
             xdir=cos(wdir)
             ydir=sin(wdir)
-            uwwfrq(i,j)=cfrq
+            wwfrq(i,j)=cfrq
             wwhrm(i,j) =2.0*Awave(i,j)*isr2    ! Hsig to Hrms conversion
             wwdrx(i,j) =xdir
             wwdre(i,j) =ydir
