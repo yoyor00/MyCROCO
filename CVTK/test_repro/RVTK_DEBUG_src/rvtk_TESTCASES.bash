@@ -42,7 +42,7 @@ LIST_EXAMPLE='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL J
 #List of test cases with only one points in one direction
 LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
 LIST_2DV_Y='OVERFLOW SHELFRONT'
-LIST_EXAMPLE='SHOREFACE'
+#LIST_EXAMPLE='RIP'
 LIST_KEY='MPI OPENMP REGIONAL ETALON_CHECK'
 LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN'
 # 1x4 4x1 2x2 1X8 and 8X1 additional tests
@@ -224,7 +224,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	/bin/mv param_bak2.h param_bak1.h
 	export OMP_NUM_THREADS=2
 	#
-	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'JET' || "${Is2DV_Y}" == '1' ]] ; then
+	if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_Y}" == '1' ]] ; then
 	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	else
 
@@ -260,7 +260,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=2
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 		
@@ -295,7 +295,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=4
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1'  ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1'  ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -329,7 +329,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=4
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'JET' ||  "${Is2DV_Y}" == '1' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' ||  "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 		
@@ -363,7 +363,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -397,7 +397,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -433,7 +433,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -468,7 +468,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    #
 
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' ||  "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'JET' || "${Is2DV_Y}" == '1' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
