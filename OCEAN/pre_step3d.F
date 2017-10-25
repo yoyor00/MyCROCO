@@ -1060,19 +1060,19 @@
 !
 # ifndef M2FILTER_NONE 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-     do j=JU_RANGE
-       do i=IV_RANGE
-         zeta(i,j,knew)=Zt_avg1(i,j)
-       enddo
-     enddo
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                          zeta(START_2D_ARRAY,knew))
+      do j=JU_RANGE
+        do i=IV_RANGE
+          zeta(i,j,knew)=Zt_avg1(i,j)
+        enddo
+      enddo
+       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+    &                          zeta(START_2D_ARRAY,knew))
 #  else
-     do j=JstrR,JendR
-       do i=IstrR,IendR
-         zeta(i,j,knew)=Zt_avg1(i,j)
-       enddo
-     enddo     
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          zeta(i,j,knew)=Zt_avg1(i,j)
+        enddo
+      enddo     
 #  endif
 # endif
 
