@@ -23,7 +23,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=../../croco/OCEAN
+SOURCE=../../../../croco/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -136,6 +136,11 @@ fi
 /bin/cp -f Make* $SCRDIR
 /bin/cp -f jobcomp $SCRDIR
 #
+# RVTK  files  DEBUG CPP KEYS
+#
+/bin/cp -f cppdefs_dev_bak1.h ${SCRDIR}/cppdefs_dev.h
+/bin/cp -f param_bak1.h ${SCRDIR}/param.h
+/bin/cp -f cppdefs_bak1.h ${SCRDIR}/cppdefs.h
 # Change directory
 #
 cd $SCRDIR

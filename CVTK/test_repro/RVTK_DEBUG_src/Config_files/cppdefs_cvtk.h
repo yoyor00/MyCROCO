@@ -496,7 +496,7 @@
 */
 # undef OPENMP
 # define MPI
-# define NBQ
+# undef NBQ
 # undef  XIOS 
 # ifdef NBQ
 #  define GRAV_ADJ_SOLITON
@@ -1073,7 +1073,7 @@
 */
 # define ANA_JET
 # define MPI
-# define NBQ
+# undef NBQ
 # ifdef NBQ
 #  define NBQ_OBC
 #  define NBQ_VOL
