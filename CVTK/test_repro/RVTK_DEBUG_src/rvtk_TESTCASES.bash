@@ -12,33 +12,45 @@
 #---------------------------------------------------------------------
 # Script to Run CVTK DEBUG procedure managing parallelization type 
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
-# VORTEX and REGIONAL
+# TESTCASES
 #--------------------------------------------------------------------
-
-echo "================================"
+#
+# TODO : reproducibility for OpenMP and WKB
+#
+MPIRUN=mpirun
+echo "======================================"
 echo "MPIRUN COMMAND: "$MPIRUN
-echo "================================"
+echo "======================================"
+echo
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
 [ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
-echo "Remove the CHECKFILE"
+echo
+echo "Remove CHECKFILE"
+echo
 [ -f check_file ] && /bin/rm check_file
-echo " "
-#
+echo
+echo "Remove AGRIF_FixedGrids.in"
+echo
+/bin/rm -f AGRIF_FixedGrids.in 
+#=============================================================================================
 # Lists
 #
-LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET KH_INST OVERFLOW RIP S2DV SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
-LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET OVERFLOW RIP SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
-#LIST_EXAMPLE='SOLITON'
+#LIST_EXAMPLE='ACOUS BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET KH_INST OVERFLOW RIP S2DV SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING'
+LIST_EXAMPLE='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL JET OVERFLOW RIP SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH THACKER UPWELLING'
+
+#List of test cases with only one points in one direction
+LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
+LIST_2DV_Y='OVERFLOW SHELFRONT'
+#LIST_EXAMPLE='RIP'
 LIST_KEY='MPI OPENMP REGIONAL ETALON_CHECK'
 LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN'
 # 1x4 4x1 2x2 1X8 and 8X1 additional tests
-ADDTEST='ON'
+ADDTEST='OFF'
 # Type of parallelization
 #
 COMPOMP='ON'
 COMPMPI='ON'
-echo ' '
 #
 echo 'OpenMP testing: '$COMPOMP
 echo 'MPI    testing: '$COMPMPI
@@ -48,22 +60,27 @@ echo 'MPI    testing: '$COMPMPI
 #
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
-SOURCE=$(sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2)
+eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
 rm -f tmp1 tmp2
 echo 'Sources code: '$SOURCE
 echo
+
+SOURCE_CVTK=${SOURCE}/../CVTK/test_repro/RVTK_DEBUG_src
+echo 'Sources CVTK tests: '$SOURCE_CVTK
+echo ' '
 #
 # Get updated files
 #
-/bin/cp ${SOURCE}/cppdefs_dev.h cppdefs_dev_bak1.h 
-/bin/cp ${SOURCE}/cppdefs.h cppdefs_bak1.h
-/bin/cp ${SOURCE}/param.h param_bak0.h
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_bak1.h 
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h
+/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h
 #
+
 # Replace with local files if any ### PAT
 #
-[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
-[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
-[ -f param.h ] && /bin/cp param.h param_bak0.h
+#[ -f cppdefs_dev.h ] && /bin/cp cppdefs_dev.h cppdefs_dev_bak1.h 
+#[ -f cppdefs.h ] && /bin/cp cppdefs.h cppdefs_bak1.h
+#[ -f param.h ] && /bin/cp param.h param_bak0.h
 #
 #=============================================================================================
 # Title
@@ -103,6 +120,12 @@ sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_bak1.h > cpp
 echo " "
 echo "Debut de la boucle sur les cas tests"
 for EXAMPLE in $LIST_EXAMPLE ; do
+
+  Is2DV_X=0
+  Is2DV_Y=0  
+  [ -n "$(echo $LIST_2DV_X |grep "${EXAMPLE}")" ] && Is2DV_X=1
+  [ -n "$(echo $LIST_2DV_Y |grep "${EXAMPLE}")" ] && Is2DV_Y=1
+
     echo "CAS TEST # "$EXAMPLE
     #
     # Serial runs
@@ -169,7 +192,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	#
 	
 	echo "--------------------------"
-	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL'  || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' ||  "${EXAMPLE}" == 'TANK' ]] ; then
+	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1'  ]] ; then
 	  echo 'SKIP THIS TEST CASE ' $EXAMPLE  
 	else 
 	    echo COMPILE OPENMP 1X2 $EXAMPLE
@@ -201,7 +224,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	/bin/mv param_bak2.h param_bak1.h
 	export OMP_NUM_THREADS=2
 	#
-	if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
+	if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_Y}" == '1' ]] ; then
 	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	else
 
@@ -237,7 +260,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=2
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'OVERFLOW' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 		
@@ -272,7 +295,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=4
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1'  ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -306,7 +329,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=4
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' ||  "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' ||  "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 		
@@ -340,7 +363,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE} == 'RIP'" || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -374,7 +397,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -410,7 +433,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    export OMP_NUM_THREADS=8
 	    #
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_X}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -445,7 +468,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    #
 
 	    echo "--------------------------"
-	    if [[ "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'RIP' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
+	    if [[ "${EXAMPLE}" == 'JET' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -469,7 +492,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    [ ! -z "$(ls *.nc 2>/dev/null)" ] && /bin/rm *.nc
 	    
 	    #-----------------------------------------------------------------------------------------------
-	fi #-> $ADDTEST == 'ON'
+	fi 
     fi  #COMPOMP
 
     #
@@ -504,7 +527,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	#
 
 	echo '----------------'
-	 if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	 if [[ "${Is2DV_X}" == '1' ]] ; then
 	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
 
 	else 
@@ -537,7 +560,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	#
 
 	echo '----------------'
-	if [[ "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
+	if [[ "${Is2DV_Y}" == '1' ]] ; then
 	    echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	else 
 	    echo COMPILE MPI 2X1 $EXAMPLE
@@ -571,7 +594,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=2'/' < param_bak0.h > param_bak1.h
 
 	    echo '----------------'
-	     if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'SHELFRONT'|| "${EXAMPLE}" == 'OVERFLOW' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	     if [[ "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -605,7 +628,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    #
 
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	     if [[ "${Is2DV_X}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -638,7 +661,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 	    #
 
 	    echo '----------------'
-	    if [[  "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' ]] ; then
+	    if [[ "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 		echo COMPILE MPI 4X1 $EXAMPLE
@@ -669,7 +692,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=4'/' < param_bak0.h > param_bak1.h
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -700,7 +723,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=4,\ NP_ETA=2'/' < param_bak0.h > param_bak1.h
 	    echo '----------------'
-	    if [[  "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${Is2DV_X}" == '1' || "${Is2DV_Y}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -736,7 +759,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 
 	    echo '----------------'
-	    if [[ "${EXAMPLE}" == 'GRAV_ADJ'  || "${EXAMPLE}" == 'INNERSHELF'  || "${EXAMPLE}" == 'INTERNAL' || "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'KH_INST' || "${EXAMPLE}" == 'IGW' || "${EXAMPLE}" == 'S2DV' || "${EXAMPLE}" == 'SWASH' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'THACKER' || "${EXAMPLE}" == 'TANK' ]] ; then
+	    if [[ "${Is2DV_X}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
@@ -769,7 +792,7 @@ for EXAMPLE in $LIST_EXAMPLE ; do
 
 	    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=8,\ NP_ETA=1'/' < param_bak0.h > param_bak1.h
 	    echo '----------------'
-	    if [[  "${EXAMPLE}" == 'ACOUS' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'OVERFLOW'  || "${EXAMPLE}" == 'SHELFRONT' || "${EXAMPLE}" == 'SHOREFACE' || "${EXAMPLE}" == 'JET' || "${EXAMPLE}" == 'ACOUS' ]] ; then
+	    if [[ "${Is2DV_X}" == '1' ]] ; then
 		echo 'SKIP THIS TEST CASE ' $EXAMPLE
 	    else
 
