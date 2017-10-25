@@ -1066,7 +1066,7 @@
         enddo
       enddo
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-    &                          zeta(START_2D_ARRAY,knew))
+     &                          zeta(START_2D_ARRAY,knew))
 #  else
       do j=JstrR,JendR
         do i=IstrR,IendR
