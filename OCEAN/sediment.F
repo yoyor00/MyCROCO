@@ -329,14 +329,8 @@ C$OMP BARRIER
           else
             phic(i,j)=ATAN2(bvstrc(i,j),bustrc(i,j))
           endif
-#   ifdef WKB_WWAVE
-          phicw(i,j)=Dwave(i,j)-phic(i,j)
-#   else
-          phicw(i,j)=1.5*pi-Dwave(i,j)-phic(i,j)
-#   endif
-#   ifdef CURVGRID
-     &                              -angler(i,j)
-#   endif
+          phicw(i,j)=Dwave(i,j)-phic(i,j)  ! Dwave assumed in CROCO 
+                                           ! grid convention
 !
 ! Compute stress components at rho points.
 !
