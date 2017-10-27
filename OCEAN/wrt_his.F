@@ -140,23 +140,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     components in XI-,ETA-directions.
 !     
       if (wrthis(indxZ)) then
-#ifdef NBQ_MASS     
-!        work2d=  zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out)
-
          work2d=zeta(:,:,fast_indx_out)
-     &            /rhobar_nbq(:,:,fast_indx_out)
-     &         -h(:,:)   
-!         if (mynode.eq.0) then
-!                  write(6,*) 'w1',zeta(istr-1,1,fast_indx_out)
-!     &                           ,zeta(istr,1,fast_indx_out)
-!     &                           ,zeta(istr+1,1,fast_indx_out)
-!                  write(6,*) 'w2',rhobar_nbq(istr-1,1,fast_indx_out)
-!     &                           ,rhobar_nbq(istr,1,fast_indx_out)
-!     &                           ,rhobar_nbq(istr+1,1,fast_indx_out)
-!                  endif
-#else
-         work2d=zeta(:,:,fast_indx_out)
-#endif
          call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
      &        record,r2dvar,type)
       endif

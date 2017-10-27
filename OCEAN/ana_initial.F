@@ -215,15 +215,6 @@ C$    integer omp_get_thread_num
         enddo
 # endif
 
-# ifdef NBQ_MASS
-        do j=JR_RANGE
-          do i=IR_RANGE
-            zeta(i,j,1)=h(i,j)+zeta(i,j,1)
-            zeta(i,j,2)=zeta(i,j,1)
-          enddo
-        enddo
-# endif
-
       else  !  nrrec.ne.0.
 
 # if defined RIP && defined RIP_TOPO_2D
