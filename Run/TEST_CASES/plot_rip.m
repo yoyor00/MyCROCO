@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Make plot from the results of the SHOREFACE test case
+%  Make plot from the results of the RIP test case
 % 
 %  Further Information:  
 %  http://www.crocoagrif.org/
@@ -109,7 +109,7 @@ for tindex=tstr:tend % ---------------------------------------------
  %map(nbcol/2  ,:)=[1 1 1];
  %map(nbcol/2+1,:)=[1 1 1];
  colormap(map);
-% contour(x,y,h,[-2:1:15],'color','r'); hold on
+ %contour(x,y,h,[-2:1:15],'color','r'); hold on
 %
  set(gcf,'color','w');
 
