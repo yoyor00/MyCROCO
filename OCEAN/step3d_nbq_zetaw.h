@@ -16,7 +16,7 @@
 #ifdef MPI
         IstrU2=Istr  !+1
 #else
-        IstrU2=Istr +1
+        IstrU2=Istr ! +1
 #endif
       else
         IstrR2=Istr
@@ -34,7 +34,7 @@
 #ifdef MPI
         JstrV2=Jstr  !+1
 #else
-        JstrV2=Jstr  +1
+        JstrV2=Jstr !  +1
 #endif
       else
         JstrR2=Jstr
@@ -101,28 +101,7 @@
 	    WORK(i,j)=pm(i,j)*pn(i,j)
 	 enddo
        enddo      
-# ifdef toto 
-       do j=Jstr,JendU_nh   
-          do i=IstrU_nh,IendU_nh
-               rubar_nbq(i,j) = 0 
-          enddo
-       enddo   
-       do j=JstrV_nh,JendV_nh   
-          do i=IstrV_nh,IendV_nh
-               rvbar_nbq(i,j) = 0 
-          enddo
-       enddo
-       do j=JstrU_nh,JendU_nh   
-          do i=IstrU_nh,IendU_nh
-               DU_nbq(i,j)=0.
-          enddo
-       enddo   
-       do j=JstrV_nh,JendV_nh   
-          do i=IstrV_nh,IendV_nh
-               DV_nbq(i,j)=0.
-          enddo
-       enddo
-#endif
+
        rubar_nbq=0.
        rvbar_nbq=0.
        DU_nbq=0.
@@ -165,6 +144,88 @@
 !
 !      do iteration_nbq=1,iteration_nbq_max
 !
+#if defined NBQ_ZETAW && defined NBQ_ZETAEXP
+
+
+!-------------------------------------------------------------------
+!       Computes surface mean velocities (Zeta
+!-------------------------------------------------------------------
+
+c LAURENT: loop indices have to be corrected
+       
+        if (IstrU.le.Iend) then
+         do j=Jstr,Jend
+          do i=Istr,Iend+1     
+               umean_nbq(i,j)=qdmu_nbq(i,j,N)  
+#ifdef NBQ_MASS        
+c LAURENT: Hz arrays should be used instead of rho_nbq/H+rho/rho0+1.
+                
+     &           / ( rho_nbq(i,j,N)  *Hzr_half_nbq_inv(i,j,N)
+     &              +rho(i,j,N)/rho0            
+     &              +rho_nbq(i-1,j,N)*Hzr_half_nbq_inv(i-1,j,N)
+     &              +rho(i-1,j,N)/rho0+2.)  
+     &            / (Hzr(i,j,N)+Hzr(i-1,j,N)) * 4. 
+#else
+     &            / (Hzr(i,j,N)+Hzr(i-1,j,N)) * 2. 
+#endif
+#ifdef MASKING
+     &            * umask(i,j) 
+#endif
+          enddo 
+         enddo 
+        endif
+
+        if (JstrV.le.Jend) then
+         do j=Jstr,Jend+1
+          do i=Istr,Iend     
+               vmean_nbq(i,j)=qdmv_nbq(i,j,N)              
+#ifdef NBQ_MASS     
+     &            / ( rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
+     &               +rho(i,j,N)/rho0   
+     &               +rho_nbq(i,j-1,N)*Hzr_half_nbq_inv(i,j-1,N)
+     &               +rho(i,j-1,N)/rho0   +2.)  
+     &            / (Hzr(i,j,N)+Hzr(i,j-1,N)) * 4. 
+#else
+     &            / (Hzr(i,j,N)+Hzr(i,j-1,N)) * 2. 
+#endif
+#ifdef MASKING
+     &            * vmask(i,j) 
+#endif
+          enddo
+         enddo 
+        endif
+
+        do j=Jstr,Jend
+          do i=Istr,Iend
+               wmean_nbq(i,j,kstp2)=qdmw_nbq(i,j,N)         
+#ifdef NBQ_MASS     
+     &     / (rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)+1.+rho(i,j,N)/rho0)  
+#endif
+     &             * Hzw_half_nbq_inv(i,j,N)   
+#ifdef MASKING
+     &             * rmask(i,j) 
+#endif
+          enddo
+        enddo 
+
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+        if (IstrU.le.Iend) then
+         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,umean_nbq(START_2D_ARRAY))
+        endif
+        if (JstrV.le.Jend) then
+         call exchange_v2d_tile (Istr,Iend,Jstr,Jend,vmean_nbq(START_2D_ARRAY))
+        endif
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,wmean_nbq(START_2D_ARRAY,kstp2))
+# endif
+
+c After this call to step2d_zetaw
+c the vertical grid (z_w, z_r, Hzr, Hzw_half_nbq) will be in (n+1)
+c while the derived arrays (Hzr_half_nbq_inv, Hzw_half_nbq_inv .. ... )
+c are still in (n)
+c since the call to grid_coef_nh is at the beginning of step2d
+#include "step2d_zetaw.h"
+
+#endif
 !-------------------------------------------------------------------
 !       "Pressure - Viscosity" Variable (theta)
 !               theta does not change
@@ -1265,7 +1326,7 @@
 #endif /* NBQ_IMP */
 
 
-#ifdef NBQ_ZETAW
+#if defined NBQ_ZETAW && !defined NBQ_ZETAEXP
 
 
 !-------------------------------------------------------------------
@@ -1429,14 +1490,29 @@
 !-------------------------------------------------------------------
 !		
 #ifdef NBQ_MASS
+#ifdef NBQ_ZETAREDIAG
+c Compute rhobar(n+1) (used in the diagnostic of zeta via vertically integrated continuity equation)
          call densityijk_nbq(20)
+#endif
 #endif
 !
 !-------------------------------------------------------------------
 !      Grid !
 !-------------------------------------------------------------------
-!		
+!
+#if !defined NBQ_ZETAEXP
 #  include "step2d_zetaw.h"   
+#else
+c need to update Dnew here
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          Dnew(i,j)=(zetaw_nbq(i,j,knew2)+h(i,j))
+#if defined NBQ_MASS
+     &    *rhobar_nbq(i,j,knew2)
+#endif
+        enddo
+      enddo
+#endif
 
 !
 !-------------------------------------------------------------------
@@ -1506,7 +1582,7 @@
           z_w(iendR2,j,k)=z_w(iend,j,k)
           z_r(istrR2,j,k)=z_r(istr,j,k)
           z_r(iendR2,j,k)=z_r(iend,j,k)
-           if (.not.EAST_INTER) then
+           if (EASTERN_EDGE) then
               hz(iend+1,j,k)=hz(iend,j,k)
                z_w(iend+1,j,k)=z_w(iend,j,k)
                z_r(iend+1,j,k)=z_r(iend,j,k)
@@ -1595,7 +1671,10 @@
 #endif  
 !    
 #ifdef NBQ_MASS
-!         call densityijk_nbq(20)
+#if !defined NBQ_ZETAREDIAG
+c densityijk_nbq has already been call is ZETAREDIAG is defined
+         call densityijk_nbq(20)
+#endif
 #endif
 !        endif
 !

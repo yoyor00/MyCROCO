@@ -30,6 +30,9 @@
 !
 !  Set lateral boundary conditions for Hz
 !
+c LAURENT: should be put in an OBC tile -with zero gradient) routine for Hzr (or Hz)
+c since it is used at several places in the code
+
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
@@ -134,6 +137,10 @@
 !  Compute other vertical grid variables at m
 !-----------------------------------------------------------------------
 !
+#if TOTO
+c LAURENT: next lines have probably to be removed
+c  step2d_grid_ext.h is always called after a set_depth
+c where z_r, z_w are properly computed
       do j=jmin,jmax
         do i=imin,imax
            z_w(i,j,0)=-h(i,j)
@@ -151,6 +158,8 @@
           enddo
         enddo
       enddo
+#endif
+	  
 	  
       do k=1,N-1
         do j=jmin,jmax

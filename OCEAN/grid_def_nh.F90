@@ -91,7 +91,7 @@
        jendu_nh = jend_nh
        istrv_nh = istr_nh
        iendv_nh = iend_nh 
-       jstrv_nh = 2
+       jstrv_nh = 1
        jendv_nh = LOCALMM 
 
 # ifdef MPI 

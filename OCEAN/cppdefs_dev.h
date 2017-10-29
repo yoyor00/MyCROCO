@@ -35,14 +35,6 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
-/*  
-   Activate the RVTK_DEBUG procedure that will compare the results
-   serial and multi-processor result by comparing binary file
-*/
-#ifndef RVTK_DEBUG
-# undef RVTK_DEBUG
-# undef RVTK_DEBUG_ADVANCED
-#endif
 
 /*
     Constant tracer option (for debugging)
@@ -153,15 +145,21 @@
 ======================================================================
    Activate NBQ Precise or Performance mode ======================================================================
 */
+#if !defined NBQ_PERF
+#define NBQ_PRECISE
+#endif
+
 #ifdef NBQ_PRECISE
 #       define NBQ_MASS                               
 #       define NBQ_DTDRHO2
-#       define NBQ_DTDRHO2B
+#       undef NBQ_DTDRHO2B
 #       define NBQ_GRIDEXT
-#       undef NBQ_TRACERS
+#       undef NBQ_ZETAEXP
+#       undef NBQ_ZETAREDIAG
+#       define NBQ_TRACERS
 #       undef  NBQ_NODS
-#       undef VAR_RHO_2D
-#       undef RESET_RHO0
+!#       undef VAR_RHO_2D
+!#       undef RESET_RHO0
 #else
 #       undef NBQ_MASS
 #       undef NBQ_DTDRHO2
@@ -169,8 +167,8 @@
 #       undef NBQ_GRIDEXT
 #       undef NBQ_TRACERS
 #       define NBQ_NODS
-#       undef VAR_RHO_2D
-#       undef RESET_RHO0
+!#       undef VAR_RHO_2D
+!#       undef RESET_RHO0
 #endif
 
 # ifdef OBC_NBQ

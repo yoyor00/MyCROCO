@@ -158,6 +158,8 @@ C$OMP END MASTER
      &              +cff2*(zeta(i,j,kbak)+h(i,j))*rhobar_nbq(i,j,kbak)
      &              +cff3*(zeta(i,j,kold)+h(i,j))*rhobar_nbq(i,j,kold)
 #  else /*  ! NBQ_ZETAW */
+c LAURENT: NBQ_AB3 should be the only possible choice
+c (stability of advection and Coriolis terms)
 #   ifndef NBQ_AB3
           Drhs(i,j)=(zeta(i,j,kstp2)+h(i,j)) *rhobar_nbq(i,j,kstp2)
 #   else

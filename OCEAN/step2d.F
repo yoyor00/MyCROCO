@@ -333,6 +333,7 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !
 #ifdef NBQ_ZETAW
+c LAURENT: correct the next loops indices and remove the tests
          if (IstrU.gt.Iend) then
             do j=Jstr,Jend
        	    do i=Istr,Iend+1
@@ -721,12 +722,12 @@ C$    trd=omp_get_thread_num()
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   vbar(START_2D_ARRAY,knew))
 #endif
-#ifndef M2FILTER_NONE
+!#ifndef M2FILTER_NONE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        DU_avg1(START_2D_ARRAY,nnew))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        DV_avg1(START_2D_ARRAY,nnew))
-#endif
+!#endif
 #ifdef NBQ
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        DU_avg2(START_2D_ARRAY))
@@ -749,10 +750,15 @@ C$    trd=omp_get_thread_num()
 C$OMP BARRIER
 C$OMP MASTER
 !       call check_tab2d(zeta(:,:,knew2),'zeta step2d #2','r')
-#ifndef NBQ_ZETAW
+!#ifndef NBQ_ZETAW
        call check_tab2d(ubar(:,:,knew2),'ubar step2d #2','u')
        call check_tab2d(vbar(:,:,knew2),'vbar step2d #2','v')
-#endif
+       
+       call check_tab2d(DU_avg1(:,:,nnew),'DU_avg1 step2d #2','u')
+       call check_tab2d(DV_avg1(:,:,nnew),'DV_avg1 step2d #2','v')
+       call check_tab3d(Hz,'Hz step2d #2','r')
+       
+!#endif
 C$OMP END MASTER       
 #endif   
 
@@ -767,37 +773,16 @@ C$OMP END MASTER
 
 #ifdef NBQ_TRACERS
        if (iif==nfast) then
-#ifdef MPI
-       if (mynode==0) then
-         i1_a=istr+1
-         i2_a=iend
-         j1_a=jstr
-         j2_a=jend
-       elseif (mynode==35) then
-         i1_a=istr
-         i2_a=iend-1
-         j1_a=jstr
-         j2_a=jend
-       else
-         i1_a=istr
-         i2_a=iend
-         j1_a=jstr
-         j2_a=jend
-       endif
-#else
-         i1_a=istr
-         i2_a=iend
-         j1_a=jstr
-         j2_a=jend
-#endif
-       do j=j1_a,j2_a
-       do i=i1_a,i2_a
+       do j=JstrR,JendR
+       do i=IstrR,IendR
            dum_s=0.
            do k=1,N
              dum_s=dum_s+
      &           hz(i,j,k)-hz_bak(i,j,k)
             enddo
             do k=1,N
+
+c LAURENT: remove this computation of Hz_corr and its definition in nbq.h
 
              Hz_corr(i,j,k)=(dum_s
      &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
@@ -849,6 +834,7 @@ C$OMP END MASTER
 !          z_r(istrR2,j,k)=z_r(istr,j,k)
 !          z_r(iendR2,j,k)=z_r(iend,j,k)
 
+c LAURENT: to be replaced by a call to OBC
 # ifndef EW_PERIODIC
        if (EASTERN_EDGE) then
               hz(iend+1,j,k)=hz(iend,j,k)
@@ -862,6 +848,7 @@ C$OMP END MASTER
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
+c LAURENT: these calls for z_w and z_r can probably be removed
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -960,6 +947,5 @@ C$OMP END MASTER
 !        endif
 #endif
 
-  
       return
       end

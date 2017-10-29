@@ -64,7 +64,7 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
-       parameter (LLm0=416, MMm0=3,    N=20)	! true 2DV
+       parameter (LLm0=562, MMm0=3,    N=40)	! true 2DV
 #elif defined MILES 
        parameter (LLm0=408, MMm0=523,  N=20)
 #elif defined IGW

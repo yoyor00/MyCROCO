@@ -144,6 +144,7 @@
 
 # ifdef NBQ
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+c LAURENT: Is this useful ? the RHS do not have to be valid in ghost cells
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
      &                                 ru_int_nbq(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
@@ -151,10 +152,10 @@
 !      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
 !     &                                 rw_int_nbq(START_2D_ARRAY,0))
 #  endif     
-# endif     
+# endif 
 
 # ifdef RVTK_DEBUG
       call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','u')
       call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','v')
-      call check_tab3d(rw_int_nbq,'rw_int_nbq (A)','w')
+      call check_tab3d(rw_int_nbq,'rw_int_nbq (A)','wint')
 # endif  

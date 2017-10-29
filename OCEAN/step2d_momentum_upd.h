@@ -13,7 +13,8 @@
 !
 
 #define Dstp DUon
- 
+
+C LAURENT: Dstp is not used anymore 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
@@ -86,6 +87,7 @@
      &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
 # endif
      &                                                   )
+
           DU_avg2(i,j)=DU_avg2(i,j)+cff2*on_u(i,j)*( DUnew 
 # ifdef MRL_WCI
      &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
@@ -93,7 +95,8 @@
      &                                                   )
 #endif
         enddo
-      enddo   
+      enddo 
+
   
       do j=JstrV,Jend
         do i=Istr,Iend
@@ -291,24 +294,36 @@
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
-          Dnew(Istr-1,j)=h(Istr-1,j)+zeta(Istr-1,j,knew)
+          Dnew(Istr-1,j)=(h(Istr-1,j)+zeta(Istr-1,j,knew))
+#if defined NBQ_MASS
+     &   *rhobar_nbq(Istr-1,j,knew)
+#endif
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=Jstr-1,JendR
-          Dnew(Iend+1,j)=h(Iend+1,j)+zeta(Iend+1,j,knew)
+          Dnew(Iend+1,j)=(h(Iend+1,j)+zeta(Iend+1,j,knew))
+#if defined NBQ_MASS
+     &   *rhobar_nbq(Iend+1,j,knew)
+#endif
         enddo
       endif
 # endif
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=Istr-1,IendR
-          Dnew(i,Jstr-1)=h(i,Jstr-1)+zeta(i,Jstr-1,knew)
+          Dnew(i,Jstr-1)=(h(i,Jstr-1)+zeta(i,Jstr-1,knew))
+#if defined NBQ_MASS
+     &   *rhobar_nbq(i,Jstr-1,knew)
+#endif
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=Istr-1,IendR
-          Dnew(i,Jend+1)=h(i,Jend+1)+zeta(i,Jend+1,knew)
+          Dnew(i,Jend+1)=(h(i,Jend+1)+zeta(i,Jend+1,knew))
+#if defined NBQ_MASS
+     &   *rhobar_nbq(i,Jend+1,knew)
+#endif
         enddo
       endif
 # endif
@@ -455,6 +470,72 @@
         enddo
       endif
 # endif 
+#endif
+#ifdef NBQ_ZETAREDIAG
+c recompute zeta via vertically integrated continuity equation
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   ubar(START_2D_ARRAY,knew))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   vbar(START_2D_ARRAY,knew))
+#endif
+       
+       do j=Jstr-1,Jend+1
+       do i=Istr-1,Iend+1
+          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+          Dnew(i,j)=(zeta(i,j,knew2)+h(i,j))
+#ifdef NBQ_MASS
+     &    *rhobar_nbq(i,j,knew2)
+#endif
+        enddo
+      enddo
+       
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          zetaw_nbq(i,j,knew2)=((h(i,j)+zetaw_nbq(i,j,kstp2))
+     &             *rhobar_nbq(i,j,kstp2)
+     &   + (dtfast*pm(i,j)*pn(i,j)
+     &              *0.5D0*(
+     &   (Dnew(i,j)+Dnew(i-1,j))*(ubar(i,j,knew))*on_u(i,j)
+     &   -(Dnew(i+1,j)+Dnew(i,j))*(ubar(i+1,j,knew))*on_u(i+1,j)
+     &  +(Dnew(i,j)+Dnew(i,j-1))*(vbar(i,j,knew))*om_v(i,j)
+     &   -(Dnew(i,j+1)+Dnew(i,j))*(vbar(i,j+1,knew))*om_v(i,j+1))))
+     &   / rhobar_nbq(i,j,knew2)-h(i,j)
+     
+        enddo
+      enddo
+      
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+        zeta(i,j,knew2)=zetaw_nbq(i,j,knew2)
+        enddo
+      enddo
+
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI       
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   zetaw_nbq(START_2D_ARRAY,knew2))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   zeta(START_2D_ARRAY,knew2))
+#endif
+       
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Zt_avg1(i,j)=zetaw_nbq(i,j,knew2)
+          enddo
+        enddo
+        
+       if ((iic.eq.1.and.iif==1)
+     &     NSTEP_GRID
+     &     .or.iif.eq.nfast) then
+        flag_grid=1
+        call set_depth_tile(Istr,Iend,Jstr,Jend
+     &   ,resetfromrhobar
+     &   ) 
+
+#include "step2d_grid_ext.h"
+
+        endif
+
 #endif
 !
 !-----------------------------------------------------------------------

@@ -15,6 +15,7 @@
       if (iic==1.and.iif==1) then
          do j=JstrV-1,Jend
             do i=IstrU-1,Iend
+c LAURENT: Indeed zetaw_nbq should be equal to zeta everywhere -> remove zetaw_nbq
                zetaw_nbq(i,j,:)=zeta(i,j,:)
             enddo
          enddo
@@ -37,6 +38,10 @@
          zeta (i,j,knew2)=
      &    ( zeta(i,j,kstp2)
      &        +dtfast*(
+#if defined NBQ_ZETAEXP
+     &    +wmean_nbq(i,j,kstp2)
+#else
+c LAURENT: this NBQ_AM4 option should be removed (its stability has not been studie)
 # ifdef NBQ_AM4
      &    +cff4*wmean_nbq(i,j,knew2)
      &    +cff5*wmean_nbq(i,j,kstp2)
@@ -45,6 +50,8 @@
 # else
      &    +wmean_nbq(i,j,knew2)
 # endif
+#endif
+c LAURENT: AB3 extrapolation should be used for zetaw_nbq in the next lines (instead of kstp2)
      &    -0.5*(umean_nbq(i  ,j)
      &          *(zetaw_nbq(i  ,j,kstp2)
      &           -zetaw_nbq(i-1,j,kstp2))*pm_u(i,j)
@@ -139,22 +146,22 @@
 ! Computes zetarhs to use in momentum equations
 !-----------------------------------------------------------------------
 !
-#  ifdef NBQ_MASS
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 
- 	  zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
-          Dnew(i,j)=(zeta_new(i,j)+h(i,j))*rhobar_nbq(i,j,knew2)
+ 	      zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+#if !defined NBQ_ZETAEXP
+c in case of ZETAEXP rhobar has not yet been computed
+c Dnew will be computed later
+          Dnew(i,j)=(zeta_new(i,j)+h(i,j))
+#if defined NBQ_MASS
+     &       *rhobar_nbq(i,j,knew2)
+#endif
+#endif
         enddo
       enddo
-#  else
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
-          Dnew(i,j)=zeta_new(i,j)+h(i,j)
-        enddo
-      enddo
-#  endif /* NBQ_MASS */
+
 !
 !-----------------------------------------------------------------------
 ! Load new free-surface values into shared array
@@ -270,6 +277,7 @@ C$OMP END MASTER
 !#  else
       do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
         do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
+c LAURENT: Third time that zetaw_nbq is set to zeta ! hope this is OK now ...
           zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) !- h(i,j) 
         enddo
       enddo
@@ -285,6 +293,7 @@ C$OMP END MASTER
 !----------------------------------------------------------------------
 !
 #  ifdef SOLVE3D
+c LAURENT: unnecessary lines with M2FILTER_NONE (only at last time step)
       cff1=weight(1,iif)
       cff2=weight(2,iif)
       if (FIRST_2D_STEP) then
@@ -309,6 +318,8 @@ C$OMP END MASTER
        if ((iic.eq.1.and.iif==1)
      &     NSTEP_GRID
      &     .or.iif.eq.nfast) then
+c setting flag_grid to 1
+c enforces the recomputation of vertical grid derived arrays (Hz(r,w)_xxx_inv) at next time step
         flag_grid=1
         call set_depth_tile(Istr,Iend,Jstr,Jend
      &   ,resetfromrhobar
