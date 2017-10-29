@@ -228,11 +228,7 @@
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-# ifdef NBQ_MASS
-      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out) - h(:,:)
-# else
       work2d=zeta(:,:,fast_indx_out)
-# endif
       call xios_send_field("zeta",work2d)
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
