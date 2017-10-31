@@ -323,7 +323,7 @@
          ENDDO 
          !           
 #  ifdef W_HADV_TVD
-        do j=JstrV-1,Jend
+        do j=JstrV-1,Jend+1
          do i=Istr,Iend
              if (k==0) then
              Hzw (i,k  ) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
