@@ -799,7 +799,6 @@ C$OMP BARRIER
           inv_f= 1.0/max(frq(i,j,wnew),eps)
           Pwave(i,j)=2.*pi*inv_f
           Awave(i,j)=hrm(i,j,wnew)/2.
-          Dwave(i,j)=ATAN2(sinw,cosw)
           if (cosw.ne.0.0) then
             Dwave(i,j)=ATAN2(sinw,cosw)
           else

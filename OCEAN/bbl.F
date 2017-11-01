@@ -216,15 +216,12 @@
 !
 !  Compute angle between currents and waves (radians)
 !
-!         if Dwave is dir waves travel TO N:
-!         phicw=pi/2.0 +Dwave(i,j)-angler(i,j)-phic
-!
           if (Ucur .ne. 0.0) then
             phic=ATAN2(Vcur,Ucur)
           else
             phic=(pi/2.0)*SIGN(1.0,Vcur)
           endif
-          phicw=Dwave(i,j)-phic  ! Dwave must be in cartesian convention
+          phicw=Dwave(i,j)-phic  ! Dwave in cartesian convention
 !
 !---------------------------------------------------------------------
 !  Determine skin roughness from sediment size and
@@ -494,25 +491,17 @@
           Vcur=0.5*(Vr(i,j)+Vr(i,j+1))
 !
           anglec=Ucur/(Umag(i,j)+1.e-10)
-          anglew=cos(Dwave(i,j)
-# ifdef CURVGRID
-     &               -angler(i,j)
-# endif          
-     &              )
+          anglew=cos(Dwave(i,j))
           bustrc(i,j)=taucw(i,j)*anglec
-          bustrw(i,j)=tauw(i,j)*anglew
+          bustrw(i,j)=tauw(i,j) *anglew
           bustrcwmax(i,j)=taucwmax(i,j)*anglew
 !          Ubot(i,j)=Ub(i,j)*anglew
 !          Ur(i,j)=Ucur
 !
           anglec=Vcur/(Umag(i,j)+1.e-10)
-          anglew=sin(Dwave(i,j)
-# ifdef CURVGRID
-     &               -angler(i,j)
-# endif          
-     &              )
+          anglew=sin(Dwave(i,j))
           bvstrc(i,j)=taucw(i,j)*anglec
-          bvstrw(i,j)=tauw(i,j)*anglew
+          bvstrw(i,j)=tauw(i,j) *anglew
           bvstrcwmax(i,j)=taucwmax(i,j)*anglew
 !          Vbot(i,j)=Ub(i,j)*anglew
 !          Vr(i,j)=Vcur
