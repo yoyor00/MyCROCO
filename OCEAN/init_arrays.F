@@ -420,6 +420,7 @@ C$    integer omp_get_thread_num
           do i=IstrR,IendR
             Akb(i,j,k)=init 
             Akw(i,j,k)=init 
+            E_pre(i,j,k)=init
 # ifdef AVERAGES
             Akb_avg(i,j,k)=init 
             Akw_avg(i,j,k)=init 

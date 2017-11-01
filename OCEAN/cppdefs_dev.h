@@ -81,7 +81,7 @@
 # undef  WKB_WWAVE
 # undef  WAVE_ROLLER
 # define WAVE_STREAMING
-# define  WAVE_RAMP
+# define WAVE_RAMP
 #endif
 
 /* 
@@ -417,12 +417,20 @@
 #  define WAVE_OFFLINE
 #  undef  WAVE_ROLLER
 # endif
+
 # ifdef WKB_WWAVE
 #  ifdef MRL_CEW
 #   undef  WKB_KZ_FILTER
 #   undef  WKB_TIME_FILTER
 #  endif
-#  if defined SHOREFACE || (defined RIP && !defined BISCA)
+#  define WKB_ADD_DIFF
+#  undef  WKB_ADD_DIFFRACTION
+#  undef  WKB_NUDGING
+#  ifndef WAVE_OFFLINE
+#   undef WKB_NUDGING
+#  endif
+#  if defined SHOREFACE || defined FLUME \
+                        || (defined RIP && !defined BISCA)
 #   define ANA_BRY_WKB
 #  endif
 # endif
@@ -511,8 +519,20 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-# undef MOVING_BATHY
-#endif
+/* 
+     Morphodynamics (bed evolution feedback on circulation):
+     MORPHODYN or MOVING_BATHY (equivalent) must be defined
+     in cppdefs.h (default is undefined)
+*/
+# if defined MORPHODYN || defined MOVING_BATHY
+#  ifdef MOVING_BATHY
+#  else
+#   define MOVING_BATHY
+#  endif
+# else
+#  undef  MOVING_BATHY
+# endif
+#endif /* SEDIMENT */
 
 /*
 ======================================================================

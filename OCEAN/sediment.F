@@ -27,11 +27,7 @@
 #  define BSTRESS_UPWIND
 # endif
 !
-# ifdef MOVING_BATHY
-#  define MORPH_FAC *morph_fac
-# else
-#  define MORPH_FAC 
-# endif  /* MOVING_BATHY */
+# define MORPH_FAC *morph_fac
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
 # undef  NEUMANN
@@ -501,13 +497,11 @@ C$OMP BARRIER
             FE_r(i,j)=FE_r(i,j)*a_slopey
 #  endif /* SLOPE_NEMETH */
 !
-#  ifdef MOVING_BATHY
 !
 ! Apply morphology factor.
 !
-            FX_r(i,j)=FX_r(i,j)*morph_fac
-            FE_r(i,j)=FE_r(i,j)*morph_fac
-#  endif
+            FX_r(i,j)=FX_r(i,j) MORPH_FAC
+            FE_r(i,j)=FE_r(i,j) MORPH_FAC
 !
 ! Apply bedload transport rate coefficient. Also limit
 ! bedload to the fraction of each sediment class.
@@ -621,10 +615,7 @@ C$OMP BARRIER
             a_slopex=(MAX(0.0,abs(dzdx)-0.01)
      &               *SIGN(1.0,dzdx)*0.1)
      &               *om_r(i,j)*dt
-#   ifdef MOVING_BATHY
-            a_slopex=a_slopex*morph_fac
-#   endif
-            FX(i,j)=FX(i,j)+a_slopex
+            FX(i,j)=FX(i,j)+a_slopex MORPH_FAC
 #   ifdef MASKING
             FX(i,j)=FX(i,j)*umask(i,j)
 #   endif
@@ -652,10 +643,7 @@ C$OMP BARRIER
             a_slopey=(MAX(0.0,abs(dzdy)-0.01
      &               *SIGN(1.0,dzdy)*0.1)
      &               *on_r(i,j)*dt
-#   ifdef MOVING_BATHY
-            a_slopey=a_slopey*morph_fac
-#   endif
-            FE(i,j)=FE(i,j)+a_slopey
+            FE(i,j)=FE(i,j)+a_slopey MORPH_FAC
 #   ifdef MASKING
             FE(i,j)=FE(i,j)*vmask(i,j)
 #   endif
@@ -1574,10 +1562,9 @@ C$OMP BARRIER
 !
 ! Apply morphology factor.
 !
-#  ifdef MOVING_BATHY
-            ero_flux(i,j,ised)=ero_flux(i,j,ised)*morph_fac
-            settling_flux(i,j,ised)=settling_flux(i,j,ised)*morph_fac
-#  endif
+            ero_flux(i,j,ised)=ero_flux(i,j,ised) MORPH_FAC
+            settling_flux(i,j,ised)=settling_flux(i,j,ised) MORPH_FAC
+
             if ( settling_flux(i,j,ised)-ero_flux(i,j,ised)
      &                                            .gt. 0. ) then
 !

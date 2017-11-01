@@ -33,6 +33,7 @@
 #undef  JET             /* Baroclinic Jet Example */
 #undef  RIP             /* Rip Current Test Case */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
+#undef  FLUME           /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
@@ -927,6 +928,55 @@
 #  define ANA_TCLIMA
 # endif
 
+#elif defined FLUME
+/*
+!                       FLUME Example
+!                       ===== =======
+!
+!   Roelvink, J.A. and Stive, M.J.F., 1989: Bar-generating cross-shore 
+!       flow mechanisms on a beach. Journal of Geophysical Research
+*/
+# undef  OPENMP
+# undef  MPI
+# define SOLVE3D
+# define UV_ADV
+# define NEW_S_COORD
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+# define ANA_SST
+# define ANA_BTFLUX
+# define NS_PERIODIC
+# define OBC_WEST
+# define SPONGE
+# define WET_DRY
+# define MRL_WCI
+# ifdef MRL_WCI
+#  define WKB_WWAVE
+#  define MRL_CEW
+#  define WKB_OBC_WEST
+#  define WAVE_ROLLER
+#  define WAVE_FRICTION
+#  define WAVE_BREAK_SWASH
+#  undef  WAVE_STREAMING
+#  undef  WAVE_RAMP
+# endif
+# define LMD_MIXING
+# define LMD_SKPP
+# define LMD_BKPP
+# define LMD_VMIX_SWASH
+# define BBL
+# define SEDIMENT
+# ifdef SEDIMENT
+#  define TCLIMATOLOGY
+#  define TNUDGING
+#  define ANA_TCLIMA
+#  define MORPHODYN
+# endif
+
 #elif defined RIP
 /*
 !                       Rip Current Example
@@ -949,6 +999,7 @@
 # ifdef GRANDPOPO
 #  define RIP_TOPO_2D
 # endif
+# undef ANA_TIDES
 !
 # undef  OPENMP
 # undef  MPI
@@ -971,7 +1022,6 @@
 # define ANA_SRFLUX
 # define ANA_SST
 # define ANA_BTFLUX
-# undef  ANA_TIDES
 # if !defined BISCA && !defined ANA_TIDES
 #  define NS_PERIODIC
 # else

@@ -124,6 +124,12 @@
 # endif
 #include "compute_auxiliary_bounds.h"
 
+! Define Stokes drift computation
+
+# ifndef FLUME
+#  define STOKES_DRIFT
+# endif
+
 ! explicit wavenumber estimator
 
 # undef  KH_SOULSBY
@@ -185,7 +191,9 @@
 
 # ifdef WKB_WWAVE
 !
-! Wave parameters from WKB model --------------------------------------
+!----------------------------------------------------------------------
+!  Wave parameters from WKB model
+!----------------------------------------------------------------------
 !
           fr(i,j) =frq(i,j,wnew)
           wh(i,j) =wave_ramp*hrm(i,j,wnew)
@@ -205,7 +213,6 @@
           kD(i,j) =kw(i,j)*Dstp(i,j)
 #  else
 !          kD(i,j) =kw(i,j)*(h(i,j)+wkb_tide)
-      !rb    kD(i,j) =kw(i,j)*h(i,j)
           kD(i,j) =kw(i,j)*Dstp(i,j)
 #  endif
 #  ifndef WAVE_ROLLER
@@ -217,12 +224,10 @@
 
 # else    /* ifndef WKB_WWAVE */
 !
-! Wave parameters from outside sources ---------------------------------
+!----------------------------------------------------------------------
+!  Wave parameters from outside source
+!----------------------------------------------------------------------
 !
-          
-          whrm(i,j)=min(whrm(i,j),0.5*Dstp(i,j))   ! crudely simulate 
-                                                   ! breaking for low
-                                                   ! resolution data
           wh(i,j)=wave_ramp*whrm(i,j)
           fr(i,j)=wfrq(i,j)
           inv_f(i,j)=1.0/max(fr(i,j),eps)
@@ -384,11 +389,15 @@
 !
       do j=jstrR,jendR
         do i=istr,iendR
+# ifdef STOKES_DRIFT
           ust2d(i,j)  =0.5*(stk(i-1,j)*wdrx(i-1,j)+stk(i,j)*wdrx(i,j))
+# endif
           brk2dx(i,j) =0.5*(brk(i-1,j)*wdrx(i-1,j)+brk(i,j)*wdrx(i,j))
           frc2dx(i,j) =0.5*(frc(i-1,j)*wdrx(i-1,j)+frc(i,j)*wdrx(i,j))
 # ifdef MASKING
+#  ifdef STOKES_DRIFT
           ust2d(i,j)  = ust2d(i,j)*umask(i,j)
+#  endif
           brk2dx(i,j) =brk2dx(i,j)*umask(i,j)
           frc2dx(i,j) =frc2dx(i,j)*umask(i,j)
 # endif
@@ -401,16 +410,20 @@
       enddo
       do j=jstr,jendR
         do i=istrR,iendR
+# ifdef STOKES_DRIFT
           vst2d(i,j)  =0.5*(stk(i,j-1)*wdre(i,j-1)+stk(i,j)*wdre(i,j))
+# endif
           brk2de(i,j) =0.5*(brk(i,j-1)*wdre(i,j-1)+brk(i,j)*wdre(i,j))
           frc2de(i,j) =0.5*(frc(i,j-1)*wdre(i,j-1)+frc(i,j)*wdre(i,j))
 # ifdef MASKING
+#  ifdef STOKES_DRIFT
           vst2d(i,j)  = vst2d(i,j)*vmask(i,j)
+#  endif
           brk2de(i,j) =brk2de(i,j)*vmask(i,j)
           frc2de(i,j) =frc2de(i,j)*vmask(i,j)
 # endif
 # ifdef WET_DRY
-! no mask wet for vstokes here 
+! no wetdry mask for vstokes here 
           brk2de(i,j) =brk2de(i,j)*vmask_wet(i,j)
           frc2de(i,j) =frc2de(i,j)*vmask_wet(i,j)
 # endif
@@ -444,6 +457,7 @@
 ! 3D depth-dependent Stokes drift velocities
 ! ==========================================
 !
+#  ifdef STOKES_DRIFT
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           inv_ex(i,j)=1.0/max(1.0-exp(-4.*kD(i,j)),eps)
@@ -454,7 +468,7 @@
             inv_dz(i,j,k)=1./Hz(i,j,k)
             cff2 = exp( 2.*kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
      &            -exp(-2.*kw(i,j)*(z_w(i,j,k)+h(i,j)+Dstp(i,j)))
-            ust_r(i,j,k) =ust_ker*inv_dz(i,j,k)*( cff2-cff1 )
+            ust_r(i,j,k)=ust_ker*inv_dz(i,j,k)*( cff2-cff1 )
             cff1=cff2
           enddo
         enddo
@@ -467,16 +481,26 @@
         do j=jstrR,jendR
           do i=istr,iendR
             ust(i,j,k)=0.5*( ust_r(i-1,j,k)*wdrx(i-1,j)
-     &                        +ust_r(i,j,k)*wdrx(i,j) )
+     &                      +ust_r(i  ,j,k)*wdrx(i  ,j) )
           enddo
         enddo
         do j=jstr,jendR
           do i=istrR,iendR
             vst(i,j,k)=0.5*( ust_r(i,j-1,k)*wdre(i,j-1)
-     &                        +ust_r(i,j,k)*wdre(i,j) )
+     &                      +ust_r(i,j  ,k)*wdre(i,j  ) )
           enddo
         enddo
       enddo
+#  else
+      do j=jstr-1,jend+1
+        do i=istr-1,iend+1
+          inv_ex(i,j)=1.0/max(1.0-exp(-4.*kD(i,j)),eps)
+          do k=1,N
+            inv_dz(i,j,k)=1./Hz(i,j,k)
+          enddo
+        enddo
+      enddo
+#  endif /* STOKES_DRIFT */
 !
 ! calP & Kapsrf: surface pressure & Bernoulli head at rho-point
 ! =============================================================
@@ -550,9 +574,12 @@
 ! kvf : vertical vortex force term (K term) at rho-point
 ! ======================================================
 !
-#  define kvr wrk3
-#  define kvfx stk
-#  define kvfy inv_f
+#  ifdef STOKES_DRIFT
+
+#   define kvr wrk3
+#   define kvfx stk
+#   define kvfy inv_f
+
       if (WESTERN_EDGE) then
         imin=IstrU-1
       else
@@ -590,19 +617,32 @@
         do j=jmin,jend               ! copy into a shared array
           do i=imin,iend
             kvf(i,j,k)=0.5*( kvr(i,j,k)+kvr(i,j,k-1) )
-#  ifdef MASKING
+#   ifdef MASKING
      &                                     *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
+#   endif
+#   ifdef WET_DRY
      &                                     *rmask_wet(i,j)
-#  endif
+#   endif
           enddo
         enddo
       enddo           ! <-- discard ust_r, kvfx, kvfy, kvr
+
+#   undef kvr
+#   undef kvfx
+#   undef kvfy
+
+#  else
+      do k=1,N
+        do j=jmin,jend
+          do i=imin,iend
+            kvf(i,j,k)=0.
+          enddo
+        enddo
+      enddo
+#  endif /* STOKES_DRIFT */
+
 #  undef ust_r
-#  undef kvr
-#  undef kvfx
-#  undef kvfy
+
 !
 ! Akw: primary wave-induced additional diffusivity for tracers at w-point
 ! =======================================================================
@@ -875,8 +915,8 @@
 !  which is required to reproduce Xu & Bowen (1994) and Lentz et al.
 !  (2008).
 !
-#  define LH53_STREAMING
 #  ifdef WAVE_STREAMING
+#   define LH53_STREAMING
 #   ifdef WAVE_BODY_STREAMING
 #    undef LH53_STREAMING
 #   endif
@@ -884,7 +924,7 @@
 #   define frc2d stk
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
-#   ifndef LH53_STREAMING
+#   ifndef LH53_STREAMING /* turbulent cases */
           abot  =wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           delta =0.160455*((abot/Zob)**0.83)*Zob  ! BBL thickness
           inv_k =min(max(a_frc*delta,eps),Dstp(i,j))
@@ -923,7 +963,7 @@
             frc_r(i,j,k) = fb*frc(i,j)
             fb1=fb2
           enddo
-#   else  /* LH53_STREAMING */
+#   else  /* LH53_STREAMING (laminar streaming) */
           frc2d(i,j)=0.0
           beta=sqrt(fr(i,j)/(Akv(i,j,0)+Akv(i,j,1)))
           cff =wramp2*(wh(i,j)**2)*(fr(i,j)**2)*kw(i,j)
@@ -1010,7 +1050,7 @@
       z_tide=0.0
 #  endif
 #  if defined OBC_WEST && (defined Z_FRC_BRY || defined M2_FRC_BRY \
-                                               || defined M3_FRC_BRY)
+                                             || defined M3_FRC_BRY)
       if (WESTERN_EDGE) then
         do j=jstrR,jendR
 #   ifdef Z_FRC_BRY
@@ -1035,7 +1075,7 @@ c            ubry_west(j,k)=-ust(istrR,j,k)
       endif
 #  endif  /* OBC_WEST */
 #  if defined OBC_EAST && (defined Z_FRC_BRY || defined M2_FRC_BRY \
-                                               || defined M3_FRC_BRY)
+                                             || defined M3_FRC_BRY)
       if (EASTERN_EDGE) then
         do j=jstrR,jendR
 #   ifdef Z_FRC_BRY
@@ -1103,7 +1143,7 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
 !======================================================================
 !
 # ifdef SOLVE3D
-!
+
 ! Vertical Stokes drift velocity at rho-point
 ! ===========================================
 ! Note "wst" is not used in prognostic computation, but only 
@@ -1111,10 +1151,10 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
 !
       subroutine wstokes (tile)
       implicit none
-# include "param.h"
+#  include "param.h"
       integer tile, trd, omp_get_thread_num
-# include "private_scratch.h"
-# include "compute_tile_bounds.h"
+#  include "private_scratch.h"
+#  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call wstokes_tile (istr,iend,jstr,jend, A2d(1,1,trd))
       return
@@ -1122,16 +1162,18 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
 
       subroutine wstokes_tile (istr,iend,jstr,jend,Wrk)
       implicit none
-# include "param.h"
+#  include "param.h"
       integer istr,iend,jstr,jend, i,j,k
       real, dimension(PRIVATE_1D_SCRATCH_ARRAY,0:N) :: Wrk
 
-# include "grid.h"
-# include "ocean3d.h"
-# include "forces.h"
-# include "scalars.h"
+#  include "grid.h"
+#  include "ocean3d.h"
+#  include "forces.h"
+#  include "scalars.h"
 
-# include "compute_auxiliary_bounds.h"
+#  include "compute_auxiliary_bounds.h"
+
+#  ifdef STOKES_DRIFT
 
       do j=jstr,jend
         do i=istr,iend
@@ -1162,7 +1204,7 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
         enddo
       enddo
 
-# ifndef EW_PERIODIC
+#   ifndef EW_PERIODIC
       if (WESTERN_EDGE) then                       ! Set lateral
         do k=1,N                                   ! boundary
           do j=jstr,jend                           ! conditions
@@ -1177,8 +1219,8 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
           enddo
         enddo
       endif
-# endif
-# ifndef NS_PERIODIC
+#   endif
+#   ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=istr,iend
@@ -1193,7 +1235,7 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
           enddo
         enddo
       endif
-#  ifndef EW_PERIODIC
+#    ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
           wst(istr-1,jstr-1,k)=wst(istr,jstr,k)
@@ -1214,8 +1256,20 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
           wst(iend+1,jend+1,k)=wst(iend,jend,k)
         enddo
       endif
-#  endif
-# endif
+#    endif
+#   endif
+
+#  else
+
+      do k=1,N
+        do j=jstr-1,jend+1
+          do i=istr-1,iend+1
+            wst(i,j,k)=0.
+          enddo
+        enddo
+      enddo
+
+#  endif  /* STOKES_DRIFT */
       return
       end
 # endif  /* SOLVE3D */

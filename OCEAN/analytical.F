@@ -524,10 +524,10 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "coupling.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# ifdef INTERNAL
+# if defined INTERNAL || defined ANA_TIDES
       real U0,omega,kwave,ETA0
 # endif
-# if defined RIP || defined SHOREFACE
+# if defined RIP && defined ANA_TIDES
       real surelev,omega1,omega2
       real tide_ampli_moy,tide_ampli_var
       real*QUAD mssh,area,cff1
@@ -542,36 +542,29 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Set sea surface height (meters).
 !
-# if defined INTERNAL
-      U0=0.02
-      omega=2.*pi/(12.4*3600)
-      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
-      ETA0=kwave*h(1,1)*U0/omega
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
-        enddo
-      enddo
-# elif defined JET
+# if defined JET
 !
 !    --> climatology computed in ana_initial
 !
-# elif (defined RIP || defined SHOREFACE) && defined ANA_TIDES
+
+# elif defined RIP && defined ANA_TIDES
 !
 ! Remove mean sea level (mssh) 
-!  !!! not OPENMP compliant and MPI DEBUG problems !!!
 !
       mssh=QuadZero
       area=QuadZero
       do j=Jstr,Jend
         do i=Istr,Iend
           cff1=1./(pm(i,j)*pn(i,j))
+#   ifdef WET_DRY
+     &              *rmask_wet(i,j)
+#   endif
           mssh=mssh+cff1*Zt_avg1(i,j)
           area=area+cff1
         enddo
       enddo
       mssh=mssh/area
-#   ifdef MPI
+#  ifdef MPI
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
@@ -585,7 +578,8 @@ C$    integer  trd, omp_get_thread_num
         area=area+allarea(1,i)
       enddo
       mssh=mssh/area
-#   endif
+      mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
+#  endif
       omega1=2.*pi/(14.*86400.)
       omega2=2.*pi/(12.*3600. )
       tide_ampli_moy=1.
@@ -593,16 +587,25 @@ C$    integer  trd, omp_get_thread_num
       surelev=1.
       do j=JstrR,JendR
         do i=IstrR,IendR
-          ssh(i,j)=zeta(i,j,knew)
+          ssh(i,j)=zeta(i,j,knew)-mssh
      &                +tide_ampli_moy*(1.+tide_ampli_var
      &                *sin(time*omega1))
      &                *sin(time*omega2)
      &                    +time*surelev/31536000.
-# ifndef RVTK_DEBUG
-     &                          - mssh
-# endif
         enddo
       enddo
+
+# elif defined INTERNAL || defined ANA_TIDES
+      U0=0.02
+      omega=2.*pi/(12.4*3600)
+      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
+      ETA0=kwave*h(1,1)*U0/omega
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
+        enddo
+      enddo
+
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -611,7 +614,10 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-#   ifdef WET_DRY
+# ifdef WET_DRY
+!
+!  Check that min depth > Dcrit
+!
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
@@ -619,9 +625,12 @@ C$    integer  trd, omp_get_thread_num
           endif
         enddo
       enddo
-#   endif
+# endif
 
 # ifdef NBQ
+!
+! Compliance with zeta and ssh definition in NBQ code
+!
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=h(i,j)+ssh(i,j)
@@ -1163,7 +1172,7 @@ C$    integer  trd, omp_get_thread_num
 # include "climat.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-# ifdef INTERNAL
+# if defined INTERNAL || defined ANA_TIDES
       real U0,omega,kwave,V0
 # endif
       real ramp
@@ -1187,7 +1196,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL
+#  if defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
