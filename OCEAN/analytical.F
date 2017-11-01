@@ -556,9 +556,6 @@ C$    integer  trd, omp_get_thread_num
       do j=Jstr,Jend
         do i=Istr,Iend
           cff1=1./(pm(i,j)*pn(i,j))
-#   ifdef WET_DRY
-     &              *rmask_wet(i,j)
-#   endif
           mssh=mssh+cff1*Zt_avg1(i,j)
           area=area+cff1
         enddo
@@ -1196,7 +1193,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || defined ANA_TIDES
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))

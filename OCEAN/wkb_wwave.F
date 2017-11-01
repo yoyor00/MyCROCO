@@ -547,6 +547,11 @@ C$OMP BARRIER
 ! Solve primary wavenumber equation
 !---------------------------------------------------------------------
 !
+# ifdef WKB_ADD_DIFF
+      cffX=1.   ! isotropic diffusion
+      cffE=1.
+# endif
+!
       do j=jstr,jend
         do i=istr,iend
 # ifdef MRL_CEW
@@ -562,16 +567,11 @@ C$OMP BARRIER
           ay2=cev-abs(cev)
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
-# ifdef WKB_ADD_DIFF
-#  ifdef WKB_ADD_DIFFRACTION
+# if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
           cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
           cffX=10.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
           cffE=10.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
-#  else
-          cffX=1.   ! isotropic diffusion
-          cffE=1.
-#  endif
 # endif
           wkx(i,j,wnew)=wkx(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*on_r(i,j)*(Dstp(i+1,j)-Dstp(i-1,j))
@@ -642,16 +642,11 @@ C$OMP BARRIER
 !
       do j=jstr,jend
         do i=istr,iend
-# ifdef WKB_ADD_DIFF
-#  ifdef WKB_ADD_DIFFRACTION
+# if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
           cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
           cffX=10.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
           cffE=10.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
-#  else
-          cffX=1.   ! isotropic diffusion
-          cffE=1.
-#  endif
 # endif
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                   *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
