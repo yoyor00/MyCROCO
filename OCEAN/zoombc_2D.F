@@ -104,6 +104,10 @@ C        indinterp = 0 indinterp is set to zero in zetabc
 C        dUinterp(0:i2u,j1t:j2t)=tabtemp2d
 C        deallocate(tabtemp2d)
 
+# ifdef WET_DRY
+        Call Agrif_Bc_variable(ubarwetid,
+     &    calledweight=tinterp,procname = u2dinterp)
+# endif
 
         Agrif_UseSpecialvalue=.false.
 C$OMP END MASTER
@@ -371,6 +375,13 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                  *umask(Istr,j)
 #   endif
+#   if defined WET_DRY
+          cff1=ABS(ABS(umask_wet(Istr,j))-1.)
+          cff2=0.5+SIGN(0.5,ubclm(Istr,j))*umask_wet(Istr,j)
+          cff3=0.5*umask_wet(Istr,j)*cff1
+     &                                           +cff2*(1.-cff1)
+          ubclm(Istr,j)=ubclm(Istr,j)*cff3
+#   endif
         enddo   
 
       endif
@@ -397,6 +408,13 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                      *umask(Iend+1,j)
 #   endif
+#   ifdef WET_DRY
+          cff1=ABS(ABS(umask_wet(Iend+1,j))-1.)
+          cff2=0.5+SIGN(0.5,ubclm(Iend+1,j))*umask_wet(Iend+1,j)
+          cff3=0.5*umask_wet(Iend+1,j)*cff1
+     &                                           +cff2*(1.-cff1)
+          ubclm(Iend+1,j)=ubclm(Iend+1,j)*cff3
+#   endif 
         enddo       
       endif
 #  endif
@@ -419,7 +437,14 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                  *umask(i,Jstr-1)
 #   endif
-      enddo
+#if defined WET_DRY
+          cff1=ABS(ABS(umask_wet(i,Jstr-1))-1.)
+          cff2=0.5+SIGN(0.5,ubclm(i,Jstr-1))*umask_wet(i,Jstr-1)
+          cff3=0.5*umask_wet(i,Jstr-1)*cff1
+     &                                           +cff2*(1.-cff1)
+          ubclm(i,Jstr-1)=ubclm(i,Jstr-1)*cff3
+#endif
+       enddo
       endif
 #  endif
 
@@ -442,7 +467,14 @@ C$OMP BARRIER
      &                *umask(i,Jend+1)
 #   endif
         enddo
-
+#   ifdef WET_DRY
+          cff1=ABS(ABS(umask_wet(i,Jend+1))-1.)
+          cff2=0.5+SIGN(0.5,ubclm(i,Jend+1))*umask_wet(i,Jend+1)
+          cff3=0.5*umask_wet(i,Jend+1)*cff1
+     &                                           +cff2*(1.-cff1)
+          ubclm(i,Jend+1)=ubclm(i,Jend+1)*cff3
+#   endif
+ 
       endif
 #  endif
 !# endif * M2_FRC_BRY || M2NUDGING */
@@ -515,7 +547,17 @@ C$OMP BARRIER
        else
 !         tabtmp = tabres
          dUinterp(i1:i2,j1:j2) = tabres
-       endif
+# ifdef WET_DRY
+         do j=j1,j2
+         do i=i1,i2
+c take the result of a constant interpolation when one of the left/right cell is dry
+           if (umask_wet(i,j) /= 2) then
+             dUinterp(i,j) = tabres(i,j)
+           endif
+         enddo
+         enddo
+# endif
+        endif
       return
       end
       subroutine u2Dinterp_old(tabres,i1,i2,j1,j2)
@@ -670,6 +712,11 @@ C        Call Agrif_Bc_variable(tabtemp2d,vbarid,calledweight=tinterp,
 C     &   procname = v2dinterp)
         Call Agrif_Bc_variable(vbarid,calledweight=tinterp,
      &   procname = v2dinterp)
+#ifdef WET_DRY
+        Call Agrif_Bc_variable(vbarwetid,
+     &    calledweight=tinterp,procname = v2dinterp)
+#endif
+
 C        dVinterp(i1t:i2t,0:j2v)=tabtemp2d
 C        deallocate(tabtemp2d)
 
@@ -944,7 +991,14 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                  *vmask(i,Jstr)
 #   endif 
-       enddo
+#if defined WET_DRY
+          cff1=ABS(ABS(vmask_wet(i,Jstr))-1.)
+          cff2=0.5+SIGN(0.5,vbclm(i,Jstr))*vmask_wet(i,Jstr)
+          cff3=0.5*vmask_wet(i,Jstr)*cff1
+     &                                           +cff2*(1.-cff1)
+          vbclm(i,Jstr)=vbclm(i,Jstr)*cff3
+#endif
+        enddo
       endif
 #  endif 
 
@@ -969,6 +1023,13 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                  *vmask(i,Jend+1)
 #   endif 
+#   if defined WET_DRY
+          cff1=ABS(ABS(vmask_wet(i,Jend+1))-1.)
+          cff2=0.5+SIGN(0.5,vbclm(i,Jend+1))*vmask_wet(i,Jend+1)
+          cff3=0.5*vmask_wet(i,Jend+1)*cff1
+     &                                           +cff2*(1.-cff1)
+          vbclm(i,Jend+1)=vbclm(i,Jend+1)*cff3
+#    endif 
         enddo
       endif
 #  endif
@@ -991,7 +1052,14 @@ C$OMP BARRIER
 #   ifdef MASKING
      &                 *vmask(Iend+1,j)
 #   endif
-        enddo
+#if defined WET_DRY
+          cff1=ABS(ABS(vmask_wet(Iend+1,j))-1.)
+          cff2=0.5+SIGN(0.5,vbclm(Iend+1,j))*vmask_wet(Iend+1,j)
+          cff3=0.5*vmask_wet(Iend+1,j)*cff1
+     &                                           +cff2*(1.-cff1)
+          vbclm(Iend+1,j)=vbclm(Iend+1,j)*cff3
+#endif
+         enddo
       endif       
 #  endif 
 
@@ -1012,6 +1080,13 @@ C$OMP BARRIER
 #   endif
 #   ifdef MASKING
      &                  *vmask(Istr-1,j)
+#   endif
+#   if defined WET_DRY
+          cff1=ABS(ABS(vmask_wet(Istr-1,j))-1.)
+          cff2=0.5+SIGN(0.5,vbclm(Istr-1,j))*vmask_wet(Istr-1,j)
+          cff3=0.5*vmask_wet(Istr-1,j)*cff1
+     &                                           +cff2*(1.-cff1)
+          vbclm(Istr-1,j)=vbclm(Istr-1,j)*cff3
 #   endif
         enddo
       endif
@@ -1084,7 +1159,17 @@ C$OMP BARRIER
 
        else
           dVinterp(i1:i2,j1:j2) = tabres
-       endif
+#ifdef WET_DRY
+         do j=j1,j2
+         do i=i1,i2
+c take the result of a constant interpolation when one of the south/north cell is dry
+           if (vmask_wet(i,j) /= 2) then
+             dVinterp(i,j) = tabres(i,j)
+           endif
+         enddo
+         enddo
+#endif
+        endif
       return
       end   
       
@@ -1447,6 +1532,12 @@ C$OMP BARRIER
           do j=Jstr-1,Jstr
           do i=IstrU-1,Iend
           SSH(i,j)=Zeta_south4(i,j,iif-1)+Zeta_south6(i,j)
+#if defined WET_DRY
+          IF (SSH(i,j).le.
+     &        (Dcrit(i,j)-h(i,j))) THEN
+            SSH(i,j)=Dcrit(i,j)-h(i,j)-eps
+          END IF
+#endif 
           enddo
           enddo
 #   if defined Z_FRC_BRY
@@ -1469,6 +1560,12 @@ C$OMP BARRIER
           do j=Jend,Jend+1
           do i=IstrU-1,Iend
           SSH(i,j)=Zeta_north4(i,j,iif-1)+Zeta_north6(i,j)
+#if defined WET_DRY
+          IF (SSH(i,j).le.
+     &        (Dcrit(i,j)-h(i,j))) THEN
+            SSH(i,j)=Dcrit(i,j)-h(i,j)-eps
+          END IF
+#endif
           enddo
           enddo
 #   if defined Z_FRC_BRY
@@ -1490,6 +1587,12 @@ C$OMP BARRIER
           do j=JstrV-1,Jend
           do i=Istr-1,Istr
           SSH(i,j)=Zeta_west4(i,j,iif-1)+Zeta_west6(i,j)
+#if defined WET_DRY
+          IF (SSH(i,j).le.
+     &        (Dcrit(i,j)-h(i,j))) THEN
+            SSH(i,j)=Dcrit(i,j)-h(i,j)-eps
+          END IF
+#endif
           enddo
           enddo
 #   if defined Z_FRC_BRY
@@ -1511,6 +1614,12 @@ C$OMP BARRIER
           do j=JstrV-1,Jend
           do i=Iend,Iend+1
           SSH(i,j)=Zeta_east4(i,j,iif-1)+Zeta_east6(i,j)
+#if defined WET_DRY
+          IF (SSH(i,j).le.
+     &        (Dcrit(i,j)-h(i,j))) THEN
+            SSH(i,j)=Dcrit(i,j)-h(i,j)-eps
+          END IF
+#endif
           enddo
           enddo
 #   if defined Z_FRC_BRY

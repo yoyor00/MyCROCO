@@ -182,6 +182,9 @@
             
       integer hid, zetaid,ubarid,vbarid,uid,vid,tid
       integer rmaskid
+#ifdef WET_DRY
+      integer rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
+#endif
       integer tspongeid, uspongeid, vspongeid
 # ifdef WKB_WWAVE
       integer wacid,warid,wkxid,wkeid
@@ -189,11 +192,18 @@
 # endif
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
      &  tspongeid, uspongeid, vspongeid, rmaskid
+#ifdef WET_DRY
+     &         ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
+#endif
 # ifdef WKB_WWAVE
      &  ,wacid,warid,wkxid,wkeid
      &  ,hrmid,frqid,wsbid,wvnid,wcgid
      
 # endif
+#ifdef WET_DRY
+      real rmask_childs(GLOBAL_2D_ARRAY)
+      common/rmask_child/rmask_childs
+#endif
       integer updatezetaid, updateubarid, updatevbarid
       integer updateduavg2id, updatedvavg2id
       integer updatetid, updateuid, updatevid
