@@ -472,7 +472,7 @@
             xdir=cos(wdir)
             ydir=sin(wdir)
             wwfrq(i,j)=cfrq
-            wwhrm(i,j) =2.0*Awave(i,j)*isr2    ! Hsig to Hrms conversion
+            wwhrm(i,j) =2.0*Awave(i,j) ! Amp to Hrms conversion
             wwdrx(i,j) =xdir
             wwdre(i,j) =ydir
 #  ifdef MASKING
