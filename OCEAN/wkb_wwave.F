@@ -359,8 +359,8 @@
          
         do j=jstrR,jendR
           do i=istrR,iendR
-#  ifdef WAVE_OFFLINE
             Dstp(i,j)=h(i,j)+zeta(i,j,knew)
+#  ifdef WAVE_OFFLINE
             dd = Dstp(i,j)
             khd = dd*wfrq(i,j)*wfrq(i,j)/g
             kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
