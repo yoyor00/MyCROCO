@@ -96,7 +96,7 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# undef  NEW_S_COORD
+# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -104,7 +104,6 @@
                       /* Equation of State */
 # define SALINITY
 # define NONLIN_EOS
-# define SPLIT_EOS
                       /* Lateral Momentum Advection (default UP3) */
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
@@ -490,7 +489,6 @@
 #  define UV_ADV
 #  define SALINITY
 #  define NONLIN_EOS
-#  define SPLIT_EOS
 #  define LMD_MIXING
 #  ifdef LMD_MIXING
 #   define LMD_SKPP
@@ -660,7 +658,6 @@
 # define UV_COR
 # define M2FILTER_FLAT
 # define NONLIN_EOS
-# define SPLIT_EOS
 # define SALINITY
 # define ANA_GRID
 # define MASKING
@@ -701,7 +698,6 @@
 # define SOLVE3D
 # define SALINITY
 # define NONLIN_EOS
-# define SPLIT_EOS
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -781,7 +777,6 @@
 # define AVERAGES
 # define SALINITY
 # define NONLIN_EOS
-# define SPLIT_EOS
 # define ANA_SSFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX

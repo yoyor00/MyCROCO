@@ -177,6 +177,17 @@
 
 /*
 ======================================================================
+    Activate EOS splitting of seawater compressibility effect in case 
+    of non-linear formulation, as part of the pressure gradient
+    algorithm with polynomial fit (Shchepetkin & McWilliams 2003)
+======================================================================
+*/
+#ifdef NONLIN_EOS
+# define SPLIT_EOS
+#endif
+
+/*
+======================================================================
     Select MOMENTUM LATERAL advection-diffusion scheme:
     (The default is third-order upstream biased)
 ======================================================================
@@ -662,8 +673,11 @@
 # undef SPONGE_DIF2
 # undef TS_HADV_RSUP3
 # undef TS_MIX_GEO
-# undef UV_MIX_GEO
+# undef TS_MIX_ISO
 # undef TS_DIF_SMAGO
+# undef UV_MIX_GEO
+# undef VIS_COEF_3D
+# undef DIF_COEF_3D
 # undef M3NUDGING
 # undef TNUDGING
 # undef ROBUST_DIAG
@@ -686,5 +700,7 @@
 # undef AGRIF_OBC_M3SPECIFIED
 # undef AGRIF_OBC_TORLANSKI
 # undef AGRIF_OBC_TSPECIFIED
+# undef SEDIMENT
+# undef BIOLOGY
 #endif
 
