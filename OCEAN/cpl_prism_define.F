@@ -64,13 +64,11 @@
         CALL prism_abort_proto ( comp_id, 'cpl_prism_grid',
      &       'Failure in prism_def_partition')
       END IF
-
 !------------------------------------------------------------------
 !     Set the ROMS grid definition to PRISM system
 !------------------------------------------------------------------
 
       CALL cpl_prism_grid(oasis_part_id)
-
 !------------------------------------------------------------------
 !     Set the WRF exchange variables definition to PRISM system
 !------------------------------------------------------------------

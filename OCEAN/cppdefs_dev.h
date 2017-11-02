@@ -82,9 +82,8 @@
 # define MRL_WCI
 # undef  WKB_WWAVE
 # undef  WAVE_ROLLER
-# undef  WAVE_FRICTION
-# undef  WAVE_STREAMING
-# undef  WAVE_RAMP
+# define WAVE_STREAMING
+# define WAVE_RAMP
 #endif
 
 /* 
