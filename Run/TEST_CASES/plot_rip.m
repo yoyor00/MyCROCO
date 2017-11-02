@@ -26,7 +26,8 @@
 %       Application of the ROMS embedding procedure for the Central 
 %      California Upwelling System,  Ocean Modelling, 2006.
 %
-%  Patrick Marchesiello, IRD 2013
+%  Patrick Marchesiello, IRD 2013,2017
+%   uses QTwriter.m for creating .mov video files if desired
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -39,8 +40,6 @@ close all
 fname     = 'rip_his.nc';  % croco file name
 makemovie = 0;             % make movie using QTWriter (for tidal case)
 makepdf   = 0;             % make pdf file
-
-Dcrit     = 0.1;           % min dry land depth
 pltvort   = 0;             % plot vort (else plot u)
 %
 %======================================================================
@@ -50,7 +49,7 @@ pltvort   = 0;             % plot vort (else plot u)
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname);
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'scrum_time'}(:)); % read last record
 tstr=2;
 tend=tindex;
 
@@ -60,22 +59,28 @@ else
  tstr=tindex;
 end
 
+h=nc{'h'}(:);
+x=nc{'x_rho'}(:);
+y=nc{'y_rho'}(:);
+pm=nc{'pm'}(:);
+pn=nc{'pn'}(:);
+N=length(nc('s_rho'));
+
+% min depth in wetting-drying scheme
+Dcrit=nc{'Dcrit'}(:);
+
+% initialize plot
 hf = figure;
 axis tight; set(hf,'DoubleBuffer','on');
 set(gca,'nextplot','replacechildren');
 
-for tindex=tstr:tend % ---------------------------------------------
+% ---------------------------------------------------------------------
+% --- get variables and plot in time loop ---
+% ---------------------------------------------------------------------
+
+for tindex=tstr:tend  % ---
 
  disp(['Tindex = ',num2str(tindex)])
-
- if tindex==tstr
-  h=nc{'h'}(:);
-  x=nc{'x_rho'}(:);
-  y=nc{'y_rho'}(:);
-  pm=nc{'pm'}(:);
-  pn=nc{'pn'}(:);
-  N=length(nc('s_rho'));
- end
 
  time=nc{'scrum_time'}(tindex)/86400;
  zeta=nc{'zeta'}(tindex,:,:);
@@ -91,46 +96,40 @@ for tindex=tstr:tend % ---------------------------------------------
  if pltvort,
   vort=mask.*psi2rho(vorticity(u,v,pm,pn));
  else
-  speed=mask.*ur; %sqrt(ur.^2+vr.^2);
+  speed=mask.*ur;  
  end
 
- %============================================================
+ %======================================
  % --- plot ---
- %=============================================================
+ %======================================
 
  if pltvort,
   cmin=-0.01; cmax=0.01; nbcol=10;
  else
-  cmin=-0.20; cmax=0.20; nbcol=10;
+  cmin=-0.25; cmax=0.25; nbcol=10;
  end
-
  cint=(cmax-cmin)/nbcol;
  map=colormap(cool(nbcol));
- %map(nbcol/2  ,:)=[1 1 1];
- %map(nbcol/2+1,:)=[1 1 1];
  colormap(map);
- %contour(x,y,h,[-2:1:15],'color','r'); hold on
-%
  set(gcf,'color','w');
-
  hold on
+
  if pltvort,
   [C,hh]=contourf(x,y,vort,[cmin:cint:cmax]);
  else
   [C,hh]=contourf(x,y,speed,[cmin:cint:cmax]);
  end
- %allH = allchild(hh);
- %patchValues = cell2mat(get(allH,'UserData'));
- %patchesToHide = abs(patchValues)<cint ;
- %set(allH(patchesToHide),'FaceColor','w','FaceAlpha',0.99);
  shading flat; colorbar;
-%
+
  I = ~(sqrt(ur.^2+vr.^2)<0.05);
  quiver(x(I),y(I),ur(I),vr(I)); hold off
  axis([100 760 10 760])
  caxis([cmin cmax])
  thour=floor(time*24);
- title(['Rip Test Case - time = ',num2str(thour),' h'])
+ title(['Rip Test Case - time = ',num2str(thour),' h'],'fontsize',14)
+ xlabel('Cross-shore distance [m]','fontsize',14)
+ ylabel('Along-shore distance [m]','fontsize',14)
+ set(gca,'fontsize',14)
  hold off
 
  if makemovie,  
@@ -139,9 +138,8 @@ for tindex=tstr:tend % ---------------------------------------------
   writeMovie(movObj,getframe(hf));
   clf('reset')
  end
-%----------------------------------
 
-end % time loop
+end % time loop -------------------------------------------------------
 
 close(nc);
 
