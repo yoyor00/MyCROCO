@@ -171,6 +171,8 @@
 #elif defined RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125
+#elif defined PGF_BASIC_JACOBIAN
+# define WJ_GRADP 0.125
 #endif
 
 /*
