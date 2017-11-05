@@ -41,7 +41,7 @@
 !     (McWilliams, Restrepo & Lane, 2004, JFM, 511, pp.135-178)
 !    
 !   inputs: R.M.S. wave height (m);
-!           peak wave freqiuency (rad/s);
+!           peak wave frequency (rad/s);
 !           mean wave direction: wdrx & wdre (non dimensional);
 !           breaking dissipation   (\epsilon_b / \rho, m3/s3);
 !           roller dissipation     (\epsilon_r / \rho, m3/s3); and
@@ -113,15 +113,16 @@
      &            c1o3=0.3333333333333333,    ! 1/3
      &            c4o3=1.3333333333333333     ! 4/3
      &           )
-# ifdef WAVE_OFFLINE
-      real roller_fraction
+# ifndef WKB_WWAVE
+      real wave_gam,wave_btg,wave_roller
+      parameter (wave_gam=0.4, wave_btg=0.8)
 #  ifdef WAVE_ROLLER
-      parameter ( roller_fraction=1.0)
+      parameter (wave_roller=1.0)
 #  else
-      parameter ( roller_fraction=0.0)
+      parameter (wave_roller=0.0)
 #  endif
-#  define wkb_roller roller_fraction
 # endif
+!
 #include "compute_auxiliary_bounds.h"
 
 ! Define Stokes drift computation
@@ -190,7 +191,6 @@
           inv_d(i,j)=1.0/Dstp(i,j)
 
 # ifdef WKB_WWAVE
-!
 !----------------------------------------------------------------------
 !  Wave parameters from WKB model
 !----------------------------------------------------------------------
@@ -225,7 +225,7 @@
 # else    /* ifndef WKB_WWAVE */
 !
 !----------------------------------------------------------------------
-!  Wave parameters from outside source
+!  Wave parameters from input file (read in get_wwave)
 !----------------------------------------------------------------------
 !
           wh(i,j)=wave_ramp*whrm(i,j)
@@ -251,35 +251,39 @@
           kD(i,j) =kh
           kw(i,j) =kh*inv_d(i,j)
 !
-! Wave breaking (btg=0.8, gam=0.4)
+! Wave breaking (check btg,gam, e.g., btg=0.8, gam=0.4)
 !
 #  ifdef WAVE_OFFLINE_BREAKING
-          ebrk(i,j) =wramp2*Eb(i,j)              ! epsilon_b (m3/s3)
+          ebrk(i,j) =wramp2*Eb(i,j)              ! e_b/rho (m3/s3)
 #  else
-#   define WAVE_BREAK_TG86
 #   ifdef WAVE_BREAK_TG86
-          cff=3.0/16.0*sqrt(pi)*g*(0.8**3)/(0.4**4)/(2.0*pi)
-          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7)  ! ep_b/rho/sigma
+          cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.0*pi)
+          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7)  ! e_b/rho/sigma (m3/s2)
 #   elif defined WAVE_BREAK_TG86A
-          cff=3.0/16.0*sqrt(pi)*g*(0.8**3)/(0.4**2)/(2.0*pi)
-          cff1=wh(i,j)/(0.4*Dstp(i,j))
+          cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.0*pi)
+          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
           ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
      &                           (1.0-(1.0+cff1**2)**(-2.5))
 #   elif defined WAVE_BREAK_CT93
-          cff=3.0/16.0*sqrt(pi)*g*(0.8**3)/(2.0*pi)
-          cff1=wh(i,j)/(0.4*Dstp(i,j))
+          cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(2.0*pi)
+          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
           ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
      &              *( 1.0+tanh(8.0*(cff1-1.0)) )*
      &               ( 1.0-(1.0+cff1**2)**(-2.5) )
+#   elif defined WAVE_BREAK_R93
+          cff=0.25*g*(wave_btg**3)/(2.0*pi)
+          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+          ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
+     &                          *(1-exp (-cff1**5 ))
 #   endif  
-          ebrk(i,j) =wramp2*ebrk(i,j)            ! epsilon_b (m3/s3)
+          ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)    ! e_b/rho (m3/s3)
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER
-          erol(i,j) =wramp2*0.5762*Dstp(i,j)*    ! epsilon_r (m3/s3)
-     &               wh(i,j)*wvqb(i,j)*          ! 0.5762=0.06*sinb*g^2
-     &               kw(i,j)*inv_f(i,j)          ! Nairn et al (1991)
-          cff =(1.-wkb_roller)*ebrk(i,j)+erol(i,j)
+          erol(i,j =wramp2*0.5762*Dstp(i,j)*    ! epsilon_r (m3/s3)
+     &              wh(i,j)*wvqb(i,j)*          ! 0.5762=0.06*sinb*g^2
+     &              kw(i,j)*inv_f(i,j)          ! Nairn et al (1991)
+          cff =(1.-wave_roller)*ebrk(i,j)+erol(i,j)
 #  else
           cff =ebrk(i,j)
 #  endif
@@ -290,13 +294,15 @@
 #  ifdef WAVE_OFFLINE_FRICTION
           frc(i,j) =wramp2*wved(i,j)*kw(i,j)
      &                           *inv_f(i,j)     ! 2DH friction term
-#  else
+#  elif WAVE_FRICTION
           abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
           fw=1.39*(Zob/max(abot,eps))**0.52      ! Soulsby (1995)
-          cff=0.5/sqrt(pi)*fw*urms**3            ! ep_d/rho
-          frc(i,j) =wramp2*cff*kw(i,j)
-     &                        *inv_f(i,j)        ! 2DH friction term
+          cff=0.5/sqrt(pi)*fw*urms**3            ! e_d/rho
+          frc(i,j)=wramp2*cff*kw(i,j)
+     &                       *inv_f(i,j)         ! 2DH friction term
+#  else
+          frc(i,j)=0.
 #  endif
 !
 ! Wave action
@@ -304,11 +310,15 @@
           act(i,j) =inv_f(i,j)*( 
      &                      0.125*g*(wh(i,j)**2) ! wave action density
 #  ifdef WAVE_OFFLINE_ROLLER
-     &          +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
+     &              +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
 #  endif
-     &                                                   )
+     &                         )
 # endif   /* WKB_WWAVE */
-
+!
+!----------------------------------------------------------------------
+!  Finalize wave parameter computation
+!----------------------------------------------------------------------
+!
           stk(i,j) =act(i,j)*kw(i,j)*inv_d(i,j)  ! depth-averaged Stokes
 # ifdef MASKING
            kw(i,j) = kw(i,j)*rmask(i,j)
@@ -647,14 +657,20 @@
 ! Akw: primary wave-induced additional diffusivity for tracers at w-point
 ! =======================================================================
 !
+#  define WAVE_NONBRK_VMIX_QIAO
+#  ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */
+!
+!  In Uchiyama et al 2010:
+!  Akw = 0.5 d/dt[[A * sinh(k(z+d))/sinh(k*d)]^2]
+!
       cff=wave_ramp/dt
       do j=jstrR,jendR
         do i=istrR,iendR
-          cff2 = 0.25*wh(i,j)/max(1.-exp(-2.*kD(i,j)),eps)
+          cff1 = 0.25*wh(i,j)/max(1.-exp(-2.*kD(i,j)),eps)
           do k=0,N
-            cff1 = cff2*( exp( kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
+            cff2 = cff1*( exp( kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
      &                   -exp(-kw(i,j)*(z_w(i,j,k)+h(i,j)+Dstp(i,j))) )
-            cff3 = cff1**2
+            cff3 = cff2**2
             Akw(i,j,k) = cff*(cff3-E_pre(i,j,k))
 #  ifdef MASKING
      &                               *rmask(i,j)
@@ -666,6 +682,30 @@
           enddo
         enddo
       enddo
+#  elif defined WAVE_NONBRK_VMIX_QIAO
+!
+!  Qiao et al, JPO 2004:
+!    Akw = alpha * kw * sig * [A * sinh(k(z+d))/sinh(k*d)]^3
+!  Wang et al. JGR 2010:
+!    alpha=0.1 for KPP applications
+!
+      do j=jstrR,jendR
+        do i=istrR,iendR
+          cff1 = 0.5*wh(i,j)/max(1.-exp(-2.*kD(i,j)),eps)
+          do k=0,N
+            cff2 = cff1*( exp( kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
+     &                   -exp(-kw(i,j)*(z_w(i,j,k)+h(i,j)+Dstp(i,j))) )
+            Akw(i,j,k) = 0.1*kw(i,j)*fr(i,j)*cff2**3
+#  ifdef MASKING
+     &                               *rmask(i,j)
+#  endif
+#  ifdef WET_DRY
+     &                               *rmask_wet(i,j)
+#  endif
+          enddo
+        enddo
+      enddo
+#  endif
 !
 ! Non conservative wave-current interaction variables.
 ! ====================================================

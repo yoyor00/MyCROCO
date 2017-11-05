@@ -637,9 +637,11 @@
 #ifdef BBL
       integer rstBBL(2)
 #endif
-#ifdef MRL_WCI
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
       integer rstWKB(3),hisWKB(9)
       common /ncvars/ rstWKB,hisWKB
+#endif
+#ifdef MRL_WCI
       integer hisSUP, hisUST2D, hisVST2D
       common /ncvars/ hisSUP, hisUST2D, hisVST2D
 # ifdef SOLVE3D
@@ -1025,7 +1027,7 @@
 # ifdef BBL
      &      , avgBBL
 # endif
-# if defined WKB_WWAVE || defined OW_COUPLING
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
      &      , avgWKB
 # endif
 # ifdef MRL_WCI

@@ -86,8 +86,10 @@
 # ifdef MOVING_BATHY
 #  define vidHm hisHm
 # endif
-# if defined MRL_WCI
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 #  define vidWKB hisWKB
+# endif
+# if defined MRL_WCI
 #  define vidSUP hisSUP
 #  define vidUST2D hisUST2D
 #  define vidVST2D hisVST2D
@@ -186,8 +188,10 @@
 # ifdef MOVING_BATHY
 #  define vidHm avgHm
 # endif
-# if defined MRL_WCI
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 #  define vidWKB avgWKB
+# endif
+# if defined MRL_WCI
 #  define vidSUP avgSUP
 #  define vidUST2D avgUST2D
 #  define vidVST2D avgVST2D
@@ -1633,7 +1637,7 @@
 !
 #endif /* SOLVE3D */
 
-#ifdef MRL_WCI
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 !
 ! WKB wave model prognostic/diagnostic variables in XI/ETA direction.
 ! ==================================================================
@@ -1660,7 +1664,7 @@
      &                               vname(3,indxHRM+iwkb-1)(1:lvar))
           endif
         enddo
-#endif
+#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
 #ifdef MRL_WCI
 !
@@ -2516,13 +2520,14 @@
          if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxSST_skin)(1:lvar), ncname(1:lstr)
           goto 99                                       !--> ERROR
-         endif
+       /
+  endif
        endif
 # endif
 
 #endif /* SOLVE3D */
 
-#if defined MRL_WCI
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 !
 ! Wave action density, wavenumber in XI/ETA directions
 !
@@ -2542,7 +2547,7 @@
             endif
           endif
         enddo
-#endif 
+#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
 #ifdef MRL_WCI
 !

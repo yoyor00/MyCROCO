@@ -547,15 +547,11 @@
       real wwuob(GLOBAL_2D_ARRAY,2)
       real wwvob(GLOBAL_2D_ARRAY,2)
       common /wwf_wwuob/wwuob /wwf_wwvob/wwvob
-#  endif /* BBL */
+#  endif /* BBL_OFFLINE */
 #  ifdef MRL_WCI 
-      real wwhrm(GLOBAL_2D_ARRAY)
-      real wwdrx(GLOBAL_2D_ARRAY)
-      real wwdre(GLOBAL_2D_ARRAY)
       real wweb(GLOBAL_2D_ARRAY,2)
       real Eb  (GLOBAL_2D_ARRAY)
-      common /wwf_wwhrm/wwhrm /wwf_wwdrx/wwdrx /wwf_wwdre/wwdre
-     &       /wwf_wweb/wweb /forces_Eb/Eb
+      common /wwf_wweb/wweb /forces_Eb/Eb
       real wved(GLOBAL_2D_ARRAY)
       real wwed(GLOBAL_2D_ARRAY,2)
       common /forces_wved/wved /wwf_wwed/wwed
@@ -564,12 +560,12 @@
       real wwqb(GLOBAL_2D_ARRAY,2)
       common /forces_wvqb/wvqb /wwf_wwqb/wwqb
 #   endif
-#  endif 
-      real ww_cycle,wwv_time(2),wwap(2), wwdp(2),wwpp(2),wwep(2),
-     &                 wwa_scale, wwd_scale, wwp_scale,wwe_scale,
-     &                 wwagrd,   wwdgrd,    wwpgrd, wwegrd
+#  endif /* MRL_WCI */
+      real ww_cycle,wwv_time(2),wwap(2),wwdp(2),wwpp(2),wwep(2),
+     &                  wwa_scale,wwd_scale,wwp_scale,wwe_scale,
+     &                              wwagrd,wwdgrd,wwpgrd,wwegrd
       integer ww_ncycle,  ww_rec,  itww
-     &        ,ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
+     &       ,ww_file_id, ww_tid,  wwa_id, wwp_id, wwd_id
 #   ifdef BBL
      &       ,wwu_id
 #   endif 

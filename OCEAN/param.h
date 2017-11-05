@@ -60,9 +60,9 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
-      parameter (LLm0=256, MMm0=3,    N=40)
+      parameter (LLm0=256,  MMm0=3,    N=40)
 #elif defined IGW
-       parameter (LLm0=878, MMm0=3,    N=40)
+      parameter (LLm0=878,  MMm0=3,    N=40)
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
 #elif defined RIVER
@@ -93,9 +93,9 @@
       parameter (LLm0=30,   MMm0=50,   N=30)   ! 20 km resolution
 # endif
 #elif defined SHOREFACE
-      parameter (LLm0=59,   MMm0=3,    N=20)   ! 20 m Planar Beach
+      parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
 #elif defined FLUME
-      parameter (LLm0=59,   MMm0=3,    N=20)   ! .5 m Flume
+      parameter (LLm0=59,   MMm0=1,    N=20)   ! .5 m Flume
 #elif defined SWASH
       parameter (LLm0=109,  MMm0=1,    N=10)   !  1 m  Swash
 !     parameter (LLm0=439,  MMm0=1,    N=10)   ! 25 cm Swash (GLOBEX)
@@ -121,7 +121,7 @@
       parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 #  endif
 # else
-      parameter (LLm0=4000,   MMm0=1,  N=30)  !  1 mm resolution
+      parameter (LLm0=4000, MMm0=1,    N=30)   !  1 mm resolution
 # endif
 #elif defined REGIONAL
 #  if   defined USWC0

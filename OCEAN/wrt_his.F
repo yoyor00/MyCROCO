@@ -241,8 +241,7 @@ CR      write(*,*) 'wrt_his:  UWstr' MYID
 CR      write(*,*) 'wrt_his:  VWstr' MYID
       endif
 
-#ifdef MRL_WCI
-# ifdef WKB_WWAVE
+#ifdef WKB_WWAVE
       if (wrthis(indxHRM)) then
         ierr=nf_fwrite (hrm(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWKB(1), record, r2dvar)
@@ -321,7 +320,7 @@ CR      write(*,*) 'wrt_his:  wrtEpb' MYID
 CR      write(*,*) 'wrt_his:  wrtEpd' MYID
       endif
 
-#  ifdef WAVE_ROLLER
+# ifdef WAVE_ROLLER
       if (wrthis(indxWAR)) then
         ierr=nf_fwrite (war(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWKB(8), record, r2dvar)
@@ -344,9 +343,9 @@ CR      write(*,*) 'wrt_his:  wrtWar' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtEpr' MYID
       endif
-#  endif
+# endif
 
-# else
+#elif defined OW_COUPLING || defined WAVE_OFFLINE
       if (wrthis(indxHRM)) then
         ierr=nf_fwrite (whrm(START_2D_ARRAY), ncidhis,
      &                                   hisWKB(1), record, r2dvar)
@@ -424,8 +423,9 @@ CR      write(*,*) 'wrt_his:  wrtEpb' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtEpd' MYID
       endif
-# endif
+#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
+#ifdef MRL_WCI 
 !      
 !  Add output variables linked to MRL_WCI
 !

@@ -1657,8 +1657,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxWEB =',indxWEB
 # endif /* WAVE_OFFLINE_BREAKING */
 #endif /* !ANA_WWAVE */
 
-#ifdef  MRL_WCI
-# ifdef WKB_WWAVE
+#ifdef WKB_WWAVE
 CR      write(stdout,'(1x,A,I3)') 'indxHRM =',indxHRM
       vname(1,indxHRM)='hrm                                      '
       vname(2,indxHRM)='RMS wave height                          '
@@ -1704,7 +1703,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxEPR =',indxEPR
       vname(2,indxEPR)='roller dissipation, epsilon_r            '
       vname(3,indxEPR)='meter^3/second^3                         '
 
-# else 
+#elif defined OW_COUPLING || defined WAVE_OFFLINE 
 CR      write(stdout,'(1x,A,I3)') 'indxHRM =',indxHRM
       vname(1,indxHRM)='whrm                                     '
       vname(2,indxHRM)='RMS wave height                          '
@@ -1749,8 +1748,9 @@ CR      write(stdout,'(1x,A,I3)') 'indxEPR =',indxEPR
       vname(1,indxEPR)='rdsp                                     '
       vname(2,indxEPR)='roller dissipation, epsilon_r            '
       vname(3,indxEPR)='meter^3/second^3                         ' 
-# endif
+#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
+#ifdef MRL_WCI
 CR      write(stdout,'(1x,A,I3)') 'indxSUP =',indxSUP
       vname(1,indxSUP)  ='sup                                    '
       vname(2,indxSUP)  ='quasi-static sea-level response (setup)'

@@ -288,16 +288,15 @@
       subroutine set_wwave_tile (Istr,Iend,Jstr,Jend)
 !
 !--------------------------------------------------------------------
-!  Set-up wind wave amplitude, direction, period for current tile.
+!  Set-up wave amplitude, direction, period for current tile.
 !--------------------------------------------------------------------
 !
       implicit none
 
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2
-      real    fac, fac1, fac2, fac3, fac4, fac5, fac6,fac7,fac8, 
-     &        wwA, wwD, wwP, wwe, Dstp,cfrq,wdir,hrms
-      real    cff,cff1,cff2, kh,khd,kw, eps,xdir,ydir,
-     &                                           wramp,m2p,isr2 
+      real    fac,fac1,fac2,fac3,fac4,fac5,fac6,fac7,fac8, 
+     &        wwA, wwD, wwP, wwe, Dstp,cfrq,hrms
+      real    cff,cff1,cff2, kh,khd,kw, eps, wramp,m2p,isr2 
 # ifdef BBL_OFFLINE
      &                                            , ab, orb_vel
 # endif
@@ -358,7 +357,7 @@
             enddo
         endif
 !
-! Time-interpolate wind wave data from gridded or point data.
+! Time-interpolate wave data from gridded or point data.
 ! Make sure that for the next time step [when time=time+dt]
 ! time+dt is still between wwv_time(it1) and wwv_time(it2);
 ! and if not, set synchro_flag to signal that the new forcing data
@@ -402,8 +401,11 @@
 # endif        
           enddo
         enddo
+      endif
 !
+!--------------------------------------------------------------------
 !  Convert wave direction Dwave to Cartesian convention
+!--------------------------------------------------------------------
 !
 !  Wave direction conventions:
 !  - Cartesian convention (CROCO): 
@@ -417,24 +419,28 @@
 !          the direction where the waves travel to, 
 !          measured clockwise from geographic North.
 !
-        do j=jstrR,jendR
-          do i=istrR,iendR
-# ifndef SHOREFACE
-!           Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
-            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
-# endif
-# ifdef CURVGRID
-            Dwave(i,j)=Dwave(i,j)-angler(i,j)
-# endif
-          enddo
+# if defined CURVGRID || !defined SHOREFACE
+      do j=jstrR,jendR
+        do i=istrR,iendR
+#  ifndef SHOREFACE
+!         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
+          Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+#  endif
+#  ifdef CURVGRID
+          Dwave(i,j)=Dwave(i,j)-angler(i,j)
+#  endif
         enddo
+      enddo
+# endif
 !
+!--------------------------------------------------------------------
 ! Simulate nearshore modifications for low resolution data
+!--------------------------------------------------------------------
 !
 # ifndef SHOREFACE
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
 #  ifdef MEKONG
 !
 ! Strong mud bank dissipation formulation: frequency and depth-dependent 
@@ -442,78 +448,68 @@
 ! and Reid (1954) and Grosskopf (1980): longer and higher waves are more 
 ! highly dissipated.
 !
-            hrms=2*Awave(i,j)
-            cfrq=2*pi/Pwave(i,j)
-            khd=Dstp*cfrq*cfrq/g
-            kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
-     &                    +khd*(0.3555555555 + khd*(0.1608465608
-     &                    +khd*(0.0632098765 + khd*(0.0217540484
-     &                                    +khd*0.0065407983)))))) )
-            kw=kh/Dstp
-            Awave(i,j)=Awave(i,j)*
-     &                  (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2 
+          hrms=2*Awave(i,j)
+          cfrq=2*pi/Pwave(i,j)
+          khd=Dstp*cfrq*cfrq/g
+          kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
+     &                  +khd*(0.3555555555 + khd*(0.1608465608
+     &                  +khd*(0.0632098765 + khd*(0.0217540484
+     &                                  +khd*0.0065407983)))))) )
+          kw=kh/Dstp
+          Awave(i,j)=Awave(i,j)*
+     &                (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2 
 #  endif /* MEKONG */
 !
 ! Simulate surf-zone dissipation due to depth-induced wave breaking
 !
-            Awave(i,j)=min(0.3*Dstp, Awave(i,j))
-          enddo
+          Awave(i,j)=min(0.3*Dstp, Awave(i,j))
         enddo
+      enddo
 # endif /* SHOREFACE */
 !
-! Compute variables for wave current interactions
+!--------------------------------------------------------------------
+! Compute variables for wave-current interactions (mrl_wci routine)
+!--------------------------------------------------------------------
 !
 # ifdef MRL_WCI
-        do j=jstrR,jendR
-          do i=istrR,iendR
-            Dstp=max(h(i,j)+z_w(i,j,N),eps)
-            cfrq=2.0*pi/max(Pwave(i,j)*m2p,0.1D0) ! mean to peak period
-            wdir=Dwave(i,j)            ! Dwave=0 when waves to E (CROCO)
-            xdir=cos(wdir)
-            ydir=sin(wdir)
-            wwfrq(i,j)=cfrq
-            wwhrm(i,j) =2.0*Awave(i,j) ! Amp to Hrms conversion
-            wwdrx(i,j) =xdir
-            wwdre(i,j) =ydir
-#  ifdef MASKING
-            wwfrq(i,j) = wwfrq(i,j)*rmask(i,j)
-            wwhrm(i,j) = wwhrm(i,j)*rmask(i,j)
-            wwdrx(i,j) = wwdrx(i,j)*rmask(i,j)
-            wwdre(i,j) = wwdre(i,j)*rmask(i,j)
-#   ifdef WAVE_OFFLINE_BREAKING
-            Eb   (i,j) = Eb   (i,j)*rmask(i,j)
-#   endif
-#   ifdef WAVE_OFFLINE_FRICTION
-            wwed(i,j,1) = wwed(i,j,1)*rmask(i,j)
-#   endif
-#   ifdef WAVE_OFFLINE_ROLLER
-            wwqb(i,j,1) = wwqb(i,j,1)*rmask(i,j)
-#   endif
-#  endif
-          enddo
-        enddo
-        do j=jstrR,jendR
-          do i=istrR,iendR
-            wfrq(i,j)=wwfrq(i,j)
-            whrm(i,j)=wwhrm(i,j)
-            wdrx(i,j)=wwdrx(i,j)
-            wdre(i,j)=wwdre(i,j)
+      do j=jstrR,jendR
+        do i=istrR,iendR
+          Dstp=max(h(i,j)+z_w(i,j,N),eps)
+          whrm(i,j)=2.0*Awave(i,j)                ! Amp to Hrms conversion
+          wfrq(i,j)=2.0*pi/max(Pwave(i,j),0.1D0)  ! Pwave peak period
+          wdrx(i,j)=cos(Dwave(i,j))             
+          wdre(i,j)=sin(Dwave(i,j))
 #  ifdef WAVE_OFFLINE_FRICTION
-            wved(i,j)=wwed(i,j,1)
+          wved(i,j)=wwed(i,j,1)
 #  else
-            wved(i,j)=0.0
+          wved(i,j)=0.0
 #  endif
 #  ifdef WAVE_OFFLINE_ROLLER
-            wvqb(i,j)=wwqb(i,j,1)
+          wvqb(i,j)=wwqb(i,j,1)
 #  endif
-          enddo
+#  ifdef MASKING
+          wfrq(i,j)=wfrq(i,j)*rmask(i,j)
+          whrm(i,j)=whrm(i,j)*rmask(i,j)
+          wdrx(i,j)=wdrx(i,j)*rmask(i,j)
+          wdre(i,j)=wdre(i,j)*rmask(i,j)
+#   ifdef WAVE_OFFLINE_BREAKING
+          Eb(i,j)=Eb(i,j)*rmask(i,j)
+#   endif
+#   ifdef WAVE_OFFLINE_FRICTION
+          wved(i,j)=wved(i,j)*rmask(i,j)
+#   endif
+#   ifdef WAVE_OFFLINE_ROLLER
+          wvqb(i,j)=wvqb(i,j)*rmask(i,j)
+#   endif
+#  endif
         enddo
+      enddo
 # endif /* MRL_WCI */
-
-      endif
 !
-! Unable to set-up wind wave fields:
+!--------------------------------------------------------------------
+! Unable to set-up wave fields:
 ! Complain about the error and signal to quit (ONE THREAD ONLY).
+!--------------------------------------------------------------------
 !
       if ((ww_cycle.gt.0.) .and. (fac1.lt.0..or.fac2.lt.0.)) then
         if (ZEROTH_TILE) then

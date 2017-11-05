@@ -401,15 +401,16 @@
 #  elif defined WAVE_BREAK_TG86A
             cff1=hrm(i,j,wstp)/(wkb_gam*Dstp(i,j))
             wsb(i,j,wstp)=sbc/(Dstp(i,j)**3)*(hrm(i,j,wstp)**5)
-     &                           *(1.0-(1.0+cff1**2)**(-2.5))
+     &                       *(1.0-(1.0+cff1**2)**(-2.5))
 #  elif defined WAVE_BREAK_CT93
             cff1=hrm(i,j,wstp)/(wkb_gam*Dstp(i,j))
             wsb(i,j,wstp)=sbc/Dstp(i,j)*(hrm(i,j,wstp)**3)
-     &      *( 1.0+tanh(8.0*(cff1-1.0)) )*( 1.0-(1.0+cff1**2)**(-2.5) )
+     &                       *( 1.0+tanh(8.0*(cff1-1.0)) )
+     &                       *( 1.0-(1.0+cff1**2)**(-2.5) )
 #  elif defined WAVE_BREAK_R93
             cff1=hrm(i,j,wstp)/(wkb_gam*Dstp(i,j))
             wsb(i,j,wstp)=sbc/Dstp(i,j)*hrm(i,j,wstp)**3*cff1**4
-     &       *(1 -exp (-cff1**5 ) )
+     &                       *(1 -exp (-cff1**5 ) )
 #  endif
 #  ifdef WAVE_ROLLER
             wcr(i,j,wstp)=frq(i,j,wstp)/max(kk**2,eps)  ! c/k
@@ -570,8 +571,8 @@ C$OMP BARRIER
 # if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
           cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
-          cffX=10.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
-          cffE=10.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
+          cffX=20.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
+          cffE=20.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
 # endif
           wkx(i,j,wnew)=wkx(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*on_r(i,j)*(Dstp(i+1,j)-Dstp(i-1,j))
@@ -645,8 +646,8 @@ C$OMP BARRIER
 # if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
           cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
-          cffX=10.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
-          cffE=10.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
+          cffX=20.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
+          cffE=20.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
 # endif
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                   *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)

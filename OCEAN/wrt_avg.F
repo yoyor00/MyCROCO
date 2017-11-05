@@ -40,20 +40,20 @@
 # ifdef SEDIMENT
 #  include "sediment.h"
 # endif
-#ifdef NBQ
-# include "nbq.h"
-#endif
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
-#if defined MPI & !defined PARALLEL_FILES
+# ifdef NBQ
+#  include "nbq.h"
+# endif
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
+# if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
      &                 1, MPI_COMM_WORLD, status, ierr)
       endif
-#endif
+# endif
 !
 ! Create/open averages file; write grid arrays, if so needed.
 !
@@ -326,9 +326,9 @@ CR      write(*,*) 'wrt_avg:  wrtAkk' MYID
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkp' MYID
       endif
-# endif
+#  endif
 
-# ifdef LMD_SKPP
+#  ifdef LMD_SKPP
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
@@ -349,8 +349,8 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
      &        record,r2dvar,type)
       endif
 CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
-# endif
-# ifdef GLS_MIXING
+#  endif
+#  ifdef GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     
@@ -378,7 +378,7 @@ CR      write(*,*) 'wrt_avg:  wrtGls' MYID
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
-# endif
+#  endif
 
 !     
 !     Write out total heat flux [W/m2]
@@ -399,7 +399,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
       endif
-#ifdef SALINITY      
+#  ifdef SALINITY      
 !     Write out surface E-P flux [cm/d]
 !     
       if (wrtavg(indxSwflx)) then
@@ -419,17 +419,17 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
       endif
-#endif
+#  endif
 !     Write out solar radiation flux [W/m2]
 !     
       if (wrtavg(indxShflx_rsw)) then
-# ifdef BULK_FLUX
+#  ifdef BULK_FLUX
          ierr=nf_fwrite(shflx_rsw_avg, ncidavg, avgShflx_rsw, 
      &                  record, r2dvar)
-# else
+#  else
          ierr=nf_fwrite(srflx_avg, ncidavg, avgShflx_rsw, 
      &                  record, r2dvar)
-# endif
+#  endif
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxShflx_rsw))
             write(stdout,1) vname(1,indxShflx_rsw)(1:lvar), record, ierr

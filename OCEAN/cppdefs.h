@@ -281,7 +281,6 @@
                       /*   Sediment dynamics model     */
 # ifdef SEDIMENT
 #  define ANA_SEDIMENT
-#  undef  BED_ARMOR
 #  undef  ANA_SPFLUX
 #  undef  ANA_BPFLUX
 # endif
@@ -903,14 +902,14 @@
 # define WET_DRY
 # define MRL_WCI
 # ifdef MRL_WCI
-#  define WKB_WWAVE
-#  undef  WKB_UNSTEADY
-#  define MRL_CEW
-#  define WKB_OBC_WEST
-#  define WAVE_ROLLER
-#  define WAVE_FRICTION
-#  define WAVE_STREAMING
-#  define WAVE_RAMP
+#  undef  WAVE_OFFLINE
+#  ifndef WAVE_OFFLINE
+#   define WKB_WWAVE
+#   define WKB_OBC_WEST
+#   define WAVE_ROLLER
+#   undef  WKB_UNSTEADY
+#   undef  MRL_CEW
+#  endif
 # endif
 # define LMD_MIXING
 # define LMD_SKPP
@@ -1054,7 +1053,6 @@
 # undef SEDIMENT
 # ifdef SEDIMENT
 #  define ANA_SEDIMENT
-#  undef  BED_ARMOR
 #  undef  ANA_SPFLUX
 #  undef  ANA_BPFLUX
 # endif
