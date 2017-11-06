@@ -416,38 +416,48 @@
     Wave Current Interaction
 ======================================================================
 */
+
+#if defined MRL_WCI || defined WKB_WWAVE
+/*  Wave breaking dissipation (both WKB and WCI) */
+# undef  WAVE_SFC_BREAK
+# ifdef WAVE_BREAK_CT93
+# elif  WAVE_BREAK_TG86
+# elif  WAVE_BREAK_TG86A
+# elif  WAVE_BREAK_R93
+# else
+#  define WAVE_BREAK_CT93 /* defaults */
+# endif
+
+/* WKB specific options  */
+#ifdef WKB_WWAVE
+# ifdef MRL_CEW
+#  undef  WKB_KZ_FILTER
+#  undef  WKB_TIME_FILTER
+# endif
+# define WKB_ADD_DIFF
+# undef  WKB_ADD_DIFFRACTION
+# undef  WKB_NUDGING
+# ifndef WAVE_OFFLINE
+#  undef WKB_NUDGING
+# endif
+# if defined SHOREFACE || defined FLUME \
+                       || (defined RIP && !defined BISCA)
+#  define ANA_BRY_WKB
+# endif
+#endif
+
 #ifdef MRL_WCI
+/* Bottom streaming */
 # ifdef WAVE_STREAMING
 #  define WAVE_BODY_STREAMING
 # endif
-# undef  WAVE_SFC_BREAK
-# define WAVE_BREAK_CT93
-# undef  WAVE_BREAK_TG86
-# undef  WAVE_BREAK_TG86A
-# undef  WAVE_BREAK_R93
-
+/* Default WCI is with input file data (WAVE_OFFLINE)  */
 # if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
 #  define WAVE_OFFLINE
 #  undef  WAVE_ROLLER
 # endif
-
-# ifdef WKB_WWAVE
-#  ifdef MRL_CEW
-#   undef  WKB_KZ_FILTER
-#   undef  WKB_TIME_FILTER
-#  endif
-#  define WKB_ADD_DIFF
-#  undef  WKB_ADD_DIFFRACTION
-#  undef  WKB_NUDGING
-#  ifndef WAVE_OFFLINE
-#   undef WKB_NUDGING
-#  endif
-#  if defined SHOREFACE || defined FLUME \
-                        || (defined RIP && !defined BISCA)
-#   define ANA_BRY_WKB
-#  endif
-# endif
 #endif
+
 
 /*
 ======================================================================
