@@ -512,6 +512,14 @@ C$    trd=omp_get_thread_num()
         do j=JstrV,Jend
           cff=sqrt(0.5*g*(h(Istr-1,j-1)+h(Istr-1,j)+
      &                    zeta(Istr-1,j-1,kstp)+zeta(Istr-1,j,kstp)))
+
+          cx=dtfast*cff*0.5*(pm(Istr-1,j-1)+pm(Istr-1,j))
+          vbar(Istr-1,j,knew)=( vbar(Istr-1,j,kstp)
+     &                         +cx*vbar(Istr,j,knew) )/(1.+cx)
+#   ifdef MASKING
+     &                        *vmask(Istr-1,j)
+#   endif
+
         enddo
 #  elif defined OBC_COM_M2CHARACT0
 !                                      Western edge Characteristic BC

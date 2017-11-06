@@ -52,7 +52,7 @@
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
-      real*QUAD buff(8)
+      real*QUAD buff(9)
       common /xyz/ buff
 #endif
 
@@ -60,6 +60,9 @@
       real my_Cu_Adv, my_Cu_W, ciV, cx, cw
 #   ifdef NBQ
       real my_Cu_Nbq_X, my_Cu_Nbq_Y, my_Cu_Nbq_Z
+      real cx_nbq,cy_nbq,cz_nbq, alphax,alphay
+      real my_Cu_Nbq
+      real Cu_Nbq
 #   endif
       integer my_i_cmax, my_j_cmax, my_k_cmax
 # endif
@@ -113,12 +116,15 @@
 !
 #ifndef NBQ_MASS
 #  define Hzr_half_nbq Hz
+#else
+#  define Hzr_half_nbq Hzr
 #endif
 !
 # ifdef MAX_ADV_CFL
       my_Cu_Adv=0.  ;  my_Cu_W=0.
 #    ifdef NBQ
       my_Cu_Nbq_X=0.; my_Cu_Nbq_Y=0.; my_Cu_Nbq_Z=0.
+      my_Cu_Nbq =0.
 #    endif
       if (mod(iic-1,ninfo).eq.0) then
 
@@ -149,22 +155,41 @@
             endif
 
 # ifdef NBQ
-            my_Cu_Nbq_Z=max(my_Cu_Nbq_Z,  
+            cz_nbq=(soundspeed_nbq*dtnbq/max(1.D-30,Hzr(i,j,k)))
 #   ifdef MASKING
-     &             rmask(i,j) *  
-#   endif
-     &       soundspeed_nbq*dtnbq
-     &       /max(1.d-30,Hzr_half_nbq(i,j,k)))
-          my_Cu_Nbq_X=max(my_Cu_Nbq_X,  
+     &             *rmask(i,j) 
+#   endif    
+            my_Cu_Nbq_Z=max(my_Cu_Nbq_Z,cz_nbq)
+            
+            cx_nbq=soundspeed_nbq*dtnbq*pm_u(i,j)
 #   ifdef MASKING
-     &             umask(i,j) *  
+     &            * umask(i,j) 
 #   endif
-     &        soundspeed_nbq*dtnbq*pm_u(i,j))
-          my_Cu_Nbq_Y=max(my_Cu_Nbq_Y,       
+          my_Cu_Nbq_X=max(my_Cu_Nbq_X,cx_nbq)
+          
+            cy_nbq=soundspeed_nbq*dtnbq*pn_v(i,j)
 #   ifdef MASKING
-     &             vmask(i,j) *  
+     &            * vmask(i,j) 
 #   endif
-     &        soundspeed_nbq*dtnbq*pn_v(i,j))
+
+          my_Cu_Nbq_Y=max(my_Cu_Nbq_Y,cy_nbq)
+          
+          alphax=(1/max(1.D-30,Hzr(i,j,k)))*
+     &   (0.5*(z_r(i+1,j,k)-z_r(i-1,j,k))*pm(i,j))
+#   ifdef MASKING
+     &             *rmask(i,j) 
+#   endif 
+
+          alphay=(1/max(1.D-30,Hzr(i,j,k)))*
+     &   (0.5*(z_r(i,j+1,k)-z_r(i,j-1,k))*pn(i,j))
+#   ifdef MASKING
+     &             *rmask(i,j) 
+#   endif 
+        
+         my_Cu_Nbq=max(my_Cu_Nbq,
+     &  (alphax*cz_nbq-cx_nbq)**2+(alphay*cz_nbq-cy_nbq)**2)
+
+
 # endif
               if (Hzr_half_nbq(i,j,k).lt.1.D-10) my_Cu_Nbq_Z=0.D0
           enddo
@@ -284,6 +309,7 @@ C$OMP CRITICAL (diag_cr_rgn)
              Cu_Nbq_X=my_Cu_Nbq_X
              Cu_Nbq_Y=my_Cu_Nbq_Y
              Cu_Nbq_Z=my_Cu_Nbq_Z
+             Cu_Nbq  = my_Cu_Nbq
 #   endif             
           else
             if (my_Cu_Adv.gt.Cu_Adv3d) then
@@ -292,7 +318,8 @@ C$OMP CRITICAL (diag_cr_rgn)
             endif
             if(my_Cu_Nbq_X.gt.Cu_Nbq_X)  Cu_Nbq_X = my_Cu_Nbq_X
             if(my_Cu_Nbq_Y.gt.Cu_Nbq_Y)  Cu_Nbq_X = my_Cu_Nbq_Y
-            if(my_Cu_Nbq_Z.gt.Cu_Nbq_Z)  Cu_Nbq_X = my_Cu_Nbq_Z                        
+            if(my_Cu_Nbq_Z.gt.Cu_Nbq_Z)  Cu_Nbq_X = my_Cu_Nbq_Z    
+            if(my_Cu_Nbq.gt.Cu_Nbq)  Cu_Nbq = my_Cu_Nbq
           endif
 # endif
           tile_count=tile_count+1         ! This counter identifies
@@ -314,13 +341,14 @@ C$OMP CRITICAL (diag_cr_rgn)
                   buff(6)=Cu_Nbq_X
                   buff(7)=Cu_Nbq_Y
                   buff(8)=Cu_Nbq_Z
+                  buff(9)=Cu_Nbq
 #     endif                  
 #  endif
 # endif
-                  call MPI_Send (buff,  8, MPI_DOUBLE_PRECISION,
+                  call MPI_Send (buff,  9, MPI_DOUBLE_PRECISION,
      &                 mynode-step, 17, MPI_COMM_WORLD,      ierr)
                 elseif (mynode .lt. size-step) then
-                  call MPI_Recv (buff,  8, MPI_DOUBLE_PRECISION,
+                  call MPI_Recv (buff,  9, MPI_DOUBLE_PRECISION,
      &                 mynode+step, 17, MPI_COMM_WORLD, status, ierr)
                   volume=volume+buff(1)
                   avgke=avgke+  buff(2)
@@ -334,7 +362,8 @@ C$OMP CRITICAL (diag_cr_rgn)
 #     ifdef NBQ  
                   if(buff(6).gt.Cu_Nbq_X)  Cu_Nbq_X = buff(6)             
                   if(buff(7).gt.Cu_Nbq_Y)  Cu_Nbq_Y = buff(7)   
-                  if(buff(8).gt.Cu_Nbq_Z)  Cu_Nbq_Z = buff(8)                     
+                  if(buff(8).gt.Cu_Nbq_Z)  Cu_Nbq_Z = buff(8)
+                  if(buff(9).gt.Cu_Nbq  )  Cu_Nbq   = buff(9)                  
 #     endif                
 #  endif
 # endif
@@ -363,8 +392,9 @@ C$OMP CRITICAL (diag_cr_rgn)
      &         '                 EGW_EXT = ',Cu_max
 #   ifdef NBQ
               write(stdout,*) '               HORIZ_NBQ = ',
-     &              max(Cu_Nbq_X,Cu_Nbq_Y),
-     &         '                VERT_NBQ = ',Cu_Nbq_Z
+     &              sqrt(Cu_Nbq_X**2+Cu_Nbq_Y**2),
+     &         '                VERT_NBQ = ',Cu_Nbq_Z,
+     &    '           NBQ_IMP = ',sqrt(Cu_Nbq)
 #   endif   
 #  endif   
 !

@@ -14,12 +14,14 @@
 
 #define Dstp DUon
 
-C LAURENT: Dstp is not used anymore 
+C LAURENT: Dstp is not used anymore : REMOVED
+#ifndef NBQ_ZETAW
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
         enddo
       enddo
+#endif
 
       cff=0.5*dtfast
 #ifdef SOLVE3D
@@ -174,7 +176,7 @@ C LAURENT: Dstp is not used anymore
         endif
       endif
       if (iic.eq.ntstart) then
-        if (FIRST_2D_STEP) then
+        if (FIRST_2D_STEP) then 
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ubclm(START_2D_ARRAY),ubclmzon)
           call zonavg_2d(Istr,Iend,Jstr,Jend,
@@ -272,7 +274,7 @@ C LAURENT: Dstp is not used anymore
 #endif  
 
 !
-!-----------------------------------------------------------------------
+!----------------------------------------------------------------------- 
 ! Set boundary conditions and compute integral mass flux accross
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
@@ -280,10 +282,24 @@ C LAURENT: Dstp is not used anymore
       call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
 
+#ifdef NBQ_ZETAREDIAG
+c recompute zeta via vertically integrated continuity equation
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   ubar(START_2D_ARRAY,knew))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   vbar(START_2D_ARRAY,knew))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   DU_avg1(START_2D_ARRAY,knew))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   DV_avg1(START_2D_ARRAY,knew))
+# endif
+#endif
           
 #ifdef OBC_VOLCONS
       call obc_flux_tile (Istr,Iend,Jstr,Jend)
 #endif
+
 !
 !-----------------------------------------------------------------------
 ! Compute fast-time averaged barotropic mass fluxes along physical
@@ -473,12 +489,6 @@ C LAURENT: Dstp is not used anymore
 #endif
 #ifdef NBQ_ZETAREDIAG
 c recompute zeta via vertically integrated continuity equation
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                   ubar(START_2D_ARRAY,knew))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                   vbar(START_2D_ARRAY,knew))
-#endif
        
        do j=Jstr-1,Jend+1
        do i=Istr-1,Iend+1
@@ -489,52 +499,62 @@ c recompute zeta via vertically integrated continuity equation
 #endif
         enddo
       enddo
-       
+
+
+!      if (iic==1.and.iif==1) then
+!        cff4= 1.
+!        cff5= 0.
+!        cff6= 0.
+!        cff7= 0.
+!      elseif (iic==1.and.iif==2) then
+!         cff4=0.5+2.*myalpha
+!         cff5=1.-cff4
+!         cff6=0.
+!         cff7=0.
+!      elseif (iic==1.and.iif==3) then
+!         cff4=0.5+mygamma+2.*myalpha
+!         cff5=1.-cff4-mygamma
+!         cff6=mygamma
+!         cff7=0.
+!      else
+!         cff4=0.5+2.*myepsilon+mygamma+2.*myalpha
+!         cff5=1.-cff4-mygamma-myepsilon
+!         cff6=mygamma
+!         cff7=myepsilon
+!      endif
+!        cff4= 1.
+!        cff5= 0.
+!        cff6= 0.
+!        cff7= 0.
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zetaw_nbq(i,j,knew2)=((h(i,j)+zetaw_nbq(i,j,kstp2))
-     &             *rhobar_nbq(i,j,kstp2)
+
+          zeta(i,j,knew2)=((h(i,j)+zeta(i,j,kstp2))
+     &             *rhobar_nbq(i,j,kstp2) 
      &   + (dtfast*pm(i,j)*pn(i,j)
      &              *0.5D0*(
-     &   (Dnew(i,j)+Dnew(i-1,j))*(ubar(i,j,knew))*on_u(i,j)
-     &   -(Dnew(i+1,j)+Dnew(i,j))*(ubar(i+1,j,knew))*on_u(i+1,j)
-     &  +(Dnew(i,j)+Dnew(i,j-1))*(vbar(i,j,knew))*om_v(i,j)
-     &   -(Dnew(i,j+1)+Dnew(i,j))*(vbar(i,j+1,knew))*om_v(i,j+1))))
+     &    (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew))*on_u(i  ,j)
+     &   -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew))*on_u(i+1,j)
+     &  + (Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew))*om_v(i,j  )
+     &   -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar(i,j+1,knew))*om_v(i,j+1))))
      &   / rhobar_nbq(i,j,knew2)-h(i,j)
-     
-        enddo
-      enddo
-      
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-        zeta(i,j,knew2)=zetaw_nbq(i,j,knew2)
+
         enddo
       enddo
 
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI       
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                   zetaw_nbq(START_2D_ARRAY,knew2))
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew2))
 #endif
-       
-        do j=JstrR,JendR
+             
+      do j=JstrR,JendR
           do i=IstrR,IendR
-            Zt_avg1(i,j)=zetaw_nbq(i,j,knew2)
+            Zt_avg1(i,j)=zeta(i,j,knew2)
           enddo
-        enddo
-        
-       if ((iic.eq.1.and.iif==1)
-     &     NSTEP_GRID
-     &     .or.iif.eq.nfast) then
-        flag_grid=1
-        call set_depth_tile(Istr,Iend,Jstr,Jend
-     &   ,resetfromrhobar
-     &   ) 
+      enddo
 
-#include "step2d_grid_ext.h"
-
-        endif
+#include "step2d_set_depth.h"
 
 #endif
 !

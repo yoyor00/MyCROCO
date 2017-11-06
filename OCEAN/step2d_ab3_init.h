@@ -88,13 +88,13 @@
 #endif
       endif
 
-      if (iif.eq.1) then
+      if (iic==1.and.iif.eq.1) then
         cff8=1.D0
         cff9=0.D0
         cff10=0.D0
-      elseif (iif.eq.1+1) then
-        cff8=1.D0
-        cff9=0.D0
+      elseif (iic==1.and.iif.eq.1+1) then
+        cff8=1.5D0
+        cff9=-0.5D0
         cff10=0.D0
       else
         cff8= 1.5D0+mybeta
@@ -158,18 +158,12 @@ C$OMP END MASTER
      &              +cff2*(zeta(i,j,kbak)+h(i,j))*rhobar_nbq(i,j,kbak)
      &              +cff3*(zeta(i,j,kold)+h(i,j))*rhobar_nbq(i,j,kold)
 #  else /*  ! NBQ_ZETAW */
-c LAURENT: NBQ_AB3 should be the only possible choice
-c (stability of advection and Coriolis terms)
-#   ifndef NBQ_AB3
-          Drhs(i,j)=(zeta(i,j,kstp2)+h(i,j)) *rhobar_nbq(i,j,kstp2)
-#   else
           Drhs(i,j)= cff8 *(zeta(i,j,kstp2)+h(i,j))
      &                    *rhobar_nbq(i,j,kstp2)
      &              +cff9 *(zeta(i,j,kbak2)+h(i,j))
      &                    *rhobar_nbq(i,j,kbak2)
      &              +cff10*(zeta(i,j,kold2)+h(i,j))
      &                    *rhobar_nbq(i,j,kold2)
-#   endif
 #  endif /* NBQ_ZETAW */
 # else /* ! NBQ_MASS */
 #  ifndef NBQ_ZETAW
@@ -177,13 +171,9 @@ c (stability of advection and Coriolis terms)
      &              +cff2*(zeta(i,j,kbak)+h(i,j))
      &              +cff3*(zeta(i,j,kold)+h(i,j))
 #  else /*  ! NBQ_ZETAW */
-#   ifndef NBQ_AB3
-          Drhs(i,j)=(zeta(i,j,kstp2)+h(i,j)) 
-#   else
           Drhs(i,j)= cff8 *(zeta(i,j,kstp2)+h(i,j))
      &              +cff9 *(zeta(i,j,kbak2)+h(i,j))
      &              +cff10*(zeta(i,j,kold2)+h(i,j))
-#   endif
 #  endif /* NBQ_ZETAW */
 # endif /* NBQ_MASS */
         enddo
@@ -221,12 +211,8 @@ C$OMP END MASTER
 !         urhs(i,j)=cff4*ubar(i,j,kstp2) +cff5*ubar(i,j,kbak2)
 !    &                                   +cff6*ubar(i,j,kold2)
         !   urhs(i,j)=DU_nbq(i,j)    !ubar(i,j,kstp2)
-#ifndef NBQ_AB3
-          urhs(i,j)=ubar(i,j,kstp2)
-#else
-          urhs(i,j)=cff8*ubar(i,j,kstp2) +cff9*ubar(i,j,kbak2)
-     &                                  +cff10*ubar(i,j,kold2)
-#endif
+          urhs(i,j)=cff8*ubar(i,j,kstp2) +cff9 *ubar(i,j,kbak2)
+     &                                   +cff10*ubar(i,j,kold2)
 #endif
 #if defined MRL_WCI && defined MASKING
           urhs(i,j)=urhs(i,j)*umask(i,j)+ust2d(i,j)*(umask(i,j)-1.0)
@@ -249,13 +235,8 @@ C$OMP END MASTER
 !         vrhs(i,j)=cff4*vbar(i,j,kstp2) +cff5*vbar(i,j,kbak2)
 !    &                                   +cff6*vbar(i,j,kold2)
 
-#ifndef NBQ_AB3
-         !  vrhs(i,j)=DV_nbq(i,j)   !vbar(i,j,kstp2)
-            vrhs(i,j)=vbar(i,j,kstp2)
-#else
-          vrhs(i,j)=cff8*vbar(i,j,kstp2) +cff9*vbar(i,j,kbak2)
-     &                                  +cff10*vbar(i,j,kold2)
-#endif
+          vrhs(i,j)=cff8*vbar(i,j,kstp2) +cff9 *vbar(i,j,kbak2)
+     &                                   +cff10*vbar(i,j,kold2)
 #endif
 #if defined MRL_WCI && defined MASKING
           vrhs(i,j)=vrhs(i,j)*vmask(i,j)+vst2d(i,j)*(vmask(i,j)-1.0)

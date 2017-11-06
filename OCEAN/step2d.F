@@ -249,7 +249,7 @@ C$    trd=omp_get_thread_num()
       real DC(PRIVATE_1D_SCRATCH_ARRAY,0:N+1) 
       real CF(PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
       real WORK(PRIVATE_2D_SCRATCH_ARRAY)
-      real dum_s
+      real dum_s,dum_max
       real sum_r(PRIVATE_2D_SCRATCH_ARRAY)
 #endif
 !
@@ -291,6 +291,11 @@ C$    trd=omp_get_thread_num()
 #  define JU_RANGE JstrR,JendR
 #  define JV_RANGE Jstr,JendR
 # endif
+
+#define zwrk UFx
+#define rzeta  UFe
+#define rzeta2  VFe
+#define rzetaSA VFx
 
 !
 !======================================================================
@@ -773,8 +778,18 @@ C$OMP END MASTER
 
 #ifdef NBQ_TRACERS
        if (iif==nfast) then
-       do j=JstrR,JendR
-       do i=IstrR,IendR
+!      do j=JstrR,JendR
+!      do i=IstrR,IendR
+
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                        DU_avg2(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                        DV_avg2(START_2D_ARRAY))
+#endif
+!      dum_max=0.
+       do j=Jstr,Jend
+       do i=Istr,Iend
            dum_s=0.
            do k=1,N
              dum_s=dum_s+
@@ -783,69 +798,43 @@ C$OMP END MASTER
             do k=1,N
 
 c LAURENT: remove this computation of Hz_corr and its definition in nbq.h
+c Kept for testing... removed soon.
 
              Hz_corr(i,j,k)=(dum_s
      &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
      &             +DV_avg2(i,j+1)-DV_avg2(i,j)
      &               )*pm(i,j)*pn(i,j)
-     &        *dt)
+     &        *dt)     !/float(N)
+     &                /(z_w(i,j,N)-z_w(i,j,0))
+     &                *(z_w(i,j,k)-z_w(i,j,k-1))
+!            dum_max=max(dum_max,abs(Hz_corr(i,j,k)))
+#ifdef MASKING
+     &        *rmask(i,j)
+#endif
+
+             Hz(i,j,k)=Hz(i,j,k)
+     &         -(dum_s
+     &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
+     &             +DV_avg2(i,j+1)-DV_avg2(i,j)
+     &               )*pm(i,j)*pn(i,j)
+     &        *dt) ! / float(N)
      &                /(z_w(i,j,N)-z_w(i,j,0))
      &                *(z_w(i,j,k)-z_w(i,j,k-1))
 #ifdef MASKING
      &        *rmask(i,j)
 #endif
-
-             hz(i,j,k)=hz(i,j,k)
-     &         -(dum_s
-     &           + (DU_avg2(i+1,j)-DU_avg2(i,j)
-     &             +DV_avg2(i,j+1)-DV_avg2(i,j)
-     &               )*pm(i,j)*pn(i,j)
-     &        *dt) / float(N)
-!    &                /(z_w(i,j,N)-z_w(i,j,0))
-!    &                *(z_w(i,j,k)-z_w(i,j,k-1))
-#ifdef MASKING
-     &        *rmask(i,j)
-#endif
-             enddo
-!            do k=N,1,-1
-!              z_w(i,j,k-1)=z_w(i,j,k)-hz(i,j,k)
+!              Hzr(i,j,k) =(Hz(i,j,k)-rho_nbq(i,j,k))      ! Zw and Zr to be adjusted here ?
+!     &                   /(1.+rho(i,j,k)/rho0)
+!              z_w(i,j,k)=z_w(i,j,k-1)+Hzr(i,j,k)
 !              z_r(i,j,k)=(z_w(i,j,k)+z_w(i,j,k-1))/2.D0
-!            enddo
+             enddo
        enddo
        enddo
-       do i=istr,iend
-       do k=1,N
-!          hz(i,jstrR2,k)=hz(i,jstr,k)
-!          hz(i,jendR2,k)=hz(i,jend,k)
-!           z_w(i,jstrR2,k)=z_w(i,jstr,k)
-!           z_w(i,jendR2,k)=z_w(i,jend,k)
-!           z_w(i,jend+1,k)=z_w(i,jend,k)
-!           z_r(i,jstrR2,k)=z_r(i,jstr,k)
-!           z_r(i,jendR2,k)=z_r(i,jend,k)
-!           z_r(i,jend+1,k)=z_r(i,jend,k)
-       enddo
-       enddo
-       do j=jstr,jend
-       do k=1,N
-!          hz(istrR2,j,k)=hz(istr,j,k)
-!          hz(iendR2,j,k)=hz(iend,j,k)
-!          z_w(istrR2,j,k)=z_w(istr,j,k)
-!          z_w(iendR2,j,k)=z_w(iend,j,k)
-!          z_r(istrR2,j,k)=z_r(istr,j,k)
-!          z_r(iendR2,j,k)=z_r(iend,j,k)
-
-c LAURENT: to be replaced by a call to OBC
-# ifndef EW_PERIODIC
-       if (EASTERN_EDGE) then
-              hz(iend+1,j,k)=hz(iend,j,k)
-!             z_w(iend+1,j,k)=z_w(iend,j,k)
-!             z_r(iend+1,j,k)=z_r(iend,j,k)
-       endif
-#endif
-       enddo
-       enddo
+!      write(6,*) iic,"Max=",dum_max
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!    &                        Hzr(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
 c LAURENT: these calls for z_w and z_r can probably be removed
@@ -946,6 +935,11 @@ c LAURENT: these calls for z_w and z_r can probably be removed
 !         stop
 !        endif
 #endif
+
+#undef zwrk 
+#undef rzeta  
+#undef rzeta2  
+#undef rzetaSA 
 
       return
       end

@@ -8,12 +8,12 @@
 !
        if (flag_grid.eq.1) then
         flag_grid=0
-        call grid_coef_nh(
-     &   Istr,Iend,Jstr,Jend,
-     &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
-     &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &   Hzu_half_qdmu, Hzv_half_qdmv                                     
-     &   )
+!        call grid_coef_nh(
+!     &   Istr,Iend,Jstr,Jend,
+!     &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
+!     &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+!     &   Hzu_half_qdmu, Hzv_half_qdmv                                     
+!     &   )
       endif
 #endif
 
@@ -42,24 +42,24 @@
 ! DTDRHO...
 !-----------------------------------------------------------------------
 !
-# if defined NBQ_DTDRHO && !defined NBQ_ZETAW
-        do k=1,N
-          do j=jstrq_nh-1,jendq_nh+1
-            do i=istrq_nh-1,iendq_nh+1
-              hrho_nbq(i,j,k,nnew)=Hzr_half_nbq(i,j,k)*rho(i,j,k)/rho0
-            enddo  
-          enddo  
-        enddo
-        if (iic.le.2) hrho_nbq(:,:,:,nstp)=hrho_nbq(:,:,:,nnew)
-        do k=0,N
-          do j=jstrq_nh-1,jendq_nh+1
-            do i=istrq_nh-1,iendq_nh+1
-              z_nbq(i,j,k,nnew)=zw_half_nbq(i,j,k)
-            enddo
-          enddo  
-        enddo
-        if (iic.eq.1) z_nbq(:,:,:,nstp)=z_nbq(:,:,:,nnew)
-# endif
+!# if defined NBQ_DTDRHO && !defined NBQ_ZETAW
+!        do k=1,N
+!          do j=jstrq_nh-1,jendq_nh+1
+!            do i=istrq_nh-1,iendq_nh+1
+!              hrho_nbq(i,j,k,nnew)=Hzr_half_nbq(i,j,k)*rho(i,j,k)/rho0
+!            enddo  
+!          enddo  
+!        enddo
+!        if (iic.le.2) hrho_nbq(:,:,:,nstp)=hrho_nbq(:,:,:,nnew)
+!        do k=0,N
+!          do j=jstrq_nh-1,jendq_nh+1
+!            do i=istrq_nh-1,iendq_nh+1
+!              z_nbq(i,j,k,nnew)=zw_half_nbq(i,j,k)
+!            enddo
+!          enddo  
+!        enddo
+!        if (iic.eq.1) z_nbq(:,:,:,nstp)=z_nbq(:,:,:,nnew)
+!# endif
 
 # ifndef NBQ_IJK
         call mat_mom_nh

@@ -109,7 +109,7 @@
 
 !c LAURENT: the two next exchanges should not be needed
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew))   ! TBD
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew2))   ! TBD
          call exchange_r3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
                                 ,rho_nbq_ext(START_2D_ARRAY,1))
 # endif

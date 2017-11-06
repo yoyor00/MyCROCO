@@ -110,7 +110,6 @@ C$    integer omp_get_thread_num
               zeta(i,j,2)=zeta(i,j,1)
               zeta(i,j,3)=zeta(i,j,1)
               zeta(i,j,4)=zeta(i,j,1)
-              zetaw_nbq(i,j,:)=zeta(i,j,1)
               wetdry(i,j)=0.
             ENDIF
             rmask_wet(i,j)=wetdry(i,j)
@@ -130,14 +129,12 @@ C$    integer omp_get_thread_num
 !              zeta(i,j,2)  = zeta(i,j,1)
 !              zeta(i,j,3)  = zeta(i,j,1)
 !              zeta(i,j,4)  = zeta(i,j,1)
-!              zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
 !            elseif (resetfromrhobar == 1) then ! Here zeta is zeta + h
 !              Zt_avg1(i,j) = zeta(i,j,1)*rhobar_nbq(i,j,1)
 !              zeta(i,j,1)  = Zt_avg1(i,j)
 !              zeta(i,j,2)  = zeta(i,j,1)
 !              zeta(i,j,3)  = zeta(i,j,1)
 !              zeta(i,j,4)  = zeta(i,j,1)
-!         !!     zetaw_nbq(i,j,:)=zeta(i,j,1)-h(i,j)
 !            endif!
 !
 !#  endif 
@@ -203,13 +200,13 @@ C$    integer omp_get_thread_num
 
 !#  ifndef NBQ_MASS
 #   ifdef NBQ_ZETAW
-            zetatmp=zetaw_nbq(i,j,knew2)
+            zetatmp=zeta(i,j,knew2)
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
 !#  else
 !#   ifdef NBQ_ZETAW
-!            zetatmp=zetaw_nbq(i,j,knew2)
+!            zetatmp=zeta(i,j,knew2)
 !#   else
 !            zetatmp=Zt_avg1(i,j)
 !     &              /rhobar_nbq_avg1(i,j)-h(i,j)
@@ -248,9 +245,9 @@ C$    integer omp_get_thread_num
             Hz_bak(i,j,k)=Hz(i,j,k)
 #   endif
 
-#   ifdef NBQ_DTDRHO2B
+!#   ifdef NBQ_DTDRHO2B
             Hz_bak2(i,j,k)=Hz(i,j,k)
-#   endif
+!#   endif
 #  else
             Hz_bak(i,j,k)=Hz(i,j,k)
 #  endif 

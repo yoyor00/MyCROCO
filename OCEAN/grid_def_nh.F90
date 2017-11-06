@@ -85,7 +85,7 @@
 !         (coef. updated in numuvw_nh)
 !*******************************************************************
 
-       istru_nh = 1
+       istru_nh = 2
        iendu_nh = LOCALLM 
        jstru_nh = jstr_nh
        jendu_nh = jend_nh

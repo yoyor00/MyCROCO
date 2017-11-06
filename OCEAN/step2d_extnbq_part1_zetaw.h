@@ -144,7 +144,7 @@
 
 # ifdef NBQ
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-c LAURENT: Is this useful ? the RHS do not have to be valid in ghost cells
+c LAURENT: Is this useful ? the RHS do not have to be valid in ghost cells (TO BE TESTED with RVTK)
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  
      &                                 ru_int_nbq(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  

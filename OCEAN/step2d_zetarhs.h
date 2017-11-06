@@ -7,9 +7,6 @@
 !-----------------------------------------------------------------------
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-!# ifdef NBQ_ZETAW
-!          zetaw_nbq(i,j)= zetaw_nbq(i,j) SWITCH rmask(i,j)
-!# endif
 
 !***********************************************************************
 # ifndef NBQ_ZETAW
@@ -71,7 +68,7 @@
 !*********************************************************************** 
 # else
 !***********************************************************************
-          zetaw_nbq(i,j,knew2)= zetaw_nbq(i,j,knew2)
+          zeta(i,j,knew2)= zeta(i,j,knew2)
      &            SWITCH rmask(i,j)   ! Utilité ?????
 !         Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))*rhobar_nbq(i,j,kstp2)
           Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))
@@ -103,25 +100,25 @@
 !-----------------------------------------------------------------------
 
 
-# ifdef NBQ_DTDRHO
-        if (iic==1.and.iif==1) then
-         z_nbq(:,:,:,kstp)=z_nbq(:,:,:,knew)
-         hrho_nbq(:,:,:,kstp)=hrho_nbq(:,:,:,knew)
-        endif
-        do k=1,N
-          do j=jstrq_nh-1,jendq_nh+1
-            do i=istrq_nh-1,iendq_nh+1
-              hrho_nbq(i,j,k,knew)=Hzr_half_nbq(i,j,k)*rho(i,j,k)/rho0
-            enddo  
-          enddo  
-        enddo
-        do k=0,N
-          do j=jstrq_nh-1,jendq_nh+1
-            do i=istrq_nh-1,iendq_nh+1
-              z_nbq(i,j,k,knew)=zw_half_nbq(i,j,k)
-            enddo
-          enddo  
-        enddo
-# endif /* NBQ_DTDRHO */
+!# ifdef NBQ_DTDRHO
+!        if (iic==1.and.iif==1) then
+!         z_nbq(:,:,:,kstp)=z_nbq(:,:,:,knew)
+!         hrho_nbq(:,:,:,kstp)=hrho_nbq(:,:,:,knew)
+!        endif
+!        do k=1,N
+!          do j=jstrq_nh-1,jendq_nh+1
+!            do i=istrq_nh-1,iendq_nh+1
+!              hrho_nbq(i,j,k,knew)=Hzr_half_nbq(i,j,k)*rho(i,j,k)/rho0
+!            enddo  
+!          enddo  
+!        enddo
+!        do k=0,N
+!          do j=jstrq_nh-1,jendq_nh+1
+!            do i=istrq_nh-1,iendq_nh+1
+!              z_nbq(i,j,k,knew)=zw_half_nbq(i,j,k)
+!            enddo
+!          enddo  
+!        enddo
+!# endif /* NBQ_DTDRHO */
       
 

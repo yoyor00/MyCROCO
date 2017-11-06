@@ -200,6 +200,12 @@
      &                                  +Wi(i,j,k)-Wi(i,j,k-1)     
 # endif     
      &                                                       )
+
+# ifdef NBQ_MASS
+            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
+     &                         /(rho_nbq_avg1(i,j,k))
+#  endif
+
           enddo
         enddo
       enddo
@@ -307,16 +313,6 @@
 
 #  if !defined NBQ_ZETAW && defined NBQ
 
-#   ifdef NBQ_MASS
-      do k=1,N
-        do j=JstrV-1,Jend
-          do i=IstrU-1,Iend
-            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
-     &                         /(rho_nbq_avg1(i,j,k))
-          enddo
-        enddo
-      enddo
-#   endif
 !
 !  Compute other vertical grid variables at n+1/2
 !

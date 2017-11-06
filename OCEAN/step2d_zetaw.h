@@ -3,36 +3,34 @@
 !    step 2: grid at n+1
 !***********************************************************************
 
-#  define zwrk UFx
-#  define rzeta  UFe
-#  define rzeta2  VFe
-#  define rzetaSA VFx
+#  define zab3 UFx
 !
 !-----------------------------------------------------------------------
 ! Computes zeta(n+1)
 !-----------------------------------------------------------------------
 !
-      if (iic==1.and.iif==1) then
-         do j=JstrV-1,Jend
-            do i=IstrU-1,Iend
-c LAURENT: Indeed zetaw_nbq should be equal to zeta everywhere -> remove zetaw_nbq
-               zetaw_nbq(i,j,:)=zeta(i,j,:)
-            enddo
-         enddo
+      if (iic==1.and.iif.eq.1) then
+         cff8=1.D0
+         cff9=0.D0
+         cff10=0.D0
+       elseif (iic==1.and.iif.eq.2) then
+         cff8=1.5D0
+         cff9=-0.5D0
+        cff10=0.D0
+      else
+        cff8= 1.5D0+mybeta
+        cff9=-2.0D0*mybeta-0.5D0
+        cff10= mybeta
       endif
 
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
-      if (iic==1.and.iif==1) then
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                   zetaw_nbq(START_2D_ARRAY,kstp2))
-      endif
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-!     &                   zetaw_nbq(START_2D_ARRAY,knew2))
-# endif
-  !    cff4=1.
-  !    cff5=0.
-  !    cff6=0.
-  !    cff7=0.
+      do j=JstrV-2,Jend+1
+        do i=IstrU-2,Iend+1
+           zab3(i,j) =   cff8  * zeta(i,j,kstp2)
+     &                 + cff9  * zeta(i,j,kbak2)
+     &                 + cff10 * zeta(i,j,kold2)
+        enddo
+      enddo
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
          zeta (i,j,knew2)=
@@ -41,26 +39,17 @@ c LAURENT: Indeed zetaw_nbq should be equal to zeta everywhere -> remove zetaw_n
 #if defined NBQ_ZETAEXP
      &    +wmean_nbq(i,j,kstp2)
 #else
-c LAURENT: this NBQ_AM4 option should be removed (its stability has not been studie)
-# ifdef NBQ_AM4
-     &    +cff4*wmean_nbq(i,j,knew2)
-     &    +cff5*wmean_nbq(i,j,kstp2)
-     &    +cff6*wmean_nbq(i,j,kbak2)
-     &    +cff7*wmean_nbq(i,j,kold2)
-# else
      &    +wmean_nbq(i,j,knew2)
-# endif
 #endif
-c LAURENT: AB3 extrapolation should be used for zetaw_nbq in the next lines (instead of kstp2)
      &    -0.5*(umean_nbq(i  ,j)
-     &          *(zetaw_nbq(i  ,j,kstp2)
-     &           -zetaw_nbq(i-1,j,kstp2))*pm_u(i,j)
+     &          *(zab3(i  ,j)
+     &           -zab3(i-1,j))*pm_u(i,j)
 #ifdef MASKING
      &         *rmask(i,j)*rmask(i-1,j)
 #endif
      &         +umean_nbq(i+1,j)
-     &          *(zetaw_nbq(i+1,j,kstp2)
-     &         -zetaw_nbq(i  ,j,kstp2))*pm_u(i+1,j) 
+     &          *(zab3(i+1,j)
+     &           -zab3(i  ,j))*pm_u(i+1,j) 
 #ifdef MASKING
      &         *rmask(i,j)*rmask(i+1,j)
 #endif
@@ -70,14 +59,14 @@ c LAURENT: AB3 extrapolation should be used for zetaw_nbq in the next lines (ins
 #endif
 
      &    -0.5*(vmean_nbq(i  ,j)
-     &          *(zetaw_nbq(i,j  ,kstp2) 
-     &           -zetaw_nbq(i,j-1,kstp2))*pm_v(i,j)
+     &          *(zab3(i,j  ) 
+     &           -zab3(i,j-1))*pm_v(i,j)
 #ifdef MASKING
      &         *rmask(i,j)*rmask(i,j-1)
 #endif
      &         +vmean_nbq(i,j+1)
-     &          *(zetaw_nbq(i,j+1,kstp2)
-     &         -zetaw_nbq(i,j  ,kstp2))*pm_v(i,j+1) 
+     &          *(zab3(i,j+1)
+     &           -zab3(i,j  ))*pm_v(i,j+1) 
 #ifdef MASKING
      &         *rmask(i,j)*rmask(i,j+1)
 #endif
@@ -99,13 +88,6 @@ c LAURENT: AB3 extrapolation should be used for zetaw_nbq in the next lines (ins
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-!#  ifdef NBQ_MASS
-!           zetaw_nbq(i,j,knew2)=(zeta(i,j,knew2)
-!     &                     -h(i,j))
-!     &               *rhobar_nbq(i,j,knew2)
-!#  else
-           zetaw_nbq(i,j,knew2)=zeta(i,j,knew2)
-!#  endif
            zeta_new(i,j)=zeta(i,j,knew2)
         enddo
       enddo
@@ -149,8 +131,7 @@ c LAURENT: AB3 extrapolation should be used for zetaw_nbq in the next lines (ins
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-
- 	      zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+ 	   zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
 #if !defined NBQ_ZETAEXP
 c in case of ZETAEXP rhobar has not yet been computed
 c Dnew will be computed later
@@ -173,16 +154,8 @@ c Dnew will be computed later
 #  if defined WET_DRY && defined MASKING
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-
-!         zeta(i,j,knew)=zeta_new(i,j) 
-
-!#   ifdef NBQ_MASS
-!          zeta(i,j,knew2)=zeta(i,j,knew2)+ 
-!     &               rhobar_nbq(i,j,knew2)*Dcrit(i,j)*(1.-rmask(i,j))
-!#   else
           zeta(i,j,knew2)=zeta(i,j,knew2)+ 
      &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-!#   endif
         enddo
       enddo 
 #  endif
@@ -241,9 +214,6 @@ C$OMP END MASTER
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew2))
-!! Following exchange necessary with WENO5!
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                   zetaw_nbq(START_2D_ARRAY,knew2))   ! AJOUTE!!!!!
 #  endif      
 !
 !-----------------------------------------------------------------------
@@ -263,25 +233,6 @@ C$OMP END MASTER
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
 
-!#  ifdef NBQ_MASS
-!!      do j=JstrV-1,Jend
-!!        do i=IstrU-1,Iend
-!!           stop 'coucou'
-!!        enddo
-!!      enddo
-!      do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
-!        do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
-!          zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) - h(i,j) 
-!        enddo
-!      enddo
-!#  else
-      do j=lbound(zetaw_nbq,2),ubound(zetaw_nbq,2)   ! WENO5
-        do i=lbound(zetaw_nbq,1),ubound(zetaw_nbq,1)
-c LAURENT: Third time that zetaw_nbq is set to zeta ! hope this is OK now ...
-          zetaw_nbq(i,j,knew2) = zeta(i,j,knew2) !- h(i,j) 
-        enddo
-      enddo
-!#  endif /* NBQ_MASS */
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.
@@ -293,22 +244,22 @@ c LAURENT: Third time that zetaw_nbq is set to zeta ! hope this is OK now ...
 !----------------------------------------------------------------------
 !
 #  ifdef SOLVE3D
-c LAURENT: unnecessary lines with M2FILTER_NONE (only at last time step)
-      cff1=weight(1,iif)
-      cff2=weight(2,iif)
-      if (FIRST_2D_STEP) then
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            Zt_avg1(i,j)=cff1*zeta(i,j,knew2)
-          enddo
-        enddo 
-      else
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew2)
-          enddo
-        enddo
-      endif
+c LAURENT: unnecessary lines with M2FILTER_NONE (only at last time step): REMOVED
+!      cff1=weight(1,iif)
+!      cff2=weight(2,iif)
+!      if (FIRST_2D_STEP) then
+!        do j=JstrR,JendR
+!          do i=IstrR,IendR
+!            Zt_avg1(i,j)=cff1*zeta(i,j,knew2)
+!          enddo
+!        enddo 
+!      else
+!        do j=JstrR,JendR
+!          do i=IstrR,IendR
+!            Zt_avg1(i,j)=Zt_avg1(i,j)+cff1*zeta(i,j,knew2)
+!          enddo
+!        enddo
+!      endif
 
 !
 !-----------------------------------------------------------------------
@@ -328,6 +279,8 @@ c enforces the recomputation of vertical grid derived arrays (Hz(r,w)_xxx_inv) a
 #include "step2d_grid_ext.h"
 
         endif
+
+#  undef zab3
 
 #  endif /* SOLVE3D */
 

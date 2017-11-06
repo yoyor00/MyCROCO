@@ -114,10 +114,14 @@
         do k=1,N 
           do j=JstrR2,JendR2           
             do i=IstrR2,IendR2
-		 rho_bak(i,j,k)=rho(i,j,k)
+	       rho_bak (i,j,k)=(   rho(i,j,k)/rho0)*Hzr(i,j,k)
 	    enddo
 	  enddo
 	 enddo
+	 z_nbq(:,:,:,1)=z_w(:,:,:)
+	 z_nbq(:,:,:,2)=z_w(:,:,:)
+	 z_nbq(:,:,:,3)=z_w(:,:,:)
+	 z_nbq(:,:,:,4)=z_w(:,:,:)
        endif
 #endif
 
@@ -157,14 +161,8 @@ c LAURENT: loop indices have to be corrected
          do j=Jstr,Jend
           do i=Istr,Iend+1     
                umean_nbq(i,j)=qdmu_nbq(i,j,N)  
-#ifdef NBQ_MASS        
-c LAURENT: Hz arrays should be used instead of rho_nbq/H+rho/rho0+1.
-                
-     &           / ( rho_nbq(i,j,N)  *Hzr_half_nbq_inv(i,j,N)
-     &              +rho(i,j,N)/rho0            
-     &              +rho_nbq(i-1,j,N)*Hzr_half_nbq_inv(i-1,j,N)
-     &              +rho(i-1,j,N)/rho0+2.)  
-     &            / (Hzr(i,j,N)+Hzr(i-1,j,N)) * 4. 
+#ifdef NBQ_MASS                      
+     &            / (Hz(i,j,N)+Hz(i-1,j,N)) * 2. 
 #else
      &            / (Hzr(i,j,N)+Hzr(i-1,j,N)) * 2. 
 #endif
@@ -180,11 +178,7 @@ c LAURENT: Hz arrays should be used instead of rho_nbq/H+rho/rho0+1.
           do i=Istr,Iend     
                vmean_nbq(i,j)=qdmv_nbq(i,j,N)              
 #ifdef NBQ_MASS     
-     &            / ( rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
-     &               +rho(i,j,N)/rho0   
-     &               +rho_nbq(i,j-1,N)*Hzr_half_nbq_inv(i,j-1,N)
-     &               +rho(i,j-1,N)/rho0   +2.)  
-     &            / (Hzr(i,j,N)+Hzr(i,j-1,N)) * 4. 
+     &            / (Hz(i,j,N)+Hz(i,j-1,N)) * 2. 
 #else
      &            / (Hzr(i,j,N)+Hzr(i,j-1,N)) * 2. 
 #endif
@@ -199,7 +193,8 @@ c LAURENT: Hz arrays should be used instead of rho_nbq/H+rho/rho0+1.
           do i=Istr,Iend
                wmean_nbq(i,j,kstp2)=qdmw_nbq(i,j,N)         
 #ifdef NBQ_MASS     
-     &     / (rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)+1.+rho(i,j,N)/rho0)  
+!    &     / (rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)+1.+rho(i,j,N)/rho0)  ! Surface BC: Rho_nbq(surf)=0 
+     &     / (1.+rho(i,j,N)/rho0)  
 #endif
      &             * Hzw_half_nbq_inv(i,j,N)   
 #ifdef MASKING
@@ -234,7 +229,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
         do k=1,N
           do j=JstrV2-1,Jend
             do i=IstrU2-1,Iend
-              thetadiv_nbq(i,j,k)=(-visc2_nbq*thetadiv_nbq(i,j,k)
+              thetadiv_nbq(i,j,k)=(-visc2_nbq*(thetadiv_nbq(i,j,k)
+     &                                        +thetadiv3_nbq(i,j,k))
      &                                +soundspeed2_nbq*rho_nbq(i,j,k)) 
      &                               *Hzr_half_nbq_inv(i,j,k)  
             enddo
@@ -1132,55 +1128,61 @@ c since the call to grid_coef_nh is at the beginning of step2d
 
 !---------------------------
 ! Time and Bp density variations
-!---------------------------   
+!---------------------------  
+ 
+#if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
+	    z_nbq(:,:,:,knew2)=z_w(:,:,:)
+#endif
+
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW
         do j=Jstr,Jend
          do i=Istr,Iend
            FC(i,0)=0.              ! Bottom boundary condition
-# ifdef NBQ_MASS
-           DC(i,0)=rho(i,j,1)/rho0
-# endif
+           CF(i,0)=0.              ! Bottom boundary condition
          enddo
 
           do k=1,N-1
             do i=Istr,Iend
               FC(i,k)=   
      &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtfast 
-     &          *0.5*( rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )  
-     &                +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1) )
-# ifdef NBQ_MASS
-              DC(i,k)=0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0
-# endif
-                
+     &          *0.5*( (rho(i,j,k  )/rho0)
+     &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k)  
+     &                +(rho(i,j,k+1)/rho0)
+     &                  +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
+              CF(i,k)=   
+     &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtfast 
+     &          *0.5*( 1.+rho(i,j,k  )/rho0
+     &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k) 
+     &                +1.+rho(i,j,k+1)/rho0
+     &                  +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1) )
 
-       thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)+(FC(i,k)-FC(i,k-1)) 
+       thetadiv2_nbq(i,j,k)=(FC(i,k)-FC(i,k-1)) 
 # ifdef NBQ_MASS
-     &          -Hzr(i,j,k)*(rho(i,j,k)-rho_bak(i,j,k))/rho0/dt
-     &          -(zr_nbq(i,j,k,knew2)-zr_nbq(i,j,k,kstp2))
-     &                     /dtfast
-     &                     *(DC(i,k)-DC(i,k-1))
+     &      +(Hzr(i,j,k)*(rho(i,j,k)/rho0)-rho_bak(i,j,k))/dtfast
 # endif
+       thetadiv3_nbq(i,j,k)=(CF(i,k)-CF(i,k-1)) 
             enddo
           enddo
-          k=N
+
           do i=Istr,Iend
-              FC(i,k)=    
-     &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtfast 
-     &               *(
-     &                rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k)
-     &              )
+              FC(i,N)=   
+     &          -(z_nbq(i,j,N,knew2)-z_nbq(i,j,N,kstp2))/dtfast 
+     &          *0.5*( rho(i,j,N)/rho0
+     &                  +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
+     &                +rho(i,j,N)/rho0)
+              CF(i,N)=   
+     &          -(z_nbq(i,j,N,knew2)-z_nbq(i,j,N,kstp2))/dtfast 
+     &          *0.5*( 1.+rho(i,j,N)/rho0
+     &                  +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
+     &                + 1.+rho(i,j,N)/rho0)
+
+       thetadiv2_nbq(i,j,N)=(FC(i,N)-FC(i,N-1)) 
 # ifdef NBQ_MASS
-              DC(i,N)=rho(i,j,N) /rho0
-# endif
-          thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)+(FC(i,k)-FC(i,k-1)) 
-# ifdef NBQ_MASS
-     &          -Hzr(i,j,k)*(rho(i,j,k)-rho_bak(i,j,k))/rho0/dt
-     &          -(zr_nbq(i,j,N,knew2)-zr_nbq(i,j,N,kstp2))
-     &                     /dtfast
-     &                     *(DC(i,N)-DC(i,N-1))
-# endif
+     &      +(Hzr(i,j,N)*(rho(i,j,N)/rho0)-rho_bak(i,j,N))/dtfast
+# endif            
+       thetadiv3_nbq(i,j,N)=(CF(i,N)-CF(i,N-1)) 
           enddo
-        enddo
+         enddo
 
 #endif
 
@@ -1195,7 +1197,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
           do k=1,N
             do i=Istr,Iend
                FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k)
-     &         - (soundspeed2_nbq*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k) 
+     &         - (soundspeed2_nbq*dtnbq+visc2_nbq) 
+     &            *(thetadiv_nbq(i,j,k)+thetadiv2_nbq(i,j,k)) 
      &                   )
      &                   * Hzr_half_nbq_inv(i,j,k) 
             enddo
@@ -1445,12 +1448,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,rho_nbq(START_2D_ARRAY,1))
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,thetadiv_nbq(START_2D_ARRAY,1))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,thetadiv2_nbq(START_2D_ARRAY,1))
+        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,thetadiv3_nbq(START_2D_ARRAY,1))
 # endif
 
          do k=1,N
          do j=Jstr-1,Jend+1
          do i=Istr-1,Iend+1
-           rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtfast*thetadiv_nbq(i,j,k)    !*Hzr_half_nbq_inv(i,j,k) !XXX2
+           rho_nbq(i,j,k) = rho_nbq(i,j,k)  
+     &       - dtfast*(thetadiv_nbq(i,j,k)+thetadiv2_nbq(i,j,k))
 # ifdef NBQ_NUDGING
              rho_nbq(i,j,k)=rho_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))
      &        +0. * nudg_coef_nbq(i,j)
@@ -1506,7 +1512,7 @@ c Compute rhobar(n+1) (used in the diagnostic of zeta via vertically integrated 
 c need to update Dnew here
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          Dnew(i,j)=(zetaw_nbq(i,j,knew2)+h(i,j))
+          Dnew(i,j)=(zeta(i,j,knew2)+h(i,j))
 #if defined NBQ_MASS
      &    *rhobar_nbq(i,j,knew2)
 #endif
@@ -1601,15 +1607,16 @@ c need to update Dnew here
 #endif
 
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
-          if (iif==nfast) then
+!          if (iif==nfast) then
             do k=1,N 
             do j=JstrR2,JendR2             
             do i=IstrR2,IendR2
-	       rho_bak(i,j,k)=rho(i,j,k)
+	       rho_bak(i,j,k)=(    rho(i,j,k)/rho0)*Hzr(i,j,k)
             enddo
             enddo
             enddo
-          endif
+!	    z_nbq(:,:,:,knew2)=z_w(:,:,:)
+!          endif
 #endif
             
 #ifdef RVTK_DEBUG

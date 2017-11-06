@@ -92,6 +92,10 @@
        
       real thetadiv_nbq(GLOBAL_2D_ARRAY,0:N)
       common/nbq_thetadiv_nbq/thetadiv_nbq
+      real thetadiv2_nbq(GLOBAL_2D_ARRAY,0:N)
+      common/nbq_thetadiv2_nbq/thetadiv2_nbq
+      real thetadiv3_nbq(GLOBAL_2D_ARRAY,0:N)
+      common/nbq_thetadiv3_nbq/thetadiv3_nbq
 
       real ru_int_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_ruint/ ru_int_nbq
@@ -214,8 +218,6 @@
       common /nbq_umean/umean_nbq
       real vmean_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vmean/vmean_nbq
-      real zetaw_nbq(GLOBAL_2D_ARRAY,4)
-      common /nbq_zetaw/zetaw_nbq
       integer :: knew2,kstp2,kbak2,kold2
       common /gridext1/knew2,kstp2,kbak2,kold2   
       real cff4
@@ -274,10 +276,10 @@
 
 # endif
 
-# ifdef NBQ_DTDRHO2B
+!# ifdef NBQ_DTDRHO2B
       real Hz_bak2(GLOBAL_2D_ARRAY,1:N)
       common /nbq_H_bak2/ Hz_bak2
-# endif
+!# endif
 
 !**********************************************************************
 # if defined ACOUSTIC && defined NBQ_IJK
@@ -297,6 +299,9 @@
 
       real  Hz_corr(GLOBAL_2D_ARRAY,N) 
       common/corr_Hz/Hz_corr
+
+!      real Hz_t(GLOBAL_2D_ARRAY,1:N,4)
+!      common /nbq_H_t/ Hz_t
 
 #endif /* NBQ */
 
