@@ -122,15 +122,17 @@
 #  else
       parameter (wave_roller=0.0)
 #  endif
-#  ifdef WAVE_FRICTION
-      if (Zob.gt.0.) then
-        Zob_my=Zob
+# endif /* !WKB_WWAVE */
+# if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
+                        || defined WAVE_STREAMING
+      if (Zob.gt.0.) then                     ! default Zob for wave
+        Zob_my=Zob                            ! dissipation or streaming
       else
         Zob_my=1.e-3
       endif
-#   define Zob Zob_my
-#  endif
-# endif /* !WKB_WWAVE */
+#  define Zob Zob_my
+# endif
+
 !
 #include "compute_auxiliary_bounds.h"
 
@@ -1087,6 +1089,11 @@
 #  undef inv_dz
 
 # endif       /* SOLVE3D */
+
+# if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
+                        || defined WAVE_STREAMING
+#   undef Zob
+# endif
 
 !
 ! Open boundary condition (valid only for idealized situations)
