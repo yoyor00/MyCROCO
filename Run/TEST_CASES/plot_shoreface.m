@@ -40,24 +40,23 @@ close all
 %
 % --- model params ---
 %
-fname     = 'shoreface_his.nc';  % croco file name
-makepdf   = 0;                   % make pdf file
+fname   = 'shoreface_his.nc';                % croco file name
+wname   = 'TEST_CASES/shoreface_JW_frc.nc';  % SWAN wave frc file
 
-alphar    = 0.0;                 % roller fraction  (see croco.in)
-Cd        = 0.0015;              % drag coefficient (see croco.in
+makepdf = 0;                                 % make pdf file
 
-wname     = 'TEST_CASES/shoreface_JW_frc.nc';
-%
+% ---
+
+alphar  = 0.0;    % roller fraction  (see croco.in)
+Cd      = 0.0015; % drag coefficient (see croco.in)
+g       = 9.8;
+      
+xmin0   = -700;   % plots axis range
+xmax0   =  -30;
+zmin0   =   -8;
+zmax0   =    1;
 %======================================================================
-%
-g = 9.8;
-yindex = 2;      
-%
-% plots axis
-xmin0=-700;
-xmax0=-30;
-zmin0=-8;
-zmax0=1;
+yindex = 2;
 %
 % ---------------------------------------------------------------------
 % --- get grid from numerical model ---
@@ -137,9 +136,10 @@ if wkb_wwave,
  % ... wave breaking dissipation ...  
  eb=squeeze(nc{'epb'}(tindex,yindex,xindex:end));
 
- % ... wave roller dissipation ...  
+ % ... wave roller dissipation ...   
  er=squeeze(nc{'epr'}(tindex,yindex,xindex:end));
-
+ if isempty(nc{'epr'}(:)), er=0.*eb; end
+  
  % ... wave number x ...
  kx=squeeze(nc{'wkx'}(tindex,yindex,xindex:end));
 

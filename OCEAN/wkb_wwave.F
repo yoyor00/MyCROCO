@@ -59,6 +59,9 @@
       real, parameter :: eps=1.e-10, 
      &                   khmax=20.     ! deep-water limit for k*h
       logical :: ana_ini_wkb
+# ifdef WAVE_FRICTION
+      real Zob_my
+# endif
 # if defined MPI 
       include 'mpif.h'
 #  include "mpi_roms.h"
@@ -171,6 +174,12 @@
 # endif
 # ifdef WAVE_FRICTION
       cfrc = 0.5/sqrt(pi)
+      if (Zob.gt.0.) then
+        Zob_my=Zob
+      else
+        Zob_my=1.e-3
+      endif
+#  define Zob Zob_my
 # endif
       peg=8.0/g
 !
@@ -812,6 +821,7 @@ C$OMP BARRIER
           abot = inv_f*urms
           fw   = 1.39*(Zob/max(abot,eps))**0.52 ! Soulsby (1995)
           wfc(i,j,wnew) = cfrc*fw*inv_f*urms**3 ! ep_d/rho/sigma
+#  undef Zob
 # else
           wfc(i,j,wnew) = 0.0
 # endif

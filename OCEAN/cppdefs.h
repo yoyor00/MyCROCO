@@ -887,6 +887,7 @@
 # define SOLVE3D
 # define UV_ADV
 # undef  MASKING
+# define WET_DRY
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -899,15 +900,14 @@
 # define NS_PERIODIC
 # define OBC_WEST
 # define SPONGE
-# define WET_DRY
 # define MRL_WCI
 # ifdef MRL_WCI
 #  undef  WAVE_OFFLINE
 #  ifndef WAVE_OFFLINE
 #   define WKB_WWAVE
 #   define WKB_OBC_WEST
-#   define WAVE_ROLLER
-#   undef  WKB_UNSTEADY
+#   define WAVE_FRICTION
+#   undef  WAVE_ROLLER
 #   undef  MRL_CEW
 #  endif
 # endif

@@ -50,8 +50,8 @@ auxiliary_averages:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr W
 rho0:
       1024.4
 
-bottom_drag:     RDRG(m/s),      RDRG2,   Zob [m],  Cdb_min, Cdb_max
-                   0.0           1.5e-3   0.0        1.e-4     1.e-1
+bottom_drag:     RDRG(m/s),    RDRG2,     Zob [m],  Cdb_min, Cdb_max
+                   0.0         1.5e-3     0.0        0.0      0.0
 
 gamma2:
                  1.
@@ -81,7 +81,7 @@ wkb_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
                       T   T     F      T     T       T      T     T    T
 
 wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
-            0.7      -10.0      10.       0.0      0.8    0.4
+            0.707    -10.0      10.       0.0      0.8    0.4
 
 wkb_roller:  roller_sinb  roller_fraction
                   0.1         0.0 

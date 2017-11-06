@@ -427,6 +427,7 @@
 # else
 #  define WAVE_BREAK_CT93 /* defaults */
 # endif
+#endif
 
 /* WKB specific options  */
 #ifdef WKB_WWAVE
@@ -457,7 +458,6 @@
 #  undef  WAVE_ROLLER
 # endif
 #endif
-
 
 /*
 ======================================================================

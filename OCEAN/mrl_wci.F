@@ -36,7 +36,7 @@
 # endif
      &           wh,fr,kw,brk,stk,Dstp,act,kD,inv_d,inv_f,frc,ebrk,erol)
 !
-!--------------------------------------------------------------------
+!----------------------------------------------------------------------
 !   Evaluating wave-averaged terms and Stokes drift based on MRL04
 !     (McWilliams, Restrepo & Lane, 2004, JFM, 511, pp.135-178)
 !    
@@ -57,7 +57,7 @@
 !      vortex force formalism: Application to the surf zone.
 !      Ocean Modelling Vol. 34:1-2, pp.16-35.
 !
-!--------------------------------------------------------------------
+!----------------------------------------------------------------------
 !
       implicit none
 # include "param.h"
@@ -105,23 +105,32 @@
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
 # endif
       parameter ( eps=1.e-10, 
-     &            bconst=0.03D0,               ! breaking contribution to KPP
-     &            a_kv=1.2D0,                  ! breaking scale for eddy visc.
+     &            bconst=0.03D0,              ! breaking contribution to KPP
+     &            a_kv=1.2D0,                 ! breaking scale for eddy visc.
      &            a_brk=0.2D0,                ! breaking scale for body force
      &            a_frc=3.D0,                 ! friction scale for body force
      &            khmax=20.D0,                ! deep-water limit for k x dep
      &            c1o3=0.3333333333333333,    ! 1/3
      &            c4o3=1.3333333333333333     ! 4/3
      &           )
+!
 # ifndef WKB_WWAVE
-      real wave_gam,wave_btg,wave_roller
-      parameter (wave_gam=0.4, wave_btg=0.8)
+      real wave_gam,wave_btg,wave_roller      ! parameters for offline
+      parameter (wave_gam=0.4, wave_btg=0.8)  ! wave forcing 
 #  ifdef WAVE_ROLLER
       parameter (wave_roller=1.0)
 #  else
       parameter (wave_roller=0.0)
 #  endif
-# endif
+#  ifdef WAVE_FRICTION
+      if (Zob.gt.0.) then
+        Zob_my=Zob
+      else
+        Zob_my=1.e-3
+      endif
+#   define Zob Zob_my
+#  endif
+# endif /* !WKB_WWAVE */
 !
 #include "compute_auxiliary_bounds.h"
 
@@ -251,14 +260,15 @@
           kD(i,j) =kh
           kw(i,j) =kh*inv_d(i,j)
 !
-! Wave breaking (check btg,gam, e.g., btg=0.8, gam=0.4)
+! --- Wave breaking ---
+!   use wave_btg, wave_gam local parameters (as in WKB model)
 !
 #  ifdef WAVE_OFFLINE_BREAKING
-          ebrk(i,j) =wramp2*Eb(i,j)              ! e_b/rho (m3/s3)
+          ebrk(i,j) =wramp2*Eb(i,j)                 ! e_b/rho (m3/s3)
 #  else
 #   ifdef WAVE_BREAK_TG86
           cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.0*pi)
-          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7)  ! e_b/rho/sigma (m3/s2)
+          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! e_b/rho/sigma (m3/s2)
 #   elif defined WAVE_BREAK_TG86A
           cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.0*pi)
           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
@@ -276,43 +286,42 @@
           ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
      &                          *(1-exp (-cff1**5 ))
 #   endif  
-          ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)    ! e_b/rho (m3/s3)
+          ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER
-          erol(i,j =wramp2*0.5762*Dstp(i,j)*    ! epsilon_r (m3/s3)
-     &              wh(i,j)*wvqb(i,j)*          ! 0.5762=0.06*sinb*g^2
-     &              kw(i,j)*inv_f(i,j)          ! Nairn et al (1991)
+          erol(i,j =wramp2*0.5762*Dstp(i,j)*        ! ep_r (m3/s3)
+     &              wh(i,j)*wvqb(i,j)*              ! 0.5762=0.06*sinb*g^2
+     &              kw(i,j)*inv_f(i,j)              ! Nairn et al (1991)
           cff =(1.-wave_roller)*ebrk(i,j)+erol(i,j)
 #  else
           cff =ebrk(i,j)
 #  endif
-          brk(i,j) =cff*kw(i,j)*inv_f(i,j)       ! 2DH breaking term
+          brk(i,j) =cff*kw(i,j)*inv_f(i,j)          ! 2DH breaking term
 !
-! Wave friction
+! --- Wave friction ---
 !
 #  ifdef WAVE_OFFLINE_FRICTION
           frc(i,j) =wramp2*wved(i,j)*kw(i,j)
-     &                           *inv_f(i,j)     ! 2DH friction term
+     &                              *inv_f(i,j)     ! 2DH friction term
 #  elif WAVE_FRICTION
           abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
-          fw=1.39*(Zob/max(abot,eps))**0.52      ! Soulsby (1995)
-          cff=0.5/sqrt(pi)*fw*urms**3            ! e_d/rho
-          frc(i,j)=wramp2*cff*kw(i,j)
-     &                       *inv_f(i,j)         ! 2DH friction term
+          fw=1.39*(Zob/max(abot,eps))**0.52         ! Soulsby (1995)
+          cff=0.5/sqrt(pi)*fw*urms**3               ! ep_d/rho
+          frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
           frc(i,j)=0.
 #  endif
 !
-! Wave action
+! --- Wave action ---
 !
-          act(i,j) =inv_f(i,j)*( 
-     &                      0.125*g*(wh(i,j)**2) ! wave action density
+          act(i,j)=inv_f(i,j)*(0.125*g*(wh(i,j)**2) ! wave action density
 #  ifdef WAVE_OFFLINE_ROLLER
-     &              +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
+     &            +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
 #  endif
      &                         )
+
 # endif   /* WKB_WWAVE */
 !
 !----------------------------------------------------------------------
