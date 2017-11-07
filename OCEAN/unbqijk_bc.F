@@ -59,6 +59,7 @@
       implicit none
 # include "param.h"
 # include "grid.h"
+# include "ocean2d.h"
 # include "ocean3d.h"
 # include "climat.h"
 # include "scalars.h"
@@ -76,6 +77,7 @@
      &        cx,cy, dft,dfx,dfy, tau,tau_in,tau_out
       parameter (eps=1.E-20)
       double precision :: mask1_u,mask2_u
+      real sum_o(PRIVATE_2D_SCRATCH_ARRAY)
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -105,43 +107,20 @@
 #   ifdef OBC_COM_NBQORLANSKI
         do k=1,N                             ! Western edge radiation
           do j=Jstr,Jend+1                   ! ======= ==== =========
-
-            l_b_j     = ijk2lmom_nh(Istr  ,j  ,k,1)
-            l_b_jm1   = ijk2lmom_nh(Istr  ,j-1,k,1)
-            if (l_b_jm1.eq.0) then
-               l_b_jm1 = l_b_j
-               mask1_u = 1.
-            else
-               mask1_u = 1.
-            endif
-            l_bm1_j   = ijk2lmom_nh(Istr+1,j  ,k,1)
-            l_bm1_jm1 = ijk2lmom_nh(Istr+1,j-1,k,1)
-            if (l_bm1_jm1.eq.0) then
-               l_bm1_jm1 = l_bm1_j
-               mask2_u = 1.
-            else
-               mask2_u = 1.
-            endif
-
-            grad(Istr  ,j)=(qdm_nbq_a(l_b_j  )
-     &                     -qdm_nbq_a(l_b_jm1)*mask1_u)
+            grad(Istr  ,j)=(qdmu_nbq(Istr,j  ,k)
+     &                     -qdmu_nbq(Istr,j-1,k))
 #    ifdef MASKING
      &                                              *pmask(Istr  ,j)
 #    endif
-            grad(Istr+1,j)=(qdm_nbq_a(l_bm1_j  )
-     &                     -qdm_nbq_a(l_bm1_jm1)*mask2_u)
+            grad(Istr  ,j)=(qdmu_nbq(Istr+1,j  ,k)
+     &                     -qdmu_nbq(Istr+1,j-1,k))
 #    ifdef MASKING
      &                                              *pmask(Istr+1,j)
 #    endif
           enddo
           do j=Jstr,Jend
-
-            l_b_j     = ijk2lmom_nh(Istr  ,j,k,1)
-            l_bm1_j   = ijk2lmom_nh(Istr+1,j,k,1)
-            l_bm2_j   = ijk2lmom_nh(Istr+2,j,k,1)
-
-          dft=qdm_nbq_a(l_bm1_j )-qdm_nbq_a(l_bm1_j)
-          dfx=qdm_nbq_a(l_bm1_j )-qdm_nbq_a(l_bm2_j)
+            dft=qdmu_nbq(Istr+1,j,k)-qdmu_nbq(Istr+1,j,k)
+            dfx=qdmu_nbq(Istr+1,j,k)-qdmu_nbq(Istr+2,j,k)
 
             if (dfx*dft .lt. 0.) then
               dft=0.                       ! <-- cancel cx, if inflow
@@ -153,7 +132,6 @@
             endif
  
             if (dft*(grad(Istr+1,j)+grad(Istr+1,j+1)) .gt. 0.) then
-!           if (dft*(grad(Istr+1,j)) .gt. 0.) then
               dfy=grad(Istr+1,j)
             else
               dfy=grad(Istr+1,j+1)
@@ -171,13 +149,13 @@
 #    endif
  
             qdm_nbq_a(l_b_j)=( 
-     &                              cff*qdm_nbq_a(l_b_j  )
-     &                              +cx*qdm_nbq_a(l_bm1_j)
+     &                              cff*qdmu_nbq(Istr,j,k)
+     &                              +cx*qdmu_nbq(Istr+1,j,k)
      &                               -max(cy,0.)*grad(Istr,j  )
      &                               -min(cy,0.)*grad(Istr,j+1)
      &                                               )/(cff+cx)
 #    if defined NBQ_FRC_BRY  || defined NBQNUDGING 
-          qdm_nbq_a(l_b_j)=(1.-tau)*qdm_nbq_a(l_b_j)
+          qdmu_nbq(Istr,j,k)=(1.-tau)*qdmu_nbq(Istr,j,k)
 #     ifdef NBQ_FRC_BRY
      &                                    +tau*unbqbry_west(j,k)
 #     else     
@@ -222,29 +200,44 @@
 #   else
 !                                            Western edge gradient BC
 !                                            ======= ==== ======== ==
+        sum_o=0.
         do k=1,N
           do j=Jstr,Jend
 !            do i=Istr,Istr+10
-             qdmu_nbq(Istr,j,k)=u(Istr,j,k,nrhs)
+!              qdmu_nbq(Istr,j,k)=qdmu_nbq(Istr+1,j,k)
+!              qdmu_nbq(Istr,j,k)=ubclm(Istr,j)
+               qdmu_nbq(Istr,j,k)=u(Istr,j,k,nrhs)
      &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr-1,j,k))
-! Attention: ceci est temporaire... u(...indx) n'est pas à jour sur les frontières...
-!            d'où la multiplication par rho*h
-             
-!            qdmu_nbq(I,j,k)=qdmu_nbq(I,j,k)
-!     &            -0.1*real(istr+10-i)**2*(qdmu_nbq(I,j,k)-u(I,j,k,3-nstp))
-!     &            /100.
 #    ifdef MASKING
      &                                     *umask(Istr,j)
 #    endif
 #    ifdef WET_DRY
      &                                 *umask_wet(Istr,j)
 #    endif 
+
+              sum_o(Istr,j)=sum_o(Istr,j)+qdmu_nbq(Istr,j,k)
+
+! Attention: ceci est temporaire... u(...indx) n'est pas à jour sur les frontières...
+!            d'où la multiplication par rho*h
+             
+!            qdmu_nbq(I,j,k)=qdmu_nbq(I,j,k)
+!     &            -0.1*real(istr+10-i)**2*(qdmu_nbq(I,j,k)-u(I,j,k,3-nstp))
+!     &            /100.
 !            if (mynode.le.10) then
 !            write(6,*)mynode,iic,iif
 !     &   ,qdmu_nbq(Istr,j,k),u(Istr+1,j,k,3-nstp)
 !     &    ,u(Istr+1,j,k,nnew),u(Istr+1,j,k,nrhs)
 !            endif
 !           enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=Jstr,Jend
+               qdmu_nbq(Istr,j,k)=qdmu_nbq(Istr,j,k)-sum_o(Istr,j)
+     &                  /float(N)
+     &                 +ubar(Istr,j,kstp)   
+     &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr-1,j,k))
+     &                                             
           enddo
         enddo
 #   endif
@@ -383,21 +376,29 @@
 #   else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
+        sum_o=0.
         do k=1,N
           do j=Jstr,Jend
-            qdmu_nbq(Iend+1,j,k) = u(Iend+1,j,k,nrhs)
-     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend,j,k))
-!            do i=Iend-9,Iend+1
-!            qdmu_nbq(I,j,k)=qdmu_nbq(I,j,k)
-!     &            -0.1*real(i-Iend+9)**2*(qdmu_nbq(I,j,k)-u(I,j,k,3-nstp))
-!     &            /100.
+     !       qdmu_nbq(Iend+1,j,k) = qdmu_nbq(Iend,j,k)
+!            qdmu_nbq(Iend+1,j,k)=ubclm(Iend+1,j)
+             qdmu_nbq(Iend+1,j,k) = u(Iend+1,j,k,nrhs)
+     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend,j,k))   
 #    ifdef MASKING
      &                                   *umask(Iend+1,j)
 #    endif
 #    ifdef WET_DRY
      &                               *umask_wet(Iend+1,j)
 #    endif
-!          enddo
+              sum_o(Iend+1,j)=sum_o(Iend+1,j)+qdmu_nbq(Iend+1,j,k)
+          enddo
+        enddo
+        do k=1,N
+          do j=Jstr,Jend
+               qdmu_nbq(Iend+1,j,k)=qdmu_nbq(Iend+1,j,k)-sum_o(Iend+1,j)
+     &                  /float(N)
+     &                 +ubar(Iend+1,j,kstp)   
+     &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend,j,k))
+     &                                             
           enddo
         enddo
 #   endif
@@ -516,6 +517,7 @@
 #   else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
+!       sum_o=0.
         do k=1,N
           do i=IstrU,Iend
             qdmu_nbq(i,Jstr-1,k)=qdmu_nbq(i,Jstr,k)
@@ -649,6 +651,7 @@
 #   else
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
+!       sum_o=0.
         do k=1,N
           do i=IstrU,Iend
             qdmu_nbq(i,Jend+1,k)=qdmu_nbq(i,Jend,k)
