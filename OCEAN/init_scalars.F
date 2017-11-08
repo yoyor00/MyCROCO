@@ -1655,156 +1655,130 @@ CR      write(stdout,'(1x,A,I3)') 'indxWEB =',indxWEB
       vname(6,indxWEB)='lat_rho lon_rho                           '
       vname(7,indxWEB)='                                          '
 # endif /* WAVE_OFFLINE_BREAKING */
+# ifdef WAVE_OFFLINE_FRICTION
+CR      write(stdout,'(1x,A,I3)') 'indxWED =',indxWED
+      vname(1,indxWED)='Ed                                        '
+      vname(2,indxWED)='frictional dissipation                    '
+      vname(3,indxWED)='m3s-3                                     '
+      vname(4,indxWED)='Ed, scalar, series                        '
+      vname(5,indxWED)='                                          '
+      vname(6,indxWED)='lat_rho lon_rho                           '
+      vname(7,indxWED)='                                          '
+# endif /* WAVE_OFFLINE_BREAKING */
+# ifdef WAVE_OFFLINE_ROLLER 
+CR      write(stdout,'(1x,A,I3)') 'indxWER =',indxWER
+      vname(1,indxWER)='Er                                        '
+      vname(2,indxWER)='roller dissipation                        '
+      vname(3,indxWER)='m3s-3                                     '
+      vname(4,indxWER)='Er, scalar, series                        '
+      vname(5,indxWER)='                                          '
+      vname(6,indxWER)='lat_rho lon_rho                           '
+      vname(7,indxWER)='                                          '
+# endif /* WAVE_OFFLINE_BREAKING */
 #endif /* !ANA_WWAVE */
 
-#ifdef WKB_WWAVE
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 CR      write(stdout,'(1x,A,I3)') 'indxHRM =',indxHRM
-      vname(1,indxHRM)='hrm                                      '
-      vname(2,indxHRM)='RMS wave height                          '
-      vname(3,indxHRM)='meter                                    '
+      vname(1,indxHRM)='hrm                                       '
+      vname(2,indxHRM)='RMS wave height                           '
+      vname(3,indxHRM)='meter                                     '
 
 CR      write(stdout,'(1x,A,I3)') 'indxFRQ =',indxFRQ
-      vname(1,indxFRQ)='frq                                      '
-      vname(2,indxFRQ)='wave frequency                           '
-      vname(3,indxFRQ)='rad/second                               '
+      vname(1,indxFRQ)='frq                                       '
+      vname(2,indxFRQ)='wave frequency                            '
+      vname(3,indxFRQ)='rad/second                                '
 
 CR      write(stdout,'(1x,A,I3)') 'indxWAC =',indxWAC
-      vname(1,indxWAC)='wac                                      '
-      vname(2,indxWAC)='wave action                              '
-      vname(3,indxWAC)='meter^3 second^-1                        '
+      vname(1,indxWAC)='wac                                       '
+      vname(2,indxWAC)='wave action                               '
+      vname(3,indxWAC)='meter^3 second^-1                         '
 
 CR      write(stdout,'(1x,A,I3)') 'indxWKX =',indxWKX
-      vname(1,indxWKX)='wkx                                      '
-      vname(2,indxWKX)='xi-dir wavenumber vector                 '
-      vname(3,indxWKX)='radian/meter                             '
+      vname(1,indxWKX)='wkx                                       '
+      vname(2,indxWKX)='xi-dir wavenumber vector                  '
+      vname(3,indxWKX)='radian/meter                              '
 
 CR      write(stdout,'(1x,A,I3)') 'indxWKE =',indxWKE
-      vname(1,indxWKE)='wke                                      '
-      vname(2,indxWKE)='eta-dir wavenumber vector                '
-      vname(3,indxWKE)='radian/meter                             '
+      vname(1,indxWKE)='wke                                       '
+      vname(2,indxWKE)='eta-dir wavenumber vector                 '
+      vname(3,indxWKE)='radian/meter                              '
 
 CR      write(stdout,'(1x,A,I3)') 'indxEPB =',indxEPB
-      vname(1,indxEPB)='epb                                      '
-      vname(2,indxEPB)='breaking dissipation, epsilon_b          '
-      vname(3,indxEPB)='meter^3/second^3                         '
+      vname(1,indxEPB)='epb                                       '
+      vname(2,indxEPB)='breaking dissipation, epsilon_b           '
+      vname(3,indxEPB)='meter^3/second^3                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxEPD =',indxEPD
-      vname(1,indxEPD)='epd                                      '
-      vname(2,indxEPD)='frictional dissipation, epsilon_d        '
-      vname(3,indxEPD)='meter^3/second^3                         '
+      vname(1,indxEPD)='epd                                       '
+      vname(2,indxEPD)='frictional dissipation, epsilon_d         '
+      vname(3,indxEPD)='meter^3/second^3                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxWAR =',indxWAR
-      vname(1,indxWAR)='war                                      '
-      vname(2,indxWAR)='wave action of roller component          '
-      vname(3,indxWAR)='meter^3 second^-1                        '
+      vname(1,indxWAR)='war                                       '
+      vname(2,indxWAR)='wave action of roller component           '
+      vname(3,indxWAR)='meter^3 second^-1                         '
 
 CR      write(stdout,'(1x,A,I3)') 'indxEPR =',indxEPR
-      vname(1,indxEPR)='epr                                      '
-      vname(2,indxEPR)='roller dissipation, epsilon_r            '
-      vname(3,indxEPR)='meter^3/second^3                         '
-
-#elif defined OW_COUPLING || defined WAVE_OFFLINE 
-CR      write(stdout,'(1x,A,I3)') 'indxHRM =',indxHRM
-      vname(1,indxHRM)='whrm                                     '
-      vname(2,indxHRM)='RMS wave height                          '
-      vname(3,indxHRM)='meter                                    '
-
-CR      write(stdout,'(1x,A,I3)') 'indxFRQ =',indxFRQ
-      vname(1,indxFRQ)='wfrq                                     '
-      vname(2,indxFRQ)='wave frequency                           '
-      vname(3,indxFRQ)='rad/second                               '
-
-CR      write(stdout,'(1x,A,I3)') 'indxWAC =',indxWAC
-      vname(1,indxWAC)='wac                                      '
-      vname(2,indxWAC)='wave action                              '
-      vname(3,indxWAC)='meter^3 second^-1                        '
-
-CR      write(stdout,'(1x,A,I3)') 'indxWKX =',indxWKX
-      vname(1,indxWKX)='wdrx                                     '
-      vname(2,indxWKX)='cosine wave direction                    '
-      vname(3,indxWKX)='ND                                       '
-
-CR      write(stdout,'(1x,A,I3)') 'indxWKE =',indxWKE
-      vname(1,indxWKE)='wdre                                     '
-      vname(2,indxWKE)='sine wave direction                      '
-      vname(3,indxWKE)='ND                                       '
-
-CR      write(stdout,'(1x,A,I3)') 'indxEPB =',indxEPB
-      vname(1,indxEPB)='wdsp                                     '
-      vname(2,indxEPB)='breaking dissipation rate, epsilon_b     '
-      vname(3,indxEPB)='meter^3/second^3                         '
-
-CR      write(stdout,'(1x,A,I3)') 'indxEPD =',indxEPD
-      vname(1,indxEPD)='wdrg                                     '
-      vname(2,indxEPD)='frictional dissipation rate, epsilon_d   '
-      vname(3,indxEPD)='meter^3/second^3                         '
-
-CR      write(stdout,'(1x,A,I3)') 'indxWAR =',indxWAR
-      vname(1,indxWAR)='war                                      '
-      vname(2,indxWAR)='wave action of roller component          '
-      vname(3,indxWAR)='meter^3 second^-1                        '
-
-CR      write(stdout,'(1x,A,I3)') 'indxEPR =',indxEPR
-      vname(1,indxEPR)='rdsp                                     '
-      vname(2,indxEPR)='roller dissipation, epsilon_r            '
-      vname(3,indxEPR)='meter^3/second^3                         ' 
+      vname(1,indxEPR)='epr                                       '
+      vname(2,indxEPR)='roller dissipation, epsilon_r             '
+      vname(3,indxEPR)='meter^3/second^3                          '
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
 #ifdef MRL_WCI
 CR      write(stdout,'(1x,A,I3)') 'indxSUP =',indxSUP
-      vname(1,indxSUP)  ='sup                                    '
-      vname(2,indxSUP)  ='quasi-static sea-level response (setup)'
-      vname(3,indxSUP)  ='meter                                  '
+      vname(1,indxSUP)  ='sup                                     '
+      vname(2,indxSUP)  ='quasi-static sea-level response (setup )'
+      vname(3,indxSUP)  ='meter                                   '
 
 CR      write(stdout,'(1x,A,I3)') 'indxUST2D =',indxUST2D
-      vname(1,indxUST2D)='ust2d                                  '
-      vname(2,indxUST2D)='u depth-averaged Stokes drift velocity '
-      vname(3,indxUST2D)='meter second-1                         '
+      vname(1,indxUST2D)='ust2d                                   '
+      vname(2,indxUST2D)='u depth-averaged Stokes drift velocity  '
+      vname(3,indxUST2D)='meter second-1                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxVST2D =',indxVST2D
-      vname(1,indxVST2D)='vst2d                                  '
-      vname(2,indxVST2D)='v depth-averaged Stokes drift velocity '
-      vname(3,indxVST2D)='meter second-1                         '
+      vname(1,indxVST2D)='vst2d                                   '
+      vname(2,indxVST2D)='v depth-averaged Stokes drift velocity  '
+      vname(3,indxVST2D)='meter second-1                          '
 # ifdef SOLVE3D
 CR      write(stdout,'(1x,A,I3)') 'indxUST =',indxUST
-      vname(1,indxUST)  ='ust                                    '
-      vname(2,indxUST)  ='u 3D Stokes drift velocity             '
-      vname(3,indxUST)  ='meter second-1                         '
+      vname(1,indxUST)  ='ust                                     '
+      vname(2,indxUST)  ='u 3D Stokes drift velocity              '
+      vname(3,indxUST)  ='meter second-1                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxVST =',indxVST
-      vname(1,indxVST)  ='vst                                    '
-      vname(2,indxVST)  ='v 3D Stokes drift velocity             '
-      vname(3,indxVST)  ='meter second-1                         '
+      vname(1,indxVST)  ='vst                                     '
+      vname(2,indxVST)  ='v 3D Stokes drift velocity              '
+      vname(3,indxVST)  ='meter second-1                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxWST =',indxWST
-      vname(1,indxWST)  ='wst                                    '
-      vname(2,indxWST)  ='w vertical 3D Stokes drift velocity    '
-      vname(3,indxWST)  ='meter second-1                         '
+      vname(1,indxWST)  ='wst                                     '
+      vname(2,indxWST)  ='w vertical 3D Stokes drift velocity     '
+      vname(3,indxWST)  ='meter second-1                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxAKB =',indxAKB
-      vname(1,indxAKB)  ='Akb                                    '
-      vname(2,indxAKB)  ='eddy viscosity due to wave breaking    '
-      vname(3,indxAKB)  ='meter2 second-1                        '
+      vname(1,indxAKB)  ='Akb                                     '
+      vname(2,indxAKB)  ='eddy viscosity due to wave breaking     '
+      vname(3,indxAKB)  ='meter2 second-1                         '
 
 CR      write(stdout,'(1x,A,I3)') 'indxAKW =',indxAKW
-      vname(1,indxAKW)  ='Akw                                    '
-      vname(2,indxAKW)  ='eddy diffusivity due to primary waves  '
-      vname(3,indxAKW)  ='meter2 second-1                        '
+      vname(1,indxAKW)  ='Akw                                     '
+      vname(2,indxAKW)  ='eddy diffusivity due to primary waves   '
+      vname(3,indxAKW)  ='meter2 second-1                         '
 
 CR      write(stdout,'(1x,A,I3)') 'indxKVF =',indxKVF
-      vname(1,indxKVF)  ='kvf                                    '
-      vname(2,indxKVF)  ='vertical vortex force (u^st du/dz)     '
-      vname(3,indxKVF)  ='meter second-2                         '
+      vname(1,indxKVF)  ='kvf                                     '
+      vname(2,indxKVF)  ='vertical vortex force (u^st du/dz)      '
+      vname(3,indxKVF)  ='meter second-2                          '
 
 CR      write(stdout,'(1x,A,I3)') 'indxCALP =',indxCALP
-      vname(1,indxCALP) ='calP                                   '
-      vname(2,indxCALP) ='surface pressure correction in prsgrd  '
-      vname(3,indxCALP) ='meter2 second-2                        '
+      vname(1,indxCALP) ='calP                                    '
+      vname(2,indxCALP) ='surface pressure correction in prsgrd   '
+      vname(3,indxCALP) ='meter2 second-2                         '
 
 CR      write(stdout,'(1x,A,I3)') 'indxKAPS =',indxKAPS
-      vname(1,indxKAPS) ='Kapsrf                                 '
-      vname(2,indxKAPS) ='surface Bernoulli head in prsgrd term  '
-      vname(3,indxKAPS) ='meter2 second-2                        '
+      vname(1,indxKAPS) ='Kapsrf                                  '
+      vname(2,indxKAPS) ='surface Bernoulli head in prsgrd term   '
+      vname(3,indxKAPS) ='meter2 second-2                         '
 # endif
 #endif /* MRL_WCI */
 

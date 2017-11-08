@@ -206,11 +206,11 @@
 !  Wave parameters from WKB model
 !----------------------------------------------------------------------
 !
-          fr(i,j) =frq(i,j,wnew)
-          wh(i,j) =wave_ramp*hrm(i,j,wnew)
-          kw(i,j) =max(wvn(i,j,wnew),eps)
+          fr(i,j)=frq(i,j,wnew)
+          wh(i,j)=wave_ramp*hrm(i,j,wnew)
+          kw(i,j)=max(wvn(i,j,wnew),eps)
 #  ifndef WAVE_ROLLER
-          cff = wramp2*wsb(i,j,wnew)
+          cff=wramp2*wsb(i,j,wnew)
           ebrk(i,j)=cff*fr(i,j)                  ! epsilon_b (m3/s3)
 #  else
           ebrk(i,j)=wramp2*wsb(i,j,wnew)*fr(i,j) ! epsilon_b (m3/s3)
@@ -218,19 +218,19 @@
           cff =wramp2*( wsr(i,j,wnew)+           ! for breaking term
      &           (1.-wkb_roller)*wsb(i,j,wnew) ) ! primary + roller
 #  endif
-          brk(i,j) =cff*kw(i,j)                  ! 2DH breaking term
-          frc(i,j) =wramp2*wfc(i,j,wnew)*kw(i,j) ! 2DH friction term
+          brk(i,j)=cff*kw(i,j)                  ! 2DH breaking term
+          frc(i,j)=wramp2*wfc(i,j,wnew)*kw(i,j) ! 2DH friction term
 #  ifdef MRL_CEW
-          kD(i,j) =kw(i,j)*Dstp(i,j)
+          kD(i,j)=kw(i,j)*Dstp(i,j)
 #  else
-!          kD(i,j) =kw(i,j)*(h(i,j)+wkb_tide)
-          kD(i,j) =kw(i,j)*Dstp(i,j)
+!          kD(i,j)=kw(i,j)*(h(i,j)+wkb_tide)
+          kD(i,j)=kw(i,j)*Dstp(i,j)
 #  endif
 #  ifndef WAVE_ROLLER
-          act(i,j) =wramp2*max(wac(i,j,wnew),0.)         ! wave action density
+          act(i,j)=wramp2*max(wac(i,j,wnew),0.)         ! wave action density
 #  else
-          act(i,j) =wramp2*(max(wac(i,j,wnew),0.)
-     &                     +max(war(i,j,wnew),0.))
+          act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
+     &                    +max(war(i,j,wnew),0.))
 #  endif
 
 # else    /* ifndef WKB_WWAVE */
@@ -266,11 +266,11 @@
 !   use wave_btg, wave_gam local parameters (as in WKB model)
 !
 #  ifdef WAVE_OFFLINE_BREAKING
-          ebrk(i,j) =wramp2*Eb(i,j)                 ! e_b/rho (m3/s3)
+          ebrk(i,j)=wramp2*wepb(i,j)                ! ep_b/rho (m3/s3)
 #  else
 #   ifdef WAVE_BREAK_TG86
           cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.0*pi)
-          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! e_b/rho/sigma (m3/s2)
+          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
 #   elif defined WAVE_BREAK_TG86A
           cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.0*pi)
           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
@@ -292,20 +292,20 @@
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER
-          erol(i,j =wramp2*0.5762*Dstp(i,j)*        ! ep_r (m3/s3)
-     &              wh(i,j)*wvqb(i,j)*              ! 0.5762=0.06*sinb*g^2
-     &              kw(i,j)*inv_f(i,j)              ! Nairn et al (1991)
-          cff =(1.-wave_roller)*ebrk(i,j)+erol(i,j)
+          erol(i,j=wramp2*0.5762*Dstp(i,j)*         ! ep_r (m3/s3)
+     &             wh(i,j)*wepr(i,j)*               ! 0.5762=0.06*sinb*g^2
+     &             kw(i,j)*inv_f(i,j)               ! Nairn et al (1991)
+          cff=(1.-wave_roller)*ebrk(i,j)+erol(i,j)
 #  else
-          cff =ebrk(i,j)
+          cff=ebrk(i,j)
 #  endif
-          brk(i,j) =cff*kw(i,j)*inv_f(i,j)          ! 2DH breaking term
+          brk(i,j)=cff*kw(i,j)*inv_f(i,j)           ! 2DH breaking term
 !
 ! --- Wave friction ---
 !
 #  ifdef WAVE_OFFLINE_FRICTION
-          frc(i,j) =wramp2*wved(i,j)*kw(i,j)
-     &                              *inv_f(i,j)     ! 2DH friction term
+          frc(i,j)=wramp2*wepd(i,j)*kw(i,j)
+     &                             *inv_f(i,j)      ! 2DH friction term
 #  elif WAVE_FRICTION
           abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
@@ -320,7 +320,7 @@
 !
           act(i,j)=inv_f(i,j)*(0.125*g*(wh(i,j)**2) ! wave action density
 #  ifdef WAVE_OFFLINE_ROLLER
-     &            +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wvqb(i,j)
+     &            +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wepr(i,j)
 #  endif
      &                         )
 
@@ -372,31 +372,28 @@
 !
       do j=jstrR,jendR
         do i=istrR,iendR
-          wdsp(i,j)=ebrk(i,j)         ! epsilon_b (m3/s3)
+          wepb(i,j)=ebrk(i,j)         ! epsilon_b (m3/s3)
 # ifdef WAVE_ROLLER
-          rdsp(i,j)=erol(i,j)         ! epsilon_r (m3/s3)
+          wepr(i,j)=erol(i,j)         ! epsilon_r (m3/s3)
 # endif
 # ifdef WKB_WWAVE
           cff = wramp2*wfc(i,j,wnew)
 # else
           cff = wramp2*frc(i,j)/kw(i,j)
 # endif
-          wdrg(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3) 
-          wbst(i,j)=cff*kw(i,j)       ! e_d stress (m2/s2) for KPP
+          wepd(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3) 
 # ifdef MASKING
-          wdsp(i,j)=wdsp(i,j)*rmask(i,j)
-          wbst(i,j)=wbst(i,j)*rmask(i,j)
-          wdrg(i,j)=wdrg(i,j)*rmask(i,j)
+          wepb(i,j)=wepb(i,j)*rmask(i,j)
+          wepd(i,j)=wepd(i,j)*rmask(i,j)
 #  ifdef WAVE_ROLLER
-          rdsp(i,j)=rdsp(i,j)*rmask(i,j)
+          wepr(i,j)=wepr(i,j)*rmask(i,j)
 #  endif
 # endif
 # ifdef WET_DRY
-          wdsp(i,j)=wdsp(i,j)*rmask_wet(i,j)
-          wbst(i,j)=wbst(i,j)*rmask_wet(i,j)
-          wdrg(i,j)=wdrg(i,j)*rmask_wet(i,j)
+          wepb(i,j)=wepb(i,j)*rmask_wet(i,j)
+          wepd(i,j)=wepd(i,j)*rmask_wet(i,j)
 #  ifdef WAVE_ROLLER
-          rdsp(i,j)=rdsp(i,j)*rmask_wet(i,j)
+          wepr(i,j)=wepr(i,j)*rmask_wet(i,j)
 #  endif
 # endif
         enddo
@@ -404,6 +401,16 @@
 # ifndef WKB_WWAVE
 #  undef inv_f
 # endif
+!
+! Wavenumber : copy into shared arrays for output
+! ===============================================
+!
+      do j=jstrR,jendR
+        do i=istrR,iendR
+          wwkx(i,j)=kw(i,j)*wdrx(i,j)
+          wwke(i,j)=kw(i,j)*wdre(i,j)
+        enddo
+      enddo
 !
 ! 2DH depth-averaged Stokes drift and breaking acceleration
 ! =========================================================
@@ -918,7 +925,7 @@
         do j=jstrR,jendR
           do i=istr,iendR
             brk3dx(i,j,k)=0.5*( brk_r(i-1,j,k)*wdrx(i-1,j)
-     &                           +brk_r(i,j,k)*wdrx(i,j) )
+     &                         +brk_r(i  ,j,k)*wdrx(i  ,j) )
 #   ifdef MASKING
      &                                         *umask(i,j)
 #   endif
@@ -931,7 +938,7 @@
         do j=jstr,jendR
           do i=istrR,iendR
             brk3de(i,j,k)=0.5*( brk_r(i,j-1,k)*wdre(i,j-1)
-     &                           +brk_r(i,j,k)*wdre(i,j) )
+     &                         +brk_r(i,j  ,k)*wdre(i,j  ) )
 #   ifdef MASKING
      &                                         *vmask(i,j)
 #   endif
@@ -1037,7 +1044,7 @@
         do i=istr,iendR
 #   ifdef LH53_STREAMING
           frc2dx(i,j)=0.5*( frc2d(i-1,j)*wdrx(i-1,j)
-     &                       +frc2d(i,j)*wdrx(i,j) )
+     &                     +frc2d(i  ,j)*wdrx(i  ,j) )
 #    ifdef MASKING
      &                                   *umask(i,j)
 #    endif
@@ -1047,7 +1054,7 @@
 #   else
           do k=1,N
             frc3dx(i,j,k)=0.5*( frc_r(i-1,j,k)*wdrx(i-1,j)
-     &                           +frc_r(i,j,k)*wdrx(i,j) )
+     &                         +frc_r(i  ,j,k)*wdrx(i  ,j) )
 #    ifdef MASKING
      &                                         *umask(i,j)
 #    endif
@@ -1062,7 +1069,7 @@
         do i=istrR,iendR
 #   ifdef LH53_STREAMING
           frc2de(i,j)=0.5*( frc2d(i,j-1)*wdre(i,j-1)
-     &                       +frc2d(i,j)*wdre(i,j) )
+     &                     +frc2d(i,j  )*wdre(i,j  ) )
 #    ifdef MASKING
      &                                   *vmask(i,j)
 #    endif
@@ -1072,7 +1079,7 @@
 #   else
           do k=1,N
             frc3de(i,j,k)=0.5*( frc_r(i,j-1,k)*wdre(i,j-1)
-     &                           +frc_r(i,j,k)*wdre(i,j) )
+     &                         +frc_r(i,j  ,k)*wdre(i,j  ) )
 #    ifdef MASKING
      &                                         *vmask(i,j)
 #    endif
@@ -1162,11 +1169,10 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       call exchange_v2d_tile(istr,iend,jstr,jend,brk2de)
       call exchange_u2d_tile(istr,iend,jstr,jend,frc2dx)
       call exchange_v2d_tile(istr,iend,jstr,jend,frc2de)
-      call exchange_r2d_tile(istr,iend,jstr,jend,wdsp)
-      call exchange_r2d_tile(istr,iend,jstr,jend,wdrg)
-      call exchange_r2d_tile(istr,iend,jstr,jend,wbst)
+      call exchange_r2d_tile(istr,iend,jstr,jend,wepb)
+      call exchange_r2d_tile(istr,iend,jstr,jend,wepd)
 #  ifdef WAVE_ROLLER
-      call exchange_r2d_tile(istr,iend,jstr,jend,rdsp)
+      call exchange_r2d_tile(istr,iend,jstr,jend,wepr)
 #  endif
 #  ifdef SOLVE3D
       call exchange_r2d_tile(istr,iend,jstr,jend,Kapsrf)

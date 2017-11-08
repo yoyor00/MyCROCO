@@ -318,7 +318,7 @@
             wdrx(i,j)=cosw      ! cosine wave direction (xi)
             wdre(i,j)=sinw      ! sine wave direction (eta)
             sup(i,j)=dsup       ! wave setup
-            wdsp(i,j)=0.0       ! sbc/(h(i,j)**5)*(hrm(i,j,k)**7)/cfrq 
+            wepb(i,j)=0.0       ! sbc/(h(i,j)**5)*(hrm(i,j,k)**7)/cfrq 
                                 ! S (\ep_b/rho, wave dissipation)
           enddo
         enddo
@@ -766,20 +766,16 @@ C$OMP BARRIER
 # elif defined WAVE_BREAK_TG86A
           cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
           wsb(i,j,wnew)=sbc/(Dstp(i,j)**3)*(hrm(i,j,wnew)**5)
-     &                            *(1.0-(1.0+peg**2)**(-2.5))
+     &                                    *(1.0-(1.0+peg**2)**(-2.5))
 # elif defined WAVE_BREAK_CT93
           cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
           wsb(i,j,wnew) =sbc/Dstp(i,j)*(hrm(i,j,wnew)**3)
-     &      *( 1.0+tanh(8.0*(cff1-1.0)) )*( 1.0-(1.0+cff1**2)**(-2.5) )
-
-#  elif defined WAVE_BREAK_R93
-            cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
-            wsb(i,j,wstp)=sbc/Dstp(i,j)*hrm(i,j,wnew)**3*cff1**4
-     &       *(1 -exp (-cff1**5 ) )
-# else
+     &                                *( 1.0+tanh(8.0*(cff1-1.0)) )
+     &                                *( 1.0-(1.0+cff1**2)**(-2.5) )
+# elif defined WAVE_BREAK_R93
           cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
-          wsb(i,j,wnew) =sbc/Dstp(i,j)*(hrm(i,j,wnew)**3)
-     &      *( 1.0+tanh(8.0*(cff1-1.0)) )*( 1.0-(1.0+cff1**2)**(-2.5) )
+          wsb(i,j,wstp)=sbc/Dstp(i,j)*hrm(i,j,wnew)**3*cff1**4
+     &                               *(1 -exp (-cff1**5 ) )
 # endif
 # if defined WET_DRY && defined WAVE_BREAK_SWASH
 !  Add dissipation near wet-dry interface (e.g., swash zone; FLUME case)
@@ -811,8 +807,13 @@ C$OMP BARRIER
           endif
 #  endif
 #  ifdef MRL_WCI
+          whrm(i,j) = hrm(i,j,wnew)
+          wfrq(i,j) = frq(i,j,wnew)
           wdrx(i,j) = cosw                      ! cosine wave direction (xi)
           wdre(i,j) = sinw                      ! sine wave direction (eta)
+#  else
+          wwkx(i,j)=wkx(i,j,wnew)               ! wavenumber components
+          wwke(i,j)=wke(i,j,wnew)               ! for output
 #  endif
 # endif
 # ifdef WAVE_FRICTION

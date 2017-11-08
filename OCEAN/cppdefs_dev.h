@@ -459,6 +459,10 @@
 # endif
 #endif
 
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#  define WAVE_IO
+# endif
+
 /*
 ======================================================================
                            KPP options

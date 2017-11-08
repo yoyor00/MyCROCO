@@ -578,7 +578,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 
 # ifdef WKB_WWAVE
       if (wrtavg(indxHRM)) then
-        ierr=nf_fwrite (hrm_avg(START_2D_ARRAY), ncidavg, avgWKB(1),
+        ierr=nf_fwrite (whrm_avg(START_2D_ARRAY), ncidavg, avgWAVE(1),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxHRM))
@@ -589,7 +589,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 CR      write(*,*) 'wrt_avg:  wrtHrm' MYID
       endif
       if (wrtavg(indxFRQ)) then
-        ierr=nf_fwrite (frq_avg(START_2D_ARRAY), ncidavg, avgWKB(2),
+        ierr=nf_fwrite (wfrq_avg(START_2D_ARRAY), ncidavg, avgWAVE(2),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxFRQ))
@@ -600,7 +600,7 @@ CR      write(*,*) 'wrt_avg:  wrtHrm' MYID
 CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
       endif
       if (wrtavg(indxWAC)) then
-        ierr=nf_fwrite (wac_avg(START_2D_ARRAY), ncidavg, avgWKB(3),
+        ierr=nf_fwrite (wac_avg(START_2D_ARRAY), ncidavg, avgWAVE(3),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWAC))
@@ -611,7 +611,7 @@ CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
 CR      write(*,*) 'wrt_avg:  wrtWac' MYID
       endif
       if (wrtavg(indxWKX)) then
-        ierr=nf_fwrite (wkx_avg(START_2D_ARRAY), ncidavg, avgWKB(4),
+        ierr=nf_fwrite (wkx_avg(START_2D_ARRAY), ncidavg, avgWAVE(4),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWKX))
@@ -622,7 +622,7 @@ CR      write(*,*) 'wrt_avg:  wrtWac' MYID
 CR      write(*,*) 'wrt_avg:  wrtWkx' MYID
       endif
       if (wrtavg(indxWKE)) then
-        ierr=nf_fwrite (wke_avg(START_2D_ARRAY), ncidavg, avgWKB(5),
+        ierr=nf_fwrite (wke_avg(START_2D_ARRAY), ncidavg, avgWAVE(5),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWKE))
@@ -633,7 +633,7 @@ CR      write(*,*) 'wrt_avg:  wrtWkx' MYID
 CR      write(*,*) 'wrt_avg:  wrtWke' MYID
       endif
       if (wrtavg(indxEPB)) then
-        ierr=nf_fwrite (wdsp_avg(START_2D_ARRAY), ncidavg, avgWKB(6),
+        ierr=nf_fwrite (wepb_avg(START_2D_ARRAY), ncidavg, avgWAVE(6),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
@@ -644,7 +644,7 @@ CR      write(*,*) 'wrt_avg:  wrtWke' MYID
 CR      write(*,*) 'wrt_avg:  wrtEpb' MYID
       endif
       if (wrtavg(indxEPD)) then
-        ierr=nf_fwrite (wdrg_avg(START_2D_ARRAY), ncidavg, avgWKB(7),
+        ierr=nf_fwrite (wepd_avg(START_2D_ARRAY), ncidavg, avgWAVE(7),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPD))
@@ -656,7 +656,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
       endif
 #  ifdef WAVE_ROLLER
       if (wrtavg(indxWAR)) then
-        ierr=nf_fwrite (war_avg(START_2D_ARRAY), ncidavg, avgWKB(8),
+        ierr=nf_fwrite (war_avg(START_2D_ARRAY), ncidavg, avgWAVE(8),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWAR))
@@ -667,7 +667,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
 CR      write(*,*) 'wrt_avg:  wrtWar' MYID
       endif
       if (wrtavg(indxEPR)) then
-        ierr=nf_fwrite (rdsp_avg(START_2D_ARRAY), ncidavg, avgWKB(9),
+        ierr=nf_fwrite (wepr_avg(START_2D_ARRAY), ncidavg, avgWAVE(9),
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPR))

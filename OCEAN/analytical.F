@@ -1389,11 +1389,18 @@ C$    integer  trd, omp_get_thread_num
           Pwave(i,j)=10.
         enddo
       enddo
-# elif defined SHOREFACE
-      wamp = 0.5            ! wave amplitude (m)
-      wdir = -10.           ! wave direction (deg)
-      wprd = 8.3            ! wave period (s)
 
+# elif defined SHOREFACE
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Awave(i,j)=0.707    ! wave amplitude (m)
+          Dwave(i,j)=-10.     ! wave direction (deg)
+          Pwave(i,j)=10.      ! wave period (s)
+        enddo
+      enddo
+      wamp = Awave(i,j)
+      wdir = Dwave(i,j)
+      wprd = Pwave(i,j)
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
       cdir = wdir*deg2rad   ! wave direction (rad)
       ho=h(1,1)             ! offshore depth
@@ -1438,21 +1445,22 @@ C$    integer  trd, omp_get_thread_num
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
 #  ifdef WET_DRY
-          IF (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) THEN
+          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
-          ENDIF
+          endif
 #  endif
         enddo
       enddo
+
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Awave(i,j)=0.7         ! wamp (m)
-          Pwave(i,j)=8.3         ! period (s)
-          Dwave(i,j)=-10.        ! offshore wave angle (deg)
+          Awave(i,j)=0.707    ! wave amplitude (m)
+          Dwave(i,j)=-10.     ! wave direction (deg)
+          Pwave(i,j)=10.      ! wave period (s)
         enddo
       enddo
 #  ifdef MRL_WCI
@@ -1472,12 +1480,12 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #  endif
 #  ifdef WET_DRY
-          IF (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) THEN
+          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
-          ENDIF
+          endif
 #  endif
 # endif
       return

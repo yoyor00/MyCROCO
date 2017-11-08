@@ -618,14 +618,14 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxHRM)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              hrm_avg(i,j) = cff*( cff1*hrm_avg(i,j)+hrm(i,j,iout) )
+              whrm_avg(i,j) = cff*( cff1*whrm_avg(i,j)+hrm(i,j,iout) )
             enddo
           enddo
         endif
         if (wrtavg(indxFRQ)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              frq_avg(i,j) = cff*( cff1*frq_avg(i,j)+frq(i,j,iout) )
+              wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+frq(i,j,iout) )
             enddo
           enddo
         endif
@@ -653,14 +653,14 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPB)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wdsp_avg(i,j) = cff*( cff1*wdsp_avg(i,j)+wdsp(i,j) )
+              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb(i,j) )
             enddo
           enddo
         endif
         if (wrtavg(indxEPD)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wdrg_avg(i,j) = cff*( cff1*wdrg_avg(i,j)+wdrg(i,j) )
+              wepd_avg(i,j) = cff*( cff1*wepd_avg(i,j)+wepd(i,j) )
             enddo
           enddo
         endif
@@ -675,7 +675,7 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPR)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              rdsp_avg(i,j) = cff*( cff1*rdsp_avg(i,j)+rdsp(i,j) )
+              wepr_avg(i,j) = cff*( cff1*wepr_avg(i,j)+wepr(i,j) )
             enddo
           enddo
         endif

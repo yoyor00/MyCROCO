@@ -86,8 +86,8 @@
 # ifdef MOVING_BATHY
 #  define vidHm hisHm
 # endif
-# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
-#  define vidWKB hisWKB
+# ifdef WAVE_IO
+#  define vidWAVE hisWAVE
 # endif
 # if defined MRL_WCI
 #  define vidSUP hisSUP
@@ -188,8 +188,8 @@
 # ifdef MOVING_BATHY
 #  define vidHm avgHm
 # endif
-# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
-#  define vidWKB avgWKB
+# ifdef WAVE_IO
+#  define vidWAVE avgWAVE
 # endif
 # if defined MRL_WCI
 #  define vidSUP avgSUP
@@ -1573,6 +1573,7 @@
         enddo
 !
 # endif /* SEDIMENT */
+
 # if defined BBL && !defined AVRH
 !
 ! Abed       Wind-induced, bed wave excursion amplitude (m)  
@@ -1608,6 +1609,7 @@
          endif
         enddo
 # endif /* BBL */
+
 # ifdef SST_SKIN
 ! Skin temperature
       if (wrt(indxT)) then
@@ -1637,10 +1639,10 @@
 !
 #endif /* SOLVE3D */
 
-#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#ifdef WAVE_IO
 !
-! WKB wave model prognostic/diagnostic variables in XI/ETA direction.
-! ==================================================================
+! Wave prognostic/diagnostic variables in XI/ETA direction.
+! =========================================================
 !
 # ifndef WAVE_ROLLER
         do iwkb=1,7
@@ -1650,21 +1652,21 @@
           if (wrt(indxHRM+iwkb-1)) then
             lvar=lenstr(vname(1,indxHRM+iwkb-1))
             ierr=nf_def_var (ncid, vname(1,indxHRM+iwkb-1)(1:lvar), 
-     &                            NF_FOUT, 3, r2dgrd, vidWKB(iwkb))
+     &                            NF_FOUT, 3, r2dgrd, vidWAVE(iwkb))
 # ifdef AVRH
             text='averaged '/ /vname(2,indxHRM+iwkb-1)
 # else
             text=vname(2,indxHRM+iwkb-1)
 # endif
             lvar=lenstr(text)
-            ierr=nf_put_att_text (ncid, vidWKB(iwkb), 'long_name', 
+            ierr=nf_put_att_text (ncid, vidWAVE(iwkb), 'long_name', 
      &                                         lvar, text(1:lvar))
             lvar=lenstr(vname(3,indxHRM+iwkb-1))
-            ierr=nf_put_att_text (ncid, vidWKB(iwkb), 'units', lvar,
+            ierr=nf_put_att_text (ncid, vidWAVE(iwkb), 'units', lvar,
      &                               vname(3,indxHRM+iwkb-1)(1:lvar))
           endif
         enddo
-#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
+#endif /* WAVE_IO */
 
 #ifdef MRL_WCI
 !
@@ -2527,7 +2529,7 @@
 
 #endif /* SOLVE3D */
 
-#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#ifdef WAVE_IO
 !
 ! Wave action density, wavenumber in XI/ETA directions
 !
@@ -2539,7 +2541,7 @@
           if (wrt(indxHRM+iwkb-1)) then
             lvar=lenstr(vname(1,indxHRM+iwkb-1))
             ierr=nf_inq_varid (ncid, vname(1,indxHRM+iwkb-1)(1:lvar), 
-     &                                                  vidWKB(iwkb))
+     &                                                  vidWAVE(iwkb))
             if (ierr .ne. nf_noerr) then
               write(stdout,1) vname(1,indxHRM+iwkb-1)(1:lvar), 
      &                                                 ncname(1:lstr)
@@ -2547,7 +2549,7 @@
             endif
           endif
         enddo
-#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
+#endif /* WAVE_IO */
 
 #ifdef MRL_WCI
 !
@@ -2777,8 +2779,10 @@
 # undef vidShflx_sen
 #endif
 #undef vidSST_skin
-#if defined MRL_WCI
-# undef vidWKB
+#ifdef WAVE_IO
+# undef vidWAVE
+#endif
+#ifdef MRL_WCI
 # undef vidSUP
 # undef vidUST2D
 # undef vidVST2D

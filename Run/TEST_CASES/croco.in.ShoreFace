@@ -75,10 +75,7 @@ tracer_diff2: TNU2(1:NT)           [m^2/sec for all]
               0.d0 0.d0 0.d0 0.d0 0.d0 0.d0 0.d0 0.d0 0.d0
 
 wave_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
-                      T   T     F      T     T       T      T     T    T
-
-wkb_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
-                      T   T     F      T     T       T      T     T    T
+                      T    T     F      T     T       T      T     F    F
 
 wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
             0.707    -10.0      10.       0.0      0.8    0.4

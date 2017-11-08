@@ -1821,7 +1821,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 
 #if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 !
-! WKB wave history fields
+! Wave history fields
 !
       elseif (keyword(1:kwlen).eq.'wave_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -1837,7 +1837,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    wrthis(indxEPD), 'write EPD  frictional dissipation (m3/s3)',
      &    wrthis(indxWAR), 'write WAR  roller wave action (m3/s)',
      &    wrthis(indxEPR), 
-     &              'write EPR  roller dissipation (m3/s3): [0,1]'
+     &                   'write EPR  roller dissipation (m3/s3): [0,1]'
 # ifdef AVERAGES
 !
 ! WKB wave average field follows its history field.
@@ -1850,27 +1850,6 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           wrtavg(indxHRM+i-1)=wrthis(indxHRM+i-1)
         enddo
 # endif
-
-#elif defined OW_COUPLING || defined WAVE_OFFLINE
-!
-! Offline or coupled-model wave history fields
-!
-      elseif (keyword(1:kwlen).eq.'wave_history_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
-        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
-     &    'Fields to be saved in wave history  (T/F)',
-     &    wrthis(indxHRM), 'write WHRM  RMS wave height (m)',
-     &    wrthis(indxFRQ), 'write WFRQ  intrinsic frequency (rad/s)',
-     &    wrthis(indxWAC), 'write WAC   primary wave action (m3/s)',
-     &    wrthis(indxWKX), 'write WDRX  cosine of wave direction',
-     &    wrthis(indxWKE), 'write WDRE  sine of wave direction',
-     &    wrthis(indxEPB), 'write WDSP  breaking dissipation (m3/s3)',
-     &    wrthis(indxEPD), 'write WDRG  frictional dissipation (m3/s3)',
-     &    wrthis(indxWAR), 'write WAR   roller wave action (m3/s)',
-     &    wrthis(indxEPR),
-     &              'write RDSP  roller dissipation (m3/s3): [0,1]'
-
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
 #ifdef WKB_WWAVE
