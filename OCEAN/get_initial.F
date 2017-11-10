@@ -178,8 +178,6 @@
         write(stdout,1) vname(1,indxZ)(1:lvar), ininame(1:lstr)
         goto 99                                           !--> ERROR
       endif
-      !init to 0
-      zeta=0.0
 #ifdef NBQ     
       zeta(:,:,1) = zeta(:,:,1) + h(:,:)  ! Change zeta definition
                                           ! from ssh to total depth
