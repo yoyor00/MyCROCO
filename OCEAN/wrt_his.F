@@ -596,7 +596,11 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     We do that because the mask has been applied if iic ==0 !
                do k=1,N
                   workr(:,:,k)=workr(:,:,k)
+#ifdef WET_DRY
      &                         SWITCH rmask_wet(:,:)
+#else
+     &                         SWITCH rmask(:,:)
+#endif
                enddo
             endif
 #endif
