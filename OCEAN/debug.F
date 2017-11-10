@@ -57,6 +57,9 @@
 
       if (typevar == 'uint') then
       i1=2
+#ifdef MPI
+      if (WEST_INTER) i1=1
+#endif
       i2=Lmmpi
       j1=1
       j2=Mmmpi
@@ -70,6 +73,9 @@
       i1=1
       i2=Lmmpi
       j1=2
+#ifdef MPI
+      if (SOUTH_INTER) j1=1
+#endif
       j2=Mmmpi
       elseif (typevar == 'v') then
       i1=0
@@ -195,6 +201,9 @@
 
       if (typevar == 'uint') then
       i1=2
+#ifdef MPI
+      if (WEST_INTER) i1=1
+#endif
       i2=Lmmpi
       j1=1
       j2=Mmmpi
@@ -208,6 +217,9 @@
       i1=1
       i2=Lmmpi
       j1=2
+#ifdef MPI
+      if (SOUTH_INTER) j1=1
+#endif
       j2=Mmmpi
       elseif (typevar == 'v') then
       i1=0
