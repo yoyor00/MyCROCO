@@ -18,7 +18,11 @@
       ! Bulk number of variables !
       ! ------------------------ !
       integer nblkvrs
+#ifdef READ_PATM
       parameter(nblkvrs=10)
+#else
+      parameter(nblkvrs=9)
+#endif
       ! --------------------- !
       ! Bulk variable''s names !
       ! --------------------- !
