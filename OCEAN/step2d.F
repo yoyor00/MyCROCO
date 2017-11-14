@@ -326,7 +326,7 @@ C$    trd=omp_get_thread_num()
 # ifdef NBQ_GRIDEXT
 #  define NSTEP_GRID .or.mod(iif,1)==0
 # else
-#  define NSTEP_GRID .or.mod(iif,nfast)==0
+#  define NSTEP_GRID .or.iif==nfast
 # endif
 !
 !======================================================================
@@ -337,6 +337,11 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !======================================================================
 !
+#ifdef NBQ_TRACERS
+         if (iic.ge.2.and.iif==1) then
+          Hz = Hz_tra
+         endif
+#endif
 #ifdef NBQ_ZETAW
 c LAURENT: correct the next loops indices and remove the tests
          if (IstrU.gt.Iend) then
@@ -441,11 +446,22 @@ c LAURENT: correct the next loops indices and remove the tests
 ! and grid can vary at dtfast.
 !---------------------------------------
 !
-      if (iic==1.and.iif==1) then
+      if (iic==1.and.iif==1) flag_grid=1
+
+      if (flag_grid==1) then 
+      flag_grid=0
 !
 # include "step2d_grid_ext.h"  
 !  
+      else
+        call grid_coef_nh(
+     &   Istr,Iend,Jstr,Jend,
+     &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
+     &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+     &   Hzu_half_qdmu, Hzv_half_qdmv
+     &   )
       endif  
+
 !
 #endif /* ! NBQ_ZETAW*/
 !
@@ -778,16 +794,18 @@ C$OMP END MASTER
 
 #ifdef NBQ_TRACERS
        if (iif==nfast) then
-!      do j=JstrR,JendR
-!      do i=IstrR,IendR
-
+       
+        Hz_tra = Hz      
+        
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        DU_avg2(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        DV_avg2(START_2D_ARRAY))
 #endif
 !      dum_max=0.
+!      do j=JstrR,JendR
+!      do i=IstrR,IendR
        do j=Jstr,Jend
        do i=Istr,Iend
            dum_s=0.
@@ -830,7 +848,6 @@ c Kept for testing... removed soon.
              enddo
        enddo
        enddo
-!      write(6,*) iic,"Max=",dum_max
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 !     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -894,6 +911,9 @@ c LAURENT: these calls for z_w and z_r can probably be removed
      &     ' =                                     = ',
      &     ' ======================================= ',
      &     '                                         '
+#ifdef MPI
+        write(stdout,'(A,I4)') '      mynode =',mynode
+#endif
         if (VMAX.eq.666.) then
           write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'

@@ -179,6 +179,11 @@
 !#  define Hzr_half_nbq Hz
 # endif
 
+# ifdef NBQ_TRACERS
+       real Hz_tra(GLOBAL_2D_ARRAY,N)
+       common /grid_Hz_tra/ Hz_tra
+#endif
+
   
 !**********************************************************************
       real DU_nbq  (GLOBAL_2D_ARRAY)
@@ -282,7 +287,7 @@
 !# endif
 
 !**********************************************************************
-# if defined ACOUSTIC && defined NBQ_IJK
+# if defined ACOUSTIC && defined NBQ_IJK  
 
       real  period_exp  
       common/ACOUS1/period_exp

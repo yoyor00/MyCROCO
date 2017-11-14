@@ -497,7 +497,11 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !---------------------------
 !  U-momentum open boundary conditions
 !---------------------------
-       
+
+# ifndef NBQ_GRIDEXT    
+       call u2dbc_tile      (Istr,Iend,Jstr,Jend, UFx) 
+       call v2dbc_tile      (Istr,Iend,Jstr,Jend, UFx)
+# endif
 # ifdef OBC_NBQ
        call unbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
        call vnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)

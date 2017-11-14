@@ -268,7 +268,7 @@ c LAURENT: unnecessary lines with M2FILTER_NONE (only at last time step): REMOVE
 !
        if ((iic.eq.1.and.iif==1)
      &     NSTEP_GRID
-     &     .or.iif.eq.nfast) then
+     &     ) then
 c setting flag_grid to 1
 c enforces the recomputation of vertical grid derived arrays (Hz(r,w)_xxx_inv) at next time step
         flag_grid=1
@@ -277,6 +277,14 @@ c enforces the recomputation of vertical grid derived arrays (Hz(r,w)_xxx_inv) a
      &   ) 
 
 #include "step2d_grid_ext.h"
+
+!       call grid_coef_nh(
+!    &   Istr,Iend,Jstr,Jend,
+!    &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
+!    &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+!    &   Hzu_half_qdmu, Hzv_half_qdmv
+!    &   )
+
 
         endif
 

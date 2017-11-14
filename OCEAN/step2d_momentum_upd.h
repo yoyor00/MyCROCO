@@ -279,8 +279,10 @@ C LAURENT: Dstp is not used anymore : REMOVED
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
+#ifdef NBQ_GRIDEXT
       call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
+#endif
 
 #ifdef NBQ_ZETAREDIAG
 c recompute zeta via vertically integrated continuity equation
@@ -349,15 +351,23 @@ c recompute zeta via vertically integrated continuity equation
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)
+# ifdef NBQ_GRIDEXT
      &         +cff1*(Dnew(IstrU-1,j)
      &         +Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
+# else
+     &         +cff1*(DU_nbq(IstrU-1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                             +ust2d(IstrU-1,j)
 # endif
      &                                             )*on_u(IstrU-1,j)
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)
+# ifdef NBQ_GRIDEXT
      &         +cff2*(Dnew(IstrU-1,j)
      &         +Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
+# else
+     &         +cff2*(DU_nbq(IstrU-1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                             +ust2d(IstrU-1,j)
 # endif
@@ -365,15 +375,23 @@ c recompute zeta via vertically integrated continuity equation
         enddo
         do j=JstrV,Jend
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)
+# ifdef NBQ_GRIDEXT
      &       +cff1*(Dnew(Istr-1,j)
      &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
+# else
+     &       +cff1*(DV_nbq(Istr-1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                              +vst2d(Istr-1,j)
 # endif
      &                                              )*om_v(Istr-1,j)
           DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)
+# ifdef NBQ_GRIDEXT
      &       +cff2*(Dnew(Istr-1,j)
      &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
+# else
+     &       +cff2*(DV_nbq(Istr-1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                              +vst2d(Istr-1,j)
 # endif
@@ -384,15 +402,23 @@ c recompute zeta via vertically integrated continuity equation
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)
+# ifdef NBQ_GRIDEXT
      &            +cff1*( Dnew(Iend+1,j)
      &            +Dnew(Iend,j) )*(ubar(Iend+1,j,knew)
+# else
+     &            +cff1*(DU_nbq(Iend+1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                              +ust2d(Iend+1,j)
 # endif
      &                                              )*on_u(Iend+1,j)
           DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)
+# ifdef NBQ_GRIDEXT
      &            +cff2*( Dnew(Iend+1,j)
      &            +Dnew(Iend,j) )*(ubar(Iend+1,j,knew)
+# else
+     &            +cff2*(DU_nbq(Iend+1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                              +ust2d(Iend+1,j)
 # endif
@@ -400,15 +426,23 @@ c recompute zeta via vertically integrated continuity equation
         enddo
         do j=JstrV,Jend
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)
+# ifdef NBQ_GRIDEXT
      &        +cff1*( Dnew(Iend+1,j)
      &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
+# else
+     &        +cff1*(DV_nbq(Iend+1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
 # endif
      &                                              )*om_v(Iend+1,j)
           DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)
+# ifdef NBQ_GRIDEXT
      &        +cff2*( Dnew(Iend+1,j)
      &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
+# else
+     &        +cff2*(DV_nbq(Iend+1,j)*2.
+# endif
 # ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
 # endif
@@ -527,35 +561,50 @@ c recompute zeta via vertically integrated continuity equation
 !        cff6= 0.
 !        cff7= 0.
 
+!#ifdef NBQ_GRIDEXT
+#ifndef NBQ_GRIDEXT
+       if ((iic.eq.1.and.iif==1)
+     &     .or.iif==nfast
+     &     ) then
+#endif
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
 
           zeta(i,j,knew2)=((h(i,j)+zeta(i,j,kstp2))
+#ifdef NBQ_MASS
      &             *rhobar_nbq(i,j,kstp2) 
+#endif
      &   + (dtfast*pm(i,j)*pn(i,j)
      &              *0.5D0*(
      &    (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew))*on_u(i  ,j)
      &   -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew))*on_u(i+1,j)
      &  + (Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew))*om_v(i,j  )
      &   -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar(i,j+1,knew))*om_v(i,j+1))))
+#ifdef NBQ_MASS
      &   / rhobar_nbq(i,j,knew2)-h(i,j)
+#endif
 
         enddo
       enddo
-
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew2))
 #endif
+!#endif
              
       do j=JstrR,JendR
           do i=IstrR,IendR
             Zt_avg1(i,j)=zeta(i,j,knew2)
           enddo
       enddo
-
-#include "step2d_set_depth.h"
-
+!#undef NBQ_HZ
+!#ifdef NBQ_HZ
+# include "step2d_set_depth.h"
+!#endif
+#ifndef NBQ_GRIDEXT
+      endif
+#endif
 #endif
 !
 !-----------------------------------------------------------------------

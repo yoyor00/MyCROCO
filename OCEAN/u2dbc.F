@@ -242,7 +242,12 @@ c          endif
           endif
   
           ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr,j,kstp)
+!#   if defined NBQ_GRIDEXT || !defined NBQ_ZETAW
      &                                    +cx*ubar(Istr+1,j,kstp)
+!#   else
+!     &                                    +cx*DU_nbq(Istr+1,j)
+!     &                        /(H(Istr+1,j)+zeta(Istr+1,j,knew))
+!#   endif
 #   ifdef M2_FRC_BRY
      &                                           +ubarbry_west(j)
 #   elif defined M2CLIMATOLOGY
@@ -258,11 +263,19 @@ c          endif
 #   ifdef MASKING
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
 #   endif
+#   ifdef NBQ_ZETAW
+          DU_nbq(Istr,j)=ubar(Istr,j,knew)
+     &          *0.5*(H(Istr  ,j)+zeta(Istr  ,j,knew)
+     &              + H(Istr-1,j)+zeta(Istr-1,j,knew))
+#   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
         do j=Jstr,Jend
+          DU_nbq(Istr,j)=ubar(Istr,j,knew)
+     &          *0.5*(H(Istr,j)+zeta(Istr,j,knew)
+     &              + H(Istr-1,j)+zeta(Istr-1,j,knew))
 #   ifdef M2_FRC_BRY
           ubar(Istr,j,knew)=ubarbry_west(j)
 #   else
@@ -419,7 +432,12 @@ c          endif
           endif
   
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
+!#   if defined NBQ_GRIDEXT || !defined NBQ_ZETAW
      &                                        +cx*ubar(Iend,j,kstp)
+!#   else
+!     &                             +cx*DU_nbq(Iend,j)
+!     &                        /(H(Iend,j)+zeta(Iend,j,knew))
+!#   endif
 #   ifdef M2_FRC_BRY
      &                                             +ubarbry_east(j)
 #   elif defined M2CLIMATOLOGY
@@ -434,6 +452,11 @@ c          endif
      &                             )) !*grad(Iend+1,j)
 #   ifdef MASKING
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
+#   endif
+#   ifdef NBQ_ZETAW
+          DU_nbq(Iend+1,j)=ubar(Iend+1,j,knew)
+     &          *0.5*(H(Iend+1,j)+zeta(Iend+1,j,knew)
+     &               +H(Iend  ,j)+zeta(Iend  ,j,knew))
 #   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED

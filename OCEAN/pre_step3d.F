@@ -125,7 +125,7 @@
 # endif
 !
 #ifndef NBQ_MASS
-#  define Hzr_half_nbq Hz
+#  define Hzr_half_nbq Hz_half_nbq
 #endif
 !
 
@@ -216,6 +216,7 @@
 !
 !  Set lateral boundary conditions for Hz_half
 !
+#  ifdef NBQ_MASS
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
@@ -275,6 +276,7 @@
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr_half_nbq(START_2D_ARRAY,1))
 #  endif
+#endif   
 
 !
 !  Set extended range

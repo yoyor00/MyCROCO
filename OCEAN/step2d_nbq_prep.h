@@ -4,17 +4,17 @@
 !-----------------------------------------------------------------------
 !
 #ifdef NBQ_ZETAW
-       if (iic.eq.1.and.iif==1) flag_grid=1
+!      if (iic.eq.1.and.iif==1) flag_grid=1
 !
-       if (flag_grid.eq.1) then
-        flag_grid=0
+!      if (flag_grid.eq.1) then
+!       flag_grid=0
 !        call grid_coef_nh(
 !     &   Istr,Iend,Jstr,Jend,
 !     &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
 !     &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
 !     &   Hzu_half_qdmu, Hzv_half_qdmv                                     
 !     &   )
-      endif
+!     endif
 #endif
 
 !

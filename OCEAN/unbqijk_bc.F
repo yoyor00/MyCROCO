@@ -235,8 +235,12 @@
           do j=Jstr,Jend
                qdmu_nbq(Istr,j,k)=qdmu_nbq(Istr,j,k)-sum_o(Istr,j)
      &                  /float(N)
+# if defined NBQ_GRIDEXT || !defined NBQ_ZETAW
      &                 +ubar(Istr,j,kstp)   
      &                      *0.5*(Hz(Istr,j,k)+ Hz(Istr-1,j,k))
+# else
+     &                 +DU_nbq(Istr,j)/float(N)
+# endif
      &                                             
           enddo
         enddo
@@ -396,8 +400,13 @@
           do j=Jstr,Jend
                qdmu_nbq(Iend+1,j,k)=qdmu_nbq(Iend+1,j,k)-sum_o(Iend+1,j)
      &                  /float(N)
+
+# if defined NBQ_GRIDEXT || !defined NBQ_ZETAW
      &                 +ubar(Iend+1,j,kstp)   
      &                      *0.5*(Hz(Iend+1,j,k)+ Hz(Iend,j,k))
+# else
+     &                 +DU_nbq(Iend+1,j)/float(N)
+# endif
      &                                             
           enddo
         enddo

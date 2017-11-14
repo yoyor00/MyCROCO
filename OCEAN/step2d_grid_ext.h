@@ -15,7 +15,10 @@
 ! Computes grid at m
 !-----------------------------------------------------------------------
 !
-
+#ifndef NBQ_GRIDEXT 
+!      if (iic==1.and.iif==1) then
+!      if (mod(iic,10)==1) then
+#endif
 !==================================
 # ifdef NBQ_MASS
 !==================================
@@ -37,11 +40,13 @@
      &                        Hzr(START_2D_ARRAY,1))
 #  endif
 
+
 !==================================
 # endif /* NBQ_MASS */
 !==================================
-
-
+!#ifndef NBQ_GRIDEXT
+!       if (mod(iic,10)==1) then
+!#endif
 !  Set extended range
 !
 #  ifdef EW_PERIODIC
@@ -102,6 +107,9 @@
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
 !     &                      z_r(START_2D_ARRAY,1))
 !# endif
+!#ifndef NBQ_GRIDEXT
+!        endif
+!#endif	
 
         call grid_coef_nh(
      &   Istr,Iend,Jstr,Jend,
@@ -110,3 +118,6 @@
      &   Hzu_half_qdmu, Hzv_half_qdmv                                     
      &   )
 
+#ifndef NBQ_GRIDEXT
+!      endif
+#endif

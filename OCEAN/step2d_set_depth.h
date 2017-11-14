@@ -51,3 +51,11 @@
 !        endif
 
 #include "step2d_grid_ext.h"
+
+!       call grid_coef_nh(
+!    &   Istr,Iend,Jstr,Jend,
+!    &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
+!    &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+!    &   Hzu_half_qdmu, Hzv_half_qdmv
+!    &   )
+
