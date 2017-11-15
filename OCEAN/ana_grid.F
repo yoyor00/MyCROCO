@@ -287,33 +287,30 @@ C$    integer omp_get_thread_num
                      Length_XI =???
                      Length_ETA=??? 
 # endif
-# ifdef AGRIF
-      else
-!
-! Child grid dimensions
-!
-        Length_XI=
-     &       Agrif_Parent ( xp,Agrif_Ix()+Lm/Agrif_IRhox(),Agrif_Iy() )
-     &     - Agrif_Parent ( xp,Agrif_Ix(),Agrif_Iy() )
-        Length_ETA=
-     &       Agrif_Parent ( yp,Agrif_Ix(),Agrif_Iy()+Mm/Agrif_IRhoy() )
-     &      -Agrif_Parent ( yp,Agrif_Ix(),Agrif_Iy() )
-      endif
-# endif /* AGRIF */
-!
+
 !----------------------------------------------------------------------
 ! Copy physical dimensions of the grid into globally vizible variables
 !----------------------------------------------------------------------
 !
-      xl=Length_XI
-      el=Length_ETA
+        xl=Length_XI
+        el=Length_ETA
+
+# ifdef AGRIF
+      else      
+        xl=Agrif_Parent(xl)/Agrif_Parent(LLm)*LLm/Agrif_Rhox()
+        el=Agrif_Parent(el)/Agrif_Parent(MMm)*MMm/Agrif_Rhoy()
+        Length_XI=xl
+        Length_ETA=el
+      endif
+# endif /* AGRIF */
+!
 !
 !----------------------------------------------------------------------
 ! Set grid spacings for rectangular grids
 !----------------------------------------------------------------------
 !
-      dx=Length_XI/float(LLm)
-      dy=Length_ETA/float(MMm)
+      dx=Length_XI/float(LLm)    
+      dy=Length_ETA/float(MMm)   
 !
 !----------------------------------------------------------------------
 ! Set reference point location
@@ -329,12 +326,6 @@ C$    integer omp_get_thread_num
       y0=y0-0.5*Length_ETA  
 # endif
 
-# ifdef AGRIF
-      if( .not. Agrif_Root() ) then
-        x0=Agrif_Parent ( xp,Agrif_Ix(),Agrif_Iy() )
-        y0=Agrif_Parent ( yp,Agrif_Ix(),Agrif_Iy() )
-      endif
-# endif
 
 CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
 CR     &                                'x0=',x0, 'y0=',y0, mynode
@@ -627,7 +618,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
      &       +1.35*(1+tanh(0.0253*(xx-xs)))
      &       +0.0032*(xx+log(cosh(alpha*(xx-xs))/cosh(alpha*xs))/alpha)
           per=eps*cos(2*pi*yy/lambda)*exp(-5*(((xx-xs-db)/db)**2))
-          h(i,j)=(1+per)*h0;
+          h(i,j)=(1+per)*h0!-0.8;
         enddo
       enddo
 #  endif

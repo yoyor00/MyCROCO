@@ -171,8 +171,11 @@
       external initzeta,initubar,initvbar,inith
       external initu,initv,initt
 # ifdef WKB_WWAVE
-      external initwac,initwkx,initwke,initwar
+      external initwac,initwkx,initwke
       external inithrm,initfrq,initwcg,initwsb,initwvn
+#  ifdef WAVE_ROLLER      
+      external initwar, initwsr, initwcr
+#  endif        
 # endif
 !$AGRIF_DO_NOT_TREAT
        integer isens
@@ -333,7 +336,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1 
         call ana_grid (tile) 
       enddo
-      call Agrif_Init_Variable(hid,procname=inith)
+      call Agrif_Init_Variable(ha_id,procname=inith)
 # else
 !
 !  Read grid from GRID NetCDF file 
@@ -670,33 +673,25 @@ CR      write(*,*) ' -2' MYID
 !----------------------------------------------------------------------
 !
 # ifdef WKB_WWAVE
-      call Agrif_Set_interp(wacid,interp=Agrif_ppm)
       call Agrif_Init_Variable(wacid,procname=initwac)
-      call Agrif_Set_interp(wkxid,interp=Agrif_ppm)
       call Agrif_Init_Variable(wkxid,procname=initwkx)
-      call Agrif_Set_interp(wkeid,interp=Agrif_ppm)
-      call Agrif_Init_Variable(wkeid,procname=initwke)
-        
-      call Agrif_Set_interp(hrmid,interp=Agrif_ppm)
+      call Agrif_Init_Variable(wkeid,procname=initwke)        
       call Agrif_Init_Variable(hrmid,procname=inithrm)
-      call Agrif_Set_interp(frqid,interp=Agrif_ppm)
       call Agrif_Init_Variable(frqid,procname=initfrq)
-      call Agrif_Set_interp(wsbid,interp=Agrif_ppm)
       call Agrif_Init_Variable(wsbid,procname=initwsb)
-      call Agrif_Set_interp(wvnid,interp=Agrif_ppm)
       call Agrif_Init_Variable(wvnid,procname=initwvn)
-      call Agrif_Set_interp(wcgid,interp=Agrif_ppm)
       call Agrif_Init_Variable(wcgid,procname=initwcg)
 #  ifdef WAVE_ROLLER
-      call Agrif_Set_interp(warid,interp=Agrif_ppm)
       call Agrif_Init_Variable(warid,procname=initwar)
+      call Agrif_Init_Variable(wcrid,procname=initwcr)
+      call Agrif_Init_Variable(wsrid,procname=initwsr)
 #  endif
 C$OMP BARRIER
 C$OMP MASTER
       MPI_master_only write(stdout,'(/1x,A/)')
      &     'WKB: started child wave computation.'
 C$OMP END MASTER
-      wkb_agrif_done=.TRUE.
+      wkb_agrif_done=.false.
       iic=0
       winfo=1
       iwave=1
@@ -1336,13 +1331,22 @@ CR      write(*,*) '  0' MYID
      &   (/i1t,j1t/),(/i2t,j2t/),wvnid)
          call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),wcgid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),wfcid)
 
 # ifdef WAVE_ROLLER
          call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),warid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),wcrid)
+         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),wsrid)
 # endif
 #endif
-
+#ifdef ANA_GRID
+        call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
+     &   (/i1t,j1t/),(/i2t,j2t/),ha_id)
+#endif
      
         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),hid)
@@ -1399,12 +1403,17 @@ CR      write(*,*) '  0' MYID
          call Agrif_Set_bc(wacid,(/0,0/))
          call Agrif_Set_interp(wacid,interp=Agrif_ppm)
          call Agrif_Set_bcinterp(wacid,interp=Agrif_ppm)
+  
          call Agrif_Set_bc(wkxid,(/0,0/))
-          call Agrif_Set_interp(wkxid,interp=Agrif_ppm)
-          call Agrif_Set_bcinterp(wkxid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wkxid,interp1=Agrif_lagrange,
+     &                                 interp2=Agrif_ppm)
+         call Agrif_Set_bcinterp(wkxid,interp1=Agrif_lagrange,
+     &                                 interp2=Agrif_ppm)
          call Agrif_Set_bc(wkeid,(/0,0/))
-         call Agrif_Set_bcinterp(wkeid,interp=Agrif_ppm)
-         call Agrif_Set_interp(wkeid,interp=Agrif_ppm)
+         call Agrif_Set_bcinterp(wkeid,interp1=Agrif_ppm,
+     &                                 interp2=Agrif_lagrange)
+         call Agrif_Set_interp(wkeid,interp1=Agrif_ppm,
+     &                                 interp2=Agrif_lagrange)
 
          call Agrif_Set_bc(hrmid,(/0,0/))
          call Agrif_Set_bcinterp(hrmid,interp=Agrif_ppm)
@@ -1420,15 +1429,27 @@ CR      write(*,*) '  0' MYID
 
          call Agrif_Set_bc(wvnid,(/0,0/))
          call Agrif_Set_bcinterp(wvnid,interp=Agrif_ppm)
-          call Agrif_Set_interp(wvnid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wvnid,interp=Agrif_ppm)
         
          call Agrif_Set_bc(wcgid,(/0,0/))
          call Agrif_Set_bcinterp(wcgid,interp=Agrif_ppm)
          call Agrif_Set_interp(wcgid,interp=Agrif_ppm)
 
+
+         call Agrif_Set_bc(wfcid,(/0,0/))
+         call Agrif_Set_bcinterp(wfcid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wfcid,interp=Agrif_ppm)
+
 # ifdef WAVE_ROLLER
          call Agrif_Set_bc(warid,(/0,0/))
          call Agrif_Set_bcinterp(warid,interp=Agrif_ppm)
+         call Agrif_Set_interp(warid,interp=Agrif_ppm)
+         call Agrif_Set_bc(wsrid,(/0,0/))
+         call Agrif_Set_bcinterp(wsrid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wsrid,interp=Agrif_ppm)
+         call Agrif_Set_bc(wcrid,(/0,0/))
+         call Agrif_Set_bcinterp(wcrid,interp=Agrif_ppm)
+         call Agrif_Set_interp(wcrid,interp=Agrif_ppm)
 # endif
 #endif 
         call Agrif_Set_bc(hid,(/0,0/)) 
@@ -1441,7 +1462,11 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bc(rmask_wetid,(/0,0/))
         call Agrif_Set_bc(umask_wetid,(/0,0/))
         call Agrif_Set_bc(vmask_wetid,(/0,0/))
-# endif        
+# endif 
+# ifdef ANA_GRID
+         call Agrif_Set_bcinterp(ha_id,interp=Agrif_ppm)
+         call Agrif_Set_interp(ha_id,interp=Agrif_ppm)
+# endif       
         call Agrif_Set_bc(tid,(/-1,0/))     
         call Agrif_Set_bc(uid,(/0,0/))
         call Agrif_Set_bc(vid,(/0,0/))
@@ -1849,12 +1874,12 @@ CR      write(*,*) '  0' MYID
        if (before) then
          do j=j1,j2
            do i=i1,i2
-             tabres(i,j) = wac(i,j,2)
+             tabres(i,j) = wac(i,j,1)
            enddo
          enddo
        else
-         wac(i1:i2,j1:j2,1)=tabres
-         wac(i1:i2,j1:j2,2)=tabres
+         wac(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+         wac(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
        
       return
@@ -1876,8 +1901,8 @@ CR      write(*,*) '  0' MYID
        enddo
        enddo
        else
-       hrm(i1:i2,j1:j2,1)=tabres
-       hrm(i1:i2,j1:j2,2)=tabres
+       hrm(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       hrm(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
       return
       end
@@ -1897,8 +1922,8 @@ CR      write(*,*) '  0' MYID
        enddo
        enddo
        else
-       frq(i1:i2,j1:j2,1)=tabres
-       frq(i1:i2,j1:j2,2)=tabres
+       frq(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       frq(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
       return
       end
@@ -1917,8 +1942,8 @@ CR      write(*,*) '  0' MYID
        enddo
        enddo
        else
-       wsb(i1:i2,j1:j2,1)=tabres
-       wsb(i1:i2,j1:j2,2)=tabres
+       wsb(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       wsb(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
       return
       end
@@ -1938,8 +1963,8 @@ CR      write(*,*) '  0' MYID
        enddo
        enddo
        else
-       wvn(i1:i2,j1:j2,1)=tabres
-       wvn(i1:i2,j1:j2,2)=tabres
+       wvn(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       wvn(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
       return
       end
@@ -1959,14 +1984,76 @@ CR      write(*,*) '  0' MYID
        enddo
        enddo
        else
-       wcg(i1:i2,j1:j2,1)=tabres
-       wcg(i1:i2,j1:j2,2)=tabres
+       wcg(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       wcg(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
       return
       end
 
-      
+      subroutine initwfc(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = wfc(i,j,2)
+       enddo
+       enddo
+       else
+       wfc(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       wfc(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+       endif
+      return
+      end
+
 #  ifdef WAVE_ROLLER
+      subroutine initwcr(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = wcr(i,j,2)
+       enddo
+       enddo
+       else
+       wcr(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       wcr(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+       endif
+      return
+      end
+
+      subroutine initwsr(tabres,i1,i2,j1,j2,before)
+      implicit none
+# include "wkb_wwave.h"
+       integer i1,i2,j1,j2
+       logical before
+       real tabres(i1:i2,j1:j2)
+       integer i,j
+
+       if (before) then
+       do j=j1,j2
+       do i=i1,i2
+         tabres(i,j) = wsr(i,j,2)
+       enddo
+       enddo
+       else
+       wsr(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+       wsr(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
+       endif
+      return
+      end
+      
       subroutine initwar(tabres,i1,i2,j1,j2,before)
       implicit none
 # include "wkb_wwave.h"
@@ -1982,8 +2069,8 @@ CR      write(*,*) '  0' MYID
            enddo
          enddo
        else
-         war(i1:i2,j1:j2,1)=tabres
-         war(i1:i2,j1:j2,2)=tabres
+         war(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+         war(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
        
       return
@@ -2005,8 +2092,8 @@ CR      write(*,*) '  0' MYID
            enddo
          enddo
        else
-         wkx(i1:i2,j1:j2,1)=tabres
-         wkx(i1:i2,j1:j2,2)=tabres
+         wkx(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+         wkx(i1:i2,j1:j2,2)=tabres(i1:i2,j1:j2)
        endif
        
       return
@@ -2027,8 +2114,8 @@ CR      write(*,*) '  0' MYID
            enddo
          enddo
        else
-         wke(i1:i2,j1:j2,1)=tabres
-         wke(i1:i2,j1:j2,2)=tabres       
+         wke(i1:i2,j1:j2,1)=tabres(i1:i2,j1:j2)
+         wke(i1:i2,j1:j2,2)=tabres (i1:i2,j1:j2)      
        endif
        
       return
@@ -2263,7 +2350,6 @@ CR      write(*,*) '  0' MYID
        integer i1,i2,j1,j2
        real tabres(i1:i2,j1:j2)
        logical before
-        write(*,*) i1,i2
        if (before) then
          tabres = h(i1:i2,j1:j2)
        else

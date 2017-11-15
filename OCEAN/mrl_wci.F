@@ -104,6 +104,9 @@
      &         wrk3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
 # endif
+# ifdef WAVE_FRICTION
+      real Zob_my
+# endif
       parameter ( eps=1.e-10, 
      &            bconst=0.03D0,              ! breaking contribution to KPP
      &            a_kv=1.2D0,                 ! breaking scale for eddy visc.
@@ -123,6 +126,9 @@
       parameter (wave_roller=0.0)
 #  endif
 # endif /* !WKB_WWAVE */
+!
+#include "compute_auxiliary_bounds.h"
+
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
                         || defined WAVE_STREAMING
       if (Zob.gt.0.) then                     ! default Zob for wave
@@ -132,9 +138,6 @@
       endif
 #  define Zob Zob_my
 # endif
-
-!
-#include "compute_auxiliary_bounds.h"
 
 ! Define Stokes drift computation
 
