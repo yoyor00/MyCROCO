@@ -5,14 +5,14 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 10000      0.20    20        1000 
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
-                    1          10           1.e-6 
+                    1          10           1.e-2 
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0      0.0d0       1.d16
 
 initial: NRREC  filename
           0 
-                          INPUT/gravadj_rst.nc
+                          gravadj_rst.nc
 
 restart:          NRST, NRPFRST / filename
                   7000      -1
@@ -41,7 +41,7 @@ lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PS
               30.         0.            0.        0.28                0.
 
 vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
-                 0.e-6    0.e-6 0.e-6
+                 0.e-6    0.e-6 0.e-6 0.e-6
 
 lateral_visc:   VISC2    [m^2/sec ]
                 0.  0.
