@@ -575,8 +575,8 @@ C$    integer  trd, omp_get_thread_num
         area=area+allarea(1,i)
       enddo
       mssh=mssh/area
-      mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
 #  endif
+      mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
       omega1=2.*pi/(14.*86400.)
       omega2=2.*pi/(12.*3600. )
       tide_ampli_moy=1.
