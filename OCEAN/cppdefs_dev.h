@@ -132,44 +132,43 @@
 */
 #ifdef NBQ
 # define M2FILTER_NONE
-# undef M2FILTER_POWER
-# define NBQ_IJK
-# define NBQ_IMP
-# define NBQ_IMPIJK
-# define NBQ_CONS
-# define NBQ_COUPLE1
+# undef  M2FILTER_POWER
+# define NBQ_IJK   
+# ifndef NBQ_EXP       
+#  define NBQ_IMP
+# endif
+# define NBQ_IMPIJK        ! not used anymore
+# define NBQ_CONS          ! not used anymore
+# define NBQ_COUPLE1       ! to be removed
 # undef TRACETXT
 # define HZR Hzr
 # define NBQ_ZETAW
-/*
-======================================================================
-   Activate NBQ Precise or Performance mode ======================================================================
-*/
-#if !defined NBQ_PERF
-#define NBQ_PRECISE
-#endif
+  /*
+   Activate NBQ Precise or Performance mode 
+  */
+# if !defined NBQ_PERF
+#  define NBQ_PRECISE
+# endif
 
-#ifdef NBQ_PRECISE
+# ifdef NBQ_PRECISE
 #       define NBQ_MASS                               
 #       define NBQ_DTDRHO2
-#       undef NBQ_DTDRHO2B
+#       undef  NBQ_DTDRHO2B
 #       define NBQ_GRIDEXT
-#       undef NBQ_ZETAEXP
-#       undef NBQ_ZETAREDIAG
+#       define NBQ_ZETAEXP
+#       define NBQ_ZETAREDIAG
 #       define NBQ_TRACERS
 #       undef  NBQ_NODS
-!#       undef VAR_RHO_2D
-!#       undef RESET_RHO0
-#else
-#       undef NBQ_MASS
-#       undef NBQ_DTDRHO2
-#       undef NBQ_DTDRHO2B
-#       undef NBQ_GRIDEXT
-#       undef NBQ_TRACERS
+# else
+#       undef  NBQ_MASS
+#       undef  NBQ_DTDRHO2
+#       undef  NBQ_DTDRHO2B
+#       undef  NBQ_GRIDEXT
+#       undef  NBQ_ZETAEXP
+#       undef  NBQ_ZETAREDIAG
+#       define NBQ_TRACERS     ! can be undef here to speedup
 #       define NBQ_NODS
-!#       undef VAR_RHO_2D
-!#       undef RESET_RHO0
-#endif
+# endif
 
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI

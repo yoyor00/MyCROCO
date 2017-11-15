@@ -38,9 +38,15 @@
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
 #elif defined KH_INST 
 # ifndef KH_INSTY
-      parameter (LLm0=256,  MMm0=1,    N=256)   
+#  if defined KH_INST2D
+      parameter (LLm0=256,  MMm0=1,    N=256)
+#  elif defined KH_INST3D
+      parameter (LLm0=256,  MMm0=32,   N=256)
+#  else
+      parameter (LLm0=256,  MMm0=1,   N=256)
+#  endif
 # else
-      parameter (LLm0=1,  MMm0=256,    N=256)   
+      parameter (LLm0=1,  MMm0=256,    N=256)
 # endif
 #elif defined ACOUSTIC 
       parameter (LLm0=64,   MMm0=1,    N=64)  

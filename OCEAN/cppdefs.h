@@ -36,11 +36,9 @@
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  S2DV            /* S2DV sections */ 
-#undef MILES            /* NBQ MILES Applications */ 
+#undef  MILES            /* NBQ MILES Applications */ 
 #undef  TANK            /* Tank Example */
 #define REGIONAL        /* REGIONAL Applications */
-#undef  REGIONAL_NBQ    /* NBQ REGIONAL Applications */ 
-
 
 #if defined REGIONAL
 /*
@@ -402,32 +400,51 @@
 !                       ================ =========== =======
 !
 */
+
 # undef  OPENMP
-# define KH_INST2D
+# undef  KH_INST2D
 # undef  KH_INST3D
 # undef  KH_INSTY
 # define MPI
+# undef PASSIVE_TRACER
 # define NBQ
+# undef XIOS 
 # ifdef NBQ
-#  undef  OBC_NBQ
 #  define NBQ_PERF
+#  undef  NBQ_PRECISE
+#  undef  NBQ_FREESLIP
+#  define NBQ_OBC
 # endif
-# undef  MASKING
+# undef  MASKING 
 # undef  OBC_EAST
 # undef  OBC_WEST
 # undef  OBC_SOUTH
 # undef  OBC_NORTH
+# define UV_VIS2
 # define SALINITY
+# define UV_MIX_S
+# define UV_VIS_SMAGO
 # define SOLVE3D
 # define NEW_S_COORD
+
 # define UV_ADV
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
+# define TS_DIF2
+# define UV_VADV_C2
+# define UV_HADV_C2
+# undef UV_VADV_TVD
+# undef UV_HADV_TVD
+# undef VANLEER
+# undef W_VADV_TVD
+# undef W_HADV_TVD
+# define RESET_RHO0
+
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
-# define ANA_SRFLUX
+# undef ANA_SRFLUX
 # define ANA_BTFLUX
 # define ANA_SSFLUX
 # define ANA_BSFLUX
@@ -477,11 +494,12 @@
 !
 */
 # undef  OPENMP
-# define MPI
+# undef  MPI
 # define NBQ
 # undef  XIOS 
 # ifdef NBQ
 #  define GRAV_ADJ_SOLITON
+#  undef  NBQ_PRECISE
 #  define NBQ_PERF
 # endif
 # define UV_VIS2
@@ -495,6 +513,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define PASSIVE_TRACER
 
 #elif defined INNERSHELF
 /*
@@ -592,7 +611,7 @@
                       /* I/O server */
 # define XIOS
                       /* Equation of State */
-# undef  SALINITY
+# define  SALINITY
                       /* Open Boundary Conditions */
 # ifdef TIDES
 #   define TIDERAMP
@@ -616,6 +635,21 @@
 # endif
                    /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
+
+                      /* TVD Advective Scheme */
+# define SUPERBEE 
+# define UV_HADV_TVD
+# define UV_VADV_TVD
+# define W_HADV_TVD
+# define W_VADV_TVD
+# define UV_HADV_C2
+# define UV_VADV_C2
+
+# define TS_VADV_WENO5
+# define TS_HADV_WENO5
+# undef  UV_VADV_WENO5
+# undef  UV_HADV_WENO5
+
                       /* Grid configuration */
 # define SPHERICAL
 # define CURVGRID
@@ -624,17 +658,21 @@
 # undef  WET_DRY
                       /* Non-Boussinesq */
 # ifdef NBQ
+#  define NBQ_FREESLIP
+#  undef  NBQ_PRECISE
 #  define NBQ_PERF
-#  define OBC_NBQ	
-#  define NBQCLIMATOLOGY
-#  define NBQNUDGING
+#  define NBQ_NUDGING
+#  define OBC_NBQ
+#  undef  NBQCLIMATOLOGY
+#  undef  NBQNUDGING
+#  undef  OBC_ZORLANSKI
 # endif
                       /* Sponge layers for UV and TS */
 # define SPONGE
-# define ANA_VMIX
+# undef  ANA_VMIX
 # define ANA_SMFLUX
 # define ANA_STFLUX
-# define ANA_SRFLUX
+# define ANA_SRFLUX 
 # define ANA_SSFLUX
                       /* Bottom Forcing */
 # define ANA_BTFLUX
@@ -642,21 +680,27 @@
                       /* Lateral Forcing */
 # define ZCLIMATOLOGY		/* <--  needed for tides forcing */
 # define M2CLIMATOLOGY		/* <--  needed for tides forcing */
-# define M3CLIMATOLOGY
-# define TCLIMATOLOGY
-# define ANA_INITIAL
+
+# undef M3CLIMATOLOGY
+# undef TCLIMATOLOGY
+# undef T_FRC_BRY
+# undef ANA_INITIAL
 # define ANA_SSH		/* <--  needed for z forcing initialisation to 0 */
 # define ANA_M2CLIMA		/* <--  needed for barotropic forcing initialisation to 0  */
-# define ANA_M3CLIMA
-# define ANA_TCLIMA
-# define EXPERIMENT3
-# define M2NUDGING
-# define M3NUDGING
-# define TNUDGING
 
-#elif defined REGIONAL_NBQ
+# undef ANA_M3CLIMA
+# define ANA_TCLIMA
+# undef EXPERIMENT1
+# undef M2NUDGING
+# undef M3NUDGING
+# undef TNUDGING
+
+# undef  PASSIVE_TRACER
+
+
+#elif defined MILES 
 /*
-!            NBQ-REGIONAL APPLICATIONS 
+!            NBQ-MILES APPLICATIONS 
 !                  ============
 !
 */
@@ -678,7 +722,7 @@
 
                       /* Open Boundary Conditions */
 # ifdef TIDES
-#   define TIDERAMP
+#   undef TIDERAMP
 #   define SSH_TIDES
 #   define POT_TIDES
 #   define UV_TIDES 
@@ -703,7 +747,8 @@
 # define UV_HADV_C2
 # define UV_VADV_TVD
 # define UV_HADV_TVD
-# define SUPERBEE
+# undef SUPERBEE
+# define VANLEER 
 # define W_VADV_TVD
 # define W_HADV_TVD
 
@@ -717,12 +762,25 @@
 # define MASKING
 # define NEW_S_COORD
 # undef  WET_DRY
+# undef PASSIVE_TRACER
                       /* Non-Boussinesq */
 # ifdef NBQ
-#  define NBQ_FREESLIP
+
+#  undef NBQ_PRECISE
 #  define NBQ_PERF
+#  undef NBQ_AM4
+#  undef NBQ_AB3
+#  undef NBQ_GRAV
+#  define NBQ_IMP
+#  undef  NBQ_NOCOUPLING
+#  define  NBQ_FREESLIP
+#  define  OBC_NBQ
+
 #  define NBQCLIMATOLOGY
-#  define NBQNUDGING
+#  undef  NBQNUDGING
+#  define NBQ_NUDGING
+#  undef OBC_ZORLANSKI
+
 # endif
                       /* Sponge layers for UV and TS */
 # define SPONGE
@@ -737,16 +795,16 @@
                       /* Lateral Forcing */
 # define ZCLIMATOLOGY		/* <--  needed for tides forcing */
 # define M2CLIMATOLOGY		/* <--  needed for tides forcing */
-# define M3CLIMATOLOGY
-# define TCLIMATOLOGY
+# undef M3CLIMATOLOGY
+# undef TCLIMATOLOGY
 # undef ANA_INITIAL
 # define ANA_SSH		/* <--  needed for z forcing initialisation to 0 */
 # define ANA_M2CLIMA		/* <--  needed for barotropic forcing initialisation to 0  */
-# define ANA_M3CLIMA
-# define ANA_TCLIMA
-# define M2NUDGING
-# define M3NUDGING
-# define TNUDGING
+# undef ANA_M3CLIMA
+# undef ANA_TCLIMA
+# undef M2NUDGING
+# undef M3NUDGING
+# undef TNUDGING
 
 #elif defined IGW
 /*
@@ -1300,7 +1358,7 @@
 !
 ! Thacker, W., (1981), Some exact solutions to the nonlinear 
 ! shallow-water wave equations. 
-! J. Fluid Mech., 107, 499–508.
+! J. Fluid Mech., 107, 499â508.
 */
 # undef  OPENMP
 # undef  MPI
@@ -1325,15 +1383,16 @@
 !
 ! Chen, X.J., 2003. A fully hydrodynamic model for three-dimensional,
 ! free-surface flows.
-! Int. J. Numer. Methods Fluids 42, 929�~@~S952.
+! Int. J. Numer. Methods Fluids 42, 929â~@~S952.
 */
-# define ADV_DISS
 # undef  TANKY
 # undef  XIOS
 # undef MPI
 # define NBQ
 # ifdef NBQ
+#  undef  NBQ_PRECISE
 #  define NBQ_PERF
+#  undef  NBQ_EXP
 # endif
 # define SOLVE3D
 # undef  MASKING
@@ -1346,8 +1405,6 @@
 # define ANA_SMFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX
-
-
 # undef UV_VADV_C2
 # undef UV_HADV_C2
 # undef UV_VADV_TVD
