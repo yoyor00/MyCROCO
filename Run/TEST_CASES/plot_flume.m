@@ -105,9 +105,6 @@ Dcrit=nc{'Dcrit'}(:);
 % ... zonal velocity ...                         ---> xu,zu
 u=squeeze(nc{'u'}(tindex,:,yindex,:));
 
-% ... meridional velocity ...                    ---> xr,zr
-v=squeeze(nc{'v'}(tindex,:,yindex,:));
-
 % ... vertical velocity ...                      ---> xr,zw
 w=squeeze(nc{'w'}(tindex,:,yindex,:));
 
