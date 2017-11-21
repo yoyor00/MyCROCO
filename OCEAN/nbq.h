@@ -93,11 +93,6 @@
       real dzdt_nbq(GLOBAL_2D_ARRAY,0:N)
       common /grid_dzdt_nbq/ dzdt_nbq
 
-#if defined NBQ_CONSOUT || defined NBQ_CONS0
-      real dzdt2_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /grid_dzdt2_nbq/ dzdt2_nbq
-#endif
-
       real e(GLOBAL_2D_ARRAY)
       common /nbq_e/ e
       real eomn(GLOBAL_2D_ARRAY)

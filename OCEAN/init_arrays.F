@@ -457,6 +457,9 @@ C$    integer omp_get_thread_num
         do i=IstrR,IendR
           sustr(i,j)=init
           svstr(i,j)=init
+# ifdef OA_COUPLING
+          smstr(i,j)=init
+# endif
 #ifndef ANA_SMFLUX
           sustrg(i,j,1)=init
           svstrg(i,j,1)=init
@@ -955,21 +958,21 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
 # if defined BVF_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING 
+      || defined GLS_MIX2017 || defined GLS_MIXING
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
@@ -1079,6 +1082,9 @@ C$    integer omp_get_thread_num
           rhobar_nbq_avg1(i,j)=1.
           rubar_nbq(i,j)=init
           rvbar_nbq(i,j)=init
+          rufrc_bak(i,j,1:2)=init
+          rvfrc_bak(i,j,1:2)=init
+          
         enddo
       enddo
       do k=1,N

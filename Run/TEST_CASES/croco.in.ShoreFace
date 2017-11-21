@@ -17,7 +17,7 @@ sediments: input file
            sediment.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
-                         F         F         F  F
+                         T         T         T T 10*T
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      F      F       F      F     F     F
@@ -46,6 +46,20 @@ primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   30*T
 auxiliary_averages:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
                        T   F    T   T    T    F   F      F       F   F    F     20*F
+
+diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
+                  T        1440         0
+                                 shoreface_dia.nc
+
+diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
+               T          1           1440            0
+                                 shoreface_dia_avg.nc
+
+diag3D_history_fields:    diag_tracers3D(1:NT) 
+                            30*T
+
+diag3D_average_fields:    diag_tracers3D_avg(1:NT)
+                            30*T
 
 rho0:
       1024.4

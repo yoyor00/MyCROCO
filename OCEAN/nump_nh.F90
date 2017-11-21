@@ -50,9 +50,10 @@
          else
             jstr_n = jstr_nh
          endif
-!........Corner (North-West):
+
+!........Corner (North-West)
          if (NORTH_INTER_NBQ) then
-            jend_n = jend_nh+1
+            jend_n = jend_nh +1 
          else
             jend_n = jend_nh
          endif
@@ -60,7 +61,7 @@
          do j=jstr_n,jend_n
          do k=1,N    
 #ifdef MASKING
-            if (rmask(i,j).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #endif
               nzq_n             = nzq_n + 1           
               ijk2lq_nh(i,j,k)  = nzq_n               
@@ -83,7 +84,7 @@
          do i=istr_nh,iend_nh
          do k=1,N    
 #ifdef MASKING
-            if (rmask(i,j).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #endif
               nzq_n             = nzq_n + 1           
               ijk2lq_nh(i,j,k)  = nzq_n               
@@ -128,7 +129,7 @@
         do j=jstr_n,jend_n
         do k=1,N   
 #  ifdef MASKING
-          if (rmask(i,j).ne.0) then
+          if (rmask_nbq(i,j).ne.0) then
 #  endif
               nzq_n             = nzq_n + 1           
               ijk2lq_nh(i,j,k)  = nzq_n               
@@ -158,7 +159,7 @@
         do i=istr_nh-1,iend_nh+1
         do k=1,N    
 #  ifdef MASKING
-          if (rmask(i,j).ne.0) then
+          if (rmask_nbq(i,j).ne.0) then
 #  endif
               nzq_n             = nzq_n + 1           
               ijk2lq_nh(i,j,k)  = nzq_n               
@@ -187,7 +188,7 @@
       do j = jstr_nh , jend_nh  
               
 #ifdef MASKING
-         if (rmask(i,j).ne.0) then
+         if (rmask_nbq(i,j).ne.0) then
 #endif
            nzq_n             = nzq_n + 1           
            ijk2lq_nh(i,j,k)  = nzq_n               
@@ -211,7 +212,7 @@
       do j = jstr_nh , jend_nh   
               
 #ifdef MASKING
-         if (rmask(i,j).ne.0) then
+         if (rmask_nbq(i,j).ne.0) then
 #endif
            nzq_n             = nzq_n + 1           
            ijk2lq_nh(i,j,k)  = nzq_n               
@@ -236,7 +237,7 @@
       do j = jstr_nh , jend_nh   
               
 #ifdef MASKING
-         if (rmask(i,j).ne.0) then
+         if (rmask_nbq(i,j).ne.0) then
 #endif
            nzq_n             = nzq_n + 1           
            ijk2lq_nh(i,j,k)  = nzq_n               
@@ -282,7 +283,7 @@
         do j=jstr_n,jend_n
         do k=1,N                 
 #  ifdef MASKING
-          if (rmask(i,j).ne.0) then
+          if (rmask_nbq(i,j).ne.0) then
 #  endif
            nzq_n             = nzq_n + 1           
            ijk2lq_nh(i,j,k)  = nzq_n               
@@ -312,7 +313,7 @@
         do i=istr_nh-1,iend_nh+1
         do k=1,N    
 #  ifdef MASKING
-          if (rmask(i,j).ne.0) then
+          if (rmask_nbq(i,j).ne.0) then
 #  endif
            nzq_n             = nzq_n + 1           
            ijk2lq_nh(i,j,k)  = nzq_n               
@@ -354,7 +355,7 @@
          do j=jstr_n,jend_n
          do k=1,N    
 #ifdef MASKING
-            if (rmask(i,j).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #endif
               nzq_n             = nzq_n + 1           
               ijk2lq_nh(i,j,k)  = nzq_n               
@@ -377,7 +378,7 @@
          do i=istr_nh,iend_nh
          do k=1,N    
 #ifdef MASKING
-            if (rmask(i,j).ne.0) then
+            if (rmask_nbq(i,j).ne.0) then
 #endif
               nzq_n             = nzq_n + 1           
               ijk2lq_nh(i,j,k)  = nzq_n               

@@ -20,11 +20,15 @@
      integer  Nhi,Nco3,Naksp,Netot,Nprorca   &
      &          , Nprorcad,Npronew,Npronewd  &
      &          , Nprobsi,Nprofed,Nprofen    &
-     &          , Ngraztot,Nnitrifo2,Nfixo2,Nremino2 &
-     &          , Npronewo2,Nprorego2      &
+     &          , Ngrapoc,Ngrapoc2           &
+     &          , Nmico2,Nmeso2              &
+     &          , Nnitrifo2,Nfixo2,Nremino2  &
+     &          , Npronewo2,Nprorego2        &
      &          , Nfld,Nflu16,Nkgco2,Natcco2,Nsinking &
-     &          , Nsinkfer,Nsinksil        &
-     &          , Nsinkcal,Nheup,Nirondep,Nnitrpot   &
+     &          , Nsinkfer,Nsinksil,Nironsed        &
+     &          , Nsinkcal,Nheup,Nnitrpot           &
+     &          , Nirondep,Nsildep,Npo4dep          &
+     &          , Nno3dep,Nnh4dep                   &
 #    endif
      &          , NumFluxTerms,NumVSinkTerms,NumGasExcTerms
 #   endif
@@ -39,15 +43,20 @@
      &            Npronew   = 7,&
      &            Npronewd  = 8,&
      &            Nprobsi   = 9,&
-     &            Nprofed   = 10,&
-     &            Nprofen   = 11,&
+     &            Nprofen   = 10,&
+     &            Nprofed   = 11,&
      &            Npronewo2 = 12,&
      &            Nprorego2 = 13,&
-     &            Ngraztot  = 14,&
-     &            Nnitrifo2 = 15,&
-     &            Nremino2  = 16,&
-     &            Nfixo2    = 17,&
-     &            NumFluxTerms = Nfixo2)
+     &            Ngrapoc   = 14,&
+     &            Ngrapoc2  = 15,&
+     &            Nmico2    = 16,&
+     &            Nmeso2    = 17,&
+     &            Nnitrifo2 = 18,&
+     &            Nremino2  = 19,&
+     &            Nfixo2    = 20,&
+     &            Nirondep  = 21,&
+     &            Nironsed  = 22,&
+     &            NumFluxTerms = Nironsed)
 
        parameter (Nfld      = 1,&
      &            Nflu16    = 2,&
@@ -58,13 +67,17 @@
      &            Nsinksil  = 7,&
      &            Nsinkcal  = 8,&
      &            Nheup     = 9,&
-     &            Nirondep  = 10,&
-     &            Nnitrpot  = 11,&
+     &            Nsildep   = 10,&
+     &            Npo4dep   = 11,&
+     &            Nno3dep   = 12,&
+     &            Nnh4dep   = 13,&
+     &            Nnitrpot  = 14,&
      &            NumGasExcTerms = 0,&
      &            NumVSinkTerms = Nnitrpot)
 #   else
-       parameter (NumFluxTerms = 0)
-       parameter (NumGasExcTerms = 0, NumVSinkTerms = 0)
+     integer NumFluxTerms,NumVSinkTerms,NumGasExcTerms
+     parameter (NumFluxTerms = 0)
+     parameter (NumGasExcTerms = 0, NumVSinkTerms = 0)
 #   endif
 #endif
 #endif

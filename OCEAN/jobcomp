@@ -2,6 +2,24 @@
 ####################################################
 #               COMPILATION JOB                    #
 ####################################################
+
+# This script assumes default compilation options, to
+# change those options : 
+# it can either be  edited to add your own options
+# or take into account the following 
+# environment variables for compilation choices :
+#
+# CROCO_NETCDFLIB      : netcdf library
+# CROCO_NETCDFINC      : netcdf include 
+# CROCO_PRISM_ROOT_DIR : OASIS-MCT directory 
+# CROCO_XIOS_ROOT_DIR  : XIOS directory
+#
+# CROCO_CFT1           : compiler
+# CROCO_FFLAGS1        : compilation otpions
+#
+# Note that environment variables overwrite hard-coded
+# options
+
 #
 # set source, compilation and run directories
 #
@@ -59,8 +77,8 @@ NETCDFINC=-I$(nf-config --includedir)
 # set MPI directories if needed
 #
 MPIF90="/usr/local/bin/mpif90"
-MPILIB="-L/usr/local/lib -lmpi"
-MPIINC="-I/usr/local/include"
+MPILIB=""
+MPIINC=""
 
 #
 # set OASIS-MCT (or OASIS3) directories if needed
@@ -101,7 +119,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 /bin/cp -RLf ${AGRIF_SRC} $SCRDIR
 /bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
 /bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
-/bin/cp -f ${ROTT_DIR}/PISCES/kRGB61* $RUNDIR
+/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 if [[ -e "namelist_pisces" ]] ; then
 	echo "  file namelist_pisces exists in Run directory"
 else
@@ -124,8 +142,8 @@ cd $SCRDIR
 #
 # generates LDFLAGS1 according to users notifications
 #
-LDFLAGS1="$NETCDFLIB"
-CPPFLAGS1="$NETCDFINC -IROMSFILES/AGRIF_INC"
+LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
+CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -IROMSFILES/AGRIF_INC"
 #
 # Set compilation options
 #
@@ -155,6 +173,10 @@ elif [[ $OS == Darwin ]] ; then        # ===== DARWIN =====
 		FFLAGS1="-O2 -r8 -i4 -g -72"
 #		FFLAGS1="-O0 -g -traceback -debug all -r8 -i4 -g -72"
 	fi
+elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
+        CPP1="cpp -traditional -DLinux"
+        CFT1="gfortran"
+        FFLAGS1="-O4 -fdefault-real-8 -fdefault-double-8 -march=native -mtune=native"
 elif [[ $OS == AIX ]] ; then           # ===== IBM =====
 	CPP1="/lib/cpp"
 	CFT1="xlf95 -I$HOME/include/"
@@ -216,8 +238,14 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	LDFLAGS1="$LDFLAGS1 $MPILIB"
 	CPPFLAGS1="$CPPFLAGS1 $MPIINC"
 	FFLAGS1="$FFLAGS1 $MPIINC"
-	CFT1="$MPIF90"
+	CFT1="${MPIF90}"
 fi
+
+#
+# Take environment variables for compiler and options
+#
+FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
+CFT1=${CROCO_CFT1-$CFT1}
 #
 # determine if NBQ related solvers (BLAS/LAPACK) are required
 #
@@ -234,6 +262,7 @@ fi
 #
 unset COMPILEXIOS
 echo "Checking COMPILEXIOS..."
+XIOS_ROOT_DIR=${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         echo " => XIOS activated"
         COMPILEXIOS=TRUE
@@ -248,6 +277,7 @@ fi
 #
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
+PRISM_ROOT_DIR=${PRISM_XIOS_ROOT_DIR-$PRISM_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
     echo " => OASIS activated"
     CHAN=MPI1
@@ -352,6 +382,8 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
     		else
 			FFLAGS1="$FFLAGS1 -openmp"
 		fi
+        elif [[ $OS == CYGWIN_NT-10.0 ]] ; then
+                FFLAGS1=="$FFLAGS1 -fopenmp"
 	elif [[ $OS == AIX ]] ; then
 		FFLAGS1="$FFLAGS1 -qsmp=omp"
 		CFT1="xlf95_r"

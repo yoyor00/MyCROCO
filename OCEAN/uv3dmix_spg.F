@@ -185,7 +185,7 @@
 # endif
 
       indx=3-nstp    !--> time index for target arrays;
-!
+
 # ifdef UV_MIX_S_SPONGE
 !
 !====================================================================
@@ -700,6 +700,7 @@
           cff1=pm(i,j)*pn(i,j)
           wz(i,j,N,indx)=wz(i,j,N,indx)+dt*cff1*(FX(i+1,j)-FX(i,j)
      &                                         + FE(i,j+1)-FE(i,j))
+           
         enddo
       enddo
 #  undef FX 

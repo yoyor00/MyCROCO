@@ -39,7 +39,9 @@
    Activate the RVTK_DEBUG procedure that will compare the results
    serial and multi-processor result by comparing binary file
 */
+#ifndef RVTK_DEBUG
 #undef RVTK_DEBUG
+#endif
 
 /*
     Constant tracer option (for debugging)
@@ -105,10 +107,17 @@
    Set default time-averaging filter for barotropic fields.
 ======================================================================
 */
-#undef  M2FILTER_NONE
-#define M2FILTER_POWER
-#undef  M2FILTER_COSINE
-#undef  M2FILTER_FLAT
+#ifdef M2FILTER_NONE     /* Check if options are defined in cppdefs.h */
+#elif defined M2FILTER_POWER
+#elif defined M2FILTER_COSINE
+#elif defined M2FILTER_FLAT
+#else
+# undef  M2FILTER_NONE
+# define M2FILTER_POWER
+# undef  M2FILTER_COSINE
+# undef  M2FILTER_FLAT
+#endif
+
 /*
 ======================================================================
    Activate barotropic pressure gradient response to the
@@ -117,8 +126,7 @@
 */
 #if defined SOLVE3D
 # define VAR_RHO_2D
-# if !defined NONLIN_EOS && !defined RVTK_DEBUG &&\
-     !defined INNERSHELF
+# if !defined NONLIN_EOS && !defined INNERSHELF
 #  define RESET_RHO0
 # endif
 #endif
@@ -131,18 +139,15 @@
 #ifdef NBQ
 # define M2FILTER_NONE
 # undef  M2FILTER_POWER
-# define VAR_RHO_2D
-# undef  NBQ_REINIT
+# undef  VAR_RHO_2D
 # undef  TRACETXT
 # undef  NBQ_OUT
-# define NBQ_CONS5
-# define NBQ_CONS6
 # define HZR Hzr
-# define OBC_NBQ
+# undef  OBC_NBQ
 # ifdef OBC_NBQ
-#  define OBC_NBQORLANSKI
+#  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED
-#  define NBQ_FRC_BRY
+#  undef  NBQ_FRC_BRY
 #  define W_FRC_BRY
 # endif
 #else
@@ -291,6 +296,10 @@
 # define TS_DIF4       /*         Hyperdiffusion  with         */
 # undef  TS_MIX_GEO    /*        Geopotential rotation         */
 # define TS_MIX_ISO    /*     or Isopycnal    rotation         */
+#  if defined GLS_MIX2017 || defined GLS_MIXING
+#   undef  TS_MIX_ISO
+#   define TS_MIX_GEO
+#  endif
 #endif
 #ifdef TS_HADV_RSUP5   /*    Pseudo RS 5th-order scheme is:    */
 # define TS_HADV_C6    /*    6th-order centered advection      */
@@ -560,7 +569,6 @@
 #  undef  MOVING_BATHY
 # endif
 #endif /* SEDIMENT */
-
 /*
 ======================================================================
                               OBCs

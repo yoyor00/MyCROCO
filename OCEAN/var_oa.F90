@@ -1,5 +1,7 @@
+
 #include "cppdefs.h"
-#ifdef ONLINE_ANALYSIS
+
+#if defined SOLVE3D && defined ONLINE_ANALYSIS
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -99,4 +101,31 @@
       return
       end function var_oa
 
+# else
+     real function var_oa(                                           &
+            ivar_v                                                    &
+           ,cnb_v                                                     &
+           ,i_v                                                       &
+           ,j_v                                                       &
+           ,k_v                                                       &
+           ,lv_v                                                      &
+           ,ls1_v                                              ) 
+
+     integer, intent(in) ::                                          &
+            cnb_v                                                     &
+           ,ivar_v                                                    &
+           ,i_v                                                       &
+           ,j_v                                                       &
+           ,k_v                                                       &
+           ,lv_v                                                      &
+           ,ls1_v
+
+      return
+      end function var_oa
+
+
+
 #endif
+
+
+

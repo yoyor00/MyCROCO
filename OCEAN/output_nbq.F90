@@ -21,9 +21,13 @@
 
       integer :: i,j,k,ichoix,j_o
       integer::p1_nbq,p2_nbq,p3_nbq,p4_nbq,p5_nbq
-      integer::ierrmpi_o
-      character*16 name_o
+      integer::ierrmpi_o,np_o
+      character*30 name_o
 
+
+! Number of points per lines:
+
+       np_o = 36
 
        if (ichoix.eq.0) then
 !
@@ -46,17 +50,40 @@
 
 #ifdef MPI
       if (mynode.lt.10) then
-         write (name_o,'(a,i1,a)') 'grid_nbq_',mynode,'.dat'
+         write (name_o,'(a,i1,a)') 'OUTPUT/grid_nbq_',mynode,'.dat'
       elseif (mynode.lt.100) then
-         write (name_o,'(a,i2,a)') 'grid_nbq_',mynode,'.dat'
+         write (name_o,'(a,i2,a)') 'OUTPUT/grid_nbq_',mynode,'.dat'
       elseif (mynode.lt.1000) then
-         write (name_o,'(a,i3,a)') 'grid_nbq_',mynode,'.dat'
+         write (name_o,'(a,i3,a)') 'OUTPUT/grid_nbq_',mynode,'.dat'
       endif
 #else
-      name_o = 'grid_nbq_s.dat'
+      name_o = 'OUTPUT/grid_nbq_s.dat'
 #endif
 
        open(unit=10,file=name_o)
+
+#ifdef OBC_WEST
+        write (10,*) 'OBC_WEST CPP key is true'
+#else
+        write (10,*) 'OBC_WEST CPP key is false'
+#endif
+#ifdef OBC_EAST 
+        write (10,*) 'OBC_EAST CPP key is true'
+#else
+        write (10,*) 'OBC_EAST CPP key is false'
+#endif
+#ifdef OBC_NORTH 
+        write (10,*) 'OBC_NORTH CPP key is true'
+#else
+        write (10,*) 'OBC_NORTH CPP key is false'
+#endif
+#ifdef OBC_SOUTH
+        write (10,*) 'OBC_SOUTH CPP key is true'
+#else
+        write (10,*) 'OBC_SOUTH CPP key is false'
+#endif
+        write (10,*)
+
 
 #ifdef MPI
        if (WEST_INTER) then
@@ -110,8 +137,32 @@
        if (NORTH_INTER_NBQ) then
         write (10,*) 'NORTH_INTER_NBQ is true'
        else
-        write (10,*) 'NORTH_INTER_NBQa is false'
+        write (10,*) 'NORTH_INTER_NBQ is false'
        endif
+
+       write (10,*) 
+
+       if (WESTERN_EDGE) then
+        write (10,*) 'WESTERN_EDGE is true'
+       else
+        write (10,*) 'WESTERN_EDGE is false'
+       endif
+       if (EASTERN_EDGE) then
+        write (10,*) 'EASTERN_EDGE is true'
+       else
+        write (10,*) 'EASTERN_EDGE is false'
+       endif
+       if (NORTHERN_EDGE) then
+        write (10,*) 'NORTHERN_EDGE is true'
+       else
+        write (10,*) 'NORTHERN_EDGE is false'
+       endif
+       if (SOUTHERN_EDGE) then
+        write (10,*) 'SOUTHERN_EDGE is true'
+       else
+        write (10,*) 'SOUTHERN_EDGE is false'
+       endif
+
        write (10,*) 
 #endif
 
@@ -154,146 +205,272 @@
        write(10,*)   
        write(10,*) 'Q-points: mijk2lq_nh(istr_nh-1:iend_nh+1,jstr_nh-1:jend_nh+1,N)'
 
-       if (jend_nh-jstr_nh.ge.18) then
-           j_o = jstr_nh+8
+       if (jend_nh-jstr_nh.ge.2*np_o+2) then
+           j_o = jstr_nh+np_o
        else
            j_o = jend_nh+1
        endif
 
-       if (iend_nh-istr_nh.ge.18) then
-          do j=jstr_nh-1,j_o
-             write(10,'(10I1,A3,10I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,istr_nh+8) &
+       if (jend_nh-jstr_nh.ge.2*np_o+2) then
+
+          if (iend_nh-istr_nh.ge.2*np_o+2) then
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(38I1,A3,38I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,istr_nh+np_o) &
                                        ,'...' &
-                                       ,(mijk2lq_nh(i,j,N),i=iend_nh-8,iend_nh+1)  
+                                       ,(mijk2lq_nh(i,j,N),i=iend_nh-np_o,iend_nh+1)  
+             enddo
+          else
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(80I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,iend_nh+1) 
+             enddo
+          endif
+          write (10,*) '                                     ...'
+      endif
+
+       if (iend_nh-istr_nh.ge.2*np_o+2) then
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,istr_nh+np_o) &
+                                       ,'...' &
+                                       ,(mijk2lq_nh(i,j,N),i=iend_nh-np_o,iend_nh+1)  
           enddo
        else
-          do j=jstr_nh-1,j_o
-             write(10,'(20I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,iend_nh+1) 
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(80I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,iend_nh+1) 
           enddo
        endif
 
-       if (jend_nh-jstr_nh.ge.18) then
-          write (10,*) '         ...'
-
-          if (iend_nh-istr_nh.ge.18) then
-             do j=max(jend_nh-8,jstr_nh),jend_nh+1
-                write(10,'(10I1,A3,10I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,istr_nh+8) &
-                                       ,'...' &
-                                       ,(mijk2lq_nh(i,j,N),i=iend_nh-8,iend_nh+1)  
-             enddo
-          else
-             do j=max(jend_nh-8,jstr_nh),jend_nh+1
-                write(10,'(20I1)') (mijk2lq_nh(i,j,N),i=istr_nh-1,iend_nh+1) 
-             enddo
-          endif
-      endif
 
 !.....U-Points:
+
        write(10,*)
        write(10,*) 'U-points: mijk2lmom_nh(istru_nh-1:iendu_nh+1,jstr_nh-1:jend_nh+1,N,1)'
 
-       if (iendu_nh-istru_nh.ge.18) then
-          do j=jstr_nh-1,j_o
-             write(10,'(10I1,A3,10I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,istru_nh+8) &
+       if (jendu_nh-jstru_nh.ge.2*np_o+2) then
+           j_o = jstru_nh+np_o
+       else
+           j_o = jendu_nh+1
+       endif
+
+       if (jendu_nh-jstru_nh.ge.2*np_o+2) then
+
+          if (iendu_nh-istru_nh.ge.2*np_o+2) then
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(38I1,A3,38I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,istru_nh+np_o) &
                                        ,'...' &
-                                       ,(mijk2lmom_nh(i,j,N,1),i=iendu_nh-8,iendu_nh+1)  
+                                       ,(mijk2lmom_nh(i,j,N,1),i=iendu_nh-np_o,iendu_nh+1)  
+             enddo
+          else
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(80I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,iendu_nh+1) 
+             enddo
+          endif
+          write (10,*) '                                     ...'
+       endif
+
+
+       if (iendu_nh-istru_nh.ge.2*np_o+2) then
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,istru_nh+np_o) &
+                                       ,'...' &
+                                       ,(mijk2lmom_nh(i,j,N,1),i=iendu_nh-np_o,iendu_nh+1)  
           enddo
        else
-          do j=jstr_nh-1,j_o
-             write(10,'(20I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,iendu_nh+1) 
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(80I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,iendu_nh+1) 
           enddo
        endif
 
-       if (jend_nh-jstr_nh.ge.18) then
-          write (10,*) '         ...'
-          if (iendu_nh-istru_nh.ge.18) then
-             do j=max(jend_nh-8,jstr_nh),jend_nh+1
-                write(10,'(10I1,A3,10I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,istru_nh+8) &
-                                       ,'...' &
-                                       ,(mijk2lmom_nh(i,j,N,1),i=iendu_nh-8,iendu_nh+1)  
-             enddo
-          else
-             do j=max(jend_nh-8,jstr_nh),jend_nh+1
-                write(10,'(20I1)') (mijk2lmom_nh(i,j,N,1),i=istru_nh-1,iendu_nh+1) 
-             enddo
-          endif
-       endif
 
 !.....V-Points:
        write(10,*)    
        write(10,*) 'V-points: mijk2lmom_nh(istr_nh-1:iend_nh+1,jstrv_nh-1:jendv_nh+1,N,2)'
 
-       if (jendv_nh-jstrv_nh.ge.18) then
-           j_o = jstrv_nh+8
+       if (jendv_nh-jstrv_nh.ge.2*np_o+2) then
+           j_o = jstrv_nh+np_o
        else
            j_o = jendv_nh+1
        endif
 
-       if (iend_nh-istr_nh.ge.18) then
-          do j=jstrv_nh-1,j_o
-             write(10,'(10I1,A3,10I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,istr_nh+8) &
-                                       ,'...' &
-                                       ,(mijk2lmom_nh(i,j,N,2),i=iend_nh-8,iend_nh+1)  
-          enddo
-       else
-          do j=jstrv_nh-1,j_o
-             write(10,'(20I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,iend_nh+1) 
-          enddo
-       endif
+       if (jendv_nh-jstrv_nh.ge.2*np_o+2) then
 
-       if (jendv_nh-jstrv_nh.ge.18) then
-          write (10,*) '         ...'
-
-          if (iend_nh-istr_nh.ge.18) then
-             do j=max(jendv_nh-8,jstrv_nh),jendv_nh+1
-                write(10,'(10I1,A3,10I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,istr_nh+8) &
+          if (iend_nh-istr_nh.ge.2*np_o+2) then
+             do j=jendv_nh+1,max(jendv_nh-np_o,jstrv_nh),-1
+                write(10,'(38I1,A3,38I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,istr_nh+np_o) &
                                        ,'...' &
-                                       ,(mijk2lmom_nh(i,j,N,2),i=iend_nh-8,iend_nh+1)  
+                                       ,(mijk2lmom_nh(i,j,N,2),i=iend_nh-np_o,iend_nh+1)  
              enddo
           else
-             do j=max(jendv_nh-8,jstrv_nh),jendv_nh+1
-                write(10,'(20I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,iend_nh+1) 
+             do j=jendv_nh+1,max(jendv_nh-np_o,jstrv_nh),-1
+                write(10,'(80I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,iend_nh+1) 
              enddo
           endif
+          write (10,*) '                                     ...'
        endif
+
+       if (iend_nh-istr_nh.ge.2*np_o+2) then
+          do j=j_o,jstrv_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,istr_nh+np_o) &
+                                       ,'...' &
+                                       ,(mijk2lmom_nh(i,j,N,2),i=iend_nh-np_o,iend_nh+1)  
+          enddo
+       else
+          do j=j_o,jstrv_nh-1,-1
+             write(10,'(80I1)') (mijk2lmom_nh(i,j,N,2),i=istr_nh-1,iend_nh+1) 
+          enddo
+       endif
+
 
 !......W-Points:
        write(10,*)  
        write(10,*) 'W-points: mijk2lmom_nh(istr_nh-1:iend_nh+1,jstr_nh-1:jend_nh+1,N,3)'
 
-       if (jend_nh-jstr_nh.ge.18) then
-           j_o = jstr_nh+8
+       if (jend_nh-jstr_nh.ge.2*np_o+2) then
+
+          if (iend_nh-istr_nh.ge.2*np_o+2) then
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(38I1,A3,38I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,istr_nh+np_o) &
+                                       ,'...' &
+                                       ,(mijk2lmom_nh(i,j,N,3),i=iend_nh-np_o,iend_nh+1)  
+             enddo
+          else
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(80I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,iend_nh+1) 
+             enddo
+          endif
+          write (10,*) '                                     ...'
+      endif
+
+       if (jend_nh-jstr_nh.ge.2*np_o+2) then
+           j_o = jstr_nh+np_o
        else
            j_o = jend_nh+1
        endif
 
-       if (iend_nh-istr_nh.ge.18) then
-          do j=jstr_nh-1,j_o
-             write(10,'(10I1,A3,10I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,istr_nh+8) &
+       if (iend_nh-istr_nh.ge.2*np_o+2) then
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,istr_nh+np_o) &
                                        ,'...' &
-                                       ,(mijk2lmom_nh(i,j,N,3),i=iend_nh-8,iend_nh+1)  
+                                       ,(mijk2lmom_nh(i,j,N,3),i=iend_nh-np_o,iend_nh+1)  
           enddo
        else
-          do j=jstr_nh-1,j_o
-             write(10,'(20I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,iend_nh+1) 
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(80I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,iend_nh+1) 
           enddo
        endif
 
-       if (jend_nh-jstr_nh.ge.18) then
-          write (10,*) '         ...'
+#ifdef MASKING
+!......Masks:
+      write(10,*)  
+      write(10,*) 'Rmask_nbq : '
+ 
+       if (jend_nh-jstr_nh.ge.2*np_o+2) then
+           j_o = jstr_nh+np_o
+       else
+           j_o = jend_nh+1
+       endif
 
-          if (iend_nh-istr_nh.ge.18) then
-             do j=max(jend_nh-8,jstr_nh),jend_nh+1
-                write(10,'(10I1,A3,10I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,istr_nh+8) &
+       if (jend_nh-jstr_nh.ge.2*np_o+2) then
+
+          if (iend_nh-istr_nh.ge.2*np_o+2) then
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(38I1,A3,38I1)') (int(rmask_nbq(i,j)),i=istr_nh-1,istr_nh+np_o) &
                                        ,'...' &
-                                       ,(mijk2lmom_nh(i,j,N,3),i=iend_nh-8,iend_nh+1)  
+                                       ,(int(rmask_nbq(i,j)),i=iend_nh-np_o,iend_nh+1)  
              enddo
           else
-             do j=max(jend_nh-8,jstr_nh),jend_nh+1
-                write(10,'(20I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,iend_nh+1) 
+             do j=jend_nh+1,max(jend_nh-np_o,jstr_nh),-1
+                write(10,'(80I1)') (int(rmask_nbq(i,j)),i=istr_nh-1,iend_nh+1) 
              enddo
           endif
+          write (10,*) '                                     ...'
       endif
+
+       if (iend_nh-istr_nh.ge.2*np_o+2) then
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (int(rmask_nbq(i,j)),i=istr_nh-1,istr_nh+np_o) &
+                                       ,'...' &
+                                       ,(int(rmask_nbq(i,j)),i=iend_nh-np_o,iend_nh+1)  
+          enddo
+       else
+          do j=j_o,jstr_nh-1,-1
+             write(10,'(80I1)') (int(rmask_nbq(i,j)),i=istr_nh-1,iend_nh+1) 
+          enddo
+       endif
+
+      write(10,*)  
+      write(10,*) 'Umask_nbq : '
+
+       if (jendu_nh-jstru_nh.ge.2*np_o+2) then
+           j_o = jstru_nh+np_o
+       else
+           j_o = jendu_nh+1
+       endif
+
+       if (jendu_nh-jstru_nh.ge.2*np_o+2) then
+
+          if (iendu_nh-istru_nh.ge.2*np_o+2) then
+             do j=jendu_nh+1,max(jendu_nh-np_o,jstru_nh),-1
+                write(10,'(38I1,A3,38I1)') (int(umask_nbq(i,j)),i=istru_nh-1,istru_nh+np_o) &
+                                       ,'...' &
+                                       ,(int(umask_nbq(i,j)),i=iendu_nh-np_o,iendu_nh+1)  
+             enddo
+          else
+             do j=jendu_nh+1,max(jendu_nh-np_o,jstru_nh),-1
+                write(10,'(80I1)') (int(umask_nbq(i,j)),i=istru_nh-1,iendu_nh+1) 
+             enddo
+          endif
+          write (10,*) '                                     ...'
+      endif
+
+       if (iendu_nh-istru_nh.ge.2*np_o+2) then
+          do j=j_o,jstru_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (int(umask_nbq(i,j)),i=istru_nh-1,istru_nh+np_o) &
+                                       ,'...' &
+                                       ,(int(umask_nbq(i,j)),i=iendu_nh-np_o,iendu_nh+1)  
+          enddo
+       else
+          do j=j_o,jstru_nh-1,-1
+             write(10,'(80I1)') (int(umask_nbq(i,j)),i=istru_nh-1,iendu_nh+1) 
+          enddo
+       endif
+
+      write(10,*)  
+      write(10,*) 'Vmask_nbq : '
+
+       if (jendv_nh-jstrv_nh.ge.2*np_o+2) then
+           j_o = jstrv_nh+np_o
+       else
+           j_o = jendv_nh+1
+       endif
+
+       if (jendv_nh-jstrv_nh.ge.2*np_o+2) then
+
+          if (iendv_nh-istrv_nh.ge.2*np_o+2) then
+             do j=jendv_nh+1,max(jendv_nh-np_o,jstrv_nh),-1
+                write(10,'(38I1,A3,38I1)') (int(vmask_nbq(i,j)),i=istrv_nh-1,istrv_nh+np_o) &
+                                       ,'...' &
+                                       ,(int(vmask_nbq(i,j)),i=iendv_nh-np_o,iendv_nh+1)  
+             enddo
+          else
+             do j=jendv_nh+1,max(jendv_nh-np_o,jstrv_nh),-1
+                write(10,'(80I1)') (int(vmask_nbq(i,j)),i=istrv_nh-1,iendv_nh+1) 
+             enddo
+          endif
+          write (10,*) '                                     ...'
+      endif
+
+       if (iendv_nh-istrv_nh.ge.2*np_o+2) then
+          do j=j_o,jstrv_nh-1,-1
+             write(10,'(38I1,A3,38I1)') (int(vmask_nbq(i,j)),i=istrv_nh-1,istrv_nh+np_o) &
+                                       ,'...' &
+                                       ,(int(vmask_nbq(i,j)),i=iendv_nh-np_o,iendv_nh+1)  
+          enddo
+       else
+          do j=j_o,jstrv_nh-1,-1
+             write(10,'(80I1)') (int(vmask_nbq(i,j)),i=istrv_nh-1,iendv_nh+1) 
+          enddo
+       endif
+#endif
 
       close(10)
       

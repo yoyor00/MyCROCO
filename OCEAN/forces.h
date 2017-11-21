@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,6 +20,10 @@
       real sustr(GLOBAL_2D_ARRAY)
       real svstr(GLOBAL_2D_ARRAY)
       common /forces_sustr/sustr /forces_svstr/svstr
+#ifdef OA_COUPLING
+      real smstr(GLOBAL_2D_ARRAY)
+      common /forces_smstr/smstr
+#endif
 #ifndef ANA_SMFLUX
 !
 !  tsms      Time of surface momentum stresses.
@@ -261,18 +265,18 @@
       real radswbio(GLOBAL_2D_ARRAY)
 # endif
 
-      common /bulk_tair/tair
-     &       /bulk_rhum/rhum 
-     &       /bulk_prate/prate
-     &       /bulk_radlw/radlw 
-     &       /bulk_radsw/radsw
-     &       /bulk_wspd/wspd
+      common /bulk_tair/ tair
+      common /bulk_rhum/ rhum 
+      common /bulk_prate/ prate
+      common /bulk_radlw/ radlw 
+      common /bulk_radsw/ radsw
+      common /bulk_wspd/ wspd
 # ifdef BULK_SM_UPDATE
-     &       /bulk_uwnd/uwnd 
-     &       /bulk_vwnd/vwnd
+      common /bulk_uwnd/ uwnd 
+      common /bulk_vwnd/ vwnd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       /bulk_radswbio/radswbio
+      common /bulk_radswbio/ radswbio
 # endif
 
       real tairg(GLOBAL_2D_ARRAY,2)
@@ -289,63 +293,62 @@
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
 
-      common /bulkdat_tairg/tairg
-     &       /bulkdat_rhumg/rhumg
-     &       /bulkdat_prateg/prateg
-     &       /bulkdat_radlwg/radlwg
-     &       /bulkdat_radswg/radswg
-     &       /bulkdat_wspdg/wspdg
+      common /bulkdat_tairg/tairg 
+      common /bulkdat_rhumg/rhumg 
+      common /bulkdat_prateg/prateg 
+      common /bulkdat_radlwg/radlwg 
+      common /bulkdat_radswg/radswg 
+      common /bulkdat_wspdg/wspdg 
 # ifdef BULK_SM_UPDATE 
-     &       /bulk_uwndg/uwndg
-     &       /bulk_vwndg/vwndg
+      common /bulk_uwndg/uwndg 
+      common /bulk_vwndg/vwndg 
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       /bulkdat_radswbiog/radswbiog
+      common /bulkdat_radswbiog/radswbiog
 # endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-     &       ,wspdp(2)
+      real    wspdp(2)
 # ifdef BULK_SM_UPDATE
-     &       ,uwndp(2),vwndp(2)
+      real    uwndp(2),vwndp(2)
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       ,radswbiop(2)
+      real    radswbiop(2)
 # endif
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
-     & 	     ,ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd 
-     &       ,wspd_id,lwspdgrd
+      integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
+      integer wspd_id,lwspdgrd
 # ifdef BULK_SM_UPDATE
-     &       ,uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+      integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &        ,radswbio_id,lradswbiogrd
+      integer radswbio_id,lradswbiogrd
 # endif
       integer itbulk,bulk_ncycle,bulk_rec,bulk_tid
-     &        ,bulkunused
+      integer bulkunused
 
-      common /bulkdat1/
-     &        tair_id,rhum_id,prate_id,radlw_id,radsw_id
-     &        ,ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-     &        ,itbulk, bulk_ncycle, bulk_rec, bulk_tid
-     &        ,bulkunused
-     &        ,wspd_id,lwspdgrd
+      common /bulkdat1_for/ tair_id,rhum_id,prate_id,radlw_id,radsw_id
+      common /bulkdat1_grd/ ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
+      common /bulkdat1_tim/ itbulk, bulk_ncycle, bulk_rec, bulk_tid
+      common /bulkdat1_uns/ bulkunused
 # ifdef BULK_SM_UPDATE
-     &       ,uwnd_id,vwnd_id,luwndgrd,lvwndgrd
+      common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       ,radswbio_id,lradswbiogrd
+      common /bulkdat1_bio/ radswbio_id,lradswbiogrd
 # endif
-      common /bulkdat2/
-     &        tairp,rhump,pratep,radlwp,radswp
-     &       ,bulk_time, bulk_cycle
-     &       ,wspdp
+      common /bulkdat1_wspd/ wspd_id,lwspdgrd
+
+      common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
+      common /bulkdat2_tim/ bulk_time, bulk_cycle
 # ifdef BULK_SM_UPDATE
-     &       ,uwndp,vwndp
+      common /bulkdat2_wnd/ uwndp,vwndp
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-     &       ,radswbiop
+      common /bulkdat2_bio/ radswbiop
 # endif
+      common /bulkdat2_wspd/ wspdp 
 #endif /* BULK_FLUX */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.

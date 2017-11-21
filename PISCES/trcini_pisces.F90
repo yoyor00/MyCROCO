@@ -54,12 +54,6 @@ MODULE trcini_pisces
       silic1 =  91.65e-6         , &
       no3    =  31.04e-6 * 7.6
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: trcini_pisces.F90 1808 2010-03-11 09:17:56Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
     SUBROUTINE trc_ini_pisces
@@ -123,13 +117,13 @@ CONTAINS
 
       CALL p4z_che        ! initialize the chemical constants
 
-      ndayflxtr = nday_year      !  Initialize a counter for the computation of chemistry
+      ndayflxtr = 0      !  Initialize a counter for the computation of chemistry
 
       ! Initialization of tracer concentration in case of  no restart 
       !--------------------------------------------------------------
       ln_rsttr = ( nrrec /= 0 ) 
-      !
-      IF( .NOT. ln_rsttr ) THEN  
+#ifdef NEMO
+      IF( .NOT. ln_rsttr ) THEN
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
@@ -164,9 +158,9 @@ CONTAINS
                ENDDO
             ENDDO
          ENDDO
-
       ENDIF
-
+#endif
+      !
       
       ! initialize the half saturation constant for silicate
       ! ----------------------------------------------------
@@ -228,7 +222,8 @@ CONTAINS
 
 
       NAMELIST/nampistrc/ tracer
-      NAMELIST/nampisbio/ part, nrdttrc, wsbio, xkmort, ferat3, wsbio2, niter1max, niter2max
+      NAMELIST/nampisbio/ part, nrdttrc, wsbio, xkmort, ferat3, wsbio2,  &
+                  &        ln_sink_new, niter1max, niter2max
 #if defined key_kriest
       NAMELIST/nampiskrp/ xkr_eta, xkr_zeta, xkr_ncontent, xkr_mass_min, xkr_mass_max
 #endif
@@ -277,14 +272,15 @@ CONTAINS
 
       IF(lwp) THEN                         ! control print
          WRITE(numout,*) ' Namelist : nampisbio'
-         WRITE(numout,*) '    part of calcite not dissolved in guts     part      =', part
-         WRITE(numout,*) '    frequence pour la biologie                nrdttrc   =', nrdttrc
-         WRITE(numout,*) '    POC sinking speed                         wsbio     =', wsbio
-         WRITE(numout,*) '    half saturation constant for mortality    xkmort    =', xkmort
-         WRITE(numout,*) '    Fe/C in zooplankton                       ferat3    =', ferat3
-         WRITE(numout,*) '    Big particles sinking speed               wsbio2    =', wsbio2
-         WRITE(numout,*) '    Maximum number of iterations for POC      niter1max =', niter1max
-         WRITE(numout,*) '    Maximum number of iterations for GOC      niter2max =', niter2max
+         WRITE(numout,*) '    part of calcite not dissolved in guts     part        =', part
+         WRITE(numout,*) '    frequence pour la biologie                nrdttrc     =', nrdttrc
+         WRITE(numout,*) '    half saturation constant for mortality    xkmort      =', xkmort
+         WRITE(numout,*) '    Fe/C in zooplankton                       ferat3      =', ferat3
+         WRITE(numout,*) '    Use of new sinking scheme (y/n)           ln_sink_new =', ln_sink_new
+         WRITE(numout,*) '    POC sinking speed                         wsbio       =', wsbio
+         WRITE(numout,*) '    Big particles sinking speed               wsbio2      =', wsbio2
+         WRITE(numout,*) '    Maximum number of iterations for POC      niter1max   =', niter1max
+         WRITE(numout,*) '    Maximum number of iterations for GOC      niter2max   =', niter2max
       ENDIF
 
       CALL p4z_lim_nam       !  co-limitations by the various nutrients
@@ -333,10 +329,18 @@ CONTAINS
 
 # include "netcdf.inc"
 
-      INTEGER :: ji, jj, irec
+      INTEGER :: ji, jj, irec, jk
       INTEGER :: ncid, varid, dimid, ierr, &
      &           lstr, lenstr, nf_fread, nrec_dust
+      INTEGER :: vartype, nvatts, latt, nvdims
+      INTEGER :: vdims(5)
+      CHARACTER(len=16) :: varname, dimname, attname
+
+      REAL     ::  cycle_length
       REAL(wp) ::  dustmp(GLOBAL_2D_ARRAY,366)
+      REAL(wp) ::  no3deptmp(GLOBAL_2D_ARRAY,366)
+      REAL(wp) ::  nh4deptmp(GLOBAL_2D_ARRAY,366)
+      REAL(wp) ::  zmaskt, expide, denitide
 
 #ifdef MPI
 #define LOCALLM Lmmpi
@@ -346,21 +350,51 @@ CONTAINS
 #define LOCALMM Mm
 #endif
 
-      ALLOCATE( dustmo(GLOBAL_2D_ARRAY,12), STAT= ierr )
+      ALLOCATE( no3depmo(GLOBAL_2D_ARRAY,12), nh4depmo(GLOBAL_2D_ARRAY,12), &
+         &      dustmo(GLOBAL_2D_ARRAY,12),cmask(GLOBAL_2D_ARRAY,jpk), STAT= ierr )
 
 !
 !    READ DUST INPUT FROM ATMOSPHERE
 !    -------------------------------------
 !
-      IF( ln_dustfer ) THEN
+      IF( ln_dust .OR. ln_ndepo ) THEN
         lstr=lenstr(bioname)
         ierr=nf_open (bioname(1:lstr), nf_nowrite, ncid)
-        if (ierr .ne. nf_noerr) then
-           write(stdout,4) bioname
+        if (ierr .ne. nf_noerr .and. lwp ) then
+           write(numout,4) bioname
+        endif
+        ierr=nf_inq_varid(ncid,"dust_time",varid)
+        ierr=nf_inq_var  (ncid, varid, varname, vartype,  &
+       &                        nvdims,  vdims,  nvatts)
+
+       year2daydta = year2day
+       do ji=1,nvatts
+          ierr=nf_inq_attname (ncid, varid, ji, attname)
+          if (ierr .eq. nf_noerr) then
+             latt=lenstr(attname)
+             if (attname(1:latt) .eq. 'cycle_length') then
+                ierr=nf_get_att_FTYPE (ncid, varid,  &
+                   &                  attname(1:latt), cycle_length)
+                if(ierr .eq. nf_noerr) then
+                  year2daydta=cycle_length
+                else
+                  if(lwp) write(numout,'(/1x,4A/)') 'SET_CYCLE ERROR while ', &
+     &              'reading attribute ''', attname(1:latt), '''.'       
+                endif
+             endif
+           endif
+        enddo
+      ENDIF
+
+      IF( ln_dust ) THEN
+        lstr=lenstr(bioname)
+        ierr=nf_open (bioname(1:lstr), nf_nowrite, ncid)
+        if (ierr .ne. nf_noerr .and. lwp ) then
+           write(numout,4) bioname
         endif
         ierr=nf_inq_varid (ncid,"dust",varid)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,5) "dust", bioname
+        if (ierr .ne. nf_noerr .and. lwp ) then
+          write(numout,5) "dust", bioname
         endif
         ierr=nf_inq_dimid(ncid,"dust_time",dimid)
         ierr=nf_inq_dimlen(ncid,dimid,nrec_dust)
@@ -369,23 +403,18 @@ CONTAINS
         do irec=1,nrec_dust
           ierr=nf_fread(dustmp(START_2D_ARRAY,irec), ncid, varid, &
      &                                              irec, r2dvar)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,6) "dust", irec 
+          if (ierr .ne. nf_noerr .and. lwp ) then
+            write(numout,6) "dust", irec 
           endif
         enddo
         ierr=nf_close(ncid)
-        write(stdout,*) 
-        write(stdout,'(6x,A,1x,I4)') &
+        if(lwp) write(numout,*) 
+        if(lwp) write(numout,'(6x,A,1x,I4)') &
 #ifdef MPI
      &                   'TRCINI_PISCES -- Read dust deposition ', mynode
 #else
      &                   'TRCINI_PISCES -- Read dust deposition ' 
 #endif
-  4     format(/,' TRCINI_PISCES - unable to open forcing netCDF ',1x,A)
-  5     format(/,' TRCINI_PISCES - unable to find forcing variable: ',A, &
-     &                               /,14x,'in forcing netCDF  ',A)
-  6     format(/,' TRCINI_PISCES - error while reading variable: ',A,2x, &
-     &                                           ' at TIME index = ',i4)
 
         DO irec = 1, nrec_dust
            DO jj = 1, LOCALMM
@@ -396,6 +425,95 @@ CONTAINS
         ENDDO
       
       ENDIF
+
+!
+!    READ N DEPOSITION FROM ATMOSPHERE (use dust_time for time)
+!    -------------------------------------
+!
+      IF (ln_ndepo) THEN
+        lstr=lenstr(bioname)
+        ierr=nf_open (bioname(1:lstr), nf_nowrite, ncid)
+        if (ierr .ne. nf_noerr .and. lwp) then
+           write(numout,4) bioname
+        endif
+        ierr=nf_inq_varid (ncid,"ndepo",varid)
+        if (ierr .ne. nf_noerr .and. lwp ) then
+          write(numout,5) "ndepo", bioname
+        endif
+        ierr=nf_inq_dimid(ncid,"dust_time",dimid)
+        ierr=nf_inq_dimlen(ncid,dimid,nrec_dust)
+!        write(*,*)'NREC_DUST=',nrec_dust
+!        write(*,*)'-----------------------------'
+        do irec=1,nrec_dust
+          ierr=nf_fread(no3deptmp(START_2D_ARRAY,irec), ncid, varid, &
+     &                                              irec, r2dvar)
+          if (ierr .ne. nf_noerr .and. lwp ) then
+            write(numout,6) "ndepo", irec
+          endif
+        enddo
+        !
+        ierr=nf_close(ncid)
+        if(lwp) write(numout,*) 
+        if(lwp) write(numout,'(6x,A,1x,I4)') &
+#ifdef MPI
+     &                   'TRCINI_PISCES -- Read Nitrate deposition ', mynode
+#else
+     &                   'TRCINI_PISCES -- Read Nitrate deposition ' 
+#endif
+
+        do irec=1,nrec_dust
+          do jj=1,LOCALMM
+            do ji=1,LOCALLM
+              no3depmo(ji,jj,irec)=no3deptmp(ji,jj,irec)
+            enddo
+          enddo
+        enddo
+        !
+        lstr=lenstr(bioname)
+        ierr=nf_open (bioname(1:lstr), nf_nowrite, ncid)
+        if (ierr .ne. nf_noerr .and. lwp) then
+           write(numout,4) bioname
+        endif
+        ierr=nf_inq_varid (ncid,"nhxdepo",varid)
+        if (ierr .ne. nf_noerr .and. lwp ) then
+          write(numout,5) "nhxdepo", bioname
+        endif
+        ierr=nf_inq_dimid(ncid,"dust_time",dimid)
+        ierr=nf_inq_dimlen(ncid,dimid,nrec_dust)
+!        write(*,*)'NREC_DUST=',nrec_dust
+!        write(*,*)'-----------------------------'
+        do irec=1,nrec_dust
+          ierr=nf_fread(nh4deptmp(START_2D_ARRAY,irec), ncid, varid, &
+     &                                              irec, r2dvar)
+          if (ierr .ne. nf_noerr .and. lwp ) then
+            write(numout,6) "nhxdepo", irec
+          endif
+        enddo
+        !
+        ierr=nf_close(ncid)
+        if(lwp) write(numout,*) 
+        if(lwp) write(numout,'(6x,A,1x,I4)') &
+#ifdef MPI
+     &                   'TRCINI_PISCES -- Read Ammoniun deposition ', mynode
+#else
+     &                   'TRCINI_PISCES -- Read Ammoniun deposition ' 
+#endif
+
+        do irec=1,nrec_dust
+          do jj=1,LOCALMM
+            do ji=1,LOCALLM
+              nh4depmo(ji,jj,irec)=nh4deptmp(ji,jj,irec)
+            enddo
+          enddo
+        enddo
+
+      ENDIF
+
+  4     format(/,' TRCINI_PISCES - unable to open forcing netCDF ',1x,A)
+  5     format(/,' TRCINI_PISCES - unable to find forcing variable: ',A, &
+     &                               /,14x,'in forcing netCDF  ',A)
+  6     format(/,' TRCINI_PISCES - error while reading variable: ',A,2x, &
+     &                                           ' at TIME index = ',i4)
 
    END SUBROUTINE trc_sbc_pisces 
 

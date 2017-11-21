@@ -70,10 +70,12 @@
 #  define SWITCH !
 # endif
 !
-!--------------------------------------------------------------------
-!  Apply right-hand-side
-!--------------------------------------------------------------------
+!<-- Apply right-hand-side
 !
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                           rw_nbq_avg2(START_2D_ARRAY,0))
+#endif
       do j=Jstr,Jend
         do k=1,N
           do i=Istr,Iend
@@ -105,7 +107,14 @@
           FC(i,N)=0.
         enddo
 
-        do k=1,N-1
+        k=1
+        do i=Istr,Iend
+          DC(i,k)=wz(i,j,k,nnew)                                    !<-- rhs
+          BC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j,k+1)) - FC(i,k) 
+     &            +0.5*dt*( Akv(i,j,k)+Akv(i,j,k) )
+     &                 /    ( z_w(i,j,k)-z_w(i,j,k-1) )
+        enddo
+        do k=2,N-1
           do i=Istr,Iend
             DC(i,k)=wz(i,j,k,nnew)                                    !<-- rhs
             BC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j,k+1)) - FC(i,k) - FC(i,k-1) !<-- diagonal term
@@ -138,8 +147,9 @@
              wz(i,j,k,nnew)=DC(i,k)-CF(i,k)*wz(i,j,k+1,nnew)  !<-- wz in m.s-1
           enddo
         enddo      !--> discard FC,BC; keep DC,CF(:,0)
-
+        
       enddo      ! <-- j
+
 #else
       do j=Jstr,Jend
         do k=1,N-1
@@ -152,6 +162,8 @@
         enddo
       enddo
 #endif
+#undef NBQ_WDIF
+
 !
 !--------------------------------------------------------------------
 ! Set PHYSICAL lateral boundary conditions.
@@ -165,7 +177,7 @@
 !
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))
+     &                                 wz(START_2D_ARRAY,0,nnew))
 # endif
 
       return

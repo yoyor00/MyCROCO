@@ -84,17 +84,6 @@
           enddo
         enddo
       enddo
-# elif defined VORTEX || defined INTERNAL || defined EQUATOR \
-                      || defined JET      || defined SHOREFACE \
-                      || defined IGW
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            Akv(i,j,k)=Akv_bak
-            Akt(i,j,k,itemp)=Akt_bak(itemp)
-          enddo
-        enddo
-      enddo
 # elif defined SHOREFACE
       do k=1,N-1
         do j=Jstr,Jend

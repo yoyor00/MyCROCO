@@ -49,145 +49,90 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)         
        l1_nh = cont_nnz_nh(l_nh)
+       l2_nh = contz_nnz_nh(l_nh)
 
 !-----------------------------
 !....... u(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = (- on_u(i,j)*pm(i,j)*pn(i,j)                  &
-                          - coefb_u(i,j,k) * gdepth_u(i,j,k)            &
-                          / (0.5*( Hzr_half_nbq(i-1,j,k) +              &
-                                    Hzr_half_nbq(i,j,k) ) )  )       
-#else
         contv_nh(l1_nh) = (- on_u(i,j)*pm(i,j)*pn(i,j)                  &
                           - coefb_u(i,j,k) * gdepth_u(i,j,k)            &
                           / (0.5*( Hzr_half_nbq(i-1,j,k) +              &
                                     Hzr_half_nbq(i,j,k) ) )  )          &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k,1)
 
 !-----------------------------
 !....... v(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = (- om_v(i,j)*pm(i,j)*pn(i,j)                  &
-                          - coefb_v(i,j,k) * gdepth_v(i,j,k)            &
-                          / (0.5*(Hzr_half_nbq(i,j-1,k)+                &
-                                  Hzr_half_nbq(i,j,k)))    )      
-#else
         contv_nh(l1_nh) = (- om_v(i,j)*pm(i,j)*pn(i,j)                  &
                           - coefb_v(i,j,k) * gdepth_v(i,j,k)            &
                           / (0.5*(Hzr_half_nbq(i,j-1,k)+                &
                                   Hzr_half_nbq(i,j,k)))    )            &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k,2)
 
 !-----------------------------
 !....... u(i,j,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_u(i,j,k+1) * gdepth_u(i,j,k+1)        &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k+1)+              &
-                                  Hzr_half_nbq(i,j,k+1)))            
-#else
         contv_nh(l1_nh) = - coefa_u(i,j,k+1) * gdepth_u(i,j,k+1)        &
                           / (0.5*(Hzr_half_nbq(i-1,j,k+1)+              &
                                   Hzr_half_nbq(i,j,k+1)))               &
                           / Hzr_half_nbq(i,j,k) 
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k+1,1)
 
 !-----------------------------
 !....... v(i,j,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_v(i,j,k+1) * gdepth_v(i,j,k+1)        &
-                          / (0.5*(Hzr_half_nbq(i,j-1,k+1)+              &
-                                  Hzr_half_nbq(i,j,k+1)))     
-#else
         contv_nh(l1_nh) = - coefa_v(i,j,k+1) * gdepth_v(i,j,k+1)        &
                           / (0.5*(Hzr_half_nbq(i,j-1,k+1)+              &
                                   Hzr_half_nbq(i,j,k+1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k+1,2)
 
 !-----------------------------
 !....... u(i+1,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) =  ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
-                          - coefb_u(i+1,j,k) * gdepth_u(i+1,j,k)        &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))   )  
-#else
         contv_nh(l1_nh) =  ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
                           - coefb_u(i+1,j,k) * gdepth_u(i+1,j,k)        &
                           / (0.5*(Hzr_half_nbq(i,j,k)+                  &
                                   Hzr_half_nbq(i+1,j,k)))   )           &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k,1)
 
 !-----------------------------
 !....... v(i,j+1,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) =  ( om_v(i,j+1)*pm(i,j)*pn(i,j)                &
-                          - coefb_v(i,j+1,k) * gdepth_v(i,j+1,k)        &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i,j+1,k)))   )      
-#else
         contv_nh(l1_nh) =  ( om_v(i,j+1)*pm(i,j)*pn(i,j)                &
                           - coefb_v(i,j+1,k) * gdepth_v(i,j+1,k)        &
                           / (0.5*(Hzr_half_nbq(i,j,k)+                  &
                                   Hzr_half_nbq(i,j+1,k)))   )           &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k,2)
 
 !-----------------------------
 !....... u(i+1,j,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
-                                  Hzr_half_nbq(i+1,j,k+1)))        
-#else
         contv_nh(l1_nh) = - coefa_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
                                   Hzr_half_nbq(i+1,j,k+1)))             &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k+1,1)
 
 !-----------------------------
 !....... v(i,j+1,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
-                                  Hzr_half_nbq(i,j+1,k+1)))     
-#else
         contv_nh(l1_nh) = - coefa_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
                                   Hzr_half_nbq(i,j+1,k+1)))             &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k+1,2) 
 
 !-----------------------------
 !....... w(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                  
-#else
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k)
-#endif
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k,3)
+        contzv_nh(l2_nh) = 1. / Hzw_half_nbq(i,j,k)                     &
+                              / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)
 
 !-----------------------------
 !....... w(i,j,k-1): 
@@ -206,224 +151,137 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)      
        l1_nh = cont_nnz_nh(l_nh)
+       l2_nh = contz_nnz_nh(l_nh)
 
 !-----------------------------
 !....... u(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) =( - on_u(i,j)*pm(i,j)*pn(i,j)                  &
-                          - ( coefb_u(i,j,k) - coefa_u(i,j,k) )         &
-                          * gdepth_u(i,j,k)                             &
-                            / (0.5*(Hzr_half_nbq(i-1,j,k)+              &
-                                    Hzr_half_nbq(i,j,k)))      ) 
-#else
         contv_nh(l1_nh) =( - on_u(i,j)*pm(i,j)*pn(i,j)                  &
                           - ( coefb_u(i,j,k) - coefa_u(i,j,k) )         &
                           * gdepth_u(i,j,k)                             &
                             / (0.5*(Hzr_half_nbq(i-1,j,k)+              &
                                     Hzr_half_nbq(i,j,k)))      )        &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k,1)
 
 !-----------------------------
 !....... v(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) =( - om_v(i,j)*pm(i,j)*pn(i,j)                  &
-                          - ( coefb_v(i,j,k) - coefa_v(i,j,k) )         &
-                          * gdepth_v(i,j,k)                             &
-                             / (0.5*(Hzr_half_nbq(i,j-1,k)+             &
-                                     Hzr_half_nbq(i,j,k)))   ) 
-#else
         contv_nh(l1_nh) =( - om_v(i,j)*pm(i,j)*pn(i,j)                  &
                           - ( coefb_v(i,j,k) - coefa_v(i,j,k) )         &
                           * gdepth_v(i,j,k)                             &
                              / (0.5*(Hzr_half_nbq(i,j-1,k)+             &
                                      Hzr_half_nbq(i,j,k)))   )          &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k,2)
 
 !-----------------------------
 !....... u(i,j,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_u(i,j,k+1) * gdepth_u(i,j,k+1)        &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k+1)+              &
-                                  Hzr_half_nbq(i,j,k+1)))   
-#else
         contv_nh(l1_nh) = - coefa_u(i,j,k+1) * gdepth_u(i,j,k+1)        &
                           / (0.5*(Hzr_half_nbq(i-1,j,k+1)+              &
                                   Hzr_half_nbq(i,j,k+1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k+1,1)
 
 !-----------------------------
 !....... v(i,j,k+1):
 !-----------------------------  
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_v(i,j,k+1) * gdepth_v(i,j,k+1)        &
-                          / (0.5*(Hzr_half_nbq(i,j-1,k+1)+              &
-                                  Hzr_half_nbq(i,j,k+1))) 
-#else
         contv_nh(l1_nh) = - coefa_v(i,j,k+1) * gdepth_v(i,j,k+1)        &
                           / (0.5*(Hzr_half_nbq(i,j-1,k+1)+              &
                                   Hzr_half_nbq(i,j,k+1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k+1,2)
 
 !-----------------------------
 !....... u(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_u(i,j,k-1) * gdepth_u(i,j,k-1)        &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k-1)+              &
-                                  Hzr_half_nbq(i,j,k-1)))   
-#else
         contv_nh(l1_nh) = + coefb_u(i,j,k-1) * gdepth_u(i,j,k-1)        &
                           / (0.5*(Hzr_half_nbq(i-1,j,k-1)+              &
                                   Hzr_half_nbq(i,j,k-1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,1)
 
 !-----------------------------
 !....... v(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_v(i,j,k-1) * gdepth_v(i,j,k-1)        &
-                          / (0.5*(Hzr_half_nbq(i,j-1,k-1)+              &
-                                  Hzr_half_nbq(i,j,k-1)))
-#else
         contv_nh(l1_nh) = + coefb_v(i,j,k-1) * gdepth_v(i,j,k-1)        &
                           / (0.5*(Hzr_half_nbq(i,j-1,k-1)+              &
                                   Hzr_half_nbq(i,j,k-1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,2)
 
 !-----------------------------
 !....... u(i+1,j,k):
-!-----------------------------   
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) =  ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
-                          - ( coefb_u(i+1,j,k) - coefa_u(i+1,j,k) )     &
-                          * gdepth_u(i+1,j,k)                           &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))       )   
-#else
+!-----------------------------  
         contv_nh(l1_nh) =  ( on_u(i+1,j)*pm(i,j)*pn(i,j)                &
                           - ( coefb_u(i+1,j,k) - coefa_u(i+1,j,k) )     &
                           * gdepth_u(i+1,j,k)                           &
                           / (0.5*(Hzr_half_nbq(i,j,k)+                  &
                                   Hzr_half_nbq(i+1,j,k)))       )       &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k,1)
 
 !-----------------------------
 !....... v(i,j+1,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh)  = (  om_v(i,j+1)*pm(i,j)*pn(i,j)               &
-                           - ( coefb_v(i,j+1,k) - coefa_v(i,j+1,k) )    &
-                           * gdepth_v(i,j+1,k)                          &
-                           / (0.5*(Hzr_half_nbq(i,j,k)+                 &
-                                   Hzr_half_nbq(i,j+1,k)))   )     
-#else
         contv_nh(l1_nh)  = (  om_v(i,j+1)*pm(i,j)*pn(i,j)               &
                            - ( coefb_v(i,j+1,k) - coefa_v(i,j+1,k) )    &
                            * gdepth_v(i,j+1,k)                          &
                            / (0.5*(Hzr_half_nbq(i,j,k)+                 &
                                    Hzr_half_nbq(i,j+1,k)))   )          &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k,2)
 
 !-----------------------------
 !....... u(i+1,j,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
-                                  Hzr_half_nbq(i+1,j,k+1)))   
-#else
         contv_nh(l1_nh) = - coefa_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
                                   Hzr_half_nbq(i+1,j,k+1)))             & 
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k+1,1)
 
 !-----------------------------
 !....... v(i,j+1,k+1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = - coefa_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
-                                  Hzr_half_nbq(i,j+1,k+1)))    
-#else
         contv_nh(l1_nh) = - coefa_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k+1)+                &
                                   Hzr_half_nbq(i,j+1,k+1)))             &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k+1,2)
 
 !-----------------------------
 !....... u(i+1,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_u(i+1,j,k-1) * gdepth_u(i+1,j,k-1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
-                                  Hzr_half_nbq(i+1,j,k-1)))      
-#else
         contv_nh(l1_nh) = + coefb_u(i+1,j,k-1) * gdepth_u(i+1,j,k-1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
                                   Hzr_half_nbq(i+1,j,k-1)))             & 
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k-1,1)
 
 !-----------------------------
 !....... v(i,j+1,k-1):
 !----------------------------- 
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_v(i,j+1,k-1) * gdepth_v(i,j+1,k-1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
-                                  Hzr_half_nbq(i,j+1,k-1)))   
-#else
         contv_nh(l1_nh) = + coefb_v(i,j+1,k-1) * gdepth_v(i,j+1,k-1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
                                   Hzr_half_nbq(i,j+1,k-1)))             &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k-1,2)
 
 !-----------------------------
 !....... w(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                 
-#else
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k)
-#endif
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k,3)
+        contzv_nh(l2_nh) = 1. / Hzw_half_nbq(i,j,k)                     &
+                              / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)
  
 !-----------------------------
 !....... w(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = -1. / Hzw_half_nbq(i,j,k-1)    
-#else
-        contv_nh(l1_nh) = -1. / Hzw_half_nbq(i,j,k-1)                   &
-                              / Hzr_half_nbq(i,j,k)
-#endif
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,3)
+        contzv_nh(l2_nh) = -1. / Hzw_half_nbq(i,j,k-1)                  &
+                               / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k-1,3)
 
         enddo
 
@@ -438,63 +296,29 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)    
        l1_nh = cont_nnz_nh(l_nh)  
-#ifdef NBQ_CONS4
-       l2_nh = cinei_nh(l_nh)  
-#endif
+       l2_nh = contz_nnz_nh(l_nh)  
 
 !-----------------------------
 !....... u(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = (- on_u(i,j)*pm(i,j)*pn(i,j)                  &
-                          + ( coefa_u(i,j,k) * gdepth_u(i,j,k)          &
-                          - coefb_u(i,j,k+1) * gdepth_u(i,j,k+1) )      &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k)+                &
-                                  Hzr_half_nbq(i,j,k)))        )   
-#else
         contv_nh(l1_nh) = (- on_u(i,j)*pm(i,j)*pn(i,j)                  &
                           + ( coefa_u(i,j,k) * gdepth_u(i,j,k)          &
                           - coefb_u(i,j,k+1) * gdepth_u(i,j,k+1) )      &
                           / (0.5*(Hzr_half_nbq(i-1,j,k)+                &
                                   Hzr_half_nbq(i,j,k)))        )        &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k,1)
-#ifdef NBQ_CONS4
-        cinev_nh(l2_nh) = (                                             &
-                          + (         &
-                          - coefb_u(i,j,k+1) * gdepth_u(i,j,k+1) )      &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k)+                &
-                                  Hzr_half_nbq(i,j,k)))        )
-        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,1)  
-#endif
            
 !-----------------------------
 !....... v(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = (- om_v(i,j)*pm(i,j)*pn(i,j)                  &
-                           + ( coefa_v(i,j,k) * gdepth_v(i,j,k)         &
-                           - coefb_v(i,j,k+1) * gdepth_v(i,j,k+1) )     &
-                           / (0.5*(Hzr_half_nbq(i,j-1,k)+               &
-                                   Hzr_half_nbq(i,j,k)))      )   
-#else
         contv_nh(l1_nh) = (- om_v(i,j)*pm(i,j)*pn(i,j)                  &
                            + ( coefa_v(i,j,k) * gdepth_v(i,j,k)         &
                            - coefb_v(i,j,k+1) * gdepth_v(i,j,k+1) )     &
                            / (0.5*(Hzr_half_nbq(i,j-1,k)+               &
                                    Hzr_half_nbq(i,j,k)))      )         &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k,2)
-#ifdef NBQ_CONS4
-        cinev_nh(l2_nh) = (                                             &
-                           + (                                          &
-                           - coefb_v(i,j,k+1) * gdepth_v(i,j,k+1) )     &
-                           / (0.5*(Hzr_half_nbq(i,j-1,k)+               &
-                                   Hzr_half_nbq(i,j,k)))      )   
-        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,2)      
-#endif
 
 !-----------------------------
 !....... u(i,j,k+1):
@@ -507,86 +331,42 @@
 !-----------------------------
 !....... u(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_u(i,j,k-1) * gdepth_u(i,j,k-1)        &
-                          / (0.5*(Hzr_half_nbq(i-1,j,k-1)+              &
-                                  Hzr_half_nbq(i,j,k-1)))         
-#else
         contv_nh(l1_nh) = + coefb_u(i,j,k-1) * gdepth_u(i,j,k-1)        &
                           / (0.5*(Hzr_half_nbq(i-1,j,k-1)+              &
                                   Hzr_half_nbq(i,j,k-1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,1)
 
 !-----------------------------
 !....... v(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_v(i,j,k-1) * gdepth_v(i,j,k-1)        &
-                          / (0.5*(Hzr_half_nbq(i,j-1,k-1)+              &
-                                  Hzr_half_nbq(i,j,k-1)))    
-#else
         contv_nh(l1_nh) = + coefb_v(i,j,k-1) * gdepth_v(i,j,k-1)        &
                           / (0.5*(Hzr_half_nbq(i,j-1,k-1)+              &
                                   Hzr_half_nbq(i,j,k-1)))               &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,2)
 
 !-----------------------------
 !....... u(i+1,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = (  on_u(i+1,j)*pm(i,j)*pn(i,j) +              &
-                            ( coefa_u(i+1,j,k) * gdepth_u(i+1,j,k)      &
-                          - coefb_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1) )  &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))     )  
-#else
         contv_nh(l1_nh) = (  on_u(i+1,j)*pm(i,j)*pn(i,j) +              &
                             ( coefa_u(i+1,j,k) * gdepth_u(i+1,j,k)      &
                           - coefb_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1) )  &
                           / (0.5*(Hzr_half_nbq(i,j,k)+                  &
                                   Hzr_half_nbq(i+1,j,k)))     )         &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k,1)
-#ifdef NBQ_CONS4
-        cinev_nh(l2_nh) = (               &
-                            (              &
-                          - coefb_u(i+1,j,k+1) * gdepth_u(i+1,j,k+1) )  &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i+1,j,k)))     )  
-        l2_nh = l2_nh + mijk2lmom_nh(i+1,j,k,1)    
-#endif
 
 !-----------------------------
 !....... v(i,j+1,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = (  om_v(i,j+1)*pm(i,j)*pn(i,j) +              &
-                            ( coefa_v(i,j+1,k) * gdepth_v(i,j+1,k)      &
-                          - coefb_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1))   &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i,j+1,k)))    )      
-#else
         contv_nh(l1_nh) = (  om_v(i,j+1)*pm(i,j)*pn(i,j) +              &
                             ( coefa_v(i,j+1,k) * gdepth_v(i,j+1,k)      &
                           - coefb_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1))   &
                           / (0.5*(Hzr_half_nbq(i,j,k)+                  &
                                   Hzr_half_nbq(i,j+1,k)))    )          &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k,2)
-#ifdef NBQ_CONS4
-        cinev_nh(l2_nh) = (  +              &
-                            (      &
-                          - coefb_v(i,j+1,k+1) * gdepth_v(i,j+1,k+1))   &
-                          / (0.5*(Hzr_half_nbq(i,j,k)+                  &
-                                  Hzr_half_nbq(i,j+1,k)))    )    
-        l2_nh = l2_nh + mijk2lmom_nh(i,j+1,k,2)    
-#endif
 
 !-----------------------------
 !....... u(i+1,j,k+1):
@@ -599,60 +379,40 @@
 !-----------------------------
 !....... u(i+1,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_u(i+1,j,k-1) * gdepth_u(i+1,j,k-1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
-                                  Hzr_half_nbq(i+1,j,k-1)))     
-#else
         contv_nh(l1_nh) = + coefb_u(i+1,j,k-1) * gdepth_u(i+1,j,k-1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
                                   Hzr_half_nbq(i+1,j,k-1)))             &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i+1,j,k-1,1)
 
 !-----------------------------
 !....... v(i,j+1,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = + coefb_v(i,j+1,k-1) * gdepth_v(i,j+1,k-1)    &
-                          / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
-                                  Hzr_half_nbq(i,j+1,k-1)))   
-#else
         contv_nh(l1_nh) = + coefb_v(i,j+1,k-1) * gdepth_v(i,j+1,k-1)    &
                           / (0.5*(Hzr_half_nbq(i,j,k-1)+                &
                                   Hzr_half_nbq(i,j+1,k-1)))             &
                           / Hzr_half_nbq(i,j,k)
-#endif
         l1_nh = l1_nh + mijk2lmom_nh(i,j+1,k-1,2)
 
 !-----------------------------
 !.......point w(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)
-#else
-        contv_nh(l1_nh) = 1. / Hzw_half_nbq(i,j,k)                      &
-                             / Hzr_half_nbq(i,j,k)
-#endif
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k,3)
-#ifdef NBQ_CONS4
-        cinev_nh(l2_nh) =  1. / Hzw_half_nbq(i,j,k)          
-        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)   
-#endif 
+        contzv_nh(l2_nh) = 1. / Hzw_half_nbq(i,j,k)                     &
+                              / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k,3)
 
 !-----------------------------
 !....... w(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-        contv_nh(l1_nh) = -1. / Hzw_half_nbq(i,j,k-1)              
-#else
-        contv_nh(l1_nh) = -1. / Hzw_half_nbq(i,j,k-1)                   &
-                              / Hzr_half_nbq(i,j,k)
-#endif
-        l1_nh = l1_nh + mijk2lmom_nh(i,j,k-1,3)
+        contzv_nh(l2_nh) = -1. / Hzw_half_nbq(i,j,k-1)                  &
+                               / Hzr_half_nbq(i,j,k)
+        l2_nh = l2_nh + mijk2lmom_nh(i,j,k-1,3)
         
       enddo
+    
+      contv_nh (1:nzcont_nh)  =  contv_nh (1:nzcont_nh)  * dtnbq
+      contzv_nh(1:nzcontz_nh) =  contzv_nh(1:nzcontz_nh) * dtnbq
+       
 
       if (ifl_nbq.eq.1) then
 !***********************************************************
@@ -674,26 +434,18 @@
 !-----------------------------
 !.......point w(i,j,k):
 !-----------------------------
-#ifdef NBQ_CONS7
-!      cimpv_nbq(l1imp_nbq) =  -1.d0 / Hzw_half_nbq(i,j,k) / Hzr_half_nbq(i,j,k) * dtnbq 
-       cimpv_nbq(l1imp_nbq) =  -1.d0 / Hzw_half_nbq(i,j,k) * dtnbq 
-#else
        cimpv_nbq(l1imp_nbq) =  -1.d0 / Hzw_half_nbq(i,j,k) / Hzr_half_nbq(i,j,k) * dtnbq 
-#endif
        l1imp_nbq = l1imp_nbq + mijk2lmom_nh(i,j,k,3)
 
 !-----------------------------
 !.......point w(i,j,k-1):
 !-----------------------------
-#ifdef NBQ_CONS7
-!      cimpv_nbq(l1imp_nbq) =  1.d0 / Hzw_half_nbq(i,j,k-1) / Hzr_half_nbq(i,j,k) * dtnbq 
-       cimpv_nbq(l1imp_nbq) =  1.d0 / Hzw_half_nbq(i,j,k-1) * dtnbq 
-#else
        cimpv_nbq(l1imp_nbq) =  1.d0 / Hzw_half_nbq(i,j,k-1) / Hzr_half_nbq(i,j,k) * dtnbq 
-#endif
        l1imp_nbq = l1imp_nbq + mijk2lmom_nh(i,j,k-1,3)
 
       enddo
+
+
       endif
 
       return

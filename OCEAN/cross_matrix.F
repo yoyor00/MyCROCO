@@ -181,9 +181,11 @@
         j=j-1
         size=j-i+1
       do k=1,size
-      modname(k:k)=ctoupper(string(i+k-1:i+k-1))
+!       modname(k:k)=ctoupper(string(i+k-1:i+k-1))
+	modname(k:k)=string(i+k-1:i+k-1)
       end do
-      modname(size+1:size+4)='.mod'
+!       modname(size+1:size+4)='.mod'
+       modname(size+1:size+4)='.F90'
               
         size=size+4
               new_name=.true.             ! encountered name does 

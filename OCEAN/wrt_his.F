@@ -138,7 +138,19 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     
       if (wrthis(indxZ)) then
 #ifdef NBQ     
-         work2d=zeta(:,:,fast_indx_out) - h(:,:)
+!        work2d=  zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out)
+
+         work2d=zeta(:,:,fast_indx_out)
+     &            /rhobar_nbq(:,:,fast_indx_out)
+     &         -h(:,:)   
+!         if (mynode.eq.0) then
+!                  write(6,*) 'w1',zeta(istr-1,1,fast_indx_out)
+!     &                           ,zeta(istr,1,fast_indx_out)
+!     &                           ,zeta(istr+1,1,fast_indx_out)
+!                  write(6,*) 'w2',rhobar_nbq(istr-1,1,fast_indx_out)
+!     &                           ,rhobar_nbq(istr,1,fast_indx_out)
+!     &                           ,rhobar_nbq(istr+1,1,fast_indx_out)
+!                  endif
 #else
          work2d=zeta(:,:,fast_indx_out)
 #endif
@@ -195,9 +207,13 @@ CR      write(*,*) 'wrt_his:  bostr' MYID
       if (wrthis(indxWstr)) then
          do j=1,Mm
             do i=1,Lm
-               work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
+#ifdef OA_COUPLING
+              work2d2(i,j)=smstr(i,j)*rho0
+#else
+              work2d2(i,j)=0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                              +(svstr(i,j)+svstr(i,j+1))**2)
      &                                                       *rho0
+#endif
             enddo
          enddo
 !        write(*,*)'WSTR : work2d2(:,5)=',work2d2(:,5)
@@ -552,7 +568,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
          do k=1,N
             do j=0,Mm+1
                do i=0,Lm+1
-                  workr(i,j,k)=0.5*(wz(i,j,k,nstp)+wz(i,j,k-1,nstp))
+                  workr(i,j,k)=wz(i,j,k,nstp)
                enddo
             enddo
          enddo
@@ -637,26 +653,6 @@ CR      write(*,*) 'wrt_his:  wrtAkt' MYID
 CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
 # endif
-# ifdef GLS_MIXING
-!     
-!     Write out vertical diffusion coefficient for TKE.
-!     
-      if (wrthis(indxAkk)) then
-         work=Akk
-         call fillvalue3d_w(work,ncidhis,hisAkk,indxAkk,
-     &        record,w3dvar,type)
-CR      write(*,*) 'wrt_his:  wrtAkk' MYID
-      endif
-!     
-!     Write out vertical diffusion coefficient for GLS.
-!     
-      if (wrthis(indxAkp)) then
-         work=Akp
-         call fillvalue3d_w(work,ncidhis,hisAkp,indxAkp,
-     &        record,w3dvar,type)
-CR      write(*,*) 'wrt_his:  wrtAkp' MYID
-      endif
-# endif
 
 # ifdef LMD_SKPP
 !     
@@ -684,12 +680,16 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIX2017 || defined GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     
       if (wrthis(indxTke)) then
+#ifdef GLS_MIXING
          work=tke(:,:,:,nstp)
+#else
+         work=trb(:,:,:,nstp,itke)       
+#endif
          call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
@@ -698,7 +698,11 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
 !     Write out generic length scale
 !     
       if (wrthis(indxGls)) then
+#ifdef GLS_MIXING
          work=gls(:,:,:,nstp)
+#else
+         work=trb(:,:,:,nstp,igls) 
+#endif
          call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID

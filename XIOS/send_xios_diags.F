@@ -16,7 +16,9 @@
 #ifdef XIOS
 
       subroutine send_xios_diags (tile)
+
       implicit none
+
      
 # include "param.h"
 # ifdef SOLVE3D
@@ -48,6 +50,11 @@
 #if defined BIOLOGY && defined PISCES
           USE trcwri_pisces
 #endif
+# ifdef NBQ
+          use module_nh
+          use module_nbq
+# endif
+
 
       implicit none
 # include "param.h"
@@ -97,6 +104,9 @@
 
 !       ilc=iic   ! number of time step since start
        ilc=1+iic-ntstart   ! number of time step since restart
+       ! To be conform with clasic (no xios) croco file first 
+       ! time step must be writen
+       if (ilc == 0) ilc=1
        CALL xios_update_calendar(ilc)
 
 !      call xios_send_field("scrum_time",time)
@@ -141,6 +151,8 @@
       call xios_send_field("Tcline",zz(:,:,1))
       zz(:,:,1)=REAL(Vtransform)
       call xios_send_field("Vtransform",zz(:,:,1))
+      call xios_send_field("levels_rho",z_r(:,:,:))
+      call xios_send_field("levels_w",z_w(:,:,:))
 # endif
 !
 ! Bathymetry.
@@ -184,7 +196,7 @@
 # endif
 
 # ifdef NBQ     
-      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:) - h(:,:)
+      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:,fast_indx_out) - h(:,:)
 # else
       work2d=zeta(:,:,fast_indx_out)
 # endif
@@ -289,16 +301,19 @@
       call xios_send_field("omega",work)
 
 #  ifdef NBQ
-      do k=1,N
-         do j=0,Mm+1
-            do i=0,Lm+1
-               workr(i,j,k)=0.5*(wz(i,j,k,nstp)+wz(i,j,k-1,nstp))
-            enddo
-         enddo
+      call xios_send_field("w_nbq",wz(:,:,:,nstp))
+
+      do l_nbq=1,neqcont_nh
+         i = l2iq_nh (l_nbq)
+         j = l2jq_nh (l_nbq)
+         k = l2kq_nh (l_nbq)
+         workr(i,j,k) = rhp_nbq_a(l_nbq)
       enddo
-#  else
-      call Wvlcty (tile, workr) 
+      call xios_send_field("rho_nbq",workr)
+
 #  endif
+
+      call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
         
 #  ifdef VIS_COEF_3D

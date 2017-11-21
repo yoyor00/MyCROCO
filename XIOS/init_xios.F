@@ -1222,7 +1222,14 @@
       CALL set_xmlatt
 
       ! end file definition
-      dtime%second = dt
+
+      ! Accademic test with dt> 1second are non comptabile with
+      ! XIOS, set xios tilme step unit to 1 model time_step
+      if (dt < 1) then
+        dtime%second =  1
+      else
+	dtime%second = dt
+      endif
       CALL xios_set_timestep(dtime)
 
       ! end definition phase

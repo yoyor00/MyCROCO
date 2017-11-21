@@ -1,6 +1,6 @@
 #include "cppdefs.h"
-#if defined NBQ && defined MPI
-
+#ifdef NBQ
+# ifdef MPI
 module module_parallel_nbq
 !------------------------------------------------------------------------------
 !                       NBQ Module for MPI-exchanges
@@ -23,8 +23,9 @@ module module_parallel_nbq
          integer ::  comm2d                 !COMMUNICATEUR GLOBAL
          integer ::  rank
          integer,dimension(10)                      ::  tvoisin         !LE NUMERO DES VOISINS DANS L'ORDRE(O,E,S,N)
-  end type
+  end type infopar_croco
 
+!  
   type (infopar_croco) :: par
   type (echblock),dimension(10) :: ech_qdm_nbq, ech_div_nbq, ech_rhs2_nh
   type (echblock),dimension(10) :: ech_qdmU_nbq, ech_qdmV_nbq, ech_qdmW_nbq
@@ -70,9 +71,9 @@ module module_parallel_nbq
  
       ! Persistants messages
       integer,dimension(0:2) :: p_nbreq_qdmU=1, p_nbreq_qdmV=1, p_nbreq_qdmW=1 
-      integer,dimension(0:1) :: p_nbreq_mv=1
+      integer,dimension(0:2) :: p_nbreq_mv=1
       integer,dimension(80,0:2) :: p_tabreq_qdmU, p_tabreq_qdmV, p_tabreq_qdmW
-      integer,dimension(80,0:1) :: p_tabreq_mv
+      integer,dimension(80,0:2) :: p_tabreq_mv
 
 contains 
 
@@ -83,6 +84,7 @@ contains
 !-------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
   use module_nh , only : istr_nh,iend_nh,jstr_nh,jend_nh,istru_nh,iendu_nh,jstrv_nh,jendv_nh
@@ -94,6 +96,7 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
   integer,intent(in) :: imax,jmax,kmax
   integer,dimension(3),intent(out) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3),intent(out) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
+  integer,intent(out) :: di,dj
 
   select case(voisin)
   !!! (/ U, V, W /)
@@ -112,6 +115,8 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jend_nh,        jendv_nh,      jend_nh  /)  
       kdeb_r=(/ 1,    1,    0    /)
       kfin_r=(/ kmax, kmax, kmax /)
+      di = -1
+      dj =  0
 
       case(est)
       ! Envoie
@@ -128,6 +133,8 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jend_nh,     jendv_nh,   jend_nh  /)
       kdeb_r=(/ 1,      1,      0       /)
       kfin_r=(/ kmax,   kmax,   kmax    /)
+      di = +1
+      dj =  0
 
   case(nord) !........................
       ! Envoie
@@ -144,6 +151,8 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jend_nh+1,     jendv_nh+1,   jend_nh+1     /)
       kdeb_r=(/ 1,      1,      0       /)
       kfin_r=(/ kmax,   kmax,   kmax    /)
+      di =  0
+      dj = +1
   
    case(sud) !........................ 
       ideb_s=(/ istru_nh,    istr_nh,      istr_nh  /)
@@ -159,6 +168,8 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jstr_nh-1,  jstrv_nh-1,    jstr_nh-1    /)
       kdeb_r=(/ 1,    1,    0    /)
       kfin_r=(/ kmax, kmax, kmax /)
+      di =  0
+      dj = -1
       
       !!! Les Coins..............................
    case(sudouest)
@@ -176,6 +187,9 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jstr_nh-1,    jstrv_nh-1,      jstr_nh-1    /) 
       kdeb_r=(/ 1,    1,    0    /)
       kfin_r=(/ kmax, kmax, kmax /)
+      di = -1
+      dj = -1
+
    case(sudest)
        ! Envoie
       ideb_s=(/ iendu_nh,  iend_nh, iend_nh /) 
@@ -191,6 +205,9 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jstr_nh-1,    jstrv_nh-1,      jstr_nh-1      /) 
       kdeb_r=(/ 1,      1,      0      /)
       kfin_r=(/ kmax,   kmax,   kmax   /)
+      di = +1
+      dj = -1
+
    case(nordouest)
 !       ! Envoie
       ideb_s=(/ istru_nh,     istr_nh,      istr_nh     /) 
@@ -206,6 +223,9 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jend_nh+1,    jendv_nh+1,      jend_nh+1      /) 
       kdeb_r=(/ 1,      1,      0      /)
       kfin_r=(/ kmax,   kmax,   kmax   /)
+      di = -1
+      dj = +1
+
    case(nordest)
       ! Envoie
       ideb_s=(/ iendu_nh,  iend_nh, iend_nh    /) 
@@ -221,38 +241,72 @@ subroutine borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
       jfin_r=(/  jend_nh+1, jendv_nh+1, jend_nh+1 /) 
       kdeb_r=(/ 1,      1,      0      /)
       kfin_r=(/ kmax,   kmax,   kmax   /)
+      di = +1
+      dj = +1
+
    case default
       call mpi_finalize(ierr)
       stop 'borne_echange_qdm_nbq_a voisin inconu'
    end select
+
+#ifndef MASKING
+   di=0
+   dj=0
+#endif
     
 
 end subroutine 	borne_echange_qdm_nbq_a  
 !--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
-subroutine get_index_ghost_qdm_nbq_a(ideb, ifin, jdeb, jfin, kdeb, kfin, &
+subroutine get_index_ghost_qdm_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
-  use module_nh , only : ijk2lmom_nh
+  use module_nh , only  : ijk2lmom_nh
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
   integer,intent(out) :: ii
   integer :: var, i, j, k, l_nbq
+  integer,intent(in) :: di, dj
      ii=0
-     do var=1,3 ! u,v,w ==> i=3,2,2
+!     do var=1,3 ! u,v,w ==> i=3,2,2
+      var=1
       do i=ideb(var),ifin(var)
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-          if (l_nbq > 0) then
+           if (l_nbq>0) then  
             ii=ii+1
             l_index(ii)=l_nbq
            endif
          enddo    
 	 enddo
 	 enddo
-     enddo	 
+      var=2
+      do i=ideb(var),ifin(var)
+	do k=kdeb(var),kfin(var)
+        do j=jdeb(var),jfin(var)
+           l_nbq=ijk2lmom_nh(i,j,k,var)
+           if (l_nbq>0) then  
+            ii=ii+1
+            l_index(ii)=l_nbq
+           endif
+         enddo    
+	 enddo
+	 enddo
+      var=3
+      do i=ideb(var),ifin(var)
+	do k=kdeb(var),kfin(var)
+        do j=jdeb(var),jfin(var)
+           l_nbq=ijk2lmom_nh(i,j,k,var)
+           if (l_nbq>0) then  
+            ii=ii+1
+            l_index(ii)=l_nbq
+           endif
+         enddo    
+	 enddo
+	 enddo
+!     enddo	 
 end subroutine get_index_ghost_qdm_nbq_a
 !--------------------------------------------------------------------------
 
@@ -269,19 +323,20 @@ subroutine getblocks_qdm_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,bloc
   integer,dimension(3) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
   integer :: ii, bcl,bcl2
-  integer :: intex
+  integer :: intex,di,dj
   !
   call borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
 	  
   ii=0
   if(sendrecv == 1) then !! sendrecv==1 => send
-    call get_index_ghost_qdm_nbq_a(ideb_s, ifin_s,  &
+    call get_index_ghost_qdm_nbq_a(di,dj,ideb_s, ifin_s,  &
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdm_nbq_a(ideb_r, ifin_r,  &
+   call get_index_ghost_qdm_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -300,7 +355,7 @@ subroutine create_echange_qdm_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -341,21 +396,22 @@ end subroutine create_echange_qdm_nbq_a
 !--------------------------------------------------------------------------
 !     Echange U
 !--------------------------------------------------------------------------
-subroutine get_index_ghost_qdmU_nbq_a(ideb, ifin, jdeb, jfin, kdeb, kfin, &
+subroutine get_index_ghost_qdmU_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
-  use module_nh , only : ijk2lmom_nh
+  use module_nh  , only : ijk2lmom_nh
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
   integer,intent(out) :: ii
   integer :: var, i, j, k, l_nbq
+  integer,intent(in) :: di, dj
      ii=0
      var=1 !,3 ! u,v,w ==> i=3,2,2
       do i=ideb(var),ifin(var)
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-          if (l_nbq > 0) then
+           if (l_nbq>0) then  
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -378,19 +434,20 @@ subroutine getblocks_qdmU_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,blo
   integer,dimension(3) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
   integer :: ii, bcl,bcl2
-  integer :: intex
+  integer :: intex,di,dj
   !
   call borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
 	  
   ii=0
   if(sendrecv == 1) then !! sendrecv==1 => send
-    call get_index_ghost_qdmU_nbq_a(ideb_s, ifin_s,  &
+    call get_index_ghost_qdmU_nbq_a(di,dj,ideb_s, ifin_s,  &
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdmU_nbq_a(ideb_r, ifin_r,  &
+   call get_index_ghost_qdmU_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -408,7 +465,7 @@ subroutine create_echange_qdmU_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -449,22 +506,22 @@ end subroutine create_echange_qdmU_nbq_a
 !--------------------------------------------------------------------------
 !     Echange V
 !--------------------------------------------------------------------------
-subroutine get_index_ghost_qdmV_nbq_a(ideb, ifin, jdeb, jfin, kdeb, kfin, &
+subroutine get_index_ghost_qdmV_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
-  use module_nh , only : ijk2lmom_nh
+  use module_nh ,  only : ijk2lmom_nh
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
   integer,intent(out) :: ii
   integer :: var, i, j, k, l_nbq
+  integer,intent(in) :: di, dj
      ii=0
      var=2 !,3 ! u,v,w ==> i=3,2,2
       do i=ideb(var),ifin(var)
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-!              write(200+par%rank,*) i,j,k," ---",ii," -- ",l_nbq
-          if (l_nbq > 0) then
+           if (l_nbq>0) then  
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -487,19 +544,20 @@ subroutine getblocks_qdmV_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,blo
   integer,dimension(3) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
   integer :: ii, bcl,bcl2
-  integer :: intex
+  integer :: intex,di,dj
   !
   call borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
 	  
   ii=0
   if(sendrecv == 1) then !! sendrecv==1 => send
-    call get_index_ghost_qdmV_nbq_a(ideb_s, ifin_s,  &
+    call get_index_ghost_qdmV_nbq_a(di,dj,ideb_s, ifin_s,  &
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdmV_nbq_a(ideb_r, ifin_r,  &
+   call get_index_ghost_qdmV_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -517,7 +575,7 @@ subroutine create_echange_qdmV_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -558,21 +616,22 @@ end subroutine create_echange_qdmV_nbq_a
 !--------------------------------------------------------------------------
 !     Echange W
 !--------------------------------------------------------------------------
-subroutine get_index_ghost_qdmW_nbq_a(ideb, ifin, jdeb, jfin, kdeb, kfin, &
+subroutine get_index_ghost_qdmW_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
-  use module_nh , only : ijk2lmom_nh
+  use module_nh ,  only : ijk2lmom_nh
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
   integer,intent(out) :: ii
   integer :: var, i, j, k, l_nbq
+  integer,intent(in) :: di, dj
      ii=0
      var=3 !,3 ! u,v,w ==> i=3,2,2
       do i=ideb(var),ifin(var)
 	do k=kdeb(var),kfin(var)
         do j=jdeb(var),jfin(var)
            l_nbq=ijk2lmom_nh(i,j,k,var)
-          if (l_nbq > 0) then
+           if (l_nbq>0) then  
             ii=ii+1
             l_index(ii)=l_nbq
            endif
@@ -595,19 +654,20 @@ subroutine getblocks_qdmW_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,blo
   integer,dimension(3) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
   integer :: ii, bcl,bcl2
-  integer :: intex
+  integer :: intex,di,dj
   !
   call borne_echange_qdm_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
 	  
   ii=0
   if(sendrecv == 1) then !! sendrecv==1 => send
-    call get_index_ghost_qdmW_nbq_a(ideb_s, ifin_s,  &
+    call get_index_ghost_qdmW_nbq_a(di,dj,ideb_s, ifin_s,  &
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)
    else
-   call get_index_ghost_qdmW_nbq_a(ideb_r, ifin_r,  &
+   call get_index_ghost_qdmW_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -625,7 +685,7 @@ subroutine create_echange_qdmW_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" quantité de mouvement :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh, &
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh, &
 			 istr_nh,iend_nh,jstr_nh
 !  use module_nbq
   use module_qsort
@@ -672,6 +732,7 @@ end subroutine create_echange_qdmW_nbq_a
 !-------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
   use module_nh , only : istr_nh,iend_nh,jstr_nh,jend_nh, &
@@ -682,6 +743,7 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
   integer,intent(in) :: imax,jmax,kmax
   integer,dimension(3),intent(out) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3),intent(out) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
+  integer,intent(out) :: di,dj
   
   select case(voisin)
    case(ouest) !........................
@@ -692,6 +754,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
       ! Reception
       ideb_r=(/ istr_nh-1, 0, 0 /); jdeb_r=(/ jstr_nh, 0, 0 /);     kdeb_r=(/ 1 ,   0, 0 /)
       ifin_r=(/ istr_nh-1, 0, 0 /); jfin_r=(/ jend_nh, 0, 0 /);     kfin_r=(/ kmax, 0, 0 /)
+      di = -1
+      dj =  0
 
    case(est)
       ! Envoie
@@ -700,6 +764,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
       ! Reception
       ideb_r=(/ iend_nh+1, 0, 0  /); jdeb_r=(/ jstr_nh,    0, 0 /);   kdeb_r=(/ 1,    0, 0 /) 
       ifin_r=(/ iend_nh+1, 0, 0  /); jfin_r=(/ jend_nh, 0, 0 /);   kfin_r=(/ kmax, 0, 0 /)
+      di = +1
+      dj =  0
            
   case(sud)
       ! Envoie
@@ -708,6 +774,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
       ! Reception
       ideb_r=(/ istr_nh,    0, 0 /);  jdeb_r=(/ jstr_nh-1, 0, 0  /);kdeb_r=(/ 1,    0, 0 /)
       ifin_r=(/ iend_nh,    0, 0 /);  jfin_r=(/ jstr_nh-1, 0, 0  /);kfin_r=(/ kmax, 0, 0 /)
+      di =  0
+      dj = -1
 
   case(nord)
       ! Envoie
@@ -716,6 +784,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
 !       ! Reception
       ideb_r=(/ istr_nh,    0, 0 /);  jdeb_r=(/ jend_nh+1, 0, 0 /); kdeb_r=(/ 1,    0, 0 /)
       ifin_r=(/ iend_nh,    0, 0 /);  jfin_r=(/ jend_nh+1, 0, 0 /); kfin_r=(/ kmax, 0, 0 /)
+      di =  0
+      dj = +1
       
        
   case(sudouest) 
@@ -725,6 +795,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
 !       ! Reception
       ideb_r=(/ istr_nh-1, 0, 0 /);jdeb_r=(/ jstr_nh-1, 0, 0 /);kdeb_r=(/ 1,    0, 0 /)
       ifin_r=(/ istr_nh-1, 0, 0 /);jfin_r=(/ jstr_nh-1, 0, 0 /);kfin_r=(/ kmax, 0, 0 /)
+      di = -1
+      dj = -1
       
    case(sudest)
        ! Envoie
@@ -733,6 +805,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
 !      ! Reception
       ideb_r=(/ iend_nh+1, 0, 0 /);jdeb_r=(/ jstr_nh-1, 0, 0 /); kdeb_r=(/ 1,    0, 0 /)
       ifin_r=(/ iend_nh+1, 0, 0 /);jfin_r=(/ jstr_nh-1, 0, 0 /); kfin_r=(/ kmax, 0, 0 /)
+      di = +1
+      dj = -1
  
    case(nordouest)
 !       ! Envoie
@@ -741,6 +815,8 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
 !       ! Reception
       ideb_r=(/ istr_nh-1, 0, 0 /);jdeb_r=(/ jend_nh+1, 0, 0 /);kdeb_r=(/ 1,    0, 0 /)
       ifin_r=(/ istr_nh-1, 0, 0 /);jfin_r=(/ jend_nh+1, 0, 0 /);kfin_r=(/ kmax, 0, 0 /)
+      di = -1
+      dj = +1
 
    case(nordest)
       ! Envoie
@@ -749,38 +825,45 @@ subroutine borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
 !     ! Reception
       ideb_r=(/ iend_nh+1, 0, 0 /);jdeb_r=(/ jend_nh+1, 0, 0 /);kdeb_r=(/ 1,     0, 0 /)
       ifin_r=(/ iend_nh+1, 0, 0 /);jfin_r=(/ jend_nh+1, 0, 0 /); kfin_r=(/ kmax, 0, 0 /)
+      di = +1
+      dj = +1
 
    case default
       call mpi_finalize(ierr)
       stop 'borne_echange_qdm_nbq_a voisin inconu'
    end select
 
+#ifndef MASKING
+   di=0
+   dj=0
+#endif
+
 end subroutine 	borne_echange_div_nbq_a  
 !--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
-subroutine get_index_ghost_div_nbq_a(ideb, ifin, jdeb, jfin, kdeb, kfin, &
+subroutine get_index_ghost_div_nbq_a(di,dj,ideb, ifin, jdeb, jfin, kdeb, kfin, &
 			    l_index, ii)
-  use module_nh , only : ijk2lq_nh
+  use module_nh  , only : ijk2lq_nh
   implicit none
   integer,dimension(3),intent(in) :: ideb,ifin,jdeb,jfin,kdeb,kfin
   integer,dimension(:),intent(inout) :: l_index
   integer,intent(out) :: ii
   integer :: var, i, j, k, l_nbq
+  integer,intent(in) :: di, dj
      ii=0
      var=1 !! inutile mais pour garder la me syntax que get_index_ghost_qdm_nbq_a
      do i=ideb(var),ifin(var)
         do k=kdeb(var),kfin(var)
            do j=jdeb(var),jfin(var)
               l_nbq=ijk2lq_nh(i,j,k)
-              if (l_nbq > 0) then
+           if (l_nbq>0) then  
                   ii=ii+1
                   l_index(ii)=l_nbq  
               endif
            enddo    
         enddo
       enddo
-!      write(3200+par%rank,*)
 end subroutine get_index_ghost_div_nbq_a
 !--------------------------------------------------------------------------
 
@@ -797,20 +880,21 @@ subroutine getblocks_div_nbq_a(voisin,imax,jmax,kmax,nbelt,nbblock,blockdeb,bloc
   integer,dimension(3) :: ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s
   integer,dimension(3) :: ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r
   integer :: ii, bcl,bcl2
-  integer :: intex
+  integer :: intex,di,dj
   !
   nbblock=0
   call borne_echange_div_nbq_a(voisin,imax,jmax,kmax, &
+          di,dj, &
 	  ideb_s,ifin_s,jdeb_s,jfin_s,kdeb_s,kfin_s, &
 	  ideb_r,ifin_r,jdeb_r,jfin_r,kdeb_r,kfin_r )
 	  
   ii=0
   if(sendrecv == 1) then !! sendrecv==1 => send
-    call get_index_ghost_div_nbq_a(ideb_s, ifin_s,  &
+    call get_index_ghost_div_nbq_a(di,dj,ideb_s, ifin_s,  &
                                   jdeb_s, jfin_s, kdeb_s, kfin_s, &
 				  idi, ii)  
    else
-   call get_index_ghost_div_nbq_a(ideb_r, ifin_r,  &
+   call get_index_ghost_div_nbq_a(-di,-dj,ideb_r, ifin_r,  &
                                   jdeb_r, jfin_r, kdeb_r, kfin_r, &
 				  idi, ii)
   endif
@@ -828,7 +912,7 @@ subroutine create_echange_div_nbq_a(imax,jmax,kmax)
 ! Echanges des variables "boucle NBQ" divergence :: 
 ! creation d'un type mpi d'echange
 !
-  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, rhs2_nh,l2imom_nh,l2jmom_nh,l2kmom_nh
+  use module_nh , only : ijk2lmom_nh, ijk2lq_nh, l2imom_nh,l2jmom_nh,l2kmom_nh
 !  use module_nbq
   use module_qsort
   implicit none
@@ -872,15 +956,17 @@ end subroutine create_echange_div_nbq_a
 !--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 ! Initialise Persistant Communications
+!--------------------------------------------------------------------------
 subroutine  Persistant_init
       use module_nbq, only : qdm_nbq_a, div_nbq_a
-  integer :: bcl, szsend, szrecv, vois, vnnew_nbq, coef
+  integer :: bcl, szsend, szrecv, vois, vnnew_nbq, dnnew_nbq, coef
 
   szsend=0
   szrecv=0
 ! Init qdmU exchange-----------------------------------------------------------
-          do vnnew_nbq=0,2
+          do vnnew_nbq=1,1
 	  coef=(vnnew_nbq+1)*10
 	  p_nbreq_qdmU(vnnew_nbq)=1
   	  do bcl=1, 8
@@ -888,14 +974,17 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_qdmU_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_qdmU_nbq(vois)%recv, szrecv,ierr) 
- 	   !print *,par%rank,"szsend=",szsend," voisin",par%tvoisin(vois),"  --",MPI_PROC_NULL
- 	   !print *,par%rank,"szrecv=",szrecv," voisin",par%tvoisin(vois)
-	   if (szsend >0) then
-	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
+!          if (szsend /= szrecv) then
+!             print *,"Attention U : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
+	   if ( szrecv>0 ) then
+	      call MPI_RECV_INIT(qdm_nbq_a(1),  1, ech_qdmU_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmU_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
-	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmU_nbq(vois)%send, par%tvoisin(vois), &
+           endif
+	   if (szsend >0) then
+	      call MPI_SEND_INIT(qdm_nbq_a(1),  1, ech_qdmU_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmU_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmU(p_nbreq_qdmU(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmU(vnnew_nbq)=p_nbreq_qdmU(vnnew_nbq)+1
@@ -907,7 +996,7 @@ subroutine  Persistant_init
 !--------------------------------------------------------------------------------------
 
 ! Init qdmV exchange-----------------------------------------------------------
-          do vnnew_nbq=0,2
+          do vnnew_nbq=1,1
 	  coef=(vnnew_nbq+1)*10
 	  p_nbreq_qdmV(vnnew_nbq)=1
   	  do bcl=1, 8
@@ -915,13 +1004,17 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_qdmV_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_qdmV_nbq(vois)%recv, szrecv,ierr) 
-! 	   print *,par%rank,"szsend=",szsend," voisin",bcl
-	   if (szsend >0) then
-	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
+!          if (szsend /= szrecv) then
+!             print *,"Attention V : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
+	   if (szrecv>0)  then
+	      call MPI_RECV_INIT(qdm_nbq_a(1),  1, ech_qdmV_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmV_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
-	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmV_nbq(vois)%send, par%tvoisin(vois), &
+           endif
+	   if (szsend >0) then
+	      call MPI_SEND_INIT(qdm_nbq_a(1),  1, ech_qdmV_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmV_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmV(p_nbreq_qdmV(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmV(vnnew_nbq)=p_nbreq_qdmV(vnnew_nbq)+1
@@ -933,7 +1026,7 @@ subroutine  Persistant_init
 !--------------------------------------------------------------------------------------
 
 ! Init qdmW exchange-----------------------------------------------------------
-          do vnnew_nbq=0,2
+          do vnnew_nbq=1,1
 	  coef=(vnnew_nbq+1)*10
 	  p_nbreq_qdmW(vnnew_nbq)=1
   	  do bcl=1, 8
@@ -941,13 +1034,17 @@ subroutine  Persistant_init
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_qdmW_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_qdmW_nbq(vois)%recv, szrecv,ierr) 
-! 	   print *,par%rank,"szsend=",szsend," voisin",bcl
-	   if (szsend >0) then
-	      call MPI_RECV_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
+!          if (szsend /= szrecv) then
+!             print *,"Attention W : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
+	   if (szrecv>0) then
+	      call MPI_RECV_INIT(qdm_nbq_a(1),  1, ech_qdmW_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagqdmW_Recv(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
-	      call MPI_SEND_INIT(qdm_nbq_a(1,vnnew_nbq),  1, ech_qdmW_nbq(vois)%send, par%tvoisin(vois), &
+           endif
+	   if (szsend >0) then
+	      call MPI_SEND_INIT(qdm_nbq_a(1),  1, ech_qdmW_nbq(vois)%send, par%tvoisin(vois), &
 			     tagqdmW_Send(vois)*coef, par%comm2d, &
 			     p_tabreq_qdmW(p_nbreq_qdmW(vnnew_nbq),vnnew_nbq), ierr)
 	      p_nbreq_qdmW(vnnew_nbq)=p_nbreq_qdmW(vnnew_nbq)+1
@@ -959,28 +1056,32 @@ subroutine  Persistant_init
 !--------------------------------------------------------------------------------------
 
 ! Init DIV exchange-----------------------------------------------------------
-          do vnnew_nbq=0,1 !!! dnrhs_nbq in [0,1]
-	  coef=(vnnew_nbq+1)*10
-	  p_nbreq_mv(vnnew_nbq)=1
+          do dnnew_nbq=1,1 !0,2 !!! dnnew_nbq in [0->2]
+	  coef=(dnnew_nbq+1)*10
+	  p_nbreq_mv(dnnew_nbq)=1
   	  do bcl=1, 8
 	   vois=lvoisin(bcl)
 	   if (par%tvoisin(vois) /= mpi_proc_null) then 
 	   call MPI_TYPE_SIZE(ech_div_nbq(vois)%send, szsend,ierr)
 	   call MPI_TYPE_SIZE(ech_div_nbq(vois)%recv, szrecv,ierr) 
-! 	   print *,par%rank,"szsend=",szsend," voisin",bcl
-	   if (szsend >0) then
-	      call MPI_RECV_INIT(div_nbq_a(1,vnnew_nbq),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
+!          if (szsend /= szrecv) then
+!             print *,"Attention DIV : ",par%rank,":",szsend,szrecv,"-->",par%tvoisin(vois)
+!          endif
+	   if (szrecv>0) then
+	      call MPI_RECV_INIT(div_nbq_a(1),  1, ech_div_nbq(vois)%recv, par%tvoisin(vois), &
 			     tagdiv_Recv(vois)*coef, par%comm2d, &
-			     p_tabreq_mv(p_nbreq_mv(vnnew_nbq),vnnew_nbq), ierr)
-	      p_nbreq_mv(vnnew_nbq)=p_nbreq_mv(vnnew_nbq)+1
-	      call MPI_SEND_INIT(div_nbq_a(1,vnnew_nbq),  1, ech_div_nbq(vois)%send, par%tvoisin(vois), &
+			     p_tabreq_mv(p_nbreq_mv(dnnew_nbq),dnnew_nbq), ierr)
+	      p_nbreq_mv(dnnew_nbq)=p_nbreq_mv(dnnew_nbq)+1
+           endif
+	   if (szsend >0) then
+	      call MPI_SEND_INIT(div_nbq_a(1),  1, ech_div_nbq(vois)%send, par%tvoisin(vois), &
 			     tagdiv_Send(vois)*coef, par%comm2d, &
-			     p_tabreq_mv(p_nbreq_mv(vnnew_nbq),vnnew_nbq), ierr)
-	      p_nbreq_mv(vnnew_nbq)=p_nbreq_mv(vnnew_nbq)+1
+			     p_tabreq_mv(p_nbreq_mv(dnnew_nbq),dnnew_nbq), ierr)
+	      p_nbreq_mv(dnnew_nbq)=p_nbreq_mv(dnnew_nbq)+1
   	   endif
            endif
 	  enddo
-	  p_nbreq_mv(vnnew_nbq)= p_nbreq_mv(vnnew_nbq)-1
+	  p_nbreq_mv(dnnew_nbq)= p_nbreq_mv(dnnew_nbq)-1
 	  enddo
 !--------------------------------------------------------------------------------------
 
@@ -995,7 +1096,7 @@ end subroutine  Persistant_init
       
 end module module_parallel_nbq
 
-#else
+#  else
  module module_parallel_nbq
   implicit none
   integer, parameter :: ouest=1,est=2,nord=3,sud=4,haut=5,bas=6
@@ -1007,13 +1108,18 @@ end module module_parallel_nbq
   type infopar_croco
          integer ::  comm2d                 !COMMUNICATEUR GLOBAL
          integer ::  rank
-         integer,dimension(10)                      ::  tvoisin
-  end type 
+         integer,dimension(10)                      ::  tvoisin=MPI_PROC_NULL         !LE NUMERO DES VOISINS DANS L'ORDRE(O,E,S,N)
+  end type infopar_croco
 
-!  integer,dimension(8),parameter :: liste_voisin = &
-!      (/ ouest, est, nord, sud, sudouest, sudest, nordouest, nordest /)
+
+  type (infopar_croco) :: par
+  integer,dimension(8),parameter :: liste_voisin = &
+      (/ ouest, est, nord, sud, sudouest, sudest, nordouest, nordest /)
   integer :: ierr,mynode
-  type(infopar_croco) :: par
 
  end module module_parallel_nbq
+#  endif
+#else
+     module module_parallel_nbq_empty
+     end module module_parallel_nbq_empty
 #endif

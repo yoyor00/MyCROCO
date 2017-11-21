@@ -53,7 +53,7 @@ include Makedefs
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
-	gls_prestep.F\
+	gls_prestep.F	gls_mix2017.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
 	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
@@ -107,8 +107,7 @@ include Makedefs
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
-	cpl_prism_get.F 	cpl_prism_getvar.F 	cpl_prism_getlistvals.F\
-        cpl_prism_grid.F
+	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
 	module_nh.F90		module_nbq.F90		module_qsort.F90\
@@ -116,10 +115,10 @@ include Makedefs
 	nump_nh.F90		mat_cont_init_nh.F90	mat_cont_nh.F90\
 	mat_mom_init_nh.F90	mat_mom_nh.F90		initial_nh.F90\
 	grid_coef_nh.F90 	ru_nbq.F90		viscous_nbq.F90\
-	step3d_nbq.F90		density_nbq.F90		spkitlocal_nh.F90\
+	step3d_fb_nbq.F90	density_nbq.F90		spkitlocal_nh.F90\
 	MPI_setup_nbq.F90	parallele_nbq.F90	output_nbq.F90\
 	implicit_nbq.F90        amub2_tri.F90	        numuvw_nh.F90\
-	grid_def_nh.F90		grid_exchange.F90	cons_nbq.F90\
+	grid_def_nh.F90		grid_exchange.F90\
 	consout_nbq.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
@@ -202,7 +201,7 @@ ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix *.F
+	./cross_matrix module*.F90 *.F90 *.F
 
 mymodules: $(MOBJS) $(AMROBJS)
 #

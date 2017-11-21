@@ -32,6 +32,9 @@
           real,dimension(:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,i,j,i1,j1,i2,j2
+#ifdef OPENMP
+          integer mynode 
+#endif         
           integer iseq1, iseq2, jseq1, jseq2
           logical mystop
 
@@ -40,6 +43,10 @@
           integer ierr
 #endif
           
+#if defined OPENMP && !defined MPI
+          mynode=0 
+#endif
+
 #if !defined MPI && !defined OPENMP
           write(107)Lm,Mm
           write(107)lbound(tab)
@@ -98,8 +105,8 @@
                   do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)     
                     i0 = i+iminmpi-1
                     if (tabread(i0,j0)/=tab(i,j)) then
-                       write(*,'(A,A,2x,4i4,3e20.12)')'BUGBIN = ',
-     &                 comment,i0,j0,i,j,
+                       write(*,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
+     &                 comment,mynode,i0,j0,i,j,
      &                 tabread(i0,j0),tab(i,j),
      &                 abs(tabread(i0,j0)-tab(i,j))
 !                       print *,'iif = ',iif,iic
@@ -154,9 +161,15 @@
           real,dimension(:,:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,k,i,j,i1,i2,j1,j2
+#ifdef OPENMP
+          integer mynode
+#endif
           integer iseq1, iseq2, jseq1, jseq2 
           logical mystop         
           
+#if defined OPENMP && !defined MPI
+          mynode=0 
+#endif
 
 #if !defined MPI && !defined OPENMP
           write(107)Lm,Mm
@@ -216,9 +229,9 @@
                 do i=max(i1,iseq1-iminmpi+1),min(i2,iseq2-iminmpi+1)     
                     i0 = i+iminmpi-1
                      if (tabread(i0,j0,k)/=tab(i,j,k)) then
-                       write(*,'(A,A,2x,5i4,3e20.12)')'BUGBIN = ',
+                       write(*,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
      &                 comment,
-     &                 i0,j0,i,j,k,
+     &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),
      &                 abs(tabread(i0,j0,k)-tab(i,j,k))
 !                      print *,'iif = ',iif,iic
@@ -239,7 +252,7 @@
                        if (mystop) then
                        stop
                        endif
-!print *,'DEBUG DE ',comment,' OK'
+            print *,'DEBUG DE ',comment,' OK'
             
             deallocate(tabread)
 #endif          

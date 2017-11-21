@@ -33,22 +33,17 @@
 !.....Initialize position indices, which will be used
 !     as size variable afterwards:
       nzcont_nh     = 1
-
-#ifdef NBQ_CONS4
-      nzcine_nh     = 1
-#endif
+      nzcontz_nh     = 1
 
 !.....initializations:
       conti_nh    = 1
+      contzi_nh    = 1
       cont_nnz_nh = 1
+      contz_nnz_nh = 1
       contj_nh    = 0
       contv_nh    = 0.
-
-#ifdef NBQ_CONS4
-      cinei_nh    = 1
-      cinej_nh    = 0
-      cinev_nh    = 0.
-#endif
+      contzj_nh    = 0
+      contzv_nh    = 0.
 
 !*******************************************************************
 !     Continuity Equation:
@@ -65,6 +60,7 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)      
        conti_nh (l_nh) = nzcont_nh  !! matrix line pointer
+       contzi_nh (l_nh) = nzcontz_nh  !! matrix line pointer
 
 !.......u(i,j,k):
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
@@ -99,8 +95,8 @@
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k+1,2)
 
 !.......w(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,3)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,3)
+         contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k,3)
+         nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k,3)
 
 !.......w(i,j,k-1):
 !        contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,3)
@@ -108,6 +104,7 @@
 
 !       Last point...
         cont_nnz_nh(l_nh+1)=nzcont_nh
+        contz_nnz_nh(l_nh+1)=nzcontz_nh
 
       enddo
 
@@ -122,6 +119,7 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)      
        conti_nh (l_nh) = nzcont_nh  !! matrix line pointer
+       contzi_nh (l_nh) = nzcontz_nh  !! matrix line pointer
 
 !.......u(i,j,k):
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
@@ -172,15 +170,16 @@
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k-1,2)
 
 !.......w(i,j,k):
-        contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,3)
-        nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,3)
+        contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k,3)
+        nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k,3)
 
 !.......w(i,j,k-1):
-        contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,3)
-        nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,3)
+        contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k-1,3)
+        nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k-1,3)
 
 !       Last point...
         cont_nnz_nh(l_nh+1)=nzcont_nh
+        contz_nnz_nh(l_nh+1)=nzcontz_nh
 
       enddo
 
@@ -195,25 +194,15 @@
        j = l2jq_nh (l_nh) 
        k = l2kq_nh (l_nh)      
        conti_nh (l_nh) = nzcont_nh  !! matrix line pointer
-#ifdef NBQ_CONS4
-       cinei_nh (l_nh) = nzcine_nh  !! matrix line pointer
-#endif
+       contzi_nh (l_nh) = nzcontz_nh  !! matrix line pointer
 
 !.......u(i,j,k):
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,1)
-#ifdef NBQ_CONS4
-         cinej_nh(nzcine_nh) = ijk2lmom_nh(i,j,k,1)
-         nzcine_nh           = nzcine_nh + mijk2lmom_nh(i,j,k,1)
-#endif
 
 !.......v(i,j,k):
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
-#ifdef NBQ_CONS4
-         cinej_nh(nzcine_nh) = ijk2lmom_nh(i,j,k,2)
-         nzcine_nh           = nzcine_nh + mijk2lmom_nh(i,j,k,2)
-#endif
 
 !........u(i,j,k-1):
           contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,1)
@@ -226,18 +215,10 @@
 !.......u(i+1,j,k):
          contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k,1)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k,1)
-#ifdef NBQ_CONS4
-         cinej_nh(nzcine_nh) = ijk2lmom_nh(i+1,j,k,1)
-         nzcine_nh           = nzcine_nh + mijk2lmom_nh(i+1,j,k,1)
-#endif
 
 !.......v(i,j+1,k):
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
-#ifdef NBQ_CONS4
-         cinej_nh(nzcine_nh) = ijk2lmom_nh(i,j+1,k,2)
-         nzcine_nh           = nzcine_nh + mijk2lmom_nh(i,j+1,k,2)
-#endif
 
 !........u(i+1,j,k-1):
           contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k-1,1)
@@ -248,19 +229,16 @@
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k-1,2)
 
 !.......w(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,3)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,3)
-#ifdef NBQ_CONS4
-         cinej_nh(nzcine_nh) = ijk2lmom_nh(i,j,k,3)
-         nzcine_nh           = nzcine_nh + mijk2lmom_nh(i,j,k,3)
-#endif
+         contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k,3)
+         nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k,3)
 
 !.......w(i,j,k-1):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,3)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,3)
+         contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k-1,3)
+         nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k-1,3)
 
 !       Last point...
         cont_nnz_nh(l_nh+1)=nzcont_nh
+        contz_nnz_nh(l_nh+1)=nzcontz_nh
 
       enddo
 
@@ -268,10 +246,9 @@
 !     Last line treatment:
 !*******************************************************************
       conti_nh    (neqq_nh(5)+1:neqq_nh(7)+1) = nzcont_nh
-#ifdef NBQ_CONS4
-      cinei_nh    (neqq_nh(5)+1:neqq_nh(7)+1) = nzcine_nh
-#endif
       cont_nnz_nh (neqq_nh(5)+1:neqq_nh(7)+1) = nzcont_nh
+      contzi_nh    (neqq_nh(5)+1:neqq_nh(7)+1) = nzcontz_nh
+      contz_nnz_nh (neqq_nh(5)+1:neqq_nh(7)+1) = nzcontz_nh
 
       if (ifl_nbq.eq.1.and.ifl_imp_nbq.eq.1) then
 !.......................................

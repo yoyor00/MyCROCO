@@ -73,6 +73,9 @@ C$    integer omp_get_thread_num
 #include "scalars.h"
 #include "forces.h"
 #include "zoom.h"
+#ifdef NBQ
+# include "nbq.h"
+#endif 
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -226,7 +229,10 @@ C$    trd=omp_get_thread_num()
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
 #   ifdef NBQ
-          cff=0.5*(zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
+!         cff=0.5*(zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
+          cff=0.5*(
+     &             zeta(Istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
+     &            +zeta(Istr  ,j,kstp)/rhobar_nbq(Istr  ,j,kstp))
 #   else
           cff=0.5*(h(Istr-1,j)+h(Istr,j)+
      &             zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
@@ -239,13 +245,29 @@ c            zx=(0.5+cx)*zeta(Istr,j,kstp)+(0.5-cx)*zeta(Istr-1,j,kstp)
 c          else
 c            zx=(0.5*zeta(Istr,j,kstp)+(cx-0.5)*zeta(Istr,j,knew))/cx
 c          endif
-
+#   ifndef NBQ
           zx=(0.5+cx)*zeta(istr,j,kstp)+(0.5-cx)*zeta(istr-1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(istr,j,knew) +cx*zeta(istr-1,j,kstp)
      &                               -(1.+cx)*zeta(istr,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
+#   else
+          zx=(0.5+cx)*(zeta(istr  ,j,kstp)/rhobar_nbq(Istr ,j,kstp)                
+     &                   -h(istr  ,j))
+     &      +(0.5-cx)*(zeta(istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
+     &                   -h(istr-1,j))
+
+          if (cx .gt. 0.292893218813452) then
+            zx=zx + (zeta(istr  ,j,knew)/rhobar_nbq(Istr  ,j,knew)                 
+     &                 -h(istr  ,j)
+     &           +cx*(zeta(istr-1,j,kstp)/rhobar_nbq(Istr-1,j,kstp)
+     &                  -h(istr-1,j))
+     &      -(1.+cx)*(zeta(istr  ,j,kstp)/rhobar_nbq(Istr  ,j,kstp)
+     &                  -h(istr  ,j))
+     &                           )*(1.-0.292893218813452/cx)**2
+          endif
+#   endif
   
           ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr,j,kstp)
      &                                    +cx*ubar(Istr+1,j,kstp)
@@ -259,6 +281,9 @@ c          endif
      &                                           -zetabry_west(j)
 #   elif defined ZCLIMATOLOGY
      &                                             -ssh(Istr-1,j)
+#    ifdef NBQ
+     &                                               +h(Istr-1,j)
+#    endif
 #   endif
      &                           )) !*grad(Istr,j)
 #   ifdef MASKING
@@ -412,7 +437,10 @@ c          endif
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
 #   ifdef NBQ
-          cff=0.5*(zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
+!         cff=0.5*(zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
+          cff=0.5*(
+     &             zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
+     &            +zeta(Iend+1,j,kstp)/rhobar_nbq(Iend+1,j,kstp))
 #   else
           cff=0.5*(h(Iend,j)+h(Iend+1,j)+
      &             zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
@@ -425,13 +453,28 @@ c            zx=(0.5+cx)*zeta(Iend,j,kstp)+(0.5-cx)*zeta(Iend+1,j,kstp)
 c          else
 c            zx=(0.5*zeta(Iend,j,kstp)+(cx-0.5)*zeta(Iend,j,knew))/cx
 c          endif
-
+#   ifndef NBQ
           zx=(0.5+cx)*zeta(iend,j,kstp)+(0.5-cx)*zeta(iend+1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(iend,j,knew) +cx*zeta(iend+1,j,kstp)
      &                               -(1.+cx)*zeta(iend,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
+#   else
+          zx=(0.5+cx)*(zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
+     &                   -h(Iend  ,j))
+     &      +(0.5-cx)*(zeta(Iend+1,j,kstp)/rhobar_nbq(Iend+1,j,kstp)
+     &                   -h(Iend+1,j))
+          if (cx .gt. 0.292893218813452) then
+            zx=zx +(zeta(iend  ,j,knew)/rhobar_nbq(Iend  ,j,knew)
+     &                -h(iend  ,j)
+     &          +cx*(zeta(Iend+1,j,kstp)/rhobar_nbq(Iend+1,j,kstp)
+     &                 -h(Iend+1,j))
+     &     -(1.+cx)*(zeta(Iend  ,j,kstp)/rhobar_nbq(Iend  ,j,kstp)
+     &                 -h(Iend  ,j))
+     &                           )*(1.-0.292893218813452/cx)**2
+          endif
+#   endif
   
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
      &                                        +cx*ubar(Iend,j,kstp)
@@ -445,6 +488,9 @@ c          endif
      &                                           -zetabry_east(j)
 #   elif defined ZCLIMATOLOGY
      &                                               -ssh(Iend,j)
+#    ifdef NBQ
+     &                                                +h(Iend,j)
+#    endif
 #   endif
      &                             )) !*grad(Iend+1,j)
 #   ifdef MASKING

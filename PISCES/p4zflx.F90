@@ -49,11 +49,6 @@ MODULE p4zflx
    REAL(wp)                             ::  t_atm_co2_flx      !: global mean of atmospheric pco2
    REAL(wp)                             ::  area               !: ocean surface
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zflx.F90 2604 2011-02-22 09:33:21Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
 
 CONTAINS
 

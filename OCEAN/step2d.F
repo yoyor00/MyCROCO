@@ -410,15 +410,13 @@ C$OMP END MASTER
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-#ifdef NBQ
-          l_nh=ijk2lq_nh(i,j,N)
-#endif
+!#ifdef NBQ
+!          l_nh=ijk2lq_nh(i,j,N)
+!#endif
           zeta_new(i,j)=zeta(i,j,kstp) + dtfast*pm(i,j)*pn(i,j)
      &                                   *(DUon(i,j)-DUon(i+1,j  )
      &                                    +DVom(i,j)-DVom(i  ,j+1))
-#ifdef NBQ_CONS4
-     &        - rhscine_nh(l_nh,2)*dtfast/rho0
-#endif
+
 #ifdef ZONAL_NUDGING
           zeta(i,j,knew)=zeta_new(i,j)
 #endif
@@ -463,12 +461,18 @@ C$OMP END MASTER
 #ifdef NBQ
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
+#ifdef MASKING
+ 	  zeta_new(i,j)=(zeta_new(i,j) -h(i,j))* rmask(i,j)+h(i,j)
+#endif
+!          zeta_new(i,j)=zeta_new(i,j) -h(i,j)
+!          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j) !+2.2204460492503131E-016       ! PATCH LR
+!          zeta_new(i,j)=zeta_new(i,j) +h(i,j)
+
           Dnew(i,j)=zeta_new(i,j)
-          zwrk(i,j)=cff0*zeta_new(i,j) /rhobar_nbq(i,j,knew)
-     &             +cff1*zeta(i,j,kstp)/rhobar_nbq(i,j,kstp)
-     &             +cff2*zeta(i,j,kbak)/rhobar_nbq(i,j,kbak)
-     &             +cff3*zeta(i,j,kold)/rhobar_nbq(i,j,kold)
+          zwrk(i,j)=cff0*zeta_new(i,j)  /rhobar_nbq(i,j,knew)
+     &             +cff1*zeta(i,j,kstp) /rhobar_nbq(i,j,kstp)
+     &             +cff2*zeta(i,j,kbak) /rhobar_nbq(i,j,kbak)
+     &             +cff3*zeta(i,j,kold) /rhobar_nbq(i,j,kold)
      &             -h(i,j)
 # if defined VAR_RHO_2D && defined SOLVE3D
           rzeta(i,j)=(1.+rhoS(i,j))*zwrk(i,j)
@@ -622,9 +626,6 @@ C$OMP END MASTER
       endif
 #endif
 
-#ifdef NBQ_CONSOUT
-      if (cff1.ne.0) call consout_nbq(20)
-#endif
 !
 !
 !======================================================================
@@ -1278,7 +1279,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           do j=Jstr,Jend
             do i=IstrU,Iend
               cff=ruint_nbq(i,j,k)
-              ruint_nbq(i,j,k)=cff1*cff 
+              ruint_nbq(i,j,k)=cff1*cff
      &                       + cff2*ruint_bak_nbq(i,j,k,3-nstp)
      &                       + cff3*ruint_bak_nbq(i,j,k,nstp)
               ruint_bak_nbq(i,j,k,nstp)=cff
@@ -1436,7 +1437,19 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
       endif
 
 # define WORK UFx
-      call step3d_nbq (Istr,Iend,Jstr,Jend, WORK)
+# ifdef NBQ_LF
+!     call step3d_lf_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_FB
+      call step3d_fb_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_RK2
+!     call step3d_rk2_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_RK3
+!     call step3d_rk3_nbq (Istr,Iend,Jstr,Jend, WORK)
+# elif defined NBQ_RK3b
+!     call step3d_rk3b_nbq (Istr,Iend,Jstr,Jend, WORK)
+# else
+!     call step3d_imp_nbq (Istr,Iend,Jstr,Jend, WORK)
+# endif
 # undef WORK
 
 !
@@ -1451,32 +1464,32 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               rhobar_nbq_avg1(i,j)=cff1*rhobar_nbq(i,j,knew)
             enddo
           enddo 
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=Istr,Iend
                 rho_nbq_avg1(i,j,k)=cff1*rho_nbq_ext(i,j,k)
                 rho_nbq_avg2(i,j,k)=cff2*rho_nbq_ext(i,j,k)
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=IstrU,Iend
                 ru_nbq_avg1(i,j,k)=cff1*ru_nbq_ext(i,j,k)
                 ru_nbq_avg2(i,j,k)=cff2*ru_nbq_ext(i,j,k)
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=JstrV,Jend
+          do k=1,N
               do i=Istr,Iend
                 rv_nbq_avg1(i,j,k)=cff1*rv_nbq_ext(i,j,k)
                 rv_nbq_avg2(i,j,k)=cff2*rv_nbq_ext(i,j,k)
               enddo
             enddo 
           enddo
-          do k=0,N
             do j=Jstr,Jend
+          do k=0,N
               do i=Istr,Iend
                 rw_nbq_avg1(i,j,k)=cff1*rw_nbq_ext(i,j,k)
                 rw_nbq_avg2(i,j,k)=cff2*rw_nbq_ext(i,j,k)
@@ -1490,8 +1503,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
      &                              +cff1*rhobar_nbq(i,j,knew)
             enddo
           enddo 
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=Istr,Iend
                 rho_nbq_avg1(i,j,k)=rho_nbq_avg1(i,j,k)
      &                              +cff1*rho_nbq_ext(i,j,k)
@@ -1500,8 +1513,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=Jstr,Jend
+          do k=1,N
               do i=IstrU,Iend
                  ru_nbq_avg1(i,j,k)=ru_nbq_avg1(i,j,k)
      &                              +cff1*ru_nbq_ext(i,j,k)
@@ -1510,8 +1523,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=1,N
             do j=JstrV,Jend
+          do k=1,N
               do i=Istr,Iend
                  rv_nbq_avg1(i,j,k)=rv_nbq_avg1(i,j,k)
      &                              +cff1*rv_nbq_ext(i,j,k)
@@ -1520,8 +1533,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
               enddo
             enddo 
           enddo
-          do k=0,N
             do j=Jstr,Jend
+          do k=0,N
               do i=Istr,Iend
                  rw_nbq_avg1(i,j,k)=rw_nbq_avg1(i,j,k)
      &                              +cff1*rw_nbq_ext(i,j,k)
@@ -1785,24 +1798,40 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
+#  ifndef NBQ
           Dnew(Istr-1,j)=h(Istr-1,j)+zeta(Istr-1,j,knew)
+#  else
+          Dnew(Istr-1,j)=zeta(Istr-1,j,knew)
+#  endif
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=Jstr-1,JendR
+#  ifndef NBQ
           Dnew(Iend+1,j)=h(Iend+1,j)+zeta(Iend+1,j,knew)
+#  else
+          Dnew(Iend+1,j)=zeta(Iend+1,j,knew)
+#  endif
         enddo
       endif
 # endif
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=Istr-1,IendR
+#  ifndef NBQ
           Dnew(i,Jstr-1)=h(i,Jstr-1)+zeta(i,Jstr-1,knew)
+#  else
+          Dnew(i,Jstr-1)=zeta(i,Jstr-1,knew)
+#  endif
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=Istr-1,IendR
+#  ifndef NBQ
           Dnew(i,Jend+1)=h(i,Jend+1)+zeta(i,Jend+1,knew)
+#  else
+          Dnew(i,Jend+1)=zeta(i,Jend+1,knew)
+#  endif
         enddo
       endif
 # endif

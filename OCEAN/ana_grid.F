@@ -92,10 +92,18 @@ C$    integer omp_get_thread_num
                      depth=4000.
                      f0=1.E-4
                      beta=0.
+# elif defined PLUME
+                     depth=1300.
+                     beta=0.
+                     f0=0.5E-4 
 # elif defined EQUATOR
                      depth=5000.
                      f0=0.
                      beta=2.2829e-11
+# elif defined KH_INST 
+                     depth=286.     
+                     f0=0.
+                     beta=0.
 # elif defined GRAV_ADJ
 #  ifdef NBQ
                      depth=0.29      ! Horn et al. (2001)
@@ -204,6 +212,22 @@ C$    integer omp_get_thread_num
 # elif defined EQUATOR
                      Length_ETA=3200.0E+3
                      Length_XI =4000.0E+3
+# elif defined KH_INST 
+#  ifndef KH_INSTY
+#   ifdef KH_INST2D
+                     Length_XI =286.0
+                     Length_ETA=286.0/256.0
+#   else
+                     Length_XI =286.0
+                     Length_ETA=Length_XI*float(MMm0)/float(LLm0) 
+#   endif
+#  else
+                     Length_ETA =286.0
+                     Length_XI=286./256.
+#  endif
+# elif defined ACOUSTIC
+                     Length_XI =128.0
+                     Length_ETA=2.0
 # elif defined GRAV_ADJ
 #  ifdef NBQ
 #   ifdef GRAV_ADJ_SOLITON
@@ -216,9 +240,6 @@ C$    integer omp_get_thread_num
                      Length_XI =64.0E+3
                      Length_ETA=2.0E+3
 #  endif
-# elif defined ACOUSTIC
-                     Length_XI =128.0
-                     Length_ETA=2.0
 # elif defined INNERSHELF
                      Length_XI =200.0e+3
                      Length_ETA=3.0e+3
@@ -274,9 +295,9 @@ C$    integer omp_get_thread_num
 #  ifndef MOVING_BATHY
 #   ifndef TANKY
                      Length_XI =10.0
-                     Length_ETA=0.20
+                     Length_ETA=0.20*MMm0
 #   else
-                     Length_XI =0.20
+                     Length_XI =0.20*LLm0
                      Length_ETA=10.0
 #   endif
 #  else
@@ -376,6 +397,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
                    || defined SOLITON || defined JET \
+                   || defined KH_INST \
                    || defined ACOUSTIC
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -692,7 +714,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         endif
       enddo
 #  elif defined TANK || defined GRAV_ADJ || defined ACOUSTIC\
-                     || defined INTERNAL || defined IGW
+                     || defined INTERNAL || defined IGW\
+                     || defined S2DV     || defined KH_INST
       gamma2=1.
       do j=JstrR,JendR
         do i=IstrR,IendR

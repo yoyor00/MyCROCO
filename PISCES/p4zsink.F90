@@ -38,12 +38,6 @@ MODULE p4zsink
    INTEGER  :: ik100 = 10
 
 
-   !!----------------------------------------------------------------------
-   !! NEMO/TOP 2.0 , LOCEAN-IPSL (2007) 
-   !! $Id: p4zsink.F90 1830 2010-04-12 13:03:51Z cetlod $ 
-   !! Software governed by the CeCILL licence (modipsl/doc/NEMO_CeCILL.txt)
-   !!----------------------------------------------------------------------
-
 CONTAINS
 
 
@@ -83,9 +77,35 @@ CONTAINS
          END DO
       END DO
 
+      !
+       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+         WRITE(charout, FMT="('b-sink')")
+         CALL prt_ctl_trc_info(charout)
+         CALL prt_ctl_trc( charout)
+       ENDIF
+
+
+!   INITIALIZE TO ZERO ALL THE SINKING ARRAYS
+!   -----------------------------------------
+
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               sinking (ji,jj,jk) = 0.e0
+               sinking2(ji,jj,jk) = 0.e0
+               sinkcal (ji,jj,jk) = 0.e0
+               sinkfer (ji,jj,jk) = 0.e0
+               sinksil (ji,jj,jk) = 0.e0
+               sinkfer2(ji,jj,jk) = 0.e0
+            END DO
+         END DO
+      END DO
+
+      IF( .NOT. ln_sink_new ) THEN
+
+
 !      LIMIT THE VALUES OF THE SINKING SPEEDS 
 !      TO AVOID NUMERICAL INSTABILITIES
-
 
       !
       ! OA This is (I hope) a temporary solution for the problem that may 
@@ -135,6 +155,7 @@ CONTAINS
          END DO
       END DO
 
+!      IF( lwp ) THEN
 !      write(numout,*)
 !      write(numout,*) '  level      Depht          depthw    wsbio3      wsbio4'
 !      DO jk = KRANGE
@@ -145,43 +166,47 @@ CONTAINS
 !      write(numout,*) ' jk = ', jpk+1,'                              depw = ' ,fsdepw(jip,jjp,jpk+1), &
 !            &   '                              e3w = ', fse3w(jip,jjp,jpk+1)
 !      write(numout,*)
+!      ENDIF
 
-!   INITIALIZE TO ZERO ALL THE SINKING ARRAYS
-!   -----------------------------------------
-
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               sinking (ji,jj,jk) = 0.e0
-               sinking2(ji,jj,jk) = 0.e0
-               sinkcal (ji,jj,jk) = 0.e0
-               sinkfer (ji,jj,jk) = 0.e0
-               sinksil (ji,jj,jk) = 0.e0
-               sinkfer2(ji,jj,jk) = 0.e0
-            END DO
-         END DO
-      END DO
 
 !   Compute the sedimentation term using p4zsink2 for all
 !   the sinking particles
 !   -----------------------------------------------------
-     DO jit = 1, iiter1
-        CALL p4z_sink2( wsbio3, sinking , jppoc, iiter1 )
-        CALL p4z_sink2( wsbio3, sinkfer , jpsfe, iiter1 )
+      DO jit = 1, iiter1
+        CALL p4z_sink2_std( wsbio3, sinking , jppoc, iiter1 )
+        CALL p4z_sink2_std( wsbio3, sinkfer , jpsfe, iiter1 )
       END DO
 
       DO jit = 1, iiter2
-        CALL p4z_sink2( wsbio4, sinking2, jpgoc, iiter2 )
-        CALL p4z_sink2( wsbio4, sinkfer2, jpbfe, iiter2 )
-        CALL p4z_sink2( wsbio4, sinksil , jpdsi, iiter2 )
-        CALL p4z_sink2( wscal , sinkcal , jpcal, iiter2 )
+        CALL p4z_sink2_std( wsbio4, sinking2, jpgoc, iiter2 )
+        CALL p4z_sink2_std( wsbio4, sinkfer2, jpbfe, iiter2 )
+        CALL p4z_sink2_std( wsbio4, sinksil , jpdsi, iiter2 )
+        CALL p4z_sink2_std( wscal , sinkcal , jpcal, iiter2 )
       END DO
 
+    ELSE
+
+        CALL p4z_sink2_new( wsbio3, sinking , jppoc )
+        CALL p4z_sink2_new( wsbio3, sinkfer , jpsfe ) 
+        !
+        CALL p4z_sink2_new( wsbio4, sinking2, jpgoc )
+        CALL p4z_sink2_new( wsbio4, sinkfer2, jpbfe )
+        CALL p4z_sink2_new( wsbio4, sinksil , jpdsi )
+        CALL p4z_sink2_new( wscal , sinkcal , jpcal )
+
+   ENDIF
+
+
+     !
+       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+         WRITE(charout, FMT="('a-sink')")
+         CALL prt_ctl_trc_info(charout)
+         CALL prt_ctl_trc( charout)
+       ENDIF
 
 !  Exchange between organic matter compartments due to
 !  coagulation/disaggregation
 !  ---------------------------------------------------
-
 
       DO jk = KRANGE
          DO jj = JRANGE
@@ -217,6 +242,13 @@ CONTAINS
          END DO
       END DO
 
+       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+         WRITE(charout, FMT="('agg')")
+         CALL prt_ctl_trc_info(charout)
+         CALL prt_ctl_trc( charout, ltra='tra')
+       ENDIF
+
+
 #if defined key_trc_diaadd
       zrfact2 = 1.e3 * rfact2r
       ik1  = ik100 + 1
@@ -231,18 +263,11 @@ CONTAINS
       END DO
 #endif
 
-      !
-       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-         WRITE(charout, FMT="('sink')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout, ltra='tra')
-!         CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
-       ENDIF
 
    END SUBROUTINE p4z_sink
 
 
-   SUBROUTINE p4z_sink2( pwsink, psinkflx, jp_tra, kiter )
+   SUBROUTINE p4z_sink2_std( pwsink, psinkflx, jp_tra, kiter )
       !!---------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_sink2  ***
       !!
@@ -270,7 +295,7 @@ CONTAINS
 
       zstep = rfact2 / FLOAT( kiter ) / 2.
 
-      DO jk = KRANGE
+      DO jk = 1, jpk
          DO jj = JRANGE
             DO ji = IRANGE
                zmask(ji,jj,jk) = tmask(ji,jj,K)
@@ -290,8 +315,7 @@ CONTAINS
          END DO
       END DO
 
-!      DO jk = KRANGE-1
-      DO jk = 2, N-1
+      DO jk = 2, jpk-1
          DO jj = JRANGE
             DO ji = IRANGE
                zwsink2(ji,jj,jk+1) = -pwsink(ji,jj,jk) / rday * zmask(ji,jj,jk+1)
@@ -309,8 +333,7 @@ CONTAINS
       ! Vertical advective flux
       DO jnt = 1, 2
          !  first guess of the slopes interior values
-!         DO jk = KRANGEL
-         DO jk = 2, N-1
+         DO jk = 2, jpk-1
             DO jj = JRANGE
                DO ji = IRANGE
                   ztraz(ji,jj,jk) = ( ztrn(ji,jj,jk-1) - ztrn(ji,jj,jk) ) * zmask(ji,jj,jk)
@@ -327,7 +350,7 @@ CONTAINS
 
          ! slopes
 !         DO jk = KRANGEL
-         DO jk = 2, N-1
+         DO jk = 2, jpk-1
             DO jj = JRANGE
                DO ji = IRANGE
                   zign = 0.25 + SIGN( 0.25, ztraz(ji,jj,jk) * ztraz(ji,jj,jk+1) )
@@ -337,8 +360,7 @@ CONTAINS
          END DO
          
          ! Slopes limitation
-!         DO jk = KRANGEL
-         DO jk = 2, N-1
+         DO jk = 2, jpk-1
             DO jj = JRANGE
                DO ji = IRANGE
                   zakz(ji,jj,jk) = SIGN( 1., zakz(ji,jj,jk) ) *        &
@@ -349,8 +371,7 @@ CONTAINS
 
          
          ! vertical advective flux
-!         DO jk = KRANGE
-         DO jk = 1, N-1
+         DO jk = 1, jpk-1
             DO jj = JRANGE   
                DO ji = IRANGE  
                   zigma = zwsink2(ji,jj,jk+1) * zstep / fse3w(ji,jj,jk+1)
@@ -369,8 +390,7 @@ CONTAINS
          END DO
          
 
-!         DO jk = KRANGE
-         DO jk = 1, N-1
+         DO jk = 1, jpk-1
             DO jj = JRANGE
                DO ji = IRANGE
                   zflx = ( psinkflx(ji,jj,jk) - psinkflx(ji,jj,jk+1) ) / zdept(ji,jj,jk)
@@ -382,8 +402,7 @@ CONTAINS
 
       ENDDO
 
-!      DO jk = KRANGE
-      DO jk = 1, N-1
+      DO jk = 1, jpk-1
          DO jj = JRANGE
             DO ji = IRANGE
                zflx = ( psinkflx(ji,jj,jk) - psinkflx(ji,jj,jk+1) ) / zdept(ji,jj,jk)
@@ -392,7 +411,7 @@ CONTAINS
          END DO
       END DO
 
-      DO jk = KRANGE
+      DO jk = 1, jpk
          DO jj = JRANGE
             DO ji = IRANGE
                trn(ji,jj,K,jp_tra) = ztmp(ji,jj,jk)
@@ -402,7 +421,276 @@ CONTAINS
       END DO
 
       !
-   END SUBROUTINE p4z_sink2
+   END SUBROUTINE p4z_sink2_std
+
+   SUBROUTINE p4z_sink2_new( pwsink, psinkflx, jp_tra )
+     !======================================================================
+     !                                                                      !
+     !  This routine computes the vertical settling (sinking) of suspended  !
+     !  sediment via a semi-Lagrangian advective flux algorithm. It uses a  !
+     !  parabolic,  vertical reconstructuion of the suspended particle in  !
+     !  the water column with PPT/WENO constraints to avoid oscillations.   !
+     !                                                                      !
+     !  References:                                                         !
+     !                                                                      !
+     !  Colella, P. and P. Woodward, 1984: The piecewise parabolic method   !
+     !    (PPM) for gas-dynamical simulations, J. Comp. Phys., 54, 174-201. !
+     !                                                                      !
+     !  Liu, X.D., S. Osher, and T. Chan, 1994: Weighted essentially        !
+     !    nonoscillatory shemes, J. Comp. Phys., 115, 200-212.              !
+     !                                                                      !
+     !  Warner, J.C., C.R. Sherwood, R.P. Signell, C.K. Harris, and H.G.    !
+     !    Arango, 2008:  Development of a three-dimensional,  regional,     !
+     !    coupled wave, current, and sediment-transport model, Computers    !
+     !    & Geosciences, 34, 1284-1306.                                     !
+     !                                                                      !
+     !=======================================================================
+#ifdef AGRIF
+      USE ocean2pisces
+#endif
+      INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index      
+      REAL(wp), INTENT(in   ), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   pwsink    ! sinking speed
+      REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   psinkflx  ! sinking fluxe
+!
+!  Local variable declarations.
+!
+      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::  ztrn,  zdept, zmask
+
+      INTEGER :: indx, ised, ks,ji,jj,jk
+      REAL(wp) :: cff, cu, cffL, cffR, dltL, dltR
+      INTEGER, DIMENSION(jpi,jpk) :: ksource
+      REAL(wp), DIMENSION(jpi,jpk+1) :: FC
+      REAL(wp), dimension(jpi,jpk) :: Hz_inv
+      REAL(wp), dimension(jpi,jpk) :: Hz_inv2
+      REAL(wp), dimension(jpi,jpk) :: Hz_inv3
+      REAL(wp), dimension(jpi,jpk) :: qc
+      REAL(wp), dimension(jpi,jpk) :: qR
+      REAL(wp), dimension(jpi,jpk) :: qL
+      REAL(wp), dimension(jpi,jpk) :: WR
+      REAL(wp), dimension(jpi,jpk) :: WL
+
+
+     ztrn(:,:,:) = 0.
+     zdept(:,:,:) = 0.
+     zmask(:,:,:) = 0.
+
+     ksource(:,:) = 0.
+     FC(:,:) = 0.
+     Hz_inv(:,:) = 0.
+     Hz_inv2(:,:) = 0.
+     Hz_inv3(:,:) = 0.
+     qc(:,:) = 0.
+     qR(:,:) = 0.
+     qL(:,:) = 0.
+     WR(:,:) = 0.
+     WL(:,:) = 0.
+
+
+      DO jk = 1, jpk
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zmask(ji,jj,jk) = tmask(ji,jj,K)
+               zdept(ji,jj,jk) = fse3t(ji,jj,K)
+               ztrn (ji,jj,jk) = trn  (ji,jj,K,jp_tra)
+           END DO
+         END DO
+      ENDDO
+
+
+!
+!-----------------------------------------------------------------------
+!  Add sediment vertical sinking (settling) term.
+!-----------------------------------------------------------------------
+!
+!  Compute inverse thicknesses to avoid repeated divisions.
+!
+      DO jj = JRANGE
+
+         DO jk= 1, jpk
+            DO ji= IRANGE
+               Hz_inv(ji,jk)=1./zdept(ji,jj,jk)
+            ENDDO
+          ENDDO
+          DO jk = 2, jpk
+             DO ji = IRANGE
+                Hz_inv2(ji,jk)=1./(zdept(ji,jj,jk)+zdept(ji,jj,jk-1))
+             ENDDO
+           ENDDO
+           DO jk = 2, jpk-1
+              DO ji = IRANGE
+                 Hz_inv3(ji,jk)=1./(zdept(ji,jj,jk+1)+zdept(ji,jj,jk)+zdept(ji,jj,jk-1))
+              ENDDO
+           ENDDO
+!
+!  Copy concentration of suspended sediment into scratch array "qc"
+!  (q-central, restrict it to be positive) which is hereafter
+!  interpreted as a set of grid-box averaged values for sediment
+!  concentration.
+!
+           DO ised=1,1
+              DO jk = 1, jpk
+                 DO ji = IRANGE
+                    qc(ji,jk)=ztrn(ji,jj,jk)
+                 ENDDO
+              ENDDO
+!
+!-----------------------------------------------------------------------
+!  Vertical sinking of suspended sediment.
+!-----------------------------------------------------------------------
+!
+!  Reconstruct vertical profile of suspended sediment "qc" in terms
+!  of a set of parabolic segments within each grid box. Then, compute
+!  semi-Lagrangian flux due to sinking.
+!
+          DO jk = 2, jpk
+            DO ji = IRANGE
+              FC(ji,jk)=(qc(ji,jk-1)-qc(ji,jk))*Hz_inv2(ji,jk)
+            END DO
+          END DO
+          DO jk = 2, jpk-1
+            DO ji = IRANGE
+              dltR=zdept(ji,jj,jk)*FC(ji,jk)
+              dltL=zdept(ji,jj,jk)*FC(ji,jk+1)
+              cff=zdept(ji,jj,jk+1)+2.*zdept(ji,jj,jk)+zdept(ji,jj,jk-1)
+              cffR=cff*FC(ji,jk)
+              cffL=cff*FC(ji,jk+1)
+!
+!  Apply PPM monotonicity constraint to prevent oscillations within the
+!  grid box.
+!
+              IF ((dltR*dltL).LE.0.) THEN
+                dltR=0.
+                dltL=0.
+              ELSE IF (ABS(dltR).GE.(cffL)) THEN
+                dltR=cffL
+              ELSE IF (ABS(dltL).GT.ABS(cffR)) THEN
+                dltL=cffR
+              ENDIF
+!
+!  Compute right and left side values (qR,qL) of parabolic segments
+!  within grid box Hz(k); (WR,WL) are measures of quadratic variations.
+!
+!  NOTE: Although each parabolic segment is monotonic within its grid
+!        box, monotonicity of the whole profile is not guaranteed,
+!        because qL(k+1)-qR(k) may still have different sign than
+!        qc(k+1)-qc(k).  This possibility is excluded, after qL and qR
+!        are reconciled using WENO procedure.
+!
+              cff=(dltR-dltL)*Hz_inv3(ji,jk)
+              dltR=dltR-cff*zdept(ji,jj,jk-1)
+              dltL=dltL+cff*zdept(ji,jj,jk+1)
+              qR(ji,jk)=qc(ji,jk)+dltR
+              qL(ji,jk)=qc(ji,jk)-dltL
+              WR(ji,jk)=(2.*dltR-dltL)**2
+              WL(ji,jk)=(dltR-2.*dltL)**2
+            END DO
+          END DO
+          cff=1.e-14
+          DO jk = 2, jpk-2
+            DO ji = IRANGE
+              dltL=MAX(cff,WL(ji,jk  ))
+              dltR=MAX(cff,WR(ji,jk-1))
+              qR(ji,jk)=(dltR*qR(ji,jk)+dltL*qL(ji,jk-1))/(dltR+dltL)
+              qL(ji,jk-1)=qR(ji,jk)
+            ENDDO
+          ENDDO
+          DO ji= IRANGE
+            FC(ji,KSURF)=0.              ! no-flux boundary condition
+!
+            qR(ji,KSURF)=qc(ji,KSURF)         ! default strictly monotonic
+            qL(ji,KSURF)=qc(ji,KSURF)         ! conditions
+            qR(ji,KSURF-1)=qc(ji,KSURF-1)
+!
+            qL(ji,KSED+1)=qc(ji,KSED)                 ! bottom grid boxes are
+            qR(ji,KSED)=qc(ji,KSED)                 ! re-assumed to be
+            qL(ji,KSED)=qc(ji,KSED)                 ! piecewise constant.
+          ENDDO
+!
+!  Apply monotonicity constraint again, since the reconciled interfacial
+!  values may cause a non-monotonic behavior of the parabolic segments
+!  inside the grid box.
+!
+          DO jk=1, jpk
+            DO ji= IRANGE
+              dltR=qR(ji,jk)-qc(ji,jk)
+              dltL=qc(ji,jk)-qL(ji,jk)
+              cffR=2.*dltR
+              cffL=2.*dltL
+              IF ((dltR*dltL).LT.0.) THEN
+                dltR=0.
+                dltL=0.
+              ELSE IF (ABS(dltR).GT.ABS(cffL)) THEN
+                dltR=cffL
+              ELSE IF (ABS(dltL).GT.ABS(cffR)) THEN
+                dltL=cffR
+              ENDIF
+              qR(ji,jk)=qc(ji,jk)+dltR
+              qL(ji,jk)=qc(ji,jk)-dltL
+            ENDDO
+          ENDDO
+!
+!  After this moment reconstruction is considered complete. The next
+!  stage is to compute vertical advective fluxes, FC. It is expected
+!  that sinking may occurs relatively fast, the algorithm is designed
+!  to be free of CFL criterion, which is achieved by allowing
+!  integration bounds for semi-Lagrangian advective flux to use as
+!  many grid boxes in upstream direction as necessary.
+!
+!  In the two code segments below, WL is the z-coordinate of the
+!  departure point for grid box interface z_w with the same indices;
+!  FC is the finite volume flux; ksource(:,k) is index of vertical
+!  grid box which contains the departure point (restricted by N(ng)).
+!  During the search: also add in content of whole grid boxes
+!  participating in FC.
+!
+          DO jk=1,jpk-1
+            DO ji=IRANGE
+              cff=rfact2 *ABS(pwsink(ji,jj,jk))/rday*zmask(ji,jj,jk)
+              FC(ji,jk+1)=0.
+              WL(ji,jk)=-fsdepw(ji,jj,jk+1)+cff !!! ATTENTION
+              WR(ji,jk)=zdept(ji,jj,jk)*qc(ji,jk)
+              ksource(ji,jk)=jk
+            ENDDO
+          ENDDO
+
+          DO jk=1, jpk
+            DO ks=2,jk
+              DO ji=IRANGE
+                IF (WL(ji,jk).GT.-fsdepw(ji,jj,ks)) THEN
+                  ksource(ji,jk)=ks-1
+                  FC(ji,jk+1)=FC(ji,jk+1)+WR(ji,ks)
+                ENDIF
+              ENDDO
+            END DO
+          END DO
+!
+!  Finalize computation of flux: add fractional part.
+!
+          DO jk=1,jpk-1
+            DO ji=IRANGE
+              ks=ksource(ji,jk)
+              cu=MIN(1.,(WL(ji,jk)+fsdepw(ji,jj,ks+1))*Hz_inv(ji,ks))
+              FC(ji,jk+1)=FC(ji,jk+1)+                                      &
+     &                  zdept(ji,jj,ks)*cu*                                  &
+     &                  (qL(ji,ks)+                                      &
+     &                   cu*(0.5*(qR(ji,ks)-qL(ji,ks))-                &
+     &                       (1.5-cu)*                               &
+     &                       (qR(ji,ks)+qL(ji,ks)-2.*qc(ji,ks))))
+            END DO
+          END DO
+          DO ji=IRANGE
+            DO jk=1,jpk-1
+               trn(ji,jj,K,jp_tra)=qc(ji,jk)+(FC(ji,jk)-FC(ji,jk+1))*Hz_inv(ji,jk) 
+!               psinkflx(ji,jj,jk,ised)=FC(ji,jk)
+               psinkflx(ji,jj,jk)=(FC(ji,jk)-FC(ji,jk+1))*Hz_inv(ji,jk)
+            ENDDO
+          ENDDO
+        END DO 
+      END DO 
+
+    !
+   END SUBROUTINE p4z_sink2_new
+
 
    INTEGER FUNCTION p4z_sink_alloc()
       !!----------------------------------------------------------------------

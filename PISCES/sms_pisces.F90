@@ -39,6 +39,7 @@ MODULE sms_pisces
    REAL(wp) ::   rdenit            !: ???
    REAL(wp) ::   o2nit             !: ???
    REAL(wp) ::   wsbio, wsbio2     !: ???
+   LOGICAL  ::   ln_sink_new       !: 
    REAL(wp) ::   xkmort            !: ???
    REAL(wp) ::   ferat3            !: ???
 
@@ -84,6 +85,7 @@ MODULE sms_pisces
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   akw3    !: 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   borat   !: 
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   hi      !: 
+   REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   excess   !: 
 
    !!* Temperature dependancy of SMS terms
    REAL(wp), ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tgfunc    !: Temp.  dependancy of various biological rates
@@ -105,10 +107,10 @@ MODULE sms_pisces
 #endif
 
   REAL(wp), PARAMETER     ::  rtrn = 1.e-20
-!  INTEGER :: jip = 15
-! INTEGER :: jjp = 25
-  INTEGER :: jip = 30
- INTEGER :: jjp = 25
+  INTEGER :: jip1 = 120
+  INTEGER :: jjp1 = 60
+  INTEGER :: jip2 = 38
+  INTEGER :: jjp2 = 20
   INTEGER :: jkp = KSURF
 
 
@@ -151,10 +153,10 @@ CONTAINS
       ALLOCATE( akb3(PRIV_3D_BIOARRAY)    , ak13  (PRIV_3D_BIOARRAY) ,       &
          &      ak23(PRIV_3D_BIOARRAY)    , aksp  (PRIV_3D_BIOARRAY) ,       &
          &      akw3(PRIV_3D_BIOARRAY)    , borat (PRIV_3D_BIOARRAY) ,       &
-         &      hi  (PRIV_3D_BIOARRAY)                          ,   STAT=ierr(5) )
+         &      hi  (PRIV_3D_BIOARRAY)    , excess(PRIV_3D_BIOARRAY) ,   STAT=ierr(5) )
          !
       !* Temperature dependancy of SMS terms
-      ALLOCATE( tgfunc(PRIV_3D_BIOARRAY)  , tgfunc2(PRIV_3D_BIOARRAY) ,   STAT=ierr(6) )
+      ALLOCATE( tgfunc(PRIV_3D_BIOARRAY)  , tgfunc2(PRIV_3D_BIOARRAY),   STAT=ierr(6) )
          !
       !* Array used to indicate negative tracer values
       ALLOCATE( xnegtr(PRIV_3D_BIOARRAY)  ,                          STAT=ierr(7) )
@@ -268,7 +270,7 @@ CONTAINS
              zvctl  = tra_ctl(jn)
              zsum   = SUM( ztab(:,:,:,jn) )
              IF( lk_mpp ) CALL mpp_sum( zsum )      ! min over the global domain
-             WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(ctrcnm(jn)), zsum-zvctl
+             IF( lwp ) WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(ctrcnm(jn)), zsum-zvctl
              tra_ctl(jn) = zsum
           END DO
        ELSE
@@ -276,7 +278,7 @@ CONTAINS
              zvctl  = tra_ctl(jn)
              zsum   = SUM( ztab(:,:,:,jn) )
              IF( lk_mpp ) CALL mpp_sum( zsum )      ! min over the global domain
-             WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(ctrcnm(jn)), zsum
+             IF( lwp ) WRITE(numout,FMT="(3x,a10,' : ',D23.16)") TRIM(ctrcnm(jn)), zsum
           END DO
       ENDIF
 

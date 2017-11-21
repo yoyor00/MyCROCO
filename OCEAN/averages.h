@@ -49,7 +49,7 @@
       real hbbl_avg(GLOBAL_2D_ARRAY)
       common /avg_hbbl/hbbl_avg
 #  endif
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined GLS_MIX2017
       real tke_avg(GLOBAL_2D_ARRAY,0:N)
       real gls_avg(GLOBAL_2D_ARRAY,0:N)
       real Lscale_avg(GLOBAL_2D_ARRAY,0:N)

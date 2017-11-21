@@ -682,6 +682,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
 #endif
+!
+!----------------------------------------------------------------------
+! OA "Stand Alone" modulus
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS 
+      call croco_oa(0)
+#endif
+
 
 CR      write(*,*) '  0' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT

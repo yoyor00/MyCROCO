@@ -47,16 +47,6 @@
       common /grid_Hz_half_bak/Hz_half_bak
       real dHzdt(GLOBAL_2D_ARRAY,N)
       common /grid_dHzdt/dHzdt
-#  if defined NBQ_CONSOUT || defined NBQ_CONS0
-      real u2(GLOBAL_2D_ARRAY,N,3)
-      common /ocean_u2/u2
-      real We3(GLOBAL_2D_ARRAY,0:N)
-      common /grid_We3/We3
-#  endif
-#  if defined NBQ_CONSOUT || defined NBQ_CONS2
-      real We2(GLOBAL_2D_ARRAY,0:N)
-      common /grid_We2/We2
-#  endif
       real h2d(GLOBAL_2D_ARRAY)
       common /h2d/ h2d
 # endif

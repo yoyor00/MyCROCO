@@ -179,9 +179,13 @@ C$    integer omp_get_thread_num
           do j=Jstr,Jend
             do i=Istr,Iend
               wstr_avg(i,j)=cff*( cff1*wstr_avg(i,j)+
+# ifdef OA_COUPLING
+     &                         smstr(i,j)*rho0)
+# else
      &                         0.5*sqrt((sustr(i,j)+sustr(i+1,j))**2
      &                                 +(svstr(i,j)+svstr(i,j+1))**2)
      &                                                          *rho0)
+# endif
             enddo
           enddo
         endif
@@ -289,12 +293,17 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined GLS_MIX2017
         if (wrtavg(indxTke)) then
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k)+tke(i,j,k,nstp))
+                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k) 
+#    ifdef GLS_MIXING                  
+     &                                  +tke(i,j,k,nstp))
+#    else
+     &                                  +trb(i,j,k,nstp,itke))
+#    endif              
               enddo
             enddo
           enddo
@@ -303,7 +312,12 @@ C$    integer omp_get_thread_num
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                gls_avg(i,j,k)=cff*(cff1*gls_avg(i,j,k)+gls(i,j,k,nstp))
+                gls_avg(i,j,k)=cff*(cff1*gls_avg(i,j,k)
+#    ifdef GLS_MIXING                  
+     &                                  +gls(i,j,k,nstp))
+#    else
+     &                                  +trb(i,j,k,nstp,igls))
+#    endif
               enddo
             enddo
           enddo
@@ -451,28 +465,6 @@ C$    integer omp_get_thread_num
               do i=IstrR,IendR
                 Akt_avg(i,j,k,isalt)=cff*(cff1*Akt_avg(i,j,k,isalt)
      &                                        +Akt(i,j,k,isalt))
-              enddo
-            enddo
-          enddo
-        endif
-#   endif
-#   ifdef GLS_MIXING
-        if (wrtavg(indxAkk)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akk_avg(i,j,k)=cff*(cff1*Akk_avg(i,j,k)
-     &                                  +Akk(i,j,k))
-              enddo
-            enddo
-          enddo
-        endif
-        if (wrtavg(indxAkp)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akp_avg(i,j,k)=cff*(cff1*Akp_avg(i,j,k)
-     &                                  +Akp(i,j,k))
               enddo
             enddo
           enddo
