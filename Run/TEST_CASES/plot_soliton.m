@@ -29,7 +29,8 @@
 clear all
 close all
 tndx=16;
-nc=netcdf('croco_his.nc','r');
+makepdf=0;
+nc=netcdf('soliton_his.nc','r');
 time=(nc{'scrum_time'}(tndx))/(24*3600);
 x=nc{'x_rho'}(:);
 y=nc{'y_rho'}(:);
@@ -46,4 +47,7 @@ hold on
 contour(x,y,100*z1,'k')
 hold off
 title(['SOLITON - zeta [cm] - day = ',num2str(time)])
+if makepdf
+ export_fig -transparent -pdf soliton.pdf
+end
 

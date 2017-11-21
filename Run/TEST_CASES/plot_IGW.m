@@ -34,6 +34,8 @@ close all
 clear all
 %================== User defined parameters ===========================
 %
+makepdf=0;
+%
 gname = 'igw_grd.nc';
 fname = 'igw_frc.nc';
 hname = 'igw_his.nc';
@@ -104,8 +106,9 @@ contourf(xrsec,zrsec,drsec,20);
 shading flat; colorbar
 title('Internal case: rho anomaly')
 %
+if makepdf
 export_fig -transparent IGW.pdf
-
+end
 
 %================================================
 %  External tides validation
@@ -179,7 +182,9 @@ if valid==1,
  legend([h1 h2],{'model','data'},'location','southeast')
  title('Barotropic tides validation')
  set(gcf,'PaperPositionMode','auto');
+ if makepdf
  export_fig -transparent IGW_tides.pdf
+ end
 end
 
 

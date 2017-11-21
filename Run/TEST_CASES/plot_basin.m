@@ -34,6 +34,7 @@ j=25;
 %
 % Read data
 %
+makepdf=0;       % make pdf file
 nc=netcdf('basin_his.nc','r');
 h=nc{'h'}(:);
 x1=nc{'x_rho'}(:);
@@ -61,6 +62,9 @@ shading flat
 caxis([0 3])
 colorbar
 title('Basin temperature [^oC] vertical section')
+if makepdf
+ export_fig -transparent -pdf basin_T.pdf
+end
 
 %
 % Second plot
@@ -77,3 +81,6 @@ contour(x1/1000,y1/1000,h,'k')
 hold off
 title('Basin sea surface elevation [cm]')
 
+if makepdf
+ export_fig -transparent -pdf basin_Z.pdf
+end
