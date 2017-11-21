@@ -101,6 +101,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
+#elif defined FLUME
+      fname='TEST_CASES/croco.in.Flume'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined TANK
