@@ -353,8 +353,8 @@
 #elif defined TS_VADV_WENO5
 #elif defined TS_VADV_C2
 #else
-# define TS_VADV_SPLINES   /* Splines vertical advection            */
-# undef  TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
+# undef  TS_VADV_SPLINES   /* Splines vertical advection            */
+# define TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
 # undef  TS_VADV_WENO5     /* 5th-order WENOZ vertical advection    */
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
@@ -473,7 +473,7 @@
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
-# undef LMD_BKPP2005
+# define LMD_BKPP2005
 #endif
 
 /*
