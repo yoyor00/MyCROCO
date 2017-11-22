@@ -251,7 +251,10 @@ C$    trd=omp_get_thread_num()
       real WORK(PRIVATE_2D_SCRATCH_ARRAY)
       real dum_s,dum_max
       real sum_r(PRIVATE_2D_SCRATCH_ARRAY)
+      real,parameter :: gammau=0.45
+      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
 #endif
+
 !
 #ifndef NBQ_MASS
 #  define Hzr_half_nbq Hz

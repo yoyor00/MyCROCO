@@ -346,7 +346,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
 # ifndef NBQ_NODS
 	  	  dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
      &                  *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))             ! dZdx * (d(delta p)dz)_u
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx 
 # else
                   if (NSTEP_DS) then
 	   	  dthetadiv_nbqdz(i,j,k,1)=(z_r(i,j,k)
@@ -354,13 +355,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))              ! dZdx * (d(delta p)dz)_u
                   endif 
                   dum_s=dthetadiv_nbqdz(i,j,k,1)                                        
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx 
 # endif
                 elseif (k.gt.1) then
 # ifndef NBQ_NODS
 	 	  dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
      &                        *dthetadiv_nbqdz_u(i,j,k1)                                        ! dZdx * (d(delta p)dz)_u
-     &	               -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                       ! - d(delta p)dx
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx
      &                    +(z_w(i,j,N)-z_w(i-1,j,N))                      
      &                  *dthetadiv_nbqdz_u(i,j,k2)
 # else
@@ -372,13 +375,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *dthetadiv_nbqdz_u(i,j,k2)                 
                   endif
 	 	  dum_s=dthetadiv_nbqdz(i,j,k,1)                                          
-     &	               -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                  
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx                
 # endif
                 else
 # ifndef NBQ_NODS
 	  	  dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
      &                  *2.*dthetadiv_nbqdz_u(i,j,k2)                                      ! dZdx * (d(delta p)dz)_u
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx
 # else
                   if (NSTEP_DS) then
   	  	  dthetadiv_nbqdz(i,j,k,1)=(z_r(i,j,k)
@@ -386,7 +391,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                    *2.*dthetadiv_nbqdz_u(i,j,k2)                                    ! dZdx * (d(delta p)dz)_u
                   endif
 	  	  dum_s=dthetadiv_nbqdz(i,j,k,1)                                          
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i-1,j,k))                         ! - d(delta p)dx  
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx  
 # endif
                 endif
                 dum_s=dum_s   *Hzu_half_qdmu(i,j,k)
@@ -426,7 +432,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
 	          dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
      &                     *(dthetadiv_nbqdz_v(i,j,k2)
      &                  +dthetadiv_nbqdz_v(i,j,k1))    ! dZdy * (d(delta p)dz)_v
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # else
                   if (NSTEP_DS) then
 	          dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j,k)
@@ -434,13 +441,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *(dthetadiv_nbqdz_v(i,j,k2)+dthetadiv_nbqdz_v(i,j,k1))       ! dZdy * (d(delta p)dz)_v
                   endif
 	          dum_s=dthetadiv_nbqdz(i,j,k,2)                         
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # endif
                 elseif (k.gt.1) then
 # ifndef NBQ_NODS
 	          dum_s=(z_r(i,j,k)-z_r(i,j-1,k))        
      &                  *dthetadiv_nbqdz_v(i,j,k1)                           ! dZdy * (d(delta p)dz)_v
-     &	               -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                 ! - d(delta p)dy
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
      &                   +(z_w(i,j,N)-z_w(i,j-1,N))        
      &                  *dthetadiv_nbqdz_v(i,j,k2)
 # else
@@ -452,13 +461,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *dthetadiv_nbqdz_v(i,j,k2)
                   endif
 	          dum_s=dthetadiv_nbqdz(i,j,k,2) 
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # endif
                 else
 # ifndef NBQ_NODS
 	          dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
      &                  *2.*dthetadiv_nbqdz_v(i,j,k2)                             ! dZdy * (d(delta p)dz)_v
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # else
                   if (NSTEP_DS) then
 	          dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j,k)
@@ -466,7 +477,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *2.*dthetadiv_nbqdz_v(i,j,k2)       ! dZdy * (d(delta p)dz)_v
                   endif
 	          dum_s=dthetadiv_nbqdz(i,j,k,2) 
-     &	              -(thetadiv_nbq(i,j,k)-thetadiv_nbq(i,j-1,k))                ! - d(delta p)dy
+     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # endif
                 endif
                 
