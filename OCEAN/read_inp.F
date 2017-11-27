@@ -101,6 +101,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
+#elif defined FLUME
+      fname='TEST_CASES/croco.in.Flume'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined TANK
@@ -1755,6 +1757,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                              'Wave-induced bottom stress.'
 
 #endif /* BBL */
+
 #ifdef MRL_WCI
 !
 ! MRL wave-current interaction variables history fields
@@ -1803,7 +1806,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           wrtavg(indxSUP)=wrthis(indxSUP)
           wrtavg(indxUST2D)=wrthis(indxUST2D)
           wrtavg(indxVST2D)=wrthis(indxVST2D)
-# ifdef SOLVE3D
+#  ifdef SOLVE3D
           wrtavg(indxUST)=wrthis(indxUST)
           wrtavg(indxVST)=wrthis(indxVST)
           wrtavg(indxWST)=wrthis(indxWST)
@@ -1812,37 +1815,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           wrtavg(indxKVF)=wrthis(indxKVF)
           wrtavg(indxCALP)=wrthis(indxCALP)
           wrtavg(indxKAPS)=wrthis(indxKAPS)
-# endif
+#  endif
 # endif /* AVERAGES */
 #endif /* MRL_WCI */
 
-#ifdef OW_COUPLING
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 !
-! coupled wave history fields
+! Wave history fields
 !
-      elseif (keyword(1:kwlen).eq.'wkb_history_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
-        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
-     &    'Fields to be saved in wave history  (T/F)',
-     &    wrthis(indxHRM), 'write WHRM  RMS wave height (m)',
-     &    wrthis(indxFRQ), 'write WFRQ  intrinsic frequency (rad/s)',
-     &    wrthis(indxWAC), 'write WAC  primary wave action (m3/s)',
-     &    wrthis(indxWKX), 'write WDRX  cosine of wave direction',
-     &    wrthis(indxWKE), 'write WDRE  sine of wave direction',
-     &    wrthis(indxEPB), 'write WDSP  breaking dissipation (m3/s3)',
-     &    wrthis(indxEPD), 'write WDRG  frictional dissipation (m3/s3)',
-     &    wrthis(indxWAR), 'write WAR  roller wave action (m3/s)',
-     &    wrthis(indxEPR),
-     &              'write RDSP  roller dissipation (m3/s3): [0,1]'
-
-#endif /* OW_COUPLING */
- 
-#ifdef WKB_WWAVE
-!
-! WKB wave history fields
-!
-      elseif (keyword(1:kwlen).eq.'wkb_history_fields') then
+      elseif (keyword(1:kwlen).eq.'wave_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
         MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
@@ -1856,7 +1837,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    wrthis(indxEPD), 'write EPD  frictional dissipation (m3/s3)',
      &    wrthis(indxWAR), 'write WAR  roller wave action (m3/s)',
      &    wrthis(indxEPR), 
-     &              'write EPR  roller dissipation (m3/s3): [0,1]'
+     &                   'write EPR  roller dissipation (m3/s3): [0,1]'
 # ifdef AVERAGES
 !
 ! WKB wave average field follows its history field.
@@ -1869,6 +1850,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           wrtavg(indxHRM+i-1)=wrthis(indxHRM+i-1)
         enddo
 # endif
+#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
+
+#ifdef WKB_WWAVE
 !
 ! WKB primary waves and empirical breaking model parameters
 !
@@ -1883,15 +1867,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &   wkb_ang,   'wkb_ang    offshore wave angle [deg]',
      &   wkb_prd,   'wkb_prd    offshore wave period [s]',
      &   wkb_tide,  'wkb_tide   constant offshore water level [m]',
-#  ifdef WAVE_BREAK_TG86
+# ifdef WAVE_BREAK_TG86
      &  'breaking model (Thornton & Guza, 1983a) is specifield.',
-#  elif defined WAVE_BREAK_TG86A
+# elif defined WAVE_BREAK_TG86A
      &  'breaking model (Thornton & Guza, 1983b) is specifield.',
-#  elif defined WAVE_BREAK_CT93
+# elif defined WAVE_BREAK_CT93
      &  'breaking model (Church & Thornton, 1993) is specifield.',
-#  else
+# else
      &  'breaking model (Church & Thornton, 1993) is default.',
-#  endif
+# endif
      &   wkb_btg,   'wkb_btg    B parameter',
      &   wkb_gam,   'wkb_gam    gamma paramemer (Hrms/h ratio)'
 
@@ -1907,7 +1891,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &   wkb_rsb,   'wkb_rsb     sin(beta) roller dissipation',
      &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
 # endif
-#endif  /* WKB_WWAVE */
+#endif /* WKB_WWAVE */
 
 #ifdef ANA_PSOURCE
 !
@@ -1982,9 +1966,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
-          read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is),
-     &                                     (Lsrc(is,itrc), itrc=1,NT),
-     &                                    (Tsrc0(is,itrc), itrc=1,NT)
+          read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
+#  ifdef SOLVE3D
+     &                                    ,(Lsrc(is,itrc), itrc=1,NT)
+     &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
+#  endif
           MPI_master_only write(stdout,'(3(/6x,i6,2x,A))')
      &    Isrc(is), 'I point source indice'
      &  , Jsrc(is), 'J point source indice'

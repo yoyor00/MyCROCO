@@ -28,9 +28,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 close all
+makepdf=0;
 tndx=6;
 N=1;
-nc=netcdf('croco_his.nc','r');
+nc=netcdf('seamount_his.nc','r');
 time=(nc{'scrum_time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
 x=nc{'x_rho'}(:)/1000;
@@ -49,5 +50,8 @@ contour(x,y,h,'k')
 colorbar
 hold off
 title(['SEAMOUNT - bottom speed [mm/s] - day = ',num2str(time)])
+if makepdf
+ export_fig -transparent -pdf seamount.pdf
+end
 
 

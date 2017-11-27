@@ -111,6 +111,11 @@
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
 # endif
+
+# ifdef SPONGE_SED
+          if (i.gt.0 .and. j.gt.0)
+     &      cff_sponge(i,j)=float(ibnd)/float(isp)
+# endif
         enddo
       enddo
 !

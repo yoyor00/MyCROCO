@@ -20,7 +20,9 @@
       parameter (eps=1.D-20)
       real stf_cff
       parameter(stf_cff=86400/0.01)
-
+#ifdef SOLVE3D
+      integer tile, itrc,i,j,k
+#endif
 #if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
@@ -36,6 +38,7 @@
 #include "mpi_roms.h"
 #ifdef SEDIMENT
 # include "sediment.h"
+      integer indxWrk
 #endif
 #ifdef BBL
 # include "bbl.h"
@@ -43,22 +46,17 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
-#ifdef SOLVE3D
-      integer tile, itrc,i,j,k
-#  ifdef SEDIMENT
-     &      , indxWrk
-#  endif
-#endif
 #ifdef NBQ
 # include "nbq.h"
 #endif
 #include "work.h"
 #include "netcdf.inc"
+
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
 
 #if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) then
@@ -257,115 +255,10 @@ CR      write(*,*) 'wrt_his:  UWstr' MYID
 CR      write(*,*) 'wrt_his:  VWstr' MYID
       endif
 
-#ifdef WKB_WWAVE
-      if (wrthis(indxHRM)) then
-        ierr=nf_fwrite (hrm(START_2D_ARRAY,wstp), ncidhis,
-     &                                   hisWKB(1), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxHRM))
-          write(stdout,1) vname(1,indxHRM)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtHrm' MYID
-      endif
-      if (wrthis(indxFRQ)) then
-        ierr=nf_fwrite (frq(START_2D_ARRAY,wstp), ncidhis,
-     &                                   hisWKB(2), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxFRQ))
-          write(stdout,1) vname(1,indxFRQ)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtFrq' MYID
-      endif
-      if (wrthis(indxWAC)) then
-        ierr=nf_fwrite (wac(START_2D_ARRAY,wstp), ncidhis,
-     &                                   hisWKB(3), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxWAC))
-          write(stdout,1) vname(1,indxWAC)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtWac' MYID
-      endif
-      if (wrthis(indxWKX)) then
-        ierr=nf_fwrite (wkx(START_2D_ARRAY,wstp), ncidhis,
-     &                                   hisWKB(4), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxWKX))
-          write(stdout,1) vname(1,indxWKX)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtWkx' MYID
-      endif
-      if (wrthis(indxWKE)) then
-        ierr=nf_fwrite (wke(START_2D_ARRAY,wstp), ncidhis,
-     &                                   hisWKB(5), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxWKE))
-          write(stdout,1) vname(1,indxWKE)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtWke' MYID
-      endif
-      if (wrthis(indxEPB)) then
-        ierr=nf_fwrite (wdsp(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(6), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxEPB))
-          write(stdout,1) vname(1,indxEPB)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtEpb' MYID
-      endif
-      if (wrthis(indxEPD)) then
-        ierr=nf_fwrite (wdrg(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(7), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxEPD))
-          write(stdout,1) vname(1,indxEPD)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtEpd' MYID
-      endif
-
-# ifdef WAVE_ROLLER
-      if (wrthis(indxWAR)) then
-        ierr=nf_fwrite (war(START_2D_ARRAY,wstp), ncidhis,
-     &                                   hisWKB(8), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxWAR))
-          write(stdout,1) vname(1,indxWAR)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtWar' MYID
-      endif
-      if (wrthis(indxEPR)) then
-        ierr=nf_fwrite (rdsp(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(9), record, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxEPR))
-          write(stdout,1) vname(1,indxEPR)(1:lvar), record, ierr,
-     &                    nf_strerror(ierr) MYID
-          goto 99                                         !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  wrtEpr' MYID
-      endif
-# endif
-#endif
-
-#ifdef OW_COUPLING
+#ifdef WAVE_IO
       if (wrthis(indxHRM)) then
         ierr=nf_fwrite (whrm(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(1), record, r2dvar)
+     &                                   hisWAVE(1), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxHRM))
           write(stdout,1) vname(1,indxHRM)(1:lvar), record, ierr,
@@ -376,7 +269,7 @@ CR      write(*,*) 'wrt_his:  wrtHrm' MYID
       endif
       if (wrthis(indxFRQ)) then
         ierr=nf_fwrite (wfrq(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(2), record, r2dvar)
+     &                                   hisWAVE(2), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxFRQ))
           write(stdout,1) vname(1,indxFRQ)(1:lvar), record, ierr,
@@ -385,9 +278,10 @@ CR      write(*,*) 'wrt_his:  wrtHrm' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtFrq' MYID
       endif
+# ifdef WKB_WWAVE
       if (wrthis(indxWAC)) then
-        ierr=nf_fwrite (whrm(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(3), record, r2dvar)
+        ierr=nf_fwrite (wac(START_2D_ARRAY,wstp), ncidhis,
+     &                                   hisWAVE(3), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWAC))
           write(stdout,1) vname(1,indxWAC)(1:lvar), record, ierr,
@@ -396,9 +290,10 @@ CR      write(*,*) 'wrt_his:  wrtFrq' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtWac' MYID
       endif
+# endif
       if (wrthis(indxWKX)) then
-        ierr=nf_fwrite (wdrx(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(4), record, r2dvar)
+        ierr=nf_fwrite (wwkx(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(4), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWKX))
           write(stdout,1) vname(1,indxWKX)(1:lvar), record, ierr,
@@ -408,8 +303,8 @@ CR      write(*,*) 'wrt_his:  wrtWac' MYID
 CR      write(*,*) 'wrt_his:  wrtWkx' MYID
       endif
       if (wrthis(indxWKE)) then
-        ierr=nf_fwrite (wdre(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(5), record, r2dvar)
+        ierr=nf_fwrite (wwke(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(5), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWKE))
           write(stdout,1) vname(1,indxWKE)(1:lvar), record, ierr,
@@ -419,8 +314,8 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-        ierr=nf_fwrite (wdsp(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(6), record, r2dvar)
+        ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(6), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
           write(stdout,1) vname(1,indxEPB)(1:lvar), record, ierr,
@@ -430,8 +325,8 @@ CR      write(*,*) 'wrt_his:  wrtWke' MYID
 CR      write(*,*) 'wrt_his:  wrtEpb' MYID
       endif
       if (wrthis(indxEPD)) then
-        ierr=nf_fwrite (wdrg(START_2D_ARRAY), ncidhis,
-     &                                   hisWKB(7), record, r2dvar)
+        ierr=nf_fwrite (wepd(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(7), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPD))
           write(stdout,1) vname(1,indxEPD)(1:lvar), record, ierr,
@@ -440,13 +335,38 @@ CR      write(*,*) 'wrt_his:  wrtEpb' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtEpd' MYID
       endif
+# ifdef WAVE_ROLLER
+#  ifdef WKB_WWAVE
+      if (wrthis(indxWAR)) then
+        ierr=nf_fwrite (war(START_2D_ARRAY,wstp), ncidhis,
+     &                                   hisWAVE(8), record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxWAR))
+          write(stdout,1) vname(1,indxWAR)(1:lvar), record, ierr,
+     &                    nf_strerror(ierr) MYID
+          goto 99                                         !--> ERROR
+        endif
+CR      write(*,*) 'wrt_his:  wrtWar' MYID
+      endif
+#  endif
+      if (wrthis(indxEPR)) then
+        ierr=nf_fwrite (wepr(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(9), record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxEPR))
+          write(stdout,1) vname(1,indxEPR)(1:lvar), record, ierr,
+     &                    nf_strerror(ierr) MYID
+          goto 99                                         !--> ERROR
+        endif
+CR      write(*,*) 'wrt_his:  wrtEpr' MYID
+      endif
+# endif
+#endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
-#endif
-
+#ifdef MRL_WCI 
 !      
 !  Add output variables linked to MRL_WCI
 !
-#ifdef MRL_WCI
       if (wrthis(indxSUP)) then
         ierr=nf_fwrite (sup, ncidhis, hisSUP, record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -992,7 +912,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
          indxWrk=indxDFLX(1)+itrc-1
          if (wrthis(indxWrk)) then
-            work2d=settling_flux(:,:,itrc)
+            work2d=settling_flux(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
      &           indxWrk,record,r2dvar,type)
          endif
@@ -1000,7 +920,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       do itrc=1,NST
          indxWrk=indxEFLX(1)+itrc-1
          if (wrthis(indxWrk)) then
-            work2d=ero_flux(:,:,itrc)
+            work2d=ero_flux(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+2*NST),
      &           indxWrk,record,r2dvar,type)
          endif

@@ -33,6 +33,7 @@
 #undef  JET             /* Baroclinic Jet Example */
 #undef  RIP             /* Rip Current Test Case */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
+#undef  FLUME           /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  THACKER         /* Thacker wetting-drying Example */
 #undef  TANK            /* Tank Example */
@@ -105,7 +106,6 @@
                       /* Equation of State */
 # define SALINITY
 # define NONLIN_EOS
-# define SPLIT_EOS
                       /* Lateral Momentum Advection (default UP3) */
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
@@ -297,7 +297,6 @@
                       /*   Sediment dynamics model     */
 # ifdef SEDIMENT
 #  define ANA_SEDIMENT
-#  undef  BED_ARMOR
 #  undef  ANA_SPFLUX
 #  undef  ANA_BPFLUX
 # endif
@@ -544,7 +543,6 @@
 #  define UV_ADV
 #  define SALINITY
 #  define NONLIN_EOS
-#  define SPLIT_EOS
 #  define LMD_MIXING
 #  ifdef LMD_MIXING
 #   define LMD_SKPP
@@ -833,7 +831,6 @@
 # define UV_COR
 # define M2FILTER_FLAT
 # define NONLIN_EOS
-# define SPLIT_EOS
 # define SALINITY
 # define ANA_GRID
 # define MASKING
@@ -874,7 +871,6 @@
 # define SOLVE3D
 # define SALINITY
 # define NONLIN_EOS
-# define SPLIT_EOS
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1020,7 +1016,6 @@
 # define AVERAGES
 # define SALINITY
 # define NONLIN_EOS
-# define SPLIT_EOS
 # define ANA_SSFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX
@@ -1146,6 +1141,53 @@
 # define SOLVE3D
 # define UV_ADV
 # undef  MASKING
+# define WET_DRY
+# define NEW_S_COORD
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+# define ANA_SST
+# define ANA_BTFLUX
+# define NS_PERIODIC
+# define OBC_WEST
+# define SPONGE
+# define MRL_WCI
+# ifdef MRL_WCI
+#  undef  WAVE_OFFLINE
+#  ifndef WAVE_OFFLINE
+#   define WKB_WWAVE
+#   define WKB_OBC_WEST
+#   define WAVE_FRICTION
+#   undef  WAVE_ROLLER
+#   undef  MRL_CEW
+#  endif
+# endif
+# define LMD_MIXING
+# define LMD_SKPP
+# define LMD_BKPP
+# undef  BBL
+# undef  SEDIMENT
+# ifdef SEDIMENT
+#  define TCLIMATOLOGY
+#  define TNUDGING
+#  define ANA_TCLIMA
+# endif
+
+#elif defined FLUME
+/*
+!                       FLUME Example
+!                       ===== =======
+!
+!   Roelvink, J.A. and Stive, M.J.F., 1989: Bar-generating cross-shore 
+!       flow mechanisms on a beach. Journal of Geophysical Research
+*/
+# undef  OPENMP
+# undef  MPI
+# define SOLVE3D
+# define UV_ADV
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1162,18 +1204,19 @@
 # define MRL_WCI
 # ifdef MRL_WCI
 #  define WKB_WWAVE
-#  undef  WKB_UNSTEADY
 #  define MRL_CEW
 #  define WKB_OBC_WEST
 #  define WAVE_ROLLER
 #  define WAVE_FRICTION
-#  define WAVE_STREAMING
-#  define WAVE_RAMP
+#  define WAVE_BREAK_SWASH
+#  undef  WAVE_STREAMING
+#  undef  WAVE_RAMP
 # endif
 
 # define LMD_MIXING
 # define LMD_SKPP
 # define LMD_BKPP
+# define LMD_VMIX_SWASH
 # undef GLS_MIX2017
 # ifdef GLS_MIX2017
 #  undef  GLS_KOMEGA
@@ -1188,13 +1231,13 @@
 #  undef Cheng_02
 # endif
 
-
-# undef  BBL
-# undef  SEDIMENT
+# define BBL
+# define SEDIMENT
 # ifdef SEDIMENT
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA
+#  define MORPHODYN
 # endif
 
 #elif defined RIP
@@ -1219,6 +1262,7 @@
 # ifdef GRANDPOPO
 #  define RIP_TOPO_2D
 # endif
+# undef ANA_TIDES
 !
 # undef OPENMP
 # define MPI
@@ -1241,7 +1285,6 @@
 # define ANA_SRFLUX
 # define ANA_SST
 # define ANA_BTFLUX
-# undef  ANA_TIDES
 # if !defined BISCA && !defined ANA_TIDES
 #  define NS_PERIODIC
 # else
@@ -1279,7 +1322,6 @@
 # undef SEDIMENT
 # ifdef SEDIMENT
 #  define ANA_SEDIMENT
-#  undef  BED_ARMOR
 #  undef  ANA_SPFLUX
 #  undef  ANA_BPFLUX
 # endif

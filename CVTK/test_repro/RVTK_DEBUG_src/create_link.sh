@@ -3,7 +3,7 @@ echo '============================================================='
 echo 'Create the link between RVTK_DEBUG/ dir . and RVTK_DEBUG_src/'
 echo '  '
 
-dir_home=$HOME/GIT/croco/CVTK/test_repro/RVTK_DEBUG_src
+dir_home=$(cd ../RVTK_DEBUG_src; pwd)
 
 mkdir TEST_CASES
 
@@ -55,7 +55,7 @@ cd ../
 #--
 echo '==============='
 echo 'Process .pbs files eventually needed'
-cp -sf ${dir_home}/*.pbs.* .
+cp -f ${dir_home}/*.pbs.* .
 
 cp -Rf jobcomp_rvtk.bash.BACK jobcomp_rvtk.bash
 cp -Rf git_process.bash.BACK git_process.bash

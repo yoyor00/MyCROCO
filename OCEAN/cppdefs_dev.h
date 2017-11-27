@@ -176,6 +176,19 @@
 #elif defined RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125
+#elif defined PGF_BASIC_JACOBIAN
+# define WJ_GRADP 0.125
+#endif
+
+/*
+======================================================================
+    Activate EOS splitting of seawater compressibility effect in case 
+    of non-linear formulation, as part of the pressure gradient
+    algorithm with polynomial fit (Shchepetkin & McWilliams 2003)
+======================================================================
+*/
+#ifdef NONLIN_EOS
+# define SPLIT_EOS
 #endif
 
 /*
@@ -375,6 +388,9 @@
 # endif
 # define SPONGE_DIF2
 # define SPONGE_VIS2
+# ifdef SEDIMENT
+#  define SPONGE_SED
+# endif
 #endif
 
 /*
@@ -409,28 +425,52 @@
     Wave Current Interaction
 ======================================================================
 */
+
+#if defined MRL_WCI || defined WKB_WWAVE
+/*  Wave breaking dissipation (both WKB and WCI) */
+# undef  WAVE_SFC_BREAK
+# ifdef WAVE_BREAK_CT93
+# elif  WAVE_BREAK_TG86
+# elif  WAVE_BREAK_TG86A
+# elif  WAVE_BREAK_R93
+# else
+#  define WAVE_BREAK_CT93 /* defaults */
+# endif
+#endif
+
+/* WKB specific options  */
+#ifdef WKB_WWAVE
+# ifdef MRL_CEW
+#  undef  WKB_KZ_FILTER
+#  undef  WKB_TIME_FILTER
+# endif
+# define WKB_ADD_DIFF
+# undef  WKB_ADD_DIFFRACTION
+# undef  WKB_NUDGING
+# ifndef WAVE_OFFLINE
+#  undef WKB_NUDGING
+# endif
+# if defined SHOREFACE || defined FLUME \
+                       || (defined RIP && !defined BISCA)
+#  define ANA_BRY_WKB
+# endif
+#endif
+
 #ifdef MRL_WCI
+/* Bottom streaming */
 # ifdef WAVE_STREAMING
 #  define WAVE_BODY_STREAMING
 # endif
-# undef  WAVE_SFC_BREAK
-# define WAVE_BREAK_CT93
-# undef  WAVE_BREAK_TG86
-# undef  WAVE_BREAK_TG86A
-# undef  WAVE_BREAK_R93
-
+/* Default WCI is with input file data (WAVE_OFFLINE)  */
 # if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
 #  define WAVE_OFFLINE
 #  undef  WAVE_ROLLER
 # endif
-# ifdef WKB_WWAVE
-#  ifdef MRL_CEW
-#   undef  WKB_KZ_FILTER
-#   undef  WKB_TIME_FILTER
-#  endif
-#  define ANA_BRY_WKB
-# endif
 #endif
+
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#  define WAVE_IO
+# endif
 
 /*
 ======================================================================
@@ -506,7 +546,8 @@
 # ifdef BEDLOAD
 #  undef  SLOPE_NEMETH
 #  define SLOPE_LESSER
-#  if (defined WAVE_OFFLINE || defined WKB_WWAVE || defined ANA_WWAVE)
+#  if (defined WAVE_OFFLINE || defined WKB_WWAVE || defined ANA_WWAVE\
+                            || defined OW_COUPLING)
 #   define BEDLOAD_SOULSBY
 #   define Z0_BL  /* Mandatory with BEDLOAD_SOULSBY */
 #   define Z0_RIP
@@ -514,12 +555,20 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-# ifdef MOVING_BATHY
+/* 
+     Morphodynamics (bed evolution feedback on circulation):
+     MORPHODYN or MOVING_BATHY (equivalent) must be defined
+     in cppdefs.h (default is undefined)
+*/
+# if defined MORPHODYN || defined MOVING_BATHY
+#  ifdef MOVING_BATHY
+#  else
+#   define MOVING_BATHY
+#  endif
 # else
-#  undef MOVING_BATHY
+#  undef  MOVING_BATHY
 # endif
-#endif
-
+#endif /* SEDIMENT */
 /*
 ======================================================================
                               OBCs
@@ -646,8 +695,11 @@
 # undef SPONGE_DIF2
 # undef TS_HADV_RSUP3
 # undef TS_MIX_GEO
-# undef UV_MIX_GEO
+# undef TS_MIX_ISO
 # undef TS_DIF_SMAGO
+# undef UV_MIX_GEO
+# undef VIS_COEF_3D
+# undef DIF_COEF_3D
 # undef M3NUDGING
 # undef TNUDGING
 # undef ROBUST_DIAG
@@ -670,5 +722,7 @@
 # undef AGRIF_OBC_M3SPECIFIED
 # undef AGRIF_OBC_TORLANSKI
 # undef AGRIF_OBC_TSPECIFIED
+# undef SEDIMENT
+# undef BIOLOGY
 #endif
 

@@ -37,9 +37,9 @@ close all
 %
 fname     = 'thacker_his.nc';            % croco file name
 g         = 9.81;                        % gravity acceleration (m^2/s)
-yindex    = 101;                         % y index
+yindex    = 1;                         % y index
 makemovie = 0;                           % make movie using QTWriter
-makepdf   = 1;                           % make pdf file
+makepdf=1
 %
 %======================================================================
 

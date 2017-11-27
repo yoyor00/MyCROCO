@@ -70,6 +70,12 @@
 
       CALL cpl_prism_grid(oasis_part_id)
 !------------------------------------------------------------------
+!     Set the ROMS grid definition to PRISM system
+!------------------------------------------------------------------
+
+      CALL cpl_prism_grid(oasis_part_id)
+
+!------------------------------------------------------------------
 !     Set the WRF exchange variables definition to PRISM system
 !------------------------------------------------------------------
 

@@ -59,9 +59,7 @@
           NORTH_INTER_NBQ = .TRUE.
        endif
 #  endif
-
 # endif 
-
 
 !*******************************************************************
 !     NH domain:  mass grid-points

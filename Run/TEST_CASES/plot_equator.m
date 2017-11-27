@@ -29,6 +29,7 @@
 clear all
 close all
 %
+makepdf=0;
 tndx=99; 
 j=17;   % middle of the basin
 i=21;
@@ -68,6 +69,10 @@ clabel(C4,h4)
 xlabel('Time (years)')
 ylabel('Depth (m)')
 title('Time evolution from 10^{o}C isothermal conditions')
+if makepdf
+ export_fig -transparent -pdf equator_evol.pdf
+end
+
 %
 % Second plot
 %
@@ -88,6 +93,10 @@ hold off
 xlabel('Longitude')
 ylabel('Depth (m)')
 title('Temperature [^oC] Section Equator')
+if makepdf
+ export_fig -transparent -pdf equator_temp.pdf
+end
+
 %
 % Third plot
 %
@@ -116,3 +125,6 @@ quiver(x1(2:2:end-1,2:2:end-1)/1e5,y1(2:2:end-1,2:2:end-1)/1e5,...
 xlabel('Longitude')
 ylabel('Latitude')
 title('Speed [cm.s^{-1}]')
+if makepdf
+ export_fig -transparent -pdf equator_speed.pdf
+end

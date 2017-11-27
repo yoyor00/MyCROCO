@@ -162,7 +162,7 @@ if makemovie,
 end
 
 if makepdf
- export_fig -transparent swash.pdf
+ export_fig -transparent swash_u.pdf
 end
 
 return
@@ -182,6 +182,9 @@ shading flat
 colorbar
 axis([0 90 75 110])
 caxis([-0.1 0.1])
+if makepdf
+ export_fig -transparent swash_ssh.pdf
+end
 
 close(nc);
 

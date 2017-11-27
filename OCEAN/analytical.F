@@ -18,7 +18,7 @@
 !  model when appropriate.
 !
 !  Routines:
-!
+
 !  ana_bmflux     Analytical kinematic bottom momentum flux.
 !  ana_btflux     Analytical kinematic bottom flux of tracer
 !                            type variables.
@@ -533,10 +533,10 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "coupling.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# ifdef INTERNAL
+# if defined INTERNAL || defined ANA_TIDES
       real U0,omega,kwave,ETA0
 # endif
-# if defined RIP || defined SHOREFACE
+# if defined RIP && defined ANA_TIDES
       real surelev,omega1,omega2
       real tide_ampli_moy,tide_ampli_var
       real*QUAD mssh,area,cff1
@@ -551,24 +551,14 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Set sea surface height (meters).
 !
-# if defined INTERNAL
-      U0=0.02
-      omega=2.*pi/(12.4*3600)
-      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
-      ETA0=kwave*h(1,1)*U0/omega
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
-        enddo
-      enddo
-# elif defined JET
+# if defined JET
 !
 !    --> climatology computed in ana_initial
 !
-# elif (defined RIP || defined SHOREFACE) && defined ANA_TIDES
+
+# elif defined RIP && defined ANA_TIDES
 !
 ! Remove mean sea level (mssh) 
-!  !!! not OPENMP compliant and MPI DEBUG problems !!!
 !
       mssh=QuadZero
       area=QuadZero
@@ -580,7 +570,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
       mssh=mssh/area
-#   ifdef MPI
+#  ifdef MPI
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
@@ -594,7 +584,8 @@ C$    integer  trd, omp_get_thread_num
         area=area+allarea(1,i)
       enddo
       mssh=mssh/area
-#   endif
+#  endif
+      mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
       omega1=2.*pi/(14.*86400.)
       omega2=2.*pi/(12.*3600. )
       tide_ampli_moy=1.
@@ -609,6 +600,18 @@ C$    integer  trd, omp_get_thread_num
      &                    +time*surelev/31536000.
         enddo
       enddo
+
+# elif defined INTERNAL || defined ANA_TIDES
+      U0=0.02
+      omega=2.*pi/(12.4*3600)
+      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
+      ETA0=kwave*h(1,1)*U0/omega
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
+        enddo
+      enddo
+
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -617,7 +620,10 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-#   ifdef WET_DRY
+# ifdef WET_DRY
+!
+!  Check that min depth > Dcrit
+!
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
@@ -625,9 +631,12 @@ C$    integer  trd, omp_get_thread_num
           endif
         enddo
       enddo
-#   endif
+# endif
 
 # ifdef NBQ
+!
+! Compliance with zeta and ssh definition in NBQ code
+!
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=h(i,j)+ssh(i,j)
@@ -1169,7 +1178,7 @@ C$    integer  trd, omp_get_thread_num
 # include "climat.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-# ifdef INTERNAL
+# if defined INTERNAL || defined ANA_TIDES
       real U0,omega,kwave,V0
 # endif
       real ramp
@@ -1193,7 +1202,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1389,11 +1398,18 @@ C$    integer  trd, omp_get_thread_num
           Pwave(i,j)=10.
         enddo
       enddo
-# elif defined SHOREFACE
-      wamp = 0.5            ! wave amplitude (m)
-      wdir = -10.           ! wave direction (deg)
-      wprd = 8.3            ! wave period (s)
 
+# elif defined SHOREFACE
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Awave(i,j)=0.707    ! wave amplitude (m)
+          Dwave(i,j)=-10.     ! wave direction (deg)
+          Pwave(i,j)=10.      ! wave period (s)
+        enddo
+      enddo
+      wamp = Awave(i,j)
+      wdir = Dwave(i,j)
+      wprd = Pwave(i,j)
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
       cdir = wdir*deg2rad   ! wave direction (rad)
       ho=h(1,1)             ! offshore depth
@@ -1438,21 +1454,22 @@ C$    integer  trd, omp_get_thread_num
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
 #  ifdef WET_DRY
-          IF (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) THEN
+          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
-          ENDIF
+          endif
 #  endif
         enddo
       enddo
+
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Awave(i,j)=0.7         ! wamp (m)
-          Pwave(i,j)=8.3         ! period (s)
-          Dwave(i,j)=-10.        ! offshore wave angle (deg)
+          Awave(i,j)=0.707    ! wave amplitude (m)
+          Dwave(i,j)=-10.     ! wave direction (deg)
+          Pwave(i,j)=10.      ! wave period (s)
         enddo
       enddo
 #  ifdef MRL_WCI
@@ -1470,7 +1487,15 @@ C$    integer  trd, omp_get_thread_num
           wdre(i,j)=sin(cdir)
         enddo
       enddo
-#   endif
+#  endif
+#  ifdef WET_DRY
+          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
+            whrm(i,j)=0.
+            wfrq(i,j)=0.
+            wdrx(i,j)=0.
+            wdre(i,j)=0.
+          endif
+#  endif
 # endif
       return
       end
@@ -1663,7 +1688,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_psource
 !======================================================================
 !
-#if defined PSOURCE && defined ANA_PSOURCE && defined SOLVE3D
+#if defined PSOURCE && defined ANA_PSOURCE
 !
 !----------------------------------------------------------------------
 !  Set analytical tracer and mass point sources and sinks
@@ -1677,34 +1702,40 @@ C$    integer  trd, omp_get_thread_num
 # include "ocean3d.h"
 # include "grid.h"
 !
-      integer is, k, Istr,Iend,Jstr,Jend, i,j
+      integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc
       real cff, cff1, cff2, ramp, Hs
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h" 
 
       if (iic.eq.ntstart) then
-
 !
 ! Set-up nondimensional shape Qshape, must add to unity
 !
-# if defined RIVER
+# ifdef RIVER
 #  define EXP_SHAPE
 #  ifdef CST_SHAPE
-       cff=1./float(N)
-       do k=1,N                         ! Uniform vertical
-         do is=1,Nsrc                   ! distribution
-           Qshape(is,k)=cff
-         enddo
-       enddo
+        cff=1./float(N)
+        do k=1,N                       ! Uniform vertical
+          do is=1,Nsrc                 ! distribution
+            Qshape(is,k)=cff
+          enddo
+        enddo
 #  elif defined EXP_SHAPE
-        do is=1,Nsrc                   ! Exponential vertical
-          Hs=h(Isrc(is),Jsrc(is))      ! distribution
-          cff=5.            ! Hs/z0  (z0 surface layer depth)
+        do is=1,Nsrc
+#  ifdef MPI
+          i=Isrc_mpi(is,mynode)
+          j=Jsrc_mpi(is,mynode)
+#  else
+          i=Isrc(is)
+          j=Jsrc(is)
+#  endif
+          Hs=h(i,j)                    ! Exponential vertical distribution
+          cff=5.                       ! Hs/z0  (z0 surface layer depth)
           cff1=cff/(1-exp(-cff))
           cff2=0.
           do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(Isrc(is),Jsrc(is),k)*cff/Hs)*
-     &        (z_w(Isrc(is),Jsrc(is),k)-z_w(Isrc(is),Jsrc(is),k-1))/Hs
+            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
@@ -1729,32 +1760,75 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 
 # elif defined REGIONAL
-        do is=1,Nsrc                   ! Exponential vertical
-#  ifdef MPI
-         i=Isrc_mpi(is,mynode)
-         j=Jsrc_mpi(is,mynode)
-#  else
-         i=Isrc(is)
-         j=Jsrc(is)
-#  endif
-          Hs=h(i,j)      ! distribution
-          cff=5.            ! Hs/z0  (z0 surface layer depth)
+#  define CST_SHAPE
+#  ifdef CST_SHAPE
+        cff=1./float(N)
+        do k=1,N                       ! Uniform vertical
+          do is=1,Nsrc                 ! distribution
+            Qshape(is,k)=cff
+          enddo
+        enddo
+#  elif defined EXP_SHAPE
+        do is=1,Nsrc
+#   ifdef MPI
+          i=Isrc_mpi(is,mynode)
+          j=Jsrc_mpi(is,mynode)
+#   else
+          i=Isrc(is)
+          j=Jsrc(is)
+#   endif
+          Hs=h(i,j)                    ! Exponential vertical distribution
+          cff=5.                       ! Hs/z0  (z0 surface layer depth)
           cff1=cff/(1-exp(-cff))
           cff2=0.
           do k=1,N
             Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
+     &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
             Qshape(is,k)=Qshape(is,k)/cff2
           enddo
         enddo
+#  endif
 
 # else
-      ERROR ###  CPP-key 'ANA_PSOURCE' is defined, but no code
-      ERROR ###  is provided to set up Dsrc, Isrc, Jsrc, Lsrc.
-# endif /* REGIONAL */
+#  define CST_SHAPE
+#  ifdef CST_SHAPE
+        cff=1./float(N)
+        do k=1,N                       ! Uniform vertical
+          do is=1,Nsrc                 ! distribution
+            Qshape(is,k)=cff
+          enddo
+        enddo
+#  elif defined EXP_SHAPE
+        do is=1,Nsrc
+#   ifdef MPI
+          i=Isrc_mpi(is,mynode)
+          j=Jsrc_mpi(is,mynode)
+#   else
+          i=Isrc(is)
+          j=Jsrc(is)
+#   endif
+          Hs=h(i,j)                    ! Exponential vertical distribution
+          cff=5.                       ! Hs/z0  (z0 surface layer depth)
+          cff1=cff/(1-exp(-cff))
+          cff2=0.
+          do k=1,N
+            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
+            cff2=cff2+Qshape(is,k)
+          enddo
+          do k=1,N
+            Qshape(is,k)=Qshape(is,k)/cff2
+          enddo
+        enddo
+#  endif
+# endif /* RIVER || REGIONAL */
+
+        do is=1,Nsrc
+          Qbar0(is)=Qbar(is)
+        enddo
 
       endif   ! iic.eq.ntstart
 
@@ -1764,19 +1838,21 @@ C$    integer  trd, omp_get_thread_num
 ! or V-direction and vice-versa) and vertically distribute them
 ! according to mass transport profile chosen above.
 !
-# if defined RIVER
+# ifdef RIVER
       ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar(is)
+        Qbar(is)=ramp*Qbar0(is)
       enddo
 # elif defined REGIONAL
-      ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
+      ramp=1. !TANH(10*dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar(is)
+        Qbar(is)=ramp*Qbar0(is)
       enddo
 # else
-      ERROR ###  CPP-key 'ANA_PSOURCE' is defined, but no code
-      ERROR ###  is provided to set up Qbar(is) analytically.
+      ramp=1. !TANH(dt*sec2day*float(iic-ntstart))
+      do is=1,Nsrc
+        Qbar(is)=ramp*Qbar0(is)
+      enddo
 # endif
       do is=1,Nsrc
         do k=1,N
@@ -1786,13 +1862,14 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
-# if defined RIVER
+# ifdef SOLVE3D
+# ifdef RIVER
       do k=1,N
         do is=1,Nsrc
           Tsrc(is,k,itemp)=Tsrc0(is,itemp)
 !          Tsrc(is,k,itemp)=4.+10.*exp(z_r(Isrc(is),Jsrc(is),k)/50.)
           Tsrc(is,k,isalt)=Tsrc0(is,isalt)
-#  if defined PASSIVE_TRACER
+#  ifdef PASSIVE_TRACER
           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
 #  endif
         enddo
@@ -1800,7 +1877,7 @@ C$    integer  trd, omp_get_thread_num
 # elif defined REGIONAL
       do k=1,N
         do is=1,Nsrc
-#  if defined PSOURCE_NCFILE_TS
+#  ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(itemp)) then
              Tsrc0(is,itemp)=5.
           endif
@@ -1808,17 +1885,34 @@ C$    integer  trd, omp_get_thread_num
              Tsrc0(is,isalt)=2.
           endif
 #  endif
-          Tsrc(is,k,itemp)=Tsrc0(is,itemp)
-          Tsrc(is,k,isalt)=Tsrc0(is,isalt)
-#  if defined PASSIVE_TRACER
-#      if defined PSOURCE_NCFILE_TS
+          do itrc=1,NT
+            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+          enddo
+#  ifdef PASSIVE_TRACER
+#   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(itpas)) then
              Tsrc0(is,itpas)=1.
           endif
-#      endif  /* PSOURCE_NCFILE_TS    */  
+#   endif
           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
 #  endif
-#  if defined BIOLOGY
+        enddo
+      enddo
+# else
+      do k=1,N
+        do is=1,Nsrc
+          do itrc=1,NT
+            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+          enddo
+        enddo
+      enddo
+# endif /* RIVER */
+!
+!  Set-up biology tracer (tracer units) point Sources/Sinks.
+!
+# ifdef BIOLOGY
+      do k=1,N
+        do is=1,Nsrc
 !     Fill with analytical value  if not find in netcdf file
           temp=Tsrc0(is,itemp)
           if (temp.lt.8.) then
@@ -1834,15 +1928,15 @@ C$    integer  trd, omp_get_thread_num
           endif
           xno3=1.67+0.5873*SiO4+0.0144*SiO4**2
      &         +0.0003099*SiO4**3
-#    if defined PSOURCE_NCFILE_TS
+#  ifdef PSOURCE_NCFILE_TS
           if(.not.got_tsrc(iNO3_)) then 
             Tsrc0(is,iNO3_)=xno3
           endif
-#    endif  /* PSOURCE_NCFILE_TS    */  
+#  endif
           Tsrc(is,k,iNO3_)=Tsrc0(is,iNO3_)
 
-#    ifdef PISCES
-#      if defined PSOURCE_NCFILE_TS
+#  ifdef PISCES
+#   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iCAL_)) then 
             Tsrc0(is,iCAL_)=0.01   
           endif
@@ -1888,7 +1982,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iNH4_)) then
             Tsrc0(is,iNH4_)=1.e-2
           endif
-#      endif   /* PSOURCE_NCFILE_TS    */  
+#   endif   /* PSOURCE_NCFILE_TS */  
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
           Tsrc(is,k,iPHY_)=Tsrc0(is,iPHY_)
@@ -1904,8 +1998,8 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iNCH_)=Tsrc0(is,iNCH_)
           Tsrc(is,k,iDCH_)=Tsrc0(is,iDCH_)
           Tsrc(is,k,iNH4_)=Tsrc0(is,iNH4_)
-#    elif defined BIO_NChlPZD
-#      if defined PSOURCE_NCFILE_TS
+#  elif defined BIO_NChlPZD
+#   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iChla)) then
             Tsrc0(is,iChla)=0.08  
           endif
@@ -1918,14 +2012,14 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDet1)) then
             Tsrc0(is,iDet1)=0.02
           endif
-#      endif   /* PSOURCE_NCFILE_TS    */        
+#   endif   /* PSOURCE_NCFILE_TS    */        
           Tsrc(is,k,iChla)=Tsrc0(is,iChla)
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)
           Tsrc(is,k,iZoo1)=Tsrc0(is,iZoo1)
           Tsrc(is,k,iDet1)=Tsrc0(is,iDet1)
           
-#    elif defined BIO_N2ChlPZD2
-#      if defined PSOURCE_NCFILE_TS
+#  elif defined BIO_N2ChlPZD2
+#   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iNH4_)) then
             Tsrc0(is,iNH4_)=0.1  
           endif
@@ -1947,7 +2041,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDet2)) then
             Tsrc0(is,iDet2)=0.02
           endif
-#      endif
+#   endif
           Tsrc(is,k,iNH4_)= Tsrc0(is,iNH4_)
           Tsrc(is,k,iChla)=Tsrc0(is,iChla)
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)
@@ -1955,9 +2049,9 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iDet1)=Tsrc0(is,iDet1)
           Tsrc(is,k,iDet2)=Tsrc0(is,iDet2)
 !----------------------------------------------------------------------
-#    elif defined BIO_BioEBUS
+#  elif defined BIO_BioEBUS
           zsrc=z_r(Isrc(is),Jsrc(is),k)
-#      if defined PSOURCE_NCFILE_TS
+#   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iNO2_)) then
             Tsrc0(is,iNO2_)=  0.05
           endif
@@ -1985,12 +2079,12 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDON)) then
             Tsrc0(is,iDON)= 0.5
           endif
-#        ifdef NITROUS_OXIDE
-           if (.not.got_tsrc(iN2O)) then
-             Tsrc0(is,iN2O)= 0.002 ! not used ...
-           endif
-#        endif 
-#      endif  /* PSOURCE_NCFILE_TS  */
+#    ifdef NITROUS_OXIDE
+          if (.not.got_tsrc(iN2O)) then
+            Tsrc0(is,iN2O)= 0.002 ! not used ...
+          endif
+#    endif 
+#   endif  /* PSOURCE_NCFILE_TS  */
           Tsrc(is,k,iNO2_)= Tsrc0(is,iNO2_)*exp(zsrc/100.)
           Tsrc(is,k,iNH4_)= Tsrc0(is,iNH4_)*exp(zsrc/100.)
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)*exp(zsrc/50.)
@@ -2002,19 +2096,15 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iDON)=Tsrc0(is,iDON)*exp(zsrc/100.)
           Tsrc(is,k,iN2O)=-(0.008*exp(zsrc/100.)-0.01)
           if (Tsrc(is,k,iN2O).lt.0.) Tsrc(is,k,iN2O)=0.
-#    endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS*/
+#  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS*/
 !----------------------------------------------------------------------
-#  endif /* BIOLOGY */
         enddo
       enddo
-# else    /*   REGIONAL   */
-
-          ERROR ###  CPP-key 'ANA_PSOURCE' is defined, but no code
-          ERROR ###  is provided to set up Tsrc(is) analytically.
-# endif
+# endif /* BIOLOGY */
+# endif /* SOLVE3D */
       return
       end
-#endif /* PSOURCE && ANA_PSOURCE SOLVE3D*/
+#endif /* PSOURCE && ANA_PSOURCE */
 !
 !======================================================================
 !                   subroutine ana_bry
