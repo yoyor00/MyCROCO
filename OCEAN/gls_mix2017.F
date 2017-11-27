@@ -400,15 +400,15 @@ c++ # define CANUTO_A
      &                             *vonKar*OneOverSig(igls)
      &                             *(cff**(rm+0.5))*(lgthsc**rn)
 
-#ifdef MRL_WCI
-                  flux_top=flux_top+
+# ifdef MRL_WCI
+                  flux_top=flux_top-
      &             OneOverSig(itke)*OneOverSig(igls)
      &                 *   cm0**(rp+1.)
      &                 *   rm
      &                 *   cff**(rm-0.5)
      &                 *   lgthsc** (rn+1.)
      &                 *   zalp*   wepb(i,j)
-#endif 
+# endif 
                   ! bottom
                   z0_b        = MAX( Zob , 1.E-04 )
                   cff         = 0.5*( trb( i,j,  1,nnew,itke )
