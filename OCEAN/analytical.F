@@ -1729,7 +1729,9 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 
 # elif defined REGIONAL
-        do is=1,Nsrc                   ! Exponential vertical
+#  define CST_SHAPE
+
+        do is=1,Nsrc 
 #  ifdef MPI
          i=Isrc_mpi(is,mynode)
          j=Jsrc_mpi(is,mynode)
@@ -1737,25 +1739,28 @@ C$    integer  trd, omp_get_thread_num
          i=Isrc(is)
          j=Jsrc(is)
 #  endif
-          Hs=h(i,j)      ! distribution
+#  ifdef CST_SHAPE
+         cff=1./float(N)
+         do k=1,N                         ! Uniform vertical
+           Qshape(is,k)=cff
+         enddo
+#  elif defined EXP_SHAPE
+          Hs=h(i,j)      ! Exponential vertical distribution
           cff=5.            ! Hs/z0  (z0 surface layer depth)
           cff1=cff/(1-exp(-cff))
           cff2=0.
           do k=1,N
-            Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
+             Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
      &        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-            !WRITE(stdout,*)'Qshape',i,j,exp(z_r(i,j,k)*cff/Hs),
-     !&           (z_w(i,j,k)-z_w(i,j,k-1))/Hs,Qshape(is,k)
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
             if (cff2 > 0.0) then
              Qshape(is,k)=Qshape(is,k)/cff2
-             Qshape(is,k)=1.0/k
             endif
           enddo
+# endif /* SHAPE */
         enddo
-
 # else
       ERROR ###  CPP-key 'ANA_PSOURCE' is defined, but no code
       ERROR ###  is provided to set up Dsrc, Isrc, Jsrc, Lsrc.

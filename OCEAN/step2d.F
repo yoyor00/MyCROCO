@@ -1920,14 +1920,26 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
-            ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
-     &                   *(Dnew(i-1,j)+Dnew(i,j)) )
+            cff=rmask(i-1,j)+rmask(i,j)
+            if (cff > 0.) then
+             ubar(i,j,knew)=cff*Qbar(is)/( on_u(i,j)
+     &               *(Dnew(i-1,j)*rmask(i-1,j)+Dnew(i,j)*rmask(i,j)) )
+
+            else
+              ubar(i,j,knew)=0.
+            endif
 # ifdef SOLVE3D
             DU_avg1(i,j,nnew)=Qbar(is)
 # endif
           else
-            vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
-     &                   *(Dnew(i,j-1)+Dnew(i,j)) )
+            cff=rmask(i,j-1)+rmask(i,j)
+            if (cff > 0.) then
+             vbar(i,j,knew)=cff*Qbar(is)/( om_v(i,j)
+     &               *(Dnew(i,j-1)*rmask(i,j-1)+Dnew(i,j)*rmask(i,j)) )
+
+            else
+              vbar(i,j,knew)=0.
+            endif
 # ifdef SOLVE3D
             DV_avg1(i,j,nnew)=Qbar(is)
 # endif
