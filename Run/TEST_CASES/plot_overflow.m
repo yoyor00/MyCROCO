@@ -29,11 +29,12 @@
 clear all
 close all
 
+makepdf=0;
 tndx=3;
 %
 % Read data
 %
-nc=netcdf('croco_his.nc','r');
+nc=netcdf('over_his.nc','r');
 h=nc{'h'}(:);
 y=squeeze(nc{'y_rho'}(:,2));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
@@ -54,6 +55,9 @@ caxis([0 1])
 shading flat
 colorbar
 title('Overflow sigma-t vertical section')
+if makepdf
+ export_fig -transparent -pdf overflow.pdf
+end
 
 
 

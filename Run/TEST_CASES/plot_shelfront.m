@@ -28,8 +28,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 close all
+makepdf=0;
 tndx=11;
-nc=netcdf('croco_his.nc','r');
+nc=netcdf('shelfront_his.nc','r');
 time=(nc{'scrum_time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
 y=squeeze(nc{'y_rho'}(:,2));
@@ -54,3 +55,6 @@ hold on
 clabel(C1,h1)
 hold off
 title(['SHELFRONT - temp [^oC] - day = ',num2str(time)])
+if makepdf
+ export_fig -transparent -pdf shelfront.pdf
+end

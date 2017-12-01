@@ -11,24 +11,26 @@
 !
       SUBROUTINE cpl_prism_define
 #include "cppdefs.h"
-!     IMPLICIT NONE
 #if defined OA_COUPLING || defined OW_COUPLING
-#ifdef OA_MCT
       USE mod_prism             ! OASIS3 prism module
-      INCLUDE 'mpif.h'
-#else 
-      USE mod_prism_def_partition_proto ! OASIS3 prism module for partitioning
-      USE mod_prism_grids_writing ! OASIS3 prism module for writing grid files
-#endif
+
+      IMPLICIT NONE
 
 #include "param.h"
 #include "grid.h"
 #include "scalars.h"
 #include "mpi_roms.h"
-      integer i, j, ji, i0, j0
-      integer nproc, myproc, error_flg
+#include "ncscrum.h"
+      integer i, j, ji, i0, j0, ja
+      integer nproc, myproc, error_flg, ierr
       integer start_x, start_y
       real delta_lon, delta_lat
+      integer ncid, varid, nf_fread
+      INTEGER    :: level
+      CHARACTER*1 clevel
+      CHARACTER*5 catm
+      character fname*64
+#include "netcdf.inc"
 
 !     !-------------------------------------------------------------------
 !     !             ***  ROUTINE cpl_prism_define  ***
@@ -62,6 +64,16 @@
         CALL prism_abort_proto ( comp_id, 'cpl_prism_grid',
      &       'Failure in prism_def_partition')
       END IF
+!------------------------------------------------------------------
+!     Set the ROMS grid definition to PRISM system
+!------------------------------------------------------------------
+
+      CALL cpl_prism_grid(oasis_part_id)
+!------------------------------------------------------------------
+!     Set the ROMS grid definition to PRISM system
+!------------------------------------------------------------------
+
+      CALL cpl_prism_grid(oasis_part_id)
 
 !------------------------------------------------------------------
 !     Set the WRF exchange variables definition to PRISM system
@@ -76,40 +88,84 @@
       oasis_var_shape(2) = Lmmpi !Lm+2+padd_X + 1  !Lm
       oasis_var_shape(3) = 1
       oasis_var_shape(4) = Mmmpi !Mm+2+padd_E + 1  !Mm
-!
-      call cpl_prism_getlistvals(nmaxfld,srcv_clname,ssnd_clname,
-     &   krcv,ksnd,oasis_runtime)
-!      
-!     ... Announce send variables.
-      DO ji = 1, ksnd
-          MPI_master_only write(*,*) 
-     &    'CPL-ROMS: ',ssnd_clname(ji),' will be sent'
-        CALL prism_def_var_proto ( ssnd_nid(ji),ssnd_clname(ji),
+
+! default definiton
+      ssnd_clname(:) = 'not defined' 
+      srcv_clname(:) = 'not defined' 
+#ifdef AGRIF
+      level=Agrif_Fixed()
+#else
+      level=0
+#endif
+      write(clevel,'(i1.1)') level
+
+!------------------------------------------------------------------
+!     Sent
+!------------------------------------------------------------------
+!     SST
+      ssnd_clname(1) = 'SRMSSTV'//clevel
+!     UOCE
+      ssnd_clname(2) = 'SRMUOCE'//clevel
+!     VOCE
+      ssnd_clname(3) = 'SRMVOCE'//clevel
+!------------------------------------------------------------------
+!     Received
+!------------------------------------------------------------------
+!     Evaporation-Precipitation [kg/m^2/s]
+      srcv_clname(1) = 'RRMEVPR'//clevel
+!     net surface SW radiation [W/m2]
+      srcv_clname(2) = 'RRMSRFL'//clevel
+!     total non-solar heat flux [W/m2]
+      srcv_clname(3) = 'RRMSTFL'//clevel
+!     zonal wind tress [N/m2]
+      srcv_clname(4) = 'RRMTAUX'//clevel
+!     meridional wind tress [N/m2]
+      srcv_clname(5) = 'RRMTAUY'//clevel
+!     wind tress module [N/m2]
+      srcv_clname(6) = 'RRMTAUM'//clevel
+      
+      DO ja = 0, nmaxatm
+
+         IF ( ja == 0 ) THEN   ;   catm = ""
+         ELSE                  ;   WRITE(catm,'(a,i1.1)') "_atm", ja
+         ENDIF
+!     
+!     ... Announce sent variables.
+      DO ji = 1, nmaxfld
+          CALL prism_def_var_proto ( ssnd_nid(ja,ji),
+     &       ssnd_clname(ji)//trim(catm),
      &       oasis_part_id, oasis_var_nodims,
      &       PRISM_Out, oasis_var_shape,
      &       oasis_var_type, comp_ierror)
-          MPI_master_only write(*,*) 
-     &    'CPL-ROMS: ',ssnd_clname(ji),ssnd_nid(ji)
-        IF ( comp_ierror /= PRISM_Ok ) THEN
-          CALL prism_abort_proto ( srcv_nid(ji),'cpl_prism_define',
-     &         'Failure in prism_def_var')
-        ENDIF
+          IF ( comp_ierror /= PRISM_Ok ) THEN
+             CALL prism_abort_proto( ssnd_nid(ja,ji),'cpl_prism_define',
+     &        'Failure in prism_def_var: '//ssnd_clname(ji)//trim(catm))
+          ELSE
+             IF ( ssnd_nid(ja,ji) /= -1 ) THEN
+                MPI_master_only write(*,*) 
+     & 'CPL-ROMS: sent ',ssnd_clname(ji)//trim(catm),ssnd_nid(ja,ji)
+             ENDIF
+          ENDIF
       END DO
 
-!     ... Announce receive variables.
-      DO ji = 1, krcv
-          MPI_master_only write(*,*) 
-     &    'CPL-ROMS: ',srcv_clname(ji),' will be received'
-        CALL prism_def_var_proto ( srcv_nid(ji),srcv_clname(ji),
+!     ... Announce received variables.
+      DO ji = 1, nmaxfld
+         CALL prism_def_var_proto ( srcv_nid(ja,ji),
+     &       srcv_clname(ji)//trim(catm),
      &       oasis_part_id, oasis_var_nodims, 
      &       PRISM_In, oasis_var_shape, 
      &       oasis_var_type, comp_ierror)
-          MPI_master_only write(*,*) 
-     &    'CPL-ROMS: ',srcv_clname(ji),srcv_nid(ji)         
-        IF ( comp_ierror /= PRISM_Ok ) THEN
-          CALL prism_abort_proto ( srcv_nid(ji),'cpl_prism_define', 
-     &         'Failure in prism_def_var')
-        ENDIF
+          IF ( comp_ierror /= PRISM_Ok ) THEN
+             CALL prism_abort_proto( srcv_nid(ja,ji),'cpl_prism_define',
+     &        'Failure in prism_def_var: '//srcv_clname(ji)//trim(catm))
+          ELSE
+             IF ( srcv_nid(ja,ji) /= -1 ) THEN
+                MPI_master_only write(*,*) 
+     & 'CPL-ROMS: received ',srcv_clname(ji)//trim(catm),srcv_nid(ja,ji)
+             ENDIF
+          ENDIF
+      END DO
+
       END DO
 
 !------------------------------------------------------------------
@@ -117,20 +173,50 @@
 !------------------------------------------------------------------
       CALL MPI_Barrier( MPI_COMM_WORLD, comp_ierror ) 
 #ifdef AGRIF
-       if (.not.Agrif_Root()) then
-       if (Agrif_fixed() == Agrif_Nb_Fine_Grids()) then
+      if (.not.Agrif_Root()) then
+         if (Agrif_fixed() == Agrif_Nb_Fine_Grids()) then
 #endif
-          MPI_master_only write(*,*) 
-     &    'CPL-ROMS: ENDDEF'
-         CALL prism_enddef_proto( comp_ierror )
-         IF ( comp_ierror /= PRISM_Ok ) THEN
-           CALL prism_abort_proto ( comp_id, 'cpl_prism_enddef', 
-     &       'Failure in prism_enddef')
-         ENDIF
+            CALL prism_enddef_proto( comp_ierror )
+            IF ( comp_ierror /= PRISM_Ok ) THEN
+               CALL prism_abort_proto ( comp_id, 'cpl_prism_enddef', 
+     &              'Failure in prism_enddef')
+            ELSE
+               MPI_master_only write(*,*) 
+     &              'CPL-ROMS: ENDDEF OK'
+            ENDIF
 #ifdef AGRIF
-      endif
+         endif
       endif
 #endif
+
+      cplmsk(:,:,0) = 1.            ! default use, no coupling mask
+      cplmsk(:,:,1:nmaxatm) = 0.    ! default definition when using coupling mask
+      fname = 'coupling_masks'//clevel//'.nc'
+# if defined MPI && defined PARALLEL_FILES
+      ierr=0
+      call insert_node (fname, len_trim(fname), mynode, NNODES, ierr)
+# endif
+      ierr=nf_open(trim(fname), nf_nowrite, ncid)
+      if (ierr == NF_NOERR) then
+          MPI_master_only write(*,*) 
+     &    'CPL-ROMS: open coupling_masks'//clevel//'.nc ok'
+          DO ja = 1, nmaxatm
+             WRITE(catm,'(a,i1.1)') "_atm", ja
+             ierr=nf_inq_varid (ncid, 'cplmsk'//catm, varid)
+             if (ierr == NF_NOERR) then
+      ierr=nf_fread (cplmsk(START_2D_ARRAY,ja), ncid, varid, 0, r2dvar)
+                MPI_master_only write(*,*) 
+     &               'CPL-ROMS: read cplmsk'//catm//' ok',
+     &               minval(cplmsk(1:Lmmpi,1:Mmmpi,ja)),
+     &               maxval(cplmsk(1:Lmmpi,1:Mmmpi,ja))
+             endif
+          enddo
+          ierr=nf_close(ncid)
+       else
+          MPI_master_only write(*,*) 
+     &         'CPL-ROMS: coupling_masks'//clevel//'.nc not found'
+       endif
+
 
 #else 
 !---------------------------------------------------------------------------------------

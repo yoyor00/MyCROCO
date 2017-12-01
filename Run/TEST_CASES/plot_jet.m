@@ -35,14 +35,17 @@ close all
 %
 % User defined parameters
 %
+makepdf=1
+%
 fname='jet_his.nc';
-gname='jet_grd.nc';
+gname='jet_his.nc';
 %
 nesting=0;
 fname_child=[fname,'.1'];
 gname_child=[gname,'.1'];
 %
-tindex=input('tindex : ');
+%tindex=input('tindex : ');
+tindex=19;
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -165,6 +168,10 @@ colorbar
 caxis([-1 1])
 axis image
 title('Surface vorticity (/f)')
+if makepdf
+ export_fig -transparent -pdf jet_vor.pdf
+end
+
 %
 figure
 colormap(jet)
@@ -179,6 +186,9 @@ colorbar
 caxis([18 20])
 axis image
 title('Surface temperature')
+if makepdf
+ export_fig -transparent -pdf jet_stemp.pdf
+end
 %
 figure
 colormap(jet)
@@ -196,6 +206,9 @@ caxis([0 0.5])
 colorbar
 hold off
 title('Surface velocity')
+if makepdf
+ export_fig -transparent -pdf jet_svel.pdf
+end
 %
 figure
 colormap(map)
@@ -211,22 +224,33 @@ colorbar
 caxis([-0.1 0.1])
 axis image
 title('Surface height')
+if makepdf
+ export_fig -transparent -pdf jet_ssh.pdf
+end
 %
 figure
 colormap(jet)
 [M,L]=size(Y);
-imid=round(M/2);
+imid=round(L/2);
 contourf(squeeze(yr(:,:,imid)),squeeze(zr(:,:,imid)),squeeze(t(:,:,imid)),20);
+caxis([9 18])
 colorbar
 title('Temperature')
+if makepdf
+ export_fig -transparent -pdf jet_temp.pdf
+end
 %
 figure
 colormap(jet)
 [M,L]=size(Y);
 imid=round(L/2);
 contourf(squeeze(yu(:,:,imid)),squeeze(zu(:,:,imid)),squeeze(u(:,:,imid)),10);
+caxis([-0.15 0.3])
 colorbar
 title('Zonal velocity')
+if makepdf
+ export_fig -transparent -pdf jet_zonvel.pdf
+end
 %
 if tindex>20
  nc=netcdf(fname,'r');
@@ -262,11 +286,15 @@ if tindex>20
   time=round(nc{'scrum_time'}(tindex(tndx))/(24*3600));
   title(['Vorticity/f - day=',num2str(time)])
  end
+ if makepdf
+ export_fig -transparent -pdf jet_multivor.pdf
+ end
+
  close(nc)
 %
 % print plot series
 %
- print -painter -depsc2 vort_jet.eps
+% print -painter -depsc2 vort_jet.eps
 %
 end
 

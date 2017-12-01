@@ -19,11 +19,7 @@
 !     !----------------------------------------------------------------------
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
-# ifdef OA_MCT
       USE mod_prism             ! OASIS3 prism module
-# else 
-      USE mod_prism_get_proto   ! OASIS3 prism module for receiving
-# endif
 # ifdef AGRIF
       use Agrif_Util
 # endif
@@ -36,13 +32,12 @@
 #include "mpi_roms.h"
 #include "ocean3d.h"
 #include "scalars.h"
-#include "grid.h"
 
       INTEGER    :: rcvtime, i, j, io, jo
-      INTEGER    :: iok_taux, iok_tauy
+      INTEGER    :: iok_taux, iok_tauy, iok_taum
       INTEGER    :: iok_srflx, iok_itemp , iok_isalt
       INTEGER    :: iok_wdry                                   ! OW_COUPLING 
-      INTEGER    :: iok_wt0m1, iok_whs, iok_wcdir, iok_wsdir  ! OW_COUPLING 
+      INTEGER    :: iok_wt0m1, iok_whs, iok_wcdir, iok_wsdir   ! OW_COUPLING 
       INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm      ! OW_COUPLING 
       INTEGER    :: iok_wtwox, iok_wtwoy, iok_wtaux, iok_wtauy ! OW_COUPLING 
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
@@ -51,26 +46,26 @@
 
       real, parameter :: eps=1.e-20
       real,dimension(GLOBAL_2D_ARRAY) :: tab_t_tmp
-# if (!defined OA_GRID_UV)
+#if (!defined OA_GRID_UV)
       real,dimension(GLOBAL_2D_ARRAY) :: tab_u_tmp
       real,dimension(GLOBAL_2D_ARRAY) :: tab_v_tmp
-# endif
+#endif
 
-# ifdef AGRIF
+#ifdef AGRIF
       level=Agrif_Fixed()
-# else
+#else
       level=0
-# endif
+#endif
       write(clevel,'(i1.1)') level
 !      
-      if (level==0) then
-         MPI_master_only 
-     & write(*,*) 'CPL-ROMS : Get for parent at time', rcvtime
-      else		
-         MPI_master_only 
-     & write(*,*) 'CPL-ROMS : Get for child:', level,
-     &  'at time', rcvtime
-      endif
+!!$      if (level==0) then
+!!$         MPI_master_only 
+!!$     & write(*,*) 'CPL-ROMS : Get for parent at time', rcvtime
+!!$      else		
+!!$         MPI_master_only 
+!!$     & write(*,*) 'CPL-ROMS : Get for child:', level,
+!!$     &  'at time', rcvtime
+!!$      endif
 !
       imin_halo = 1  
       imax_halo = Lmmpi  
@@ -95,6 +90,7 @@
       iok_itemp = 0
       iok_taux = 0
       iok_tauy = 0
+      iok_taum = 0
 !
 !     add for OW_COUPLING
       iok_wdry = 0
@@ -113,11 +109,11 @@
 !     add end for OW_COUPLING
 !
 !      print *,'CROCO, number of received fields = ',krcv
-      DO i = 1, krcv
-# ifdef OA_COUPLING
+      DO i = 1, nmaxfld
+#ifdef OA_COUPLING
 !-------------------------------------------------
          if (srcv_clname(i)=='RRMSRFL'//clevel) then
-            call cpl_prism_getvar(srcv_nid(i), srcv_clname(i),
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_srflx) 
             if (iok_srflx /= 0) then
 !              Transmit to ROMS field
@@ -127,7 +123,7 @@
          end if  
 !-------------------------------------------------
          if (srcv_clname(i)=='RRMEVPR'//clevel) then
-            call cpl_prism_getvar(srcv_nid(i), srcv_clname(i),
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_isalt) 
             if (iok_isalt /= 0) then
 !              Transmit to ROMS field : stflx(:,:,isalt)
@@ -138,7 +134,7 @@
          end if
 !-------------------------------------------------
          if (srcv_clname(i)=='RRMSTFL'//clevel) then
-            call cpl_prism_getvar(srcv_nid(i), srcv_clname(i),
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_itemp) 
             if (iok_itemp /= 0)  then
 !              Transmit to ROMS field : stflx(:,:,itemp)
@@ -148,10 +144,10 @@
          end if
 !-------------------------------------------------
          if (srcv_clname(i)=='RRMTAUX'//clevel) then
-            call cpl_prism_getvar(srcv_nid(i), srcv_clname(i),
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_taux) 
             if (iok_taux /= 0) then  
-#  if (!defined OA_GRID_UV)  
+#if (!defined OA_GRID_UV)  
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate TAUX on grid T --> U
                do jo=jmin_halo-1,jmax_halo+1
@@ -161,19 +157,20 @@
                enddo
 !              Transmit to ROMS field : sustr
                sustr  = tab_u_tmp / rho0
-#  else
+               if (iok_taum == 0) tab_u_tmp = tab_t_tmp ! temporary storage...
+#else
 !              Transmit to ROMS field : sustr
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                sustr  = tab_t_tmp / rho0
-#  endif   
+#endif   
             endif
          end if
 !-------------------------------------------------
          if (srcv_clname(i)=='RRMTAUY'//clevel) then
-            call cpl_prism_getvar(srcv_nid(i), srcv_clname(i),
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_tauy) 
             if (iok_tauy /= 0) then 
-#  if (!defined OA_GRID_UV) 
+#if (!defined OA_GRID_UV) 
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate TAUY on grid T --> U
                do jo=jmin_halo,jmax_halo+1
@@ -183,15 +180,29 @@
                enddo
 !              Transmit to ROMS field : svstr
                svstr = tab_v_tmp(:,:) / rho0
-#  else
+               if (iok_taum == 0) tab_v_tmp = tab_t_tmp ! temporary storage...
+#else
 !              Transmit to ROMS field : svstr
                call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                svstr = tab_t_tmp(:,:) / rho0                
-#  endif 
+#endif 
             endif
          end if
-# endif
-# ifdef OW_COUPLING
+         if (srcv_clname(i)=='RRMTAUM'//clevel) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_taum) 
+            if (iok_taum /= 0) then  
+!              Transmit to ROMS field : smstr
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               smstr = tab_t_tmp / rho0
+!     avoid slight negative values (after interpolation for example)...
+               WHERE ( smstr < 0. )  
+                  smstr = 0.
+               END WHERE
+            endif
+         end if
+#endif
+#ifdef OW_COUPLING
 !        print *,'entering get ow_coupling'
 !        print *,'srcv_clname(i)=',srcv_clname(i)
 !-------------------------------------------------
@@ -251,7 +262,7 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                wdre = rmask * tab_t_tmp 
             endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
@@ -263,7 +274,7 @@
 !               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_ubr : rms amplitude of orbital bottom velocity of the waves (m/s)
 !        not tested/performed yet
@@ -299,7 +310,7 @@
 !               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_tauox : x-component of the wave-ocean momentum flux (tauox in m2.s-2)
 !        not tested/performed yet
@@ -323,7 +334,7 @@
 !               sustr  = tab_t_tmp / rho0
 !#endif   
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_tauoy : y-component of the wave-ocean momentum flux (tauoy in m2.s-2)
 !        not tested/performed yet
@@ -371,7 +382,7 @@
 !               sustr  = tab_t_tmp / rho0
 !#endif   
 !            endif
-         end if
+         endif
 !-------------------------------------------------
 !        wave_tauwy : Net wave-supported stress, y-component (tauwiy in m2.s-2)
 !        not tested/performed yet
@@ -395,17 +406,25 @@
 !               svstr = tab_t_tmp(:,:) / rho0
 !#endif 
 !            endif
-         end if
+         endif
 !-------------------------------------------------
-# endif
+#endif
       END DO 
 !-------------------------------------------------
 !
-# ifdef OA_COUPLING
+#ifdef OA_COUPLING
       if  (iok_itemp /= 0) then
          stflx(:,:,itemp) = stflx(:,:,itemp) + srflx
       endif
-# endif
+      IF  (iok_taum == 0 .and. iok_taux /= 0 .and. iok_tauy /= 0) THEN
+#if (!defined OA_GRID_UV) 
+         smstr = sqrt(tab_u_tmp**2 + tab_v_tmp**2)  / rho0
+#else
+         case not coded...
+#endif 
+      ENDIF
+#endif
+      
 !	
 #else 
 !---------------------------------------------------------------------------------------

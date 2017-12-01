@@ -36,8 +36,8 @@ close all
 % --- model params ---
 %
 fname     = 'shoreface_his.nc';    % croco file name
-yindex    = 3;                     % y index
-makepdf   = 0;                     % make pdf file
+yindex    = 1;                     % y index
+makepdf   = 1;                     % make pdf file 
 %
 %======================================================================
 
@@ -322,7 +322,7 @@ title(['SHOREFACE: Akb at Time ',num2str(thour),' hour'])
 hold off
 
 subplot(3,1,3)
-cmin=0; cmax=1.e-5; nbcol=40;
+cmin=0; cmax=3.e-3; nbcol=40;
 cint=(cmax-cmin)/nbcol;
 map=colormap(jet(nbcol));
 colormap(map);

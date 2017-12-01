@@ -12,5 +12,6 @@
 # Misc               #
 ######################
 doc/build
-Run/*
-Run/amr.in
+# dev files          #
+######################
+OCEAN/*.F.*

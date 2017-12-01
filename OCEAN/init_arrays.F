@@ -420,6 +420,7 @@ C$    integer omp_get_thread_num
           do i=IstrR,IendR
             Akb(i,j,k)=init 
             Akw(i,j,k)=init 
+            E_pre(i,j,k)=init
 # ifdef AVERAGES
             Akb_avg(i,j,k)=init 
             Akw_avg(i,j,k)=init 
@@ -456,6 +457,9 @@ C$    integer omp_get_thread_num
         do i=IstrR,IendR
           sustr(i,j)=init
           svstr(i,j)=init
+# ifdef OA_COUPLING
+          smstr(i,j)=init
+# endif
 #ifndef ANA_SMFLUX
           sustrg(i,j,1)=init
           svstrg(i,j,1)=init
@@ -581,15 +585,17 @@ C$    integer omp_get_thread_num
           srflxg(i,j,1)=init
           srflxg(i,j,2)=init
 # endif
-# if defined BBL && !defined ANA_WWAVE && !defined WKB_WWAVE
+# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
           wwag(i,j,1)=init
           wwdg(i,j,1)=init
           wwpg(i,j,1)=init
-          wweb(i,j,1)=init
           wwag(i,j,2)=init
           wwdg(i,j,2)=init
           wwpg(i,j,2)=init
+#  ifdef WAVE_OFFLINE_BREAKING
+          wweb(i,j,1)=init
           wweb(i,j,2)=init
+#  endif
 # endif
         enddo
       enddo

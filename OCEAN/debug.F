@@ -32,6 +32,9 @@
           real,dimension(:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,i,j,i1,j1,i2,j2
+#ifdef OPENMP
+          integer mynode 
+#endif         
           integer iseq1, iseq2, jseq1, jseq2
           logical mystop
 
@@ -40,6 +43,10 @@
           integer ierr
 #endif
           
+#if defined OPENMP && !defined MPI
+          mynode=0 
+#endif
+
 #if !defined MPI && !defined OPENMP
           write(107)Lm,Mm
           write(107)lbound(tab)
@@ -154,9 +161,15 @@
           real,dimension(:,:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,k,i,j,i1,i2,j1,j2
+#ifdef OPENMP
+          integer mynode
+#endif
           integer iseq1, iseq2, jseq1, jseq2 
           logical mystop         
           
+#if defined OPENMP && !defined MPI
+          mynode=0 
+#endif
 
 #if !defined MPI && !defined OPENMP
           write(107)Lm,Mm
@@ -239,7 +252,7 @@
                        if (mystop) then
                        stop
                        endif
-!print *,'DEBUG DE ',comment,' OK'
+            print *,'DEBUG DE ',comment,' OK'
             
             deallocate(tabread)
 #endif          
