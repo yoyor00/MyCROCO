@@ -71,7 +71,11 @@
           zeta(i,j,knew2)= zeta(i,j,knew2)
      &            SWITCH rmask(i,j)   ! Utilité ?????
 !         Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))*rhobar_nbq(i,j,kstp2)
+#  ifdef MASKING
+          Dnew(i,j)=(zeta(i,j,kstp2)*rmask(i,j)+h(i,j))
+#  else
           Dnew(i,j)=(zeta(i,j,kstp2)+h(i,j))
+#  endif
           zwrk(i,j)=zeta(i,j,kstp2) SWITCH rmask(i,j)  
 !         zwrk(i,j)=zeta_new(i,j) SWITCH rmask(i,j)  
 !          zwrk(i,j)= cff4*zeta(i,j,kstp2)

@@ -35,7 +35,7 @@
       endif
 
 #ifdef NBQ_ZETAW
-      if (iic==1.and.iif==1) then
+      if (FIRST_TIME_STEP.and.iif==1) then
         knew2=2
         kstp2=1
         kbak2=4
@@ -88,11 +88,11 @@
 #endif
       endif
 
-      if (iic==1.and.iif.eq.1) then
+      if (FIRST_TIME_STEP.and.iif.eq.1) then
         cff8=1.D0
         cff9=0.D0
         cff10=0.D0
-      elseif (iic==1.and.iif.eq.1+1) then
+      elseif (FIRST_TIME_STEP.and.iif.eq.1+1) then
         cff8=1.5D0
         cff9=-0.5D0
         cff10=0.D0

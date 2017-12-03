@@ -167,8 +167,19 @@
         iteration_nbq_max=ndtnbq
         soundspeed_nbq =csound_nbq !!! pseudoacoustic speed for tank
         soundspeed2_nbq=csound_nbq**2
+
+!       do j=lbound(soundspeed_nbq,2),ubound(soundspeed_nbq,2)
+!       do i=lbound(soundspeed_nbq,1),ubound(soundspeed_nbq,1)
+!         soundspeed_nbq(i,j)=5.*sqrt(g*h(i,j))
+!         if (soundspeed_nbq(i,j)>=300) then
+!        print *,i,j, soundspeed_nbq(i,j),csound_nbq,h(i,j)
+!         endif
+!         soundspeed2_nbq(i,j)=soundspeed_nbq(i,j)**2
+!       enddo
+!       enddo
+
 !       cw_int_nbq=soundspeed_nbq !!! ~ 2-10 sqrt(gH)_max
-        cw_int_nbq=sqrt(9.81*4000.) !soundspeed_nbq !!! ~ 2-10 sqrt(gH)_max
+!       cw_int_nbq=sqrt(9.81*4000.) !soundspeed_nbq !!! ~ 2-10 sqrt(gH)_max
 
 
 !       MPI_master_only write(stdout,'3(A,I4/)')
@@ -279,8 +290,8 @@
 # ifndef NBQ_IJK
          call viscous_nbq(0)
 # else
-        csvisc1_nbq  = dtnbq * soundspeed2_nbq + visc2_nbq
-        csvisc2_nbq  = dtnbq * soundspeed2_nbq / csvisc1_nbq 
+!        csvisc1_nbq  = dtnbq * soundspeed2_nbq + visc2_nbq
+!        csvisc2_nbq  = dtnbq * soundspeed2_nbq / csvisc1_nbq 
 # endif
 !
 !----------------------------------------------------------------------
@@ -300,6 +311,13 @@
 !                 rhp_nbq_a initializations (PART II)
 !
 !**********************************************************************
+
+!.........Grid update:
+#ifdef NBQ_GRIDEXT
+          dtgrid_nbq = dtfast
+#else
+          dtgrid_nbq = dt
+#endif
 
 !.........EOS to compute rho (ifnot already done):
 

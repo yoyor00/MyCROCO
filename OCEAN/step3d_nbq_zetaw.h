@@ -48,15 +48,15 @@
       endif
 
 #ifdef NBQ_DTDRHO2
-       if (iic==1.and.iif==1) then
+       if (FIRST_TIME_STEP.and.iif==1) then
 	  do j=JstrR2,JendR2
-# ifdef NBQ_MASS
+!# ifdef NBQ_MASS
 	    do k=1,N
 	    do i=IstrR2,IendR2
 	       zr_nbq(i,j,k,:)=z_r(i,j,k)
             enddo
             enddo
-# endif
+!# endif
    	    do k=0,N
 	    do i=IstrR2,IendR2
 	       z_nbq (i,j,k,:)=z_w(i,j,k)
@@ -71,7 +71,7 @@
 !-------------------------------------------------------------------
 !
 #  if defined ACOUSTIC && defined NBQ_IJK
-       if (iic==1.and.iif==1) then
+       if (FIRST_TIME_STEP.and.iif==1) then
           call densityijk_nbq(10)      
        endif
 #  endif
@@ -110,7 +110,7 @@
 
 
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
-       if (iic==1.and.iif==1) then
+       if (FIRST_TIME_STEP.and.iif==1) then
         do k=1,N 
           do j=JstrR2,JendR2           
             do i=IstrR2,IendR2
@@ -225,13 +225,13 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !       "Pressure - Viscosity" Variable (theta)
 !               theta does not change
 !-------------------------------------------------------------------
-!       
+!      
         do k=1,N
-          do j=JstrV2-1,Jend
-            do i=IstrU2-1,Iend
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
               thetadiv_nbq(i,j,k)=(-visc2_nbq*(thetadiv_nbq(i,j,k)
      &                                        +thetadiv3_nbq(i,j,k))
-     &                                +soundspeed2_nbq*rho_nbq(i,j,k)) 
+     &                             +soundspeed2_nbq(i,j)*rho_nbq(i,j,k)) 
      &                               *Hzr_half_nbq_inv(i,j,k)  
             enddo
           enddo
@@ -346,8 +346,6 @@ c since the call to grid_coef_nh is at the beginning of step2d
 # ifndef NBQ_NODS
 	  	  dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
      &                  *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))             ! dZdx * (d(delta p)dz)_u
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
-     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx 
 # else
                   if (NSTEP_DS) then
 	   	  dthetadiv_nbqdz(i,j,k,1)=(z_r(i,j,k)
@@ -355,15 +353,11 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *(dthetadiv_nbqdz_u(i,j,k2)+dthetadiv_nbqdz_u(i,j,k1))              ! dZdx * (d(delta p)dz)_u
                   endif 
                   dum_s=dthetadiv_nbqdz(i,j,k,1)                                        
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
-     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx 
 # endif
                 elseif (k.gt.1) then
 # ifndef NBQ_NODS
 	 	  dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
      &                        *dthetadiv_nbqdz_u(i,j,k1)                                        ! dZdx * (d(delta p)dz)_u
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
-     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx
      &                    +(z_w(i,j,N)-z_w(i-1,j,N))                      
      &                  *dthetadiv_nbqdz_u(i,j,k2)
 # else
@@ -375,15 +369,11 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *dthetadiv_nbqdz_u(i,j,k2)                 
                   endif
 	 	  dum_s=dthetadiv_nbqdz(i,j,k,1)                                          
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
-     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx                
 # endif
                 else
 # ifndef NBQ_NODS
 	  	  dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
      &                  *2.*dthetadiv_nbqdz_u(i,j,k2)                                      ! dZdx * (d(delta p)dz)_u
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
-     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx
 # else
                   if (NSTEP_DS) then
   	  	  dthetadiv_nbqdz(i,j,k,1)=(z_r(i,j,k)
@@ -391,17 +381,27 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                    *2.*dthetadiv_nbqdz_u(i,j,k2)                                    ! dZdx * (d(delta p)dz)_u
                   endif
 	  	  dum_s=dthetadiv_nbqdz(i,j,k,1)                                          
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
-     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx  
 # endif
                 endif
+#ifdef MASKING
+                if (umask(i-1,j)*umask(i+1,j)==0.) then
+                dum_s=dum_s
+     &   -(thetadiv_nbq(i,j,k)
+     &   -thetadiv_nbq(i-1,j,k))                       ! - d(delta p)dx
+                else
+#endif
+                dum_s=dum_s
+     &   -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i+1,j,k)
+     &   -gammau*thetadiv_nbq(i-1,j,k)-gammau_2*thetadiv_nbq(i-2,j,k))                       ! - d(delta p)dx
+#ifdef MASKING
+                endif
+#endif
                 dum_s=dum_s   *Hzu_half_qdmu(i,j,k)
                 qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * (
      &              dum_s + ru_int_nbq(i,j,k))  
                 DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
                 ru_nbq_ext (i,j,k) = dum_s / work(i,j) 
                 rubar_nbq(i,j)=rubar_nbq(i,j)+ru_nbq_ext(i,j,k)
-
 # ifdef NBQ_NUDGING
              qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))
      &        +u(i,j,k,nrhs)*hzu_half_qdmu(i,j,k)
@@ -432,8 +432,6 @@ c since the call to grid_coef_nh is at the beginning of step2d
 	          dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
      &                     *(dthetadiv_nbqdz_v(i,j,k2)
      &                  +dthetadiv_nbqdz_v(i,j,k1))    ! dZdy * (d(delta p)dz)_v
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
-     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # else
                   if (NSTEP_DS) then
 	          dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j,k)
@@ -441,15 +439,11 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *(dthetadiv_nbqdz_v(i,j,k2)+dthetadiv_nbqdz_v(i,j,k1))       ! dZdy * (d(delta p)dz)_v
                   endif
 	          dum_s=dthetadiv_nbqdz(i,j,k,2)                         
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
-     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # endif
                 elseif (k.gt.1) then
 # ifndef NBQ_NODS
 	          dum_s=(z_r(i,j,k)-z_r(i,j-1,k))        
      &                  *dthetadiv_nbqdz_v(i,j,k1)                           ! dZdy * (d(delta p)dz)_v
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
-     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
      &                   +(z_w(i,j,N)-z_w(i,j-1,N))        
      &                  *dthetadiv_nbqdz_v(i,j,k2)
 # else
@@ -461,15 +455,11 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *dthetadiv_nbqdz_v(i,j,k2)
                   endif
 	          dum_s=dthetadiv_nbqdz(i,j,k,2) 
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
-     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # endif
                 else
 # ifndef NBQ_NODS
 	          dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
      &                  *2.*dthetadiv_nbqdz_v(i,j,k2)                             ! dZdy * (d(delta p)dz)_v
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
-     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # else
                   if (NSTEP_DS) then
 	          dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j,k)
@@ -477,11 +467,22 @@ c since the call to grid_coef_nh is at the beginning of step2d
      &                  *2.*dthetadiv_nbqdz_v(i,j,k2)       ! dZdy * (d(delta p)dz)_v
                   endif
 	          dum_s=dthetadiv_nbqdz(i,j,k,2) 
-     &	 -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
-     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
 # endif
                 endif
                 
+#ifdef MASKING
+                if (vmask(i,j-1)*vmask(i,j+1)==0.) then
+                dum_s=dum_s
+     &   -(thetadiv_nbq(i,j,k)
+     &   -thetadiv_nbq(i,j-1,k))                       ! - d(delta p)dy
+                else
+#endif
+                dum_s=dum_s
+     &   -(gammau*thetadiv_nbq(i,j,k)+gammau_2*thetadiv_nbq(i,j+1,k)
+     &   -gammau*thetadiv_nbq(i,j-1,k)-gammau_2*thetadiv_nbq(i,j-2,k))                       ! - d(delta p)dy
+#ifdef MASKING
+                endif
+#endif
                 dum_s=dum_s*Hzv_half_qdmv(i,j,k)
                 qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * (
      &                  dum_s + rv_int_nbq(i,j,k))    
@@ -509,11 +510,16 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !---------------------------
 !  U-momentum open boundary conditions
 !---------------------------
+# ifdef RVTK_DEBUG
+      call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
+      call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
+#endif
 
 # ifndef NBQ_GRIDEXT    
-       call u2dbc_tile      (Istr,Iend,Jstr,Jend, UFx) 
+       call u2dbc_tile      (Istr,Iend,Jstr,Jend, UFx)
        call v2dbc_tile      (Istr,Iend,Jstr,Jend, UFx)
 # endif
+       
 # ifdef OBC_NBQ
        call unbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
        call vnbqijk_bc_tile (Istr,Iend,Jstr,Jend, WORK)
@@ -1146,11 +1152,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
 ! Time and Bp density variations
 !---------------------------  
  
-#if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
+#if defined NBQ_DTDRHO2 && defined NBQ_ZETAW 
 	    z_nbq(:,:,:,knew2)=z_w(:,:,:)
 #endif
 
 #if defined NBQ_DTDRHO2 && defined NBQ_ZETAW
+
+# ifndef NBQ_GRIDEXT
+          if (iif==1) then
+# endif
         do j=Jstr,Jend
          do i=Istr,Iend
            FC(i,0)=0.              ! Bottom boundary condition
@@ -1160,13 +1170,13 @@ c since the call to grid_coef_nh is at the beginning of step2d
           do k=1,N-1
             do i=Istr,Iend
               FC(i,k)=   
-     &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtfast 
+     &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtgrid_nbq
      &          *0.5*( (rho(i,j,k  )/rho0)
      &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k)  
      &                +(rho(i,j,k+1)/rho0)
      &                  +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
               CF(i,k)=   
-     &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtfast 
+     &          -(z_nbq(i,j,k,knew2)-z_nbq(i,j,k,kstp2))/dtgrid_nbq 
      &          *0.5*( 1.+rho(i,j,k  )/rho0
      &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k) 
      &                +1.+rho(i,j,k+1)/rho0
@@ -1174,7 +1184,7 @@ c since the call to grid_coef_nh is at the beginning of step2d
 
        thetadiv2_nbq(i,j,k)=(FC(i,k)-FC(i,k-1)) 
 # ifdef NBQ_MASS
-     &      +(Hzr(i,j,k)*(rho(i,j,k)/rho0)-rho_bak(i,j,k))/dtfast
+     &      +(Hzr(i,j,k)*(rho(i,j,k)/rho0)-rho_bak(i,j,k))/dtgrid_nbq
 # endif
        thetadiv3_nbq(i,j,k)=(CF(i,k)-CF(i,k-1)) 
             enddo
@@ -1182,24 +1192,27 @@ c since the call to grid_coef_nh is at the beginning of step2d
 
           do i=Istr,Iend
               FC(i,N)=   
-     &          -(z_nbq(i,j,N,knew2)-z_nbq(i,j,N,kstp2))/dtfast 
+     &          -(z_nbq(i,j,N,knew2)-z_nbq(i,j,N,kstp2))/dtgrid_nbq
      &          *0.5*( rho(i,j,N)/rho0
      &                  +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
      &                +rho(i,j,N)/rho0)
               CF(i,N)=   
-     &          -(z_nbq(i,j,N,knew2)-z_nbq(i,j,N,kstp2))/dtfast 
+     &          -(z_nbq(i,j,N,knew2)-z_nbq(i,j,N,kstp2))/dtgrid_nbq 
      &          *0.5*( 1.+rho(i,j,N)/rho0
      &                  +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
      &                + 1.+rho(i,j,N)/rho0)
 
        thetadiv2_nbq(i,j,N)=(FC(i,N)-FC(i,N-1)) 
 # ifdef NBQ_MASS
-     &      +(Hzr(i,j,N)*(rho(i,j,N)/rho0)-rho_bak(i,j,N))/dtfast
+     &      +(Hzr(i,j,N)*(rho(i,j,N)/rho0)-rho_bak(i,j,N))/dtgrid_nbq
 # endif            
        thetadiv3_nbq(i,j,N)=(CF(i,N)-CF(i,N-1)) 
           enddo
          enddo
 
+# ifdef NBQ_NODS
+         endif
+# endif
 #endif
 
 !
@@ -1208,18 +1221,25 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !-------------------------------------------------------------------
 !
 #ifdef NBQ_IMP
+        qdmw_nbq_old = qdmw_nbq
 !  
         do j=Jstr,Jend
           do k=1,N
             do i=Istr,Iend
-               FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k)
-     &         - (soundspeed2_nbq*dtnbq+visc2_nbq) 
-     &            *(thetadiv_nbq(i,j,k)+thetadiv2_nbq(i,j,k)) 
+               FC(i,k)=  (soundspeed2_nbq(i,j)*rho_nbq(i,j,k)
+     &         - thetaimp_nbq*(soundspeed2_nbq(i,j)*dtnbq+visc2_nbq) 
+     &            *(thetadiv_nbq(i,j,k)+thetadiv2_nbq(i,j,k))
      &                   )
-     &                   * Hzr_half_nbq_inv(i,j,k) 
+     
+       FC(i,k)=FC(i,k)-thetaimp_nbq*(1.-thetaimp_nbq)*
+     &   soundspeed2_nbq(i,j)*dtnbq*
+     & (Hzw_half_nbq_inv(i,j,k)* qdmw_nbq(i,j,k)
+     &  -Hzw_half_nbq_inv(i,j,k-1)* qdmw_nbq(i,j,k-1))
+     
+       FC(i,k)=FC(i,k)* Hzr_half_nbq_inv(i,j,k) 
             enddo
-          enddo    
-  
+          enddo
+     
 !.........Inner layers:
           do k=1,N-1
             do i=Istr,Iend                                                               
@@ -1261,13 +1281,15 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !---------------------------
 
 !.......Comptuts coef.
-        cff1=1./(dtnbq*(soundspeed2_nbq*dtnbq+visc2_nbq)) 
+!        cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq*dtnbq+visc2_nbq)) 
 
         do j=Jstr,Jend
 
 !..........Bottom BC:
            k=1
            do i=Istr,Iend
+             cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
+     &             *dtnbq+visc2_nbq)) 
              cff=(cff1+Hzw_half_nbq_inv(i,j,1)*(Hzr_half_nbq_inv(i,j,1)
      &                 +Hzr_half_nbq_inv(i,j,2)))
              CF(i,1)=(-Hzw_half_nbq_inv(i,j,2)*Hzr_half_nbq_inv(i,j,2))/cff
@@ -1279,6 +1301,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !..........Inner layers:
            do k=2,N-1
              do i=Istr,Iend
+             cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
+     &             *dtnbq+visc2_nbq)) 
                cff=(cff1+                                                                    
      &               Hzw_half_nbq_inv(i,j,k)*(Hzr_half_nbq_inv(i,j,k)
      &              +Hzr_half_nbq_inv(i,j,k+1))   
@@ -1294,6 +1318,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !..........Surface BC:
            k=N
            do i=Istr,Iend
+             cff1=1./(dtnbq*(thetaimp_nbq**2*soundspeed2_nbq(i,j)
+     &             *dtnbq+visc2_nbq)) 
              cff=(cff1+Hzw_half_nbq_inv(i,j,N)*Hzr_half_nbq_inv(i,j,N) 
      &                     +Hzw_half_nbq_inv(i,j,N-1)
      &                     *Hzr_half_nbq_inv(i,j,N)*CF(i,N-1))  
@@ -1309,10 +1335,6 @@ c since the call to grid_coef_nh is at the beginning of step2d
 !    &                 *9.81*dtnbq        
 
 # ifdef NBQ_NUDGING
-!        if (mynode.lt.5.and.j==2) then
-!            write(6,*) mynode,i,nudg_coef_nbq(i,j),qdmw_nbq(i,j,N)
-!    &         ,wz(i,j,N,nrhs)*hzw_half_nbq(i,j,N)
-!        endif
              qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-nudg_coef_nbq(i,j))
      &        +wz(i,j,N,nrhs)*hzw_half_nbq(i,j,N)
      &        * nudg_coef_nbq(i,j)
@@ -1437,7 +1459,9 @@ c since the call to grid_coef_nh is at the beginning of step2d
             
 #ifdef NBQ_FREESLIP
          do i=Istr,Iend
-           FC(i,0)=Hzw_half_nbq_inv(i,j,0) * qdmw_nbq(i,j,0)             ! Bottom boundary condition
+           FC(i,0)=Hzw_half_nbq_inv(i,j,0) *
+     &  (thetaimp_nbq*qdmw_nbq(i,j,0)
+     &  +(1.-thetaimp_nbq)*qdmw_nbq_old(i,j,0))   ! Bottom boundary condition
          enddo
 #else
          do i=Istr,Iend
@@ -1447,13 +1471,17 @@ c since the call to grid_coef_nh is at the beginning of step2d
 
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=Hzw_half_nbq_inv(i,j,k) * qdmw_nbq(i,j,k)   
+              FC(i,k)=Hzw_half_nbq_inv(i,j,k) *
+     &  (thetaimp_nbq*qdmw_nbq(i,j,k)
+     &  +(1.-thetaimp_nbq)*qdmw_nbq_old(i,j,k))
 	      thetadiv_nbq(i,j,k)=thetadiv_nbq(i,j,k)
      &                           +FC(i,k)-FC(i,k-1)  
             enddo
           enddo
             do i=Istr,Iend
-              FC(i,N)=Hzw_half_nbq_inv(i,j,N) * qdmw_nbq(i,j,N)  
+              FC(i,N)=Hzw_half_nbq_inv(i,j,N) *
+     &  (thetaimp_nbq*qdmw_nbq(i,j,N)
+     &  +(1.-thetaimp_nbq)*qdmw_nbq_old(i,j,N))
 	      thetadiv_nbq(i,j,N)=thetadiv_nbq(i,j,N)
      &                           +FC(i,N)-FC(i,N-1)    
             enddo
@@ -1469,8 +1497,8 @@ c since the call to grid_coef_nh is at the beginning of step2d
 # endif
 
          do k=1,N
-         do j=Jstr-1,Jend+1
-         do i=Istr-1,Iend+1
+         do j=JstrV-2,Jend+1
+         do i=IstrU-2,Iend+1
            rho_nbq(i,j,k) = rho_nbq(i,j,k)  
      &       - dtfast*(thetadiv_nbq(i,j,k)+thetadiv2_nbq(i,j,k))
 # ifdef NBQ_NUDGING
@@ -1491,13 +1519,13 @@ c since the call to grid_coef_nh is at the beginning of step2d
 
 #ifdef NBQ_DTDRHO2
 	  do j=JstrR2,JendR2
-# ifdef NBQ_MASS
+!# ifdef NBQ_MASS
 	    do k=1,N
 	    do i=IstrR2,IendR2
              zr_nbq(i,j,k,knew2)=z_r(i,j,k)
             enddo
             enddo
-# endif
+!# endif
    	    do k=0,N
 	    do i=IstrR2,IendR2
              z_nbq (i,j,k,knew2)=z_w(i,j,k)
@@ -1622,7 +1650,7 @@ c need to update Dnew here
 #  endif 
 #endif
 
-#if defined NBQ_DTDRHO2 && defined NBQ_ZETAW && defined NBQ_MASS
+#if defined NBQ_DTDRHO2 && defined NBQ_ZETAW 
 !          if (iif==nfast) then
             do k=1,N 
             do j=JstrR2,JendR2             

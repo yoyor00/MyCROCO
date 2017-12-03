@@ -101,8 +101,8 @@
            enddo
          enddo
  
-!          rhobar_nbq=1.
-!          rho_nbq_ext=1.       
+!         rhobar_nbq=1.
+!         rho_nbq_ext=1.       
 
 !
 !      

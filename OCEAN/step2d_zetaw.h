@@ -9,11 +9,11 @@
 ! Computes zeta(n+1)
 !-----------------------------------------------------------------------
 !
-      if (iic==1.and.iif.eq.1) then
+      if (FIRST_TIME_STEP.and.iif.eq.1) then
          cff8=1.D0
          cff9=0.D0
          cff10=0.D0
-       elseif (iic==1.and.iif.eq.2) then
+       elseif (FIRST_TIME_STEP.and.iif.eq.2) then
          cff8=1.5D0
          cff9=-0.5D0
         cff10=0.D0
@@ -75,7 +75,7 @@
      &         *vmask(i,j)*vmask(i,j+1)
 #endif
      &         ) )
-#ifdef MASING
+#ifdef MASKING
      &         *rmask(i,j)
 #endif
         enddo
@@ -267,8 +267,7 @@ c LAURENT: unnecessary lines with M2FILTER_NONE (only at last time step): REMOVE
 !-----------------------------------------------------------------------
 !
        if ((iic.eq.1.and.iif==1)
-     &     NSTEP_GRID
-     &     ) then
+     &     NSTEP_GRID) then
 c setting flag_grid to 1
 c enforces the recomputation of vertical grid derived arrays (Hz(r,w)_xxx_inv) at next time step
         flag_grid=1
@@ -277,14 +276,6 @@ c enforces the recomputation of vertical grid derived arrays (Hz(r,w)_xxx_inv) a
      &   ) 
 
 #include "step2d_grid_ext.h"
-
-!       call grid_coef_nh(
-!    &   Istr,Iend,Jstr,Jend,
-!    &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
-!    &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-!    &   Hzu_half_qdmu, Hzv_half_qdmv
-!    &   )
-
 
         endif
 

@@ -155,19 +155,19 @@
             endif
 
 # ifdef NBQ
-            cz_nbq=(soundspeed_nbq*dtnbq/max(1.D-30,Hzr(i,j,k)))
+            cz_nbq=(soundspeed_nbq(i,j)*dtnbq/max(1.D-30,Hzr(i,j,k)))
 #   ifdef MASKING
      &             *rmask(i,j) 
 #   endif    
             my_Cu_Nbq_Z=max(my_Cu_Nbq_Z,cz_nbq)
             
-            cx_nbq=soundspeed_nbq*dtnbq*pm_u(i,j)
+            cx_nbq=soundspeed_nbq(i,j)*dtnbq*pm_u(i,j)
 #   ifdef MASKING
      &            * umask(i,j) 
 #   endif
           my_Cu_Nbq_X=max(my_Cu_Nbq_X,cx_nbq)
           
-            cy_nbq=soundspeed_nbq*dtnbq*pn_v(i,j)
+            cy_nbq=soundspeed_nbq(i,j)*dtnbq*pn_v(i,j)
 #   ifdef MASKING
      &            * vmask(i,j) 
 #   endif
@@ -188,6 +188,9 @@
         
          my_Cu_Nbq=max(my_Cu_Nbq,
      &  (alphax*cz_nbq-cx_nbq)**2+(alphay*cz_nbq-cy_nbq)**2)
+       if ((abs(i+iminmpi-1-144)<=2).AND.(abs(j+jminmpi-1-226)<=2)) then
+       !print *,'MUCUNBQ = ',i,j,k,sqrt(my_Cu_Nbq),h(i,j)
+       endif
 
 
 # endif

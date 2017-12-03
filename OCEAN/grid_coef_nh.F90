@@ -115,8 +115,8 @@
 
 #if defined NBQ_IJK
         do k=1,N
-        do j=jstr_nh-1,jend_nh+1
-        do i=istr_nh-1,iend_nh+1
+        do j=JstrV-2,Jend+1
+        do i=IstrU-2,Iend+1
           Hzr_half_nbq_inv(i,j,k)=1.d0/max(1.e-30,Hzr(i,j,k))
 # ifdef MASKING
           Hzr_half_nbq_inv(i,j,k)=Hzr_half_nbq_inv(i,j,k)*rmask(i,j)
@@ -147,8 +147,8 @@
         enddo 
 
         do k=0,N
-        do j=jstr_nh-1,jend_nh+1
-        do i=istr_nh-1,iend_nh+1
+        do j=JstrV-2,Jend+1
+        do i=IstrU-2,Iend+1
           Hzw_half_nbq_inv(i,j,k)=1.d0/max(1.e-30,Hzw_half_nbq(i,j,k)) 
 # ifdef MASKING
           Hzw_half_nbq_inv(i,j,k)=Hzw_half_nbq_inv(i,j,k)*rmask(i,j)
@@ -158,8 +158,8 @@
         enddo
 		
         do k=0,N
-        do j=jstr_nh,jend_nh
-        do i=istru_nh,iend_nh+1
+        do j=JstrV-2,Jend+1
+        do i=IstrU-1,Iend+1
           Hzw_half_nbq_inv_u(i,j,k)=0.25d0*2.d0/max(1.e-30,Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i-1,j,k)) 
 # if defined MASKING
           Hzw_half_nbq_inv_u(i,j,k)=Hzw_half_nbq_inv_u(i,j,k) *umask(i,j)   
@@ -169,8 +169,8 @@
         enddo
               
         do k=0,N
-        do j=jstrv_nh,jend_nh+1
-        do i=istr_nh,iend_nh
+        do j=JstrV-1,Jend+1
+        do i=IstrU-1,Iend+1
           Hzw_half_nbq_inv_v(i,j,k)=0.25d0*2.d0/max(1.e-30,Hzw_half_nbq(i,j,k)+Hzw_half_nbq(i,j-1,k)) 
 # if defined MASKING	
           Hzw_half_nbq_inv_v(i,j,k)= Hzw_half_nbq_inv_v(i,j,k)*vmask(i,j)

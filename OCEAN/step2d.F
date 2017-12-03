@@ -11,6 +11,7 @@
 !
 #include "cppdefs.h"
 #define PRED_COUPLED_MODE
+!#define NBQ_TRACERS
 
       subroutine step2d (tile)
       implicit none
@@ -251,10 +252,13 @@ C$    trd=omp_get_thread_num()
       real WORK(PRIVATE_2D_SCRATCH_ARRAY)
       real dum_s,dum_max
       real sum_r(PRIVATE_2D_SCRATCH_ARRAY)
-      real,parameter :: gammau=0.45
-      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
 #endif
-
+      real,parameter :: thetaimp_nbq = 1.
+      real,parameter :: gammau=0.45
+      !real,parameter :: gammau=0.55
+      !real,parameter :: gammau=1.0
+      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
+      real,dimension(GLOBAL_2D_ARRAY,0:N) :: qdmw_nbq_old
 !
 #ifndef NBQ_MASS
 #  define Hzr_half_nbq Hz
@@ -387,11 +391,11 @@ c LAURENT: correct the next loops indices and remove the tests
 #endif
 !
 #ifdef NBQ_ZETAW
-        if (iic==1.and.iif==1) then
+        if (FIRST_TIME_STEP.and.iif==1) then
          cff4= 1.
          cff5= 0.
          cff6= 0.
-        elseif (iic==1.and.iif==2) then
+        elseif (FIRST_TIME_STEP.and.iif==2) then
          cff4= 1.5
          cff5= -0.5
          cff6= 0.
@@ -449,10 +453,12 @@ c LAURENT: correct the next loops indices and remove the tests
 ! and grid can vary at dtfast.
 !---------------------------------------
 !
-      if (iic==1.and.iif==1) flag_grid=1
 
-      if (flag_grid==1) then 
+      if (FIRST_TIME_STEP.and.iif==1) flag_grid=1
+
+      if (flag_grid==1) then
       flag_grid=0
+
 !
 # include "step2d_grid_ext.h"  
 !  
@@ -464,7 +470,6 @@ c LAURENT: correct the next loops indices and remove the tests
      &   Hzu_half_qdmu, Hzv_half_qdmv
      &   )
       endif  
-
 !
 #endif /* ! NBQ_ZETAW*/
 !
@@ -591,17 +596,17 @@ c LAURENT: correct the next loops indices and remove the tests
 !---------------------------------------
 !
 #ifdef NBQ_ZETAW
-      if (iic==1.and.iif==1) then
+      if (FIRST_TIME_STEP.and.iif==1) then
         cff4= 1.
         cff5= 0.
         cff6= 0.
         cff7= 0.
-      elseif (iic==1.and.iif==2) then
+      elseif (FIRST_TIME_STEP.and.iif==2) then
          cff4=0.5+2.*myalpha
          cff5=1.-cff4
          cff6=0.
          cff7=0.
-      elseif (iic==1.and.iif==3) then
+      elseif (FIRST_TIME_STEP.and.iif==3) then
          cff4=0.5+mygamma+2.*myalpha
          cff5=1.-cff4-mygamma
          cff6=mygamma
@@ -663,6 +668,11 @@ c LAURENT: correct the next loops indices and remove the tests
           rho_nbq_avg1=1.
 #  endif
 # endif
+
+!         rhobar_nbq  =1.
+!         rho_nbq_ext =1.
+!         rho_nbq_avg1=1.
+
 !
 #endif  /* NBQ */   
 !#ifdef SOLVE3D
@@ -797,18 +807,19 @@ C$OMP END MASTER
 
 #ifdef NBQ_TRACERS
        if (iif==nfast) then
-       
-        Hz_tra = Hz      
-        
+
+        Hz_tra = Hz
+
+!      do j=JstrR,JendR
+!      do i=IstrR,IendR
+
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        DU_avg2(START_2D_ARRAY))
-       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        DV_avg2(START_2D_ARRAY))
 #endif
 !      dum_max=0.
-!      do j=JstrR,JendR
-!      do i=IstrR,IendR
        do j=Jstr,Jend
        do i=Istr,Iend
            dum_s=0.
@@ -851,6 +862,7 @@ c Kept for testing... removed soon.
              enddo
        enddo
        enddo
+!      write(6,*) iic,"Max=",dum_max
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 !     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -914,9 +926,11 @@ c LAURENT: these calls for z_w and z_r can probably be removed
      &     ' =                                     = ',
      &     ' ======================================= ',
      &     '                                         '
+
 #ifdef MPI
         write(stdout,'(A,I4)') '      mynode =',mynode
 #endif
+
         if (VMAX.eq.666.) then
           write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'

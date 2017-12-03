@@ -57,9 +57,9 @@
       common /nbq_var4/ slip_nbq    
 
 !**********************************************************************
-      double precision soundspeed_nbq               
+      real soundspeed_nbq(GLOBAL_2D_ARRAY) 
       common /nbq_param1/ soundspeed_nbq                              
-      double precision soundspeed2_nbq             
+      real soundspeed2_nbq(GLOBAL_2D_ARRAY) 
       common /nbq_param2/ soundspeed2_nbq                                                
       double precision time_nbq               
       common /nbq_param3/ time_nbq                                                     
@@ -81,6 +81,9 @@
       common /nbq_csound/ csound_nbq
       real visc2_nbq
       common /nbq_visc2/ visc2_nbq
+
+      real dtgrid_nbq
+      common /nbq_dtgrid/ dtgrid_nbq
 
 !**********************************************************************
       real qdmu_nbq(GLOBAL_2D_ARRAY,N)
@@ -274,7 +277,7 @@
       real z_nbq(GLOBAL_2D_ARRAY,0:N,4)
       common /nbq_z/z_nbq
 
-#  if defined NBQ_ZETAW && defined NBQ_MASS
+#  if defined NBQ_ZETAW 
       real rho_bak(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_bak/rho_bak
 #  endif
@@ -287,7 +290,7 @@
 !# endif
 
 !**********************************************************************
-# if defined ACOUSTIC && defined NBQ_IJK  
+# if defined ACOUSTIC && defined NBQ_IJK
 
       real  period_exp  
       common/ACOUS1/period_exp

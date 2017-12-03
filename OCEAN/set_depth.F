@@ -277,7 +277,7 @@ C$    integer omp_get_thread_num
 
 !
 #  ifdef NBQ_ZETAW
-      if (iic==0.or.(iic==1.and.iif==1)) then
+      if (iic==0.or.(FIRST_TIME_STEP.and.iif==1)) then
          Hz_bak =Hz
 #   ifdef NBQ_DTDRHO2B
          Hz_bak2=Hz
@@ -305,20 +305,20 @@ C$    integer omp_get_thread_num
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_r(START_2D_ARRAY,1))
-!# ifdef NBQ_DTDRHO2
+# ifdef NBQ_DTDRHO2
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
 #  ifdef NBQ_DTDRHO2B
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak2(START_2D_ARRAY,1))
 #  endif
-!# endif
+# endif
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
 #   ifdef MOVING_BATHY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
 #   endif
-#   ifdef NBQ_MASS
+#   ifdef NBQ
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
 

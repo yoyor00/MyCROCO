@@ -199,7 +199,7 @@
    !  &            -0.1*real(istr+10-i)**2*(rho_nbq(I,j,k)-0.)
    !  &            /100.
 #   ifdef MASKING
-     &                                     *rmask(istr,j)
+     &                                     *rmask(istr-1,j)
 #   endif
       !   enddo
          enddo

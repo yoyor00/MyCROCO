@@ -1295,6 +1295,13 @@ C$    integer  trd, omp_get_thread_num
 #  define JV_RANGE Jstr,JendR
 # endif
 !
+
+#if defined NBQ && (defined NBQCLIMATOLOGY || \
+                   (defined AGRIF && !defined NBQ_FRC_BRY))
+
+#if defined SOLVE3D && (defined M3CLIMATOLOGY || \
+                        (defined AGRIF && !defined M3_FRC_BRY))
+
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1313,6 +1320,8 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+#endif
+#endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
