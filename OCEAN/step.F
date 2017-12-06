@@ -628,11 +628,19 @@ C$OMP BARRIER
                   ! tile-processing sequence.               
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
+#ifdef NBQ
+            call     step2d_nbq (tile)
+#else
             call     step2d (tile)
+#endif            
           enddo
         else
           do tile=my_first,my_last
+#ifdef NBQ
+            call     step2d_nbq (tile)
+#else
             call     step2d (tile)
+#endif            
           enddo
         endif
 
