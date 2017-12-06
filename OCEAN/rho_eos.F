@@ -560,6 +560,9 @@ C$OMP CRITICAL (rho_cr_rgn)
      &                                 'mean density, kg/m3.'
 
       endif  ! <-- tile_count.eq.nsubs
+
+      rho0 = nint(rho0*1.d6,kind=8)/1.d6 ! round rho0 to 6 digits
+
 !
 C$OMP END CRITICAL (rho_cr_rgn)
       return

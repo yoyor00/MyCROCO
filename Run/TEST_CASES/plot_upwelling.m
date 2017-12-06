@@ -29,8 +29,9 @@
 clear all
 close all
 
+makepdf=0;
 tndx=5;
-nc=netcdf('croco_avg.nc','r');
+nc=netcdf('upwelling_avg.nc','r');
 time=(nc{'scrum_time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
 y=squeeze(nc{'y_rho'}(:,2));
@@ -56,5 +57,8 @@ hold on
 [C1,h1,]=contour(yr,zr,100*u,[-100:20:100],'k');
 clabel(C1,h1)
 title(['UPWELLING - temp [^oC] - day = ',num2str(time)])
+if makepdf
+ export_fig -transparent -pdf upwelling.pdf
+end
 
 

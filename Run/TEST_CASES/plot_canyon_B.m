@@ -29,6 +29,7 @@
 clear all
 close all
 
+makepdf=0;
 tndx=3;
 i=32;
 %
@@ -62,8 +63,11 @@ figure(1)
 contourf(yr,zr,t,[28:0.1:32])
 shading flat
 colorbar
-title('Canyon sigma vertical section')
+title('Canyon B sigma vertical section')
 caxis([28 31])
+if makepdf
+ export_fig -transparent -pdf canyon_b_S.pdf
+end
 %
 % Second plot
 %
@@ -78,5 +82,8 @@ hold on
 contour(x1(2:end-1,2:end-1)/1000,y1(2:end-1,2:end-1)/1000,...
         h(2:end-1,2:end-1),'k')
 hold off
-title('Canyon sea surface elevation [cm]')
+title('Canyon B sea surface elevation [cm]')
+if makepdf
+ export_fig -transparent -pdf canyon_b_Z.pdf
+end
 

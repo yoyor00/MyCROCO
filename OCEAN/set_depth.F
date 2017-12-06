@@ -58,6 +58,9 @@ C$    integer omp_get_thread_num
       real cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
 # include "param.h"
 # include "grid.h"
+# ifdef AGRIF
+# include "zoom.h"
+# endif
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "coupling.h"
@@ -97,6 +100,9 @@ C$    integer omp_get_thread_num
           do i=I_RANGE    ! averaged free surface.
 # ifdef WET_DRY
             wetdry(i,j)=1.
+#  ifdef AGRIF
+            rmask_childs(i,j)=1.
+#  endif         
             IF (h(i,j).eq.0.) THEN
               h(i,j)=eps
             END IF

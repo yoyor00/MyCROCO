@@ -35,6 +35,8 @@ close all
 %
 % User defined parameters
 %
+makepdf=0;
+%
 vname='zeta';
 tindex=11;
 %
@@ -173,4 +175,7 @@ if nestvortex==1
   imagesc(flipud(tdiff))
   colorbar
   title(['Parent - Child : ',vname,' - Day ',num2str(time)])
+end
+if makepdf
+ export_fig -transparent -pdf vortex.pdf
 end

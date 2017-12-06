@@ -1,21 +1,27 @@
 1  Stitle (a80)
-CROCO - Sediment - Test
+ROMS - Sediment - Test
 
 2  Sd(1-NST), CSED, SRHO,  WSED,  ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
-      0.125   9.9   2650.  9.4    25.0e-5  0.05    0.14    0.4  0.4
-      0.050   0.0   2650.  1.6     4.0e-5  0.01    0.14    0.6  0.6
+      0.100    0.0  2650.   7.0   1.5e-4   0.003   1000   1 1
+      0.100    0.0  2650.   7.0   1.5e-4   0.003   1000   0 0
 
 3 BTHK(1:NLAY)
-       0.3E-2   10. 
+      0.5 0.5
             
 4 BPOR(1:NLAY)
-       0.41    0.42
+      0.5 0.5
 
 5 Hrip             
-       0.03  
+       0. 
 
 6 Lrip
-       0.14  
+       0.  
+
+7 bedload_coeff 
+       0.
+
+8 morph_fac
+      24. 
 
 99 END of sediment input data
 
@@ -36,7 +42,7 @@ CROCO - Sediment - Test
 
   Sd        Diameter of grain size class [mm].
 
-  CSED      Initial concentration (spatially uniform) [kg/m3].  
+  CSED      Initial concentration (spatially uniform) [mg/l].  
   
   SRHO      Density of sediment material of size class [kg/m3]. 
             Quartz: SRHO=2650 kg/m3  

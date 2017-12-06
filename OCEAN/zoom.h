@@ -107,6 +107,11 @@
 # ifdef WKB_WWAVE
      &  ,dWactinterp,dWkxtinterp,dWketinterp,dWacinterp
 # endif
+# ifdef ANA_GRID
+      integer ha_id
+      common/ha_id/ha_id 
+# endif 
+
        logical Alreadyupdated(GLOBAL_2D_ARRAY,3)
        common/updateprestep/Alreadyupdated
 
@@ -177,23 +182,39 @@
 
       integer j1t,i1t,i2t,j2t
       integer i1u,i2u,j1v,j2v
+      integer common_index
       common/arraysindices/i1t,j1t,i2t,j2t,
-     &     i1u,i2u,j1v,j2v
+     &     i1u,i2u,j1v,j2v,common_index
             
       integer hid, zetaid,ubarid,vbarid,uid,vid,tid
       integer rmaskid
+#ifdef WET_DRY
+      integer rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
+#endif
       integer tspongeid, uspongeid, vspongeid
 # ifdef WKB_WWAVE
-      integer wacid,warid,wkxid,wkeid
-      integer hrmid,frqid,wsbid,wvnid,wcgid
+      integer wacid,wkxid,wkeid
+      integer hrmid,frqid,wsbid,wvnid,wcgid,wfcid
+#  ifdef WAVE_ROLLER      
+      integer warid, wsrid,wcrid
+#  endif       
 # endif
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
      &  tspongeid, uspongeid, vspongeid, rmaskid
+#ifdef WET_DRY
+     &         ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
+#endif
 # ifdef WKB_WWAVE
-     &  ,wacid,warid,wkxid,wkeid
-     &  ,hrmid,frqid,wsbid,wvnid,wcgid
-     
+     &  ,wacid,wkxid,wkeid
+     &  ,hrmid,frqid,wsbid,wvnid,wcgid,wfcid
+#  ifdef WAVE_ROLLER      
+     & , warid, wsrid,wcrid  
+#  endif         
 # endif
+#ifdef WET_DRY
+      real rmask_childs(GLOBAL_2D_ARRAY)
+      common/rmask_child/rmask_childs
+#endif
       integer updatezetaid, updateubarid, updatevbarid
       integer updateduavg2id, updatedvavg2id
       integer updatetid, updateuid, updatevid

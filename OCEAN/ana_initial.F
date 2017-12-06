@@ -1653,17 +1653,6 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 #endif
-
-!#   ifdef RVTK_DEBUG
-!      call check_tab3d(u(:,:,:,1),'u(1) ana_initial','u')
-!      call check_tab2d(ubar(:,:,1),'ubar(1) ana_initial','u')
-!      call check_tab3d(u(:,:,:,2),'u(2) ana_initial','u')
-!      call check_tab2d(ubar(:,:,2),'ubar(2) ana_initial','u')
-!      call check_tab3d(u(:,:,:,3),'u(3) ana_initial','u')
-!      call check_tab2d(ubar(:,:,3),'ubar(3) ana_initial','u')
-!#   endif    
-
-
 #undef IR_RANGE
 #undef IU_RANGE
 #undef JR_RANGE
@@ -1903,12 +1892,11 @@ C$    integer omp_get_thread_num
       enddo
       mssh=mssh/area
 # endif
+      mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
       do j=Jstr,Jend
         do i=Istr,Iend
           zeta(i,j,tndx)=zeta(i,j,tndx)
-# ifndef RVTK_DEBUG
      &                          - mssh
-# endif
         enddo
       enddo
 !

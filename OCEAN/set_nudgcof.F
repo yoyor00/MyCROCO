@@ -117,6 +117,11 @@
 #  endif
 
 # endif
+
+# ifdef SPONGE_SED
+          if (i.gt.0 .and. j.gt.0)
+     &      cff_sponge(i,j)=float(ibnd)/float(isp)
+# endif
         enddo
       enddo
 !
