@@ -311,14 +311,18 @@ C$    integer omp_get_thread_num
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_r(START_2D_ARRAY,1))
-# ifdef NBQ_DTDRHO2
+#   ifndef NBQ 
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz(START_2D_ARRAY,1))
-#  ifdef NBQ_DTDRHO2B
+#   endif
+#   ifdef NBQ_DTDRHO2
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+#   endif
+#   ifdef NBQ_DTDRHO2B
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak2(START_2D_ARRAY,1))
-#  endif
-# endif
+#   endif
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
 #   ifdef MOVING_BATHY

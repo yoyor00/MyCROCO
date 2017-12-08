@@ -273,9 +273,11 @@ c          endif
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
         do j=Jstr,Jend
+#   ifdef NBQ_ZETAW
           DU_nbq(Istr,j)=ubar(Istr,j,knew)
      &          *0.5*(H(Istr,j)+zeta(Istr,j,knew)
      &              + H(Istr-1,j)+zeta(Istr-1,j,knew))
+#   endif     
 #   ifdef M2_FRC_BRY
           ubar(Istr,j,knew)=ubarbry_west(j)
 #   else
