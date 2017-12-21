@@ -35,7 +35,7 @@ include Makedefs
 # SRC90: additional F90 routines for the non-hydrostatic engine
 #======================================================================
 
- SRCS = main.F		step.F		read_inp.F\
+ SRCS = 		step.F		read_inp.F\
 	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
@@ -58,7 +58,7 @@ include Makedefs
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
 	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
-	debug.F step_with_cost_fun.F cost_fun.F\
+	debug.F \
 \
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
@@ -160,25 +160,30 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 ADJ_SRCS=cost_fun.F step.F step2d.F diag.F v2dbc.F u2dbc.F exchange.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o adBuffer.o adStack.o
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o
 
-TGT_SRCS=$(ADJ_SRCS) main_tgt.F
+TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.f)
-TGT_ALL_OBJS1=$(OBJS:main.o=)
-TGT_ALL_OBJS=$(TGT_ALL_OBJS1:step_with_cost_fun.o=)
-TGT_OBJS=$(TAP_TARGET)_d.o contextAD.o
+TGT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 
 #======================================================================
 
 #
-# Executable file.
-# ========== =====
-#
-$(SBIN):  $(ADJ_OBJS) $(OBJS90) $(OBJS) $(SBIN)_tgt
-	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(ADJ_OBJS) $(LCDF) $(LMPI) 
-	mv a.out $(SBIN)
+# Everything
+# ==========
+all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt
 
-$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(TGT_ALL_OBJS)
+#
+# Executables files.
+# =========== =====
+#
+$(SBIN): $(OBJS90) $(OBJS) main.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI)
+
+$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) 
+
+$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_tgt.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI)
 
 
@@ -230,10 +235,6 @@ adBufferCtest : adStack.c adBuffer.c adBufferCtest.c
 m1qn3.o: m1qn3.F
 	$(FC) $(FFLAGS) -c $^ -o $@
 
-#
-# Everything
-# ==========
-all: tools depend $(SBIN)
 
 #
 # Auxiliary utility programs and List of Dependecies:
@@ -301,12 +302,11 @@ plotter: plotter.F
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET)
 
-main_tgt.F: main.F
-	cp $^ $@
-
-main_tgt.f: main_tgt.F
-
+main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
+
+main_adj.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS)
 	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET)
