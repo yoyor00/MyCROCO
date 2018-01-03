@@ -279,7 +279,7 @@ C LAURENT: Dstp is not used anymore : REMOVED
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
-#ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
       call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
 #endif
@@ -351,7 +351,7 @@ c recompute zeta via vertically integrated continuity equation
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &         +cff1*(Dnew(IstrU-1,j)
      &         +Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
 # else
@@ -362,7 +362,7 @@ c recompute zeta via vertically integrated continuity equation
 # endif
      &                                             )*on_u(IstrU-1,j)
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &         +cff2*(Dnew(IstrU-1,j)
      &         +Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
 # else
@@ -375,7 +375,7 @@ c recompute zeta via vertically integrated continuity equation
         enddo
         do j=JstrV,Jend
           DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &       +cff1*(Dnew(Istr-1,j)
      &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
 # else
@@ -386,7 +386,7 @@ c recompute zeta via vertically integrated continuity equation
 # endif
      &                                              )*om_v(Istr-1,j)
           DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &       +cff2*(Dnew(Istr-1,j)
      &       +Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
 # else
@@ -402,7 +402,7 @@ c recompute zeta via vertically integrated continuity equation
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &            +cff1*( Dnew(Iend+1,j)
      &            +Dnew(Iend,j) )*(ubar(Iend+1,j,knew)
 # else
@@ -413,7 +413,7 @@ c recompute zeta via vertically integrated continuity equation
 # endif
      &                                              )*on_u(Iend+1,j)
           DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &            +cff2*( Dnew(Iend+1,j)
      &            +Dnew(Iend,j) )*(ubar(Iend+1,j,knew)
 # else
@@ -426,7 +426,7 @@ c recompute zeta via vertically integrated continuity equation
         enddo
         do j=JstrV,Jend
           DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &        +cff1*( Dnew(Iend+1,j)
      &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
 # else
@@ -437,7 +437,7 @@ c recompute zeta via vertically integrated continuity equation
 # endif
      &                                              )*om_v(Iend+1,j)
           DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)
-# ifdef NBQ_GRIDEXT
+# if defined NBQ_GRIDEXT || !defined NBQ
      &        +cff2*( Dnew(Iend+1,j)
      &        +Dnew(Iend+1,j-1) )*(vbar(Iend+1,j,knew)
 # else

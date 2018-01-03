@@ -19,7 +19,7 @@
 
       use module_nh
       use module_nbq
-# ifdef MPI
+# if defined MPI && !defined NBQ_IJK
       use module_parallel_nbq, only : ierr,par,OUEST,EST
 # endif
       implicit none
