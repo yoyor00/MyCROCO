@@ -632,7 +632,7 @@ C$OMP BARRIER
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
 #ifdef NBQ
-            call     step2d_nbq (tile)
+            call     step3d_fast (tile)
 #else
             call     step2d (tile)
 #endif            
@@ -640,7 +640,7 @@ C$OMP BARRIER
         else
           do tile=my_first,my_last
 #ifdef NBQ
-            call     step2d_nbq (tile)
+            call     step3d_fast (tile)
 #else
             call     step2d (tile)
 #endif            

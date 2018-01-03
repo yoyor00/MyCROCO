@@ -14,7 +14,7 @@
 #define PRED_COUPLED_MODE
 !#define NBQ_TRACERS
 
-      subroutine step2d_nbq (tile)
+      subroutine step3d_fast (tile)
       implicit none
       integer tile, trd
 #include "param.h"
@@ -982,6 +982,6 @@ c LAURENT: these calls for z_w and z_r can probably be removed
       return
       end
 #else
-      subroutine step2d_nbq_empty
+      subroutine step3d_fast_empty
       end
 #endif /* NBQ */
