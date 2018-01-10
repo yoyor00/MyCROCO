@@ -92,7 +92,7 @@ if [[ $copy_tag == 1 ]] ; then
     echo '         '
     
     cd $MY_CONFIG_PATH'/'$MY_CONFIG_NAME
-    mkdir Misc TEST_CASES NAMELIST_OANALYSIS CROCO_FILES SCRATCH
+    mkdir Misc TEST_CASES NAMELIST_OANALYSIS CROCO_FILES SCRATCH DATA
     
     #OCEAN
     DIRO='OCEAN'
