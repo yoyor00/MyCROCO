@@ -46,6 +46,10 @@ KMP_DUPLICATE_LIB_OK=TRUE
 #
 DT=3600
 #
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+#
+NFAST=60
+#
 # Number of days per month
 #
 NDAYS=30
@@ -116,6 +120,9 @@ fi
 #
 # Get the code
 #
+if [ ! -e $SCRATCHDIR ] ; then
+ mkdir $SCRATCHDIR
+fi
 cd $SCRATCHDIR
 echo "Getting $CODFILE from $INPUTDIR"
 $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
@@ -162,7 +169,7 @@ done
 #
 NUMTIMES=0
 NUMTIMES=$((NDAYS * 24 * 3600))
-NUMTIMES=$((NUMTIMES / DT))
+NUMTIMES=$((NUMTIMES / DT
 echo "Writing in ${MODEL}_inter.in"
 LEVEL=0
 while [[ $LEVEL != $NLEVEL ]]; do
@@ -173,7 +180,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     NUMTIMES=$((3 * NUMTIMES))
   fi
   echo "USING NUMTIMES = $NUMTIMES"
-  sed 's/NUMTIMES/'$NUMTIMES'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}.in${ENDF}
+  sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
   LEVEL=$((LEVEL + 1))
 done
 #
