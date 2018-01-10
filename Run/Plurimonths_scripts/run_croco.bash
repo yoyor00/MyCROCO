@@ -169,7 +169,7 @@ done
 #
 NUMTIMES=0
 NUMTIMES=$((NDAYS * 24 * 3600))
-NUMTIMES=$((NUMTIMES / DT
+NUMTIMES=$((NUMTIMES / DT))
 echo "Writing in ${MODEL}_inter.in"
 LEVEL=0
 while [[ $LEVEL != $NLEVEL ]]; do
