@@ -180,7 +180,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     NUMTIMES=$((3 * NUMTIMES))
   fi
   echo "USING NUMTIMES = $NUMTIMES"
-  sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
+  sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}.in${ENDF}
   LEVEL=$((LEVEL + 1))
 done
 #
