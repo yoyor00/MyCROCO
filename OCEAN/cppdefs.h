@@ -211,7 +211,7 @@
 # undef PSOURCE
 # undef PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
-#   define PSOURCE_NCFILE_TS
+#   undef PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
