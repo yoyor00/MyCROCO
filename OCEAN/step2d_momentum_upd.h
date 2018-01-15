@@ -587,10 +587,11 @@ c recompute zeta via vertically integrated continuity equation
 
         enddo
       enddo
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                   zeta(START_2D_ARRAY,knew2))
-#endif
+!#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+!     &                   zeta(START_2D_ARRAY,knew2))
+!#endif
+
 !#endif
              
       do j=JstrR,JendR
@@ -598,6 +599,10 @@ c recompute zeta via vertically integrated continuity equation
             Zt_avg1(i,j)=zeta(i,j,knew2)
           enddo
       enddo
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                   Zt_avg1(START_2D_ARRAY))
+#endif
 !#undef NBQ_HZ
 !#ifdef NBQ_HZ
 # include "step2d_set_depth.h"
