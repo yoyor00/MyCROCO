@@ -178,8 +178,8 @@
 # ifdef NBQ_MASS
        real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
-!# else
-!#  define Hzr_half_nbq Hz
+# else
+#  define Hzr_half_nbq Hz_half
 # endif
 
 # ifdef NBQ_TRACERS
