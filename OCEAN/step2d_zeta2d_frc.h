@@ -37,6 +37,15 @@
           enddo                              ! extrapolation needs
         enddo                                ! to be performed.
 # endif
+# ifndef NBQ_ZETAW
+        if (FIRST_TIME_STEP) then
+          cff2=0.                        ! 
+          cff1=1.                        !
+        else                             !
+          cff2=-0.5
+          cff1=1.5
+        endif
+# endif
 !
 !-----------------------------------------------------------------------
 ! Since coupling requires that pressure gradient term is computed

@@ -167,11 +167,13 @@
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
 #ifdef NBQ_CONS
-              thetadiv_nbq(i,j,k)=(-visc2_nbq*thetadiv_nbq(i,j,k)+soundspeed2_nbq*rho_nbq(i,j,k)) &
+              thetadiv_nbq(i,j,k)=(-visc2_nbq*thetadiv_nbq(i,j,k) &
+                     +soundspeed2_nbq(i,j)*rho_nbq(i,j,k)) &
                                    *Hzr_half_nbq_inv(i,j,k)                                   !XXX3
 #else 
-              thetadiv_nbq(i,j,k)=-visc2_nbq*thetadiv_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)          &
-                                   +soundspeed2_nbq*rho_nbq(i,j,k)                            !XXX3
+              thetadiv_nbq(i,j,k)=-visc2_nbq*thetadiv_nbq(i,j,k) &
+                     *Hzr_half_nbq_inv(i,j,k)          &
+                                   +soundspeed2_nbq(i,j)*rho_nbq(i,j,k)                            !XXX3
 #endif
             enddo
           enddo
@@ -934,15 +936,15 @@
 # ifdef NBQ_CONS
 !               FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq * thetadiv_nbq(i,j,k) ) & !XXX5
 !                        * Hzr_half_nbq_inv(i,j,k) 
-               FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k) &
-              - (soundspeed2_nbq*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k)  &
+               FC(i,k)=  (soundspeed2_nbq(i,j)*rho_nbq(i,j,k) &
+              - (soundspeed2_nbq(i,j)*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k)  &
                         ) &
                         * Hzr_half_nbq_inv(i,j,k) 
 # else
 !              FC(i,k)=  soundspeed2_nbq*(rho_nbq(i,j,k)- dtnbq * thetadiv_nbq(i,j,k)   & !XXX5
 !                       * Hzr_half_nbq_inv(i,j,k) )
-               FC(i,k)=  (soundspeed2_nbq*rho_nbq(i,j,k) &
-              - (soundspeed2_nbq*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k)  &
+               FC(i,k)=  (soundspeed2_nbq(i,j)*rho_nbq(i,j,k) &
+              - (soundspeed2_nbq(i,j)*dtnbq+visc2_nbq) * thetadiv_nbq(i,j,k)  &
                         ) &
                         * Hzr_half_nbq_inv(i,j,k) 
 # endif
@@ -991,7 +993,7 @@
 !---------------------------
 
 !.......Comptuts coef.
-        cff1=1./(dtnbq*(soundspeed2_nbq*dtnbq+visc2_nbq)) 
+        cff1=1./(dtnbq*(soundspeed2_nbq(1,1)*dtnbq+visc2_nbq)) 
 
         do j=Jstr_nh,Jend_nh
 

@@ -124,7 +124,7 @@
 #  define rw_nbq_avg1 rw_nbq_ext
 # endif
 !
-#ifndef NBQ_MASS
+#if defined NBQ_MASS && defined NBQ_ZETAW
 #  define Hzr_half_nbq Hz_half_nbq
 #endif
 !
@@ -216,7 +216,7 @@
 !
 !  Set lateral boundary conditions for Hz_half
 !
-#  ifdef NBQ_MASS
+#  if defined NBQ_MASS || !defined NBQ_ZETAW
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
