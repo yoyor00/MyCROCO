@@ -254,6 +254,11 @@ C$    trd=omp_get_thread_num()
 #   ifdef MASKING
           vbar(i,Jstr,knew)=vbar(i,Jstr,knew)*vmask(i,Jstr)
 #   endif
+#   ifdef NBQ_ZETAW
+          DV_nbq(i,Jstr)=vbar(i,Jstr,knew)
+     &          *0.5*(H(i,Jstr  )+zeta(i,Jstr  ,knew)
+     &              + H(i,Jstr-1)+zeta(i,Jstr-1,knew))
+#   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                           Southern edge Specified BC
@@ -410,6 +415,11 @@ C$    trd=omp_get_thread_num()
      &                            ) )  !*grad(i,Jend+1)
 #   ifdef MASKING
           vbar(i,Jend+1,knew)=vbar(i,Jend+1,knew)*vmask(i,Jend+1)
+#   endif
+#   ifdef NBQ_ZETAW
+          DV_nbq(i,Jend+1)=vbar(i,Jend+1,knew)
+     &          *0.5*(H(i,Jend+1)+zeta(i,Jend+1,knew)
+     &              + H(i,Jend  )+zeta(i,Jend  ,knew))
 #   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED

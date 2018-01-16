@@ -242,12 +242,7 @@ c          endif
           endif
   
           ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr,j,kstp)
-!#   if defined NBQ_GRIDEXT || !defined NBQ_ZETAW
      &                                    +cx*ubar(Istr+1,j,kstp)
-!#   else
-!     &                                    +cx*DU_nbq(Istr+1,j)
-!     &                        /(H(Istr+1,j)+zeta(Istr+1,j,knew))
-!#   endif
 #   ifdef M2_FRC_BRY
      &                                           +ubarbry_west(j)
 #   elif defined M2CLIMATOLOGY
@@ -434,12 +429,7 @@ c          endif
           endif
   
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
-!#   if defined NBQ_GRIDEXT || !defined NBQ_ZETAW
      &                                        +cx*ubar(Iend,j,kstp)
-!#   else
-!     &                             +cx*DU_nbq(Iend,j)
-!     &                        /(H(Iend,j)+zeta(Iend,j,knew))
-!#   endif
 #   ifdef M2_FRC_BRY
      &                                             +ubarbry_east(j)
 #   elif defined M2CLIMATOLOGY
