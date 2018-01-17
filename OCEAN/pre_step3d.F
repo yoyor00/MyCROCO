@@ -216,6 +216,7 @@
 !
 !  Set lateral boundary conditions for Hz_half
 !
+#ifdef NBQ
 #  if defined NBQ_MASS || !defined NBQ_ZETAW
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
@@ -276,6 +277,7 @@
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr_half_nbq(START_2D_ARRAY,1))
 #  endif
+#endif   
 #endif   
 
 !
