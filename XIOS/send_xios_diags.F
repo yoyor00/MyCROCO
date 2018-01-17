@@ -320,7 +320,7 @@
 #  ifdef VADV_ADAPT_IMP
      &                    +   Wi(i,j,k)
 #  endif                  
-     &                           ) *pm(i,j)*pn(i,j)
+     &                           ) *pm(i,j)*pn(i,j) 
 #  ifdef NBQ_MASS
      &                         /rho_nbq_avg1(i,j,k)
 #  endif
@@ -339,6 +339,8 @@
          workr(i,j,k) = rhp_nbq_a(l_nbq)
       enddo
       call xios_send_field("rho_nbq",workr)
+#else
+      call xios_send_field("rho_nbq",rho_nbq)
 #endif
 
 #  endif
