@@ -124,7 +124,7 @@
 #  define rw_nbq_avg1 rw_nbq_ext
 # endif
 !
-#if defined NBQ_MASS && defined NBQ_ZETAW
+#if !defined NBQ_MASS && defined NBQ_ZETAW
 #  define Hzr_half_nbq Hz_half_nbq
 #endif
 !
