@@ -306,8 +306,6 @@ C$    trd=omp_get_thread_num()
 #define rzetaSA VFx
       if (iic==1.and.iif==1) then
 
-        if (mynode==0) write (6,*) "Initializations in step3d_fast."
-         
         do k=1,N
           do j=Jstr-1,Jend+1
           do i=Istr-1,iend+1
