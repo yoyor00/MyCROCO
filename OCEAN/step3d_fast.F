@@ -304,6 +304,74 @@ C$    trd=omp_get_thread_num()
 #define rzeta  UFe
 #define rzeta2  VFe
 #define rzetaSA VFx
+      if (iic==1.and.iif==1) then
+
+        if (mynode==0) write (6,*) "Initializations in step3d_fast."
+         
+        do k=1,N
+          do j=Jstr-1,Jend+1
+          do i=Istr-1,iend+1
+#ifdef NBQ_MASS
+              qdmu_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i-1,j,k))/rho0)
+     &              *0.5*u(i,j,k,nrhs)*(hz(i,j,k)+hz(i-1,j,k))
+#else
+              qdmu_nbq(i,j,k)=0.5*u(i,j,k,nrhs)*(hz(i,j,k)+hz(i-1,j,k))
+#endif
+          enddo
+         enddo
+        enddo
+
+        do k=1,N
+          do j=Jstr-1,Jend+1
+          do i=Istr-1,iend+1
+#ifdef NBQ_MASS
+              qdmv_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i,j-1,k))/rho0) 
+     &              *0.5*v(i,j,k,nrhs)*(hz(i,j,k)+hz(i,j-1,k))
+#else
+              qdmv_nbq(i,j,k)=0.5*v(i,j,k,nrhs)*(hz(i,j,k)+hz(i,j-1,k))
+#endif
+          enddo
+         enddo
+        enddo
+
+        do k=1,N-1
+          do j=Jstr-1,Jend+1
+          do i=Istr-1,iend+1
+#ifdef NBQ_MASS
+               qdmw_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0) 
+     &            *0.5*wz(i,j,k,nrhs)*(hz(i,j,k)+hz(i,j,k+1))
+#else
+              qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*(hz(i,j,k)+hz(i,j,k+1))
+#endif
+          enddo
+         enddo
+        enddo
+        k=0 
+          do j=Jstr-1,Jend+1
+          do i=Istr-1,iend+1
+#ifdef NBQ_MASS
+            qdmw_nbq(i,j,k)=(1.+rho(i,j,k+1)/rho0) 
+     &            *0.5*wz(i,j,k,nrhs)*hz(i,j,k+1)
+#else
+            qdmw_nbq(i,j,k)= 0.5*wz(i,j,k,nrhs)*hz(i,j,k+1)
+#endif
+          enddo
+        enddo
+        k=N 
+          do j=Jstr-1,Jend+1
+          do i=Istr-1,iend+1
+#ifdef NBQ_MASS
+            qdmw_nbq(i,j,k)=(1.+rho(i,j,k)/rho0) 
+     &           *0.5*wz(i,j,k,nrhs)*hz(i,j,k)
+#else
+            qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*hz(i,j,k)
+#endif
+          enddo
+        enddo
+
+      endif
+
+
 
 !
 !======================================================================
@@ -320,10 +388,10 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef NBQ_NODS
 #  if defined NBQ_IMP && defined NBQ_ZETAW
-#   define NSTEP_DS mod(iic,1000)==1.and.iif==1
+#   define NSTEP_DS mod(iic,1)==1.and.iif==1
 !#   define NSTEP_DS mod(iic,10)==1
 #  else
-#   define NSTEP_DS mod(iic,200)==1.and.iif==1
+#   define NSTEP_DS mod(iic,1)==1.and.iif==1
 #  endif
 # endif
 !
