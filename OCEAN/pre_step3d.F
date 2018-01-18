@@ -201,7 +201,7 @@
 # endif     
      &                                                       )
 
-# ifdef NBQ_MASS
+# if defined NBQ && defined NBQ_MASS
             Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
      &                         /(rho_nbq_avg1(i,j,k))
 #  endif
@@ -277,7 +277,7 @@
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr_half_nbq(START_2D_ARRAY,1))
 #  endif
-#endif   
+# endif
 #endif   
 
 !
