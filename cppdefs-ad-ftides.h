@@ -58,7 +58,7 @@
 # undef BENGUELA_LR
                       /* Parallelization */
 # undef  OPENMP
-# undef  MPI
+# define  MPI
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY

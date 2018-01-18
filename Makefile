@@ -157,7 +157,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F step.F step2d.F diag.F v2dbc.F u2dbc.F exchange.F
+ADJ_SRCS=cost_fun.F step.F step2d.F diag.F v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o
@@ -171,7 +171,7 @@ TGT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 #
 # Everything
 # ==========
-all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt
+all: tools depend $(SBIN) $(SBIN)_adj
 
 #
 # Executables files.
@@ -300,7 +300,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET)
+	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
@@ -309,7 +309,7 @@ main_adj.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS)
-	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET)
+	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich
 
 # Special treatment for barrier function:
 # THERE SHALL BE NO OPTIMIZATION HERE!!!!
