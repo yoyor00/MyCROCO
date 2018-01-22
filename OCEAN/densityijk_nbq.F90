@@ -67,7 +67,7 @@
 !  and time filter, ready for external mode
 !**********************************************************************
 #ifdef NBQ_ZETAW
-        rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew2)=0.
+        rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0.
 #else
         rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0.
 #endif 
@@ -76,7 +76,7 @@
            do j=jstrq_nh-1,jendq_nh+1
              do i=istrq_nh-1,iendq_nh+1
 #ifdef NBQ_ZETAW
-               rhobar_nbq(i,j,knew2)= rhobar_nbq(i,j,knew2) + rho_nbq(i,j,k) &  !XXX1
+               rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k) &  !XXX1
                              +rho(i,j,k)/rho0*hzr(i,j,k)
 #else
                rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew) + rho_nbq(i,j,k)  !XXX1
@@ -92,7 +92,7 @@
          do j=jstrq_nh-1,jendq_nh+1
            do i=istrq_nh-1,iendq_nh+1
 #  ifdef NBQ_ZETAW
-             rhobar_nbq(i,j,knew2) = 1.+(rhobar_nbq(i,j,knew2)) & 
+             rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq(i,j,knew)) & 
                 / (z_w(i,j,N)-z_w(i,j,0))
 #  else
              rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq_int(i,j)+rhobar_nbq(i,j,knew)) & 
@@ -109,7 +109,9 @@
 
 !c LAURENT: the two next exchanges should not be needed
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew2))   ! TBD
+#ifdef ZETAW
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew))   ! TBD
+#endif
          call exchange_r3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
                                 ,rho_nbq_ext(START_2D_ARRAY,1))
 # endif

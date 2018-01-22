@@ -167,7 +167,16 @@
 #       define NBQ_TRACERS
 #       define NBQ_NODS
 #endif
-
+#ifndef NBQ_ZETAW
+#       undef NBQ_MASS
+#       undef NBQ_DTDRHO2
+#       undef NBQ_DTDRHO2B
+#       undef NBQ_GRIDEXT
+#       undef NBQ_ZETAEXP
+#       undef NBQ_ZETAREDIAG
+#       undef NBQ_TRACERS
+#       define NBQ_NODS
+#endif
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED

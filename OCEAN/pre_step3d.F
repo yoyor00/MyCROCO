@@ -123,10 +123,14 @@
 #  define rv_nbq_avg1 rv_nbq_ext
 #  define rw_nbq_avg1 rw_nbq_ext
 # endif
-!
-#if !defined NBQ_MASS && defined NBQ_ZETAW
-#  define Hzr_half_nbq Hz_half_nbq
-#endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!   Caution : version NBQ_MASS && ZETA2D not available
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# if !defined NBQ_ZETAW 
+#      define  Hzr_half_nbq Hz_half
+# endif
+
 !
 
 !
@@ -201,10 +205,10 @@
 # endif     
      &                                                       )
 
-# if defined NBQ && defined NBQ_MASS
-            Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
-     &                         /(rho_nbq_avg1(i,j,k))
-#  endif
+!# if defined NBQ && defined NBQ_MASS && !defined NBQ_ZETAW
+!           Hzr_half_nbq(i,j,k)=Hz_half(i,j,k)
+!    &                         /(rho_nbq_avg1(i,j,k))
+!#  endif
 
           enddo
         enddo
@@ -216,9 +220,8 @@
 !
 !  Set lateral boundary conditions for Hz_half
 !
-#ifdef NBQ
-#  if defined NBQ_MASS || !defined NBQ_ZETAW
-#  ifndef EW_PERIODIC
+#if defined NBQ && !defined NBQ_ZETAW
+# ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
           do j=Jstr,Jend
@@ -233,8 +236,8 @@
           enddo
         enddo
       endif
-#  endif
-#  ifndef NS_PERIODIC
+# endif
+# ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=Istr,Iend
@@ -249,8 +252,8 @@
           enddo
         enddo
       endif
-#  endif
-#  ifndef EW_PERIODIC
+# endif
+# ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=1,N
           Hzr_half_nbq(0,0,k)=Hzr_half_nbq(1,1,k)
@@ -272,11 +275,10 @@
      &                     Hzr_half_nbq(LOCALLM,LOCALMM,k)
         enddo
       endif
-#  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr_half_nbq(START_2D_ARRAY,1))
-#  endif
 # endif
 #endif   
 
@@ -360,50 +362,6 @@
 !        qdmw_nbq(i,j,0)=wz(i,j,0,nstp)*0.5*(Hz(i,j,1))
 !      enddo
 !      enddo
-#else
-!
-!  Compute other vertical grid variables at n+1/2
-!
-!      do j=jmin,jmax
-!        do i=imin,imax
-!           z_w(i,j,0)=-h(i,j)
-!           z_r(i,j,1)=z_w(i,j,0)
-!     &                        +0.5*Hz(i,j,1)
-!!          Hz_r(i,j,0  )=0.
-!!          Hz_r(i,j,N+1)=0.
-!           z_w(i,j,1)   =z_w(i,j,0)+Hz(i,j,1)
-!        enddo
-!      enddo
-!      do k=2,N
-!        do j=jmin,jmax
-!          do i=imin,imax
-!            z_w(i,j,k)=z_w(i,j,k-1)+Hz(i,j,k)
-!            z_r(i,j,k)=z_r(i,j,k-1)
-!     &                 +0.5*(Hz(i,j,k)+Hz(i,j,k-1))
-!          enddo
-!        enddo
-!      enddo
-!	  
-!      do k=1,N-1
-!        do j=jmin,jmax
-!          do i=imin,imax
-!            Hzw_half_nbq(i,j,k)=z_r(i,j,k+1)-z_r(i,j,k)
-!          enddo
-!        enddo
-!      enddo
-!      
-!      do j=jmin,jmax
-!        do i=imin,imax
-!          Hzw_half_nbq(i,j,0  )=z_r(i,j,1)-z_w(i,j,0)
-!          Hzw_half_nbq(i,j,N  )=z_w(i,j,N)-z_r(i,j,N)
-!        enddo
-!      enddo    
-!
-!!      do j=Jstr-1,Jend+1
-!!      do i=Istr-1,Iend+1
-!!        qdmw_nbq(i,j,0)=wz(i,j,0,nstp)*0.5*(Hz(i,j,1))
-!!      enddo
-!!      enddo
 #  endif /* NBQ_ZETAW */
 
 !

@@ -92,8 +92,6 @@ C$    integer omp_get_thread_num
 !
 #ifdef NBQ_ZETAW
       if (kbak2==0) kbak2=knew
-      if (kstp2==0) kstp2=knew
-      if (knew2==0) knew2=knew
 #endif
       if (iic.eq.0) then  ! During initialization and /or restart: copy initial
         do j=J_RANGE      ! free surface field into array for holding fast-time
@@ -206,13 +204,13 @@ C$    integer omp_get_thread_num
 
 !#  ifndef NBQ_MASS
 #   ifdef NBQ_ZETAW
-            zetatmp=zeta(i,j,knew2)
+            zetatmp=zeta(i,j,knew)
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
 !#  else
 !#   ifdef NBQ_ZETAW
-!            zetatmp=zeta(i,j,knew2)
+!            zetatmp=zeta(i,j,knew)
 !#   else
 !            zetatmp=Zt_avg1(i,j)
 !     &              /rhobar_nbq_avg1(i,j)-h(i,j)

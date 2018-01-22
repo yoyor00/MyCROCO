@@ -40,7 +40,8 @@ include Makedefs
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
-	step2d.F step3d_fast.F u2dbc.F		v2dbc.F		zetabc.F\
+	step2d.F 	step3d_fast_zetaw.F		step3d_fast_zeta2d.F\
+ 	u2dbc.F		v2dbc.F		zetabc.F\
 	obc_volcons.F\
 \
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\

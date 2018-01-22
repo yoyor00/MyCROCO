@@ -175,7 +175,7 @@
 # endif
   
 !**********************************************************************
-# ifdef NBQ_MASS
+# if defined NBQ_MASS && !defined NBQ_ZETAW 
        real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
 # endif
@@ -224,8 +224,8 @@
       common /nbq_umean/umean_nbq
       real vmean_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vmean/vmean_nbq
-      integer :: knew2,kstp2,kbak2,kold2
-      common /gridext1/knew2,kstp2,kbak2,kold2   
+      integer :: kbak2,kold2
+      common /gridext1/kbak2,kold2   
       real cff4
       common /com_cff4/ cff4
       real cff5
@@ -240,8 +240,6 @@
       common /com_cff9/ cff9
       real cff10
       common /com_cff10/ cff10
-      integer flag_grid
-      common /grid_flag/ flag_grid
       integer IstrU2,JstrV2
       integer IstrR2,IendR2
       integer JstrR2,JendR2
