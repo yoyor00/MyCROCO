@@ -323,6 +323,12 @@
                 dum_s=dum_s*Hzu_half_qdmu(i,j,k)
                 qdmu_nbq(i,j,k) = qdmu_nbq(i,j,k) + dtnbq * ( dum_s + ru_int_nbq(i,j,k))   
 
+#ifdef NBQ_NUDGING
+             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j))  &
+             +u(i,j,k,nrhs)*hzu_half_qdmu(i,j,k) &
+             * nudg_coef_nbq(i,j)
+#endif
+
               enddo
             enddo
 
@@ -376,6 +382,13 @@
                 
                 dum_s=dum_s*Hzv_half_qdmv(i,j,k)
                 qdmv_nbq(i,j,k) = qdmv_nbq(i,j,k) + dtnbq * ( dum_s + rv_int_nbq(i,j,k))    
+
+#ifdef NBQ_NUDGING
+             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j)) &
+             +v(i,j,k,nrhs)*hzv_half_qdmv(i,j,k) & 
+             * nudg_coef_nbq(i,j)
+#endif
+
               enddo
             enddo
           endif
@@ -430,8 +443,15 @@
 #ifdef MASKING
                qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #endif            
+# ifdef NBQ_NUDGING
+             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j)) &
+              +wz(i,j,k,nrhs)*hzw_half_nbq(i,j,k) &
+              * nudg_coef_nbq(i,j)
+# endif
+
             enddo             
           enddo
+
           k=N
           do i=Istr_nh,Iend_nh                                                               
                dum_s =   thetadiv_nbq(i,j,N)                              
@@ -440,6 +460,13 @@
 #ifdef MASKING
                 qdmw_nbq(i,j,N) = qdmw_nbq(i,j,N) * rmask(i,j) 
 #endif               
+
+# ifdef NBQ_NUDGING
+             qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-nudg_coef_nbq(i,j)) &
+              +wz(i,j,N,nrhs)*hzw_half_nbq(i,j,N) &
+              * nudg_coef_nbq(i,j)
+# endif
+
           enddo     
         		   
 ! Bottom boundary:        
@@ -1029,10 +1056,23 @@
 !..........Solves tri-diag system:
            do i=Istr_nh,Iend_nh
              qdmw_nbq(i,j,N)=DC(i,k)           
+
+# ifdef NBQ_NUDGING
+             qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*(1.-nudg_coef_nbq(i,j)) &
+              +wz(i,j,N,nrhs)*hzw_half_nbq(i,j,N) &
+              * nudg_coef_nbq(i,j)
+# endif
+
            enddo
            do k=N-1,1,-1
              do i=Istr_nh,Iend_nh
                qdmw_nbq(i,j,k)=DC(i,k)-CF(i,k)*qdmw_nbq(i,j,k+1)
+# ifdef NBQ_NUDGING
+             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j)) &
+              +wz(i,j,k,nrhs)*hzw_half_nbq(i,j,k) &
+              * nudg_coef_nbq(i,j)
+# endif
+
              enddo            
            enddo                        
         enddo    
@@ -1080,6 +1120,12 @@
 # else
           rho_nbq(i,j,k) = rho_nbq(i,j,k)  - dtnbq * thetadiv_nbq(i,j,k) *Hzr_half_nbq_inv(i,j,k) !XXX2
 # endif
+
+#ifdef NBQ_NUDGING
+             rho_nbq(i,j,k)=rho_nbq(i,j,k)*(1.-nudg_coef_nbq(i,j)) &
+              +0. * nudg_coef_nbq(i,j)
+#endif
+
         enddo
         enddo
         enddo
