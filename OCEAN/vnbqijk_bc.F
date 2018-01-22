@@ -240,9 +240,9 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do i=Istr,Iend
                qdmv_nbq(i,Jstr,k)=qdmv_nbq(i,Jstr,k)-sum_o(i,Jstr)
      &                  /float(N)
-     &                 +vbar(i,Jstr,kstp)   
-     &                      *0.5*(Hz(i,Jstr,k)+ Hz(i,Jstr-1,k))
-     &                                             
+     &                +DV_nbq(i,Jstr)/float(N)
+!     &                 +vbar(i,Jstr,kstp)   
+!     &                      *0.5*(Hz(i,Jstr,k)+ Hz(i,Jstr-1,k))                                             
           enddo
         enddo
 
@@ -399,9 +399,10 @@ c        call vnbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
           do i=Istr,Iend
                qdmv_nbq(i,Jend+1,k)=qdmv_nbq(i,Jend+1,k)-sum_o(i,Jend+1)
      &                  /float(N)
-     &                 +vbar(i,Jend+1,kstp)   
-     &                      *0.5*(Hz(i,Jend+1,k)+ Hz(i,Jend,k))
-     &                                             
+     &                  +DV_nbq(i,Jend+1)/float(N)
+!     &                 +vbar(i,Jend+1,kstp)   
+!     &                      *0.5*(Hz(i,Jend+1,k)+ Hz(i,Jend,k))
+!     &                                             
           enddo
         enddo
       

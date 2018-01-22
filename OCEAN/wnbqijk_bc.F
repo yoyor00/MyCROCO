@@ -207,7 +207,6 @@
           do j=Jstr,Jend
 !           qdmw_nbq(Istr-1,j,k)=qdmw_nbq(Istr,j,k)
 !    &                                     *rmask(Istr,j)
-            if (k.lt.N) then
              qdmw_nbq(Istr-1,j,k)=wz(Istr-1,j,k,nrhs)
      &          *hzw_half_nbq(istr-1,j,k)
 #    ifdef MASKING
@@ -216,26 +215,6 @@
 #    ifdef WET_DRY
      &                                 *rmask_wet(Istr,j)
 #    endif
-!            do i=Istr,Istr+10
-!            qdmw_nbq(I,j,k)=qdmw_nbq(i,j,k)
-!     &            -0.01*real(istr+10-i)**2*(qdmw_nbq(I,j,k)
-!     &   -wz(I,j,k,nnew)*hzw_half_nbq(I,j,k))/100.
-!          enddo
-            else
-             qdmw_nbq(Istr-1,j,k)=wz(Istr-1,j,k,nrhs)
-     &          *hzw_half_nbq(istr-1,j,k)
-#    ifdef MASKING
-     &                                     *rmask(Istr,j)
-#    endif
-#    ifdef WET_DRY
-     &                                 *rmask_wet(Istr,j)
-#    endif
-!            do i=Istr,Istr+10
-!            qdmw_nbq(I,j,k)=qdmw_nbq(i,j,k)
-!     &            -0.01*real(istr+10-i)**2*(qdmw_nbq(I,j,k)
-!     &   -wz(I,j,k,nnew)*hzw_half_nbq(I,j,k))/100.
-!          enddo
-            endif
           enddo
         enddo
 #   endif
@@ -360,7 +339,6 @@
           do j=Jstr,Jend
 !           qdmw_nbq(Iend+1,j,k)=qdmw_nbq(Iend,j,k)
 !    &                                   *rmask(Iend+1,j)
-            if (k.lt.N) then
              qdmw_nbq(Iend+1,j,k)=wz(Iend+1,j,k,nrhs)
      &          *hzw_half_nbq(Iend+1,j,k)
 #    ifdef MASKING
@@ -369,28 +347,6 @@
 #    ifdef WET_DRY
      &                               *rmask_wet(Iend+1,j)
 #    endif
-!              do i=Iend-9,Iend
-!             qdmw_nbq(I,j,k)=qdmw_nbq(I,j,k)
-!     &            -0.01*real(i-Iend+9)**2*(qdmw_nbq(I,j,k)
-!     &            -wz(I,j,k,nnew)*hzw_half_nbq(I,j,k))/100.
-!              enddo
-
-
-            else
-             qdmw_nbq(Iend+1,j,k)=wz(Iend+1,j,k,nrhs)
-     &          *hzw_half_nbq(Iend+1,j,k)
-#    ifdef MASKING
-     &                                   *rmask(Iend+1,j)
-#    endif
-#    ifdef WET_DRY
-     &                               *rmask_wet(Iend+1,j)
-#    endif
-!              do i=Iend-9,Iend
-!             qdmw_nbq(I,j,k)=qdmw_nbq(i,j,k)
-!     &            -0.01*real(i-Iend+9)**2*(qdmw_nbq(I,j,k) 
-!     &            -wz(I,j,k,nnew)*hzw_half_nbq(I,j,k))/100.
-!              enddo
-            endif
           enddo
         enddo
 #   endif
@@ -514,7 +470,9 @@
 !                                           ======== ==== ======== ==
         do k=0,N
           do i=Istr,Iend
-            qdmw_nbq(i,Jstr-1,k)=qdmw_nbq(i,Jstr,k)
+!            qdmw_nbq(i,Jstr-1,k)=qdmw_nbq(i,Jstr,k)
+             qdmw_nbq(i,Jstr-1,k)=wz(i,Jstr-1,k,nrhs)
+     &          *hzw_half_nbq(i,Jstr-1,k)
 #    ifdef MASKING
      &                                   *rmask(i,Jstr-1)
 #    endif
@@ -641,7 +599,9 @@
           do i=Istr,Iend
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
-            qdmw_nbq(i,Jend+1,k)=qdmw_nbq(i,Jend,k)
+!            qdmw_nbq(i,Jend+1,k)=qdmw_nbq(i,Jend,k)
+             qdmw_nbq(i,Jend+1,k)=wz(i,Jend+1,k,nrhs)
+     &          *hzw_half_nbq(i,Jend+1,k)
 #    ifdef MASKING
      &                                   *rmask(i,Jend+1)
 #    endif
