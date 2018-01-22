@@ -77,10 +77,12 @@
 !      call unbqijk_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
+#ifdef NBQ_ZETAW
 # if defined NBQ_FRC_BRY || defined NBQNUDGING
       tau_in=dt*tauM_in
       tau_out=dt*tauM_out
 # endif
+#endif
 !
 !# define nnew 2
 !# define nstp 1
