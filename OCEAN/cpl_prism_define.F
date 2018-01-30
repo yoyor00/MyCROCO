@@ -72,9 +72,9 @@
 !------------------------------------------------------------------
 !     Set the ROMS grid definition to PRISM system
 !------------------------------------------------------------------
-
-      CALL cpl_prism_grid(oasis_part_id)
-
+     if (mynode.eq.0) then
+      CALL cpl_prism_grid
+     endif
 !------------------------------------------------------------------
 !     Set the WRF exchange variables definition to PRISM system
 !------------------------------------------------------------------
@@ -104,10 +104,13 @@
 !------------------------------------------------------------------
 !     SST
       ssnd_clname(1) = 'SRMSSTV'//clevel
+!     SSH
+      ssnd_clname(1) = 'SRMSSHV'//clevel
 !     UOCE
       ssnd_clname(2) = 'SRMUOCE'//clevel
 !     VOCE
       ssnd_clname(3) = 'SRMVOCE'//clevel
+
 !------------------------------------------------------------------
 !     Received
 !------------------------------------------------------------------
@@ -123,7 +126,35 @@
       srcv_clname(5) = 'RRMTAUY'//clevel
 !     wind tress module [N/m2]
       srcv_clname(6) = 'RRMTAUM'//clevel
-      
+
+
+!     mask to manage wet-drying[]
+      srcv_clname(1) = 'RRM_DRY'//clevel
+!     mean Wave Period [s]
+      srcv_clname(1) = 'RRMT0M1'//clevel
+!     significant wave height [m]
+      srcv_clname(2) = 'RRM__HS'//clevel
+!     cos of mean wave direction []
+      srcv_clname(2) = 'RRMCDIR'//clevel
+!     sin of mean wave direction []
+      srcv_clname(2) = 'RRMSDIR'//clevel
+!     bhd: wave induced Bernoulli head pressure [N.m-1]
+      srcv_clname(2) = 'RRM_BHD'//clevel
+!     wave_ubr: rms amplitude of orbital bottom velocity of the waves [m.s-1]
+      srcv_clname(2) = 'RRM_UBR'//clevel
+!     wave_phioc :  wave to ocean TKE flux  [W.m-2]
+      srcv_clname(2) = 'RRM_FOC'//clevel
+!     wave_wlm :  wave mean wave length  [m]
+      srcv_clname(2) = 'RRM__LM'//clevel      
+!     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(2) = 'RRMTWOX'//clevel   
+!     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(2) = 'RRMTWOY'//clevel   
+!     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
+      srcv_clname(2) = 'RRMTWSX'//clevel   
+!     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
+      srcv_clname(2) = 'RRMTWSY'//clevel   
+
       DO ja = 0, nmaxatm
 
          IF ( ja == 0 ) THEN   ;   catm = ""
