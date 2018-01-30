@@ -200,7 +200,7 @@
 !     avoid slight negative values (after interpolation for example)...
                where ( smstr < 0. )  
                   smstr = 0.
-               end whe
+               end where
             endif
          end if
 #endif
