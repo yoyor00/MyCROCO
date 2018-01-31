@@ -93,7 +93,11 @@
       real qdmw_nbq(GLOBAL_2D_ARRAY,0:N)
       common/nbq_qdmw_nbq/qdmw_nbq
        
+#ifdef MPI       
       real thetadiv_nbq(GLOBAL_2D_ARRAY,0:N)
+#else
+      real thetadiv_nbq(GLOBAL_2D_ARRAY_EXT_NBQ,0:N)
+#endif      
       common/nbq_thetadiv_nbq/thetadiv_nbq
       real thetadiv2_nbq(GLOBAL_2D_ARRAY,0:N)
       common/nbq_thetadiv2_nbq/thetadiv2_nbq

@@ -312,7 +312,7 @@ C$    trd=omp_get_thread_num()
 !
         do k=1,N
           do j=Jstr-1,Jend+1
-          do i=Istr-1,iend+1
+          do i=Istr,iend+1
 #ifdef NBQ_MASS
               qdmu_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i-1,j,k))/rho0)
      &              *0.5*u(i,j,k,nrhs)*(hz(i,j,k)+hz(i-1,j,k))
@@ -324,7 +324,7 @@ C$    trd=omp_get_thread_num()
         enddo
 
         do k=1,N
-          do j=Jstr-1,Jend+1
+          do j=Jstr,Jend+1
           do i=Istr-1,iend+1
 #ifdef NBQ_MASS
               qdmv_nbq(i,j,k)=(1.+0.5*(rho(i,j,k)+rho(i,j-1,k))/rho0) 
