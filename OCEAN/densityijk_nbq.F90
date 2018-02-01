@@ -111,6 +111,8 @@
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #ifdef ZETAW
          call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew))   ! TBD
+#else
+         call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,rhobar_nbq(START_2D_ARRAY,knew))   ! TBD
 #endif
          call exchange_r3d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh &
                                 ,rho_nbq_ext(START_2D_ARRAY,1))
