@@ -50,10 +50,6 @@
 #if defined BIOLOGY && defined PISCES
           USE trcwri_pisces
 #endif
-# ifdef NBQ
-          use module_nh
-          use module_nbq
-# endif
 
 
       implicit none
@@ -64,6 +60,7 @@
 # include "ocean3d.h"
 # include "forces.h"
 # include "mixing.h"
+# include "coupling.h"
 # ifdef SEDIMENT
 #  include "sediment.h"
 # endif
@@ -230,7 +227,8 @@
 
       work2d=zeta(:,:,fast_indx_out)
       call xios_send_field("zeta",work2d)
-      call xios_send_field("ubar",ubar(:,:,fast_indx_out))
+  !   call xios_send_field("ubar",ubar(:,:,fast_indx_out))
+      call xios_send_field("ubar",DU_avg2(:,:))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 
 # ifdef MOVING_BATHY
@@ -303,9 +301,11 @@
       call xios_send_field("u",u(:,:,:,nstp))
       call xios_send_field("v",v(:,:,:,nstp)) 
 
-      call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
+     !call xios_send_field("temp",t(:,:,:,nstp,3)) 
+      call xios_send_field("temp",Hz_corr(:,:,:)) 
 #  ifdef SALINITY
-      call xios_send_field("salt",t(:,:,:,nstp,isalt))
+   !  call xios_send_field("salt",t(:,:,:,nstp,isalt))
+      call xios_send_field("salt",Hz(:,:,:))
 #  endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff

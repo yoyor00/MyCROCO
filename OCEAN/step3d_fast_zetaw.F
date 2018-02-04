@@ -119,8 +119,6 @@ C$    trd=omp_get_thread_num()
 !
 !======================================================================
 !
-      use module_nh
-      use module_nbq
 
       implicit none
 #include "param.h"

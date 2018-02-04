@@ -113,16 +113,9 @@ include Makedefs
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
-	module_nh.F90		module_nbq.F90		module_qsort.F90\
-	module_parallel_nbq.F90 module_tracetxt_out.F90	module_param.F90\
-	nump_nh.F90		mat_cont_init_nh.F90	mat_cont_nh.F90\
-	mat_mom_init_nh.F90	mat_mom_nh.F90		initial_nh.F90\
-	grid_coef_nh.F90 	ru_nbq.F90		viscous_nbq.F90\
-	step3d_fb_nbq.F90	density_nbq.F90		spkitlocal_nh.F90\
-	MPI_setup_nbq.F90	parallele_nbq.F90	output_nbq.F90\
-	implicit_nbq.F90        amub2_tri.F90	        numuvw_nh.F90\
+	module_param.F90 	initial_nh.F90\
+	grid_coef_nh.F90 	densityijk_nbq.F90        viscous_nbq.F90\
 	grid_def_nh.F90		grid_exchange.F90\
-	step3d_fbijk_nbq.F90	ruijk_nbq.F90		densityijk_nbq.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\

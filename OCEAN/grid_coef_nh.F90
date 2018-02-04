@@ -17,8 +17,8 @@
 !
 !**********************************************************************
 
-      use module_nh
-      use module_nbq
+!      use module_nh
+!      use module_nbq
 # if defined MPI && !defined NBQ_IJK
       use module_parallel_nbq, only : ierr,par,OUEST,EST
 # endif

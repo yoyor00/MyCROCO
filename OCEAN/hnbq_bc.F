@@ -52,8 +52,6 @@
 !
 # include "set_obc_definitions.h"
 !
-      USE module_nh
-      USE module_nbq
 !
       implicit none
 # include "param.h"

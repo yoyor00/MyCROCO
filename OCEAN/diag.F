@@ -27,8 +27,6 @@
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
 # if defined NBQ && defined MAX_ADV_CFL
-      use module_nh 
-      use module_nbq
 # endif
       implicit none     
 #include "param.h" 

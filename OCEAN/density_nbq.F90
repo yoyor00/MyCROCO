@@ -37,9 +37,6 @@
 !      use module_principal , only : kount0, iteration3d, rhp_t, rho, mask_t, &
 !			    dz_t, iteration2d_max_now, hz_w, iteration2d,    &
 !			    imax, jmax, kmax
-!     use module_parallele                ! #MPI#
-      use module_nh                       ! #NH#
-      use module_nbq                      ! #NBQ#
       implicit none
       integer :: icall, i,j ,k, k1,indm_d
 

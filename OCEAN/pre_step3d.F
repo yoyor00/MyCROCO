@@ -67,8 +67,6 @@
 !--------------------------------------------------------------------
 !
 #ifdef NBQ
-      use module_nh
-      use module_nbq
 #endif
       implicit none
 # include "param.h"

@@ -49,8 +49,6 @@
 !**********************************************************************
 !CXA MODULES TO ADD 
 
-      use module_nh
-      use module_nbq
 # ifdef TRACETXT
       use module_tracetxt_out
 # endif

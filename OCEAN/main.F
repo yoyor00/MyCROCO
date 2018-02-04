@@ -28,8 +28,8 @@
           USE xios          ! XIOS module
 #endif
 #ifdef NBQ
-          USE module_nh     ! NBQ modules
-          USE module_nbq
+!          USE module_nh     ! NBQ modules
+!          USE module_nbq
 #endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
