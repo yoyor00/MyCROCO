@@ -113,9 +113,9 @@ include Makedefs
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
-	module_param.F90 	initial_nh.F90\
+	module_param.F90\
 	grid_coef_nh.F90 	densityijk_nbq.F90        viscous_nbq.F90\
-	grid_def_nh.F90		grid_exchange.F90\
+	grid_def_nh.F90		grid_exchange.F90 initial_nh.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
