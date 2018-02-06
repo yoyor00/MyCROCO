@@ -1,15 +1,15 @@
 ! $Id: cpl_prism_grid.F Joris Pianezze 9 aout 2016 $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-      SUBROUTINE cpl_prism_grid()
+      SUBROUTINE cpl_prism_grid(id_partition)
 #include "cppdefs.h"
 !     IMPLICIT NONE
 #if defined OA_COUPLING || defined OW_COUPLING
@@ -23,6 +23,8 @@
 #include "scalars.h"
 #include "mpi_roms.h"
 #include "set_global_definitions.h"
+!
+      integer, intent(in) :: id_partition
 !
       integer error_flg
 !
@@ -45,13 +47,13 @@
 !     !             ***  ROUTINE cpl_prism_grid  ***
 !     !
 !     ! ** Purpose :   Define grids/areas/corners/masks information for ocean
-!     !                exchange between ROMS and COUPLER. (OASIS3-MCT software)
+!     !                exchange between CROCO and COUPLER. (OASIS3-MCT software)
 !     !
 !     ! ** Method  :   OASIS3 MPI communication
 !     !--------------------------------------------------------------------
 
 !------------------------------------------------------------------
-!     Set the ROMS grid definition to PRISM system
+!     Set the CROCO grid definition to PRISM system
 !------------------------------------------------------------------
 !
 !    Need to use oasis3_mct_v3 !
@@ -62,18 +64,21 @@
 !------------------------------------------------------------------
 !     -- t-grid --
       CALL prism_write_grid('ocnt',LLm,MMm,
-     &           lonr(1:LLm,1:MMm),latr(1:LLm,1:MMm))
+     &           lonr(1:Lmmpi,1:Mmmpi),latr(1:Lmmpi,1:Mmmpi),
+     &           id_partition)
 !     -- u-grid --
       CALL prism_write_grid('ocnu',LLm,MMm,
-     &           lonu(1:LLm,1:MMm),latu(1:LLm,1:MMm))
+     &           lonu(1:Lmmpi,1:Mmmpi),latu(1:Lmmpi,1:Mmmpi),
+     &           id_partition)
 !     -- v-grid --
       CALL prism_write_grid('ocnv',LLm,MMm,
-     &           lonv(1:LLm,1:MMm),latv(1:LLm,1:MMm))
+     &           lonv(1:Lmmpi,1:Mmmpi),latv(1:Lmmpi,1:Mmmpi),
+     &           id_partition)
 
 ! Model grid cell corner longitudes and latitudes
 !------------------------------------------------------------------
-      DO i=1, LLm
-        DO j=1, MMm
+      DO i=1, Lmmpi
+        DO j=1, Mmmpi
 !
 !       -- t-grid --
 !
@@ -130,38 +135,44 @@
       ENDDO
 !
       CALL prism_write_corner('ocnt', LLm, MMm, 4,
-     &             clonr(1:LLm,1:MMm,:), clatr(1:LLm,1:MMm,:))
+     &             clonr(1:Lmmpi,1:Mmmpi,:), clatr(1:Lmmpi,1:Mmmpi,:),
+     &             id_partition)
 !
       CALL prism_write_corner('ocnu', LLm, MMm, 4,
-     &             clonu(1:LLm,1:MMm,:), clatu(1:LLm,1:MMm,:))
+     &             clonu(1:Lmmpi,1:Mmmpi,:), clatu(1:Lmmpi,1:Mmmpi,:),
+     &             id_partition)
 !
       CALL prism_write_corner('ocnv', LLm, MMm, 4,
-     &             clonv(1:LLm,1:MMm,:), clatv(1:LLm,1:MMm,:))
+     &             clonv(1:Lmmpi,1:Mmmpi,:), clatv(1:Lmmpi,1:Mmmpi,:),
+     &             id_partition)
 !
 ! Model grid cell area
 !------------------------------------------------------------------
 !     -- t-grid --
       arear(:,:)=1./(pm(:,:)*pn(:,:))
       CALL prism_write_area('ocnt', LLm, MMm,
-     &                         arear(1:LLm,1:MMm))
+     &                         arear(1:Lmmpi,1:Mmmpi),
+     &                         id_partition)
 
 !     -- u-grid --
       areau(:,:)=1./(pm(:,:)*pn(:,:))
       CALL prism_write_area('ocnu', LLm, MMm,
-     &                         areau(1:LLm,1:MMm))
+     &                         areau(1:Lmmpi,1:Mmmpi),
+     &                         id_partition)
 
 !     -- v-grid --
       areav(:,:)=1./(pm(:,:)*pn(:,:))
       CALL prism_write_area('ocnv', LLm, MMm,
-     &                         areav(1:LLm,1:MMm))
+     &                         areav(1:Lmmpi,1:Mmmpi),
+     &                         id_partition)
 
 ! Model grid mask : 0=sea / 1=land
 !------------------------------------------------------------------
       rmask_inv=0
       umask_inv=0
       vmask_inv=0
-      DO i=1, LLm
-        DO j=1, MMm
+      DO i=1, Lmmpi
+        DO j=1, Mmmpi
           IF (rmask(i,j)==0) rmask_inv(i,j)=1
           IF (umask(i,j)==0) umask_inv(i,j)=1
           IF (vmask(i,j)==0) vmask_inv(i,j)=1
@@ -170,15 +181,18 @@
 
 !     -- t-grid --
       CALL prism_write_mask('ocnt', LLm, MMm,
-     &                     rmask_inv(1:LLm,1:MMm))
+     &                     rmask_inv(1:Lmmpi,1:Mmmpi),
+     &                     id_partition)
 
 !     -- u-grid --
       CALL prism_write_mask('ocnu', LLm, MMm,
-     &                     umask_inv(1:LLm,1:MMm))
+     &                     umask_inv(1:Lmmpi,1:Mmmpi),
+     &                     id_partition)
 
 !     -- v-grid --
       CALL prism_write_mask('ocnv', LLm, MMm,
-     &                     vmask_inv(1:LLm,1:MMm))
+     &                     vmask_inv(1:Lmmpi,1:Mmmpi),
+     &                     id_partition)
       
 ! Terminate grid writing
 !------------------------------------------------------------------

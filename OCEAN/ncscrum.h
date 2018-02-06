@@ -787,7 +787,7 @@
 # ifdef BBL
       integer avgBBL(6)
 # endif
-# ifdef WKB_WWAVE
+# if defined WKB_WWAVE || defined OW_COUPLING
       integer avgWAVE(9)
 # endif
 # ifdef MRL_WCI

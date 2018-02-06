@@ -36,11 +36,9 @@
  
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3  
-       if ((iif==-1).and.(oasis_time < oasis_runtime)) then 
+       if ( (iif==-1).and.(oasis_time>=0) ) then
          print *, 'oasis time before get = ', oasis_time
-!         call cpl_prism_put (oasis_time) ! moved to the end of the step       
          call cpl_prism_get (oasis_time)
-!         oasis_time = oasis_time + dt   ! moved to the end of the step 
        endif 
 #endif /* OA_COUPLING */
 
@@ -76,12 +74,11 @@ C$OMP END PARALLEL
         nbstep3d = nbstep3d + 1
       endif
 #if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3  
-       if ((iif==-1).and.(oasis_time < oasis_runtime)) then
-         print *, 'oasis time before put = ', oasis_time
-         call cpl_prism_put (oasis_time)        
+!--Get phase of OASIS3 
+       if (iif==-1) then
+         if (oasis_time>=0) call cpl_prism_put (oasis_time)
          oasis_time = oasis_time + dt
-       endif
+       endif 
 #endif /* OA_COUPLING */
 #endif
 #ifdef ONLINE_ANA
