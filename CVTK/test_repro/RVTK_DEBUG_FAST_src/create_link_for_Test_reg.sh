@@ -9,7 +9,7 @@ dir_datafiles=$DATAWORK/CROCO_FILES_VHR_BCK
 ln -sf $dir_datafiles CROCO_FILES
 ln -sf $dir_testroot/VHR .
 ln -sf $dir_testroot/test_croco_reg.sh .
-ln -sf $dir_testroot/rvtk_REGIONAL.bash .
+ln -sf $dir_testroot/rvtk_fast_qsub_REGIONAL.bash .
 ln -sf $dir_testroot/jobcomp_rvtk.bash .
 ln -sf $dir_testroot/extract_results_croco.bash .
 

@@ -9,7 +9,7 @@ mkdir $testconf
 ./mk_TestDIR_reg.bash $testconf
 done
 #
-#gather_recap.bash 
+gather_recap.bash 
 
 exit
 

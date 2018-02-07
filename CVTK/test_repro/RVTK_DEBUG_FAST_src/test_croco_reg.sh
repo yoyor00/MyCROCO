@@ -37,5 +37,5 @@ echo Rev$numrev
 /bin/rm -f Recap_*
 touch Recap_${TEST_NAME}.git${numrev}
 
-SCRIPT_RVTK=rvtk_REGIONAL.bash
+SCRIPT_RVTK=rvtk_fast_qsub_REGIONAL.bash
 ./$SCRIPT_RVTK > Recap_${TEST_NAME}.git${numrev}
