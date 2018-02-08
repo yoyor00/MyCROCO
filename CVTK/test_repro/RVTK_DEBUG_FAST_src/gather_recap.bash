@@ -1,6 +1,7 @@
 #!/bin/bash
 #################################
 # Gather all the log file to put them in a global one
+# to have the echo on set -x
 set -x
 
 today=`date +%Y%m%d`
