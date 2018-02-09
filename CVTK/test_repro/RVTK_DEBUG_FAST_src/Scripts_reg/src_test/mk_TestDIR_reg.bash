@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[ ! -d gitinfos ] && ./git_process.bash 
+
 # Directory creation
 echo "======================================================"
 [ ! -d $1 ] && mkdir $1

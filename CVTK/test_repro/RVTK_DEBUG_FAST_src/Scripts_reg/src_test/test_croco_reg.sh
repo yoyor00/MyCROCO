@@ -10,6 +10,8 @@
 ##
 ## Get code source from jobcomp file
 ##
+
+set -x 
 sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
 sed -n '$p' tmp1 > tmp2
 eval "SOURCE_CROCO=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
