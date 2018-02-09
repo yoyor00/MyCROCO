@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#set -x
 # Directory creation
 echo "======================================================"
 [ ! -d $1 ] && mkdir $1
