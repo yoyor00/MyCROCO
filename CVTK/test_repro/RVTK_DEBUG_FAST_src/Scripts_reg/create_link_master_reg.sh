@@ -18,6 +18,9 @@ ln -sf $dir_home/../gitinfo.sh $dir_TESTROOT/.
 ln -sf $dir_home/../Log_Details $dir_TESTROOT/.
 ln -sf $dir_home/../git_process.bash $dir_TESTROOT/.
 ln -sf $dir_home/../gather_recap.bash $dir_TESTROOT/.
+ln -sf $dir_home/../jobcomp_rvtk.bash $dir_TESTROOT/.
+ln -sf $dir_home/../comp_run_*.bash $dir_TESTROOT/.
+ln -sf $dir_home/../extract_results_croco.bash $dir_TESTROOT/.
 
 # input files + namlist
 ln -sf $dir_home/../VHR $dir_TESTROOT/.

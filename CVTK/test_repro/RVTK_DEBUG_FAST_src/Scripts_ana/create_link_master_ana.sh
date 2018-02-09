@@ -33,6 +33,13 @@ ln -sf $dir_home/IGW/* $dir_TESTROOT/TEST_CASES/.
 ln -sf $dir_home/SHOREFACE/* $dir_TESTROOT/TEST_CASES/.
 ln -sf $dir_home/JET/* $dir_TESTROOT/TEST_CASES/.
 
-
 ln -sf $dir_web/Log_Summary $dir_TESTROOT/.
+
+#
+rm -Rf $dir_TESTROOT/Configure_Test ; 
+cd $dir_TESTROOT
+ln -sf Configure_Test_ana Configure_Test
+cd -
+#
+
 echo 'Well done: Finish linking'
