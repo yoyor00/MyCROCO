@@ -46,7 +46,8 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 #
 # Get updated files
 #
-#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_bak1.h.OPENMP
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev.h
+
 /bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.SERIAL
 /bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.SERIAL
 

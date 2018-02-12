@@ -3,7 +3,6 @@
 echo 'Create the link between TESTROOT . and '$PWD
 
 dir_testroot=$DATAWORK/RVTK_DEBUG_REG_DEV/TESTROOT/KTEST
-dir_datafiles=$HOME/GIT/croco/CVTK/test_repro/RVTK_DEBUG_FAST_src/
 
 #echo 'Process input file'
 ln -sf $dir_testroot/TEST_CASES .

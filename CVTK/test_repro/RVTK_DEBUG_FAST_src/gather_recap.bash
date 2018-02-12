@@ -5,7 +5,9 @@
 set -x
 
 today=`date +%Y%m%d`
-numrev=`echo BASIN/Recap_* | cut -d. -f2`
+ligne=`grep -n revision gitinfos | cut -d: -f1`
+ligne2=$((ligne + 1))
+numrev=`head -$ligne2 gitinfos | tail -1 | tr -d '\n' | tr -d ' '`
 
 for testREGO in `ls Configure_Test` ; do  
     testREG=`echo $testREGO | cut -d/ -f2-`
@@ -21,6 +23,6 @@ for i in `ls -1 Recap_*${today}.git*` ; do
 done
 cd -
 
-mv Log_Summary/Junk/gather_recap_tmp Log_Summary/gather_recap_${today}_${numrev}
-cp Log_Summary/gather_recap_${today}_${numrev} .
+mv Log_Summary/Junk/gather_recap_tmp Log_Summary/gather_recap_${today}_git${numrev}
+cp Log_Summary/gather_recap_${today}_git${numrev} .
 rm -Rf Log_Summary/Junk/*

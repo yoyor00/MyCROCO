@@ -16,6 +16,8 @@
 #--------------------------------------------------------------------
 #MPIRUN=$MPI_LAUNCH
 #echo "======== BEGIN CVTK TEST PROCEDURE ==========="
+#set -x
+
 echo "=============================================="
 echo "=> CONFIG "$mytest
 echo " "
@@ -43,7 +45,8 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 #
 # Get updated files
 #
-#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_bak1.h.OPENMP
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev.h
+
 /bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.SERIAL
 /bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.SERIAL
 
@@ -105,14 +108,11 @@ for par in SERIAL OPENMP MPI ; do
 	echo $EXAMPLE
 	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
 	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+	if [ $LIST_KEY_NEST = 'AGRIF' ]; then
+	    sed 's/'define\ \ \*AGRIF_2W'/'undef\ AGRIF_2W'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
+	    /bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+	fi
     done
-    #    #==4.3
-    #    for EXAMPLE in $LIST_KEY_PAR
-    #    do
-    #	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-    #	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
-    #    done
-    #==
 done
 
 #=====================================================================================================

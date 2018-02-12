@@ -10,16 +10,21 @@ dir_TESTROOT=$DATAWORK/RVTK_DEBUG_REG_DEV/TESTROOT/VORT/
 
 # later rm -rf $dir_TESTROOT
 mkdir $dir_TESTROOT
+
 ln -sf $dir_home/src_test/* $dir_TESTROOT/.
-ln -sf $dir_home/Configure_Test $dir_TESTROOT/.
+ln -sf $dir_home/Configure_Test_vort $dir_TESTROOT/.
 
 # common scripts and program
 ln -sf $dir_home/../gitinfo.sh $dir_TESTROOT/.
 ln -sf $dir_home/../Log_Details $dir_TESTROOT/.
 ln -sf $dir_home/../git_process.bash $dir_TESTROOT/.
 ln -sf $dir_home/../gather_recap.bash $dir_TESTROOT/.
+ln -sf $dir_home/../jobcomp_rvtk.bash $dir_TESTROOT/.
+ln -sf $dir_home/../comp_run_*.bash $dir_TESTROOT/.
+ln -sf $dir_home/../extract_results_croco.bash $dir_TESTROOT/.
 
 # input files + namlist
+
 ln -sf $dir_home/VORTEX $dir_TESTROOT/.
 ln -sf $dir_web/Log_Summary $dir_TESTROOT/.
 echo 'Well done: Finish linking'
