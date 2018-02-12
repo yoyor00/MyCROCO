@@ -482,7 +482,8 @@
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
-# define LMD_BKPP2005
+# undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth 
+                           default: lmd_bkpp1994 */
 #endif
 
 /*
