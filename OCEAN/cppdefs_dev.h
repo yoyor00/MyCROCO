@@ -482,7 +482,7 @@
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
-# define LMD_BKPP2005
+# undef LMD_BKPP2005  !<- GC : still some instabilities at depth with bkpp2005
 #endif
 
 /*
