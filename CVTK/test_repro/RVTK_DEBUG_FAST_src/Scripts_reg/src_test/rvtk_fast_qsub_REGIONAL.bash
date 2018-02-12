@@ -161,7 +161,7 @@ if [ ${FLAG_OPENMP} = 1 ]; then
     export OMP_NUM_THREADS=4
     par1='OPENMP'
     sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-    sed 's/'NPP=2'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+    sed 's/'NPP=2'/'NPP=4'/' < param_bak1.h.$par1 > param_bak2.h.$par1
     /bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
     
     sed 's/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
