@@ -23,7 +23,7 @@ ln -sf $dir_home/../comp_run_*.bash $dir_TESTROOT/.
 ln -sf $dir_home/../extract_results_croco.bash $dir_TESTROOT/.
 
 # input files + namlist
-ln -sf $dir_home/../VHR $dir_TESTROOT/.
+ln -sf $dir_home/VHR $dir_TESTROOT/.
 #ln -sf $dir_home/m $dir_TESTROOT/.
 
 ln -sf $dir_web/Log_Summary $dir_TESTROOT/.
