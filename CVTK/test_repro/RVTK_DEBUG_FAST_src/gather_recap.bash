@@ -2,8 +2,10 @@
 #################################
 # Gather all the log file to put them in a global one
 # to have the echo on set -x
-set -x
-
+#set -x
+# Use input argument as
+# gather_recap KTEST,VORT, REG
+#=================================
 today=`date +%Y%m%d`
 ligne=`grep -n revision gitinfos | cut -d: -f1`
 ligne2=$((ligne + 1))
@@ -23,6 +25,6 @@ for i in `ls -1 Recap_*${today}.git*` ; do
 done
 cd -
 
-mv Log_Summary/Junk/gather_recap_tmp Log_Summary/gather_recap_${today}_git${numrev}
-cp Log_Summary/gather_recap_${today}_git${numrev} .
+mv Log_Summary/Junk/gather_recap_tmp "Log_Summary/$1_gather_recap_${today}_git${numrev}"
+cp "Log_Summary/$1_gather_recap_${today}_git${numrev}" .
 rm -Rf Log_Summary/Junk/*
