@@ -99,15 +99,15 @@
 !     !$         WRITE(333,*) '     - Maximum value is ', MAXVAL(rcv_field)
 !     !$         WRITE(333,*) '     -     Sum value is ', SUM(rcv_field)
 !     !$         WRITE(333,*) '****************'
-        
+
       endif
 !     
-      
-#else 
+ 
+#else
 !---------------------------------------------------------------------------------------
 !     Dummy subroutine                                                           NO Coupling
 !---------------------------------------------------------------------------------------
-#endif 
+#endif
       END SUBROUTINE cpl_prism_getvar
-      
-      
+
+

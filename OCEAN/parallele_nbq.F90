@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined NBQ && defined MPI
+#if defined NBQ && defined MPI && !defined NBQ_IJK
 !------------------------------------------------------------------------------
 !                               NHOMS
 !                Non Hydrostatic Ocean Modeling System      

@@ -514,6 +514,7 @@
           enddo
         enddo
       enddo
+      
       mrho=mrho/vol
 !
 !  Make global volume average of sigma-t(T,S) ~ sigma-t(T0,S0)

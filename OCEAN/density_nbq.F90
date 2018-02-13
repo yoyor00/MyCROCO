@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
 
       subroutine density_nbq(icall)
 
@@ -37,9 +37,6 @@
 !      use module_principal , only : kount0, iteration3d, rhp_t, rho, mask_t, &
 !			    dz_t, iteration2d_max_now, hz_w, iteration2d,    &
 !			    imax, jmax, kmax
-!     use module_parallele                ! #MPI#
-      use module_nh                       ! #NH#
-      use module_nbq                      ! #NBQ#
       implicit none
       integer :: icall, i,j ,k, k1,indm_d
 
@@ -57,39 +54,12 @@
       double precision :: t1_d,t2_d
 
       if (icall.eq.20) then
-#ifndef NBQ_VOL
+#ifdef NBQ_MASS
 !
 !**********************************************************************
 !  Transfer density field to i,j,k array 
 !  and time filter, ready for external mode
 !**********************************************************************
-
-#ifdef old_version 
-       
-        rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0. 
-        work2d    (istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1)=0.
-
-        do j=jstrq_nh-1,jendq_nh+1
-        do k=1,N
-        do i=istrq_nh-1,iendq_nh+1     
-           l_nbq=ijk2lq_nh(i,j,k)
-           rho_nbq_ext(i,j,k)  = 1.D0 + (rhp_nbq_a(l_nbq)+rho(i,j,k))/rho0     
-           work2d(i,j)         = work2d(i,j)+Hzr_half_nbq(i,j,k)
-           rhobar_nbq(i,j,knew)= 1./float(N)+ rhobar_nbq(i,j,knew) &
-               +(rhp_nbq_a(l_nbq)+rho(i,j,k))/rho0*Hzr_half_nbq(i,j,k) 
-         enddo
-         enddo
-         enddo
-!
-!.......Rho0 added subsequently for added precision 
-!
-         do j=jstrq_nh-1,jendq_nh+1
-         do i=istrq_nh-1,iendq_nh+1
-           rhobar_nbq(i,j,knew) = 1.D0 + rhobar_nbq(i,j,knew)/max(work2d(i,j),1.d-30)
-         enddo
-         enddo
-#endif
-
         rhobar_nbq(istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1,knew)=0.
 !       work2d    (istrq_nh-1:iendq_nh+1,jstrq_nh-1:jendq_nh+1)=0.
 
@@ -99,8 +69,8 @@
            k     = l2kq_nh (l_nbq)                    
 !          work2d(i,j)         = work2d(i,j)+Hzr_half_nbq(i,j,k)
            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)                           &
-                     +(rhp_nbq_a(l_nbq)+rho(i,j,k))/rho0 *Hzr_half_nbq(i,j,k)
-           rho_nbq_ext(i,j,k)  = 1.+(rhp_nbq_a(l_nbq)+rho(i,j,k)  )/rho0     
+                     +(rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0) *Hzr_half_nbq(i,j,k)
+           rho_nbq_ext(i,j,k)  = 1.+rhp_nbq_a(l_nbq)+rho(i,j,k)/rho0      
          enddo
 !
 !.......Rho0 added subsequently for added precision 
@@ -119,8 +89,7 @@
 !                               ,rho_nbq_ext(START_2D_ARRAY,1))
 #endif
 
-        
-
+       
    !    rhobar_nbq=1.
    !    rho_nbq_ext=1.
 

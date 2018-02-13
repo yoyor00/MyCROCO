@@ -35,13 +35,6 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
-/*  
-   Activate the RVTK_DEBUG procedure that will compare the results
-   serial and multi-processor result by comparing binary file
-*/
-#ifndef RVTK_DEBUG
-#undef RVTK_DEBUG
-#endif
 
 /*
     Constant tracer option (for debugging)
@@ -138,18 +131,60 @@
 */
 #ifdef NBQ
 # define M2FILTER_NONE
-# undef  M2FILTER_POWER
-# undef  VAR_RHO_2D
-# undef  TRACETXT
-# undef  NBQ_OUT
+# undef M2FILTER_POWER
+# define NBQ_IJK
+# define NBQ_IMP
+# define NBQ_IMPIJK
+# define NBQ_CONS
+# define NBQ_COUPLE1
+# undef TRACETXT
 # define HZR Hzr
-# undef  OBC_NBQ
+# define NBQ_ZETAW
+/*
+======================================================================
+   Activate NBQ Precise or Performance mode ======================================================================
+*/
+#if !defined NBQ_PERF
+#define NBQ_PRECISE
+#endif
+
+#ifdef NBQ_PRECISE
+#       define NBQ_MASS                               
+#       define NBQ_DTDRHO2
+#       undef NBQ_DTDRHO2B
+#       define NBQ_GRIDEXT
+#       define NBQ_ZETAEXP
+#       define NBQ_ZETAREDIAG
+#       define NBQ_TRACERS
+#       undef  NBQ_NODS
+#else
+#       undef NBQ_MASS
+#       define NBQ_DTDRHO2
+#       undef  NBQ_DTDRHO2B
+#       undef NBQ_GRIDEXT
+#       undef NBQ_ZETAEXP
+#       undef NBQ_ZETAREDIAG
+#       define NBQ_TRACERS
+#       define NBQ_NODS
+#endif
+#ifndef NBQ_ZETAW
+#       undef NBQ_MASS
+#       undef NBQ_DTDRHO2
+#       undef NBQ_DTDRHO2B
+#       undef NBQ_GRIDEXT
+#       undef NBQ_ZETAEXP
+#       undef NBQ_ZETAREDIAG
+#       undef NBQ_TRACERS
+#       define NBQ_NODS
+#endif
 # ifdef OBC_NBQ
 #  undef  OBC_NBQORLANSKI
 #  undef  OBC_NBQSPECIFIED
 #  undef  NBQ_FRC_BRY
 #  define W_FRC_BRY
 # endif
+
+
 #else
 # define HZR Hz
 #endif

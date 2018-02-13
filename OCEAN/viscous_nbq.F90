@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
 
       subroutine viscous_nbq(icall)
 !**********************************************************************
@@ -31,7 +31,7 @@
 # include "param_F90.h"
 # include "scalars_F90.h"
 # include "ocean2d.h"
-# include "ocean3d.h"
+# include "ocean3d.h" 
 # include "grid.h"
 # include "nbq.h"
 

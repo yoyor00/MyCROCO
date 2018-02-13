@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined NBQ && defined MPI
+#if defined NBQ && !defined NBQ_IJK && defined MPI
 
  subroutine MPI_nbq_Setup(imax,jmax,kmax)
 !------------------------------------------------------------------------------

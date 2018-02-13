@@ -61,6 +61,9 @@
 
       if (typevar == 'uint') then
       i1=2
+#ifdef MPI
+      if (WEST_INTER) i1=1
+#endif
       i2=Lmmpi
       j1=1
       j2=Mmmpi
@@ -74,6 +77,9 @@
       i1=1
       i2=Lmmpi
       j1=2
+#ifdef MPI
+      if (SOUTH_INTER) j1=1
+#endif
       j2=Mmmpi
       elseif (typevar == 'v') then
       i1=0
@@ -161,11 +167,28 @@
           real,dimension(:,:,:),allocatable :: tabread
           character*(*) :: comment,typevar
           integer i0,j0,k,i,j,i1,i2,j1,j2
+          character*80 :: comment_k
 #ifdef OPENMP
           integer mynode
 #endif
           integer iseq1, iseq2, jseq1, jseq2 
-          logical mystop         
+          logical mystop     
+
+          if (typevar == 'w') then
+            do k=1,N+1
+              write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k-1
+              call check_tab2d(tab(START_2D_ARRAY,k),
+     &                         TRIM(comment_k),'r')
+            enddo
+            return
+          elseif (typevar == 'wint') then
+            do k=1,N+1
+              write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k-1
+              call check_tab2d(tab(START_2D_ARRAY,k),
+     &                         TRIM(comment_k),'rint')
+            enddo
+            return
+          endif        
           
 #if defined OPENMP && !defined MPI
           mynode=0 
@@ -185,6 +208,9 @@
 
       if (typevar == 'uint') then
       i1=2
+#ifdef MPI
+      if (WEST_INTER) i1=1
+#endif
       i2=Lmmpi
       j1=1
       j2=Mmmpi
@@ -198,6 +224,9 @@
       i1=1
       i2=Lmmpi
       j1=2
+#ifdef MPI
+      if (SOUTH_INTER) j1=1
+#endif
       j2=Mmmpi
       elseif (typevar == 'v') then
       i1=0

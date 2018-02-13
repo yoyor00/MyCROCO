@@ -1,6 +1,6 @@
-
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
+
       subroutine mat_cont_init_nh 
 
 !*******************************************************************
@@ -62,35 +62,43 @@
        conti_nh (l_nh) = nzcont_nh  !! matrix line pointer
        contzi_nh (l_nh) = nzcontz_nh  !! matrix line pointer
 
-!.......u(i,j,k):
+!........u(i,j,k-1):	- 1	-
+
+!........u(i+1,j,k-1):	- 2	-
+
+!.......u(i,j,k):	- 3	-
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,1)
 
-!.......v(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
-
-!.......u(i,j,k+1):
+!.......u(i,j,k+1):	- 4	-
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,1)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,1)
 
-!.......v(i,j,k+1):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,2)
-
-!.......u(i+1,j,k):
+!.......u(i+1,j,k):	- 5	-
          contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k,1)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k,1)
 
-!.......v(i,j+1,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
-
-!........u(i+1,j,k+1):
+!........u(i+1,j,k+1):	- 6	-
          contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k+1,1)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k+1,1)
 
-!........v(i,j+1,k+1):
+!........v(i,j,k-1):	- 7	-
+
+!.......v(i,j,k):	- 8	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
+
+!.......v(i,j,k+1):	- 9	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,2)
+
+!........v(i,j+1,k-1):	- 10	-
+
+!.......v(i,j+1,k):	- 11	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
+
+!........v(i,j+1,k+1):	- 12	-
          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k+1,2)
          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k+1,2)
 
@@ -121,53 +129,53 @@
        conti_nh (l_nh) = nzcont_nh  !! matrix line pointer
        contzi_nh (l_nh) = nzcontz_nh  !! matrix line pointer
 
-!.......u(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,1)
-
-!.......v(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
-
-!.......u(i,j,k+1):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,1)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,1)
-
-!.......v(i,j,k+1):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,2)
-
-!........u(i,j,k-1):
+!........u(i,j,k-1):	- 1	-
           contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,1)
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,1)
 
-!........v(i,j,k-1):
-          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,2)
-          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,2)
-
-!.......u(i+1,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k,1)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k,1)
-
-!.......v(i,j+1,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
-
-!........u(i+1,j,k+1):
-          contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k+1,1)
-          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k+1,1)
-
-!........v(i,j+1,k+1):
-          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k+1,2)
-          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k+1,2)
-
-!........u(i+1,j,k-1):
+!........u(i+1,j,k-1):	- 2	-
           contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k-1,1)
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k-1,1)
 
-!........v(i,j+1,k-1):
+!.......u(i,j,k):	- 3	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,1)
+
+!.......u(i,j,k+1):	- 4	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,1)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,1)
+
+!.......u(i+1,j,k):	- 5	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k,1)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k,1)
+
+!........u(i+1,j,k+1):	- 6	-
+          contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k+1,1)
+          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k+1,1)
+
+!........v(i,j,k-1):	- 7	-
+          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,2)
+          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,2)
+
+!.......v(i,j,k):	- 8	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
+
+!.......v(i,j,k+1):	- 9	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k+1,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k+1,2)
+
+!........v(i,j+1,k-1):	- 10	-
           contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k-1,2)
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k-1,2)
+
+!.......v(i,j+1,k):	- 11	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
+
+!........v(i,j+1,k+1):	- 12	-
+          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k+1,2)
+          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k+1,2)
 
 !.......w(i,j,k):
         contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k,3)
@@ -196,43 +204,51 @@
        conti_nh (l_nh) = nzcont_nh  !! matrix line pointer
        contzi_nh (l_nh) = nzcontz_nh  !! matrix line pointer
 
-!.......u(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,1)
-
-!.......v(i,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
-
-!........u(i,j,k-1):
+!........u(i,j,k-1):	- 1	-
           contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,1)
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,1)
 
-!........v(i,j,k-1):
-          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,2)
-          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,2)
-
-!.......u(i+1,j,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k,1)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k,1)
-
-!.......v(i,j+1,k):
-         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
-         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
-
-!........u(i+1,j,k-1):
+!........u(i+1,j,k-1):	- 2	-
           contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k-1,1)
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k-1,1)
 
-!........v(i,j+1,k-1):
+!.......u(i,j,k):	- 3	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,1)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,1)
+
+!.......u(i,j,k+1):	- 4	-
+
+!.......u(i+1,j,k):	- 5	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i+1,j,k,1)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i+1,j,k,1)
+
+!........u(i+1,j,k+1):	- 6	-
+
+!........v(i,j,k-1):	- 7	-
+          contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k-1,2)
+          nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k-1,2)
+
+!.......v(i,j,k):	- 8	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j,k,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j,k,2)
+
+!.......v(i,j,k+1):	- 9	-
+
+!........v(i,j+1,k-1):	- 10	-
           contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k-1,2)
           nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k-1,2)
 
-!.......w(i,j,k):
+!.......v(i,j+1,k):	- 11	-
+         contj_nh(nzcont_nh) = ijk2lmom_nh(i,j+1,k,2)
+         nzcont_nh           = nzcont_nh + mijk2lmom_nh(i,j+1,k,2)
+
+!........v(i,j+1,k+1):	- 12	-
+
+!.......w(i,j,k):	- x	-
          contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k,3)
          nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k,3)
 
-!.......w(i,j,k-1):
+!.......w(i,j,k-1):	- x	-
          contzj_nh(nzcontz_nh) = ijk2lmom_nh(i,j,k-1,3)
          nzcontz_nh           = nzcontz_nh + mijk2lmom_nh(i,j,k-1,3)
 
@@ -286,7 +302,28 @@
       neqcimp_nbq = neqcont_nh 
       cimpi_nbq(neqcimp_nbq+1) = nzcimp_nbq
 
-      return
+! 	write(1000,*) "neqq_nh(1:)=",neqq_nh(1:)
+!       do l_nh = neqq_nh(2)+1,neqq_nh(3)   
+! 	do j=conti_nh (l_nh),conti_nh (l_nh+1)-1
+! 	    write(1000,*) "1 -",l_nh,j,contj_nh(j)
+! 	enddo
+! 	write(1000,*) 
+!       enddo
+!       write(1000,*) "--------"
+!       do l_nh = neqq_nh(3)+1,neqq_nh(4)   
+! 	do j=conti_nh (l_nh),conti_nh (l_nh+1)-1
+! 	    write(1000,*) "2 -",l_nh,j,contj_nh(j)
+! 	enddo
+! 	write(1000,*) 
+!       enddo
+! 	write(1000,*)  "--------"
+!        do l_nh = neqq_nh(4)+1,neqq_nh(5)   
+! 	do j=conti_nh (l_nh),conti_nh (l_nh+1)-1
+! 	    write(1000,*) "3 -",l_nh,j,contj_nh(j)
+! 	enddo
+! 	write(1000,*) 
+!       enddo
+     return
       end subroutine mat_cont_init_nh
 #else
       subroutine mat_cont_init_nh_empty
