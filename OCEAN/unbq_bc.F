@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
       subroutine unbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -36,7 +36,7 @@
 !
 # endif /* NBQ */
 #else
-# ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
 !
 ! CHILD
 !
@@ -47,7 +47,7 @@
 !
 # endif /* NBQ */
 #endif /* CHILD */
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
 !
 ! Common Code
 !
@@ -181,7 +181,7 @@
 #     else     
 !    &                                    +tau*unbqclm(Istr,j,k)
      &                                    +tau*(
-     &       u(Istr,j,k,nnew)*rho0
+     &       u(Istr,j,k,nnew)
 !     &                      unbqclm(Istr,j,k)    
 !     &   +ubclm(Istr,j)*hz_half(Istr,j,k)
      &                                         )
@@ -225,7 +225,7 @@
             l_b_j     = ijk2lmom_nh(Istr  ,j  ,k,1)
             l_bm1_j   = ijk2lmom_nh(Istr+1,j  ,k,1)
             qdm_nbq_a(l_b_j)=qdm_nbq_a(l_bm1_j) ! Gradient: default
-!           qdm_nbq_a(l_b_j)=u(Istr,j,k,nnew)*rho0 ! Gradient: default
+!           qdm_nbq_a(l_b_j)=u(Istr,j,k,nnew)   ! Gradient: default
 #    ifdef MASKING
      &                                     *umask(Istr,j)
 #    endif
@@ -331,7 +331,7 @@
 #     else     
 !    &                                  +tau*unbqclm(Iend+1,j,k)
      &                                  +tau* (
-     &            u(Iend+1,j,k,nnew)*rho0
+     &            u(Iend+1,j,k,nnew)
 !     &              unbqclm(Iend+1,j,k)  
 !     &            + ubclm(Iend+1,j)*hz_half(Iend+1,j,k)
      &                                        )       
@@ -375,7 +375,7 @@
             l_b_j     = ijk2lmom_nh(Iend+1,j,k,1)
             l_bm1_j   = ijk2lmom_nh(Iend  ,j,k,1)
             qdm_nbq_a(l_b_j)=qdm_nbq_a(l_bm1_j)  ! gradient (default)
-!           qdm_nbq_a(l_b_j)=u(Iend+1,j,k,nnew)*rho0  ! gradient (default)
+!           qdm_nbq_a(l_b_j)=u(Iend+1,j,k,nnew)  ! gradient (default)
 #    ifdef MASKING
      &                                   *umask(Iend+1,j)
 #    endif

@@ -47,7 +47,6 @@
        endif
 
        if (ichoix.eq.1) then
-
 #ifdef MPI
       if (mynode.lt.10) then
          write (name_o,'(a,i1,a)') 'OUTPUT/grid_nbq_',mynode,'.dat'
@@ -59,7 +58,6 @@
 #else
       name_o = 'OUTPUT/grid_nbq_s.dat'
 #endif
-
        open(unit=10,file=name_o)
 
 #ifdef OBC_WEST
@@ -176,6 +174,8 @@
        write(10,*) 'Grid(v) :'
        write(10,*) istrv_nh,iendv_nh,jstrv_nh,jendv_nh
        write(10,*)
+
+#ifndef NBQ_IJK
        write(10,*) 'Num(q) :'
        write(10,*) neqq_nh(1:7)
        write(10,*) 'Num(u) :'
@@ -194,12 +194,16 @@
        write(10,*) 'DNum(w) :'
        write(10,*) neqw_nh(1)-neqv_nh(7),(neqw_nh(k+1)-neqw_nh(k),k=1,6)
        write(10,*)
+#endif
+
+#ifndef NBQ_IJK
        write(10,*) 'Mat Mom  :'
        write(10,*) (momi_nh(nequ_nh(k)+1),k=1,7)
        write(10,*) (momi_nh(neqv_nh(k)+1),k=1,7)
        write(10,*) (momi_nh(neqw_nh(k)+1),k=1,5)
        write(10,*) 'Mat Cont :'
        write(10,*) (conti_nh(neqq_nh(k)+1),k=1,7)
+
 
 !......Q-Points:
        write(10,*)   
@@ -357,8 +361,9 @@
              write(10,'(80I1)') (mijk2lmom_nh(i,j,N,3),i=istr_nh-1,iend_nh+1) 
           enddo
        endif
+#endif
 
-#ifdef MASKING
+#if defined MASKING  && !defined NBQ_IJK
 !......Masks:
       write(10,*)  
       write(10,*) 'Rmask_nbq : '
@@ -470,8 +475,8 @@
              write(10,'(80I1)') (int(vmask_nbq(i,j)),i=istrv_nh-1,iendv_nh+1) 
           enddo
        endif
-#endif
 
+#endif
       close(10)
       
 !      call mpi_finalize(ierrmpi_o)

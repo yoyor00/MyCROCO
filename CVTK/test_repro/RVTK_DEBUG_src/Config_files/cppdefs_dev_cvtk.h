@@ -555,6 +555,14 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
+<<<<<<< HEAD
+# ifdef MOVING_BATHY
+# else
+#  undef MOVING_BATHY
+# endif
+#endif
+
+=======
 /* 
      Morphodynamics (bed evolution feedback on circulation):
      MORPHODYN or MOVING_BATHY (equivalent) must be defined
@@ -569,6 +577,7 @@
 #  undef  MOVING_BATHY
 # endif
 #endif /* SEDIMENT */
+>>>>>>> master
 /*
 ======================================================================
                               OBCs

@@ -10,6 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
+#ifndef NBQ
 #define PRED_COUPLED_MODE
 
       subroutine step2d (tile)
@@ -2142,3 +2143,7 @@ C$OMP END MASTER
   
       return
       end
+#else
+      subroutine step2d_empty
+      end
+#endif /* NBQ */

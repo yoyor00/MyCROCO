@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 subroutine grid_exchange
-#if defined NBQ  && defined MPI
+#if defined NBQ  && !defined NBQ_IJK && defined MPI
   use module_parallel_nbq
   use module_nh
   implicit none

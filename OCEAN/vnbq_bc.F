@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
       subroutine vnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -37,7 +37,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 # endif /* NBQ */
 #else
-# ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
 !
 ! CHILD
 !
@@ -48,7 +48,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 # endif /* NBQ */
 #endif /* CHILD */
-#ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
 !
 ! Common Code
 !
@@ -710,7 +710,7 @@ c        call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
           l_c_jm1 = ijk2lmom_nh(Iend+1,Jend  ,k,2)
           l_c_im1 = ijk2lmom_nh(Iend  ,Jend+1,k,2)
           qdm_nbq_a(l_c)=0.5*(qdm_nbq_a(l_c_jm1)
-     &                            +qdm_nbq_a(l_c_im1)
+     &                            +qdm_nbq_a(l_c_im1))
 #  ifdef MASKING
      &                                *vmask(Iend+1,Jend+1)
 #  endif
