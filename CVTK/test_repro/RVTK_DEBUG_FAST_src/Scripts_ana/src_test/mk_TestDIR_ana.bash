@@ -16,9 +16,7 @@ cp -Rf comp_run_* create_link_for_Test_ana.sh $1
 #===========================================================
 cd $1
 export mytest=$1
-echo " Create links "
 ./create_link_for_Test_ana.sh
-echo " test croco"
 ./test_croco_ana.sh
 cd -
 echo "======================================================"

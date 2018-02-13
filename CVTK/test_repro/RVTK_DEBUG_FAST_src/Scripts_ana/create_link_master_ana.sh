@@ -29,9 +29,9 @@ ln -sf $dir_home/../extract_results_croco.bash $dir_TESTROOT/.
 [ ! -d $dir_TESTROOT/TEST_CASES ] && mkdir $dir_TESTROOT/TEST_CASES
 
 ln -sf $dir_home/ANA/* $dir_TESTROOT/TEST_CASES/.
-ln -sf $dir_home/IGW/* $dir_TESTROOT/TEST_CASES/.
-ln -sf $dir_home/SHOREFACE/* $dir_TESTROOT/TEST_CASES/.
-ln -sf $dir_home/JET/* $dir_TESTROOT/TEST_CASES/.
+#ln -sf $dir_home/IGW/* $dir_TESTROOT/TEST_CASES/.
+#ln -sf $dir_home/SHOREFACE/* $dir_TESTROOT/TEST_CASES/.
+#ln -sf $dir_home/JET/* $dir_TESTROOT/TEST_CASES/.
 
 ln -sf $dir_web/Log_Summary $dir_TESTROOT/.
 

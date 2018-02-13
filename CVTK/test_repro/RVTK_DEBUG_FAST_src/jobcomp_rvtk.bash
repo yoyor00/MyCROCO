@@ -143,7 +143,7 @@ fi
 #
 # RVTK  files  DEBUG CPP KEYS
 #
-/bin/cp -f cppdefs_dev_bak1.h ${SCRDIR}/cppdefs_dev.h
+/bin/cp -f cppdefs_dev_cvtk.h ${SCRDIR}/cppdefs_dev.h
 /bin/cp -f ${SCRDIR}/cppdefs.h.OK ${SCRDIR}/cppdefs.h
 /bin/cp -f ${SCRDIR}/param.h.OK ${SCRDIR}/param.h
 
