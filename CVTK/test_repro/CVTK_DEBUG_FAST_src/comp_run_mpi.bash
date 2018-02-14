@@ -18,5 +18,6 @@ par1='MPI'
 /bin/mv croco croco_${par1}.exe
 
 # Run
-$MPI_LAUNCH -np 4 ./croco_${par1}.exe croco.in > mpi2X2_${TEST_NAME}.log
+#$MPI_LAUNCH -np 4 ./croco_${par1}.exe croco.in > mpi2X2_${TEST_NAME}.log
+$MPI_LAUNCH -np 4 ./croco_${par1}.exe $CROCOIN > mpi2X2_${TEST_NAME}.log
 

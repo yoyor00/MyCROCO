@@ -17,4 +17,4 @@ time ./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log
 /bin/mv croco croco_${par1}.exe
 
 # Run
-./croco_${par1}.exe croco.in > openmp2X2_${TEST_NAME}.log
+./croco_${par1}.exe $CROCOIN > openmp2X2_${TEST_NAME}.log

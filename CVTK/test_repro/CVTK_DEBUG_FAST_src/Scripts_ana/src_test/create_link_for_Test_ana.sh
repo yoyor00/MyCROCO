@@ -8,7 +8,7 @@ source ../CONFIGURE_ANA
 ln -sf $dir_home/../CONFIGURE_GLOBAL .
 ln -sf $dir_home/../CONFIGURE_ANA .
 
-ln -sf $dir_home/../TEST_CASES .
+ln -sf $dir_home/../TEST_CASES_CVTK TEST_CASES
 ln -sf $dir_home/../jobcomp_rvtk.bash .
 ln -sf $dir_home/../extract_results_croco.bash .
 ln -sf $dir_home/../comp_run_*.bash .

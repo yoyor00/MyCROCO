@@ -5,8 +5,8 @@
 #PBS -l mem=20gb
 #PBS -j oe 
 #PBS -M gildas.cambon@ird.fr -m abe
+
 cd $PBS_O_WORKDIR
-echo $PBS_O_LOGNAME
 #===================================
 source configure_file
 par1='SERIAL'
@@ -15,5 +15,5 @@ par1='SERIAL'
 mv croco croco_${par1}.exe
 
 #Run (and produce check file)
-time ./croco_${par1}.exe croco.in > serial_${TEST_NAME}.log
+time ./croco_${par1}.exe $CROCOIN > serial_${TEST_NAME}.log
 

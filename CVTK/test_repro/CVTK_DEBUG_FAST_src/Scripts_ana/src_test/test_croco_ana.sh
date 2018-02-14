@@ -10,12 +10,13 @@
 ##
 ## Get code source from jobcomp file
 ##
-sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
-sed -n '$p' tmp1 > tmp2
-eval "SOURCE_CROCO=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
-rm -f tmp1 tmp2
+#sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
+#sed -n '$p' tmp1 > tmp2
+#eval "SOURCE_CROCO=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+#rm -f tmp1 tmp2
 #echo
 #echo 'SOURCE_CROCO='$SOURCE_CROCO
+
 
 #export MPIRUN=`which mpirun`
 export MPIRUN=$MPI_LAUNCH

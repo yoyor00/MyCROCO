@@ -6,6 +6,7 @@
 # Use input argument as
 # gather_recap KTEST,VORT, REG
 #=================================
+
 today=`date +%Y%m%d`
 ligne=`grep -n revision gitinfos | cut -d: -f1`
 ligne2=$((ligne + 1))
