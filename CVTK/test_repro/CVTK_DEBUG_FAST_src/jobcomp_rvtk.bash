@@ -26,8 +26,9 @@ SCRDIR=$1
 #
 # set source, compilation and run directories
 #
-SOURCE=/home7/datahome/crocodev/GIT/croco/OCEAN
-#SCRDIR=./Compile
+#===
+source CONFIGURE_GLOBAL
+#===
 echo 'SRCDIR='$SCRDIR
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..

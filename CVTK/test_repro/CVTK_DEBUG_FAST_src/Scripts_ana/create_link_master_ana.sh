@@ -1,45 +1,34 @@
 #!/bin/bash
 #echo '============================================================='
-echo 'Create the link between RVTK_DEBUG_REG/TESTROOT dir . and the RVTK_DEBUG_src/'
-#echo '  '
+echo 'Create the link between CVTK_DEBUG_FAST_src and CVTK_DEBUG/test dir'
 
-dir_home=$HOME/GIT/croco/CVTK/test_repro/RVTK_DEBUG_FAST_src/Scripts_ana
-dir_web=/home/datawork-croco/public/commit-check
-dir_TESTROOT=$DATAWORK/RVTK_DEBUG_REG_DEV/TESTROOT/KTEST
+ROOTDIR="/home7/datahome/crocodev/GIT/croco/CVTK/test_repro/CVTK_DEBUG_FAST_src"
+source "$ROOTDIR/CONFIGURE_ANA"
 
-# later rm -rf $dir_TESTROOT
-mkdir $dir_TESTROOT
+mkdir $dir_test
+ln -sf $dir_home/Configure_Test_ana $dir_test/
 
-ln -sf $dir_home/src_test/* $dir_TESTROOT/.
-#ln -sf $dir_home/src_test/*bash $dir_TESTROOT/.
-#ln -sf $dir_home/src_test/test_croco_ana.sh $dir_TESTROOT/.
-#ln -sf $dir_home/src_test/create_link_for_Test_ana.sh $dir_TESTROOT/.
-ln -sf $dir_home/Configure_Test_ana $dir_TESTROOT/.
+# configure files
+ln -sf $dir_home/../CONFIGURE_GLOBAL $dir_test/
+ln -sf $dir_home/../CONFIGURE_ANA $dir_test/
 
 # common scripts and programms
-ln -sf $dir_home/../gitinfo.sh $dir_TESTROOT/.
-ln -sf $dir_home/../Log_Details $dir_TESTROOT/.
-ln -sf $dir_home/../git_process.bash $dir_TESTROOT/.
-ln -sf $dir_home/../gather_recap.bash $dir_TESTROOT/.
-ln -sf $dir_home/../jobcomp_rvtk.bash $dir_TESTROOT/.
-ln -sf $dir_home/../comp_run_*.bash $dir_TESTROOT/.
-ln -sf $dir_home/../extract_results_croco.bash $dir_TESTROOT/.
+ln -sf $dir_home/../Log_Details $dir_test/
+ln -sf $dir_home/../gather_recap.bash $dir_test/
+ln -sf $dir_home/../gitinfo.sh $dir_test/
+ln -sf $dir_home/../git_process.bash $dir_test/
+ln -sf $dir_web/Log_Summary $dir_test/
 
-# input files + namlist
-[ ! -d $dir_TESTROOT/TEST_CASES ] && mkdir $dir_TESTROOT/TEST_CASES
+# ana specific and programms
+ln -sf $dir_home/src_test/mk_CLEANALL_ana.bash $dir_test/
+ln -sf $dir_home/src_test/mk_TestDIR_ana.bash $dir_test/
+ln -sf $dir_home/src_test/mk_TESTALL_ana.bash $dir_test/
 
-ln -sf $dir_home/ANA/* $dir_TESTROOT/TEST_CASES/.
-#ln -sf $dir_home/IGW/* $dir_TESTROOT/TEST_CASES/.
-#ln -sf $dir_home/SHOREFACE/* $dir_TESTROOT/TEST_CASES/.
-#ln -sf $dir_home/JET/* $dir_TESTROOT/TEST_CASES/.
 
-ln -sf $dir_web/Log_Summary $dir_TESTROOT/.
-
-#
-rm -Rf $dir_TESTROOT/Configure_Test ; 
-cd $dir_TESTROOT
+# cleaning
+rm -Rf $dir_test/Configure_Test; 
+cd $dir_test	
 ln -sf Configure_Test_ana Configure_Test
 cd -
 #
-
 echo 'Well done: Finish linking'
