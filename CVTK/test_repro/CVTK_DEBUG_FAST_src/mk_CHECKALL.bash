@@ -2,6 +2,7 @@
 
 for i in `ls Configure_Test/*` ; do
     ii=`echo $i | cut -d/ -f2-`
-    echo '=> Clean the dir: '$ii
-    rm -Rf $ii
+    echo ' '
+    echo '=> Check the dir: '$ii
+    grep 'DONE' $ii/*.log
 done

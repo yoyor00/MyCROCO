@@ -1,30 +1,34 @@
 #!/bin/bash
 #echo '============================================================='
-echo 'Create the link between RVTK_DEBUG_REG/TESTROOT dir . and the RVTK_DEBUG_src/'
-#echo '  '
-set -x
+echo 'Create the link between CVTK_DEBUG_FAST_src and CVTK_DEBUG/test dir'
 
-dir_home=$HOME/GIT/croco/CVTK/test_repro/RVTK_DEBUG_FAST_src/Scripts_vort
-dir_web=/home/datawork-croco/public/commit-check
-dir_TESTROOT=$DATAWORK/RVTK_DEBUG_REG_DEV/TESTROOT/VORT/
+ROOTDIR="/home7/datahome/crocodev/GIT/croco/CVTK/test_repro/CVTK_DEBUG_FAST_src"
+source "$ROOTDIR/CONFIGURE_VORT"
 
-# later rm -rf $dir_TESTROOT
-mkdir $dir_TESTROOT
+mkdir $dir_test
+ln -sf $dir_home/Configure_Test_vort $dir_test/
 
-ln -sf $dir_home/src_test/* $dir_TESTROOT/.
-ln -sf $dir_home/Configure_Test_vort $dir_TESTROOT/.
+# configure files
+ln -sf $dir_home/../CONFIGURE_GLOBAL $dir_test/
+ln -sf $dir_home/../CONFIGURE_VORT $dir_test/
 
-# common scripts and program
-ln -sf $dir_home/../gitinfo.sh $dir_TESTROOT/.
-ln -sf $dir_home/../Log_Details $dir_TESTROOT/.
-ln -sf $dir_home/../git_process.bash $dir_TESTROOT/.
-ln -sf $dir_home/../gather_recap.bash $dir_TESTROOT/.
-ln -sf $dir_home/../jobcomp_rvtk.bash $dir_TESTROOT/.
-ln -sf $dir_home/../comp_run_*.bash $dir_TESTROOT/.
-ln -sf $dir_home/../extract_results_croco.bash $dir_TESTROOT/.
+# common scripts and programms
+ln -sf $dir_home/../Log_Details $dir_test/
+ln -sf $dir_home/../gather_recap.bash $dir_test/
+ln -sf $dir_home/../gitinfo.sh $dir_test/
+ln -sf $dir_home/../git_process.bash $dir_test/
+ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
+ln -sf $dir_home/..//mk_CHECKALL.bash $dir_test/
+ln -sf $dir_web/Log_Summary $dir_test/
 
-# input files + namlist
+# ana specific and programms
+ln -sf $dir_home/src_test/mk_TestDIR_vort.bash $dir_test/
+ln -sf $dir_home/src_test/mk_TESTALL_vort.bash $dir_test/
 
-ln -sf $dir_home/VORTEX $dir_TESTROOT/.
-ln -sf $dir_web/Log_Summary $dir_TESTROOT/.
+# cleaning
+rm -Rf $dir_test/Configure_Test; 
+cd $dir_test	
+ln -sf Configure_Test_vort Configure_Test
+cd -
+#
 echo 'Well done: Finish linking'

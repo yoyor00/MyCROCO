@@ -14,8 +14,6 @@
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX and REGIONAL
 #--------------------------------------------------------------------
-#MPIRUN=$MPI_LAUNCH
-#echo "======== BEGIN CVTK TEST PROCEDURE ==========="
 #set -x
 
 echo "=============================================="
@@ -34,18 +32,20 @@ echo " "
 #=============================================================================================
 # Sources
 #
-sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
-sed -n '$p' tmp1 > tmp2
-eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
-rm -f tmp1 tmp2
-echo 'Sources code: '$SOURCE
-
-SOURCE_CVTK=${SOURCE}/../CVTK/test_repro/RVTK_DEBUG_src
+#sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
+#sed -n '$p' tmp1 > tmp2
+#eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+#rm -f tmp1 tmp2
+#echo 'Sources code: '$SOURCE
+#===
+source CONFIGURE_GLOBAL
+#===
+SOURCE_CVTK=${SOURCE_CROCO}/../CVTK/test_repro/CVTK_DEBUG_FAST_src
 echo 'Sources CVTK tests: '$SOURCE_CVTK
 #
 # Get updated files
 #
-/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev.h
+/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_cvtk.h
 
 /bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.SERIAL
 /bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.SERIAL
@@ -65,9 +65,18 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 #KEY_DEBUG='RVTK_DEBUG'
 #LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN GRID#'
 #CONFIG_NAME='BENGUELA_VHR'
-
 /bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
+
+#List of test cases with only one points in one direction
+LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
+LIST_2DV_Y='OVERFLOW SHELFRONT'
+
 source configure_file
+
+Is2DV_X=0
+Is2DV_Y=0
+[ -n "$(echo $LIST_2DV_X |grep "${EXAMPLE}")" ] && Is2DV_X=1
+[ -n "$(echo $LIST_2DV_Y |grep "${EXAMPLE}")" ] && Is2DV_Y=1
 
 ##############################################################################
 #
@@ -108,14 +117,11 @@ for par in SERIAL OPENMP MPI ; do
 	echo $EXAMPLE
 	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
 	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+	if [ $LIST_KEY_NEST = 'AGRIF' ]; then
+	    sed 's/'define\ \ \*AGRIF_2W'/'undef\ AGRIF_2W'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
+	    /bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+	fi
     done
-    #    #==4.3
-    #    for EXAMPLE in $LIST_KEY_PAR
-    #    do
-    #	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-    #	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
-    #    done
-    #==
 done
 
 #=====================================================================================================
@@ -129,7 +135,7 @@ echo '==============================='
 echo 'START TESTING ...             '
 #echo '==============================='
 
-# 3- 
+# 3- 'MPI'
 ##############################################################################
 # Serial runs
 ##############################################################################
@@ -156,14 +162,28 @@ myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
 ##############################################################################
 if [ ${FLAG_OPENMP} = 1 ]; then 
     
-#    echo ' '
-    echo "OPEN-MP 2X2 NPP=4 TEST $mytest"
-    export OMP_NUM_THREADS=4
     par1='OPENMP'
-    sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-    sed 's/'NPP=2'/'NPP=4'/' < param_bak1.h.$par1 > param_bak2.h.$par1
-    /bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
+    if [ $Is2DV_X == 1 ]; then
+	echo "OPEN-MP 1X2 NPP=2 TEST $mytest"
+	export OMP_NUM_THREADS=2
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+	
+    elif [ $Is2DV_Y == 1 ]; then
+	echo "OPEN-MP 2x1 NPP=2 TEST $mytest"
+	export OMP_NUM_THREADS=2
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=1'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+	
+    else
+	echo "OPEN-MP 2X2 NPP=4 TEST $mytest"
+	export OMP_NUM_THREADS=4
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+	sed 's/'NPP=4'/'NPP=4'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+	
+    fi	 
     
+    /bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
     sed 's/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
     /bin/mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
     
@@ -171,37 +191,46 @@ if [ ${FLAG_OPENMP} = 1 ]; then
     cp param_bak1.h.$par1 Compile_${par1}/param.h.OK
     cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
     
- #   echo "qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash" 
+    #   echo "qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash" 
     qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
     
- #   echo ""myjobid_openmp=`qselect -N ${TEST_NAME}_OM -u $USER`""
+    #   echo ""myjobid_openmp=`qselect -N ${TEST_NAME}_OM -u $USER`""
     myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
 fi 
 
 ###############################################################################
 
-# 4- 
+# 4- RVTK_DEBUG_REG_DEV
 ##############################################################################
 # Mpi runs
 ##############################################################################
 if [ ${FLAG_MPI} = 1 ]; then 
-
-#    echo ' '
-    echo "MPI 2X2 TEST $mytest"
+    
     par1='MPI'
-    sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+    if [ $Is2DV_X == 1 ]; then
+	echo "MPI 1X2 TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=1,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par
+	
+    elif [ $Is2DV_Y == 1 ]; then
+	echo "MPI 2X1 TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param_bak0.h.$par1 > param_bak1.h.$par
+    
+    else	
+	echo "MPI 2X2 TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+    fi
+    
     rm param_bak0.h.$par1
     sed 's/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
     /bin/mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
-    
     rm -Rf Compile_$par1 ; mkdir Compile_$par1
     cp param_bak1.h.$par1 Compile_${par1}/param.h.OK
     cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
     
-  #  echo "qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash"
+    #  echo "qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash"
     qsub -N ${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
     
-  #  echo "myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`""
+    #  echo "myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`""
     myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`"
 fi
 
@@ -210,18 +239,18 @@ fi
 ##############################################################################
 #  runs
 #echo ' '
-    echo "EXTRACTION $mytest"
+echo "EXTRACTION $mytest"
 if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
-#echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
-qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
-
+    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
+    qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
+    
 elif [ ${FLAG_OPENMP} = 1 ]; then 
-#echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
-qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash
-
+    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
+    qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash
+    
 elif [ ${FLAG_MPI} = 1 ]; then 
-#echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
-qsub -N ${TEST_NAME}_EX -W depend=afterok:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
+    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
+    qsub -N ${TEST_NAME}_EX -W depend=afterok:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
 fi
 #########################################################################################################
 
