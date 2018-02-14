@@ -32,13 +32,15 @@ echo " "
 #=============================================================================================
 # Sources
 #
-sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
-sed -n '$p' tmp1 > tmp2
-eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
-rm -f tmp1 tmp2
-echo 'Sources code: '$SOURCE
-
-SOURCE_CVTK=${SOURCE}/../CVTK/test_repro/RVTK_DEBUG_src
+#sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
+#sed -n '$p' tmp1 > tmp2
+#eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
+#rm -f tmp1 tmp2
+#echo 'Sources code: '$SOURCE
+#===
+source CONFIGURE_GLOBAL
+#===
+SOURCE_CVTK=${SOURCE_CROCO}/../CVTK/test_repro/CVTK_DEBUG_FAST_src
 echo 'Sources CVTK tests: '$SOURCE_CVTK
 #
 # Get updated files

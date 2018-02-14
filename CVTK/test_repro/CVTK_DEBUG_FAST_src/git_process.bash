@@ -8,8 +8,8 @@ echo "SOURCE_ROMS="$SOURCE_ROMS
 echo 
 echo "PROCESS GIT UPDATE"
 cd  $SOURCE_ROMS/..
-/usr/bin/git checkout master
-#/usr/bin/git pull
+#/usr/bin/git checkout
+/usr/bin/git pull
 cd -
 
 # Get revision of sources

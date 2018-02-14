@@ -22,14 +22,15 @@
 
 #
 SCRDIR=$1
-
+echo 'SRCDIR='$SCRDIR
 #
 # set source, compilation and run directories
 #
 #===
 source CONFIGURE_GLOBAL
 #===
-echo 'SRCDIR='$SCRDIR
+SOURCE=$SOURCE_CROCO
+echo 'SOURCE_CROCO='$SOURCE_CROCO
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
 #
