@@ -1,0 +1,40 @@
+==============================================
+=> CONFIG TestTIDES
+ 
+=> MPIRUN COMMAND: mpiexec_mpt
+Remove *.exe* *.log* 
+Remove the CHECKFILE
+Remove AGRIF_FixedGrids.in
+ 
+Sources code: /home7/datahome/crocodev/GIT/croco/OCEAN
+Sources CVTK tests: /home7/datahome/crocodev/GIT/croco/OCEAN/../CVTK/test_repro/RVTK_DEBUG_src
+TESTS OF
+undef PSOURCE PSOURCE_NCFILE FRC_BRY CLIMATOLOGY TIDES AGRIF AGRIF_2WAY BULK_FLUX MPI OPENMP
+PARA= SERIAL
+PARA= OPENMP
+PARA= MPI
+FLAG OPENMP 1
+FLAG MPI 1
+===============================
+START TESTING ...             
+SERIAL NPP=1 TEST TestTIDES
+743289.datarmor0
+OPEN-MP 2X2 NPP=4 TEST TestTIDES
+743290.datarmor0
+MPI 2X2 TEST TestTIDES
+743291.datarmor0
+EXTRACTION TestTIDES
+743292.datarmor0
+>> oooooooooooooo <<
+REVISION GIT : 3709
+DATE         : 20180208
+===================
+OPENMP CHECK (BUGBIN detection)
+res_omp=
+check [passed]
+===================
+MPI CHECK (BUGBIN detection)
+res_mpi=
+check mpi [passed]
+---------------------------
+ 
