@@ -704,7 +704,7 @@
   Define the NetCDF creation mode flag:
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
 */ 
-#define NF_CLOBBER nf_clobber
+#define NF_CLOBBER nf_64bit_offset
 
 /*
 ======================================================================
