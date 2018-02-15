@@ -8,9 +8,11 @@ source ../CONFIGURE_REG
 ln -sf $dir_home/../CONFIGURE_GLOBAL .
 ln -sf $dir_home/../CONFIGURE_REG .
 
+[ -d TEST_CASES ] && rm TEST_CASES
 ln -sf $dir_home/../TEST_CASES_CVTK TEST_CASES
 ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in.VHR croco.in
 ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in.1.VHR croco.in.1
+ln -sf $dir_home/../TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in.REGIONAL.VHR AGRIF_FixedGrids.in
 ln -sf $dir_datafile/VHR/*.nc* .
 
 ln -sf $dir_home/../jobcomp_rvtk.bash .

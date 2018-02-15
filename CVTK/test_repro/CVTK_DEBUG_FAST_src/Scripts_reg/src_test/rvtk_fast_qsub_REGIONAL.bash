@@ -25,9 +25,10 @@ echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
 echo "Remove the CHECKFILE"
 [ -f check_file ] && /bin/rm check_file
-echo "Remove AGRIF_FixedGrids.in"
-/bin/rm -f AGRIF_FixedGrids.in 
-echo " " 
+
+#echo "Remove AGRIF_FixedGrids.in"
+#/bin/rm -f AGRIF_FixedGrids.in 
+#echo " " 
 
 #=============================================================================================
 # Sources
@@ -65,7 +66,7 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 #KEY_DEBUG='RVTK_DEBUG'
 #LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN GRID#'
 #CONFIG_NAME='BENGUELA_VHR'
-/bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
+#/bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
 
 #List of test cases with only one points in one direction
 LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
@@ -75,8 +76,8 @@ source configure_file
 
 Is2DV_X=0
 Is2DV_Y=0
-[ -n "$(echo $LIST_2DV_X |grep "${EXAMPLE}")" ] && Is2DV_X=1
-[ -n "$(echo $LIST_2DV_Y |grep "${EXAMPLE}")" ] && Is2DV_Y=1
+[ -n "$(echo $LIST_2DV_X |grep "${CONFIG_NAME}")" ] && Is2DV_X=1
+[ -n "$(echo $LIST_2DV_Y |grep "${CONFIG_NAME}")" ] && Is2DV_Y=1
 
 ##############################################################################
 #
@@ -117,7 +118,7 @@ for par in SERIAL OPENMP MPI ; do
 	echo $EXAMPLE
 	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
 	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
-	if [ $LIST_KEY_NEST = 'AGRIF' ]; then
+	if [ "$LIST_KEY_NEST" = "AGRIF" ]; then
 	    sed 's/'define\ \ \*AGRIF_2W'/'undef\ AGRIF_2W'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
 	    /bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
 	fi

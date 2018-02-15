@@ -65,7 +65,7 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 #KEY_DEBUG='RVTK_DEBUG'
 #LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN GRID#'
 #CONFIG_NAME='BENGUELA_VHR'
-/bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
+#/bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
 
 #List of test cases with only one points in one direction
 LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
@@ -75,8 +75,8 @@ source configure_file
 
 Is2DV_X=0
 Is2DV_Y=0
-[ -n "$(echo $LIST_2DV_X |grep "${EXAMPLE}")" ] && Is2DV_X=1
-[ -n "$(echo $LIST_2DV_Y |grep "${EXAMPLE}")" ] && Is2DV_Y=1
+[ -n "$(echo $LIST_2DV_X |grep "${CONFIG_NAME}")" ] && Is2DV_X=1
+[ -n "$(echo $LIST_2DV_Y |grep "${CONFIG_NAME}")" ] && Is2DV_Y=1
 
 ##############################################################################
 #

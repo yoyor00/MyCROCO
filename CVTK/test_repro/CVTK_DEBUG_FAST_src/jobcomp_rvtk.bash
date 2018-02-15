@@ -271,7 +271,8 @@ echo "Checking COMPILENBQ..."
 if $($CPP1 testkeys.F | grep -i -q nbqisdefined) ; then
 	echo " => NBQ activated"
 	COMPILENBQ=TRUE
-	LDFLAGS1="-lblas -llapack $LDFLAGS1"
+	#LDFLAGS1="-lblas -llapack $LDFLAGS1"
+	LDFLAGS1="-lmkl $LDFLAGS1"
 	FFLAGS1="$FFLAGS1 -ffree-line-length-none"
 fi
 #
