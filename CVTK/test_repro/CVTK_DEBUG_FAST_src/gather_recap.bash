@@ -7,7 +7,14 @@
 # gather_recap KTEST,VORT, REG
 #=================================
 
-today=`date +%Y%m%d`
+# $1: type of cas test
+# $2: date
+# usage : gather_recap.bash $1 $2
+#---------------------------------
+type_test=$1
+today=$2
+[ ! -n "$(echo "$2")" ] && today=`date +%Y%m%d`
+
 ligne=`grep -n revision gitinfos | cut -d: -f1`
 ligne2=$((ligne + 1))
 numrev=`head -$ligne2 gitinfos | tail -1 | tr -d '\n' | tr -d ' '`
