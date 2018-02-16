@@ -163,7 +163,7 @@ if [ ${FLAG_OPENMP} = 1 ]; then
 	echo "OPEN-MP 1X2 NPP=2 TEST $mytest"
 	#export OMP_NUM_THREADS=4
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-	sed 's/'NPP=4'/'NPP=4'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 	
     elif [ $Is2DV_Y == 1 ]; then
 	echo "OPEN-MP 2x1 NPP=2 TEST $mytest"
@@ -175,7 +175,7 @@ if [ ${FLAG_OPENMP} = 1 ]; then
 	echo "OPEN-MP 2X2 NPP=4 TEST $mytest"
 	#export OMP_NUM_THREADS=4
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+	sed 's/'NPP=4'/'NPP=4'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 	
     fi	 
     
