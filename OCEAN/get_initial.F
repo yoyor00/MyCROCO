@@ -349,7 +349,7 @@
           goto 99                                        !--> ERROR
         endif
       else
-        write(stdout,3) vname(1,indxWrk)(1:lvar), ininame(1:lstr)
+        write(stdout,3) vname(1,indxHrip)(1:lvar), ininame(1:lstr)
         got_inibed(1)=.false.
       endif
 !
@@ -367,7 +367,7 @@
           goto 99                                        !--> ERROR
         endif
       else
-        write(stdout,3) vname(1,indxWrk)(1:lvar), ininame(1:lstr)
+        write(stdout,3) vname(1,indxLrip)(1:lvar), ininame(1:lstr)
         got_inibed(2)=.false.
       endif
 # endif /* BBL */
