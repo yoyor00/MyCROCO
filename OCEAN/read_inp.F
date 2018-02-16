@@ -2037,7 +2037,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Online forcing: last forcing year',yearend,
      &         ', month', monthend,'.'
         MPI_master_only write(stdout,
-     &         '(7x,A,A,1x,A4,1x,I1,A)')
+     &         '(7x,A,A,1x,A4,1x,I2,A)')
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */
