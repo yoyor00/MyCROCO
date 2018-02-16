@@ -272,8 +272,10 @@ if $($CPP1 testkeys.F | grep -i -q nbqisdefined) ; then
 	echo " => NBQ activated"
 	COMPILENBQ=TRUE
 	#LDFLAGS1="-lblas -llapack $LDFLAGS1"
-	LDFLAGS1="-lmkl $LDFLAGS1"
-	FFLAGS1="$FFLAGS1 -ffree-line-length-none"
+	# for datarmor
+	LDFLAGS1="-mkl=sequential $LDFLAGS1"
+	#
+        FFLAGS1="$FFLAGS1 -ffree-line-length-none"
 fi
 #
 # determine if XIOS compilation is required

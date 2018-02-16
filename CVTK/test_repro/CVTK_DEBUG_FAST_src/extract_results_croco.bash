@@ -7,16 +7,20 @@
 cd $PBS_O_WORKDIR
 echo $PBS_O_LOGNAME
 #===================================
+#set -x
 
+#==
 source configure_file
+#==
+
 numrev0=`sed -n '/revision/{n;p;}' gitinfos`
 numrev=`echo $numrev0 | tr -d [:blank:]`
 today=`date +%Y%m%d`
 mv Recap_${TEST_NAME}.git${numrev} Recap_${TEST_NAME}_${today}.git${numrev}
 
 #============================================
-filein_openmp=openmp2X2_${TEST_NAME}.log
-filein_mpi=mpi2X2_${TEST_NAME}.log
+filein_openmp=openmp_${NBPROCS}_${TEST_NAME}.log
+filein_mpi=mpi_${NBPROCS}_${TEST_NAME}.log
 
 fileout_openmp=openmp_checkbugbin_${TEST_NAME}.txt
 fileout_mpi=mpi_checkbugbin_${TEST_NAME}.txt
