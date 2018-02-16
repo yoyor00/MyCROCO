@@ -114,8 +114,8 @@
 #  endif
 # endif
 # ifdef WKB_WWAVE
-      real hrm_avg(GLOBAL_2D_ARRAY)
-      real frq_avg(GLOBAL_2D_ARRAY)
+      real whrm_avg(GLOBAL_2D_ARRAY)
+      real wfrq_avg(GLOBAL_2D_ARRAY)
       real wac_avg(GLOBAL_2D_ARRAY)
       real wkx_avg(GLOBAL_2D_ARRAY)
       real wke_avg(GLOBAL_2D_ARRAY)
