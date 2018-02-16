@@ -69,10 +69,7 @@ c********************************************************************
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
 # endif
-# ifdef MRL_WCI
-#  include "forces.h"
-# endif
-# ifdef READ_PATM 
+# if defined MRL_WCI || defined READ_PATM
 #  include "forces.h"
 # endif
 # ifdef POT_TIDES
