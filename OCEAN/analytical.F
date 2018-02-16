@@ -1791,9 +1791,8 @@ C$    integer  trd, omp_get_thread_num
              Qshape(is,k)=Qshape(is,k)/cff2
             endif
           enddo
-# endif /* SHAPE */
         enddo
-!#  endif
+# endif
 
 # else
 #  define CST_SHAPE
