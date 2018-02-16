@@ -502,15 +502,15 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+80)
+      parameter (indxQBAR=indxSUSTR+90)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+81)
+      parameter (indxTsrc=indxSUSTR+91)
 # endif
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+82)
+      parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
 #ifdef ICE
       integer indxAi
