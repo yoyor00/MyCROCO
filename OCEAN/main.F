@@ -804,6 +804,9 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
       call MPI_Finalize (ierr)
 # endif     
 #endif
+#ifdef LOGFILE
+      MPI_master_only close (stdout)
+#endif      
 
       stop
       end

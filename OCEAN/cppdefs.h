@@ -57,14 +57,19 @@
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
+                      /* I/O server */
+# undef  XIOS
+                      /* dedicated croco.log file */
+# undef  LOGFILE
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
 # undef  OW_COUPLING
-                      /* I/O server */
-# undef  XIOS
+# undef  OA_GRID_UV
+                      /* Wave-current interactions */
+# undef  MRL_WCI
                       /* Open Boundary Conditions */
 # undef  TIDES
 # define OBC_EAST
@@ -181,6 +186,24 @@
 #  define QCORRECTION
 #  define SFLX_CORR
 #  define ANA_DIURNAL_SW
+# endif
+                      /* Wave-current interactions */
+# ifdef OW_COUPLING
+#  define MRL_WCI
+# endif
+# ifdef MRL_WCI
+#  undef  WAVE_ROLLER
+#  define WAVE_STREAMING
+#  define WAVE_FRICTION
+#  define WAVE_RAMP
+#  undef  WKB_WWAVE
+#  ifdef WKB_WWAVE
+#   undef  WKB_OBC_NORTH
+#   undef  WKB_OBC_SOUTH
+#   undef  WKB_OBC_WEST
+#   undef  WKB_OBC_EAST
+#  endif
+#  undef  WAVE_OFFLINE
 # endif
                       /* Lateral Forcing */
 # define CLIMATOLOGY

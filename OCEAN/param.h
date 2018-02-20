@@ -284,7 +284,12 @@
 #ifdef AGRIF
       common/scrum_deriv_param/padd_X,padd_E
 #endif
-      parameter (stdout=6, Np=N+1)
+#ifdef LOGFILE
+      common /stdout/stdout 
+#else
+      parameter (stdout=6)
+#endif
+      parameter (Np=N+1)
 #ifndef AGRIF
 # ifdef MPI
       parameter (Lm=(LLm+NP_XI-1)/NP_XI, Mm=(MMm+NP_ETA-1)/NP_ETA)

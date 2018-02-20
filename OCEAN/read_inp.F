@@ -146,6 +146,31 @@
         lstr=lenstr(fname)
       endif
 #endif
+#ifdef LOGFILE
+# ifndef AGRIF
+      MPI_master_only stdout=80
+# else 
+      stdout=Agrif_Get_Unit()     
+      if (.Not.Agrif_Root()) then
+        if(mynode.eq.0) then
+         open (stdout,file='croco.log.' / / Agrif_Cfixed(),
+     &   status='REPLACE',form='formatted',err=98)
+        else
+         stdout=6
+        endif
+      else          
+# endif 
+      if(mynode.eq.0) then      
+      open (stdout,file='croco.log',
+     & status='REPLACE',form='formatted',err=98)   
+      else  
+      stdout=6
+      endif
+# ifdef AGRIF
+      endif
+# endif      
+#endif  
+
 !
       wrthis(indxTime)=.false.
 #ifdef AVERAGES
@@ -2047,6 +2072,10 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       goto 99 
   97  write(stdout,'(/1x,4A/)') 'READ_INP ERROR: Cannot find input ',
      &                                'file ''', fname(1:lstr), '''.'
+#ifdef LOGFILE
+  98  write(6,'(/1x,4A/)') 'READ_INP ERROR: Cannot open log file ',
+     &                                'file   , croco.log', '''.'
+#endif
       ierr=ierr+1
   99  close (input) 
 !
