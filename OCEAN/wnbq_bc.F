@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
       subroutine wnbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -36,7 +36,7 @@
 !
 # endif /* NBQ */
 #else
-# ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
 !
 ! CHILD
 !
@@ -47,7 +47,7 @@
 !
 # endif /* NBQ */
 #endif /* CHILD */
-#ifdef NBQ
+# if defined NBQ && !defined NBQ_IJK
 !
 ! Common Code
 !

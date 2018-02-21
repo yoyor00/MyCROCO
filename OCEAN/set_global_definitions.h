@@ -223,6 +223,7 @@
 #define FIRST_TIME_STEP iic.eq.ntstart
 #ifdef SOLVE3D
 # define FIRST_2D_STEP iif.eq.1
+# define LAST_2D_STEP iif.eq.nfast
 # define NOT_LAST_2D_STEP iif.lt.nfast+1
 #else
 # define FIRST_2D_STEP iic.eq.ntstart

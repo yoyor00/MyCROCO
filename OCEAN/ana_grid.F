@@ -213,18 +213,9 @@ C$    integer omp_get_thread_num
                      Length_ETA=3200.0E+3
                      Length_XI =4000.0E+3
 # elif defined KH_INST 
-#  ifndef KH_INSTY
-#   ifdef KH_INST2D
-                     Length_XI =286.0
-                     Length_ETA=286.0/256.0
-#   else
                      Length_XI =286.0
                      Length_ETA=Length_XI*float(MMm0)/float(LLm0) 
-#   endif
-#  else
-                     Length_ETA =286.0
-                     Length_XI=286./256.
-#  endif
+!                    Length_ETA=286.0/256.0
 # elif defined ACOUSTIC
                      Length_XI =128.0
                      Length_ETA=2.0

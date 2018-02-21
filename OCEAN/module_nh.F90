@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ && !defined NBQ_IJK
       module module_nh
 
       implicit none
@@ -9,16 +9,6 @@
       TYPE (DMUMPS_STRUC) mumps_par
       integer 		   :: mumps_comm
 # endif
-
-!__________________________________________________________________________
-!
-!                               SNH2012.14      
-!                 Non-Hydrostatic & Non-Boussinesq Kernel Version  
-! Laboratoire d Aerologie, 14 Avenue Edouard Belin, F-31400 Toulouse
-! http://poc.obs-mip.fr/auclair/WOcean.fr/SNH/index_snh_home.htm  
-!
-!__________________________________________________________________________
-
 
 ! debut module ne pas toucher a cette ligne
 
@@ -44,60 +34,42 @@
 !**********************************************************************
 !.....Flags et dimensions "integer"
 !**********************************************************************
-      integer  ::                                                     &
-         istr_nh                                                      &
-        ,jstr_nh                                                      &
-        ,iend_nh                                                      &
-        ,jend_nh                                                      &
-        ,istru_nh                                                     &
-        ,jstru_nh                                                     &
-        ,istrv_nh                                                     &
-        ,jstrv_nh                                                     &
-        ,iendu_nh                                                     &
-        ,jendu_nh                                                     &
-        ,iendv_nh                                                     & 
-        ,jendv_nh                                                     & 
-        ,istrq_nh                                                     &
-        ,iendq_nh                                                     &
-        ,jstrq_nh                                                     &
-        ,jendq_nh
- 
-      integer  ::                                                     &
-         ifl_nh                                                       &
-        ,ifl_solv_nh                                                  &
-        ,l_nh                                                         &
-        ,l1_nh                                                        &
-        ,l2_nh                                                        &
-        ,nnz_nh         (10)                                          &
+
+       integer ::
+         nnz_nh         (10)                                          &
         ,nzeq_nh                                                      &
         ,nzcont_nh                                                    &
-        ,nzcontz_nh                                                    &
+        ,nzcontz_nh                                                   &
         ,nzmom_nh                                                     &   
         ,neqcont_nh                                                   &  
         ,neqmom_nh      (0:3)                                         &
         ,neqq_nh        (0:7)                                         &
         ,nequ_nh        (0:7)                                         &
         ,neqv_nh        (0:7)                                         &
-        ,neqw_nh        (0:7)                                      
+        ,neqw_nh        (0:7)       
         
+      integer, dimension(:), allocatable     ::                       &
+         momi_nh                                                      &  
+        ,momj_nh  
+
       integer,dimension(:),allocatable ::                             &        
          conti_nh                                                     &   
         ,cont_nnz_nh                                                  & 
         ,contj_nh                                                     & 
         ,contz_nnz_nh                                                  & 
         ,contzi_nh                                                    &   
-        ,contzj_nh      
+        ,contzj_nh   
 
 
 !**********************************************************************
 !.....Variables Real
 !**********************************************************************
-      real ::      &
-       period_exp  &
-      ,for_a_exp   &
-      ,dg_exp      &
-      ,hmax_exp    &
-      ,amp_exp
+!      real ::      &
+!       period_exp  &
+!      ,for_a_exp   &
+!      ,dg_exp      &
+!      ,hmax_exp    &
+!      ,amp_exp
 
 !**********************************************************************
 !.....Tableaux "integer"
@@ -108,17 +80,15 @@
         ,l2kq_nh        &  
         ,l2imom_nh      &  
         ,l2jmom_nh      &  
-        ,l2kmom_nh      &  
-        ,momi_nh        &  
-        ,momj_nh           
-        
+        ,l2kmom_nh      
+
       integer, dimension(:,:,:), allocatable    ::                    &
-         ijk2lq_nh      &  
-        ,mijk2lq_nh        
+         ijk2lq_nh     &
+        ,mijk2lq_nh
 
       integer, dimension(:,:,:,:), allocatable  ::                    &
          ijk2lmom_nh    &  
-        ,mijk2lmom_nh      
+        ,mijk2lmom_nh
 
 !**********************************************************************
 !.....Tableaux: double precision
@@ -130,19 +100,20 @@
         ,momv_nh        &  
         ,momvg_nh      
 
-      double precision, dimension(:,:), allocatable    ::             &
-         coriolis_nh_t                                                
-        
+!      double precision, dimension(:,:), allocatable    ::             &
+!         coriolis_nh_t                                                
+   
       double precision, dimension(:,:,:), allocatable   ::            &
          coefa_u        &  
         ,coefb_u        &  
         ,coefa_v        &  
-        ,coefb_v        &  
-        ,gdepth_u       &  
-        ,gdepth_v              
+        ,coefb_v
+      double precision, dimension(:,:,:), allocatable   ::            &
+         gdepth_u       &  
+        ,gdepth_v    
 
-      double precision                                                &
-         time_omp_nh    (100)                                        
+!      double precision                                                &
+!         time_omp_nh    (100)                                        
 
 
 ! fin module ne pas toucher a cette ligne
@@ -153,18 +124,18 @@
          implicit none
 
 # include "param_F90.h"
-#include "def_bounds.h"
+# include "def_bounds.h"
 
          integer :: imax,jmax,nbdom_world
 
       imax=LOCALLM
       jmax=LOCALMM
 
-#ifdef MPI
+# ifdef MPI
          nbdom_world=NNODES
-#else
+# else
          nbdom_world=1
-#endif
+# endif
 
          nmq_nh=(imax+4)*(jmax+4)*(N+1)
          nmv_nh=(imax+4)*(jmax+4)*N                &
@@ -181,35 +152,41 @@
          allocate(cont_nnz_nh     (nmq_nh)                   )  
          allocate(contz_nnz_nh     (nmq_nh)                   )  
          allocate(contj_nh        (nmcont_nh)                )  
-         allocate(contzj_nh       (nmcont_nh)                )  
+         allocate(contzj_nh       (nmcont_nh)                )    
+         allocate(momi_nh         (nmv_nh)                   )  
+         allocate(momj_nh         (nmmom_nh)                 ) 
+         allocate(momv_nh         (nmmom_nh)                 )  
+         allocate(momvg_nh        (nmmom_nh)                 )  
+         allocate(contv_nh        (0:nmcont_nh)              ) 
+         allocate(contzv_nh       (0:nmcont_nh)              ) 
+
          allocate(l2iq_nh         (nmq_nh)                   ) 
          allocate(l2jq_nh         (nmq_nh)                   ) 
          allocate(l2kq_nh         (nmq_nh)                   )  
          allocate(l2imom_nh       (nmv_nh)                   )  
          allocate(l2jmom_nh       (nmv_nh)                   )  
-         allocate(l2kmom_nh       (nmv_nh)                   )   
-         allocate(momi_nh         (nmv_nh)                   )  
-         allocate(momj_nh         (nmmom_nh)                 )  
-         allocate(ijk2lq_nh       (GLOBAL_2D_ARRAY,0:N+1)    )   
+         allocate(l2kmom_nh       (nmv_nh)                   ) 
+
+         allocate(ijk2lq_nh       (GLOBAL_2D_ARRAY,0:N+1)    )
          allocate(mijk2lq_nh      (GLOBAL_2D_ARRAY,0:N+1)    )
+
+
          allocate(ijk2lmom_nh     (GLOBAL_2D_ARRAY,0:N+1,3)  )   
          allocate(mijk2lmom_nh    (GLOBAL_2D_ARRAY,0:N+1,3)  )
-         allocate(contv_nh        (0:nmcont_nh)              ) 
-         allocate(contzv_nh       (0:nmcont_nh)              ) 
-         allocate(momv_nh         (nmmom_nh)                 )  
-         allocate(momvg_nh        (nmmom_nh)                 ) 
-         allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )  
+
+!         allocate(coriolis_nh_t   (GLOBAL_2D_ARRAY)          )
+
          allocate(coefa_u         (GLOBAL_2D_ARRAY,0:N+1)    )  
          allocate(coefb_u         (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(coefa_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
-         allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    )  
+         allocate(coefb_v         (GLOBAL_2D_ARRAY,0:N+1)    ) 
          allocate(gdepth_u        (GLOBAL_2D_ARRAY,0:N+1)    ) 
-         allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    )  
+         allocate(gdepth_v        (GLOBAL_2D_ARRAY,0:N+1)    ) 
 
          end subroutine alloc_module_nh
 
         end module module_nh  
 #else
-        module module_nh_empty
+        module module_nh
         end module
 #endif

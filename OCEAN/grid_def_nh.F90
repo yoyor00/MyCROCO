@@ -8,14 +8,15 @@
 !
 !******************************************************************************************
 
-      use module_nh
-      use module_nbq
+!      use module_nh
+!      use module_nbq
 
       implicit none
 
 # include "param_F90.h"
 # include "scalars_F90.h"
 # include "grid.h"
+# include "nbq.h"
 
 # include "def_bounds.h"
 
@@ -88,7 +89,7 @@
        jendu_nh = jend_nh
        istrv_nh = istr_nh
        iendv_nh = iend_nh 
-       jstrv_nh = 2
+       jstrv_nh = 1
        jendv_nh = LOCALMM 
 
 # ifdef MPI 
@@ -101,7 +102,7 @@
       endif
 # endif
 
-# ifdef MASKING
+# if defined  MASKING && !defined NBQ_IJK
 !*******************************************************************
 ! Grid-mask for NBQ-use
 !*******************************************************************

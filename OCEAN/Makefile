@@ -40,7 +40,8 @@ include Makedefs
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
-	step2d.F	u2dbc.F		v2dbc.F		zetabc.F\
+	step2d.F 	step3d_fast_zetaw.F		step3d_fast_zeta2d.F\
+ 	u2dbc.F		v2dbc.F		zetabc.F\
 	obc_volcons.F\
 \
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\
@@ -95,7 +96,7 @@ include Makedefs
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
+	autotiling.F	MessPass3D_nbq.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -105,21 +106,16 @@ include Makedefs
 \
 	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
+	unbqijk_bc.F vnbqijk_bc.F wnbqijk_bc.F rnbqijk_bc.F\
+	hnbq_bc.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
-	module_nh.F90		module_nbq.F90		module_qsort.F90\
-	module_parallel_nbq.F90 module_tracetxt_out.F90	module_param.F90\
-	nump_nh.F90		mat_cont_init_nh.F90	mat_cont_nh.F90\
-	mat_mom_init_nh.F90	mat_mom_nh.F90		initial_nh.F90\
-	grid_coef_nh.F90 	ru_nbq.F90		viscous_nbq.F90\
-	step3d_fb_nbq.F90	density_nbq.F90		spkitlocal_nh.F90\
-	MPI_setup_nbq.F90	parallele_nbq.F90	output_nbq.F90\
-	implicit_nbq.F90        amub2_tri.F90	        numuvw_nh.F90\
-	grid_def_nh.F90		grid_exchange.F90\
-	consout_nbq.F90\
+	module_param.F90\
+	grid_coef_nh.F90 	densityijk_nbq.F90        viscous_nbq.F90\
+	grid_def_nh.F90		grid_exchange.F90 initial_nh.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\

@@ -37,6 +37,7 @@
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_roms.h"
+# include "nbq.h"
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
       real    wrk(PRIVATE_2D_SCRATCH_ARRAY)
 # if defined CANARY  || defined IBERIA
@@ -55,7 +56,7 @@
 #  ifdef IGW
       isp=155
 #  else
-      isp=10
+      isp=20
 #  endif
 # else
 #  ifdef MPI
@@ -110,6 +111,11 @@
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
+
+#  ifdef NBQ_NUDGING
+          nudg_coef_nbq(i,j)=wrk(i,j)/1000.
+#  endif
+
 # endif
 
 # ifdef SPONGE_SED
@@ -198,7 +204,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_sponge_r(i,j)=(0.01/(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+          visc2_sponge_r(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef UV_VIS4
           visc4_sponge_r(i,j)=visc2_sponge_r(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -209,7 +215,7 @@
 !
       do j=Jstr,JendR
         do i=Istr,IendR
-          visc2_sponge_p(i,j)=0.25*(0.01/(pm(i,j)*pn(i,j)*dt))*
+          visc2_sponge_p(i,j)=0.25*(0.01 /(pm(i,j)*pn(i,j)*dt))*
      &                              ( wrk(i,j  )+wrk(i-1,j  )
      &                               +wrk(i,j-1)+wrk(i-1,j-1) ) 
 #   ifdef UV_VIS4
@@ -226,7 +232,7 @@
        do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
-            diff2_sponge(i,j)=(0.01/(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+            diff2_sponge(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef TS_DIF4
             diff4_sponge(i,j)=diff2_sponge(i,j)/(pm(i,j)*pn(i,j))
 #   endif
