@@ -58,14 +58,19 @@
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
+                      /* I/O server */
+# undef  XIOS
+                      /* dedicated croco.log file */
+# undef  LOGFILE
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
 # undef  OW_COUPLING
-                      /* I/O server */
-# undef  XIOS
+# undef  OA_GRID_UV
+                      /* Wave-current interactions */
+# undef  MRL_WCI
                       /* Open Boundary Conditions */
 # undef  TIDES
 # define OBC_EAST

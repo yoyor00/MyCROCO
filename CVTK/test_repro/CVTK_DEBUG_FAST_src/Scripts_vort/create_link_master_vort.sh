@@ -5,6 +5,7 @@ echo 'Create the link between CVTK_DEBUG_FAST_src and CVTK_DEBUG/test dir'
 ROOTDIR="/home7/datahome/crocodev/GIT/croco/CVTK/test_repro/CVTK_DEBUG_FAST_src"
 source "$ROOTDIR/CONFIGURE_VORT"
 
+rm -Rf $dir_test
 mkdir $dir_test
 mkdir $dir_test/Junk
 ln -sf $dir_home/Configure_Test_vort $dir_test/

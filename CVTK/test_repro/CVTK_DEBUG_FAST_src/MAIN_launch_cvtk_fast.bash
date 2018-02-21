@@ -1,1 +1,1 @@
-src_global/Launch_CVTK_FAST.bash
+src_global/MAIN_launch_cvtk_fast.bash
