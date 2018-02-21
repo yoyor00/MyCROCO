@@ -377,7 +377,8 @@
             || (defined QCORRECTION && !defined ANA_SST)   \
             || (defined SALINITY    && !defined ANA_SSFLUX  && \
                                        !defined BULK_FLUX   && \
-                                       !defined BULK_EP) \
+                                       !defined BULK_EP     &&
+                                       !defined OA_COUPLING) \
             || (defined SALINITY    && defined QCORRECTION && \
                                        defined SFLX_CORR   && \
                                        !defined ANA_SSS) \

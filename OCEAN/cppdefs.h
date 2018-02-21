@@ -187,6 +187,12 @@
 #  define SFLX_CORR
 #  define ANA_DIURNAL_SW
 # endif
+# ifdef OA_COUPLING
+#  undef BULK_FLUX
+#  undef QCORRECTION
+#  undef SFLX_CORR
+#  undef ANA_DIURNAL_SW
+# endif
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
 #  define MRL_WCI
