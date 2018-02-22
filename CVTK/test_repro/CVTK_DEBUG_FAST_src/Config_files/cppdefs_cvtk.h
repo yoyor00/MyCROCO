@@ -1111,7 +1111,7 @@
 */
 # define ANA_JET
 # define  MPI
-# define NBQ
+# undef NBQ
 # ifdef NBQ
 #  define NBQ_OBC
 #  undef NBQ_VOL

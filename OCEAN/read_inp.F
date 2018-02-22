@@ -363,38 +363,31 @@
      &                   'Grid File:', grdname(1:lstr)
 #endif
 
-#if (!defined BULK_FLUX && !defined ANA_SMFLUX && \
-                           !defined OA_COUPLING)  \
-        || (defined TIDES) \
-        || (defined MRL_WCI     && !defined ANA_WWAVE   && \
+
+! forcing file for tides
+#if defined TIDES \    
+        || (defined MRL_WCI     && !defined ANA_WWAVE && \
                                    !defined WKB_WWAVE && \
                                    !defined OW_COUPLING) \
-        || (defined SOLVE3D     && (\
-                                    (!defined ANA_STFLUX  && \
-                                     !defined BULK_FLUX   && \
-                                     !defined OA_COUPLING) \
-            ||                         !defined ANA_BTFLUX   \
-            || (defined BBL         && !defined ANA_BSEDIM  && \
-                                       !defined SEDIMENT) \
-            || (defined BBL         && !defined ANA_WWAVE   && \
-                                       !defined WKB_WWAVE && \
-                                       !defined OW_COUPLING) \
-            || (defined QCORRECTION && !defined ANA_SST)   \
-            || (defined SALINITY    && !defined ANA_SSFLUX  && \
-                                       !defined BULK_FLUX   && \
-                                       !defined BULK_EP     &&
-                                       !defined OA_COUPLING) \
-            || (defined SALINITY    && defined QCORRECTION && \
-                                       defined SFLX_CORR   && \
-                                       !defined ANA_SSS) \
-            || (defined LMD_SKPP    && !defined ANA_SRFLUX  && \
-                                       !defined BULK_FLUX && \
-                                       !defined OA_COUPLING) \
-            || (defined BULK_FLUX   && \
-                                      (!defined BULK_SMFLUX || \
-                                       !defined BULK_EP)) \
-                                   )\
-           )
+        || (defined SFLX_CORR   && !defined ANA_SSS   && \
+                                   !defined BULK_EP   && \
+                                   !defined OA_COUPLING) \
+        || (defined QCORRECTION && !defined ANA_SST   && \
+                                   !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        || (defined BBL         && !defined ANA_BSEDIM  && \
+                                   !defined SEDIMENT  && \
+                                   !defined OA_COUPLING) \
+        || (!defined ANA_STFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        || (defined SALINITY    && !defined ANA_SSFLUX && \ 
+                                   !defined BULK_EP   && \
+                                   !defined OA_COUPLING) \
+        || (!defined ANA_STFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING)
+
 !
 !
 ! Forcing file name. Check its availability.
