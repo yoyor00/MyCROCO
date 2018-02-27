@@ -146,6 +146,31 @@
         lstr=lenstr(fname)
       endif
 #endif
+#ifdef LOGFILE
+# ifndef AGRIF
+      MPI_master_only stdout=80
+# else 
+      stdout=Agrif_Get_Unit()     
+      if (.Not.Agrif_Root()) then
+        if(mynode.eq.0) then
+         open (stdout,file='croco.log.' / / Agrif_Cfixed(),
+     &   status='REPLACE',form='formatted',err=98)
+        else
+         stdout=6
+        endif
+      else          
+# endif 
+      if(mynode.eq.0) then      
+      open (stdout,file='croco.log',
+     & status='REPLACE',form='formatted',err=98)   
+      else  
+      stdout=6
+      endif
+# ifdef AGRIF
+      endif
+# endif      
+#endif  
+
 !
       wrthis(indxTime)=.false.
 #ifdef AVERAGES
@@ -338,37 +363,31 @@
      &                   'Grid File:', grdname(1:lstr)
 #endif
 
-#if (!defined BULK_FLUX && !defined ANA_SMFLUX && \
-                           !defined OA_COUPLING)  \
-        || (defined TIDES) \
-        || (defined MRL_WCI     && !defined ANA_WWAVE   && \
+
+! forcing file for tides
+#if defined TIDES \    
+        || (defined MRL_WCI     && !defined ANA_WWAVE && \
                                    !defined WKB_WWAVE && \
                                    !defined OW_COUPLING) \
-        || (defined SOLVE3D     && (\
-                                    (!defined ANA_STFLUX  && \
-                                     !defined BULK_FLUX   && \
-                                     !defined OA_COUPLING) \
-            ||                         !defined ANA_BTFLUX   \
-            || (defined BBL         && !defined ANA_BSEDIM  && \
-                                       !defined SEDIMENT) \
-            || (defined BBL         && !defined ANA_WWAVE   && \
-                                       !defined WKB_WWAVE && \
-                                       !defined OW_COUPLING) \
-            || (defined QCORRECTION && !defined ANA_SST)   \
-            || (defined SALINITY    && !defined ANA_SSFLUX  && \
-                                       !defined BULK_FLUX   && \
-                                       !defined BULK_EP) \
-            || (defined SALINITY    && defined QCORRECTION && \
-                                       defined SFLX_CORR   && \
-                                       !defined ANA_SSS) \
-            || (defined LMD_SKPP    && !defined ANA_SRFLUX  && \
-                                       !defined BULK_FLUX && \
-                                       !defined OA_COUPLING) \
-            || (defined BULK_FLUX   && \
-                                      (!defined BULK_SMFLUX || \
-                                       !defined BULK_EP)) \
-                                   )\
-           )
+        || (defined SFLX_CORR   && !defined ANA_SSS   && \
+                                   !defined BULK_EP   && \
+                                   !defined OA_COUPLING) \
+        || (defined QCORRECTION && !defined ANA_SST   && \
+                                   !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        || (defined BBL         && !defined ANA_BSEDIM  && \
+                                   !defined SEDIMENT  && \
+                                   !defined OA_COUPLING) \
+        || (!defined ANA_STFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        || (defined SALINITY    && !defined ANA_SSFLUX && \ 
+                                   !defined BULK_EP   && \
+                                   !defined OA_COUPLING) \
+        || (!defined ANA_STFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING)
+
 !
 !
 ! Forcing file name. Check its availability.
@@ -2052,6 +2071,10 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       goto 99 
   97  write(stdout,'(/1x,4A/)') 'READ_INP ERROR: Cannot find input ',
      &                                'file ''', fname(1:lstr), '''.'
+#ifdef LOGFILE
+  98  write(6,'(/1x,4A/)') 'READ_INP ERROR: Cannot open log file ',
+     &                                'file   , croco.log', '''.'
+#endif
       ierr=ierr+1
   99  close (input) 
 !

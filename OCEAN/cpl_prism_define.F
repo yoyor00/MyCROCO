@@ -101,11 +101,11 @@
 !     SST
       ssnd_clname(1) = 'SRMSSTV'//clevel
 !     SSH
-      ssnd_clname(1) = 'SRMSSHV'//clevel
+      ssnd_clname(2) = 'SRMSSHV'//clevel
 !     UOCE
-      ssnd_clname(2) = 'SRMUOCE'//clevel
+      ssnd_clname(3) = 'SRMUOCE'//clevel
 !     VOCE
-      ssnd_clname(3) = 'SRMVOCE'//clevel
+      ssnd_clname(4) = 'SRMVOCE'//clevel
 
 !------------------------------------------------------------------
 !     Received

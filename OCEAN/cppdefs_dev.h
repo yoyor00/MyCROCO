@@ -54,7 +54,6 @@
 # define MPI
 # define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
-# undef  OA_GRID_UV
 # undef  BULK_FLUX
 #endif
 
@@ -71,12 +70,8 @@
 # define MPI
 # define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
-# undef  OA_GRID_UV
-# define MRL_WCI
 # undef  WKB_WWAVE
-# undef  WAVE_ROLLER
-# define WAVE_STREAMING
-# define WAVE_RAMP
+# undef  WAVE_OFFLINE
 #endif
 
 /* 
@@ -475,6 +470,7 @@
 
 /* WKB specific options  */
 #ifdef WKB_WWAVE
+# define MRL_CEW
 # ifdef MRL_CEW
 #  undef  WKB_KZ_FILTER
 #  undef  WKB_TIME_FILTER
@@ -496,10 +492,15 @@
 # ifdef WAVE_STREAMING
 #  define WAVE_BODY_STREAMING
 # endif
-/* Default WCI is with input file data (WAVE_OFFLINE)  */
-# if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
-#  define WAVE_OFFLINE
-#  undef  WAVE_ROLLER
+#endif
+
+#ifdef WAVE_OFFLINE
+# define WAVE_OFFLINE_BREAKING
+# ifdef WAVE_ROLLER
+#  define WAVE_OFFLINE_ROLLER
+# endif
+# if defined WAVE_FRICTION || WAVE_STREAMING
+#  define WAVE_OFFLINE_FRICTION
 # endif
 #endif
 
