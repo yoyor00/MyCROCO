@@ -1573,9 +1573,9 @@
       call xios_send_field("u",u(:,:,:,nstp))
       call xios_send_field("v",v(:,:,:,nstp)) 
 #   ifdef NBQ
-      call xios_send_field("temp",t(:,:,:,nstp,3)) 
+      call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   else
-      call xios_send_field("temp",t(:,:,:,nstp,3)) 
+      call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   endif
 #  ifdef SALINITY
    !  call xios_send_field("salt",t(:,:,:,nstp,isalt))
