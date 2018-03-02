@@ -59,7 +59,8 @@
                       /* Parallelization */
 # undef  OPENMP
 # define  MPI
-                      /* Nesting */
+# define AMPI
+  /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */

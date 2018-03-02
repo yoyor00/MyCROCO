@@ -177,13 +177,13 @@ all: tools depend $(SBIN) $(SBIN)_adj
 # Executables files.
 # =========== =====
 #
-$(SBIN): $(OBJS90) $(OBJS) main.o
+$(SBIN): $(OBJS90) $(OBJS) main.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI)
 
-$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o
+$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o ampiSupport.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) 
 
-$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_tgt.o
+$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_tgt.o ampiSupport.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI)
 
 
@@ -300,7 +300,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich
+	tapenade $^ -msglevel 20 -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
@@ -309,7 +309,14 @@ main_adj.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS)
-	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich
+	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+
+
+fortranSupport.o : fortranSupport.F
+	$(FC) $(FFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
+
+ampiSupport.o : ampiSupport.c
+	$(CC) $(CFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
 
 # Special treatment for barrier function:
 # THERE SHALL BE NO OPTIMIZATION HERE!!!!
