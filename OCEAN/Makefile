@@ -102,7 +102,7 @@ include Makedefs
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
 	t3dpremix.F     update3D.F	Agrif2Model.F\
 \
-	init_xios.F	send_xios_diags.F\
+	send_xios_diags.F\
 \
 	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\

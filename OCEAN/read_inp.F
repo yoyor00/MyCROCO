@@ -365,7 +365,7 @@
 
 
 ! forcing file for tides
-#if defined TIDES \    
+#if defined TIDES \
         || (defined MRL_WCI     && !defined ANA_WWAVE && \
                                    !defined WKB_WWAVE && \
                                    !defined OW_COUPLING) \
@@ -380,7 +380,7 @@
                                    !defined OA_COUPLING) \
         || (!defined ANA_STFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
-        || (defined SALINITY    && !defined ANA_SSFLUX && \ 
+        || (defined SALINITY    && !defined ANA_SSFLUX && \
                                    !defined BULK_EP   && \
                                    !defined OA_COUPLING) \
         || (!defined ANA_STFLUX && !defined BULK_FLUX && \

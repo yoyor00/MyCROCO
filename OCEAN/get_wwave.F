@@ -468,7 +468,7 @@
         fac=wwp_scale/(fac1+fac2)
         fac31=fac*fac1
         fac32=fac*fac2
-        wwD=fac31*wwpp(it1)+fac32*wwpp(it2)
+        wwP=fac31*wwpp(it1)+fac32*wwpp(it2)
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
         fac=wweb_scale/(fac1+fac2)
