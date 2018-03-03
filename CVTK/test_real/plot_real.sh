@@ -1,19 +1,7 @@
 #!/bin/bash
 set -x
 
-LIST_EXAMPLE=$1
-ROOTDIR=$2
-NUMBER=$3
-
-if [ ${#ROOTDIR} -eq 0 ]; then
-  ROOTDIR=$(dirname $(dirname $PWD))
-fi 
-if [ ${#LIST_EXAMPLE} -eq 0 ]; then
-  LIST_EXAMPLE='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE SWASH THACKER TANK'
-fi  
-
-[ ! -d TEST_CASES ] && \cp -r ${ROOTDIR}/Run/TEST_CASES .
-
+#- dependancies
 REQUIRE="matlab pdfcrop gs"
 for i in $REQUIRE
 do 
@@ -23,6 +11,38 @@ do
  fi
 done
 
+b_n=$(basename ${0})
+OPTIND=1
+
+x_n='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE SWASH THACKER TANK'
+x_d=$(dirname $(dirname $PWD))
+
+#- Choice of the options ---
+while getopts :hn:d: V
+do
+  case $V in
+        (h) x_h=${OPTARG};
+        echo "Usage      : "${b_n} \
+            " [-h] [-n EXAMPLE] [-d ROOT_DIR] [-p PARALLEL] [-m MAX_PROC]";
+        echo " -h               : help";       
+        echo " -n EXAMPLE       : TEST name, as listed in cppdefs.h, default : all";
+        echo "";
+        exit 0;;
+        (n)  x_n=${OPTARG};;
+        (d)  x_d=${OPTARG};;
+        (:)  echo ${b_n}" : -"${OPTARG}" option : missing value" 1>&2;
+        exit 2;;
+        (\?) echo ${b_n}" : -"${OPTARG}" option : not supported" 1>&2;
+        exit 2;;
+  esac
+done
+shift $(($OPTIND-1));
+
+LIST_EXAMPLE=$x_n
+ROOTDIR=$x_d
+
+
+NUMBER=${@: -1}
 i=0
 for EXAMPLE in $LIST_EXAMPLE
   do 
@@ -42,7 +62,7 @@ for EXAMPLE in $LIST_EXAMPLE
     FILE2=$( comm -3 <( ls *.pdf ) <( echo "$FILE1" ) )
 
     gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFIXEDMEDIA -sPAPERSIZE=a4 -dPSFitPage -sOutputFile=tmp.pdf	${FILE2} 
-
+    \rm ${FILE2}
 gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFIXEDMEDIA -sPAPERSIZE=a4 -dPSFitPage -dSubsetFonts=true -dEmbedAllFonts=true -dPDFSETTINGS=/default  \
 -sOutputFile=${EXAMPLE}.pdf                          \
 -c "<< \
@@ -68,7 +88,7 @@ FILE3=${EXAMPLE}.pdf
 gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sPAPERSIZE=a4 -dSubsetFonts=true -dEmbedAllFonts=true -dPDFSETTINGS=/default  \
 -sOutputFile=merged_tmp.pdf ${FILE3}  
 \mv merged_tmp.pdf merged.pdf
-\rm ${EXAMPLE}.pdf ${FILE2} tmp.pdf
+\rm ${EXAMPLE}.pdf tmp.pdf
 
   done
 

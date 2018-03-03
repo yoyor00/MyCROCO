@@ -511,7 +511,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# define PASSIVE_TRACER
+# undef PASSIVE_TRACER
 
 #elif defined INNERSHELF
 /*
@@ -952,6 +952,7 @@
 # define AVERAGES
 # define EW_PERIODIC
 # define ANA_SMFLUX
+# define ANA_STFLUX
 
 # elif defined OVERFLOW
 /*
