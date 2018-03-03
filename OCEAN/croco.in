@@ -1,9 +1,11 @@
 title:
         BENGUELA TEST MODEL
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                720      3600     60      1
+                720      3600      60      1
 S-coord: THETA_S,   THETA_B,    Hc (m)
-           7.0d0      2.0d0      200.0d0
+           7.0d0     2.0d0      200.0d0
+time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
+                     1         1000         0.01
 grid:  filename
                           CROCO_FILES/croco_grd.nc
 forcing: filename
@@ -63,11 +65,11 @@ bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
 gamma2:
                  1.d0
 
-sponge:          X_SPONGE [m]
-                    XXX
+sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
+                    XXX               XXX  
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
-                1.       360.      3.      360.
+                1.      360.      3.      360.
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        72         0
@@ -118,7 +120,7 @@ diagbioVSink_history_fields:   wrtdiabioVSink
                                  50*T  
 
 diagbioGasExc_history_fields:  wrtdiabioGasExc 
-			                      50*T 
+		                 50*T 
 
 diagbioFlux_average_fields:    wrtdiabioFlux_avg
                                   50*T   
@@ -127,7 +129,7 @@ diagbioVSink_average_fields:   wrtdiabioVSink_avg
                                   50*T
 
 diagbioGasExc_average_fields:  wrtdiabioGasExc_avg
-			                      50*T
+			          50*T
 	
 biology:   forcing file
            CROCO_FILES/croco_frcbio.nc
@@ -139,18 +141,6 @@ sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
-
-wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
-                      T   T     T     T   T   T   T   T  T    T    T
-
-wave_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
-                      T   T     T      T     T       T      T     T    T
-
-wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
-            0.5       0.         10.      0.0       1.3    0.38
-
-wkb_roller:  roller_sinb  roller_fraction
-                  0.1          0.5
 
 floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname
            T      6      0
