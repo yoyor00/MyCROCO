@@ -254,11 +254,6 @@ C$    trd=omp_get_thread_num()
 #   ifdef MASKING
           vbar(i,Jstr,knew)=vbar(i,Jstr,knew)*vmask(i,Jstr)
 #   endif
-#   ifdef NBQ_ZETAW
-          DV_nbq(i,Jstr)=vbar(i,Jstr,knew)
-     &          *0.5*(H(i,Jstr  )+zeta(i,Jstr  ,knew)
-     &              + H(i,Jstr-1)+zeta(i,Jstr-1,knew))
-#   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                           Southern edge Specified BC
@@ -282,12 +277,14 @@ C$    trd=omp_get_thread_num()
      &                      *vmask(i,Jstr)
 #   endif
         enddo
-#  endif
+
+#  endif /* OBC_COM_ORLANSKI */
 # else
         do i=Istr,Iend                        ! Southern edge closed
           vbar(i,Jstr,knew)=0.                ! ======== ==== ======
         enddo                                 !  (no-flux, default)
 # endif          /* OBC_COM_SOUTH */
+
       endif   !<-- SOUTHERN_EDGE
 !
 !====================================================================
@@ -416,11 +413,6 @@ C$    trd=omp_get_thread_num()
 #   ifdef MASKING
           vbar(i,Jend+1,knew)=vbar(i,Jend+1,knew)*vmask(i,Jend+1)
 #   endif
-#   ifdef NBQ_ZETAW
-          DV_nbq(i,Jend+1)=vbar(i,Jend+1,knew)
-     &          *0.5*(H(i,Jend+1)+zeta(i,Jend+1,knew)
-     &              + H(i,Jend  )+zeta(i,Jend  ,knew))
-#   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                           Northern edge Specified BC
@@ -444,7 +436,8 @@ C$    trd=omp_get_thread_num()
      &                        *vmask(i,Jend+1)
 #   endif
         enddo
-#  endif
+
+#  endif /* OBC_COM_ORLANSKI */
 # else
         do i=Istr,Iend                        ! Northern edge closed
           vbar(i,Jend+1,knew)=0.              ! ======== ==== ======
@@ -840,6 +833,75 @@ C$    trd=omp_get_thread_num()
       END IF
 # endif
 #endif  /* WET_DRY */
+
+#if defined NBQ && defined NBQ_ZETAW
+!
+!=======================================================================
+!  Computes normal boundary values of DU_nbq for NBQ OBCs
+!=======================================================================
+!
+# ifndef NS_COM_PERIODIC
+#  ifdef OBC_COM_SOUTH
+      if (SOUTHERN_EDGE) then
+        do i=Istr,Iend
+          DV_nbq(i,Jstr)=vbar(i,Jstr,knew)
+     &                   *0.5*(h(i,Jstr  )+zeta(i,Jstr  ,knew)
+     &                       + h(i,Jstr-1)+zeta(i,Jstr-1,knew))
+#   ifdef NBQ_MASS
+     &                         *0.5*(rhobar_nbq(i,Jstr  ,knew)
+     &                              +rhobar_nbq(i,Jstr-1,knew))
+#   endif
+        enddo
+      endif
+#  endif
+#  ifdef OBC_COM_NORTH
+      if (NORTHERN_EDGE) then
+        do i=Istr,Iend
+          DV_nbq(i,Jend+1)=vbar(i,Jend+1,knew)
+     &                   *0.5*(h(i,Jend+1)+zeta(i,Jend+1,knew)
+     &                       + h(i,Jend  )+zeta(i,Jend  ,knew))
+#   ifdef NBQ_MASS
+     &                           *0.5*(rhobar_nbq(i,Jend+1,knew)
+     &                                +rhobar_nbq(i,Jend  ,knew))
+#   endif
+        enddo
+      endif
+#  endif
+# endif /* NS_COM_PERIODIC */
+!
+# ifdef QDM_OBC_TANG_CORRECT
+# ifndef EW_COM_PERIODIC
+#  ifdef OBC_COM_WEST
+      if (WESTERN_EDGE) then
+        do j=JstrV,Jend
+          DV_nbq(Istr-1,j)=vbar(Istr-1,j,knew)
+     &                 *0.5*(h(Istr-1,j  )+zeta(Istr-1,j,knew)
+     &                      +h(Istr-1,j-1)+zeta(Istr-1,j,knew))
+#   ifdef NBQ_MASS
+     &                         *0.5*(rhobar_nbq(Istr-1,j,knew)
+     &                              +rhobar_nbq(Istr-1,j,knew))
+#   endif
+
+        enddo
+      endif
+#  endif
+#  ifdef OBC_COM_EAST
+      if (EASTERN_EDGE) then
+        do j=JstrV,Jend
+          DV_nbq(Iend+1,j)=vbar(Iend+1,j,knew)
+     &                 *0.5*(h(Iend+1,j  )+zeta(Iend+1,j,knew)
+     &                      +h(Iend+1,j-1)+zeta(Iend+1,j,knew))
+#   ifdef NBQ_MASS
+     &                         *0.5*(rhobar_nbq(Iend+1,j,knew)
+     &                              +rhobar_nbq(Iend+1,j,knew))
+#   endif
+        enddo
+      endif
+#  endif
+# endif /* EW_COM_PERIODIC */
+# endif
+#endif /* NBQ */
+
 
       return
       end

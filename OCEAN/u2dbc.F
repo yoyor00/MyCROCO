@@ -136,7 +136,7 @@ C$    trd=omp_get_thread_num()
 !====================================================================
 #ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then                
-# ifdef OBC_COM_WEST                  
+# ifdef OBC_COM_WEST
 #  ifdef OBC_COM_M2ORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
@@ -228,51 +228,35 @@ C$    trd=omp_get_thread_num()
      &             zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
           hx=sqrt(g/cff)
           cx=dtfast*cff*hx*0.5*(pm(Istr-1,j)+pm(Istr,j))
-  
-c          if (cx.lt.0.5) then
-c            zx=(0.5+cx)*zeta(Istr,j,kstp)+(0.5-cx)*zeta(Istr-1,j,kstp)
-c          else
-c            zx=(0.5*zeta(Istr,j,kstp)+(cx-0.5)*zeta(Istr,j,knew))/cx
-c          endif
           zx=(0.5+cx)*zeta(istr,j,kstp)+(0.5-cx)*zeta(istr-1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(istr,j,knew) +cx*zeta(istr-1,j,kstp)
-     &                               -(1.+cx)*zeta(istr,j,kstp)
+     &                             -(1.+cx)*zeta(istr  ,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
   
-          ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr,j,kstp)
-     &                                    +cx*ubar(Istr+1,j,kstp)
+          ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr  ,j,kstp)
+     &                                 +cx*ubar(Istr+1,j,kstp)
 #   ifdef M2_FRC_BRY
-     &                                           +ubarbry_west(j)
+     &                                        +ubarbry_west(j)
 #   elif defined M2CLIMATOLOGY
-     &                                             +ubclm(Istr,j)
+     &                                          +ubclm(Istr,j)
 #    endif
-     &                                      -hx*( zx
+     &                                          -hx*( zx
 #   ifdef Z_FRC_BRY
-     &                                           -zetabry_west(j)
+     &                                        -zetabry_west(j)
 #   elif defined ZCLIMATOLOGY
-     &                                             -ssh(Istr-1,j)
+     &                                          -ssh(Istr-1,j)
 #   endif
-     &                           )) !*grad(Istr,j)
+     &                           ))
 #   ifdef MASKING
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
-#   endif
-#   ifdef NBQ_ZETAW
-          DU_nbq(Istr,j)=ubar(Istr,j,knew)
-     &          *0.5*(H(Istr  ,j)+zeta(Istr  ,j,knew)
-     &              + H(Istr-1,j)+zeta(Istr-1,j,knew))
 #   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
         do j=Jstr,Jend
-#   ifdef NBQ_ZETAW
-          DU_nbq(Istr,j)=ubar(Istr,j,knew)
-     &          *0.5*(H(Istr,j)+zeta(Istr,j,knew)
-     &              + H(Istr-1,j)+zeta(Istr-1,j,knew))
-#   endif     
 #   ifdef M2_FRC_BRY
           ubar(Istr,j,knew)=ubarbry_west(j)
 #   else
@@ -291,7 +275,8 @@ c          endif
      &                      *umask(Istr,j)
 #   endif
         enddo
-#  endif
+
+#  endif /* OBC_COM_ORLASNKI */
 !
 #  ifdef MRL_WCI000
                                                 ! Western edge WEC
@@ -316,7 +301,9 @@ c          endif
           ubar(istr,j,knew)=0.                  ! (no-flux, default)
 #  endif
         enddo
+
 # endif           /* OBC_COM_WEST */
+
       endif     !<-- WESTERN_EDGE
 !
 !====================================================================
@@ -415,40 +402,29 @@ c          endif
      &             zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
           hx=sqrt(g/cff)
           cx=dtfast*cff*hx*0.5*(pm(Iend,j)+pm(Iend+1,j))
-  
-c          if (cx.lt.0.5) then
-c            zx=(0.5+cx)*zeta(Iend,j,kstp)+(0.5-cx)*zeta(Iend+1,j,kstp)
-c          else
-c            zx=(0.5*zeta(Iend,j,kstp)+(cx-0.5)*zeta(Iend,j,knew))/cx
-c          endif
           zx=(0.5+cx)*zeta(iend,j,kstp)+(0.5-cx)*zeta(iend+1,j,kstp)
           if (cx .gt. 0.292893218813452) then
             zx=zx + ( zeta(iend,j,knew) +cx*zeta(iend+1,j,kstp)
-     &                               -(1.+cx)*zeta(iend,j,kstp)
+     &                             -(1.+cx)*zeta(iend  ,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
   
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
-     &                                        +cx*ubar(Iend,j,kstp)
+     &                                   +cx*ubar(Iend  ,j,kstp)
 #   ifdef M2_FRC_BRY
-     &                                             +ubarbry_east(j)
+     &                                          +ubarbry_east(j)
 #   elif defined M2CLIMATOLOGY
-     &                                             +ubclm(Iend+1,j)
+     &                                          +ubclm(Iend+1,j)
 #    endif
-     &                                      +hx*( zx
+     &                                          +hx*( zx
 #   ifdef Z_FRC_BRY
-     &                                           -zetabry_east(j)
+     &                                          -zetabry_east(j)
 #   elif defined ZCLIMATOLOGY
-     &                                               -ssh(Iend,j)
+     &                                              -ssh(Iend,j)
 #   endif
-     &                             )) !*grad(Iend+1,j)
+     &                             ))
 #   ifdef MASKING
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
-#   endif
-#   ifdef NBQ_ZETAW
-          DU_nbq(Iend+1,j)=ubar(Iend+1,j,knew)
-     &          *0.5*(H(Iend+1,j)+zeta(Iend+1,j,knew)
-     &               +H(Iend  ,j)+zeta(Iend  ,j,knew))
 #   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
@@ -473,7 +449,8 @@ c          endif
      &                        *umask(Iend+1,j)
 #   endif
         enddo
-#  endif
+
+#  endif /* OBC_COM_ORLANKSI */
 !
 #  ifdef MRL_WCI000
 !                                            Eastern edge WEC
@@ -499,12 +476,14 @@ c          endif
           ubar(Iend+1,j,knew)=0.
 #  endif
         enddo
+
 # endif /* OBC_COM_EAST */
+
       endif         !<-- EASTERN_EDGE
+
 #endif              /* !EW_COM_PERIODIC */
  
- 
- 
+
 #ifndef NS_COM_PERIODIC
 !
 !====================================================================
@@ -574,7 +553,7 @@ c          endif
      &                    zeta(i-1,Jstr-1,kstp)+zeta(i,Jstr-1,kstp)))
           cx=dtfast*0.5*cff*(pn(i-1,Jstr-1)+pn(i,Jstr-1))
           ubar(i,Jstr-1,knew)=(ubar(i,Jstr-1,kstp)
-     &                         +cx*ubar(i,Jstr,knew) )/(1.+cx)     
+     &                        +cx*ubar(i,Jstr,knew) )/(1.+cx)     
 #   ifdef MASKING
      &                         *umask(i,Jstr-1)
 #   endif
@@ -892,6 +871,73 @@ c          endif
       END IF
 # endif
 #endif  /* WET_DRY */
+
+#if defined NBQ && defined NBQ_ZETAW
+!
+!=======================================================================
+!  Computes normal boundary values of DU_nbq for NBQ OBCs
+!=======================================================================
+!
+# ifndef EW_COM_PERIODIC
+#  ifdef OBC_COM_WEST
+      if (WESTERN_EDGE) then
+        do j=Jstr,Jend
+          DU_nbq(Istr,j)=ubar(Istr,j,knew)
+     &                     *0.5*(h(Istr  ,j)+zeta(Istr  ,j,knew)
+     &                         + h(Istr-1,j)+zeta(Istr-1,j,knew))
+#   ifdef NBQ_MASS
+     &                           *0.5*(rhobar_nbq(Istr  ,j,knew)
+     &                                +rhobar_nbq(Istr-1,j,knew))
+#   endif
+        enddo
+      endif
+#  endif
+#  ifdef OBC_COM_EAST
+      if (EASTERN_EDGE) then
+        do j=Jstr,Jend
+          DU_nbq(Iend+1,j)=ubar(Iend+1,j,knew)
+     &                     *0.5*(h(Iend+1,j)+zeta(Iend+1,j,knew)
+     &                          +h(Iend  ,j)+zeta(Iend  ,j,knew))
+#   ifdef NBQ_MASS
+     &                           *0.5*(rhobar_nbq(Iend+1,j,knew)
+     &                                +rhobar_nbq(Iend  ,j,knew))
+#   endif
+        enddo
+      endif
+#  endif
+# endif /* EW_COM_PERIODIC */
+!
+# ifdef QDM_OBC_TANG_CORRECT
+# ifndef NS_COM_PERIODIC
+#  ifdef OBC_COM_SOUTH
+      if (SOUTHERN_EDGE) then
+        do i=IstrU,Iend
+          DU_nbq(i,Jstr-1)=ubar(i,Jstr-1,knew)
+     &                 *0.5*(h(i  ,Jstr-1)+zeta(i  ,Jstr-1,knew)
+     &                      +h(i-1,Jstr-1)+zeta(i-1,Jstr-1,knew))
+#   ifdef NBQ_MASS
+     &                         *0.5*(rhobar_nbq(i  ,Jstr-1,knew)
+     &                              +rhobar_nbq(i-1,Jstr-1,knew))
+#   endif
+        enddo
+      endif
+#  endif
+#  ifdef OBC_COM_NORTH
+      if (NORTHERN_EDGE) then
+        do i=IstrU,Iend
+          DU_nbq(i,Jend+1)=ubar(i,Jend+1,knew)
+     &                 *0.5*(h(i  ,Jend+1)+zeta(i  ,Jend+1,knew)
+     &                      +h(i-1,Jend+1)+zeta(i-1,Jend+1,knew))
+#   ifdef NBQ_MASS
+     &                         *0.5*(rhobar_nbq(i  ,Jend+1,knew)
+     &                              +rhobar_nbq(i-1,Jend+1,knew))
+#   endif
+        enddo
+      endif
+#  endif
+# endif /* NS_COM_PERIODIC */
+# endif
+#endif /* NBQ */
 
       return
       end

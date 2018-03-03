@@ -56,7 +56,7 @@
 #  ifdef IGW
       isp=155
 #  else
-      isp=20
+      isp=10
 #  endif
 # else
 #  ifdef MPI
@@ -111,11 +111,6 @@
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
-
-#  ifdef NBQ_NUDGING
-          nudg_coef_nbq(i,j)=wrk(i,j)/1000.
-#  endif
-
 # endif
 
 # ifdef SPONGE_SED
@@ -142,6 +137,9 @@
 # endif
 # ifdef M3NUDGING
           M3nudgcof(i,j)=tauM_out*wrk(i,j)
+# endif
+# ifdef NBQ_NUDGING
+          NBQnudgcof(i,j)=5.e-4*wrk(i,j) ! ~ 1 hour
 # endif
         enddo
       enddo

@@ -232,12 +232,7 @@
 !----------------------------------------------------------------------
 !
       integer NWEIGHT
-#ifdef NBQ
-      parameter (NWEIGHT=100000)
-#else
       parameter (NWEIGHT=1000)
-#endif
-
 !
 !----------------------------------------------------------------------
 ! Tides, Wetting-Drying, Point sources, Floast, Stations

@@ -11,13 +11,13 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#  ifdef MPI
-#   define LOCALLM Lmmpi
-#   define LOCALMM Mmmpi
-#  else
-#   define LOCALLM Lm
-#   define LOCALMM Mm
-#  endif      
+#ifdef MPI
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
+#else
+# define LOCALLM Lm
+# define LOCALMM Mm
+#endif      
 
 #ifdef AGRIF
 # ifdef AGRIF_OBC_WEST
@@ -73,6 +73,10 @@
       common/zoom3D_UT/Utimeindex
       integer Vtimeindex
       common/zoom3D_VT/Vtimeindex
+#  ifdef NBQ
+      integer U3DFastTimeindex, U3DFastTimeindex2
+      common /zoom3Dfast_UT/ U3DFastTimeindex, U3DFastTimeindex2
+#  endif
 # endif
 
       real weight2(0:NWEIGHT,0:NWEIGHT)
@@ -188,9 +192,12 @@
             
       integer hid, zetaid,ubarid,vbarid,uid,vid,tid
       integer rmaskid
-#ifdef WET_DRY
+# ifdef NBQ
+      integer qdmunbqid, qdmvnbqid, qdmwnbqid, rhonbqid
+# endif
+# ifdef WET_DRY
       integer rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
-#endif
+# endif
       integer tspongeid, uspongeid, vspongeid
 # ifdef WKB_WWAVE
       integer wacid,wkxid,wkeid
@@ -201,9 +208,12 @@
 # endif
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
      &  tspongeid, uspongeid, vspongeid, rmaskid
-#ifdef WET_DRY
+# ifdef WET_DRY
      &         ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
-#endif
+# endif
+# ifdef NBQ
+     &         ,qdmunbqid,qdmvnbqid,qdmwnbqid,rhonbqid
+# endif
 # ifdef WKB_WWAVE
      &  ,wacid,wkxid,wkeid
      &  ,hrmid,frqid,wsbid,wvnid,wcgid,wfcid

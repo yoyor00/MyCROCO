@@ -67,6 +67,13 @@
       real rho1(GLOBAL_2D_ARRAY,N)
       real rho(GLOBAL_2D_ARRAY,N)
       common /ocean_rho1/rho1 /ocean_rho/rho
+# if defined NONLIN_EOS && defined SPLIT_EOS
+      real qp1(GLOBAL_2D_ARRAY,N)
+      common /ocean_qp1/qp1
+      real qp2
+      parameter (qp2=0.0000172)
+# endif
+
 # ifdef BIOLOGY
 #  ifdef BIO_NChlPZD
       real theta(GLOBAL_2D_ARRAY,N)
@@ -74,13 +81,19 @@
 #  elif defined BIO_BioEBUS  
       real AOU(GLOBAL_2D_ARRAY,N)
       common /ocean_AOU/AOU
+      real wind10(GLOBAL_2D_ARRAY)
+      common /ocean_wind10/wind10      
 #  endif
 # endif  /* BIOLOGY */
-# if defined NONLIN_EOS && defined SPLIT_EOS
-      real qp1(GLOBAL_2D_ARRAY,N)
-      common /ocean_qp1/qp1
-      real qp2
-      parameter (qp2=0.0000172)
-# endif
+
+# ifdef OXYGEN
+      real u10(GLOBAL_2D_ARRAY)
+      real Kv_O2(GLOBAL_2D_ARRAY)
+      real O2satu(GLOBAL_2D_ARRAY)
+      common /gasexc_O2_u10/ u10 
+      common /gasexc_O2_Kv_O2/ Kv_O2
+      common /gasexc_O2_O2satu/ O2satu
+# endif /* OXYGEN */
+
 #endif  /* SOLVE3D */
 

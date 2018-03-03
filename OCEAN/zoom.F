@@ -4,7 +4,7 @@
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license. 
 ! 
 ! This routine belongs to the specific CROCO package.
 ! 
@@ -142,6 +142,7 @@
 # ifdef AUTOTILING
 #  include "autotiling.h"
 # endif
+# include "nbq.h"
 
       integer size_XI,size_ETA,se,sse, sz,ssz
       real res1,res2,res3,res4,res5,res6,cff1,cff2
@@ -231,7 +232,7 @@
 !            
 !      call Agrif_Set_type(h,(/2,2/),(/1,1/))
 !      call Agrif_Set_raf(h,(/'x','y'/))  
-
+!            
 #  ifdef MASKING      
 !      call Agrif_Set_type(rmask,(/2,2/),(/1,1/))
 !      call Agrif_Set_raf(rmask,(/'x','y'/))          
@@ -523,8 +524,10 @@ CR      write(*,*) ' -6' MYID
 C$OMP PARALLEL DO PRIVATE(tile)      ! Create three-dimensional
       do tile=0,NSUB_X*NSUB_E-1      ! S-coordinate system: at this
         call set_depth (tile)        ! time free surface is set to
-      enddo                          ! a non-zero field, either 
-CR      write(*,*)  ' -5' MYID       ! analytically or from restart.
+                                     ! a non-zero field, either
+                                     ! analytically or from restart.
+      enddo                          
+CR      write(*,*)  ' -5' MYID       
 # endif
 
 # ifdef SOLVE3D
@@ -600,6 +603,17 @@ CR      write(*,*)  ' -5' MYID       ! analytically or from restart.
 #  endif /* AGRIF_ADAPTIVE */
 !
 !----------------------------------------------------------------------
+!  Set initial Non-boussinesq variables - Part I
+!----------------------------------------------------------------------
+!
+# ifdef NBQ
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nh(tile,1)
+      enddo
+# endif
+!
+!----------------------------------------------------------------------
 !  Initialize diagnostic fields: mass flux, rho, omega
 !----------------------------------------------------------------------
 !
@@ -615,6 +629,27 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*)  ' -3' MYID
 # endif /* SOLVE3D */
+!
+!----------------------------------------------------------------------
+!  Set initial Non-boussinesq density field: rhobar_nbq - Part II
+!----------------------------------------------------------------------
+!
+# ifdef NBQ
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nh(tile,2)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_depth (tile,1)
+      enddo
+      
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_HUV (tile)
+      enddo
+# endif
 !
 !----------------------------------------------------------------------
 ! Create environment for lateral forcing:
@@ -759,6 +794,18 @@ C$OMP END MASTER
 !
 CR      write(*,*) ' -1' MYID 
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
+
+!
+!----------------------------------------------------------------------
+!  Set initial Non-boussinesq variables PART III
+!----------------------------------------------------------------------
+!
+# ifdef NBQ
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nh(tile,3)
+      enddo     
+# endif
 !
 !----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files
@@ -950,6 +997,7 @@ CR      write(*,*) '  0' MYID
 # include "ncscrum.h"
 # include "scalars.h"
 # include "zoom.h"
+!# include "nbq.h"
       integer :: irhot
       
       i1t = 0
@@ -1377,6 +1425,15 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),tid)
+
+!# ifdef NBQ                     
+!        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/), !!  LR test; \TODO check dims
+!     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
+!     &    (/i2t,j2t,N,NT/),rhonbqid)
+!        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
+!     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
+!     &    (/i2t,j2t,N,NT/),qdmwnbqid)
+!# endif
      
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
@@ -1385,6 +1442,12 @@ CR      write(*,*) '  0' MYID
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),uid)
+
+!# ifdef NBQ                  
+!        call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/), !!  LR test; \TODO check dims
+!     &   (/'x','y','N'/),(/i1u,j1t,1/),
+!     &   (/i2u,j2t,N/),qdmunbqid)
+!# endif
      
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
@@ -1394,6 +1457,12 @@ CR      write(*,*) '  0' MYID
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vid)
      
+!# ifdef NBQ                  
+!        call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),!!  LR test; \TODO check dims
+!     &   (/'x','y','N'/),(/i1t,j1v,1/),
+!     &   (/i2t,j2v,N/),qdmvnbqid)
+!# endif
+
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vspongeid)     
@@ -1476,6 +1545,10 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bcinterp(zetaid,interp=Agrif_lagrange)        
         call Agrif_Set_bcinterp(ubarid,interp1=Agrif_lagrange,
      &                                 interp2=Agrif_ppm)
+!# ifdef NBQ
+!        call Agrif_Set_bc(qdmunbqid,(/0,0/))
+!        call Agrif_Set_bc(qdmvnbqid,(/0,0/))
+!# endif
 # ifdef WET_DRY
         call Agrif_Set_bcinterp(ubarwetid,interp=Agrif_Constant)
 # endif     
@@ -1502,6 +1575,12 @@ CR      write(*,*) '  0' MYID
      
         call Agrif_Set_bcinterp(vspongeid,interp1=Agrif_ppm,
      &                                 interp2=Agrif_lagrange) 
+!# ifdef NBQ
+!        call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_lagrange,
+!     &                                 interp2=Agrif_ppm)
+!        call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
+!     &                                 interp2=Agrif_lagrange)
+!# endif
 
       call Agrif_Set_UpdateType(rmaskid,update=
      &Agrif_Update_Average)
@@ -1510,20 +1589,20 @@ CR      write(*,*) '  0' MYID
      &Agrif_Update_Average)
 # endif
      
-#if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX        
+# if defined AGRIF_UPDATE_FULLWEIGHTING || defined AGRIF_UPDATE_MIX        
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_full_weighting)
-#endif
+# endif
 
-#if defined AGRIF_UPDATE_MIX_HIGH
+# if defined AGRIF_UPDATE_MIX_HIGH
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_4rdorder)
-#endif
+# endif
 
-#if defined AGRIF_UPDATE_AVERAGE || defined AGRIF_UPDATE_MIX_LOW
+# if defined AGRIF_UPDATE_AVERAGE || defined AGRIF_UPDATE_MIX_LOW
       call Agrif_Set_UpdateType(hid,update=
      &Agrif_Update_Average)
-#endif
+# endif
 
       end subroutine declare_zoom_variables
 !

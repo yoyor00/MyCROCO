@@ -136,18 +136,6 @@
       if (ierr.ne.0) goto 100        !--> ERROR
 #endif
 !
-!----------------------------------------------------------------------
-!  Set allocations for non-boussinesq (NBQ) equation arrays
-!----------------------------------------------------------------------
-!
-#if defined NBQ && !defined NBQ_IJK
-      call alloc_module_nh() 
-# ifndef MPI
-      MPI_STATUS_SIZE=1
-# endif
-      call alloc_module_nbq(MPI_STATUS_SIZE)
-#endif
-!
 #define CR  !
 !
 !----------------------------------------------------------------------
@@ -270,11 +258,7 @@ CR      write(*,*) ' -8' MYID
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile
-#ifdef NBQ
-     &      ,0
-#endif
-     & )
+        call set_depth (tile)
       enddo
 CR      write(*,*) ' -7' MYID
 !
@@ -332,11 +316,7 @@ CR      write(*,*) ' -6' MYID
 #if defined  SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile
-#ifdef NBQ
-     &      ,0
-#endif
-     & )
+        call set_depth (tile)
       enddo
 CR      write(*,*)  ' -5' MYID
 #endif
@@ -349,8 +329,8 @@ CR      write(*,*)  ' -5' MYID
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nh(tile,1)
-      enddo	  
-# endif
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize diagnostic fields: mass flux, rho, omega
@@ -374,18 +354,18 @@ CR      write(*,*)  ' -3' MYID
 #endif
 !
 !----------------------------------------------------------------------
-!  Set initial Non-boussinesq density field: rhp_nbq_a
+!  Set initial Non-boussinesq density field: rhobar_nbq
 !----------------------------------------------------------------------
 !
 #ifdef NBQ
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nh(tile,2)
-      enddo	  
+      enddo
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile,1)
+        call set_depth (tile)
       enddo
       
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -693,7 +673,7 @@ C$OMP END MASTER
 
 !
 !----------------------------------------------------------------------
-!  Set initial Non-boussinesq variables PART3
+!  Set initial Non-boussinesq variables PART3: momentum fields
 !----------------------------------------------------------------------
 !
 #ifdef NBQ
@@ -701,8 +681,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nh(tile,3)
       enddo     
-# endif
-
+#endif
 !
 !----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files
@@ -840,9 +819,6 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
       call MPI_Finalize (ierr)
 # endif     
 #endif
-#ifdef LOGFILE
-      MPI_master_only close (stdout)
-#endif      
 
       stop
       end

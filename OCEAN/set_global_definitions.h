@@ -229,6 +229,12 @@
 # define FIRST_2D_STEP iic.eq.ntstart
 # define NOT_LAST_2D_STEP iic.lt.ntimes+2
 #endif
+!
+#ifdef NBQ
+# define FIRST_FAST_STEP iif.eq.1
+# define LAST_FAST_STEP iif.eq.nfast
+# define NOT_LAST_FAST_STEP iif.lt.nfast+1
+#endif
 
 /* Switch ON/OFF double precision for real type variables (since this
  is mostly controlled by mpc and/or compuler options, this CPP-switch
