@@ -1,13 +1,25 @@
+! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello $
+!
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! The two other branches from UCLA (Shchepetkin et al) 
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+! 
+! CROCO website : http://www.croco-ocean.org
+!======================================================================
+!
 #include "cppdefs.h"
 #ifdef NBQ
-
+!
       subroutine grid_def_nh
-
-!******************************************************************************************
+!
+!=======================================================================
+!
 !                   Numbering of Mass Points
 !
-!******************************************************************************************
-
+!=======================================================================
+!
 !      use module_nh
 !      use module_nbq
 
@@ -17,20 +29,13 @@
 # include "scalars_F90.h"
 # include "grid.h"
 # include "nbq.h"
-
 # include "def_bounds.h"
 
       integer :: i1,i2,j1,j2,i,j
 
-!******************************************************************************************
-! Inner MPI domain:
-! cf: http://poc.obs-mip.fr/auclair/WOcean.fr/SNH/Restricted/NH-NBQ/Html_pages/Algebrique_Numerotation_Base.htm
-!******************************************************************************************
-
 !*******************************************************************
 !     Definitions: *_INTER_NBQ logical variables
 !*******************************************************************
-
 
 # ifdef MPI 
 
@@ -102,128 +107,12 @@
       endif
 # endif
 
-# if defined  MASKING && !defined NBQ_IJK
-!*******************************************************************
-! Grid-mask for NBQ-use
-!*******************************************************************
-
-      rmask_nbq(Istr_nh:Iend_nh  ,Jstr_nh:Jend_nh)   = rmask(Istr_nh:Iend_nh  ,Jstr_nh:Jend_nh)
-      umask_nbq(Istru_nh:Iendu_nh,Jstru_nh:Jendu_nh) = umask(Istru_nh:Iendu_nh,Jstru_nh:Jendu_nh)
-      vmask_nbq(Istrv_nh:Iendv_nh,Jstrv_nh:Jendv_nh) = vmask(Istrv_nh:Iendv_nh,Jstrv_nh:Jendv_nh)
-
-!  Exchange Grid
-#  ifdef MPI
-      call exchange_r2d_tile (Istr_nh,Iend_nh,Jstr_nh,Jend_nh,  &
-                        rmask_nbq(START_2D_ARRAY))
-      call exchange_u2d_tile (Istru_nh,Iendu_nh,Jstru_nh,Jendu_nh,  &
-                        umask_nbq(START_2D_ARRAY))
-      call exchange_v2d_tile (Istrv_nh,Iendv_nh,Jstrv_nh,Jendv_nh,  &
-                        vmask_nbq(START_2D_ARRAY))
-#  endif
-
-      i1 = istr_nh
-      i2 = iend_nh
-      do j=jstr_nh-1,jend_nh+1
-#  ifdef MPI
-         if (WESTERN_EDGE) rmask_nbq(i1-1,j) = rmask_nbq(i1,j)
-         if (EASTERN_EDGE) rmask_nbq(i2+1,j) = rmask_nbq(i2,j)
-#  else
-#   if defined OBC_WEST
-            rmask_nbq(i1-1,j) = rmask_nbq(i1,j)
-#   endif
-#   if defined OBC_EAST
-            rmask_nbq(i2+1,j) = rmask_nbq(i2,j)
-#   endif
-#  endif
-      enddo
-
-      j1 = jstr_nh
-      j2 = jend_nh
-      do i=istr_nh-1,iend_nh+1
-#  ifdef MPI
-        if (SOUTHERN_EDGE) rmask_nbq(i,j1-1) = rmask_nbq(i,j1)
-        if (NORTHERN_EDGE) rmask_nbq(i,j2+1) = rmask_nbq(i,j2)
-#  else
-#   if defined OBC_SOUTH
-           rmask_nbq(i,j1-1) = rmask_nbq(i,j1)
-#   endif
-#   if defined OBC_NORTH
-           rmask_nbq(i,j2+1) = rmask_nbq(i,j2)
-#   endif
-#  endif
-      enddo
-
-      i1 = istru_nh
-      i2 = iendu_nh
-      do j=jstru_nh-1,jendu_nh+1
-#  ifdef MPI
-         if (WESTERN_EDGE) umask_nbq(i1-1,j) = umask_nbq(i1,j)
-         if (EASTERN_EDGE) umask_nbq(i2+1,j) = umask_nbq(i2,j)
-#  else
-#   if defined OBC_WEST
-            umask_nbq(i1-1,j) = umask_nbq(i1,j)
-#   endif
-#   if defined OBC_EAST
-            umask_nbq(i2+1,j) = umask_nbq(i2,j)
-#   endif
-#  endif
-      enddo
-
-      j1 = jstru_nh
-      j2 = jendu_nh
-      do i=istru_nh-1,iendu_nh+1
-#  ifdef MPI
-        if (SOUTHERN_EDGE) umask_nbq(i,j1-1) = umask_nbq(i,j1)
-        if (NORTHERN_EDGE) umask_nbq(i,j2+1) = umask_nbq(i,j2)  
-#  else
-#   if defined OBC_SOUTH
-           umask_nbq(i,j1-1) = umask_nbq(i,j1)
-#   endif
-#   if defined OBC_NORTH
-           umask_nbq(i,j2+1) = umask_nbq(i,j2)
-#   endif
-#  endif
-      enddo
-
-      i1 = istrv_nh
-      i2 = iendv_nh
-      do j=jstrv_nh-1,jendv_nh+1
-#  ifdef MPI
-         if (WESTERN_EDGE) vmask_nbq(i1-1,j) = vmask_nbq(i1,j)
-         if (EASTERN_EDGE) vmask_nbq(i2+1,j) = vmask_nbq(i2,j)
-#  else
-#   if defined OBC_WEST
-            vmask_nbq(i1-1,j) = vmask_nbq(i1,j)
-#   endif
-#   if defined OBC_EAST
-            vmask_nbq(i2+1,j) = vmask_nbq(i2,j)
-#   endif
-#  endif
-      enddo
-
-      j1 = jstrv_nh
-      j2 = jendv_nh
-      do i=istrv_nh-1,iendv_nh+1
-#  ifdef MPI
-        if (SOUTHERN_EDGE) vmask_nbq(i,j1-1) = vmask_nbq(i,j1)
-        if (NORTHERN_EDGE) vmask_nbq(i,j2+1) = vmask_nbq(i,j2)
-#  else
-#   if defined OBC_SOUTH
-           vmask_nbq(i,j1-1) = vmask_nbq(i,j1)
-#   endif
-#   if defined OBC_NORTH
-           vmask_nbq(i,j2+1) = vmask_nbq(i,j2)
-#   endif
-#  endif
-      enddo
-# endif
-
       return
 
       end subroutine grid_def_nh
  
 #else
-        subroutine grid_def_nh_empty
-        return
-        end 
+      subroutine grid_def_nh_empty
+      return
+      end 
 #endif

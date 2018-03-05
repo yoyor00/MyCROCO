@@ -22,17 +22,18 @@ include Makedefs
 #======================================================================
 # SRCS: source codes files are sorted into groups, separated by
 # blanc lines:
-#   1) main driving part;	   2) 2D time stepping engine;
-#   3) 3D time stepping engine;	   4) sea-water EOS routines;
-#   5) vertical mixing schemes;    6) on-fly model diagnostic routines;
-#   7) netCDF I/O routines;	   8) main forcing routines;
-#   9) Wave forcing routines;	  10) Online surface forcing routines;
-#  11) Floats routines;		  12) Stations routines;
-#  13) biology/sediment routines; 14) PISCES routines
-#  15) MPI routines;		  16) AGRIF routines;           
-#  17) non-hydrostatic engine     18) OASIS coupling interface;
+#   1) main driving part;		 2) 2D time stepping engine;
+#   3) 3D time stepping engine;		 4) non-hydrostatic engine
+#   5) sea-water EOS;			 6) vertical mixing schemes;    
+#   7) on-fly model diagnostics;	 8) netCDF I/O routines;	   
+#   9) main forcing;			10) Wave forcing routines;
+#  11) Online surface forcing;		12) Floats routines;
+#  13) Station diagnostics;		14) biology/sediment routines;
+#  15) PISCES biology;			16) MPI routines;
+#  17) AGRIF routines;			18) OASIS coupling interface;
 #
-# SRC90: additional F90 routines for the non-hydrostatic engine
+# SRC90: additional F90 routines for the non-hydrostatic engine,
+#        PISCES code and OASIS interface
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
@@ -40,8 +41,7 @@ include Makedefs
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
-	step2d.F 	step3d_fast_zetaw.F		step3d_fast_zeta2d.F\
- 	u2dbc.F		v2dbc.F		zetabc.F\
+	step2d.F 	u2dbc.F		v2dbc.F		zetabc.F\
 	obc_volcons.F\
 \
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\
@@ -49,6 +49,11 @@ include Makedefs
 	uv3dmix.F	uv3dmix_spg.F	t3dmix.F	t3dmix_spg.F\
 	hmix_coef.F	wetdry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
+\
+	step3d_fast_zetaw.F		step3d_fast_zeta2d.F\
+	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
+	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
+        nbq_bry_store.F\
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F\
 \
@@ -100,22 +105,18 @@ include Makedefs
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
-	t3dpremix.F     update3D.F	Agrif2Model.F\
+	t3dpremix.F     update3D.F	zoombc_3Dfast.F\
+	Agrif2Model.F\
 \
-	init_xios.F	send_xios_diags.F\
-\
-	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
-	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
-	unbqijk_bc.F vnbqijk_bc.F wnbqijk_bc.F rnbqijk_bc.F\
-	hnbq_bc.F\
+	send_xios_diags.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
 	module_param.F90\
-	grid_coef_nh.F90 	densityijk_nbq.F90        viscous_nbq.F90\
-	grid_def_nh.F90		grid_exchange.F90 initial_nh.F90\
+	grid_coef_nh.F90 	density_nbq.F90\
+	grid_def_nh.F90		initial_nh.F90\
 \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\

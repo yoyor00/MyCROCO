@@ -31,10 +31,6 @@ C$    integer omp_get_thread_num
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#ifdef KH_INST
-      use module_nh
-      use module_nbq
-#endif
       implicit none
 #include "param.h"
 #include "grid.h"

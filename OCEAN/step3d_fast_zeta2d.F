@@ -61,8 +61,8 @@ C$    trd=omp_get_thread_num()
      &                          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
      &                          ,work_nbq
      &                          ,work3d_nbq
-     &                          ,ruext_nbq_2d_sum, rvext_nbq_2d_sum
-     &                          ,ruext_nbq_2d_old, rvext_nbq_2d_old
+     &                          ,ru_ext_nbq_sum, rv_ext_nbq_sum
+     &                          ,ru_ext_nbq_old, rv_ext_nbq_old
      &                          ,Drhs_half_u,Drhs_half_v
      &                          )
 
@@ -113,9 +113,6 @@ C$    trd=omp_get_thread_num()
 !
 !======================================================================
 !
-      use module_nh
-      use module_nbq
-
       implicit none
 #include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
@@ -157,10 +154,10 @@ C$    trd=omp_get_thread_num()
        real work_nbq(PRIVATE_2D_SCRATCH_ARRAY,11)
        real work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,N,5)
 
-       real ruext_nbq_2d_sum(PRIVATE_2D_SCRATCH_ARRAY)
-       real rvext_nbq_2d_sum(PRIVATE_2D_SCRATCH_ARRAY)
-       real ruext_nbq_2d_old(PRIVATE_2D_SCRATCH_ARRAY)
-       real rvext_nbq_2d_old(PRIVATE_2D_SCRATCH_ARRAY)
+       real ru_ext_nbq_sum(PRIVATE_2D_SCRATCH_ARRAY)
+       real rv_ext_nbq_sum(PRIVATE_2D_SCRATCH_ARRAY)
+       real ru_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY)
+       real rv_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY)
        real Drhs_half_u(PRIVATE_2D_SCRATCH_ARRAY)
        real Drhs_half_v(PRIVATE_2D_SCRATCH_ARRAY)
 #ifdef M2FILTER_NONE
@@ -1501,9 +1498,9 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !
 !   ru_int_nbq        : RHS (3D) ( *mask & 2D correction)
 !
-!   ruext_nbq_2d     : RHS (2D)
-!   ruext_nbq_2d_old : RHS (2D) at previous time-step
-!   ruext_nbq_2d_sum : to compute time-averaged RHS (2D)
+!   ru_ext_nbq     : RHS (2D)
+!   ru_ext_nbq_old : RHS (2D) at previous time-step
+!   ru_ext_nbq_sum : to compute time-averaged RHS (2D)
 !   
 !
 !-----------------------------------------------------------------------
@@ -1518,8 +1515,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !
         do j=Jstr,Jend
           do i=IstrU,Iend
-            ruext_nbq_2d_sum(i,j)=0.
-            ruext_nbq_2d_old(i,j)=0.
+            ru_ext_nbq_sum(i,j)=0.
+            ru_ext_nbq_old(i,j)=0.
 !            Drhs_half_u(i,j) = 0.
           enddo
         enddo
@@ -1538,8 +1535,8 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
  
         do j=JstrV,Jend
           do i=Istr,Iend
-            rvext_nbq_2d_sum(i,j)=0.
-            rvext_nbq_2d_old(i,j)=0.
+            rv_ext_nbq_sum(i,j)=0.
+            rv_ext_nbq_old(i,j)=0.
 !            Drhs_half_v(i,j) = 0.
           enddo
         enddo 
@@ -1563,17 +1560,17 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 ! All 2D time-steps 
 !------------------------------
 !
-#define ruext_nbq_2d UFx
+#define ru_ext_nbq UFx
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-          ruext_nbq_2d(i,j)=(rufrc(i,j)+rubar(i,j))*pm_u(i,j)*pn_u(i,j)
+          ru_ext_nbq(i,j)=(rufrc(i,j)+rubar(i,j))*pm_u(i,j)*pn_u(i,j)
      &              /(Drhs(i,j)+Drhs(i-1,j))
 #ifdef MASKING
-          ruext_nbq_2d(i,j)=ruext_nbq_2d(i,j)*umask(i,j)
+          ru_ext_nbq(i,j)=ru_ext_nbq(i,j)*umask(i,j)
 #endif
 #if defined M2FILTER_NONE     
-          ruext_nbq_2d_sum(i,j)=ruext_nbq_2d_sum(i,j)+ruext_nbq_2d(i,j)
+          ru_ext_nbq_sum(i,j)=ru_ext_nbq_sum(i,j)+ru_ext_nbq(i,j)
 #endif          
         enddo
       enddo
@@ -1582,7 +1579,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)  +
-     &        (ruext_nbq_2d(i,j)-ruext_nbq_2d_old(i,j))
+     &        (ru_ext_nbq(i,j)-ru_ext_nbq_old(i,j))
      &        *(Hz_half(i-1,j,k)+Hz_half(i,j,k))
           enddo
         enddo
@@ -1590,22 +1587,22 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-          ruext_nbq_2d_old(i,j)=ruext_nbq_2d(i,j)
+          ru_ext_nbq_old(i,j)=ru_ext_nbq(i,j)
         enddo
       enddo
       
-#undef ruext_nbq_2d
+#undef ru_ext_nbq
 
-#define rvext_nbq_2d UFx
+#define rv_ext_nbq UFx
       do j=JstrV,Jend
         do i=Istr,Iend
-          rvext_nbq_2d(i,j)=(rvfrc(i,j)+rvbar(i,j))*pm_v(i,j)*pn_v(i,j)
+          rv_ext_nbq(i,j)=(rvfrc(i,j)+rvbar(i,j))*pm_v(i,j)*pn_v(i,j)
      &              /(Drhs(i,j)+Drhs(i,j-1))
 #ifdef MASKING
-          rvext_nbq_2d(i,j)=rvext_nbq_2d(i,j)*vmask(i,j)
+          rv_ext_nbq(i,j)=rv_ext_nbq(i,j)*vmask(i,j)
 #endif
 #if defined M2FILTER_NONE     
-          rvext_nbq_2d_sum(i,j)=rvext_nbq_2d_sum(i,j)+rvext_nbq_2d(i,j)
+          rv_ext_nbq_sum(i,j)=rv_ext_nbq_sum(i,j)+rv_ext_nbq(i,j)
 #endif          
         enddo
       enddo
@@ -1614,7 +1611,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
         do j=JstrV,Jend
           do i=Istr,Iend
             rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)+
-     &        (rvext_nbq_2d(i,j)-rvext_nbq_2d_old(i,j))
+     &        (rv_ext_nbq(i,j)-rv_ext_nbq_old(i,j))
      &         *(Hz_half(i,j-1,k)+Hz_half(i,j,k))
           enddo
         enddo
@@ -1622,10 +1619,10 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 
       do j=JstrV,Jend
         do i=Istr,Iend
-          rvext_nbq_2d_old(i,j)=rvext_nbq_2d(i,j)
+          rv_ext_nbq_old(i,j)=rv_ext_nbq(i,j)
         enddo
       enddo
-#undef rvext_nbq_2d 
+#undef rv_ext_nbq 
 
 !
 !***********************************************************************
@@ -1762,12 +1759,12 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           do k=1,N
             do j=Jstr,Jend
               do i=IstrU,Iend
-     !    !     ru_nbq_avg1(i,j,k)=ru_nbq_ext(i,j,k)
+     !    !     ru_nbq_avg1(i,j,k)=ru_nbq(i,j,k)
                 ru_int_nbq(i,j,k) = ru_int_nbq(i,j,k)
-     &             -ruext_nbq_2d_old(i,j)*(Hz_half(i-1,j,k)+Hz_half(i,j,k))
+     &             -ru_ext_nbq_old(i,j)*(Hz_half(i-1,j,k)+Hz_half(i,j,k))
                 ru_nbq_avg2(i,j,k)=
      &             ((qdmu_nbq(i,j,k)-ru_nbq_avg2(i,j,k))/dt
-     &             -ru_int_nbq(i,j,k)-(ruext_nbq_2d_sum(i,j)/nfast)*
+     &             -ru_int_nbq(i,j,k)-(ru_ext_nbq_sum(i,j)/nfast)*
      &             (Hz_half(i,j,k)+Hz_half(i-1,j,k)))*on_u(i,j)*om_u(i,j)
               enddo
             enddo 
@@ -1776,13 +1773,13 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           do k=1,N
             do j=JstrV,Jend
               do i=Istr,Iend             
-          !     rv_nbq_avg1(i,j,k)=rv_nbq_ext(i,j,k) 
+          !     rv_nbq_avg1(i,j,k)=rv_nbq(i,j,k) 
                 rv_int_nbq(i,j,k) = rv_int_nbq(i,j,k)
-     &            -rvext_nbq_2d_old(i,j)*(Hz_half(i,j-1,k)+Hz_half(i,j,k))
+     &            -rv_ext_nbq_old(i,j)*(Hz_half(i,j-1,k)+Hz_half(i,j,k))
 
                 rv_nbq_avg2(i,j,k)=
      &             ((qdmv_nbq(i,j,k)-rv_nbq_avg2(i,j,k))/dt
-     &             -rv_int_nbq(i,j,k)-(rvext_nbq_2d_sum(i,j)/nfast)*
+     &             -rv_int_nbq(i,j,k)-(rv_ext_nbq_sum(i,j)/nfast)*
      &             (Hz_half(i,j,k)+Hz_half(i,j-1,k)))*on_v(i,j)*om_v(i,j) 
               enddo
             enddo 
@@ -1791,7 +1788,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           do k=1,N   ! Francis: switch from k=0 to k=1 here
             do j=Jstr,Jend
               do i=Istr,Iend
-         !      rw_nbq_avg1(i,j,k)=rw_nbq_ext(i,j,k)
+         !      rw_nbq_avg1(i,j,k)=rw_nbq(i,j,k)
                 rw_nbq_avg2(i,j,k)=
      &             ((qdmw_nbq(i,j,k)-rw_nbq_avg2(i,j,k))/dt
      &             -rw_int_nbq(i,j,k))*on_r(i,j)*om_r(i,j)
@@ -1809,21 +1806,21 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 #ifdef NBQ_NOCOUPLING 
           rubar_nbq   =0.   ! 2D
           rvbar_nbq   =0.
-          ru_nbq_ext  =0.   ! 3D
-          rv_nbq_ext  =0.
-          rw_nbq_ext  =0.
+          ru_nbq      =0.   ! 3D
+          rv_nbq      =0.
+          rw_nbq      =0.
           ru_nbq_avg2 =0.
           rv_nbq_avg2 =0.
           rw_nbq_avg2 =0.
 # ifdef NBQ_MASS
           rhobar_nbq  =1.
-          rho_nbq_ext =1.
+          rho_nbq     =1.
           rho_nbq_avg1=1.
 # endif
 #endif
 
 !         rhobar_nbq  =1.
-!         rho_nbq_ext =1.
+!         rho_nbq     =1.
 !         rho_nbq_avg1=1.
 
 !

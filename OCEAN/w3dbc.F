@@ -599,6 +599,14 @@
 # endif
       return
       end
+!
+# ifndef CHILD
+#  define CHILD
+#  ifdef AGRIF
+#   include "w3dbc.F"
+#  endif
+#  undef CHILD
+# endif  /* !CHILD */
 #else
       subroutine w3dbc_empty
       end

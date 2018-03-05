@@ -54,7 +54,12 @@
 # define MPI
 # define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
+# undef  OA_GRID_UV
 # undef  BULK_FLUX
+# undef  QCORRECTION
+# undef  SFLX_CORR
+# undef  ANA_DIURNAL_SW
+# undef  OA_GRID_UV
 #endif
 
 /* 
@@ -72,6 +77,11 @@
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  WKB_WWAVE
 # undef  WAVE_OFFLINE
+# ifdef MRL_WCI
+#  undef  WAVE_ROLLER
+#  define WAVE_STREAMING
+#  define WAVE_RAMP
+# endif
 #endif
 
 /* 
@@ -108,6 +118,97 @@
 
 /*
 ======================================================================
+   Activate NBQ choices for non-hydrostatic simulations
+======================================================================
+*/
+#ifdef NBQ              /* General options */
+# define SOLVE3D
+# define M2FILTER_NONE  /* no filter with NBQ */
+# undef  M2FILTER_POWER
+# define NBQ_ZETAW
+# define NBQ_IMP
+# undef  NBQ_FREESLIP
+# undef  TRACETXT
+# undef  DIAG_CFL
+# define HZR Hzr
+/*
+   NBQ Precise or Performance options 
+*/
+# if !defined NBQ_PERF
+#  define NBQ_PRECISE
+# endif
+# ifdef NBQ_PRECISE
+#  define NBQ_MASS                               
+#  define NBQ_ZETAREDIAG
+#  define NBQ_HZCORRECT
+# else
+#  undef  NBQ_MASS
+#  undef  NBQ_ZETAREDIAG
+#  define NBQ_HZCORRECT
+# endif
+/*
+   Options for older ZETA2D code 
+*/
+# ifndef NBQ_ZETAW
+#  undef  NBQ_MASS
+#  undef  NBQ_GRIDEXT
+#  undef  NBQ_ZETAEXP
+#  undef  NBQ_ZETAREDIAG
+#  undef  NBQ_TRACERS
+#  define NBQ_NODS
+# endif
+/*
+   Options for wz HADV numerical schemes (default C4)
+*/
+# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_HADV_TVD
+# elif defined W_HADV_WENO5 /* not implemented */
+# elif defined W_HADV_C4
+# elif defined W_HADV_C2
+# else
+#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_HADV_TVD      /* TVD vertical advection                 */
+#  undef  W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  define W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
+# endif
+/*
+   Options for wz VADV numerical schemes (default SPLINES)
+*/
+# ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_VADV_TVD
+# elif defined W_VADV_WENO5 /* not implemented */
+# elif defined W_VADV_C2
+# else
+#  define W_VADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_VADV_TVD      /* TVD vertical advection                 */
+#  undef  W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
+#  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
+# endif
+/*
+   NBQ Open boundary conditions
+*/
+# if defined OBC_WEST  || defined OBC_EAST  || \
+     defined OBC_NORTH || defined OBC_SOUTH
+#  define OBC_NBQ
+# endif
+# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
+#  define OBC_NBQORLANSKI    /*  Radiative conditions           */
+#  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
+#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
+# endif
+
+#else                /* Hydrostatic mode */
+
+# define HZR Hz
+
+#endif  /* NBQ */
+
+/*
+======================================================================
    Activate barotropic pressure gradient response to the
    perturbation of free-surface in the presence of stratification
 ======================================================================
@@ -117,71 +218,6 @@
 # if !defined NONLIN_EOS && !defined INNERSHELF
 #  define RESET_RHO0
 # endif
-#endif
-
-/*
-======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
-======================================================================
-*/
-#ifdef NBQ
-# define M2FILTER_NONE
-# undef M2FILTER_POWER
-# define NBQ_IJK
-# define NBQ_IMP
-# define NBQ_IMPIJK
-# define NBQ_CONS
-# define NBQ_COUPLE1
-# undef TRACETXT
-# define HZR Hzr
-# define NBQ_ZETAW
-/*
-======================================================================
-   Activate NBQ Precise or Performance mode ======================================================================
-*/
-#if !defined NBQ_PERF
-#define NBQ_PRECISE
-#endif
-
-#ifdef NBQ_PRECISE
-#       define NBQ_MASS                               
-#       define NBQ_DTDRHO2
-#       undef NBQ_DTDRHO2B
-#       define NBQ_GRIDEXT
-#       define NBQ_ZETAEXP
-#       define NBQ_ZETAREDIAG
-#       define NBQ_TRACERS
-#       undef  NBQ_NODS
-#else
-#       undef NBQ_MASS
-#       define NBQ_DTDRHO2
-#       undef  NBQ_DTDRHO2B
-#       undef NBQ_GRIDEXT
-#       undef NBQ_ZETAEXP
-#       undef NBQ_ZETAREDIAG
-#       define NBQ_TRACERS
-#       define NBQ_NODS
-#endif
-#ifndef NBQ_ZETAW
-#       undef NBQ_MASS
-#       undef NBQ_DTDRHO2
-#       undef NBQ_DTDRHO2B
-#       undef NBQ_GRIDEXT
-#       undef NBQ_ZETAEXP
-#       undef NBQ_ZETAREDIAG
-#       undef NBQ_TRACERS
-#       define NBQ_NODS
-#endif
-# ifdef OBC_NBQ
-#  undef  OBC_NBQORLANSKI
-#  undef  OBC_NBQSPECIFIED
-#  undef  NBQ_FRC_BRY
-#  define W_FRC_BRY
-# endif
-
-
-#else
-# define HZR Hz
 #endif
 
 /*
@@ -233,6 +269,7 @@
 #elif defined UV_HADV_UP5
 #elif defined UV_HADV_C6
 #elif defined UV_HADV_WENO5
+#elif defined UV_HADV_TVD
 #else
 # define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
 # undef  UV_HADV_C4        /* 4th-order centered lateral advection */
@@ -240,6 +277,7 @@
 # undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
 # undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
 # undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
+# undef  UV_HADV_TVD	   /*           TVD      lateral advection */
 #endif
 /* 
    UV DIFFUSION: set default orientation
@@ -277,10 +315,12 @@
 #ifdef UV_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
 #elif defined UV_VADV_WENO5
 #elif defined UV_VADV_C2
+#elif defined UV_VADV_TVD
 #else
-# define UV_VADV_SPLINES   /* Splines vertical advection             */
-# undef  UV_VADV_WENO5     /* 5th-order WENOZ vertical advection  */
+# define UV_VADV_SPLINES   /*            Splines vertical advection  */
+# undef  UV_VADV_WENO5     /* 5th-order  WENOZ   vertical advection  */
 # undef  UV_VADV_C2        /* 2nd-order centered vertical advection  */
+# undef  UV_VADV_TVD       /*            TVD     vertical advection  */
 #endif
 
 #ifdef VADV_ADAPT_IMP      /* Semi-implicit vertical advection       */
@@ -470,7 +510,6 @@
 
 /* WKB specific options  */
 #ifdef WKB_WWAVE
-# define MRL_CEW
 # ifdef MRL_CEW
 #  undef  WKB_KZ_FILTER
 #  undef  WKB_TIME_FILTER
@@ -492,15 +531,10 @@
 # ifdef WAVE_STREAMING
 #  define WAVE_BODY_STREAMING
 # endif
-#endif
-
-#ifdef WAVE_OFFLINE
-# define WAVE_OFFLINE_BREAKING
-# ifdef WAVE_ROLLER
-#  define WAVE_OFFLINE_ROLLER
-# endif
-# if defined WAVE_FRICTION || WAVE_STREAMING
-#  define WAVE_OFFLINE_FRICTION
+/* Default WCI is with input file data (WAVE_OFFLINE)  */
+# if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
+#  define WAVE_OFFLINE
+#  undef  WAVE_ROLLER
 # endif
 #endif
 
@@ -556,6 +590,12 @@
 # define LIMIT_BSTRESS
 #endif
 #ifdef BBL
+# ifdef OW_COUPLING
+# elif defined WAVE_OFFLINE
+# elif defined WKB_WWAVE
+# else
+#  define ANA_WWAVE
+# endif
 # ifdef SEDIMENT
 #  undef  ANA_BSEDIM
 # else

@@ -1,7 +1,7 @@
 title:
         BENGUELA TEST MODEL
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               5     150      60      10
+               17280     150      60      10
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0      0.0d0     1.0d16
 grid:  filename
@@ -12,15 +12,15 @@ climatology: filename
                           TEST_CASES/igw_clm.nc
 initial: NRREC  filename
           0
-                          igw_ini.nc
+                          TEST_CASES/igw_ini.nc
 restart:          NRST, NRPFRST / filename
-                   5    -1
+                   72000    -1
                           igw_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T      5     0
+            T      24     0
                           igw_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
-            1      5     0
+            1      259200     0
                           igw_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
