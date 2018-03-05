@@ -247,7 +247,7 @@
  
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
-#    if defined NBQ_FRC_BRY || defined NB_QNUDGING
+#    if defined NBQ_FRC_BRY || defined NBQ_NUDGING
               tau=tau_in
             else
               tau=tau_out
