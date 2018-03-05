@@ -1578,8 +1578,7 @@
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   endif
 #  ifdef SALINITY
-   !  call xios_send_field("salt",t(:,:,:,nstp,isalt))
-      call xios_send_field("salt",Hz(:,:,:))
+      call xios_send_field("salt",t(:,:,:,nstp,isalt))
 #  endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
@@ -1605,18 +1604,7 @@
 
 #  ifdef NBQ
       call xios_send_field("w_nbq",wz(:,:,:,nstp))
-#ifndef NBQ_IJK
-      do l_nbq=1,neqcont_nh
-         i = l2iq_nh (l_nbq)
-         j = l2jq_nh (l_nbq)
-         k = l2kq_nh (l_nbq)
-         workr(i,j,k) = rhp_nbq_a(l_nbq)
-      enddo
-      call xios_send_field("rho_nbq",workr)
-#else
       call xios_send_field("rho_nbq",rho_nbq)
-#endif
-
 #  endif
 
       call Wvlcty (tile, workr) 
