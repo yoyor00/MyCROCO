@@ -143,8 +143,8 @@ c**
      &			WS_type,ierr)
 	     call mpi_type_commit(WS_type,ierr)
 	  ! Déclare persistant Comm
-	     call mpi_ssend_init(A, 1, WS_type, p_W, 11, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_ssend_init(A, 1, WS_type, p_W, 11, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 
 	     newsize=(/ Npts, jmax-jmin+1, nmax /)
 	     ! Recv
@@ -155,8 +155,8 @@ c**
      & 			MPI_DOUBLE_PRECISION,
      &			WR_type,ierr)
 	     call mpi_type_commit(WR_type,ierr)
-	     call mpi_recv_init(A, 1, WR_type, p_W, 12, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_recv_init(A, 1, WR_type, p_W, 12, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 
           endif
           
@@ -171,8 +171,8 @@ c**
      & 			MPI_DOUBLE_PRECISION,
      &			ES_type,ierr)
 	     call mpi_type_commit(ES_type,ierr)
-	     call mpi_ssend_init(A, 1, ES_type, p_E, 12, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_ssend_init(A, 1, ES_type, p_E, 12, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 
 	     newsize=(/ Npts, jmax-jmin+1, nmax /)
 ! 	     newsize=(/ 1, jmax-jmin+1, nmax /)
@@ -184,8 +184,8 @@ c**
      & 			MPI_DOUBLE_PRECISION,
      &			ER_type,ierr)
 	     call mpi_type_commit(ER_type,ierr)
-	     call mpi_recv_init(A, 1, ER_type, p_E, 11, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_recv_init(A, 1, ER_type, p_E, 11, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
  
           endif
 
@@ -202,8 +202,8 @@ c**
      &			SS_type,ierr)	  
 	  call mpi_type_commit(SS_type,ierr)
 	  ! Déclare persistant Comm
-	  call mpi_ssend_init(A, 1, SS_type, p_S, 13, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	  call mpi_ssend_init(A, 1, SS_type, p_S, 13, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 	  !! Same couscous with Receive
 	  ! Define size of exchange subarray
 	  newsize=(/ imax-imin+1, Npts, nmax /)
@@ -217,8 +217,8 @@ c**
      &			SR_type,ierr)	  
 	  call mpi_type_commit(SR_type,ierr)
 	  ! Déclare persistant Comm
-	  call mpi_recv_init(A, 1, SR_type, p_S, 14, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	  call mpi_recv_init(A, 1, SR_type, p_S, 14, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
           endif
           
           if (NORTH_INTER) then
@@ -234,8 +234,8 @@ c**
      &			NS_type,ierr)	  
 	  call mpi_type_commit(NS_type,ierr)
 	  ! Déclare persistant Comm
-	  call mpi_ssend_init(A, 1, NS_type, p_N, 14, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	  call mpi_ssend_init(A, 1, NS_type, p_N, 14, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 	  !! Same couscous with Receive
 	  ! Define size of exchange subarray
 	  newsize=(/ imax-imin+1, Npts, nmax /)
@@ -249,8 +249,8 @@ c**
      &			NR_type,ierr)	  
 	  call mpi_type_commit(NR_type,ierr)
 	  ! Déclare persistant Comm
-	  call mpi_recv_init(A, 1, NR_type, p_N, 13, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	  call mpi_recv_init(A, 1, NR_type, p_N, 13, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 	  endif	 
 	  
 	  ! 
@@ -269,8 +269,8 @@ c**
      &			SWS_type,ierr)
 	     call mpi_type_commit(SWS_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_ssend_init(A, 1, SWS_type, p_SW, 16, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_ssend_init(A, 1, SWS_type, p_SW, 16, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 !	     ! Send bounds Carreful index begin in 0 even in fortran
 	     starts = (/ 1-Npts,1-Npts,1 /) - lbound(A)
 	    ! Create and commit mpi type
@@ -281,8 +281,8 @@ c**
      &			SWR_type,ierr)
 	     call mpi_type_commit(SWR_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_recv_init(A, 1, SWR_type, p_SW, 15, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_recv_init(A, 1, SWR_type, p_SW, 15, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
           endif
           
           if (NORTH_INTER .and. EAST_INTER) then
@@ -298,8 +298,8 @@ c**
      &			NES_type,ierr)
 	     call mpi_type_commit(NES_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_ssend_init(A, 1, NES_type, p_NE, 15, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_ssend_init(A, 1, NES_type, p_NE, 15, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
      
 !	     ! Send bounds Carreful index begin in 0 even in fortran
 	     starts = (/ Lmmpi+1,Mmmpi+1,1 /) - lbound(A)
@@ -311,8 +311,8 @@ c**
      &			NER_type,ierr)
 	     call mpi_type_commit(NER_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_recv_init(A, 1, NER_type, p_NE, 16, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_recv_init(A, 1, NER_type, p_NE, 16, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
           endif
 
           if (SOUTH_INTER .and. EAST_INTER) then
@@ -328,8 +328,8 @@ c**
      &			SES_type,ierr)
 	     call mpi_type_commit(SES_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_ssend_init(A, 1, SES_type, p_SE, 18, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_ssend_init(A, 1, SES_type, p_SE, 18, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 !	     ! Send bounds Carreful index begin in 0 even in fortran
 	     starts = (/ Lmmpi+1,1-Npts,1 /) - lbound(A)
 	    ! Create and commit mpi type
@@ -340,8 +340,8 @@ c**
      &			SER_type,ierr)
 	     call mpi_type_commit(SER_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_recv_init(A, 1, SER_type, p_SE, 17, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_recv_init(A, 1, SER_type, p_SE, 17, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
           endif
           
           if (NORTH_INTER .and. WEST_INTER) then
@@ -357,8 +357,8 @@ c**
      &			NWS_type,ierr)
 	     call mpi_type_commit(NWS_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_ssend_init(A, 1, NWS_type, p_NW, 17, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_ssend_init(A, 1, NWS_type, p_NW, 17, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
 !	     ! Send bounds Carreful index begin in 0 even in fortran
 	     starts = (/ 1-Npts,Mmmpi+1,1 /) - lbound(A)
 	    ! Create and commit mpi type
@@ -369,8 +369,8 @@ c**
      &			NWR_type,ierr)
 	     call mpi_type_commit(NWR_type,ierr)
 	     ! Déclare persistant Comm
-	     call mpi_recv_init(A, 1, NWR_type, p_NW, 18, MPI_COMM_WORLD,
-     &			treq(nbreq(iv),iv), ierr)
+	     call mpi_recv_init(A, 1, NWR_type, p_NW, 18, 
+     &			MPI_COMM_WORLD,treq(nbreq(iv),iv), ierr)
           endif
 
 !       print *,mynode, "(1) treq  =","nbreq(",iv,")=",
