@@ -17,19 +17,22 @@ x_n='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELF
 x_d=$(dirname $(dirname $PWD))
 x_p="NO"
 x_m="1"
+x_r="Run"
 x_s="mpirun"
 
 #- Choice of the options ---
-while getopts :hn:d:p:u:m:s: V
+while getopts :hn:d:p:u:m:s:r: V
 do
   case $V in
         (h) x_h=${OPTARG};
         echo "Usage      : "${b_n} \
-            " [-h] [-n EXAMPLE] [-d ROOT_DIR] [-p PARALLEL] [-m MAX_PROC]";
+            " [-h] [-n EXAMPLE] [-d ROOT_DIR] [-r RUNDIR] [-p PARALLEL] [-m MAX_PROC]";
         echo " -h               : help";       
         echo " -n EXAMPLE       : TEST name, as listed in cppdefs.h, default : all";
+        echo " -d ROOTDIR       : Root of the git repository, default : same as CVTK";
+        echo " -r RUNDIR        : Run repository for cppdefs.hand modified .F files, default : Run";
         echo " -p PARALLEL      : Type of parallelism (MPI or OPENMP), default : no";
-        echo " -p MAX_PROC      : Max number of cpus available, default : 1";
+        echo " -m MAX_PROC      : Max number of cpus available, default : 1";
         echo " -s MPI_RUN       : mpirun command, default : mpirun";
         echo "";
         exit 0;;
@@ -37,6 +40,7 @@ do
         (d)  x_d=${OPTARG};;
         (p)  x_p=${OPTARG};;
         (m)  x_m=${OPTARG};;
+        (r)  x_r=${OPTARG};;
         (s)  x_s=${OPTARG};;
         (:)  echo ${b_n}" : -"${OPTARG}" option : missing value" 1>&2;
         exit 2;;
@@ -51,10 +55,12 @@ ROOTDIR=$x_d
 PARALLEL=$x_p
 MAX_PROC=$x_m
 MPIRUN=$x_s
+RUNDIR=$x_r
     
-[ ! -f cppdefs.h ] && \cp ${ROOTDIR}/Run/cppdefs.h .
-[ ! -f param.h ] && \cp ${ROOTDIR}/Run/param.h .
-[ ! -d TESTCASES ] && \cp -r ${ROOTDIR}/Run/TEST_CASES .
+    
+[ -f cppdefs.h ] && \rm cppdefs.h && \cp ${ROOTDIR}/${RUNDIR}/cppdefs.h .
+[ -f param.h ]    && \rm param.h   && cp ${ROOTDIR}/${RUNDIR}/param.h .
+[ -d TESTCASES ] && \rm -rf TESTCASES && \cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
 [ ! -d LOG ] && mkdir LOG
 
 # Number of cases
@@ -69,7 +75,7 @@ for EXAMPLE in $LIST_EXAMPLE
     echo 
     echo "RUNNING TEST Number "${i} / ${NB_TEST}" : $EXAMPLE"
     [ -f LOG/${EXAMPLE}_run.log ] && \rm LOG/${EXAMPLE}_run.log
-     ./run_real.sh -n $EXAMPLE -d $ROOTDIR -p $PARALLEL -m $MAX_PROC -s $MPIRUN > LOG/${EXAMPLE}_run.log  2>&1  || { echo COMPILING or RUNNING TEST $EXAMPLE failed... EXITING... && exit ; }
+     ./run_real.sh -n $EXAMPLE -d $ROOTDIR -p $PARALLEL -m $MAX_PROC -r $RUNDIR -s $MPIRUN > LOG/${EXAMPLE}_run.log  2>&1  || { echo COMPILING or RUNNING TEST $EXAMPLE failed... EXITING... && exit ; }
  #   [ ! -f  ${EXAMPLE}_his.nc ] && { echo RUNNING TEST $EXAMPLE failed... EXITING... && exit ; }
     echo 
 

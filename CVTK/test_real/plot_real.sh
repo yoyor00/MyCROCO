@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 
 #- dependancies
 REQUIRE="matlab pdfcrop gs"
@@ -23,9 +23,10 @@ do
   case $V in
         (h) x_h=${OPTARG};
         echo "Usage      : "${b_n} \
-            " [-h] [-n EXAMPLE] [-d ROOT_DIR] [-p PARALLEL] [-m MAX_PROC]";
+            " [-h] [-n EXAMPLE] [-d ROOT_DIR] ";
         echo " -h               : help";       
         echo " -n EXAMPLE       : TEST name, as listed in cppdefs.h, default : all";
+        echo " -d ROOTDIR       : Root of the git repository, default : same as CVTK";
         echo "";
         exit 0;;
         (n)  x_n=${OPTARG};;
