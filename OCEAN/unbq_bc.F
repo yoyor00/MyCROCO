@@ -76,7 +76,7 @@
 ! Interpolations of the parent values to get unbqbry_east or unbqclm
 !
 # ifdef CHILD
-      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+!      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING

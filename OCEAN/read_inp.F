@@ -376,18 +376,19 @@
                                    !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
         || (defined BBL         && !defined ANA_BSEDIM  && \
-                                   !defined SEDIMENT  && \
-                                   !defined OA_COUPLING) \
+                                   !defined SEDIMENT) \
         || (!defined ANA_STFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
+                                   !defined OA_COUPLING && \
+                                   defined SOLVE3D) \
         || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_EP   && \
-                                   !defined OA_COUPLING) \
-        || (!defined ANA_STFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
+                                   !defined BULK_EP && \
+                                   !defined OA_COUPLING && \
+                                   defined SOLVE3D) \
+        || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING && \
+                                   defined SOLVE3D) \
         || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING)
-
 !
 !
 ! Forcing file name. Check its availability.

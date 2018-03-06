@@ -6,7 +6,7 @@
 #PBS -l mpiprocs=4
 #PBS -l mem=20gb
 #PBS -j oe 
-#PBS -M gildas.cambon@ird.fr -m abe
+#PBS -M gildas.cambon@ird.fr
 cd $PBS_O_WORKDIR
 echo $PBS_O_LOGNAME
 #===================================
