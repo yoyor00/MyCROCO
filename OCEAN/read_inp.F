@@ -365,30 +365,32 @@
 
 
 ! forcing file for tides
-#if defined TIDES \
-        || (defined MRL_WCI     && !defined ANA_WWAVE && \
-                                   !defined WKB_WWAVE && \
-                                   !defined OW_COUPLING) \
-        || (defined SFLX_CORR   && !defined ANA_SSS   && \
+#if !defined NO_FRCFILE  && \
+        ( defined TIDES \
+          || (defined MRL_WCI     && !defined ANA_WWAVE && \
+                                     !defined WKB_WWAVE && \
+                                     !defined OW_COUPLING) \
+          || (defined SFLX_CORR   && !defined ANA_SSS   && \
                                    !defined BULK_EP   && \
                                    !defined OA_COUPLING) \
-        || (defined QCORRECTION && !defined ANA_SST   && \
+          || (defined QCORRECTION && !defined ANA_SST   && \
                                    !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
-        || (defined BBL         && !defined ANA_BSEDIM  && \
+          || (defined BBL         && !defined ANA_BSEDIM  && \
                                    !defined SEDIMENT) \
-        || (!defined ANA_STFLUX && !defined BULK_FLUX && \
+          || (!defined ANA_STFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING && \
                                    defined SOLVE3D) \
-        || (defined SALINITY    && !defined ANA_SSFLUX && \
+          || (defined SALINITY    && !defined ANA_SSFLUX && \
                                    !defined BULK_EP && \
                                    !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-        || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
+                                    defined SOLVE3D) \
+          || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING && \
                                    defined SOLVE3D) \
-        || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING)
+          || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
+                                   !defined OA_COUPLING) \
+        )
 !
 !
 ! Forcing file name. Check its availability.
@@ -405,7 +407,7 @@
         frcname=fname(1:lstr)
         MPI_master_only write(stdout,'(2x,A,2x,A)')
      &             'Forcing Data File:', frcname(1:lstr)
-#endif
+#endif  /* !defined NO_FRCFILE */
 !
 ! Biology forcing: iron dust deposition. 
 !

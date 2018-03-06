@@ -45,17 +45,27 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 #
 # Get updated files
 #
-/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_cvtk.h
-
-/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.SERIAL
-/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.SERIAL
-
-/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.OPENMP
-/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.OPENMP
-
-/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.MPI
-/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.MPI
+#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_cvtk.h
+#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.SERIAL
+#/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.SERIAL
+#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.OPENMP
+#/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.OPENMP
+#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.MPI
+#/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.MPI
 #
+/bin/cp ${SOURCE_CROCO}/cppdefs_dev.h cppdefs_dev_cvtk.h
+sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_cvtk.h > cppdefs_dev_cvtk.h.tmp
+mv cppdefs_dev_cvtk.h.tmp cppdefs_dev_cvtk.h
+
+/bin/cp ${SOURCE_CROCO}/cppdefs.h cppdefs_bak1.h.SERIAL
+/bin/cp ${SOURCE_CROCO}/param.h param_bak0.h.SERIAL
+
+/bin/cp ${SOURCE_CROCO}/cppdefs.h cppdefs_bak1.h.OPENMP
+/bin/cp ${SOURCE_CROCO}/param.h param_bak0.h.OPENMP
+
+/bin/cp ${SOURCE_CROCO}/cppdefs.h cppdefs_bak1.h.MPI
+/bin/cp ${SOURCE_CROCO}/param.h param_bak0.h.MPI
+#==
 
 # Source config file
 #LIST_KEY0='PSOURCE PSOURCE_NCFILE FRC_BRY CLIMATOLOGY TIDES AGRIF AGRIF_2WAY BULK_FLUX MPI OPENMP'
@@ -159,13 +169,13 @@ myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
 if [ ${FLAG_OPENMP} = 1 ]; then 
     
     par1='OPENMP'
-    if [ $Is2DV_X == 1 ]; then
+    if [ $Is2DV_Y == 1 ]; then
 	echo "OPEN-MP 1X2 NPP=2 TEST $mytest"
 	#export OMP_NUM_THREADS=4
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
 	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 	
-    elif [ $Is2DV_Y == 1 ]; then
+    elif [ $Is2DV_X == 1 ]; then
 	echo "OPEN-MP 2x1 NPP=2 TEST $mytest"
 	#export OMP_NUM_THREADS=4
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=1'/' < param_bak0.h.$par1 > param_bak1.h.$par1
@@ -203,11 +213,11 @@ fi
 if [ ${FLAG_MPI} = 1 ]; then 
     
     par1='MPI'
-    if [ $Is2DV_X == 1 ]; then
+    if [ $Is2DV_Y == 1 ]; then
 	echo "MPI 1X2 TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=1,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par
 	
-    elif [ $Is2DV_Y == 1 ]; then
+    elif [ $Is2DV_X == 1 ]; then
 	echo "MPI 2X1 TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param_bak0.h.$par1 > param_bak1.h.$par
     

@@ -35,6 +35,13 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
+/*  
+   Activate the RVTK_DEBUG procedure that will compare the results
+   serial and multi-processor result by comparing binary file
+*/
+#ifndef RVTK_DEBUG
+# undef RVTK_DEBUG
+#endif
 
 /*
     Constant tracer option (for debugging)

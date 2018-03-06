@@ -362,6 +362,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define NO_FRCFILE
 
 #elif defined CANYON_A
 /*
@@ -379,6 +380,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define NO_FRCFILE
 
 #elif defined CANYON_B
 /*
@@ -397,6 +399,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define ANA_VMIX
+# define NO_FRCFILE
 
 #elif defined EQUATOR
 /*
@@ -427,6 +430,7 @@
 # define LMD_MIXING
 # define LMD_RIMIX
 # define LMD_CONVEC
+# define NO_FRCFILE
 
 #elif defined INNERSHELF
 /*
@@ -466,6 +470,7 @@
 #   define GLS_KKL
 #  endif
 # endif
+# define NO_FRCFILE
 
 #elif defined INTERNAL
 /*
@@ -506,6 +511,7 @@
 # undef  M2NUDGING
 # undef  M3NUDGING
 # undef  TNUDGING
+# define NO_FRCFILE
 
 #elif defined IGW
 /*
@@ -599,6 +605,7 @@
 #      define RANDOM_HORIZONTAL
 #   endif
 # endif
+# define NO_FRCFILE
 
 #elif defined SEAMOUNT
 /*
@@ -620,6 +627,7 @@
 # define ANA_SRFLUX
 # define ANA_BTFLUX
 # define ANA_BSFLUX
+# define NO_FRCFILE
 
 # elif defined SHELFRONT
 /*
@@ -641,6 +649,7 @@
 # define ANA_BTFLUX
 # define ANA_BSFLUX
 # define EW_PERIODIC
+# define NO_FRCFILE
 
 #elif defined SOLITON
 /*
@@ -656,6 +665,7 @@
 # define AVERAGES
 # define EW_PERIODIC
 # define ANA_SMFLUX
+# define NO_FRCFILE
 
 #elif defined THACKER
 /*
@@ -681,6 +691,7 @@
 # define ANA_SMFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX
+# define NO_FRCFILE
 
 # elif defined OVERFLOW
 /*
@@ -700,6 +711,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define NO_FRCFILE
 /*
 !                       Plume Example
 !                       ===== =======
@@ -765,6 +777,8 @@
 #  undef  Cheng_02
 # endif
 
+# define NO_FRCFILE
+
 #elif defined UPWELLING
 /*
 !                       Upwelling Example
@@ -792,6 +806,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define EW_PERIODIC
+# define NO_FRCFILE
 
 #elif defined VORTEX
 /*
@@ -824,6 +839,7 @@
 # define M2NUDGING
 # define M3NUDGING
 # define TNUDGING
+# define NO_FRCFILE
 
 #elif defined JET
 /*
@@ -883,6 +899,7 @@
 #  define LMD_RIMIX
 #  define LMD_CONVEC
 # endif 
+# define NO_FRCFILE
 
 #elif defined SHOREFACE
 /*
@@ -996,6 +1013,7 @@
 #  define ANA_TCLIMA
 #  define MORPHODYN
 # endif
+# define NO_FRCFILE
 
 #elif defined RIP
 /*
@@ -1116,6 +1134,7 @@
 # define M3_FRC_BRY
 # define T_FRC_BRY
 # define WET_DRY
+# define NO_FRCFILE
 
 #elif defined TANK
 /*
@@ -1153,6 +1172,7 @@
 # undef  MINMOD
 # undef  W_VADV_TVD
 # undef  W_HADV_TVD
+# define NO_FRCFILE
 
 #elif defined ACOUSTIC 
 /*
@@ -1177,6 +1197,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define NO_FRCFILE
 
 #elif defined GRAV_ADJ
 /*
@@ -1210,6 +1231,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define PASSIVE_TRACER
+# define NO_FRCFILE
 
 #elif defined KH_INST 
 /*
