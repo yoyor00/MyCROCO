@@ -1230,7 +1230,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# define PASSIVE_TRACER
+# undef PASSIVE_TRACER
 # define NO_FRCFILE
 
 #elif defined KH_INST 
