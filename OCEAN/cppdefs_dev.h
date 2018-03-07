@@ -36,12 +36,11 @@
 #endif
 
 /*  
-   Activate the RVTK_DEBUG procedure that will compare the results
-   serial and multi-processor result by comparing binary file
+   Activate the RVTK_DEBUG procedure that will test the reproducibility 
+   of parallel computation by comparing binary files produced by serial 
+   and parallel runs
 */
-#ifndef RVTK_DEBUG
-# undef RVTK_DEBUG
-#endif
+#undef RVTK_DEBUG
 
 /*
     Constant tracer option (for debugging)
@@ -467,6 +466,31 @@
 # define SPONGE_VIS2
 # ifdef SEDIMENT
 #  define SPONGE_SED
+# endif
+#endif
+
+/*
+======================================================================
+   TIDES:  
+   select dependable keys if not done yet
+======================================================================
+*/
+#ifdef TIDES
+# ifdef SSH_TIDES
+#  ifdef ZCLIMATOLOGY
+#  elif Z_FRC_BRY
+#  else
+#   define ZCLIMATOLOGY
+#   define ANA_SSH
+#  endif
+# endif
+# ifdef UV_TIDES
+#  ifdef M2CLIMATOLOGY
+#  elif M2_FRC_BRY
+#  else
+#   define M2CLIMATOLOGY
+#   define ANA_M2CLIMA
+#  endif
 # endif
 #endif
 
