@@ -609,7 +609,7 @@ CR      write(*,*)  ' -5' MYID
 # ifdef NBQ
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call initial_nh(tile,1)
+        call initial_nbq(tile,1)
       enddo
 # endif
 !
@@ -637,7 +637,7 @@ CR      write(*,*)  ' -3' MYID
 # ifdef NBQ
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call initial_nh(tile,2)
+        call initial_nbq(tile,2)
       enddo
 
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -803,7 +803,7 @@ CR      write(*,*) ' -1' MYID
 # ifdef NBQ
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call initial_nh(tile,3)
+        call initial_nbq(tile,3)
       enddo     
 # endif
 !

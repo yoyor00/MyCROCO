@@ -139,7 +139,7 @@
           M3nudgcof(i,j)=tauM_out*wrk(i,j)
 # endif
 # ifdef NBQ_NUDGING
-          NBQnudgcof(i,j)=5.e-4*wrk(i,j) ! ~ 1 hour
+          NBQnudgcof(i,j)=tauM_out*wrk(i,j)
 # endif
         enddo
       enddo

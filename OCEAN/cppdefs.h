@@ -100,10 +100,8 @@
 # undef  ETALON_CHECK
                       /* Non-hydrostatic options */
 # ifdef NBQ
-#  define NBQ_PERF
-#  undef  NBQ_PRECISE
-#  define W_VADV_TVD
 #  define W_HADV_TVD
+#  define W_VADV_TVD
 # endif
                       /* Grid configuration */
 # define CURVGRID
@@ -1116,7 +1114,6 @@
 ! Int. J. Numer. Methods Fluids 42, 929â~@~S952.
 */
 # undef  TANKY
-# undef  XIOS
 # undef  MPI
 # define NBQ
 # ifdef NBQ
@@ -1124,9 +1121,7 @@
 #  define NBQ_PERF
 # endif
 # define SOLVE3D
-# undef  MASKING
 # undef  UV_ADV
-# undef  UV_VIS2
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1134,14 +1129,6 @@
 # define ANA_SMFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX
-# undef  UV_VADV_C2
-# undef  UV_HADV_C2
-# undef  UV_VADV_TVD
-# undef  UV_HADV_TVD
-# undef  SUPERBEE
-# undef  MINMOD
-# undef  W_VADV_TVD
-# undef  W_HADV_TVD
 # define NO_FRCFILE
 
 #elif defined ACOUSTIC 
@@ -1152,15 +1139,12 @@
 # undef  MPI
 # define NBQ
 # ifdef NBQ
-#  undef  NBQ_IMP
-#  undef  DEBUG_NBQ 
+#  undef  NBQ_PRECISE
+#  define NBQ_PERF
 # endif
 # undef  UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
-# undef  UV_ADV
-# undef  TS_HADV_WENO5
-# undef  TS_VADV_WENO5
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX

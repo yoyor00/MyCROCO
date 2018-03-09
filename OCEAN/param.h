@@ -139,7 +139,7 @@
 #  ifndef TANKY
       parameter (LLm0=50,   MMm0=1,    N=50)   ! 20 cm resolution
 #  else
-      parameter (LLm0=1,    MMm0=30,   N=10)   ! 20 cm resolution
+      parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 #  endif
 # else
       parameter (LLm0=4000, MMm0=1,    N=30)   !  1 mm resolution

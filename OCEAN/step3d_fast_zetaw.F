@@ -253,7 +253,7 @@ C$    trd=omp_get_thread_num()
         cff=0.5/rho0
         do k=1,N
           do j=Jstr-1,Jend+1
-            do i=Istr,iend+1
+            do i=Istr,Iend+1
               qdmu_nbq(i,j,k)=0.5*u(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i-1,j,k))
 # ifdef NBQ_MASS
      &                              *(1.+cff*(rho(i,j,k)+rho(i-1,j,k)))
@@ -264,7 +264,7 @@ C$    trd=omp_get_thread_num()
 
         do k=1,N
           do j=Jstr,Jend+1
-            do i=Istr-1,iend+1
+            do i=Istr-1,Iend+1
               qdmv_nbq(i,j,k)=0.5*v(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i,j-1,k))
 # ifdef NBQ_MASS
      &                              *(1.+cff*(rho(i,j,k)+rho(i,j-1,k))) 
@@ -275,7 +275,7 @@ C$    trd=omp_get_thread_num()
 
         do k=1,N-1
           do j=Jstr-1,Jend+1
-            do i=Istr-1,iend+1
+            do i=Istr-1,Iend+1
               qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i,j,k+1))
 # ifdef NBQ_MASS
      &                               *(1.+cff*(rho(i,j,k)+rho(i,j,k+1)))
@@ -285,7 +285,7 @@ C$    trd=omp_get_thread_num()
         enddo
         k=0 
         do j=Jstr-1,Jend+1
-          do i=Istr-1,iend+1
+          do i=Istr-1,Iend+1
             qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*Hz(i,j,k+1)
 # ifdef NBQ_MASS
      &                             *(1.+rho(i,j,k+1)/rho0)
@@ -295,7 +295,7 @@ C$    trd=omp_get_thread_num()
         enddo
         k=N 
         do j=Jstr-1,Jend+1
-          do i=Istr-1,iend+1
+          do i=Istr-1,Iend+1
             qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*Hz(i,j,k)
 # ifdef NBQ_MASS
      &                             *(1.+rho(i,j,k)/rho0)
@@ -303,15 +303,31 @@ C$    trd=omp_get_thread_num()
           enddo
         enddo
 
+# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                         qdmu_nbq(START_2D_ARRAY,1))
+       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                         qdmv_nbq(START_2D_ARRAY,1))
+#  endif
+# endif
+
       endif ! iic.eq.ntstart .and. iif.eq.1
 
 # ifdef NBQ_HZCORRECT
       if (iic.ge.2 .and. iif.eq.1) then
-        Hz = Hz_tra
-        call grid_coef_nh(Istr,Iend,Jstr,Jend,
-     &                    Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
-     &                    Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &                    Hzu_half_qdmu,      Hzv_half_qdmv)
+        do k=1,N
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              Hz(i,j,k) = Hz_correct(i,j,k)
+            enddo
+          enddo
+        enddo
+
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
+     &                     Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
+     &                     Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+     &                     Hzu_half_qdmu,      Hzv_half_qdmv)
       endif
 # endif
 
@@ -402,7 +418,7 @@ C$    trd=omp_get_thread_num()
       endif
 
 # ifdef RVTK_DEBUG_ADVANCED
-       call check_tab2d(zeta(:,:,kstp),'zeta step2d #0','r')
+       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
 # endif  
 !
 !----------------------------------------------------------------------
@@ -507,7 +523,7 @@ C$    trd=omp_get_thread_num()
 # endif
 
 # ifdef RVTK_DEBUG_ADVANCED
-      call check_tab2d(zeta(:,:,kstp),'zeta step2d #1','r')
+      call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r')
 # endif 
 !
 !-----------------------------------------------------------------------
@@ -546,9 +562,9 @@ C$    trd=omp_get_thread_num()
       if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
-        call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (index 0) step2d','r')
-        call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (index 0) step2d','u')
-        call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (index 0) step2d','v')
+        call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (0) step3d_fast','r')
+        call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (0) step3d_fast','u')
+        call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (0) step3d_fast','v')
 C$OMP END MASTER  
       endif
 #   endif  
@@ -559,10 +575,10 @@ C$OMP END MASTER
 !----------------------------------------------------------------------
 !
       if (FIRST_TIME_STEP .and. iif.eq.1) then
-        call grid_coef_nh(Istr,Iend,Jstr,Jend,
-     &                    Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
-     &                    Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &                    Hzu_half_qdmu,      Hzv_half_qdmv)
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
+     &                     Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
+     &                     Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+     &                     Hzu_half_qdmu,      Hzv_half_qdmv)
       endif
 !
 !=====================================================================
@@ -1108,59 +1124,19 @@ C$OMP END MASTER
       endif    ! FIRST_FAST_STEP
 !
 !-----------------------------------------------------------------------
-!  Extended loop indices z_nbq initialization
-!-----------------------------------------------------------------------
-!
-      if (istr.eq.1) then
-        IstrR2=Istr-1
-# ifdef MPI
-        IstrU2=Istr  !+1
-# else
-        IstrU2=Istr ! +1
-# endif
-      else
-        IstrR2=Istr
-        IstrU2=Istr
-      endif
-
-      if (iend.eq.Lm) then
-        IendR2=Iend+1
-      else
-        IendR2=Iend
-      endif
-
-      if (jstr.eq.1) then
-        JstrR2=Jstr-1
-# ifdef MPI
-        JstrV2=Jstr  !+1
-# else
-        JstrV2=Jstr !  +1
-# endif
-      else
-        JstrR2=Jstr
-        JstrV2=Jstr
-      endif
-
-      if (jend.eq.Mm) then
-        JendR2=Jend+1
-      else
-        JendR2=Jend
-      endif
-!
-!-----------------------------------------------------------------------
-!  z_nbq backups
+!  zw_nbq backups
 !-----------------------------------------------------------------------
 !
       if (FIRST_TIME_STEP .and. iif.eq.1) then
-        do j=JstrR2,JendR2
+        do j=JstrR,JendR
           do k=1,N
-            do i=IstrR2,IendR2
+            do i=IstrR,IendR
               zr_nbq(i,j,k,:)=z_r(i,j,k)
             enddo
           enddo
           do k=0,N
-            do i=IstrR2,IendR2
-              z_nbq (i,j,k,:)=z_w(i,j,k)
+            do i=IstrR,IendR
+              zw_nbq (i,j,k,:)=z_w(i,j,k)
             enddo
           enddo
         enddo
@@ -1172,7 +1148,12 @@ C$OMP END MASTER
 !
 # ifdef ACOUSTIC 
       if (FIRST_TIME_STEP .and. iif.eq.1) then
-        call density_nbq(10)      
+        period_exp = 0.025/2.
+        for_a_exp  = 2.5
+        amp_exp    = 1.e-2
+        hmax_exp   = 128.
+        dg_exp     = 2.
+        time_nbq   = 0. 
       endif
 # endif
 !
@@ -1183,19 +1164,18 @@ C$OMP END MASTER
       do j=Jstr,Jend
         do i=Istr,Iend
           work(i,j)=pm(i,j)*pn(i,j)
+          rubar_nbq(i,j)=0.
+          rvbar_nbq(i,j)=0.
+          DU_nbq(i,j)=0.
+          DV_nbq(i,j)=0.
         enddo
       enddo      
-
-      rubar_nbq=0.
-      rvbar_nbq=0.
-      DU_nbq=0.
-      DV_nbq=0.
 
 # ifdef NBQ_MASS
       if (FIRST_TIME_STEP .and. iif.eq.1) then
         do k=1,N 
-          do j=JstrR2,JendR2           
-            do i=IstrR2,IendR2
+          do j=JstrR,JendR           
+            do i=IstrR,IendR
               rho_bak(i,j,k)=rho(i,j,k)/rho0*Hzr(i,j,k)
             enddo
           enddo
@@ -1364,7 +1344,7 @@ C$OMP END MASTER
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta (i,j,knew)=(zeta(i,j,kstp) + dtfast*(
+          zeta(i,j,knew)=(zeta(i,j,kstp) + dtfast*(
      &                           wsurf_nbq(i,j,kstp)
      &                     -0.5*(usurf_nbq(i  ,j)
      &                                     *(zab3(i  ,j)
@@ -1507,11 +1487,10 @@ C$OMP END MASTER
 ! Update grid variables
 !-----------------------------------------------------------------------
 !
-        call grid_coef_nh(Istr,Iend,Jstr,Jend,
-     &                    Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
-     &                    Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &                    Hzu_half_qdmu,      Hzv_half_qdmv )
-
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
+     &                     Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
+     &                     Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+     &                     Hzu_half_qdmu,      Hzv_half_qdmv )
       endif
 
 #  undef zab3
@@ -1561,12 +1540,12 @@ C$OMP END MASTER
           if (k.eq.0) then ! Bottom Boundary conditions
 
             do j=Jstr,Jend
-              do i=IstrU2,Iend
+              do i=Istr-1,Iend
                 dthetadiv_nbqdz_u(i,j,k2)=0. 
               enddo
             enddo
 
-            do j=JstrV2,Jend
+            do j=Jstr-1,Jend
               do i=Istr,Iend
                 dthetadiv_nbqdz_v(i,j,k2)=0.
               enddo
@@ -1576,8 +1555,8 @@ C$OMP END MASTER
 
             if (k.eq.N) then ! Top Boundary conditions
 
-              do j=JstrV2-1,Jend
-                do i=IstrU2-1,Iend
+              do j=Jstr-1,Jend
+                do i=Istr-1,Iend
 # ifdef NBQ_PERF
                   dthetadiv_nbqdz(i,j,k,1)= - thetadiv_nbq(i,j,k)
 # else
@@ -1588,8 +1567,8 @@ C$OMP END MASTER
 
             else
 
-              do j=JstrV2-1,Jend
-                do i=IstrU2-1,Iend
+              do j=Jstr-1,Jend
+                do i=Istr-1,Iend
 # ifdef NBQ_PERF
                   dthetadiv_nbqdz(i,j,k,1)=thetadiv_nbq(i,j,k+1)
      &                                   - thetadiv_nbq(i,j,k)
@@ -1603,7 +1582,7 @@ C$OMP END MASTER
             endif
   
             do j=Jstr,Jend
-              do i=IstrU2,Iend
+              do i=Istr,Iend
 # ifdef NBQ_PERF
                 dthetadiv_nbqdz_u(i,j,k2)=Hzw_half_nbq_inv_u(i,j,k)*(
      &                                    dthetadiv_nbqdz(i,j,k,1)
@@ -1615,7 +1594,7 @@ C$OMP END MASTER
 # endif          
               enddo
             enddo
-            do j=JstrV2,Jend
+            do j=Jstr,Jend
               do i=Istr,Iend
 # ifdef NBQ_PERF
                  dthetadiv_nbqdz_v(i,j,k2)=Hzw_half_nbq_inv_v(i,j,k)*(
@@ -1642,7 +1621,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
           do j=Jstr,Jend
-            do i=IstrU2,Iend
+            do i=Istr,Iend
               if (k.gt.1.and.k.lt.N) then 
 # ifdef NBQ_PERF
                 if (NSTEP_DS) then
@@ -1719,7 +1698,7 @@ C$OMP END MASTER
 !       Fast-mode V-momentum: qdmv_nbq
 !-----------------------------------------------------------------------
 !
-          do j=JstrV2,Jend
+          do j=Jstr,Jend
             do i=Istr,Iend
               if (k.gt.1.and.k.lt.N) then 
 # ifdef NBQ_PERF
@@ -1807,16 +1786,15 @@ C$OMP END MASTER
 # endif
 
 # ifdef AGRIF
-!  With AGRIF, this call to zetabc is needed for u2dbc,v2dbc
-      call zetabc_tile     (Istr,Iend,Jstr,Jend, UFx)   
+!   With AGRIF, this call to zetabc is needed for u2dbc,v2dbc
+      call zetabc_tile  (Istr,Iend,Jstr,Jend, UFx)   
 # endif
-      call u2dbc_tile      (Istr,Iend,Jstr,Jend, UFx)
-      call v2dbc_tile      (Istr,Iend,Jstr,Jend, UFx)
+
+      call u2dbc_tile   (Istr,Iend,Jstr,Jend, UFx)
+      call v2dbc_tile   (Istr,Iend,Jstr,Jend, UFx)
        
-# ifdef OBC_NBQ
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
       call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-# endif
 !
 !-----------------------------------------------------------------------
 ! Exchange periodic boundaries and computational margins
@@ -1882,6 +1860,7 @@ C$OMP END MASTER
 #  ifdef OBC_NBQ
       call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 #  endif
+
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !     call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
 !    &                        qdmw_nbq(START_2D_ARRAY,0))
@@ -2080,7 +2059,15 @@ C$OMP END MASTER
 
             do j=Jstr,Jend
               do i=Istr,Iend
-                thetadiv_nbq(i,j,k)=FX(i,j)+FX(i+1,j)           
+                thetadiv_nbq(i,j,k)=FX(i,j)+FX(i+1,j)
+              enddo
+            enddo
+
+          else ! IstrU.gt.Iend
+
+            do j=Jstr,Jend
+              do i=Istr,Iend
+                thetadiv_nbq(i,j,k)=0.
               enddo
             enddo
 
@@ -2341,7 +2328,13 @@ C$OMP END MASTER
 ! thetadiv3_nbq: slope derivatives
 !-----------------------------------------------------------------------
 !
-      z_nbq(:,:,:,knew)=z_w(:,:,:)
+      do j=JstrR,JendR
+        do k=0,N
+          do i=IstrR,IendR
+            zw_nbq(i,j,k,knew)=z_w(i,j,k)
+          enddo
+        enddo
+      enddo
 
 # ifdef NBQ_PERF
       if (iif.eq.1) then
@@ -2356,13 +2349,13 @@ C$OMP END MASTER
           do k=1,N-1
             do i=Istr,Iend
               FC(i,k)=   
-     &          -(z_nbq(i,j,k,knew)-z_nbq(i,j,k,kstp))/dtgrid_nbq
+     &          -(zw_nbq(i,j,k,knew)-zw_nbq(i,j,k,kstp))/dtgrid_nbq
      &           *0.5*( (rho(i,j,k  )/rho0)
      &                  +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  )  
      &                  +(rho(i,j,k+1)/rho0)
      &                  +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
               CF(i,k)=   
-     &          -(z_nbq(i,j,k,knew)-z_nbq(i,j,k,kstp))/dtgrid_nbq 
+     &          -(zw_nbq(i,j,k,knew)-zw_nbq(i,j,k,kstp))/dtgrid_nbq 
      &          *0.5*( 1.+rho(i,j,k  )/rho0
      &                   +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  ) 
      &                +1.+rho(i,j,k+1)/rho0
@@ -2379,12 +2372,12 @@ C$OMP END MASTER
 
           do i=Istr,Iend
             FC(i,N)=   
-     &        -(z_nbq(i,j,N,knew)-z_nbq(i,j,N,kstp))/dtgrid_nbq
+     &        -(zw_nbq(i,j,N,knew)-zw_nbq(i,j,N,kstp))/dtgrid_nbq
      &         *0.5*( rho(i,j,N)/rho0
      &               +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
      &               +rho(i,j,N)/rho0)
             CF(i,N)=   
-     &        -(z_nbq(i,j,N,knew)-z_nbq(i,j,N,kstp))/dtgrid_nbq 
+     &        -(zw_nbq(i,j,N,knew)-zw_nbq(i,j,N,kstp))/dtgrid_nbq 
      &        *0.5*( 1.+rho(i,j,N)/rho0
      &                 +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
      &             + 1.+rho(i,j,N)/rho0)
@@ -2669,18 +2662,36 @@ C$OMP END MASTER
 !-------------------------------------------------------------------
 !
 # if defined ACOUSTIC
-      call density_nbq(11)       
+        time_nbq = time_nbq + dtfast
+        do k=1,N
+          do j=Jstr-1,Jend-1
+            do i=Istr-1,Iend-1
+              dist_d=sqrt((xr(i,j)-xl/2.)**2+(0.*(yr(i,j)-el/2.))**2
+     &                             +(abs(z_w(i,j,k))-hmax_exp/2.)**2)
+
+             rho_nbq(i,j,k)=rho_nbq(i,j,k)+amp_exp
+     &                         *sin(2*acos(-1.)*time_nbq/period_exp)
+     &                                 *exp(-dist_d**2/for_a_exp**2)
+#  ifdef NBQ_MASS
+     &                      *Hzr(i,j,k)
+#  else
+     &                      *Hz(i,j,k)
+#  endif
+            enddo
+          enddo
+        enddo
+
 # endif
 
-      do j=JstrR2,JendR2
+      do j=JstrR,JendR
         do k=1,N
-          do i=IstrR2,IendR2
+          do i=IstrR,IendR
             zr_nbq(i,j,k,knew)=z_r(i,j,k)
           enddo
         enddo
         do k=0,N
-          do i=IstrR2,IendR2
-            z_nbq (i,j,k,knew)=z_w(i,j,k)
+          do i=IstrR,IendR
+            zw_nbq(i,j,k,knew)=z_w(i,j,k)
           enddo
         enddo
       enddo
@@ -2694,7 +2705,48 @@ C$OMP END MASTER
 ! Compute rhobar_nbq(n+1) used in zeta diagnostic from 
 ! depth-integrated continuity equation
 !
-      call density_nbq(20)
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          rhobar_nbq(i,j,knew)=0.
+        enddo  
+      enddo
+      do k=1,N
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+#  ifdef NBQ_ZETAW
+            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)
+     &                             +rho_nbq(i,j,k)
+     &                             +rho(i,j,k)/rho0*Hzr(i,j,k)
+#  else
+            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)
+     &                            +rho_nbq(i,j,k)
+#  endif
+          enddo  
+        enddo  
+      enddo
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+#  ifdef NBQ_ZETAW
+          rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq(i,j,knew)) 
+     &                            / (z_w(i,j,N)-z_w(i,j,0))
+#  else
+          rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq_int(i,j)
+     &                              +rhobar_nbq(i,j,knew))
+     &           / (zw_half_nbq(i,j,N)-zw_half_nbq(i,j,0))
+#  endif
+           enddo
+         enddo
+!      
+! LAURENT: the next exchange should not be needed
+!
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+     &                           rhobar_nbq(START_2D_ARRAY,knew))
+#  endif
+#  ifdef RVTK_DEBUG
+!      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
+#  endif    
+
 # endif
 !
 !
@@ -2895,11 +2947,10 @@ C$OMP END MASTER
 ! s-grid evolves with external mode (NH)
 !-----------------------------------------------------------------------
 !
-        call grid_coef_nh(Istr,Iend,Jstr,Jend,
-     &                    Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
-     &                    Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &                    Hzu_half_qdmu,      Hzv_half_qdmv)
-
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
+     &                     Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
+     &                     Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+     &                     Hzu_half_qdmu,      Hzv_half_qdmv)
       endif
 
 #   undef zab3
@@ -2927,8 +2978,8 @@ C$OMP END MASTER
 !=====================================================================
 !
       do k=1,N 
-        do j=JstrR2,JendR2             
-          do i=IstrR2,IendR2
+        do j=JstrR,JendR             
+          do i=IstrR,IendR
             rho_bak(i,j,k)=rho(i,j,k)/rho0*Hzr(i,j,k)
           enddo
         enddo
@@ -2964,12 +3015,52 @@ C$OMP END MASTER
 !=====================================================================
 !  Update rho for mode coupling
 !  ==> update rhobar_nbq(m+1) for 2D computations and
-!         rho_nbq(m+1) for internal mode computation
-!  Note: density_nbq has already been called if ZETAREDIAG is defined
+!  Note: already done if ZETAREDIAG is defined
 !=====================================================================
 !
 # if defined NBQ_MASS && !defined NBQ_ZETAREDIAG
-      call density_nbq(20)
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          rhobar_nbq(i,j,knew)=0.
+        enddo  
+      enddo
+      do k=1,N
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+#  ifdef NBQ_ZETAW
+            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)
+     &                             +rho_nbq(i,j,k)
+     &                             +rho(i,j,k)/rho0*Hzr(i,j,k)
+#  else
+            rhobar_nbq(i,j,knew)= rhobar_nbq(i,j,knew)
+     &                            +rho_nbq(i,j,k)
+#  endif
+          enddo  
+        enddo  
+      enddo
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+#  ifdef NBQ_ZETAW
+          rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq(i,j,knew)) 
+     &                            / (z_w(i,j,N)-z_w(i,j,0))
+#  else
+          rhobar_nbq(i,j,knew) = 1.+(rhobar_nbq_int(i,j)
+     &                              +rhobar_nbq(i,j,knew))
+     &           / (zw_half_nbq(i,j,N)-zw_half_nbq(i,j,0))
+#  endif
+           enddo
+         enddo
+!      
+! LAURENT: the next exchange should not be needed
+!
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+     &                           rhobar_nbq(START_2D_ARRAY,knew))
+#  endif
+#  ifdef RVTK_DEBUG
+!      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
+#  endif    
+
 # endif
 
       if (LAST_FAST_STEP) then
@@ -3274,10 +3365,8 @@ C$OMP END MASTER
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
-# ifndef NBQ_PERF
       call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
-# endif
 
 # ifdef NBQ_ZETAREDIAG
 !
@@ -3299,7 +3388,7 @@ C$OMP END MASTER
       call obc_flux_tile (Istr,Iend,Jstr,Jend)
 # endif
 
-# if !defined NBQ_PERF && defined OBC_NBQ
+# ifndef NBQ_PERF
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
       call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 # endif
@@ -3594,10 +3683,10 @@ C$OMP END MASTER
 ! Compute derived grid parameters
 !-----------------------------------------------------------------------
 !
-        call grid_coef_nh(Istr,Iend,Jstr,Jend,
-     &                    Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
-     &                    Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
-     &                    Hzu_half_qdmu,      Hzv_half_qdmv)
+        call grid_nbq_tile(Istr,Iend,Jstr,Jend,
+     &                     Hzw_half_nbq_inv,   Hzr_half_nbq_inv,
+     &                     Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
+     &                     Hzu_half_qdmu,      Hzv_half_qdmv)
 
 #  ifdef NBQ_PERF
       endif !<-- (iic.eq.1.and.iif.eq.1) .or. iif.eq.nfast
@@ -3622,11 +3711,11 @@ C$OMP END MASTER
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
             ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
-     &                   *(Dnew(i-1,j)+Dnew(i,j)) )
+     &                       *(Dnew(i-1,j)+Dnew(i,j)) )
             DU_avg1(i,j,nnew)=Qbar(is)
           else
             vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
-     &                   *(Dnew(i,j-1)+Dnew(i,j)) )
+     &                       *(Dnew(i,j-1)+Dnew(i,j)) )
             DV_avg1(i,j,nnew)=Qbar(is)
           endif
         endif
@@ -3692,9 +3781,9 @@ C$OMP END MASTER
 #  endif
 
 #  ifdef RVTK_DEBUG_ADVANCED
-        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r')
-        call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step2d','u')
-        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step2d','v')
+        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step3d_fast','r')
+        call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step3d_fast','u')
+        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step3d_fast','v')
 #  endif   
       endif
 
@@ -3720,73 +3809,6 @@ C$OMP END MASTER
       endif
 #  endif
 # endif /* AGRIF */
-
-!
-!-----------------------------------------------------------------------
-!  Apply conservation requirements for nesting
-!-----------------------------------------------------------------------
-!
-# ifdef AGRIF
-      if (.NOT.Agrif_Root()) THEN
-        do j=Jstr-1,Jend+1
-          do i=Istr-1,Iend+1
-            Zt_avg3(i,j,iif)=zeta(i,j,knew)
-          enddo
-        enddo 
-        do j=JstrR,JendR
-          do i=Istr,IendR
-            DU_avg3(i,j,iif) = 0.5*(h(i  ,j)+zeta(i  ,j,knew)+
-     &                              h(i-1,j)+zeta(i-1,j,knew)) 
-     &                               *on_u(i,j)*ubar(i,j,knew)
-          enddo
-        enddo 
-        do j=Jstr,JendR
-          do i=IstrR,IendR
-            DV_avg3(i,j,iif) = 0.5*(h(i,j  )+zeta(i,j  ,knew)+
-     &                              h(i,j-1)+zeta(i,j-1,knew)) 
-     &                               *om_v(i,j)*vbar(i,j,knew)
-          enddo
-        enddo
- 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                          Zt_avg3(START_2D_ARRAY,iif))
-        call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                          DU_avg3(START_2D_ARRAY,iif))
-        call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                          DV_avg3(START_2D_ARRAY,iif))
-#  endif
-
-#  ifdef RVTK_DEBUG_ADVANCED
-        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r')
-        call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step2d','u')
-        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step2d','v')
-#  endif   
-      endif
-
-#  ifdef AGRIF_CONSERV_VOL
-      if (iif.eq.nfast) then
-        if (agrif_root()) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              DU_avg1(i,j,5) = dt * DU_avg2(i,j)
-              DV_avg1(i,j,5) = dt * DV_avg2(i,j)
-            enddo
-          enddo
-        else
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              DU_avg1(i,j,5) = dt * DU_avg2(i,j)
-              DV_avg1(i,j,5) = dt * DV_avg2(i,j)
-              DU_avg1(i,j,4) = DU_avg1(i,j,4) + DU_avg1(i,j,5)
-              DV_avg1(i,j,4) = DV_avg1(i,j,4) + DV_avg1(i,j,5)
-            enddo
-          enddo       
-        endif
-      endif
-#  endif
-# endif /* AGRIF */
-
 !
 !-----------------------------------------------------------------------
 !  Correct Hz(m+1) for internal mode
@@ -3797,7 +3819,13 @@ C$OMP END MASTER
 
       if (iif.eq.nfast) then
 
-        Hz_tra = Hz
+        do k=1,N
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
+              Hz_correct(i,j,k)=Hz(i,j,k)
+            enddo
+          enddo
+        enddo
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -3806,7 +3834,6 @@ C$OMP END MASTER
      &                          DV_avg2(START_2D_ARRAY))
 #  endif
 
-!       dum_max=0.
         do j=Jstr,Jend
           do i=Istr,Iend
             dum_s=0.
@@ -3819,7 +3846,7 @@ C$OMP END MASTER
      &             + (DU_avg2(i+1,j)-DU_avg2(i,j)
      &               +DV_avg2(i,j+1)-DV_avg2(i,j)
      &               )*pm(i,j)*pn(i,j)
-     &               *dt)       ! / float(N)
+     &               *dt)
      &               /(z_w(i,j,N)-z_w(i,j,0))
      &               *(z_w(i,j,k)-z_w(i,j,k-1))
 #  ifdef MASKING
@@ -3827,21 +3854,11 @@ C$OMP END MASTER
 #  endif
 
 #  ifdef NBQ_HZCORR_DEBUG
-              Hz_corr(i,j,k)=(dum_s
-     &                    + (DU_avg2(i+1,j)-DU_avg2(i,j)
-     &                      +DV_avg2(i,j+1)-DV_avg2(i,j)
-     &                      )*pm(i,j)*pn(i,j)
-     &                      *dt)     !/float(N)
-     &                     /(z_w(i,j,N)-z_w(i,j,0))
-     &                     *(z_w(i,j,k)-z_w(i,j,k-1))
-!            dum_max=max(dum_max,abs(Hz_corr(i,j,k)))
-#   ifdef MASKING
-     &                     *rmask(i,j)
-#   endif
+              Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
 #  endif
 
 !# ifdef NBQ_MASS
-!              Hzr(i,j,k)=(Hz(i,j,k)-rho_nbq(i,j,k)) ! adjust Zw,Zr here?
+!              Hzr(i,j,k)=(Hz(i,j,k)-rho_nbq(i,j,k)) ! adjust Zw,Zr?
 !     &                        /(1.+rho(i,j,k)/rho0)
 !# endif
 !              z_w(i,j,k)=z_w(i,j,k-1)+Hzr(i,j,k)
@@ -3859,10 +3876,10 @@ C$OMP END MASTER
 !     &                           Hzr(START_2D_ARRAY,1))
 !# endif
 ! LAURENT: these calls for z_w and z_r can probably be removed
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          z_w(START_2D_ARRAY,0))
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          z_r(START_2D_ARRAY,1))
+!        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!     &                          z_w(START_2D_ARRAY,0))
+!        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!     &                          z_r(START_2D_ARRAY,1))
 #  endif 
 
       endif ! iif.eq.nfast

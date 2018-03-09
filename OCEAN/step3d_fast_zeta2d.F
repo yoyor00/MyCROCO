@@ -369,7 +369,7 @@ C$    trd=omp_get_thread_num()
       endif
 !
 #ifdef NBQ_TRACERS
-         if (iic.ge.2.and.iif==1) Hz = Hz_tra
+         if (iic.ge.2.and.iif==1) Hz = Hz_correct
 #endif
 !
 !----------------------------------------------------------------------
@@ -1642,7 +1642,7 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 !
 ! Pre-computes Grid coef.
 !
-        call grid_coef_nh(
+        call grid_nbq_tile(
      &   Istr,Iend,Jstr,Jend,
      &   Hzw_half_nbq_inv,Hzr_half_nbq_inv,
      &   Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
@@ -1654,15 +1654,15 @@ ccc          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
 ! Initializes rho_bar
 !
 #ifdef NBQ_MASS
-         do j=jstrq_nh-1,jendq_nh+1
-           do i=istrq_nh-1,iendq_nh+1
+         do j=jstr-1,jend+1
+           do i=istr-1,iend+1
              rhobar_nbq_int(i,j)= 0.
            enddo
          enddo
-		  
+
          do k=1,N
-           do j=jstrq_nh-1,jendq_nh+1
-             do i=istrq_nh-1,iendq_nh+1
+           do j=jstr-1,jend+1
+             do i=istr-1,iend+1
                rhobar_nbq_int(i,j)= rhobar_nbq_int(i,j)
      &              +(1./rho0)*rho(i,j,k)*Hzr_half_nbq(i,j,k)
              enddo  

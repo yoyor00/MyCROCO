@@ -77,7 +77,7 @@
 ! Interpolations of the parent values to get wnbqbry_east or wnbqclm
 !
 # ifdef CHILD
-!      call wnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call wnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -177,8 +177,6 @@
         do k=0,N
           do j=Jstr,Jend
            qdmw_nbq(Istr-1,j,k)=qdmw_nbq(Istr,j,k)
-!             qdmw_nbq(Istr-1,j,k)=wz(Istr-1,j,k,nrhs)
-!     &                           *hzw_half_nbq(istr-1,j,k)
 #    ifdef MASKING
      &                            *rmask(Istr-1,j)
 #    endif
@@ -190,13 +188,13 @@
 
 #   endif /* OBC_COM_NBQORLANSKI */
 !
-!#  else           /* alternative to open */
-!        do k=1,N                                     ! Western edge closed
-!          do j=jstr,jend                             ! ======= ==== ======
-!                                                     !  (no-slip: default)
-!            qdmw_nbq(Istr-1,j,k)=0.           
-!          enddo
-!        enddo
+#  else           /* alternative to open */
+        do k=1,N                                     ! Western edge closed
+          do j=jstr,jend                             ! ======= ==== ======
+                                                     !  (no-slip: default)
+            qdmw_nbq(Istr-1,j,k)=0.           
+          enddo
+        enddo
 
 #  endif              /* OBC_COM_WEST */
 
@@ -289,8 +287,6 @@
         do k=0,N
           do j=Jstr,Jend
            qdmw_nbq(Iend+1,j,k)=qdmw_nbq(Iend,j,k)
-!          qdmw_nbq(Iend+1,j,k)=wz(Iend+1,j,k,nrhs)
-!     &                         *hzw_half_nbq(Iend+1,j,k)
 #    ifdef MASKING
      &                             *rmask(Iend+1,j)
 #    endif
@@ -302,13 +298,13 @@
 
 #   endif /* OBC_COM_NBQORLANSKI */
 !
-!#  else
-!        do k=1,N                                    ! Eastern edge closed
-!          do j=jstr,jend                            ! ======= ==== ======
-!                                                    !  (no-slip: default)
-!             qdmw_nbq(Iend+1,j,k)=0.
-!          enddo
-!        enddo
+#  else
+        do k=1,N                                    ! Eastern edge closed
+          do j=jstr,jend                            ! ======= ==== ======
+                                                    !  (no-slip: default)
+             qdmw_nbq(Iend+1,j,k)=0.
+          enddo
+        enddo
 
 #  endif            /* OBC_COM_EAST */
 
@@ -405,8 +401,6 @@
         do k=0,N
           do i=Istr,Iend
             qdmw_nbq(i,Jstr-1,k)=qdmw_nbq(i,Jstr,k)
-!           qdmw_nbq(i,Jstr-1,k)=wz(i,Jstr-1,k,nrhs)
-!     &                         *hzw_half_nbq(i,Jstr-1,k)
 #    ifdef MASKING
      &                             *rmask(i,Jstr-1)
 #    endif
@@ -418,13 +412,13 @@
 
 #   endif /* OBC_COM_NBQORLANSKI */
 
-!#  else
-!        do k=1,N                                     ! Southern edge closed
-!          do i=Istr,Iend                             ! ======== ==== ======
-!            l_b_i     = ijk2lmom_nh(i  ,Jstr-1,k,3)  !  (no-slip: default)
-!            qdm_nbq_a(l_b_i)=0.
-!          enddo
-!        enddo
+#  else
+        do k=1,N                                     ! Southern edge closed
+          do i=Istr,Iend                             ! ======== ==== ======
+                                                     !  (no-slip: default)
+            qdmw_nbq(i,Jstr-1,k)=0.
+          enddo
+        enddo
 
 #  endif              /* OBC_COM_SOUTH */
 
@@ -518,8 +512,6 @@
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
             qdmw_nbq(i,Jend+1,k)=qdmw_nbq(i,Jend,k)
-!             qdmw_nbq(i,Jend+1,k)=wz(i,Jend+1,k,nrhs)
-!     &                            *hzw_half_nbq(i,Jend+1,k)
 #    ifdef MASKING
      &                             *rmask(i,Jend+1)
 #    endif
@@ -531,13 +523,13 @@
 
 #   endif /* OBC_COM_NBQORLANSKI */
 
-!#  else
-!        do k=1,N                                      ! Northern edge closed
-!          do i=Istr,Iend                              ! ======== ==== ======
-!            l_b_i     = ijk2lmom_nh(i  ,Jend+1,k,3)   !   (no-slip: default)
-!            qdm_nbq_a(l_b_i)=0.
-!          enddo
-!        enddo
+#  else
+        do k=1,N                                      ! Northern edge closed
+          do i=Istr,Iend                              ! ======== ==== ======
+                                                      !   (no-slip: default)
+            qdmw_nbq(i,Jend+1,k)=0.
+          enddo
+        enddo
 #  endif
 
       endif     !<--  NORTHERN_EDGE

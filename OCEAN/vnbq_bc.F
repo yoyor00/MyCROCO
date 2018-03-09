@@ -1,14 +1,15 @@
-! $Id:$
+! $Id: vnbq_bc.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 ! 
-! CROCO website : http://www.croco-ocean.org
+! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
+
 #ifndef CHILD
 !
 # include "cppdefs.h"
@@ -76,7 +77,7 @@
 ! Interpolations of the parent values to get vnbqbry_east or vnbqclm
 !
 # ifdef CHILD
-!      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -210,13 +211,13 @@
         enddo
 #  undef vsum
 
-!#  else
-!        do k=1,N                                     ! Southern edge closed
-!          do i=Istr,Iend                             ! ======== ==== ======
-!                                                     !  (no-flux: default)
-!            qdmv_nbq(i,Jend+1,k)=0.
-!          enddo
-!        enddo
+#  else
+        do k=1,N                                     ! Southern edge closed
+          do i=Istr,Iend                             ! ======== ==== ======
+                                                     !  (no-flux: default)
+            qdmv_nbq(i,Jend+1,k)=0.
+          enddo
+        enddo
 #  endif              /* OBC_COM_SOUTH */
 
       endif         !<-- SOUTHERN_EDGE
@@ -347,13 +348,13 @@
         enddo
 #   undef vsum
 !
-!#  else
-!        do k=1,N                                    ! Northern edge closed
-!          do i=Istr,Iend                            ! ======== ==== ======
-!                                                    !   (no-flux: default)
-!            qdmv_nbq(i,Jend+1,k)=0.
-!          enddo
-!        enddo
+#  else
+        do k=1,N                                    ! Northern edge closed
+          do i=Istr,Iend                            ! ======== ==== ======
+                                                    !   (no-flux: default)
+            qdmv_nbq(i,Jend+1,k)=0.
+          enddo
+        enddo
 #  endif
 
       endif     !<--  NORTHERN_EDGE
@@ -462,7 +463,7 @@
         vsum=0.
         do k=1,N
           do j=JstrV,Jend
-            vsum(Istr-1,j)=vsum(Istr-1,j)+qdmu_nbq(Istr-1,j,k)
+            vsum(Istr-1,j)=vsum(Istr-1,j)+qdmv_nbq(Istr-1,j,k)
           enddo
         enddo
         do k=1,N
@@ -470,8 +471,8 @@
             cff1=0.5*(Hz(Istr-1,j,k)+Hz(Istr-1,j-1,k))
             cff2=0.5*(h(Istr-1,j  )+zeta(Istr-1,j  ,knew)
      &               +h(Istr-1,j-1)+zeta(Istr-1,j-1,knew))
-            qdmu_nbq(Istr-1,j,k)=qdmu_nbq(Istr-1,j,k)
-     &                           +(DU_nbq(Istr-1,j)-vsum(Istr-1,j))
+            qdmv_nbq(Istr-1,j,k)=qdmv_nbq(Istr-1,j,k)
+     &                           +(DV_nbq(Istr-1,j)-vsum(Istr-1,j))
      &                                                   *cff1/cff2
 #    ifdef MASKING
      &                             *vmask(Istr-1,j)
@@ -484,21 +485,21 @@
 #   undef vsum
 #  endif
 
-!#  else
-!#   ifdef NS_COM_PERIODIC
-!#    define J_RANGE JstrV,Jend
-!#   else
-!#    define J_RANGE Jstr,JendR
-!#   endif
-!        do k=1,N                        ! Wall: free-slip (gamma2=+1)
-!          do j=J_RANGE                  ! =====   no-slip (gamma2=-1)
-!            qdmu_nbq(Istr-1,j,k)=gamma2*qdmu_nbq(Istr-1,j,k)
-!#   ifdef MASKING
-!     &                                          *vmask(Istr-1,j)
-!#   endif
-!          enddo
-!        enddo
-!#   undef J_RANGE
+#  else
+#   ifdef NS_COM_PERIODIC
+#    define J_RANGE JstrV,Jend
+#   else
+#    define J_RANGE Jstr,JendR
+#   endif
+        do k=1,N                        ! Wall: free-slip (gamma2=+1)
+          do j=J_RANGE                  ! =====   no-slip (gamma2=-1)
+            qdmv_nbq(Istr-1,j,k)=gamma2*qdmv_nbq(Istr,j,k)
+#   ifdef MASKING
+     &                                    *vmask(Istr-1,j)
+#   endif
+          enddo
+        enddo
+#   undef J_RANGE
 
 #  endif /* OBC_WEST */
 
@@ -604,7 +605,7 @@
         vsum=0.
         do k=1,N
           do j=JstrV,Jend
-            vsum(Iend+1,j)=vsum(Iend+1,j)+qdmu_nbq(Iend+1,j,k)
+            vsum(Iend+1,j)=vsum(Iend+1,j)+qdmv_nbq(Iend+1,j,k)
           enddo
         enddo
         do k=1,N
@@ -612,8 +613,8 @@
             cff1=0.5*(Hz(Iend+1,j,k)+Hz(Iend+1,j-1,k))
             cff2=0.5*(h(Iend+1,j  )+zeta(Iend+1,j  ,knew)
      &               +h(Iend+1,j-1)+zeta(Iend+1,j-1,knew))
-            qdmu_nbq(Iend+1,j,k)=qdmu_nbq(Iend+1,j,k)
-     &                           +(DU_nbq(Iend+1,j)-vsum(Iend+1,j))
+            qdmv_nbq(Iend+1,j,k)=qdmv_nbq(Iend+1,j,k)
+     &                           +(DV_nbq(Iend+1,j)-vsum(Iend+1,j))
      &                                                   *cff1/cff2
 #    ifdef MASKING
      &                                  *vmask(Iend+1,j)
@@ -626,21 +627,21 @@
 #   undef vsum
 #  endif
 
-!#  else
-!#   ifdef NS_COM_PERIODIC
-!#    define J_RANGE JstrV,Jend
-!#   else
-!#    define J_RANGE Jstr,JendR
-!#   endif
-!        do k=1,N                        ! Wall: free-slip (gamma2=+1)
-!          do j=J_RANGE                  ! ====    no-slip (gamma2=-1)
-!            qdmu_nbq(Iend+1,j,k)=gamma2*qdmu_nbq(Iend+1,j,k)
-!#   ifdef MASKING
-!     &                                          *vmask(Iend+1,j)
-!#   endif
-!          enddo
-!        enddo
-!#   undef J_RANGE
+#  else
+#   ifdef NS_COM_PERIODIC
+#    define J_RANGE JstrV,Jend
+#   else
+#    define J_RANGE Jstr,JendR
+#   endif
+        do k=1,N                        ! Wall: free-slip (gamma2=+1)
+          do j=J_RANGE                  ! ====    no-slip (gamma2=-1)
+            qdmv_nbq(Iend+1,j,k)=gamma2*qdmv_nbq(Iend,j,k)
+#   ifdef MASKING
+     &                                    *vmask(Iend+1,j)
+#   endif
+          enddo
+        enddo
+#   undef J_RANGE
 
 #  endif /* OBC_EAST */
 

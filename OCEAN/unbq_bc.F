@@ -1,12 +1,12 @@
-! $Id:$
+! $Id: unbq_bc.F 1458 2014-02-03 15:01:25Z gcambon $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
 ! 
-! CROCO website : http://www.croco-ocean.org
+! ROMS_AGRIF website : http://www.romsagrif.org
 !======================================================================
 !
 #ifndef CHILD
@@ -76,7 +76,7 @@
 ! Interpolations of the parent values to get unbqbry_east or unbqclm
 !
 # ifdef CHILD
-!      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -211,12 +211,12 @@
         enddo
 #  undef usum
 !
-!#  else           /* alternative to open */
-!        do k=1,N                                      ! Western edge closed
-!          do j=jstr,jend                              ! ======= ==== ======
-!            qdmu_nbq(Istr,j,k)=0.                     !  (no-flux: default)
-!          enddo
-!        enddo
+#  else           /* alternative to open */
+        do k=1,N                                      ! Western edge closed
+          do j=jstr,jend                              ! ======= ==== ======
+            qdmu_nbq(Istr,j,k)=0.                     !  (no-flux: default)
+          enddo
+        enddo
 
 #  endif              /* OBC_COM_WEST */
 !
@@ -247,7 +247,7 @@
  
             if (dfx*dft .lt. 0.) then
               dft=0.                      ! <-- cancel cx, if inflow
-#    if defined NBQ_FRC_BRY || defined NBQ_NUDGING
+#    if defined NBQ_FRC_BRY || defined NB_QNUDGING
               tau=tau_in
             else
               tau=tau_out
@@ -347,12 +347,12 @@
         enddo
 #  undef vsum
 !
-!#  else
-!        do k=1,N                                     ! Eastern edge closed
-!          do j=jstr,jend                             ! ======= ==== ======
-!             qdmu_nbq(Iend+1,j,k)=0.                 !  (no-flux: default)  
-!          enddo
-!        enddo
+#  else
+        do k=1,N                                     ! Eastern edge closed
+          do j=jstr,jend                             ! ======= ==== ======
+             qdmu_nbq(Iend+1,j,k)=0.                 !  (no-flux: default)  
+          enddo
+        enddo
 
 #  endif            /* OBC_COM_EAST */
 
@@ -485,21 +485,21 @@
 #    undef usum
 #   endif
 
-!#  else
-!#   ifdef EW_COM_PERIODIC
-!#    define I_RANGE IstrU,Iend
-!#   else
-!#    define I_RANGE Istr,IendR
-!#   endif
-!        do k=1,N                        ! Wall: free-slip (gamma2=+1)
-!          do i=I_RANGE                  ! =====   no-slip (gamma2=-1)
-!            qdmu_nbq(i,Jstr-1,k)=gamma2*qdmu_nbq(i,Jstr,k)
-!#   ifdef MASKING
-!     &                                    *umask(i,Jstr-1)
-!#   endif
-!          enddo
-!        enddo
-!#   undef I_RANGE
+#  else
+#   ifdef EW_COM_PERIODIC
+#    define I_RANGE IstrU,Iend
+#   else
+#    define I_RANGE Istr,IendR
+#   endif
+        do k=1,N                        ! Wall: free-slip (gamma2=+1)
+          do i=I_RANGE                  ! =====   no-slip (gamma2=-1)
+            qdmu_nbq(i,Jstr-1,k)=gamma2*qdmu_nbq(i,Jstr,k)
+#   ifdef MASKING
+     &                                    *umask(i,Jstr-1)
+#   endif
+          enddo
+        enddo
+#   undef I_RANGE
 
 #  endif /* OBC_COM_SOUTH */
 
@@ -628,21 +628,21 @@
 #   undef usum
 #  endif
 
-!#  else
-!#   ifdef EW_COM_PERIODIC
-!#    define I_RANGE IstrU,Iend
-!#   else
-!#    define I_RANGE Istr,IendR
-!#   endif
-!        do k=1,N                        ! Wall: free-slip (gamma2=+1)
-!          do i=I_RANGE                  ! =====   no-slip (gamma2=-1)
-!            qdmu_nbq(i,Jend+1,k)=gamma2*qdmu_nbq(i,Jend,k)
-!#   ifdef MASKING
-!     &                                    *umask(i,Jend+1)
-!#   endif
-!          enddo
-!        enddo
-!#   undef I_RANGE
+#  else
+#   ifdef EW_COM_PERIODIC
+#    define I_RANGE IstrU,Iend
+#   else
+#    define I_RANGE Istr,IendR
+#   endif
+        do k=1,N                        ! Wall: free-slip (gamma2=+1)
+          do i=I_RANGE                  ! =====   no-slip (gamma2=-1)
+            qdmu_nbq(i,Jend+1,k)=gamma2*qdmu_nbq(i,Jend,k)
+#   ifdef MASKING
+     &                                    *umask(i,Jend+1)
+#   endif
+          enddo
+        enddo
+#   undef I_RANGE
 
 #  endif  /* OBC_COM_NORTH */
 

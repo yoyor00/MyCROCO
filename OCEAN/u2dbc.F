@@ -747,6 +747,7 @@ C$    trd=omp_get_thread_num()
       endif          !<-- NORTHERN_EDGE
 #endif                /* !NS_COM_PERIODIC */
  
+!=======================================================================
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
  
@@ -879,8 +880,8 @@ C$    trd=omp_get_thread_num()
 !=======================================================================
 !
 # ifndef EW_COM_PERIODIC
-#  ifdef OBC_COM_WEST
       if (WESTERN_EDGE) then
+#  ifdef OBC_COM_WEST
         do j=Jstr,Jend
           DU_nbq(Istr,j)=ubar(Istr,j,knew)
      &                     *0.5*(h(Istr  ,j)+zeta(Istr  ,j,knew)
@@ -890,10 +891,15 @@ C$    trd=omp_get_thread_num()
      &                                +rhobar_nbq(Istr-1,j,knew))
 #   endif
         enddo
-      endif
+#  else
+        do j=Jstr,Jend
+          DU_nbq(Istr,j)=0.  ! closed boundary
+        enddo
 #  endif
-#  ifdef OBC_COM_EAST
+      endif
+!
       if (EASTERN_EDGE) then
+#  ifdef OBC_COM_EAST
         do j=Jstr,Jend
           DU_nbq(Iend+1,j)=ubar(Iend+1,j,knew)
      &                     *0.5*(h(Iend+1,j)+zeta(Iend+1,j,knew)
@@ -903,14 +909,17 @@ C$    trd=omp_get_thread_num()
      &                                +rhobar_nbq(Iend  ,j,knew))
 #   endif
         enddo
-      endif
+#  else
+        do j=Jstr,Jend
+          DU_nbq(Iend+1,j)=0.  ! closed boundary
+        enddo
 #  endif
+      endif
 # endif /* EW_COM_PERIODIC */
 !
-# ifdef QDM_OBC_TANG_CORRECT
 # ifndef NS_COM_PERIODIC
-#  ifdef OBC_COM_SOUTH
       if (SOUTHERN_EDGE) then
+#  ifdef OBC_COM_SOUTH
         do i=IstrU,Iend
           DU_nbq(i,Jstr-1)=ubar(i,Jstr-1,knew)
      &                 *0.5*(h(i  ,Jstr-1)+zeta(i  ,Jstr-1,knew)
@@ -920,10 +929,15 @@ C$    trd=omp_get_thread_num()
      &                              +rhobar_nbq(i-1,Jstr-1,knew))
 #   endif
         enddo
-      endif
+#  else
+        do i=IstrU,Iend
+          DU_nbq(i,Jstr-1)=gamma2*DU_nbq(i,Jstr)  ! slip/noslip boundary
+        enddo
 #  endif
-#  ifdef OBC_COM_NORTH
+      endif
+!
       if (NORTHERN_EDGE) then
+#  ifdef OBC_COM_NORTH
         do i=IstrU,Iend
           DU_nbq(i,Jend+1)=ubar(i,Jend+1,knew)
      &                 *0.5*(h(i  ,Jend+1)+zeta(i  ,Jend+1,knew)
@@ -933,10 +947,14 @@ C$    trd=omp_get_thread_num()
      &                              +rhobar_nbq(i-1,Jend+1,knew))
 #   endif
         enddo
-      endif
+#  else
+        do i=IstrU,Iend
+          DU_nbq(i,Jend+1)=gamma2* DU_nbq(i,Jend)
+        enddo
 #  endif
+      endif
 # endif /* NS_COM_PERIODIC */
-# endif
+!
 #endif /* NBQ */
 
       return

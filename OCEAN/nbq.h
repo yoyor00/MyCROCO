@@ -20,40 +20,6 @@
       logical NORTH_INTER_NBQ       
       common /nbq_log4/ NORTH_INTER_NBQ
 
-!**********************************************************************
-      integer   istr_nh    
-      common /nbq_int1/ istr_nh                                              
-      integer   jstr_nh    
-      common /nbq_int2/ jstr_nh 
-      integer   iend_nh   
-      common /nbq_int3/ iend_nh
-      integer   jend_nh    
-      common /nbq_int4/ jend_nh
-      integer   istru_nh     
-      common /nbq_int5/  istru_nh
-      integer   jstru_nh    
-      common /nbq_int6/   jstru_nh
-      integer   istrv_nh   
-      common /nbq_int7/ istrv_nh
-      integer   jstrv_nh     
-      common /nbq_int8/ jstrv_nh
-      integer   iendu_nh      
-      common /nbq_int9/ iendu_nh
-      integer   jendu_nh      
-      common /nbq_int10/ jendu_nh
-      integer   iendv_nh    
-      common /nbq_int11/ iendv_nh
-      integer   jendv_nh      
-      common /nbq_int12/ jendv_nh
-      integer   istrq_nh    
-      common /nbq_int13/ istrq_nh
-      integer   iendq_nh     
-      common /nbq_int14/iendq_nh
-      integer   jstrq_nh     
-      common /nbq_int15/ jstrq_nh
-      integer   jendq_nh    
-      common /nbq_int16/ jendq_nh  
-                                   
 !********************************************************************** 
       integer iteration_nbq_max  
       common /nbq_var1/ iteration_nbq_max             
@@ -174,50 +140,6 @@
       common /nbq_rvbar/ rvbar_nbq
 
 !**********************************************************************
-# if defined OBC_NBQ && defined OBC_NBQORLANSKI
-#  ifdef OBC_WEST
-      real qdmu_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
-      common /bry_unbq_west/ qdmu_nbq_west
-      real qdmv_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
-      common /bry_vnbq_west/ qdmv_nbq_west
-      real qdmw_nbq_west(GLOBAL_1D_ARRAYETA,0:N,2)
-      common /bry_wnbq_west/ qdmw_nbq_west
-      real  rho_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
-      common /bry_rnbq_west/ rho_nbq_west
-#  endif
-#  ifdef OBC_EAST
-      real qdmu_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
-      common /bry_unbq_east/ qdmu_nbq_east
-      real qdmv_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
-      common /bry_vnbq_east/ qdmv_nbq_east
-      real qdmw_nbq_east(GLOBAL_1D_ARRAYETA,0:N,2)
-      common /bry_wnbq_east/ qdmw_nbq_east
-      real  rho_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
-      common /bry_rnbq_east/ rho_nbq_east
-#  endif
-#  ifdef OBC_SOUTH
-      real qdmu_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
-      common /bry_unbq_south/ qdmu_nbq_south
-      real qdmv_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
-      common /bry_vnbq_south/ qdmv_nbq_south
-      real qdmw_nbq_south(GLOBAL_1D_ARRAYXI,0:N,2)
-      common /bry_wnbq_south/ qdmw_nbq_south
-      real  rho_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
-      common /bry_rnbq_south/ rho_nbq_south
-#  endif
-#  ifdef OBC_NORTH
-      real qdmu_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
-      common /bry_unbq_north/ qdmu_nbq_north
-      real qdmv_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
-      common /bry_vnbq_north/ qdmv_nbq_north
-      real qdmw_nbq_north(GLOBAL_1D_ARRAYXI,0:N,2)
-      common /bry_wnbq_north/ qdmw_nbq_north
-      real  rho_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
-      common /bry_rnbq_north/ rho_nbq_north
-#  endif
-# endif     
-
-!**********************************************************************
       real e(GLOBAL_2D_ARRAY)
       common /nbq_e/ e
       real eomn(GLOBAL_2D_ARRAY)
@@ -244,15 +166,15 @@
 
       real zr_nbq(GLOBAL_2D_ARRAY,N,4)
       common /nbq_zr/ zr_nbq
-      real z_nbq(GLOBAL_2D_ARRAY,0:N,4)
-      common /nbq_z/ z_nbq
+      real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)
+      common /nbq_zw/ zw_nbq
 
       real Hz_bak2(GLOBAL_2D_ARRAY,1:N)
       common /nbq_H_bak2/ Hz_bak2
 
 # ifdef NBQ_HZCORRECT
-       real Hz_tra(GLOBAL_2D_ARRAY,N)
-       common /grid_Hz_tra/ Hz_tra
+       real Hz_correct(GLOBAL_2D_ARRAY,N)
+       common /grid_Hz_correct/ Hz_correct
 #  ifdef NBQ_HZCORR_DEBUG
       real  Hz_corr(GLOBAL_2D_ARRAY,N) 
       common/corr_Hz/Hz_corr
@@ -309,6 +231,50 @@
       integer IstrR2,IendR2
       integer JstrR2,JendR2
 # endif /* NBQ_ZETAW */
+
+!**********************************************************************
+# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+#  ifdef OBC_WEST
+      real qdmu_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
+      common /bry_unbq_west/ qdmu_nbq_west
+      real qdmv_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
+      common /bry_vnbq_west/ qdmv_nbq_west
+      real qdmw_nbq_west(GLOBAL_1D_ARRAYETA,0:N,2)
+      common /bry_wnbq_west/ qdmw_nbq_west
+      real  rho_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
+      common /bry_rnbq_west/ rho_nbq_west
+#  endif
+#  ifdef OBC_EAST
+      real qdmu_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
+      common /bry_unbq_east/ qdmu_nbq_east
+      real qdmv_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
+      common /bry_vnbq_east/ qdmv_nbq_east
+      real qdmw_nbq_east(GLOBAL_1D_ARRAYETA,0:N,2)
+      common /bry_wnbq_east/ qdmw_nbq_east
+      real  rho_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
+      common /bry_rnbq_east/ rho_nbq_east
+#  endif
+#  ifdef OBC_SOUTH
+      real qdmu_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
+      common /bry_unbq_south/ qdmu_nbq_south
+      real qdmv_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
+      common /bry_vnbq_south/ qdmv_nbq_south
+      real qdmw_nbq_south(GLOBAL_1D_ARRAYXI,0:N,2)
+      common /bry_wnbq_south/ qdmw_nbq_south
+      real  rho_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
+      common /bry_rnbq_south/ rho_nbq_south
+#  endif
+#  ifdef OBC_NORTH
+      real qdmu_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
+      common /bry_unbq_north/ qdmu_nbq_north
+      real qdmv_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
+      common /bry_vnbq_north/ qdmv_nbq_north
+      real qdmw_nbq_north(GLOBAL_1D_ARRAYXI,0:N,2)
+      common /bry_wnbq_north/ qdmw_nbq_north
+      real  rho_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
+      common /bry_rnbq_north/ rho_nbq_north
+#  endif
+# endif     
 
 !**********************************************************************
 # ifdef NBQ_NUDGING
