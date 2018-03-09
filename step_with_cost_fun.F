@@ -23,7 +23,7 @@ c     this file is not differentiated
       retval = nf_inq_varid(ncid, 'zeta', varid)
       if (retval .ne. nf_noerr) call handle_err(retval)
 
-      retval = nf_fread(obs(START_2D_ARRAY,1), ncid, varid, 0, r2dvar)
+      retval = nf_fread(obs(START_2D_ARRAY,1), ncid, varid, 1, r2dvar)
 
       retval = nf_close(ncid)
       if (retval .ne. nf_noerr) call handle_err(retval)

@@ -180,10 +180,10 @@ all: tools depend $(SBIN) $(SBIN)_adj
 $(SBIN): $(OBJS90) $(OBJS) main.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI)
 
-$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o ampiSupport.o fortranSupport.o
+$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) 
 
-$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_tgt.o ampiSupport.o fortranSupport.o
+$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_tgt.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI)
 
 
@@ -314,9 +314,6 @@ $(TAP_TARGET)_d.f: $(TGT_PSRCS)
 
 fortranSupport.o : fortranSupport.F
 	$(FC) $(FFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
-
-ampiSupport.o : ampiSupport.c
-	$(CC) $(CFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
 
 # Special treatment for barrier function:
 # THERE SHALL BE NO OPTIMIZATION HERE!!!!

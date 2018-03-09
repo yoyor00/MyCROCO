@@ -1,6 +1,5 @@
       subroutine cost_fun(x, cost)
       implicit none
-# define BW_AMPI_REDUCE BWS_AMPI_REDUCE      
 # include "cppdefs.h"
 # include "param.h"
 # include "scalars.h"
@@ -21,11 +20,11 @@
 
       call set_state(x, h0, rdrg2_bck)
 
-      icost = 0
+      cost = 0
       do k=1,120
          call step()
 
-         call cost_fun_step(icost)
+         call cost_fun_step(cost)
          
       end do
 
@@ -35,10 +34,10 @@ c     issue with Reduce (bws_ampi_reduce is present but signature
 c     different, association by name, from what tapenade writes) call
 c     call AMPI_Reduce(icost, cost, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, & 0,
 c     MPI_COMM_WORLD, ierr);
-      call AMPI_Gather(icost, 1, AMPI_ADOUBLE_PRECISION, acost, NNODES,
+      call AMPI_Gather(cost, 1, AMPI_ADOUBLE_PRECISION, acost, NNODES,
      &     AMPI_ADOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
 
-      cost = 0
+c      cost = 0
       if (mynode.eq.0) then
          do i = 1, NNODES
             cost = cost + acost(i)
