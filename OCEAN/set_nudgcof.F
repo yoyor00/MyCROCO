@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 #if defined ZNUDGING || defined M2NUDGING || defined M3NUDGING\
-    || defined TNUDGING || defined SPONGE
+    || defined TNUDGING || defined NBQ_NUDGING || defined SPONGE
 
       subroutine set_nudgcof (tile)
       implicit none
@@ -37,7 +37,9 @@
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_roms.h"
-# include "nbq.h"
+# ifdef NBQ_NUDGING
+#  include "nbq.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i, j, k, isp, itrc, ibnd
       real    wrk(PRIVATE_2D_SCRATCH_ARRAY)
 # if defined CANARY  || defined IBERIA
