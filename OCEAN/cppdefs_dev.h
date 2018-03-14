@@ -138,13 +138,13 @@
 # undef  DIAG_CFL
 # define HZR Hzr
 /*
-   NBQ Precise or Performance options 
+   NBQ Precise or Performance options (default: NBQ_PERF) 
 */
-# if !defined NBQ_PERF
-#  define NBQ_PRECISE
+# if !defined NBQ_PRECISE
+#  define NBQ_PERF
 # endif
 # ifdef NBQ_PRECISE
-#  define NBQ_MASS                               
+#  define NBQ_MASS
 #  define NBQ_ZETAREDIAG
 #  define NBQ_HZCORRECT
 # else

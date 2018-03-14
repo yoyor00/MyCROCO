@@ -164,8 +164,6 @@
        common /grid_Hzr_half_nbq/ Hzr_half_nbq
 # endif
 
-      real zr_nbq(GLOBAL_2D_ARRAY,N,4)
-      common /nbq_zr/ zr_nbq
       real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)
       common /nbq_zw/ zw_nbq
 

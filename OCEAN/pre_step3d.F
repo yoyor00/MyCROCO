@@ -520,10 +520,18 @@
             cdt=(1.-gamma)*dt
       endif 
 
-#ifdef NBQ
-      ru_int_nbq_2d(:,:) = 0.
-      rv_int_nbq_2d(:,:) = 0.
-#endif
+# ifdef NBQ
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+           ru_int_nbq_2d(i,j)=0.
+        enddo
+      enddo
+      do j=JstrV,Jend
+        do i=Istr,Iend
+           rv_int_nbq_2d(i,j)=0.
+        enddo
+      enddo
+# endif
 
       do j=Jstr,Jend
 
@@ -533,7 +541,8 @@
              DC(i,k)=1./Hz_half(i,j,k)
            enddo   
 # endif
-             DC(i,0)=cdt*pn(i,j)*pm(i,j)
+           DC(i,0)=cdt*pn(i,j)*pm(i,j)
+
         enddo
         
         do itrc=1,NT

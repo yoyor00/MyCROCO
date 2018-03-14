@@ -29,18 +29,17 @@ C$    trd=omp_get_thread_num()
 !                       step3d_fast_zetaw
 !======================================================================
 !
-      call step3d_fast_zetaw_tile ( Istr,Iend,Jstr,Jend, A2d(1, 1,trd)
-     &                   , A2d(1, 2,trd), A2d(1, 3,trd), A2d(1, 4,trd)
-     &                   , A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd)
-     &                   , A2d(1, 8,trd), A2d(1, 9,trd) 
-     &                   , A2d(1,10,trd), A2d(1,11,trd) 
-     &                   , A2d(1,12,trd), A2d(1,13,trd)     
+      call step3d_fast_zetaw_tile ( Istr,Iend,Jstr,Jend
+     &                   , A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd)
+     &                   , A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd)
+     &                   , A2d(1, 7,trd), A2d(1, 8,trd)
+     &                   , A2d(1, 9,trd), A2d(1,10,trd)
+     &                   , A2d(1,11,trd), A2d(1,12,trd)
+     &                   , A2d(1,13,trd), A2d(1,14,trd)
+     &                   , A2d(1,15,trd), A2d(1,16,trd)
      &                   , A3d(1, 1,trd), A3d(1, 2,trd)
      &                   , A3d(1, 3,trd), A3d(1, 4,trd)
      &                   , A3d(1, 5,trd), A3d(1, 6,trd)
-     &                   , A2d(1,14,trd)    ! A2d(:,14-25,trd) for NBQ
-     &                   , A2d(1,26,trd), A2d(1,27,trd)
-     &                   , A2d(1,28,trd), A2d(1,29,trd)
      &                   )
 
       return
@@ -50,18 +49,17 @@ C$    trd=omp_get_thread_num()
 !                      step3d_fast_zetaw_tile
 !======================================================================
 !
-      subroutine step3d_fast_zetaw_tile (Istr,Iend,Jstr,Jend, zeta_new
+      subroutine step3d_fast_zetaw_tile (Istr,Iend,Jstr,Jend
      &                          ,Dnew,rubar,rvbar
      &                          ,Drhs, UFx,UFe
      &                          ,VFx,VFe
      &                          ,urhs,vrhs 
      &                          ,DUon,DVom
+     &                          ,ru_ext_nbq_sum, rv_ext_nbq_sum
+     &                          ,ru_ext_nbq_old, rv_ext_nbq_old
      &                          ,Hzw_half_nbq_inv, Hzr_half_nbq_inv 
      &                          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
      &                          ,Hzu_half_qdmu,Hzv_half_qdmv
-     &                          ,work_nbq
-     &                          ,ru_ext_nbq_sum, rv_ext_nbq_sum
-     &                          ,ru_ext_nbq_old, rv_ext_nbq_old
      &                          )
 !
 !
@@ -74,42 +72,66 @@ C$    trd=omp_get_thread_num()
 !
       implicit none
 # include "param.h"
-      integer Istr,Iend,Jstr,Jend, i,j,
-     &        imin,imax,jmin,jmax
+      integer Istr,Iend,Jstr,Jend, i,j,k,
+     &        imin,imax,jmin,jmax,
+     &        k1, k2, kp1,
+     &        i1_a,i2_a,j1_a,j2_a
 # ifdef MPI
      &        ,err
 # endif
 # ifdef PSOURCE
      &        ,is
 # endif
-      real    VMAX,VMAXL
-      real zeta_new(PRIVATE_2D_SCRATCH_ARRAY),  cff,
-     &         Dnew(PRIVATE_2D_SCRATCH_ARRAY),  cff0,
-     &        rubar(PRIVATE_2D_SCRATCH_ARRAY),  cff1,
-     &        rvbar(PRIVATE_2D_SCRATCH_ARRAY),  cff2,
-     &         Drhs(PRIVATE_2D_SCRATCH_ARRAY),  cff3,
-     &          UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &          UFe(PRIVATE_2D_SCRATCH_ARRAY),  DUnew,
-     &          VFx(PRIVATE_2D_SCRATCH_ARRAY),  DVnew,
-     &          VFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &         urhs(PRIVATE_2D_SCRATCH_ARRAY),  
-     &         vrhs(PRIVATE_2D_SCRATCH_ARRAY),
-     &         DUon(PRIVATE_2D_SCRATCH_ARRAY),
-     &         DVom(PRIVATE_2D_SCRATCH_ARRAY)
+      real    myepsilon,mybeta,myalpha,mygamma,
+     &        VMAX,VMAXL, cff,cff0,cff1,cff2,cff3, 
+     &        DUnew,DVnew, dum_s
 
-       real   Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
-     &        Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &     Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N),
-     &   Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &   Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &             work_nbq(PRIVATE_2D_SCRATCH_ARRAY,11),
+      real,parameter :: thetaimp_nbq = 1.
+      real,parameter :: gammau=0.45    ! pressure gradient scheme
+      !real,parameter :: gammau=0.55
+      !real,parameter :: gammau=1.0
+      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
+
+      real
+     &                Dnew(PRIVATE_2D_SCRATCH_ARRAY),
+     &               rubar(PRIVATE_2D_SCRATCH_ARRAY),
+     &               rvbar(PRIVATE_2D_SCRATCH_ARRAY),
+     &                Drhs(PRIVATE_2D_SCRATCH_ARRAY),
+     &                 UFx(PRIVATE_2D_SCRATCH_ARRAY),
+     &                 UFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &                 VFx(PRIVATE_2D_SCRATCH_ARRAY),
+     &                 VFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &                urhs(PRIVATE_2D_SCRATCH_ARRAY),  
+     &                vrhs(PRIVATE_2D_SCRATCH_ARRAY),
+     &                DUon(PRIVATE_2D_SCRATCH_ARRAY),
+     &                 DVom(PRIVATE_2D_SCRATCH_ARRAY)
+      real
      &       ru_ext_nbq_sum(PRIVATE_2D_SCRATCH_ARRAY),
      &       rv_ext_nbq_sum(PRIVATE_2D_SCRATCH_ARRAY),
      &       ru_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY),
      &       rv_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY)
 
-      real :: myepsilon,mybeta,myalpha,mygamma
+      real    Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
+     &        Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &     Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,  N),
+     &   Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &   Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+      real 
+     &    dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2),
+     &    dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2),
+     &    dthetadiv_nbqdz_w(PRIVATE_2D_SCRATCH_ARRAY,2),
+     &              dZdxq_u(PRIVATE_2D_SCRATCH_ARRAY,2),
+     &              dZdyq_v(PRIVATE_2D_SCRATCH_ARRAY,2),
+     &                   FX(PRIVATE_2D_SCRATCH_ARRAY),
+     &                   FY(PRIVATE_2D_SCRATCH_ARRAY),
+     &                   FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &                   DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &                   CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &                 work(PRIVATE_2D_SCRATCH_ARRAY),
+     &                sum_r(PRIVATE_2D_SCRATCH_ARRAY),
+     &         qdmw_nbq_old(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
@@ -133,37 +155,6 @@ C$    trd=omp_get_thread_num()
       real cff1_WD,cff2_WD
 # endif
 # include "nbq.h"
-      integer k
-      real dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real dthetadiv_nbqdz_w(PRIVATE_2D_SCRATCH_ARRAY,2) 
-
-      real dZdxq_u(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real dZdyq_v(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real FY(PRIVATE_2D_SCRATCH_ARRAY) 
-
-      real zwrk1(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real zwrk2(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real zwrk3(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real zwrk4(PRIVATE_2D_SCRATCH_ARRAY,2) 
-      real zwrk5(PRIVATE_2D_SCRATCH_ARRAY) 
-      real FC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
-      real FX(PRIVATE_2D_SCRATCH_ARRAY) 
-      integer :: k1, k2, kp1
-      integer i1_a,i2_a,j1_a,j2_a
-
-      real DC(PRIVATE_1D_SCRATCH_ARRAY,0:N+1) 
-      real CF(PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
-      real work(PRIVATE_2D_SCRATCH_ARRAY)
-      real dum_s,dum_max
-      real sum_r(PRIVATE_2D_SCRATCH_ARRAY)
-      real,dimension(GLOBAL_2D_ARRAY,0:N) :: qdmw_nbq_old
-
-      real,parameter :: thetaimp_nbq = 1.
-      real,parameter :: gammau=0.45
-      !real,parameter :: gammau=0.55
-      !real,parameter :: gammau=1.0
-      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
 !
 # ifndef NBQ_MASS
 #  define Hzr Hz
@@ -202,12 +193,6 @@ C$    trd=omp_get_thread_num()
 #  define JU_RANGE JstrR,JendR
 #  define JV_RANGE Jstr,JendR
 # endif
-
-# define zwrk UFx
-# define rzeta   UFe
-# define rzeta2  VFe
-# define rzetaSA VFx
-
 !
 !*********************************************************************
 ! Set several approximations to speed-up computation
@@ -586,6 +571,11 @@ C$OMP END MASTER
 ! (compute Zeta for rhs)
 !=====================================================================
 !
+# define zwrk    UFx
+# define rzeta   UFe
+# define rzeta2  VFe
+# define rzetaSA VFx
+
 # ifdef NBQ_MASS
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -595,7 +585,7 @@ C$OMP END MASTER
           zwrk(i,j)=zeta(i,j,kstp)
 #  ifdef MASKING
           Dnew(i,j)=(zeta(i,j,kstp)*rmask(i,j)+h(i,j))
-     &         *rhobar_nbq(i,j,kstp) ! CAUTION: rhobar_nbq must be 1 on land !!
+     &              *rhobar_nbq(i,j,kstp) !! rhobar_nbq must be 1 on land !!
           zwrk(i,j)=zwrk(i,j)*rmask(i,j)
 #  else
           Dnew(i,j)=(zeta(i,j,kstp)+h(i,j))*rhobar_nbq(i,j,kstp)
@@ -616,9 +606,6 @@ C$OMP END MASTER
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-#  ifndef NBQ
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)    ! Useful ????
-#  endif
           zeta(i,j,knew)= zeta(i,j,knew) SWITCH rmask(i,j) ! Useful ????
 #  ifdef MASKING
           Dnew(i,j)=(zeta(i,j,kstp)*rmask(i,j)+h(i,j))
@@ -875,7 +862,6 @@ C$OMP END MASTER
      &                 +ust2d(i,j-1)+ust2d(i+1,j-1) )
           dude = 0.5*( urhs(i,j) - urhs(i,j-1)
      &                 +urhs(i+1,j) - urhs(i+1,j-1) )
-!          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           dvde = 0.5*( vrhs(i,j+1)-vrhs(i,j-1) )
           rvbar(i,j) = rvbar(i,j) + 0.5*on_v(i,j)*
      &                      ( Drhs(i,j-1)+Drhs(i,j) )
@@ -1129,11 +1115,6 @@ C$OMP END MASTER
 !
       if (FIRST_TIME_STEP .and. iif.eq.1) then
         do j=JstrR,JendR
-          do k=1,N
-            do i=IstrR,IendR
-              zr_nbq(i,j,k,:)=z_r(i,j,k)
-            enddo
-          enddo
           do k=0,N
             do i=IstrR,IendR
               zw_nbq (i,j,k,:)=z_w(i,j,k)
@@ -1385,17 +1366,6 @@ C$OMP END MASTER
 #  endif
         enddo
       enddo
-
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))
-#  endif
-
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-           zeta_new(i,j)=zeta(i,j,knew)
-        enddo
-      enddo
 !
 !-----------------------------------------------------------------------
 !  Add nudging terms
@@ -1418,46 +1388,39 @@ C$OMP END MASTER
 #   endif  /* ZONAL_NUDGING */
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) + dtfast*Znudgcof(i,j)
+          zeta(i,j,knew)=zeta(i,j,knew) + dtfast*Znudgcof(i,j)
 #   ifdef ZONAL_NUDGING
      &                                 *(sshzon(j)-zetazon(j))
 #   else
-     &                                 *(ssh(i,j)-zeta_new(i,j))
+     &                              *(ssh(i,j)-zeta(i,j,knew))
 #   endif /* ZONAL_NUDGING */
+#   ifdef MASKING
+     &                                             *rmask(i,j)
+#   endif
         enddo
       enddo
 #  endif /* ZNUDGING */
 !
 !-----------------------------------------------------------------------
-! Apply fixed land mask
-!
-! if WET_DRY is used: load new free-surface values into shared array
-! Modify new free-surface to ensure that depth is > Dcrit in masked
-! cells.
+! Compute wet/dry masks
 !-----------------------------------------------------------------------
 !
-#  ifdef MASKING
+! First: modify new free-surface to ensure that depth 
+!        is > Dcrit in masked cells.
+!
+#  if defined WET_DRY && defined MASKING
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j)*rmask(i,j)
-#   ifdef WET_DRY
           zeta(i,j,knew)=zeta(i,j,knew)+ 
      &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-#   endif
         enddo
       enddo 
 #  endif
 !
-!-----------------------------------------------------------------------
-! Compute wet/dry masks
-!-----------------------------------------------------------------------
+! Then compute wet/dry masks
 !
 #  ifdef WET_DRY
       call wetdry_tile (Istr,Iend,Jstr,Jend)
-#  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))
 #  endif
 !
 !-----------------------------------------------------------------------
@@ -1466,6 +1429,14 @@ C$OMP END MASTER
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
 !
+!-----------------------------------------------------------------------
+! Perform exchanges
+!-----------------------------------------------------------------------
+!
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,knew))
+#  endif
 !
 !=====================================================================
 !  Update grid
@@ -2401,8 +2372,14 @@ C$OMP END MASTER
 !-------------------------------------------------------------------
 !
 # ifdef NBQ_IMP
-      qdmw_nbq_old = qdmw_nbq
-!  
+      do k=0,N
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            qdmw_nbq_old(i,j,k)=qdmw_nbq(i,j,k)
+          enddo
+        enddo
+      enddo
+  
       do j=Jstr,Jend ! <-- j loop
 
         do k=1,N
@@ -2682,19 +2659,6 @@ C$OMP END MASTER
         enddo
 
 # endif
-
-      do j=JstrR,JendR
-        do k=1,N
-          do i=IstrR,IendR
-            zr_nbq(i,j,k,knew)=z_r(i,j,k)
-          enddo
-        enddo
-        do k=0,N
-          do i=IstrR,IendR
-            zw_nbq(i,j,k,knew)=z_w(i,j,k)
-          enddo
-        enddo
-      enddo
 !
 !-------------------------------------------------------------------
 !      rhobar_nbq
@@ -2836,17 +2800,6 @@ C$OMP END MASTER
 #  endif
         enddo
       enddo
-
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                   zeta(START_2D_ARRAY,knew))
-#  endif
-
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta(i,j,knew)
-        enddo
-      enddo
 !
 !-----------------------------------------------------------------------
 ! Add zeta nudging terms
@@ -2869,12 +2822,15 @@ C$OMP END MASTER
 #   endif  /* ZONAL_NUDGING */
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) + dtfast*Znudgcof(i,j)
+          zeta(i,j,knew)=zeta(i,j,knew) + dtfast*Znudgcof(i,j)
 #   ifdef ZONAL_NUDGING
      &                                 *(sshzon(j)-zetazon(j))
 #   else
-     &                                 *(ssh(i,j)-zeta_new(i,j))
+     &                              *(ssh(i,j)-zeta(i,j,knew))
 #   endif /* ZONAL_NUDGING */
+#   ifdef MASKING
+     &                                             *rmask(i,j)
+#   endif
         enddo
       enddo
 #  endif /* ZNUDGING */
@@ -2885,8 +2841,7 @@ C$OMP END MASTER
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
-          Dnew(i,j)=(zeta_new(i,j)+h(i,j))
+          Dnew(i,j)=(zeta(i,j,knew)+h(i,j))
 #   ifdef NBQ_MASS
      &               *rhobar_nbq(i,j,knew)
 #   endif
@@ -2894,10 +2849,11 @@ C$OMP END MASTER
       enddo
 !
 !-----------------------------------------------------------------------
-! Masking with WET/DRY scheme: 
-! Load new free-surface values into shared array and modify new 
-! free-surface to ensure that depth is > Dcrit for masked cells.
+! Compute wet/dry masks
 !-----------------------------------------------------------------------
+!
+! First: modify new free-surface to ensure that depth 
+!        is > Dcrit in masked cells.
 !
 #  if defined WET_DRY && defined MASKING
       do j=JstrV-1,Jend
@@ -2908,23 +2864,26 @@ C$OMP END MASTER
       enddo 
 #  endif
 !
-!-----------------------------------------------------------------------
-! Compute wet/dry masks
-!-----------------------------------------------------------------------
+! Then compute wet/dry masks
 !
 #  ifdef WET_DRY
       call wetdry_tile (Istr,Iend,Jstr,Jend)
 #  endif
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                        zeta(START_2D_ARRAY,knew))
-#  endif   
 !
 !-----------------------------------------------------------------------
 ! Set boundary conditions for the free-surface
 !-----------------------------------------------------------------------
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
+!
+!-----------------------------------------------------------------------
+! Perform exchanges
+!-----------------------------------------------------------------------
+!
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,knew))
+#  endif
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.
@@ -3391,6 +3350,12 @@ C$OMP END MASTER
 # ifndef NBQ_PERF
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
       call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        qdmu_nbq(START_2D_ARRAY,1))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        qdmv_nbq(START_2D_ARRAY,1))
+#  endif
 # endif
 !
 !-----------------------------------------------------------------------
@@ -3594,7 +3559,6 @@ C$OMP END MASTER
 !
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
           Dnew(i,j)=(zeta(i,j,knew)+h(i,j))
 #  ifdef NBQ_MASS
      &               *rhobar_nbq(i,j,knew)
