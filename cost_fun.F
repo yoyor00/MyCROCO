@@ -168,7 +168,7 @@ c      cost = 0
 #include "param.h"
 #include "grid.h"
 #include "ocean2d.h" 
-#include "scalars.h"m
+#include "scalars.h"
 #include "mpi_roms.h"
 #include "adparam.h"
       integer Istr,Iend,Jstr,Jend, i,j
