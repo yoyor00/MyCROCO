@@ -109,6 +109,7 @@ if [[ $copy_tag == 1 ]] ; then
     
     # XIOS
     DIRO='XIOS'
+    cp -Rf $SOURCES_DIR/$DIRO/iodef.xml .
     cp -Rf $SOURCES_DIR/$DIRO/domain_def.xml .
     cp -Rf $SOURCES_DIR/$DIRO/field_def.xml_full . 
     cp -Rf $SOURCES_DIR/$DIRO/xios_launch.file .

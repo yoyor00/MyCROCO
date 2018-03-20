@@ -476,7 +476,7 @@
 #ifdef TIDES
 # ifdef SSH_TIDES
 #  ifdef ZCLIMATOLOGY
-#  elif Z_FRC_BRY
+#  elif defined Z_FRC_BRY
 #  else
 #   define ZCLIMATOLOGY
 #   define ANA_SSH
@@ -484,7 +484,7 @@
 # endif
 # ifdef UV_TIDES
 #  ifdef M2CLIMATOLOGY
-#  elif M2_FRC_BRY
+#  elif defined M2_FRC_BRY
 #  else
 #   define M2CLIMATOLOGY
 #   define ANA_M2CLIMA
