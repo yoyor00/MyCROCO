@@ -623,16 +623,16 @@
             enddo
           enddo
 
-# ifdef NBQXXX
-          do k=1,N
-            do i=IstrU,Iend
-               ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
-     &            - ru_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
-     &                               /( Zt_avg1(i  ,j)+H(i  ,j)
-     &                                 +Zt_avg1(i-1,j)+H(i-1,j))
-            enddo
-          enddo
-# endif
+!# ifdef NBQ
+!          do k=1,N
+!            do i=IstrU,Iend
+!               ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
+!     &            - ru_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
+!     &                               /( Zt_avg1(i  ,j)+h(i  ,j)
+!     &                                 +Zt_avg1(i-1,j)+h(i-1,j))
+!            enddo
+!          enddo
+!# endif
 
         else 
 
@@ -679,8 +679,8 @@
             do i=IstrU,Iend
                ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
      &            - ru_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i-1,j,k))
-     &                               /( Zt_avg1(i  ,j)+H(i  ,j)
-     &                                 +Zt_avg1(i-1,j)+H(i-1,j))
+     &                               /( Zt_avg1(i  ,j)+h(i  ,j)
+     &                                 +Zt_avg1(i-1,j)+h(i-1,j))
             enddo
           enddo
 # endif
@@ -724,16 +724,16 @@
               enddo
             enddo
 
-# ifdef NBQXXX
-          do k=1,N
-            do i=Istr,Iend
-               rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
-     &            - rv_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
-     &                               /( Zt_avg1(i,j  )+H(i,j  )
-     &                                 +Zt_avg1(i,j-1)+H(i,j-1))
-            enddo
-          enddo
-# endif
+!# ifdef NBQ
+!          do k=1,N
+!            do i=Istr,Iend
+!               rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
+!     &            - rv_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
+!     &                               /( Zt_avg1(i,j  )+h(i,j  )
+!     &                                 +Zt_avg1(i,j-1)+h(i,j-1))
+!            enddo
+!          enddo
+!# endif
 
           else
 
@@ -781,8 +781,8 @@
             do i=Istr,Iend
                rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
      &            - rv_int_nbq_2d(i,j) *(Hz(i,j,k)+Hz(i,j-1,k))
-     &                               /( Zt_avg1(i,j  )+H(i,j  )
-     &                                 +Zt_avg1(i,j-1)+H(i,j-1))
+     &                               /( Zt_avg1(i,j  )+h(i,j  )
+     &                                 +Zt_avg1(i,j-1)+h(i,j-1))
             enddo
           enddo
 # endif

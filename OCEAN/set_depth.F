@@ -69,9 +69,9 @@ C$    integer omp_get_thread_num
 #  define J_RANGE JstrR,JendR
 # endif
 !
-#ifdef NBQ_ZETAW
+# ifdef NBQ_ZETAW
       if (kbak2.eq.0) kbak2=knew
-#endif
+# endif
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -191,12 +191,14 @@ C$    integer omp_get_thread_num
 #  endif
 
 #  ifdef NBQ_ZETAW
-#   ifdef NBQ_PRECISE
+#   ifndef NBQ_GRID_SLOW
             if (iif.eq.1) Hz_bak(i,j,k)=Hz(i,j,k)
 #   else
             Hz_bak(i,j,k)=Hz(i,j,k)
 #   endif
+#   ifdef NBQ_HZ_PROGNOSTIC
             Hz_bak2(i,j,k)=Hz(i,j,k)
+#   endif
 #  else
             Hz_bak(i,j,k)=Hz(i,j,k)
 #  endif 
@@ -242,7 +244,7 @@ C$    integer omp_get_thread_num
 #   ifdef MOVING_BATHY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
 #   endif
-#   ifdef NBQ
+#   ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
 #   endif

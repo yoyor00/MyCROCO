@@ -632,7 +632,7 @@ C$OMP BARRIER
           do tile=my_first,my_last
 #ifdef NBQ
 # ifdef NBQ_ZETAW
-            call     step3d_fast_zetaw  (tile)
+            call     step3d_fast (tile)
 # else
             call     step3d_fast_zeta2d (tile)
 # endif
@@ -644,7 +644,7 @@ C$OMP BARRIER
           do tile=my_first,my_last
 #ifdef NBQ
 # ifdef NBQ_ZETAW
-            call     step3d_fast_zetaw  (tile)
+            call     step3d_fast (tile)
 # else
             call     step3d_fast_zeta2d (tile)
 # endif

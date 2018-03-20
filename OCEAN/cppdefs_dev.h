@@ -140,17 +140,15 @@
 /*
    NBQ Precise or Performance options (default: NBQ_PERF) 
 */
-# if !defined NBQ_PRECISE
+# ifndef NBQ_PRECISE
 #  define NBQ_PERF
 # endif
-# ifdef NBQ_PRECISE
-#  define NBQ_MASS
-#  define NBQ_ZETAREDIAG
-#  define NBQ_HZCORRECT
-# else
+# ifdef NBQ_PERF
 #  undef  NBQ_MASS
-#  undef  NBQ_ZETAREDIAG
-#  define NBQ_HZCORRECT
+#  define NBQ_GRID_SLOW
+# else
+#  define NBQ_MASS
+#  undef  NBQ_GRID_SLOW
 # endif
 /*
    Options for older ZETA2D code 
@@ -203,7 +201,7 @@
 #  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
-#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  undef  NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
 

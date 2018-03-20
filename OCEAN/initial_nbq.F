@@ -85,8 +85,8 @@
       real K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! to nonlinear EOS
 # endif  
 
-      integer i,j,k,ierr
-      integer icall
+      integer i,j,k,ierr, icall
+      real    cff
 
 # include "compute_extended_bounds.h"
 !
@@ -238,10 +238,10 @@
 !
 !**********************************************************************
 !.........Grid update:
-# ifdef NBQ_PRECISE
-        dtgrid_nbq = dtfast
-# else
+# ifdef NBQ_GRID_SLOW
         dtgrid_nbq = dt
+# else
+        dtgrid_nbq = dtfast
 # endif
 
 !.........EOS to compute rho (if not already done):
@@ -283,9 +283,6 @@
             rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,1) 
           enddo
         enddo
-# else
-!      rhobar_nbq     (:,:,:)=1.
-!      rhobar_nbq_avg1(:,:  )=1.
 # endif
         
 !.......Remaining initializations:
@@ -322,37 +319,8 @@
 !**********************************************************************
         do k=1,N
           do j=JR_RANGE
-            do i=IU_RANGE
-              qdmu_nbq(i,j,k)=0.
-            enddo
-          enddo
-        enddo
-# ifdef NBQ_ZETAW
-        do j=JR_RANGE
-          do i=IU_RANGE
-            usurf_nbq=0.
-          enddo
-        enddo
-# endif
-        do k=1,N
-          do j=JV_RANGE
             do i=IR_RANGE
-              qdmv_nbq(i,j,k)=0.
-            enddo
-          enddo
-        enddo
-# ifdef NBQ_ZETAW
-        do j=JV_RANGE
-          do i=IR_RANGE
-            vsurf_nbq=0.
-          enddo
-        enddo
-# endif
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              qdmw_nbq(i,j,k)=0.
-              rho_nbq(i,j,k) =0.
+              rho_nbq(i,j,k)=0.
 # ifndef NBQ_ZETAW
               zr_half_nbq(i,j,k)=0.
               zw_half_nbq(i,j,k)=0.
@@ -360,67 +328,67 @@
             enddo
           enddo
         enddo
-# ifdef NBQ_ZETAW
-        do j=JR_RANGE
-          do i=IR_RANGE
-            wsurf_nbq=0.
+
+        cff=0.5/rho0
+        do k=1,N
+          do j=Jstr-1,Jend+1
+            do i=Istr,Iend+1
+              qdmu_nbq(i,j,k)=0.5*u(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i-1,j,k))
+# ifdef NBQ_MASS
+     &                              *(1.+cff*(rho(i,j,k)+rho(i-1,j,k)))
+# endif
+          enddo
+         enddo
+        enddo
+
+        do k=1,N
+          do j=Jstr,Jend+1
+            do i=Istr-1,Iend+1
+              qdmv_nbq(i,j,k)=0.5*v(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i,j-1,k))
+# ifdef NBQ_MASS
+     &                              *(1.+cff*(rho(i,j,k)+rho(i,j-1,k))) 
+# endif
+            enddo
           enddo
         enddo
+
+        do k=1,N-1
+          do j=Jstr-1,Jend+1
+            do i=Istr-1,Iend+1
+              qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i,j,k+1))
+# ifdef NBQ_MASS
+     &                               *(1.+cff*(rho(i,j,k)+rho(i,j,k+1)))
+# endif
+            enddo
+          enddo
+        enddo
+        k=0 
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+            qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*Hz(i,j,k+1)
+# ifdef NBQ_MASS
+     &                             *(1.+rho(i,j,k+1)/rho0)
 # endif
 
-# ifdef KH_INST
-        if (iic.le.1.and.iif.le.1) then
-          do k=1,N
-            do j=JR_RANGE
-              do i=IU_RANGE
-                qdmu_nbq(i,j,k)=0.5*u(i,j,k,nrhs)
-# ifdef NBQ_MASS
-     &                          *(Hz(i,j,k)+Hz(i-1,j,k))
-     &                          *(1.+0.5*(rho(i,j,k)+rho(i-1,j,k))/rho0)
-# else
-     &                          *(Hz(i,j,k)+Hz(i-1,j,k))
-# endif
-              enddo
-            enddo
           enddo
+        enddo
+        k=N 
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+            qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)*Hz(i,j,k)
+# ifdef NBQ_MASS
+     &                             *(1.+rho(i,j,k)/rho0)
+# endif
+          enddo
+        enddo
 
-          do k=1,N-1
-            do j=JR_RANGE
-              do i=IR_RANGE
-                qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)
-# ifdef NBQ_MASS
-     &                          *(Hz(i,j,k)+Hz(i,j,k+1))
-     &                          *(1.+0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0)
-# else
-     &                          *(Hz(i,j,k)+Hz(i,j,k+1))
-# endif
-              enddo
-            enddo
-          enddo
-          k=0 
-          do j=JR_RANGE 
-            do i=IR_RANGE
-                qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)
-# ifdef NBQ_MASS
-     &                          *(Hz(i,j,k)+Hz(i,j,k+1))
-     &                          *(1.+0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0)
-# else
-     &                          *(Hz(i,j,k)+Hz(i,j,k+1))
-# endif            enddo
-          enddo
-          k=N 
-          do j=JR_RANGE
-            do i=IR_RANGE
-                qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nrhs)
-# ifdef NBQ_MASS
-     &                          *(Hz(i,j,k)+Hz(i,j,k+1))
-     &                          *(1.+0.5*(rho(i,j,k)+rho(i,j,k+1))/rho0)
-# else
-     &                          *(Hz(i,j,k)+Hz(i,j,k+1))
-# endif
-            enddo
-          enddo
-        endif ! iic
+# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI  
+       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                         qdmu_nbq(START_2D_ARRAY,1))
+       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                         qdmv_nbq(START_2D_ARRAY,1))
+#  endif
 # endif
 
       endif  ! icall

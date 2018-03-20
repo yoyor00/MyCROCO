@@ -121,12 +121,10 @@
 #  ifndef NBQ_ZETAW
       real rhobar_nbq_int(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_int/ rhobar_nbq_int
-#  endif
-# endif
-
-# ifdef NBQ_ZETAW 
+#  else
       real rho_bak(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_bak/rho_bak
+#  endif
 # endif
 
       real ru_int_nbq_2d (GLOBAL_2D_ARRAY)  
@@ -150,25 +148,10 @@
       common /nbq_sina/ sina
 
 !**********************************************************************
-      real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /grid_Hzw_half_nbq/ Hzw_half_nbq
-# ifndef NBQ_ZETAW
-      real zr_half_nbq(GLOBAL_2D_ARRAY,N)
-      common /grid_zr_half_nbq/ zr_half_nbq
-      real zw_half_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /grid_zw_half_nbq/ zw_half_nbq     
-# endif    
-
-# if defined NBQ_MASS && !defined NBQ_ZETAW 
-       real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
-       common /grid_Hzr_half_nbq/ Hzr_half_nbq
-# endif
-
       real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)
       common /nbq_zw/ zw_nbq
-
-      real Hz_bak2(GLOBAL_2D_ARRAY,1:N)
-      common /nbq_H_bak2/ Hz_bak2
+      real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
+      common /grid_Hzw_half_nbq/ Hzw_half_nbq
 
 # ifdef NBQ_HZCORRECT
        real Hz_correct(GLOBAL_2D_ARRAY,N)
@@ -178,9 +161,25 @@
       common/corr_Hz/Hz_corr
 #  endif
 # endif
+
+# ifdef NBQ_HZ_PROGNOSTIC
+      real Hz_bak2(GLOBAL_2D_ARRAY,1:N)
+      common /nbq_H_bak2/ Hz_bak2
+# endif
+
+# ifndef NBQ_ZETAW
+      real zr_half_nbq(GLOBAL_2D_ARRAY,N)
+      common /grid_zr_half_nbq/ zr_half_nbq
+      real zw_half_nbq(GLOBAL_2D_ARRAY,0:N)
+      common /grid_zw_half_nbq/ zw_half_nbq     
+#  ifdef NBQ_MASS
+      real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
+      common /grid_Hzr_half_nbq/ Hzr_half_nbq
+#  endif
+# endif
   
 !**********************************************************************
-# ifdef NBQ_PERF
+# ifdef NBQ_GRID_SLOW
       real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N,2)
       common /nbq_nods3/ dthetadiv_nbqdz
       real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
@@ -196,11 +195,11 @@
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
 #  endif
-# endif /* NBQ_PERF */
+# endif /* NBQ_GRID_SLOW */
 
 !**********************************************************************
 # ifdef NBQ_ZETAW
-      real wsurf_nbq(GLOBAL_2D_ARRAY,4)
+      real wsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_wsurf/wsurf_nbq
       real usurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_usurf/usurf_nbq

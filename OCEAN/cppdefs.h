@@ -1200,7 +1200,6 @@
 # ifdef NBQ
 #  define NBQ_PERF
 #  undef  NBQ_PRECISE
-#  define NBQ_OBC
 # endif
 # undef  XIOS
 # define SOLVE3D
