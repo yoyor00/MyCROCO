@@ -404,7 +404,6 @@
 #  define DVom(i,j) Hvom_w(i,j,0)
 #  define udZ_x(i,j) Huon_w(i,j,1)  
 #  define vdZ_y(i,j) Hvom_w(i,j,1)
-#  define FC1 lap
 !
 !----------------------------------------------
 !  First, set bottom boundary condition for wz:
@@ -587,8 +586,8 @@
           DO i=Istr,Iend
             FC(i,k) = 0.5*(wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs))*We_r(i,k)
 #   ifdef W_VADV_TVD
-            FC1(i,k)=(We_r(i,k) * (wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs) )
-     &           -abs(We_r(i,k))* (wz(i,j,k,nrhs) - wz(i,j,k-1,nrhs) ) 
+            CF(i,k)=(We_r(i,k) * (wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs) )
+     &          -abs(We_r(i,k))* (wz(i,j,k,nrhs) - wz(i,j,k-1,nrhs) ) 
      &               ) *0.5
 #   endif
           ENDDO
@@ -603,8 +602,8 @@
         ! FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz_bot  )*We_r(i,1)
           FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz(i,j,0,nrhs)  )*We_r(i,1)
 #   ifdef W_VADV_TVD
-          FC1(i,1)=(We_r(i,1) * (wz(i,j,1,nrhs) + wz(i,j,0,nrhs) )
-     &         -abs(We_r(i,1))* (wz(i,j,1,nrhs) - wz(i,j,0,nrhs) ) )*0.5
+          CF(i,1)=(We_r(i,1) * (wz(i,j,1,nrhs) + wz(i,j,0,nrhs) )
+     &        -abs(We_r(i,1))* (wz(i,j,1,nrhs) - wz(i,j,0,nrhs) ) )*0.5
 #   endif
 !         wz_sfc  = pn(i,j)*pm(i,j)*( DUon(i,j)-DUon(i+1,j  )
 !     &                           +   DVom(i,j)-DVom(i  ,j+1) )    !
@@ -613,8 +612,8 @@
 !        FC(i,N) = 0.5*( wz_sfc + wz(i,j,N-1,nrhs))*We_r(i,N)
           FC(i,N) = 0.5*( wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs))*We_r(i,N)
 #   ifdef W_VADV_TVD
-          FC1(i,N)=(We_r(i,N) * (wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs) )
-     &         -abs(We_r(i,N))* (wz(i,j,N,nrhs) - wz(i,j,N-1,nrhs) ) )*0.5
+          CF(i,N)=(We_r(i,N) * (wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs) )
+     &        -abs(We_r(i,N))* (wz(i,j,N,nrhs) - wz(i,j,N-1,nrhs) ) )*0.5
 #   endif
         ENDDO          
 
@@ -636,7 +635,7 @@
             rr = (wz(i,j,min(kp1,N),nrhs) -wz(i ,j,k,nrhs))
             rrm= (wz(i,j,k  ,nrhs) -wz(i ,j,km1,nrhs))
             Cr = limiter2(cu,FC(i,k),cff1,rrm,rr,rrp)
-            FC(i,k) = (1-Cr)*FC1(i,k) + Cr*FC(i,k)
+            FC(i,k) = (1-Cr)*CF(i,k) + Cr*FC(i,k)
           ENDDO
         ENDDO
 #   endif
@@ -649,7 +648,6 @@
 #  undef DVom 
 #  undef udZ_x  
 #  undef vdZ_y
-#  undef FC1
 !
 !-----------------------------------------------------
 ! Finalize vertical advection: compite flux divergence
