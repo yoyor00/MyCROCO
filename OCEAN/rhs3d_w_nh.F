@@ -235,22 +235,20 @@
             cu = pn_u(i,j)*cdt*cff
      &           /Hzw(i,k)*pm(i,j)
 
-            rrp= (wz(i+1,j,k,nrhs) -wz(i,j,k,nrhs))
+            rrp= (wz(i+1,j,k,nstp)-wz(i  ,j,k,nstp))
 #   ifdef MASKING
-     &                                *umask(i+1,j)
+     &                                 *umask(i+1,j)
 #   endif
-            rr = (wz(i,j,k,nrhs) -wz(i-1 ,j,k,nrhs))
+            rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
 #   ifdef MASKING
-     &                                *umask(i,j)
+     &                                   *umask(i,j)
 #   endif
-            rrm= (wz(i-1,j,k,nrhs) -wz(i-2 ,j,k,nrhs))
+            rrm= (wz(i-1,j,k,nstp)-wz(i-2,j,k,nstp))
 #   ifdef MASKING
-     &                                *umask(i-1,j)
+     &                                 *umask(i-1,j)
 #   endif
-
-            cff1=(cff*(wz(i-1,j,k,nrhs) + wz(i,j,k,nrhs) )
-     &                                   -ABS(cff)*rr)*0.5
-
+            cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
+     &                                        -ABS(cff)*rr)
             Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
             WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
           ENDDO
@@ -277,20 +275,20 @@
             cu = pm_v(i,j)*cdt*cff
      &           /Hzw(i,k)*pn(i,j)
 
-            rrp= (wz(i,j+1,k,nrhs) -wz(i,j,k,nrhs))
+            rrp= (wz(i,j+1,k,nstp)-wz(i,j  ,k,nstp))
 #   ifdef MASKING
-     &                                *vmask(i,j+1)
+     &                                 *vmask(i,j+1)
 #   endif
-            rr = (wz(i,j,k,nrhs) -wz(i,j-1,k,nrhs))
+            rr = (wz(i,j  ,k,nstp)-wz(i,j-1,k,nstp))
 #   ifdef MASKING
-     &                                *vmask(i,j)
+     &                                   *vmask(i,j)
 #   endif
-            rrm= (wz(i,j-1,k,nrhs) -wz(i,j-2,k,nrhs))
+            rrm= (wz(i,j-1,k,nstp)-wz(i,j-2,k,nstp))
 #   ifdef MASKING
-     &                                *vmask(i,j-1)
+     &                                 *vmask(i,j-1)
 #   endif
-            cff1=(cff*(wz(i,j,k,nrhs) + wz(i,j-1,k,nrhs) )
-     &                                  -ABS(cff)*rr )*0.5
+            cff1=0.5*(cff*(wz(i,j,k,nstp)+wz(i,j-1,k,nstp))
+     &                                        -ABS(cff)*rr)
             Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
             WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
           ENDDO
@@ -604,8 +602,8 @@
         ! FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz_bot  )*We_r(i,1)
           FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz(i,j,0,nrhs)  )*We_r(i,1)
 #   ifdef W_VADV_TVD
-          CF(i,1)=(We_r(i,1) * (wz(i,j,1,nrhs) + wz(i,j,0,nrhs) )
-     &        -abs(We_r(i,1))* (wz(i,j,1,nrhs) - wz(i,j,0,nrhs) ) )*0.5
+          CF(i,1)=(We_r(i,1) * (wz(i,j,1,nstp) + wz(i,j,0,nstp) )
+     &        -abs(We_r(i,1))* (wz(i,j,1,nstp) - wz(i,j,0,nstp) ) )*0.5
 #   endif
 !         wz_sfc  = pn(i,j)*pm(i,j)*( DUon(i,j)-DUon(i+1,j  )
 !     &                           +   DVom(i,j)-DVom(i  ,j+1) )    !
@@ -614,8 +612,8 @@
 !        FC(i,N) = 0.5*( wz_sfc + wz(i,j,N-1,nrhs))*We_r(i,N)
           FC(i,N) = 0.5*( wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs))*We_r(i,N)
 #   ifdef W_VADV_TVD
-          CF(i,N)=(We_r(i,N) * (wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs) )
-     &        -abs(We_r(i,N))* (wz(i,j,N,nrhs) - wz(i,j,N-1,nrhs) ) )*0.5
+          CF(i,N)=(We_r(i,N) * (wz(i,j,N,nstp) + wz(i,j,N-1,nstp) )
+     &        -abs(We_r(i,N))* (wz(i,j,N,nstp) - wz(i,j,N-1,nstp) ) )*0.5
 #   endif
         ENDDO          
 
@@ -633,9 +631,9 @@
             cff= We_r(i,k)
             cu = cff*pm(i,j)*pn(i,j)
      &            *cdt/Hzw(i,k)
-            rrp= (wz(i,j,min(kp2,N),nrhs) -wz(i,j,min(kp1,N),nrhs))
-            rr = (wz(i,j,min(kp1,N),nrhs) -wz(i ,j,k,nrhs))
-            rrm= (wz(i,j,k  ,nrhs) -wz(i ,j,km1,nrhs))
+            rrp= (wz(i,j,min(kp2,N),nstp) -wz(i,j,min(kp1,N),nstp))
+            rr = (wz(i,j,min(kp1,N),nstp) -wz(i ,j,k,nstp))
+            rrm= (wz(i,j,k  ,nstp) -wz(i ,j,km1,nstp))
             Cr = limiter2(cu,FC(i,k),cff1,rrm,rr,rrp)
             FC(i,k) = (1-Cr)*CF(i,k) + Cr*FC(i,k)
           ENDDO
