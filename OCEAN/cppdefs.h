@@ -1176,6 +1176,10 @@
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
+# define W_HADV_TVD
+# define W_VADV_TVD
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
 # define ANA_GRID

@@ -2434,8 +2434,8 @@ C$OMP END MASTER
 # ifdef ACOUSTIC
         time_nbq = time_nbq + dtfast
         do k=1,N
-          do j=Jstr-1,Jend-1
-            do i=Istr-1,Iend-1
+          do j=JstrV-2,Jend+1
+            do i=IstrU-2,Iend+1
               dist_d=sqrt((xr(i,j)-xl/2.)**2+(0.*(yr(i,j)-el/2.))**2
      &                             +(abs(z_w(i,j,k))-hmax_exp/2.)**2)
 
