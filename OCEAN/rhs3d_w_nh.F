@@ -71,7 +71,7 @@
 # include "scalars.h"  
 # include "nbq.h"
 # include "compute_auxiliary_bounds.h"
-      !!
+ 
 # ifdef EW_PERIODIC 
 #   define IU_RANGE Istr,Iend
 #   define IV_RANGE Istr,Iend
@@ -94,14 +94,14 @@
           HUon_w(i,j,N)=0.5*HUon(i,j,N) 
         ENDDO
       ENDDO
-      !
+ 
       DO j = jstr,jend+1
         DO i = istr,iend
           HVom_w(i,j,0)=0.5*HVom(i,j,1)             
           HVom_w(i,j,N)=0.5*HVom(i,j,N) 
         ENDDO
       ENDDO 
-      !
+ 
       DO k = 1,N-1
         DO j = jstr,jend
           DO i = istr,iend+1
@@ -149,13 +149,15 @@
 !  Horizontal advection
 !----------------------------------------------------------------------- 
 !
+#  if defined W_HADV_TVD || defined W_VADV_TVD
       if(nrhs.eq.3) then
         cdt = dt                     !<-- Corrector
       elseif(FIRST_TIME_STEP) then
         cdt = 0.5*dt
       else
-        cdt = (1.-2*gamma)*dt        !<-- Predictor
+        cdt = (1.-1./6.)*dt        !<-- Predictor
       endif
+#  endif
 
 #  ifndef EW_PERIODIC
       IF (WESTERN_EDGE) THEN       
@@ -222,12 +224,12 @@
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
             if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i,j,k+1))
+              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
             elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k) + HZR(i,j,k))
+              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
             else
-              Hzw (i,k) = 0.25 * ( HZR(i  ,j,k) + HZR(i  ,j,k+1)
-     &                           + HZR(i-1,j,k) + HZR(i-1,j,k+1) )
+              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
+     &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
             endif
             cff = Huon_w(i,j,k)
             cu = pn_u(i,j)*cdt*cff
@@ -250,7 +252,7 @@
      &                                   -ABS(cff)*rr)*0.5
 
             Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-cr)*cff1 + Cr* WFx(i,j)
+            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
           ENDDO
         ENDDO
 !---
@@ -269,7 +271,7 @@
               Hzw(i,k) = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
             else
               Hzw(i,k) = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
-     &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1) )
+     &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1))
             endif
             cff = Hvom_w(i,j,k)
             cu = pm_v(i,j)*cdt*cff
@@ -296,7 +298,7 @@
 
 #  else /* W_HADV_C4 */
 !
-! === TVD horizontal advection scheme ===
+! === Fourth order horizontal advection scheme ===
 !
         DO j=jstr,jend
           DO i=imin,imax+1
@@ -580,7 +582,7 @@
 
 #  else
 !
-! === C2 vertical advection scheme ===
+! === C2 vertical advection scheme with TVD correction ===
 !
         DO k=2,N-1
           DO i=Istr,Iend
@@ -650,7 +652,7 @@
 #  undef vdZ_y
 !
 !-----------------------------------------------------
-! Finalize vertical advection: compite flux divergence
+! Finalize vertical advection: compute flux divergence
 !-----------------------------------------------------
 ! 
         DO k=1,N
@@ -678,17 +680,18 @@
 !
 !=======================================================================
 !
-# if defined W_VADV_TVD || defined W_VADV_TVD
+# if defined W_VADV_TVD || defined W_HADV_TVD
 
       function limiter2(nu,hf,lf,rrm,rr,rrp)
 
       implicit none
       real    :: cff,limiter2,Rj,nu,hf,lf,rrm,rr,rrp
 !
-!  Upwind        Limiter(Cr)=0.
-!  Lax-Wendroff  Limiter(Cr)=1.
-!  Min-Mod       Limiter(Cr)=max(0.,min(1.,Cr))
-!  Suberbee      Limiter(Cr)=max(0.,max(min(1.,2*Cr*(1-nu)/nu),min(2.,Cr)))
+!  Upwind        Limiter(Rj)=0.
+!  Lax-Wendroff  Limiter(Rj)=1.
+!  Min-Mod       Limiter(Rj)=max(0.,min(1.,Rj))
+!  Suberbee      Limiter(Rj)=max(0.,max(min(1.,2*Rj),min(2.,Rj)))
+!  Van Leer      Limiter(Rj)=(Rj+abs(Rj))/(1+abs(Rj))  => default
 !
       if (abs(rr).gt.1.e-20) THEN
         if (nu .gt. 1.e-20) THEN
@@ -703,19 +706,15 @@
           Rj=Rrp*1.E20
         endif
       endif
-       
-!     limiter=max(0., min(1.,(hf-lf)/rr,(1-abs(nu))/abs(nu)*Rj) )
-      cff=(1-abs(nu))/abs(nu)
-!  Add stability condition/tvd Rj => Rj*cff
 
 #  ifdef SUPERBEE
-       limiter2=max(0.,max(min(1.,2.*Rj),
-     &                     min(2.,Rj)))
+       limiter2=max(0.,max(min(1.,2.*Rj),min(2.,Rj)))
 #  elif defined MINMOD
        limiter2=max(0.D0,min(1.,Rj))
 #  else
-       limiter2=(Rj+abs(Rj))/(1+abs(Rj))
-#  endif       
+       limiter2=(Rj+abs(Rj))/(1+abs(Rj))  ! Van Leer
+#  endif
+
       end function
 
 # endif /* W_VADV_TVD || W_VADV_TVD */
