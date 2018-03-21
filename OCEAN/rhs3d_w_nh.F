@@ -678,7 +678,7 @@
 !
 !=======================================================================
 !
-# if defined W_VADV_TVD || defined W_VADV_TVD
+# if defined W_VADV_TVD || defined W_HADV_TVD
 
       function limiter2(nu,hf,lf,rrm,rr,rrp)
 
