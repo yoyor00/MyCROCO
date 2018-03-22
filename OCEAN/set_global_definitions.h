@@ -35,8 +35,9 @@
 # define THREE_GHOST_POINTS_TS
 #endif
 
-#if defined UV_HADV_UP5   || defined UV_HADV_C6 || \
-    defined UV_HADV_WENO5 
+#if defined UV_HADV_UP5   || defined UV_HADV_C6   || \
+    defined UV_HADV_WENO5 || defined W_HADV_WENO5 || \
+    defined W_HADV_UP5    || defined W_HADV_C6
 # define THREE_GHOST_POINTS
 # define THREE_GHOST_POINTS_UV
 #endif

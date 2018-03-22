@@ -642,7 +642,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile,1)
+        call set_depth (tile)
       enddo
       
 C$OMP PARALLEL DO PRIVATE(tile)

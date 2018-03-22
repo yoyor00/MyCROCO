@@ -348,12 +348,12 @@ C$    integer omp_get_thread_num
             ubar(i,j,3) = ubar(i,j,1)
           enddo
         enddo
+
 #   ifdef NBQ
 !ajout perturbation sur W
-        do j=lbound(t,2),ubound(t,2)
-           do i=lbound(t,1),ubound(t,1)
-
-            depth=h(i,j)
+         do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
 ! TRADITIONAL KH INSTABILITY : VELOCITY AND DENSITY SHEARS AT SAME DEPTHS (zu0=zr0)
               zu0=-0.5*depth
 ! SHIFTED PROFILE FOR THERMOCLINE ENTRAINMENT STUDIES
@@ -378,12 +378,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-#   endif
-!#ifdef MPI
-!        if (mynode.eq.0) close(10) 
-!#else
-!        close(10)
-!#endif
+#   endif /* NBQ */
 
 #   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,   
@@ -418,7 +413,6 @@ C$    integer omp_get_thread_num
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                                 wz(START_2D_ARRAY,0,3))
 #    endif
-
 #   endif
 !******************************
 ! KH_INST: end

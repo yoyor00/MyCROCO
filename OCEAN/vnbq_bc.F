@@ -214,7 +214,7 @@
         do k=1,N                                     ! Southern edge closed
           do i=Istr,Iend                             ! ======== ==== ======
                                                      !  (no-flux: default)
-            qdmv_nbq(i,Jend+1,k)=0.
+            qdmv_nbq(i,Jstr,k)=0.
           enddo
         enddo
 #  endif              /* OBC_COM_SOUTH */

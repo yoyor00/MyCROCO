@@ -160,7 +160,7 @@
      defined W_FRC_BRY     ||                          \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY
+     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
       integer numthreads,     ntstart,   ntimes,  ninfo
