@@ -166,7 +166,7 @@
 */
 # ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
 # elif defined W_HADV_TVD
-# elif defined W_HADV_WENO5 /* not implemented */
+# elif defined W_HADV_WENO5
 # elif defined W_HADV_C4
 # elif defined W_HADV_C2
 # else
@@ -181,7 +181,7 @@
 */
 # ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
 # elif defined W_VADV_TVD
-# elif defined W_VADV_WENO5 /* not implemented */
+# elif defined W_VADV_WENO5
 # elif defined W_VADV_C2
 # else
 #  define W_VADV_SPLINES  /* Splines vertical advection             */
