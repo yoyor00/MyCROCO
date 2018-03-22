@@ -1664,14 +1664,12 @@ C$OMP END MASTER
 ! Vertical momentum open boundary conditions
 !-----------------------------------------------------------------------
 !
-#  ifdef OBC_NBQ
-      call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
-#  endif
-
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!      call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+!
+!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !     call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
 !    &                        qdmw_nbq(START_2D_ARRAY,0))
-#  endif
+!#  endif
 
 # endif  /* ! NBQ_IMP */
 !
@@ -2150,17 +2148,18 @@ C$OMP END MASTER
 !  thetadiv3_nbq: slope derivatives
 !-----------------------------------------------------------------------
 !
-      do j=JstrR,JendR
-        do k=0,N
-          do i=IstrR,IendR
-            zw_nbq(i,j,k,knew)=z_w(i,j,k)
-          enddo
-        enddo
-      enddo
-
 # ifdef NBQ_GRID_SLOW
       if (FIRST_FAST_STEP) then
 # endif
+
+        do j=JstrR,JendR
+          do k=0,N
+            do i=IstrR,IendR
+              zw_nbq(i,j,k,knew)=z_w(i,j,k)
+            enddo
+          enddo
+        enddo
+
         do j=Jstr,Jend !<-- j loop
 
           do i=Istr,Iend
@@ -2395,8 +2394,6 @@ C$OMP END MASTER
 
 !                 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-!     &                       rho_nbq(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv_nbq(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -2426,6 +2423,13 @@ C$OMP END MASTER
           enddo
         enddo
       enddo
+
+!      call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work)
+!
+!# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!     &                       rho_nbq(START_2D_ARRAY,1))
+!# endif
 !
 !-------------------------------------------------------------------
 !  Acoustic wave emission

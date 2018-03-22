@@ -14,7 +14,7 @@
       SUBROUTINE rhs3d_w_nh(tile)
 
 !======================================================================
-!                       ***  Subroutine RHS3D  ***
+!                   ***  Subroutine RHS3D  ***
 ! NBQ mode :  compute right-hand-side for the vertical velocity wz 
 !======================================================================
 ! History :   2016-11  (F. Lemarié)  Original code
@@ -44,8 +44,8 @@
       INTEGER  :: Istr,Iend,Jstr,Jend
       INTEGER  :: i,j,k,kp
       INTEGER  :: imin,imax,jmin,jmax
-      real    rr,rrm,rrp,limiter2,Cr,cdt,cu
-      integer kp2,kp1,km1
+      real        rr,rrm,rrp,limiter2,Cr,cdt,cu
+      integer     kp2,kp1,km1
       !!
 # include "param.h"
       REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
@@ -70,6 +70,49 @@
 # include "forces.h"
 # include "scalars.h"  
 # include "nbq.h"
+!
+!--------------------------------------------------------------------
+! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
+! used in UP5 and C6 advection schemes (and order degradation near 
+! land masks). cdiff is part of laplacian diffusion in flux1 (used 
+! near mask): 
+!    0 --> flux1=flux2 (second order C2 advection scheme)
+!    1 --> flux1 gives 1st order monotonic UP1 advection scheme
+!--------------------------------------------------------------------
+!
+# if defined W_HADV_WENO5 ||  defined W_VADV_WENO5
+      REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
+      REAL    :: ua, vel, cdiff, cdif
+      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
+      REAL    :: flx2, flx3, flx4, flx5
+      REAL    :: mask0, mask1, mask2, mask3
+
+      flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
+
+      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
+     &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
+
+      flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
+     &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+
+      flux3(q_im2, q_im1, q_i, q_ip1, ua) =
+     &      flux4(q_im2, q_im1, q_i, q_ip1, ua) +
+     &      sign(1.,ua)*((q_ip1 -
+     &      q_im2)-3.*(q_i-q_im1))/12.0
+
+      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
+     &      ( 37.*(q_i+q_im1) - 8.*(q_ip1+q_im2)
+     &      +(q_ip2+q_im3) )/60.0
+
+      flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
+     &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+     &      -sign(1.,ua)*( 
+     &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
+# endif
+# if  defined W_HADV_WENO5 || defined W_VADV_WENO5
+      REAL    :: flux3_weno, flux5_weno
+# endif
+
 # include "compute_auxiliary_bounds.h"
  
 # ifdef EW_PERIODIC 
@@ -159,7 +202,51 @@
       endif
 #  endif
 
-#  ifndef EW_PERIODIC
+#  ifdef W_HADV_WENO5
+!   Only for MPI, not OpenMP (to be done)
+#   ifdef NS_PERIODIC
+          jmin=1
+          jmax=LOCALMM+1
+#   else
+#    ifdef MPI
+          if (SOUTH_INTER) then
+            jmin=1
+          else
+            jmin=3
+          endif
+          if (NORTH_INTER) then
+            jmax=Mmmpi+1
+          else
+            jmax=Mmmpi-1
+          endif
+#    else
+          jmin=3
+          jmax=Mm-1
+#    endif
+#   endif
+#   ifdef EW_PERIODIC
+          imin=1
+          imax=LOCALLM+1
+#   else
+#    ifdef MPI
+          if (WEST_INTER) then
+            imin=1
+          else
+            imin=3
+          endif
+          if (EAST_INTER) then
+            imax=Lmmpi+1
+          else
+            imax=Lmmpi-1
+          endif
+#    else
+          imin=3
+          imax=Lm-1
+#    endif
+#   endif
+
+#  else /* !W_HADV_WENO5 */
+#   ifndef EW_PERIODIC
       IF (WESTERN_EDGE) THEN       
          imin=istr                  
       ELSE                        
@@ -170,12 +257,12 @@
       ELSE                  
          imax=iend+1           
       ENDIF
-#  else
+#   else
       imin=istr-1
       imax=iend+1
-#  endif
+#   endif
 
-#  ifndef NS_PERIODIC
+#   ifndef NS_PERIODIC
       IF (SOUTHERN_EDGE) THEN
          jmin=jstr
       ELSE
@@ -186,10 +273,12 @@
       ELSE
          jmax=jend+1
       ENDIF
-#  else
+#   else
       jmin=jstr-1
       jmax=jend+1
-#  endif
+#   endif
+#  endif /* W_HADV_WENO5 */
+
  
       DO k=0,N             
 
@@ -293,6 +382,55 @@
             WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
           ENDDO
         ENDDO
+
+#  elif defined W_HADV_WENO5 || defined W_HADV_C6 || defined W_HADV_UP5
+!
+! === WENO5 or 5th/6th order horizontal advection scheme ===
+!
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux2
+#   undef  UP5_MASKING
+          cdif=0. 
+!
+#   include "w_hadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        else                 ! corrector
+
+#   ifdef UV_HADV_C6
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+#    undef  UP5_MASKING
+#   elif defined UV_HADV_WENO5
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
+#    define UP5_MASKING
+          cdif=1.
+#   else
+#    define FLUX5 flux5
+#    define FLUX3 flux3
+#    define FLUX2 flux1
+#    undef  UP5_MASKING
+          cdif=0.5
+#   endif
+!
+#   include "w_hadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP5_MASKING
+
+        endif
+
 
 #  else /* W_HADV_C4 */
 !
@@ -578,6 +716,37 @@
           FC(i,N+1)=0.
         ENDDO
 
+# elif defined W_VADV_WENO5
+!
+! === WENO5 vertical advection scheme ===
+!
+        if (nnew.eq.3) then  ! predictor
+
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux1
+!
+          cdif=0.
+#   include "w_vadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        else                 ! corrector
+
+#   define FLUX5 flux5_weno
+#   define FLUX3 flux3_weno
+#   define FLUX2 flux1
+!
+          cdif=1.
+#   include "w_vadv_order5.h"
+!
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+
+        endif
 #  else
 !
 ! === C2 vertical advection scheme with TVD correction ===
