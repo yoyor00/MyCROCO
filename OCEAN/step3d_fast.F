@@ -1,4 +1,4 @@
-! $Id: step3d_fast_zetaw.F 1615 2014-12-17 13:27:07Z rblod $
+! $Id: step3d_fast.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -26,10 +26,10 @@ C$    integer omp_get_thread_num
 C$    trd=omp_get_thread_num()
 !      
 !======================================================================
-!                       step3d_fast_zetaw
+!                       step3d_fast
 !======================================================================
 !
-      call step3d_fast_zetaw_tile ( Istr,Iend,Jstr,Jend
+      call step3d_fast_tile ( Istr,Iend,Jstr,Jend
      &                   , A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd)
      &                   , A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd)
      &                   , A2d(1, 7,trd), A2d(1, 8,trd)
@@ -46,10 +46,10 @@ C$    trd=omp_get_thread_num()
       end
 ! 
 !======================================================================
-!                      step3d_fast_zetaw_tile
+!                      step3d_fast_tile
 !======================================================================
 !
-      subroutine step3d_fast_zetaw_tile (Istr,Iend,Jstr,Jend
+      subroutine step3d_fast_tile (Istr,Iend,Jstr,Jend
      &                          ,Dnew,rubar,rvbar
      &                          ,Drhs, UFx,UFe
      &                          ,VFx,VFe
@@ -362,19 +362,6 @@ C$    trd=omp_get_thread_num()
         enddo
       enddo
 # undef IV_EXT_RANGE
-
-# ifdef M2_HADV_UP3
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                        urhs(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                        vrhs(START_2D_ARRAY))
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                        Duon (START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                        Dvom(START_2D_ARRAY))
-#  endif
-# endif
 
 # ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
@@ -2416,10 +2403,10 @@ C$OMP END MASTER
      &                       - dtfast*(thetadiv_nbq(i,j,k)+
      &                                 thetadiv2_nbq(i,j,k))
 
-# ifdef NBQ_NUDGINGXXX
-            rho_nbq(i,j,k)=rho_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
+!# ifdef NBQ_NUDGING
+!            rho_nbq(i,j,k)=rho_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
 !     &                       +rnbqclm(i,j,k).*NBQnudgcof(i,j)
-# endif
+!# endif
           enddo
         enddo
       enddo

@@ -1202,8 +1202,8 @@
 # undef  MPI
 # define NBQ
 # ifdef NBQ
-#  define NBQ_PERF
-#  undef  NBQ_PRECISE
+#  undef  NBQ_PERF
+#  define NBQ_PRECISE
 # endif
 # undef  XIOS
 # define SOLVE3D
@@ -1212,20 +1212,17 @@
 # define UV_VIS2
 # define UV_MIX_S
 # define UV_VIS_SMAGO
+# define TS_DIF2
 # define SALINITY
 # undef  PASSIVE_TRACER
 
 # define UV_ADV
+# define UV_VADV_WENO5
+# define UV_HADV_WENO5
+# define W_VADV_WENO5
+# define W_HADV_WENO5
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
-# define TS_DIF2
-# define UV_VADV_C2
-# define UV_HADV_C2
-# undef  UV_VADV_TVD
-# undef  UV_HADV_TVD
-# undef  W_VADV_TVD
-# undef  W_HADV_TVD
-# define RESET_RHO0
 
 # define ANA_GRID
 # define ANA_INITIAL
