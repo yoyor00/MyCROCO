@@ -27,9 +27,7 @@
      &                      Istr,Iend,Jstr,Jend
      &                     ,A3d(1,1,trd), A3d(1,2,trd)
      &                     ,A3d(1,3,trd), A3d(1,4,trd)
-#ifdef NBQ_ZETAW
      &                     ,A3d(1,5,trd), A3d(1,6,trd)
-#endif
 #ifdef NONLIN_EOS
      &                     ,A2d(1,1,trd), A2d(1,2,trd)
 #endif
@@ -41,9 +39,7 @@
      &                            Istr,Iend,Jstr,Jend
      &                           ,Hzw_half_nbq_inv, Hzr_half_nbq_inv
      &                           ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
-#ifdef NBQ_ZETAW
      &                           ,Hzu_half_qdmu,Hzv_half_qdmv
-#endif
 #ifdef NONLIN_EOS
      &                           ,K_up, K_dw
 #endif
@@ -69,17 +65,12 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 
-# ifdef NBQ_ZETAW
        real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-# endif
        real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
        real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-# ifndef NBQ_ZETAW	   	   
-       real work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,N,5)
-# endif
 # ifdef NONLIN_EOS      
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! work arrays for call
       real K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! to nonlinear EOS
@@ -192,7 +183,6 @@
             enddo
           enddo
         enddo
-# ifdef NBQ_ZETAW
         do k=1,N
           do j=JR_RANGE
             do i=IU_RANGE
@@ -212,14 +202,6 @@
      &                    ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
      &                    ,Hzu_half_qdmu, Hzv_half_qdmv
      &                    )
-# else
-        call grid_nbq_tile(Istr,Iend,Jstr,Jend
-     &                    ,Hzw_half_nbq_inv,Hzr_half_nbq_inv
-     &                    ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
-     &                    ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,1)
-     &                    ,work3d_nbq(PRIVATE_2D_SCRATCH_ARRAY,1,2)
-     &                    )
-# endif
 !
 !----------------------------------------------------------------------
 !... Set second viscosity coefficient:
@@ -321,10 +303,6 @@
           do j=JR_RANGE
             do i=IR_RANGE
               rho_nbq(i,j,k)=0.
-# ifndef NBQ_ZETAW
-              zr_half_nbq(i,j,k)=0.
-              zw_half_nbq(i,j,k)=0.
-# endif
             enddo
           enddo
         enddo

@@ -37,7 +37,7 @@ C$    integer omp_get_thread_num
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
 # include "param.h"
 # include "grid.h"
 # ifdef AGRIF
@@ -69,7 +69,7 @@ C$    integer omp_get_thread_num
 #  define J_RANGE JstrR,JendR
 # endif
 !
-# ifdef NBQ_ZETAW
+# ifdef NBQ
       if (kbak2.eq.0) kbak2=knew
 # endif
 !
@@ -163,12 +163,7 @@ C$    integer omp_get_thread_num
 #  endif
           do i=I_RANGE
 
-#   ifdef NBQ_ZETAW
             zetatmp=zeta(i,j,knew)
-#   else
-            zetatmp=Zt_avg1(i,j)
-#   endif
-
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif
@@ -190,7 +185,7 @@ C$    integer omp_get_thread_num
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
 
-#  ifdef NBQ_ZETAW
+#  ifdef NBQ
 #   ifndef NBQ_GRID_SLOW
             if (iif.eq.1) Hz_bak(i,j,k)=Hz(i,j,k)
 #   else
@@ -206,18 +201,14 @@ C$    integer omp_get_thread_num
 
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
-#   ifdef NBQ_ZETAW
             Hz(i,j,k)=Hz(i,j,k)*(1.+rho(i,j,k)/rho0)
      &                               +rho_nbq(i,j,k) 
-#   else
-            Hz(i,j,k)=Hz(i,j,k)*rho_nbq_avg1(i,j,k)
-#   endif
 #  endif
           enddo
         enddo
       enddo
 
-#  ifdef NBQ_ZETAW
+#  ifdef NBQ
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         do k=1,N,+1
           do j=J_RANGE

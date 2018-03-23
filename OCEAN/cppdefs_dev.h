@@ -131,7 +131,6 @@
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
-# define NBQ_ZETAW
 # define NBQ_IMP
 # undef  NBQ_FREESLIP
 # undef  TRACETXT
@@ -146,20 +145,11 @@
 # ifdef NBQ_PERF
 #  undef  NBQ_MASS
 #  define NBQ_GRID_SLOW
+#  define NBQ_HZCORRECT
 # else
 #  define NBQ_MASS
 #  undef  NBQ_GRID_SLOW
-# endif
-/*
-   Options for older ZETA2D code 
-*/
-# ifndef NBQ_ZETAW
-#  undef  NBQ_MASS
-#  undef  NBQ_GRIDEXT
-#  undef  NBQ_ZETAEXP
-#  undef  NBQ_ZETAREDIAG
-#  undef  NBQ_TRACERS
-#  define NBQ_NODS
+#  define NBQ_HZCORRECT
 # endif
 /*
    Options for wz HADV numerical schemes (default C4)

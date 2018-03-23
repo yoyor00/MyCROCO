@@ -631,11 +631,7 @@ C$OMP BARRIER
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
 #ifdef NBQ
-# ifdef NBQ_ZETAW
             call     step3d_fast (tile)
-# else
-            call     step3d_fast_zeta2d (tile)
-# endif
 #else
             call     step2d (tile)
 #endif            
@@ -643,11 +639,7 @@ C$OMP BARRIER
         else
           do tile=my_first,my_last
 #ifdef NBQ
-# ifdef NBQ_ZETAW
             call     step3d_fast (tile)
-# else
-            call     step3d_fast_zeta2d (tile)
-# endif
 #else
             call     step2d (tile)
 #endif            
@@ -664,10 +656,8 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
-# ifndef NBQ_ZETAW
        call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
        call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
-# endif
 C$OMP END MASTER       
 #endif
 
@@ -730,7 +720,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
-# if ! defined NBQ_ZETAW
+# ifndef NBQ
       do tile=my_first,my_last
         call set_depth (tile)
       enddo

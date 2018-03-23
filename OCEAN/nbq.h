@@ -118,13 +118,8 @@
       common /nbq_rhobar/ rhobar_nbq
       real rhobar_nbq_avg1(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_AVG1/ rhobar_nbq_avg1
-#  ifndef NBQ_ZETAW
-      real rhobar_nbq_int(GLOBAL_2D_ARRAY)
-      common /nbq_rhobar_int/ rhobar_nbq_int
-#  else
       real rho_bak(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_bak/rho_bak
-#  endif
 # endif
 
       real ru_int_nbq_2d (GLOBAL_2D_ARRAY)  
@@ -167,17 +162,6 @@
       common /nbq_H_bak2/ Hz_bak2
 # endif
 
-# ifndef NBQ_ZETAW
-      real zr_half_nbq(GLOBAL_2D_ARRAY,N)
-      common /grid_zr_half_nbq/ zr_half_nbq
-      real zw_half_nbq(GLOBAL_2D_ARRAY,0:N)
-      common /grid_zw_half_nbq/ zw_half_nbq     
-#  ifdef NBQ_MASS
-      real Hzr_half_nbq(GLOBAL_2D_ARRAY,N)
-      common /grid_Hzr_half_nbq/ Hzr_half_nbq
-#  endif
-# endif
-  
 !**********************************************************************
 # ifdef NBQ_GRID_SLOW
       real dthetadiv_nbqdz(GLOBAL_2D_ARRAY,0:N,2)
@@ -187,24 +171,21 @@
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
 # else
-#  ifdef NBQ_ZETAW
       real dthetadiv_nbqdz(GLOBAL_2D_ARRAY)
       common /nbq_nods3/ dthetadiv_nbqdz
       real dZdxq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods5/ dZdxq_w
       real dZdyq_w(GLOBAL_2D_ARRAY,0:N+1)
       common /nbq_nods7/ dZdyq_w
-#  endif
 # endif /* NBQ_GRID_SLOW */
 
 !**********************************************************************
-# ifdef NBQ_ZETAW
       real wsurf_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_wsurf/wsurf_nbq
+      common /nbq_wsurf/ wsurf_nbq
       real usurf_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_usurf/usurf_nbq
+      common /nbq_usurf/ usurf_nbq
       real vsurf_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_vsurf/vsurf_nbq
+      common /nbq_vsurf/ vsurf_nbq
 
       integer :: kbak2,kold2
       common /gridext1/kbak2,kold2
@@ -223,11 +204,6 @@
       common /com_cff9/ cff9
       real cff10
       common /com_cff10/ cff10
-
-      integer IstrU2,JstrV2
-      integer IstrR2,IendR2
-      integer JstrR2,JendR2
-# endif /* NBQ_ZETAW */
 
 !**********************************************************************
 # if defined OBC_NBQ && defined OBC_NBQORLANSKI

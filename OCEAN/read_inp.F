@@ -297,12 +297,8 @@
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
      &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
      &                                      'compressible fluids.'
-# ifndef NBQ_ZETAW
-        dtnbq=dtfast/float(ndtnbq)     ! set nbq time step.
-# else
         dtnbq=dtfast
         ndtnbq=1
-# endif
 #endif
 
 #ifdef SOLVE3D

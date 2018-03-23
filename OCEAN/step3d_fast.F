@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 
-#if defined NBQ && defined NBQ_ZETAW
+#ifdef NBQ
 
 # undef  NBQ_HZ_PROGNOSTIC
 
