@@ -3,10 +3,10 @@
 #define W_HADV
 #define W_VADV
 
-#ifndef NBQ_FREESLIP
-# define NBQ_WNOSLIP
+#ifdef NBQ_FREESLIP
+# define NBQ_WFREESLIP
 #else
-# undef  NBQ_WNOSLIP
+# undef  NBQ_WFREESLIP
 #endif
 
 #if defined SOLVE3D && defined NBQ
@@ -80,7 +80,8 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined W_HADV_WENO5 ||  defined W_VADV_WENO5
+# if defined W_HADV_WENO5 || defined W_HADV_C6 || defined W_HADV_UP5 \
+  || defined W_VADV_WENO5 || defined W_VADV_C6 || defined W_VADV_UP5
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
       REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
@@ -202,46 +203,45 @@
       endif
 #  endif
 
-#  ifdef W_HADV_WENO5
-!   Only for MPI, not OpenMP (to be done)
+#  if defined W_HADV_WENO5 || defined W_HADV_C6 || defined W_HADV_UP5
 #   ifdef NS_PERIODIC
-          jmin=1
-          jmax=LOCALMM+1
+      jmin=1
+      jmax=LOCALMM+1
 #   else
 #    ifdef MPI
-          if (SOUTH_INTER) then
-            jmin=1
-          else
-            jmin=3
-          endif
-          if (NORTH_INTER) then
-            jmax=Mmmpi+1
-          else
-            jmax=Mmmpi-1
-          endif
+      if (SOUTH_INTER) then
+        jmin=1
+      else
+        jmin=3
+      endif
+      if (NORTH_INTER) then
+        jmax=Mmmpi+1
+      else
+        jmax=Mmmpi-1
+      endif
 #    else
-          jmin=3
-          jmax=Mm-1
+      jmin=3
+      jmax=Mm-1
 #    endif
 #   endif
 #   ifdef EW_PERIODIC
-          imin=1
-          imax=LOCALLM+1
+      imin=1
+      imax=LOCALLM+1
 #   else
 #    ifdef MPI
-          if (WEST_INTER) then
-            imin=1
-          else
-            imin=3
-          endif
-          if (EAST_INTER) then
-            imax=Lmmpi+1
-          else
-            imax=Lmmpi-1
-          endif
+      if (WEST_INTER) then
+        imin=1
+      else
+        imin=3
+      endif
+      if (EAST_INTER) then
+        imax=Lmmpi+1
+      else
+        imax=Lmmpi-1
+      endif
 #    else
-          imin=3
-          imax=Lm-1
+      imin=3
+      imax=Lm-1
 #    endif
 #   endif
 
@@ -261,7 +261,6 @@
       imin=istr-1
       imax=iend+1
 #   endif
-
 #   ifndef NS_PERIODIC
       IF (SOUTHERN_EDGE) THEN
          jmin=jstr
@@ -387,50 +386,51 @@
 !
 ! === WENO5 or 5th/6th order horizontal advection scheme ===
 !
-        if (nnew.eq.3) then  ! predictor
-
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux2
-#   undef  UP5_MASKING
-          cdif=0. 
-!
-#   include "w_hadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
-        else                 ! corrector
-
-#   ifdef UV_HADV_C6
-#    define FLUX5 flux6
-#    define FLUX3 flux4
-#    define FLUX2 flux2
-#    undef  UP5_MASKING
-#   elif defined UV_HADV_WENO5
+#   ifdef W_HADV_WENO5
 #    define FLUX5 flux5_weno
 #    define FLUX3 flux3_weno
 #    define FLUX2 flux1
 #    define UP5_MASKING
           cdif=1.
-#   else
-#    define FLUX5 flux5
-#    define FLUX3 flux3
-#    define FLUX2 flux1
+#    include "w_hadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#    undef UP5_MASKING
+
+#   else /* C6 or UP5 */
+
+        if (nnew.eq.3) then  ! predictor
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
 #    undef  UP5_MASKING
+          cdif=0. 
+#    include "w_hadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+        else                 ! corrector
+#    ifdef W_HADV_C6
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+#     undef  UP5_MASKING
+          cdif=0.
+#    else
+#     define FLUX5 flux5
+#     define FLUX3 flux3
+#     define FLUX2 flux1
+#     define UP5_MASKING
           cdif=0.5
-#   endif
-!
-#   include "w_hadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-#   undef UP5_MASKING
-
+#    endif
+#    include "w_hadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#    undef UP5_MASKING
         endif
-
+#   endif /* WENO5 */
 
 #  else /* W_HADV_C4 */
 !
@@ -538,8 +538,8 @@
 !
 #  define udH_x WFx
 #  define vdH_y WFe  
-#  define DUon(i,j) Huon_w(i,j,0)  
-#  define DVom(i,j) Hvom_w(i,j,0)
+#  define DUon(i,j)  Huon_w(i,j,0)  
+#  define DVom(i,j)  Hvom_w(i,j,0)
 #  define udZ_x(i,j) Huon_w(i,j,1)  
 #  define vdZ_y(i,j) Hvom_w(i,j,1)
 !
@@ -551,7 +551,7 @@
       IF(nrhs.eq.3) then    !<-- corrector
         DO j=Jstr,Jend 
           DO i=Istr,Iend+1 
-#  ifndef NBQ_WNOSLIP
+#  ifdef NBQ_WFREESLIP
             udH_x(i,j) = - u(i,j,1,nrhs) * pm_u(i,j) 
      &                                   * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
 #  else
@@ -570,7 +570,7 @@
 
         DO j=Jstr,Jend+1 
           DO i=Istr,Iend 
-#  ifndef NBQ_WNOSLIP
+#  ifdef NBQ_WFREESLIP
             vdH_y(i,j) = - v(i,j,1,nrhs) * pn_v(i,j) 
      &                                   * ( z_w(i,j,0)-z_w(i,j-1,0) )
 #  else
@@ -589,7 +589,7 @@
       ELSE                  !<-- predictor
         DO j=Jstr,Jend 
           DO i=Istr,Iend+1 
-#  ifndef NBQ_WNOSLIP
+#  ifdef NBQ_WFREESLIP
             udH_x(i,j) = - u(i,j,1,nstp) * pm_u(i,j) 
      &                                   * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
 #  else
@@ -608,7 +608,7 @@
 
         DO j=Jstr,Jend+1 
           DO i=Istr,Iend 
-#  ifndef NBQ_WNOSLIP
+#  ifdef NBQ_WFREESLIP
             vdH_y(i,j) = - v(i,j,1,nstp) * pn_v(i,j) 
      &                                   * ( z_w(i,j,0)-z_w(i,j-1,0) )
 #  else
@@ -626,7 +626,7 @@
         ENDDO
       ENDIF    
 
-#  ifdef NBQ_FREESLIP
+#  ifdef NBQ_WFREESLIP
       DO j=Jstr,Jend
         DO i=Istr,Iend
           wz(i,j,0,nnew) = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
@@ -666,12 +666,14 @@
 !
 ! === SPLINES vertical advection scheme ===
 !
-        DO i=Istr,Iend      
+        DO i=Istr,Iend
+#   ifdef NBQ_WFREESLIP
           wz_bot  = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
      &                      +   vdH_y(i,j) + vdH_y(i,j+1) )  
-#   ifdef MOVING_BATHY
+#    ifdef MOVING_BATHY
           wz_bot  =  wz_bot - dh(i,j)     
-#   endif  
+#    endif  
+#   endif
           cff     =   0.5 / ( Hzw (i,1) + Hzw (i,0) )  !<--- 1 / b(1)
           CF(i,1) =   cff * Hzw(i,0)                 !<--- q(1) = c(1) / b(1)
           FC(i,1) =   cff * (  3.*Hzw(i,0)*wz(i,j,1,nrhs)     
@@ -716,37 +718,48 @@
           FC(i,N+1)=0.
         ENDDO
 
-# elif defined W_VADV_WENO5
+#  elif defined W_VADV_WENO5 || defined W_VADV_C6 || defined W_VADV_UP5
 !
 ! === WENO5 vertical advection scheme ===
 !
-        if (nnew.eq.3) then  ! predictor
-
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux1
-!
-          cdif=0.
-#   include "w_vadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
-        else                 ! corrector
-
-#   define FLUX5 flux5_weno
-#   define FLUX3 flux3_weno
-#   define FLUX2 flux1
-!
+#   ifdef W_VADV_WENO5
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
           cdif=1.
-#   include "w_vadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
+#    include "w_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#   else /* C6 or UP5 */
+        if (nnew.eq.3) then  ! predictor
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+          cdif=0.
+#    include "w_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+        else                 ! corrector
+#    ifdef W_VADV_C6
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+          cdif=0.
+#    else
+#     define FLUX5 flux5
+#     define FLUX3 flux3
+#     define FLUX2 flux1
+          cdif=0.5
+#    endif
+#    include "w_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
         endif
+#   endif /* WENO5 */
+
 #  else
 !
 ! === C2 vertical advection scheme with TVD correction ===

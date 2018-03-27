@@ -407,7 +407,11 @@ C$OMP BARRIER
         call prsgrd (tile)
         call rhs3d (tile)
 # ifdef NBQ
-        call rhs3d_w_nh (tile)
+#  if defined AGRIF && defined NBQ_CHILD_ONLY
+        if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
+#  else
+          call rhs3d_w_nh (tile)
+#  endif
 # endif
         call pre_step3d (tile)
 # ifdef GLS_MIXING
@@ -631,7 +635,15 @@ C$OMP BARRIER
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
 #ifdef NBQ
-            call     step3d_fast (tile)
+# if defined AGRIF && defined NBQ_CHILD_ONLY
+            if (Agrif_Root()) then
+              call   step2d (tile)
+            else
+              call   step3d_fast (tile)
+            endif
+# else
+            call   step3d_fast (tile)
+# endif
 #else
             call     step2d (tile)
 #endif            
@@ -639,7 +651,15 @@ C$OMP BARRIER
         else
           do tile=my_first,my_last
 #ifdef NBQ
-            call     step3d_fast (tile)
+# if defined AGRIF && defined NBQ_CHILD_ONLY
+            if (Agrif_Root()) then
+              call   step2d (tile)
+            else
+              call   step3d_fast (tile)
+            endif
+# else
+            call   step3d_fast (tile)
+# endif
 #else
             call     step2d (tile)
 #endif            
@@ -720,7 +740,13 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
-# ifndef NBQ
+# if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
+      if (Agrif_Root()) then
+        do tile=my_first,my_last
+          call set_depth (tile)
+        enddo
+      endif
+# else
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
@@ -747,11 +773,19 @@ C$OMP BARRIER
         call prsgrd (tile)
         call rhs3d (tile)
 # ifdef NBQ
+#  if defined AGRIF && defined NBQ_CHILD_ONLY
+        if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
+#  else
         call rhs3d_w_nh (tile)
+#  endif
 # endif
         call step3d_uv1 (tile)
 # ifdef NBQ
+#  if defined AGRIF && defined NBQ_CHILD_ONLY
+        if (.Not.Agrif_Root()) call step3d_w (tile)
+#  else
         call step3d_w (tile)
+#  endif
 # endif
       enddo
 C$OMP BARRIER
@@ -795,9 +829,6 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef NBQ
-# include "nbq.h"
-#endif
 #ifdef FLOATS
 # include "floats.h"
 #endif
