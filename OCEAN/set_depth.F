@@ -162,8 +162,11 @@ C$    integer omp_get_thread_num
           cff1_r=Cs_r(k)
 #  endif
           do i=I_RANGE
-
+#  ifdef NBQ
             zetatmp=zeta(i,j,knew)
+#  else
+            zetatmp=Zt_avg1(i,j)
+#  endif
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif
