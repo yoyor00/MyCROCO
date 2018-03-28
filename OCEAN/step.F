@@ -746,7 +746,7 @@ C$OMP BARRIER
           call set_depth (tile)
         enddo
       endif
-# else
+# elif !defined NBQ
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
