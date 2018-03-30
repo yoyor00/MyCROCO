@@ -34,8 +34,8 @@ c     issue with Reduce (bws_ampi_reduce is present but signature
 c     different, association by name, from what tapenade writes) call
 c     call AMPI_Reduce(icost, cost, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, & 0,
 c     MPI_COMM_WORLD, ierr);
-      call AMPI_Gather(cost, 1, AMPI_ADOUBLE_PRECISION, acost, NNODES,
-     &     AMPI_ADOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+c      call AMPI_Gather(cost, 1, MPI_DOUBLE, acost, NNODES,
+c     &     MPI_DOUBLE, 0, MPI_COMM_WORLD, ierr)
 
 c      cost = 0
       if (mynode.eq.0) then
@@ -178,12 +178,12 @@ c      cost = 0
       write(*,*) 'set_state'
       write(*,*) 'krhs=',krhs
 
-      do j=JstrR,JendR
-         do i=IstrR,IendR
-            h0(i,j) = h(i,j)
-            h(i,j) = real(x(1+i+(IstrR-IendR+1)*(j-1)))
-         end do
-      end do
+ !     do j=JstrR,JendR
+ !        do i=IstrR,IendR
+ !           h0(i,j) = h(i,j)
+ !           h(i,j) = real(x(1+i+(IstrR-IendR+1)*(j-1)))
+ !        end do
+ !     end do
 
       rdrg2_bck = rdrg2
       rdrg2 = real(x(1))
