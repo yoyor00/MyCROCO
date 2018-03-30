@@ -151,7 +151,7 @@
 # ifdef NBQ_MASS
         do j=JR_RANGE
           do i=IR_RANGE
-            rhobar_nbq(i,j,k) =1.
+            rhobar_nbq(i,j,:) =1.
           enddo
         enddo
 # endif
