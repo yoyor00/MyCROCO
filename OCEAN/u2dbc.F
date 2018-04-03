@@ -873,7 +873,7 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif  /* WET_DRY */
 
-#if defined NBQ && defined NBQ_ZETAW
+#ifdef NBQ
 !
 !=======================================================================
 !  Computes normal boundary values of DU_nbq for NBQ OBCs

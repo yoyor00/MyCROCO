@@ -131,7 +131,6 @@
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
-# define NBQ_ZETAW
 # define NBQ_IMP
 # undef  NBQ_FREESLIP
 # undef  TRACETXT
@@ -146,20 +145,11 @@
 # ifdef NBQ_PERF
 #  undef  NBQ_MASS
 #  define NBQ_GRID_SLOW
+#  define NBQ_HZCORRECT
 # else
 #  define NBQ_MASS
 #  undef  NBQ_GRID_SLOW
-# endif
-/*
-   Options for older ZETA2D code 
-*/
-# ifndef NBQ_ZETAW
-#  undef  NBQ_MASS
-#  undef  NBQ_GRIDEXT
-#  undef  NBQ_ZETAEXP
-#  undef  NBQ_ZETAREDIAG
-#  undef  NBQ_TRACERS
-#  define NBQ_NODS
+#  define NBQ_HZCORRECT
 # endif
 /*
    Options for wz HADV numerical schemes (default C4)
@@ -229,20 +219,22 @@
    Activate choice of Pressure Gradient formulation
    (default is the Density Jacobian formulation with Cubic 
    Polynomial fit from Shchepetkin et al. (2003). But:
-   1- a cheaper standard Jacobian formulation can also be used 
-   (PGF_BASIC_JACOBIAN), especially for flat or smooth 
-   topography). 
-   2- The Weighted Jacobian formulation of Song & Haidvogel (1994)
-   can also be used by defining the WJ_GRADP key, which then serves 
+   1- This code can be run cheaper for flat bottom cases if
+      terms involving z-grid x/y gradients are removed
+      (PGF_FLAT_BOTTOM)
+   2- a cheaper standard Jacobian formulation can also be used 
+   (PGF_BASIC_JACOBIAN) for smooth topography. 
+   3- The Weighted Jacobian formulation of Song & Haidvogel (1994)
+   can be used in this case by defining WJ_GRADP key, which then serves 
    as the weight value. 
 ======================================================================
 */
 #if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
                   || defined SOLITON  || defined JET \
                   || defined ACOUSTIC || defined VORTEX \
-                  || defined THACKER  || defined TANK
-# define PGF_BASIC_JACOBIAN
-# undef WJ_GRADP
+                  || defined THACKER  || defined TANK \
+                  || defined KH_INST
+# define PGF_FLAT_BOTTOM
 #elif defined RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125

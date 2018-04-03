@@ -50,7 +50,7 @@ include Makedefs
 	hmix_coef.F	wetdry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
 \
-	step3d_fast.F	step3d_fast_zeta2d.F\
+	step3d_fast.F\
 	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
         w3dbc.F		nbq_bry_store.F\

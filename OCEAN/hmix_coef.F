@@ -119,13 +119,8 @@
         do j=jmin,jmax
           do i=imin,imax
           dZdt=abs(zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
-#   ifdef NBQ
-          cff=zeta(i,j,knew)
-          Dbr=10.*om_r(i,j)*on_r(i,j)
-#   else
           cff=z_w(i,j,N)-z_w(i,j,0)
           Dbr=10.*om_r(i,j)*on_r(i,j)
-#   endif
           dZdt0=0.01*sqrt(g*cff)
           Bbr=max(0.,min(1.,dZdt/dZdt0-1.))
           do k=1,N
