@@ -230,7 +230,7 @@
       enddo
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_p3d_tile (Istr,Iend,Jstr,Jend,visc3d_p)
+      call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
 #  endif
 
 # endif /* UV_VIS_SMAGO  */
