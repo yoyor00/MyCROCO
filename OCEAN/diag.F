@@ -181,8 +181,8 @@
         
               my_Cu_Nbq=max(my_Cu_Nbq,
      &                (alphax*cz_nbq-cx_nbq)**2+(alphay*cz_nbq-cy_nbq)**2)
-# endif /* NBQ */
               if (Hzr_half_nbq(i,j,k).lt.1.D-10) my_Cu_Nbq_Z=0.D0
+# endif /* NBQ */
             enddo
           enddo
         enddo            
@@ -306,10 +306,12 @@ C$OMP CRITICAL (diag_cr_rgn)
                Cu_Adv3d=my_Cu_Adv
                Cu_W=my_Cu_W
             endif
+# ifdef NBQ
             if(my_Cu_Nbq_X.gt.Cu_Nbq_X)  Cu_Nbq_X = my_Cu_Nbq_X
             if(my_Cu_Nbq_Y.gt.Cu_Nbq_Y)  Cu_Nbq_X = my_Cu_Nbq_Y
             if(my_Cu_Nbq_Z.gt.Cu_Nbq_Z)  Cu_Nbq_X = my_Cu_Nbq_Z    
             if(my_Cu_Nbq.gt.Cu_Nbq)      Cu_Nbq   = my_Cu_Nbq
+# endif             
           endif
 #endif /* DIAG_CFL */
           tile_count=tile_count+1         ! This counter identifies
