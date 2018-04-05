@@ -714,41 +714,22 @@ C$OMP END MASTER
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1= 1.5+cff3                 ! maximum stability (with
         endif                            ! special care for startup)
-        if (FIRST_TIME_STEP) then
-         do j=Jstr,Jend
-          do i=IstrU,Iend
-            cff=rufrc(i,j)
-            rufrc(i,j)=cff1*cff + cff2*rufrc_bak(i,j,3-nstp)
-     &                          + cff3*rufrc_bak(i,j,nstp)
-            rufrc_bak(i,j,nstp)=cff
-          enddo
+        do j=Jstr,Jend
+         do i=IstrU,Iend
+           cff=rufrc(i,j)-rubar(i,j)
+           rufrc(i,j)=cff1*cff + cff2*rufrc_bak(i,j,3-nstp)
+     &                         + cff3*rufrc_bak(i,j,nstp)
+           rufrc_bak(i,j,nstp)=cff
          enddo
-         do j=JstrV,Jend
-          do i=Istr,Iend
-            cff=rvfrc(i,j)
-            rvfrc(i,j)=cff1*cff + cff2*rvfrc_bak(i,j,3-nstp)
-     &                          + cff3*rvfrc_bak(i,j,nstp)
-            rvfrc_bak(i,j,nstp)=cff
-          enddo
+        enddo
+        do j=JstrV,Jend
+         do i=Istr,Iend
+           cff=rvfrc(i,j)-rvbar(i,j)
+           rvfrc(i,j)=cff1*cff + cff2*rvfrc_bak(i,j,3-nstp)
+     &                         + cff3*rvfrc_bak(i,j,nstp)
+           rvfrc_bak(i,j,nstp)=cff
          enddo
-        else
-         do j=Jstr,Jend
-          do i=IstrU,Iend
-            cff=rufrc(i,j)-rubar(i,j)
-            rufrc(i,j)=cff1*cff + cff2*rufrc_bak(i,j,3-nstp)
-     &                          + cff3*rufrc_bak(i,j,nstp)
-            rufrc_bak(i,j,nstp)=cff
-          enddo
-         enddo
-         do j=JstrV,Jend
-          do i=Istr,Iend
-            cff=rvfrc(i,j)-rvbar(i,j)
-            rvfrc(i,j)=cff1*cff + cff2*rvfrc_bak(i,j,3-nstp)
-     &                          + cff3*rvfrc_bak(i,j,nstp)
-            rvfrc_bak(i,j,nstp)=cff
-          enddo
-         enddo
-        endif
+        enddo
 !
       endif   !<-- FIRST_FAST_STEP
 !
