@@ -300,7 +300,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -msglevel 20 -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^ -msginfile -tracelevel 100 -msglevel 100 -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@

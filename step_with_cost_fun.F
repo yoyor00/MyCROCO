@@ -3,7 +3,7 @@ c     this file is not differentiated
 # include "cppdefs.h"
 
       subroutine read_obs()
-            implicit none
+      implicit none
 # include "netcdf.inc"
 # include "cppdefs.h"
 # include "param.h"
@@ -11,11 +11,13 @@ c     this file is not differentiated
 # include "ncscrum.h"
 # include "ocean2d.h"
 # include "adparam.h"
-      
+
       character*(*) FILE_NAME
       parameter (FILE_NAME='obs.nc')
 
-      integer ncid, varid, retval, nf_fread
+      integer ncid, varid, retval, nf_fread, k
+
+      integer i,j
 
       retval = nf_open(FILE_NAME, nf_nowrite, ncid)
       if (retval .ne. nf_noerr) call handle_err(retval)
@@ -23,54 +25,120 @@ c     this file is not differentiated
       retval = nf_inq_varid(ncid, 'zeta', varid)
       if (retval .ne. nf_noerr) call handle_err(retval)
 
-      retval = nf_fread(obs(START_2D_ARRAY,1), ncid, varid, 1, r2dvar)
+      do k=1,NT
+         retval = nf_fread(obs(START_2D_ARRAY,k),ncid,varid,k,r2dvar)
+      end do
 
       retval = nf_close(ncid)
       if (retval .ne. nf_noerr) call handle_err(retval)
 
+      do i=1,15
+         do j=1,15
+            write(*,*) mynode, i, j, obs(i,j,1)
+         end do
+      end do
+
+
       end subroutine read_obs
-      
-      subroutine state_control(iicroot)
-    
+
+      subroutine optim_driver(x,f,gg,reverse,indic)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
 # include "adparam.h"
-# include "scalars.h"
+# ifdef MPI
+# include "mpi_roms.h"
+# ifdef AMPI
+# include "ampi/ampif.h"
+# else
+      include 'mpif.h'
+# endif
+# endif
 
-      integer iicroot
-      
-C     params m1qn3
-      
-      integer indic,Sn,imp,io,imode(3),omode,niter,nsim,iz(5),ndz,
+      integer indic,imp,io,imode(3),omode,niter,nsim,iz(5),ndz,
      &     reverse
+
+      parameter(ndz=10*ad_array_size*ad_array_size+1)
+
       external simul_rc,euclid,ctonbe,ctcabe
+      external simul
       character*3 normtype
 
       real izs(1)
       real rzs(1)
       real dzs(1)
 
+      double precision f
+      double precision gg(ad_array_size)
+
       double precision dx, df1,epsrel,
      &     z(5*ad_array_size+1)
-
-      parameter (Sn = ad_array_size,
-     &     ndz=10*ad_array_size*ad_array_size+1)
-
-      double precision f
-
-      double precision gg(Sn)
 
       double precision dz(ndz)
 
       integer i
 
-      sim_iicroot = iicroot
-      
-c     initial state: should call some user subroutine here
-      do i=2,Sn
-         x(i) = 60
+      dx=1.e-10
+      df1=f
+      epsrel=1.e-2
+      niter=200
+      nsim=200
+      normtype = 'dfn'
+      io=6
+      imp=5
+      imode(1)=0
+      imode(2)=0
+      imode(3)=0
+
+      do i=1,ad_array_size
+         write (*,*) 'x, gg', i, x(i), gg(i)
       end do
+
+      call m1qn3 (simul,euclid,ctonbe,ctcabe,ad_array_size,x,
+     &     f,gg,dx,df1,epsrel,
+     &     normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
+     &     reverse,indic,izs,rzs,dzs)
+
+      end subroutine optim_driver
+
+
+
+      subroutine state_control(iicroot)
+
+      implicit none
+# include "cppdefs.h"
+# include "param.h"
+# include "adparam.h"
+# include "scalars.h"
+# ifdef MPI
+# include "mpi_roms.h"
+# ifdef AMPI
+# include "ampi/ampif.h"
+# else
+      include 'mpif.h'
+# endif
+# endif
+      integer iicroot
+      integer ierr
+
+      integer indic,reverse
+
+      real izs(1)
+      real rzs(1)
+      real dzs(1)
+
+      double precision f
+
+      double precision gg(ad_array_size)
+
+      integer i
+
+      sim_iicroot = iicroot
+
+c     initial state: should call some user subroutine here
+C      do i=2,Sn
+C         x(i) = 65
+C      end do
 
       x(1) = rdrg2
 
@@ -80,38 +148,32 @@ c     initial state: should call some user subroutine here
       open(unit=778, file="h.dat", action="write",
      &     form='FORMATTED')
 
-      call simul (indic,Sn,x,f,gg,izs,rzs,dzs)
-
-      dx=1.e-10
-      df1=f
-      epsrel=1.e-5
-      niter=200
-      nsim=200
-      normtype = 'dfn'
-      io=6
-      imp=5
-      imode(1)=0
-      imode(2)=0
-      imode(3)=0
-      reverse=1
-
       indic = 4
+      call simul (indic,ad_array_size,x,f,gg,izs,rzs,dzs)
 
-c     reverse mode 
-      do while (reverse.ge.1)
-         call simul(indic,Sn,x,f,gg,izs,rzs,dzs)
-         MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,Sn,x,
-     &        f,gg,dx,df1,epsrel,
-     &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
-     &        reverse,indic,izs,rzs,dzs)
-      end do
-C ...      
+      reverse = 0
+c     reverse mode
+c      do while (reverse.ge.1)
+         write(*,*) '+++>', mynode, x(1), f, gg(1)
+
+c         call simul(indic,ad_array_size,x,f,gg,izs,rzs,dzs)
+
+         write(*,*) '===>', mynode, x(1), f, gg(1)
+
+         MPI_master_only call optim_driver
+     &        (x,f,gg,reverse,indic)
+
+         call AMPI_Bcast(x,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &        0,MPI_COMM_WORLD,ierr)
+
+c      end do
+C ...
       call set_state(x)
 
       close (unit=777)
       close (unit=778)
       write(*,*) 'end state_control'
-      
+
       return
       end subroutine state_control
 
@@ -121,8 +183,8 @@ C ...
 # include "param.h"
 # include "scalars.h"
 # include "adparam.h"
-      
-      integer indic, Sn
+
+      integer indic, Sn, i
       double precision f, gg(Sn)
       real izs(1)
       real rzs(1)
@@ -150,52 +212,24 @@ c     Here we call directly the computation of cost_fun.
          call restore_croco_state()
          call save_croco_state()
          costb = 1
+
+         write (*,*) '--------------------------------------'
+         write (*,*) 'start adjoint'
+         write (*,*) '--------------------------------------'
          call cost_fun_b(x, gg, cost, costb)
+
+         write (*,*) '--------------------------------------'
+         write (*,*) 'end adjoint'
+         write (*,*) '--------------------------------------'
          call restore_croco_state()
-         
+
+         do i=1,Sn
+            write(*,*) '--->', i,f,cost,gg(i)
+         end do
+
       end if
       return
       end
-
-      subroutine fun_val(iicroot)
-# include "cppdefs.h"
-# include "param.h"
-# include "scalars.h"
-# include "adparam.h"
-
-      integer iicroot
-      integer i, NVAL
-      parameter (NVAL=60)
-      real dx, cost, xv(NVAL), f(NVAL), gg(NVAL), costb
-
-      sim_iicroot = iicroot
-      
-      dx = rdrg2 / NVAL
-      
-      x(1) = 0
-      do i = 2,ad_array_size
-         x(i)  = 60
-      end do
-      
-      do i=1,NVAL
-         xv(i) = 0.5*rdrg2 + i*dx
-         x(1) = xv(i)
-         call save_croco_state()
-         call cost_fun(x, cost)
-         f(i) = cost
-         call restore_croco_state()
-         call save_croco_state()
-         costb = 1
-         x(1) = xv(i)
-         call cost_fun_b(x, gg(i), cost, costb)
-         call restore_croco_state()
-      end do
-
-      do i=1,NVAL
-         write(*,*) xv(i), f(i), gg(i)
-      end do
-      
-      end subroutine fun_val
 
       subroutine save_croco_state()
       implicit none
@@ -280,7 +314,7 @@ c     Here we call directly the computation of cost_fun.
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
-      
+
       subroutine handle_err(errcode)
       implicit none
 # include "netcdf.inc"

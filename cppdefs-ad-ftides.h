@@ -54,6 +54,7 @@
 
   /* Configuration Name */
 #define FRICTION_TIDES
+# define OUT_DOUBLE
 # define TAPENADE
 # undef BENGUELA_LR
                       /* Parallelization */
