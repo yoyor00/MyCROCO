@@ -1284,9 +1284,15 @@ C$    integer omp_get_thread_num
       else
         cff_perturb = 0.02
         tndx=1
-        zeta(:,:,tndx)=0.
-        call set_depth_tile (Istr,Iend,Jstr,Jend)
       endif
+!
+! Set flat free surface zeta and associated vertical grid
+! --> zeta will be diagnozed from pressure after 
+!     from first call to PGF routine 
+!
+      knew=tndx  ! --> set_depth
+      zeta(:,:,tndx)=0.
+      call set_depth_tile (Istr,Iend,Jstr,Jend)
 !
 ! --- Build northern and southern density profiles ---
 !

@@ -106,7 +106,8 @@ C$    integer omp_get_thread_num
 #  else
             hinv(i,j)=1./h(i,j) 
 #  endif
-            Zt_avg1(i,j)=zeta(i,j,1)     
+            Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified 
+                                         ! in ana_initial (JET)     
 # endif /* SOLVE3D */
           enddo
         enddo
