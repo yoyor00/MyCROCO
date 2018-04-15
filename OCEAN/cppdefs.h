@@ -822,10 +822,8 @@
 !                       ========== === =======
 */
 # define ANA_JET
-# define MPI
-# define NBQ
-# undef  AGRIF
-# undef  AGRIF_2WAY
+# undef  MPI
+# undef  NBQ
 # define SOLVE3D
 # define UV_COR
 # define UV_ADV
@@ -840,8 +838,7 @@
 # define ANA_BTFLUX
 # define ANA_VMIX
 # define EW_PERIODIC
-# define SPONGE
-!# define CLIMATOLOGY
+# define CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
