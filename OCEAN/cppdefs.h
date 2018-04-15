@@ -36,10 +36,10 @@
 #undef  TANK            /* Tank Example */
 #undef  ACOUSTIC        /* Acoustic wave test case */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
-#define KH_INST         /* Kelvin-Helmholtz Instability Example */
+#undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  S2DV            /* S2DV sections */ 
 #undef  MILES            /* NBQ MILES Applications */ 
-#undef  REGIONAL        /* REGIONAL Applications */
+#define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
