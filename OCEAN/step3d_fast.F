@@ -2194,11 +2194,12 @@ C$OMP END MASTER
      &                   +rho_nbq(i,j,k  )*Hzr_half_nbq_inv(i,j,k  ) 
      &                +1.+rho(i,j,k+1)/rho0
      &                   +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1) )
+
+              thetadiv2_nbq(i,j,k)=(FC(i,k)-FC(i,k-1)) 
 # ifdef NBQ_DRHODT
      &                             +(Hzr(i,j,k)*rho(i,j,k)/rho0-
      &                               rho_bak(i,j,k))/dtgrid_nbq
 # endif
-              thetadiv2_nbq(i,j,k)=(FC(i,k)-FC(i,k-1)) 
               thetadiv3_nbq(i,j,k)=(CF(i,k)-CF(i,k-1)) 
             enddo
           enddo
@@ -2214,11 +2215,11 @@ C$OMP END MASTER
      &        *0.5*( 1.+rho(i,j,N)/rho0
      &                 +rho_nbq(i,j,N)*Hzr_half_nbq_inv(i,j,N)
      &             + 1.+rho(i,j,N)/rho0)
+            thetadiv2_nbq(i,j,N)=(FC(i,N)-FC(i,N-1)) 
 # ifdef NBQ_DRHODT
      &                           +(Hzr(i,j,N)*rho(i,j,N)/rho0-
      &                             rho_bak(i,j,N))/dtgrid_nbq
 # endif
-            thetadiv2_nbq(i,j,N)=(FC(i,N)-FC(i,N-1)) 
             thetadiv3_nbq(i,j,N)=(CF(i,N)-CF(i,N-1)) 
           enddo
 
