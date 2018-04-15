@@ -69,15 +69,11 @@
       common /nbq_qdmw_nbq/ qdmw_nbq
 
 !**********************************************************************       
-# ifdef MPI       
-      real thetadiv_nbq(GLOBAL_2D_ARRAY,0:N)
-# else
-      real thetadiv_nbq(GLOBAL_2D_ARRAY_EXT_NBQ,0:N)
-# endif      
+      real thetadiv_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
-      real thetadiv2_nbq(GLOBAL_2D_ARRAY,0:N)
+      real thetadiv2_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_thetadiv2_nbq/ thetadiv2_nbq
-      real thetadiv3_nbq(GLOBAL_2D_ARRAY,0:N)
+      real thetadiv3_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_thetadiv3_nbq/ thetadiv3_nbq
 
 !**********************************************************************
@@ -118,6 +114,8 @@
       common /nbq_rhobar/ rhobar_nbq
       real rhobar_nbq_avg1(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_AVG1/ rhobar_nbq_avg1
+# endif
+# ifdef NBQ_DRHODT
       real rho_bak(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_bak/rho_bak
 # endif

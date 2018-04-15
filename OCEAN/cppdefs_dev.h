@@ -286,6 +286,9 @@
 /* 
    Set keys related to Smagorinsky viscosity 
 */
+#ifdef UV_VIS_SMAGO_3D
+# define UV_VIS_SMAGO  
+#endif
 #ifdef UV_VIS_SMAGO 
 # define VIS_COEF_3D  
 #endif

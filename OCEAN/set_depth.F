@@ -69,10 +69,6 @@ C$    integer omp_get_thread_num
 #  define J_RANGE JstrR,JendR
 # endif
 !
-# ifdef NBQ
-      if (kbak2.eq.0) kbak2=knew
-# endif
-!
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
 !
@@ -111,6 +107,16 @@ C$    integer omp_get_thread_num
 # endif /* SOLVE3D */
           enddo
         enddo
+
+# ifdef NBQ_MASS
+        do k=1,N
+          do j=J_RANGE
+            do i=I_RANGE
+              rho_nbq(i,j,k)=0.
+            enddo
+          enddo
+        enddo
+# endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)

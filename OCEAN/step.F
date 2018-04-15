@@ -394,9 +394,7 @@ C$OMP BARRIER
 # elif defined BVF_MIXING
         call bvf_mix (tile)
 # endif
-
         call omega (tile)
-
 # ifdef VIS_COEF_3D
         call hvisc_coef (tile)
 # endif
@@ -410,7 +408,7 @@ C$OMP BARRIER
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
-          call rhs3d_w_nh (tile)
+        call rhs3d_w_nh (tile)
 #  endif
 # endif
         call pre_step3d (tile)
@@ -590,7 +588,7 @@ C$OMP BARRIER
 #  endif
 # endif
 # if defined WKB_WWAVE && !defined ANA_BRY_WKB
-          call set_bry_wkb (tile)
+            call set_bry_wkb (tile)
 # endif
           enddo
 # ifdef AGRIF
@@ -613,7 +611,6 @@ C$OMP BARRIER
           call set_avg (tile)
 # endif
 # if defined UV_VIS2 && defined UV_VIS_SMAGO
-
         call hvisc_coef (tile)
 # endif
         enddo

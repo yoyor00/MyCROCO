@@ -61,11 +61,9 @@
 #    define START_1D_ARRAYETA -2
 #   else
 #    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -2:Lm+3+padd_X,-1:Mm+2+padd_E
-#    endif
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY -2,0
+#    define START_2D_ARRAY -2,0
+#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_1D_ARRAYETA 0
 #   endif
 #  else
@@ -73,17 +71,11 @@
 #   define START_1D_ARRAYXI 0
 #   ifdef NS_PERIODIC
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2:Mm+3+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-2:Mm+3+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
 #    define START_2D_ARRAY 0,-2
 #    define START_1D_ARRAYETA -2
 #   else
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY 0,0
 #    define START_1D_ARRAYETA 0
@@ -109,9 +101,6 @@
 #    define START_1D_ARRAYETA -1
 #   else
 #    define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY -1,0
 #    define START_1D_ARRAYETA 0
@@ -121,17 +110,11 @@
 #   define START_1D_ARRAYXI 0
 #   ifdef NS_PERIODIC
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1:Mm+2+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
 #    define START_2D_ARRAY 0,-1
 #    define START_1D_ARRAYETA -1
 #   else
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY 0,0
 #    define START_1D_ARRAYETA 0

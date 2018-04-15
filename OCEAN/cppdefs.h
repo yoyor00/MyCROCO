@@ -36,10 +36,10 @@
 #undef  TANK            /* Tank Example */
 #undef  ACOUSTIC        /* Acoustic wave test case */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
-#undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
+#define KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  S2DV            /* S2DV sections */ 
 #undef  MILES            /* NBQ MILES Applications */ 
-#define REGIONAL        /* REGIONAL Applications */
+#undef  REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
@@ -823,7 +823,7 @@
 */
 # define ANA_JET
 # define MPI
-# undef  NBQ
+# define NBQ
 # undef  AGRIF
 # undef  AGRIF_2WAY
 # define SOLVE3D
@@ -840,7 +840,8 @@
 # define ANA_BTFLUX
 # define ANA_VMIX
 # define EW_PERIODIC
-# define CLIMATOLOGY
+# define SPONGE
+!# define CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
@@ -1176,10 +1177,6 @@
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
-# define W_HADV_TVD
-# define W_VADV_TVD
-# define UV_HADV_WENO5
-# define UV_VADV_WENO5
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
 # define ANA_GRID
@@ -1196,34 +1193,27 @@
 !                       ================ =========== =======
 !
 */
-# undef  KH_INST2D
-# undef  KH_INST3D
 # undef  KH_INSTY
-# undef  MPI
+# undef  KH_INST3D
+# define MPI
 # define NBQ
-# ifdef NBQ
-#  undef  NBQ_PERF
-#  define NBQ_PRECISE
-# endif
+# define NBQ_PRECISE
 # undef  XIOS
 # define SOLVE3D
 # define NEW_S_COORD
-
-# define UV_VIS2
-# define UV_MIX_S
-# define UV_VIS_SMAGO
-# define TS_DIF2
-# define SALINITY
-# undef  PASSIVE_TRACER
-
 # define UV_ADV
-# define UV_VADV_WENO5
-# define UV_HADV_WENO5
-# define W_VADV_WENO5
-# define W_HADV_WENO5
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5
-
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# define UV_VIS2
+# define UV_MIX_S
+# define UV_VIS_SMAGO_3D
+# define TS_DIF2
+# undef  SALINITY
+# undef  PASSIVE_TRACER
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1237,6 +1227,7 @@
 # else
 #  define NS_PERIODIC
 # endif
+# define NO_FRCFILE
 
 #elif defined S2DV 
 /*

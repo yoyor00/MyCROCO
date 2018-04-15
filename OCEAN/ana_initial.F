@@ -73,7 +73,7 @@ C$    integer omp_get_thread_num
       real rho1_exp,rho2_exp,h1_exp, Lt
       real d(0:N)
       real zu0,zr0,zint,depth,dz,gam,del,hint,du,drho
-      real hu0,hup0,htemp0,hsalt0,eps3D
+      real hu0,hup0,htemp0,hsalt0
 #endif
 #ifdef GRAV_ADJ_SOLITON
       real zint,depth,dz,gam,del
@@ -269,22 +269,21 @@ C$    integer omp_get_thread_num
 !
 ! Traditional KH instability: 
 !
-!  Configuration from Pelletier et al.: linear shear within mixed layer 
+!  Configuration from Peltier et al.: linear shear within mixed layer 
 !
-        du     = 1.    ! Value to be replaced by the RunBuilder script. 
-        hu0    = 10.
-        eps3D  = 0.2   ! 3D perturbation
+        du     = 1.    ! fluid flow
+        hu0    = 10.   ! shear layer
 !
         do j=JR_RANGE
           do i=IR_RANGE
             depth=h(i,j)
-            zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
-!           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
-            hup0=0.15*depth  ! perturbation
+            zu0=-0.50*depth   ! u & rho shears at same depth (zu0=zr0)
+!           zu0=-0.40*depth   ! shift for thermocline entrainment studies
+            hup0=0.15*depth   ! perturbation
             hint = 0.
             do k=1,N
               u(i,j,k,1)  = -du*tanh((z_r(1,1,k)-zu0)/hu0)
-              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
+              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *     ! add perturbation
      &                       (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
      &                       (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
      &                                      *sin(4.*pi/xl*xr(i,j))
@@ -503,24 +502,21 @@ C$    integer omp_get_thread_num
 
 #  elif defined KH_INST
 !
-! Traditional KH instability: 
+! Traditional KH instability
 !
-!  Configuration from Pelletier et al.: linear shear within mixed layer 
-!
-        htemp0 = 10.
+        drho   = 1.2        ! density difference
+        htemp0 = 10.        ! stratified layer
 #   ifdef SALINITY
         hsalt0 = 10.
 #   endif
-        drho   = 1.2   ! Value to be replaced by script (originally 1.2)
 !
         do j=JR_RANGE
           do i=IR_RANGE
               depth=h(i,j)
-              zr0=-0.5*depth
+              zr0=-0.50*depth
               hup0=0.15*depth
-              zr0=-0.5*depth
               do k=1,N
-                 t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+                 t(i,j,k,1,itemp) = 13.+ drho * (
      &                              0.1*(z_r(1,1,k)-zr0)/depth +
      &                              dtanh((z_r(1,1,k)-zr0)/htemp0) 
      &                                              )  / Tcoef
@@ -1173,6 +1169,15 @@ C$    integer omp_get_thread_num
      &                        v(START_2D_ARRAY,1,1))
 #   endif
 #  endif /* SOLVE3D */
+#  ifdef NBQ
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             wz(START_2D_ARRAY,0,1))
+#   else
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                        wz(START_2D_ARRAY,0,1))
+#   endif
+#  endif /* NBQ */
 # endif /* ANA_INITIAL */
 # ifdef SOLVE3D
       do itrc=1,NT
