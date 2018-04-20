@@ -1,0 +1,16 @@
+#!/bin/sh
+set `DBAD_PHASE=1 mpirun.mpich -np 1 ./croco_tgt ./croco-ad-ftides-tgt.in | sed 's/.*Condensed[^:]*:\(.*\)/\1/p;d'`
+f0=$1
+eps=`expr "$2" : ".*:\(.*\))"`
+set `DBAD_PHASE=2 mpirun.mpich -np 1 ./croco_tgt ./croco-ad-ftides-tgt.in | sed 's/.*Condensed.*:\(.*\)/\1/p;d'`
+f1=$1
+v=$2
+
+echo autodiff derivative: $v
+
+echo epsilon: $eps
+echo "cost with initial condition           : $f1"
+echo "cost with perturbed initial condition : $f0"
+python -c "print ('divided diff derivative:', ($f0 - $f1)/$eps)"
+
+python -c "print ('relative error:', abs($v - ($f0-$f1)/ $eps)/abs($v))" 

@@ -6,20 +6,15 @@
 # include "scalars.h"
 # include "ocean2d.h"
 # include "ncscrum.h"
+# include "private_scratch.h"
+      real*QUAD buff(6)
+      common /xyz/ buff
+# include "climat.h"
 # include "adparam.h"
 
-# ifdef MPI
-# include "mpi_roms.h"
-# ifdef AMPI
-# include "ampi/ampif.h"
-# else
-      include 'mpif.h'
-# endif
-# endif
-
       double precision cost
-
-      double precision acost(NNODES)
+      double precision xcost
+      
       double precision rdrg2_bck
 
       integer k, ierr, i
@@ -34,37 +29,7 @@ C$AD NOCHECKPOINT
          call cost_fun_step(cost, k)
       end do
 
-      write (*,*) NNODES
-
-# ifdef MPI
-# ifdef AMPI
-c     issue with Reduce (bws_ampi_reduce is present but signature
-c     different, association by name, from what tapenade writes) call
-c     call AMPI_Reduce(icost, cost, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, & 0,
-c     MPI_COMM_WORLD, ierr);
-      if (mynode.eq.0) then
-         do i = 1, NNODES
-            acost(i) = 0.
-         end do
-      end if
-      call AMPI_Gather(cost, 1, AMPI_ADOUBLE_PRECISION, acost, 1,
-     &     AMPI_ADOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-
-c     cost = 0
-      if (NNODES.ge.2) then
-         if (mynode.eq.0) then
-            do i = 2, NNODES
-               cost = cost + acost(i)
-            end do
-         end if
-      end if
-
-# endif
-# else
-
-# endif
-
-c      MPI_master_only cost = cost +
+c     cost = cost +
 c     &     (x(1)-rdrg2_bck)*(x(1)-rdrg2_bck)
 
       write (*,*) 'rdrg2=',rdrg2
@@ -201,10 +166,10 @@ c     &           zeta(i,j,knew),obs(i,j,sim_iicroot+k)
       bi = IendR-IstrR+1
       bj = JendR-JstrR+1
 
-      write(*,*) 'set_state'
-      write(*,*) 'krhs=',krhs
+c      write(*,*) 'set_state'
+c      write(*,*) 'krhs=',krhs
 
-      write(*,*) bi, bj, ad_array_size
+c      write(*,*) bi, bj, ad_array_size
 
 c      do j=JstrR,JendR
 c         do i=IstrR,IendR
@@ -217,10 +182,13 @@ c      end do
 
       rdrg2 = real(x(1))
 
+      write(*, *) '**** set_state ****'
+
+#ifdef MPI      
+      write(*, *) 'mynode=',mynode
+#endif      
       write(*, *) 'rdrg2=',rdrg2
-      write(*, *) 'IstrR=',IstrR
-      write(*, *) 'JstrR=',JstrR
-      write(*, *) 'h(IstrR,JstrR)=',h(IstrR,JstrR)
+      write(*, *) '*******************'
 
  900  format(1PE16.9)
 

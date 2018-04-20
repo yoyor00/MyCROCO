@@ -31,12 +31,12 @@ c     this file is not differentiated
 
       retval = nf_close(ncid)
       if (retval .ne. nf_noerr) call handle_err(retval)
-
-      do i=1,15
-         do j=1,15
-            write(*,*) mynode, i, j, obs(i,j,1)
-         end do
-      end do
+      
+c      do i=1,15
+c         do j=1,15
+c            write(*,*) mynode, i, j, obs(i,j,1)
+c         end do
+c      end do
 
 
       end subroutine read_obs
@@ -91,7 +91,7 @@ c     this file is not differentiated
       imode(3)=0
 
       do i=1,ad_array_size
-         write (*,*) 'x, gg', i, x(i), gg(i)
+         write (*,*) 'before: x, gg', i, x(i), gg(i)
       end do
 
       call m1qn3 (simul,euclid,ctonbe,ctcabe,ad_array_size,x,
@@ -99,6 +99,12 @@ c     this file is not differentiated
      &     normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &     reverse,indic,izs,rzs,dzs)
 
+
+      do i=1,ad_array_size
+         write (*,*) 'after: x, gg', i, x(i), gg(i)
+      end do
+
+      
       end subroutine optim_driver
 
 
@@ -121,52 +127,116 @@ c     this file is not differentiated
       integer iicroot
       integer ierr
 
-      integer indic,reverse
+      integer indic,imp,io,imode(3),omode,niter,nsim,iz(5),ndz,
+     &     reverse
+
+      parameter(ndz=10*ad_array_size*ad_array_size+1)
+
+      external simul_rc,euclid,ctonbe,ctcabe
+      external simul
+      character*3 normtype
 
       real izs(1)
       real rzs(1)
       real dzs(1)
 
-      double precision f
+      double precision f, xf
+      double precision gg(ad_array_size), xgg(ad_array_size)
 
-      double precision gg(ad_array_size)
+      double precision dx, df1,epsrel,
+     &     z(5*ad_array_size+1)
+
+      double precision dz(ndz)
 
       integer i
-
+      
       sim_iicroot = iicroot
 
 c     initial state: should call some user subroutine here
 C      do i=2,Sn
 C         x(i) = 65
 C      end do
-
+      do i=1,ad_array_size
+         gg(i) = 0.
+      end do
+      
       x(1) = rdrg2
-
+      indic = 4
+      call simul (indic,ad_array_size,x,f,gg,izs,rzs,dzs)
+#ifdef AMPI      
+      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
+      call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
+     &     MPI_COMM_WORLD, ierr)
+      call AMPI_Reduce(gg, xgg, ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &     MPI_SUM, 0,
+     &     MPI_COMM_WORLD, ierr)
+      
+      if (mynode.eq.0) then
+         write(*,*) 'NODE 0:', xf, xgg(1)
+         f = xf
+         gg(:) = xgg(:)
+      end if
+#endif      
+      dx=1.e-10
+      df1=f
+      epsrel=1.e-2
+      niter=200
+      nsim=200
+      normtype = 'dfn'
+      io=6
+      imp=5
+      imode(1)=0
+      imode(2)=0
+      imode(3)=0
+      
       write(*,*) 'start state_control'
       open(unit=777, file="rdrg2.dat", action="write",
      &     form='FORMATTED')
       open(unit=778, file="h.dat", action="write",
      &     form='FORMATTED')
 
-      indic = 4
-      call simul (indic,ad_array_size,x,f,gg,izs,rzs,dzs)
 
-      reverse = 0
+      reverse = 1
 c     reverse mode
-c      do while (reverse.ge.1)
-         write(*,*) '+++>', mynode, x(1), f, gg(1)
+      do while (reverse.ge.1)
+c         write(*,*) '+++>', mynode, x(1), f, gg(1)
 
-c         call simul(indic,ad_array_size,x,f,gg,izs,rzs,dzs)
+c         MPI_master_only call optim_driver
+c     &        (x,f,gg,reverse,indic)
 
-         write(*,*) '===>', mynode, x(1), f, gg(1)
-
-         MPI_master_only call optim_driver
-     &        (x,f,gg,reverse,indic)
-
+         MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
+     &        ad_array_size,x,
+     &        f,gg,dx,df1,epsrel,
+     &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
+     &        reverse,indic,izs,rzs,dzs)
+         
+c         write(*,*) '===>', mynode, x(1), f, gg(1)
+#ifdef AMPI         
+         call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(x,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
+#endif
+         
+         call simul(indic,ad_array_size,x,f,gg,izs,rzs,dzs)
 
-c      end do
+#ifdef AMPI         
+         call AMPI_Barrier(MPI_COMM_WORLD,ierr)
+         call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
+     &        MPI_COMM_WORLD, ierr)
+         call AMPI_Reduce(gg, xgg, ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &        MPI_SUM, 0,
+     &        MPI_COMM_WORLD, ierr)
+
+         if (mynode.eq.0) then
+            write(*,*) 'NODE 0:', xf, xgg(1)
+            f = xf
+            gg(:) = xgg(:)
+         end if
+#endif
+         
+         df1 = f
+
+      end do
 C ...
       call set_state(x)
 
@@ -212,7 +282,8 @@ c     Here we call directly the computation of cost_fun.
          call restore_croco_state()
          call save_croco_state()
          costb = 1
-
+         gg(1) = 0
+         
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
@@ -221,8 +292,21 @@ c     Here we call directly the computation of cost_fun.
          write (*,*) '--------------------------------------'
          write (*,*) 'end adjoint'
          write (*,*) '--------------------------------------'
+         do i=1,Sn
+            write(*,*) '1--->', i,x(1),f,cost,gg(i)
+         end do
          call restore_croco_state()
 
+         cost = f
+         gg(1) = 0
+         costb = 1
+         call cost_fun_b(x, gg, cost, costb)
+         do i=1,Sn
+            write(*,*) '2--->', i,x(1),f,cost,gg(i)
+         end do
+         call restore_croco_state()
+
+         
          do i=1,Sn
             write(*,*) '--->', i,f,cost,gg(i)
          end do

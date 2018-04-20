@@ -1,3 +1,4 @@
+! -*- fortran -*-
 ! $Id: cppdefs.h 1628 2015-01-10 13:53:00Z marchesiello $
 !
 !======================================================================
@@ -59,6 +60,7 @@
 # undef BENGUELA_LR
                       /* Parallelization */
 # undef  OPENMP
+# undef RVTK_DEBUG
 # define  MPI
 # define AMPI
   /* Nesting */
