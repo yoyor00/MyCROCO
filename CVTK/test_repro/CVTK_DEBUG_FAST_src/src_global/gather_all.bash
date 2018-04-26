@@ -4,9 +4,15 @@
 #PBS -l walltime=02:00:00
 #PBS -j oe
 #PBS -M gildas.cambon@ird.fr -m abe
+
 cd $PBS_O_WORKDIR
 echo $PBS_O_LOGNAME
-#===================================
+###===================================
+
+#-----------------------
+source CONFIGURE_GLOBAL
+#-----------------------
+set -x
 
 cd ${TESTROOTDIR}/REG
 ./gather_recap.bash REG
