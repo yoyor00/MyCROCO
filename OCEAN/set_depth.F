@@ -211,7 +211,7 @@ C$    integer omp_get_thread_num
 
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
-            Hz(i,j,k)=Hz(i,j,k)*(1.+rho(i,j,k)/rho0)
+            Hz(i,j,k)=Hz(i,j,k)*(1.+rho_grd(i,j,k))
      &                               +rho_nbq(i,j,k) 
 #  endif
           enddo

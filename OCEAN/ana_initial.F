@@ -73,7 +73,8 @@ C$    integer omp_get_thread_num
       real rho1_exp,rho2_exp,h1_exp, Lt
       real d(0:N)
       real zu0,zr0,zint,depth,dz,gam,del,hint,du,drho
-      real hu0,hup0,htemp0,hsalt0
+      real zdye10,zdye20
+      real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
 #ifdef GRAV_ADJ_SOLITON
       real zint,depth,dz,gam,del
@@ -269,31 +270,36 @@ C$    integer omp_get_thread_num
 !
 ! Traditional KH instability: 
 !
-!  Configuration from Peltier et al.: linear shear within mixed layer 
+!  Configuration from Pelletier et al.: linear shear within mixed layer 
 !
-        du     = 1.    ! fluid flow
-        hu0    = 10.   ! shear layer
+        du     = 1.0    ! Value to be replaced by the RunBuilder script. 
+        hu0    = 10.
+        eps3D  = 0.   ! 3D perturbation
 !
         do j=JR_RANGE
           do i=IR_RANGE
             depth=h(i,j)
-            zu0=-0.50*depth   ! u & rho shears at same depth (zu0=zr0)
-!           zu0=-0.40*depth   ! shift for thermocline entrainment studies
-            hup0=0.15*depth   ! perturbation
+            zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
+!           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
+            hup0=0.15*depth  ! perturbation
             hint = 0.
             do k=1,N
               u(i,j,k,1)  = -du*tanh((z_r(1,1,k)-zu0)/hu0)
-              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *     ! add perturbation
+              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
      &                       (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
      &                       (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
-     &                                      *sin(4.*pi/xl*xr(i,j))
+     &                                      *sin(2.*2.*pi/xl*xp(i,j))
+     &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
+
               u(i,j,k,2)  = u(i,j,k,1)
               v(i,j,k,1)  = 0.
               v(i,j,k,2)  = 0.
 #   ifdef NBQ
               wz(i,j,k,1) = -0.01*du*hup0*
      &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                  *4.*pi/xl*cos(4.*pi/xl*xp(i,j))
+     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+
               wz(i,j,k,2) = wz(i,j,k,1)
 #   endif
 
@@ -302,14 +308,19 @@ C$    integer omp_get_thread_num
               hint = hint               + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
             enddo
             ubar(i,j,1) = ubar(i,j,1) / hint
-            ubar(i,j,2) = ubar(i,j,1)
+            ubar(i,j,:) = ubar(i,j,1)
+            do k=1,N
+                u(i,j,k,1) = u(i,j,k,1) - ubar(i,j,1) 
+                u(i,j,k,2) = u(i,j,k,1)
+            enddo
+            ubar(i,j,1) = 0. 
+            ubar(i,j,:) = ubar(i,j,1)
           enddo
         enddo
 #   ifdef NBQ
         do j=JR_RANGE
           do i=IR_RANGE
-             wz(i,j,0,1)=0.
-             wz(i,j,0,2)=0.
+              wz(i,j,0,:)=0.
           enddo
         enddo
 #   endif
@@ -323,8 +334,7 @@ C$    integer omp_get_thread_num
               u(i,j,k,2)=0.
               v(i,j,k,2)=0.
 #   ifdef NBQ
-              wz(i,j,k,1)=0.
-              wz(i,j,k,2)=0.
+              wz(i,j,k,:)=0.
 #   endif
             enddo
           enddo
@@ -502,24 +512,32 @@ C$    integer omp_get_thread_num
 
 #  elif defined KH_INST
 !
-! Traditional KH instability
+! Traditional KH instability: 
 !
-        drho   = 1.2        ! density difference
-        htemp0 = 10.        ! stratified layer
+!  Configuration from Pelletier et al.: linear shear within mixed layer 
+!
+        htemp0 = 10.
 #   ifdef SALINITY
         hsalt0 = 10.
 #   endif
+        drho   = 1.2    ! Value to be replaced by script (originally 1.2)
 !
         do j=JR_RANGE
           do i=IR_RANGE
               depth=h(i,j)
-              zr0=-0.50*depth
+              zr0=-0.5*depth
               hup0=0.15*depth
+
               do k=1,N
-                 t(i,j,k,1,itemp) = 13.+ drho * (
+                 t(i,j,k,1,itemp) = 13.+ 1.*drho * (
      &                              0.1*(z_r(1,1,k)-zr0)/depth +
      &                              dtanh((z_r(1,1,k)-zr0)/htemp0) 
      &                                              )  / Tcoef
+!    &            +0.001*
+!!   &                       (tanh(abs(z_r(1,1,k)-zr0)/hup0))*
+!    &                       (1. -tanh((z_r(1,1,k)-zr0)/hup0)**2.)
+!    &                                      *sin(2.*2.*pi/xl*xr(i,j))
+
                  t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
 #    ifdef SALINITY
                  t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
@@ -860,6 +878,26 @@ C$    integer omp_get_thread_num
               t(i,j,k,1,itpas)=0
             endif
             t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
+#  elif defined KH_INST
+              zdye10 = -0.65*depth
+              t(i,j,k,1,itpas1) =
+     &            + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
+!    &                     )/Scoef      
+     &                     )
+!
+                 t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
+
+              zdye20 = -0.35*depth
+              t(i,j,k,1,itpas2) =
+!
+     &            + 35 +0.05* drho* (
+     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
+!    &                     )/Scoef      
+     &                     )
+!
+                 t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
+
 #  else
             if (h(i,j).lt.300) then
               t(i,j,k,1,itpas)=1.
@@ -1162,22 +1200,21 @@ C$    integer omp_get_thread_num
      &                             u(START_2D_ARRAY,1,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,1))
+#ifdef NBQ
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             wz(START_2D_ARRAY,0,1))
+#endif
 #   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,1))
-#   endif
-#  endif /* SOLVE3D */
-#  ifdef NBQ
-#   ifdef THREE_GHOST_POINTS_UV
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             wz(START_2D_ARRAY,0,1))
-#   else
+#ifdef NBQ
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,1))
+#endif
 #   endif
-#  endif /* NBQ */
+#  endif /* SOLVE3D */
 # endif /* ANA_INITIAL */
 # ifdef SOLVE3D
       do itrc=1,NT

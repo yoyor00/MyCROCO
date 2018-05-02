@@ -132,9 +132,16 @@
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
 # define NBQ_IMP
+# undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
+# undef  NBQ_HZ_PROGNOSTIC
+# ifdef  TANK
+#  undef  NBQ_AM4
+# else
+#  define NBQ_AM4
+# endif
 # undef  TRACETXT
-# undef  DIAG_CFL
+# define  DIAG_CFL
 # define HZR Hzr
 /*
    NBQ Precise or Performance options (default: NBQ_PERF) 

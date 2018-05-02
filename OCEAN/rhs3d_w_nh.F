@@ -669,11 +669,13 @@
         DO i=Istr,Iend
 #   ifdef NBQ_WFREESLIP
           wz_bot  = - 0.5d0 * ( udH_x(i,j) + udH_x(i+1,j)
-     &                      +   vdH_y(i,j) + vdH_y(i,j+1) )  
-#    ifdef MOVING_BATHY
-          wz_bot  =  wz_bot - dh(i,j)     
-#    endif  
-#   endif
+     &                    +   vdH_y(i,j) + vdH_y(i,j+1) )  
+#     ifdef MOVING_BATHY
+          wz_bot  = wz_bot - dh(i,j)     
+#     endif  
+#    else
+          wz_bot  =0.
+#    endif
           cff     =   0.5 / ( Hzw (i,1) + Hzw (i,0) )  !<--- 1 / b(1)
           CF(i,1) =   cff * Hzw(i,0)                 !<--- q(1) = c(1) / b(1)
           FC(i,1) =   cff * (  3.*Hzw(i,0)*wz(i,j,1,nrhs)     

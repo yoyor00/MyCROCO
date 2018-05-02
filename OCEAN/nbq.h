@@ -106,6 +106,11 @@
       common /nbq_DU_nbq/ DU_nbq
       real DV_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DV_nbq/ DV_nbq
+      real rho_grd(GLOBAL_2D_ARRAY,N)
+      common/nbq_rho_grd/rho_grd
+
+      real rho_bak(GLOBAL_2D_ARRAY,N)
+      common/nbq_rho_bak/rho_bak
 
 # ifdef NBQ_MASS
       real rho_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
@@ -114,10 +119,6 @@
       common /nbq_rhobar/ rhobar_nbq
       real rhobar_nbq_avg1(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_AVG1/ rhobar_nbq_avg1
-# endif
-# ifdef NBQ_DRHODT
-      real rho_bak(GLOBAL_2D_ARRAY,N)
-      common/nbq_rho_bak/rho_bak
 # endif
 
       real ru_int_nbq_2d (GLOBAL_2D_ARRAY)  
