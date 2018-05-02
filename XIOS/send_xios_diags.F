@@ -1225,8 +1225,8 @@
 
       ! end file definition
 
-      ! Accademic test with dt> 1second are non comptabile with
-      ! XIOS, set xios tilme step unit to 1 model time_step
+      ! Accademic test with dt < 1 second are non comptabile with
+      ! XIOS, set xios time step unit to 1 model time_step
       if (dt < 1) then
         dtime%second =  1
       else
@@ -1613,6 +1613,32 @@
 #  ifdef VIS_COEF_3D
       call xios_send_field("visc3d",visc3d_r)
 #  endif
+
+            do k=1,N
+               do j=0,Mm+1
+                  do i=0,Lm+1
+                  if (k.ne.N) then
+#ifdef NBQ_MASS 
+                   workr(i,j,k)=
+     &                 (u(i,j,k+1,nstp)-u(i,j,k,nstp))
+     &                         /Hzr(i,j,k)
+     &                -(wz(i,j,k,nstp)-wz(i-1,j,k,nstp))
+     &                         *pm(i,j)
+#else
+                   workr(i,j,k)=
+     &                 (u(i,j,k+1,nstp)-u(i,j,k,nstp))
+     &                         /Hz(i,j,k)
+     &                -(wz(i,j,k,nstp)-wz(i-1,j,k,nstp))
+     &                         *pm(i,j)
+#endif
+                  endif 
+                  enddo
+                enddo
+              enddo
+#  ifdef NBQ
+      call xios_send_field("vortuw_nbq",workr)  
+#  endif
+
 
 #  ifdef DIF_COEF_3D
       do k=1,N
