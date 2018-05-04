@@ -18,8 +18,12 @@
 #  Gildas Cambon, LOPS (gildas.cambon@ird.fr) February 2018
 #=========================================================
 
+set -x
+ 
+rm -f *.o????*
 
-set -x 
+#- GIT pull to have the up-to date revision
+./gitpull.bash
 
 #-O Clean-up the CVTK_FAST environement for reg, ana and vort type
 ./cleanup_all.bash
@@ -32,14 +36,19 @@ set -x
 ##myjobid_env="`qselect -N setup_env_cvtk -u $USER`"
 
 #-2 Lauch the various CVTK_FAST for reg, ana and vort
-qsub -h -N exec_cvtk exec_cvtk.bash
-myjobid_cvtk="`qselect -N exec_cvtk -u $USER`"
+echo "#-2 Lauch the various CVTK_FAST for reg, ana and vort"
+./exec_cvtk.bash
+#qsub -h -N exec_cvtk exec_cvtk.bash
+#qsub -h -N exec_cvtk exec_cvtk.bash.pbs
+#myjobid_cvtk="`qselect -N exec_cvtk -u $USER`"
 
 #-3 Get the recap for each CVTK_FAST type 
-qsub -N gather_all -W depend=afterok:$myjobid_cvtk gather_all.bash
+#echo "-3 Get the recap for each CVTK_FAST type" 
+#qsub -N gather_all -W depend=afterany:$myjobid_cvtk gather_all.bash.pbs
+#qsub -N gather_all -W depend=afterany:`qselect -N exec_cvtk` gather_all.bash.pbs
 
 #-End 
-qrls `qselect -N exec_cvtk`
+#qrls `qselect -N exec_cvtk`
 
 #==========
 #rm -f *.o????*
