@@ -23,6 +23,7 @@
       call set_state(x)
 
       cost = 0
+
       do k=1,120
 C$AD NOCHECKPOINT
          call step()

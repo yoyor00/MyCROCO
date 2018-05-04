@@ -280,7 +280,7 @@ c     Here we call directly the computation of cost_fun.
          call cost_fun(x, cost)
          f = cost
          call restore_croco_state()
-         call save_croco_state()
+c         call save_croco_state()
          costb = 1
          gg(1) = 0
          

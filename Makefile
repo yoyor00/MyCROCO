@@ -157,10 +157,10 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F step.F step2d.F diag.F v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F 
+ADJ_SRCS=cost_fun.F step.F step2d.F diag.F v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o 
 
 TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.f)
@@ -199,6 +199,12 @@ testMemSizec.o : testMemSizec.c
 
 testMemSize : testMemSizef.o testMemSizec.o
 	$(FC) $(FFLAGS) testMemSizef.o testMemSizec.o -o testMemSize
+
+treeverse.f: treeverse.F
+	/bin/mv $^ $@
+
+treeverse.o: treeverse.f
+	$(CC) $(FFLAGS) -c treeverse.f
 
 adBuffer.o : adBuffer.f
 	$(FC) $(FFLAGS) -c adBuffer.f
@@ -299,7 +305,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -msginfile -msglevel 1000 -head "cost_fun(cost)/(x)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^  -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
