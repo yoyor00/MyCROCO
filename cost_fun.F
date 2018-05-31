@@ -1,3 +1,4 @@
+
       subroutine cost_fun(x, cost)
       implicit none
 # include "cppdefs.h"
@@ -10,11 +11,12 @@
       real*QUAD buff(6)
       common /xyz/ buff
 # include "climat.h"
+# include "forces.h"
 # include "adparam.h"
 
       double precision cost
       double precision xcost
-      
+
       double precision rdrg2_bck
 
       integer k, ierr, i
@@ -25,7 +27,6 @@
       cost = 0
 
       do k=1,120
-C$AD NOCHECKPOINT
          call step()
          call cost_fun_step(cost, k)
       end do
@@ -40,6 +41,7 @@ c     &     (x(1)-rdrg2_bck)*(x(1)-rdrg2_bck)
       return
       end subroutine cost_fun
 
+C$AD NOCHECKPOINT
       subroutine cost_fun_step(icost, k)
       implicit none
 # include "cppdefs.h"
@@ -69,6 +71,7 @@ c     &     (x(1)-rdrg2_bck)*(x(1)-rdrg2_bck)
 
       end subroutine cost_fun_step
 
+C$AD NOCHECKPOINT
       subroutine cost_fun_step_2d(tile, icost, k)
 
       implicit none
@@ -82,6 +85,7 @@ c     &     (x(1)-rdrg2_bck)*(x(1)-rdrg2_bck)
 
       end subroutine cost_fun_step_2d
 
+C$AD NOCHECKPOINT
       subroutine cost_fun_step_2d_tile(Istr, Iend, Jstr, Jend, icost, k)
       implicit none
 #include "param.h"
@@ -106,7 +110,7 @@ c     &           zeta(i,j,knew),obs(i,j,sim_iicroot+k)
 
       end subroutine cost_fun_step_2d_tile
 
-
+C$AD NOCHECKPOINT
       subroutine set_state(x)
       implicit none
 # include "cppdefs.h"
@@ -136,6 +140,7 @@ c     &           zeta(i,j,knew),obs(i,j,sim_iicroot+k)
       end subroutine set_state
 
 
+C$AD NOCHECKPOINT
       subroutine set_state_2d(tile, x)
 
       implicit none
@@ -148,7 +153,7 @@ c     &           zeta(i,j,knew),obs(i,j,sim_iicroot+k)
 
       end subroutine set_state_2d
 
-
+C$AD NOCHECKPOINT
       subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend,x)
       implicit none
 
@@ -185,9 +190,9 @@ c      end do
 
       write(*, *) '**** set_state ****'
 
-#ifdef MPI      
+#ifdef MPI
       write(*, *) 'mynode=',mynode
-#endif      
+#endif
       write(*, *) 'rdrg2=',rdrg2
       write(*, *) '*******************'
 

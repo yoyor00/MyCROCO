@@ -157,7 +157,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F step.F step2d.F diag.F v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F
+ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o 
@@ -171,7 +171,7 @@ TGT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 #
 # Everything
 # ==========
-all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt
+all: tools depend $(SBIN) $(SBIN)_adj # $(SBIN)_tgt
 
 #
 # Executables files.
@@ -305,7 +305,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^  -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^ -html -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@

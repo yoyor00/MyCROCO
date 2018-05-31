@@ -62,8 +62,8 @@
 # undef  OPENMP
 # define RVTK_DEBUG
 # define RVTK_DEBUG_ADVANCED
-# define  MPI
-# define AMPI
+# undef  MPI
+# undef AMPI
   /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
@@ -228,8 +228,8 @@
 # undef  OBC_M3SPECIFIED
 # undef  OBC_TSPECIFIED
                       /* Input/Output & Diagnostics */
-# define AVERAGES
-# define AVERAGES_K
+# undef AVERAGES
+# undef AVERAGES_K
 # undef  DIAGNOSTICS_TS
 # undef  DIAGNOSTICS_UV
 # ifdef DIAGNOSTICS_TS
