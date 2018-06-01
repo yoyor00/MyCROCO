@@ -15,6 +15,10 @@
 # Set machine dependent definitions and rules.
 #======================================================================
 
+%.tap.f: %.F
+	$(CPP) -P $(CPPFLAGS) -D__TAPENADE__ $*.F | ./mpc > $*.tap.f
+
+
 include Makedefs
 
 #======================================================================
@@ -158,12 +162,12 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 #
 
 ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F
-ADJ_PSRCS=$(ADJ_SRCS:.F=.f)
+ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o 
 
 TGT_SRCS=$(ADJ_SRCS)
-TGT_PSRCS=$(TGT_SRCS:.F=.f)
+TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
 TGT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 
 #======================================================================

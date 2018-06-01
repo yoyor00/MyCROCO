@@ -60,10 +60,10 @@
 # undef BENGUELA_LR
                       /* Parallelization */
 # undef  OPENMP
-# define RVTK_DEBUG
-# define RVTK_DEBUG_ADVANCED
-# undef  MPI
-# undef AMPI
+# undef RVTK_DEBUG
+# undef RVTK_DEBUG_ADVANCED
+# define MPI
+# define AMPI
   /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
