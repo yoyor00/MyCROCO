@@ -729,7 +729,7 @@
 /*                    Update schemes */
 # undef  AGRIF_UPDATE_MIX_LOW
 # define AGRIF_UPDATE_MIX
-# define AGRIF_UPDATE_DECAL
+# undef  AGRIF_UPDATE_DECAL
 /*                    Conservation options */
 # define AGRIF_CONSERV_VOL
 # undef  AGRIF_CONSERV_TRA
