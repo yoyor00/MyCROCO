@@ -360,12 +360,6 @@
 /* 
   Options for split-rotated advection-diffusion schemes
 */
-#ifdef TS_HADV_C4      /* 4th-order centered advection with:   */
-# define TS_DIF2       /*   + Laplacian Diffusion              */
-# undef  TS_DIF4       /*                                      */
-# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
-# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
-#endif 
 #ifdef TS_HADV_RSUP3   /*  Rotated-Split 3rd-order scheme is:  */
 # define TS_HADV_C4    /*    4th-order centered advection      */
 # undef  TS_DIF2       /*               +                      */
@@ -384,6 +378,14 @@
 # define TS_MIX_GEO    /*        Geopotential rotation         */
 # undef  TS_MIX_ISO    /*     or Isopycnal    rotation         */
 #endif
+#if defined TS_HADV_C4 && !defined TS_HADV_RSUP3     
+                       /* 4th-order centered advection with:   */
+# define TS_DIF2       /*   + Laplacian Diffusion              */
+# undef  TS_DIF4       /*                                      */
+# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
+# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
+#endif 
+
 /* 
    TS DIFFUSION: set default orientation
 */
