@@ -379,6 +379,7 @@
             enddo
 # endif
           endif
+!
 # ifdef SALINITY 
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
 # else
@@ -397,6 +398,14 @@
 # endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
+# ifdef DIAGNOSTICS_TS
+          else
+            do k=1,N
+              do i=Istr,Iend
+                TForc(i,j,k,itrc)=0.
+              enddo
+            enddo
+# endif  /* DIAGNOSTICS_TS */
           endif
 !
 !
