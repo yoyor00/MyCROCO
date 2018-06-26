@@ -164,18 +164,20 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F get_vbc.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBuffer.o adStack.o step_with_cost_fun.o cost_fun.o 
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBuffer.o adStack.o adj_driver.o cost_fun.o 
 
 TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
-TGT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
+TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBuffer.o adStack.o tgt_driver.o cost_fun.o 
+
+TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 
 #======================================================================
 
 #
 # Everything
 # ==========
-all: tools depend $(SBIN) $(SBIN)_adj # $(SBIN)_tgt
+all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt
 
 #
 # Executables files.
@@ -185,9 +187,9 @@ $(SBIN): $(OBJS90) $(OBJS) main.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o
-	$(LDR) $(FFLAGS) $(LDFLAGS)  -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
-$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) fortranSupport.o
+$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 # $Id: Makefile 3922 2011-05-19 08:54:39Z llh $
@@ -309,7 +311,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -html -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
@@ -317,8 +319,11 @@ main_tgt.f: main.F
 main_adj.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
 
-$(TAP_TARGET)_d.f: $(TGT_PSRCS) main_tgt.f
-	tapenade $^ -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+$(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
+	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(x)" -r8 -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+
+$(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
+	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 
 fortranSupport.o : fortranSupport.F

@@ -8,6 +8,7 @@ C     -*- fortran -*-
       double precision obs(GLOBAL_2D_ARRAY, NT)
       
       double precision x(ad_array_size)
+      double precision xd(ad_array_size)
 
       integer sim_iicroot
       

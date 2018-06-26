@@ -96,7 +96,6 @@ C$AD NOCHECKPOINT
       integer Istr,Iend,Jstr,Jend,i,j
       integer k
       double precision delta_z, icost
-#include "compute_extended_bounds.h"
 
       do j=Jstr,Jend
          do i=Istr,Iend
