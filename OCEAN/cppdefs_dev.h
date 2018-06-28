@@ -141,7 +141,7 @@
 #  define NBQ_AM4
 # endif
 # undef  TRACETXT
-# define  DIAG_CFL
+# undef  DIAG_CFL
 # define HZR Hzr
 /*
    NBQ Precise or Performance options (default: NBQ_PERF) 
