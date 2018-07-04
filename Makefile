@@ -327,7 +327,7 @@ $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
 
 
 fortranSupport.o : fortranSupport.F
-	$(FC) $(FFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
+	$(FC) $(FFLAGS) $(CPPFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
 
 # Special treatment for barrier function:
 # THERE SHALL BE NO OPTIMIZATION HERE!!!!
