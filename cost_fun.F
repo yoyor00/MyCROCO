@@ -26,6 +26,7 @@
 
       cost = 0
 
+C$AD BINOMIAL-CKP 121 10 1
       do k=1,120
          call step()
          call cost_fun_step(cost, k)

@@ -186,10 +186,10 @@ all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt
 $(SBIN): $(OBJS90) $(OBJS) main.o fortranSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
 
-$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o
+$(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o ampiSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
-$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o
+$(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o fortranSupport.o ampiSupport.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 # $Id: Makefile 3922 2011-05-19 08:54:39Z llh $

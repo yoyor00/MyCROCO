@@ -31,7 +31,7 @@ c     this file is not differentiated
 
       retval = nf_close(ncid)
       if (retval .ne. nf_noerr) call handle_err(retval)
-      
+
 c      do i=1,15
 c         do j=1,15
 c            write(*,*) mynode, i, j, obs(i,j,1)
@@ -104,7 +104,7 @@ c      end do
          write (*,*) 'after: x, gg', i, x(i), gg(i)
       end do
 
-      
+
       end subroutine optim_driver
 
 
@@ -149,7 +149,7 @@ c      end do
       double precision dz(ndz)
 
       integer i
-      
+
       sim_iicroot = iicroot
 
 c     initial state: should call some user subroutine here
@@ -159,24 +159,24 @@ C      end do
       do i=1,ad_array_size
          gg(i) = 0.
       end do
-      
+
       x(1) = rdrg2
       indic = 4
       call simul (indic,ad_array_size,x,f,gg,izs,rzs,dzs)
-#ifdef AMPI      
+#ifdef AMPI
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
       call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
       call AMPI_Reduce(gg, xgg, ad_array_size,AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
-      
+
       if (mynode.eq.0) then
          write(*,*) 'NODE 0:', xf, xgg(1)
          f = xf
          gg(:) = xgg(:)
       end if
-#endif      
+#endif
       dx=1.e-10
       df1=f
       epsrel=1.e-2
@@ -188,7 +188,7 @@ C      end do
       imode(1)=0
       imode(2)=0
       imode(3)=0
-      
+
       write(*,*) 'start state_control'
       open(unit=777, file="rdrg2.dat", action="write",
      &     form='FORMATTED')
@@ -209,17 +209,17 @@ c     &        (x,f,gg,reverse,indic)
      &        f,gg,dx,df1,epsrel,
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
-         
+
 c         write(*,*) '===>', mynode, x(1), f, gg(1)
-#ifdef AMPI         
+#ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(x,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
 #endif
-         
+
          call simul(indic,ad_array_size,x,f,gg,izs,rzs,dzs)
 
-#ifdef AMPI         
+#ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
      &        MPI_COMM_WORLD, ierr)
@@ -233,7 +233,7 @@ c         write(*,*) '===>', mynode, x(1), f, gg(1)
             gg(:) = xgg(:)
          end if
 #endif
-         
+
          df1 = f
 
       end do
@@ -261,6 +261,7 @@ C ...
       real dzs(1)
 
       double precision cost, costb
+      double precision xbck(Sn), eps
 
       if (indic.eq.1) then
          write(*,*) 'indic = 1'
@@ -280,10 +281,18 @@ c     Here we call directly the computation of cost_fun.
          call cost_fun(x, cost)
          f = cost
          call restore_croco_state()
-c         call save_croco_state()
+
+         eps = 1.0D-10
+
+         xbck(1) = x(1) + eps
+         call cost_fun(xbck, cost)
+         write(*,*) '-||->', (cost-f)/eps
+         call restore_croco_state()
+
          costb = 1
          gg(1) = 0
-         
+         cost = f
+
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
@@ -292,21 +301,10 @@ c         call save_croco_state()
          write (*,*) '--------------------------------------'
          write (*,*) 'end adjoint'
          write (*,*) '--------------------------------------'
-         do i=1,Sn
-            write(*,*) '1--->', i,x(1),f,cost,gg(i)
-         end do
+         write (*,*) '1--->', x(1),f,cost,gg(1)
+
          call restore_croco_state()
 
-         cost = f
-         gg(1) = 0
-         costb = 1
-         call cost_fun_b(x, gg, cost, costb)
-         do i=1,Sn
-            write(*,*) '2--->', i,x(1),f,cost,gg(i)
-         end do
-         call restore_croco_state()
-
-         
          do i=1,Sn
             write(*,*) '--->', i,f,cost,gg(i)
          end do
