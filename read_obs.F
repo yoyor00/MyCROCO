@@ -25,8 +25,8 @@ c     this file is not differentiated
       retval = nf_inq_varid(ncid, 'zeta', varid)
       if (retval .ne. nf_noerr) call handle_err(retval)
 
-      do k=ad_ast,ad_nt
-         retval = nf_fread(ad_obs(START_2D_ARRAY,k-ad_ast+1),ncid,varid,
+      do k=1,20000
+         retval = nf_fread(ad_obs(START_2D_ARRAY,k),ncid,varid,
      &        k,r2dvar)
 c         write (*,*) 'max_val ad_obs:',k,maxval(ad_obs)
       end do

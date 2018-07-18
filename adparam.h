@@ -8,9 +8,9 @@ C     size of the assimilation window (number of steps)
 
 C     start of assimilation
       integer ad_ast
-      parameter (ad_ast = 1)
+      parameter (ad_ast = 7200)
 
-      double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt)
+      double precision ad_obs(GLOBAL_2D_ARRAY, 20000)
       
       double precision ad_x(ad_array_size)
       double precision ad_xd(ad_array_size)

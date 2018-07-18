@@ -95,16 +95,16 @@ C$AD NOCHECKPOINT
 #include "ocean2d.h"
 #include "adparam.h"
       integer Istr,Iend,Jstr,Jend,i,j
-      integer k
+      integer k, kk
       double precision delta_z, icost
 
       do j=Jstr,Jend
          do i=Istr,Iend
 c            if (k.gt.2) then
 c               write(*,*) i,j,knew,sim_iicroot,k,sim_iicroot+k,
-c     &              zeta(i,j,knew),ad_obs(i,j,k+1)
+c     &              zeta(i,j,knew),ad_obs(i,j,sim_iicroot+k)
 c            end if
-            delta_z = (zeta(i,j,knew)-ad_obs(i,j,k+1))
+            delta_z = (zeta(i,j,knew)-ad_obs(i,j,sim_iicroot+k))
             icost = icost + delta_z*delta_z
          end do
       end do
