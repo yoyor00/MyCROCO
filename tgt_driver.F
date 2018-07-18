@@ -2,46 +2,7 @@ c     this file is not differentiated
 
 # include "cppdefs.h"
 
-      subroutine read_obs()
-      implicit none
-# include "netcdf.inc"
-# include "cppdefs.h"
-# include "param.h"
-# include "scalars.h"
-# include "ncscrum.h"
-# include "ocean2d.h"
-# include "adparam.h"
-
-      character*(*) FILE_NAME
-      parameter (FILE_NAME='obs.nc')
-
-      integer ncid, varid, retval, nf_fread, k
-
-      integer i,j
-
-      retval = nf_open(FILE_NAME, nf_nowrite, ncid)
-      if (retval .ne. nf_noerr) call handle_err(retval)
-
-      retval = nf_inq_varid(ncid, 'zeta', varid)
-      if (retval .ne. nf_noerr) call handle_err(retval)
-
-      do k=1,NT
-         retval = nf_fread(obs(START_2D_ARRAY,k),ncid,varid,k,r2dvar)
-      end do
-
-      retval = nf_close(ncid)
-      if (retval .ne. nf_noerr) call handle_err(retval)
-      
-c      do i=1,15
-c         do j=1,15
-c            write(*,*) mynode, i, j, obs(i,j,1)
-c         end do
-c      end do
-
-
-      end subroutine read_obs
-
-      subroutine optim_driver(x,f,gg,reverse,indic)
+      subroutine optim_driver(ad_x,f,gg,reverse,indic)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -91,17 +52,17 @@ c      end do
       imode(3)=0
 
       do i=1,ad_array_size
-         write (*,*) 'before: x, gg', i, x(i), gg(i)
+         write (*,*) 'before: x, gg', i, ad_x(i), gg(i)
       end do
 
-      call m1qn3 (simul,euclid,ctonbe,ctcabe,ad_array_size,x,
+      call m1qn3 (simul,euclid,ctonbe,ctcabe,ad_array_size,ad_x,
      &     f,gg,dx,df1,epsrel,
      &     normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &     reverse,indic,izs,rzs,dzs)
 
 
       do i=1,ad_array_size
-         write (*,*) 'after: x, gg', i, x(i), gg(i)
+         write (*,*) 'after: x, gg', i, ad_x(i), gg(i)
       end do
 
       
@@ -154,15 +115,15 @@ c      end do
 
 c     initial state: should call some user subroutine here
 C      do i=2,Sn
-C         x(i) = 65
+C         ad_x(i) = 65
 C      end do
       do i=1,ad_array_size
          gg(i) = 0.
       end do
       
-      x(1) = rdrg2
+      ad_x(1) = rdrg2
       indic = 4
-      call simul (indic,ad_array_size,x,f,gg,izs,rzs,dzs)
+      call simul (indic,ad_array_size,ad_x,f,gg,izs,rzs,dzs)
 #ifdef AMPI      
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
       call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
@@ -199,27 +160,27 @@ C      end do
       reverse = 1
 c     reverse mode
       do while (reverse.ge.1)
-c         write(*,*) '+++>', mynode, x(1), f, gg(1)
+c         write(*,*) '+++>', mynode, ad_x(1), f, gg(1)
 
 c         MPI_master_only call optim_driver
 c     &        (x,f,gg,reverse,indic)
 
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
-     &        ad_array_size,x,
+     &        ad_array_size,ad_x,
      &        f,gg,dx,df1,epsrel,
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
          
-c         write(*,*) '===>', mynode, x(1), f, gg(1)
+c         write(*,*) '===>', mynode, ad_x(1), f, gg(1)
 #ifdef AMPI         
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Bcast(x,ad_array_size,AMPI_ADOUBLE_PRECISION,
+         call AMPI_Bcast(ad_x,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)   
 #endif
          
-         call simul(indic,ad_array_size,x,f,gg,izs,rzs,dzs)
+         call simul(indic,ad_array_size,ad_x,f,gg,izs,rzs,dzs)
 
 #ifdef AMPI         
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
@@ -240,7 +201,7 @@ c         write(*,*) '===>', mynode, x(1), f, gg(1)
 
       end do
 C ...
-      call set_state(x)
+      call set_state(ad_x)
 
       close (unit=777)
       close (unit=778)
@@ -251,7 +212,7 @@ C ...
 
 C     !! adjoint check only
 C     !! x size = 1 ==> dfdx ok
-      subroutine simul(indic,Sn,x,f,dfdx,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x,f,dfdx,izs,rzs,dzs)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -280,17 +241,17 @@ c         f = cost
 c         call restore_croco_state()
 c         call save_croco_state()
          dfdx(1) = 0
-         xd(1) = 1
+         ad_xd(1) = 1
          write (*,*) '--------------------------------------'
          write (*,*) 'start tangent'
          write (*,*) '--------------------------------------'
-         call cost_fun_d(x, xd, cost, dfdx)
+         call cost_fun_d(ad_x, ad_xd, cost, dfdx)
 
          write (*,*) '--------------------------------------'
          write (*,*) 'end tangent'
          write (*,*) '--------------------------------------'
          do i=1,Sn
-            write(*,*) '1--->', i,x(i),xd(i),cost,dfdx(i)
+            write(*,*) '1--->', i,ad_x(i),ad_xd(i),cost,dfdx(i)
          end do
          f = cost
          call restore_croco_state()
@@ -300,7 +261,7 @@ c         dfdx(1) = 0
 c         costd = 1
 c         call cost_fun_d(x, dfdx, cost, costd)
 c         do i=1,Sn
-c            write(*,*) '2--->', i,x(1),f,cost,dfdx(i),costd
+c            write(*,*) '2--->', i,ad_x(1),f,cost,dfdx(i),costd
 c         end do
 c         call restore_croco_state()
 

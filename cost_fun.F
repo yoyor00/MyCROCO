@@ -1,5 +1,5 @@
 
-      subroutine cost_fun(x, cost)
+      subroutine cost_fun(ad_x, cost)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -22,7 +22,7 @@
       integer k, ierr, i
 
       rdrg2_bck = rdrg2
-      call set_state(x)
+      call set_state(ad_x)
 
       cost = 0
 
@@ -100,10 +100,11 @@ C$AD NOCHECKPOINT
 
       do j=Jstr,Jend
          do i=Istr,Iend
-c            write(*,*) i,j,knew,sim_iicroot+k,
-c     &           zeta(i,j,knew),obs(i,j,sim_iicroot+k)
-
-            delta_z = (zeta(i,j,knew)-obs(i,j,sim_iicroot+k))
+c            if (k.gt.2) then
+c               write(*,*) i,j,knew,sim_iicroot,k,sim_iicroot+k,
+c     &              zeta(i,j,knew),ad_obs(i,j,k+1)
+c            end if
+            delta_z = (zeta(i,j,knew)-ad_obs(i,j,k+1))
             icost = icost + delta_z*delta_z
          end do
       end do
@@ -111,7 +112,7 @@ c     &           zeta(i,j,knew),obs(i,j,sim_iicroot+k)
       end subroutine cost_fun_step_2d_tile
 
 C$AD NOCHECKPOINT
-      subroutine set_state(x)
+      subroutine set_state(ad_x)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -134,14 +135,14 @@ C$AD NOCHECKPOINT
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call set_state_2d(tile, x)
+         call set_state_2d(tile, ad_x)
       end do
 
       end subroutine set_state
 
 
 C$AD NOCHECKPOINT
-      subroutine set_state_2d(tile, x)
+      subroutine set_state_2d(tile, ad_x)
 
       implicit none
 # include "param.h"
@@ -149,12 +150,12 @@ C$AD NOCHECKPOINT
       integer tile
 # include "compute_tile_bounds.h"
 
-      call set_state_2d_tile(Istr, Iend, Jstr, Jend, x)
+      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
 
       end subroutine set_state_2d
 
 C$AD NOCHECKPOINT
-      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend,x)
+      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend,ad_x)
       implicit none
 
 #include "param.h"
@@ -186,7 +187,7 @@ c             h(i,j) = x(1+(i-IstrR+1)+bi*(j-JstrR))
 c         end do
 c      end do
 
-      rdrg2 = real(x(1))
+      rdrg2 = real(ad_x(1))
 
       write(*, *) '**** set_state ****'
 
