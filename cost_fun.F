@@ -26,8 +26,8 @@
 
       cost = 0
 
-C$AD BINOMIAL-CKP 121 10 1
-      do k=1,120
+C$AD BINOMIAL-CKP ad_nt+1 40 1
+      do k=1,ad_nt
          call step()
          call cost_fun_step(cost, k)
       end do
@@ -100,15 +100,15 @@ C$AD NOCHECKPOINT
 
       do j=Jstr,Jend
          do i=Istr,Iend
-c            if (k.gt.2) then
+c            if ((zeta(i,j,knew)-ad_obs(i,j,k+1)) > 1D-10) then
 c               write(*,*) i,j,knew,sim_iicroot,k,sim_iicroot+k,
-c     &              zeta(i,j,knew),ad_obs(i,j,sim_iicroot+k)
+c     &              zeta(i,j,knew),ad_obs(i,j,k+1)
 c            end if
-            delta_z = (zeta(i,j,knew)-ad_obs(i,j,sim_iicroot+k))
+            delta_z = (zeta(i,j,knew)-ad_obs(i,j,k+1))
             icost = icost + delta_z*delta_z
          end do
       end do
-
+      
       end subroutine cost_fun_step_2d_tile
 
 C$AD NOCHECKPOINT
