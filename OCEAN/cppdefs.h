@@ -547,9 +547,7 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-=======
 # define NO_FRCFILE
->>>>>>> master
 
 #elif defined INNERSHELF
 /*
@@ -727,7 +725,6 @@
                       /* I/O server */
 # undef XIOS
                       /* Equation of State */
->>>>>>> master
 # define SALINITY
 # define TIDES
 # define TIDERAMP
@@ -764,9 +761,7 @@
 # define M3NUDGING
 # define TNUDGING
 # undef  ONLINE_ANALYSIS
-=======
 # define NO_FRCFILE
->>>>>>> master
 
 #elif defined IGW
 /*
@@ -1012,7 +1007,6 @@
 # endif
 # define NO_FRCFILE
 
->>>>>>> master
 #elif defined UPWELLING
 /*
 !                       Upwelling Example
