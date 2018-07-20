@@ -35,10 +35,14 @@
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc,
-     &        imin,imax,jmin,jmax
+     &        imin,imax,jmin,jmax, kp
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
-      real cff, surf, defrate, horcon, cff_peclet
+      real cff, horcon, cff_peclet
+# ifdef NBQ
+      parameter (horcon=0.01)
+# else
       parameter (horcon=0.1)
+# endif
 # include "param.h"
 # include "grid.h"
 # include "mixing.h"
@@ -87,28 +91,74 @@
 !---------------------------------------------------------------
 ! Smagorinsky viscosity at RHO points
 !
-!  The POM formulation is used:
 !    A = C*DX*DY*DEFRATE
-!        with DEFRATE=sqrt[du/dx^2 +dvdy^2 + 0.5(dvdx+dudy)^2]
-!        the deformation rate
+!        with DEFRATE=sqrt[ (dui/dxj + duj/dxi)^2 ] 
 !
 !---------------------------------------------------------------
 !
-! Smagorinsky viscosity at RHO points
+! Horizontal deformation rate (squared) at RHO point:
+!  du/dx^2 +dvdy^2 + 0.5(dvdx+dudy)^2
 !
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax
-            defrate=sqrt( ((u(i+1,j,k,nrhs)-u(i,j,k,nrhs))*pm(i,j))**2
+            visc3d_r(i,j,k)= 
+     &                    ((u(i+1,j,k,nrhs)-u(i,j,k,nrhs))*pm(i,j))**2
      &                   +((v(i,j+1,k,nrhs)-v(i,j,k,nrhs))*pn(i,j))**2
-     &               +0.5*(0.25*pn(i,j)*(
-     &                     u(i,j+1,k,nrhs)+u(i+1,j+1,k,nrhs)
-     &                    -u(i,j-1,k,nrhs)-u(i+1,j-1,k,nrhs))
-     &                   + 0.25*pm(i,j)*(
-     &                     v(i+1,j,k,nrhs)+v(i+1,j+1,k,nrhs)
-     &                    -v(i-1,j,k,nrhs)-v(i-1,j+1,k,nrhs)) )**2)
-            surf=om_r(i,j)*on_r(i,j)
-            visc3d_r(i,j,k)=horcon*surf*defrate
+     &               +0.125*( pn(i,j)*
+     &                        (u(i,j+1,k,nrhs)+u(i+1,j+1,k,nrhs)
+     &                        -u(i,j-1,k,nrhs)-u(i+1,j-1,k,nrhs))
+     &                      +pm(i,j)*
+     &                        (v(i+1,j,k,nrhs)+v(i+1,j+1,k,nrhs)
+     &                        -v(i-1,j,k,nrhs)-v(i-1,j+1,k,nrhs)) )**2
+          enddo
+        enddo
+      enddo
+!
+#  if defined NBQ && defined UV_VIS_SMAGO_3D
+!
+! Add vertical deformation for non-hydrostatic cases
+!  dw/dz^2 + (du/dz+dw/x)^2 + (dv/dz+dw/y)^2
+!
+      do k=2,N-1
+        do j=jmin,jmax
+          do i=imin,imax
+            visc3d_r(i,j,k)=visc3d_r(i,j,k)+
+     &                 ((wz(i,j,k,nrhs)-wz(i,j,k-1,nrhs))/Hzr(i,j,k))**2
+     &               +0.125*( (u(i,j,k+1,nrhs)+u(i+1,j,k+1,nrhs)
+     &                        -u(i,j,k-1,nrhs)-u(i+1,j,k-1,nrhs))
+     &                               /(z_r(i,j,k+1)-z_r(i,j,k-1))
+     &                     +pm(i,j)*
+     &                        (wz(i+1,j,k,nrhs)+wz(i+1,j,k+1,nrhs)
+     &                        -wz(i-1,j,k,nrhs)-wz(i-1,j,k+1,nrhs)) )**2
+     &               +0.125*( (v(i,j,k+1,nrhs)+v(i,j+1,k+1,nrhs)
+     &                        -v(i,j,k-1,nrhs)-v(i,j+1,k-1,nrhs))
+     &                               /(z_r(i,j,k+1)-z_r(i,j,k-1))
+     &                     +pn(i,j)*
+     &                        (wz(i,j+1,k,nrhs)+wz(i,j+1,k+1,nrhs)
+     &                        -wz(i,j-1,k,nrhs)-wz(i,j-1,k+1,nrhs)) )**2
+          enddo
+        enddo
+      enddo
+#  endif
+!
+! Smagorinsky viscosity at RHO points
+!
+      kp=min(k+1,N)
+      do j=jmin,jmax
+        do i=imin,imax
+          cff=horcon*om_r(i,j)*on_r(i,j)
+          do k=1,N
+            visc3d_r(i,j,k)=cff*sqrt(visc3d_r(i,j,k))
+#  if defined NBQ && defined UV_VIS_SMAGO_3D
+#   if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+                        || defined LMD_MIXING || defined GLS_MIX2017
+            Akv(i,j,k)=Akv(i,j,k)+
+#   else
+            Akv(i,j,k)=Akv_bak+
+     &                          0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp))
+#   endif
+#  endif
           enddo
         enddo
       enddo
@@ -119,13 +169,8 @@
         do j=jmin,jmax
           do i=imin,imax
           dZdt=abs(zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
-#   ifdef NBQ
-          cff=zeta(i,j,knew)
-          Dbr=10.*om_r(i,j)*on_r(i,j)
-#   else
           cff=z_w(i,j,N)-z_w(i,j,0)
           Dbr=10.*om_r(i,j)*on_r(i,j)
-#   endif
           dZdt0=0.01*sqrt(g*cff)
           Bbr=max(0.,min(1.,dZdt/dZdt0-1.))
           do k=1,N
@@ -230,7 +275,7 @@
       enddo
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_p3d_tile (Istr,Iend,Jstr,Jend,visc3d_p)
+      call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
 #  endif
 
 # endif /* UV_VIS_SMAGO  */

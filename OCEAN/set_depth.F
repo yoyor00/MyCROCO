@@ -10,6 +10,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
+# ifdef NBQ
+#   undef FIX_HZ
+# endif
 #if defined SOLVE3D || defined WET_DRY
 
       subroutine set_depth (tile)
@@ -34,7 +37,7 @@ C$    integer omp_get_thread_num
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
 # include "param.h"
 # include "grid.h"
 # ifdef AGRIF
@@ -66,9 +69,16 @@ C$    integer omp_get_thread_num
 #  define J_RANGE JstrR,JendR
 # endif
 !
-      if (iic.eq.0) then  ! During initialization and /or restart: copy initial
-        do j=J_RANGE      ! free surface field into array for holding fast-time
-          do i=I_RANGE    ! averaged free surface.
+!----------------------------------------------------------------------
+!  Initialization of free surface zeta arrays and wet/dry mask
+!
+!  During initialization and/or restart: copy initial free surface 
+!  field into array for holding fast-time averaged free surface.
+!----------------------------------------------------------------------
+!
+      if (iic.eq.0) then
+        do j=J_RANGE
+          do i=I_RANGE
 # ifdef WET_DRY
             wetdry(i,j)=1.
 #  ifdef AGRIF
@@ -77,13 +87,8 @@ C$    integer omp_get_thread_num
             IF (h(i,j).eq.0.) THEN
               h(i,j)=eps
             END IF
-#  ifdef NBQ
-            IF (zeta(i,j,1) .lt. Dcrit(i,j)) THEN
-              zeta(i,j,1)=Dcrit(i,j)
-#  else
             IF (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) THEN
               zeta(i,j,1)=Dcrit(i,j)-h(i,j)
-#  endif
               zeta(i,j,2)=zeta(i,j,1)
               zeta(i,j,3)=zeta(i,j,1)
               zeta(i,j,4)=zeta(i,j,1)
@@ -97,54 +102,46 @@ C$    integer omp_get_thread_num
 #  else
             hinv(i,j)=1./h(i,j) 
 #  endif
-            Zt_avg1(i,j)=zeta(i,j,1)
-#  ifdef NBQ
-            if (zeta(i,j,1).eq.0.) then     ! Set Zt_avg1 and rhobar_nbq_avg1
-              Zt_avg1(i,j) = h(i,j)         ! before call to ana_initial (zeta=0)
-              zeta(i,j,1)  = Zt_avg1(i,j)
-              zeta(i,j,2)  = zeta(i,j,1)
-              zeta(i,j,3)  = zeta(i,j,1)
-              zeta(i,j,4)  = zeta(i,j,1)
-            else
-             if (zeta(i,j,1).eq.h(i,j).and.rhobar_nbq(i,j,1).ne.1.) then
-              Zt_avg1(i,j) = rhobar_nbq(i,j,1)*h(i,j)
-              zeta(i,j,1)  = Zt_avg1(i,j)
-              zeta(i,j,2)  = zeta(i,j,1)
-              zeta(i,j,3)  = zeta(i,j,1)
-              zeta(i,j,4)  = zeta(i,j,1)
-             endif
-            endif
-#  endif
+            Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified 
+                                         ! in ana_initial (JET)     
 # endif /* SOLVE3D */
           enddo
         enddo
 
+# ifdef NBQ_MASS
+        do k=1,N
+          do j=J_RANGE
+            do i=I_RANGE
+              rho_nbq(i,j,k)=0.
+            enddo
+          enddo
+        enddo
+# endif
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
 #  ifdef WET_DRY
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_wet)
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_wet)
 #  endif
 #  if defined NBQ || defined WET_DRY 
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
-     &                        zeta(START_2D_ARRAY,1))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
-     &                        zeta(START_2D_ARRAY,2))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
-     &                        zeta(START_2D_ARRAY,3))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
-     &                        zeta(START_2D_ARRAY,4))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,wetdry)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,rmask_wet)
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+     &                          zeta(START_2D_ARRAY,1))
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+     &                          zeta(START_2D_ARRAY,2))
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+     &                          zeta(START_2D_ARRAY,3))
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
+     &                          zeta(START_2D_ARRAY,4))
 #  endif
 # endif
-      endif   !  iic==0
-
-# ifdef NBQ_CONSOUT
-      call consout_nbq(10)
-# endif
-
+      endif   !  iic==0  <-- end initialization
+!
+!----------------------------------------------------------------------
+!  Set vertical grid
+!----------------------------------------------------------------------
+!
 # ifdef SOLVE3D
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
@@ -152,6 +149,7 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
+
 #  ifdef MOVING_BATHY
           h(i,j)=h(i,j)+dh(i,j)
 #  endif
@@ -171,14 +169,13 @@ C$    integer omp_get_thread_num
           cff1_r=Cs_r(k)
 #  endif
           do i=I_RANGE
-            zetatmp=Zt_avg1(i,j)
 #  ifdef NBQ
-     &              /rhobar_nbq_avg1(i,j)-h(i,j)
-            if (rhobar_nbq_avg1(i,j).eq.0) stop 'Error set_depth (1)'
-            if (rhobar_nbq(i,j,1).eq.0)    stop 'Error set_depth (2)'
-#   if defined MASKING && !defined WET_DRY
+            zetatmp=zeta(i,j,knew)
+#  else
+            zetatmp=Zt_avg1(i,j)
+#  endif
+#  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
-#   endif
 #  endif
             z_w0=cff_w+cff1_w*h(i,j) 
             z_r0=cff_r+cff1_r*h(i,j)            
@@ -197,22 +194,40 @@ C$    integer omp_get_thread_num
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
-            Hz_bak(i,j,k)=Hz(i,j,k)
-            Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
+
 #  ifdef NBQ
+#   ifndef NBQ_GRID_SLOW
+            if (iif.eq.1) Hz_bak(i,j,k)=Hz(i,j,k)
+#   else
+            Hz_bak(i,j,k)=Hz(i,j,k)
+#   endif
+#   ifdef NBQ_HZ_PROGNOSTIC
+            Hz_bak2(i,j,k)=Hz(i,j,k)
+#   endif
+#  else
+            Hz_bak(i,j,k)=Hz(i,j,k)
+#  endif 
+            Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
+
+#  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
-            Hz(i,j,k) =Hz(i,j,k)*rho_nbq_avg1(i,j,k)
-            if (rho_nbq_ext(i,j,k).eq.0) stop 'Error set_depth (3)'
+            Hz(i,j,k)=Hz(i,j,k)*(1.+rho(i,j,k)/rho0)
+     &                               +rho_nbq(i,j,k) 
 #  endif
           enddo
         enddo
       enddo
 
-#  ifdef NBQ_CONS5
-      call cons_nbq(30)
-#  endif
-#  ifdef NBQ_CONSOUT
-      call consout_nbq(11)
+#  ifdef NBQ
+      if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
+        do k=1,N,+1
+          do j=J_RANGE
+            do i=I_RANGE
+              Hz_bak(i,j,k)=Hz(i,j,k)
+            enddo
+          enddo
+        enddo
+      endif
 #  endif
 
 #  undef I_RANGE
@@ -230,10 +245,9 @@ C$    integer omp_get_thread_num
 #   ifdef MOVING_BATHY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
 #   endif
-#   ifdef NBQ
+#   ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
-
 #   endif
 #  endif 
       return
@@ -451,7 +465,7 @@ C$    integer omp_get_thread_num
 #   endif
 #  endif
       return
-      end
+      end 
 !
 !======================================================================
 !

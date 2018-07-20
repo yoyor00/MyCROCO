@@ -163,7 +163,7 @@
      defined W_FRC_BRY     ||                          \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY
+     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
       integer numthreads,     ntstart,   ntimes,  ninfo
@@ -444,7 +444,12 @@
      &     lonmin, lonmax, latmin, latmax
 #endif
 
+      real*QUAD Cu_Adv3d,  Cu_W, Cu_Nbq_X, Cu_Nbq_Y, Cu_Nbq_Z
+      integer i_cx_max, j_cx_max, k_cx_max
+      common /diag_vars/ Cu_Adv3d,  Cu_W,
+     &        i_cx_max, j_cx_max, k_cx_max
       real*QUAD volume, avgke, avgpe, avgkp, bc_crss
+
 #ifdef OBC_VOLCONS
      &        , bc_flux, ubar_xs
 #endif

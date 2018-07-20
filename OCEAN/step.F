@@ -35,12 +35,10 @@
 #ifdef SOLVE3D   
  
 #if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3  
-       if ((iif==-1).and.(oasis_time < oasis_runtime)) then 
-         print *, 'oasis time before get = ', oasis_time
-!         call cpl_prism_put (oasis_time) ! moved to the end of the step       
+!--Get phase of OASIS3 
+       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes) ) then
+!         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
-!         oasis_time = oasis_time + dt   ! moved to the end of the step 
        endif 
 #endif /* OA_COUPLING */
 
@@ -76,12 +74,13 @@ C$OMP END PARALLEL
         nbstep3d = nbstep3d + 1
       endif
 #if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3  
-       if ((iif==-1).and.(oasis_time < oasis_runtime)) then
-         print *, 'oasis time before put = ', oasis_time
-         call cpl_prism_put (oasis_time)        
+!--Get phase of OASIS3 
+       if (iif==-1) then
+         if (oasis_time>=0.and.(nbstep3d<ntimes)) then
+           call cpl_prism_put (oasis_time)
+         endif
          oasis_time = oasis_time + dt
-       endif
+       endif 
 #endif /* OA_COUPLING */
 #endif
 #ifdef ONLINE_ANA
@@ -398,9 +397,7 @@ C$OMP BARRIER
 # elif defined BVF_MIXING
         call bvf_mix (tile)
 # endif
-
         call omega (tile)
-
 # ifdef VIS_COEF_3D
         call hvisc_coef (tile)
 # endif
@@ -411,7 +408,11 @@ C$OMP BARRIER
         call prsgrd (tile)
         call rhs3d (tile)
 # ifdef NBQ
+#  if defined AGRIF && defined NBQ_CHILD_ONLY
+        if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
+#  else
         call rhs3d_w_nh (tile)
+#  endif
 # endif
         call pre_step3d (tile)
 # ifdef GLS_MIXING
@@ -590,7 +591,7 @@ C$OMP BARRIER
 #  endif
 # endif
 # if defined WKB_WWAVE && !defined ANA_BRY_WKB
-          call set_bry_wkb (tile)
+            call set_bry_wkb (tile)
 # endif
           enddo
 # ifdef AGRIF
@@ -613,7 +614,6 @@ C$OMP BARRIER
           call set_avg (tile)
 # endif
 # if defined UV_VIS2 && defined UV_VIS_SMAGO
-
         call hvisc_coef (tile)
 # endif
         enddo
@@ -634,11 +634,35 @@ C$OMP BARRIER
                   ! tile-processing sequence.               
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
+#ifdef NBQ
+# if defined AGRIF && defined NBQ_CHILD_ONLY
+            if (Agrif_Root()) then
+              call   step2d (tile)
+            else
+              call   step3d_fast (tile)
+            endif
+# else
+            call   step3d_fast (tile)
+# endif
+#else
             call     step2d (tile)
+#endif            
           enddo
         else
           do tile=my_first,my_last
+#ifdef NBQ
+# if defined AGRIF && defined NBQ_CHILD_ONLY
+            if (Agrif_Root()) then
+              call   step2d (tile)
+            else
+              call   step3d_fast (tile)
+            endif
+# else
+            call   step3d_fast (tile)
+# endif
+#else
             call     step2d (tile)
+#endif            
           enddo
         endif
 
@@ -716,9 +740,17 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
+# if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
+      if (Agrif_Root()) then
+        do tile=my_first,my_last
+          call set_depth (tile)
+        enddo
+      endif
+# elif !defined NBQ
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
+# endif
 
 C$OMP BARRIER
 
@@ -741,11 +773,19 @@ C$OMP BARRIER
         call prsgrd (tile)
         call rhs3d (tile)
 # ifdef NBQ
+#  if defined AGRIF && defined NBQ_CHILD_ONLY
+        if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
+#  else
         call rhs3d_w_nh (tile)
+#  endif
 # endif
         call step3d_uv1 (tile)
 # ifdef NBQ
+#  if defined AGRIF && defined NBQ_CHILD_ONLY
+        if (.Not.Agrif_Root()) call step3d_w (tile)
+#  else
         call step3d_w (tile)
+#  endif
 # endif
       enddo
 C$OMP BARRIER
@@ -789,9 +829,6 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef NBQ
-# include "nbq.h"
-#endif
 #ifdef FLOATS
 # include "floats.h"
 #endif

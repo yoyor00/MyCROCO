@@ -12,6 +12,7 @@
 # Misc               #
 ######################
 doc/build
-# dev files          #
-######################
-OCEAN/*.F.*
+Run/*
+Run/amr.in
+
+OCEAN.bak/cpl_prism_getlistvals.F

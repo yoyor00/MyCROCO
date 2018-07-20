@@ -27,10 +27,6 @@
 #ifdef XIOS
           USE xios          ! XIOS module
 #endif
-#ifdef NBQ
-          USE module_nh     ! NBQ modules
-          USE module_nbq
-#endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces 
@@ -39,9 +35,11 @@
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
+#include "nbq.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
+#include "ocean2d.h"
 #include "mpi_roms.h"
 #ifdef FLOATS
 # include "floats.h"
@@ -52,15 +50,12 @@
 # include "nc_sta.h"
 #endif
 #ifdef AGRIF
-       Type(Agrif_pgrid),pointer  :: parcours     
+      Type(Agrif_pgrid),pointer  :: parcours     
 #endif 
 #ifdef MPI
       include 'mpif.h'
-!      real*8 start_time2, start_time1, exe_time
-#elif defined NBQ
-       integer MPI_STATUS_SIZE
+!     real*8 start_time2, start_time1, exe_time
 #endif 
-
       integer :: iifroot, iicroot
 #ifdef WKB_WWAVE
       integer winterp
@@ -132,18 +127,6 @@
 !     start_time1=PMPI_Wtime()
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100        !--> ERROR
-#endif
-!
-!----------------------------------------------------------------------
-!  Set allocations for non-boussinesq (NBQ) equation arrays
-!----------------------------------------------------------------------
-!
-#ifdef NBQ
-      call alloc_module_nh() 
-# ifndef MPI
-      MPI_STATUS_SIZE=1
-# endif
-      call alloc_module_nbq(MPI_STATUS_SIZE)
 #endif
 !
 #define CR  !
@@ -258,6 +241,7 @@ CR      write(*,*) ' -9' MYID
 !
 !  Set fast-time averaging for coupling of split-explicit baroropic mode.
 !
+
       call set_weights 
 CR      write(*,*) ' -8' MYID 
 !
@@ -331,14 +315,6 @@ CR      write(*,*)  ' -5' MYID
 #endif
 !
 !----------------------------------------------------------------------
-!  Set initial Non-boussinesq variables
-!----------------------------------------------------------------------
-!
-#ifdef NBQ
-      call initial_nh(1)
-# endif
-!
-!----------------------------------------------------------------------
 !  Initialize diagnostic fields: mass flux, rho, omega
 !----------------------------------------------------------------------
 !
@@ -357,18 +333,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call rho_eos (tile)
       enddo
 CR      write(*,*)  ' -3' MYID
-#endif
-!
-!----------------------------------------------------------------------
-!  Set initial Non-boussinesq density field: rhp_nbq_a
-!----------------------------------------------------------------------
-!
-#ifdef NBQ
-      call initial_nh(2)
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
-      enddo
 #endif
 !
 !----------------------------------------------------------------------
@@ -667,6 +631,36 @@ C$OMP MASTER
      &     'WKB: completed steady wave computation.'
 C$OMP END MASTER
 #endif /* WKB_WWAVE */
+
+!
+!----------------------------------------------------------------------
+!  Set initial non-Boussinesq parameters and variables
+!----------------------------------------------------------------------
+!
+#ifdef NBQ
+# ifdef NBQ_MASS
+!
+! Re-evaluate Hz and Huon,Hvom using 
+! previously computed density rho
+!
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_depth (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_HUV (tile)
+      enddo
+# endif
+!
+! Set initial NBQ param. & var.
+!
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call initial_nbq(tile)
+      enddo     
+#endif
 !
 !----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files

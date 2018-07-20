@@ -1,12 +1,12 @@
 ! $Id: cpl_prism_grid.F Joris Pianezze 9 aout 2016 $
 !
 !======================================================================
-! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 ! 
-! ROMS_AGRIF website : http://www.romsagrif.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
       SUBROUTINE cpl_prism_grid(id_partition)
@@ -47,13 +47,13 @@
 !     !             ***  ROUTINE cpl_prism_grid  ***
 !     !
 !     ! ** Purpose :   Define grids/areas/corners/masks information for ocean
-!     !                exchange between ROMS and COUPLER. (OASIS3-MCT software)
+!     !                exchange between CROCO and COUPLER. (OASIS3-MCT software)
 !     !
 !     ! ** Method  :   OASIS3 MPI communication
 !     !--------------------------------------------------------------------
 
 !------------------------------------------------------------------
-!     Set the ROMS grid definition to PRISM system
+!     Set the CROCO grid definition to PRISM system
 !------------------------------------------------------------------
 !
 !    Need to use oasis3_mct_v3 !

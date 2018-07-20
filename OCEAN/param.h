@@ -38,9 +38,13 @@
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
 #elif defined KH_INST 
 # ifndef KH_INSTY
-      parameter (LLm0=256,  MMm0=1,    N=256)   
+#  ifdef KH_INST3D
+      parameter (LLm0=256,  MMm0=32,  N=256)
+#  else
+      parameter (LLm0=256,  MMm0=1,   N=256)
+#  endif
 # else
-      parameter (LLm0=1,  MMm0=256,    N=256)   
+      parameter (LLm0=1,    MMm0=256, N=256)
 # endif
 #elif defined ACOUSTIC 
       parameter (LLm0=64,   MMm0=1,    N=64)  
@@ -64,9 +68,9 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
 #elif defined S2DV 
-!      parameter (LLm0=256, MMm0=3,    N=40)	! true 2DV
-#elif defined REGIONAL_NBQ
-       parameter (LLm0=256, MMm0=119,  N=80)
+       parameter (LLm0=562, MMm0=3,    N=40)   ! true 2DV
+#elif defined MILES 
+       parameter (LLm0=408, MMm0=523,  N=20)
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -230,12 +234,7 @@
 !----------------------------------------------------------------------
 !
       integer NWEIGHT
-#ifdef NBQ
-      parameter (NWEIGHT=100000)
-#else
       parameter (NWEIGHT=1000)
-#endif
-
 !
 !----------------------------------------------------------------------
 ! Tides, Wetting-Drying, Point sources, Floast, Stations
@@ -288,7 +287,12 @@
 #ifdef AGRIF
       common/scrum_deriv_param/padd_X,padd_E
 #endif
-      parameter (stdout=6, Np=N+1)
+#ifdef LOGFILE
+      common /stdout/stdout 
+#else
+      parameter (stdout=6)
+#endif
+      parameter (Np=N+1)
 #ifndef AGRIF
 # ifdef MPI
       parameter (Lm=(LLm+NP_XI-1)/NP_XI, Mm=(MMm+NP_ETA-1)/NP_ETA)
@@ -301,12 +305,20 @@
 
 #if defined AGRIF || defined AUTOTILING
       integer NSA, N2d,N3d,N1dXI,N1dETA
+#if !defined NBQ
       parameter (NSA=28)
+#else
+      parameter (NSA=35)
+#endif
       common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
 #else
       integer NSA, N2d,N3d, size_XI,size_ETA
       integer se,sse, sz,ssz
+#if !defined NBQ
       parameter (NSA=28)
+#else
+      parameter (NSA=35)
+#endif
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)
 # else

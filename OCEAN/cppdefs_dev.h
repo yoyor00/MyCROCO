@@ -36,12 +36,11 @@
 #endif
 
 /*  
-   Activate the RVTK_DEBUG procedure that will compare the results
-   serial and multi-processor result by comparing binary file
+   Activate the RVTK_DEBUG procedure that will test the reproducibility 
+   of parallel computation by comparing binary files produced by serial 
+   and parallel runs
 */
-#ifndef RVTK_DEBUG
 #undef RVTK_DEBUG
-#endif
 
 /*
     Constant tracer option (for debugging)
@@ -63,6 +62,10 @@
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  OA_GRID_UV
 # undef  BULK_FLUX
+# undef  QCORRECTION
+# undef  SFLX_CORR
+# undef  ANA_DIURNAL_SW
+# undef  OA_GRID_UV
 #endif
 
 /* 
@@ -78,12 +81,13 @@
 # define MPI
 # define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
-# undef  OA_GRID_UV
-# define MRL_WCI
 # undef  WKB_WWAVE
-# undef  WAVE_ROLLER
-# define WAVE_STREAMING
-# define WAVE_RAMP
+# undef  WAVE_OFFLINE
+# ifdef MRL_WCI
+#  undef  WAVE_ROLLER
+#  define WAVE_STREAMING
+#  define WAVE_RAMP
+# endif
 #endif
 
 /* 
@@ -120,6 +124,85 @@
 
 /*
 ======================================================================
+   Activate NBQ choices for non-hydrostatic simulations
+======================================================================
+*/
+#ifdef NBQ              /* General options */
+# define SOLVE3D
+# define M2FILTER_NONE  /* no filter with NBQ */
+# undef  M2FILTER_POWER
+# define NBQ_IMP
+# undef  NBQ_FREESLIP
+# undef  TRACETXT
+# undef  DIAG_CFL
+# define HZR Hzr
+/*
+   NBQ Precise or Performance options (default: NBQ_PERF) 
+*/
+# ifndef NBQ_PRECISE
+#  define NBQ_PERF
+# endif
+# ifdef NBQ_PERF
+#  undef  NBQ_MASS
+#  define NBQ_GRID_SLOW
+#  define NBQ_HZCORRECT
+# else
+#  define NBQ_MASS
+#  undef  NBQ_GRID_SLOW
+#  define NBQ_HZCORRECT
+# endif
+/*
+   Options for wz HADV numerical schemes (default C4)
+*/
+# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_HADV_TVD
+# elif defined W_HADV_WENO5
+# elif defined W_HADV_C4
+# elif defined W_HADV_C2
+# else
+#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_HADV_TVD      /* TVD vertical advection                 */
+#  undef  W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  define W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
+# endif
+/*
+   Options for wz VADV numerical schemes (default SPLINES)
+*/
+# ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_VADV_TVD
+# elif defined W_VADV_WENO5
+# elif defined W_VADV_C2
+# else
+#  define W_VADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_VADV_TVD      /* TVD vertical advection                 */
+#  undef  W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
+#  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
+# endif
+/*
+   NBQ Open boundary conditions
+*/
+# if defined OBC_WEST  || defined OBC_EAST  || \
+     defined OBC_NORTH || defined OBC_SOUTH
+#  define OBC_NBQ
+# endif
+# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
+#  define OBC_NBQORLANSKI    /*  Radiative conditions           */
+#  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
+#  undef  NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
+# endif
+
+#else                /* Hydrostatic mode */
+
+# define HZR Hz
+
+#endif  /* NBQ */
+
+/*
+======================================================================
    Activate barotropic pressure gradient response to the
    perturbation of free-surface in the presence of stratification
 ======================================================================
@@ -133,46 +216,25 @@
 
 /*
 ======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
-======================================================================
-*/
-#ifdef NBQ
-# define M2FILTER_NONE
-# undef  M2FILTER_POWER
-# undef  VAR_RHO_2D
-# undef  TRACETXT
-# undef  NBQ_OUT
-# define HZR Hzr
-# undef  OBC_NBQ
-# ifdef OBC_NBQ
-#  undef  OBC_NBQORLANSKI
-#  undef  OBC_NBQSPECIFIED
-#  undef  NBQ_FRC_BRY
-#  define W_FRC_BRY
-# endif
-#else
-# define HZR Hz
-#endif
-
-/*
-======================================================================
    Activate choice of Pressure Gradient formulation
    (default is the Density Jacobian formulation with Cubic 
    Polynomial fit from Shchepetkin et al. (2003). But:
-   1- a cheaper standard Jacobian formulation can also be used 
-   (PGF_BASIC_JACOBIAN), especially for flat or smooth 
-   topography). 
-   2- The Weighted Jacobian formulation of Song & Haidvogel (1994)
-   can also be used by defining the WJ_GRADP key, which then serves 
+   1- This code can be run cheaper for flat bottom cases if
+      terms involving z-grid x/y gradients are removed
+      (PGF_FLAT_BOTTOM)
+   2- a cheaper standard Jacobian formulation can also be used 
+   (PGF_BASIC_JACOBIAN) for smooth topography. 
+   3- The Weighted Jacobian formulation of Song & Haidvogel (1994)
+   can be used in this case by defining WJ_GRADP key, which then serves 
    as the weight value. 
 ======================================================================
 */
 #if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
                   || defined SOLITON  || defined JET \
                   || defined ACOUSTIC || defined VORTEX \
-                  || defined THACKER  || defined TANK
-# define PGF_BASIC_JACOBIAN
-# undef WJ_GRADP
+                  || defined THACKER  || defined TANK \
+                  || defined KH_INST
+# define PGF_FLAT_BOTTOM
 #elif defined RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125
@@ -203,6 +265,7 @@
 #elif defined UV_HADV_UP5
 #elif defined UV_HADV_C6
 #elif defined UV_HADV_WENO5
+#elif defined UV_HADV_TVD
 #else
 # define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
 # undef  UV_HADV_C4        /* 4th-order centered lateral advection */
@@ -210,6 +273,7 @@
 # undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
 # undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
 # undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
+# undef  UV_HADV_TVD	   /*           TVD      lateral advection */
 #endif
 /* 
    UV DIFFUSION: set default orientation
@@ -222,6 +286,9 @@
 /* 
    Set keys related to Smagorinsky viscosity 
 */
+#ifdef UV_VIS_SMAGO_3D
+# define UV_VIS_SMAGO  
+#endif
 #ifdef UV_VIS_SMAGO 
 # define VIS_COEF_3D  
 #endif
@@ -247,10 +314,12 @@
 #ifdef UV_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
 #elif defined UV_VADV_WENO5
 #elif defined UV_VADV_C2
+#elif defined UV_VADV_TVD
 #else
-# define UV_VADV_SPLINES   /* Splines vertical advection             */
-# undef  UV_VADV_WENO5     /* 5th-order WENOZ vertical advection  */
+# define UV_VADV_SPLINES   /*            Splines vertical advection  */
+# undef  UV_VADV_WENO5     /* 5th-order  WENOZ   vertical advection  */
 # undef  UV_VADV_C2        /* 2nd-order centered vertical advection  */
+# undef  UV_VADV_TVD       /*            TVD     vertical advection  */
 #endif
 
 #ifdef VADV_ADAPT_IMP      /* Semi-implicit vertical advection       */
@@ -395,6 +464,31 @@
 
 /*
 ======================================================================
+   TIDES:  
+   select dependable keys if not done yet
+======================================================================
+*/
+#ifdef TIDES
+# ifdef SSH_TIDES
+#  ifdef ZCLIMATOLOGY
+#  elif defined Z_FRC_BRY
+#  else
+#   define ZCLIMATOLOGY
+#   define ANA_SSH
+#  endif
+# endif
+# ifdef UV_TIDES
+#  ifdef M2CLIMATOLOGY
+#  elif defined M2_FRC_BRY
+#  else
+#   define M2CLIMATOLOGY
+#   define ANA_M2CLIMA
+#  endif
+# endif
+#endif
+
+/*
+======================================================================
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
@@ -482,7 +576,8 @@
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
-# define LMD_BKPP2005
+# undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth 
+                           default: lmd_bkpp1994 */
 #endif
 
 /*
@@ -519,6 +614,12 @@
 # define LIMIT_BSTRESS
 #endif
 #ifdef BBL
+# ifdef OW_COUPLING
+# elif defined WAVE_OFFLINE
+# elif defined WKB_WWAVE
+# else
+#  define ANA_WWAVE
+# endif
 # ifdef SEDIMENT
 #  undef  ANA_BSEDIM
 # else
@@ -668,7 +769,7 @@
   Define the NetCDF creation mode flag:
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
 */ 
-#define NF_CLOBBER nf_clobber
+#define NF_CLOBBER nf_64bit_offset
 
 /*
 ======================================================================

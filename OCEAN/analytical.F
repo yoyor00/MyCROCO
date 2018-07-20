@@ -633,17 +633,6 @@ C$    integer  trd, omp_get_thread_num
       enddo
 # endif
 
-# ifdef NBQ
-!
-! Compliance with zeta and ssh definition in NBQ code
-!
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=h(i,j)+ssh(i,j)
-        enddo
-      enddo
-# endif
-
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (istr,iend,jstr,jend, ssh(START_2D_ARRAY))
 # endif
@@ -1312,15 +1301,20 @@ C$    integer  trd, omp_get_thread_num
 #  define JV_RANGE Jstr,JendR
 # endif
 !
+
+# if defined NBQ && (defined NBQCLIMATOLOGY || \
+                    (defined AGRIF && !defined NBQ_FRC_BRY)) \
+                 && (defined M3CLIMATOLOGY || \
+                    (defined AGRIF && !defined M3_FRC_BRY))
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
-            unbqclm(i,j,k)=0.5*rho0*(Hz(i,j,k)+Hz(i-1,j,k))*uclm(i,j,k)
+            unbqclm(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nrhs)
           enddo
         enddo
         do j=JV_RANGE
           do i=IV_RANGE
-            vnbqclm(i,j,k)=0.5*rho0*(Hz(i,j,k)+Hz(i,j-1,k))*vclm(i,j,k)
+            vnbqclm(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nrhs)
           enddo
         enddo
         do j=JstrR,JendR
@@ -1330,6 +1324,26 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+# else
+      do k=1,N
+        do j=JU_RANGE
+          do i=IU_RANGE
+            unbqclm(i,j,k)=0.
+          enddo
+        enddo
+        do j=JV_RANGE
+          do i=IV_RANGE
+            vnbqclm(i,j,k)=0.
+          enddo
+        enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            wnbqclm(i,j,k)=0.
+            rnbqclm(i,j,k)=0.
+          enddo
+        enddo
+      enddo
+# endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
@@ -2151,9 +2165,6 @@ C$    integer  trd, omp_get_thread_num
 #   else
           zetabry_west(j)=0.
 #   endif
-#   ifdef NBQ
-     &                   +h(IstrR,j)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2185,9 +2196,6 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
         do j=JstrR,JendR
           zetabry_east(j)=0.
-#   ifdef NBQ
-     &                   +h(IendR,j)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2219,9 +2227,6 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
         do i=IstrR,IendR
           zetabry_south(i)=0.
-#   ifdef NBQ
-     &                   +h(i,JstrR)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2253,9 +2258,6 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
         do i=IstrR,IendR
           zetabry_north(i)=0.
-#   ifdef NBQ
-     &                   +h(i,JendR)
-#   endif
         enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2324,15 +2326,8 @@ C$    integer  trd, omp_get_thread_num
       if (WESTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
-#  ifdef M3CLIMATOLOGY
-            unbqbry_west(j,k)=0.5*rho0*(Hz(0,j,k)+Hz(1,j,k))
-     &                                          *uclm(1,j,k)
-#  elif defined M3_FRC_BRY
-            unbqbry_west(j,k)=0.5*rho0*(Hz(0,j,k)+Hz(1,j,k))
-     &                                       *ubry_west(j,k)
-#  else
-            unbqbry_west(j,k)=0.
-#  endif
+            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
+     &                                   *u(1,j,k,nrhs)
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
 #  ifdef W_FRC_BRY
@@ -2340,15 +2335,8 @@ C$    integer  trd, omp_get_thread_num
 #  endif
           enddo
           do j=JstrR+1,JendR
-#  ifdef M3CLIMATOLOGY
-            vnbqbry_west(j,k)=0.5*rho0*(Hz(0,j,k)+Hz(0,j-1,k))
-     &                                            *vclm(0,j,k)
-#  elif defined M3_FRC_BRY
-            vnbqbry_west(j,k)=0.5*rho0*(Hz(0,j,k)+Hz(0,j-1,k))
-     &                                         *vbry_west(j,k)
-#  else
-            vnbqbry_west(j,k)=0.
-#  endif
+            vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
+     &                                     *v(0,j,k,nrhs)
           enddo
         enddo
       endif
@@ -2358,15 +2346,8 @@ C$    integer  trd, omp_get_thread_num
       if (EASTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
-#  ifdef M3CLIMATOLOGY
-            unbqbry_east(j,k)=0.5*rho0*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
-     &                                                *uclm(IendR,j,k)
-#  elif defined M3_FRC_BRY
-            unbqbry_east(j,k)=0.5*rho0*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
-     &                                                 *ubry_east(j,k)
-#  else
-            unbqbry_east(j,k)=0.
-#  endif
+            unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
+     &                                         *u(IendR,j,k,nrhs)
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
 #  ifdef W_FRC_BRY
@@ -2374,15 +2355,8 @@ C$    integer  trd, omp_get_thread_num
 #  endif
           enddo
           do j=JstrR+1,JendR
-#  ifdef M3CLIMATOLOGY
-            vnbqbry_east(j,k)=0.5*rho0*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                                  *vclm(IendR,j,k)
-#  elif defined M3_FRC_BRY
-            vnbqbry_east(j,k)=0.5*rho0*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                                   *vbry_east(j,k)
-#  else
-            vnbqbry_east(j,k)=0.
-#  endif
+            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
+     &                                           *v(IendR,j,k,nrhs)
           enddo
         enddo
       endif
@@ -2392,15 +2366,8 @@ C$    integer  trd, omp_get_thread_num
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=IstrR,IendR
-#  ifdef M3CLIMATOLOGY
-            vnbqbry_south(i,k)=0.5*rho0*(Hz(i,0,k)+Hz(i,1,k))
-     &                                           *vclm(i,1,k)
-#  elif defined M3_FRC_BRY
-            vnbqbry_south(i,k)=0.5*rho0*(Hz(i,0,k)+Hz(i,1,k))
-     &                                       *vbry_south(i,k)
-#  else
-            vnbqbry_south(j,k)=0.
-#  endif
+            vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
+     &                                    *v(i,1,k,nrhs)
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
 #  ifdef W_FRC_BRY
@@ -2408,15 +2375,8 @@ C$    integer  trd, omp_get_thread_num
 #  endif
           enddo
           do i=IstrR+1,IendR
-#  ifdef M3CLIMATOLOGY
-            unbqbry_south(i,k)=0.5*rho0*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                             *uclm(i,0,k)
-#  elif defined M3_FRC_BRY
-            unbqbry_south(i,k)=0.5*rho0*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                         *ubry_south(i,k)
-#  else
-            unbqbry_south(i,k)=0.
-#  endif
+            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
+     &                                      *u(i,0,k,nrhs)
           enddo
         enddo
       endif
@@ -2426,15 +2386,8 @@ C$    integer  trd, omp_get_thread_num
       if (NORTHERN_EDGE) then
         do k=1,N
           do i=IstrR,IendR
-#  ifdef M3CLIMATOLOGY
-            vnbqbry_north(i,k)=0.5*rho0*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
-     &                                                 *vclm(i,JendR,k)
-#  elif defined M3_FRC_BRY
-            vnbqbry_north(i,k)=0.5*rho0*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
-     &                                                 *vbry_north(i,k)
-#  else
-            vnbqbry_north(j,k)=0.
-#  endif
+            vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
+     &                                          *v(i,JendR,k,nrhs)
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #  ifdef W_FRC_BRY
@@ -2442,15 +2395,8 @@ C$    integer  trd, omp_get_thread_num
 #  endif
           enddo
           do i=IstrR+1,IendR
-#  ifdef M3CLIMATOLOGY
-            unbqbry_north(i,k)=0.5*rho0*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
-     &                                                 *uclm(i,JendR,k)
-#  elif defined M3_FRC_BRY
-            unbqbry_north(i,k)=0.5*rho0*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
-     &                                                 *ubry_north(i,k)
-#  else
-            unbqbry_north(i,k)=0.
-#  endif
+            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
+     &                                          *u(i,JendR,k,nrhs)
           enddo
         enddo
       endif

@@ -36,8 +36,6 @@ clear all
 %
 makepdf=0;
 %
-gname = 'igw_grd.nc';
-fname = 'igw_frc.nc';
 hname = 'igw_his.nc';
 
 jj    = 600;      % location of validation (over the shelf)
@@ -46,18 +44,17 @@ valid = 0;        % 1: valid against forcing data
 %
 %  Process CROCO solutions
 %
-nc=netcdf(gname);
+
+nc=netcdf(hname);
 h=squeeze(nc{'h'}(:));
 hsec=squeeze(nc{'h'}(2,:));
 lonu=squeeze(nc{'lon_u'}(2,:));
 lonr=squeeze(nc{'lon_rho'}(2,:));
-close(nc)
-
-nc=netcdf(hname);
 N=length(nc('s_rho'));
 theta_s=nc.theta_s(:); 
 theta_b=nc.theta_b(:); 
 hc=nc.hc(:); 
+Vtransform=nc{'Vtransform'}(:);
 ssh=squeeze(nc{'zeta'}(:,2,:));
 zeta=squeeze(nc{'zeta'}(end,:,:));
 u=squeeze(nc{'ubar'}(:,2,:));
@@ -73,8 +70,8 @@ close(nc)
 
 zeta_u=rho2u_2d(zeta);
 h_u=rho2u_2d(h);
-z=zlevs(h_u,zeta_u,theta_s,theta_b,hc,N,'r',1);
-zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r',1);
+z=zlevs(h_u,zeta_u,theta_s,theta_b,hc,N,'r',Vtransform);
+zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r',Vtransform);
 zsec=squeeze(z(:,2,:));
 xsec=repmat(lonu,N,1);
 zrsec=squeeze(zr(:,2,:));
@@ -93,8 +90,8 @@ colorbar
 title('Internal case: U section')
 %
 subplot(3,1,2)
-%contourf(xrsec,zrsec,wsec,20);
-pcolor(xrsec,zrsec,wsec);
+contourf(xrsec,zrsec,wsec,20);
+%pcolor(xrsec,zrsec,wsec);
 shading flat
 colorbar
 %caxis([-0.01 0.01])

@@ -35,8 +35,9 @@
 # define THREE_GHOST_POINTS_TS
 #endif
 
-#if defined UV_HADV_UP5   || defined UV_HADV_C6 || \
-    defined UV_HADV_WENO5 
+#if defined UV_HADV_UP5   || defined UV_HADV_C6   || \
+    defined UV_HADV_WENO5 || defined W_HADV_WENO5 || \
+    defined W_HADV_UP5    || defined W_HADV_C6
 # define THREE_GHOST_POINTS
 # define THREE_GHOST_POINTS_UV
 #endif
@@ -60,11 +61,9 @@
 #    define START_1D_ARRAYETA -2
 #   else
 #    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -2:Lm+3+padd_X,-1:Mm+2+padd_E
-#    endif
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY -2,0
+#    define START_2D_ARRAY -2,0
+#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_1D_ARRAYETA 0
 #   endif
 #  else
@@ -72,17 +71,11 @@
 #   define START_1D_ARRAYXI 0
 #   ifdef NS_PERIODIC
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2:Mm+3+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-2:Mm+3+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
 #    define START_2D_ARRAY 0,-2
 #    define START_1D_ARRAYETA -2
 #   else
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY 0,0
 #    define START_1D_ARRAYETA 0
@@ -108,9 +101,6 @@
 #    define START_1D_ARRAYETA -1
 #   else
 #    define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY -1,0
 #    define START_1D_ARRAYETA 0
@@ -120,17 +110,11 @@
 #   define START_1D_ARRAYXI 0
 #   ifdef NS_PERIODIC
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1:Mm+2+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
 #    define START_2D_ARRAY 0,-1
 #    define START_1D_ARRAYETA -1
 #   else
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    ifdef NBQ
-#     define GLOBAL_2D_ARRAY_EXT_NBQ -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    endif
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_2D_ARRAY 0,0
 #    define START_1D_ARRAYETA 0
@@ -223,10 +207,17 @@
 #define FIRST_TIME_STEP iic.eq.ntstart
 #ifdef SOLVE3D
 # define FIRST_2D_STEP iif.eq.1
+# define LAST_2D_STEP iif.eq.nfast
 # define NOT_LAST_2D_STEP iif.lt.nfast+1
 #else
 # define FIRST_2D_STEP iic.eq.ntstart
 # define NOT_LAST_2D_STEP iic.lt.ntimes+2
+#endif
+!
+#ifdef NBQ
+# define FIRST_FAST_STEP iif.eq.1
+# define LAST_FAST_STEP iif.eq.nfast
+# define NOT_LAST_FAST_STEP iif.lt.nfast+1
 #endif
 
 /* Switch ON/OFF double precision for real type variables (since this

@@ -792,7 +792,7 @@
 # ifdef BBL
       integer avgBBL(6)
 # endif
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
       integer avgWAVE(9)
 # endif
 # ifdef MRL_WCI
@@ -1037,7 +1037,7 @@
 # ifdef BBL
      &      , avgBBL
 # endif
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
      &      , avgWAVE
 # endif
 # ifdef MRL_WCI

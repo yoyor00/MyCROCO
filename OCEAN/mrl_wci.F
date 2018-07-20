@@ -104,7 +104,7 @@
      &         wrk3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
 # endif
-# ifdef WAVE_FRICTION
+# if defined WAVE_FRICTION || defined WAVE_STREAMING
       real Zob_my
 # endif
       parameter ( eps=1.e-10, 

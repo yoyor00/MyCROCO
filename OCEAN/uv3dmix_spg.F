@@ -683,7 +683,7 @@
         do i=Istr,Iend+1
         FX(i,j)=0.25*(visc2_sponge_r(i,j)+visc2_sponge_r(i-1,j))
      &                  *pmon_u(i,j)*(Hz(i,j,N  )+Hz(i-1,j,N  ))
-     &                        *(wz(i,j,N,nrhs)-wz(i-1,j,N,nrhs))
+     &                        *(wz(i,j,N,nstp)-wz(i-1,j,N,nstp))
      &                                         SWITCH umask(i,j)
         enddo
       enddo

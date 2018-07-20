@@ -33,6 +33,8 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
+      real cu,rr,rrm,rrp,limiter,Cr,cdt
+      integer kp2,kp1,km1
 # include "param.h"
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
@@ -70,8 +72,8 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined UV_HADV_UP5 ||  defined UV_HADV_C6 || \
-     defined UV_HADV_WENO5 || defined UV_VADV_WENO5
+# if defined UV_HADV_WENO5 || defined UV_HADV_C6 || defined UV_HADV_UP5 \
+  || defined UV_VADV_WENO5 || defined UV_VADV_C6 || defined UV_VADV_UP5
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
       REAL    :: ua, vel, cdiff, cdif
@@ -107,30 +109,40 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
 !
-#ifdef MPI
-# define LOCALLM Lmmpi
-# define LOCALMM Mmmpi
-#else
-# define LOCALLM Lm
-# define LOCALMM Mm
-#endif
+# ifdef MPI
+#  define LOCALLM Lmmpi
+#  define LOCALMM Mmmpi
+# else
+#  define LOCALLM Lm
+#  define LOCALMM Mm
+# endif
 !
+# if defined UV_HADV_TVD || defined UV_VADV_TVD
+      if(nrhs.eq.3) then
+        cdt =     dt                 !<-- Corrector
+      elseif(FIRST_TIME_STEP) then
+        cdt = 0.5*dt
+      else
+        cdt = (1.-1./6.)*dt        !<-- Predictor
+      endif
+# endif
+
 # ifdef BODYFORCE
-#  define Uwrk UFx
-#  define Vwrk VFe
-#  define wrk UFe
-!
 !====================================================================
 !
 !  Apply surface and bottom stresses as body forces if selected
 !
 !====================================================================
+!
+#  define Uwrk UFx
+#  define Vwrk VFe
+#  define wrk  UFe
 !
 !  Apply surface stress as a bodyforce: determine the thickness [m]
 !  of the surface layer; then add in surface stress as a bodyfoce.
@@ -225,9 +237,8 @@
 # endif /* BODYFORCE */
 
       do k=1,N
-!
+
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
-!
 !====================================================================
 !
 !  Add in Coriolis, Stokes-Coriolis and curvilinear transformation 
@@ -314,9 +325,7 @@
         enddo
 # endif /* UV_COR || (CURVGRID && UV_ADV) */
 
-
 # ifdef UV_ADV
-!
 !======================================================================
 !
 !  Add in horizontal advection of momentum.
@@ -328,7 +337,7 @@
 !
 #  if !(defined UV_HADV_UP3 || defined UV_HADV_C4  || \
         defined UV_HADV_C2  || defined UV_HADV_UP5 || \
-        defined UV_HADV_C6  || defined UV_HADV_WENO5)
+        defined UV_HADV_C6  || defined UV_HADV_WENO5 )
 #   define UV_HADV_UP3
 #  endif
 
@@ -338,53 +347,56 @@
 ! 5th or 6th order or WENO5 advection schemes
 !----------------------------------------------------------------------
 !
-        if (nnew.eq.3) then  ! predictor
-
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux2
-#   undef  UP5_MASKING
-!
-          cdif=0. 
-#   include "u_hadv_order5.h"
-#   include "v_hadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
-        else                 ! corrector
-
-#   ifdef UV_HADV_C6
-#    define FLUX5 flux6
-#    define FLUX3 flux4
-#    define FLUX2 flux2
-#    undef  UP5_MASKING
-#   elif defined UV_HADV_WENO5
+#   ifdef UV_HADV_WENO5
 #    define FLUX5 flux5_weno
 #    define FLUX3 flux3_weno
 #    define FLUX2 flux1
 #    define UP5_MASKING
           cdif=1.
-#   else
-#    define FLUX5 flux5
-#    define FLUX3 flux3
-#    define FLUX2 flux1
-#    undef  UP5_MASKING
-          cdif=0.5
-#   endif
-!
-#   include "u_hadv_order5.h"
-#   include "v_hadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-#   undef UP5_MASKING
+#    include "u_hadv_order5.h"
+#    include "v_hadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#    undef UP5_MASKING
 
+#   else  /* C6 or UP5 */
+
+        if (nnew.eq.3) then  ! predictor
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+#    undef  UP5_MASKING
+          cdif=0. 
+#    include "u_hadv_order5.h"
+#    include "v_hadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+        else                 ! corrector
+#    if UV_HADV_C6
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+#     undef  UP5_MASKING
+          cdif=0.
+#    else
+#     define FLUX5 flux5
+#     define FLUX3 flux3
+#     define FLUX2 flux2
+#     define UP5_MASKING
+          cdif=0.5
+#    endif
+#    include "u_hadv_order5.h"
+#    include "v_hadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#    undef UP5_MASKING
         endif
-!
-#  elif defined UV_HADV_UP3 || defined UV_HADV_C4
+#   endif /* WENO5 */
+
+#  elif defined UV_HADV_UP3 || defined UV_HADV_C4 
 !
 !----------------------------------------------------------
 ! Fourth or Third order advection scheme (default)
@@ -446,11 +458,12 @@
 
         do j=Jstr,Jend
           do i=IstrU-1,Iend
-#   ifdef UV_HADV_C4
+#   if defined UV_HADV_C4
             UFx(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
      &                         -0.125*(uxx(i,j)+uxx(i+1,j))
      &                  )*( Huon(i,j,k)+Huon(i+1,j,k)
      &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))
+
 #   else
             cffX=u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
             if (cffX.gt.0.) then
@@ -520,11 +533,12 @@
 #   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend
-#   ifdef UV_HADV_C4
+#   if defined UV_HADV_C4
             VFe(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
      &                        -0.125*(vee(i,j)+vee(i,j+1))
      &                  )*( Hvom(i,j,k)+Hvom(i,j+1,k)
      &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))
+
 #   else
             cffE=v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
             if (cffE.gt.0.) then
@@ -594,7 +608,7 @@
         enddo
         do j=Jstr,Jend+1
           do i=IstrU,Iend
-#   ifdef UV_HADV_C4
+#   if defined UV_HADV_C4
             UFe(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
      &                        -0.125*(uee(i,j)+uee(i,j-1))
      &                  )*( Hvom(i,j,k)+Hvom(i-1,j,k)
@@ -670,11 +684,12 @@
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend+1
-#   ifdef UV_HADV_C4
+#   if defined  UV_HADV_C4
             VFx(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
      &                        -0.125*(vxx(i,j)+vxx(i-1,j))
      &                  )*( Huon(i,j,k)+Huon(i,j-1,k)
      &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
+
 #   else
             cffE=v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
             cffX=Huon(i,j,k)+Huon(i,j-1,k)
@@ -691,10 +706,10 @@
 #   undef Huee
 #   undef vxx
 
-#  else /* --> UV_HADV_C2 */
+#  elif defined UV_HADV_C2 || defined UV_HADV_TVD
 !
 !----------------------------------------------------------
-! Second order advection scheme (default)
+! Second order advection scheme with TVD correction
 !----------------------------------------------------------
 !
         do j=Jstr,Jend
@@ -721,6 +736,13 @@
      &                       *(Huon(i,j,k)+Huon(i,j-1,k))
           enddo
         enddo
+!
+! Correction with Total Variance Diminishing method
+!
+#  ifdef UV_HADV_TVD
+#   include "uvhadv_tvd.h"
+#  endif
+
 #  endif /* UV_HADV_UP3 */
 !
 !----------------------------------------------------------
@@ -755,23 +777,22 @@
       enddo    ! <-- k
 
       do j=Jstr,Jend
+
 # ifdef UV_ADV
-!
 !======================================================================
 !
 !  Compute and add in vertical advection terms
 !
 !======================================================================
 !
-#  ifdef UV_VADV_SPLINES
-!
 !----------------------------------------------------------
-!  U VERTICAL ADVECTION:
+!  U-component VERTICAL ADVECTION:
 !
 !  Construct conservative parabolic splines for the 
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
+#  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
             DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
@@ -822,45 +843,58 @@
           FC(i,0)=0.
 #   endif
         enddo
-#  elif defined UV_VADV_WENO5
+
+#  elif defined UV_VADV_WENO5 || defined UV_VADV_UP5 \
+                              || defined UV_VADV_C6
 !
 !----------------------------------------------------------
 ! Compute vertical advective fluxes 
 ! using 5th-order WENO scheme
 !----------------------------------------------------------
 !
-        if (nnew.eq.3) then  ! predictor
-
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux1
-!
-          cdif=0.
-#   include "u_vadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
-        else                 ! corrector
-
-#   define FLUX5 flux5_weno
-#   define FLUX3 flux3_weno
-#   define FLUX2 flux1
-!
+#   ifdef UV_VADV_WENO5
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
           cdif=1.
-#   include "u_vadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
+#    include "u_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#   else
+        if (nnew.eq.3) then  ! predictor
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+          cdif=0.
+#    include "u_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+        else                 ! corrector
+#    ifdef UV_VADV_C6
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+          cdif=0.
+#    else
+#     define FLUX5 flux5
+#     define FLUX3 flux3
+#     define FLUX2 flux1
+          cdif=0.5
+#    endif
+#    include "u_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+         endif
+#   endif /* WENO5 */
 
-        endif
-#  elif defined UV_VADV_C2
+#  elif defined UV_VADV_C2 || defined UV_VADV_TVD
 !
 !----------------------------------------------------------
-!  Compute vertical advective fluxes 
-!  using Second order advection scheme
+!  Compute vertical advective fluxes using
+!  second order advection scheme with TVD correction
 !----------------------------------------------------------
 !
         do k=1,N-1
@@ -879,6 +913,30 @@
 #   endif
           FC(i,N)=0.
         enddo
+!
+!  Correction with TVD method
+!
+#   ifdef UV_VADV_TVD
+        do k=1,N-1
+          kp2=MIN(N,k+2)
+          kp1=MIN(N,k+1)
+          km1=MAX(1,k-1)
+          do i=IstrU,Iend
+            cff = 0.5 *(We(i,j,k)+We(i-1,j,k) )
+            cu = cff*pm_u(i,j)*pn_u(i,j)
+     &           * cdt*2/(-z_r(i  ,j,k)+z_r(i  ,j,k+1)
+     &                    -z_r(i-1,j,k)+z_r(i-1,j,k+1))      
+            rrp= (u(i,j,kp2,nstp) -u(i,j,kp1,nstp)) 
+            rr = (u(i,j,kp1,nstp) -u(i,j,k  ,nstp)) 
+            rrm= (u(i,j,k  ,nstp) -u(i,j,km1,nstp))                 
+            cff1=0.5*( cff*(u(i,j,k,nstp)+u(i,j,kp1,nstp))
+     &                                      -abs(cff)*rr )
+            Cr=limiter(cu,FC(i,k),cff1,rrm,rr,rrp)
+            FC(i,k) = cff1*(1-cr) + Cr*FC(i,k)
+          enddo
+        enddo
+#   endif
+
 #  else
 !
 !----------------------------------------------------------
@@ -938,16 +996,17 @@
           enddo
         enddo               !--> discard FC
 
-        if (j.ge.JstrV) then
-#  ifdef UV_VADV_SPLINES
 !
 !----------------------------------------------------------
-!  V VERTICAL ADVECTION:
+!  V-component VERTICAL ADVECTION:
 !
 !  Construct conservative parabolic splines for the 
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
+        if (j.ge.JstrV) then
+!
+#  ifdef UV_VADV_SPLINES
           do k=1,N
             do i=Istr,Iend
               DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
@@ -998,45 +1057,57 @@
             FC(i,0)=0.
 #   endif
           enddo
-#  elif defined UV_VADV_WENO5
+
+#  elif defined UV_VADV_WENO5 || defined UV_VADV_C6 \
+                              || defined UV_VADV_UP5
 !
 !----------------------------------------------------------
 ! Compute vertical advective fluxes 
 ! using 5th-order WENO scheme
 !----------------------------------------------------------
 !
-        if (nnew.eq.3) then  ! predictor
-
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux1
-!
-          cdif=0.
-#   include "v_vadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
-        else                 ! corrector
-
-#   define FLUX5 flux5_weno
-#   define FLUX3 flux3_weno
-#   define FLUX2 flux1
-!
+#   ifdef UV_VADV_WENO5
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
           cdif=1.
-#   include "v_vadv_order5.h"
-!
-#   undef FLUX5
-#   undef FLUX3
-#   undef FLUX2
-
+#    include "v_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+#   else
+        if (nnew.eq.3) then  ! predictor
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+          cdif=0.
+#    include "v_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
+        else                 ! corrector
+#    ifdef UV_VADV_C6
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+          cdif=0.
+#    else
+#     define FLUX5 flux5
+#     define FLUX3 flux3
+#     define FLUX2 flux1
+          cdif=0.5
+#    endif
+#    include "v_vadv_order5.h"
+#    undef FLUX5
+#    undef FLUX3
+#    undef FLUX2
         endif
+#   endif /* WENO5 */
 
-#  elif defined UV_VADV_C2
+#  elif defined UV_VADV_C2 || defined UV_VADV_TVD
 !
 !----------------------------------------------------------
-!  Second order advection scheme
+!  Second order advection scheme with TVD correction
 !----------------------------------------------------------
 !
           do k=1,N-1
@@ -1055,6 +1126,30 @@
 #   endif
             FC(i,N)=0.
           enddo
+!
+!  Correction using TVD method
+!
+#   ifdef UV_VADV_TVD
+          do k=1,N-1
+            kp2=min(N,k+2)
+            kp1=min(N,k+1)
+            km1=max(1,k-1)
+            do i=Istr,Iend
+              cff = 0.5*(We(i,j,k)+We(i,j-1,k))
+              cu = cff*pm_v(i,j)*pn_v(i,j)
+     &             * cdt*2/(-z_r(i,j  ,k)+z_r(i,j  ,k+1)
+     &                      -z_r(i,j-1,k)+z_r(i,j-1,k+1))      
+              rrp= v(i,j,kp2,nstp)-v(i,j,kp1,nstp) 
+              rr = v(i,j,kp1,nstp)-v(i,j,k  ,nstp) 
+              rrm= v(i,j,k  ,nstp)-v(i,j,km1,nstp)                    
+              cff1=0.5*( cff*(v(i,j,k,nstp)+v(i,j,kp1,nstp))
+     &                                        -abs(cff)*rr )
+              Cr=limiter(cu,FC(i,k),cff1,rrm,rr,rrp)
+              FC(i,k) = cff1*(1-cr) + Cr*FC(i,k)
+            enddo
+          enddo         
+#   endif
+
 #  else
 !
 !----------------------------------------------------------
@@ -1095,7 +1190,7 @@
 #   else
           FC(i,0)=0.
 #   endif
-           enddo
+          enddo
 #  endif
 !
 !----------------------------------------------------------
@@ -1114,7 +1209,6 @@
           enddo
         endif
 # endif /* UV_ADV */
-
 !
 !======================================================================
 !
@@ -1239,10 +1333,54 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
             enddo
           enddo
         endif
-      enddo      !<-- j
+
+      enddo      !<-- j loop
 
       return
       end
+!
+!=======================================================================
+!
+# if defined UV_VADV_TVD || defined UV_HADV_TVD
+ 
+      function limiter(nu,hf,lf,rrm,rr,rrp)      
+      implicit none
+      real    :: cff,limiter,Rj,nu,hf,lf,rrm,rr,rrp
+!
+!  Upwind        Limiter(Rj)=0.
+!  Lax-Wendroff  Limiter(Rj)=1.
+!  Min-Mod       Limiter(Rj)=max(0.,min(1.,Rj))
+!  Suberbee      Limiter(Rj)=max(0.,max(min(1.,2*Rj),min(2.,Rj)))
+!  Van Leer      Limiter(Rj)=(Rj+abs(Rj))/(1+abs(Rj))  => default
+!
+      if (abs(rr).gt.1.e-20) THEN
+        if (nu .gt. 1.e-20) THEN
+          Rj=rrm/rr
+        else
+          Rj=rrp/rr
+        endif
+      else
+        if (nu.gt.1.e-20) then
+          Rj=Rrm*1.E20
+        else
+          Rj=Rrp*1.E20
+        endif
+      endif
+
+#  ifdef SUPERBEE
+       limiter=max(0.,max(min(1.,2.*Rj),min(2.,Rj)))
+#  elif defined MINMOD
+       limiter=max(0.,min(1.,Rj))
+#  else
+       limiter=(Rj+abs(Rj))/(1+abs(Rj))  ! Van Leer
+#  endif
+
+      end function
+
+# endif /* UV_VADV_TVD || UV_VADV_TVD */
+!
+!=======================================================================
+!
 #else
       subroutine rhs3d_empty
       end
