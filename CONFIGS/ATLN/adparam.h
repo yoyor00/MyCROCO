@@ -11,14 +11,14 @@ C     on change check BINOMIAL-CKP param in cost_fun
 
 C     start of assimilation in the obs file
       integer ad_ast
-      parameter (ad_ast = 1)
+      parameter (ad_ast = 14401)
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
       parameter (ad_main_st = 1)
 
 C     observations
-      double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt+1)
+      double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt+2)
 
 C     control vector
       double precision ad_x(ad_array_size)

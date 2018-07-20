@@ -170,6 +170,8 @@ TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
 TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBuffer.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o
 
+DIV_OBJS=m1qn3.o treeverse.o adBuffer.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o
+
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 
 #======================================================================
@@ -177,7 +179,7 @@ TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 #
 # Everything
 # ==========
-all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt
+all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt $(SBIN)_div
 
 #
 # Executables files.
@@ -190,6 +192,9 @@ $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_div: $(DIV_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 # $Id: Makefile 3922 2011-05-19 08:54:39Z llh $
