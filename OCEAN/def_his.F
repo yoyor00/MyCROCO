@@ -368,7 +368,7 @@
 !
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
-     &                            NF_FOUT, 1, timedim, vidTime)
+     &                            NF_DOUBLE, 1, timedim, vidTime)
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
         ierr=nf_put_att_text (ncid, vidTime, 'long_name', lvar,
@@ -394,7 +394,7 @@
 !
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_FOUT, 1, timedim, vidTime2)
+     &                            NF_DOUBLE, 1, timedim, vidTime2)
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
         ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
