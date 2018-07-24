@@ -1857,17 +1857,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef RIVER
       ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
+        Qbar(is)=ramp*Qbar(is)
       enddo
 # elif defined REGIONAL
       ramp=1. !TANH(10*dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
+        Qbar(is)=ramp*Qbar(is)
       enddo
 # else
       ramp=1. !TANH(dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
+        Qbar(is)=ramp*Qbar(is)
       enddo
 # endif
       do is=1,Nsrc
