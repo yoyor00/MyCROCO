@@ -60,6 +60,7 @@
 # undef  MPI
                       /* I/O server */
 # undef  XIOS
+# define NC4PAR
                       /* Non-hydrostatic option */
 # undef  NBQ
                       /* Nesting */
