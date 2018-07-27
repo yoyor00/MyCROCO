@@ -121,7 +121,7 @@ C      end do
          gg(i) = 0.
       end do
 
-      ad_x(1) = rdrg2
+      ad_x(1) = Zob
       indic = 4
       call simul (indic,ad_array_size,ad_x,f,gg,izs,rzs,dzs)
 #ifdef AMPI
@@ -151,7 +151,7 @@ C      end do
       imode(3)=0
 
       write(*,*) 'start state_control'
-      open(unit=777, file="rdrg2.dat", action="write",
+      open(unit=777, file="zob.dat", action="write",
      &     form='FORMATTED')
       open(unit=778, file="h.dat", action="write",
      &     form='FORMATTED')
@@ -221,7 +221,7 @@ C ...
       real vbar_bck(GLOBAL_2D_ARRAY,4)
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
-      real rdrg2_bck
+      real Zob_bck
 
       integer kstp_bck
       integer krhs_bck
@@ -229,13 +229,13 @@ C ...
       integer iic_bck
 
       common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, rdrg2_bck
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zob_bck
 
       ubar_bck(:,:,:) = ubar(:,:,:)
       vbar_bck(:,:,:) = vbar(:,:,:)
       zeta_bck(:,:,:) = zeta(:,:,:)
       h_bck(:,:) = h(:,:)
-      rdrg2_bck = rdrg2
+      Zob_bck = Zob
 
       kstp_bck = kstp
       krhs_bck = krhs
@@ -263,7 +263,7 @@ C ...
       real vbar_bck(GLOBAL_2D_ARRAY,4)
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
-      real rdrg2_bck
+      real Zob_bck
 
       integer kstp_bck
       integer krhs_bck
@@ -271,13 +271,13 @@ C ...
       integer iic_bck
 
       common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, rdrg2_bck
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zob_bck
 
       ubar(:,:,:) = ubar_bck(:,:,:)
       vbar(:,:,:) = vbar_bck(:,:,:)
       zeta(:,:,:) = zeta_bck(:,:,:)
       h(:,:) = h_bck(:,:)
-      rdrg2 = rdrg2_bck
+      Zob = Zob_bck
 
       kstp = kstp_bck
       krhs = krhs_bck
