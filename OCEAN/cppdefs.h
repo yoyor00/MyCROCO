@@ -291,6 +291,7 @@
 # ifdef TIDES
 #  define SSH_TIDES
 #  undef UV_TIDES
+#  undef TIDES_MAS
 #  undef  POT_TIDES
 #  define TIDERAMP
 # endif

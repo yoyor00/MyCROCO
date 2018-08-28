@@ -81,7 +81,8 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	get_tides.F     clm_tides.F     get_bulk.F      bulk_flux.F\
+	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+        clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F\
 \
