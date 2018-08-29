@@ -35,7 +35,7 @@
 !
       real dt, dtfast, time, time2, time_start, tdays
       real*8 time_mars,time_end,tool_datosec
-      character*19 date,tool_sectodat,end_date
+      character*19 date,tool_sectodat,run_end_date,run_start_date
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
@@ -48,10 +48,10 @@
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
-     &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
-     &                       time_mars,time_end,date,end_date,
+     &                      ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &               time_mars,time_end,date,run_end_date,run_start_date,
 #ifdef SOLVE3D
-     &                       iif, nstp, nrhs, nnew, nbstep3d,
+     &                       iif, nstp, nrhs, nnew, nbstep2d,
 #endif
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,
