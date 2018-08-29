@@ -51,7 +51,7 @@
      &                      ndtfast, iic, kstp, krhs, knew, next_kstp,
      &               time_mars,time_end,date,run_end_date,run_start_date,
 #ifdef SOLVE3D
-     &                       iif, nstp, nrhs, nnew, nbstep2d,
+     &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,
