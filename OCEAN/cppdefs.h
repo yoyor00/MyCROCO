@@ -54,7 +54,9 @@
 */
                       /* Configuration Name */
 # define SEINE 
-# define END_DATE
+
+                     /* Time management */
+# define USE_CALENDAR 
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
