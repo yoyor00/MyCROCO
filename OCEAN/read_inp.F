@@ -256,16 +256,24 @@
          MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
      &   'Start date:', start_date(1:lstr)
 #endif
-#ifdef END_DATE
+#ifdef USE_CALENDAR 
 !
-! END date
+! Run start date
 !
-      elseif (keyword(1:kwlen).eq.'end_date') then
+      elseif (keyword(1:kwlen).eq.'run_start_date') then
          call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) end_date
-         lstr=lenstr(end_date)
+         read(input,'(A)',err=95) run_start_date
+         lstr=lenstr(run_end_date)
          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'End date:', end_date(1:lstr)
+     &   'Run start date:', run_start_date(1:lstr)
+! Run END date
+!
+      elseif (keyword(1:kwlen).eq.'run_end_date') then
+         call cancel_kwd (keyword(1:kwlen), ierr)
+         read(input,'(A)',err=95) run_end_date
+         lstr=lenstr(run_end_date)
+         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run end date:', run_end_date(1:lstr)
 #endif
 !     
 ! Time-stepping parameters

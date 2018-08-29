@@ -275,6 +275,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (nrrec.ne.0) then           ! read from NetCDF file
         call get_initial
       endif
+#ifdef USE_CALENDAR
+  !calcul of start times and ntimes
+  time=tool_datosec(run_start_date)
+  time_end=tool_datosec(run_end_date)
+  ntimes=int((time_end-time)/dt)
+  MPI_master_only write(stdout,*)
+    &     'Ntimes from date_start and date_end:',ntimes
+#endif
+
 #endif
 !
 !  Set initial conditions analytically for ideal cases
@@ -709,8 +718,8 @@ CR      write(*,*) '  0' MYID
       next_kstp=kstp
       time_start=time
       time_mars=time
-#ifdef END_DATE
-      time_end=tool_datosec(end_date)
+#ifdef USE_CALENDAR 
+      time_end=tool_datosec(run_end_date)
 #endif
 
 ! XIOS (
@@ -734,11 +743,11 @@ CR      write(*,*) '  0' MYID
 #endif
 
       do iicroot=ntstart,ntimes+1
-#ifdef END_DATE
-        MPI_master_only write(*,'(a)') "debut boucle en temps"
-        MPI_master_only write(*,'(a)') tool_sectodat(time)
+#ifdef USE_CALENDAR 
+        !MPI_master_only write(*,'(a)') "debut boucle en temps"
+        !MPI_master_only write(*,'(a)') tool_sectodat(time)
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        MPI_master_only write(*,'(a)') tool_sectodat(time_end)
+        !MPI_master_only write(*,'(a)') tool_sectodat(time_end)
         if(time > time_end) goto 99 
 #endif
 
@@ -762,11 +771,11 @@ CR      write(*,*) '  0' MYID
         enddo
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
-#ifdef END_DATE
-        MPI_master_only write(*,'(a)') "fin boucle en temps"
-        MPI_master_only write(*,'(a)') tool_sectodat(time)
+#ifdef USE_CALENDAR 
+        !MPI_master_only write(*,'(a)') "fin boucle en temps"
+        !MPI_master_only write(*,'(a)') tool_sectodat(time)
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        MPI_master_only write(*,'(a)') tool_sectodat(time_end)
+        !MPI_master_only write(*,'(a)') tool_sectodat(time_end)
         if(time > time_end) goto 99 
 #endif
       enddo                                !-->  end of time step
