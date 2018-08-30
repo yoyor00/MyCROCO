@@ -275,15 +275,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (nrrec.ne.0) then           ! read from NetCDF file
         call get_initial
       endif
-#ifdef USE_CALENDAR
-  !calcul of start times and ntimes
-  time=tool_datosec(run_start_date)
-  time_end=tool_datosec(run_end_date)
-  ntimes=int((time_end-time)/dt)
-  MPI_master_only write(stdout,*)
-    &     'Ntimes from date_start and date_end:',ntimes
 #endif
-
+#ifdef USE_CALENDAR
+      !calcul of start times and ntimes
+      !set run_start_date if not read in init
+      if (time .eq. 0.0) time=tool_datosec(run_start_date) 
+      time_end=tool_datosec(run_end_date)
+      ntimes=int((time_end-time)/dt)
+      MPI_master_only write(stdout,*)
+     &     'Ntimes from date_start and date_end:',ntimes
 #endif
 !
 !  Set initial conditions analytically for ideal cases
