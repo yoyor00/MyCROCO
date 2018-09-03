@@ -156,8 +156,8 @@
             Akv(i,j,k)=Akv(i,j,k)+
 #   else
             Akv(i,j,k)=Akv_bak+
-     &                          0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp))
 #   endif
+     &                          0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp))
 #  endif
           enddo
         enddo
