@@ -591,13 +591,13 @@ C$OMP END MASTER
 #  endif
      &                     -0.5*(vsurf_nbq(i  ,j)
      &                                     *(zab3(i,j  ) 
-     &                                      -zab3(i,j-1))*pm_v(i,j)
+     &                                      -zab3(i,j-1))*pn_v(i,j)
 #  ifdef MASKING
      &                                     *rmask(i,j)*rmask(i,j-1)
 #  endif
      &                          +vsurf_nbq(i,j+1)
-     &                                   *(zab3(i,j+1)
-     &                                    -zab3(i,j  ))*pm_v(i,j+1) 
+     &                                     *(zab3(i,j+1)
+     &                                      -zab3(i,j  ))*pn_v(i,j+1) 
 #  ifdef MASKING
      &                                     *rmask(i,j)*rmask(i,j+1)
 #  endif
@@ -1955,13 +1955,13 @@ C$OMP END MASTER
               do i=Istr,Iend   
 #  ifdef NBQ_GRID_SLOW
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                          +0.5*(dZdyq_w(i,j  ,k)*pm_v(i,j  )  
-     &                               +dZdyq_w(i,j+1,k)*pm_v(i,j+1) )
+     &                          +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )  
+     &                               +dZdyq_w(i,j+1,k)*pn_v(i,j+1) )
      &                                                  * Hzr(i,j,1)
 #  else
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                          +0.5*(dZdyq_w(i,j  ,k2)*pm_v(i,j  )  
-     &                               +dZdyq_w(i,j+1,k2)*pm_v(i,j+1) )
+     &                          +0.5*(dZdyq_w(i,j  ,k2)*pn_v(i,j  )  
+     &                               +dZdyq_w(i,j+1,k2)*pn_v(i,j+1) )
      &                                                   * Hzr(i,j,1)
 #  endif 
 #  ifdef MASKING
@@ -2033,8 +2033,8 @@ C$OMP END MASTER
             do j=Jstr,Jend
               do i=Istr,Iend   
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                         +0.5*(dZdyq_w(i,j  ,k)*pm_v(i,j  )  
-     &                              +dZdyq_w(i,j+1,k)*pm_v(i,j+1) )
+     &                         +0.5*(dZdyq_w(i,j  ,k)*pn_v(i,j  )  
+     &                              +dZdyq_w(i,j+1,k)*pn_v(i,j+1) )
      &                                                 * Hzr(i,j,1) 
 #   ifdef MASKING
                 qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
@@ -2060,8 +2060,8 @@ C$OMP END MASTER
           do j=Jstr,Jend
             do i=Istr,Iend   
                qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)
-     &                         +0.5*(dZdyq_w(i,j  ,k2)*pm_v(i,j  )  
-     &                              +dZdyq_w(i,j+1,k2)*pm_v(i,j+1) )
+     &                         +0.5*(dZdyq_w(i,j  ,k2)*pn_v(i,j  )  
+     &                              +dZdyq_w(i,j+1,k2)*pn_v(i,j+1) )
      &                                                  * Hzr(i,j,1) 
 #   ifdef MASKING
                qdmw_nbq(i,j,0)=qdmw_nbq(i,j,0)*rmask(i,j)
@@ -2738,7 +2738,7 @@ C$OMP END MASTER
      &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
 # endif
      &                                                   )
-          DV_avg2(i,j)=DV_avg2(i,j)+cff2*on_v(i,j)*( DVnew
+          DV_avg2(i,j)=DV_avg2(i,j)+cff2*om_v(i,j)*( DVnew
 # ifdef MRL_WCI
      &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
 # endif
