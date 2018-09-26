@@ -77,7 +77,7 @@ C$    trd=omp_get_thread_num()
 !     components (qdmu_nbq, qdmv_nbq, qdmw_nbq) by time integration of 
 !     all forces:
 !       Compressible pressure force + second viscosity + gravity
-!       + restoring force + non-NBQ RHS forces
+!       + NT Coriolis force + restoring force + non-NBQ RHS forces
 !  3- Solves mass conservation equation, i.e., computes compressible 
 !     density rho_nbq by time integration of momentum divergence
 !
@@ -122,11 +122,11 @@ C$    trd=omp_get_thread_num()
      &        VMAX,VMAXL, cff,cff0,cff1,cff2,cff3, 
      &        DUnew,DVnew, dum_s
 
-#ifdef NBQ_THETAIMP
+# ifdef NBQ_THETAIMP
       real,parameter :: thetaimp_nbq = 0.5 
-#else
+# else
       real,parameter :: thetaimp_nbq = 1.
-#endif
+# endif
       real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
 !     real,parameter :: gammau=1.0   ! 1.0 --> second-order
       real,parameter :: gammau_2=(1./3.)*(1.-gammau)
@@ -170,6 +170,14 @@ C$    trd=omp_get_thread_num()
      &                 work(PRIVATE_2D_SCRATCH_ARRAY),
      &                sum_r(PRIVATE_2D_SCRATCH_ARRAY),
      &         qdmw_nbq_old(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# ifdef UV_COR_NT
+      real
+     &               ntcoru(PRIVATE_2D_SCRATCH_ARRAY,  N),
+     &               ntcorv(PRIVATE_2D_SCRATCH_ARRAY,  N),
+     &               ntcorw(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &                  Huw(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &                  Hvw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
 
 # include "grid.h"
 # include "ocean2d.h"
@@ -1328,6 +1336,78 @@ C$OMP END MASTER
 !
 !***********************************************************************
 !
+# ifdef UV_COR_NT
+!=====================================================================
+!  Compute Non-traditional Coriolis pseudo-force
+!
+!    ntcoru = -e W cos(a) * Hz      [m2/s2]
+!    ntcorv = +e W sin(a) * Hz
+!    ntcorw = +e (U cos(a) - V sin(a) ) * Hz
+!  
+!  with e = 2 Omega cos(Phi)
+!       a = angle between North and meridional grid axis
+!
+!=====================================================================
+!
+      do k=1,N
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            UFx(i,j)=-0.5*e(i,j)*cosa(i,j)
+     &                            *( qdmw_nbq(i,j,k-1)
+     &                              +qdmw_nbq(i,j,k  )) 
+            VFe(i,j)=+0.5*e(i,j)*sina(i,j)
+     &                            *( qdmw_nbq(i,j,k-1)
+     &                              +qdmw_nbq(i,j,k)  )
+          enddo
+        enddo
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ntcoru(i,j,k)=0.5*(UFx(i,j)+UFx(i-1,j))
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            ntcorv(i,j,k)=0.5*(VFe(i,j)+VFe(i,j-1))
+          enddo
+        enddo
+      enddo
+
+      do j=Jstr,Jend
+        do i=Istr,Iend+1
+          Huw(i,j,0)=0.5*qdmu_nbq(i,j,1)                
+          Huw(i,j,N)=0.5*qdmu_nbq(i,j,N) 
+        enddo
+      enddo
+      do j=Jstr,Jend+1
+        do i=Istr,Iend
+          Hvw(i,j,0)=0.5*qdmv_nbq(i,j,1)             
+          Hvw(i,j,N)=0.5*qdmv_nbq(i,j,N) 
+        enddo
+      enddo
+      do k=1,N-1
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+            Huw(i,j,k)=0.5*(qdmu_nbq(i,j,k)+qdmu_nbq(i,j,k+1))
+          enddo
+        enddo
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+            Hvw(i,j,k)=0.5*(qdmv_nbq(i,j,k)+qdmv_nbq(i,j,k+1))
+          enddo
+        enddo       
+      enddo
+      do k=0,N
+        do j=Jstr,Jend   
+          do i=Istr,Iend        
+            ntcorw(i,j,k) = 0.5*e(i,j)*(
+     &          cosa(i,j)*(Huw(i,j,k)+Huw(i+1,j,k)) 
+     &        - sina(i,j)*(Hvw(i,j,k)+Hvw(i,j+1,k))
+     &                                 )                        
+          enddo
+        enddo
+      enddo    
+# endif
+!
 !=====================================================================
 !  Compute "Pressure - Viscosity" component (theta)
 !=====================================================================
@@ -1509,6 +1589,9 @@ C$OMP END MASTER
               endif
 # endif
               dum_s=dum_s*Hzu_half_qdmu(i,j,k)
+# ifdef UV_COR_NT
+              dum_s=dum_s+ntcoru(i,j,k)
+# endif
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtnbq * (
      &                        dum_s + ru_int_nbq(i,j,k) )  
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
@@ -1590,6 +1673,9 @@ C$OMP END MASTER
               endif
 # endif
               dum_s=dum_s*Hzv_half_qdmv(i,j,k)
+# ifdef UV_COR_NT
+              dum_s=dum_s+ntcorv(i,j,k)
+# endif
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtnbq * (
      &                        dum_s + rv_int_nbq(i,j,k) )
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
@@ -1648,7 +1734,10 @@ C$OMP END MASTER
       do j=Jstr,Jend
         do k=1,N-1
           do i=Istr,Iend   
-            dum_s =   thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)   
+            dum_s = thetadiv_nbq(i,j,k) - thetadiv_nbq(i,j,k+1)   
+#  ifdef UV_COR_NT
+            dum_s = dum_s + ntcorw(i,j,k)
+#  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #  ifdef NBQ_GRAV
@@ -1666,6 +1755,9 @@ C$OMP END MASTER
         k=N
         do i=Istr,Iend
           dum_s =   thetadiv_nbq(i,j,N)
+#  ifdef UV_COR_NT
+          dum_s = dum_s + ntcorw(i,j,k)
+#  endif
           qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)   
      &                   + dtnbq * ( dum_s + rw_int_nbq(i,j,N) )
 #  ifdef NBQ_GRAV
@@ -2223,7 +2315,7 @@ C$OMP END MASTER
 # endif
 !
 !-------------------------------------------------------------------
-!  Solve implicit W-omentum equation
+!  Solve implicit W-momentum equation
 !-------------------------------------------------------------------
 !
 # ifdef NBQ_IMP
@@ -2255,9 +2347,13 @@ C$OMP END MASTER
         enddo
      
 !.........Inner layers
+
         do k=1,N-1
-          do i=Istr,Iend
-            dum_s = FC(i,k) - FC(i,k+1)            
+          do i=Istr,Iend   
+            dum_s = FC(i,k) - FC(i,k+1)
+#  ifdef UV_COR_NT
+            dum_s = dum_s + ntcorw(i,j,k)
+#  endif
             qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   
      &                        + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #  ifdef MASKING
@@ -2271,7 +2367,10 @@ C$OMP END MASTER
 
         k=N
         do i=Istr,Iend
-          dum_s =   FC(i,k)                              
+          dum_s =   FC(i,k)
+#  ifdef UV_COR_NT
+          dum_s = dum_s + ntcorw(i,j,k)
+#  endif
           qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k)   
      &                      + dtnbq * ( dum_s + rw_int_nbq(i,j,k) )
 #   ifdef MASKING
@@ -2281,6 +2380,8 @@ C$OMP END MASTER
         enddo   
 
       enddo !<-- j loop
+
+
 
 !---------------------
 ! Gaussian Elimination
@@ -2410,7 +2511,10 @@ C$OMP END MASTER
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv3_nbq(START_2D_ARRAY,1))
 # endif
+
 !
+      write(11,*) ndtfast*iic+iif,qdmw_nbq(5,5,10)
+
 !
 !=====================================================================
 !

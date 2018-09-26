@@ -159,6 +159,11 @@
 #  define NBQ_HZCORRECT
 # endif
 /*
+  Non traditional Coriolis force 
+*/
+# undef UV_COR_NT
+
+/*
    Options for wz HADV numerical schemes (default C4)
 */
 # ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */

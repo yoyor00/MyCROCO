@@ -160,10 +160,11 @@
         ENDDO         
       ENDDO
 
-# if defined UV_COR
+# if !defined NBQ && defined UV_COR_NTXXX
 !
 !-----------------------------------------------------------------------
-!  Add in Coriolis  FWcor = +e (U cos(angle) - V sin(angle) ) 
+!  Add in non-traditional Coriolis pseudo-force
+!    RW = +e (U cos(angle) - V sin(angle) ) * dV
 !  with e = 2 Omega cos Phi
 !-----------------------------------------------------------------------
 !

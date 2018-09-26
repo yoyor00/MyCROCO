@@ -501,14 +501,15 @@
       parameter (pi=3.14159265358979323846, deg2rad=pi/180.,
      &                                      rad2deg=180./pi)
 !
-! Earth radius [m]; Aceleration of gravity [m/s^2], duration
-! of the day in seconds and its inverse; Julian offset day.
+! Earth radius [m]; Earth rotation [rad/s]; Acceleration of gravity [m/s^2];
+! duration of the day in seconds and its inverse; Julian offset day.
 
-      real Eradius, g, day2sec,sec2day, jul_off,
+      real Eradius, Erotation, g, day2sec,sec2day, jul_off,
      &     year2day,day2year
-      parameter (Eradius=6371315.0,  day2sec=86400.,
-     &           sec2day=1./86400., jul_off=2440000.,
-     &           year2day=365.25, day2year=1./365.25)
+      parameter (Eradius=6371315.0,  Erotation=7.292115090e-5,
+     &           day2sec=86400., sec2day=1./86400.,
+     &           year2day=365.25, day2year=1./365.25,
+     &           jul_off=2440000.)
 !
 ! Acceleration of gravity (nondimensional for Soliton problem)
 !
