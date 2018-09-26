@@ -771,14 +771,12 @@ rho_eos.o:
 #
 rhs3d.o: rhs3d.F cppdefs.h param.h ocean3d.h grid.h nbq.h forces.h diagnostics.h 
 rhs3d.o: scalars.h compute_auxiliary_bounds.h private_scratch.h coupling.h 
-rhs3d.o: u_hadv_order5.h v_hadv_order5.h u_vadv_order5.h v_vadv_order5.h uvhadv_tvd.h 
-rhs3d.o: cppdefs_dev.h 
-rhs3d.o:
+rhs3d.o: u_hadv_order5.h v_hadv_order5.h uvhadv_tvd.h u_vadv_order5.h v_vadv_order5.h 
+rhs3d.o: 
 #
 rhs3d_w_nh.o: rhs3d_w_nh.F cppdefs.h param.h ocean3d.h grid.h nbq.h forces.h 
 rhs3d_w_nh.o: scalars.h compute_auxiliary_bounds.h private_scratch.h coupling.h 
-rhs3d_w_nh.o: w_hadv_order5.h w_vadv_order5.h
-rhs3d_w_nh.o: cppdefs_dev.h 
+rhs3d_w_nh.o: w_hadv_order5.h w_vadv_order5.h cppdefs_dev.h 
 rhs3d_w_nh.o:
 #
 rhs_floats.o: rhs_floats.F cppdefs.h param.h ocean3d.h grid.h scalars.h 
@@ -835,7 +833,7 @@ set_nudgcof.o: scalars.h compute_extended_bounds.h private_scratch.h climat.h
 set_nudgcof.o: cppdefs_dev.h 
 set_nudgcof.o:
 #
-set_nudgcof_fine.o: set_nudgcof_fine.F cppdefs.h param.h grid.h mixing.h 
+set_nudgcof_fine.o: set_nudgcof_fine.F cppdefs.h param.h grid.h nbq.h mixing.h 
 set_nudgcof_fine.o: scalars.h compute_extended_bounds.h private_scratch.h climat.h 
 set_nudgcof_fine.o: cppdefs_dev.h 
 set_nudgcof_fine.o:
@@ -874,17 +872,10 @@ step2d.o: compute_tile_bounds.h scalars.h compute_auxiliary_bounds.h private_scr
 step2d.o: coupling.h sources.h tides.h set_global_definitions.h zoom.h cppdefs_dev.h 
 step2d.o:
 #
-step3d_fast_zeta2d.o: step3d_fast_zeta2d.F cppdefs.h param.h mpi_roms.h ocean2d.h ocean3d.h 
-step3d_fast_zeta2d.o: nbq.h forces.h mixing.h compute_tile_bounds.h scalars.h 
-step3d_fast_zeta2d.o: private_scratch.h climat.h coupling.h sources.h tides.h 
-step3d_fast_zeta2d.o: zoom.h cppdefs_dev.h 
-step3d_fast_zeta2d.o:
-#
-step3d_fast_zetaw.o: step3d_fast_zetaw.F cppdefs.h param.h mpi_roms.h ocean2d.h ocean3d.h 
-step3d_fast_zetaw.o: nbq.h forces.h mixing.h compute_tile_bounds.h scalars.h 
-step3d_fast_zetaw.o: private_scratch.h climat.h coupling.h sources.h 
-step3d_fast_zetaw.o: zoom.h cppdefs_dev.h 
-step3d_fast_zetaw.o:
+step3d_fast.o: step3d_fast.F cppdefs.h param.h mpi_roms.h ocean2d.h ocean3d.h grid.h nbq.h 
+step3d_fast.o: mixing.h compute_tile_bounds.h scalars.h compute_auxiliary_bounds.h 
+step3d_fast.o: climat.h coupling.h sources.h set_global_definitions.h zoom.h cppdefs_dev.h 
+step3d_fast.o:
 #
 step3d_t.o: step3d_t.F cppdefs.h param.h ocean3d.h grid.h forces.h mixing.h diagnostics.h 
 step3d_t.o: scalars.h compute_auxiliary_bounds.h private_scratch.h climat.h sources.h 

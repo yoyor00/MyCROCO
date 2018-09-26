@@ -273,8 +273,9 @@
 !
           do j=jstr,jend
             do i=istr,iend
-              cff1=pm(i,j)*pn(i,j)
-              THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
+              cff1=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1
+     &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
      &                                SWITCH rmask(i,j)
             enddo
@@ -511,10 +512,11 @@
 !
           do j=jstr,jend
             do i=istr,iend
-              cff1=pm(i,j)*pn(i,j)
-              THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
+              cff1=1./(pm(i,j)*pn(i,j))
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*Hz(i,j,k)*cff1
+     &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
-     &                         +(FC(i,j,k2)-FC(i,j,k1))/cff1
+     &                         +(FC(i,j,k2)-FC(i,j,k1))*cff1
      &                                   SWITCH rmask(i,j)
             enddo
           enddo
@@ -530,11 +532,22 @@
 !
 #   define FC FFC
       do j=jstr,jend 
-#    ifdef SALINITY
+#   ifdef SALINITY
         indx=min(itrc,isalt)
-#    else
+#   else
         indx=min(itrc,itemp)
-#    endif
+#   endif
+!
+!  Initialize TVmix diag computation: 
+!  --> use Trate which needs recomputing anyway
+!
+#   ifdef DIAGNOSTICS_TS
+          do k=1,N
+            do i=Istr,Iend
+               Trate(i,j,k,itrc)=t(i,j,k,nnew,itrc)
+            enddo
+          enddo
+#   endif /* DIAGNOSTICS_TS */
 !++
 !++ Explicit vertical Laplacian
 !++
@@ -585,8 +598,26 @@
             t(i,j,k,nnew,itrc)=DC(i,k)+CF(i,k)*t(i,j,k+1,nnew,itrc)
           enddo
         enddo           !--> discard FC,CF,DC
-      enddo
 #   undef FC 
+
+#   ifdef DIAGNOSTICS_TS
+!
+!  Add TVmix correction term to previous TVmix computation
+!
+          do k=1,N
+            do i=Istr,Iend
+              TVmix(i,j,k,itrc) = TVmix(i,j,k,itrc)*Hz(i,j,k)
+     &                                           /(pm(i,j)*pn(i,j))
+     &            -(Trate(i,j,k,itrc)-t(i,j,k,nnew,itrc)*Hz(i,j,k))
+     &                                        /(dt*pm(i,j)*pn(i,j))
+#    ifdef MASKING
+     &                                                 * rmask(i,j)
+#    endif
+            enddo
+          enddo
+#   endif /* DIAGNOSTICS_TS */
+
+       enddo ! j loop
 #  endif /* TS_SPONGE_IMP */
 
 #  undef MIN
@@ -631,6 +662,9 @@
 !
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
+# ifdef TS_MIX_IMP
+              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
+# endif
             enddo
           enddo
         enddo
@@ -697,36 +731,65 @@
 #   undef T_mld_nnew 
 #   undef T_mld_nstp
 #  endif /* DIAGNOSTICS_TS_MLD */
-
+!
+!  DEBUG DIAGS
+!
 #  ifdef DIAGNOSTICS_DEBUG
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
          i=5
          j=5
 #   if defined DIAGNOSTICS_TS_MLD
-        cff=Trate_mld(i,j,itrc)-
-     &      TXadv_mld(i,j,itrc)-
-     &      TYadv_mld(i,j,itrc)-
-     &      TVadv_mld(i,j,itrc)-
-     &      TVmix_mld(i,j,itrc)-
-     &      THmix_mld(i,j,itrc)-
-     &      Tentr_mld(i,j,itrc)-
-     &      TForc_mld(i,j,itrc)
-           MPI_master_only write(stdout,'(A,2x,1pe10.3)')
+         cff=Trate_mld(i,j,itrc)-
+     &       TXadv_mld(i,j,itrc)-
+     &       TYadv_mld(i,j,itrc)-
+     &       TVadv_mld(i,j,itrc)-
+     &       TVmix_mld(i,j,itrc)-
+     &       THmix_mld(i,j,itrc)-
+     &       Tentr_mld(i,j,itrc)-
+     &       TForc_mld(i,j,itrc)
+         MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &     ' T3DMIX: T budget closure MLD     :', cff
 
 #   endif /* DIAGNOSTICS_TS_MLD */
-        cff=Trate(i,j,N-5,itrc)-
+         cff=Trate(i,j,N-5,itrc)-
      &       TXadv(i,j,N-5,itrc)-
      &       TYadv(i,j,N-5,itrc)-
      &       TVadv(i,j,N-5,itrc)-
      &       TVmix(i,j,N-5,itrc)-
      &       THmix(i,j,N-5,itrc)-
      &       TForc(i,j,N-5,itrc)
-           MPI_master_only write(stdout,'(A,2x,1pe10.3)')
+         MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &     ' T3DMIX: T budget closure at k=N-5:', cff
       endif
 #  endif /* DIAGNOSTICS_DEBUG */
 # endif /* DIAGNOSTICS_TS */
+!
+!
+! CONSTANT TRACERS
+!
+# ifdef CONST_TRACERS
+        do k=1,N
+          do j=jstr,jend
+            do i=istr,iend
+              t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
+            enddo
+          enddo
+        enddo
+#  ifdef DIAGNOSTICS_TS
+        do k=1,N
+          do j=jstr,jend
+            do i=Istr,Iend
+               THmix(i,j,k,itrc)=0.0
+               TVmix(i,j,k,itrc)=0.0
+               Trate(i,j,k,itrc)=0.0
+#   ifdef MASKING
+     &              * rmask(i,j)
+#   endif
+            enddo
+          enddo
+        enddo
+#  endif /* DIAGNOSTICS_TS */
+# endif /* CONST_TRACERS */
 !
 !
 !==========================================================

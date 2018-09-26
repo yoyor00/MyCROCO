@@ -57,7 +57,7 @@
    xkmort     =  1.E-7   ! half saturation constant for mortality
    ferat3     =  3.E-6   ! Fe/C in zooplankton 
    wsbio2     =  30.     ! Big particles sinking speed
-   ln_sink_new = .true.  ! Semi-Lagrangian advective flux algorithm.
+   ln_sink_new = .false.  ! Semi-Lagrangian advective flux algorithm.
    niter1max  =  10
    niter2max  =  50
 /

@@ -132,7 +132,14 @@
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
 # define NBQ_IMP
+# undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
+# undef  NBQ_HZ_PROGNOSTIC
+# ifdef  TANK
+#  undef  NBQ_AM4
+# else
+#  define NBQ_AM4
+# endif
 # undef  TRACETXT
 # undef  DIAG_CFL
 # define HZR Hzr
@@ -151,6 +158,11 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+/*
+  Non traditional Coriolis force 
+*/
+# undef UV_COR_NT
+
 /*
    Options for wz HADV numerical schemes (default C4)
 */
@@ -353,12 +365,6 @@
 /* 
   Options for split-rotated advection-diffusion schemes
 */
-#ifdef TS_HADV_C4      /* 4th-order centered advection with:   */
-# define TS_DIF2       /*   + Laplacian Diffusion              */
-# undef  TS_DIF4       /*                                      */
-# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
-# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
-#endif 
 #ifdef TS_HADV_RSUP3   /*  Rotated-Split 3rd-order scheme is:  */
 # define TS_HADV_C4    /*    4th-order centered advection      */
 # undef  TS_DIF2       /*               +                      */
@@ -377,6 +383,14 @@
 # define TS_MIX_GEO    /*        Geopotential rotation         */
 # undef  TS_MIX_ISO    /*     or Isopycnal    rotation         */
 #endif
+#if defined TS_HADV_C4 && !defined TS_HADV_RSUP3     
+                       /* 4th-order centered advection with:   */
+# define TS_DIF2       /*   + Laplacian Diffusion              */
+# undef  TS_DIF4       /*                                      */
+# define TS_DIF_SMAGO  /*   + Smagorinsky diffusivity          */
+# define TS_MIX_ISO    /*   + Isopycnal rotation               */ 
+#endif 
+
 /* 
    TS DIFFUSION: set default orientation
 */
@@ -722,7 +736,7 @@
 /*                    Update schemes */
 # undef  AGRIF_UPDATE_MIX_LOW
 # define AGRIF_UPDATE_MIX
-# define AGRIF_UPDATE_DECAL
+# undef  AGRIF_UPDATE_DECAL
 /*                    Conservation options */
 # define AGRIF_CONSERV_VOL
 # undef  AGRIF_CONSERV_TRA

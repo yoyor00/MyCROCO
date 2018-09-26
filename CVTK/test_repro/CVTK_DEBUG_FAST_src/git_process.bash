@@ -1,17 +1,18 @@
 #!/bin/bash
 
-# GIT code update
-#-----------------
-SOURCE_ROMS=$HOME/GIT/croco/OCEAN
+#=========================
+source CONFIGURE_GLOBAL
+#=========================
 echo
-echo "SOURCE_ROMS="$SOURCE_ROMS
+echo "SOURCE_CROCO="$SOURCE_CROCO
 echo 
-echo "PROCESS GIT UPDATE"
-cd  $SOURCE_ROMS/..
-/usr/bin/git checkout
+
+#echo "PROCESS GIT UPDATE"
+#cd  $SOURCE_ROMS/..
+##/usr/bin/git checkout
 #/usr/bin/git pull
-cd -
+#cd -
 
 # Get revision of sources
 #-------------------------
-./gitinfo.sh $SOURCE_ROMS > gitinfos
+./gitinfo.sh $SOURCE_CROCO > gitinfos

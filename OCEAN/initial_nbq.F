@@ -235,7 +235,7 @@
           enddo
         enddo
 
-        do k=0,N
+        do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
               thetadiv_nbq(i,j,k)=0.

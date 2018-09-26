@@ -263,7 +263,8 @@
 ! (swdk is used later in this routine)
 !----------------------------------------------------------
 !
-# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+# if defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIX2017 || defined GLS_MIXING
 #  define wrk1 FX
 #  define wrk2 FE
       do k=1,N-1
@@ -357,7 +358,8 @@
             do k=1,N-1
               do i=Istr,Iend
                 FC(i,k)=0.
-# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+# if defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIX2017 || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
 #  ifdef LMD_NONLOCAL
      &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
@@ -379,6 +381,7 @@
             enddo
 # endif
           endif
+!
 # ifdef SALINITY 
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
 # else
@@ -397,6 +400,14 @@
 # endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
+# ifdef DIAGNOSTICS_TS
+          else
+            do k=1,N
+              do i=Istr,Iend
+                TForc(i,j,k,itrc)=0.
+              enddo
+            enddo
+# endif  /* DIAGNOSTICS_TS */
           endif
 !
 !

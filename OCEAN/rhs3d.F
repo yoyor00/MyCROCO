@@ -273,13 +273,22 @@
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
 # endif
-# ifdef NBQ
-            UFx(i,j)=UFx(i,j)
-     &      +0.5*Hz(i,j,k)*eomn(i,j)*cosa(i,j)
-     &                            *(wz(i,j,k-1,nrhs)+wz(i,j,k,nrhs)) 
-            VFe(i,j)=VFe(i,j)   
-     &      -0.5*Hz(i,j,k)*eomn(i,j)*sina(i,j)
-     &                            *(wz(i,j,k-1,nrhs)+wz(i,j,k,nrhs))
+# if !defined NBQ && defined UV_COR_NTXXX
+!
+!  Compute Non-traditional Coriolis pseudo-force
+!
+!    RU = -e W cos(a) * dV     [m4/s2]
+!    RV = +e W sin(a) * dV
+!  
+!  with e = 2 Omega cos(Phi)
+!       a = angle between North and meridional grid axis
+!
+!  If NBQ --> done in fast mode
+!
+            cff= 0.5*Hz(i,j,k)*eomn(i,j)
+     &                      *(wz(i,j,k-1,nrhs)+wz(i,j,k,nrhs))
+            UFx(i,j)=UFx(i,j) - cff*cosa(i,j)
+            VFe(i,j)=VFe(i,j) - cff*sina(i,j)
 # endif
           enddo
         enddo

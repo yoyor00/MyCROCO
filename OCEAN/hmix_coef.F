@@ -37,7 +37,7 @@
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc,
      &        imin,imax,jmin,jmax, kp
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
-      real cff, horcon, cff_peclet
+      real horcon, cff,cff0
 # ifdef NBQ
       parameter (horcon=0.01)
 # else
@@ -91,13 +91,19 @@
 !---------------------------------------------------------------
 ! Smagorinsky viscosity at RHO points
 !
-!    A = C*DX*DY*DEFRATE
-!        with DEFRATE=sqrt[ (dui/dxj + duj/dxi)^2 ] 
+!    A = Cs L^2 D
+!
+!  with deformation rate D:
+!
+!    D = sqrt[ 2 DijDij ]  -- Dij = 0.5*(dui/dxj + duj/dxi) --
+!      = sqrt[ 2 dudx^2 + 2 dvdy^2 + (dvdx+dudy)^2         --> 2D
+!            + 2 dwdz^2 + (dudz+dwdx)^2 + (dvdz+dwdy)^2 ]  --> 3D
 !
 !---------------------------------------------------------------
 !
-! Horizontal deformation rate (squared) at RHO point:
-!  du/dx^2 +dvdy^2 + 0.5(dvdx+dudy)^2
+! Horizontal deformation rate (squared & halved) at RHO point:
+!
+!     dudx^2 + dvdy^2 + 0.5(dvdx+dudy)^2
 !
       do k=1,N
         do j=jmin,jmax
@@ -108,7 +114,7 @@
      &               +0.125*( pn(i,j)*
      &                        (u(i,j+1,k,nrhs)+u(i+1,j+1,k,nrhs)
      &                        -u(i,j-1,k,nrhs)-u(i+1,j-1,k,nrhs))
-     &                      +pm(i,j)*
+     &                       +pm(i,j)*
      &                        (v(i+1,j,k,nrhs)+v(i+1,j+1,k,nrhs)
      &                        -v(i-1,j,k,nrhs)-v(i-1,j+1,k,nrhs)) )**2
           enddo
@@ -117,8 +123,9 @@
 !
 #  if defined NBQ && defined UV_VIS_SMAGO_3D
 !
-! Add vertical deformation for non-hydrostatic cases
-!  dw/dz^2 + (du/dz+dw/x)^2 + (dv/dz+dw/y)^2
+! Add vertical deformation for non-hydrostatic cases:
+!
+!     dwdz^2 + 0.5*(dudz+dwdx)^2 + 0.5*(dvdz+dwdy)^2
 !
       do k=2,N-1
         do j=jmin,jmax
@@ -142,22 +149,27 @@
       enddo
 #  endif
 !
-! Smagorinsky viscosity at RHO points
+! Smagorinsky viscosity at RHO points and AKv at W points
+!
+!      Length-scale: horizontal : Lh = sqrt(dx*dy) --> visc3d
+!                    vertical   : Lv = Hz          --> Akv
 !
       kp=min(k+1,N)
       do j=jmin,jmax
         do i=imin,imax
           cff=horcon*om_r(i,j)*on_r(i,j)
+          cff0=pm(i,j)*pn(i,j)
           do k=1,N
-            visc3d_r(i,j,k)=cff*sqrt(visc3d_r(i,j,k))
+            visc3d_r(i,j,k)=cff*sqrt(2*visc3d_r(i,j,k))
 #  if defined NBQ && defined UV_VIS_SMAGO_3D
 #   if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
                         || defined LMD_MIXING || defined GLS_MIX2017
             Akv(i,j,k)=Akv(i,j,k)+
 #   else
             Akv(i,j,k)=Akv_bak+
-     &                          0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp))
 #   endif
+     &                       0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp))
+     &                                    *cff0*Hz(i,j,k)*Hz(i,j,k)
 #  endif
           enddo
         enddo
@@ -166,8 +178,8 @@
 ! Add Wave breaking dissipation in wave-resolved cases
 !
 #  ifdef SWASH
-        do j=jmin,jmax
-          do i=imin,imax
+      do j=jmin,jmax
+        do i=imin,imax
           dZdt=abs(zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
           cff=z_w(i,j,N)-z_w(i,j,0)
           Dbr=10.*om_r(i,j)*on_r(i,j)
@@ -175,7 +187,7 @@
           Bbr=max(0.,min(1.,dZdt/dZdt0-1.))
           do k=1,N
             visc3d_r(i,j,k)=max(0.1/horcon*visc3d_r(i,j,k),
-     &                                    Dbr*Bbr*cff*dZdt)
+     &                                      Dbr*Bbr*cff*dZdt)
 !     &                               *1000*max(pm(i,j)*pm(i,j)*
 !     &                              (z_r(i+1,j,k)-z_r(i-1,j,k)-
 !     &                               z_w(i+1,j,0)+z_w(i-1,j,0))**2,

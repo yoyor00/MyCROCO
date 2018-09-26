@@ -405,6 +405,9 @@
                                    defined SOLVE3D) \
           || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
+          || (defined BULK_FLUX  && \
+                                      (!defined BULK_SMFLUX || \
+                                       !defined BULK_EP)) \
         )
 !
 !

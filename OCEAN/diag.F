@@ -383,13 +383,13 @@ C$OMP CRITICAL (diag_cr_rgn)
 #endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
 #ifdef DIAG_CFL
-              if (mod(iic-1,10*ninfo).eq.0) then
+              if (mod(iic-1,ninfo).eq.0) then
               write(stdout,4) 'CFL --  INT_3DADV  = ',Cu_adv3d,
      &                             '   EXT_GWAVES = ',Cu_max
               endif
    4          format(10x,A,F6.2,A,F6.2)
 # ifdef NBQ
-              if (mod(iic-1,10*ninfo).eq.0) then
+              if (mod(iic-1,ninfo).eq.0) then
               write(stdout,5) '        NBQ_HADV   = ',
      &                                 sqrt(Cu_Nbq_X**2+Cu_Nbq_Y**2),
      &                             '   NBQ_IMP    = ',sqrt(Cu_Nbq),

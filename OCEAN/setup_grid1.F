@@ -42,15 +42,23 @@ C$    integer omp_get_thread_num
 !
 !  Set f/mn,at horizontal RHO-points.
 !
-
       do j=JstrR,JendR                             ! This array
         do i=IstrR,IendR                           ! is NOT to be 
           fomn(i,j)=f(i,j)/(pm(i,j)*pn(i,j))       ! communicated 
-#ifdef NBQ
+                                                   ! in MPI code; 
+                                                   ! others are...
+# ifdef UV_COR_NT
+!
+!  Horizontal Coriolis parameter e/mn
+!   e = 2 Omega cos(Phi)
+!
+#  ifndef ANA_GRID
+          e(i,j)=2.*Erotation*cos(asin(f(i,j)/(2.*Erotation)))
+#  endif
           eomn(i,j)=e(i,j)/(pm(i,j)*pn(i,j))          
-#endif
-        enddo                                      ! in MPI code; 
-      enddo                                        ! others are...
+# endif
+        enddo
+      enddo
 
 #ifdef EW_PERIODIC
 # define IR_RANGE IstrR,IendR
