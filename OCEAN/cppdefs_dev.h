@@ -158,10 +158,6 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
-/*
-  Non traditional Coriolis force 
-*/
-# undef UV_COR_NT
 
 /*
    Options for wz HADV numerical schemes (default C4)

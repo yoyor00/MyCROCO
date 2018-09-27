@@ -34,9 +34,6 @@ C$    integer omp_get_thread_num
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-#ifdef NBQ
-# include "nbq.h"
-#endif
 !
 #include "compute_extended_bounds.h"
 !
@@ -94,7 +91,7 @@ C$    integer omp_get_thread_num
           on_r(i,j)=1./pn(i,j)
           pnom_r(i,j)=pn(i,j)/pm(i,j)
           pmon_r(i,j)=pm(i,j)/pn(i,j)
-#ifdef NBQ
+#ifdef UV_COR_NT
 # ifdef CURVGRID
           cosa(i,j) = cos(angler(i,j))
           sina(i,j) = sin(angler(i,j))

@@ -132,16 +132,6 @@
       common /nbq_rvbar/ rvbar_nbq
 
 !**********************************************************************
-      real e(GLOBAL_2D_ARRAY)
-      common /nbq_e/ e
-      real eomn(GLOBAL_2D_ARRAY)
-      common /nbq_eomn/ eomn
-      real cosa(GLOBAL_2D_ARRAY)
-      common /nbq_cosa/ cosa
-      real sina(GLOBAL_2D_ARRAY)
-      common /nbq_sina/ sina
-
-!**********************************************************************
       real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)
       common /nbq_zw/ zw_nbq
       real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
