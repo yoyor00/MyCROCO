@@ -91,7 +91,7 @@ C$    integer omp_get_thread_num
           on_r(i,j)=1./pn(i,j)
           pnom_r(i,j)=pn(i,j)/pm(i,j)
           pmon_r(i,j)=pm(i,j)/pn(i,j)
-#ifdef UV_COR_NT
+# if defined UV_COR_NT || defined CROCO_QH
 # ifdef CURVGRID
           cosa(i,j) = cos(angler(i,j))
           sina(i,j) = sin(angler(i,j))
