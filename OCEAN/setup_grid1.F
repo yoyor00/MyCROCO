@@ -44,7 +44,7 @@ C$    integer omp_get_thread_num
           fomn(i,j)=f(i,j)/(pm(i,j)*pn(i,j))       ! communicated 
                                                    ! in MPI code; 
                                                    ! others are...
-# ifdef UV_COR_NT
+# if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal Coriolis parameter e/mn
 !   e = 2 Omega cos(Phi)

@@ -161,7 +161,7 @@
       common /wetdry_wet/wetdry
 #endif
 
-#ifdef UV_COR_NT
+#if defined UV_COR_NT || defined CROCO_QH
       real e(GLOBAL_2D_ARRAY)
       common /nbq_e/ e
       real eomn(GLOBAL_2D_ARRAY)

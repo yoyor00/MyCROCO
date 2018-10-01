@@ -382,7 +382,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
-# ifdef UV_COR_NT
+# if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal (non-traditional) Coriolis parameter
 !
