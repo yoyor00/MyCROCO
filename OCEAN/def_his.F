@@ -53,7 +53,7 @@
      &      , iwkb
 #endif
 #ifdef NC4PAR
-#include "mpif.h"
+      include "mpif.h"
 #endif
 
 #include "param.h"
@@ -287,7 +287,7 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        write(stdout,*)'CREATE NC4 PARALLEL FILE'        
+        write(stdout,*)'CREATE HIS/AVG NC4 PARALLEL FILE'        
         ierr=nf_create_par(ncname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
@@ -2053,7 +2053,7 @@
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
 #else
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio), 
-     $     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
+     &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 #endif
         if (ierr. eq. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
