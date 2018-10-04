@@ -17,11 +17,11 @@
       double precision cost
       double precision xcost
 
-      double precision Zob_bck
+      double precision Zobt_bck
 
       integer k, ierr, i
 
-      Zob_bck = Zob
+      Zobt_bck = Zobt
       call set_state(ad_x)
 
       cost = 0
@@ -35,7 +35,7 @@ C$AD BINOMIAL-CKP ad_nt+1 40 1
 c     cost = cost +
 c     &     (x(1)-Zob_bck)*(x(1)-Zob_bck)
 
-      write (*,*) 'Zob=',Zob
+      write (*,*) 'Zob=',Zobt
 
       write (*,*) 'cost=',cost
 
@@ -165,7 +165,7 @@ C$AD NOCHECKPOINT
 #include "mpi_roms.h"
 #include "adparam.h"
       integer Istr,Iend,Jstr,Jend, i,j
-      double precision Zob_bck, h0(GLOBAL_2D_ARRAY)
+      double precision Zobt_bck, h0(GLOBAL_2D_ARRAY)
 
       integer bi, bj
 #include "compute_extended_bounds.h"
@@ -187,14 +187,14 @@ c             h(i,j) = x(1+(i-IstrR+1)+bi*(j-JstrR))
 c         end do
 c      end do
 
-      Zob = real(ad_x(1))
+      Zobt = real(ad_x(1))
 
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
       write(*, *) 'mynode=',mynode
 #endif
-      write(*, *) 'Zob=',Zob
+      write(*, *) 'Zob=',Zobt
       write(*, *) '*******************'
 
  900  format(1PE16.9)

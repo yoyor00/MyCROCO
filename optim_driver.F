@@ -121,7 +121,7 @@ C      end do
          gg(i) = 0.
       end do
 
-      ad_x(1) = Zob
+      ad_x(1) = Zobt
       indic = 4
       call simul (indic,ad_array_size,ad_x,f,gg,izs,rzs,dzs)
 #ifdef AMPI
@@ -221,7 +221,7 @@ C ...
       real vbar_bck(GLOBAL_2D_ARRAY,4)
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
-      real Zob_bck
+      real Zobt_bck
 
       integer kstp_bck
       integer krhs_bck
@@ -229,13 +229,13 @@ C ...
       integer iic_bck
 
       common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zob_bck
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
       ubar_bck(:,:,:) = ubar(:,:,:)
       vbar_bck(:,:,:) = vbar(:,:,:)
       zeta_bck(:,:,:) = zeta(:,:,:)
       h_bck(:,:) = h(:,:)
-      Zob_bck = Zob
+      Zobt_bck = Zobt
 
       kstp_bck = kstp
       krhs_bck = krhs
@@ -263,7 +263,7 @@ C ...
       real vbar_bck(GLOBAL_2D_ARRAY,4)
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
-      real Zob_bck
+      real Zobt_bck
 
       integer kstp_bck
       integer krhs_bck
@@ -271,13 +271,13 @@ C ...
       integer iic_bck
 
       common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zob_bck
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
       ubar(:,:,:) = ubar_bck(:,:,:)
       vbar(:,:,:) = vbar_bck(:,:,:)
       zeta(:,:,:) = zeta_bck(:,:,:)
       h(:,:) = h_bck(:,:)
-      Zob = Zob_bck
+      Zobt = Zobt_bck
 
       kstp = kstp_bck
       krhs = krhs_bck
