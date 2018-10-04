@@ -53,6 +53,11 @@ include Makedefs
 	hmix_coef.F	wetdry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
 \
+	step3d_fast.F\
+	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\
+	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
+        w3dbc.F		nbq_bry_store.F\
+\
 	rho_eos.F	ab_ratio.F	alfabeta.F\
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
@@ -79,7 +84,8 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	get_tides.F     clm_tides.F     get_bulk.F      bulk_flux.F\
+	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+        clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F\
 \
@@ -99,32 +105,19 @@ include Makedefs
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
+	autotiling.F	MessPass3D_nbq.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
-	t3dpremix.F     update3D.F	Agrif2Model.F\
+	t3dpremix.F     update3D.F	zoombc_3Dfast.F\
+	Agrif2Model.F\
 \
-	init_xios.F	send_xios_diags.F\
-\
-	step3d_w.F	rhs3d_w_nh.F	w3dbc.F\
-	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
+	send_xios_diags.F\
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 
  SRCS90 = \
-	module_nh.F90		module_nbq.F90		module_qsort.F90\
-	module_parallel_nbq.F90 module_tracetxt_out.F90	module_param.F90\
-	nump_nh.F90		mat_cont_init_nh.F90	mat_cont_nh.F90\
-	mat_mom_init_nh.F90	mat_mom_nh.F90		initial_nh.F90\
-	grid_coef_nh.F90 	ru_nbq.F90		viscous_nbq.F90\
-	step3d_fb_nbq.F90	density_nbq.F90		spkitlocal_nh.F90\
-	MPI_setup_nbq.F90	parallele_nbq.F90	output_nbq.F90\
-	implicit_nbq.F90        amub2_tri.F90	        numuvw_nh.F90\
-	grid_def_nh.F90		grid_exchange.F90\
-	consout_nbq.F90\
-\
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
@@ -137,7 +130,9 @@ include Makedefs
 	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
 	module_oa_level.F90	module_oa_interface.F90\
-	module_oa_upd.F90	croco_oa.F90		var_oa.F90
+	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
+\
+	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 
