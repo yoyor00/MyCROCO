@@ -3,6 +3,9 @@ title:
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 20000      10     1      1
 
+start_date:
+01/04/2014 00:00:00
+
 grid:  filename
                           CROCO_FILES/croco_grd.nc
 forcing: filename
