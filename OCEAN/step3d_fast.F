@@ -2511,10 +2511,6 @@ C$OMP END MASTER
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        thetadiv3_nbq(START_2D_ARRAY,1))
 # endif
-
-!
-      write(11,*) ndtfast*iic+iif,qdmw_nbq(5,5,10)
-
 !
 !=====================================================================
 !
