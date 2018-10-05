@@ -188,7 +188,8 @@ c         end do
 c      end do
 
       Zobt = real(ad_x(1))
-
+      zob(:,:) = Zobt
+      
       write(*, *) '**** set_state ****'
 
 #ifdef MPI

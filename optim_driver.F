@@ -278,6 +278,7 @@ C ...
       zeta(:,:,:) = zeta_bck(:,:,:)
       h(:,:) = h_bck(:,:)
       Zobt = Zobt_bck
+      zob(:,:) = Zobt
 
       kstp = kstp_bck
       krhs = krhs_bck

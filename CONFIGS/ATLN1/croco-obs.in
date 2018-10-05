@@ -1,5 +1,9 @@
 title:
         FRICTION TIDE ATLN
+
+start_date:
+01/04/2014 00:00:00
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 20000      10     1      1
 
@@ -56,7 +60,7 @@ tracer_diff4: TNU4(1:NT)           [m^4/sec for all]
 vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
                    0.d0    30*0.d0
 
-bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
+bottom_drag:     RDRG [m/s],  RDRG2,  Zobt [m],  Cdb_min, Cdb_max
                  0.0d-04      0.0d-02    1.d-3     1.d-4    1.d-1 
 
 gamma2:
