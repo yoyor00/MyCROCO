@@ -202,3 +202,103 @@ c      end do
 
       return
       end subroutine set_state_2d_tile
+
+
+      subroutine init_control(ad_x)
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "ocean2d.h"
+# include "adparam.h"
+      integer i
+      
+      do i=1,ad_array_size
+         ad_x(i)=Zobt
+      end do
+      end subroutine init_control
+
+      subroutine save_croco_state()
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "ocean2d.h"
+# include "adparam.h"
+
+      real ubar_bck(GLOBAL_2D_ARRAY,4)
+      real vbar_bck(GLOBAL_2D_ARRAY,4)
+      real zeta_bck(GLOBAL_2D_ARRAY,4)
+      real h_bck(GLOBAL_2D_ARRAY)
+      real Zobt_bck
+
+      integer kstp_bck
+      integer krhs_bck
+      integer knew_bck
+      integer iic_bck
+
+      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
+
+      ubar_bck(:,:,:) = ubar(:,:,:)
+      vbar_bck(:,:,:) = vbar(:,:,:)
+      zeta_bck(:,:,:) = zeta(:,:,:)
+      h_bck(:,:) = h(:,:)
+      Zobt_bck = Zobt
+
+      kstp_bck = kstp
+      krhs_bck = krhs
+      knew_bck = knew
+      iic_bck = iic
+
+      write(*,*) 'save------'
+      write(*,*) 'knew=',knew
+      write(*,*) 'kstp=',kstp
+      write(*,*) 'krhs=',krhs
+      write(*,*) 'iic=',iic
+      write(*,*) '----------'
+
+      end subroutine save_croco_state
+      
+      subroutine restore_croco_state()
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "ocean2d.h"
+# include "adparam.h"
+
+      real ubar_bck(GLOBAL_2D_ARRAY,4)
+      real vbar_bck(GLOBAL_2D_ARRAY,4)
+      real zeta_bck(GLOBAL_2D_ARRAY,4)
+      real h_bck(GLOBAL_2D_ARRAY)
+      real Zobt_bck
+
+      integer kstp_bck
+      integer krhs_bck
+      integer knew_bck
+      integer iic_bck
+
+      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
+
+      ubar(:,:,:) = ubar_bck(:,:,:)
+      vbar(:,:,:) = vbar_bck(:,:,:)
+      zeta(:,:,:) = zeta_bck(:,:,:)
+      h(:,:) = h_bck(:,:)
+      Zobt = Zobt_bck
+      zob(:,:) = Zobt
+
+      kstp = kstp_bck
+      krhs = krhs_bck
+      knew = knew_bck
+      iic = iic_bck
+
+      write(*,*) 'restore+++'
+      write(*,*) 'knew=',knew
+      write(*,*) 'kstp=',kstp
+      write(*,*) 'krhs=',krhs
+      write(*,*) 'iic=',iic
+      write(*,*) '++++++++++'
+
+      end subroutine restore_croco_state

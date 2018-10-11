@@ -113,15 +113,12 @@ c     this file is not differentiated
 
       sim_iicroot = iicroot
 
-c     initial state: should call some user subroutine here
-C      do i=2,Sn
-C         x(i) = 65
-C      end do
       do i=1,ad_array_size
          gg(i) = 0.
       end do
 
-      ad_x(1) = Zobt
+      call init_control(ad_x)
+      
       indic = 4
       call simul (indic,ad_array_size,ad_x,f,gg,izs,rzs,dzs)
 #ifdef AMPI
@@ -209,90 +206,7 @@ C ...
       return
       end subroutine state_control
 
-      subroutine save_croco_state()
-      implicit none
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "adparam.h"
 
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
-      real h_bck(GLOBAL_2D_ARRAY)
-      real Zobt_bck
-
-      integer kstp_bck
-      integer krhs_bck
-      integer knew_bck
-      integer iic_bck
-
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
-
-      ubar_bck(:,:,:) = ubar(:,:,:)
-      vbar_bck(:,:,:) = vbar(:,:,:)
-      zeta_bck(:,:,:) = zeta(:,:,:)
-      h_bck(:,:) = h(:,:)
-      Zobt_bck = Zobt
-
-      kstp_bck = kstp
-      krhs_bck = krhs
-      knew_bck = knew
-      iic_bck = iic
-
-      write(*,*) 'save------'
-      write(*,*) 'knew=',knew
-      write(*,*) 'kstp=',kstp
-      write(*,*) 'krhs=',krhs
-      write(*,*) 'iic=',iic
-      write(*,*) '----------'
-
-      end subroutine save_croco_state
-
-      subroutine restore_croco_state()
-      implicit none
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "adparam.h"
-
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
-      real h_bck(GLOBAL_2D_ARRAY)
-      real Zobt_bck
-
-      integer kstp_bck
-      integer krhs_bck
-      integer knew_bck
-      integer iic_bck
-
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
-
-      ubar(:,:,:) = ubar_bck(:,:,:)
-      vbar(:,:,:) = vbar_bck(:,:,:)
-      zeta(:,:,:) = zeta_bck(:,:,:)
-      h(:,:) = h_bck(:,:)
-      Zobt = Zobt_bck
-      zob(:,:) = Zobt
-
-      kstp = kstp_bck
-      krhs = krhs_bck
-      knew = knew_bck
-      iic = iic_bck
-
-      write(*,*) 'restore+++'
-      write(*,*) 'knew=',knew
-      write(*,*) 'kstp=',kstp
-      write(*,*) 'krhs=',krhs
-      write(*,*) 'iic=',iic
-      write(*,*) '++++++++++'
-
-      end subroutine restore_croco_state
 
       subroutine handle_err(errcode)
       implicit none
