@@ -380,7 +380,22 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           f(i,j)=f0+beta*(yr(i,j)-(0.5*el))
 #  endif
         enddo
-      enddo   
+      enddo
+
+# if defined UV_COR_NT || defined CROCO_QH
+!
+!  Horizontal (non-traditional) Coriolis parameter
+!
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          if (beta.eq.0) then     ! f-plan
+            e(i,j)=2.*Erotation*cos(asin(f0/(2.*Erotation)))
+          else
+            e(i,j)=beta*Eradius   ! beta plan
+          endif
+        enddo
+      enddo
+# endif
 !
 !----------------------------------------------------------------------
 !  Set bathymetry [meters; positive] at RHO-points.

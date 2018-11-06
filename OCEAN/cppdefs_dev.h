@@ -141,7 +141,7 @@
 #  define NBQ_AM4
 # endif
 # undef  TRACETXT
-# define  DIAG_CFL
+# undef  DIAG_CFL
 # define HZR Hzr
 /*
    NBQ Precise or Performance options (default: NBQ_PERF) 
@@ -158,6 +158,7 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+
 /*
    Options for wz HADV numerical schemes (default C4)
 */
