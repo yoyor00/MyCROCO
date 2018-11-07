@@ -1147,6 +1147,7 @@
 # define ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
+# define ANA_SRFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
 
