@@ -10,6 +10,7 @@
 #include "ampi/ampi.h"
 #include "ampi/adTool/support.h"
 #include "ampi/libCommon/modified.h"
+#include "adBufferC.h"
 #include "adStack.h"
 
 MPI_Comm ADTOOL_AMPI_COMM_WORLD_SHADOW ;
@@ -156,8 +157,8 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    AMPI_PairedWith pairedWith,
 			    MPI_Comm comm) {
   /* [llh] TODO: this is not nice: we should call pushinteger4() instead ! */
-  pushinteger4array(&src,1) ;
-  pushinteger4array(&tag,1) ;
+  pushInteger4Array(&src,1) ;
+  pushInteger4Array(&tag,1) ;
 }
 
 void ADTOOL_AMPI_popSRinfo(void** buf,
@@ -169,8 +170,8 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Comm* comm,
 			   void **idx) { 
   /* [llh] TODO: this is not nice: we should call popinteger4() instead ! */
-  popinteger4array(tag,1) ;
-  popinteger4array(src,1) ;
+  popInteger4Array(tag,1) ;
+  popInteger4Array(src,1) ;
 }
 
 void ADTOOL_AMPI_pushGSinfo(int commSizeForRootOrNull,
@@ -787,7 +788,7 @@ void ADTOOL_AMPI_pushBuffer(int count, MPI_Datatype datatype, MPI_Comm comm,
     MPI_Aint lb, extent ;
     MPI_Type_get_extent(datatype,&lb,&extent);
     int length = count*(int)extent ;
-    pushNarray((char*)buffer, length) ;
+    pushNArray((char*)buffer, length, 1) ; // !!! ??? add last arg (check)
 }
 
 /**
@@ -798,7 +799,7 @@ void ADTOOL_AMPI_popBuffer(int count, MPI_Datatype datatype, MPI_Comm comm,
     MPI_Aint lb, extent ;
     MPI_Type_get_extent(datatype,&lb,&extent);
     int length = count*(int)extent ;
-    popNarray((char*)buffer, length) ;
+    popNArray((char*)buffer, length, 1) ; //!!! ??? add last arg
 }
 
 void ADTOOL_AMPI_writeData(void *buf,int *count) {}
