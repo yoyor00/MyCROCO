@@ -1,6 +1,9 @@
 title:
 	Friction tides
 
+start_date:
+01/04/2014 00:00:00
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                8640     60      1       1
 
