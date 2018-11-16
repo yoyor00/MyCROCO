@@ -137,7 +137,7 @@ c     this file is not differentiated
 #endif
       dx=1.e-10
       df1=f
-      epsrel=1.e-2
+      epsrel=1.e-7
       niter=200
       nsim=200
       normtype = 'dfn'

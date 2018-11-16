@@ -60,8 +60,8 @@
 # undef BENGUELA_LR
                       /* Parallelization */
 # undef  OPENMP
-# define RVTK_DEBUG
-# define RVTK_DEBUG_ADVANCED
+!# define RVTK_DEBUG
+!# define RVTK_DEBUG_ADVANCED
 # define MPI
 # define AMPI
   /* Nesting */

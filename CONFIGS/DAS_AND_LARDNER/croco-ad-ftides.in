@@ -33,7 +33,7 @@ rho0:
       1025.
 
 bottom_drag:     RDRG(m/s),      RDRG2, Zob [m],  Cdb_min, Cdb_max
-                 0.0d-04         0.20d-05     0.d-3        1.d-4    1.d-1
+                 0.0d-04         0.00d-05     0.15d-3        1.d-4    1.d-1
 
 gamma2:
                  1.
