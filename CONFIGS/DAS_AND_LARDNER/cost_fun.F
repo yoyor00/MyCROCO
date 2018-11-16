@@ -1,3 +1,4 @@
+#define control_var rdrg2
 
       subroutine cost_fun(ad_x, cost)
       implicit none
@@ -17,11 +18,11 @@
       double precision cost
       double precision xcost
 
-      double precision zobt_bck
+      double precision control_var_bck
 
       integer k, ierr, i
 
-      zobt_bck = zobt
+      control_var_bck = control_var
       call set_state(ad_x)
 
       cost = 0
@@ -33,9 +34,9 @@ C$AD BINOMIAL-CKP 120 10 1
       end do
 
 c     cost = cost +
-c     &     (ad_x(1)-zobt_bck)*(ad_x(1)-zobt_bck)
+c     &     (ad_x(1)-control_var_bck)*(ad_x(1)-control_var_bck)
 
-      write (*,*) 'zobt=',zobt
+      write (*,*) 'control_var=',control_var
       write (*,*) 'cost=',cost
 
       return
@@ -164,7 +165,7 @@ C$AD NOCHECKPOINT
 #include "mpi_roms.h"
 #include "adparam.h"
       integer Istr,Iend,Jstr,Jend, i,j
-      double precision zobt_bck, h0(GLOBAL_2D_ARRAY)
+      double precision control_var_bck, h0(GLOBAL_2D_ARRAY)
 
       integer bi, bj
 #include "compute_extended_bounds.h"
@@ -186,14 +187,14 @@ c             h(i,j) = ad_x(1+(i-IstrR+1)+bi*(j-JstrR))
 c         end do
 c      end do
 
-      zobt = real(ad_x(1))
+      control_var = real(ad_x(1))
 
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
       write(*, *) 'mynode=',mynode
 #endif
-      write(*, *) 'zobt=',zobt
+      write(*, *) 'control_var=',control_var
       write(*, *) '*******************'
 
  900  format(1PE16.9)
@@ -213,7 +214,7 @@ c      end do
       real vbar_bck(GLOBAL_2D_ARRAY,4)
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
-      real zobt_bck
+      real control_var_bck
 
       integer kstp_bck
       integer krhs_bck
@@ -221,13 +222,13 @@ c      end do
       integer iic_bck
 
       common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, zobt_bck
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, control_var_bck
 
       ubar_bck(:,:,:) = ubar(:,:,:)
       vbar_bck(:,:,:) = vbar(:,:,:)
       zeta_bck(:,:,:) = zeta(:,:,:)
       h_bck(:,:) = h(:,:)
-      zobt_bck = zobt
+      control_var_bck = control_var
 
       kstp_bck = kstp
       krhs_bck = krhs
@@ -255,7 +256,7 @@ c      end do
       real vbar_bck(GLOBAL_2D_ARRAY,4)
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
-      real zobt_bck
+      real control_var_bck
 
       integer kstp_bck
       integer krhs_bck
@@ -263,13 +264,13 @@ c      end do
       integer iic_bck
 
       common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, zobt_bck
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, control_var_bck
 
       ubar(:,:,:) = ubar_bck(:,:,:)
       vbar(:,:,:) = vbar_bck(:,:,:)
       zeta(:,:,:) = zeta_bck(:,:,:)
       h(:,:) = h_bck(:,:)
-      zobt = zobt_bck
+      control_var = control_var_bck
 
       kstp = kstp_bck
       krhs = krhs_bck
@@ -295,6 +296,6 @@ c      end do
       integer i
       
       do i=1,ad_array_size
-         ad_x(i)=zobt
+         ad_x(i)=control_var
       end do
       end subroutine init_control
