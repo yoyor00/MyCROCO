@@ -60,7 +60,7 @@ c     Here we call directly the computation of cost_fun.
 
          call restore_croco_state()
 
-         do i=1,Sn
+         do i=1,1
             write(*,*) '--->', i,f,cost,gg(i)
          end do
 

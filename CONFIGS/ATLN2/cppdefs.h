@@ -55,6 +55,7 @@
 
   /* Configuration Name */
 #define FRICTION_TIDES
+#define Z0B_VAR ZOBI_VAR
 # define OUT_DOUBLE
 # define TAPENADE
 # define BENGUELA_LR
@@ -62,8 +63,8 @@
 # undef  OPENMP
 # undef RVTK_DEBUG
 # undef RVTK_DEBUG_ADVANCED
-# define MPI
-# define AMPI
+# undef MPI
+# undef AMPI
   /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY

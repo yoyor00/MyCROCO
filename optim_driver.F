@@ -19,7 +19,8 @@ c     this file is not differentiated
       integer indic,imp,io,imode(3),omode,niter,nsim,iz(5),ndz,
      &     reverse
 
-      parameter(ndz=10*ad_array_size*ad_array_size+1)
+c     ndz must be >= 6*ad_array_size+1 in DIS mode
+      parameter(ndz=6*ad_array_size+1)
 
       external simul_rc,euclid,ctonbe,ctcabe
       external simul
@@ -91,7 +92,8 @@ c     this file is not differentiated
       integer indic,imp,io,imode(3),omode,niter,nsim,iz(5),ndz,
      &     reverse
 
-      parameter(ndz=10*ad_array_size*ad_array_size+1)
+c     ndz must be >= 6*ad_array_size+1 in DIS mode      
+      parameter(ndz=6*ad_array_size+1)
 
       external simul_rc,euclid,ctonbe,ctcabe
       external simul
@@ -104,8 +106,7 @@ c     this file is not differentiated
       double precision f, xf
       double precision gg(ad_array_size), xgg(ad_array_size)
 
-      double precision dx, df1,epsrel,
-     &     z(5*ad_array_size+1)
+      double precision dx, df1,epsrel
 
       double precision dz(ndz)
 
@@ -143,8 +144,11 @@ c     this file is not differentiated
       normtype = 'dfn'
       io=6
       imp=5
+c     imode(1)=0 ==> DIS mode
       imode(1)=0
+c     imode(2)=0 ==> cold start      
       imode(2)=0
+c     imode(3)=0 ==> simulator never called with indic=1     
       imode(3)=0
 
       write(*,*) 'start state_control'

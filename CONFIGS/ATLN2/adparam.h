@@ -3,6 +3,7 @@ C     -*- fortran -*-
 C     size of the problem (number of control variables)
       integer ad_array_size
       parameter (ad_array_size=(3+Lm+3+padd_X)*(3+Mm+3+padd_E))
+c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 C     size of the assimilation window (number of steps)
 C     on change check BINOMIAL-CKP param in cost_fun
