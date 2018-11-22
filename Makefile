@@ -322,6 +322,12 @@ plotter: plotter.F
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
+cmaker.f: cmaker.F
+	$(CPP) -P $(CPPFLAGS) $^ | ./mpc > $@
+
+cmaker: cmaker.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
 
