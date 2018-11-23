@@ -118,7 +118,7 @@ c     &        zeta(i,j,knew),ad_obs(i,j,ta+1)
 
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
          delta_zob = (zob(i,j) - zob_bck(i,j))
-         icost = icost + delta_z*delta_z + 1.D10*delta_zob*delta_zob
+         icost = icost + delta_z*delta_z 
       end do
       
       end subroutine cost_fun_step_2d_tile
@@ -204,11 +204,15 @@ C$AD NOCHECKPOINT
 
       do j=Jstr,Jend
          do i=Istr,Iend
-            zob(i,j) = 0.
-            do k=1,ad_array_size
-               zob(i,j) = zob(i,j) + ad_x(k)*W(i,j,k)/SkW(i,j)
-            end do
-            zob(i,j)=min(max(zob(i,j),1.D-10),1.0)
+            k=ad_colloc(i,j)
+            if (k.lt.1.or.k.gt.ad_array_size) then
+               write (*,*) 'AD BIG PROBLEM k=',k
+               stop
+            endif
+c            do k=1,ad_array_size
+c               zob(i,j) = zob(i,j) + ad_x(k)*ad_x(k)*W(i,j,k)/SkW(i,j)
+c     end do
+            zob(i,j)=min(ad_x(k)*ad_x(k), 1.0)
          end do
       end do
       
@@ -241,11 +245,21 @@ C$AD NOCHECKPOINT
 # include "climat.h"
 # include "forces.h"
 # include "adparam.h"      
+# ifdef MPI
+# include "mpi_roms.h"
+# ifdef AMPI
+# include "ampi/ampif.h"
+# else
+      include 'mpif.h'
+# endif
+# endif
+      integer ierr
 
+      
       integer k
       
       do k=1,ad_array_size
-         ad_x(k)=Zobt
+         ad_x(k)=sqrt(Zobt)
       end do
 
       MPI_master_only call init_collocation_points()
@@ -448,7 +462,7 @@ c from rosettacode.org
 # include "adparam.h"      
 
       integer Istr,Iend,Jstr,Jend,i,j,k
-      double precision dist,rk,haversine
+      double precision mindist,dist,rk,haversine
 
       
       do j=Jstr,Jend
@@ -463,6 +477,19 @@ c from rosettacode.org
             end do
          end do
       end do
+
+      do j=Jstr,Jend
+         do i=Istr,Iend
+            mindist=1.D230
+            do k=1,ad_array_size
+               dist=haversine(latr(i,j),lonr(i,j),latr(ad_i(k),ad_j(k)),
+     &              lonr(ad_i(k),ad_j(k)))
+               if (dist.lt.mindist) then
+                  ad_colloc(i,j)=k
+               endif
+            enddo
+         enddo
+      enddo
       
       end subroutine init_weighted_coefficients_2d_tile
 
@@ -475,22 +502,28 @@ c from rosettacode.org
 #include "scalars.h"
 #include "ocean2d.h"      
 #include "adparam.h"
-      integer i,j,k
+      integer i,j,k,istep,jstep
       real r
+      double precision dist,mindist
 # include "compute_tile_bounds.h"
 
-      call random_seed()
+      istep=(Iend+1-Istr)/sqrt(real(ad_array_size))
+      jstep=(Iend+1-Istr)/sqrt(real(ad_array_size))
       k=1
-      do while (k.le.ad_array_size)
-         call random_number(r)
-         i=Istr+floor((Iend+1-Istr)*r)
-         j=Jstr+floor((Jend+1-Jstr)*r)
-         write(*,*) '###>',i,j,pmask(i,j),Istr,Iend,Jstr,Jend,r
-         if (pmask(i,j).eq.1) then
-            ad_i(k)=i
-            ad_j(k)=j
-            k=k+1
-         endif
-      enddo
-      
+      jloop: do j=Jstr,Jend,istep
+      do i=Istr,Iend,jstep
+c         call random_number(r)
+c         i=Istr+floor((Iend+1-Istr)*r)
+c     j=Jstr+floor((Jend+1-Jstr)*r)
+            if (pmask(i,j).eq.1) then
+               ad_i(k)=i
+               ad_j(k)=j
+               k=k+1
+               if (k.gt.ad_array_size) then
+                  exit jloop
+               endif
+            endif
+         enddo
+      enddo jloop
+
       end subroutine init_collocation_points

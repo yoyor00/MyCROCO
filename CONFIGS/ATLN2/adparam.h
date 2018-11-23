@@ -2,7 +2,7 @@ C     -*- fortran -*-
 
 C     size of the problem (number of control variables)
       integer ad_array_size
-      parameter (ad_array_size=30)
+      parameter (ad_array_size=1)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 C     size of the assimilation window (number of steps)
@@ -31,6 +31,9 @@ c     coordinates of control points (i.e collocation points)
 c     weighted coefficients
       double precision W(GLOBAL_2D_ARRAY,ad_array_size)
       double precision SkW(GLOBAL_2D_ARRAY)
+
+c     direct affectation of collocation points
+      integer ad_colloc(GLOBAL_2D_ARRAY)
       
 C     tangential vector
       double precision ad_xd(ad_array_size)
@@ -43,6 +46,7 @@ c     tidal period (M2)
       parameter(TM2 = 12.4206012)
       
 C     commons
+      common /colloc_id/ ad_colloc
       common /collocation_coords/ ad_i,ad_j
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
