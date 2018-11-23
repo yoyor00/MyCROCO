@@ -320,7 +320,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 cmaker.f: cmaker.F
 	$(CPP) -P $(CPPFLAGS) $^ | ./mpc > $@
@@ -335,10 +335,10 @@ main_adj.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
-	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(x)" -r8 -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
-	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
 
 
 fortranSupport.o : fortranSupport.F

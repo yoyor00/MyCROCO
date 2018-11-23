@@ -178,6 +178,8 @@ c         write(*,*) '===>', mynode, ad_x(1), f, gg(1)
          call AMPI_Bcast(ad_x,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
+     &        0,MPI_COMM_WORLD,ierr)
+         call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)   
 #endif
          call simul(indic,ad_array_size,ad_x,f,gg,izs,rzs,dzs)

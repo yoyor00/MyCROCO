@@ -27,21 +27,24 @@ c     this file is not differentiated
 
          call save_croco_state()
 
-c     It is no trivial to get direct result from reverse mode with tapenade
-c     cf Original statements and results disappearing from the Reverse code:
-c     https://www-sop.inria.fr/tropics/tapenade/faq.html#adjlive
-c     this need -nooptim adjointliveness but it is not sufficient,
-c     and it needs some modifications in generated code.
-c     Here we call directly the computation of cost_fun.
+c        It is no trivial to get direct result from reverse mode with
+c        tapenade cf Original statements and results disappearing from
+c        the Reverse code:
+c        https://www-sop.inria.fr/tropics/tapenade/faq.html#adjlive this
+c        need -nooptim adjointliveness but it is not sufficient, and it
+c        needs some modifications in generated code.  Here we call
+c        directly the computation of cost_fun.
+
          call cost_fun(ad_x, cost)
          f = cost
-         call restore_croco_state()
 
-         eps = 1.0D-10
+c     call restore_croco_state()
 
-         xbck(1) = ad_x(1) + eps
-         call cost_fun(xbck, cost)
-         write(*,*) '-||->', (cost-f)/eps
+c         eps = 1.0D-10
+
+c         xbck(1) = ad_x(1) + eps
+c         call cost_fun(xbck, cost)
+c         write(*,*) '-||->', (cost-f)/eps
          call restore_croco_state()
 
          costb = 1

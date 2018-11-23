@@ -88,7 +88,7 @@ C$AD NOCHECKPOINT
       end subroutine cost_fun_step_2d
 
 C$AD NOCHECKPOINT
-      subroutine cost_fun_step_2d_tile(Istr, Iend, Jstr, Jend, icost, ta)
+      subroutine cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,icost,ta)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -106,19 +106,17 @@ C$AD NOCHECKPOINT
       integer Istr,Iend,Jstr,Jend,i,j
       integer ta, k
       double precision delta_z, delta_zob, icost
-      real zob_bck(GLOBAL_2D_ARRAY)
-      common /backup/ zob_bck
 
-      do k=1,ad_array_size
+      do k=1,ad_array_size/nnodes
          i=ad_i(k)
          j=ad_j(k)
 
 
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
          delta_zob = (zob(i,j) - zob_bck(i,j))
-c         write(*,*) '----',i,j,knew,sim_iicroot,k,sim_iicroot+k,
-c     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
-c         write(*,*) '++++',delta_z,delta_zob
+         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
+     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
+         write(*,*) 'BBBBB',mynode,delta_z,delta_zob
          icost = icost + delta_z*delta_z + delta_zob*delta_zob
       end do
       
@@ -199,21 +197,32 @@ C$AD NOCHECKPOINT
 # include "forces.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend, i,j,k
+      integer Istr,Iend,Jstr,Jend, i,j,k,xk
+      double precision lzob
+
+      integer ad_anode_size
 
 #include "compute_extended_bounds.h"
+      ad_anode_size=ad_array_size/nnodes
 
       do j=Jstr,Jend
          do i=Istr,Iend
-            k=ad_colloc(i,j)
-            if (k.lt.1.or.k.gt.ad_array_size) then
-               write (*,*) 'AD BIG PROBLEM k=',k
-               stop
-            endif
-c            do k=1,ad_array_size
-c               zob(i,j) = zob(i,j) + ad_x(k)*ad_x(k)*W(i,j,k)/SkW(i,j)
-c     end do
-            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
+c            k=ad_colloc(i,j)
+c            if (k.lt.1.or.k.gt.ad_array_size) then
+c               write (*,*) 'AD BIG PROBLEM k=',k
+c               stop
+c            endif
+            zob(i,j)=0
+#ifdef MPI
+            xk=(mynode-1)*ad_anode_size+k
+#else
+            xk=k
+#endif
+            do k=1,ad_anode_size
+               lzob=1.D-7 + 1/(1+exp(ad_x(k)))
+               zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
+            end do
+c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
          end do
       end do
       
@@ -263,16 +272,7 @@ c     end do
          ad_x(k)=log(1./Zobt - 1.)
       end do
 
-      MPI_master_only call init_collocation_points()
-#ifdef AMPI
-      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-      call AMPI_Bcast(ad_i,ad_array_size,MPI_INTEGER,
-     &     0,MPI_COMM_WORLD,ierr)
-      call AMPI_Bcast(ad_j,ad_array_size,MPI_INTEGER,
-     &     0,MPI_COMM_WORLD,ierr)
-#endif
-
-      call init_weighted_coefficients()
+      call init_collocation_points()
       
       end subroutine init_control
 
@@ -291,20 +291,6 @@ c     end do
 # include "forces.h"
 # include "adparam.h"
 
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
-      real zob_bck(GLOBAL_2D_ARRAY)
-      real Zobt_bck
-
-      integer kstp_bck
-      integer krhs_bck
-      integer knew_bck
-      integer iic_bck
-
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
-
       ubar_bck(:,:,:) = ubar(:,:,:)
       vbar_bck(:,:,:) = vbar(:,:,:)
       zeta_bck(:,:,:) = zeta(:,:,:)
@@ -321,6 +307,8 @@ c     end do
       write(*,*) 'kstp=',kstp
       write(*,*) 'krhs=',krhs
       write(*,*) 'iic=',iic
+      write(*,*) 'minzob',minval(zob_bck)
+      write(*,*) 'maxzob',maxval(zob_bck)
       write(*,*) '----------'
 
       end subroutine save_croco_state
@@ -339,20 +327,6 @@ c     end do
 # include "climat.h"
 # include "forces.h"
 # include "adparam.h"
-
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
-      real zob_bck(GLOBAL_2D_ARRAY)
-      real Zobt_bck
-
-      integer kstp_bck
-      integer krhs_bck
-      integer knew_bck
-      integer iic_bck
-
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
       ubar(:,:,:) = ubar_bck(:,:,:)
       vbar(:,:,:) = vbar_bck(:,:,:)
@@ -399,7 +373,7 @@ c from rosettacode.org
           dist = radius*c
       end function haversine
 
-      subroutine init_weighted_coefficients()
+      subroutine init_collocation_points()
 # include "cppdefs.h"
 # include "param.h"
 # include "grid.h"
@@ -427,12 +401,12 @@ c from rosettacode.org
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call init_weighted_coefficients_2d(tile)
+         call init_collocation_points_2d(tile)
       end do      
 
-      end subroutine init_weighted_coefficients
+      end subroutine init_collocation_points
 
-      subroutine init_weighted_coefficients_2d(tile)
+      subroutine init_collocation_points_2d(tile)
 
       implicit none
 # include "cppdefs.h"
@@ -442,11 +416,11 @@ c from rosettacode.org
       double precision icost
 # include "compute_tile_bounds.h"
 
-      call init_weighted_coefficients_2d_tile(Istr, Iend, Jstr, Jend)
+      call init_collocation_points_2d_tile(Istr, Iend, Jstr, Jend)
 
-      end subroutine init_weighted_coefficients_2d
+      end subroutine init_collocation_points_2d
 
-      subroutine init_weighted_coefficients_2d_tile(Istr,Iend,Jstr,Jend)
+      subroutine init_collocation_points_2d_tile(Istr,Iend,Jstr,Jend)
 
       implicit none
 # include "cppdefs.h"
@@ -462,14 +436,40 @@ c from rosettacode.org
 # include "forces.h"
 # include "adparam.h"      
 
-      integer Istr,Iend,Jstr,Jend,i,j,k
+      integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep
       double precision mindist,dist,rk,haversine
 
+      integer ad_anode_size
+
+      ad_anode_size = ad_array_size/nnodes
+
+      
+      istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
+      jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
+      k=1
+      jloop: do j=Jstr,Jend,istep
+      do i=Istr,Iend,jstep
+c         call random_number(r)
+c         i=Istr+floor((Iend+1-Istr)*r)
+c     j=Jstr+floor((Jend+1-Jstr)*r)
+         if (h(i,j).gt.0.1.and.ad_obs(i,j,1).ne.spval) then
+               write(*,*) 'new collocation point:',mynode,i,j,h(i,j),
+     &           ad_obs(i,j,1)
+               ad_i(k)=i
+               ad_j(k)=j
+               k=k+1
+               if (k.gt.ad_anode_size) then
+                  exit jloop
+               endif
+            endif
+         enddo
+      enddo jloop
+      
       
       do j=Jstr,Jend
          do i=Istr,Iend
             SkW(i,j)=0.
-            do k=1,ad_array_size
+            do k=1,ad_anode_size
                dist=haversine(latr(i,j),lonr(i,j),latr(ad_i(k),ad_j(k)),
      &              lonr(ad_i(k),ad_j(k)))
                rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
@@ -482,7 +482,7 @@ c from rosettacode.org
       do j=Jstr,Jend
          do i=Istr,Iend
             mindist=1.D230
-            do k=1,ad_array_size
+            do k=1,ad_anode_size
                dist=haversine(latr(i,j),lonr(i,j),latr(ad_i(k),ad_j(k)),
      &              lonr(ad_i(k),ad_j(k)))
                if (dist.lt.mindist) then
@@ -492,41 +492,5 @@ c from rosettacode.org
          enddo
       enddo
       
-      end subroutine init_weighted_coefficients_2d_tile
+      end subroutine init_collocation_points_2d_tile
 
-
-      subroutine init_collocation_points()
-
-#include "cppdefs.h"
-#include "param.h"
-#include "grid.h"
-#include "scalars.h"
-#include "ocean2d.h"      
-#include "adparam.h"
-      integer i,j,k,istep,jstep
-      real r
-      double precision dist,mindist
-# include "compute_tile_bounds.h"
-
-      istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
-      jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
-      k=1
-      jloop: do j=Jstr,Jend,istep
-      do i=Istr,Iend,jstep
-c         call random_number(r)
-c         i=Istr+floor((Iend+1-Istr)*r)
-c     j=Jstr+floor((Jend+1-Jstr)*r)
-         if (h(i,j).gt.0.1.and.ad_obs(i,j,1).ne.spval) then
-               write(*,*) 'new collocation point:',i,j,h(i,j),
-     &           ad_obs(i,j,1)
-               ad_i(k)=i
-               ad_j(k)=j
-               k=k+1
-               if (k.gt.ad_array_size) then
-                  exit jloop
-               endif
-            endif
-         enddo
-      enddo jloop
-
-      end subroutine init_collocation_points
