@@ -109,16 +109,17 @@ C$AD NOCHECKPOINT
       real zob_bck(GLOBAL_2D_ARRAY)
       common /backup/ zob_bck
 
-      
       do k=1,ad_array_size
          i=ad_i(k)
          j=ad_j(k)
-c         write(*,*) '}}}}',i,j,knew,sim_iicroot,k,sim_iicroot+k,
-c     &        zeta(i,j,knew),ad_obs(i,j,ta+1)
+
 
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
          delta_zob = (zob(i,j) - zob_bck(i,j))
-         icost = icost + delta_z*delta_z 
+c         write(*,*) '----',i,j,knew,sim_iicroot,k,sim_iicroot+k,
+c     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
+c         write(*,*) '++++',delta_z,delta_zob
+         icost = icost + delta_z*delta_z + delta_zob*delta_zob
       end do
       
       end subroutine cost_fun_step_2d_tile
@@ -212,7 +213,7 @@ C$AD NOCHECKPOINT
 c            do k=1,ad_array_size
 c               zob(i,j) = zob(i,j) + ad_x(k)*ad_x(k)*W(i,j,k)/SkW(i,j)
 c     end do
-            zob(i,j)=min(ad_x(k)*ad_x(k), 1.0)
+            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
          end do
       end do
       
@@ -259,7 +260,7 @@ c     end do
       integer k
       
       do k=1,ad_array_size
-         ad_x(k)=sqrt(Zobt)
+         ad_x(k)=log(1./Zobt - 1.)
       end do
 
       MPI_master_only call init_collocation_points()
@@ -507,15 +508,17 @@ c from rosettacode.org
       double precision dist,mindist
 # include "compute_tile_bounds.h"
 
-      istep=(Iend+1-Istr)/sqrt(real(ad_array_size))
-      jstep=(Iend+1-Istr)/sqrt(real(ad_array_size))
+      istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
+      jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
       k=1
       jloop: do j=Jstr,Jend,istep
       do i=Istr,Iend,jstep
 c         call random_number(r)
 c         i=Istr+floor((Iend+1-Istr)*r)
 c     j=Jstr+floor((Jend+1-Jstr)*r)
-            if (pmask(i,j).eq.1) then
+         if (h(i,j).gt.0.1.and.ad_obs(i,j,1).ne.spval) then
+               write(*,*) 'new collocation point:',i,j,h(i,j),
+     &           ad_obs(i,j,1)
                ad_i(k)=i
                ad_j(k)=j
                k=k+1
