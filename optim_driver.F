@@ -47,15 +47,16 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       call init_control()
       
       indic = 4
-      call simul (indic,ad_array_size,ad_x,f,ad_g,izs,rzs,dzs)
+      call simul (indic,ad_array_size,ad_x_f,f,ad_g_f,izs,rzs,dzs)
 #ifdef AMPI
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
       call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
-c      call AMPI_Reduce(gg, xgg, ad_array_size,AMPI_ADOUBLE_PRECISION,
-c     &     MPI_SUM, 0,
-c     &     MPI_COMM_WORLD, ierr)
-
+      call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
+     &     AMPI_ADOUBLE_PRECISION,
+     &     MPI_SUM, 0,
+     &     MPI_COMM_WORLD, ierr)
+      
       if (mynode.eq.0) then
          f = xf
       end if
@@ -89,22 +90,10 @@ c         write(*,*) '+++>', mynode, ad_x(1), f, gg(1)
 
 c         MPI_master_only call optim_driver
 c     &        (x,f,gg,reverse,indic)
-#ifdef AMPI
-         call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Gather(ad_x,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-         call AMPI_Gather(ad_g,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,ad_g_f,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
-#else
-         ad_x_f = ad_x
-#endif
-
-      do i=1,ad_array_size
-         write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),ad_g_f(i)
-      end do
+         do i=1,ad_array_size
+            write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),ad_g_f(i)
+         end do
          
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
      &        ad_array_size,ad_x_f,
@@ -114,35 +103,31 @@ c     &        (x,f,gg,reverse,indic)
 
 #ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Scatter(ad_x_f,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,ad_x,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-         call AMPI_Scatter(ad_g_f,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,ad_g,ad_array_size/nnodes,
-     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+         call AMPI_Bcast(ad_x_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &        0,MPI_COMM_WORLD,ierr)
+         call AMPI_Bcast(ad_g_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &        0,MPI_COMM_WORLD,ierr)
 c        call AMPI_Bcast(ad_x_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
 c     &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
-#else
-         ad_x = ad_x_f
 #endif
-         call simul(indic,ad_array_size/nnodes,ad_x,f,ad_g,izs,rzs,dzs)
+         call simul(indic,ad_array_size,ad_x_f,f,ad_g_f,izs,rzs,dzs)
 
 #ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
      &        MPI_COMM_WORLD, ierr)
-c         call AMPI_Reduce(gg, xgg, ad_array_size,AMPI_ADOUBLE_PRECISION,
-c     &        MPI_SUM, 0,
-c     &        MPI_COMM_WORLD, ierr)
-
+         call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
+     &     AMPI_ADOUBLE_PRECISION,
+     &     MPI_SUM, 0,
+     &     MPI_COMM_WORLD, ierr)
+#endif
          if (mynode.eq.0) then
             f = xf
          end if
-#endif
 
          df1 = f
 
@@ -153,7 +138,7 @@ c     &        MPI_COMM_WORLD, ierr)
       end do
 
 C ...
-      call set_state(ad_x)
+      call set_state(ad_x_f)
 
       close (unit=777)
       close (unit=778)

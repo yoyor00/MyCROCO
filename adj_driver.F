@@ -2,7 +2,7 @@ c     this file is not differentiated
 
 # include "cppdefs.h"      
       
-      subroutine simul(indic,Sn,ad_x,f,ad_g,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x_f,f,ad_g_f,izs,rzs,dzs)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -35,7 +35,7 @@ c        need -nooptim adjointliveness but it is not sufficient, and it
 c        needs some modifications in generated code.  Here we call
 c        directly the computation of cost_fun.
 
-         call cost_fun(ad_x, cost)
+         call cost_fun(ad_x_f, cost)
          f = cost
 
 c     call restore_croco_state()
@@ -53,12 +53,12 @@ c         write(*,*) '-||->', (cost-f)/eps
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
-         call cost_fun_b(ad_x, ad_g, cost, costb)
+         call cost_fun_b(ad_x_f, ad_g_f, cost, costb)
 
          write (*,*) '--------------------------------------'
          write (*,*) 'end adjoint'
          write (*,*) '--------------------------------------'
-         write (*,*) '1--->', ad_x(1),f,cost,ad_g(1)
+         write (*,*) '1--->', ad_x_f(1),f,cost,ad_g_f(1)
 
          call restore_croco_state()
 

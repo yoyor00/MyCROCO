@@ -1,5 +1,5 @@
 
-      subroutine cost_fun(ad_x, cost)
+      subroutine cost_fun(ad_x_f, cost)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -18,7 +18,7 @@
       double precision xcost
       integer ta
       
-      call set_state(ad_x)
+      call set_state(ad_x_f)
 
       cost = 0
 
@@ -123,7 +123,7 @@ C$AD NOCHECKPOINT
       end subroutine cost_fun_step_2d_tile
 
 C$AD NOCHECKPOINT
-      subroutine set_state(ad_x)
+      subroutine set_state(ad_x_f)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -152,14 +152,14 @@ C$AD NOCHECKPOINT
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call set_state_2d(tile, ad_x)
+         call set_state_2d(tile, ad_x_f)
       end do
 
       end subroutine set_state
 
 
 C$AD NOCHECKPOINT
-      subroutine set_state_2d(tile, ad_x)
+      subroutine set_state_2d(tile, ad_x_f)
 
       implicit none
 # include "cppdefs.h"
@@ -177,12 +177,12 @@ C$AD NOCHECKPOINT
       integer tile
 # include "compute_tile_bounds.h"
 
-      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
+      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x_f)
 
       end subroutine set_state_2d
 
 C$AD NOCHECKPOINT
-      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend,ad_x)
+      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x_f)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -213,12 +213,11 @@ c               write (*,*) 'AD BIG PROBLEM k=',k
 c               stop
 c            endif
             zob(i,j)=0
-
-            do k=1,ad_anode_size
-               lzob=1.D-7 + 1/(1+exp(ad_x(k)))
+            do k=1,ad_array_size
+               lzob=1.D-7 + 1/(1+exp(ad_x_f(k)))
                zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
             end do
-c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
+c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
          end do
       end do
       
@@ -264,9 +263,9 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
       
       integer k
       
-      do k=1,ad_array_size/nnodes
-         ad_x(k)=log(1./Zobt - 1.)
-         ad_g(k)=0.
+      do k=1,ad_array_size
+         ad_x_f(k)=log(1./Zobt  - 1.)
+         ad_g_f(k)=0.
       end do
       
       call init_collocation_points()
@@ -432,8 +431,15 @@ c from rosettacode.org
 # include "climat.h"
 # include "forces.h"
 # include "adparam.h"      
-
-      integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep
+# ifdef MPI
+# include "mpi_roms.h"
+# ifdef AMPI
+# include "ampi/ampif.h"
+# else
+      include 'mpif.h'
+# endif
+# endif
+      integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep,ierr
       double precision mindist,dist,rk,haversine
 
       integer ad_anode_size
@@ -454,6 +460,8 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
      &           ad_obs(i,j,1)
                ad_i(k)=i
                ad_j(k)=j
+               ad_latr(k)=latr(i,j)
+               ad_lonr(k)=lonr(i,j)
                k=k+1
                if (k.gt.ad_anode_size) then
                   exit jloop
@@ -462,14 +470,33 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
          enddo
       enddo jloop
       
+#ifdef AMPI
+      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
+      call AMPI_Gather(ad_latr,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,ad_latr_f,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+      call AMPI_Gather(ad_lonr,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,ad_lonr_f,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+      call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &     0,MPI_COMM_WORLD,ierr)
+      call AMPI_Bcast(ad_lonr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &     0,MPI_COMM_WORLD,ierr)
+#else
+      ad_latr_f = ad_latr
+      ad_lonr_f = ad_lonr
+#endif
+      do k=1,ad_array_size
+         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
+      end do
       
       do j=Jstr,Jend
          do i=Istr,Iend
             SkW(i,j)=0.
-            do k=1,ad_anode_size
-               dist=haversine(latr(i,j),lonr(i,j),latr(ad_i(k),ad_j(k)),
-     &              lonr(ad_i(k),ad_j(k)))
-               rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
+            rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
+            do k=1,ad_array_size
+               dist=haversine(latr(i,j),lonr(i,j),
+     &              ad_latr_f(k),ad_lonr_f(k))
                W(i,j,k)=exp(-dist/rk)
                SkW(i,j)=SkW(i,j)+W(i,j,k)
             end do
@@ -479,9 +506,9 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
       do j=Jstr,Jend
          do i=Istr,Iend
             mindist=1.D230
-            do k=1,ad_anode_size
-               dist=haversine(latr(i,j),lonr(i,j),latr(ad_i(k),ad_j(k)),
-     &              lonr(ad_i(k),ad_j(k)))
+            do k=1,ad_array_size
+               dist=haversine(latr(i,j),lonr(i,j),
+     &              ad_latr(k),ad_lonr(k))
                if (dist.lt.mindist) then
                   ad_colloc(i,j)=k
                endif
@@ -490,4 +517,5 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
       enddo
       
       end subroutine init_collocation_points_2d_tile
+
 
