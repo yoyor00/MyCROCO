@@ -117,7 +117,7 @@ C$AD NOCHECKPOINT
          write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
      &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
          write(*,*) 'BBBBB',mynode,delta_z,delta_zob
-         icost = icost + delta_z*delta_z + delta_zob*delta_zob
+         icost = icost + delta_z*delta_z + 1.D-5*delta_zob*delta_zob
       end do
       
       end subroutine cost_fun_step_2d_tile
@@ -197,7 +197,7 @@ C$AD NOCHECKPOINT
 # include "forces.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend, i,j,k,xk
+      integer Istr,Iend,Jstr,Jend, i,j,k
       double precision lzob
 
       integer ad_anode_size
@@ -213,11 +213,7 @@ c               write (*,*) 'AD BIG PROBLEM k=',k
 c               stop
 c            endif
             zob(i,j)=0
-#ifdef MPI
-            xk=(mynode-1)*ad_anode_size+k
-#else
-            xk=k
-#endif
+
             do k=1,ad_anode_size
                lzob=1.D-7 + 1/(1+exp(ad_x(k)))
                zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
@@ -241,7 +237,7 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
       end subroutine set_state_2d_tile
 
 
-      subroutine init_control(ad_x)
+      subroutine init_control()
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -268,10 +264,11 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x(k)))
       
       integer k
       
-      do k=1,ad_array_size
+      do k=1,ad_array_size/nnodes
          ad_x(k)=log(1./Zobt - 1.)
+         ad_g(k)=0.
       end do
-
+      
       call init_collocation_points()
       
       end subroutine init_control

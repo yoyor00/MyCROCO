@@ -2,7 +2,7 @@ C     -*- fortran -*-
 
 C     size of the problem (number of control variables)
       integer ad_array_size
-      parameter (ad_array_size=30*nnodes)
+      parameter (ad_array_size=2*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 C     size of the assimilation window (number of steps)
@@ -18,12 +18,21 @@ C     number of time steps in the main file before assimilation
       integer ad_main_st
       parameter (ad_main_st = 1)
 
-C     observations
+c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt+2)
 
-C     control vector
-      double precision ad_x(ad_array_size)
+c     control vector / MPI processes
+      double precision ad_x(ad_array_size/nnodes)
 
+c     full control vector
+      double precision ad_x_f(ad_array_size)
+
+c     gradient / MPI processes
+      double precision ad_g(ad_array_size/nnodes)
+
+c     full gradient vector
+      double precision ad_g_f(ad_array_size)
+      
 c     coordinates of control points (i.e collocation points)
       integer ad_i(ad_array_size/nnodes)
       integer ad_j(ad_array_size/nnodes)

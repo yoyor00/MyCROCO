@@ -2,7 +2,7 @@ c     this file is not differentiated
 
 # include "cppdefs.h"      
       
-      subroutine simul(indic,Sn,ad_x,f,gg,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x,f,ad_g,izs,rzs,dzs)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -10,7 +10,7 @@ c     this file is not differentiated
 # include "adparam.h"
 
       integer indic, Sn, i
-      double precision f, gg(Sn)
+      double precision f
       real izs(1)
       real rzs(1)
       real dzs(1)
@@ -48,24 +48,19 @@ c         write(*,*) '-||->', (cost-f)/eps
          call restore_croco_state()
 
          costb = 1
-         gg(1) = 0
          cost = f
 
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
-         call cost_fun_b(ad_x, gg, cost, costb)
+         call cost_fun_b(ad_x, ad_g, cost, costb)
 
          write (*,*) '--------------------------------------'
          write (*,*) 'end adjoint'
          write (*,*) '--------------------------------------'
-         write (*,*) '1--->', ad_x(1),f,cost,gg(1)
+         write (*,*) '1--->', ad_x(1),f,cost,ad_g(1)
 
          call restore_croco_state()
-
-         do i=1,1
-            write(*,*) '--->', i,f,cost,gg(i)
-         end do
 
       end if
       return
