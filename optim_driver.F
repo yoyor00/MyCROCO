@@ -44,7 +44,10 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
 
       sim_iicroot = iicroot
 
-      call init_control()
+      call init_control(ad_x_f,ad_g_f)
+
+      MPI_master_only write(*,*) 'A1##>',ad_x_f
+      MPI_master_only write(*,*) 'B1##>',ad_g_f
       
       indic = 4
       call simul (indic,ad_array_size,ad_x_f,f,ad_g_f,izs,rzs,dzs)
@@ -94,28 +97,35 @@ c     &        (x,f,gg,reverse,indic)
          do i=1,ad_array_size
             write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),ad_g_f(i)
          end do
+
+         MPI_master_only write(*,*) '1##>',ad_x_f
+         MPI_master_only write(*,*) '2##>',ad_sg_f
+         
+
          
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
      &        ad_array_size,ad_x_f,
-     &        f,ad_g_f,dx,df1,epsrel,
+     &        f,ad_sg_f,dx,df1,epsrel,
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
+
 
 #ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(ad_x_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
-         call AMPI_Bcast(ad_g_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+         call AMPI_Bcast(ad_sg_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
-c        call AMPI_Bcast(ad_x_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
-c     &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
 #endif
+         ad_g_f = ad_sg_f
          call simul(indic,ad_array_size,ad_x_f,f,ad_g_f,izs,rzs,dzs)
 
+
+         
 #ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,

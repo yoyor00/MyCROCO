@@ -215,6 +215,7 @@ c            endif
             zob(i,j)=0
             do k=1,ad_array_size
                lzob=1.D-7 + 1/(1+exp(ad_x_f(k)))
+               write(*,*) '###',mynode,i,j,k,ad_x_f(k),W(i,j,k)
                zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
             end do
 c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
@@ -236,7 +237,7 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
       end subroutine set_state_2d_tile
 
 
-      subroutine init_control()
+      subroutine init_control(ad_x_f,ad_g_f)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -267,8 +268,11 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
          ad_x_f(k)=log(1./Zobt  - 1.)
          ad_g_f(k)=0.
       end do
-      
+
       call init_collocation_points()
+
+      MPI_master_only write(*,*) 'A0##>',ad_x_f
+      MPI_master_only write(*,*) 'B0##>',ad_g_f
       
       end subroutine init_control
 

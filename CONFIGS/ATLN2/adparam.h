@@ -2,7 +2,7 @@ C     -*- fortran -*-
 
 C     size of the problem (number of control variables)
       integer ad_array_size
-      parameter (ad_array_size=30*nnodes)
+      parameter (ad_array_size=10*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 C     size of the assimilation window (number of steps)
