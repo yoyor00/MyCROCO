@@ -439,10 +439,10 @@ C$OMP BARRIER
 ! FX_r and FE_r have dimensions of kg.
 !
             bedld=8.0*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.0)**1.5)
-     &                                   *smgdr*IGN(1.0,tau_wX(i,j))
+     &                                   *smgdr*SIGN(1.0,tau_wX(i,j))
             FX_r(i,j)=bedld*on_r(i,j)*dt
             bedld=8.0*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.0)**1.5)
-     &                                   *smgdr*IGN(1.0,tau_wE(i,j))
+     &                                   *smgdr*SIGN(1.0,tau_wE(i,j))
             FE_r(i,j)=bedld*om_r(i,j)*dt
 #   else
 !
