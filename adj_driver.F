@@ -27,7 +27,7 @@ c     this file is not differentiated
 
          call save_croco_state()
 
-c        It is no trivial to get direct result from reverse mode with
+c        It is not trivial to get direct result from reverse mode with
 c        tapenade cf Original statements and results disappearing from
 c        the Reverse code:
 c        https://www-sop.inria.fr/tropics/tapenade/faq.html#adjlive this

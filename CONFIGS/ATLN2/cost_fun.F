@@ -364,7 +364,7 @@ c from rosettacode.org
           ! great circle distance -- adapted from Matlab
           real,intent(in) :: deglat1,deglon1,deglat2,deglon2
           real :: a,c,dist,dlat,dlon,lat1,lat2
-          real,parameter :: radius = 6372.8
+          real,parameter :: radius = 6372800
 
           dlat = to_radian(deglat2-deglat1)
           dlon = to_radian(deglon2-deglon1)
@@ -542,8 +542,8 @@ c         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
 
       integer k
 
-c      control_to_param = 1.D-7 + 1/(1+exp(ad_x_f(k)))
-      control_to_param = ad_x_f(k)
+      control_to_param = 1.D-7 + 1/(1+exp(ad_x_f(k)))
+c      control_to_param = ad_x_f(k)
 
       end function control_to_param
 
@@ -564,7 +564,7 @@ c      control_to_param = 1.D-7 + 1/(1+exp(ad_x_f(k)))
 
       integer k
 
-c      param_to_control = log(1./Zobt  - 1.)
-      param_to_control = Zobt
+      param_to_control = log(1./Zobt  - 1.)
+c      param_to_control = Zobt
 
       end function param_to_control
