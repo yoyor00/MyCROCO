@@ -213,8 +213,16 @@
 #  else
         do k=1,N                                     ! Southern edge closed
           do i=Istr,Iend                             ! ======== ==== ======
-                                                     !  (no-flux: default)
-            qdmv_nbq(i,Jstr,k)=0.
+#   ifdef MRL_WCI
+            qdmv_nbq(i,Jstr,k)=-vst(i,Jstr,k)        ! no Lagrangian flux
+                               *0.5*(Hz(i,Jstr,k)+Hz(i,Jstr-1,k))
+#    ifdef MASKING
+     &                         *vmask(i,Jstr)
+#    endif
+#   else
+            qdmv_nbq(i,Jstr,k)=0.                    ! no-flux: default
+#   endif
+
           enddo
         enddo
 #  endif              /* OBC_COM_SOUTH */
@@ -350,8 +358,15 @@
 #  else
         do k=1,N                                    ! Northern edge closed
           do i=Istr,Iend                            ! ======== ==== ======
-                                                    !   (no-flux: default)
-            qdmv_nbq(i,Jend+1,k)=0.
+#   ifdef MRL_WCI
+            qdmv_nbq(i,Jend+1,k)=-vst(i,Jend+1,k)   ! no Lagrangian flux
+                               *0.5*(Hz(i,Jend+1,k)+ Hz(i,Jend,k))
+#    ifdef MASKING
+     &                         *vmask(i,Jend+1)
+#    endif
+#   else
+            qdmv_nbq(i,Jend+1,k)=0.                 ! no-flux: default
+#   endif
           enddo
         enddo
 #  endif

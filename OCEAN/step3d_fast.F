@@ -309,8 +309,6 @@ C$    trd=omp_get_thread_num()
             enddo
           enddo
       enddo
-
-
 !
 !=====================================================================
 ! AB3 Forward Step: compute total depth of water column and vertically
@@ -502,8 +500,12 @@ C$OMP END MASTER
       if (IstrU.le.Iend) then
         do j=Jstr,Jend
           do i=IstrU-1,Iend+1     
-            usurf_nbq(i,j)=qdmu_nbq(i,j,N)  
+            usurf_nbq(i,j)=(qdmu_nbq(i,j,N)  
      &                     *2./(Hz(i,j,N)+Hz(i-1,j,N))
+#  ifdef MRL_WCI
+     &                     +ust(i,j,N)*umask_wet(i,j)
+#  endif
+     &                     )
 #  ifdef MASKING
      &                     *umask(i,j) 
 #  endif
@@ -514,8 +516,12 @@ C$OMP END MASTER
       if (JstrV.le.Jend) then
         do j=JstrV-1,Jend+1
           do i=Istr,Iend     
-            vsurf_nbq(i,j)=qdmv_nbq(i,j,N)              
+            vsurf_nbq(i,j)=(qdmv_nbq(i,j,N)              
      &                     *2./(Hz(i,j,N)+Hz(i,j-1,N))
+#  ifdef MRL_WCI
+     &                     +vst(i,j,N)*vmask_wet(i,j)
+#  endif
+     &                      )
 #  ifdef MASKING
      &                     *vmask(i,j) 
 #  endif
@@ -525,11 +531,15 @@ C$OMP END MASTER
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          wsurf_nbq(i,j)=qdmw_nbq(i,j,N)         
+          wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)         
 #  ifdef NBQ_MASS     
      &                       /(1.+rho_grd(i,j,N))
 #  endif
-     &                       *Hzw_half_nbq_inv(i,j,N)   
+     &                       *Hzw_half_nbq_inv(i,j,N)
+#  ifdef MRL_WCI
+     &                     +wst(i,j,N)*rmask_wet(i,j)
+#  endif
+     &                    )
 #  ifdef MASKING
      &                       *rmask(i,j) 
 #  endif
@@ -855,9 +865,6 @@ C$OMP END MASTER
 #   ifdef MASKING
      &                                 *pmask(i+1,j)
 #   endif
-#   ifdef WET_DRYXXX
-     &                                 *pmask_wet(i+1,j)
-#   endif
         enddo
       enddo
       do j=Jstr-1,Jend
@@ -869,9 +876,6 @@ C$OMP END MASTER
      &                   *(urhs(i,j+1)+urhs(i,j))
 #   ifdef MASKING
      &                                 *pmask(i,j+1)
-#   endif
-#   ifdef WET_DRYXXX
-     &                                 *pmask_wet(i,j+1)
 #   endif
         enddo
       enddo
@@ -907,7 +911,7 @@ C$OMP END MASTER
 #   if defined CURVGRID && defined UV_ADV
           cff1 = Drhs(i,j)*(
      &    0.5*( dndx(i,j)*(vst2d(i,j)+vst2d(i,j+1))
-     &          -dmde(i,j)*(ust2d(i,j)+ust2d(i+1,j)) ))
+     &         -dmde(i,j)*(ust2d(i,j)+ust2d(i+1,j)) ))
 #   else
           cff1 = 0.0
 #   endif
@@ -995,11 +999,11 @@ C$OMP END MASTER
 # ifdef MRL_WCI
       do j=Jstr,Jend
         do i=IstrU,Iend
-          vstu = 0.25*( vst2d(i,j) + vst2d(i,j+1)
+          vstu = 0.25*( vst2d(i  ,j)+vst2d(i  ,j+1)
      &                 +vst2d(i-1,j)+vst2d(i-1,j+1) )
-          dudx = 0.5*( urhs(i+1,j)-urhs(i-1,j) )
-          dvdx = 0.5*( vrhs(i,j) - vrhs(i-1,j)
-     &                 +vrhs(i,j+1) - vrhs(i-1,j+1) )
+          dudx = 0.50*( urhs(i+1,j)-urhs(i-1,j  ) )
+          dvdx = 0.50*( vrhs(i  ,j)-vrhs(i-1,j  )
+     &                 +vrhs(i,j+1)-vrhs(i-1,j+1) )
           rubar(i,j) = rubar(i,j) + 0.5*om_u(i,j)*
      &                      ( Drhs(i-1,j)+Drhs(i,j) )
      &               *( ust2d(i,j)*dudx + vstu*dvdx )
@@ -1008,11 +1012,11 @@ C$OMP END MASTER
 
       do j=JstrV,Jend
         do i=Istr,Iend
-          ustv = 0.25*( ust2d(i,j) + ust2d(i+1,j)
+          ustv = 0.25*( ust2d(i,j  )+ust2d(i+1,j  )
      &                 +ust2d(i,j-1)+ust2d(i+1,j-1) )
-          dude = 0.5*( urhs(i,j) - urhs(i,j-1)
-     &                 +urhs(i+1,j) - urhs(i+1,j-1) )
-          dvde = 0.5*( vrhs(i,j+1)-vrhs(i,j-1) )
+          dude = 0.50*( urhs(i,j  )-urhs(i  ,j-1)
+     &                 +urhs(i+1,j)-urhs(i+1,j-1) )
+          dvde = 0.50*( vrhs(i,j+1)-vrhs(i  ,j-1) )
           rvbar(i,j) = rvbar(i,j) + 0.5*on_v(i,j)*
      &                      ( Drhs(i,j-1)+Drhs(i,j) )
      &               *( ustv*dude + vst2d(i,j)*dvde )
@@ -1607,7 +1611,6 @@ C$OMP END MASTER
 # endif
             enddo 
           enddo
-
 !
 !-----------------------------------------------------------------------
 !  Fast-mode V-momentum: qdmv_nbq
@@ -1694,6 +1697,39 @@ C$OMP END MASTER
         endif  !<-- k>0
       enddo   !<-- k=0,N   
 
+# ifdef WET_DRY
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+          cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
+          cff2_WD=0.5+SIGN(0.5,DU_nbq(i,j))*umask_wet(i,j)
+          umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
+     &                         +cff2_WD*(1.-cff1_WD)
+          DU_nbq(i,j)=DU_nbq(i,j)*umask_wet(i,j)
+#  ifdef MRL_WCI
+          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+#  endif
+          do k=1,N
+            qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
+          enddo
+        enddo 
+      enddo
+      do j=JstrV,Jend
+        do i=Istr,Iend
+          cff1_WD=ABS(ABS(vmask_wet(i,j))-1.)
+          cff2_WD=0.5+SIGN(0.5,DV_nbq(i,j))*vmask_wet(i,j)
+          vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
+     &                         +cff2_WD*(1.-cff1_WD)
+          DV_nbq(i,j)=DV_nbq(i,j)*vmask_wet(i,j)
+#  ifdef MRL_WCI
+          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+#  endif
+          do k=1,N
+            qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
+          enddo
+        enddo 
+      enddo
+# endif
+
 # ifdef RVTK_DEBUG
       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
       call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
@@ -1703,6 +1739,18 @@ C$OMP END MASTER
 !  U & V momentum open boundary conditions
 !-----------------------------------------------------------------------
 !
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+          ubar(i,j,knew)=urhs(i,j)
+        enddo 
+      enddo
+      do j=JstrV,Jend
+        do i=Istr,Iend
+          vbar(i,j,knew)=vrhs(i,j)
+        enddo 
+      enddo
+      M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
+                           ! and compute DU_nbq
       call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
       call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
@@ -1748,9 +1796,9 @@ C$OMP END MASTER
      &                    *(Hzr(i,j,k)+Hzr(i,j,k+1))
      &                    *g*dtnbq
 #  endif
-#  ifdef MASKING
-            qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
-#  endif            
+#   ifdef MASKING
+          qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
+#   endif
           enddo             
         enddo
 
@@ -1766,9 +1814,9 @@ C$OMP END MASTER
      &                   -rho_nbq(i,j,N)*0.5
      &                   *g*dtnbq
 #  endif
-#  ifdef MASKING
-          qdmw_nbq(i,j,N)=qdmw_nbq(i,j,N)*rmask(i,j) 
-#  endif           
+#   ifdef MASKING
+          qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) * rmask(i,j)
+#   endif
         enddo
       enddo !<-- j loop
 !
@@ -2363,7 +2411,6 @@ C$OMP END MASTER
 #  ifdef MASKING
             qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #  endif               
-
           enddo             
         enddo
 
@@ -2380,11 +2427,9 @@ C$OMP END MASTER
 #   ifdef MASKING
           qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
 #   endif              
-
         enddo   
 
       enddo !<-- j loop
-
 
 
 !---------------------
@@ -2442,16 +2487,20 @@ C$OMP END MASTER
 !..........Solves tri-diag system
         do i=Istr,Iend
           qdmw_nbq(i,j,N)=DC(i,k)   
-!    &                    -rho_nbq(i,j,N)*0.5*g*dtnbq        
+#  ifdef NBQ_GRAV
+     &                    -rho_nbq(i,j,N)*0.5*g*dtnbq
+#  endif     
         enddo
 
         do k=N-1,1,-1
           do i=Istr,Iend
             qdmw_nbq(i,j,k)=DC(i,k)-CF(i,k)*qdmw_nbq(i,j,k+1)
-!    &            -0.25*(rho_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)
-!    &                 +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
-!    &                *(Hzr(i,j,k)+Hzr(i,j,k+1))
-!    &                 *g*dtnbq
+#  ifdef NBQ_GRAV
+     &            -0.25*(rho_nbq(i,j,k)*Hzr_half_nbq_inv(i,j,k)
+     &                 +rho_nbq(i,j,k+1)*Hzr_half_nbq_inv(i,j,k+1))
+     &                *(Hzr(i,j,k)+Hzr(i,j,k+1))
+     &                 *g*dtnbq
+#  endif
           enddo            
         enddo                        
 
@@ -2802,14 +2851,7 @@ C$OMP END MASTER
      &                                         *umask(i,j)
 # endif
 # ifdef WET_DRY
-          cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
-          cff2_WD=0.5+SIGN(0.5,DUnew)*umask_wet(i,j)
-          umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
-     &                         +cff2_WD*(1.-cff1_WD)
-          DUnew=DUnew*umask_wet(i,j)
-#  ifdef MRL_WCI
-          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
-#  endif
+     &                                     *umask_wet(i,j)
 # endif
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) 
@@ -2833,14 +2875,7 @@ C$OMP END MASTER
      &                                         *vmask(i,j)
 # endif
 # ifdef WET_DRY
-          cff1_WD=ABS(ABS(vmask_wet(i,j))-1.)
-          cff2_WD=0.5+SIGN(0.5,DVnew)*vmask_wet(i,j)
-          vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
-     &                        +cff2_WD*(1.-cff1_WD)
-          DVnew=DVnew*vmask_wet(i,j)
-#  ifdef MRL_WCI
-          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
-#  endif
+     &                                     *vmask_wet(i,j)
 # endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) 
@@ -2959,16 +2994,108 @@ C$OMP END MASTER
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
         enddo
       enddo
-# endif /* INTERNAL */  
+# endif /* INTERNAL */
+!
+!-----------------------------------------------------------------------
+! Apply point sources for river runoff simulations
+!-----------------------------------------------------------------------
+!
+# ifdef PSOURCE
+      do is=1,Nsrc 
+#  ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#  else
+        i=Isrc(is)
+        j=Jsrc(is)
+#  endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.0) then
+            ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
+     &                       *(Dnew(i-1,j)+Dnew(i,j)) )
+            DU_avg1(i,j,nnew)=Qbar(is)
+          else
+            vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
+     &                       *(Dnew(i,j-1)+Dnew(i,j)) )
+            DV_avg1(i,j,nnew)=Qbar(is)
+          endif
+        endif
+      enddo
+# endif
 !
 !----------------------------------------------------------------------- 
 ! Set boundary conditions and compute integral mass flux accross
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
+      M2bc_nbq_flag=.false.  ! skip wet/dry conditions
+                             ! and DU_nbq computation
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
 
+# ifdef WET_DRY
+#  ifndef EW_COM_PERIODIC
+      if (WESTERN_EDGE) then
+        DO j=Jstr,Jend
+          ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask_wet(Istr,j)
+#   ifdef MRL_WCI
+          ust2d(Istr,j)=ust2d(Istr,j)*umask_wet(Istr,j)
+#   endif
+        END DO
+        DO j=JstrV,Jend
+          vbar(Istr-1,j,knew)=vbar(Istr-1,j,knew)*vmask_wet(Istr-1,j)
+#   ifdef MRL_WCI
+          vst2d(Istr-1,j)=vst2d(Istr-1,j)*vmask_wet(Istr-1,j)
+#   endif
+        END DO
+      END IF
+      if (EASTERN_EDGE) then
+        DO j=Jstr,Jend
+          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask_wet(Iend+1,j)
+#   ifdef MRL_WCI
+          ust2d(Iend+1,j)=ust2d(Iend+1,j)*umask_wet(Iend+1,j)
+#   endif
+        END DO
+        DO j=JstrV,Jend
+          vbar(Iend+1,j,knew)=vbar(Iend+1,j,knew)*vmask_wet(Iend+1,j)
+#   ifdef MRL_WCI
+          vst2d(Iend+1,j)=vst2d(Iend+1,j)*vmask_wet(Iend+1,j)
+#   endif
+        END DO
+      END IF
+#  endif
+#  ifndef NS_COM_PERIODIC
+      if (SOUTHERN_EDGE) then
+        DO i=IstrU,Iend
+          ubar(i,Jstr-1,knew)=ubar(i,Jstr-1,knew)*umask_wet(i,Jstr-1)
+#   ifdef MRL_WCI
+          ust2d(i,Jstr-1)=ust2d(i,Jstr-1)*umask_wet(i,Jstr-1)
+#   endif
+        END DO
+        DO i=IstrU,Iend
+          vbar(i,Jstr,knew)=vbar(i,Jstr,knew)*vmask_wet(i,Jstr)
+#   ifdef MRL_WCI
+          vst2d(i,Jstr)=vst2d(i,Jstr)*vmask_wet(i,Jstr)
+#   endif
+        END DO
+      END IF
+      if (NORTHERN_EDGE) then
+        DO i=Istr,Iend
+          ubar(i,Jend+1,knew)=ubar(i,Jend+1,knew)*umask_wet(i,Jend+1)
+#   ifdef MRL_WCI
+          ust2d(i,Jend+1)=ust2d(i,Jend+1)*umask_wet(i,Jend+1)
+#   endif
+        END DO
+        DO i=Istr,Iend
+          vbar(i,Jend+1,knew)=vbar(i,Jend+1,knew)*vmask_wet(i,Jend+1)
+#   ifdef MRL_WCI
+          vst2d(i,Jend+1)=vst2d(i,Jend+1)*vmask_wet(i,Jend+1)
+#   endif
+        END DO
+      END IF
+#  endif
+# endif
 !
 ! zeta vill be recomputed via depth-integrated continuity equation
 !
@@ -3040,134 +3167,84 @@ C$OMP END MASTER
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
-          DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)
-     &                                  +cff1*(DU_nbq(IstrU-1,j)*2.
-#  ifdef MRL_WCI
-     &                                             +ust2d(IstrU-1,j)
-#  endif
-     &                                             )*on_u(IstrU-1,j)
-          DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)
-     &                                   +cff2*(DU_nbq(IstrU-1,j)*2.
-#  ifdef MRL_WCI
-     &                                             +ust2d(IstrU-1,j)
-#  endif
-     &                                             )*on_u(IstrU-1,j)
+          cff=(Dnew(IstrU-1,j)+Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
+# ifdef MRL_WCI
+     &                                              +ust2d(IstrU-1,j)
+# endif
+     &                                              )*on_u(IstrU-1,j)
+          DU_avg1(IstrU-1,j,nnew)=DU_avg1(IstrU-1,j,nnew)+cff1*cff
+          DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)+cff2*cff
         enddo
         do j=JstrV,Jend
-          DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)
-     &                                   +cff1*(DV_nbq(Istr-1,j)*2.
-#  ifdef MRL_WCI
-     &                                              +vst2d(Istr-1,j)
-#  endif
-     &                                              )*om_v(Istr-1,j)
-          DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)
-     &                                    +cff2*(DV_nbq(Istr-1,j)*2.
-#  ifdef MRL_WCI
-     &                                              +vst2d(Istr-1,j)
-#  endif
-     &                                              )*om_v(Istr-1,j)
+          cff=(Dnew(Istr-1,j)+Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
+# ifdef MRL_WCI
+     &                                               +vst2d(Istr-1,j)
+# endif
+     &                                               )*om_v(Istr-1,j)
+          DV_avg1(Istr-1,j,nnew)=DV_avg1(Istr-1,j,nnew)+cff1*cff
+          DV_avg2(Istr-1,j)=DV_avg2(Istr-1,j)+cff2*cff
         enddo
       endif
-        
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
-          DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)
-     &                                   +cff1*(DU_nbq(Iend+1,j)*2.
-#  ifdef MRL_WCI
-     &                                              +ust2d(Iend+1,j)
-#  endif
-     &                                              )*on_u(Iend+1,j)
-          DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)
-     &                                    +cff2*(DU_nbq(Iend+1,j)*2.
-#  ifdef MRL_WCI
-     &                                              +ust2d(Iend+1,j)
-#  endif
-     &                                              )*on_u(Iend+1,j)
+          cff=(Dnew(Iend+1,j)+Dnew(Iend,j))*(ubar(Iend+1,j,knew)
+# ifdef MRL_WCI
+     &                                          +ust2d(Iend+1,j)
+# endif
+     &                                          )*on_u(Iend+1,j)
+          DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)+cff1*cff
+          DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)+cff2*cff
         enddo
         do j=JstrV,Jend
-          DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)
-     &                                    +cff1*(DV_nbq(Iend+1,j)*2.
-#  ifdef MRL_WCI
+          cff=(Dnew(Iend+1,j)+Dnew(Iend+1,j-1))*(vbar(Iend+1,j,knew)
+# ifdef MRL_WCI
      &                                              +vst2d(Iend+1,j)
-#  endif
+# endif
      &                                              )*om_v(Iend+1,j)
-          DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)
-     &                                    +cff2*(DV_nbq(Iend+1,j)*2.
-#  ifdef MRL_WCI
-     &                                              +vst2d(Iend+1,j)
-#  endif
-     &                                              )*om_v(Iend+1,j)
+          DV_avg1(Iend+1,j,nnew)=DV_avg1(Iend+1,j,nnew)+cff1*cff
+          DV_avg2(Iend+1,j)=DV_avg2(Iend+1,j)+cff2*cff
         enddo
       endif
 # endif /* !EW_PERIODIC */
-
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=IstrU,Iend
-          DU_avg1(i,Jstr-1,nnew)=DU_avg1(i,Jstr-1,nnew)
-     &                                        +cff1*( Dnew(i,Jstr-1)
-     &                      +Dnew(i-1,Jstr-1) )*(ubar(i,Jstr-1,knew)
+          cff=(Dnew(i,Jstr-1)+Dnew(i-1,Jstr-1))*(ubar(i,Jstr-1,knew)
 #  ifdef MRL_WCI
      &                                              +ust2d(i,Jstr-1)
 #  endif
      &                                              )*on_u(i,Jstr-1)
-          DU_avg2(i,Jstr-1)=DU_avg2(i,Jstr-1)
-     &                                        +cff2*( Dnew(i,Jstr-1)
-     &                      +Dnew(i-1,Jstr-1) )*(ubar(i,Jstr-1,knew)
-#  ifdef MRL_WCI
-     &                                              +ust2d(i,Jstr-1)
-#  endif
-     &                                              )*on_u(i,Jstr-1)
+          DU_avg1(i,Jstr-1,nnew)=DU_avg1(i,Jstr-1,nnew)+cff1*cff
+          DU_avg2(i,Jstr-1)=DU_avg2(i,Jstr-1)+cff2*cff
         enddo
         do i=IstrR,IendR
-          DV_avg1(i,JstrV-1,nnew)=DV_avg1(i,JstrV-1,nnew)
-     &                                         +cff1*(Dnew(i,JstrV-1)
-     &                        +Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
+          cff=(Dnew(i,JstrV-1)+Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
 #  ifdef MRL_WCI
      &                                              +vst2d(i,JstrV-1)
 #  endif
      &                                              )*om_v(i,JstrV-1)
-          DV_avg2(i,JstrV-1)=DV_avg2(i,JstrV-1)
-     &                                         +cff2*(Dnew(i,JstrV-1)
-     &                        +Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
-#  ifdef MRL_WCI
-     &                                              +vst2d(i,JstrV-1)
-#  endif
-     &                                              )*om_v(i,JstrV-1)
+          DV_avg1(i,JstrV-1,nnew)=DV_avg1(i,JstrV-1,nnew)+cff1*cff
+          DV_avg2(i,JstrV-1)=DV_avg2(i,JstrV-1)+cff2*cff
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=IstrU,Iend
-          DU_avg1(i,Jend+1,nnew)=DU_avg1(i,Jend+1,nnew)
-     &                                         +cff1*( Dnew(i,Jend+1)
-     &                       +Dnew(i-1,Jend+1) )*(ubar(i,Jend+1,knew)
+          cff=(Dnew(i,Jend+1)+Dnew(i-1,Jend+1))*(ubar(i,Jend+1,knew)
 #  ifdef MRL_WCI
-     &                                               +ust2d(i,Jend+1)
+     &                                              +ust2d(i,Jend+1)
 #  endif
-     &                                               )*on_u(i,Jend+1)
-          DU_avg2(i,Jend+1)=DU_avg2(i,Jend+1)
-     &                                         +cff2*( Dnew(i,Jend+1)
-     &                       +Dnew(i-1,Jend+1) )*(ubar(i,Jend+1,knew)
-#  ifdef MRL_WCI
-     &                                               +ust2d(i,Jend+1)
-#  endif
-     &                                               )*on_u(i,Jend+1)
+     &                                              )*on_u(i,Jend+1)
+          DU_avg1(i,Jend+1,nnew)=DU_avg1(i,Jend+1,nnew)+cff1*cff
+          DU_avg2(i,Jend+1)=DU_avg2(i,Jend+1)+cff2*cff
         enddo
         do i=IstrR,IendR
-          DV_avg1(i,Jend+1,nnew)=DV_avg1(i,Jend+1,nnew)
-     &                                         +cff1*( Dnew(i,Jend+1)
-     &                           +Dnew(i,Jend) )*(vbar(i,Jend+1,knew)
+          cff=(Dnew(i,Jend+1)+Dnew(i,Jend))*(vbar(i,Jend+1,knew)
 #  ifdef MRL_WCI
-     &                                               +vst2d(i,Jend+1)
+     &                                          +vst2d(i,Jend+1)
 #  endif
-     &                                               )*om_v(i,Jend+1)
-          DV_avg2(i,Jend+1)=DV_avg2(i,Jend+1)
-     &                                         +cff2*( Dnew(i,Jend+1)
-     &                           +Dnew(i,Jend) )*(vbar(i,Jend+1,knew)
-#  ifdef MRL_WCI
-     &                                               +vst2d(i,Jend+1)
-#  endif
-     &                                               )*om_v(i,Jend+1)
+     &                                          )*om_v(i,Jend+1)
+          DV_avg1(i,Jend+1,nnew)=DV_avg1(i,Jend+1,nnew)+cff1*cff
+          DV_avg2(i,Jend+1)=DV_avg2(i,Jend+1)+cff2*cff
         enddo
       endif
 # endif /* !NS_PERIODIC */
@@ -3209,10 +3286,26 @@ C$OMP END MASTER
      &                                          *rhobar_nbq(i,j,kstp)
 # endif
      &                                + (dtfast*pm(i,j)*pn(i,j)*0.5*(
-     &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew))*on_u(i  ,j)
-     &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew))*on_u(i+1,j)
-     &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew))*om_v(i,j  )
-     &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar(i,j+1,knew))*om_v(i,j+1))) )
+     &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew)
+# ifdef MRL_WCI
+     &                               +ust2d(i  ,j)
+# endif  
+     &                                                 )*on_u(i  ,j)
+     &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew)
+# ifdef MRL_WCI
+     &                               +ust2d(i+1,j)
+# endif 
+     &                                                 )*on_u(i+1,j)
+     &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew)
+# ifdef MRL_WCI
+     &                               +vst2d(i,j  )
+# endif
+     &                                                 )*om_v(i,j  )
+     &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar(i,j+1,knew)
+# ifdef MRL_WCI
+     &                               +vst2d(i,j+1)
+# endif
+     &                                                 )*om_v(i,j+1))) )
 # ifdef NBQ_MASS
      &                                             /rhobar_nbq(i,j,knew)
 # endif
@@ -3298,34 +3391,6 @@ C$OMP END MASTER
 #  ifdef NBQ_GRID_SLOW
       endif !<-- LAST_FAST_STEP
 #  endif
-!
-!-----------------------------------------------------------------------
-! Apply point sources for river runoff simulations
-!-----------------------------------------------------------------------
-!
-# ifdef PSOURCE
-      do is=1,Nsrc 
-#  ifdef MPI
-        i=Isrc_mpi(is,mynode)
-        j=Jsrc_mpi(is,mynode)
-#  else
-        i=Isrc(is)
-        j=Jsrc(is)
-#  endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
-          if (Dsrc(is).eq.0) then
-            ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
-     &                       *(Dnew(i-1,j)+Dnew(i,j)) )
-            DU_avg1(i,j,nnew)=Qbar(is)
-          else
-            vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
-     &                       *(Dnew(i,j-1)+Dnew(i,j)) )
-            DV_avg1(i,j,nnew)=Qbar(is)
-          endif
-        endif
-      enddo
-# endif
 !
 !-----------------------------------------------------------------------
 !  Exchange boundary information.
@@ -3429,7 +3494,6 @@ C$OMP END MASTER
            enddo
          enddo
       endif
-
 #  endif
 !
 !-----------------------------------------------------------------------

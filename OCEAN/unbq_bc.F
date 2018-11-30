@@ -214,7 +214,15 @@
 #  else           /* alternative to open */
         do k=1,N                                      ! Western edge closed
           do j=jstr,jend                              ! ======= ==== ======
-            qdmu_nbq(Istr,j,k)=0.                     !  (no-flux: default)
+#   ifdef MRL_WCI
+            qdmu_nbq(Istr,j,k)=-ust(Istr,j,k)         ! no Lagrangian flux
+                               *0.5*(Hz(Istr,j,k)+Hz(Istr-1,j,k))
+#    ifdef MASKING
+     &                       *umask(Istr,j)
+#    endif
+#   else
+            qdmu_nbq(Istr,j,k)=0.                     !  no-flux: default
+#   endif
           enddo
         enddo
 
@@ -350,7 +358,15 @@
 #  else
         do k=1,N                                     ! Eastern edge closed
           do j=jstr,jend                             ! ======= ==== ======
-             qdmu_nbq(Iend+1,j,k)=0.                 !  (no-flux: default)  
+#   ifdef MRL_WCI
+             qdmu_nbq(Iend+1,j,k)=-ust(Iend+1,j,k)   ! no Lagrangian flux
+     &                            *0.5*(Hz(Iend+1,j,k)+Hz(Iend,j,k))
+#    ifdef MASKING
+     &                          *umask(Iend+1,j)
+#    endif
+#   else
+             qdmu_nbq(Iend+1,j,k)=0.                 ! no-flux: default
+#   endif
           enddo
         enddo
 
