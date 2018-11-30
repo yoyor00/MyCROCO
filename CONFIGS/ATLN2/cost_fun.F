@@ -17,7 +17,7 @@
       double precision cost
       double precision xcost
       integer ta
-      
+
       call set_state(ad_x_f)
 
       cost = 0
@@ -101,7 +101,7 @@ C$AD NOCHECKPOINT
       common /xyz/ buff
 # include "climat.h"
 # include "forces.h"
-# include "adparam.h"      
+# include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j
       integer ta, k
@@ -119,7 +119,7 @@ C$AD NOCHECKPOINT
          write(*,*) 'BBBBB',mynode,delta_z,delta_zob
          icost = icost + delta_z*delta_z + 1.D-5*delta_zob*delta_zob
       end do
-      
+
       end subroutine cost_fun_step_2d_tile
 
 C$AD NOCHECKPOINT
@@ -199,6 +199,7 @@ C$AD NOCHECKPOINT
 
       integer Istr,Iend,Jstr,Jend, i,j,k
       double precision lzob
+      double precision control_to_param
 
       integer ad_anode_size
 
@@ -214,14 +215,14 @@ c               stop
 c            endif
             zob(i,j)=0
             do k=1,ad_array_size
-               lzob=1.D-7 + 1/(1+exp(ad_x_f(k)))
-               write(*,*) '###',mynode,i,j,k,ad_x_f(k),W(i,j,k)
+               lzob=control_to_param(k,ad_x_f)
+c               write(*,*) '###',mynode,i,j,k,ad_x_f(k),W(i,j,k)
                zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
             end do
 c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
          end do
       end do
-      
+
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
@@ -250,7 +251,7 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
       common /xyz/ buff
 # include "climat.h"
 # include "forces.h"
-# include "adparam.h"      
+# include "adparam.h"
 # ifdef MPI
 # include "mpi_roms.h"
 # ifdef AMPI
@@ -259,21 +260,22 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
       include 'mpif.h'
 # endif
 # endif
+      double precision param_to_control
       integer ierr
 
-      
+
       integer k
-      
+
       do k=1,ad_array_size
-         ad_x_f(k)=log(1./Zobt  - 1.)
+         ad_x_f(k)=param_to_control(k)
          ad_g_f(k)=0.
       end do
 
       call init_collocation_points()
 
-      MPI_master_only write(*,*) 'A0##>',ad_x_f
-      MPI_master_only write(*,*) 'B0##>',ad_g_f
-      
+c      MPI_master_only write(*,*) 'A0##>',ad_x_f
+c      MPI_master_only write(*,*) 'B0##>',ad_g_f
+
       end subroutine init_control
 
       subroutine save_croco_state()
@@ -312,7 +314,7 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
       write(*,*) '----------'
 
       end subroutine save_croco_state
-      
+
       subroutine restore_croco_state()
       implicit none
 # include "cppdefs.h"
@@ -348,22 +350,22 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
 
       end subroutine restore_croco_state
 
-c from rosettacode.org 
+c from rosettacode.org
       function to_radian(degree) result(rad)
           ! degrees to radians
           real,intent(in) :: degree
           real, parameter :: deg_to_rad = atan(1.0)/45 ! exploit intrinsic atan to generate pi/180 runtime constant
           real :: rad
- 
+
           rad = degree*deg_to_rad
       end function to_radian
- 
+
       function haversine(deglat1,deglon1,deglat2,deglon2) result (dist)
-          ! great circle distance -- adapted from Matlab 
+          ! great circle distance -- adapted from Matlab
           real,intent(in) :: deglat1,deglon1,deglat2,deglon2
           real :: a,c,dist,dlat,dlon,lat1,lat2
-          real,parameter :: radius = 6372.8 
- 
+          real,parameter :: radius = 6372.8
+
           dlat = to_radian(deglat2-deglat1)
           dlon = to_radian(deglon2-deglon1)
           lat1 = to_radian(deglat1)
@@ -402,7 +404,7 @@ c from rosettacode.org
 
       do tile=my_first,my_last
          call init_collocation_points_2d(tile)
-      end do      
+      end do
 
       end subroutine init_collocation_points
 
@@ -434,7 +436,7 @@ c from rosettacode.org
       common /xyz/ buff
 # include "climat.h"
 # include "forces.h"
-# include "adparam.h"      
+# include "adparam.h"
 # ifdef MPI
 # include "mpi_roms.h"
 # ifdef AMPI
@@ -450,7 +452,7 @@ c from rosettacode.org
 
       ad_anode_size = ad_array_size/nnodes
 
-      
+
       istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
       jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
       k=1
@@ -473,7 +475,7 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
             endif
          enddo
       enddo jloop
-      
+
 #ifdef AMPI
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
       call AMPI_Gather(ad_latr,ad_array_size/nnodes,
@@ -491,9 +493,9 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
       ad_lonr_f = ad_lonr
 #endif
       do k=1,ad_array_size
-         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
+c         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
       end do
-      
+
       do j=Jstr,Jend
          do i=Istr,Iend
             SkW(i,j)=0.
@@ -519,7 +521,50 @@ c     j=Jstr+floor((Jend+1-Jstr)*r)
             enddo
          enddo
       enddo
-      
+
       end subroutine init_collocation_points_2d_tile
 
 
+      double precision function control_to_param(k,ad_x_f)
+      implicit none
+# include "cppdefs.h"
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "ocean2d.h"
+# include "ncscrum.h"
+# include "private_scratch.h"
+      real*QUAD buff(6)
+      common /xyz/ buff
+# include "climat.h"
+# include "forces.h"
+# include "adparam.h"
+
+      integer k
+
+c      control_to_param = 1.D-7 + 1/(1+exp(ad_x_f(k)))
+      control_to_param = ad_x_f(k)
+
+      end function control_to_param
+
+      double precision function param_to_control(k)
+      implicit none
+# include "cppdefs.h"
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "ocean2d.h"
+# include "ncscrum.h"
+# include "private_scratch.h"
+      real*QUAD buff(6)
+      common /xyz/ buff
+# include "climat.h"
+# include "forces.h"
+# include "adparam.h"
+
+      integer k
+
+c      param_to_control = log(1./Zobt  - 1.)
+      param_to_control = Zobt
+
+      end function param_to_control

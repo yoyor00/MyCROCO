@@ -159,7 +159,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o
 
 TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
@@ -174,7 +174,7 @@ TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 #
 # Everything
 # ==========
-all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_tgt $(SBIN)_div
+all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc $(SBIN)_tgt $(SBIN)_div
 
 #
 # Executables files.
@@ -184,6 +184,9 @@ $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_adc:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
@@ -333,6 +336,9 @@ main_tgt.f: main.F
 
 main_adj.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL $^ | ./mpc > $@
+
+main_adc.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_CHECK $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
 	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
