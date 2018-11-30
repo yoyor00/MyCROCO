@@ -1,17 +1,7 @@
 
       subroutine cost_fun(ad_x_f, cost)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       double precision cost
@@ -25,7 +15,7 @@
 C$AD BINOMIAL-CKP ad_nt 40 1
       do ta=1,ad_nt-1
          call step()
-         call cost_fun_step(cost, ta)
+         call cost_fun_step(ad_x_f,cost,ta)
       end do
 
       write (*,*) 'Zob=',Zobt
@@ -36,19 +26,9 @@ C$AD BINOMIAL-CKP ad_nt 40 1
       end subroutine cost_fun
 
 C$AD NOCHECKPOINT
-      subroutine cost_fun_step(icost, ta)
+      subroutine cost_fun_step(ad_x_f,icost,ta)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       double precision icost
@@ -67,40 +47,31 @@ C$AD NOCHECKPOINT
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call cost_fun_step_2d(tile, icost, ta)
+         call cost_fun_step_2d(tile,ad_x_f,icost,ta)
       end do
 
       end subroutine cost_fun_step
 
 C$AD NOCHECKPOINT
-      subroutine cost_fun_step_2d(tile, icost, ta)
+      subroutine cost_fun_step_2d(tile,ad_x_f,icost,ta)
 
       implicit none
-# include "cppdefs.h"
-# include "param.h"
+# include "adinc.h"
+# include "adparam.h"     
       integer ta
       integer tile
       double precision icost
 # include "compute_tile_bounds.h"
 
-      call cost_fun_step_2d_tile(Istr, Iend, Jstr, Jend, icost, ta)
+      call cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,ad_x_f,icost,ta)
 
       end subroutine cost_fun_step_2d
 
 C$AD NOCHECKPOINT
-      subroutine cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,icost,ta)
+      subroutine cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
+     &     ad_x_f,icost,ta)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j
@@ -110,8 +81,6 @@ C$AD NOCHECKPOINT
       do k=1,ad_array_size/nnodes
          i=ad_i(k)
          j=ad_j(k)
-
-
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
          delta_zob = (zob(i,j) - zob_bck(i,j))
          write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
@@ -125,17 +94,7 @@ C$AD NOCHECKPOINT
 C$AD NOCHECKPOINT
       subroutine set_state(ad_x_f)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       integer ntrds,trd,my_first,my_last,tile,range
@@ -162,17 +121,7 @@ C$AD NOCHECKPOINT
       subroutine set_state_2d(tile, ad_x_f)
 
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
       integer tile
 # include "compute_tile_bounds.h"
@@ -184,17 +133,7 @@ C$AD NOCHECKPOINT
 C$AD NOCHECKPOINT
       subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x_f)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -240,30 +179,11 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
 
       subroutine init_control(ad_x_f,ad_g_f)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
-# ifdef MPI
-# include "mpi_roms.h"
-# ifdef AMPI
-# include "ampi/ampif.h"
-# else
-      include 'mpif.h'
-# endif
-# endif
+      
       double precision param_to_control
       integer ierr
-
-
       integer k
 
       do k=1,ad_array_size
@@ -280,17 +200,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       subroutine save_croco_state()
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       ubar_bck(:,:,:) = ubar(:,:,:)
@@ -317,17 +227,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       subroutine restore_croco_state()
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       ubar(:,:,:) = ubar_bck(:,:,:)
@@ -376,17 +276,8 @@ c from rosettacode.org
       end function haversine
 
       subroutine init_collocation_points()
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+      implicit none
+# include "adinc.h"
 # include "adparam.h"
 
       integer ntrds,trd,my_first,my_last,tile,range
@@ -409,10 +300,9 @@ c from rosettacode.org
       end subroutine init_collocation_points
 
       subroutine init_collocation_points_2d(tile)
-
       implicit none
-# include "cppdefs.h"
-# include "param.h"
+# include "adinc.h"
+# include "adparam.h"
       integer k
       integer tile
       double precision icost
@@ -423,28 +313,10 @@ c from rosettacode.org
       end subroutine init_collocation_points_2d
 
       subroutine init_collocation_points_2d_tile(Istr,Iend,Jstr,Jend)
-
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
-# ifdef MPI
-# include "mpi_roms.h"
-# ifdef AMPI
-# include "ampi/ampif.h"
-# else
-      include 'mpif.h'
-# endif
-# endif
+      
       integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep,ierr
       double precision mindist,dist,rk,haversine
 
@@ -527,17 +399,7 @@ c         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
 
       double precision function control_to_param(k,ad_x_f)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       integer k
@@ -549,17 +411,7 @@ c      control_to_param = ad_x_f(k)
 
       double precision function param_to_control(k)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
-# include "ncscrum.h"
-# include "private_scratch.h"
-      real*QUAD buff(6)
-      common /xyz/ buff
-# include "climat.h"
-# include "forces.h"
+# include "adinc.h"
 # include "adparam.h"
 
       integer k

@@ -1,7 +1,5 @@
 c     this file is not differentiated
       
-# include "cppdefs.h"
-
       subroutine state_control(iicroot)
 
       implicit none
