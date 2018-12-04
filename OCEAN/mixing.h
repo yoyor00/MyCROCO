@@ -77,7 +77,7 @@
       common /mixing_idRz/idRz
 # ifdef TS_MIX_ISO
       real Rslope_max,Gslope_max
-      parameter (Gslope_max=5., Rslope_max=0.05)
+      parameter (Gslope_max=1., Rslope_max=0.05)
 # endif
 # ifdef TS_MIX_ISO_FILT
       integer ismooth

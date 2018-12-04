@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#define SWTRIADS  /* spatial scheme TRIADS or SWTRIADS */
+#define TRIADS  /* spatial scheme TRIADS or SWTRIADS */
 !
 #ifndef CHILD_SPG
       subroutine t3dmix (tile)
