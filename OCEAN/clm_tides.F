@@ -297,8 +297,8 @@
             nd0=nd
             nn=1
            end if
-           rsud(nn,k,i,l)=SSH_Tamp(i,j,l)*100.0
-           gsud(nn,k,i,l)=SSH_Tphase(i,j,l)
+           rsud(nn,k,i,:)=SSH_Tamp(i,j,l)*100.0
+           gsud(nn,k,i,:)=SSH_Tphase(i,j,l)
            if(ir0 < 0) gg(nn,k)=gg(nn,k)+180.0
            nomd(nn,k)=nol
            fr1(nn,k)=ir1/float(ir0)
