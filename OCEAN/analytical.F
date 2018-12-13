@@ -2146,12 +2146,15 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       implicit none          
-      integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "param.h"
+# ifdef OBC_PATM
+#  include "forces.h"
+# endif
 # include "grid.h"
 # include "scalars.h"
 # include "boundary.h"
 !
+      integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "compute_auxiliary_bounds.h"
 !
 # ifdef OBC_WEST
@@ -2164,6 +2167,10 @@ C$    integer  trd, omp_get_thread_num
 !     &                    +0.03*sin(0.462*2*pi*time)   ! but with 1rst order waves
 #   else
           zetabry_west(j)=0.
+#   endif
+#   ifdef OBC_PATM
+           zetabry_west(j)=zetabry_west(j)
+     &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #   endif
         enddo
 #  endif
@@ -2197,6 +2204,12 @@ C$    integer  trd, omp_get_thread_num
         do j=JstrR,JendR
           zetabry_east(j)=0.
         enddo
+#   ifdef OBC_PATM
+        do j=JstrR,JendR
+          zetabry_east(j)=zetabry_east(j)
+     &                    -(patm2d(IendR,j)-paref)/(g*rho0)
+        enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
         do j=JstrR,JendR
@@ -2228,6 +2241,12 @@ C$    integer  trd, omp_get_thread_num
         do i=IstrR,IendR
           zetabry_south(i)=0.
         enddo
+#   ifdef OBC_PATM
+        do i=IstrR,IendR
+          zetabry_south(i)=zetabry_south(i)
+     &                    -(patm2d(i,JstrR)-paref)/(g*rho0)
+        enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
         do i=IstrR,IendR
@@ -2259,6 +2278,12 @@ C$    integer  trd, omp_get_thread_num
         do i=IstrR,IendR
           zetabry_north(i)=0.
         enddo
+#   ifdef OBC_PATM
+        do i=IstrR,IendR
+          zetabry_north(i)=zetabry_north(i)
+     &                     -(patm2d(i,JendR)-paref)/(g*rho0)
+        enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
         do i=IstrR,IendR

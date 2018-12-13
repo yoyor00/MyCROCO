@@ -443,6 +443,9 @@
 # include "boundary.h"
 !
 # include "compute_extended_bounds.h"
+#  ifdef OBC_PATM
+#   include "forces.h"
+#  endif
 
       it1=3-itbry
       it2=itbry
@@ -463,6 +466,12 @@
             zetabry_west(j)=cff1*zetabry_west_dt(j,it1)
      &                     +cff2*zetabry_west_dt(j,it2)
           enddo
+#   ifdef OBC_PATM
+          do j=JstrR,JendR
+           zetabry_west(j)=zetabry_west(j)
+     &                     -(patm2d(Istr,j)-paref)/(g*rho0)
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -504,6 +513,12 @@
             zetabry_east(j)=cff1*zetabry_east_dt(j,it1)
      &                     +cff2*zetabry_east_dt(j,it2)
           enddo
+#   ifdef OBC_PATM
+          do j=JstrR,JendR
+           zetabry_east(j)=zetabry_east(j)
+     &                     -(patm2d(IendR,j)-paref)/(g*rho0)
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -545,6 +560,12 @@
             zetabry_south(i)=cff1*zetabry_south_dt(i,it1)
      &                      +cff2*zetabry_south_dt(i,it2)
           enddo
+#   ifdef OBC_PATM
+          do i=IstrR,IendR 
+           zetabry_south(i)=zetabry_south(i)
+     &                      -(patm2d(i,JstrR)-paref)/(g*rho0)
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR
@@ -586,6 +607,12 @@
             zetabry_north(i)=cff1*zetabry_north_dt(i,it1)
      &                      +cff2*zetabry_north_dt(i,it2)
           enddo
+#   ifdef OBC_PATM
+          do i=IstrR,IendR 
+           zetabry_north(i)=zetabry_north(i)
+     &                      -(patm2d(i,JendR)-paref)/(g*rho0)
+          enddo
+#   endif
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR

@@ -251,7 +251,8 @@
 !  prate    surface precipitation rate [cm day-1]
 !  radlw    net terrestrial longwave radiation [Watts meter-2]
 !  radsw    net solar shortwave radiation [Watts meter-2]
-!
+!  patm2d   atmospheric pressure above mean seal level
+!  paref     reference pressure to compute inverse barometer effect
       real tair(GLOBAL_2D_ARRAY)
       real rhum(GLOBAL_2D_ARRAY)
       real prate(GLOBAL_2D_ARRAY)
@@ -260,6 +261,10 @@
       real wspd(GLOBAL_2D_ARRAY)
 # ifdef READ_PATM
       real patm2d(GLOBAL_2D_ARRAY)
+#  ifdef OBC_PATM
+      real paref
+      parameter(paref=101325) 
+#  endif
 # endif
 # ifdef BULK_SM_UPDATE
       real uwnd(GLOBAL_2D_ARRAY)

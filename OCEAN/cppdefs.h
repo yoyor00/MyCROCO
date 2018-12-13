@@ -217,6 +217,9 @@
 #  define  ONLINE
 #  define AROME
 #  define READ_PATM
+#  ifdef READ_PATM 
+#   define OBC_PATM
+#  endif
 #  undef  ERA_ECMWF
 #  undef  RELATIVE_WIND
 # else
