@@ -335,3 +335,16 @@
 #endif
 
 
+/*
+ Define MPI variables for non MPI runs
+*/ 
+
+#ifndef MPI
+# define MPI_COMM_WORLD 0
+# define mpi_min 0
+# define mpi_integer 0
+# define mpi_double_precision 0
+# define mpi_max 0
+# define mpi_sum 0
+# define mynode 0
+#endif

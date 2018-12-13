@@ -259,39 +259,58 @@
      &                                                             )
 #  ifdef MRL_WCI
 #    if defined CURVGRID && defined UV_ADV
-             cff1=0.5*Hz(i,j,k)*(
+            cff1=0.5*Hz(i,j,k)*(
      &           0.5*( dndx(i,j)*(vst(i,j,k)+vst(i,j+1,k))
      &                -dmde(i,j)*(ust(i,j,k)+ust(i+1,j,k)) ))
 #    else
-          cff1 = 0.0
+            cff1 = 0.0
 #    endif
             UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))  
-            UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+            UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
 # else
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
 # endif
-# if !defined NBQ && defined UV_COR_NTXXX
-!
-!  Compute Non-traditional Coriolis pseudo-force
-!
-!    RU = -e W cos(a) * dV     [m4/s2]
-!    RV = +e W sin(a) * dV
-!  
-!  with e = 2 Omega cos(Phi)
-!       a = angle between North and meridional grid axis
-!
-!  If NBQ --> done in fast mode
-!
-            cff= 0.5*Hz(i,j,k)*eomn(i,j)
-     &                      *(wz(i,j,k-1,nrhs)+wz(i,j,k,nrhs))
-            UFx(i,j)=UFx(i,j) - cff*cosa(i,j)
-            VFe(i,j)=VFe(i,j) - cff*sina(i,j)
-# endif
           enddo
         enddo
+
+# ifdef CROCO_QH
+!--------------------------------------------------------------------
+!  Compute Non-traditional Coriolis pseudo-force
+!    RU = -e W cos(a) * dV     [m4/s2]
+!    RV = +e W sin(a) * dV
+!  with e = 2 Omega cos(Phi) horizontal Coriolis parameter
+!       a = angle between North and meridional grid axis
+!  If NBQ --> done in fast mode
+!--------------------------------------------------------------------
+!
+! Add to We contributions due to (quasi-)horizontal motions 
+! along S=const surfaces 
+!
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend+1
+            wrk1(i,j)=u(i,j,k,nrhs)*on_u(i,j)
+     &                       *(z_r(i,j,k)-z_r(i-1,j,k))
+          enddo
+        enddo
+        do j=JstrV-1,Jend+1
+          do i=IstrU-1,Iend
+            wrk2(i,j)=v(i,j,k,nrhs)*om_v(i,j)
+     &                       *(z_r(i,j,k)-z_r(i,j-1,k))
+          enddo
+        enddo
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            cff= 0.5*Hz(i,j,k)*e(i,j)*(We(i,j,k-1)+We(i,j,k)
+     &                          +0.5*(wrk1(i,j)+wrk1(i+1,j)+
+     &                                wrk2(i,j)+wrk2(i,j+1)))
+            UFx(i,j)=UFx(i,j) - cff*cosa(i,j)
+            VFe(i,j)=VFe(i,j) - cff*sina(i,j)
+          enddo
+        enddo
+# endif
 
         do j=Jstr,Jend
           do i=IstrU,Iend

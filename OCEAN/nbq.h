@@ -19,6 +19,8 @@
       common /nbq_log3/ SOUTH_INTER_NBQ
       logical NORTH_INTER_NBQ       
       common /nbq_log4/ NORTH_INTER_NBQ
+      logical M2bc_nbq_flag
+      common /nbq_M2bc/ M2bc_nbq_flag
 
 !********************************************************************** 
       integer iteration_nbq_max  
@@ -132,16 +134,6 @@
       common /nbq_rvbar/ rvbar_nbq
 
 !**********************************************************************
-      real e(GLOBAL_2D_ARRAY)
-      common /nbq_e/ e
-      real eomn(GLOBAL_2D_ARRAY)
-      common /nbq_eomn/ eomn
-      real cosa(GLOBAL_2D_ARRAY)
-      common /nbq_cosa/ cosa
-      real sina(GLOBAL_2D_ARRAY)
-      common /nbq_sina/ sina
-
-!**********************************************************************
       real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)
       common /nbq_zw/ zw_nbq
       real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
@@ -185,24 +177,6 @@
       common /nbq_usurf/ usurf_nbq
       real vsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vsurf/ vsurf_nbq
-
-      integer :: kbak2,kold2
-      common /gridext1/kbak2,kold2
-
-      real cff4
-      common /com_cff4/ cff4
-      real cff5
-      common /com_cff5/ cff5
-      real cff6
-      common /com_cff6/ cff6
-      real cff7
-      common /com_cff7/ cff7
-      real cff8
-      common /com_cff8/ cff8
-      real cff9
-      common /com_cff9/ cff9
-      real cff10
-      common /com_cff10/ cff10
 
 !**********************************************************************
 # if defined OBC_NBQ && defined OBC_NBQORLANSKI

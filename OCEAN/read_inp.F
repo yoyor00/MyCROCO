@@ -1593,7 +1593,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         enddo
 
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && \
+     !defined GLS_MIX2017 && !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !

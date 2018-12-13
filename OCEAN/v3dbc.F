@@ -182,10 +182,18 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
           enddo
         enddo
 #   endif
+
 #  else
         do k=1,N                               ! Southern edge closed
           do i=Istr,Iend                       ! ======== ==== ======
+#   ifdef MRL_WCI
+            v(i,Jstr,k,nnew)=-vst(i,Jstr,k)    ! no Lagrangian flux
+#    ifdef MASKING
+     &                       *vmask(i,Jstr)
+#    endif
+#   else
             v(i,Jstr,k,nnew)=0.                !  (no-flux: default)
+#   endif
           enddo
         enddo
 #  endif              /* OBC_COM_SOUTH */
@@ -293,10 +301,18 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
           enddo
         enddo
 #   endif
+
 #  else
-        do k=1,N                               ! Northern edge closed
-          do i=Istr,Iend                       ! ======== ==== ======
-            v(i,Jend+1,k,nnew)=0.              !   (no-flux: default)
+        do k=1,N                                   ! Northern edge closed
+          do i=Istr,Iend                           ! ======== ==== ======
+#   ifdef MRL_WCI
+            v(i,Jend+1,k,nnew)=-vst(i,Jend+1,k)    ! no Lagrangian flux
+#    ifdef MASKING
+     &                         *vmask(i,Jend+1)
+#    endif
+#   else
+            v(i,Jend+1,k,nnew)=0.                  !  (no-flux: default)
+#   endif
           enddo
         enddo
 #  endif

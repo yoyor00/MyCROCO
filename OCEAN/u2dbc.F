@@ -104,8 +104,7 @@ C$    trd=omp_get_thread_num()
       tau_in=dtfast*tauM_in
       tau_out=dtfast*tauM_out
 #endif
-
-
+!
 #if defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
       grad = 1.
 #if defined OBC_COM_SOUTH && defined OBC_COM_WEST
@@ -278,24 +277,13 @@ C$    trd=omp_get_thread_num()
 
 #  endif /* OBC_COM_ORLASNKI */
 !
-#  ifdef MRL_WCI000
-                                                ! Western edge WEC
-        do j=jstr,jend                          ! ======= ==== ===
-          ubar(istr,j,knew)=ubar(istr,j,knew)
-     &                      -ust2d(istr,j)      ! no Lagrangian flux
-#   ifdef MASKING
-     &                      *umask(istr,j)
-#   endif
-        enddo
-#  endif
-!
 # else
                                                 ! Western edge closed
         do j=jstr,jend                          ! ======= ==== ======
 #  ifdef MRL_WCI
-          ubar(istr,j,knew)=-ust2d(istr,j)      ! no Lagrangian flux
+          ubar(istr,j,knew)=-ust2d(Istr,j)      ! no Lagrangian flux
 #   ifdef MASKING
-     &                      *umask(istr,j)
+     &                      *umask(Istr,j)
 #   endif
 #  else
           ubar(istr,j,knew)=0.                  ! (no-flux, default)
@@ -452,23 +440,11 @@ C$    trd=omp_get_thread_num()
 
 #  endif /* OBC_COM_ORLANKSI */
 !
-#  ifdef MRL_WCI000
-!                                            Eastern edge WEC
-!                                            ======= ==== ===
-        do j=Jstr,Jend
-          ubar(Iend+1,j,knew)=ubar(Iend,j,knew)
-     &                        -ust2d(Iend,j)     ! no Lagrangian flux
-#   ifdef MASKING
-     &                        *umask(Iend+1,j)
-#   endif
-        enddo
-#  endif
-!
 # else
                                              ! Eastern edge closed BC
         do j=Jstr,Jend                       ! ======= ==== ====== ==
 #  ifdef MRL_WCI
-          ubar(Iend+1,j,knew)=-ust2d(Iend,j)     ! no Lagrangian flux
+          ubar(Iend+1,j,knew)=-ust2d(Iend+1,j)     ! no Lagrangian flux
 #   ifdef MASKING
      &                        *umask(Iend+1,j)
 #   endif
@@ -788,8 +764,13 @@ C$    trd=omp_get_thread_num()
       endif
 #endif
 
-#if defined WET_DRY
-!
+!------------------------------------------------------------
+#ifdef NBQ
+       if (M2bc_nbq_flag) then
+#endif
+!------------------------------------------------------------
+
+#ifdef WET_DRY
 !=======================================================================
 !  Impose wetting and drying conditions.
 !=======================================================================
@@ -874,14 +855,13 @@ C$    trd=omp_get_thread_num()
 #endif  /* WET_DRY */
 
 #ifdef NBQ
-!
 !=======================================================================
 !  Computes normal boundary values of DU_nbq for NBQ OBCs
 !=======================================================================
 !
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
-#  ifdef OBC_COM_WEST
+#  if defined OBC_COM_WEST || defined MRL_WCI
         do j=Jstr,Jend
           DU_nbq(Istr,j)=ubar(Istr,j,knew)
      &                     *0.5*(h(Istr  ,j)+zeta(Istr  ,j,knew)
@@ -899,7 +879,7 @@ C$    trd=omp_get_thread_num()
       endif
 !
       if (EASTERN_EDGE) then
-#  ifdef OBC_COM_EAST
+#  if defined OBC_COM_EAST || defined MRL_WCI
         do j=Jstr,Jend
           DU_nbq(Iend+1,j)=ubar(Iend+1,j,knew)
      &                     *0.5*(h(Iend+1,j)+zeta(Iend+1,j,knew)
@@ -919,7 +899,7 @@ C$    trd=omp_get_thread_num()
 !
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
-#  ifdef OBC_COM_SOUTH
+#  if defined OBC_COM_SOUTH || defined MRL_WCI
         do i=IstrU,Iend
           DU_nbq(i,Jstr-1)=ubar(i,Jstr-1,knew)
      &                 *0.5*(h(i  ,Jstr-1)+zeta(i  ,Jstr-1,knew)
@@ -937,7 +917,7 @@ C$    trd=omp_get_thread_num()
       endif
 !
       if (NORTHERN_EDGE) then
-#  ifdef OBC_COM_NORTH
+#  if defined OBC_COM_NORTH  || defined MRL_WCI
         do i=IstrU,Iend
           DU_nbq(i,Jend+1)=ubar(i,Jend+1,knew)
      &                 *0.5*(h(i  ,Jend+1)+zeta(i  ,Jend+1,knew)
@@ -949,11 +929,13 @@ C$    trd=omp_get_thread_num()
         enddo
 #  else
         do i=IstrU,Iend
-          DU_nbq(i,Jend+1)=gamma2* DU_nbq(i,Jend)
+          DU_nbq(i,Jend+1)=gamma2*DU_nbq(i,Jend)
         enddo
 #  endif
       endif
 # endif /* NS_COM_PERIODIC */
+!
+      endif ! M2bc_nbq_flag
 !
 #endif /* NBQ */
 

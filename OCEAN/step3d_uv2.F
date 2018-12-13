@@ -637,6 +637,9 @@
      &                  0.05*dRdx(i,j,k+1)
           enddo
         enddo
+        do i=IU_RANGE
+          dRdx(i,j,1)=dRdx(i,j,2)
+        enddo
       endif
 #  endif /* TS_MIX_ISO_FILT */
 !
@@ -768,6 +771,9 @@
      &                  0.90*dRde(i,j,k  )+
      &                  0.05*dRde(i,j,k+1)
           enddo
+        enddo
+        do i=IV_RANGE
+          dRde(i,j,1)=dRde(i,j,2)
         enddo
       endif
 #  endif /* TS_MIX_ISO_FILT */

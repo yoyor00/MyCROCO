@@ -71,7 +71,7 @@ echo 'DATE         :' $today >> $file
 cat checkbugbin_${TEST_NAME}.txt >> $file 
 echo '---------------------------' >> $file
 echo ' ' >> $file
-cp $file ../Log_Details
+
 #echo '@@@@@@@@@@@@@@@@@@@@ ' >> $file
 
 # Cleaning
