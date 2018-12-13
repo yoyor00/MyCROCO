@@ -284,6 +284,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
+      ntimes=ntimes+ntstart
 #endif
 !
 !  Set initial conditions analytically for ideal cases
