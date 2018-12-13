@@ -60,6 +60,7 @@
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
+# undef  MPI_OPT
                       /* I/O server */
 # undef  XIOS
 # define NC4PAR
