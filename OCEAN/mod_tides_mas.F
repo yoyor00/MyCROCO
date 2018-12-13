@@ -45,7 +45,7 @@
       INTEGER :: i4mn10,im10,i3msn10,i4ms10,i4mk10,i5msn10,i2msnk10,i3m2s10
       INTEGER :: i2msk82,i5mns10,i3m2n10
       
-      INTEGER,PARAMETER               :: tide_nbharmcp=16
+      INTEGER,PARAMETER               :: tide_nbharmcp=Ntides
    
 !tidepredic
       integer                   :: nol,nd0,ir0,ir1,ir2,nd,jourmem=-1

@@ -14,7 +14,9 @@
       subroutine get_tides    ! from forcing netCDF file. 
                               ! Scale them. 
 #if defined SSH_TIDES || defined UV_TIDES
+#ifdef TIDES_MAS
       USE MOD_TIDES_MAS
+#endif
       implicit none
 
 #ifndef TIDES_MAS
