@@ -45,6 +45,9 @@
 # ifdef DIAGNOSTICS_TS
 # include "diagnostics.h"
 # endif
+# ifdef DIAGNOSTICS_PV
+#  include "diags_pv.h"
+# endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
      &       ,imin,imax,jmin,jmax,iAkt,nadv
 # ifdef PSOURCE
@@ -391,7 +394,7 @@
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+FC(i,k )
      &                                               -FC(i,k-1)
-# ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
                 TForc(i,j,k,itrc)=(FC(i,k)-FC(i,k-1))
      &                                    /(dt*pm(i,j)*pn(i,j))
 #  ifdef MASKING
@@ -400,14 +403,6 @@
 # endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
-# ifdef DIAGNOSTICS_TS
-          else
-            do k=1,N
-              do i=Istr,Iend
-                TForc(i,j,k,itrc)=0.
-              enddo
-            enddo
-# endif  /* DIAGNOSTICS_TS */
           endif
 !
 !
@@ -453,7 +448,7 @@
               t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
             enddo
           enddo
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=0.0
@@ -605,7 +600,7 @@
 #  else
      &                         (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
 #  endif /* ZONAL_NUDGING */
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
               TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
      &                    +Tnudgcof(i,j,k,itrc)
      &                    *(tclm(i,j,k,itrc)
@@ -634,7 +629,7 @@
 ! where Trate is updated accordingly
 !======================================================================
 !
-# ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -656,12 +651,14 @@
 #  endif /* DIAGNOSTICS_TS_ADV */
 !
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
+#  ifdef DIAGNOSTICS_TS
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
+#  endif
+              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
               TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               THmix(i,j,k,itrc)=0.
             enddo
           enddo

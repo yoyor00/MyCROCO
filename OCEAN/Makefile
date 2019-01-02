@@ -77,6 +77,16 @@ include Makedefs
 	wrt_bio_diags.F	wrt_bio_diags_avg.F\
 	set_avg.F	set_diags_avg.F	set_diagsM_avg.F\
 	set_bio_diags_avg.F\
+	def_diags_vrt.F	wrt_diags_vrt.F\
+	set_diags_vrt.F	set_diags_vrt_avg.F	wrt_diags_vrt_avg.F\
+	def_diags_ek.F	wrt_diags_ek.F\
+	set_diags_ek.F	set_diags_ek_avg.F	wrt_diags_ek_avg.F\
+	def_diags_pv.F	wrt_diags_pv.F\
+	set_diags_pv.F	set_diags_pv_avg.F	wrt_diags_pv_avg.F\
+	def_diags_eddy.F\
+	set_diags_eddy_avg.F	wrt_diags_eddy_avg.F\
+	def_surf.F	wrt_surf.F\
+	set_surf_avg.F	wrt_surf_avg.F\
 \
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
@@ -145,7 +155,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
  AMROBJS=$(AMRRCS:.f=.o)
 
 #
-# Eecutable file.
+# Executable file.
 # ========= =====
 #
 $(SBIN):  $(OBJS90) $(OBJS)

@@ -152,7 +152,7 @@
 # undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
-# undef  GLS_MIX2017  /* <--- Warning: under testing */
+# undef  GLS_MIX2017  /* <--- Warning: option still under testing */
 
 # ifdef LMD_MIXING
 #  define LMD_SKPP
@@ -161,6 +161,7 @@
 #  define LMD_CONVEC
 #  undef  LMD_DDMIX
 #  define LMD_NONLOCAL
+#  undef  MLCONVEC
 # endif
 # ifdef GLS_MIXING
 #  define GLS_KKL
@@ -199,8 +200,10 @@
 # else
 #  define QCORRECTION
 #  define SFLX_CORR
+#  undef SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
+# undef SEA_ICE_NOFLUX /* no flux under sea ice */
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
 #  define MRL_WCI
@@ -267,14 +270,45 @@
 # undef  OBC_M2SPECIFIED
 # undef  OBC_M3SPECIFIED
 # undef  OBC_TSPECIFIED
-                      /* Input/Output & Diagnostics */
+                      /* Input/Output */
 # define AVERAGES
 # define AVERAGES_K
+# undef OUTPUTS_SURFACE /* 2d surface fields with higher sampling */
+/*
+!                        Diagnostics 
+!---------------------------------
+! Tracers, momentum balances
+! Mixing layer balances 
+! Vertically integrated vorticity and energy balances 
+! Eddy terms
+!---------------------------------
+!
+*/
 # undef  DIAGNOSTICS_TS
 # undef  DIAGNOSTICS_UV
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
-#  define DIAGNOSTICS_TS_MLD
+#  undef  DIAGNOSTICS_TS_MLD
+# endif
+
+# undef  DIAGNOSTICS_VRT
+# undef  DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_EK
+#  undef DIAGNOSTICS_EK_FULL
+#  undef DIAGNOSTICS_EK_MLD
+# endif
+
+# undef DIAGNOSTICS_PV
+# undef DIAGNOSTICS_DISS
+# ifdef DIAGNOSTICS_DISS
+#  define DIAGNOSTICS_PV
+# endif
+
+# undef DIAGNOSTICS_EDDY
+
+# undef TENDENCY
+# ifdef TENDENCY
+#  define DIAGNOSTICS_UV
 # endif
 /*
 !           Applications:
@@ -739,6 +773,7 @@
 #  define LMD_CONVEC
 #  undef  LMD_DDMIX
 #  define LMD_NONLOCAL
+#  undef  MLCONVEC
 # endif
 # ifdef GLS_MIX2017
 #  undef  GLS_KOMEGA

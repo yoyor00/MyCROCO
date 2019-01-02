@@ -205,6 +205,11 @@
       real dqdt(GLOBAL_2D_ARRAY)
       common /forces_dqdt/dqdt 
 #  endif
+# ifdef SFLX_CORR_COEF
+! value of nudging for surface salinity correction (in days)
+      real dSdt
+      parameter (dSdt=30.0)
+# endif
 #  ifndef ANA_SSS
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
