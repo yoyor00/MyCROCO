@@ -185,12 +185,6 @@
 # ifdef SALINITY
       integer indxS
       parameter (indxS=indxT+1)
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
-      integer indxbvf
-      parameter (indxbvf=indxS+1)
-# endif
 # endif
 # ifdef PASSIVE_TRACER
       integer indxTPAS
@@ -524,14 +518,23 @@
 # else
       parameter (indxSSH=indxVb+1)
 # endif
+
 #endif /* SOLVE3D */
+
+#if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIX2017 || defined GLS_MIXING
+      integer indxbvf
+      parameter (indxbvf=indxSSH+1)
+#endif
+
       integer indxSUSTR, indxSVSTR
-      parameter (indxSUSTR=indxSSH+1, indxSVSTR=indxSSH+2)
+      parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
       integer indxTime2
-      parameter (indxTime2=indxSSH+3)
+      parameter (indxTime2=indxSSH+4)
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
-      parameter (indxShflx=indxSSH+4)
+      parameter (indxShflx=indxSSH+5)
 # ifdef SALINITY
       integer indxSwflx
       parameter (indxSwflx=indxShflx+1, indxShflx_rsw=indxShflx+2)

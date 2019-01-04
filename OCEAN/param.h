@@ -353,7 +353,7 @@
 !
       parameter (itemp=1)
 # ifdef SALINITY 
-      parameter (ntrc_salt=2)
+      parameter (ntrc_salt=1)
 # else
       parameter (ntrc_salt=0)
 # endif
@@ -400,14 +400,11 @@
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
-
+!
 ! Total number of tracers
 !
-# ifdef SALINITY
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed-1)
-# else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
-# endif
+
 # if defined BBL && defined AGRIF
       integer Agrif_lev_sedim
       parameter (Agrif_lev_sedim=0)
