@@ -37,9 +37,10 @@
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc,
      &        imin,imax,jmin,jmax, kp
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
-      real horcon, cff,cff0
+      real horcon, cff,cff0,cff1,cff2
 # ifdef NBQ
-      parameter (horcon=0.01)
+      real Ric, Pr
+      parameter (horcon=0.01, Ric=0.25, Pr=0.3)
 # else
       parameter (horcon=0.1)
 # endif
@@ -99,6 +100,12 @@
 !      = sqrt[ 2 dudx^2 + 2 dvdy^2 + (dvdx+dudy)^2         --> 2D
 !            + 2 dwdz^2 + (dudz+dwdx)^2 + (dvdz+dwdy)^2 ]  --> 3D
 !
+!  L Length-scale: horizontal Lh = sqrt(dx*dy) --> visc3d
+!                  vertical   Lv = Hz          --> Akv
+!
+!  For LES problems, Lilly's buoyancy correction is applied based
+!  on the ratio of gradient and critical Ri (mixing goes to 0 for 
+!  Rig > Ric)
 !---------------------------------------------------------------
 !
 ! Horizontal deformation rate (squared & halved) at RHO point:
@@ -121,7 +128,7 @@
         enddo
       enddo
 !
-#  if defined NBQ && defined UV_VIS_SMAGO_3D
+#  ifdef UV_VIS_SMAGO_3D
 !
 ! Add vertical deformation for non-hydrostatic cases:
 !
@@ -131,51 +138,82 @@
         do j=jmin,jmax
           do i=imin,imax
             visc3d_r(i,j,k)=visc3d_r(i,j,k)+
-     &                 ((wz(i,j,k,nrhs)-wz(i,j,k-1,nrhs))/Hzr(i,j,k))**2
+#   ifdef NBQ
+     &            ((wz(i,j,k,nrhs)-wz(i,j,k-1,nrhs))/Hzr(i,j,k))**2
+#   endif
      &               +0.125*( (u(i,j,k+1,nrhs)+u(i+1,j,k+1,nrhs)
      &                        -u(i,j,k-1,nrhs)-u(i+1,j,k-1,nrhs))
      &                               /(z_r(i,j,k+1)-z_r(i,j,k-1))
-     &                     +pm(i,j)*
+#   ifdef NBQ
+     &                        +pm(i,j)*
      &                        (wz(i+1,j,k,nrhs)+wz(i+1,j,k+1,nrhs)
-     &                        -wz(i-1,j,k,nrhs)-wz(i-1,j,k+1,nrhs)) )**2
+     &                        -wz(i-1,j,k,nrhs)-wz(i-1,j,k+1,nrhs)) 
+#   endif
+     &                      )**2
      &               +0.125*( (v(i,j,k+1,nrhs)+v(i,j+1,k+1,nrhs)
      &                        -v(i,j,k-1,nrhs)-v(i,j+1,k-1,nrhs))
      &                               /(z_r(i,j,k+1)-z_r(i,j,k-1))
-     &                     +pn(i,j)*
+#   ifdef NBQ
+     &                        +pn(i,j)*
      &                        (wz(i,j+1,k,nrhs)+wz(i,j+1,k+1,nrhs)
-     &                        -wz(i,j-1,k,nrhs)-wz(i,j-1,k+1,nrhs)) )**2
+     &                        -wz(i,j-1,k,nrhs)-wz(i,j-1,k+1,nrhs)) 
+#   endif
+     &                      )**2
           enddo
         enddo
       enddo
 #  endif
 !
-! Smagorinsky viscosity at RHO points and AKv at W points
+!  Smagorinsky viscosity at RHO points for horizontal dissipation
 !
-!      Length-scale: horizontal : Lh = sqrt(dx*dy) --> visc3d
-!                    vertical   : Lv = Hz          --> Akv
+!      Lh = sqrt(dx*dy) --> visc3d
 !
-      kp=min(k+1,N)
       do j=jmin,jmax
         do i=imin,imax
           cff=horcon*om_r(i,j)*on_r(i,j)
-          cff0=pm(i,j)*pn(i,j)
           do k=1,N
-            visc3d_r(i,j,k)=cff*sqrt(2*visc3d_r(i,j,k))
-#  if defined NBQ && defined UV_VIS_SMAGO_3D
+            cff1=2.*visc3d_r(i,j,k)  ! D²
+            visc3d_r(i,j,k)=cff*sqrt(cff1) ! Cs*dxdy*D²
+#  ifdef UV_VIS_SMAGO_3D
+!      Buoyancy correction (Lilly, 1962)
+            cff2=sqrt(max(0.,1.-(bvf(i,j,k)/max(cff1,1.e-12))/Ric))
+            visc3d_r(i,j,k)=cff2*visc3d_r(i,j,k)
+#  endif
+          enddo
+        enddo
+      enddo
+
+#  ifdef UV_VIS_SMAGO_3D
+!
+!  Add smagorinsky viscosity to AKv at W points for vertical dissipation
+!
+!      Lv = Hz          --> Akv
+!
+      do k=1,N
+        kp=min(k+1,N)
+        do j=jmin,jmax
+          do i=imin,imax
 #   if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
                         || defined LMD_MIXING || defined GLS_MIX2017
             Akv(i,j,k)=Akv(i,j,k)+
 #   else
             Akv(i,j,k)=Akv_bak+
 #   endif
-     &                       0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp))
-     &                                    *cff0*Hz(i,j,k)*Hz(i,j,k)
-#  endif
+     &                 0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
+     &                                       *pm(i,j)*pn(i,j)
+     &                                   *Hz(i,j,k)*Hz(i,j,k)
+!      Apply SGS Prandtl number for tracers
+            Akt(i,j,k,itemp)=Pr*Akv(i,j,k)
+#   ifdef SALINITY                               
+            Akt(i,j,k,isalt)=Akt(i,j,k,itemp)
+#   endif
           enddo
         enddo
       enddo
+#  endif /* UV_VIS_SMAGO_3D */
 !
-! Add Wave breaking dissipation in wave-resolved cases
+!  Add wave breaking dissipation 
+!  for surface wave-resolved cases
 !
 #  ifdef SWASH
       do j=jmin,jmax
@@ -187,13 +225,7 @@
           Bbr=max(0.,min(1.,dZdt/dZdt0-1.))
           do k=1,N
             visc3d_r(i,j,k)=max(0.1/horcon*visc3d_r(i,j,k),
-     &                                      Dbr*Bbr*cff*dZdt)
-!     &                               *1000*max(pm(i,j)*pm(i,j)*
-!     &                              (z_r(i+1,j,k)-z_r(i-1,j,k)-
-!     &                               z_w(i+1,j,0)+z_w(i-1,j,0))**2,
-!     &                                         pn(i,j)*pn(i,j)*
-!     &                               (z_r(i,j+1,k)-z_r(i,j-1,k)-
-!     &                               z_w(i,j+1,0)+z_w(i,j-1,0))**2))
+     &                                    Dbr*Bbr*cff*dZdt)
           enddo
         enddo
       enddo
@@ -290,6 +322,110 @@
       call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
 #  endif
 
+#  ifdef UV_VIS_SMAGO_3D
+!------------------------------------------------------
+!  Lateral boundary conditions for vertical diffusivity
+!  in case of 3D Smagorinsky SGS model
+!------------------------------------------------------
+!
+#  define k0 1 
+#  ifndef EW_PERIODIC
+      if (WESTERN_EDGE) then
+        do j=jstr,jend
+          do k=k0,N
+            Akv(istr-1,j,k)=Akv(istr,j,k)
+            Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
+#   ifdef SALINITY
+            Akt(istr-1,j,k,isalt)=Akt(istr,j,k,isalt)
+#   endif
+          enddo
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do j=jstr,jend
+          do k=k0,N
+            Akv(iend+1,j,k)=Akv(iend,j,k)
+            Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
+#   ifdef SALINITY
+            Akt(iend+1,j,k,isalt)=Akt(iend,j,k,isalt)
+#   endif
+          enddo
+        enddo
+      endif
+#  endif
+#  ifndef NS_PERIODIC
+      if (SOUTHERN_EDGE) then
+        do i=istr,iend
+          do k=k0,N
+            Akv(i,jstr-1,k)=Akv(i,jstr,k)
+            Akt(i,jstr-1,k,itemp)=Akt(i,jstr,k,itemp)
+#   ifdef SALINITY
+            Akt(i,jstr-1,k,isalt)=Akt(i,jstr,k,isalt)
+#   endif
+          enddo
+        enddo
+      endif
+      if (NORTHERN_EDGE) then
+        do i=istr,iend
+          do k=k0,N
+            Akv(i,jend+1,k)=Akv(i,jend,k)
+            Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
+#   ifdef SALINITY
+            Akt(i,jend+1,k,isalt)=Akt(i,jend,k,isalt)
+#   endif
+          enddo
+        enddo
+      endif
+#   ifndef EW_PERIODIC
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        do k=k0,N
+          Akv(istr-1,jstr-1,k)=Akv(istr,jstr,k)
+          Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
+#    ifdef SALINITY
+          Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
+#    endif
+        enddo
+      endif
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        do k=k0,N
+          Akv(istr-1,jend+1,k)=Akv(istr,jend,k)
+          Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
+#    ifdef SALINITY
+          Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
+#    endif
+        enddo
+      endif
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        do k=k0,N
+          Akv(iend+1,jstr-1,k)=Akv(iend,jstr,k)
+          Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
+#    ifdef SALINITY
+          Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
+#    endif
+        enddo
+      endif
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        do k=k0,N
+          Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
+          Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
+#    ifdef SALINITY
+          Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
+#    endif
+        enddo
+      endif
+#   endif
+#  endif
+!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!      call exchange_w3d_tile (istr,iend,jstr,jend, Akv)
+!      call exchange_w3d_tile (istr,iend,jstr,jend,
+!     &                        Akt(START_2D_ARRAY,0,itemp))
+!#   ifdef SALINITY
+!      call exchange_w3d_tile (istr,iend,jstr,jend,
+!     &                        Akt(START_2D_ARRAY,0,isalt))
+!#   endif
+!#  endif
+# endif /* UV_VIS_SMAGO_3D */
+
 # endif /* UV_VIS_SMAGO  */
 #else
       subroutine hvisc_coef_empty
@@ -330,10 +466,15 @@
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
       real cff, surf, defrate, horcon
-# ifdef TS_HADV_C6
-      parameter (horcon=1./20.)
+# if defined TS_DIF_SMAGO && defined UV_VIS_SMAGO_3D
+      real Pr
+      parameter (horcon=0.003, Pr=0.3)  ! --> LES SGS model
 # else
-      parameter (horcon=1./12.)
+#  ifdef TS_HADV_C6
+      parameter (horcon=1./20.)  ! --> RSUP5
+#  else
+      parameter (horcon=1./12.)  ! --> RSUP3
+#  endif
 # endif
 # include "param.h"
 # include "grid.h"
@@ -357,6 +498,7 @@
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
+#  ifndef UV_VIS_SMAGO
             defrate=sqrt( ((u(i+1,j,k,nrhs)-u(i,j,k,nrhs))*pm(i,j))**2
      &                   +((v(i,j+1,k,nrhs)-v(i,j,k,nrhs))*pn(i,j))**2
      &               +0.5*(0.25*pn(i,j)*(
@@ -367,6 +509,11 @@
      &                    -v(i-1,j,k,nrhs)-v(i-1,j+1,k,nrhs)) )**2)
             surf=om_r(i,j)*on_r(i,j)
             diff3d_r(i,j,k)=horcon*surf*defrate
+#  elif defined UV_VIS_SMAGO_3D
+            diff3d_r(i,j,k)=Pr*visc3d_r(i,j,k)
+#  else
+            diff3d_r(i,j,k)=visc3d_r(i,j,k)
+#  endif
           enddo
         enddo
       enddo

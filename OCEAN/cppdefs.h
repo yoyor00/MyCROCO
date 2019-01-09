@@ -1242,8 +1242,7 @@
 # define W_HADV_WENO5
 # define W_VADV_WENO5
 # define UV_VIS2
-# define UV_MIX_S
-# define UV_VIS_SMAGO_3D
+# undef  UV_VIS_SMAGO_3D
 # define TS_DIF2
 # undef  SALINITY
 # undef  PASSIVE_TRACER
