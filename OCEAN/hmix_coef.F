@@ -19,11 +19,11 @@
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
-      call hvisc_coef_tile (Istr,Iend,Jstr,Jend,A2d(1,1,trd))
+      call hvisc_coef_tile (Istr,Iend,Jstr,Jend, A3d(1,1,trd))
       return
       end
 !
-      subroutine hvisc_coef_tile (Istr,Iend,Jstr,Jend, grd_scale)
+      subroutine hvisc_coef_tile (Istr,Iend,Jstr,Jend, defrate)
 !
 !==================================================================
 !
@@ -34,9 +34,14 @@
 !==================================================================
 !
       implicit none
+# include "param.h"
+# include "grid.h"
+# include "mixing.h"
+# include "ocean3d.h"
+# include "ocean2d.h"
+# include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc,
      &        imin,imax,jmin,jmax, kp
-      real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
       real horcon, cff,cff0,cff1,cff2
 # ifdef NBQ
       real Ric, Pr
@@ -44,15 +49,10 @@
 # else
       parameter (horcon=0.1)
 # endif
-# include "param.h"
-# include "grid.h"
-# include "mixing.h"
-# include "ocean3d.h"
-# include "ocean2d.h"
-# include "scalars.h"
 # ifdef SWASH
       real dZdt,dZdt0,Bbr,Dbr
 # endif
+      real defrate(PRIVATE_2D_SCRATCH_ARRAY,1:N)
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -108,14 +108,14 @@
 !  Rig > Ric)
 !---------------------------------------------------------------
 !
-! Horizontal deformation rate (squared & halved) at RHO point:
+!  Horizontal deformation rate (squared & halved) at RHO point:
 !
 !     dudx^2 + dvdy^2 + 0.5(dvdx+dudy)^2
 !
       do k=1,N
         do j=jmin,jmax
           do i=imin,imax
-            visc3d_r(i,j,k)= 
+            defrate(i,j,k)= 
      &                    ((u(i+1,j,k,nrhs)-u(i,j,k,nrhs))*pm(i,j))**2
      &                   +((v(i,j+1,k,nrhs)-v(i,j,k,nrhs))*pn(i,j))**2
      &               +0.125*( pn(i,j)*
@@ -130,14 +130,14 @@
 !
 #  ifdef UV_VIS_SMAGO_3D
 !
-! Add vertical deformation for non-hydrostatic cases:
+!  Add vertical deformation rate
 !
 !     dwdz^2 + 0.5*(dudz+dwdx)^2 + 0.5*(dvdz+dwdy)^2
 !
       do k=2,N-1
         do j=jmin,jmax
           do i=imin,imax
-            visc3d_r(i,j,k)=visc3d_r(i,j,k)+
+            defrate(i,j,k)=defrate(i,j,k)+
 #   ifdef NBQ
      &            ((wz(i,j,k,nrhs)-wz(i,j,k-1,nrhs))/Hzr(i,j,k))**2
 #   endif
@@ -164,7 +164,7 @@
       enddo
 #  endif
 !
-!  Smagorinsky viscosity at RHO points for horizontal dissipation
+!  Compute lateral Smagorinsky viscosity at RHO points
 !
 !      Lh = sqrt(dx*dy) --> visc3d
 !
@@ -172,12 +172,13 @@
         do i=imin,imax
           cff=horcon*om_r(i,j)*on_r(i,j)
           do k=1,N
-            cff1=2.*visc3d_r(i,j,k)  ! D²
-            visc3d_r(i,j,k)=cff*sqrt(cff1) ! Cs*dxdy*D²
+            cff1=2.*defrate(i,j,k)               ! D²
 #  ifdef UV_VIS_SMAGO_3D
 !      Buoyancy correction (Lilly, 1962)
             cff2=sqrt(max(0.,1.-(bvf(i,j,k)/max(cff1,1.e-12))/Ric))
-            visc3d_r(i,j,k)=cff2*visc3d_r(i,j,k)
+            visc3d_r(i,j,k)=cff*sqrt(cff1)*cff2
+#  else
+            visc3d_r(i,j,k)=cff*sqrt(cff1)       ! Cs*dxdy*D²
 #  endif
           enddo
         enddo
@@ -185,7 +186,7 @@
 
 #  ifdef UV_VIS_SMAGO_3D
 !
-!  Add smagorinsky viscosity to AKv at W points for vertical dissipation
+!  Compute vertical Smagorinsky viscosity at W points
 !
 !      Lv = Hz          --> Akv
 !
@@ -193,16 +194,16 @@
         kp=min(k+1,N)
         do j=jmin,jmax
           do i=imin,imax
-#   if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-                        || defined LMD_MIXING || defined GLS_MIX2017
-            Akv(i,j,k)=Akv(i,j,k)+
-#   else
-            Akv(i,j,k)=Akv_bak+
-#   endif
-     &                 0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
+            Akv(i,j,k)=0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
      &                                       *pm(i,j)*pn(i,j)
      &                                   *Hz(i,j,k)*Hz(i,j,k)
+#   if !defined LMD_MIXING && !defined BVF_MIXING && \
+       !defined GLS_MIX2017 && !defined GLS_MIXING
+     &                                              + Akv_bak
+#   endif
+!
 !      Apply SGS Prandtl number for tracers
+!
             Akt(i,j,k,itemp)=Pr*Akv(i,j,k)
 #   ifdef SALINITY                               
             Akt(i,j,k,isalt)=Akt(i,j,k,itemp)
@@ -212,20 +213,21 @@
       enddo
 #  endif /* UV_VIS_SMAGO_3D */
 !
-!  Add wave breaking dissipation 
-!  for surface wave-resolved cases
+!  Add surface wave breaking dissipation for wave-resolved cases
 !
 #  ifdef SWASH
       do j=jmin,jmax
         do i=imin,imax
           dZdt=abs(zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
+          cff0=om_r(i,j)*on_r(i,j)
+          Dbr=10.*cff0
+          cff1=0.1*cff0
           cff=z_w(i,j,N)-z_w(i,j,0)
-          Dbr=10.*om_r(i,j)*on_r(i,j)
           dZdt0=0.01*sqrt(g*cff)
           Bbr=max(0.,min(1.,dZdt/dZdt0-1.))
           do k=1,N
-            visc3d_r(i,j,k)=max(0.1/horcon*visc3d_r(i,j,k),
-     &                                    Dbr*Bbr*cff*dZdt)
+            cff2=cff1*sqrt(2.*defrate(i,j,k))
+            visc3d_r(i,j,k)=max(cff2,Dbr*Bbr*cff*dZdt)
           enddo
         enddo
       enddo
