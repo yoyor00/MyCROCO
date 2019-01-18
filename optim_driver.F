@@ -78,9 +78,9 @@ c     imode(3)=0 ==> simulator never called with indic=1
       imode(3)=0
 
       write(*,*) 'start state_control'
-      open(unit=777, file="zob.dat", action="write",
+      open(unit=777, file="coords.dat", action="write",
      &     form='FORMATTED')
-      open(unit=778, file="h.dat", action="write",
+      open(unit=778, file="icoords.dat", action="write",
      &     form='FORMATTED')
 
 
@@ -145,7 +145,10 @@ c     &        (x,f,gg,reverse,indic)
          
       end do
 
-C ...
+C     ...
+      do i=1,ad_array_size/2
+         write (777,*) ad_x_f(2*i),ad_x_f(2*i-1)
+      end do
       call set_state(ad_x_f)
 
       close (unit=777)

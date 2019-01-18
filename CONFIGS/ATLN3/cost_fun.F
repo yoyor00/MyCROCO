@@ -70,7 +70,7 @@ C$AD NOCHECKPOINT
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend,i,j
+      integer Istr,Iend,Jstr,Jend,i,j,ix,jx
       integer ta, k
       double precision delta, xlat,xlon,xxl,xxw,icost
       double precision haversine,xx,xxmin,mmin
@@ -78,18 +78,21 @@ C$AD NOCHECKPOINT
       do j=Jstr,Jend
          do i=Istr,Iend
             xxmin = 1.D38
-            do k=1,ad_array_size/2
-               xlat=ad_x_f(2*k-1)
-               xlon=ad_x_f(2*k)
-               xxw=sqrt(g*mmin(h(i,j),ad_h_f(k)))*TM2
-               xxl=haversine(latr(i,j),lonr(i,j),xlat,xlon)
-               xx=xxl/(xxw*xxw)
-               xx=xx*xx
-               xxmin=min(xxmin,xx)
+            if (h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
+               do k=1,ad_array_size/2
+                  xlat=ad_x_f(2*k-1)
+                  xlon=ad_x_f(2*k)
+                  call get_ij(xlat,xlon,ix,jx)
+                  xxw=sqrt(g*(min(h(i,j),h(ix,jx))))*TM2*3600
+                  xxl=haversine(latr(i,j),lonr(i,j),xlat,xlon)
+                  xx=xxl/(xxw*xxw)
+                  xx=xx*xx
+                  xxmin=min(xxmin,xx)
 c     write(*,*) '#####>',i,j,xlat,xlon,latr(i,j),lonr(i,j),k,
 c     &              icost
-            end do
-            icost = icost + xxmin
+               end do
+               icost = icost + xxmin
+            end if
          end do
       end do
 
@@ -298,7 +301,7 @@ c from rosettacode.org
 # include "adparam.h"
       
       integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep,ierr
-      double precision mindist,dist,rk,xr,haversine
+      double precision mindist,dist,rk,xr,yr,haversine
 
       istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
       jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
@@ -307,15 +310,17 @@ c      jloop: do j=Jstr,Jend,istep
 c     do i=Istr,Iend,jstep
       do while (k.le.(ad_array_size/2))
          call random_number(xr)
+         call random_number(yr)
          i=Istr+floor((Iend+1-Istr)*xr)
-         j=Jstr+floor((Jend+1-Jstr)*xr)
-         if (h(i,j).gt.0.1.and.ad_obs(i,j,1).ne.spval) then
+         j=Jstr+floor((Jend+1-Jstr)*yr)
+         if (h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
             write(*,*) 'new collocation point:',mynode,i,j,latr(i,j),
      &           lonr(i,j),h(i,j),
      &           ad_obs(i,j,1)
             ad_latr(k)=latr(i,j)
             ad_lonr(k)=lonr(i,j)
             ad_h(k)=h(i,j)
+            write(778,*) lonr(i,j),latr(i,j)
             k=k+1
 c               if (k.gt.ad_array_size/(2*nnodes)) then
 c                  exit jloop
@@ -378,4 +383,71 @@ c      enddo jloop
 
       end subroutine init_collocation_points_2d_tile
 
+      subroutine get_ij(lon,lat,i,j)
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+      double precision lon,lat
+      integer ntrds,trd,my_first,my_last,tile,range,i,j
 
+#ifdef OPENMP
+      ntrds=omp_get_num_threads()
+      trd=omp_get_thread_num()
+#else
+      ntrds=1
+      trd=0
+#endif
+      range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
+      my_first=trd*range
+      my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
+
+      do tile=my_first,my_last
+         call get_ij_2d(tile,lon,lat,i,j)
+      end do
+
+      end subroutine get_ij
+
+      subroutine get_ij_2d(tile,lon,lat,i,j)
+            implicit none
+# include "adinc.h"
+# include "adparam.h"
+      integer tile,i,j
+      double precision lon,lat
+# include "compute_tile_bounds.h"
+
+      call get_ij_2d_tile(Istr,Iend,Jstr,Jend,lon,lat,i,j)
+
+      end subroutine get_ij_2d
+
+      subroutine get_ij_2d_tile(Istr,Iend,Jstr,Jend,lon,lat,i,j)
+      implicit none
+
+# include "adinc.h"
+# include "adparam.h"      
+
+      integer Istr, Iend, Jstr, Jend, i, j, istep, jstep
+      double precision lon,lat
+
+      i = (Iend-Istr)/2
+      j = (Jend-Jstr)/2
+      istep = i/2
+      jstep = j/2
+
+      do while (max(istep,jstep).gt.1)
+         if (lonr(i,j) > lon) then
+            i = i+istep
+         else
+            i = i-istep
+         end if
+         istep = istep / 2
+
+         if (latr(i,j) > lat) then
+            j = j+jstep
+         else
+            j = j-jstep
+         end if
+         jstep = jstep / 2
+
+      end do
+
+      end subroutine get_ij_2d_tile
