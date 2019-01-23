@@ -151,7 +151,7 @@ echo 'START TESTING ...             '
 ##############################################################################
 # Serial runs
 ##############################################################################
-
+echo "KEYS TESTED : "$LIST_KEY_PHYS
 #echo ''
 par1='SERIAL'
 echo "SERIAL NPP=1 TEST $mytest"
@@ -188,13 +188,12 @@ if [ ${FLAG_OPENMP} = 1 ]; then
 	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 	
     else
-	echo "OPEN-MP 2X2 NPP=4 TEST $mytest"
-	export OMP_NUM_THREADS=4
-	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-	sed 's/'NPP=4'/'NPP=4'/' < param_bak1.h.$par1 > param_bak2.h.$par1
+	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} NPP=${NBPROCS} TEST $mytest"
+	export OMP_NUM_THREADS=${NBPROCS}
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=${NBPROCS_X},\ NSUB_E=${NBPROCS_Y}'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+	sed 's/'NPP=4'/'NPP=${NBPROCS}'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 	
     fi	 
-    
     /bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
     sed 's/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
     /bin/mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
@@ -220,7 +219,7 @@ if [ ${FLAG_MPI} = 1 ]; then
     
     par1='MPI'
     if [ $Is2DV_Y == 1 ]; then
-	echo "MPI 1X2 TEST $mytest"
+	echo "MPI  TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=1,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par
 	
     elif [ $Is2DV_X == 1 ]; then
@@ -228,8 +227,8 @@ if [ ${FLAG_MPI} = 1 ]; then
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param_bak0.h.$par1 > param_bak1.h.$par
     
     else	
-	echo "MPI 2X2 TEST $mytest"
-	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+	echo "MPI ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param_bak0.h.$par1 > param_bak1.h.$par1
     fi
     
     rm param_bak0.h.$par1

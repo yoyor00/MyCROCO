@@ -196,7 +196,8 @@
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
 #  undef  ERA_ECMWF
-#  undef  RELATIVE_WIND
+#  undef  RELATIVE_WIND 
+#  undef  BULK_REL_WIND    /* <-- under dev */
 # else
 #  define QCORRECTION
 #  define SFLX_CORR
