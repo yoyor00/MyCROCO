@@ -490,7 +490,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
       implicit none
 # include "param.h"
-# ifdef BULK_REL_WIND
+# ifdef RELATIVE_WIND
 #  include "ocean3d.h"
 # endif
 # include "forces.h"
@@ -504,7 +504,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
-# ifdef BULK_REL_WIND
+# ifdef RELATIVE_WIND
       integer imax,jmax
       real swparam0
       parameter (swparam0=0.7)
@@ -516,7 +516,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 # include "compute_extended_bounds.h"
 !
-# ifdef BULK_REL_WIND
+# ifdef RELATIVE_WIND
 #  ifdef MPI
        imax=IendR+1
        jmax=JendR+1
@@ -559,7 +559,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
 # ifdef BULK_SMFLUX
 #  ifdef BULK_SM_UPDATE
-#   ifdef BULK_REL_WIND
+#   ifdef RELATIVE_WIND
 !     
 !     Compute relative winds ---
 !     
@@ -624,14 +624,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &           wspd(START_2D_ARRAY))
 #    endif
-#   else /* BULK_REL_WIND */
+#   else /* RELATIVE_WIND */
             do j=JstrR,JendR
               do i=IstrR,IendR
                 uwnd(i,j)=uwndg(i,j,itbulk)
                 vwnd(i,j)=vwndg(i,j,itbulk)
               enddo
             enddo
-#   endif /* BULK_REL_WIND */
+#   endif /* RELATIVE_WIND */
 #  else /* BULK_SM_UPDATE */
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -748,7 +748,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           enddo
 # ifdef BULK_SMFLUX
 #  ifdef BULK_SM_UPDATE
-#   ifdef BULK_REL_WIND
+#   ifdef RELATIVE_WIND
 !     
 !     Compute relative winds ---
 !     
@@ -822,7 +822,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
             enddo
           enddo
-#   endif /* BULK_REL_WIND */
+#   endif /* RELATIVE_WIND */
 #  else 
           do j=JstrR,JendR
             do i=IstrR,IendR
