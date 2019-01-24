@@ -235,9 +235,15 @@
       parameter (NWEIGHT=1000)
 !
 !----------------------------------------------------------------------
-! Tides, Wetting-Drying, Point sources, Floast, Stations
+! OA-Coupling, Tides, Wetting-Drying, Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
+#if defined RELATIVE_WIND
+      ! setup coupling coeff
+      real swparam0
+      parameter (swparam0=1)
+      !parameter (swparam0=0.7) !<- LR
+#endif
 
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides

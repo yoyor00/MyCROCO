@@ -52,16 +52,16 @@
       real cff,cff1,cff2, cff3,cff4
 # ifdef BULK_EP
       real cff5,cff6
-# endif
+# endif      
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
 # ifdef RELATIVE_WIND
-      real cff9,cff10
       integer imax,jmax
-      real swparam0
-      parameter (swparam0=0.7)
-# endif
+!     real swparam0            ! setup coupling coeff
+!     parameter (swparam0=0.7) ! see param.h
+# endif   
+!     
 # include "compute_extended_bounds.h"
 !
 # ifdef RELATIVE_WIND

@@ -504,10 +504,10 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
-# ifdef RELATIVE_WIND
+# ifdef RELATIVE_WIND          
       integer imax,jmax
-      real swparam0
-      parameter (swparam0=0.7)
+      !real swparam0            ! setup coupling coeff
+      !parameter (swparam0=0.7) ! see param.h
 # endif
       real val1,val2,val3,val4,val5,val6,val7,val8
 # ifdef DIURNAL_INPUT_SRFLX
