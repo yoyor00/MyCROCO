@@ -196,7 +196,7 @@ C$OMP BARRIER
       real tau_mean(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
       integer i, j, k, ised
-      real eps 
+      real eps, Dstp
       real cff, cff1, cff2, cff3, cff4, cff5
       real a_slopex, a_slopey, sed_angle
       real bedld, bedld_mass, dzdx, dzdy
@@ -205,7 +205,7 @@ C$OMP BARRIER
 #  ifdef BEDLOAD_SOULSBY
       real theta_mean, theta_wav, w_asym
       real theta_max, theta_max1, theta_max2
-      real phi_x1, phi_x2, phi_x, phi_y, Dstp
+      real phi_x1, phi_x2, phi_x, phi_y
       real bedld_x, bedld_y, tau_cur, waven, wavec
 #  endif
       real kdmax,Kbh,Kbh2,Kdh,Fwave
@@ -439,10 +439,10 @@ C$OMP BARRIER
 ! FX_r and FE_r have dimensions of kg.
 !
             bedld=8.0*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.0)**1.5)
-     &                                   *smgdr*IGN(1.0,tau_wX(i,j))
+     &                                   *smgdr*SIGN(1.0,tau_wX(i,j))
             FX_r(i,j)=bedld*on_r(i,j)*dt
             bedld=8.0*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.0)**1.5)
-     &                                   *smgdr*IGN(1.0,tau_wE(i,j))
+     &                                   *smgdr*SIGN(1.0,tau_wE(i,j))
             FE_r(i,j)=bedld*om_r(i,j)*dt
 #   else
 !

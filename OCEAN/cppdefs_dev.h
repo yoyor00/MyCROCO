@@ -296,6 +296,7 @@
 */
 #ifdef UV_VIS_SMAGO_3D
 # define UV_VIS_SMAGO  
+# define TS_DIF_SMAGO
 #endif
 #ifdef UV_VIS_SMAGO 
 # define VIS_COEF_3D  
@@ -414,7 +415,7 @@
 #  undef CLIMAT_TS_MIXH_FINE
 # endif
 /*
-   Use 3D viscosity arrays if needed       
+   Use 3D diffusivity arrays if needed       
 */
 #if defined TS_HADV_RSUP3 \
  || defined TS_HADV_RSUP5 || defined TS_DIF_SMAGO

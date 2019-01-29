@@ -15,7 +15,6 @@ ln -sf $dir_home/../CONFIGURE_GLOBAL $dir_test/
 ln -sf $dir_home/../CONFIGURE_VORT $dir_test/
 
 # common scripts and programms
-ln -sf $dir_home/../Log_Details $dir_test/
 ln -sf $dir_home/../gather_recap.bash $dir_test/
 ln -sf $dir_home/../gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/

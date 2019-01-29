@@ -271,7 +271,7 @@ CONTAINS
       INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index      
       INTEGER , INTENT(in   )                         ::   kiter     ! number of iterations for time-splitting 
       REAL(wp), INTENT(in   ), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   pwsink    ! sinking speed
-      REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   psinkflx  ! sinking fluxe
+      REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk+1) ::   psinkflx  ! sinking fluxe
       !!
       INTEGER  ::   ji, jj, jk, jn, jnt
       REAL(wp) ::   zigma,zew,zign, zflx, zstep
@@ -287,7 +287,7 @@ CONTAINS
             DO ji = IRANGE
                zmask(ji,jj,jk) = tmask(ji,jj,K)
                zdept(ji,jj,jk) = fse3t(ji,jj,K)
-               ztrn (ji,jj,jk) = trn  (ji,jj,K,jp_tra)
+               ztrn (ji,jj,jk) = trn(ji,jj,K,jp_tra)
            END DO
          END DO
       ENDDO
@@ -437,7 +437,7 @@ CONTAINS
 #endif
       INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index      
       REAL(wp), INTENT(in   ), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   pwsink    ! sinking speed
-      REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   psinkflx  ! sinking fluxe
+      REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk+1) ::   psinkflx  ! sinking fluxe
 !
 !  Local variable declarations.
 !
@@ -478,7 +478,7 @@ CONTAINS
             DO ji = IRANGE
                zmask(ji,jj,jk) = tmask(ji,jj,K)
                zdept(ji,jj,jk) = fse3t(ji,jj,K)
-               ztrn (ji,jj,jk) = trn  (ji,jj,K,jp_tra)
+               ztrn (ji,jj,jk) = trn(ji,jj,K,jp_tra)
            END DO
          END DO
       ENDDO

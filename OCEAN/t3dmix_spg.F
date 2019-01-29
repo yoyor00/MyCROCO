@@ -163,6 +163,9 @@
 # ifdef DIAGNOSTICS_TS
 #  include "diagnostics.h"
 # endif
+# ifdef DIAGNOSTICS_PV
+#  include "diags_pv.h"
+# endif
 # ifdef AGRIF
 #  include "zoom.h"
 # endif
@@ -267,7 +270,7 @@
           enddo
         enddo
 
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -600,7 +603,7 @@
         enddo           !--> discard FC,CF,DC
 #   undef FC 
 
-#   ifdef DIAGNOSTICS_TS
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 !  Add TVmix correction term to previous TVmix computation
 !
@@ -643,7 +646,7 @@
         enddo
 # endif
 
-# ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !

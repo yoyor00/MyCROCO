@@ -77,8 +77,7 @@
       integer itbms,      bmstid,busid, bvsid,     tbmsindx
       logical bmscycle,   bms_onerec,   lbusgrd,   lbvsgrd
       common /bmsdat1/bms_tintrp, bustrp,       bvstrp,    tbms
-      common /bmsdat2/bmsclen,    bms_tstart,   bms_tend,  tsbms,
-     &               sclbms
+      common /bmsdat2/bmsclen, bms_tstart, bms_tend, tsbms, sclbms
       common /bmsdat3/itbms,      bmstid,busid, bvsid,     tbmsindx
       common /bmsdat4/bmscycle,   bms_onerec,   lbusgrd,   lbvsgrd
 
@@ -206,6 +205,11 @@
       real dqdt(GLOBAL_2D_ARRAY)
       common /forces_dqdt/dqdt 
 #  endif
+# ifdef SFLX_CORR_COEF
+! value of nudging for surface salinity correction (in days)
+      real dSdt
+      parameter (dSdt=30.0)
+# endif
 #  ifndef ANA_SSS
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
@@ -383,8 +387,7 @@
       integer itsrf, srf_ncycle, srf_rec
       integer lsrfgrd, srf_tid, srf_id 
       common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
-      common /srfdat2/ itsrf, srf_ncycle, srf_rec, lsrfgrd, srf_tid,
-     &                 srf_id
+      common /srfdat2/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
 
 # ifdef DIURNAL_INPUT_SRFLX
       real srflxbiog(GLOBAL_2D_ARRAY,2)

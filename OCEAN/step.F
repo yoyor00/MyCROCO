@@ -433,16 +433,51 @@ C$OMP BARRIER
 # ifdef SST_SKIN
         call sstskin (tile)
 # endif
+
+!---------------------------
+# if defined DIAGNOSTICS_VRT
+        call set_diags_vrt (tile)
+# endif
+# if defined DIAGNOSTICS_EK
+        call set_diags_ek (tile)
+# endif
+# if defined DIAGNOSTICS_PV
+        call set_diags_pv (tile)
+# endif
+
 # ifdef AVERAGES
         call set_avg (tile)
 #  if defined DIAGNOSTICS_TS
-        call set_diags_avg (tile)
+        if (ldefdia_avg
+     &      .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1)))
+     &      call set_diags_avg (tile)
 #  endif
 #  if defined DIAGNOSTICS_UV
-        call set_diagsM_avg (tile)
+        if (ldefdiaM_avg .and. wrtdiaM_avg(3))
+     &      call set_diagsM_avg (tile)
+#  endif
+#  if defined DIAGNOSTICS_VRT
+        if (ldefdiags_vrt_avg .and. wrtdiags_vrt_avg(indxTime))
+     &      call set_diags_vrt_avg (tile)
+#  endif
+#  if defined DIAGNOSTICS_EK
+        if (ldefdiags_ek_avg .and. wrtdiags_ek_avg(indxTime))
+     &      call set_diags_ek_avg (tile)
+#  endif
+#  if defined DIAGNOSTICS_PV
+        if (ldefdiags_pv_avg .and. wrtdiags_pv_avg(indxTime))
+     &      call set_diags_pv_avg (tile)
+#  endif
+#  if defined DIAGNOSTICS_EDDY
+        if (ldefdiags_eddy_avg .and. wrtdiags_eddy_avg(indxTime))
+     &      call set_diags_eddy_avg (tile)
 #  endif
 #  ifdef DIAGNOSTICS_BIO
         call set_bio_diags_avg (tile)
+#  endif
+#  if defined OUTPUTS_SURFACE
+        if (ldefsurf_avg .and. wrtsurf_avg(indxTime))
+     &      call set_surf_avg (tile)
 #  endif
 # endif
       enddo

@@ -154,8 +154,12 @@ C$OMP BARRIER
 # ifdef SOLVE3D
       END IF
 # endif
-
-# ifdef SOLVE3D
+!
+!--------------------------------------------------------------------
+!  Averaged wet/dry mask for 3D slow mode if M2 filter
+!--------------------------------------------------------------------
+!
+# if defined SOLVE3D && !defined M2FILTER_NONE
 !
 !  Wet/dry mask at RHO-points, averaged over all fast time-steps.
 !
