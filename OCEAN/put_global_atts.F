@@ -40,8 +40,10 @@
 #include "netcdf.inc"
 #if defined MPI && defined PARALLEL_FILES
       integer*4 ibuff(4)
+# ifdef NCJOIN_UCLA
       integer chunk_size_X,margin_X,chunk_size_E,margin_E
       integer Istrmpi,Iendmpi,Jstrmpi,Jendmpi, i_X,j_E
+# endif
 !
 ! Put global attribute 'partition' which identifies subdomain
 ! within the processor grid individually for each file.
