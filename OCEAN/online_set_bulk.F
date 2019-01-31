@@ -58,8 +58,8 @@
 # endif
 # ifdef RELATIVE_WIND
       integer imax,jmax
-     real swparam0            ! setup coupling coeff
-     parameter (swparam0=1)   ! see param.h
+      real swparam0            ! setup coupling coeff
+      parameter (swparam0=1)   ! see param.h
 # endif   
 !     
 # include "compute_extended_bounds.h"
