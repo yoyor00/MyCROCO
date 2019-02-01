@@ -316,7 +316,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       ncpoints=0
       do k=1,ad_array_size
          call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
-         if (.not.out.and.(ncpoints.lt.(ad_array_size/nnodes))) then
+         if (.not.out.and.(ncpoints.lt.(ad_array_size))) then
             ncpoints=ncpoints+1
             ad_i(ncpoints)=i
             ad_j(ncpoints)=j
@@ -335,8 +335,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
             SkW(i,j)=0.
             rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
             do k=1,ad_array_size
-               dist=distance(latr(i,j),lonr(i,j),
-     &              ad_latr_f(k),ad_lonr_f(k))
+               dist=distance(lonr(i,j),latr(i,j),
+     &              ad_lonr_f(k),ad_latr_f(k))
                W(i,j,k)=exp(-dist/rk)
                SkW(i,j)=SkW(i,j)+W(i,j,k)
             end do
@@ -347,8 +347,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          do i=Istr,Iend
             mindist=1.D230
             do k=1,ad_array_size
-               dist=distance(latr(i,j),lonr(i,j),
-     &              ad_latr_f(k),ad_lonr_f(k))
+               dist=distance(lonr(i,j),latr(i,j),
+     &              ad_lonr_f(k),ad_latr_f(k))
                if (dist.lt.mindist) then
                   ad_colloc(i,j)=k
                endif

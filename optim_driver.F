@@ -93,7 +93,8 @@ c         MPI_master_only call optim_driver
 c     &        (x,f,gg,reverse,indic)
 
          do i=1,ad_array_size
-            write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),ad_g_f(i)
+            write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),
+     &           ad_g_f(i)
          end do
 
          MPI_master_only write(*,*) '1##>',ad_x_f

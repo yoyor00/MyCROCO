@@ -156,7 +156,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F
+ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o

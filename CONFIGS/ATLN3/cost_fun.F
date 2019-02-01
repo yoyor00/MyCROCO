@@ -74,6 +74,7 @@ C$AD NOCHECKPOINT
       integer ta, k
 ! unused out of domain flag (1 proc only)      
       logical out
+      external get_ij
       double precision delta, xlat,xlon,xxl,xxw,icost
       double precision distance,xx,xxmin,mmin
 
@@ -84,9 +85,9 @@ C$AD NOCHECKPOINT
                do k=1,ad_array_size/2
                   xlat=ad_x_f(2*k-1)
                   xlon=ad_x_f(2*k)
-                  call get_ij(xlat,xlon,ix,jx,out)
+                  call get_ij(xlon,xlat,ix,jx,out)
                   xxw=sqrt(g*(min(h(i,j),h(ix,jx))))*TM2*3600
-                  xxl=distance(latr(i,j),lonr(i,j),xlat,xlon)
+                  xxl=distance(lonr(i,j),latr(i,j),xlon,xlat)
                   xx=xxl/(xxw*xxw)
                   xx=xx*xx
                   xxmin=min(xxmin,xx)
@@ -328,8 +329,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
             SkW(i,j)=0.
             rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
             do k=1,ad_array_size/2
-               dist=distance(latr(i,j),lonr(i,j),
-     &              ad_latr_f(k),ad_lonr_f(k))
+               dist=distance(lonr(i,j),latr(i,j),
+     &              ad_lonr_f(k),ad_latr_f(k))
                W(i,j,k)=exp(-dist/rk)
                SkW(i,j)=SkW(i,j)+W(i,j,k)
             end do
@@ -340,8 +341,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          do i=Istr,Iend
             mindist=1.D230
             do k=1,ad_array_size/2
-               dist=distance(latr(i,j),lonr(i,j),
-     &              ad_latr_f(k),ad_lonr_f(k))
+               dist=distance(lonr(i,j),latr(i,j),
+     &              ad_lonr_f(k),ad_latr_f(k))
                if (dist.lt.mindist) then
                   ad_colloc(i,j)=k
                endif

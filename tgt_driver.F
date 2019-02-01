@@ -4,7 +4,7 @@ c     this file is not differentiated
 
 C     !! adjoint check only
 C     !! x size = 1 ==> dfdx ok
-      subroutine simul(indic,Sn,ad_x,f,dfdx,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x_f,f,dfdx,izs,rzs,dzs)
       implicit none
 # include "cppdefs.h"
 # include "param.h"
@@ -37,13 +37,13 @@ c         call save_croco_state()
          write (*,*) '--------------------------------------'
          write (*,*) 'start tangent'
          write (*,*) '--------------------------------------'
-         call cost_fun_d(ad_x, ad_xd, cost, dfdx)
+         call cost_fun_d(ad_x_f, ad_xd, cost, dfdx)
 
          write (*,*) '--------------------------------------'
          write (*,*) 'end tangent'
          write (*,*) '--------------------------------------'
          do i=1,Sn
-            write(*,*) '1--->', i,ad_x(i),ad_xd(i),cost,dfdx(i)
+            write(*,*) '1--->', i,ad_x_f(i),ad_xd(i),cost,dfdx(i)
          end do
          f = cost
          call restore_croco_state()

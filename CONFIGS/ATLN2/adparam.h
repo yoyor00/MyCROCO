@@ -2,7 +2,7 @@ C     -*- fortran -*-
 
 C     size of the problem (number of control variables)
       integer ad_array_size
-      parameter (ad_array_size=24*nnodes)
+      parameter (ad_array_size=3*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 C     size of the assimilation window (number of steps)
@@ -21,14 +21,8 @@ C     number of time steps in the main file before assimilation
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt+2)
 
-c     control vector / MPI processes
-      double precision ad_x(ad_array_size/nnodes)
-
 c     full control vector
       double precision ad_x_f(ad_array_size)
-
-c     gradient / MPI processes
-      double precision ad_g(ad_array_size/nnodes)
 
 c     full gradient vector
       double precision ad_g_f(ad_array_size)
@@ -40,17 +34,17 @@ c     number of control points (<= ad_array_size/nnodes)
       integer ncpoints
       
 c     coordinates of control points
-      integer ad_i(ad_array_size/nnodes)
-      integer ad_j(ad_array_size/nnodes)
+      integer ad_i(ad_array_size)
+      integer ad_j(ad_array_size)
       
 c     latitudes/longitudes of control points on whole grid
-      double precision ad_latr(ad_array_size/nnodes)
-      double precision ad_lonr(ad_array_size/nnodes)
+      double precision ad_latr(ad_array_size)
+      double precision ad_lonr(ad_array_size)
       
       double precision ad_latr_f(ad_array_size)
       double precision ad_lonr_f(ad_array_size)
 c     depth of control points
-      double precision ad_h(ad_array_size/nnodes)
+      double precision ad_h(ad_array_size)
       double precision ad_h_f(ad_array_size)
       
 c     weighted coefficients

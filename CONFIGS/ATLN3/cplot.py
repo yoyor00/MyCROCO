@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 from mpl_toolkits.basemap import Basemap
 
-#points=np.loadtxt('fort.778')
-points=np.loadtxt('coords.dat')
+#points=np.loadtxt('cpoints.dat')
+points=np.loadtxt('fort.778')
 
 m = Basemap(projection='merc', llcrnrlon=-9, urcrnrlon=1,llcrnrlat=43,urcrnrlat=51, resolution='h')
  
