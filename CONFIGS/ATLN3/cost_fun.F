@@ -72,8 +72,10 @@ C$AD NOCHECKPOINT
 
       integer Istr,Iend,Jstr,Jend,i,j,ix,jx
       integer ta, k
+! unused out of domain flag (1 proc only)      
+      logical out
       double precision delta, xlat,xlon,xxl,xxw,icost
-      double precision haversine,xx,xxmin,mmin
+      double precision distance,xx,xxmin,mmin
 
       do j=Jstr,Jend
          do i=Istr,Iend
@@ -82,9 +84,9 @@ C$AD NOCHECKPOINT
                do k=1,ad_array_size/2
                   xlat=ad_x_f(2*k-1)
                   xlon=ad_x_f(2*k)
-                  call get_ij(xlat,xlon,ix,jx)
+                  call get_ij(xlat,xlon,ix,jx,out)
                   xxw=sqrt(g*(min(h(i,j),h(ix,jx))))*TM2*3600
-                  xxl=haversine(latr(i,j),lonr(i,j),xlat,xlon)
+                  xxl=distance(latr(i,j),lonr(i,j),xlat,xlon)
                   xx=xxl/(xxw*xxw)
                   xx=xx*xx
                   xxmin=min(xxmin,xx)
@@ -232,32 +234,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine restore_croco_state
 
-c from rosettacode.org
-      function to_radian(degree) result(rad)
-          ! degrees to radians
-          real,intent(in) :: degree
-          real, parameter :: deg_to_rad = atan(1.0)/45 ! exploit intrinsic atan to generate pi/180 runtime constant
-          real :: rad
-
-          rad = degree*deg_to_rad
-      end function to_radian
-
-      function haversine(deglat1,deglon1,deglat2,deglon2) result (dist)
-          ! great circle distance -- adapted from Matlab
-          real,intent(in) :: deglat1,deglon1,deglat2,deglon2
-          real :: a,c,dist,dlat,dlon,lat1,lat2
-          real,parameter :: radius = 6372800
-          real :: to_radian
-          
-          dlat = to_radian(deglat2-deglat1)
-          dlon = to_radian(deglon2-deglon1)
-          lat1 = to_radian(deglat1)
-          lat2 = to_radian(deglat2)
-          a = (sin(dlat/2))**2 + cos(lat1)*cos(lat2)*(sin(dlon/2))**2
-          c = 2*asin(sqrt(a))
-          dist = radius*c
-      end function haversine
-
       subroutine init_collocation_points()
       implicit none
 # include "adinc.h"
@@ -300,14 +276,10 @@ c from rosettacode.org
 # include "adinc.h"
 # include "adparam.h"
       
-      integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep,ierr
-      double precision mindist,dist,rk,xr,yr,haversine
+      integer Istr,Iend,Jstr,Jend,i,j,k,ierr
+      double precision mindist,dist,rk,xr,yr,distance
 
-      istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
-      jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
       k=1
-c      jloop: do j=Jstr,Jend,istep
-c     do i=Istr,Iend,jstep
       do while (k.le.(ad_array_size/2))
          call random_number(xr)
          call random_number(yr)
@@ -322,13 +294,9 @@ c     do i=Istr,Iend,jstep
             ad_h(k)=h(i,j)
             write(778,*) lonr(i,j),latr(i,j)
             k=k+1
-c               if (k.gt.ad_array_size/(2*nnodes)) then
-c                  exit jloop
-c               endif
          endif
             
       enddo
-c      enddo jloop
             
 #ifdef AMPI
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
@@ -360,7 +328,7 @@ c      enddo jloop
             SkW(i,j)=0.
             rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
             do k=1,ad_array_size/2
-               dist=haversine(latr(i,j),lonr(i,j),
+               dist=distance(latr(i,j),lonr(i,j),
      &              ad_latr_f(k),ad_lonr_f(k))
                W(i,j,k)=exp(-dist/rk)
                SkW(i,j)=SkW(i,j)+W(i,j,k)
@@ -372,7 +340,7 @@ c      enddo jloop
          do i=Istr,Iend
             mindist=1.D230
             do k=1,ad_array_size/2
-               dist=haversine(latr(i,j),lonr(i,j),
+               dist=distance(latr(i,j),lonr(i,j),
      &              ad_latr_f(k),ad_lonr_f(k))
                if (dist.lt.mindist) then
                   ad_colloc(i,j)=k
@@ -383,71 +351,3 @@ c      enddo jloop
 
       end subroutine init_collocation_points_2d_tile
 
-      subroutine get_ij(lon,lat,i,j)
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-      double precision lon,lat
-      integer ntrds,trd,my_first,my_last,tile,range,i,j
-
-#ifdef OPENMP
-      ntrds=omp_get_num_threads()
-      trd=omp_get_thread_num()
-#else
-      ntrds=1
-      trd=0
-#endif
-      range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
-      my_first=trd*range
-      my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
-
-      do tile=my_first,my_last
-         call get_ij_2d(tile,lon,lat,i,j)
-      end do
-
-      end subroutine get_ij
-
-      subroutine get_ij_2d(tile,lon,lat,i,j)
-            implicit none
-# include "adinc.h"
-# include "adparam.h"
-      integer tile,i,j
-      double precision lon,lat
-# include "compute_tile_bounds.h"
-
-      call get_ij_2d_tile(Istr,Iend,Jstr,Jend,lon,lat,i,j)
-
-      end subroutine get_ij_2d
-
-      subroutine get_ij_2d_tile(Istr,Iend,Jstr,Jend,lon,lat,i,j)
-      implicit none
-
-# include "adinc.h"
-# include "adparam.h"      
-
-      integer Istr, Iend, Jstr, Jend, i, j, istep, jstep
-      double precision lon,lat
-
-      i = (Iend-Istr)/2
-      j = (Jend-Jstr)/2
-      istep = i/2
-      jstep = j/2
-
-      do while (max(istep,jstep).gt.1)
-         if (lonr(i,j) > lon) then
-            i = i+istep
-         else
-            i = i-istep
-         end if
-         istep = istep / 2
-
-         if (latr(i,j) > lat) then
-            j = j+jstep
-         else
-            j = j-jstep
-         end if
-         jstep = jstep / 2
-
-      end do
-
-      end subroutine get_ij_2d_tile

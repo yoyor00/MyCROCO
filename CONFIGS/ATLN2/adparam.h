@@ -2,7 +2,7 @@ C     -*- fortran -*-
 
 C     size of the problem (number of control variables)
       integer ad_array_size
-      parameter (ad_array_size=10*nnodes)
+      parameter (ad_array_size=24*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 C     size of the assimilation window (number of steps)
@@ -35,18 +35,24 @@ c     full gradient vector
 
 c     sum of all full gradient vectors
       double precision ad_sg_f(ad_array_size)
+
+c     number of control points (<= ad_array_size/nnodes)
+      integer ncpoints
       
-c     coordinates of control points (i.e collocation points)
+c     coordinates of control points
       integer ad_i(ad_array_size/nnodes)
       integer ad_j(ad_array_size/nnodes)
       
-c     latitudes/longitudes of rho points on whole grid
+c     latitudes/longitudes of control points on whole grid
       double precision ad_latr(ad_array_size/nnodes)
       double precision ad_lonr(ad_array_size/nnodes)
       
       double precision ad_latr_f(ad_array_size)
       double precision ad_lonr_f(ad_array_size)
-
+c     depth of control points
+      double precision ad_h(ad_array_size/nnodes)
+      double precision ad_h_f(ad_array_size)
+      
 c     weighted coefficients
       double precision W(GLOBAL_2D_ARRAY,ad_array_size)
       double precision SkW(GLOBAL_2D_ARRAY)
@@ -81,7 +87,8 @@ C     commons
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
       
       common /colloc_id/ ad_colloc
-      common /collocation_coords/ ad_i,ad_j
+      common /collocation_coords/ ncpoints,ad_i,ad_j,ad_latr_f,ad_lonr_f
+     &     ,ad_h_f
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
       common /state_info/ sim_iicroot

@@ -159,13 +159,13 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o
 
 TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
-TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o
+TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o get_ij.o distance.o
 
-DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o
+DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o get_ij.o distance.o
 
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 

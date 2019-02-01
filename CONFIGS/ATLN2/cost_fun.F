@@ -78,14 +78,14 @@ C$AD NOCHECKPOINT
       integer ta, k
       double precision delta_z, delta_zob, icost
 
-      do k=1,ad_array_size/nnodes
+      do k=1,ncpoints
          i=ad_i(k)
          j=ad_j(k)
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
          delta_zob = (zob(i,j) - zob_bck(i,j))
-         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
-     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
-         write(*,*) 'BBBBB',mynode,delta_z,delta_zob
+c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
+c     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
+c         write(*,*) 'BBBBB',mynode,delta_z,delta_zob
          icost = icost + delta_z*delta_z + 1.D-5*delta_zob*delta_zob
       end do
 
@@ -140,11 +140,7 @@ C$AD NOCHECKPOINT
       double precision lzob
       double precision control_to_param
 
-      integer ad_anode_size
-
 #include "compute_extended_bounds.h"
-      ad_anode_size=ad_array_size/nnodes
-
       do j=Jstr,Jend
          do i=Istr,Iend
 c            k=ad_colloc(i,j)
@@ -250,36 +246,15 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine restore_croco_state
 
-c from rosettacode.org
-      function to_radian(degree) result(rad)
-          ! degrees to radians
-          real,intent(in) :: degree
-          real, parameter :: deg_to_rad = atan(1.0)/45 ! exploit intrinsic atan to generate pi/180 runtime constant
-          real :: rad
 
-          rad = degree*deg_to_rad
-      end function to_radian
-
-      function haversine(deglat1,deglon1,deglat2,deglon2) result (dist)
-          ! great circle distance -- adapted from Matlab
-          real,intent(in) :: deglat1,deglon1,deglat2,deglon2
-          real :: a,c,dist,dlat,dlon,lat1,lat2
-          real,parameter :: radius = 6372800
-
-          dlat = to_radian(deglat2-deglat1)
-          dlon = to_radian(deglon2-deglon1)
-          lat1 = to_radian(deglat1)
-          lat2 = to_radian(deglat2)
-          a = (sin(dlat/2))**2 + cos(lat1)*cos(lat2)*(sin(dlon/2))**2
-          c = 2*asin(sqrt(a))
-          dist = radius*c
-      end function haversine
 
       subroutine init_collocation_points()
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
+      integer k
+      integer ierr
       integer ntrds,trd,my_first,my_last,tile,range
 
 #ifdef OPENMP
@@ -293,6 +268,19 @@ c from rosettacode.org
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
+      if (mynode.eq.0) then
+         open(unit=99,file="cpoints.dat")
+         do k=1,ad_array_size
+            read(99,*) ad_lonr_f(k), ad_latr_f(k)
+         end do
+         close(unit=99)
+      end if
+      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
+      call AMPI_Bcast(ad_lonr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &     0,MPI_COMM_WORLD,ierr)
+      call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+     &     0,MPI_COMM_WORLD,ierr)
+         
       do tile=my_first,my_last
          call init_collocation_points_2d(tile)
       end do
@@ -317,63 +305,37 @@ c from rosettacode.org
 # include "adinc.h"
 # include "adparam.h"
       
-      integer Istr,Iend,Jstr,Jend,i,j,k,istep,jstep,ierr
-      double precision mindist,dist,rk,haversine
+      integer Istr,Iend,Jstr,Jend,i,j,k,ierr
+      logical out
+      double precision mindist,dist,rk,distance,xr,yr
 
-      integer ad_anode_size
-
-      ad_anode_size = ad_array_size/nnodes
-
-
-      istep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
-      jstep=(Iend+1-Istr)/(2*sqrt(real(ad_array_size)))
-      k=1
-      jloop: do j=Jstr,Jend,istep
-      do i=Istr,Iend,jstep
-c         call random_number(r)
-c         i=Istr+floor((Iend+1-Istr)*r)
-c     j=Jstr+floor((Jend+1-Jstr)*r)
-         if (h(i,j).gt.0.1.and.ad_obs(i,j,1).ne.spval) then
-               write(*,*) 'new collocation point:',mynode,i,j,h(i,j),
-     &           ad_obs(i,j,1)
-               ad_i(k)=i
-               ad_j(k)=j
-               ad_latr(k)=latr(i,j)
-               ad_lonr(k)=lonr(i,j)
-               k=k+1
-               if (k.gt.ad_anode_size) then
-                  exit jloop
-               endif
-            endif
-         enddo
-      enddo jloop
-
-#ifdef AMPI
-      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-      call AMPI_Gather(ad_latr,ad_array_size/nnodes,
-     &     AMPI_ADOUBLE_PRECISION,ad_latr_f,ad_array_size/nnodes,
-     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-      call AMPI_Gather(ad_lonr,ad_array_size/nnodes,
-     &     AMPI_ADOUBLE_PRECISION,ad_lonr_f,ad_array_size/nnodes,
-     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-      call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
-     &     0,MPI_COMM_WORLD,ierr)
-      call AMPI_Bcast(ad_lonr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
-     &     0,MPI_COMM_WORLD,ierr)
-#else
-      ad_latr_f = ad_latr
-      ad_lonr_f = ad_lonr
-#endif
       do k=1,ad_array_size
-c         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
+         write(*,*) '###',mynode,ad_latr_f(k),ad_lonr_f(k)
       end do
 
+      ncpoints=0
+      do k=1,ad_array_size
+         call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
+         if (.not.out.and.(ncpoints.lt.(ad_array_size/nnodes))) then
+            ncpoints=ncpoints+1
+            ad_i(ncpoints)=i
+            ad_j(ncpoints)=j
+         end if
+      end do
+
+      write(*,*) mynode,'ncpoints=',ncpoints
+      do k=1,ncpoints
+         write(*,*) 'cpoints',mynode,ad_i(k),ad_j(k)
+      end do
+      
+!     sum of ncpoints should be ad_array_size      
+      
       do j=Jstr,Jend
          do i=Istr,Iend
             SkW(i,j)=0.
             rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
             do k=1,ad_array_size
-               dist=haversine(latr(i,j),lonr(i,j),
+               dist=distance(latr(i,j),lonr(i,j),
      &              ad_latr_f(k),ad_lonr_f(k))
                W(i,j,k)=exp(-dist/rk)
                SkW(i,j)=SkW(i,j)+W(i,j,k)
@@ -385,8 +347,8 @@ c         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
          do i=Istr,Iend
             mindist=1.D230
             do k=1,ad_array_size
-               dist=haversine(latr(i,j),lonr(i,j),
-     &              ad_latr(k),ad_lonr(k))
+               dist=distance(latr(i,j),lonr(i,j),
+     &              ad_latr_f(k),ad_lonr_f(k))
                if (dist.lt.mindist) then
                   ad_colloc(i,j)=k
                endif
@@ -403,10 +365,32 @@ c         write(*,*) '###',ad_latr_f(k),ad_lonr_f(k)
 # include "adparam.h"
 
       integer k
+      double precision y, a, b
+      parameter (a = 1D-6)
+      parameter (b = 1D-2)
 
-      control_to_param = 1.D-7 + 1/(1+exp(ad_x_f(k)))
-c      control_to_param = ad_x_f(k)
+      y = ad_x_f(k)
 
+c     R -> (a,b)
+      control_to_param = 1.D-7 + 1/(1+exp(y))
+c      if (y.le.0) then 
+c         control_to_param = (a*y + b*y
+c     &        + sqrt(a*a*y*y - 2*a*b*y*y + b*b*y*y + 4) - 2)/(2*y)
+c      else
+c         control_to_param = (a*y + b*y
+c     &        - sqrt(a*a*y*y - 2*a*b*y*y + b*b*y*y + 4) - 2)/(2*y)
+c      end if
+
+c      if (control_to_param.ge.b) then
+c         write(*,*) '>>>>>', control_to_param,'>=',b
+c         stop
+c      end if
+c      if (control_to_param.le.a) then
+c         write(*,*) '>>>>>', control_to_param, '=<',a
+c         stop
+         
+c      end if
+      
       end function control_to_param
 
       double precision function param_to_control(k)
@@ -415,8 +399,14 @@ c      control_to_param = ad_x_f(k)
 # include "adparam.h"
 
       integer k
+      double precision x, a, b
+      parameter (a = 1D-6)
+      parameter (b = 1D-2)
+      
+      x = Zobt
 
-      param_to_control = log(1./Zobt  - 1.)
-c      param_to_control = Zobt
-
+c     (a,b) -> R      
+      param_to_control = log(1./x  - 1.)
+c      param_to_control = 1/(a - x) + 1/(b - x)
+      
       end function param_to_control
