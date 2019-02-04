@@ -301,6 +301,11 @@
 #  undef  POT_TIDES
 #  define TIDERAMP
 # endif
+# undef  OBC_REDUCED_PHYSICS
+# if defined SSH_TIDES && !defined UV_TIDES
+#  define OBC_REDUCED_PHYSICS
+#  undef  M2_FRC_BRY
+#endif 
 # define OBC_M2CHARACT
 # undef  OBC_M2ORLANSKI
 # define OBC_M3ORLANSKI
