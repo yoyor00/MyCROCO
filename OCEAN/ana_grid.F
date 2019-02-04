@@ -688,6 +688,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 # endif
 
+!----------------------------------------------------------------------
+! initialisation of z0b in case of analytical cases
+!----------------------------------------------------------------------
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          zob(i,j)=zobt
+        end do
+      end do
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.
