@@ -3,18 +3,9 @@ c     this file is not differentiated
       subroutine state_control(iicroot)
 
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "adparam.h"
-# include "scalars.h"
-# ifdef MPI
-# include "mpi_roms.h"
-# ifdef AMPI
-# include "ampi/ampif.h"
-# else
-      include 'mpif.h'
-# endif
-# endif
+#include "adinc.h"
+#include "adparam.h"      
+      
       integer iicroot
       integer ierr
 
@@ -32,26 +23,31 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       real rzs(1)
       real dzs(1)
 
-      double precision f, xf
+      double precision cost, xf
 
       double precision dx, df1,epsrel
 
       double precision dz(ndz)
 
       integer i
-
+      
       sim_iicroot = iicroot
+      ad_counter = 0
 
+      write(*,*) 'ad_array_size=', ad_array_size
+      write(*,*) 'nx:',2+lm+2+padd_x
+      write(*,*) 'ne:',2+mm+2+padd_e
+      
       call init_control(ad_x_f,ad_g_f)
 
       MPI_master_only write(*,*) 'A1##>',ad_x_f
       MPI_master_only write(*,*) 'B1##>',ad_g_f
       
       indic = 4
-      call simul (indic,ad_array_size,ad_x_f,f,ad_g_f,izs,rzs,dzs)
+      call simul (indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
 #ifdef AMPI
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-      call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
+      call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
       call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
      &     AMPI_ADOUBLE_PRECISION,
@@ -59,11 +55,11 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
      &     MPI_COMM_WORLD, ierr)
       
       if (mynode.eq.0) then
-         f = xf
+         cost = xf
       end if
 #endif
       dx=1.e-10
-      df1=f
+      df1=cost
       epsrel=1.e-4
       niter=200
       nsim=200
@@ -87,10 +83,10 @@ c     imode(3)=0 ==> simulator never called with indic=1
       reverse = 1
 c     reverse mode
       do while (reverse.ge.1)
-c         write(*,*) '+++>', mynode, ad_x(1), f, gg(1)
+c         write(*,*) '+++>', mynode, ad_x(1), cost, gg(1)
 
 c         MPI_master_only call optim_driver
-c     &        (x,f,gg,reverse,indic)
+c     &        (x,cost,gg,reverse,indic)
 
          do i=1,ad_array_size
             write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),
@@ -104,7 +100,7 @@ c     &        (x,f,gg,reverse,indic)
          
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
      &        ad_array_size,ad_x_f,
-     &        f,ad_sg_f,dx,df1,epsrel,
+     &        cost,ad_sg_f,dx,df1,epsrel,
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
 
@@ -121,13 +117,13 @@ c     &        (x,f,gg,reverse,indic)
      &        0,MPI_COMM_WORLD,ierr)
 #endif
          ad_g_f = ad_sg_f
-         call simul(indic,ad_array_size,ad_x_f,f,ad_g_f,izs,rzs,dzs)
+         call simul(indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
 
 
          
 #ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
+         call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
      &        MPI_COMM_WORLD, ierr)
          call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
      &     AMPI_ADOUBLE_PRECISION,
@@ -135,21 +131,19 @@ c     &        (x,f,gg,reverse,indic)
      &     MPI_COMM_WORLD, ierr)
 #endif
          if (mynode.eq.0) then
-            f = xf
+            cost = xf
          end if
 
-         df1 = f
+         df1 = cost
 
          do i=1,ad_array_size
             write (*,*) 'after: mynode,x,g',mynode,i,ad_x_f(i),ad_g_f(i)
          end do
          
+         ad_counter = ad_counter+1
       end do
 
 C     ...
-      do i=1,ad_array_size/2
-         write (777,*) ad_x_f(2*i),ad_x_f(2*i-1)
-      end do
       call set_state(ad_x_f)
 
       close (unit=777)

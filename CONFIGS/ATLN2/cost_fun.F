@@ -18,8 +18,6 @@ C$AD BINOMIAL-CKP ad_nt 40 1
          call cost_fun_step(ad_x_f,cost,ta)
       end do
 
-      write (*,*) 'Zob=',Zobt
-
       write (*,*) 'cost=',cost
 
       return
@@ -57,7 +55,7 @@ C$AD NOCHECKPOINT
 
       implicit none
 # include "adinc.h"
-# include "adparam.h"     
+# include "adparam.h"
       integer ta
       integer tile
       double precision icost
@@ -139,6 +137,7 @@ C$AD NOCHECKPOINT
       integer Istr,Iend,Jstr,Jend, i,j,k
       double precision lzob
       double precision control_to_param
+      character*6 counter_str
 
 #include "compute_extended_bounds.h"
       do j=Jstr,Jend
@@ -147,29 +146,48 @@ c            k=ad_colloc(i,j)
 c            if (k.lt.1.or.k.gt.ad_array_size) then
 c               write (*,*) 'AD BIG PROBLEM k=',k
 c               stop
-c            endif
-            zob(i,j)=0
-            do k=1,ad_array_size
-               lzob=control_to_param(k,ad_x_f)
-c               write(*,*) '###',mynode,i,j,k,ad_x_f(k),W(i,j,k)
-               zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
+c     endif
+            if (ad_obs(i,j,1).ne.spval) then
+               zob(i,j)=0
+               do k=1,ad_array_size
+                  lzob=control_to_param(k,ad_x_f)
+c     write(*,*) '###',mynode,i,j,k,ad_x_f(k),W(i,j,k)
+                  zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
+               end do
+c     zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
+            end if
             end do
-c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
          end do
-      end do
 
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
       write(*, *) 'mynode=',mynode
 #endif
+
+      write(*, *) 'ad_counter=',ad_counter
       write(*, *) 'min zob=',minval(zob)
       write(*, *) 'max zob=',maxval(zob)
       write(*, *) '*******************'
 
- 900  format(1PE16.9)
+
+      write(*,*) 'Istr,Iend',Istr,Iend
+      write(*,*) 'Jstr,Jend',Jstr,Jend
+
+      write(counter_str, 910) mynode,ad_counter
+      open(unit=99,file='z0b.'//counter_str)
+      write(99, *) Iend-Istr+1,Jend-Jstr+1,0
+      do j=Jstr,Jend
+         do i=Istr,Iend
+            write(99, *) lonr(i,j),latr(i,j),zob(i,j)
+         end do
+      end do
+      close(99)
+
 
       return
+ 900  format(1PE16.9)
+ 910  format(I2.2,'-',I3.3)
       end subroutine set_state_2d_tile
 
 
@@ -177,7 +195,7 @@ c            zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      
+
       double precision param_to_control
       integer ierr
       integer k
@@ -280,7 +298,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
      &     0,MPI_COMM_WORLD,ierr)
       call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
-         
+
       do tile=my_first,my_last
          call init_collocation_points_2d(tile)
       end do
@@ -304,10 +322,11 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      
+
       integer Istr,Iend,Jstr,Jend,i,j,k,ierr
       logical out
       double precision mindist,dist,rk,distance,xr,yr
+      character*2 node_str
 
       do k=1,ad_array_size
          write(*,*) '###',mynode,ad_latr_f(k),ad_lonr_f(k)
@@ -323,13 +342,15 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          end if
       end do
 
-      write(*,*) mynode,'ncpoints=',ncpoints
+      write(node_str, 930) mynode
+      open(unit=99, file='cpoints-'//node_str//'.dat')
       do k=1,ncpoints
-         write(*,*) 'cpoints',mynode,ad_i(k),ad_j(k)
+         write(99,*) lonr(ad_i(k),ad_j(k)), latr(ad_i(k),ad_j(k))
       end do
-      
-!     sum of ncpoints should be ad_array_size      
-      
+      close(99)
+ 930  format(I2.2)
+!     sum of ncpoints should be ad_array_size
+
       do j=Jstr,Jend
          do i=Istr,Iend
             SkW(i,j)=0.
@@ -373,7 +394,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
 c     R -> (a,b)
       control_to_param = 1.D-7 + 1/(1+exp(y))
-c      if (y.le.0) then 
+c      if (y.le.0) then
 c         control_to_param = (a*y + b*y
 c     &        + sqrt(a*a*y*y - 2*a*b*y*y + b*b*y*y + 4) - 2)/(2*y)
 c      else
@@ -388,9 +409,9 @@ c      end if
 c      if (control_to_param.le.a) then
 c         write(*,*) '>>>>>', control_to_param, '=<',a
 c         stop
-         
+
 c      end if
-      
+
       end function control_to_param
 
       double precision function param_to_control(k)
@@ -402,11 +423,11 @@ c      end if
       double precision x, a, b
       parameter (a = 1D-6)
       parameter (b = 1D-2)
-      
+
       x = Zobt
 
-c     (a,b) -> R      
+c     (a,b) -> R
       param_to_control = log(1./x  - 1.)
 c      param_to_control = 1/(a - x) + 1/(b - x)
-      
+
       end function param_to_control
