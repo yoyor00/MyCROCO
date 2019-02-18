@@ -199,8 +199,8 @@
 #  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
-#  undef  NBQ_FRC_BRY        /* bdy forcing/nudging             */
-#  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
+#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  define W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
 
 #else                /* Hydrostatic mode */
@@ -292,14 +292,25 @@
 # define UV_MIX_S      /* Default: diffusion along sigma surfaces */
 #endif
 /* 
-   Set keys related to Smagorinsky viscosity 
+   Set keys related to Smagorinsky viscosity or 3D GLS 
 */
 #ifdef UV_VIS_SMAGO_3D
+# define UV_VIS2
+# define TS_DIF2
 # define UV_VIS_SMAGO  
 # define TS_DIF_SMAGO
 #endif
 #ifdef UV_VIS_SMAGO 
-# define VIS_COEF_3D  
+# define VIS_COEF_3D
+#endif
+#ifdef GLS_MIX2017_3D
+# define GLS_MIX2017
+# define GLS_KEPSILON
+# undef  GLS_KOMEGA
+# define UV_VIS2
+# define VIS_COEF_3D
+# undef  TS_DIF2
+# undef  DIF_COEF_3D
 #endif
 /*
    Set UP3 scheme in barotropic equations for 2DH applications
@@ -495,6 +506,28 @@
 #   define M2CLIMATOLOGY
 #   define ANA_M2CLIMA
 #  endif
+# endif
+#endif
+
+/*
+======================================================================
+    WAVE_MAKER for wave-resolving simulations
+======================================================================
+*/
+#ifdef WAVE_MAKER
+# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN \
+                                || defined FLUME_WAVES
+#  define WAVE_MAKER_SPECTRUM
+# endif
+# ifdef WAVE_MAKER_SPECTRUM
+#  ifdef WAVE_MAKER_JONSWAP
+#  elif defined WAVE_MAKER_GAUSSIAN
+#  else
+#   define WAVE_MAKER_JONSWAP
+#  endif
+# endif
+# ifndef WAVE_MAKER_SPECTRUM
+#  define STOKES_WAVES
 # endif
 #endif
 
