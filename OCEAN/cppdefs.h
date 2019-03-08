@@ -604,7 +604,6 @@
 # define SOLVE3D
 # define UV_ADV
 # define UV_COR
-# define M2FILTER_FLAT
 # define NONLIN_EOS
 # define SALINITY
 # define ANA_GRID
