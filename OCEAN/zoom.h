@@ -29,6 +29,16 @@
       real V_west(0:0,-1:Mm+2+padd_E,N,4)
       common/zoom3D_VW/V_west
 #  endif
+#  ifdef NBQ
+      real Unbq_west(1:1,-1:Mm+2+padd_E,N,2)
+      common/zoom3Dnbq_UW/Unbq_west 
+      real Vnbq_west(0:0,-1:Mm+2+padd_E,N,2)
+      common/zoom3Dnbq_VW/Vnbq_west
+      real Wnbq_west(0:0,-1:Mm+2+padd_E,0:N,2)
+      common/zoom3Dnbq_WW/Wnbq_west
+      real W_west(0:0,-1:Mm+2+padd_E,0:N,4)
+      common/zoom3D_WW/W_west
+#  endif      
 # endif
 # ifdef AGRIF_OBC_EAST
 #  ifdef SOLVE3D
@@ -39,6 +49,16 @@
       real V_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,4)
       common/zoom3D_VE/V_east
 #  endif
+#  ifdef NBQ
+      real Unbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,2)
+      common/zoom3Dnbq_UE/Unbq_east 
+      real Vnbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,2)
+      common/zoom3Dnbq_VE/Vnbq_east
+      real Wnbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,0:N,2)
+      common/zoom3Dnbq_WE/Wnbq_east
+      real W_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,0:N,4)
+      common/zoom3D_WE/W_east
+#  endif      
 # endif
 # ifdef AGRIF_OBC_SOUTH   
 #  ifdef SOLVE3D
@@ -49,6 +69,16 @@
       real V_south(-1:Lm+2+padd_X,1:1,N,4)
       common/zoom3D_VS/V_south
 #  endif
+#  ifdef NBQ
+      real Unbq_south(-1:Lm+2+padd_X,0:0,N,2)
+      common/zoom3Dnbq_US/Unbq_south 
+      real Vnbq_south(-1:Lm+2+padd_X,1:1,N,2)
+      common/zoom3Dnbq_VS/Vnbq_south
+      real Wnbq_south(-1:Lm+2+padd_X,0:0,0:N,2)
+      common/zoom3Dnbq_WS/Wnbq_south
+      real W_south(-1:Lm+2+padd_X,0:0,0:N,4)
+      common/zoom3D_WS/W_south
+#  endif      
 # endif
 # ifdef AGRIF_OBC_NORTH  
 #  ifdef SOLVE3D
@@ -59,6 +89,16 @@
       real V_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,4)
       common/zoom3D_VN/V_north
 #  endif
+#  ifdef NBQ
+      real Unbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,2)
+      common/zoom3Dnbq_UN/Unbq_north 
+      real Vnbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,2)
+      common/zoom3Dnbq_VN/Vnbq_north
+      real Wnbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,0:N,2)
+      common/zoom3Dnbq_WN/Wnbq_north
+      real W_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,0:N,4)
+      common/zoom3D_WN/W_north
+#  endif      
 # endif
       integer Zetatimeindex, Zetatimeindex2
       common/zoom2D_ZetaT/Zetatimeindex, Zetatimeindex2
@@ -74,8 +114,8 @@
       integer Vtimeindex
       common/zoom3D_VT/Vtimeindex
 #  ifdef NBQ
-      integer U3DFastTimeindex, U3DFastTimeindex2
-      common /zoom3Dfast_UT/ U3DFastTimeindex, U3DFastTimeindex2
+      integer Wtimeindex
+      common/zoom3D_WT/Wtimeindex
 #  endif
 # endif
 
@@ -116,17 +156,28 @@
       common/ha_id/ha_id 
 # endif 
 
+# ifdef NBQ
+       logical Alreadyupdated(GLOBAL_2D_ARRAY,4)
+# else       
        logical Alreadyupdated(GLOBAL_2D_ARRAY,3)
+# endif       
        common/updateprestep/Alreadyupdated
 
        real usponge(GLOBAL_2D_ARRAY,N)
        real vsponge(GLOBAL_2D_ARRAY,N)
+       real wsponge(GLOBAL_2D_ARRAY,0:N)
        real tsponge(GLOBAL_2D_ARRAY,N,NT)
-       common/sponge_com/usponge, vsponge, tsponge
+       common/sponge_com/usponge, vsponge, tsponge,wsponge
 
        real Huonagrif(GLOBAL_2D_ARRAY,N)
        real Hvomagrif(GLOBAL_2D_ARRAY,N)
+# ifdef NBQ
+       real Weagrif(GLOBAL_2D_ARRAY,0:N)
+# endif       
        common/huvagrif/Huonagrif,Hvomagrif
+# ifdef NBQ
+     &  ,Weagrif
+# endif 
 
       real Zt_avg3(GLOBAL_2D_ARRAY,0:NWEIGHT)
       common/zoom2D_Zeta2/Zt_avg3
@@ -142,20 +193,26 @@
       common/zoom3D_sponge_UW/U_sponge_west 
       real V_sponge_west(0:10,-1:Mm+2+padd_E,N,2)
       common/zoom3D_sponge_VW/V_sponge_west
-      
+      real W_sponge_west(0:10,-1:Mm+2+padd_E,N,2)
+      common/zoom3D_sponge_WW/W_sponge_west
+     
       real T_sponge_east(LOCALLM-9:LOCALLM+1,-1:Mm+2+padd_E,N,2,NT)
       common/zoom3D_sponge_TE/T_sponge_east
       real U_sponge_east(LOCALLM-9:LOCALLM+1,-1:Mm+2+padd_E,N,2)
       common/zoom3D_sponge_UE/U_sponge_east 
       real V_sponge_east(LOCALLM-9:LOCALLM+1,-1:Mm+2+padd_E,N,2)
       common/zoom3D_sponge_VE/V_sponge_east
-      
+      real W_sponge_east(LOCALLM-9:LOCALLM+1,-1:Mm+2+padd_E,N,2)
+      common/zoom3D_sponge_WE/W_sponge_east
+     
       real T_sponge_south(-1:Lm+2+padd_X,0:10,N,2,NT)
       common/zoom3D_sponge_TS/T_sponge_south
       real U_sponge_south(-1:Lm+2+padd_X,0:10,N,2)
       common/zoom3D_sponge_US/U_sponge_south 
       real V_sponge_south(-1:Lm+2+padd_X,1:11,N,2)
       common/zoom3D_sponge_VS/V_sponge_south
+      real W_sponge_south(-1:Lm+2+padd_X,0:10,N,2)
+      common/zoom3D_sponge_WS/W_sponge_south
             
       real T_sponge_north(-1:Lm+2+padd_X,LOCALMM-9:LOCALMM+1,N,2,NT)     
       common/zoom3D_sponge_TN/T_sponge_north
@@ -163,6 +220,8 @@
       common/zoom3D_sponge_UN/U_sponge_north 
       real V_sponge_north(-1:Lm+2+padd_X,LOCALMM-9:LOCALMM+1,N,2)
       common/zoom3D_sponge_VN/V_sponge_north
+      real W_sponge_north(-1:Lm+2+padd_X,LOCALMM-9:LOCALMM+1,N,2)
+      common/zoom3D_sponge_WN/W_sponge_north
       
       integer TTimesponge, UVTimesponge
       common/zoom3D_sponge_times/TTimesponge, UVTimesponge            
@@ -194,11 +253,12 @@
       integer rmaskid
 # ifdef NBQ
       integer qdmunbqid, qdmvnbqid, qdmwnbqid, rhonbqid
+      integer wzid, wzspongeid
 # endif
 # ifdef WET_DRY
       integer rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
 # endif
-      integer tspongeid, uspongeid, vspongeid
+      integer tspongeid, uspongeid, vspongeid,wspongeid
 # ifdef WKB_WWAVE
       integer wacid,wkxid,wkeid
       integer hrmid,frqid,wsbid,wvnid,wcgid,wfcid
@@ -207,12 +267,12 @@
 #  endif       
 # endif
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
-     &  tspongeid, uspongeid, vspongeid, rmaskid
+     &  tspongeid, uspongeid, vspongeid, rmaskid,wspongeid
 # ifdef WET_DRY
      &         ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
 # endif
 # ifdef NBQ
-     &         ,qdmunbqid,qdmvnbqid,qdmwnbqid,rhonbqid
+     &         ,qdmunbqid,qdmvnbqid,qdmwnbqid,rhonbqid,wzid,wzspongeid
 # endif
 # ifdef WKB_WWAVE
      &  ,wacid,wkxid,wkeid
@@ -221,19 +281,29 @@
      & , warid, wsrid,wcrid  
 #  endif         
 # endif
-#ifdef WET_DRY
+# ifdef WET_DRY
       real rmask_childs(GLOBAL_2D_ARRAY)
       common/rmask_child/rmask_childs
-#endif
+# endif
       integer updatezetaid, updateubarid, updatevbarid
       integer updateduavg2id, updatedvavg2id
       integer updatetid, updateuid, updatevid
       integer updatemyfxid, updatemyfyid
       integer updatehuonid, updatehvomid
+# ifdef NBQ
+      integer updatewid, updateweid
+      integer updateunbqid, updatevnbqid,updatewnbqid,
+     &       usurfid,vsurfid,wsurfid
+# endif       
       common/varidsupdate/updatezetaid, updateubarid, updatevbarid,
      &       updateduavg2id, updatedvavg2id,
      &       updatetid, updateuid, updatevid, updatemyfxid,
      &       updatemyfyid,updatehuonid, updatehvomid
+#ifdef NBQ
+     &     , updatewid, updateweid,
+     &       updateunbqid, updatevnbqid,updatewnbqid,
+     &       usurfid,vsurfid,wsurfid
+#endif     
 
 !$AGRIF_DO_NOT_TREAT
       integer :: iind
