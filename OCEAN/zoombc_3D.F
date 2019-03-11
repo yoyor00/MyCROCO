@@ -1323,6 +1323,329 @@ C     &                tabres(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1:NT)
       return
       end       
 # endif /* SOLVE 3D */
+
+# ifdef NBQ
+      subroutine w3dbc_interp_tile(Istr,Iend,Jstr,Jend)
+      use AGRIF_Util
+      implicit none
+#  include "param.h"
+#  include "boundary.h"  
+#  include "climat.h"
+#  include "grid.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "ocean3d.h"
+      integer Istr,Iend,Jstr,Jend, i,j,k
+!      real, dimension(:,:,:), allocatable :: uext
+      integer itrcind
+      real tinterp
+      INTEGER :: nbstep3dparent
+      External :: w3dinterp
+      real :: ainterp(6)
+      integer :: irhot
+      real :: rrhot
+      integer :: nsource, ndest
+      integer :: parentnbstep
+      
+      real :: gamma
+!
+#  include "compute_auxiliary_bounds.h"
+!
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+!       return
+      irhot=Agrif_Irhot()
+      rrhot=real(irhot)
+
+C$OMP BARRIER
+C$OMP MASTER
+
+      parentnbstep=Agrif_Parent_Nb_Step()
+
+       IF ((((nbcoarse == 1).AND.(nnew == 3)).OR.
+     &   ((nbcoarse == irhot).AND.(nnew /=3))).AND.
+     &    (WTimeindex.NE.parentnbstep)) THEN
+
+C        Allocate(uext(i1u:i2u,j1t:j2t,N))
+        tinterp=1.
+#ifdef MASKING
+        Agrif_UseSpecialvalue=.true.
+#endif        
+        Agrif_Specialvalue=0.
+!        uext=0.
+        Call Agrif_Set_bc(wzid,(/0,0/),InterpolationShouldbemade=.TRUE.)
+!        Call Agrif_Bc_variable(uext,uid,calledweight=tinterp,
+!     &procname=u3dinterp)
+        Call Agrif_Bc_variable(wzid,calledweight=tinterp,
+     &procname=w3dinterp)
+        Agrif_UseSpecialValue=.false.
+
+
+
+        WTimeindex = parentnbstep
+
+      endif
+C$OMP END MASTER
+C$OMP BARRIER
+      
+       nbstep3dparent=
+     &Agrif_Parent(nbstep3d)
+                    
+       tinterp = real(nbcoarse)/rrhot
+       IF (nnew == 3) tinterp = tinterp - 1./(2.*rrhot)
+
+       gamma = 1./12.
+       
+       
+       ainterp(3)=tinterp*4*(1+tinterp)
+       ainterp(2)=-3.*(-1+tinterp+2*tinterp**2)
+       ainterp(1)=tinterp*(-1+2*tinterp)
+       
+       ainterp = ainterp/3.
+
+       ainterp(1) = 0.
+       ainterp(2) = 1.-2*tinterp
+       ainterp(3) = 2.*tinterp
+       
+       ainterp = 0.
+       
+       IF (nnew == 3) then  
+         ainterp(1) = 0.5-tinterp
+         ainterp(2) = 0.5+tinterp
+       else 
+         ainterp(3) = -tinterp
+         ainterp(4) = 1.+tinterp
+       endif
+              
+       IF (nbstep3dparent .LE. 1) THEN
+       ainterp = 0.
+       ainterp(2) = 1.
+       ENDIF
+       
+       if (nbstep3d .LE. (Agrif_irhot()-1)) then
+        ainterp = 0.
+        ainterp(2) = 1.
+       endif
+                  
+       IF ((nnew/=3).AND.(nbcoarse == irhot)) THEN
+         ainterp    = 0.
+         ainterp(4) = 1.
+       ENDIF
+              
+#  ifdef AGRIF_OBC_SOUTH
+      if (SOUTHERN_EDGE) then
+        do k=0,N      
+          do i=IstrR,IendR
+#   if defined NBQ_FRC_BRY     
+            wbry_south(i,k)=
+#   else
+            wclm(i,Jstr-1,k)=
+#   endif
+     &  (ainterp(1)*W_south(i,Jstr-1,k,1)+
+     &   ainterp(2)*W_south(i,Jstr-1,k,2)+
+     &   ainterp(3)*W_south(i,Jstr-1,k,3)+
+     &   ainterp(4)*W_south(i,Jstr-1,k,4)+
+     &   ainterp(5)*wz(i,Jstr-1,k,3-nstp)+
+     &   ainterp(6)*wz(i,Jstr-1,k,nstp))
+#   ifdef MASKING     
+     &    *rmask(i,Jstr-1)
+#   endif
+
+          enddo
+        enddo
+      endif
+      
+      
+#  endif
+#  ifdef AGRIF_OBC_NORTH
+      if (NORTHERN_EDGE) then      
+        do k=0,N      
+          do i=IstrR,IendR
+#   if defined NBQ_FRC_BRY     
+            wbry_north(i,k)=
+#   else   
+            wclm(i,Jend+1,k)=
+#   endif
+     &  (ainterp(1)*W_north(i,Jend+1,k,1)+
+     &   ainterp(2)*W_north(i,Jend+1,k,2)+
+     &   ainterp(3)*W_north(i,Jend+1,k,3)+
+     &   ainterp(4)*W_north(i,Jend+1,k,4)+
+     &   ainterp(5)*wz(i,Jend+1,k,3-nstp)+
+     &   ainterp(6)*wz(i,Jend+1,k,nstp))     
+#   ifdef MASKING     
+     &    *rmask(i,Jend+1)
+#   endif
+          enddo
+        enddo
+      endif      
+#  endif
+ 
+#  ifdef AGRIF_OBC_WEST
+      if (WESTERN_EDGE) then      
+        do k=0,N      
+          do j=JstrR,JendR
+#   if defined NBQ_FRC_BRY     
+            wbry_west(j,k)=
+#   else     
+            wclm(Istr-1,j,k)=
+#   endif
+     &  (ainterp(1)*W_west(Istr-1,j,k,1)+
+     &   ainterp(2)*W_west(Istr-1,j,k,2)+
+     &   ainterp(3)*W_west(Istr-1,j,k,3)+
+     &   ainterp(4)*W_west(Istr-1,j,k,4)+
+     &   ainterp(5)*wz(Istr-1,j,k,3-nstp)+
+     &   ainterp(6)*wz(Istr-1,j,k,nstp))
+#   ifdef MASKING     
+     &    *rmask(Istr-1,j)
+#   endif
+          enddo
+        enddo
+      endif      
+#  endif
+      
+#  ifdef AGRIF_OBC_EAST
+      if (EASTERN_EDGE) then      
+        do k=0,N      
+          do j=JstrR,JendR
+#   if defined NBQ_FRC_BRY  
+            wbry_east(j,k)=
+#   else
+            wclm(Iend+1,j,k)=
+#   endif
+     &  (ainterp(1)*W_east(Iend+1,j,k,1)+
+     &   ainterp(2)*W_east(Iend+1,j,k,2)+
+     &   ainterp(3)*W_east(Iend+1,j,k,3)+
+     &   ainterp(4)*W_east(Iend+1,j,k,4)+
+     &   ainterp(5)*wz(Iend+1,j,k,3-nstp)+
+     &   ainterp(6)*wz(Iend+1,j,k,nstp))         
+#   ifdef MASKING     
+     &    *rmask(Iend+1,j)
+#   endif
+          enddo
+        enddo
+      endif
+#  endif
+    
+      return
+      end
+!
+
+      subroutine w3Dinterp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+#  include "zoom.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       integer nb,ndir
+       integer nparent
+       integer nsource, ndest
+       logical :: western_side, eastern_side
+       logical :: northern_side,southern_side
+
+       if (before) then
+         IF ((iif == 0)) THEN
+           nparent = 3
+         ELSE
+           nparent = nnew
+         ENDIF
+
+         tabres(i1:i2,j1:j2,k1:k2) = wz(i1:i2,j1:j2,k1:k2,nparent)
+       else
+
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+
+         western_side  = (nb == 1).AND.(ndir == 1)
+         eastern_side  = (nb == 1).AND.(ndir == 2)
+         southern_side = (nb == 2).AND.(ndir == 1)
+         northern_side = (nb == 2).AND.(ndir == 2)
+
+! FIXME :
+!         U_south(...) = tabres !(0:LOCALLM+1,1:1,1:N)
+!         U_north(...) = tabres !(0:LOCALLM+1,1:1,1:N)
+         IF (nnew == 3) THEN
+           nsource = 2
+         ELSE
+           nsource = 4
+         ENDIF
+         ndest = nsource - 1
+
+#  ifdef AGRIF_OBC_SOUTH
+        if (southern_side) then
+#   ifdef MPI
+            if (.not.SOUTH_INTER) then
+#   endif
+                W_south(i1:i2,j1:j2,0:N,ndest)=
+     &          W_south(i1:i2,j1:j2,0:N,nsource)
+
+                W_south(i1:i2,j1:j2,0:N,nsource) = tabres
+#   ifdef MPI
+            endif
+#   endif
+        endif
+#  endif
+#  ifdef AGRIF_OBC_NORTH
+        if (northern_side) then
+#   ifdef MPI
+            if (.not.NORTH_INTER) then
+#   endif
+                W_north(i1:i2,j1:j2,0:N,ndest)=
+     &          W_north(i1:i2,j1:j2,0:N,nsource)
+
+                W_north(i1:i2,j1:j2,0:N,nsource) = tabres
+#   ifdef MPI
+            endif
+#   endif
+        endif
+#  endif
+#  ifdef AGRIF_OBC_WEST
+        if (western_side) then
+#   ifdef MPI
+            if (.not.WEST_INTER) then
+#   endif
+                W_west(i1:i2,j1:j2,0:N,ndest)=
+     &          W_west(i1:i2,j1:j2,0:N,nsource)
+
+                W_west(i1:i2,j1:j2,0:N,nsource) = tabres
+#   ifdef MPI
+            endif
+#   endif
+        endif
+#  endif
+#  ifdef AGRIF_OBC_EAST
+        if (eastern_side) then
+#   ifdef MPI
+            if (.not.EAST_INTER) then
+#   endif
+                W_east(i1:i2,j1:j2,0:N,ndest)=
+     &          W_east(i1:i2,j1:j2,0:N,nsource)
+
+                W_east(i1:i2,j1:j2,0:N,nsource) = tabres
+#   ifdef MPI
+            endif
+#   endif
+        endif
+#  endif
+
+       endif
+      return
+      end
+# endif 
+
 #else
       subroutine zoombc_3D_empty()
       return

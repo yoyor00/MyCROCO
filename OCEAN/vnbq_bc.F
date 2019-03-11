@@ -76,7 +76,7 @@
 ! Interpolations of the parent values to get vnbqbry_east or vnbqclm
 !
 # ifdef CHILD
-!      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING

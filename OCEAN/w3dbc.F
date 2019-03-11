@@ -70,6 +70,10 @@
 !
 ! Interpolations of the parent values to get wbry_east or wclm
 !
+# ifdef CHILD
+      call w3dbc_interp_tile(Istr,Iend,Jstr,Jend)
+# endif
+
 # if defined W_FRC_BRY || defined WCLIMATOLOGY
       tau_in=dt*tauM_in
       tau_out=dt*tauM_out

@@ -171,6 +171,11 @@
       external hinterp, updateh, updatermask
       external initzeta,initubar,initvbar,inith
       external initu,initv,initt
+# ifdef NBQ
+       external initwz
+       external initunbq, initvnbq,initwnbq
+       external initrhonbq
+# endif      
 # ifdef WKB_WWAVE
       external initwac,initwkx,initwke
       external inithrm,initfrq,initwcg,initwsb,initwvn
@@ -299,6 +304,9 @@
 !
 !  PISCES biogeochemeical model parameters
 !
+#  ifdef PISCES
+!      call get_dust
+#  endif
 #  if defined BIOLOGY && defined PISCES
 !      call get_dust
       CALL trc_nam_pisces
@@ -483,6 +491,28 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
         call Agrif_Init_Variable(uid,procname=initu)
         call Agrif_Init_Variable(vid,procname=initv)
+#ifdef NBQ        
+        call Agrif_Set_bcinterp(wzid,interp=Agrif_linear)
+
+        call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_linear,
+     &                                 interp2=Agrif_ppm)
+        call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
+     &                                 interp2=Agrif_linear)
+        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_ppm)
+
+        call Agrif_Set_interp(wzid,interp=Agrif_linear)
+
+        call Agrif_Set_interp(qdmunbqid,interp1=Agrif_linear,
+     &                                 interp2=Agrif_ppm)
+        call Agrif_Set_interp(qdmvnbqid,interp1=Agrif_ppm,
+     &                                 interp2=Agrif_linear)
+        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_ppm)
+
+        call Agrif_Init_Variable(wzid,procname=initwz)
+        call Agrif_Init_Variable(qdmunbqid,procname=initunbq)
+        call Agrif_Init_Variable(qdmvnbqid,procname=initvnbq)
+        call Agrif_Init_Variable(qdmwnbqid,procname=initwnbq)
+#endif        
 
         if (Agrif_Parent_Nb_Step() == 0) then
           call get_initial
@@ -843,6 +873,9 @@ CR      write(*,*) '  0' MYID
       Ttimeindex = -1
       Utimeindex = -1
       Vtimeindex = -1
+#  ifdef NBQ
+      Wtimeindex = -1
+#  endif       
 #  ifdef AGRIF_OBC_SOUTH
 #   ifdef MPI        
             if (.not.SOUTH_INTER) then
@@ -855,6 +888,20 @@ CR      write(*,*) '  0' MYID
      
                 T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
      &          t(0:LOCALLM+1,0:1,1:N,1,1:NT)     
+
+#   ifdef NBQ
+                W_south(0:LOCALLM+1,0:0,0:N,4)=
+     &          wz(0:LOCALLM+1,0:0,0:N,1)
+
+                Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
+     &          qdmu_nbq(0:LOCALLM+1,0:0,1:N)
+     
+                Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
+     &          qdmv_nbq(0:LOCALLM+1,1:1,1:N)
+
+                Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
+     &          qdmw_nbq(0:LOCALLM+1,0:0,0:N)     
+#   endif
           
 #   ifdef MPI           
             endif          
@@ -873,6 +920,20 @@ CR      write(*,*) '  0' MYID
                 T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
      &          t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)         
           
+#   ifdef NBQ
+                W_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,4)=
+     &          wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
+
+                Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
+     &          qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
+     
+                Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
+     &          qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
+
+                Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
+     &          qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
+#   endif
+
 #   ifdef MPI                    
             endif  
 #   endif            
@@ -890,6 +951,20 @@ CR      write(*,*) '  0' MYID
                 T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
      &          t(0:1,0:LOCALMM+1,1:N,1,1:NT)     
                     
+#   ifdef NBQ
+                W_west(0:0,0:LOCALMM+1,0:N,4)=
+     &          wz(0:0,0:LOCALMM+1,0:N,1)
+
+                Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
+     &          qdmu_nbq(1:1,0:LOCALMM+1,1:N)
+     
+                Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
+     &          qdmv_nbq(0:0,0:LOCALMM+1,1:N)
+
+                Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
+     &          qdmw_nbq(0:0,0:LOCALMM+1,0:N)
+#   endif
+
 #   ifdef MPI            
             endif
 #   endif            
@@ -906,6 +981,21 @@ CR      write(*,*) '  0' MYID
      
                 T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
      &          t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)     
+
+#   ifdef NBQ
+                W_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,4)=
+     &          wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
+
+                Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
+     &          qdmu_nbq(1:1,0:LOCALMM+1,1:N)
+     
+                Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
+     &          qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
+
+                Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
+     &          qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
+#   endif
+
 #   ifdef MPI               
             endif  
 #   endif                            
@@ -935,6 +1025,7 @@ CR      write(*,*) '  0' MYID
 
       usponge = 0.
       vsponge = 0.
+      wsponge = 0.
       
       myfx = 0.
       myfy = 0.
@@ -1362,6 +1453,151 @@ CR      write(*,*) '  0' MYID
      &update=Agrif_Update_Average)     
 # endif
 
+# ifdef NBQ
+      call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,0/),
+     &    (/i2t,j2t,N/),updatewid)
+
+# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+      call Agrif_Set_UpdateType(updatewid,update=
+     &Agrif_Update_full_weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX     
+      call Agrif_Set_UpdateType(updatewid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX_HIGH  
+      call Agrif_Set_UpdateType(updatewid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX_LOW
+      call Agrif_Set_UpdateType(updatewid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Average)
+# endif
+
+# ifdef AGRIF_UPDATE_AVERAGE     
+      call Agrif_Set_UpdateType(updatewid,
+     &update=Agrif_Update_Average)     
+# endif
+
+      call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,0/),
+     &    (/i2t,j2t,N/),updateweid)
+
+# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+      call Agrif_Set_UpdateType(updateweid,update=
+     &Agrif_Update_full_weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX
+      call Agrif_Set_UpdateType(updateweid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX_HIGH
+      call Agrif_Set_UpdateType(updateweid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+
+#  ifdef AGRIF_UPDATE_MIX_LOW
+      call Agrif_Set_UpdateType(updateweid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Average)
+#  endif
+
+#  ifdef AGRIF_UPDATE_AVERAGE
+      call Agrif_Set_UpdateType(updateweid,
+     &update=Agrif_Update_Average)    
+#  endif
+
+      call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1u,j1t,1/),
+     &    (/i2u,j2t,N/),updateunbqid)
+
+      call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1v,1/),
+     &    (/i2t,j2v,N/),updatevnbqid)
+
+       call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,0/),
+     &    (/i2t,j2t,N/),updatewnbqid)
+
+
+      call Agrif_Declare_Variable((/1,2/),(/1,1/),
+     &    (/'x','y'/),(/i1u,j1t/),
+     &    (/i2u,j2t/),usurfid)
+
+      call Agrif_Declare_Variable((/2,1/),(/1,1/),
+     &    (/'x','y'/),(/i1t,j1v/),
+     &    (/i2t,j2v/),vsurfid)
+
+       call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,1/),
+     &    (/i2t,j2t,N/),wsurfid) 
+
+      call Agrif_Set_UpdateType(usurfid,update=
+     &Agrif_Update_full_weighting)
+      call Agrif_Set_UpdateType(vsurfid,update=
+     &Agrif_Update_full_weighting)
+      call Agrif_Set_UpdateType(wsurfid,update=
+     &Agrif_Update_full_weighting)
+
+# ifdef AGRIF_UPDATE_FULLWEIGHTING           
+      call Agrif_Set_UpdateType(updateunbqid,update=
+     &Agrif_Update_full_weighting)
+      call Agrif_Set_UpdateType(updatevnbqid,update=
+     &Agrif_Update_full_weighting)
+      call Agrif_Set_UpdateType(updatewnbqid,update=
+     &Agrif_Update_full_weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX
+      call Agrif_Set_UpdateType(updateunbqid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Full_Weighting)
+      call Agrif_Set_UpdateType(updatevnbqid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Average)
+      call Agrif_Set_UpdateType(updatewnbqid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX_HIGH
+      call Agrif_Set_UpdateType(updateunbqid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_4rdorder)
+      call Agrif_Set_UpdateType(updatevnbqid,
+     &update1=Agrif_Update_4rdorder,
+     &update2=Agrif_Update_Full_Weighting)
+      call Agrif_Set_UpdateType(updatewnbqid,
+     &update1=Agrif_Update_Full_Weighting,
+     &update2=Agrif_Update_Full_Weighting)
+# endif
+
+# ifdef AGRIF_UPDATE_MIX_LOW
+      call Agrif_Set_UpdateType(updateunbqid,
+     &update1=Agrif_Update_Copy,
+     &update2=Agrif_Update_Average)
+      call Agrif_Set_UpdateType(updatevnbqid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Copy)
+      call Agrif_Set_UpdateType(updatewnbqid,
+     &update1=Agrif_Update_Average,
+     &update2=Agrif_Update_Average)      
+# endif
+
+
+# endif /* NBQ*/
+
 #ifdef WKB_WWAVE
          call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/),
      &   (/i1t,j1t/),(/i2t,j2t/),wacid)
@@ -1427,14 +1663,14 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),tid)
 
-!# ifdef NBQ                     
-!        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/), !!  LR test; \TODO check dims
-!     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
-!     &    (/i2t,j2t,N,NT/),rhonbqid)
-!        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
-!     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
-!     &    (/i2t,j2t,N,NT/),qdmwnbqid)
-!# endif
+# ifdef NBQ                     
+        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/), !!  LR test; \TODO check dims
+     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
+     &    (/i2t,j2t,N,NT/),rhonbqid)
+        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &    (/'x','y','N'/),(/i1t,j1t,0/),
+     &    (/i2t,j2t,N/),qdmwnbqid)
+# endif
      
         call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
@@ -1444,11 +1680,11 @@ CR      write(*,*) '  0' MYID
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),uid)
 
-!# ifdef NBQ                  
-!        call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/), !!  LR test; \TODO check dims
-!     &   (/'x','y','N'/),(/i1u,j1t,1/),
-!     &   (/i2u,j2t,N/),qdmunbqid)
-!# endif
+# ifdef NBQ                  
+        call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/), !!  LR test; \TODO check dims
+     &   (/'x','y','N'/),(/i1u,j1t,1/),
+     &   (/i2u,j2t,N/),qdmunbqid)
+# endif
      
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
@@ -1458,16 +1694,24 @@ CR      write(*,*) '  0' MYID
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vid)
      
-!# ifdef NBQ                  
-!        call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),!!  LR test; \TODO check dims
-!     &   (/'x','y','N'/),(/i1t,j1v,1/),
-!     &   (/i2t,j2v,N/),qdmvnbqid)
-!# endif
+# ifdef NBQ                  
+        call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),!!  LR test; \TODO check dims
+     &   (/'x','y','N'/),(/i1t,j1v,1/),
+     &   (/i2t,j2v,N/),qdmvnbqid)
+# endif
 
         call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vspongeid)     
              
+#ifdef NBQ
+        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &   (/'x','y','N'/),(/i1t,j1t,0/),
+     &   (/i2t,j2t,N/),wzid)
+        call Agrif_Declare_Variable((/2,2,0/),(/1,1,0/),
+     &   (/'x','y','N'/),(/i1t,j1t,0/),
+     &   (/i2t,j2t,N/),wspongeid)
+#endif
 
 #ifdef WKB_WWAVE
          call Agrif_Set_bc(wacid,(/0,0/))
@@ -1546,10 +1790,12 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bcinterp(zetaid,interp=Agrif_lagrange)        
         call Agrif_Set_bcinterp(ubarid,interp1=Agrif_lagrange,
      &                                 interp2=Agrif_ppm)
-!# ifdef NBQ
-!        call Agrif_Set_bc(qdmunbqid,(/0,0/))
-!        call Agrif_Set_bc(qdmvnbqid,(/0,0/))
-!# endif
+# ifdef NBQ
+        call Agrif_Set_bc(wzid,(/0,0/))
+        call Agrif_Set_bc(qdmunbqid,(/0,0/))
+        call Agrif_Set_bc(qdmvnbqid,(/0,0/))
+        call Agrif_Set_bc(qdmwnbqid,(/0,0/))
+# endif
 # ifdef WET_DRY
         call Agrif_Set_bcinterp(ubarwetid,interp=Agrif_Constant)
 # endif     
@@ -1576,12 +1822,17 @@ CR      write(*,*) '  0' MYID
      
         call Agrif_Set_bcinterp(vspongeid,interp1=Agrif_ppm,
      &                                 interp2=Agrif_lagrange) 
-!# ifdef NBQ
-!        call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_lagrange,
-!     &                                 interp2=Agrif_ppm)
-!        call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
-!     &                                 interp2=Agrif_lagrange)
-!# endif
+# ifdef NBQ
+        call Agrif_Set_bcinterp(wzid,interp=Agrif_ppm)
+     
+        call Agrif_Set_bcinterp(wspongeid,interp=Agrif_ppm) 
+
+        call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_lagrange,
+     &                                 interp2=Agrif_ppm)
+        call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
+     &                                 interp2=Agrif_lagrange)
+        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_lagrange)
+# endif
 
       call Agrif_Set_UpdateType(rmaskid,update=
      &Agrif_Update_Average)
@@ -2605,6 +2856,7 @@ CR      write(*,*) '  0' MYID
        endif      
       return
       end
+
       subroutine initv_old(tabres,i1,i2,j1,j2,k1,k2)
       implicit none
 # include "param.h"
@@ -2620,6 +2872,89 @@ CR      write(*,*) '  0' MYID
       return
       end
       
+# ifdef NBQ
+      subroutine initwz(tabres,i1,i2,j1,j2,k1,k2,before)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "zoom.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       
+       if (before) then
+         tabres = wz(i1:i2,j1:j2,k1:k2,nnew)
+       else
+         wz(i1:i2,j1:j2,k1:k2,1) = tabres
+       endif      
+      return
+      end
+
+      subroutine initunbq(tabres,i1,i2,j1,j2,k1,k2,before)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "zoom.h"
+# include "nbq.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       
+       if (before) then
+         tabres = qdmu_nbq(i1:i2,j1:j2,k1:k2)
+       else
+         qdmu_nbq(i1:i2,j1:j2,k1:k2) = tabres
+       endif      
+      return
+      end
+
+      subroutine initvnbq(tabres,i1,i2,j1,j2,k1,k2,before)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "zoom.h"
+# include "nbq.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       
+       if (before) then
+         tabres = qdmv_nbq(i1:i2,j1:j2,k1:k2)
+       else
+         qdmv_nbq(i1:i2,j1:j2,k1:k2) = tabres
+       endif      
+      return
+      end
+
+      subroutine initwnbq(tabres,i1,i2,j1,j2,k1,k2,before)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "zoom.h"
+# include "nbq.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       
+       if (before) then
+         tabres = qdmw_nbq(i1:i2,j1:j2,k1:k2)
+       else
+         qdmw_nbq(i1:i2,j1:j2,k1:k2) = tabres
+       endif      
+      return
+      end
+
+
+# endif      
+
       subroutine initt(tabres,i1,i2,j1,j2,k1,k2,m1,m2,before)
       implicit none
 # include "param.h"

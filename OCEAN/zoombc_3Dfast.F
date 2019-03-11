@@ -34,9 +34,8 @@
 
       integer Istr,Iend,Jstr,Jend, i,j,k
       real tinterp
-      INTEGER :: nbstep3dparent
-      External :: u3dinterp
-      integer :: parentnbstep
+      real :: ainterp(2)
+      external qdmuinterp
       !
 # include "compute_auxiliary_bounds.h"
 !
@@ -48,98 +47,109 @@
 #  define LOCALMM Mm
 # endif
 
-      call u3dbc_interp_tile(Istr,Iend,Jstr,Jend)
-
-
-      parentnbstep=Agrif_Parent(iif)
-      if (U3DFastTimeindex .NE. parentnbstep) then ! <<< - 3Dfast time index ok?
-        dUinterp = 0.
-        tinterp=1.
+      if(Agrif_NbStepint() == 0) then
+ !       write(*,*) 'WE INTERP iif = ', iif
+ !       write(*,*)
 # ifdef MASKING
         Agrif_UseSpecialValue = .true.
 # endif
         Agrif_SpecialValue = 0.
+         tinterp=1.
+        Call Agrif_Set_bc(qdmunbqid,(/0,0/),
+     &   InterpolationShouldbemade=.TRUE.)
+        Call Agrif_Bc_variable(qdmunbqid,calledweight=tinterp,
+     & procname=qdmuinterp)
+        Agrif_UseSpecialValue=.false.
+      endif
 
-        common_index = 1
-!        Call Agrif_Bc_variable(qdmunbqid,             ! <<< - qdmunbq OK?
-!     &    calledweight=tinterp,procname = u3dinterp)  ! <<< - implement 3dfast == 3d for future?
+      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(2)=1.- ainterp(1)
+ !     write(*,*) 'U:' 
+ !     write(*,*) maxval(Unbq_north)
+ !     write(*,*) maxval(Unbq_south)
+ !     write(*,*) maxval(Unbq_east)
+ !     write(*,*) maxval(Unbq_west)
+ !     write(*,*)
 
-        Agrif_UseSpecialvalue=.false.
-        U3DFastTimeindex = parentnbstep
-        U3DFastTimeindex2 = agrif_nb_step()
-      endif                     ! end if (U3DFastTimeindex .NE. parentnbstep)
-
-
-      if (agrif_nb_step() .EQ. U3DFastTimeindex2) then
 
 # ifdef AGRIF_OBC_SOUTH
-! ---------------------------------
-           if (SOUTHERN_EDGE) then
-              do k=1,N      
-                 do i=Istr,IendR
-                    qdmu_nbq(i,Jstr-1,k)=u(i,Jstr-1,k,nstp)     !  *0.01
-#  ifdef MASKING
-     &                   *umask(i,Jstr-1)
+      if (SOUTHERN_EDGE) then
+        do k=1,N      
+          do i=Istr,IendR
+#  if defined NBQ_FRC_BRY     
+            unbqbry_south(i,k)=
+#  else
+            unbqclm(i,Jstr-1,k)=
 #  endif
-                    
-                 enddo
-              enddo
-           endif         
+     &  (ainterp(1)*Unbq_south(i,Jstr-1,k,1)+
+     &   ainterp(2)*Unbq_south(i,Jstr-1,k,2))
+#  ifdef MASKING     
+     &    *umask(i,Jstr-1)
+#  endif
+          enddo
+        enddo
+      endif            
 # endif
 
 # ifdef AGRIF_OBC_NORTH
-! ---------------------------------
-           if (NORTHERN_EDGE) then      
-              do k=1,N      
-                 do i=Istr,IendR
-                    qdmu_nbq(i,Jend+1,k)=u(i,Jend+1,k,nstp)       !   *0.01 
-#  ifdef MASKING
-     &                   *umask(i,Jend+1)
+      if (NORTHERN_EDGE) then      
+        do k=1,N      
+          do i=Istr,IendR
+#  if defined NBQ_FRC_BRY     
+            unbqbry_north(i,k)=
+#  else   
+            unbqclm(i,Jend+1,k)=
 #  endif
-                 enddo
-              enddo
-           endif      
+     &  (ainterp(1)*Unbq_north(i,Jend+1,k,1)+
+     &   ainterp(2)*Unbq_north(i,Jend+1,k,2))     
+#  ifdef MASKING     
+     &    *umask(i,Jend+1)
+#  endif
+          enddo
+        enddo
+      endif      
 # endif
-           
-
+ 
 # ifdef AGRIF_OBC_WEST
-! ---------------------------------
-           if (WESTERN_EDGE) then      
-              do k=1,N      
-                 do j=JstrR,JendR
-                    qdmu_nbq(Istr,j,k)=u(Istr,j,k,nstp)    !   *0.01 
-#  ifdef MASKING
-     &                   *umask(Istr,j)
+      if (WESTERN_EDGE) then      
+        do k=1,N      
+          do j=JstrR,JendR
+#  if defined NBQ_FRC_BRY     
+           unbqbry_west(j,k)=
+#  else     
+            unbqclm(Istr,j,k)=
 #  endif
-                 enddo
-              enddo
-           endif      
-# endif
-           
-# ifdef AGRIF_OBC_EAST
-! ---------------------------------
-           if (EASTERN_EDGE) then      
-              do k=1,N      
-                 do j=JstrR,JendR
-                    qdmu_nbq(Iend+1,j,k)=u(Iend+1,j,k,nstp)       !  *0.01 
-#  ifdef MASKING
-     &                   *umask(Iend+1,j)
+     &  (ainterp(1)*Unbq_west(Istr,j,k,1)+
+     &   ainterp(2)*Unbq_west(Istr,j,k,2))
+#  ifdef MASKING     
+     &    *umask(Istr,j)
 #  endif
-                 enddo
-              enddo
-           endif
+          enddo
+        enddo
+      endif      
 # endif
-
-
-      endif ! end if (agrif_nb_step() .EQ. U2DTimeindex2
       
-!
-! \TODO To be continued ???
-! 3d fast interp?
-!
-
+# ifdef AGRIF_OBC_EAST
+      if (EASTERN_EDGE) then      
+        do k=1,N      
+          do j=JstrR,JendR
+#  if defined NBQ_FRC_BRY  
+            unbqbry_east(j,k)=
+#  else
+            unbqclm(Iend+1,j,k)=
+#  endif
+     &  (ainterp(1)*Unbq_east(Iend+1,j,k,1)+
+     &   ainterp(2)*Unbq_east(Iend+1,j,k,2))         
+#  ifdef MASKING     
+     &    *umask(Iend+1,j)
+#  endif
+          enddo
+        enddo
+      endif
+# endif
+    
       return
-      end       
+      end
 !
 !====================================================================
 !                   subroutine vnbq_bc_interp_tile
@@ -156,13 +166,11 @@
 # include "boundary.h"
 # include "zoom.h"
 # include "coupling.h"
-#  include "nbq.h"
+# include "nbq.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-      external :: v3dinterp
-!$AGRIF_DO_NOT_TREAT
-      integer :: indinterp,nbgrid
-      common/interp2d/indinterp,nbgrid
-!$AGRIF_END_DO_NOT_TREAT      
+      real tinterp
+      real :: ainterp(2)
+      external qdmvinterp   
   
 # ifdef MPI
        include 'mpif.h'
@@ -175,91 +183,104 @@
 !          
 # include "compute_auxiliary_bounds.h"
 !
-
-      parentnbstep=Agrif_Parent(iif)
-      
-      if (V2DTimeindex .NE. parentnbstep) then
-        dVinterp = 0.
-        tinterp=1.
-
-# ifdef MASKING        
+      if(Agrif_NbStepint() == 0) then
+# ifdef MASKING
         Agrif_UseSpecialValue = .true.
 # endif
         Agrif_SpecialValue = 0.
-        
-        nbgrid = Agrif_Fixed()
-        common_index = 1
-!        Call Agrif_Bc_variable(qdmvnbqid,
-!     &   calledweight=tinterp,procname = v3dinterp)  ! <<< - implement 3dfast == 3d for future?
-
-        Agrif_UseSpecialvalue=.false.
-        V2DTimeindex = parentnbstep
-        V2DTimeindex2 = agrif_nb_step()
+         tinterp=1.
+        Call Agrif_Set_bc(qdmvnbqid,(/0,0/),
+     &   InterpolationShouldbemade=.TRUE.)
+        Call Agrif_Bc_variable(qdmvnbqid,calledweight=tinterp,
+     & procname=qdmvinterp)
+        Agrif_UseSpecialValue=.false.
       endif
 
-      if (agrif_nb_step() .EQ. V2DTimeindex2) then
+      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(2)=1.- ainterp(1)
+ !     write(*,*) 'V:' 
+ !     write(*,*) maxval(Vnbq_north)
+ !     write(*,*) maxval(Vnbq_south)
+ !     write(*,*) maxval(Vnbq_east)
+ !     write(*,*) maxval(Vnbq_west)
+ !     write(*,*)
 
 
-# ifdef AGRIF_OBC_SOUTH
-! ---------------------------------
+#  ifdef AGRIF_OBC_SOUTH
       if (SOUTHERN_EDGE) then
-         do k=1,N      
-            do i=IstrR,IendR
-               qdmv_nbq(i,Jstr,k)=qdmv_nbq(i,Jstr,k)       *0.01 
-#  ifdef MASKING
-     &              *vmask(i,Jstr) 
-#  endif
-            enddo
-         enddo
+        do k=1,N      
+          do i=IstrR,IendR
+#   if defined NBQ_FRC_BRY   
+            vnbqbry_south(i,k)=
+#   else
+            vnbqclm(i,Jstr,k)=
+#   endif
+     &    (ainterp(1)*Vnbq_south(i,Jstr,k,1)+
+     &     ainterp(2)*Vnbq_south(i,Jstr,k,2))
+#   ifdef MASKING     
+     &    *vmask(i,Jstr)
+#   endif
+          enddo
+        enddo
       endif
-# endif
+#  endif
 
-# ifdef AGRIF_OBC_NORTH
-! ---------------------------------
+#  ifdef AGRIF_OBC_NORTH
       if (NORTHERN_EDGE) then      
-         do k=1,N      
-            do i=IstrR,IendR
-               qdmv_nbq(i,Jend+1,k)=qdmv_nbq(i,Jend+1,k)       *0.01    
-#  ifdef MASKING
-     &              *vmask(i,Jend+1)
-#  endif
-            enddo
-         enddo
+        do k=1,N      
+          do i=IstrR,IendR
+#   if defined NBQ_FRC_BRY
+            vnbqbry_north(i,k)=
+#   else
+            vnbqclm(i,Jend+1,k)=
+#   endif
+     &    (ainterp(1)*Vnbq_north(i,Jend+1,k,1)+
+     &     ainterp(2)*Vnbq_north(i,Jend+1,k,2))     
+#   ifdef MASKING     
+     &    *vmask(i,Jend+1)
+#   endif 
+          enddo
+        enddo
       endif      
-# endif
-
-# ifdef AGRIF_OBC_WEST
-! ---------------------------------
+#  endif
+#  ifdef AGRIF_OBC_WEST
       if (WESTERN_EDGE) then      
-         do k=1,N      
-            do j=Jstr,JendR
-               qdmv_nbq(Istr-1,j,k)=qdmv_nbq(Istr-1,j,k)       *0.01     
-#  ifdef MASKING
-     &              *vmask(Istr-1,j)
-#  endif
-            enddo
-         enddo
+        do k=1,N      
+          do j=Jstr,JendR
+#   if defined NBQ_FRC_BRY
+            vnbqbry_west(j,k)=
+#   else
+            vnbqclm(Istr-1,j,k)=
+#   endif
+     &    (ainterp(1)*Vnbq_west(Istr-1,j,k,1)+
+     &     ainterp(2)*Vnbq_west(Istr-1,j,k,2))  
+#   ifdef MASKING     
+     &    *vmask(Istr-1,j)
+#   endif
+          enddo
+        enddo
       endif      
-# endif
-
-# ifdef AGRIF_OBC_EAST
-! ---------------------------------
-      if (EASTERN_EDGE) then      
-         do k=1,N      
-            do j=Jstr,JendR
-               qdmv_nbq(Iend+1,j,k)=qdmv_nbq(Iend+1,j,k)      *0.01 
-#  ifdef MASKING
-     &           *vmask(Iend+1,j)
 #  endif
-         enddo
-      enddo
+
+#  ifdef AGRIF_OBC_EAST
+      if (EASTERN_EDGE) then      
+        do k=1,N      
+          do j=Jstr,JendR
+#   if defined M3_FRC_BRY  
+            vnbqbry_east(j,k)=
+#   else
+            vnbqclm(Iend+1,j,k)=
+#   endif
+     &    (ainterp(1)*Vnbq_east(Iend+1,j,k,1)+
+     &     ainterp(2)*Vnbq_east(Iend+1,j,k,2))      
+#   ifdef MASKING     
+     &    *vmask(Iend+1,j)
+#   endif
+          enddo
+        enddo
       endif
-# endif
-
-      endif !         if (agrif_nb_step() .EQ. V2DTimeindex2) then
-
-      
-      return
+#  endif    
+       return
       end       
 !
 !====================================================================
@@ -277,103 +298,443 @@
 # include "boundary.h"
 # include "zoom.h"
 # include "coupling.h"
-#  include "nbq.h"
-      integer Istr,Iend,Jstr,Jend,i,j,k
-      integer :: parentnbstep
-      INTEGER :: nbstep3dparent
+# include "nbq.h"
+      integer Istr,Iend,Jstr,Jend, i,j,k
       real tinterp
-      external t3dinterp
+      real :: ainterp(2)
+      external qdmwinterp   
+  
+# ifdef MPI
+       include 'mpif.h'
+#  define LOCALLM Lmmpi
+#  define LOCALMM Mmmpi
+# else
+#  define LOCALLM Lm
+#  define LOCALMM Mm
+# endif   
+!          
+# include "compute_auxiliary_bounds.h"
 !
-#  include "compute_auxiliary_bounds.h"
-!
+      if(Agrif_NbStepint() == 0) then
+# ifdef MASKING
+        Agrif_UseSpecialValue = .true.
+# endif
+        Agrif_SpecialValue = 0.
+         tinterp=1.
+        Call Agrif_Set_bc(qdmwnbqid,(/0,0/),
+     &   InterpolationShouldbemade=.TRUE.)
+        Call Agrif_Bc_variable(qdmwnbqid,calledweight=tinterp,
+     & procname=qdmwinterp)
+        Agrif_UseSpecialValue=.false.
+      endif
+
+      ainterp(1)= (REAL(Agrif_Nbstepint()) + 1.) / Agrif_Rhot()
+      ainterp(2)=1.- ainterp(1)
+ !     write(*,*) 'V:' 
+ !     write(*,*) maxval(Vnbq_north)
+ !     write(*,*) maxval(Vnbq_south)
+ !     write(*,*) maxval(Vnbq_east)
+ !     write(*,*) maxval(Vnbq_west)
+ !     write(*,*)
+
+
+#  ifdef AGRIF_OBC_SOUTH
+      if (SOUTHERN_EDGE) then
+        do k=0,N      
+          do i=IstrR,IendR
+#   if defined NBQ_FRC_BRY   
+            wnbqbry_south(i,k)=
+#   else
+            wnbqclm(i,Jstr-1,k)=
+#   endif
+     &    (ainterp(1)*Wnbq_south(i,Jstr-1,k,1)+
+     &     ainterp(2)*Wnbq_south(i,Jstr-1,k,2))
+#   ifdef MASKING     
+     &    *rmask(i,Jstr-1)
+#   endif
+          enddo
+        enddo
+      endif
+#  endif
+
+#  ifdef AGRIF_OBC_NORTH
+      if (NORTHERN_EDGE) then      
+        do k=0,N      
+          do i=IstrR,IendR
+#   if defined NBQ_FRC_BRY
+            wnbqbry_north(i,k)=
+#   else
+            wnbqclm(i,Jend+1,k)=
+#   endif
+     &    (ainterp(1)*Wnbq_north(i,Jend+1,k,1)+
+     &     ainterp(2)*Wnbq_north(i,Jend+1,k,2))     
+#   ifdef MASKING     
+     &    *rmask(i,Jend+1)
+#   endif 
+          enddo
+        enddo
+      endif      
+#  endif
+#  ifdef AGRIF_OBC_WEST
+      if (WESTERN_EDGE) then      
+        do k=0,N      
+          do j=JstrR,JendR
+#   if defined NBQ_FRC_BRY
+            wnbqbry_west(j,k)=
+#   else
+            wnbqclm(Istr-1,j,k)=
+#   endif
+     &    (ainterp(1)*Wnbq_west(Istr-1,j,k,1)+
+     &     ainterp(2)*Wnbq_west(Istr-1,j,k,2))  
+#   ifdef MASKING     
+     &    *rmask(Istr-1,j)
+#   endif
+          enddo
+        enddo
+      endif      
+#  endif
+
+#  ifdef AGRIF_OBC_EAST
+      if (EASTERN_EDGE) then      
+        do k=0,N      
+          do j=JstrR,JendR
+#   if defined M3_FRC_BRY  
+            wnbqbry_east(j,k)=
+#   else
+            wnbqclm(Iend+1,j,k)=
+#   endif
+     &    (ainterp(1)*Wnbq_east(Iend+1,j,k,1)+
+     &     ainterp(2)*Wnbq_east(Iend+1,j,k,2))      
+#   ifdef MASKING     
+     &    *rmask(Iend+1,j)
+#   endif
+          enddo
+        enddo
+      endif
+#  endif    
+       return
+      end         
+
+
+      subroutine qdmuinterp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "nbq.h"
+# include "zoom.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       integer nb,ndir
+       integer nsource, ndest
+       logical :: western_side, eastern_side
+       logical :: northern_side,southern_side
+
+       if (before) then
+         tabres(i1:i2,j1:j2,k1:k2) = qdmu_nbq(i1:i2,j1:j2,k1:k2)
+       else
+
 #  ifdef MPI
 #   define LOCALLM Lmmpi
 #   define LOCALMM Mmmpi
 #  else
 #   define LOCALLM Lm
 #   define LOCALMM Mm
-#  endif   
+#  endif
 
-      nbstep3dparent=Agrif_Parent(nbstep3d)
-      parentnbstep=Agrif_Parent_Nb_Step()
+         western_side  = (nb == 1).AND.(ndir == 1)
+         eastern_side  = (nb == 1).AND.(ndir == 2)
+         southern_side = (nb == 2).AND.(ndir == 1)
+         northern_side = (nb == 2).AND.(ndir == 2)
 
-      if (TTimeindex.NE.parentnbstep) then
-        tinterp=1.
-# ifdef MASKING        
-        Agrif_UseSpecialvalue=.true.
-# endif
-        Agrif_Specialvalue=0.
-        Call Agrif_Set_bc(tid,(/-1,0/),
-     &     InterpolationShouldbemade=.TRUE.)
-!        Call Agrif_Bc_variable(tid,calledweight=tinterp,
-!     &       procname = t3dinterp)
-        
-        Agrif_UseSpecialValue=.false.
-      endif
-
+      nsource=1
+      ndest=2 
 
 # ifdef AGRIF_OBC_SOUTH
-! ------------------------
-         if (SOUTHERN_EDGE) then
-            do k=1,N      
-               do i=IstrR,IendR
-                  qdmw_nbq(i,Jstr-1,k)=qdmw_nbq(i,Jstr-1,k)  *0.01 
-#  ifdef MASKING     
-     &        *rmask(i,Jstr-1)
+        if (southern_side) then
+#  ifdef MPI
+            if (.not.SOUTH_INTER) then
 #  endif
-          enddo
-        enddo
-      endif
+                   if (Agrif_NbStepint() == 0) then
+
+                Unbq_south(i1:i2,j1:j2,1:N,ndest)=
+     &          Unbq_south(i1:i2,j1:j2,1:N,nsource)
+             endif
+                Unbq_south(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
 # endif
 
 # ifdef AGRIF_OBC_NORTH
-! ------------------------
-      if (NORTHERN_EDGE) then      
-        do k=1,N      
-          do i=IstrR,IendR
-             qdmw_nbq(i,Jend+1,k)=qdmw_nbq(i,Jend+1,k)   *0.01     
-#  ifdef MASKING     
-     &          *rmask(i,Jend+1)
+        if (northern_side) then
+#  ifdef MPI
+            if (.not.NORTH_INTER) then
 #  endif
-          enddo
-        enddo
-      endif      
+                   if (Agrif_NbStepint() == 0) then
+
+                Unbq_north(i1:i2,j1:j2,1:N,ndest)=
+     &          Unbq_north(i1:i2,j1:j2,1:N,nsource)
+       endif
+                Unbq_north(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
 # endif
 
 # ifdef AGRIF_OBC_WEST
-! -----------------------
-      if (WESTERN_EDGE) then      
-        do k=1,N      
-          do j=JstrR,JendR
-            qdmw_nbq(Istr-1,j,k)=qdmw_nbq(Istr-1,j,k)        *0.01 
-#  ifdef MASKING     
-     &         *rmask(Istr-1,j)
+        if (western_side) then
+#  ifdef MPI
+            if (.not.WEST_INTER) then
 #  endif
-          enddo
-        enddo
-      endif      
+                   if (Agrif_NbStepint() == 0) then
+
+                Unbq_west(i1:i2,j1:j2,1:N,ndest)=
+     &          Unbq_west(i1:i2,j1:j2,1:N,nsource)
+        endif
+                Unbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
 # endif
 
 # ifdef AGRIF_OBC_EAST
-! ------------------------
-      if (EASTERN_EDGE) then      
-         do k=1,N      
-            do j=JstrR,JendR
-               qdmw_nbq(Iend+1,j,k)=qdmw_nbq(Iend+1,j,k)     *0.01     
-#  ifdef MASKING
-     &              *rmask(Iend+1,j)
+        if (eastern_side) then
+#  ifdef MPI
+            if (.not.EAST_INTER) then
 #  endif
-            enddo
-         enddo
-      endif
-# endif
-!
-! \TODO To be continued
-!
-!
+                   if (Agrif_NbStepint() == 0) then
 
+                Unbq_east(i1:i2,j1:j2,1:N,ndest)=
+     &          Unbq_east(i1:i2,j1:j2,1:N,nsource)
+       endif
+                Unbq_east(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+       endif
       return
-      end     
+      end
+
+      subroutine qdmvinterp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "nbq.h"
+# include "zoom.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       integer nb,ndir
+       integer nsource, ndest
+       logical :: western_side, eastern_side
+       logical :: northern_side,southern_side
+
+       if (before) then
+         tabres(i1:i2,j1:j2,k1:k2) = qdmv_nbq(i1:i2,j1:j2,k1:k2)
+       else
+
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+
+         western_side  = (nb == 1).AND.(ndir == 1)
+         eastern_side  = (nb == 1).AND.(ndir == 2)
+         southern_side = (nb == 2).AND.(ndir == 1)
+         northern_side = (nb == 2).AND.(ndir == 2)
+
+      nsource=1
+      ndest=2 
+
+# ifdef AGRIF_OBC_SOUTH
+        if (southern_side) then
+#  ifdef MPI
+            if (.not.SOUTH_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+                Vnbq_south(i1:i2,j1:j2,1:N,ndest)=
+     &          Vnbq_south(i1:i2,j1:j2,1:N,nsource)
+                endif
+
+                Vnbq_south(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+# ifdef AGRIF_OBC_NORTH
+        if (northern_side) then
+#  ifdef MPI
+            if (.not.NORTH_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+               Vnbq_north(i1:i2,j1:j2,1:N,ndest)=
+     &          Vnbq_north(i1:i2,j1:j2,1:N,nsource)
+        endif
+                Vnbq_north(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+# ifdef AGRIF_OBC_WEST
+        if (western_side) then
+#  ifdef MPI
+            if (.not.WEST_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+
+                Vnbq_west(i1:i2,j1:j2,1:N,ndest)=
+     &          Vnbq_west(i1:i2,j1:j2,1:N,nsource)
+             endif
+                Vnbq_west(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+# ifdef AGRIF_OBC_EAST
+        if (eastern_side) then
+#  ifdef MPI
+            if (.not.EAST_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+
+                Vnbq_east(i1:i2,j1:j2,1:N,ndest)=
+     &          Vnbq_east(i1:i2,j1:j2,1:N,nsource)
+              endif
+                Vnbq_east(i1:i2,j1:j2,1:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+       endif
+      return
+      end
+
+      subroutine qdmwinterp(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+# include "param.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "nbq.h"
+# include "zoom.h"
+
+       integer i1,i2,j1,j2,k1,k2
+       real tabres(i1:i2,j1:j2,k1:k2)
+       logical before
+       integer nb,ndir
+       integer nsource, ndest
+       logical :: western_side, eastern_side
+       logical :: northern_side,southern_side
+
+       if (before) then
+         tabres(i1:i2,j1:j2,k1:k2) = qdmw_nbq(i1:i2,j1:j2,k1:k2)
+       else
+
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+
+         western_side  = (nb == 1).AND.(ndir == 1)
+         eastern_side  = (nb == 1).AND.(ndir == 2)
+         southern_side = (nb == 2).AND.(ndir == 1)
+         northern_side = (nb == 2).AND.(ndir == 2)
+
+      nsource=1
+      ndest=2 
+
+# ifdef AGRIF_OBC_SOUTH
+        if (southern_side) then
+#  ifdef MPI
+            if (.not.SOUTH_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+                Wnbq_south(i1:i2,j1:j2,0:N,ndest)=
+     &          Wnbq_south(i1:i2,j1:j2,0:N,nsource)
+                endif
+                Wnbq_south(i1:i2,j1:j2,0:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+# ifdef AGRIF_OBC_NORTH
+        if (northern_side) then
+#  ifdef MPI
+            if (.not.NORTH_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+                Wnbq_north(i1:i2,j1:j2,0:N,ndest)=
+     &          Wnbq_north(i1:i2,j1:j2,0:N,nsource)
+               endif
+                Wnbq_north(i1:i2,j1:j2,0:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+# ifdef AGRIF_OBC_WEST
+        if (western_side) then
+#  ifdef MPI
+            if (.not.WEST_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+                Wnbq_west(i1:i2,j1:j2,0:N,ndest)=
+     &          Wnbq_west(i1:i2,j1:j2,0:N,nsource)
+                 endif
+                Wnbq_west(i1:i2,j1:j2,0:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+# ifdef AGRIF_OBC_EAST
+        if (eastern_side) then
+#  ifdef MPI
+            if (.not.EAST_INTER) then
+#  endif
+                   if (Agrif_NbStepint() == 0) then
+
+                Wnbq_east(i1:i2,j1:j2,0:N,ndest)=
+     &          Wnbq_east(i1:i2,j1:j2,0:N,nsource)
+             endif
+                Wnbq_east(i1:i2,j1:j2,0:N,nsource) = tabres
+#  ifdef MPI
+            endif
+#  endif
+        endif
+# endif
+
+       endif
+      return
+      end
 !
 !====================================================================
 !                   subroutine rnbq_bc_interp_tile

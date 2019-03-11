@@ -234,6 +234,9 @@
       external :: updatemyfx, updatemyfy
       external :: updateunp1pre
       external :: updatevnp1pre
+#ifdef NBQ
+      external :: updatewnp1pre,Updatewnp1
+#endif     
 !$AGRIF_DO_NOT_TREAT
       integer :: nbcoarsechild
       common/updateprestepint/nbcoarsechild      
@@ -268,7 +271,12 @@
       Call Agrif_Update_Variable(updatehvomid,
      &     locupdate1=(/1,1/),locupdate2=(/0,0/),
      &     procname = updatevnp1pre)
-     
+# ifdef NBQ
+      Call Agrif_Update_Variable(updateweid,
+     &     locupdate1=(/1,1/),locupdate2=(/1,1/),
+     &     procname = updatewnp1pre)
+# endif     
+
 #endif
 #endif
      
@@ -281,8 +289,8 @@
       
       irhot=Agrif_Irhot()
       
-      !IF (mod(nbstep3d,1) == (irhot-1)) THEN
-      IF (.TRUE.) THEN
+      IF (mod(nbstep3d,1) == (irhot-1)) THEN
+      !IF (.TRUE.) THEN
 
 #ifdef AGRIF_UPDATE_DECAL
       Agrif_UseSpecialValueInUpdate = .FALSE.
@@ -294,7 +302,15 @@
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &     procname = updatevnp1)
-     
+
+# ifdef NBQ
+ !     Call Agrif_Update_Variable(updatewid,
+ !    &     locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+ !    &     procname = updatewnp1)
+      Call Agrif_Update_Variable(updatewid,
+     &     procname = updatewnp1)
+# endif     
+
 #else
       Agrif_UseSpecialValueInUpdate = .FALSE.
            
@@ -302,6 +318,10 @@
      &     procname = updateunp1)
       Call Agrif_Update_Variable(updatevid,
      &     procname = updatevnp1)
+# ifdef NBQ
+      Call Agrif_Update_Variable(updatewid,
+     &     procname = updatewnp1)
+# endif      
 #endif
       ELSE
 
@@ -315,6 +335,16 @@
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/1,3/),locupdate2=(/0,2/),
      &     procname = updatevnp1) 
+# ifdef NBQ
+   !   Call Agrif_Update_Variable(updatewid,
+   !  &     locupdate1=(/1,3/),locupdate2=(/1,3/),
+   !  &     procname = updatewnp1) 
+
+
+      Call Agrif_Update_Variable(updatewid,
+     &     locupdate1=(/0,2/),locupdate2=(/0,2/),
+     &     procname = updatewnp1)
+# endif
 #else
      
       Agrif_UseSpecialValueInUpdate = .FALSE.
@@ -325,6 +355,11 @@
       Call Agrif_Update_Variable(updatevid,
      &     locupdate1=(/0,2/),locupdate2=(/0,2/),
      &     procname = updatevnp1) 
+# ifdef NBQ
+      Call Agrif_Update_Variable(updatewid,
+     &     locupdate1=(/0,2/),locupdate2=(/0,2/),
+     &     procname = updatewnp1)
+# endif      
 #endif    
       ENDIF
 
@@ -554,6 +589,86 @@
       return
       end      
 
+#ifdef NBQ
+      Subroutine Updatewnp1pre(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "ocean3d.h"
+#  include "grid.h"
+#  include "scalars.h"
+#  include "zoom.h"
+      integer i1,i2,j1,j2,k1,k2,nb,ndir
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+
+!$AGRIF_DO_NOT_TREAT
+      integer :: nbcoarsechild
+      common/updateprestepint/nbcoarsechild
+!$AGRIF_END_DO_NOT_TREAT      
+      
+      integer i,j,k
+      
+      real :: invrrhot
+
+      IF (before) THEN
+      
+        invrrhot = 1./real(Agrif_Irhot())
+        DO k=k1,k2
+        DO j=j1,j2
+        DO i=i1,i2
+          tabres(i,j,k) = invrrhot * We(i,j,k)
+#ifdef MASKING
+     &                       *rmask(i,j)
+#endif          
+        ENDDO
+        ENDDO
+        ENDDO
+       
+       ELSE
+         IF (nbcoarsechild == 1) THEN
+           DO k=k1,k2
+           DO j=j1,j2
+           DO i=i1,i2
+             Weagrif(i,j,k) = 3.*tabres(i,j,k)
+#ifdef MASKING             
+     &                         * rmask(i,j)
+#endif
+           ENDDO
+           ENDDO
+           ENDDO 
+        
+         ELSE
+       
+
+           DO j=j1,j2
+           DO i=i1,i2
+             IF (.Not.Alreadyupdated(i,j,4)) THEN
+               DO k=k1,k2             
+           Weagrif(i,j,k)= (Weagrif(i,j,k)+3.*tabres(i,j,k))
+#ifdef MASKING
+     &                              * rmask(i,j)
+#endif    
+              We(i,j,k) = Weagrif(i,j,k)
+               ENDDO
+               Alreadyupdated(i,j,4) = .TRUE.
+             ENDIF
+           ENDDO 
+           ENDDO
+           
+          ENDIF        
+        ENDIF
+             if (Agrif_Fixed() == 0) then
+        write(*,*) 'in updatenp1pre : We = ' ,Agrif_Fixed(), 
+     &  iif,iic, We(30,28,N)
+       else 
+       write(*,*) 'in updatenp1pre : We = ' ,Agrif_Fixed(), 
+     &  iif,iic, We(10,8,N)
+        endif
+      
+      
+      return
+      end      
+#endif
                   
       Subroutine UpdateTranp1(tabres,i1,i2,j1,j2,k1,k2,l1,l2,before)
       implicit none
@@ -811,6 +926,53 @@
       
       return
       end
+
+#ifdef NBQ
+      Subroutine Updatewnp1(tabres,i1,i2,j1,j2,k1,k2,before)
+      implicit none
+#  include "param.h"
+#  include "ocean3d.h"
+#  include "grid.h"
+#  include "scalars.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+      
+      integer i,j,k
+      
+      IF (before) THEN
+        DO k=k1,k2
+         DO j=j1,j2
+           DO i=i1,i2
+             tabres(i,j,k) = wz(i,j,k,nnew)
+            ENDDO
+         ENDDO
+        ENDDO
+       ELSE
+        DO k=k1,k2
+         DO j=j1,j2
+          DO i=i1,i2
+          wz(i,j,k,nnew) = tabres(i,j,k)
+#ifdef MASKING
+     &              * rmask(i,j)
+#endif     
+          ENDDO
+         ENDDO
+       ENDDO        
+       ENDIF
+              if (Agrif_Fixed() == 0) then
+        write(*,*) 'in updatenp1 : wz = ' ,Agrif_Fixed(), 
+     &  iif,iic, wz(30,28,N,nnew)
+       else 
+       write(*,*) 'in updatenp1 : wz = ' ,Agrif_Fixed(), 
+     &  iif,iic, wz(10,8,N,nnew)
+        endif
+      
+
+      
+      return
+      end
+#endif
 #else
         subroutine update3D_empty
         return

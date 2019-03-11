@@ -46,6 +46,10 @@
 !      real tabtemp(GLOBAL_2D_ARRAY,4)
       external updateubar,updatevbar,updatezeta
       external updateduavg2, updatedvavg2
+#ifdef NBQ
+      external updateunbq, updatevnbq, updatewnbq
+      external updateusurf, updatevsurf, updatewsurf
+#endif
       real,dimension(:,:),pointer :: ztavg1_parent,duavg2parent
       real,dimension(:,:),pointer :: parenth,parenton_u,parentom_v
       real,dimension(:,:),pointer ::dvavg2parent
@@ -135,6 +139,20 @@ C$OMP MASTER
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
      &     procname = updatevbar) 
      
+# ifdef NBQ
+      Call Agrif_Update_Variable(updateunbqid,
+     &     locupdate1=(/0,3/),locupdate2=(/1,4/),
+     &     procname = updateunbq)
+     
+      Call Agrif_Update_Variable(updatevnbqid,
+     &     locupdate1=(/1,4/),locupdate2=(/0,3/),
+     &     procname = updatevnbq) 
+     
+      Call Agrif_Update_Variable(updatewnbqid,
+     &     locupdate1=(/1,4/),locupdate2=(/1,4/),
+     &     procname = updatewnbq) 
+# endif 
+
 #else
        Call Agrif_Update_Variable(updatezetaid,
      &         locupdate=(/0,1/),procname = updatezeta)
@@ -155,6 +173,24 @@ C$OMP MASTER
       Call Agrif_Update_Variable(updatevbarid,
      &     locupdate1=(/0,1/),locupdate2=(/0,1/),
      &     procname = updatevbar)          
+
+# ifdef NBQ
+      Call Agrif_Update_Variable(updateunbqid,
+     &     locupdate1=(/0,1/),locupdate2=(/0,1/),
+     &     procname = updateunbq)
+     
+      Call Agrif_Update_Variable(updatevnbqid,
+     &     locupdate1=(/0,1/),locupdate2=(/0,1/),
+     &     procname = updatevnbq) 
+     
+      Call Agrif_Update_Variable(updatewnbqid,
+     &     locupdate1=(/0,1/),locupdate2=(/0,1/),
+     &     procname = updatewnbq) 
+      Call Agrif_Update_Variable(wsurfid,
+     &     locupdate1=(/0,1/),locupdate2=(/0,1/),
+     &     procname = updatewsurf) 
+# endif 
+
 #endif
 
       IF (iif == nfast) THEN
@@ -182,6 +218,22 @@ C$OMP MASTER
      &     locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &     procname = updatevbar)
      
+
+# ifdef NBQ
+      Call Agrif_Update_Variable(updateunbqid,
+     &     locupdate1=(/0,-1/),locupdate2=(/1,-2/),
+     &     procname = updateunbq)
+     
+      Call Agrif_Update_Variable(updatevnbqid,
+     &     locupdate1=(/1,-2/),locupdate2=(/0,-1/),
+     &     procname = updatevnbq) 
+     
+      Call Agrif_Update_Variable(updatewnbqid,
+     &     locupdate1=(/1,-2/),locupdate2=(/1,-2/),
+     &     procname = updatewnbq) 
+# endif 
+
+
 #else
       Call Agrif_Update_Variable(updatezetaid,
      &         procname = updatezeta)
@@ -193,6 +245,20 @@ C$OMP MASTER
      
       Call Agrif_Update_Variable(updatevbarid,
      &     procname = updatevbar)
+
+# ifdef NBQ
+      Call Agrif_Update_Variable(updateunbqid,
+     &     procname = updateunbq)
+     
+      Call Agrif_Update_Variable(updatevnbqid,
+     &     procname = updatevnbq) 
+     
+      Call Agrif_Update_Variable(updatewnbqid,
+     &     procname = updatewnbq) 
+      Call Agrif_Update_Variable(wsurfid,
+     &     procname = updatewsurf)
+# endif 
+
 #endif
 
       Agrif_UseSpecialValueInUpdate = .FALSE.
@@ -227,8 +293,165 @@ C$OMP END MASTER
 
       return
       end
+
+#ifdef NBQ
+
+      Subroutine updateusurf(tabres,i1,i2,j1,j2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "nbq.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2)
+      logical before
+      integer nb, ndir
+      real hzu
+      real t1,t2,t3
+       if (before) then
+       tabres (i1:i2,j1:j2)=usurf_nbq(i1:i2,j1:j2)
+       else
+       usurf_nbq(i1:i2,j1:j2)= tabres (i1:i2,j1:j2)
+       endif
+ 
+      return
+      end
+
+      Subroutine updatevsurf(tabres,i1,i2,j1,j2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "nbq.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2)
+      logical before
+      integer nb, ndir
+      real hzu
+      real t1,t2,t3
+       if (before) then
+       tabres (i1:i2,j1:j2)=vsurf_nbq(i1:i2,j1:j2)
+       else
+       vsurf_nbq(i1:i2,j1:j2)= tabres (i1:i2,j1:j2)
+       endif
+ 
+      return
+      end
+
+      Subroutine updatewsurf(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean3d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "nbq.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+      integer nb, ndir
+      real hzu
+      real t1,t2,t3
+       if (before) then
+       tabres (i1:i2,j1:j2,k1:k2)=Hz(i1:i2,j1:j2,k1:k2)
+       else
+       Hz(i1:i2,j1:j2,k1:k2)= tabres(i1:i2,j1:j2,k1:k2)
+       endif
+ 
+      return
+      end
+
+      Subroutine Updateunbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "nbq.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+      integer nb, ndir
+      real hzu
+      real t1,t2,t3
       
-      Subroutine Updateubar(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+       if (before) then
+       tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
+       else
+       qdmu_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
+       endif
+!      if (Agrif_Fixed() == 0) then
+!        write(*,*) 'in update : qdmu_nbq = ' ,Agrif_Fixed(), 
+!     &  iif,iic, qdmu_nbq(30,28,N)
+!       else 
+!       write(*,*) 'in update : qdmu_nbq = ' ,Agrif_Fixed(), 
+!     &  iif,iic, qdmu_nbq(10,8,N)
+!      endif       
+
+      return
+      end 
+      Subroutine Updatevnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "nbq.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+      integer nb, ndir
+      real hzu
+      real t1,t2,t3
+      
+       if (before) then
+       tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
+       else
+       qdmv_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
+       endif
+      
+
+      return
+      end 
+      Subroutine Updatewnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
+      implicit none
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean2d.h"
+#  include "coupling.h"
+#  include "scalars.h"
+#  include "zoom.h"
+#  include "nbq.h"
+      integer i1,i2,j1,j2,k1,k2
+      real tabres(i1:i2,j1:j2,k1:k2)
+      logical before
+      integer nb, ndir
+      real hzu
+      real t1,t2,t3
+      
+       if (before) then
+       tabres (i1:i2,j1:j2,k1:k2)=qdmw_nbq(i1:i2,j1:j2,k1:k2)
+       else
+       qdmw_nbq(i1:i2,j1:j2,k1:k2)= tabres (i1:i2,j1:j2,k1:k2)
+       endif
+      
+
+      return
+      end 
+#endif      
+      
+       Subroutine Updateubar(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -384,6 +607,7 @@ C$OMP END MASTER
       return
       end 
 
+
 #ifdef WET_DRY
       Subroutine updatermask_child(tabres,i1,i2,j1,j2,before,nb,ndir)
       implicit none
@@ -443,6 +667,7 @@ C$OMP END MASTER
       end subroutine updatermask_child
 #endif
       
+       
       Subroutine Updatezeta(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
       implicit none
 #  include "param.h"
@@ -591,6 +816,7 @@ C$OMP END MASTER
       return
       end           
   
+  
       Subroutine Updatevbar(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
       implicit none
 #  include "param.h"
@@ -737,6 +963,7 @@ C$OMP END MASTER
       
       return
       end 
+
             
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
       implicit none

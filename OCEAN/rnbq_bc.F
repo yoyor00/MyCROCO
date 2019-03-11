@@ -76,7 +76,7 @@
 ! Interpolations of the parent values to get rnbqbry or rnbqclm
 !
 # ifdef CHILD
-!      call rnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call rnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING

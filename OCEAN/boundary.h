@@ -374,7 +374,7 @@
 # endif
 #endif /* NBQ */
 
-#if defined NBQ && defined W_FRC_BRY
+#if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
       real wbry_west(GLOBAL_1D_ARRAYETA,0:N)
       common /bry_w_west/ wbry_west
