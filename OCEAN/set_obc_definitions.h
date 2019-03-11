@@ -167,6 +167,7 @@
 #   endif
 #  endif
 
+#else
 /* CHILD OBC DEFINITIONS */
 
 #  ifdef AGRIF_OBC_EAST
