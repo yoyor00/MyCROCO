@@ -5,14 +5,19 @@ C     size of the problem (number of control variables)
       parameter (ad_array_size=3*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
-C     size of the assimilation window (number of steps)
+
+C     number of steps between cost function computation
+      integer ad_ns
+      parameter (ad_ns = 180)
+
+C     size of the assimilation window
 C     on change check BINOMIAL-CKP param in cost_fun
       integer ad_nt
-      parameter (ad_nt = 120)
+      parameter (ad_nt = 80)
 
 C     start of assimilation in the obs file
       integer ad_ast
-      parameter (ad_ast = 14401)
+      parameter (ad_ast = 98)
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
@@ -21,6 +26,12 @@ C     number of time steps in the main file before assimilation
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt+2)
 
+c     control vector / process
+      double precision ad_x(ad_array_size)
+
+c     gradient vector / process
+      double precision ad_g(ad_array_size)
+      
 c     full control vector
       double precision ad_x_f(ad_array_size)
 
@@ -63,6 +74,9 @@ C     time step of the main simulation
 C     general iteration counter
       integer ad_counter
 
+C     cost function counter
+      integer ad_cost_counter
+      
 c     tidal period (M2)
       double precision TM2
       parameter(TM2 = 12.4206012)
@@ -73,7 +87,8 @@ c     backup
       real zeta_bck(GLOBAL_2D_ARRAY,4)
       real zob_bck(GLOBAL_2D_ARRAY)
       real Zobt_bck
-
+      real ad_cost
+      
       integer kstp_bck
       integer krhs_bck
       integer knew_bck
@@ -88,4 +103,4 @@ C     commons
      &     ,ad_h_f
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
-      common /state_info/ sim_iicroot,ad_counter
+      common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,ad_cost

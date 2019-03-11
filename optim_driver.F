@@ -32,8 +32,11 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       integer i
       
       sim_iicroot = iicroot
+      ad_cost_counter = 1
+      ad_cost = 1
       ad_counter = 0
 
+      
       write(*,*) 'ad_array_size=', ad_array_size
       write(*,*) 'nx:',2+lm+2+padd_x
       write(*,*) 'ne:',2+mm+2+padd_e
@@ -53,7 +56,9 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
      &     AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
-      
+
+      ad_counter = ad_counter + 1
+
       if (mynode.eq.0) then
          cost = xf
       end if
@@ -123,8 +128,8 @@ c     &        (x,cost,gg,reverse,indic)
          
 #ifdef AMPI
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
-     &        MPI_COMM_WORLD, ierr)
+         call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
+     &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
      &     AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM, 0,

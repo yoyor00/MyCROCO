@@ -8,7 +8,8 @@ c     this file is not differentiated
 # include "param.h"
 # include "scalars.h"
 # include "adparam.h"
-
+      real t1, t2, xtime
+      
       integer indic, Sn, i
       double precision f
       real izs(1)
@@ -34,10 +35,16 @@ c        https://www-sop.inria.fr/tropics/tapenade/faq.html#adjlive this
 c        need -nooptim adjointliveness but it is not sufficient, and it
 c        needs some modifications in generated code.  Here we call
 c        directly the computation of cost_fun.
-
+         write (*,*) '--------------------------------------'
+         write (*,*) 'start cost'
+         write (*,*) '--------------------------------------'
+         t1 = xtime()
          call cost_fun(ad_x_f, cost)
+         t2 = xtime()
          f = cost
-
+         write (*,*) '--------------------------------------'
+         write (*,*) 'end cost:',t2-t1
+         write (*,*) '--------------------------------------'
 c     call restore_croco_state()
 
 c         eps = 1.0D-10
@@ -53,12 +60,12 @@ c         write(*,*) '-||->', (cost-f)/eps
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
+         t1 = xtime()
          call cost_fun_b(ad_x_f, ad_g_f, cost, costb)
-
+         t2 = xtime()
          write (*,*) '--------------------------------------'
-         write (*,*) 'end adjoint'
+         write (*,*) 'end adjoint:',t2-t1
          write (*,*) '--------------------------------------'
-         write (*,*) '1--->', ad_x_f(1),f,cost,ad_g_f(1)
 
          call restore_croco_state()
 

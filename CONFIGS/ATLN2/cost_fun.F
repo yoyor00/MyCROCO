@@ -6,18 +6,30 @@
 
       double precision cost
       double precision xcost
-      integer ta
+      double precision sigma2
+      integer ta,k,xk
+
+      integer i,j
+      double precision delta_z
 
       call set_state(ad_x_f)
 
+c      sigma2 = ad_cost/ad_cost_counter
       cost = 0
 
-C$AD BINOMIAL-CKP ad_nt 40 1
-      do ta=1,ad_nt-1
-         call step()
+C$AD BINOMIAL-CKP ad_nt+1 40 1
+      do ta=1,ad_nt
+         do xk=1,ad_ns
+            call step()
+         end do
          call cost_fun_step(ad_x_f,cost,ta)
       end do
 
+c      if (sigma2.gt.0) then
+c         cost = cost / sigma2
+c      end if
+      
+      ad_cost = cost
       write (*,*) 'cost=',cost
 
       return
@@ -79,12 +91,17 @@ C$AD NOCHECKPOINT
       do k=1,ncpoints
          i=ad_i(k)
          j=ad_j(k)
-         delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
+         delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
          delta_zob = (zob(i,j) - zob_bck(i,j))
 c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
 c     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
-c         write(*,*) 'BBBBB',mynode,delta_z,delta_zob
-         icost = icost + delta_z*delta_z + 1.D-5*delta_zob*delta_zob
+c         write(*,*) 'BBBBB',mynode,delta_z,zeta(i,j,knew),
+c     &        ad_obs(i,j,ta+1),
+c     &        ad_obs(i,j,ta),ad_obs(i,j,ta+2),ad_obs(i,j,ta-1),
+c     &        ad_obs(i,j,ta-2)
+         icost = icost + delta_z*delta_z + 0.0001*delta_zob*delta_zob/
+     &        (h(i,j)*h(i,j))
+         ad_cost_counter = ad_cost_counter + 1
       end do
 
       end subroutine cost_fun_step_2d_tile
@@ -139,7 +156,12 @@ C$AD NOCHECKPOINT
       double precision control_to_param
       character*6 counter_str
 
+      double precision zobmin,zobmax
+      
 #include "compute_extended_bounds.h"
+      zobmin=1000.
+      zobmax=0.
+      
       do j=Jstr,Jend
          do i=Istr,Iend
 c            k=ad_colloc(i,j)
@@ -148,16 +170,22 @@ c               write (*,*) 'AD BIG PROBLEM k=',k
 c               stop
 c     endif
             if (ad_obs(i,j,1).ne.spval) then
-               zob(i,j)=0
+               zob(i,j)=0.0
                do k=1,ad_array_size
-                  lzob=control_to_param(k,ad_x_f)
-c     write(*,*) '###',mynode,i,j,k,ad_x_f(k),W(i,j,k)
+                  lzob=control_to_param(ad_x_f(k))
                   zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
+c                  write(*,*) '%%%%',mynode,k,ad_x_f(k),
+c     &                 lzob,zob(i,j)
                end do
-c     zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
+               if (zobmin.gt.zob(i,j)) then
+                  zobmin=zob(i,j)
+               end if
+               if (zobmax.lt.zob(i,j)) then
+                  zobmax=zob(i,j)
+               end if
             end if
-            end do
          end do
+      end do
 
       write(*, *) '**** set_state ****'
 
@@ -166,8 +194,8 @@ c     zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
 #endif
 
       write(*, *) 'ad_counter=',ad_counter
-      write(*, *) 'min zob=',minval(zob)
-      write(*, *) 'max zob=',maxval(zob)
+      write(*, *) 'min zob=',zobmin
+      write(*, *) 'max zob=',zobmax
       write(*, *) '*******************'
 
 
@@ -199,13 +227,15 @@ c     zob(i,j)=1.D-7 + 1/(1+exp(ad_x_f(k)))
       double precision param_to_control
       integer ierr
       integer k
-
+      
+      call init_collocation_points()
+      
       do k=1,ad_array_size
-         ad_x_f(k)=param_to_control(k)
+         ad_x_f(k)=param_to_control(5.0D-3)
          ad_g_f(k)=0.
       end do
 
-      call init_collocation_points()
+
 
 c      MPI_master_only write(*,*) 'A0##>',ad_x_f
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
@@ -380,54 +410,27 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       end subroutine init_collocation_points_2d_tile
 
 
-      double precision function control_to_param(k,ad_x_f)
+      double precision function control_to_param(y)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
-      integer k
-      double precision y, a, b
-      parameter (a = 1D-6)
-      parameter (b = 1D-2)
-
-      y = ad_x_f(k)
+      double precision y
 
 c     R -> (a,b)
-      control_to_param = 1.D-7 + 1/(1+exp(y))
-c      if (y.le.0) then
-c         control_to_param = (a*y + b*y
-c     &        + sqrt(a*a*y*y - 2*a*b*y*y + b*b*y*y + 4) - 2)/(2*y)
-c      else
-c         control_to_param = (a*y + b*y
-c     &        - sqrt(a*a*y*y - 2*a*b*y*y + b*b*y*y + 4) - 2)/(2*y)
-c      end if
-
-c      if (control_to_param.ge.b) then
-c         write(*,*) '>>>>>', control_to_param,'>=',b
-c         stop
-c      end if
-c      if (control_to_param.le.a) then
-c         write(*,*) '>>>>>', control_to_param, '=<',a
-c         stop
-
-c      end if
+      control_to_param = 1/(1+exp(y))
 
       end function control_to_param
 
-      double precision function param_to_control(k)
+      double precision function param_to_control(x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
-      integer k
-      double precision x, a, b
-      parameter (a = 1D-6)
-      parameter (b = 1D-2)
-
-      x = Zobt
+      double precision x
 
 c     (a,b) -> R
-      param_to_control = log(1./x  - 1.)
+      param_to_control = log(1./(x)  - 1.)
 c      param_to_control = 1/(a - x) + 1/(b - x)
 
       end function param_to_control

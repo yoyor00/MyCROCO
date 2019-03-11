@@ -18,7 +18,8 @@ lat = np.array([])
 dat = np.array([])
 points = [None]*nprocs
 for proc in range(nprocs):
-    data=np.loadtxt('z0b.0{0}-056'.format(proc))
+#    data1=np.loadtxt('z0b.0{0}-011'.format(proc))
+    data=np.loadtxt('z0b.0{0}-021'.format(proc))
     ni=int(data[0, 0])
     nj=int(data[0, 1])
     lon=np.append(lon, data[1:, 0]) #np.reshape(data[1:, 0], (nj, ni))
