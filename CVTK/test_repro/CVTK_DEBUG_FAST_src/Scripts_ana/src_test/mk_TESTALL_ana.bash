@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -x
+
 ./git_process.bash
 
 for testconf in `ls -1 ./Configure_Test/ `;do

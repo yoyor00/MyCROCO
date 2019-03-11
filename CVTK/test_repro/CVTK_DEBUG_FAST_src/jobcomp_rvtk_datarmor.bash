@@ -44,7 +44,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 if [[ $OS == Linux ]] ; then
 
-	LINUX_FC=ifort
+	LINUX_FC=gfortran
 #
 #	set 32 or 64 Bits executable
 #
@@ -82,7 +82,7 @@ NETCDFINC=-I$(nf-config --includedir)
 #
 # set MPI directories if needed
 #
-MPIF90="ifort $MPI_LIBS"
+MPIF90="mpif90"
 MPILIB=""
 MPIINC=""
 echo $MPIF90
@@ -173,7 +173,7 @@ if [[ $OS == Linux ]] ; then           # ===== LINUX =====
         elif [[ $LINUX_FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -mcmodel=medium"
+		FFLAGS1="-O1 -fdefault-real-8 -fdefault-double-8 -mcmodel=medium"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"

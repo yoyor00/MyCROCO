@@ -4,7 +4,10 @@
 #PBS -l walltime=02:00:00
 #PBS -j oe 
 #PBS -M gildas.cambon@ird.fr -m abe
-cd $PBS_O_WORKDIR
+
+set -x
+test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
+echo "$CI_CROCO_PWD"
 echo $PBS_O_LOGNAME
 #===================================
 #set -x
@@ -35,7 +38,7 @@ GREP_CMD='grep -m 1'
 #=============================================
 # OPENMP
 echo "===================" > $fileout_openmp
-echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp 
+echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp
 ${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
 res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
 echo 'res_omp='$res_omp >> $fileout_openmp
