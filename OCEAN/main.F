@@ -115,11 +115,6 @@
       call init_auto_tiling
 #endif
 !
-!  Initialize debug procedure
-!
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
-       call debug_ini
-#endif
 !
 !  Setup MPI domain decomposition
 !
@@ -127,6 +122,11 @@
 !     start_time1=PMPI_Wtime()
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100        !--> ERROR
+#endif
+!  Initialize debug procedure
+!
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+       call debug_ini
 #endif
 !
 #define CR  !

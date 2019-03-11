@@ -40,7 +40,7 @@
    of parallel computation by comparing binary files produced by serial 
    and parallel runs
 */
-#undef RVTK_DEBUG
+!#undef RVTK_DEBUG
 
 /*
     Constant tracer option (for debugging)
