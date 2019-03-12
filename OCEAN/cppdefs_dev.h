@@ -790,6 +790,11 @@
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
 # endif
+
+#if defined NBQ
+#define AGRIF_OBC_NBQSPECIFIED
+#endif
+
 #endif /* AGRIF */
 
 /*
