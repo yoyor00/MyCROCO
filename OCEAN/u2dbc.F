@@ -61,6 +61,9 @@ C$    integer omp_get_thread_num
 #endif       
       real    eps,cff, cx,cy,
      &        dft,dfx,dfy, tau,tau_in,tau_out,hx,zx
+#ifdef OBC_REDUCED_PHYSICS
+     &        ,bry_val,bry_pgr,bry_str,bry_cor
+#endif
       parameter (eps=1.D-20)
 #ifdef WET_DRY
       real cff1,cff2
@@ -71,7 +74,9 @@ C$    integer omp_get_thread_num
 #include "grid.h"
 #include "ocean2d.h"
 #include "scalars.h"
-#include "forces.h"
+#ifdef OBC_REDUCED_PHYSICS
+#  include "forces.h"
+#endif
 #include "zoom.h"
 #ifdef NBQ
 # include "nbq.h"
@@ -215,6 +220,42 @@ C$    trd=omp_get_thread_num()
 #   elif defined M2CLIMATOLOGY
      &                                             +ubclm(Istr,j)
 #   endif
+#   ifdef OBC_REDUCED_PHYSICS
+      cff1=1.0_r8/(0.5_r8*(h(Istr-1,j)+
+     &                     zeta(Istr-1,j,knew)+
+     &                     h(Istr  ,j)+
+     &                     zeta(Istr  ,j,knew)))
+      bry_str=cff1*(sustr(Istr,j)-
+     &              bustr(Istr,j))
+
+#    ifdef UV_COR
+      bry_cor=0.125_r8*(vbar(Istr-1,j  ,knew)+
+     &                  vbar(Istr-1,j+1,knew)+
+     &                  vbar(Istr  ,j  ,knew)+
+     &                  vbar(Istr  ,j+1,knew))*
+     &                  (f(Istr-1,j)+f(Istr  ,j))
+
+#    else
+       bry_cor=0.
+#    endif
+       bry_pgr=-g*(zeta(Istr  ,j,knew)-
+     &             zeta(Istr-1,j,knew))*
+     &             0.5_r8*(pm(Istr-1,j)+
+     &                     pm(Istr  ,j))
+
+
+       Cx=1.0_r8/SQRT(g*0.5_r8*(h(Istr-1,j)+
+     &                          zeta(Istr-1,j,knew)+
+     &                          h(Istr  ,j)+
+     &                          zeta(Istr  ,j,knew)))
+       cff2=om_u(Istr,j)*Cx
+       bry_val=ubar(Istr+1,j,knew)+
+     &                cff2*(bry_pgr+
+     &                      bry_cor+
+     &                      bry_str)
+
+       ubar(Istr,j,knew)=ubar(Istr,j,knew)+bry_val
+#   endif
 #   ifdef MASKING
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
 #   endif
@@ -248,6 +289,42 @@ C$    trd=omp_get_thread_num()
      &                                          -ssh(Istr-1,j)
 #   endif
      &                           ))
+#   ifdef OBC_REDUCED_PHYSICS
+      cff1=1.0_r8/(0.5_r8*(h(Istr-1,j)+
+     &                     zeta(Istr-1,j,knew)+
+     &                     h(Istr  ,j)+
+     &                     zeta(Istr  ,j,knew)))
+      bry_str=cff1*(sustr(Istr,j)-
+     &              bustr(Istr,j))
+
+#    ifdef UV_COR
+      bry_cor=0.125_r8*(vbar(Istr-1,j  ,knew)+
+     &                  vbar(Istr-1,j+1,knew)+
+     &                  vbar(Istr  ,j  ,knew)+
+     &                  vbar(Istr  ,j+1,knew))*
+     &                  (f(Istr-1,j)+f(Istr  ,j))
+
+#    else
+       bry_cor=0.
+#    endif
+       bry_pgr=-g*(zeta(Istr  ,j,knew)-
+     &             zeta(Istr-1,j,knew))*
+     &             0.5_r8*(pm(Istr-1,j)+
+     &                     pm(Istr  ,j))
+
+
+       Cx=1.0_r8/SQRT(g*0.5_r8*(h(Istr-1,j)+
+     &                          zeta(Istr-1,j,knew)+
+     &                          h(Istr  ,j)+
+     &                          zeta(Istr  ,j,knew)))
+       cff2=om_u(Istr,j)*Cx
+       bry_val=ubar(Istr+1,j,knew)+
+     &                cff2*(bry_pgr+
+     &                      bry_cor+
+     &                      bry_str)
+
+       ubar(Istr,j,knew)=ubar(Istr,j,knew)+bry_val
+#   endif
 #   ifdef MASKING
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
 #   endif
@@ -378,6 +455,42 @@ C$    trd=omp_get_thread_num()
 #   elif defined M2CLIMATOLOGY
      &                                             +ubclm(Iend+1,j)
 #   endif
+#   ifdef OBC_REDUCED_PHYSICS
+      cff1=1.0_r8/(0.5_r8*(h(Iend,j)+
+     &                     zeta(Iend,j,knew)+
+     &                     h(Iend+1  ,j)+
+     &                     zeta(Iend+1  ,j,knew)))
+      bry_str=cff1*(sustr(Iend+1,j)-
+     &              bustr(Iend+1,j))
+
+#    ifdef UV_COR
+      bry_cor=0.125_r8*(vbar(Iend,j  ,knew)+
+     &                  vbar(Iend,j+1,knew)+
+     &                  vbar(Iend+1  ,j  ,knew)+
+     &                  vbar(Iend+1  ,j+1,knew))*
+     &                  (f(Iend,j)+f(Iend+1  ,j))
+
+#    else
+       bry_cor=0.
+#    endif
+       bry_pgr=-g*(zeta(Iend+1  ,j,knew)-
+     &             zeta(Iend,j,knew))*
+     &             0.5_r8*(pm(Iend,j)+
+     &                     pm(Iend+1,j))
+
+
+       Cx=1.0_r8/SQRT(g*0.5_r8*(h(Iend,j)+
+     &                          zeta(Iend,j,knew)+
+     &                          h(Iend+1 ,j)+
+     &                          zeta(Iend+1  ,j,knew)))
+       cff2=om_u(Iend+1,j)*Cx
+       bry_val=ubar(Iend,j,knew)+
+     &                cff2*(bry_pgr+
+     &                      bry_cor+
+     &                      bry_str)
+
+       ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)+bry_val
+#   endif
 #   ifdef MASKING
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
 #   endif
@@ -411,6 +524,42 @@ C$    trd=omp_get_thread_num()
      &                                              -ssh(Iend,j)
 #   endif
      &                             ))
+#   ifdef OBC_REDUCED_PHYSICS
+      cff1=1.0_r8/(0.5_r8*(h(Iend,j)+
+     &                     zeta(Iend,j,knew)+
+     &                     h(Iend+1  ,j)+
+     &                     zeta(Iend+1  ,j,knew)))
+      bry_str=cff1*(sustr(Iend+1,j)-
+     &              bustr(Iend+1,j))
+
+#    ifdef UV_COR
+      bry_cor=0.125_r8*(vbar(Iend,j  ,knew)+
+     &                  vbar(Iend,j+1,knew)+
+     &                  vbar(Iend+1  ,j  ,knew)+
+     &                  vbar(Iend+1  ,j+1,knew))*
+     &                  (f(Iend,j)+f(Iend+1  ,j))
+          
+#    else
+       bry_cor=0.
+#    endif
+       bry_pgr=-g*(zeta(Iend+1  ,j,knew)-
+     &             zeta(Iend,j,knew))*
+     &             0.5_r8*(pm(Iend,j)+
+     &                     pm(Iend+1,j))
+
+
+       Cx=1.0_r8/SQRT(g*0.5_r8*(h(Iend,j)+
+     &                          zeta(Iend,j,knew)+
+     &                          h(Iend+1 ,j)+
+     &                          zeta(Iend+1  ,j,knew)))
+       cff2=om_u(Iend+1,j)*Cx
+       bry_val=ubar(Iend,j,knew)+
+     &                cff2*(bry_pgr+
+     &                      bry_cor+
+     &                      bry_str)
+
+       ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)+bry_val
+#   endif
 #   ifdef MASKING
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
 #   endif
