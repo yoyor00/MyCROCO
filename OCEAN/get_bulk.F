@@ -490,7 +490,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
       implicit none
 # include "param.h"
-# ifdef RELATIVE_WIND
+# ifdef CFB_WIND
 #  include "ocean3d.h"
 # endif
 # include "forces.h"
@@ -504,10 +504,8 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
-# ifdef RELATIVE_WIND          
+# ifdef CFB_WIND          
       integer imax,jmax
-      !real swparam0            ! setup coupling coeff
-      !parameter (swparam0=0.7) ! see param.h
 # endif
       real val1,val2,val3,val4,val5,val6,val7,val8
 # ifdef DIURNAL_INPUT_SRFLX
@@ -516,7 +514,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 # include "compute_extended_bounds.h"
 !
-# ifdef RELATIVE_WIND
+# ifdef CFB_WIND
 #  ifdef MPI
        imax=IendR+1
        jmax=JendR+1
@@ -559,27 +557,25 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
 # ifdef BULK_SMFLUX
 #  ifdef BULK_SM_UPDATE
-#   ifdef RELATIVE_WIND
+#   ifdef CFB_WIND
 !     
 !     Compute relative winds ---
 !     
-            cff=swparam0        ! set current-wind coupling parameter
+            cff=1-swparam        ! set current-wind coupling parameter => Ua-(1-sw)Uo
             do j=JstrR,JendR
               do i=IstrR,imax
-                !cff=swparam(i,j)
                 uwnd(i,j)=uwndg(i,j,itbulk) - cff*u(i,j,N,nrhs)
               enddo
             enddo
             do j=JstrR,jmax
               do i=IstrR,IendR+1
-                !cff=swparam(i,j)
-                vwnd(i,j)=vwndg(i,j,itbulk) -cff*v(i,j,N,nrhs)
+                vwnd(i,j)=vwndg(i,j,itbulk) - cff*v(i,j,N,nrhs)
               enddo
             enddo
             do j=JstrR,min(JendR,Mm)
               do i=IstrR,min(IendR,Lm)
-                wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j  ))**2+
-     &               0.25*(vwnd(i,j)+vwnd(i  ,j+1))**2)
+                wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &               0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
               enddo
             enddo
 #    ifndef EW_PERIODIC
@@ -624,14 +620,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &           wspd(START_2D_ARRAY))
 #    endif
-#   else /* RELATIVE_WIND */
+#   else /* CFB_WIND */
             do j=JstrR,JendR
               do i=IstrR,IendR
                 uwnd(i,j)=uwndg(i,j,itbulk)
                 vwnd(i,j)=vwndg(i,j,itbulk)
               enddo
             enddo
-#   endif /* RELATIVE_WIND */
+#   endif /* CFB_WIND */
 #  else /* BULK_SM_UPDATE */
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -748,29 +744,27 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           enddo
 # ifdef BULK_SMFLUX
 #  ifdef BULK_SM_UPDATE
-#   ifdef RELATIVE_WIND
+#   ifdef CFB_WIND
 !     
 !     Compute relative winds ---
 !     
-          cff=swparam0          ! set current-wind coupling parameter
+          cff=1-swparam          ! set current-wind coupling parameter => Ua-(1-sw)Uo
           do j=JstrR,JendR
             do i=IstrR,imax
-              !cff=swparam(i,j)
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
      &             -cff*u(i,j,N,nrhs)
             enddo
           enddo
           do j=JstrR,jmax
             do i=IstrR,IendR+1
-              !cff=swparam(i,j)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
      &             -cff*v(i,j,N,nrhs)
             enddo
           enddo
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
-              wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j  ))**2+
-     &             0.25*(vwnd(i,j)+vwnd(i  ,j+1))**2)
+              wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &             0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
             enddo
           enddo
 #    ifndef EW_PERIODIC
@@ -822,7 +816,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
             enddo
           enddo
-#   endif /* RELATIVE_WIND */
+#   endif /* CFB_WIND */
 #  else 
           do j=JstrR,JendR
             do i=IstrR,IendR

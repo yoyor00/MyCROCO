@@ -47,7 +47,13 @@
       common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
       common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
 
-#  undef SMFLUX_DATA
+# if defined CFB && defined CFB_STRESS && !defined BULK_FLUX
+      real wspdg(GLOBAL_2D_ARRAY,2)
+      common /smsdat_wspdg/wspdg
+      real    wspdp(2)
+      integer lwgrd, wid
+      common /smsdat5/ lwgrd, wid
+# endif
 #endif /* !ANA_SMFLUX */
 !
 !  BOTTOM MOMENTUM FLUX:

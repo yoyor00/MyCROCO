@@ -44,7 +44,7 @@
 # include "forces.h"
 # include "scalars.h"
 # include "grid.h"
-# ifdef RELATIVE_WIND
+# ifdef CFB_WIND
 #  include "ocean3d.h"
 # endif
 # include "online.h"
@@ -56,15 +56,13 @@
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
-# ifdef RELATIVE_WIND
+# ifdef CFB_WIND
       integer imax,jmax
-!     real swparam0            ! setup coupling coeff
-!     parameter (swparam0=0.7) ! see param.h
 # endif   
 !     
 # include "compute_extended_bounds.h"
 !
-# ifdef RELATIVE_WIND
+# ifdef CFB_WIND
 #  ifdef MPI
        imax=IendR+1
        jmax=JendR+1
@@ -163,14 +161,13 @@
             enddo
           enddo
         elseif (blkvar_id.eq.9) then
-# ifdef RELATIVE_WIND
+# ifdef CFB_WIND
 !
 !     Compute relative winds ---
 !     
-          cff=swparam0          ! set current-wind coupling parameter
+          cff=1-swparam          ! set current-wind coupling parameter => Ua-(1-sw)Uo
           do j=JstrR,JendR
             do i=IstrR,imax
-              !cff=swparam(i,j)
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
      &                                       -cff*u(i,j,N,nrhs)
             enddo
@@ -178,7 +175,6 @@
 
           do j=JstrR,jmax
             do i=IstrR,IendR+1
-              !cff=swparam(i,j)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
      &                                      -cff*v(i,j,N,nrhs)
             enddo
@@ -234,7 +230,7 @@
      &                           wspd(START_2D_ARRAY))
 #  endif
 !
-# else  /* RELATIVE_WIND */
+# else  /* CFB_WIND */
 !         
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -250,7 +246,7 @@
 #  endif 
             enddo
           enddo
-# endif /* RELATIVE_WIND */
+# endif /* CFB_WIND */
         endif
 
       !====== == ==== ============== 

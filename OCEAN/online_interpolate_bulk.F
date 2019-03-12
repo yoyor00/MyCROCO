@@ -256,7 +256,7 @@
      
         do j=J_RANGE
           do i=I_RANGE
-#  ifndef RELATIVE_WIND
+#  ifndef CFB_WIND
             wspdg(i,j,iblkrec)=sqrt(uwndg(i,j,iblkrec)*uwndg(i,j,iblkrec)
      &                             +vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
 #  endif
@@ -300,7 +300,7 @@
 
 	call exchange_v2d_tile(1,Lm,1,Mm,
      &                         vwndg(START_2D_ARRAY,iblkrec))
-#   ifndef RELATIVE_WIND
+#   ifndef CFB_WIND
 	call exchange_r2d_tile(1,Lm,1,Mm,
      &                         wspdg(START_2D_ARRAY,iblkrec))
 #   endif
