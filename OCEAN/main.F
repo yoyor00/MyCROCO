@@ -275,11 +275,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (nrrec.ne.0) then           ! read from NetCDF file
         call get_initial
       endif
+
 #endif
 #ifdef USE_CALENDAR
       !calcul of start times and ntimes
-      !set run_start_date if not read in init
-      if (time .eq. 0.0) time=tool_datosec(run_start_date) 
+#ifndef ANA_INITIAL
+      !if no init file set the start_date from croco.in
+      time=tool_datosec(run_start_date)
+#endif
       time_end=tool_datosec(run_end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
@@ -745,10 +748,7 @@ CR      write(*,*) '  0' MYID
 
       do iicroot=ntstart,ntimes+1
 #ifdef USE_CALENDAR 
-        !MPI_master_only write(*,'(a)') "debut boucle en temps"
-        !MPI_master_only write(*,'(a)') tool_sectodat(time)
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        !MPI_master_only write(*,'(a)') tool_sectodat(time_end)
         if(time > time_end) goto 99 
 #endif
 
@@ -772,13 +772,6 @@ CR      write(*,*) '  0' MYID
         enddo
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
-#ifdef USE_CALENDAR 
-        !MPI_master_only write(*,'(a)') "fin boucle en temps"
-        !MPI_master_only write(*,'(a)') tool_sectodat(time)
-        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        !MPI_master_only write(*,'(a)') tool_sectodat(time_end)
-        if(time > time_end) goto 99 
-#endif
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:

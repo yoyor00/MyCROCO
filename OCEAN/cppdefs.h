@@ -286,7 +286,6 @@
                       /* Bottom Forcing */
 # define ANA_BSFLUX
 # define ANA_BTFLUX
-# undef z0_mars
                       /* Point Sources - Rivers */
 # undef PSOURCE
 # undef PSOURCE_NCFILE
@@ -296,8 +295,11 @@
                       /* Open Boundary Conditions */
 # ifdef TIDES
 #  define SSH_TIDES
-#  undef UV_TIDES
-#  undef TIDES_MAS
+#  define  UV_TIDES
+#  define TIDES_MAS
+#  ifdef TIDES_MAS
+#   undef TIDES_MAS_DBG
+#  endif
 #  undef  POT_TIDES
 #  define TIDERAMP
 # endif

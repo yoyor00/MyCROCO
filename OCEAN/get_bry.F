@@ -441,11 +441,10 @@
 # include "grid.h"
 # include "scalars.h"
 # include "boundary.h"
-!
-# include "compute_extended_bounds.h"
 #  ifdef OBC_PATM
 #   include "forces.h"
 #  endif
+# include "compute_extended_bounds.h"
 
       it1=3-itbry
       it2=itbry

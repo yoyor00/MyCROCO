@@ -1534,7 +1534,8 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxTke),  wrtavg(indxGls)
      &                    ,  wrtavg(indxLsc)       
-        if (wrtavg(indxTke) .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
+        if ( wrtavg(indxAkk) .or. wrtavg(indxAkp) .or. wrtavg(indxTke)
+     &                       .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
      &     ) wrtavg(indxTime)=.true.
 
         MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
