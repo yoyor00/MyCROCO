@@ -189,6 +189,36 @@
       integer ntsdiaM_avg, nwrtdiaM_avg
 # endif
 #endif
+# ifdef DIAGNOSTICS_VRT
+      integer nwrtdiags_vrt
+#ifdef AVERAGES
+      integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
+#endif
+#endif
+# ifdef DIAGNOSTICS_EK
+      integer nwrtdiags_ek
+#ifdef AVERAGES
+      integer ntsdiags_ek_avg, nwrtdiags_ek_avg
+#endif
+#endif
+# ifdef DIAGNOSTICS_PV
+      integer nwrtdiags_pv
+#ifdef AVERAGES
+      integer ntsdiags_pv_avg, nwrtdiags_pv_avg
+#endif
+#endif
+# ifdef DIAGNOSTICS_EDDY
+      integer nwrtdiags_eddy
+#ifdef AVERAGES
+      integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
+#endif
+#endif
+#ifdef OUTPUTS_SURFACE
+      integer nwrtsurf
+#ifdef AVERAGES
+      integer ntssurf_avg, nwrtsurf_avg
+#endif
+#endif
 #ifdef DIAGNOSTICS_BIO
       integer nwrtdiabio
 # ifdef AVERAGES
@@ -222,6 +252,36 @@
       logical ldefdiaM
 # ifdef AVERAGES
       logical ldefdiaM_avg
+# endif
+#endif
+#if defined DIAGNOSTICS_VRT
+      logical ldefdiags_vrt
+# ifdef AVERAGES
+      logical ldefdiags_vrt_avg
+# endif
+#endif
+#if defined DIAGNOSTICS_EK
+      logical ldefdiags_ek
+# ifdef AVERAGES
+      logical ldefdiags_ek_avg
+# endif
+#endif
+#if defined DIAGNOSTICS_PV
+      logical ldefdiags_pv
+# ifdef AVERAGES
+      logical ldefdiags_pv_avg
+# endif
+#endif
+#if defined DIAGNOSTICS_EDDY
+      logical ldefdiags_eddy
+# ifdef AVERAGES
+      logical ldefdiags_eddy_avg
+# endif
+#endif
+#ifdef OUTPUTS_SURFACE
+      logical ldefsurf
+# ifdef AVERAGES
+      logical ldefsurf_avg
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
@@ -301,6 +361,46 @@
      &                      , nwrtdiaM_avg
      &                      , ntsdiaM_avg
 # endif
+#endif
+# ifdef DIAGNOSTICS_VRT
+     &                      , ldefdiags_vrt, nwrtdiags_vrt
+#ifdef AVERAGES
+     &                      , ldefdiags_vrt_avg
+     &                      , nwrtdiags_vrt_avg
+     &                      , ntsdiags_vrt_avg
+#endif
+#endif
+# ifdef DIAGNOSTICS_EK
+     &                      , ldefdiags_ek, nwrtdiags_ek
+#ifdef AVERAGES
+     &                      , ldefdiags_ek_avg
+     &                      , nwrtdiags_ek_avg
+     &                      , ntsdiags_ek_avg
+#endif
+#endif
+# ifdef DIAGNOSTICS_PV
+     &                      , ldefdiags_pv, nwrtdiags_pv
+#ifdef AVERAGES
+     &                      , ldefdiags_pv_avg
+     &                      , nwrtdiags_pv_avg
+     &                      , ntsdiags_pv_avg
+#endif
+#endif
+# ifdef DIAGNOSTICS_EDDY
+     &                      , ldefdiags_eddy, nwrtdiags_eddy
+#ifdef AVERAGES
+     &                      , ldefdiags_eddy_avg
+     &                      , nwrtdiags_eddy_avg
+     &                      , ntsdiags_eddy_avg
+#endif
+#endif
+#ifdef OUTPUTS_SURFACE
+     &                      , ldefsurf, nwrtsurf
+#ifdef AVERAGES
+     &                      , ldefsurf_avg
+     &                      , nwrtsurf_avg
+     &                      , ntssurf_avg
+#endif
 #endif
 #ifdef DIAGNOSTICS_BIO
      &                      , ldefdiabio, nwrtdiabio

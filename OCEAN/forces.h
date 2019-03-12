@@ -205,6 +205,11 @@
       real dqdt(GLOBAL_2D_ARRAY)
       common /forces_dqdt/dqdt 
 #  endif
+# ifdef SFLX_CORR_COEF
+! value of nudging for surface salinity correction (in days)
+      real dSdt
+      parameter (dSdt=30.0)
+# endif
 #  ifndef ANA_SSS
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
@@ -629,5 +634,20 @@
 #   endif
 # endif /* WAVE_OFFLINE */
 #endif /* BBL || MRL_WCI */
+
+#ifdef WAVE_MAKER
+      integer Nfrq, Ndir
+      parameter (Nfrq=250, Ndir=50)
+      real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
+      real wd_bry(Ndir), wa_bry_d(Ndir)
+      common /wave_maker/ wf_bry, wk_bry, wa_bry,
+     &                    wd_bry, wa_bry_d
+# ifdef WAVE_MAKER_DSPREAD
+      real wpha_bry(Nfrq,Ndir)
+# else
+      real wpha_bry(Nfrq)
+# endif
+      common /wave_maker_pha/ wpha_bry
+#endif
 
 

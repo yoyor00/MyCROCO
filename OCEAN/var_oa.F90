@@ -50,11 +50,9 @@
       use module_oa_level
 !     use module_oa_upd
 !     use module_nrj
+      use scalars
 
       implicit none
-
-# include "param_F90.h"
-# include "scalars_F90.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"

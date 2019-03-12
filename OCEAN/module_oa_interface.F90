@@ -2651,10 +2651,9 @@ CONTAINS
       use module_oa_periode
       use module_oa_stock
 !      use module_oa_upd
+      use scalars
 
       implicit none
-#include "param_F90.h"
-#include "scalars_F90.h"
 
       integer, intent(in) :: ichoix
 
@@ -3603,11 +3602,9 @@ CONTAINS
       use module_oa_stock     !wf_oa, tallocated_oa
       use module_oa_level
 !      use module_oa_upd      !var3d_oa
+      use scalars
 
       implicit none
-
-#include "param_F90.h"
-#include "scalars_F90.h"
  
 !TODO intent(in)
       integer                                                         &
@@ -4365,11 +4362,8 @@ CONTAINS
       use module_oa_periode
       use module_oa_stock
 !      use module_oa_upd
-
+      use scalars
       implicit none
-   
-#include "param_F90.h"
-#include "scalars_F90.h"
  
       integer, intent(in) :: ichoix
       integer, intent(in) :: i1_h, i2_h, i3_h, i4_h

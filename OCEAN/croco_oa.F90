@@ -11,10 +11,8 @@
 !      use module_nbq
 !#endif
       use module_interface_oa
-
+      use scalars
       implicit none
-# include "param_F90.h"
-# include "scalars_F90.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
