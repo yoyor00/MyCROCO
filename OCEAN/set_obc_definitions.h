@@ -215,6 +215,7 @@
 #  endif
 #  ifdef AGRIF_OBC_NBQSPECIFIED
 #   define OBC_COM_NBQSPECIFIED
+#   define OBC_COM_WSPECIFIED
 #  endif
 #  ifdef AGRIF_OBC_NBQORLANSKI
 #   define OBC_COM_NBQORLANSKI
