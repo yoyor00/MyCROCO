@@ -248,7 +248,7 @@
 # elif defined CFB_STRESS2
       ! setup coupling coeff: sustr+(stau)Uo
       ! with stau = cfb_slope2*Stress + cfb_offset2
-      real fb_slope2, cfb_offset2
+      real cfb_slope2, cfb_offset2
       parameter (cfb_slope2=0.056)
       parameter (cfb_offset2=0.0025)
 # elif defined CFB_WIND

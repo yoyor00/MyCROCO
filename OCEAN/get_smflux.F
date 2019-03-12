@@ -14,7 +14,6 @@
                               ! Read point or grided surface momentum
       subroutine get_smflux   ! flux (wind stress) at the appropriate
                               ! time from forcing netCDF file. 
-# define SMFLUX_DATA
       implicit none
 # include "param.h"
 # include "scalars.h"

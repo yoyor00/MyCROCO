@@ -80,47 +80,48 @@
 !  Compute kinematic, surface wind stress (m2/s2).
 !--------------------------------------------------------------
 !
-!     sustr = sustr+stau.Uo where stau=slope_cfd*Ua+offset_cfb 
+!     sustr = sustr+stau.Uo where stau=cfb_slope*Ua+cfb_offset 
 !     same for svstr
 !
       do j=jmin,jmax
         do i=imin+1,imax
-#  ifdef CFB_STRESS
-          cff=slope_cfb*0.5*(wspd(i,j)+wspd(i+1,j))+offset_cfb
-#  else /* CFB_STRESS2 case
+# ifdef CFB_STRESS
+          cff=cfb_slope*0.5*(wspd(i,j)+wspd(i+1,j))+cfb_offset
+# else 
+! CFB_STRESS2 case
           cff3=0.25*(svstr(i-1,j)+svstr(i,j)+svstr(i-1,j+1)+svstr(i,j+1))
           cff2=sqrt(sustr(i,j)**2+cff3**2)
-          cff=slope_cfb2*cff2+offset_cfb2
-#  endif
+          cff=cfb_slope2*cff2+cfb_offset2
+# endif
           sustr(i,j)=sustr(i,j)+cff*u(i,j,N,nrhs)
-#  ifdef MASKING
+# ifdef MASKING
           sustr(i,j)=sustr(i,j)*umask(i,j)
-#  endif
-#  ifdef WET_DRY
+# endif
+# ifdef WET_DRY
           sustr(i,j)=sustr(i,j)*umask_wet(i,j)
-#  endif
+# endif
         enddo
       enddo
 !
       do j=jmin+1,jmax
         do i=imin,imax
-#  ifdef CFB_STRESS
-          cff=slope_cfb*0.5*(wspd(i,j)+wspd(i,j+1))+offset_cfb
-#  else /* CFB_STRESS2 case
+# ifdef CFB_STRESS
+          cff=cfb_slope*0.5*(wspd(i,j)+wspd(i,j+1))+cfb_offset
+# else 
+! CFB_STRESS2 case
           cff3=0.25*(sustr(i,j-1)+sustr(i,j)+sustr(i+1,j-1)+sustr(i+1,j))
           cff2=sqrt(svstr(i,j)**2+cff3**2)
-          cff=slope_cfb2*cff2+offset_cfb2
-#  endif
+          cff=cfb_slope2*cff2+cfb_offset2
+# endif
           svstr(i,j)=svstr(i,j)+cff*v(i,j,N,nrhs)
-#  ifdef MASKING
+# ifdef MASKING
           svstr(i,j)=svstr(i,j)*vmask(i,j)
-#  endif
-#  ifdef WET_DRY
+# endif
+# ifdef WET_DRY
           svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
-#  endif
+# endif
         enddo
       enddo
-# endif
 
       return
       end

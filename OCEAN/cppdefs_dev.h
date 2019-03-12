@@ -531,9 +531,9 @@
 ======================================================================
 */
 #ifdef CFB
- #define CFB_STRESS
- #undef  CFB_STRESS2
- #undef  CFB_WIND
+# define CFB_STRESS
+# undef  CFB_STRESS2
+# undef  CFB_WIND
 #endif
 
 /*

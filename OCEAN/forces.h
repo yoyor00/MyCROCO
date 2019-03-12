@@ -51,9 +51,12 @@
       real wspdg(GLOBAL_2D_ARRAY,2)
       common /smsdat_wspdg/wspdg
       real    wspdp(2)
+      common /smsdat2_wspd/ wspdp
+      real wspd(GLOBAL_2D_ARRAY)
+      common /smsdat_wspd/ wspd
+# endif
       integer lwgrd, wid
       common /smsdat5/ lwgrd, wid
-# endif
 #endif /* !ANA_SMFLUX */
 !
 !  BOTTOM MOMENTUM FLUX:
