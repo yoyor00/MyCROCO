@@ -65,7 +65,7 @@
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  OA_GRID_UV
+# undef  CFB
 #endif
 
 /* 
@@ -556,6 +556,17 @@
 # ifdef ONLINE
 #  define CUBIC_INTERP
 # endif
+#endif
+
+/*
+======================================================================
+    Current feedback option
+======================================================================
+*/
+#ifdef CFB
+# define CFB_STRESS
+# undef  CFB_STRESS2
+# undef  CFB_WIND
 #endif
 
 /*

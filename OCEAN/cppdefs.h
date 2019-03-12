@@ -196,13 +196,13 @@
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
 #  undef  ERA_ECMWF
-#  undef  RELATIVE_WIND
 # else
 #  define QCORRECTION
 #  define SFLX_CORR
 #  undef SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
+# define CFB
 # undef SEA_ICE_NOFLUX /* no flux under sea ice */
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
