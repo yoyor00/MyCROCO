@@ -17,7 +17,7 @@
 
 #include "cppdefs.h"
 #include "param.h" 
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 
       !!-------------------------------------------------------------------
       !!             ***  ROUTINE cpl_prism_init  ***
