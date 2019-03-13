@@ -87,7 +87,7 @@
       jmax=jend+1
 # endif
 !
-# if defined UV_VIS2 && defined GLS_MIX2017_3D
+# if defined UV_VIS2 && defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
 ! 
@@ -236,7 +236,7 @@
      &                                       *pm(i,j)*pn(i,j)
      &                                   *Hz(i,j,k)*Hz(i,j,k)
 #   if !defined LMD_MIXING && !defined BVF_MIXING && \
-       !defined GLS_MIX2017 && !defined GLS_MIXING
+                           && !defined GLS_MIXING
      &                                              + Akv_bak
 #   endif
 !
@@ -487,9 +487,9 @@
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
       real cff, surf, defrate, horcon
 # if defined TS_DIF_SMAGO && (defined UV_VIS_SMAGO_3D ||\
-                              defined GLS_MIX2017_3D)
+                              defined GLS_MIXING_3D)
       real Pr
-      parameter (horcon=0.003, Pr=0.3)  ! --> LES SGS model
+      parameter (horcon=0.05, Pr=0.3)  ! --> LES SGS model
 # else
 #  ifdef TS_HADV_C6
       parameter (horcon=1./20.)  ! --> RSUP5
@@ -505,7 +505,7 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-# if defined GLS_MIX2017_3D
+# if defined GLS_MIXING_3D
 !---------------------------------------------------------------
 !  GLS horizontal viscosity at RHO points
 ! 
@@ -553,7 +553,7 @@
 !
 ! Boundary conditions
 !
-# if defined TS_VIS_SMAGO || defined GLS_MIX2017_3D
+# if defined GLS_MIXING_3D || defined TS_DIF_SMAGO
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
@@ -612,7 +612,7 @@
 # endif /* TS_HADV_RSUP3 */
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#  if defined TS_VIS_SMAGO || defined GLS_MIX2017_3D
+#  ifdef TS_DIF_SMAGO
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,diff3d_r)
 #  endif
 #  if defined TS_HADV_RSUP3 || defined TS_HADV_RSUP5

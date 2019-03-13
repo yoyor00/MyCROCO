@@ -115,6 +115,11 @@
       call init_auto_tiling
 #endif
 !
+!  Initialize debug procedure
+!
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+       call debug_ini
+#endif
 !
 !  Setup MPI domain decomposition
 !
@@ -122,11 +127,6 @@
 !     start_time1=PMPI_Wtime()
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100        !--> ERROR
-#endif
-!  Initialize debug procedure
-!
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
-       call debug_ini
 #endif
 !
 #define CR  !
@@ -147,20 +147,14 @@
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
 !
-!  Generic Length Scale (GLS) model parameters
-!
 #ifdef SOLVE3D
-# ifdef GLS_MIXING
-      call init_gls (ierr)
-# endif
-
 !
 !  PISCES biogeochemeical model parameters
 !
-#if defined BIOLOGY && defined PISCES
+# if defined BIOLOGY && defined PISCES
       CALL trc_nam_pisces
       CALL trc_sbc_pisces
-#endif
+# endif
 !
 !
 !  Read sediment initial values and parameters from sediment.in file

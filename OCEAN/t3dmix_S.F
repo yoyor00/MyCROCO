@@ -492,7 +492,7 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#   ifdef LMD_SKPP
+#   if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
 #   else

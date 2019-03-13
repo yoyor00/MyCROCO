@@ -412,9 +412,6 @@ C$OMP BARRIER
 #  endif
 # endif
         call pre_step3d (tile)
-# ifdef GLS_MIXING
-        call gls_prestep (tile)
-# endif
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
           call uv3dpremix (tile)
@@ -909,10 +906,7 @@ C$OMP BARRIER
         call omega (tile)
 
 # ifdef GLS_MIXING
-        call step3d_gls  (tile)
-# endif
-# ifdef GLS_MIX2017
-        call gls_mix2017 (tile)
+        call gls_mixing (tile)
 # endif
         call step3d_t (tile)
 # ifdef SEDIMENT

@@ -227,7 +227,7 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 !
 !     Brunt vaisala frequency.
 !
@@ -321,7 +321,7 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
 #    endif /* SALINITY */
 #  endif  /* AVERAGES_K */
 
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
@@ -344,7 +344,7 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
 CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 # endif
 
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     

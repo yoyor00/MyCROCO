@@ -1384,7 +1384,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
 
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                         '
       vname(2,indxbvf)='Brunt Vaisala Frequency                     '
@@ -1456,7 +1456,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxAks =',indxAks
       vname(6,indxAks)='lat_rho lon_rho                           '
       vname(7,indxAks)='                                          '
 # endif
-# ifdef LMD_SKPP  
+# if defined LMD_SKPP || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxHbl =',indxHbl
       vname(1,indxHbl)='hbl                                       '
       vname(2,indxHbl)='depth of planetary boundary layer         '
@@ -1477,7 +1477,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxHbbl =',indxHbbl
       vname(6,indxHbbl)='lat_rho lon_rho                          '
       vname(7,indxHbbl)='                                         '
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxTke =',indxTke   
       vname(1,indxTke)='tke                                       '
       vname(2,indxTke)='turbulent kinetic energy                  '

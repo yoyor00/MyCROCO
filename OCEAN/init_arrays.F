@@ -297,7 +297,7 @@ C$    integer omp_get_thread_num
             omega_avg(i,j,k)=init
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
             bvf_avg(i,j,k)=init
 # endif
 # endif
@@ -1205,21 +1205,21 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
 # if defined BVF_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIX2017 || defined GLS_MIXING
+      || defined GLS_MIXING
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
@@ -1229,10 +1229,6 @@ C$    integer omp_get_thread_num
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=init
 #  endif
-# endif
-# ifdef GLS_MIXING
-              Akk(i,j,k)=Akk_bak
-              Akp(i,j,k)=Akp_bak
 # endif
           enddo
         enddo
@@ -1247,18 +1243,18 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
 !
 !  Initialize depth of surface boundary layer.
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-#ifdef LMD_SKPP2005
+#  ifdef LMD_SKPP2005
           hbls(i,j,1)=init          
           hbls(i,j,2)=init 
-#else        
+#  else        
           hbl(i,j)=init
-#endif         
+#  endif         
           kbl(i,j)=init
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
@@ -1312,10 +1308,8 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            tke(i,j,k,1)=gls_Kmin
-            tke(i,j,k,2)=gls_Kmin
-            gls(i,j,k,1)=gls_Pmin
-            gls(i,j,k,2)=gls_Pmin
+            trb(i,j,k,nstp,itke)=init 
+            trb(i,j,k,nstp,igls)=init        
             Lscale(i,j,k)=init
           enddo
         enddo

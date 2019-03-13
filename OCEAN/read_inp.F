@@ -1074,7 +1074,7 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &                                          ,  wrthis(indxHbl)
 # else 
      &                                          ,  dumboolean
@@ -1138,7 +1138,7 @@ c        close(testunit)
 # ifdef DIF_COEF_3D
      &                                        .or. wrthis(indxDiff)
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &                                        .or. wrthis(indxHbl)
 # endif
 # ifdef LMD_BKPP
@@ -1192,9 +1192,9 @@ c        close(testunit)
 # ifdef DIF_COEF_3D
      &  , wrthis(indxDiff),  'write Visc3d', 'Horizontal diffusivity.'
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &  , wrthis(indxHbl),  'write Hbl  ',
-     &                      'Depth of KPP-model boundary layer.'
+     &                      'Depth of model boundary layer.'
 # endif
 # ifdef LMD_BKPP
      &  , wrthis(indxHbbl), 'write Hbbl  ',
@@ -1248,7 +1248,7 @@ c        close(testunit)
 !
 ! Switches for GLS fields to be saved into history file.
 !
-#if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
       elseif (keyword(1:kwlen).eq.'gls_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrthis(indxTke),  wrthis(indxGls)
@@ -1310,7 +1310,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &                                          ,  wrtavg(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1325,7 +1325,7 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &                                          ,  wrtavg(indxHbl)
 # else 
      &                                          ,  dumboolean
@@ -1382,7 +1382,7 @@ c        close(testunit)
 #  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &                                        .or. wrtavg(indxbvf)
 # endif
 # ifdef VIS_COEF_3D
@@ -1391,7 +1391,7 @@ c        close(testunit)
 # ifdef DIF_COEF_3D
      &                                        .or. wrtavg(indxDiff)
 # endif
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
      &                                        .or. wrtavg(indxHbl)
 #  endif
 #  ifdef LMD_BKPP
@@ -1443,7 +1443,7 @@ c        close(testunit)
 #  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
 #  endif
@@ -1453,9 +1453,9 @@ c        close(testunit)
 #  ifdef DIF_COEF_3D
      &  , wrtavg(indxDiff),'write diff3d', 'Horizontal diffusivity'
 #  endif
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
      &  , wrtavg(indxHbl),  'write Hbl  ',
-     &                          'Depth of KPP-model boundary layer'
+     &                          'Depth of model boundary layer'
 #  endif
 #  ifdef LMD_BKPP
      &  , wrtavg(indxHbbl),  'write Hbbl  ',
@@ -1510,7 +1510,7 @@ c        close(testunit)
 !
 ! Switches for GLS fields to be saved into history file.
 !
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
       elseif (keyword(1:kwlen).eq.'gls_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxTke),  wrtavg(indxGls)
@@ -1525,7 +1525,6 @@ c        close(testunit)
      &   , wrtavg(indxLsc), 'write Lscale ', 
      &                                  'vertical mixing length scale.'
 #  endif
-
 # endif /* SOLVE3D */
 #endif /* AVERAGES */
 
@@ -1996,7 +1995,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIX2017 && !defined GLS_MIXING
+     !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !

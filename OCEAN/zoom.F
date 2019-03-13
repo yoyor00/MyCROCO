@@ -289,13 +289,7 @@
 !
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
-!
-!  Generic Length Scale (GLS) model parameters
-!
 # ifdef SOLVE3D
-#  ifdef GLS_MIXING
-      call init_gls (ierr)
-#  endif
 !
 !  PISCES biogeochemeical model parameters
 !

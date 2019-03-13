@@ -693,7 +693,7 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
 # endif
 
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
@@ -719,16 +719,12 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# if defined GLS_MIX2017 || defined GLS_MIXING
+# ifdef GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     
       if (wrthis(indxTke)) then
-#ifdef GLS_MIXING
-         work=tke(:,:,:,nstp)
-#else
          work=trb(:,:,:,nstp,itke)       
-#endif
          call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
@@ -737,11 +733,7 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
 !     Write out generic length scale
 !     
       if (wrthis(indxGls)) then
-#ifdef GLS_MIXING
-         work=gls(:,:,:,nstp)
-#else
          work=trb(:,:,:,nstp,igls) 
-#endif
          call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID

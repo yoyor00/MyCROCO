@@ -410,7 +410,7 @@
       parameter (Agrif_lev_sedim=0)
 # endif
 
-# ifdef GLS_MIX2017
+# ifdef GLS_MIXING
       integer NGLS
       parameter(NGLS=2)
       integer itke

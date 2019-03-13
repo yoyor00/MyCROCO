@@ -36,7 +36,7 @@
       real rho_avg(GLOBAL_2D_ARRAY,N)
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
 # endif
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
@@ -45,13 +45,13 @@
      &       /avg_rho/rho_avg /avg_omega/omega_avg
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &       /avg_bvf/bvf_avg
 # endif
      &       /avg_w/w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
       real hbl_avg(GLOBAL_2D_ARRAY)
       common /avg_hbl/hbl_avg
 #  endif
@@ -59,7 +59,7 @@
       real hbbl_avg(GLOBAL_2D_ARRAY)
       common /avg_hbbl/hbbl_avg
 #  endif
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
       real tke_avg(GLOBAL_2D_ARRAY,0:N)
       real gls_avg(GLOBAL_2D_ARRAY,0:N)
       real Lscale_avg(GLOBAL_2D_ARRAY,0:N)
@@ -116,11 +116,6 @@
       real Akv_avg(GLOBAL_2D_ARRAY,0:N)
       real Akt_avg(GLOBAL_2D_ARRAY,0:N,2)
       common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
-#   ifdef GLS_MIXING
-      real Akk_avg(GLOBAL_2D_ARRAY,0:N)
-      real Akp_avg(GLOBAL_2D_ARRAY,0:N)
-      common /avg_Akk/Akk_avg /avg_Akp/Akp_avg
-#   endif
 #  endif
 # endif
 # ifdef WKB_WWAVE

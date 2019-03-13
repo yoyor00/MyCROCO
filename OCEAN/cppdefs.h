@@ -152,8 +152,6 @@
 # undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
-# undef  GLS_MIX2017  /* <--- Warning: option still under testing */
-
 # ifdef LMD_MIXING
 #  define LMD_SKPP
 #  define LMD_BKPP
@@ -162,28 +160,6 @@
 #  undef  LMD_DDMIX
 #  define LMD_NONLOCAL
 #  undef  MLCONVEC
-# endif
-# ifdef GLS_MIXING
-#  define GLS_KKL
-#  undef  GLS_KOMEGA
-#  undef  GLS_KEPSILON
-#  undef  GLS_GEN
-#  undef  KANTHA_CLAYSON
-#  undef  CRAIG_BANNER
-#  undef  CANUTO_A
-#  undef  ZOS_HSIG
-# endif
-# ifdef GLS_MIX2017
-#  undef  GLS_KOMEGA
-#  define GLS_KEPSILON
-#  undef  GLS_GEN
-#  define CANUTO_A
-#  undef  GibLau_78
-#  undef  MelYam_82
-#  undef  KanCla_94
-#  undef  Luyten_96
-#  undef  CANUTO_B 
-#  undef  Cheng_02
 # endif
                       /* Surface Forcing */
 # undef BULK_FLUX
@@ -492,14 +468,12 @@
 #  define SALINITY
 #  define NONLIN_EOS
 #  define LMD_MIXING
+#  undef  GLS_MIXING
 #  ifdef LMD_MIXING
 #   define LMD_SKPP
 #   define LMD_BKPP
 #   define LMD_RIMIX
 #   define LMD_CONVEC
-#  else
-#   define GLS_MIXING
-#   define GLS_KKL
 #  endif
 # endif
 # define NO_FRCFILE
@@ -764,7 +738,7 @@
 # define TS_HADV_UP3
 # define SPONGE
 # undef  LMD_MIXING
-# define GLS_MIX2017
+# define GLS_MIXING
 # ifdef LMD_MIXING
 #  define LMD_SKPP
 #  define LMD_BKPP
@@ -773,18 +747,6 @@
 #  undef  LMD_DDMIX
 #  define LMD_NONLOCAL
 #  undef  MLCONVEC
-# endif
-# ifdef GLS_MIX2017
-#  undef  GLS_KOMEGA
-#  define GLS_KEPSILON
-#  undef  GLS_GEN
-#  define CANUTO_A
-#  undef  GibLau_78
-#  undef  MelYam_82
-#  undef  KanCla_94
-#  undef  Luyten_96
-#  undef  CANUTO_B
-#  undef  Cheng_02
 # endif
 # define NO_FRCFILE
 
@@ -991,20 +953,7 @@
 # define LMD_SKPP
 # define LMD_BKPP
 # define LMD_VMIX_SWASH
-# undef  GLS_MIX2017
-# ifdef GLS_MIX2017
-#  undef  GLS_KOMEGA
-#  define GLS_KEPSILON
-#  undef  GLS_GEN
-#  define CANUTO_A
-#  undef GibLau_78
-#  undef MelYam_82
-#  undef KanCla_94
-#  undef Luyten_96
-#  undef CANUTO_B 
-#  undef Cheng_02
-# endif
-
+# undef  GLS_MIXING
 # define BBL
 # define SEDIMENT
 # ifdef SEDIMENT
@@ -1122,7 +1071,7 @@
 # define UV_VADV_WENO5
 # define W_HADV_WENO5
 # define W_VADV_WENO5
-# define GLS_MIX2017_3D 
+# define GLS_MIXING_3D 
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1372,7 +1321,7 @@
 # define SPONGE
 # undef  LMD_MIXING
 # undef  LMD_BKPP
-# undef  GLS_MIX2017
+# undef  GLS_MIXING
 # undef  ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
