@@ -14,7 +14,6 @@
                               ! Read point or grided surface momentum
       subroutine get_smflux   ! flux (wind stress) at the appropriate
                               ! time from forcing netCDF file. 
-# define SMFLUX_DATA
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -81,6 +80,25 @@ c**        call opencdf (frcname,N)
           write(stdout,3) vname(1,indxSVSTR)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+
+#  if defined CFB && defined CFB_STRESS 
+        lvar=lenstr(vname(1,indxWSPD))
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWSPD)(1:lvar),wid)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_inq_varndims (ncidfrc, wid, i)
+          if (ierr. eq. nf_noerr) then
+            if (i.gt.1) then
+              lwgrd=1
+            else
+              lwgrd=0
+            endif
+          endif
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,3) vname(1,indxWSPD)(1:lvar),frcname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+#  endif
 !
 ! Determine whether there is cycling to reuse the input data and
 ! what is cycling period "sms_cycle", find initial cycling index
@@ -141,6 +159,19 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'svstr', sms_rec 
           goto 99                                         !--> ERROR
         endif
+
+#  if defined CFB && defined CFB_STRESS 
+        if (lwgrd.eq.1) then
+          ierr=nf_fread(wspdg(START_2D_ARRAY,i), ncidfrc, wid,
+     &                                              sms_rec, r2dvar)
+        else
+          ierr=nf_get_var1_FTYPE(ncidfrc,wid,sms_rec,wspdp(i))
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,6) 'wspd', sms_rec
+          goto 99                                         !--> ERROR
+        endif
+#  endif
        itsms=i
        MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
      &              'GET_SMFLUX --',
@@ -231,6 +262,22 @@ c**        call opencdf (frcname,N)
               enddo
             enddo
           endif
+#  if defined CFB && defined CFB_STRESS 
+          if (lwgrd.eq.1) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                wspd(i,j)=sms_scale*wspdg(i,j,itsms)
+              enddo
+            enddo
+          else
+            cff=sms_scale*wspdp(itsms)
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                wspd(i,j)=cff
+              enddo
+            enddo
+          endif
+#  endif
         endif
 !
 ! Interpolate surface momentum stresses in time.
@@ -288,6 +335,23 @@ c**        call opencdf (frcname,N)
           enddo
 # endif /* SMFLUX_CURVGRID */
         endif 
+#  if defined CFB && defined CFB_STRESS 
+        if (lwgrd.eq.1) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              wspd(i,j)=cff1*wspdg(i,j,it1)
+     &                       +cff2*wspdg(i,j,it2)
+            enddo
+          enddo
+        else
+          cff=cff1*wspdp(it1)+cff2*wspdp(it2)
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              wspd(i,j)=cff
+            enddo
+          enddo
+        endif
+#  endif
 !
 ! Unable to set-up surface momentum stresses: Complain about the
 ! error and signal to quit (ONE THREAD ONLY).
