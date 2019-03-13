@@ -741,12 +741,9 @@ C$OMP END MASTER
 ! Interpolate zeta fields half-step backward (AM4) for the subsequent 
 ! computation of barotropic pressure-gradient
 !
-!      myalpha   = 0.01
-!      myepsilon = 0.00976186 - 0.13451357*myalpha
-!      mygamma   = 0.08344500 - 0.51358400*myalpha
-       myalpha   = 0.0
-       myepsilon = 0.013
-       mygamma   = 0.088
+      myalpha   = 0.25
+      myepsilon = 0.00976186 - 0.13451357*myalpha
+      mygamma   = 0.08344500 - 0.51358400*myalpha
 !
       if (FIRST_FAST_STEP) then
         cff0=0.                  !---> Compute pressure-gradient
