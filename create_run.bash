@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+# Update : Feb. 2019
 # G. Cambon : Sept. 2016
 #
 
@@ -15,16 +16,16 @@ cd -
 SOURCES_DIR=${CROCO_DIR}'/croco/'
 TOOLS_DIR=${CROCO_DIR}'/croco_tools/'
 #
-MY_CONFIG_PATH=${CROCO_DIR}'/CONFIGS/'
+MY_CONFIG_PATH=${CROCO_DIR}
 #
 # Name of the configuration directory defined by the user
 #
-MY_CONFIG_NAME='BENGUELA_LR'
+MY_CONFIG_NAME='Run_BENGUELA_LR'
 #
 #
 # END USER SECTION
 #==========================================================================================
-
+set -x
 
 while getopts :h V
 do
@@ -33,7 +34,7 @@ do
     echo " Script to setup your own croco configuration.";
     echo " ";
     echo " What is does :";
-    echo " - Copy the original croco/Run with cppdefs.h, param.h and *.in files needed";
+    echo " - Copy the original croco/OCEAN cppdefs.h, param.h and *.in files needed";
     echo " - Copy the original crocotools_param.m and start.m file from croco_tools/";
     echo " - Copy the original run_croco*.bash file from croco_tools/Pluriannual_scripts/";
     echo "";
@@ -119,9 +120,9 @@ if [[ $copy_tag == 1 ]] ; then
     cp -Rf $SOURCES_DIR/$DIRO/README_XIOS .
 
     # TEST_CASE + NAMELIST_OANALYSIS
-    cp -Rf $SOURCES_DIR/Run/TEST_CASES .
-    cp -Rf $SOURCES_DIR/Run/NAMELIST_OANALYSIS .
-    cp -Rf $SOURCES_DIR/Run/Plurimonths_scripts/*.bash .
+    cp -Rf $SOURCES_DIR/TEST_CASES .
+    cp -Rf $SOURCES_DIR/SCRIPTS/NAMELIST_OANALYSIS .
+    cp -Rf $SOURCES_DIR/SCRIPTS/Plurimonths_scripts/*.bash .
     
     echo '=> Copy from '$SOURCES_DIR ' done'
     echo '         '
