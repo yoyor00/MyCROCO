@@ -16,6 +16,7 @@
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
+      real zob_temp
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -340,6 +341,13 @@
       ! write(stdout,*)'zob',
      !&  minval(zob),maxval(zob),minloc(zob),maxloc(zob)
        zob(:,:)=max(zob(:,:),1e-7)
+       zob_temp=max(zob(:,:))
+#ifdef MPI
+          if (NNODES.gt.1) then         ! Perform global max
+            call MPI_allreduce(zob_temp,zobt,1,
+     &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
+          endif
+# endif
 # else 
        zob(:,:)=zobt 
 # endif

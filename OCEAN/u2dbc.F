@@ -74,9 +74,7 @@ C$    integer omp_get_thread_num
 #include "grid.h"
 #include "ocean2d.h"
 #include "scalars.h"
-#ifdef OBC_REDUCED_PHYSICS
-#  include "forces.h"
-#endif
+#include "forces.h"
 #include "zoom.h"
 #ifdef NBQ
 # include "nbq.h"
