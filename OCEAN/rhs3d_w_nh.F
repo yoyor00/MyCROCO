@@ -311,7 +311,38 @@
         ENDDO
 
         DO j=Jstr,Jend
-          DO i=Istr,Iend+1
+          ! wz(i-2,..) out of bounds
+          i = Istr
+            if (k==0) then
+              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
+            elseif (k==N) then
+              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
+            else
+              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
+     &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
+            endif
+            cff = Huon_w(i,j,k)
+            cu = pn_u(i,j)*cdt*cff
+     &           /Hzw(i,k)*pm(i,j)
+
+            rrp= (wz(i+1,j,k,nstp)-wz(i  ,j,k,nstp))
+#   ifdef MASKING
+     &                                 *umask(i+1,j)
+#   endif
+            rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
+#   ifdef MASKING
+     &                                   *umask(i,j)
+#   endif
+            rrm= wz(i-1,j,k,nstp)
+#   ifdef MASKING
+     &                                 *umask(i-1,j)
+#   endif
+            cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
+     &                                        -ABS(cff)*rr)
+            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
+            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
+
+          DO i=Istr+1,Iend
             if (k==0) then
               Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
             elseif (k==N) then
@@ -341,6 +372,37 @@
             Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
             WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
           ENDDO
+          ! wz(i+1,.) out of bounds
+          i=Iend+1
+            if (k==0) then
+              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
+            elseif (k==N) then
+              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
+            else
+              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
+     &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
+            endif
+            cff = Huon_w(i,j,k)
+            cu = pn_u(i,j)*cdt*cff
+     &           /Hzw(i,k)*pm(i,j)
+
+            rrp= wz(i  ,j,k,nstp)
+#   ifdef MASKING
+     &                                 *0.0 ! *umask(i+1,j) out of bounds
+#   endif
+            rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
+#   ifdef MASKING
+     &                                   *umask(i,j)
+#   endif
+            rrm= (wz(i-1,j,k,nstp)-wz(i-2,j,k,nstp))
+#   ifdef MASKING
+     &                                 *umask(i-1,j)
+#   endif
+            cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
+     &                                        -ABS(cff)*rr)
+            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
+            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
+
         ENDDO
 !---
         DO j=jstr,jend+1
@@ -350,7 +412,40 @@
           ENDDO
         ENDDO 
 
-        DO j=JstrV-1,Jend+1
+        ! (wz(:,j-2)outof bounds
+        j=JstrV-1
+          DO i=Istr,Iend
+            if (k==0) then
+              Hzw(i,k) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
+            elseif (k==N) then
+              Hzw(i,k) = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
+            else
+              Hzw(i,k) = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
+     &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1))
+            endif
+            cff = Hvom_w(i,j,k)
+            cu = pm_v(i,j)*cdt*cff
+     &           /Hzw(i,k)*pn(i,j)
+
+            rrp= (wz(i,j+1,k,nstp)-wz(i,j  ,k,nstp))
+#   ifdef MASKING
+     &                                 *vmask(i,j+1)
+#   endif
+            rr = (wz(i,j  ,k,nstp)-wz(i,j-1,k,nstp))
+#   ifdef MASKING
+     &                                   *vmask(i,j)
+#   endif
+            rrm= wz(i,j-1,k,nstp)
+#   ifdef MASKING
+     &                                 *vmask(i,j-1)
+#   endif
+            cff1=0.5*(cff*(wz(i,j,k,nstp)+wz(i,j-1,k,nstp))
+     &                                        -ABS(cff)*rr)
+            Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
+            WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
+          ENDDO
+
+        DO j=JstrV,Jend+1
           DO i=Istr,Iend
             if (k==0) then
               Hzw(i,k) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
