@@ -204,7 +204,7 @@ ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix module*.F90 *.F90 *.F
+	./cross_matrix module*.F90 *.F90 *.F *.h
 
 mymodules: $(MOBJS) $(AMROBJS)
 #

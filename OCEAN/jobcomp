@@ -23,7 +23,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=../../croco/OCEAN
+SOURCE=../croco/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -103,13 +103,13 @@ do
 done
 
 [ ! -d $SCRDIR/AGRIF_FILES ] &&  mkdir $SCRDIR/AGRIF_FILES
-for file in $(ls ${AGRIF_SRC}/AGRIF_FILES/*.F90) $(ls ${AGRIF_SRC}/AGRIF_FILES/*.F) 
+for file in $(ls ${AGRIF_SRC}/AGRIF_FILES/*.F90) 
 do
   file1=$(basename $file) 
 #  echo $file1	
   if [ ! -f $file1 ]; then
 	  if [ -f $SCRDIR/AGRIF_FILES/${file1} ] ; then
-	    [ "1$(diff $file $SCRDIR/$file1)" != "1" ] && cp -f $file $SCRDIR/AGRIF_FILES 
+	    [ "1$(diff $file $SCRDIR/AGRIF_FILES/$file1)" != "1" ] && cp -f $file $SCRDIR/AGRIF_FILES 
 	  else
 	  	cp -f $file $SCRDIR/AGRIF_FILES 
 	  fi
