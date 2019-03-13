@@ -597,7 +597,7 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 # ifdef USE_CALENDAR
         read(input,*,err=95) ldefhis, dtout, nrpfhis
-        nwrt=(dtout*3600.)/dt 
+        nwrt=ceiling((dtout*3600.)/dt)
         MPI_master_only write(stdout,'(6x,A,f6.2,A)')
      &  'DT HIS =',dtout,'H'
 # else
