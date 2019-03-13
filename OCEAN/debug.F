@@ -12,14 +12,56 @@
 #include "cppdefs.h"
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 
+          module debug
+          integer nbprocs_in
+          integer,dimension(:),allocatable :: debug_procs_units
+          end module debug
 !
 !======================================================================
 !                    debug_ini
 !======================================================================
 !
           subroutine debug_ini()
+          USE debug
+#include "param.h"
+#include "scalars.h"
+          character(len=80) :: filename
+          character(len=80) :: tmp_string
+          integer :: nb
           
-          open(107,file="check_file",form='unformatted')
+          filename="check_file"
+#if !defined RVTK_DEBUG_WRITE
+          open(107,file="debug_infos",form="formatted",
+     &  status='OLD')
+            read(107,*)nbprocs_in
+          close(107)
+          allocate(debug_procs_units(0:nbprocs_in-1))
+          do nb = 0,nbprocs_in-1
+             write(filename,'(a11,i0,a1,i0)')
+     &    "check_file_",nbprocs_in,'_',nb
+            open(newunit=debug_procs_units(nb),
+     &           file=filename,form='unformatted',
+     &           status='OLD')
+          enddo
+#else
+#if defined MPI
+          if (mynode == 0) then
+          open(107,file="debug_infos",form="formatted")
+            write(107,*)NNODES
+          close(107)
+          endif
+          print *,'MYNODE = ',mynode
+          write(filename,'(a11,i0,a1,i0)')
+     &    "check_file_",NNODES,'_',mynode
+#else
+          open(107,file="debug_infos",form="formatted")
+            write(107,*)1
+          close(107)
+          write(filename,'(a14)')"check_file_1_0"
+#endif
+          open(107,file=filename,form='unformatted',
+     &            status='UNKNOWN')
+#endif
           return
 
           end subroutine debug_ini
@@ -29,7 +71,7 @@
 !======================================================================
 !
           subroutine check_tab2d(tab,comment,typevar)
-
+      USE debug
       implicit none
 # include "param.h"
 # include "scalars.h"  
@@ -44,7 +86,11 @@
       real,dimension(:,:),allocatable :: tabread
       character*(*) :: comment,typevar
       integer i0,j0,i,j,i1,j1,i2,j2
+#if !defined RVTK_DEBUG_WRITE
+      integer i1_r,i2_r,j1_r,j2_r,nb
+#endif
 # ifdef OPENMP
+#  undef mynode
       integer mynode 
 # endif         
       integer iseq1, iseq2, jseq1, jseq2
@@ -58,62 +104,39 @@
       mynode=0 
 # endif
 
-# if !defined MPI && !defined OPENMP
-      write(107)Lm,Mm
+!# if !defined MPI && !defined OPENMP
+#if defined RVTK_DEBUG_WRITE
+#include "debug_indices.h"
+#if defined MPI
+      i1 = i1 + iminmpi - 1
+      i2 = i2 + iminmpi - 1
+      j1 = j1 + jminmpi - 1
+      j2 = j2 + jminmpi - 1
+#endif
+      write(107)i1,i2,j1,j2
       write(107)lbound(tab)
+#if defined MPI
+     &  + (/iminmpi-1,jminmpi-1/)
+#endif
       write(107)ubound(tab)
+#if defined MPI
+     &  + (/iminmpi-1,jminmpi-1/)
+#endif
       write(107)tab
 # else
-      read(107)Lmseq,Mmseq
-      read(107)lb
-      read(107)ub
+      do nb = 0, nbprocs_in-1
+      read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
+      read(debug_procs_units(nb))lb
+      read(debug_procs_units(nb))ub
       allocate(tabread(lb(1):ub(1),lb(2):ub(2)))
-      read(107)tabread
+      read(debug_procs_units(nb))tabread
 
-      if (typevar == 'uint') then
-      i1=2
-#  ifdef MPI
-      if (WEST_INTER) i1=1
-#  endif
-      i2=Lmmpi
-      j1=1
-      j2=Mmmpi
-      elseif (typevar == 'u') then
-      i1=1
-      i2=Lmmpi+1
-      j1=0
-      j2=Mmmpi+1
-      endif
-      if (typevar == 'vint') then
-      i1=1
-      i2=Lmmpi
-      j1=2
-#  ifdef MPI
-      if (SOUTH_INTER) j1=1
-#  endif
-      j2=Mmmpi
-      elseif (typevar == 'v') then
-      i1=0
-      i2=Lmmpi+1      
-      j1=1
-      j2=Mmmpi+1
-      endif    
-      if (typevar == 'rint') then
-      i1=1
-      i2=Lmmpi
-      j1=1
-      j2=Mmmpi
-      elseif (typevar == 'r') then
-      i1=0
-      i2=Lmmpi+1
-      j1=0
-      j2=Mmmpi+1
-      endif          
+#include "debug_indices.h"
       
-      iseq1 = 0
-      iseq2 = Lmseq+1
-      jseq1 = 0
-      jseq2 = Mmseq+1
+      iseq1 = i1_r
+      iseq2 = i2_r
+      jseq1 = j1_r
+      jseq2 = j2_r
 
 
       mystop =.false.
@@ -145,12 +168,14 @@
       endif
             
       deallocate(tabread)
-# endif /* !MPI && !OPENMP */      
+      enddo /* do nb = 0, nbprocs_in-1 */
+# endif /* !defined RVTK_DEBUG_WRITE */      
 
 # ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,ierr)
 # endif
-# if defined MPI || defined OPENMP
+
+#if !defined RVTK_DEBUG_WRITE
       MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
      &                       ,' ON GRID ',Agrif_CFixed()
@@ -165,7 +190,7 @@
 !======================================================================
 !
           subroutine check_tab3d(tab,comment,typevar)
-
+      USE debug
       implicit none
 # include "param.h"
 # include "scalars.h"  
@@ -183,6 +208,9 @@
       real,dimension(:,:,:),allocatable :: tabread
       character*(*) :: comment,typevar
       integer i0,j0,k,i,j,i1,i2,j1,j2
+#if !defined RVTK_DEBUG_WRITE
+      integer i1_r,i2_r,j1_r,j2_r,nb
+#endif
       character*80 :: comment_k
 # ifdef OPENMP
       integer mynode
@@ -210,62 +238,39 @@
           mynode=0 
 # endif
 
-# if !defined MPI && !defined OPENMP
-      write(107)Lm,Mm
+#if defined RVTK_DEBUG_WRITE
+#include "debug_indices.h"
+#if defined MPI
+      i1 = i1 + iminmpi - 1
+      i2 = i2 + iminmpi - 1
+      j1 = j1 + jminmpi - 1
+      j2 = j2 + jminmpi - 1
+#endif
+      write(107)i1,i2,j1,j2
       write(107)lbound(tab)
+#if defined MPI
+     &  + (/iminmpi-1,jminmpi-1,0/)
+#endif
       write(107)ubound(tab)
+#if defined MPI
+     &  + (/iminmpi-1,jminmpi-1,0/)
+#endif
       write(107)tab
 # else
-      read(107)Lmseq,Mmseq
-      read(107)lb
-      read(107)ub
+      
+      do nb = 0, nbprocs_in-1
+      read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
+      read(debug_procs_units(nb))lb
+      read(debug_procs_units(nb))ub
       allocate(tabread(lb(1):ub(1),lb(2):ub(2),lb(3):ub(3)))
-      read(107)tabread
+      read(debug_procs_units(nb))tabread
 
-      if (typevar == 'uint') then
-      i1=2
-#  ifdef MPI
-      if (WEST_INTER) i1=1
-#  endif
-      i2=Lmmpi
-      j1=1
-      j2=Mmmpi
-      elseif (typevar == 'u') then
-      i1=1
-      i2=Lmmpi+1
-      j1=0
-      j2=Mmmpi+1
-      endif
-      if (typevar == 'vint') then
-      i1=1
-      i2=Lmmpi
-      j1=2
-#  ifdef MPI
-      if (SOUTH_INTER) j1=1
-#  endif
-      j2=Mmmpi
-      elseif (typevar == 'v') then
-      i1=0
-      i2=Lmmpi+1      
-      j1=1
-      j2=Mmmpi+1
-      endif    
-      if (typevar == 'rint') then
-      i1=1
-      i2=Lmmpi
-      j1=1
-      j2=Mmmpi
-      elseif (typevar == 'r') then
-      i1=0
-      i2=Lmmpi+1
-      j1=0
-      j2=Mmmpi+1
-      endif   
+#include "debug_indices.h"
 
-      iseq1 = 0
-      iseq2 = Lmseq+1
-      jseq1 = 0
-      jseq2 = Mmseq+1
+      iseq1 = i1_r
+      iseq2 = i2_r
+      jseq1 = j1_r
+      jseq2 = j2_r
       
       mystop =.false.
       DebugExit : do k=1,N
@@ -299,12 +304,14 @@
       endif
             
       deallocate(tabread)
-# endif /* !MPI && !OPENMP */
+      enddo /* do nb = 0, nbprocs_in-1 */
+# endif /* !defined RVTK_DEBUG_WRITE */
 
 # ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,ierr)
 # endif
-# if defined MPI || defined OPENMP
+
+#if !defined RVTK_DEBUG_WRITE
       MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
      &                       ,' ON GRID ',Agrif_CFixed()

@@ -614,7 +614,20 @@ C$    trd=omp_get_thread_num()
 !====================================================================
       if (SOUTHERN_EDGE) then
 # ifdef OBC_COM_SOUTH
-#  if defined OBC_COM_M2ORLANSKI
+#  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_SOUTH
+!                                           Southern edge Specified BC
+!                                           ======== ==== ========= ==
+        do i=IstrU,Iend
+#   ifdef M2_FRC_BRY
+          ubar(i,Jstr-1,knew)=ubarbry_south(i)
+#   else 
+          ubar(i,Jstr-1,knew)=ubclm(i,Jstr-1)
+#   endif
+#   ifdef MASKING
+     &                         *umask(i,Jstr-1)
+#   endif
+        enddo
+#  elif defined OBC_COM_M2ORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
         do i=IstrU-1,Iend
@@ -698,19 +711,6 @@ C$    trd=omp_get_thread_num()
           ubar(i,Jstr-1,knew)=ubar(i,Jstr-1,knew)*umask(i,Jstr-1)
 #   endif
         enddo
-#  elif defined OBC_COM_M2SPECIFIED
-!                                           Southern edge Specified BC
-!                                           ======== ==== ========= ==
-        do i=IstrU,Iend
-#   ifdef M2_FRC_BRY
-          ubar(i,Jstr-1,knew)=ubarbry_south(i)
-#   else 
-          ubar(i,Jstr-1,knew)=ubclm(i,Jstr-1)
-#   endif
-#   ifdef MASKING
-     &                         *umask(i,Jstr-1)
-#   endif
-        enddo
 #  else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
@@ -743,7 +743,20 @@ C$    trd=omp_get_thread_num()
 !====================================================================
       if (NORTHERN_EDGE) then
 # ifdef OBC_COM_NORTH
-#  if defined OBC_COM_M2ORLANSKI
+#  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_NORTH
+!                                           Northern edge Specified BC
+!                                           ======== ==== ========= ==
+        do i=IstrU,Iend
+#   ifdef M2_FRC_BRY
+          ubar(i,Jend+1,knew)=ubarbry_north(i)
+#   else
+          ubar(i,Jend+1,knew)=ubclm(i,Jend+1)
+#   endif
+#   ifdef MASKING
+     &                        *umask(i,Jend+1)
+#   endif
+        enddo
+#  elif defined OBC_COM_M2ORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
         do i=IstrU-1,Iend
@@ -826,19 +839,6 @@ C$    trd=omp_get_thread_num()
           endif
 #   ifdef MASKING
           ubar(i,Jend+1,knew)=ubar(i,Jend+1,knew)*umask(i,Jend+1)
-#   endif
-        enddo
-#  elif defined OBC_COM_M2SPECIFIED
-!                                           Northern edge Specified BC
-!                                           ======== ==== ========= ==
-        do i=IstrU,Iend
-#   ifdef M2_FRC_BRY
-          ubar(i,Jend+1,knew)=ubarbry_north(i)
-#   else
-          ubar(i,Jend+1,knew)=ubclm(i,Jend+1)
-#   endif
-#   ifdef MASKING
-     &                        *umask(i,Jend+1)
 #   endif
         enddo
 #  else

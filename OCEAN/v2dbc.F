@@ -621,7 +621,20 @@ C$    trd=omp_get_thread_num()
 !====================================================================
       if (WESTERN_EDGE) then
 # ifdef OBC_COM_WEST
-#  ifdef OBC_COM_M2ORLANSKI 
+#  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_WEST
+!                                           Western edge Specified BC
+!                                           ======= ==== ========= ==
+       do j=JstrV,Jend
+#   ifdef M2_FRC_BRY
+          vbar(Istr-1,j,knew)=vbarbry_west(j)
+#   else
+          vbar(Istr-1,j,knew)=vbclm(Istr-1,j)
+#   endif
+#   ifdef MASKING
+     &                        *vmask(Istr-1,j)
+#   endif
+        enddo
+#  elif defined OBC_COM_M2ORLANSKI 
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
         do j=JstrV-1,Jend
@@ -707,19 +720,6 @@ C$    trd=omp_get_thread_num()
           vbar(Istr-1,j,knew)=vbar(Istr-1,j,knew)*vmask(Istr-1,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2SPECIFIED
-!                                           Western edge Specified BC
-!                                           ======= ==== ========= ==
-       do j=JstrV,Jend
-#   ifdef M2_FRC_BRY
-          vbar(Istr-1,j,knew)=vbarbry_west(j)
-#   else
-          vbar(Istr-1,j,knew)=vbclm(Istr-1,j)
-#   endif
-#   ifdef MASKING
-     &                        *vmask(Istr-1,j)
-#   endif
-        enddo
 #  else
 !                                           Western edge gradient BC
 !                                           ======= ==== ======== ==
@@ -752,7 +752,20 @@ C$    trd=omp_get_thread_num()
 !====================================================================
       if (EASTERN_EDGE) then
 # ifdef OBC_COM_EAST
-#  ifdef OBC_COM_M2ORLANSKI
+#  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_EAST
+!                                           Eastern edge Specified BC
+!                                           ======= ==== ========= ==
+        do j=JstrV,Jend
+#   ifdef M2_FRC_BRY
+          vbar(Iend+1,j,knew)=vbarbry_east(j)
+#   else
+          vbar(Iend+1,j,knew)=vbclm(Iend+1,j)
+#   endif
+#   ifdef MASKING
+     &                        *vmask(Iend+1,j)
+#   endif
+        enddo
+#  elif defined OBC_COM_M2ORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
         do j=JstrV-1,Jend
@@ -834,19 +847,6 @@ C$    trd=omp_get_thread_num()
           endif
 #   ifdef MASKING
           vbar(Iend+1,j,knew)=vbar(Iend+1,j,knew)*vmask(Iend+1,j)
-#   endif
-        enddo
-#  elif defined OBC_COM_M2SPECIFIED
-!                                           Eastern edge Specified BC
-!                                           ======= ==== ========= ==
-        do j=JstrV,Jend
-#   ifdef M2_FRC_BRY
-          vbar(Iend+1,j,knew)=vbarbry_east(j)
-#   else
-          vbar(Iend+1,j,knew)=vbclm(Iend+1,j)
-#   endif
-#   ifdef MASKING
-     &                        *vmask(Iend+1,j)
 #   endif
         enddo
 #  else

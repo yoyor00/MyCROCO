@@ -86,7 +86,7 @@
       phase=0.
       ramp=1.
 # ifdef TIDERAMP
-      ramp=max(0.,0.5*(TANH(50*(dt*sec2day*float(iic-ntstart)-0.5))+0.5))
+      ramp=TANH(dt*sec2day*float(iic-1))
 # endif
       cff=2.*pi*time
 !
@@ -480,7 +480,7 @@
 #  ifdef MASKING
        do j=JRANGE
          do i=IRANGE
-           Etide(i,j)=Etide(i,j)*rmask(i,j)
+           Etide(i,j)=Etide(i,j)*ramp*rmask(i,j)
          end do
        end do 
 #  endif

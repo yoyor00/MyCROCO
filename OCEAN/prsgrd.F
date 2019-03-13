@@ -67,7 +67,17 @@ c********************************************************************
        parameter (UG=0.02)
 # endif
 # ifdef DIAGNOSTICS_UV
-#  include "diagnostics.h"
+# include "diagnostics.h"
+# else
+# if defined DIAGNOSTICS_VRT
+# include "diags_vrt.h"
+# endif
+# if defined DIAGNOSTICS_EK
+# include "diags_ek.h"
+# if defined DIAGNOSTICS_EK_MLD
+#  include "mixing.h"
+# endif
+# endif
 # endif
 # if defined MRL_WCI || defined READ_PATM
 #  include "forces.h"
@@ -295,11 +305,41 @@ c********************************************************************
 # else
      &                                                               )
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
             endif
+# elif defined DIAGNOSTICS_EK
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                ekwrkPrsgrd(i,j,1) = ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              else
+                ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1) + ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              endif
+# if defined DIAGNOSTICS_EK_MLD
+              if (k.eq.N) then
+                ekwrkPrsgrd_mld(i,j,1) = ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              elseif (k.ge.kbl(i,j)) then
+            ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1) + ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              endif
 # endif
+            endif
+# endif
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                wrkPrsgrd(i,j,1) = ru(i,j,k) SWITCH umask(i,j)
+              else
+                wrkPrsgrd(i,j,1) = wrkPrsgrd(i,j,1) + ru(i,j,k)
+     &                     SWITCH umask(i,j)
+              endif
+            endif
+# endif
+
           enddo
         enddo
 !
@@ -358,6 +398,7 @@ c********************************************************************
           enddo
         endif
 
+
         do j=JstrV-1,Jend
           do i=Istr,Iend
             cff=2.*FC(i,j)*FC(i,j+1)
@@ -399,11 +440,40 @@ c********************************************************************
 # else
      &                                                               )
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
             endif
+# elif defined DIAGNOSTICS_EK
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                ekwrkPrsgrd(i,j,2) = rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              else
+                ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2) + rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              endif
+# if defined DIAGNOSTICS_EK_MLD
+              if (k.eq.N) then
+                ekwrkPrsgrd_mld(i,j,2) = rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              elseif (k.ge.kbl(i,j)) then
+            ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2) + rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              endif
 # endif
+            endif
+# endif
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                wrkPrsgrd(i,j,2) = rv(i,j,k) SWITCH vmask(i,j)
+              else
+                wrkPrsgrd(i,j,2) = wrkPrsgrd(i,j,2) + rv(i,j,k)
+     &                                       SWITCH vmask(i,j)
+              endif
+            endif
+#  endif
 
           enddo
         enddo
@@ -415,6 +485,11 @@ c********************************************************************
 !
 !======================================================================
 !
+#ifdef MASKING
+# define SWITCH *
+#else
+# define SWITCH !
+#endif
 c********************************************************************
 ! Compute pressure gradient term: STANDARD JACOBIAN or WEIGHTED 
 ! JACOBIAN of Tony Song. Both these approaches imply that the
@@ -480,7 +555,17 @@ c********************************************************************
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  ifdef DIAGNOSTICS_UV
-#   include "diagnostics.h"
+#    include "diagnostics.h"
+#  else
+#    if defined DIAGNOSTICS_VRT
+#      include "diags_vrt.h"
+#    endif
+#    if defined DIAGNOSTICS_EK
+#      include "diags_ek.h"
+#      if defined DIAGNOSTICS_EK_MLD
+#        include "mixing.h"
+#      endif
+#    endif
 #  endif
 #  ifdef MRL_WCI
 #    include "forces.h"
@@ -530,11 +615,25 @@ c********************************************************************
  
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
 
-#  ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,1) = ru(i,j,N) SWITCH umask(i,j)
             endif
-#  endif
+# elif defined DIAGNOSTICS_EK
+            if (nnew.ne.3) then
+                ekwrkPrsgrd(i,j,1) = ru(i,j,N)
+     &                           * u(i,j,N,nrhs) SWITCH umask(i,j)
+# if defined DIAGNOSTICS_EK_MLD
+                ekwrkPrsgrd_mld(i,j,1) = ru(i,j,N)
+     &                           * u(i,j,N,nrhs) SWITCH umask(i,j)
+# endif
+            endif
+# endif
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            if (nnew.ne.3) then
+                wrkPrsgrd(i,j,1) = ru(i,j,N) SWITCH umask(i,j)
+            endif
+# endif
           enddo
 # ifdef WJ_GRADP
           cff=0.25*g/rho0
@@ -570,11 +669,40 @@ c********************************************************************
  
               ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*pgrd(i)
 
-#  ifdef DIAGNOSTICS_UV
-              if (nnew.ne.3) then
-                MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+            if (nnew.ne.3) then
+              MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
+            endif
+# elif defined DIAGNOSTICS_EK
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                ekwrkPrsgrd(i,j,1) = ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              else
+                ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1) + ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-#  endif
+# if defined DIAGNOSTICS_EK_MLD
+              if (k.eq.N) then
+                ekwrkPrsgrd_mld(i,j,1) = ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              elseif (k.ge.kbl(i,j)) then
+            ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1) + ru(i,j,k)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+              endif
+# endif
+            endif
+# endif
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                wrkPrsgrd(i,j,1) = ru(i,j,k) SWITCH umask(i,j)
+              else
+                wrkPrsgrd(i,j,1) = wrkPrsgrd(i,j,1) + ru(i,j,k)
+     &                     SWITCH umask(i,j)
+              endif
+            endif
+# endif
 
             enddo
           enddo     !--> discard pgrd
@@ -602,9 +730,25 @@ c********************************************************************
  
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)
 
-#  ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,2) = rv(i,j,N) SWITCH vmask(i,j)
+            endif
+# elif defined DIAGNOSTICS_EK
+            if (nnew.ne.3) then
+                ekwrkPrsgrd(i,j,2) = rv(i,j,N)
+     &                           * v(i,j,N,nrhs) SWITCH vmask(i,j)
+# if defined DIAGNOSTICS_EK_MLD
+              if (k.eq.N) then
+                ekwrkPrsgrd_mld(i,j,2) = rv(i,j,N)
+     &                           * v(i,j,N,nrhs) SWITCH vmask(i,j)
+              endif
+# endif
+            endif
+# endif
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            if (nnew.ne.3) then
+                wrkPrsgrd(i,j,2) = rv(i,j,N) SWITCH vmask(i,j)
             endif
 #  endif
 
@@ -643,10 +787,39 @@ c********************************************************************
  
               rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*pgrd(i)
 
-#  ifdef DIAGNOSTICS_UV
-              if (nnew.ne.3) then
-                MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+            if (nnew.ne.3) then
+              MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
+            endif
+# elif defined DIAGNOSTICS_EK
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                ekwrkPrsgrd(i,j,2) = rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              else
+                ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2) + rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
+# if defined DIAGNOSTICS_EK_MLD
+              if (k.eq.N) then
+                ekwrkPrsgrd_mld(i,j,2) = rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              elseif (k.ge.kbl(i,j)) then
+            ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2) + rv(i,j,k)
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+              endif
+# endif
+            endif
+# endif
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            if (nnew.ne.3) then
+              if (k.eq.N) then
+                wrkPrsgrd(i,j,2) = rv(i,j,k) SWITCH vmask(i,j)
+              else
+                wrkPrsgrd(i,j,2) = wrkPrsgrd(i,j,2) + rv(i,j,k)
+     &                                       SWITCH vmask(i,j)
+              endif
+            endif
 #  endif
 
             enddo

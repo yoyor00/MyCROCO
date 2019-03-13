@@ -7,19 +7,16 @@ MODULE ocean2pisces
    USE xios
 #endif
 
-
+   use scalars
+   use ncscrum
    IMPLICIT NONE
    PUBLIC
 
-
-#include "param_F90.h" 
 #include "grid.h"
 #include "ocean3d.h"
 #include "forces.h"
 #include "mixing.h"
 #include "diagnostics.h"
-#include "scalars_F90.h"
-#include "ncscrum_F90.h"
 # if defined MPI
   include 'mpif.h'
 # include "mpi_roms.h"

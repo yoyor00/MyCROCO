@@ -41,9 +41,6 @@ C$    integer omp_get_thread_num
 # include "sediment.h"
 #endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
-#if defined NBQ && ! defined MPI
-      integer :: mynode
-#endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif

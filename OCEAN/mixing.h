@@ -102,7 +102,8 @@
 
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIX2017 || defined GLS_MIXING \
+  || defined UV_VIS_SMAGO_3D
       real bvf(GLOBAL_2D_ARRAY,0:N)
       common /mixing_bvf/ bvf
 # endif
