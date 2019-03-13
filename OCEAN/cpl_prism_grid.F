@@ -11,11 +11,11 @@
 !
       SUBROUTINE cpl_prism_grid(id_partition)
 #include "cppdefs.h"
+#if defined OA_COUPLING || defined OW_COUPLING
       USE mod_prism             ! OASIS3 prism module
       IMPLICIT NONE
-#if defined OA_COUPLING || defined OW_COUPLING
-      INCLUDE 'mpif.h'
-
+      include 'mpif.h'
+      
 #include "param.h"
 #include "grid.h"
 #include "scalars.h"

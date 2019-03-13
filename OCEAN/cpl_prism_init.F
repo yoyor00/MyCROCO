@@ -17,8 +17,6 @@
 
 #include "cppdefs.h"
 #include "param.h" 
-!         INTEGER :: ocean_grid_comm, comp_ierror,comp_id
-!         CHARACTER(len=6)   :: comp_name
 #include "mpi_roms.h"
 
       !!-------------------------------------------------------------------
