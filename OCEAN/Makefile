@@ -158,7 +158,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # Executable file.
 # ========= =====
 #
-$(SBIN):  $(OBJS90) $(OBJS)
+$(SBIN):  $(OBJS90) $(OBJS) depend
 	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
 	mv a.out $(SBIN)
 #
@@ -204,7 +204,7 @@ ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix module*.F90 *.F90 *.F
+	./cross_matrix module*.F90 *.F90 *.F *.h
 
 mymodules: $(MOBJS) $(AMROBJS)
 #

@@ -21,8 +21,8 @@
 !                                                                     
 !======================================================================
 !
-#ifdef OA_MCT
-          USE mod_prism     ! OASIS3 module
+#if defined OA_COUPLING || defined OW_COUPLING
+         USE mod_prism
 #endif
 #ifdef XIOS
           USE xios          ! XIOS module
@@ -40,7 +40,7 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef FLOATS
 # include "floats.h"
 # include "ncscrum_floats.h"

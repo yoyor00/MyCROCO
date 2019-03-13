@@ -543,7 +543,7 @@
 # include "param.h"
 # include "grid.h"
 # ifdef MPI
-#      include "mpi_roms.h"
+#      include "mpi_cpl.h"
        include 'mpif.h'
 # endif
       !!----------------------------------------------------------------------
@@ -1122,7 +1122,7 @@
 # include "ocean3d.h"
 # include "scalars.h"
 # include "ncscrum.h"
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
       !
       INTEGER Istr,Iend,Jstr,Jend
       !

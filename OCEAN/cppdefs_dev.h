@@ -50,7 +50,7 @@
 /* 
 ======================================================================
    Set OA COUPLING options:
-   Define MPI, select OA_MCT    
+   Define MPI  
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
@@ -58,7 +58,6 @@
 #ifdef OA_COUPLING
 # undef  OPENMP
 # define MPI
-# define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  OA_GRID_UV
 # undef  BULK_FLUX
@@ -71,7 +70,7 @@
 /* 
 ======================================================================
    Set OW COUPLING options:
-   Define MPI, select OA_MCT    
+   Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
@@ -79,7 +78,6 @@
 #ifdef OW_COUPLING
 # undef  OPENMP
 # define MPI
-# define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  WKB_WWAVE
 # undef  WAVE_OFFLINE
