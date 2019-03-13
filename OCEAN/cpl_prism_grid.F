@@ -11,12 +11,10 @@
 !
       SUBROUTINE cpl_prism_grid(id_partition)
 #include "cppdefs.h"
-!     IMPLICIT NONE
-#if defined OA_COUPLING || defined OW_COUPLING
-#ifdef OA_MCT
       USE mod_prism             ! OASIS3 prism module
+      IMPLICIT NONE
+#if defined OA_COUPLING || defined OW_COUPLING
       INCLUDE 'mpif.h'
-#endif
 
 #include "param.h"
 #include "grid.h"
@@ -41,6 +39,7 @@
       integer rmask_inv(GLOBAL_2D_ARRAY)
       integer umask_inv(GLOBAL_2D_ARRAY)
       integer vmask_inv(GLOBAL_2D_ARRAY)
+      integer j,i
 !
 !
 !     !-------------------------------------------------------------------

@@ -281,27 +281,12 @@ PRISM_ROOT_DIR=${CROCO_PRISM_ROOT_DIR-$PRISM_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
     echo " => OASIS activated"
     CHAN=MPI1
-    if $($CPP1 testkeys.F | grep -i -q oacpl_mctisdefined) ; then
-	echo " => OASIS-MCT activated"
-	LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
+    LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
 		${PRISM_ROOT_DIR}/lib/libmct.a  \
 		${PRISM_ROOT_DIR}/lib/libmpeu.a \
 		${PRISM_ROOT_DIR}/lib/libscrip.a"
-	PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
+    PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
 		-I${PRISM_ROOT_DIR}/build/lib/mct"
-    elif $($CPP1 testkeys.F | grep -i -q oacpl_oa3isdefined) ; then
-	echo " => OASIS3 activated"
-	LIBPSMILE="${PRISM_ROOT_DIR}/lib/libanaisg.a \
-		${PRISM_ROOT_DIR}/lib/libanaism.a \
-		${PRISM_ROOT_DIR}/lib/libclim.${CHAN}.a \
-		${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
-		${PRISM_ROOT_DIR}/lib/libfscint.a  \
-		${PRISM_ROOT_DIR}/lib/libmpp_io.a \
-		${PRISM_ROOT_DIR}/lib/libscrip.a"
-	PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
-		-I${PRISM_ROOT_DIR}/build/lib/clim.${CHAN} \
-		-I${PRISM_ROOT_DIR}/build/lib/mpp_io"
-    fi
     COMPILEOASIS=TRUE
     LDFLAGS1="$LDFLAGS1 $LIBPSMILE"
     CPPFLAGS1="$CPPFLAGS1 ${PSMILE_INCDIR}"

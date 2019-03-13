@@ -12,11 +12,7 @@
        SUBROUTINE cpl_prism_init
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
-#ifdef OA_MCT
-          USE mod_prism            ! OASIS3 prism module
-#else
-          USE mod_prism_proto      ! OASIS3 prism module
-#endif
+          USE mod_prism             ! OASIS3 prism module
           IMPLICIT NONE
 
 #include "cppdefs.h"
