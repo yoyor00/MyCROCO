@@ -33,6 +33,6 @@ for i in `ls -1 Recap_*${today}.git*` ; do
 done
 cd -
 
-mv Junk/gather_recap_tmp "Log_Summary/$1_gather_recap_${today}_git${numrev}"
-cp "Log_Summary/$1_gather_recap_${today}_git${numrev}" .
+mv Junk/gather_recap_tmp "./$1_gather_recap_${today}_git${numrev}"
+#cp -rf "./$1_gather_recap_${today}_git${numrev}" .
 ##rm -Rf Junk/*
