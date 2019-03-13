@@ -449,13 +449,8 @@
       if (maxval(Zob).ne.0.) then
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
-#ifdef z0_mars
-            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/(Zob(i,j)+1.0))
-            wrk(i,j)=cff*cff
-#else
             cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
             wrk(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
-#endif
           enddo
         enddo
         do j=Jstr,Jend
