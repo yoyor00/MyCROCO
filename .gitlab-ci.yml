@@ -29,7 +29,7 @@ run:
     - cd $CVTKWORK/KTEST
     - ./mk_TESTALL_ana.bash
     - ./gather_recap.bash ANA
-    - grep failed */Recap_*.* && false || true
+    - ! grep failed */Recap_*.*
     
   artifacts:
     paths:
