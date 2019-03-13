@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined CFB & !defined CFB_WIND
+#if defined CFB && !defined CFB_WIND
 
       subroutine cfb_stress (tile)
       implicit none
