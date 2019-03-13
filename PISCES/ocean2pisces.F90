@@ -19,7 +19,7 @@ MODULE ocean2pisces
 #include "diagnostics.h"
 # if defined MPI
   include 'mpif.h'
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
 # endif
   
 
