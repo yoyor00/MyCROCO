@@ -480,7 +480,7 @@
 #  ifdef MASKING
        do j=JRANGE
          do i=IRANGE
-           Etide(i,j)=Etide(i,j)*rmask(i,j)
+           Etide(i,j)=Etide(i,j)*ramp*rmask(i,j)
          end do
        end do 
 #  endif
