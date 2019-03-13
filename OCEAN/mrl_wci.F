@@ -1247,25 +1247,25 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
         do k=1,N,+1        !--> recursive
           do i=istr,iend
             Wrk(i,k)=Wrk(i,k-1)-0.5*pm(i,j)*pn(i,j)*(
-     &        (Hz(i+1,j,k)+Hz(i,j,k))*on_u(i+1,j)*ust(i+1,j,k)
-     &           -(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)*ust(i,j,k)
-     &       +(Hz(i,j+1,k)+Hz(i,j,k))*om_v(i,j+1)*vst(i,j+1,k)
-     &           -(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)*vst(i,j,k) )
+     &       (Hz(i+1,j  ,k)+Hz(i  ,j  ,k))*on_u(i+1,j  )*ust(i+1,j  ,k)
+     &      -(Hz(i  ,j  ,k)+Hz(i-1,j  ,k))*on_u(i  ,j  )*ust(i  ,j  ,k)
+     &      +(Hz(i  ,j+1,k)+Hz(i  ,j  ,k))*om_v(i  ,j+1)*vst(i  ,j+1,k)
+     &      -(Hz(i  ,j  ,k)+Hz(i  ,j-1,k))*om_v(i  ,j  )*vst(i  ,j  ,k))
           enddo
         enddo
         do i=istr,iend
           wst(i,j,N)=+0.375*Wrk(i,N) +0.75*Wrk(i,N-1)
-     &                                -0.125*Wrk(i,N-2)
+     &                              -0.125*Wrk(i,N-2)
         enddo
         do k=N-1,2,-1
           do i=istr,iend
             wst(i,j,k)=+0.5625*(Wrk(i,k  )+Wrk(i,k-1))
-     &                  -0.0625*(Wrk(i,k+1)+Wrk(i,k-2))
+     &                 -0.0625*(Wrk(i,k+1)+Wrk(i,k-2))
           enddo
         enddo
         do i=istr,iend
           wst(i,j,  1)= -0.125*Wrk(i,2) +0.75*Wrk(i,1)
-     &                                  +0.375*Wrk(i,0)
+     &                                 +0.375*Wrk(i,0)
         enddo
       enddo
 
