@@ -755,12 +755,10 @@
                      || defined OBC_NORTH
 
 # ifdef OBC_M2SPECIFIED
-# elif defined OBC_M2FLATHER
 # elif defined OBC_M2CHARACT
 # elif defined OBC_M2ORLANSKI
 # else
 #  undef  OBC_M2SPECIFIED
-#  undef  OBC_M2FLATHER
 #  define OBC_M2CHARACT
 #  undef  OBC_M2ORLANSKI
 # endif

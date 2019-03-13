@@ -27,7 +27,6 @@
 #undef OBC_COM_M3UPWIND
 #undef OBC_COM_M2SPECIFIED
 #undef OBC_COM_M2ORLANSKI
-#undef OBC_COM_M2FLATHER
 #undef OBC_COM_M2CHARACT
 #undef OBC_COM_ZSPECIFIED
 #undef OBC_COM_ZORLANSKI
@@ -76,10 +75,6 @@
 #  ifdef OBC_M2ORLANSKI
 #   define OBC_COM_M2ORLANSKI
 #   define OBC_COM_ZORLANSKI
-#  endif
-#  ifdef OBC_M2FLATHER
-#   define OBC_COM_M2FLATHER
-#   define OBC_COM_ZCHAPMAN
 #  endif
 #  ifdef OBC_M2CHARACT
 #   define OBC_COM_M2CHARACT
@@ -204,10 +199,6 @@
 #  ifdef AGRIF_OBC_M2ORLANSKI
 #   define OBC_COM_M2ORLANSKI
 #   define OBC_COM_ZORLANSKI
-#  endif
-#  ifdef AGRIF_OBC_M2FLATHER
-#   define OBC_COM_M2FLATHER
-#   define OBC_COM_ZCHAPMAN
 #  endif
 #  ifdef AGRIF_OBC_M2CHARACT
 #   define OBC_COM_M2CHARACT

@@ -105,28 +105,28 @@ C$    trd=omp_get_thread_num()
       tau_out=dtfast*tauM_out
 #endif
 !
-#if defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
+#ifdef OBC_COM_M2CHARACT
       grad = 1.
-#if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+# if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         grad(Istr,Jstr) = 0.5
       endif
-#endif
-#if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+# endif
+# if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         grad(Iend+1,Jstr) = 0.5
       endif
-#endif
-#if defined OBC_COM_NORTH && defined OBC_COM_WEST
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         grad(Istr,Jend) = 0.5
       endif
-#endif
-#if defined OBC_COM_NORTH && defined OBC_COM_EAST
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         grad(Iend+1,Jend) = 0.5
       endif
-#endif      
+# endif      
 #endif
 
 !
@@ -191,29 +191,6 @@ C$    trd=omp_get_thread_num()
 #    else
      &                              +tau*ubclm(Istr,j)
 #    endif
-#   endif
-#   ifdef MASKING
-          ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
-#   endif
-        enddo
-#  elif defined OBC_COM_M2FLATHER
-!                                            Western edge Flather BC
-!                                            ======= ==== ======= ==
-        do j=Jstr,Jend
-          cff=-sqrt(2.*g/(h(Istr-1,j)+h(Istr,j)
-     &                   +zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp)))
-          ubar(Istr,j,knew)=cff
-     &               *(0.5*(zeta(Istr-1,j,knew)+zeta(Istr,j,knew))
-#   ifdef Z_FRC_BRY
-     &                                           -zetabry_west(j) 
-#   elif defined ZCLIMATOLOGY
-     &                           -0.5*(ssh(Istr-1,j)+ssh(Istr,j)) 
-#   endif
-     &              )*grad(Istr,j)
-#   ifdef M2_FRC_BRY
-     &                                           +ubarbry_west(j)
-#   elif defined M2CLIMATOLOGY
-     &                                             +ubclm(Istr,j)
 #   endif
 #   ifdef MASKING
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
@@ -354,29 +331,6 @@ C$    trd=omp_get_thread_num()
 #    else
      &                                +tau*ubclm(Iend+1,j)
 #    endif
-#   endif
-#   ifdef MASKING
-          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
-#   endif
-        enddo
-#  elif defined OBC_COM_M2FLATHER
-!                                            Eastern edge Flather BC
-!                                            ======= ==== ======= ==
-        do j=Jstr,Jend
-          cff=sqrt(2.*g/(h(Iend,j)+h(Iend+1,j)+
-     &                   zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp)))
-          ubar(Iend+1,j,knew)=cff
-     &               *(0.5*( zeta(Iend,j,knew)+zeta(Iend+1,j,knew))
-#   ifdef Z_FRC_BRY
-     &                                             -zetabry_east(j)
-#   elif defined ZCLIMATOLOGY
-     &                             -0.5*(ssh(Iend,j)+ssh(Iend+1,j))
-#   endif
-     &               )*grad(Iend+1,j)
-#   ifdef M2_FRC_BRY
-     &                                             +ubarbry_east(j)
-#   elif defined M2CLIMATOLOGY
-     &                                             +ubclm(Iend+1,j)
 #   endif
 #   ifdef MASKING
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
@@ -534,7 +488,7 @@ C$    trd=omp_get_thread_num()
           ubar(i,Jstr-1,knew)=ubar(i,Jstr-1,knew)*umask(i,Jstr-1)
 #   endif
         enddo
-#  elif defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
+#  elif defined OBC_COM_M2CHARACT
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
@@ -663,7 +617,7 @@ C$    trd=omp_get_thread_num()
           ubar(i,Jend+1,knew)=ubar(i,Jend+1,knew)*umask(i,Jend+1)
 #   endif
         enddo
-#  elif defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
+#  elif defined OBC_COM_M2CHARACT
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
