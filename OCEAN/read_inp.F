@@ -50,6 +50,9 @@
      &                                       , itrc
 #endif
       logical dumboolean
+#ifdef USE_CALENDAR
+      real  dtout
+#endif
 !
 ! Use pre-set default startup filename for known applications,
 ! or get it as an argument from command line via iargc-getarg
@@ -569,7 +572,14 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'restart') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef USE_CALENDAR
+        read(input,*,err=95) dtout,nrpfrst 
+        nrst=(dtout*3600.)/dt 
+        MPI_master_only write(stdout,'(6x,A,f6.2,A)')
+     &  'DT RESTART =',dtout,'H'
+# else
         read(input,*,err=95) nrst, nrpfrst
+# endif
         read(input,'(A)',err=95)  fname 
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
@@ -585,7 +595,14 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'history') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef USE_CALENDAR
+        read(input,*,err=95) ldefhis, dtout, nrpfhis
+        nwrt=(dtout*3600.)/dt 
+        MPI_master_only write(stdout,'(6x,A,f6.2,A)')
+     &  'DT HIS =',dtout,'H'
+# else
         read(input,*,err=95) ldefhis, nwrt, nrpfhis
+# endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
@@ -602,7 +619,14 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef USE_CALENDAR
+        read(input,*,err=95) ntsavg, dtout, nrpfavg
+        navg=(dtout*3600.)/dt
+        MPI_master_only write(stdout,'(6x,A,f6.2,A)')
+     &  'DT AVG =',dtout,'H'
+# else
         read(input,*,err=95) ntsavg, navg, nrpfavg
+# endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
