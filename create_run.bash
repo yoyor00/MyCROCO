@@ -25,7 +25,7 @@ MY_CONFIG_NAME='Run_BENGUELA_LR'
 #
 # END USER SECTION
 #==========================================================================================
-set -x
+#set -x
 
 while getopts :h V
 do
