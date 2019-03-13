@@ -14,7 +14,7 @@
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX and REGIONAL
 #--------------------------------------------------------------------
-#set -x
+set -x
 
 echo "=============================================="
 echo "=> CONFIG "$mytest
@@ -159,8 +159,8 @@ cp param_bak1.h.$par1 Compile_$par1/param.h.OK
 cp cppdefs_bak1.h.$par1 Compile_$par1/cppdefs.h.OK
 
 #echo "qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash"
-qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
-myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
+CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
+[ -x `which qselect` ] && myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
 
 # 4- 
 ##############################################################################
@@ -198,7 +198,7 @@ if [ ${FLAG_OPENMP} = 1 ]; then
     cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
     
     #   echo "qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash" 
-    qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
+    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
     
     #   echo ""myjobid_openmp=`qselect -N ${TEST_NAME}_OM -u $USER`""
     myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
@@ -234,7 +234,7 @@ if [ ${FLAG_MPI} = 1 ]; then
     cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
     
     #  echo "qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash"
-    qsub -N ${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
+    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
     
     #  echo "myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`""
     myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`"
@@ -248,15 +248,15 @@ fi
 echo "EXTRACTION $mytest"
 if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
-    qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
+    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
     
 elif [ ${FLAG_OPENMP} = 1 ]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
-    qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
+    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
     
 elif [ ${FLAG_MPI} = 1 ]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
-    qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
+    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
 fi
 #########################################################################################################
 

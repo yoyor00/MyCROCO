@@ -1655,6 +1655,9 @@
       work2d=hbl
 #   endif
       call xios_send_field("hbl",work2d)
+#  elif defined GLS_MIXING
+      work2d=hbl
+      call xios_send_field("hbl",work2d)
 #  endif
 #  ifdef LMD_BKPP
       call xios_send_field("hbbl",work2d)

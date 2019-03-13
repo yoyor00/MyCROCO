@@ -191,7 +191,7 @@ C$    trd=omp_get_thread_num()
 # ifdef TANK
          myalpha   = 0.01
 # else
-         myalpha   = 0.15
+         myalpha   = 0.25
 # endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha

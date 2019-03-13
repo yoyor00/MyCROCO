@@ -247,7 +247,7 @@ C$    integer omp_get_thread_num
         endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
         if (wrtavg(indxbvf)) then
           do k=0,N
             do j=JstrR,JendR
@@ -264,9 +264,9 @@ C$    integer omp_get_thread_num
               do i=IstrR,IendR
                 omega_avg(i,j,k)=cff*( cff1*omega_avg(i,j,k)
      &                                 +We(i,j,k)*pm(i,j)*pn(i,j)
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
      &                                 +Wi(i,j,k)*pm(i,j)*pn(i,j)
-#endif      
+# endif      
      &                                                          )
               enddo
             enddo
@@ -281,17 +281,17 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
         if (wrtavg(indxHbl)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
-#ifdef LMD_SKPP2005
+#  ifdef LMD_SKPP2005
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbls(i,j,nstp))
-#else
+#  else
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbl(i,j))
-#endif     
+# endif     
             enddo
           enddo
         endif
@@ -306,17 +306,13 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
         if (wrtavg(indxTke)) then
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k) 
-#    ifdef GLS_MIXING                  
-     &                                  +tke(i,j,k,nstp))
-#    else
      &                                  +trb(i,j,k,nstp,itke))
-#    endif              
               enddo
             enddo
           enddo
@@ -326,11 +322,7 @@ C$    integer omp_get_thread_num
             do j=JstrR,JendR
               do i=IstrR,IendR
                 gls_avg(i,j,k)=cff*(cff1*gls_avg(i,j,k)
-#    ifdef GLS_MIXING                  
-     &                                  +gls(i,j,k,nstp))
-#    else
      &                                  +trb(i,j,k,nstp,igls))
-#    endif
               enddo
             enddo
           enddo

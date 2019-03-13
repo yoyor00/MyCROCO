@@ -454,7 +454,7 @@
       integer indxAks
       parameter (indxAks=indxAkt+4)
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
       integer indxHbl
       parameter (indxHbl=indxAkt+5)
 # endif
@@ -462,7 +462,7 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkt+6)
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
       integer indxTke
       parameter (indxTke=indxAkt+7)
       integer indxGls
@@ -527,7 +527,7 @@
 
 #if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -562,6 +562,10 @@
       integer indxShflx_rlw,indxShflx_lat,indxShflx_sen 
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
+# endif
+# if defined CFB && defined CFB_STRESS && !defined BULK_FLUX
+      integer indxWSPD
+      parameter (indxWSPD=indxSUSTR+200)
 # endif
 #endif /* SOLVE3D */
 
@@ -846,10 +850,10 @@
      &      , hisAkv, hisAkt, hisAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , hisbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -994,10 +998,10 @@
      &      , avgAkv, avgAkt, avgAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , avgbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 # endif
 # ifdef BIOLOGY
@@ -1240,10 +1244,10 @@
      &      , hisHbl,  hisHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , hisbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1455,10 +1459,10 @@
      &      , avgHbl,  avgHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , avgbvf
 # endif
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 #  ifdef BIOLOGY

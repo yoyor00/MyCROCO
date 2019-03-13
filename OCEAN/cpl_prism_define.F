@@ -13,7 +13,6 @@
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
       USE mod_prism             ! OASIS3 prism module
-
       IMPLICIT NONE
 
 #include "param.h"

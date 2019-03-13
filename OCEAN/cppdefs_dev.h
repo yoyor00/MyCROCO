@@ -40,7 +40,7 @@
    of parallel computation by comparing binary files produced by serial 
    and parallel runs
 */
-!#undef RVTK_DEBUG
+#undef RVTK_DEBUG
 
 /*
     Constant tracer option (for debugging)
@@ -50,7 +50,7 @@
 /* 
 ======================================================================
    Set OA COUPLING options:
-   Define MPI, select OA_MCT    
+   Define MPI  
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
@@ -58,20 +58,19 @@
 #ifdef OA_COUPLING
 # undef  OPENMP
 # define MPI
-# define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  OA_GRID_UV
 # undef  BULK_FLUX
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  OA_GRID_UV
+# undef  CFB
 #endif
 
 /* 
 ======================================================================
    Set OW COUPLING options:
-   Define MPI, select OA_MCT    
+   Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
@@ -79,7 +78,6 @@
 #ifdef OW_COUPLING
 # undef  OPENMP
 # define MPI
-# define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  WKB_WWAVE
 # undef  WAVE_OFFLINE
@@ -303,10 +301,8 @@
 #ifdef UV_VIS_SMAGO 
 # define VIS_COEF_3D
 #endif
-#ifdef GLS_MIX2017_3D
-# define GLS_MIX2017
-# define GLS_KEPSILON
-# undef  GLS_KOMEGA
+#ifdef GLS_MIXING_3D
+# define GLS_MIXING
 # define UV_VIS2
 # define VIS_COEF_3D
 # undef  TS_DIF2
@@ -379,10 +375,6 @@
 # define TS_DIF4       /*         Hyperdiffusion  with         */
 # undef  TS_MIX_GEO    /*        Geopotential rotation         */
 # define TS_MIX_ISO    /*     or Isopycnal    rotation         */
-#  if defined GLS_MIX2017 || defined GLS_MIXING
-#   undef  TS_MIX_ISO
-#   define TS_MIX_GEO
-#  endif
 #endif
 #ifdef TS_HADV_RSUP5   /*    Pseudo RS 5th-order scheme is:    */
 # define TS_HADV_C6    /*    6th-order centered advection      */
@@ -486,6 +478,33 @@
 
 /*
 ======================================================================
+   GLS_MIXING
+======================================================================
+*/
+#ifdef GLS_MIXING
+
+# if   defined GLS_KOMEGA  
+# elif defined GLS_KEPSILON
+# elif defined GLS_GEN
+# else
+#  define GLS_KEPSILON
+# endif
+
+# if   defined CANUTO_A  
+# elif defined GibLau_78
+# elif defined MelYam_82
+# elif defined KanCla_94
+# elif defined Luyten_96
+# elif defined CANUTO_B 
+# elif defined Cheng_02
+# else
+#  define CANUTO_A
+# endif
+
+#endif
+
+/*
+======================================================================
    TIDES:  
    select dependable keys if not done yet
 ======================================================================
@@ -556,6 +575,17 @@
 # ifdef ONLINE
 #  define CUBIC_INTERP
 # endif
+#endif
+
+/*
+======================================================================
+    Current feedback option
+======================================================================
+*/
+#ifdef CFB
+# define CFB_STRESS
+# undef  CFB_STRESS2
+# undef  CFB_WIND
 #endif
 
 /*
@@ -723,12 +753,10 @@
                      || defined OBC_NORTH
 
 # ifdef OBC_M2SPECIFIED
-# elif defined OBC_M2FLATHER
 # elif defined OBC_M2CHARACT
 # elif defined OBC_M2ORLANSKI
 # else
 #  undef  OBC_M2SPECIFIED
-#  undef  OBC_M2FLATHER
 #  define OBC_M2CHARACT
 #  undef  OBC_M2ORLANSKI
 # endif

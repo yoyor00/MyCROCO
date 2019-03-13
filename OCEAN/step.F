@@ -36,7 +36,7 @@
  
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
-       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes) ) then
+       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
        endif 
@@ -76,7 +76,7 @@ C$OMP END PARALLEL
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes)) then
+         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
          endif
          oasis_time = oasis_time + dt
@@ -415,9 +415,6 @@ C$OMP BARRIER
 #  endif
 # endif
         call pre_step3d (tile)
-# ifdef GLS_MIXING
-        call gls_prestep (tile)
-# endif
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
           call uv3dpremix (tile)
@@ -912,10 +909,7 @@ C$OMP BARRIER
         call omega (tile)
 
 # ifdef GLS_MIXING
-        call step3d_gls  (tile)
-# endif
-# ifdef GLS_MIX2017
-        call gls_mix2017 (tile)
+        call gls_mixing (tile)
 # endif
         call step3d_t (tile)
 # ifdef SEDIMENT

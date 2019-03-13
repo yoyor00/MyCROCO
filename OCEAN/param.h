@@ -239,9 +239,28 @@
       parameter (NWEIGHT=1000)
 !
 !----------------------------------------------------------------------
-! Tides, Wetting-Drying, Point sources, Floast, Stations
+! OA-Coupling, Tides, Wetting-Drying, Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
+#ifdef CFB
+# ifdef CFB_STRESS
+      ! setup coupling coeff: sustr+(stau)Uo
+      ! with stau = cfb_slope*Uatm + cfb_offset
+      real cfb_slope, cfb_offset
+      parameter (cfb_slope=0.0029)
+      parameter (cfb_offset=0.008)
+# elif defined CFB_STRESS2
+      ! setup coupling coeff: sustr+(stau)Uo
+      ! with stau = cfb_slope2*Stress + cfb_offset2
+      real cfb_slope2, cfb_offset2
+      parameter (cfb_slope2=0.056)
+      parameter (cfb_offset2=0.0025)
+# elif defined CFB_WIND
+      ! setup coupling coeff: Ua-(1-sw)Uo
+      real swparam
+      parameter (swparam=0.3)
+# endif
+#endif
 
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
@@ -414,7 +433,7 @@
       parameter (Agrif_lev_sedim=0)
 # endif
 
-# ifdef GLS_MIX2017
+# ifdef GLS_MIXING
       integer NGLS
       parameter(NGLS=2)
       integer itke

@@ -502,8 +502,6 @@
 #  endif /* ZCLIMATOLOGY */
 !
 !  If appropriate, load tidal forcing into boundary arrays.
-!  Note: for OBC_M2FLATHER only interpolation is done at normal
-!        U point in preparation for u2dbc and v2dbc routines
 !
 #  ifdef Z_FRC_BRY
 #   if defined OBC_WEST
@@ -514,12 +512,7 @@
      &     write(102,*)'Etide',tool_sectodat(time),
      &     h(Istr-1,j),Etide(Istr-1,j)!,Etide(Istr,j)
 #endif
-          zetabry_west(j)=zetabry_west(j)+
-#    ifdef OBC_M2FLATHER
-     &                    0.5*(Etide(Istr-1,j)+Etide(Istr,j))
-#    else
-     &                    Etide(Istr-1,j)
-#    endif
+          zetabry_west(j)=zetabry_west(j)+Etide(Istr-1,j)
 #    ifdef WET_DRY
           if (zetabry_west(j) .lt. Dcrit(Istr-1,j)-h(Istr-1,j)) then
             zetabry_west(j)=Dcrit(Istr-1,j)-h(Istr-1,j)
@@ -531,12 +524,7 @@
 #   if defined OBC_EAST
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
-          zetabry_east(j)=zetabry_east(j)+
-#    ifdef OBC_M2FLATHER
-     &                    0.5*(Etide(Iend,j)+Etide(Iend+1,j))
-#    else
-     &                    Etide(Iend+1,j)
-#    endif
+          zetabry_east(j)=zetabry_east(j)+Etide(Iend+1,j)
 #    ifdef WET_DRY
           if (zetabry_east(j) .lt. Dcrit(Iend+1,j)-h(Iend+1,j)) then
             zetabry_east(j)=Dcrit(Iend+1,j)-h(Iend+1,j)
@@ -548,12 +536,7 @@
 #   if defined OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do i=IstrR,IendR
-          zetabry_south(i)=zetabry_south(i)+
-#    ifdef OBC_M2FLATHER
-     &                     0.5*(Etide(i,Jstr-1)+Etide(i,Jstr))
-#    else
-     &                     Etide(i,Jstr-1)
-#    endif
+          zetabry_south(i)=zetabry_south(i)+Etide(i,Jstr-1)
 #    ifdef WET_DRY
           if (zetabry_south(i) .lt. Dcrit(i,Jstr-1)-h(i,Jstr-1)) then
             zetabry_south(i)=Dcrit(i,Jstr-1)-h(i,Jstr-1)
@@ -565,12 +548,7 @@
 #   if defined OBC_NORTH
       if (NORTHERN_EDGE) then
         do i=IstrR,IendR
-          zetabry_north(i)=zetabry_north(i)+
-#    ifdef OBC_M2FLATHER
-     &                     0.5*(Etide(i,Jend)+Etide(i,Jend+1))
-#    else
-     &                     Etide(i,Jend+1)
-#    endif
+          zetabry_north(i)=zetabry_north(i)+Etide(i,Jend+1)
 #    ifdef WET_DRY
           if (zetabry_north(i) .lt. Dcrit(i,Jend+1)-h(i,Jend+1)) then
             zetabry_north(i)=Dcrit(i,Jend+1)-h(i,Jend+1)

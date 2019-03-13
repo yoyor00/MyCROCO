@@ -1,79 +1,77 @@
-! $Id: gls_smooth.h 1160 2013-06-11 09:48:32Z gcambon $
-!
-!======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-!
-! CROCO website : http://www.croco-ocean.org/
-!======================================================================
-!
-! PART OF KPP2005 (Shchepetkin et al. 2005)
-!
 #   ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=J_EXT_RANGE
-          hwrk(Istr-1,j,k)=hwrk(Istr,j,k)
+          trb(Istr-1,j,k,nnew,ig)=trb(Istr,j,k,nnew,ig)
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=J_EXT_RANGE
-          hwrk(Iend+1,j,k)=hwrk(Iend,j,k)
+          trb(Iend+1,j,k,nnew,ig)=trb(Iend,j,k,nnew,ig)
         enddo
       endif
 #   endif
 #   ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=I_EXT_RANGE
-          hwrk(i,Jstr-1,k)=hwrk(i,Jstr,k)
+          trb(i,Jstr-1,k,nnew,ig)=trb(i,Jstr,k,nnew,ig)
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=I_EXT_RANGE
-          hwrk(i,Jend+1,k)=hwrk(i,Jend,k)
+          trb(i,Jend+1,k,nnew,ig)=trb(i,Jend,k,nnew,ig)
         enddo
       endif
 #    ifndef EW_PERIODIC
       if (WESTERN_EDGE.and.SOUTHERN_EDGE) then
-        hwrk(Istr-1,Jstr-1,k)=hwrk(Istr,Jstr,k)
+        trb(Istr-1,Jstr-1,k,nnew,ig)=trb(Istr,Jstr,k,nnew,ig)
       endif
       if (WESTERN_EDGE.and.NORTHERN_EDGE) then
-        hwrk(Istr-1,Jend+1,k)=hwrk(Istr,Jend,k)
+        trb(Istr-1,Jend+1,k,nnew,ig)=trb(Istr,Jend,k,nnew,ig)
       endif
       if (EASTERN_EDGE.and.SOUTHERN_EDGE) then
-        hwrk(Iend+1,Jstr-1,k)=hwrk(Iend,Jstr,k)
+        trb(Iend+1,Jstr-1,k,nnew,ig)=trb(Iend,Jstr,k,nnew,ig)
       endif
       if (EASTERN_EDGE.and.NORTHERN_EDGE) then
-        hwrk(Iend+1,Jend+1,k)=hwrk(Iend,Jend,k)
+        trb(Iend+1,Jend+1,k,nnew,ig)=trb(Iend,Jend,k,nnew,ig)
       endif
 #    endif
 #   endif
 
-      do j=Jstr,Jend+1
-        do i=Istr,Iend+1
-          wrk3(i,j)=0.25*( hwrk(i  ,j  ,k)  
-     &                   + hwrk(i-1,j  ,k)
-     &                   + hwrk(i  ,j-1,k)
-     &                   + hwrk(i-1,j-1,k) )
-#   ifdef MASKING
-     &                   *pmask2(i,j)
-#   endif
-        enddo
-      enddo
-      do j=Jstr,Jend
-        do i=Istr,Iend
-#   ifdef MASKING
-          cff=0.25*(pmask2(i,j)   +pmask2(i+1,j)
-     &             +pmask2(i,j+1) +pmask2(i+1,j+1))
-#   else
-          cff=1.
-#   endif
-          hwrk(i,j,k)=(1.-cff)*hwrk(i,j,k)+
-     &              0.25*(wrk3(i,j)  +wrk3(i+1,j)
-     &                   +wrk3(i,j+1)+wrk3(i+1,j+1))
-#   ifdef MASKING
-          hwrk(i,j,k)=hwrk(i,j,k)*rmask(i,j)
-#   endif
-        enddo
-      enddo
+         DO j=jstr-1,jend+1              
+            DO i=istr,iend+1          
+               FX (i,j  )=( trb(i  ,j,k,nnew,ig) 
+     &                   -  trb(i-1,j,k,nnew,ig) ) 
+#  ifdef MASKING
+     &                                 *umask(i,j)  
+#  endif
+            ENDDO                    
+         ENDDO
+         DO j=jstr,jend+1                 
+            DO i=istr-1,iend+1
+               FE1(i,j,0)=( trb(i,j  ,k,nnew,ig) 
+     &                    - trb(i,j-1,k,nnew,ig) ) 
+#  ifdef MASKING
+     &                                 *vmask(i,j)
+#  endif
+            ENDDO
+            DO i=istr,iend
+              FE(i,j)=FE1(i,j,0) 
+     &         +  smth_a*( FX(i+1,j)+FX(i  ,j-1)
+     &                 -FX(i  ,j)-FX(i+1,j-1))
+            ENDDO
+         ENDDO
+         DO j=jstr,jend
+            DO i=istr,iend+1
+              FX(i,j)=FX(i,j  ) 
+     &         + smth_a*( FE1(i,j+1,0)+FE1(i-1,j  ,0)
+     &                -FE1(i,j  ,0)-FE1(i-1,j+1,0))
+            ENDDO
+            DO i=istr,iend
+               trb(i,j,k,nnew,ig)=trb(i,j,k,nnew,ig) 
+     &         + smth_b*( FX(i+1,j)-FX(i,j)
+     &                 +FE(i,j+1)-FE(i,j) )
+#  ifdef MASKING
+     &                            *rmask(i,j)
+#  endif
+            ENDDO
+         ENDDO              !--> discard FX,FE,FE1

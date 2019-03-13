@@ -35,7 +35,7 @@
 !======================================================
 ! Look for Hbl, Akt, Akv, ... (J. Gula)
 !======================================================
-# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017
+# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 # include "mixing.h"
 # endif
 !======================================================
@@ -342,8 +342,7 @@
 !Look for Hbl, Akt, Akv, ... (J. Gula)
 !======================================================
 
-# ifdef LMD_SKPP
-#  ifdef LMD_SKPP2005
+# if defined LMD_SKPP || defined GLS_MIXING
 !
 !  hbl:
 !
@@ -351,7 +350,11 @@
       lvar=lenstr(vname(1,indxHbl))
       ierr=nf_inq_varid (ncid, vname(1,indxHbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
+#  ifdef LMD_SKPP2005
         ierr=nf_fread (hbls(START_2D_ARRAY,1), ncid, varid,
+#  else
+        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
+#  endif
      &                                         indx, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
@@ -364,7 +367,6 @@
      &     vname(1,indxHbl)(1:lvar),       ''' not found in ''',
      &     ininame(1:lstr), ''' ==> initialized to zero state.'
       endif
-#  endif
 !
 !  vertical viscosity coefficient.:
 !
@@ -452,7 +454,7 @@
 
 !======================================================
 
-# if defined GLS_MIX2017 || defined GLS_MIXING
+# ifdef GLS_MIXING
 
 !
 !  turbulent kinetic energy.

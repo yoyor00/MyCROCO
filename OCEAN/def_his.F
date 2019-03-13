@@ -78,7 +78,7 @@
 # define vidR hisR
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 # define vidbvf hisbvf
 #endif
 # define vidO hisO
@@ -163,7 +163,7 @@
 # define vidR avgR
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 # define vidbvf avgbvf
 #endif
 # define vidO avgO
@@ -711,7 +711,7 @@
         endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 !----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -1134,7 +1134,7 @@
 # endif
 
 
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
 !
 ! Depth of planetary boundary layer.
 !
@@ -1201,7 +1201,7 @@
         endif
 # endif
 
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
 !
 ! Turbulent Kinetic Energy.
 !
@@ -2325,7 +2325,7 @@
         endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -2448,7 +2448,7 @@
 # endif
 
 
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
 !
 ! Depth of surface planetary boundary layer.
 !
@@ -2475,7 +2475,7 @@
         endif
 # endif
 
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
 !
 ! Turbulent Kinetic Energy.
 !
@@ -2912,7 +2912,7 @@
 #undef vidR
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 #undef vidbvf
 #endif
 #undef vidO
