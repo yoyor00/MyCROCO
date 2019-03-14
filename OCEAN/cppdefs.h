@@ -18,6 +18,7 @@
 #undef  CANYON_B        /* Canyon_B Example */
 #undef  EQUATOR         /* Equator Example  */
 #undef  INNERSHELF      /* Inner Shelf Example */
+#define  SINGLE_COLUMN   /*  1DV vertical model :  encompassing, Kato Philips, Willis Deardorf, Non rotating BBL, forced bottom Ekman layr, double Ekman layer*/
 #undef  RIVER           /* River run-off Example */
 #undef  OVERFLOW        /* Graviational/Overflow Example */
 #undef  SEAMOUNT        /* Seamount Example */
@@ -481,6 +482,42 @@
 # define LMD_MIXING
 # define LMD_RIMIX
 # define LMD_CONVEC
+#elif defined SINGLE_COLUMN
+/*
+!                       Single Column Example
+!                       ====== ====== =======
+*/
+/*
+!    seven  sets up are encompassed
+*/
+# undef KATO_PHILIPS      /* erosion of a linear stratification by a constant surface wind stress */
+# undef WILLIS_DEARDORFF   /* erosion of a linear stratification by a constant loss of surface buoyancy */
+# undef DIURNAL_CYCLE   /* erosion of a linear stratification by a constant loss of surface buoyancy */
+# undef FORCED_EKBBL       /* forced Ekman bottom boundary layer */
+# undef FORCED_DBLEEK      /* forced Ekman bottom and surface boundary layers */
+# undef FORCED_NONROTBBL   /* non rotating forced bottom boundary layer : Prandt layer  */
+# define FORCED_OSCNONROTBBL   /* non rotating oscillatory forced bottom boundary layer  */
+
+# undef  OPENMP
+# undef  MPI
+# define UV_ADV
+# define NEW_S_COORD
+# define UV_COR
+# define SOLVE3D
+
+# undef  LMD_MIXING
+# define GLS_MIXING
+
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+
+# define EW_PERIODIC
+# define NS_PERIODIC
+
 
 #elif defined KH_INST 
 /*
