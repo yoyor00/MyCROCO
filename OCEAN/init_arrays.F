@@ -91,6 +91,15 @@ C$    integer omp_get_thread_num
 !
 #include "compute_extended_bounds.h"
 !
+!  Initialize booleans for I/O
+!
+      do i=1,NWRTHIS
+        wrthis(i)=.false.
+#ifdef AVERAGES
+        wrtavg(i)=.false.
+#endif
+      enddo
+!
 !  Initialize 2-D primitive variables.
 !
       do j=JstrR,JendR
