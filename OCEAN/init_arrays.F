@@ -33,6 +33,7 @@ C$    integer omp_get_thread_num
 !
 !     implicit none
 #include "param.h"
+#include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
 #include "ocean3d.h"
