@@ -124,6 +124,9 @@ C$    integer omp_get_thread_num
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_wet)
+#   ifdef AGRIF
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_childs)
+#   endif
 #  endif
 #  if defined NBQ || defined WET_DRY 
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
