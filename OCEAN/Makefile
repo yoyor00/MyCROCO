@@ -158,7 +158,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # Executable file.
 # ========= =====
 #
-$(SBIN):  $(OBJS90) $(OBJS) depend
+$(SBIN):  depend $(OBJS90) $(OBJS) 
 	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
 	mv a.out $(SBIN)
 #
@@ -239,5 +239,5 @@ my_barrier.o: my_barrier.f
 # Include automatically generated dependency list:
 #
 
-include Make.depend
+-include Make.depend
 
