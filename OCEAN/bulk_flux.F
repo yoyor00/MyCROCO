@@ -112,6 +112,12 @@
 !
       do j=jmin,jmax
         do i=imin,imax
+
+# ifdef READ_PATM
+! get pressure from ATM file and convert to hPa
+         patm = patm2d(i,j)/100.0
+# endif
+
 !
 !
 !  surface temperature and salinity
@@ -417,7 +423,9 @@
 # endif
       real rhow,patm
       parameter (rhow=1000.0)
+#ifndef READ_PATM 
       parameter (patm=1010.0)
+#endif
       real eps,r3
       parameter (eps=1.d-20)
       parameter (r3=1.0/3.0)
@@ -485,6 +493,11 @@
 !
       do j=jmin,jmax
         do i=imin,imax
+
+# ifdef READ_PATM
+! get pressure from ATM file and convert in hPa
+         patm = patm2d(i,j)/100.0
+# endif
 !
 !
 !  Input bulk parameterization fields

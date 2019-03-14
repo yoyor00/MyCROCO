@@ -387,6 +387,8 @@
         do i=IstrR,IendR
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
           srflx(i,j)=srflx(i,j)*rmask_wet(i,j)
+!          sustr(i,j)=sustr(i,j)*umask_wet(i,j)
+!          svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
 #   endif
@@ -452,10 +454,10 @@
 !  Set bottom stress using logarithmic or linear 
 !  and/or quadratic formulation. 
 !
-      if (Zob.ne.0.) then
+      if (maxval(Zob).ne.0.) then
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
-            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob)
+            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
             wrk(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
           enddo
         enddo

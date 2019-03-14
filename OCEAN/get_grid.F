@@ -16,6 +16,7 @@
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
+      real zob_temp
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -116,6 +117,8 @@
         write(stdout,1) 'h', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
+! REMOVE WET DRY    
+!     h(:,:)=max(h(:,:),10.0)
 !
 ! Coriolis parameter.
 !
@@ -292,6 +295,64 @@
       endif
 
 # endif /* MASKING */
+
+# ifdef REDUC_SECTION
+      ureduc(:,:)=1.0
+      vreduc(:,:)=1.0
+      ierr=nf_inq_varid (ncid, 'reduc_u', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (ureduc(START_2D_ARRAY), ncid, varid, 0, u2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'reduc_u', grdname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'reduc_u', grdname(1:lstr)
+        goto 99                                           !--> ERROR
+      endif
+      ureduc(:,:)=min(ureduc(:,:),1.0)
+
+      ierr=nf_inq_varid (ncid, 'reduc_v', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (vreduc(START_2D_ARRAY), ncid, varid, 0, v2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'reduc_v', grdname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'reduc_v', grdname(1:lstr)
+        goto 99                                           !--> ERROR
+      endif
+      vreduc(:,:)=min(vreduc(:,:),1.0)
+# endif
+# ifdef Z0B_VAR
+      zob(:,:)=0.0
+      ierr=nf_inq_varid (ncid, 'z0b', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (zob(START_2D_ARRAY), ncid, varid, 0, v2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'zob', grdname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'zob', grdname(1:lstr)
+        goto 99                                           !--> ERROR
+      endif
+      ! write(stdout,*)'zob',
+     !&  minval(zob),maxval(zob),minloc(zob),maxloc(zob)
+       zob(:,:)=max(zob(:,:),1e-7)
+       zob_temp=max(zob(:,:))
+#ifdef MPI
+          if (NNODES.gt.1) then         ! Perform global max
+            call MPI_allreduce(zob_temp,zobt,1,
+     &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
+          endif
+# endif
+# else 
+       zob(:,:)=zobt 
+# endif
+
+
       ierr=nf_close(ncid)
       return                                      !--> NORMAL RETURN
 
@@ -299,6 +360,8 @@
      &           1x, A / 12x, 'in grid netCDF file:', 1x, A/)
    2  format(/1x, 'GET_GRID - error while reading variable:',
      &           1x, A / 12x, 'in grid netCDF file:', 1x, A/)
+   3  format ('bornes h:',2(1x,F10.7),1x,4(i4,1x))
+   4  format (A,2(1x,F10.7),1x,4(i4,1x))
   99  may_day_flag=2
       return                                              !--> ERROR
       end

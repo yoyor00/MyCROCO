@@ -620,6 +620,10 @@ C$OMP END MASTER
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i-1,j) )
 #endif
+#if defined READ_PATM && !defined SOLVE3D
+     &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
+     &                                   *( patm2d(i,j)-patm2d(i-1,j) )
+#endif
      &                                                              )
 ! 
           rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
@@ -636,6 +640,10 @@ C$OMP END MASTER
 #if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i,j-1) )
+#endif
+#if defined READ_PATM && !defined SOLVE3D
+     &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
+     &                                   *( patm2d(i,j)-patm2d(i,j-1) )
 #endif
      &                                                              )
         enddo
@@ -1659,14 +1667,26 @@ C$OMP END MASTER
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
-            ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
-     &                   *(Dnew(i-1,j)+Dnew(i,j)) )
+            cff=rmask(i-1,j)+rmask(i,j)
+            if (cff > 0.) then
+             ubar(i,j,knew)=cff*Qbar(is)/( on_u(i,j)
+     &               *(Dnew(i-1,j)*rmask(i-1,j)+Dnew(i,j)*rmask(i,j)) )
+
+            else
+              ubar(i,j,knew)=0.
+            endif
 # ifdef SOLVE3D
             DU_avg1(i,j,nnew)=Qbar(is)
 # endif
           else
-            vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
-     &                   *(Dnew(i,j-1)+Dnew(i,j)) )
+            cff=rmask(i,j-1)+rmask(i,j)
+            if (cff > 0.) then
+             vbar(i,j,knew)=cff*Qbar(is)/( om_v(i,j)
+     &               *(Dnew(i,j-1)*rmask(i,j-1)+Dnew(i,j)*rmask(i,j)) )
+
+            else
+              vbar(i,j,knew)=0.
+            endif
 # ifdef SOLVE3D
             DV_avg1(i,j,nnew)=Qbar(is)
 # endif

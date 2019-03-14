@@ -54,11 +54,14 @@
 */
                       /* Configuration Name */
 # define BENGUELA_LR
+                      /* Calendar feature */
+# undef USE_CALENDAR 
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
                       /* I/O server */
 # undef  XIOS
+# undef NC4PAR
                       /* Non-hydrostatic option */
 # undef  NBQ
                       /* Nesting */
@@ -171,7 +174,14 @@
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
-#  undef  ERA_ECMWF
+#  ifdef ONLINE 
+#   define AROME
+#   undef  ERA_ECMWF
+#  endif
+#  undef READ_PATM
+#  ifdef READ_PATM 
+#   define OBC_PATM
+#  endif
 # else
 #  define QCORRECTION
 #  define SFLX_CORR
@@ -237,6 +247,10 @@
 #  define SSH_TIDES
 #  define UV_TIDES
 #  define POT_TIDES
+#  undef  TIDES_MAS
+#  ifndef UV_TIDES
+#   define OBC_REDUCED_PHYSICS
+#  endif
 #  define TIDERAMP
 # endif
 # define OBC_M2CHARACT

@@ -378,6 +378,9 @@ C$OMP CRITICAL (diag_cr_rgn)
               endif
               trd=omp_get_thread_num()
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
+#ifdef CALENDAR 
+              write(stdout,'(a)') tool_sectodat(time)
+#endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
 #ifdef DIAG_CFL
               if (mod(iic-1,ninfo).eq.0) then

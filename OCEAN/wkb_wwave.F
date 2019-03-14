@@ -20,12 +20,20 @@
       call wkb_wwave_tile (istr,iend,jstr,jend, 
      &                     A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd), 
      &                     A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd), 
-     &                     A2d(1,7,trd), A2d(1,8,trd))
+     &                     A2d(1,7,trd), A2d(1,8,trd)
+# ifdef WAVE_FRICTION
+     &      ,A2d(1,9,trd)
+#endif
+     &   )
       return
       end
  
       subroutine wkb_wwave_tile (istr,iend,jstr,jend, 
-     &                     cgx,cge, acx,ace, Dstp, rkx,rke,rwac)
+     &                     cgx,cge, acx,ace, Dstp, rkx,rke,rwac
+# ifdef WAVE_FRICTION
+     &      ,zob_my
+#endif
+     &  )
 !
 !======================================================================
 !  WKB ray equation + action-density conservation equations for
@@ -49,6 +57,9 @@
      &        imin,imax,jmin,jmax, prc
       real, dimension(PRIVATE_2D_SCRATCH_ARRAY) :: cgx,cge,acx,ace,
      &                                             Dstp,rkx,rke,rwac
+# ifdef WAVE_FRICTION
+      real Zob_my(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
       real, dimension(3) :: wkb_bry
       real sbc, kh, kk, nw, cg, a0, ax, ax1, ax2, ay, ay1, ay2,
      &     cosw, sinw, cw, dtinv, cxu, cev, orbital, peg,
@@ -59,9 +70,6 @@
       real, parameter :: eps=1.e-10, 
      &                   khmax=20.     ! deep-water limit for k*h
       logical :: ana_ini_wkb
-# ifdef WAVE_FRICTION
-      real Zob_my
-# endif
 # if defined MPI 
       include 'mpif.h'
 #  include "mpi_cpl.h"
@@ -174,7 +182,7 @@
 # endif
 # ifdef WAVE_FRICTION
       cfrc = 0.5/sqrt(pi)
-      if (Zob.gt.0.) then
+      if (Zobt.gt.0.) then
         Zob_my=Zob
       else
         Zob_my=1.e-3
@@ -786,7 +794,7 @@ C$OMP BARRIER
           inv_f= 1.0/max(frq(i,j,wnew),eps)
           urms = 0.5*frq(i,j,wnew)*hrm(i,j,wnew)/max(sinh(khn),eps)
           abot = inv_f*urms
-          fw   = 1.39*(Zob/max(abot,eps))**0.52 ! Soulsby (1995)
+          fw   = 1.39*(Zob(i,j)/max(abot,eps))**0.52 ! Soulsby (1995)
           wfc(i,j,wnew) = cfrc*fw*inv_f*urms**3 ! ep_d/rho/sigma
 #  undef Zob
 # else

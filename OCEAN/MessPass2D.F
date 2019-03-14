@@ -74,10 +74,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       isize=Npts*ishft                  ! sizes for side messages
       jsize=Npts*jshft                  ! in XI and ETA directions
 
+#define write !
 c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
 c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
-# define write !
                             !  Message passing split into two stages
                             !  in order to optimize Send-Recv pairing
                             !  in such a way that if one subdomain
@@ -91,8 +91,8 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 !
 ! Prepare to receive and send: sides....
         if (mdii.eq.0) then
-          if (WEST_INTER) then
-c            write(*,*) 'MessPass2D: 1.1', mynode
+          if (WEST_INTER2) then
+            write(*,*) 'MessPass2D: 1.1', mynode
             do j=jmin,jmax
               do ipts=1,Npts
                 jbuf_sndW(j-jmin+(ipts-1)*jshft)=A(ipts,j)
@@ -104,8 +104,8 @@ c            write(*,*) 'MessPass2D: 1.1', mynode
      &                         p_W, 1, MPI_COMM_WORLD,         ierr)
           endif
         else
-          if (EAST_INTER) then
-c            write(*,*) 'MessPass2D: 1.2', mynode
+          if (EAST_INTER2) then
+            write(*,*) 'MessPass2D: 1.2', mynode
             do j=jmin,jmax
               do ipts=1,Npts
                 jbuf_sndE(j-jmin+(ipts-1)*jshft)=A(Lmmpi-Npts+ipts,j)
@@ -119,8 +119,8 @@ c            write(*,*) 'MessPass2D: 1.2', mynode
         endif
 
         if (mdjj.eq.0) then
-          if (SOUTH_INTER) then
-c            write(*,*) 'MessPass2D: 1.3', mynode
+          if (SOUTH_INTER2) then
+            write(*,*) 'MessPass2D: 1.3', mynode
             do i=imin,imax
               do jpts=1,Npts
                 ibuf_sndS(i-imin+(jpts-1)*ishft)=A(i,jpts)
@@ -132,8 +132,8 @@ c            write(*,*) 'MessPass2D: 1.3', mynode
      &                         p_S, 3, MPI_COMM_WORLD,         ierr)
           endif
         else
-          if (NORTH_INTER) then
-c            write(*,*) 'MessPass2D: 1.4', mynode
+          if (NORTH_INTER2) then
+            write(*,*) 'MessPass2D: 1.4', mynode
             do i=imin,imax
               do jpts=1,Npts
                 ibuf_sndN(i-imin+(jpts-1)*ishft)=A(i,Mmmpi-Npts+jpts)
@@ -148,9 +148,10 @@ c            write(*,*) 'MessPass2D: 1.4', mynode
 !
 ! ...corners:
 !
+
         if (mdii.eq.0) then
-          if (SOUTH_INTER .and. WEST_INTER) then
-c            write(*,*) 'MessPass2D: 1.5', mynode
+          if (CORNER_SW) then
+            write(*,*) 'MessPass2D: 1.5', mynode
             do jpts=1,Npts
               do ipts=1,Npts
                 buf_snd1(ipts+Npts*(jpts-1))=A(ipts,jpts)
@@ -162,8 +163,8 @@ c            write(*,*) 'MessPass2D: 1.5', mynode
      &                               5, MPI_COMM_WORLD,        ierr)
           endif
         else
-          if (NORTH_INTER .and. EAST_INTER) then
-c            write(*,*) 'MessPass2D: 1.6', mynode
+          if (CORNER_NE) then
+            write(*,*) 'MessPass2D: 1.6', mynode
             do jpts=1,Npts
               do ipts=1,Npts
                 buf_snd2(ipts+Npts*(jpts-1))=
@@ -176,10 +177,9 @@ c            write(*,*) 'MessPass2D: 1.6', mynode
      &                               6, MPI_COMM_WORLD,        ierr)
           endif
         endif
-
         if (mdii.eq.1) then
-          if (SOUTH_INTER .and. EAST_INTER) then
-c            write(*,*) 'MessPass2D: 1.7', mynode
+          if (CORNER_SE) then
+            write(*,*) 'MessPass2D: 1.7', mynode
             do jpts=1,Npts
               do ipts=1,Npts
                 buf_snd3(ipts+Npts*(jpts-1))=
@@ -192,8 +192,8 @@ c            write(*,*) 'MessPass2D: 1.7', mynode
      &                               7, MPI_COMM_WORLD,         ierr)
           endif
         else
-          if (NORTH_INTER .and. WEST_INTER) then
-c            write(*,*) 'MessPass2D: 1.8', mynode
+          if (CORNER_NW) then
+            write(*,*) 'MessPass2D: 1.8', mynode
             do jpts=1,Npts
               do ipts=1,Npts
                 buf_snd4(ipts+Npts*(jpts-1))=
@@ -210,8 +210,8 @@ c            write(*,*) 'MessPass2D: 1.8', mynode
 !
 ! Wait for completion of receive and fill ghost points: sides...
 !
-      if (WEST_INTER) then
-c        write(*,*) 'MessPass2D: 2.1', mynode
+      if (WEST_INTER2) then
+        write(*,*) 'MessPass2D: 2.1', mynode
         call MPI_Wait (req(1),status(1,1),ierr)
         do j=jmin,jmax
           do ipts=1,Npts
@@ -219,9 +219,16 @@ c        write(*,*) 'MessPass2D: 2.1', mynode
           enddo
         enddo
       endif
+      if ( WEST_INTER .and. .not. WEST_INTER2 ) then
+        do j=jmin,jmax
+          do ipts=1,Npts
+           A(ipts-Npts,j)=A(ipts,j)
+          enddo
+        enddo
+      endif
 
-      if (EAST_INTER) then
-c        write(*,*) 'MessPass2D: 2.2', mynode
+      if (EAST_INTER2) then
+        write(*,*) 'MessPass2D: 2.2', mynode
         call MPI_Wait (req(2),status(1,2),ierr)
         do j=jmin,jmax
           do ipts=1,Npts
@@ -229,9 +236,16 @@ c        write(*,*) 'MessPass2D: 2.2', mynode
           enddo
         enddo
       endif
+      if ( EAST_INTER .and. .not. EAST_INTER2 ) then
+        do j=jmin,jmax
+          do ipts=1,Npts
+           A(Lmmpi+ipts,j)=A(Lmmpi-Npts+ipts,j)
+          enddo
+        enddo
+      endif
 
-      if (SOUTH_INTER) then
-c        write(*,*) 'MessPass2D: 2.3', mynode
+      if (SOUTH_INTER2) then
+        write(*,*) 'MessPass2D: 2.3', mynode
         call MPI_Wait (req(3),status(1,3),ierr)
         do i=imin,imax
           do jpts=1,Npts
@@ -239,9 +253,16 @@ c        write(*,*) 'MessPass2D: 2.3', mynode
           enddo
         enddo
       endif
+      if ( SOUTH_INTER .and. .not. SOUTH_INTER2 ) then
+        do i=imin,imax
+          do jpts=1,Npts
+           A(i,jpts-Npts)=A(i,jpts)
+          enddo
+        enddo
+      endif
 
-      if (NORTH_INTER) then
-c        write(*,*) 'MessPass2D: 2.4', mynode
+      if (NORTH_INTER2) then
+        write(*,*) 'MessPass2D: 2.4', mynode
         call MPI_Wait (req(4),status(1,4),ierr)
         do i=imin,imax
           do jpts=1,Npts
@@ -249,21 +270,37 @@ c        write(*,*) 'MessPass2D: 2.4', mynode
           enddo
         enddo
       endif
-!
-! ...corners:
-!
-      if (SOUTH_INTER .and. WEST_INTER) then
-c        write(*,*) 'MessPass2D: 2.5', mynode
-        call MPI_Wait (req(5),status(1,5),ierr)
-        do jpts=1,Npts
-          do ipts=1,Npts
-            A(ipts-Npts,jpts-Npts)=buf_rev1(ipts+Npts*(jpts-1))
+      if (NORTH_INTER .AND. .not. NORTH_INTER2) then
+        do i=imin,imax
+          do jpts=1,Npts
+            A(i,Mmmpi+jpts)=A(i,Mmmpi-Npts+jpts)
           enddo
         enddo
       endif
 
-      if (NORTH_INTER .and. EAST_INTER) then
-c        write(*,*) 'MessPass2D: 2.6', mynode
+!
+! ...corners:
+!
+      if ( CORNER_SW) then
+        write(*,*) 'MessPass2D: 2.5', mynode
+        call MPI_Wait (req(5),status(1,5),ierr)
+        do jpts=1,Npts
+          do ipts=1,Npts
+          A(ipts-Npts,jpts-Npts)=buf_rev1(ipts+Npts*(jpts-1))
+          enddo
+        enddo
+      endif
+      if (.not.CORNER_SW .and.
+     &  SOUTH_INTER .and.WEST_INTER ) then
+        do jpts=1,Npts
+          do ipts=1,Npts
+           A(ipts-Npts,jpts-Npts)=A(ipts,jpts)
+          enddo
+        enddo
+       endif  
+
+      if ( CORNER_NE) then
+        write(*,*) 'MessPass2D: 2.6', mynode
         call MPI_Wait (req(6),status(1,6),ierr)
         do jpts=1,Npts
           do ipts=1,Npts
@@ -271,9 +308,17 @@ c        write(*,*) 'MessPass2D: 2.6', mynode
           enddo
         enddo
       endif
+      if (.not.CORNER_NE .and.
+     &  NORTH_INTER .and.EAST_INTER ) then
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(Lmmpi+ipts,Mmmpi+jpts)=A(Lmmpi+ipts-NPts,Mmmpi+jpts-Npts)
+          enddo
+        enddo
+       endif  
 
-      if (SOUTH_INTER .and. EAST_INTER) then
-c        write(*,*) 'MessPass2D: 2.7', mynode
+      if (CORNER_SE) then
+        write(*,*) 'MessPass2D: 2.7', mynode
         call MPI_Wait (req(7),status(1,7),ierr)
         do jpts=1,Npts
           do ipts=1,Npts
@@ -281,9 +326,18 @@ c        write(*,*) 'MessPass2D: 2.7', mynode
           enddo
         enddo
       endif
+      if (.not. CORNER_SE .and. 
+     &  SOUTH_INTER .and. EAST_INTER ) then
+        do jpts=1,Npts
+          do ipts=1,Npts
+            A(Lmmpi+ipts,jpts-Npts)=A(Lmmpi+ipts-Npts,jpts)
+          enddo
+        enddo      
+      endif  
 
-      if (NORTH_INTER .and. WEST_INTER) then
-c        write(*,*) 'MessPass2D: 2.8', mynode
+
+      if (CORNER_NW) then
+        write(*,*) 'MessPass2D: 2.8', mynode
         call MPI_Wait (req(8),status(1,8),ierr)
         do jpts=1,Npts
           do ipts=1,Npts
@@ -291,6 +345,16 @@ c        write(*,*) 'MessPass2D: 2.8', mynode
           enddo
         enddo
       endif
+      if (.not. CORNER_NW .and.
+     &   NORTH_INTER .and.  WEST_INTER ) then
+       do jpts=1,Npts
+          do ipts=1,Npts
+            A(ipts-Npts,Mmmpi+jpts)=A(ipts,Mmmpi+jpts-NPts)
+          enddo
+        enddo
+       endif 
+
+
 c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 
 #if defined AGRIF
