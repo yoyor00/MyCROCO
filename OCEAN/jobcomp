@@ -74,7 +74,7 @@ XIOS_ROOT_DIR=$HOME/xios-1.0
 #
 # Use GNU Make command
 #
-MAKE=make
+MAKE=gmake
 #
 # AGRIF sources directory
 #
@@ -398,12 +398,14 @@ echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
 echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
 echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
 echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
-sed -f flags.tmp Makedefs.generic > Makedefs
+sed -f flags.tmp Make.inc > Make.inc.tmp
+\mv Make.inc.tmp Make.inc
 rm -f flags.tmp
 
 #
 # compile croco
 #
-$MAKE 
+$MAKE depend
+$MAKE  
 mv croco $RUNDIR
 #

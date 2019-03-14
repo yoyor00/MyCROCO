@@ -24,6 +24,14 @@
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
 #endif
+#ifdef OW_COUPLING
+      real twox(GLOBAL_2D_ARRAY)
+      real twoy(GLOBAL_2D_ARRAY)
+      real tawx(GLOBAL_2D_ARRAY)
+      real tawy(GLOBAL_2D_ARRAY)
+      common /forces_twox/twox /forces_twoy/twoy
+      common /forces_tawx/tawx /forces_tawy/tawy
+#endif
 #ifndef ANA_SMFLUX
 !
 !  tsms      Time of surface momentum stresses.
@@ -264,13 +272,21 @@
 !  prate    surface precipitation rate [cm day-1]
 !  radlw    net terrestrial longwave radiation [Watts meter-2]
 !  radsw    net solar shortwave radiation [Watts meter-2]
-!
+!  patm2d   atmospheric pressure above mean seal level
+!  paref     reference pressure to compute inverse barometer effect
       real tair(GLOBAL_2D_ARRAY)
       real rhum(GLOBAL_2D_ARRAY)
       real prate(GLOBAL_2D_ARRAY)
       real radlw(GLOBAL_2D_ARRAY)
       real radsw(GLOBAL_2D_ARRAY)
       real wspd(GLOBAL_2D_ARRAY)
+# ifdef READ_PATM
+      real patm2d(GLOBAL_2D_ARRAY)
+#  ifdef OBC_PATM
+      real paref
+      parameter(paref=101325) 
+#  endif
+# endif
 # ifdef BULK_SM_UPDATE
       real uwnd(GLOBAL_2D_ARRAY)
       real vwnd(GLOBAL_2D_ARRAY)
@@ -285,6 +301,9 @@
       common /bulk_radlw/ radlw 
       common /bulk_radsw/ radsw
       common /bulk_wspd/ wspd
+# ifdef READ_PATM
+      common /bulk_patm/ patm2d
+# endif
 # ifdef BULK_SM_UPDATE
       common /bulk_uwnd/ uwnd 
       common /bulk_vwnd/ vwnd
@@ -299,6 +318,9 @@
       real radlwg(GLOBAL_2D_ARRAY,2)
       real radswg(GLOBAL_2D_ARRAY,2)
       real wspdg(GLOBAL_2D_ARRAY,2)
+# ifdef READ_PATM
+      real patmg(GLOBAL_2D_ARRAY,2)
+# endif
 # ifdef BULK_SM_UPDATE
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
@@ -313,6 +335,9 @@
       common /bulkdat_radlwg/radlwg 
       common /bulkdat_radswg/radswg 
       common /bulkdat_wspdg/wspdg 
+# ifdef READ_PATM
+      common /bulkdat_patmg/patmg 
+# endif
 # ifdef BULK_SM_UPDATE 
       common /bulk_uwndg/uwndg 
       common /bulk_vwndg/vwndg 
@@ -323,6 +348,9 @@
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
       real    wspdp(2)
+# ifdef READ_PATM
+      real patmp(2)
+# endif
 # ifdef BULK_SM_UPDATE
       real    uwndp(2),vwndp(2)
 # endif
@@ -333,6 +361,9 @@
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
       integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
       integer wspd_id,lwspdgrd
+# ifdef READ_PATM
+      integer patm_id,lpatmgrd
+#endif
 # ifdef BULK_SM_UPDATE
       integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
@@ -346,6 +377,9 @@
       common /bulkdat1_grd/ ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
       common /bulkdat1_tim/ itbulk, bulk_ncycle, bulk_rec, bulk_tid
       common /bulkdat1_uns/ bulkunused
+# ifdef READ_PATM
+      common /bulkdat1_patm/ patm_id,lpatmgrd
+#endif
 # ifdef BULK_SM_UPDATE
       common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
 # endif
@@ -356,6 +390,9 @@
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
       common /bulkdat2_tim/ bulk_time, bulk_cycle
+# ifdef READ_PATM
+      common /bulkdat2_patm/ patmp
+# endif
 # ifdef BULK_SM_UPDATE
       common /bulkdat2_wnd/ uwndp,vwndp
 # endif

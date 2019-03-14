@@ -715,6 +715,12 @@ C$    integer omp_get_thread_num
 # ifdef OA_COUPLING
           smstr(i,j)=init
 # endif
+# ifdef OW_COUPLING
+          twox(i,j)=init
+          twoy(i,j)=init
+          tawx(i,j)=init
+          tawy(i,j)=init
+# endif
 #ifndef ANA_SMFLUX
           sustrg(i,j,1)=init
           svstrg(i,j,1)=init

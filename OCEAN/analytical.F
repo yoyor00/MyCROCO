@@ -137,6 +137,12 @@
             if (rr.le.2.5e3) then
               btflx(i,j,itemp)=0.001
             endif
+# elif defined SINGLE_COLUMN 
+#  if defined KATO_PHILIPS
+            btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
+#  elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
+            btflx(i,j,itemp)=-1.0e-5*0.01
+#  endif
 # endif
           enddo
         enddo
@@ -362,6 +368,19 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
        enddo
       enddo
+# elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=(0.01)**2
+        enddo
+      enddo
+# elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
+
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=-(0.0025)**2
+        enddo
+      enddo
 # elif defined CANYON_A || defined CANYON_B
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -493,6 +512,9 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           srflx(i,j)=0.
+# ifdef DIURNAL_CYCLE
+          srflx(i,j)=max(cos(2.*pi*(time/86400.-0.5)),0.)*264.91/(rho0*Cp)
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
           srflxbio(i,j)=0.
 # endif
@@ -695,8 +717,8 @@ C$    integer  trd, omp_get_thread_num
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sst(i,j)=???
-          dqdt(i,j)=???
+          sst(i,j)=25
+          dqdt(i,j)=0.
         enddo
       enddo
 # endif
@@ -772,7 +794,13 @@ c
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
+#if defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+            stflx(i,j,itemp)= - 100./(rho0*Cp)
+#elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+            stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+#else
             stflx(i,j,itemp)=0.
+#endif
           enddo
         enddo
 !
@@ -1626,7 +1654,7 @@ C$    integer  trd, omp_get_thread_num
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1                ! [m2/s2]
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3                ! [m/s]
           Sdens(i,j)=MAX(cff4,1050.)
 # ifdef DEBUG
@@ -1801,10 +1829,12 @@ C$    integer  trd, omp_get_thread_num
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
+            if (cff2 > 0.0) then
+             Qshape(is,k)=Qshape(is,k)/cff2
+            endif
           enddo
         enddo
-#  endif
+# endif
 
 # else
 #  define CST_SHAPE
@@ -1855,17 +1885,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef RIVER
       ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
+        Qbar(is)=ramp*Qbar(is)
       enddo
 # elif defined REGIONAL
       ramp=1. !TANH(10*dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
+        Qbar(is)=ramp*Qbar(is)
       enddo
 # else
       ramp=1. !TANH(dt*sec2day*float(iic-ntstart))
       do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
+        Qbar(is)=ramp*Qbar(is)
       enddo
 # endif
       do is=1,Nsrc
@@ -2160,6 +2190,9 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # include "param.h"
+# ifdef OBC_PATM
+#  include "forces.h"
+# endif
 # include "grid.h"
 # include "scalars.h"
 # include "boundary.h"
@@ -2168,6 +2201,7 @@ C$    integer  trd, omp_get_thread_num
 # include "coupling.h"
 # include "forces.h"
 !
+      integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "compute_auxiliary_bounds.h"
 !
 # ifdef OBC_WEST
@@ -2184,6 +2218,10 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
+#    ifdef OBC_PATM
+            zetabry_west(j)=zetabry_west(j)
+     &                     -(patm2d(Istr,j)-paref)/(g*rho0)
+#    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
@@ -2222,6 +2260,10 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
+#   ifdef OBC_PATM
+            zetabry_east(j)=zetabry_east(j)
+     &                    -(patm2d(IendR,j)-paref)/(g*rho0)
+#   endif
           enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2259,6 +2301,10 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
+#   ifdef OBC_PATM
+            zetabry_south(i)=zetabry_south(i)
+     &                    -(patm2d(i,JstrR)-paref)/(g*rho0)
+#   endif
           enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2296,6 +2342,10 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)
+#   ifdef OBC_PATM
+            zetabry_north(i)=zetabry_north(i)
+     &                     -(patm2d(i,JendR)-paref)/(g*rho0)
+#   endif
           enddo
 #  endif
 #  ifdef M2_FRC_BRY

@@ -81,6 +81,18 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined SINGLE_COLUMN
+# ifdef KATO_PHILIPS 
+      parameter (LLm0=5 ,   MMm0=5,    N=100)   !
+# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=50)   !
+# elif defined FORCED_EKBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=40)   !
+# elif defined FORCED_DBLEEK 
+      parameter (LLm0=5 ,   MMm0=5,    N=25)   !
+# elif defined DIURNAL_CYCLE
+      parameter (LLm0=5 ,   MMm0=5,    N=150)   !
+# endif
 #elif defined PLUME
       parameter (LLm0=200,   MMm0=200,   N=100)        
 !      parameter (LLm0=80,   MMm0=80,   N=100) 
@@ -173,6 +185,10 @@
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
+#  elif defined MENOR 
+      parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
+#  elif defined SEINE 
+      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -276,13 +292,13 @@
 # elif defined SWASH
       parameter (D_wetdry=0.001)
 # else
-      parameter (D_wetdry=0.10)
+      parameter (D_wetdry=0.2)
 # endif
 #endif
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources
-      parameter (Msrc=10)        ! ====== == ===== =======
+      parameter (Msrc=1)        ! ====== == ===== =======
 #endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats

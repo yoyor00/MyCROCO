@@ -63,7 +63,7 @@
 #  define SWITCH !
 # endif
 
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -559,7 +559,11 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     We do that because the mask has been applied if iic ==0 !
                do k=1,N
                   workr(:,:,k)=workr(:,:,k)
+#ifdef WET_DRY
+     &                         SWITCH rmask_wet(:,:)
+#else
      &                         SWITCH rmask(:,:)
+#endif
                enddo
             endif
 #endif
@@ -1047,7 +1051,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
 !     
-#if defined MPI &               !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILE & !defined NC4PAR
       ierr=nf_close (ncidhis)
       if (nrpfhis.gt.0 .and. record.ge.nrpfhis) ncidhis=-1
 #else
@@ -1070,7 +1074,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
          may_day_flag=3
       endif
 
-#if defined MPI &               !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
          call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &        1, MPI_COMM_WORLD,  ierr)

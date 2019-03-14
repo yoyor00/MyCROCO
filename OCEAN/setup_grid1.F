@@ -123,6 +123,9 @@ C$    integer omp_get_thread_num
      &                 /(pn(i,j)+pn(i-1,j))
            om_u(i,j)=2./(pm(i,j)+pm(i-1,j))
            on_u(i,j)=2./(pn(i,j)+pn(i-1,j))
+#ifdef REDUC_SECTION
+           on_u(i,j)=on_u(i,j)*ureduc(i,j)
+#endif
            pn_u(i,j)=0.5*(pn(i,j)+pn(i-1,j))
            pm_u(i,j)=0.5*(pm(i,j)+pm(i-1,j))
 #ifdef MASKING
@@ -139,6 +142,9 @@ C$    integer omp_get_thread_num
      &                /(pm(i,j)+pm(i,j-1))
           om_v(i,j)=2./(pm(i,j)+pm(i,j-1))
           on_v(i,j)=2./(pn(i,j)+pn(i,j-1))
+#ifdef REDUC_SECTION
+           om_v(i,j)=om_v(i,j)*vreduc(i,j)
+#endif
           pm_v(i,j)=0.5*(pm(i,j)+pm(i,j-1))
           pn_v(i,j)=0.5*(pn(i,j)+pn(i,j-1))
 #ifdef MASKING
@@ -218,6 +224,7 @@ C$    integer omp_get_thread_num
 #undef JV_RANGE
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pnom_r)

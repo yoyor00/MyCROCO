@@ -146,9 +146,9 @@
 !     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
       srcv_clname(17) = 'RRMTWOY'//clevel   
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(18) = 'RRMTWSX'//clevel   
+      srcv_clname(18) = 'RRMTAWX'//clevel   
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(19) = 'RRMTWSY'//clevel   
+      srcv_clname(19) = 'RRMTAWY'//clevel   
 
       DO ja = 0, nmaxatm
 

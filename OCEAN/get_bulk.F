@@ -138,6 +138,24 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                        !--> ERROR
         endif
 
+# ifdef READ_PATM
+        lvar=lenstr(vname(1,indxPATM))
+        ierr=nf_inq_varid (ncidbulk, vname(1,indxPATM)(1:lvar),patm_id)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_inq_varndims (ncidbulk, patm_id, i)
+          if (ierr. eq. nf_noerr) then
+            if (i.gt.1) then
+              lpatmgrd=1
+            else
+              lpatmgrd=0
+            endif
+          endif
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,3) vname(1,indxPATM)(1:lvar),bulkname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
         lvar=lenstr(vname(1,indxShflx_rswbio))
         ierr=nf_inq_varid (ncidbulk,vname(1,indxShflx_rswbio)(1:lvar)
@@ -364,6 +382,21 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! radswbio
 !
+# ifdef READ_PATM
+! Patm
+!
+        if (lpatmgrd.eq.1) then
+          ierr=nf_fread (patmg(START_2D_ARRAY,i), ncidbulk, patm_id,
+     &                                            bulk_rec,  r2dvar)
+        else
+          ierr=nf_get_var1_FTYPE (ncidbulk,patm_id,bulk_rec,patmp(i))
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,6) 'PATM', bulk_rec
+          goto 99                                         !--> ERROR
+        endif
+
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
         if (lradswbiogrd.eq.1) then
           ierr=nf_fread (radswbiog(START_2D_ARRAY,i), ncidbulk,
@@ -507,7 +540,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifdef CFB_WIND          
       integer imax,jmax
 # endif
-      real val1,val2,val3,val4,val5,val6,val7,val8
+      real val1,val2,val3,val4,val5,val6,val7,val8,val9
 # ifdef DIURNAL_INPUT_SRFLX
       real val55
 # endif /* DIURNAL_INPUT_SRFLX */
@@ -546,6 +579,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
                 radlw(i,j)=srf_scale*radlwg(i,j,itbulk)
                 radsw(i,j)=srf_scale*radswg(i,j,itbulk)
                 srflx(i,j)=radsw(i,j)
+# ifdef READ_PATM
+                patm2d(i,j)=patmg(i,j,itbulk)
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
                 radswbio(i,j)=srf_scale*radswbiog(i,j,itbulk)
                 srflxbio(i,j)=radswbio(i,j)
@@ -660,6 +696,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             val8=sms_scale*svstrp(itbulk)
 #  endif /* BULK_SM_UPDATE */
 # endif /* BULK_SMFLUX */
+# ifdef READ_PATM
+            val9=patmp(itbulk)
+# endif
             do j=JstrR,JendR
               do i=IstrR,IendR
                 wspd(i,j)=val1
@@ -668,6 +707,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
                 radlw(i,j)=val4
                 radsw(i,j)=val5
                 srflx(i,j)=val5
+# ifdef READ_PATM
+                patm2d(i,j)=val9
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
                 radswbio(i,j)=val55
                 srflxbio(i,j)=val55
@@ -732,6 +774,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               radlw(i,j)=cff3*radlwg(i,j,it1)+cff4*radlwg(i,j,it2)
               radsw(i,j)=cff3*radswg(i,j,it1)+cff4*radswg(i,j,it2)
               srflx(i,j)=radsw(i,j)
+# ifdef READ_PATM
+              patm2d(i,j)=cff1*patmg(i,j,it1)+cff2*patmg(i,j,it2)
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
               radswbio(i,j)=cff3*radswbiog(i,j,it1)
      &             +cff4*radswbiog(i,j,it2)
@@ -849,6 +894,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           val8=cff7*svstrp(it1)+cff8*svstrp(it2)
 #  endif /* BULK_SM_UPDATE */
 # endif /* BULK_SMFLUX */
+# ifdef READ_PATM
+          val9=cff1*patmp(it1)+cff2*patmp(it2)
+# endif
           
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -874,6 +922,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               svstr(i,j)=val8
 #  endif /* BULK_SM_UPDATE */
 # endif /* BULK_SMFLUX */
+# ifdef READ_PATM
+             patm2d(i,j)=val9
+# endif
             enddo
           enddo
         endif

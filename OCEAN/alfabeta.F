@@ -104,7 +104,7 @@
 # ifdef NONLIN_EOS 
           Tt=t(i,j,N,nstp,itemp)
 #  ifdef SALINITY
-          Ts=t(i,j,N,nstp,isalt)
+          Ts=max(0.,t(i,j,N,nstp,isalt))
           sqrtTs=sqrt(Ts)
 #  else
           Ts=0.

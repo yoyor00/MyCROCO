@@ -152,7 +152,7 @@
       DO j=JstrV-1,Jend+1
         DO i=IstrU-1,Iend+1
 # ifdef SOLVE3D
-          Zr(i,j)=max(z_r(i,j,1)-z_w(i,j,0),Zob+1.E-4)
+          Zr(i,j)=max(z_r(i,j,1)-z_w(i,j,0),Zob(i,j)+1.E-4)
           Ur(i,j)=u(i,j,1,nrhs)
           Vr(i,j)=v(i,j,1,nrhs)
 # else
@@ -257,8 +257,7 @@
      &                                  *(d50**0.9)*tau_cb   ! [m^2/s^2]
 
           znotc= d50/12.0
-          znot = MAX(Zob,znotc)
-!
+          znot = MAX(Zob(i,j),znotc)
 !---------------------------------------------------------------------
 !  set tauc acc. to current-only case (max znot & skin friction) [m/s]
 !---------------------------------------------------------------------

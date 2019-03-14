@@ -469,6 +469,10 @@
       parameter (indxGls=indxAkt+8)
       integer indxLsc
       parameter (indxLsc=indxAkt+9)
+      integer indxAkk
+      parameter (indxAkk=indxAkt+10)
+      integer indxAkp
+      parameter (indxAkp=indxAkt+11)
 # endif
 #endif
 
@@ -549,11 +553,12 @@
 # endif
 # ifdef BULK_FLUX
       integer indxWSPD,indxTAIR,indxRHUM,indxRADLW,indxRADSW,
-     &        indxPRATE,indxUWND,indxVWND
+     &        indxPRATE,indxUWND,indxVWND,indxPATM
       parameter (indxWSPD=indxSST+3,  indxTAIR=indxSST+4,
      &           indxRHUM=indxSST+5,  indxRADLW=indxSST+6,
      &           indxRADSW=indxSST+7, indxPRATE=indxSST+8,
-     &           indxUWND=indxSST+9,  indxVWND=indxSST+10)
+     &           indxUWND=indxSST+9,  indxVWND=indxSST+10,
+     &           indxPATM=indxSST+11)
       integer indxShflx_rlw,indxShflx_lat,indxShflx_sen 
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
@@ -667,15 +672,15 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+80)
+      parameter (indxQBAR=indxSUSTR+90)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+81)
+      parameter (indxTsrc=indxSUSTR+91)
 # endif
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+82)
+      parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
 #ifdef ICE
       integer indxAi
@@ -1554,8 +1559,11 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-
+# if ! defined XIOS2
       character*80 date_str, title, start_date
+# else  
+      character*80 date_str, title
+# endif
       character*80 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
@@ -1638,7 +1646,11 @@
       character*75  vname(20, 90)
 #endif
 
+#ifndef XIOS2
       common /cncscrum/       date_str,   title,  start_date
+#else
+      common /cncscrum/       date_str,   title
+#endif
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname

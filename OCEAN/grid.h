@@ -56,6 +56,9 @@
 ! vmask
 ! pmask    pmask=(0=Land, 1=Sea, 1-gamma2 =boundary).
 !
+! reducu  reduction coefficient along x-axis for rivers sections  
+! reducv  reduction coefficient along y-axis for rivers sections  
+
       real h(GLOBAL_2D_ARRAY)
       real hinv(GLOBAL_2D_ARRAY)
       real f(GLOBAL_2D_ARRAY)
@@ -160,6 +163,15 @@
       common /Dcrit_wet/Dcrit
       common /wetdry_wet/wetdry
 #endif
+
+#ifdef REDUC_SECTION
+      real ureduc(GLOBAL_2D_ARRAY)
+      real vreduc(GLOBAL_2D_ARRAY)
+      common /reduc_u/ureduc
+      common /reduc_v/vreduc
+#endif
+      real zob(GLOBAL_2D_ARRAY)
+      common /Z0B_VAR/zob
 
 #if defined UV_COR_NT || defined CROCO_QH
       real e(GLOBAL_2D_ARRAY)
