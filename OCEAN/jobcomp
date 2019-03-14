@@ -102,22 +102,22 @@ do
   fi 
 done
 
-[ ! -d $SCRDIR/AGRIF_FILES ] &&  mkdir $SCRDIR/AGRIF_FILES
+[ ! -d $SCRDIR/AGRIF/AGRIF_FILES ] &&  mkdir -p $SCRDIR/AGRIF/AGRIF_FILES
 for file in $(ls ${AGRIF_SRC}/AGRIF_FILES/*.F90) 
 do
   file1=$(basename $file) 
 #  echo $file1	
   if [ ! -f $file1 ]; then
-	  if [ -f $SCRDIR/AGRIF_FILES/${file1} ] ; then
-	    [ "1$(diff $file $SCRDIR/AGRIF_FILES/$file1)" != "1" ] && cp -f $file $SCRDIR/AGRIF_FILES 
+	  if [ -f $SCRDIR/AGRIF/AGRIF_FILES/${file1} ] ; then
+	    [ "1$(diff $file $SCRDIR/AGRIF/AGRIF_FILES/$file1)" != "1" ] && cp -f $file $SCRDIR/AGRIF/AGRIF_FILES 
 	  else
-	  	cp -f $file $SCRDIR/AGRIF_FILES 
+	  	cp -f $file $SCRDIR/AGRIF/AGRIF_FILES 
 	  fi
   else 
-	  if [ -f $SCRDIR/AGRIF_FILES/$file1 ] ; then
-	    [ "1$(diff $file1  $SCRDIR/AGRIF_FILES/${file1})" != "1" ] && cp -f $file1 $SCRDIR/AGRIF_FILES 
+	  if [ -f $SCRDIR/AGRIF/AGRIF_FILES/$file1 ] ; then
+	    [ "1$(diff $file1  $SCRDIR/AGRIF/AGRIF_FILES/${file1})" != "1" ] && cp -f $file1 $SCRDIR/AGRIF/AGRIF_FILES 
 	  else
-	  	cp -f $file1 $SCRDIR/AGRIF_FILES 
+	  	cp -f $file1 $SCRDIR/AGRIF/AGRIF_FILES 
 	  fi   	     
   fi 
 done
@@ -130,11 +130,12 @@ done
 #/bin/cp -f ${SOURCE}/testkeys.F $SCRDIR
 /bin/cp -f ${SOURCE}/jobcomp $SCRDIR
 /bin/cp -f ${SOURCE}/amr.in $SCRDIR
-#/bin/cp -RLf ${AGRIF_SRC} $SCRDIR
+/bin/cp -rf ${AGRIF_SRC}/LIB $SCRDIR/AGRIF
+/bin/cp -Rf ${AGRIF_SRC}/Makefile $SCRDIR/AGRIF
+/bin/cp -Rf ${AGRIF_SRC}/agrif2model.F90 $SCRDIR/AGRIF
 #/bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
 #/bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
 #/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
-
 
 if [[ -e "namelist_pisces" ]] ; then
 	echo "  file namelist_pisces exists in Run directory"
