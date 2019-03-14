@@ -857,7 +857,7 @@
 
 ======================================================================
 */
-#ifndef SOLVE3D
+#ifndef SOLVE3D                    
 # undef AVERAGES_K
 # undef SALINITY
 # undef NONLIN_EOS
@@ -869,6 +869,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
+# undef CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH

@@ -286,9 +286,11 @@ C$OMP END PARALLEL
 #endif
       call get_date (date_str)
 
-#ifdef TS_MIX_ISO_FILT
+#ifdef SOLVE3D
+# ifdef TS_MIX_ISO_FILT
       csmooth=dt/(86400.)
       ismooth=int(1./csmooth)
+# endif
 #endif
 !
 !---------------------------------------------------------------
