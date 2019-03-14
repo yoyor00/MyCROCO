@@ -24,6 +24,14 @@
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
 #endif
+#ifdef OW_COUPLING
+      real twox(GLOBAL_2D_ARRAY)
+      real twoy(GLOBAL_2D_ARRAY)
+      real tawx(GLOBAL_2D_ARRAY)
+      real tawy(GLOBAL_2D_ARRAY)
+      common /forces_twox/twox /forces_twoy/twoy
+      common /forces_tawx/tawx /forces_tawy/tawy
+#endif
 #ifndef ANA_SMFLUX
 !
 !  tsms      Time of surface momentum stresses.
