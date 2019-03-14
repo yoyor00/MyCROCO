@@ -51,7 +51,7 @@
 #endif
       logical dumboolean
 #ifdef USE_CALENDAR
-      real  dtout
+      real  dt_his,dt_avg,dt_rst
 #endif
 !
 ! Use pre-set default startup filename for known applications,
@@ -297,10 +297,10 @@
 ! Start date
 !
       elseif (keyword(1:kwlen).eq.'start_date') then
-         call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) start_date
-         lstr=lenstr(start_date)
-         MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) start_date
+        lstr=lenstr(start_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
      &   'Start date:', start_date(1:lstr)
 #endif
 #ifdef USE_CALENDAR 
@@ -308,19 +308,28 @@
 ! Run start date
 !
       elseif (keyword(1:kwlen).eq.'run_start_date') then
-         call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) run_start_date
-         lstr=lenstr(run_end_date)
-         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) run_start_date
+        lstr=lenstr(run_end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &   'Run start date:', run_start_date(1:lstr)
 ! Run END date
 !
       elseif (keyword(1:kwlen).eq.'run_end_date') then
-         call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) run_end_date
-         lstr=lenstr(run_end_date)
-         MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) run_end_date
+        lstr=lenstr(run_end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &   'Run end date:', run_end_date(1:lstr)
+! output time steps
+      elseif (keyword(1:kwlen).eq.'output_time_steps') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) dt_his,dt_avg,dt_rst
+        MPI_master_only 
+     &  write(stdout,'(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
+     &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
+     &  'DT RST=',dt_rst,'H'
+        MPI_master_only write(stdout,*) 
 #endif
 !     
 ! Time-stepping parameters
@@ -586,19 +595,15 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'restart') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef USE_CALENDAR
-        read(input,*,err=95) dtout,nrpfrst 
-        nrst=(dtout*3600.)/dt 
-        MPI_master_only write(stdout,'(6x,A,f6.2,A)')
-     &  'DT RESTART =',dtout,'H'
-# else
         read(input,*,err=95) nrst, nrpfrst
-# endif
         read(input,'(A)',err=95)  fname 
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        nrst=ceiling((dt_rst*3600.)/dt)
+#endif
         rstname=fname(1:lstr)
         MPI_master_only write(stdout,
      &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
@@ -609,19 +614,15 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'history') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef USE_CALENDAR
-        read(input,*,err=95) ldefhis, dtout, nrpfhis
-        nwrt=ceiling((dtout*3600.)/dt)
-        MPI_master_only write(stdout,'(6x,A,f6.2,A)')
-     &  'DT HIS =',dtout,'H'
-# else
         read(input,*,err=95) ldefhis, nwrt, nrpfhis
-# endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        nwrt=ceiling((dt_his*3600.)/dt)
+#endif
         hisname=fname(1:lstr)
         MPI_master_only write(stdout,
      &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
@@ -633,19 +634,15 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef USE_CALENDAR
-        read(input,*,err=95) ntsavg, dtout, nrpfavg
-        navg=(dtout*3600.)/dt
-        MPI_master_only write(stdout,'(6x,A,f6.2,A)')
-     &  'DT AVG =',dtout,'H'
-# else
         read(input,*,err=95) ntsavg, navg, nrpfavg
-# endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        navg=ceiling((dt_avg*3600.)/dt)
+#endif
         avgname=fname(1:lstr)
         MPI_master_only write(stdout,
      &         '(2(I10,2x,A,1x,A/32x,A/),6x,A,2x,A,1x,A,I3)')
