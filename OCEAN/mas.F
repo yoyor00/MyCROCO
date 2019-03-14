@@ -292,7 +292,7 @@
       do l=1,m
       le=2**l
       le1=le/2
-      u=(1.0,0.0)
+      u=cmplx(1.0,0.0)
       fij=pi/le1
       w=cexp(cmplx(0.0,fij))
       do j=1,le1
