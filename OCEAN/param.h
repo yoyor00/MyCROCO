@@ -116,8 +116,8 @@
 #elif defined FLUME
       parameter (LLm0=59,   MMm0=1,    N=20)   ! .5 m Flume
 #elif defined SWASH
-      parameter (LLm0=109,  MMm0=1,    N=10)   !  1 m  Swash
-!     parameter (LLm0=439,  MMm0=1,    N=10)   ! 25 cm Swash (GLOBEX)
+!     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
+      parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
 #elif defined RIP
 # ifdef BISCA
       parameter (LLm0= 86,  MMm0=92,   N=20)   ! 10 m Bisca Rip
@@ -255,7 +255,7 @@
 # if defined THACKER || defined FLUME
       parameter (D_wetdry=0.01)
 # elif defined SWASH
-      parameter (D_wetdry=0.05)
+      parameter (D_wetdry=0.001)
 # else
       parameter (D_wetdry=0.10)
 # endif
