@@ -92,13 +92,6 @@ C$    integer omp_get_thread_num
 !
 #include "compute_extended_bounds.h"
 !
-!  Initialize booleans for I/O
-!
-      do i=1,NWRTHIS
-        wrthis(i)=.false.
-        wrtavg(i)=.false.
-      enddo
-!
 !  Initialize 2-D primitive variables.
 !
       do j=JstrR,JendR
@@ -831,7 +824,7 @@ C$    integer omp_get_thread_num
           shflx_sen_avg(i,j)=init
 #  endif
 # endif /* BULK_FLUX */
-# if defined CFB && defined CFB_STRESS && !defined BULK_FLUX 
+# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
           wspd(i,j)=init
           wspdg(i,j,1)=init
           wspdg(i,j,2)=init

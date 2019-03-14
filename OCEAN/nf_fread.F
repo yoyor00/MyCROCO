@@ -42,24 +42,11 @@
 # include "scalars.h"
 #endif
 #include "netcdf.inc"
-      integer offset
-!       character(len=50) :: filename
-!       character(len=2) :: cmynode
-!       integer    wrtindic
-!       common/indic/ wrtindic
                                       ! Decode grid type into
       vert_type=type/4                ! vertical and horizontal 
       horiz_type=type-4*vert_type     ! grid types, then calculate 
       jmin=horiz_type/2               ! starting indices indices
       imin=horiz_type-2*jmin          ! in horizontal directions. 
-
-!       cmynode='00'
-!         if (mynode < 10) then
-!             write(cmynode(2:2),'(I1)') mynode
-!         else 
-!             write(cmynode(1:2),'(I2)') mynode
-!         endif
-!       print *,mynode,"-----------",wrtindic,cmynode
 
       start(1)=1
       start(2)=1
@@ -123,65 +110,9 @@
         
 !! If MPI domain voisin is set to null we have to expand 
 !! the zone read in netcdf file. 
-#ifdef MPI
-# ifdef MPI_OPT2
-#  ifdef THREE_GHOST_POINTS
-        offset=3
-#  else
-        offset=2
-#  endif 
-       if (.not. EAST_INTER2) then
-         if (ii.lt.NP_XI-1) then
-             imax=imax+offset
-         endif
-       endif
-       if (.not. NORTH_INTER2) then
-         if (jj.lt.NP_ETA-1) then
-             jmax=jmax+offset
-         endif
-       endif
-       if(.not. WEST_INTER2) then
-         if (ii.gt.0) then
-             imin=imin-offset
-             start(1)=start(1)-offset
-         endif
-       endif
-       if (.not. SOUTH_INTER2) then
-         if (jj.gt.0) then
-             jmin=jmin-offset
-             start(2)=start(2)-offset
-         endif
-       endif
-# endif
-#endif
       
       count(1)=imax-imin+1
       count(2)=jmax-jmin+1
-!      write(*,*) start(1)
-
-!      if (wrtindic == 1) then
-!       print *,mynode,"===============",wrtindic,cmynode
-!        filename='pm_nf_fread_Frontiere_terre.'//cmynode 
-!        open(200+mynode,file=filename)
-!        write(200+mynode,*) NORTH_INTER2
-!        write(200+mynode,*) WEST_INTER2,EAST_INTER2
-!        write(200+mynode,*) SOUTH_INTER2
-!        write(200+mynode,*) "----"
-!        write(200+mynode,*) NORTH_INTER
-!        write(200+mynode,*) WEST_INTER,EAST_INTER
-!        write(200+mynode,*) SOUTH_INTER
-!        write(200+mynode,*) "----"
-!        write(200+mynode,*) CORNER_NW, CORNER_NE
-!        write(200+mynode,*) CORNER_SW, CORNER_SE
-!        write(200+mynode,*) "----"
-!        write(200+mynode,*) start(1:2)
-!        write(200+mynode,*) count(1:2)
-!        write(200+mynode,*) start(1:2)+count(1:2)
-!        write(200+mynode,*) "----"
-!        write(200+mynode,*) imin,jmin
-!        write(200+mynode,*) imax,jmax
-!        close(200+mynode) 
-!      endif
 
 c**   write(stdout,'(1x,A,i4,1x,A,i2,2(3x,A,I2,2x,A,I3,2x,A,I3))')
 c**  &      'NF_READ/WRITE: mynode=',mynode,'horiz_grid',horiz_type,
@@ -269,18 +200,6 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #define LOCALMM Mm
 #endif
 #ifndef WRITER
-!      if (wrtindic == 1) then
-!       print *,mynode,"===============",wrtindic,cmynode
-!      filename='pm_nf_fread_1_terre.'//cmynode 
-!      open(200+mynode,file=filename)
-!      do i=lbound(A,1),ubound(A,1)
-!      do j=lbound(A,2),ubound(A,2)
-!            write(200+mynode,*) i,j,A(i,j,1)
-!      enddo
-!      enddo
-!      close(200+mynode)
-!      endif
-
 # if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
       if (horiz_type.eq.0 .and. vert_type.eq.0) then
         call exchange_r2d_tile (1,LOCALLM,1,LOCALMM, A)
@@ -317,20 +236,9 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 
 CC      elseif (horiz_type.eq.0 .and. vert_type.eq.3) then
 CC        call exchange_b3d_tile (1,LOCALLM,1,LOCALMM, A)
-      endif
 #  endif
+      endif
 # endif
-!      if (wrtindic == 1) then
-!      filename='pm_nf_fread_2_terre.'//cmynode
-!      open(300+mynode,file=filename)
-!      do i=lbound(A,1),ubound(A,1)
-!      do j=lbound(A,2),ubound(A,2)
-!            write(300+mynode,*) i,j,A(i,j,1)
-!      enddo
-!      enddo
-!      close(300+mynode)
-!      endif
-
 #endif
       return
       end

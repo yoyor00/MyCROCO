@@ -95,7 +95,7 @@
 ! Account for Current feedback  
 !---------------------------------------------------------------
 !
-#  if defined CFB && !defined CFB_WIND
+#  if defined SMFLUX_CFB && !defined CFB_WIND
       call cfb_stress
 #  endif
 !
