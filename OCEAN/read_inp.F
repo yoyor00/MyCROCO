@@ -325,8 +325,8 @@
       elseif (keyword(1:kwlen).eq.'output_time_steps') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) dt_his,dt_avg,dt_rst
-        MPI_master_only 
-     &  write(stdout,'(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
+        MPI_master_only  write(stdout,
+     &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
      &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
      &  'DT RST=',dt_rst,'H'
         MPI_master_only write(stdout,*) 
