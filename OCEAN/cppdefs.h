@@ -54,18 +54,18 @@
 !
 */
                       /* Configuration Name */
-# define SEINE 
+# define BENGUELA_LR 
 
                      /* Time management */
-# define USE_CALENDAR 
+# undef USE_CALENDAR 
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
 # undef  MPI_OPT
                       /* I/O server */
 # undef  XIOS
-# define NC4PAR
-                      /* Non-hydrostatic option */
+# undef  NC4PAR
+                     /* Non-hydrostatic option */
 # undef  NBQ
                       /* Nesting */
 # undef  AGRIF
@@ -271,17 +271,15 @@
 # ifdef TIDES
 #  define SSH_TIDES
 #  define  UV_TIDES
-#  define TIDES_MAS
+#  undef TIDES_MAS
 #  ifdef TIDES_MAS
 #   undef TIDES_MAS_DBG
 #  endif
 #  undef  POT_TIDES
 #  define TIDERAMP
 # endif
-# undef  OBC_REDUCED_PHYSICS
 # if defined SSH_TIDES && !defined UV_TIDES
 #  define OBC_REDUCED_PHYSICS
-#  undef  M2_FRC_BRY
 #endif 
 # define OBC_M2CHARACT
 # undef  OBC_M2ORLANSKI
