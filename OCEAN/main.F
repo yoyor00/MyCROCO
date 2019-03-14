@@ -774,6 +774,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
  100  continue
 
 #ifdef MPI
+      if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
 !     start_time2=PMPI_Wtime()
