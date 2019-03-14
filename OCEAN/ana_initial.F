@@ -398,34 +398,7 @@ C$    integer omp_get_thread_num
              enddo
           enddo
         enddo
-#  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=0.1 * z_r(i,j,k) + 22.
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-             enddo
-          enddo
-        enddo
-#  elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=0.01 * z_r(i,j,k) + 22.
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-             enddo
-          enddo
-        enddo
-#  elif defined SINGLE_COLUMN && defined KATO_PHILIPS
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=16.0+(0.01)**2/(g*Tcoef/rho0) 
-     &             * (z_r(i,j,k)) 
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-             enddo
-          enddo
-        enddo
+
 #  elif defined CANYON_A
         do k=1,N
           do j=JR_RANGE
