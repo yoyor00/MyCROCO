@@ -81,6 +81,18 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined SINGLE_COLUMN
+# ifdef KATO_PHILIPS 
+      parameter (LLm0=5 ,   MMm0=5,    N=100)   !
+# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=50)   !
+# elif defined FORCED_EKBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=40)   !
+# elif defined FORCED_DBLEEK 
+      parameter (LLm0=5 ,   MMm0=5,    N=25)   !
+# elif defined DIURNAL_CYCLE
+      parameter (LLm0=5 ,   MMm0=5,    N=150)   !
+# endif
 #elif defined PLUME
       parameter (LLm0=200,   MMm0=200,   N=100)        
 !      parameter (LLm0=80,   MMm0=80,   N=100) 
