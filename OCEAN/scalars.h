@@ -48,8 +48,9 @@
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
+     &               time_mars,time_end,tool_datosec, 
+     &               date,tool_sectodat,run_end_date,run_start_date,
      &                      ndtfast, iic, kstp, krhs, knew, next_kstp,
-     &               time_mars,time_end,date,run_end_date,run_start_date,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
