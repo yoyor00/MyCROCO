@@ -254,7 +254,7 @@
 ! OA-Coupling, Tides, Wetting-Drying, Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
-#ifdef CFB
+#ifdef SMFLUX_CFB
 # ifdef CFB_STRESS
       ! setup coupling coeff: sustr+(stau)Uo
       ! with stau = cfb_slope*Uatm + cfb_offset
