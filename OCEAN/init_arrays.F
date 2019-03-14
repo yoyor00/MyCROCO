@@ -33,6 +33,7 @@ C$    integer omp_get_thread_num
 !
 !     implicit none
 #include "param.h"
+#include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
 #include "ocean3d.h"
@@ -90,6 +91,13 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_extended_bounds.h"
+!
+!  Initialize booleans for I/O
+!
+      do i=1,NWRTHIS
+        wrthis(i)=.false.
+        wrtavg(i)=.false.
+      enddo
 !
 !  Initialize 2-D primitive variables.
 !
