@@ -90,7 +90,8 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	get_tides.F     clm_tides.F     get_bulk.F      bulk_flux.F\
+	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+        clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F\
         cfb_stress.F\
@@ -136,7 +137,9 @@ include Makedefs
 	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
 	module_oa_level.F90	module_oa_interface.F90\
-	module_oa_upd.F90	croco_oa.F90		var_oa.F90
+	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
+\
+	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 

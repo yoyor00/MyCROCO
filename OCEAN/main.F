@@ -269,6 +269,19 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (nrrec.ne.0) then           ! read from NetCDF file
         call get_initial
       endif
+
+#endif
+#ifdef USE_CALENDAR
+      !calcul of start times and ntimes
+#ifndef ANA_INITIAL
+      !if no init file set the start_date from croco.in
+      time=tool_datosec(run_start_date)
+#endif
+      time_end=tool_datosec(run_end_date)
+      ntimes=int((time_end-time)/dt)
+      MPI_master_only write(stdout,*)
+     &     'Ntimes from date_start and date_end:',ntimes
+      ntimes=ntimes+ntstart
 #endif
 !
 !  Set initial conditions analytically for ideal cases
@@ -702,6 +715,10 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-steping.'
       next_kstp=kstp
       time_start=time
+      time_mars=time
+#ifdef USE_CALENDAR 
+      time_end=tool_datosec(run_end_date)
+#endif
 
 ! XIOS (
 !  Clean log output a bit
@@ -724,6 +741,10 @@ CR      write(*,*) '  0' MYID
 #endif
 
       do iicroot=ntstart,ntimes+1
+#ifdef USE_CALENDAR 
+        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        if(time > time_end) goto 99 
+#endif
 
 
 #ifdef SOLVE3D

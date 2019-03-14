@@ -1,4 +1,4 @@
-! $Id: set_global_definitions.h 1618 2014-12-18 14:39:51Z rblod $
+! $Id: set_global_definitions.h 1616 2014-12-18 14:39:51Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -115,7 +115,7 @@
 #elif defined M2FILTER_FLAT
 #else
 # undef  M2FILTER_NONE
-# define M2FILTER_POWER
+# define  M2FILTER_POWER
 # undef  M2FILTER_COSINE
 # undef  M2FILTER_FLAT
 #endif
@@ -827,7 +827,7 @@
 
    Set land mask value to _FillValue
 */ 
-#undef  FILLVAL
+#define  FILLVAL
 
 /* 
   Write start_date information in netCDF output
@@ -835,14 +835,16 @@
   For example, if the simulation starts 1 January of 2000, at 00:00:00
   start_date: 01-JAN-2000 00:00:00) 
 */ 
-#undef  START_DATE
 
 /* 
   Define the NetCDF creation mode flag:
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
 */ 
+#ifdef NC4PAR
+#define NF_CLOBBER nf_mpiio 
+#else
 #define NF_CLOBBER nf_64bit_offset
-
+#endif
 /*
 ======================================================================
 

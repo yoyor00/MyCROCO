@@ -6,7 +6,12 @@ time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1         1000         0.01
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0
-
+run_start_date:
+01/04/2014 00:00:00
+run_end_date: 
+01/01/2016 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                   1       6       12
 grid:  filename
     CROCO_FILES/croco_grd.nc
 forcing: filename

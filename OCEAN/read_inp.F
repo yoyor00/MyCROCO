@@ -50,6 +50,9 @@
      &                                       , itrc
 #endif
       logical dumboolean
+#ifdef USE_CALENDAR
+      real  dt_his,dt_avg,dt_rst
+#endif
 !
 ! Use pre-set default startup filename for known applications,
 ! or get it as an argument from command line via iargc-getarg
@@ -105,6 +108,20 @@
       fname='TEST_CASES/croco.in.Flume'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
+#elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+      fname='TEST_CASES/croco.in.KATO_PHILLIPS'
+#elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+      fname='TEST_CASES/croco.in.WILLIS_DEARDORFF'
+#elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+      fname='TEST_CASES/croco.in.DIURNALCYCLE'
+#elif defined SINGLE_COLUMN && defined FORCED_EKBBL
+      fname='TEST_CASES/croco.in.FORCED_EKBBL'
+#elif defined SINGLE_COLUMN && defined FORCED_DBLEEK 
+      fname='TEST_CASES/croco.in.FORCED_DBLEEK'
+#elif defined SINGLE_COLUMN && defined FORCED_NONROTBBL
+      fname='TEST_CASES/croco.in.FORCED_NONROTBBL'
+#elif defined SINGLE_COLUMN && defined FORCED_OSCNONROTBBL
+      fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
 # ifdef NBQ
       fname='TEST_CASES/croco.in.Tank_nbq'
@@ -280,11 +297,39 @@
 ! Start date
 !
       elseif (keyword(1:kwlen).eq.'start_date') then
-         call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) start_date
-         lstr=lenstr(start_date)
-         MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) start_date
+        lstr=lenstr(start_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
      &   'Start date:', start_date(1:lstr)
+#endif
+#ifdef USE_CALENDAR 
+!
+! Run start date
+!
+      elseif (keyword(1:kwlen).eq.'run_start_date') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) run_start_date
+        lstr=lenstr(run_end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run start date:', run_start_date(1:lstr)
+! Run END date
+!
+      elseif (keyword(1:kwlen).eq.'run_end_date') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) run_end_date
+        lstr=lenstr(run_end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run end date:', run_end_date(1:lstr)
+! output time steps
+      elseif (keyword(1:kwlen).eq.'output_time_steps') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) dt_his,dt_avg,dt_rst
+        MPI_master_only 
+     &  write(stdout,'(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
+     &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
+     &  'DT RST=',dt_rst,'H'
+        MPI_master_only write(stdout,*) 
 #endif
 !     
 ! Time-stepping parameters
@@ -556,6 +601,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        nrst=ceiling((dt_rst*3600.)/dt)
+#endif
         rstname=fname(1:lstr)
         MPI_master_only write(stdout,
      &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
@@ -572,6 +620,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        nwrt=ceiling((dt_his*3600.)/dt)
+#endif
         hisname=fname(1:lstr)
         MPI_master_only write(stdout,
      &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
@@ -589,6 +640,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        navg=ceiling((dt_avg*3600.)/dt)
+#endif
         avgname=fname(1:lstr)
         MPI_master_only write(stdout,
      &         '(2(I10,2x,A,1x,A/32x,A/),6x,A,2x,A,1x,A,I3)')
@@ -1515,7 +1569,8 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxTke),  wrtavg(indxGls)
      &                    ,  wrtavg(indxLsc)       
-        if (wrtavg(indxTke) .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
+        if ( wrtavg(indxAkk) .or. wrtavg(indxAkp) .or. wrtavg(indxTke)
+     &                       .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
      &     ) wrtavg(indxTime)=.true.
 
         MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
@@ -1950,11 +2005,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'bottom_drag') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) rdrg, rdrg2, Zob, Cdb_min, Cdb_max
+        read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
         MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
      &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
      &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &      Zob, 'Zob      Bottom roughness for logarithmic law (m).',
+     &      Zobt, 'Zobt      Bottom roughness for logarithmic law (m).',
      &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
      &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
 !
@@ -2505,7 +2560,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Online forcing: last forcing year',yearend,
      &         ', month', monthend,'.'
         MPI_master_only write(stdout,
-     &         '(7x,A,A,1x,A4,1x,I1,A)')
+     &         '(7x,A,A,1x,A4,1x,I2,A)')
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */

@@ -173,6 +173,10 @@
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
+#  elif defined MENOR 
+      parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
+#  elif defined SEINE 
+      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -276,13 +280,13 @@
 # elif defined SWASH
       parameter (D_wetdry=0.001)
 # else
-      parameter (D_wetdry=0.10)
+      parameter (D_wetdry=0.2)
 # endif
 #endif
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources
-      parameter (Msrc=10)        ! ====== == ===== =======
+      parameter (Msrc=1)        ! ====== == ===== =======
 #endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats

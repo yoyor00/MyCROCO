@@ -81,7 +81,7 @@
 ! Do not process #7 :  upward longwave is obsolete
 !
         if (blkvar_id.eq.7) goto 10
-#  ifdef ERA_ECMWF
+#  if defined ERA_ECMWF || defined AROME
 !
 ! In the case of ERA the net short wave is used
 ! Net Short wave - 5 downward short wave not used
@@ -247,6 +247,14 @@
             enddo
           enddo
 # endif /* CFB_WIND */
+# ifdef READ_PATM
+        elseif (blkvar_id.eq.10) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              patm2d(i,j)=cff1*patmg(i,j,it1)+cff2*patmg(i,j,it2)
+            enddo
+          enddo
+# endif
         endif
 
       !====== == ==== ============== 
