@@ -402,8 +402,13 @@
 !      MPI_master_only print *,'tawx = ',tawx(5,5)
 !      MPI_master_only print *,'twox = ',twox(5,5)
 !
+# if defined WAVE_SMFLUX
+         sustr = twox
+         svstr = twoy
+# else
          sustr = sustr - tawx + twox
          svstr = svstr - tawy + twoy
+# endif
 !
 !      MPI_master_only print *,'sustr = ',sustr(5,5)
 !
