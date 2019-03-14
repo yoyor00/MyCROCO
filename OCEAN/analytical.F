@@ -137,6 +137,12 @@
             if (rr.le.2.5e3) then
               btflx(i,j,itemp)=0.001
             endif
+# elif defined SINGLE_COLUMN 
+#  if defined KATO_PHILIPS
+            btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
+#  elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
+            btflx(i,j,itemp)=-1.0e-5*0.01
+#  endif
 # endif
           enddo
         enddo
@@ -362,6 +368,19 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
        enddo
       enddo
+# elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=(0.01)**2
+        enddo
+      enddo
+# elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
+
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=-(0.0025)**2
+        enddo
+      enddo
 # elif defined CANYON_A || defined CANYON_B
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -493,6 +512,9 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           srflx(i,j)=0.
+# ifdef DIURNAL_CYCLE
+          srflx(i,j)=max(cos(2.*pi*(time/86400.-0.5)),0.)*264.91/(rho0*Cp)
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
           srflxbio(i,j)=0.
 # endif
@@ -772,7 +794,13 @@ c
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
+#if defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+            stflx(i,j,itemp)= - 100./(rho0*Cp)
+#elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+            stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+#else
             stflx(i,j,itemp)=0.
+#endif
           enddo
         enddo
 !

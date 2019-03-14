@@ -65,6 +65,16 @@ c********************************************************************
 ! a constant cross-shore geostrophic flow UG (m/s)
        real UG
        parameter (UG=0.02)
+# elif defined FORCED_EKBBL
+       real UG
+       parameter (UG=10.0)
+# elif defined  FORCED_DBLEEK
+       real UG
+       parameter (UG=0.0015)
+# elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL 
+       real gdzetady, omega
+       parameter (gdzetady=2.e-6*9.81)
+       parameter (omega=2.*pi/(12.4*3600.))
 # endif
 # ifdef DIAGNOSTICS_UV
 # include "diagnostics.h"
@@ -425,8 +435,12 @@ c********************************************************************
         do j=JstrV,Jend
           do i=Istr,Iend
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
-# ifdef INNERSHELF_APG
+# if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
      &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
+# elif defined FORCED_OSCNONROTBBL
+     &     -gdzetady*cos(omega*time)*on_v(i,j)+
+# elif defined FORCED_NONROTBBL
+     &     -gdzetady*on_v(i,j)+
 # endif
      &                                             P(i,j-1,k)-P(i,j,k)
 # ifndef PGF_FLAT_BOTTOM

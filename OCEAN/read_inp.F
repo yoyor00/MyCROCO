@@ -108,6 +108,20 @@
       fname='TEST_CASES/croco.in.Flume'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
+#elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+      fname='TEST_CASES/croco.in.KATO_PHILLIPS'
+#elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+      fname='TEST_CASES/croco.in.WILLIS_DEARDORFF'
+#elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+      fname='TEST_CASES/croco.in.DIURNALCYCLE'
+#elif defined SINGLE_COLUMN && defined FORCED_EKBBL
+      fname='TEST_CASES/croco.in.FORCED_EKBBL'
+#elif defined SINGLE_COLUMN && defined FORCED_DBLEEK 
+      fname='TEST_CASES/croco.in.FORCED_DBLEEK'
+#elif defined SINGLE_COLUMN && defined FORCED_NONROTBBL
+      fname='TEST_CASES/croco.in.FORCED_NONROTBBL'
+#elif defined SINGLE_COLUMN && defined FORCED_OSCNONROTBBL
+      fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
 # ifdef NBQ
       fname='TEST_CASES/croco.in.Tank_nbq'
