@@ -104,8 +104,10 @@
 ! Open the file
 !
           lvar=lenstr(bulkfilename(blkvar_id))
-          MPI_master_only print*, 'Open :',
+          if (blkvar_id .gt. 0) then 
+           MPI_master_only write(stdout,*),'Open Meteo file :',
      &              bulkfilename(blkvar_id)(1:lvar)
+          endif
           ierr=nf_open(bulkfilename(blkvar_id)(1:lvar), nf_nowrite, 
      &                 ncidbulkO(blkvar_id)) 
           if (ierr. ne. nf_noerr) goto 4            !--> ERROR
