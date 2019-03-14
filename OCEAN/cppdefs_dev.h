@@ -835,7 +835,6 @@
   For example, if the simulation starts 1 January of 2000, at 00:00:00
   start_date: 01-JAN-2000 00:00:00) 
 */ 
-#define  START_DATE
 
 /* 
   Define the NetCDF creation mode flag:

@@ -92,6 +92,28 @@ C$    integer omp_get_thread_num
                      depth=5000.
                      f0=1.E-4 
                      beta=2.E-11
+# elif defined SINGLE_COLUMN
+#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF 
+                     depth=50.
+                     f0=0.
+                     beta=0.
+#  elif defined DIURNAL_CYCLE
+                     depth=150.
+                     f0=0.
+                     beta=0.
+#  elif defined FORCED_EKBBL
+                     depth=1500.
+                     f0=1.E-4
+                     beta=0.
+#  elif defined FORCED_DBLEEK
+                     depth=25.0
+                     f0=1.E-4
+                     beta=0.
+#  elif defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
+                     depth=5.
+                     f0=0.0
+                     beta=0.
+#  endif 
 # elif defined CANYON_A || defined CANYON_B
                      depth=4000.
                      f0=1.E-4
@@ -210,6 +232,9 @@ C$    integer omp_get_thread_num
 # if defined BASIN
                      Length_XI =3600.0e+3
                      Length_ETA=2800.0e+3
+# elif defined SINGLE_COLUMN
+                     Length_XI = 10.0e+3
+                     Length_ETA= 10.0e+3
 # elif defined CANYON_A || defined CANYON_B
                      Length_XI =128.0e+3
                      Length_ETA=96.0e+3
@@ -408,7 +433,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
                    || defined SOLITON || defined JET \
                    || defined KH_INST \
-                   || defined ACOUSTIC
+                   || defined ACOUSTIC || defined SINGLE_COLUMN
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
@@ -692,14 +717,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 # endif
 
-!----------------------------------------------------------------------
-! initialisation of z0b in case of analytical cases
-!----------------------------------------------------------------------
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          zob(i,j)=zobt
-        end do
-      end do
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.

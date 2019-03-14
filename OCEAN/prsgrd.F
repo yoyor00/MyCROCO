@@ -60,11 +60,21 @@ c********************************************************************
 # include "grid.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# ifdef INNERSHELF_APG
+# if defined INNERSHELF_APG
 ! Impose alongshore pressure gradient balancing
 ! a constant cross-shore geostrophic flow UG (m/s)
        real UG
        parameter (UG=0.02)
+# elif defined FORCED_EKBBL
+       real UG
+       parameter (UG=10.0)
+# elif defined  FORCED_DBLEEK
+       real UG
+       parameter (UG=0.0015)
+# elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL 
+       real gdzetady, omega
+       parameter (gdzetady=2.e-6*9.81)
+       parameter (omega=2.*pi/(12.4*3600.))
 # endif
 # ifdef DIAGNOSTICS_UV
 # include "diagnostics.h"
@@ -79,7 +89,7 @@ c********************************************************************
 # endif
 # endif
 # endif
-# if defined MRL_WCI || defined READ_PATM
+# ifdef MRL_WCI
 #  include "forces.h"
 # endif
 # ifdef POT_TIDES
@@ -188,9 +198,6 @@ c********************************************************************
 # ifdef POT_TIDES
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
 # endif
-#  ifdef READ_PATM 
-         P(i,j,N) = P(i,j,N) + patm2d(i,j)/rho0
-#  endif
         enddo
         do k=N-1,1,-1
           do i=IstrU-1,Iend
@@ -425,8 +432,12 @@ c********************************************************************
         do j=JstrV,Jend
           do i=Istr,Iend
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
-# ifdef INNERSHELF_APG
+# if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
      &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
+# elif defined FORCED_OSCNONROTBBL
+     &     -gdzetady*cos(omega*time)*on_v(i,j)+
+# elif defined FORCED_NONROTBBL
+     &     -gdzetady*on_v(i,j)+
 # endif
      &                                             P(i,j-1,k)-P(i,j,k)
 # ifndef PGF_FLAT_BOTTOM
@@ -570,9 +581,6 @@ c********************************************************************
 #  ifdef MRL_WCI
 #    include "forces.h"
 #  endif
-# ifdef READ_PATM 
-#  include "forces.h"
-# endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -605,12 +613,9 @@ c********************************************************************
      &     +cff*( (rho(i-1,j,N)-rsurf(i,j))*(z_w(i-1,j,N)-z_r(i,j,N))
      &           +(rsurf(i-1,j)-rho(i,j,N))*(z_w(i,j,N)-z_r(i-1,j,N))
      &                                                              )
-    
+
 #  ifdef POT_TIDES
-     &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
-#  endif
-#  ifdef READ_PATM 
-     &                         - (patm2d(i,j)-patm2d(i-1,j))/rho0
+                                        - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
  
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
@@ -722,10 +727,7 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
-     &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
-#  endif
-#  ifdef READ_PATM 
-     &                               - (patm2d(i,j)-patm2d(i,j-1))/rho0
+                                        - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
  
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)
