@@ -81,7 +81,7 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
 
-#  if defined CFB && defined CFB_STRESS 
+#  if defined SMFLUX_CFB && defined CFB_STRESS 
         lvar=lenstr(vname(1,indxWSPD))
         ierr=nf_inq_varid (ncidfrc,vname(1,indxWSPD)(1:lvar),wid)
         if (ierr .eq. nf_noerr) then
@@ -160,7 +160,7 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
 
-#  if defined CFB && defined CFB_STRESS 
+#  if defined SMFLUX_CFB && defined CFB_STRESS 
         if (lwgrd.eq.1) then
           ierr=nf_fread(wspdg(START_2D_ARRAY,i), ncidfrc, wid,
      &                                              sms_rec, r2dvar)
@@ -262,7 +262,7 @@ c**        call opencdf (frcname,N)
               enddo
             enddo
           endif
-#  if defined CFB && defined CFB_STRESS 
+#  if defined SMFLUX_CFB && defined CFB_STRESS 
           if (lwgrd.eq.1) then
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -335,7 +335,7 @@ c**        call opencdf (frcname,N)
           enddo
 # endif /* SMFLUX_CURVGRID */
         endif 
-#  if defined CFB && defined CFB_STRESS 
+#  if defined SMFLUX_CFB && defined CFB_STRESS 
         if (lwgrd.eq.1) then
           do j=JstrR,JendR
             do i=IstrR,IendR

@@ -563,7 +563,7 @@
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
 # endif
-# if defined CFB && defined CFB_STRESS && !defined BULK_FLUX
+# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
       integer indxWSPD
       parameter (indxWSPD=indxSUSTR+200)
 # endif
