@@ -210,6 +210,22 @@ diagbioGasExc_average_fields:  wrtdiabioGasExc_avg
 biology:   forcing file
              CROCO_FILES/croco_frcbio.nc
 
+wkb_boundary: filename
+             CROCO_FILES/croco_wkb.nc
+wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
+            0.25     190.        8.      -2.       1.3    0.38
+wkb_roller:  roller_sinb  roller_fraction
+                  0.1         0.5
+
+wave_history_fields: hrm  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
+                      20*F
+wave_average_fields: hrm  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
+                      20*F
+wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
+                      20*F
+wci_average_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
+                      20*F
+
 sediments: input file
            sediment.in
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)

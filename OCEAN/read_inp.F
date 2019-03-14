@@ -2248,20 +2248,44 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 # ifdef AVERAGES
 !
-! MRL_WCI average field follows its history field.
+! MRL wave-current interaction variables average fields
 !
-          wrtavg(indxSUP)=wrthis(indxSUP)
-          wrtavg(indxUST2D)=wrthis(indxUST2D)
-          wrtavg(indxVST2D)=wrthis(indxVST2D)
+        elseif (keyword(1:kwlen).eq.'wci_average_fields') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,*,err=95) wrtavg(indxSUP),  wrtavg(indxUST2D)
+     &                                        ,  wrtavg(indxVST2D)
 #  ifdef SOLVE3D
-          wrtavg(indxUST)=wrthis(indxUST)
-          wrtavg(indxVST)=wrthis(indxVST)
-          wrtavg(indxWST)=wrthis(indxWST)
-          wrtavg(indxAkb)=wrthis(indxAkb)
-          wrtavg(indxAkw)=wrthis(indxAkw)
-          wrtavg(indxKVF)=wrthis(indxKVF)
-          wrtavg(indxCALP)=wrthis(indxCALP)
-          wrtavg(indxKAPS)=wrthis(indxKAPS)
+     &         , wrtavg(indxUST), wrtavg(indxVST), wrtavg(indxwST)
+     &         , wrtavg(indxAKB), wrtavg(indxAKW), wrtavg(indxKVF)
+     &                        , wrtavg(indxCALP), wrtavg(indxKAPS)
+#  endif
+        MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')
+     &    'Fields to be saved in MRL-WCI 2D average  (T/F)',
+     &    wrtavg(indxSUP),
+     &    'write SUP    quasi-static sea-level [m]',
+     &    wrtavg(indxUST2D),
+     &    'write UST2D  depth-averaged  XI-Stokes velocity [m/s]',
+     &    wrtavg(indxVST2D),
+     &    'write VST2D  depth-averaged ETA-Stokes velocity [m/s]'
+#  ifdef SOLVE3D
+        MPI_master_only write(stdout,'(/1x,A,8(/6x,l1,2x,A))')
+     &    'Fields to be saved in MRL-WCI 3D average  (T/F)',
+     &    wrtavg(indxUST),
+     &    'write UST  3D  XI-Stokes velocity [m/s]',
+     &    wrtavg(indxVST),
+     &    'write VST  3D ETA-Stokes velocity [m/s]',
+     &    wrtavg(indxWST),
+     &    'write WST  3D vertical Stokes velocity [m/s]',
+     &    wrtavg(indxAkb),
+     &    'write Akb  eddy viscosity due to wave breaking [m2/s]',
+     &    wrtavg(indxAkw),
+     &    'write Akw  eddy diffusivity due to primary waves [m2/s]',
+     &    wrtavg(indxKVF),
+     &    'write KVF  vertical vortex force [m/s2]',
+     &    wrtavg(indxCALP),
+     &    'write CALP surface pressure correction [m]',
+     &    wrtavg(indxKAPS),
+     &    'write KAPS surface Bernoulli head [m]'
 #  endif
 # endif /* AVERAGES */
 #endif /* MRL_WCI */
@@ -2274,7 +2298,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
         MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
-     &    'Fields to be saved in WKB wave history  (T/F)',
+     &    'Fields to be saved in wave history  (T/F)',
      &    wrthis(indxHRM), 'write HRM  wave height (m)',
      &    wrthis(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
      &    wrthis(indxWAC), 'write WAC  primary wave action (m3/s)',
@@ -2287,15 +2311,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                   'write EPR  roller dissipation (m3/s3): [0,1]'
 # ifdef AVERAGES
 !
-! WKB wave average field follows its history field.
-!
-#  ifndef WAVE_ROLLER
-        do i=1,7
-#  else
-        do i=1,9
-#  endif
-          wrtavg(indxHRM+i-1)=wrthis(indxHRM+i-1)
-        enddo
+! Wave average fields
+! 
+      elseif (keyword(1:kwlen).eq.'wave_average_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) (wrtavg(i), i=indxHRM,indxHRM+8)
+        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
+     &    'Fields to be saved in wave average  (T/F)',
+     &    wrtavg(indxHRM), 'write HRM  wave height (m)',
+     &    wrtavg(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
+     &    wrtavg(indxWAC), 'write WAC  primary wave action (m3/s)',
+     &    wrtavg(indxWKX), 'write WKX  wavenumber  xi-dir component',
+     &    wrtavg(indxWKE), 'write WKE  wavenumber eta-dir component',
+     &    wrtavg(indxEPB), 'write EPB  breaking dissipation (m3/s3)',
+     &    wrtavg(indxEPD), 'write EPD  frictional dissipation (m3/s3)',
+     &    wrtavg(indxWAR), 'write WAR  roller wave action (m3/s)',
+     &    wrtavg(indxEPR),
+     &                   'write EPR  roller dissipation (m3/s3): [0,1]'
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
