@@ -786,9 +786,11 @@
 # ifdef AGRIF_2WAY
 #  define AGRIF_OBC_M3SPECIFIED
 #  define AGRIF_OBC_TSPECIFIED
+#  define AGRIF_OBC_NBQSPECIFIED
 # else
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
+#  define AGRIF_OBC_NBQORLANSKI
 # endif
 #endif /* AGRIF */
 

@@ -180,7 +180,7 @@
 
 !**********************************************************************
 # if defined OBC_NBQ && defined OBC_NBQORLANSKI
-#  ifdef OBC_WEST
+#  ifdef OBC_COM_WEST
       real qdmu_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_unbq_west/ qdmu_nbq_west
       real qdmv_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
@@ -190,7 +190,7 @@
       real  rho_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_rnbq_west/ rho_nbq_west
 #  endif
-#  ifdef OBC_EAST
+#  ifdef OBC_COM_EAST
       real qdmu_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_unbq_east/ qdmu_nbq_east
       real qdmv_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
@@ -200,7 +200,7 @@
       real  rho_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_rnbq_east/ rho_nbq_east
 #  endif
-#  ifdef OBC_SOUTH
+#  ifdef OBC_COM_SOUTH
       real qdmu_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_unbq_south/ qdmu_nbq_south
       real qdmv_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
@@ -210,7 +210,7 @@
       real  rho_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_rnbq_south/ rho_nbq_south
 #  endif
-#  ifdef OBC_NORTH
+#  ifdef OBC_COM_NORTH
       real qdmu_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_unbq_north/ qdmu_nbq_north
       real qdmv_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
