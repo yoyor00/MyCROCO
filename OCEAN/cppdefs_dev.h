@@ -832,7 +832,7 @@
 
    Set land mask value to _FillValue
 */ 
-#define  FILLVAL
+#undef  FILLVAL
 
 /* 
   Write start_date information in netCDF output

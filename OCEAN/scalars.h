@@ -574,6 +574,6 @@
 !   FillValue (Needed if the FILLVAL key is defined)
 !   (See fillvalue.F subroutine)
       real spval
-      parameter (spval=-999.0)
+      parameter (spval=0.0)
       logical mask_val
       parameter (mask_val = .true.)
