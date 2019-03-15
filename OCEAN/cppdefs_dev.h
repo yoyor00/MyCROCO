@@ -869,7 +869,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
-# undef CFB                     
+# undef SMFLUX_CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH

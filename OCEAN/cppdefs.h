@@ -188,7 +188,7 @@
 #  undef SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# define SMFLUX_CFB
+# undef SMFLUX_CFB
 # undef SEA_ICE_NOFLUX /* no flux under sea ice */
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
