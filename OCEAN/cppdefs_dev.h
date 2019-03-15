@@ -588,8 +588,8 @@
 ======================================================================
 */
 #ifdef SMFLUX_CFB
-# define CFB_STRESS
-# undef  CFB_STRESS2
+# undef  CFB_STRESS
+# define CFB_STRESS2
 # undef  CFB_WIND
 #endif
 
