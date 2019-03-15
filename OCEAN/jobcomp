@@ -170,7 +170,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CFT1=ifort
 		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise -mcmodel=medium"
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
-#                       -check uninit -CA -CB -CS"
+#                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
