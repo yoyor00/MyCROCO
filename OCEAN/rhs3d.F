@@ -24,16 +24,23 @@
      &                                    A3d(1,1,trd), A3d(1,2,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
+     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
+     &                      A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
+     &                      A2d(1,10,trd),
+     &                      A2d(1,11,trd), A2d(1,12,trd)  )
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
+     &                                 wrk1,wrk2, UFx,UFe, VFx,VFe,
+     &   velux, velve, velue, velvx,veluw, velvw )
+
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
       real cu,rr,rrm,rrp,limiter,Cr,cdt
+      real  Fxh, Fxl,vit,limiteur_h3
+
       integer kp2,kp1,km1
 # include "param.h"
 # ifdef DIAGNOSTICS_UV
@@ -74,7 +81,14 @@
      &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
+     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma ,
+     &    velux(PRIVATE_2D_SCRATCH_ARRAY),
+     &    velve(PRIVATE_2D_SCRATCH_ARRAY),
+     &    velue(PRIVATE_2D_SCRATCH_ARRAY),
+     &    velvx(PRIVATE_2D_SCRATCH_ARRAY),
+     &    veluw(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &    velvw(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -624,11 +638,12 @@
 !
 !======================================================================
 !
-#  if !(defined UV_HADV_UP3 || defined UV_HADV_C4  || \
+/* #  if !(defined UV_HADV_UP3 || defined UV_HADV_C4  || \
         defined UV_HADV_C2  || defined UV_HADV_UP5 || \
         defined UV_HADV_C6  || defined UV_HADV_WENO5 )
 #   define UV_HADV_UP3
-#  endif
+#  endif 
+*/
 
 #  if defined UV_HADV_UP5 || defined UV_HADV_C6 || defined UV_HADV_WENO5
 !
@@ -756,10 +771,11 @@
         do j=Jstr,Jend
           do i=IstrU-1,Iend
 #   if defined UV_HADV_C4
-            UFx(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
+            velux(i,j)=( Huon(i,j,k)+Huon(i+1,j,k)
+     &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))*0.5
+            UFx(i,j)=0.5*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
      &                         -0.125*(uxx(i,j)+uxx(i+1,j))
-     &                  )*( Huon(i,j,k)+Huon(i+1,j,k)
-     &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))
+     &                  )*velux(i,j)
 
 #   else
 #     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
@@ -776,8 +792,9 @@
             else
               curvX=uxx(i+1,j)
             endif
-            UFx(i,j)=0.25*(cffX+gamma*curvX)*( Huon(i,j,k)+
-     &            Huon(i+1,j,k)-0.125*(Huxx(i,j)+Huxx(i+1,j)))
+            velux(i,j)=( Huon(i,j,k)+
+     &            Huon(i+1,j,k)-0.125*(Huxx(i,j)+Huxx(i+1,j)))*0.5
+            UFx(i,j)=0.5*(cffX+gamma*curvX)*velux(i,j)
 #   endif
           enddo
         enddo
@@ -839,10 +856,11 @@
         do j=JstrV-1,Jend
           do i=Istr,Iend
 #   if defined UV_HADV_C4
-            VFe(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
+            velve(i,j)=( Hvom(i,j,k)+Hvom(i,j+1,k)
+     &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))*0.5
+            VFe(i,j)=0.5*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
      &                        -0.125*(vee(i,j)+vee(i,j+1))
-     &                  )*( Hvom(i,j,k)+Hvom(i,j+1,k)
-     &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))
+     &                  )*velve(i,j)
 
 #   else
 #     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
@@ -859,8 +877,10 @@
             else
               curvE=vee(i,j+1)
             endif
-            VFe(i,j)=0.25*(cffE+gamma*curvE)*( Hvom(i,j,k)+
-     &             Hvom(i,j+1,k)-0.125*(Hvee(i,j)+Hvee(i,j+1)))
+            velve(i,j)=( Hvom(i,j,k)+
+     &             Hvom(i,j+1,k)-0.125*(Hvee(i,j)+Hvee(i,j+1)))*0.5
+            VFe(i,j)=0.5*(cffE+gamma*curvE)*velve(i,j)
+
 #   endif
           enddo
         enddo
@@ -922,10 +942,12 @@
         do j=Jstr,Jend+1
           do i=IstrU,Iend
 #   if defined UV_HADV_C4
-            UFe(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
+            velue(i,j)=( Hvom(i,j,k)+Hvom(i-1,j,k)
+     &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))*0.5
+            UFe(i,j)=0.5*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
      &                        -0.125*(uee(i,j)+uee(i,j-1))
-     &                  )*( Hvom(i,j,k)+Hvom(i-1,j,k)
-     &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
+     &                  )*velue(i,j)
+
 #   else
 #     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
@@ -942,8 +964,10 @@
             else
               curvX=uee(i,j)
             endif
-            UFe(i,j)=0.25*(cffX+gamma*curvX)*(cffE-0.125*(
-     &                             Hvxx(i,j)+Hvxx(i-1,j) ))
+            velue(i,j)=(cffE-0.125*(
+     &                             Hvxx(i,j)+Hvxx(i-1,j) ))*0.5
+            UFe(i,j)=0.5*(cffX+gamma*curvX)* velue(i,j)
+
 #   endif
           enddo
         enddo
@@ -1006,10 +1030,12 @@
         do j=JstrV,Jend
           do i=Istr,Iend+1
 #   if defined  UV_HADV_C4
-            VFx(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
+            velvx(i,j)=( Huon(i,j,k)+Huon(i,j-1,k)
+     &                     -0.125*(Huee(i,j)+Huee(i,j-1)))*0.5
+            VFx(i,j)=0.5*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
      &                        -0.125*(vxx(i,j)+vxx(i-1,j))
-     &                  )*( Huon(i,j,k)+Huon(i,j-1,k)
-     &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
+     &                  )* velvx(i,j)
+
 
 #   else
 #     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
@@ -1027,8 +1053,10 @@
             else
               curvE=vxx(i,j)
             endif
-            VFx(i,j)=0.25*(cffE+gamma*curvE)*(cffX-0.125*(
-     &                             Huee(i,j)+Huee(i,j-1) ))
+            velvx(i,j)= (cffX-0.125*(
+     &                             Huee(i,j)+Huee(i,j-1) ))*0.5
+            VFx(i,j)=0.5*(cffE+gamma*curvE)* velvx(i,j)
+
 #   endif
           enddo
         enddo
@@ -1043,36 +1071,48 @@
 !
         do j=Jstr,Jend
           do i=IstrU-1,Iend
-            UFx(i,j)=0.25*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-     &                      *(Huon(i,j,k)+Huon(i+1,j,k))
+            velux(i,j) = (Huon(i,j,k)+Huon(i+1,j,k))*0.5
+            UFx(i,j)=0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+     &                      * velux(i,j)
           enddo
         enddo
         do j=JstrV-1,Jend
           do i=Istr,Iend
-            VFe(i,j)=0.25*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
-     &                       *(Hvom(i,j,k)+Hvom(i,j+1,k))
+            velve(i,j) =  (Hvom(i,j,k)+Hvom(i,j+1,k))*0.5
+            VFe(i,j)=0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+     &                       * velve(i,j)
           enddo
         enddo
         do j=Jstr,Jend+1
           do i=IstrU,Iend
-            UFe(i,j)=0.25*(u(i,j,k,nrhs)+u(i,j-1,k,nrhs))
-     &                      *( Hvom(i,j,k)+Hvom(i-1,j,k))
+            velue(i,j) =  (Hvom(i,j,k)+Hvom(i-1,j,k))*0.5
+            UFe(i,j)=0.5*(u(i,j,k,nrhs)+u(i,j-1,k,nrhs))
+     &                      * velue(i,j)
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend+1
-            VFx(i,j)=0.25*(v(i,j,k,nrhs)+v(i-1,j,k,nrhs))
-     &                       *(Huon(i,j,k)+Huon(i,j-1,k))
+            velvx(i,j) = (Huon(i,j,k)+Huon(i,j-1,k))*0.5
+            VFx(i,j)=0.5*(v(i,j,k,nrhs)+v(i-1,j,k,nrhs))
+     &                       * velvx(i,j)
           enddo
         enddo
+
 !
 ! Correction with Total Variance Diminishing method
 !
 #  ifdef UV_HADV_TVD
 #   include "uvhadv_tvd.h"
 #  endif
+!
 
 #  endif /* UV_HADV_UP3 */
+
+
+#ifdef UV_HADV_TVD_2
+#   include "uvhadv_tvd_2.h"
+#endif
+
 !
 !----------------------------------------------------------
 ! Finalize horizontal advection: compute flux divergences
@@ -1307,24 +1347,29 @@
 ! Compute vertical advective fluxes 
 ! FC=W*[spline-interpolated velocity]
 !
-        do k=1,N-1
+!
+         do k=1,N-1
           do i=IstrU,Iend
-            FC(i,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
+            veluw(i,k) = ( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
      &                                 We(i+1,j,k)+We(i-2,j,k) ))
+            FC(i,k)= veluw(i,k)
      &             *( u(i,j,k,nrhs)+DC(i,k)*(
      &                              0.33333333333333*CF(i,k  )
      &                             +0.16666666666667*CF(i,k-1)
      &                                                       ))
           enddo
         enddo               !--> discard CF,DC
+
         do i=IstrU,Iend
           FC(i,N)=0.
+          veluw(i,N)=0.
 #   ifdef MOVING_BATHY
           FC(i,0)=0.5*u(i,j,1,nrhs)*
      &            (We(i  ,j,0)+
      &             We(i-1,j,0))
 #   else
           FC(i,0)=0.
+          veluw(i,0)=0.
 #   endif
         enddo
 
@@ -1383,8 +1428,9 @@
 !
         do k=1,N-1
           do i=IstrU,Iend
-            FC(i,k)=0.25*(u(i,j,k,nrhs)+u(i,j,k+1,nrhs))
-     &                            *(We(i,j,k)+We(i-1,j,k))
+            veluw(i,k) = 0.5 * (We(i,j,k)+We(i-1,j,k))
+            FC(i,k)=0.5*(u(i,j,k,nrhs)+u(i,j,k+1,nrhs))
+     &                            *veluw(i,k)
           enddo
         enddo
         do i=IstrU,Iend
@@ -1393,10 +1439,13 @@
      &            (We(i  ,j,0)+
      &             We(i-1,j,0))
 #   else
+          veluw(i,0)=0.
           FC(i,0)=0.
 #   endif
+          veluw(i,N)=0.
           FC(i,N)=0.
         enddo
+
 !
 !  Correction with TVD method
 !
@@ -1464,6 +1513,34 @@
 #   endif
         enddo
 #  endif
+
+#  if defined UV_VADV_TVD_2
+!
+!----------------------------------------------------------
+!  Compute vertical advective fluxes 
+!  using Second order advection scheme
+!----------------------------------------------------------
+!
+        if (nnew.ne.3) then ! corrector     
+        do k=1,N-1
+        kp2=MIN(N,k+2)
+        kp1=MIN(N,k+1)
+        km1=MAX(1,k-1)
+          do i=IstrU,Iend
+            cff = 0.5 *(We(i,j,k)+We(i-1,j,k) )
+            rrp= (u(i,j,kp2,nstp) -u(i,j,kp1,nstp)) 
+            rr = (u(i,j,kp1,nstp) -u(i ,j,k,nstp)) 
+            rrm= (u(i,j,k  ,nstp) -u(i ,j,km1,nstp))                 
+            Fxl=( cff*(u(i,j,k,nstp) + u(i,j,kp1,nstp))
+     &        -abs(cff)*rr )*0.5
+            vit=veluw(i,k)*pm_u(i,j)*pn_u(i,j)
+            FC(i,k)=Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
+          enddo
+        enddo
+        endif
+#  endif        
+
+
 !
 !----------------------------------------------------------
 ! Finalize U vertical advection: compute flux divergences
@@ -1550,8 +1627,9 @@
 !
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
-     &                                   We(i,j+1,k)+We(i,j-2,k) ))
+              velvw(i,k) =  (0.5625*( We(i,j  ,k)+We(i,j-1,k))-0.0625*(
+     &                                   We(i,j+1,k)+We(i,j-2,k) )) 
+              FC(i,k)= velvw(i,k)
      &               *( v(i,j,k,nrhs)+DC(i,k)*(
      &                                0.33333333333333*CF(i,k  )
      &                               +0.16666666666667*CF(i,k-1)
@@ -1560,14 +1638,17 @@
           enddo             !--> discard CF,DC
           do i=Istr,Iend
             FC(i,N)=0.
+            velvw(i,N)=0.
 #   ifdef MOVING_BATHY
             FC(i,0)=0.5*v(i,j,1,nrhs)*
      &              (We(i,j  ,0)+
      &               We(i,j-1,0))
 #   else
             FC(i,0)=0.
+            velvw(i,0)=0.
 #   endif
           enddo
+
 
 #  elif defined UV_VADV_WENO5 || defined UV_VADV_C6 \
                               || defined UV_VADV_UP5
@@ -1621,10 +1702,12 @@
 !  Second order advection scheme with TVD correction
 !----------------------------------------------------------
 !
+ !
           do k=1,N-1
             do i=Istr,Iend
-              FC(i,k)=0.25*(v(i,j,k,nrhs)+v(i,j,k+1,nrhs))
-     &                              *(We(i,j,k)+We(i,j-1,k))
+              velvw(i,k) = 0.5*(We(i,j,k)+We(i,j-1,k))
+              FC(i,k)=0.5*(v(i,j,k,nrhs)+v(i,j,k+1,nrhs))
+     &                              *velvw(i,k)
             enddo
           enddo
           do i=Istr,Iend
@@ -1634,9 +1717,12 @@
      &               We(i,j-1,0))
 #   else
             FC(i,0)=0.
+            velvw(i,0)=0.
 #   endif
             FC(i,N)=0.
+            velvw(i,N)=0.
           enddo
+
 !
 !  Correction using TVD method
 !
@@ -1703,6 +1789,33 @@
 #   endif
           enddo
 #  endif
+
+#  if defined UV_VADV_TVD_2
+!
+!----------------------------------------------------------
+!  Total variation diminushing
+!----------------------------------------------------------
+!
+        if (nnew.ne.3) then ! corrector     
+          do k=1,N-1
+            kp2=min(N,k+2)
+            kp1=min(N,k+1)
+            km1=max(1,k-1)
+            do i=Istr,Iend
+              cff = 0.5*(We(i,j,k)+We(i,j-1,k))
+              rrp= v(i,j,kp2,nstp)-v(i,j,kp1,nstp) 
+              rr = v(i,j,kp1,nstp)-v(i,j,k  ,nstp) 
+              rrm= v(i,j,k  ,nstp)-v(i,j,km1,nstp)                    
+              Fxl=( cff*(v(i,j,k,nstp) + v(i,j,kp1,nstp))
+     &        -abs(cff)*rr )*0.5
+              vit = velvw(i,k)*pm_v(i,j)*pn_v(i,j)
+            FC(i,k)=Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
+            enddo
+          enddo 
+          endif        
+#  endif
+
+
 !
 !----------------------------------------------------------
 ! Finalize V vertical advection: compute flux divergences
@@ -1916,7 +2029,34 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
 
       end function
 
+      
+
 # endif /* UV_VADV_TVD || UV_VADV_TVD */
+
+      real function limiteur_h3(rrm,rr,rrp,u0,Fx_l,Fx_h)
+        real :: rr, rrm, rrp, h3, u0, Fx_h, Fx_l
+
+         real :: rr_up
+
+        if (u0>0) then
+          rr_up = rrm
+          else
+            rr_up = rrp
+         endif
+
+           h3=((Fx_h-Fx_l))
+
+         if (rr>0) then
+          limiteur_h3=max(0.,min(h3,max(-rr_up*0.5*abs(u0),
+     &  min(2*rr_up*0.5*abs(u0),h3,1.5*rr*0.5*abs(u0)))))
+          else
+          limiteur_h3=-max(0.,min(-h3,max(rr_up*0.5*abs(u0),
+     &   min(-2*rr_up*0.5*abs(u0),-h3,-1.5*rr*0.5*abs(u0)))))
+         endif
+
+         end function limiteur_h3
+
+
 !
 !=======================================================================
 !

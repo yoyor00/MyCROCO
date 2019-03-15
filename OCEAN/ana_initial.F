@@ -625,15 +625,19 @@ C$    integer omp_get_thread_num
           do j=JstrR,JendR
             do i=IstrR,IendR
 #    ifdef MPI
-              if (i+iminmpi-1 .LE. LLm/2) then
+!             if (i+iminmpi-1 .LE. LLm/2) then
+              if (i+iminmpi-1 .LE. LLm/1.5) then
 #    else
-              if (i .LE. LLm/2) then
+!             if (i .LE. LLm/2) then
+              if (i .LE. LLm/1.5) then
 #    endif            
                 t(i,j,k,1,itemp)=5/Tcoef
                 t(i,j,k,2,itemp)=5/Tcoef
               else
-                t(i,j,k,1,itemp)=10/Tcoef
-                t(i,j,k,2,itemp)=10/Tcoef           
+                t(i,j,k,1,itemp)=7./Tcoef
+                t(i,j,k,2,itemp)=7./Tcoef           
+!               t(i,j,k,1,itemp)=10/Tcoef
+!               t(i,j,k,2,itemp)=10/Tcoef           
               endif
             enddo
           enddo

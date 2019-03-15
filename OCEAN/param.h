@@ -58,7 +58,8 @@
 #  endif
 # else
 !     parameter (LLm0=32,   MMm0=4,    N=10)   !   2 km resolution
-      parameter (LLm0=128,  MMm0=4,    N=40)   ! 500  m resolution
+!     parameter (LLm0=128,  MMm0=4,    N=40)   ! 500  m resolution
+      parameter (LLm0=1000,  MMm0=4,    N=40)   ! 500  m resolution
 !     parameter (LLm0=512,  MMm0=4,   N=160)   ! 125  m resolution
 # endif
 #elif defined INNERSHELF
@@ -223,7 +224,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=8,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP

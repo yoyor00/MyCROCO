@@ -135,6 +135,7 @@ C$    integer omp_get_thread_num
                      depth=0.29      ! Horn et al. (2001)
 #  else
                      depth=20.
+                     depth=600.
 #  endif
                      f0=0.
                      beta=0.
@@ -258,6 +259,7 @@ C$    integer omp_get_thread_num
                      Length_ETA=0.1
 #  else
                      Length_XI =64.0E+3
+                     Length_XI =150.0E+3
                      Length_ETA=2.0E+3
 #  endif
 # elif defined INNERSHELF
@@ -430,13 +432,21 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !  Set bathymetry [meters; positive] at RHO-points.
 !----------------------------------------------------------------------
 !
-# if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
+# if defined BASIN || defined EQUATOR \
                    || defined SOLITON || defined JET \
                    || defined KH_INST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
+        enddo
+      enddo
+# elif defined GRAV_ADJ 
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=depth-  0.0*exp(-((xr(i,j)-0.5*Length_XI)/20000.)**2)
+          h(i,j)=depth-400.0*exp(-((xr(i,j)-0.5*Length_XI)/20000.)**2)
+          if(j==3) write(*,*), h(i,j), (xr(i,j)-0.5*Length_XI),i
         enddo
       enddo
 
