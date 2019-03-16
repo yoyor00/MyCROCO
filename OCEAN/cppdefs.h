@@ -39,6 +39,7 @@
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  S2DV            /* S2DV sections */ 
 #undef  MILES            /* NBQ MILES Applications */ 
+#undef  TS_HADV_TEST    /* Horizontal tracer advection test example */ 
 #define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
@@ -188,7 +189,7 @@
 #  undef SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# undef SMFLUX_CFB
+# define SMFLUX_CFB
 # undef SEA_ICE_NOFLUX /* no flux under sea ice */
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
@@ -1344,6 +1345,42 @@
 # define ANA_BTFLUX
 # define ANA_BSFLUX
 
+#elif defined TS_HADV_TEST
+/*
+!                Horizontal TRACER ADVECTION EXAMPLE 
+!                ========== ====== ========= =======
+!
+*/
+# undef  SOLID_BODY_ROT   /* Example with spatially varying velocity */
+# undef  DIAGONAL_ADV     /*    Constant advection in the diagonal   */
+# define SOLID_BODY_PER   /* Example with a space and time-varying velocity */
+
+# undef  OPENMP
+# undef  MPI
+# undef  UV_ADV
+# define NEW_S_COORD
+# undef  UV_COR
+# define SOLVE3D
+# define M2FILTER_NONE
+# define ANA_VMIX
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define ANA_BSFLUX
+# define ANA_SSFLUX
+# define NO_FRCFILE
+# define SALINITY
+# define EW_PERIODIC
+# define NS_PERIODIC
+
+#define TS_HADV_UP3    /* Choose specific advection scheme */
+#undef  TS_HADV_C4
+#undef  TS_HADV_UP5
+#undef  TS_HADV_WENO5
+#undef  TS_HADV_C6
 
 #endif /* END OF CONFIGURATION CHOICE */
 

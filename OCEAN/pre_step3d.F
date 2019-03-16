@@ -424,6 +424,10 @@
 # include "compute_vert_tracer_fluxes.h"
 # undef PREDICTOR
 !
+# ifdef TS_HADV_TEST
+      FC(istr:iend,0:N) = 0.d0
+# endif
+!
 !----------------------------------------------------------------------    
 !++ Apply vertical advection for tracers (DC corresponds to 1/Hz_half)
 !----------------------------------------------------------------------
@@ -468,6 +472,11 @@
 !
 !======================================================================
 !
+# if defined TS_HADV_TEST && defined SOLID_BODY_PER
+      u(:,:,:,nstp) = u(:,:,:,nnew)
+      v(:,:,:,nstp) = v(:,:,:,nnew)
+# endif
+
         do i=IstrU,Iend
           DC(i,0)=pm_u(i,j)*pn_u(i,j)
         enddo
@@ -804,7 +813,20 @@
 #  undef rv_nbq_avg1 
 #  undef rw_nbq_avg1 
 # endif
-
+!
+!--------------------------------------------------------------------
+!
+# if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
+      u(:,:,:,nnew) = u(:,:,:,nstp)  
+      v(:,:,:,nnew) = v(:,:,:,nstp)
+# endif
+# if defined TS_HADV_TEST && defined SOLID_BODY_PER
+      cff           = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))  
+      u(:,:,:,nnew) = u(:,:,:,nstp) * cff 
+      v(:,:,:,nnew) = v(:,:,:,nstp) * cff
+# endif
+!
+!--------------------------------------------------------------------
 !
 !======================================================================
 ! Set PHYSICAL lateral boundary conditions for tracers.

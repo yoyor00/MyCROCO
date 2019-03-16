@@ -81,6 +81,8 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined TS_HADV_TEST
+      parameter (LLm0=100,  MMm0=100,  N=5) 
 #elif defined SINGLE_COLUMN
 # ifdef KATO_PHILIPS 
       parameter (LLm0=5 ,   MMm0=5,    N=100)   !

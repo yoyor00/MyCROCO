@@ -303,6 +303,10 @@
 # undef PREDICTOR
 # include "compute_vert_tracer_fluxes.h"
 
+# ifdef TS_HADV_TEST
+      FC(istr:iend,0:N) = 0.d0
+# endif
+
 !----------------------------------------------------------
 ! Apply flux correction for monotonicity
 !----------------------------------------------------------

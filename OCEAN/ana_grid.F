@@ -152,6 +152,10 @@ C$    integer omp_get_thread_num
                      beta=0.
                      ridge_width=30.e3
                      ridge_height=1600.
+# elif defined TS_HADV_TEST
+                     depth=10.
+                     f0=0.
+                     beta=0.                     
 # elif defined OVERFLOW
                      depth=40.
                      f0=0.
@@ -268,6 +272,9 @@ C$    integer omp_get_thread_num
                      Length_ETA=6.0e+3
 !                     Length_XI =2400.0e+3
 !                     Length_ETA=100.0e+3
+# elif defined TS_HADV_TEST
+                     Length_XI  = 1.0E+3
+                     Length_ETA = 1.0E+3
 # elif defined OVERFLOW
                      Length_XI =2.0E+3
                      Length_ETA=64.0E+3
@@ -432,7 +439,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
                    || defined SOLITON || defined JET \
-                   || defined KH_INST \
+                   || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN
       do j=JstrR,JendR
         do i=IstrR,IendR

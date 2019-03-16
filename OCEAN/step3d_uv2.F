@@ -1072,6 +1072,33 @@
         endif  !<-- j.ge.Jstr
       enddo    !<-- j loop
 !
+!--------------------------------------------------------------------
+!
+# if defined TS_HADV_TEST 
+#    if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
+      u(:,:,:,nnew) = u(:,:,:,nstp) 
+      v(:,:,:,nnew) = v(:,:,:,nstp)
+#    endif
+#    if defined SOLID_BODY_PER
+      cff           = cos(2.*pi*(time+dt)/(float(ntimes)*dt)) 
+      u(:,:,:,nnew) = u(:,:,:,nstp) * cff
+      v(:,:,:,nnew) = v(:,:,:,nstp) * cff
+      u(:,:,:,nrhs) = u(:,:,:,nstp)
+      v(:,:,:,nrhs) = v(:,:,:,nstp)
+#    endif      
+      do j=Jstr,Jend
+        do k=1,N
+          do i=IstrU,Iend
+            Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)*u(i,j,k,nnew)
+          enddo
+          do i=Istr,Iend
+            if (j.ge.JstrV) then
+              Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)*v(i,j,k,nnew)
+            end if
+          enddo
+        enddo
+      enddo
+#  endif
 !
 !--------------------------------------------------------------------
 ! Apply mass point sources
