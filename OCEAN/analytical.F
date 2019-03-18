@@ -2190,9 +2190,6 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # include "param.h"
-# ifdef OBC_PATM
-#  include "forces.h"
-# endif
 # include "grid.h"
 # include "scalars.h"
 # include "boundary.h"
