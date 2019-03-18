@@ -133,7 +133,7 @@ if [[ $copy_tag == 1 ]] ; then
     cp -Rf $TOOLS_DIR/Town/town.dat Misc/
     #
 
-    cp -Rf $SOURCES_DIR/create_myconfig.bash create_myconfig.bash.BCK
+    cp -Rf $SOURCES_DIR/create_run.bash create_run.bash.BCK
     cd -
     #
     echo '=> Copy from '$TOOLS_DIR ' done'
