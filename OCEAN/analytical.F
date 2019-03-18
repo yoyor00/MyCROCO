@@ -2201,7 +2201,6 @@ C$    integer  trd, omp_get_thread_num
 # include "coupling.h"
 # include "forces.h"
 !
-      integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "compute_auxiliary_bounds.h"
 !
 # ifdef OBC_WEST
