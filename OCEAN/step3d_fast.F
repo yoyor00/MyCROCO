@@ -673,8 +673,9 @@ C$OMP END MASTER
 # if defined WET_DRY && defined MASKING
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
+          cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
           zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
+     &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
         enddo
       enddo 
 # endif
