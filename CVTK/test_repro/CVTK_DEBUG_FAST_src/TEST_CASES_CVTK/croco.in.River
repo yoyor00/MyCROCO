@@ -5,7 +5,7 @@ title:
 	River run off  Example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               5      540      40      1
+               5      540      60      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            3.0d0      0.0d0        50.d0
