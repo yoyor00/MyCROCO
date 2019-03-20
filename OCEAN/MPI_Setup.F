@@ -38,6 +38,7 @@
 # include "scalars.h"
 # include "ncscrum.h"
 # include "mpi_cpl.h"
+# include "netcdf.inc"
       include 'mpif.h'
       call MPI_Comm_size (MPI_COMM_WORLD, nsize,  ierr)
       call MPI_Comm_rank (MPI_COMM_WORLD, mynode, ierr)
