@@ -573,7 +573,7 @@ C$    trd=omp_get_thread_num()
           vbar(Istr-1,j,knew)=vbar(Istr-1,j,knew)*vmask(Istr-1,j)
 #   endif
         enddo
-#  elif definef OBC_COM_M2CHARACT
+#  elif defined OBC_COM_M2CHARACT
 !                                             Western edge Chapman BC
 !                                             ======= ==== ======= ==
         do j=JstrV,Jend

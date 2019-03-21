@@ -463,6 +463,7 @@
 */
 # undef  OPENMP
 # undef  MPI
+# undef  NBQ
 # define INNERSHELF_EKMAN
 # define INNERSHELF_APG
 # define SOLVE3D
@@ -490,6 +491,14 @@
 #   define LMD_BKPP
 #   define LMD_RIMIX
 #   define LMD_CONVEC
+#  endif
+#  undef WAVE_MAKER_INTERNAL
+#  ifdef WAVE_MAKER_INTERNAL
+#   define ANA_BRY
+#   define Z_FRC_BRY
+#   define M2_FRC_BRY
+#   define M3_FRC_BRY
+#   define T_FRC_BRY
 #  endif
 # endif
 # define NO_FRCFILE
@@ -1099,7 +1108,6 @@
 # define ANA_BTFLUX
 # define OBC_WEST
 # define OBC_SPECIFIED_WEST
-# define FRC_BRY
 # define ANA_BRY
 # define Z_FRC_BRY
 # define M2_FRC_BRY

@@ -34,8 +34,8 @@
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
       real dt, dtfast, time, time2, time_start, tdays
-      real*8 time_mars,time_end,tool_datosec
-      character*19 date,tool_sectodat,run_end_date,run_start_date
+      real time_mars, time_end
+      character*19 date, run_end_date, run_start_date
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
@@ -48,9 +48,7 @@
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
-     &               time_mars,time_end,
-     &               date,run_end_date,run_start_date,
-     &                      ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
@@ -61,6 +59,8 @@
      &                       wstp, wnew,
 #endif
      &                       PREDICTOR_2D_STEP 
+      common /time_indices2/ time_mars, time_end,
+     &                       date, run_end_date, run_start_date
 
 !
 ! Slowly changing variables: these are typically set in the beginning

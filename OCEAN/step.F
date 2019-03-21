@@ -199,12 +199,10 @@ C$OMP MASTER
 #if defined ZCLIMATOLOGY && !defined ANA_SSH
             call get_ssh
 #endif
-#ifdef FRC_BRY
-# ifndef ANA_BRY
+#if defined FRC_BRY && !defined ANA_BRY
             call get_bry
-#  ifdef BIOLOGY
+# ifdef BIOLOGY
             call get_bry_bio
-#  endif
 # endif
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
@@ -255,7 +253,9 @@ C$OMP BARRIER
 #  endif
 #  ifdef BIOLOGY
           call ana_bry_bio (tile)  ! analytical values are given
-          call set_bry_bio (tile)  ! if data is missing from bry files
+#   ifndef ANA_BRY
+          call set_bry_bio (tile)  ! if data are missing from bry files
+#   endif
 #  endif
 # endif
 # if defined WKB_WWAVE && !defined ANA_BRY_WKB

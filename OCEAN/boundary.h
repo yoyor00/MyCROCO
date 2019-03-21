@@ -9,6 +9,9 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+      logical got_tbry(NT)
+      common /bry_logical/ got_tbry
+
 #ifndef ANA_BRY
       real bry_time(2)
       common /bry_indices_array/ bry_time
@@ -18,8 +21,7 @@
       common /bry_indices_integer/ bry_id, bry_time_id, bry_ncycle,
      &                             bry_rec, itbry, ntbry
 
-#if defined BIOLOGY || defined PISCES
-      logical got_tbry(NT)
+# if defined BIOLOGY || defined PISCES
       real bry_time1(2,NT)
       common /bry_indices_array1/ bry_time1
       real bry_cycle1(NT)
@@ -28,9 +30,7 @@
      $        bry_rec1(NT), itbry1(NT), ntbry1(NT)
       common /bry_indices_integer1/ bry_tid, bry_ncycle1,
      &                              bry_rec1, itbry1, ntbry1
-      common /bry_logical/ got_tbry
-  
-#endif
+# endif
 
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -374,7 +374,7 @@
 # endif
 #endif /* NBQ */
 
-#if defined NBQ && defined W_FRC_BRY
+#if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
       real wbry_west(GLOBAL_1D_ARRAYETA,0:N)
       common /bry_w_west/ wbry_west
