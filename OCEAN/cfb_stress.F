@@ -80,18 +80,28 @@
 !  Compute kinematic, surface wind stress (m2/s2).
 !--------------------------------------------------------------
 !
-!     sustr = sustr+stau.Uo where stau=cfb_slope*Ua+cfb_offset 
+!     sustr = sustr+stau*Uo where stau=cfb_slope*Ua+cfb_offset for wind
+!     larger than 3m/s, otherwise take mean value of -0.0027
 !     same for svstr
 !
       do j=jmin,jmax
         do i=imin+1,imax
 # ifdef CFB_STRESS
-          cff=cfb_slope*0.5*(wspd(i,j)+wspd(i+1,j))+cfb_offset
+          if (wspd(i+1,j) .gt. 3) then
+              cff=0.5*cfb_slope*(wspd(i,j)+wspd(i+1,j))+cfb_offset
+          else
+              cff = -0.0027
+          endif
 # else 
 ! CFB_STRESS2 case
-          cff3=0.25*(svstr(i-1,j)+svstr(i,j)+svstr(i-1,j+1)+svstr(i,j+1))
-          cff2=sqrt(sustr(i,j)**2+cff3**2)
-          cff=cfb_slope2*cff2+cfb_offset2
+          cff3=0.25*(svstr(i-1,j  )+svstr(i,j  )+
+     &               svstr(i-1,j+1)+svstr(i,j+1))
+          if (cff3 .gt. 0.045) then 
+              cff2=sqrt(sustr(i,j)**2+cff3**2)
+              cff=cfb_slope2*cff2+cfb_offset2
+          else
+              cff = -0.0027
+          endif
 # endif
           sustr(i,j)=sustr(i,j)+cff*u(i,j,N,nrhs)
 # ifdef MASKING
@@ -106,12 +116,21 @@
       do j=jmin+1,jmax
         do i=imin,imax
 # ifdef CFB_STRESS
-          cff=cfb_slope*0.5*(wspd(i,j)+wspd(i,j+1))+cfb_offset
+          if (wspd(i+1,j) .gt. 3) then
+             cff=0.5*cfb_slope*(wspd(i,j)+wspd(i,j+1))+cfb_offset
+          else
+              cff = -0.0027
+          endif
 # else 
 ! CFB_STRESS2 case
-          cff3=0.25*(sustr(i,j-1)+sustr(i,j)+sustr(i+1,j-1)+sustr(i+1,j))
-          cff2=sqrt(svstr(i,j)**2+cff3**2)
-          cff=cfb_slope2*cff2+cfb_offset2
+          cff3=0.25*(sustr(i  ,j-1)+sustr(i  ,j)+
+     &               sustr(i+1,j-1)+sustr(i+1,j))
+          if (cff3 .gt. 0.045) then
+              cff2=sqrt(svstr(i,j)**2+cff3**2)
+              cff=cfb_slope2*cff2+cfb_offset2
+          else
+              cff = -0.0027
+          endif
 # endif
           svstr(i,j)=svstr(i,j)+cff*v(i,j,N,nrhs)
 # ifdef MASKING

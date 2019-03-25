@@ -261,13 +261,13 @@
       ! setup coupling coeff: sustr+(stau)Uo
       ! with stau = cfb_slope*Uatm + cfb_offset
       real cfb_slope, cfb_offset
-      parameter (cfb_slope=0.0029)
+      parameter (cfb_slope=-0.0029)
       parameter (cfb_offset=0.008)
 # elif defined CFB_STRESS2
       ! setup coupling coeff: sustr+(stau)Uo
       ! with stau = cfb_slope2*Stress + cfb_offset2
       real cfb_slope2, cfb_offset2
-      parameter (cfb_slope2=0.056)
+      parameter (cfb_slope2=-0.056)
       parameter (cfb_offset2=0.0025)
 # elif defined CFB_WIND
       ! setup coupling coeff: Ua-(1-sw)Uo
