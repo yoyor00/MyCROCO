@@ -14,6 +14,7 @@ ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in.VHR croco.in
 ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in.1.VHR croco.in.1
 ln -sf $dir_home/../TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in.REGIONAL.VHR AGRIF_FixedGrids.in
 ln -sf $dir_datafile/VHR/*.nc* .
+ln -sf $dir_datafile/DATA .
 
 ln -sf $dir_home/../jobcomp_rvtk.bash .
 ln -sf $dir_home/../extract_results_croco.bash .

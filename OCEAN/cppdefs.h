@@ -604,7 +604,6 @@
 # define SOLVE3D
 # define UV_ADV
 # define UV_COR
-# define M2FILTER_FLAT
 # define NONLIN_EOS
 # define SALINITY
 # define ANA_GRID
@@ -1109,14 +1108,21 @@
 !                       ===== ====== ===== =======
 !
 */
+# define SWASH_GLOBEX_B2
+# undef  SWASH_GLOBEX_A3
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
-# undef  NBQ
+# define AVERAGES
+# define NBQ
+# define NBQ_PRECISE
+# define WAVE_MAKER
 # define UV_ADV
-# define UV_VIS2
-# define UV_VIS_SMAGO
-# define MASKING
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# define GLS_MIX2017_3D 
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1127,7 +1133,7 @@
 # define ANA_SST
 # define ANA_BTFLUX
 # define OBC_WEST
-# define SPONGE
+# define OBC_SPECIFIED_WEST
 # define FRC_BRY
 # define ANA_BRY
 # define Z_FRC_BRY
