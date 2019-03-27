@@ -18,11 +18,11 @@
           if (NORTH_INTER) then
             jmax=Mmmpi+1
           else
-            jmax=Mmmpi-1
+            jmax=Mmmpi-2
           endif
 #   else
           jmin=3
-          jmax=Mm-1
+          jmax=Mm-2
 #   endif
 #  endif
 #  ifdef EW_PERIODIC
@@ -38,11 +38,11 @@
           if (EAST_INTER) then
             imax=Lmmpi+1
           else
-            imax=Lmmpi-1
+            imax=Lmmpi-2
           endif
 #   else
           imin=3
-          imax=Lm-1
+          imax=Lm-2
 #   endif
 #  endif
 !
