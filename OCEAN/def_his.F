@@ -2323,7 +2323,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
-# if if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
+# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING )
 !-----------------------------------------------------------------------------
