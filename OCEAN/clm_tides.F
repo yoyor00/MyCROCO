@@ -55,7 +55,7 @@
 # include "boundary.h"
 !
 #ifdef TIDES_MAS
-      CHARACTER (len=19)    :: cdate
+      CHARACTER (len=19)    :: cdate,tool_sectodat
       logical :: flag=.false.
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
       integer :: nn,l,k,kk,ll

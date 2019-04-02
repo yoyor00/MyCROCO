@@ -149,11 +149,12 @@ C$OMP MASTER
 #ifdef AUTOTILING
       call begin_timing
 #endif
-!      MPI_master_only write(stdout,*) "toto",iic,ntstart
       time=time_start+dt*float(iic-ntstart)
+      tdays=time*sec2day
+#ifdef USE_CALENDAR
       time_mars=time_mars+dt
       tdays=(time_mars-time_start)*sec2day
-!     tdays=time*sec2day
+#endif
 
 #ifdef SOLVE3D
       nstp=1+mod(iic-ntstart,2)

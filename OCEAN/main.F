@@ -715,8 +715,8 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-steping.'
       next_kstp=kstp
       time_start=time
-      time_mars=time
 #ifdef USE_CALENDAR 
+      time_mars=time
       time_end=tool_datosec(run_end_date)
 #endif
 
