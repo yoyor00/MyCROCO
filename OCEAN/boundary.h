@@ -9,8 +9,10 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+#ifdef T_FRC_BRY
       logical got_tbry(NT)
       common /bry_logical/ got_tbry
+# endif
 
 #ifndef ANA_BRY
       real bry_time(2)
