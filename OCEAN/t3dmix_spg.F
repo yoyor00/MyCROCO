@@ -665,7 +665,7 @@
 !
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
-# ifdef TS_MIX_IMP
+# ifdef TS_SPONGE_IMP
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
 # endif
             enddo

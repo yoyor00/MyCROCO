@@ -7,10 +7,11 @@
 # LDR           Program to load the objects into an executable
 # LDFLAGS       Flags to the loader
 #
-CPP = $(CPP1)
-CPPFLAGS = $(CPPFLAGS1)
-CFT = $(CFT1)
-LDR = $(CFT)
-FFLAGS = $(FFLAGS1)
-LDFLAGS =
-LCDF = $(LDFLAGS1)
+      CPP = $(CPP1)
+ CPPFLAGS = $(CPPFLAGS1)
+      CFT = $(CFT1)
+      LDR = $(CFT)
+   FFLAGS = $(FFLAGS1)
+ FFLAGS90 = $(FFLAGS1)
+  LDFLAGS =
+     LCDF = $(LDFLAGS1)

@@ -1,5 +1,5 @@
 title:
-	Gravitational Adjustment Example
+	Kelvin-Helmoltz instability Example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
               999992     0.03     10       100 

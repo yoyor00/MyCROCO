@@ -118,7 +118,7 @@
       common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
 #  endif
 # endif
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
       real whrm_avg(GLOBAL_2D_ARRAY)
       real wfrq_avg(GLOBAL_2D_ARRAY)
       real wac_avg(GLOBAL_2D_ARRAY)

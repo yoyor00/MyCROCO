@@ -225,9 +225,9 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type) 
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING )
 !
 !     Brunt vaisala frequency.
 !
@@ -570,7 +570,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !
 # endif /* SOLVE3D */
 
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
       if (wrtavg(indxHRM)) then
         ierr=nf_fwrite (whrm_avg(START_2D_ARRAY), ncidavg, avgWAVE(1),
      &                                            record, r2dvar)
@@ -593,6 +593,7 @@ CR      write(*,*) 'wrt_avg:  wrtHrm' MYID
         endif
 CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
       endif
+#  ifdef WKB_WWAVE
       if (wrtavg(indxWAC)) then
         ierr=nf_fwrite (wac_avg(START_2D_ARRAY), ncidavg, avgWAVE(3),
      &                                            record, r2dvar)
@@ -604,6 +605,7 @@ CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
         endif
 CR      write(*,*) 'wrt_avg:  wrtWac' MYID
       endif
+#  endif
       if (wrtavg(indxWKX)) then
         ierr=nf_fwrite (wkx_avg(START_2D_ARRAY), ncidavg, avgWAVE(4),
      &                                            record, r2dvar)
@@ -649,6 +651,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpb' MYID
 CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
       endif
 #  ifdef WAVE_ROLLER
+#   ifdef WKB_WWAVE
       if (wrtavg(indxWAR)) then
         ierr=nf_fwrite (war_avg(START_2D_ARRAY), ncidavg, avgWAVE(8),
      &                                            record, r2dvar)
@@ -660,6 +663,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
         endif
 CR      write(*,*) 'wrt_avg:  wrtWar' MYID
       endif
+#   endif
       if (wrtavg(indxEPR)) then
         ierr=nf_fwrite (wepr_avg(START_2D_ARRAY), ncidavg, avgWAVE(9),
      &                                            record, r2dvar)

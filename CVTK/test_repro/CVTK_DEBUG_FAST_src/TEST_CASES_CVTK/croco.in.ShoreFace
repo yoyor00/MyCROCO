@@ -17,7 +17,7 @@ sediments: input file
            sediment.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
-                         T         T         T T 10*T
+                         20*T
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      F      F       F      F     F     F

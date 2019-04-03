@@ -474,8 +474,9 @@ C$OMP END MASTER
         do i=IstrU-1,Iend
           zeta(i,j,knew)=zeta_new(i,j) 
 #if defined WET_DRY && defined MASKING
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
+            cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
+            zeta(i,j,knew)=zeta(i,j,knew)+ 
+     &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
 #endif
         enddo
       enddo 

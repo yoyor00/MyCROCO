@@ -83,7 +83,7 @@ C$    integer omp_get_thread_num
 #  include "sediment.h"
 # endif
 # ifdef WKB_WWAVE
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
 # endif
 !
       integer IstrR,IendR,JstrR,JendR
@@ -610,22 +610,33 @@ C$    integer omp_get_thread_num
 #  endif /* SEDIMENT */
 # endif /* SOLVE3D */
 
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
+#  ifdef WKB_WWAVE
         iout=wstp
+#  endif
         if (wrtavg(indxHRM)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               whrm_avg(i,j) = cff*( cff1*whrm_avg(i,j)+hrm(i,j,iout) )
+#  else
+              whrm_avg(i,j) = cff*( cff1*whrm_avg(i,j)+whrm(i,j) )
+#  endif
             enddo
           enddo
         endif
         if (wrtavg(indxFRQ)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+frq(i,j,iout) )
+#  else  
+              wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+wfrq(i,j) )
+#  endif  
             enddo
           enddo
         endif
+#  ifdef WKB_WWAVE
         if (wrtavg(indxWAC)) then
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -633,17 +644,26 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  endif
         if (wrtavg(indxWKX)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wkx(i,j,iout) )
+#  else 
+              wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wwkx(i,j) )
+#  endif
             enddo
           enddo
         endif
         if (wrtavg(indxWKE)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               wke_avg(i,j) = cff*( cff1*wke_avg(i,j)+wke(i,j,iout) )
+#  else
+              wke_avg(i,j) = cff*( cff1*wke_avg(i,j)+wwke(i,j) )
+#  endif
             enddo
           enddo
         endif
@@ -662,6 +682,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  ifdef WAVE_ROLLER
+#   ifdef WKB_WWAVE
         if (wrtavg(indxWAR)) then
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -669,6 +690,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#   endif
         if (wrtavg(indxEPR)) then
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -677,7 +699,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-# endif  /* WKB_WWAVE */
+# endif  /* WKB_WAVE_IO */
 
 # ifdef MRL_WCI
         if (wrthis(indxSUP)) then

@@ -1695,12 +1695,10 @@ CR      write(*,*) '  0' MYID
 
          do j=j1,j2
            do i=i1,i2
-# ifndef WET_DRY
-#  ifdef NEW_S_COORD
+# ifdef NEW_S_COORD
              h(i,j)=max(tabres(i,j),hmin)
-#  else
+# else
              h(i,j)=max(tabres(i,j),hc)
-#  endif
 # endif
 # ifdef NEW_S_COORD 
              hinv(i,j)=1./(h(i,j)+hc)      

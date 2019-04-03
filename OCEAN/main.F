@@ -273,7 +273,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #ifdef USE_CALENDAR
       !calcul of start times and ntimes
-#ifndef ANA_INITIAL
+#ifdef ANA_INITIAL
       !if no init file set the start_date from croco.in
       time=tool_datosec(run_start_date)
 #endif
