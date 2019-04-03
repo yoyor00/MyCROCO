@@ -69,6 +69,9 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#ifdef USE_CALENDAR
+      character*19 :: tool_sectodat
+#endif
      
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
