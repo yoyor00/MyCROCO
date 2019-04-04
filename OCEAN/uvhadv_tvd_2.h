@@ -44,7 +44,7 @@
         enddo
 
         do j=JstrV,Jend+1
-          do i=IstrU,Iend
+          do i=Istr,Iend
             cff = 0.5*(Hvom(i,j,k)+Hvom(i-1,j,k))
             rrp= (u(i,j+1,k,nstp)-u(i,j  ,k,nstp)) 
 #   ifdef MASKING
@@ -67,7 +67,7 @@
           enddo
         enddo
 
-        do j=JstrV,Jend
+        do j=Jstr,Jend
           do i=IstrU,Iend+1
             cff = 0.5*(Huon(i,j,k)+Huon(i,j-1,k))
             rrp=(v(i+1,j,k,nstp)-v(i  ,j,k,nstp))

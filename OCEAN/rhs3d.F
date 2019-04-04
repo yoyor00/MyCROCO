@@ -1809,7 +1809,7 @@
               Fxl=( cff*(v(i,j,k,nstp) + v(i,j,kp1,nstp))
      &        -abs(cff)*rr )*0.5
               vit = velvw(i,k)*pm_v(i,j)*pn_v(i,j)
-            FC(i,k)=Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
+            FC(i,k)=0!Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
             enddo
           enddo 
           endif        
@@ -2038,21 +2038,25 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
 
          real :: rr_up
 
-        if (u0>0) then
-          rr_up = rrm
+    !  if (abs(rr).gt.1.e-20) THEN
+        if (u0>1.e-20) then
+            rr_up = rrm
           else
             rr_up = rrp
          endif
 
            h3=((Fx_h-Fx_l))
 
-         if (rr>0) then
+         if (rr>1.e-20) then
           limiteur_h3=max(0.,min(h3,max(-rr_up*0.5*abs(u0),
      &  min(2*rr_up*0.5*abs(u0),h3,1.5*rr*0.5*abs(u0)))))
           else
           limiteur_h3=-max(0.,min(-h3,max(rr_up*0.5*abs(u0),
      &   min(-2*rr_up*0.5*abs(u0),-h3,-1.5*rr*0.5*abs(u0)))))
          endif
+     ! else
+        !  limiteur_h3=0
+     ! endif 
 
          end function limiteur_h3
 
