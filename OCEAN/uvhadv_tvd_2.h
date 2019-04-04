@@ -87,6 +87,8 @@
             vit=velvx(i,j)/om_p(i,j)
      &    /( 0.25*( Hz(i  ,j,k)+Hz(i  ,j-1,k)
      &           +  Hz(i-1,j,k)+Hz(i-1,j-1,k) ) )
+            Fxl=( cff*(v(i,j,k,nstp)+v(i-1,j,k,nstp))
+     &        -abs(cff)*rr )*0.5
             VFx(i,j)=Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,VFx(i,j))       
           enddo
         enddo

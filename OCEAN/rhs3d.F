@@ -23,17 +23,22 @@
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
      &                                    A3d(1,1,trd), A3d(1,2,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                      A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
-     &                      A2d(1,10,trd),
-     &                      A2d(1,11,trd), A2d(1,12,trd)  )
+     &                      A2d(1,10,trd), A2d(1,11,trd), A2d(1,12,trd),
+     &                      A2d(1,13,trd),
+     &                      A2d(1,14,trd), A2d(1,15,trd)  )
       return
       end
 
-      subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                                 wrk1,wrk2, UFx,UFe, VFx,VFe,
-     &   velux, velve, velue, velvx,veluw, velvw )
+      subroutine rhs3d_tile (Istr,Iend,Jstr,Jend,
+     &   ru,rv,
+     &   CF,FC,DC,
+     &   wrk1,wrk2, UFx,
+     &   UFe, VFx,VFe,
+     &   velux, velve, velue,
+     &   velvx,
+     &   veluw, velvw )     
 
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -1809,7 +1814,7 @@
               Fxl=( cff*(v(i,j,k,nstp) + v(i,j,kp1,nstp))
      &        -abs(cff)*rr )*0.5
               vit = velvw(i,k)*pm_v(i,j)*pn_v(i,j)
-            FC(i,k)=0!Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
+            FC(i,k)=Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
             enddo
           enddo 
           endif        
