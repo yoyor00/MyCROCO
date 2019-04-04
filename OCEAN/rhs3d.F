@@ -1809,7 +1809,7 @@
               Fxl=( cff*(v(i,j,k,nstp) + v(i,j,kp1,nstp))
      &        -abs(cff)*rr )*0.5
               vit = velvw(i,k)*pm_v(i,j)*pn_v(i,j)
-            FC(i,k)=0!Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
+            FC(i,k)=Fxl+limiteur_h3(rrm,rr,rrp,vit,Fxl,FC(i,k))       
             enddo
           enddo 
           endif        
