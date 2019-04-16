@@ -40,7 +40,10 @@
    of parallel computation by comparing binary files produced by serial 
    and parallel runs
 */
-#undef RVTK_DEBUG
+#undef  RVTK_DEBUG
+#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP
+# define RVTK_DEBUG_WRITE
+#endif
 
 /*
     Constant tracer option (for debugging)

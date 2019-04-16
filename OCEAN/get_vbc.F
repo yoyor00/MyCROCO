@@ -67,8 +67,9 @@
 !---------------------------------------------------------------
 !
 # ifndef ANA_SMFLUX
-#  if (!defined BULK_FLUX || (defined BULK_FLUX && !defined BULK_SMFLUX)) \
-      && (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
+         || (defined BULK_FLUX && !defined BULK_SMFLUX) \
+         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
       call get_smflux
 #  endif
 # endif
@@ -89,14 +90,6 @@
 #   endif
 #  elif !defined ANA_STFLUX
       call get_stflux (itemp)
-#  endif
-!
-!---------------------------------------------------------------
-! Account for Current feedback  
-!---------------------------------------------------------------
-!
-#  if defined SMFLUX_CFB && !defined CFB_WIND
-      call cfb_stress
 #  endif
 !
 !---------------------------------------------------------------
@@ -216,8 +209,9 @@
 # ifdef ANA_SMFLUX
       call ana_smflux_tile (Istr,Iend,Jstr,Jend)
 # else
-#  if (!defined BULK_FLUX || (defined BULK_FLUX && !defined BULK_SMFLUX)) \
-      && (defined OW_COUPLING && !defined WAVE_SMFLUX)
+#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
+         || (defined BULK_FLUX && !defined BULK_SMFLUX) \
+         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
       call set_smflux_tile (Istr,Iend,Jstr,Jend)
 #  endif
 # endif
@@ -263,13 +257,20 @@
 #    endif
 #   endif
 #  endif /* BULK_FLUX */
-
 !
 !---------------------------------------------------------------
-!
+! Correction to surface momentum flux due to surface current 
+! feedback (parametrization for an uncoupled model)
 !---------------------------------------------------------------
 !
-
+#  if defined SMFLUX_CFB && !defined CFB_WIND
+      call cfb_stress_tile (Istr,Iend,Jstr,Jend)
+#  endif
+!
+!---------------------------------------------------------------
+! Simplest sea ice correction to T,S fluxes
+!---------------------------------------------------------------
+!
 #ifdef SEA_ICE_NOFLUX
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -325,22 +326,6 @@
         enddo
       enddo
 #  endif /* !BULK_EP */
-
-!
-!---------------------------------------------------------------
-!
-!---------------------------------------------------------------
-!
-
-!#ifdef SEA_ICE_NOFLUX
-!      do j=JstrR,JendR
-!        do i=IstrR,IendR
-!              if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
-!                   stflx(i,j,isalt)=0.
-!              endif
-!        enddo
-!      enddo
-!#endif
 !
 !--------------------------------------------------------------
 ! Flux correction to surface salt flux.

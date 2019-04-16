@@ -33,77 +33,63 @@
 #include "scalars.h"
       integer i,j, Istr,Iend,Jstr,Jend,
      &        imin,imax,jmin,jmax
-      real cff,cff2,cff3
+      real    cff,cff1,cff2
 
-# ifdef EW_PERIODIC
-        imin=Istr-2
-        imax=Iend+2
+# include "compute_extended_bounds.h"
+
+# ifdef CFB_STRESS
+      imax=IendR
+      jmax=JendR
 # else
-      if (WESTERN_EDGE) then
-        imin=Istr-1
-      else
-        imin=Istr-2
-      endif
       if (EASTERN_EDGE) then
-        imax=Iend+1
+        imax=Iend
       else
-        imax=Iend+2
-      endif
-# endif
-# ifdef NS_PERIODIC
-        jmin=Jstr-2
-        jmax=Jend+2
-# else
-      if (SOUTHERN_EDGE) then
-        jmin=Jstr-1
-      else
-        jmin=Jstr-2
+        imax=IendR
       endif
       if (NORTHERN_EDGE) then
-        jmax=Jend+1
+        jmax=Jend
       else
-        jmax=Jend+2
+        jmax=JendR
       endif
 # endif
 !
-!----------------------------------------------------------------------
-!  Input variables:
+!---------------------------------------------------------------------
+!  Correct kinematic, surface wind stress (m2/s2) due to surface 
+!  current feedback
+!---------------------------------------------------------------------
 !
-!      - wspd
-!      - sustr
-!      - svstr
+! sustr = sustr + s_tau * Uo,  (or equivalently for svstr)
 !
-!----------------------------------------------------------------------
+!   with  s_tau = cfb_slope1 * Uatm + cfb_offset1 [N.m^-3.s]  CFB_STRESS
+!    or   s_tau = cfb_slope2 * Wstr + cfb_offset2 [N.m^-3.s]  CFB_STRESS2
 !
+!      For wind Uatm < 3 m/s, or wind stress Wstr < 0.045 N/m^2: 
+!            --> take s_tau mean value of -0.0027 N.m^-3.s
+!      Caution: sustr is in [m^2/s^2], sms_scale=1/rho0 [m^3/kg] must be
+!      used for conversion
 !
-!--------------------------------------------------------------
-!  Compute kinematic, surface wind stress (m2/s2).
-!--------------------------------------------------------------
+!---------------------------------------------------------------------
 !
-!     sustr = sustr+stau*Uo where stau=cfb_slope*Ua+cfb_offset for wind
-!     larger than 3m/s, otherwise take mean value of -0.0027
-!     same for svstr
-!
-      do j=jmin,jmax
-        do i=imin+1,imax
+      do j=JstrR,jmax
+        do i=Istr,IendR
 # ifdef CFB_STRESS
-          if (wspd(i+1,j) .gt. 3) then
-              cff=0.5*cfb_slope*(wspd(i,j)+wspd(i+1,j))+cfb_offset
+          cff1=0.5*(wspd(i,j)+wspd(i-1,j))
+          if (cff1 .gt. 3) then
+              cff = cff1*cfb_slope + cfb_offset
           else
               cff = -0.0027
           endif
 # else 
-! CFB_STRESS2 case
-          cff3=0.25*(svstr(i-1,j  )+svstr(i,j  )+
-     &               svstr(i-1,j+1)+svstr(i,j+1))
-          if (cff3 .gt. 0.045) then 
-              cff2=sqrt(sustr(i,j)**2+cff3**2)
-              cff=cfb_slope2*cff2+cfb_offset2
+          cff2=0.25*(svstr(i-1,j  )+svstr(i,j  )  ! CFB_STRESS2 case
+     &              +svstr(i-1,j+1)+svstr(i,j+1))
+          cff1=sqrt(sustr(i,j)**2+cff2**2)/sms_scale
+          if (cff1 .gt. 0.045) then 
+            cff = cfb_slope2*cff1 + cfb_offset2
           else
-              cff = -0.0027
+            cff = -0.0027
           endif
 # endif
-          sustr(i,j)=sustr(i,j)+cff*u(i,j,N,nrhs)
+          sustr(i,j)=sustr(i,j)+sms_scale*cff*u(i,j,N,nrhs)
 # ifdef MASKING
           sustr(i,j)=sustr(i,j)*umask(i,j)
 # endif
@@ -113,26 +99,26 @@
         enddo
       enddo
 !
-      do j=jmin+1,jmax
-        do i=imin,imax
+      do j=Jstr,JendR
+        do i=IstrR,imax
 # ifdef CFB_STRESS
-          if (wspd(i+1,j) .gt. 3) then
-             cff=0.5*cfb_slope*(wspd(i,j)+wspd(i,j+1))+cfb_offset
+          cff1=0.5*(wspd(i,j)+wspd(i,j-1))
+          if (cff1 .gt. 3) then
+            cff = cfb_slope*cff1 + cfb_offset
           else
-              cff = -0.0027
+            cff = -0.0027
           endif
 # else 
-! CFB_STRESS2 case
-          cff3=0.25*(sustr(i  ,j-1)+sustr(i  ,j)+
-     &               sustr(i+1,j-1)+sustr(i+1,j))
-          if (cff3 .gt. 0.045) then
-              cff2=sqrt(svstr(i,j)**2+cff3**2)
-              cff=cfb_slope2*cff2+cfb_offset2
+          cff2=0.25*(sustr(i  ,j-1)+sustr(i  ,j)  ! CFB_STRESS2 case
+     &              +sustr(i+1,j-1)+sustr(i+1,j))
+          cff1=sqrt(svstr(i,j)**2+cff2**2)/sms_scale
+          if (cff1 .gt. 0.045) then
+            cff = cfb_slope2*cff1 + cfb_offset2
           else
-              cff = -0.0027
+            cff = -0.0027
           endif
 # endif
-          svstr(i,j)=svstr(i,j)+cff*v(i,j,N,nrhs)
+          svstr(i,j)=svstr(i,j)+sms_scale*cff*v(i,j,N,nrhs)
 # ifdef MASKING
           svstr(i,j)=svstr(i,j)*vmask(i,j)
 # endif
@@ -141,7 +127,21 @@
 # endif
         enddo
       enddo
-
+!
+# ifndef CFB_STRESS
+!  Set boundary conditions for CFB_STRESS2 case
+      if (NORTHERN_EDGE) then
+        do i=Istr,IendR
+          sustr(i,Jend+1)=sustr(i,Jend)
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do j=Jstr,JendR
+          svstr(Iend+1,j)=svstr(Iend,j)
+        enddo
+      endif
+# endif
+!
       return
       end
 #else
