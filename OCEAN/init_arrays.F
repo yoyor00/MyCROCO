@@ -829,6 +829,10 @@ C$    integer omp_get_thread_num
           wspdg(i,j,1)=init
           wspdg(i,j,2)=init
 # endif
+# if defined SMFLUX_CFB && defined CFB_STRESS2 
+          wstr_u(i,j)=init
+          wstr_v(i,j)=init
+# endif
 # ifdef SST_SKIN
           sst_skin=init
 #  ifdef AVERAGES

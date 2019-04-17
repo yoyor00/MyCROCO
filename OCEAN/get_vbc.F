@@ -259,15 +259,6 @@
 #  endif /* BULK_FLUX */
 !
 !---------------------------------------------------------------
-! Correction to surface momentum flux due to surface current 
-! feedback (parametrization for an uncoupled model)
-!---------------------------------------------------------------
-!
-#  if defined SMFLUX_CFB && !defined CFB_WIND
-      call cfb_stress_tile (Istr,Iend,Jstr,Jend)
-#  endif
-!
-!---------------------------------------------------------------
 ! Simplest sea ice correction to T,S fluxes
 !---------------------------------------------------------------
 !
