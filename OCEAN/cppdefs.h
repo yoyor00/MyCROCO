@@ -175,7 +175,7 @@
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
 #  ifdef ONLINE 
-#   define AROME
+#   undef  AROME
 #   undef  ERA_ECMWF
 #  endif
 #  undef READ_PATM
