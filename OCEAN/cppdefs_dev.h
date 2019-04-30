@@ -591,9 +591,15 @@
 ======================================================================
 */
 #ifdef SMFLUX_CFB
-# undef  CFB_STRESS
-# define CFB_STRESS2
-# undef  CFB_WIND
+# ifdef BULK_FLUX
+#  define CFB_STRESS
+#  undef  CFB_STRESS2
+#  undef  CFB_WIND
+# else
+#  undef  CFB_STRESS
+#  define CFB_STRESS2
+#  undef  CFB_WIND
+# endif
 #endif
 
 /*
