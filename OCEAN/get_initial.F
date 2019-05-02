@@ -150,47 +150,47 @@
           nrecavg=ibuff(4)
 #endif
 
-!
-! The following lines are giving trouble when restarting
-!
-!#ifdef DIAGNOSTICS_VRT
-!          nrecdiags_vrt=ibuff(3)
-!# ifdef AVERAGES
-!          nrecdiags_vrt_avg=ibuff(4)
-!# endif
-!#endif
-!#ifdef DIAGNOSTICS_EK
-!          nrecdiags_ek=ibuff(3)
-!# ifdef AVERAGES
-!          nrecdiags_ek_avg=ibuff(4)
-!# endif
-!#endif
-!#ifdef DIAGNOSTICS_PV
-!          nrecdiags_pv=ibuff(3)
-!# ifdef AVERAGES
-!          nrecdiags_pv_avg=ibuff(4)
-!# endif
-!#endif
-!#ifdef DIAGNOSTICS_EDDY
-!          nrecdiags_eddy=ibuff(3)
-!# ifdef AVERAGES
-!          nrecdiags_eddy_avg=ibuff(4)
-!# endif
-!#endif
-!#if defined DIAGNOSTICS_TS
-!          nrecdia=ibuff(3)
-!# ifdef AVERAGES
-!          ncdump=ibuff(4)
-!# endif
-!#endif
-!#ifdef DIAGNOSTICS_UV
-!          nrecdiaM=ibuff(3)
-!# ifdef AVERAGES
-!          nrecdiaM_avg=ibuff(4)
-!# endif
-!#endif
-!
-!
+
+#ifdef RESTART_DIAGS
+
+#ifdef DIAGNOSTICS_VRT
+          nrecdiags_vrt=ibuff(3)
+# ifdef AVERAGES
+          nrecdiags_vrt_avg=ibuff(4)
+# endif
+#endif
+#ifdef DIAGNOSTICS_EK
+          nrecdiags_ek=ibuff(3)
+# ifdef AVERAGES
+          nrecdiags_ek_avg=ibuff(4)
+# endif
+#endif
+#ifdef DIAGNOSTICS_PV
+          nrecdiags_pv=ibuff(3)
+# ifdef AVERAGES
+          nrecdiags_pv_avg=ibuff(4)
+# endif
+#endif
+#ifdef DIAGNOSTICS_EDDY
+          nrecdiags_eddy=ibuff(3)
+# ifdef AVERAGES
+          nrecdiags_eddy_avg=ibuff(4)
+# endif
+#endif
+#if defined DIAGNOSTICS_TS
+          nrecdia=ibuff(3)
+# ifdef AVERAGES
+          ncdump=ibuff(4)
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+          nrecdiaM=ibuff(3)
+# ifdef AVERAGES
+          nrecdiaM_avg=ibuff(4)
+# endif
+#endif
+
+#endif
 
 
 
