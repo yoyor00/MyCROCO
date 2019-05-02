@@ -257,20 +257,21 @@
 !----------------------------------------------------------------------
 !
 #ifdef SMFLUX_CFB
+      ! parameters for computing current feedback on wind-stress
 # ifdef CFB_STRESS
-      ! setup coupling coeff: sustr+(stau)Uo
-      ! with stau = cfb_slope*Uatm + cfb_offset
+      ! wind-stress correction using wind: rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope*Ua + cfb_offset [N.m^-3.s]
       real cfb_slope, cfb_offset
-      parameter (cfb_slope=0.0029)
+      parameter (cfb_slope=-0.0029)
       parameter (cfb_offset=0.008)
 # elif defined CFB_STRESS2
-      ! setup coupling coeff: sustr+(stau)Uo
-      ! with stau = cfb_slope2*Stress + cfb_offset2
+      ! wind-stress correction using stress: rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
       real cfb_slope2, cfb_offset2
-      parameter (cfb_slope2=0.056)
+      parameter (cfb_slope2=-0.056)
       parameter (cfb_offset2=0.0025)
 # elif defined CFB_WIND
-      ! setup coupling coeff: Ua-(1-sw)Uo
+      ! wind correction: Ua-(1-sw)*Uo
       real swparam
       parameter (swparam=0.3)
 # endif

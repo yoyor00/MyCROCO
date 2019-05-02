@@ -55,14 +55,12 @@
 */
                       /* Configuration Name */
 # define BENGUELA_LR
-                      /* Calendar feature */
-# undef USE_CALENDAR 
                       /* Parallelization */
-# undef  OPENMP
+# define OPENMP
 # undef  MPI
+# undef  MPI_OPT
                       /* I/O server */
 # undef  XIOS
-# undef NC4PAR
                       /* Non-hydrostatic option */
 # undef  NBQ
                       /* Nesting */
@@ -88,7 +86,8 @@
 # undef  BBL
                       /* dedicated croco.log file */
 # undef  LOGFILE
-
+                      /* Calendar */
+# undef  USE_CALENDAR
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -100,8 +99,8 @@
 # ifdef MPI
 #  undef  PARALLEL_FILES
 # endif
+# undef  NC4PAR
 # undef  AUTOTILING
-# undef  ETALON_CHECK
                       /* Non-hydrostatic options */
 # ifdef NBQ
 #  define W_HADV_TVD
@@ -176,7 +175,7 @@
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
 #  ifdef ONLINE 
-#   define AROME
+#   undef  AROME
 #   undef  ERA_ECMWF
 #  endif
 #  undef READ_PATM
@@ -186,11 +185,11 @@
 # else
 #  define QCORRECTION
 #  define SFLX_CORR
-#  undef SFLX_CORR_COEF
+#  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
 # undef SMFLUX_CFB
-# undef SEA_ICE_NOFLUX /* no flux under sea ice */
+# undef  SEA_ICE_NOFLUX
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
 #  define MRL_WCI
@@ -264,7 +263,7 @@
                       /* Input/Output */
 # define AVERAGES
 # define AVERAGES_K
-# undef OUTPUTS_SURFACE /* 2d surface fields with higher sampling */
+# undef  OUTPUTS_SURFACE /* 2d surface fields with higher sampling */
 /*
 !                        Diagnostics 
 !---------------------------------
@@ -289,15 +288,15 @@
 #  undef DIAGNOSTICS_EK_MLD
 # endif
 
-# undef DIAGNOSTICS_PV
-# undef DIAGNOSTICS_DISS
-# ifdef DIAGNOSTICS_DISS
+# undef  DIAGNOSTICS_PV
+# undef  DIAGNOSTICS_DISS
+# ifdef  DIAGNOSTICS_DISS
 #  define DIAGNOSTICS_PV
 # endif
 
-# undef DIAGNOSTICS_EDDY
+# undef  DIAGNOSTICS_EDDY
 
-# undef TENDENCY
+# undef  TENDENCY
 # ifdef TENDENCY
 #  define DIAGNOSTICS_UV
 # endif
@@ -317,7 +316,7 @@
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
 #  undef  PISCES
-#  undef BIO_NChlPZD
+#  undef  BIO_NChlPZD
 #  undef  BIO_N2ChlPZD2
 #  define BIO_BioEBUS
                       /*   Biology options    */
@@ -462,6 +461,7 @@
 */
 # undef  OPENMP
 # undef  MPI
+# undef  NBQ
 # define INNERSHELF_EKMAN
 # define INNERSHELF_APG
 # define SOLVE3D
@@ -489,6 +489,14 @@
 #   define LMD_BKPP
 #   define LMD_RIMIX
 #   define LMD_CONVEC
+#  endif
+#  undef WAVE_MAKER_INTERNAL
+#  ifdef WAVE_MAKER_INTERNAL
+#   define ANA_BRY
+#   define Z_FRC_BRY
+#   define M2_FRC_BRY
+#   define M3_FRC_BRY
+#   define T_FRC_BRY
 #  endif
 # endif
 # define NO_FRCFILE
@@ -1098,7 +1106,6 @@
 # define ANA_BTFLUX
 # define OBC_WEST
 # define OBC_SPECIFIED_WEST
-# define FRC_BRY
 # define ANA_BRY
 # define Z_FRC_BRY
 # define M2_FRC_BRY

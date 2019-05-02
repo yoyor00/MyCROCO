@@ -38,11 +38,11 @@
           if (EAST_INTER) then
             imax=Lmmpi+1
           else
-            imax=Lmmpi-1
+            imax=Lmmpi-2
           endif
 #   else
           imin=3
-          imax=Lm-1
+          imax=Lm-2
 #   endif
 #  endif
 !

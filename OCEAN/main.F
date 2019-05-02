@@ -69,6 +69,9 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#ifdef USE_CALENDAR
+      character*19 :: tool_sectodat
+#endif
      
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -715,8 +718,8 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-steping.'
       next_kstp=kstp
       time_start=time
-      time_mars=time
 #ifdef USE_CALENDAR 
+      time_mars=time
       time_end=tool_datosec(run_end_date)
 #endif
 

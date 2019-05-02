@@ -55,7 +55,7 @@
 # include "boundary.h"
 !
 #ifdef TIDES_MAS
-      CHARACTER (len=19)    :: cdate
+      CHARACTER (len=19)    :: cdate,tool_sectodat
       logical :: flag=.false.
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
       integer :: nn,l,k,kk,ll
@@ -91,7 +91,7 @@
       cff=2.*pi*time
 !
 # if defined SSH_TIDES
-#ifdef TIDES_MAS
+#  ifdef TIDES_MAS
 !-------------
 ! MAS INIT
 !-------------
@@ -147,8 +147,7 @@
          num(k)=nn-1
         end do
        ENDIF
-
-
+!
        IF (EASTERN_EDGE) THEN
         do j=JstrR,JendR
          num(:)=0
@@ -189,11 +188,8 @@
          num(k)=nn-1
         end do
        ENDIF
-
-
 !
        IF (NORTHERN_EDGE) THEN
-        !write(stdout,*)'MPI',mynode,iminmpi,imaxmpi,jminmpi,jmaxmpi
         do i=IstrR,IendR
          num(:)=0
          rnord(:,:,i,:)=0.0
@@ -230,7 +226,7 @@
          num(k)=nn-1
         end do
        ENDIF
-
+!
        IF (SOUTHERN_EDGE) THEN
         do i=IstrR,IendR
          num(:)=0
@@ -269,64 +265,14 @@
         end do
        ENDIF
      
-! test init Etide
-      cdate = tool_sectodat(time)
-!      MPI_master_only write(*,*)'maree init:',cdate 
-      CALL tool_decompdate(cdate,ijour,imois,ian,iheure,iminu,isec)
-      tempis =iheure*3600.0+iminu*60.0+isec
-      t0=0.
-       do j=JstrR,JendR
-        do i=IstrR,IendR
-        num(:)=0
-         rsud(:,:,i,:)=0.0
-         gsud(:,:,i,:)=0.0
-         nd0=0
-         k=1
-         nn=1
-         do l=1,tide_nbharmcp
-          if (l_presence(nu(l))) then
-           nol=ide(nu(l))
-           ir0=rr0(nu(l))
-           ir1=rr1(nu(l))
-           ir2=rr2(nu(l))
-           nd=nol/100000
-           if(nd /= nd0) then
-            num(k)=nn-1
-            k=nd+1
-            if(nd >= 6)k=(nd+6)/2
-            nd0=nd
-            nn=1
-           end if
-           rsud(nn,k,i,:)=SSH_Tamp(i,j,l)*100.0
-           gsud(nn,k,i,:)=SSH_Tphase(i,j,l)
-           if(ir0 < 0) gg(nn,k)=gg(nn,k)+180.0
-           nomd(nn,k)=nol
-           fr1(nn,k)=ir1/float(ir0)
-           fr2(nn,k)=ir2/float(ir0)
-           hn(129)=-999.
-           nn=nn+1
-          end if
-        end do
-         num(k)=nn-1
-         if(rmask(i,j)/=0) then
-           call ma1(flag,mynode,i,j,
-     &    t0,ijour,imois,ian,hn(1),rr(1,1),
-     &                 gg(1,1),nomd,fr1,fr2,num)
-            call ma7(flag,tempis,hn(1),Etide(i,j),k)
-         endif
-        end do
-       end do
-!       write(stdout,*)'Etide init:',minval(Etide),maxval(Etide)
-
-
-
       ENDIF ! FIRST TIME STEP
-# endif
+#  endif /* MAS INIT */ 
+
+#ifndef TIDES_MAS
 !---------------------------------------------------------------------
 !  Add tidal elevation (m) to sea surface height climatology.
 !---------------------------------------------------------------------
 !
-#ifndef TIDES_MAS
       do j=JRANGE
         do i=IRANGE
           Etide(i,j)=0.
@@ -348,6 +294,9 @@
         endif
       enddo
 #else
+!--------------------------------------------
+! USE MAS COMPOSITION FOR HARMONIC PREDICTION
+!--------------------------------------------
       cdate = tool_sectodat(time)
       CALL tool_decompdate(cdate,ijour,imois,ian,iheure,iminu,isec)
       tempis =iheure*3600.0+iminu*60.0+isec
@@ -439,11 +388,11 @@
         do j=JstrR,JendR
          do l=1,2
            if(rmask(Istr+l-2,j)/=0) then
-#ifdef TIDES_MAS_DBG
+# ifdef TIDES_MAS_DBG
             if (j+jminmpi-1 .eq. 149 .and. l .eq. 2) then
               flag=.false.
             endif
-#endif
+# endif
             call ma7(flag,tempis,hnouest(1,j,l),Etide(Istr+l-2,j),k)
               flag=.false.
 !             if (j+jminmpi-1 .eq. 149 .and. l .eq. 2) 
@@ -453,7 +402,7 @@
         end do
         do j=JstrR,JendR
           do i=IstrR,IendR
-#ifdef TIDES_MAS_DBG
+# ifdef TIDES_MAS_DBG
             if (i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149) then
 !               do kk=1,130
 !                write(stdout,*)'hnouest',hnouest(kk,j,1)
@@ -462,11 +411,10 @@
      &            tempis,ian,ijour,imois,
      &           iheure,iminu,isec,time,cdate,jourmem
             endif 
-#endif
+# endif
          enddo
         enddo
 !
-
        end if
 
        if (EASTERN_EDGE) then
@@ -484,10 +432,11 @@
          end do
        end do 
 #  endif
-#endif
-!
+#endif /* MAS COMPOSITION */
+
+!----------------------------------------------------------------
 !  Add sub-tidal forcing and adjust climatology to include tides.
-!
+!----------------------------------------------------------------
 #  if defined ZCLIMATOLOGY
       do j=JRANGE
         do i=IRANGE
@@ -500,19 +449,19 @@
         enddo
       enddo
 #  endif /* ZCLIMATOLOGY */
-!
+!----------------------------------------------------------------
 !  If appropriate, load tidal forcing into boundary arrays.
-!
+!----------------------------------------------------------------
 #  ifdef Z_FRC_BRY
 #   if defined OBC_WEST
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
+          zetabry_west(j)=zetabry_west(j)+Etide(Istr-1,j)
 #ifdef TIDES_MAS_DBG
          if (j+jminmpi-1 .eq. 149) 
      &     write(102,*)'Etide',tool_sectodat(time),
-     &     h(Istr-1,j),Etide(Istr-1,j)!,Etide(Istr,j)
+     &     h(Istr-1,j),Etide(Istr-1,j),zetabry_west(j)
 #endif
-          zetabry_west(j)=zetabry_west(j)+Etide(Istr-1,j)
 #    ifdef WET_DRY
           if (zetabry_west(j) .lt. Dcrit(Istr-1,j)-h(Istr-1,j)) then
             zetabry_west(j)=Dcrit(Istr-1,j)-h(Istr-1,j)

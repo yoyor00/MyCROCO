@@ -149,11 +149,12 @@ C$OMP MASTER
 #ifdef AUTOTILING
       call begin_timing
 #endif
-!      MPI_master_only write(stdout,*) "toto",iic,ntstart
       time=time_start+dt*float(iic-ntstart)
+      tdays=time*sec2day
+#ifdef USE_CALENDAR
       time_mars=time_mars+dt
       tdays=(time_mars-time_start)*sec2day
-!     tdays=time*sec2day
+#endif
 
 #ifdef SOLVE3D
       nstp=1+mod(iic-ntstart,2)
@@ -199,12 +200,10 @@ C$OMP MASTER
 #if defined ZCLIMATOLOGY && !defined ANA_SSH
             call get_ssh
 #endif
-#ifdef FRC_BRY
-# ifndef ANA_BRY
+#if defined FRC_BRY && !defined ANA_BRY
             call get_bry
-#  ifdef BIOLOGY
+# ifdef BIOLOGY
             call get_bry_bio
-#  endif
 # endif
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
@@ -255,7 +254,9 @@ C$OMP BARRIER
 #  endif
 #  ifdef BIOLOGY
           call ana_bry_bio (tile)  ! analytical values are given
-          call set_bry_bio (tile)  ! if data is missing from bry files
+#   ifndef ANA_BRY
+          call set_bry_bio (tile)  ! if data are missing from bry files
+#   endif
 #  endif
 # endif
 # if defined WKB_WWAVE && !defined ANA_BRY_WKB
@@ -334,6 +335,21 @@ C$OMP BARRIER
 # endif /* BULK_FLUX */
 
       if (may_day_flag.ne.0) return  !-->  EXIT
+
+#  if defined SMFLUX_CFB && !defined CFB_WIND
+!
+! Apply correction to surface momentum flux due to current feedback
+!
+#   ifdef CFB_STRESS2
+      do tile=my_tile_range
+        call cfb_stress_cor (tile) ! compute wind stress magnitude
+      enddo
+C$OMP BARRIER
+#   endif
+      do tile=my_tile_range
+        call cfb_stress (tile)
+      enddo
+#  endif
 
 # if defined WKB_WWAVE && !defined WKB_STEADY
       wkb_agrif_done=.FALSE.

@@ -509,17 +509,32 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface solar shortwave radiation [degC m/s] at
 !  horizontal RHO-points.
 !
+# if defined INNERSHELF && !defined INNERSHELF_EKMAN
       do j=JstrR,JendR
         do i=IstrR,IendR
-          srflx(i,j)=0.
-# ifdef DIURNAL_CYCLE
-          srflx(i,j)=max(cos(2.*pi*(time/86400.-0.5)),0.)*264.91/(rho0*Cp)
-# endif
+          srflx(i,j)=264.91/(rho0*Cp)
 # ifdef DIURNAL_INPUT_SRFLX
-          srflxbio(i,j)=0.
+          srflxbio(i,j)=srflx(i,j)
+# endif
+# ifdef DIURNAL_CYCLE
+          srflx(i,j)=srflx(i,j)*max(cos(2.*pi*(time/86400.-0.5)),0.)
 # endif
         enddo
       enddo
+# else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          srflx(i,j)=0.   ! default is 0.
+#  ifdef DIURNAL_INPUT_SRFLX
+          srflxbio(i,j)=srflx(i,j)
+#  endif
+#  ifdef DIURNAL_CYCLE
+          srflx(i,j)=264.91/(rho0*Cp)
+     &                     *max(cos(2.*pi*(time/86400.-0.5)),0.)
+#  endif
+        enddo
+      enddo
+# endif /* INNERSHELF */
       return
       end
 #endif /* ANA_SRFLUX */
@@ -711,6 +726,13 @@ C$    integer  trd, omp_get_thread_num
               sst(i,j)=((sst2-sst1)*yr(i,j)+sst1*y1-y2*sst2)/(y1-y2)
             endif
           endif
+          dqdt(i,j)=-50.0/(rho0*Cp)
+        enddo
+      enddo
+# elif defined INNERSHELF
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sst(i,j)=24.
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
@@ -1877,27 +1899,26 @@ C$    integer  trd, omp_get_thread_num
       endif   ! iic.eq.ntstart
 
 !
+!  If Qbar is read in nc file, update Qbar0 at every time step
+!
+# ifdef PSOURCE_NCFILE
+      do is=1,Nsrc
+        Qbar0(is)=Qbar(is)
+      enddo
+# endif
+!
+! Set-up river ramp to avoid strong initial shocks
+!
+      ramp=TANH(dt*sec2day*float(iic-ntstart)) ! 1-day ramp
+      do is=1,Nsrc
+        Qbar(is)=ramp*Qbar0(is)
+      enddo
+!
 ! Set-up vertically integrated mass transport [m3/s] of point
 ! sources (these may be time-dependent; positive in the positive U-
 ! or V-direction and vice-versa) and vertically distribute them
 ! according to mass transport profile chosen above.
 !
-# ifdef RIVER
-      ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar(is)
-      enddo
-# elif defined REGIONAL
-      ramp=1. !TANH(10*dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar(is)
-      enddo
-# else
-      ramp=1. !TANH(dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar(is)
-      enddo
-# endif
       do is=1,Nsrc
         do k=1,N
           Qsrc(is,k)=Qbar(is)*Qshape(is,k)
@@ -2175,7 +2196,7 @@ C$    integer  trd, omp_get_thread_num
 !
       implicit none          
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
-# ifdef WAVE_MAKER
+# if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
       integer iw,jw
       real    Du,Dv,Zu,Zv,Zr,Dr,xu,yu,xv,yv,x0,y0,time0, 
      &        h0,khd,kh,wa,wk,wp,wf,wd,wds,ramp,
@@ -2197,17 +2218,25 @@ C$    integer  trd, omp_get_thread_num
 # include "ocean2d.h"
 # include "coupling.h"
 # include "forces.h"
+# include "mixing.h"
 !
 # include "compute_auxiliary_bounds.h"
-!
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
 
 #  ifdef WAVE_MAKER
 !
-!  Wave maker on western boundary
+!  --- Surface wave maker on western boundary ---
 !
 #    include "wave_maker.h"
+
+#  elif defined WAVE_MAKER_INTERNAL
+!
+!  --- Internal wave maker on western boundary ---
+!
+#    include "wave_maker_internal.h"
+
 #  else
 
         if (FIRST_TIME_STEP) then
@@ -2517,6 +2546,12 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+# ifdef ANA_BRY
+      do i=1,itrc
+        got_tbry(i)=.false.
+      enddo
+# endif
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N

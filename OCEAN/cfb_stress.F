@@ -26,74 +26,52 @@
       subroutine cfb_stress_tile (Istr,Iend,Jstr,Jend)
 
       implicit none
-#include "param.h"
-#include "grid.h"
-#include "ocean3d.h"
-#include "forces.h"
-#include "scalars.h"
+# include "param.h"
+# include "grid.h"
+# include "ocean3d.h"
+# include "forces.h"
+# include "scalars.h"
       integer i,j, Istr,Iend,Jstr,Jend,
      &        imin,imax,jmin,jmax
-      real cff,cff2,cff3
+      real    cff,cff1
 
-# ifdef EW_PERIODIC
-        imin=Istr-2
-        imax=Iend+2
-# else
-      if (WESTERN_EDGE) then
-        imin=Istr-1
-      else
-        imin=Istr-2
-      endif
-      if (EASTERN_EDGE) then
-        imax=Iend+1
-      else
-        imax=Iend+2
-      endif
-# endif
-# ifdef NS_PERIODIC
-        jmin=Jstr-2
-        jmax=Jend+2
-# else
-      if (SOUTHERN_EDGE) then
-        jmin=Jstr-1
-      else
-        jmin=Jstr-2
-      endif
-      if (NORTHERN_EDGE) then
-        jmax=Jend+1
-      else
-        jmax=Jend+2
-      endif
-# endif
+#  include "compute_extended_bounds.h"
 !
-!----------------------------------------------------------------------
-!  Input variables:
+!---------------------------------------------------------------------
+!  Correct kinematic, surface wind stress (m2/s2) due to surface 
+!  current feedback
+!---------------------------------------------------------------------
 !
-!      - wspd
-!      - sustr
-!      - svstr
+! sustr = sustr + s_tau * Uo,  (or equivalently for svstr)
 !
-!----------------------------------------------------------------------
+!   with  s_tau = cfb_slope1 * Uatm + cfb_offset1 [N.m^-3.s]  CFB_STRESS
+!    or   s_tau = cfb_slope2 * Wstr + cfb_offset2 [N.m^-3.s]  CFB_STRESS2
 !
+!      For wind Uatm < 3 m/s, or wind stress Wstr < 0.045 N/m^2: 
+!            --> take s_tau mean value of -0.0027 N.m^-3.s
+!      Caution: sustr is in [m^2/s^2], sms_scale=1/rho0 [m^3/kg] must be
+!      used for conversion
 !
-!--------------------------------------------------------------
-!  Compute kinematic, surface wind stress (m2/s2).
-!--------------------------------------------------------------
+!---------------------------------------------------------------------
 !
-!     sustr = sustr+stau.Uo where stau=cfb_slope*Ua+cfb_offset 
-!     same for svstr
-!
-      do j=jmin,jmax
-        do i=imin+1,imax
+      do j=JstrR,JendR
+        do i=Istr,IendR
 # ifdef CFB_STRESS
-          cff=cfb_slope*0.5*(wspd(i,j)+wspd(i+1,j))+cfb_offset
+          cff1=0.5*(wspd(i,j)+wspd(i-1,j))
+          if (cff1 .gt. 3.) then
+            cff = cfb_slope*cff1 + cfb_offset
+          else
+            cff = -0.0027
+          endif
 # else 
-! CFB_STRESS2 case
-          cff3=0.25*(svstr(i-1,j)+svstr(i,j)+svstr(i-1,j+1)+svstr(i,j+1))
-          cff2=sqrt(sustr(i,j)**2+cff3**2)
-          cff=cfb_slope2*cff2+cfb_offset2
+          cff1=wstr_u(i,j)/sms_scale    ! CFB_STRESS2 case
+          if (cff1 .gt. 0.045) then 
+            cff = cfb_slope2*cff1 + cfb_offset2
+          else
+            cff = -0.0027
+          endif
 # endif
-          sustr(i,j)=sustr(i,j)+cff*u(i,j,N,nrhs)
+          sustr(i,j)=sustr(i,j) + sms_scale*cff*u(i,j,N,nrhs)
 # ifdef MASKING
           sustr(i,j)=sustr(i,j)*umask(i,j)
 # endif
@@ -103,17 +81,24 @@
         enddo
       enddo
 !
-      do j=jmin+1,jmax
-        do i=imin,imax
+      do j=Jstr,JendR
+        do i=IstrR,IendR
 # ifdef CFB_STRESS
-          cff=cfb_slope*0.5*(wspd(i,j)+wspd(i,j+1))+cfb_offset
+          cff1=0.5*(wspd(i,j)+wspd(i,j-1))
+          if (cff1 .gt. 3.) then
+            cff = cfb_slope*cff1 + cfb_offset
+          else
+            cff = -0.0027
+          endif
 # else 
-! CFB_STRESS2 case
-          cff3=0.25*(sustr(i,j-1)+sustr(i,j)+sustr(i+1,j-1)+sustr(i+1,j))
-          cff2=sqrt(svstr(i,j)**2+cff3**2)
-          cff=cfb_slope2*cff2+cfb_offset2
+          cff1=wstr_v(i,j)/sms_scale    ! CFB_STRESS2 case
+          if (cff1 .gt. 0.045) then
+            cff = cfb_slope2*cff1 + cfb_offset2
+          else
+            cff = -0.0027
+          endif
 # endif
-          svstr(i,j)=svstr(i,j)+cff*v(i,j,N,nrhs)
+          svstr(i,j)=svstr(i,j) + sms_scale*cff*v(i,j,N,nrhs)
 # ifdef MASKING
           svstr(i,j)=svstr(i,j)*vmask(i,j)
 # endif
@@ -122,9 +107,127 @@
 # endif
         enddo
       enddo
+!
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
+# endif
+!
+      return
+      end
+!
+!==============================================================================
+!
+# ifdef CFB_STRESS2
+      subroutine cfb_stress_cor (tile)
+      implicit none
+      integer tile, trd, omp_get_thread_num
+# include "param.h"
+# include "private_scratch.h"
+# include "compute_tile_bounds.h"
+      trd=omp_get_thread_num()
+      call cfb_stress_cor_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine cfb_stress_cor_tile (Istr,Iend,Jstr,Jend)
+
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+#  include "forces.h"
+      integer i,j, Istr,Iend,Jstr,Jend,
+     &        imin,imax,jmin,jmax
+      real    cff
+
+#  include "compute_extended_bounds.h"
+#  ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+#  else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+#  endif
+
+      if ( Iend .eq. LOCALLM ) then
+#  ifdef EW_PERIODIC
+        imax=Iend+1
+#  else
+#   ifdef MPI
+        if (EAST_INTER) then
+          imax=Iend+1
+        else
+          imax=Iend
+        endif
+#   else
+        imax=Iend
+#   endif
+#  endif
+      else
+        imax=Iend
+      endif
+
+      if ( Jend .eq. LOCALMM ) then
+#  ifdef NS_PERIODIC
+        jmax=Jend+1
+#  else
+#   ifdef MPI
+        if (NORTH_INTER) then
+          jmax=Jend+1
+        else
+          jmax=Jend
+        endif
+#   else
+        jmax=Jend
+#   endif
+#  endif
+      else
+        jmax=Jend
+      endif
+!
+!---------------------------------------------------------------------
+!
+!  Compute wind stress magnitude at u and v points
+!
+!---------------------------------------------------------------------
+!
+      do j=JstrR,jmax
+        do i=Istr,IendR
+          cff=0.25*(svstr(i-1,j  )+svstr(i,j  )
+     &             +svstr(i-1,j+1)+svstr(i,j+1))
+          wstr_u(i,j)=sqrt(sustr(i,j)**2+cff**2)
+        enddo
+      enddo
+!
+      do j=Jstr,JendR
+        do i=IstrR,imax
+          cff=0.25*(sustr(i  ,j-1)+sustr(i  ,j)
+     &             +sustr(i+1,j-1)+sustr(i+1,j))
+          wstr_v(i,j)=sqrt(svstr(i,j)**2+cff**2)
+        enddo
+      enddo
+!
+!  Set boundary conditions
+!
+      if (NORTHERN_EDGE) then
+        do i=Istr,IendR
+          wstr_u(i,Jend+1)=wstr_u(i,Jend)
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do j=Jstr,JendR
+          wstr_v(Iend+1,j)=wstr_v(Iend,j)
+        enddo
+      endif
+!#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!      call exchange_u2d_tile(Istr,Iend,Jstr,Jend,wstr_u(START_2D_ARRAY))
+!      call exchange_v2d_tile(Istr,Iend,Jstr,Jend,wstr_v(START_2D_ARRAY))
+!#  endif
 
       return
       end
+# endif /* CFB_STRESS2 */
+
 #else
       subroutine cfb_stress_empty
       return

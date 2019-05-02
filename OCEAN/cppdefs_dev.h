@@ -40,7 +40,10 @@
    of parallel computation by comparing binary files produced by serial 
    and parallel runs
 */
-#undef RVTK_DEBUG
+#undef  RVTK_DEBUG
+#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP
+# define RVTK_DEBUG_WRITE
+#endif
 
 /*
     Constant tracer option (for debugging)
@@ -588,9 +591,15 @@
 ======================================================================
 */
 #ifdef SMFLUX_CFB
-# undef  CFB_STRESS
-# define CFB_STRESS2
-# undef  CFB_WIND
+# ifdef BULK_FLUX
+#  define CFB_STRESS
+#  undef  CFB_STRESS2
+#  undef  CFB_WIND
+# else
+#  undef  CFB_STRESS
+#  define CFB_STRESS2
+#  undef  CFB_WIND
+# endif
 #endif
 
 /*
@@ -770,7 +779,6 @@
 # endif
 
 # ifdef SOLVE3D
-
 #  ifdef OBC_M3SPECIFIED
 #  elif defined OBC_M3ORLANSKI
 #  else
@@ -784,8 +792,13 @@
 #   undef  OBC_TSPECIFIED
 #   define OBC_TORLANSKI
 #  endif
-
 # endif /* SOLVE3D */
+
+# if defined Z_FRC_BRY  || defined M2_FRC_BRY ||\
+     defined M3_FRC_BRY || defined T_FRC_BRY  ||\
+     defined ANA_BRY
+#  define FRC_BRY
+# endif
 
 #endif /* OBC */
 

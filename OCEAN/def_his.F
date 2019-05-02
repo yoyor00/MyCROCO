@@ -709,9 +709,9 @@
           call nf_add_attribute(ncid, vidR, indxR, 5, NF_FOUT, ierr)
 
         endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING )
 !----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -2323,9 +2323,9 @@
             goto 99                                       !--> ERROR
           endif
         endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING )
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.

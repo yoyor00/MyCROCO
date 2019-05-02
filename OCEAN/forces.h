@@ -63,6 +63,12 @@
       real wspd(GLOBAL_2D_ARRAY)
       common /smsdat_wspd/ wspd
 # endif
+# if defined SMFLUX_CFB && defined CFB_STRESS2
+      real wstr_u(GLOBAL_2D_ARRAY)
+      real wstr_v(GLOBAL_2D_ARRAY)
+      common /smsdat_wstr_u/ wstr_u
+      common /smsdat_wstr_v/ wstr_v
+# endif
       integer lwgrd, wid
       common /smsdat5/ lwgrd, wid
 #endif /* !ANA_SMFLUX */
