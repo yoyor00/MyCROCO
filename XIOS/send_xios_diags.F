@@ -16,7 +16,7 @@
       MODULE xios_module
       USE xios
       IMPLICIT NONE
- 
+
       PUBLIC set_grid
       PUBLIC iom_set_domain_attr
       PUBLIC iom_set_axis_attr
@@ -26,7 +26,7 @@
       PUBLIC set_scalar
       
       CONTAINS
-#include "cppdefs.h"
+!#include "cppdefs.h"
 
 
       SUBROUTINE set_grid( cdgrd, plon, plat)
@@ -40,8 +40,9 @@
       !!
       !! ** Method  :   
       !!
-      !! ** History :   A. Ponte   , adaptation for CROCO 
-      !!                S. Masson  , original version (NEMO)  
+      !! ** History :   S. Theetten , adaptation for XIOS-2.5 (May, 2019)
+      !!                A. Ponte    , adaptation for CROCO
+      !!                S. Masson   , original version (NEMO)  
       !!
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)            , INTENT(in) ::   cdgrd
@@ -133,8 +134,13 @@
 # endif
 
       ! notes iminmpi, jminmpi are computed in MPI_Setup.F
+# if ! defined XIOS2
       CALL iom_set_domain_attr(TRIM(cdgrd),ni_glo=nx_glo, nj_glo=ny_glo,
      &     ibegin=istart, ni=ni,jbegin=jstart,nj=nj)
+# else
+      CALL iom_set_domain_attr(TRIM(cdgrd),ni_glo=nx_glo, nj_glo=ny_glo,
+     &     ibegin=istart-1, ni=ni,jbegin=jstart-1,nj=nj)
+# endif
       ! to do: below should have be rewritten to match all configs (periodic, number of ghost points, ...)
       ! see set_global_definitions.h
       CALL iom_set_domain_attr(TRIM(cdgrd),data_dim=2,
@@ -153,7 +159,7 @@
       SUBROUTINE iom_set_domain_attr( cdid, ni_glo, nj_glo, ibegin, jbegin,
      & ni, nj, zoom_ibegin, zoom_jbegin, zoom_ni, zoom_nj,
      & data_dim, data_ibegin, data_ni, data_jbegin, data_nj, 
-     & lonvalue, latvalue, mask )
+     & lonvalue, latvalue, mask,nvertex, bounds_lon, bounds_lat, area )
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE iom_set_domain_attr  ***
       !!
@@ -161,8 +167,9 @@
       !!
       !! ** Method  :   
       !!
-      !! ** History :   R. Benshila, adaptation for CROCO 
-      !!                S. Masson  , original version (NEMO)  
+      !! ** History :   S. Theetten , adaptation for XIOS-2.5 (May, 2019)
+      !!                R. Benshila , adaptation for CROCO
+      !!                S. Masson   , original version (NEMO)  
       !!
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*) , INTENT(in) :: cdid
@@ -171,38 +178,82 @@
       INTEGER , OPTIONAL, INTENT(in) :: data_dim, data_ibegin, data_ni
       INTEGER , OPTIONAL, INTENT(in) :: data_jbegin, data_nj
       INTEGER , OPTIONAL, INTENT(in) :: zoom_ibegin, zoom_jbegin
-      INTEGER , OPTIONAL, INTENT(in) :: zoom_ni, zoom_nj
-      REAL , DIMENSION(:) , OPTIONAL, INTENT(in) :: lonvalue, latvalue
-      LOGICAL, DIMENSION(:,:), OPTIONAL, INTENT(in) :: mask
+      INTEGER , OPTIONAL, INTENT(in) :: zoom_ni, zoom_nj, nvertex
+      REAL, DIMENSION(:)   , OPTIONAL, INTENT(in) ::   lonvalue, latvalue
+      REAL, DIMENSION(:,:) , OPTIONAL, INTENT(in) ::   bounds_lon, 
+     & bounds_lat, area
+# if ! defined XIOS2
+      LOGICAL,  DIMENSION(:,:) , OPTIONAL, INTENT(in) ::   mask
+# else
+      LOGICAL,  DIMENSION(:) , OPTIONAL, INTENT(in) ::   mask
+# endif
       !!----------------------------------------------------------------------
       !
+# if ! defined XIOS2
+      IF ( xios_is_valid_domain     (cdid) ) THEN
+         CALL xios_set_domain_attr     ( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
+     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,  
+     &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
+     &    data_jbegin=data_jbegin, data_nj=data_nj ,  
+     &    zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
+     &    zoom_ni=zoom_ni, zoom_nj=zoom_nj,                       
+     &    lonvalue=lonvalue, latvalue=latvalue, mask=mask,
+     &    nvertex=nvertex, bounds_lon=bounds_lon,                 
+     &    bounds_lat=bounds_lat)!RB, area=area )
+      ENDIF
+      IF ( xios_is_valid_domaingroup(cdid) ) THEN
+         CALL xios_set_domaingroup_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo,
+     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
+     &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
+     &    data_jbegin=data_jbegin, data_nj=data_nj ,   
+     &    zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
+     &    zoom_ni=zoom_ni, zoom_nj=zoom_nj,                       
+     &    lonvalue=lonvalue, latvalue=latvalue, mask=mask, 
+     &    nvertex=nvertex, bounds_lon=bounds_lon,                  
+     &    bounds_lat=bounds_lat)!RB, area=area )
+      ENDIF
+
+# else
+
       IF ( xios_is_valid_domain(cdid) ) THEN
-        CALL xios_set_domain_attr(cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
-     & ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
-     & data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
-     & data_jbegin=data_jbegin, data_nj=data_nj, 
-     & zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
-     & zoom_ni=zoom_ni, zoom_nj=zoom_nj,
-     &    lonvalue=lonvalue, latvalue=latvalue,mask=mask )
+         CALL xios_set_domain_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
+     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
+     &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni,
+     &    data_jbegin=data_jbegin, data_nj=data_nj,   
+     &    lonvalue_1D=lonvalue, latvalue_1D=latvalue, mask_1D=mask,
+     &    nvertex=nvertex, bounds_lon_1D=bounds_lon,       
+     &    bounds_lat_1D=bounds_lat, area=area, type='curvilinear')
       ENDIF
       !
       IF ( xios_is_valid_domaingroup(cdid) ) THEN
-         CALL xios_set_domaingroup_attr( cdid,
-     &  ni_glo=ni_glo, nj_glo=nj_glo, 
-     &  ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
-     &  data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
-     &  data_jbegin=data_jbegin, data_nj=data_nj ,
-     &  zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
-     &  zoom_ni=zoom_ni, zoom_nj=zoom_nj,
-     &  lonvalue=lonvalue, latvalue=latvalue,mask=mask )
+         CALL xios_set_domaingroup_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
+     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
+     &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
+     &    data_jbegin=data_jbegin, data_nj=data_nj ,   
+     &    lonvalue_1D=lonvalue, latvalue_1D=latvalue, mask_1D=mask,
+     & nvertex=nvertex, bounds_lon_1D=bounds_lon,                  
+     &    bounds_lat_1D=bounds_lat, area=area, type='curvilinear')
       ENDIF
+# endif
       !
       CALL xios_solve_inheritance()
       ! 
       END SUBROUTINE iom_set_domain_attr
 
+# if defined XIOS2
+      SUBROUTINE iom_set_zoom_domain_attr( cdid, ibegin, jbegin, ni, nj)
+      CHARACTER(LEN=*)          , INTENT(in) ::   cdid
+      INTEGER         , OPTIONAL, INTENT(in) ::   ibegin, jbegin, ni, nj
+
+      IF ( xios_is_valid_zoom_domain     (cdid) ) THEN
+         CALL xios_set_zoom_domain_attr     ( cdid, ibegin=ibegin-1, 
+     &        jbegin=jbegin-1, ni=ni, nj=nj)
+      ENDIF
+      END SUBROUTINE iom_set_zoom_domain_attr
+# endif
+
       
-      SUBROUTINE iom_set_axis_attr( cdid, paxis )
+      SUBROUTINE iom_set_axis_attr( cdid, paxis,bounds )
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE iom_set_axis_attr  ***
       !!
@@ -210,14 +261,18 @@
       !!
       !! ** Method  :   
       !!
-      !! ** History :   A. Ponte   , adaptation for CROCO 
-      !!                S. Masson  , original version (NEMO)  
+      !! ** History :   S. Theetten , adaptation for XIOS-2.5 (May, 2019)
+      !!                A. Ponte    , adaptation for CROCO
+      !!                S. Masson   , original version (NEMO)
       !!
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)      , INTENT(in) ::   cdid
-      REAL, DIMENSION(:), INTENT(in) ::   paxis
+      REAL, DIMENSION(:)  , OPTIONAL, INTENT(in) ::   paxis
+      REAL, DIMENSION(:,:), OPTIONAL, INTENT(in) ::   bounds
       !!----------------------------------------------------------------------
       !
+      IF ( PRESENT(paxis) ) THEN
+# if ! defined XIOS2
       IF ( xios_is_valid_axis (cdid) ) then
        CALL xios_set_axis_attr(cdid, size=size(paxis),value=paxis )
       ENDIF
@@ -225,7 +280,24 @@
       IF ( xios_is_valid_axisgroup(cdid) ) then
        CALL xios_set_axisgroup_attr(cdid, size=size(paxis),value=paxis )
       ENDIF
+# else
+      IF ( xios_is_valid_axis (cdid) ) then
+       CALL xios_set_axis_attr(cdid,n_glo=SIZE(paxis), value=paxis )
+      ENDIF
       !
+      IF ( xios_is_valid_axisgroup(cdid) ) then
+       CALL xios_set_axisgroup_attr(cdid, n_glo=SIZE(paxis),value=paxis)
+      ENDIF
+# endif
+      !
+      ENDIF
+      IF ( xios_is_valid_axis     (cdid) )  then 
+         CALL xios_set_axis_attr     ( cdid, bounds=bounds )
+      ENDIF
+      IF ( xios_is_valid_axisgroup(cdid) )  then
+         CALL xios_set_axisgroup_attr( cdid, bounds=bounds )
+      ENDIF
+      
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_axis_attr
@@ -238,13 +310,19 @@
       !!
       !! ** Method  :   
       !!
-      !! ** History :   A. Ponte   , adaptation for CROCO 
-      !!                S. Masson  , original version (NEMO)  
+      !! ** History :   S. Theetten , adaptation for XIOS-2.5 (May, 2019)
+      !!                A. Ponte    , adaptation for CROCO 
+      !!                S. Masson   , original version (NEMO)  
       !!
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
+# if ! defined XIOS2
       CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   freq_op
       CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   freq_offset
+# else
+      TYPE(xios_duration),OPTIONAL , INTENT(in) ::   freq_op
+      TYPE(xios_duration),OPTIONAL , INTENT(in) ::   freq_offset
+# endif      
       !!----------------------------------------------------------------------
       !
       IF ( xios_is_valid_field     (cdid) ) 
@@ -305,16 +383,24 @@
       CHARACTER(LEN=*)          , INTENT(in ) :: 
      &   cdid
       CHARACTER(LEN=*),OPTIONAL , INTENT(out) :: 
-     &   name, name_suffix, output_freq
-      !
+     &   name, name_suffix
+# if ! defined XIOS2
+      CHARACTER(LEN=*),OPTIONAL , INTENT(out) ::    output_freq
+# else
+      TYPE(xios_duration)   ,OPTIONAL , INTENT(out) :: output_freq
+# endif 
       LOGICAL                                 :: 
      &   llexist1,llexist2,llexist3
       !---------------------------------------------------------------------
       !
       IF( PRESENT( name        ) )   name = ''          ! default values
       IF( PRESENT( name_suffix ) )   name_suffix = ''
+# if ! defined XIOS2
       IF( PRESENT( output_freq ) )   output_freq = ''
-      IF ( xios_is_valid_file     (cdid) ) THEN
+# else
+      IF( PRESENT( output_freq ) )   output_freq = xios_duration(0,0,0,0,0,0)
+# endif
+       IF ( xios_is_valid_file     (cdid) ) THEN
          CALL xios_solve_inheritance()
          CALL xios_is_defined_file_attr   
      &      ( cdid, name = llexist1, name_suffix = llexist2,
@@ -351,16 +437,25 @@
       !! ** Purpose :   fake axis for salar output
       !!
       !! ** Method  :   
-      !!
-      !! ** History :   R. Benshila, adaptation for CROCO 
-      !!                S. Masson  , original version (NEMO)  
+      !! ** History :   S. Theetten , adaptation for XIOS-2.5 (May, 2019)
+      !!                R. Benshila , adaptation for CROCO 
+      !!                S. Masson   , original version (NEMO)  
       !!
       !!----------------------------------------------------------------------
       REAL, DIMENSION(1) ::   zz = 1.
       !!----------------------------------------------------------------------
       ! 
+# if ! defined XIOS2
       CALL iom_set_domain_attr('scalarpoint', ni_glo=NNODES, nj_glo=1, 
      &  ibegin=mynode+1, jbegin=1, ni=1, nj=1)
+!      CALL iom_set_domain_attr('scalarpoint', data_dim=2,data_ibegin = 1, 
+!     &                         data_ni = 1, data_jbegin = 1, data_nj = 1)
+# else
+      CALL iom_set_domain_attr('scalarpoint', ni_glo=NNODES, nj_glo=1,
+     &  ibegin=mynode, jbegin=0, ni=1, nj=1)
+!      CALL iom_set_domain_attr('scalarpoint', data_dim=2,data_ibegin = 0,
+!     &                         data_ni = 1, data_jbegin = 0, data_nj = 1)
+# endif
       CALL iom_set_domain_attr('scalarpoint', data_dim=2,data_ibegin = 1, 
      &                         data_ni = 1, data_jbegin = 1, data_nj = 1)
       zz=REAL(mynode+1)
@@ -379,7 +474,8 @@
       !!
       !! ** Method  :   
       !!
-      !! ** History :   R. Benshila, adaptation for CROCO 
+      !! ** History :   S. Theetten, adaptation for XIOS-2.5 (May, 2019)
+      !!                R. Benshila, adaptation for CROCO 
       !!                S. Masson  , original version (NEMO)  
       !!
       !!----------------------------------------------------------------------
@@ -396,12 +492,15 @@
       REAL       ,DIMENSION(11) ::   zlatrama                 ! latitudes  of rama   moorings
       REAL        ,DIMENSION( 3) ::   zlonpira                 ! longitudes of pirata moorings
       REAL     ,DIMENSION( 9) ::   zlatpira                 ! latitudes  of pirata moorings
+!!!!!!!!!!!!!!!!#if  defined XIOS2
+!!!!!!!!!!!!!!!!      TYPE(xios_duration)            ::   f_op, f_of
+!!!!!!!!!!!!!!!!#endif
       !!----------------------------------------------------------------------
       !
       ! frequency of the call of iom_put (attribut: freq_op)
       WRITE(cl1,'(i1)') 1 
-      CALL iom_set_field_attr('field_definition', 
-     & freq_op = cl1//'ts', freq_offset='0ts')
+!!!!!!!!!!!!!!!!!!      CALL iom_set_field_attr('field_definition', 
+!!!!!!!!!!!!!!!!!!     & freq_op = cl1//'ts', freq_offset='0ts')
 
       ! output file names (attribut: name)
       DO ji = 1, 9
@@ -661,7 +760,8 @@
       !!
       !! ** Method  :   request xml attribute and modify it
       !!
-      !! ** History :   R. Benshila, adaptation for CROCO 
+      !! ** History :   S. Theetten, adaptation for XIOS-2.5 (May, 2019)
+      !!                R. Benshila, adaptation for CROCO 
       !!                S. Masson  , original version (NEMO)  
       !!
       !!---------------------------------------------------------------------
@@ -676,21 +776,29 @@
       INTEGER            ::   iyear, imonth, iday, isec
       REAL               ::   zsec, jday0
       LOGICAL            ::   llexist
+# if  defined XIOS2
+      TYPE(xios_duration)   ::   output_freq
+# endif     
       !!----------------------------------------------------------------------
       !
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
-       READ(start_date(1:2),fmt='(i2)') iday
-       READ(start_date(4:5),fmt='(i2)') imonth
-       READ(start_date(7:10),fmt='(i4)') iyear
+       READ(starting_date(1:2),fmt='(i2)') iday
+       READ(starting_date(4:5),fmt='(i2)') imonth
+       READ(starting_date(7:10),fmt='(i4)') iyear
        CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
 # else
        CALL ymds2ju( 1, 1, 1, 0., jday0 )  
 # endif
       DO jn = 1,2
 
+# if ! defined XIOS2
          IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
      &           = clname, output_freq = clfreq )
+# else
+         IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
+     &           = clname, output_freq = output_freq )
+# endif
          IF( jn == 2 )   CALL iom_get_file_attr( cdid, name_suffix = clname )
 
          IF ( TRIM(clname) /= '' ) THEN 
@@ -702,6 +810,7 @@
                idx = INDEX(clname,'@expname@') + INDEX(clname,'@EXPNAME@')
             END DO
 
+# if ! defined XIOS2
             idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
             DO WHILE ( idx /= 0 ) 
                IF ( TRIM(clfreq) /= '' ) THEN
@@ -714,7 +823,40 @@
                ENDIF
                idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
             END DO
-
+# else
+            idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
+            DO WHILE ( idx /= 0 )
+              IF ( output_freq%timestep /= 0) THEN
+                  WRITE(clfreq,'(I18,A2)')INT(output_freq%timestep),'ts'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE IF ( output_freq%hour /= 0 ) THEN
+                  WRITE(clfreq,'(I19,A1)')INT(output_freq%hour),'h'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE IF ( output_freq%day /= 0 ) THEN
+                  WRITE(clfreq,'(I19,A1)')INT(output_freq%day),'d'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE IF ( output_freq%month /= 0 ) THEN
+                  WRITE(clfreq,'(I19,A1)')INT(output_freq%month),'m'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE IF ( output_freq%year /= 0 ) THEN
+                  WRITE(clfreq,'(I19,A1)')INT(output_freq%year),'y'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE
+                  if(mynode .eq. 0 ) print*,'error in the name of file id '
+     &           //TRIM(cdid),
+     & ' attribute output_freq is undefined -> cannot replace @freq@ in '
+     & //TRIM(clname) 
+				  STOP
+!                  CALL ctl_stop('error in the name of file id '
+!     &			  //TRIM(cdid),   
+!     & ' attribute output_freq is undefined -> cannot replace @freq@ in '
+!     & //TRIM(clname) )
+              ENDIF
+              clname = clname(1:idx-1)//TRIM(ADJUSTL(clfreq))//
+     &		  clname(idx+6:LEN_TRIM(clname))
+              idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
+            END DO
+# endif
             idx = INDEX(clname,'@startdate@') + INDEX(clname,'@STARTDATE@')
             DO WHILE ( idx /= 0 ) 
                cldate = iom_sdate( tdays+jday0  )
@@ -1102,11 +1244,12 @@
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE iom_sdate  ***
       !!
-      !! ** Purpose :   defintion of grid for output
+      !! ** Purpose :   definition of grid for output
       !!
       !! ** Method  :   
       !!
-      !! ** History :   R. Benshila, imrpovement for CROCO 
+      !! ** History :   S. Theetten, adaptation for XIOS-2.5 (May, 2019)
+      !!                R. Benshila, improvement for CROCO 
       !!                A. Ponte   , adaption for ROMS  
       !!                S. Masson  , original version (NEMO)  
       !!
@@ -1128,7 +1271,13 @@
       !
       INTEGER tile,ji
       INTEGER ilocal_comm
+# if !  defined XIOS2
       TYPE(xios_time) :: dtime  = xios_time(0, 0, 0, 0, 0, 0)
+# else
+      TYPE(xios_duration) :: dtime    = xios_duration(0,
+     &  0, 0, 0, 0, 0)
+      TYPE(xios_date)     :: start_date
+# endif     
       TYPE(xios_context) :: ctx_hdl
       TYPE(xios_field) :: field_hdl
       TYPE(xios_fieldgroup) :: fieldgroup_hdl
@@ -1173,14 +1322,16 @@
       CALL iom_swap( cdname )
 
       ! calendar parameters
+# if ! defined XIOS2	  
       CALL xios_set_context_attr(TRIM(clname), calendar_type= 
      &      "Gregorian")
+# endif
 
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
-      READ(start_date(1:2),fmt='(i2)') iday
-      READ(start_date(4:5),fmt='(i2)') imonth
-      READ(start_date(7:10),fmt='(i4)') iyear
+      READ(starting_date(1:2),fmt='(i2)') iday
+      READ(starting_date(4:5),fmt='(i2)') imonth
+      READ(starting_date(7:10),fmt='(i4)') iyear
 # else
       iday=1
       imonth=1       
@@ -1188,9 +1339,15 @@
 # endif
       WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')") 
      & iyear,imonth,iday
+# if ! defined XIOS2
       CALL xios_set_context_attr(TRIM(clname), 
      &        start_date=cldate )
-
+# else
+      CALL xios_define_calendar( TYPE = "Gregorian", 
+     &           start_date = xios_date(iyear,imonth,iday,0,0,0),
+     & time_origin = xios_date(1900,01,01,00,00,00) )
+	 
+#endif
       ! horizontal grid definition
       CALL set_scalar
 
@@ -1206,7 +1363,7 @@
       CALL set_grid( "u", xp, yr )
       CALL set_grid( "v", xr, yp )
       CALL set_grid( "w", xr, yr )
-# endif       
+# endif
  
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r )
@@ -1226,7 +1383,7 @@
       ! end file definition
 
       ! Accademic test with dt> 1second are non comptabile with
-      ! XIOS, set xios tilme step unit to 1 model time_step
+      ! XIOS, set xios time step unit to 1 model time_step
       if (dt < 1) then
         dtime%second =  1
       else
@@ -1313,7 +1470,9 @@
 !  Copyright (c) 2000 Rutgers/UCLA                                   !
 !================================================ Hernan G. Arango ===
 !                                                                    !
-!  This routine sends every diagnostics fields to Xios server                                              !
+!  This routine sends every diagnostics fields to Xios server         
+!
+!  ** History :   S. Theetten , adaptation for XIOS-2.5 (May, 2019)
 !                                                                    !
 !=====================================================================
 !
@@ -1410,6 +1569,7 @@
 !
 ! Ugly fix to write scalars until XIOS 2.0
 !
+# if ! defined XIOS2
       do k=1,N
       zz(:,:,k)=Cs_r(k)
       end do
@@ -1436,6 +1596,19 @@
       call xios_send_field("Tcline",zz(:,:,1))
       zz(:,:,1)=REAL(Vtransform)
       call xios_send_field("Vtransform",zz(:,:,1))
+# else
+! Beautiful  way to write scalars with XIOS-2.x
+      call xios_send_field("Cs_r",Cs_r(1:N))
+      call xios_send_field("Cs_w",Cs_w(0:N))
+      call xios_send_field("sc_r",sc_r(1:N))
+      call xios_send_field("sc_w",sc_w(0:N))
+      call xios_send_field("hc",hc)
+      call xios_send_field("theta_s",theta_s)
+      call xios_send_field("theta_b",theta_b)
+      call xios_send_field("Tcline",Tcline)
+      call xios_send_field("Vtransform",REAL(Vtransform))
+# endif
+
       call xios_send_field("levels_rho",z_r(:,:,:))
       call xios_send_field("levels_w"  ,z_w(:,:,:))
       do k=1,N
@@ -1497,7 +1670,11 @@
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
+#ifdef NBQ     
+      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:) - h(:,:)
+#else
       work2d=zeta(:,:,fast_indx_out)
+#endif
       call xios_send_field("zeta",work2d)
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
@@ -1571,14 +1748,18 @@
 #  ifdef SOLVE3D
       call xios_send_field("u",u(:,:,:,nstp))
       call xios_send_field("v",v(:,:,:,nstp)) 
-#   ifdef NBQ
+      call xios_send_field("u_surf",u(:,:,30,nstp)) 
+      call xios_send_field("v_surf",v(:,:,30,nstp)) 
+# ifdef NBQ
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   else
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
-#   endif
-#  ifdef SALINITY
+      call xios_send_field("temp_surf",t(:,:,30,nstp,itemp)) 
+# endif
+# ifdef SALINITY
       call xios_send_field("salt",t(:,:,:,nstp,isalt))
-#  endif /* SALINITY */
+      call xios_send_field("salt_surf",t(:,:,30,nstp,isalt))
+# endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
 ! but I found it quiet ugly
@@ -1645,26 +1826,26 @@
       call xios_send_field("AKs",work)
 #  endif
 #  ifdef GLS_MIXING
-      call xios_send_field("AKk",Akk)
-      call xios_send_field("AKp",Akp)
+!      call xios_send_field("AKk",Akk)
+!      call xios_send_field("AKp",Akp)
 #  endif
 #  ifdef LMD_SKPP
 #   ifdef LMD_SKPP2005
-      work2d=hbls(:,:,nstp)
+!      work2d=hbls(:,:,nstp)
 #   else
-      work2d=hbl
+!      work2d=hbl
 #   endif
-      call xios_send_field("hbl",work2d)
+!      call xios_send_field("hbl",work2d)
 #  elif defined GLS_MIXING
-      work2d=hbl
-      call xios_send_field("hbl",work2d)
+!      work2d=hbl
+!      call xios_send_field("hbl",work2d)
 #  endif
 #  ifdef LMD_BKPP
       call xios_send_field("hbbl",work2d)
 #  endif
 #  ifdef GLS_MIXING
-      call xios_send_field("tke",tke(:,:,:,nstp))
-      call xios_send_field("gls",gls(:,:,:,nstp))
+!      call xios_send_field("tke",tke(:,:,:,nstp))
+!      call xios_send_field("gls",gls(:,:,:,nstp))
       call xios_send_field("Lscale",Lscale)
 #  endif
 
@@ -1857,8 +2038,3 @@
       end
 
 #endif /* XIOS */
-
-
-
-
-
