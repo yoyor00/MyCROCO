@@ -1748,17 +1748,17 @@
 #  ifdef SOLVE3D
       call xios_send_field("u",u(:,:,:,nstp))
       call xios_send_field("v",v(:,:,:,nstp)) 
-      call xios_send_field("u_surf",u(:,:,30,nstp)) 
-      call xios_send_field("v_surf",v(:,:,30,nstp)) 
+      call xios_send_field("u_surf",u(:,:,N,nstp)) 
+      call xios_send_field("v_surf",v(:,:,N,nstp)) 
 # ifdef NBQ
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   else
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
-      call xios_send_field("temp_surf",t(:,:,30,nstp,itemp)) 
+      call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
 # endif
 # ifdef SALINITY
       call xios_send_field("salt",t(:,:,:,nstp,isalt))
-      call xios_send_field("salt_surf",t(:,:,30,nstp,isalt))
+      call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
 # endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
