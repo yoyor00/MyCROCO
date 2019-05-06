@@ -117,7 +117,7 @@
            ,k_v                                                       &
            ,lv_v                                                      &
            ,ls1_v
-
+      va_oa = var_oa
       return
       end function var_oa
 
