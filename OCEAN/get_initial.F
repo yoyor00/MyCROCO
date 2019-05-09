@@ -180,7 +180,7 @@
 #if defined DIAGNOSTICS_TS
           nrecdia=ibuff(3)
 # ifdef AVERAGES
-          ncdump=ibuff(4)
+          nrecdia_avg=ibuff(4)
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
