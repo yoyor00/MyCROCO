@@ -213,7 +213,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
           enddo
         enddo
 !
-#   elif defined_COM_M3ORLANSKI
+#   elif defined OBC_COM_M3ORLANSKI
         do k=1,N                            ! Northern edge radiation
           do i=Istr,Iend+1                  ! ======== ==== =========
             grad(i,Jend  )=(v(i,Jend  ,k,nstp)-v(i-1,Jend  ,k,nstp))
