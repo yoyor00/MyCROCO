@@ -1768,6 +1768,10 @@
 
       call xios_send_field("bvf",bvf)
 
+#ifdef DISSIP_SHALLOW
+      call xios_send_field("damping_sw",damping_sw)
+#endif
+
       do k=0,N
          do j=0,Mm+1
             do i=0,Lm+1

@@ -180,7 +180,7 @@
 #if defined DIAGNOSTICS_TS
           nrecdia=ibuff(3)
 # ifdef AVERAGES
-          ncdump=ibuff(4)
+          nrecdia_avg=ibuff(4)
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
@@ -626,6 +626,23 @@
      &     vname(1,indxLsc)(1:lvar),       ''' not found in ''',
      &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
+# endif
+
+# ifdef DISSIP_SHALLOW
+      lvar=lenstr(vname(1,indxDSW))
+      ierr=nf_inq_varid (ncid, vname(1,indxDSW)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (damping_sw(START_2D_ARRAY), ncid, varid,
+     &                                           indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxDSW)(1:lvar)
+     &         , indx, ininame(1:lstr), nf_strerror(ierr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,3) vname(1,indxDSW)(1:lvar)
+     &                               , ininame(1:lstr)
+      endif
 # endif
 
 !======================================================

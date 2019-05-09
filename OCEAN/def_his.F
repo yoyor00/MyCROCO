@@ -93,6 +93,9 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
+# ifdef DISSIP_SHALLOW
+#  define vidDSW hisDSW
+# endif      
 # ifdef MOVING_BATHY
 #  define vidHm hisHm
 # endif
@@ -249,6 +252,8 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 ! Decide whether to create a new file, or open existing one.
@@ -560,6 +565,25 @@
 
         endif
 
+#ifdef DISSIP_SHALLOW
+        if (wrt(indxDSW)) then
+          lvar=lenstr(vname(1,indxDSW))
+          ierr=nf_def_var (ncid, vname(1,indxDSW)(1:lvar),
+     &                              NF_FOUT, 3, r2dgrd, vidDSW)
+          lvar=lenstr(vname(2,indxDSW))
+          ierr=nf_put_att_text (ncid, vidDSW, 'long_name', lvar,
+     &                                  vname(2,indxDSW)(1:lvar))
+          lvar=lenstr(vname(3,indxDSW))
+          ierr=nf_put_att_text (ncid, vidDSW, 'units',     lvar,
+     &                                  vname(3,indxDSW)(1:lvar))
+          lvar=lenstr(vname(4,indxDSW))
+          ierr=nf_put_att_text (ncid, vidDSW, 'field',     lvar,
+     &                                  vname(4,indxDSW)(1:lvar))
+
+          call nf_add_attribute(ncid, vidDSW, indxDSW, 5, NF_FOUT, ierr)
+
+        endif
+#endif
 #ifdef MOVING_BATHY 
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
@@ -2214,7 +2238,19 @@
             goto 99                                       !--> ERROR
           endif
         endif
-
+!
+! Dissipation in shallow areas
+!
+#ifdef DISSIP_SHALLOW
+        if (wrt(indxDSW)) then
+          lvar=lenstr(vname(1,indxDSW))
+          ierr=nf_inq_varid (ncid, vname(1,indxDSW)(1:lvar), vidDSW)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxDSW)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+# endif
 !
 ! time evolving bathymetry
 !

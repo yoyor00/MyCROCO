@@ -21,6 +21,10 @@
       common /ocean_zeta/zeta
       common /ocean_ubar/ubar
       common /ocean_vbar/vbar
+#if defined DISSIP_SHALLOW
+      real damping_sw(GLOBAL_2D_ARRAY)
+      common /ocean_damping/damping_sw
+#endif
 
 #if !defined SOLVE3D && defined M2_HADV_UP3
       real urhs(GLOBAL_2D_ARRAY)

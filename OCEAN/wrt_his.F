@@ -188,6 +188,16 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
+#ifdef DISSIP_SHALLOW
+!     
+!     Write out damping coefficient on the barotropic mode (shallow + large cfl)
+!     
+      if (wrthis(indxDSW)) then
+         work2d(:,:)=damping_sw(:,:)
+         call fillvalue2d(work2d,ncidhis,hisDSW,indxDSW,
+     &        record,r2dvar,type)
+      endif
+#endif
 #ifdef MOVING_BATHY
 !     
 !     Write out time evolving bathymetry
