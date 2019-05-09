@@ -1766,6 +1766,8 @@
 
       call xios_send_field("rho",rho)
 
+      call xios_send_field("bvf",bvf)
+
       do k=0,N
          do j=0,Mm+1
             do i=0,Lm+1

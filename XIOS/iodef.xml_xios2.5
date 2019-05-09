@@ -2,7 +2,7 @@
 <simulation>
 
 	<context id="roms">
-		<calendar_type="Gregorian" start_date="2012-03-01 15:00:00" time_origin="2012-02-29 15:00:00" />
+		<calendar_type="Gregorian" start_date="1999-01-15 12:00:00" time_origin="1970-01-01 00:00:00" />
 
 
 		<!-- ========================================================================== -->
@@ -13,8 +13,8 @@
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
 
-		<file_definition type="one_file"  name="@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
-			<file_group id="120ts" output_freq="120ts"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
+			<file_group id="12h" output_freq="12h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file1" name_suffix="_inst">
 					<field_group id="grid_fields" operation="once">
 						<field field_ref="hc" />
@@ -38,10 +38,10 @@
 						<field field_ref="levels_u" />
 						<field field_ref="levels_v" /> 
 						<field field_ref="levels_w" />
-						<!-- <field field_ref="Cs_r" /> -->
-                        <!-- <field field_ref="sc_r" /> -->
-                        <!-- <field field_ref="Cs_w" /> -->
-                        <!-- <field field_ref="sc_w" /> -->
+						<field field_ref="Cs_r" />
+                        <field field_ref="sc_r" />
+                        <field field_ref="Cs_w" />
+                        <field field_ref="sc_w" />
 					</field_group>
 
 					<field_group id="inst_fields" operation="instant" freq_offset="60ts" >
@@ -56,6 +56,7 @@
 						<field field_ref="temp" name="T" />
 						<field field_ref="salt" name="S" />
 						<field field_ref="rho" name="rho" />
+					    <field field_ref="bvf" name="N" />
 					</field_group>
 
 				</file>
@@ -63,8 +64,8 @@
 		</file_definition>
 
 
-		<file_definition type="one_file"  name="@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
-			<file_group id="120ts" output_freq="120ts"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
+			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file2" name_suffix="_aver">
 					<field_group id="grid_fields2" operation="once">
                         <field field_ref="hc" />
@@ -88,10 +89,10 @@
                         <field field_ref="levels_u" />
                         <field field_ref="levels_v" />
                         <field field_ref="levels_w" />
-                        <!-- <field field_ref="Cs_r" />  -->
-                        <!-- <field field_ref="sc_r" /> -->
-                        <!-- <field field_ref="Cs_w" /> -->
-                        <!-- <field field_ref="sc_w" /> -->
+						<field field_ref="Cs_r" />
+                        <field field_ref="sc_r" />
+                        <field field_ref="Cs_w" />
+                        <field field_ref="sc_w" />
 					</field_group>
 					
 					<field_group id="ave_fields" operation="average">
@@ -106,14 +107,15 @@
                         <field field_ref="temp" name="T"  />
                         <field field_ref="salt" name="S"  />
                         <field field_ref="rho" name="rho"  />
+					    <field field_ref="bvf" name="N" />
 					</field_group>
 
 				</file>
 			</file_group>
 		</file_definition>
 
-		<file_definition type="one_file"  name="@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
-			<file_group id="1ts" output_freq="1ts"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
+			<file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file3" name_suffix="_inst_surf">
 					<field_group id="grid_fields3" operation="once">
                         <field field_ref="hc" />
@@ -137,18 +139,18 @@
                         <field field_ref="levels_u" />
                         <field field_ref="levels_v" />
                         <field field_ref="levels_w" />
-                        <!-- <field field_ref="Cs_r" />  -->
-                        <!-- <field field_ref="sc_r" /> -->
-                        <!-- <field field_ref="Cs_w" /> -->
-                        <!-- <field field_ref="sc_w" /> -->
+						<field field_ref="Cs_r" />
+                        <field field_ref="sc_r" />
+                        <field field_ref="Cs_w" />
+                        <field field_ref="sc_w" />
 					</field_group>
 					
 					<field_group id="surf_fields" operation="instant">
                         <field field_ref="zeta" name="zeta"/>
-                        <field field_ref="u_surf" name="u_surf" />
-                        <field field_ref="v_surf" name="v_surf" />
-                        <field field_ref="temp_surf" name="T_surf" />
-                        <field field_ref="salt_surf" name="S_surf" />
+                        <field field_ref="u_surf" name="u" />
+                        <field field_ref="v_surf" name="v" />
+                        <field field_ref="temp_surf" name="T" />
+                        <field field_ref="salt_surf" name="S" />
 					</field_group>
 
 				</file>
