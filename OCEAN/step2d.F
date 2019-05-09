@@ -153,7 +153,7 @@ C$    trd=omp_get_thread_num()
 # include "zoom.h"
         integer irhox, irhoy, irhot
 #endif
-#ifdef DISSIP_SHALLOW
+#if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
         real u_1, u_2, cfl_1, cfl_2, depth_1, depth_2
         real damping, lambda_cfl, lambda_h, dummy, uu, vv
 #endif
@@ -1335,7 +1335,7 @@ C$OMP END MASTER
 #else
       cff2=2.*dtfast
 #endif
-#ifdef DISSIP_SHALLOW      
+#if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
       depth_1 = 10.
       depth_2 = 50.
       u_1 = 2.
@@ -1350,6 +1350,7 @@ C$OMP END MASTER
 #endif
       do j=Jstr,Jend
         do i=IstrU,Iend
+#if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
 #ifdef DISSIP_SHALLOW_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
@@ -1364,6 +1365,7 @@ C$OMP END MASTER
            damping = lambda_h*lambda_cfl
            damping_sw(i,j) = damping_sw(i,j)+damping*.5
            damping_sw(i-1,j) = damping_sw(i-1,j)+damping*.5
+#endif
 #endif
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
@@ -1382,7 +1384,7 @@ C$OMP END MASTER
 #ifdef MASKING
      &                                         *umask(i,j)
 #endif
-#ifdef DISSIP_SHALLOW
+#if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
            dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
            if (dummy.ge.depth_2) lambda_h=0.
@@ -1436,6 +1438,7 @@ C$OMP END MASTER
          
       do j=JstrV,Jend
         do i=Istr,Iend
+#if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
 #ifdef DISSIP_SHALLOW_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
@@ -1450,6 +1453,7 @@ C$OMP END MASTER
            damping = lambda_h*lambda_cfl
            damping_sw(i,j) = damping_sw(i,j)+damping*.5
            damping_sw(i,j-1) = damping_sw(i,j-1)+damping*.5
+#endif
 #endif
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
@@ -1468,7 +1472,7 @@ C$OMP END MASTER
 #ifdef MASKING
      &                                         *vmask(i,j)
 #endif
-#ifdef DISSIP_SHALLOW
+#if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
            dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
            if (dummy.ge.depth_2) lambda_h=0.

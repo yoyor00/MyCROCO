@@ -369,6 +369,141 @@
 #  undef Uwrk
 # endif /* BODYFORCE */
 
+
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+!====================================================================
+!
+!  If BSTRESS too large for CFL, apply it as a body force
+!
+!====================================================================
+!
+#  define Uwrk UFx
+#  define Vwrk VFe
+#  define wrk  UFe
+#  define levbfrc N
+!
+!  Apply bottom stress as a bodyforce: determine the thickness [m]
+!  of the bottom layer; then add in bottom stress as a bodyfoce.
+!
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          wrk(i,j)=0.
+        enddo
+      enddo
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            do k=1,levbfrc
+              wrk(i,j)=wrk(i,j)+Hz(i,j,k)
+            enddo
+          enddo
+        enddo
+
+      cff=0.75/dt
+
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+
+          cff1=cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
+          Uwrk(i,j)=bustr(i,j) -
+     &               SIGN(1.D0, bustr(i,j))*
+     &               MIN(ABS(bustr(i,j)),
+     &                   ABS(u(i,j,1,nrhs))*cff1)
+
+          Uwrk(i,j)=Uwrk(i,j)*4./((wrk(i-1,j)+wrk(i,j))
+     &                             *(pm (i-1,j)+pm (i,j))
+     &                             *(pn (i-1,j)+pn (i,j)))
+
+# ifdef DIAGNOSTICS_VRT
+            wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
+     &                    SWITCH umask(i,j)
+# endif /* DIAGNOSTICS_VRT */
+
+          bustr(i,j)=SIGN(1.D0, bustr(i,j))*
+     &               MIN(ABS(bustr(i,j)),
+     &                   ABS(u(i,j,1,nrhs))*cff1)
+
+        enddo
+      enddo
+      do j=JstrV,Jend
+        do i=Istr,Iend
+
+          cff1=cff*0.5*(Hz(i,j-1,1)+Hz(i,j,1))
+          Vwrk(i,j)=bvstr(i,j) -
+     &               SIGN(1.D0, bvstr(i,j))*
+     &               MIN(ABS(bvstr(i,j)),
+     &                   ABS(v(i,j,1,nrhs))*cff1)
+
+          Vwrk(i,j)=Vwrk(i,j)*4./((wrk(i,j-1)+wrk(i,j))
+     &                             *(pm (i,j-1)+pm (i,j))
+     &                             *(pn (i,j-1)+pn (i,j)))
+
+# ifdef DIAGNOSTICS_VRT
+            wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
+     &                    SWITCH vmask(i,j)
+# endif /* DIAGNOSTICS_VRT */
+
+          bvstr(i,j)=SIGN(1.D0, bvstr(i,j))*
+     &               MIN(ABS(bvstr(i,j)),
+     &                   ABS(v(i,j,1,nrhs))*cff1)
+
+        enddo
+      enddo             !--> discard wrk
+      do k=1,levbfrc
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru(i,j,k)=ru(i,j,k)-Uwrk(i,j)*(Hz(i,j,k)+
+     &                                               Hz(i-1,j,k))
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+            if (nnew.ne.3) then
+              Mbody(i,j,k,1) = Mbody(i,j,k,1)
+     &                       - Uwrk(i,j)*(Hz(i,j,k)+
+     &                                    Hz(i-1,j,k))
+     &                        SWITCH umask(i,j)
+            endif
+# endif
+# if defined DIAGNOSTICS_EK
+          if (nnew.ne.3) then
+          if (k.eq.1) then
+            ekwrkDrag(i,j,1)= 0.
+          endif
+            ekwrkDrag(i,j,1)=ekwrkDrag(i,j,1)
+     &                   - Uwrk(i,j)*(Hz(i,j,k)+
+     &                                Hz(i-1,j,k))
+     &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
+          endif
+# endif /* DIAGNOSTICS_EK */
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)=rv(i,j,k)-Vwrk(i,j)*(Hz(i,j,k)+
+     &                                               Hz(i,j-1,k))
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+            if (nnew.ne.3) then
+              Mbody(i,j,k,2) = Mbody(i,j,k,2)
+     &                       -Vwrk(i,j)*(Hz(i,j,k)+
+     &                                   Hz(i,j-1,k))
+     &                        SWITCH vmask(i,j)
+            endif
+# endif
+# if defined DIAGNOSTICS_EK
+          if (k.eq.1) then
+            ekwrkDrag(i,j,2)= 0.
+          endif
+            ekwrkDrag(i,j,2)= ekwrkDrag(i,j,2)
+     &                    -Vwrk(i,j)*(Hz(i,j,k)+
+     &                                Hz(i,j-1,k))
+     &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
+# endif /* DIAGNOSTICS_EK */
+          enddo
+        enddo
+      enddo         !--> discard Uwrk,Vwrk
+#  undef wrk
+#  undef Vwrk
+#  undef Uwrk
+#  undef levbfrc
+# endif /* DISSIP_SHALLOW_BODY */
+
       do k=1,N
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)

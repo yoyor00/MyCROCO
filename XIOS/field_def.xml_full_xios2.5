@@ -84,6 +84,11 @@
 #endif
          <field id="rho" long_name="density anomaly" unit="kilogram meter-3" grid_ref="rho_3D"/>
          <field id="bvf" long_name="Brunt Vaisala frequency" unit="second-2" grid_ref="w_3D"/>
+
+#ifdef DISSIP_SHALLOW
+         <field id="damping_sw" long_name="damping coefficient in shallow waters" unit="_" />
+#endif
+
 #ifdef VIS_COEF_3D
          <!-- VIS_COEF_3D -->
          <field id="visc3d" long_name="horizontal viscosity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>

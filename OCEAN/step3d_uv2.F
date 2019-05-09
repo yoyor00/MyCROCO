@@ -227,12 +227,18 @@
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+     &                     + wrkDrag(i,j,1)
+# endif
             wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
 # endif /* DIAGNOSTICS_VRT */
 # ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+     &                     + ekwrkDrag(i,j,1)
+# endif
           ekwrkWind(i,j,1)= sustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
 # endif /* DIAGNOSTICS_EK */
@@ -295,7 +301,7 @@
             MVmix(i,j,k,1)=-( MVmix(i,j,k,1) - u(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
      &                    *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE || defined DISSIP_SHALLOW_BODY
             MVmix(i,j,k,1)= MVmix(i,j,k,1) + Mbody(i,j,k,1)
 # endif
 # elif defined DIAGNOSTICS_EK
@@ -320,9 +326,14 @@
         do i=IstrU,Iend
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
      &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
      &               + (wrkDrag(i,j,1) + wrkWind(i,j,1))
+     &               * on_u(i,j)
+# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+          wrkVmix(i,j,1) = wrkVmix(i,j,1)
+     &               + (wrkDrag(i,j,1) + wrkWind(i,j,1)
+     &               + bustr(i,j)*om_u(i,j)           )
      &               * on_u(i,j)
 # endif
         enddo
@@ -331,9 +342,14 @@
         do i=IstrU,Iend
              ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
      &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE
              ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
      &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
+# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+             ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
+     &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
+     &               + bustr(i,j)*om_u(i,j)*on_u(i,j)
+     &                    * u(i,j,1,nrhs)
 # endif
 # if defined DIAGNOSTICS_EK_MLD
              ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1)
@@ -472,12 +488,18 @@
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+     &                     + wrkDrag(i,j,2)
+# endif
             wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
 # endif /* DIAGNOSTICS_VRT */
 # ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+     &                     + ekwrkDrag(i,j,2)
+# endif
           ekwrkWind(i,j,2)= svstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
 # endif /* DIAGNOSTICS_EK */
@@ -546,7 +568,7 @@
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
      &                    *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE || defined DISSIP_SHALLOW_BODY
             MVmix(i,j,k,2)= MVmix(i,j,k,2) + Mbody(i,j,k,2)
 # endif
 # elif defined DIAGNOSTICS_EK
@@ -575,6 +597,11 @@
           wrkVmix(i,j,2) = wrkVmix(i,j,2)
      &               + (wrkDrag(i,j,2) +wrkWind(i,j,2))
      &               * om_v(i,j)
+# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+          wrkVmix(i,j,2) = wrkVmix(i,j,2)
+     &               + (wrkDrag(i,j,2) +wrkWind(i,j,2)
+     &               +  bvstr(i,j)*on_v(i,j)          )
+     &               * om_v(i,j)
 # endif
         enddo
 # endif
@@ -585,6 +612,11 @@
 # ifdef BODYFORCE
              ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
      &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
+# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
+     &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
+     &               + bvstr(i,j)*om_v(i,j)*on_v(i,j)
+     &                 * v(i,j,1,nrhs)
 # endif
 # if defined DIAGNOSTICS_EK_MLD
              ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2)
