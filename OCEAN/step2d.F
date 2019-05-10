@@ -1342,8 +1342,8 @@ C$OMP END MASTER
       u_2 = 5.
       !cfl_1 = 0.5
       !cfl_2 = 0.8
-      do j=Jstr,Jend
-         do i=Istr,Iend
+      do j=Jstr-1,Jend
+         do i=Istr-1,Iend
             damping_sw(i,j) = 0.
          enddo
       enddo
@@ -1385,6 +1385,7 @@ C$OMP END MASTER
      &                                         *umask(i,j)
 #endif
 #if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
+#ifndef DISSIP_SHALLOW_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
            if (dummy.ge.depth_2) lambda_h=0.
@@ -1412,6 +1413,7 @@ C$OMP END MASTER
                write(*,*) 'damping', damping
                write(*,*) '-----------------'
            endif
+#endif
 #endif
           DUnew = DUnew*(1.-damping)
 #endif
@@ -1473,6 +1475,7 @@ C$OMP END MASTER
      &                                         *vmask(i,j)
 #endif
 #if defined DISSIP_SHALLOW && DISSIP_SHALLOW_BARO
+#ifndef DISSIP_SHALLOW_BARO_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
            if (dummy.ge.depth_2) lambda_h=0.
@@ -1500,6 +1503,7 @@ C$OMP END MASTER
                write(*,*) 'damping', damping
                write(*,*) '-----------------'
            endif
+#endif
 #endif
           DVnew = DVnew*(1.-damping)
 #endif
