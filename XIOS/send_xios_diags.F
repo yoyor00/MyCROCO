@@ -1713,6 +1713,11 @@
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
 
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+      call xios_send_field("bustr_lim",bustr_lim*rho0)
+      call xios_send_field("bvstr_lim",bvstr_lim*rho0)
+#  endif
+
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
       call xios_send_field("frq",frq(:,:,wstp))

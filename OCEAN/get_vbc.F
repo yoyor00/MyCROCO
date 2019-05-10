@@ -489,7 +489,7 @@
       endif
 
 
-#  if defined LIMIT_BSTRESS && !defined DISSIP_SHALLOW_BODY
+#  ifdef LIMIT_BSTRESS
 
 !
 !  From J. Warner's code:
@@ -501,17 +501,30 @@
       do j=Jstr,Jend
         do i=IstrU,Iend
           cff1=cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
+
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+          bustr_lim(i,j)=bustr(i,j)
+#  endif
           bustr(i,j)=SIGN(1.D0, bustr(i,j))* 
      &               MIN(ABS(bustr(i,j)),
      &                   ABS(u(i,j,1,nrhs))*cff1)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+          bustr_lim(i,j)=bustr_lim(i,j)-bustr(i,j)
+#  endif
         enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
           cff1=cff*0.5*(Hz(i,j-1,1)+Hz(i,j,1))
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+          bvstr_lim(i,j)=bvstr(i,j)
+#  endif
           bvstr(i,j)=SIGN(1.D0, bvstr(i,j))*
      &               MIN(ABS(bvstr(i,j)),
      &                   ABS(v(i,j,1,nrhs))*cff1)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+          bvstr_lim(i,j)=bvstr_lim(i,j)-bvstr(i,j)
+#  endif
         enddo
       enddo
 #  endif

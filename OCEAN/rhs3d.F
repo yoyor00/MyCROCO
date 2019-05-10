@@ -373,7 +373,7 @@
 # if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
 !====================================================================
 !
-!  If BSTRESS too large for CFL, apply it as a body force
+!  If BSTRESS too large for CFL, apply part of it as a body force
 !
 !====================================================================
 !
@@ -404,23 +404,15 @@
         do i=IstrU,Iend
 
           cff1=cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
-          Uwrk(i,j)=bustr(i,j) -
-     &               SIGN(1.D0, bustr(i,j))*
-     &               MIN(ABS(bustr(i,j)),
-     &                   ABS(u(i,j,1,nrhs))*cff1)
 
-          Uwrk(i,j)=Uwrk(i,j)*4./((wrk(i-1,j)+wrk(i,j))
+          Uwrk(i,j)=bustr_lim(i,j)*4./((wrk(i-1,j)+wrk(i,j))
      &                             *(pm (i-1,j)+pm (i,j))
      &                             *(pn (i-1,j)+pn (i,j)))
 
 # ifdef DIAGNOSTICS_VRT
-            wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
+          wrkDrag(i,j,1)= -bustr_lim(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
 # endif /* DIAGNOSTICS_VRT */
-
-          bustr(i,j)=SIGN(1.D0, bustr(i,j))*
-     &               MIN(ABS(bustr(i,j)),
-     &                   ABS(u(i,j,1,nrhs))*cff1)
 
         enddo
       enddo
@@ -428,23 +420,16 @@
         do i=Istr,Iend
 
           cff1=cff*0.5*(Hz(i,j-1,1)+Hz(i,j,1))
-          Vwrk(i,j)=bvstr(i,j) -
-     &               SIGN(1.D0, bvstr(i,j))*
-     &               MIN(ABS(bvstr(i,j)),
-     &                   ABS(v(i,j,1,nrhs))*cff1)
 
-          Vwrk(i,j)=Vwrk(i,j)*4./((wrk(i,j-1)+wrk(i,j))
+          Vwrk(i,j)=bvstr_lim(i,j)*4./((wrk(i,j-1)+wrk(i,j))
      &                             *(pm (i,j-1)+pm (i,j))
      &                             *(pn (i,j-1)+pn (i,j)))
 
 # ifdef DIAGNOSTICS_VRT
-            wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
+            wrkDrag(i,j,2)= -bvstr_lim(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
 # endif /* DIAGNOSTICS_VRT */
 
-          bvstr(i,j)=SIGN(1.D0, bvstr(i,j))*
-     &               MIN(ABS(bvstr(i,j)),
-     &                   ABS(v(i,j,1,nrhs))*cff1)
 
         enddo
       enddo             !--> discard wrk
