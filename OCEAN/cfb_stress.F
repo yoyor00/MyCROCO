@@ -33,7 +33,7 @@
 # include "scalars.h"
       integer i,j, Istr,Iend,Jstr,Jend,
      &        imin,imax,jmin,jmax
-      real    cff,cff1
+      real    cff,cff1, Wspd_min,Wstr_min, stau_ref
 
 #  include "compute_extended_bounds.h"
 !
@@ -42,36 +42,42 @@
 !  current feedback
 !---------------------------------------------------------------------
 !
-! sustr = sustr + s_tau * Uo,  (or equivalently for svstr)
+!         sustr = sustr + s_tau * Uo,  (or equivalently for svstr)
 !
-!   with  s_tau = cfb_slope1 * Uatm + cfb_offset1 [N.m^-3.s]  CFB_STRESS
-!    or   s_tau = cfb_slope2 * Wstr + cfb_offset2 [N.m^-3.s]  CFB_STRESS2
+! with  s_tau = cfb_slope  * Wspd + cfb_offset  [N.m^-3.s]  CFB_STRESS
+!  or   s_tau = cfb_slope2 * Wstr + cfb_offset2 [N.m^-3.s]  CFB_STRESS2
 !
-!      For wind Uatm < 3 m/s, or wind stress Wstr < 0.045 N/m^2: 
+!      For wind wpeed  Wspd < 3 m/s,          CFB_STRESS
+!          wind stress Wstr < 0.045 N/m^2     CFB_STRESS2
 !            --> take s_tau mean value of -0.0027 N.m^-3.s
-!      Caution: sustr is in [m^2/s^2], sms_scale=1/rho0 [m^3/kg] must be
-!      used for conversion
+!
+!      Caution: sustr is in [m^2/s^2], sms_scale=1/rho0 [m^3/kg]
+!      must be used for conversion
 !
 !---------------------------------------------------------------------
 !
+      Wspd_min=3.        ! [m/s]
+      Wstr_min=0.045     ! [N/m2]
+      stau_ref=-0.0027   ! [N.m^-3.s]
+
       do j=JstrR,JendR
         do i=Istr,IendR
 # ifdef CFB_STRESS
           cff1=0.5*(wspd(i,j)+wspd(i-1,j))
-          if (cff1 .gt. 3.) then
+          if (cff1 .gt. Wspd_min) then
             cff = cfb_slope*cff1 + cfb_offset
           else
-            cff = -0.0027
+            cff = stau_ref
           endif
 # else 
-          cff1=wstr_u(i,j)/sms_scale    ! CFB_STRESS2 case
-          if (cff1 .gt. 0.045) then 
+          cff1=wstr_u(i,j)*rho0    ! CFB_STRESS2 case
+          if (cff1 .gt. Wstr_min) then 
             cff = cfb_slope2*cff1 + cfb_offset2
           else
-            cff = -0.0027
+            cff = stau_ref
           endif
 # endif
-          sustr(i,j)=sustr(i,j) + sms_scale*cff*u(i,j,N,nrhs)
+          sustr(i,j)=sustr(i,j) + cff*u(i,j,N,nrhs)/rho0
 # ifdef MASKING
           sustr(i,j)=sustr(i,j)*umask(i,j)
 # endif
@@ -85,20 +91,20 @@
         do i=IstrR,IendR
 # ifdef CFB_STRESS
           cff1=0.5*(wspd(i,j)+wspd(i,j-1))
-          if (cff1 .gt. 3.) then
+          if (cff1 .gt. Wspd_min) then
             cff = cfb_slope*cff1 + cfb_offset
           else
-            cff = -0.0027
+            cff = stau_ref
           endif
 # else 
-          cff1=wstr_v(i,j)/sms_scale    ! CFB_STRESS2 case
-          if (cff1 .gt. 0.045) then
+          cff1=wstr_v(i,j)*rho0    ! CFB_STRESS2 case
+          if (cff1 .gt. Wstr_min) then
             cff = cfb_slope2*cff1 + cfb_offset2
           else
-            cff = -0.0027
+            cff = stau_ref
           endif
 # endif
-          svstr(i,j)=svstr(i,j) + sms_scale*cff*v(i,j,N,nrhs)
+          svstr(i,j)=svstr(i,j) + cff*v(i,j,N,nrhs)/rho0
 # ifdef MASKING
           svstr(i,j)=svstr(i,j)*vmask(i,j)
 # endif
