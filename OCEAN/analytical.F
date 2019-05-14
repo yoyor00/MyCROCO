@@ -641,7 +641,7 @@ C$    integer  trd, omp_get_thread_num
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
-      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
+      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
       ETA0=kwave*h(1,1)*U0/omega
       do j=JstrR,JendR
         do i=IstrR,IendR
