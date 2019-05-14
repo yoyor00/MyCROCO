@@ -93,7 +93,7 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
-# ifdef DISSIP_SHALLOW
+# ifdef DISSIP_SHALLOW_BARO
 #  define vidDSW hisDSW
 # endif      
 # ifdef MOVING_BATHY
@@ -565,7 +565,7 @@
 
         endif
 
-#ifdef DISSIP_SHALLOW
+#ifdef DISSIP_SHALLOW_BARO
         if (wrt(indxDSW)) then
           lvar=lenstr(vname(1,indxDSW))
           ierr=nf_def_var (ncid, vname(1,indxDSW)(1:lvar),
@@ -2241,7 +2241,7 @@
 !
 ! Dissipation in shallow areas
 !
-#ifdef DISSIP_SHALLOW
+#ifdef DISSIP_SHALLOW_BARO
         if (wrt(indxDSW)) then
           lvar=lenstr(vname(1,indxDSW))
           ierr=nf_inq_varid (ncid, vname(1,indxDSW)(1:lvar), vidDSW)

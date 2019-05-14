@@ -95,6 +95,9 @@
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+      real wrk(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
@@ -125,6 +128,21 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          wrk(i,j)=0.
+        enddo
+      enddo
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            do k=1,N
+              wrk(i,j)=wrk(i,j)+Hz(i,j,k)
+            enddo
+          enddo
+        enddo
+# endif
+
       do j=Jstr,Jend
 !
 ! The vertical viscosity term is not added as an explicit divergence term
@@ -223,7 +241,22 @@
 # ifndef BODYFORCE
         do i=IstrU,Iend
           DC(i,N)=DC(i,N)+dt*sustr(i,j)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+          if (ABS(bustr(i,j)).gt.ABS(bustr_lim(i,j))) then
+              bustr_lim(i,j) = bustr(i,j)
+              bustr(i,j) = 0.
+            do k=1,N
+              DC(i,k)=DC(i,1)-dt*bustr_lim(i,j)*(Hz(i,j,k)+
+     &                                    Hz(i-1,j,k))
+     &                     /(wrk(i-1,j)+wrk(i,j))
+            enddo
+          else
+              bustr_lim(i,j) = 0.
+              DC(i,1)=DC(i,1)-dt*bustr(i,j)
+          endif
+# else
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
+#  endif
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
@@ -484,7 +517,23 @@
 # ifndef BODYFORCE
           do i=Istr,Iend
             DC(i,N)=DC(i,N)+dt*svstr(i,j)
+# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+          if (ABS(bvstr(i,j)).gt.ABS(bvstr_lim(i,j))) then
+              bvstr_lim(i,j) = bvstr(i,j)
+              bvstr(i,j) = 0.
+            do k=1,N
+              DC(i,k)=DC(i,1)-dt*bvstr_lim(i,j)*(Hz(i,j,k)+
+     &                                    Hz(i,j-1,k))
+     &                     /(wrk(i,j-1)+wrk(i,j))
+            enddo
+
+          else
+              bvstr_lim(i,j) = 0.
+              DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+          endif
+# else
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+#  endif
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)

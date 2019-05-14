@@ -188,7 +188,7 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
-#ifdef DISSIP_SHALLOW
+#ifdef DISSIP_SHALLOW_BARO
 !     
 !     Write out damping coefficient on the barotropic mode (shallow + large cfl)
 !     
