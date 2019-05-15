@@ -628,7 +628,7 @@
         endif
 # endif
 
-# ifdef DISSIP_SHALLOW
+# ifdef DISSIP_SHALLOW_BARO
       lvar=lenstr(vname(1,indxDSW))
       ierr=nf_inq_varid (ncid, vname(1,indxDSW)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then

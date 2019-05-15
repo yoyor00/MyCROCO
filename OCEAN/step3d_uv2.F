@@ -95,8 +95,9 @@
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
+      real cffd
 # endif
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
@@ -128,7 +129,10 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
+
+      cffd = 0.1
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           wrk(i,j)=0.
@@ -241,12 +245,12 @@
 # ifndef BODYFORCE
         do i=IstrU,Iend
           DC(i,N)=DC(i,N)+dt*sustr(i,j)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
           if (ABS(bustr(i,j)).gt.ABS(bustr_lim(i,j))) then
               bustr_lim(i,j) = bustr(i,j)
               bustr(i,j) = 0.
             do k=1,N
-              DC(i,k)=DC(i,1)-dt*bustr_lim(i,j)*(Hz(i,j,k)+
+              DC(i,k)=DC(i,1)-cffd*dt*bustr_lim(i,j)*(Hz(i,j,k)+
      &                                    Hz(i-1,j,k))
      &                     /(wrk(i-1,j)+wrk(i,j))
             enddo
@@ -260,7 +264,7 @@
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# if defined DISSIP_SHALLOW_BODY
      &                     + wrkDrag(i,j,1)
 # endif
             wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
@@ -269,7 +273,7 @@
 # ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# if defined DISSIP_SHALLOW_BODY
      &                     + ekwrkDrag(i,j,1)
 # endif
           ekwrkWind(i,j,1)= sustr(i,j)*om_u(i,j)*on_u(i,j)
@@ -363,7 +367,7 @@
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
      &               + (wrkDrag(i,j,1) + wrkWind(i,j,1))
      &               * on_u(i,j)
-# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# elif defined DISSIP_SHALLOW_BODY
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
      &               + (wrkDrag(i,j,1) + wrkWind(i,j,1)
      &               + bustr(i,j)*om_u(i,j)           )
@@ -378,7 +382,7 @@
 # if defined BODYFORCE
              ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
      &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
-# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# elif defined DISSIP_SHALLOW_BODY
              ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
      &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
      &               + bustr(i,j)*om_u(i,j)*on_u(i,j)
@@ -517,12 +521,12 @@
 # ifndef BODYFORCE
           do i=Istr,Iend
             DC(i,N)=DC(i,N)+dt*svstr(i,j)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY_v2
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
           if (ABS(bvstr(i,j)).gt.ABS(bvstr_lim(i,j))) then
               bvstr_lim(i,j) = bvstr(i,j)
               bvstr(i,j) = 0.
             do k=1,N
-              DC(i,k)=DC(i,1)-dt*bvstr_lim(i,j)*(Hz(i,j,k)+
+              DC(i,k)=DC(i,1)-cffd*dt*bvstr_lim(i,j)*(Hz(i,j,k)+
      &                                    Hz(i,j-1,k))
      &                     /(wrk(i,j-1)+wrk(i,j))
             enddo
@@ -537,7 +541,7 @@
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# if defined DISSIP_SHALLOW_BODY
      &                     + wrkDrag(i,j,2)
 # endif
             wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
@@ -546,7 +550,7 @@
 # ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# if defined DISSIP_SHALLOW_BODY
      &                     + ekwrkDrag(i,j,2)
 # endif
           ekwrkWind(i,j,2)= svstr(i,j)*om_v(i,j)*on_v(i,j)
@@ -646,7 +650,7 @@
           wrkVmix(i,j,2) = wrkVmix(i,j,2)
      &               + (wrkDrag(i,j,2) +wrkWind(i,j,2))
      &               * om_v(i,j)
-# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# elif defined DISSIP_SHALLOW_BODY
           wrkVmix(i,j,2) = wrkVmix(i,j,2)
      &               + (wrkDrag(i,j,2) +wrkWind(i,j,2)
      &               +  bvstr(i,j)*on_v(i,j)          )
@@ -661,7 +665,7 @@
 # ifdef BODYFORCE
              ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
      &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
-# elif defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# elif defined DISSIP_SHALLOW_BODY
              ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
      &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
      &               + bvstr(i,j)*om_v(i,j)*on_v(i,j)

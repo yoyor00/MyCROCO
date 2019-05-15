@@ -1073,8 +1073,8 @@ c        close(testunit)
      &                    ,  wrthis(indxU),  wrthis(indxV)
      &                    , (wrthis(itrc), itrc=indxT,indxT+NT-1) 
 #endif
-#ifdef DISSIP_SHALLOW
-        wrthis(indxDSW) = .TRUE. ! force the writing
+#ifdef DISSIP_SHALLOW_BARO
+        wrthis(indxDSW) = .FALSE. ! force the writing
 #endif 
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
 #ifdef SOLVE3D
@@ -1162,7 +1162,7 @@ c        close(testunit)
 # endif
 # ifdef MOVING_BATHY
      &                                          , wrthis(indxHm)
-# else 
+# else
      &                                          ,  dumboolean
 # endif
 # if defined BIOLOGY && !defined PISCES
@@ -1264,7 +1264,7 @@ c        close(testunit)
      &  , wrthis(indxShflx_sen), 'write shflx_sen [W/m2]',
      &                                 'Sensible heat flux'
 # endif
-#ifdef DISSIP_SHALLOW      
+#ifdef DISSIP_SHALLOW_BARO
      &  , wrthis(indxDSW), 'write damping_sw [1]',
      &                                 'Damping coef on the barotropic mode'
 # endif        

@@ -370,7 +370,7 @@
 # endif /* BODYFORCE */
 
 
-# if defined DISSIP_SHALLOW && (defined DISSIP_SHALLOW_BODY_v1 || defined DISSIP_SHALLOW_BODY_v0)
+# if defined DISSIP_SHALLOW_BODY_v1 || defined DISSIP_SHALLOW_BODY_v0
 !====================================================================
 !
 !  If BSTRESS too large for CFL, apply part of it as a body force
@@ -398,8 +398,10 @@
           enddo
         enddo
 
-
-      cff = 1.
+!
+!  The value of 0.1 is arbitrary limitation assigment.
+!
+      cff = 0.1
 
       do j=Jstr,Jend
         do i=IstrU,Iend

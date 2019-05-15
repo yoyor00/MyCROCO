@@ -153,7 +153,7 @@ C$    trd=omp_get_thread_num()
 # include "zoom.h"
         integer irhox, irhoy, irhot
 #endif
-#if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BARO
+#if defined DISSIP_SHALLOW_BARO
         real u_1, u_2, cfl_1, cfl_2, depth_1, depth_2
         real damping, lambda_cfl, lambda_h, dummy, uu, vv
 #endif
@@ -1335,7 +1335,7 @@ C$OMP END MASTER
 #else
       cff2=2.*dtfast
 #endif
-#if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BARO
+#if defined DISSIP_SHALLOW_BARO
       depth_1 = 10.
       depth_2 = 50.
       u_1 = 2.
@@ -1350,7 +1350,7 @@ C$OMP END MASTER
 #endif
       do j=Jstr,Jend
         do i=IstrU,Iend
-#if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BARO
+#if defined DISSIP_SHALLOW_BARO
 #ifdef DISSIP_SHALLOW_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
@@ -1384,7 +1384,7 @@ C$OMP END MASTER
 #ifdef MASKING
      &                                         *umask(i,j)
 #endif
-#if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BARO
+#if defined DISSIP_SHALLOW_BARO
 #ifndef DISSIP_SHALLOW_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
@@ -1440,7 +1440,7 @@ C$OMP END MASTER
          
       do j=JstrV,Jend
         do i=Istr,Iend
-#if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BARO
+#if defined DISSIP_SHALLOW_BARO
 #ifdef DISSIP_SHALLOW_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
@@ -1474,7 +1474,7 @@ C$OMP END MASTER
 #ifdef MASKING
      &                                         *vmask(i,j)
 #endif
-#if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BARO
+#if defined DISSIP_SHALLOW_BARO
 #ifndef DISSIP_SHALLOW_BARO_old
            dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
            lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
