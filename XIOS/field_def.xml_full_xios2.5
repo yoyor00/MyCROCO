@@ -85,7 +85,7 @@
          <field id="rho" long_name="density anomaly" unit="kilogram meter-3" grid_ref="rho_3D"/>
          <field id="bvf" long_name="Brunt Vaisala frequency" unit="second-2" grid_ref="w_3D"/>
 
-#ifdef DISSIP_SHALLOW
+#ifdef DISSIP_SHALLOW_BARO
          <field id="damping_sw" long_name="damping coefficient in shallow waters" unit="_" />
 #endif
 
@@ -268,7 +268,7 @@
          <field id="bustr" long_name="bottom  u-momentum stress" unit="N/m2" />
          <field id="u" long_name="v-momentum component" unit="meter second-1" grid_ref="u_3D"/>
          <field id="u_surf" long_name="u-momentum component" unit="meter second-1" />
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# if defined DISSIP_SHALLOW_BODY
          <field id="bustr_lim" long_name="bottom  u-momentum stress for body" unit="N/m2" />
 #  endif
 
@@ -299,7 +299,7 @@
          <field id="bvstr" long_name="bottom  v-momentum stress" unit="N/m2" />
          <field id="v" long_name="v-momentum component" unit="meter second-1" grid_ref="v_3D"/>
          <field id="v_surf" long_name="v-momentum component" unit="meter second-1" />
-# if defined DISSIP_SHALLOW && defined DISSIP_SHALLOW_BODY
+# if defined DISSIP_SHALLOW_BODY
          <field id="bvstr_lim" long_name="bottom  v-momentum stress for body" unit="N/m2" />
 #  endif
 #ifdef MASKING
