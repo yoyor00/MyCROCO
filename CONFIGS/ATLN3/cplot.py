@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 
 from mpl_toolkits.basemap import Basemap, cm
 
-#points=np.loadtxt('cpoints.dat')
+points=np.loadtxt('cpoints.dat')
+lonp = points[:, 0]
+latp = points[:, 1]
 
 nprocs=8
 
@@ -19,12 +21,12 @@ dat = np.array([])
 points = [None]*nprocs
 for proc in range(nprocs):
 #    data1=np.loadtxt('z0b.0{0}-011'.format(proc))
-    data=np.loadtxt('z0b.0{0}-021'.format(proc))
+    data=np.loadtxt('z0b.0{0}-003'.format(proc))
     ni=int(data[0, 0])
     nj=int(data[0, 1])
     lon=np.append(lon, data[1:, 0]) #np.reshape(data[1:, 0], (nj, ni))
     lat=np.append(lat, data[1:, 1])
-    dat=np.append(dat, data[1:, 2])#np.reshape(data[1:, 1], (nj, ni))
+    dat=np.append(dat, (data[1:, 2]-0.008)/0.008)#np.reshape(data[1:, 1], (nj, ni))
     points[proc] = np.loadtxt('cpoints-0{0}.dat'.format(proc))
     print(len(points[proc]))
 #    xlon[proc]=np.reshape(xlon[proc],(1,len(xlon[proc])))
@@ -50,14 +52,16 @@ for proc in range(nprocs):
             x=points[proc][0]
             y=points[proc][1]
             
-        m.plot(x, y, 'o', color=(1,0,.1*proc), latlon=True)
+        m.plot(x, y, 'o', color=(1, float(proc)/float(nprocs), float(proc)/float(nprocs)), latlon=True)
 
+
+#m.plot(lonp, latp, 'o', color=(0, 1, 0), latlon=True)        
 # draw coastlines and borders
 m.drawcoastlines()
 m.drawcountries()
  
 # draw meridians and parallels
-m.drawmeridians(np.arange(0, 360, 30))
-m.drawparallels(np.arange(-90, 90, 30))
+m.drawmeridians(np.arange(0, 360, 2), labels=[False,True,True,False])
+m.drawparallels(np.arange(-90, 90, 2), labels=[True,False,False,True])
 cb = m.colorbar(pc,"right", size="5%", pad='2%')
 plt.show()

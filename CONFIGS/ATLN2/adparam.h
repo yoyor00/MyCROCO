@@ -1,8 +1,8 @@
 C     -*- fortran -*-
 
-C     size of the problem (number of control variables)
+C     size of the optimization problem
       integer ad_array_size
-      parameter (ad_array_size=3*nnodes)
+      parameter (ad_array_size=100*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 
@@ -13,11 +13,11 @@ C     number of steps between cost function computation
 C     size of the assimilation window
 C     on change check BINOMIAL-CKP param in cost_fun
       integer ad_nt
-      parameter (ad_nt = 80)
+      parameter (ad_nt = 48)
 
 C     start of assimilation in the obs file
       integer ad_ast
-      parameter (ad_ast = 98)
+      parameter (ad_ast = 140)
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st
@@ -41,7 +41,7 @@ c     full gradient vector
 c     sum of all full gradient vectors
       double precision ad_sg_f(ad_array_size)
 
-c     number of control points (<= ad_array_size/nnodes)
+c     number of measure points (<= ad_array_size/nnodes)
       integer ncpoints
 
 c     coordinates of control points

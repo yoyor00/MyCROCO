@@ -23,7 +23,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       real rzs(1)
       real dzs(1)
 
-      double precision cost, xf
+      double precision cost, xf, rms
 
       double precision dx, df1,epsrel
 
@@ -83,6 +83,8 @@ c     imode(3)=0 ==> simulator never called with indic=1
      &     form='FORMATTED')
       open(unit=778, file="icoords.dat", action="write",
      &     form='FORMATTED')
+      open(unit=779, file="ctrl.dat", action="write",
+     &     form='FORMATTED')
 
 
       reverse = 1
@@ -102,7 +104,7 @@ c     &        (x,cost,gg,reverse,indic)
          MPI_master_only write(*,*) '2##>',ad_sg_f
          
 
-         
+C        get ad_x_f, the new ad state on mpi master
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
      &        ad_array_size,ad_x_f,
      &        cost,ad_sg_f,dx,df1,epsrel,
@@ -111,6 +113,7 @@ c     &        (x,cost,gg,reverse,indic)
 
 
 #ifdef AMPI
+C        broadcast the new ad state
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(ad_x_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &        0,MPI_COMM_WORLD,ierr)
@@ -122,11 +125,13 @@ c     &        (x,cost,gg,reverse,indic)
      &        0,MPI_COMM_WORLD,ierr)
 #endif
          ad_g_f = ad_sg_f
+         
+C        get ad_g_f the gradient on each proc
          call simul(indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
-
 
          
 #ifdef AMPI
+C        sum all proc gradients on master
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &        0,MPI_COMM_WORLD,ierr)
@@ -139,6 +144,8 @@ c     &        (x,cost,gg,reverse,indic)
             cost = xf
          end if
 
+         write (779,*) rms(), cost, norm2(ad_sg_f)
+         
          df1 = cost
 
          do i=1,ad_array_size
@@ -153,6 +160,7 @@ C     ...
 
       close (unit=777)
       close (unit=778)
+      close (unit=779)
       write(*,*) 'end state_control'
 
       return
@@ -169,3 +177,79 @@ C     ...
       stop 2
       end
       
+
+      function rms()
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+
+      double precision rms,irms
+      integer i,j
+      double precision delta_z
+
+      irms = 0
+
+      call rms_fun_step(irms)
+
+      rms=sqrt(irms)
+      
+      end function rms
+
+      subroutine rms_fun_step(irms)
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+
+      double precision irms
+      integer ntrds,trd,my_first,my_last,tile,range
+
+#ifdef OPENMP
+      ntrds=omp_get_num_threads()
+      trd=omp_get_thread_num()
+#else
+      ntrds=1
+      trd=0
+#endif
+      range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
+      my_first=trd*range
+      my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
+
+      do tile=my_first,my_last
+         call rms_fun_step_2d(tile,irms)
+      end do
+
+      end subroutine rms_fun_step
+
+      subroutine rms_fun_step_2d(tile,irms)
+
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+      integer tile
+      double precision irms
+# include "compute_tile_bounds.h"
+
+      call rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,irms)
+
+      end subroutine rms_fun_step_2d
+
+      subroutine rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
+     &     irms)
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+
+      integer Istr,Iend,Jstr,Jend,i,j
+      integer k
+      double precision delta_z, delta_zob, irms
+
+      do j=Jstr,Jend
+         do i=Istr,Iend
+            if (ad_obs(i,j,1).ne.spval) then
+               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_nt+2))
+               irms = irms + delta_z*delta_z
+            end if
+         end do
+      end do
+
+      end subroutine rms_fun_step_2d_tile

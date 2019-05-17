@@ -96,8 +96,11 @@ C$AD NOCHECKPOINT
 c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
 c     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
 c         write(*,*) 'BBBBB',mynode,delta_z,zeta(i,j,knew),
+c     &        ad_obs(i,j,ta+3),
+c     &        ad_obs(i,j,ta+2),
 c     &        ad_obs(i,j,ta+1),
-c     &        ad_obs(i,j,ta),ad_obs(i,j,ta+2),ad_obs(i,j,ta-1),
+c     &        ad_obs(i,j,ta),
+c     &        ad_obs(i,j,ta-1),
 c     &        ad_obs(i,j,ta-2)
          icost = icost + delta_z*delta_z + 0.0001*delta_zob*delta_zob/
      &        (h(i,j)*h(i,j))
@@ -320,6 +323,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          open(unit=99,file="cpoints.dat")
          do k=1,ad_array_size
             read(99,*) ad_lonr_f(k), ad_latr_f(k)
+            write(*,*) 'reading',k,ad_lonr_f(k), ad_latr_f(k)
          end do
          close(unit=99)
       end if
@@ -365,7 +369,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       ncpoints=0
       do k=1,ad_array_size
          call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
-         if (.not.out.and.(ncpoints.lt.(ad_array_size))) then
+         if (.not.out.and.(ncpoints.lt.(ad_array_size)).and.
+     &        h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
             ncpoints=ncpoints+1
             ad_i(ncpoints)=i
             ad_j(ncpoints)=j
