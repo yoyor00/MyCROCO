@@ -184,7 +184,7 @@ $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC 
 
 $(SBIN)_adc:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
@@ -201,13 +201,13 @@ profile.o: profile.c
 	$(CC) $(FLAGS) -c profile.c
 
 testMemSizef.o : testMemSizef.f
-	$(FC) $(FFLAGS) -c testMemSizef.f
+	$(CFT) $(FFLAGS) -c testMemSizef.f
 
 testMemSizec.o : testMemSizec.c
 	$(CC) $(FFLAGS) -c testMemSizec.c
 
 testMemSize : testMemSizef.o testMemSizec.o
-	$(FC) $(FFLAGS) testMemSizef.o testMemSizec.o -o testMemSize
+	$(CFT) $(FFLAGS) testMemSizef.o testMemSizec.o -o testMemSize
 
 treeverse.f: treeverse.F
 	/bin/cp $^ $@
@@ -216,13 +216,13 @@ adBuffer.f: adBuffer.F
 	/bin/cp $^ $@
 
 treeverse.o: treeverse.f
-	$(FC) $(FFLAGS) -c $^
+	$(CFT) $(FFLAGS) -c $^
 
 adBinomial.o: adBinomial.c
 	$(CC) $(FFLAGS) -c $^
 
 adBuffer.o : adBuffer.f
-	$(FC) $(FFLAGS) -c $^
+	$(CFT) $(FFLAGS) -c $^
 
 adBufferC.o: adBufferC.c
 	$(CC) $(FFLAGS) -c $^
@@ -234,15 +234,15 @@ dpStack.o : dpStack.c
 	$(CC) $(FFLAGS) -c dpStack.c
 
 dpTest.o : dpTest.f
-	$(FC) $(FFLAGS) -c dpTest.f
+	$(CFT) $(FFLAGS) -c dpTest.f
 
 validityTest.o : validityTest.f
-	$(FC) $(FFLAGS) -c validityTest.f
+	$(CFT) $(FFLAGS) -c validityTest.f
 
 treeverseFtest : treeverseFtest.f treeverse.f
-	$(FC) $(FFLAGS) -c treeverseFtest.f
-	$(FC) $(FFLAGS) -c treeverse.f
-	$(FC) $(FFLAGS) $(LDFLAGS) treeverseFtest.o treeverse.o -o treeverseFtest
+	$(CFT) $(FFLAGS) -c treeverseFtest.f
+	$(CFT) $(FFLAGS) -c treeverse.f
+	$(CFT) $(FFLAGS) $(LDFLAGS) treeverseFtest.o treeverse.o -o treeverseFtest
 
 treeverseCtest : treeverseCtest.c treeverse.c treeverse.h
 	$(CC) $(FFLAGS) -c treeverse.c
@@ -250,13 +250,13 @@ treeverseCtest : treeverseCtest.c treeverse.c treeverse.h
 	$(CC) $(FFLAGS) $(LDFLAGS) treeverseCtest.o treeverse.o -o treeverseCtest
 
 adBufferFtest : adStack.c adBuffer.f adBufferFtest.f
-	$(FC) $(FFLAGS) $^ -o $@
+	$(CFT) $(FFLAGS) $^ -o $@
 
 adBufferCtest : adStack.c adBuffer.c adBufferCtest.c
-	$(FC) $(FFLAGS) $^ -o $@
+	$(CFT) $(FFLAGS) $^ -o $@
 
 m1qn3.o: m1qn3.F
-	$(FC) $(FFLAGS) -c $^ -o $@
+	$(CFT) $(FFLAGS) -c $^ -o $@
 
 
 #
@@ -323,7 +323,7 @@ plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
-	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) -I /usr/include -I /usr/local/include
 
 cmaker.f: cmaker.F
 	$(CPP) -P $(CPPFLAGS) $^ | ./mpc > $@
@@ -341,17 +341,17 @@ main_adc.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_CHECK $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
-	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) -I /usr/include -I /usr/local/include
 
 $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
-	tapenade $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) -I /usr/include/mpich -I /usr/local/include
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) -I /usr/include -I /usr/local/include
 
 
 fortranSupport.o : fortranSupport.F
-	$(FC) $(FFLAGS) $(CPPFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
+	$(CFT) $(FFLAGS) $(CPPFLAGS) -I /usr/include -I /usr/local/include -c $^ -o $@
 
 ampiSupport.o : ampiSupport.c
-	$(CC) $(CPPFLAGS) -I /usr/include/mpich -I /usr/local/include -c $^ -o $@
+	$(CC) $(CPPFLAGS) -I /usr/include -I /usr/local/include -c $^ -o $@
 
 
 # Special treatment for barrier function:
