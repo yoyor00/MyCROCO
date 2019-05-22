@@ -23,7 +23,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       real rzs(1)
       real dzs(1)
 
-      double precision cost, xf, rms
+      double precision cost, xf, rms, crms, rms0
 
       double precision dx, df1,epsrel
 
@@ -126,15 +126,16 @@ C        broadcast the new ad state
 #endif
          ad_g_f = ad_sg_f
          
-C        get ad_g_f the gradient on each proc
+C        get ad_g_f the gradient on each proc (& ad_rms)
          call simul(indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
 
-         
 #ifdef AMPI
-C        sum all proc gradients on master
+C        sum all proc gradients & rms on master
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &        0,MPI_COMM_WORLD,ierr)
+         call AMPI_Reduce(ad_rms, rms0, 1, AMPI_ADOUBLE_PRECISION,
+     &        MPI_SUM,0,MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
      &     AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM, 0,
@@ -142,9 +143,9 @@ C        sum all proc gradients on master
 #endif
          if (mynode.eq.0) then
             cost = xf
+            write (779,*) ad_counter,rms0,cost,norm2(ad_sg_f)
+            call flush(779)
          end if
-
-         write (779,*) rms(), cost, norm2(ad_sg_f)
          
          df1 = cost
 

@@ -88,6 +88,9 @@ c     backup
       real zob_bck(GLOBAL_2D_ARRAY)
       real Zobt_bck
       real ad_cost
+
+c     rms      
+      real ad_rms
       
       integer kstp_bck
       integer krhs_bck
@@ -103,4 +106,5 @@ C     commons
      &     ,ad_h_f
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
-      common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,ad_cost
+      common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,
+     &     ad_cost,ad_rms

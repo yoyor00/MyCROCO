@@ -67,6 +67,8 @@ c         write(*,*) '-||->', (cost-f)/eps
          write (*,*) 'end adjoint:',t2-t1
          write (*,*) '--------------------------------------'
 
+         ad_rms = rms()
+         
          call restore_croco_state()
 
       end if
