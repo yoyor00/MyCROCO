@@ -18,7 +18,8 @@ c     this file is not differentiated
 
       double precision cost, costb
       double precision xbck(Sn), eps
-
+      double precision rms
+      
       if (indic.eq.1) then
          write(*,*) 'indic = 1'
       end if
