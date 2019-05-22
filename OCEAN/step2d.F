@@ -1847,6 +1847,12 @@ C$OMP END MASTER
         endif
         write(stdout,'(A,2I6)')  
      &                                       '  IMAX JMAX  =',imax,jmax
+#if defined MPI
+        write(stdout,'(A,I6)')  
+     &                                       '  NODE  =',mynode
+        write(stdout,'(A,2I6)')  
+     &       '  IMAX JMAX  =',imax-iminmpi+1,jmax-jminmpi+1
+#endif
 #ifdef SOLVE3D
         write(stdout,'(A,2I6/)')
      &                                         '  IINT IEXT  =',iic,iif

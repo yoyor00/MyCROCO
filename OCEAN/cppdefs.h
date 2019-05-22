@@ -61,6 +61,7 @@
 # undef  MPI_OPT
                       /* I/O server */
 # undef  XIOS
+# undef  XIOS2
                       /* Non-hydrostatic option */
 # undef  NBQ
                       /* Nesting */
@@ -188,7 +189,7 @@
 #  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# define SMFLUX_CFB
+# undef SMFLUX_CFB
 # undef  SEA_ICE_NOFLUX
                       /* Wave-current interactions */
 # ifdef OW_COUPLING

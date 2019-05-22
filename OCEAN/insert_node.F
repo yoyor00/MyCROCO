@@ -41,7 +41,7 @@
 !                    in this code nnodes is used only to determine
 !                    how many digits are needed to accomodate all
 !                    possible MPI node numbers.
-!         ierr    error counter, NORMALLY MUST BE TO 0 BY CALLER;
+!         ierr    error counter, NORMALLY MUST BE SET TO 0 BY CALLER;
 !
 ! output: name    modified string with node number inserted.
 !         lstr    length of the modified string
@@ -56,10 +56,10 @@
 #else
      &                                        , node,  nnodes
 #endif
-      parameter (digits=4)
+      parameter (digits=5)
       logical leading_dots
       ndots=0                            ! Determine how many dots
-      leading_dots=.true.                ! are present inthe string.
+      leading_dots=.true.                ! are present in the string.
       do i=1,lstr                        ! Do not allow more than 3
         if (name(i:i).eq.'.') then       ! dots: signal about error,
          if (.not.leading_dots) then     ! if it occurs, however, do
