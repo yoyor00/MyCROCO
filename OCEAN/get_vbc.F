@@ -192,6 +192,7 @@
 #include "sources.h"
 #include "mpi_cpl.h"
       integer i,j,is, Istr,Iend,Jstr,Jend
+      integer k
       real cff,cff1
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY)
@@ -505,6 +506,12 @@
           bustr_lim(i,j)=SIGN(1.D0, bustr(i,j))*
      &               MIN(ABS(bustr(i,j)),
      &                   ABS(u(i,j,1,nrhs))*cff1)
+          do k=2,N
+              cff1=cff1 + cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
+          enddo
+          bustr(i,j)=SIGN(1.D0, bustr(i,j))*
+     &               MIN(ABS(bustr(i,j)),
+     &                   ABS(u(i,j,1,nrhs))*cff1)
 # else
 # if defined DISSIP_SHALLOW_BODY
           bustr_lim(i,j)=bustr(i,j)
@@ -530,6 +537,12 @@
           cff1=cff*0.5*(Hz(i,j-1,1)+Hz(i,j,1))
 # if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
           bvstr_lim(i,j)=SIGN(1.D0, bvstr(i,j))*
+     &               MIN(ABS(bvstr(i,j)),
+     &                   ABS(v(i,j,1,nrhs))*cff1)
+          do k=2,N
+              cff1=cff1 + cff*0.5*(Hz(i,j-1,k)+Hz(i,j,k))
+          enddo
+          bvstr(i,j)=SIGN(1.D0, bvstr(i,j))*
      &               MIN(ABS(bvstr(i,j)),
      &                   ABS(v(i,j,1,nrhs))*cff1)
 # else

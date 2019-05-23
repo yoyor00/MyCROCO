@@ -131,7 +131,7 @@
 !
 # if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
 
-      cffd = 0.1
+      cffd = 1.
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -250,7 +250,7 @@
               bustr_lim(i,j) = bustr(i,j)
               bustr(i,j) = 0.
             do k=1,N
-              DC(i,k)=DC(i,1)-cffd*dt*bustr_lim(i,j)*(Hz(i,j,k)+
+              DC(i,k)=DC(i,k)-cffd*dt*bustr_lim(i,j)*(Hz(i,j,k)+
      &                                    Hz(i-1,j,k))
      &                     /(wrk(i-1,j)+wrk(i,j))
             enddo
@@ -526,7 +526,7 @@
               bvstr_lim(i,j) = bvstr(i,j)
               bvstr(i,j) = 0.
             do k=1,N
-              DC(i,k)=DC(i,1)-cffd*dt*bvstr_lim(i,j)*(Hz(i,j,k)+
+              DC(i,k)=DC(i,k)-cffd*dt*bvstr_lim(i,j)*(Hz(i,j,k)+
      &                                    Hz(i,j-1,k))
      &                     /(wrk(i,j-1)+wrk(i,j))
             enddo
