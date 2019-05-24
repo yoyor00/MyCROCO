@@ -58,7 +58,8 @@
       CHARACTER (len=19)    :: cdate,tool_sectodat
       logical :: flag=.false.
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
-      integer :: nn,l,k,kk,ll
+      integer :: nn,l,k,kk
+      INTEGER, dimension(0:10) :: esp_corres=(/1,2,3,4,5,0,6,0,7,0,8/)
 #endif
       integer
      &     Iend, Istr, Jend, Jstr, i, itide
@@ -111,40 +112,40 @@
          nomd(:,:)=0
          fr1(:,:)=0.0
          fr2(:,:)=0.0
-         nd0=0
-         k=1
-         nn=1
          do i=1,tide_nbharmcp
+          if(j+jminmpi-1.eq.149) then 
+             write(stdout,*) 'i=',nu(i),l_presence(nu(i))
+          end if
           if (l_presence(nu(i))) then
            nol=ide(nu(i))
            ir0=rr0(nu(i))
            ir1=rr1(nu(i))
            ir2=rr2(nu(i))
-           nd=nol/100000
-           if(nd /= nd0) then
-            num(k)=nn-1
-            k=nd+1
-            if(nd >= 6) k=(nd+6)/2
-            nd0=nd
-            nn=1
+           k=esp_corres(int(nol/100000))
+           num(k)=num(k)+1
+           nn=num(k)
+           if(j+jminmpi-1.eq.149) then 
+             write(stdout,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
            end if
            do l=1,2 
             rouest(nn,k,j,l)=SSH_Tamp(Istr+l-2,j,i)*100.0
             gouest(nn,k,j,l)=SSH_Tphase(Istr+l-2,j,i)
-#ifdef TIDES_MAS_DBG
-            if (j+jminmpi-1 .eq. 149) write(stdout,*)'TAMP',
-     &       l,i,nu(i),h(Istr+l-2,j),rouest(nn,k,j,l),gouest(nn,k,j,l)
-#endif
             nomd(nn,k)=nol
             if(ir0 < 0) gouest(nn,k,j,l)=gouest(nn,k,j,l)+180.0
             fr1(nn,k)=ir1/float(ir0)
             fr2(nn,k)=ir2/float(ir0)
             hnouest(129,j,l)=-999.
            end do
-           nn=nn+1
           endif
          end do
-         num(k)=nn-1
+        if(j+jminmpi-1.eq.149) then 
+            do k=1,8
+             write(stdout,*) 'k=',k,num(k)
+               do kk=1,num(k)
+               write(stdout,*) 'kk=',kk,rouest(kk,k,j,1)
+               end do
+            end do
+        endif
         end do
        ENDIF
 !
@@ -156,23 +157,15 @@
          nomd(:,:)=0
          fr1(:,:)=0.0
          fr2(:,:)=0.0
-         nd0=0
-         k=1
-         nn=1
          do i=1,tide_nbharmcp
           if (l_presence(nu(i))) then
            nol=ide(nu(i))
            ir0=rr0(nu(i))
            ir1=rr1(nu(i))
            ir2=rr2(nu(i))
-           nd=nol/100000
-           if(nd /= nd0) then
-            num(k)=nn-1
-            k=nd+1
-            if(nd >= 6) k=(nd+6)/2
-            nd0=nd
-            nn=1
-           end if
+           k=esp_corres(int(nol/100000))
+           num(k)=num(k)+1
+           nn=num(k)
            do l=1,2 
             rest(nn,k,j,l)=SSH_Tamp(Iend+l-1,j,i)*100.0
             gest(nn,k,j,l)=SSH_Tphase(Iend+l-1,j,i)
@@ -182,10 +175,8 @@
             fr2(nn,k)=ir2/float(ir0)
             hnest(129,j,l)=-999.
            end do
-           nn=nn+1
           endif
          end do
-         num(k)=nn-1
         end do
        ENDIF
 !
@@ -194,23 +185,17 @@
          num(:)=0
          rnord(:,:,i,:)=0.0
          gnord(:,:,i,:)=0.0
-         nd0=0
-         k=1
-         nn=1
+         fr1(:,:)=0.0
+         fr2(:,:)=0.0
          do j=1,tide_nbharmcp
           if (l_presence(nu(j))) then
            nol=ide(nu(j))
            ir0=rr0(nu(j))
            ir1=rr1(nu(j))
            ir2=rr2(nu(j))
-           nd=nol/100000
-           if(nd /= nd0) then
-            num(k)=nn-1
-            k=nd+1
-            if(nd >= 6)k=(nd+6)/2
-            nd0=nd
-            nn=1
-           end if
+           k=esp_corres(int(nol/100000))
+           num(k)=num(k)+1
+           nn=num(k)
            do l=1,2 
             rnord(nn,k,i,l)=SSH_Tamp(i,Jend+l-1,j)*100.0
             gnord(nn,k,i,l)=SSH_Tphase(i,Jend+l-1,j)
@@ -220,10 +205,8 @@
             fr2(nn,k)=ir2/float(ir0)
             hnnord(129,i,l)=-999.
            end do 
-           nn=nn+1
           end if
-        end do
-         num(k)=nn-1
+         end do
         end do
        ENDIF
 !
@@ -232,23 +215,17 @@
          num(:)=0
          rsud(:,:,i,:)=0.0
          gsud(:,:,i,:)=0.0
-         nd0=0
-         k=1
-         nn=1
+         fr1(:,:)=0.0
+         fr2(:,:)=0.0
          do j=1,tide_nbharmcp
           if (l_presence(nu(j))) then
            nol=ide(nu(j))
            ir0=rr0(nu(j))
            ir1=rr1(nu(j))
            ir2=rr2(nu(j))
-           nd=nol/100000
-           if(nd /= nd0) then
-            num(k)=nn-1
-            k=nd+1
-            if(nd >= 6)k=(nd+6)/2
-            nd0=nd
-            nn=1
-           end if
+           k=esp_corres(int(nol/100000))
+           num(k)=num(k)+1
+           nn=num(k)
            do l=1,2 
             rsud(nn,k,i,l)=SSH_Tamp(i,Jstr+l-2,j)*100.0
             gsud(nn,k,i,l)=SSH_Tphase(i,Jstr+l-2,j)
@@ -258,10 +235,8 @@
             fr2(nn,k)=ir2/float(ir0)
             hnsud(129,i,l)=-999.
            end do 
-           nn=nn+1
           end if
-        end do
-         num(k)=nn-1
+         end do
         end do
        ENDIF
      
@@ -304,7 +279,7 @@
 ! calcul des 128 hauteurs par jour
 !---------------------------------
 !
-      t0=0.0
+      t_0=0.0
       k=0
       if(ijour /= jourmem) then
 
@@ -313,7 +288,7 @@
          do l=1,2
            if(rmask(i,Jstr+l-2)/=0)
      &      call ma1(flag,mynode,i,l,
-     &    t0,ijour,imois,ian,hnsud(1,i,l),rsud(1,1,i,l),
+     &    t_0,ijour,imois,ian,hnsud(1,i,l),rsud(1,1,i,l),
      &                 gsud(1,1,i,l),nomd,fr1,fr2,num)
          end do
         end do
@@ -323,7 +298,7 @@
         do i=IstrR,IendR
          do l=1,2
            if(rmask(i,Jend+l-1)/=0)  then 
-             call ma1(flag,mynode,i,l,t0,
+             call ma1(flag,mynode,i,l,t_0,
      &                ijour,imois,ian,hnnord(1,i,l),rnord(1,1,i,l),
      &                gnord(1,1,i,l),nomd,fr1,fr2,num)
            end if
@@ -332,14 +307,13 @@
        end if
        
        if (WESTERN_EDGE) then
-!        write(stdout,*)'MPI',mynode,iminmpi,imaxmpi,jminmpi,jmaxmpi
         do j=JstrR,JendR
          do l=1,2
            if(rmask(Istr+l-2,j)/=0)   then
             if (j+jminmpi-1 .eq. 149 .and. l .eq. 2)
      &          flag=.false.
              call ma1(flag,mynode,j,l,
-     &            t0,ijour,imois,ian,hnouest(1,j,l),rouest(1,1,j,l),
+     &            t_0,ijour,imois,ian,hnouest(1,j,l),rouest(1,1,j,l),
      &            gouest(1,1,j,l),nomd,fr1,fr2,num)
               flag=.false.
            endif
@@ -352,7 +326,7 @@
          do l=1,2
            if(rmask(Iend+l-1,j)/=0)   
      &     call ma1(flag,mynode,j,l
-     &         ,t0,ijour,imois,ian,hnest(1,j,l),rest(1,1,j,l),
+     &         ,t_0,ijour,imois,ian,hnest(1,j,l),rest(1,1,j,l),
      &         gest(1,1,j,l),nomd,fr1,fr2,num)
          end do
         end do
@@ -390,30 +364,25 @@
            if(rmask(Istr+l-2,j)/=0) then
 # ifdef TIDES_MAS_DBG
             if (j+jminmpi-1 .eq. 149 .and. l .eq. 2) then
-              flag=.false.
+              flag=.true.
             endif
 # endif
             call ma7(flag,tempis,hnouest(1,j,l),Etide(Istr+l-2,j),k)
               flag=.false.
-!             if (j+jminmpi-1 .eq. 149 .and. l .eq. 2) 
-!     &          write(stdout,*)'Etide after ma7',Etide(Istr+l-2,j)
            endif
          end do
         end do
+# ifdef TIDES_MAS_DBG
         do j=JstrR,JendR
           do i=IstrR,IendR
-# ifdef TIDES_MAS_DBG
             if (i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149) then
-!               do kk=1,130
-!                write(stdout,*)'hnouest',hnouest(kk,j,1)
-!               end do
                write(stdout,*)'etide',Etide(i,j),
      &            tempis,ian,ijour,imois,
      &           iheure,iminu,isec,time,cdate,jourmem
             endif 
-# endif
          enddo
         enddo
+# endif
 !
        end if
 

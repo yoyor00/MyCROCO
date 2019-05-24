@@ -1379,7 +1379,7 @@
         asfo=vathau*nd_tmp(1)+valonmlun*(nd_tmp(2)-5)+
      &       valonmsol*(nd_tmp(3)-5)+valonperl*(nd_tmp(4)-5)
      &       +valonascl*(nd_tmp(5)-5)+valonpers*(nd_tmp(6)-5)
-        frequence(i)=mod(asfo/24.0,360.0)
+        frequence(i)=max(mod(asfo/24.0,360.0),1e-10)
         omega(i)=2*pi*frequence(i)*(pi/180.0/3600.0)
        end do
 !

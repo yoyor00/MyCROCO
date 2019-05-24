@@ -45,7 +45,7 @@
       d2=hn(l+1)+hn(l-1)-hh
 !
       haut=(hh+d*(d*d2+d1))/800.0
-      if (flag) write(6,*)"ma7 haut",haut
+      if (flag) write(6,*)"ma7 haut",haut,l,hh,hn(l+1),hn(l-1),d1,d2
 !
       end subroutine ma7
 !
@@ -129,16 +129,14 @@
          noa(i)=nno(i,kg)
          r1(i)=fr1(i,kg)
          r2(i)=fr2(i,kg)
+         if (flag)
+     &  write(6,*)"ma1 before ma3",i,r(i),g(i),r1(i),r2(i),noa(i)
         end do
 !
-        !if (flag) r(1)=124.0
-        !if (flag) g(1)=250.0
-        if (flag) write(6,*)"ma1 before ma3",r,g,r1,r2,noa
+
 
         call ma3(f,v0,q,n,r,g,fnjd,ng,t0,r1,r2,noa)
         
-        if (flag) write(6,*)"ma1 after ma3",f,v0,q,r,g,
-     &                      fnjd,ng,t0,r1,r2,noa
 !
         do i=1,n
          r(i)=r(i)*f(i)
@@ -146,6 +144,8 @@
          q(i)=mod(q(i),360.0)
          q0(i)=mod(q0(i),360.0)
          if(q0(i) < 0.0)q0(i)=q0(i)+360.0
+         if (flag) write(6,*)"ma1 after ma3",i,f(i),q0(i),v0(i),q(i),
+     &                      r(i),g(i),ng,r1(i),r2(i),noa(i)
         end do
 !
         do i=l,3
@@ -154,6 +154,7 @@
           k=fq+1
           fq=fq-k+1
           co=((c(k+1)-c(k))*fq+c(k))*r(j)
+          if (flag) write(6,*)"x,y",j,k,fq,co
           k=k-90
           if(k <= 0) k=k+360
           so=((c(k+1)-c(k))*fq+c(k))*r(j)
@@ -161,6 +162,7 @@
           y(ng,i)=y(ng,i)+so
           q0(j)=q0(j)+q(j)
           if(q0(j) > 360.0)q0(j)=q0(j)-360.0
+          if (flag) write(6,*)"x,y2",j,so,x(ng,i),y(ng,i),q0
          end do
         end do
        end if

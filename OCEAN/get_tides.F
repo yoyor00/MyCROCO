@@ -47,40 +47,7 @@
 ! initialisation du tableau des constituants harmoniques
 !-------------------------------------------------
       call tide_data
-       nu(1)=im2
-       nu(2)=ik1
-       nu(3)=ik2
-       nu(4)=i2n22nm2
-       nu(5)=im4
-       nu(6)=imf
-       nu(7)=imm
-       nu(8)=in2
-       nu(9)=io1
-       nu(10)=ip1
-       nu(11)=iq1
-       nu(12)=is2
-       nu(13)=im6
-       nu(14)=imn4
-       nu(15)=ims4
-       nu(16)=imk4
 
-
-! on reordonne les ondes pour decrire le spectre de facon compatible
-! avec la liste SIMON
-!-------------------------------------------------
-!
-      kount=1
-      do while(kount/=0)
-       kount=0
-       do nn=1,Ntides-1
-        if(nu(nn) > nu(nn+1)) then
-         kount=kount+1
-         xt=nu(nn)
-         nu(nn)=nu(nn+1)
-         nu(nn+1)=xt
-        end if
-       end do
-      end do
       l_presence(:)=.false.
 
 ! ACTIVATION DE TOUTES LES ONDES
@@ -128,19 +95,16 @@
 
       do itide=1,Ntides
 #ifdef TIDES_MAS
-      ! search for the corresponding tide
-      Do l=1,Ntides
-# ifdef TIDES_MAS_DBG
-       MPI_master_only write(stdout,*)'tide ',trim(nommar(nu(itide))),
-     &    itide,l,nu(itide),Tperiod(l),360./frequence(nu(itide)),
-     &   l_presence(nu(itide))
-# endif
-        if (abs(Tperiod(l)-360./frequence(nu(itide))) .le. 1e-4  ) then
-          ind=l
+       ! search for the corresponding tide
+       do l=1 ,nmarmax
+        if (abs(Tperiod(itide)-360./frequence(l)) .le. 1e-4  ) then
+          nu(itide)=l
+          ind=itide
           l_presence(nu(itide))=.true.
 # ifdef TIDES_MAS_DBG
-       MPI_master_only write(stdout,*)'tide ',trim(nommar(nu(itide))),
-     &   l_presence(nu(itide))
+       MPI_master_only write(stdout,*)'tide ',itide,l,
+     &   Tperiod(itide),
+     &   trim(nommar(nu(itide))),l_presence(nu(itide))
 # endif
           exit
        endif
@@ -286,9 +250,14 @@
 # endif
 
       enddo !Ntides
+# ifdef TIDES_MAS_DBG
+        MPI_master_only write(stdout,*)'NU TIDE',nu(1:Ntides)
+# endif
 #ifdef TIDES_MAS
       Tperiod=Tperiod*3600.0
 #endif
+
+
       return
 
 !
