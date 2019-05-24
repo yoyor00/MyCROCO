@@ -2274,6 +2274,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else 
+#   ifdef Z_FRC_BRY
+          do j=JstrR,JendR
+            zetabry_west(j)=0.0
+#    ifdef OBC_PATM
+            zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
+#    endif
+          enddo
+#   endif
+#   ifdef M2_FRC_BRY
+          do j=JstrR,JendR
+            ubarbry_west(j)=0.0
+            vbarbry_west(j)=0.0
+          enddo
+#   endif
         endif
 #  endif /* WAVE_MAKER */
       endif
@@ -2316,6 +2331,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else 
+#  ifdef Z_FRC_BRY
+          do j=JstrR,JendR
+            zetabry_east(j)=0.0
+#   ifdef OBC_PATM
+            zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
+#   endif
+          enddo
+#  endif
+#  ifdef M2_FRC_BRY
+          do j=JstrR,JendR
+            ubarbry_east(j)=0.0
+            vbarbry_east(j)=0.0
+          enddo
+#  endif
         endif
       endif
 # endif /* OBC_EAST */
@@ -2357,6 +2387,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else
+#  ifdef Z_FRC_BRY
+          do i=IstrR,IendR
+            zetabry_south(i)=0.0
+#   ifdef OBC_PATM
+            zetabry_south(i)=-(patm2d(i,JstrR)-paref)/(g*rho0)
+#   endif
+          enddo
+#  endif
+#  ifdef M2_FRC_BRY
+          do i=IstrR,IendR
+            ubarbry_south(i)=0.0
+            vbarbry_south(i)=0.0
+          enddo
+#  endif
         endif
       endif
 # endif /* OBC_SOUTH */
@@ -2398,6 +2443,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else
+#  ifdef Z_FRC_BRY
+          do i=IstrR,IendR
+            zetabry_north(i)=0.0
+#   ifdef OBC_PATM
+            zetabry_north(i)=-(patm2d(i,JendR)-paref)/(g*rho0)
+#   endif
+          enddo
+#  endif
+#  ifdef M2_FRC_BRY
+          do i=IstrR,IendR
+            ubarbry_north(i)=0.0
+            vbarbry_north(i)=0.0
+          enddo
+#  endif
         endif
       endif
 # endif /* OBC_NORTH */
