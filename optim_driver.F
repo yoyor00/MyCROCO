@@ -184,24 +184,29 @@ C     ...
 # include "adinc.h"
 # include "adparam.h"
 
-      double precision rms,irms
-      integer i,j
-      double precision delta_z
+      double precision rms,irms,crms
+      integer i,j,ne,cne,ierr
 
       irms = 0
 
-      call rms_fun_step(irms)
+      call rms_fun_step(irms,ne)
 
-      rms=sqrt(irms)
+      call AMPI_Reduce(crms, irms, 1, AMPI_ADOUBLE_PRECISION,
+     &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
+      call AMPI_Reduce(cne, ne, 1, MPI_INTEGER,
+     &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
+
+      rms = sqrt(crms)/ne
       
       end function rms
 
-      subroutine rms_fun_step(irms)
+      subroutine rms_fun_step(irms,ne)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
       double precision irms
+      integer ne
       integer ntrds,trd,my_first,my_last,tile,range
 
 #ifdef OPENMP
@@ -216,41 +221,43 @@ C     ...
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call rms_fun_step_2d(tile,irms)
+         call rms_fun_step_2d(tile,irms,ne)
       end do
 
       end subroutine rms_fun_step
 
-      subroutine rms_fun_step_2d(tile,irms)
+      subroutine rms_fun_step_2d(tile,irms,ne)
 
       implicit none
 # include "adinc.h"
 # include "adparam.h"
       integer tile
       double precision irms
+      integer ne
 # include "compute_tile_bounds.h"
 
-      call rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,irms)
+      call rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,irms,ne)
 
       end subroutine rms_fun_step_2d
 
       subroutine rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
-     &     irms)
+     &     irms,ne)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j
-      integer k
+      integer k,ne
       double precision delta_z, delta_zob, irms
-
+      ne = 0
       do j=Jstr,Jend
          do i=Istr,Iend
             if (ad_obs(i,j,1).ne.spval) then
-               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_nt+2))
+               delta_z = (zeta(i,j,knew)-ad_obs(i,j,3))
                irms = irms + delta_z*delta_z
+               ne = ne+1
             end if
          end do
       end do
-
+      
       end subroutine rms_fun_step_2d_tile

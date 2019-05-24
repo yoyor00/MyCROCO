@@ -114,7 +114,7 @@ C$AD NOCHECKPOINT
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-
+      double precision rms
       integer ntrds,trd,my_first,my_last,tile,range
 
 #ifdef OPENMP
@@ -132,6 +132,10 @@ C$AD NOCHECKPOINT
          call set_state_2d(tile, ad_x_f)
       end do
 
+C$AD  DO-NOT-DIFF      
+      ad_rms = rms()
+C$AD  END-DO-NOT-DIFF
+      
       end subroutine set_state
 
 
