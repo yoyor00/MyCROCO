@@ -777,6 +777,9 @@ C$    integer omp_get_thread_num
 # endif
 !
 # ifdef BULK_FLUX
+#  if defined READ_PATM && defined OBC_PATM
+          patm2d(i,j)=paref
+# endif
           tair (i,j)=init
           rhum (i,j)=init
           prate (i,j)=init
