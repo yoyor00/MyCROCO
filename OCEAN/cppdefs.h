@@ -1002,6 +1002,8 @@
 !  BISCA: realistic case with Input files
 !  GRANDPOPO: idealized Grand Popo Beach in Benin, 
 !              longshore uniform
+!  WAVE_MAKER & NBQ : wave resolving simulation 
+!                     rather than wave-averaged (#undef MRL_WCI)
 */
 # undef  BISCA
 # undef  RIP_TOPO_2D
@@ -1016,12 +1018,48 @@
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
-# undef  VADV_ADAPT_IMP
-# define UV_VIS2
-# define UV_VIS_SMAGO
-# define LMD_MIXING
-# define LMD_SKPP
-# define LMD_BKPP
+# undef  NBQ
+# ifdef NBQ
+#  define NBQ_PRECISE
+#  define WAVE_MAKER
+#  define WAVE_MAKER_SPECTRUM
+#  define WAVE_MAKER_DSPREAD
+#  define UV_HADV_WENO5
+#  define UV_VADV_WENO5
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+#  define GLS_MIXING_3D 
+#  undef  ANA_TIDES
+#  undef  MRL_WCI
+#  define OBC_SPECIFIED_WEST
+#  define FRC_BRY
+#  define ANA_BRY
+#  define Z_FRC_BRY
+#  define M2_FRC_BRY
+#  define M3_FRC_BRY
+#  define T_FRC_BRY
+#  define AVERAGES
+#  define AVERAGES_K
+# else
+#  define UV_VIS2
+#  define UV_VIS_SMAGO
+#  define LMD_MIXING
+#  define LMD_SKPP
+#  define LMD_BKPP
+#  define MRL_WCI
+# endif
+# define WET_DRY
+# ifdef MRL_WCI
+#  define WKB_WWAVE
+#  define WKB_OBC_WEST
+#  define WAVE_ROLLER
+#  define WAVE_FRICTION
+#  define WAVE_STREAMING
+#  define MRL_CEW
+#  ifdef RIP_TOPO_2D
+#   define WAVE_RAMP
+#  endif
+# endif
 # ifndef BISCA
 #  define ANA_GRID
 # endif
@@ -1049,19 +1087,6 @@
 #  define M3CLIMATOLOGY
 #  define M2NUDGING
 #  define M3NUDGING
-# endif
-# define WET_DRY
-# define MRL_WCI
-# ifdef MRL_WCI
-#  define WKB_WWAVE
-#  define WKB_OBC_WEST
-#  define WAVE_ROLLER
-#  define WAVE_FRICTION
-#  define WAVE_STREAMING
-#  define MRL_CEW
-#  ifdef RIP_TOPO_2D
-#   define WAVE_RAMP
-#  endif
 # endif
 # ifdef BISCA
 #  define BBL

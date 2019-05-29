@@ -170,6 +170,15 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     
       if (wrthis(indxZ)) then
          work2d=zeta(:,:,fast_indx_out)
+#ifdef WET_DRY
+         do j=0,Mm
+            do i=0,Lm
+               if (h(i,j) .le. Dcrit(i,j)) then
+                 work2d(i,j)=work2d(i,j)+h(i,j)
+               endif
+            enddo
+         enddo
+#endif
          call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
      &        record,r2dvar,type)
       endif

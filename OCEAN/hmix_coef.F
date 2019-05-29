@@ -235,7 +235,7 @@
             Akv(i,j,k)=0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
      &                                       *pm(i,j)*pn(i,j)
      &                                   *Hz(i,j,k)*Hz(i,j,k)
-#   if !defined LMD_MIXING && !defined BVF_MIXING && \
+#   if !defined LMD_MIXING && !defined BVF_MIXING \
                            && !defined GLS_MIXING
      &                                              + Akv_bak
 #   endif
