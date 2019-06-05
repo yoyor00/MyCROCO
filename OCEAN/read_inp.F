@@ -445,7 +445,6 @@
                                    !defined BULK_EP   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
-                                   !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
           || (defined BBL         && !defined ANA_BSEDIM  && \
                                    !defined SEDIMENT) \

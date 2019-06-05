@@ -43,7 +43,7 @@
       call MPI_Comm_size (MPI_COMM_WORLD, nsize,  ierr)
       call MPI_Comm_rank (MPI_COMM_WORLD, mynode, ierr)
       if (nsize.ne.NNODES) then
-        MPI_master_only write(stdout,'(/1x,A,I4,1x,A,I3,A/)')
+        MPI_master_only write(stdout,'(/1x,A,I5,1x,A,I5,A/)')
      &     'ERROR in MPI_Setup: number of MPI-nodes should be',
      &                         NNODES, 'instead of', nsize, '.'
         ierr=99
