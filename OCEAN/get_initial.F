@@ -49,7 +49,7 @@
 #endif
       integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*64
+      character units*180
 #include "netcdf.inc"
 !
 ! Open initial conditions netCDF file for reading. Check that all

@@ -43,7 +43,7 @@
 #include "mpi_cpl.h"
       integer kwsize, testunit, input
       parameter (kwsize=32, testunit=40, input=15)
-      character end_signal*3, keyword*32, fname*64
+      character end_signal*3, keyword*32, fname*180
       parameter (end_signal='end')
       integer ierr, iargc, is,ie, kwlen, lstr, lenstr
 #ifdef SOLVE3D

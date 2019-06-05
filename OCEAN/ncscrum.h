@@ -1564,7 +1564,7 @@
 # else  
       character*80 date_str, title
 # endif
-      character*80 ininame,  grdname,  hisname
+      character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES
