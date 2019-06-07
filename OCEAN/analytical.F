@@ -1851,7 +1851,7 @@ C$    integer  trd, omp_get_thread_num
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
-            if (cff2 > 0.0) then
+            if (cff2 .gt. 0.0) then
              Qshape(is,k)=Qshape(is,k)/cff2
             endif
           enddo

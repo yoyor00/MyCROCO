@@ -128,10 +128,10 @@
       real rv_int_nbq_2d (GLOBAL_2D_ARRAY)  
       common /nbq_rvint_2d/rv_int_nbq_2d
 
-      real rubar_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_rubar/ rubar_nbq
-      real rvbar_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_rvbar/ rvbar_nbq
+!      real rubar_nbq(GLOBAL_2D_ARRAY)
+!      common /nbq_rubar/ rubar_nbq
+!      real rvbar_nbq(GLOBAL_2D_ARRAY)
+!      common /nbq_rvbar/ rvbar_nbq
 
 !**********************************************************************
       real zw_nbq(GLOBAL_2D_ARRAY,0:N,4)

@@ -560,6 +560,38 @@ C$OMP END MASTER
 #  endif
 !
 !-------------------------------------------------------------------
+! Apply point sources for river runoff simulations
+!-------------------------------------------------------------------
+!
+#ifdef PSOURCE
+      do is=1,Nsrc 
+# ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+# else
+        i=Isrc(is)
+        j=Jsrc(is)
+# endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.0) then
+            urhs(i,j)=2.*Qbar(is)/( on_u(i,j)
+     &                             *(Drhs(i-1,j)+Drhs(i,j)) )
+            DUon(i,j)=Qbar(is)
+            usurf_nbq(i,j)=2.*Qsrc(is,N)
+     &                     /( on_u(i,j)*(Hz(i,j,N)+Hz(i-1,j,N)) )
+          else
+            vrhs(i,j)=2.*Qbar(is)/( om_v(i,j)
+     &                             *(Drhs(i,j-1)+Drhs(i,j)) )
+            DVom(i,j)=Qbar(is)
+            vsurf_nbq(i,j)=2.*Qsrc(is,N)
+     &                     /( om_v(i,j)*(Hz(i,j,N)+Hz(i,j-1,N)) )
+          endif
+        endif
+      enddo
+#endif
+!
+!-------------------------------------------------------------------
 ! Advance zeta at m+1
 !-------------------------------------------------------------------
 !
@@ -592,35 +624,17 @@ C$OMP END MASTER
      &                     -0.5*(usurf_nbq(i  ,j)
      &                                     *(zab3(i  ,j)
      &                                      -zab3(i-1,j))*pm_u(i,j)
-#  ifdef MASKING
-     &                                     *rmask(i,j)*rmask(i-1,j)
-#  endif
      &                          +usurf_nbq(i+1,j)
-     &                                   *(zab3(i+1,j)
-     &                                    -zab3(i  ,j))*pm_u(i+1,j) 
-#  ifdef MASKING
-     &                                     *rmask(i,j)*rmask(i+1,j)
-#  endif
+     &                                     *(zab3(i+1,j)
+     &                                      -zab3(i  ,j))*pm_u(i+1,j) 
      &                          )
-#  ifdef MASKING
-     &                                     *umask(i,j)*umask(i+1,j)
-#  endif
      &                     -0.5*(vsurf_nbq(i  ,j)
      &                                     *(zab3(i,j  ) 
      &                                      -zab3(i,j-1))*pn_v(i,j)
-#  ifdef MASKING
-     &                                     *rmask(i,j)*rmask(i,j-1)
-#  endif
      &                          +vsurf_nbq(i,j+1)
      &                                     *(zab3(i,j+1)
      &                                      -zab3(i,j  ))*pn_v(i,j+1) 
-#  ifdef MASKING
-     &                                     *rmask(i,j)*rmask(i,j+1)
-#  endif
      &                          )
-#  ifdef MASKING
-     &                                     *vmask(i,j)*vmask(i,j+1)
-#  endif
      &                                                ) )
 #  ifdef MASKING
      &                                                  *rmask(i,j)
@@ -1261,8 +1275,8 @@ C$OMP END MASTER
       do j=Jstr,Jend
         do i=Istr,Iend
           work(i,j)=pm(i,j)*pn(i,j)
-          rubar_nbq(i,j)=0.
-          rvbar_nbq(i,j)=0.
+!          rubar_nbq(i,j)=0.
+!          rvbar_nbq(i,j)=0.
           DU_nbq(i,j)=0.
           DV_nbq(i,j)=0.
         enddo
@@ -1597,10 +1611,13 @@ C$OMP END MASTER
               dum_s=dum_s+ntcoru(i,j,k)
 # endif
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtnbq * (
-     &                        dum_s + ru_int_nbq(i,j,k) )  
+     &                        dum_s + ru_int_nbq(i,j,k) )
+# ifdef MASKING
+              qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask(i,j)
+# endif
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
               ru_nbq(i,j,k)=dum_s/work(i,j) 
-              rubar_nbq(i,j)=rubar_nbq(i,j)+ru_nbq(i,j,k)
+!              rubar_nbq(i,j)=rubar_nbq(i,j)+ru_nbq(i,j,k)
 
 # if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
@@ -1681,9 +1698,12 @@ C$OMP END MASTER
 # endif
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtnbq * (
      &                        dum_s + rv_int_nbq(i,j,k) )
+# ifdef MASKING
+              qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask(i,j)
+# endif
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
               rv_nbq(i,j,k)=dum_s/work(i,j)  
-              rvbar_nbq(i,j)=rvbar_nbq(i,j)+rv_nbq(i,j,k)
+!              rvbar_nbq(i,j)=rvbar_nbq(i,j)+rv_nbq(i,j,k)
 
 # if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
@@ -1694,7 +1714,11 @@ C$OMP END MASTER
           enddo
         endif  !<-- k>0
       enddo   !<-- k=0,N   
-
+!
+!-----------------------------------------------------------------------
+!  U & V momentum wet mask
+!-----------------------------------------------------------------------
+!
 # ifdef WET_DRY
       do j=Jstr,Jend
         do i=IstrU,Iend
@@ -1731,6 +1755,44 @@ C$OMP END MASTER
 # ifdef RVTK_DEBUG
       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
       call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
+# endif
+!
+!-----------------------------------------------------------------------
+! Apply point sources for river runoff simulations
+!-----------------------------------------------------------------------
+!
+# ifdef PSOURCE
+      do is=1,Nsrc 
+#  ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#  else
+        i=Isrc(is)
+        j=Jsrc(is)
+#  endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.0) then
+            DU_nbq(i,j)=0.
+#  ifdef WET_DRY
+            umask_wet(i,j)=1
+#  endif
+            do k=1,N
+              qdmu_nbq(i,j,k)=Qsrc(is,k)*pn_u(i,j)
+              DU_nbq(i,j)    =DU_nbq(i,j)+qdmu_nbq(i,j,k)
+            enddo
+          else
+            DV_nbq(i,j)=0.
+#  ifdef WET_DRY
+            vmask_wet(i,j)=1
+#  endif
+            do k=1,N
+              qdmv_nbq(i,j,k)=Qsrc(is,k)*pm_v(i,j)
+              DV_nbq(i,j)    =DV_nbq(i,j)+qdmv_nbq(i,j,k)
+            enddo
+          endif
+        endif
+      enddo
 # endif
 !
 !-----------------------------------------------------------------------
@@ -2250,20 +2312,13 @@ C$OMP END MASTER
           do j=Jstr,Jend
             do i=Istr,Iend+1
               FX(i,j)=on_u(i,j)*qdmu_nbq(i,j,k)
-# ifdef MASKING
-              FX(i,j)=FX(i,j)*umask(i,j)
-# endif
             enddo
           enddo
         endif
-  
         if (JstrV.le.Jend) then
           do j=Jstr,Jend+1  
             do i=Istr,Iend
               FY(i,j)=om_v(i,j)*qdmv_nbq(i,j,k)
-# ifdef MASKING
-              FY(i,j)=FY(i,j)*vmask(i,j)
-# endif
             enddo
           enddo
         endif
@@ -2707,8 +2762,7 @@ C$OMP END MASTER
       endif
 
 # ifdef RVTK_DEBUG
-      call check_tab2d(rubar_nbq,'rubar_nbq step3d_nbq','uint')
-      call check_tab2d(rvbar_nbq,'rvbar_nbq step3d_nbq','vint')
+!      call check_tab3d(rw_nbq,'rw_nbq','rint')
 # endif  
 !
 !=====================================================================
@@ -2790,8 +2844,8 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # ifdef NBQ_NOCOUPLING 
-      rubar_nbq   =0.   ! 2D
-      rvbar_nbq   =0.
+!      rubar_nbq   =0.   ! 2D
+!      rvbar_nbq   =0.
       ru_nbq      =0.   ! 3D
       rv_nbq      =0.
       rw_nbq      =0.
@@ -2845,9 +2899,6 @@ C$OMP END MASTER
       do j=Jstr,Jend
         do i=IstrU,Iend
           DUnew=DU_nbq(i,j) *2.
-# ifdef MASKING
-     &                                         *umask(i,j)
-# endif
 # ifdef WET_DRY
      &                                     *umask_wet(i,j)
 # endif
@@ -2869,9 +2920,6 @@ C$OMP END MASTER
       do j=JstrV,Jend
         do i=Istr,Iend
           DVnew=DV_nbq(i,j) *2.
-# ifdef MASKING
-     &                                         *vmask(i,j)
-# endif
 # ifdef WET_DRY
      &                                     *vmask_wet(i,j)
 # endif
@@ -2931,6 +2979,8 @@ C$OMP END MASTER
           ubar(i,j,knew)=ubar(i,j,knew) + DUnew
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*DUnew*
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
+          DU_avg2(i,j)     =DU_avg2(i,j)      +cff2*DUnew*
+     &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
         enddo
       enddo
       
@@ -2950,7 +3000,8 @@ C$OMP END MASTER
           vbar(i,j,knew)=vbar(i,j,knew) + DVnew
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*DVnew*
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-
+          DV_avg2(i,j)     =DV_avg2(i,j)      +cff2*DVnew*
+     &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
         enddo
       enddo
 # endif /* M2NUDGING */
@@ -2974,6 +3025,8 @@ C$OMP END MASTER
           ubar(i,j,knew)=ubar(i,j,knew) + DUnew
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*DUnew*
      &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
+          DU_avg2(i,j)     =DU_avg2(i,j)      +cff2*DUnew*
+     &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
         enddo
       enddo
 
@@ -2990,37 +3043,11 @@ C$OMP END MASTER
           vbar(i,j,knew)=vbar(i,j,knew) + DVnew
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*DVnew*
      &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
+          DV_avg2(i,j)     =DV_avg2(i,j)      +cff2*DVnew*
+     &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
         enddo
       enddo
 # endif /* INTERNAL */
-!
-!-----------------------------------------------------------------------
-! Apply point sources for river runoff simulations
-!-----------------------------------------------------------------------
-!
-# ifdef PSOURCE
-      do is=1,Nsrc 
-#  ifdef MPI
-        i=Isrc_mpi(is,mynode)
-        j=Jsrc_mpi(is,mynode)
-#  else
-        i=Isrc(is)
-        j=Jsrc(is)
-#  endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
-          if (Dsrc(is).eq.0) then
-            ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
-     &                       *(Dnew(i-1,j)+Dnew(i,j)) )
-            DU_avg1(i,j,nnew)=Qbar(is)
-          else
-            vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
-     &                       *(Dnew(i,j-1)+Dnew(i,j)) )
-            DV_avg1(i,j,nnew)=Qbar(is)
-          endif
-        endif
-      enddo
-# endif
 !
 !----------------------------------------------------------------------- 
 ! Set boundary conditions and compute integral mass flux accross
@@ -3310,6 +3337,25 @@ C$OMP END MASTER
      &                                                          - h(i,j)
           enddo
         enddo
+!
+!-----------------------------------------------------------------------
+!  Set masking for zeta, including wet/dry conditions
+!-----------------------------------------------------------------------
+!
+# ifdef MASKING
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          zeta(i,j,knew)=zeta(i,j,knew)*rmask(i,j)
+#  ifdef WET_DRY
+!    modify new free-surface to ensure that depth 
+!    is > Dcrit in masked cells.
+          cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
+          zeta(i,j,knew)=zeta(i,j,knew)+ 
+     &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
+#  endif
+        enddo
+      enddo 
+# endif
 !
 !-----------------------------------------------------------------------
 !  Set boundary conditions for the free-surface

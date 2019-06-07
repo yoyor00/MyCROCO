@@ -134,6 +134,10 @@ C$    integer omp_get_thread_num
 #ifdef SOLVE3D
           rufrc(i,j)=init
           rufrc(i,j)=init
+          rufrc_bak(i,j,1)=init
+          rvfrc_bak(i,j,1)=init
+          rufrc_bak(i,j,2)=init
+          rvfrc_bak(i,j,2)=init
 !
           Zt_avg1(i,j)=0. !init
           DU_avg1(i,j,1)=0. !init
@@ -1342,11 +1346,8 @@ C$    integer omp_get_thread_num
           rhobar_nbq(i,j,:)   =1.
           rhobar_nbq_avg1(i,j)=1.
 #  endif
-          rubar_nbq(i,j)    =init
-          rvbar_nbq(i,j)    =init
-          rufrc_bak(i,j,1:2)=init
-          rvfrc_bak(i,j,1:2)=init
-          
+!          rubar_nbq(i,j)    =init
+!          rvbar_nbq(i,j)    =init
         enddo
       enddo
       do k=1,N
@@ -1359,10 +1360,10 @@ C$    integer omp_get_thread_num
 # endif
             ru_nbq(i,j,k)     =init
             rv_nbq(i,j,k)     =init
-#if !defined M2FILTER_NONE
+# ifndef M2FILTER_NONE
             ru_nbq_avg1(i,j,k)=init
             rv_nbq_avg1(i,j,k)=init
-#endif
+# endif
             ru_nbq_avg2(i,j,k)=init
             rv_nbq_avg2(i,j,k)=init
             ru_int_nbq(i,j,k) =init
@@ -1376,15 +1377,15 @@ C$    integer omp_get_thread_num
             wz(i,j,k,1)  =init
             wz(i,j,k,2)  =init
             rw_nbq(i,j,k)=init
-#if !defined M2FILTER_NONE
+# ifndef M2FILTER_NONE
             rw_nbq_avg1(i,j,k)=init
-#endif
+# endif
             rw_nbq_avg2(i,j,k)=init
             rw_int_nbq(i,j,k) =init
           enddo
         enddo
       enddo
-# endif
+# endif /* NBQ */
 
 #endif /* SOLVE3D */
 

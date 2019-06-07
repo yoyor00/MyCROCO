@@ -1089,11 +1089,13 @@
       do j=Jstr,Jend
         do k=1,N
           do i=IstrU,Iend
-            Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)*u(i,j,k,nnew)
+            Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+     &                                         *u(i,j,k,nnew)
           enddo
           do i=Istr,Iend
             if (j.ge.JstrV) then
-              Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)*v(i,j,k,nnew)
+              Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+     &                                           *v(i,j,k,nnew)
             end if
           enddo
         enddo
@@ -1174,10 +1176,10 @@
      &                           (uclm(i,j,k)-u(i,j,k,nnew))
 #  endif /* ZONAL_NUDGING */
 #  ifdef MASKING
-            u(i,j,k,nnew)=u(i,j,k,nnew)*umask(i,j)
+     &                                           *umask(i,j)
 #  endif
 # ifdef WET_DRY
-            u(i,j,k,nnew)=u(i,j,k,nnew)*umask_wet(i,j)
+     &                                       *umask_wet(i,j)
 # endif
           enddo
         enddo
@@ -1192,40 +1194,33 @@
      &                            (vclm(i,j,k)-v(i,j,k,nnew))
 #  endif
 #  ifdef MASKING
-            v(i,j,k,nnew)=v(i,j,k,nnew)*vmask(i,j)
+     &                                            *vmask(i,j)
 #  endif
 # ifdef WET_DRY
-            v(i,j,k,nnew)=v(i,j,k,nnew)*vmask_wet(i,j)
+     &                                        *vmask_wet(i,j)
 # endif
           enddo
         enddo
       enddo
 # endif
-
-
-
-
+!
+!--------------------------------------------------------------------
+!  Compute UV & PV diagnostics
+!--------------------------------------------------------------------
+!
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
-
-
             MVmix2(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
      &                                           *om_u(i,j)*on_u(i,j)/dt
      &                                           - Mrate(i,j,k,1)
-
-
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
-!
-
 #  if defined UV_HADV_UP3  || defined UV_HADV_UP5
             MHdiff(i,j,k,1)= MXadv(i,j,k,1) + MYadv(i,j,k,1)
      &                       - MHdiff(i,j,k,1)
-
 # endif
-
 !
 ! Divide all diagnostic terms by the cell volume Hz/(pm*pn).
 ! There after the unit of diag terms are :
@@ -1260,27 +1255,20 @@
             Mbwf(i,j,k,1)    = Mbwf(i,j,k,1)*cff
             Mfrc(i,j,k,1)    = Mfrc(i,j,k,1)*cff
 #  endif
-!
-
           enddo
         enddo
 
         do j=JV_RANGE
           do i=IV_RANGE
-
-!
             MVmix2(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
-
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
-
 #  if defined UV_HADV_UP3 || defined UV_HADV_UP5
             MHdiff(i,j,k,2)= MXadv(i,j,k,2) + MYadv(i,j,k,2)
      &                       - MHdiff(i,j,k,2)
 #  endif
-
 !
 ! Divide all diagnostic terms by the cell volume Hz/(pm*pn).
 ! There after the unit of diag terms are :
@@ -1325,22 +1313,16 @@
 
         do j=JU_RANGE
           do i=IU_RANGE
-
            k=1
-    
            wrkrate(i,j,1)=(0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
      &                                       *om_u(i,j)*on_u(i,j)/dt
-
             do k=2,N
-
                 wrkrate(i,j,1) = wrkrate(i,j,1) + 
      &           ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
      &                                       *om_u(i,j)*on_u(i,j)/dt
-
             enddo
-
 
 ! Divide u-diagnostic terms by (1/pn).
 ! There after the unit of these terms are :
@@ -1366,25 +1348,17 @@
 # endif
           enddo
         enddo
-
         do j=JV_RANGE
           do i=IV_RANGE
-
            k=1
-
-
            wrkrate(i,j,2)=(0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp))
      &                                       *om_v(i,j)*on_v(i,j)/dt
-
             do k=2,N
-
-                wrkrate(i,j,2) = wrkrate(i,j,2) +
+           wrkrate(i,j,2) = wrkrate(i,j,2) +
      &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp))
      &                                       *om_v(i,j)*on_v(i,j)/dt
-
-
             enddo
 
 ! Divide v-diagnostic terms by (1/pm).
@@ -1411,17 +1385,11 @@
 # endif
           enddo
         enddo
-
-
 # endif /* DIAGNOSTICS_VRT */
 
-
-
 # if defined DIAGNOSTICS_EK_FULL
-
         do j=JstrR,JendR
           do i=IstrR,IendR
-
             ekwrkHadv(i,j,1) = 0.
             ekwrkVadv(i,j,1) = 0.
             ekwrkCor(i,j,1) = 0.
@@ -1474,7 +1442,6 @@
 
         do j=JU_RANGE
           do i=IU_RANGE
-
             do k=1,N
 # if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_PV
             cff=(Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
@@ -1561,14 +1528,12 @@
 # endif
           enddo
 # endif
-
         enddo
       enddo
 
       do j=JV_RANGE
         do i=IV_RANGE
             do k=1,N
-            
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
             cff=(Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
      &          * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
@@ -1655,8 +1620,6 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
-
-
 # if defined DIAGNOSTICS_EK
 
         do j=JU_RANGE
@@ -1674,7 +1637,6 @@
 #  ifdef MASKING
      &                     *umask(i,j)
 #  endif
-
             ekwrkvol(i,j,1) = ekwrkvol(i,j,1)
      &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
      &                  - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))      )
@@ -1701,7 +1663,6 @@
 #  ifdef MASKING
      &                     *umask(i,j)
 #  endif
-
             enddo
 
             ekwrkVmix2(i,j,1) = ekwrkrate(i,j,1) - ekwrkVmix2(i,j,1)
@@ -1760,7 +1721,6 @@
         do j=JV_RANGE
           do i=IV_RANGE
 
-
             ekwrkrate(i,j,2)= 0.
             ekwrkvol(i,j,2) = 0.
 
@@ -1773,7 +1733,6 @@
 #  ifdef MASKING
      &                     *vmask(i,j)
 #  endif
-
             ekwrkvol(i,j,2) = ekwrkvol(i,j,2)
      &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
      &                  - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))      )
@@ -1851,13 +1810,7 @@
 #  endif
           enddo
         enddo
-
-
 # endif /* DIAGNOSTICS_EK */
-
-
-
-
 
 #if defined DIAGNOSTICS_PV
 ! Add non conservative terms to rhs.
@@ -1899,9 +1852,6 @@
           enddo
 
 #endif /* DIAGNOSTICS_PV */
-
-
-
 
 # undef IU_RANGE
 # undef JU_RANGE

@@ -444,13 +444,28 @@ C$OMP END MASTER
 #endif /* ZNUDGING */
 !
 !-----------------------------------------------------------------------
+! Mask land cells & ensure that total depth in masked cells is > Dcrit
+!-----------------------------------------------------------------------
+!
+#ifdef MASKING
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          zeta_new(i,j)=zeta_new(i,j)*rmask(i,j)
+# ifdef WET_DRY
+          cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
+          zeta_new(i,j)=zeta_new(i,j)+
+     &                 cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
+# endif
+        enddo
+      enddo
+#endif
+!
+!-----------------------------------------------------------------------
 ! Computes zetarhs to use in mometum equations
 !-----------------------------------------------------------------------
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
-          Dnew(i,j)=zeta_new(i,j)+h(i,j)
           zwrk(i,j)=cff0*zeta_new(i,j) +cff1*zeta(i,j,kstp)
      &             +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold)
 #if defined VAR_RHO_2D && defined SOLVE3D
@@ -466,18 +481,12 @@ C$OMP END MASTER
 !
 !-----------------------------------------------------------------------
 ! Load new free-surface values into shared array
-! Modify new free-surface to ensure that depth is > Dcrit for masked
-! cells.
 !-----------------------------------------------------------------------
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
+          Dnew(i,j)=zeta_new(i,j)+h(i,j)
           zeta(i,j,knew)=zeta_new(i,j) 
-#if defined WET_DRY && defined MASKING
-            cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
-            zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &                   cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-#endif
         enddo
       enddo 
 !
@@ -1668,26 +1677,14 @@ C$OMP END MASTER
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
-            cff=rmask(i-1,j)+rmask(i,j)
-            if (cff > 0.) then
-             ubar(i,j,knew)=cff*Qbar(is)/( on_u(i,j)
-     &               *(Dnew(i-1,j)*rmask(i-1,j)+Dnew(i,j)*rmask(i,j)) )
-
-            else
-              ubar(i,j,knew)=0.
-            endif
+            ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
+     &                       *(Dnew(i-1,j)+Dnew(i,j)) )
 # ifdef SOLVE3D
             DU_avg1(i,j,nnew)=Qbar(is)
 # endif
           else
-            cff=rmask(i,j-1)+rmask(i,j)
-            if (cff > 0.) then
-             vbar(i,j,knew)=cff*Qbar(is)/( om_v(i,j)
-     &               *(Dnew(i,j-1)*rmask(i,j-1)+Dnew(i,j)*rmask(i,j)) )
-
-            else
-              vbar(i,j,knew)=0.
-            endif
+            vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
+     &                       *(Dnew(i,j-1)+Dnew(i,j)) )
 # ifdef SOLVE3D
             DV_avg1(i,j,nnew)=Qbar(is)
 # endif
