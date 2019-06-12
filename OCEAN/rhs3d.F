@@ -406,7 +406,7 @@
       do j=Jstr,Jend
         do i=IstrU,Iend
 
-        cff = max(min(0.01/(abs(sustr(i,j)) *rho0),0.1),0.01)
+        cff = 1. !max(min(0.01/(abs(sustr(i,j)) *rho0),0.1),0.01)
         Uwrk(i,j)=cff*bustr_lim(i,j)*4./((wrk(i-1,j)+wrk(i,j))
      &                             *(pm (i-1,j)+pm (i,j))
      &                             *(pn (i-1,j)+pn (i,j)))
@@ -421,7 +421,7 @@
       do j=JstrV,Jend
         do i=Istr,Iend
 
-        cff = max(min(0.01/(abs(svstr(i,j)) *rho0),0.1),0.01)
+        cff = 1. !max(min(0.01/(abs(svstr(i,j)) *rho0),0.1),0.01)
         Vwrk(i,j)=cff*bvstr_lim(i,j)*4./((wrk(i,j-1)+wrk(i,j))
      &                             *(pm (i,j-1)+pm (i,j))
      &                             *(pn (i,j-1)+pn (i,j)))

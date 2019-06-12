@@ -507,7 +507,7 @@
      &               MIN(ABS(bustr(i,j)),
      &                   ABS(u(i,j,1,nrhs))*cff1)
           do k=2,N
-              cff1=cff1 + cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
+              cff1=cff1 + cff*0.5*(Hz(i-1,j,k)+Hz(i,j,k))
           enddo
           bustr(i,j)=SIGN(1.D0, bustr(i,j))*
      &               MIN(ABS(bustr(i,j)),

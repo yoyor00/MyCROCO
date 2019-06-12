@@ -97,7 +97,8 @@
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
 # if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
-      real cffd
+      real coef(0:N),height(0:N)
+      real Hdiss,gamma,fbot
 # endif
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
@@ -129,23 +130,6 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
-
-      cffd = 1.
-
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-          wrk(i,j)=0.
-        enddo
-      enddo
-        do j=JstrV-1,Jend
-          do i=IstrU-1,Iend
-            do k=1,N
-              wrk(i,j)=wrk(i,j)+Hz(i,j,k)
-            enddo
-          enddo
-        enddo
-# endif
 
       do j=Jstr,Jend
 !
@@ -247,13 +231,55 @@
           DC(i,N)=DC(i,N)+dt*sustr(i,j)
 # if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
           if (ABS(bustr(i,j)).gt.ABS(bustr_lim(i,j))) then
-              bustr_lim(i,j) = bustr(i,j)
-              bustr(i,j) = 0.
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'in DISSIP bustr,bustr_lim',
+     &                   bustr(i,j),bustr_lim(i,j)
+            endif
             do k=1,N
-              DC(i,k)=DC(i,k)-cffd*dt*bustr_lim(i,j)*(Hz(i,j,k)+
-     &                                    Hz(i-1,j,k))
-     &                     /(wrk(i-1,j)+wrk(i,j))
+# if defined DISSIP_SHALLOW_BODY_v2_lin
+              coef(k) = (Hz(i,j,k)+Hz(i-1,j,k))
+     &                   /(z_w(i  ,j,N)-z_w(i  ,j,0)
+     &                    +z_w(i-1,j,N)-z_w(i-1,j,0))
+# elif defined DISSIP_SHALLOW_BODY_v2_exp
+              height(k) = 0.5* (z_w(i,j,0)-z_w(i,j,k)
+     &            + z_w(i-1,j,0)-z_w(i-1,j,k))
             enddo
+              height(0) = 0.
+!--------------------------------------------------------------------
+! Find the exponential scale
+!--------------------------------------------------------------------
+
+            Hdiss=-height(1)/10.
+            fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            gamma = bustr_lim(i,j)/bustr(i,j)
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'Hdiss,fbot,gamma',Hdiss,fbot,gamma
+            endif
+            do while (fbot.ge.gamma.and.Hdiss.le.abs(10*height(N)))
+                Hdiss = Hdiss*2.
+                fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            enddo
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'Hdiss,fbot,gamma',Hdiss,fbot,gamma
+            endif
+            cff=0.
+            do k=1,N
+            coef(k) = (exp(height(k-1)/Hdiss) -exp(height(k)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+              cff = cff + coef(k)
+# endif
+              !bustr_lim(i,j) = bustr(i,j)
+              !bustr(i,j) = 0.
+              DC(i,k)=DC(i,k)-dt*bustr(i,j)*coef(k)
+            enddo
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'u coef(1) in step3duv2',coef(1)
+            write(*,*) 'u bustr*coef',bustr(i,j)*coef(1)
+            write(*,*) 'u bustr_lim',bustr_lim(i,j)
+            write(*,*) 'int coef (should be one)',cff
+            endif
           else
               bustr_lim(i,j) = 0.
               DC(i,1)=DC(i,1)-dt*bustr(i,j)
@@ -523,14 +549,42 @@
             DC(i,N)=DC(i,N)+dt*svstr(i,j)
 # if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
           if (ABS(bvstr(i,j)).gt.ABS(bvstr_lim(i,j))) then
-              bvstr_lim(i,j) = bvstr(i,j)
-              bvstr(i,j) = 0.
             do k=1,N
-              DC(i,k)=DC(i,k)-cffd*dt*bvstr_lim(i,j)*(Hz(i,j,k)+
-     &                                    Hz(i,j-1,k))
-     &                     /(wrk(i,j-1)+wrk(i,j))
+# if defined DISSIP_SHALLOW_BODY_v2_lin
+              coef(k) = (Hz(i,j,k)+Hz(i,j-1,k))
+     &                   /(z_w(i  ,j,N)-z_w(i  ,j,0)
+     &                    +z_w(i,j-1,N)-z_w(i,j-1,0))
+# elif defined DISSIP_SHALLOW_BODY_v2_exp
+              height(k) = 0.5* (z_w(i,j,0)-z_w(i,j,k)
+     &            + z_w(i,j-1,0)-z_w(i,j-1,k))
             enddo
+              height(0) = 0.
+!--------------------------------------------------------------------
+! Find the exponential scale
+!--------------------------------------------------------------------
 
+            Hdiss=-height(1)/10.
+            fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            gamma = bvstr_lim(i,j)/bvstr(i,j)
+            do while (fbot.ge.gamma.and.Hdiss.le.abs(10*height(N)))
+                Hdiss = Hdiss*2.
+                fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            enddo
+            do k=1,N
+            coef(k) = (exp(height(k-1)/Hdiss) -exp(height(k)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+# endif
+              !bvstr_lim(i,j) = bvstr(i,j)
+              !bvstr(i,j) = 0.
+              DC(i,k)=DC(i,k)-dt*bvstr(i,j)*coef(k)
+            enddo
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'v coef(1) in step3duv2',coef(1)
+            write(*,*) 'v bvstr*coef',bvstr(i,j)*coef(1)
+            write(*,*) 'v bvstr_lim',bvstr_lim(i,j)
+            endif
           else
               bvstr_lim(i,j) = 0.
               DC(i,1)=DC(i,1)-dt*bvstr(i,j)
