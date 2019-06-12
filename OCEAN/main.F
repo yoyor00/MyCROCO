@@ -647,7 +647,7 @@ C$OMP END MASTER
 !  Set initial non-Boussinesq parameters and variables
 !----------------------------------------------------------------------
 !
-#ifdef NBQ
+#ifdef M3FAST
 # ifdef NBQ_MASS
 !
 ! Re-evaluate Hz and Huon,Hvom using 

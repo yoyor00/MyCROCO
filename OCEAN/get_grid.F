@@ -22,7 +22,7 @@
 # include "ncscrum.h"
 # include "grid.h"
 # include "netcdf.inc"
-# ifdef NBQ
+# ifdef M3FAST
       integer i,j,Istr,Iend,Jstr,Jend
 #  include "compute_extended_bounds.h"
 # endif

@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef NBQ
+# ifdef M3FAST
       subroutine unbq_bc_tile (Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF      
       use AGRIF_Util
@@ -34,9 +34,9 @@
 ! Set lateral boundary conditions for U-component momentum
 ! qdmu_nbq for the parent grid.
 !
-# endif /* NBQ */
+# endif /* M3FAST */
 #else
-# ifdef NBQ
+# ifdef M3FAST
 !
 ! CHILD
 !
@@ -45,9 +45,9 @@
 ! Set lateral boundary conditions for U-component momentum
 ! qdmu_nbq for the child grid.
 !
-# endif /* NBQ */
+# endif /* M3FAST */
 #endif /* CHILD */
-#ifdef NBQ
+#ifdef M3FAST
 !
 ! Common Code
 !
@@ -716,7 +716,7 @@
       subroutine unbq_bc_child_empty
       end
 # endif
-#endif /* NBQ */
+#endif /* M3FAST */
 #ifndef CHILD
 # define CHILD
 # ifdef AGRIF

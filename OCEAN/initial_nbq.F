@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifdef NBQ
+#ifdef M3FAST
 !
       subroutine initial_nbq (tile)
 !
@@ -157,6 +157,7 @@
 !   Compressible density initializations
 !----------------------------------------------------------------------
 !
+# ifdef NBQ
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -164,6 +165,7 @@
             enddo
           enddo
         enddo
+# endif
 # ifdef NBQ_MASS
         do k=1,N
           do j=JR_RANGE
@@ -215,6 +217,7 @@
           enddo
         enddo
 
+# ifdef NBQ
         do k=1,N-1
           do j=Jstr-1,Jend+1
             do i=Istr-1,Iend+1
@@ -242,6 +245,7 @@
             enddo
           enddo
         enddo
+# endif
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.

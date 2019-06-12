@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 
-#ifdef NBQ
+#ifdef M3FAST
 
       subroutine step3d_fast (tile)
       implicit none
@@ -148,7 +148,8 @@ C$    trd=omp_get_thread_num()
      &       ru_ext_nbq_sum(PRIVATE_2D_SCRATCH_ARRAY),
      &       rv_ext_nbq_sum(PRIVATE_2D_SCRATCH_ARRAY),
      &       ru_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY),
-     &       rv_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY)
+     &       rv_ext_nbq_old(PRIVATE_2D_SCRATCH_ARRAY),
+     &                 work(PRIVATE_2D_SCRATCH_ARRAY)
 
       real    Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
      &        Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -156,6 +157,7 @@ C$    trd=omp_get_thread_num()
      &     Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,  N),
      &   Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &   Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# ifdef NBQ
       real 
      &    dthetadiv_nbqdz_u(PRIVATE_2D_SCRATCH_ARRAY,2),
      &    dthetadiv_nbqdz_v(PRIVATE_2D_SCRATCH_ARRAY,2),
@@ -167,9 +169,8 @@ C$    trd=omp_get_thread_num()
      &                   FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &                   DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &                   CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
-     &                 work(PRIVATE_2D_SCRATCH_ARRAY),
-     &                sum_r(PRIVATE_2D_SCRATCH_ARRAY),
      &         qdmw_nbq_old(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
 # ifdef UV_COR_NT
       real
      &               ntcoru(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -290,6 +291,7 @@ C$    trd=omp_get_thread_num()
 ! Store rho.h at first slow and fast time-step
 !=====================================================================
 !
+# ifdef NBQ
       if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
          do k=1,N
            do j=JstrV-2,Jend+1
@@ -309,6 +311,7 @@ C$    trd=omp_get_thread_num()
             enddo
           enddo
       enddo
+# endif
 !
 !=====================================================================
 ! AB3 Forward Step: compute total depth of water column and vertically
@@ -478,6 +481,8 @@ C$OMP END MASTER
      &                     Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v,
      &                     Hzu_half_qdmu,      Hzv_half_qdmv)
       endif
+
+# ifdef NBQ
 !
 !-------------------------------------------------------------------
 !  zeta(m+1) is derived here from the surface vertical velocity 
@@ -531,11 +536,15 @@ C$OMP END MASTER
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
+#  ifdef NBQ
           wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)         
-#  ifdef NBQ_MASS     
+#   ifdef NBQ_MASS     
      &                       /(1.+rho_grd(i,j,N))
-#  endif
+#   endif
      &                       *Hzw_half_nbq_inv(i,j,N)
+#  else
+          wsurf_nbq(i,j)=(We(i,j,N)*pm(i,j)*pn(i,j)
+#  endif
 #  ifdef MRL_WCI
      &                     +wst(i,j,N)*rmask_wet(i,j)
 #  endif
@@ -563,15 +572,15 @@ C$OMP END MASTER
 ! Apply point sources for river runoff simulations
 !-------------------------------------------------------------------
 !
-#ifdef PSOURCE
+#  ifdef PSOURCE
       do is=1,Nsrc 
-# ifdef MPI
+#   ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
-# else
+#   else
         i=Isrc(is)
         j=Jsrc(is)
-# endif
+#   endif
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
@@ -589,7 +598,7 @@ C$OMP END MASTER
           endif
         endif
       enddo
-#endif
+#  endif
 !
 !-------------------------------------------------------------------
 ! Advance zeta at m+1
@@ -642,6 +651,44 @@ C$OMP END MASTER
         enddo
       enddo
 #  undef zab3
+
+# else /* NBQ */
+!
+!  Advance zeta at m+1 from continuity for the hydrostatic case ---
+!
+!  First, apply point sources
+!
+#  ifdef PSOURCE
+      do is=1,Nsrc 
+#   ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#   else
+        i=Isrc(is)
+        j=Jsrc(is)
+#   endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.0) then
+            urhs(i,j)=2.*Qbar(is)/( on_u(i,j)
+     &                             *(Drhs(i-1,j)+Drhs(i,j)) )
+            DUon(i,j)=Qbar(is)
+          else
+            vrhs(i,j)=2.*Qbar(is)/( om_v(i,j)
+     &                             *(Drhs(i,j-1)+Drhs(i,j)) )
+            DVom(i,j)=Qbar(is)
+          endif
+        endif
+      enddo
+#  endif
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          zeta(i,j,knew)=zeta(i,j,kstp) + dtfast*pm(i,j)*pn(i,j)
+     &                                   *(DUon(i,j)-DUon(i+1,j  )
+     &                                    +DVom(i,j)-DVom(i  ,j+1))
+        enddo
+      enddo
+# endif /* NBQ */
 !
 !-----------------------------------------------------------------------
 !  Add nudging terms
@@ -953,7 +1000,8 @@ C$OMP END MASTER
 ! Linear and/or quadratic bottom stress.
 !-----------------------------------------------------------------------
 !
-# ifdef BBL
+# ifndef BSTRESS_FAST
+#  ifdef BBL
         do j=Jstr,Jend
           do i=IstrU,Iend
             rubar(i,j)=rubar(i,j) - bustr(i,j)
@@ -966,7 +1014,7 @@ C$OMP END MASTER
      &                             *om_v(i,j)*on_v(i,j)
           enddo
         enddo
-# else
+#  else
       if (rdrg2.gt.0.) then
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -1002,7 +1050,8 @@ C$OMP END MASTER
           enddo
         enddo
       endif
-# endif
+#  endif
+# endif /* BSTRESS_FAST */
 !
 !-----------------------------------------------------------------------
 ! Add 2D vortex-force terms combined with advection terms
@@ -1211,7 +1260,7 @@ C$OMP END MASTER
 !=====================================================================
 !
 !-----------------------------------------------------------------------
-!  Initializations of ru_nbq_avg2 (as dqmu_nbq) at first fast step
+!  Initializations of ru_nbq_avg2 (as qdmu_nbq) at first fast step
 !  It is used at last fast step for computation of new ru_nbq_avg2
 !-----------------------------------------------------------------------
 !
@@ -1230,6 +1279,7 @@ C$OMP END MASTER
             enddo
           enddo 
         enddo
+# ifdef NBQ
         do k=0,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -1237,12 +1287,14 @@ C$OMP END MASTER
             enddo
           enddo 
         enddo
+# endif
       endif    ! FIRST_FAST_STEP
 !
 !-----------------------------------------------------------------------
 !  zw_nbq backups
 !-----------------------------------------------------------------------
 !
+# ifdef NBQ
       if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
         do j=JstrR,JendR
           do k=0,N
@@ -1252,6 +1304,7 @@ C$OMP END MASTER
           enddo
         enddo
       endif
+# endif
 !
 !-------------------------------------------------------------------
 !  Acoustic wave emission
@@ -1269,6 +1322,84 @@ C$OMP END MASTER
 # endif
 !
 !------------------------------------------------------------------
+!  Fast bottom friction
+!
+!  Set bottom stress using logarithmic or linear 
+!  and/or quadratic formulation. 
+!-------------------------------------------------------------------
+!
+# ifdef BSTRESS_FAST
+#  define UBOT UFx
+#  define VBOT VFe
+      if (maxval(Zob).ne.0.) then
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+            UBOT(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
+            VBOT(i,j)=2.*qdmv_nbq(i,j,1)/(Hz(i,j,1)+Hz(i,j-1,1))
+          enddo
+        enddo
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
+            work(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
+          enddo
+        enddo
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            cff=0.25*(VBOT(i  ,j)+VBOT(i  ,j+1)+
+     &                VBOT(i-1,j)+VBOT(i-1,j+1))
+            bustr(i,j)=0.5*(work(i-1,j)+work(i,j))*UBOT(i,j)*
+     &                 SQRT(UBOT(i,j)*UBOT(i,j)+cff*cff)
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            cff=0.25*(UBOT(i,j  )+UBOT(i+1,j  )+
+     &                UBOT(i,j-1)+UBOT(i+1,j-1))
+            bvstr(i,j)=0.5*(work(i,j-1)+work(i,j))*VBOT(i,j)*
+     &                 SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
+          enddo
+        enddo
+      elseif (rdrg2.gt.0.) then
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+            UBOT(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
+            VBOT(i,j)=2.*qdmv_nbq(i,j,1)/(Hz(i,j,1)+Hz(i,j-1,1))
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            cff=0.25*(VBOT(i  ,j)+VBOT(i  ,j+1)+
+     &                VBOT(i-1,j)+VBOT(i-1,j+1))
+            bustr(i,j)=rdrg2*UBOT(i,j)*
+     &                 SQRT(UBOT(i,j)*UBOT(i,j)+cff*cff)
+          enddo
+        enddo
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            cff=0.25*(UBOT(i,j  )+UBOT(i+1,j  )+
+     &                UBOT(i,j-1)+UBOT(i+1,j-1))
+            bvstr(i,j)=rdrg2*VBOT(i,j)*
+     &                 SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
+          enddo
+        enddo
+      else
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            bustr(i,j)=rdrg*2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            bvstr(i,j)=rdrg*2.*qdmv_nbq(i,j,1)/(Hz(i,j,1)+Hz(i,j-1,1))
+          enddo
+        enddo
+      endif
+#  undef UBOT
+#  undef VBOT
+# endif
+!
+!------------------------------------------------------------------
 !  Implicit part: system setup
 !-------------------------------------------------------------------
 !    
@@ -1280,12 +1411,13 @@ C$OMP END MASTER
           DU_nbq(i,j)=0.
           DV_nbq(i,j)=0.
         enddo
-      enddo      
+      enddo
 !	
 !------------------------------------------------------------------
 !  Store qdmw_nbq into working array
 !------------------------------------------------------------------
 !
+# ifdef NBQ
       if (LAST_FAST_STEP) then
         do k=0,N 
           do j=Jstr,Jend             
@@ -1295,6 +1427,7 @@ C$OMP END MASTER
           enddo
         enddo
       endif
+# endif
 !	
 !------------------------------------------------------------------
 !  Recover Hz at first fast step (if final Hz correction needed)
@@ -1429,7 +1562,8 @@ C$OMP END MASTER
 !=====================================================================
 !  Compute "Pressure - Viscosity" component (theta)
 !=====================================================================
-! 
+!
+# ifdef NBQ
       do k=1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
@@ -1539,7 +1673,7 @@ C$OMP END MASTER
 
 # ifdef NBQ_GRID_SLOW
         endif ! NSTEP_DS
-# endif          
+# endif
 
         if (k.gt.0) then
 !
@@ -1610,10 +1744,13 @@ C$OMP END MASTER
 # ifdef UV_COR_NT
               dum_s=dum_s+ntcoru(i,j,k)
 # endif
+# ifdef BSTRESS_FAST
+              if (k.eq.1) dum_s=dum_s-bustr(i,j)
+# endif
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtnbq * (
-     &                        dum_s + ru_int_nbq(i,j,k) )
+     &                        dum_s + ru_int_nbq(i,j,k) )  
 # ifdef MASKING
-              qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask(i,j)
+     &                                        *umask(i,j)
 # endif
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
               ru_nbq(i,j,k)=dum_s/work(i,j) 
@@ -1696,10 +1833,13 @@ C$OMP END MASTER
 # ifdef UV_COR_NT
               dum_s=dum_s+ntcorv(i,j,k)
 # endif
+# ifdef BSTRESS_FAST
+              if (k.eq.1) dum_s=dum_s-bvstr(i,j)
+# endif
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtnbq * (
      &                        dum_s + rv_int_nbq(i,j,k) )
 # ifdef MASKING
-              qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask(i,j)
+     &                                        *vmask(i,j)
 # endif
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
               rv_nbq(i,j,k)=dum_s/work(i,j)  
@@ -1714,6 +1854,77 @@ C$OMP END MASTER
           enddo
         endif  !<-- k>0
       enddo   !<-- k=0,N   
+
+# else /* NBQ */
+
+!
+!  Hydrostatic case
+!
+      do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              dum_s=0.
+# ifdef BSTRESS_FAST
+              if (k.eq.1) dum_s=dum_s-bustr(i,j)
+# endif
+              qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtnbq * (
+     &                        dum_s + ru_int_nbq(i,j,k) )  
+# ifdef MASKING
+     &                                        *umask(i,j)
+# endif
+              DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
+              ru_nbq(i,j,k)=dum_s/work(i,j) 
+           enddo 
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              dum_s=0.
+# ifdef BSTRESS_FAST
+              if (k.eq.1) dum_s=dum_s-bvstr(i,j)
+# endif
+              qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtnbq * (
+     &                        dum_s + rv_int_nbq(i,j,k) )
+# ifdef MASKING
+     &                                        *vmask(i,j)
+# endif
+              DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
+              rv_nbq(i,j,k)=dum_s/work(i,j)  
+            enddo
+          enddo
+       enddo
+# endif /* NBQ */ 
+!
+!-----------------------------------------------------------------------
+! Apply point sources for river runoff simulations
+!-----------------------------------------------------------------------
+!
+# ifdef PSOURCE
+      do is=1,Nsrc 
+#  ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#  else
+        i=Isrc(is)
+        j=Jsrc(is)
+#  endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.0) then
+            DU_nbq(i,j)=0.
+            do k=1,N
+              qdmu_nbq(i,j,k)=Qsrc(is,k)*pn_u(i,j)
+              DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
+            enddo
+          else
+            DV_nbq(i,j)=0.
+            do k=1,N
+              qdmv_nbq(i,j,k)=Qsrc(is,k)*pm_v(i,j)
+              DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
+            enddo
+          endif
+        endif
+      enddo
+# endif
 !
 !-----------------------------------------------------------------------
 !  U & V momentum wet mask
@@ -1755,44 +1966,6 @@ C$OMP END MASTER
 # ifdef RVTK_DEBUG
       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
       call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
-# endif
-!
-!-----------------------------------------------------------------------
-! Apply point sources for river runoff simulations
-!-----------------------------------------------------------------------
-!
-# ifdef PSOURCE
-      do is=1,Nsrc 
-#  ifdef MPI
-        i=Isrc_mpi(is,mynode)
-        j=Jsrc_mpi(is,mynode)
-#  else
-        i=Isrc(is)
-        j=Jsrc(is)
-#  endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
-          if (Dsrc(is).eq.0) then
-            DU_nbq(i,j)=0.
-#  ifdef WET_DRY
-            umask_wet(i,j)=1
-#  endif
-            do k=1,N
-              qdmu_nbq(i,j,k)=Qsrc(is,k)*pn_u(i,j)
-              DU_nbq(i,j)    =DU_nbq(i,j)+qdmu_nbq(i,j,k)
-            enddo
-          else
-            DV_nbq(i,j)=0.
-#  ifdef WET_DRY
-            vmask_wet(i,j)=1
-#  endif
-            do k=1,N
-              qdmv_nbq(i,j,k)=Qsrc(is,k)*pm_v(i,j)
-              DV_nbq(i,j)    =DV_nbq(i,j)+qdmv_nbq(i,j,k)
-            enddo
-          endif
-        endif
-      enddo
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1894,6 +2067,8 @@ C$OMP END MASTER
 #  endif
 
 # endif  /* ! NBQ_IMP */
+
+# ifdef NBQ
 !
 !
 !=====================================================================
@@ -2315,6 +2490,7 @@ C$OMP END MASTER
             enddo
           enddo
         endif
+  
         if (JstrV.le.Jend) then
           do j=Jstr,Jend+1  
             do i=Istr,Iend
@@ -2717,6 +2893,8 @@ C$OMP END MASTER
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
 #  endif    
 # endif /* NBQ_MASS */
+
+# endif /* NBQ */
 !
 !
 !***********************************************************************
@@ -2749,6 +2927,7 @@ C$OMP END MASTER
 !  Note: here rw_nbq contains qdmw_nbq(m)
 !=====================================================================
 !
+# ifdef NBQ
       if (LAST_FAST_STEP) then
         do k=0,N 
           do j=Jstr,Jend              
@@ -2761,9 +2940,10 @@ C$OMP END MASTER
         enddo
       endif
 
-# ifdef RVTK_DEBUG
+#  ifdef RVTK_DEBUG
 !      call check_tab3d(rw_nbq,'rw_nbq','rint')
-# endif  
+#  endif  
+# endif
 !
 !=====================================================================
 ! Get filtered RHS terms
@@ -2826,6 +3006,7 @@ C$OMP END MASTER
           enddo 
         enddo
 
+# ifdef NBQ
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -2835,7 +3016,8 @@ C$OMP END MASTER
      &                           -rw_int_nbq(i,j,k))*on_r(i,j)*om_r(i,j)
             enddo
           enddo 
-        enddo   
+        enddo
+# endif
 
       endif ! LAST_FAST_STEP
 !
@@ -2848,10 +3030,12 @@ C$OMP END MASTER
 !      rvbar_nbq   =0.
       ru_nbq      =0.   ! 3D
       rv_nbq      =0.
-      rw_nbq      =0.
       ru_nbq_avg2 =0.
       rv_nbq_avg2 =0.
+#  ifdef NBQ
+      rw_nbq      =0.
       rw_nbq_avg2 =0.
+#  endif
 #  ifdef NBQ_MASS
       rhobar_nbq  =1.
       rho_nbq     =0.
@@ -2874,8 +3058,10 @@ C$OMP END MASTER
      &                        ru_nbq_avg2(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  
      &                        rv_nbq_avg2(START_2D_ARRAY,1))
+#  ifdef NBQ
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,  
      &                        rw_nbq_avg2(START_2D_ARRAY,0))
+#  endif 
 # endif
 !
 !=====================================================================
@@ -3690,4 +3876,4 @@ C$OMP END MASTER
 #else
       subroutine step3d_fast_empty
       end
-#endif /* NBQ */
+#endif /* M3FAST */

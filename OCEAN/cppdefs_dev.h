@@ -133,11 +133,15 @@
    Activate NBQ choices for non-hydrostatic simulations
 ======================================================================
 */
-#ifdef NBQ              /* General options */
+#if defined NBQ || defined M3FAST       /* General options */
+# ifdef NBQ
+#  define M3FAST
+# endif
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
 # define NBQ_IMP
+# define BSTRESS_FAST
 # undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
@@ -148,7 +152,11 @@
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
-# define HZR Hzr
+# ifdef NBQ
+#  define HZR Hzr
+# else
+#  define HZR Hz
+# endif
 /*
    NBQ Precise or Performance options (default: NBQ_PERF) 
 */
@@ -213,7 +221,7 @@
 
 # define HZR Hz
 
-#endif  /* NBQ */
+#endif  /* NBQ || M3FAST */
 
 /*
 ======================================================================

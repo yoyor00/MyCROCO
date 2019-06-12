@@ -76,7 +76,7 @@ C$    integer omp_get_thread_num
 #include "scalars.h"
 #include "forces.h"
 #include "zoom.h"
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif 
 !
@@ -797,7 +797,7 @@ C$    trd=omp_get_thread_num()
 #endif
 
 !------------------------------------------------------------
-#ifdef NBQ
+#ifdef M3FAST
        if (M2bc_nbq_flag) then
 #endif
 !------------------------------------------------------------
@@ -886,7 +886,7 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif  /* WET_DRY */
 
-#ifdef NBQ
+#ifdef M3FAST
 !=======================================================================
 !  Computes normal boundary values of DU_nbq for NBQ OBCs
 !=======================================================================
@@ -969,7 +969,7 @@ C$    trd=omp_get_thread_num()
 !
       endif ! M2bc_nbq_flag
 !
-#endif /* NBQ */
+#endif /* M3FAST */
 
       return
       end

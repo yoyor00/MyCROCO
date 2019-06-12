@@ -40,16 +40,20 @@
             qdmu_nbq_west(j,k,2)=qdmu_nbq(Istr+1,j,k)
             qdmv_nbq_west(j,k,1)=qdmv_nbq(Istr-1,j,k)
             qdmv_nbq_west(j,k,2)=qdmv_nbq(Istr  ,j,k)
+#  ifdef NBQ
             qdmw_nbq_west(j,k,1)=qdmw_nbq(Istr-1,j,k)
             qdmw_nbq_west(j,k,2)=qdmw_nbq(Istr  ,j,k)
              rho_nbq_west(j,k,1)= rho_nbq(Istr-1,j,k)
              rho_nbq_west(j,k,2)= rho_nbq(Istr  ,j,k)
+#  endif
           enddo
         enddo
+#  ifdef NBQ
         do j=Jstr-1,Jend+1
           qdmw_nbq_west(j,0,1)=qdmw_nbq(Istr-1,j,0)
           qdmw_nbq_west(j,0,2)=qdmw_nbq(Istr  ,j,0)
         enddo
+#  endif
       endif
 # endif /* OBC_WEST */
 !
@@ -61,16 +65,20 @@
             qdmu_nbq_east(j,k,2)=qdmu_nbq(Iend  ,j,k)
             qdmv_nbq_east(j,k,1)=qdmv_nbq(Iend+1,j,k)
             qdmv_nbq_east(j,k,2)=qdmv_nbq(Iend  ,j,k)
+#  ifdef NBQ
             qdmw_nbq_east(j,k,1)=qdmw_nbq(Iend+1,j,k)
             qdmw_nbq_east(j,k,2)=qdmw_nbq(Iend  ,j,k)
              rho_nbq_east(j,k,1)= rho_nbq(Iend+1,j,k)
              rho_nbq_east(j,k,2)= rho_nbq(Iend  ,j,k)
+#  endif
           enddo
         enddo
+#  ifdef NBQ
         do j=Jstr-1,Jend+1
           qdmw_nbq_east(j,0,1)=qdmw_nbq(Iend+1,j,0)
           qdmw_nbq_east(j,0,2)=qdmw_nbq(Iend  ,j,0)
         enddo
+#  endif
       endif
 # endif /* OBC_EAST */
 !
@@ -82,16 +90,20 @@
             qdmu_nbq_south(i,k,2)=qdmu_nbq(i,Jstr  ,k)
             qdmv_nbq_south(i,k,1)=qdmv_nbq(i,Jstr  ,k)
             qdmv_nbq_south(i,k,2)=qdmv_nbq(i,Jstr+1,k)
+#  ifdef NBQ
             qdmw_nbq_south(i,k,1)=qdmw_nbq(i,Jstr-1,k)
             qdmw_nbq_south(i,k,2)=qdmw_nbq(i,Jstr  ,k)
              rho_nbq_south(i,k,1)= rho_nbq(i,Jstr-1,k)
              rho_nbq_south(i,k,2)= rho_nbq(i,Jstr  ,k)
+#  endif
           enddo
         enddo
+#  ifdef NBQ
         do i=Istr-1,Iend+1
           qdmw_nbq_south(i,0,1)=qdmw_nbq(i,Jstr-1,0)
           qdmw_nbq_south(i,0,2)=qdmw_nbq(i,Jstr  ,0)
         enddo
+#  endif
       endif
 # endif /* OBC_SOUTH */
 !
@@ -103,16 +115,20 @@
             qdmu_nbq_north(i,k,2)=qdmu_nbq(i,Jend  ,k)
             qdmv_nbq_north(i,k,1)=qdmv_nbq(i,Jend+1,k)
             qdmv_nbq_north(i,k,2)=qdmv_nbq(i,Jend  ,k)
+#  ifdef NBQ
             qdmw_nbq_north(i,k,1)=qdmw_nbq(i,Jend+1,k)
             qdmw_nbq_north(i,k,2)=qdmw_nbq(i,Jend  ,k)
              rho_nbq_north(i,k,1)= rho_nbq(i,Jend+1,k)
              rho_nbq_north(i,k,2)= rho_nbq(i,Jend  ,k)
+#  endif
           enddo
         enddo
+#  ifdef NBQ
         do i=Istr-1,Iend+1
           qdmw_nbq_north(i,0,1)=qdmw_nbq(i,Jend+1,0)
           qdmw_nbq_north(i,0,2)=qdmw_nbq(i,Jend  ,0)
         enddo
+#  endif
       endif
 # endif /* OBC_NORTH */
 !

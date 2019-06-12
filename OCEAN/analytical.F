@@ -1367,12 +1367,14 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nrhs)
           enddo
         enddo
+#  ifdef NBQ
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
             rnbqclm(i,j,k)=0.
           enddo
         enddo
+#  endif
       enddo
 # else
       do k=1,N
@@ -1386,20 +1388,24 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.
           enddo
         enddo
+#  ifdef NBQ
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
             rnbqclm(i,j,k)=0.
           enddo
         enddo
+#  endif
       enddo
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
+#   ifdef NBQ
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  wnbqclm)
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  rnbqclm)
+#   endif
 # endif
 # undef IU_RANGE
 # undef JU_RANGE
@@ -1851,7 +1857,7 @@ C$    integer  trd, omp_get_thread_num
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
-            if (cff2 .gt. 0.0) then
+            if (cff2 > 0.0) then
              Qshape(is,k)=Qshape(is,k)/cff2
             endif
           enddo
@@ -2506,9 +2512,10 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
-
+#   ifdef NBQ
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
+#   endif
           enddo
           do j=JstrR+1,JendR
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
@@ -2524,8 +2531,10 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
+#   ifdef NBQ
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
+#   endif
           enddo
           do j=JstrR+1,JendR
             vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
@@ -2541,8 +2550,10 @@ C$    integer  trd, omp_get_thread_num
           do i=IstrR,IendR
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
+#   ifdef NBQ
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
+#   endif
           enddo
           do i=IstrR+1,IendR
             unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
@@ -2558,8 +2569,10 @@ C$    integer  trd, omp_get_thread_num
           do i=IstrR,IendR
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
+#   ifdef NBQ
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
+#   endif
           enddo
           do i=IstrR+1,IendR
             unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))

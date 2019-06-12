@@ -37,7 +37,7 @@
 #ifdef MPI
       include 'mpif.h'
 #endif
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 #include "mpi_cpl.h"
@@ -358,7 +358,7 @@
           goto 95
         endif
 
-#ifdef NBQ
+#ifdef M3FAST
 !     
 ! NBQ Time-stepping parameters
 !

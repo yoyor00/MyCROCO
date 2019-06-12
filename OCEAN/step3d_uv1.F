@@ -36,7 +36,7 @@
 # ifdef MRL_WCI
 #   include "forces.h"
 # endif
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 !
@@ -50,7 +50,7 @@
         enddo
         do k=1,N
           do i=IstrU,Iend
-# ifdef NBQ
+# ifdef M3FAST
             u(i,j,k,nnew)=u(i,j,k,nnew)+DC(i,0)*(ru(i,j,k)+
      &                                           ru_nbq_avg2(i,j,k))
 
@@ -70,7 +70,7 @@
           enddo
           do k=1,N
             do i=Istr,Iend
-#ifdef NBQ
+#ifdef M3FAST
               v(i,j,k,nnew)=v(i,j,k,nnew)+DC(i,0)*(rv(i,j,k)+
      &                                             rv_nbq_avg2(i,j,k))
 #else
