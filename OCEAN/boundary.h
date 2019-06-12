@@ -350,7 +350,7 @@
       real unbqbry_east(GLOBAL_1D_ARRAYETA,N),
      &     vnbqbry_east(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_east1/ unbqbry_east,
-     &                       vnbqbry_east,
+     &                       vnbqbry_east
 #  ifdef NBQ
       real wnbqbry_east(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_east(GLOBAL_1D_ARRAYETA,N)
