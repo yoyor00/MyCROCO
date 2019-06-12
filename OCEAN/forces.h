@@ -81,6 +81,13 @@
       real bustr(GLOBAL_2D_ARRAY)
       real bvstr(GLOBAL_2D_ARRAY)
       common /forces_bustr/bustr /forces_bvstr/bvstr
+
+# if defined DISSIP_SHALLOW_BODY
+      real bustr_lim(GLOBAL_2D_ARRAY)
+      real bvstr_lim(GLOBAL_2D_ARRAY)
+      common /forces_bustr/bustr_lim /forces_bvstr/bvstr_lim
+#endif
+
 #ifndef ANA_BMFLUX
 !
 !  tbms      Time of surface momentum stresses.

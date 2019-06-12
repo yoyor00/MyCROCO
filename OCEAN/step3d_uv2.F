@@ -95,6 +95,11 @@
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
+      real wrk(PRIVATE_2D_SCRATCH_ARRAY)
+      real coef(0:N),height(0:N)
+      real Hdiss,gamma,fbot
+# endif
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
@@ -125,6 +130,7 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
+
       do j=Jstr,Jend
 !
 ! The vertical viscosity term is not added as an explicit divergence term
@@ -223,16 +229,79 @@
 # ifndef BODYFORCE
         do i=IstrU,Iend
           DC(i,N)=DC(i,N)+dt*sustr(i,j)
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
+          if (ABS(bustr(i,j)).gt.ABS(bustr_lim(i,j))) then
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'in DISSIP bustr,bustr_lim',
+     &                   bustr(i,j),bustr_lim(i,j)
+            endif
+            do k=1,N
+# if defined DISSIP_SHALLOW_BODY_v2_lin
+              coef(k) = (Hz(i,j,k)+Hz(i-1,j,k))
+     &                   /(z_w(i  ,j,N)-z_w(i  ,j,0)
+     &                    +z_w(i-1,j,N)-z_w(i-1,j,0))
+# elif defined DISSIP_SHALLOW_BODY_v2_exp
+              height(k) = 0.5* (z_w(i,j,0)-z_w(i,j,k)
+     &            + z_w(i-1,j,0)-z_w(i-1,j,k))
+            enddo
+              height(0) = 0.
+!--------------------------------------------------------------------
+! Find the exponential scale
+!--------------------------------------------------------------------
+
+            Hdiss=-height(1)/10.
+            fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            gamma = bustr_lim(i,j)/bustr(i,j)
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'Hdiss,fbot,gamma',Hdiss,fbot,gamma
+            endif
+            do while (fbot.ge.gamma.and.Hdiss.le.abs(10*height(N)))
+                Hdiss = Hdiss*2.
+                fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            enddo
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'Hdiss,fbot,gamma',Hdiss,fbot,gamma
+            endif
+            cff=0.
+            do k=1,N
+            coef(k) = (exp(height(k-1)/Hdiss) -exp(height(k)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+              cff = cff + coef(k)
+# endif
+              !bustr_lim(i,j) = bustr(i,j)
+              !bustr(i,j) = 0.
+              DC(i,k)=DC(i,k)-dt*bustr(i,j)*coef(k)
+            enddo
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'u coef(1) in step3duv2',coef(1)
+            write(*,*) 'u bustr*coef',bustr(i,j)*coef(1)
+            write(*,*) 'u bustr_lim',bustr_lim(i,j)
+            write(*,*) 'int coef (should be one)',cff
+            endif
+          else
+              bustr_lim(i,j) = 0.
+              DC(i,1)=DC(i,1)-dt*bustr(i,j)
+          endif
+# else
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
+#  endif
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
+# if defined DISSIP_SHALLOW_BODY
+     &                     + wrkDrag(i,j,1)
+# endif
             wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
 # endif /* DIAGNOSTICS_VRT */
 # ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
+# if defined DISSIP_SHALLOW_BODY
+     &                     + ekwrkDrag(i,j,1)
+# endif
           ekwrkWind(i,j,1)= sustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
 # endif /* DIAGNOSTICS_EK */
@@ -295,7 +364,7 @@
             MVmix(i,j,k,1)=-( MVmix(i,j,k,1) - u(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
      &                    *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE || defined DISSIP_SHALLOW_BODY
             MVmix(i,j,k,1)= MVmix(i,j,k,1) + Mbody(i,j,k,1)
 # endif
 # elif defined DIAGNOSTICS_EK
@@ -320,9 +389,14 @@
         do i=IstrU,Iend
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
      &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
      &               + (wrkDrag(i,j,1) + wrkWind(i,j,1))
+     &               * on_u(i,j)
+# elif defined DISSIP_SHALLOW_BODY
+          wrkVmix(i,j,1) = wrkVmix(i,j,1)
+     &               + (wrkDrag(i,j,1) + wrkWind(i,j,1)
+     &               + bustr(i,j)*om_u(i,j)           )
      &               * on_u(i,j)
 # endif
         enddo
@@ -331,9 +405,14 @@
         do i=IstrU,Iend
              ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
      &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE
              ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
      &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
+# elif defined DISSIP_SHALLOW_BODY
+             ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
+     &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
+     &               + bustr(i,j)*om_u(i,j)*on_u(i,j)
+     &                    * u(i,j,1,nrhs)
 # endif
 # if defined DIAGNOSTICS_EK_MLD
              ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1)
@@ -468,16 +547,66 @@
 # ifndef BODYFORCE
           do i=Istr,Iend
             DC(i,N)=DC(i,N)+dt*svstr(i,j)
+# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
+          if (ABS(bvstr(i,j)).gt.ABS(bvstr_lim(i,j))) then
+            do k=1,N
+# if defined DISSIP_SHALLOW_BODY_v2_lin
+              coef(k) = (Hz(i,j,k)+Hz(i,j-1,k))
+     &                   /(z_w(i  ,j,N)-z_w(i  ,j,0)
+     &                    +z_w(i,j-1,N)-z_w(i,j-1,0))
+# elif defined DISSIP_SHALLOW_BODY_v2_exp
+              height(k) = 0.5* (z_w(i,j,0)-z_w(i,j,k)
+     &            + z_w(i,j-1,0)-z_w(i,j-1,k))
+            enddo
+              height(0) = 0.
+!--------------------------------------------------------------------
+! Find the exponential scale
+!--------------------------------------------------------------------
+
+            Hdiss=-height(1)/10.
+            fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            gamma = bvstr_lim(i,j)/bvstr(i,j)
+            do while (fbot.ge.gamma.and.Hdiss.le.abs(10*height(N)))
+                Hdiss = Hdiss*2.
+                fbot = (1. - exp(height(1)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+            enddo
+            do k=1,N
+            coef(k) = (exp(height(k-1)/Hdiss) -exp(height(k)/Hdiss))
+     &                / ( 1. - exp(height(N)/Hdiss) )
+# endif
+              !bvstr_lim(i,j) = bvstr(i,j)
+              !bvstr(i,j) = 0.
+              DC(i,k)=DC(i,k)-dt*bvstr(i,j)*coef(k)
+            enddo
+            if (i.eq.30.and.j.eq.30) then
+            write(*,*) 'v coef(1) in step3duv2',coef(1)
+            write(*,*) 'v bvstr*coef',bvstr(i,j)*coef(1)
+            write(*,*) 'v bvstr_lim',bvstr_lim(i,j)
+            endif
+          else
+              bvstr_lim(i,j) = 0.
+              DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+          endif
+# else
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+#  endif
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
+# if defined DISSIP_SHALLOW_BODY
+     &                     + wrkDrag(i,j,2)
+# endif
             wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
 # endif /* DIAGNOSTICS_VRT */
 # ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
+# if defined DISSIP_SHALLOW_BODY
+     &                     + ekwrkDrag(i,j,2)
+# endif
           ekwrkWind(i,j,2)= svstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
 # endif /* DIAGNOSTICS_EK */
@@ -546,7 +675,7 @@
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
      &                    *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
-# ifdef BODYFORCE
+# if defined BODYFORCE || defined DISSIP_SHALLOW_BODY
             MVmix(i,j,k,2)= MVmix(i,j,k,2) + Mbody(i,j,k,2)
 # endif
 # elif defined DIAGNOSTICS_EK
@@ -575,6 +704,11 @@
           wrkVmix(i,j,2) = wrkVmix(i,j,2)
      &               + (wrkDrag(i,j,2) +wrkWind(i,j,2))
      &               * om_v(i,j)
+# elif defined DISSIP_SHALLOW_BODY
+          wrkVmix(i,j,2) = wrkVmix(i,j,2)
+     &               + (wrkDrag(i,j,2) +wrkWind(i,j,2)
+     &               +  bvstr(i,j)*on_v(i,j)          )
+     &               * om_v(i,j)
 # endif
         enddo
 # endif
@@ -585,6 +719,11 @@
 # ifdef BODYFORCE
              ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
      &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
+# elif defined DISSIP_SHALLOW_BODY
+             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
+     &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
+     &               + bvstr(i,j)*om_v(i,j)*on_v(i,j)
+     &                 * v(i,j,1,nrhs)
 # endif
 # if defined DIAGNOSTICS_EK_MLD
              ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2)

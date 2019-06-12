@@ -110,6 +110,17 @@ C$    integer omp_get_thread_num
           vbar(i,j,2)=init
           vbar(i,j,3)=init
           vbar(i,j,4)=init
+
+#ifdef DISSIP_SHALLOW_BARO
+          damping_sw(i,j) = init
+#endif
+
+#ifdef DISSIP_SHALLOW_BODY
+          bustr_lim(i,j) = init
+          bvstr_lim(i,j) = init
+#endif
+
+
 #ifdef AVERAGES
           zeta_avg(i,j)=init 
           ubar_avg(i,j)=init

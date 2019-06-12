@@ -178,6 +178,10 @@
       integer indxHm
       parameter (indxHm=5)
 #endif
+#ifdef DISSIP_SHALLOW_BARO
+      integer indxDSW
+      parameter (indxDSW=5) ! same index as MOVING_BATHY => mutually exclusive
+#endif				    
 #ifdef SOLVE3D
       integer indxU, indxV, indxT
       parameter (indxU=6, indxV=7, indxT=8)
@@ -838,6 +842,9 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
+#ifdef DISSIP_SHALLOW_BARO
+     &      , hisDSW
+# endif
 # ifdef MOVING_BATHY
      &      , hisHm
 # endif
@@ -1234,6 +1241,9 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
+#ifdef DISSIP_SHALLOW_BARO
+     &      , hisDSW
+# endif
 # ifdef MOVING_BATHY
      &      , hisHm
 # endif
