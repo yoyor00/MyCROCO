@@ -289,7 +289,7 @@ C$OMP BARRIER
 C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
-# if defined  BBL  
+# if defined  BBL && !defined M3FAST 
 #   ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
 #   endif
@@ -672,7 +672,13 @@ C$OMP END MASTER
 C$OMP BARRIER
 
 #endif  /* !defined SOLVE3D */
-        
+
+#if defined BBL && defined M3FAST
+        do tile=my_first,my_last
+          call bblm (tile)
+        enddo
+C$OMP BARRIER
+#endif
                   ! This might look a bit silly,
                   ! since both branches of this
                   ! if statement are identical.

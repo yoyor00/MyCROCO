@@ -1328,7 +1328,7 @@ C$OMP END MASTER
 !  and/or quadratic formulation. 
 !-------------------------------------------------------------------
 !
-# ifdef BSTRESS_FAST
+# if defined BSTRESS_FAST && !defined BBL
 #  define UBOT UFx
 #  define VBOT VFe
       if (maxval(Zob).ne.0.) then
@@ -1750,7 +1750,7 @@ C$OMP END MASTER
               qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k) + dtnbq * (
      &                        dum_s + ru_int_nbq(i,j,k) )  
 # ifdef MASKING
-     &                                        *umask(i,j)
+              qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask(i,j)
 # endif
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
               ru_nbq(i,j,k)=dum_s/work(i,j) 
@@ -1839,7 +1839,7 @@ C$OMP END MASTER
               qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k) + dtnbq * (
      &                        dum_s + rv_int_nbq(i,j,k) )
 # ifdef MASKING
-     &                                        *vmask(i,j)
+              qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask(i,j)
 # endif
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
               rv_nbq(i,j,k)=dum_s/work(i,j)  
@@ -1911,15 +1911,21 @@ C$OMP END MASTER
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
             DU_nbq(i,j)=0.
+#  ifdef WET_DRY
+            umask_wet(i,j)=1
+#  endif
             do k=1,N
               qdmu_nbq(i,j,k)=Qsrc(is,k)*pn_u(i,j)
-              DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
+              DU_nbq(i,j)    =DU_nbq(i,j)+qdmu_nbq(i,j,k)
             enddo
           else
             DV_nbq(i,j)=0.
+#  ifdef WET_DRY
+            vmask_wet(i,j)=1
+#  endif
             do k=1,N
               qdmv_nbq(i,j,k)=Qsrc(is,k)*pm_v(i,j)
-              DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
+              DV_nbq(i,j)    =DV_nbq(i,j)+qdmv_nbq(i,j,k)
             enddo
           endif
         endif
@@ -2490,7 +2496,6 @@ C$OMP END MASTER
             enddo
           enddo
         endif
-  
         if (JstrV.le.Jend) then
           do j=Jstr,Jend+1  
             do i=Istr,Iend

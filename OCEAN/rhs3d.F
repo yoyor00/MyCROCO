@@ -81,6 +81,9 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
+# ifdef NBQ
+#  include "nbq.h"
+# endif
 # ifdef MRL_WCI
       real vstu,dudx,dvdx,ustv,dude,dvde
 # endif
@@ -1842,7 +1845,11 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
 # ifndef BODYFORCE
+#  ifdef BSTRESS_FAST
+     &        + sustr(i,j)*om_u(i,j)*on_u(i,j)
+#  else
      &        +(sustr(i,j)-bustr(i,j))*om_u(i,j)*on_u(i,j)
+#  endif
 # endif
 #  if defined MRL_WCI && defined WAVE_SFC_BREAK
      &                    +brk2dx(i,j)*om_u(i,j)*on_u(i,j)
@@ -1857,7 +1864,11 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
           do i=Istr,Iend
             rvfrc(i,j)=rv(i,j,1)
 # ifndef BODYFORCE
+#  ifdef BSTRESS_FAST
+     &       + svstr(i,j)*om_v(i,j)*on_v(i,j)
+#  else
      &       +(svstr(i,j)-bvstr(i,j))*om_v(i,j)*on_v(i,j)
+#  endif
 # endif
 # if defined MRL_WCI && defined WAVE_SFC_BREAK
      &                   +brk2de(i,j)*om_v(i,j)*on_v(i,j)

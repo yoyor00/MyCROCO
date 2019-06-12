@@ -166,7 +166,9 @@
 # ifdef NBQ_PERF
 #  undef  NBQ_MASS
 #  define NBQ_GRID_SLOW
-#  define NBQ_HZCORRECT
+#  ifdef NBQ
+#   define NBQ_HZCORRECT
+#  endif
 # else
 #  define NBQ_MASS
 #  undef  NBQ_GRID_SLOW
@@ -184,8 +186,8 @@
 # else
 #  undef  W_HADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_HADV_TVD      /* TVD vertical advection                 */
-#  undef  W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
-#  define W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
 #  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
@@ -215,6 +217,14 @@
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
+#  ifndef NBQ
+#   undef  OBC_NBQORLANSKI
+#   define OBC_NBQSPECIFIED
+#   undef  NBQ_NUDGING
+#   undef  NBQCLIMATOLOGY
+#   define NBQ_FRC_BRY
+#   undef W_FRC_BRY
+#  endif
 # endif
 
 #else                /* Hydrostatic mode */

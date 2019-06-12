@@ -430,7 +430,12 @@
       call ana_bmflux_tile (Istr,Iend,Jstr,Jend)
 
 # elif defined SOLVE3D
-#  ifndef BSTRESS_FAST
+
+#  ifdef BSTRESS_FAST
+!
+!   --> Compute bustr & bvstr in step3d_fast
+!
+#  else
 !
 !  Set bottom stress using logarithmic or linear 
 !  and/or quadratic formulation. 
@@ -517,7 +522,6 @@
       enddo
 #   endif
 #  endif /* BSTRESS_FAST */
-
 
 !
 ! Set boundary conditions
