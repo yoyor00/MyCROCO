@@ -490,14 +490,32 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface solar shortwave radiation [degC m/s] at
 !  horizontal RHO-points.
 !
+# if defined INNERSHELF && !defined INNERSHELF_EKMAN
       do j=JstrR,JendR
         do i=IstrR,IendR
-          srflx(i,j)=0.
+          srflx(i,j)=264.91/(rho0*Cp)
 # ifdef DIURNAL_INPUT_SRFLX
-          srflxbio(i,j)=0.
+          srflxbio(i,j)=srflx(i,j)
+# endif
+# ifdef DIURNAL_CYCLE
+          srflx(i,j)=srflx(i,j)*max(cos(2.*pi*(time/86400.-0.5)),0.)
 # endif
         enddo
       enddo
+# else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          srflx(i,j)=0.   ! default is 0.
+#  ifdef DIURNAL_INPUT_SRFLX
+          srflxbio(i,j)=srflx(i,j)
+#  endif
+#  ifdef DIURNAL_CYCLE
+          srflx(i,j)=264.91/(rho0*Cp)
+     &                     *max(cos(2.*pi*(time/86400.-0.5)),0.)
+#  endif
+        enddo
+      enddo
+# endif /* INNERSHELF */
       return
       end
 #endif /* ANA_SRFLUX */
@@ -604,7 +622,7 @@ C$    integer  trd, omp_get_thread_num
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
-      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
+      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
       ETA0=kwave*h(1,1)*U0/omega
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -692,11 +710,18 @@ C$    integer  trd, omp_get_thread_num
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+# elif defined INNERSHELF
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sst(i,j)=24.
+          dqdt(i,j)=-50.0/(rho0*Cp)
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sst(i,j)=???
-          dqdt(i,j)=???
+          sst(i,j)=25
+          dqdt(i,j)=0.
         enddo
       enddo
 # endif
@@ -1626,7 +1651,7 @@ C$    integer  trd, omp_get_thread_num
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1                ! [m2/s2]
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3                ! [m/s]
           Sdens(i,j)=MAX(cff4,1050.)
 # ifdef DEBUG
@@ -1801,10 +1826,12 @@ C$    integer  trd, omp_get_thread_num
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
+            if (cff2 .gt. 0.0) then
+             Qshape(is,k)=Qshape(is,k)/cff2
+            endif
           enddo
         enddo
-#  endif
+# endif
 
 # else
 #  define CST_SHAPE
@@ -1847,27 +1874,26 @@ C$    integer  trd, omp_get_thread_num
       endif   ! iic.eq.ntstart
 
 !
+!  If Qbar is read in nc file, update Qbar0 at every time step
+!
+# ifdef PSOURCE_NCFILE
+      do is=1,Nsrc
+        Qbar0(is)=Qbar(is)
+      enddo
+# endif
+!
+! Set-up river ramp to avoid strong initial shocks
+!
+      ramp=TANH(dt*sec2day*float(iic-ntstart)) ! 1-day ramp
+      do is=1,Nsrc
+        Qbar(is)=ramp*Qbar0(is)
+      enddo
+!
 ! Set-up vertically integrated mass transport [m3/s] of point
 ! sources (these may be time-dependent; positive in the positive U-
 ! or V-direction and vice-versa) and vertically distribute them
 ! according to mass transport profile chosen above.
 !
-# ifdef RIVER
-      ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
-      enddo
-# elif defined REGIONAL
-      ramp=1. !TANH(10*dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
-      enddo
-# else
-      ramp=1. !TANH(dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
-      enddo
-# endif
       do is=1,Nsrc
         do k=1,N
           Qsrc(is,k)=Qbar(is)*Qshape(is,k)
