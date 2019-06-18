@@ -42,6 +42,8 @@
 #  ifdef NBQ_MASS
       real Hzr(GLOBAL_2D_ARRAY,N)
       common /grid_Hzr/Hzr
+#  else
+#     define Hzr Hz
 #  endif
 # endif
 # ifdef M3FAST

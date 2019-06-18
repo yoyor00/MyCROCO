@@ -285,7 +285,9 @@
               DC(i,1)=DC(i,1)-dt*bustr(i,j)
           endif
 # else
+#  ifndef BSTRESS_FAST
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
+#  endif
 #  endif
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
@@ -590,7 +592,9 @@
               DC(i,1)=DC(i,1)-dt*bvstr(i,j)
           endif
 # else
+#  ifndef BSTRESS_FAST
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+#  endif
 #  endif
 # ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)

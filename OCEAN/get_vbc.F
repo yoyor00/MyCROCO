@@ -192,7 +192,9 @@
 #include "sources.h"
 #include "mpi_cpl.h"
       integer i,j,is, Istr,Iend,Jstr,Jend
+# if defined DISSIP_SHALLOW_BODY
       integer k
+# endif
       real cff,cff1
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY)
@@ -497,7 +499,7 @@
         enddo
       endif
 
-#   ifdef LIMIT_BSTRESS
+#   ifdef LIMIT_BSTRESS0
 !
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted

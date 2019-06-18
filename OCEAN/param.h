@@ -885,4 +885,14 @@
 # endif
 #endif /*SOLVE3D */
 
+!
+!----------------------------------------------------------------------
+! Max time increment for computing bottom stress at the 3D fast time 
+! steps
+!----------------------------------------------------------------------
+!
+#ifdef BSTRESS_FAST
+      integer inc_faststep_max
+      parameter(inc_faststep_max = 10)
+#endif
 

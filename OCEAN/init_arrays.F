@@ -1357,8 +1357,6 @@ C$    integer omp_get_thread_num
           rhobar_nbq(i,j,:)   =1.
           rhobar_nbq_avg1(i,j)=1.
 #  endif
-          rubar_nbq(i,j)    =init
-          rvbar_nbq(i,j)    =init
         enddo
       enddo
       do k=1,N

@@ -364,7 +364,7 @@
       common /bry_nbq_south1/ unbqbry_south,
      &                        vnbqbry_south
 #  ifdef NBQ
-     &     wnbqbry_south(GLOBAL_1D_ARRAYXI,0:N),
+      real wnbqbry_south(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_south(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_sout2h/ wnbqbry_south,
      &                        rnbqbry_south
@@ -376,7 +376,7 @@
       common /bry_nbq_north1/ unbqbry_north,
      &                        vnbqbry_north
 #  ifdef NBQ
-     &     wnbqbry_north(GLOBAL_1D_ARRAYXI,0:N),
+      real wnbqbry_north(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_north(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_north2/ wnbqbry_north,
      &                        rnbqbry_north

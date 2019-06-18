@@ -107,6 +107,17 @@
       real DV_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DV_nbq/ DV_nbq
 
+# ifdef BSTRESS_FAST      
+      integer inc_faststep
+      common/nbq_inc_faststep/inc_faststep
+      integer nb_faststep
+      common/nbq_nb_faststep/nb_faststep
+      real rubar_sum(GLOBAL_2D_ARRAY)
+      common /nbq_rubar_sum/ rubar_sum
+      real rvbar_sum(GLOBAL_2D_ARRAY)
+      common /nbq_rvbar_sum/ rvbar_sum
+# endif
+
 # ifdef NBQ
       real rho_grd(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_grd/rho_grd
@@ -127,11 +138,6 @@
       common /nbq_ruint_2d/ru_int_nbq_2d
       real rv_int_nbq_2d (GLOBAL_2D_ARRAY)  
       common /nbq_rvint_2d/rv_int_nbq_2d
-
-      real rubar_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_rubar/ rubar_nbq
-      real rvbar_nbq(GLOBAL_2D_ARRAY)
-      common /nbq_rvbar/ rvbar_nbq
 
 !**********************************************************************
       real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
