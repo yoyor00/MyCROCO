@@ -315,42 +315,39 @@ C$    trd=omp_get_thread_num()
       enddo
 # endif
  
+!
+!  Reinitialise fast mode at each first fast step
+!
       if (FIRST_FAST_STEP) then
         do k=1,N
-          do j=Jstr,Jend
-            do i=IstrU,Iend
+          do j=Jstr-1,Jend+1
+            do i=IstrU-1,Iend+1
               qdmu_nbq(i,j,k)=0.5*u(i,j,k,nstp)*(Hz(i,j,k)+Hz(i-1,j,k))
             enddo
-          enddo 
+          enddo
         enddo
         do k=1,N
-          do j=JstrV,Jend
-            do i=Istr,Iend
+          do j=JstrV-1,Jend+1
+            do i=Istr-1,Iend+1
               qdmv_nbq(i,j,k)=0.5*v(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j-1,k))
             enddo
-          enddo 
+          enddo
         enddo
-# ifdef NBQ
-        do k=1,N-1
-          do j=Jstr,Jend
-            do i=Istr,Iend
+#  ifdef NBQ
+        do j=JstrV-1,Jend
+          do k=1,N-1
+            do i=IstrU-1,Iend
               qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
             enddo
           enddo
-        enddo
-        k=0 
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nstp)*Hz(i,j,k+1)
+          do i=IstrU-1,Iend
+            qdmw_nbq(i,j,0)=0.5*wz(i,j,0,nstp)*Hz(i,j,1)
+          enddo
+          do i=IstrU-1,Iend
+            qdmw_nbq(i,j,N)=0.5*wz(i,j,N,nstp)*Hz(i,j,N)
           enddo
         enddo
-        k=N 
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            qdmw_nbq(i,j,k)=0.5*wz(i,j,k,nstp)*Hz(i,j,k)
-          enddo
-        enddo
-# endif
+#  endif
       endif    ! FIRST_FAST_STEP
 !
 !=====================================================================
