@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 
-#if !defined NBQ || (defined AGRIF && defined NBQ_CHILD_ONLY)
+#if !defined M3FAST || (defined AGRIF && defined NBQ_CHILD_ONLY)
 
 #define PRED_COUPLED_MODE
 
@@ -1869,4 +1869,4 @@ C$OMP END MASTER
 #else
       subroutine step2d_empty
       end
-#endif /* NBQ */
+#endif /* M3FAST */

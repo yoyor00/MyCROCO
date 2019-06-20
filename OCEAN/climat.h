@@ -175,16 +175,18 @@
 # undef GLOBAL_1D_ETA
 #endif
 
-#if defined NBQ && (defined NBQCLIMATOLOGY || \
+#if defined M3FAST && (defined NBQCLIMATOLOGY || \
                    (defined AGRIF && !defined NBQ_FRC_BRY))
       real unbqclm(GLOBAL_2D_ARRAY,N)
       real vnbqclm(GLOBAL_2D_ARRAY,N)
-      real wnbqclm(GLOBAL_2D_ARRAY,N)
-      real rnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_unbqclm/unbqclm 
       common /climat_vnbqclm/vnbqclm
+# ifdef NBQ
+      real wnbqclm(GLOBAL_2D_ARRAY,N)
+      real rnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_wnbqclm/wnbqclm 
       common /climat_rnbqclm/rnbqclm
+# endif
 #endif
 
 

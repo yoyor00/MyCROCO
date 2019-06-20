@@ -426,8 +426,16 @@
 
 #if (!defined BBL || defined AGRIF)
 # ifdef ANA_BMFLUX
+
       call ana_bmflux_tile (Istr,Iend,Jstr,Jend)
+
 # elif defined SOLVE3D
+
+#  ifdef BSTRESS_FAST
+!
+!   --> Compute bustr & bvstr in step3d_fast
+!
+#  else
 !
 !  Set bottom stress using logarithmic or linear 
 !  and/or quadratic formulation. 
@@ -488,7 +496,7 @@
         enddo
       endif
 
-#  ifdef LIMIT_BSTRESS
+#   ifdef LIMIT_BSTRESS
 !
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted
@@ -512,7 +520,8 @@
      &                   ABS(v(i,j,1,nrhs))*cff1)
         enddo
       enddo
-#  endif
+#   endif
+#  endif /* BSTRESS_FAST */
 
 !
 ! Set boundary conditions

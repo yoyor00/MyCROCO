@@ -36,9 +36,9 @@
 # ifdef MRL_WCI
 #   include "forces.h"
 # endif
-#ifdef NBQ
-# include "nbq.h"
-#endif
+# ifdef M3FAST
+#  include "nbq.h"
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -50,18 +50,18 @@
         enddo
         do k=1,N
           do i=IstrU,Iend
-# ifdef NBQ
+# ifdef M3FAST
             u(i,j,k,nnew)=u(i,j,k,nnew)+DC(i,0)*(ru(i,j,k)+
      &                                           ru_nbq_avg2(i,j,k))
 
-#else
+# else
             u(i,j,k,nnew)=u(i,j,k,nnew)+DC(i,0)*ru(i,j,k)
-#endif
-#  if defined MRL_WCI && defined MASKING
+# endif
+# if defined MRL_WCI && defined MASKING
             u(i,j,k,nnew)=u(i,j,k,nnew)*umask(i,j)
      &                    +0.5*ust(i,j,k)*(Hz(i-1,j,k)+Hz(i,j,k))
      &                                          *(umask(i,j)-1.0)
-#  endif
+# endif
           enddo
         enddo
         if (j.ge.JstrV) then
@@ -70,17 +70,17 @@
           enddo
           do k=1,N
             do i=Istr,Iend
-#ifdef NBQ
+# ifdef M3FAST
               v(i,j,k,nnew)=v(i,j,k,nnew)+DC(i,0)*(rv(i,j,k)+
      &                                             rv_nbq_avg2(i,j,k))
-#else
+# else
               v(i,j,k,nnew)=v(i,j,k,nnew)+DC(i,0)*rv(i,j,k)
-#endif
-#  if defined MRL_WCI && defined MASKING
+# endif
+# if defined MRL_WCI && defined MASKING
               v(i,j,k,nnew)=v(i,j,k,nnew)*vmask(i,j)
      &                      +0.5*vst(i,j,k)*(Hz(i,j-1,k)+Hz(i,j,k))
      &                                            *(vmask(i,j)-1.0)
-#  endif
+# endif
             enddo
           enddo
         endif

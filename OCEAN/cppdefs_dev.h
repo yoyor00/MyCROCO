@@ -41,6 +41,7 @@
    and parallel runs
 */
 #undef  RVTK_DEBUG
+
 #if defined RVTK_DEBUG && !defined MPI && !defined OPENMP
 # define RVTK_DEBUG_WRITE
 #endif
@@ -134,17 +135,17 @@
 ======================================================================
 */
 #ifdef NBQ              /* General options */
+# define M3FAST
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
 # define NBQ_IMP
+# define BSTRESS_FAST
 # undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
-# ifdef  TANK
-#  undef  NBQ_AM4
-# else
-#  define NBQ_AM4
+# ifdef TANK
+#  define NOT_NBQ_AM4
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
@@ -164,7 +165,6 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
-
 /*
    Options for wz HADV numerical schemes (default C4)
 */
@@ -176,8 +176,8 @@
 # else
 #  undef  W_HADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_HADV_TVD      /* TVD vertical advection                 */
-#  undef  W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
-#  define W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
 #  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
@@ -214,6 +214,37 @@
 # define HZR Hz
 
 #endif  /* NBQ */
+
+/*
+======================================================================
+   Activate FAST timestep 3D dynamics for hydrostatic simulations
+   -- Fast friction BSTRESS_FAST --
+======================================================================
+*/
+#ifdef BSTRESS_FAST
+# define M3FAST
+#endif
+#if !defined NBQ && defined M3FAST       /* General options */
+# define SOLVE3D
+# define M2FILTER_NONE  /* no filter with M3FAST */
+# undef  M2FILTER_POWER
+# define BSTRESS_FAST
+/*
+   use options from NBQ Open boundary conditions
+*/
+# if defined OBC_WEST  || defined OBC_EAST  || \
+     defined OBC_NORTH || defined OBC_SOUTH
+#  define OBC_NBQ
+# endif
+# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
+#  undef  OBC_NBQORLANSKI    /*  Radiative conditions           */
+#  define OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  undef  NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef  NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
+#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
+# endif
+#endif  /* M3FAST */
 
 /*
 ======================================================================
@@ -697,10 +728,11 @@
 
     LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid 
     numerical instability associated with reversing bottom flow
+    NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
 #ifndef INNERSHELF
-# define LIMIT_BSTRESS
+# undef  LIMIT_BSTRESS
 #endif
 #ifdef BBL
 # ifdef OW_COUPLING

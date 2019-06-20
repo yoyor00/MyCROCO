@@ -601,7 +601,7 @@ CR      write(*,*)  ' -5' MYID
 !  Set initial Non-boussinesq variables - Part I
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
+# ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,1)
@@ -629,7 +629,7 @@ CR      write(*,*)  ' -3' MYID
 !  Set initial Non-boussinesq density field: rhobar_nbq - Part II
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
+# ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,2)
@@ -795,7 +795,7 @@ CR      write(*,*) ' -1' MYID
 !  Set initial Non-boussinesq variables PART III
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
+# ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,3)
@@ -1421,7 +1421,7 @@ CR      write(*,*) '  0' MYID
      &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
      &    (/i2t,j2t,N,NT/),tid)
 
-!# ifdef NBQ                     
+!# ifdef NBQ
 !        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/), !!  LR test; \TODO check dims
 !     &    (/'x','y','N','N'/),(/i1t,j1t,1,1/),
 !     &    (/i2t,j2t,N,NT/),rhonbqid)

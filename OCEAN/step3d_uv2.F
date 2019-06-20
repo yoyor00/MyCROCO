@@ -223,21 +223,23 @@
 # ifndef BODYFORCE
         do i=IstrU,Iend
           DC(i,N)=DC(i,N)+dt*sustr(i,j)
+#  ifndef BSTRESS_FAST
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
-# ifdef DIAGNOSTICS_VRT
+#  endif
+#  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
             wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
-# endif /* DIAGNOSTICS_VRT */
-# ifdef DIAGNOSTICS_EK
+#  endif /* DIAGNOSTICS_VRT */
+#  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
           ekwrkWind(i,j,1)= sustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
-# endif /* DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_EK */
         enddo
-# endif
+# endif /* BODYFORCE */
         do i=IstrU,Iend
           cff=1./BC(i,1)
           CF(i,1)=cff*( FC(i,1)                  !<-- q(1) = c(1)/b(1)
@@ -344,9 +346,9 @@
 !###########################
 
 # if defined DIAGNOSTICS_BARO
+!
 ! Now add only coupling contribution to the pressure gradient diagnostics
-
-
+!
         do k=1,N
           do i=IstrU,Iend
 !            u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
@@ -468,21 +470,23 @@
 # ifndef BODYFORCE
           do i=Istr,Iend
             DC(i,N)=DC(i,N)+dt*svstr(i,j)
+#  ifndef BSTRESS_FAST
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
-# ifdef DIAGNOSTICS_VRT
+#  endif
+#  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
             wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
-# endif /* DIAGNOSTICS_VRT */
-# ifdef DIAGNOSTICS_EK
+#  endif /* DIAGNOSTICS_VRT */
+#  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
           ekwrkWind(i,j,2)= svstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
-# endif /* DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_EK */
           enddo
-# endif          
+# endif /* BODYFORCE */        
 !
 ! Resolve the tri-diagonal system. Also perform coupling between the
 ! barotropic and baroclinic modes (similarly to the XI-component, see
@@ -541,7 +545,6 @@
           do k=1,N
             do i=Istr,Iend
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
-!
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
@@ -594,9 +597,9 @@
 # endif
 !###########################
 # if defined DIAGNOSTICS_BARO
+!
 ! Now add only coupling contribution to the pressure gradient diagnostics
-
-
+!
           do k=1,N
             do i=Istr,Iend
 !              v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
@@ -632,13 +635,10 @@
 !-------------------------------------------------------------------
 ! DIAGNOSTICS
 !-------------------------------------------------------------------
-
-
 # if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_PV
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
-
             Mrate(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
      &                                           *om_u(i,j)*on_u(i,j)/dt
@@ -648,7 +648,6 @@
 
         do j=JstrV,Jend
           do i=Istr,Iend
-
             Mrate(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
      &                                           *om_v(i,j)*on_v(i,j)/dt
@@ -656,9 +655,7 @@
         enddo
       enddo
 # endif
-
 # if defined DIAGNOSTICS_EK
-
         do j=JstrR,JendR
           do i=IstrR,IendR
             ekwrkVmix2(i,j,1)=0
@@ -669,11 +666,9 @@
 # endif
           enddo
         enddo
-
         do j=Jstr,Jend
           do i=IstrU,Iend
             do k=1,N
-
                 ekwrkVmix2(i,j,1) = ekwrkVmix2(i,j,1) + 0.5*
      &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
@@ -682,10 +677,8 @@
      &                     *umask(i,j)
 #  endif
             enddo
-
 # if defined DIAGNOSTICS_EK_MLD
             do k=kbl(i,j),N
-
                 ekwrkVmix2_mld(i,j,1) = ekwrkVmix2_mld(i,j,1) + 0.5*
      &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
@@ -697,11 +690,9 @@
 # endif
           enddo
         enddo
-
         do j=JstrV,Jend
           do i=Istr,Iend
             do k=1,N
-
               ekwrkVmix2(i,j,2) = ekwrkVmix2(i,j,2) + 0.5*
      &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
@@ -709,7 +700,6 @@
 #  ifdef MASKING
      &                     *vmask(i,j)
 #  endif
-
             enddo
 # if defined DIAGNOSTICS_EK_MLD
             do k=kbl(i,j),N
@@ -724,11 +714,7 @@
 # endif
           enddo
         enddo
-
-
 # endif /* DIAGNOSTICS_EK */
-
-
 !
 !--------------------------------------------------------------------
 !  Compute wet/dry masks for total velocity

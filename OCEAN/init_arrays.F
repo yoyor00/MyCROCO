@@ -1339,31 +1339,29 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 
-# ifdef NBQ
+# ifdef M3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef NBQ_MASS
           rhobar_nbq(i,j,:)   =1.
           rhobar_nbq_avg1(i,j)=1.
 #  endif
-!          rubar_nbq(i,j)    =init
-!          rvbar_nbq(i,j)    =init
         enddo
       enddo
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# ifdef NBQ_MASS
+#  ifdef NBQ_MASS
             rho_nbq(i,j,k)     =1.
             rho_nbq_avg1(i,j,k)=1.
 !            rho_nbq_avg2(i,j,k)=1.
-# endif
+#  endif
             ru_nbq(i,j,k)     =init
             rv_nbq(i,j,k)     =init
-# ifndef M2FILTER_NONE
+#  if !defined M2FILTER_NONE
             ru_nbq_avg1(i,j,k)=init
             rv_nbq_avg1(i,j,k)=init
-# endif
+#  endif
             ru_nbq_avg2(i,j,k)=init
             rv_nbq_avg2(i,j,k)=init
             ru_int_nbq(i,j,k) =init
@@ -1371,21 +1369,30 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+#  ifdef NBQ
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
             wz(i,j,k,1)  =init
             wz(i,j,k,2)  =init
             rw_nbq(i,j,k)=init
-# ifndef M2FILTER_NONE
+#  if !defined M2FILTER_NONE
             rw_nbq_avg1(i,j,k)=init
-# endif
+#  endif
             rw_nbq_avg2(i,j,k)=init
             rw_int_nbq(i,j,k) =init
           enddo
         enddo
       enddo
-# endif /* NBQ */
+#  else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          rubar_nbq(i,j)=init
+          rvbar_nbq(i,j)=init
+        enddo
+      enddo
+#  endif/* NBQ */
+# endif /* M3FAST */
 
 #endif /* SOLVE3D */
 

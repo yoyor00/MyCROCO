@@ -151,6 +151,8 @@
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
+                      /* Bottom friction in fast 3D step */
+# undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
@@ -1019,6 +1021,7 @@
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
+# define BSTRESS_FAST
 # undef  NBQ
 # ifdef NBQ
 #  define NBQ_PRECISE

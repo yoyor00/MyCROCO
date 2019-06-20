@@ -105,7 +105,7 @@ C$OMP END PARALLEL
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 #ifdef FLOATS
@@ -289,7 +289,7 @@ C$OMP BARRIER
 C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
-# if defined  BBL  
+# if defined  BBL && !defined M3FAST 
 #   ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
 #   endif
@@ -551,6 +551,9 @@ C$OMP BARRIER
 #ifdef STATIONS
 # include "sta.h"
 #endif
+#if defined BBL && defined BSTRESS_FAST
+# include "nbq.h"
+#endif
        integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
@@ -672,7 +675,15 @@ C$OMP END MASTER
 C$OMP BARRIER
 
 #endif  /* !defined SOLVE3D */
-        
+
+#if defined BBL && defined BSTRESS_FAST
+        if (mod(iif-1,inc_faststep).eq.0) then
+          do tile=my_first,my_last
+            call bblm (tile)
+          enddo
+        endif
+C$OMP BARRIER
+#endif
                   ! This might look a bit silly,
                   ! since both branches of this
                   ! if statement are identical.
@@ -682,7 +693,7 @@ C$OMP BARRIER
                   ! tile-processing sequence.               
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
-#ifdef NBQ
+#ifdef M3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -698,7 +709,7 @@ C$OMP BARRIER
           enddo
         else
           do tile=my_first,my_last
-#ifdef NBQ
+#ifdef M3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -723,9 +734,15 @@ C$OMP BARRIER
 #ifdef RVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
+# ifdef M3FAST
+       call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r')
+       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
+       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+# else
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
        call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
        call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
+# endif
 C$OMP END MASTER       
 #endif
 
@@ -744,7 +761,7 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 #ifdef FLOATS

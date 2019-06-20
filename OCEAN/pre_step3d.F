@@ -31,9 +31,7 @@
      &                                            A2d(1,4,trd), 
 # endif           
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
-# ifndef NBQ
      &                                          , A3d(1,4,trd)         
-# endif
      &                                                        )
       return
       end
@@ -44,9 +42,7 @@
      &                                                       WC, 
 # endif     
      &                                               FX,FE,WORK
-# ifndef NBQ
      &                                                 ,Hz_half
-# endif
      &                                                         )  
 !
 !--------------------------------------------------------------------
@@ -66,8 +62,6 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
-#ifdef NBQ
-#endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
@@ -87,13 +81,11 @@
 # ifdef VADV_ADAPT_IMP      
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
-# ifndef NBQ
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
-# endif
 # ifdef WET_DRY
       real cff3,cff4,cff5
 #  endif
-# ifdef NBQ
+# ifdef M3FAST
       real qdm_nstp,qdm_indx
 # endif
       parameter (gamma=1./6., epsil=1.E-16)
@@ -107,7 +99,7 @@
 # ifdef PSOURCE
 #  include "sources.h"
 # endif
-# ifdef NBQ
+# ifdef M3FAST
 #  include "nbq.h"
 # endif
 # ifdef MASKING
@@ -116,10 +108,12 @@
 #  define SWITCH !
 # endif
 
-# ifdef NBQ
+# ifdef M3FAST
 #  define ru_nbq_avg1 ru_nbq
 #  define rv_nbq_avg1 rv_nbq
-#  define rw_nbq_avg1 rw_nbq
+#  ifdef NBQ
+#   define rw_nbq_avg1 rw_nbq
+#  endif
 # endif
 !
 !--------------------------------------------------------------------
@@ -389,7 +383,7 @@
             cdt=(1.-gamma)*dt
       endif 
 
-# ifdef NBQ
+# ifdef M3FAST
       do j=Jstr,Jend
         do i=IstrU,Iend
            ru_int_nbq_2d(i,j)=0.
@@ -492,7 +486,7 @@
               u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                           +cdt*DC(i,0)*ru(i,j,k)
      &                      )*cff
-# ifdef NBQ
+# ifdef M3FAST
               ru_int_nbq(i,j,k) = 0.
 !              ru_int_nbq_2d(i,j)=ru_int_nbq_2d(i,j)+ru_int_nbq(i,j,k)
 # endif
@@ -501,7 +495,7 @@
             enddo
           enddo
 
-!# ifdef NBQ
+!# ifdef M3FAST
 !          do k=1,N
 !            do i=IstrU,Iend
 !               ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
@@ -525,7 +519,7 @@
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
 # endif 
 
-# ifdef NBQ
+# ifdef M3FAST
               qdm_nstp = u(i,j,k,nstp)*0.5*(Hz(i  ,j,k)+
      &                                      Hz(i-1,j,k))
               qdm_indx = u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
@@ -552,7 +546,7 @@
             enddo
           enddo  
 
-# ifdef NBQ
+# ifdef M3FAST
           do k=1,N
             do i=IstrU,Iend
                ru_int_nbq(i,j,k)=ru_int_nbq(i,j,k)
@@ -593,7 +587,7 @@
      &                                           +cdt*DC(i,0)*rv(i,j,k)
      &                           )*cff
 
-# ifdef NBQ
+# ifdef M3FAST
                 rv_int_nbq(i,j,k) = 0.
 !                rv_int_nbq_2d(i,j)=rv_int_nbq_2d(i,j)+rv_int_nbq(i,j,k)
 # endif
@@ -602,7 +596,7 @@
               enddo
             enddo
 
-!# ifdef NBQ
+!# ifdef M3FAST
 !          do k=1,N
 !            do i=Istr,Iend
 !               rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
@@ -626,7 +620,7 @@
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
 # endif              
 
-# ifdef NBQ
+# ifdef M3FAST
                 qdm_nstp = v(i,j,k,nstp)*0.5*(Hz(i,j  ,k)+
      &                                        Hz(i,j-1,k))
                 qdm_indx = v(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
@@ -654,7 +648,7 @@
               enddo
             enddo               !--> discard DC(:,0)
 
-# ifdef NBQ
+# ifdef M3FAST
           do k=1,N
             do i=Istr,Iend
                rv_int_nbq(i,j,k)=rv_int_nbq(i,j,k)
@@ -808,10 +802,12 @@
 !==
 # endif /* NBQ */   
   
-# if defined NBQ && defined M2FILTER_NONE 
+# if defined M3FAST && defined M2FILTER_NONE 
 #  undef ru_nbq_avg1 
-#  undef rv_nbq_avg1 
-#  undef rw_nbq_avg1 
+#  undef rv_nbq_avg1
+#  ifdef NBQ
+#   undef rw_nbq_avg1
+#  endif
 # endif
 !
 !--------------------------------------------------------------------
