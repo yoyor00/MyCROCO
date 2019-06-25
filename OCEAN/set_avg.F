@@ -346,6 +346,14 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+        if (wrtavg(indxBhflx)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              btflx_avg(i,j,itemp)=cff*(cff1*btflx_avg(i,j,itemp)+
+     &                                       btflx(i,j,itemp)*(rho0*Cp))
+            enddo
+          enddo
+        endif
 #ifdef SALINITY
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
@@ -356,6 +364,15 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+        if (wrtavg(indxBwflx)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              btflx_avg(i,j,isalt)=cff*(cff1*btflx_avg(i,j,isalt)+
+     &                               stf_cff*btflx(i,j,isalt) /
+     &               ( max(eps,t(i,j,1,nstp,isalt)) ) )
+            enddo
+          enddo
+        endif        
 #endif
         if (wrtavg(indxShflx_rsw)) then
           do j=JstrR,JendR

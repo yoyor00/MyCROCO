@@ -1,4 +1,4 @@
-! $Id: read_inp.F 1615 2014-12-17 13:27:07Z rblod $
+! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -1117,6 +1117,13 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+        || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+        || defined GLS_MIXING
+     &                                          ,  wrthis(indxbvf)
+# else
+     &                                          ,  dumboolean
+# endif
 # ifdef VIS_COEF_3D
      &                                          ,  wrthis(indxVisc)
 # else 
@@ -1149,16 +1156,26 @@ c        close(testunit)
 # endif
      &                                          ,  wrthis(indxShflx_rsw)
 # ifdef BULK_FLUX
-     &                                          , wrthis(indxShflx_rlw)
-     &                                          , wrthis(indxShflx_lat)
-     &                                          , wrthis(indxShflx_sen)
+     &                                          ,  wrthis(indxShflx_rlw)
+     &                                          ,  wrthis(indxShflx_lat)
+     &                                          ,  wrthis(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          ,  wrthis(indxBhflx)
+#else
+     &                                          ,  dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          ,  wrthis(indxBwflx)
+#else
+     &                                          ,  dumboolean
+#endif       
 # ifdef MOVING_BATHY
-     &                                          , wrthis(indxHm)
+     &                                          ,  wrthis(indxHm)
 # else 
      &                                          ,  dumboolean
 # endif
@@ -1211,7 +1228,13 @@ c        close(testunit)
      &                                        .or. wrthis(indxShflx_lat)
      &                                        .or. wrthis(indxShflx_sen)
 # endif
-# if defined BIOLOGY && !defined PISCES
+# if defined BHFLUX
+     &                                        .or. wrthis(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrthis(indxBwflx)
+#endif 
+# if defined BIOLOGY &&         !defined PISCES
      &                                        .or. wrthis(indxHel)
 #  ifdef BIO_NChlPZD
      &                                        .or. wrthis(indxChC)
@@ -1297,7 +1320,14 @@ c        close(testunit)
 # endif
      &  , wrthis(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                          'Short-wave surface radiation'
-
+# ifdef BHFLUX
+     &  , wrthis(indxBhflx), 'write Bhflx [W/m2]', 
+     &                       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrthis(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Bottom freshwater flux (E-P)'
+# endif        
 !
 ! Switches for GLS fields to be saved into history file.
 !
@@ -1354,8 +1384,12 @@ c        close(testunit)
 
       elseif (keyword(1:kwlen).eq.'auxiliary_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wrtavg(indxR), wrtavg(indxO)
-     &        ,  wrtavg(indxW),  wrtavg(indxAkv),  wrtavg(indxAkt)
+        read(input,*,err=95)
+     &                                             wrtavg(indxR)
+     &                                          ,  wrtavg(indxO)
+     &                                          ,  wrtavg(indxW)
+     &                                          ,  wrtavg(indxAkv)
+     &                                          ,  wrtavg(indxAkt)
 # ifdef SALINITY
      &                                          ,  wrtavg(indxAks)
 # else 
@@ -1408,6 +1442,16 @@ c        close(testunit)
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          , wrtavg(indxBhflx)
+#else
+     &                                          , dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          , wrtavg(indxBwflx)
+#else
+     &                                          , dumboolean
+#endif      
 # ifdef MOVING_BATHY
      &                                          , wrtavg(indxHm)
 # else 
@@ -1464,7 +1508,13 @@ c        close(testunit)
      &                                        .or. wrtavg(indxShflx_rlw)
      &                                        .or. wrtavg(indxShflx_lat)
      &                                        .or. wrtavg(indxShflx_sen)
-#  endif 
+#  endif
+# if defined BHFLUX
+     &                                        .or. wrtavg(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrtavg(indxBwflx)
+#endif 
 #  if defined BIOLOGY && !defined PISCES
      &                                        .or. wrtavg(indxHel)
 #   ifdef BIO_NChlPZD
@@ -1558,7 +1608,15 @@ c        close(testunit)
      &                      'Surface freshwater flux (E-P)'
 #  endif
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
-     &                      'Short-wave surface radiation.'
+     &                          'Short-wave surface radiation.'
+# ifdef BHFLUX
+     &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
+     &       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && define SALINITY
+     &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Surface freshwater flux (E-P)'
+# endif     
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -2540,6 +2598,24 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */
 !
+!
+! Hydrothermal forcing file name. Check its availability.
+!
+#if defined BHFLUX || defined BWFLUX
+      elseif (keyword(1:kwlen).eq.'bottom_forcing') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        btfname=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &       'Bottom forcing file:', fname(1:lstr)
+#endif  /* BHFLUX || BWFLUX  */
+!
 ! Online forcing with CFSR
 !
 #ifdef ONLINE   /* JG Online */
@@ -2563,6 +2639,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */
+
+        
 
       else
         MPI_master_only write(stdout,'(/3(1x,A)/)')

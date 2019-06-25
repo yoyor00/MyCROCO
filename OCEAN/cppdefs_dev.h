@@ -690,7 +690,27 @@
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
 #endif
+/*
+======================================================================
+      Bottom forcing:
+      
+      By default:
+         define ANA_BTFLUX : set to zero in analytical.F
+         define ANA_BSFLUX
 
+
+      - define BHFLUX : bottom heat flux, Btflx(i,j,itemp), is read into
+                  the netcdf file croco_btf.nc
+      - define BWFLUX : bottom freshwater flux, Btflx(i,j,isalt), is read
+                   into a netcdf file(croco_btf.nc)
+======================================================================
+*/
+#if !defined ANA_BTFLUX
+#  define BHFLUX
+#endif
+#if !defined ANA_BSFLUX
+#  define BWFLUX
+#endif
 /*
 ======================================================================
     Bottom stress option:
