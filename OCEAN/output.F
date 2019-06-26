@@ -45,7 +45,7 @@
 ! XIOS Case
 !
 #ifdef XIOS
-       ntrds=omp_get_num_threads()
+      ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
       range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
       my_first=trd*range
@@ -248,7 +248,7 @@
 #  ifdef AVERAGES
         if (mod(ilc-1,navg).eq.0 .and. wrtavg(indxTime)) call wrt_avg
 #  endif
-#endif
+
 #if defined DIAGNOSTICS_TS
         if (mod(ilc-1,nwrtdia).eq.0
      &      .and. ldefdia
@@ -355,6 +355,10 @@
         endif
 # endif
 #endif
+
+#endif
+
+
 #ifdef FLOATS
 # ifdef AGRIF
         if (Agrif_Root()) then
