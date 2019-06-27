@@ -138,6 +138,24 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                        !--> ERROR
         endif
 
+# ifdef READ_PATM
+        lvar=lenstr(vname(1,indxPATM))
+        ierr=nf_inq_varid (ncidbulk, vname(1,indxPATM)(1:lvar),patm_id)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_inq_varndims (ncidbulk, patm_id, i)
+          if (ierr. eq. nf_noerr) then
+            if (i.gt.1) then
+              lpatmgrd=1
+            else
+              lpatmgrd=0
+            endif
+          endif
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,3) vname(1,indxPATM)(1:lvar),bulkname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
         lvar=lenstr(vname(1,indxShflx_rswbio))
         ierr=nf_inq_varid (ncidbulk,vname(1,indxShflx_rswbio)(1:lvar)
@@ -364,6 +382,21 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! radswbio
 !
+# ifdef READ_PATM
+! Patm
+!
+        if (lpatmgrd.eq.1) then
+          ierr=nf_fread (patmg(START_2D_ARRAY,i), ncidbulk, patm_id,
+     &                                            bulk_rec,  r2dvar)
+        else
+          ierr=nf_get_var1_FTYPE (ncidbulk,patm_id,bulk_rec,patmp(i))
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,6) 'PATM', bulk_rec
+          goto 99                                         !--> ERROR
+        endif
+
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
         if (lradswbiogrd.eq.1) then
           ierr=nf_fread (radswbiog(START_2D_ARRAY,i), ncidbulk,
@@ -479,21 +512,23 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
   99  may_day_flag=2
       return
       end
-
-
+!
+!======================================================================
+!
       subroutine set_bulk_tile (Istr,Iend,Jstr,Jend)
+!
+!======================================================================
 !
 ! Set-up bulk data for current tile.
 !
-!!!! gc # define BULK_DATA
-!!!! gc # ifdef BULK_WSTR
-!!!! gc #  define SMFLUX_DATA
-!!!! gc # endif
       implicit none
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"
 # include "grid.h"
+# if defined SMFLUX_CFB && defined STFLUX_CFB
+#  include "ocean3d.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff,cff1,cff2, cff3,cff4
 # ifdef BULK_EP
@@ -502,22 +537,38 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
-      real val1,val2,val3,val4,val5,val6,val7,val8
+      real val1,val2,val3,val4,val5,val6,val7,val8,val9
 # ifdef DIURNAL_INPUT_SRFLX
       real val55
 # endif /* DIURNAL_INPUT_SRFLX */
+# if defined SMFLUX_CFB && defined STFLUX_CFB
+      integer imax,jmax
+# endif
 !
 # include "compute_extended_bounds.h"
 !
+# if defined SMFLUX_CFB && defined STFLUX_CFB
+#  ifdef MPI
+       imax=IendR+1
+       jmax=JendR+1
+#  else
+       imax=min(IendR+1,Lm+1)
+       jmax=min(JendR+1,Mm+1)
+#  endif
+# endif
+
       it1=3-itbulk
       it2=itbulk
       cff=time+0.5*dt
       cff1=bulk_time(it2)-cff
       cff2=cff-bulk_time(it1)
 !
+!----------------------------------------------------------------------
 !  Load time invariant 
+!----------------------------------------------------------------------
 !
       if (bulk_cycle.lt.0.) then
+
         if (FIRST_TIME_STEP) then
           if (ltairgrd.eq.1) then
             do j=JstrR,JendR
@@ -528,6 +579,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
                 radlw(i,j)=srf_scale*radlwg(i,j,itbulk)
                 radsw(i,j)=srf_scale*radswg(i,j,itbulk)
                 srflx(i,j)=radsw(i,j)
+# ifdef READ_PATM
+                patm2d(i,j)=patmg(i,j,itbulk)
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
                 radswbio(i,j)=srf_scale*radswbiog(i,j,itbulk)
                 srflxbio(i,j)=radswbio(i,j)
@@ -535,18 +589,107 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifdef BULK_EP
                 prate(i,j)=stf_scale(isalt)*prateg(i,j,itbulk)
 # endif
-# ifdef BULK_SMFLUX
-#  ifdef BULK_SM_UPDATE
-                uwnd(i,j)=uwndg(i,j,itbulk)
-                vwnd(i,j)=vwndg(i,j,itbulk)
-#  else
-                sustr(i,j)=sms_scale*sustrg(i,j,itbulk)
-                svstr(i,j)=sms_scale*svstrg(i,j,itbulk)
-#  endif /* BULK_SM_UPDATE */
-# endif /* BULK_SMFLUX */
               enddo
             enddo
+# ifdef BULK_SMFLUX
+#  ifdef BULK_SM_UPDATE
+#   if defined SMFLUX_CFB && defined STFLUX_CFB
+!     
+!     Compute relative winds ---
+!     
+            cff=1.-swparam   ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+!
+            do j=JstrR,JendR
+              do i=IstrR,imax
+                uwnd(i,j)=uwndg(i,j,itbulk) - cff*u(i,j,N,nrhs)
+              enddo
+            enddo
+            do j=JstrR,jmax
+              do i=IstrR,IendR+1
+                vwnd(i,j)=vwndg(i,j,itbulk) - cff*v(i,j,N,nrhs)
+              enddo
+            enddo
+            do j=JstrR,min(JendR,Mm)
+              do i=IstrR,min(IendR,Lm)
+                wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &                         0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
+              enddo
+            enddo
+#    ifndef CFB_WIND
+!
+!  If coupling parametrization is based on wind-stress correction, not wind (CFB_STRESS), 
+!  keep absolute wind components (uwnd,vwnd); in this case, only relative wind speed (wspd) 
+!  is used for heat flux computation in bulk_flux)
+!
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                uwnd(i,j)=uwndg(i,j,itbulk)
+                vwnd(i,j)=vwndg(i,j,itbulk)
+              enddo
+            enddo
+#    endif
+#    ifndef EW_PERIODIC
+            if (WESTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd(Istr-1,j)=wspd(Istr,j)
+              enddo
+            endif
+            if (EASTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd(Iend+1,j)=wspd(Iend,j)
+              enddo
+            endif
+#    endif
+#    ifndef NS_PERIODIC
+            if (SOUTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd(i,Jstr-1)=wspd(i,Jstr)
+              enddo
+            endif
+            if (NORTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd(i,Jend+1)=wspd(i,Jend)
+              enddo
+            endif
+#     ifndef EW_PERIODIC
+            if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
+            endif
+            if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
+            endif
+            if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
+            endif
+            if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
+            endif
+#     endif
+#    endif
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &           wspd(START_2D_ARRAY))
+#    endif
+#   else /* SMFLUX_CFB */
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                uwnd(i,j)=uwndg(i,j,itbulk)
+                vwnd(i,j)=vwndg(i,j,itbulk)
+              enddo
+            enddo
+#   endif /* SMFLUX_CFB */
+#  else /* BULK_SM_UPDATE */
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                sustr(i,j)=sms_scale*sustrg(i,j,itbulk)
+                svstr(i,j)=sms_scale*svstrg(i,j,itbulk)
+              enddo
+            enddo
+#  endif /* BULK_SM_UPDATE */
+# endif /* BULK_SMFLUX */
+            
           else
+            
             val1=wspdp(itbulk)
             val2=tairp(itbulk)
             val3=rhump(itbulk)
@@ -567,6 +710,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             val8=sms_scale*svstrp(itbulk)
 #  endif /* BULK_SM_UPDATE */
 # endif /* BULK_SMFLUX */
+# ifdef READ_PATM
+            val9=patmp(itbulk)
+# endif
             do j=JstrR,JendR
               do i=IstrR,IendR
                 wspd(i,j)=val1
@@ -575,6 +721,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
                 radlw(i,j)=val4
                 radsw(i,j)=val5
                 srflx(i,j)=val5
+# ifdef READ_PATM
+                patm2d(i,j)=val9
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
                 radswbio(i,j)=val55
                 srflxbio(i,j)=val55
@@ -595,16 +744,21 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
           endif
         endif
-!
-!  Time-interpolate SST and dQdSST from grided or point data.
-!  Check that for the next time step [when time=time+dt] time+dt 
-!  is still between wspd_time(it1) and wspd_time(it2); and if not,
-!  set synchro_flag top signal that the new forcing data should be
-!  read from the netCDF input file (master thread only).
-!
+!     
+!----------------------------------------------------------------------
+!     Time interpolation
+!     
+!     Time-interpolate SST and dQdSST from grided or point data.
+!     Check that for the next time step [when time=time+dt] time+dt 
+!     is still between wspd_time(it1) and wspd_time(it2); and if not,
+!     set synchro_flag top signal that the new forcing data should be
+!     read from the netCDF input file (master thread only).
+!----------------------------------------------------------------------
+!     
       elseif (cff1.ge.0. .and. cff2.ge.0.) then
+        
         if (ZEROTH_TILE .and. cff1.lt.dt) synchro_flag=.TRUE.
-                                    !note cff order maters
+        !note cff order maters
         cff=srf_scale/(cff1+cff2)
         cff3=cff1*cff
         cff4=cff2*cff
@@ -623,8 +777,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         cff=1./(cff1+cff2)
         cff1=cff1*cff
         cff2=cff2*cff
-
+        
         if (ltairgrd.eq.1) then
+          
           do j=JstrR,JendR
             do i=IstrR,IendR
               wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
@@ -633,26 +788,120 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               radlw(i,j)=cff3*radlwg(i,j,it1)+cff4*radlwg(i,j,it2)
               radsw(i,j)=cff3*radswg(i,j,it1)+cff4*radswg(i,j,it2)
               srflx(i,j)=radsw(i,j)
+# ifdef READ_PATM
+              patm2d(i,j)=cff1*patmg(i,j,it1)+cff2*patmg(i,j,it2)
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
               radswbio(i,j)=cff3*radswbiog(i,j,it1)
-     &                     +cff4*radswbiog(i,j,it2)
+     &             +cff4*radswbiog(i,j,it2)
               srflxbio(i,j)=radswbio(i,j)
 # endif /* DIURNAL_INPUT_SRFLX */
 # ifdef BULK_EP
               prate(i,j)=cff5*prateg(i,j,it1)+cff6*prateg(i,j,it2)
 # endif
-# ifdef BULK_SMFLUX
-#  ifdef BULK_SM_UPDATE
-              uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
-              vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
-#  else 
-              sustr(i,j)=cff7*sustrg(i,j,it1)+cff8*sustrg(i,j,it2)
-              svstr(i,j)=cff7*svstrg(i,j,it1)+cff8*svstrg(i,j,it2)
-#  endif /* BULK_SM_UPDATE */
-# endif
             enddo
           enddo
+# ifdef BULK_SMFLUX
+#  ifdef BULK_SM_UPDATE
+# if defined SMFLUX_CFB && defined STFLUX_CFB
+!     
+!     Compute relative winds ---
+!     
+          cff=1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+          do j=JstrR,JendR
+            do i=IstrR,imax
+              uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
+     &             -cff*u(i,j,N,nrhs)
+            enddo
+          enddo
+          do j=JstrR,jmax
+            do i=IstrR,IendR+1
+              vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
+     &             -cff*v(i,j,N,nrhs)
+            enddo
+          enddo
+          do j=JstrR,min(JendR,Mm)
+            do i=IstrR,min(IendR,Lm)
+              wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &             0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
+            enddo
+          enddo
+#    ifndef CFB_WIND
+!
+!  If coupling parametrization is based on wind-stress correction, not wind (CFB_STRESS),
+!  keep absolute wind components (uwnd,vwnd); in this case, only relative wind speed (wspd) 
+!  is used for heat flux computation in bulk_flux)
+!
+!
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                uwnd(i,j)=uwndg(i,j,itbulk)
+                vwnd(i,j)=vwndg(i,j,itbulk)
+              enddo
+            enddo
+#    endif
+#    ifndef EW_PERIODIC
+          if (WESTERN_EDGE) then
+            do j=Jstr,Jend
+              wspd(Istr-1,j)=wspd(Istr,j)
+            enddo
+          endif
+          if (EASTERN_EDGE) then
+            do j=Jstr,Jend
+              wspd(Iend+1,j)=wspd(Iend,j)
+            enddo
+          endif
+#    endif
+#    ifndef NS_PERIODIC
+          if (SOUTHERN_EDGE) then
+            do i=Istr,Iend
+              wspd(i,Jstr-1)=wspd(i,Jstr)
+            enddo
+          endif
+          if (NORTHERN_EDGE) then
+            do i=Istr,Iend
+              wspd(i,Jend+1)=wspd(i,Jend)
+            enddo
+          endif
+#     ifndef EW_PERIODIC
+          if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+            wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
+          endif
+          if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+            wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
+          endif
+          if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+            wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
+          endif
+          if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+            wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
+          endif
+#     endif
+#    endif
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &         wspd(START_2D_ARRAY))
+#    endif
+#   else
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
+              vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
+            enddo
+          enddo
+#   endif /* SMFLUX_CFB */
+#  else 
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              sustr(i,j)=cff7*sustrg(i,j,it1)+cff8*sustrg(i,j,it2)
+              svstr(i,j)=cff7*svstrg(i,j,it1)+cff8*svstrg(i,j,it2)
+            enddo
+          enddo
+#  endif /* BULK_SM_UPDATE */
+# endif /* BULK_SMFLUX */
+          
         else
+          
           val1=cff1*wspdp(it1)+cff2*wspdp(it2)
           val2=cff1*tairp(it1)+cff2*tairp(it2)
           val3=cff1*rhump(it1)+cff2*rhump(it2)
@@ -671,8 +920,12 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 #  else 
           val7=cff7*sustrp(it1)+cff8*sustrp(it2)
           val8=cff7*svstrp(it1)+cff8*svstrp(it2)
-#  endif
+#  endif /* BULK_SM_UPDATE */
+# endif /* BULK_SMFLUX */
+# ifdef READ_PATM
+          val9=cff1*patmp(it1)+cff2*patmp(it2)
 # endif
+          
           do j=JstrR,JendR
             do i=IstrR,IendR
               wspd(i,j)=val1
@@ -697,19 +950,22 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               svstr(i,j)=val8
 #  endif /* BULK_SM_UPDATE */
 # endif /* BULK_SMFLUX */
+# ifdef READ_PATM
+             patm2d(i,j)=val9
+# endif
             enddo
           enddo
         endif
-!
-!  Unable to set-up SST and dQdSST:
-!  Complain about the error and signal to quit.      
-!
+!     
+!     Unable to set-up SST and dQdSST:
+!     Complain about the error and signal to quit.      
+!     
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'bulk_time',tdays,bulk_time(it2)*sec2day
-  1       format(/,' SET_BULK - current model time exceeds ending',
+ 1        format(/,' SET_BULK - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
-     &           2x,'TEND = ',g12.4)
+     &         2x,'TEND = ',g12.4)
           may_day_flag=2
         endif
       endif
@@ -720,3 +976,4 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       return
       end
 #endif /* BULK_FLUX */
+      

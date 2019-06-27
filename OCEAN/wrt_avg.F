@@ -34,7 +34,7 @@
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
 # include "work.h"
 # include "netcdf.inc"
 # ifdef SEDIMENT
@@ -48,7 +48,7 @@
 # else
 #  define SWITCH !
 # endif
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
      &                 1, MPI_COMM_WORLD, status, ierr)
@@ -123,6 +123,15 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     
       if (wrtavg(indxZ)) then
          work2d=zeta_avg
+# ifdef WET_DRY
+         do j=0,Mm
+            do i=0,Lm
+               if (h(i,j) .le. Dcrit(i,j)) then
+                 work2d(i,j)=work2d(i,j)+h(i,j)
+               endif
+            enddo
+         enddo
+# endif
          call fillvalue2d(work2d,ncidavg,avgZ,indxZ,
      &                   record,r2dvar,type)
       endif
@@ -225,9 +234,9 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type) 
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING )
 !
 !     Brunt vaisala frequency.
 !
@@ -321,7 +330,7 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
 #    endif /* SALINITY */
 #  endif  /* AVERAGES_K */
 
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
@@ -344,7 +353,7 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
 CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 # endif
 
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     
@@ -570,7 +579,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !
 # endif /* SOLVE3D */
 
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
       if (wrtavg(indxHRM)) then
         ierr=nf_fwrite (whrm_avg(START_2D_ARRAY), ncidavg, avgWAVE(1),
      &                                            record, r2dvar)
@@ -593,6 +602,7 @@ CR      write(*,*) 'wrt_avg:  wrtHrm' MYID
         endif
 CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
       endif
+#  ifdef WKB_WWAVE
       if (wrtavg(indxWAC)) then
         ierr=nf_fwrite (wac_avg(START_2D_ARRAY), ncidavg, avgWAVE(3),
      &                                            record, r2dvar)
@@ -604,6 +614,7 @@ CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
         endif
 CR      write(*,*) 'wrt_avg:  wrtWac' MYID
       endif
+#  endif
       if (wrtavg(indxWKX)) then
         ierr=nf_fwrite (wkx_avg(START_2D_ARRAY), ncidavg, avgWAVE(4),
      &                                            record, r2dvar)
@@ -649,6 +660,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpb' MYID
 CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
       endif
 #  ifdef WAVE_ROLLER
+#   ifdef WKB_WWAVE
       if (wrtavg(indxWAR)) then
         ierr=nf_fwrite (war_avg(START_2D_ARRAY), ncidavg, avgWAVE(8),
      &                                            record, r2dvar)
@@ -660,6 +672,7 @@ CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
         endif
 CR      write(*,*) 'wrt_avg:  wrtWar' MYID
       endif
+#   endif
       if (wrtavg(indxEPR)) then
         ierr=nf_fwrite (wepr_avg(START_2D_ARRAY), ncidavg, avgWAVE(9),
      &                                            record, r2dvar)
@@ -811,7 +824,7 @@ CR      write(*,*) 'wrt_avg:  wrtKaps' MYID
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
 !     
-# if defined MPI &              !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close(ncidavg)
       if (nrpfavg.gt.0 .and. record.ge.nrpfavg) ncidavg=-1
 # else
@@ -834,7 +847,7 @@ CR      write(*,*) 'wrt_avg:  wrtKaps' MYID
          may_day_flag=3
       endif
 
-# if defined MPI &              !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
          call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &        1, MPI_COMM_WORLD,  ierr)

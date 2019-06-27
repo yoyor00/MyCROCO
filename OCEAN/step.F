@@ -24,7 +24,7 @@
 #include "coupling.h"
 #include "ocean3d.h"
 #include "ocean2d.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
        
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
@@ -36,7 +36,7 @@
  
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
-       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes) ) then
+       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
        endif 
@@ -76,7 +76,7 @@ C$OMP END PARALLEL
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes)) then
+         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
          endif
          oasis_time = oasis_time + dt
@@ -105,7 +105,7 @@ C$OMP END PARALLEL
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 #ifdef FLOATS
@@ -151,6 +151,10 @@ C$OMP MASTER
 #endif
       time=time_start+dt*float(iic-ntstart)
       tdays=time*sec2day
+#ifdef USE_CALENDAR
+      time_mars=time_mars+dt
+      tdays=(time_mars-time_start)*sec2day
+#endif
 
 #ifdef SOLVE3D
       nstp=1+mod(iic-ntstart,2)
@@ -196,12 +200,10 @@ C$OMP MASTER
 #if defined ZCLIMATOLOGY && !defined ANA_SSH
             call get_ssh
 #endif
-#ifdef FRC_BRY
-# ifndef ANA_BRY
+#if defined FRC_BRY && !defined ANA_BRY
             call get_bry
-#  ifdef BIOLOGY
+# ifdef BIOLOGY
             call get_bry_bio
-#  endif
 # endif
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
@@ -252,7 +254,9 @@ C$OMP BARRIER
 #  endif
 #  ifdef BIOLOGY
           call ana_bry_bio (tile)  ! analytical values are given
-          call set_bry_bio (tile)  ! if data is missing from bry files
+#   ifndef ANA_BRY
+          call set_bry_bio (tile)  ! if data are missing from bry files
+#   endif
 #  endif
 # endif
 # if defined WKB_WWAVE && !defined ANA_BRY_WKB
@@ -285,7 +289,7 @@ C$OMP BARRIER
 C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
-# if defined  BBL  
+# if defined  BBL && !defined M3FAST 
 #   ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
 #   endif
@@ -331,6 +335,21 @@ C$OMP BARRIER
 # endif /* BULK_FLUX */
 
       if (may_day_flag.ne.0) return  !-->  EXIT
+
+#  if defined SMFLUX_CFB && !defined CFB_WIND
+!
+! Apply correction to surface momentum flux due to current feedback
+!
+#   ifdef CFB_STRESS2
+      do tile=my_tile_range
+        call cfb_stress_cor (tile) ! compute wind stress magnitude
+      enddo
+C$OMP BARRIER
+#   endif
+      do tile=my_tile_range
+        call cfb_stress (tile)
+      enddo
+#  endif
 
 # if defined WKB_WWAVE && !defined WKB_STEADY
       wkb_agrif_done=.FALSE.
@@ -412,9 +431,6 @@ C$OMP BARRIER
 #  endif
 # endif
         call pre_step3d (tile)
-# ifdef GLS_MIXING
-        call gls_prestep (tile)
-# endif
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
           call uv3dpremix (tile)
@@ -534,6 +550,9 @@ C$OMP BARRIER
 #endif
 #ifdef STATIONS
 # include "sta.h"
+#endif
+#if defined BBL && defined BSTRESS_FAST
+# include "nbq.h"
 #endif
        integer range
       integer ntrds,trd,
@@ -656,7 +675,15 @@ C$OMP END MASTER
 C$OMP BARRIER
 
 #endif  /* !defined SOLVE3D */
-        
+
+#if defined BBL && defined BSTRESS_FAST
+        if (mod(iif-1,inc_faststep).eq.0) then
+          do tile=my_first,my_last
+            call bblm (tile)
+          enddo
+        endif
+C$OMP BARRIER
+#endif
                   ! This might look a bit silly,
                   ! since both branches of this
                   ! if statement are identical.
@@ -666,7 +693,7 @@ C$OMP BARRIER
                   ! tile-processing sequence.               
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
-#ifdef NBQ
+#ifdef M3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -682,7 +709,7 @@ C$OMP BARRIER
           enddo
         else
           do tile=my_first,my_last
-#ifdef NBQ
+#ifdef M3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -707,9 +734,15 @@ C$OMP BARRIER
 #ifdef RVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
+# ifdef M3FAST
+       call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r')
+       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
+       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+# else
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
        call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
        call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
+# endif
 C$OMP END MASTER       
 #endif
 
@@ -728,7 +761,7 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef NBQ
+#ifdef M3FAST
 # include "nbq.h"
 #endif
 #ifdef FLOATS
@@ -909,10 +942,7 @@ C$OMP BARRIER
         call omega (tile)
 
 # ifdef GLS_MIXING
-        call step3d_gls  (tile)
-# endif
-# ifdef GLS_MIX2017
-        call gls_mix2017 (tile)
+        call gls_mixing (tile)
 # endif
         call step3d_t (tile)
 # ifdef SEDIMENT

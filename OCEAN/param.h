@@ -81,6 +81,20 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined TS_HADV_TEST
+      parameter (LLm0=100,  MMm0=100,  N=5) 
+#elif defined SINGLE_COLUMN
+# ifdef KATO_PHILIPS 
+      parameter (LLm0=5 ,   MMm0=5,    N=100)   !
+# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=50)   !
+# elif defined FORCED_EKBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=40)   !
+# elif defined FORCED_DBLEEK 
+      parameter (LLm0=5 ,   MMm0=5,    N=25)   !
+# elif defined DIURNAL_CYCLE
+      parameter (LLm0=5 ,   MMm0=5,    N=150)   !
+# endif
 #elif defined PLUME
       parameter (LLm0=200,   MMm0=200,   N=100)        
 !      parameter (LLm0=80,   MMm0=80,   N=100) 
@@ -173,6 +187,10 @@
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
+#  elif defined MENOR 
+      parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
+#  elif defined SEINE 
+      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -233,12 +251,39 @@
 !
       integer NWEIGHT
       parameter (NWEIGHT=1000)
-!
-!----------------------------------------------------------------------
-! Tides, Wetting-Drying, Point sources, Floast, Stations
-!----------------------------------------------------------------------
-!
 
+!
+!----------------------------------------------------------------------
+! OA coupling parametrization for current feedback on wind-stress  
+! (Renault et al., Sc. Reports 2017)
+!----------------------------------------------------------------------
+!
+#ifdef SMFLUX_CFB
+      ! wind correction: Ua-(1-sw)*Uo
+      ! ifndef CFB_WIND, this is only used to correct heat flux (bulk_flux)
+      real swparam
+      parameter (swparam=0.3)
+# ifdef CFB_STRESS
+      ! wind-stress correction using wind speed:  rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope * wspd + cfb_offset [N.m^-3.s]
+      !  (recommendended and default if BULK_FLUX - needs wspd data)
+      real cfb_slope, cfb_offset
+      parameter (cfb_slope=-0.0029)
+      parameter (cfb_offset=0.008)
+# elif defined CFB_STRESS2
+      ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
+      ! (use if wspd data not available, e.g. not BULK_FLUX)
+      real cfb_slope2, cfb_offset2
+      parameter (cfb_slope2=-0.100)
+      parameter (cfb_offset2=0.001)
+# endif
+#endif
+!
+!----------------------------------------------------------------------
+! Tides
+!----------------------------------------------------------------------
+!
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
@@ -249,6 +294,10 @@
 # endif
 #endif
 !
+!----------------------------------------------------------------------
+! Wetting-Drying
+!----------------------------------------------------------------------
+!
 #ifdef WET_DRY
       real D_wetdry             ! Critical Depth for Drying cells
                                 ! ======== ===== === ====== =====
@@ -257,9 +306,13 @@
 # elif defined SWASH
       parameter (D_wetdry=0.001)
 # else
-      parameter (D_wetdry=0.10)
+      parameter (D_wetdry=0.2)
 # endif
 #endif
+!
+!----------------------------------------------------------------------
+! Point sources, Floast, Stations
+!----------------------------------------------------------------------
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources
@@ -410,7 +463,7 @@
       parameter (Agrif_lev_sedim=0)
 # endif
 
-# ifdef GLS_MIX2017
+# ifdef GLS_MIXING
       integer NGLS
       parameter(NGLS=2)
       integer itke
@@ -832,4 +885,14 @@
 # endif
 #endif /*SOLVE3D */
 
+!
+!----------------------------------------------------------------------
+! Max time increment for computing bottom stress at the 3D fast time 
+! steps
+!----------------------------------------------------------------------
+!
+#ifdef BSTRESS_FAST
+      integer inc_faststep_max
+      parameter(inc_faststep_max = 10)
+#endif
 

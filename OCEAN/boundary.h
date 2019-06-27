@@ -9,6 +9,11 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+#ifdef T_FRC_BRY
+      logical got_tbry(NT)
+      common /bry_logical/ got_tbry
+# endif
+
 #ifndef ANA_BRY
       real bry_time(2)
       common /bry_indices_array/ bry_time
@@ -18,8 +23,7 @@
       common /bry_indices_integer/ bry_id, bry_time_id, bry_ncycle,
      &                             bry_rec, itbry, ntbry
 
-#if defined BIOLOGY || defined PISCES
-      logical got_tbry(NT)
+# if defined BIOLOGY || defined PISCES
       real bry_time1(2,NT)
       common /bry_indices_array1/ bry_time1
       real bry_cycle1(NT)
@@ -28,9 +32,7 @@
      $        bry_rec1(NT), itbry1(NT), ntbry1(NT)
       common /bry_indices_integer1/ bry_tid, bry_ncycle1,
      &                              bry_rec1, itbry1, ntbry1
-      common /bry_logical/ got_tbry
-  
-#endif
+# endif
 
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -331,48 +333,56 @@
 #endif  /* WKB_WWAVE */ 
 
 
-#if defined NBQ && defined NBQ_FRC_BRY
+#if defined M3FAST && defined NBQ_FRC_BRY
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
       real unbqbry_west(GLOBAL_1D_ARRAYETA,N),
-     &     vnbqbry_west(GLOBAL_1D_ARRAYETA,N),
-     &     wnbqbry_west(GLOBAL_1D_ARRAYETA,0:N),
+     &     vnbqbry_west(GLOBAL_1D_ARRAYETA,N)
+      common /bry_nbq_west1/ unbqbry_west,
+     &                       vnbqbry_west
+#  ifdef NBQ
+      real wnbqbry_west(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_west(GLOBAL_1D_ARRAYETA,N)
-      common /bry_nbq_west/ unbqbry_west,
-     &                      vnbqbry_west,
-     &                      wnbqbry_west,
-     &                      rnbqbry_west
+      common /bry_nbq_west2/ wnbqbry_west,
+     &                       rnbqbry_west
+#  endif
 # endif
 # if defined OBC_EAST || defined AGRIF_OBC_EAST
       real unbqbry_east(GLOBAL_1D_ARRAYETA,N),
-     &     vnbqbry_east(GLOBAL_1D_ARRAYETA,N),
-     &     wnbqbry_east(GLOBAL_1D_ARRAYETA,0:N),
+     &     vnbqbry_east(GLOBAL_1D_ARRAYETA,N)
+      common /bry_nbq_east1/ unbqbry_east,
+     &                       vnbqbry_east
+#  ifdef NBQ
+      real wnbqbry_east(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_east(GLOBAL_1D_ARRAYETA,N)
-      common /bry_nbq_east/ unbqbry_east,
-     &                      vnbqbry_east,
-     &                      wnbqbry_east,
-     &                      rnbqbry_east
+      common /bry_nbq_east2/ wnbqbry_east,
+     &                       rnbqbry_east
+#  endif
 # endif
 # if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
       real unbqbry_south(GLOBAL_1D_ARRAYXI,N),
-     &     vnbqbry_south(GLOBAL_1D_ARRAYXI,N),
-     &     wnbqbry_south(GLOBAL_1D_ARRAYXI,0:N),
+     &     vnbqbry_south(GLOBAL_1D_ARRAYXI,N)
+      common /bry_nbq_south1/ unbqbry_south,
+     &                        vnbqbry_south
+#  ifdef NBQ
+      real wnbqbry_south(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_south(GLOBAL_1D_ARRAYXI,N)
-      common /bry_nbq_south/ unbqbry_south,
-     &                       vnbqbry_south,
-     &                       wnbqbry_south,
-     &                       rnbqbry_south
+      common /bry_nbq_sout2h/ wnbqbry_south,
+     &                        rnbqbry_south
+#  endif
 # endif
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
       real unbqbry_north(GLOBAL_1D_ARRAYXI,N),
-     &     vnbqbry_north(GLOBAL_1D_ARRAYXI,N),
-     &     wnbqbry_north(GLOBAL_1D_ARRAYXI,0:N),
+     &     vnbqbry_north(GLOBAL_1D_ARRAYXI,N)
+      common /bry_nbq_north1/ unbqbry_north,
+     &                        vnbqbry_north
+#  ifdef NBQ
+      real wnbqbry_north(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_north(GLOBAL_1D_ARRAYXI,N)
-      common /bry_nbq_west/ unbqbry_north,
-     &                      vnbqbry_north,
-     &                      wnbqbry_north,
-     &                      rnbqbry_north
+      common /bry_nbq_north2/ wnbqbry_north,
+     &                        rnbqbry_north
+#  endif
 # endif
-#endif /* NBQ */
+#endif /* M3FAST */
 
 #if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST

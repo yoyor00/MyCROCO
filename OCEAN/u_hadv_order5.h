@@ -38,11 +38,11 @@
           if (EAST_INTER) then
             imax=Lmmpi+1
           else
-            imax=Lmmpi-1
+            imax=Lmmpi-2
           endif
 #   else
           imin=3
-          imax=Lm-1
+          imax=Lm-2
 #   endif
 #  endif
 !
@@ -72,28 +72,26 @@
                 flx3 = vel*FLUX3(
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs), vel ) 
-                vel = 0.5*(Hvom(i-1,j,k)+Hvom(i,j,k))
+!                vel = 0.5*(Hvom(i-1,j,k)+Hvom(i,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs), vel, cdif)
 #   ifdef UP5_MASKING
-                mask0=umask(i,j-1)*umask(i,j)
-                mask2=umask(i,j-2)*mask0*umask(i,j+1)
+                mask2=umask(i,j-2)*umask(i,j+1)
                 IF (vel.gt.0) THEN
-                  mask1=umask(i,j-2)*mask0
-                  mask3=umask(i,j-3)*mask2          
+                  mask1=umask(i,j-2)
+                  mask0=umask(i,j-3)*mask2          
                 ELSE
-                  mask1=umask(i,j+1)*mask0
-                  mask3=umask(i,j+2)*mask2
+                  mask1=umask(i,j+1)
+                  mask0=umask(i,j+2)*mask2
                 ENDIF
-                UFe(i,j)=mask3*flx5+(1-mask3)*mask1*flx3+
-     &                              (1-mask3)*(1-mask1)*mask0*flx2
 #   else
                 mask1=umask(i,j-2)*umask(i,j+1)
                 mask2=umask(i,j-3)*umask(i,j+2)
                 mask0=mask1*mask2
+#   endif
                 UFe(i,j)=mask0*flx5+(1-mask0)*mask1*flx3+
      &                              (1-mask0)*(1-mask1)*flx2
-#   endif /* UP5_MASKING */
+
 #  else
                 UFe(i,j)=flx5
 #  endif /* MASKING */
@@ -117,7 +115,7 @@
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs), vel )
 #  ifdef MASKING
-                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
+!                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs), vel, cdif)
                 mask1=umask(i,j-2)*umask(i,j+1)
@@ -145,7 +143,7 @@
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs), vel )
 #  ifdef MASKING
-                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
+!                vel = 0.5*(Hvom(i-1,j,k)+ Hvom(i,j,k))
                 flx2 = vel*FLUX2(
      &             u(i,j-1,k,nrhs), u(i,j  ,k,nrhs), vel, cdif)
                 mask1=umask(i,j-2)*umask(i,j+1)
@@ -183,24 +181,21 @@
                 flx2 = vel*FLUX2(
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs), vel, cdif)
 #   ifdef UP5_MASKING
-                mask0=umask(i,j)*umask(i+1,j)
-                mask2=umask(i-1,j)*mask0*umask(i+2,j)
+                mask2=umask(i-1,j)*umask(i+2,j)
                 IF (vel.gt.0) THEN
-                  mask1=umask(i-1,j)*mask0
-                  mask3=umask(i-2,j)*mask2          
+                  mask1=umask(i-1,j)
+                  mask0=umask(i-2,j)*mask2          
                 ELSE
-                  mask1=umask(i+2,j)*mask0
-                  mask3=umask(i+3,j)*mask2
+                  mask1=umask(i+2,j)
+                  mask0=umask(i+3,j)*mask2
                 ENDIF
-                UFx(i,j)=mask3*flx5+(1-mask3)*mask1*flx3+
-     &                              (1-mask3)*(1-mask1)*mask0*flx2
 #   else
                 mask1=umask(i-1,j)*umask(i+2,j)
                 mask2=umask(i-2,j)*umask(i+3,j)
                 mask0=mask1*mask2
+#   endif
                 UFx(i,j)=mask0*flx5+(1-mask0)*mask1*flx3+
      &                              (1-mask0)*(1-mask1)*flx2
-#   endif /* UP5_MASKING */
 #  else
                 UFx(i,j)=flx5
 #  endif /* MASKING */

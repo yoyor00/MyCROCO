@@ -15,7 +15,7 @@
       integer tile
 #include "param.h"
 #include "scalars.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef MPI
       include 'mpif.h'
 #endif
@@ -42,7 +42,7 @@
 #include "param.h"
 #include "scalars.h"
 #include "grid.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
@@ -297,9 +297,13 @@ c**       write(*,*) mynode, ' crss =',bc_crss, 'vol =',volume
      &        '(/1x,A,8x,A,9x,A,9x,A,9x,A,6x,A)')
      &        'hmin','hmax','grdmin','grdmax','Cu_min','Cu_max'
           MPI_master_only write( stdout,
-     &        '(F12.6,F13.6,2(1x,E14.9),2F12.8)')
+! S. Theetten (May,6, 2029) avoid Remark 8291 during compilation 
+!     &        '(F12.6,F13.6,2(1x,E14.9),2F12.8)')
+     &        '(F12.6,F13.6,2(1x,E16.9),2F12.8)')
      &         hmin,  hmax,  grdmin,  grdmax,  Cu_min,  Cu_max
-          MPI_master_only write( stdout,'(2(3x,A,1PE27.21)/)')
+! S. Theetten (May,6, 2029) avoid Remark 8291 during compilation 
+!          MPI_master_only write( stdout,'(2(3x,A,1PE27.21)/)')
+          MPI_master_only write( stdout,'(2(3x,A,1PE28.21)/)')
      &        'volume=', volume, 'open_cross=', bc_crss
 
 #ifdef SPHERICAL

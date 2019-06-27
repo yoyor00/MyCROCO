@@ -11,17 +11,15 @@
 !
       SUBROUTINE cpl_prism_grid(id_partition)
 #include "cppdefs.h"
-!     IMPLICIT NONE
 #if defined OA_COUPLING || defined OW_COUPLING
-#ifdef OA_MCT
       USE mod_prism             ! OASIS3 prism module
-      INCLUDE 'mpif.h'
-#endif
-
+      IMPLICIT NONE
+      include 'mpif.h'
+      
 #include "param.h"
 #include "grid.h"
 #include "scalars.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #include "set_global_definitions.h"
 !
       integer, intent(in) :: id_partition
@@ -41,6 +39,7 @@
       integer rmask_inv(GLOBAL_2D_ARRAY)
       integer umask_inv(GLOBAL_2D_ARRAY)
       integer vmask_inv(GLOBAL_2D_ARRAY)
+      integer j,i
 !
 !
 !     !-------------------------------------------------------------------
@@ -77,8 +76,8 @@
 
 ! Model grid cell corner longitudes and latitudes
 !------------------------------------------------------------------
-      DO i=1, Lmmpi
-        DO j=1, Mmmpi
+      DO j=1, Mmmpi
+        DO i=1, Lmmpi
 !
 !       -- t-grid --
 !
@@ -148,20 +147,23 @@
 !
 ! Model grid cell area
 !------------------------------------------------------------------
-!     -- t-grid --
-      arear(:,:)=1./(pm(:,:)*pn(:,:))
+!
+      DO j=1, Mmmpi
+        DO i=1, Lmmpi
+          arear(i,j)=om_r(i,j)*on_r(i,j)
+          areau(i,j)=om_u(i,j)*on_u(i,j)
+          areav(i,j)=om_v(i,j)*on_v(i,j)
+        ENDDO
+      ENDDO
+!
       CALL prism_write_area('ocnt', LLm, MMm,
      &                         arear(1:Lmmpi,1:Mmmpi),
      &                         id_partition)
 
-!     -- u-grid --
-      areau(:,:)=1./(pm(:,:)*pn(:,:))
       CALL prism_write_area('ocnu', LLm, MMm,
      &                         areau(1:Lmmpi,1:Mmmpi),
      &                         id_partition)
 
-!     -- v-grid --
-      areav(:,:)=1./(pm(:,:)*pn(:,:))
       CALL prism_write_area('ocnv', LLm, MMm,
      &                         areav(1:Lmmpi,1:Mmmpi),
      &                         id_partition)
@@ -171,8 +173,8 @@
       rmask_inv=0
       umask_inv=0
       vmask_inv=0
-      DO i=1, Lmmpi
-        DO j=1, Mmmpi
+      DO j=1, Mmmpi
+        DO i=1, Lmmpi
           IF (rmask(i,j)==0) rmask_inv(i,j)=1
           IF (umask(i,j)==0) umask_inv(i,j)=1
           IF (vmask(i,j)==0) vmask_inv(i,j)=1

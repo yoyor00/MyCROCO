@@ -1,13 +1,15 @@
 #!/bin/bash
+set -x
+set -e
 #echo '============================================================='
 echo 'Create the link between CVTK_DEBUG_FAST_src and CVTK_DEBUG/test dir'
 
-ROOTDIR="/home7/datahome/crocodev/GIT/croco/CVTK/test_repro/CVTK_DEBUG_FAST_src"
-source "$ROOTDIR/CONFIGURE_ANA"
+source "$CVTKHOME/CONFIGURE_ANA"
 
 rm -Rf $dir_test
-mkdir $dir_test
-mkdir $dir_test/Junk
+mkdir -p $dir_test
+mkdir -p $dir_web
+mkdir -p $dir_test/Junk
 
 ln -sf $dir_home/Configure_Test_ana $dir_test/
 

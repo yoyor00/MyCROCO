@@ -29,7 +29,16 @@
 #include "grid.h"
 #include "netcdf.inc"
 
-#ifdef MASKING
+#ifdef MASKING 
+#ifdef WET_DRY
+      if (typevar2d.eq.r2dvar) then
+         mask2=rmask_wet
+      elseif (typevar2d.eq.u2dvar) then
+         mask2=umask_wet
+      elseif (typevar2d.eq.v2dvar)then
+         mask2=vmask_wet
+      endif    
+#else
       if (typevar2d.eq.r2dvar) then
          mask2=rmask
       elseif (typevar2d.eq.u2dvar) then
@@ -37,6 +46,8 @@
       elseif (typevar2d.eq.v2dvar)then
          mask2=vmask
       endif    
+
+#endif
 !
       if (typefile ==filetype_his) then
          text='WRT_HIS'
@@ -101,6 +112,17 @@
 #include "netcdf.inc"
 !   
 #ifdef MASKING
+#ifdef WET_DRY
+      if (typevar3d.eq.r3dvar) then
+         mask2=rmask_wet
+      elseif (typevar3d.eq.w3dvar) then
+         mask2=rmask_wet
+      elseif (typevar3d.eq.u3dvar) then
+         mask2=umask_wet
+      elseif (typevar3d.eq.v3dvar) then
+         mask2=vmask_wet
+      endif   
+#else
       if (typevar3d.eq.r3dvar) then
          mask2=rmask
       elseif (typevar3d.eq.w3dvar) then
@@ -110,6 +132,8 @@
       elseif (typevar3d.eq.v3dvar) then
          mask2=vmask
       endif   
+
+#endif
 !
       if (typefile ==filetype_his) then
          text='WRT_HIS'

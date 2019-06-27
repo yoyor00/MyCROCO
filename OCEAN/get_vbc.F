@@ -67,7 +67,9 @@
 !---------------------------------------------------------------
 !
 # ifndef ANA_SMFLUX
-#  if !defined BULK_FLUX || (defined BULK_FLUX && !defined BULK_SMFLUX)
+#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
+         || (defined BULK_FLUX && !defined BULK_SMFLUX) \
+         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
       call get_smflux
 #  endif
 # endif
@@ -123,7 +125,7 @@
 ! If BULK_FLUX is defined, radsw copies to srflx in get_bulk
 !
 #  ifndef BULK_FLUX
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #    ifndef ANA_SRFLUX
       call get_srflux
 #    endif
@@ -188,7 +190,7 @@
 #include "scalars.h"
 #include "climat.h"
 #include "sources.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
       integer i,j,is, Istr,Iend,Jstr,Jend
       real cff,cff1
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
@@ -207,7 +209,9 @@
 # ifdef ANA_SMFLUX
       call ana_smflux_tile (Istr,Iend,Jstr,Jend)
 # else
-#  if !defined BULK_FLUX || (defined BULK_FLUX && !defined BULK_SMFLUX)
+#  if (!defined BULK_FLUX && !defined OW_COUPLING) \
+         || (defined BULK_FLUX && !defined BULK_SMFLUX) \
+         || (defined OW_COUPLING && !defined WAVE_SMFLUX)
       call set_smflux_tile (Istr,Iend,Jstr,Jend)
 #  endif
 # endif
@@ -245,7 +249,7 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #    ifdef ANA_SRFLUX
       call ana_srflux_tile (Istr,Iend,Jstr,Jend)
 #    else
@@ -253,19 +257,17 @@
 #    endif
 #   endif
 #  endif /* BULK_FLUX */
-
 !
 !---------------------------------------------------------------
-!
+! Simplest sea ice correction to T,S fluxes
 !---------------------------------------------------------------
 !
-
 #ifdef SEA_ICE_NOFLUX
       do j=JstrR,JendR
         do i=IstrR,IendR
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
                    srflx(i,j)=0.
 #    endif
               endif
@@ -315,22 +317,6 @@
         enddo
       enddo
 #  endif /* !BULK_EP */
-
-!
-!---------------------------------------------------------------
-!
-!---------------------------------------------------------------
-!
-
-!#ifdef SEA_ICE_NOFLUX
-!      do j=JstrR,JendR
-!        do i=IstrR,IendR
-!              if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
-!                   stflx(i,j,isalt)=0.
-!              endif
-!        enddo
-!      enddo
-!#endif
 !
 !--------------------------------------------------------------
 ! Flux correction to surface salt flux.
@@ -363,7 +349,7 @@
 ! Diurnal modulation of surface solar shortwave radiation flux
 !---------------------------------------------------------------
 !
-#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #   ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 #   endif
@@ -379,6 +365,8 @@
         do i=IstrR,IendR
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
           srflx(i,j)=srflx(i,j)*rmask_wet(i,j)
+!          sustr(i,j)=sustr(i,j)*umask_wet(i,j)
+!          svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
 #   endif
@@ -438,16 +426,24 @@
 
 #if (!defined BBL || defined AGRIF)
 # ifdef ANA_BMFLUX
+
       call ana_bmflux_tile (Istr,Iend,Jstr,Jend)
+
 # elif defined SOLVE3D
+
+#  ifdef BSTRESS_FAST
+!
+!   --> Compute bustr & bvstr in step3d_fast
+!
+#  else
 !
 !  Set bottom stress using logarithmic or linear 
 !  and/or quadratic formulation. 
 !
-      if (Zob.ne.0.) then
+      if (maxval(Zob).ne.0.) then
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
-            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob)
+            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
             wrk(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
           enddo
         enddo
@@ -500,7 +496,7 @@
         enddo
       endif
 
-#  ifdef LIMIT_BSTRESS
+#   ifdef LIMIT_BSTRESS
 !
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted
@@ -524,7 +520,8 @@
      &                   ABS(v(i,j,1,nrhs))*cff1)
         enddo
       enddo
-#  endif
+#   endif
+#  endif /* BSTRESS_FAST */
 
 !
 ! Set boundary conditions
@@ -616,7 +613,7 @@
       call set_psource_ts_tile(Istr,Iend,Jstr,Jend)  
 # endif
 #endif
-#if defined PSOURCE & defined ANA_PSOURCE
+#if defined PSOURCE && defined ANA_PSOURCE
 C$OMP BARRIER
 C$OMP MASTER
       call ana_psource_tile (Istr,Iend,Jstr,Jend)

@@ -102,8 +102,7 @@
 
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING \
-  || defined UV_VIS_SMAGO_3D
+  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       real bvf(GLOBAL_2D_ARRAY,0:N)
       common /mixing_bvf/ bvf
 # endif
@@ -113,7 +112,10 @@
       common /lmd_hel/hel
 # endif
 
-# if defined LMD_SKPP || defined LMD_BKPP
+# ifdef LMD_MIXING
+      real ustar(GLOBAL_2D_ARRAY) 
+      common /lmd_kpp_ustar/ustar
+#  if defined LMD_SKPP || defined LMD_BKPP
 !
 ! Large/McWilliams/Doney oceanic planetary boundary layer variables.
 ! ghats       Boundary layer nonlocal transport (m/s^2).
@@ -128,43 +130,29 @@
       common /lmd_kpp_kbl/ kbl 
       common /lmd_kpp_hbbl/ hbbl  
       common /lmd_kpp_kbbl/ kbbl 
-#  ifdef LMD_SKPP2005      
+#   ifdef LMD_SKPP2005      
       real hbls(GLOBAL_2D_ARRAY,2)
       common /lmd_kpp_hbl/ hbls
-#  else           
+#   else           
       real hbl (GLOBAL_2D_ARRAY  )      
       common /lmd_kpp_hbl/ hbl   
-#  endif
-#  ifdef LMD_NONLOCAL
+#   endif
+#   ifdef LMD_NONLOCAL
       real ghats(GLOBAL_2D_ARRAY,0:N)
       common /lmd_kpp_ghats/ghats
-#  endif
-# endif /* LMD_SKPP || LMD_BKPP */
+#   endif
+#  endif /* LMD_SKPP || LMD_BKPP */
 
-# ifdef LMD_MIXING
-      real ustar(GLOBAL_2D_ARRAY) 
-      common /lmd_kpp_ustar/ustar
-# endif /* LMD_MIXING */
-
-# ifdef GLS_MIXING
-      real tke(GLOBAL_2D_ARRAY,0:N,3)
-      real gls(GLOBAL_2D_ARRAY,0:N,3)
-      real Akk(GLOBAL_2D_ARRAY,0:N)
-      real Akp(GLOBAL_2D_ARRAY,0:N)
-      real Lscale(GLOBAL_2D_ARRAY,0:N)
-      common /gls_tke/tke
-      common /gls_gls/gls
-      common /gls_Akk/Akk
-      common /gls_Akp/Akp
-      common /gls_Lscale/Lscale
-# endif /* GLS_MIXING */
-
-# ifdef GLS_MIX2017
+# elif defined GLS_MIXING
       real trb(GLOBAL_2D_ARRAY,0:N,2,NGLS)
       common /gls_trb/trb
       real Lscale(GLOBAL_2D_ARRAY,0:N)
       common /gls_lsc/Lscale
-# endif /* GLS_MIX2017 */
+      integer kbl(GLOBAL_2D_ARRAY)
+      common /gls_kbl/ kbl 
+      real hbl(GLOBAL_2D_ARRAY  )      
+      common /gls_hbl/ hbl 
+# endif /* GLS_MIXING */
 
 #else
 

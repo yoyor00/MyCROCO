@@ -29,7 +29,7 @@
 
 #include "param.h"
 #include "forces.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #include "ocean3d.h"
 #include "scalars.h"
 #include "grid.h"
@@ -314,102 +314,104 @@
 !            endif
          endif
 !-------------------------------------------------
-!        wave_tauox : x-component of the wave-ocean momentum flux (tauox in m2.s-2)
-!        not tested/performed yet
+!        wave_twox : x-component of the wave-to-ocean momentum flux (twox in m2.s-2)
          if (srcv_clname(i)=='RRMTWOX'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wtwox)
-!            if (iok_wtwox /= 0) then
-!#if (!defined OA_GRID_UV)  
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!!              Interpolate TWOX on grid T --> U
-!               do jo=jmin_halo-1,jmax_halo+1
-!               do io=imin_halo,imax_halo+1
-!                  tab_u_tmp(io,jo)=0.5*(tab_t_tmp(io-1,jo)+tab_t_tmp(io,jo))
-!               enddo
-!               enddo
-!!              Transmit to CROCO field : sustr
-!               sustr  = tab_u_tmp / rho0
-!#else
-!!              Transmit to CROCO field : sustr
-!               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               sustr  = tab_t_tmp / rho0
-!#endif   
-!            endif
+            if (iok_wtwox /= 0) then
+#if (!defined OA_GRID_UV)  
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!              Interpolate TWOX on grid T --> U
+               do jo=jmin_halo-1,jmax_halo+1
+               do io=imin_halo,imax_halo+1
+                  twox(io,jo)=0.5*(tab_t_tmp(io-1,jo)+tab_t_tmp(io,jo))
+               enddo
+               enddo
+#else
+               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               twox  = tab_t_tmp
+#endif   
+            endif
          endif
 !-------------------------------------------------
-!        wave_tauoy : y-component of the wave-ocean momentum flux (tauoy in m2.s-2)
-!        not tested/performed yet
+!        wave_twoy : y-component of the wave-to-ocean momentum flux (twoy in m2.s-2)
          if (srcv_clname(i)=='RRMTWOY'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wtwoy)
-!            if (iok_wtwoy /= 0) then
-!#if (!defined OA_GRID_UV) 
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!!              Interpolate TWOY on grid T --> U
-!               do jo=jmin_halo,jmax_halo+1
-!               do io=imin_halo-1,imax_halo+1
-!                  tab_v_tmp(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
-!               enddo
-!               enddo
-!!              Transmit to CROCO field : svstr
-!               svstr = tab_v_tmp(:,:) / rho0
-!#else
-!!              Transmit to CROCO field : svstr
-!               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               svstr = tab_t_tmp(:,:) / rho0
-!#endif 
-!            endif
-         end if
+            if (iok_wtwoy /= 0) then
+#if (!defined OA_GRID_UV) 
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!              Interpolate TWOY on grid T --> U
+               do jo=jmin_halo,jmax_halo+1
+               do io=imin_halo-1,imax_halo+1
+                  twoy(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
+               enddo
+               enddo
+#else
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               twoy = tab_t_tmp
+#endif 
+            endif
+         endif
 !-------------------------------------------------
-!        wave_tauwx : Net wave-supported stress, x-component (tauwix in m2.s-2)
-!        not tested/performed yet
-         if (srcv_clname(i)=='RRMTWSX'//clevel) then
+!        wave_tawx : Net wave-supported stress, x-component (tawx in m2.s-2)
+!        (ie atmosphere-to-wave stress)
+         if (srcv_clname(i)=='RRMTAWX'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wtaux)
-!            if (iok_wtaux /= 0) then
-!#if (!defined OA_GRID_UV)  
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!!              Interpolate TWOX on grid T --> U
-!               do jo=jmin_halo-1,jmax_halo+1
-!               do io=imin_halo,imax_halo+1
-!                  tab_u_tmp(io,jo)=0.5*(tab_t_tmp(io-1,jo)+tab_t_tmp(io,jo))
-!               enddo
-!               enddo
-!!              Transmit to CROCO field : sustr
-!               sustr  = tab_u_tmp / rho0
-!#else
-!!              Transmit to CROCO field : sustr
-!               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               sustr  = tab_t_tmp / rho0
-!#endif   
-!            endif
+            if (iok_wtaux /= 0) then
+#if (!defined OA_GRID_UV)  
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!              Interpolate TWOX on grid T --> U
+               do jo=jmin_halo-1,jmax_halo+1
+               do io=imin_halo,imax_halo+1
+                  tawx(io,jo)=0.5*(tab_t_tmp(io-1,jo)+tab_t_tmp(io,jo))
+               enddo
+               enddo
+#else
+               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               tawx = tab_t_tmp
+#endif   
+            endif
          endif
 !-------------------------------------------------
-!        wave_tauwy : Net wave-supported stress, y-component (tauwiy in m2.s-2)
-!        not tested/performed yet
-         if (srcv_clname(i)=='RRMTWSY'//clevel) then
+!        wave_tawy : Net wave-supported stress, y-component (tawy in m2.s-2)
+!        (ie atmosphere-to-wave stress)
+         if (srcv_clname(i)=='RRMTAWY'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wtauy)
-!            if (iok_wtauy /= 0) then
-!#if (!defined OA_GRID_UV) 
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!!              Interpolate TWOY on grid T --> U
-!               do jo=jmin_halo,jmax_halo+1
-!               do io=imin_halo-1,imax_halo+1
-!                  tab_v_tmp(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
-!               enddo
-!               enddo
-!!              Transmit to CROCO field : svstr
-!               svstr = tab_v_tmp(:,:) / rho0
-!#else
-!!              Transmit to CROCO field : svstr
-!               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               svstr = tab_t_tmp(:,:) / rho0
-!#endif 
-!            endif
+            if (iok_wtauy /= 0) then
+#if (!defined OA_GRID_UV) 
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!              Interpolate TWOY on grid T --> U
+               do jo=jmin_halo,jmax_halo+1
+               do io=imin_halo-1,imax_halo+1
+                  tawy(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
+               enddo
+               enddo
+#else
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               tawy = tab_t_tmp
+#endif 
+            endif
          endif
 !-------------------------------------------------
+!        Update CROCO wind stress accounting for wave bulk
+!      MPI_master_only print *,'entering sustr = sustr - tawx + twox'
+!      MPI_master_only print *,'sustr = ',sustr(5,5)
+!      MPI_master_only print *,'tawx = ',tawx(5,5)
+!      MPI_master_only print *,'twox = ',twox(5,5)
+!
+# if defined WAVE_SMFLUX
+         sustr = twox
+         svstr = twoy
+# else
+         sustr = sustr - tawx + twox
+         svstr = svstr - tawy + twoy
+# endif
+!
+!      MPI_master_only print *,'sustr = ',sustr(5,5)
+!
 #endif
       END DO 
 !-------------------------------------------------
@@ -434,4 +436,3 @@
 !---------------------------------------------------------------------------------------
 #endif 
       END SUBROUTINE cpl_prism_get
-      

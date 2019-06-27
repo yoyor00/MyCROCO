@@ -63,7 +63,7 @@
 # ifdef AUTOTILING
 #  include "autotiling.h"
 # endif
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
 
       integer size_XI,size_ETA,se,sse, sz,ssz
 !$AGRIF_DO_NOT_TREAT
@@ -294,13 +294,7 @@
 !
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
-!
-!  Generic Length Scale (GLS) model parameters
-!
 # ifdef SOLVE3D
-#  ifdef GLS_MIXING
-      call init_gls (ierr)
-#  endif
 !
 !  PISCES biogeochemeical model parameters
 !
@@ -637,7 +631,7 @@ CR      write(*,*)  ' -5' MYID
 !  Set initial Non-boussinesq variables - Part I
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
+# ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,1)
@@ -665,7 +659,7 @@ CR      write(*,*)  ' -3' MYID
 !  Set initial Non-boussinesq density field: rhobar_nbq - Part II
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
+# ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,2)
@@ -831,7 +825,7 @@ CR      write(*,*) ' -1' MYID
 !  Set initial Non-boussinesq variables PART III
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
+# ifdef M3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,3)
@@ -1952,12 +1946,10 @@ CR      write(*,*) '  0' MYID
 
          do j=j1,j2
            do i=i1,i2
-# ifndef WET_DRY
-#  ifdef NEW_S_COORD
+# ifdef NEW_S_COORD
              h(i,j)=max(tabres(i,j),hmin)
-#  else
+# else
              h(i,j)=max(tabres(i,j),hc)
-#  endif
 # endif
 # ifdef NEW_S_COORD 
              hinv(i,j)=1./(h(i,j)+hc)      

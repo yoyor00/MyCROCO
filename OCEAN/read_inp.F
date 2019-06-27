@@ -40,16 +40,19 @@
 #ifdef NBQ
 # include "nbq.h"
 #endif
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
       integer kwsize, testunit, input
       parameter (kwsize=32, testunit=40, input=15)
-      character end_signal*3, keyword*32, fname*64
+      character end_signal*3, keyword*32, fname*180
       parameter (end_signal='end')
       integer ierr, iargc, is,ie, kwlen, lstr, lenstr
 #ifdef SOLVE3D
      &                                       , itrc
 #endif
       logical dumboolean
+#ifdef USE_CALENDAR
+      real  dt_his,dt_avg,dt_rst
+#endif
 !
 ! Use pre-set default startup filename for known applications,
 ! or get it as an argument from command line via iargc-getarg
@@ -105,6 +108,20 @@
       fname='TEST_CASES/croco.in.Flume'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
+#elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+      fname='TEST_CASES/croco.in.KATO_PHILLIPS'
+#elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+      fname='TEST_CASES/croco.in.WILLIS_DEARDORFF'
+#elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+      fname='TEST_CASES/croco.in.DIURNALCYCLE'
+#elif defined SINGLE_COLUMN && defined FORCED_EKBBL
+      fname='TEST_CASES/croco.in.FORCED_EKBBL'
+#elif defined SINGLE_COLUMN && defined FORCED_DBLEEK 
+      fname='TEST_CASES/croco.in.FORCED_DBLEEK'
+#elif defined SINGLE_COLUMN && defined FORCED_NONROTBBL
+      fname='TEST_CASES/croco.in.FORCED_NONROTBBL'
+#elif defined SINGLE_COLUMN && defined FORCED_OSCNONROTBBL
+      fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
 # ifdef NBQ
       fname='TEST_CASES/croco.in.Tank_nbq'
@@ -280,11 +297,39 @@
 ! Start date
 !
       elseif (keyword(1:kwlen).eq.'start_date') then
-         call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) start_date
-         lstr=lenstr(start_date)
-         MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) start_date
+        lstr=lenstr(start_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)') 
      &   'Start date:', start_date(1:lstr)
+#endif
+#ifdef USE_CALENDAR 
+!
+! Run start date
+!
+      elseif (keyword(1:kwlen).eq.'run_start_date') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) run_start_date
+        lstr=lenstr(run_end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run start date:', run_start_date(1:lstr)
+! Run END date
+!
+      elseif (keyword(1:kwlen).eq.'run_end_date') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) run_end_date
+        lstr=lenstr(run_end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run end date:', run_end_date(1:lstr)
+! output time steps
+      elseif (keyword(1:kwlen).eq.'output_time_steps') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) dt_his,dt_avg,dt_rst
+        MPI_master_only  write(stdout,
+     &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
+     &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
+     &  'DT RST=',dt_rst,'H'
+        MPI_master_only write(stdout,*) 
 #endif
 !     
 ! Time-stepping parameters
@@ -400,7 +445,6 @@
                                    !defined BULK_EP   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
-                                   !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
           || (defined BBL         && !defined ANA_BSEDIM  && \
                                    !defined SEDIMENT) \
@@ -556,6 +600,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        nrst=ceiling((dt_rst*3600.)/dt)
+#endif
         rstname=fname(1:lstr)
         MPI_master_only write(stdout,
      &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
@@ -572,6 +619,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        nwrt=ceiling((dt_his*3600.)/dt)
+#endif
         hisname=fname(1:lstr)
         MPI_master_only write(stdout,
      &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
@@ -589,6 +639,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
+#ifdef USE_CALENDAR
+        navg=ceiling((dt_avg*3600.)/dt)
+#endif
         avgname=fname(1:lstr)
         MPI_master_only write(stdout,
      &         '(2(I10,2x,A,1x,A/32x,A/),6x,A,2x,A,1x,A,I3)')
@@ -1074,7 +1127,7 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &                                          ,  wrthis(indxHbl)
 # else 
      &                                          ,  dumboolean
@@ -1138,7 +1191,7 @@ c        close(testunit)
 # ifdef DIF_COEF_3D
      &                                        .or. wrthis(indxDiff)
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &                                        .or. wrthis(indxHbl)
 # endif
 # ifdef LMD_BKPP
@@ -1192,9 +1245,9 @@ c        close(testunit)
 # ifdef DIF_COEF_3D
      &  , wrthis(indxDiff),  'write Visc3d', 'Horizontal diffusivity.'
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &  , wrthis(indxHbl),  'write Hbl  ',
-     &                      'Depth of KPP-model boundary layer.'
+     &                      'Depth of model boundary layer.'
 # endif
 # ifdef LMD_BKPP
      &  , wrthis(indxHbbl), 'write Hbbl  ',
@@ -1248,7 +1301,7 @@ c        close(testunit)
 !
 ! Switches for GLS fields to be saved into history file.
 !
-#if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
       elseif (keyword(1:kwlen).eq.'gls_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrthis(indxTke),  wrthis(indxGls)
@@ -1310,7 +1363,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &                                          ,  wrtavg(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1325,7 +1378,7 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
      &                                          ,  wrtavg(indxHbl)
 # else 
      &                                          ,  dumboolean
@@ -1382,7 +1435,7 @@ c        close(testunit)
 #  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &                                        .or. wrtavg(indxbvf)
 # endif
 # ifdef VIS_COEF_3D
@@ -1391,7 +1444,7 @@ c        close(testunit)
 # ifdef DIF_COEF_3D
      &                                        .or. wrtavg(indxDiff)
 # endif
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
      &                                        .or. wrtavg(indxHbl)
 #  endif
 #  ifdef LMD_BKPP
@@ -1443,7 +1496,7 @@ c        close(testunit)
 #  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
 #  endif
@@ -1453,9 +1506,9 @@ c        close(testunit)
 #  ifdef DIF_COEF_3D
      &  , wrtavg(indxDiff),'write diff3d', 'Horizontal diffusivity'
 #  endif
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
      &  , wrtavg(indxHbl),  'write Hbl  ',
-     &                          'Depth of KPP-model boundary layer'
+     &                          'Depth of model boundary layer'
 #  endif
 #  ifdef LMD_BKPP
      &  , wrtavg(indxHbbl),  'write Hbbl  ',
@@ -1510,12 +1563,13 @@ c        close(testunit)
 !
 ! Switches for GLS fields to be saved into history file.
 !
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
       elseif (keyword(1:kwlen).eq.'gls_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxTke),  wrtavg(indxGls)
      &                    ,  wrtavg(indxLsc)       
-        if (wrtavg(indxTke) .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
+        if ( wrtavg(indxAkk) .or. wrtavg(indxAkp) .or. wrtavg(indxTke)
+     &                       .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
      &     ) wrtavg(indxTime)=.true.
 
         MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
@@ -1525,7 +1579,6 @@ c        close(testunit)
      &   , wrtavg(indxLsc), 'write Lscale ', 
      &                                  'vertical mixing length scale.'
 #  endif
-
 # endif /* SOLVE3D */
 #endif /* AVERAGES */
 
@@ -1951,11 +2004,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'bottom_drag') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) rdrg, rdrg2, Zob, Cdb_min, Cdb_max
+        read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
         MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
      &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
      &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &      Zob, 'Zob      Bottom roughness for logarithmic law (m).',
+     &      Zobt, 'Zobt      Bottom roughness for logarithmic law (m).',
      &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
      &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
 !
@@ -1996,7 +2049,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIX2017 && !defined GLS_MIXING
+     !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !
@@ -2249,20 +2302,44 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 # ifdef AVERAGES
 !
-! MRL_WCI average field follows its history field.
+! MRL wave-current interaction variables average fields
 !
-          wrtavg(indxSUP)=wrthis(indxSUP)
-          wrtavg(indxUST2D)=wrthis(indxUST2D)
-          wrtavg(indxVST2D)=wrthis(indxVST2D)
+        elseif (keyword(1:kwlen).eq.'wci_average_fields') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,*,err=95) wrtavg(indxSUP),  wrtavg(indxUST2D)
+     &                                        ,  wrtavg(indxVST2D)
 #  ifdef SOLVE3D
-          wrtavg(indxUST)=wrthis(indxUST)
-          wrtavg(indxVST)=wrthis(indxVST)
-          wrtavg(indxWST)=wrthis(indxWST)
-          wrtavg(indxAkb)=wrthis(indxAkb)
-          wrtavg(indxAkw)=wrthis(indxAkw)
-          wrtavg(indxKVF)=wrthis(indxKVF)
-          wrtavg(indxCALP)=wrthis(indxCALP)
-          wrtavg(indxKAPS)=wrthis(indxKAPS)
+     &         , wrtavg(indxUST), wrtavg(indxVST), wrtavg(indxwST)
+     &         , wrtavg(indxAKB), wrtavg(indxAKW), wrtavg(indxKVF)
+     &                        , wrtavg(indxCALP), wrtavg(indxKAPS)
+#  endif
+        MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')
+     &    'Fields to be saved in MRL-WCI 2D average  (T/F)',
+     &    wrtavg(indxSUP),
+     &    'write SUP    quasi-static sea-level [m]',
+     &    wrtavg(indxUST2D),
+     &    'write UST2D  depth-averaged  XI-Stokes velocity [m/s]',
+     &    wrtavg(indxVST2D),
+     &    'write VST2D  depth-averaged ETA-Stokes velocity [m/s]'
+#  ifdef SOLVE3D
+        MPI_master_only write(stdout,'(/1x,A,8(/6x,l1,2x,A))')
+     &    'Fields to be saved in MRL-WCI 3D average  (T/F)',
+     &    wrtavg(indxUST),
+     &    'write UST  3D  XI-Stokes velocity [m/s]',
+     &    wrtavg(indxVST),
+     &    'write VST  3D ETA-Stokes velocity [m/s]',
+     &    wrtavg(indxWST),
+     &    'write WST  3D vertical Stokes velocity [m/s]',
+     &    wrtavg(indxAkb),
+     &    'write Akb  eddy viscosity due to wave breaking [m2/s]',
+     &    wrtavg(indxAkw),
+     &    'write Akw  eddy diffusivity due to primary waves [m2/s]',
+     &    wrtavg(indxKVF),
+     &    'write KVF  vertical vortex force [m/s2]',
+     &    wrtavg(indxCALP),
+     &    'write CALP surface pressure correction [m]',
+     &    wrtavg(indxKAPS),
+     &    'write KAPS surface Bernoulli head [m]'
 #  endif
 # endif /* AVERAGES */
 #endif /* MRL_WCI */
@@ -2275,7 +2352,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
         MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
-     &    'Fields to be saved in WKB wave history  (T/F)',
+     &    'Fields to be saved in wave history  (T/F)',
      &    wrthis(indxHRM), 'write HRM  wave height (m)',
      &    wrthis(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
      &    wrthis(indxWAC), 'write WAC  primary wave action (m3/s)',
@@ -2288,15 +2365,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                   'write EPR  roller dissipation (m3/s3): [0,1]'
 # ifdef AVERAGES
 !
-! WKB wave average field follows its history field.
-!
-#  ifndef WAVE_ROLLER
-        do i=1,7
-#  else
-        do i=1,9
-#  endif
-          wrtavg(indxHRM+i-1)=wrthis(indxHRM+i-1)
-        enddo
+! Wave average fields
+! 
+      elseif (keyword(1:kwlen).eq.'wave_average_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) (wrtavg(i), i=indxHRM,indxHRM+8)
+        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
+     &    'Fields to be saved in wave average  (T/F)',
+     &    wrtavg(indxHRM), 'write HRM  wave height (m)',
+     &    wrtavg(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
+     &    wrtavg(indxWAC), 'write WAC  primary wave action (m3/s)',
+     &    wrtavg(indxWKX), 'write WKX  wavenumber  xi-dir component',
+     &    wrtavg(indxWKE), 'write WKE  wavenumber eta-dir component',
+     &    wrtavg(indxEPB), 'write EPB  breaking dissipation (m3/s3)',
+     &    wrtavg(indxEPD), 'write EPD  frictional dissipation (m3/s3)',
+     &    wrtavg(indxWAR), 'write WAR  roller wave action (m3/s)',
+     &    wrtavg(indxEPR),
+     &                   'write EPR  roller dissipation (m3/s3): [0,1]'
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
@@ -2474,7 +2559,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Online forcing: last forcing year',yearend,
      &         ', month', monthend,'.'
         MPI_master_only write(stdout,
-     &         '(7x,A,A,1x,A4,1x,I1,A)')
+     &         '(7x,A,A,1x,A4,1x,I2,A)')
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */

@@ -78,6 +78,12 @@ C$    integer omp_get_thread_num
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
 #endif
+#ifdef TS_HADV_TEST 
+      real cff,cff1,cx,cy,cmax,xx,yy
+#  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+      real psi(PRIVATE_2D_SCRATCH_ARRAY)
+#  endif      
+#endif
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -262,7 +268,62 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-
+#  elif defined TS_HADV_TEST
+#    ifdef DIAGONAL_ADV
+        do j=Jstr,Jend
+          do k=1,N
+            do i=IstrU,Iend
+              u(i,j,k,1)  = 1.D0
+              u(i,j,k,2)  = u(i,j,k,1)
+            enddo
+            do i=Istr,Iend
+              if (j.ge.JstrV) then
+                v(i,j,k,1) = 1.D0
+                v(i,j,k,2) = v(i,j,k,1)
+              end if
+            enddo
+          enddo
+        enddo
+#    endif
+#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+       cff  = - xl / pi
+       cff1 =   pi / xl
+       do j=Jstr-2,Jend+2
+         do i=Istr-2,Iend+2
+           psi(i,j) = cff * (sin(cff1*xp(i,j)))**2 * (sin(cff1*yp(i,j)))**2
+         enddo
+       enddo
+       cff  = pm(1,1)
+       do j=Jstr,Jend
+         do k=1,N
+           do i=IstrU,Iend
+             u(i,j,k,1)  = - cff * (psi(i,j+1)-psi(i,j))
+             u(i,j,k,2)  =  u(i,j,k,1)
+#    if defined SOLID_BODY_PER
+             u(i,j,k,3)  =  u(i,j,k,1)                
+#    endif
+           enddo
+           do i=Istr,Iend
+              if (j.ge.JstrV) then
+                v(i,j,k,1) = cff * (psi(i+1,j)-psi(i,j))
+                v(i,j,k,2) = v(i,j,k,1)
+#    if defined SOLID_BODY_PER
+                v(i,j,k,3) = v(i,j,k,1)                
+#    endif
+              end if
+           enddo
+         enddo
+       enddo       
+#    endif
+       cmax = 0.D0
+       do j=Jstr+1,Jend-1
+         do i=Istr+1,Iend-1
+            cx = dt*( MAX(u(i+1,j,N,1),0.)-MIN(u(i,j,N,1),0.) )*pm(i,j)
+            cy = dt*( MAX(v(i,j+1,N,1),0.)-MIN(v(i,j,N,1),0.) )*pn(i,j)
+            cmax = MAX( cx+cy, cmax )
+         enddo
+       enddo
+       print*,'CFL_max = ',cmax
 #  elif defined KH_INST
 !
 ! Traditional KH instability: 
@@ -398,7 +459,64 @@ C$    integer omp_get_thread_num
              enddo
           enddo
         enddo
-
+#  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=0.1 * z_r(i,j,k) + 22.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#  elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=0.01 * z_r(i,j,k) + 22.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#  elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=16.0+(0.01)**2/(g*Tcoef/rho0) 
+     &             * (z_r(i,j,k)) 
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#  elif defined TS_HADV_TEST && defined DIAGONAL_ADV
+        cff = 1./(50.*50.)
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=exp( -cff * ( (xr(i,j)-0.25*xl)**2
+     &                                   +   (yr(i,j)-0.25*el)**2 ) )
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+             enddo
+          enddo
+        enddo
+#  elif defined TS_HADV_TEST && ( defined SOLID_BODY_ROT || defined SOLID_BODY_PER )
+        cff = 1./(50.*50.)
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=exp( -cff * ( (xr(i,j)-0.25*xl)**2
+     &                                   +   (yr(i,j)-0.25*el)**2 ) )
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+             enddo
+          enddo
+        enddo
 #  elif defined CANYON_A
         do k=1,N
           do j=JR_RANGE
@@ -1256,7 +1374,7 @@ C$    integer omp_get_thread_num
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
 # include "private_scratch.h"
 # ifdef CLIMATOLOGY
 #  include "climat.h"

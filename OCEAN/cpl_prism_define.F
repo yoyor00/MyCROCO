@@ -13,13 +13,12 @@
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
       USE mod_prism             ! OASIS3 prism module
-
       IMPLICIT NONE
 
 #include "param.h"
 #include "grid.h"
 #include "scalars.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #include "ncscrum.h"
       integer i, j, ji, i0, j0, ja
       integer nproc, myproc, error_flg, ierr
@@ -147,9 +146,9 @@
 !     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
       srcv_clname(17) = 'RRMTWOY'//clevel   
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(18) = 'RRMTWSX'//clevel   
+      srcv_clname(18) = 'RRMTAWX'//clevel   
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(19) = 'RRMTWSY'//clevel   
+      srcv_clname(19) = 'RRMTAWY'//clevel   
 
       DO ja = 0, nmaxatm
 

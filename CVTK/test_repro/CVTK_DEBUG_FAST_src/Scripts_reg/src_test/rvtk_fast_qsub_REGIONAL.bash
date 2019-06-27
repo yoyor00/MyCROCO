@@ -194,7 +194,6 @@ if [ ${FLAG_OPENMP} = 1 ]; then
 	sed 's/'NPP=4'/'NPP=${NBPROCS}'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 	
     fi	 
-    
     /bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
     sed 's/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
     /bin/mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1

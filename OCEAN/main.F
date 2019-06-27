@@ -21,8 +21,8 @@
 !                                                                     
 !======================================================================
 !
-#ifdef OA_MCT
-          USE mod_prism     ! OASIS3 module
+#if defined OA_COUPLING || defined OW_COUPLING
+         USE mod_prism
 #endif
 #ifdef XIOS
           USE xios          ! XIOS module
@@ -40,7 +40,7 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef FLOATS
 # include "floats.h"
 # include "ncscrum_floats.h"
@@ -68,6 +68,9 @@
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
+#endif
+#ifdef USE_CALENDAR
+      character*19 :: tool_sectodat
 #endif
      
 #ifdef AUTOTILING
@@ -147,20 +150,14 @@
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
 !
-!  Generic Length Scale (GLS) model parameters
-!
 #ifdef SOLVE3D
-# ifdef GLS_MIXING
-      call init_gls (ierr)
-# endif
-
 !
 !  PISCES biogeochemeical model parameters
 !
-#if defined BIOLOGY && defined PISCES
+# if defined BIOLOGY && defined PISCES
       CALL trc_nam_pisces
       CALL trc_sbc_pisces
-#endif
+# endif
 !
 !
 !  Read sediment initial values and parameters from sediment.in file
@@ -275,6 +272,19 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (nrrec.ne.0) then           ! read from NetCDF file
         call get_initial
       endif
+
+#endif
+#ifdef USE_CALENDAR
+      !calcul of start times and ntimes
+#ifdef ANA_INITIAL
+      !if no init file set the start_date from croco.in
+      time=tool_datosec(run_start_date)
+#endif
+      time_end=tool_datosec(run_end_date)
+      ntimes=int((time_end-time)/dt)
+      MPI_master_only write(stdout,*)
+     &     'Ntimes from date_start and date_end:',ntimes
+      ntimes=ntimes+ntstart
 #endif
 !
 !  Set initial conditions analytically for ideal cases
@@ -634,10 +644,10 @@ C$OMP END MASTER
 
 !
 !----------------------------------------------------------------------
-!  Set initial non-Boussinesq parameters and variables
+!  Set initial non-Boussinesq (or fast 3D) parameters and variables
 !----------------------------------------------------------------------
 !
-#ifdef NBQ
+#ifdef M3FAST
 # ifdef NBQ_MASS
 !
 ! Re-evaluate Hz and Huon,Hvom using 
@@ -708,6 +718,10 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-steping.'
       next_kstp=kstp
       time_start=time
+#ifdef USE_CALENDAR 
+      time_mars=time
+      time_end=tool_datosec(run_end_date)
+#endif
 
 ! XIOS (
 !  Clean log output a bit
@@ -730,6 +744,10 @@ CR      write(*,*) '  0' MYID
 #endif
 
       do iicroot=ntstart,ntimes+1
+#ifdef USE_CALENDAR 
+        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        if(time > time_end) goto 99 
+#endif
 
 
 #ifdef SOLVE3D
@@ -780,6 +798,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
  100  continue
 
 #ifdef MPI
+      if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
 !     start_time2=PMPI_Wtime()

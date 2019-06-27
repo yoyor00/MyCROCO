@@ -410,8 +410,8 @@ c++ # define CANUTO_A
      &                 *   zalp*   wepb(i,j)
 # endif 
                   ! bottom
-                  z0_b        = MAX( Zob , 1.E-04 )
-                  cff         = 0.5*( trb( i,j,  1,nnew,itke )
+                  z0_b        = MAX( Zob(i,j) , 1.E-04 )
+                  cff         = 0.5*( trb( i,j,  1,nnew,itke )  
      &                            +   trb( i,j,  0,nnew,itke ) )
                   lgthsc      = vonKar*(0.5*Hz(i,j,1)+z0_b)
                   trb_bot     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)

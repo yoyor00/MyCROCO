@@ -18,11 +18,11 @@
           if (NORTH_INTER) then
             jmax=Mmmpi+1
           else
-            jmax=Mmmpi-1
+            jmax=Mmmpi-2
           endif
 #   else
           jmin=3
-          jmax=Mm-1
+          jmax=Mm-2
 #   endif
 #  endif
 #  ifdef EW_PERIODIC
@@ -72,24 +72,21 @@
                 flx2 = vel*FLUX2(
      &             v(i,j  ,k,nrhs), v(i,j+1,k,nrhs), vel, cdif)
 #   ifdef UP5_MASKING
-                mask0=vmask(i,j)*vmask(i,j+1)
-                mask2=vmask(i,j-1)*mask0*vmask(i,j+2)
+                mask2=vmask(i,j-1)*vmask(i,j+2)
                 IF (vel.gt.0) THEN
-                  mask1=vmask(i,j-1)*mask0
-                  mask3=vmask(i,j-2)*mask2          
+                  mask1=vmask(i,j-1)
+                  mask0=vmask(i,j-2)*mask2          
                 ELSE
-                  mask1=vmask(i,j+2)*mask0
-                  mask3=vmask(i,j+3)*mask2
+                  mask1=vmask(i,j+2)
+                  mask0=vmask(i,j+3)*mask2
                 ENDIF
-                VFe(i,j)=mask3*flx5+(1-mask3)*mask1*flx3+
-     &                              (1-mask3)*(1-mask1)*mask0*flx2
 #   else
                 mask1=vmask(i,j-1)*vmask(i,j+2)
                 mask2=vmask(i,j-2)*vmask(i,j+3)
                 mask0=mask1*mask2
+#   endif
                 VFe(i,j)=mask0*flx5+(1-mask0)*mask1*flx3+
      &                              (1-mask0)*(1-mask1)*flx2
-#   endif /* UP5_MASKING */
 #  else
                 VFe(i,j)=flx5
 #  endif /* MASKING */
@@ -106,7 +103,6 @@
             ELSE IF ( j.eq.jmin-1 .and. jmax.ge.jmin ) THEN  ! 3rd of 4th order flux 2 in
                                                              ! from south boundary
               DO i = Istr,Iend
-
 !               vel = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
                 vel = flux4(Hvom(i,j-1,k),Hvom(i,j,k),
      &                      Hvom(i,j+1,k),Hvom(i,j+2,k),1.)
@@ -180,28 +176,25 @@
                 flx3 = vel*FLUX3(
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs), vel )
-                vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
+!                vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
                 flx2 = vel*FLUX2(
      &             v(i-1,j,k,nrhs), v(i  ,j,k,nrhs), vel, cdif)
 #   ifdef UP5_MASKING
-                mask0=vmask(i-1,j)*vmask(i,j)
-                mask2=vmask(i-2,j)*mask0*vmask(i+1,j)
+                mask2=vmask(i-2,j)*vmask(i+1,j)
                 IF (vel.gt.0) THEN
-                  mask1=vmask(i-2,j)*mask0
-                  mask3=vmask(i-3,j)*mask2          
+                  mask1=vmask(i-2,j)
+                  mask0=vmask(i-3,j)*mask2          
                 ELSE
-                  mask1=vmask(i+1,j)*mask0
-                  mask3=vmask(i+2,j)*mask2
+                  mask1=vmask(i+1,j)
+                  mask0=vmask(i+2,j)*mask2
                 ENDIF
-                VFx(i,j)=mask3*flx5+(1-mask3)*mask1*flx3+
-     &                              (1-mask3)*(1-mask1)*mask0*flx2
 #   else
                 mask1=vmask(i-2,j)*vmask(i+1,j)
                 mask2=vmask(i-3,j)*vmask(i+2,j)
                 mask0=mask1*mask2
+#   endif
                 VFx(i,j)=mask0*flx5+(1-mask0)*mask1*flx3+
      &                              (1-mask0)*(1-mask1)*flx2
-#   endif /* UP5_MASKING */
 #  else
                 VFx(i,j)=flx5
 #  endif /* MASKING */
@@ -225,7 +218,7 @@
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs), vel )
 #  ifdef MASKING
-                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
+!                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
                 flx2 = vel*FLUX2(
      &             v(i-1,j,k,nrhs), v(i  ,j,k,nrhs), vel, cdif)
                 mask1=vmask(i-2,j)*vmask(i+1,j)
@@ -253,7 +246,7 @@
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs),  vel )
 #  ifdef MASKING
-                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
+!                vel = 0.5*(Huon(i,j-1,k)+ Huon(i,j,k))
                 flx2 = vel*FLUX2(
      &             v(i-1,j,k,nrhs), v(i,j,k,nrhs), vel, cdif)
                 mask1=vmask(i-2,j)*vmask(i+1,j)

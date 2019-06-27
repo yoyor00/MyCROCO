@@ -266,8 +266,7 @@
 ! (swdk is used later in this routine)
 !----------------------------------------------------------
 !
-# if defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #  define wrk1 FX
 #  define wrk2 FE
       do k=1,N-1
@@ -285,7 +284,7 @@
       enddo
 #  undef wrk1
 #  undef wrk2
-# endif /* LMD_SKPP || LMD_BKPP */
+# endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
 !
 !
 !======================================================================
@@ -303,6 +302,10 @@
 !
 # undef PREDICTOR
 # include "compute_vert_tracer_fluxes.h"
+
+# ifdef TS_HADV_TEST
+      FC(istr:iend,0:N) = 0.d0
+# endif
 
 !----------------------------------------------------------
 ! Apply flux correction for monotonicity
@@ -362,7 +365,7 @@
               do i=Istr,Iend
                 FC(i,k)=0.
 # if defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
 #  ifdef LMD_NONLOCAL
      &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
@@ -537,7 +540,7 @@
             cff1 = 1./(z_r(i,j,k+1)-z_r(i,j,k))
 #   ifdef LMD_SKPP2005
             hbltmp=hbls(i,j,3-nstp)
-#   elif defined LMD_SKPP1994
+#   elif defined LMD_SKPP1994 || defined GLS_MIXING
             hbltmp=hbl(i,j)
 #   else
             hbltmp=10.
@@ -719,7 +722,7 @@
 !
         do j=Jstr,Jend
           do i=Istr,Iend
-#    ifdef LMD_SKPP
+#    if defined LMD_SKPP || defined GLS_MIXING
             if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
             kmld=kbl_nstp(i,j)
 #    else

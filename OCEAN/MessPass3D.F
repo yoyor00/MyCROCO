@@ -24,7 +24,7 @@
 !     implicit none
 # include "param.h"
 # include "scalars.h"
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
       include 'mpif.h'
 !
 ! Nb of boundary points involved in communication
@@ -101,7 +101,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
 ! Prepare to receive and send: sides....
         if (mdii.eq.0) then
-          if ((WEST_INTER)) then
+          if ((WEST_INTER2)) then
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
@@ -115,7 +115,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &                         p_W, 1, MPI_COMM_WORLD,         ierr)
           endif
         else
-          if (EAST_INTER) then
+          if (EAST_INTER2) then
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
@@ -132,7 +132,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
         endif
 
         if (mdjj.eq.0) then
-          if (SOUTH_INTER) then
+          if (SOUTH_INTER2) then
             ibuf_snds = 0.
             do k=1,nmax
               do i=imin,imax
@@ -147,7 +147,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &                         p_S, 3, MPI_COMM_WORLD,         ierr)
           endif
         else
-          if (NORTH_INTER) then
+          if (NORTH_INTER2) then
             ibuf_sndn = 0.
             do k=1,nmax
               do i=imin,imax
@@ -167,7 +167,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 ! ...corners:
 !
         if (mdii.eq.0) then
-          if (SOUTH_INTER .and. WEST_INTER) then
+          if (CORNER_SW) then
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
@@ -181,7 +181,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &                                5, MPI_COMM_WORLD,        ierr)
           endif
         else
-          if (NORTH_INTER .and. EAST_INTER) then
+          if (CORNER_NE) then
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
@@ -198,7 +198,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
         endif
 
         if (mdii.eq.1) then
-          if (SOUTH_INTER .and. EAST_INTER) then
+          if (CORNER_SE) then
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
@@ -213,7 +213,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &                                7, MPI_COMM_WORLD,        ierr)
           endif
         else
-          if (NORTH_INTER .and. WEST_INTER) then
+          if (CORNER_NW) then
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
@@ -233,7 +233,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
 ! Wait for completion of receive and fill ghost points: sides...
 !
-      if (WEST_INTER) then
+      if (WEST_INTER2) then
         call MPI_Wait (req(1),status(1,1),ierr)
         do k=1,nmax
           do j=jmin,jmax
@@ -243,8 +243,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (WEST_INTER .and. .not. WEST_INTER2) then
+        do k=1,nmax
+          do j=jmin,jmax
+            do ipts=1,Npts
+              A(ipts-Npts,j,k)=A(ipts,j,k)
+            enddo
+          enddo
+        enddo
+      endif
 
-      if (EAST_INTER) then
+      if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
         do k=1,nmax
           do j=jmin,jmax
@@ -255,8 +264,18 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (EAST_INTER .and. .not. EAST_INTER2) then
+        do k=1,nmax
+          do j=jmin,jmax
+            do ipts=1,Npts
+              A(Lmmpi+ipts,j,k)=A(Lmmpi+ipts-Npts,j,k)
+            enddo
+          enddo
+        enddo
+      endif
 
-      if (SOUTH_INTER) then
+
+      if (SOUTH_INTER2) then
         call MPI_Wait (req(3),status(1,3),ierr)
         do k=1,nmax
           do i=imin,imax
@@ -266,8 +285,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (SOUTH_INTER .and. .not. SOUTH_INTER2) then
+       do k=1,nmax
+          do i=imin,imax
+            do jpts=1,Npts
+              A(i,jpts-Npts,k)=A(i,jpts,k)
+            enddo
+          enddo
+        enddo
+      endif
 
-      if (NORTH_INTER) then
+      if (NORTH_INTER2) then
         call MPI_Wait (req(4),status(1,4),ierr)
         do k=1,nmax
           do i=imin,imax
@@ -278,10 +306,19 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (NORTH_INTER .and. .not. NORTH_INTER2) then
+        do k=1,nmax
+          do i=imin,imax
+            do jpts=1,Npts
+              A(i,Mmmpi+jpts,k)=A(i,Mmmpi+jpts-Npts,k)
+            enddo
+          enddo
+        enddo
+      endif
 !
 ! ...corners:
 !
-      if (SOUTH_INTER .and. WEST_INTER) then
+      if (CORNER_SW) then
         call MPI_Wait (req(5),status(1,5),ierr)
         do k=1,nmax
           do jpts=1,Npts
@@ -292,8 +329,19 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (.not. CORNER_SW  .and.
+     &   SOUTH_INTER .and.  WEST_INTER ) then
+       do k=1,nmax
+          do jpts=1,Npts
+            do ipts=1,Npts
+              A(ipts-Npts,jpts-Npts,k)=
+     &                           A(ipts,jpts,k)
+            enddo
+          enddo
+        enddo
+       endif 
 
-      if (NORTH_INTER.and.EAST_INTER) then
+      if (CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
         do k=1,nmax
           do jpts=1,Npts
@@ -304,8 +352,20 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
-
-      if (SOUTH_INTER .and. EAST_INTER) then
+      if (.not. CORNER_NE  .and.
+     &   NORTH_INTER .and.  EAST_INTER ) then
+       do k=1,nmax
+          do jpts=1,Npts
+            do ipts=1,Npts
+              A(Lmmpi+ipts,Mmmpi+jpts,k)=
+     &              A(Lmmpi+ipts-Npts,Mmmpi+jpts-Npts,k)                
+            enddo
+          enddo
+        enddo
+       endif 
+    
+     
+      if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
         do k=1,nmax
           do jpts=1,Npts
@@ -316,8 +376,20 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (.not. CORNER_SE .and.
+     &   SOUTH_INTER .and.  EAST_INTER ) then
+       do k=1,nmax
+          do jpts=1,Npts
+            do ipts=1,Npts
+               A(Lmmpi+ipts,jpts-Npts,k)=
+     &                           A(Lmmpi+ipts-Npts,jpts,k)
+            enddo
+          enddo
+        enddo
+       endif 
+ 
 
-      if (NORTH_INTER .and. WEST_INTER) then
+      if (CORNER_NW) then
         call MPI_Wait (req(8),status(1,8),ierr)
         do k=1,nmax
           do jpts=1,Npts
@@ -328,6 +400,16 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
           enddo
         enddo
       endif
+      if (.not. CORNER_NW  .and.
+     &   NORTH_INTER .and.  WEST_INTER ) then
+       do k=1,nmax
+          do jpts=1,Npts
+            do ipts=1,Npts
+              A(ipts-Npts,Mmmpi+jpts,k)=A(ipts,Mmmpi+jpts-Npts,k)
+            enddo
+          enddo
+        enddo
+       endif 
 
 # if defined AGRIF
         DeAllocate(buf_snd4,  ibuf_sndN,  buf_snd2,

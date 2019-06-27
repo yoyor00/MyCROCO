@@ -60,7 +60,7 @@
             IF ((zeta(i,j,knew)+h(i,j)).le.Dcrit(i,j)+eps) THEN
               wetdry(i,j)=0.
             END IF
-# ifdef AGRIF
+# ifdef AGRIF_2WAY
             IF ((wetdry(i,j)==1) .AND. (rmask_childs(i,j)==0.)) THEN
               wetdry(i,j) = 0.
             END IF
@@ -68,7 +68,7 @@
           END DO
         END DO
 
-# ifdef AGRIF
+# ifdef AGRIF0
         if (.not.agrif_root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -109,7 +109,7 @@ C$OMP BARRIER
           END DO
         END DO
 
-# ifdef AGRIF
+# ifdef AGRIF0
         if (.not.agrif_root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -136,7 +136,7 @@ C$OMP BARRIER
           END DO
         END DO
 
-# ifdef AGRIF
+# ifdef AGRIF0
         if (.not.agrif_root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -225,7 +225,7 @@ C$OMP BARRIER
           END DO
         END DO
 
-#  ifdef AGRIF
+#  ifdef AGRIF0
         if (.not.agrif_root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -260,7 +260,7 @@ C$OMP BARRIER
           END DO
         END DO
 
-#  ifdef AGRIF
+#  ifdef AGRIF0
         if (.not.agrif_root()) then
 C$OMP BARRIER
 C$OMP MASTER

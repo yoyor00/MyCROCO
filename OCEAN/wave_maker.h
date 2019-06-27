@@ -22,14 +22,19 @@
 #    define WAVE_MAKER_SPECTRUM
 
 #   elif defined RIP && !defined MRL_WCI
-#    define WAVE_MAKER_JONSWAP
+#    ifdef WAVE_MAKER_SPECTRUM
+#      define WAVE_MAKER_JONSWAP
+#      undef  WAVE_MAKER_GAUSSIAN
+#    else
+#      undef  WAVE_MAKER_BICHROMATIC
+#      undef  STOKES_WAVES
+#    endif
 #    define WAVE_MAKER_OBLIQUE
-#    define WAVE_MAKER_DSPREAD
         wp=11.            ! period
         wa=0.4            ! amplitude
         wd=-20.           ! incidence angle (deg)
-        wds=15.           ! directional spread (deg)
-                          !  -> crest length = wl/(2sin(wds*deg2rad))
+        wds=30.           ! directional spread (deg)
+                          !  -> crest length = wl/(2*sin(wds))
 #   elif defined SWASH
 #    ifdef SWASH_GLOBEX_B2
 #     define WAVE_MAKER_BICHROMATIC
@@ -53,6 +58,7 @@
 !
 #   ifdef FLUME_WAVES
         x0=14.1
+        y0=0.
         time0=64.
 #   else
         x0=0.
@@ -62,8 +68,8 @@
 !
 !  Convert angles to rad
 !
-        wd=-wd*deg2rad    ! incidence angle 
-        wds=wds*deg2rad   ! directional spread
+        wd =wd *deg2rad  ! incidence angle 
+        wds=wds*deg2rad  ! directional spread
 !
 !--------------------------------------------------------------------
 !  Initialisation
@@ -74,17 +80,16 @@
 !  Read file
 !
         if (FIRST_TIME_STEP) then
-!        open(117,file='datwaves_CORR1.txt',form='formatted',status='old')
+!         open(117,file='datwaves_CORR1.txt',form='formatted',status='old')
           open(117,file='datwaves.txt',form='formatted',status='old')
-          do k=1,320
-            read(117,*) wa_bry(k), wf_bry(k),
-     &                  wpha_bry(k), wk_bry(k)
-            wa_bry(k)=wa_bry(k)*0.154/0.05
-            !wpha_bry(k)=wpha_bry(k) + 1.5*pi
-            khd=h(1,1)*wf_bry(k)**2/g   ! recompute wavenumber
-            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                       khd*(K5+K6*khd)))))) )
-            wk_bry(k)=kh/h(1,:1,$s/1)
+          do k=1,Nfrq !--> Nfrq=320 in forces.h
+            read(117,*) wa_bry(k), wf_bry(k), wpha_bry(k), wk_bry(k)
+            wa_bry(k)=wa_bry(k)*0.154/0.05  ! correct amplitude
+            ! wpha_bry(k)=wpha_bry(k) + 1.5*pi
+!            khd=h(1,1)*wf_bry(k)**2/g      ! recompute wavenumber
+!            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+!     &                                       khd*(K5+K6*khd)))))) )
+!            wk_bry(k)=kh/h(1,1)
           enddo
         endif
         ramp=tanh(dt/2.*float(iic-ntstart))
@@ -131,8 +136,8 @@
           enddo
 #    endif
 #    ifdef WAVE_MAKER_DSPREAD
-          dmin=wd-25  ! directional spread
-          dmax=wd+25
+          dmin=wd-30*deg2rad  ! directional spread
+          dmax=wd+30*deg2rad
           dd=(dmax-dmin)/Ndir
           cff4=0.
           do jw=1,Ndir
@@ -155,9 +160,9 @@
           do iw=1,Nfrq
             wpha_bry(iw)=wpha_bry(iw)*2.*pi
           enddo
+#    endif /* WAVE_MAKER_DSPREAD */
         endif ! FIRST_TIME_STEP
         ramp=tanh(dt/wp*float(iic-ntstart))
-#    endif /* WAVE_MAKER_DSPREAD */
 
 #   elif defined WAVE_MAKER_BICHROMATIC
 !
@@ -195,7 +200,7 @@
 #    if defined WAVE_MAKER_SPECTRUM
           zetabry_west(j)=0.
           do iw=1,Nfrq   ! frequency spread
-#     if WAVE_MAKER_DSPREAD
+#     ifdef WAVE_MAKER_DSPREAD
             do jw=1,Ndir ! directional spread
               theta=(xr(0,j)-x0)*wk_bry(iw)*cos(wd_bry(jw))
      &             +(yr(0,j)-y0)*wk_bry(iw)*sin(wd_bry(jw))
@@ -237,9 +242,10 @@
      &                   +(yr(0,j)-y0)*cos(wd)*sin(wds)*wk)
           zetabry_west(j)=( wa*cos(theta)
 #     ifdef STOKES_WAVES
-     &            +wk*wa*wa*(3.-sigma**2)/(4.*sigma**3)*cos(2.*theta)
+     &                      +wk*wa*wa*(3.-sigma**2)/
+     &                   (4.*sigma**3)*cos(2.*theta)
 #     endif
-     &                        )*cff_spread
+     &                    )*cff_spread
 #    endif /* FLUME ... */
         enddo  ! j loop
 #   endif /* Z_FRC_BRY */
@@ -251,7 +257,6 @@
 #   ifdef M3_FRC_BRY
         do j=JstrR,JendR
           h0=0.5*(h(0,j)+h(1,j))
-          !Du=0.5*(z_w(0,j,N)+z_w(1,j,N)-z_w(0,j,0)-z_w(1,j,0))
           Du=h0
 #    if defined FLUME_WAVES || \
      (defined WAVE_MAKER_SPECTRUM && !defined WAVE_MAKER_OBLIQUE \
@@ -323,13 +328,19 @@
      &                    +cff2*cosh(2*wk*Zu)
 #     endif
           enddo
-          cff1=0.5*g*wa*wa*wk/(wf*Du)
-          do k=1,N
-            ubry_west(j,k)=ubry_west(j,k)   ! compensation flow
-     &                    -cff1
-          enddo
 #    endif /* FLUME_WAVES ... */
+
         enddo  ! j loop
+
+#   ifndef FLUME_WAVES
+        cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
+        do j=JstrR,JendR
+          do k=1,N
+            ubry_west(j,k)=ubry_west(j,k) - cff1
+          enddo
+        enddo
+#   endif
+
 #   endif /* M3_FRC_BRY */
 
 #   ifdef M2_FRC_BRY
@@ -351,9 +362,8 @@
 #   ifdef M3_FRC_BRY
         do j=JstrV,JendR
           h0=0.5*(h(0,j)+h(0,j-1))
-          !Dv=0.5*(z_w(0,j,N)+z_w(0,j-1,N)-z_w(0,j,0)-z_w(0,j-1,0))
           Dv=h0
-#    if defined WAVE_MAKER_SPECTRUM && WAVE_MAKER_OBLIQUE
+#    if defined WAVE_MAKER_SPECTRUM && defined WAVE_MAKER_OBLIQUE
           khd=h0*wf**2/g   ! compute mean wavenumber
           wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                     khd*(K5+K6*khd)))))) )/h0
@@ -364,7 +374,7 @@
      &                                    /sinh(wk*Dv)
           enddo
 
-#    elif defined WAVE_MAKER_BICHROMATIC && WAVE_MAKER_OBLIQUE
+#    elif defined WAVE_MAKER_BICHROMATIC && defined WAVE_MAKER_OBLIQUE
           do k=1,N
               vbry_west(j,k)=0.
           enddo
@@ -420,11 +430,11 @@
 !
 #   ifdef W_FRC_BRY
         do j=JstrR,JendR
-          !Dr=z_w(0,j,N)-z_w(0,j,0)
           Dr=h(0,j)
 #    ifdef WAVE_MAKER_SPECTRUM 
           do k=1,N
-            wbry_west(j,k)=0.
+            wbry_west(j,k)=0. 
+#     ifndef WAVE_MAKER_DSPREAD
             Zr=Dr+z_w(0,j,k)
             do iw=1,Nfrq
               wbry_west(j,k)=wbry_west(j,k)+
@@ -435,6 +445,7 @@
      &                                 -(time-time0)*wf_bry(iw)
      &                                            -wpha_bry(iw))
             enddo
+#     endif
           enddo
 
 #    elif defined WAVE_MAKER_BICHROMATIC
@@ -450,14 +461,7 @@
      &                    +cff2*sinh(wk1*Zr)
      &                  +cff3*sinh(2*wk1*Zr)
      &                  +cff4*sinh(2*wk1*Zr)
-            wbry_west(j,k)=0.
           enddo
-          do k=1,N-1
-            wnbqbry_west(j,k)=0.5*wbry_west(j,k)*(Hz(0,j,k)+Hz(0,j,k+1))
-          enddo
-          wnbqbry_west(j,0)=0.5*wbry_west(j,0)*Hz(0,j,1)
-          wnbqbry_west(j,N)=0.5*wbry_west(j,N)*Hz(0,j,N)
-
 #    else
           theta=(xr(0,j)-x0)*cos(wd)*cos(wds)*wk
      &         +(yr(0,j)-y0)*sin(wd)*cos(wds)*wk - time*wf
@@ -469,6 +473,7 @@
      &                 +cff2*sinh(2*wk*Zr)
           enddo
 #    endif /* WAVE_MAKER_SPECTRUM ... */
+
         enddo  ! j loop
 #   endif /* W_FRC_BRY */
 !

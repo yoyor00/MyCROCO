@@ -295,7 +295,7 @@ ana_vmix.o:
 analytical.o: analytical.F cppdefs.h param.h ocean2d.h ocean3d.h grid.h forces.h 
 analytical.o: scalars.h compute_extended_bounds.h compute_auxiliary_bounds.h sediment.h 
 analytical.o: bbl.h  coupling.h wkb_wwave.h sources.h boundary.h set_global_definitions.h 
-analytical.o: wave_maker.h
+analytical.o: wave_maker.h  wave_maker_internal.h
 analytical.o: 
 #
 autotiling.o: autotiling.F cppdefs.h param.h mpi_roms.h scalars.h ncscrum.h 

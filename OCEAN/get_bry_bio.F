@@ -10,7 +10,8 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined T_FRC_BRY && defined BIOLOGY 
+#if defined SOLVE3D && defined T_FRC_BRY && defined BIOLOGY \
+                    && !defined ANA_BRY
 
       subroutine get_bry_bio    ! Read side boundary forcing 
       implicit none             ! fields from boundary file

@@ -454,7 +454,7 @@
       integer indxAks
       parameter (indxAks=indxAkt+4)
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
       integer indxHbl
       parameter (indxHbl=indxAkt+5)
 # endif
@@ -462,13 +462,17 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkt+6)
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
       integer indxTke
       parameter (indxTke=indxAkt+7)
       integer indxGls
       parameter (indxGls=indxAkt+8)
       integer indxLsc
       parameter (indxLsc=indxAkt+9)
+      integer indxAkk
+      parameter (indxAkk=indxAkt+10)
+      integer indxAkp
+      parameter (indxAkp=indxAkt+11)
 # endif
 #endif
 
@@ -523,7 +527,7 @@
 
 #if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -549,14 +553,19 @@
 # endif
 # ifdef BULK_FLUX
       integer indxWSPD,indxTAIR,indxRHUM,indxRADLW,indxRADSW,
-     &        indxPRATE,indxUWND,indxVWND
+     &        indxPRATE,indxUWND,indxVWND,indxPATM
       parameter (indxWSPD=indxSST+3,  indxTAIR=indxSST+4,
      &           indxRHUM=indxSST+5,  indxRADLW=indxSST+6,
      &           indxRADSW=indxSST+7, indxPRATE=indxSST+8,
-     &           indxUWND=indxSST+9,  indxVWND=indxSST+10)
+     &           indxUWND=indxSST+9,  indxVWND=indxSST+10,
+     &           indxPATM=indxSST+11)
       integer indxShflx_rlw,indxShflx_lat,indxShflx_sen 
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
+# endif
+# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
+      integer indxWSPD
+      parameter (indxWSPD=indxSUSTR+200)
 # endif
 #endif /* SOLVE3D */
 
@@ -663,15 +672,15 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+80)
+      parameter (indxQBAR=indxSUSTR+90)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+81)
+      parameter (indxTsrc=indxSUSTR+91)
 # endif
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+82)
+      parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
 #ifdef ICE
       integer indxAi
@@ -841,10 +850,10 @@
      &      , hisAkv, hisAkt, hisAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , hisbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -989,10 +998,10 @@
      &      , avgAkv, avgAkt, avgAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , avgbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 # endif
 # ifdef BIOLOGY
@@ -1235,10 +1244,10 @@
      &      , hisHbl,  hisHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , hisbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1450,10 +1459,10 @@
      &      , avgHbl,  avgHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , avgbvf
 # endif
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 #  ifdef BIOLOGY
@@ -1550,9 +1559,12 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-
+# if ! defined XIOS2
       character*80 date_str, title, start_date
-      character*80 ininame,  grdname,  hisname
+# else  
+      character*80 date_str, title
+# endif
+      character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES
@@ -1634,7 +1646,11 @@
       character*75  vname(20, 90)
 #endif
 
+#ifndef XIOS2
       common /cncscrum/       date_str,   title,  start_date
+#else
+      common /cncscrum/       date_str,   title
+#endif
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname

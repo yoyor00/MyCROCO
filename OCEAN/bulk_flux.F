@@ -112,6 +112,12 @@
 !
       do j=jmin,jmax
         do i=imin,imax
+
+# ifdef READ_PATM
+! get pressure from ATM file and convert to hPa
+         patm = patm2d(i,j)/100.0
+# endif
+
 !
 !
 !  surface temperature and salinity
@@ -231,25 +237,23 @@
           cer(i,j)=ce
         enddo
       enddo
-
 !
 !---------------------------------------------------------------
-!
+!   Very basic ice model
 !---------------------------------------------------------------
 !
-
-#ifdef SEA_ICE_NOFLUX
+# ifdef SEA_ICE_NOFLUX
       do j=jmin,jmax
         do i=imin,imax
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
                    srflx(i,j)=0.
-#    endif
+#  endif
               endif
         enddo
       enddo
-#endif
+# endif
 !
 !---------------------------------------------------------------
 ! Flux correction to surface net heat flux.
@@ -419,7 +423,9 @@
 # endif
       real rhow,patm
       parameter (rhow=1000.0)
+#ifndef READ_PATM 
       parameter (patm=1010.0)
+#endif
       real eps,r3
       parameter (eps=1.d-20)
       parameter (r3=1.0/3.0)
@@ -487,6 +493,11 @@
 !
       do j=jmin,jmax
         do i=imin,imax
+
+# ifdef READ_PATM
+! get pressure from ATM file and convert in hPa
+         patm = patm2d(i,j)/100.0
+# endif
 !
 !
 !  Input bulk parameterization fields
@@ -794,7 +805,7 @@
         do i=imin,imax
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIX2017 || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
                    srflx(i,j)=0.
 #    endif
               endif

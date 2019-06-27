@@ -665,7 +665,7 @@
 !
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
-# ifdef TS_MIX_IMP
+# ifdef TS_SPONGE_IMP
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
 # endif
             enddo
@@ -705,7 +705,7 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#   ifdef LMD_SKPP
+#   if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
 #   else

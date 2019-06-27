@@ -61,6 +61,9 @@ C$    integer omp_get_thread_num
 #endif       
       real    eps,cff, cx,cy,
      &        dft,dfx,dfy, tau,tau_in,tau_out,hx,zx
+#ifdef OBC_REDUCED_PHYSICS
+     &        ,bry_val,bry_pgr,bry_str,bry_cor
+#endif
       parameter (eps=1.D-20)
 #ifdef WET_DRY
       real cff1,cff2
@@ -105,28 +108,28 @@ C$    trd=omp_get_thread_num()
       tau_out=dtfast*tauM_out
 #endif
 !
-#if defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
+#ifdef OBC_COM_M2CHARACT
       grad = 1.
-#if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+# if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         grad(Istr,Jstr) = 0.5
       endif
-#endif
-#if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+# endif
+# if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         grad(Iend+1,Jstr) = 0.5
       endif
-#endif
-#if defined OBC_COM_NORTH && defined OBC_COM_WEST
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         grad(Istr,Jend) = 0.5
       endif
-#endif
-#if defined OBC_COM_NORTH && defined OBC_COM_EAST
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         grad(Iend+1,Jend) = 0.5
       endif
-#endif      
+# endif      
 #endif
 
 !
@@ -196,29 +199,6 @@ C$    trd=omp_get_thread_num()
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2FLATHER
-!                                            Western edge Flather BC
-!                                            ======= ==== ======= ==
-        do j=Jstr,Jend
-          cff=-sqrt(2.*g/(h(Istr-1,j)+h(Istr,j)
-     &                   +zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp)))
-          ubar(Istr,j,knew)=cff
-     &               *(0.5*(zeta(Istr-1,j,knew)+zeta(Istr,j,knew))
-#   ifdef Z_FRC_BRY
-     &                                           -zetabry_west(j) 
-#   elif defined ZCLIMATOLOGY
-     &                           -0.5*(ssh(Istr-1,j)+ssh(Istr,j)) 
-#   endif
-     &              )*grad(Istr,j)
-#   ifdef M2_FRC_BRY
-     &                                           +ubarbry_west(j)
-#   elif defined M2CLIMATOLOGY
-     &                                             +ubclm(Istr,j)
-#   endif
-#   ifdef MASKING
-          ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
-#   endif
-        enddo
 #  elif defined OBC_COM_M2CHARACT
 !                                            Western edge Characteristic BC
 !                                            ======= ==== ======= ==
@@ -233,11 +213,49 @@ C$    trd=omp_get_thread_num()
      &                             -(1.+cx)*zeta(istr  ,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
+#   ifdef OBC_REDUCED_PHYSICS
+          cff1=1.0/(0.5*(h(Istr-1,j)+
+     &                     zeta(Istr-1,j,knew)+
+     &                     h(Istr  ,j)+
+     &                     zeta(Istr  ,j,knew)))
+          bry_str=cff1*(sustr(Istr,j)-
+     &              bustr(Istr,j))
+
+#    ifdef UV_COR
+          bry_cor=0.125*(vbar(Istr-1,j  ,knew)+
+     &                  vbar(Istr-1,j+1,knew)+
+     &                  vbar(Istr  ,j  ,knew)+
+     &                  vbar(Istr  ,j+1,knew))*
+     &                  (f(Istr-1,j)+f(Istr  ,j))
+
+#    else
+           bry_cor=0.
+#    endif
+           bry_pgr=-g*(zeta(Istr  ,j,knew)-
+     &             zeta(Istr-1,j,knew))*
+     &             0.5*(pm(Istr-1,j)+
+     &                     pm(Istr  ,j))
+
+
+           Cx=1.0/SQRT(g*0.5*(h(Istr-1,j)+
+     &                          zeta(Istr-1,j,knew)+
+     &                          h(Istr  ,j)+
+     &                          zeta(Istr  ,j,knew)))
+           cff2=om_u(Istr,j)*Cx
+           bry_val=ubar(Istr+1,j,knew)+
+     &                cff2*(bry_pgr+
+     &                      bry_cor+
+     &                      bry_str)
+#   endif
   
           ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr  ,j,kstp)
      &                                 +cx*ubar(Istr+1,j,kstp)
 #   ifdef M2_FRC_BRY
+#    ifdef OBC_REDUCED_PHYSICS
+     &                                        +bry_val
+#    else
      &                                        +ubarbry_west(j)
+#    endif
 #   elif defined M2CLIMATOLOGY
      &                                          +ubclm(Istr,j)
 #    endif
@@ -359,29 +377,6 @@ C$    trd=omp_get_thread_num()
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2FLATHER
-!                                            Eastern edge Flather BC
-!                                            ======= ==== ======= ==
-        do j=Jstr,Jend
-          cff=sqrt(2.*g/(h(Iend,j)+h(Iend+1,j)+
-     &                   zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp)))
-          ubar(Iend+1,j,knew)=cff
-     &               *(0.5*( zeta(Iend,j,knew)+zeta(Iend+1,j,knew))
-#   ifdef Z_FRC_BRY
-     &                                             -zetabry_east(j)
-#   elif defined ZCLIMATOLOGY
-     &                             -0.5*(ssh(Iend,j)+ssh(Iend+1,j))
-#   endif
-     &               )*grad(Iend+1,j)
-#   ifdef M2_FRC_BRY
-     &                                             +ubarbry_east(j)
-#   elif defined M2CLIMATOLOGY
-     &                                             +ubclm(Iend+1,j)
-#   endif
-#   ifdef MASKING
-          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
-#   endif
-        enddo
 #  elif defined OBC_COM_M2CHARACT
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
@@ -396,11 +391,51 @@ C$    trd=omp_get_thread_num()
      &                             -(1.+cx)*zeta(iend  ,j,kstp)
      &                           )*(1.-0.292893218813452/cx)**2
           endif
-  
+#   ifdef OBC_REDUCED_PHYSICS
+          cff1=1.0/(0.5*(h(Iend,j)+
+     &                     zeta(Iend,j,knew)+
+     &                     h(Iend+1  ,j)+
+     &                     zeta(Iend+1  ,j,knew)))
+          bry_str=cff1*(sustr(Iend+1,j)-
+     &              bustr(Iend+1,j))
+
+#    ifdef UV_COR
+          bry_cor=0.125*(vbar(Iend,j  ,knew)+
+     &                  vbar(Iend,j+1,knew)+
+     &                  vbar(Iend+1  ,j  ,knew)+
+     &                  vbar(Iend+1  ,j+1,knew))*
+     &                  (f(Iend,j)+f(Iend+1  ,j))
+          
+#    else
+          bry_cor=0.
+#    endif
+          bry_pgr=-g*(zeta(Iend+1  ,j,knew)-
+     &             zeta(Iend,j,knew))*
+     &             0.5*(pm(Iend,j)+
+     &                     pm(Iend+1,j))
+
+
+          Cx=1.0/SQRT(g*0.5*(h(Iend,j)+
+     &                          zeta(Iend,j,knew)+
+     &                          h(Iend+1 ,j)+
+     &                          zeta(Iend+1  ,j,knew)))
+          cff2=om_u(Iend+1,j)*Cx
+          bry_val=ubar(Iend,j,knew)+
+     &                cff2*(bry_pgr+
+     &                      bry_cor+
+     &                      bry_str)
+#   endif
+#   ifdef MASKING
+          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
+#   endif
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
      &                                   +cx*ubar(Iend  ,j,kstp)
 #   ifdef M2_FRC_BRY
+#    ifdef OBC_REDUCED_PHYSICS
+     &                                          +bry_val
+#    else
      &                                          +ubarbry_east(j)
+#    endif
 #   elif defined M2CLIMATOLOGY
      &                                          +ubclm(Iend+1,j)
 #    endif
@@ -411,9 +446,6 @@ C$    trd=omp_get_thread_num()
      &                                              -ssh(Iend,j)
 #   endif
      &                             ))
-#   ifdef MASKING
-          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
-#   endif
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                            Eastern edge Specified BC
@@ -534,7 +566,7 @@ C$    trd=omp_get_thread_num()
           ubar(i,Jstr-1,knew)=ubar(i,Jstr-1,knew)*umask(i,Jstr-1)
 #   endif
         enddo
-#  elif defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
+#  elif defined OBC_COM_M2CHARACT
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
@@ -663,7 +695,7 @@ C$    trd=omp_get_thread_num()
           ubar(i,Jend+1,knew)=ubar(i,Jend+1,knew)*umask(i,Jend+1)
 #   endif
         enddo
-#  elif defined OBC_COM_M2FLATHER || defined OBC_COM_M2CHARACT
+#  elif defined OBC_COM_M2CHARACT
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend

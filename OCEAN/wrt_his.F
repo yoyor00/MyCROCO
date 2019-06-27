@@ -40,7 +40,7 @@
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "mixing.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef SEDIMENT
 # include "sediment.h"
       integer indxWrk
@@ -63,7 +63,7 @@
 #  define SWITCH !
 # endif
 
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -170,6 +170,15 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     
       if (wrthis(indxZ)) then
          work2d=zeta(:,:,fast_indx_out)
+#ifdef WET_DRY
+         do j=0,Mm
+            do i=0,Lm
+               if (h(i,j) .le. Dcrit(i,j)) then
+                 work2d(i,j)=work2d(i,j)+h(i,j)
+               endif
+            enddo
+         enddo
+#endif
          call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
      &        record,r2dvar,type)
       endif
@@ -559,7 +568,11 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     We do that because the mask has been applied if iic ==0 !
                do k=1,N
                   workr(:,:,k)=workr(:,:,k)
+#ifdef WET_DRY
+     &                         SWITCH rmask_wet(:,:)
+#else
      &                         SWITCH rmask(:,:)
+#endif
                enddo
             endif
 #endif
@@ -693,7 +706,7 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
       endif
 # endif
 
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
 !     
 !     Write out depth of planetary boundary layer (m).
 !     
@@ -719,16 +732,12 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# if defined GLS_MIX2017 || defined GLS_MIXING
+# ifdef GLS_MIXING
 !     
 !     Write out turbulent kinetic energy.
 !     
       if (wrthis(indxTke)) then
-#ifdef GLS_MIXING
-         work=tke(:,:,:,nstp)
-#else
          work=trb(:,:,:,nstp,itke)       
-#endif
          call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
@@ -737,11 +746,7 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
 !     Write out generic length scale
 !     
       if (wrthis(indxGls)) then
-#ifdef GLS_MIXING
-         work=gls(:,:,:,nstp)
-#else
          work=trb(:,:,:,nstp,igls) 
-#endif
          call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
@@ -1055,7 +1060,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
 !     
-#if defined MPI &               !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILE & !defined NC4PAR
       ierr=nf_close (ncidhis)
       if (nrpfhis.gt.0 .and. record.ge.nrpfhis) ncidhis=-1
 #else
@@ -1078,7 +1083,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
          may_day_flag=3
       endif
 
-#if defined MPI &               !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
          call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &        1, MPI_COMM_WORLD,  ierr)
