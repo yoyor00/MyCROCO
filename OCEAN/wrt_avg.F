@@ -412,13 +412,7 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
 !     Mult by mask to avoid erroneous data 
 !     over land if Qcorrection cppkeys applied
 !
-        write(*,*)'btflx_avg(10,10,itemp)=',btflx_avg(10,10,itemp)
         ierr=nf_fwrite(work2d, ncidavg, avgBhflx, record, r2dvar)
-!
-        write(*,*)'ncidavg=',ncidavg
-        write(*,*)'avgBhflx=',avgBhflx
-        write(*,*)'record=',record
-!
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxBhflx))
           write(stdout,1) vname(1,indxBhflx)(1:lvar), record, ierr

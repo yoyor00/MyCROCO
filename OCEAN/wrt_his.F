@@ -784,13 +784,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       if (wrthis(indxBhflx)) then
         work2d=btflx(:,:,itemp)*rho0*Cp
      &       SWITCH rmask
-        write(*,*)'btflx(10,10,itemp)=',btflx(10,10,itemp)
         ierr=nf_fwrite(work2d, ncidhis, hisBhflx, record, r2dvar)
-! 
-        write(*,*)'ncidhis=',ncidhis
-        write(*,*)'hisBhflx=',hisBhflx
-        write(*,*)'record=',record
-!     
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxBhflx))
           MPI_master_only write(stdout,1)
