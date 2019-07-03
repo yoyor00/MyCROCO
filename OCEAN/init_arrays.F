@@ -753,10 +753,16 @@ C$    integer omp_get_thread_num
             stflxg(i,j,2,itrc)=init
 # endif
             btflx(i,j,itrc)=init
-# ifndef ANA_BTFLUX
-            btflxg(i,j,1,itrc)=init
-            btflxg(i,j,2,itrc)=init
+            
+# if !defined ANA_BTFLUX
+            btflxg(i,j,1,itemp)=init
+            btflxg(i,j,2,itemp)=init
 # endif
+# if !defined ANA_BSFLUX
+            btflxg(i,j,1,isalt)=init
+            btflxg(i,j,2,isalt)=init
+# endif
+            
           enddo
         enddo
       enddo

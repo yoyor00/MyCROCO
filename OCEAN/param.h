@@ -18,7 +18,7 @@
 !          points and peroodic ghost points (if any) are excluded].
 !
 ! Lm,Mm    Number of the internal points [see above] of array
-!          covering a Message Passing subdomain. In the case when
+!     covering a Message Passing subdomain. In the case when
 !          no Message Passing partitioning is used, these two are
 !          the same as LLm,MMm. 
 !
@@ -225,7 +225,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=4,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -251,39 +251,31 @@
 !
       integer NWEIGHT
       parameter (NWEIGHT=1000)
-
 !
 !----------------------------------------------------------------------
-! OA coupling parametrization for current feedback on wind-stress  
-! (Renault et al., Sc. Reports 2017)
+! OA-Coupling, Tides, Wetting-Drying, Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
 #ifdef SMFLUX_CFB
-      ! wind correction: Ua-(1-sw)*Uo
-      ! ifndef CFB_WIND, this is only used to correct heat flux (bulk_flux)
-      real swparam
-      parameter (swparam=0.3)
 # ifdef CFB_STRESS
-      ! wind-stress correction using wind speed:  rho0*sustr + s_tau*Uo
-      !   s_tau = cfb_slope * wspd + cfb_offset [N.m^-3.s]
-      !  (recommendended and default if BULK_FLUX - needs wspd data)
+      ! setup coupling coeff: sustr+(stau)Uo
+      ! with stau = cfb_slope*Uatm + cfb_offset
       real cfb_slope, cfb_offset
-      parameter (cfb_slope=-0.0029)
+      parameter (cfb_slope=0.0029)
       parameter (cfb_offset=0.008)
 # elif defined CFB_STRESS2
-      ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
-      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
-      ! (use if wspd data not available, e.g. not BULK_FLUX)
+      ! setup coupling coeff: sustr+(stau)Uo
+      ! with stau = cfb_slope2*Stress + cfb_offset2
       real cfb_slope2, cfb_offset2
-      parameter (cfb_slope2=-0.100)
-      parameter (cfb_offset2=0.001)
+      parameter (cfb_slope2=0.056)
+      parameter (cfb_offset2=0.0025)
+# elif defined CFB_WIND
+      ! setup coupling coeff: Ua-(1-sw)Uo
+      real swparam
+      parameter (swparam=0.3)
 # endif
 #endif
-!
-!----------------------------------------------------------------------
-! Tides
-!----------------------------------------------------------------------
-!
+
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
@@ -293,10 +285,6 @@
       parameter (Ntides=8)
 # endif
 #endif
-!
-!----------------------------------------------------------------------
-! Wetting-Drying
-!----------------------------------------------------------------------
 !
 #ifdef WET_DRY
       real D_wetdry             ! Critical Depth for Drying cells
@@ -309,10 +297,6 @@
       parameter (D_wetdry=0.2)
 # endif
 #endif
-!
-!----------------------------------------------------------------------
-! Point sources, Floast, Stations
-!----------------------------------------------------------------------
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Msrc               ! Number of point sources

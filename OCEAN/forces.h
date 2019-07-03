@@ -168,16 +168,23 @@
       real btflxg(GLOBAL_2D_ARRAY,2,NT)
       common /btfdat_btflxg/btflxg
 
-      real sclbtf(NT), btf_tstart(NT), btf_tend(NT)
-      real btfclen(NT), tsbtf(NT)
-      real btf_tintrp(2,NT), btflxp(2,NT),  tbtflx(2,NT)
-      integer itbtf(NT), btfid(NT), btftid(NT),tbtfindx(NT)
-      logical lbtfgrd(NT), btfcycle(NT), btf_onerec(NT)
-      common /btfdat1/ sclbtf, btf_tstart, btf_tend, btfclen
-      common /btfdat2/ tsbtf,  btf_tintrp,   btflxp,        tbtflx
-      common /btfdat3/ itbtf,  btfid,        btftid,        tbtfindx
-      common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
-
+!$$$      real sclbtf(NT), btf_tstart(NT), btf_tend(NT)
+!$$$      real btfclen(NT), tsbtf(NT)
+!$$$      real btf_tintrp(2,NT), btflxp(2,NT),  tbtflx(2,NT)
+!$$$      integer itbtf(NT), btfid(NT), btftid(NT),tbtfindx(NT)
+!$$$      logical lbtfgrd(NT), btfcycle(NT), btf_onerec(NT)
+!$$$      common /btfdat1/ sclbtf, btf_tstart, btf_tend, btfclen
+!$$$      common /btfdat2/ tsbtf,  btf_tintrp,   btflxp,        tbtflx
+!$$$      common /btfdat3/ itbtf,  btfid,        btftid,        tbtfindx
+!$$$  common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
+      
+      real btflxp(2,NT), btf_time(2,NT)
+      real btf_cycle(NT), btf_scale(NT)
+      integer itbtf(NT), btf_ncycle(NT), btf_rec(NT) 
+      integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
+      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
+      common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
+      common /btfdat3/  btf_tid, btf_id
 #   undef BTFLUX_DATA
 # endif /* !ANA_BTFLUX */
 #ifdef QCORRECTION

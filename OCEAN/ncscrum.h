@@ -51,7 +51,10 @@
 ! indxSST         sea surface temperature
 ! indxdQdSST      Q-correction coefficient dQdSST
 ! indxSSS         sea surface salinity
-! indxQBAR         river runoff
+! indxQBAR        river runoff
+! indxBhflx       bottom hydrothermal heat flux
+! indxBwflx       bottom hydrothermal freshwater flux
+      
 !
 ! indxAi          fraction of cell covered by ice
 ! indxUi,indxVi   U,V-components of sea ice velocity
@@ -682,6 +685,9 @@
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
+      integer indxBhflx,indxBwflx
+      parameter (indxBhflx=indxSUSTR+93)
+      parameter (indxBwflx=indxSUSTR+94)
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
@@ -764,7 +770,8 @@
 !                    _frc           forcing
 !                    _clm           climatology
 !                    _qbar          river runoff
-!
+!                    _btf           hydrothermal flux
+!     
 ! endings refer to:  ___Time  time [in seconds]
 !                    ___Tstep time step numbers and record numbers
 !   all objects      ___Z     free-surface
@@ -796,16 +803,19 @@
 !   ntuclm  momentum variables in current climatology file.
 !   ntww    wind induced wave data in current forcing file.
 !   ntbulkn bulk formula variables in current forcing file.
-!   ntqbar   river runoff in current forcing file.
+!   ntqbar  river runoff in current forcing file.
+!   ntbtf   bottom hydrothermal flux of tracer in current forcing file.
 !
 ! vname    character array for variable names and attributes;
 !=================================================================
 !
-      integer ncidfrc, ncidbulk, ncidclm,  ntsms ,
-     &        ntsrf,  ntssh,  ntsst, ntsss, ntuclm,
-     &        ntbulk, ncidqbar, ntqbar, ntww
+      integer ncidfrc, ncidbulk, ncidclm,  ntsms
+     &     , ncidqbar, ncidbtf
+     &     , ntsrf,  ntssh,  ntsst, ntsss, ntuclm
+     &     , ntbulk, ntqbar, ntww
 #ifdef SOLVE3D
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
+     &       , ntbtf(NT)
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
@@ -837,7 +847,7 @@
       integer  ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
+     &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
 # ifdef MOVING_BATHY
      &      , hisHm
 # endif
@@ -988,7 +998,7 @@
       integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
-     &      , avgShflx, avgSwflx, avgShflx_rsw
+     &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
 # ifdef MOVING_BATHY
      &      , avgHm
 # endif
@@ -1206,8 +1216,10 @@
 #endif
 	
       common/incscrum/
-     &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
-     &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
+     &     ncidfrc, ncidbulk,ncidclm, ncidqbar, ncidbtf
+     &     , ntsms, ntsrf, ntssh, ntsst
+     &     , ntuclm, ntsss, ntbulk, ntqbar, ntww
+     
 #if defined MPI && defined PARALLEL_FILES
 !# ifndef EW_PERIODIC
      &      , xi_rho,  xi_u
@@ -1217,7 +1229,7 @@
 !# endif
 #endif
 #ifdef SOLVE3D
-     &                        ,  nttclm, ntstf, nttsrc
+     &     ,  nttclm, ntstf, nttsrc, ntbtf
 #endif
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
@@ -1233,7 +1245,8 @@
      &      , ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
+     &     , hisShflx, hisSwflx, hisShflx_rsw
+     &     , hisBhflx, hisBwflx
 # ifdef MOVING_BATHY
      &      , hisHm
 # endif
@@ -1449,6 +1462,7 @@
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
+     &      , avgBhflx, avgBwflx
 # ifdef MOVING_BATHY
      &      , avgHm
 # endif
@@ -1567,6 +1581,7 @@
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname
 #ifdef AVERAGES
      &                                ,   avgname
 #endif
@@ -1654,6 +1669,7 @@
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
