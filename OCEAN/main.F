@@ -743,7 +743,11 @@ CR      write(*,*) '  0' MYID
       call computenbmaxtimes
 #endif
 
+! Start Chrono
+      start_time1=PMPI_Wtime()
+
       do iicroot=ntstart,ntimes+1
+        start_time1_1=PMPI_Wtime()
 #ifdef USE_CALENDAR 
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
         if(time > time_end) goto 99 
@@ -768,10 +772,18 @@ CR      write(*,*) '  0' MYID
 #ifdef SOLVE3D
         enddo
 #endif
+        start_time1_2=PMPI_Wtime()
+        exe_time_1 = start_time1_2 - start_time1_1
+          if (mynode.eq.0) write(97,*) exe_time_1
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:
+      start_time2=PMPI_Wtime()
+      exe_time = start_time2 - start_time1
+      MPI_master_only write(stdout,*) '*******************************'
+      MPI_master_only write(stdout,*) 'temps time-stepping : ',exe_time
+      MPI_master_only write(stdout,*) '*******************************'
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()
