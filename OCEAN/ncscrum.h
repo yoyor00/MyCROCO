@@ -1569,11 +1569,7 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-# if ! defined XIOS2
       character*80 date_str, title, start_date
-# else  
-      character*80 date_str, title
-# endif
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
@@ -1656,11 +1652,7 @@
       character*75  vname(20, 90)
 #endif
 
-#ifndef XIOS2
       common /cncscrum/       date_str,   title,  start_date
-#else
-      common /cncscrum/       date_str,   title
-#endif
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
