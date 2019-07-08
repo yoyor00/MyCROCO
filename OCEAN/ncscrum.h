@@ -1569,7 +1569,9 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
+# if defined XIOS
       character*80 date_str, title, start_date
+# endif
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname

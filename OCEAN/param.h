@@ -191,6 +191,18 @@
       parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
 #  elif defined SEINE 
       parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
+#  elif defined  BAHAZ
+      parameter (LLm0=1250, MMm0=2250,  N=100) ! <-- BAHAZ
+#  elif defined  MEGATL9
+      parameter (LLm0=979, MMm0=778,  N=100) ! <-- MEGATL9
+#  elif defined  MEGATL6
+      parameter (LLm0=1468, MMm0=1167,  N=50) ! <-- MEGATL6
+#  elif defined  MEGATL3
+      parameter (LLm0=2937, MMm0=2334,  N=100) ! <-- MEGATL3
+#  elif defined  MEGATL
+      parameter (LLm0=8811, MMm0=7002,  N=200) ! <-- MEGATL
+#  elif defined  GIGATL3
+      parameter (LLm0=3000, MMm0=4000,  N=100) ! <-- GIGATL3
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
