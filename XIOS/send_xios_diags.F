@@ -1121,9 +1121,9 @@ C 				  endif
       !
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
-       READ(starting_date(1:2),fmt='(i2)') iday
-       READ(starting_date(4:5),fmt='(i2)') imonth
-       READ(starting_date(7:10),fmt='(i4)') iyear
+       READ(start_date(1:2),fmt='(i2)') iday
+       READ(start_date(4:5),fmt='(i2)') imonth
+       READ(start_date(7:10),fmt='(i4)') iyear
        CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
 # else
        CALL ymds2ju( 1, 1, 1, 0., jday0 )  
@@ -1615,7 +1615,7 @@ C 				  endif
 # else
       TYPE(xios_duration) :: dtime    = xios_duration(0,
      &  0, 0, 0, 0, 0)
-      TYPE(xios_date)     :: start_date
+!      TYPE(xios_date)     :: start_date
 # endif     
       TYPE(xios_context) :: ctx_hdl
       TYPE(xios_field) :: field_hdl
@@ -1669,9 +1669,9 @@ C 				  endif
 
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
-      READ(starting_date(1:2),fmt='(i2)') iday
-      READ(starting_date(4:5),fmt='(i2)') imonth
-      READ(starting_date(7:10),fmt='(i4)') iyear
+      READ(start_date(1:2),fmt='(i2)') iday
+      READ(start_date(4:5),fmt='(i2)') imonth
+      READ(start_date(7:10),fmt='(i4)') iyear
 # else
       iday=1
       imonth=1       
@@ -2101,17 +2101,17 @@ C 				  endif
 #  ifdef SOLVE3D
       call xios_send_field("u",u(:,:,:,nstp))
       call xios_send_field("v",v(:,:,:,nstp)) 
-!      call xios_send_field("u_surf",u(:,:,N,nstp)) 
-!      call xios_send_field("v_surf",v(:,:,N,nstp)) 
+      call xios_send_field("u_surf",u(:,:,N,nstp)) 
+      call xios_send_field("v_surf",v(:,:,N,nstp)) 
 # ifdef NBQ
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   else
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
-!      call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
+      call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
 # endif
 # ifdef SALINITY
       call xios_send_field("salt",t(:,:,:,nstp,isalt))
-!      call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
+      call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
 # endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
