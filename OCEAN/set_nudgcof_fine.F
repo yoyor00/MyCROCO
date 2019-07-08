@@ -103,7 +103,7 @@
           M3nudgcof(i,j)=0.
 # endif
 # ifdef NBQ_NUDGING
-          NBQnudgcof(i,j)=dtfast*tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less)
+          NBQnudgcof(i,j)=0.
 # endif
         enddo
       enddo

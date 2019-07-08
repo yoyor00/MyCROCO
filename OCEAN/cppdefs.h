@@ -38,7 +38,7 @@
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  S2DV            /* S2DV sections */ 
-#undef  MILES            /* NBQ MILES Applications */ 
+#undef  MILES           /* NBQ MILES Applications */ 
 #undef  TS_HADV_TEST    /* Horizontal tracer advection test example */ 
 #define REGIONAL        /* REGIONAL Applications */
 
@@ -56,9 +56,8 @@
                       /* Configuration Name */
 # define BENGUELA_LR
                       /* Parallelization */
-# define OPENMP
+# undef  OPENMP
 # undef  MPI
-# undef  MPI_OPT
                       /* I/O server */
 # undef  XIOS
 # undef  XIOS2
