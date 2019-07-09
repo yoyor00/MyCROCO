@@ -201,8 +201,10 @@
 #  define OBC_NBQ
 # endif
 # ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
-#  define OBC_NBQORLANSKI    /*  Radiative conditions           */
-#  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  define OBC_NBQORLANSKI    /*  NBQ Radiative conditions       */
+#  undef  OBC_NBQSPECIFIED   /*  NBQ Specified conditions       */
+#  define OBC_WORLANSKI      /*  W Radiative conditions         */
+#  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
@@ -885,16 +887,14 @@
 # ifdef AGRIF_2WAY
 #  define AGRIF_OBC_M3SPECIFIED
 #  define AGRIF_OBC_TSPECIFIED
-#  define AGRIF_OBC_NBQSPECIFIED
 # else
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
-#  define AGRIF_OBC_NBQORLANSKI
 # endif
-
-#if defined NBQ
-#define AGRIF_OBC_NBQSPECIFIED
-#endif
+# ifdef NBQ
+#  define AGRIF_OBC_WSPECIFIED
+#  define AGRIF_OBC_NBQSPECIFIED
+# endif
 
 #endif /* AGRIF */
 

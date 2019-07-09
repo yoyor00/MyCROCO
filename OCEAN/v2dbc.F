@@ -86,6 +86,9 @@ C$    integer omp_get_thread_num
 !
 #ifdef CHILD
 #  ifdef SOLVE3D
+#   ifdef NBQ
+      if (M2bc_nbq_flag) then
+#   endif
       trd=0
 C$    trd=omp_get_thread_num()
       call v2dbc_interp_tile(Istr,Iend,Jstr,Jend
@@ -97,6 +100,9 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,2+NWEIGHT)
      &                    ,A1dXI(1,3+2*NWEIGHT)
      &                    ,A1dXI(1,4+2*NWEIGHT))
+#   ifdef NBQ
+      endif
+#   endif
 #  else
       Some coding is needed to have AGRIF without SOLVE3D.....
 #  endif

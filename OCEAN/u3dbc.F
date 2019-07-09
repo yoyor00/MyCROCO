@@ -108,33 +108,7 @@
 #    endif
           enddo
         enddo
-!
-!  Replace external mode
-!
-#  define usum grad
-        usum=0.
-        do k=1,N
-          do j=Jstr,Jend
-            usum(Istr,j)=usum(Istr,j)+u(Istr,j,k,nnew)
-     &                    *0.5*(Hz(Istr,j,k)+Hz(Istr-1,j,k))
-          enddo
-        enddo
-        do k=1,N
-          do j=Jstr,Jend
-            cff=0.5*(z_w(0,j,N)+z_w(1,j,N)-z_w(0,j,0)-z_w(1,j,0))
-            u(Istr,j,k,nnew)=u(Istr,j,k,nnew)
-     &                         +(DU_avg1(Istr,j,nnew)
-     &                         -usum(Istr,j))/cff
-#    ifdef MASKING
-     &                                 *umask(Istr,j)
-#    endif
-#    ifdef WET_DRY
-     &                             *umask_wet(Istr,j)
-#    endif
-          enddo
-        enddo
-#  undef usum
-!
+
 #   elif defined OBC_COM_M3ORLANSKI
         do k=1,N                             ! Western edge radiation
           do j=Jstr,Jend+1                   ! ======= ==== =========

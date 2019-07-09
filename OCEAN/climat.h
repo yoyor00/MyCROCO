@@ -182,7 +182,7 @@
       common /climat_unbqclm/unbqclm 
       common /climat_vnbqclm/vnbqclm
 # ifdef NBQ
-      real wnbqclm(GLOBAL_2D_ARRAY,N)
+      real wnbqclm(GLOBAL_2D_ARRAY,0:N)
       real rnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_wnbqclm/wnbqclm 
       common /climat_rnbqclm/rnbqclm

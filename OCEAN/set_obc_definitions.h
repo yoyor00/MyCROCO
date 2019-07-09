@@ -31,6 +31,8 @@
 #undef OBC_COM_ZSPECIFIED
 #undef OBC_COM_ZORLANSKI
 #undef OBC_COM_ZCHAPMAN
+#undef OBC_COM_WSPECIFIED
+#undef OBC_COM_WORLANSKI
 #undef OBC_COM_NBQSPECIFIED
 #undef OBC_COM_NBQORLANSKI
 #undef EW_COM_PERIODIC
@@ -80,6 +82,12 @@
 #   define OBC_COM_M2CHARACT
 #   define OBC_COM_ZCHAPMAN
 #  endif
+#  ifdef OBC_WSPECIFIED
+#   define OBC_COM_WSPECIFIED
+#  endif
+#  ifdef OBC_WORLANSKI
+#   define OBC_COM_WORLANSKI
+#  endif
 #  ifdef OBC_NBQSPECIFIED
 #   define OBC_COM_NBQSPECIFIED
 #  endif
@@ -106,6 +114,9 @@
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
 #    define OBC_COM_TSPECIFIED_WEST
 #   endif
+#   if defined W_FRC_BRY || defined WCLIMATOLOGY
+#    define OBC_COM_WSPECIFIED_WEST
+#   endif
 #   if defined NBQ_FRC_BRY || defined NBQCLIMATOLOGY
 #    define OBC_COM_NBQSPECIFIED_WEST
 #   endif
@@ -122,6 +133,9 @@
 #   endif
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
 #    define OBC_COM_TSPECIFIED_EAST
+#   endif
+#   if defined W_FRC_BRY || defined WCLIMATOLOGY
+#    define OBC_COM_WSPECIFIED_EAST
 #   endif
 #   if defined NBQ_FRC_BRY || defined NBQCLIMATOLOGY
 #    define OBC_COM_NBQSPECIFIED_EAST
@@ -140,6 +154,9 @@
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
 #    define OBC_COM_TSPECIFIED_SOUTH
 #   endif
+#   if defined W_FRC_BRY || defined WCLIMATOLOGY
+#    define OBC_COM_WSPECIFIED_SOUTH
+#   endif
 #   if defined NBQ_FRC_BRY || defined NBQCLIMATOLOGY
 #    define OBC_COM_NBQSPECIFIED_SOUTH
 #   endif
@@ -156,6 +173,9 @@
 #   endif
 #   if defined T_FRC_BRY || defined TCLIMATOLOGY
 #    define OBC_COM_TSPECIFIED_NORTH
+#   endif
+#   if defined W_FRC_BRY || defined WCLIMATOLOGY
+#    define OBC_COM_WSPECIFIED_NORTH
 #   endif
 #   if defined NBQ_FRC_BRY || defined NBQCLIMATOLOGY
 #    define OBC_COM_NBQSPECIFIED_NORTH
@@ -204,9 +224,14 @@
 #   define OBC_COM_M2CHARACT
 #   define OBC_COM_ZSPECIFIED
 #  endif
+#  ifdef AGRIF_OBC_WSPECIFIED
+#   define OBC_COM_WSPECIFIED
+#  endif
+#  ifdef AGRIF_OBC_WORLANSKI
+#   define OBC_COM_WORLANSKI
+#  endif
 #  ifdef AGRIF_OBC_NBQSPECIFIED
 #   define OBC_COM_NBQSPECIFIED
-#   define OBC_COM_WSPECIFIED
 #  endif
 #  ifdef AGRIF_OBC_NBQORLANSKI
 #   define OBC_COM_NBQORLANSKI
