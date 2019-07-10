@@ -2294,8 +2294,12 @@ C 				  endif
           call xios_send_field("u_Hdiff",MHdiff(:,:,:,itrc))
           call xios_send_field("u_Vmix",MVmix(:,:,:,itrc))
           call xios_send_field("u_Vmix2",MVmix2(:,:,:,itrc))
+#  ifdef DIAGNOSTICS_BARO
           call xios_send_field("u_Baro",MBaro(:,:,:,itrc))
-
+#  endif
+#  ifdef M3FAST
+          call xios_send_field("u_fast",Mfast(:,:,:,itrc))
+#  endif
       itrc = 2
           call xios_send_field("v_rate", Mrate(:,:,:,itrc))
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
@@ -2306,7 +2310,12 @@ C 				  endif
           call xios_send_field("v_Hdiff",MHdiff(:,:,:,itrc))
           call xios_send_field("v_Vmix",MVmix(:,:,:,itrc))
           call xios_send_field("v_Vmix2",MVmix2(:,:,:,itrc))
+#  ifdef DIAGNOSTICS_BARO
           call xios_send_field("v_Baro",MBaro(:,:,:,itrc))
+#  endif
+#  ifdef M3FAST
+          call xios_send_field("v_fast",Mfast(:,:,:,itrc))
+#  endif
 #  endif
 
 
@@ -2322,6 +2331,9 @@ C 				  endif
           call xios_send_field("vrtBaro",vrtBaro(:,:))
           call xios_send_field("vrtDrag",vrtDrag(:,:))
           call xios_send_field("vrtWind",vrtWind(:,:))
+#  ifdef M3FAST
+          call xios_send_field("vrtfast",vrtfast(:,:))
+#  endif
 #  endif
 
 
@@ -2339,7 +2351,9 @@ C 				  endif
           call xios_send_field("ekvol",ekvol(:,:))
           call xios_send_field("ekDrag",ekDrag(:,:))
           call xios_send_field("ekWind",ekWind(:,:))
-
+#  ifdef M3FAST
+          call xios_send_field("ekfast",ekfast(:,:))
+#  endif
 #  endif
 
 

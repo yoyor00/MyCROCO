@@ -204,6 +204,15 @@
      &                      indxMBaro+itrc-1,
      &                      record,ivar,type)
 # endif
+!
+! indxMfast
+!
+# if defined M3FAST
+           workr=Mfast(:,:,:,itrc)
+           call fillvalue3d(workr,nciddiaM,diaMfast(itrc),
+     &                      indxMfast+itrc-1,
+     &                      record,ivar,type)
+# endif
 #if defined MRL_WCI
 !
 ! indxMvf
@@ -293,6 +302,9 @@
 # if defined DIAGNOSTICS_BARO
       write(*,*) 'MBaro(i,j,k,itrc) ',MBaro(i,j,k,itrc)
 # endif
+# if defined M3FAST
+      write(*,*) 'Mfast(i,j,k,itrc) ',Mfast(i,j,k,itrc)
+# endif
 # ifdef MRL_WCI
       write(*,*) 'Mvf(i,j,k,itrc)     ',Mvf(i,j,k,itrc)
       write(*,*) 'Mbrk(i,j,k,itrc)    ',Mbrk(i,j,k,itrc)
@@ -313,6 +325,9 @@
      &                                  +  MHmix(i,j,k,itrc,nstp)
      &                                  +  MVmix(i,j,k,itrc)
      &                                  +  MVmix2(i,j,k,itrc)
+# if defined M3FAST
+     &                                  +  Mfast(i,j,k,itrc)
+# endif
 # ifdef MRL_WCI
      &                                  +  Mvf(i,j,k,itrc)
      &                                  +  Mbrk(i,j,k,itrc)

@@ -200,6 +200,10 @@ C$    integer omp_get_thread_num
             MBaro(i,j,k,1)=init
             MBaro(i,j,k,2)=init
 # endif
+# if defined M3FAST
+            Mfast(i,j,k,1)=init
+            Mfast(i,j,k,2)=init
+# endif
 # endif
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MXadv(i,j,k,1)=init ! indice 1 for u_momentum
@@ -257,6 +261,10 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
+#  endif
+# if defined M3FAST
+            Mfast_avg(i,j,k,1)=init
+            Mfast_avg(i,j,k,2)=init
 #  endif
             MHmix_avg(i,j,k,1)=init
             MHmix_avg(i,j,k,2)=init
@@ -428,6 +436,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             vrtBaro(i,j)=init
 # endif
+# if defined M3FAST
+            vrtfast(i,j)=init
+# endif
 #  ifdef AVERAGES
             vrtXadv_avg(i,j)=init
             vrtYadv_avg(i,j)=init
@@ -442,6 +453,9 @@ C$    integer omp_get_thread_num
             vrtDrag_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             vrtBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            vrtfast_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
           enddo
@@ -468,6 +482,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             ekBaro(i,j)=init
 # endif
+# if defined M3FAST
+            ekfast(i,j)=init
+# endif
 #  ifdef AVERAGES
             ekHadv_avg(i,j)=init
             ekHdiff_avg(i,j)=init
@@ -483,6 +500,9 @@ C$    integer omp_get_thread_num
             ekDrag_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             ekBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
 
@@ -500,6 +520,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             ekBaro_mld(i,j)=init
 # endif
+# if defined M3FAST
+            ekfast_mld(i,j)=init
+# endif
 #  ifdef AVERAGES
             ekHadv_mld_avg(i,j)=init
             ekHdiff_mld_avg(i,j)=init
@@ -513,6 +536,9 @@ C$    integer omp_get_thread_num
             ekVmix2_mld_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             ekBaro_mld_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_mld_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EK */

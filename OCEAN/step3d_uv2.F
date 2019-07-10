@@ -1224,6 +1224,9 @@
 # if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,1) = MBaro(i,j,k,1)*cff
 # endif
+# if defined M3FAST
+            Mfast(i,j,k,1) = Mfast(i,j,k,1)*cff
+# endif
 # endif
             MHmix(i,j,k,1,3-nstp) = MHmix(i,j,k,1,3-nstp)*cff
             MVmix(i,j,k,1)   = MVmix(i,j,k,1)*cff
@@ -1271,6 +1274,9 @@
             MPrsgrd(i,j,k,2) = MPrsgrd(i,j,k,2)*cff
 # if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,2) = MBaro(i,j,k,2)*cff
+# endif
+# if defined M3FAST
+            Mfast(i,j,k,2) = Mfast(i,j,k,2)*cff
 # endif
 #  endif
             MHmix(i,j,k,2,3-nstp) = MHmix(i,j,k,2,3-nstp)*cff
@@ -1332,6 +1338,9 @@
 # if defined DIAGNOSTICS_BARO
             wrkBaro(i,j,1)=wrkBaro(i,j,1)*cff
 # endif
+# if defined M3FAST
+            wrkfast(i,j,1)=wrkfast(i,j,1)*cff
+# endif
           enddo
         enddo
         do j=JV_RANGE
@@ -1369,6 +1378,9 @@
 # if defined DIAGNOSTICS_BARO
             wrkBaro(i,j,2)=wrkBaro(i,j,2)*cff
 # endif
+# if defined M3FAST
+            wrkfast(i,j,2)=wrkfast(i,j,2)*cff
+# endif
           enddo
         enddo
 # endif /* DIAGNOSTICS_VRT */
@@ -1387,6 +1399,9 @@
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,1) = 0.
 # endif
+# if defined M3FAST
+            ekwrkfast(i,j,1) = 0.
+# endif
             ekwrkHadv(i,j,2) = 0.
             ekwrkVadv(i,j,2) = 0.
             ekwrkCor(i,j,2) = 0.
@@ -1397,6 +1412,9 @@
             ekwrkHdiff(i,j,2) = 0.
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,2) = 0.
+# endif
+# if defined M3FAST
+            ekwrkfast(i,j,2) = 0.
 # endif
 
 # if defined DIAGNOSTICS_EK_MLD
@@ -1467,6 +1485,10 @@
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,1) = ekwrkBaro(i,j,1)
      &        + MBaro(i,j,k,1)  * cff
+# endif
+# if defined M3FAST
+            ekwrkfast(i,j,1) = ekwrkfast(i,j,1)
+     &        + Mfast(i,j,k,1)  * cff
 # endif
           enddo
 
@@ -1558,6 +1580,10 @@
             ekwrkBaro(i,j,2) = ekwrkBaro(i,j,2)
      &        + MBaro(i,j,k,2)  * cff
 # endif
+# if defined M3FAST
+            ekwrkfast(i,j,2) = ekwrkfast(i,j,2)
+     &        + Mfast(i,j,k,2)  * cff
+# endif
             enddo
 
 # if defined DIAGNOSTICS_EK_MLD
@@ -1638,6 +1664,9 @@
      &                  + MPrsgrd(i,j,k,1)
      &                  + MHmix(i,j,k,1,3-nstp)
      &                  + MVmix(i,j,k,1)
+# if defined M3FAST
+     &                  + Mfast(i,j,k,1)
+# endif
 # if defined DIAGNOSTICS_UV
      &                  + MVmix2(i,j,k,1))
 # else
@@ -1734,6 +1763,9 @@
      &                  + MPrsgrd(i,j,k,2)
      &                  + MHmix(i,j,k,2,3-nstp)
      &                  + MVmix(i,j,k,2)
+# if defined M3FAST
+     &                  + Mfast(i,j,k,2)
+# endif
 # if defined DIAGNOSTICS_UV
      &                  + MVmix2(i,j,k,2))
 # else
@@ -1809,6 +1841,9 @@
 # if defined DIAGNOSTICS_BARO
      &                            - MBaro(i,j,k,1)
 # endif
+# if defined M3FAST
+     &                            + Mfast(i,j,k,1)
+# endif
      &                            + MHmix(i,j,k,1,3-nstp)
      &                            + MHdiff(i,j,k,1))
 # if defined DIAGNOSTICS_DISS
@@ -1826,6 +1861,9 @@
      &                            + MVmix(i,j,k,2)
 # if defined DIAGNOSTICS_BARO
      &                            - MBaro(i,j,k,2)
+# endif
+# if defined M3FAST
+     &                            + Mfast(i,j,k,2)
 # endif
      &                            + MHmix(i,j,k,2,3-nstp)
      &                            + MHdiff(i,j,k,2))
@@ -1902,6 +1940,10 @@
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,1))
 # endif
+# if defined M3FAST
+      call exchange_u3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,1))
+# endif
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -1930,6 +1972,10 @@
 # if defined DIAGNOSTICS_BARO
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,2))
+# endif
+# if defined M3FAST
+      call exchange_v3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,2))
 # endif
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,2))
@@ -1962,6 +2008,10 @@
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkBaro(START_2D_ARRAY,1))
 # endif
+# if defined M3FAST
+      call exchange_u2d_tile (istr,iend,jstr,jend,
+     &                                 wrkfast(START_2D_ARRAY,1))
+# endif
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -1990,6 +2040,10 @@
 # if defined DIAGNOSTICS_BARO
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkBaro(START_2D_ARRAY,2))
+# endif
+# if defined M3FAST
+      call exchange_v2d_tile (istr,iend,jstr,jend,
+     &                                 wrkfast(START_2D_ARRAY,2))
 # endif
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,2))
@@ -2026,8 +2080,10 @@
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,1))
 # endif
-
-
+# if defined M3FAST
+      call exchange_u3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,1))
+# endif
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
@@ -2050,7 +2106,10 @@
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,2))
 # endif
-
+# if defined M3FAST
+      call exchange_v3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,2))
+# endif
 # endif
 
 
@@ -2084,7 +2143,10 @@
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkBaro(START_2D_ARRAY,1))
 # endif
-
+# if defined M3FAST
+      call exchange_u2d_tile (istr,iend,jstr,jend,
+     &                                 ekwrkfast(START_2D_ARRAY,1))
+# endif
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkHadv(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
@@ -2113,7 +2175,10 @@
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkBaro(START_2D_ARRAY,2))
 # endif
-
+# if defined M3FAST
+      call exchange_v2d_tile (istr,iend,jstr,jend,
+     &                                 ekwrkfast(START_2D_ARRAY,2))
+# endif
 # if defined DIAGNOSTICS_EK_MLD
 
       call exchange_u2d_tile (istr,iend,jstr,jend,

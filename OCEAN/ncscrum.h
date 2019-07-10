@@ -105,6 +105,7 @@
 !  indxMHdiff                    : horizontal diffusion term (implicit)
 !  indxMrate                     : tendency term
 !  indxMBaro                     : Barotropic coupling term
+!  indxMfast                     : Fast term
 !  indxMBtcr                     : forth-order truncation error
 !  indxMswd, indxMbdr            : surface wind & bed shear stresses (m2/s2)
 !  indxMvf, indxMbrk             : vortex force & breaking body force terms
@@ -131,6 +132,7 @@
 !  indxvrtWind                   : Wind stress term
 !  indxvrtDrag                   : Bottom drag term
 !  indxvrtBaro                   : Barotropic coupling term
+!  indxvrtfast                   : Fast term
 !
 ! ** DIAGNOSTICS_EK **
 !  indxekHadv,indxekHdiff        : Horizontal advection and diffusion terms
@@ -143,6 +145,7 @@
 !  indxekWind                    : Wind stress term
 !  indxekDrag                    : Bottom drag term
 !  indxekBaro                    : Barotropic coupling term
+!  indxekfast                    : Fast term
 !
 ! ** DIAGNOSTICS_PV **
 !  indxpvpv                        : Potential vorticity
@@ -318,6 +321,10 @@
       integer indxMBaro
       parameter (indxMBaro=indxMrate+2)
 # endif
+# if defined M3FAST
+      integer indxMfast
+      parameter (indxMfast=indxMrate+4)
+# endif
 # endif
 # ifdef DIAGNOSTICS_VRT
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
@@ -338,6 +345,10 @@
 # if defined DIAGNOSTICS_BARO
       integer indxvrtBaro
       parameter (indxvrtBaro=indxvrtDrag+1)
+# endif
+# if defined M3FAST
+      integer indxvrtfast
+      parameter (indxvrtfast=indxvrtDrag+2)
 # endif
 # endif
 # ifdef DIAGNOSTICS_EK
@@ -360,6 +371,10 @@
 # if defined DIAGNOSTICS_BARO
       integer indxekBaro
       parameter (indxekBaro=indxekDrag+1)
+# endif
+# if defined M3FAST
+      integer indxekfast
+      parameter (indxekfast=indxekDrag+2)
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
       integer indxekHadv_mld,indxekHdiff_mld,indxekVadv_mld,
@@ -917,6 +932,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro(2)
 # endif
+# if defined M3FAST
+     &      , diaMfast(2)
+# endif
 #  ifdef MRL_WCI
      &      , diaMvf(2), diaMbrk(2), diaMStCo(2)
      &      , diaMVvf(2), diaMPrscrt(2), diaMsbk(2)
@@ -934,6 +952,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro(2)
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast(2)
+# endif
 # endif
 
 # ifdef DIAGNOSTICS_EK
@@ -945,6 +966,9 @@
      &      , diags_ekVmix2(2), diags_ekWind(2), diags_ekDrag(2)
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro(2)
+# endif
+# if defined M3FAST
+     &      , diags_ekfast(2)
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
       integer diags_ekHadv_mld(2), diags_ekHdiff_mld(2)
@@ -1082,6 +1106,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
 # endif
+# if defined M3FAST
+     &      , diaMfast_avg(2)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
        integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg 
@@ -1093,6 +1120,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast_avg(2)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
        integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg 
@@ -1103,6 +1133,9 @@
      &      , diags_ekVmix2_avg(2), diags_ekWind_avg(2), diags_ekDrag_avg(2)
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
+# endif
+# if defined M3FAST
+     &      , diags_ekfast_avg(2)
 # endif
 #  ifdef DIAGNOSTICS_EK_MLD
        integer diags_ekHadv_mld_avg(2), diags_ekHdiff_mld_avg(2)
@@ -1319,6 +1352,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
+# if defined M3FAST
+     &      , diaMfast
+# endif
 # ifdef MRL_WCI
      &      , diaMvf, diaMbrk, diaMStCo
      &      , diaMVvf, diaMPrscrt, diaMsbk
@@ -1333,6 +1369,9 @@
      &      , diaMVmix_avg, diaMVmix2_avg, diaMrate_avg
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro_avg
+# endif
+# if defined M3FAST
+     &      , diaMfast_avg
 # endif
 #  ifdef MRL_WCI
      &      , diaMvf_avg, diaMbrk_avg, diaMStCo_avg
@@ -1350,6 +1389,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast
+# endif
 # ifdef AVERAGES
      &      , nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
@@ -1359,6 +1401,9 @@
      &      , diags_vrtVmix2_avg, diags_vrtWind_avg, diags_vrtDrag_avg
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg
+# endif
+# if defined M3FAST
+     &      , diags_vrtfast_avg
 # endif
 # endif
 #endif
@@ -1372,6 +1417,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro
 # endif
+# if defined M3FAST
+     &      , diags_ekfast
+# endif
 # ifdef AVERAGES
      &      , nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
@@ -1381,6 +1429,9 @@
      &      , diags_ekVmix2_avg, diags_ekWind_avg, diags_ekDrag_avg
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg
+# endif
+# if defined M3FAST
+     &      , diags_ekfast_avg
 # endif
 # endif
 #ifdef DIAGNOSTICS_EK_MLD

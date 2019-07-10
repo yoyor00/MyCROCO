@@ -35,6 +35,9 @@
 # if defined DIAGNOSTICS_BARO
      &     wrkBaro(PRIVATE_2D_SCRATCH_ARRAY,2),
 # endif
+# if defined M3FAST
+     &     wrkfast(PRIVATE_2D_SCRATCH_ARRAY,2),
+# endif
 # endif
      &     dH(N), jstri(2), istri(2),
      &     jendi(2), iendi(2)
@@ -172,6 +175,15 @@
      &         + MBaro(i,j,k,itrc)*dH(k)
            enddo
 # endif
+           ! ------- ------------- ------ ------ - -----
+# if defined M3FAST
+           wrkfast(i,j,itrc)= Mfast(i,j,1,itrc)*dH(1)
+
+           do k=2,N
+             wrkfast(i,j,itrc)= wrkfast(i,j,itrc)
+     &         + Mfast(i,j,k,itrc)*dH(k)
+           enddo
+# endif
           enddo
          enddo
         enddo
@@ -266,6 +278,11 @@
 # if defined DIAGNOSTICS_BARO
           vrtBaro(i,j)=(wrkBaro(i,j,2)-wrkBaro(i-1,j,2))*cff1
      &           - (wrkBaro(i,j,1) - wrkBaro(i,j-1,1)) * cff2
+# endif
+
+# if defined M3FAST
+          vrtfast(i,j)=(wrkfast(i,j,2)-wrkfast(i-1,j,2))*cff1
+     &           - (wrkfast(i,j,1) - wrkfast(i,j-1,1)) * cff2
 # endif
           enddo
          enddo

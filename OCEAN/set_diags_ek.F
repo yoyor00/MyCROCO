@@ -99,6 +99,10 @@
           ekBaro(i,j)=0.5*(ekwrkBaro(i,j,1)+ekwrkBaro(i+1,j,1))
      &              + 0.5*(ekwrkBaro(i,j,2) + ekwrkBaro(i,j+1,2))
 # endif
+# if defined M3FAST
+          ekfast(i,j)=0.5*(ekwrkfast(i,j,1)+ekwrkfast(i+1,j,1))
+     &              + 0.5*(ekwrkfast(i,j,2) + ekwrkfast(i,j+1,2))
+# endif
 
 # if defined DIAGNOSTICS_EK_MLD
 

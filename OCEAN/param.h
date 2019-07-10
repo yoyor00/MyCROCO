@@ -862,20 +862,20 @@
       parameter (ntrc_diats=0)
 # endif
 # ifdef DIAGNOSTICS_UV
-      parameter (ntrc_diauv=22)
+      parameter (ntrc_diauv=24)
 # else
       parameter (ntrc_diauv=0)
 # endif
 # ifdef DIAGNOSTICS_VRT
-      parameter (ntrc_diavrt=14)
+      parameter (ntrc_diavrt=16)
 # else
       parameter (ntrc_diavrt=0)
 # endif
 # ifdef DIAGNOSTICS_EK
 # ifdef DIAGNOSTICS_EK_MLD
-      parameter (ntrc_diaek=26)
+      parameter (ntrc_diaek=28)
 # else
-      parameter (ntrc_diaek=14)
+      parameter (ntrc_diaek=16)
 # endif
 # else
       parameter (ntrc_diaek=0)

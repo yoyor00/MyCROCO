@@ -128,6 +128,7 @@
                   vrtrate_avg(i,j)=vrtrate(i,j)
            enddo
           enddo
+
 # if defined DIAGNOSTICS_BARO
              do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -136,6 +137,13 @@
           enddo
 # endif
 
+# if defined M3FAST
+             do j=JstrR,JendR
+                do i=IstrR,IendR
+                  vrtfast_avg(i,j)=vrtfast(i,j)
+           enddo
+          enddo
+# endif
 
         elseif (mod(iic-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).gt.1) then
 
@@ -222,12 +230,23 @@
      &                    vrtrate(i,j)  
            enddo
           enddo
+
 # if defined DIAGNOSTICS_BARO
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtBaro_avg(i,j) =
      &                       vrtBaro_avg(i,j) +
      &                       vrtBaro(i,j)
+           enddo
+          enddo
+# endif
+
+# if defined M3FAST
+             do j=JstrR,JendR
+                do i=IstrR,IendR
+                  vrtfast_avg(i,j) =
+     &                       vrtfast_avg(i,j) +
+     &                       vrtfast(i,j)
            enddo
           enddo
 # endif
@@ -322,6 +341,7 @@
      &                      vrtrate(i,j) )
            enddo
           enddo
+
 # if defined DIAGNOSTICS_BARO
               do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -331,6 +351,17 @@
            enddo
           enddo
 # endif
+
+# if defined M3FAST
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  vrtfast_avg(i,j) = cff *
+     &                       ( vrtfast_avg(i,j) +
+     &                         vrtfast(i,j) )
+           enddo
+          enddo
+# endif
+
         endif
       endif       !<-- iic.gt.ntsavg
 
