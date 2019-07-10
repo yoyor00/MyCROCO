@@ -188,9 +188,9 @@
 # elif defined W_VADV_WENO5
 # elif defined W_VADV_C2
 # else
-#  define W_VADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_VADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_VADV_TVD      /* TVD vertical advection                 */
-#  undef  W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
+#  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
