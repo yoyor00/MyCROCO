@@ -2371,6 +2371,23 @@ CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(7,indxMBaro+itrc-1)='                              '
 # endif
 
+# if defined M3FAST
+CR      write(stdout,'(1x,A,I3)') 'indxMfast = ',indxMfast+itrc-1
+       nametrc=vname(1,indxU+itrc-1)
+       unitt=vname(3,indxU+itrc-1)
+       write(vname1,*) trim(nametrc),'_fast                     '
+       vname(1,indxMfast+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxMfast+itrc-1)
+       vname(2,indxMfast+itrc-1)='fast term       '
+       write(vname3,*) trim(unitt),' second-1                    '
+       vname(3,indxMfast+itrc-1)=vname3
+       vname(4,indxMfast+itrc-1)='                              '
+       write(vname3,*) 'fast_term_',trim(nametrc)
+     &               //'_component'
+       vname(5,indxMfast+itrc-1)=vname3
+       vname(6,indxMfast+itrc-1)='                              '
+       vname(7,indxMfast+itrc-1)='                              '
+# endif
 
 # ifdef MRL_WCI
 CR       write(stdout,'(1x,A,I3)') 'indxMvf = ',indxMvf+itrc-1
@@ -2641,6 +2658,17 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
        vname(3,indxvrtBaro)=vname3
 # endif
 
+# if defined M3FAST
+CR       write(stdout,'(1x,A,I3)') 'indxvrtfast = ',indxvrtfast+itrc-1
+       nametrc='vrt'
+       unitt=vname(3,indxU)
+       write(vname1,*) trim(nametrc),'_fast                     '
+       vname(1,indxvrtfast)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxvrtfast)
+       vname(2,indxvrtfast)='Fast term        '
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxvrtfast)=vname3
+# endif
 
 # endif /* DIAGNOSTICS_VRT */
 
@@ -2770,6 +2798,17 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(2,indxekBaro)='Barotropic coupling term        '
        write(vname3,*) trim(unitt),' meter second-2        '
        vname(3,indxekBaro)=vname3
+# endif
+
+# if defined M3FAST
+CR       write(stdout,'(1x,A,I3)') 'indxekfast = ',indxekfast+itrc-1
+       unitt=vname(3,indxU)
+       write(vname1,*) trim(nametrc),'_fast                     '
+       vname(1,indxekfast)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxekfast)
+       vname(2,indxekfast)='Fast term        '
+       write(vname3,*) trim(unitt),' meter second-2        '
+       vname(3,indxekfast)=vname3
 # endif
 
 

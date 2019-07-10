@@ -66,6 +66,9 @@
 # if defined DIAGNOSTICS_BARO
 #  define viddiags_vrtBaro diags_vrtBaro
 # endif
+# if defined M3FAST
+#  define viddiags_vrtfast diags_vrtfast
+# endif
 #else
 
 # define ncname diags_vrtname_avg
@@ -88,6 +91,9 @@
 #  define viddiags_vrtDrag diags_vrtDrag_avg
 # if defined DIAGNOSTICS_BARO
 #  define viddiags_vrtBaro diags_vrtBaro_avg
+# endif
+# if defined M3FAST
+#  define viddiags_vrtfast diags_vrtfast_avg
 # endif
 #endif
 
@@ -604,6 +610,35 @@
         call nf_add_attribute(ncid, viddiags_vrtBaro(itrc),
      &           indxvrtBaro+itrc-1, 5,NF_REAL, ierr)
 # endif
+
+# if defined M3FAST
+!------------------------------
+!
+! indxvrtfast
+!
+          lvar=lenstr(vname(1,indxvrtfast+itrc-1))
+          ierr=nf_def_var (ncid, vname(1,indxvrtfast+itrc-1)(1:lvar),
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtfast(itrc))
+# ifdef AVRH
+          text='averaged '/ /vname(2,indxvrtfast+itrc-1)
+# else
+          text=vname(2,indxvrtfast+itrc-1)
+# endif
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, viddiags_vrtfast(itrc), 'long_name',
+     &                          lvar, text(1:lvar))
+
+          lvar=lenstr(vname(3,indxvrtfast+itrc-1))
+          ierr=nf_put_att_text (ncid, viddiags_vrtfast(itrc), 'units', lvar,
+     &                          vname(3,indxvrtfast+itrc-1)(1:lvar))
+          lvar=lenstr(vname(4,indxvrtfast+itrc-1))
+          ierr=nf_put_att_text (ncid,viddiags_vrtfast(itrc), 'field',
+     &                      lvar, vname(4,indxvrtfast+itrc-1)(1:lvar))
+
+        call nf_add_attribute(ncid, viddiags_vrtfast(itrc),
+     &           indxvrtfast+itrc-1, 5,NF_REAL, ierr)
+# endif
+
 !
 ! Leave definition mode.
 ! ----- ---------- -----
@@ -857,6 +892,20 @@
          endif
 # endif
 
+# if defined M3FAST
+!
+! indxvrtfast
+!
+         lvar=lenstr(vname(1,indxvrtfast+itrc-1))
+         ierr=nf_inq_varid (ncid, vname(1,indxvrtfast+itrc-1)(1:lvar),
+     &                      viddiags_vrtfast(itrc))
+         if (ierr .ne. nf_noerr) then
+           write(stdout,1) vname(1,indxvrtfast+itrc-1)(1:lvar),
+     &                     ncname(1:lstr)
+           goto 99                                       !--> ERROR
+         endif
+# endif
+
 !
        endif
 
@@ -934,6 +983,9 @@
 #undef viddiags_vrtDrag
 # if defined DIAGNOSTICS_BARO
 #undef viddiags_vrtBaro
+# endif
+# if defined M3FAST
+#undef viddiags_vrtfast
 # endif
 !
 # ifdef AVERAGES

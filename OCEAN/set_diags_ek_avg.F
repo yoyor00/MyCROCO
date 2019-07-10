@@ -129,6 +129,14 @@
           enddo
 # endif
 
+# if defined M3FAST
+             do j=JstrR,JendR
+                do i=IstrR,IendR
+                  ekfast_avg(i,j)=ekfast(i,j)
+           enddo
+          enddo
+# endif
+
              do j=JstrR,JendR
                 do i=IstrR,IendR 
                   ekrate_avg(i,j)=ekrate(i,j)
@@ -217,6 +225,7 @@
      &                       ekDrag(i,j)
            enddo
           enddo
+
 # if defined DIAGNOSTICS_BARO
              do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -226,6 +235,17 @@
            enddo
           enddo
 # endif
+
+# if defined M3FAST
+             do j=JstrR,JendR
+                do i=IstrR,IendR
+                  ekfast_avg(i,j) =
+     &                       ekfast_avg(i,j) +
+     &                       ekfast(i,j)
+           enddo
+          enddo
+# endif
+
              do j=JstrR,JendR
                 do i=IstrR,IendR 
                   ekrate_avg(i,j) = 
@@ -350,6 +370,17 @@
            enddo
           enddo
 # endif
+
+# if defined M3FAST
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  ekfast_avg(i,j) = cff *
+     &                       ( ekfast_avg(i,j) +
+     &                         ekfast(i,j) )
+           enddo
+          enddo
+# endif
+
         endif
       endif       !<-- iic.gt.ntsavg
 

@@ -329,6 +329,23 @@
      &                            cffM )
 # endif
 
+# if defined M3FAST
+            cffM = ( Mfast(i+1,j,k,iflux)-Mfast(i,j,k,iflux) )
+     &             * 0.5 * (pm_u(i+1,j) + pm_u(i,j)) * cffux
+     & + (0.25 *(Mfast(i,j+1,k,iflux)-Mfast(i,j,k,iflux))
+     &               * 0.5 * (pn_u(i,j+1) + pn_u(i,j))
+     & + 0.25 *(Mfast(i,j,k,iflux)-Mfast(i,j-1,k,iflux))
+     &               * 0.5 * (pn_u(i,j) + pn_u(i,j-1))
+     & + 0.25 *(Mfast(i+1,j+1,k,iflux)-Mfast(i+1,j,k,iflux))
+     &               * 0.5 * (pn_u(i+1,j+1) + pn_u(i+1,j))
+     & + 0.25 *(Mfast(i+1,j,k,iflux)-Mfast(i+1,j-1,k,iflux))
+     &               * 0.5 * (pn_u(i+1,j) + pn_u(i+1,j-1))) * cffuy
+
+                Mfast_avg(i,j,k,iflux) = cff *
+     &                     ( cff1*Mfast_avg(i,j,k,iflux) +
+     &                            cffM )
+# endif
+
                elseif (iflux.eq.2) then
 
 
@@ -525,6 +542,23 @@
      &                            cffM )
 # endif
 
+# if defined M3FAST
+        cffM = (Mfast(i,j+1,k,iflux) - Mfast(i,j,k,iflux))
+     &            * 0.5 * (pn_v(i,j+1) + pn_v(i,j)) * cffvy
+     &  +(0.25*(Mfast(i+1,j,k,iflux)-Mfast(i,j,k,iflux))
+     &            * 0.5 * (pm_v(i+1,j) + pm_v(i,j))
+     &  + 0.25*(Mfast(i,j,k,iflux)-Mfast(i-1,j,k,iflux))
+     &            * 0.5 * (pm_v(i,j) + pm_v(i-1,j))
+     &  + 0.25*(Mfast(i+1,j+1,k,iflux)-Mfast(i,j+1,k,iflux))
+     &            * 0.5 * (pm_v(i+1,j+1) + pm_v(i,j+1))
+     &  + 0.25*(Mfast(i,j+1,k,iflux)-Mfast(i-1,j+1,k,iflux))
+     &            * 0.5 * (pm_v(i,j+1) + pm_v(i-1,j+1))) * cffuy
+
+                Mfast_avg(i,j,k,iflux) = cff *
+     &                     ( cff1*Mfast_avg(i,j,k,iflux) +
+     &                            cffM )
+# endif
+
                endif
 
 
@@ -563,6 +597,11 @@
                 MBaro_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            MBaro(i,j,k,iflux) )
+# endif
+# if defined M3FAST
+                Mfast_avg(i,j,k,iflux) = cff *
+     &                     ( cff1*Mfast_avg(i,j,k,iflux) +
+     &                            Mfast(i,j,k,iflux) )
 # endif
 # endif
 # if defined MRL_WCI

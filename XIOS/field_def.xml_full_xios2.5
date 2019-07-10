@@ -354,6 +354,9 @@
          <field id="u_Vmix" long_name="u Vmix" unit="meter second-2" grid_ref="u_3D"/>
          <field id="u_Vmix2" long_name="u Vmix2" unit="meter second-2" grid_ref="u_3D"/>
          <field id="u_Baro" long_name="u Baro" unit="meter second-2" grid_ref="u_3D"/>
+#  ifdef M3FAST
+         <field id="u_fast" long_name="u fast" unit="meter second-2" grid_ref="u_3D"/>
+#  endif
      </field_group>
      <field_group id="v_diaM" grid_ref="v_3D">
          <field id="v_rate" long_name="v rate" unit="meter second-2" grid_ref="v_3D"/>
@@ -365,6 +368,9 @@
          <field id="v_Vmix" long_name="v Vmix" unit="meter second-2" grid_ref="v_3D"/>
          <field id="v_Vmix2" long_name="v Vmix2" unit="meter second-2" grid_ref="v_3D"/>
          <field id="v_Baro" long_name="v Baro" unit="meter second-2" grid_ref="v_3D"/>
+#  ifdef M3FAST
+         <field id="v_fast" long_name="v fast" unit="meter second-2" grid_ref="v_3D"/>
+#  endif
     </field_group>
 #endif
 
@@ -384,6 +390,9 @@
          <field id="ekvol" long_name="ek vol" unit="meter2 second-3"/>
          <field id="ekDrag" long_name="ek Drag" unit="meter2 second-3"/>
          <field id="ekWind" long_name="ek Wind" unit="meter2 second-3"/>
+#  ifdef M3FAST
+         <field id="ekfast" long_name="ek fast" unit="meter2 second-3"/>
+#  endif
     </field_group>
 #endif
 
@@ -397,6 +406,9 @@
          <field id="vrtHdiff" long_name="vrt Hdiff" unit="meter second-2"/>
          <field id="vrtVmix2" long_name="vrt Vmix2" unit="meter second-2"/>
          <field id="vrtBaro" long_name="vrt Baro" unit="meter second-2"/>
+#  ifdef M3FAST
+         <field id="vrtfast" long_name="vrt fast" unit="meter second-2"/>
+#  endif
          <field id="vrtDrag" long_name="vrt Drag" unit="meter second-2"/>
          <field id="vrtWind" long_name="vrt Wind" unit="meter second-2"/>
     </field_group>
