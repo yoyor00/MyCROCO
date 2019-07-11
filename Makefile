@@ -159,13 +159,13 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o
 
 TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
-TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o get_ij.o distance.o xtime.o
+TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o get_ij.o distance.o xtime.o
 
-DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o get_ij.o distance.o xtime.o
+DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o get_ij.o distance.o xtime.o
 
 TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 
@@ -184,16 +184,16 @@ $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC 
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC 
 
 $(SBIN)_adc:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_div: $(DIV_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape -lampiADtoolStubsOO -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiADtoolStubsST -lampiBookkeeping -lblas -lampiPlainC
 
 # $Id: Makefile 3922 2011-05-19 08:54:39Z llh $
 
@@ -229,6 +229,9 @@ adBufferC.o: adBufferC.c
 
 adStack.o : adStack.c
 	$(CC) $(FFLAGS) -c adStack.c
+
+adDebug.o : adDebug.c
+	$(CC) $(FFLAGS) -c adDebug.c
 
 dpStack.o : dpStack.c
 	$(CC) $(FFLAGS) -c dpStack.c

@@ -35,7 +35,6 @@ c      end if
       return
       end subroutine cost_fun
 
-C$AD NOCHECKPOINT
       subroutine cost_fun_step(ad_x_f,icost,ta)
       implicit none
 # include "adinc.h"
@@ -62,7 +61,6 @@ C$AD NOCHECKPOINT
 
       end subroutine cost_fun_step
 
-C$AD NOCHECKPOINT
       subroutine cost_fun_step_2d(tile,ad_x_f,icost,ta)
 
       implicit none
@@ -77,7 +75,6 @@ C$AD NOCHECKPOINT
 
       end subroutine cost_fun_step_2d
 
-C$AD NOCHECKPOINT
       subroutine cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
      &     ad_x_f,icost,ta)
       implicit none
@@ -109,7 +106,6 @@ c     &        ad_obs(i,j,ta-2)
 
       end subroutine cost_fun_step_2d_tile
 
-C$AD NOCHECKPOINT
       subroutine set_state(ad_x_f)
       implicit none
 # include "adinc.h"
@@ -138,8 +134,6 @@ C$AD  END-DO-NOT-DIFF
       
       end subroutine set_state
 
-
-C$AD NOCHECKPOINT
       subroutine set_state_2d(tile, ad_x_f)
 
       implicit none
@@ -152,7 +146,6 @@ C$AD NOCHECKPOINT
 
       end subroutine set_state_2d
 
-C$AD NOCHECKPOINT
       subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x_f)
       implicit none
 # include "adinc.h"
