@@ -13,7 +13,7 @@
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="12h" output_freq="12h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file1" name_suffix="_inst" split_freq="5d" split_freq_format="%y-%mo-%d">
 					<field_group id="grid_fields" operation="once">
@@ -60,7 +60,7 @@
 			</file_group>
 		</file_definition>
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file2" name_suffix="_inst_surf" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
@@ -78,7 +78,7 @@
 		</file_definition>
 		
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file3" name_suffix="_aver" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
@@ -103,7 +103,7 @@
 		
 
 # ifdef DIAGNOSTICS_UV
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="M" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file4" name_suffix="_M" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
@@ -140,7 +140,7 @@
 # endif
 
 # ifdef DIAGNOSTICS_EK
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file5" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
@@ -169,7 +169,7 @@
 
 
 # ifdef DIAGNOSTICS_VRT
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="VRT" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file6" name_suffix="_VRT" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
@@ -197,7 +197,7 @@
 
 
 # ifdef DIAGNOSTICS_EDDY
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="EDDY" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file7" name_suffix="_EDDY" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
