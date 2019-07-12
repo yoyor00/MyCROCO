@@ -52,7 +52,7 @@
      &                + 0.5*(ekwrkHdiff(i,j,2) + ekwrkHdiff(i,j+1,2))
 
 
-# if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && defined UV_HADV_UP3
+# if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
           ekHdiff(i,j) = ekHadv(i,j) - ekHdiff(i,j)
 # endif       
                  
@@ -115,7 +115,7 @@
      &                + 0.5*(ekwrkHdiff_mld(i,j,2) + ekwrkHdiff_mld(i,j+1,2))
 
 
-# if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && defined UV_HADV_UP3
+# if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
           ekHdiff_mld(i,j) = ekHadv_mld(i,j) - ekHdiff_mld(i,j)
 # endif       
                  
