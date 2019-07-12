@@ -194,9 +194,9 @@
 
 
       if (WESTERN_EDGE) then     ! Restrict extended ranges one
-        imin=istr+1               ! point inward near the physical
+        imin=istr+1              ! point inward near the physical
       else                       ! boundary. Note that this version
-        imin=istr            ! of code is suitable for MPI
+        imin=istr                ! of code is suitable for MPI
       endif                      ! configuration too.
 
       if (SOUTHERN_EDGE) then
@@ -237,7 +237,7 @@
      &           - (wrkHdiff(i,j,1) - wrkHdiff(i,j-1,1)) * cff2
 
 
-# if !defined DIAGNOSTICS_UV && defined UV_HADV_UP3
+# if !defined DIAGNOSTICS_UV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
           vrtHdiff(i,j) = vrtXadv(i,j) + vrtYadv(i,j) - vrtHdiff(i,j)
 # endif
 
