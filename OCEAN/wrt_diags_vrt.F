@@ -221,6 +221,17 @@
      &                      indxvrtBaro+itrc-1,
      &                      record,ivar,type)
 # endif
+
+# if defined M3FAST
+!
+! indxvrtfast
+!
+           work2d=vrtfast(:,:)
+           call fillvalue2d(work2d,nciddiags_vrt,diags_vrtfast(itrc),
+     &                      indxvrtfast+itrc-1,
+     &                      record,ivar,type)
+# endif
+
         endif
 !
 #ifdef DEBUG

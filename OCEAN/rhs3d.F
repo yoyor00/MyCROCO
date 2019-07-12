@@ -680,21 +680,32 @@
 #     define UP5_MASKING
           cdif=0.5
 #    endif
+
 #    include "u_hadv_order5.h"
 #    include "v_hadv_order5.h"
-
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
-        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-#      if defined UV_HADV_UP5
-#        include "uhdiff_order5.h"
-#        include "vhdiff_order5.h"
-#      endif
-#    endif
 
 #    undef FLUX5
 #    undef FLUX3
 #    undef FLUX2
 #    undef UP5_MASKING
+
+#    if defined UV_HADV_UP5
+#      if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+#        define FLUX5 flux6
+#        define FLUX3 flux4
+#        define FLUX2 flux2
+           cdif=0.
+#          include "uhdiff_order5.h"
+#          include "vhdiff_order5.h"
+#        undef FLUX5
+#        undef FLUX3
+#        undef FLUX2
+#      endif
+#    endif
+
+
+
         endif
 #   endif /* WENO5 */
 
