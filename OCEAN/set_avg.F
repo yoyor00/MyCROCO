@@ -26,7 +26,7 @@ C$    integer omp_get_thread_num
 #  ifdef MRL_WCI
       call wstokes (tile)
 #  endif
-# ifdef SOLVE3D
+# if defined SOLVE3D && !defined NBQ
       if (wrtavg(indxW)) then
         call Wvlcty (tile, workr)
       endif
@@ -273,6 +273,15 @@ C$    integer omp_get_thread_num
           enddo
         endif
         if (wrtavg(indxW)) then
+# ifdef NBQ
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                w_avg(i,j,k)=cff*(cff1*w_avg(i,j,k)+wz(i,j,k,nstp))
+              enddo
+            enddo
+          enddo
+# else
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -280,6 +289,7 @@ C$    integer omp_get_thread_num
               enddo
             enddo
           enddo
+# endif
         endif
 # if defined LMD_SKPP || defined GLS_MIXING
         if (wrtavg(indxHbl)) then
