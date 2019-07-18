@@ -15,7 +15,7 @@
 # Set machine dependent definitions and rules.
 #======================================================================
 
-include Make.inc
+include Makedefs
 #======================================================================
 # Model Configuration:
 #======================================================================
@@ -64,6 +64,7 @@ include Make.inc
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
+        param.F         ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
 	get_date.F	lenstr.F	closecdf.F	insert_node.F\
@@ -161,13 +162,14 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
  AMROBJS=$(AMRRCS:.f=.o)
 
 
-
+%.mod : %.o
+	@touch $@
 
 #
 # Executable file.
 # ========= =====
 #
-$(SBIN):  depend $(OBJS90) $(OBJS) 
+$(SBIN):   $(OBJS90) $(OBJS) 
 	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
 	mv a.out $(SBIN)
 
@@ -227,7 +229,7 @@ ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix module*.F90 *.F90 *.F 
+	./cross_matrix  *.F90 *.F 
 
 mymodules: $(MOBJS) $(AMROBJS)
 #
@@ -261,8 +263,6 @@ my_barrier.o: my_barrier.f
 #
 # Include automatically generated dependency list:
 #
-include Makedefs.generic
 
-
-include Make.depend
+-include Make.depend
 

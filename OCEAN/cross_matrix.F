@@ -45,10 +45,13 @@
       parameter (max_name_size=62, max_names=956, max_string_size=92,
      &                                             input=11, iout=12)
       character*62 fname(max_names)
+      logical ismodule(max_names,max_names)
       character*62 modname
+      character*4 sufname
       character string*92, quote*1, double_quote*1, backslash*1
       integer nsize(max_names), size,  lines, nmax,  n_disc,  n_excl, 
-     &                              last_arg, iargc, iocheck, i,j,k,n
+     &                              last_arg, iargc, iocheck, i,j,k,n,
+     & my_iostat
       logical matrix(max_names,max_names), new_name, not_end_of_file
       
       character ctoupper,tab
@@ -58,6 +61,8 @@
         write(*,*) 'ERROR IN cross_matrix: NO FILE NAMES ARE GIVEN'
         stop
       endif
+
+       ismodule(:,:)=.false.
 
       write(*,'(/1x,A,1x,A/)') 'This is CROSS_MATRIX: Creating',
      &                             'new version of Make.depend.'
@@ -163,37 +168,49 @@
  19      continue
  
 
-       if (iocheck.eq.0 .and.
+        if (iocheck.eq.0 .and.
      &     ((string(1:1).ne.' ').AND.
      &     (string(1:1).ne.tab))) goto 4
 
          i=2
  
  17      if ((string(i:i).eq.' ').OR.(string(i:i).eq.tab)) then
-        i=i+1
-        if (i.lt.max_string_size) goto 17
-      elseif ((string(i:i+3) .eq. 'USE ').or.
+           i=i+1
+           if (i.lt.max_string_size) goto 17
+         elseif ((string(i:i+3) .eq. 'USE ').or.
      &                  (string(i:i+3) .eq. 'use ')) then
-        i=i+4
-        j=i
+           sufname=string(i:i+3)
+           i=i+4
+           j=i
  18        j=j+1
-        if ((string(j:j).EQ.' ').or.(string(j:j).EQ.tab)) then
-        j=j-1
-        size=j-i+1
-      do k=1,size
+           if ((string(j:j).EQ.' ').or.(string(j:j).EQ.tab)) then
+             j=j-1
+             size=j-i+1
+             do k=1,size
 !       modname(k:k)=ctoupper(string(i+k-1:i+k-1))
-	modname(k:k)=string(i+k-1:i+k-1)
-      end do
-!       modname(size+1:size+4)='.mod'
-       modname(size+1:size+4)='.F90'
-              
-        size=size+4
+                modname(k:k)=string(i+k-1:i+k-1)
+             end do
+      
+             modname(size+1:size+4)='.F90'
+             size=size+4
+
+             open(unit=125, file=modname(1:size), form='formatted', 
+     &                               status='old', iostat=my_iostat)
+             close(125)
+
+             if(my_iostat /= 0) then
+               size=size-4
+               modname(size+1:size+2)='.F' 
+               size=size+2
+            endif
+
               new_name=.true.             ! encountered name does 
                do k=1,nmax                 ! not exist in catalog.
                  if (size .eq. nsize(k)) then
                    if (modname(1:size) .eq. fname(k)(1:size)) then
                      new_name=.false.      !
                      matrix(k,n)=.true.    ! Then test the new name
+                     ismodule(k,n)=.true.
                    endif                   ! against those already in
                  endif                     ! catalog. If matches were
                enddo                       ! found, reject it as a
@@ -203,6 +220,7 @@
                  matrix(nmax,n)=.true.     ! its size into catalog,
                  nsize(nmax)=size          ! if it was not rejected.  
                  fname(nmax)(1:size)=modname(1:size)
+                 ismodule(nmax,n)=.true.
                  do i=size+1,max_name_size
                    fname(nmax)(i:i)=' '
                  enddo
@@ -212,8 +230,9 @@
           end if        
       end if
          
-        if (not_end_of_file) goto 4
-       close (unit=input)
+      if (not_end_of_file) goto 4
+        close (unit=input)
+      
       if (n.lt.nmax) goto 2
 
  29      continue
@@ -222,8 +241,12 @@
         do k=1,nmax               ! to operation of logical addition: 
           if (matrix(k,n)) then   !  
             do j=1,nmax           ! if
-              if (matrix(j,k))    !      file1 depends on file2
-     &         matrix(j,n)=.true. ! and 
+              if (matrix(j,k)) then   !      file1 depends on file2
+              matrix(j,n)=.true. 
+              
+              if (ismodule(j,k)) ismodule(j,n)=.true.
+          endif
+            ! and 
             enddo                 !      file2 depends on file3
           endif                   ! then
         enddo                     !      file1 depends on file3 
@@ -260,7 +283,7 @@
 ! column separator ':' are not repeated, while backslach symbol is
 ! used in the end of each line, if the line needs to be  continued
 ! on the next line.
-!          
+
       do n=1,last_arg !!! nmax
         if (nsize(n).gt.0) then
 #define XCOMM_FORMAT
@@ -270,6 +293,7 @@
   11      i=nsize(n) 
            string(1:i)=fname(n)(1:i)
            if (string(i-1:i).eq.'.F') string(i:i)='o'
+           if (string(i-3:i).eq.'.F90') string(i-2:i)='o'
            i=i+1
            string(i:i)=':'
   12       i=i+1
@@ -280,11 +304,24 @@
                 i=i+nsize(n)+1
                 string(i:i)=' '
               endif
+              if (fname(n)(nsize(n)-3:nsize(n)).eq.'.F90') then
+                string(i+1:i+nsize(n))=fname(n)(1:nsize(n))
+                i=i+nsize(n)+1
+                string(i:i)=' '
+              endif
             endif
   13        k=k+1
             if (matrix(k,n)) then
               if (i+nsize(k).lt.max_string_size) then
-                string(i+1:i+nsize(k))=fname(k)(1:nsize(k))
+                 string(i+1:i+nsize(k))=fname(k)(1:nsize(k))
+                 if(ismodule(k,n))then
+                   if(string(i+nsize(k)-1:i+nsize(k)).eq.'.F') then
+                     string(i+nsize(k)-1:i+nsize(k))=  '.o'
+                   endif
+                   if(string(i+nsize(k)-3:i+nsize(k)).eq.'.F90') then
+                     string(i+nsize(k)-3:i+nsize(k))='.o  '
+                   endif
+                 endif
                 i=i+nsize(k)
                 goto 12
               else
@@ -325,6 +362,7 @@
                i=i+1
                string(i:i)=' ' 
                string(i+1:i+nsize(k))=fname(k)(1:nsize(k))
+
                i=i+nsize(k)
              else
                i=i+1
@@ -339,6 +377,8 @@
 #endif
         endif
       enddo 
+
+
       close (iout)
       stop
       end
