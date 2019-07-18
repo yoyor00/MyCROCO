@@ -617,19 +617,20 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     
       if (wrthis(indxW)) then
 #ifdef NBQ
-         do k=1,N
+         do k=0,N
             do j=0,Mm+1
                do i=0,Lm+1
-                  workr(i,j,k)=wz(i,j,k,nstp)
+                  work(i,j,k)=wz(i,j,k,nstp)
                enddo
             enddo
          enddo
+         call fillvalue3d(work,ncidhis,hisW,indxW,record,w3dvar,type)
 #else
          do tile=0,NSUB_X*NSUB_E-1
             call Wvlcty (tile, workr) 
          enddo
-#endif
          call fillvalue3d(workr,ncidhis,hisW,indxW,record,r3dvar,type)
+#endif
          
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
       endif

@@ -105,7 +105,7 @@
          enddo
         enddo
 !
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
         do k=0,N
@@ -210,7 +210,7 @@
 #    endif
           enddo
         enddo
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
         do k=0,N
@@ -317,7 +317,7 @@
 #    endif
           enddo
         enddo
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
         do k=0,N
@@ -425,7 +425,7 @@
           enddo
         enddo
 !
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
         do k=0,N

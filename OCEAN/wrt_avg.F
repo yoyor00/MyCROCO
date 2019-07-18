@@ -259,8 +259,13 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !     
       if (wrtavg(indxW)) then
+# ifdef NBQ
+         work=w_avg
+         call fillvalue3d(work ,ncidavg,avgW,indxW,record,w3dvar,type)
+# else
          workr=w_avg
          call fillvalue3d(workr,ncidavg,avgW,indxW,record,r3dvar,type)
+# endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif   
 !     

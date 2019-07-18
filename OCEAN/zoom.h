@@ -29,15 +29,19 @@
       real V_west(0:0,-1:Mm+2+padd_E,N,4)
       common/zoom3D_VW/V_west
 #  endif
-#  ifdef NBQ
+#  ifdef M3FAST
       real Unbq_west(1:1,-1:Mm+2+padd_E,N,2)
       common/zoom3Dnbq_UW/Unbq_west 
       real Vnbq_west(0:0,-1:Mm+2+padd_E,N,2)
       common/zoom3Dnbq_VW/Vnbq_west
+#   ifdef NBQ
       real Wnbq_west(0:0,-1:Mm+2+padd_E,0:N,2)
       common/zoom3Dnbq_WW/Wnbq_west
       real W_west(0:0,-1:Mm+2+padd_E,0:N,4)
       common/zoom3D_WW/W_west
+      real Rnbq_west(0:0,-1:Mm+2+padd_E,1:N,2)
+      common/zoom3Dnbq_RW/Rnbq_west
+#   endif
 #  endif      
 # endif
 # ifdef AGRIF_OBC_EAST
@@ -49,15 +53,19 @@
       real V_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,4)
       common/zoom3D_VE/V_east
 #  endif
-#  ifdef NBQ
+#  ifdef M3FAST
       real Unbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,2)
       common/zoom3Dnbq_UE/Unbq_east 
       real Vnbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,2)
       common/zoom3Dnbq_VE/Vnbq_east
+#   ifdef NBQ
       real Wnbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,0:N,2)
       common/zoom3Dnbq_WE/Wnbq_east
       real W_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,0:N,4)
       common/zoom3D_WE/W_east
+      real Rnbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,1:N,2)
+      common/zoom3Dnbq_RE/Rnbq_east
+#   endif
 #  endif      
 # endif
 # ifdef AGRIF_OBC_SOUTH   
@@ -69,15 +77,19 @@
       real V_south(-1:Lm+2+padd_X,1:1,N,4)
       common/zoom3D_VS/V_south
 #  endif
-#  ifdef NBQ
+#  ifdef M3FAST
       real Unbq_south(-1:Lm+2+padd_X,0:0,N,2)
       common/zoom3Dnbq_US/Unbq_south 
       real Vnbq_south(-1:Lm+2+padd_X,1:1,N,2)
       common/zoom3Dnbq_VS/Vnbq_south
+#   ifdef NBQ
       real Wnbq_south(-1:Lm+2+padd_X,0:0,0:N,2)
       common/zoom3Dnbq_WS/Wnbq_south
       real W_south(-1:Lm+2+padd_X,0:0,0:N,4)
       common/zoom3D_WS/W_south
+      real Rnbq_south(-1:Lm+2+padd_X,0:0,1:N,2)
+      common/zoom3Dnbq_RS/Rnbq_south
+#   endif
 #  endif      
 # endif
 # ifdef AGRIF_OBC_NORTH  
@@ -89,15 +101,19 @@
       real V_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,4)
       common/zoom3D_VN/V_north
 #  endif
-#  ifdef NBQ
+#  ifdef M3FAST
       real Unbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,2)
       common/zoom3Dnbq_UN/Unbq_north 
       real Vnbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,2)
       common/zoom3Dnbq_VN/Vnbq_north
+#   ifdef NBQ
       real Wnbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,0:N,2)
       common/zoom3Dnbq_WN/Wnbq_north
       real W_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,0:N,4)
       common/zoom3D_WN/W_north
+      real Rnbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,1:N,2)
+      common/zoom3Dnbq_RN/Rnbq_north
+#   endif
 #  endif      
 # endif
       integer Zetatimeindex, Zetatimeindex2
@@ -251,9 +267,11 @@
             
       integer hid, zetaid,ubarid,vbarid,uid,vid,tid
       integer rmaskid
-# ifdef NBQ
-      integer qdmunbqid, qdmvnbqid, qdmwnbqid, rhonbqid
-      integer wzid, wzspongeid
+# ifdef M3FAST
+      integer qdmunbqid, qdmvnbqid
+#  ifdef NBQ
+      integer qdmwnbqid, rhonbqid, wzid, wzspongeid
+#  endif
 # endif
 # ifdef WET_DRY
       integer rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
@@ -269,10 +287,13 @@
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
      &  tspongeid, uspongeid, vspongeid, rmaskid,wspongeid
 # ifdef WET_DRY
-     &         ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
+     &        ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
 # endif
-# ifdef NBQ
-     &         ,qdmunbqid,qdmvnbqid,qdmwnbqid,rhonbqid,wzid,wzspongeid
+# ifdef M3FAST
+     &        ,qdmunbqid,qdmvnbqid
+#  ifdef NBQ
+     &        ,qdmwnbqid,rhonbqid,wzid,wzspongeid
+#  endif
 # endif
 # ifdef WKB_WWAVE
      &  ,wacid,wkxid,wkeid
@@ -290,20 +311,22 @@
       integer updatetid, updateuid, updatevid
       integer updatemyfxid, updatemyfyid
       integer updatehuonid, updatehvomid
-# ifdef NBQ
-      integer updatewid, updateweid
-      integer updateunbqid, updatevnbqid,updatewnbqid,
-     &       usurfid,vsurfid,wsurfid
+# ifdef M3FAST
+      integer updateunbqid, updatevnbqid
+#  ifdef NBQ
+      integer updatewid, updatewnbqid, updaterhonbqid
+#  endif
 # endif       
       common/varidsupdate/updatezetaid, updateubarid, updatevbarid,
      &       updateduavg2id, updatedvavg2id,
      &       updatetid, updateuid, updatevid, updatemyfxid,
      &       updatemyfyid,updatehuonid, updatehvomid
-#ifdef NBQ
-     &     , updatewid, updateweid,
-     &       updateunbqid, updatevnbqid,updatewnbqid,
-     &       usurfid,vsurfid,wsurfid
-#endif     
+# ifdef M3FAST
+     &      ,updateunbqid, updatevnbqid
+#  ifdef NBQ
+     &      ,updatewid, updatewnbqid, updaterhonbqid
+#  endif     
+# endif
 
 !$AGRIF_DO_NOT_TREAT
       integer :: iind

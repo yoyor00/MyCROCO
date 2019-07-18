@@ -199,10 +199,10 @@ C$    integer omp_get_thread_num
 #  endif
 
 #  ifdef NBQ
-#   ifndef NBQ_GRID_SLOW
-            if (iif.eq.1) Hz_bak(i,j,k)=Hz(i,j,k)
+#   ifdef NBQ_GRID_SLOW
+            if (LAST_FAST_STEP)  Hz_bak(i,j,k)=Hz(i,j,k)
 #   else
-            Hz_bak(i,j,k)=Hz(i,j,k)
+            if (FIRST_FAST_STEP) Hz_bak(i,j,k)=Hz(i,j,k)
 #   endif
 #   ifdef NBQ_HZ_PROGNOSTIC
             Hz_bak2(i,j,k)=Hz(i,j,k)
@@ -214,8 +214,8 @@ C$    integer omp_get_thread_num
 
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
-            Hz(i,j,k)=Hz(i,j,k)*(1.+rho_grd(i,j,k))
-     &                               +rho_nbq(i,j,k) 
+            Hz(i,j,k) =Hz(i,j,k)*(1.+rho_grd(i,j,k))
+     &                              +rho_nbq(i,j,k) 
 #  endif
           enddo
         enddo

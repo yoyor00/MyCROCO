@@ -318,7 +318,8 @@ C$    trd=omp_get_thread_num()
       enddo
 # endif
  
-# ifdef BSTRESS_FAST
+# undef M3FAST_REINIT
+# if defined BSTRESS_FAST && defined M3FAST_REINIT
 !
 !  Reinitialise fast mode at each first fast step
 !
@@ -2955,7 +2956,7 @@ C$OMP END MASTER
         enddo
       enddo
 
-!      call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work)
+      call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work)
 !
 !# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
