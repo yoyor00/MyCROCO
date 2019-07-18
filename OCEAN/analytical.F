@@ -1132,14 +1132,14 @@ C$    integer  trd, omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
-            tclm(i,j,k,isand)=Csed(1)
-            tclm(i,j,k,isilt)=Csed(2)
+            tclm(i,j,k,isand)=0. !Csed(1)
+            tclm(i,j,k,isilt)=0. !Csed(2)
 #  else   
             if (.not.got_tclm(isand)) then
-              tclm(i,j,k,isand)=Csed(1)
+              tclm(i,j,k,isand)=0. !Csed(1)
             endif
             if (.not.got_tclm(isilt)) then
-              tclm(i,j,k,isilt)=Csed(2)
+              tclm(i,j,k,isilt)=0. !Csed(2)
             endif
 #  endif
           enddo
