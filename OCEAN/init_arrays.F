@@ -176,7 +176,9 @@ C$    integer omp_get_thread_num
             rho_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
+#  ifndef NBQ
             w_avg(i,j,k)=init
+#  endif
 # endif
 # ifdef MRL_WCI
             ust(i,j,k)=init
@@ -308,6 +310,9 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
+#  ifdef NBQ
+            w_avg(i,j,k)=init
+#  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING

@@ -715,7 +715,7 @@ CR      write(*,*) '  0' MYID
 !
 #undef CR
       MPI_master_only write(stdout,'(/1x,A27/)') 
-     &                'MAIN: started time-steping.'
+     &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
 #ifdef USE_CALENDAR 
