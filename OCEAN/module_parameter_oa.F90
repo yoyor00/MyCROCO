@@ -2,11 +2,9 @@
 
         module module_parameter_oa
 
+        USE param
         integer :: imax,jmax,kmax
 
-# define F90CODE
-# include "param.h"
-# undef  F90CODE
 
 
 #ifdef MPI

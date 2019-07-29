@@ -129,11 +129,7 @@
       fname='TEST_CASES/croco.in.Tank'
 # endif
 #elif defined SWASH
-# ifdef NBQ
-      fname='TEST_CASES/croco.in.Swash_nbq'
-# else
       fname='TEST_CASES/croco.in.Swash'
-# endif
 #elif defined IGW
 # ifdef NBQ
       fname='TEST_CASES/croco.in.IGW_nbq'
