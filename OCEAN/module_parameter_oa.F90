@@ -2,9 +2,9 @@
 
         module module_parameter_oa
 
+        USE param
         integer :: imax,jmax,kmax
 
-        USE param
 
 
 #ifdef MPI
