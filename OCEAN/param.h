@@ -491,7 +491,7 @@
 ! Tracer identification indices
 !----------------------------------------------------------------------
 !
-#if defined SOLVE3D && !defined F90CODE
+#if defined SOLVE3D
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf

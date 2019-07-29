@@ -40,7 +40,11 @@
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
 # endif
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
+# ifdef NBQ
+      real w_avg(GLOBAL_2D_ARRAY,0:N)
+# else
       real w_avg(GLOBAL_2D_ARRAY,N)
+# endif
       common /avg_u/u_avg /avg_v/v_avg /avg_t/t_avg
      &       /avg_rho/rho_avg /avg_omega/omega_avg
 # if defined ANA_VMIX || defined BVF_MIXING \
