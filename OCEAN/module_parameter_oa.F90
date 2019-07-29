@@ -4,9 +4,7 @@
 
         integer :: imax,jmax,kmax
 
-# define F90CODE
-# include "param.h"
-# undef  F90CODE
+        USE param
 
 
 #ifdef MPI
