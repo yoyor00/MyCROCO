@@ -128,13 +128,25 @@
 # else
       fname='TEST_CASES/croco.in.Tank'
 # endif
+#elif defined ACOUSTIC
+      fname='TEST_CASES/croco.in.Acoustic' 
 #elif defined SWASH
       fname='TEST_CASES/croco.in.Swash'
+#elif defined KH_INST      
+      fname='TEST_CASES/croco.in.KH_INST'
 #elif defined IGW
 # ifdef NBQ
       fname='TEST_CASES/croco.in.IGW_nbq'
 # else
       fname='TEST_CASES/croco.in.IGW'
+# endif
+#elif defined TS_HADV_TEST
+# ifdef SOLID_BODY_ROT 
+      fname='TEST_CASES/croco.in.TS_adv_body'
+# elif defined DIAGONAL_ADV
+      fname='TEST_CASES/croco.in.TS_adv_diag'
+# elif defined SOLID_BODY_PER
+      fname='TEST_CASES/croco.in.TS_adv_rep'
 # endif
 #else
       fname='croco.in'

@@ -182,8 +182,12 @@
 # endif
 # ifdef WAVE_FRICTION
       cfrc = 0.5/sqrt(pi)
-      if (Zobt.gt.0.) then
-        Zob_my=Zob
+      if (Zobt.gt.0.) then                     ! default Zob for wave
+        do j=jstr-1,jend+1                     ! dissipation or streaming
+          do i=istr-1,iend+1      
+            Zob_my(i,j)=Zob(i,j)
+          enddo
+        enddo                         
       else
         Zob_my=1.e-3
       endif

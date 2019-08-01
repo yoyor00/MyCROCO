@@ -80,10 +80,12 @@
         endif
         if (sources) then
           if (string(lstr:lstr).eq.backslash) then
-            lstr=lstr-1
-   8        if (string(lstr:lstr).eq.' ') then
+            if (lstr .gt. 1 ) then 
               lstr=lstr-1
-              if (lstr.gt.0) goto 8
+   8          if (string(lstr:lstr).eq.' ') then
+                lstr=lstr-1
+                if (lstr.gt.0) goto 8
+              endif
             endif
             if (lstr.eq.0 .and. .not.end_of_file) goto 1
           else
