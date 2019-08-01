@@ -58,6 +58,7 @@
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
+# undef  MPI_NOLAND
                       /* I/O server */
 # undef  XIOS
 # undef  XIOS2
