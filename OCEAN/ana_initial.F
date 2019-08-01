@@ -85,6 +85,7 @@
 #endif
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
+#endif
 !
 #include "compute_auxiliary_bounds.h"
 !
