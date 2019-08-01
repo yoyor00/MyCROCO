@@ -53,6 +53,7 @@
      &      , iwkb
 #endif
 #ifdef NC4PAR
+# include "mpi_cpl.h"
       include "mpif.h"
 #endif
 

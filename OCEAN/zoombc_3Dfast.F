@@ -165,6 +165,7 @@
       external :: qdmvinterp   
   
 # ifdef MPI
+#  include "mpi_cpl.h"
        include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
@@ -296,6 +297,7 @@
 # include "compute_auxiliary_bounds.h"
 !
 # ifdef MPI
+# include "mpi_cpl.h"
        include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
@@ -765,6 +767,7 @@
       external :: rhointerp   
 !
 # ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi

@@ -157,7 +157,7 @@ cd $SCRDIR
 # generates LDFLAGS1 according to users notifications
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
-CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -IROMSFILES/AGRIF_INC"
+CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
 #
 # Set compilation options
 #
@@ -273,7 +273,8 @@ if $($CPP1 testkeys.F | grep -i -q nbqisdefined) ; then
 	COMPILENBQ=TRUE
 	#LDFLAGS1="-lblas -llapack $LDFLAGS1"
 	# for datarmor
-	LDFLAGS1="-mkl=sequential $LDFLAGS1"
+	#LDFLAGS1="-mkl=sequential $LDFLAGS1"
+	LDFLAGS1=" $LDFLAGS1"
 	#
         FFLAGS1="$FFLAGS1 -ffree-line-length-none"
 fi
@@ -368,18 +369,18 @@ if [[ $COMPILEAGRIF ]] ; then
 	fi
 #
 	$CPP1 amr.in | grep -v -e ! -e '#' -e % -e '*' > amr.scrum
-	mkdir ROMSFILES
-	mv AGRIF/conv ROMSFILES/.
-	mv amr.scrum ROMSFILES/.
-	cd ROMSFILES
+	mkdir CROCOFILES
+	mv AGRIF/conv CROCOFILES/.
+	mv amr.scrum CROCOFILES/.
+	cd CROCOFILES
 	mkdir AGRIF_MODELFILES
 	mkdir AGRIF_INC
 	cd ..
 	for i in *.h *.h90 ; do
 		echo $i
-		cat cppdefs.h $i | cpp -P | grep -v -e ! -e '#' -e % -e '*' > ROMSFILES/$i
+		cat cppdefs.h $i | cpp -P | grep -v -e ! -e '#' -e % -e '*' > CROCOFILES/$i
 	done
-	mv -f ROMSFILES/private_scratch_AMR.h ROMSFILES/private_scratch.h
+	mv -f CROCOFILES/private_scratch_AMR.h CROCOFILES/private_scratch.h
 fi
 
 #
@@ -433,6 +434,7 @@ rm -f flags.tmp
 #
 # compile croco
 #
+$MAKE depend
 $MAKE 
 mv croco $RUNDIR
 #

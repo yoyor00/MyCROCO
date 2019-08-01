@@ -76,8 +76,8 @@
 # include "param.h"
 # include "scalars.h"  
 # include "ocean2d.h" 
-# include "mpi_cpl.h"
 # ifdef MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
 # endif   
       real,dimension(GLOBAL_2D_ARRAY) :: tab
@@ -196,6 +196,7 @@
 # include "scalars.h"  
 # include "ocean2d.h" 
 # ifdef MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
 # endif   
 # ifdef MPI

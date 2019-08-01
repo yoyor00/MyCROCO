@@ -783,9 +783,9 @@
       !
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
-       READ(starting_date(1:2),fmt='(i2)') iday
-       READ(starting_date(4:5),fmt='(i2)') imonth
-       READ(starting_date(7:10),fmt='(i4)') iyear
+       READ(start_date(1:2),fmt='(i2)') iday
+       READ(start_date(4:5),fmt='(i2)') imonth
+       READ(start_date(7:10),fmt='(i4)') iyear
        CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
 # else
        CALL ymds2ju( 1, 1, 1, 0., jday0 )  
@@ -1276,7 +1276,7 @@
 # else
       TYPE(xios_duration) :: dtime    = xios_duration(0,
      &  0, 0, 0, 0, 0)
-      TYPE(xios_date)     :: start_date
+!      TYPE(xios_date)     :: start_date
 # endif     
       TYPE(xios_context) :: ctx_hdl
       TYPE(xios_field) :: field_hdl
@@ -1329,9 +1329,9 @@
 
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
-      READ(starting_date(1:2),fmt='(i2)') iday
-      READ(starting_date(4:5),fmt='(i2)') imonth
-      READ(starting_date(7:10),fmt='(i4)') iyear
+      READ(start_date(1:2),fmt='(i2)') iday
+      READ(start_date(4:5),fmt='(i2)') imonth
+      READ(start_date(7:10),fmt='(i4)') iyear
 # else
       iday=1
       imonth=1       
@@ -1670,12 +1670,7 @@
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-#ifdef NBQ     
-      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:) - h(:,:)
-#else
-      work2d=zeta(:,:,fast_indx_out)
-#endif
-      call xios_send_field("zeta",work2d)
+      call xios_send_field("zeta",zeta(:,:,fast_indx_out))
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 

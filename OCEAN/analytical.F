@@ -578,6 +578,7 @@ C$    integer  trd, omp_get_thread_num
       real tide_ampli_moy,tide_ampli_var
       real*QUAD mssh,area,cff1
 #  ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)

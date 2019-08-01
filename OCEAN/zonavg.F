@@ -17,6 +17,7 @@
 
 !-- for parallelization (mean of A in xi direction)
 #ifdef MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,NNODES)
@@ -66,6 +67,7 @@
 
 !-- for parallelization (mean of A in xi direction)
 #ifdef MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,N,NNODES)

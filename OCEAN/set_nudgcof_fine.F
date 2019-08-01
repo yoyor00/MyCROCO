@@ -28,6 +28,7 @@
 !     implicit none
       integer ierr
 # if defined MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
 # endif
 # include "param.h"

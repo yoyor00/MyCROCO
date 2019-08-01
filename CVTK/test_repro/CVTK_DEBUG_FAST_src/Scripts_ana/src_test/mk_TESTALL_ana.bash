@@ -1,11 +1,13 @@
 #!/bin/bash
 
 set -e
-set -x
+#set -x
 
 ./git_process.bash
 
-for testconf in `ls -1 ./Configure_Test/ `;do
+
+#for testconf in `ls -1 ./Configure_Test/ `;do
+for testconf in SWASH ;do
 echo $testconf
 rm -rf $testconf
 ./mk_TestDIR_ana.bash $testconf

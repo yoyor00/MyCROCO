@@ -392,6 +392,7 @@ c#  include "param.h"
       integer Istr,Iend,Jstr,Jend
 #  include "param.h"
 #  include "scalars.h"
+# include "mpi_cpl.h"
       include 'mpif.h'
 
       integer i,j,k,ierr
