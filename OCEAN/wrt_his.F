@@ -1104,7 +1104,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
 !     
-#if defined MPI & !defined PARALLEL_FILE & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (ncidhis)
       if (nrpfhis.gt.0 .and. record.ge.nrpfhis) ncidhis=-1
 #else

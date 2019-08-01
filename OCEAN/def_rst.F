@@ -37,6 +37,7 @@
       character*65 vinfo(4)
 #endif
 #ifdef NC4PAR
+# include "mpi_cpl.h"
       include "mpif.h"
 #endif
 

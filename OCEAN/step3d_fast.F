@@ -198,6 +198,9 @@ C$    trd=omp_get_thread_num()
 # if defined INTERNAL || defined BODYTIDE
       real U0, omega
 # endif
+# ifdef ACOUSTIC
+      real dist_d  
+# endif
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
 # endif

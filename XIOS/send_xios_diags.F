@@ -2030,12 +2030,7 @@ C 				  endif
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-#ifdef NBQ     
-      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:) - h(:,:)
-#else
-      work2d=zeta(:,:,fast_indx_out)
-#endif
-      call xios_send_field("zeta",work2d)
+      call xios_send_field("zeta",zeta(:,:,fast_indx_out))
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 

@@ -62,9 +62,9 @@
       INTEGER, dimension(0:10) :: esp_corres=(/1,2,3,4,5,0,6,0,7,0,8/)
 #endif
       integer
-     &     Iend, Istr, Jend, Jstr, i, itide
+     &     Iend, Istr, Jend, Jstr, i, j, itide
       real
-     &     angle, phase, omega_loc, ramp, cff,j
+     &     angle, phase, omega_loc, ramp, cff
       real
      &        Cangle(PRIVATE_2D_SCRATCH_ARRAY),
      &        Cphase(PRIVATE_2D_SCRATCH_ARRAY),

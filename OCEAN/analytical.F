@@ -578,6 +578,7 @@ C$    integer  trd, omp_get_thread_num
       real tide_ampli_moy,tide_ampli_var
       real*QUAD mssh,area,cff1
 #  ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
@@ -2506,19 +2507,41 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+# ifdef EW_PERIODIC
+#  define IU_RANGE Istr,Iend
+#  define IV_RANGE Istr,Iend
+# else
+#  define IU_RANGE Istr,IendR
+#  define IV_RANGE IstrR,IendR
+# endif
+
+# ifdef NS_PERIODIC
+#  define JU_RANGE Jstr,Jend
+#  define JV_RANGE Jstr,Jend
+# else
+#  define JU_RANGE JstrR,JendR
+#  define JV_RANGE Jstr,JendR
+# endif
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N
-          do j=JstrR,JendR
+          do j=JU_RANGE 
+            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
+     &                                   *u(1,j,k,nrhs)
+          enddo
+          do j=JV_RANGE 
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
+          enddo
 #   ifdef NBQ
+          do j=IstrR,IendR
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
-#   endif
           enddo
+#   endif
         enddo
       endif
 # endif /* OBC_WEST */

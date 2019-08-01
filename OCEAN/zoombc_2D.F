@@ -52,6 +52,7 @@
       real,dimension(GLOBAL_1D_ARRAYXI,0:NWEIGHT) :: DU_south4,DU_north4
 
 # ifdef MPI
+# include "mpi_cpl.h"
        include 'mpif.h'
 # endif
   
@@ -548,6 +549,7 @@ C$OMP BARRIER
 !$AGRIF_END_DO_NOT_TREAT
 
 # ifdef MPI
+# include "mpi_cpl.h"
        include 'mpif.h'
 # endif
 # ifdef MPI
