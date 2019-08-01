@@ -6,7 +6,7 @@
 #PBS -M gildas.cambon@ird.fr -m abe
 
 set -x
-#test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
+test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
 echo "$CI_CROCO_PWD"
 echo $PBS_O_LOGNAME
 #===================================
