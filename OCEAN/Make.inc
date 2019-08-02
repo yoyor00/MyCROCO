@@ -7,6 +7,9 @@
 # LDR           Program to load the objects into an executable
 # LDFLAGS       Flags to the loader
 #
+
+%.o: %.mod
+
       CPP = $(CPP1)
  CPPFLAGS = $(CPPFLAGS1)
       CFT = $(CFT1)
