@@ -1675,7 +1675,7 @@ C 				  endif
 # else
       iday=1
       imonth=1       
-      iyear=1970
+      iyear=1
 # endif
       WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')") 
      & iyear,imonth,iday
@@ -1685,8 +1685,8 @@ C 				  endif
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
      &           start_date = xios_date(iyear,imonth,iday,0,0,0),
-     & time_origin = xios_date(1970,01,01,00,00,00) )
- 
+     & time_origin = xios_date(1979,01,01,00,00,00) )
+
 #endif
       ! horizontal grid definition
       CALL set_scalar
@@ -1866,6 +1866,13 @@ C 				  endif
 # include "work.h"
 # include "private_scratch.h"
 !
+#ifdef DIAGNOSTICS_EDDY
+      real workru(GLOBAL_2D_ARRAY,1:N)
+      common /work3d_r/ workru
+      real workrv(GLOBAL_2D_ARRAY,1:N)
+      common /work3d_r/ workrv
+      real GRho
+#endif
       integer tile
       integer Istr,Iend,Jstr,Jend
       integer i,j,k
@@ -2096,17 +2103,17 @@ C 				  endif
 #  ifdef SOLVE3D
       call xios_send_field("u",u(:,:,:,nstp))
       call xios_send_field("v",v(:,:,:,nstp)) 
-!      call xios_send_field("u_surf",u(:,:,N,nstp)) 
-!      call xios_send_field("v_surf",v(:,:,N,nstp)) 
+      call xios_send_field("u_surf",u(:,:,N,nstp)) 
+      call xios_send_field("v_surf",v(:,:,N,nstp)) 
 # ifdef NBQ
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
 #   else
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
-!      call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
+      call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
 # endif
 # ifdef SALINITY
       call xios_send_field("salt",t(:,:,:,nstp,isalt))
-!      call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
+      call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
 # endif /* SALINITY */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
@@ -2139,6 +2146,40 @@ C 				  endif
 
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
+
+#  ifdef DIAGNOSTICS_EDDY
+
+         GRho=-1*g/rho0
+
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+
+                  GRho=-1*g/rho0
+
+                  workru = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
+                  workrv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
+
+                enddo
+              enddo
+           enddo
+
+          call xios_send_field("uu", workru**2)
+          call xios_send_field("uv", workru*workrv)
+          call xios_send_field("vv", workrv**2)
+          call xios_send_field("ub", workru*GRho*rho)
+          call xios_send_field("vb", workrv*GRho*rho)
+          call xios_send_field("wb", workr *GRho*rho)
+          call xios_send_field("uT", workru*t(:,:,:,nstp,itemp))
+          call xios_send_field("vT", workrv*t(:,:,:,nstp,itemp))
+          call xios_send_field("wT", workr *t(:,:,:,nstp,itemp))
+          call xios_send_field("uS", workru*t(:,:,:,nstp,isalt))
+          call xios_send_field("vS", workrv*t(:,:,:,nstp,isalt))
+          call xios_send_field("wS", workr *t(:,:,:,nstp,isalt))
+
+#  endif
+
+
         
 #  ifdef VIS_COEF_3D
       call xios_send_field("visc3d",visc3d_r)
@@ -2261,8 +2302,21 @@ C 				  endif
           call xios_send_field("v_Vmix",MVmix(:,:,:,itrc))
           call xios_send_field("v_Vmix2",MVmix2(:,:,:,itrc))
           call xios_send_field("v_Baro",MBaro(:,:,:,itrc))
+#  endif
 
 
+#  ifdef DIAGNOSTICS_VRT
+          call xios_send_field("vrtrate", vrtrate(:,:))
+          call xios_send_field("vrtadv", vrtXadv(:,:) + vrtYadv(:,:))
+          call xios_send_field("vrtCor",vrtCor(:,:))
+          call xios_send_field("vrtPrsgrd",vrtPrsgrd(:,:))
+          call xios_send_field("vrtHmix",vrtHmix(:,:))
+          call xios_send_field("vrtHdiff",vrtHdiff(:,:))
+!          call xios_send_field("vrtVmix",vrtVmix(:,:))
+          call xios_send_field("vrtVmix2",vrtVmix2(:,:))
+          call xios_send_field("vrtBaro",vrtBaro(:,:))
+          call xios_send_field("vrtDrag",vrtDrag(:,:))
+          call xios_send_field("vrtWind",vrtWind(:,:))
 #  endif
 
 

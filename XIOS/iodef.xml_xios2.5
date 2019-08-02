@@ -13,9 +13,9 @@
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
 			<file_group id="12h" output_freq="12h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file1" name_suffix="_inst">
+				<file id="file1" name_suffix="_inst" split_freq="5d" split_freq_format="%y-%mo-%d">
 					<field_group id="grid_fields" operation="once">
 						<field field_ref="hc" />
 						<field field_ref="theta_s" />
@@ -50,19 +50,19 @@
 						<field field_ref="u" name="u" />
 						<field field_ref="v" name="v" />
 						<field field_ref="w" name="w" />
-						<field field_ref="temp" name="T" />
-						<field field_ref="salt" name="S" />
+						<field field_ref="temp" name="temp" />
+						<field field_ref="salt" name="salt" />
 						<field field_ref="rho" name="rho" />
-					    <field field_ref="bvf" name="N" />
+					    <field field_ref="bvf" name="bvf" />
 					</field_group>
 
 				</file>
 			</file_group>
 		</file_definition>
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
 			<file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file2" name_suffix="_inst_surf">
+				<file id="file2" name_suffix="_inst_surf" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="surf_fields" operation="instant">
 						<field field_ref="time" name="time" />
@@ -78,11 +78,36 @@
 		</file_definition>
 		
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
 			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file3" name_suffix="_M">
+				<file id="file3" name_suffix="_aver" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="ave_fields" operation="average">
+						<field field_ref="zeta" />
+						<field field_ref="ubar" name="ubar"  />
+						<field field_ref="vbar" name="vbar"  />
+						<field field_ref="sustr" name="sustr"  />
+						<field field_ref="svstr" name="svstr"  />
+						<field field_ref="u" name="u" />
+						<field field_ref="v" name="v"  />
+						<field field_ref="w" name="w" />
+						<field field_ref="temp" name="temp"  />
+						<field field_ref="salt" name="salt"  />
+						<field field_ref="rho" name="rho"  />
+					    <field field_ref="bvf" name="bvf" />
+					</field_group>
+
+				</file>
+			</file_group>
+		</file_definition>
+		
+
+# ifdef DIAGNOSTICS_UV
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+			<file_group id="M" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+				<file id="file4" name_suffix="_M" split_freq="5d" split_freq_format="%y-%mo-%d">
+					
+					<field_group id="M_fields" operation="average">
 						<field field_ref="u_rate" name="u_rate"  />
 						<field field_ref="u_adv" name="u_adv"  />
 						<field field_ref="u_Cor" name="u_cor"  />
@@ -106,12 +131,14 @@
 				</file>
 			</file_group>
 		</file_definition>
+# endif
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
-			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file4" name_suffix="_KE">
+# ifdef DIAGNOSTICS_EK
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+			<file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+				<file id="file5" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
-					<field_group id="ave_fields" operation="average">
+					<field_group id="KE_fields" operation="average">
 						<field field_ref="ekrate" name="ke_rate"  />
 						<field field_ref="ekadv" name="ke_adv"  />
 						<field field_ref="ekCor" name="ke_cor"  />
@@ -129,31 +156,61 @@
 				</file>
 			</file_group>
 		</file_definition>
+# endif
 
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@_@startdate@_@enddate@" sync_freq="1h" min_digits="4">		
-			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file5" name_suffix="_aver">
+
+# ifdef DIAGNOSTICS_VRT
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+			<file_group id="VRT" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+				<file id="file6" name_suffix="_VRT" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
-					<field_group id="diaM_fields" operation="average">
-						<field field_ref="zeta" />
-						<field field_ref="ubar" name="ubar"  />
-						<field field_ref="vbar" name="vbar"  />
-						<field field_ref="sustr" name="sustr"  />
-						<field field_ref="svstr" name="svstr"  />
-						<field field_ref="u" name="u" />
-						<field field_ref="v" name="v"  />
-						<field field_ref="w" name="w" />
-						<field field_ref="temp" name="temp"  />
-						<field field_ref="salt" name="salt"  />
-						<field field_ref="rho" name="rho"  />
-					    <field field_ref="bvf" name="bvf" />
+					<field_group id="vrt_fields" operation="average">
+						<field field_ref="vrtrate" name="vrt_rate"  />
+						<field field_ref="vrtadv" name="vrt_adv"  />
+						<field field_ref="vrtCor" name="vrt_cor"  />
+						<field field_ref="vrtPrsgrd" name="vrt_Prsgrd"  />
+						<field field_ref="vrtHmix" name="vrt_Hmix"  />
+						<field field_ref="vrtHdiff" name="vrt_hdiff" />
+						<field field_ref="vrtVmix2" name="vrt_nudg" />
+						<field field_ref="vrtBaro" name="vrt_baro" />
+						<field field_ref="vrtDrag" name="vrt_drag" />
+						<field field_ref="vrtWind" name="vrt_wind" />
 					</field_group>
 
 				</file>
 			</file_group>
 		</file_definition>
+# endif
 		
+
+
+# ifdef DIAGNOSTICS_EDDY
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="1h" min_digits="4">		
+			<file_group id="EDDY" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+				<file id="file7" name_suffix="_EDDY" split_freq="5d" split_freq_format="%y-%mo-%d">
+					
+					<field_group id="eddy_fields" operation="average">
+						<field field_ref="uu" name="uu"  />
+						<field field_ref="uv" name="uv"  />
+						<field field_ref="vv" name="vv"  />
+						<field field_ref="ub" name="ub"  />
+						<field field_ref="vb" name="vb"  />
+						<field field_ref="wb" name="wb" />
+						<field field_ref="uT" name="uT"  />
+						<field field_ref="vT" name="vT"  />
+						<field field_ref="wT" name="wT" />
+						<field field_ref="uS" name="uS"  />
+						<field field_ref="vS" name="vS"  />
+						<field field_ref="wS" name="wS" />
+					</field_group>
+
+				</file>
+			</file_group>
+		</file_definition>
+# endif
 		
+
+
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
 
