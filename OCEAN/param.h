@@ -552,6 +552,7 @@
      &          , NFlux_Zmetab
      &          , NFlux_Zmort
      &          , NFlux_ReminD1, NFlux_ReminD2
+     &          , NFlux_CoagPhy, NFlux_CoagSDet
      &          , NumFluxTermsN, NumFluxTerms, NumGasExcTerms
      &          , NFlux_VSinkP1
      &          , NFlux_VSinkD1, NFlux_VSinkD2
@@ -707,7 +708,7 @@
      &           NumVSinkTerms  = 2)
 
 #  elif defined BIO_N2ChlPZD2
-      parameter (ntrc_bio=7,itrc_bio=itemp+ntrc_salt+ntrc_pas+1) 
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,   
      &           iPhy1=iNO3_+3,
      &           iZoo1=iNO3_+4,
@@ -720,10 +721,12 @@
      &           NFlux_Pmort    = 6,
      &           NFlux_Zmetab   = 7,
      &           NFlux_Zmort    = 8,
-     &           NFlux_ReminD1  = 9,
-     &           NFlux_ReminD2  = 10,
-     &           NumFluxTermsN  = 10,
-     &           NumFluxTerms   = 10,
+     &           NFlux_CoagPhy  = 9,
+     &           NFlux_CoagSDet = 10,
+     &           NFlux_ReminD1  = 11,
+     &           NFlux_ReminD2  = 12,
+     &           NumFluxTermsN  = 12,
+     &           NumFluxTerms   = 12,
      &           NumGasExcTerms = 0,
      &           NFlux_VSinkP1  = 1,
      &           NFlux_VSinkD1  = 2,
