@@ -27,7 +27,7 @@
 #include "scalars.h"
           character(len=80) :: filename
           character(len=80) :: tmp_string
-          integer :: nb
+          integer :: nb, newunit
           
           filename="check_file"
 #if !defined RVTK_DEBUG_WRITE
@@ -37,11 +37,15 @@
           close(107)
           allocate(debug_procs_units(0:nbprocs_in-1))
           do nb = 0,nbprocs_in-1
-             write(filename,'(a11,i0,a1,i0)')
+            write(filename,'(a11,i0,a1,i0)')
      &    "check_file_",nbprocs_in,'_',nb
-            open(newunit=debug_procs_units(nb),
+!RB : quickfix before updation conv to deal with newunit
+!$AGRIF_DO_NOT_TREAT
+            open(newunit=new_unit,
      &           file=filename,form='unformatted',
      &           status='OLD')
+!$AGRIF_END_DO_NOT_TREAT
+            debug_procs_units(nb)=new_unit
           enddo
 #else
 #if defined MPI
