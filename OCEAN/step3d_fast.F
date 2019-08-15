@@ -3238,6 +3238,9 @@ C$OMP END MASTER
 # else
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &                             + cff * rubar_nbq(i,j) )
+#ifdef MASKING
+     &                                     *umask(i,j)
+#endif
 # endif
 # ifdef WET_DRY
      &                                     *umask_wet(i,j)
@@ -3264,6 +3267,9 @@ C$OMP END MASTER
 # else
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &                             + cff * rvbar_nbq(i,j) )
+#ifdef MASKING
+     &                                     *vmask(i,j)
+#endif
 # endif
 # ifdef WET_DRY
      &                                     *vmask_wet(i,j)

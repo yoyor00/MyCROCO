@@ -8,7 +8,7 @@
 #PBS -j oe
 set -x
 set -e
-#test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
+test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
 echo "$CI_CROCO_PWD"
 echo $PBS_O_LOGNAME
 #===================================
@@ -22,6 +22,5 @@ par1='MPI'
 # Run
 MPIRUN=${CROCO_CI_MPIRUN:-${MPI_LAUNCH}}
 
-#$MPIRUN -np $NBPROCS ./croco_${par1}.exe $CROCOIN > mpi_${NBPROCS}_${TEST_NAME}.log || $CROCO_CI_MPIRUN 
-mpirun -np $NBPROCS ./croco_${par1}.exe $CROCOIN > mpi_${NBPROCS}_${TEST_NAME}.log || $CROCO_CI_MPIRUN 
+$MPIRUN -np $NBPROCS ./croco_${par1}.exe $CROCOIN > mpi_${NBPROCS}_${TEST_NAME}.log || $CROCO_CI_MPIRUN 
 
