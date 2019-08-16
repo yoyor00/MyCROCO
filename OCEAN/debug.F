@@ -168,7 +168,11 @@
       mystop=globstop
 #  endif
       if (mystop) then
-        stop
+#  ifdef MPI
+        call MPI_barrier(MPI_COMM_WORLD,ierr)
+        call MPI_Finalize (ierr)
+#   endif
+        stop                            !-->  EXIT
       endif
             
       deallocate(tabread)
