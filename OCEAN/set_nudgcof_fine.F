@@ -85,6 +85,9 @@
 !
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.)! cosine profile
 !          wrk(i,j)=float(isp-ibnd)/float(isp)            ! linear profile
+# ifdef SPONGE_SED
+          sed_sponge(i,j)=1.
+# endif
         enddo
       enddo
 !
