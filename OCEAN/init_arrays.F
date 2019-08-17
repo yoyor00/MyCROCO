@@ -907,7 +907,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # if defined PSOURCE_NCFILE
-          do i=1,Msrc
+          do i=1,Nsrc
            qbar(i)=init
            qbarg(i,1)=init
            qbarg(i,2)=init
