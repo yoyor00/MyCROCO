@@ -44,9 +44,6 @@
       real losrc(Nsrc)
       common /source_losrc/ losrc
 
-      integer Nsrc
-      common /source_Nsrc/ Nsrc
-
       integer Dsrc(Nsrc)
       common /source_Dsrc/ Dsrc
 

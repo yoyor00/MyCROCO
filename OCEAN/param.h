@@ -326,6 +326,10 @@
 ! Point sources, Floast, Stations
 !----------------------------------------------------------------------
 !
+#if defined PSOURCE || defined PSOURCE_NCFILE
+      integer Nsrc               ! Number of point sources
+      parameter (Nsrc=12)        ! ====== == ===== =======
+#endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats
        parameter (Mfloats=32000) ! ======= ====== == ======

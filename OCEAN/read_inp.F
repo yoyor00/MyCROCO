@@ -27,6 +27,7 @@
 #endif
 #if defined PSOURCE || defined PSOURCE_NCFILE
 # include "sources.h"
+      integer Nsrc_dumb
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
@@ -2512,7 +2513,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         qbarname=fname(1:lstr)
         MPI_master_only write(stdout,'(2x,A,2x,A)')
      &             'Runoff Data File:', qbarname(1:lstr)
-        read(input,*,err=95) Nsrc
+        read(input,*,err=95) Nsrc_dumb
         MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
@@ -2561,7 +2562,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'psource') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         
-        read(input,*,err=95) Nsrc
+        read(input,*,err=95) Nsrc_dumb
         MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
