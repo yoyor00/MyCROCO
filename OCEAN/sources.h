@@ -18,45 +18,42 @@
 ! Qshape     Nondimensional shape function to distribute mass
 !             ass point Sources/Sinks vertically.
 !
-      real Qbar0(Msrc)
+      real Qbar0(Nsrc)
       common /sources_Qbar0/ Qbar0
 
-      real Qbar(Msrc)
+      real Qbar(Nsrc)
       common /sources_Qbar/ Qbar
 
-      real Qsrc(Msrc,N)
+      real Qsrc(Nsrc,N)
       common /source_Qsrc/ Qsrc
 
-      real Qshape(Msrc,N)
+      real Qshape(Nsrc,N)
       common /source_Qshape/ Qshape
 
 # ifdef SOLVE3D
-      real Tsrc(Msrc,N,NT)
+      real Tsrc(Nsrc,N,NT)
       common /source_Tsrc/ Tsrc
 
-      real Tsrc0(Msrc,NT)
+      real Tsrc0(Nsrc,NT)
       common /source_Tsrc0/ Tsrc0
 # endif
 
-      real lasrc(Msrc)
+      real lasrc(Nsrc)
       common /source_lasrc/ lasrc
 
-      real losrc(Msrc)
+      real losrc(Nsrc)
       common /source_losrc/ losrc
 
-      integer Nsrc
-      common /source_Nsrc/ Nsrc
-
-      integer Dsrc(Msrc)
+      integer Dsrc(Nsrc)
       common /source_Dsrc/ Dsrc
 
-      integer Isrc(Msrc)
+      integer Isrc(Nsrc)
       common /source_Isrc/ Isrc
 
-      integer Jsrc(Msrc)
+      integer Jsrc(Nsrc)
       common /source_Jsrc/ Jsrc
 
-      logical Lsrc(Msrc,30)
+      logical Lsrc(Nsrc,30)
       common /source_Lsrc/ Lsrc
 
 #ifdef PSOURCE_NCFILE
@@ -64,7 +61,7 @@
 !  qbarg  |  Two-time-level grided data for river runoff [m3/s].
 !  tqbar     Time of river runoff data.
 !
-      real qbarg(Msrc,2)
+      real qbarg(Nsrc,2)
       common /qbardat_qbarg/qbarg
       real    qbar_time(2)
       real    qbar_cycle
@@ -73,11 +70,11 @@
       common /qbardat2/ qbar_cycle
       common /qbardat3/ itqbar, qbar_ncycle, qbar_rec, qbar_tid, qbar_id
 
-      real qbardir(Msrc)
+      real qbardir(Nsrc)
       common /source_qbardir/ qbardir
 
 # ifdef PSOURCE_NCFILE_TS
-      real tsrcg(Msrc,2,NT)
+      real tsrcg(Nsrc,2,NT)
       common /tsrcdat_tsrcg/tsrcg
       real    tsrc_time(2,NT)
       real    tsrc_cycle(NT)
@@ -94,9 +91,9 @@
 #endif /* PSOURCE_NCFILE */
 
 # ifdef MPI
-      integer Isrc_mpi(Msrc,0:NNODES-1)
+      integer Isrc_mpi(Nsrc,0:NNODES-1)
       common /source_Isrc_mpi/ Isrc_mpi
-      integer Jsrc_mpi(Msrc,0:NNODES-1)
+      integer Jsrc_mpi(Nsrc,0:NNODES-1)
       common /source_Jsrc_mpi/ Jsrc_mpi
 # endif
 
