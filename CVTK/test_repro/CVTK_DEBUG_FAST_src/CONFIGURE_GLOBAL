@@ -18,7 +18,7 @@ COMPUTER=LINUX
 
 if [ "${COMPUTER}"=="LINUX" ]; then
 # Computer dependant function to submit jobs
-SUBMIT_DIR=$(PWD)
+SUBMIT_DIR=$(pwd)
 MPIRUN=$CROCO_CI_MPIRUN
 
 function Fqsub_serial() {
