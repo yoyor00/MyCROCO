@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 set -e
 #echo '============================================================='
 echo 'Create the link between CVTK_DEBUG_FAST_src and CVTK_DEBUG/test dir'

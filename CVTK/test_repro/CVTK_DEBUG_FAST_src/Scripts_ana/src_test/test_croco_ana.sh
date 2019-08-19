@@ -19,7 +19,7 @@
 
 
 #export MPIRUN=`which mpirun`
-export MPIRUN=$MPI_LAUNCH
+#export MPIRUN=$MPI_LAUNCH
 
 ###########################
 source configure_file

@@ -5,8 +5,10 @@
 #PBS -j oe 
 #PBS -M gildas.cambon@ird.fr -m abe
 
-set -x
-test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
+
+source CONFIGURE_GLOBAL
+
+test -z "$CI_CROCO_PWD" && cd $SUBMIT_DIR || cd "$CI_CROCO_PWD"
 echo "$CI_CROCO_PWD"
 echo $PBS_O_LOGNAME
 #===================================
@@ -42,7 +44,7 @@ echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp
 ${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
 res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
 echo 'res_omp='$res_omp >> $fileout_openmp
-if [ -z $res_omp ] ; then 
+if [ -z "$res_omp" ] ; then 
 echo 'check [passed]'  >> $fileout_openmp
 else
 echo 'check [failed]'  >> $fileout_openmp
@@ -54,7 +56,7 @@ echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
 ${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
 res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
 echo 'res_mpi='$res_mpi >> $fileout_mpi
-if [ -z $res_mpi ] ; then 
+if [ -z "$res_mpi" ] ; then 
 echo 'check mpi [passed]'  >> $fileout_mpi
 else
 echo 'check mpi [failed]'  >> $fileout_mpi
