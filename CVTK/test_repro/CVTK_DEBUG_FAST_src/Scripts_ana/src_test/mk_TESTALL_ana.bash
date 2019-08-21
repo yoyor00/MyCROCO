@@ -58,7 +58,8 @@ done
 
 
 env
-
+echo
+tty
 
 #
 echo "  "
