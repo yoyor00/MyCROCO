@@ -9,6 +9,7 @@ variables:
   CROCO_CI_MPIRUN: "mpirun.mpich"
   
 before_script:
+  - bash -i 
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
   - cd $DATADIR
