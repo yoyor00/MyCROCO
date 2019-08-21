@@ -312,8 +312,8 @@ if [  "$SUCCESS" -ne 0 ]; then
   echo "EXITING ..."
   echo
   echo  > /dev/stdin
-  echo -e "$(tput setaf 1 ; tput bold)SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} $(tput sgr0)" > /dev/tty
-  echo -e "$(tput setaf 1 ; tput bold)EXITING ...$(tput sgr0)"  > /dev/tty
+  echo -e "$(tput setaf 1 ; tput bold)SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} $(tput sgr0)" > /dev/stdin
+  echo -e "$(tput setaf 1 ; tput bold)EXITING ...$(tput sgr0)"  > /dev/stdin
   echo  > /dev/stdin
   exit  1
 fi

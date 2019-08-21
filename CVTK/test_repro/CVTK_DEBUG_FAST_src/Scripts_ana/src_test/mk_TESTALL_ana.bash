@@ -9,11 +9,9 @@ set -u
 for testconf in `ls -1 ./Configure_Test/ `;do
 #for testconf in BASIN SWASH; do
   [ -d $testconf ] && rm -rf 	$testconf 
-  tput setaf 14 ; tput bold
-  echo "=============================="
-  echo "TESTING $testconf :"
-  echo "=============================="
-  tput sgr0
+  echo $(tput setaf 14 ; tput bold)"=============================="$(tput sgr0)
+  echo $(tput setaf 14 ; tput bold)"TESTING $testconf :"$(tput sgr0)
+  echo $(tput setaf 14 ; tput bold)"=============================="$(tput sgr0)
   rm -rf $testconf
   ./mk_TestDIR_ana.bash $testconf
   echo "  "  
