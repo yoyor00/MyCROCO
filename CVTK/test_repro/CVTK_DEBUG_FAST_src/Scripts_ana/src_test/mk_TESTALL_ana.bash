@@ -55,6 +55,11 @@ for testconf in `ls -1 ./Configure_Test/ `;do
    
   i=$(($i+1)) 
 done  
+
+
+env
+
+
 #
 echo "  "
 if [ $ierr -eq  0 ]; then  
