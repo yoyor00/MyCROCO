@@ -22,8 +22,9 @@ ln -sf $dir_home/../gather_recap.bash $dir_test/
 ln -sf $dir_home/../gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
 ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
-ln -sf $dir_home/..//mk_CHECKALL.bash $dir_test/
+ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
 ln -sf $dir_web/Log_Summary $dir_test/
+ln -sf  $dir_home/../print/* $dir_test/
 
 # ana specific and programms
 ln -sf $dir_home/src_test/mk_TestDIR_ana.bash $dir_test/

@@ -8,73 +8,76 @@
 #  CVTKWORK: "$CI_PROJECT_DIR/.datawork"
 #  CROCO_CI_MPIRUN: "mpirun.mpich"
 
+#CI_PROJECT_DIR=/Users/rblod/201906_MERGE/croco
 SOURCE_CROCO="$CI_PROJECT_DIR/OCEAN"
 #SOURCE_CROCO=/Users/rblod/201906_MERGE/croco_remote/OCEAN
+#CROCO_CI_MPIRUN=mpirun
 TESTROOTDIR=${CVTKWORK}
+#CI_CROCO_PWD=$(pwd)
 #
 
 #-
 COMPUTER=LINUX
 
 if [ "${COMPUTER}"=="LINUX" ]; then
-# Computer dependant function to submit jobs
-SUBMIT_DIR=$(pwd)
-MPIRUN=$CROCO_CI_MPIRUN
+  # Computer dependant function to submit jobs
+  SUBMIT_DIR=$CI_CROCO_PWD
+  MPIRUN=$CROCO_CI_MPIRUN
+  
+  function Fqsub_serial() {
+    ./comp_run_serial.bash
+  }
+  function Fqsub_openmp() {
+    ./comp_run_openmp.bash
+  }
+  function Fqsub_mpi() {
+    ./comp_run_mpi.bash
+  }
 
-function Fqsub_serial() {
- ./comp_run_serial.bash
-}
-function Fqsub_openmp() {
-./comp_run_openmp.bash
-}
-function Fqsub_mpi() {
-  ./comp_run_mpi.bash
-}
-
-function Fextract_results() {
-FLAG_MPI=$1
-FLAG_OPENMP=$2
-if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
-   ./extract_results_croco.bash
-elif [ ${FLAG_OPENMP} = 1 ]; then 
-   ./extract_results_croco.bash
-elif [ ${FLAG_MPI} = 1 ]; then 
-   ./extract_results_croco.bash
-fi
-}
+  function Fextract_results() {
+    FLAG_MPI=$1
+    FLAG_OPENMP=$2
+    if [[ ${FLAG_MPI} -eq 1 &&  ${FLAG_OPENMP} -eq 1 ]]; then 
+      ./extract_results_croco.bash
+    elif [ ${FLAG_OPENMP} -eq  1 ]; then 
+      ./extract_results_croco.bash
+    elif [ ${FLAG_MPI} -eq 1 ]; then 
+    ./extract_results_croco.bash
+    fi
+  }
 
 else
-# Computer dependant function to submit jobs
-SUBMIT_DIR=$PBS_O_WORKDIR
-MPIRUN=$MPI_LAUNCH
+  # Computer dependant function to submit jobs
+  SUBMIT_DIR=$PBS_O_WORKDIR
+  MPIRUN=$MPI_LAUNCH
 
-function Fqsub_serial() {
-  CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
-  [ -x `which qselect` ] && myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
-}
-function Fqsub_openmp() {
-  CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
-  myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
-}
-function Fqsub_mpi() {
-  CI_CROCO_PWD=$PWD qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
-  myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
-}
+  function Fqsub_serial() {
+    CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
+    [ -x `which qselect` ] && myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
+  }
+  function Fqsub_openmp() {
+    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
+    myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
+  }
+  function Fqsub_mpi() {
+    CI_CROCO_PWD=$PWD qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
+    myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
+  }
 
-function Fextract_results() {
-if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
+  function Fextract_results() {
+    if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
-   CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
+      CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
     
-elif [ ${FLAG_OPENMP} = 1 ]; then 
+    elif [ ${FLAG_OPENMP} = 1 ]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
-   CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
+      CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
     
-elif [ ${FLAG_MPI} = 1 ]; then 
+    elif [ ${FLAG_MPI} = 1 ]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
-   CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
-fi
-qrls `qselect -N ${TEST_NAME}_SE`
-}
+      CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
+    fi
+    qrls `qselect -N ${TEST_NAME}_SE`
+   }
 
 fi

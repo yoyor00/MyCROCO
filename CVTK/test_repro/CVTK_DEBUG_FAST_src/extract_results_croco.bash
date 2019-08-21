@@ -5,17 +5,19 @@
 #PBS -j oe 
 #PBS -M gildas.cambon@ird.fr -m abe
 
+set -e
+set -u
 
 source CONFIGURE_GLOBAL
+source configure_file
 
-test -z "$CI_CROCO_PWD" && cd $SUBMIT_DIR || cd "$CI_CROCO_PWD"
-echo "$CI_CROCO_PWD"
-echo $PBS_O_LOGNAME
+cd $SUBMIT_DIR 
+echo "   - Test repro" > /dev/tty
+#echo "$CI_CROCO_PWD"
 #===================================
 #set -x
 
 #==
-source configure_file
 #==
 
 numrev0=`sed -n '/revision/{n;p;}' gitinfos`
@@ -45,9 +47,9 @@ ${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
 res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
 echo 'res_omp='$res_omp >> $fileout_openmp
 if [ -z "$res_omp" ] ; then 
-echo 'check [passed]'  >> $fileout_openmp
+  echo 'check [passed]'  >> $fileout_openmp
 else
-echo 'check [failed]'  >> $fileout_openmp
+  echo 'check [failed]'  >> $fileout_openmp
 fi
 
 #MPI
@@ -57,10 +59,22 @@ ${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
 res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
 echo 'res_mpi='$res_mpi >> $fileout_mpi
 if [ -z "$res_mpi" ] ; then 
-echo 'check mpi [passed]'  >> $fileout_mpi
+  echo 'check mpi [passed]'  >> $fileout_mpi
 else
-echo 'check mpi [failed]'  >> $fileout_mpi
+  echo 'check mpi [failed]'  >> $fileout_mpi
 fi
+
+if [ ! -z "$res_omp" ] ||  [ ! -z "$res_mpi" ] ; then
+  sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
+  \mv tmp.txt ${TEST_NAME}_steps
+  msg1="- Repro failure for ${TEST_NAME} ..."
+  msg2="$(tput setaf 1 ; tput bold)${msg1}$( tput sgr0)"
+  echo -e "   $msg2" > /dev/tty  
+else
+  sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
+  \mv tmp.txt ${TEST_NAME}_steps
+fi  
+
 
 # MERGE
 cat $fileout_mpi >>  $fileout_openmp
