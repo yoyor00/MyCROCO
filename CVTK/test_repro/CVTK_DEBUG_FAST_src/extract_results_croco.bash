@@ -12,7 +12,7 @@ source CONFIGURE_GLOBAL
 source configure_file
 
 cd $SUBMIT_DIR 
-echo "   - Test repro" > /dev/tty
+echo "   - Test repro" > /dev/stdin
 #echo "$CI_CROCO_PWD"
 #===================================
 #set -x
@@ -69,7 +69,7 @@ if [ ! -z "$res_omp" ] ||  [ ! -z "$res_mpi" ] ; then
   \mv tmp.txt ${TEST_NAME}_steps
   msg1="- Repro failure for ${TEST_NAME} ..."
   msg2="$(tput setaf 1 ; tput bold)${msg1}$( tput sgr0)"
-  echo -e "   $msg2" > /dev/tty  
+  echo -e "   $msg2" > /dev/stdin  
 else
   sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
   \mv tmp.txt ${TEST_NAME}_steps
