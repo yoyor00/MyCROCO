@@ -9,7 +9,6 @@ variables:
   CROCO_CI_MPIRUN: "mpirun.mpich"
   
 before_script:
-  - bash -i 
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
   - cd $DATADIR
@@ -29,7 +28,7 @@ before_script:
 run:
   script:
     - cd $CVTKWORK/KTEST
-    - ./mk_TESTALL_ana.bash
+    - exec ./mk_TESTALL_ana.bash
     - ./gather_recap.bash ANA
     - /bin/sh -c '! grep failed */Recap_*.*'
     
