@@ -181,7 +181,7 @@ all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc $(SBIN)_tgt $(SBIN)_div
 # =========== =====
 #
 $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC -lampiADtoolStubsST
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
@@ -348,9 +348,11 @@ main_adc.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_CHECK $^ | ./mpc > $@
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
+	ln -sf empty_code_insertion.h code_insertion.h
 	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) $(AMPIINC)
 
 $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
+	ln -sf empty_code_insertion.h code_insertion.h
 	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
 
 

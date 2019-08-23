@@ -47,7 +47,7 @@
       double precision distance
       double precision dlon,dlat
       logical out
-
+#ifdef SPHERICAL
 c      write(*,*) '==========getij=========='
       
       if ((lon.gt.lonr(Iend,Jend)).or.
@@ -107,4 +107,5 @@ c     &           latr(i,j))
          end do
 
       end if
+#endif
       end subroutine get_ij_2d_tile

@@ -1,4 +1,3 @@
-#define control_var rdrg2
 
       subroutine cost_fun(ad_x, cost)
       implicit none
@@ -18,11 +17,9 @@
       double precision cost
       double precision xcost
 
-      double precision control_var_bck
-
       integer k, ierr, i
 
-      control_var_bck = control_var
+      rdrg2_bck = rdrg2
       call set_state(ad_x)
 
       cost = 0
@@ -36,7 +33,7 @@ C$AD BINOMIAL-CKP 120 10 1
 c     cost = cost +
 c     &     (ad_x(1)-control_var_bck)*(ad_x(1)-control_var_bck)
 
-      write (*,*) 'control_var=',control_var
+      write (*,*) 'rdrg2=',rdrg2
       write (*,*) 'cost=',cost
 
       return
@@ -165,7 +162,6 @@ C$AD NOCHECKPOINT
 #include "mpi_roms.h"
 #include "adparam.h"
       integer Istr,Iend,Jstr,Jend, i,j
-      double precision control_var_bck, h0(GLOBAL_2D_ARRAY)
 
       integer bi, bj
 #include "compute_extended_bounds.h"
@@ -187,14 +183,14 @@ c             h(i,j) = ad_x(1+(i-IstrR+1)+bi*(j-JstrR))
 c         end do
 c      end do
 
-      control_var = real(ad_x(1))
+      rdrg2 = real(ad_x(1))
 
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
       write(*, *) 'mynode=',mynode
 #endif
-      write(*, *) 'control_var=',control_var
+      write(*, *) 'rdrg2=',rdrg2
       write(*, *) '*******************'
 
  900  format(1PE16.9)
@@ -204,31 +200,13 @@ c      end do
 
       subroutine save_croco_state()
       implicit none
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
+# include "adinc.h"
 # include "adparam.h"
-
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
-      real h_bck(GLOBAL_2D_ARRAY)
-      real control_var_bck
-
-      integer kstp_bck
-      integer krhs_bck
-      integer knew_bck
-      integer iic_bck
-
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, control_var_bck
 
       ubar_bck(:,:,:) = ubar(:,:,:)
       vbar_bck(:,:,:) = vbar(:,:,:)
       zeta_bck(:,:,:) = zeta(:,:,:)
-      h_bck(:,:) = h(:,:)
-      control_var_bck = control_var
+      rdrg2_bck = rdrg2
 
       kstp_bck = kstp
       krhs_bck = krhs
@@ -246,31 +224,13 @@ c      end do
 
       subroutine restore_croco_state()
       implicit none
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
+# include "adinc.h"
 # include "adparam.h"
-
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
-      real h_bck(GLOBAL_2D_ARRAY)
-      real control_var_bck
-
-      integer kstp_bck
-      integer krhs_bck
-      integer knew_bck
-      integer iic_bck
-
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, control_var_bck
 
       ubar(:,:,:) = ubar_bck(:,:,:)
       vbar(:,:,:) = vbar_bck(:,:,:)
       zeta(:,:,:) = zeta_bck(:,:,:)
-      h(:,:) = h_bck(:,:)
-      control_var = control_var_bck
+      rdrg2 = rdrg2_bck
 
       kstp = kstp_bck
       krhs = krhs_bck
@@ -288,14 +248,11 @@ c      end do
       
       subroutine init_control(ad_x)
       implicit none
-# include "param.h"
-# include "grid.h"
-# include "scalars.h"
-# include "ocean2d.h"
+# include "adinc.h"
 # include "adparam.h"
       integer i
       
       do i=1,ad_array_size
-         ad_x(i)=control_var
+         ad_x(i)=rdrg2
       end do
       end subroutine init_control

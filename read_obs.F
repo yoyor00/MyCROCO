@@ -1,1 +1,0 @@
-CONFIGS/CURRENT/read_obs.F

@@ -48,6 +48,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       
       indic = 4
       call simul (indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
+#ifdef MPI
 #ifdef AMPI
       call AMPI_Barrier(MPI_COMM_WORLD,ierr)
       call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
@@ -57,12 +58,15 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
      &     MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
 
-      ad_counter = ad_counter + 1
-
       if (mynode.eq.0) then
          cost = xf
       end if
 #endif
+#else
+      ad_sg_f = ad_g_f
+#endif      
+      ad_counter = ad_counter + 1
+
       dx=1.e-10
       df1=cost
       epsrel=1.e-4
@@ -111,7 +115,7 @@ C        get ad_x_f, the new ad state on mpi master
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
 
-
+#ifdef MPI
 #ifdef AMPI
 C        broadcast the new ad state
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
@@ -124,11 +128,13 @@ C        broadcast the new ad state
          call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
 #endif
+#endif         
          ad_g_f = ad_sg_f
          
 C        get ad_g_f the gradient on each proc (& ad_rms)
          call simul(indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
 
+#ifdef MPI         
 #ifdef AMPI
 C        sum all proc gradients & rms on master
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
@@ -141,6 +147,9 @@ C        sum all proc gradients & rms on master
      &     MPI_SUM, 0,
      &     MPI_COMM_WORLD, ierr)
 #endif
+#else
+         ad_sg_f = ad_g_f
+#endif         
          if (mynode.eq.0) then
             cost = xf
             write (779,*) ad_counter,rms0,cost,norm2(ad_sg_f)
@@ -149,9 +158,11 @@ C        sum all proc gradients & rms on master
          
          df1 = cost
 
+#ifdef MPI         
          do i=1,ad_array_size
             write (*,*) 'after: mynode,x,g',mynode,i,ad_x_f(i),ad_g_f(i)
          end do
+#endif
          
          ad_counter = ad_counter+1
       end do
@@ -191,11 +202,15 @@ C     ...
 
       call rms_fun_step(irms,ne)
 
+#ifdef MPI
+#ifdef AMPI      
       call AMPI_Reduce(crms, irms, 1, AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
       call AMPI_Reduce(cne, ne, 1, MPI_INTEGER,
      &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
-
+#endif
+#endif
+      
       rms = sqrt(crms)/ne
       
       end function rms

@@ -25,18 +25,16 @@ c     this file is not differentiated
       retval = nf_inq_varid(ncid, 'zeta', varid)
       if (retval .ne. nf_noerr) call handle_err(retval)
 
-      do k=1,ad_nt
-         retval = nf_fread(ad_obs(START_2D_ARRAY,k),ncid,varid,k,r2dvar)
+      do k=ad_ast,ad_ast+ad_nt+1
+         retval = nf_fread(ad_obs(START_2D_ARRAY,k-ad_ast+1),ncid,varid,
+     &        k,r2dvar)
+c         write (*,*) 'max_val ad_obs:',k,maxval(ad_obs)
       end do
 
       retval = nf_close(ncid)
       if (retval .ne. nf_noerr) call handle_err(retval)
 
-c      do i=1,15
-c         do j=1,15
-c            write(*,*) mynode, i, j, ad_obs(i,j,1)
-c         end do
-c      end do
+      write (*,*) 'max_val ad_obs:',maxval(ad_obs)
 
-
+      
       end subroutine read_obs

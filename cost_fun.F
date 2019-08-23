@@ -1,1 +1,0 @@
-CONFIGS/CURRENT/cost_fun.F
