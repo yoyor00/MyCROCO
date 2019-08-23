@@ -181,7 +181,7 @@ all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc $(SBIN)_tgt $(SBIN)_div
 # =========== =====
 #
 $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC -lampiADtoolStubsST
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
