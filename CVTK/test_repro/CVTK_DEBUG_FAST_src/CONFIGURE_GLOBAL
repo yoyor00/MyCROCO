@@ -17,7 +17,7 @@ CI_CROCO_PWD=$(pwd)
 #
 
 #-
-FANCY_OUTPUT=1
+FANCY_OUTPUT=0
 if [ ${FANCY_OUTPUT} -eq 1 ] ;then
   FMT_BLUEBLD=$(tput setaf 14 ; tput bold)
   FMT_ORD=$(tput sgr0)
