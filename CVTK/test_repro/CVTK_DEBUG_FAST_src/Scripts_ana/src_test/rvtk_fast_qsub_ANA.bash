@@ -150,7 +150,8 @@ if [ ! -f ${TEST_NAME}_steps ]; then
   echo 'Y' >> ${TEST_NAME}_steps
 fi
 #echo -e "   - Run Tests"> /dev/tty
-echo -e "   - Run Tests" > /dev/stdin
+#echo -e "   - Run Tests" > /dev/stdin
+
 ##############################################################################
 # Serial runs
 ##############################################################################
@@ -176,6 +177,8 @@ SUCCESS=$(($SUCCESS+$myreturn))
 if [ "$myreturn" -eq 1 ]; then
   SUCCESS_COMP=$(($SUCCESS_COMP+1))
   sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
+  \mv tmp.txt ${TEST_NAME}_steps 
+  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
   \mv tmp.txt ${TEST_NAME}_steps 
 fi  
 if [ "$myreturn" -eq 2 ]; then
@@ -236,6 +239,8 @@ if [ ${FLAG_OPENMP} = 1 ]; then
     SUCCESS_COMP=$(($SUCCESS_COMP+1))
     sed -e '1c N' ${TEST_NAME}_steps > tmp.txt
     \mv tmp.txt ${TEST_NAME}_steps 
+    sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps 
   fi  
   if [ "$myreturn" -eq 2 ]; then
     SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
@@ -289,6 +294,8 @@ if [ ${FLAG_MPI} = 1 ]; then
     SUCCESS_COMP=$(($SUCCESS_COMP+1))
     sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps 
+    sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps 
   fi  
   if [ "$myreturn" -eq 2 ]; then
     SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
@@ -311,10 +318,14 @@ if [  "$SUCCESS" -ne 0 ]; then
   echo "SOMETHING WRONG HAPPENED"
   echo "EXITING ..."
   echo
-  echo  > /dev/stdin
-  echo -e "$(tput setaf 1 ; tput bold)SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} $(tput sgr0)" > /dev/stdin
-  echo -e "$(tput setaf 1 ; tput bold)EXITING ...$(tput sgr0)"  > /dev/stdin
-  echo  > /dev/stdin
+#  echo  > /dev/stdin
+#  echo -e "$(tput setaf 1 ; tput bold)SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} $(tput sgr0)" > /dev/stdin
+#  echo -e "$(tput setaf 1 ; tput bold)EXITING ...$(tput sgr0)"  > /dev/stdin
+#  echo  > /dev/stdin
+  echo  | tee -a mylog.txt
+  echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+  echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt 
+  echo  | tee -a mylog.txt
   exit  1
 fi
 

@@ -4,14 +4,16 @@ set -e
 set -u
 #set -x
 
+source CONFIGURE_GLOBAL
+
 ./git_process.bash
 
 for testconf in `ls -1 ./Configure_Test/ `;do
-#for testconf in BASIN SWASH; do
+#for testconf in BASIN IGW ; do
   [ -d $testconf ] && rm -rf 	$testconf 
-  echo $(tput setaf 14 ; tput bold)"=============================="$(tput sgr0)
-  echo $(tput setaf 14 ; tput bold)"TESTING $testconf :"$(tput sgr0)
-  echo $(tput setaf 14 ; tput bold)"=============================="$(tput sgr0)
+  echo ${FMT_BLUEBLD}"=============================="${FMT_ORD}
+  echo ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
+  echo ${FMT_BLUEBLD}"=============================="${FMT_ORD}
   rm -rf $testconf
   ./mk_TestDIR_ana.bash $testconf
   echo "  "  
@@ -19,7 +21,7 @@ done
 
 i=1
 ierr=0
-#for testconf in  SWASH BASIN; do  
+#for testconf in   BASIN IGW ; do  
 for testconf in `ls -1 ./Configure_Test/ `;do
   if [ $i -eq 1 ]; then	
   echo "  "
@@ -37,51 +39,47 @@ for testconf in `ls -1 ./Configure_Test/ `;do
     eval var='$'$key
     if [ "${var}" == 'Y' ]; then
   	  varname="$(echo -e ${TEST}_PR)"
-  	  varvalue="$(echo -e $(tput setaf 2 ; tput bold )${var}$( tput sgr0))"
+  	  varvalue="$(echo -e ${FMT_GREENBLD}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
     elif 	[ "${var}" == 'N' ]; then
   	  varname="$(echo -e ${TEST}_PR)"
-  	  varvalue="$(echo -e $(tput setaf 1 ; tput bold  )${var}$( tput sgr0))"
+  	  varvalue="$(echo -e ${FMT_REDBLD}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
   	  ierr=$(($ierr+1))
     else
   	  varname="$(echo -e ${TEST}_PR)"
-      varvalue="$(echo -e $(  tput setab 7 ; tput bold ;   )${var}$( tput sgr0))"
+      varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
     fi
   done
   format="%-10s %20s %29s %25s \n"
   printf "$format" $testconf $COMPIL_OUT_PR $EXEC_OUT_PR $REPRO_OUT_PR
-   
+
   i=$(($i+1)) 
 done  
 
 
-env
-echo
-tty
-
 #
 echo "  "
 if [ $ierr -eq  0 ]; then  
-  tput setaf 2
+  echo -e ${FMT_GREEN}""
   cat fancy_sucess.txt
-  tput sgr0
+  echo -e ""${FMT_ORD}
   exit 0
 elif  [ $ierr -le  3 ]; then
-  tput setaf 172
+  echo -e ${FMT_ORANGE}""
   cat  fancy_almost.txt
-  tput sgr0
+  echo -e ""${FMT_ORD}
   exit 1
 elif  [ $ierr -le  9 ]; then
-  tput setaf 1
+  echo -e ${FMT_RED}""
   cat  fancy_failure.txt
-  tput sgr0
+  echo -e ""${FMT_ORD}
   exit 1
 else
-  tput setaf 9
+  echo -e ${FMT_RED2}""
   cat  fancy_critical.txt
-  tput sgr0
+  echo -e ""${FMT_ORD}
   exit 1
 fi
 
