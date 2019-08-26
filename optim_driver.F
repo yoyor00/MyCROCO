@@ -29,6 +29,8 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
 
       double precision dz(ndz)
 
+      double precision control_to_param
+
       integer i
       
       sim_iicroot = iicroot
@@ -68,7 +70,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       ad_counter = ad_counter + 1
 
       dx=1.e-10
-      df1=cost
+      df1=4.e-12
       epsrel=1.e-4
       niter=200
       nsim=200
@@ -115,6 +117,12 @@ C        get ad_x_f, the new ad state on mpi master
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
 
+
+         do i=1,ad_array_size
+            write (*,*) 'after: mynode, x, g',mynode,i,
+     &           control_to_param(ad_x_f(i)),
+     &           ad_g_f(i)
+         end do
 #ifdef MPI
 #ifdef AMPI
 C        broadcast the new ad state
@@ -158,12 +166,6 @@ C        sum all proc gradients & rms on master
          
          df1 = cost
 
-#ifdef MPI         
-         do i=1,ad_array_size
-            write (*,*) 'after: mynode,x,g',mynode,i,ad_x_f(i),ad_g_f(i)
-         end do
-#endif
-         
          ad_counter = ad_counter+1
       end do
 
@@ -210,8 +212,12 @@ C     ...
      &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
 #endif
 #endif
-      
-      rms = sqrt(crms)/ne
+
+      if (ne.gt.0) then
+         rms = sqrt(crms)/ne
+      else
+         rms = 0
+      end if
       
       end function rms
 

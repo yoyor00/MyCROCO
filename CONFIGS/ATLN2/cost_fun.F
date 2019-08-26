@@ -17,7 +17,7 @@
 c      sigma2 = ad_cost/ad_cost_counter
       cost = 0
 
-C$AD BINOMIAL-CKP ad_nt+1 40 1
+C$XAD BINOMIAL-CKP ad_nt+1 40 1
       do ta=1,ad_nt
          do xk=1,ad_ns
             call step()
@@ -159,9 +159,9 @@ C$AD  END-DO-NOT-DIFF
       double precision zobmin,zobmax
       
 #include "compute_extended_bounds.h"
-      zobmin=1000.
+      zobmin=1.e99
       zobmax=0.
-      
+
       do j=Jstr,Jend
          do i=Istr,Iend
 c            k=ad_colloc(i,j)
@@ -185,6 +185,10 @@ c     &                 lzob,zob(i,j)
                end if
             end if
          end do
+      end do
+
+      do k=1,ncpoints
+         zob(ad_i(k), ad_j(k)) = control_to_param(ad_x_f(k))
       end do
 
       write(*, *) '**** set_state ****'
@@ -231,13 +235,23 @@ c     &                 lzob,zob(i,j)
       call init_collocation_points()
       
       do k=1,ad_array_size
-         ad_x_f(k)=param_to_control(5.0D-3)
          ad_g_f(k)=0.
       end do
 
+      do k=1,ad_array_size/nnodes
+         ad_x(k)=0.
+      end do
+      
+      do k=1,ncpoints
+         ad_x(k)=zobt
+      end do
 
+      call AMPI_AllGather(ad_x,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
 
-c      MPI_master_only write(*,*) 'A0##>',ad_x_f
+      
+C      MPI_master_only write(*,*) 'A0##>',ad_x_f
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
@@ -359,13 +373,16 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       double precision mindist,dist,rk,distance,xr,yr
       character*2 node_str
 
-      do k=1,ad_array_size
-         write(*,*) '###',mynode,ad_latr_f(k),ad_lonr_f(k)
-      end do
-
       ncpoints=0
       do k=1,ad_array_size
          call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
+         write(*,*) '###',mynode,ad_latr_f(k),ad_lonr_f(k),out,
+     &        (ncpoints.lt.(ad_array_size))
+         if (.not.out) then
+            write(*,*) '####',mynode,i,j,
+     &        h(i,j).gt.10,
+     &           ad_obs(i,j,1).ne.spval
+         end if
          if (.not.out.and.(ncpoints.lt.(ad_array_size)).and.
      &        h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
             ncpoints=ncpoints+1
@@ -374,6 +391,12 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          end if
       end do
 
+      if (ncpoints.gt.ad_array_size/nnodes) then
+         write(*,*)
+     &        'error: ncpoints>ad_array_size/nnodes'
+         call exit(1)
+      end if
+      
       write(node_str, 930) mynode
       open(unit=99, file='cpoints-'//node_str//'.dat')
       do k=1,ncpoints
@@ -381,7 +404,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       end do
       close(99)
  930  format(I2.2)
-!     sum of ncpoints should be ad_array_size
 
       do j=Jstr,Jend
          do i=Istr,Iend
