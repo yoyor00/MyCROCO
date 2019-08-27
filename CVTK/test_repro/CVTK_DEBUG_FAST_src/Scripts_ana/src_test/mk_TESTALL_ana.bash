@@ -8,8 +8,8 @@ source CONFIGURE_GLOBAL
 
 ./git_process.bash
 
-for testconf in `ls -1 ./Configure_Test/ `;do
-#for testconf in BASIN IGW ; do
+#for testconf in `ls -1 ./Configure_Test/ `;do
+for testconf in SWASH ; do
   [ -d $testconf ] && rm -rf 	$testconf 
   echo ${FMT_BLUEBLD}"=============================="${FMT_ORD}
   echo ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
@@ -25,7 +25,11 @@ ierr=0
 for testconf in `ls -1 ./Configure_Test/ `;do
   if [ $i -eq 1 ]; then	
   echo "  "
-  printf "%22s %12s %12s" COMPILATION EXECUTION REPRODUCIBILITY
+  if [ ${FANCY_OUTPUT} -eq 1 ] ;then
+    printf "%22s %12s %12s" COMPILATION EXECUTION REPRODUCIBILITY
+  else
+    printf "%35s %20s %20s" COMPILATION EXECUTION REPRODUCIBILITY
+  fi  
   printf "\n"
 
   fi
@@ -52,7 +56,11 @@ for testconf in `ls -1 ./Configure_Test/ `;do
   	  eval "$varname=\$varvalue"
     fi
   done
-  format="%-10s %20s %29s %25s \n"
+  if [ ${FANCY_OUTPUT} -eq 1 ] ;then
+    format="%-10s %20s %29s %25s \n"
+  else
+    format="%-10s %20s %20s %20s \n"
+  fi
   printf "$format" $testconf $COMPIL_OUT_PR $EXEC_OUT_PR $REPRO_OUT_PR
 
   i=$(($i+1)) 
