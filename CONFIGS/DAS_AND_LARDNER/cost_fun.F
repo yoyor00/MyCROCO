@@ -256,3 +256,17 @@ c      end do
          ad_x(i)=rdrg2
       end do
       end subroutine init_control
+
+      double precision function control_to_param(y)
+
+      control_to_param = y
+
+      end function control_to_param
+
+      double precision function param_to_control(x)
+
+      param_to_control = x
+
+      end function param_to_control
+
+
