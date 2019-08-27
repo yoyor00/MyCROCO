@@ -11,9 +11,10 @@ source CONFIGURE_GLOBAL
 for testconf in `ls -1 ./Configure_Test/ `;do
 #for testconf in SWASH ; do
   [ -d $testconf ] && rm -rf 	$testconf 
-  echo ${FMT_BLUEBLD}"=============================="${FMT_ORD}
-  echo ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
-  echo ${FMT_BLUEBLD}"=============================="${FMT_ORD}
+  echo -e ${FMT_BLUEBLD}"=============================="$(tput sgr0)
+  echo -e $(tput setaf 14)"TESTING $testconf :"$(tput sgr0)
+  echo -e $(tput setaf 14; tput bold)"=============================="$(tput sgr0)
+  echo -e "\033[45mHello world sur fond rose\033[0m"
   rm -rf $testconf
   ./mk_TestDIR_ana.bash $testconf
   echo "  "  
