@@ -332,7 +332,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       if (mynode.eq.0) then
          open(unit=99,file="cpoints.dat")
-         do k=1,ad_array_size
+         do k=1,npcpoints
             read(99,*) ad_lonr_f(k), ad_latr_f(k)
             write(*,*) 'reading',k,ad_lonr_f(k), ad_latr_f(k)
          end do
@@ -374,16 +374,16 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       character*2 node_str
 
       ncpoints=0
-      do k=1,ad_array_size
+      do k=1,npcpoints
          call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
-         write(*,*) '###',mynode,ad_latr_f(k),ad_lonr_f(k),out,
-     &        (ncpoints.lt.(ad_array_size))
-         if (.not.out) then
-            write(*,*) '####',mynode,i,j,
-     &        h(i,j).gt.10,
-     &           ad_obs(i,j,1).ne.spval
-         end if
-         if (.not.out.and.(ncpoints.lt.(ad_array_size)).and.
+c         write(*,*) '###',mynode,ad_latr_f(k),ad_lonr_f(k),out,
+c     &        (ncpoints.lt.(ad_array_size))
+c         if (.not.out) then
+c            write(*,*) '####',mynode,i,j,
+c     &        h(i,j).gt.10,
+c     &           ad_obs(i,j,1).ne.spval
+c         end if
+         if (.not.out.and.(ncpoints.lt.(ad_array_size/nnodes)).and.
      &        h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
             ncpoints=ncpoints+1
             ad_i(ncpoints)=i
@@ -393,7 +393,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       if (ncpoints.gt.ad_array_size/nnodes) then
          write(*,*)
-     &        'error: ncpoints>ad_array_size/nnodes'
+     &        mynode,'error: ncpoints=',ncpoints,
+     &        '>,ad_array_size/nnodes=',
+     &        ad_array_size/nnodes
          call exit(1)
       end if
       

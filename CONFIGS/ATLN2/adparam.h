@@ -2,7 +2,7 @@ C     -*- fortran -*-
 
 C     size of the optimization problem
       integer ad_array_size
-      parameter (ad_array_size=100*nnodes)
+      parameter (ad_array_size=110*nnodes)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
 
@@ -41,7 +41,11 @@ c     full gradient vector
 c     sum of all full gradient vectors
       double precision ad_sg_f(ad_array_size)
 
-c     number of measure points (<= ad_array_size/nnodes)
+c     number of proposed measure points
+      integer npcpoints
+      parameter (npcpoints=900)
+      
+c     number of validated measure points (<= ad_array_size/nnodes)
       integer ncpoints
 
 c     coordinates of control points
