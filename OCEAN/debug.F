@@ -309,9 +309,13 @@
       mystop=globstop
 #  endif
       if (mystop) then
-        stop
+#  ifdef MPI
+        call MPI_barrier(MPI_COMM_WORLD,ierr)
+        call MPI_Finalize (ierr)
+#   endif
+        stop                            !-->  EXIT
       endif
-            
+           
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
 # endif /* !defined RVTK_DEBUG_WRITE */
