@@ -144,7 +144,6 @@ echo 'START TESTING ...             '
 SUCCESS=0
 SUCCESS_COMP=0
 SUCCESS_EXEC=0
-rm -rf  ${TEST_NAME}_steps
 if [ ! -f ${TEST_NAME}_steps ]; then 
   echo 'Y' > ${TEST_NAME}_steps
   echo 'Y' >> ${TEST_NAME}_steps
@@ -173,8 +172,6 @@ cp cppdefs_bak1.h.$par1 Compile_$par1/cppdefs.h.OK
 #CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
 Fqsub_serial
 myreturn=$?
-echo serial $myreturn
-
 
 SUCCESS=$(($SUCCESS+$myreturn))
 if [ "$myreturn" -eq 1 ]; then
@@ -236,7 +233,6 @@ if [ ${FLAG_OPENMP} = 1 ]; then
 
   Fqsub_openmp
   myreturn=$?
-  echo OPENMP $myreturn
 
   SUCCESS=$(($SUCCESS+$myreturn))
   if [ "$myreturn" -eq 1 ]; then
@@ -294,7 +290,6 @@ if [ ${FLAG_MPI} = 1 ]; then
   #CI_CROCO_PWD=$PWD qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
   Fqsub_mpi
   myreturn=$?
-  echo mpi $myreturn
 
   SUCCESS=$(($SUCCESS+myreturn))
 

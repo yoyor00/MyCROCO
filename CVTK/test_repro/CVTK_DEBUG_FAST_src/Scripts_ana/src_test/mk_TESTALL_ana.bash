@@ -8,8 +8,8 @@ source CONFIGURE_GLOBAL
 
 ./git_process.bash
 
-#for testconf in `ls -1 ./Configure_Test/ `;do
-for testconf in SWASH ; do
+for testconf in `ls -1 ./Configure_Test/ `;do
+#for testconf in SWASH ; do
   [ -d $testconf ] && rm -rf 	$testconf 
   echo ${FMT_BLUEBLD}"=============================="${FMT_ORD}
   echo ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
