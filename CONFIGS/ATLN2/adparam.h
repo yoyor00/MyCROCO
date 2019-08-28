@@ -85,7 +85,7 @@ C     cost function counter
       
 c     tidal period (M2)
       double precision TM2
-      parameter(TM2 = 12.4206012)
+      parameter(TM2 = 12.4206012*3600)
 
 c     backup
       real ubar_bck(GLOBAL_2D_ARRAY,4)

@@ -85,15 +85,28 @@ c      end if
       integer ta, k
       double precision delta_z, delta_zob, icost
 
+c      do j=Jstr,Jend
+c         do i=Istr,Iend
+c            if (ad_obs(i,j,1).ne.spval) then
+c               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
+c               delta_zob = (zob(i,j) - zob_bck(i,j))
+c               icost = icost + delta_z*delta_z + 1.0D-2*
+c     &              delta_zob*delta_zob/
+c     &              (h(i,j)*h(i,j))
+c               ad_cost_counter = ad_cost_counter + 1
+c            end if
+c         end do
+c      end do
+      
       do k=1,ncpoints
          i=ad_i(k)
          j=ad_j(k)
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
          delta_zob = (zob(i,j) - zob_bck(i,j))
-         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
-     &        zeta(i,j,knew),ad_obs(i,j,ta+2),zob(i,j),zob_bck(i,j),
-     &        delta_z,
-     &        delta_zob
+c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
+c     &        zeta(i,j,knew),ad_obs(i,j,ta+2),zob(i,j),zob_bck(i,j),
+c     &        delta_z,
+c     &        delta_zob
 c         write(*,*) 'BBBBB',mynode,
 c     &        ad_obs(i,j,ta+3),
 c     &        ad_obs(i,j,ta+2),
@@ -101,7 +114,7 @@ c     &        ad_obs(i,j,ta+1),
 c     &        ad_obs(i,j,ta),
 c     &        ad_obs(i,j,ta-1),
 c     &        ad_obs(i,j,ta-2)
-         icost = icost + delta_z*delta_z + 1.0D-12*
+         icost = icost + delta_z*delta_z + 1.0D-6*
      &        delta_zob*delta_zob/
      &        (h(i,j)*h(i,j))
          ad_cost_counter = ad_cost_counter + 1
@@ -176,9 +189,10 @@ c     endif
                zob(i,j)=0.0
                cpoint=0
                do k=1,npcpoints
-                  if(ad_cpoint_node(k).ge.0) then
+                  if(ad_cpoint_node(k).eq.mynode) then
                      cpoint=cpoint+1
-                     lzob=control_to_param(ad_x_f(cpoint))
+                     lzob=control_to_param(
+     &                    ad_x_f(mynode*(ad_array_size/nnodes)+cpoint))
                      zob(i,j) = zob(i,j) + lzob*W(i,j,cpoint)/SkW(i,j)
                   endif
 c     write(*,*) '%%%%',mynode,k,ad_x_f(k),
@@ -194,10 +208,10 @@ c     &                 lzob,zob(i,j)
          end do
       end do
 
-      do k=1,ncpoints
-         zob(ad_i(k), ad_j(k))=
-     &        control_to_param(ad_x_f(mynode*ncpoints+k))
-      end do
+c      do k=1,ncpoints
+c         zob(ad_i(k), ad_j(k))=
+c     &        control_to_param(ad_x_f(mynode*(ad_array_size/nnodes)+k))
+c      end do
 
       write(*, *) '**** set_state ****'
 
@@ -259,7 +273,7 @@ c     &                 lzob,zob(i,j)
      &     AMPI_ADOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
 
       
-      MPI_master_only write(*,*) 'A0##>',ad_x_f
+c      MPI_master_only write(*,*) 'A0##>',ad_x_f
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
