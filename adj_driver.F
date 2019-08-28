@@ -2,21 +2,18 @@ c     this file is not differentiated
 
 # include "cppdefs.h"      
       
-      subroutine simul(indic,Sn,ad_x_f,f,ad_g_f,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
       implicit none
-# include "cppdefs.h"
-# include "param.h"
-# include "scalars.h"
+# include "adinc.h"
 # include "adparam.h"
       real t1, t2, xtime
       
       integer indic, Sn, i
-      double precision f
       real izs(1)
       real rzs(1)
       real dzs(1)
 
-      double precision cost, costb
+      double precision cost, icost, costb
       double precision xbck(Sn), eps
       double precision rms
       
@@ -40,12 +37,15 @@ c        directly the computation of cost_fun.
          write (*,*) 'start cost'
          write (*,*) '--------------------------------------'
          t1 = xtime()
-         call cost_fun(ad_x_f, cost)
+         call cost_fun(ad_x_f, icost)
          t2 = xtime()
-         f = cost
+         cost = icost
          write (*,*) '--------------------------------------'
          write (*,*) 'end cost:',t2-t1
          write (*,*) '--------------------------------------'
+
+         ad_rms = rms()
+         
 c     call restore_croco_state()
 
 c         eps = 1.0D-10
@@ -56,13 +56,13 @@ c         write(*,*) '-||->', (cost-f)/eps
          call restore_croco_state()
 
          costb = 1
-         cost = f
+         icost = cost
 
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
          t1 = xtime()
-         call cost_fun_b(ad_x_f, ad_g_f, cost, costb)
+         call cost_fun_b(ad_x_f, ad_g_f, icost, costb)
          t2 = xtime()
          write (*,*) '--------------------------------------'
          write (*,*) 'end adjoint:',t2-t1

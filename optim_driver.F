@@ -23,7 +23,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       real rzs(1)
       real dzs(1)
 
-      double precision cost, xf, rms, crms, rms0
+      double precision cost, xf
 
       double precision dx, df1,epsrel
 
@@ -70,7 +70,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       ad_counter = ad_counter + 1
 
       dx=1.e-10
-      df1=4.e-12
+      df1=xf/100
       epsrel=1.e-4
       niter=200
       nsim=200
@@ -148,8 +148,6 @@ C        sum all proc gradients & rms on master
          call AMPI_Barrier(MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &        0,MPI_COMM_WORLD,ierr)
-         call AMPI_Reduce(ad_rms, rms0, 1, AMPI_ADOUBLE_PRECISION,
-     &        MPI_SUM,0,MPI_COMM_WORLD,ierr)
          call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
      &     AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM, 0,
@@ -160,7 +158,7 @@ C        sum all proc gradients & rms on master
 #endif         
          if (mynode.eq.0) then
             cost = xf
-            write (779,*) ad_counter,rms0,cost,norm2(ad_sg_f)
+            write (779,*) ad_counter,ad_rms,cost,norm2(ad_sg_f)
             call flush(779)
          end if
          
@@ -206,15 +204,18 @@ C     ...
 
 #ifdef MPI
 #ifdef AMPI      
-      call AMPI_Reduce(crms, irms, 1, AMPI_ADOUBLE_PRECISION,
+      call AMPI_Reduce(irms, crms, 1, AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
-      call AMPI_Reduce(cne, ne, 1, MPI_INTEGER,
+      call AMPI_Reduce(ne, cne, 1, MPI_INTEGER,
      &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
 #endif
+#else
+      crms = irms
+      cne = ne
 #endif
 
-      if (ne.gt.0) then
-         rms = sqrt(crms)/ne
+      if (cne.gt.0) then
+         rms = sqrt(crms)/cne
       else
          rms = 0
       end if
@@ -274,7 +275,7 @@ C     ...
       do j=Jstr,Jend
          do i=Istr,Iend
             if (ad_obs(i,j,1).ne.spval) then
-               delta_z = (zeta(i,j,knew)-ad_obs(i,j,3))
+               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_ta+2))
                irms = irms + delta_z*delta_z
                ne = ne+1
             end if

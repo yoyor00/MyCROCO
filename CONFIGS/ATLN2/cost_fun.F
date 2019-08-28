@@ -17,7 +17,7 @@
 c      sigma2 = ad_cost/ad_cost_counter
       cost = 0
 
-C$XAD BINOMIAL-CKP ad_nt+1 40 1
+C$AD BINOMIAL-CKP ad_nt+1 40 1
       do ta=1,ad_nt
          do xk=1,ad_ns
             call step()
@@ -90,16 +90,19 @@ c      end if
          j=ad_j(k)
          delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
          delta_zob = (zob(i,j) - zob_bck(i,j))
-c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
-c     &        zeta(i,j,knew),ad_obs(i,j,ta+1),zob(i,j),zob_bck(i,j)
-c         write(*,*) 'BBBBB',mynode,delta_z,zeta(i,j,knew),
+         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
+     &        zeta(i,j,knew),ad_obs(i,j,ta+2),zob(i,j),zob_bck(i,j),
+     &        delta_z,
+     &        delta_zob
+c         write(*,*) 'BBBBB',mynode,
 c     &        ad_obs(i,j,ta+3),
 c     &        ad_obs(i,j,ta+2),
 c     &        ad_obs(i,j,ta+1),
 c     &        ad_obs(i,j,ta),
 c     &        ad_obs(i,j,ta-1),
 c     &        ad_obs(i,j,ta-2)
-         icost = icost + delta_z*delta_z + 0.0001*delta_zob*delta_zob/
+         icost = icost + delta_z*delta_z + 1.0D-12*
+     &        delta_zob*delta_zob/
      &        (h(i,j)*h(i,j))
          ad_cost_counter = ad_cost_counter + 1
       end do
@@ -128,10 +131,6 @@ c     &        ad_obs(i,j,ta-2)
          call set_state_2d(tile, ad_x_f)
       end do
 
-C$AD  DO-NOT-DIFF      
-      ad_rms = rms()
-C$AD  END-DO-NOT-DIFF
-      
       end subroutine set_state
 
       subroutine set_state_2d(tile, ad_x_f)
@@ -151,7 +150,7 @@ C$AD  END-DO-NOT-DIFF
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend, i,j,k
+      integer Istr,Iend,Jstr,Jend, i,j,k,cpoint
       double precision lzob
       double precision control_to_param
       character*6 counter_str
@@ -162,6 +161,10 @@ C$AD  END-DO-NOT-DIFF
       zobmin=1.e99
       zobmax=0.
 
+c      call AMPI_Scatter(ad_x_f,ad_array_size/nnodes,
+c     &     AMPI_ADOUBLE_PRECISION,ad_x,ad_array_size/nnodes,
+c     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+
       do j=Jstr,Jend
          do i=Istr,Iend
 c            k=ad_colloc(i,j)
@@ -171,10 +174,14 @@ c               stop
 c     endif
             if (ad_obs(i,j,1).ne.spval) then
                zob(i,j)=0.0
-               do k=1,ad_array_size
-                  lzob=control_to_param(ad_x_f(k))
-                  zob(i,j) = zob(i,j) + lzob*W(i,j,k)/SkW(i,j)
-c                  write(*,*) '%%%%',mynode,k,ad_x_f(k),
+               cpoint=0
+               do k=1,npcpoints
+                  if(ad_cpoint_node(k).ge.0) then
+                     cpoint=cpoint+1
+                     lzob=control_to_param(ad_x_f(cpoint))
+                     zob(i,j) = zob(i,j) + lzob*W(i,j,cpoint)/SkW(i,j)
+                  endif
+c     write(*,*) '%%%%',mynode,k,ad_x_f(k),
 c     &                 lzob,zob(i,j)
                end do
                if (zobmin.gt.zob(i,j)) then
@@ -188,7 +195,8 @@ c     &                 lzob,zob(i,j)
       end do
 
       do k=1,ncpoints
-         zob(ad_i(k), ad_j(k)) = control_to_param(ad_x_f(k))
+         zob(ad_i(k), ad_j(k))=
+     &        control_to_param(ad_x_f(mynode*ncpoints+k))
       end do
 
       write(*, *) '**** set_state ****'
@@ -243,7 +251,7 @@ c     &                 lzob,zob(i,j)
       end do
       
       do k=1,ncpoints
-         ad_x(k)=zobt
+         ad_x(k)=param_to_control(zobt)
       end do
 
       call AMPI_AllGather(ad_x,ad_array_size/nnodes,
@@ -251,7 +259,7 @@ c     &                 lzob,zob(i,j)
      &     AMPI_ADOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
 
       
-C      MPI_master_only write(*,*) 'A0##>',ad_x_f
+      MPI_master_only write(*,*) 'A0##>',ad_x_f
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
@@ -368,9 +376,10 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend,i,j,k,ierr
+      integer Istr,Iend,Jstr,Jend,i,j,k,ierr,cpoint
       logical out
       double precision mindist,dist,rk,distance,xr,yr
+      integer ad_cpoint_node_tmp(npcpoints)
       character*2 node_str
 
       ncpoints=0
@@ -382,12 +391,15 @@ c         if (.not.out) then
 c            write(*,*) '####',mynode,i,j,
 c     &        h(i,j).gt.10,
 c     &           ad_obs(i,j,1).ne.spval
-c         end if
-         if (.not.out.and.(ncpoints.lt.(ad_array_size/nnodes)).and.
-     &        h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
-            ncpoints=ncpoints+1
-            ad_i(ncpoints)=i
-            ad_j(ncpoints)=j
+c     end if
+         ad_cpoint_node_tmp(k)=-1
+         if (.not.out.and.(ncpoints.lt.(ad_array_size/nnodes))) then
+            if (h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
+               ncpoints=ncpoints+1
+               ad_i(ncpoints)=i
+               ad_j(ncpoints)=j
+               ad_cpoint_node_tmp(k)=mynode
+            end if
          end if
       end do
 
@@ -398,6 +410,11 @@ c         end if
      &        ad_array_size/nnodes
          call exit(1)
       end if
+
+      call AMPI_Allreduce(ad_cpoint_node_tmp,ad_cpoint_node,npcpoints,
+     &     MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
+      call AMPI_AllGather(ncpoints,1,MPI_INTEGER,ncpoints_f,1,
+     &     MPI_INTEGER,MPI_COMM_WORLD,ierr)
       
       write(node_str, 930) mynode
       open(unit=99, file='cpoints-'//node_str//'.dat')
@@ -411,11 +428,15 @@ c         end if
          do i=Istr,Iend
             SkW(i,j)=0.
             rk=max(0.01*sqrt(g*h(i,j))*TM2,10000.)
-            do k=1,ad_array_size
-               dist=distance(lonr(i,j),latr(i,j),
-     &              ad_lonr_f(k),ad_latr_f(k))
-               W(i,j,k)=exp(-dist/rk)
-               SkW(i,j)=SkW(i,j)+W(i,j,k)
+            cpoint=0
+            do k=1,npcpoints
+               if (ad_cpoint_node(k).ge.0) then
+                  cpoint=cpoint+1
+                  dist=distance(lonr(i,j),latr(i,j),
+     &                 ad_lonr_f(k),ad_latr_f(k))
+                  W(i,j,cpoint)=exp(-dist/rk)
+                  SkW(i,j)=SkW(i,j)+W(i,j,cpoint)
+               end if
             end do
          end do
       end do
@@ -423,11 +444,16 @@ c         end if
       do j=Jstr,Jend
          do i=Istr,Iend
             mindist=1.D230
-            do k=1,ad_array_size
-               dist=distance(lonr(i,j),latr(i,j),
-     &              ad_lonr_f(k),ad_latr_f(k))
-               if (dist.lt.mindist) then
-                  ad_colloc(i,j)=k
+            cpoint=0
+            do k=1,npcpoints
+               if (ad_cpoint_node(k).ge.0) then
+                  cpoint=cpoint+1
+                  dist=distance(lonr(i,j),latr(i,j),
+     &                 ad_lonr_f(k),ad_latr_f(k))
+                  
+                  if (dist.lt.mindist) then
+                     ad_colloc(i,j)=cpoint
+                  endif
                endif
             enddo
          enddo

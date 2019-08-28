@@ -2,9 +2,12 @@ C     -*- fortran -*-
 
 C     size of the optimization problem
       integer ad_array_size
-      parameter (ad_array_size=110*nnodes)
+      parameter (ad_array_size=900)
 c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
 
+c     number of proposed measure points
+      integer npcpoints
+      parameter (npcpoints=900)
 
 C     number of steps between cost function computation
       integer ad_ns
@@ -26,11 +29,11 @@ C     number of time steps in the main file before assimilation
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt+2)
 
-c     control vector / process
-      double precision ad_x(ad_array_size)
+c     state vector / process
+      double precision ad_x(ad_array_size/nnodes)
 
 c     gradient vector / process
-      double precision ad_g(ad_array_size)
+      double precision ad_g(ad_array_size/nnodes)
       
 c     full control vector
       double precision ad_x_f(ad_array_size)
@@ -41,26 +44,25 @@ c     full gradient vector
 c     sum of all full gradient vectors
       double precision ad_sg_f(ad_array_size)
 
-c     number of proposed measure points
-      integer npcpoints
-      parameter (npcpoints=900)
-      
 c     number of validated measure points (<= ad_array_size/nnodes)
       integer ncpoints
 
-c     coordinates of control points
-      integer ad_i(ad_array_size)
-      integer ad_j(ad_array_size)
+c     MPI node of validated measure points (-1 for unvalidated points)
+      integer ad_cpoint_node(npcpoints)
+
+c     numbers validated measure points per nodes
+      integer ncpoints_f(nnodes)
+      
+c     coordinates of measure points
+      integer ad_i(ad_array_size/nnodes)
+      integer ad_j(ad_array_size/nnodes)
 
 c     latitudes/longitudes of control points on whole grid
-      double precision ad_latr(ad_array_size)
-      double precision ad_lonr(ad_array_size)
-
-      double precision ad_latr_f(ad_array_size)
-      double precision ad_lonr_f(ad_array_size)
+      double precision ad_latr_f(npcpoints)
+      double precision ad_lonr_f(npcpoints)
 c     depth of control points
-      double precision ad_h(ad_array_size)
-      double precision ad_h_f(ad_array_size)
+      double precision ad_h(npcpoints)
+      double precision ad_h_f(npcpoints)
 
 c     weighted coefficients
       double precision W(GLOBAL_2D_ARRAY,ad_array_size)
@@ -95,6 +97,7 @@ c     backup
 
 c     rms      
       real ad_rms
+      integer ad_ta
       
       integer kstp_bck
       integer krhs_bck
@@ -106,9 +109,9 @@ C     commons
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
       common /colloc_id/ ad_colloc
-      common /collocation_coords/ ncpoints,ad_i,ad_j,ad_latr_f,ad_lonr_f
-     &     ,ad_h_f
+      common /collocation_coords/ ncpoints,ncpoints_f,ad_i,ad_j,
+     &     ad_latr_f,ad_lonr_f,ad_h_f,ad_cpoint_node
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
       common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,
-     &     ad_cost,ad_rms
+     &     ad_cost,ad_rms,ad_ta
