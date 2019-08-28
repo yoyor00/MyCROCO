@@ -328,18 +328,12 @@
      &                    +cff2*cosh(2*wk*Zu)
 #     endif
           enddo
-#    endif /* FLUME_WAVES ... */
-
-        enddo  ! j loop
-
-#   ifndef FLUME_WAVES
-        cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
-        do j=JstrR,JendR
+          cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
           do k=1,N
             ubry_west(j,k)=ubry_west(j,k) - cff1
           enddo
-        enddo
-#   endif
+
+        enddo  ! j loop
 
 #   endif /* M3_FRC_BRY */
 

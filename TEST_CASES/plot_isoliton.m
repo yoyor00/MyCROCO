@@ -30,18 +30,14 @@ clear all
 close all
 %================== User defined parameters ===========================
 %
-fname     = 'gravadj_his.nc';
-tindex    = [10;20;50];    % record indices to plot
-nbq       = 0;             % 0/1: hydro/nonhydro case
-plot_psi  = 0;             % plot streamfunction
-makepdf   = 1;             % make pdf file
+fname     = 'isoliton_his.nc';   % croco output file
+tindex    = [30;50;70];          % record indices to plot
+makepdf   = 1;                   % make pdf file
 %
 %======================================================================
-
-hFig = figure;
-colormap('lines')
-colormap('jet')
 nplot=length(tindex);
+hFig = figure;
+colormap('jet')
 set(hFig, 'Position', [200 500 700 150*nplot])
 
 for it=1:length(tindex); % --------------- time loop
@@ -57,9 +53,9 @@ disp(['tndx = ',num2str(tndx)'']);
 h=nc{'h'}(:);
 x=squeeze(nc{'x_rho'}(2,:));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
-t=squeeze(nc{'temp'}(tndx,:,2,:));
+t=squeeze(nc{'rho'}(tndx,:,2,:));
+w=1000*squeeze(nc{'w'}(tndx,:,2,:));
 [N,M]=size(t);
-w=1000*squeeze(nc{'w'}(tndx,1:N,2,:));
 theta_s=nc.theta_s(:);
 theta_b=nc.theta_b(:);
 hc=nc.hc(:);
@@ -68,17 +64,7 @@ close(nc);
 zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r',2);
 zr=squeeze(zr(:,2,:));
 xr=reshape(x,1,M);
-if nbq,
- xr=repmat(xr,[N 1]);
-else
- xr=repmat(xr,[N 1])/1000 - 32;
-end
-
-psi=zeros(size(w));
-for i=2:M;
-  psi(:,i)=psi(:,i-1)-w(:,i).*(xr(:,i)-xr(:,i-1));
-end
-
+xr=repmat(xr,[N 1]);
 t(t==0)=NaN;
 
 % -------------------------------------
@@ -86,29 +72,21 @@ t(t==0)=NaN;
 % -------------------------------------
 
 subplot(length(tindex),1,it)
-[C,h] = contourf(xr,zr,t,[10:1:40]); hold on
+[C,h] = contourf(xr,zr,t,[-40:1:40]); hold on
 set(h,'LineColor','none')
-if plot_psi
- hold on
- contour(xr,zr,psi,'k');
- hold off
-end
-if nbq,
- xlabel('X [m]')
-else
- xlabel('X [km]')
-end
+xlabel('X [m]')
 ylabel('Depth [m]')
-caxis([15 35])
+axis([-Inf Inf -0.25 -0.15])
+caxis([20 30])
 colorbar
 if it==1,
- title('Gravitational adjustment')
+ title('Internal Soliton')
 end
 
 end % ----------------------- time loop
 
 if makepdf
- export_fig -transparent -pdf gravadj.pdf
+ export_fig -transparent -pdf isoliton.pdf
 end
 
 

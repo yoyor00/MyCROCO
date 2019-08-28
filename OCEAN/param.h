@@ -50,27 +50,21 @@
       parameter (LLm0=64,   MMm0=1,    N=64)  
 #elif defined GRAV_ADJ
 # ifdef NBQ
-#  ifdef GRAV_ADJ_SOLITON
-      parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
-#  else
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
       parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
-#  endif
 # else
-!     parameter (LLm0=32,   MMm0=4,    N=10)   !   2 km resolution
-      parameter (LLm0=128,  MMm0=4,    N=40)   ! 500  m resolution
-!     parameter (LLm0=512,  MMm0=4,   N=160)   ! 125  m resolution
+!     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
+      parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
+!     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
+#elif defined I_SOLITON
+      parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
 !     parameter (LLm0=120,  MMm0=10,   N=40)   !  10 km resolution
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
       parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
-#elif defined S2DV 
-       parameter (LLm0=562, MMm0=3,    N=40)   ! true 2DV
-#elif defined MILES 
-       parameter (LLm0=408, MMm0=523,  N=20)
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -85,19 +79,20 @@
       parameter (LLm0=100,  MMm0=100,  N=5) 
 #elif defined SINGLE_COLUMN
 # ifdef KATO_PHILIPS 
-      parameter (LLm0=5 ,   MMm0=5,    N=100)   !
-# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
-      parameter (LLm0=5 ,   MMm0=5,    N=50)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=100)
+# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \
+    || defined FORCED_OSCNONROTBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=50)
 # elif defined FORCED_EKBBL
-      parameter (LLm0=5 ,   MMm0=5,    N=40)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=40)
 # elif defined FORCED_DBLEEK 
-      parameter (LLm0=5 ,   MMm0=5,    N=25)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=25)
 # elif defined DIURNAL_CYCLE
-      parameter (LLm0=5 ,   MMm0=5,    N=150)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=150)
 # endif
 #elif defined PLUME
-      parameter (LLm0=200,   MMm0=200,   N=100)        
-!      parameter (LLm0=80,   MMm0=80,   N=100) 
+      parameter (LLm0=200,  MMm0=200,  N=100)        
+!     parameter (LLm0=80,   MMm0=80,   N=100) 
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
 #elif defined SEAMOUNT
@@ -157,7 +152,7 @@
       parameter (LLm0=4000, MMm0=1,    N=30)   !  1 mm resolution
 # endif
 #elif defined CALDEIRA
-      parameter (LLm0=100,   MMm0=100,   N=50)
+      parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -188,7 +183,7 @@
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
 #  elif defined MENOR 
-      parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
+      parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
 #  elif defined SEINE 
       parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  else
@@ -287,7 +282,7 @@
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
-# if defined IGW || defined S2DV
+# if defined IGW
       parameter (Ntides=1)
 # else
       parameter (Ntides=8)

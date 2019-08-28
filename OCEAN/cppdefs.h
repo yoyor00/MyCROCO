@@ -34,12 +34,11 @@
 #undef  FLUME           /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
-#undef  ACOUSTIC        /* Acoustic wave test case */
+#undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
+#undef  I_SOLITON       /* Internal Soliton Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
-#undef  S2DV            /* S2DV sections */ 
-#undef  MILES           /* NBQ MILES Applications */ 
-#undef  TS_HADV_TEST    /* Horizontal tracer advection test example */ 
+#undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
 #define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
@@ -1196,22 +1195,11 @@
 /*
 !                       Gravitational Adjustment Example
 !                       ============= ========== =======
-!
-!  Soliton case GRAV_ADJ_SOLITON (non-hydro test) is setup from:
-!  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
-!  The degeneration of large-scale interfacial gravity waves in lakes. 
-!  J. Fluid Mech., 434:181-207. 
-!
 */
 # undef  OPENMP
 # undef  MPI
 # undef  NBQ
 # undef  XIOS 
-# ifdef NBQ
-#  define GRAV_ADJ_SOLITON
-#  undef  NBQ_PRECISE
-#  define NBQ_PERF
-# endif
 # define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1223,7 +1211,36 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# undef PASSIVE_TRACER
+# undef  PASSIVE_TRACER
+# define NO_FRCFILE
+
+#elif defined I_SOLITON
+/*
+!                       Gravitational Adjustment Example
+!                       ============= ========== =======
+!
+!  Internal soliton case I_SOLITON (non-hydrostatic) is setup from:
+!  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
+!  The degeneration of large-scale interfacial gravity waves in lakes. 
+!  J. Fluid Mech., 434:181-207. 
+!
+*/
+# undef  OPENMP
+# undef  MPI
+# define NBQ
+# undef  XIOS 
+# define UV_VIS2
+# define SOLVE3D
+# define NEW_S_COORD
+# define UV_ADV
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# undef  PASSIVE_TRACER
 # define NO_FRCFILE
 
 #elif defined KH_INST 
@@ -1266,120 +1283,6 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
-
-#elif defined S2DV 
-/*
-!                  2DV Sections 
-!                  ============
-*/
-# undef  EXPERIMENT1
-# define NBQ
-# define MPI
-# define XIOS
-# define SPHERICAL
-# define CURVGRID
-# undef  MASKING
-# define NEW_S_COORD
-# undef  WET_DRY
-# ifdef NBQ
-#  undef  NBQ_PRECISE
-#  define NBQ_PERF
-# endif
-# define SOLVE3D 
-# define UV_ADV
-# define UV_COR
-# define SALINITY
-# undef  VADV_ADAPT_IMP
-# define SUPERBEE 
-# define UV_HADV_TVD
-# define UV_VADV_TVD
-# undef  UV_VADV_WENO5
-# undef  UV_HADV_WENO5
-# define W_HADV_TVD
-# define W_VADV_TVD
-# define TS_VADV_WENO5
-# define TS_HADV_WENO5
-# define UV_VIS2
-# define UV_VIS_SMAGO
-# undef  TIDES
-# ifdef TIDES
-#  define TIDERAMP
-#  define SSH_TIDES
-#  define UV_TIDES 
-# endif
-# define OBC_EAST
-# define OBC_WEST
-# define NS_PERIODIC
-# undef  ANA_INITIAL
-# undef  ANA_VMIX
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_SRFLUX 
-# define ANA_SSFLUX
-# define ANA_BTFLUX
-# define ANA_BSFLUX
-# undef  PASSIVE_TRACER
-
-#elif defined MILES 
-/*
-!                NBQ MILES APPLICATIONS 
-!                === ===== ============
-!
-*/
-# undef  EXPERIMENT1
-# undef  EXPERIMENT3
-# define NBQ
-# define MPI
-# define XIOS
-# define SOLVE3D 
-# define UV_ADV
-# define UV_COR
-# ifdef NBQ
-#  undef  NBQ_PRECISE
-#  define NBQ_PERF
-#  define NBQ_FREESLIP
-# endif
-# define SPHERICAL
-# define CURVGRID
-# define MASKING
-# define NEW_S_COORD
-# undef  WET_DRY
-# undef  VADV_ADAPT_IMP
-# undef  UV_VADV_C2
-# undef  UV_HADV_C2
-# define UV_VADV_TVD
-# define UV_HADV_TVD
-# undef  SUPERBEE
-# define W_VADV_TVD
-# define W_HADV_TVD
-# define UV_VIS2
-# undef  UV_VIS_SMAGO
-# define SALINITY
-# define TS_HADV_WENO5
-# define TS_VADV_WENO5
-# undef  PASSIVE_TRACER
-# undef  TIDES
-# ifdef TIDES
-#  undef  TIDERAMP
-#  define SSH_TIDES
-#  define POT_TIDES
-#  define UV_TIDES 
-# endif
-# define OBC_EAST
-# define OBC_WEST
-# undef  OBC_SOUTH
-# undef  OBC_NORTH
-# define SPONGE
-# undef  LMD_MIXING
-# undef  LMD_BKPP
-# undef  GLS_MIXING
-# undef  ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_SRFLUX
-# define ANA_SSFLUX
-# define ANA_BTFLUX
-# define ANA_BSFLUX
 
 #elif defined TS_HADV_TEST
 /*

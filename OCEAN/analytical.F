@@ -884,7 +884,7 @@ C$    integer  trd, omp_get_thread_num
 # include "sediment.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    cff,cff1
-# if defined IGW || defined S2DV
+# if defined IGW
       real    sig,rhom,depth
 # endif  
 !

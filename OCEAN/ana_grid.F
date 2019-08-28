@@ -132,10 +132,14 @@ C$    integer omp_get_thread_num
                      beta=0.
 # elif defined GRAV_ADJ
 #  ifdef NBQ
-                     depth=0.29      ! Horn et al. (2001)
+                     depth=0.3
 #  else
                      depth=20.
 #  endif
+                     f0=0.
+                     beta=0.
+# elif defined I_SOLITON
+                     depth=0.29 ! Horn et al. (2001)
                      f0=0.
                      beta=0.
 # elif defined ACOUSTIC
@@ -248,22 +252,20 @@ C$    integer omp_get_thread_num
 # elif defined KH_INST 
                      Length_XI =286.0
                      Length_ETA=Length_XI*float(MMm0)/float(LLm0) 
-!                    Length_ETA=286.0/256.0
 # elif defined ACOUSTIC
                      Length_XI =128.0
                      Length_ETA=2.0
 # elif defined GRAV_ADJ
 #  ifdef NBQ
-#   ifdef GRAV_ADJ_SOLITON
-                     Length_XI =6.0    ! Horn et al. (2001)
-#   else
                      Length_XI =3.0
-#   endif
                      Length_ETA=0.1
 #  else
                      Length_XI =64.0E+3
                      Length_ETA=2.0E+3
 #  endif
+# elif defined I_SOLITON
+                     Length_XI =6.0   ! Horn et al. (2001)
+                     Length_ETA=0.1
 # elif defined INNERSHELF
                      Length_XI =200.0e+3
                      Length_ETA=3.0e+3
@@ -438,9 +440,10 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
-                   || defined SOLITON || defined JET \
+                   || defined SOLITON || defined I_SOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
-                   || defined ACOUSTIC || defined SINGLE_COLUMN
+                   || defined ACOUSTIC || defined SINGLE_COLUMN \
+                   || defined JET
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth

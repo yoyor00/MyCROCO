@@ -49,7 +49,7 @@
 #ifdef INTERNAL
       real cff
 #endif
-#if defined IGW || defined S2DV || defined MILES 
+#if defined IGW
       real    cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
@@ -72,7 +72,7 @@
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
-#ifdef GRAV_ADJ_SOLITON
+#ifdef I_SOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
@@ -665,11 +665,9 @@
            enddo
         enddo
 
-#  elif defined GRAV_ADJ
-
-#   ifdef GRAV_ADJ_SOLITON
-#    define HORN_PROFILE
-#    ifdef HORN_PROFILE
+#  elif defined I_SOLITON
+#   define HORN_PROFILE
+#   ifdef HORN_PROFILE
 !
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
 !  The degeneration of large-scale interfacial gravity waves in lakes. 
@@ -713,7 +711,8 @@
           enddo
         enddo
 #    endif /* HORN_PROFILE */ 
-#   else /*  !GRAV_ADJ_SOLITON */
+
+#  elif defined GRAV_ADJ
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -731,7 +730,6 @@
             enddo
           enddo
         enddo
-#   endif /* GRAV_ADJ_SOLITON */
 
 #  elif defined ACOUSTIC 
 
@@ -785,7 +783,7 @@
           enddo
         enddo
 
-#  elif defined IGW || defined S2DV || defined MILES
+#  elif defined IGW
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N
