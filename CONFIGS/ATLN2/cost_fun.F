@@ -4,8 +4,7 @@
 # include "adinc.h"
 # include "adparam.h"
 
-      double precision cost
-      double precision xcost
+      double precision cost,icost
       double precision sigma2
       integer ta,k,xk
 
@@ -15,33 +14,36 @@
       call set_state(ad_x_f)
 
 c      sigma2 = ad_cost/ad_cost_counter
-      cost = 0
+      icost = 0
 
 C$AD BINOMIAL-CKP ad_nt+1 40 1
       do ta=1,ad_nt
          do xk=1,ad_ns
             call step()
          end do
-         call cost_fun_step(ad_x_f,cost,ta)
+         call cost_fun_step(ad_x_f,icost,ta,1)
       end do
 
-c      if (sigma2.gt.0) then
-c         cost = cost / sigma2
-c      end if
+      cost=sqrt(icost)
+
+      icost=0
+      call cost_fun_step(ad_x_f,icost,ta,2)
+      cost=cost+sqrt(icost)
       
       ad_cost = cost
+      ad_ta = ta
       write (*,*) 'cost=',cost
 
       return
       end subroutine cost_fun
 
-      subroutine cost_fun_step(ad_x_f,icost,ta)
+      subroutine cost_fun_step(ad_x_f,icost,ta,mode)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
       double precision icost
-      integer ta
+      integer ta,mode
       integer ntrds,trd,my_first,my_last,tile,range
 
 #ifdef OPENMP
@@ -56,33 +58,34 @@ c      end if
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call cost_fun_step_2d(tile,ad_x_f,icost,ta)
+         call cost_fun_step_2d(tile,ad_x_f,icost,ta,mode)
       end do
 
       end subroutine cost_fun_step
 
-      subroutine cost_fun_step_2d(tile,ad_x_f,icost,ta)
+      subroutine cost_fun_step_2d(tile,ad_x_f,icost,ta,mode)
 
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      integer ta
+      integer ta,mode
       integer tile
       double precision icost
 # include "compute_tile_bounds.h"
 
-      call cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,ad_x_f,icost,ta)
+      call cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,ad_x_f,icost,ta,
+     &     mode)
 
       end subroutine cost_fun_step_2d
 
       subroutine cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
-     &     ad_x_f,icost,ta)
+     &     ad_x_f,icost,ta,mode)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend,i,j
-      integer ta, k
+      integer ta,mode
+      integer Istr,Iend,Jstr,Jend,i,j,k
       double precision delta_z, delta_zob, icost
 
 c      do j=Jstr,Jend
@@ -97,12 +100,13 @@ c               ad_cost_counter = ad_cost_counter + 1
 c            end if
 c         end do
 c      end do
-      
-      do k=1,ncpoints
-         i=ad_i(k)
-         j=ad_j(k)
-         delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
-         delta_zob = (zob(i,j) - zob_bck(i,j))
+
+      if (mode.eq.1) then
+         do k=1,ncpoints
+            i=ad_i(k)
+            j=ad_j(k)
+            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
+c         delta_zob = (zob(i,j) - zob_bck(i,j))
 c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
 c     &        zeta(i,j,knew),ad_obs(i,j,ta+2),zob(i,j),zob_bck(i,j),
 c     &        delta_z,
@@ -114,11 +118,17 @@ c     &        ad_obs(i,j,ta+1),
 c     &        ad_obs(i,j,ta),
 c     &        ad_obs(i,j,ta-1),
 c     &        ad_obs(i,j,ta-2)
-         icost = icost + delta_z*delta_z + 1.0D-6*
-     &        delta_zob*delta_zob/
-     &        (h(i,j)*h(i,j))
-         ad_cost_counter = ad_cost_counter + 1
-      end do
+            icost = icost + delta_z*delta_z
+            ad_cost_counter = ad_cost_counter + 1
+         end do
+      else if (mode.eq.2) then
+         do k=1,ncpoints
+            i=ad_i(k)
+            j=ad_j(k)
+            delta_zob = (zob(i,j) - zob_bck(i,j))
+            icost = icost + delta_zob*delta_zob
+         end do
+      end if
 
       end subroutine cost_fun_step_2d_tile
 
@@ -178,35 +188,45 @@ c      call AMPI_Scatter(ad_x_f,ad_array_size/nnodes,
 c     &     AMPI_ADOUBLE_PRECISION,ad_x,ad_array_size/nnodes,
 c     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
+      k=0
       do j=Jstr,Jend
          do i=Istr,Iend
+            k=k+1
+            zob(i,j)=control_to_param(ad_x_f(k))
+            if (zobmin.gt.zob(i,j)) then
+               zobmin=zob(i,j)
+            end if
+            if (zobmax.lt.zob(i,j)) then
+               zobmax=zob(i,j)
+            end if
+         end do
+      end do
+               
+            
 c            k=ad_colloc(i,j)
 c            if (k.lt.1.or.k.gt.ad_array_size) then
 c               write (*,*) 'AD BIG PROBLEM k=',k
 c               stop
 c     endif
-            if (ad_obs(i,j,1).ne.spval) then
-               zob(i,j)=0.0
-               cpoint=0
-               do k=1,npcpoints
-                  if(ad_cpoint_node(k).eq.mynode) then
-                     cpoint=cpoint+1
-                     lzob=control_to_param(
-     &                    ad_x_f(mynode*(ad_array_size/nnodes)+cpoint))
-                     zob(i,j) = zob(i,j) + lzob*W(i,j,cpoint)/SkW(i,j)
-                  endif
+c            if (ad_obs(i,j,1).ne.spval) then
+c               zob(i,j)=0.0
+c               cpoint=ad_colloc(i,j)
+c               zob(i,j)=control_to_param(
+c     &              ad_x_f(cpoint))
+c               cpoint=0
+c               do k=1,npcpoints
+c                  if(ad_cpoint_node(k).eq.mynode) then
+c                     cpoint=cpoint+1
+c                     lzob=control_to_param(
+c     &                    ad_x_f(mynode*(ad_array_size/nnodes)+cpoint))
+c                     zob(i,j) = zob(i,j) + lzob*W(i,j,cpoint)/SkW(i,j)
+c                  endif
 c     write(*,*) '%%%%',mynode,k,ad_x_f(k),
 c     &                 lzob,zob(i,j)
-               end do
-               if (zobmin.gt.zob(i,j)) then
-                  zobmin=zob(i,j)
-               end if
-               if (zobmax.lt.zob(i,j)) then
-                  zobmax=zob(i,j)
-               end if
-            end if
-         end do
-      end do
+c               end do
+c            end if
+c         end do
+c      end do
 
 c      do k=1,ncpoints
 c         zob(ad_i(k), ad_j(k))=
@@ -254,26 +274,20 @@ c      end do
       integer ierr
       integer k
       
-      call init_collocation_points()
+      call init_local_arrays(ad_x)
       
       do k=1,ad_array_size
          ad_g_f(k)=0.
-      end do
-
-      do k=1,ad_array_size/nnodes
-         ad_x(k)=0.
+         ad_x_f(k)=0.
       end do
       
-      do k=1,ncpoints
-         ad_x(k)=param_to_control(zobt)
-      end do
-
+      write(*,*) 'A0##>',ad_x
       call AMPI_AllGather(ad_x,ad_array_size/nnodes,
      &     AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_size/nnodes,
      &     AMPI_ADOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
 
       
-c      MPI_master_only write(*,*) 'A0##>',ad_x_f
+
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
@@ -332,7 +346,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
 
 
-      subroutine init_collocation_points()
+      subroutine init_local_arrays(ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -367,12 +381,12 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
      &     0,MPI_COMM_WORLD,ierr)
 
       do tile=my_first,my_last
-         call init_collocation_points_2d(tile)
+         call init_local_arrays_2d(tile,ad_x)
       end do
 
-      end subroutine init_collocation_points
+      end subroutine init_local_arrays
 
-      subroutine init_collocation_points_2d(tile)
+      subroutine init_local_arrays_2d(tile,ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -381,21 +395,21 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       double precision icost
 # include "compute_tile_bounds.h"
 
-      call init_collocation_points_2d_tile(Istr, Iend, Jstr, Jend)
+      call init_local_arrays_2d_tile(Istr, Iend, Jstr, Jend,ad_x)
 
-      end subroutine init_collocation_points_2d
+      end subroutine init_local_arrays_2d
 
-      subroutine init_collocation_points_2d_tile(Istr,Iend,Jstr,Jend)
+      subroutine init_local_arrays_2d_tile(Istr,Iend,Jstr,Jend,ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j,k,ierr,cpoint
       logical out
-      double precision mindist,dist,rk,distance,xr,yr
-      integer ad_cpoint_node_tmp(npcpoints)
+      double precision mindist,dist,rk,distance,xr,yr,param_to_control
+      integer ad_cpoint_node_tmp(npcpoints),ad_cpoint_id_tmp(npcpoints)
       character*2 node_str
-
+      
       ncpoints=0
       do k=1,npcpoints
          call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
@@ -407,12 +421,14 @@ c     &        h(i,j).gt.10,
 c     &           ad_obs(i,j,1).ne.spval
 c     end if
          ad_cpoint_node_tmp(k)=-1
+         ad_cpoint_id_tmp(k)=0
          if (.not.out.and.(ncpoints.lt.(ad_array_size/nnodes))) then
-            if (h(i,j).gt.10.and.ad_obs(i,j,1).ne.spval) then
+            if (h(i,j).gt.1.and.ad_obs(i,j,1).ne.spval) then
                ncpoints=ncpoints+1
                ad_i(ncpoints)=i
                ad_j(ncpoints)=j
                ad_cpoint_node_tmp(k)=mynode
+               ad_cpoint_id_tmp(k)=ncpoints
             end if
          end if
       end do
@@ -426,6 +442,8 @@ c     end if
       end if
 
       call AMPI_Allreduce(ad_cpoint_node_tmp,ad_cpoint_node,npcpoints,
+     &     MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
+      call AMPI_Allreduce(ad_cpoint_id_tmp,ad_cpoint_id,npcpoints,
      &     MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
       call AMPI_AllGather(ncpoints,1,MPI_INTEGER,ncpoints_f,1,
      &     MPI_INTEGER,MPI_COMM_WORLD,ierr)
@@ -461,19 +479,40 @@ c     end if
             cpoint=0
             do k=1,npcpoints
                if (ad_cpoint_node(k).ge.0) then
-                  cpoint=cpoint+1
+                  cpoint=ad_cpoint_id(k)
                   dist=distance(lonr(i,j),latr(i,j),
      &                 ad_lonr_f(k),ad_latr_f(k))
-                  
                   if (dist.lt.mindist) then
-                     ad_colloc(i,j)=cpoint
+                     ad_node_colloc(i,j)=ad_cpoint_node(k)
+                     ad_colloc(i,j)=
+     &                    ad_cpoint_node(k)*(ad_array_size/nnodes)+
+     &                    cpoint
                   endif
                endif
             enddo
          enddo
       enddo
 
-      end subroutine init_collocation_points_2d_tile
+      do k=0,ad_array_size/nnodes
+         ad_x(k)=0
+      end do
+      
+      k=0
+      do j=Jstr,Jend
+         do i=Istr,Iend
+            k=k+1
+            if (ad_obs(i,j,1).ne.spval) then
+               ad_x(k)=param_to_control(zob(i,j))
+            else
+               ad_x(k)=0.
+            end if
+         end do
+      end do
+
+      write(*,*) 'XXXXXXXXXXXXXXXXXXXXXXX',k,ad_array_size/nnodes
+
+      
+      end subroutine init_local_arrays_2d_tile
 
 
       double precision function control_to_param(y)

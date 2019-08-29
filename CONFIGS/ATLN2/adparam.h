@@ -2,8 +2,8 @@ C     -*- fortran -*-
 
 C     size of the optimization problem
       integer ad_array_size
-      parameter (ad_array_size=900)
-c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e))
+c      parameter (ad_array_size=900)
+      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
 
 c     number of proposed measure points
       integer npcpoints
@@ -50,12 +50,15 @@ c     number of validated measure points (<= ad_array_size/nnodes)
 c     MPI node of validated measure points (-1 for unvalidated points)
       integer ad_cpoint_node(npcpoints)
 
+c     id of validated measure points
+      integer ad_cpoint_id(npcpoints)
+      
 c     numbers validated measure points per nodes
       integer ncpoints_f(nnodes)
       
 c     coordinates of measure points
-      integer ad_i(ad_array_size/nnodes)
-      integer ad_j(ad_array_size/nnodes)
+      integer ad_i(npcpoints)
+      integer ad_j(npcpoints)
 
 c     latitudes/longitudes of control points on whole grid
       double precision ad_latr_f(npcpoints)
@@ -65,10 +68,11 @@ c     depth of control points
       double precision ad_h_f(npcpoints)
 
 c     weighted coefficients
-      double precision W(GLOBAL_2D_ARRAY,ad_array_size)
+      double precision W(GLOBAL_2D_ARRAY,npcpoints)
       double precision SkW(GLOBAL_2D_ARRAY)
 
 c     direct affectation of collocation points
+      integer ad_node_colloc(GLOBAL_2D_ARRAY)
       integer ad_colloc(GLOBAL_2D_ARRAY)
 
 C     tangential vector
@@ -82,6 +86,10 @@ C     general iteration counter
 
 C     cost function counter
       integer ad_cost_counter
+
+c     timings
+      double precision ad_dir_time
+      double precision ad_adj_time
       
 c     tidal period (M2)
       double precision TM2
@@ -108,9 +116,11 @@ C     commons
       common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
-      common /colloc_id/ ad_colloc
+      common /ad_timings/ ad_dir_time,ad_adj_time
+      
+      common /colloc_id/ ad_colloc,ad_node_colloc
       common /collocation_coords/ ncpoints,ncpoints_f,ad_i,ad_j,
-     &     ad_latr_f,ad_lonr_f,ad_h_f,ad_cpoint_node
+     &     ad_latr_f,ad_lonr_f,ad_h_f,ad_cpoint_node,ad_cpoint_id
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
       common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,

@@ -45,8 +45,8 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       
       call init_control(ad_x_f,ad_g_f)
 
-      MPI_master_only write(*,*) 'A1##>',ad_x_f
-      MPI_master_only write(*,*) 'B1##>',ad_g_f
+c      MPI_master_only write(*,*) 'A1##>',ad_x_f
+c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       
       indic = 4
       call simul (indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
@@ -101,13 +101,13 @@ c         write(*,*) '+++>', mynode, ad_x(1), cost, gg(1)
 c         MPI_master_only call optim_driver
 c     &        (x,cost,gg,reverse,indic)
 
-         do i=1,ad_array_size
-            write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),
-     &           ad_g_f(i)
-         end do
+c         do i=1,ad_array_size
+c            write (*,*) 'before: mynode, x, g',mynode,i,ad_x_f(i),
+c     &           ad_g_f(i)
+c         end do
 
-         MPI_master_only write(*,*) '1##>',ad_x_f
-         MPI_master_only write(*,*) '2##>',ad_sg_f
+c         MPI_master_only write(*,*) '1##>',ad_x_f
+c         MPI_master_only write(*,*) '2##>',ad_sg_f
          
 
 C        get ad_x_f, the new ad state on mpi master
@@ -118,11 +118,11 @@ C        get ad_x_f, the new ad state on mpi master
      &        reverse,indic,izs,rzs,dzs)
 
 
-         do i=1,ad_array_size
-            write (*,*) 'after: mynode, x, g',mynode,i,
-     &           control_to_param(ad_x_f(i)),
-     &           ad_g_f(i)
-         end do
+c         do i=1,ad_array_size
+c            write (*,*) 'after: mynode, x, g',mynode,i,
+c     &           control_to_param(ad_x_f(i)),
+c     &           ad_g_f(i)
+c         end do
 #ifdef MPI
 #ifdef AMPI
 C        broadcast the new ad state
@@ -158,7 +158,8 @@ C        sum all proc gradients & rms on master
 #endif         
          if (mynode.eq.0) then
             cost = xf
-            write (779,*) ad_counter,ad_rms,cost,norm2(ad_sg_f)
+            write (779,*) ad_counter,ad_rms,cost,norm2(ad_sg_f),
+     &           ad_dir_time,ad_adj_time
             call flush(779)
          end if
          

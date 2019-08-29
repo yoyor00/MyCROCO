@@ -9,7 +9,7 @@ points=np.loadtxt('cpoints.dat')
 lonp = points[:, 0]
 latp = points[:, 1]
 
-nprocs=8
+nprocs=32
 
 xlon=list(range(nprocs))
 xlat=list(range(nprocs))
@@ -21,7 +21,7 @@ dat = np.array([])
 points = [None]*nprocs
 for proc in range(nprocs):
 #    data1=np.loadtxt('z0b.0{0}-011'.format(proc))
-    data=np.loadtxt('z0b.0{0}-003'.format(proc))
+    data=np.loadtxt('z0b.{0:2d}-003'.format(proc))
     ni=int(data[0, 0])
     nj=int(data[0, 1])
     lon=np.append(lon, data[1:, 0]) #np.reshape(data[1:, 0], (nj, ni))

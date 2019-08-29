@@ -39,9 +39,10 @@ c        directly the computation of cost_fun.
          t1 = xtime()
          call cost_fun(ad_x_f, icost)
          t2 = xtime()
+         ad_dir_time=t2-t1
          cost = icost
          write (*,*) '--------------------------------------'
-         write (*,*) 'end cost:',t2-t1
+         write (*,*) 'end cost:',ad_dir_time
          write (*,*) '--------------------------------------'
 
          ad_rms = rms()
@@ -64,8 +65,9 @@ c         write(*,*) '-||->', (cost-f)/eps
          t1 = xtime()
          call cost_fun_b(ad_x_f, ad_g_f, icost, costb)
          t2 = xtime()
+         ad_adj_time=t2-t1
          write (*,*) '--------------------------------------'
-         write (*,*) 'end adjoint:',t2-t1
+         write (*,*) 'end adjoint:',ad_adj_time
          write (*,*) '--------------------------------------'
 
          call restore_croco_state()

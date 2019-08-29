@@ -327,7 +327,7 @@ plotter: plotter.F
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x_f)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 
 
@@ -349,11 +349,11 @@ main_adc.f: main.F
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x_f)" -r8 -output $(TAP_TARGET) $(AMPIINC)
 
 $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x_f)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
 
 
 fortranSupport.o : fortranSupport.F
