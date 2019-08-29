@@ -39,7 +39,7 @@ touch $fileout_mpi
 
 GREP_CMD='grep -m 1'
 
-if [ $FLAG_OPENMP eq 1 ]; then
+if [ $FLAG_OPENMP -eq 1 ]; then
 #=============================================
 # OPENMP
   echo "===================" > $fileout_openmp
@@ -56,7 +56,7 @@ else
   res_omp=""  
 fi
 
-if [ $FLAG_MPI eq 1 ]; then
+if [ $FLAG_MPI -eq 1 ]; then
 #MPI
   echo "===================" > $fileout_mpi
   echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
