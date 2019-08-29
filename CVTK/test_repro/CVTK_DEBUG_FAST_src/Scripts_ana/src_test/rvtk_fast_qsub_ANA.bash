@@ -248,15 +248,13 @@ if [ ${FLAG_OPENMP} = 1 ]; then
     \mv tmp.txt ${TEST_NAME}_steps 
   fi  
 
-else
+#else
   
-  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
-  \mv tmp.txt ${TEST_NAME}_steps     
+#  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+#  \mv tmp.txt ${TEST_NAME}_steps     
 
 fi 
 
-echo  toto
-echo $SUCCESS $SUCCESS_COMP $SUCCESS_EXEC
 ###############################################################################
 
 # 4- RVTK_DEBUG_REG_DEV
@@ -308,10 +306,10 @@ if [ ${FLAG_MPI} = 1 ]; then
     
     #  echo "myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`""
     #myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`"
-else
+#else
 
-  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
-  \mv tmp.txt ${TEST_NAME}_steps     
+#  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+#  \mv tmp.txt ${TEST_NAME}_steps     
 
 fi
 
