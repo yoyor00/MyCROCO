@@ -82,7 +82,7 @@
       fname='TEST_CASES/croco.in.Grav_adj'
 # endif
 #elif defined I_SOLITON
-      fname='TEST_CASES/croco.in.Int_Soliton'
+      fname='TEST_CASES/croco.in.Isoliton'
 #elif defined INNERSHELF/
       fname='TEST_CASES/croco.in.Innershelf'
 #elif defined INTERNAL
