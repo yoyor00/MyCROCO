@@ -332,6 +332,7 @@
           do k=1,N
             ubry_west(j,k)=ubry_west(j,k) - cff1
           enddo
+#    endif /* FLUME_WAVES */
 
         enddo  ! j loop
 
