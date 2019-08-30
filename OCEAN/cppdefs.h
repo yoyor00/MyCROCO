@@ -1156,8 +1156,8 @@
 # define NBQ
 # ifdef NBQ
 #  undef  NBQ_PRECISE
-#  define NBQ_PERF
 # endif
+# define M2FILTER_NONE
 # define SOLVE3D
 # undef  UV_ADV
 # define NEW_S_COORD
