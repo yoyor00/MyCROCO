@@ -39,9 +39,9 @@
 #elif defined KH_INST 
 # ifndef KH_INSTY
 #  ifdef KH_INST3D
-      parameter (LLm0=256,  MMm0=32,  N=256)
+      parameter (LLm0=256,  MMm0=32,  N=256)   !   1 m resolution
 #  else
-      parameter (LLm0=256,  MMm0=1,   N=256)
+      parameter (LLm0=128,  MMm0=1,   N=128)   !   2 m resolution
 #  endif
 # else
       parameter (LLm0=1,    MMm0=256, N=256)

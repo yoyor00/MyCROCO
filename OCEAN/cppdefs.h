@@ -1253,7 +1253,7 @@
 # undef  KH_INST3D
 # define MPI
 # define NBQ
-# define NBQ_PRECISE
+# undef  NBQ_PRECISE
 # undef  XIOS
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1264,9 +1264,6 @@
 # define UV_VADV_WENO5
 # define W_HADV_WENO5
 # define W_VADV_WENO5
-# define UV_VIS2
-# undef  UV_VIS_SMAGO_3D
-# define TS_DIF2
 # undef  SALINITY
 # undef  PASSIVE_TRACER
 # define ANA_GRID
