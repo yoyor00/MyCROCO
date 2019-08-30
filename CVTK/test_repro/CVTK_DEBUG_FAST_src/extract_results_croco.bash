@@ -39,29 +39,37 @@ touch $fileout_mpi
 
 GREP_CMD='grep -m 1'
 
+if [ $FLAG_OPENMP -eq 1 ]; then
 #=============================================
 # OPENMP
-echo "===================" > $fileout_openmp
-echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp
-${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
-res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
-echo 'res_omp='$res_omp >> $fileout_openmp
-if [ -z "$res_omp" ] ; then 
-  echo 'check [passed]'  >> $fileout_openmp
-else
+  echo "===================" > $fileout_openmp
+  echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp
+  ${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
+  res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
+  echo 'res_omp='$res_omp >> $fileout_openmp
+  if [ -z "$res_omp" ] ; then 
+    echo 'check [passed]'  >> $fileout_openmp
+  else
   echo 'check [failed]'  >> $fileout_openmp
+  fi
+else
+  res_omp=""  
 fi
 
+if [ $FLAG_MPI -eq 1 ]; then
 #MPI
-echo "===================" > $fileout_mpi
-echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
-${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
-res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
-echo 'res_mpi='$res_mpi >> $fileout_mpi
-if [ -z "$res_mpi" ] ; then 
-  echo 'check mpi [passed]'  >> $fileout_mpi
+  echo "===================" > $fileout_mpi
+  echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
+  ${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
+  res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
+  echo 'res_mpi='$res_mpi >> $fileout_mpi
+  if [ -z "$res_mpi" ] ; then 
+    echo 'check mpi [passed]'  >> $fileout_mpi
+  else
+    echo 'check mpi [failed]'  >> $fileout_mpi
+  fi
 else
-  echo 'check mpi [failed]'  >> $fileout_mpi
+  res_mpi=""  
 fi
 
 if [ ! -z "$res_omp" ] ||  [ ! -z "$res_mpi" ] ; then

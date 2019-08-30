@@ -21,7 +21,7 @@ done
 
 i=1
 ierr=0
-#for testconf in   BASIN IGW ; do  
+#for testconf in   SWASH ; do  
 for testconf in `ls -1 ./Configure_Test/ `;do
   if [ $i -eq 1 ]; then	
   echo "  "
