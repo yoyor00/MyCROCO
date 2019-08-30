@@ -76,6 +76,10 @@ C     general iteration counter
 
 C     cost function counter
       integer ad_cost_counter
+
+c     timings
+      double precision ad_dir_time
+      double precision ad_adj_time
       
 c     tidal period (M2)
       double precision TM2
@@ -91,6 +95,7 @@ c     backup
 
 c     rms      
       real ad_rms
+      integer ad_ta
       
       integer kstp_bck
       integer krhs_bck
@@ -100,6 +105,8 @@ c     rms
 C     commons
       common /backup/ ubar_bck, vbar_bck, zeta_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, rdrg2_bck
+      
+      common /ad_timings/ ad_dir_time,ad_adj_time
 
       common /colloc_id/ ad_colloc
       common /collocation_coords/ ncpoints,ad_i,ad_j,ad_latr_f,ad_lonr_f
@@ -107,5 +114,5 @@ C     commons
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
       common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,
-     &     ad_cost,ad_rms
+     &     ad_cost,ad_rms,ad_ta
       

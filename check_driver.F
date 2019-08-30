@@ -48,7 +48,7 @@ c     ad_g . (1 1 1 ... )
       s_ad_g = sum(ad_g)
       
 c     perturbations      
-      ad_eps = 1D-5
+      ad_eps = 1D-2
       do while (ad_eps.gt.1D-10)   
          
          do k=1,ad_array_size/nnodes
