@@ -2,7 +2,7 @@ c     this file is not differentiated
 
 # include "cppdefs.h"      
       
-      subroutine simul(indic,Sn,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
+      subroutine simul(indic,Sn,ad_x,cost,ad_g,izs,rzs,dzs)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -16,6 +16,8 @@ c     this file is not differentiated
       double precision cost, icost, costb
       double precision xbck(Sn), eps
       double precision rms
+
+      integer ierr
       
       if (indic.eq.1) then
          write(*,*) 'indic = 1'
@@ -37,7 +39,7 @@ c        directly the computation of cost_fun.
          write (*,*) 'start cost'
          write (*,*) '--------------------------------------'
          t1 = xtime()
-         call cost_fun(ad_x_f, icost)
+         call cost_fun(ad_x, icost)
          t2 = xtime()
          ad_dir_time=t2-t1
          cost = icost
@@ -63,7 +65,7 @@ c         write(*,*) '-||->', (cost-f)/eps
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
          t1 = xtime()
-         call cost_fun_b(ad_x_f, ad_g_f, icost, costb)
+         call cost_fun_b(ad_x, ad_g, icost, costb)
          t2 = xtime()
          ad_adj_time=t2-t1
          write (*,*) '--------------------------------------'

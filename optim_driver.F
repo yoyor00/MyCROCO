@@ -23,7 +23,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       real rzs(1)
       real dzs(1)
 
-      double precision cost, xf
+      double precision cost, cost_f
 
       double precision dx, df1,epsrel
 
@@ -43,34 +43,45 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       write(*,*) 'nx:',2+lm+2+padd_x
       write(*,*) 'ne:',2+mm+2+padd_e
       
-      call init_control(ad_x_f,ad_g_f)
+      call init_control(ad_x,ad_g)
 
+
+      
 c      MPI_master_only write(*,*) 'A1##>',ad_x_f
 c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       
       indic = 4
-      call simul (indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
-#ifdef MPI
-#ifdef AMPI
-      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-      call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
-     &     MPI_COMM_WORLD, ierr)
-      call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
-     &     AMPI_ADOUBLE_PRECISION,
-     &     MPI_SUM, 0,
-     &     MPI_COMM_WORLD, ierr)
+      call simul (indic,ad_array_size,ad_x,cost,ad_g,izs,rzs,dzs)
 
-      if (mynode.eq.0) then
-         cost = xf
-      end if
+#ifdef MPI
+#ifdef AMPI     
+      call AMPI_Gather(ad_x,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+
+      call AMPI_Gather(ad_g,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,ad_g_f,ad_array_size/nnodes,
+     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 #endif
 #else
-      ad_sg_f = ad_g_f
+      ad_x_f=ad_x
+      ad_g_f=ad_g
+#endif
+      
+#ifdef MPI
+#ifdef AMPI
+      call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
+     &     0, MPI_COMM_WORLD, ierr)
+      
+      if (mynode.eq.0) then
+         cost = cost_f
+      end if
+#endif
 #endif      
       ad_counter = ad_counter + 1
 
       dx=1.e-10
-      df1=xf/100
+      df1=cost_f/100
       epsrel=1.e-4
       niter=200
       nsim=200
@@ -113,10 +124,9 @@ c         MPI_master_only write(*,*) '2##>',ad_sg_f
 C        get ad_x_f, the new ad state on mpi master
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
      &        ad_array_size,ad_x_f,
-     &        cost,ad_sg_f,dx,df1,epsrel,
+     &        cost,ad_g_f,dx,df1,epsrel,
      &        normtype,imp,io,imode,omode,niter,nsim,iz,dz,ndz,
      &        reverse,indic,izs,rzs,dzs)
-
 
 c         do i=1,ad_array_size
 c            write (*,*) 'after: mynode, x, g',mynode,i,
@@ -125,46 +135,60 @@ c     &           ad_g_f(i)
 c         end do
 #ifdef MPI
 #ifdef AMPI
-C        broadcast the new ad state
-         call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Bcast(ad_x_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
-     &        0,MPI_COMM_WORLD,ierr)
-         call AMPI_Bcast(ad_sg_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
-     &        0,MPI_COMM_WORLD,ierr)
+         call AMPI_Scatter(ad_x_f,ad_array_size/nnodes,
+     &        AMPI_ADOUBLE_PRECISION,ad_x,ad_array_size/nnodes,
+     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+c         call AMPI_Scatter(ad_g_f,ad_array_size/nnodes,
+c     &        AMPI_ADOUBLE_PRECISION,ad_g,ad_array_size/nnodes,
+c     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+#endif         
+#else
+         ad_x=ad_x_f
+         ad_g=ad_g_f
+#endif         
+#ifdef MPI
+#ifdef AMPI
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
 #endif
 #endif         
-         ad_g_f = ad_sg_f
-         
-C        get ad_g_f the gradient on each proc (& ad_rms)
-         call simul(indic,ad_array_size,ad_x_f,cost,ad_g_f,izs,rzs,dzs)
 
-#ifdef MPI         
-#ifdef AMPI
-C        sum all proc gradients & rms on master
-         call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Reduce(cost, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
-     &        0,MPI_COMM_WORLD,ierr)
-         call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
-     &     AMPI_ADOUBLE_PRECISION,
-     &     MPI_SUM, 0,
-     &     MPI_COMM_WORLD, ierr)
+         
+C        get ad_gthe gradient on each proc (& ad_rms)
+         call simul(indic,ad_array_size,ad_x,cost,ad_g,izs,rzs,dzs)
+
+#ifdef MPI
+#ifdef AMPI     
+         call AMPI_Gather(ad_g,ad_array_size/nnodes,
+     &        AMPI_ADOUBLE_PRECISION,ad_g_f,ad_array_size/nnodes,
+     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 #endif
 #else
-         ad_sg_f = ad_g_f
-#endif         
+         ad_g_f=ad_g
+#endif
+      
+#ifdef MPI
+#ifdef AMPI
+         call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
+     &        0, MPI_COMM_WORLD, ierr)
+         
          if (mynode.eq.0) then
-            cost = xf
-            write (779,*) ad_counter,ad_rms,cost,norm2(ad_sg_f),
+            cost = cost_f
+         end if
+#endif
+#endif      
+         
+
+         if (mynode.eq.0) then
+            write (779,*) ad_counter,ad_rms,cost,norm2(ad_g_f),
      &           ad_dir_time,ad_adj_time
             call flush(779)
          end if
          
          df1 = cost
-
+         
          ad_counter = ad_counter+1
       end do
 

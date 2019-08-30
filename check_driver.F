@@ -19,71 +19,64 @@ c     this file is not differentiated
       integer ierr
       integer k
       double precision f,xf,f0
-      double precision fp,xfp,costb,cost
-      double precision ad_eps,ad_check
+      double precision fp,xfp,costb,cost,icost,cost_p
+      double precision ad_eps,ad_check,ad_check_f,s_ad_g
 
+c     perturbated ad_x
+      double precision ad_x_p(ad_array_size/nnodes)
       
       sim_iicroot = iicroot
 
-      call init_control(ad_x_f,ad_g_f)
+      open(unit=789, file="ad_check.dat", action="write",
+     &     form='FORMATTED')
+      
+      call init_control(ad_x,ad_g)
 
       write(*,*) 'start gradient ad_check'
-      open(unit=777, file="zob.dat", action="write",
-     &     form='FORMATTED')
-      open(unit=778, file="h.dat", action="write",
-     &     form='FORMATTED')
 
+c     1. compute gradient with adjoint
+      call save_croco_state()
+      icost=0
+      call cost_fun(ad_x, icost)
+      call restore_croco_state()
+      costb=1
+      cost=icost
+      call cost_fun_b(ad_x,ad_g,cost,costb)
+      call restore_croco_state()
+
+c     ad_g . (1 1 1 ... )
+      s_ad_g = sum(ad_g)
+      
+c     perturbations      
       ad_eps = 1D-5
-      do while (ad_eps.gt.1D-10)
-
-         call save_croco_state()
-         call cost_fun(ad_x_f, f)
-         call restore_croco_state()
-         costb=1
-         cost=f
-         call cost_fun_b(ad_x_f,ad_g_f,cost,costb)
-         call restore_croco_state()
-#ifdef AMPI
-         call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-         call AMPI_Reduce(f, xf, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM, 0,
-     &        MPI_COMM_WORLD, ierr)
-         call AMPI_Reduce(ad_g_f,ad_sg_f,ad_array_size,
-     &        AMPI_ADOUBLE_PRECISION,
-     &        MPI_SUM, 0,
-     &        MPI_COMM_WORLD, ierr)
+      do while (ad_eps.gt.1D-10)   
          
-         ad_g_f = ad_sg_f
-         if (mynode.eq.0) then
-            f = xf
-         end if
-#endif
-c     perturbations
-         do k=1,ad_array_size
-            ad_x_f(k) = ad_x_f(k)+ad_eps
-            call save_croco_state()
-            call cost_fun(ad_x_f,fp)
-            call restore_croco_state()
-            ad_x_f(k) = ad_x_f(k)-ad_eps
-#ifdef AMPI
-            call AMPI_Barrier(MPI_COMM_WORLD,ierr)
-            call AMPI_Reduce(fp, xfp, 1, AMPI_ADOUBLE_PRECISION,
-     &           MPI_SUM, 0,
-     &           MPI_COMM_WORLD, ierr)
-            if (mynode.eq.0) then
-               fp = xfp
-            end if
-#endif
-            MPI_master_only ad_check=
-     &           abs(ad_sg_f(k)-((fp-f)/ad_eps))/abs(ad_sg_f(k))
-            
-            MPI_master_only write(*,*) 'k,ad_eps,ad_check='
-     &           ,k,ad_eps,ad_check
-         
+         do k=1,ad_array_size/nnodes
+            ad_x_p(k) = ad_x(k)+ad_eps
          end do
+         
+         call save_croco_state()
+         icost=0
+         call cost_fun(ad_x_p,icost)
+         call restore_croco_state()
+
+         cost_p = icost
+         
+         ad_check=(s_ad_g-(cost_p-cost)/ad_eps)/s_ad_g
+
+         call AMPI_Reduce(ad_check, ad_check_f, 1,
+     &        AMPI_ADOUBLE_PRECISION, MPI_SUM,
+     &        0, MPI_COMM_WORLD, ierr)
+
+         if (mynode.eq.0) then
+            ad_check_f = ad_check_f/nnodes
+            write(789,*)
+     &           mynode,ad_eps,ad_check
+            call flush(789)
+         end if
          ad_eps =ad_eps/2.
       end do
-      close (unit=777)
-      close (unit=778)
+      close (unit=789)
       write(*,*) 'end state_control'
 
       return

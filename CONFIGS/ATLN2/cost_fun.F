@@ -1,5 +1,5 @@
 
-      subroutine cost_fun(ad_x_f, cost)
+      subroutine cost_fun(ad_x, cost)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -11,7 +11,7 @@
       integer i,j
       double precision delta_z
 
-      call set_state(ad_x_f)
+      call set_state(ad_x)
 
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
@@ -21,14 +21,16 @@ C$AD BINOMIAL-CKP ad_nt+1 40 1
          do xk=1,ad_ns
             call step()
          end do
-         call cost_fun_step(ad_x_f,icost,ta,1)
+         call cost_fun_step(ad_x,icost,ta,3)
       end do
 
-      cost=sqrt(icost)
+      cost=icost
 
       icost=0
-      call cost_fun_step(ad_x_f,icost,ta,2)
-      cost=cost+sqrt(icost)
+      call cost_fun_step(ad_x,icost,ta,2)
+
+      write(*,*) '==cost==>',cost,sqrt(icost)
+      cost=cost+1.D-3*icost
       
       ad_cost = cost
       ad_ta = ta
@@ -37,7 +39,7 @@ C$AD BINOMIAL-CKP ad_nt+1 40 1
       return
       end subroutine cost_fun
 
-      subroutine cost_fun_step(ad_x_f,icost,ta,mode)
+      subroutine cost_fun_step(ad_x,icost,ta,mode)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -58,12 +60,12 @@ C$AD BINOMIAL-CKP ad_nt+1 40 1
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call cost_fun_step_2d(tile,ad_x_f,icost,ta,mode)
+         call cost_fun_step_2d(tile,ad_x,icost,ta,mode)
       end do
 
       end subroutine cost_fun_step
 
-      subroutine cost_fun_step_2d(tile,ad_x_f,icost,ta,mode)
+      subroutine cost_fun_step_2d(tile,ad_x,icost,ta,mode)
 
       implicit none
 # include "adinc.h"
@@ -73,13 +75,13 @@ C$AD BINOMIAL-CKP ad_nt+1 40 1
       double precision icost
 # include "compute_tile_bounds.h"
 
-      call cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,ad_x_f,icost,ta,
+      call cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,ad_x,icost,ta,
      &     mode)
 
       end subroutine cost_fun_step_2d
 
       subroutine cost_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
-     &     ad_x_f,icost,ta,mode)
+     &     ad_x,icost,ta,mode)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -122,17 +124,27 @@ c     &        ad_obs(i,j,ta-2)
             ad_cost_counter = ad_cost_counter + 1
          end do
       else if (mode.eq.2) then
-         do k=1,ncpoints
-            i=ad_i(k)
-            j=ad_j(k)
-            delta_zob = (zob(i,j) - zob_bck(i,j))
-            icost = icost + delta_zob*delta_zob
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               delta_zob = (zob(i,j) - zob_bck(i,j))
+               icost = icost + delta_zob*delta_zob
+            end do
+         end do
+      else if (mode.eq.3) then
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               if (ad_obs(i,j,1).ne.spval) then
+                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
+                  icost = icost + delta_z*delta_z
+                  ad_cost_counter = ad_cost_counter + 1
+               end if
+            end do
          end do
       end if
 
       end subroutine cost_fun_step_2d_tile
 
-      subroutine set_state(ad_x_f)
+      subroutine set_state(ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -151,12 +163,12 @@ c     &        ad_obs(i,j,ta-2)
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call set_state_2d(tile, ad_x_f)
+         call set_state_2d(tile, ad_x)
       end do
 
       end subroutine set_state
 
-      subroutine set_state_2d(tile, ad_x_f)
+      subroutine set_state_2d(tile, ad_x)
 
       implicit none
 # include "adinc.h"
@@ -164,11 +176,11 @@ c     &        ad_obs(i,j,ta-2)
       integer tile
 # include "compute_tile_bounds.h"
 
-      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x_f)
+      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
 
       end subroutine set_state_2d
 
-      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x_f)
+      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -184,15 +196,13 @@ c     &        ad_obs(i,j,ta-2)
       zobmin=1.e99
       zobmax=0.
 
-c      call AMPI_Scatter(ad_x_f,ad_array_size/nnodes,
-c     &     AMPI_ADOUBLE_PRECISION,ad_x,ad_array_size/nnodes,
-c     &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-
       k=0
       do j=Jstr,Jend
          do i=Istr,Iend
             k=k+1
-            zob(i,j)=control_to_param(ad_x_f(k))
+            if (ad_obs(i,j,1).ne.spval) then
+               zob(i,j)=control_to_param(ad_x(k))
+            end if
             if (zobmin.gt.zob(i,j)) then
                zobmin=zob(i,j)
             end if
@@ -265,7 +275,7 @@ c      end do
       end subroutine set_state_2d_tile
 
 
-      subroutine init_control(ad_x_f,ad_g_f)
+      subroutine init_control(ad_x,ad_g)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -276,16 +286,10 @@ c      end do
       
       call init_local_arrays(ad_x)
       
-      do k=1,ad_array_size
-         ad_g_f(k)=0.
-         ad_x_f(k)=0.
+      do k=1,ad_array_size/nnodes
+         ad_g(k)=0.
+         ad_x(k)=0.
       end do
-      
-      write(*,*) 'A0##>',ad_x
-      call AMPI_AllGather(ad_x,ad_array_size/nnodes,
-     &     AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_size/nnodes,
-     &     AMPI_ADOUBLE_PRECISION,MPI_COMM_WORLD,ierr)
-
       
 
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
@@ -374,7 +378,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          end do
          close(unit=99)
       end if
-      call AMPI_Barrier(MPI_COMM_WORLD,ierr)
       call AMPI_Bcast(ad_lonr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
       call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
