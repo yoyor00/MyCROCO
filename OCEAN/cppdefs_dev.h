@@ -573,8 +573,7 @@
 ======================================================================
 */
 #ifdef WAVE_MAKER
-# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN \
-                                || defined FLUME_WAVES
+# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 #  define WAVE_MAKER_SPECTRUM
 # endif
 # ifdef WAVE_MAKER_SPECTRUM
@@ -664,7 +663,7 @@
 # ifndef WAVE_OFFLINE
 #  undef WKB_NUDGING
 # endif
-# if defined SHOREFACE || defined FLUME \
+# if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
 # endif

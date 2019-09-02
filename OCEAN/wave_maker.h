@@ -18,7 +18,7 @@
 !
 !  Set configuration parameters
 !
-#   ifdef FLUME_WAVES
+#   ifdef ROGUE_WAVE
 #    define WAVE_MAKER_SPECTRUM
 
 #   elif defined RIP && !defined MRL_WCI
@@ -56,7 +56,7 @@
 !
 !  Time & space origins
 !
-#   ifdef FLUME_WAVES
+#   ifdef ROGUE_WAVE
         x0=14.1
         y0=0.
         time0=64.
@@ -75,7 +75,7 @@
 !  Initialisation
 !--------------------------------------------------------------------
 !
-#   ifdef FLUME_WAVES
+#   ifdef ROGUE_WAVE
 !
 !  Read file
 !
@@ -188,7 +188,7 @@
         khd=h0*wf**2/g   ! compute wavenumber
         wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                   khd*(K5+K6*khd)))))) )/h0
-#   endif /* FLUME ... */
+#   endif /* ROGUE_WAVE ... */
 !
 !--------------------------------------------------------------------
 !  Sea level zetabry
@@ -246,7 +246,7 @@
      &                   (4.*sigma**3)*cos(2.*theta)
 #     endif
      &                    )*cff_spread
-#    endif /* FLUME ... */
+#    endif /* ROGUE_WAVE ... */
         enddo  ! j loop
 #   endif /* Z_FRC_BRY */
 !
@@ -258,7 +258,7 @@
         do j=JstrR,JendR
           h0=0.5*(h(0,j)+h(1,j))
           Du=h0
-#    if defined FLUME_WAVES || \
+#    if defined ROGUE_WAVE || \
      (defined WAVE_MAKER_SPECTRUM && !defined WAVE_MAKER_OBLIQUE \
                                   && !defined WAVE_MAKER_DSPREAD)
           do k=1,N
@@ -332,7 +332,7 @@
           do k=1,N
             ubry_west(j,k)=ubry_west(j,k) - cff1
           enddo
-#    endif /* FLUME_WAVES */
+#    endif /* ROGUE_WAVE */
 
         enddo  ! j loop
 

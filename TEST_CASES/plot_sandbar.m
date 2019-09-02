@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Make plot from the results of the FLUME test case
+%  Make plot from the results of the SANDBAR test case
 % 
 %  Further Information:  
 %  http://www.crocoagrif.org/
@@ -35,7 +35,7 @@ close all
 %
 % --- model params ---
 %
-fname = 'flume_his.nc'; % croco file name
+fname = 'sandbar_his.nc'; % croco file name
 
 morph_fac = 24;         % morphological factor (sediment.in)
 morph_cpl =  1;         % feedback to currents
@@ -172,7 +172,7 @@ grid on
 axis([-Inf Inf -0.6 0.05])
 caxis([cmin cmax])
 thour=floor(time*24);
-title(['FLUME: U at Time ',num2str(thour),' hour'])
+title(['SANDBAR: U at Time ',num2str(thour),' hour'])
 hold off
 
 subplot(2,1,2)
@@ -194,11 +194,11 @@ grid on
 axis([-Inf Inf -0.6 0.05])
 caxis([cmin cmax])
 thour=floor(time*24);
-title(['FLUME: W at Time ',num2str(thour),' hour'])
+title(['SANDBAR: W at Time ',num2str(thour),' hour'])
 hold off
 
 if makepdf
- export_fig -transparent flume_u.pdf
+ export_fig -transparent sandbar_u.pdf
 end
 %
 %-------------------------------------------------
@@ -219,7 +219,7 @@ grid on
 axis([-Inf Inf -0.6 0.05])
 caxis([cmin cmax])
 thour=floor(time*24);
-title(['FLUME: Akv at Time ',num2str(thour),' hour'])
+title(['SANDBAR: Akv at Time ',num2str(thour),' hour'])
 hold off
 
 subplot(2,1,2)
@@ -234,16 +234,16 @@ grid on
 axis([-Inf Inf -0.6 0.05])
 caxis([cmin cmax])
 thour=floor(time*24);
-title(['FLUME: Akb at Time ',num2str(thour),' hour'])
+title(['SANDBAR: Akb at Time ',num2str(thour),' hour'])
 hold off
 
 if makepdf
- export_fig -transparent flume_Kv.pdf
+ export_fig -transparent sandbar_Kv.pdf
 end
 end % add_plot ---
 %
 %======================================================================
-%            VALIDATION USING FLUME EXPERIMENT 
+%            VALIDATION USING SANDBAR EXPERIMENT 
 %               BY ROELVINK & STIVE 1989
 %======================================================================
 %
@@ -369,7 +369,7 @@ title('Bed Evolution - 0h/12h/24h','Fontsize',15)
 set(gca,'Fontsize',15)
 
 if makepdf
- export_fig -transparent flume_valid.pdf
+ export_fig -transparent sandbar_valid.pdf
 end
 %
 %-------------------------------------------
@@ -395,7 +395,7 @@ set(gca,'Fontsize',15)
 hold off
 
 if makepdf
- export_fig -transparent flume_valid_bed.pdf
+ export_fig -transparent sandbar_valid_bed.pdf
 end
 end % add_plot
 %
@@ -411,10 +411,10 @@ legend('Setup Model','Setup Exp','Bathy/10')
 grid on
 axis([xmin xmax zmin zmax])
 thour=floor(time*24);
-title(['FLUME: Setup at Time ',num2str(thour),' hour'])
+title(['SANDBAR: Setup at Time ',num2str(thour),' hour'])
 hold off
 
 if makepdf
- export_fig -transparent flume_valid_sup.pdf
+ export_fig -transparent sandbar_valid_sup.pdf
 end
 end % add_plot ---

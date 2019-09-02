@@ -107,8 +107,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
-#elif defined FLUME
-      fname='TEST_CASES/croco.in.Flume'
+#elif defined SANDBAR
+      fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined SINGLE_COLUMN && defined KATO_PHILIPS

@@ -156,7 +156,7 @@
 
 ! Define Stokes drift computation
 
-# ifndef FLUME
+# ifndef SANDBAR
 #  define STOKES_DRIFT
 # endif
 

@@ -1,5 +1,5 @@
 title:
-        FLUME Example 
+        SANDBAR Example 
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                36000      0.1      30      100
@@ -11,7 +11,7 @@ initial: NRREC  filename
           0
 
 sediments: input file
-           sediment_flume.in
+           sediment_sandbar.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T          
@@ -24,18 +24,18 @@ wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
 
 restart:          NRST, NRPFRST / filename
                   24000   -1
-                          flume_rst.nc
+                          sandbar_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
             T     3000       0
-                          flume_his.nc
+                          sandbar_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   10*T
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     6000     0
-                          flume_avg.nc
+                          sandbar_avg.nc
 
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen  HEL
                              F   F     T   T    T    F    F     F       T   T    T     T    T    T    T    T   10*T             
@@ -49,11 +49,11 @@ auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Ws
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        300         0
-                                 flume_dia.nc
+                                 sandbar_dia.nc
 
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           250            0
-                                 flume_dia_avg.nc
+                                 sandbar_dia_avg.nc
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             30*T

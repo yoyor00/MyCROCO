@@ -756,7 +756,7 @@ C$OMP BARRIER
      &                               *(1 -exp (-cff1**5 ) )
 # endif
 # if defined WET_DRY && defined WAVE_BREAK_SWASH
-!  Add dissipation near wet-dry interface (e.g., swash zone; FLUME case)
+!  Add dissipation near wet-dry interface (e.g., swash zone; SANDBAR case)
           wsb(i,j,wnew)=wsb(i,j,wnew)*(1.+2.*
      &                  (1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
      &                                 (z_w(i,j,N)-z_w(i,j,0)))) )

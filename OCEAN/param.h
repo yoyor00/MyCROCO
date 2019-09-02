@@ -122,8 +122,8 @@
 # endif
 #elif defined SHOREFACE
       parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
-#elif defined FLUME
-      parameter (LLm0=59,   MMm0=1,    N=20)   ! .5 m Flume
+#elif defined SANDBAR
+      parameter (LLm0=59,   MMm0=1,    N=20)   ! 50 cm
 #elif defined SWASH
 !     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
@@ -296,7 +296,7 @@
 #ifdef WET_DRY
       real D_wetdry             ! Critical Depth for Drying cells
                                 ! ======== ===== === ====== =====
-# if defined THACKER || defined FLUME
+# if defined THACKER || defined SANDBAR
       parameter (D_wetdry=0.01)
 # elif defined SWASH
       parameter (D_wetdry=0.001)

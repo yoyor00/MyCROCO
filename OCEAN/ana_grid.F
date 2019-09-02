@@ -67,7 +67,7 @@ C$    integer omp_get_thread_num
 # ifdef RIP
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
-# ifdef FLUME
+# ifdef SANDBAR
       real p1,p2,p3,p4
 # endif
 # ifdef RIVER
@@ -196,7 +196,7 @@ C$    integer omp_get_thread_num
                      depth=15.
                      f0=0.   
                      beta=0.
-# elif defined FLUME
+# elif defined SANDBAR
                      depth=0.6
                      f0=0.   
                      beta=0.
@@ -304,7 +304,7 @@ C$    integer omp_get_thread_num
 # elif defined SHOREFACE
                      Length_XI =1180.0 
                      Length_ETA=Length_ETA_ISO_GRID
-# elif defined FLUME
+# elif defined SANDBAR
                      Length_XI =32.0 
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
@@ -596,7 +596,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
-# elif defined FLUME
+# elif defined SANDBAR
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef MPI

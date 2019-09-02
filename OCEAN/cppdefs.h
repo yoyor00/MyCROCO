@@ -31,7 +31,7 @@
 #undef  JET             /* Baroclinic Jet Example */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  RIP             /* Rip Current Test Case */
-#undef  FLUME           /* Bar-generating Flume Example */
+#undef  SANDBAR         /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
 #undef  ACOUSTIC        /* Acoustic wave Example */
@@ -938,10 +938,10 @@
 #  define ANA_TCLIMA
 # endif
 
-#elif defined FLUME
+#elif defined SANDBAR
 /*
-!                       FLUME Example
-!                       ===== =======
+!                       SANDBAR Example
+!                       ======= =======
 !
 !   Roelvink, J.A. and Stive, M.J.F., 1989: Bar-generating cross-shore 
 !       flow mechanisms on a beach. Journal of Geophysical Research

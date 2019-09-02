@@ -660,11 +660,7 @@
 
 #ifdef WAVE_MAKER
       integer Nfrq, Ndir
-# ifdef FLUME_WAVES
       parameter (Nfrq=320, Ndir=50)
-# else
-      parameter (Nfrq=250, Ndir=50)
-# endif
       real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
       real wd_bry(Ndir), wa_bry_d(Ndir)
       common /wave_maker/ wf_bry, wk_bry, wa_bry,
