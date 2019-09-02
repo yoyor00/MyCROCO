@@ -59,8 +59,7 @@ C$    integer omp_get_thread_num
 # include "scalars.h"
 !
       real Length_XI,Length_ETA, depth, f0,beta, 
-     &     cff,y, x0,y0,dx,dy, NSUB,
-     &     grid_LoM,grid_MoL
+     &     cff,y, x0,y0,dx,dy, NSUB
 !
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
@@ -235,8 +234,8 @@ C$    integer omp_get_thread_num
 ! Grid dimensions (Length_XI, Length_ETA)
 !----------------------------------------------------------------------
 !
-      grid_MoL=float(MMm0)/float(LLm0)
-      grid_LoM=float(LLm0)/float(MMm0)
+# define Length_XI_ISO_GRID Length_ETA*float(LLm0)/float(MMm0)
+# define Length_ETA_ISO_GRID Length_XI*float(MMm0)/float(LLm0)
 !
 # ifdef AGRIF
       if (Agrif_Root()) then
@@ -249,91 +248,94 @@ C$    integer omp_get_thread_num
                      Length_ETA= 10.0e+3
 # elif defined CANYON_A || defined CANYON_B
                      Length_XI =128.0e+3
-                     Length_ETA=96.0e+3
+                     Length_ETA= 96.0e+3
 # elif defined EQUATOR
-                     Length_ETA=3200.0E+3
-                     Length_XI =4000.0E+3
+                     Length_ETA=3200.0e+3
+                     Length_XI =4000.0e+3
 # elif defined KH_INST 
                      Length_XI =256.0
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined ACOUSTIC
                      Length_XI =128.0
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined GRAV_ADJ
 #  ifdef NBQ
                      Length_XI =3.0
 #  else
-                     Length_XI =64.0E+3
+                     Length_XI =64.0e+3
 #  endif
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined I_SOLITON
-                     Length_XI =6.0   ! Horn et al. (2001)
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_XI =6.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
                      Length_XI =200.0e+3
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined INTERNAL
                      Length_XI =1200.0e+3
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined TS_HADV_TEST
-                     Length_XI = 1.0E+3
-                     Length_ETA= 1.0E+3
+                     Length_XI = 1.0e+3
+                     Length_ETA= 1.0e+3
 # elif defined OVERFLOW
                      Length_ETA=64.0E+3
-                     Length_XI =Length_ETA*grid_LoM
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined SEAMOUNT
                      Length_XI =512.0e+3
                      Length_ETA=512.0e+3
 # elif defined SHELFRONT
-                     Length_XI =20.0e+3
                      Length_ETA=200.0e+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined SOLITON
                      Length_XI =48.
                      Length_ETA=16.
 # elif defined UPWELLING
-                     Length_ETA=8.E+4
-                     Length_XI =Length_ETA*grid_LoM
+                     Length_ETA=80.e+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined SED_TEST2
                      Length_XI =25000.0
-                     Length_ETA=2500.0
+                     Length_ETA= 2500.0
 # elif defined RIVER
-                     Length_ETA=8.E+4
-                     Length_XI =Length_ETA*grid_LoM
+                     Length_ETA=80.e+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined JET
-                     Length_XI =500.e+3 
+                     Length_XI = 500.e+3 
                      Length_ETA=2000.e+3 
 # elif defined SHOREFACE
                      Length_XI =1180.0 
-                     Length_ETA=140.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined FLUME
                      Length_XI =32.0 
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
                      Length_XI =110.0 
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined RIP
                      Length_XI =768.0 
                      Length_ETA=768.0
 # elif defined THACKER
-                     Length_XI =199.e+3 
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_XI =200.e+3 
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined TANK
 #  ifndef MOVING_BATHY
 #   ifndef TANKY
                      Length_XI =10.0
-                     Length_ETA=Length_XI*grid_MoL
+                     Length_ETA=Length_ETA_ISO_GRID
 #   else
                      Length_ETA=10.0
-                     Length_XI =Length_ETA*grid_LoM
+                     Length_XI =Length_XI_ISO_GRID
 #   endif
 #  else
                      Length_XI =4.0
-                     Length_ETA=0.001
+                     Length_ETA=Length_ETA_ISO_GRID
 #  endif
 # else
                      Length_XI =???
                      Length_ETA=??? 
 # endif
+
+# undef Length_XI_ISO_GRID
+# undef Length_ETA_ISO_GRID
 
 !----------------------------------------------------------------------
 ! Copy physical dimensions of the grid into globally vizible variables

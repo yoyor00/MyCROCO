@@ -98,7 +98,7 @@
 #elif defined SEAMOUNT
       parameter (LLm0=64,   MMm0=64,   N=20)
 #elif defined SHELFRONT
-      parameter (LLm0=4,    MMm0=40,   N=10)
+      parameter (LLm0=3,    MMm0=40,   N=10)
 #elif defined SOLITON
       parameter (LLm0=96,   MMm0=32,   N=10)
 #elif defined UPWELLING
@@ -137,9 +137,9 @@
 # endif
 #elif defined THACKER
 # ifdef THACKER_2DV
-      parameter (LLm0=199,  MMm0=1,    N=5 )   !  1 km resolution
+      parameter (LLm0=200,  MMm0=1,    N=5 )   !  1 km resolution
 # else
-      parameter (LLm0=199,  MMm0=199,  N=5 )   !  1 km resolution
+      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution
 # endif
 #elif defined TANK
 # ifndef MOVING_BATHY
