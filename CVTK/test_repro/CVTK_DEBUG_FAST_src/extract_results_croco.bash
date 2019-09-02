@@ -79,8 +79,13 @@ if [ ! -z "$res_omp" ] ||  [ ! -z "$res_mpi" ] ; then
   msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
   echo -e "   $msg2" | tee -a mylog.txt
 else
-  sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
-  \mv tmp.txt ${TEST_NAME}_steps
+  if [ $FLAG_MPI -eq 1 -o  $FLAG_OPENMP -eq 1 ]; then
+    sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps
+  else
+    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps
+  fi
 fi  
 
 

@@ -620,12 +620,6 @@
 ! kvf : vertical vortex force term (K term) at rho-point
 ! ======================================================
 !
-#  ifdef STOKES_DRIFT
-
-#   define kvr wrk3
-#   define kvfx stk
-#   define kvfy inv_f
-
       if (WESTERN_EDGE) then
         imin=IstrU-1
       else
@@ -636,6 +630,13 @@
       else
         jmin=JstrV
       endif
+
+#  ifdef STOKES_DRIFT
+
+#   define kvr wrk3
+#   define kvfx stk
+#   define kvfy inv_f
+
       do k=1,N-1
         do j=JstrV-1,jend+1             ! du/dz & dv/dz at horz u- &
           do i=IstrU-1,iend+1           ! v- & vert w-point

@@ -126,11 +126,7 @@
 #elif defined SINGLE_COLUMN && defined FORCED_OSCNONROTBBL
       fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
-# ifdef NBQ
-      fname='TEST_CASES/croco.in.Tank_nbq'
-# else
       fname='TEST_CASES/croco.in.Tank'
-# endif
 #elif defined ACOUSTIC
       fname='TEST_CASES/croco.in.Acoustic' 
 #elif defined SWASH

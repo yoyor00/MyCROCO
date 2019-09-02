@@ -26,7 +26,7 @@
       Ad = A
       
       do j=jstr-1,jend+1
-         Azond(j)=sum(Ad(istr:iend,j))
+         Azond(j)=sum(A(istr:iend,j))
       enddo
 
 #ifdef MPI
@@ -77,7 +77,7 @@
       
       do k=1,N
          do j=jstr-1,jend+1
-               Azond(j,k)=sum(Ad(istr:iend,j,k))
+         Azond(j,k)=sum(A(istr:iend,j,k))
          enddo
       enddo
 

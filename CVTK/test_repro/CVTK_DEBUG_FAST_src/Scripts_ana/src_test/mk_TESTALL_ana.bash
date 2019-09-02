@@ -9,7 +9,6 @@ source CONFIGURE_GLOBAL
 ./git_process.bash
 
 for testconf in `ls -1 ./Configure_Test/ `;do
-#for testconf in SWASH ; do
   [ -d $testconf ] && rm -rf 	$testconf 
   echo -e ${FMT_BLUEBLD}"=============================="${FMT_ORD}
   echo -e ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
@@ -21,12 +20,11 @@ done
 
 i=1
 ierr=0
-#for testconf in   SWASH ; do  
 for testconf in `ls -1 ./Configure_Test/ `;do
   if [ $i -eq 1 ]; then	
   echo "  "
   if [ ${FANCY_OUTPUT} -eq 1 ] ;then
-    printf "%22s %12s %12s" COMPILATION EXECUTION REPRODUCIBILITY
+    printf "%26s %14s %20s" COMPILATION EXECUTION REPRODUCIBILITY
   else
     printf "%35s %20s %20s" COMPILATION EXECUTION REPRODUCIBILITY
   fi  
@@ -57,9 +55,9 @@ for testconf in `ls -1 ./Configure_Test/ `;do
     fi
   done
   if [ ${FANCY_OUTPUT} -eq 1 ] ;then
-    format="%-10s %20s %29s %25s \n"
+    format="%-12s %20s %29s %29s \n"
   else
-    format="%-10s %20s %20s %20s \n"
+    format="%-12s %20s %20s %20s \n"
   fi
   printf "$format" $testconf $COMPIL_OUT_PR $EXEC_OUT_PR $REPRO_OUT_PR
 

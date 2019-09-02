@@ -337,7 +337,7 @@
         eps3D  = 0.   ! 3D perturbation
 !
         do j=JR_RANGE
-          do i=IR_RANGE
+          do i=IU_RANGE
             depth=h(i,j)
             zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
 !           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
@@ -352,17 +352,6 @@
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
 
               u(i,j,k,2)  = u(i,j,k,1)
-              v(i,j,k,1)  = 0.
-              v(i,j,k,2)  = 0.
-#   ifdef NBQ
-              wz(i,j,k,1) = -0.01*du*hup0*
-     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
-
-              wz(i,j,k,2) = wz(i,j,k,1)
-#   endif
-
               ubar(i,j,1) = ubar(i,j,1) + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                  * u(i,j,k,1)
               hint = hint               + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
@@ -375,6 +364,27 @@
             enddo
             ubar(i,j,1) = 0. 
             ubar(i,j,:) = ubar(i,j,1)
+          enddo
+        enddo
+
+        do j=JR_RANGE
+          do i=IR_RANGE
+            depth=h(i,j)
+            zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
+!           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
+            hup0=0.15*depth  ! perturbation
+            do k=1,N
+              v(i,j,k,1)  = 0.
+              v(i,j,k,2)  = 0.
+#   ifdef NBQ
+              wz(i,j,k,1) = -0.01*du*hup0*
+     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+
+              wz(i,j,k,2) = wz(i,j,k,1)
+#   endif
+            enddo
           enddo
         enddo
 #   ifdef NBQ

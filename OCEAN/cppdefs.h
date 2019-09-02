@@ -1151,7 +1151,6 @@
 ! free-surface flows.
 ! Int. J. Numer. Methods Fluids 42, 929â~@~S952.
 */
-# undef  TANKY
 # undef  MPI
 # define NBQ
 # ifdef NBQ

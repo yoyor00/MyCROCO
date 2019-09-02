@@ -311,7 +311,11 @@
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Nsrc               ! Number of point sources
+# ifdef RIVER
+      parameter (Nsrc=2)         ! ====== == ===== =======
+# else
       parameter (Nsrc=12)        ! ====== == ===== =======
+# endif
 #endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats

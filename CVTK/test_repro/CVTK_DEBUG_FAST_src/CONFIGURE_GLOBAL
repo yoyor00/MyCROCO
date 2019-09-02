@@ -68,6 +68,9 @@ if [ "${COMPUTER}"=="LINUX" ]; then
       ./extract_results_croco.bash
     elif [ ${FLAG_MPI} -eq 1 ]; then 
     ./extract_results_croco.bash
+    else
+    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps
     fi
   }
 
@@ -90,17 +93,20 @@ else
   }
 
   function Fextract_results() {
-    if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
+    if [[ ${FLAG_MPI} -eq 1 &&  ${FLAG_OPENMP} -eq 1 ]]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
       CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
     
-    elif [ ${FLAG_OPENMP} = 1 ]; then 
+    elif [ ${FLAG_OPENMP} -eq 1 ]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
       CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
     
-    elif [ ${FLAG_MPI} = 1 ]; then 
+    elif [ ${FLAG_MPI} -eq 1 ]; then 
     #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
       CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
+    else
+    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps
     fi
     qrls `qselect -N ${TEST_NAME}_SE`
    }

@@ -78,7 +78,7 @@ mv cppdefs_dev_cvtk.h.tmp cppdefs_dev_cvtk.h
 #/bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
 
 #List of test cases with only one points in one direction
-LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
+LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER TANK I_SOLITON KH_INST SANDBAR'
 LIST_2DV_Y='OVERFLOW SHELFRONT'
 
 source configure_file
@@ -193,7 +193,7 @@ fi
 ##############################################################################
 # Openmp runs
 ##############################################################################
-if [ ${FLAG_OPENMP} = 1 ]; then 
+if [ ${FLAG_OPENMP} -eq 1 ]; then 
     
   par1='OPENMP'
   if [ $Is2DV_Y == 1 ]; then
@@ -261,7 +261,7 @@ fi
 ##############################################################################
 # Mpi runs
 ##############################################################################
-if [ ${FLAG_MPI} = 1 ]; then 
+if [ ${FLAG_MPI} -eq 1 ]; then 
     
   par1='MPI'
   if [ $Is2DV_Y == 1 ]; then
