@@ -20,7 +20,7 @@ done
 
 found=0
 for testconf in `ls -1 ./Configure_Test/ `; do
-  mytest=$(ls $testconf/jobcomp_OPENMP* 2>&1)
+  mytest=$(ls $testconf/jobcomp_OPENMP* > /dev/null 2>&1)
   if [ $? -eq 1 ]; then
     if [ $found -eq 0 ]; then
       echo -e "Some configurations were not tested :" 
@@ -28,7 +28,7 @@ for testconf in `ls -1 ./Configure_Test/ `; do
     fi   
     echo -e "   - $testconf not tested for OPENMP"    
   fi  
-  mytest=$(ls $testconf/jobcomp_MPI* 2>&1)
+  mytest=$(ls $testconf/jobcomp_MPI* > /dev/null 2>&1)
   if [ $? -eq 1 ]; then
     if [ $found -eq 0 ]; then
       echo -e "Some configurations were not tested :" 
