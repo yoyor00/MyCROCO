@@ -12,7 +12,7 @@ initial: NRREC  filename
           0 
                           swash_rst.nc
 restart:          NRST, NRPFRST / filename
-                  90000     -1
+                  900000     -1
                           swash_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T     4      0 

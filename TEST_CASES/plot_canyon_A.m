@@ -60,8 +60,7 @@ yr=repmat(yr,[N 1])/1000;
 % First plot
 %
 figure(1)
-contourf(yr,zr,t,[28:0.1:32])
-shading flat
+contourf(yr,zr,t,[28:0.1:32],'linestyle','none')
 colorbar
 title('Canyon A sigma vertical section')
 caxis([28 31])
@@ -74,9 +73,8 @@ end
 %
 figure(2)
 contourf(x1(2:end-1,2:end-1)/1000,y1(2:end-1,2:end-1)/1000,...
-         100*zeta(2:end-1,2:end-1),[-0.5:0.1:2])
+         100*zeta(2:end-1,2:end-1),[-0.5:0.1:2],'linestyle','none')
 axis image
-shading flat
 caxis([-0.1 1])
 colorbar
 hold on

@@ -150,8 +150,9 @@ for tindex=tstr:tend % ---------------------------------------------
  map(nbcol/2+1,:)=[1 1 1];
  colormap(map);
 
- contourf(xr2d,zr,u1-u2,[cmin:cint:cmax]); hold on
- shading flat; colorbar;
+ contourf(xr2d,zr,u1-u2,[cmin:cint:cmax],'linestyle','none'); 
+ hold on
+ colorbar;
  plot(xr,-hr,'color','k','LineWidth',3);
  ha=plot(xr,zeta2,'color','g','LineWidth',2);
  hn=plot(xr,zeta1,'color','r','LineWidth',2);

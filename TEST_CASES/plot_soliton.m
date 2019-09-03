@@ -37,10 +37,9 @@ y=nc{'y_rho'}(:);
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
 z1=squeeze(nc{'zeta'}(1,:,:));
 close(nc);
-contourf(x,y,100*zeta,[-5:2:20])
+contourf(x,y,100*zeta,[-5:2:20],'linestyle','none')
 axis image
 axis([0 48 0 16])
-shading flat
 caxis([0 12])
 colorbar('h')
 hold on

@@ -82,25 +82,21 @@ xrsec=repmat(lonr,N,1);
 %---------------------------------------------------------
 figure('position',[500 500 700 700])
 subplot(3,1,1)
-contourf(xsec,zsec,usec,20); 
-shading flat
+contourf(xsec,zsec,usec,20,'linestyle','none'); 
 colorbar
 %colormap(flipud(jet))
 %caxis([-0.1 0.1])
 title('Internal case: U section')
 %
 subplot(3,1,2)
-contourf(xrsec,zrsec,wsec,20);
-%pcolor(xrsec,zrsec,wsec);
-shading flat
+contourf(xrsec,zrsec,wsec,20,'linestyle','none');
 colorbar
 %caxis([-0.01 0.01])
 title('Internal case: W section')
 %
 subplot(3,1,3)
-contourf(xrsec,zrsec,drsec,20); 
-%hold on; contour(xrsec,zrsec,rsec,'k'); hold off
-shading flat; colorbar
+contourf(xrsec,zrsec,drsec,20,'linestyle','none'); 
+colorbar
 title('Internal case: rho anomaly')
 %
 if makepdf
