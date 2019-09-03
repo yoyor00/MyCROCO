@@ -624,14 +624,14 @@
 # define PSOURCE
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# define FLOATS
+# undef  FLOATS
 # ifdef FLOATS
-#   define RANDOM_WALK
-#   ifdef RANDOM_WALK
-#      define DIEL_MIGRATION
-#      define RANDOM_VERTICAL
-#      define RANDOM_HORIZONTAL
-#   endif
+#  define RANDOM_WALK
+#  ifdef RANDOM_WALK
+#   define DIEL_MIGRATION
+#   define RANDOM_VERTICAL
+#   define RANDOM_HORIZONTAL
+#  endif
 # endif
 # define NO_FRCFILE
 
