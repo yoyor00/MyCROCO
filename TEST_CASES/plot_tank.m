@@ -269,12 +269,13 @@ for tindex=tstr:tend % ---------------------------------- time loop
  colormap(map);
 
  if nbq,
-  contourf(xr2d,zr,u1-u2,[cmin:cint:cmax]); hold on
+  contourf(xr2d,zr,u1-u2,[cmin:cint:cmax],'linestyle','none');
  else
-  contourf(xr2d,zr,u1-u3,[cmin:cint:cmax]); hold on
+  contourf(xr2d,zr,u1-u3,[cmin:cint:cmax],'linestyle','none');
  end
+ hold on
  quiver(xr2d,zr,ur1,wr1,2);
- shading flat; colorbar;
+ colorbar;
  if nbq,
   ha=plot(xr,1000*zeta2,'color','g','LineWidth',2);
  else

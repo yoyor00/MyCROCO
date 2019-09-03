@@ -49,8 +49,7 @@ zr=squeeze(zr(:,:,1));
 yr=reshape(y,1,M);
 yr=repmat(yr,[N 1])/1000;
 
-contourf(yr,zr,t,[9:0.5:20])
-shading flat
+contourf(yr,zr,t,[9:0.5:20],'linestyle','none')
 colorbar
 caxis([10 18])
 hold on

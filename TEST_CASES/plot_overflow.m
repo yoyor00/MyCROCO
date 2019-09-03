@@ -50,9 +50,8 @@ zr=squeeze(zr(:,:,1));
 yr=reshape(y,1,M);
 yr=repmat(yr,[N 1])/1000;
 
-contourf(yr,zr,t,(-0.1:0.02:1))
+contourf(yr,zr,t,(-0.1:0.02:1),'linestyle','none')
 caxis([0 1])
-shading flat
 colorbar
 title('Overflow sigma-t vertical section')
 if makepdf

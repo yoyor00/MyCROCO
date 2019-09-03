@@ -57,8 +57,7 @@ xr=repmat(xr,[N 1])/1000;
 % First plot
 %
 figure(1)
-contourf(xr,zr,t,[0:0.2:5])
-shading flat
+contourf(xr,zr,t,[0:0.2:5],'linestyle','none')
 caxis([0 3])
 colorbar
 title('Basin temperature [^oC] vertical section')
@@ -71,16 +70,14 @@ end
 %
 figure(2)
 contourf(x1(2:end-1,2:end-1)/1000,y1(2:end-1,2:end-1)/1000,...
-         100*zeta(2:end-1,2:end-1),[-20:2:20])
+         100*zeta(2:end-1,2:end-1),[-20:2:20],'linestyle','none')
 axis image
-shading flat
 caxis([-8 8])
 colorbar
 hold on
 contour(x1/1000,y1/1000,h,'k')
 hold off
 title('Basin sea surface elevation [cm]')
-
 if makepdf
  export_fig -transparent -pdf basin_Z.pdf
 end

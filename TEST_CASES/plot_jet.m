@@ -157,10 +157,10 @@ map=colormap(jet(20));
 map(10:11,:)=1*[1 1 1 ; 1 1 1];
 colormap(map)
 %pcolor(xp,yp,vort); shading flat
-contourf(xp,yp,vort,20); shading flat
+contourf(xp,yp,vort,20,'linestyle','none');
 if nesting,
  hold on
- contourf(xp2,yp2,vort2,20); shading flat
+ contourf(xp2,yp2,vort2,20,'linestyle','none');
  plot(Xbox,Ybox,'k');
  hold off
 end
@@ -175,10 +175,10 @@ end
 %
 figure
 colormap(jet)
-contourf(X,Y,sst,20); shading flat
+contourf(X,Y,sst,20,'linestyle','none');
 if nesting,
  hold on
- contourf(X2,Y2,sst2,20); shading flat
+ contourf(X2,Y2,sst2,20,'linestyle','none');
  plot(Xbox,Ybox,'k');
  hold off
 end
@@ -212,14 +212,13 @@ end
 %
 figure
 colormap(map)
-contourf(X,Y,zeta,20); shading flat
+contourf(X,Y,zeta,20,'linestyle','none');
 if nesting,
  hold on
- contourf(X2,Y2,zeta2,20); shading flat
+ contourf(X2,Y2,zeta2,20,'linestyle','none');
  plot(Xbox,Ybox,'k');
  hold off
 end
-shading flat
 colorbar
 caxis([-0.1 0.1])
 axis image
@@ -271,7 +270,7 @@ if tindex>20
    ax(3)=subplot(1,3,3);
   end
   colormap(map)
-  contourf(xp,yp,vort,20); shading flat
+  contourf(xp,yp,vort,20,'linestyle','none');
   if tndx==3,
     h=colorbar('v');
     %set(h, 'Position', [.35 .2 .3 .03])

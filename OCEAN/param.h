@@ -62,9 +62,9 @@
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
-!     parameter (LLm0=120,  MMm0=10,   N=40)   !  10 km resolution
-!     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
-      parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
+!     parameter (LLm0=120,  MMm0=3,    N=40)   !  10 km resolution
+      parameter (LLm0=800,  MMm0=3,    N=40)   ! 1.5 km resolution
+!     parameter (LLm0=1600, MMm0=3,    N=40)   ! .75 km resolution
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  

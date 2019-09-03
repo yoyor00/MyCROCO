@@ -169,8 +169,9 @@ map=colormap(jet(nbcol));
 map(nbcol/2  ,:)=[1 1 1];
 map(nbcol/2+1,:)=[1 1 1];
 colormap(map);
-contourf(xr2d,zr,u1,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xr2d,zr,u1,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 plot(xr,zeta1,'color','g','LineWidth',3);
 grid on
@@ -187,8 +188,9 @@ map=colormap(jet(nbcol));
 map(nbcol/2  ,:)=[1 1 1];
 map(nbcol/2+1,:)=[1 1 1];
 colormap(map);
-contourf(xr2d,zr,v1,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xr2d,zr,v1,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 plot(xr,zeta1,'color','g','LineWidth',3);
 grid on
@@ -205,8 +207,9 @@ map=colormap(jet(nbcol));
 map(nbcol/2  ,:)=[1 1 1];
 map(nbcol/2+1,:)=[1 1 1];
 colormap(map);
-contourf(xr2d,zr,w1,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xr2d,zr,w1,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 plot(xr,zeta1,'color','g','LineWidth',3);
 grid on
@@ -234,8 +237,9 @@ map=colormap(jet(nbcol));
 map(nbcol/2  ,:)=[1 1 1];
 map(nbcol/2+1,:)=[1 1 1];
 colormap(map);
-contourf(xr2d,zr,ust,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xr2d,zr,ust,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 plot(xr,zeta1,'color','g','LineWidth',3);
 grid on
@@ -252,8 +256,9 @@ map=colormap(jet(nbcol));
 map(nbcol/2  ,:)=[1 1 1];
 map(nbcol/2+1,:)=[1 1 1];
 colormap(map);
-contourf(xr2d,zr,vst,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xr2d,zr,vst,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 plot(xr,zeta1,'color','g','LineWidth',3);
 grid on
@@ -270,8 +275,9 @@ map=colormap(jet(nbcol));
 map(nbcol/2  ,:)=[1 1 1];
 map(nbcol/2+1,:)=[1 1 1];
 colormap(map);
-contourf(xr2d,zr,wst,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xr2d,zr,wst,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 plot(xr,zeta1,'color','g','LineWidth',3);
 grid on
@@ -296,8 +302,9 @@ cmin=0; cmax=0.05; nbcol=40;
 cint=(cmax-cmin)/nbcol;
 map=colormap(jet(nbcol));
 colormap(map);
-contourf(xw2d,zw,Akv,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xw2d,zw,Akv,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 grid on
 axis([-Inf Inf -Inf 1])
@@ -311,8 +318,9 @@ cmin=0; cmax=0.05; nbcol=40;
 cint=(cmax-cmin)/nbcol;
 map=colormap(jet(nbcol));
 colormap(map);
-contourf(xw2d,zw,Akb,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xw2d,zw,Akb,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 grid on
 axis([-Inf Inf -Inf 1])
@@ -326,8 +334,9 @@ cmin=0; cmax=3.e-3; nbcol=40;
 cint=(cmax-cmin)/nbcol;
 map=colormap(jet(nbcol));
 colormap(map);
-contourf(xw2d,zw,Akw,[cmin:cint:cmax]); hold on
-shading flat; colorbar;
+contourf(xw2d,zw,Akw,[cmin:cint:cmax],'linestyle','none'); 
+hold on
+colorbar;
 plot(xr,-hr,'color','k','LineWidth',3);
 grid on
 axis([-Inf Inf -Inf 1])

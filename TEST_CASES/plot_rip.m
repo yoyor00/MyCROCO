@@ -115,11 +115,11 @@ for tindex=tstr:tend  % ---
  hold on
 
  if pltvort,
-  [C,hh]=contourf(x,y,vort,[cmin:cint:cmax]);
+  [C,hh]=contourf(x,y,vort,[cmin:cint:cmax],'linestyle','none');
  else
-  [C,hh]=contourf(x,y,speed,[cmin:cint:cmax]);
+  [C,hh]=contourf(x,y,speed,[cmin:cint:cmax],'linestyle','none');
  end
- shading flat; colorbar;
+ colorbar;
 
  I = ~(sqrt(ur.^2+vr.^2)<0.05);
  quiver(x(I),y(I),ur(I),vr(I)); hold off

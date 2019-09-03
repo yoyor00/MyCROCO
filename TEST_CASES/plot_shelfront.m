@@ -46,9 +46,8 @@ zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r');
 zr=squeeze(zr(:,:,1));
 yr=reshape(y,1,M);
 yr=repmat(yr,[N 1])/1000;
-contourf(yr,zr,t,(12:0.5:18))
+contourf(yr,zr,t,(12:0.5:18),'linestyle','none')
 caxis([12 18])
-shading flat
 colorbar
 hold on
 [C1,h1]=contour(yr,zr,100*u,(-5:2:9),'k');

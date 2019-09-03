@@ -518,7 +518,6 @@
 # define UV_ADV
 # define BODYTIDE
 # define ANA_GRID
-# undef  INTERNALSHELF
 # define ANA_INITIAL
 # define ANA_BTFLUX
 # define ANA_SMFLUX
@@ -527,20 +526,23 @@
 # define ANA_VMIX
 # define EW_PERIODIC
 # define NS_PERIODIC
-# undef  OBC_EAST
-# undef  OBC_WEST
-# undef  SPONGE
-# undef  ANA_SSH
-# undef  ANA_M2CLIMA
-# undef  ANA_M3CLIMA
-# undef  ANA_TCLIMA
-# undef  ZCLIMATOLOGY
-# undef  M2CLIMATOLOGY
-# undef  M3CLIMATOLOGY
-# undef  TCLIMATOLOGY
-# undef  M2NUDGING
-# undef  M3NUDGING
-# undef  TNUDGING
+# ifdef INTERNALSHELF
+#  undef   EW_PERIODIC
+#  define  OBC_EAST
+#  define  OBC_WEST
+#  define  SPONGE
+#  define  ANA_SSH
+#  define  ANA_M2CLIMA
+#  define  ANA_M3CLIMA
+#  define  ANA_TCLIMA
+#  define  ZCLIMATOLOGY
+#  define  M2CLIMATOLOGY
+#  define  M3CLIMATOLOGY
+#  define  TCLIMATOLOGY
+#  define  M2NUDGING
+#  define  M3NUDGING
+#  define  TNUDGING
+# endif
 # define NO_FRCFILE
 
 #elif defined IGW
@@ -622,14 +624,14 @@
 # define PSOURCE
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# define FLOATS
+# undef  FLOATS
 # ifdef FLOATS
-#   define RANDOM_WALK
-#   ifdef RANDOM_WALK
-#      define DIEL_MIGRATION
-#      define RANDOM_VERTICAL
-#      define RANDOM_HORIZONTAL
-#   endif
+#  define RANDOM_WALK
+#  ifdef RANDOM_WALK
+#   define DIEL_MIGRATION
+#   define RANDOM_VERTICAL
+#   define RANDOM_HORIZONTAL
+#  endif
 # endif
 # define NO_FRCFILE
 

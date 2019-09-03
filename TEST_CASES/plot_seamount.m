@@ -40,11 +40,10 @@ u=squeeze(nc{'u'}(tndx,N,:,:));
 v=squeeze(nc{'v'}(tndx,N,:,:));
 close(nc);
 spd=1000*sqrt( u2rho_2d(u).^2+v2rho_2d(v).^2);
-contourf(x,y,spd,[0:0.5:5])
+contourf(x,y,spd,[0:0.5:5],'linestyle','none')
 axis image
 axis([0 500 0 500])
 caxis([0 3])
-shading flat
 hold on
 contour(x,y,h,'k')
 colorbar
