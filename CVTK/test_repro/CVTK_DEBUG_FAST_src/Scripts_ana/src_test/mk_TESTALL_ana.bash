@@ -21,6 +21,8 @@ done
 found=0
 for testconf in `ls -1 ./Configure_Test/ `; do
   ls $testconf/jobcomp_OPENMP* > /dev/null 2>&1
+  echo $?
+  ls $testconf/jobcomp_OPENMP* > /dev/null 2>&1
   if [ $? -eq 1 ]; then
     if [ $found -eq 0 ]; then
       echo -e "Some configurations were not tested :" 
