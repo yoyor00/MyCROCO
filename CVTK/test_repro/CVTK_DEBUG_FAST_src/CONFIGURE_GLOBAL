@@ -1,114 +1,120 @@
 #!/bin/bash
 
 #- 
-# Variables automaticalyy set by  ci
+# Variables automatically set by  ci
 # DO NOT overwrite
 #  CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
 #  DATADIR: "$CI_PROJECT_DIR/.datadir"
 #  CVTKWORK: "$CI_PROJECT_DIR/.datawork"
 #  CROCO_CI_MPIRUN: "mpirun.mpich"
+#--
+#--
+#Add debug local interactive and not CI integration
+export CI_PROJECT_DIR="/local/tmp/3/gcambon/2019_MERGE/croco/builds/0/project-0"
+export CVTKWORK=$CI_PROJECT_DIR/.datawork
+export CVTKHOME="$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
+export CVTKWORK=$CI_PROJECT_DIR/.datawork
+export DATADIR=$CI_PROJECT_DIR/.datadir
+export CROCO_CI_MPIRUN=mpirun
+#--
 
-#CI_PROJECT_DIR=/Users/rblod/201906_MERGE/croco
-SOURCE_CROCO="$CI_PROJECT_DIR/OCEAN"
-#SOURCE_CROCO=/Users/rblod/201906_MERGE/croco/OCEAN
-#CROCO_CI_MPIRUN=mpirun
-TESTROOTDIR=${CVTKWORK}
+# Interactive and CI 
 CI_CROCO_PWD=$(pwd)
-#
+SOURCE_CROCO="$CI_PROJECT_DIR/OCEAN"
+TESTROOTDIR=${CVTKWORK}
 
 #-
-FANCY_OUTPUT=1
+FANCY_OUTPUT=0
 if [ ${FANCY_OUTPUT} -eq 1 ] ;then
-#  FMT_BLUEBLD=$(tput setaf 14 ; tput bold)
-  FMT_BLUEBLD=$(tput setaf 14 )
-  FMT_ORD='\033[0m'
-  FMT_GREEN=$(tput setaf 2)
-  FMT_ORANGE=$(tput setaf 172)
-  FMT_RED=$(tput setaf 1)
-  FMT_RED2=$(tput setaf 9)
-  FMT_GREENBLD=$(tput setaf 2 ; tput bold )
-  FMT_REDBLD=$(tput setaf 1 ; tput bold )
-  FMT_RVERT=$(  tput setab 7 ; tput bold    )
+    #  FMT_BLUEBLD=$(tput setaf 14 ; tput bold)
+    FMT_BLUEBLD=$(tput setaf 14 )
+    FMT_ORD='\033[0m'
+    FMT_GREEN=$(tput setaf 2)
+    FMT_ORANGE=$(tput setaf 172)
+    FMT_RED=$(tput setaf 1)
+    FMT_RED2=$(tput setaf 9)
+    FMT_GREENBLD=$(tput setaf 2 ; tput bold )
+    FMT_REDBLD=$(tput setaf 1 ; tput bold )
+    FMT_RVERT=$(  tput setab 7 ; tput bold    )
 else
-  FMT_BLUEBLD=""
-  FMT_ORD=""
-  FMT_GREEN=""
-  FMT_ORANGE=""
-  FMT_RED=""
-  FMT_RED2=""
-  FMT_GREENBLD=""
-  FMT_REDBLD=""
-  FMT_RVERT=""
+    FMT_BLUEBLD=""
+    FMT_ORD=""
+    FMT_GREEN=""
+    FMT_ORANGE=""
+    FMT_RED=""
+    FMT_RED2=""
+    FMT_GREENBLD=""
+    FMT_REDBLD=""
+    FMT_RVERT=""
 fi
 
 
 COMPUTER=LINUX
 
 if [ "${COMPUTER}"=="LINUX" ]; then
-  # Computer dependant function to submit jobs
-  SUBMIT_DIR=$CI_CROCO_PWD
-  MPIRUN=$CROCO_CI_MPIRUN
-  
-  function Fqsub_serial() {
-    ./comp_run_serial.bash
-  }
-  function Fqsub_openmp() {
-    ./comp_run_openmp.bash
-  }
-  function Fqsub_mpi() {
-    ./comp_run_mpi.bash
-  }
-
-  function Fextract_results() {
-    FLAG_MPI=$1
-    FLAG_OPENMP=$2
-    if [[ ${FLAG_MPI} -eq 1 &&  ${FLAG_OPENMP} -eq 1 ]]; then 
-      ./extract_results_croco.bash
-    elif [ ${FLAG_OPENMP} -eq  1 ]; then 
-      ./extract_results_croco.bash
-    elif [ ${FLAG_MPI} -eq 1 ]; then 
-    ./extract_results_croco.bash
-    else
-    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
-    \mv tmp.txt ${TEST_NAME}_steps
-    fi
-  }
-
+    # Computer dependant function to submit jobs
+    SUBMIT_DIR=$CI_CROCO_PWD
+    MPIRUN=$CROCO_CI_MPIRUN
+    
+    function Fqsub_serial() {
+	./comp_run_serial.bash
+    }
+    function Fqsub_openmp() {
+	./comp_run_openmp.bash
+    }
+    function Fqsub_mpi() {
+	./comp_run_mpi.bash
+    }
+    function Fextract_results() {
+	FLAG_MPI=$1
+	FLAG_OPENMP=$2
+	if [[ ${FLAG_MPI} -eq 1 &&  ${FLAG_OPENMP} -eq 1 ]]; then 
+	    ./extract_results_croco.bash
+	elif [ ${FLAG_OPENMP} -eq  1 ]; then 
+	    ./extract_results_croco.bash
+	elif [ ${FLAG_MPI} -eq 1 ]; then 
+	    ./extract_results_croco.bash
+	else
+	    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+	    \mv tmp.txt ${TEST_NAME}_steps
+	fi
+    }
+    
 else
-  # Computer dependant function to submit jobs
-  SUBMIT_DIR=$PBS_O_WORKDIR
-  MPIRUN=$MPI_LAUNCH
-
-  function Fqsub_serial() {
-    CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
-    [ -x `which qselect` ] && myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
-  }
-  function Fqsub_openmp() {
-    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
-    myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
-  }
-  function Fqsub_mpi() {
-    CI_CROCO_PWD=$PWD qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
-    myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
-  }
-
-  function Fextract_results() {
-    if [[ ${FLAG_MPI} -eq 1 &&  ${FLAG_OPENMP} -eq 1 ]]; then 
-    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
-      CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
+    # Computer dependant function to submit jobs
+    SUBMIT_DIR=$PBS_O_WORKDIR
+    MPIRUN=$MPI_LAUNCH
     
-    elif [ ${FLAG_OPENMP} -eq 1 ]; then 
-    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
-      CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
+    function Fqsub_serial() {
+	CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
+	[ -x `which qselect` ] && myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
+    }
+    function Fqsub_openmp() {
+	CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
+	myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
+    }
+    function Fqsub_mpi() {
+	CI_CROCO_PWD=$PWD qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
+	myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
+    }
     
-    elif [ ${FLAG_MPI} -eq 1 ]; then 
-    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
-      CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
-    else
-    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
-    \mv tmp.txt ${TEST_NAME}_steps
-    fi
-    qrls `qselect -N ${TEST_NAME}_SE`
-   }
-
+    function Fextract_results() {
+	if [[ ${FLAG_MPI} -eq 1 &&  ${FLAG_OPENMP} -eq 1 ]]; then 
+	    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
+	    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
+	    
+	elif [ ${FLAG_OPENMP} -eq 1 ]; then 
+	    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
+	    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
+	    
+	elif [ ${FLAG_MPI} -eq 1 ]; then 
+	    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
+	    CI_CROCO_PWD=$PWD qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
+	else
+	    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+	    \mv tmp.txt ${TEST_NAME}_steps
+	fi
+	qrls `qselect -N ${TEST_NAME}_SE`
+    }
+    
 fi

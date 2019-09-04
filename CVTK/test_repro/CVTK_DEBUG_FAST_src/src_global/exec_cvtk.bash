@@ -1,13 +1,5 @@
 #!/bin/bash
 
-##===================================
-##PBS -q sequentiel
-##PBS -l walltime=02:00:00
-##PBS -j oe
-#cd $PBS_O_WORKDIR
-#echo $PBS_O_LOGNAME
-##===================================
-
 set -x 
 
 #-----------------------
