@@ -55,9 +55,11 @@ c     perturbations
 
          write(*,*) '==check==',mynode,ad_check
 
+#if defined(MPI) && defined(AMPI)
          call AMPI_Reduce(ad_check, ad_check_f, 1,
      &        AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &        0, MPI_COMM_WORLD, ierr)
+#endif
 
          if (mynode.eq.0) then
             ad_check_f = ad_check_f/nnodes
