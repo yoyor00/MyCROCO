@@ -3,18 +3,8 @@ c     this file is not differentiated
       subroutine check_driver(iicroot)
 
       implicit none
-# include "cppdefs.h"
-# include "param.h"
+# include "adinc.h"
 # include "adparam.h"
-# include "scalars.h"
-# ifdef MPI
-# include "mpi_roms.h"
-# ifdef AMPI
-# include "ampi/ampif.h"
-# else
-      include 'mpif.h'
-# endif
-# endif
       integer iicroot
       integer ierr
       integer k
@@ -64,6 +54,8 @@ c     perturbations
          
          ad_check=(s_ad_g-(cost_p-cost)/ad_eps)/s_ad_g
 
+         write(*,*) '==check==',mynode,ad_check
+
          call AMPI_Reduce(ad_check, ad_check_f, 1,
      &        AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &        0, MPI_COMM_WORLD, ierr)
@@ -71,7 +63,7 @@ c     perturbations
          if (mynode.eq.0) then
             ad_check_f = ad_check_f/nnodes
             write(789,*)
-     &           mynode,ad_eps,ad_check
+     &           ad_eps,ad_check_f
             call flush(789)
          end if
          ad_eps =ad_eps/2.
