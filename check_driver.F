@@ -8,8 +8,7 @@ c     this file is not differentiated
       integer iicroot
       integer ierr
       integer k
-      double precision f,xf,f0
-      double precision fp,xfp,costb,cost,icost,cost_p
+      double precision icost,costb,cost,cost_p
       double precision ad_eps,ad_check,ad_check_f,s_ad_g
 
 c     perturbated ad_x
