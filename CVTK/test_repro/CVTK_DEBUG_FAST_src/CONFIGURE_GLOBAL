@@ -20,7 +20,7 @@ export CROCO_CI_MPIRUN=mpirun
 #--
 
 # Interactive and CI 
-CI_GC=gfortran
+CI_GC=ifort
 CI_MPIF90=mpif90
 CI_CROCO_PWD=$(pwd)
 SOURCE_CROCO="$CI_PROJECT_DIR/OCEAN"
