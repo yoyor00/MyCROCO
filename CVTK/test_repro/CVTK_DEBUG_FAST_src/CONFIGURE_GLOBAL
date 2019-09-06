@@ -16,7 +16,7 @@ export CI_PROJECT_DIR=$CROCOROOT/croco/builds/0/project-0
 export CVTKWORK=$CI_PROJECT_DIR/.datawork
 export CVTKHOME="$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
 export DATADIR=$CI_PROJECT_DIR/.datadir
-export CROCO_CI_MPIRUN=mpirun
+export CROCO_CI_MPIRUN=mpirun.mpich
 #--
 
 # Interactive and CI 
