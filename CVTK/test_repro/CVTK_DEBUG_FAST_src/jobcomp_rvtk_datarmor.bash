@@ -42,12 +42,12 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC=CI_FC
+FC=$CI_FC
 
 #
 # set MPI directories if needed
 #
-MPIF90=CI_MPIF90
+MPIF90=$CI_MPIF90
 MPILIB=""
 MPIINC=""
 
