@@ -9,14 +9,13 @@
 #  CROCO_CI_MPIRUN: "mpirun.mpich"
 #--
 #--
-
-#Add in case of dev/debug local interactive and not CI integration
-#export CI_PROJECT_DIR="/local/tmp/3/gcambon/2019_MERGE/croco/builds/0/project-0"
-#export CVTKWORK=$CI_PROJECT_DIR/.datawork
-#export CVTKHOME="$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
-#export CVTKWORK=$CI_PROJECT_DIR/.datawork
-#export DATADIR=$CI_PROJECT_DIR/.datadir
-#export CROCO_CI_MPIRUN=mpirun
+#Add debug local interactive and not CI integration
+export CI_PROJECT_DIR="/local/tmp/3/gcambon/2019_MERGE/croco/builds/0/project-0"
+export CVTKWORK=$CI_PROJECT_DIR/.datawork
+export CVTKHOME="$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
+export CVTKWORK=$CI_PROJECT_DIR/.datawork
+export DATADIR=$CI_PROJECT_DIR/.datadir
+export CROCO_CI_MPIRUN=mpirun
 #--
 
 # Interactive and CI 
