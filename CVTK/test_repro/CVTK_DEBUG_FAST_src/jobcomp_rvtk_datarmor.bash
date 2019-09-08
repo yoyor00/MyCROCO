@@ -44,7 +44,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 if [[ $OS == Linux ]] ; then
 
-	LINUX_FC=ifort
+	LINUX_FC=gfortran
 #
 #	set 32 or 64 Bits executable
 #
