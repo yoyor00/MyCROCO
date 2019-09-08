@@ -1,5 +1,10 @@
 #!/bin/bash
-
+#===================================
+#PBS -q omp
+#PBS -l ncpus=4
+#PBS -l walltime=02:00:00
+#PBS -l mem=20gb
+#PBS -j oe
 #set -x
 set -eu
 
@@ -14,14 +19,12 @@ par1='OPENMP'
 # Compile
 msg1="- Compilation failure for ${TEST_NAME} : ${par1}..."
 msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
-
 ./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt; echo -e $msg1 ; exit 1 ; }
 /bin/mv croco croco_${par1}.exe
 
 # Run
 msg1="- Execution failure for ${TEST_NAME} : ${par1}..."
 msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
-
 export OMP_NUM_THREADS=$NBPROCS
 ./croco_${par1}.exe $CROCOIN > openmp_${NBPROCS}_${TEST_NAME}.log  2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
 

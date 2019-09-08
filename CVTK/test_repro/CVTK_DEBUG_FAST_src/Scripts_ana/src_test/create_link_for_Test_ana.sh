@@ -1,8 +1,7 @@
 #!/bin/bash
-#set -x
+#echo '============================================================='
 echo '   - Link TESTROOT and '$PWD
 
-source ../CONFIGURE_GLOBAL
 source ../CONFIGURE_ANA
 
 #echo 'common scripts

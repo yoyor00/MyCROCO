@@ -6,7 +6,7 @@ variables:
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
-  CROCO_CI_MPIRUN: "mpirun"
+  CROCO_CI_MPIRUN: "mpirun.mpich"
   
 before_script:
   - mkdir -p $DATADIR
@@ -28,8 +28,7 @@ before_script:
 run:
   script:
     - cd $CVTKWORK/KTEST
-    - exec ./mk_TestDIR_ana.bash UPWELLING
-##    - exec ./mk_TESTALL_ana.bash
+    - exec ./mk_TESTALL_ana.bash
     - ./gather_recap.bash ANA
     - /bin/sh -c '! grep failed */Recap_*.*'
     
