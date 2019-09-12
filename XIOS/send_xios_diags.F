@@ -85,6 +85,10 @@
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
+      CASE ("psi")
+         vtype=p2dvar
+         nx_glo=LLm+1
+         ny_glo=MMm+1
       END SELECT
 
       ! From nf_fread.F
@@ -1697,12 +1701,14 @@ C 				  endif
       CALL set_grid( "u", lonu, latu )
       CALL set_grid( "v", lonv, latv )
       CALL set_grid( "w", lonr, latr )
+      CALL set_grid( "psi", lonu, latv )
 # else
       CALL set_grid( "rho", xr, yr )
       CALL set_grid( "b", xr, yr )
       CALL set_grid( "u", xp, yr )
       CALL set_grid( "v", xr, yp )
       CALL set_grid( "w", xr, yr )
+      CALL set_grid( "psi", xp, yp )
 # endif
  
       ! vertical grid definition
@@ -2067,6 +2073,9 @@ C 				  endif
       call xios_send_field("sustr",work2d)
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
+
+      call xios_send_field("uwnd",uwnd)
+      call xios_send_field("vwnd",vwnd)
 
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
