@@ -14,8 +14,7 @@
    ==== == ============ ===== ============= ====
 */
 #undef  BASIN           /* Basin Example */
-#undef  CANYON_A        /* Canyon_A Example */
-#undef  CANYON_B        /* Canyon_B Example */
+#undef  CANYON          /* Canyon Example */
 #undef  EQUATOR         /* Equator Example  */
 #undef  INNERSHELF      /* Inner Shelf Example */
 #undef  RIVER           /* River run-off Example */
@@ -388,13 +387,14 @@
 # define ANA_BTFLUX
 # define NO_FRCFILE
 
-#elif defined CANYON_A
+#elif defined CANYON
 /*
-!                       First Canyon Example
-!                       ===== ====== =======
+!                       Canyon Example
+!                       ====== =======
 */
 # undef  OPENMP
 # undef  MPI
+# define CANYON_STRAT
 # define UV_ADV
 # define UV_COR
 # define SOLVE3D
@@ -404,25 +404,6 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# define NO_FRCFILE
-
-#elif defined CANYON_B
-/*
-!                       Second Canyon Example
-!                       ====== ====== =======
-*/
-# undef  OPENMP
-# undef  MPI
-# define UV_ADV
-# define UV_COR
-# define SOLVE3D
-# define EW_PERIODIC
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_BTFLUX
-# define ANA_VMIX
 # define NO_FRCFILE
 
 #elif defined EQUATOR
@@ -438,7 +419,6 @@
 # define UV_COR
 # define UV_VIS2
 # define SOLVE3D
-# define SALINITY
 # define TS_DIF2
 # define ANA_GRID
 # define ANA_INITIAL
@@ -450,7 +430,6 @@
 # define ANA_BSFLUX
 # define QCORRECTION
 # define ANA_SST
-# define LMD_SKPP /* problem with MPI in Xi direction */
 # define LMD_MIXING
 # define LMD_RIMIX
 # define LMD_CONVEC
@@ -813,8 +792,8 @@
 */
 # undef  OPENMP
 # undef  MPI
-# define AGRIF
-# define AGRIF_2WAY
+# undef  AGRIF
+# undef  AGRIF_2WAY
 # undef  NBQ
 # define SOLVE3D
 # define UV_COR

@@ -31,7 +31,8 @@ close all
 
 makepdf=0;
 tndx=5;
-nc=netcdf('upwelling_avg.nc','r');
+nc=netcdf('upwelling_avg.nc');
+
 time=(nc{'scrum_time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
 y=squeeze(nc{'y_rho'}(:,2));
@@ -49,13 +50,16 @@ zr=squeeze(zr(:,:,1));
 yr=reshape(y,1,M);
 yr=repmat(yr,[N 1])/1000;
 
-contourf(yr,zr,t,[9:0.5:20],'linestyle','none')
+contourf(yr,zr,t,[9:1:20],'linestyle','none')
 colorbar
 caxis([10 18])
 hold on
 [C1,h1,]=contour(yr,zr,100*u,[-100:20:100],'k');
 clabel(C1,h1)
-title(['UPWELLING - temp [^oC] - day = ',num2str(time)])
+xlabel('X [km]')
+ylabel('Z [m]')
+title(['UPWELLING - temp [^oC] / u [cm/s] - day = ',num2str(time)])
+set(gca,'fontsize',15)
 if makepdf
  export_fig -transparent -pdf upwelling.pdf
 end

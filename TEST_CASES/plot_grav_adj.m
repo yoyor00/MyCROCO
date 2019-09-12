@@ -34,7 +34,7 @@ fname     = 'gravadj_his.nc';
 tindex    = [10;20;50];    % record indices to plot
 nbq       = 0;             % 0/1: hydro/nonhydro case
 plot_psi  = 0;             % plot streamfunction
-makepdf   = 1;             % make pdf file
+makepdf   = 0;             % make pdf file
 %
 %======================================================================
 

@@ -691,7 +691,7 @@
                       IF-less KPP --> KPP2005
 ======================================================================
 */
-#ifdef LMD_SKPP
+#if defined LMD_SKPP
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP

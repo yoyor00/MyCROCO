@@ -32,7 +32,7 @@ close all
 %
 fname     = 'isoliton_his.nc';   % croco output file
 tindex    = [30;50;70];          % record indices to plot
-makepdf   = 1;                   % make pdf file
+makepdf   = 0;                   % make pdf file
 %
 %======================================================================
 nplot=length(tindex);
