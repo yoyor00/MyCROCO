@@ -50,6 +50,7 @@
       integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
+      CHARACTER(len=19)          :: tool_sectodat
 #include "netcdf.inc"
 !
 ! Open initial conditions netCDF file for reading. Check that all
@@ -134,6 +135,15 @@
 
       time=time*time_scale
       tdays=time*sec2day
+
+      start_date_run = tool_sectodat(time+origin_date_in_sec)
+
+      READ(start_date_run(1:2),fmt='(i2)') start_day
+      READ(start_date_run(4:5),fmt='(i2)') start_month
+      READ(start_date_run(7:10),fmt='(i4)') start_year
+      READ(start_date_run(12:13),fmt='(i2)') start_hour
+      READ(start_date_run(15:16),fmt='(i2)') start_minute
+      READ(start_date_run(18:19),fmt='(i2)') start_second
 
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then

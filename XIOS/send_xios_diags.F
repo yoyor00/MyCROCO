@@ -404,7 +404,7 @@
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
       CHARACTER(LEN=*)          , INTENT(in) ::   type
       CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   name
-	  REAL                                   ::   value
+      REAL                                   ::   value
       LOGICAL :: ok
       TYPE(xios_file) :: file_hdl
       TYPE(xios_variable) :: var_hdl
@@ -423,7 +423,7 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_float
-	  
+  
       SUBROUTINE iom_set_file_global_attr_int(cdid, type, name, value)
 # include "param.h"
 # include "scalars.h"
@@ -460,8 +460,8 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_int
-	  
-	  
+  
+  
       SUBROUTINE iom_set_file_attr( cdid, name, name_suffix )
 # include "param.h"
 # include "scalars.h"
@@ -1619,6 +1619,7 @@ C 				  endif
 # else
       TYPE(xios_duration) :: dtime    = xios_duration(0,
      &  0, 0, 0, 0, 0)
+      TYPE(xios_date)      :: time_origin
 !      TYPE(xios_date)     :: start_date
 # endif     
       TYPE(xios_context) :: ctx_hdl
@@ -1677,9 +1678,9 @@ C 				  endif
       READ(start_date(4:5),fmt='(i2)') imonth
       READ(start_date(7:10),fmt='(i4)') iyear
 # else
-      iday=1
-      imonth=1       
-      iyear=1
+      iday=start_day
+      imonth=start_month       
+      iyear=start_year
 # endif
       WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')") 
      & iyear,imonth,iday
@@ -1688,8 +1689,10 @@ C 				  endif
      &        start_date=cldate )
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-     &           start_date = xios_date(iyear,imonth,iday,0,0,0),
-     & time_origin = xios_date(1979,01,01,00,00,00) )
+     &      start_date  = xios_date(start_year,start_month,start_day,
+     &                    start_hour,start_minute,start_second),
+     &      time_origin = xios_date(origin_year,origin_month,origin_day,
+     &                    origin_hour,origin_minute,origin_second))
 
 #endif
       ! horizontal grid definition
@@ -1728,7 +1731,7 @@ C 				  endif
 
       ! end file definition
 
-      ! Accademic test with dt> 1second are non comptabile with
+      ! Academic test with dt > 1 second are non comptabile with
       ! XIOS, set xios time step unit to 1 model time_step
       if (dt < 1) then
         dtime%second =  1
@@ -2073,10 +2076,10 @@ C 				  endif
       call xios_send_field("sustr",work2d)
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
-
+# ifdef BULK_SM_UPDATE
       call xios_send_field("uwnd",uwnd)
       call xios_send_field("vwnd",vwnd)
-
+# endif
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
       call xios_send_field("frq",frq(:,:,wstp))
