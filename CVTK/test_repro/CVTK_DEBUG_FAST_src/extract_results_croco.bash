@@ -1,11 +1,7 @@
 #!/bin/bash
 #===================================
-#PBS -q sequentiel
-#PBS -l walltime=02:00:00
-#PBS -j oe 
-#PBS -M gildas.cambon@ird.fr -m abe
 
-set -e
+#set -e
 set -u
 
 source CONFIGURE_GLOBAL
@@ -15,7 +11,7 @@ cd $SUBMIT_DIR
 echo "   - Test repro" | tee -a mylog.txt
 #echo "$CI_CROCO_PWD"
 #===================================
-#set -x
+set -x
 
 #==
 #==
