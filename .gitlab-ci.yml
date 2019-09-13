@@ -29,7 +29,8 @@ run:
   script:
     - cd $CVTKWORK/KTEST
 #    - exec ./mk_TestDIR_ana.bash UPWELLING
-    - exec ./mk_TESTALL_ana.bash
+    - ./mk_TESTALL_ana.bash
+    - echo "gather_recap.bash KTEST"
     - ./gather_recap.bash KTEST
     - /bin/sh -c '! grep failed */Recap_*.*'
     

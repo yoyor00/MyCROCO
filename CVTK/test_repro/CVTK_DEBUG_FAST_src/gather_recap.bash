@@ -36,4 +36,4 @@ cd -
 mv Junk/gather_recap_tmp "./$1_gather_recap_${today}_git${numrev}"
 #cp -rf "./$1_gather_recap_${today}_git${numrev}" .
 ##rm -Rf Junk/*
-cp "./$1_gather_recap_${today}_git${numrev}" ../$CVTKWORK/ftp
+cp "./$1_gather_recap_${today}_git${numrev}" $CVTKWORK/ftp
