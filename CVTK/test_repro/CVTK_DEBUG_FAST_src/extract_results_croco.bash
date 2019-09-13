@@ -100,7 +100,5 @@ cat checkbugbin_${TEST_NAME}.txt >> $file
 echo '---------------------------' >> $file
 echo ' ' >> $file
 
-#echo '@@@@@@@@@@@@@@@@@@@@ ' >> $file
-
 # Cleaning
 rm -f $fileout_openmp $fileout_mpi
