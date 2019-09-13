@@ -1,11 +1,6 @@
 #!/bin/bash
 #===================================
-#PBS -q omp
-#PBS -l walltime=02:00:00
-#PBS -l ncpus=4
-#PBS -l mpiprocs=4
-#PBS -l mem=20gb
-#PBS -j oe
+
 #set -x
 set -eu
 

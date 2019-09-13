@@ -18,8 +18,7 @@
 
 echo "=============================================="
 echo "=> CONFIG "$mytest
-echo " "
-echo "=> MPIRUN COMMAND: "$MPIRUN
+
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
 [ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
@@ -40,6 +39,9 @@ echo " "
 #===
 source CONFIGURE_GLOBAL
 #===
+echo " "
+echo "=> MPIRUN COMMAND: "$MPIRUN
+#
 SOURCE_CVTK=${SOURCE_CROCO}/../CVTK/test_repro/CVTK_DEBUG_FAST_src
 echo 'Sources CVTK tests: '$SOURCE_CVTK
 #

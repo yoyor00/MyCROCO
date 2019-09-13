@@ -1,9 +1,6 @@
 #!/bin/bash
 #===================================
-#PBS -q sequentiel
-#PBS -l walltime=02:00:00
-#PBS -l mem=20gb
-#PBS -j oe 
+
 #set -x
 set -e
 set -u

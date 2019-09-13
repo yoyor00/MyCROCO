@@ -32,7 +32,7 @@ run:
     - ./mk_TESTALL_ana.bash
     - echo "gather_recap.bash KTEST"
     - ./gather_recap.bash KTEST
-    - /bin/sh -c '! grep failed */Recap_*.*'
+    - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
     
   artifacts:
     paths:
