@@ -752,8 +752,8 @@
     NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
-#ifndef INNERSHELF
-# undef  LIMIT_BSTRESS
+#ifndef BSTRESS_FAST
+# define  LIMIT_BSTRESS
 #endif
 #ifdef BBL
 # ifdef OW_COUPLING
