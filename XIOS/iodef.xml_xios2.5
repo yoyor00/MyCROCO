@@ -60,6 +60,7 @@
 			</file_group>
 		</file_definition>
 
+# ifdef  OUTPUTS_SURFACE
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file2" name_suffix="_inst_surf" split_freq="5d" split_freq_format="%y-%mo-%d">
@@ -76,7 +77,7 @@
 				</file>
 			</file_group>
 		</file_definition>
-		
+#  endif
 
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
