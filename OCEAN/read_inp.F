@@ -301,6 +301,26 @@
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 !
+#ifdef XIOS2
+!
+! origin_date is the origin date of time axis.
+! It must the same used in croco_tool for input files preprocessing
+! 
+      elseif (keyword(1:kwlen).eq.'origin_date') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,'(A)',err=95) origin_date
+          lstr=lenstr(origin_date)
+          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
+     &    origin_date(1:lstr)
+          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
+      READ(origin_date(1:2),fmt='(i2)') origin_day
+      READ(origin_date(4:5),fmt='(i2)') origin_month
+      READ(origin_date(7:10),fmt='(i4)') origin_year
+      READ(origin_date(12:13),fmt='(i2)') origin_hour
+      READ(origin_date(15:16),fmt='(i2)') origin_minute
+      READ(origin_date(18:19),fmt='(i2)') origin_second
+#endif
 #ifdef START_DATE
 !
 ! Start date
