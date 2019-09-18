@@ -134,7 +134,7 @@
      &         exp((17.502*tairg(i,j,iblkrec))/
      &             (240.97+tairg(i,j,iblkrec)))
             Qsat=0.62197*(ew/(Pref-0.378*ew))
-            !rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
+            rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
 # ifdef MPI
