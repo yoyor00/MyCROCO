@@ -11,7 +11,7 @@
       integer i,j
       double precision delta_z
 
-      call set_state(ad_x)
+      call set_state(ad_x,2)
 
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
@@ -107,7 +107,7 @@ c      end do
          do k=1,ncpoints
             i=ad_i(k)
             j=ad_j(k)
-            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
+            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+1))
 c         delta_zob = (zob(i,j) - zob_bck(i,j))
 c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
 c     &        zeta(i,j,knew),ad_obs(i,j,ta+2),zob(i,j),zob_bck(i,j),
@@ -134,7 +134,7 @@ c     &        ad_obs(i,j,ta-2)
          do j=Jstr,Jend
             do i=Istr,Iend
                if (ad_obs(i,j,1).ne.spval) then
-                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
+                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+1)
                   icost = icost + delta_z*delta_z
                   ad_cost_counter = ad_cost_counter + 1
                end if
@@ -144,12 +144,12 @@ c     &        ad_obs(i,j,ta-2)
 
       end subroutine cost_fun_step_2d_tile
 
-      subroutine set_state(ad_x)
+      subroutine set_state(ad_x,mode)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
       double precision rms
-      integer ntrds,trd,my_first,my_last,tile,range
+      integer ntrds,trd,my_first,my_last,tile,range,mode
 
 #ifdef OPENMP
       ntrds=omp_get_num_threads()
@@ -163,29 +163,29 @@ c     &        ad_obs(i,j,ta-2)
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       do tile=my_first,my_last
-         call set_state_2d(tile, ad_x)
+         call set_state_2d(tile, ad_x, mode)
       end do
 
       end subroutine set_state
 
-      subroutine set_state_2d(tile, ad_x)
+      subroutine set_state_2d(tile, ad_x, mode)
 
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      integer tile
+      integer tile,mode
 # include "compute_tile_bounds.h"
 
-      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
+      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x, mode)
 
       end subroutine set_state_2d
 
-      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x)
+      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x, mode)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
 
-      integer Istr,Iend,Jstr,Jend, i,j,k,cpoint
+      integer Istr,Iend,Jstr,Jend, i,j,k,cpoint,mode
       double precision lzob
       double precision control_to_param
       character*6 counter_str
@@ -193,36 +193,47 @@ c     &        ad_obs(i,j,ta-2)
       double precision zobmin,zobmax
       
 #include "compute_extended_bounds.h"
-      zobmin=1.e99
-      zobmax=0.
 
-      k=0
-      do j=Jstr,Jend
-         do i=Istr,Iend
-            k=k+1
-            if (ad_obs(i,j,1).ne.spval) then
-               zob(i,j)=control_to_param(ad_x(k))
-            end if
-            if (zobmin.gt.zob(i,j)) then
-               zobmin=zob(i,j)
-            end if
-            if (zobmax.lt.zob(i,j)) then
-               zobmax=zob(i,j)
-            end if
+c     observations on the whole grid
+      if (mode.eq.2) then
+         zobmin=1.e99
+         zobmax=0.
+
+         k=0
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               if (ad_obs(i,j,1).ne.spval) then
+                  k=k+1
+                  zob(i,j)=control_to_param(ad_x(k))
+               end if
+               if (zobmin.gt.zob(i,j)) then
+                  zobmin=zob(i,j)
+               end if
+               if (zobmax.lt.zob(i,j)) then
+                  zobmax=zob(i,j)
+               end if
+            end do
          end do
-      end do
-               
-            
-c            k=ad_colloc(i,j)
-c            if (k.lt.1.or.k.gt.ad_array_size) then
-c               write (*,*) 'AD BIG PROBLEM k=',k
-c               stop
-c     endif
-c            if (ad_obs(i,j,1).ne.spval) then
-c               zob(i,j)=0.0
-c               cpoint=ad_colloc(i,j)
-c               zob(i,j)=control_to_param(
-c     &              ad_x_f(cpoint))
+      end if
+
+c     observations on distributed points, value from the nearest
+      if (mode.eq.1) then
+         k=0
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               if (ad_obs(i,j,1).ne.spval) then
+                  k=ad_colloc(i,j)
+                  if (k.lt.1.or.(k.gt.ad_array_size)) then
+                     write (*,*) 'AD BIG PROBLEM k=',k
+                     stop
+                  end if
+                  
+                  zob(i,j)=control_to_param(
+     &                 ad_x(k))
+               end if
+            end do
+         end do
+      end if
 c               cpoint=0
 c               do k=1,npcpoints
 c                  if(ad_cpoint_node(k).eq.mynode) then
@@ -283,15 +294,14 @@ c      end do
       double precision param_to_control
       integer ierr
       integer k
-      
-      call init_local_arrays(ad_x)
-      
+
       do k=1,ad_array_size/nnodes
          ad_g(k)=0.
          ad_x(k)=0.
       end do
       
-
+      call init_local_arrays(ad_x)
+      
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
@@ -378,11 +388,12 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          end do
          close(unit=99)
       end if
+#if defined(MPI) && defined(AMPI)      
       call AMPI_Bcast(ad_lonr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
       call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
-
+#endif
       do tile=my_first,my_last
          call init_local_arrays_2d(tile,ad_x)
       end do
@@ -444,13 +455,18 @@ c     end if
          call exit(1)
       end if
 
+#if defined(MPI) && defined(AMPI)      
       call AMPI_Allreduce(ad_cpoint_node_tmp,ad_cpoint_node,npcpoints,
      &     MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
       call AMPI_Allreduce(ad_cpoint_id_tmp,ad_cpoint_id,npcpoints,
      &     MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
       call AMPI_AllGather(ncpoints,1,MPI_INTEGER,ncpoints_f,1,
      &     MPI_INTEGER,MPI_COMM_WORLD,ierr)
-      
+#else
+      ad_cpoint_node=ad_cpoint_node_tmp
+      ad_cpoint_id=ad_cpoint_id_tmp
+      ncpoints_f=ncpoints
+#endif
       write(node_str, 930) mynode
       open(unit=99, file='cpoints-'//node_str//'.dat')
       do k=1,ncpoints
@@ -478,41 +494,40 @@ c     end if
 
       do j=Jstr,Jend
          do i=Istr,Iend
-            mindist=1.D230
-            cpoint=0
-            do k=1,npcpoints
-               if (ad_cpoint_node(k).ge.0) then
-                  cpoint=ad_cpoint_id(k)
-                  dist=distance(lonr(i,j),latr(i,j),
-     &                 ad_lonr_f(k),ad_latr_f(k))
-                  if (dist.lt.mindist) then
-                     ad_node_colloc(i,j)=ad_cpoint_node(k)
-                     ad_colloc(i,j)=
-     &                    ad_cpoint_node(k)*(ad_array_size/nnodes)+
-     &                    cpoint
+            if (ad_obs(i,j,1).ne.spval) then
+               mindist=1.D230
+               cpoint=0
+               do k=1,npcpoints
+                  if (ad_cpoint_node(k).ge.0) then
+                     cpoint=ad_cpoint_id(k)
+                     dist=distance(lonr(i,j),latr(i,j),
+     &                    ad_lonr_f(k),ad_latr_f(k))
+                     if (dist.lt.mindist) then
+                        ad_node_colloc(i,j)=ad_cpoint_node(k)
+                        ad_colloc(i,j)=
+     &                       ad_cpoint_node(k)*(ad_array_size/nnodes)+
+     &                       cpoint
+                     endif
                   endif
-               endif
-            enddo
+               enddo
+            endif
          enddo
       enddo
 
-      do k=0,ad_array_size/nnodes
-         ad_x(k)=0
-      end do
-      
       k=0
       do j=Jstr,Jend
          do i=Istr,Iend
-            k=k+1
             if (ad_obs(i,j,1).ne.spval) then
+               k=k+1
                ad_x(k)=param_to_control(zob(i,j))
-            else
-               ad_x(k)=0.
             end if
          end do
       end do
+      ad_array_node_size=k
 
-      write(*,*) 'XXXXXXXXXXXXXXXXXXXXXXX',k,ad_array_size/nnodes
+      write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
+     &     ad_array_node_size,
+     &     ad_array_size/nnodes
 
       
       end subroutine init_local_arrays_2d_tile

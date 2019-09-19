@@ -1,9 +1,17 @@
 C     -*- fortran -*-
+#ifndef MPI
+      integer mynode, nnodes
+      parameter (mynode=0)
+      parameter (nnodes=1)
+#endif
 
 C     size of the optimization problem
       integer ad_array_size
 c      parameter (ad_array_size=900)
       parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
+
+c     real size of the problem per node (<= ad_array_size/nnodes)
+      integer ad_array_node_size
 
 c     number of proposed measure points
       integer npcpoints
@@ -34,7 +42,7 @@ c     state vector / process
 
 c     gradient vector / process
       double precision ad_g(ad_array_size/nnodes)
-      
+
 c     full control vector
       double precision ad_x_f(ad_array_size)
 
@@ -52,10 +60,10 @@ c     MPI node of validated measure points (-1 for unvalidated points)
 
 c     id of validated measure points
       integer ad_cpoint_id(npcpoints)
-      
+
 c     numbers validated measure points per nodes
       integer ncpoints_f(nnodes)
-      
+
 c     coordinates of measure points
       integer ad_i(npcpoints)
       integer ad_j(npcpoints)
@@ -90,7 +98,7 @@ C     cost function counter
 c     timings
       double precision ad_dir_time
       double precision ad_adj_time
-      
+
 c     tidal period (M2)
       double precision TM2
       parameter(TM2 = 12.4206012*3600)
@@ -103,10 +111,10 @@ c     backup
       real Zobt_bck
       real ad_cost
 
-c     rms      
+c     rms
       real ad_rms
       integer ad_ta
-      
+
       integer kstp_bck
       integer krhs_bck
       integer knew_bck
@@ -116,8 +124,10 @@ C     commons
       common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
+      common /ad/ ad_array_node_size
+
       common /ad_timings/ ad_dir_time,ad_adj_time
-      
+
       common /colloc_id/ ad_colloc,ad_node_colloc
       common /collocation_coords/ ncpoints,ncpoints_f,ad_i,ad_j,
      &     ad_latr_f,ad_lonr_f,ad_h_f,ad_cpoint_node,ad_cpoint_id

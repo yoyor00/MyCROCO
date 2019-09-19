@@ -159,7 +159,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
-ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o check_driver.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
+ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
 
 TGT_SRCS=$(ADJ_SRCS)
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
@@ -186,7 +186,7 @@ $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
 
-$(SBIN)_adc:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS)
+$(SBIN)_adc:  $(ADJ_OBJS) $(TAP_TARGET)_d.o check_driver.o $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS) 
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
@@ -327,7 +327,7 @@ plotter: plotter.F
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x_f)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 
 
@@ -349,12 +349,13 @@ main_adc.f: main.F
 
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x_f)" -r8 -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) $(AMPIINC)
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 
 $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x_f)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
-
+	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 
 fortranSupport.o : fortranSupport.F
 	$(CFT) $(FFLAGS) $(CPPFLAGS) -I /usr/include -I /usr/local/include -c $^ -o $@

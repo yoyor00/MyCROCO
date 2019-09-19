@@ -18,8 +18,4 @@ c -*- fortran -*-
 # else
       include 'mpif.h'
 # endif
-# else
-      integer mynode, nnodes
-      parameter (mynode=0)
-      parameter (nnodes=1)
 # endif

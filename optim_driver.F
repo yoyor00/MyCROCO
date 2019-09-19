@@ -77,11 +77,11 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
          cost = cost_f
       end if
 #endif
-#endif      
+#endif
       ad_counter = ad_counter + 1
 
       dx=1.e-10
-      df1=cost_f/100
+      df1=cost/10000
       epsrel=1.e-4
       niter=200
       nsim=200

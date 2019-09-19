@@ -66,7 +66,7 @@ c     direct affectation of collocation points
       integer ad_colloc(GLOBAL_2D_ARRAY)
 
 C     tangential vector
-      double precision ad_xd(ad_array_size)
+      double precision ad_xd(1)
 
 C     time step of the main simulation
       integer sim_iicroot
