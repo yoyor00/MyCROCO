@@ -60,10 +60,7 @@
 			</file_group>
 		</file_definition>
 
-<<<<<<< HEAD
 # ifdef  OUTPUTS_SURFACE
-=======
->>>>>>> dev_week_2019
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file2" name_suffix="_inst_surf" split_freq="5d" split_freq_format="%y-%mo-%d">
@@ -80,11 +77,7 @@
 				</file>
 			</file_group>
 		</file_definition>
-<<<<<<< HEAD
 #  endif
-=======
-		
->>>>>>> dev_week_2019
 
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
@@ -96,18 +89,12 @@
 						<field field_ref="vbar" name="vbar"  />
 						<field field_ref="sustr" name="sustr"  />
 						<field field_ref="svstr" name="svstr"  />
-<<<<<<< HEAD
 # ifdef  DEBUG_BULK
-=======
->>>>>>> dev_week_2019
                         <field field_ref="uwnd" name="uwnd"  />
                         <field field_ref="vwnd" name="vwnd"  />
                         <field field_ref="shflx" name="shflx"  />
                         <field field_ref="swflx" name="swflx"  />
-<<<<<<< HEAD
 #  endif
-=======
->>>>>>> dev_week_2019
 						<field field_ref="u" name="u" />
 						<field field_ref="v" name="v"  />
 						<field field_ref="w" name="w" />
@@ -152,8 +139,6 @@
 #  ifdef M3FAST
                         <field field_ref="v_fast" name="v_fast" />
 #  endif
-<<<<<<< HEAD
-=======
 					</field_group>
 
 				</file>
@@ -182,64 +167,12 @@
 #  ifdef M3FAST
                         <field field_ref="ekfast" name="ke_fast" />
 #  endif
->>>>>>> dev_week_2019
 					</field_group>
 
 				</file>
 			</file_group>
 		</file_definition>
 # endif
-
-<<<<<<< HEAD
-# ifdef DIAGNOSTICS_EK
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
-			<file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file5" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
-					
-					<field_group id="KE_fields" operation="average">
-						<field field_ref="ekrate" name="ke_rate"  />
-						<field field_ref="ekadv" name="ke_adv"  />
-						<field field_ref="ekCor" name="ke_cor"  />
-						<field field_ref="ekPrsgrd" name="ke_prsgrd"  />
-						<field field_ref="ekHmix" name="ke_hmix"  />
-						<field field_ref="ekHdiff" name="ke_hdiff" />
-						<field field_ref="ekVmix" name="ke_vmix"  />
-						<field field_ref="ekVmix2" name="ke_nudg" />
-						<field field_ref="ekvol" name="ke_vol" />
-						<field field_ref="ekBaro" name="ke_baro" />
-						<field field_ref="ekDrag" name="ke_drag" />
-						<field field_ref="ekWind" name="ke_wind" />
-#  ifdef M3FAST
-                        <field field_ref="ekfast" name="ke_fast" />
-=======
-
-# ifdef DIAGNOSTICS_VRT
-		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
-			<file_group id="VRT" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file6" name_suffix="_VRT" split_freq="5d" split_freq_format="%y-%mo-%d">
-					
-					<field_group id="vrt_fields" operation="average">
-						<field field_ref="vrtrate" name="vrt_rate"  />
-						<field field_ref="vrtadv" name="vrt_adv"  />
-						<field field_ref="vrtCor" name="vrt_cor"  />
-						<field field_ref="vrtPrsgrd" name="vrt_prsgrd"  />
-						<field field_ref="vrtHmix" name="vrt_hmix"  />
-						<field field_ref="vrtHdiff" name="vrt_hdiff" />
-						<field field_ref="vrtVmix2" name="vrt_nudg" />
-						<field field_ref="vrtBaro" name="vrt_baro" />
-						<field field_ref="vrtDrag" name="vrt_drag" />
-						<field field_ref="vrtWind" name="vrt_wind" />
-#  ifdef M3FAST
-                        <field field_ref="vrtfast" name="vrt_fast" />
->>>>>>> dev_week_2019
-#  endif
-					</field_group>
-
-				</file>
-			</file_group>
-		</file_definition>
-# endif
-<<<<<<< HEAD
 
 
 # ifdef DIAGNOSTICS_VRT
@@ -267,8 +200,6 @@
 			</file_group>
 		</file_definition>
 # endif
-=======
->>>>>>> dev_week_2019
 		
 
 

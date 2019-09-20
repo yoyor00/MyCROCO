@@ -373,7 +373,6 @@
       !!----------------------------------------------------------------------
 
       CALL xios_solve_inheritance()
-<<<<<<< HEAD
 
       IF ( xios_is_valid_file     (cdid) )   THEN
           CALL xios_get_handle(cdid,file_hdl)
@@ -411,45 +410,6 @@
       TYPE(xios_variable) :: var_hdl
       !!----------------------------------------------------------------------
 
-=======
-
-      IF ( xios_is_valid_file     (cdid) )   THEN
-          CALL xios_get_handle(cdid,file_hdl)
-
-          CALL xios_add_child(file_hdl, var_hdl, trim(name))
-          CALL xios_set_variable_attr(trim(name), name=name, type=type)
-          ok = xios_setvar(trim(name),value)
-      ENDIF
-
-      CALL xios_solve_inheritance()
-      !
-      END SUBROUTINE iom_set_file_global_attr_char
-
-
-      SUBROUTINE iom_set_file_global_attr_float(cdid, type, name, value)
-# include "param.h"
-# include "scalars.h"
-      !!----------------------------------------------------------------------
-      !!                     ***  ROUTINE iom_set_file_global_attr_char  ***
-      !!
-      !! ** Purpose :   set file global attribute for XIOS
-      !!
-      !! ** Method  :   
-      !!
-      !! ** History :   S. Theetten : add global attributes , May, 2019
-
-      !!
-      !!----------------------------------------------------------------------
-      CHARACTER(LEN=*)          , INTENT(in) ::   cdid
-      CHARACTER(LEN=*)          , INTENT(in) ::   type
-      CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   name
-	  REAL                                   ::   value
-      LOGICAL :: ok
-      TYPE(xios_file) :: file_hdl
-      TYPE(xios_variable) :: var_hdl
-      !!----------------------------------------------------------------------
-
->>>>>>> dev_week_2019
       CALL xios_solve_inheritance()
 
       IF ( xios_is_valid_file     (cdid) )   THEN
@@ -463,11 +423,7 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_float
-<<<<<<< HEAD
   
-=======
-	  
->>>>>>> dev_week_2019
       SUBROUTINE iom_set_file_global_attr_int(cdid, type, name, value)
 # include "param.h"
 # include "scalars.h"
@@ -504,13 +460,8 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_int
-<<<<<<< HEAD
   
   
-=======
-	  
-	  
->>>>>>> dev_week_2019
       SUBROUTINE iom_set_file_attr( cdid, name, name_suffix )
 # include "param.h"
 # include "scalars.h"
@@ -1738,15 +1689,10 @@ C 				  endif
      &        start_date=cldate )
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-<<<<<<< HEAD
      &      start_date  = xios_date(start_year,start_month,start_day,
      &                    start_hour,start_minute,start_second),
      &      time_origin = xios_date(origin_year,origin_month,origin_day,
      &                    origin_hour,origin_minute,origin_second))
-=======
-     &           start_date = xios_date(iyear,imonth,iday,0,0,0),
-     & time_origin = xios_date(1979,01,01,00,00,00) )
->>>>>>> dev_week_2019
 
 #endif
       ! horizontal grid definition
@@ -2130,17 +2076,10 @@ C 				  endif
       call xios_send_field("sustr",work2d)
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
-<<<<<<< HEAD
 # ifdef BULK_SM_UPDATE
       call xios_send_field("uwnd",uwnd)
       call xios_send_field("vwnd",vwnd)
 # endif
-=======
-
-      call xios_send_field("uwnd",uwnd)
-      call xios_send_field("vwnd",vwnd)
-
->>>>>>> dev_week_2019
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
       call xios_send_field("frq",frq(:,:,wstp))
