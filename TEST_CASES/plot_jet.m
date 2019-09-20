@@ -32,26 +32,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 close all
-%
+%====================================================================
 % User defined parameters
 %
-makepdf=1
-%
-fname='jet_his.nc';
-gname='jet_his.nc';
-%
-nesting=0;
-fname_child=[fname,'.1'];
-gname_child=[gname,'.1'];
-%
-%tindex=input('tindex : ');
-tindex=19;
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Parent
-%
-nc=netcdf(fname,'r');
+fname   = 'jet_his.nc';
+tindex  = 19;
+makepdf = 0;
+
+%====================================================================
+% Read variables
+%====================================================================
+
+nc=netcdf(fname);
+xr=1e-3*nc{'x_rho'}(:);
+yr=1e-3*nc{'y_rho'}(:);
+h=nc{'h'}(:,:);
+pm=nc{'pm'}(:,:);
+pn=nc{'pn'}(:,:);
+f=nc{'f'}(:,:);
 N=length(nc('s_rho'));
 tlen=length(nc{'scrum_time'}(:));
 tindex=min(tlen,tindex);
@@ -61,208 +59,122 @@ zeta=squeeze(nc{'zeta'}(tindex,:,:));
 u=squeeze(nc{'u'}(tindex,:,:,:));
 v=squeeze(nc{'v'}(tindex,:,:,:));
 rho=squeeze(nc{'temp'}(tindex,:,:,:));
-R0=30; TCOEF=0.28;
-t=(-rho+R0)./TCOEF;
-sst=squeeze(t(N,:,:));
+u0=squeeze(nc{'u'}(1,:,:,:));
+rho0=squeeze(nc{'temp'}(1,:,:,:));
 close(nc)
-%
-nc=netcdf(gname,'r');
-xr=1e-3*nc{'x_rho'}(:);
-yr=1e-3*nc{'y_rho'}(:);
-h=nc{'h'}(:,:);
-pm=nc{'pm'}(:,:);
-pn=nc{'pn'}(:,:);
-f=nc{'f'}(:,:);
-close(nc)
-[xu,xv,xp]=rho2uvp(xr);
+
+[xu,xv,xp]=rho2uvp(xr);  % horiz. fields
 [yu,yv,yp]=rho2uvp(yr);
 [fu,fv,fp]=rho2uvp(f);
+R0=30; TCOEF=0.28;
+t=(-rho+R0)./TCOEF;
+t0=(-rho0+R0)./TCOEF;
+sst=squeeze(t(N,:,:));
 zr=zlevs(h,zeta,5,0,100,N,'r');
-u0=squeeze(u(N,:,:));
-v0=squeeze(v(N,:,:));
-[vort]=vorticity(u0,v0,pm,pn);
+us=squeeze(u(N,:,:));
+vs=squeeze(v(N,:,:));
+[vort]=vorticity(us,vs,pm,pn);
 vort=vort./fp;
-X=xr; Y=yr;
-xr=tridim(X,N);
-yr=tridim(Y,N);
-zu=0.5*(zr(:,:,1:end-1)+zr(:,:,2:end));
-xu=0.5*(xr(:,:,1:end-1)+xr(:,:,2:end));
-yu=0.5*(yr(:,:,1:end-1)+yr(:,:,2:end));
 ur=u2rho_2d(squeeze(u(N,:,:)));
 vr=v2rho_2d(squeeze(v(N,:,:)));
 
-%
-% Child
-%
-if nesting,
- nc=netcdf(fname_child,'r');
- zeta2=squeeze(nc{'zeta'}(tindex,:,:));
- u2=squeeze(nc{'u'}(tindex,:,:,:));
- v2=squeeze(nc{'v'}(tindex,:,:,:));
- rho2=squeeze(nc{'temp'}(tindex,:,:,:));
- t2=(-rho2+R0)./TCOEF;
- sst2=squeeze(t2(N,:,:));
- close(nc)
- zeta2(:,1)=NaN; zeta2(:,end)=NaN;
- u2(:,:,1)=NaN; u2(:,:,end)=NaN;
- v2(:,:,1)=NaN; v2(:,:,end)=NaN;
- t2(:,:,1)=NaN; t2(:,:,end)=NaN;
- sst2(:,1)=NaN; sst2(:,end)=NaN;
-%
- nc=netcdf(gname_child,'r');
- xr2=1e-3*nc{'x_rho'}(:);
- yr2=1e-3*nc{'y_rho'}(:);
- h2=nc{'h'}(:,:);
- pm2=nc{'pm'}(:,:);
- pn2=nc{'pn'}(:,:);
- f2=nc{'f'}(:,:);
- close(nc)
- [xu2,xv2,xp2]=rho2uvp(xr2);
- [yu2,yv2,yp2]=rho2uvp(yr2);
- [fu2,fv2,fp2]=rho2uvp(f2);
- zr2=zlevs(h2,zeta2,5,0,100,N,'r');
- u02=squeeze(u2(N,:,:));
- v02=squeeze(v2(N,:,:));
- [vort2]=vorticity(u02,v02,pm2,pn2);
- vort2=vort2./fp2;
- u02(:,1)=NaN; u02(:,end)=NaN;
- v02(:,1)=NaN; v02(:,end)=NaN;
- vort2(:,1:2)=NaN; vort2(:,end-1:end)=NaN;
+XR=tridim(xr,N);         % vert. sections
+YR=tridim(yr,N);
+YU=0.5*(YR(:,:,1:end-1)+YR(:,:,2:end));
+zu=0.5*(zr(:,:,1:end-1)+zr(:,:,2:end));
+[M,L]=size(yr);
+imid=round(L/2);
+yrs=squeeze(YR(:,:,imid));
+zrs=squeeze(zr(:,:,imid));
+yus=squeeze(YU(:,:,imid));
+zus=squeeze(zu(:,:,imid));
+u0s=squeeze(u0(:,:,imid));
+t0s=squeeze(t0(:,:,imid));
 
-%
- Xbox=cat(1,xp2(1:end,1),  ...
-            xp2(end,1:end)' ,...
-            xp2(end:-1:1,end),...
-            xp2(1,end:-1:1)');
- Ybox=cat(1,yp2(1:end,1),  ...
-            yp2(end,1:end)' ,...
-            yp2(end:-1:1,end),...
-            yp2(1,end:-1:1)');
-
- X2=xr2; Y2=yr2;
- xr2=tridim(X2,N);
- yr2=tridim(Y2,N);
- zu2=0.5*(zr2(:,:,1:end-1)+zr2(:,:,2:end));
- xu2=0.5*(xr2(:,:,1:end-1)+xr2(:,:,2:end));
- yu2=0.5*(yr2(:,:,1:end-1)+yr2(:,:,2:end));
- ur2=u2rho_2d(squeeze(u2(N,:,:)));
- vr2=v2rho_2d(squeeze(v2(N,:,:)));
-end
-%======================================================
-%
+%====================================================================
 % Plot
+%====================================================================
+
+%
+%  Initial fields ......
 %
 figure
-map=colormap(jet(20));
-map(10:11,:)=1*[1 1 1 ; 1 1 1];
-colormap(map)
-%pcolor(xp,yp,vort); shading flat
-contourf(xp,yp,vort,20); shading flat
-if nesting,
- hold on
- contourf(xp2,yp2,vort2,20); shading flat
- plot(Xbox,Ybox,'k');
- hold off
+subplot(2,1,1)
+colormap(jet)
+contourf(yrs,zrs,t0s,20);
+caxis([9 18])
+ylabel('Z [m]')
+colorbar
+title('Initial Temperature')
+set(gca,'fontsize',15)
+%
+subplot(2,1,2)
+contourf(yus,zus,u0s,10);
+caxis([-0.1 0.3])
+xlabel('Y [km]')
+ylabel('Z [m]')
+colorbar
+title('Initial Zonal Velocity')
+set(gca,'fontsize',15)
+if makepdf
+ export_fig -transparent -pdf jet_init.pdf
 end
+
+%
+% Final dynamic fields .......
+%
+figure('position',[100 100 800 400])
+%
+subplot(1,3,1)  % SSH
+contourf(xr,yr,zeta,20);
 colorbar
 caxis([-1 1])
-axis image
-title('Surface vorticity (/f)')
+axis([0 500 0 2000])
+xlabel('X [km]')
+ylabel('Y [km]')
+title(['SSH - day=',num2str(time)])
+set(gca,'fontsize',12)
+%
+subplot(1,3,2)  % vort/f
+colormap(jet)
+contourf(xp,yp,vort,20,'linestyle','none');
+colorbar
+caxis([-0.3 0.3])
+axis([0 500 0 2000])
+xlabel('X [km]')
+title(['\xi/f - day=',num2str(time)])
+set(gca,'fontsize',12)
+%
+subplot(1,3,3)  % Speed
+spd=sqrt(ur.^2+vr.^2);
+contourf(xr,yr,spd,10,'linestyle','none'); 
+hold on
+quiver(xr,yr,ur,vr,3)
+caxis([0 0.7])
+axis([0 500 0 2000])
+xlabel('X [km]')
+colorbar
+hold off
+title(['Speed - day=',num2str(time)])
+set(gca,'fontsize',12)
+%
 if makepdf
- export_fig -transparent -pdf jet_vor.pdf
+ export_fig -transparent -pdf jet.pdf
 end
 
 %
-figure
-colormap(jet)
-contourf(X,Y,sst,20); shading flat
-if nesting,
- hold on
- contourf(X2,Y2,sst2,20); shading flat
- plot(Xbox,Ybox,'k');
- hold off
-end
-colorbar
-caxis([18 20])
-axis image
-title('Surface temperature')
-if makepdf
- export_fig -transparent -pdf jet_stemp.pdf
-end
+% Time evolution of SST .......
 %
-figure
-colormap(jet)
-spd=sqrt(ur.^2+vr.^2);
-contourf(X,Y,spd,20); hold on
-quiver(X,Y,ur,vr,'k')
-if nesting,
- spd2=sqrt(ur2.^2+vr2.^2);
- contourf(X2,Y2,spd2,20); 
- quiver(X2,Y2,ur2,vr2,'k')
- plot(Xbox,Ybox,'k');
-end
-axis image
-caxis([0 0.5])
-colorbar
-hold off
-title('Surface velocity')
-if makepdf
- export_fig -transparent -pdf jet_svel.pdf
-end
-%
-figure
-colormap(map)
-contourf(X,Y,zeta,20); shading flat
-if nesting,
- hold on
- contourf(X2,Y2,zeta2,20); shading flat
- plot(Xbox,Ybox,'k');
- hold off
-end
-shading flat
-colorbar
-caxis([-0.1 0.1])
-axis image
-title('Surface height')
-if makepdf
- export_fig -transparent -pdf jet_ssh.pdf
-end
-%
-figure
-colormap(jet)
-[M,L]=size(Y);
-imid=round(L/2);
-contourf(squeeze(yr(:,:,imid)),squeeze(zr(:,:,imid)),squeeze(t(:,:,imid)),20);
-caxis([9 18])
-colorbar
-title('Temperature')
-if makepdf
- export_fig -transparent -pdf jet_temp.pdf
-end
-%
-figure
-colormap(jet)
-[M,L]=size(Y);
-imid=round(L/2);
-contourf(squeeze(yu(:,:,imid)),squeeze(zu(:,:,imid)),squeeze(u(:,:,imid)),10);
-caxis([-0.15 0.3])
-colorbar
-title('Zonal velocity')
-if makepdf
- export_fig -transparent -pdf jet_zonvel.pdf
-end
-%
-if tindex>20
- nc=netcdf(fname,'r');
+if tindex>18
+ nc=netcdf(fname);
  lx=30; ly=15;
  figure('units','centimeters','position', ...
           [0 0 lx ly],'paperpositionmode','auto')
- tindex=[11;15;21];
+ tindex=[11;15;19];
+ colormap(jet)
  for tndx=1:3;
-  u=squeeze(nc{'u'}(tindex(tndx),N,:,:));
-  v=squeeze(nc{'v'}(tindex(tndx),N,:,:));
-  [vort]=vorticity(u,v,pm,pn);
-  vort=vort./fp;
+  rhos=squeeze(nc{'temp'}(tindex(tndx),N,:,:));
+  sst=(-rhos+R0)./TCOEF;
   if tndx==1,
    ax(1)=subplot(1,3,1);
   elseif tndx==2,
@@ -270,34 +182,28 @@ if tindex>20
   elseif tndx==3,
    ax(3)=subplot(1,3,3);
   end
-  colormap(map)
-  contourf(xp,yp,vort,20); shading flat
+  contourf(xr,yr,sst,20);
   if tndx==3,
     h=colorbar('v');
-    %set(h, 'Position', [.35 .2 .3 .03])
     set(h, 'Position', [.85 .35 .02 .3])
     for i=1:3
       pos=get(ax(i), 'Position');
       set(ax(i), 'Position', [.88*pos(1) pos(2) pos(3) pos(4)]);
     end
   end
-  caxis([-0.8 0.8])
-  axis image
+  caxis([13 20])
+  xlabel('X [km]')
+  if tndx==1
+   ylabel('Y [km]')
+  end
   time=round(nc{'scrum_time'}(tindex(tndx))/(24*3600));
-  title(['Vorticity/f - day=',num2str(time)])
+  title(['SST - day=',num2str(time)])
  end
  if makepdf
  export_fig -transparent -pdf jet_multivor.pdf
  end
-
  close(nc)
-%
-% print plot series
-%
-% print -painter -depsc2 vort_jet.eps
-%
 end
-
 
 return
 

@@ -30,18 +30,16 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
-#elif defined CANYON_A
+#elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
-#elif defined CANYON_B
-      parameter (LLm0=66,   MMm0=48,   N=16)
 #elif defined EQUATOR
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
 #elif defined KH_INST 
 # ifndef KH_INSTY
 #  ifdef KH_INST3D
-      parameter (LLm0=256,  MMm0=32,  N=256)
+      parameter (LLm0=256,  MMm0=32,  N=256)   !   1 m resolution
 #  else
-      parameter (LLm0=256,  MMm0=1,   N=256)
+      parameter (LLm0=128,  MMm0=1,   N=128)   !   2 m resolution
 #  endif
 # else
       parameter (LLm0=1,    MMm0=256, N=256)
@@ -50,27 +48,21 @@
       parameter (LLm0=64,   MMm0=1,    N=64)  
 #elif defined GRAV_ADJ
 # ifdef NBQ
-#  ifdef GRAV_ADJ_SOLITON
-      parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
-#  else
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
       parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
-#  endif
 # else
-!     parameter (LLm0=32,   MMm0=4,    N=10)   !   2 km resolution
-      parameter (LLm0=128,  MMm0=4,    N=40)   ! 500  m resolution
-!     parameter (LLm0=512,  MMm0=4,   N=160)   ! 125  m resolution
+!     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
+      parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
+!     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
+#elif defined I_SOLITON
+      parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
-!     parameter (LLm0=120,  MMm0=10,   N=40)   !  10 km resolution
-!     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
-      parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
-#elif defined S2DV 
-       parameter (LLm0=562, MMm0=3,    N=40)   ! true 2DV
-#elif defined MILES 
-       parameter (LLm0=408, MMm0=523,  N=20)
+!     parameter (LLm0=120,  MMm0=3,    N=40)   !  10 km resolution
+      parameter (LLm0=800,  MMm0=3,    N=40)   ! 1.5 km resolution
+!     parameter (LLm0=1600, MMm0=3,    N=40)   ! .75 km resolution
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -85,25 +77,26 @@
       parameter (LLm0=100,  MMm0=100,  N=5) 
 #elif defined SINGLE_COLUMN
 # ifdef KATO_PHILIPS 
-      parameter (LLm0=5 ,   MMm0=5,    N=100)   !
-# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
-      parameter (LLm0=5 ,   MMm0=5,    N=50)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=100)
+# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \
+    || defined FORCED_OSCNONROTBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=50)
 # elif defined FORCED_EKBBL
-      parameter (LLm0=5 ,   MMm0=5,    N=40)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=40)
 # elif defined FORCED_DBLEEK 
-      parameter (LLm0=5 ,   MMm0=5,    N=25)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=25)
 # elif defined DIURNAL_CYCLE
-      parameter (LLm0=5 ,   MMm0=5,    N=150)   !
+      parameter (LLm0=5 ,   MMm0=5,    N=150)
 # endif
 #elif defined PLUME
-      parameter (LLm0=200,   MMm0=200,   N=100)        
-!      parameter (LLm0=80,   MMm0=80,   N=100) 
+      parameter (LLm0=200,  MMm0=200,  N=100)        
+!     parameter (LLm0=80,   MMm0=80,   N=100) 
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
 #elif defined SEAMOUNT
       parameter (LLm0=64,   MMm0=64,   N=20)
 #elif defined SHELFRONT
-      parameter (LLm0=4,    MMm0=40,   N=10)
+      parameter (LLm0=3,    MMm0=40,   N=10)
 #elif defined SOLITON
       parameter (LLm0=96,   MMm0=32,   N=10)
 #elif defined UPWELLING
@@ -127,8 +120,8 @@
 # endif
 #elif defined SHOREFACE
       parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
-#elif defined FLUME
-      parameter (LLm0=59,   MMm0=1,    N=20)   ! .5 m Flume
+#elif defined SANDBAR
+      parameter (LLm0=59,   MMm0=1,    N=20)   ! 50 cm
 #elif defined SWASH
 !     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
@@ -142,9 +135,9 @@
 # endif
 #elif defined THACKER
 # ifdef THACKER_2DV
-      parameter (LLm0=199,  MMm0=1,    N=5 )   !  1 km resolution
+      parameter (LLm0=200,  MMm0=1,    N=5 )   !  1 km resolution
 # else
-      parameter (LLm0=199,  MMm0=199,  N=5 )   !  1 km resolution
+      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution
 # endif
 #elif defined TANK
 # ifndef MOVING_BATHY
@@ -157,7 +150,7 @@
       parameter (LLm0=4000, MMm0=1,    N=30)   !  1 mm resolution
 # endif
 #elif defined CALDEIRA
-      parameter (LLm0=100,   MMm0=100,   N=50)
+      parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -188,7 +181,7 @@
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
 #  elif defined MENOR 
-      parameter (LLm0=1059,  MMm0=447,  N=40)   ! MENOR
+      parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
 #  elif defined SEINE 
       parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  elif defined  BAHAZ
@@ -299,7 +292,7 @@
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
-# if defined IGW || defined S2DV
+# if defined IGW
       parameter (Ntides=1)
 # else
       parameter (Ntides=8)
@@ -313,7 +306,7 @@
 #ifdef WET_DRY
       real D_wetdry             ! Critical Depth for Drying cells
                                 ! ======== ===== === ====== =====
-# if defined THACKER || defined FLUME
+# if defined THACKER || defined SANDBAR
       parameter (D_wetdry=0.01)
 # elif defined SWASH
       parameter (D_wetdry=0.001)
@@ -328,7 +321,11 @@
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
       integer Nsrc               ! Number of point sources
+# ifdef RIVER
+      parameter (Nsrc=2)         ! ====== == ===== =======
+# else
       parameter (Nsrc=12)        ! ====== == ===== =======
+# endif
 #endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats
@@ -564,6 +561,7 @@
      &          , NFlux_Zmetab
      &          , NFlux_Zmort
      &          , NFlux_ReminD1, NFlux_ReminD2
+     &          , NFlux_CoagPhy, NFlux_CoagSDet
      &          , NumFluxTermsN, NumFluxTerms, NumGasExcTerms
      &          , NFlux_VSinkP1
      &          , NFlux_VSinkD1, NFlux_VSinkD2
@@ -719,7 +717,7 @@
      &           NumVSinkTerms  = 2)
 
 #  elif defined BIO_N2ChlPZD2
-      parameter (ntrc_bio=7,itrc_bio=itemp+ntrc_salt+ntrc_pas+1) 
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,   
      &           iPhy1=iNO3_+3,
      &           iZoo1=iNO3_+4,
@@ -732,10 +730,12 @@
      &           NFlux_Pmort    = 6,
      &           NFlux_Zmetab   = 7,
      &           NFlux_Zmort    = 8,
-     &           NFlux_ReminD1  = 9,
-     &           NFlux_ReminD2  = 10,
-     &           NumFluxTermsN  = 10,
-     &           NumFluxTerms   = 10,
+     &           NFlux_CoagPhy  = 9,
+     &           NFlux_CoagSDet = 10,
+     &           NFlux_ReminD1  = 11,
+     &           NFlux_ReminD2  = 12,
+     &           NumFluxTermsN  = 12,
+     &           NumFluxTerms   = 12,
      &           NumGasExcTerms = 0,
      &           NFlux_VSinkP1  = 1,
      &           NFlux_VSinkD1  = 2,

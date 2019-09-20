@@ -3,9 +3,9 @@
 #=========================
 source CONFIGURE_GLOBAL
 #=========================
-echo
-echo "SOURCE_CROCO="$SOURCE_CROCO
-echo 
+#echo
+#echo "SOURCE_CROCO="$SOURCE_CROCO
+#echo 
 
 #echo "PROCESS GIT UPDATE"
 #cd  $SOURCE_ROMS/..

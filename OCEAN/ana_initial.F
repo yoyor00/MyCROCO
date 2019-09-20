@@ -49,7 +49,7 @@
 #ifdef INTERNAL
       real cff
 #endif
-#if defined IGW || defined S2DV || defined MILES 
+#if defined IGW
       real    cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
@@ -72,7 +72,7 @@
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
-#ifdef GRAV_ADJ_SOLITON
+#ifdef I_SOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
@@ -337,7 +337,7 @@
         eps3D  = 0.   ! 3D perturbation
 !
         do j=JR_RANGE
-          do i=IR_RANGE
+          do i=IU_RANGE
             depth=h(i,j)
             zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
 !           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
@@ -352,17 +352,6 @@
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
 
               u(i,j,k,2)  = u(i,j,k,1)
-              v(i,j,k,1)  = 0.
-              v(i,j,k,2)  = 0.
-#   ifdef NBQ
-              wz(i,j,k,1) = -0.01*du*hup0*
-     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
-
-              wz(i,j,k,2) = wz(i,j,k,1)
-#   endif
-
               ubar(i,j,1) = ubar(i,j,1) + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                  * u(i,j,k,1)
               hint = hint               + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
@@ -375,6 +364,27 @@
             enddo
             ubar(i,j,1) = 0. 
             ubar(i,j,:) = ubar(i,j,1)
+          enddo
+        enddo
+
+        do j=JR_RANGE
+          do i=IR_RANGE
+            depth=h(i,j)
+            zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
+!           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
+            hup0=0.15*depth  ! perturbation
+            do k=1,N
+              v(i,j,k,1)  = 0.
+              v(i,j,k,2)  = 0.
+#   ifdef NBQ
+              wz(i,j,k,1) = -0.01*du*hup0*
+     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+
+              wz(i,j,k,2) = wz(i,j,k,1)
+#   endif
+            enddo
           enddo
         enddo
 #   ifdef NBQ
@@ -519,17 +529,8 @@
              enddo
           enddo
         enddo
-#  elif defined CANYON_A
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=T0
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-            enddo
-          enddo
-        enddo
-
-#  elif defined CANYON_B
+#  elif defined CANYON
+#   ifdef CANYON_STRAT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -539,7 +540,16 @@
             enddo
           enddo
         enddo
-
+#   else
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=T0
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+            enddo
+          enddo
+        enddo
+#   endif
 #  elif defined SHOREFACE || defined RIP
         do k=1,N
           do j=jstrR,jendR
@@ -665,11 +675,9 @@
            enddo
         enddo
 
-#  elif defined GRAV_ADJ
-
-#   ifdef GRAV_ADJ_SOLITON
-#    define HORN_PROFILE
-#    ifdef HORN_PROFILE
+#  elif defined I_SOLITON
+#   define HORN_PROFILE
+#   ifdef HORN_PROFILE
 !
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
 !  The degeneration of large-scale interfacial gravity waves in lakes. 
@@ -713,7 +721,8 @@
           enddo
         enddo
 #    endif /* HORN_PROFILE */ 
-#   else /*  !GRAV_ADJ_SOLITON */
+
+#  elif defined GRAV_ADJ
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -731,7 +740,6 @@
             enddo
           enddo
         enddo
-#   endif /* GRAV_ADJ_SOLITON */
 
 #  elif defined ACOUSTIC 
 
@@ -785,7 +793,7 @@
           enddo
         enddo
 
-#  elif defined IGW || defined S2DV || defined MILES
+#  elif defined IGW
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N

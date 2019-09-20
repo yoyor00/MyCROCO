@@ -38,11 +38,10 @@
 /*  
    Activate the RVTK_DEBUG procedure that will test the reproducibility 
    of parallel computation by comparing binary files produced by serial 
-   and parallel runs
+   and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
+   be defined from cppdefs.h, so not undefined here !!!!! 
 */
-#undef  RVTK_DEBUG
-
-#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP
+#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
 # define RVTK_DEBUG_WRITE
 #endif
 
@@ -574,8 +573,7 @@
 ======================================================================
 */
 #ifdef WAVE_MAKER
-# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN \
-                                || defined FLUME_WAVES
+# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 #  define WAVE_MAKER_SPECTRUM
 # endif
 # ifdef WAVE_MAKER_SPECTRUM
@@ -665,7 +663,7 @@
 # ifndef WAVE_OFFLINE
 #  undef WKB_NUDGING
 # endif
-# if defined SHOREFACE || defined FLUME \
+# if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
 # endif
@@ -693,7 +691,7 @@
                       IF-less KPP --> KPP2005
 ======================================================================
 */
-#ifdef LMD_SKPP
+#if defined LMD_SKPP
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP

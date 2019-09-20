@@ -2,6 +2,7 @@
 # check this file with: https://gitlab.inria.fr/ci/lint
 
 variables:
+  TERM: "xterm-256color"
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
@@ -27,7 +28,7 @@ before_script:
 run:
   script:
     - cd $CVTKWORK/KTEST
-    - ./mk_TESTALL_ana.bash
+    - exec ./mk_TESTALL_ana.bash
     - ./gather_recap.bash ANA
     - /bin/sh -c '! grep failed */Recap_*.*'
     

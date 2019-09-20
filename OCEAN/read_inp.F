@@ -69,10 +69,8 @@
 !
 #if defined BASIN
       fname='TEST_CASES/croco.in.Basin'
-#elif defined CANYON_A
-      fname='TEST_CASES/croco.in.Canyon_A'
-#elif defined CANYON_B
-      fname='TEST_CASES/croco.in.Canyon_B'
+#elif defined CANYON
+      fname='TEST_CASES/croco.in.Canyon'
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
@@ -81,6 +79,8 @@
 # else
       fname='TEST_CASES/croco.in.Grav_adj'
 # endif
+#elif defined I_SOLITON
+      fname='TEST_CASES/croco.in.Isoliton'
 #elif defined INNERSHELF
       fname='TEST_CASES/croco.in.Innershelf'
 #elif defined INTERNAL
@@ -105,8 +105,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
-#elif defined FLUME
-      fname='TEST_CASES/croco.in.Flume'
+#elif defined SANDBAR
+      fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined SINGLE_COLUMN && defined KATO_PHILIPS
@@ -124,11 +124,7 @@
 #elif defined SINGLE_COLUMN && defined FORCED_OSCNONROTBBL
       fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
-# ifdef NBQ
-      fname='TEST_CASES/croco.in.Tank_nbq'
-# else
       fname='TEST_CASES/croco.in.Tank'
-# endif
 #elif defined ACOUSTIC
       fname='TEST_CASES/croco.in.Acoustic' 
 #elif defined SWASH

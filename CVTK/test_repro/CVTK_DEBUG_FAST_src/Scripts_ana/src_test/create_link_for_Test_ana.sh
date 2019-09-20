@@ -1,6 +1,6 @@
 #!/bin/bash
 #echo '============================================================='
-echo 'Create the link between TESTROOT . and '$PWD
+echo '   - Link TESTROOT and '$PWD
 
 source ../CONFIGURE_ANA
 

@@ -3,7 +3,7 @@
 %  Make 1 plot from the results of the GRAV_ADJ test case
 % 
 %  Further Information:  
-%  http://www.croco-ocean.org
+%  http://www.brest.ird.fr/Roms_tools/
 %  
 %  This file is part of CROCOTOOLS
 %
@@ -31,28 +31,17 @@ close all
 %================== User defined parameters ===========================
 %
 fname     = 'gravadj_his.nc';
-
-nbq       = 1;             % 0/1: hydro / non-hydro case
-soliton   = 0;             % 0/1: lock-exchange / soliton
-
+tindex    = [10;20;50];    % record indices to plot
+nbq       = 0;             % 0/1: hydro/nonhydro case
 plot_psi  = 0;             % plot streamfunction
-makepdf   = 1;             % make pdf file
+makepdf   = 0;             % make pdf file
 %
 %======================================================================
 
 hFig = figure;
-
-if soliton
- tindex    = [1;40;51];      % size gives subplot number
- AdvancedColormap('swr',20)
-else
- tindex    = [1;4;11];
- colormap('lines')
-end
-
+colormap('jet')
 nplot=length(tindex);
-set(hFig, 'Position', [200 500 700 200*nplot])
-
+set(hFig, 'Position', [200 500 700 150*nplot])
 
 for it=1:length(tindex); % --------------- time loop
 
@@ -68,8 +57,8 @@ h=nc{'h'}(:);
 x=squeeze(nc{'x_rho'}(2,:));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
 t=squeeze(nc{'temp'}(tndx,:,2,:));
-w=1000*squeeze(nc{'w'}(tndx,:,2,:));
 [N,M]=size(t);
+w=1000*squeeze(nc{'w'}(tndx,1:N,2,:));
 theta_s=nc.theta_s(:);
 theta_b=nc.theta_b(:);
 hc=nc.hc(:);
@@ -96,24 +85,21 @@ t(t==0)=NaN;
 % -------------------------------------
 
 subplot(length(tindex),1,it)
-contourf(xr,zr,t,[15:1:40]);
+[C,h] = contourf(xr,zr,t,[10:1:40]); hold on
+set(h,'LineColor','none')
 if plot_psi
  hold on
- contour(xr,zr,psi,[-5:0.5:5],'k');
+ contour(xr,zr,psi,'k');
  hold off
 end
-caxis([15 38])
 if nbq,
  xlabel('X [m]')
 else
  xlabel('X [km]')
 end
 ylabel('Depth [m]')
-shading flat
-if ~nbq,
- colorbar
- caxis([12 32])
-end
+caxis([15 35])
+colorbar
 if it==1,
  title('Gravitational adjustment')
 end
@@ -121,9 +107,7 @@ end
 end % ----------------------- time loop
 
 if makepdf
- export_fig -transparent -pdf grav_adj.pdf
-% print -dpdf gravadj.pdf
-% eval('!pdfcrop gravadj.pdf gravadj.pdf')
+ export_fig -transparent -pdf gravadj.pdf
 end
 
 

@@ -1,5 +1,6 @@
 #!/bin/bash
 #set -x
+source CONFIGURE_GLOBAL
 source CONFIGURE_REG
 
 [ ! -d gitinfos ] && ./git_process.bash

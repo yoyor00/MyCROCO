@@ -5,19 +5,34 @@
 #PBS -l walltime=02:00:00
 #PBS -l mem=20gb
 #PBS -j oe
-set -x
-set -e
-test -z "$CI_CROCO_PWD" && cd $PBS_O_WORKDIR || cd "$CI_CROCO_PWD"
-echo "$CI_CROCO_PWD"
-echo $PBS_O_LOGNAME
-#===================================
+#set -x
+set -eu
+
+source CONFIGURE_GLOBAL
 source configure_file
 
+cd $SUBMIT_DIR
+echo "$SUBMIT_DIR"
+
+#===================================
 par1='OPENMP'
 # Compile
-time ./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log
+msg1="- Compilation failure for ${TEST_NAME} : ${par1}..."
+msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
+./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt; echo -e $msg1 ; exit 1 ; }
 /bin/mv croco croco_${par1}.exe
 
 # Run
+msg1="- Execution failure for ${TEST_NAME} : ${par1}..."
+msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
 export OMP_NUM_THREADS=$NBPROCS
-./croco_${par1}.exe $CROCOIN > openmp_${NBPROCS}_${TEST_NAME}.log
+./croco_${par1}.exe $CROCOIN > openmp_${NBPROCS}_${TEST_NAME}.log  2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
+
+# Additional check in case of clean stop before the end
+SUCCESS=1
+grep 'MAIN: DONE'  openmp_${NBPROCS}_${TEST_NAME}.log || SUCCESS=0
+if [  "$SUCCESS" -eq 0 ]; then
+  echo -e "   $msg2" | tee -a mylog.txt
+  echo -e $msg1 
+  exit 2 
+fi	
