@@ -16,7 +16,7 @@ c     this file is not differentiated
 
       
 c     perturbated ad_x
-      double precision ad_d(ad_array_size/nnodes)
+      double precision ad_d(1)
       double precision ad_x_p(ad_array_size/nnodes)
 
       double precision control_to_param,rand
@@ -43,9 +43,7 @@ c     1. compute gradient with adjoint
 
          
 c     2. compute tangent          
-      do k=1,ad_array_node_size
-         ad_d(k)=0
-      end do
+      ad_d(1)=0
 
       call save_croco_state()
       call cost_fun_d(ad_x, ad_g, cost, ad_d)

@@ -134,7 +134,7 @@ c     &        ad_obs(i,j,ta-2)
          do j=Jstr,Jend
             do i=Istr,Iend
                if (ad_obs(i,j,1).ne.spval) then
-                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+1)
+                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
                   icost = icost + delta_z*delta_z
                   ad_cost_counter = ad_cost_counter + 1
                end if
