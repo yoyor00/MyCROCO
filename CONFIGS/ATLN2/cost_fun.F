@@ -271,7 +271,7 @@ c      end do
 
       write(counter_str, 910) mynode,ad_counter
       open(unit=99,file='z0b.'//counter_str)
-      write(99, *) Iend-Istr+1,Jend-Jstr+1,0
+      write(99, *) Iend-Istr+1,Jend-Jstr+1,mynode
       do j=Jstr,Jend
          do i=Istr,Iend
             write(99, *) lonr(i,j),latr(i,j),zob(i,j)
@@ -389,9 +389,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          close(unit=99)
       end if
 #if defined(MPI) && defined(AMPI)      
-      call AMPI_Bcast(ad_lonr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+      call AMPI_Bcast(ad_lonr_f,npcpoints,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
-      call AMPI_Bcast(ad_latr_f,ad_array_size,AMPI_ADOUBLE_PRECISION,
+      call AMPI_Bcast(ad_latr_f,npcpoints,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
 #endif
       do tile=my_first,my_last
@@ -423,7 +423,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       double precision mindist,dist,rk,distance,xr,yr,param_to_control
       integer ad_cpoint_node_tmp(npcpoints),ad_cpoint_id_tmp(npcpoints)
       character*2 node_str
-      
       ncpoints=0
       do k=1,npcpoints
          call get_ij(ad_lonr_f(k),ad_latr_f(k),i,j,out)
