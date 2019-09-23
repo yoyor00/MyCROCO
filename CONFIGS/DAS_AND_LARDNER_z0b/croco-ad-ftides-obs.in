@@ -1,0 +1,42 @@
+title:
+	Friction tides
+
+start_date:
+01/04/2014 00:00:00
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               8640     60      1       1
+
+initial: NRREC  filename
+          0 
+                          ftides_rst.nc
+
+restart:          NRST, NRPFRST / filename
+                  1200      -1
+                          ftides_rst_obs.nc
+                          
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T      1      0 
+                          ftides_his.nc
+
+averages: NTSAVG, NAVG, NRPFAVG / filename
+            1      80      0
+                          ftides_avg.nc
+
+primary_history_fields: zeta UBAR VBAR  
+                        T    T    T   
+
+primary_averages: zeta UBAR VBAR
+                  T    T    T 
+
+rho0:
+      1025.
+
+bottom_drag:     RDRG(m/s),      RDRG2, Zobt [m],  Cdb_min, Cdb_max
+                 0.0d-04         0.0     0.008        1.d-4    1.d-1
+
+gamma2:
+                 1.
+
+nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
+             1.       180.      1.       180.

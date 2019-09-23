@@ -187,7 +187,7 @@ C        get ad_gthe gradient on each proc (& ad_rms)
             call flush(779)
          end if
          
-         df1 = cost
+         df1 = cost/10000
          
          ad_counter = ad_counter+1
       end do
@@ -223,6 +223,7 @@ C     ...
       double precision rms,irms,crms
       integer i,j,ne,cne,ierr
 
+      ne = 0
       irms = 0
 
       call rms_fun_step(irms,ne)
@@ -296,7 +297,7 @@ C     ...
       integer Istr,Iend,Jstr,Jend,i,j
       integer k,ne
       double precision delta_z, delta_zob, irms
-      ne = 0
+
       do j=Jstr,Jend
          do i=Istr,Iend
             if (ad_obs(i,j,1).ne.spval) then

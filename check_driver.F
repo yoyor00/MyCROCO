@@ -73,6 +73,7 @@ c     n_ad_g = < ad_g . ad_g >
       cost_f = cost
 #endif
 
+      ad_eps = 0.
       if (mynode.eq.0) then
          ad_check_tgt = n_ad_g_f/ad_d_f
          write(789,*)
