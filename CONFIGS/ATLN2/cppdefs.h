@@ -54,7 +54,7 @@
 */
 
   /* Configuration Name */
-#define FRICTION_TIDES
+#define ATLN_FRICTION_TIDES
 #define Z0B_VAR ZOBI_VAR
 # define OUT_DOUBLE
 # define TAPENADE

@@ -60,7 +60,7 @@
 !     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
 !     parameter (LLm0=1600, MMm0=4,    N=40) ! .75 km resolution
       parameter (LLm0=15, MMm0=15,    N=40) ! .75 km resolution
-#elif defined FRICTION_TIDES
+#elif defined ATLN_FRICTION_TIDES
       parameter (LLm0=139, MMm0=164,    N=1) 
 #elif defined S2DV 
       parameter (LLm0=256, MMm0=3,    N=40)
@@ -229,7 +229,7 @@
                                  ! ====== == =====
 # if defined IGW || defined S2DV
       parameter (Ntides=1)
-# elif defined(FRICTION_TIDES)
+# elif defined(ATLN_FRICTION_TIDES)
       parameter (Ntides=1)
 # else
       parameter (Ntides=8)
