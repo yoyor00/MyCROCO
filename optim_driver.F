@@ -187,7 +187,7 @@ C        get ad_gthe gradient on each proc (& ad_rms)
             call flush(779)
          end if
          
-         df1 = cost/10000
+         df1 = cost
          
          ad_counter = ad_counter+1
       end do

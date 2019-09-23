@@ -204,7 +204,7 @@ c     observations on the whole grid
             do i=Istr,Iend
                if (ad_obs(i,j,1).ne.spval) then
                   k=k+1
-                  zob(i,j)=control_to_param(ad_x(k))
+                  zob(i,j)=ad_x(1)
                end if
                if (zobmin.gt.zob(i,j)) then
                   zobmin=zob(i,j)
@@ -228,8 +228,7 @@ c     observations on distributed points, value from the nearest
                      stop
                   end if
                   
-                  zob(i,j)=control_to_param(
-     &                 ad_x(k))
+                  zob(i,j)= ad_x(k)
                end if
             end do
          end do
@@ -518,7 +517,7 @@ c     end if
          do i=Istr,Iend
             if (ad_obs(i,j,1).ne.spval) then
                k=k+1
-               ad_x(k)=param_to_control(zob(i,j))
+               ad_x(k)=zob(i,j)
             end if
          end do
       end do

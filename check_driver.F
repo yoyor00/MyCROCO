@@ -82,7 +82,7 @@ c     n_ad_g = < ad_g . ad_g >
       end if
       
 c     3. finite difference estimation
-      ad_eps = 1.
+      ad_eps = 1.D-4
       do while (ad_eps.gt.1D-10)   
          
          do k=1,ad_array_node_size
