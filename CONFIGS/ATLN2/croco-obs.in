@@ -1,7 +1,7 @@
 title:
         FRICTION TIDE ATLN
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                35000      10     1      1
+                100000      10     1      1
 
 start_date:
 01/04/2014 00:00:00
@@ -20,7 +20,7 @@ initial: NRREC  filename
           1 
                           CROCO_FILES/croco_ini.nc
 restart:          NRST, NRPFRST / filename
-                   25200       -1
+                   69840       -1
                           CROCO_FILES/croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T      180     0
