@@ -55,7 +55,11 @@ c     n_ad_g = < ad_g . ad_g >
          n_ad_g = n_ad_g + ad_g(k)*ad_g(k)
       end do
 
-      ad_check_tgt = (n_ad_g / ad_d(1))
+      if (ad_d(1).gt.epsilon(ad_d(1))) then
+         ad_check_tgt = (n_ad_g / ad_d(1))
+      else
+         ad_check_tgt = 0
+      end if
 
 #if defined(MPI) && defined(AMPI)
       call AMPI_Reduce(n_ad_g, n_ad_g_f, 1,
@@ -75,7 +79,11 @@ c     n_ad_g = < ad_g . ad_g >
 
       ad_eps = 0.
       if (mynode.eq.0) then
-         ad_check_tgt = n_ad_g_f/ad_d_f
+         if (abs(ad_d_f).gt.1D-20) then
+            ad_check_tgt = n_ad_g_f/ad_d_f
+         else
+            ad_check_tgt = 0
+         end if
          write(789,*)
      &        ad_eps,ad_check_tgt
          call flush(789)
@@ -111,8 +119,12 @@ c     3. finite difference estimation
 #endif
 
          if (mynode.eq.0) then
-            ad_check_div=(n_ad_g_f / ((cost_p_f-cost_f)/ad_eps))
-
+            if (abs(cost_p_f - cost_f).gt.1D-48) then
+               ad_check_div=(n_ad_g_f / ((cost_p_f-cost_f)/ad_eps))
+            else
+               ad_check_div=0
+            end if
+            
             write(789,*)
      &           ad_eps,ad_check_div
             call flush(789)

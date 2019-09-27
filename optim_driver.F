@@ -301,7 +301,7 @@ C     ...
       do j=Jstr,Jend
          do i=Istr,Iend
             if (ad_obs(i,j,1).ne.spval) then
-               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_ta+1))
+               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_nt+2))
                irms = irms + delta_z*delta_z
                ne = ne+1
             end if

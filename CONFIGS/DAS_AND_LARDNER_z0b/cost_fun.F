@@ -16,24 +16,23 @@
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
 
-C$XAD BINOMIAL-CKP ad_nt+1 90 1
-      do ta=1,ad_nt
-         do xk=1,ad_ns
-            call step()
-         end do
-         call cost_fun_step(ad_x,icost,ta*ad_ns,3)
+C$AD BINOMIAL-CKP ad_nt*ad_ns+1 80 1
+      do ta=1,ad_nt*ad_ns
+         call step()
+         if (mod(ta,ad_ns).eq.0) then
+            call cost_fun_step(ad_x,icost,ta,3)
+         end if
       end do
 
       cost=icost
-
       icost=0
-      call cost_fun_step(ad_x,icost,ta,2)
+      call cost_fun_step(ad_x,icost,ad_nt,2)
 
       write(*,*) '==cost==>',cost,sqrt(icost)
       cost=cost
       
       ad_cost = cost
-      ad_ta = ta
+      ad_ta = ad_nt*ad_ns
       write (*,*) 'cost=',cost
 
       return
