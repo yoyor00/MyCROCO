@@ -7,7 +7,6 @@ C     -*- fortran -*-
 
 C     size of the optimization problem
       integer ad_array_size
-c      parameter (ad_array_size=900)
       parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
 
 c     real size of the problem per node (<= ad_array_size/nnodes)
@@ -17,18 +16,17 @@ c     number of proposed measure points
       integer npcpoints
       parameter (npcpoints=900)
 
-C     number of steps between cost function computation
+C     number of steps between cost function computations
       integer ad_ns
       parameter (ad_ns = 180)
 
-C     size of the assimilation window
-C     on change check BINOMIAL-CKP param in cost_fun
+C     number of cost function computations
       integer ad_nt
       parameter (ad_nt = 48)
 
 C     start of assimilation in the obs file
       integer ad_ast
-      parameter (ad_ast = 140)
+      parameter (ad_ast = 388)
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st

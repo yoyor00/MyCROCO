@@ -1,3 +1,16 @@
+      subroutine ad_step()
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+
+      integer k
+
+C$AD BINOMIAL-CKP ad_ns+1 10 1
+      do k=1,ad_ns
+         call step()
+      end do
+
+      end subroutine ad_step
 
       subroutine cost_fun(ad_x, cost)
       implicit none
@@ -16,24 +29,23 @@
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
 
-C$AD BINOMIAL-CKP ad_nt+1 40 1
       do ta=1,ad_nt
-         do xk=1,ad_ns
-            call step()
-         end do
+
+         call ad_step()
+
          call cost_fun_step(ad_x,icost,ta,3)
+
       end do
 
       cost=icost
 
       icost=0
-      call cost_fun_step(ad_x,icost,ta,2)
+      call cost_fun_step(ad_x,icost,ad_nt,2)
 
       write(*,*) '==cost==>',cost,sqrt(icost)
-      cost=cost+1.D-3*icost
-      
+      cost=cost
       ad_cost = cost
-      ad_ta = ta
+      ad_ta = ad_nt*ad_ns
       write (*,*) 'cost=',cost
 
       return
@@ -191,7 +203,7 @@ c     &        ad_obs(i,j,ta-2)
       character*6 counter_str
 
       double precision zobmin,zobmax
-      
+
 #include "compute_extended_bounds.h"
 
 c     observations on the whole grid
@@ -202,9 +214,10 @@ c     observations on the whole grid
          k=0
          do j=Jstr,Jend
             do i=Istr,Iend
-               if (ad_obs(i,j,1).ne.spval) then
+               if ((ad_obs(i,j,1).ne.spval).and.(k.lt.
+     &              (ad_array_size/nnodes))) then
                   k=k+1
-                  zob(i,j)=ad_x(1)
+                  zob(i,j)=ad_x(k)
                end if
                if (zobmin.gt.zob(i,j)) then
                   zobmin=zob(i,j)
@@ -227,7 +240,7 @@ c     observations on distributed points, value from the nearest
                      write (*,*) 'AD BIG PROBLEM k=',k
                      stop
                   end if
-                  
+
                   zob(i,j)= ad_x(k)
                end if
             end do
@@ -298,9 +311,9 @@ c      end do
          ad_g(k)=0.
          ad_x(k)=0.
       end do
-      
+
       call init_local_arrays(ad_x)
-      
+
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
@@ -387,7 +400,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          end do
          close(unit=99)
       end if
-#if defined(MPI) && defined(AMPI)      
+#if defined(MPI) && defined(AMPI)
       call AMPI_Bcast(ad_lonr_f,npcpoints,AMPI_ADOUBLE_PRECISION,
      &     0,MPI_COMM_WORLD,ierr)
       call AMPI_Bcast(ad_latr_f,npcpoints,AMPI_ADOUBLE_PRECISION,
@@ -453,7 +466,7 @@ c     end if
          call exit(1)
       end if
 
-#if defined(MPI) && defined(AMPI)      
+#if defined(MPI) && defined(AMPI)
       call AMPI_Allreduce(ad_cpoint_node_tmp,ad_cpoint_node,npcpoints,
      &     MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
       call AMPI_Allreduce(ad_cpoint_id_tmp,ad_cpoint_id,npcpoints,
@@ -512,10 +525,16 @@ c     end if
          enddo
       enddo
 
+      do k=1,ad_array_size/nnodes
+         ad_x(k)=0
+      end do
+
+
       k=0
       do j=Jstr,Jend
          do i=Istr,Iend
-            if (ad_obs(i,j,1).ne.spval) then
+            if ((ad_obs(i,j,1).ne.spval).and.(k.lt.
+     &           (ad_array_size/nnodes))) then
                k=k+1
                ad_x(k)=zob(i,j)
             end if
@@ -527,7 +546,7 @@ c     end if
      &     ad_array_node_size,
      &     ad_array_size/nnodes
 
-      
+
       end subroutine init_local_arrays_2d_tile
 
 
