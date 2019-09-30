@@ -14,7 +14,7 @@ done
 b_n=$(basename ${0})
 OPTIND=1
 
-x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP SHOREFACE SWASH THACKER TANK RIVER'
+x_n='BASIN CANYON_A CANYON_B EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE THACKER TANK RIVER'
 x_d=$(dirname $(dirname $PWD))
 
 #- Choice of the options ---
@@ -54,7 +54,7 @@ for EXAMPLE in $LIST_EXAMPLE
     example=$EXAMPLE
     [ "$EXAMPLE" != "IGW" ] && example=$(echo $EXAMPLE |tr '[:upper:]' '[:lower:]')
     myscript="plot_${example}"
-    sed -i .bak "s/makepdf\(.*\)=\(.*\)0\(.*\)/makepdf=1/g" TEST_CASES/${myscript}.m
+    sed  "s/makepdf\(.*\)=\(.*\)0\(.*\)/makepdf=1/g" TEST_CASES/${myscript}.m > tmp.txt && mv tmp.txt TEST_CASES/${myscript}.m
      
     \rm $(echo $EXAMPLE |tr '[:upper:]' '[:lower:]')*.pdf
     \rm $(echo $EXAMPLE |tr '[:lower:]' '[:upper:]')*.pdf
