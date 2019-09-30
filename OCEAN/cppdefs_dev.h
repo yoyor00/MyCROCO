@@ -1,4 +1,4 @@
-! $Id: set_global_definitions.h 1618 2014-12-18 14:39:51Z rblod $
+! $Id: set_global_definitions.h 1616 2014-12-18 14:39:51Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -38,9 +38,12 @@
 /*  
    Activate the RVTK_DEBUG procedure that will test the reproducibility 
    of parallel computation by comparing binary files produced by serial 
-   and parallel runs
+   and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
+   be defined from cppdefs.h, so not undefined here !!!!! 
 */
-#undef RVTK_DEBUG
+#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
+# define RVTK_DEBUG_WRITE
+#endif
 
 /*
     Constant tracer option (for debugging)
@@ -50,7 +53,7 @@
 /* 
 ======================================================================
    Set OA COUPLING options:
-   Define MPI, select OA_MCT    
+   Define MPI  
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
@@ -58,20 +61,19 @@
 #ifdef OA_COUPLING
 # undef  OPENMP
 # define MPI
-# define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  OA_GRID_UV
 # undef  BULK_FLUX
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  OA_GRID_UV
+# undef  SMFLUX_CFB
 #endif
 
 /* 
 ======================================================================
    Set OW COUPLING options:
-   Define MPI, select OA_MCT    
+   Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
    to OASIS-MCT local communicator
 ======================================================================
@@ -79,7 +81,6 @@
 #ifdef OW_COUPLING
 # undef  OPENMP
 # define MPI
-# define OA_MCT
 # define MPI_COMM_WORLD ocean_grid_comm
 # undef  WKB_WWAVE
 # undef  WAVE_OFFLINE
@@ -87,6 +88,11 @@
 #  undef  WAVE_ROLLER
 #  define WAVE_STREAMING
 #  define WAVE_RAMP
+# endif
+# ifdef OA_COUPLING
+#  undef WAVE_SMFLUX
+# else
+#  define WAVE_SMFLUX
 # endif
 #endif
 
@@ -99,6 +105,7 @@
 ======================================================================
 */ 
 #ifdef XIOS
+# define XIOS2
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
 # define key_iomput
@@ -117,7 +124,7 @@
 #elif defined M2FILTER_FLAT
 #else
 # undef  M2FILTER_NONE
-# define M2FILTER_POWER
+# define  M2FILTER_POWER
 # undef  M2FILTER_COSINE
 # undef  M2FILTER_FLAT
 #endif
@@ -128,6 +135,7 @@
 ======================================================================
 */
 #ifdef NBQ              /* General options */
+# define M3FAST
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
@@ -135,10 +143,8 @@
 # undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
-# ifdef  TANK
-#  undef  NBQ_AM4
-# else
-#  define NBQ_AM4
+# ifdef TANK
+#  define NOT_NBQ_AM4
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
@@ -158,7 +164,6 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
-
 /*
    Options for wz HADV numerical schemes (default C4)
 */
@@ -170,8 +175,8 @@
 # else
 #  undef  W_HADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_HADV_TVD      /* TVD vertical advection                 */
-#  undef  W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
-#  define W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
 #  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
@@ -182,9 +187,9 @@
 # elif defined W_VADV_WENO5
 # elif defined W_VADV_C2
 # else
-#  define W_VADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_VADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_VADV_TVD      /* TVD vertical advection                 */
-#  undef  W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
+#  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
@@ -195,8 +200,10 @@
 #  define OBC_NBQ
 # endif
 # ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
-#  define OBC_NBQORLANSKI    /*  Radiative conditions           */
-#  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  define OBC_NBQORLANSKI    /*  NBQ Radiative conditions       */
+#  undef  OBC_NBQSPECIFIED   /*  NBQ Specified conditions       */
+#  define OBC_WORLANSKI      /*  W Radiative conditions         */
+#  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
@@ -208,6 +215,37 @@
 # define HZR Hz
 
 #endif  /* NBQ */
+
+/*
+======================================================================
+   Activate FAST timestep 3D dynamics for hydrostatic simulations
+   -- Fast friction BSTRESS_FAST --
+======================================================================
+*/
+#ifdef BSTRESS_FAST
+# define M3FAST
+#endif
+#if !defined NBQ && defined M3FAST       /* General options */
+# define SOLVE3D
+# define M2FILTER_NONE  /* no filter with M3FAST */
+# undef  M2FILTER_POWER
+# define BSTRESS_FAST
+/*
+   use options from NBQ Open boundary conditions
+*/
+# if defined OBC_WEST  || defined OBC_EAST  || \
+     defined OBC_NORTH || defined OBC_SOUTH
+#  define OBC_NBQ
+# endif
+# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
+#  undef  OBC_NBQORLANSKI    /*  Radiative conditions           */
+#  define OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  undef  NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef  NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
+#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
+# endif
+#endif  /* M3FAST */
 
 /*
 ======================================================================
@@ -303,10 +341,8 @@
 #ifdef UV_VIS_SMAGO 
 # define VIS_COEF_3D
 #endif
-#ifdef GLS_MIX2017_3D
-# define GLS_MIX2017
-# define GLS_KEPSILON
-# undef  GLS_KOMEGA
+#ifdef GLS_MIXING_3D
+# define GLS_MIXING
 # define UV_VIS2
 # define VIS_COEF_3D
 # undef  TS_DIF2
@@ -379,10 +415,6 @@
 # define TS_DIF4       /*         Hyperdiffusion  with         */
 # undef  TS_MIX_GEO    /*        Geopotential rotation         */
 # define TS_MIX_ISO    /*     or Isopycnal    rotation         */
-#  if defined GLS_MIX2017 || defined GLS_MIXING
-#   undef  TS_MIX_ISO
-#   define TS_MIX_GEO
-#  endif
 #endif
 #ifdef TS_HADV_RSUP5   /*    Pseudo RS 5th-order scheme is:    */
 # define TS_HADV_C6    /*    6th-order centered advection      */
@@ -486,6 +518,33 @@
 
 /*
 ======================================================================
+   GLS_MIXING
+======================================================================
+*/
+#ifdef GLS_MIXING
+
+# if   defined GLS_KOMEGA  
+# elif defined GLS_KEPSILON
+# elif defined GLS_GEN
+# else
+#  define GLS_KEPSILON
+# endif
+
+# if   defined CANUTO_A  
+# elif defined GibLau_78
+# elif defined MelYam_82
+# elif defined KanCla_94
+# elif defined Luyten_96
+# elif defined CANUTO_B 
+# elif defined Cheng_02
+# else
+#  define CANUTO_A
+# endif
+
+#endif
+
+/*
+======================================================================
    TIDES:  
    select dependable keys if not done yet
 ======================================================================
@@ -515,8 +574,7 @@
 ======================================================================
 */
 #ifdef WAVE_MAKER
-# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN \
-                                || defined FLUME_WAVES
+# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 #  define WAVE_MAKER_SPECTRUM
 # endif
 # ifdef WAVE_MAKER_SPECTRUM
@@ -560,6 +618,24 @@
 
 /*
 ======================================================================
+    Current feedback option
+======================================================================
+*/
+#ifdef SMFLUX_CFB
+# ifdef BULK_FLUX
+#  define CFB_STRESS
+#  undef  CFB_STRESS2
+#  undef  CFB_WIND
+#  define STFLUX_CFB
+# else
+#  undef  CFB_STRESS
+#  define CFB_STRESS2
+#  undef  CFB_WIND
+# endif
+#endif
+
+/*
+======================================================================
     Wave Current Interaction
 ======================================================================
 */
@@ -588,7 +664,7 @@
 # ifndef WAVE_OFFLINE
 #  undef WKB_NUDGING
 # endif
-# if defined SHOREFACE || defined FLUME \
+# if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
 # endif
@@ -616,7 +692,7 @@
                       IF-less KPP --> KPP2005
 ======================================================================
 */
-#ifdef LMD_SKPP
+#if defined LMD_SKPP
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
@@ -652,10 +728,11 @@
 
     LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid 
     numerical instability associated with reversing bottom flow
+    NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
 #ifndef INNERSHELF
-# define LIMIT_BSTRESS
+# undef  LIMIT_BSTRESS
 #endif
 #ifdef BBL
 # ifdef OW_COUPLING
@@ -723,12 +800,10 @@
                      || defined OBC_NORTH
 
 # ifdef OBC_M2SPECIFIED
-# elif defined OBC_M2FLATHER
 # elif defined OBC_M2CHARACT
 # elif defined OBC_M2ORLANSKI
 # else
 #  undef  OBC_M2SPECIFIED
-#  undef  OBC_M2FLATHER
 #  define OBC_M2CHARACT
 #  undef  OBC_M2ORLANSKI
 # endif
@@ -737,7 +812,6 @@
 # endif
 
 # ifdef SOLVE3D
-
 #  ifdef OBC_M3SPECIFIED
 #  elif defined OBC_M3ORLANSKI
 #  else
@@ -751,8 +825,13 @@
 #   undef  OBC_TSPECIFIED
 #   define OBC_TORLANSKI
 #  endif
-
 # endif /* SOLVE3D */
+
+# if defined Z_FRC_BRY  || defined M2_FRC_BRY ||\
+     defined M3_FRC_BRY || defined T_FRC_BRY  ||\
+     defined ANA_BRY
+#  define FRC_BRY
+# endif
 
 #endif /* OBC */
 
@@ -790,6 +869,11 @@
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
 # endif
+# ifdef NBQ
+#  define AGRIF_OBC_WSPECIFIED
+#  define AGRIF_OBC_NBQSPECIFIED
+# endif
+
 #endif /* AGRIF */
 
 /*
@@ -807,14 +891,16 @@
   For example, if the simulation starts 1 January of 2000, at 00:00:00
   start_date: 01-JAN-2000 00:00:00) 
 */ 
-#undef  START_DATE
 
 /* 
   Define the NetCDF creation mode flag:
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
 */ 
+#ifdef NC4PAR
+#define NF_CLOBBER nf_mpiio 
+#else
 #define NF_CLOBBER nf_64bit_offset
-
+#endif
 /*
 ======================================================================
 
@@ -822,7 +908,7 @@
 
 ======================================================================
 */
-#ifndef SOLVE3D
+#ifndef SOLVE3D                    
 # undef AVERAGES_K
 # undef SALINITY
 # undef NONLIN_EOS
@@ -834,6 +920,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
+# undef SMFLUX_CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH

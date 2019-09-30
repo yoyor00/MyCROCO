@@ -67,7 +67,7 @@ C$    integer omp_get_thread_num
 # ifdef RIP
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
-# ifdef FLUME
+# ifdef SANDBAR
       real p1,p2,p3,p4
 # endif
 # ifdef RIVER
@@ -92,7 +92,29 @@ C$    integer omp_get_thread_num
                      depth=5000.
                      f0=1.E-4 
                      beta=2.E-11
-# elif defined CANYON_A || defined CANYON_B
+# elif defined SINGLE_COLUMN
+#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF 
+                     depth=50.
+                     f0=0.
+                     beta=0.
+#  elif defined DIURNAL_CYCLE
+                     depth=150.
+                     f0=0.
+                     beta=0.
+#  elif defined FORCED_EKBBL
+                     depth=1500.
+                     f0=1.E-4
+                     beta=0.
+#  elif defined FORCED_DBLEEK
+                     depth=25.0
+                     f0=1.E-4
+                     beta=0.
+#  elif defined FORCED_NONROTBBL || defined FORCED_OSCNONROTBBL
+                     depth=5.
+                     f0=0.0
+                     beta=0.
+#  endif 
+# elif defined CANYON
                      depth=4000.
                      f0=1.E-4
                      beta=0.
@@ -105,15 +127,19 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=2.2829e-11
 # elif defined KH_INST 
-                     depth=286.     
+                     depth=256.     
                      f0=0.
                      beta=0.
 # elif defined GRAV_ADJ
 #  ifdef NBQ
-                     depth=0.29      ! Horn et al. (2001)
+                     depth=0.3
 #  else
                      depth=20.
 #  endif
+                     f0=0.
+                     beta=0.
+# elif defined I_SOLITON
+                     depth=0.29 ! Horn et al. (2001)
                      f0=0.
                      beta=0.
 # elif defined ACOUSTIC
@@ -130,6 +156,10 @@ C$    integer omp_get_thread_num
                      beta=0.
                      ridge_width=30.e3
                      ridge_height=1600.
+# elif defined TS_HADV_TEST
+                     depth=10.
+                     f0=0.
+                     beta=0.                     
 # elif defined OVERFLOW
                      depth=40.
                      f0=0.
@@ -166,7 +196,7 @@ C$    integer omp_get_thread_num
                      depth=15.
                      f0=0.   
                      beta=0.
-# elif defined FLUME
+# elif defined SANDBAR
                      depth=0.6
                      f0=0.   
                      beta=0.
@@ -204,105 +234,108 @@ C$    integer omp_get_thread_num
 ! Grid dimensions (Length_XI, Length_ETA)
 !----------------------------------------------------------------------
 !
+# define Length_XI_ISO_GRID Length_ETA*float(LLm0)/float(MMm0)
+# define Length_ETA_ISO_GRID Length_XI*float(MMm0)/float(LLm0)
+!
 # ifdef AGRIF
       if (Agrif_Root()) then
 # endif
 # if defined BASIN
                      Length_XI =3600.0e+3
                      Length_ETA=2800.0e+3
-# elif defined CANYON_A || defined CANYON_B
+# elif defined SINGLE_COLUMN
+                     Length_XI = 10.0e+3
+                     Length_ETA= 10.0e+3
+# elif defined CANYON
                      Length_XI =128.0e+3
-                     Length_ETA=96.0e+3
+                     Length_ETA= 96.0e+3
 # elif defined EQUATOR
-                     Length_ETA=3200.0E+3
-                     Length_XI =4000.0E+3
+                     Length_ETA=3200.0e+3
+                     Length_XI =4000.0e+3
 # elif defined KH_INST 
-                     Length_XI =286.0
-                     Length_ETA=Length_XI*float(MMm0)/float(LLm0) 
-!                    Length_ETA=286.0/256.0
+                     Length_XI =256.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined ACOUSTIC
                      Length_XI =128.0
-                     Length_ETA=2.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined GRAV_ADJ
 #  ifdef NBQ
-#   ifdef GRAV_ADJ_SOLITON
-                     Length_XI =6.0    ! Horn et al. (2001)
-#   else
                      Length_XI =3.0
-#   endif
-                     Length_ETA=0.1
 #  else
-                     Length_XI =64.0E+3
-                     Length_ETA=2.0E+3
+                     Length_XI =64.0e+3
 #  endif
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined I_SOLITON
+                     Length_XI =6.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
                      Length_XI =200.0e+3
-                     Length_ETA=3.0e+3
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined INTERNAL
                      Length_XI =1200.0e+3
-                     Length_ETA=6.0e+3
-!                     Length_XI =2400.0e+3
-!                     Length_ETA=100.0e+3
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined TS_HADV_TEST
+                     Length_XI = 1.0e+3
+                     Length_ETA= 1.0e+3
 # elif defined OVERFLOW
-                     Length_XI =2.0E+3
                      Length_ETA=64.0E+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined SEAMOUNT
                      Length_XI =512.0e+3
                      Length_ETA=512.0e+3
 # elif defined SHELFRONT
-                     Length_XI =20.0e+3
                      Length_ETA=200.0e+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined SOLITON
                      Length_XI =48.
                      Length_ETA=16.
 # elif defined UPWELLING
-                     Length_ETA=8.E+4
-                     Length_XI =LLm*Length_ETA/MMm
+                     Length_ETA=80.e+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined SED_TEST2
                      Length_XI =25000.0
-                     Length_ETA=2500.0
+                     Length_ETA= 2500.0
 # elif defined RIVER
-                     Length_ETA=8.E+4
-                     Length_XI =LLm*Length_ETA/MMm
+                     Length_ETA=80.e+3
+                     Length_XI =Length_XI_ISO_GRID
 # elif defined JET
-                     Length_XI =500.e+3 
+                     Length_XI = 500.e+3 
                      Length_ETA=2000.e+3 
 # elif defined SHOREFACE
-                    Length_XI =1180.0 
-                    Length_ETA=140.0
-# elif defined FLUME
-                    Length_XI =32.0 
-                    Length_ETA=1.0
+                     Length_XI =1180.0 
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined SANDBAR
+                     Length_XI =32.0 
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
-                    Length_XI =110.0 
-                    Length_ETA=MMm*Length_XI/LLm
+                     Length_XI =110.0 
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined RIP
-                    Length_XI =768.0 
-                    Length_ETA=768.0
+                     Length_XI =768.0 
+                     Length_ETA=768.0
 # elif defined THACKER
-                     Length_XI =199.e+3 
-#  ifdef THACKER_2DV
-                     Length_ETA=3.e+3
-#  else
-                     Length_ETA=199.e+3
-#  endif
+                     Length_XI =200.e+3 
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined TANK
 #  ifndef MOVING_BATHY
 #   ifndef TANKY
                      Length_XI =10.0
-                     Length_ETA=0.20*MMm0
+                     Length_ETA=Length_ETA_ISO_GRID
 #   else
-                     Length_XI =0.20*LLm0
                      Length_ETA=10.0
+                     Length_XI =Length_XI_ISO_GRID
 #   endif
 #  else
                      Length_XI =4.0
-                     Length_ETA=0.001
+                     Length_ETA=Length_ETA_ISO_GRID
 #  endif
 # else
                      Length_XI =???
                      Length_ETA=??? 
 # endif
+
+# undef Length_XI_ISO_GRID
+# undef Length_ETA_ISO_GRID
 
 !----------------------------------------------------------------------
 ! Copy physical dimensions of the grid into globally vizible variables
@@ -406,16 +439,17 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
-                   || defined SOLITON || defined JET \
-                   || defined KH_INST \
-                   || defined ACOUSTIC
+                   || defined SOLITON || defined I_SOLITON \
+                   || defined KH_INST || defined TS_HADV_TEST \
+                   || defined ACOUSTIC || defined SINGLE_COLUMN \
+                   || defined JET
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
         enddo
       enddo
 
-# elif defined CANYON_A || defined CANYON_B
+# elif defined CANYON
       do j=JstrR,JendR
         do i=IstrR,IendR
           cff=32000.-16000.*(sin(pi*xr(i,j)/Length_XI))**24
@@ -562,7 +596,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
-# elif defined FLUME
+# elif defined SANDBAR
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef MPI
@@ -692,6 +726,14 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 # endif
 
+!----------------------------------------------------------------------
+! initialisation of z0b in case of analytical cases
+!----------------------------------------------------------------------
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          zob(i,j)=zobt
+        end do
+      end do
 !
 !----------------------------------------------------------------------
 !  Set masking at RHO-points.

@@ -169,7 +169,7 @@
 ! 4 process radsw (warning!! first (4) downward then (5) upward)
 ! Net solar shortwave radiation: Downwards short wave  
 !
-#  ifdef ERA_ECMWF
+#  if defined ERA_ECMWF || defined AROME
 ! In the case of ERA we used the net short wave - downward short wave is not used
 #  else
         call MYINTERP(1, NXref, 1, NYref,
@@ -194,7 +194,7 @@
 
         do j=J_RANGE
           do i=I_RANGE
-#  ifdef ERA_ECMWF
+#  if defined ERA_ECMWF || defined AROME
             radswg(i,j,iblkrec)=blk_dum1(i,j)
 #  else
             radswg(i,j,iblkrec)=radswg(i,j,iblkrec)-blk_dum1(i,j)
@@ -256,7 +256,7 @@
      
         do j=J_RANGE
           do i=I_RANGE
-#  ifndef RELATIVE_WIND
+#  ifndef CFB_WIND
             wspdg(i,j,iblkrec)=sqrt(uwndg(i,j,iblkrec)*uwndg(i,j,iblkrec)
      &                             +vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
 #  endif
@@ -300,7 +300,7 @@
 
 	call exchange_v2d_tile(1,Lm,1,Mm,
      &                         vwndg(START_2D_ARRAY,iblkrec))
-#   ifndef RELATIVE_WIND
+#   ifndef CFB_WIND
 	call exchange_r2d_tile(1,Lm,1,Mm,
      &                         wspdg(START_2D_ARRAY,iblkrec))
 #   endif
@@ -309,6 +309,20 @@
 
 # else
       USE_BULK_SM_UPDATE !
+# endif
+      elseif (blkvar_id.eq.10) then
+# ifdef READ_PATM
+! 10 process sea surface pressure
+        call MYINTERP(1, NXref, 1, NYref,
+     &                lonref, latref, varref,
+     &                I_RANGE,J_RANGE,
+     &                lonr(GLOBAL_2D_ARRAY), 
+     &                latr(GLOBAL_2D_ARRAY),
+     &                patmg(GLOBAL_2D_ARRAY,iblkrec))
+# ifdef MPI
+	call exchange_r2d_tile(1,Lm,1,Mm,
+     &                         patmg(START_2D_ARRAY,iblkrec))
+#endif
 # endif
       endif
  

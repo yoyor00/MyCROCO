@@ -36,7 +36,7 @@
 #include "ocean3d.h"
 #include "mixing.h"
 #include "diagnostics.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
@@ -201,6 +201,15 @@
      &                      indxMBaro+itrc-1,
      &                      record,ivar,type)
 # endif
+# if defined M3FAST
+!
+! indxMfast
+!
+           workr=Mfast_avg(:,:,:,itrc)
+           call fillvalue3d(workr,nciddiaM_avg,diaMfast_avg(itrc),
+     &                      indxMfast+itrc-1,
+     &                      record,ivar,type)
+# endif
 #ifdef MRL_WCI
 !
 ! indxMvf
@@ -286,8 +295,12 @@
       write(*,*) 'MPrsgrd_avg(i,j,k,itrc) ',MPrsgrd_avg(i,j,k,itrc)
       write(*,*) 'MHmix_avg(i,j,k,itrc)   ',MHmix_avg(i,j,k,itrc)
       write(*,*) 'MVmix_avg(i,j,k,itrc)   ',MVmix_avg(i,j,k,itrc)
+      write(*,*) 'MVmix2_avg(i,j,k,itrc)  ',MVmix2_avg(i,j,k,itrc)
 # if defined DIAGNOSTICS_BARO
       write(*,*) 'MBaro_avg(i,j,k,itrc) ',MBaro_avg(i,j,k,itrc)
+# endif
+# if defined M3FAST
+      write(*,*) 'Mfast_avg(i,j,k,itrc) ',Mfast_avg(i,j,k,itrc)
 # endif
 # ifdef MRL_WCI
       write(*,*) 'Mvf_avg(i,j,k,itrc)     ',Mvf_avg(i,j,k,itrc)
@@ -308,6 +321,10 @@
      &                                  +  MPrsgrd_avg(i,j,k,itrc)
      &                                  +  MHmix_avg(i,j,k,itrc)
      &                                  +  MVmix_avg(i,j,k,itrc)
+     &                                  +  MVmix2_avg(i,j,k,itrc)
+# if defined M3FAST
+     &                                  +  Mfast_avg(i,j,k,itrc)
+# endif
 # ifdef MRL_WCI
      &                                  +  Mvf_avg(i,j,k,itrc)
      &                                  +  Mbrk_avg(i,j,k,itrc)

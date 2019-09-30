@@ -30,18 +30,16 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
-#elif defined CANYON_A
+#elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
-#elif defined CANYON_B
-      parameter (LLm0=66,   MMm0=48,   N=16)
 #elif defined EQUATOR
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
 #elif defined KH_INST 
 # ifndef KH_INSTY
 #  ifdef KH_INST3D
-      parameter (LLm0=256,  MMm0=32,  N=256)
+      parameter (LLm0=256,  MMm0=32,  N=256)   !   1 m resolution
 #  else
-      parameter (LLm0=256,  MMm0=1,   N=256)
+      parameter (LLm0=128,  MMm0=1,   N=128)   !   2 m resolution
 #  endif
 # else
       parameter (LLm0=1,    MMm0=256, N=256)
@@ -50,27 +48,21 @@
       parameter (LLm0=64,   MMm0=1,    N=64)  
 #elif defined GRAV_ADJ
 # ifdef NBQ
-#  ifdef GRAV_ADJ_SOLITON
-      parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
-#  else
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
       parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
-#  endif
 # else
-!     parameter (LLm0=32,   MMm0=4,    N=10)   !   2 km resolution
-      parameter (LLm0=128,  MMm0=4,    N=40)   ! 500  m resolution
-!     parameter (LLm0=512,  MMm0=4,   N=160)   ! 125  m resolution
+!     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
+      parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
+!     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
+#elif defined I_SOLITON
+      parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
-!     parameter (LLm0=120,  MMm0=10,   N=40)   !  10 km resolution
-!     parameter (LLm0=800,  MMm0=4,    N=40)   ! 1.5 km resolution
-      parameter (LLm0=1600, MMm0=4,    N=40)   ! .75 km resolution
-#elif defined S2DV 
-       parameter (LLm0=562, MMm0=3,    N=40)   ! true 2DV
-#elif defined MILES 
-       parameter (LLm0=408, MMm0=523,  N=20)
+!     parameter (LLm0=120,  MMm0=3,    N=40)   !  10 km resolution
+      parameter (LLm0=800,  MMm0=3,    N=40)   ! 1.5 km resolution
+!     parameter (LLm0=1600, MMm0=3,    N=40)   ! .75 km resolution
 #elif defined IGW
 # ifndef NBQ
 !      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
@@ -81,15 +73,30 @@
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
+#elif defined TS_HADV_TEST
+      parameter (LLm0=100,  MMm0=100,  N=5) 
+#elif defined SINGLE_COLUMN
+# ifdef KATO_PHILIPS 
+      parameter (LLm0=5 ,   MMm0=5,    N=100)
+# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \
+    || defined FORCED_OSCNONROTBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=50)
+# elif defined FORCED_EKBBL
+      parameter (LLm0=5 ,   MMm0=5,    N=40)
+# elif defined FORCED_DBLEEK 
+      parameter (LLm0=5 ,   MMm0=5,    N=25)
+# elif defined DIURNAL_CYCLE
+      parameter (LLm0=5 ,   MMm0=5,    N=150)
+# endif
 #elif defined PLUME
-      parameter (LLm0=200,   MMm0=200,   N=100)        
-!      parameter (LLm0=80,   MMm0=80,   N=100) 
+      parameter (LLm0=200,  MMm0=200,  N=100)        
+!     parameter (LLm0=80,   MMm0=80,   N=100) 
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
 #elif defined SEAMOUNT
       parameter (LLm0=64,   MMm0=64,   N=20)
 #elif defined SHELFRONT
-      parameter (LLm0=4,    MMm0=40,   N=10)
+      parameter (LLm0=3,    MMm0=40,   N=10)
 #elif defined SOLITON
       parameter (LLm0=96,   MMm0=32,   N=10)
 #elif defined UPWELLING
@@ -113,8 +120,8 @@
 # endif
 #elif defined SHOREFACE
       parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
-#elif defined FLUME
-      parameter (LLm0=59,   MMm0=1,    N=20)   ! .5 m Flume
+#elif defined SANDBAR
+      parameter (LLm0=59,   MMm0=1,    N=20)   ! 50 cm
 #elif defined SWASH
 !     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
@@ -128,9 +135,9 @@
 # endif
 #elif defined THACKER
 # ifdef THACKER_2DV
-      parameter (LLm0=199,  MMm0=1,    N=5 )   !  1 km resolution
+      parameter (LLm0=200,  MMm0=1,    N=5 )   !  1 km resolution
 # else
-      parameter (LLm0=199,  MMm0=199,  N=5 )   !  1 km resolution
+      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution
 # endif
 #elif defined TANK
 # ifndef MOVING_BATHY
@@ -143,7 +150,7 @@
       parameter (LLm0=4000, MMm0=1,    N=30)   !  1 mm resolution
 # endif
 #elif defined CALDEIRA
-      parameter (LLm0=100,   MMm0=100,   N=50)
+      parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -173,6 +180,10 @@
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
+#  elif defined MENOR 
+      parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
+#  elif defined SEINE 
+      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -233,37 +244,76 @@
 !
       integer NWEIGHT
       parameter (NWEIGHT=1000)
-!
-!----------------------------------------------------------------------
-! Tides, Wetting-Drying, Point sources, Floast, Stations
-!----------------------------------------------------------------------
-!
 
+!
+!----------------------------------------------------------------------
+! OA coupling parametrization for current feedback on wind-stress  
+! (Renault et al., Sc. Reports 2017)
+!----------------------------------------------------------------------
+!
+#ifdef SMFLUX_CFB
+      ! wind correction: Ua-(1-sw)*Uo
+      ! ifndef CFB_WIND, this is only used to correct heat flux (bulk_flux)
+      real swparam
+      parameter (swparam=0.3)
+# ifdef CFB_STRESS
+      ! wind-stress correction using wind speed:  rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope * wspd + cfb_offset [N.m^-3.s]
+      !  (recommendended and default if BULK_FLUX - needs wspd data)
+      real cfb_slope, cfb_offset
+      parameter (cfb_slope=-0.0029)
+      parameter (cfb_offset=0.008)
+# elif defined CFB_STRESS2
+      ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
+      ! (use if wspd data not available, e.g. not BULK_FLUX)
+      real cfb_slope2, cfb_offset2
+      parameter (cfb_slope2=-0.100)
+      parameter (cfb_offset2=0.001)
+# endif
+#endif
+!
+!----------------------------------------------------------------------
+! Tides
+!----------------------------------------------------------------------
+!
 #if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
-# if defined IGW || defined S2DV
+# if defined IGW
       parameter (Ntides=1)
 # else
       parameter (Ntides=8)
 # endif
 #endif
 !
+!----------------------------------------------------------------------
+! Wetting-Drying
+!----------------------------------------------------------------------
+!
 #ifdef WET_DRY
       real D_wetdry             ! Critical Depth for Drying cells
                                 ! ======== ===== === ====== =====
-# if defined THACKER || defined FLUME
+# if defined THACKER || defined SANDBAR
       parameter (D_wetdry=0.01)
 # elif defined SWASH
       parameter (D_wetdry=0.001)
 # else
-      parameter (D_wetdry=0.10)
+      parameter (D_wetdry=0.2)
 # endif
 #endif
 !
+!----------------------------------------------------------------------
+! Point sources, Floast, Stations
+!----------------------------------------------------------------------
+!
 #if defined PSOURCE || defined PSOURCE_NCFILE
-      integer Msrc               ! Number of point sources
-      parameter (Msrc=10)        ! ====== == ===== =======
+      integer Nsrc               ! Number of point sources
+# ifdef RIVER
+      parameter (Nsrc=2)         ! ====== == ===== =======
+# else
+      parameter (Nsrc=12)        ! ====== == ===== =======
+# endif
 #endif
 #ifdef FLOATS
        integer Mfloats           ! Maximum number of floats
@@ -410,7 +460,7 @@
       parameter (Agrif_lev_sedim=0)
 # endif
 
-# ifdef GLS_MIX2017
+# ifdef GLS_MIXING
       integer NGLS
       parameter(NGLS=2)
       integer itke
@@ -426,7 +476,7 @@
 ! Tracer identification indices
 !----------------------------------------------------------------------
 !
-#if defined SOLVE3D && !defined F90CODE
+#if defined SOLVE3D
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf
@@ -499,6 +549,7 @@
      &          , NFlux_Zmetab
      &          , NFlux_Zmort
      &          , NFlux_ReminD1, NFlux_ReminD2
+     &          , NFlux_CoagPhy, NFlux_CoagSDet
      &          , NumFluxTermsN, NumFluxTerms, NumGasExcTerms
      &          , NFlux_VSinkP1
      &          , NFlux_VSinkD1, NFlux_VSinkD2
@@ -654,7 +705,7 @@
      &           NumVSinkTerms  = 2)
 
 #  elif defined BIO_N2ChlPZD2
-      parameter (ntrc_bio=7,itrc_bio=itemp+ntrc_salt+ntrc_pas+1) 
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,   
      &           iPhy1=iNO3_+3,
      &           iZoo1=iNO3_+4,
@@ -667,10 +718,12 @@
      &           NFlux_Pmort    = 6,
      &           NFlux_Zmetab   = 7,
      &           NFlux_Zmort    = 8,
-     &           NFlux_ReminD1  = 9,
-     &           NFlux_ReminD2  = 10,
-     &           NumFluxTermsN  = 10,
-     &           NumFluxTerms   = 10,
+     &           NFlux_CoagPhy  = 9,
+     &           NFlux_CoagSDet = 10,
+     &           NFlux_ReminD1  = 11,
+     &           NFlux_ReminD2  = 12,
+     &           NumFluxTermsN  = 12,
+     &           NumFluxTerms   = 12,
      &           NumGasExcTerms = 0,
      &           NFlux_VSinkP1  = 1,
      &           NFlux_VSinkD1  = 2,
@@ -797,20 +850,20 @@
       parameter (ntrc_diats=0)
 # endif
 # ifdef DIAGNOSTICS_UV
-      parameter (ntrc_diauv=22)
+      parameter (ntrc_diauv=24)
 # else
       parameter (ntrc_diauv=0)
 # endif
 # ifdef DIAGNOSTICS_VRT
-      parameter (ntrc_diavrt=14)
+      parameter (ntrc_diavrt=16)
 # else
       parameter (ntrc_diavrt=0)
 # endif
 # ifdef DIAGNOSTICS_EK
 # ifdef DIAGNOSTICS_EK_MLD
-      parameter (ntrc_diaek=26)
+      parameter (ntrc_diaek=28)
 # else
-      parameter (ntrc_diaek=14)
+      parameter (ntrc_diaek=16)
 # endif
 # else
       parameter (ntrc_diaek=0)
@@ -832,4 +885,14 @@
 # endif
 #endif /*SOLVE3D */
 
+!
+!----------------------------------------------------------------------
+! Max time increment for computing bottom stress at the 3D fast time 
+! steps
+!----------------------------------------------------------------------
+!
+#ifdef BSTRESS_FAST
+      integer inc_faststep_max
+      parameter(inc_faststep_max = 10)
+#endif
 

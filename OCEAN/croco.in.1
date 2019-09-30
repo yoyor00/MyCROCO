@@ -6,7 +6,12 @@ time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1         1000         0.01
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0
-
+run_start_date:
+01/04/2014 00:00:00
+run_end_date: 
+01/01/2016 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                   1       6       12
 grid:  filename
     CROCO_FILES/croco_grd.nc.1
 forcing: filename
@@ -35,12 +40,12 @@ primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen  HEL
                              F   F     T   F    T    F    F     F       T   T    T     T    T    T    T    T   10*T             
 gls_history_fields:   TKE  GLS  Lscale
-                      T     T    T
+                       T     T    T
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   30*T
-auxiliary_averages: rho Omega  W  Akv  Akt  Aks Visc3d Diff3d HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
-                     F   T     T   F    T    F    F      F     T   T    T     T    T    T     T    T  10*T
+auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
+                     F   T     T   F    T    F     F     F      T   T    T     T   T    T     T    T   10*T
 gls_averages:   TKE  GLS  Lscale
                  T     T    T
 
@@ -208,7 +213,23 @@ diagbioGasExc_average_fields:  wrtdiabioGasExc_avg
 			         50*T
 	
 biology:   forcing file
-           CROCO_FILES/croco_frcbio.nc.1
+             CROCO_FILES/croco_frcbio.nc
+
+wkb_boundary: filename
+             XXXXXXX
+wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
+            0.25     190.        8.      -2.       1.3    0.38
+wkb_roller:  roller_sinb  roller_fraction
+                  0.1         0.5
+
+wave_history_fields: hrm  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
+                      20*F
+wave_average_fields: hrm  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
+                      20*F
+wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
+                      20*F
+wci_average_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
+                      20*F
 
 sediments: input file
            sediment.in

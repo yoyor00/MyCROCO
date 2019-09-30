@@ -35,7 +35,7 @@
 #include "ocean3d.h"
 #include "mixing.h"
 #include "diags_ek.h"
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
@@ -248,6 +248,16 @@
      &                      record,ivar,type)
 # endif
 
+# if defined M3FAST
+!
+! indxekfast
+!
+           work2d=ekfast_avg(:,:)
+           call fillvalue2d(work2d,nciddiags_ek_avg,
+     &                      diags_ekfast_avg(itrc),
+     &                      indxekfast+itrc-1,
+     &                      record,ivar,type)
+# endif
 
 
 # if defined DIAGNOSTICS_EK_MLD
@@ -349,6 +359,7 @@
      &                      indxekBaro_mld+itrc-1,
      &                      record,ivar,type)
 # endif
+
 # endif
 
         endif
@@ -368,6 +379,9 @@
       write(*,*) 'ekvol_avg(i,j)   ',ekvol_avg(i,j)
 # if defined DIAGNOSTICS_BARO
       write(*,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
+# endif
+# if defined M3FAST
+      write(*,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
 # endif
       write(*,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)
 

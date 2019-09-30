@@ -723,7 +723,7 @@ C$OMP BARRIER
             cff=(FX(i+1,j)-FX(i,j)+                           
      &           FE(i,j+1)-FE(i,j))*pm(i,j)*pn(i,j)
 #  ifdef SPONGE_SED
-     &                             *cff_sponge(i,j)
+     &                             *sed_sponge(i,j)
 #  endif
 #  undef DIFF_BED
 #  ifdef DIFF_BED
@@ -803,7 +803,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo
@@ -1287,12 +1287,12 @@ C$OMP BARRIER
                t(i,j,k,nnew,indx)=qc(i,k)
      &                   +(FC(i,k)-FC(i,k-1))*Hz_inv(i,k) 
 #  ifdef SPONGE_SED
-     &                                       *cff_sponge(i,j)
+     &                                       *sed_sponge(i,j)
 #  endif
             enddo   
             settling_flux(i,j,ised)=FC(i,0)
 #  ifdef SPONGE_SED
-     &                                       *cff_sponge(i,j)
+     &                                       *sed_sponge(i,j)
 #  endif
           enddo   
         enddo   
@@ -1388,7 +1388,7 @@ C$OMP BARRIER
      &                settling_flux(i,j,ised))
             ero_flux(i,j,ised)=ero_flux(i,j,ised)
 #  ifdef SPONGE_SED
-     &                             *cff_sponge(i,j)
+     &                             *sed_sponge(i,j)
 #  endif
 !
 !  Update global tracer variables (m Tunits for nnew indx, Tuints for 3)
@@ -2017,7 +2017,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo

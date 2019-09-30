@@ -27,32 +27,6 @@
  
       subroutine uv3dpremix_tile (Istr,Iend,Jstr,Jend,CF,DC)
 !
-! Computes harmonic mixing of momentum, along constant S-surfaces
-! as horizontal divergence of the stress tensor. Components of the
-! stress tensor are:
-!                         du     dv
-!         s_xx = -s_yy = ---- - -----
-!                         dx     dy
-!
-!                         du     dv
-!         s_xy =  s_yx = ---- + ----
-!                         dy     dx
-!
-! Reference:
-!
-! Wajsowicz, R.C, 1993: A consistent formulation of the anisotropic
-!     stress tensor for use in models of the large-scale ocean
-!     circulation, JCP, 105, 333-338.
-!
-! Sadourny, R. and K. Maynard, 1997: Formulations of lateral
-!     diffusion in geophysical fluid dynamics models, In "Numerical
-!     Methods of Atmospheric and Oceanic Modelling". Lin, Laprise,
-!     and Ritchie, Eds., NRC Research Press, 547-556.
-!
-! Griffies, S.M. and R.W. Hallberg, 2000: Biharmonic friction with
-!     a Smagorinsky-like viscosity for use in large-scale eddy-
-!     permitting ocean models, Mon. Wea. Rev., 128, 8, 2935-2946.
-!
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, indx
       real CF(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -119,7 +93,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
-       if (agrif_nb_step() .EQ. UVspongeTimeindex2) then
+      if (agrif_nb_step() .EQ. UVspongeTimeindex2) then
 
        if (SOUTHERN_EDGE) then  
          do k=1,N
@@ -147,14 +121,14 @@ C$OMP BARRIER
          enddo
        endif
                      
-      if (NORTHERN_EDGE) then
+       if (NORTHERN_EDGE) then
          do k=1,N
          do j=JendR-decal,JendR
          do i=Istr,IendR
           U_sponge_north(i,j,k,UVTimesponge)=
      &              usponge(i,j,k)          
 #ifdef MASKING
-     &    *vmask(i,j)
+     &    *umask(i,j)
 #endif
          enddo
          enddo
@@ -173,40 +147,50 @@ C$OMP BARRIER
        endif               
 
 
-      if (WESTERN_EDGE) then
+       if (WESTERN_EDGE) then
          do k=1,N
          do j=JstrR,JendR
          do i=Istr,Istr+decal-1 
           U_sponge_west(i,j,k,UVTimesponge)=
-     &              usponge(i,j,k)       
+     &              usponge(i,j,k)
+#ifdef MASKING
+     &    *umask(i,j)
+#endif     
          enddo
          enddo
 
          do j=Jstr,JendR
          do i=IstrR,IstrR+decal      
           V_sponge_west(i,j,k,UVTimesponge)=
-     &              vsponge(i,j,k)        
+     &              vsponge(i,j,k)
+#ifdef MASKING
+     &    *vmask(i,j)
+#endif     
          enddo
          enddo
 
          enddo
-
-
        endif
                     
-      if (EASTERN_EDGE) then  
+       if (EASTERN_EDGE) then  
          do k=1,N
          do j=JstrR,JendR
          do i=IendR-decal+1,IendR
           U_sponge_east(i,j,k,UVTimesponge)=
-     &              usponge(i,j,k)    
+     &              usponge(i,j,k)
+#ifdef MASKING
+     &    *umask(i,j)
+#endif 
          enddo
          enddo
 
          do j=Jstr,JendR
          do i=IendR-decal,IendR
           V_sponge_east(i,j,k,UVTimesponge)=
-     &              vsponge(i,j,k)             
+     &              vsponge(i,j,k)
+#ifdef MASKING
+     &    *vmask(i,j)
+#endif         
          enddo
          enddo
 
@@ -216,14 +200,14 @@ C$OMP BARRIER
       ENDIF    
 
 
-       tinterp = real(nbcoarse-1)/rrhot
-       IF (nbstep3d .LT. irhot) tinterp = 0.
-       onemtinterp = -tinterp
-       tinterp = 1.+tinterp
+      tinterp = real(nbcoarse-1)/rrhot
+      IF (nbstep3d .LT. irhot) tinterp = 0.
+      onemtinterp = -tinterp
+      tinterp = 1.+tinterp
        
-       nold = 3 - UVTimesponge
+      nold = 3 - UVTimesponge
 
-       if (SOUTHERN_EDGE) then
+      if (SOUTHERN_EDGE) then
        do k=1,N
        do j=JstrR,JstrR+decal
        do i=Istr,IendR
@@ -242,9 +226,9 @@ C$OMP BARRIER
        enddo
 
        enddo
-       endif
+      endif
        
-       if (NORTHERN_EDGE) then
+      if (NORTHERN_EDGE) then
        do k=1,N
        do j=JendR-decal,JendR
        do i=Istr,IendR
@@ -263,124 +247,123 @@ C$OMP BARRIER
        enddo
 
        enddo           
-       endif
+      endif
        
       if (WESTERN_EDGE) then
-         do k=1,N
-         do j=JstrR,JendR
-         do i=Istr,Istr+decal-1
-          usponge(i,j,k) =
+       do k=1,N
+       do j=JstrR,JendR
+       do i=Istr,Istr+decal-1
+        usponge(i,j,k) =
      &       onemtinterp*U_sponge_west(i,j,k,nold)
      &       +tinterp*U_sponge_west(i,j,k,UVTimesponge)
 
 
-         enddo
-         enddo
+       enddo
+       enddo
 
-         do j=Jstr,JendR
-         do i=IstrR,IstrR+decal
-          vsponge(i,j,k) =
+       do j=Jstr,JendR
+       do i=IstrR,IstrR+decal
+        vsponge(i,j,k) =
      &       onemtinterp*V_sponge_west(i,j,k,nold)
      &       +tinterp*V_sponge_west(i,j,k,UVTimesponge)
-         enddo
-         enddo
+       enddo
+       enddo
 
-         enddo
-
-       endif      
+       enddo
+      endif      
        
       if (EASTERN_EDGE) then    
-         do k=1,N
-         do j=JstrR,JendR
-         do i=IendR-decal+1,IendR
-          usponge(i,j,k) =
+       do k=1,N
+       do j=JstrR,JendR
+       do i=IendR-decal+1,IendR
+        usponge(i,j,k) =
      &       onemtinterp*U_sponge_east(i,j,k,nold)
      &       +tinterp*U_sponge_east(i,j,k,UVTimesponge)
-         enddo
-         enddo
+       enddo
+       enddo
 
-         do j=Jstr,JendR
-         do i=IendR-decal,IendR
-          vsponge(i,j,k) =
+       do j=Jstr,JendR
+       do i=IendR-decal,IendR
+        vsponge(i,j,k) =
      &       onemtinterp*V_sponge_east(i,j,k,nold)
      &       +tinterp*V_sponge_east(i,j,k,UVTimesponge)       
-         enddo
-         enddo
+       enddo
+       enddo
 
-         enddo 
-       endif
+       enddo 
+      endif
 
-         do j=JstrR,JendR
-         do i=IstrR,IendR
-          DC(i,j,0) = 0.
-          CF(i,j,0) = 0.
-         enddo
-         enddo
+      do j=JstrR,JendR
+      do i=IstrR,IendR
+       DC(i,j,0) = 0.
+       CF(i,j,0) = 0.
+      enddo
+      enddo
                           
-         do k=1,N
-         do j=JstrR,JendR
-         do i=Istr,IendR
-          DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
-          DC(i,j,0) = DC(i,j,0) + DC(i,j,k)
-          CF(i,j,0) = CF(i,j,0) + DC(i,j,k)*usponge(i,j,k)
-         enddo
-         enddo
-         enddo
+      do k=1,N
+      do j=JstrR,JendR
+      do i=Istr,IendR
+       DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+       DC(i,j,0) = DC(i,j,0) + DC(i,j,k)
+       CF(i,j,0) = CF(i,j,0) + DC(i,j,k)*usponge(i,j,k)
+      enddo
+      enddo
+      enddo
 
-         do j=JstrR,JendR
-         do i=Istr,IendR
-         DC(i,j,0)=1./DC(i,j,0)
-         CF(i,j,0)=DC(i,j,0)
+      do j=JstrR,JendR
+      do i=Istr,IendR
+       DC(i,j,0)=1./DC(i,j,0)
+       CF(i,j,0)=DC(i,j,0)
      &                   *(CF(i,j,0)-DU_avg1(i,j,nstp))
-         enddo
-         enddo
+      enddo
+      enddo
 
-         do k = N,1,-1
-         do j=JstrR,JendR
-         do i=Istr,IendR
-         usponge(i,j,k) = (usponge(i,j,k)-CF(i,j,0))
+      do k = N,1,-1
+      do j=JstrR,JendR
+      do i=Istr,IendR
+       usponge(i,j,k) = (usponge(i,j,k)-CF(i,j,0))
 #ifdef MASKING
      &             * umask(i,j)
 #endif
-         enddo
-         enddo
-         enddo
+      enddo
+      enddo
+      enddo
 
-         do j=JstrR,JendR
-         do i=IstrR,IendR
-          DC(i,j,0) = 0.
-          CF(i,j,0) = 0.
-         enddo
-         enddo
+      do j=JstrR,JendR
+      do i=IstrR,IendR
+       DC(i,j,0) = 0.
+       CF(i,j,0) = 0.
+      enddo
+      enddo
 
-         do k=1,N
-         do j=Jstr,JendR
-         do i=IstrR,IendR
-          DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
-          DC(i,j,0) = DC(i,j,0) + DC(i,j,k)
-          CF(i,j,0) = CF(i,j,0) + DC(i,j,k)*vsponge(i,j,k)
-         enddo
-         enddo
-         enddo
+      do k=1,N
+      do j=Jstr,JendR
+      do i=IstrR,IendR
+       DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+       DC(i,j,0) = DC(i,j,0) + DC(i,j,k)
+       CF(i,j,0) = CF(i,j,0) + DC(i,j,k)*vsponge(i,j,k)
+      enddo
+      enddo
+      enddo
 
-         do j=Jstr,JendR
-         do i=IstrR,IendR
-         DC(i,j,0)=1./DC(i,j,0)
-         CF(i,j,0)=DC(i,j,0)
+      do j=Jstr,JendR
+      do i=IstrR,IendR
+       DC(i,j,0)=1./DC(i,j,0)
+       CF(i,j,0)=DC(i,j,0)
      &                   *(CF(i,j,0)-DV_avg1(i,j,nstp))
-         enddo
-         enddo
+      enddo
+      enddo
 
-         do k = N,1,-1
-         do j=Jstr,JendR
-         do i=IstrR,IendR
-         vsponge(i,j,k) = (vsponge(i,j,k)-CF(i,j,0))
+      do k = N,1,-1
+      do j=Jstr,JendR
+      do i=IstrR,IendR
+       vsponge(i,j,k) = (vsponge(i,j,k)-CF(i,j,0))
 #ifdef MASKING
      &       * vmask(i,j)
 #endif
-         enddo
-         enddo
-         enddo
+      enddo
+      enddo
+      enddo
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,

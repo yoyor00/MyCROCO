@@ -1,0 +1,37 @@
+# ci croco
+# check this file with: https://gitlab.inria.fr/ci/lint
+
+variables:
+  TERM: "xterm-256color"
+  CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
+  DATADIR: "$CI_PROJECT_DIR/.datadir"
+  CVTKWORK: "$CI_PROJECT_DIR/.datawork"
+  CROCO_CI_MPIRUN: "mpirun.mpich"
+  
+before_script:
+  - mkdir -p $DATADIR
+  - mkdir -p $CVTKWORK
+  - cd $DATADIR
+  - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
+  - cd $CVTKHOME/Scripts_ana
+  - ./create_link_master_ana.sh
+  - cd ..
+#  - cd ./Scripts_vort
+#  - ./create_link_master_vort.sh
+#  - cd ..
+#  - cd ./Scripts_reg
+#  - ./create_link_master_reg.sh
+#  - cd ..
+
+
+
+run:
+  script:
+    - cd $CVTKWORK/KTEST
+    - exec ./mk_TESTALL_ana.bash
+    - ./gather_recap.bash ANA
+    - /bin/sh -c '! grep failed */Recap_*.*'
+    
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp

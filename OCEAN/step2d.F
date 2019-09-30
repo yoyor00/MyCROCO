@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 
-#if !defined NBQ || (defined AGRIF && defined NBQ_CHILD_ONLY)
+#if !defined M3FAST || (defined AGRIF && defined NBQ_CHILD_ONLY)
 
 #define PRED_COUPLED_MODE
 
@@ -167,7 +167,7 @@ C$    trd=omp_get_thread_num()
 #endif
 !
 #ifdef MPI
-#include "mpi_roms.h"
+#include "mpi_cpl.h"
       include 'mpif.h'
 # define LOCALLM Lmmpi
 # define LOCALMM Mmmpi
@@ -191,7 +191,7 @@ C$    trd=omp_get_thread_num()
 # ifdef TANK
          myalpha   = 0.01
 # else
-         myalpha   = 0.5
+         myalpha   = 0.25
 # endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
@@ -444,13 +444,28 @@ C$OMP END MASTER
 #endif /* ZNUDGING */
 !
 !-----------------------------------------------------------------------
+! Mask land cells & ensure that total depth in masked cells is > Dcrit
+!-----------------------------------------------------------------------
+!
+#ifdef MASKING
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          zeta_new(i,j)=zeta_new(i,j)*rmask(i,j)
+# ifdef WET_DRY
+          cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
+          zeta_new(i,j)=zeta_new(i,j)+
+     &                 cff*(Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
+# endif
+        enddo
+      enddo
+#endif
+!
+!-----------------------------------------------------------------------
 ! Computes zetarhs to use in mometum equations
 !-----------------------------------------------------------------------
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j) SWITCH rmask(i,j)
-          Dnew(i,j)=zeta_new(i,j)+h(i,j)
           zwrk(i,j)=cff0*zeta_new(i,j) +cff1*zeta(i,j,kstp)
      &             +cff2*zeta(i,j,kbak)+cff3*zeta(i,j,kold)
 #if defined VAR_RHO_2D && defined SOLVE3D
@@ -466,17 +481,12 @@ C$OMP END MASTER
 !
 !-----------------------------------------------------------------------
 ! Load new free-surface values into shared array
-! Modify new free-surface to ensure that depth is > Dcrit for masked
-! cells.
 !-----------------------------------------------------------------------
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
+          Dnew(i,j)=zeta_new(i,j)+h(i,j)
           zeta(i,j,knew)=zeta_new(i,j) 
-#if defined WET_DRY && defined MASKING
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &                   (Dcrit(i,j)-h(i,j))*(1.-rmask(i,j))
-#endif
         enddo
       enddo 
 !
@@ -620,6 +630,10 @@ C$OMP END MASTER
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i-1,j) )
 #endif
+#if defined READ_PATM && !defined SOLVE3D
+     &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
+     &                                   *( patm2d(i,j)-patm2d(i-1,j) )
+#endif
      &                                                              )
 ! 
           rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
@@ -636,6 +650,10 @@ C$OMP END MASTER
 #if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i,j-1) )
+#endif
+#if defined READ_PATM && !defined SOLVE3D
+     &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
+     &                                   *( patm2d(i,j)-patm2d(i,j-1) )
 #endif
      &                                                              )
         enddo
@@ -1660,13 +1678,13 @@ C$OMP END MASTER
      &      JstrR.le.j .and. j.le.JendR) then
           if (Dsrc(is).eq.0) then
             ubar(i,j,knew)=2.*Qbar(is)/( on_u(i,j)
-     &                   *(Dnew(i-1,j)+Dnew(i,j)) )
+     &                       *(Dnew(i-1,j)+Dnew(i,j)) )
 # ifdef SOLVE3D
             DU_avg1(i,j,nnew)=Qbar(is)
 # endif
           else
             vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
-     &                   *(Dnew(i,j-1)+Dnew(i,j)) )
+     &                       *(Dnew(i,j-1)+Dnew(i,j)) )
 # ifdef SOLVE3D
             DV_avg1(i,j,nnew)=Qbar(is)
 # endif
@@ -1826,6 +1844,12 @@ C$OMP END MASTER
         endif
         write(stdout,'(A,2I6)')  
      &                                       '  IMAX JMAX  =',imax,jmax
+#if defined MPI
+        write(stdout,'(A,I6)')  
+     &                                       '  NODE  =',mynode
+        write(stdout,'(A,2I6)')  
+     &       '  IMAX JMAX  =',imax-iminmpi+1,jmax-jminmpi+1
+#endif
 #ifdef SOLVE3D
         write(stdout,'(A,2I6/)')
      &                                         '  IINT IEXT  =',iic,iif
@@ -1845,4 +1869,4 @@ C$OMP END MASTER
 #else
       subroutine step2d_empty
       end
-#endif /* NBQ */
+#endif /* M3FAST */

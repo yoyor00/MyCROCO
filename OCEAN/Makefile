@@ -16,7 +16,6 @@
 #======================================================================
 
 include Makedefs
-
 #======================================================================
 # Model Configuration:
 #======================================================================
@@ -59,13 +58,13 @@ include Makedefs
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
-	gls_prestep.F	gls_mix2017.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
 	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
+        param.F         ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
 	get_date.F	lenstr.F	closecdf.F	insert_node.F\
@@ -91,9 +90,11 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	get_tides.F     clm_tides.F     get_bulk.F      bulk_flux.F\
+	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+        clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F\
+        cfb_stress.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
 \
@@ -111,7 +112,7 @@ include Makedefs
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F	MessPass3D_nbq.F\
+	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -132,17 +133,23 @@ include Makedefs
 	trcsms_pisces.F90			trcini_pisces.F90\
 	pisces_ini.F90\
 \
-	module_oa_parameter.F90\
+	module_parameter_oa.F90\
 	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
 	module_oa_level.F90	module_oa_interface.F90\
-	module_oa_upd.F90	croco_oa.F90		var_oa.F90
+	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
+\
+	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
+ TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+
+
  RCS = $(SRCS:.F=.f)
+
  RCS90 = $(SRCS90:.F90=.f90)
 
  OBJS = $(RCS:.f=.o)
@@ -154,39 +161,55 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
  AMROBJS=$(AMRRCS:.f=.o)
 
+
+%.mod : %.o
+	@touch $@
+
 #
 # Executable file.
 # ========= =====
 #
-$(SBIN):  $(OBJS90) $(OBJS)
+$(SBIN):   $(OBJS90) $(OBJS) 
 	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
 	mv a.out $(SBIN)
+
 #
 # Everything
 # ==========
 all: tools depend $(SBIN)
-
 #
 # Auxiliary utility programs and List of Dependecies:
 # ========= ======= ======== === ==== == ============
 #
-  TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 
 tools: $(TOOLS)
 
 mpc: mpc.F
 	$(CPP) -P $(CPPFLAGS) mpc.F > mpc_.f
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o mpc mpc_.f
-cross_matrix: cross_matrix.o
+
+cross_matrix: mpc cross_matrix.F 
+	$(CPP) -P $(CPPFLAGS) cross_matrix.F | ./mpc > cross_matrix_.f
+	$(CFT) -c $(FFLAGS) cross_matrix_.f -o cross_matrix.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cross_matrix cross_matrix.o
-cppcheck: cppcheck.o
+
+cppcheck:  mpc cppcheck.F 
+	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
+	$(CFT) -c $(FFLAGS) cppcheck_.f -o cppcheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
-srcscheck: srcscheck.o
+
+srcscheck: mpc srcscheck.F 
+	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
+	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
-checkkwds: checkkwds.o
+
+checkkwds: mpc checkkwds.F 
+	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
+	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o	
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
 	rm -f setup_kwds.F
+
 checkdefs: check_switches1.F setup_kwds.F
 
 check_switches1.F: cppcheck cppdefs.h
@@ -198,13 +221,15 @@ setup_kwds.F: checkkwds read_inp.F
 	./checkkwds
 partit: partit.o insert_node.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o lenstr.o $(LCDF)
+
 ncjoin: ncjoin.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncjoin ncjoin.o lenstr.o $(LCDF)
+
 ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix module*.F90 *.F90 *.F
+	./cross_matrix  *.F90 *.F 
 
 mymodules: $(MOBJS) $(AMROBJS)
 #
@@ -239,5 +264,5 @@ my_barrier.o: my_barrier.f
 # Include automatically generated dependency list:
 #
 
-include Make.depend
+-include Make.depend
 

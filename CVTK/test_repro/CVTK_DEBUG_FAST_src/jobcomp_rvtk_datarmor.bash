@@ -44,7 +44,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 if [[ $OS == Linux ]] ; then
 
-	LINUX_FC=ifort
+	LINUX_FC=gfortran
 #
 #	set 32 or 64 Bits executable
 #
@@ -82,7 +82,7 @@ NETCDFINC=-I$(nf-config --includedir)
 #
 # set MPI directories if needed
 #
-MPIF90="ifort $MPI_LIBS"
+MPIF90="mpif90"
 MPILIB=""
 MPIINC=""
 echo $MPIF90
@@ -157,7 +157,7 @@ cd $SCRDIR
 # generates LDFLAGS1 according to users notifications
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
-CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -IROMSFILES/AGRIF_INC"
+CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
 #
 # Set compilation options
 #
@@ -173,7 +173,7 @@ if [[ $OS == Linux ]] ; then           # ===== LINUX =====
         elif [[ $LINUX_FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -mcmodel=medium"
+		FFLAGS1="-O1 -fdefault-real-8 -fdefault-double-8 -mcmodel=medium"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
@@ -183,8 +183,8 @@ elif [[ $OS == Darwin ]] ; then        # ===== DARWIN =====
 	if [[ $DARWIN_FC == gfortran ]] ; then  
         	CFT1="gfortran"
         	FFLAGS1="-O4 -fdefault-real-8 -fdefault-double-8"
-#	 	FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-#			-fbounds-check -finit-real=nan -finit-integer=8888"
+	 	FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+			-fbounds-check -finit-real=nan -finit-integer=8888"
 	else
 		CFT1="ifort"
 		FFLAGS1="-O2 -r8 -i4 -g -72"
@@ -273,7 +273,8 @@ if $($CPP1 testkeys.F | grep -i -q nbqisdefined) ; then
 	COMPILENBQ=TRUE
 	#LDFLAGS1="-lblas -llapack $LDFLAGS1"
 	# for datarmor
-	LDFLAGS1="-mkl=sequential $LDFLAGS1"
+	#LDFLAGS1="-mkl=sequential $LDFLAGS1"
+         
 	#
         FFLAGS1="$FFLAGS1 -ffree-line-length-none"
 fi
@@ -368,18 +369,18 @@ if [[ $COMPILEAGRIF ]] ; then
 	fi
 #
 	$CPP1 amr.in | grep -v -e ! -e '#' -e % -e '*' > amr.scrum
-	mkdir ROMSFILES
-	mv AGRIF/conv ROMSFILES/.
-	mv amr.scrum ROMSFILES/.
-	cd ROMSFILES
+	mkdir CROCOFILES
+	mv AGRIF/conv CROCOFILES/.
+	mv amr.scrum CROCOFILES/.
+	cd CROCOFILES
 	mkdir AGRIF_MODELFILES
 	mkdir AGRIF_INC
 	cd ..
 	for i in *.h *.h90 ; do
 		echo $i
-		cat cppdefs.h $i | cpp -P | grep -v -e ! -e '#' -e % -e '*' > ROMSFILES/$i
+		cat cppdefs.h $i | cpp -P | grep -v -e ! -e '#' -e % -e '*' > CROCOFILES/$i
 	done
-	mv -f ROMSFILES/private_scratch_AMR.h ROMSFILES/private_scratch.h
+	mv -f CROCOFILES/private_scratch_AMR.h CROCOFILES/private_scratch.h
 fi
 
 #
@@ -433,6 +434,7 @@ rm -f flags.tmp
 #
 # compile croco
 #
+$MAKE depend
 $MAKE 
 mv croco $RUNDIR
 #

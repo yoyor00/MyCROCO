@@ -7,15 +7,15 @@
 	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
 #	rm -f $*.f
 .F.f:
-	@$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > ROMSFILES/$*.F
-	@(cd ROMSFILES ; ./conv amr.scrum -rm \
+	@$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > CROCOFILES/$*.F
+	@(cd CROCOFILES ; ./conv amr.scrum -rm \
 		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F)
-	@$(CPP) -P $(CPPFLAGS) -IROMSFILES/AGRIF_INC ROMSFILES/AGRIF_MODELFILES/$*.F | ./mpc > $*_.f
+	@$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F | ./mpc > $*_.f
 .F.o:
-	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > ROMSFILES/$*.F
-	(cd ROMSFILES ; ./conv amr.scrum -rm \
+	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > CROCOFILES/$*.F
+	(cd CROCOFILES ; ./conv amr.scrum -rm \
 		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F)
-	$(CPP) -P $(CPPFLAGS) -IROMSFILES/AGRIF_INC ROMSFILES/AGRIF_MODELFILES/$*.F > $*_.f
+	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F > $*_.f
 	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
 #	/bin/rm $*.f
 
@@ -23,15 +23,15 @@
 	$(CFT) -c $(FFLAGS) $*_.f90 -o $*.o
 #	rm -f $*.f
 .F90.f90:
-	@$(CPP) -P $(CPPFLAGS) $*.F90 > ROMSFILES/$*.F90
-	@(cd ROMSFILES ; ./conv amr.scrum -rm \
+	@$(CPP) -P $(CPPFLAGS) $*.F90 > CROCOFILES/$*.F90
+	@(cd CROCOFILES ; ./conv amr.scrum -rm \
 		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F90)
-	@$(CPP) -P $(CPPFLAGS) -IROMSFILES/AGRIF_INC ROMSFILES/AGRIF_MODELFILES/$*.F90 > $*_.f90
+	@$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F90 > $*_.f90
 .F90.o:
-	$(CPP) -P $(CPPFLAGS) $*.F90 > ROMSFILES/$*.F90
-	(cd ROMSFILES ; ./conv amr.scrum -rm \
+	$(CPP) -P $(CPPFLAGS) $*.F90 > CROCOFILES/$*.F90
+	(cd CROCOFILES ; ./conv amr.scrum -rm \
 		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F90)
-	$(CPP) -P $(CPPFLAGS) -IROMSFILES/AGRIF_INC ROMSFILES/AGRIF_MODELFILES/$*.F90 > $*_.f90
+	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F90 > $*_.f90
 	$(CFT) -c $(FFLAGS) $*_.f90 -o $*.o
 #	/bin/rm $*.f
 
@@ -40,7 +40,7 @@
 .f:
 	$(LDR) -o $@ $(LDFLAGS) $<
 
-# [2] Machine dependent definitions for SGI and SGI/CRAY Origin 
+# [2] Machine dependent definitions for SGI and SGI/CRAY Origin
 #==== ======= ========= =========== === === === ======== ======
 # CPP           Name of the C preprocessor
 # CPPFLAGS      Flags to the C preprocessor
@@ -55,4 +55,4 @@
       LDR = $(CFT)
    FFLAGS = $(FFLAGS1)
   LDFLAGS =
-      LCDF = $(LDFLAGS1)	 
+      LCDF = $(LDFLAGS1)

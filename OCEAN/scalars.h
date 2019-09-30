@@ -34,6 +34,10 @@
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
       real dt, dtfast, time, time2, time_start, tdays
+#ifdef USE_CALENDAR
+      real time_mars, time_end
+      character*19 date, run_end_date, run_start_date
+#endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
@@ -57,6 +61,10 @@
      &                       wstp, wnew,
 #endif
      &                       PREDICTOR_2D_STEP 
+#ifdef USE_CALENDAR
+      common /time_indices2/ time_mars, time_end,
+     &                       date, run_end_date, run_start_date
+#endif
 
 !
 ! Slowly changing variables: these are typically set in the beginning
@@ -93,7 +101,7 @@
 ! Cdb_max  Maximum bottom drag coefficient allowed.
 ! Cdb_min  Minimum bottom drag coefficient to avoid the 
 !                law-of-the-wall to extend indefinitely.
-! Zob      Bottom roughness (m).
+! Zobt      Bottom roughness (m).
 ! 
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
@@ -137,7 +145,7 @@
 !                        the ripple var. is set in ana_bsedim (ifndef SEDIMENT)
 !
       real time_avg, time2_avg, rho0
-     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zob
+     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
@@ -157,7 +165,7 @@
 #endif
 #if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     ||                          \
+     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
      defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
@@ -293,7 +301,7 @@
 
       common /scalars_main/
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
-     &           , Zob,       Cdb_min,   Cdb_max
+     &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
@@ -417,71 +425,6 @@
       real Akt_bak(NT)
       common /scalars_akt/ Akv_bak, Akt_bak 
 # endif
-
-# if defined SOLVE3D && defined GLS_MIXING
-!
-!-----------------------------------------------------------------------
-!  Generic Length Scale parameters.
-!-----------------------------------------------------------------------
-!
-!   Charnock_alpha   Charnok surface roughness,
-!                    Zos:   (charnok_alpha * u_star**2) / g
-!   zos_hsig_alpha   Roughness from wave amplitude,
-!                    Zos:   zos_hsig_alpha * Hsig
-!   sz_alpha         Surface flux from wave dissipation,
-!                    flux:  dt * sz_alpha * Wave_dissip
-!   crgban_cw        Surface flux due to Craig and Banner wave breaking,
-!                    flux:  dt * crgban_cw * u_star**3
-!   where Wave_dissip = epsilon^b * rho0
-!
-!    gls_Gh0
-!    gls_Ghcri
-!    gls_Ghmin
-!    gls_Kmin      Minimum value of specific turbulent kinetic energy.
-!    gls_Pmin      Minimum Value of dissipation.
-!    gls_cmu0      Stability coefficient (non-dimensional).
-!    gls_c1        Shear production coefficient (non-dimensional).
-!    gls_c2        Dissipation coefficient (non-dimensional).
-!    gls_c3m       Buoyancy production coefficient (minus).
-!    gls_c3p       Buoyancy production coefficient (plus).
-!    gls_E2
-!    gls_m         Turbulent kinetic energy exponent (non-dimensional).
-!    gls_n         Turbulent length scale exponent (non-dimensional).
-!    gls_p         Stability exponent (non-dimensional).
-!    gls_sigk      Constant Schmidt number (non-dimensional) for
-!                    turbulent kinetic energy diffusivity.
-!    gls_sigp      Constant Schmidt number (non-dimensional) for
-!                    turbulent generic statistical field, "psi".
-!
-      real charnok_alpha, zos_hsig_alpha, sz_alpha, crgban_cw,
-     &     Zos, Akk_bak, Akp_bak, gls_diff2
-      real gls_p, gls_m, gls_n, gls_Kmin, gls_Pmin, gls_c1, gls_c2,
-     &     gls_c3m, gls_c3p, gls_sigk, gls_sigp, gls_cmu0,
-     &     gls_Gh0, gls_Ghcri, gls_Ghmin, gls_E2
-      real my_A1, my_A2, my_B1, my_B2, my_C1, my_C2, my_C3,
-     &     my_E1, my_E2, my_Gh0, my_Sq, my_dtfac, my_lmax, my_qmin,
-     &     my_B1p2o3, my_B1pm1o3, my_E1o2, my_Sh1, my_Sh2, my_Sm1,
-     &     my_Sm2, my_Sm3, my_Sm4
-      common /gls_par1/ charnok_alpha, zos_hsig_alpha, sz_alpha,
-     &     crgban_cw, Zos, Akk_bak, Akp_bak, gls_diff2
-      common /gls_par2/ gls_p, gls_m, gls_n, gls_Kmin, gls_Pmin, gls_c1,
-     &     gls_c2,  gls_c3m, gls_c3p, gls_sigk, gls_sigp, gls_cmu0,
-     &     gls_Gh0, gls_Ghcri, gls_Ghmin, gls_E2
-      common /gls_par3/ my_A1, my_A2, my_B1, my_B2, my_C1, my_C2, my_C3,
-     &     my_E1, my_E2, my_Gh0, my_Sq, my_dtfac, my_lmax, my_qmin,
-     &     my_B1p2o3, my_B1pm1o3, my_E1o2, my_Sh1, my_Sh2, my_Sm1,
-     &     my_Sm2, my_Sm3, my_Sm4
-#  if defined CANUTO_A || defined CANUTO_B
-      real gls_s0, gls_s1, gls_s2, gls_s3, gls_s4, gls_s5, gls_s6,
-     &     gls_b0, gls_b1, gls_b2, gls_b3, gls_b4, gls_b5, gls_L1,
-     &     gls_L2, gls_L3, gls_L4, gls_L5, gls_L6, gls_L7, gls_L8
-      common /gls_par4/ gls_s0, gls_s1, gls_s2, gls_s3, gls_s4, gls_s5,
-     &     gls_s6,
-     &     gls_b0, gls_b1, gls_b2, gls_b3, gls_b4, gls_b5, gls_L1,
-     &     gls_L2, gls_L3, gls_L4, gls_L5, gls_L6, gls_L7, gls_L8
-#  endif
-# endif
-
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable
@@ -586,11 +529,15 @@
 ! MPI rlated variables
 ! === ====== =========
 !
+      logical EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2
       logical EAST_INTER, WEST_INTER, NORTH_INTER, SOUTH_INTER
+      logical CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE
       integer mynode, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE, p_NW,p_NE
       common /comm_setup/ mynode, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE,
-     &  p_NW,p_NE, EAST_INTER, WEST_INTER, NORTH_INTER, SOUTH_INTER
-          
+     &  p_NW,p_NE, EAST_INTER, WEST_INTER, NORTH_INTER, SOUTH_INTER,
+     & EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2,
+     & CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE
+
 #endif
 
 !
@@ -631,6 +578,6 @@
 !   FillValue (Needed if the FILLVAL key is defined)
 !   (See fillvalue.F subroutine)
       real spval
-      parameter (spval=-9999.0)
+      parameter (spval=0.0)
       logical mask_val
       parameter (mask_val = .true.)

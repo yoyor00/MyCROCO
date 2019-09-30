@@ -58,6 +58,7 @@
 #endif
      
 #ifdef MPI
+   
 # ifdef PARALLEL_FILES
 !#  ifdef EW_PERIODIC
 !      imin=1 
@@ -105,6 +106,11 @@
       imax=Lm+1
       jmax=Mm+1
 #endif
+    
+        
+!! If MPI domain voisin is set to null we have to expand 
+!! the zone read in netcdf file. 
+      
       count(1)=imax-imin+1
       count(2)=jmax-jmin+1
 

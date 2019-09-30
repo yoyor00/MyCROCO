@@ -5,14 +5,14 @@
 
 .f.o:
 	$(CFT) -c $(FFLAGS) $*.f -o $*.o
-#	rm -f $*.f
+# rm -f $*.f
 .F.f:
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*.f
 
 .F.o:
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*_.f
 	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
-#	/bin/rm $*.f
+
 .f90.o:
 	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
 .F90.f90:

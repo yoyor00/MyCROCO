@@ -18,7 +18,7 @@
 !  model when appropriate.
 !
 !  Routines:
-
+!
 !  ana_bmflux     Analytical kinematic bottom momentum flux.
 !  ana_btflux     Analytical kinematic bottom flux of tracer
 !                            type variables.
@@ -137,6 +137,12 @@
             if (rr.le.2.5e3) then
               btflx(i,j,itemp)=0.001
             endif
+# elif defined SINGLE_COLUMN 
+#  if defined KATO_PHILIPS
+            btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
+#  elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
+            btflx(i,j,itemp)=-1.0e-5*0.01
+#  endif
 # endif
           enddo
         enddo
@@ -362,7 +368,20 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
        enddo
       enddo
-# elif defined CANYON_A || defined CANYON_B
+# elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=(0.01)**2
+        enddo
+      enddo
+# elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
+
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=-(0.0025)**2
+        enddo
+      enddo
+# elif defined CANYON
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=0.0001*0.5*sin(2.*pi*tdays/10.)*
@@ -490,14 +509,32 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface solar shortwave radiation [degC m/s] at
 !  horizontal RHO-points.
 !
+# if defined INNERSHELF && !defined INNERSHELF_EKMAN
       do j=JstrR,JendR
         do i=IstrR,IendR
-          srflx(i,j)=0.
+          srflx(i,j)=264.91/(rho0*Cp)
 # ifdef DIURNAL_INPUT_SRFLX
-          srflxbio(i,j)=0.
+          srflxbio(i,j)=srflx(i,j)
+# endif
+# ifdef DIURNAL_CYCLE
+          srflx(i,j)=srflx(i,j)*max(cos(2.*pi*(time/86400.-0.5)),0.)
 # endif
         enddo
       enddo
+# else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          srflx(i,j)=0.   ! default is 0.
+#  ifdef DIURNAL_INPUT_SRFLX
+          srflxbio(i,j)=srflx(i,j)
+#  endif
+#  ifdef DIURNAL_CYCLE
+          srflx(i,j)=264.91/(rho0*Cp)
+     &                     *max(cos(2.*pi*(time/86400.-0.5)),0.)
+#  endif
+        enddo
+      enddo
+# endif /* INNERSHELF */
       return
       end
 #endif /* ANA_SRFLUX */
@@ -541,6 +578,7 @@ C$    integer  trd, omp_get_thread_num
       real tide_ampli_moy,tide_ampli_var
       real*QUAD mssh,area,cff1
 #  ifdef MPI
+#  include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
@@ -604,7 +642,7 @@ C$    integer  trd, omp_get_thread_num
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
-      kwave=((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1))
+      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
       ETA0=kwave*h(1,1)*U0/omega
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -692,11 +730,18 @@ C$    integer  trd, omp_get_thread_num
           dqdt(i,j)=-50.0/(rho0*Cp)
         enddo
       enddo
+# elif defined INNERSHELF
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sst(i,j)=24.
+          dqdt(i,j)=-50.0/(rho0*Cp)
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sst(i,j)=???
-          dqdt(i,j)=???
+          sst(i,j)=25
+          dqdt(i,j)=0.
         enddo
       enddo
 # endif
@@ -772,7 +817,13 @@ c
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
+#if defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+            stflx(i,j,itemp)= - 100./(rho0*Cp)
+#elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+            stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+#else
             stflx(i,j,itemp)=0.
+#endif
           enddo
         enddo
 !
@@ -833,7 +884,7 @@ C$    integer  trd, omp_get_thread_num
 # include "sediment.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    cff,cff1
-# if defined IGW || defined S2DV
+# if defined IGW
       real    sig,rhom,depth
 # endif  
 !
@@ -1082,14 +1133,14 @@ C$    integer  trd, omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
-            tclm(i,j,k,isand)=Csed(1)
-            tclm(i,j,k,isilt)=Csed(2)
+            tclm(i,j,k,isand)=0. !Csed(1)
+            tclm(i,j,k,isilt)=0. !Csed(2)
 #  else   
             if (.not.got_tclm(isand)) then
-              tclm(i,j,k,isand)=Csed(1)
+              tclm(i,j,k,isand)=0. !Csed(1)
             endif
             if (.not.got_tclm(isilt)) then
-              tclm(i,j,k,isilt)=Csed(2)
+              tclm(i,j,k,isilt)=0. !Csed(2)
             endif
 #  endif
           enddo
@@ -1317,12 +1368,14 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nrhs)
           enddo
         enddo
+#  ifdef NBQ
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
             rnbqclm(i,j,k)=0.
           enddo
         enddo
+#  endif
       enddo
 # else
       do k=1,N
@@ -1336,20 +1389,24 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.
           enddo
         enddo
+#  ifdef NBQ
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
             rnbqclm(i,j,k)=0.
           enddo
         enddo
+#  endif
       enddo
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
+#   ifdef NBQ
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  wnbqclm)
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  rnbqclm)
+#   endif
 # endif
 # undef IU_RANGE
 # undef JU_RANGE
@@ -1626,7 +1683,7 @@ C$    integer  trd, omp_get_thread_num
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1                ! [m2/s2]
-          Ssize(i,j)=MIN(cff2,Zob)
+          Ssize(i,j)=MIN(cff2,Zob(i,j))
           w_set(i,j)=cff3                ! [m/s]
           Sdens(i,j)=MAX(cff4,1050.)
 # ifdef DEBUG
@@ -1801,10 +1858,12 @@ C$    integer  trd, omp_get_thread_num
             cff2=cff2+Qshape(is,k)
           enddo
           do k=1,N
-            Qshape(is,k)=Qshape(is,k)/cff2
+            if (cff2 .gt. 0.0) then
+             Qshape(is,k)=Qshape(is,k)/cff2
+            endif
           enddo
         enddo
-#  endif
+# endif
 
 # else
 #  define CST_SHAPE
@@ -1847,27 +1906,26 @@ C$    integer  trd, omp_get_thread_num
       endif   ! iic.eq.ntstart
 
 !
+!  If Qbar is read in nc file, update Qbar0 at every time step
+!
+# ifdef PSOURCE_NCFILE
+      do is=1,Nsrc
+        Qbar0(is)=Qbar(is)
+      enddo
+# endif
+!
+! Set-up river ramp to avoid strong initial shocks
+!
+      ramp=TANH(dt*sec2day*float(iic-ntstart)) ! 1-day ramp
+      do is=1,Nsrc
+        Qbar(is)=ramp*Qbar0(is)
+      enddo
+!
 ! Set-up vertically integrated mass transport [m3/s] of point
 ! sources (these may be time-dependent; positive in the positive U-
 ! or V-direction and vice-versa) and vertically distribute them
 ! according to mass transport profile chosen above.
 !
-# ifdef RIVER
-      ramp=1 !TANH(dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
-      enddo
-# elif defined REGIONAL
-      ramp=1. !TANH(10*dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
-      enddo
-# else
-      ramp=1. !TANH(dt*sec2day*float(iic-ntstart))
-      do is=1,Nsrc
-        Qbar(is)=ramp*Qbar0(is)
-      enddo
-# endif
       do is=1,Nsrc
         do k=1,N
           Qsrc(is,k)=Qbar(is)*Qshape(is,k)
@@ -2145,7 +2203,7 @@ C$    integer  trd, omp_get_thread_num
 !
       implicit none          
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
-# ifdef WAVE_MAKER
+# if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
       integer iw,jw
       real    Du,Dv,Zu,Zv,Zr,Dr,xu,yu,xv,yv,x0,y0,time0, 
      &        h0,khd,kh,wa,wk,wp,wf,wd,wds,ramp,
@@ -2167,23 +2225,35 @@ C$    integer  trd, omp_get_thread_num
 # include "ocean2d.h"
 # include "coupling.h"
 # include "forces.h"
+# include "mixing.h"
 !
 # include "compute_auxiliary_bounds.h"
-!
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
 
 #  ifdef WAVE_MAKER
 !
-!  Wave maker on western boundary
+!  --- Surface wave maker on western boundary ---
 !
 #    include "wave_maker.h"
+
+#  elif defined WAVE_MAKER_INTERNAL
+!
+!  --- Internal wave maker on western boundary ---
+!
+#    include "wave_maker_internal.h"
+
 #  else
 
         if (FIRST_TIME_STEP) then
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
+#    ifdef OBC_PATM
+            zetabry_west(j)=zetabry_west(j)
+     &                     -(patm2d(Istr,j)-paref)/(g*rho0)
+#    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
@@ -2211,6 +2281,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else 
+#   ifdef Z_FRC_BRY
+          do j=JstrR,JendR
+            zetabry_west(j)=0.0
+#    ifdef OBC_PATM
+            zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
+#    endif
+          enddo
+#   endif
+#   ifdef M2_FRC_BRY
+          do j=JstrR,JendR
+            ubarbry_west(j)=0.0
+            vbarbry_west(j)=0.0
+          enddo
+#   endif
         endif
 #  endif /* WAVE_MAKER */
       endif
@@ -2222,6 +2307,10 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
+#   ifdef OBC_PATM
+            zetabry_east(j)=zetabry_east(j)
+     &                    -(patm2d(IendR,j)-paref)/(g*rho0)
+#   endif
           enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2249,6 +2338,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else 
+#  ifdef Z_FRC_BRY
+          do j=JstrR,JendR
+            zetabry_east(j)=0.0
+#   ifdef OBC_PATM
+            zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
+#   endif
+          enddo
+#  endif
+#  ifdef M2_FRC_BRY
+          do j=JstrR,JendR
+            ubarbry_east(j)=0.0
+            vbarbry_east(j)=0.0
+          enddo
+#  endif
         endif
       endif
 # endif /* OBC_EAST */
@@ -2259,6 +2363,10 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
+#   ifdef OBC_PATM
+            zetabry_south(i)=zetabry_south(i)
+     &                    -(patm2d(i,JstrR)-paref)/(g*rho0)
+#   endif
           enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2286,6 +2394,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else
+#  ifdef Z_FRC_BRY
+          do i=IstrR,IendR
+            zetabry_south(i)=0.0
+#   ifdef OBC_PATM
+            zetabry_south(i)=-(patm2d(i,JstrR)-paref)/(g*rho0)
+#   endif
+          enddo
+#  endif
+#  ifdef M2_FRC_BRY
+          do i=IstrR,IendR
+            ubarbry_south(i)=0.0
+            vbarbry_south(i)=0.0
+          enddo
+#  endif
         endif
       endif
 # endif /* OBC_SOUTH */
@@ -2296,6 +2419,10 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)
+#   ifdef OBC_PATM
+            zetabry_north(i)=zetabry_north(i)
+     &                     -(patm2d(i,JendR)-paref)/(g*rho0)
+#   endif
           enddo
 #  endif
 #  ifdef M2_FRC_BRY
@@ -2323,6 +2450,21 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+        else
+#  ifdef Z_FRC_BRY
+          do i=IstrR,IendR
+            zetabry_north(i)=0.0
+#   ifdef OBC_PATM
+            zetabry_north(i)=-(patm2d(i,JendR)-paref)/(g*rho0)
+#   endif
+          enddo
+#  endif
+#  ifdef M2_FRC_BRY
+          do i=IstrR,IendR
+            ubarbry_north(i)=0.0
+            vbarbry_north(i)=0.0
+          enddo
+#  endif
         endif
       endif
 # endif /* OBC_NORTH */
@@ -2365,20 +2507,41 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+# ifdef EW_PERIODIC
+#  define IU_RANGE Istr,Iend
+#  define IV_RANGE Istr,Iend
+# else
+#  define IU_RANGE Istr,IendR
+#  define IV_RANGE IstrR,IendR
+# endif
+
+# ifdef NS_PERIODIC
+#  define JU_RANGE Jstr,Jend
+#  define JV_RANGE Jstr,Jend
+# else
+#  define JU_RANGE JstrR,JendR
+#  define JV_RANGE Jstr,JendR
+# endif
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N
-          do j=JstrR,JendR
+          do j=JU_RANGE 
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
-
+          enddo
+          do j=JV_RANGE 
+            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
+     &                                   *u(1,j,k,nrhs)
+            vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
+     &                                   *v(0,j,k,nrhs)
+          enddo
+#   ifdef NBQ
+          do j=IstrR,IendR
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
           enddo
-          do j=JstrR+1,JendR
-            vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
-     &                                     *v(0,j,k,nrhs)
-          enddo
+#   endif
         enddo
       endif
 # endif /* OBC_WEST */
@@ -2389,12 +2552,12 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
+            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
+     &                                         *v(IendR,j,k,nrhs)
+#   ifdef NBQ
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
-          enddo
-          do j=JstrR+1,JendR
-            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                           *v(IendR,j,k,nrhs)
+#   endif
           enddo
         enddo
       endif
@@ -2406,12 +2569,12 @@ C$    integer  trd, omp_get_thread_num
           do i=IstrR,IendR
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
+            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
+     &                                    *u(i,0,k,nrhs)
+#   ifdef NBQ
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
-          enddo
-          do i=IstrR+1,IendR
-            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                      *u(i,0,k,nrhs)
+#   endif
           enddo
         enddo
       endif
@@ -2423,12 +2586,12 @@ C$    integer  trd, omp_get_thread_num
           do i=IstrR,IendR
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-            wnbqbry_north(i,k)=0.
-            rnbqbry_north(i,k)=0.
-          enddo
-          do i=IstrR+1,IendR
             unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
      &                                          *u(i,JendR,k,nrhs)
+#   ifdef NBQ
+            wnbqbry_north(i,k)=0.
+            rnbqbry_north(i,k)=0.
+#   endif
           enddo
         enddo
       endif
@@ -2471,6 +2634,12 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+# ifdef ANA_BRY
+      do i=1,itrc
+        got_tbry(i)=.false.
+      enddo
+# endif
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N

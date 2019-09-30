@@ -286,9 +286,11 @@ C$OMP END PARALLEL
 #endif
       call get_date (date_str)
 
-#ifdef TS_MIX_ISO_FILT
+#ifdef SOLVE3D
+# ifdef TS_MIX_ISO_FILT
       csmooth=dt/(86400.)
       ismooth=int(1./csmooth)
+# endif
 #endif
 !
 !---------------------------------------------------------------
@@ -1384,7 +1386,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
 
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                         '
       vname(2,indxbvf)='Brunt Vaisala Frequency                     '
@@ -1456,7 +1458,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxAks =',indxAks
       vname(6,indxAks)='lat_rho lon_rho                           '
       vname(7,indxAks)='                                          '
 # endif
-# ifdef LMD_SKPP  
+# if defined LMD_SKPP || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxHbl =',indxHbl
       vname(1,indxHbl)='hbl                                       '
       vname(2,indxHbl)='depth of planetary boundary layer         '
@@ -1477,7 +1479,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxHbbl =',indxHbbl
       vname(6,indxHbbl)='lat_rho lon_rho                          '
       vname(7,indxHbbl)='                                         '
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxTke =',indxTke   
       vname(1,indxTke)='tke                                       '
       vname(2,indxTke)='turbulent kinetic energy                  '
@@ -2274,7 +2276,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxMcor+itrc-1)
 CR      write(stdout,'(1x,A,I3)') 'indxMPrsgrd = ',indxMPrsgrd+itrc-1
        nametrc=vname(1,indxU+itrc-1)
        unitt=vname(3,indxU+itrc-1)
-       write(vname1,*) trim(nametrc),'_Prsgrd                     '
+       write(vname1,*) trim(nametrc),'_prsgrd                     '
        vname(1,indxMPrsgrd+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMPrsgrd+itrc-1) 
        vname(2,indxMPrsgrd+itrc-1)='Pressure gradient term        '
@@ -2355,7 +2357,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxMVmix2+itrc-1)
 CR      write(stdout,'(1x,A,I3)') 'indxMBaro = ',indxMBaro+itrc-1
        nametrc=vname(1,indxU+itrc-1)
        unitt=vname(3,indxU+itrc-1)
-       write(vname1,*) trim(nametrc),'_Baro                     '
+       write(vname1,*) trim(nametrc),'_baro                     '
        vname(1,indxMBaro+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(2,indxMBaro+itrc-1)='Barotropic coupling term       '
@@ -2369,6 +2371,23 @@ CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(7,indxMBaro+itrc-1)='                              '
 # endif
 
+# if defined M3FAST
+CR      write(stdout,'(1x,A,I3)') 'indxMfast = ',indxMfast+itrc-1
+       nametrc=vname(1,indxU+itrc-1)
+       unitt=vname(3,indxU+itrc-1)
+       write(vname1,*) trim(nametrc),'_fast                     '
+       vname(1,indxMfast+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxMfast+itrc-1)
+       vname(2,indxMfast+itrc-1)='fast term       '
+       write(vname3,*) trim(unitt),' second-1                    '
+       vname(3,indxMfast+itrc-1)=vname3
+       vname(4,indxMfast+itrc-1)='                              '
+       write(vname3,*) 'fast_term_',trim(nametrc)
+     &               //'_component'
+       vname(5,indxMfast+itrc-1)=vname3
+       vname(6,indxMfast+itrc-1)='                              '
+       vname(7,indxMfast+itrc-1)='                              '
+# endif
 
 # ifdef MRL_WCI
 CR       write(stdout,'(1x,A,I3)') 'indxMvf = ',indxMvf+itrc-1
@@ -2556,7 +2575,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtCor)
 CR       write(stdout,'(1x,A,I3)') 'indxvrtPrsgrd = ',indxvrtPrsgrd+itrc-1
        nametrc='vrt'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Prsgrd                     '
+       write(vname1,*) trim(nametrc),'_prsgrd                     '
        vname(1,indxvrtPrsgrd)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtPrsgrd)
        vname(2,indxvrtPrsgrd)='Pressure gradient term        '
@@ -2610,7 +2629,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtVmix2)
 CR       write(stdout,'(1x,A,I3)') 'indxvrtWind = ',indxvrtWind+itrc-1
        nametrc='vrt'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Wind                       ' 
+       write(vname1,*) trim(nametrc),'_wind                       '
        vname(1,indxvrtWind)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtWind)
        vname(2,indxvrtWind)='Wind stress curl            '
@@ -2621,7 +2640,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtWind)
 CR       write(stdout,'(1x,A,I3)') 'indxvrtDrag = ',indxvrtDrag+itrc-1
        nametrc='vrt'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Drag                       ' 
+       write(vname1,*) trim(nametrc),'_drag                       '
        vname(1,indxvrtDrag)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtDrag)
        vname(2,indxvrtDrag)='Bottom drag curl            '
@@ -2631,7 +2650,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtDrag)
 CR       write(stdout,'(1x,A,I3)') 'indxvrtBaro = ',indxvrtBaro+itrc-1
        nametrc='vrt'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Baro                     '
+       write(vname1,*) trim(nametrc),'_baro                     '
        vname(1,indxvrtBaro)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
        vname(2,indxvrtBaro)='Barotropic coupling term        '
@@ -2639,6 +2658,17 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
        vname(3,indxvrtBaro)=vname3
 # endif
 
+# if defined M3FAST
+CR       write(stdout,'(1x,A,I3)') 'indxvrtfast = ',indxvrtfast+itrc-1
+       nametrc='vrt'
+       unitt=vname(3,indxU)
+       write(vname1,*) trim(nametrc),'_fast                     '
+       vname(1,indxvrtfast)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxvrtfast)
+       vname(2,indxvrtfast)='Fast term        '
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxvrtfast)=vname3
+# endif
 
 # endif /* DIAGNOSTICS_VRT */
 
@@ -2646,9 +2676,9 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
 
 # ifdef DIAGNOSTICS_EK
 
+       nametrc='ke'
+
 CR       write(stdout,'(1x,A,I3)') 'indxekHadv = ',indxekHadv+itrc-1
-       nametrc='ek'
-       lvar=lenstr(nametrc)
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hadv                       '
        vname(1,indxekHadv)=vname1
@@ -2658,7 +2688,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekHadv)
        vname(3,indxekHadv)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHdiff = ',indxekHdiff+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hdiff                       '
        vname(1,indxekHdiff)=vname1
@@ -2669,7 +2698,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekHdiff)
 
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVadv = ',indxekVadv+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vadv                       '
        vname(1,indxekVadv)=vname1
@@ -2679,7 +2707,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekVadv)
        vname(3,indxekVadv)=vname3       
        
 CR       write(stdout,'(1x,A,I3)') 'indxekCor = ',indxekCor+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_cor                        '
        vname(1,indxekCor)=vname1
@@ -2689,9 +2716,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxekCor)
        vname(3,indxekCor)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekPrsgrd = ',indxekPrsgrd+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Prsgrd                     '
+       write(vname1,*) trim(nametrc),'_prsgrd                     '
        vname(1,indxekPrsgrd)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekPrsgrd)
        vname(2,indxekPrsgrd)='Pressure gradient term        '
@@ -2699,7 +2725,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekPrsgrd)
        vname(3,indxekPrsgrd)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHmix = ',indxekHmix+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hmix                       '
        vname(1,indxekHmix)=vname1
@@ -2709,7 +2734,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekHmix)
        vname(3,indxekHmix)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVmix = ',indxekVmix+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vmix                       ' 
        vname(1,indxekVmix)=vname1
@@ -2719,7 +2743,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekVmix)
        vname(3,indxekVmix)=vname3
        
 CR       write(stdout,'(1x,A,I3)') 'indxekrate = ',indxekrate+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_rate                       '
        vname(1,indxekrate)=vname1
@@ -2730,7 +2753,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekrate)
 
        
 CR       write(stdout,'(1x,A,I3)') 'indxekvol = ',indxekvol+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vol                       '
        vname(1,indxekvol)=vname1
@@ -2740,7 +2762,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekvol)
        vname(3,indxekvol)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVmix2 = ',indxekVmix2+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_nudg                       '
        vname(1,indxekVmix2)=vname1
@@ -2750,9 +2771,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxekVmix2)
        vname(3,indxekVmix2)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekWind = ',indxekWind+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Wind                       ' 
+       write(vname1,*) trim(nametrc),'_wind                       '
        vname(1,indxekWind)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekWind)
        vname(2,indxekWind)='Wind stress                 '
@@ -2760,11 +2780,9 @@ CR       write(stdout,'(20x,A)') vname(1,indxekWind)
        vname(3,indxekWind)=vname3
 
 
-
 CR       write(stdout,'(1x,A,I3)') 'indxekDrag = ',indxekDrag+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Drag                       ' 
+       write(vname1,*) trim(nametrc),'_drag                       '
        vname(1,indxekDrag)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekDrag)
        vname(2,indxekDrag)='Bottom drag                 '
@@ -2773,9 +2791,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxekDrag)
 
 # if defined DIAGNOSTICS_BARO
 CR       write(stdout,'(1x,A,I3)') 'indxekBaro = ',indxekBaro+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Baro                     '
+       write(vname1,*) trim(nametrc),'_baro                     '
        vname(1,indxekBaro)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(2,indxekBaro)='Barotropic coupling term        '
@@ -2783,12 +2800,21 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(3,indxekBaro)=vname3
 # endif
 
+# if defined M3FAST
+CR       write(stdout,'(1x,A,I3)') 'indxekfast = ',indxekfast+itrc-1
+       unitt=vname(3,indxU)
+       write(vname1,*) trim(nametrc),'_fast                     '
+       vname(1,indxekfast)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxekfast)
+       vname(2,indxekfast)='Fast term        '
+       write(vname3,*) trim(unitt),' meter second-2        '
+       vname(3,indxekfast)=vname3
+# endif
+
 
 # ifdef DIAGNOSTICS_EK_MLD
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHadv = ',indxekHadv+itrc-1
-       nametrc='ek'
-       lvar=lenstr(nametrc)
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hadv_mld                    '
        vname(1,indxekHadv_mld)=vname1
@@ -2798,7 +2824,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekHadv)
        vname(3,indxekHadv_mld)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHdiff = ',indxekHdiff+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hdiff_mld                   '
        vname(1,indxekHdiff_mld)=vname1
@@ -2809,7 +2834,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekHdiff)
 
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVadv = ',indxekVadv+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vadv_mld                   '
        vname(1,indxekVadv_mld)=vname1
@@ -2819,7 +2843,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekVadv)
        vname(3,indxekVadv_mld)=vname3
        
 CR       write(stdout,'(1x,A,I3)') 'indxekCor = ',indxekCor+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_cor_mld                     '
        vname(1,indxekCor_mld)=vname1
@@ -2829,9 +2852,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxekCor)
        vname(3,indxekCor_mld)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekPrsgrd = ',indxekPrsgrd+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Prsgrd_mld                  '
+       write(vname1,*) trim(nametrc),'_prsgrd_mld                  '
        vname(1,indxekPrsgrd_mld)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekPrsgrd)
        vname(2,indxekPrsgrd_mld)='Pressure gradient term        '
@@ -2839,7 +2861,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekPrsgrd)
        vname(3,indxekPrsgrd_mld)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHmix = ',indxekHmix+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hmix_mld                    '
        vname(1,indxekHmix_mld)=vname1
@@ -2849,7 +2870,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekHmix)
        vname(3,indxekHmix_mld)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVmix = ',indxekVmix+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vmix_mld                    '
        vname(1,indxekVmix_mld)=vname1
@@ -2859,7 +2879,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekVmix)
        vname(3,indxekVmix_mld)=vname3
        
 CR       write(stdout,'(1x,A,I3)') 'indxekrate = ',indxekrate+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_rate_mld                    '
        vname(1,indxekrate_mld)=vname1
@@ -2870,7 +2889,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekrate)
 
        
 CR       write(stdout,'(1x,A,I3)') 'indxekvol = ',indxekvol+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vol_mld                    '
        vname(1,indxekvol_mld)=vname1
@@ -2880,7 +2898,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxekvol)
        vname(3,indxekvol_mld)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVmix2 = ',indxekVmix2+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_nudg_mld                    '
        vname(1,indxekVmix2_mld)=vname1
@@ -2891,9 +2908,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxekVmix2)
 
 # if defined DIAGNOSTICS_BARO
 CR       write(stdout,'(1x,A,I3)') 'indxekBaro = ',indxekBaro+itrc-1
-       nametrc='ek'
        unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_Baro_mld                  '
+       write(vname1,*) trim(nametrc),'_baro_mld                  '
        vname(1,indxekBaro_mld)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(2,indxekBaro_mld)='Pressure gradient term        '

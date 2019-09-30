@@ -17,6 +17,7 @@
 
 !-- for parallelization (mean of A in xi direction)
 #ifdef MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,NNODES)
@@ -25,7 +26,7 @@
       Ad = A
       
       do j=jstr-1,jend+1
-         Azond(j)=sum(Ad(istr:iend,j))
+         Azond(j)=sum(A(istr:iend,j))
       enddo
 
 #ifdef MPI
@@ -66,6 +67,7 @@
 
 !-- for parallelization (mean of A in xi direction)
 #ifdef MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
       integer ierr, lenode
       real*8 allsumd(0:Mm+1,N,NNODES)
@@ -75,7 +77,7 @@
       
       do k=1,N
          do j=jstr-1,jend+1
-               Azond(j,k)=sum(Ad(istr:iend,j,k))
+         Azond(j,k)=sum(A(istr:iend,j,k))
          enddo
       enddo
 

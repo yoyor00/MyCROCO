@@ -223,21 +223,23 @@
 # ifndef BODYFORCE
         do i=IstrU,Iend
           DC(i,N)=DC(i,N)+dt*sustr(i,j)
+#  ifndef BSTRESS_FAST
           DC(i,1)=DC(i,1)-dt*bustr(i,j)
-# ifdef DIAGNOSTICS_VRT
+#  endif
+#  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
             wrkWind(i,j,1)= sustr(i,j)*om_u(i,j)
      &                    SWITCH umask(i,j)
-# endif /* DIAGNOSTICS_VRT */
-# ifdef DIAGNOSTICS_EK
+#  endif /* DIAGNOSTICS_VRT */
+#  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
           ekwrkWind(i,j,1)= sustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
-# endif /* DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_EK */
         enddo
-# endif
+# endif /* BODYFORCE */
         do i=IstrU,Iend
           cff=1./BC(i,1)
           CF(i,1)=cff*( FC(i,1)                  !<-- q(1) = c(1)/b(1)
@@ -344,9 +346,9 @@
 !###########################
 
 # if defined DIAGNOSTICS_BARO
+!
 ! Now add only coupling contribution to the pressure gradient diagnostics
-
-
+!
         do k=1,N
           do i=IstrU,Iend
 !            u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
@@ -468,21 +470,23 @@
 # ifndef BODYFORCE
           do i=Istr,Iend
             DC(i,N)=DC(i,N)+dt*svstr(i,j)
+#  ifndef BSTRESS_FAST
             DC(i,1)=DC(i,1)-dt*bvstr(i,j)
-# ifdef DIAGNOSTICS_VRT
+#  endif
+#  ifdef DIAGNOSTICS_VRT
             wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
             wrkWind(i,j,2)= svstr(i,j)*on_v(i,j)
      &                    SWITCH vmask(i,j)
-# endif /* DIAGNOSTICS_VRT */
-# ifdef DIAGNOSTICS_EK
+#  endif /* DIAGNOSTICS_VRT */
+#  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
           ekwrkWind(i,j,2)= svstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
-# endif /* DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_EK */
           enddo
-# endif          
+# endif /* BODYFORCE */        
 !
 ! Resolve the tri-diagonal system. Also perform coupling between the
 ! barotropic and baroclinic modes (similarly to the XI-component, see
@@ -541,7 +545,6 @@
           do k=1,N
             do i=Istr,Iend
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
-!
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
@@ -594,9 +597,9 @@
 # endif
 !###########################
 # if defined DIAGNOSTICS_BARO
+!
 ! Now add only coupling contribution to the pressure gradient diagnostics
-
-
+!
           do k=1,N
             do i=Istr,Iend
 !              v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
@@ -632,13 +635,10 @@
 !-------------------------------------------------------------------
 ! DIAGNOSTICS
 !-------------------------------------------------------------------
-
-
 # if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_PV
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
-
             Mrate(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
      &                                           *om_u(i,j)*on_u(i,j)/dt
@@ -648,7 +648,6 @@
 
         do j=JstrV,Jend
           do i=Istr,Iend
-
             Mrate(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
      &                                           *om_v(i,j)*on_v(i,j)/dt
@@ -656,9 +655,7 @@
         enddo
       enddo
 # endif
-
 # if defined DIAGNOSTICS_EK
-
         do j=JstrR,JendR
           do i=IstrR,IendR
             ekwrkVmix2(i,j,1)=0
@@ -669,11 +666,9 @@
 # endif
           enddo
         enddo
-
         do j=Jstr,Jend
           do i=IstrU,Iend
             do k=1,N
-
                 ekwrkVmix2(i,j,1) = ekwrkVmix2(i,j,1) + 0.5*
      &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
@@ -682,10 +677,8 @@
      &                     *umask(i,j)
 #  endif
             enddo
-
 # if defined DIAGNOSTICS_EK_MLD
             do k=kbl(i,j),N
-
                 ekwrkVmix2_mld(i,j,1) = ekwrkVmix2_mld(i,j,1) + 0.5*
      &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
@@ -697,11 +690,9 @@
 # endif
           enddo
         enddo
-
         do j=JstrV,Jend
           do i=Istr,Iend
             do k=1,N
-
               ekwrkVmix2(i,j,2) = ekwrkVmix2(i,j,2) + 0.5*
      &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
@@ -709,7 +700,6 @@
 #  ifdef MASKING
      &                     *vmask(i,j)
 #  endif
-
             enddo
 # if defined DIAGNOSTICS_EK_MLD
             do k=kbl(i,j),N
@@ -724,11 +714,7 @@
 # endif
           enddo
         enddo
-
-
 # endif /* DIAGNOSTICS_EK */
-
-
 !
 !--------------------------------------------------------------------
 !  Compute wet/dry masks for total velocity
@@ -1072,6 +1058,35 @@
         endif  !<-- j.ge.Jstr
       enddo    !<-- j loop
 !
+!--------------------------------------------------------------------
+!
+# if defined TS_HADV_TEST 
+#    if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
+      u(:,:,:,nnew) = u(:,:,:,nstp) 
+      v(:,:,:,nnew) = v(:,:,:,nstp)
+#    endif
+#    if defined SOLID_BODY_PER
+      cff           = cos(2.*pi*(time+dt)/(float(ntimes)*dt)) 
+      u(:,:,:,nnew) = u(:,:,:,nstp) * cff
+      v(:,:,:,nnew) = v(:,:,:,nstp) * cff
+      u(:,:,:,nrhs) = u(:,:,:,nstp)
+      v(:,:,:,nrhs) = v(:,:,:,nstp)
+#    endif      
+      do j=Jstr,Jend
+        do k=1,N
+          do i=IstrU,Iend
+            Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+     &                                         *u(i,j,k,nnew)
+          enddo
+          do i=Istr,Iend
+            if (j.ge.JstrV) then
+              Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+     &                                           *v(i,j,k,nnew)
+            end if
+          enddo
+        enddo
+      enddo
+#  endif
 !
 !--------------------------------------------------------------------
 ! Apply mass point sources
@@ -1147,10 +1162,10 @@
      &                           (uclm(i,j,k)-u(i,j,k,nnew))
 #  endif /* ZONAL_NUDGING */
 #  ifdef MASKING
-            u(i,j,k,nnew)=u(i,j,k,nnew)*umask(i,j)
+     &                                           *umask(i,j)
 #  endif
 # ifdef WET_DRY
-            u(i,j,k,nnew)=u(i,j,k,nnew)*umask_wet(i,j)
+     &                                       *umask_wet(i,j)
 # endif
           enddo
         enddo
@@ -1165,40 +1180,33 @@
      &                            (vclm(i,j,k)-v(i,j,k,nnew))
 #  endif
 #  ifdef MASKING
-            v(i,j,k,nnew)=v(i,j,k,nnew)*vmask(i,j)
+     &                                            *vmask(i,j)
 #  endif
 # ifdef WET_DRY
-            v(i,j,k,nnew)=v(i,j,k,nnew)*vmask_wet(i,j)
+     &                                        *vmask_wet(i,j)
 # endif
           enddo
         enddo
       enddo
 # endif
-
-
-
-
+!
+!--------------------------------------------------------------------
+!  Compute UV & PV diagnostics
+!--------------------------------------------------------------------
+!
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
-
-
             MVmix2(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
      &                                           *om_u(i,j)*on_u(i,j)/dt
      &                                           - Mrate(i,j,k,1)
-
-
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
-!
-
 #  if defined UV_HADV_UP3  || defined UV_HADV_UP5
             MHdiff(i,j,k,1)= MXadv(i,j,k,1) + MYadv(i,j,k,1)
      &                       - MHdiff(i,j,k,1)
-
 # endif
-
 !
 ! Divide all diagnostic terms by the cell volume Hz/(pm*pn).
 ! There after the unit of diag terms are :
@@ -1215,6 +1223,9 @@
             MPrsgrd(i,j,k,1) = MPrsgrd(i,j,k,1)*cff
 # if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,1) = MBaro(i,j,k,1)*cff
+# endif
+# if defined M3FAST
+            Mfast(i,j,k,1) = Mfast(i,j,k,1)*cff
 # endif
 # endif
             MHmix(i,j,k,1,3-nstp) = MHmix(i,j,k,1,3-nstp)*cff
@@ -1233,27 +1244,20 @@
             Mbwf(i,j,k,1)    = Mbwf(i,j,k,1)*cff
             Mfrc(i,j,k,1)    = Mfrc(i,j,k,1)*cff
 #  endif
-!
-
           enddo
         enddo
 
         do j=JV_RANGE
           do i=IV_RANGE
-
-!
             MVmix2(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
-
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
-
 #  if defined UV_HADV_UP3 || defined UV_HADV_UP5
             MHdiff(i,j,k,2)= MXadv(i,j,k,2) + MYadv(i,j,k,2)
      &                       - MHdiff(i,j,k,2)
 #  endif
-
 !
 ! Divide all diagnostic terms by the cell volume Hz/(pm*pn).
 ! There after the unit of diag terms are :
@@ -1270,6 +1274,9 @@
             MPrsgrd(i,j,k,2) = MPrsgrd(i,j,k,2)*cff
 # if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,2) = MBaro(i,j,k,2)*cff
+# endif
+# if defined M3FAST
+            Mfast(i,j,k,2) = Mfast(i,j,k,2)*cff
 # endif
 #  endif
             MHmix(i,j,k,2,3-nstp) = MHmix(i,j,k,2,3-nstp)*cff
@@ -1298,22 +1305,16 @@
 
         do j=JU_RANGE
           do i=IU_RANGE
-
            k=1
-    
            wrkrate(i,j,1)=(0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
      &                                       *om_u(i,j)*on_u(i,j)/dt
-
             do k=2,N
-
                 wrkrate(i,j,1) = wrkrate(i,j,1) + 
      &           ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
      &                                       *om_u(i,j)*on_u(i,j)/dt
-
             enddo
-
 
 ! Divide u-diagnostic terms by (1/pn).
 ! There after the unit of these terms are :
@@ -1337,27 +1338,22 @@
 # if defined DIAGNOSTICS_BARO
             wrkBaro(i,j,1)=wrkBaro(i,j,1)*cff
 # endif
+# if defined M3FAST
+            wrkfast(i,j,1)=wrkfast(i,j,1)*cff
+# endif
           enddo
         enddo
-
         do j=JV_RANGE
           do i=IV_RANGE
-
            k=1
-
-
            wrkrate(i,j,2)=(0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp))
      &                                       *om_v(i,j)*on_v(i,j)/dt
-
             do k=2,N
-
-                wrkrate(i,j,2) = wrkrate(i,j,2) +
+           wrkrate(i,j,2) = wrkrate(i,j,2) +
      &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp))
      &                                       *om_v(i,j)*on_v(i,j)/dt
-
-
             enddo
 
 ! Divide v-diagnostic terms by (1/pm).
@@ -1382,19 +1378,16 @@
 # if defined DIAGNOSTICS_BARO
             wrkBaro(i,j,2)=wrkBaro(i,j,2)*cff
 # endif
+# if defined M3FAST
+            wrkfast(i,j,2)=wrkfast(i,j,2)*cff
+# endif
           enddo
         enddo
-
-
 # endif /* DIAGNOSTICS_VRT */
 
-
-
 # if defined DIAGNOSTICS_EK_FULL
-
         do j=JstrR,JendR
           do i=IstrR,IendR
-
             ekwrkHadv(i,j,1) = 0.
             ekwrkVadv(i,j,1) = 0.
             ekwrkCor(i,j,1) = 0.
@@ -1406,6 +1399,9 @@
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,1) = 0.
 # endif
+# if defined M3FAST
+            ekwrkfast(i,j,1) = 0.
+# endif
             ekwrkHadv(i,j,2) = 0.
             ekwrkVadv(i,j,2) = 0.
             ekwrkCor(i,j,2) = 0.
@@ -1416,6 +1412,9 @@
             ekwrkHdiff(i,j,2) = 0.
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,2) = 0.
+# endif
+# if defined M3FAST
+            ekwrkfast(i,j,2) = 0.
 # endif
 
 # if defined DIAGNOSTICS_EK_MLD
@@ -1447,7 +1446,6 @@
 
         do j=JU_RANGE
           do i=IU_RANGE
-
             do k=1,N
 # if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_PV
             cff=(Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
@@ -1487,6 +1485,10 @@
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,1) = ekwrkBaro(i,j,1)
      &        + MBaro(i,j,k,1)  * cff
+# endif
+# if defined M3FAST
+            ekwrkfast(i,j,1) = ekwrkfast(i,j,1)
+     &        + Mfast(i,j,k,1)  * cff
 # endif
           enddo
 
@@ -1534,14 +1536,12 @@
 # endif
           enddo
 # endif
-
         enddo
       enddo
 
       do j=JV_RANGE
         do i=IV_RANGE
             do k=1,N
-            
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
             cff=(Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
      &          * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
@@ -1579,6 +1579,10 @@
 # if defined DIAGNOSTICS_BARO
             ekwrkBaro(i,j,2) = ekwrkBaro(i,j,2)
      &        + MBaro(i,j,k,2)  * cff
+# endif
+# if defined M3FAST
+            ekwrkfast(i,j,2) = ekwrkfast(i,j,2)
+     &        + Mfast(i,j,k,2)  * cff
 # endif
             enddo
 
@@ -1628,8 +1632,6 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
-
-
 # if defined DIAGNOSTICS_EK
 
         do j=JU_RANGE
@@ -1647,7 +1649,6 @@
 #  ifdef MASKING
      &                     *umask(i,j)
 #  endif
-
             ekwrkvol(i,j,1) = ekwrkvol(i,j,1)
      &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
      &                  - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))      )
@@ -1663,6 +1664,9 @@
      &                  + MPrsgrd(i,j,k,1)
      &                  + MHmix(i,j,k,1,3-nstp)
      &                  + MVmix(i,j,k,1)
+# if defined M3FAST
+     &                  + Mfast(i,j,k,1)
+# endif
 # if defined DIAGNOSTICS_UV
      &                  + MVmix2(i,j,k,1))
 # else
@@ -1674,7 +1678,6 @@
 #  ifdef MASKING
      &                     *umask(i,j)
 #  endif
-
             enddo
 
             ekwrkVmix2(i,j,1) = ekwrkrate(i,j,1) - ekwrkVmix2(i,j,1)
@@ -1733,7 +1736,6 @@
         do j=JV_RANGE
           do i=IV_RANGE
 
-
             ekwrkrate(i,j,2)= 0.
             ekwrkvol(i,j,2) = 0.
 
@@ -1746,7 +1748,6 @@
 #  ifdef MASKING
      &                     *vmask(i,j)
 #  endif
-
             ekwrkvol(i,j,2) = ekwrkvol(i,j,2)
      &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
      &                  - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))      )
@@ -1762,6 +1763,9 @@
      &                  + MPrsgrd(i,j,k,2)
      &                  + MHmix(i,j,k,2,3-nstp)
      &                  + MVmix(i,j,k,2)
+# if defined M3FAST
+     &                  + Mfast(i,j,k,2)
+# endif
 # if defined DIAGNOSTICS_UV
      &                  + MVmix2(i,j,k,2))
 # else
@@ -1824,13 +1828,7 @@
 #  endif
           enddo
         enddo
-
-
 # endif /* DIAGNOSTICS_EK */
-
-
-
-
 
 #if defined DIAGNOSTICS_PV
 ! Add non conservative terms to rhs.
@@ -1842,6 +1840,9 @@
      &                            + MVmix(i,j,k,1)
 # if defined DIAGNOSTICS_BARO
      &                            - MBaro(i,j,k,1)
+# endif
+# if defined M3FAST
+     &                            + Mfast(i,j,k,1)
 # endif
      &                            + MHmix(i,j,k,1,3-nstp)
      &                            + MHdiff(i,j,k,1))
@@ -1861,6 +1862,9 @@
 # if defined DIAGNOSTICS_BARO
      &                            - MBaro(i,j,k,2)
 # endif
+# if defined M3FAST
+     &                            + Mfast(i,j,k,2)
+# endif
      &                            + MHmix(i,j,k,2,3-nstp)
      &                            + MHdiff(i,j,k,2))
 # if defined DIAGNOSTICS_DISS
@@ -1872,9 +1876,6 @@
           enddo
 
 #endif /* DIAGNOSTICS_PV */
-
-
-
 
 # undef IU_RANGE
 # undef JU_RANGE
@@ -1939,6 +1940,10 @@
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,1))
 # endif
+# if defined M3FAST
+      call exchange_u3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,1))
+# endif
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -1967,6 +1972,10 @@
 # if defined DIAGNOSTICS_BARO
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,2))
+# endif
+# if defined M3FAST
+      call exchange_v3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,2))
 # endif
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,2))
@@ -1999,6 +2008,10 @@
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkBaro(START_2D_ARRAY,1))
 # endif
+# if defined M3FAST
+      call exchange_u2d_tile (istr,iend,jstr,jend,
+     &                                 wrkfast(START_2D_ARRAY,1))
+# endif
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -2027,6 +2040,10 @@
 # if defined DIAGNOSTICS_BARO
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkBaro(START_2D_ARRAY,2))
+# endif
+# if defined M3FAST
+      call exchange_v2d_tile (istr,iend,jstr,jend,
+     &                                 wrkfast(START_2D_ARRAY,2))
 # endif
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,2))
@@ -2063,8 +2080,10 @@
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,1))
 # endif
-
-
+# if defined M3FAST
+      call exchange_u3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,1))
+# endif
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
@@ -2087,7 +2106,10 @@
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,2))
 # endif
-
+# if defined M3FAST
+      call exchange_v3d_tile (istr,iend,jstr,jend,
+     &                                 Mfast(START_2D_ARRAY,1,2))
+# endif
 # endif
 
 
@@ -2121,7 +2143,10 @@
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkBaro(START_2D_ARRAY,1))
 # endif
-
+# if defined M3FAST
+      call exchange_u2d_tile (istr,iend,jstr,jend,
+     &                                 ekwrkfast(START_2D_ARRAY,1))
+# endif
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkHadv(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
@@ -2150,7 +2175,10 @@
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkBaro(START_2D_ARRAY,2))
 # endif
-
+# if defined M3FAST
+      call exchange_v2d_tile (istr,iend,jstr,jend,
+     &                                 ekwrkfast(START_2D_ARRAY,2))
+# endif
 # if defined DIAGNOSTICS_EK_MLD
 
       call exchange_u2d_tile (istr,iend,jstr,jend,

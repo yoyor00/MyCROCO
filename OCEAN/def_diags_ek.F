@@ -68,6 +68,9 @@
 # if defined DIAGNOSTICS_BARO
 #  define viddiags_ekBaro diags_ekBaro
 # endif
+# if defined M3FAST
+#  define viddiags_ekfast diags_ekfast
+# endif
 # ifdef DIAGNOSTICS_EK_MLD
 #  define viddiags_ekHadv_mld diags_ekHadv_mld
 #  define viddiags_ekHdiff_mld diags_ekHdiff_mld
@@ -107,6 +110,9 @@
 #  define viddiags_ekDrag diags_ekDrag_avg
 # if defined DIAGNOSTICS_BARO
 #  define viddiags_ekBaro diags_ekBaro_avg
+# endif
+# if defined M3FAST
+#  define viddiags_ekfast diags_ekfast_avg
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
 #  define viddiags_ekHadv_mld diags_ekHadv_mld_avg
@@ -733,6 +739,36 @@
      &                        NF_REAL, ierr)
 # endif
 
+# if defined M3FAST
+!------------------------------
+!
+! indxekfast
+!
+          lvar=lenstr(vname(1,indxekfast+itrc-1))
+          ierr=nf_def_var (ncid, vname(1,indxekfast+itrc-1)(1:lvar),
+     &                     NF_REAL, 3, r2dgrd, viddiags_ekfast(itrc))
+# ifdef AVRH
+          text='averaged '/ /vname(2,indxekfast+itrc-1)
+# else
+          text=vname(2,indxekfast+itrc-1)
+# endif
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, viddiags_ekfast(itrc),
+     &                       'long_name',
+     &                          lvar, text(1:lvar))
+
+          lvar=lenstr(vname(3,indxekfast+itrc-1))
+          ierr=nf_put_att_text (ncid, viddiags_ekfast(itrc),
+     &                       'units', lvar,
+     &                          vname(3,indxekfast+itrc-1)(1:lvar))
+          lvar=lenstr(vname(4,indxekfast+itrc-1))
+          ierr=nf_put_att_text (ncid,viddiags_ekfast(itrc), 'field',
+     &                      lvar, vname(4,indxekfast+itrc-1)(1:lvar))
+
+        call nf_add_attribute(ncid, viddiags_ekfast(itrc),
+     &                       indxekfast+itrc-1, 5,
+     &                        NF_REAL, ierr)
+# endif
 
 # ifdef DIAGNOSTICS_EK_MLD
 
@@ -1355,6 +1391,7 @@
      &                     ncname(1:lstr) 
            goto 99                                       !--> ERROR
          endif
+
 # if defined DIAGNOSTICS_BARO
 !
 ! indxekBaro
@@ -1368,6 +1405,21 @@
            goto 99                                       !--> ERROR
          endif
 # endif
+
+# if defined M3FAST
+!
+! indxekfast
+!
+         lvar=lenstr(vname(1,indxekfast+itrc-1))
+         ierr=nf_inq_varid (ncid, vname(1,indxekfast+itrc-1)(1:lvar),
+     &                      viddiags_ekfast(itrc))
+         if (ierr .ne. nf_noerr) then
+           write(stdout,1) vname(1,indxekfast+itrc-1)(1:lvar),
+     &                     ncname(1:lstr)
+           goto 99                                       !--> ERROR
+         endif
+# endif
+
 # ifdef DIAGNOSTICS_EK_MLD
 
 !          
@@ -1593,6 +1645,9 @@
 # if defined DIAGNOSTICS_BARO
 #undef viddiags_ekBaro
 # endif
+# if defined M3FAST
+#undef viddiags_ekfast
+# endif
 !
 # ifdef DIAGNOSTICS_EK_MLD
 #undef viddiags_ekHadv_mld
@@ -1606,7 +1661,7 @@
 #undef viddiags_ekvol_mld
 #undef viddiags_ekVmix2_mld
 # if defined DIAGNOSTICS_BARO
-#undef viddiags_ekBaro
+#undef viddiags_ekBaro_mld
 # endif
 # endif
 !

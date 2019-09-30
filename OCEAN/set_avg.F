@@ -26,7 +26,7 @@ C$    integer omp_get_thread_num
 #  ifdef MRL_WCI
       call wstokes (tile)
 #  endif
-# ifdef SOLVE3D
+# if defined SOLVE3D && !defined NBQ
       if (wrtavg(indxW)) then
         call Wvlcty (tile, workr)
       endif
@@ -83,7 +83,7 @@ C$    integer omp_get_thread_num
 #  include "sediment.h"
 # endif
 # ifdef WKB_WWAVE
-# include "wkb_wwave.h"
+#  include "wkb_wwave.h"
 # endif
 !
       integer IstrR,IendR,JstrR,JendR
@@ -247,7 +247,7 @@ C$    integer omp_get_thread_num
         endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
         if (wrtavg(indxbvf)) then
           do k=0,N
             do j=JstrR,JendR
@@ -264,15 +264,24 @@ C$    integer omp_get_thread_num
               do i=IstrR,IendR
                 omega_avg(i,j,k)=cff*( cff1*omega_avg(i,j,k)
      &                                 +We(i,j,k)*pm(i,j)*pn(i,j)
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
      &                                 +Wi(i,j,k)*pm(i,j)*pn(i,j)
-#endif      
+# endif      
      &                                                          )
               enddo
             enddo
           enddo
         endif
         if (wrtavg(indxW)) then
+# ifdef NBQ
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                w_avg(i,j,k)=cff*(cff1*w_avg(i,j,k)+wz(i,j,k,nstp))
+              enddo
+            enddo
+          enddo
+# else
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -280,18 +289,19 @@ C$    integer omp_get_thread_num
               enddo
             enddo
           enddo
+# endif
         endif
-#  ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
         if (wrtavg(indxHbl)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
-#ifdef LMD_SKPP2005
+#  ifdef LMD_SKPP2005
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbls(i,j,nstp))
-#else
+#  else
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbl(i,j))
-#endif     
+# endif     
             enddo
           enddo
         endif
@@ -306,17 +316,13 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
         if (wrtavg(indxTke)) then
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k) 
-#    ifdef GLS_MIXING                  
-     &                                  +tke(i,j,k,nstp))
-#    else
      &                                  +trb(i,j,k,nstp,itke))
-#    endif              
               enddo
             enddo
           enddo
@@ -326,11 +332,7 @@ C$    integer omp_get_thread_num
             do j=JstrR,JendR
               do i=IstrR,IendR
                 gls_avg(i,j,k)=cff*(cff1*gls_avg(i,j,k)
-#    ifdef GLS_MIXING                  
-     &                                  +gls(i,j,k,nstp))
-#    else
      &                                  +trb(i,j,k,nstp,igls))
-#    endif
               enddo
             enddo
           enddo
@@ -618,22 +620,33 @@ C$    integer omp_get_thread_num
 #  endif /* SEDIMENT */
 # endif /* SOLVE3D */
 
-# ifdef WKB_WWAVE
+# ifdef WAVE_IO
+#  ifdef WKB_WWAVE
         iout=wstp
+#  endif
         if (wrtavg(indxHRM)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               whrm_avg(i,j) = cff*( cff1*whrm_avg(i,j)+hrm(i,j,iout) )
+#  else
+              whrm_avg(i,j) = cff*( cff1*whrm_avg(i,j)+whrm(i,j) )
+#  endif
             enddo
           enddo
         endif
         if (wrtavg(indxFRQ)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+frq(i,j,iout) )
+#  else  
+              wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+wfrq(i,j) )
+#  endif  
             enddo
           enddo
         endif
+#  ifdef WKB_WWAVE
         if (wrtavg(indxWAC)) then
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -641,17 +654,26 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  endif
         if (wrtavg(indxWKX)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wkx(i,j,iout) )
+#  else 
+              wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wwkx(i,j) )
+#  endif
             enddo
           enddo
         endif
         if (wrtavg(indxWKE)) then
           do j=jstrR,jendR
             do i=istrR,iendR
+#  ifdef WKB_WWAVE
               wke_avg(i,j) = cff*( cff1*wke_avg(i,j)+wke(i,j,iout) )
+#  else
+              wke_avg(i,j) = cff*( cff1*wke_avg(i,j)+wwke(i,j) )
+#  endif
             enddo
           enddo
         endif
@@ -670,6 +692,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  ifdef WAVE_ROLLER
+#   ifdef WKB_WWAVE
         if (wrtavg(indxWAR)) then
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -677,6 +700,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#   endif
         if (wrtavg(indxEPR)) then
           do j=jstrR,jendR
             do i=istrR,iendR
@@ -685,7 +709,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-# endif  /* WKB_WWAVE */
+# endif  /* WKB_WAVE_IO */
 
 # ifdef MRL_WCI
         if (wrthis(indxSUP)) then

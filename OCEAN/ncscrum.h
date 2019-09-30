@@ -102,6 +102,7 @@
 !  indxMHdiff                    : horizontal diffusion term (implicit)
 !  indxMrate                     : tendency term
 !  indxMBaro                     : Barotropic coupling term
+!  indxMfast                     : Fast term
 !  indxMBtcr                     : forth-order truncation error
 !  indxMswd, indxMbdr            : surface wind & bed shear stresses (m2/s2)
 !  indxMvf, indxMbrk             : vortex force & breaking body force terms
@@ -128,6 +129,7 @@
 !  indxvrtWind                   : Wind stress term
 !  indxvrtDrag                   : Bottom drag term
 !  indxvrtBaro                   : Barotropic coupling term
+!  indxvrtfast                   : Fast term
 !
 ! ** DIAGNOSTICS_EK **
 !  indxekHadv,indxekHdiff        : Horizontal advection and diffusion terms
@@ -140,6 +142,7 @@
 !  indxekWind                    : Wind stress term
 !  indxekDrag                    : Bottom drag term
 !  indxekBaro                    : Barotropic coupling term
+!  indxekfast                    : Fast term
 !
 ! ** DIAGNOSTICS_PV **
 !  indxpvpv                        : Potential vorticity
@@ -315,6 +318,10 @@
       integer indxMBaro
       parameter (indxMBaro=indxMrate+2)
 # endif
+# if defined M3FAST
+      integer indxMfast
+      parameter (indxMfast=indxMrate+4)
+# endif
 # endif
 # ifdef DIAGNOSTICS_VRT
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
@@ -335,6 +342,10 @@
 # if defined DIAGNOSTICS_BARO
       integer indxvrtBaro
       parameter (indxvrtBaro=indxvrtDrag+1)
+# endif
+# if defined M3FAST
+      integer indxvrtfast
+      parameter (indxvrtfast=indxvrtDrag+2)
 # endif
 # endif
 # ifdef DIAGNOSTICS_EK
@@ -357,6 +368,10 @@
 # if defined DIAGNOSTICS_BARO
       integer indxekBaro
       parameter (indxekBaro=indxekDrag+1)
+# endif
+# if defined M3FAST
+      integer indxekfast
+      parameter (indxekfast=indxekDrag+2)
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
       integer indxekHadv_mld,indxekHdiff_mld,indxekVadv_mld,
@@ -454,7 +469,7 @@
       integer indxAks
       parameter (indxAks=indxAkt+4)
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
       integer indxHbl
       parameter (indxHbl=indxAkt+5)
 # endif
@@ -462,13 +477,17 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkt+6)
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
       integer indxTke
       parameter (indxTke=indxAkt+7)
       integer indxGls
       parameter (indxGls=indxAkt+8)
       integer indxLsc
       parameter (indxLsc=indxAkt+9)
+      integer indxAkk
+      parameter (indxAkk=indxAkt+10)
+      integer indxAkp
+      parameter (indxAkp=indxAkt+11)
 # endif
 #endif
 
@@ -523,7 +542,7 @@
 
 #if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -549,14 +568,19 @@
 # endif
 # ifdef BULK_FLUX
       integer indxWSPD,indxTAIR,indxRHUM,indxRADLW,indxRADSW,
-     &        indxPRATE,indxUWND,indxVWND
+     &        indxPRATE,indxUWND,indxVWND,indxPATM
       parameter (indxWSPD=indxSST+3,  indxTAIR=indxSST+4,
      &           indxRHUM=indxSST+5,  indxRADLW=indxSST+6,
      &           indxRADSW=indxSST+7, indxPRATE=indxSST+8,
-     &           indxUWND=indxSST+9,  indxVWND=indxSST+10)
+     &           indxUWND=indxSST+9,  indxVWND=indxSST+10,
+     &           indxPATM=indxSST+11)
       integer indxShflx_rlw,indxShflx_lat,indxShflx_sen 
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
+# endif
+# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
+      integer indxWSPD
+      parameter (indxWSPD=indxSUSTR+200)
 # endif
 #endif /* SOLVE3D */
 
@@ -663,15 +687,15 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+80)
+      parameter (indxQBAR=indxSUSTR+90)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+81)
+      parameter (indxTsrc=indxSUSTR+91)
 # endif
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+82)
+      parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
 #ifdef ICE
       integer indxAi
@@ -841,10 +865,10 @@
      &      , hisAkv, hisAkt, hisAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , hisbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -898,6 +922,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro(2)
 # endif
+# if defined M3FAST
+     &      , diaMfast(2)
+# endif
 #  ifdef MRL_WCI
      &      , diaMvf(2), diaMbrk(2), diaMStCo(2)
      &      , diaMVvf(2), diaMPrscrt(2), diaMsbk(2)
@@ -915,6 +942,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro(2)
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast(2)
+# endif
 # endif
 
 # ifdef DIAGNOSTICS_EK
@@ -926,6 +956,9 @@
      &      , diags_ekVmix2(2), diags_ekWind(2), diags_ekDrag(2)
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro(2)
+# endif
+# if defined M3FAST
+     &      , diags_ekfast(2)
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
       integer diags_ekHadv_mld(2), diags_ekHdiff_mld(2)
@@ -989,10 +1022,10 @@
      &      , avgAkv, avgAkt, avgAks
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , avgbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 # endif
 # ifdef BIOLOGY
@@ -1063,6 +1096,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
 # endif
+# if defined M3FAST
+     &      , diaMfast_avg(2)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
        integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg 
@@ -1074,6 +1110,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast_avg(2)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
        integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg 
@@ -1084,6 +1123,9 @@
      &      , diags_ekVmix2_avg(2), diags_ekWind_avg(2), diags_ekDrag_avg(2)
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
+# endif
+# if defined M3FAST
+     &      , diags_ekfast_avg(2)
 # endif
 #  ifdef DIAGNOSTICS_EK_MLD
        integer diags_ekHadv_mld_avg(2), diags_ekHdiff_mld_avg(2)
@@ -1235,10 +1277,10 @@
      &      , hisHbl,  hisHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , hisbvf
 # endif
-# if defined GLS_MIXING || defined GLS_MIX2017
+# ifdef GLS_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1297,6 +1339,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
+# if defined M3FAST
+     &      , diaMfast
+# endif
 # ifdef MRL_WCI
      &      , diaMvf, diaMbrk, diaMStCo
      &      , diaMVvf, diaMPrscrt, diaMsbk
@@ -1311,6 +1356,9 @@
      &      , diaMVmix_avg, diaMVmix2_avg, diaMrate_avg
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro_avg
+# endif
+# if defined M3FAST
+     &      , diaMfast_avg
 # endif
 #  ifdef MRL_WCI
      &      , diaMvf_avg, diaMbrk_avg, diaMStCo_avg
@@ -1328,6 +1376,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast
+# endif
 # ifdef AVERAGES
      &      , nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
@@ -1337,6 +1388,9 @@
      &      , diags_vrtVmix2_avg, diags_vrtWind_avg, diags_vrtDrag_avg
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg
+# endif
+# if defined M3FAST
+     &      , diags_vrtfast_avg
 # endif
 # endif
 #endif
@@ -1350,6 +1404,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro
 # endif
+# if defined M3FAST
+     &      , diags_ekfast
+# endif
 # ifdef AVERAGES
      &      , nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
@@ -1359,6 +1416,9 @@
      &      , diags_ekVmix2_avg, diags_ekWind_avg, diags_ekDrag_avg
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg
+# endif
+# if defined M3FAST
+     &      , diags_ekfast_avg
 # endif
 # endif
 #ifdef DIAGNOSTICS_EK_MLD
@@ -1450,10 +1510,10 @@
      &      , avgHbl,  avgHbbl
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
      &      , avgbvf
 # endif
-#  if defined GLS_MIXING || defined GLS_MIX2017
+#  ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 #  ifdef BIOLOGY
@@ -1550,9 +1610,8 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-
       character*80 date_str, title, start_date
-      character*80 ininame,  grdname,  hisname
+      character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES
@@ -1634,8 +1693,9 @@
       character*75  vname(20, 90)
 #endif
 
-      common /cncscrum/       date_str,   title,  start_date
-     &         ,   ininame,  grdname, hisname
+      common /cncscrum/
+     &             date_str,   title,  start_date,
+     &             ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES

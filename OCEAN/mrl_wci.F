@@ -22,19 +22,29 @@
 # ifdef SOLVE3D
      &            A3d(1,1,trd),A3d(1,2,trd),A3d(1,3,trd),
 # endif
-     &            A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd),A2d(1,4,trd),
-     &            A2d(1,5,trd),A2d(1,6,trd),
-     &            A2d(1,7,trd),A2d(1,8,trd),A2d(1,9,trd),
-     &            A2d(1,10,trd),A2d(1,11,trd),
-     &            A2d(1,12,trd),A2d(1,13,trd))
+     &            A2d(1,1,trd) ,A2d(1,2,trd) ,A2d(1,3,trd) ,
+     &            A2d(1,4,trd) ,A2d(1,5,trd) ,A2d(1,6,trd) ,
+     &            A2d(1,7,trd) ,A2d(1,8,trd) ,A2d(1,9,trd) ,
+     &            A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
+     &            A2d(1,13,trd)
+# if (defined WAVE_FRICTION && !defined WKB_WWAVE)\
+                        || defined WAVE_STREAMING
+     &            ,A2d(1,14,trd)
+# endif
+     &                  )
       return
       end
 
       subroutine mrl_wci_tile (istr,iend,jstr,jend, 
 # ifdef SOLVE3D
-     &                                                   wrk1,wrk2,wrk3,
+     &            wrk1,wrk2,wrk3,
 # endif
-     &           wh,fr,kw,brk,stk,Dstp,act,kD,inv_d,inv_f,frc,ebrk,erol)
+     &            wh,fr,kw,brk,stk,Dstp,act,kD,inv_d,inv_f,frc,ebrk,erol
+# if (defined WAVE_FRICTION && !defined WKB_WWAVE)\
+                        || defined WAVE_STREAMING
+     &           ,zob_my
+# endif
+     &     )
 !
 !----------------------------------------------------------------------
 !   Evaluating wave-averaged terms and Stokes drift based on MRL04
@@ -97,15 +107,16 @@
      &            frc(PRIVATE_2D_SCRATCH_ARRAY),
      &           ebrk(PRIVATE_2D_SCRATCH_ARRAY),
      &           erol(PRIVATE_2D_SCRATCH_ARRAY)
+# if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
+                        || defined WAVE_STREAMING
+     &           ,zob_my(PRIVATE_2D_SCRATCH_ARRAY)
+#endif 
 # ifdef SOLVE3D
       integer  k,kk 
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
-# endif
-# if defined WAVE_FRICTION || defined WAVE_STREAMING
-      real Zob_my
 # endif
       parameter ( eps=1.e-10, 
      &            bconst=0.03D0,              ! breaking contribution to KPP
@@ -131,8 +142,12 @@
 
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
                         || defined WAVE_STREAMING
-      if (Zob.gt.0.) then                     ! default Zob for wave
-        Zob_my=Zob                            ! dissipation or streaming
+      if (Zobt.gt.0.) then                     ! default Zob for wave
+        do j=jstr-1,jend+1                     ! dissipation or streaming
+          do i=istr-1,iend+1      
+            Zob_my(i,j)=Zob(i,j)
+          enddo
+        enddo                         
       else
         Zob_my=1.e-3
       endif
@@ -141,7 +156,7 @@
 
 ! Define Stokes drift computation
 
-# ifndef FLUME
+# ifndef SANDBAR
 #  define STOKES_DRIFT
 # endif
 
@@ -312,7 +327,7 @@
 #  elif defined WAVE_FRICTION
           abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
-          fw=1.39*(Zob/max(abot,eps))**0.52         ! Soulsby (1995)
+          fw=1.39*(Zob(i,j)/max(abot,eps))**0.52         ! Soulsby (1995)
           cff=0.5/sqrt(pi)*fw*urms**3               ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
@@ -605,12 +620,6 @@
 ! kvf : vertical vortex force term (K term) at rho-point
 ! ======================================================
 !
-#  ifdef STOKES_DRIFT
-
-#   define kvr wrk3
-#   define kvfx stk
-#   define kvfy inv_f
-
       if (WESTERN_EDGE) then
         imin=IstrU-1
       else
@@ -621,6 +630,13 @@
       else
         jmin=JstrV
       endif
+
+#  ifdef STOKES_DRIFT
+
+#   define kvr wrk3
+#   define kvfx stk
+#   define kvfy inv_f
+
       do k=1,N-1
         do j=JstrV-1,jend+1             ! du/dz & dv/dz at horz u- &
           do i=IstrU-1,iend+1           ! v- & vert w-point
@@ -987,7 +1003,7 @@
         do i=istr-1,iend+1
 #   ifndef LH53_STREAMING /* turbulent cases */
           abot  =wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
-          delta =0.160455*((abot/Zob)**0.83)*Zob  ! BBL thickness
+          delta =0.160455*((abot/Zob(i,j))**0.83)*Zob(i,j)  ! BBL thickness
           inv_k =min(max(a_frc*delta,eps),Dstp(i,j))
           kfrc  =1./inv_k          ! vertical scale for wave friction
 #    ifdef FF_FUNC1
@@ -1247,25 +1263,25 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
         do k=1,N,+1        !--> recursive
           do i=istr,iend
             Wrk(i,k)=Wrk(i,k-1)-0.5*pm(i,j)*pn(i,j)*(
-     &        (Hz(i+1,j,k)+Hz(i,j,k))*on_u(i+1,j)*ust(i+1,j,k)
-     &           -(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)*ust(i,j,k)
-     &       +(Hz(i,j+1,k)+Hz(i,j,k))*om_v(i,j+1)*vst(i,j+1,k)
-     &           -(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)*vst(i,j,k) )
+     &       (Hz(i+1,j  ,k)+Hz(i  ,j  ,k))*on_u(i+1,j  )*ust(i+1,j  ,k)
+     &      -(Hz(i  ,j  ,k)+Hz(i-1,j  ,k))*on_u(i  ,j  )*ust(i  ,j  ,k)
+     &      +(Hz(i  ,j+1,k)+Hz(i  ,j  ,k))*om_v(i  ,j+1)*vst(i  ,j+1,k)
+     &      -(Hz(i  ,j  ,k)+Hz(i  ,j-1,k))*om_v(i  ,j  )*vst(i  ,j  ,k))
           enddo
         enddo
         do i=istr,iend
           wst(i,j,N)=+0.375*Wrk(i,N) +0.75*Wrk(i,N-1)
-     &                                -0.125*Wrk(i,N-2)
+     &                              -0.125*Wrk(i,N-2)
         enddo
         do k=N-1,2,-1
           do i=istr,iend
             wst(i,j,k)=+0.5625*(Wrk(i,k  )+Wrk(i,k-1))
-     &                  -0.0625*(Wrk(i,k+1)+Wrk(i,k-2))
+     &                 -0.0625*(Wrk(i,k+1)+Wrk(i,k-2))
           enddo
         enddo
         do i=istr,iend
           wst(i,j,  1)= -0.125*Wrk(i,2) +0.75*Wrk(i,1)
-     &                                  +0.375*Wrk(i,0)
+     &                                 +0.375*Wrk(i,0)
         enddo
       enddo
 

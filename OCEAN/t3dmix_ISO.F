@@ -880,12 +880,12 @@
       enddo   ! --> k
 
 # ifdef TS_MIX_IMP
+      do j=jstr,jend 
 #  ifdef VADV_ADAPT_IMP
        do i=Istr,Iend
             DC(i,0)=dt*pn(i,j)*pm(i,j)
        enddo
 #  endif
-      do j=jstr,jend 
 # define FC FFC
 # include "t3dmix_tridiagonal.h"
 # undef FC   
@@ -965,7 +965,7 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#  ifdef LMD_SKPP
+#  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
 #  else

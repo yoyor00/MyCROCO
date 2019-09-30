@@ -32,6 +32,10 @@
       real ekBaro(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
+# if defined M3FAST
+      real ekfast(GLOBAL_2D_ARRAY)
+!CSDISTRIBUTE_RESHAPE ekfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
 # ifdef AVERAGES
       real timediags_ek_avg
       real ekHadv_avg(GLOBAL_2D_ARRAY)
@@ -62,6 +66,10 @@
       real ekBaro_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekBaro_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
+# if defined M3FAST
+      real ekfast_avg(GLOBAL_2D_ARRAY)
+!CSDISTRIBUTE_RESHAPE ekfast_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
 # endif
 
 
@@ -81,6 +89,9 @@
 # if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro/ekBaro
 # endif
+# if defined M3FAST
+     &       /diag_ekfast/ekfast
+# endif
 
 # ifdef AVERAGES
       common /diag_timediags_ek_avg/timediags_ek_avg
@@ -98,6 +109,9 @@
      &       /diag_ekDrag_avg/ekDrag_avg
 # if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro_avg/ekBaro_avg
+# endif
+# if defined M3FAST
+     &       /diag_ekfast_avg/ekfast_avg
 # endif
 
 # endif      
@@ -217,6 +231,10 @@
       real ekwrkBaro(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
+# if defined M3FAST
+      real ekwrkfast(GLOBAL_2D_ARRAY,2)
+!CSDISTRIBUTE_RESHAPE ekwrkfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
       common /diag_ekwrkHadv/ekwrkHadv   
      &       /diag_ekwrkHdiff/ekwrkHdiff
      &       /diag_ekwrkVadv/ekwrkVadv     
@@ -231,6 +249,9 @@
      &       /diag_ekwrkdrag/ekwrkdrag
 # if defined DIAGNOSTICS_BARO
      &       /diag_ekwrkBaro/ekwrkBaro
+# endif
+# if defined M3FAST
+     &       /diag_ekwrkfast/ekwrkfast
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
 
@@ -288,6 +309,9 @@
 # if defined DIAGNOSTICS_BARO
       real MBaro(GLOBAL_2D_ARRAY,N,2)
 # endif
+# if defined M3FAST
+      real Mfast(GLOBAL_2D_ARRAY,N,2)
+# endif
 
       common /diag_MXadv/MXadv
      &       /diag_MYadv/MYadv
@@ -300,6 +324,9 @@
      &       /diag_Mbody/Mbody
 # if defined DIAGNOSTICS_BARO
      &       /diag_MBaro/MBaro
+# endif
+# if defined M3FAST
+     &       /diag_Mfast/Mfast
 # endif
 # endif /* DIAGNOSTICS_EK_FULL */
 

@@ -564,7 +564,7 @@ C$OMP BARRIER
 !
 !------------------------------------------------
 !  First apply shallow condition effects
-!  (e.g., swash; used in Flume test case)
+!  (e.g., swash; used in SANDBAR test case)
 !------------------------------------------------
 !
 # if defined WET_DRY && defined LMD_VMIX_SWASH

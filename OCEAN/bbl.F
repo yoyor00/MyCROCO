@@ -84,6 +84,9 @@
 # endif
 # include "scalars.h"
 # include "sediment.h"
+# if defined M3FAST && defined BSTRESS_FAST
+#  include "nbq.h"
+# endif
       logical
      &        SAND, SILT
       integer
@@ -152,9 +155,14 @@
       DO j=JstrV-1,Jend+1
         DO i=IstrU-1,Iend+1
 # ifdef SOLVE3D
-          Zr(i,j)=max(z_r(i,j,1)-z_w(i,j,0),Zob+1.E-4)
+          Zr(i,j)=max(z_r(i,j,1)-z_w(i,j,0),Zob(i,j)+1.E-4)
+#  if defined M3FAST && defined BSTRESS_FAST
+          Ur(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
+          Vr(i,j)=2.*qdmv_nbq(i,j,1)/(Hz(i,j,1)+Hz(i,j-1,1))
+#  else
           Ur(i,j)=u(i,j,1,nrhs)
           Vr(i,j)=v(i,j,1,nrhs)
+#  endif
 # else
           Zr(i,j)=0.5*(h(i,j)+zeta(i,j,kstp))
           Ur(i,j)=ubar(i,j,kstp)
@@ -257,8 +265,7 @@
      &                                  *(d50**0.9)*tau_cb   ! [m^2/s^2]
 
           znotc= d50/12.0
-          znot = MAX(Zob,znotc)
-!
+          znot = MAX(Zob(i,j),znotc)
 !---------------------------------------------------------------------
 !  set tauc acc. to current-only case (max znot & skin friction) [m/s]
 !---------------------------------------------------------------------
@@ -509,7 +516,7 @@
         enddo
       enddo
 
-# ifdef LIMIT_BSTRESS
+# ifdef LIMIT_BSTRESS0
 !---------------------------------------------------------------------
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted
@@ -540,6 +547,10 @@
 ! Set boundary conditions
 !---------------------------------------------------------------------
 !
+#  if defined M3FAST && defined BSTRESS_FAST
+      if (LAST_FAST_STEP) then
+#  endif
+
 # ifndef EW_PERIODIC
       IF (EASTERN_EDGE) THEN
         DO j=Jstr,Jend
@@ -660,11 +671,11 @@
       END IF
 # endif
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Abed(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Hripple(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Lripple(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Zbnot(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Zbapp(START_2D_ARRAY))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Abed(START_2D_ARRAY))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Hripple(START_2D_ARRAY))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Lripple(START_2D_ARRAY))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Zbnot(START_2D_ARRAY))
+!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Zbapp(START_2D_ARRAY))
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bustrc(START_2D_ARRAY))
@@ -674,6 +685,10 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bustrcwmax(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bvstrcwmax(START_2D_ARRAY))
 # endif
+
+#  if defined M3FAST && defined BSTRESS_FAST
+      endif
+#  endif
 
       return
       end

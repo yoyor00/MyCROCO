@@ -15,7 +15,6 @@
       implicit none
 #include "param.h"
        integer tile, trd
-C$    integer omp_get_thread_num
 #include "compute_tile_bounds.h"
       call ana_initial_tile (Istr,Iend,Jstr,Jend)
       return
@@ -50,7 +49,7 @@ C$    integer omp_get_thread_num
 #ifdef INTERNAL
       real cff
 #endif
-#if defined IGW || defined S2DV || defined MILES 
+#if defined IGW
       real    cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
@@ -73,10 +72,19 @@ C$    integer omp_get_thread_num
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
-#ifdef GRAV_ADJ_SOLITON
+#ifdef I_SOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
+#endif
+#ifdef TS_HADV_TEST 
+      real cff,cff1,cx,cy,cmax,xx,yy
+#  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+      real psi(PRIVATE_2D_SCRATCH_ARRAY)
+#  endif      
+#endif
+#ifdef JET
+      integer istr1,iend1,jstr1,jend1  
 #endif
 !
 #include "compute_auxiliary_bounds.h"
@@ -262,7 +270,62 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-
+#  elif defined TS_HADV_TEST
+#    ifdef DIAGONAL_ADV
+        do j=Jstr,Jend
+          do k=1,N
+            do i=IstrU,Iend
+              u(i,j,k,1)  = 1.D0
+              u(i,j,k,2)  = u(i,j,k,1)
+            enddo
+            do i=Istr,Iend
+              if (j.ge.JstrV) then
+                v(i,j,k,1) = 1.D0
+                v(i,j,k,2) = v(i,j,k,1)
+              end if
+            enddo
+          enddo
+        enddo
+#    endif
+#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+       cff  = - xl / pi
+       cff1 =   pi / xl
+       do j=Jstr-2,Jend+2
+         do i=Istr-2,Iend+2
+           psi(i,j) = cff * (sin(cff1*xp(i,j)))**2 * (sin(cff1*yp(i,j)))**2
+         enddo
+       enddo
+       cff  = pm(1,1)
+       do j=Jstr,Jend
+         do k=1,N
+           do i=IstrU,Iend
+             u(i,j,k,1)  = - cff * (psi(i,j+1)-psi(i,j))
+             u(i,j,k,2)  =  u(i,j,k,1)
+#    if defined SOLID_BODY_PER
+             u(i,j,k,3)  =  u(i,j,k,1)                
+#    endif
+           enddo
+           do i=Istr,Iend
+              if (j.ge.JstrV) then
+                v(i,j,k,1) = cff * (psi(i+1,j)-psi(i,j))
+                v(i,j,k,2) = v(i,j,k,1)
+#    if defined SOLID_BODY_PER
+                v(i,j,k,3) = v(i,j,k,1)                
+#    endif
+              end if
+           enddo
+         enddo
+       enddo       
+#    endif
+       cmax = 0.D0
+       do j=Jstr+1,Jend-1
+         do i=Istr+1,Iend-1
+            cx = dt*( MAX(u(i+1,j,N,1),0.)-MIN(u(i,j,N,1),0.) )*pm(i,j)
+            cy = dt*( MAX(v(i,j+1,N,1),0.)-MIN(v(i,j,N,1),0.) )*pn(i,j)
+            cmax = MAX( cx+cy, cmax )
+         enddo
+       enddo
+       print*,'CFL_max = ',cmax
 #  elif defined KH_INST
 !
 ! Traditional KH instability: 
@@ -274,7 +337,7 @@ C$    integer omp_get_thread_num
         eps3D  = 0.   ! 3D perturbation
 !
         do j=JR_RANGE
-          do i=IR_RANGE
+          do i=IU_RANGE
             depth=h(i,j)
             zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
 !           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
@@ -289,17 +352,6 @@ C$    integer omp_get_thread_num
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
 
               u(i,j,k,2)  = u(i,j,k,1)
-              v(i,j,k,1)  = 0.
-              v(i,j,k,2)  = 0.
-#   ifdef NBQ
-              wz(i,j,k,1) = -0.01*du*hup0*
-     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
-
-              wz(i,j,k,2) = wz(i,j,k,1)
-#   endif
-
               ubar(i,j,1) = ubar(i,j,1) + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                  * u(i,j,k,1)
               hint = hint               + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
@@ -312,6 +364,27 @@ C$    integer omp_get_thread_num
             enddo
             ubar(i,j,1) = 0. 
             ubar(i,j,:) = ubar(i,j,1)
+          enddo
+        enddo
+
+        do j=JR_RANGE
+          do i=IR_RANGE
+            depth=h(i,j)
+            zu0=-0.5*depth   ! u & rho shears at same depth (zu0=zr0)
+!           zu0=-0.4*depth   ! shifted profile for thermocline entrainment studies
+            hup0=0.15*depth  ! perturbation
+            do k=1,N
+              v(i,j,k,1)  = 0.
+              v(i,j,k,2)  = 0.
+#   ifdef NBQ
+              wz(i,j,k,1) = -0.01*du*hup0*
+     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+
+              wz(i,j,k,2) = wz(i,j,k,1)
+#   endif
+            enddo
           enddo
         enddo
 #   ifdef NBQ
@@ -398,18 +471,66 @@ C$    integer omp_get_thread_num
              enddo
           enddo
         enddo
-
-#  elif defined CANYON_A
+#  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              t(i,j,k,1,itemp)=T0
+              t(i,j,k,1,itemp)=0.1 * z_r(i,j,k) + 22.
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-            enddo
+             enddo
           enddo
         enddo
-
-#  elif defined CANYON_B
+#  elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=0.01 * z_r(i,j,k) + 22.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#  elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=16.0+(0.01)**2/(g*Tcoef/rho0) 
+     &             * (z_r(i,j,k)) 
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#  elif defined TS_HADV_TEST && defined DIAGONAL_ADV
+        cff = 1./(50.*50.)
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=exp( -cff * ( (xr(i,j)-0.25*xl)**2
+     &                                   +   (yr(i,j)-0.25*el)**2 ) )
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+             enddo
+          enddo
+        enddo
+#  elif defined TS_HADV_TEST && ( defined SOLID_BODY_ROT || defined SOLID_BODY_PER )
+        cff = 1./(50.*50.)
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=exp( -cff * ( (xr(i,j)-0.25*xl)**2
+     &                                   +   (yr(i,j)-0.25*el)**2 ) )
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+             enddo
+          enddo
+        enddo
+#  elif defined CANYON
+#   ifdef CANYON_STRAT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -419,7 +540,16 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-
+#   else
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=T0
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+            enddo
+          enddo
+        enddo
+#   endif
 #  elif defined SHOREFACE || defined RIP
         do k=1,N
           do j=jstrR,jendR
@@ -545,11 +675,9 @@ C$    integer omp_get_thread_num
            enddo
         enddo
 
-#  elif defined GRAV_ADJ
-
-#   ifdef GRAV_ADJ_SOLITON
-#    define HORN_PROFILE
-#    ifdef HORN_PROFILE
+#  elif defined I_SOLITON
+#   define HORN_PROFILE
+#   ifdef HORN_PROFILE
 !
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
 !  The degeneration of large-scale interfacial gravity waves in lakes. 
@@ -593,7 +721,8 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 #    endif /* HORN_PROFILE */ 
-#   else /*  !GRAV_ADJ_SOLITON */
+
+#  elif defined GRAV_ADJ
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -611,7 +740,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-#   endif /* GRAV_ADJ_SOLITON */
 
 #  elif defined ACOUSTIC 
 
@@ -665,7 +793,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 
-#  elif defined IGW || defined S2DV || defined MILES
+#  elif defined IGW
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N
@@ -820,15 +948,37 @@ C$    integer omp_get_thread_num
 !
       endif  ! nrrec.eq.0.
 !
-      call ana_jet_tile (Istr,Iend,Jstr,Jend,0)
+
+! This is a quick fix to get the initialisation reproducible 
+! (and right...) with OpenMP or tiling. This initialisation is performed
+! on the whole domain (or MPI subdomain). 
+! Not optimal at all but the routine ana_jet should be totally 
+! re-written to make it properly
+!  
+#ifdef MPI
+#define LOCALLM Lmmpi
+#define LOCALMM Mmmpi
+#else
+#define LOCALLM Lm
+#define LOCALMM Mm
+#endif
+C$OMP MASTER
+      Istr1=1
+      Iend1=LOCALLM
+      Jstr1=1
+      Jend1=LOCALMM
+      call ana_jet_tile (Istr1,Iend1,Jstr1,Jend1,0)
+C$OMP END MASTER
 !
 ! Compute same fields with zonal perturbation 
 ! --> store in initial arrays
 !
       if (nrrec.eq.0) then  ! only during initialization
 !
-        call ana_jet_tile (Istr,Iend,Jstr,Jend,1)
-
+C$OMP MASTER
+        call ana_jet_tile (Istr1,Iend1,Jstr1,Jend1,1)
+C$OMP END MASTER
+C$OMP BARRIER
 #  else
         do k=1,N
           do j=JR_RANGE
@@ -1191,6 +1341,12 @@ C$    integer omp_get_thread_num
      &                        ubar(START_2D_ARRAY,1))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,1))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        zeta(START_2D_ARRAY,2))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                        ubar(START_2D_ARRAY,2))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                        vbar(START_2D_ARRAY,2))
 #  ifdef SOLVE3D
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1200,15 +1356,24 @@ C$    integer omp_get_thread_num
 #ifdef NBQ
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,1))
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             wz(START_2D_ARRAY,0,2))
 #endif
 #   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,1))
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,2))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,2))
+
 #ifdef NBQ
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,1))
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                        wz(START_2D_ARRAY,0,2))
 #endif
 #   endif
 #  endif /* SOLVE3D */
@@ -1219,9 +1384,13 @@ C$    integer omp_get_thread_num
 #  ifdef THREE_GHOST_POINTS_TS
           call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                                 t(START_2D_ARRAY,1,1,itrc))
+          call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                                 t(START_2D_ARRAY,1,2,itrc))
 #  else
           call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                            t(START_2D_ARRAY,1,1,itrc))
+          call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                            t(START_2D_ARRAY,1,2,itrc))
 #  endif
         endif
       enddo
@@ -1256,7 +1425,7 @@ C$    integer omp_get_thread_num
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "scalars.h"
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
 # include "private_scratch.h"
 # ifdef CLIMATOLOGY
 #  include "climat.h"
@@ -1276,7 +1445,9 @@ C$    integer omp_get_thread_num
      &     FC(PRIVATE_2D_SCRATCH_ARRAY),
      &    dZx(PRIVATE_2D_SCRATCH_ARRAY),
      &     rx(PRIVATE_2D_SCRATCH_ARRAY),
-     &    dRx(PRIVATE_2D_SCRATCH_ARRAY)
+     &    dRx(PRIVATE_2D_SCRATCH_ARRAY),
+     &    dR(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # ifdef MPI
       include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
@@ -1288,7 +1459,7 @@ C$    integer omp_get_thread_num
      &         +zasym
 !
 # include "compute_auxiliary_bounds.h"
-!
+
 ! ---------------------------------------------------------------------
 !                     BAROCLINIC JET TEST CASE
 ! ---------------------------------------------------------------------
@@ -1429,13 +1600,15 @@ C$    integer omp_get_thread_num
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho(START_2D_ARRAY,1))
 # endif
+
 !
 ! --- Compute zeta ---
 !
 ! Get pressure using pressure gradient routine
 !
       call prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
-     &                  A2d(1,3,0),A2d(1,4,0), FC,dZx,rx,dRx)
+     &                  dR,dZ, FC,dZx,rx,dRx)
+
 !
 ! Compute zeta so as to cancel bottom pressure perturbation
 !
@@ -1496,12 +1669,13 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (istr,iend,jstr,jend,
      &                        zeta(START_2D_ARRAY,tndx))
 # endif
+      
 !
 ! --- Get gressure gradient (ru,rv) using updated zeta field ---
 !
       call set_depth_tile (Istr,Iend,Jstr,Jend)
       call prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
-     &                  A2d(1,3,0),A2d(1,4,0), FC,dZx,rx,dRx)
+     &                  dR,dZ, FC,dZx,rx,dRx)
 
 # define WORK rho1
       do k=1,N
@@ -1513,22 +1687,24 @@ C$    integer omp_get_thread_num
       enddo
       if (NORTHERN_EDGE) then
         do k=1,N
-          do i=Istr-1,Iend+1
+          do i=Istr,Iend
             WORK(i,Jend+1,k)=0.
           enddo
         enddo
       endif
       if (SOUTHERN_EDGE) then
         do k=1,N
-          do i=Istr-1,Iend+1
+          do i=Istr,Iend
             WORK(i,JstrV-1,k)=0.
           enddo
         enddo
       endif
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        WORK(START_2D_ARRAY,1))
 # endif
+
       do k=1,N
         do j=JstrV-1,Jend+1
           do i=Istr-1,Iend+1
@@ -1536,7 +1712,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-!
+ 
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -1546,25 +1722,27 @@ C$    integer omp_get_thread_num
       enddo
       if (NORTHERN_EDGE) then
         do k=1,N
-          do i=Istr-1,Iend+1
+          do i=IstrU,Iend
             WORK(i,Jend+1,k)=0.
           enddo
         enddo
       endif
       if (SOUTHERN_EDGE) then
         do k=1,N
-          do i=Istr-1,Iend+1
+          do i=Istr,Iend
             WORK(i,0,k)=0.
           enddo
         enddo
       endif
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_r3d_tile (istr,iend,jstr,jend,
+      call exchange_u3d_tile (istr,iend,jstr,jend,
      &                        WORK(START_2D_ARRAY,1))
 # endif
+
       do k=1,N
         do j=Jstr-1,Jend+1
-          do i=IstrU-1,Iend+1
+          do i=Istr-1,Iend+1
             ru(i,j,k)=WORK(i,j,k)
           enddo
         enddo

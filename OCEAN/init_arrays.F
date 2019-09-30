@@ -134,6 +134,10 @@ C$    integer omp_get_thread_num
 #ifdef SOLVE3D
           rufrc(i,j)=init
           rufrc(i,j)=init
+          rufrc_bak(i,j,1)=init
+          rvfrc_bak(i,j,1)=init
+          rufrc_bak(i,j,2)=init
+          rvfrc_bak(i,j,2)=init
 !
           Zt_avg1(i,j)=0. !init
           DU_avg1(i,j,1)=0. !init
@@ -172,7 +176,9 @@ C$    integer omp_get_thread_num
             rho_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
+#  ifndef NBQ
             w_avg(i,j,k)=init
+#  endif
 # endif
 # ifdef MRL_WCI
             ust(i,j,k)=init
@@ -195,6 +201,10 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,1)=init
             MBaro(i,j,k,2)=init
+# endif
+# if defined M3FAST
+            Mfast(i,j,k,1)=init
+            Mfast(i,j,k,2)=init
 # endif
 # endif
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
@@ -254,6 +264,10 @@ C$    integer omp_get_thread_num
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
 #  endif
+# if defined M3FAST
+            Mfast_avg(i,j,k,1)=init
+            Mfast_avg(i,j,k,2)=init
+#  endif
             MHmix_avg(i,j,k,1)=init
             MHmix_avg(i,j,k,2)=init
             MVmix_avg(i,j,k,1)=init
@@ -296,9 +310,12 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
+#  ifdef NBQ
+            w_avg(i,j,k)=init
+#  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIX2017 || defined GLS_MIXING
+  || defined GLS_MIXING
             bvf_avg(i,j,k)=init
 # endif
 # endif
@@ -424,6 +441,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             vrtBaro(i,j)=init
 # endif
+# if defined M3FAST
+            vrtfast(i,j)=init
+# endif
 #  ifdef AVERAGES
             vrtXadv_avg(i,j)=init
             vrtYadv_avg(i,j)=init
@@ -438,6 +458,9 @@ C$    integer omp_get_thread_num
             vrtDrag_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             vrtBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            vrtfast_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
           enddo
@@ -464,6 +487,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             ekBaro(i,j)=init
 # endif
+# if defined M3FAST
+            ekfast(i,j)=init
+# endif
 #  ifdef AVERAGES
             ekHadv_avg(i,j)=init
             ekHdiff_avg(i,j)=init
@@ -479,6 +505,9 @@ C$    integer omp_get_thread_num
             ekDrag_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             ekBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
 
@@ -496,6 +525,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             ekBaro_mld(i,j)=init
 # endif
+# if defined M3FAST
+            ekfast_mld(i,j)=init
+# endif
 #  ifdef AVERAGES
             ekHadv_mld_avg(i,j)=init
             ekHdiff_mld_avg(i,j)=init
@@ -509,6 +541,9 @@ C$    integer omp_get_thread_num
             ekVmix2_mld_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             ekBaro_mld_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_mld_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EK */
@@ -708,6 +743,12 @@ C$    integer omp_get_thread_num
 # ifdef OA_COUPLING
           smstr(i,j)=init
 # endif
+# ifdef OW_COUPLING
+          twox(i,j)=init
+          twoy(i,j)=init
+          tawx(i,j)=init
+          tawy(i,j)=init
+# endif
 #ifndef ANA_SMFLUX
           sustrg(i,j,1)=init
           svstrg(i,j,1)=init
@@ -771,6 +812,9 @@ C$    integer omp_get_thread_num
 # endif
 !
 # ifdef BULK_FLUX
+#  if defined READ_PATM && defined OBC_PATM
+          patm2d(i,j)=paref
+# endif
           tair (i,j)=init
           rhum (i,j)=init
           prate (i,j)=init
@@ -818,6 +862,15 @@ C$    integer omp_get_thread_num
           shflx_sen_avg(i,j)=init
 #  endif
 # endif /* BULK_FLUX */
+# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
+          wspd(i,j)=init
+          wspdg(i,j,1)=init
+          wspdg(i,j,2)=init
+# endif
+# if defined SMFLUX_CFB && defined CFB_STRESS2 
+          wstr_u(i,j)=init
+          wstr_v(i,j)=init
+# endif
 # ifdef SST_SKIN
           sst_skin=init
 #  ifdef AVERAGES
@@ -848,7 +901,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # if defined PSOURCE_NCFILE
-          do i=1,Msrc
+          do i=1,Nsrc
            qbar(i)=init
            qbarg(i,1)=init
            qbarg(i,2)=init
@@ -1206,21 +1259,21 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
 # if defined BVF_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIX2017 || defined GLS_MIXING
+      || defined GLS_MIXING
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIX2017 && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
@@ -1230,10 +1283,6 @@ C$    integer omp_get_thread_num
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=init
 #  endif
-# endif
-# ifdef GLS_MIXING
-              Akk(i,j,k)=Akk_bak
-              Akp(i,j,k)=Akp_bak
 # endif
           enddo
         enddo
@@ -1248,18 +1297,18 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# ifdef LMD_SKPP
+# if defined LMD_SKPP || defined GLS_MIXING
 !
 !  Initialize depth of surface boundary layer.
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-#ifdef LMD_SKPP2005
+#  ifdef LMD_SKPP2005
           hbls(i,j,1)=init          
           hbls(i,j,2)=init 
-#else        
+#  else        
           hbl(i,j)=init
-#endif         
+#  endif         
           kbl(i,j)=init
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
@@ -1313,44 +1362,37 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            tke(i,j,k,1)=gls_Kmin
-            tke(i,j,k,2)=gls_Kmin
-            gls(i,j,k,1)=gls_Pmin
-            gls(i,j,k,2)=gls_Pmin
+            trb(i,j,k,nstp,itke)=init 
+            trb(i,j,k,nstp,igls)=init        
             Lscale(i,j,k)=init
           enddo
         enddo
       enddo
 # endif
 
-# ifdef NBQ
+# ifdef M3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef NBQ_MASS
           rhobar_nbq(i,j,:)   =1.
           rhobar_nbq_avg1(i,j)=1.
 #  endif
-          rubar_nbq(i,j)    =init
-          rvbar_nbq(i,j)    =init
-          rufrc_bak(i,j,1:2)=init
-          rvfrc_bak(i,j,1:2)=init
-          
         enddo
       enddo
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# ifdef NBQ_MASS
+#  ifdef NBQ_MASS
             rho_nbq(i,j,k)     =1.
             rho_nbq_avg1(i,j,k)=1.
 !            rho_nbq_avg2(i,j,k)=1.
-# endif
+#  endif
             ru_nbq(i,j,k)     =init
             rv_nbq(i,j,k)     =init
-#if !defined M2FILTER_NONE
+#  if !defined M2FILTER_NONE
             ru_nbq_avg1(i,j,k)=init
             rv_nbq_avg1(i,j,k)=init
-#endif
+#  endif
             ru_nbq_avg2(i,j,k)=init
             rv_nbq_avg2(i,j,k)=init
             ru_int_nbq(i,j,k) =init
@@ -1358,21 +1400,30 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+#  ifdef NBQ
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
             wz(i,j,k,1)  =init
             wz(i,j,k,2)  =init
             rw_nbq(i,j,k)=init
-#if !defined M2FILTER_NONE
+#  if !defined M2FILTER_NONE
             rw_nbq_avg1(i,j,k)=init
-#endif
+#  endif
             rw_nbq_avg2(i,j,k)=init
             rw_int_nbq(i,j,k) =init
           enddo
         enddo
       enddo
-# endif
+#  else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          rubar_nbq(i,j)=init
+          rvbar_nbq(i,j)=init
+        enddo
+      enddo
+#  endif/* NBQ */
+# endif /* M3FAST */
 
 #endif /* SOLVE3D */
 

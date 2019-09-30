@@ -39,20 +39,12 @@
 # ifdef NBQ
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
-# ifdef NBQ_MASS
+#  ifdef NBQ_MASS
       real Hzr(GLOBAL_2D_ARRAY,N)
       common /grid_Hzr/Hzr
-# else
+#  else
 #     define Hzr Hz
-# endif
-      real Hz_half(GLOBAL_2D_ARRAY,N)
-      common /grid_Hz_half/Hz_half
-      real Hz_half_bak(GLOBAL_2D_ARRAY,N)
-      common /grid_Hz_half_bak/Hz_half_bak
-      real dHzdt(GLOBAL_2D_ARRAY,N)
-      common /grid_dHzdt/dHzdt
-      real h2d(GLOBAL_2D_ARRAY)
-      common /h2d/ h2d
+#  endif
 # endif
 
 # if defined UV_VIS4 && defined UV_MIX_GEO

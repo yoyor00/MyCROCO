@@ -162,7 +162,7 @@
         do k=1,N-1,+1
           do i=I_EXT_RANGE
             zscale=z_r(i,j,k)-z_w(i,j,0)
-            Kern=zscale/(zscale+Zob)
+            Kern=zscale/(zscale+Zob(i,j))
 
             Cr(i,k)=Cr(i,k-1) + Kern*(
      &                 0.5*( ( u(i  ,j,k+1,tind)-u(i  ,j,k,tind)
