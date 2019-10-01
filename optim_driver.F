@@ -1,18 +1,18 @@
 c     this file is not differentiated
-      
+
       subroutine state_control(iicroot)
 
       implicit none
 #include "adinc.h"
-#include "adparam.h"      
-      
+#include "adparam.h"
+
       integer iicroot
       integer ierr
 
       integer indic,imp,io,imode(3),omode,niter,nsim,iz(5),ndz,
      &     reverse
 
-c     ndz must be >= 6*ad_array_size+1 in DIS mode      
+c     ndz must be >= 6*ad_array_size+1 in DIS mode
       parameter(ndz=6*ad_array_size+1)
 
       external simul_rc,euclid,ctonbe,ctcabe
@@ -32,29 +32,32 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
       double precision control_to_param
 
       integer i
-      
+
       sim_iicroot = iicroot
       ad_cost_counter = 1
       ad_cost = 1
       ad_counter = 0
 
-      
+
       write(*,*) 'ad_array_size=', ad_array_size
       write(*,*) 'nx:',2+lm+2+padd_x
       write(*,*) 'ne:',2+mm+2+padd_e
-      
+
       call init_control(ad_x,ad_g)
 
 
-      
+
 c      MPI_master_only write(*,*) 'A1##>',ad_x_f
 c      MPI_master_only write(*,*) 'B1##>',ad_g_f
-      
+
       indic = 4
       call simul (indic,ad_array_size,ad_x,cost,ad_g,izs,rzs,dzs)
 
+      ad_x_f(:) = 0.
+      ad_g_f(:) = 0.
+
 #ifdef MPI
-#ifdef AMPI     
+#ifdef AMPI
       call AMPI_Gather(ad_x,ad_array_size/nnodes,
      &     AMPI_ADOUBLE_PRECISION,ad_x_f,ad_array_size/nnodes,
      &     AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
@@ -67,12 +70,12 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       ad_x_f=ad_x
       ad_g_f=ad_g
 #endif
-      
+
 #ifdef MPI
 #ifdef AMPI
       call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
      &     0, MPI_COMM_WORLD, ierr)
-      
+
       if (mynode.eq.0) then
          cost = cost_f
       end if
@@ -81,7 +84,7 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       ad_counter = ad_counter + 1
 
       dx=1.e-10
-      df1=cost/10000
+      df1=cost
       epsrel=1.e-4
       niter=200
       nsim=200
@@ -90,9 +93,9 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
       imp=5
 c     imode(1)=0 ==> DIS mode
       imode(1)=0
-c     imode(2)=0 ==> cold start      
+c     imode(2)=0 ==> cold start
       imode(2)=0
-c     imode(3)=0 ==> simulator never called with indic=1     
+c     imode(3)=0 ==> simulator never called with indic=1
       imode(3)=0
 
       write(*,*) 'start state_control'
@@ -119,7 +122,7 @@ c         end do
 
 c         MPI_master_only write(*,*) '1##>',ad_x_f
 c         MPI_master_only write(*,*) '2##>',ad_sg_f
-         
+
 
 C        get ad_x_f, the new ad state on mpi master
          MPI_master_only call m1qn3 (simul_rc,euclid,ctonbe,ctcabe,
@@ -141,11 +144,11 @@ c         end do
 c         call AMPI_Scatter(ad_g_f,ad_array_size/nnodes,
 c     &        AMPI_ADOUBLE_PRECISION,ad_g,ad_array_size/nnodes,
 c     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-#endif         
+#endif
 #else
          ad_x=ad_x_f
          ad_g=ad_g_f
-#endif         
+#endif
 #ifdef MPI
 #ifdef AMPI
          call AMPI_Bcast(reverse,1,MPI_INTEGER,
@@ -153,14 +156,15 @@ c     &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
          call AMPI_Bcast(indic,1,MPI_INTEGER,
      &        0,MPI_COMM_WORLD,ierr)
 #endif
-#endif         
+#endif
 
-         
-C        get ad_gthe gradient on each proc (& ad_rms)
+
+C        get cost & ad_g, the gradient on each proc (& ad_rms)
          call simul(indic,ad_array_size,ad_x,cost,ad_g,izs,rzs,dzs)
 
+         ad_g_f(:) = 0
 #ifdef MPI
-#ifdef AMPI     
+#ifdef AMPI
          call AMPI_Gather(ad_g,ad_array_size/nnodes,
      &        AMPI_ADOUBLE_PRECISION,ad_g_f,ad_array_size/nnodes,
      &        AMPI_ADOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
@@ -168,27 +172,28 @@ C        get ad_gthe gradient on each proc (& ad_rms)
 #else
          ad_g_f=ad_g
 #endif
-      
+
 #ifdef MPI
 #ifdef AMPI
-         call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION, MPI_SUM,
+         call AMPI_Reduce(cost, cost_f, 1, AMPI_ADOUBLE_PRECISION,
+     &        MPI_SUM,
      &        0, MPI_COMM_WORLD, ierr)
-         
+
          if (mynode.eq.0) then
             cost = cost_f
          end if
 #endif
-#endif      
-         
+#endif
+
 
          if (mynode.eq.0) then
             write (779,*) ad_counter,ad_rms,cost,norm2(ad_g_f),
      &           ad_dir_time,ad_adj_time
             call flush(779)
          end if
-         
+
          df1 = cost
-         
+
          ad_counter = ad_counter+1
       end do
 
@@ -213,7 +218,7 @@ C     ...
       print *, 'Error: ', nf_strerror(errcode)
       stop 2
       end
-      
+
 
       function rms()
       implicit none
@@ -225,11 +230,14 @@ C     ...
 
       ne = 0
       irms = 0
+      rms = 0
+      cne = 0
+      crms = 0
 
       call rms_fun_step(irms,ne)
 
 #ifdef MPI
-#ifdef AMPI      
+#ifdef AMPI
       call AMPI_Reduce(irms, crms, 1, AMPI_ADOUBLE_PRECISION,
      &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
       call AMPI_Reduce(ne, cne, 1, MPI_INTEGER,
@@ -240,12 +248,14 @@ C     ...
       cne = ne
 #endif
 
-      if (cne.gt.0) then
-         rms = sqrt(crms)/cne
-      else
-         rms = 0
+      if (mynode.eq.0) then
+         if (cne.gt.0) then
+            rms = sqrt(crms)/cne
+         else
+            rms = 0
+         end if
       end if
-      
+
       end function rms
 
       subroutine rms_fun_step(irms,ne)
@@ -307,5 +317,5 @@ C     ...
             end if
          end do
       end do
-      
+
       end subroutine rms_fun_step_2d_tile

@@ -5,7 +5,7 @@
 
       integer k
 
-C$AD BINOMIAL-CKP ad_ns+1 10 1
+C$AD BINOMIAL-CKP ad_ns+1 99 1
       do k=1,ad_ns
          call step()
       end do
@@ -286,7 +286,9 @@ c      end do
       write(99, *) Iend-Istr+1,Jend-Jstr+1,mynode
       do j=Jstr,Jend
          do i=Istr,Iend
-            write(99, *) lonr(i,j),latr(i,j),zob(i,j)
+            if (ad_obs(i,j,1).ne.spval) then
+               write(99, *) lonr(i,j),latr(i,j),zob(i,j)
+            end if
          end do
       end do
       close(99)

@@ -1,14 +1,14 @@
 c     this file is not differentiated
 
-# include "cppdefs.h"      
-      
+# include "cppdefs.h"
+
       subroutine simul(indic,Sn,ad_x,cost,ad_g,izs,rzs,dzs)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
       real t1, t2, xtime
-      
-      integer indic, Sn, i
+
+      integer indic, Sn, k
       real izs(1)
       real rzs(1)
       real dzs(1)
@@ -18,7 +18,7 @@ c     this file is not differentiated
       double precision rms
 
       integer ierr
-      
+
       if (indic.eq.1) then
          write(*,*) 'indic = 1'
       end if
@@ -48,7 +48,7 @@ c        directly the computation of cost_fun.
          write (*,*) '--------------------------------------'
 
          ad_rms = rms()
-         
+
 c     call restore_croco_state()
 
 c         eps = 1.0D-10
@@ -64,6 +64,8 @@ c         write(*,*) '-||->', (cost-f)/eps
          write (*,*) '--------------------------------------'
          write (*,*) 'start adjoint'
          write (*,*) '--------------------------------------'
+
+         ad_g(:) = 0.
          t1 = xtime()
          call cost_fun_b(ad_x, ad_g, icost, costb)
          t2 = xtime()
@@ -77,4 +79,3 @@ c         write(*,*) '-||->', (cost-f)/eps
       end if
       return
       end
-
