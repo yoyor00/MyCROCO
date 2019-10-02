@@ -146,6 +146,31 @@
 		</file_definition>
 # endif
 
+# ifdef DIAGNOSTICS_TS
+        <file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
+            <file_group id="TS" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+                <file id="file4" name_suffix="_TS" split_freq="5d" split_freq_format="%y-%mo-%d">
+                    
+                    <field_group id="TS_fields" operation="average">
+                        <field field_ref="T_rate" name="T_rate"  />
+                        <field field_ref="T_adv" name="T_adv"  />
+                        <field field_ref="T_Hmix" name="T_hmix"  />
+                        <field field_ref="T_Vmix" name="T_vmix"  />
+                        <field field_ref="T_Forc" name="T_forc" />
+#  ifdef SALINITY
+                        <field field_ref="S_rate" name="S_rate"  />
+                        <field field_ref="S_adv" name="S_adv"  />
+                        <field field_ref="S_Hmix" name="S_hmix"  />
+                        <field field_ref="S_Vmix" name="S_vmix"  />
+                        <field field_ref="S_Forc" name="S_forc" />
+# endif
+                    </field_group>
+
+                </file>
+            </file_group>
+        </file_definition>
+# endif
+
 # ifdef DIAGNOSTICS_EK
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->

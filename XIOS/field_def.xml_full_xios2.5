@@ -376,6 +376,22 @@
     </field_group>
 #endif
 
+#ifdef DIAGNOSTICS_TS
+     <field_group id="TS_dia" grid_ref="rho_3D">
+         <field id="T_rate" long_name="T rate" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_adv" long_name="T adv" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_Hmix" long_name="T Hmix" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_Vmix" long_name="T Vmix" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_Forc" long_name="T Forc" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  ifdef SALINITY
+         <field id="S_rate" long_name="S rate" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_adv" long_name="S adv" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_Hmix" long_name="S Hmix" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_Vmix" long_name="S Vmix" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_Forc" long_name="S Forc" unit="PSU second-1" grid_ref="rho_3D"/>
+#  endif
+    </field_group>
+#endif
 
 
 #ifdef DIAGNOSTICS_EK

@@ -1851,7 +1851,7 @@ C 				  endif
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_TS
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
@@ -2324,6 +2324,29 @@ C 				  endif
           call xios_send_field("v_fast",Mfast(:,:,:,itrc))
 #  endif
 #  endif
+
+
+
+#  ifdef DIAGNOSTICS_TS
+         itrc=1
+          call xios_send_field("T_rate", Trate(:,:,:,itrc))
+          call xios_send_field("T_adv", TXadv(:,:,:,itrc)
+     &           + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+          call xios_send_field("T_Hmix",THmix(:,:,:,itrc))
+          call xios_send_field("T_Vmix",TVmix(:,:,:,itrc))
+          call xios_send_field("T_Forc",TForc(:,:,:,itrc))
+#  ifdef SALINITY
+        itrc = 2
+          call xios_send_field("S_rate", Trate(:,:,:,itrc))
+          call xios_send_field("S_adv", TXadv(:,:,:,itrc)
+     &              + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+          call xios_send_field("S_Hmix",THmix(:,:,:,itrc))
+          call xios_send_field("S_Vmix",TVmix(:,:,:,itrc))
+          call xios_send_field("S_Forc",TForc(:,:,:,itrc))
+#  endif
+#  endif
+
+
 
 
 #  ifdef DIAGNOSTICS_VRT
