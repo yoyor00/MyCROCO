@@ -13,7 +13,7 @@ done
 b_n=$(basename ${0})
 OPTIND=1
 
-x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP SHOREFACE FLUME SWASH THACKER TANK IGW RIVER'
+x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE SANDBAR THACKER TANK IGW RIVER'
 x_d=$(dirname $(dirname $PWD))
 x_p="NO"
 x_m="1"
@@ -60,7 +60,8 @@ RUNDIR=$x_r
     
 [ -f cppdefs.h ] && \rm cppdefs.h && \cp ${ROOTDIR}/${RUNDIR}/cppdefs.h .
 [ -f param.h ]    && \rm param.h   && cp ${ROOTDIR}/${RUNDIR}/param.h .
-[ -d TESTCASES ] && \rm -rf TESTCASES && \cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
+[ -d TESTCASES ] && \rm -rf TESTCASES 
+cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
 [ ! -d LOG ] && mkdir LOG
 
 # Number of cases

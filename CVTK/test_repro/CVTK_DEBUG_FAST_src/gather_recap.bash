@@ -21,14 +21,14 @@ numrev=`head -$ligne2 gitinfos | tail -1 | tr -d '\n' | tr -d ' '`
 #==
 for testREGO in `ls Configure_Test` ; do  
     testREG=`echo $testREGO | cut -d/ -f2-`
-    echo $testREG
+    #echo $testREG
     #echo "$testREG/Recap_${testREG}_${today}_*.git* Log_Summary"
     cp $testREG/Recap_${testREG}_${today}.git* Junk
 done
 
 cd Junk
 for i in `ls -1 Recap_*${today}.git*` ; do 
-    echo $i 
+    #echo $i 
     cat $i >>  gather_recap_tmp
 done
 cd -

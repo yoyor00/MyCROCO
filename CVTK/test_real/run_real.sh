@@ -3,7 +3,7 @@
 b_n=$(basename ${0})
 OPTIND=1
 
-x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP SHOREFACE SWASH THACKER TANK RIVER'
+x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE SWASH THACKER TANK RIVER'
 x_d=$(dirname $(dirname $PWD))
 x_p="NO"
 x_m="1"
@@ -56,29 +56,29 @@ RUNDIR=$x_r
 [ -d TESTCASES ] && \rm -rf TESTCASES && \cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
 
 #- undef everything
-sed -i .bak '1,/^#if defined REGIONAL/ s/define /undef /g' cppdefs.h 
+sed  '1,/^#if defined REGIONAL/ s/define /undef /g' cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 #- undef MPI
-sed -i .bak "s/^#\(.*\)define\(.*\)MPI\(.*\)/#undef MPI/ " cppdefs.h
+sed  "s/^#\(.*\)define\(.*\)MPI\(.*\)/#undef MPI/ " cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 #- undef OPENMP
-sed -i .bak "s/^#\(.*\)define\(.*\)OPENMP\(.*\)/#undef OPENMP/ " cppdefs.h
+sed "s/^#\(.*\)define\(.*\)OPENMP\(.*\)/#undef OPENMP/ " cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 #- undef NBQ
-sed -i .bak "s/^#\(.*\)define\(.*\)NBQ\(.*\)/#undef NBQ/ " cppdefs.h
+#sed "s/^#\(.*\)define\(.*\)NBQ\(.*\)/#undef NBQ/ " cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 
 #- suppress totally MPI or OPENMP (mandatory)
-sed -i .bak -e "s/^# *undef *MPI// " -e "s/^# *undef *OPENMP// " cppdefs.h
+sed  "s/^# *undef *MPI// " -e "s/^# *undef *OPENMP// " cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 
 #- define MPI if needed
 if [ "$PARALLEL" == "MPI" ]; then
-  sed -i .bak  /"defined\(.*\)${EXAMPLE}"'/a\'$'\n''#define MPI'$'\n' cppdefs.h
+  sed   /"defined\(.*\)${EXAMPLE}"'/a\'$'\n''#define MPI'$'\n' cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 fi
 
 #- define OPENMP if need
 if [ "$PARALLEL" == "OPENMP" ]; then
-  sed -i .bak  /"defined\(.*\)${EXAMPLE}"'/a\'$'\n''#define OPENMP'$'\n' cppdefs.h
+  sed   /"defined\(.*\)${EXAMPLE}"'/a\'$'\n''#define OPENMP'$'\n' cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 fi
 
 # proper path in jobcomp
-sed -i .bak "s:.*SOURCE=.*:SOURCE=$ROOTDIR/OCEAN:g" jobcomp
+sed  "s:.*SOURCE=.*:SOURCE=$ROOTDIR/OCEAN:g" jobcomp
 
 # main loop
 for EXAMPLE in $LIST_EXAMPLE
@@ -117,12 +117,12 @@ do
 
     if [ "$PARALLEL" == "MPI" ] ; then 
       NEW_LINE="parameter (NP_XI=$PROC_X,NP_ETA=$PROC_Y,NNODES=NP_XI*NP_ETA)"
-      sed -i .bak -e /"^ *parameter\(.*\)NP_XI*="'/c\'$'\n'"\      ${NEW_LINE}" param.h
+      sed  -e /"^ *parameter\(.*\)NP_XI*="'/c\'$'\n'"\      ${NEW_LINE}" param.h > tmp.txt && \mv tmp.txt param.h 
     else
       NEW_LINE="parameter (NSUB_X=$PROC_X,NSUB_E=$PROC_Y)"
-      sed -i .bak -e /"^\ *parameter\(.*\)NSUB_X*="'/c\'$'\n'"\      ${NEW_LINE}" param.h
+      sed  -e /"^\ *parameter\(.*\)NSUB_X*="'/c\'$'\n'"\      ${NEW_LINE}" param.h > tmp.txt && \mv tmp.txt param.h 
       NEW_LINE="parameter (NPP=$NB_PROC)"
-      sed -i .bak -e /"^\ *parameter\(.*\)NPP*="'/c\'$'\n'"\      ${NEW_LINE}" param.h
+      sed  -e /"^\ *parameter\(.*\)NPP*="'/c\'$'\n'"\      ${NEW_LINE}" param.h > tmp.txt && \mv tmp.txt param.h 
     fi  
   fi
 
@@ -137,7 +137,7 @@ do
   fi
 
 #- define config and run
-  sed -i .bak "s/^#\(.*\)undef\(.*\)$EXAMPLE\(.*\)/#define $EXAMPLE/" cppdefs.h
+  sed  "s/^#\(.*\)undef\(.*\)$EXAMPLE\(.*\)/#define $EXAMPLE/" cppdefs.h  > tmp.txt && \mv tmp.txt cppdefs.h 
   ./jobcomp || exit 1
   if [ "${PARALLEL}" == "MPI" ]; then
     $MPIRUN -np $NB_PROC ./croco || exit 1
@@ -148,13 +148,13 @@ do
   fi     
 
 #- revert stuff  for safety
-  sed -i .bak "s/#define $EXAMPLE /#undef  $EXAMPLE/" cppdefs.h  
+  sed  -e "s/#define $EXAMPLE /#undef  $EXAMPLE/" cppdefs.h   > tmp.txt && \mv tmp.txt cppdefs.h 
   NEW_LINE="parameter (NP_XI=1,NP_ETA=1_Y,NNODES=NP_XI*NP_ETA)"
-  sed -i .bak -e /"^ *parameter\(.*\)NP_XI*="'/c\'$'\n'"\      ${NEW_LINE}" param.h
+  sed  -e /"^ *parameter\(.*\)NP_XI*="'/c\'$'\n'"\      ${NEW_LINE}" param.h > tmp.txt && \mv tmp.txt param.h 
   NEW_LINE="parameter (NSUB_X=1,NSUB_E=1)"
-  sed -i .bak -e /"^\ *parameter\(.*\)NSUB_X*="'/c\'$'\n'"\      ${NEW_LINE}" param.h
+  sed  -e /"^\ *parameter\(.*\)NSUB_X*="'/c\'$'\n'"\      ${NEW_LINE}" param.h > tmp.txt && \mv tmp.txt param.h 
   NEW_LINE="parameter (NPP=1)"
-  sed -i .bak -e /"^\ *parameter\(.*\)NPP*="'/c\'$'\n'"\      ${NEW_LINE}" param.h
+  sed  -e /"^\ *parameter\(.*\)NPP*="'/c\'$'\n'"\      ${NEW_LINE}" param.h >  tmp.txt && \mv tmp.txt param.h 
 done
 
 # qq sed utiles si besoin :

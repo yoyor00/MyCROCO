@@ -59,7 +59,6 @@
 # undef  MPI_NOLAND
                       /* I/O server */
 # undef  XIOS
-# undef  XIOS2
                       /* Non-hydrostatic option */
 # undef  NBQ
                       /* Nesting */
