@@ -57,6 +57,8 @@ ly=24;
 dxleft=2;dxright=0.25;
 dyup=2.5;dybot=1.5;dyint=0.5;
 subfigratio=2/3;
+
+makepdf=0;
 %======================================================================
 
 % ---------------------------------------------------------------------
@@ -333,6 +335,7 @@ set(ga1,'units','centimeters','position',[dxleft dybot+2*(dy2+dyint) dx dy1])
 set(ga2,'units','centimeters','position',[dxleft dybot+dy2+dyint dx dy2])
 set(ga3,'units','centimeters','position',[dxleft dybot dx dy2])
 
-print -dpdf valid_innershelf.pdf;
-
+if makepdf,
+ export_fig -transparent valid_innershelf.pdf
+end
 

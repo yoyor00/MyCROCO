@@ -40,7 +40,7 @@
 
 # include "compute_auxiliary_bounds.h"
 
-# if defined CANYON_B
+# ifdef CANYON_STRAT
       cff=1./50.                    ! Setup both top and bottom
       do k=1,N-1                    ! boundary layers.
         do j=Jstr,Jend
@@ -110,7 +110,7 @@
           enddo
         enddo
       enddo
-# endif /* CANYON_B */
+# endif /* CANYON_STRAT */
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)

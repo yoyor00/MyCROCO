@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Make 1 plot from the results of the OVERFLOW test case
+%  Make 1 plot from the results of the Gravitational OVERFLOW test case
 % 
 %  Further Information:  
 %  http://www.croco-ocean.org
@@ -30,14 +30,16 @@ clear all
 close all
 
 makepdf=0;
-tndx=3;
+tndx=6;
 %
 % Read data
 %
-nc=netcdf('over_his.nc','r');
+nc=netcdf('over_his.nc');
 h=nc{'h'}(:);
+time=nc{'scrum_time'}(tndx)/86400;
 y=squeeze(nc{'y_rho'}(:,2));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
+t0=squeeze(nc{'temp'}(1,:,:,2));
 t=squeeze(nc{'temp'}(tndx,:,:,2));
 [N,M]=size(t);
 theta_s=nc.theta_s(:);
@@ -50,10 +52,25 @@ zr=squeeze(zr(:,:,1));
 yr=reshape(y,1,M);
 yr=repmat(yr,[N 1])/1000;
 
-contourf(yr,zr,t,(-0.1:0.02:1),'linestyle','none')
+subplot(2,1,1)
+contourf(yr,zr,t0,(-0.1:0.1:1),'linestyle','none')
 caxis([0 1])
 colorbar
-title('Overflow sigma-t vertical section')
+title('OVERFLOW - \rho anomaly vertical section')
+xlabel('Y [km]')
+ylabel('Z [m]')
+text(10,-30,'t=0','fontsize',14)
+set(gca,'fontsize',15)
+
+subplot(2,1,2)
+contourf(yr,zr,t,(-0.1:0.1:1),'linestyle','none')
+caxis([0 1])
+colorbar
+xlabel('Y [km]')
+ylabel('Z [m]')
+text(10,-30,['t=',num2str(time,'%4.1f'),' days'],'fontsize',14)
+set(gca,'fontsize',15)
+
 if makepdf
  export_fig -transparent -pdf overflow.pdf
 end

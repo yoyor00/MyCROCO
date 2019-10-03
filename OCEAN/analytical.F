@@ -381,7 +381,7 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-(0.0025)**2
         enddo
       enddo
-# elif defined CANYON_A || defined CANYON_B
+# elif defined CANYON
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=0.0001*0.5*sin(2.*pi*tdays/10.)*

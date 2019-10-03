@@ -69,10 +69,8 @@
 !
 #if defined BASIN
       fname='TEST_CASES/croco.in.Basin'
-#elif defined CANYON_A
-      fname='TEST_CASES/croco.in.Canyon_A'
-#elif defined CANYON_B
-      fname='TEST_CASES/croco.in.Canyon_B'
+#elif defined CANYON
+      fname='TEST_CASES/croco.in.Canyon'
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ

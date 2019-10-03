@@ -529,17 +529,8 @@
              enddo
           enddo
         enddo
-#  elif defined CANYON_A
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=T0
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-            enddo
-          enddo
-        enddo
-
-#  elif defined CANYON_B
+#  elif defined CANYON
+#   ifdef CANYON_STRAT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -549,7 +540,16 @@
             enddo
           enddo
         enddo
-
+#   else
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=T0
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+            enddo
+          enddo
+        enddo
+#   endif
 #  elif defined SHOREFACE || defined RIP
         do k=1,N
           do j=jstrR,jendR

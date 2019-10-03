@@ -46,7 +46,8 @@ valid = 0;        % 1: valid against forcing data
 %
 
 nc=netcdf(hname);
-h=squeeze(nc{'h'}(:));
+tndx=length(nc{'scrum_time'}(:));
+h=nc{'h'}(:);
 hsec=squeeze(nc{'h'}(2,:));
 lonu=squeeze(nc{'lon_u'}(2,:));
 lonr=squeeze(nc{'lon_rho'}(2,:));
@@ -56,16 +57,16 @@ theta_b=nc.theta_b(:);
 hc=nc.hc(:); 
 Vtransform=nc{'Vtransform'}(:);
 ssh=squeeze(nc{'zeta'}(:,2,:));
-zeta=squeeze(nc{'zeta'}(end,:,:));
+zeta=squeeze(nc{'zeta'}(tndx,:,:));
 u=squeeze(nc{'ubar'}(:,2,:));
 v=squeeze(nc{'vbar'}(:,2,:));
-usec=squeeze(nc{'u'}(end,:,2,:));
-vsec=squeeze(nc{'v'}(end,:,2,:));
-wsec=squeeze(nc{'w'}(end,:,2,:));
-tsec=squeeze(nc{'temp'}(end,:,2,:));
-rsec=squeeze(nc{'rho'}(end,:,2,:));
+usec=squeeze(nc{'u'}(tndx,:,2,:));
+vsec=squeeze(nc{'v'}(tndx,:,2,:));
+wsec=squeeze(nc{'w'}(tndx,:,2,:));
+tsec=squeeze(nc{'temp'}(tndx,:,2,:));
+rsec=squeeze(nc{'rho'}(tndx,:,2,:));
 drsec=rsec-squeeze(nc{'rho'}(1,:,2,:));
-t=nc{'scrum_time'}(:);
+time=nc{'scrum_time'}(tndx)/86400;
 close(nc)
 
 zeta_u=rho2u_2d(zeta);
@@ -81,23 +82,43 @@ xrsec=repmat(lonr,N,1);
 %  Plot internal tides section for u,w,rhop
 %---------------------------------------------------------
 figure('position',[500 500 700 700])
+map=colormap(jet(20));
+map(10:11,:)=[1 1 1; 1 1 1];
+colormap(map)
+
 subplot(3,1,1)
 contourf(xsec,zsec,usec,20,'linestyle','none'); 
+hold on;
 colorbar
-%colormap(flipud(jet))
-%caxis([-0.1 0.1])
-title('Internal case: U section')
+plot(lonr,-hsec,'color','k','LineWidth',3);
+hold off
+caxis([-0.5 0.5])
+ylabel('Z [m]')
+title(['IGW - U [m/s] at ',num2str(time,'%4.1f'),' days'])
+set(gca,'fontsize',15)
 %
 subplot(3,1,2)
 contourf(xrsec,zrsec,wsec,20,'linestyle','none');
+hold on;
 colorbar
-%caxis([-0.01 0.01])
-title('Internal case: W section')
+plot(lonr,-hsec,'color','k','LineWidth',3);
+hold off
+caxis([-0.03 0.03])
+ylabel('Z [m]')
+title(['IGW - W [m/s] at ',num2str(time,'%4.1f'),' days'])
+set(gca,'fontsize',15)
 %
 subplot(3,1,3)
 contourf(xrsec,zrsec,drsec,20,'linestyle','none'); 
+hold on;
 colorbar
-title('Internal case: rho anomaly')
+plot(lonr,-hsec,'color','k','LineWidth',3);
+hold off
+caxis([-0.05 0.05])
+xlabel('Longitude')
+ylabel('Z [m]')
+title(['IGW - \rho_a [kg/m^3] at ',num2str(time,'%4.1f'),' days'])
+set(gca,'fontsize',15)
 %
 if makepdf
 export_fig -transparent IGW.pdf
@@ -108,9 +129,9 @@ end
 %================================================
 
 if valid==1,
-%
-% Process forcing tidal data 
-%
+ %
+ % Process forcing tidal data 
+ %
  omega = 2.*pi/(12.*3600);   % S2 tide
  rad=pi/180;
  disp('  ssh...')
@@ -125,15 +146,16 @@ if valid==1,
  for i=1:length(t)
    sshd(i,:)=ssh_amp.*cos(omega*t(i)-rad*ssh_pha);
  end
-  % or ...
-%  nc=netcdf(fname);
-%  ssh_amp=squeeze(nc{'tide_Eamp'}(1,2,:));
-%  ssh_pha=squeeze(nc{'tide_Ephase'}(1,2,:));
-%  close(nc)
-%  for i=1:length(t)
-%    sshd(i,:)=ssh_amp.*cos(omega*t(i)-rad*ssh_pha);
-%  end
-% Process U
+ %  or ...
+ %  nc=netcdf(fname);
+ %  ssh_amp=squeeze(nc{'tide_Eamp'}(1,2,:));
+ %  ssh_pha=squeeze(nc{'tide_Ephase'}(1,2,:));
+ %  close(nc)
+ %  for i=1:length(t)
+ %    sshd(i,:)=ssh_amp.*cos(omega*t(i)-rad*ssh_pha);
+ %  end
+ %
+ % Process U
  disp('  u...')
  fname0='IGW_FILES/amp_u_S2.cdf';
  nc=netcdf(fname0);
@@ -146,7 +168,7 @@ if valid==1,
  for i=1:length(t)
    ud(i,:)=uamp.*cos(omega*t(i)-rad*upha);
  end
-% Process V
+ % Process V
  disp('  v...')
  fname0='IGW_FILES/amp_v_S2.cdf';
  nc=netcdf(fname0);
@@ -159,10 +181,9 @@ if valid==1,
  for i=1:length(t)
    vd(i,:)=vamp.*cos(omega*t(i)-rad*vpha);
  end
-
-%
-% Plot comparisons
-%
+ %
+ % Plot comparisons
+ %
  hfig=figure('position',[300,300,700,400]);
  h1=plot(t,ssh(:,jj),'b'); hold on;
  h2=plot(t,sshd(:,jj),'b--'); hold on;

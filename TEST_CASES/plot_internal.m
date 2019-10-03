@@ -37,6 +37,7 @@ close all
 
 fname='internal_his.nc';
 
+make_pdf=0;
 %======================================================================
 %
 % Read data
@@ -83,7 +84,9 @@ set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
 hold off
 
-export_fig -transparent internal_rho.pdf
+if makepdf,
+ export_fig -transparent internal_rho.pdf
+end
 
 return
 

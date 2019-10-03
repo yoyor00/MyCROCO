@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Make 1 plot from the results of the EQUATOR test case
+%  Make plots from the results of the EQUATOR test case
 % 
 %  Further Information:  
 %  http://www.croco-ocean.org
@@ -41,6 +41,7 @@ h=nc{'h'}(:);
 x1=nc{'x_rho'}(:);
 y1=nc{'y_rho'}(:);
 x=squeeze(x1(j,:));
+tndx=min(tndx,length(nc{'scrum_time'}(:)));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
 t=squeeze(mean(nc{'temp'}(tndx,:,j:j+1,:),2));
 t2=squeeze(mean(mean(nc{'temp'}(:,:,j:j+1,i:i+1),4),3));
@@ -62,21 +63,17 @@ xr=repmat(xr,[N 1])/1e5;
 %
 % First plot
 %
-figure(1)
+figure('position',[100 100 500 700])
+%
+subplot(2,1,1)
 [C4,h4]=contour(1980+time/(360*24*3600),z2,t2',[4:2:30],'k');
 axis([-inf inf -300 0])
 clabel(C4,h4)
 xlabel('Time (years)')
 ylabel('Depth (m)')
-title('Time evolution from 10^{o}C isothermal conditions')
-if makepdf
- export_fig -transparent -pdf equator_evol.pdf
-end
-
+title('EQUATOR - T evolution from homogeneous conditions')
 %
-% Second plot
-%
-figure(2)
+subplot(2,1,2)
 [C1,h1]=contour(xr(:,2:end-2),zr(:,2:end-2),t(:,2:end-2),[5:1:19],'k');
 if isfinite(C1)
   clabel(C1,h1)
@@ -87,44 +84,46 @@ clabel(C2,h2)
 set(h2,'LineWidth',1.5)
 [C3,h3]=contour(xr(:,2:end-2),zr(:,2:end-2),t(:,2:end-2),[21:1:30],'k');
 clabel(C3,h3)
-%shading flat
 axis([-inf inf -300 0])
 hold off
 xlabel('Longitude')
 ylabel('Depth (m)')
-title('Temperature [^oC] Section Equator')
+title('EQUATOR - Temperature [^oC] Eq. section')
+%
 if makepdf
- export_fig -transparent -pdf equator_temp.pdf
+ export_fig -transparent -pdf equator_sections.pdf
 end
 
 %
-% Third plot
+% Second plot
 %
-figure(3)
+figure('position',[100 100 500 700])
+%
 subplot(2,1,1)
-pcolor(x1(2:end-1,2:end-1)/1e5,y1(2:end-1,2:end-1)/1e5,...
-         sst(2:end-1,2:end-1))
-axis image
-shading flat
+contourf(x1(2:end-1,2:end-1)/1e5,y1(2:end-1,2:end-1)/1e5,...
+         sst(2:end-1,2:end-1),20)
 caxis([10 25])
 colorbar
+axis([1 39 -12 12])
 xlabel('Longitude')
 ylabel('Latitude')
-title('SST [^oC]')
+grid on
+title('EQUATOR - SST [^oC]')
+%
 subplot(2,1,2)
 sst=100*sqrt(u.^2+v.^2);
-pcolor(x1(2:end-1,2:end-1)/1e5,y1(2:end-1,2:end-1)/1e5,...
-         sst(2:end-1,2:end-1))
-axis image
-shading flat
+contourf(x1(2:end-1,2:end-1)/1e5,y1(2:end-1,2:end-1)/1e5,...
+         sst(2:end-1,2:end-1),20,'linestyle','none')
 caxis([0 150])
 colorbar
 hold on
 quiver(x1(2:2:end-1,2:2:end-1)/1e5,y1(2:2:end-1,2:2:end-1)/1e5,...
          u(2:2:end-1,2:2:end-1),v(2:2:end-1,2:2:end-1),'k')
+axis([1 39 -12 12])
 xlabel('Longitude')
 ylabel('Latitude')
-title('Speed [cm.s^{-1}]')
+title('EQUATOR - Speed [cm.s^{-1}]')
+%
 if makepdf
  export_fig -transparent -pdf equator_speed.pdf
 end

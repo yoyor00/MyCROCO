@@ -114,7 +114,7 @@ C$    integer omp_get_thread_num
                      f0=0.0
                      beta=0.
 #  endif 
-# elif defined CANYON_A || defined CANYON_B
+# elif defined CANYON
                      depth=4000.
                      f0=1.E-4
                      beta=0.
@@ -246,7 +246,7 @@ C$    integer omp_get_thread_num
 # elif defined SINGLE_COLUMN
                      Length_XI = 10.0e+3
                      Length_ETA= 10.0e+3
-# elif defined CANYON_A || defined CANYON_B
+# elif defined CANYON
                      Length_XI =128.0e+3
                      Length_ETA= 96.0e+3
 # elif defined EQUATOR
@@ -449,7 +449,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
-# elif defined CANYON_A || defined CANYON_B
+# elif defined CANYON
       do j=JstrR,JendR
         do i=IstrR,IendR
           cff=32000.-16000.*(sin(pi*xr(i,j)/Length_XI))**24
