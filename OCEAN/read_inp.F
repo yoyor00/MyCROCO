@@ -2626,7 +2626,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
 ! Hydrothermal forcing file name. Check its availability.
 !
-#if defined BHFLUX || defined BWFLUX
+#if defined BHFLUX || ( defined BWFLUX && defined SALINITY)
       elseif (keyword(1:kwlen).eq.'bottom_forcing') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) fname
@@ -2639,7 +2639,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         btfname=fname(1:lstr)
         MPI_master_only write(stdout,'(2x,A,2x,A)')
      &       'Bottom forcing file:', fname(1:lstr)
-#endif  /* BHFLUX || BWFLUX  */
+#endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
 ! Online forcing with CFSR
 !
