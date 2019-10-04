@@ -27,7 +27,7 @@ SOURCE_CROCO="$CI_PROJECT_DIR/OCEAN"
 TESTROOTDIR=${CVTKWORK}
 
 #-
-FANCY_OUTPUT=0
+FANCY_OUTPUT=1
 if [ ${FANCY_OUTPUT} -eq 1 ] ;then
     #  FMT_BLUEBLD=$(tput setaf 14 ; tput bold)
     FMT_BLUEBLD=$(tput setaf 14 )
