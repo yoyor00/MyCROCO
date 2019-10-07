@@ -2036,7 +2036,8 @@ C 				  endif
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-      call xios_send_field("zeta",zeta(:,:,fast_indx_out))
+      work2d=zeta(:,:,fast_indx_out)
+      call xios_send_field("zeta",work2d)
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 
@@ -2073,9 +2074,10 @@ C 				  endif
       call xios_send_field("sustr",work2d)
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
-
+#ifdef BULK_SM_UPDATE
       call xios_send_field("uwnd",uwnd)
       call xios_send_field("vwnd",vwnd)
+#endif
 
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
@@ -2130,7 +2132,11 @@ C 				  endif
 
       call xios_send_field("rho",rho)
 
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       call xios_send_field("bvf",bvf)
+# endif
 
       do k=0,N
          do j=0,Mm+1
