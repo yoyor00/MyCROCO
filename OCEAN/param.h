@@ -308,11 +308,11 @@
 !----------------------------------------------------------------------
 !
 #if defined PSOURCE || defined PSOURCE_NCFILE
-      integer Nsrc               ! Number of point sources
+      integer Msrc               ! Number of point sources
 # ifdef RIVER
-      parameter (Nsrc=2)         ! ====== == ===== =======
+      parameter (Msrc=2)         ! ====== == ===== =======
 # else
-      parameter (Nsrc=12)        ! ====== == ===== =======
+      parameter (Msrc=100)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
