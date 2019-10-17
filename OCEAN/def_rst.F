@@ -588,7 +588,7 @@
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
