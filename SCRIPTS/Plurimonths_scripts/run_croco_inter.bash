@@ -31,6 +31,7 @@ NBPROCS=8
 # command for running the mode : ./ for sequential job, mpirun -np NBPROCS for mpi run
 RUNCMD='./'
 #RUNCMD="mpirun -np $NBPROCS "
+#RUNCMD="MPI_LAUNCH "
 
 #  Define environment variables for OPENMP
 #
