@@ -1558,14 +1558,14 @@ C$    integer  trd, omp_get_thread_num
           wdre(i,j)=sin(cdir)
         enddo
       enddo
-#  endif
-#  ifdef WET_DRY
+#   ifdef WET_DRY
           if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
           endif
+#   endif
 #  endif
 # endif
       return
