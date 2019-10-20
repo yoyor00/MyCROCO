@@ -2348,7 +2348,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif /* AVERAGES */
 #endif /* MRL_WCI */
 
-#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#if defined MRL_WCI || defined OW_COUPLING
 !
 ! Wave history fields
 !
