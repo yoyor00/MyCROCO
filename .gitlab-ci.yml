@@ -28,9 +28,11 @@ before_script:
 run:
   script:
     - cd $CVTKWORK/KTEST
-    - exec ./mk_TESTALL_ana.bash
-    - ./gather_recap.bash ANA
-    - /bin/sh -c '! grep failed */Recap_*.*'
+#    - exec ./mk_TestDIR_ana.bash UPWELLING
+    - ./mk_TESTALL_ana.bash
+    - echo "gather_recap.bash KTEST"
+    - ./gather_recap.bash KTEST
+    - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
     
   artifacts:
     paths:

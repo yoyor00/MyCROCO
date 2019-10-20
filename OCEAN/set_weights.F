@@ -379,7 +379,7 @@ c**     write(*,*) shft/sum, ndtfast
       endif
  
 # else
-      MPI_master_only write(*,'(/1x,A,I3,4x,A,I3/)')
+      MPI_master_only write(stdout,'(/1x,A,I3,4x,A,I3/)')
      &   'Time splitting: ndtfast =', ndtfast, 'nfast =', nfast
  
 # endif   /* TEST_WEIGHTS */
