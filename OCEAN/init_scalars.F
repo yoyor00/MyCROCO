@@ -1738,7 +1738,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxWER =',indxWER
 # endif /* WAVE_OFFLINE_BREAKING */
 #endif /* !ANA_WWAVE */
 
-#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#if defined MRL_WCI || defined OW_COUPLING
 CR      write(stdout,'(1x,A,I3)') 'indxHRM =',indxHRM
       vname(1,indxHRM)='hrm                                       '
       vname(2,indxHRM)='RMS wave height                           '
