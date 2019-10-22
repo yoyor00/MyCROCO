@@ -682,9 +682,9 @@
 # endif
 #endif
 
-#if defined MRL_WCI || defined OW_COUPLING
-# define WAVE_IO
-#endif
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#  define WAVE_IO
+# endif
 
 /*
 ======================================================================
