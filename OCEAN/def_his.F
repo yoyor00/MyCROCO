@@ -596,9 +596,9 @@
           lvar=lenstr(vname(1,indxU))
           ierr=nf_def_var (ncid, vname(1,indxU)(1:lvar), 
      &                             NF_FOUT, 4, u3dgrd, vidU)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidU,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxU))
           ierr=nf_put_att_text (ncid, vidU, 'long_name', lvar,
@@ -624,9 +624,9 @@
           lvar=lenstr(vname(1,indxV))
           ierr=nf_def_var (ncid, vname(1,indxV)(1:lvar), 
      &                             NF_FOUT, 4, v3dgrd, vidV)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidV,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxV))
           ierr=nf_put_att_text (ncid, vidV, 'long_name', lvar,
@@ -655,9 +655,9 @@
             lvar=lenstr(vname(1,indxT+itrc-1))
             ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidT(itrc))
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidT(itrc),nf_collective)
-#endif
+# endif
 # ifndef AVRH
             lvar=lenstr(vname(2,indxT+itrc-1))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'long_name',
@@ -687,9 +687,9 @@
           lvar=lenstr(vname(1,indxR))
           ierr=nf_def_var (ncid, vname(1,indxR)(1:lvar), 
      &                             NF_FOUT, 4, r3dgrd, vidR)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidR,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxR))
           ierr=nf_put_att_text (ncid, vidR, 'long_name', lvar,
@@ -750,19 +750,19 @@
           lvar=lenstr(vname(1,indxAOU))
           ierr=nf_def_var (ncid, vname(1,indxAOU)(1:lvar), 
      &                           NF_FOUT, 4, r3dgrd, vidAOU)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAOU,nf_collective)
-#endif
-#   ifndef AVRH
+#  endif
+#  ifndef AVRH
           lvar=lenstr(vname(2,indxAOU))
           ierr=nf_put_att_text (ncid, vidAOU, 'long_name',lvar,
      &                                vname(2,indxAOU)(1:lvar))
-#   else
+#  else
           text='averaged '/ /vname(2,indxAOU)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidAOU, 'long_name',lvar,
      &                                          text(1:lvar))
-#   endif
+#  endif
           lvar=lenstr(vname(3,indxAOU))
           ierr=nf_put_att_text (ncid, vidAOU, 'units',lvar,
      &                                vname(3,indxAOU)(1:lvar))
@@ -777,9 +777,9 @@
           lvar=lenstr(vname(1,indxWIND10))
           ierr=nf_def_var (ncid, vname(1,indxWIND10)(1:lvar), 
      &                         NF_FOUT, 3, r2dgrd, vidwind10)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidwind10,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWIND10))
           ierr=nf_put_att_text (ncid,vidwind10,'long_name',lvar,
@@ -809,9 +809,9 @@
           lvar=lenstr(vname(1,indxO))
           ierr=nf_def_var (ncid, vname(1,indxO)(1:lvar),
      &                             NF_FOUT, 4, w3dgrd, vidO)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidO,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxO))
           ierr=nf_put_att_text (ncid, vidO, 'long_name', lvar,
@@ -879,19 +879,19 @@
           lvar=lenstr(vname(1,indxBostr))
           ierr=nf_def_var (ncid, vname(1,indxBostr)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidBostr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidBostr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxBostr))
           ierr=nf_put_att_text (ncid, vidBostr, 'long_name', lvar,
      &                                 vname(2,indxBostr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxBostr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidBostr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxBostr))
           ierr=nf_put_att_text (ncid, vidBostr, 'units',     lvar,
      &                                 vname(3,indxBostr)(1:lvar))
@@ -905,19 +905,19 @@
           lvar=lenstr(vname(1,indxWstr))
           ierr=nf_def_var (ncid, vname(1,indxWstr)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidWstr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidWstr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxWstr))
           ierr=nf_put_att_text (ncid, vidWstr, 'long_name', lvar,
      &                                 vname(2,indxWstr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxWstr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidWstr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxWstr))
           ierr=nf_put_att_text (ncid, vidWstr, 'units',     lvar,
      &                                 vname(3,indxWstr)(1:lvar))
@@ -931,19 +931,19 @@
           lvar=lenstr(vname(1,indxUWstr))
           ierr=nf_def_var (ncid, vname(1,indxUWstr)(1:lvar),
      &                             NF_FOUT, 3, u2dgrd, vidUWstr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUWstr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxUWstr))
           ierr=nf_put_att_text (ncid, vidUWstr, 'long_name', lvar,
      &                                 vname(2,indxUWstr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxUWstr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidUWstr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxUWstr))
           ierr=nf_put_att_text (ncid, vidUWstr, 'units',     lvar,
      &                                 vname(3,indxUWstr)(1:lvar))
@@ -957,19 +957,19 @@
           lvar=lenstr(vname(1,indxVWstr))
           ierr=nf_def_var (ncid, vname(1,indxVWstr)(1:lvar),
      &                             NF_FOUT, 3, v2dgrd, vidVWstr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVWstr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxVWstr))
           ierr=nf_put_att_text (ncid, vidVWstr, 'long_name', lvar,
      &                                 vname(2,indxVWstr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxVWstr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidVWstr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxVWstr))
           ierr=nf_put_att_text (ncid, vidVWstr, 'units',     lvar,
      &                                 vname(3,indxVWstr)(1:lvar))
@@ -988,9 +988,9 @@
           lvar=lenstr(vname(1,indxVisc))
           ierr=nf_def_var (ncid, vname(1,indxVisc)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidVisc)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVisc,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxVisc))
           ierr=nf_put_att_text (ncid, vidVisc, 'long_name', lvar,
@@ -1021,9 +1021,9 @@
           lvar=lenstr(vname(1,indxDiff))
           ierr=nf_def_var (ncid, vname(1,indxDiff)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidDiff)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidDiff,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxDiff))
           ierr=nf_put_att_text (ncid, vidDiff, 'long_name', lvar,
@@ -1050,9 +1050,9 @@
           lvar=lenstr(vname(1,indxAkv))
           ierr=nf_def_var (ncid, vname(1,indxAkv)(1:lvar),
      &                             NF_FOUT, 4, w3dgrd, vidAkv)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkv,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxAkv))
           ierr=nf_put_att_text (ncid, vidAkv, 'long_name', lvar,
@@ -1081,9 +1081,9 @@
           lvar=lenstr(vname(1,indxAkt))
           ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidAkt)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkt,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxAkt))
           ierr=nf_put_att_text (ncid, vidAkt, 'long_name', lvar,
@@ -1113,9 +1113,9 @@
           lvar=lenstr(vname(1,indxAks))
           ierr=nf_def_var (ncid, vname(1,indxAks)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidAks)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAks,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxAks))
           ierr=nf_put_att_text (ncid, vidAks, 'long_name', lvar,
@@ -1148,9 +1148,9 @@
           lvar=lenstr(vname(1,indxHbl))
           ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidHbl)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHbl,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxHbl))
           ierr=nf_put_att_text (ncid, vidHbl, 'long_name', lvar,
@@ -1181,9 +1181,9 @@
           lvar=lenstr(vname(1,indxHbbl))
           ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidHbbl)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHbbl,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxHbbl))
           ierr=nf_put_att_text (ncid, vidHbbl, 'long_name', lvar,
@@ -1215,9 +1215,9 @@
           lvar=lenstr(vname(1,indxTke))
           ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidTke)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTke,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxTke))
           ierr=nf_put_att_text (ncid, vidTke, 'long_name', lvar,
@@ -1246,9 +1246,9 @@
           lvar=lenstr(vname(1,indxGls))
           ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidGls)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidGls,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxGls))
           ierr=nf_put_att_text (ncid, vidGls, 'long_name', lvar,
@@ -1277,9 +1277,9 @@
           lvar=lenstr(vname(1,indxLsc))
           ierr=nf_def_var (ncid, vname(1,indxLsc)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidLsc)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidLsc,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxLsc))
           ierr=nf_put_att_text (ncid, vidLsc, 'long_name', lvar,
@@ -1310,9 +1310,9 @@
           lvar=lenstr(vname(1,indxShflx))
           ierr=nf_def_var (ncid, vname(1,indxShflx)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidShflx)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxShflx))
           ierr=nf_put_att_text (ncid, vidShflx, 'long_name', lvar,
@@ -1339,9 +1339,9 @@
           lvar=lenstr(vname(1,indxSwflx))
           ierr=nf_def_var (ncid, vname(1,indxSwflx)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidSwflx)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSwflx,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxSwflx))
           ierr=nf_put_att_text (ncid, vidSwflx, 'long_name', lvar,
@@ -1368,9 +1368,9 @@
         lvar=lenstr(vname(1,indxShflx_rsw))
         ierr=nf_def_var (ncid, vname(1,indxShflx_rsw)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_rsw)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_rsw,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
         lvar=lenstr(vname(2,indxShflx_rsw))
         ierr=nf_put_att_text (ncid, vidShflx_rsw, 'long_name', lvar,
@@ -1398,9 +1398,9 @@
         lvar=lenstr(vname(1,indxShflx_rlw))
         ierr=nf_def_var (ncid, vname(1,indxShflx_rlw)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_rlw)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_rlw,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
         lvar=lenstr(vname(2,indxShflx_rlw))
         ierr=nf_put_att_text (ncid, vidShflx_rlw, 'long_name', lvar,
@@ -1426,9 +1426,9 @@
         lvar=lenstr(vname(1,indxShflx_lat))
         ierr=nf_def_var (ncid, vname(1,indxShflx_lat)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_lat)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_lat,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
         lvar=lenstr(vname(2,indxShflx_lat))
         ierr=nf_put_att_text (ncid, vidShflx_lat, 'long_name', lvar,
@@ -1454,9 +1454,9 @@
         lvar=lenstr(vname(1,indxShflx_sen))
         ierr=nf_def_var (ncid, vname(1,indxShflx_sen)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_sen)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_sen,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
         lvar=lenstr(vname(2,indxShflx_sen))
         ierr=nf_put_att_text (ncid, vidShflx_sen, 'long_name', lvar,
@@ -1485,9 +1485,9 @@
           lvar=lenstr(vname(1,indxHel))
           ierr=nf_def_var (ncid, vname(1,indxHel)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidHel)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHel,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxHel))
           ierr=nf_put_att_text (ncid, vidHel, 'long_name', lvar,
@@ -1518,9 +1518,9 @@
           lvar=lenstr(vname(1,indxChC))
           ierr=nf_def_var (ncid, vname(1,indxChC)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidChC)
-#ifdef NC4PAR
+#   ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidChC,nf_collective)
-#endif
+#   endif
 #   ifndef AVRH
           lvar=lenstr(vname(2,indxChC))
           ierr=nf_put_att_text (ncid, vidChC, 'long_name', lvar,
@@ -1550,19 +1550,19 @@
           lvar=lenstr(vname(1,indxU10))
           ierr=nf_def_var (ncid, vname(1,indxU10)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidU10)
-#ifdef NC4PAR
+#    ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidU10,nf_collective)
-#endif
-#  ifndef AVRH
+#    endif
+#    ifndef AVRH
           lvar=lenstr(vname(2,indxU10))
           ierr=nf_put_att_text (ncid, vidU10, 'long_name', lvar,
      &                                  vname(2,indxU10)(1:lvar))
-#  else
+#    else
           text='averaged '/ /vname(2,indxU10)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidU10, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+#    endif
           lvar=lenstr(vname(3,indxU10))
           ierr=nf_put_att_text (ncid, vidU10, 'units',     lvar,
      &                                  vname(3,indxU10)(1:lvar))
@@ -1581,19 +1581,19 @@
           lvar=lenstr(vname(1,indxKvO2))
           ierr=nf_def_var (ncid, vname(1,indxKvO2)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidKvO2)
-#ifdef NC4PAR
+#    ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidKvO2,nf_collective)
-#endif
-#  ifndef AVRH
+#    endif
+#    ifndef AVRH
           lvar=lenstr(vname(2,indxKvO2))
           ierr=nf_put_att_text (ncid, vidKvO2, 'long_name', lvar,
      &                                  vname(2,indxKvO2)(1:lvar))
-#  else
+#    else
           text='averaged '/ /vname(2,indxKvO2)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidKvO2, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+#    endif
           lvar=lenstr(vname(3,indxKvO2))
           ierr=nf_put_att_text (ncid, vidKvO2, 'units',     lvar,
      &                                  vname(3,indxKvO2)(1:lvar))
@@ -1612,19 +1612,19 @@
           lvar=lenstr(vname(1,indxO2sat))
           ierr=nf_def_var (ncid, vname(1,indxO2sat)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidO2sat)
-#ifdef NC4PAR
+#    ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidO2sat,nf_collective)
-#endif
-#  ifndef AVRH
+#    endif
+#    ifndef AVRH
           lvar=lenstr(vname(2,indxO2sat))
           ierr=nf_put_att_text (ncid, vidO2sat, 'long_name', lvar,
      &                                  vname(2,indxO2sat)(1:lvar))
-#  else
+#    else
           text='averaged '/ /vname(2,indxO2sat)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidO2sat, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+#    endif
           lvar=lenstr(vname(3,indxO2sat))
           ierr=nf_put_att_text (ncid, vidO2sat, 'units',     lvar,
      &                                  vname(3,indxO2sat)(1:lvar))
@@ -1656,9 +1656,9 @@
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
      &                             NF_FOUT, 4, b3dgrd, vidSed(itrc))
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
           ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
@@ -1691,9 +1691,9 @@
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidSed(itrc))
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
           ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
@@ -1730,9 +1730,9 @@
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidBBL(itrc))
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidBBL(itrc),nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
           ierr=nf_put_att_text (ncid, vidBBL(itrc), 'long_name', lvar,
@@ -1760,9 +1760,9 @@
         lvar=lenstr(vname(1,indxSST_skin))
         ierr=nf_def_var (ncid, vname(1,indxSST_skin)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidSST_skin)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSST_skin,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
         lvar=lenstr(vname(2,indxSST_skin))
         ierr=nf_put_att_text (ncid, vidSST_skin, 'long_name', lvar,
@@ -1800,9 +1800,9 @@
             lvar=lenstr(vname(1,indxHRM+iwkb-1))
             ierr=nf_def_var (ncid, vname(1,indxHRM+iwkb-1)(1:lvar), 
      &                            NF_FOUT, 3, r2dgrd, vidWAVE(iwkb))
-#ifdef NC4PAR
+# ifdef NC4PAR
             ierr=nf_var_par_access(ncid,vidWAVE(iwkb),nf_collective)
-#endif
+# endif
 # ifdef AVRH
             text='averaged '/ /vname(2,indxHRM+iwkb-1)
 # else
@@ -1829,20 +1829,20 @@
           lvar=lenstr(vname(1,indxSUP))
           ierr=nf_def_var (ncid, vname(1,indxSUP)(1:lvar), NF_FOUT,
      &                                           3, r2dgrd, vidSUP)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSUP,nf_collective)
-#endif
+# endif
 
-#  ifndef AVRH
+# ifndef AVRH
           lvar=lenstr(vname(2,indxSUP))
           ierr=nf_put_att_text (ncid, vidSUP, 'long_name', lvar,
      &                                  vname(2,indxSUP)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxSUP)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidSUP, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxSUP))
           ierr=nf_put_att_text (ncid, vidSUP, 'units',     lvar,
      &                                 vname(3,indxSUP)(1:lvar))
@@ -1854,19 +1854,19 @@
           lvar=lenstr(vname(1,indxUST2D))
           ierr=nf_def_var (ncid, vname(1,indxUST2D)(1:lvar), NF_FOUT,
      &                                           3, u2dgrd, vidUST2D)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUST2D,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxUST2D))
           ierr=nf_put_att_text (ncid, vidUST2D, 'long_name', lvar,
      &                                  vname(2,indxUST2D)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxUST2D)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidUST2D, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxUST2D))
           ierr=nf_put_att_text (ncid, vidUST2D, 'units',     lvar,
      &                                 vname(3,indxUST2D)(1:lvar))
@@ -1876,19 +1876,19 @@
           lvar=lenstr(vname(1,indxVST2D))
           ierr=nf_def_var (ncid, vname(1,indxVST2D)(1:lvar), NF_FOUT,
      &                                           3, v2dgrd, vidVST2D)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVST2D,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxVST2D))
           ierr=nf_put_att_text (ncid, vidVST2D, 'long_name', lvar,
      &                                  vname(2,indxVST2D)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxVST2D)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidVST2D, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxVST2D))
           ierr=nf_put_att_text (ncid, vidVST2D, 'units',     lvar,
      &                                  vname(3,indxVST2D)(1:lvar))
@@ -1901,9 +1901,9 @@
           lvar=lenstr(vname(1,indxUST))
           ierr=nf_def_var (ncid, vname(1,indxUST)(1:lvar), NF_FOUT,
      &                                           4, u3dgrd, vidUST)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUST,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxUST))
           ierr=nf_put_att_text (ncid, vidUST, 'long_name', lvar,
@@ -1923,9 +1923,9 @@
           lvar=lenstr(vname(1,indxVST))
           ierr=nf_def_var (ncid, vname(1,indxVST)(1:lvar), NF_FOUT,
      &                                           4, v3dgrd, vidVST)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVST,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxVST))
           ierr=nf_put_att_text (ncid, vidVST, 'long_name', lvar,
@@ -1947,9 +1947,9 @@
           lvar=lenstr(vname(1,indxWST))
           ierr=nf_def_var (ncid, vname(1,indxWST)(1:lvar), NF_FOUT,
      &                                           4, r3dgrd, vidWST)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidWST,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWST))
           ierr=nf_put_att_text (ncid, vidWST, 'long_name', lvar,
@@ -1972,9 +1972,9 @@
           lvar=lenstr(vname(1,indxAkb))
           ierr=nf_def_var (ncid, vname(1,indxAkb)(1:lvar), NF_FOUT,
      &                                           4, w3dgrd, vidAkb)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkb,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxAkb))
           ierr=nf_put_att_text (ncid, vidAkb, 'long_name', lvar,
@@ -1996,9 +1996,9 @@
           lvar=lenstr(vname(1,indxAkw))
           ierr=nf_def_var (ncid, vname(1,indxAkw)(1:lvar), NF_FOUT,
      &                                           4, w3dgrd, vidAkw)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkw,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxAkw))
           ierr=nf_put_att_text (ncid, vidAkw, 'long_name', lvar,
@@ -2020,9 +2020,9 @@
           lvar=lenstr(vname(1,indxKVF))
           ierr=nf_def_var (ncid, vname(1,indxKVF)(1:lvar), NF_FOUT,
      &                                           4, r3dgrd, vidKVF)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidKVF,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxKVF))
           ierr=nf_put_att_text (ncid, vidKVF, 'long_name', lvar,
@@ -2044,9 +2044,9 @@
           lvar=lenstr(vname(1,indxCALP))
           ierr=nf_def_var (ncid, vname(1,indxCALP)(1:lvar), NF_FOUT,
      &                                           3, r2dgrd, vidCALP)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidCALP,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxCALP))
           ierr=nf_put_att_text (ncid, vidCALP, 'long_name', lvar,
@@ -2068,9 +2068,9 @@
           lvar=lenstr(vname(1,indxKAPS))
           ierr=nf_def_var (ncid, vname(1,indxKAPS)(1:lvar), NF_FOUT,
      &                                           3, r2dgrd, vidKAPS)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidKAPS,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxKAPS))
           ierr=nf_put_att_text (ncid, vidKAPS, 'long_name', lvar,
@@ -2789,7 +2789,7 @@
 !
 ! wst: vertical Stokes drift velocity (m/s) at rho-point
 !
-        if (wrthis(indxWST)) then
+        if (wrt(indxWST)) then
           lvar=lenstr(vname(1,indxWST))
           ierr=nf_inq_varid (ncid, vname(1,indxWST)(1:lvar), vidWST)
           if (ierr .ne. nf_noerr) then
