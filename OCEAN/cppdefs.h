@@ -17,6 +17,7 @@
 #undef  CANYON          /* Canyon Example */
 #undef  EQUATOR         /* Equator Example  */
 #undef  INNERSHELF      /* Inner Shelf Example */
+#undef  SINGLE_COLUMN   /*  1DV vertical Example */
 #undef  RIVER           /* River run-off Example */
 #undef  OVERFLOW        /* Graviational/Overflow Example */
 #undef  SEAMOUNT        /* Seamount Example */
@@ -480,6 +481,37 @@
 #  endif
 # endif
 # define NO_FRCFILE
+
+#elif defined SINGLE_COLUMN
+/*
+!                       Single Column Example
+!                       ====== ====== =======
+!
+!                              Seven  sets up are encompassed :
+*/
+# define KATO_PHILIPS          /* erosion of a linear stratification by a constant surface wind stress */
+# undef WILLIS_DEARDORFF       /* erosion of a linear stratification by a constant loss of surface buoyancy */
+# undef DIURNAL_CYCLE          /* erosion of a linear stratification by a constant loss of surface buoyancy */
+# undef FORCED_EKBBL           /* forced Ekman bottom boundary layer */
+# undef FORCED_DBLEEK          /* forced Ekman bottom and surface boundary layers */
+# undef FORCED_NONROTBBL       /* non rotating forced bottom boundary layer : Prandt layer  */
+# undef FORCED_OSCNONROTBBL    /* non rotating oscillatory forced bottom boundary layer  */
+# undef  OPENMP
+# undef  MPI
+# define UV_ADV
+# define NEW_S_COORD
+# define UV_COR
+# define SOLVE3D
+# undef  LMD_MIXING
+# define GLS_MIXING
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define EW_PERIODIC
+# define NS_PERIODIC
 
 #elif defined INTERNAL
 /*
