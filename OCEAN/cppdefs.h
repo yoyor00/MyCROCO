@@ -17,7 +17,7 @@
 #undef  CANYON          /* Canyon Example */
 #undef  EQUATOR         /* Equator Example  */
 #undef  INNERSHELF      /* Inner Shelf Example */
-#undef  SINGLE_COLUMN   /*  1DV vertical Example */
+#undef  SINGLE_COLUMN   /* 1DV vertical Example */
 #undef  RIVER           /* River run-off Example */
 #undef  OVERFLOW        /* Graviational/Overflow Example */
 #undef  SEAMOUNT        /* Seamount Example */
