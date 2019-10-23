@@ -7,10 +7,12 @@ http://forge.ipsl.jussieu.fr/ioserver/wiki/documentation
 
 or follow these few steps ...
 
+Note : since croco v1.1, CROCO is using XIOS 2.0 and above. There is no backward compatibility with XIOS 1.0 used in CROCO v1.0. Especially the xml files need to be updated.
+
 Install XIOS
 ============
 
-svn co -r 7012 http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/branchs/xios-1.0 XIOS
+svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/trunk XIOS
 
 1- Install NECTD4 (including netcdf-c and netcdf-fortran) if not done before 
 
