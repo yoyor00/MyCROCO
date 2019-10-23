@@ -33,11 +33,11 @@ Go to Run directory
 Define CPP key XIOS in cppdefs.h
 
 run jobcomp script
-	--> jobcomp compiles ROMS linked with XIOS libraries 
+	--> jobcomp compiles CROCO linked with XIOS libraries
 				(if XIOS defined in cppdefs.h)
-		    compiles ROMS-XIOS interface 
-				(routines in Roms_Agrif/XIOS)
-		    copies XIOS executable in Run directory 
+		    compiles CROCO-XIOS interface
+				(routines in croco/XIOS)
+		    copies XIOS executable in Run directory
 
 Run ROMS and XIOS
 ==================
