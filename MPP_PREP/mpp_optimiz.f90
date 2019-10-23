@@ -42,9 +42,7 @@ PROGRAM mpp_optimiz_nc
          eta_rho ,    & !: J-size of the model (namelist)
          Npts    =  2,    & !: number of ghost cells
          numnam  =  4       !: logical unit for the namelist
-    LOGICAL :: OBC_NORTH, OBC_SOUTH, OBC_EAST, OBC_WEST    
-    NAMELIST /namspace/ jpk, Npts,   &
-            OBC_NORTH, OBC_SOUTH, OBC_EAST, OBC_WEST
+    NAMELIST /namspace/ jpk, Npts
     NAMELIST /namproc/ jprocx, jpmem
 
     INTEGER ::  jpnix ,jpnjx  
