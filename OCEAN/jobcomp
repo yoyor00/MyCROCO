@@ -92,31 +92,33 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 #
 # copy SOURCE code
 #
-/bin/cp -f ${SOURCE}/*.F90 $SCRDIR
-/bin/cp -f ${SOURCE}/*.F   $SCRDIR
-/bin/cp -f ${SOURCE}/*.h   $SCRDIR
-/bin/cp -f ${SOURCE}/Make* $SCRDIR
-/bin/cp -f ${SOURCE}/testkeys.F $SCRDIR
-/bin/cp -f ${SOURCE}/jobcomp $SCRDIR
-/bin/cp -f ${SOURCE}/amr.in $SCRDIR
-/bin/cp -RLf ${AGRIF_SRC} $SCRDIR
-/bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+
+ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
+ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
+ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
+ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
+ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
+ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
+ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
+ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        /bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+        \cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
 fi
 #
 # overwrite with local files
 #
-/bin/cp -f *.F90 $SCRDIR
-/bin/cp -f *.F $SCRDIR
-/bin/cp -f *.h $SCRDIR
-/bin/cp -f Make* $SCRDIR
-/bin/cp -f jobcomp $SCRDIR
+
+ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
+ls *.F9    > /dev/null  2>&1 && \cp -f *.F $SCRDIR
+ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
+ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
+ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 
 # Change directory
 #
