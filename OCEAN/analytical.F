@@ -1916,7 +1916,11 @@ C$    integer  trd, omp_get_thread_num
 !
 ! Set-up river ramp to avoid strong initial shocks
 !
+# ifdef RIVER_RAMP
       ramp=TANH(dt*sec2day*float(iic-ntstart)) ! 1-day ramp
+# else
+      ramp=1.0                                 ! no ramp (by default)
+# endif
       do is=1,Nsrc
         Qbar(is)=ramp*Qbar0(is)
       enddo

@@ -596,10 +596,12 @@
 */
 #if defined PSOURCE
 #  define ANA_PSOURCE  /* ON: set vertical profil for qbar */
+#  undef RIVER_RAMP
 #endif
 #if defined PSOURCE_NCFILE
 # define PSOURCE
 # define ANA_PSOURCE
+# undef RIVER_RAMP
 #endif
 
 /*
