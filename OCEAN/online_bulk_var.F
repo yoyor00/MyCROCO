@@ -158,7 +158,7 @@
 # endif
 
 
-#  elif ERA_ECMWF
+#  elif defined ERA_ECMWF
 
       ! Temperature_height_above_ground
       blk_vname(1,1)='T2M                                      '
