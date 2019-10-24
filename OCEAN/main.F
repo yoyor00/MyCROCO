@@ -278,7 +278,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       !calcul of start times and ntimes
 #ifdef ANA_INITIAL
       !if no init file set the start_date from croco.in
-      time=tool_datosec(run_start_date)
+      if (nrrec.eq.0) time=tool_datosec(run_start_date)
 #endif
       time_end=tool_datosec(run_end_date)
       ntimes=int((time_end-time)/dt)
