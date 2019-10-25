@@ -115,7 +115,7 @@ fi
 #
 
 ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
-ls *.F9    > /dev/null  2>&1 && \cp -f *.F $SCRDIR
+ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
 ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
