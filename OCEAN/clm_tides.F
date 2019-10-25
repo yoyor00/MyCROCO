@@ -113,9 +113,11 @@
          fr1(:,:)=0.0
          fr2(:,:)=0.0
          do i=1,tide_nbharmcp
+# ifdef TIDES_MAS_DBG
           if(j+jminmpi-1.eq.149) then 
              write(stdout,*) 'i=',nu(i),l_presence(nu(i))
           end if
+# endif
           if (l_presence(nu(i))) then
            nol=ide(nu(i))
            ir0=rr0(nu(i))
@@ -124,9 +126,11 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
+# ifdef TIDES_MAS_DBG
            if(j+jminmpi-1.eq.149) then 
              write(stdout,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
            end if
+# endif
            do l=1,2 
             rouest(nn,k,j,l)=SSH_Tamp(Istr+l-2,j,i)*100.0
             gouest(nn,k,j,l)=SSH_Tphase(Istr+l-2,j,i)
@@ -138,6 +142,7 @@
            end do
           endif
          end do
+# ifdef TIDES_MAS_DBG
         if(j+jminmpi-1.eq.149) then 
             do k=1,8
              write(stdout,*) 'k=',k,num(k)
@@ -146,6 +151,7 @@
                end do
             end do
         endif
+# endif
         end do
        ENDIF
 !

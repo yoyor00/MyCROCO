@@ -1,68 +1,86 @@
-CROCO v1.0
+CROCO v1.1
 -----------
-Released date : 26 June 2018
+Released date : 25 October 2019
 
-Previous release : ROMS_AGRIF v3.1.1 (July 2014)
+Previous release : CROCO v1.0 (June 2018)
 
-New in v1.0 :
+
+Reminders:
+==========
+CROCO sources and CROCO_TOOLS (the follow-on of ROMS_TOOLS) are now distributed separately (for croco_tools releases, see associated tab at  https://www.croco-ocean.org/download/croco-project/ ). ROMS_AGRIF  is not maintained anymore and we strongly encourage ROMS_AGRIF users to switch  to CROCO. CROCO version available directly from the git repository is a unstable development  version. Standard users should use the stable one downloaded from the web site. 
+ 
+New in v1.1 :
 =============
-CROCO sources and CROCO_TOOLS (the follow-on of ROMS_TOOLS) are now distributed separately (for croco_tools releases, see associated tab at  https://www.croco-ocean.org/download/croco-project/ ).  
 
-CROCO has now a new architecture tree. The OCEAN directory contains the sources. 
+- architecture : slight changes
+	- CROCO doesn't come with a default Run directory anymore, first step as a user will be to edit the script create_run.bash to create your own
+	- as a consequence default TEST_CASES are now stored in croco/TEST_CASES and the scipts for running under croco/SCRIPTS
 
-New in CROCO v1.0 (associated cppkey names and dedicated configuration in cppdefs.h are presented):
+- parallelisation : in MPI (not OPENMP), CROCO has now the capacity to avoid compuation on land only processors. A pre-processing step is required. The corresponding tool is located under croco/MPP_PREP : the namelist has to be filled ith the maximum number of CPUs available, then compile and execute the code. It returns the optimal parameters for NP_XI, NP_ETA and NNODES.
+# define MPI
+# define MPI_NOLAND   (default undef)
 
-- Non-hydrostatic kernel: a (3D) non-Boussinesq “fast-mode” is available.  
-#define NBQ 
-Dedicated configurations : #define TANK, ACOUSTIC, GRAV_ADJ (NBQ), KH_INST, S2DV, MILES
-croco.in: set CSOUND_NBQ (sound speed) to a minimum of 5 times the max external gravity wave phase speed (sqrt(gh)). Max is real sound speed of 1500 m/s. Lower sound speed allows larger time steps.
-cppdefs.h: choice of the full scheme (NBQ_PRECISE) or for faster integration a simplified one (NBQ_PERF). In this case, the vertical grid and some non-dominant terms of the fast mode equations are only updated at the internal (slow) step. NBQ_PERF is the default option and is recommended for submesoscale applications (>10m resolution), while NBQ_PRECISE should be used for LES applications (e.g., KH_INST)
-cppdefs.h: choice of advection scheme for vertical velocity w includes TVD and WENO (see below); default choice is W_HADV_C4 and W_VADV_SPLINES for horizontal and vertical advection respectively (see cppdefs_dev.h for default choices).
-AGRIF nesting (1-WAY for now) is possible with NBQ and for NBQ integration in child grid only: #define NBQ_CHILD_ONLY
+- outputs : NetCDF4 parallel cpabilities are available. When running with MPI activated, writing in a single file (without PARALLEL_FILES) is faster
+# define MPI
+# define NC4PAR   (default undef)
+            XIOS has been updated to XIOS2.5. A sample of the new xml files are available in croco/XIOS. There is no backward compatibility with XIOS1. See https://forge.ipsl.jussieu.fr/ioserver/wiki/documentation 
+# define MPI
+# define XIOS   (default undef)
 
-- Updated Ocean-Wave-Atmosphere coupling using the generic coupler OASIS3-MCT  
-#define OA_COUPLING and/or #define OW_COUPLING
-See specific documentation for coupling in the Documentation section of our website ; https://www.croco-ocean.org/documentation/  ; dedicated Coupling_tools are also available in croco_tools
+- diagnostics : several trends computation added. Each of them has its corresponding section in croco.in.
+                vorticity : 
+# define  DIAGNOSTICS_VRT
+                eddy kinetic energy :
+# define  DIAGNOSTICS_EK
+                potential vorticity  
+# define  DIAGNOSTICS_PV
 
-- Updated Wave-Current interactions (McWilliams et al., JFM 2004)  
-#define MRL_WCI 
-Dedicated configuration : SHOREFACE
+- grid : possibility of refining locally the resolution of meshes to take into account section reduction (example : schematic river canal in a realistic configuration : keep realistic sections based on a 500m meshgrid size)
+# define REDUC_SECTION  (default undef)
 
-- Built-in wave propagation model (WKB) for nearshore applications 
-#define WKB_WAVE
+- bottom friction : Spatialisation of Z0 coefficient
+# define Z0B_VAR   (default undef)
+					Use sub time steps for computation of botoom friction. In this case, bottom friction is applied in step3d_fast routine
+# default BSTRESS_FAST  (default depends on the configurations) 
 
-- Updates in sediments modules based on Warner et al. (2008): bedload transport, hydro-morphodynamics coupling and morphological acceleration factor 
-#define SEDIMENT and associated cppkeys
-Dedicated configuration :  FLUME, RIP
+- functional : Use of calendar to define start and end date : The user can choose the beginning and the end of the simulation in croco.in , then the number of time steps will be calculated. Also print the date at each time step in screen log.
+# define USE_CALENDAR   (default undef)
+with in croco.in the additional lines
+  run_start_date:
+    01/04/2015 00:00:00
+  run_end_date:
+    12/04/2015 00:00:00
 
-- Additional IO module (XIOS) providing more flexibility and better performances for HPC 
-# define XIOS
+- atmospheric forcing : Manage MeteoFrance inputs (Arome/Arpege) for online atmospheric reading and interpolation
+# define AROME        (default undef)
+						Read atmospherical pressure from meteo file and use it in bulk flux and take into account atmospherical pressure gradient in the equations
+# define READ_PATM	  (default undef)
+						Current feedback added in bulk and forcing cases. Three  possibilities: feedback on the stress (CFB_STRESS, default) using a coefficient based on the wind speed, or based on the wind stress (CFB_STRESS2), or feedback on the wind speed (CFB_WIND, less physical)
+# define SMFLUX_CFB (default undef)
 
-- Choice of monotonic horizontal and vertical advection schemes for all variables (WENO5 &  TVD)
-WENO5:  #define UV_HADV_ADV ;  UV_VADV_TVD ; W_HADV_TVD ;  W_VADV_TVD ; TS_VADV_WENO5 ; TS_HADV_WENO5
-TVD:  # define UV_HADV_TVD ; UV_VADV_TVD ; W_HADV_TVD ; W_VADV_TVD
+- ocean/wave coupling : add wave average outputs. Add wave-to-ocean stress accounting for wave model bulk
 
-- Semi-implicit vertical advection for avoiding CFL limitation associated with “hot spots” (Shchepetkin, OM 2015) 
-# define  VADV_ADAPT_IMP 
-GLS turbulent closure sub-model (in addition to KPP)  
-# define GLS_MIXING_2017 
+- tides : Introduction of a new method for harmonic composition : use of Simon (SHOM) method to build tide elevation from harmonic constituents.
+# define TIDES_MAS    (default undef)
 
-- Wave‐induced (non breaking) vertical mixing in KPP modified according to Wang et al. (JGR 2010) based on Qiao et al (JPO 2004)  
-# define WAVE_NONBRK_VMIX_QIAO in mrl_wci.F
+- open boudaries : reduced-form equation for barotropic velocities at boundary conditions in case of velocity tides are not available (not defined UV_TIDES). It's also useful for test cases to only force the model with an analytical sea surface elevation (for example a M2 tide). In both cases it replaces M2_FRC_BRY (and this cpp key should be set to False to avoid confusion) and it works with M2FLATHER and M2CHARACT obc conditions. This development comes from Roms-Rutgers source code.
+This option has been tested in a tidal flat test case for each open boundary condition (north, south, west and east)
+# define OBC_REDUCED_PHYSICS (default undef)
+					OBC_M2FLATHER has been suppressed. Use OBS_M2CHARACT instead
 
-- Basic 3D Smagorinsky model for LES-type applications   
-# define UV_VIS_SMAGO_3D (with NBQ)
+- vertical mixing : GLS scheme has been rewritten. GLS_MIX2017 cpp key as been suppress
+#define GLS  (default depends on the configurations, if activated KEPSILON model and  CANUTO stability function by default)
+Dedicated configuration : SINGLE_COLUMN, a 1D vertical model with several subsettings to test.
 
-- Built-in diffusion in barotropic time stepping as an alternative to fast mode filtering (used in NBQ applications)  
-# define M2FILTER_NONE
+- test cases : addtion or renaming
+I_SOLITON : was previously GRAV_ADJ with GRAV_ADJ_SOLITON activated
+FLUME : now SANDBAR
+TS_HADV_TEST : new case to test horizontal advection for tracers
 
-- Updated PISCES version (Aumont et Bopp, GBC 2006)  
-# define PISCES 
 
-- New vertical coordinate (not dependent on minimum depth), by default,  suited for decreasing pressure gradient errors in the thermocline above steep topography (Shchepetkin and McWilliams, 2009)
- # define NEW_S_COORD
 
-- Dedicated log output file croco.log 
-# define LOGFILE
-
-ROMS_AGRIF  is not maintained anymore and we strongly encourage ROMS_AGRIF users to switch  to CROCO. 
+ _   _                      __                 _
+| | | | __ ___   _____     / _|_   _ _ __     | |
+| |_| |/ _` \ \ / / _ \   | |_| | | | '_ \    | |
+|  _  | (_| |\ V /  __/   |  _| |_| | | | |   |_|
+|_| |_|\__,_| \_/ \___|   |_|  \__,_|_| |_|   (_)

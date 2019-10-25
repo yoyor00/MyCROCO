@@ -37,7 +37,7 @@ close all
 
 fname='internal_his.nc';
 
-make_pdf=0;
+makepdf=0;
 %======================================================================
 %
 % Read data
