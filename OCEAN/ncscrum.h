@@ -837,9 +837,12 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
+#ifdef GLS_MIXING
+      integer rstTke,rstGls
+#endif
 # ifdef SEDIMENT
       integer rstSed(NST+2)
-# endif	
+#endif
 #endif
 #ifdef BBL
       integer rstBBL(2)
@@ -1268,6 +1271,9 @@
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
+#ifdef GLS_MIXING
+     &      , rstTke,rstGls
+#endif
 # ifdef SEDIMENT
      &                         , rstSed
 # endif
