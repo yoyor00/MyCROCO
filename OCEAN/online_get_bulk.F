@@ -105,7 +105,7 @@
 !
           lvar=lenstr(bulkfilename(blkvar_id))
           if (blkvar_id .eq. 1) then 
-           MPI_master_only write(stdout,*),'Open Meteo file :',
+           MPI_master_only write(stdout,*) 'Open Meteo file :',
      &              bulkfilename(blkvar_id)(1:lvar)
           endif
           ierr=nf_open(bulkfilename(blkvar_id)(1:lvar), nf_nowrite, 
