@@ -165,6 +165,93 @@
       !      
       END SUBROUTINE set_grid
 
+#ifdef MASKING
+      SUBROUTINE set_mask(cdgrd)
+# include "param.h"
+# include "ncscrum.h"
+# include "scalars.h"
+# include "grid.h"
+      !!----------------------------------------------------------------------
+      !!                     ***  ROUTINE set_mask  ***
+      !!
+      !! ** Purpose :   set mask in domain definition to XIOS library
+      !!
+      !! ** Method  :   
+      !!
+      !! ** History :   S. Petton   , adapt from set_grid
+      !!                S. Theetten , adaptation for XIOS-2.5 (May, 2019)
+      !!                A. Ponte    , adaptation for CROCO
+      !!                S. Masson   , original version (NEMO)  
+      !!
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*)            , INTENT(in) ::   cdgrd
+      LOGICAL zmask(GLOBAL_2D_ARRAY)
+      !
+      INTEGER vtype, horiz_type, vert_type
+      INTEGER imin, imax, jmin, jmax, ni, nj
+      !!----------------------------------------------------------------------
+      !
+      zmask(:,:) = .false.
+      SELECT CASE (TRIM(cdgrd))
+      CASE ("rho")
+         vtype=r2dvar
+         where(rmask(:,:) > 0) zmask(:,:) = .true.
+      CASE ("b")
+         vtype=r2dvar
+         where(rmask(:,:) > 0) zmask(:,:) = .true.
+      CASE ("u")
+         vtype=u2dvar
+         where(umask(:,:) > 0) zmask(:,:) = .true.
+      CASE ("v")
+         vtype=v2dvar
+         where(vmask(:,:) > 0) zmask(:,:) = .true.
+      CASE ("w")
+         vtype=r2dvar
+         where(rmask(:,:) > 0) zmask(:,:) = .true.
+      CASE ("psi")
+         vtype=p2dvar
+         where(pmask(:,:) > 0) zmask(:,:) = .true.
+      END SELECT
+
+      ! From nf_fread.F
+      vert_type=vtype/4            ! vertical and horizontal
+      horiz_type=vtype-4*vert_type ! grid types, then calculate
+      jmin=horiz_type/2            ! starting indices indices
+      imin=horiz_type-2*jmin       ! in horizontal directions.
+
+# ifdef MPI
+      IF (ii.gt.0) then
+         imin=1
+      ENDIF
+      IF (ii.eq.NP_XI-1) then
+         imax=Lmmpi+1
+      ELSE
+         imax=Lmmpi
+      ENDIF
+      IF (jj.gt.0) then
+         jmin=1
+      ENDIF
+      IF (jj.eq.NP_ETA-1) then
+         jmax=Mmmpi+1
+      ELSE
+         jmax=Mmmpi
+      ENDIF
+# else
+      imin=1
+      imax=Lm+1
+      jmin=1
+      jmax=Mm+1
+# endif
+
+      ! there is probably already a variable for ni and nj 
+      ni=imax-imin+1
+      nj=jmax-jmin+1
+
+      CALL iom_set_domain_attr(TRIM(cdgrd),
+     &     mask=RESHAPE(zmask(imin:imax,jmin:jmax), (/ni*nj/)))
+      
+      END SUBROUTINE set_mask
+#endif
 
       SUBROUTINE iom_set_domain_attr( cdid, ni_glo, nj_glo, ibegin, jbegin,
      & ni, nj, zoom_ibegin, zoom_jbegin, zoom_ni, zoom_nj,
@@ -1129,6 +1216,8 @@ C 				  endif
        READ(start_date(4:5),fmt='(i2)') imonth
        READ(start_date(7:10),fmt='(i4)') iyear
        CALL ymds2ju( iyear, imonth,iday, 0., jday0 )  
+# elif defined USE_CALENDAR
+       CALL ymds2ju(1900, 1, 1, 0., jday0 )  
 # else
        CALL ymds2ju( 1, 1, 1, 0., jday0 )  
 # endif
@@ -1297,7 +1386,7 @@ C 				  endif
       ENDIF
 
       IF( llfull ) THEN
-         clfmt = TRIM(clfmt)//",'_',i2.2,':',i2.2,':',i2.2"
+         clfmt = TRIM(clfmt)//",'_',3i2.2"
          ihour   = isec / 3600
          isec    = MOD(isec, 3600)
          iminute = isec / 60
@@ -1631,7 +1720,11 @@ C 				  endif
       CHARACTER(len=19) :: cldate
       CHARACTER(len=10) :: clname
       CHARACTER(len=10) :: cdname
-      INTEGER iday,imonth,iyear
+      INTEGER iday,imonth,iyear,ihour,iminute,isec
+#ifdef USE_CALENDAR
+      CHARACTER (len=19)    :: tool_sectodat
+#endif
+
       !!---------------------------------------------------------------------
       !  
 # include "compute_auxiliary_bounds.h"
@@ -1676,21 +1769,29 @@ C 				  endif
       READ(start_date(1:2),fmt='(i2)') iday
       READ(start_date(4:5),fmt='(i2)') imonth
       READ(start_date(7:10),fmt='(i4)') iyear
+      ihour=0
+      iminute=0
+      isec=0
+# elif defined USE_CALENDAR
+      cldate = tool_sectodat(time)
+      CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
 # else
       iday=1
       imonth=1       
       iyear=1
+      ihour=0
+      iminute=0
+      isec=0
 # endif
-      WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')") 
-     & iyear,imonth,iday
 # if ! defined XIOS2
+      WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')")
+     & iyear,imonth,iday
       CALL xios_set_context_attr(TRIM(clname), 
      &        start_date=cldate )
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-     &           start_date = xios_date(iyear,imonth,iday,0,0,0),
-     & time_origin = xios_date(1979,01,01,00,00,00) )
-
+     & time_origin = xios_date(1979,01,01,00,00,00),
+     & start_date = xios_date(iyear,imonth,iday,ihour,iminute,isec))
 #endif
       ! horizontal grid definition
       CALL set_scalar
@@ -1709,6 +1810,15 @@ C 				  endif
       CALL set_grid( "v", xr, yp )
       CALL set_grid( "w", xr, yr )
       CALL set_grid( "psi", xp, yp )
+# endif
+
+# ifdef MASKING
+      CALL set_mask("rho")
+      CALL set_mask("b")
+      CALL set_mask("u")
+      CALL set_mask("v")
+      CALL set_mask("w")
+      CALL set_mask("psi")
 # endif
  
       ! vertical grid definition

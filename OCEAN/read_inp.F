@@ -2515,8 +2515,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           MPI_master_only write(stdout,'(1pe10.3,2x,A)')
      &    Qbar(is), 'Total transport at point source'
 #  ifdef MPI
-          write(*,*)'Isrc(is)=',Isrc(is)
-          write(*,*)'Jsrc(is)=',Jsrc(is)
+          MPI_master_only write(*,*)'Isrc(is)=',Isrc(is)
+          MPI_master_only write(*,*)'Jsrc(is)=',Jsrc(is)
           if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
      &        jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
            Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
