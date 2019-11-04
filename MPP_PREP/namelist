@@ -12,10 +12,6 @@
 &NAMSPACE
     jpk =30
     Npts = 2
-    OBC_NORTH = .TRUE.
-    OBC_SOUTH = .FALSE.
-    OBC_EAST  = .FALSE.
-    OBC_WEST  = .TRUE.
 /
 !'''''''''''''''''''''''''''''''''''''
 !      namproc
@@ -51,5 +47,5 @@
 ! Complete name will be {covdta}.{NP_XI}x{NP_ETA}_{NPP}
 &NAMFILE
      cbathy='croco_grd.nc'
-     covdta = 'seine100m'
+     covdta = 'benguela'
 /

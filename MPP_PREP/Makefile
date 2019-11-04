@@ -1,9 +1,9 @@
-NETCDF_ROOT=$(NETCDF_DIR)
+NETCDF_ROOT=/usr/local
 NETCDF_INC=$(NETCDF_ROOT)/include
 NETCDF_LIB=$(NETCDF_ROOT)/lib -lnetcdf -lnetcdff
 #
-F90=ifort
-F90FLAGS= -O0 -C -debug -Wunused -traceback -w
+F90=gfortran
+F90FLAGS= -O3 -fdefault-real-8
 LDFLAGS= 
 #
 SRCS = $(patsubst %.f90, %.o, $(wildcard *.f90))

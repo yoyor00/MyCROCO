@@ -13,7 +13,7 @@ import sys
 #myncfile='croco_grd.nc'
 
 if len(sys.argv) != 3:
-	print "Usage : mpp_plot.py GRID_FILE COVDTA_FILE"
+	print ("Usage : mpp_plot.py GRID_FILE COVDTA_FILE")
 	sys.exit (1)
 
 myncfile=sys.argv[1]

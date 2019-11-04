@@ -165,8 +165,6 @@
       external :: qdmvinterp   
   
 # ifdef MPI
-#  include "mpi_cpl.h"
-       include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -293,12 +291,7 @@
       integer  :: irhot,irhox,irhoy
       real     :: rrhot,cffx,cffy
       external :: qdmwinterp   
-!          
-# include "compute_auxiliary_bounds.h"
-!
 # ifdef MPI
-# include "mpi_cpl.h"
-       include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -306,6 +299,10 @@
 #  define LOCALMM Mm
 # endif   
 !          
+!          
+# include "compute_auxiliary_bounds.h"
+!
+
       irhot=Agrif_Irhot()
       irhox=Agrif_Irhox()
       irhoy=Agrif_Irhoy()
@@ -767,8 +764,6 @@
       external :: rhointerp   
 !
 # ifdef MPI
-#  include "mpi_cpl.h"
-      include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
