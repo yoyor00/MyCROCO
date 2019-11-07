@@ -1,5 +1,7 @@
 c -*- fortran -*-
 
+c common includes for AD tools
+
 # include "cppdefs.h"
 # include "param.h"
 # include "grid.h"
@@ -18,4 +20,8 @@ c -*- fortran -*-
 # else
       include 'mpif.h'
 # endif
-# endif
+# else
+      integer mynode, nnodes
+      parameter (mynode=0)
+      parameter (nnodes=1)
+#endif

@@ -1,10 +1,5 @@
 C     -*- fortran -*-
-#ifndef MPI
-      integer mynode, nnodes
-      parameter (mynode=0)
-      parameter (nnodes=1)
-#endif
-
+      
 C     size of the optimization problem
       integer ad_array_size
 c      parameter (ad_array_size=900)
@@ -121,17 +116,17 @@ c     rms
       integer iic_bck
 
 C     commons
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
+      common /ad_backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
       common /ad/ ad_array_node_size
 
       common /ad_timings/ ad_dir_time,ad_adj_time
 
-      common /colloc_id/ ad_colloc,ad_node_colloc
-      common /collocation_coords/ ncpoints,ncpoints_f,ad_i,ad_j,
+      common /ad_colloc_id/ ad_colloc,ad_node_colloc
+      common /ad_collocation_coords/ ncpoints,ncpoints_f,ad_i,ad_j,
      &     ad_latr_f,ad_lonr_f,ad_h_f,ad_cpoint_node,ad_cpoint_id
-      common /weighted_coefs/ W,SkW
-      common /obs_data/ ad_obs
-      common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,
+      common /ad_weighted_coefs/ W,SkW
+      common /ad_obs_data/ ad_obs
+      common /ad_state_info/ sim_iicroot,ad_counter,ad_cost_counter,
      &     ad_cost,ad_rms,ad_ta

@@ -5,11 +5,7 @@ c     this file is not differentiated
       subroutine read_obs()
       implicit none
 # include "netcdf.inc"
-# include "cppdefs.h"
-# include "param.h"
-# include "scalars.h"
-# include "ncscrum.h"
-# include "ocean2d.h"
+# include "adinc.h"
 # include "adparam.h"
 
       character*(*) FILE_NAME

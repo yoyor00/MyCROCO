@@ -63,8 +63,8 @@
 # undef  OPENMP
 # undef RVTK_DEBUG
 # undef RVTK_DEBUG_ADVANCED
-#define MPI
-#define AMPI
+# define MPI
+# define AMPI
   /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY

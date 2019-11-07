@@ -16,7 +16,7 @@
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
 
-C$AD BINOMIAL-CKP ad_nt*ad_ns+1 80 1
+C$AD BINOMIAL-CKP ad_nt*ad_ns+1 1 1
       do ta=1,ad_nt*ad_ns
          call step()
          if (mod(ta,ad_ns).eq.0) then
@@ -186,7 +186,6 @@ c$$$     &                 ad_obs(i,j,ta-2)
 
       integer Istr,Iend,Jstr,Jend, i,j,k,cpoint
       double precision lzob
-      double precision control_to_param
       character*6 counter_str
 
       double precision zobmin,zobmax
@@ -211,37 +210,6 @@ c$$$     &                 ad_obs(i,j,ta-2)
          end do
       end do
                
-            
-c            k=ad_colloc(i,j)
-c            if (k.lt.1.or.k.gt.ad_array_size) then
-c               write (*,*) 'AD BIG PROBLEM k=',k
-c               stop
-c     endif
-c            if (ad_obs(i,j,1).ne.spval) then
-c               zob(i,j)=0.0
-c               cpoint=ad_colloc(i,j)
-c               zob(i,j)=control_to_param(
-c     &              ad_x_f(cpoint))
-c               cpoint=0
-c               do k=1,npcpoints
-c                  if(ad_cpoint_node(k).eq.mynode) then
-c                     cpoint=cpoint+1
-c                     lzob=control_to_param(
-c     &                    ad_x_f(mynode*(ad_array_size/nnodes)+cpoint))
-c                     zob(i,j) = zob(i,j) + lzob*W(i,j,cpoint)/SkW(i,j)
-c                  endif
-c     write(*,*) '%%%%',mynode,k,ad_x_f(k),
-c     &                 lzob,zob(i,j)
-c               end do
-c            end if
-c         end do
-c      end do
-
-c      do k=1,ncpoints
-c         zob(ad_i(k), ad_j(k))=
-c     &        control_to_param(ad_x_f(mynode*(ad_array_size/nnodes)+k))
-c      end do
-
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
@@ -279,7 +247,6 @@ c      end do
 # include "adinc.h"
 # include "adparam.h"
 
-      double precision param_to_control
       integer ierr
       integer k
       
@@ -393,7 +360,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j,k
-      double precision param_to_control
       
       k=0
       do j=Jstr,Jend
@@ -414,35 +380,3 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       end subroutine init_local_arrays_2d_tile
 
 
-      double precision function control_to_param(y)
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-
-      double precision y
-
-      double precision a,b,c,d
-      parameter(a=0.0002,b=0.1,c=-1000000,d=1000000)
-c     (c,d) -> (a,b)
-      control_to_param = (-a*d + a*y + b*c - b*y)/(c - d)
-c      control_to_param = 1/(1+exp(y))
-
-      end function control_to_param
-
-      double precision function param_to_control(x)
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-
-      double precision x
-
-      double precision a,b,c,d
-      parameter(a=0.0002,b=0.1,c=-1000000,d=1000000)
-      
-c     (a,b) -> (c,d)
-      param_to_control = c+((d-c)*(x-a)/(b-a))
-      
-c      param_to_control = log(1./(x)  - 1.)
-c      param_to_control = 1/(a - x) + 1/(b - x)
-
-      end function param_to_control

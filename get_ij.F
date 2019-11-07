@@ -1,3 +1,6 @@
+c     -*- fortran -*-
+c     simple 2D dichotomy
+
       subroutine get_ij(lon,lat,i,j,out)
       implicit none
 # include "adinc.h"

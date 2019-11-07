@@ -1,9 +1,4 @@
 C     -*- fortran -*-
-#ifndef MPI
-      integer mynode, nnodes
-      parameter (mynode=0)
-      parameter (nnodes=1)
-#endif
 
 C     size of the optimization problem
       integer ad_array_size
