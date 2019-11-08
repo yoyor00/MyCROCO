@@ -39,6 +39,8 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define ANA_SSH
+# define ZCLIMATOLOGY
 
 # undef OBC_EAST
 # undef OBC_WEST

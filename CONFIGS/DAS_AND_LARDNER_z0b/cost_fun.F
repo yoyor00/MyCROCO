@@ -16,7 +16,7 @@
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
 
-C$AD BINOMIAL-CKP ad_nt*ad_ns+1 1 1
+C$AD BINOMIAL-CKP ad_nt*ad_ns+1 90 1
       do ta=1,ad_nt*ad_ns
          call step()
          if (mod(ta,ad_ns).eq.0) then
