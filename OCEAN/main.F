@@ -267,10 +267,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  Read from NetCDF file
 !
 #ifndef ANA_INITIAL
-      call get_initial               ! Set initial conditions
+#ifdef EXACT_RESTART
+      call get_initial (nrrec-1, 2) ! Set initial conditions
+#endif
+      call get_initial (nrrec, 1)   ! Set initial conditions
 #else
-      if (nrrec.ne.0) then           ! read from NetCDF file
-        call get_initial
+      if (nrrec.ne.0) then          ! read from NetCDF file
+        call get_initial (nrrec, 1)
       endif
 
 #endif

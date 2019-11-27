@@ -173,6 +173,9 @@
 #endif
       integer numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
+#ifdef EXACT_RESTART
+     &     ,  forw_start
+#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif
@@ -327,6 +330,9 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
+#ifdef EXACT_RESTART
+     &       , forw_start
+#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif

@@ -201,10 +201,22 @@
 # define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lm+Mm-2
 #endif
 
-/*
-  Define time indices logic
-*/
+
+/* Normally initial condition exists only as a single time record
+ at given time.  This requires the use of a two-time-level scheme
+ "forw_start" to start time stepping (in our case a RK2 --- forward
+ Euler + trapezoidal correction is used for the initial step). If
+ the run is interrupted and restarted from a single record, the use
+ of forward step causes differences between the results obtained by
+ a continuous run.  Macro EXACT_RESTART activates the option of
+ saving two consecutive time steps into restart file allowing exact
+ restart. */
+
+#ifdef EXACT_RESTART
+# define FIRST_TIME_STEP iic.eq.forw_start
+#else
 #define FIRST_TIME_STEP iic.eq.ntstart
+#endif   
 #ifdef SOLVE3D
 # define FIRST_2D_STEP iif.eq.1
 # define LAST_2D_STEP iif.eq.nfast
