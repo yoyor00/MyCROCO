@@ -33,7 +33,7 @@
 ! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
-      real dt, dtfast, time, time2, time_start, tdays
+      real dt, dtfast, time, time2, time_start, tdays , start_time
 #ifdef USE_CALENDAR
       real time_mars, time_end
       character*19 date, run_end_date, run_start_date
@@ -50,7 +50,8 @@
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
-     &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &     ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &     start_time , 
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif

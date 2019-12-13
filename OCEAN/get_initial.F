@@ -50,14 +50,14 @@
 #if defined SEDIMENT || defined BBL
      &      ,  indxWrk
 #endif
-      integer ncid, req_rec, tindx, record, max_rec, start_time,
+      integer ncid, req_rec, tindx, record, max_rec,
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
 #include "netcdf.inc"
-!#define time illegal
-!#define tdays illegal
-!#define nrrec illegal
+#define time illegal
+#define tdays illegal
+#define nrrec illegal
 
 !     
 ! Open initial conditions netCDF file for reading. Check that all
@@ -78,10 +78,13 @@
       if (ierr .eq. nf_noerr) then
         ierr=checkdims (ncid, ininame(1:lstr), lstr, max_rec)
         if (ierr. eq. nf_noerr) then
+          write(*,*) 'TTTTTTT'
+          write(*,*) ' max_rec=',max_rec
           if (max_rec.gt.0) then
             if (req_rec.gt.0) then
               if (req_rec.le.max_rec) then
                 record=req_rec
+                write(*,*) 'record=',record
               else
                 write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')
      &           '### ERROR: get_initial :: requested restart time ',
@@ -166,6 +169,8 @@
 !
       lvar=lenstr(vname(1,indxTime))
       ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
+      write(*,*)'vname(1,indxTime)(1:lvar)=', vname(1,indxTime)(1:lvar)
+      
 !! GC
 !! The following is done for backward compatibility: normally time
 !! variable is named "ocean_time", but legacy startup files may name
@@ -180,7 +185,13 @@
 ! GC
 
       if (ierr .eq. nf_noerr) then
+        write(*,*)'BBBBBBBBBBBB'
+        write(*,*)'AAAAAAAAAAAA'
+        write(*,*)'ncid ',ncid ,'varid ',varid,'record ',record
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
+        write(*,*)'BBBB'
+        write(*,*)'ncid ',ncid ,'varid ',varid,'record ',record,
+     &       'start_time ',start_time
         if (ierr .eq. nf_noerr) then
           ierr=nf_get_att_text(ncid, varid, 'units', units)
           if (ierr .eq. nf_noerr) then
@@ -197,8 +208,8 @@
               goto 99                                    !--> ERROR
             endif
             start_time=start_time*time_scale
-
-
+            write(*,*)'START_TIME=',start_time,
+     &           ' TIME_SCALE=',time_scale
 #ifdef EXACT_RESTART
             if (tindx.eq.2) then
               forw_start=0
@@ -259,9 +270,10 @@
       endif
  
 
-      time=time*time_scale
-      tdays=time*sec2day
-
+!!      time=time*time_scale
+!!      tdays=time*sec2day
+!!      write(*,*)'time ',time,' tdays ',tdays
+      
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then
         start(1)=1
@@ -386,7 +398,8 @@
 #endif
         MPI_master_only write(stdout,'(6x,2A,G12.4,1x,A,I4)') 
      &          'GET_INITIAL -- ',
-     &          'Processing data for time =', tdays, 'record =', record
+     &       'Processing data for time =', start_time*sec2day,
+     &                                      'record =', record
       endif
 #ifdef EXACT_RESTART
       if (tindx.eq.1 .and. forw_start.eq.0) forw_start=ntstart
@@ -422,8 +435,12 @@
           ntsdiags_eddy_avg = ntsavg
 #endif
 #endif
-
-
+!     
+          if (tindx.eq.1) then
+            if (ntstart.lt.1) ntstart=1
+            ntimes=ntstart+ntimes-1
+          endif
+!              
 !
 ! Free-surface.
 !

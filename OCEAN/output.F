@@ -61,7 +61,7 @@
 !
       if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
 #ifdef EXACT_RESTART
-     &                        .or. mod(ilc,nrst).eq.0
+     &                    .or.      mod(ilc,nrst).eq.0
 #endif
      &     .or. (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
 #ifdef AVERAGES

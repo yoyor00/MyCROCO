@@ -277,6 +277,11 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 
 #endif
+                                ! Set initial model clock: at this
+      time=start_time           ! moment "start_time" (global scalar)
+      tdays=time*sec2day        ! is set by get_initial or analytically
+                                ! --> copy it into threadprivate "time"
+
 #ifdef USE_CALENDAR
       !calcul of start times and ntimes
 #ifdef ANA_INITIAL
