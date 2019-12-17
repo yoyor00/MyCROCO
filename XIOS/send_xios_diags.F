@@ -1777,18 +1777,12 @@ C 				  endif
       cldate = tool_sectodat(time)
       CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
 # else
-<<<<<<< HEAD
       iday=start_day
       imonth=start_month       
       iyear=start_year
-=======
-      iday=1
-      imonth=1       
-      iyear=1
       ihour=0
       iminute=0
       isec=0
->>>>>>> master
 # endif
 # if ! defined XIOS2
       WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')")
@@ -1797,16 +1791,11 @@ C 				  endif
      &        start_date=cldate )
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-<<<<<<< HEAD
      &      start_date  = xios_date(start_year,start_month,start_day,
      &                    start_hour,start_minute,start_second),
      &      time_origin = xios_date(origin_year,origin_month,origin_day,
      &                    origin_hour,origin_minute,origin_second))
 
-=======
-     & time_origin = xios_date(1979,01,01,00,00,00),
-     & start_date = xios_date(iyear,imonth,iday,ihour,iminute,isec))
->>>>>>> master
 #endif
       ! horizontal grid definition
       CALL set_scalar
