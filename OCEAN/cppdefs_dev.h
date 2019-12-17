@@ -646,9 +646,9 @@
 /*  Wave breaking dissipation (both WKB and WCI) */
 # undef  WAVE_SFC_BREAK
 # ifdef WAVE_BREAK_CT93
-# elif  WAVE_BREAK_TG86
-# elif  WAVE_BREAK_TG86A
-# elif  WAVE_BREAK_R93
+# elif defined WAVE_BREAK_TG86
+# elif defined WAVE_BREAK_TG86A
+# elif defined WAVE_BREAK_R93
 # else
 #  define WAVE_BREAK_CT93 /* defaults */
 # endif
