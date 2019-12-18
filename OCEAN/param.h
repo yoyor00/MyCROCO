@@ -885,12 +885,12 @@
 # else
       parameter (ntrc_diapv=0)
 # endif
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       parameter (ntrc_diaeddy=10)
 # else
       parameter (ntrc_diaeddy=0)
 # endif
-# ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       parameter (ntrc_surf=5)
 # else
       parameter (ntrc_surf=0)

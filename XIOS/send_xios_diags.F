@@ -1816,14 +1816,14 @@ C 				  endif
       CALL set_grid( "psi", xp, yp )
 # endif
 
-# ifdef MASKING
-      CALL set_mask("rho")
-      CALL set_mask("b")
-      CALL set_mask("u")
-      CALL set_mask("v")
-      CALL set_mask("w")
-      CALL set_mask("psi")
-# endif
+!# ifdef MASKING
+!      CALL set_mask("rho")
+!      CALL set_mask("b")
+!      CALL set_mask("u")
+!      CALL set_mask("v")
+!      CALL set_mask("w")
+!      CALL set_mask("psi")
+!# endif
  
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r )
@@ -1987,10 +1987,6 @@ C 				  endif
 # include "private_scratch.h"
 !
 #ifdef DIAGNOSTICS_EDDY
-      real workru(GLOBAL_2D_ARRAY,1:N)
-      common /work3d_r/ workru
-      real workrv(GLOBAL_2D_ARRAY,1:N)
-      common /work3d_r/ workrv
       real GRho
 #endif
       integer tile
@@ -2278,27 +2274,18 @@ C 				  endif
             do j=JstrR,JendR
               do i=IstrR,IendR
 
-                  GRho=-1*g/rho0
-
-                  workru = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
-                  workrv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
-
+                  workru(i,j,k) = 0.5*(u(i+1,j,k,nstp)
+     &                                +u(i,j,k,nstp))
+                  workrv(i,j,k) = 0.5*(v(i,j+1,k,nstp)
+     &                                +v(i,j,k,nstp))
+                  
                 enddo
               enddo
            enddo
 
-          call xios_send_field("uu", workru**2)
-          call xios_send_field("uv", workru*workrv)
-          call xios_send_field("vv", workrv**2)
-          call xios_send_field("ub", workru*GRho*rho)
-          call xios_send_field("vb", workrv*GRho*rho)
-          call xios_send_field("wb", workr *GRho*rho)
-          call xios_send_field("uT", workru*t(:,:,:,nstp,itemp))
-          call xios_send_field("vT", workrv*t(:,:,:,nstp,itemp))
-          call xios_send_field("wT", workr *t(:,:,:,nstp,itemp))
-          call xios_send_field("uS", workru*t(:,:,:,nstp,isalt))
-          call xios_send_field("vS", workrv*t(:,:,:,nstp,isalt))
-          call xios_send_field("wS", workr *t(:,:,:,nstp,isalt))
+          call xios_send_field("workru", workru)
+          call xios_send_field("workrv", workrv)
+          call xios_send_field("buoy", GRho * rho)
 
 #  endif
 

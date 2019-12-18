@@ -235,13 +235,13 @@
       wrtdiags_pv_avg(NT+1)=.false.
 #endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       wrtdiags_eddy(3)=.false.
 #ifdef AVERAGES
       wrtdiags_eddy_avg(3)=.false.
 #endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       wrtsurf(3)=.false.
 #ifdef AVERAGES
       wrtsurf_avg(3)=.false.
@@ -884,7 +884,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_PV */
 
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !
 ! Diagnostics eddy file name.
 !
@@ -926,7 +926,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_EDDY */
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 ! surface outputs file name.
 !
@@ -1875,7 +1875,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_PV */
 
 
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !
 ! Switches for fields to be saved into eddy diagnostics file.
 !
@@ -1905,7 +1905,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_EDDY */
 
 
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 ! Switches for fields to be saved into surface outputs file.
 !

@@ -161,7 +161,8 @@
 #endif
 
 
-#ifdef RESTART_DIAGS
+#if defined RESTART_DIAGS && ! defined XIOS
+
 
 #ifdef DIAGNOSTICS_VRT
           nrecdiags_vrt=ibuff(3)
@@ -181,7 +182,7 @@
           nrecdiags_pv_avg=ibuff(4)
 # endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
           nrecdiags_eddy=ibuff(3)
 # ifdef AVERAGES
           nrecdiags_eddy_avg=ibuff(4)
@@ -215,7 +216,7 @@
      &                            'read time and record indices.'
           goto 99                                         !--> ERROR
         endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
         start(1)=1
         start(2)=indx
         count(1)=6

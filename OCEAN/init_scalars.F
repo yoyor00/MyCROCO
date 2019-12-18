@@ -46,7 +46,7 @@
 # endif
 
 
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #include "diags_eddy.h"
 # endif
 
@@ -255,7 +255,7 @@ C$OMP END PARALLEL
 # endif
 # endif
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       nciddiags_eddy=-1
       nrecdiags_eddy=0
 # ifdef AVERAGES
@@ -264,7 +264,7 @@ C$OMP END PARALLEL
 # endif
 # endif
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       ncidsurf=-1
       nrecsurf=0
 # ifdef AVERAGES
@@ -3016,7 +3016,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvMrhs+itrc-1)
 
 
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
 CR       write(stdout,'(1x,A,I3)') 'indxeddyuu = ',indxeddyuu
        write(vname1,*) 'uu                                    '
@@ -3110,7 +3110,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvb)
 
 
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurft = ',indxsurft
        nametrc='surf'
