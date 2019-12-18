@@ -349,7 +349,7 @@
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
 #endif
         ierr=nf_def_dim (ncid, 'time', nf_unlimited, timedim)
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
         ierr=nf_def_dim (ncid, 'auxil',    6,        auxil(1))
 #else
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))

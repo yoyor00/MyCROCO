@@ -106,13 +106,13 @@
      &    .and. wrtdiags_pv_avg(indxTime))
 # endif
 # endif
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
      &    .or. (mod(iic-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).eq.0
      &    .and. wrtdiags_eddy_avg(indxTime))
 # endif
 # endif
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &    .or. (mod(iic-ntstart,nwrtsurf).eq.0
      &    .and. wrtsurf(indxTime))
 # ifdef AVERAGES
@@ -194,13 +194,13 @@
      &                            nrecdiags_pv_avg=nrecdiags_pv_avg+1
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
         if (mod(iic-ntsdiags_eddy_avg,nwrtdiags_eddy_avg) .eq.0)
      &                     nrecdiags_eddy_avg=nrecdiags_eddy_avg+1
 # endif
 #endif
-# ifdef OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
         if (mod(iic-ntstart,nwrtsurf) .eq.0)
      &                                    nrecsurf=nrecsurf+1
 # ifdef AVERAGES
@@ -315,7 +315,7 @@
 # endif
 #endif
 
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
         if (mod(iic-ntsdiags_eddy_avg,nwrtdiags_eddy_avg) .eq.0
      &      .and. iic.gt.ntstart+1
@@ -325,7 +325,7 @@
 # endif
 #endif
 
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
         if (mod(iic-ntstart,nwrtsurf).eq.0
      &      .and. ldefsurf 
      &      .and. wrtsurf(indxTime)) 

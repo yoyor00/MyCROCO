@@ -13,7 +13,7 @@
 # include "cppdefs.h"
 #endif
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
 #ifndef AVRH
       subroutine def_diags_eddy (ncid, total_rec, ierr)

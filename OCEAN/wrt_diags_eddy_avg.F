@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EDDY && defined AVERAGES
+#if defined DIAGNOSTICS_EDDY && defined AVERAGES && ! defined XIOS
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics 

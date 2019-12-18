@@ -3,7 +3,7 @@
 !
 
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
       real timediags_eddy_avg
       real eddyuu_avg(GLOBAL_2D_ARRAY,N)

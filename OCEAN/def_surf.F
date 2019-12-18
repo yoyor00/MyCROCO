@@ -12,7 +12,7 @@
 #ifndef AVRH
 # include "cppdefs.h"
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 
 #ifndef AVRH
       subroutine def_surf (ncid, total_rec, ierr)

@@ -8,7 +8,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if (defined DIAGNOSTICS_EDDY && defined AVERAGES)
+#if defined DIAGNOSTICS_EDDY && defined AVERAGES  && ! defined XIOS
 
       subroutine set_diags_eddy_avg(tile)
 
