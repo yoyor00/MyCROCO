@@ -167,10 +167,12 @@
       nadv=  nstp   !<-- do not remove: used in compute_tracer_fluxes.h
 
       if (FIRST_TIME_STEP) then
+        write(*,*)'EULER'
         cff=0.5*dt
         cff1=1.
         cff2=0.
       else
+        write(*,*)'LEAP FROG'
         cff=(1.-gamma)*dt
         cff1=0.5+gamma
         cff2=0.5-gamma

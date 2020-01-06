@@ -59,6 +59,13 @@
 !
 ! Conditions for writing output
 !
+!$$$      write(*,*)'IIC=',iic
+!$$$      write(*,*)'ILC=',ilc
+!$$$      write(*,*)'NTSTART=',ntstart
+!$$$      write(*,*)'NRST=',nrst
+!$$$      write(*,*)'NWRT=',nwrt
+!$$$      write(*,*)'NAVG=',navg
+      
       if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
 #ifdef EXACT_RESTART
      &                    .or.      mod(ilc,nrst).eq.0

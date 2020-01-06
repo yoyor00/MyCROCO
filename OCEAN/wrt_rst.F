@@ -125,6 +125,8 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+      write(*,*)'zeta(10,10,fast_indx_out)',
+     &           zeta(10,10,fast_indx_out)
 !
 ! 2D momentum component in XI-direction.
 !

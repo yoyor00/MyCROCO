@@ -78,8 +78,6 @@
       if (ierr .eq. nf_noerr) then
         ierr=checkdims (ncid, ininame(1:lstr), lstr, max_rec)
         if (ierr. eq. nf_noerr) then
-          write(*,*) 'TTTTTTT'
-          write(*,*) ' max_rec=',max_rec
           if (max_rec.gt.0) then
             if (req_rec.gt.0) then
               if (req_rec.le.max_rec) then
@@ -185,11 +183,7 @@
 ! GC
 
       if (ierr .eq. nf_noerr) then
-        write(*,*)'BBBBBBBBBBBB'
-        write(*,*)'AAAAAAAAAAAA'
-        write(*,*)'ncid ',ncid ,'varid ',varid,'record ',record
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
-        write(*,*)'BBBB'
         write(*,*)'ncid ',ncid ,'varid ',varid,'record ',record,
      &       'start_time ',start_time
         if (ierr .eq. nf_noerr) then
@@ -208,13 +202,19 @@
               goto 99                                    !--> ERROR
             endif
             start_time=start_time*time_scale
+            write(*,*)'  '
+            write(*,*)'TINDEX=',tindx
             write(*,*)'START_TIME=',start_time,
      &           ' TIME_SCALE=',time_scale
+            write(*,*)'  '
 #ifdef EXACT_RESTART
             if (tindx.eq.2) then
               forw_start=0
               if (record.lt.max_rec) then
+                write(*,*)'time_bak=start_time...'
+                write(*,*)'time_bak=',time_bak
                 time_bak=start_time
+                write(*,*)'time_bak=',time_bak
                 ierr=nf_get_var1_FTYPE (ncid, varid, record+1,
      &                                             start_time)
                 if (ierr .eq. nf_noerr) then
@@ -225,6 +225,8 @@
 !
                   if (abs(start_time-time_bak-dt) .lt. 0.001*dt) then
                     forw_start=1
+                    write(*,*)'forw_start=',forw_start
+                     write(*,*)' '
                   else
                     write(*,'(1x,2A,2I4/10x,4A/10x,A/)')
      &                'WARNING: Exact restart is requested, but ',
@@ -268,11 +270,6 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
- 
-
-!!      time=time*time_scale
-!!      tdays=time*sec2day
-!!      write(*,*)'time ',time,' tdays ',tdays
       
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then
@@ -330,14 +327,23 @@
 #endif
           
 #endif
+ 
+        write(*,*)'ntstart=',ntstart
+        write(*,*)'nrecrst=',nrecrst
+        write(*,*)'nrechis=',nrechis
+        write(*,*)'nrecavg=',nrecavg
+          
 #ifdef EXACT_RESTART
           if (tindx.eq.2 .and. record.lt.max_rec) then
             start(2)=record+1
             ierr=nf_get_vara_int (ncid, varid, start, count, ibuff)
             if (ierr .eq. nf_noerr) then
-              write(*,*) ibuff(1), ntstart
+              write(*,*) '  '
+              write(*,*) 'ibuff',ibuff
+              write(*,*)'ntstart',ntstart
               if (ibuff(1) .eq. ntstart+1) then
                 forw_start=1
+                write(*,*)'forw_start',forw_start
               else
                 write(*,'(1x,3A,2I4/10x,4A/10x,A)')      'WARNING: ',
      &           'Exact restart is requested, but is not possible: ',
@@ -354,7 +360,6 @@
           if (tindx.eq.2 .and. forw_start.ne.1) return
           if (tindx.eq.1) then
 
-
             if (forw_start.eq.1) then
               write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
      &                ': Exact restart from day =',
@@ -369,6 +374,14 @@
 #ifdef EXACT_RESTART
             endif
           endif
+
+          write(*,*)'    '
+          write(*,*)'END PROCEDURE....'
+          write(*,*)'time_bak=',time_bak
+          write(*,*)'start_time=',start_time
+          write(*,*)'dt=',dt
+          write(*,*)'forw_start=',forw_start
+          
 #endif
         else
          MPI_master_only write(stdout,'(/1x,2A/)') 

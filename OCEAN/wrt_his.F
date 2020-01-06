@@ -181,6 +181,10 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 #endif
          call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
      &        record,r2dvar,type)
+         
+         write(*,*)'WRT_HIS: zeta(10,10,fast_indx_out)',
+     &        zeta(10,10,fast_indx_out)
+         write(*,*)'fast_indx_out=',fast_indx_out
       endif
 !     
       if (wrthis(indxUb)) then  
@@ -579,7 +583,10 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
             call fillvalue3d(workr,ncidhis,hisT(itrc),
      &           indxT+itrc-1,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
-         endif   
+      write(*,*)'t(10,10,32,nstp,itrc)=',t(10,10,32,nstp,itrc)
+      write(*,*)'nstp=',nstp
+
+      endif   
       enddo
 !     
 !     Density anomaly.

@@ -42,6 +42,9 @@
        endif 
 #endif /* OA_COUPLING */
 
+!$$$       write(*,*)'IIC=',iic
+!$$$       write(*,*)'IIF=',iic
+
        iif = iif+1
       IF (iif .EQ. 0) then
 #endif      
@@ -151,6 +154,8 @@ C$OMP MASTER
 #endif
       time=time_start+dt*float(iic-ntstart)
       tdays=time*sec2day
+      write(*,*)'TIME=',time
+
 #ifdef USE_CALENDAR
       time_mars=time_mars+dt
       tdays=(time_mars-time_start)*sec2day
@@ -1039,3 +1044,5 @@ C$OMP END MASTER
 
       return
       end      
+
+      
