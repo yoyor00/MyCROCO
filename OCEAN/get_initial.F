@@ -349,8 +349,10 @@
         write(*,*)'ntstart=',ntstart
         write(*,*)'nrecrst=',nrecrst
         write(*,*)'nrechis=',nrechis
+# ifdef AVERAGES
         write(*,*)'nrecavg=',nrecavg
-          
+# endif
+
 #ifdef EXACT_RESTART
           if (tindx.eq.2 .and. record.lt.max_rec) then
             start(2)=record+1
