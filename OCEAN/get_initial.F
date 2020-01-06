@@ -54,6 +54,7 @@
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
+      CHARACTER(len=19)          :: tool_sectodat
 #include "netcdf.inc"
 #define time illegal
 #define tdays illegal
@@ -270,7 +271,23 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
+<<<<<<< HEAD
       
+=======
+
+      time=time*time_scale
+      tdays=time*sec2day
+
+      start_date_run = tool_sectodat(time+origin_date_in_sec)
+
+      READ(start_date_run(1:2),fmt='(i2)') start_day
+      READ(start_date_run(4:5),fmt='(i2)') start_month
+      READ(start_date_run(7:10),fmt='(i4)') start_year
+      READ(start_date_run(12:13),fmt='(i2)') start_hour
+      READ(start_date_run(15:16),fmt='(i2)') start_minute
+      READ(start_date_run(18:19),fmt='(i2)') start_second
+
+>>>>>>> dev_2019_megatl
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then
         start(1)=1
@@ -287,7 +304,8 @@
 #endif
 
 
-#ifdef RESTART_DIAGS
+#if defined RESTART_DIAGS && ! defined XIOS
+
 
 #ifdef DIAGNOSTICS_VRT
           nrecdiags_vrt=ibuff(3)
@@ -307,7 +325,7 @@
           nrecdiags_pv_avg=ibuff(4)
 # endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
           nrecdiags_eddy=ibuff(3)
 # ifdef AVERAGES
           nrecdiags_eddy_avg=ibuff(4)
@@ -389,7 +407,7 @@
      &                            'read time and record indices.'
           goto 99                                         !--> ERROR
         endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
         start(1)=1
         start(2)=indx
         count(1)=6

@@ -406,8 +406,28 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
             goto 99             !--> ERROR
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
-      endif
+       endif
+!     
+!     Write out bottom heat flux 
+!     
+      if (wrtavg(indxBhflx)) then
+        work2d=btflx_avg(:,:,itemp)
+     &         SWITCH rmask
+!     
+!     Mult by mask to avoid erroneous data 
+!     over land if Qcorrection cppkeys applied
+!
+        ierr=nf_fwrite(work2d, ncidavg, avgBhflx, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBhflx))
+          write(stdout,1) vname(1,indxBhflx)(1:lvar), record, ierr
+     &         MYID
+          goto 99               !--> ERROR
+        endif
+CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID 
+      endif  
 #  ifdef SALINITY      
+!
 !     Write out surface E-P flux [cm/d]
 !     
       if (wrtavg(indxSwflx)) then
@@ -426,7 +446,27 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
             goto 99             !--> ERROR
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
-      endif
+       endif
+!
+!     Write out bottom fresh water flux [cm/d]
+!     
+      if (wrtavg(indxBwflx)) then
+         work2d=btflx_avg(:,:,isalt)
+     &         SWITCH rmask  
+!
+!        Mult by mask to avoid erroneous data over land 
+!        if SFlux cppkeys correction applied and also 
+!        to remove enormous wrong value diciding by eps.    
+!
+         ierr=nf_fwrite(work2d, ncidavg, avgBwflx, record, r2dvar)
+         if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxBwflx))
+            write(stdout,1) vname(1,indxBwflx)(1:lvar), record, ierr
+     &           MYID
+            goto 99             !--> ERROR
+         endif
+CR      write(*,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
+       endif
 #  endif
 !     Write out solar radiation flux [W/m2]
 !     

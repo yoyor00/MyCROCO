@@ -1,5 +1,6 @@
 #include "cppdefs.h"
-#if (defined OUTPUTS_SURFACE && defined AVERAGES)
+#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+
  
       subroutine set_surf_avg (tile)
       implicit none

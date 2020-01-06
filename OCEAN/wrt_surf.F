@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 !---------------------------------------------------------------
 ! Write surface fields only in another netCDF file.

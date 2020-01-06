@@ -646,9 +646,9 @@
 /*  Wave breaking dissipation (both WKB and WCI) */
 # undef  WAVE_SFC_BREAK
 # ifdef WAVE_BREAK_CT93
-# elif  WAVE_BREAK_TG86
-# elif  WAVE_BREAK_TG86A
-# elif  WAVE_BREAK_R93
+# elif defined WAVE_BREAK_TG86
+# elif defined WAVE_BREAK_TG86A
+# elif defined WAVE_BREAK_R93
 # else
 #  define WAVE_BREAK_CT93 /* defaults */
 # endif
@@ -684,9 +684,9 @@
 # endif
 #endif
 
-#if defined MRL_WCI || defined OW_COUPLING
-# define WAVE_IO
-#endif
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#  define WAVE_IO
+# endif
 
 /*
 ======================================================================
@@ -723,7 +723,27 @@
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
 #endif
+/*
+======================================================================
+      Bottom forcing:
+      
+      By default:
+         define ANA_BTFLUX : set to zero in analytical.F
+         define ANA_BSFLUX
 
+
+      - define BHFLUX : bottom heat flux, Btflx(i,j,itemp), is read into
+                  the netcdf file croco_btf.nc
+      - define BWFLUX : bottom freshwater flux, Btflx(i,j,isalt), is read
+                   into a netcdf file(croco_btf.nc)
+======================================================================
+*/
+#if !defined ANA_BTFLUX
+#  define BHFLUX
+#endif
+#if !defined ANA_BSFLUX
+#  define BWFLUX
+#endif
 /*
 ======================================================================
     Bottom stress option:
@@ -733,8 +753,8 @@
     NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
-#ifndef INNERSHELF
-# undef  LIMIT_BSTRESS
+#ifndef BSTRESS_FAST
+# define  LIMIT_BSTRESS
 #endif
 #ifdef BBL
 # ifdef OW_COUPLING

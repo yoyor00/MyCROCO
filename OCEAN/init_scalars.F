@@ -46,7 +46,7 @@
 # endif
 
 
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #include "diags_eddy.h"
 # endif
 
@@ -214,6 +214,7 @@ C$OMP END PARALLEL
       ncidbulk=-1
       ncidclm=-1
       ncidqbar=-1
+      ncidbtf=-1
 #ifdef DIAGNOSTICS_TS
       nciddia=-1
 # ifdef AVERAGES
@@ -254,7 +255,7 @@ C$OMP END PARALLEL
 # endif
 # endif
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       nciddiags_eddy=-1
       nrecdiags_eddy=0
 # ifdef AVERAGES
@@ -263,7 +264,7 @@ C$OMP END PARALLEL
 # endif
 # endif
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       ncidsurf=-1
       nrecsurf=0
 # ifdef AVERAGES
@@ -313,7 +314,7 @@ C$OMP END PARALLEL
 ! Initialisation at one blanck space
       vname(:,:)='  '
 
-#undef CR
+!#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='scrum_time'
       vname(2,indxTime)='time since initialization'
@@ -1645,6 +1646,24 @@ CR       write(stdout,'(20x,A)') vname(1,indxTVmix+itrc-1)
 #  endif
 # endif
 
+#if defined BHFLUX || defined ANA_BTFLUX
+CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
+      vname(1,indxBhflx)='bhflux                                 '
+      vname(2,indxBhflx)='bottom net heat flux                   '
+      vname(3,indxBhflx)='Watts meter-2                          '
+      vname(4,indxBhflx)='bottom heat flux, scalar, series       '
+      vname(5,indxBhflx)='                                       '
+      vname(6,indxBhflx)='lat_rho lon_rho                        '
+#endif
+#if (defined BWFLUX || defined ANA_BSFLUX) && defined SALINTY
+CR      write(stdout,'(1x,A,I3)') 'indxBwflx =',indxBwflx
+      vname(1,indxBwflx)='bwflux                                 '
+      vname(2,indxBwflx)='bottom freshwater flux (E-P)          '
+      vname(3,indxBwflx)='centimeter day-1                       '
+      vname(4,indxBwflx)='bottom freshwater flux, scalar, series'
+      vname(5,indxBwflx)='                                       '
+      vname(6,indxBwflx)='lat_rho lon_rho                        '
+#endif      
 # if defined SALINITY && defined SFLX_CORR
 CR      write(stdout,'(1x,A,I3)') 'indxSSS =',indxSSS
       vname(1,indxSSS)='SSS                                       '
@@ -1738,7 +1757,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxWER =',indxWER
 # endif /* WAVE_OFFLINE_BREAKING */
 #endif /* !ANA_WWAVE */
 
-#if defined MRL_WCI || defined OW_COUPLING
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 CR      write(stdout,'(1x,A,I3)') 'indxHRM =',indxHRM
       vname(1,indxHRM)='hrm                                       '
       vname(2,indxHRM)='RMS wave height                           '
@@ -2997,7 +3016,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvMrhs+itrc-1)
 
 
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
 CR       write(stdout,'(1x,A,I3)') 'indxeddyuu = ',indxeddyuu
        write(vname1,*) 'uu                                    '
@@ -3091,7 +3110,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvb)
 
 
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurft = ',indxsurft
        nametrc='surf'

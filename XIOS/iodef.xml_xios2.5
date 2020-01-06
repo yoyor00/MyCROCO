@@ -2,8 +2,7 @@
 <simulation>
 
 	<context id="roms">
-		<calendar_type="Gregorian" start_date="1999-01-15 12:00:00" time_origin="1970-01-01 00:00:00" />
-
+		<!-- <calendar_type="Gregorian" start_date="1999-01-15 12:00:00" time_origin="1970-01-01 00:00:00" /> -->
 
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
@@ -13,32 +12,41 @@
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
 
+
+        <file_definition type="one_file"  name="./HIS/xios" sync_freq="5d" min_digits="4">
+                <file_group id="grid" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+                    <file id="file0" name_suffix="_grid">
+                        <field_group id="grid_fields" operation="once">
+                            <field field_ref="hc" />
+                            <field field_ref="theta_s" />
+                            <field field_ref="theta_b" />
+                            <field field_ref="Tcline" />
+                            <field field_ref="Vtransform" />
+                            <field field_ref="h" />
+                            <field field_ref="f" />
+                            <field field_ref="pm" />
+                            <field field_ref="pn" />
+                            <field field_ref="lon_rho" />
+                            <field field_ref="lat_rho" />
+                            <field field_ref="lon_u" />
+                            <field field_ref="lat_u" />
+                            <field field_ref="lon_v" />
+                            <field field_ref="lat_v" />
+                            <field field_ref="angle" />
+                            <field field_ref="mask_rho" />
+                            <field field_ref="Cs_r" />
+                            <field field_ref="sc_r" />
+                            <field field_ref="Cs_w" />
+                            <field field_ref="sc_w" />
+                        </field_group>
+                    </file>
+                </file_group>
+            </file_definition>
+            
+            
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="12h" output_freq="12h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file1" name_suffix="_inst" split_freq="5d" split_freq_format="%y-%mo-%d">
-					<field_group id="grid_fields" operation="once">
-						<field field_ref="hc" />
-						<field field_ref="theta_s" />
-						<field field_ref="theta_b" />
-						<field field_ref="Tcline" />
-						<field field_ref="Vtransform" />
-						<field field_ref="h" />
-						<field field_ref="f" />
-						<field field_ref="pm" />
-						<field field_ref="pn" />
-						<field field_ref="lon_rho" />
-						<field field_ref="lat_rho" />
-						<field field_ref="lon_u" />
-						<field field_ref="lat_u" />
-						<field field_ref="lon_v" />
-						<field field_ref="lat_v" />
-						<field field_ref="angle" />
-						<field field_ref="mask_rho" />
-						<field field_ref="Cs_r" />
-						<field field_ref="sc_r" />
-						<field field_ref="Cs_w" />
-						<field field_ref="sc_w" />
-					</field_group>
 
 					<field_group id="inst_fields" operation="instant">
 						<field field_ref="time" name="time" />
@@ -60,9 +68,27 @@
 			</file_group>
 		</file_definition>
 
+# ifdef  HOURLY_VELOCITIES
+        <file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
+            <file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+                <file id="file2" name_suffix="_avg_3d" split_freq="5d" split_freq_format="%y-%mo-%d">
+                    
+                    <field_group id="hourly_fields" operation="average">
+                        <field field_ref="time" name="time" />
+                        <field field_ref="u" name="u" />
+                        <field field_ref="v" name="v" />
+                    </field_group>
+
+                </file>
+            </file_group>
+        </file_definition>
+#  endif
+        
+        
+# ifdef  OUTPUTS_SURFACE
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file2" name_suffix="_inst_surf" split_freq="5d" split_freq_format="%y-%mo-%d">
+				<file id="file3" name_suffix="_inst_surf" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="surf_fields" operation="instant">
 						<field field_ref="time" name="time" />
@@ -76,22 +102,26 @@
 				</file>
 			</file_group>
 		</file_definition>
-		
+#  endif
 
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file3" name_suffix="_aver" split_freq="5d" split_freq_format="%y-%mo-%d">
+				<file id="file4" name_suffix="_aver" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="ave_fields" operation="average">
 						<field field_ref="zeta" />
 						<field field_ref="ubar" name="ubar"  />
 						<field field_ref="vbar" name="vbar"  />
+                        <field field_ref="bustr" name="bustr"  />
+                        <field field_ref="bvstr" name="bvstr"  />
 						<field field_ref="sustr" name="sustr"  />
 						<field field_ref="svstr" name="svstr"  />
+# ifdef  DEBUG_BULK
                         <field field_ref="uwnd" name="uwnd"  />
                         <field field_ref="vwnd" name="vwnd"  />
                         <field field_ref="shflx" name="shflx"  />
                         <field field_ref="swflx" name="swflx"  />
+#  endif
 						<field field_ref="u" name="u" />
 						<field field_ref="v" name="v"  />
 						<field field_ref="w" name="w" />
@@ -109,7 +139,7 @@
 # ifdef DIAGNOSTICS_UV
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="M" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file4" name_suffix="_M" split_freq="5d" split_freq_format="%y-%mo-%d">
+				<file id="file5" name_suffix="_M" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="M_fields" operation="average">
 						<field field_ref="u_rate" name="u_rate"  />
@@ -119,7 +149,7 @@
 						<field field_ref="u_Hmix" name="u_hmix"  />
 						<field field_ref="u_Hdiff" name="u_hdiff" />
 						<field field_ref="u_Vmix" name="u_vmix"  />
-						<field field_ref="u_Vmix2" name="u_nudg" />
+<!--						<field field_ref="u_Vmix2" name="u_nudg" /> -->
 						<field field_ref="u_Baro" name="u_baro" />
 #  ifdef M3FAST
                         <field field_ref="u_fast" name="u_fast" />
@@ -131,7 +161,7 @@
                         <field field_ref="v_Hmix" name="v_hmix"  />
                         <field field_ref="v_Hdiff" name="v_hdiff" />
                         <field field_ref="v_Vmix" name="v_vmix"  />
-                        <field field_ref="v_Vmix2" name="v_nudg" />
+<!--                        <field field_ref="v_Vmix2" name="v_nudg" /> -->
                         <field field_ref="v_Baro" name="v_baro" />
 #  ifdef M3FAST
                         <field field_ref="v_fast" name="v_fast" />
@@ -143,10 +173,35 @@
 		</file_definition>
 # endif
 
+# ifdef DIAGNOSTICS_TS
+        <file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
+            <file_group id="TS" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+                <file id="file6" name_suffix="_TS" split_freq="5d" split_freq_format="%y-%mo-%d">
+                    
+                    <field_group id="TS_fields" operation="average">
+                        <field field_ref="T_rate" name="T_rate"  />
+                        <field field_ref="T_adv" name="T_adv"  />
+                        <field field_ref="T_Hmix" name="T_hmix"  />
+                        <field field_ref="T_Vmix" name="T_vmix"  />
+                        <field field_ref="T_Forc" name="T_forc" />
+#  ifdef SALINITY
+                        <field field_ref="S_rate" name="S_rate"  />
+                        <field field_ref="S_adv" name="S_adv"  />
+                        <field field_ref="S_Hmix" name="S_hmix"  />
+                        <field field_ref="S_Vmix" name="S_vmix"  />
+                        <field field_ref="S_Forc" name="S_forc" />
+# endif
+                    </field_group>
+
+                </file>
+            </file_group>
+        </file_definition>
+# endif
+
 # ifdef DIAGNOSTICS_EK
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file5" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
+				<file id="file7" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="KE_fields" operation="average">
 						<field field_ref="ekrate" name="ke_rate"  />
@@ -156,7 +211,7 @@
 						<field field_ref="ekHmix" name="ke_hmix"  />
 						<field field_ref="ekHdiff" name="ke_hdiff" />
 						<field field_ref="ekVmix" name="ke_vmix"  />
-						<field field_ref="ekVmix2" name="ke_nudg" />
+<!--						<field field_ref="ekVmix2" name="ke_nudg" /> -->
 						<field field_ref="ekvol" name="ke_vol" />
 						<field field_ref="ekBaro" name="ke_baro" />
 						<field field_ref="ekDrag" name="ke_drag" />
@@ -175,7 +230,7 @@
 # ifdef DIAGNOSTICS_VRT
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="VRT" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file6" name_suffix="_VRT" split_freq="5d" split_freq_format="%y-%mo-%d">
+				<file id="file8" name_suffix="_VRT" split_freq="5d" split_freq_format="%y-%mo-%d">
 					
 					<field_group id="vrt_fields" operation="average">
 						<field field_ref="vrtrate" name="vrt_rate"  />
@@ -184,7 +239,7 @@
 						<field field_ref="vrtPrsgrd" name="vrt_prsgrd"  />
 						<field field_ref="vrtHmix" name="vrt_hmix"  />
 						<field field_ref="vrtHdiff" name="vrt_hdiff" />
-						<field field_ref="vrtVmix2" name="vrt_nudg" />
+<!-- 						<field field_ref="vrtVmix2" name="vrt_nudg" />  -->
 						<field field_ref="vrtBaro" name="vrt_baro" />
 						<field field_ref="vrtDrag" name="vrt_drag" />
 						<field field_ref="vrtWind" name="vrt_wind" />
@@ -201,23 +256,33 @@
 
 
 # ifdef DIAGNOSTICS_EDDY
+
+
+        <field_definition>
+         <field id="workru" name="workru" />
+         <field id="workrv" name="workrv" />
+        </field_definition>
+
+
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 			<file_group id="EDDY" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
-				<file id="file7" name_suffix="_EDDY" split_freq="5d" split_freq_format="%y-%mo-%d">
-					
-					<field_group id="eddy_fields" operation="average">
-						<field field_ref="uu" name="uu"  />
-						<field field_ref="uv" name="uv"  />
-						<field field_ref="vv" name="vv"  />
-						<field field_ref="ub" name="ub"  />
-						<field field_ref="vb" name="vb"  />
-						<field field_ref="wb" name="wb" />
-						<field field_ref="uT" name="uT"  />
-						<field field_ref="vT" name="vT"  />
-						<field field_ref="wT" name="wT" />
-						<field field_ref="uS" name="uS"  />
-						<field field_ref="vS" name="vS"  />
-						<field field_ref="wS" name="wS" />
+				<file id="file9" name_suffix="_EDDY" split_freq="5d" split_freq_format="%y-%mo-%d">
+
+                    <field_group id="eddy_fields" operation="average">
+                      <field id="uu" field_ref="workru"> workru * workru </field>
+                      <field id="uv" field_ref="workru"> workru * workrv </field>
+                      <field id="vv" field_ref="workru"> workrv * workrv </field>
+                      <field id="uw" field_ref="workru"> workru * w </field>
+                      <field id="vw" field_ref="workru"> workrv * w </field>
+                      <field id="ub" field_ref="workru"> workru * buoy </field>
+                      <field id="vb" field_ref="workru"> workrv * buoy </field>
+                      <field id="wb" field_ref="workru"> w * buoy </field>
+                      <field id="uT" field_ref="workru"> workru * temp </field>
+                      <field id="vT" field_ref="workru"> workrv * temp </field>
+                      <field id="wT" field_ref="workru"> w * temp </field>
+                      <field id="uS" field_ref="workru"> workru * salt </field>
+                      <field id="vS" field_ref="workru"> workrv * salt </field>
+                      <field id="wS" field_ref="workru"> w * salt </field>
 					</field_group>
 
 				</file>

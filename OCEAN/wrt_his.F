@@ -16,7 +16,7 @@
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
      &   , ibuff(4)
@@ -120,7 +120,7 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
       endif
 
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
 #ifdef AVERAGES
@@ -771,7 +771,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 # endif
 
 !     
-!     Write out total heat flux 
+!     Write out total surface heat flux 
 !     
       if (wrthis(indxShflx)) then
          work2d=stflx(:,:,itemp)*rho0*Cp
@@ -786,9 +786,25 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
-      
+!     
+!     Write out bottom heat flux 
+!     
+      if (wrthis(indxBhflx)) then
+        work2d=btflx(:,:,itemp)*rho0*Cp
+     &       SWITCH rmask
+        ierr=nf_fwrite(work2d, ncidhis, hisBhflx, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBhflx))
+          MPI_master_only write(stdout,1)
+     &         vname(1,indxBhflx)(1:lvar), record, ierr
+     &         MYID
+            goto 99             !--> ERROR
+          endif
+CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
+      endif      
 #ifdef SALINITY    
-!     Write out surface salt flux  
+!     Write out surface salt flux
+!
 !       --> convert [psu.m.s-1] => [cm/days] : 
 !       stf_cff= 86400/0.01 = 1/stf_scale 
 !       After forcing reading (get_stflx.F), multiply by 0.01/86400.
@@ -810,8 +826,35 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
-      endif
+CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
+       endif
+!
+!     Write out bottom salt flux
+!
+       
+!       --> convert [psu.m.s-1] => [cm/days] : 
+!       btf_cff= 86400/0.01 = 1/btf_scale 
+!       After forcing reading (get_btflx.F), multiply by 0.01/86400.
+!       Then in get_vbc.F, mult. by salinity t(i,j,1,nstp,isalt)
+!
+      if (wrthis(indxBwflx)) then
+         do j=0,Mm+1
+            do i=0,Lm+1
+               work2d(i,j)=btf_cff*btflx(i,j,isalt)/
+     &              ( max(eps,t(i,j,1,nstp,isalt))) 
+     &              SWITCH rmask(i,j)
+            enddo
+        enddo
+         ierr=nf_fwrite(work2d, ncidhis, hisBwflx, record, r2dvar)
+         if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxBwflx))
+           MPI_master_only write(stdout,1)
+     &        vname(1,indxBwflx)(1:lvar), record, ierr
+     &           MYID
+            goto 99             !--> ERROR
+         endif
+      write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
+       endif        
 #endif      
 !     
 !     Write out surface heat flux component (W/m2)

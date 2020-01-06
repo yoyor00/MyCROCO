@@ -55,6 +55,8 @@
      &       /avg_w/w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
+      real btflx_avg(GLOBAL_2D_ARRAY,NT)
+      common /avg_btflx/btflx_avg
 #  if defined LMD_SKPP || defined GLS_MIXING
       real hbl_avg(GLOBAL_2D_ARRAY)
       common /avg_hbl/hbl_avg

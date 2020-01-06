@@ -466,7 +466,7 @@ C$OMP BARRIER
         call set_diags_pv (tile)
 # endif
 
-# ifdef AVERAGES
+# if defined AVERAGES && ! defined XIOS
         call set_avg (tile)
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg

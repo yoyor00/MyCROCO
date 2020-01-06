@@ -24,6 +24,9 @@
 #include "ocean3d.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
+#ifdef GLS_MIXING
+# include "mixing.h"
+#endif
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
@@ -185,6 +188,35 @@
           goto 99                                         !--> ERROR
         endif
       enddo
+      
+# ifdef GLS_MIXING
+!
+! Turbulent kinetic energy.
+!
+
+        ierr=nf_fwrite(trb(START_2D_ARRAY,1,nstp,itke), ncidrst,
+     &                             rstTke, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxTke))
+          write(stdout,1) vname(1,indxTke)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
+! Generic length scale.
+!
+
+        ierr=nf_fwrite(trb(START_2D_ARRAY,1,nstp,itke), ncidrst,
+     &                             rstGls, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxGls))
+          write(stdout,1) vname(1,indxGls)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+
+# endif
+      
 # endif
 
 
