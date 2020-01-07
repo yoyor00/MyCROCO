@@ -321,7 +321,7 @@ C$    trd=omp_get_thread_num()
       enddo
 # endif
  
-# undef M3FAST_REINIT
+# define M3FAST_REINIT
 # if defined BSTRESS_FAST && defined M3FAST_REINIT
 !
 !  Reinitialise fast mode at each first fast step
