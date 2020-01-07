@@ -273,9 +273,6 @@
       endif
 
 
-      time=time*time_scale
-      tdays=time*sec2day
-
       start_date_run = tool_sectodat(start_time+origin_date_in_sec)
 
       READ(start_date_run(1:2),fmt='(i2)') start_day
