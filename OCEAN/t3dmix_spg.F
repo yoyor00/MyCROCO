@@ -226,6 +226,15 @@
       jmax=jend+1
 # endif
 
+
+
+
+        write(*,*)'t3dmix_spg ini t(10,10,32,nnew)='
+     &                  ,t(10,10,32,nnew,itrc)
+
+   
+   
+   
 # ifdef TS_MIX_S
 !==================================================================
 !
@@ -325,6 +334,12 @@
           diff3v(i,j)=0.5*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
         enddo
       enddo
+      
+
+        write(*,*)'t3dmix_spg diff3u(10,10)='
+     &                   ,diff3u(10,10)
+     
+     
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
 !==========================================================
@@ -359,6 +374,7 @@
           enddo
         endif
  
+
         if (k.eq.0 .or. k.eq.N) then
 !========================================================
 ! Set bottom and top boundary condition  (FC = 0).
@@ -426,8 +442,14 @@
      &                                                              )
             enddo
           enddo
-
-
+          
+          if (k.eq.32) then
+           write(*,*) 't3dmix_spg FX(10,10)='
+     &                ,FX(10,10)
+           write(*,*) 't3dmix_spg dRdx(10,10,32)='
+     &                ,dRdx(10,10,32)
+          endif
+          
           if (k.lt.N) then
 !========================================================
 ! Compute the vertical component
@@ -487,11 +509,24 @@
               enddo
             enddo
           endif  ! <-- k.lt.N
+          
+        if (k.eq.32) then
+           write(*,*) 't3dmix_spg FC(10,10,k2)='
+     &                  ,FC(10,10,k2)
+           write(*,*) 't3dmix_spg FC(10,10,k1)='
+     &                  ,FC(10,10,k1)
+     
+        endif
 
 !++========================================================
 !++ Perform time stepping
 !++========================================================
 
+        if (k.eq.32) then
+          write(*,*)'t3dmix_spg bef t(10,10,32,nnew)='
+     &                  ,t(10,10,32,nnew,itrc)
+        endif
+        
           do j=jstr,jend
             do i=istr,iend
 #  ifdef TS_SPONGE_IMP
@@ -508,6 +543,18 @@
 #  endif
             enddo
           enddo
+          
+
+         if (k.eq.32) then
+           write(*,*)'t3dmix_spg Hz(10,10,32)='
+     &                   ,Hz(10,10,32)
+           write(*,*)'t3dmix_spg FX(10,10)='
+     &                   ,FX(10,10)
+           write(*,*)'t3dmix_spg FE(10,10)='
+     &                   ,FE(10,10)
+           write(*,*)'t3dmix_spg t(10,10,32,nnew)='
+     &                   ,t(10,10,32,nnew,itrc)
+         endif
 
 #  ifdef DIAGNOSTICS_TS
 !
@@ -603,6 +650,7 @@
         enddo           !--> discard FC,CF,DC
 #   undef FC 
 
+
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 !  Add TVmix correction term to previous TVmix computation
@@ -628,6 +676,11 @@
 #  undef LT
 #  undef GT
 # endif /* TS_MIX_S */
+
+
+            write(*,*)'t3dmix_spg end t(10,10,32,nnew)='
+     &               ,t(10,10,32,nnew,itrc)
+
 !
 !=================================================================
 !

@@ -624,6 +624,12 @@ C$OMP BARRIER
 # endif
         enddo
       enddo
+      
+
+        write(*,*)'lmd_vmix Akv(10,10,32)=',Akv(10,10,32)
+
+
+      
 !
 !------------------------------------------------
 !  Apply background small viscosity

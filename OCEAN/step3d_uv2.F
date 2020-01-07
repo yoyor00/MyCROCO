@@ -197,6 +197,12 @@
 # endif
         enddo
 
+
+        if (j.eq.10) then
+          write(*,*)'step3d_uv2 Akv(10,10,32)=',Akv(10,10,32)
+          write(*,*)'step3d_uv2 Akv(10,10,31)=',Akv(10,10,31)
+        endif
+
         do k=1,N-1
           do i=IstrU,Iend
             FC(i,k)=-dt*(Akv(i,j,k)+Akv(i-1,j,k))
@@ -318,6 +324,11 @@
 # endif
           enddo
         enddo        !--> discard DC,CF(:,0)
+        
+        if (j.eq.10) then
+          write(*,*)'step3d_uv2 u(10,10,32,nnew)=',u(10,10,32,nnew)
+        endif
+        
 # if defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV
         do i=IstrU,Iend
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
@@ -864,6 +875,11 @@
             Huon(i,j,k)=FC(i,k)-DC(i,k)*FC(i,0)
           enddo
         enddo
+        
+        if (j.eq.10) then
+          write(*,*)'step3d_uv2 Huon(10,10,32)=',Huon(10,10,32)
+        endif
+        
 !
 !-------------------------------------------------
 ! Compute density XI gradients for use in t3dmix

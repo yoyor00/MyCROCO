@@ -24,7 +24,7 @@
 #include "ocean3d.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#ifdef GLS_MIXING
+#if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
 #endif
 #ifdef SEDIMENT
@@ -188,7 +188,42 @@
           goto 99                                         !--> ERROR
         endif
       enddo
-      
+    
+# if defined LMD_SKPP
+!
+!     Write out depth of planetary boundary layer (m).
+!
+#  ifdef LMD_SKPP2005
+        ierr=nf_fwrite(hbls(START_2D_ARRAY,nstp), ncidrst,
+     &                             rstHbl, record, r2dvar)
+        write(*,*) 'wrt_rst rstHbl',rstHbl, rstT
+#  else
+        ierr=nf_fwrite(hbl(START_2D_ARRAY), ncidrst,
+     &                             rstHbl, record, r2dvar)
+#  endif
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxHbl))
+            write(stdout,1) vname(1,indxHbl)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+        
+# if defined LMD_BKPP
+!
+!     Write out depth of bottom planetary boundary layer (m).
+!
+        ierr=nf_fwrite(hbbl(START_2D_ARRAY), ncidrst,
+     &                             rstHbbl, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxHbbl))
+            write(stdout,1) vname(1,indxHbbl)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+# endif
+
+# endif
+
 # ifdef GLS_MIXING
 !
 ! Turbulent kinetic energy.

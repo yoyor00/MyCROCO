@@ -398,7 +398,59 @@
 
           
         enddo
-        
+
+# ifdef LMD_SKPP
+!
+! Depth of planetary boundary layer.
+!
+
+          lvar=lenstr(vname(1,indxHbl))
+          ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
+     &         NF_DOUBLE, 3, r2dgrd, rstHbl)
+        write(*,*) 'def_rst rstHbl',rstHbl, rstT
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstHbl,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxHbl))
+          ierr=nf_put_att_text (ncid, rstHbl, 'long_name',
+     &                     lvar,   vname(2,indxHbl)(1:lvar))
+          lvar=lenstr(vname(3,indxHbl))
+          ierr=nf_put_att_text (ncid, rstHbl, 'units', lvar,
+     &         vname(3,indxHbl)(1:lvar))
+          lvar=lenstr(vname(4,indxHbl))
+          ierr=nf_put_att_text (ncid, rstHbl, 'field', lvar,
+     &         vname(4,indxHbl)(1:lvar))
+
+          call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
+     &         NF_DOUBLE,ierr)
+
+
+# ifdef LMD_BKPP
+
+          lvar=lenstr(vname(1,indxHbbl))
+          ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
+     &         NF_DOUBLE, 3, r2dgrd, rstHbbl)
+        write(*,*) 'def_rst rstHbbl',rstHbbl, rstT
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstHbbl,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxHbbl))
+          ierr=nf_put_att_text (ncid, rstHbbl, 'long_name',
+     &                     lvar,   vname(2,indxHbbl)(1:lvar))
+          lvar=lenstr(vname(3,indxHbbl))
+          ierr=nf_put_att_text (ncid, rstHbbl, 'units', lvar,
+     &         vname(3,indxHbbl)(1:lvar))
+          lvar=lenstr(vname(4,indxHbbl))
+          ierr=nf_put_att_text (ncid, rstHbbl, 'field', lvar,
+     &         vname(4,indxHbbl)(1:lvar))
+
+          call nf_add_attribute(ncid, rstHbbl, indxHbbl, 5,
+     &         NF_DOUBLE,ierr)
+
+
+# endif
+# endif
+
 # ifdef GLS_MIXING
 !
 ! Turbulent kinetic energy.
@@ -792,6 +844,33 @@
           endif
         enddo 
 #endif
+
+
+# ifdef LMD_SKPP
+!
+! Depth of planetary boundary layer.
+!
+          lvar=lenstr(vname(1,indxHbl))
+          ierr=nf_inq_varid (ncid,vname(1,indxHbl)(1:lvar), rstHbl)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef LMD_BKPP
+!
+! Depth of bottom planetary boundary layer.
+!
+          lvar=lenstr(vname(1,indxHbbl))
+          ierr=nf_inq_varid (ncid,vname(1,indxHbbl)(1:lvar), rstHbbl)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxHbbl)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# endif
+# endif
+
+
+
 #ifdef SEDIMENT
 !
 ! Bed thickness

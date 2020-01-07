@@ -837,6 +837,12 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
+#ifdef LMD_SKPP
+      integer rstHbl
+#ifdef LMD_BKPP
+      integer rstHbbl
+#endif
+#endif
 #ifdef GLS_MIXING
       integer rstTke,rstGls
 #endif
@@ -1271,6 +1277,12 @@
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
+#ifdef LMD_SKPP
+     &      , rstHbl
+#ifdef LMD_BKPP
+     &      , rstHbbl
+#endif
+#endif
 #ifdef GLS_MIXING
      &      , rstTke,rstGls
 #endif

@@ -140,6 +140,14 @@
 #   endif
 #  endif
 !-------------------------------------------------------------------
+
+
+        if (k.eq.32) then
+          write(*,*)'step3d t(10,10,32,nadv)=',t(10,10,32,nadv,itrc)
+          write(*,*)'nadv,nstp,nnew ',nadv,nstp,nnew
+          write(*,*)'step3d Huon(10,10,32)=',Huon(10,10,32)
+        endif
+
           do j=Jstr,Jend
             do i=I_EXT_RANGE
               FX(i,j)=(t(i,j,k,nadv,itrc)-t(i-1,j,k,nadv,itrc))

@@ -734,6 +734,11 @@
 !     &     vname(1,indxHbl)(1:lvar),       ''' not found in ''',
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.'
       endif
+      
+#  ifdef LMD_SKPP2005
+      write(*,*)'get_initial hbls(10,10)=',hbls(10,10,1)
+#  endif
+
 !
 !  vertical viscosity coefficient
 !
@@ -754,6 +759,9 @@
 !     &     vname(1,indxAkv)(1:lvar),       ''' not found in ''',
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
+        
+        write(*,*)'get_initial Akv(10,10,32)=',Akv(10,10,32)
+
 !
 !  vertical diffusion coefficient for potential temperature.
 !

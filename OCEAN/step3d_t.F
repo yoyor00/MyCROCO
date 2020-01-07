@@ -218,6 +218,15 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
+
+        if (k.eq.32) then
+          write(*,*)'step3d t(10,10,32,nstp)=',t(10,10,32,nstp,itrc)
+          write(*,*)'step3d Hz_bak(10,10,32)=',Hz_bak(10,10,32)
+          write(*,*)'step3d FX(10,10)=',FX(10,10)
+        endif
+        
+        
+        
           do j=Jstr,Jend
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
@@ -226,6 +235,12 @@
      &                                                           )
             enddo
           enddo                 !-->  discard FX,FE
+
+
+        if (k.eq.32) then
+          write(*,*)'step3d t(10,10,32,nnew)=',t(10,10,32,nnew,itrc)
+        endif
+
 
 # if defined AGRIF && defined AGRIF_CONSERV_TRA
           IF (Agrif_Root()) Then
@@ -326,6 +341,13 @@
             enddo
           enddo               !--> discard FC
 
+
+        if (j.eq.10) then
+          write(*,*)'step3d (vadv) t(10,10,32,nnew)='
+     &                          ,t(10,10,32,nnew,itrc)
+        endif
+
+
 # ifdef DIAGNOSTICS_TS
        do k=1,N 
          do i=Istr,Iend
@@ -407,6 +429,12 @@
               enddo
             enddo
           endif
+
+         if (j.eq.10) then
+           write(*,*)'step3d (forc) t(10,10,32,nnew)='
+     &                          ,t(10,10,32,nnew,itrc)
+         endif
+
 !
 !
 !======================================================================
@@ -809,6 +837,9 @@
             enddo
           enddo
         enddo
+        
+        write(*,*)'step3d (end) t(10,10,32,nnew)='
+     &                         ,t(10,10,32,nnew,itrc)
 #  undef I_RANGE
 #  undef J_RANGE
 # endif /* MASKING */
