@@ -270,13 +270,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef EXACT_RESTART
       call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
-!C$OMP BARRIER                        
-!# ifdef SOLVE3D
-!        do tile=my_tile_range       
-!          call set_depth (tile)     !<-- needed to initialize Hz_bak
-!        enddo
-!C$OMP BARRIER
-!# endif
+C$OMP BARRIER
+# ifdef SOLVE3D
+        do tile=my_tile_range
+          call set_depth (tile)     !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+# endif
 
 #endif
       call get_initial (nrrec, 1)   ! Set initial conditions

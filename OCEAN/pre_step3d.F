@@ -177,6 +177,16 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
+      
+      write(*,*)'pre_step3 Hz(10,10,32)=',Hz(10,10,32)
+      write(*,*)'pre_step3 Hz_bak(10,10,32)=',Hz_bak(10,10,32)
+      write(*,*)'pre_step3 Huon(10,10,32)=',Huon(10,10,32)
+      write(*,*)'pre_step3 Hvom(10,10,32)=',Hvom(10,10,32)
+      write(*,*)'pre_step3 We(10,10,32)=',We(10,10,32)
+# ifdef VADV_ADAPT_IMP
+      write(*,*)'pre_step3 Wi(10,10,32)=',Wi(10,10,32)
+# endif
+
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -191,6 +201,8 @@
           enddo
         enddo
       enddo
+      
+      write(*,*)'pre_step3 Hz_half(10,10,32)=',Hz_half(10,10,32)
 !
 !  Set extended range
 !

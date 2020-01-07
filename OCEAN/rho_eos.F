@@ -174,6 +174,10 @@
 !
       dr00=r00-rho0
 !
+
+        write(*,*)'in rho_eos T(10,10,32)=',t(10,10,32,nrhs,itemp)
+        write(*,*)'in rho_eos S(10,10,32)=',t(10,10,32,nrhs,isalt)
+
       do j=JstrR,JendR
 
         do k=1,N                                       ! NONLINEAR

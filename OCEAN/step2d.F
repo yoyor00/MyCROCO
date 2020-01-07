@@ -1227,7 +1227,13 @@ C$OMP END MASTER
           cff3=0.281105                  ! forward using  AM3-like
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1=1.5+cff3                  ! maximum stability (with
-        endif                            ! special care for startup)
+        endif
+        
+        cff3=0.                        ! This version is designed
+        cff2=0.                        ! for coupling during 3D
+        cff1=1.
+        
+        
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=rufrc(i,j)-rubar(i,j)
