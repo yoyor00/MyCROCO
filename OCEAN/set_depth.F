@@ -232,7 +232,7 @@ C$    integer omp_get_thread_num
 
       !!write(*,*)'set_depth Hz(10,10,32)=',Hz(10,10,32)
 
-#  ifdef M3FAST
+#  if defined M3FAST && ! defined EXACT_RESTART
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         do k=1,N,+1
           do j=J_RANGE
@@ -243,6 +243,12 @@ C$    integer omp_get_thread_num
         enddo
       endif
 #  endif
+
+
+      !!write(*,*)'set_depth Hz(10,10,32)=',Hz(10,10,32)
+      !!write(*,*)'set_depth Hz_bak(10,10,32)=',Hz_bak(10,10,32)
+
+
 
 #  undef I_RANGE
 #  undef J_RANGE
