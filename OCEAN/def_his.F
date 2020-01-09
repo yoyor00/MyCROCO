@@ -52,15 +52,15 @@
 #if defined MRL_WCI
      &      , iwkb
 #endif
-#ifdef NC4PAR
-# include "mpi_cpl.h"
-      include 'mpif.h'
-#endif
 
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "netcdf.inc"
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include 'mpif.h'
+#endif
       character*70 text
 
 #ifndef AVRH

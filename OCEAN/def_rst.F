@@ -36,10 +36,6 @@
      & , dim_Tinfo(3), dim_track(4), dim_fltgrd(2)
       character*65 vinfo(4)
 #endif
-#ifdef NC4PAR
-# include "mpi_cpl.h"
-      include 'mpif.h'
-#endif
 
 #include "param.h"
 #include "scalars.h"
@@ -49,6 +45,11 @@
 # include "floats.h"
 # include "ncscrum_floats.h"
 #endif
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include 'mpif.h'
+#endif
+
 !
 ! Put time record index into file name. In  the case when model
 ! output is to be arranged into sequence of named files, the naming
