@@ -77,7 +77,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
 
-      write(*,*)'set_depth zeta(10,10,1)=',zeta(10,10,1)
+      !!write(*,*)'set_depth zeta(10,10,1)=',zeta(10,10,1)
 
       if (iic.eq.0) then
         do j=J_RANGE
@@ -154,8 +154,8 @@ C$    integer omp_get_thread_num
 #  endif
 
 
-      write(*,*)'set_depth Hz_bak(10,10,32)=',Hz(10,10,32)
-      write(*,*)'set_depth zetatmp(10,10)=',Zt_avg1(10,10)
+      !!write(*,*)'set_depth Hz_bak(10,10,32)=',Hz(10,10,32)
+      !!write(*,*)'set_depth zetatmp(10,10)=',Zt_avg1(10,10)
 
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
@@ -230,7 +230,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-      write(*,*)'set_depth Hz(10,10,32)=',Hz(10,10,32)
+      !!write(*,*)'set_depth Hz(10,10,32)=',Hz(10,10,32)
 
 #  ifdef M3FAST
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then

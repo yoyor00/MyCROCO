@@ -226,7 +226,7 @@ c**        call opencdf (frcname,N)
 ! Load time invariant surface stresses.
 !
       if (sms_cycle.lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           if (lsusgrd.eq.1 .and. lsvsgrd.eq.1) then
             do j=JstrR,JendR
               do i=Istr,IendR

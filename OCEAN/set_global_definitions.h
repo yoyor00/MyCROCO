@@ -216,7 +216,10 @@
 # define FIRST_TIME_STEP iic.eq.forw_start
 #else
 #define FIRST_TIME_STEP iic.eq.ntstart
-#endif   
+#endif
+#define FIRST_RST_TIME_STEP iic.eq.ntstart
+/* First time step after initialisation, always equal to iic.eq.ntstart
+   no dependence to EXACT_ or SOFT_RESTART */
 #ifdef SOLVE3D
 # define FIRST_2D_STEP iif.eq.1
 # define LAST_2D_STEP iif.eq.nfast

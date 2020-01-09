@@ -201,7 +201,7 @@ c**        call opencdf (btfname,N)
 ! Time interpolation is not performed in this case.
 !
       if (btf_cycle(itrc).lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           if (lbtfgrd(itrc).eq.1) then
             cff=btf_scale(itrc)
             do j=JstrR,JendR
