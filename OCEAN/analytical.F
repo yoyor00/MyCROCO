@@ -2250,7 +2250,7 @@ C$    integer  trd, omp_get_thread_num
 
 #  else
 
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
@@ -2307,7 +2307,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
@@ -2363,7 +2363,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
@@ -2419,7 +2419,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)

@@ -96,7 +96,7 @@
 !-------------
 ! MAS INIT
 !-------------
-      IF (FIRST_TIME_STEP) THEN
+      IF (FIRST_RST_TIME_STEP) THEN
 
 
 ! lecture des conditions aux limites
