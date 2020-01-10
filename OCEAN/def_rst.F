@@ -407,7 +407,6 @@
           lvar=lenstr(vname(1,indxHbl))
           ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
      &         NF_DOUBLE, 3, r2dgrd, rstHbl)
-        write(*,*) 'def_rst rstHbl',rstHbl, rstT
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstHbl,nf_collective)
 #endif
@@ -500,6 +499,59 @@
 
 #endif
 #endif
+
+
+# ifdef EXACT_RESTART
+!
+! Forcing for barotropic equations in XI-direction.
+!
+        lvar=lenstr(vname(1,indxrufrc))
+        ierr=nf_def_var (ncid, vname(1,indxrufrc)(1:lvar),
+     &                         NF_DOUBLE, 3, u2dgrd, rstrufrc)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrufrc,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxrufrc))
+        ierr=nf_put_att_text (ncid, rstrufrc, 'long_name', lvar,
+     &                         vname(2,indxrufrc)(1:lvar))
+        lvar=lenstr(vname(3,indxrufrc))
+        ierr=nf_put_att_text (ncid, rstrufrc, 'units', lvar,
+     &                         vname(3,indxrufrc)(1:lvar))
+        lvar=lenstr(vname(4,indxrufrc))
+        ierr=nf_put_att_text (ncid, rstrufrc, 'field', lvar,
+     &                         vname(4,indxrufrc)(1:lvar))
+      call nf_add_attribute(ncid, rstrufrc,
+     &                         indxrufrc, 5, NF_DOUBLE, ierr)
+!
+! Forcing for barotropic equations in ETA-direction.
+!
+        lvar=lenstr(vname(1,indxrvfrc))
+        ierr=nf_def_var (ncid, vname(1,indxrvfrc)(1:lvar),
+     &                         NF_DOUBLE, 3, v2dgrd, rstrvfrc)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrvfrc,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxrvfrc))
+        ierr=nf_put_att_text (ncid, rstrvfrc, 'long_name', lvar,
+     &                         vname(2,indxrvfrc)(1:lvar))
+        lvar=lenstr(vname(3,indxrvfrc))
+        ierr=nf_put_att_text (ncid, rstrvfrc, 'units', lvar,
+     &                         vname(3,indxrvfrc)(1:lvar))
+        lvar=lenstr(vname(4,indxrvfrc))
+        ierr=nf_put_att_text (ncid, rstrvfrc, 'field', lvar,
+     &                         vname(4,indxrvfrc)(1:lvar))
+      call nf_add_attribute(ncid, rstrvfrc,
+     &                         indxrvfrc, 5, NF_DOUBLE, ierr)
+
+
+# endif
+
+
+
+
+
+
+
 #ifdef SEDIMENT
 !
 ! Sediment bed thickness
@@ -870,6 +922,26 @@
 # endif
 
 
+# ifdef EXACT_RESTART
+!
+! Forcing for barotropic equations in XI-direction.
+!
+        lvar=lenstr(vname(1,indxrufrc))
+        ierr=nf_inq_varid (ncid, vname(1,indxrufrc)(1:lvar), rstrufrc)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxrufrc)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+!
+! Forcing for barotropic equations in XI-direction.
+!
+        lvar=lenstr(vname(1,indxrvfrc))
+        ierr=nf_inq_varid (ncid, vname(1,indxrvfrc)(1:lvar), rstrvfrc)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxrvfrc)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# endif
 
 #ifdef SEDIMENT
 !

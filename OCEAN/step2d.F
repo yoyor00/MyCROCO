@@ -1228,12 +1228,17 @@ C$OMP END MASTER
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1=1.5+cff3                  ! maximum stability (with
         endif
+
         
-        cff3=0.                        ! This version is designed
-        cff2=0.                        ! for coupling during 3D
-        cff1=1.
-        
-        
+        write(*,*)'step2d rufrc_bak(10,10,3-nstp)=',
+     &            rufrc_bak(10,10,3-nstp)
+        write(*,*)'step2d rufrc_bak(10,10,nstp)=',
+     &            rufrc_bak(10,10,nstp)
+        write(*,*)'step2d rvfrc_bak(10,10,3-nstp)=',
+     &            rvfrc_bak(10,10,3-nstp)
+        write(*,*)'step2d rvfrc_bak(10,10,nstp)=',
+     &            rvfrc_bak(10,10,nstp)
+            
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=rufrc(i,j)-rubar(i,j)
