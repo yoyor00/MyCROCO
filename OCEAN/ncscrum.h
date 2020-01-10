@@ -550,13 +550,23 @@
       parameter (indxbvf=indxSSH+1)
 #endif
 
+# ifdef EXACT_RESTART
+      integer indxrufrc
+      parameter (indxrufrc=indxSSH+2)
+      integer indxrvfrc
+      parameter (indxrvfrc=indxrufrc+1)
+      integer indxSUSTR, indxSVSTR
+      parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
+# else
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
+# endif
+  
       integer indxTime2
-      parameter (indxTime2=indxSSH+4)
+      parameter (indxTime2=indxSUSTR+2)
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
-      parameter (indxShflx=indxSSH+5)
+      parameter (indxShflx=indxSUSTR+3)
 # ifdef SALINITY
       integer indxSwflx
       parameter (indxSwflx=indxShflx+1, indxShflx_rsw=indxShflx+2)
@@ -849,6 +859,9 @@
 # ifdef SEDIMENT
       integer rstSed(NST+2)
 #endif
+#endif
+#ifdef EXACT_RESTART
+      integer rstrufrc,rstrvfrc
 #endif
 #ifdef BBL
       integer rstBBL(2)
@@ -1285,6 +1298,9 @@
 #endif
 #ifdef GLS_MIXING
      &      , rstTke,rstGls
+#endif
+#ifdef EXACT_RESTART
+     &      , rstrufrc,rstrvfrc
 #endif
 # ifdef SEDIMENT
      &                         , rstSed

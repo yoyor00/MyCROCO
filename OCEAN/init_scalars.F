@@ -1560,6 +1560,29 @@ CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
 # endif /* BIOLOGY */
 #endif /* SOLVE3D */
 
+
+# ifdef EXACT_RESTART
+
+CR      write(stdout,'(1x,A,I3)') 'indxrufrc =',indxrufrc
+      vname(1,indxrufrc)='rufrc                                     '
+      vname(2,indxrufrc)='barotropic forcing terms                  '
+      vname(3,indxrufrc)='meter second-2                            '
+      vname(4,indxrufrc)='rufrc, scalar, series                     '
+      vname(5,indxrufrc)='barotropic_forcing_terms                  '
+      vname(6,indxrufrc)='lat_u lon_u                               '
+      vname(7,indxrufrc)='                                          '
+      
+CR      write(stdout,'(1x,A,I3)') 'indxrvfrc =',indxrvfrc
+      vname(1,indxrvfrc)='rvfrc                                     '
+      vname(2,indxrvfrc)='barotropic forcing terms                  '
+      vname(3,indxrvfrc)='meter second-2                            '
+      vname(4,indxrvfrc)='rvfrc, scalar, series                     '
+      vname(5,indxrvfrc)='barotropic_forcing_terms                  '
+      vname(6,indxrvfrc)='lat_v lon_v                               '
+      vname(7,indxrvfrc)='                                          '
+
+# endif /* EXACT_RESTART */
+
 CR      write(stdout,'(1x,A,I3)') 'indxSSH =',indxSSH              
       vname(1,indxSSH)='SSH                                       '
       vname(2,indxSSH)='sea surface height                        '

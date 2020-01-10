@@ -38,6 +38,10 @@
 # if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 # include "mixing.h"
 # endif
+
+# if defined EXACT_RESTART
+# include "coupling.h"
+# endif
 !======================================================
 !
 !======================================================
@@ -829,6 +833,8 @@
       endif
 # endif
 
+
+
 # ifdef GLS_MIXING
 !
 !  turbulent kinetic energy.
@@ -891,6 +897,59 @@
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
 # endif
+
+
+# if defined EXACT_RESTART
+!
+!  rufrc
+!
+      lvar=lenstr(vname(1,indxrufrc))
+      ierr=nf_inq_varid (ncid, vname(1,indxrufrc)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+      ierr=nf_fread (rufrc_bak(START_2D_ARRAY,3-tindx), ncid,
+     &                                     varid, record, u2dvar)
+        if (ierr .ne. nf_noerr) then
+         MPI_master_only write(stdout,2) vname(1,indxrufrc)(1:lvar)
+     &                                , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+!        MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxrufrc)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.'
+      endif
+
+      write(*,*)'get_initial rufrc_bak(10,10,3-nstp)=',
+     &                       rufrc_bak(10,10,3-nstp)
+      write(*,*)'get_initial rufrc_bak(10,10,nstp)=',
+     &                       rufrc_bak(10,10,nstp)
+     
+     
+
+!  rvfrc
+!
+       lvar=lenstr(vname(1,indxrvfrc))
+       ierr=nf_inq_varid (ncid, vname(1,indxrvfrc)(1:lvar), varid)
+       if (ierr .eq. nf_noerr) then
+       ierr=nf_fread (rvfrc_bak(START_2D_ARRAY,3-tindx), ncid,
+     &                                     varid, record, v2dvar)
+         if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxrvfrc)(1:lvar)
+     &                                , record, ininame(1:lstr)
+           goto 99                                        !--> ERROR
+         endif
+       else
+!        MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxrufrc)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.'
+       endif
+ 
+     
+     
+#  endif
+
 
 !
 !  Close input NetCDF file.

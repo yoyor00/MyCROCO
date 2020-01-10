@@ -27,6 +27,9 @@
 #if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
 #endif
+#if defined EXACT_RESTART
+# include "coupling.h"
+#endif
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
@@ -152,6 +155,7 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+      
 #ifdef SOLVE3D
 !
 ! 3D momentum component in XI-direction.
@@ -253,6 +257,40 @@
 # endif
       
 # endif
+
+# ifdef EXACT_RESTART
+!
+! Write out forcing for barotropic equations in XI-direction.
+!
+
+        ierr=nf_fwrite(rufrc_bak(START_2D_ARRAY,3-nstp), ncidrst,
+     &                             rstrufrc, record, u2dvar)
+
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxrufrc))
+            write(stdout,1) vname(1,indxrufrc)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+
+
+!
+! Write out forcing for barotropic equations in XI-direction.
+!
+
+        ierr=nf_fwrite(rvfrc_bak(START_2D_ARRAY,3-nstp), ncidrst,
+     &                             rstrvfrc, record, v2dvar)
+
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxrvfrc))
+            write(stdout,1) vname(1,indxrvfrc)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+        
+    
+# endif
+
 
 
 # ifdef SEDIMENT
