@@ -321,7 +321,7 @@ C$    trd=omp_get_thread_num()
       enddo
 # endif
  
-# undef M3FAST_REINIT
+# define M3FAST_REINIT
 # if defined BSTRESS_FAST && defined M3FAST_REINIT
 !
 !  Reinitialise fast mode at each first fast step
@@ -418,6 +418,8 @@ C$    trd=omp_get_thread_num()
 # endif /* NBQ_MASS */
         enddo
       enddo
+      
+
 !
 ! Depth-average ubar velocity at m+1/2
 !
@@ -454,6 +456,10 @@ C$    trd=omp_get_thread_num()
      &                                                              )
         enddo
       enddo
+      write(*,*)'step3d_fast DUon(i,j)=',iif,
+     &          DUon(10,10),DUon(11,10)
+      write(*,*)'step3d_fast DVom(i,j)=',iif,
+     &          DVom(10,10),DVom(10,11)
 
 # ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
@@ -697,6 +703,8 @@ C$OMP END MASTER
       enddo
 #  undef zab3
 
+
+
 # else /* NBQ */
 !
 !********************************************************************
@@ -740,6 +748,15 @@ C$OMP END MASTER
 #  endif
         enddo
       enddo
+      
+      
+        write(*,*)'step3d_fast DUon(i,j)=',iif,
+     &          DUon(10,10),DUon(11,10)
+        write(*,*)'step3d_fast DVom(i,j)=',iif,
+     &          DVom(10,10),DVom(10,11)
+        write(*,*)'step3d_fast zeta(10,10,knew)=',iif,
+     &           zeta(10,10,knew)
+
 # endif /* NBQ */
 !
 !-----------------------------------------------------------------------
@@ -3719,6 +3736,8 @@ C$OMP END MASTER
      &                                                          - h(i,j)
           enddo
         enddo
+        
+
 !
 !-----------------------------------------------------------------------
 !  Set masking for zeta, including wet/dry conditions
