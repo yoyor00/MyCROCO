@@ -230,10 +230,34 @@
 
 # ifdef GLS_MIXING
 !
+! Vertical viscosity coefficient.
+!
+
+        ierr=nf_fwrite(Akv(START_2D_ARRAY,0), ncidrst,
+     &                             rstAkv, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkv))
+          write(stdout,1) vname(1,indxAkv)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
+! Generic length scale.Write out vertical diffusion coefficient for potential temperature.
+!
+
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
+     &                             rstAkt, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkt))
+          write(stdout,1) vname(1,indxAkt)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
 ! Turbulent kinetic energy.
 !
 
-        ierr=nf_fwrite(trb(START_2D_ARRAY,1,nstp,itke), ncidrst,
+        ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,itke), ncidrst,
      &                             rstTke, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxTke))
@@ -245,7 +269,7 @@
 ! Generic length scale.
 !
 
-        ierr=nf_fwrite(trb(START_2D_ARRAY,1,nstp,itke), ncidrst,
+        ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,igls), ncidrst,
      &                             rstGls, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxGls))
@@ -253,6 +277,13 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+        
+        
+        write(*,*)'wrt_rst trb(10,10,32,nstp,itke)=',
+     &                        trb(10,10,32,nstp,itke)
+        write(*,*)'wrt_rst trb(10,10,32,nstp,igls)=',
+     &                        trb(10,10,32,nstp,igls)
+         
 
 # endif
       

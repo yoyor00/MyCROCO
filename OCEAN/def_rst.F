@@ -399,6 +399,10 @@
           
         enddo
 
+
+
+
+
 # ifdef LMD_SKPP
 !
 ! Depth of planetary boundary layer.
@@ -450,7 +454,58 @@
 # endif
 # endif
 
+
+
 # ifdef GLS_MIXING
+
+!
+! Vertical viscosity coefficient.
+!
+
+          lvar=lenstr(vname(1,indxAkv))
+          ierr=nf_def_var (ncid, vname(1,indxAkv)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstAkv)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAkv,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxAkv))
+          ierr=nf_put_att_text (ncid, rstAkv, 'long_name',
+     &                     lvar,   vname(2,indxAkv)(1:lvar))
+          lvar=lenstr(vname(3,indxAkv))
+          ierr=nf_put_att_text (ncid, rstAkv, 'units', lvar,
+     &         vname(3,indxAkv)(1:lvar))
+          lvar=lenstr(vname(4,indxAkv))
+          ierr=nf_put_att_text (ncid, rstAkv, 'field', lvar,
+     &         vname(4,indxAkv)(1:lvar))
+
+          call nf_add_attribute(ncid, rstAkv, indxAkv, 5,
+     &         NF_DOUBLE,ierr)
+
+!
+! Vertical diffusion coefficient for potential temperature.
+!
+
+          lvar=lenstr(vname(1,indxAkt))
+          ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstAkt)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAkt,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxAkt))
+          ierr=nf_put_att_text (ncid, rstAkt, 'long_name',
+     &                     lvar,   vname(2,indxAkt)(1:lvar))
+          lvar=lenstr(vname(3,indxAkt))
+          ierr=nf_put_att_text (ncid, rstAkt, 'units', lvar,
+     &         vname(3,indxAkt)(1:lvar))
+          lvar=lenstr(vname(4,indxAkt))
+          ierr=nf_put_att_text (ncid, rstAkt, 'field', lvar,
+     &         vname(4,indxAkt)(1:lvar))
+
+          call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
+     &         NF_DOUBLE,ierr)
+
+
+
 !
 ! Turbulent kinetic energy.
 !
@@ -921,6 +976,44 @@
 # endif
 # endif
 
+# ifdef GLS_MIXING
+!
+! Vertical viscosity coefficient.
+!
+          lvar=lenstr(vname(1,indxAkv))
+          ierr=nf_inq_varid (ncid,vname(1,indxAkv)(1:lvar), rstAkv)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! Vertical diffusion coefficient for potential temperature.
+!
+          lvar=lenstr(vname(1,indxAkt))
+          ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), rstAkt)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! Turbulent kinetic energy.
+!
+          lvar=lenstr(vname(1,indxTke))
+          ierr=nf_inq_varid (ncid,vname(1,indxTke)(1:lvar), rstTke)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxTke)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! Generic length scale.
+!
+          lvar=lenstr(vname(1,indxGls))
+          ierr=nf_inq_varid (ncid,vname(1,indxGls)(1:lvar), rstGls)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# endif
 
 # ifdef EXACT_RESTART
 !

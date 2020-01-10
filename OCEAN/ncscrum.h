@@ -854,7 +854,7 @@
 #endif
 #endif
 #ifdef GLS_MIXING
-      integer rstTke,rstGls
+      integer rstAkv,rstAkt,rstTke,rstGls
 #endif
 # ifdef SEDIMENT
       integer rstSed(NST+2)
@@ -1297,7 +1297,7 @@
 #endif
 #endif
 #ifdef GLS_MIXING
-     &      , rstTke,rstGls
+     &      , rstAkv,rstAkt,rstTke,rstGls
 #endif
 #ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc

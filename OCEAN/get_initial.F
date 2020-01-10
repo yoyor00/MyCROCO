@@ -896,6 +896,13 @@
 !     &     vname(1,indxLsc)(1:lvar),       ''' not found in ''',
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
+        
+        
+       write(*,*)'get_initial trb(10,10,32,nstp,itke)=',
+     &                        trb(10,10,32,nstp,itke)
+       write(*,*)'get_initial trb(10,10,32,nstp,igls)=',
+     &                        trb(10,10,32,nstp,igls)
+      
 # endif
 
 
