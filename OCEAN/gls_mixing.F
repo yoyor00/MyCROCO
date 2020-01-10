@@ -229,7 +229,14 @@
             ENDDO
           ENDDO  
         ENDDO
-      ENDIF 
+      ENDIF
+      
+      
+      write(*,*)'gls trb(10,10,32,nstp,itke)=',
+     &                        trb(10,10,32,nstp,itke)
+      write(*,*)'gls trb(10,10,32,nstp,igls)=',
+     &                        trb(10,10,32,nstp,igls)
+      
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
@@ -284,6 +291,14 @@
       ENDDO         
 # undef FX
 # undef FE
+
+       write(*,*)'gls00  trb(10,10,31,nnew,itke)=',
+     &                        trb(10,10,31,nnew,itke)
+       write(*,*)'gls00 trb(10,10,31,nnew,igls)=',
+     &                        trb(10,10,31,nnew,igls)
+
+
+
 !
 !--------------------------------------------------------------------
 !  Compute the vertical shear (or complete deformation rate D)
@@ -524,6 +539,10 @@
       !--------------------------------------------------
       ENDDO     ! j loop
       !-------------------------------------------------- 
+       write(*,*)'gls0  trb(10,10,32,nnew,itke)=',
+     &                        trb(10,10,32,nnew,itke)
+       write(*,*)'gls0 trb(10,10,32,nnew,igls)=',
+     &                        trb(10,10,32,nnew,igls)
 
 !
 !--------------------------------------------------------------------
@@ -558,6 +577,11 @@
 
 # undef I_EXT_RANGE
 # undef J_EXT_RANGE
+
+       write(*,*)'gls1 trb(10,10,32,nnew,itke)=',
+     &                        trb(10,10,32,nnew,itke)
+       write(*,*)'gls1 trb(10,10,32,nnew,igls)=',
+     &                        trb(10,10,32,nnew,igls)
 
 !
 !--------------------------------------------------------------------
@@ -796,6 +820,12 @@
           enddo
         enddo
       enddo
+      
+      
+       write(*,*)'gls trb(10,10,32,nnew,itke)=',
+     &                        trb(10,10,32,nnew,itke)
+       write(*,*)'gls trb(10,10,32,nnew,igls)=',
+     &                        trb(10,10,32,nnew,igls)
 !
 ! Exchange computational margines and/or periodic boundaries:
 !--------- ------------- -------- ------ -------- ----------- 
