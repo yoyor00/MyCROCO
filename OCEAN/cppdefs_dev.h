@@ -733,7 +733,7 @@
     NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
-#ifndef INNERSHELF
+#ifdef INNERSHELF
 # undef  LIMIT_BSTRESS
 #endif
 #ifdef BBL

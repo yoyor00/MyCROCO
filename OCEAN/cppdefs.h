@@ -57,7 +57,6 @@
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
-# undef  MPI_NOLAND
                       /* I/O server */
 # undef  XIOS
                       /* Non-hydrostatic option */
@@ -97,8 +96,9 @@
                       /* Parallelization */
 # ifdef MPI
 #  undef  PARALLEL_FILES
+#  undef  NC4PAR
+#  undef  MPI_NOLAND
 # endif
-# undef  NC4PAR
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
 # ifdef NBQ
@@ -151,6 +151,7 @@
 # undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
 # undef  BSTRESS_FAST
+# define LIMIT_BSTRESS
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
