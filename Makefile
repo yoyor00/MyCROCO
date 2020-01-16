@@ -325,6 +325,14 @@ clobber: clean
 plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
+$(TAP_TARGET)_d.o: $(TAP_TARGET)_d.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
+$(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	ln -sf empty_code_insertion.h code_insertion.h
 	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
