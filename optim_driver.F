@@ -105,6 +105,8 @@ c     imode(3)=0 ==> simulator never called with indic=1
      &     form='FORMATTED')
       open(unit=779, file="ctrl.dat", action="write",
      &     form='FORMATTED')
+      open(unit=780, file="grad.dat", action="write",
+     &     form='FORMATTED')
 
 
       reverse = 1
@@ -190,6 +192,8 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
             write (779,*) ad_counter,ad_rms,cost,norm2(ad_g_f),
      &           ad_dir_time,ad_adj_time
             call flush(779)
+            write (780,*) ad_counter,ad_g_f
+            call flush(780)
          end if
 
          df1 = cost
@@ -203,6 +207,7 @@ C     ...
       close (unit=777)
       close (unit=778)
       close (unit=779)
+      close (unit=780)
       write(*,*) 'end state_control'
 
       return
