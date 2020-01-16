@@ -230,7 +230,7 @@ c$$$     &                 ad_obs(i,j,ta-2)
       write(99, *) Iend-Istr+1,Jend-Jstr+1,0
       do j=Jstr,Jend
          do i=Istr,Iend
-            write(99, *) i,j,zob(i,j)
+            write(99, *) xr(i,j),yr(i,j),zob(i,j)
          end do
       end do
       close(99)

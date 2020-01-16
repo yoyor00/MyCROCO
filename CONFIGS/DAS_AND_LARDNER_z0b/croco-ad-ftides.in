@@ -9,7 +9,7 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
 
 initial: NRREC  filename
           0 
-                          ftides_rst_1.nc
+                          ftides_rst_obs.nc
 
 restart:          NRST, NRPFRST / filename
                   120000      -1
@@ -33,7 +33,7 @@ rho0:
       1025.
 
 bottom_drag:     RDRG(m/s),      RDRG2, Zobt [m],  Cdb_min, Cdb_max
-                 0.0d-04         0.0d-05     0.010        1.d-4    1.d-1
+                 0.0d-04         0.0d-05     0.005        1.d-4    1.d-1
 
 gamma2:
                  1.

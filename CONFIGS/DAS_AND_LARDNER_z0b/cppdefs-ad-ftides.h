@@ -35,7 +35,7 @@
 # undef BODYFORCE
 
 # define ANA_GRID
-# define ANA_INITIAL
+# undef ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
