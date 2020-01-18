@@ -32,12 +32,19 @@
 # include "strings.h"
 # include "diagnostics.h"
 # include "netcdf.inc"
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include "mpif.h"
+#endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),u2dgrd(3),v2dgrd(3),auxil(2),checkdims 
 # ifdef SOLVE3D
      &      , r3dgrd(4),u3dgrd(4),v3dgrd(4),w3dgrd(4),itrc
 # endif
+#ifdef NC4PAR
+     &      , csize,cmode
+#endif
 !
 # ifndef AVRH
 !
@@ -135,13 +142,22 @@
 #endif
 !
       if (ncid.ne.-1) create_new_file=.false.
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
 #endif
 !
  10   if (create_new_file) then
         lstr=lenstr(ncname)
-        ierr=nf_create(ncname(1:lstr),NF_CLOBBER,ncid)
+#ifndef NC4PAR
+        ierr=nf_create(ncname(1:lstr),NF_CLOBBER, ncid)
+#else
+        cmode = ior(nf_netcdf4,nf_classic_model)
+        cmode = ior(cmode, nf_mpiio)
+        csize=xi_rho*eta_rho/NNODES
+        MPI_master_only write(stdout,*)'CREATE DIAG NC4 PARALLEL FILE'
+        ierr=nf_create_par(ncname(1:lstr),cmode,
+     &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
+#endif
         if (ierr.ne.nf_noerr) then
           write(stdout,11) ncname(1:lstr)
           may_day_flag=3
@@ -221,7 +237,10 @@
 !
         ierr=nf_def_var (ncid, 'time_step', nf_int, 2, auxil,
      &                                                 vidTstep)
-        ierr=nf_put_att_text (ncid, vidTstep, 'long_name', 48,
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
+        ierr=nf_put_att_text (ncid, diaTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
 !
 ! Time.
@@ -229,6 +248,9 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
      &                            NF_FOUT, 1, timedim, vidTime)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
@@ -261,6 +283,9 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
      &                            NF_FOUT, 1, timedim, vidTime2)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
@@ -310,6 +335,9 @@
           lvar=lenstr(vname(1,indxMXadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMXadv+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMXadv(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMXadv(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMXadv+itrc-1))
           ierr=nf_put_att_text (ncid, vidMXadv(itrc), 'long_name',
@@ -335,6 +363,9 @@
           lvar=lenstr(vname(1,indxMYadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMYadv+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMYadv(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMYadv(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMYadv+itrc-1))
           ierr=nf_put_att_text (ncid, vidMYadv(itrc), 'long_name',
@@ -360,6 +391,9 @@
           lvar=lenstr(vname(1,indxMVadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMVadv+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMVadv(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMVadv(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMVadv+itrc-1))
           ierr=nf_put_att_text (ncid, vidMVadv(itrc), 'long_name',
@@ -385,6 +419,9 @@
           lvar=lenstr(vname(1,indxMCor+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMCor+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMCor(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMCor(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMCor+itrc-1))
           ierr=nf_put_att_text (ncid, vidMCor(itrc), 'long_name',
@@ -410,6 +447,9 @@
           lvar=lenstr(vname(1,indxMPrsgrd+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMPrsgrd+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMPrsgrd(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMPrsgrd(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMPrsgrd+itrc-1))
           ierr=nf_put_att_text (ncid, vidMPrsgrd(itrc), 'long_name',
@@ -435,6 +475,9 @@
           lvar=lenstr(vname(1,indxMHmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMHmix+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMHmix(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMHmix(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMHmix+itrc-1))
           ierr=nf_put_att_text (ncid, vidMHmix(itrc), 'long_name',
@@ -460,6 +503,9 @@
           lvar=lenstr(vname(1,indxMHdiff+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMHdiff+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMHdiff(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMHdiff(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMHdiff+itrc-1))
           ierr=nf_put_att_text (ncid, vidMHdiff(itrc), 'long_name',
@@ -485,6 +531,9 @@
           lvar=lenstr(vname(1,indxMVmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMVmix+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMVmix(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMVmix(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMVmix+itrc-1))
           ierr=nf_put_att_text (ncid, vidMVmix(itrc), 'long_name',
@@ -510,6 +559,9 @@
           lvar=lenstr(vname(1,indxMVmix2+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMVmix2+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMVmix2(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMVmix2(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMVmix2+itrc-1))
           ierr=nf_put_att_text (ncid, vidMVmix2(itrc), 'long_name',
@@ -536,6 +588,9 @@
           lvar=lenstr(vname(1,indxMBaro+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMBaro+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMBaro(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMBaro(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMBaro+itrc-1))
           ierr=nf_put_att_text (ncid, vidMBaro(itrc), 'long_name',
@@ -563,6 +618,9 @@
           lvar=lenstr(vname(1,indxMfast+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMfast+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMfast(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMfast(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMfast+itrc-1))
           ierr=nf_put_att_text (ncid, vidMfast(itrc), 'long_name',
@@ -591,6 +649,9 @@
           lvar=lenstr(vname(1,indxMvf+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMvf+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMvf(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMvf(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMvf+itrc-1))
           ierr=nf_put_att_text (ncid, vidMvf(itrc), 'long_name',
@@ -616,6 +677,9 @@
           lvar=lenstr(vname(1,indxMbrk+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMbrk+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMbrk(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMbrk(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMbrk+itrc-1))
           ierr=nf_put_att_text (ncid, vidMbrk(itrc), 'long_name',
@@ -641,6 +705,9 @@
           lvar=lenstr(vname(1,indxMStCo+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMStCo+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMStCo(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMStCo(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMStCo+itrc-1))
           ierr=nf_put_att_text (ncid, vidMStCo(itrc), 'long_name',
@@ -666,6 +733,9 @@
           lvar=lenstr(vname(1,indxMVvf+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMVvf+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMVvf(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMVvf(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMVvf+itrc-1))
           ierr=nf_put_att_text (ncid, vidMVvf(itrc), 'long_name',
@@ -691,6 +761,9 @@
           lvar=lenstr(vname(1,indxMPrscrt+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMPrscrt+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMPrscrt(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMPrscrt(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMPrscrt+itrc-1))
           ierr=nf_put_att_text (ncid, vidMPrscrt(itrc), 'long_name',
@@ -716,6 +789,9 @@
           lvar=lenstr(vname(1,indxMsbk+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMsbk+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMsbk(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMsbk(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMsbk+itrc-1))
           ierr=nf_put_att_text (ncid, vidMsbk(itrc), 'long_name',
@@ -741,6 +817,9 @@
           lvar=lenstr(vname(1,indxMbwf+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMbwf+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMbwf(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMbwf(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMbwf+itrc-1))
           ierr=nf_put_att_text (ncid, vidMbwf(itrc), 'long_name',
@@ -766,6 +845,9 @@
           lvar=lenstr(vname(1,indxMfrc+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMfrc+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMfrc(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMfrc(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMfrc+itrc-1))
           ierr=nf_put_att_text (ncid, vidMfrc(itrc), 'long_name',
@@ -792,6 +874,9 @@
           lvar=lenstr(vname(1,indxMrate+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMrate+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, vidMrate(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidMrate(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxMrate+itrc-1))
           ierr=nf_put_att_text (ncid, vidMrate(itrc), 'long_name', 
@@ -840,7 +925,12 @@
 ! defined there and find their netCDF IDs.
 !
       elseif (ncid.eq.-1) then
+#ifndef NC4PAR
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
+#else
+        ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
+     &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
+#endif
         if (ierr. ne. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
@@ -868,7 +958,7 @@
         endif
 !
         if (ierr. ne. nf_noerr) then
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
           if (mynode.eq.0) then
             create_new_file=.true.
             goto 10
@@ -1160,7 +1250,7 @@
      &                     'existing file  from record =', rec
      &                      MYID
 !
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then

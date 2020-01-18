@@ -50,7 +50,7 @@
 # include "work.h"
 #endif
 #include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -273,7 +273,7 @@
 ! to access data immediately after it is written.
 !---------------------------------------------------------------
 !
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (nciddiags_vrt)
       if (nrpfdiags_vrt.gt.0 .and. record.ge.nrpfdiags_vrt) nciddiags_vrt=-1
 #else
@@ -298,7 +298,7 @@
         may_day_flag=3
       endif
 
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &                        1, MPI_COMM_WORLD,  ierr)

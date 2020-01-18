@@ -1143,8 +1143,13 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
+<<<<<<< HEAD
         || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
         || defined GLS_MIXING
+=======
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
+>>>>>>> master
      &                                          ,  wrthis(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1227,6 +1232,11 @@ c        close(testunit)
 # ifdef SALINITY
      &                                        .or. wrthis(indxAks)
 # endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
+     &                                        .or. wrthis(indxbvf)
+# endif
 # ifdef VIS_COEF_3D
      &                                        .or. wrthis(indxVisc)
 # endif
@@ -1287,6 +1297,12 @@ c        close(testunit)
      &  , wrthis(indxAks),  'write Aks  ',
      &                      'Vertical diffusivity for salinity.'
 # endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
+     &  , wrthis(indxbvf),  'write bvf  ',
+     &                         'Brunt Vaisala Frequency.'
+#  endif
 # ifdef VIS_COEF_3D
      &  , wrthis(indxVisc),  'write Visc3d', 'Horizontal viscosity.'
 # endif
