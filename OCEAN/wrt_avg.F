@@ -234,9 +234,9 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type) 
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
-# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
+# if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING )
+  || defined GLS_MIXING
 !
 !     Brunt vaisala frequency.
 !
