@@ -1143,13 +1143,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
-<<<<<<< HEAD
         || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
         || defined GLS_MIXING
-=======
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
->>>>>>> master
      &                                          ,  wrthis(indxbvf)
 # else
      &                                          ,  dumboolean
