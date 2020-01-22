@@ -14,7 +14,7 @@ c common includes for AD tools
 # include "climat.h"
 # include "forces.h"
 # ifdef MPI
-# include "mpi_roms.h"
+# include "mpi_cpl.h"
 # ifdef AMPI
 # include "ampi/ampif.h"
 # else
