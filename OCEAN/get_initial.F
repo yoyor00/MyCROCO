@@ -22,6 +22,9 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#ifdef MOVING_BATHY
+# include "grid.h"
+#endif
 #ifdef BBL
 # include "bbl.h"
 #endif
@@ -285,6 +288,69 @@
      &                                ,ininame(1:lstr)
         goto 99                                           !--> ERROR
       endif
+
+#ifdef MOVING_BATHY
+!
+! Time evolving bathymetry (only needed for restart)
+!
+      lvar=lenstr(vname(1,indxHm))
+      ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (h, ncid, varid, indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxHm)(1:lvar)
+     &                                      ,indx,ininame(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+!       Only read hmorph from restart file
+!        MPI_master_only  write(stdout,1) vname(1,indxHm)(1:lvar)
+!     &                                          ,ininame(1:lstr)
+!        goto 99                                           !--> ERROR
+      endif
+#endif
+
+#ifdef BBL
+!
+! Ripple height
+!
+      got_inibed(1)=.true.
+      lvar=lenstr(vname(1,indxHrip))
+      ierr=nf_inq_varid (ncid, vname(1,indxHrip)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (Hripple, ncid, varid,
+     &                                        indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxHrip)(1:lvar)
+     &                                , indx, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,3) vname(1,indxHrip)(1:lvar)
+     &                                , ininame(1:lstr)
+        got_inibed(1)=.false.
+      endif
+!
+! Ripple length
+!
+      got_inibed(2)=.true.
+      lvar=lenstr(vname(1,indxLrip))
+      ierr=nf_inq_varid (ncid, vname(1,indxLrip)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (Lripple, ncid, varid,
+     &                                        indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxLrip)(1:lvar)
+     &                                , indx, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,3) vname(1,indxLrip)(1:lvar)
+     &                                , ininame(1:lstr)
+        got_inibed(2)=.false.
+      endif
+#endif /* BBL */
+
 #ifdef SOLVE3D
 !
 ! 3D momentum component in the XI-direction.
@@ -340,7 +406,7 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,3) vname(1,indxT+itrc-1)(1:lvar),
+          MPI_master_only write(stdout,3) vname(1,indxT+itrc-1)(1:lvar),
      &                                    ininame(1:lstr)
           got_tini(itrc)=.false.
         endif
@@ -408,46 +474,6 @@
       endif
       enddo
 # endif /* SEDIMENT */
-# ifdef BBL
-!
-! Ripple height
-!
-      got_inibed(1)=.true.
-      lvar=lenstr(vname(1,indxHrip))
-      ierr=nf_inq_varid (ncid, vname(1,indxHrip)(1:lvar), varid)
-      if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (Hripple, ncid, varid,
-     &                                        indx, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxHrip)(1:lvar)
-     &                                , indx, ininame(1:lstr)
-          goto 99                                        !--> ERROR
-        endif
-      else
-        MPI_master_only write(stdout,3) vname(1,indxHrip)(1:lvar)
-     &                                , ininame(1:lstr)
-        got_inibed(1)=.false.
-      endif
-!
-! Ripple length
-!
-      got_inibed(2)=.true.
-      lvar=lenstr(vname(1,indxLrip))
-      ierr=nf_inq_varid (ncid, vname(1,indxLrip)(1:lvar), varid)
-      if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (Lripple, ncid, varid,
-     &                                        indx, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxLrip)(1:lvar)
-     &                                , indx, ininame(1:lstr)
-          goto 99                                        !--> ERROR
-        endif
-      else
-        MPI_master_only write(stdout,3) vname(1,indxLrip)(1:lvar)
-     &                                , ininame(1:lstr)
-        got_inibed(2)=.false.
-      endif
-# endif /* BBL */
 
 !======================================================
 ! Look for Hbl, Akt, Akv, ... (J. Gula)
@@ -635,7 +661,7 @@
 !  Close input NetCDF file.
 !
       ierr=nf_close(ncid)
-#endif
+#endif /* SOLVE3D */
 
 #if defined OA_COUPLING || defined OW_COUPLING
       call cpl_prism_define

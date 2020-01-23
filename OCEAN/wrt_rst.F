@@ -27,6 +27,9 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#ifdef MOVING_BATHY
+# include "grid.h"
+#endif
 #ifdef BBL
 # include "bbl.h"
 #endif
@@ -80,6 +83,7 @@
         record=1+mod(nrecrst-1, abs(nrpfrst))
       endif
 
+!#define CR
 !
 ! Write out evolving model variables:
 ! ----- --- -------- ----- ----------
@@ -183,8 +187,6 @@
           goto 99                                         !--> ERROR
         endif
       enddo
-# endif
-
 
 # ifdef SEDIMENT
 !
@@ -199,7 +201,7 @@
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-CR    write(*,*) 'wrt_rst:  Bed_thick' MYID
+CR      write(*,*) 'wrt_rst:  Bed_thick' MYID
 
       ierr=nf_fwrite(bed_poros, ncidrst, rstSed(2), 
      &                                       record, b3dvar)
@@ -209,7 +211,7 @@ CR    write(*,*) 'wrt_rst:  Bed_thick' MYID
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-CR    write(*,*) 'wrt_rst:  Bed_poros' MYID
+CR      write(*,*) 'wrt_rst:  Bed_poros' MYID
 
       do itrc=1,NST
         indxWrk=indxBFRA(1)+itrc-1
@@ -222,12 +224,27 @@ CR    write(*,*) 'wrt_rst:  Bed_poros' MYID
      &                MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       enddo
+CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 # endif /* SEDIMENT */
+#endif /* SOLVE3D */
 
-# ifdef BBL
+#ifdef MOVING_BATHY
+!     
+!     Write out time evolving bathymetry
+!     
+      ierr=nf_fwrite(h, ncidrst, rstHm, record, r2dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxHm))
+        write(stdout,1) vname(1,indxHm)(1:lvar), record, ierr
+     &                    MYID
+        goto 99                                         !--> ERROR
+      endif
+CR      write(*,*) 'wrt_rst:  Hm' MYID
+#endif
+
+#ifdef BBL
       ierr=nf_fwrite(Hripple, ncidrst, rstBBL(1), record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxHrip))
@@ -235,7 +252,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                    MYID
         goto 99                                         !--> ERROR
       endif
-CR    write(*,*) 'wrt_rst:  Hripple' MYID
+CR      write(*,*) 'wrt_rst:  Hripple' MYID
       ierr=nf_fwrite(Lripple, ncidrst, rstBBL(2), record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxLrip))
@@ -243,8 +260,8 @@ CR    write(*,*) 'wrt_rst:  Hripple' MYID
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-CR    write(*,*) 'wrt_rst:  Lripple' MYID
-# endif /* BBL */
+CR      write(*,*) 'wrt_rst:  Lripple' MYID
+#endif /* BBL */
 
 #ifdef FLOATS
 # ifdef AGRIF
@@ -339,7 +356,7 @@ CR    write(*,*) 'wrt_rst:  Lripple' MYID
 # ifdef AGRIF
       endif       ! Agrif_Root()
 # endif
-#endif
+#endif /* FLOATS */
 
   1   format(/1x, 'WRT_RST ERROR while writing variable ''', A,
      &           ''' into restart file.', /11x, 'Time record:',

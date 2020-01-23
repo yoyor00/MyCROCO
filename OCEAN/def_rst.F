@@ -333,7 +333,6 @@
         
        call nf_add_attribute(ncid, rstVb, indxVb, 5, NF_DOUBLE, ierr)
 
-
 #ifdef SOLVE3D
 !
 ! 3D momenta in XI- and ETA-directions.
@@ -341,9 +340,9 @@
         lvar=lenstr(vname(1,indxU))
         ierr=nf_def_var (ncid, vname(1,indxU)(1:lvar),
      &                              NF_DOUBLE, 4, u3dgrd, rstU)
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstU,nf_collective)
-#endif
+# endif
         lvar=lenstr(vname(2,indxU))
         ierr=nf_put_att_text (ncid, rstU, 'long_name', lvar,
      &                                   vname(2,indxU)(1:lvar))
@@ -359,9 +358,9 @@
         lvar=lenstr(vname(1,indxV))
         ierr=nf_def_var (ncid, vname(1,indxV)(1:lvar),
      &                              NF_DOUBLE, 4, v3dgrd, rstV)
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstV,nf_collective)
-#endif
+# endif
         lvar=lenstr(vname(2,indxV))
         ierr=nf_put_att_text (ncid, rstV, 'long_name', lvar,
      &                                   vname(2,indxV)(1:lvar))
@@ -381,9 +380,9 @@
           lvar=lenstr(vname(1,indxT+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
-#endif
+# endif
           lvar=lenstr(vname(2,indxT+itrc-1))
           ierr=nf_put_att_text (ncid, rstT(itrc), 'long_name',
      &                     lvar,   vname(2,indxT+itrc-1)(1:lvar))
@@ -399,7 +398,8 @@
 
           
         enddo
-#endif
+#endif /* SOLVE3D */
+
 #ifdef SEDIMENT
 !
 ! Sediment bed thickness
@@ -407,9 +407,9 @@
         lvar=lenstr(vname(1,indxBTHK))
         ierr=nf_def_var (ncid, vname(1,indxBTHK)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(1))
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstSed(1),nf_collective)
-#endif
+# endif
         lvar=lenstr(vname(2,indxBTHK))
         ierr=nf_put_att_text (ncid, rstSed(1), 'long_name', lvar,
      &                                   vname(2,indxBTHK)(1:lvar))
@@ -429,9 +429,9 @@
         lvar=lenstr(vname(1,indxBPOR))
         ierr=nf_def_var (ncid, vname(1,indxBPOR)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(2))
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstSed(2),nf_collective)
-#endif
+# endif
         lvar=lenstr(vname(2,indxBPOR))
         ierr=nf_put_att_text (ncid, rstSed(2), 'long_name', lvar,
      &                                   vname(2,indxBPOR)(1:lvar))
@@ -449,13 +449,13 @@
 ! Bed size class fractions.
 !
         do itrc=1,NST
-           indxWrk=indxBFRA(1)+itrc-1
+          indxWrk=indxBFRA(1)+itrc-1
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
      &                          NF_DOUBLE, 4, b3dgrd, rstSed(itrc+2))
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstSed(itrc+2),nf_collective)
-#endif
+# endif
           lvar=lenstr(vname(2,indxWrk))
           ierr=nf_put_att_text (ncid, rstSed(itrc+2), 'long_name',
      &                     lvar,   vname(2,indxWrk)(1:lvar))
@@ -469,18 +469,40 @@
       call nf_add_attribute(ncid, rstSed(itrc+2), indxWrk, 5, 
      &         NF_DOUBLE, ierr)
 
-        enddo          
-# endif /* SEDIMENT */
-# ifdef BBL
+        enddo
+#endif /* SEDIMENT */
+
+#ifdef MOVING_BATHY 
+        lvar=lenstr(vname(1,indxHm))
+        ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
+     &                            NF_DOUBLE, 3, r2dgrd, rstHm)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstHm,nf_collective)
+# endif
+        lvar=lenstr(vname(2,indxHm))
+        ierr=nf_put_att_text (ncid, rstHm, 'long_name', lvar,
+     &                                vname(2,indxHm)(1:lvar))
+        lvar=lenstr(vname(3,indxHm))
+        ierr=nf_put_att_text (ncid, rstHm, 'units',     lvar,
+     &                                vname(3,indxHm)(1:lvar))
+        lvar=lenstr(vname(4,indxHm))
+        ierr=nf_put_att_text (ncid, rstHm, 'field',     lvar,
+     &                                vname(4,indxHm)(1:lvar))
+
+        call nf_add_attribute(ncid, rstHm, indxHm, 5, NF_DOUBLE, ierr)
+
+#endif
+
+#ifdef BBL
 !
 ! Bed ripple height
 !
         lvar=lenstr(vname(1,indxHrip))
         ierr=nf_def_var (ncid, vname(1,indxHrip)(1:lvar),
      &                              NF_DOUBLE, 3, r2dgrd, rstBBL(1))
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstBBL(1),nf_collective)
-#endif
+# endif
         lvar=lenstr(vname(2,indxHrip))
         ierr=nf_put_att_text (ncid, rstBBL(1), 'long_name', lvar,
      &                                   vname(2,indxHrip)(1:lvar))
@@ -501,9 +523,9 @@
         lvar=lenstr(vname(1,indxLrip))
         ierr=nf_def_var (ncid, vname(1,indxLrip)(1:lvar),
      &                              NF_DOUBLE, 3, r2dgrd, rstBBL(2))
-#ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstBBL(2),nf_collective)
-#endif
+# endif
         lvar=lenstr(vname(2,indxLrip))
         ierr=nf_put_att_text (ncid, rstBBL(2), 'long_name', lvar,
      &                                   vname(2,indxLrip)(1:lvar))
@@ -516,7 +538,7 @@
 
         call nf_add_attribute(ncid, rstBBL, indxLrip, 5, 
      &       NF_DOUBLE, ierr)
-# endif /* BBL */
+#endif /* BBL */
 
 
 #ifdef FLOATS
@@ -530,9 +552,9 @@
            lvar=lenstr(vinfo(1))
            ierr=nf_def_var(ncid,vinfo(1)(1:lvar),nf_int,
      &                    1,timedim,rstnfloats)
-#ifdef NC4PAR
+# ifdef NC4PAR
            ierr=nf_var_par_access(ncid,rstnfloats,nf_collective)
-#endif
+# endif
            lvar=lenstr(vinfo(2))
            ierr=nf_put_att_text(ncid,rstnfloats,'long_name',lvar,
      &                         vinfo(2)(1:lvar))
@@ -545,9 +567,9 @@
            lvar=lenstr(vinfo(1))
            ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_DOUBLE,
      &                    3,dim_Tinfo,rstTinfo)
-#ifdef NC4PAR
+# ifdef NC4PAR
            ierr=nf_var_par_access(ncid,rstinfo,nf_collective)
-#endif
+# endif
            lvar=lenstr(vinfo(2))
            ierr=nf_put_att_text(ncid,rstTinfo,'long_name',lvar,
      &                         vinfo(2)(1:lvar))
@@ -743,7 +765,8 @@
             goto 99                                       !--> ERROR
           endif
         enddo 
-#endif
+#endif /* SOLVE3D */
+
 #ifdef SEDIMENT
 !
 ! Bed thickness
@@ -776,9 +799,22 @@
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-        enddo                 
-# endif /* SEDIMENT */
-# ifdef BBL
+        enddo
+#endif /* SEDIMENT */
+
+#ifdef MOVING_BATHY
+!
+! Time evolving bathymetry
+!
+        lvar=lenstr(vname(1,indxHm))
+        ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), rstHm)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxHm)(1:lvar), rstname(1:lstr)
+          goto 99                                       !--> ERROR
+        endif
+#endif
+
+#ifdef BBL
 !
 ! Bed ripple height
 !

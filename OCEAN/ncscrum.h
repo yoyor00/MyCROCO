@@ -831,6 +831,9 @@
       integer rstSed(NST+2)
 # endif	
 #endif
+#ifdef MOVING_BATHY
+      integer rstHm
+#endif
 #ifdef BBL
       integer rstBBL(2)
 #endif
@@ -1259,6 +1262,9 @@
 # ifdef SEDIMENT
      &                         , rstSed
 # endif
+#endif
+#ifdef MOVING_BATHY
+     &                         , rstHm
 #endif
 #ifdef BBL
      &                         , rstBBL

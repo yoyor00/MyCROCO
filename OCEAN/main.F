@@ -275,9 +275,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
 #endif
 #ifdef USE_CALENDAR
-      !calcul of start times and ntimes
+      ! compute start time and ntimes
 #ifdef ANA_INITIAL
-      !if no init file set the start_date from croco.in
+      ! if no initial file set start_date from croco.in
       if (nrrec.eq.0) time=tool_datosec(run_start_date)
 #endif
       time_end=tool_datosec(run_end_date)
@@ -309,11 +309,58 @@ CR      write(*,*) ' -6' MYID
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
 !----------------------------------------------------------------------
+!  Bottom sediment parameters for BBL or SEDIMENT model
+!----------------------------------------------------------------------
+!
+#if (defined BBL && defined ANA_BSEDIM) || defined SEDIMENT
+!
+!  --- Set analytically ---
+!
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+
+# if defined BBL && defined ANA_BSEDIM
+#  ifdef AGRIF
+        if (Agrif_lev_sedim.EQ.0) call ana_bsedim (tile)
+#  else
+        call ana_bsedim (tile)
+#  endif
+# endif
+!
+# ifdef SEDIMENT
+#  ifdef AGRIF
+        if (Agrif_lev_sedim.EQ.0) call ana_sediment (tile)
+#  else
+        call ana_sediment (tile)
+#  endif
+# endif
+      enddo
+#endif
+!
+!  --- Read from NetCDF file (to do) ---
+!
+#if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
+# ifdef AGRIF
+      if (Agrif_lev_sedim.EQ.0) call get_bsedim
+#  else
+      call get_bsedim
+#  endif
+#endif
+!
+#if defined SEDIMENT && !defined ANA_SEDIMENT
+# ifdef AGRIF
+      if (Agrif_lev_sedim.EQ.0) call get_sediment
+# else
+      call get_sediment
+# endif
+#endif
+!
+!----------------------------------------------------------------------
 !  Finalize grid setup
 !----------------------------------------------------------------------
 !
 !  Finalize vertical grid now that zeta is knowned
-!  zeta is also corrected here fr Wetting/Drying
+!  zeta is also corrected here for Wetting/Drying
 !  in both 2D and 3D cases
 !
 #if defined  SOLVE3D || defined WET_DRY
@@ -439,52 +486,6 @@ CR      write(*,*) ' -2' MYID
 #endif
 !
 CR      write(*,*) ' -1' MYID 
-!
-!----------------------------------------------------------------------
-!  Bottom sediment parameters for BBL or SEDIMENT model
-!----------------------------------------------------------------------
-!
-#if (defined BBL && defined ANA_BSEDIM) || defined SEDIMENT
-!
-!  --- Set analytically ---
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-
-# if defined BBL && defined ANA_BSEDIM
-#  ifdef AGRIF
-        if (Agrif_lev_sedim.EQ.0) call ana_bsedim (tile)
-#  else
-        call ana_bsedim (tile)
-#  endif
-# endif
-# ifdef SEDIMENT
-#  ifdef AGRIF
-        if (Agrif_lev_sedim.EQ.0) call ana_sediment (tile)
-#  else
-        call ana_sediment (tile)
-#  endif
-# endif
-      enddo
-#endif
-!
-!  --- Read from NetCDF file ---
-!
-#if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
-# ifdef AGRIF
-      if (Agrif_lev_sedim.EQ.0) call get_bsedim
-#  else
-      call get_bsedim
-#  endif
-#endif
-!
-!#if defined SEDIMENT && !defined ANA_SEDIMENT
-!# ifdef AGRIF
-!      if (Agrif_lev_sedim.EQ.0) call get_sediment
-!# else
-!      call get_sediment
-!# endif
-!#endif
 !
 !----------------------------------------------------------------------
 !  Initialize XIOS I/O server
