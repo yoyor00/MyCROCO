@@ -317,7 +317,11 @@ C$OMP END PARALLEL
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='scrum_time'
       vname(2,indxTime)='time since initialization'
+#ifdef USE_CALENDAR
+      vname(3,indxTime)='seconds since 1900-01-01'
+#else
       vname(3,indxTime)='second'
+#endif
       vname(4,indxTime)='time, scalar, series'
       vname(5,indxTime)='time'
       vname(6,indxTime)='    '
@@ -332,7 +336,11 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
 CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
       vname(1,indxTime2)='time'
       vname(2,indxTime2)='time since initialization'
+#ifdef USE_CALENDAR
+      vname(3,indxTime2)='seconds since 1900-01-01'
+#else
       vname(3,indxTime2)='second'
+#endif
       vname(4,indxTime2)='time, scalar, series'
       vname(5,indxTime2)='time'
       vname(6,indxTime2)='  '
