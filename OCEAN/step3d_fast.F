@@ -358,6 +358,13 @@ C$    trd=omp_get_thread_num()
 #  endif
       endif    ! FIRST_FAST_STEP
 # endif
+
+# ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(qdmu_nbq,'qdmu_nbqint INIT','uint')
+      call check_tab3d(qdmv_nbq,'qdmv_nbqint INIT','vint')
+# endif
+
+
 !
 !=====================================================================
 ! AB3 Forward Step: compute total depth of water column and vertically
@@ -419,6 +426,9 @@ C$    trd=omp_get_thread_num()
         enddo
       enddo
       
+        write(*,*)'step3d_fast ubar(i,j,kstp)=',ubar(10,10,kstp)
+        write(*,*)'step3d_fast ubar(i,j,kbak)=',ubar(10,10,kbak)
+        write(*,*)'step3d_fast ubar(i,j,kold)=',ubar(10,10,kold)
 
 !
 ! Depth-average ubar velocity at m+1/2
@@ -457,9 +467,11 @@ C$    trd=omp_get_thread_num()
         enddo
       enddo
       write(*,*)'step3d_fast DUon(i,j)=',iif,
-     &          DUon(10,10),DUon(11,10)
-      write(*,*)'step3d_fast DVom(i,j)=',iif,
-     &          DVom(10,10),DVom(10,11)
+     &          DUon(10,10)
+      write(*,*)'step3d_fast Drhs(i,j),urhs(i,j)',iif,
+     &          Drhs(10,10),urhs(10,10)
+!      write(*,*)'step3d_fast DVom(i,j)=',iif,
+!     &          DVom(10,10),DVom(10,11)
 
 # ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
@@ -1971,6 +1983,12 @@ C$OMP END MASTER
       enddo   !<-- k=0,N   
 
 # else /* NBQ */
+
+# ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(qdmu_nbq,'qdmu_nbqint 0','uint')
+      call check_tab3d(qdmv_nbq,'qdmv_nbqint 0','vint')
+# endif
+
 !
 !********************************************************************
 !
@@ -2028,7 +2046,15 @@ C$OMP END MASTER
         enddo
       endif
 
-# endif /* NBQ */ 
+# endif /* NBQ */
+
+
+# ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(qdmu_nbq,'qdmu_nbqint bef PSOURCE','uint')
+      call check_tab3d(qdmv_nbq,'qdmv_nbqint bef PSOURCE','vint')
+# endif
+
+
 !
 !-----------------------------------------------------------------------
 ! Apply point sources for river runoff simulations

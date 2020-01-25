@@ -15,12 +15,17 @@
           module debug
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
+          integer start_debug
+          parameter (start_debug0=6)
+          parameter (start_debug=start_debug0)
+          parameter (start_debug_read=start_debug)
           end module debug
 !
 !======================================================================
 !                    debug_ini
 !======================================================================
 !
+          
           subroutine debug_ini()
           USE debug
 #include "param.h"
@@ -30,46 +35,47 @@
           integer :: nb, newunit
           
           filename="check_file"
+            
 #if !defined RVTK_DEBUG_WRITE
           open(107,file="debug_infos",form="formatted",
-     &  status='OLD')
-            read(107,*)nbprocs_in
+     &         status='OLD')
+          read(107,*)nbprocs_in
           close(107)
           allocate(debug_procs_units(0:nbprocs_in-1))
           do nb = 0,nbprocs_in-1
             write(filename,'(a11,i0,a1,i0)')
-     &    "check_file_",nbprocs_in,'_',nb
-!RB : quickfix before updation conv to deal with newunit
-!$AGRIF_DO_NOT_TREAT
+     &           "check_file_",nbprocs_in,'_',nb
+!     RB : quickfix before updation conv to deal with newunit
+!     $AGRIF_DO_NOT_TREAT
             open(newunit=new_unit,
      &           file=filename,form='unformatted',
      &           status='OLD')
-!$AGRIF_END_DO_NOT_TREAT
+!     $AGRIF_END_DO_NOT_TREAT
             debug_procs_units(nb)=new_unit
           enddo
 #else
 #if defined MPI
           if (mynode == 0) then
-          open(107,file="debug_infos",form="formatted")
+            open(107,file="debug_infos",form="formatted")
             write(107,*)NNODES
-          close(107)
+            close(107)
           endif
           print *,'MYNODE = ',mynode
           write(filename,'(a11,i0,a1,i0)')
-     &    "check_file_",NNODES,'_',mynode
+     &         "check_file_",NNODES,'_',mynode
 #else
           open(107,file="debug_infos",form="formatted")
-            write(107,*)1
+          write(107,*)1
           close(107)
           write(filename,'(a14)')"check_file_1_0"
 #endif
           open(107,file=filename,form='unformatted',
-     &            status='UNKNOWN')
+     &         status='UNKNOWN')
 #endif
           return
-
+          
           end subroutine debug_ini
-!
+!     
 !======================================================================
 !                    check_tab2d
 !======================================================================
@@ -103,7 +109,7 @@
       logical globstop
       integer ierr
 # endif
-          
+      
 # if defined OPENMP && !defined MPI
       mynode=0 
 # endif
@@ -111,6 +117,9 @@
 !# if !defined MPI && !defined OPENMP
 #if defined RVTK_DEBUG_WRITE
 #include "debug_indices.h"
+
+      if (iic.gt.start_debug) then
+        write(*,*)'iic.gt.start_debug check_tab2d write'
 #if defined MPI
       i1 = i1 + iminmpi - 1
       i2 = i2 + iminmpi - 1
@@ -127,14 +136,19 @@
      &  + (/iminmpi-1,jminmpi-1/)
 #endif
       write(107)tab
+      endif
 # else
-      do nb = 0, nbprocs_in-1
-      read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
-      read(debug_procs_units(nb))lb
-      read(debug_procs_units(nb))ub
-      allocate(tabread(lb(1):ub(1),lb(2):ub(2)))
-      read(debug_procs_units(nb))tabread
+      if (iic.gt.start_debug_read) then
+        !write(*,*)'iic=',iic
+        write(*,*)'iic.gt.start_debug_read check_tab2d read'
 
+        do nb = 0, nbprocs_in-1
+          read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
+          read(debug_procs_units(nb))lb
+          read(debug_procs_units(nb))ub
+          allocate(tabread(lb(1):ub(1),lb(2):ub(2)))
+          read(debug_procs_units(nb))tabread
+          
 #include "debug_indices.h"
       
       iseq1 = i1_r
@@ -177,6 +191,7 @@
             
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
+      endif
 # endif /* !defined RVTK_DEBUG_WRITE */      
 
 # ifdef MPI
@@ -184,12 +199,13 @@
 # endif
 
 #if !defined RVTK_DEBUG_WRITE
+      if (iic.gt.start_debug_read) then
       MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
+      endif
 # endif
-
           return
           end subroutine check_tab2d
 !
@@ -221,11 +237,12 @@
       integer i1_r,i2_r,j1_r,j2_r,nb
 #endif
       character*80 :: comment_k
+        
 # ifdef OPENMP
       integer mynode
 # endif
       integer iseq1, iseq2, jseq1, jseq2 
-      logical mystop     
+      logical mystop
 
       if (typevar == 'w') then
         do k=1,N+1
@@ -249,6 +266,10 @@
 
 #if defined RVTK_DEBUG_WRITE
 #include "debug_indices.h"
+          
+          if (iic.gt.start_debug) then
+            write(*,*)'iic.gt.start_debug check_tab3d write'
+            
 #if defined MPI
       i1 = i1 + iminmpi - 1
       i2 = i2 + iminmpi - 1
@@ -265,14 +286,18 @@
      &  + (/iminmpi-1,jminmpi-1,0/)
 #endif
       write(107)tab
+      endif
 # else
-      
-      do nb = 0, nbprocs_in-1
-      read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
-      read(debug_procs_units(nb))lb
-      read(debug_procs_units(nb))ub
-      allocate(tabread(lb(1):ub(1),lb(2):ub(2),lb(3):ub(3)))
-      read(debug_procs_units(nb))tabread
+      if (iic.gt.start_debug_read) then
+        !write(*,*)'iic ',iic
+        write(*,*)'iic.gt.start_debug_read check_tab3d read'
+
+        do nb = 0, nbprocs_in-1
+          read(debug_procs_units(nb))i1_r,i2_r,j1_r,j2_r
+          read(debug_procs_units(nb))lb
+          read(debug_procs_units(nb))ub
+          allocate(tabread(lb(1):ub(1),lb(2):ub(2),lb(3):ub(3)))
+          read(debug_procs_units(nb))tabread
 
 #include "debug_indices.h"
 
@@ -318,6 +343,7 @@
            
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
+      endif
 # endif /* !defined RVTK_DEBUG_WRITE */
 
 # ifdef MPI
@@ -325,10 +351,12 @@
 # endif
 
 #if !defined RVTK_DEBUG_WRITE
-      MPI_master_only print *,'CHECK ',comment,' PASSED'
+      if (iic.gt.start_debug_read) then
+        MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
-     &                       ,' ON GRID ',Agrif_CFixed()
+     &       ,' ON GRID ',Agrif_CFixed()
 #  endif
+      endif
 # endif
           return
           end subroutine check_tab3d    

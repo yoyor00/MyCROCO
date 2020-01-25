@@ -108,7 +108,7 @@
 #  define SWITCH !
 # endif
 # ifdef TS_MIX_ISO_FILT
-      if (iic.eq.ntstart) then
+      if (FIRST_TIME_STEP) then
        cfilt=1.                 ! exponential
       else                      ! time smoothing
        cfilt=csmooth            ! coefficient

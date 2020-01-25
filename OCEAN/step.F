@@ -435,7 +435,24 @@ C$OMP BARRIER
         call rhs3d_w_nh (tile)
 #  endif
 # endif
+
+
+#ifdef RVTK_DEBUG_PERFRST
+      do itrc=1,NT
+       write(*,*)'step t(10,10,32,nstp,itrc)=',t(10,10,32,nstp,itrc)
+       write(*,*)'step t(1,0,1,nstp,itrc)=',t(1,0,1,nstp,itrc)
+       call check_tab3d(t(:,:,:,nstp,itrc),'t nstp bef prestep3d','r')
+      enddo
+#endif
+
         call pre_step3d (tile)
+        
+#ifdef RVTK_DEBUG_PERFRST
+      do itrc=1,NT
+      call check_tab3d(t(:,:,:,nnew,itrc),'t nnew aft prestep3d','r')
+      enddo
+#endif
+
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
           call uv3dpremix (tile)
@@ -506,16 +523,21 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
+
 #ifdef RVTK_DEBUG
       do itrc=1,NT
       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
 #endif
+
 
       nrhs=3
       nnew=3-nstp
+
+#ifdef RVTK_DEBUG
+      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
+#endif
 
 #ifdef ONLINE_ANALYSIS
       call croco_oa(1)
@@ -1017,6 +1039,18 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
 
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+      call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
+      enddo
+      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v step3d','v')
+C$OMP END MASTER
+#endif
+
 C$OMP MASTER
 #ifdef AUTOTILING
       call end_timing
@@ -1030,17 +1064,6 @@ C$OMP MASTER
 #endif      
 C$OMP END MASTER
 C$OMP BARRIER
-
-#if defined RVTK_DEBUG && defined SOLVE3D
-C$OMP BARRIER
-C$OMP MASTER
-      do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
-      enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v step3d','v')    
-C$OMP END MASTER      
-#endif
 
       return
       end      

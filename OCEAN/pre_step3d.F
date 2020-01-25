@@ -534,6 +534,8 @@
 # endif 
 
 # ifdef M3FAST
+
+              
               qdm_nstp = u(i,j,k,nstp)*0.5*(Hz(i  ,j,k)+
      &                                      Hz(i-1,j,k))
               qdm_indx = u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
@@ -571,6 +573,10 @@
           enddo
 # endif
          endif
+        
+         
+         
+         
 !
 !======================================================================
 !
@@ -690,6 +696,25 @@
 !======================================================================
 !
       enddo     !<-- j
+      
+      
+        
+        write(*,*)'pre_step3 ru_nbq_avg2=',ru_nbq_avg2(10,10,32)
+        write(*,*)'pre_step3 Zt_avg1=',Zt_avg1(10,10)
+        write(*,*)'pre_step3 ru_int_nbq=',ru_int_nbq(10,10,32)
+        write(*,*)'pre_step3 ru=',ru(10,10,32)
+
+        
+# ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(u(:,:,:,nstp),'prestep3d u(i,j,k,nstp)','uint')
+      call check_tab3d(u(:,:,:,indx),'prestep3d u(i,j,k,indx)','uint')
+!      call check_tab3d(u(:,:,:,nnew),'prestep3d u(i,j,k,nnew)','uint')
+      call check_tab3d(ru_nbq_avg2,'prestep3d ru_nbq_avg2','uint')
+      call check_tab2d(ru_int_nbq_2d,'prestep3d ru_int_nbq_2d','rint')
+      call check_tab2d(Zt_avg1,'prestep3d Zt_avg1','rint')
+      call check_tab3d(ru_int_nbq,'prestep3d ru_int_nbq','uint')
+# endif
+      
       
 # ifdef NBQ
 !----------------------------------------------------------

@@ -219,14 +219,11 @@
 !----------------------------------------------------------
 !
 
-        if (k.eq.32) then
-          write(*,*)'step3d t(10,10,32,nstp)=',t(10,10,32,nstp,itrc)
-          write(*,*)'step3d Hz_bak(10,10,32)=',Hz_bak(10,10,32)
-          write(*,*)'step3d FX(10,10)=',FX(10,10)
-        endif
-        
-        
-        
+#ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(t(:,:,:,nstp,itrc),'t step3d_t','r')
+      call check_tab3d(Hz_bak(:,:,:),'Hz_bak step3d_t','r')
+#endif
+
           do j=Jstr,Jend
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)

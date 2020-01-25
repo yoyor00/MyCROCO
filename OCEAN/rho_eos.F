@@ -175,8 +175,11 @@
       dr00=r00-rho0
 !
 
-        write(*,*)'in rho_eos T(10,10,32)=',t(10,10,32,nrhs,itemp)
-        write(*,*)'in rho_eos S(10,10,32)=',t(10,10,32,nrhs,isalt)
+
+#ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
+      call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
+#endif
 
       do j=JstrR,JendR
 
