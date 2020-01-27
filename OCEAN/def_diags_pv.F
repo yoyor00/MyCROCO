@@ -33,12 +33,19 @@
 # include "strings.h"
 # include "diags_pv.h"
 # include "netcdf.inc"
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include "mpif.h"
+#endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),u2dgrd(3),v2dgrd(3),auxil(2),checkdims 
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
      &      , p2dgrd(3), p3dgrd(4), pw3dgrd(4)
+#endif
+#ifdef NC4PAR
+     &      , csize,cmode
 #endif
 
       character*60 text
@@ -115,13 +122,22 @@
 
 !
       if (ncid.ne.-1) create_new_file=.false.
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
 #endif
 !
  10   if (create_new_file) then
         lstr=lenstr(ncname)
+#ifndef NC4PAR
         ierr=nf_create(ncname(1:lstr),NF_CLOBBER,ncid)
+#else
+        cmode = ior(nf_netcdf4,nf_classic_model)
+        cmode = ior(cmode, nf_mpiio)
+        csize=xi_rho*eta_rho/NNODES
+        MPI_master_only write(stdout,*)'CREATE DIAG NC4 PARALLEL FILE'
+        ierr=nf_create_par(ncname(1:lstr),cmode,
+     &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
+#endif
         if (ierr.ne.nf_noerr) then
           write(stdout,11) ncname(1:lstr)
           may_day_flag=3
@@ -208,6 +224,9 @@
 !
         ierr=nf_def_var (ncid, 'time_step', nf_int, 2, auxil,
      &                                                 vidTstep)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
+#endif
         ierr=nf_put_att_text (ncid, vidTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
 !
@@ -216,6 +235,9 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
      &                            NF_FOUT, 1, timedim, vidTime)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime,nf_collective)
+#endif
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
@@ -248,6 +270,9 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
      &                            NF_FOUT, 1, timedim, vidTime2)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
+#endif
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
@@ -291,6 +316,9 @@
            lvar=lenstr(vname(1,indxpvTrhs+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxpvTrhs+itrc-1)(1:lvar),
      &                      NF_FOUT, 4, r3dgrd, viddiags_Trhs(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,viddiags_Trhs(itrc),nf_collective)
+#endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxpvTrhs+itrc-1))
            ierr=nf_put_att_text (ncid, viddiags_Trhs(itrc), 'long_name',
@@ -330,6 +358,9 @@
           lvar=lenstr(vname(1,indxpvpv))
           ierr=nf_def_var (ncid, vname(1,indxpvpv)(1:lvar),
      &                     NF_FOUT, 4, pw3dgrd, viddiags_pv(itrc))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,viddiags_pv(itrc),nf_collective)
+#endif
 # ifdef AVRH
           text='averaged '/ /vname(2,indxpvpv)
 # else
@@ -358,6 +389,9 @@
           lvar=lenstr(vname(1,indxpvpvd))
           ierr=nf_def_var (ncid, vname(1,indxpvpvd)(1:lvar),
      &                     NF_FOUT, 4, pw3dgrd, viddiags_pvd(itrc))
+#ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_pvd(itrc),nf_collective)
+#endif
 # ifdef AVRH
           text='averaged '/ /vname(2,indxpvpvd)
 # else
@@ -403,6 +437,9 @@
           lvar=lenstr(vname(1,indxpvMrhs+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxpvMrhs+itrc-1)(1:lvar),
      &                     NF_FOUT, 4, r3dgrd, viddiags_Mrhs(itrc))
+#ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,viddiags_Mrhs(itrc),nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxpvMrhs+itrc-1))
           ierr=nf_put_att_text (ncid, viddiags_Mrhs(itrc), 'long_name', 
@@ -455,7 +492,13 @@
 ! defined there and find their netCDF IDs.
 !
       elseif (ncid.eq.-1) then
+#ifndef NC4PAR
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
+#else
+        MPI_master_only write(stdout,*) "Open file in parallel"
+        ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
+     &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
+#endif
         if (ierr. ne. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
@@ -483,7 +526,7 @@
         endif
 !
         if (ierr. ne. nf_noerr) then
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
           if (mynode.eq.0) then
             create_new_file=.true.
             goto 10
@@ -616,7 +659,7 @@
      &                     'existing file  from record =', rec
      &                      MYID
 !
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then

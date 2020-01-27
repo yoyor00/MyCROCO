@@ -68,7 +68,7 @@
 			</file_group>
 		</file_definition>
 
-# ifdef  HOURLY_VELOCITIES
+# if defined  HOURLY_VELOCITIES || defined HOURLY_3D
         <file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
             <file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
                 <file id="file2" name_suffix="_avg_3d" split_freq="5d" split_freq_format="%y-%mo-%d">
@@ -77,6 +77,11 @@
                         <field field_ref="time" name="time" />
                         <field field_ref="u" name="u" />
                         <field field_ref="v" name="v" />
+# if defined HOURLY_3D
+                        <field field_ref="temp" name="temp" />
+                        <field field_ref="salt" name="salt" />
+                        <field field_ref="zeta" name="zeta" />
+#  endif
                     </field_group>
 
                 </file>

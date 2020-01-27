@@ -314,11 +314,11 @@ C$    integer omp_get_thread_num
 #  ifdef NBQ
             w_avg(i,j,k)=init
 #  endif
-# if defined ANA_VMIX || defined BVF_MIXING \
+#  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
             bvf_avg(i,j,k)=init
-# endif
+#  endif
 # endif
           enddo
         enddo
@@ -662,6 +662,10 @@ C$    integer omp_get_thread_num
 !
 !  Initialize sediment module arrays.
 !
+#  if !defined ANA_SEDIMENT
+      got_inibed(1:2)=.false.
+      got_inised(1:3)=.false.
+#  endif
       do j=JstrR,JendR
         do i=IstrR,IendR
            Ssize(i,j)=init

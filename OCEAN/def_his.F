@@ -52,15 +52,15 @@
 #if defined MRL_WCI
      &      , iwkb
 #endif
-#ifdef NC4PAR
-# include "mpi_cpl.h"
-      include "mpif.h"
-#endif
 
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "netcdf.inc"
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include 'mpif.h'
+#endif
       character*70 text
 
 #ifndef AVRH
@@ -719,9 +719,9 @@
           call nf_add_attribute(ncid, vidR, indxR, 5, NF_FOUT, ierr)
 
         endif
-# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
+# if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING )
+  || defined GLS_MIXING
 !----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -2398,9 +2398,9 @@
             goto 99                                       !--> ERROR
           endif
         endif
-# if defined WRTBVF && ( defined ANA_VMIX || defined BVF_MIXING \
+# if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING )
+  || defined GLS_MIXING
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.

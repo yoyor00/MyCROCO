@@ -516,7 +516,7 @@
         enddo
       enddo
 
-# ifdef LIMIT_BSTRESS0
+# ifdef LIMIT_BSTRESS
 !---------------------------------------------------------------------
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted

@@ -110,6 +110,26 @@
      &                   MYID
         goto 99                                           !--> ERROR
       endif
+
+# if defined OUTPUTS_SURFACE && ! defined XIOS
+      count(1)=6
+      ibuff(5)=nrecsurf
+#ifdef AVERAGES
+      ibuff(6)=nrecsurf_avg
+#else
+      ibuff(6)=0
+#endif
+      start(1)=1
+      start(2)=record
+      count(2)=1
+      ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
+      if (ierr .ne. nf_noerr) then
+            write(stdout,1) 'time_step_surf', record, ierr
+     &                   MYID
+      endif
+#endif
+
+
 !
 ! Time.
 !
