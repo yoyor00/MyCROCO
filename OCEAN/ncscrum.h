@@ -556,7 +556,21 @@
       integer indxrvfrc
       parameter (indxrvfrc=indxrufrc+1)
       integer indxSUSTR, indxSVSTR
+# ifdef M3FAST
+      integer indxru_nbq,indxrv_nbq
+      integer indxru_nbq_avg2,indxrv_nbq_avg2
+      integer indxqdmu_nbq,indxqdmv_nbq
+      parameter (indxru_nbq=indxrvfrc+1,
+     &           indxrv_nbq=indxru_nbq+1,
+     &           indxru_nbq_avg2=indxrv_nbq+1,
+     &           indxrv_nbq_avg2=indxru_nbq_avg2+1,
+     &           indxqdmu_nbq=indxrv_nbq_avg2+1,
+     &           indxqdmv_nbq=indxqdmu_nbq+1)
+      parameter (indxSUSTR=indxqdmv_nbq+1,
+     &           indxSVSTR=indxqdmv_nbq+2)
+# else
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
+# endif
 # else
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
@@ -862,6 +876,11 @@
 #endif
 #ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
+# ifdef M3FAST
+      integer rstru_nbq,rstrv_nbq
+      integer rstru_nbq_avg2,rstrv_nbq_avg2
+      integer rstqdmu_nbq,rstqdmv_nbq
+# endif  /* M3FAST */
 #endif
 #ifdef BBL
       integer rstBBL(2)
@@ -1301,6 +1320,11 @@
 #endif
 #ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
+# ifdef M3FAST
+     &      , rstru_nbq,rstrv_nbq
+     &      , rstru_nbq_avg2,rstrv_nbq_avg2
+     &      , rstqdmu_nbq,rstqdmv_nbq
+# endif  /* M3FAST */
 #endif
 # ifdef SEDIMENT
      &                         , rstSed

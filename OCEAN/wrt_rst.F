@@ -29,6 +29,9 @@
 #endif
 #if defined EXACT_RESTART
 # include "coupling.h"
+# if defined M3FAST
+# include "nbq.h"
+# endif
 #endif
 #ifdef SEDIMENT
 # include "sediment.h"
@@ -41,7 +44,12 @@
 # include "floats.h"
 #endif
       integer ierr, record, lstr, lvar, lenstr
-     &  , start(2), count(2), ibuff(4), nf_fwrite
+     &  , start(2), count(2), nf_fwrite
+# if defined OUTPUTS_SURFACE && ! defined XIOS
+     &   , ibuff(6)
+#else
+     &   , ibuff(4)
+#endif
 #ifdef SOLVE3D
      &      , itrc
 #endif
@@ -106,7 +114,7 @@
       count(2)=1
       ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr
+        MPI_master_only write(stdout,1) 'time_step', record, ierr
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -124,7 +132,7 @@
       count(2)=1
       ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-            write(stdout,1) 'time_step_surf', record, ierr
+        MPI_master_only write(stdout,1) 'time_step_surf', record, ierr
      &                   MYID
       endif
 #endif
@@ -339,6 +347,95 @@
             goto 99                                         !--> ERROR
         endif
         
+        
+# ifdef M3FAST
+
+!
+! 3D rhs for M3FAST in XI-direction.
+!
+      ierr=nf_fwrite(ru_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstru_nbq,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxru_nbq))
+        write(stdout,1) vname(1,indxru_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D rhs for M3FAST in ETA-direction.
+!
+       ierr=nf_fwrite(rv_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstrv_nbq,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxrv_nbq))
+         write(stdout,1) vname(1,indxrv_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+!
+! 3D rhs for M3FAST in XI-direction.
+!
+      ierr=nf_fwrite(ru_nbq_avg2(START_2D_ARRAY,1),
+     &                               ncidrst, rstru_nbq_avg2,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxru_nbq_avg2))
+        write(stdout,1) vname(1,indxru_nbq_avg2)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D rhs for M3FAST in ETA-direction.
+!
+       ierr=nf_fwrite(rv_nbq_avg2(START_2D_ARRAY,1),
+     &                               ncidrst, rstrv_nbq_avg2,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxrv_nbq_avg2))
+         write(stdout,1) vname(1,indxrv_nbq_avg2)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+!
+! 3D rhs for M3FAST in XI-direction.
+!
+      ierr=nf_fwrite(qdmu_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstqdmu_nbq,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxqdmu_nbq))
+        write(stdout,1) vname(1,indxqdmu_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D rhs for M3FAST in ETA-direction.
+!
+       ierr=nf_fwrite(qdmv_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstqdmv_nbq,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxqdmv_nbq))
+         write(stdout,1) vname(1,indxqdmv_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+
+
+
+
+# endif  /* M3FAST */
     
 # endif
 

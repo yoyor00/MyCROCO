@@ -972,6 +972,17 @@ C$OMP BARRIER
         call gls_mixing (tile)
 # endif
         call step3d_t (tile)
+        
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+      call check_tab3d(t(:,:,:,nnew,itrc),'t aft step3d_t','r')
+      enddo
+C$OMP END MASTER
+#endif
+
 # ifdef SEDIMENT
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim)
@@ -988,6 +999,17 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+      call check_tab3d(t(:,:,:,nnew,itrc),'t bef t3dmix','r')
+      enddo
+C$OMP END MASTER
+#endif
+
+
       do tile=my_first,my_last
 # if defined TS_DIF2 || defined TS_DIF4 
         call t3dmix (tile)
@@ -997,6 +1019,16 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+      call check_tab3d(t(:,:,:,nnew,itrc),'t aft t3dmix_spg','r')
+      enddo
+C$OMP END MASTER
+#endif
+
 
 #endif /* SOLVE3D */
 

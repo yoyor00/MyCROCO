@@ -36,6 +36,10 @@
      & , dim_Tinfo(3), dim_track(4), dim_fltgrd(2)
       character*65 vinfo(4)
 #endif
+#ifdef NC4PAR
+# include "mpi_cpl.h"
+      include "mpif.h"
+#endif
 
 #include "param.h"
 #include "scalars.h"
@@ -45,11 +49,6 @@
 # include "floats.h"
 # include "ncscrum_floats.h"
 #endif
-#ifdef NC4PAR
-# include "mpi_cpl.h"
-      include 'mpif.h'
-#endif
-
 !
 ! Put time record index into file name. In  the case when model
 ! output is to be arranged into sequence of named files, the naming
@@ -145,7 +144,11 @@
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
 #endif
         ierr=nf_def_dim (ncid, 'time', nf_unlimited, timedim)
+# if defined OUTPUTS_SURFACE && ! defined XIOS
+        ierr=nf_def_dim (ncid, 'auxil',    6,        auxil(1))
+#else
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
+#endif
         auxil(2)=timedim
 
         r2dgrd(3)=timedim           ! Free surface
@@ -372,7 +375,7 @@
         ierr=nf_put_att_text (ncid, rstV, 'field',     lvar,
      &                                  vname(4,indxV)(1:lvar))
 
-        call nf_add_attribute(ncid, rstV, indxVb, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstV, indxV, 5, NF_DOUBLE, ierr)
 
 !
 ! Tracer variables.
@@ -434,7 +437,6 @@
           lvar=lenstr(vname(1,indxHbbl))
           ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
      &         NF_DOUBLE, 3, r2dgrd, rstHbbl)
-        write(*,*) 'def_rst rstHbbl',rstHbbl, rstT
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstHbbl,nf_collective)
 #endif
@@ -553,7 +555,7 @@
           call nf_add_attribute(ncid, rstGls, indxGls, 5,
      &         NF_DOUBLE,ierr)
 
-#endif
+#endif /* GLS_MIXING */
 #endif
 
 
@@ -600,7 +602,141 @@
      &                         indxrvfrc, 5, NF_DOUBLE, ierr)
 
 
-# endif
+# ifdef M3FAST
+
+!
+! 3D rhs for M3FAST in XI- and ETA-directions.
+!
+        lvar=lenstr(vname(1,indxru_nbq))
+        ierr=nf_def_var (ncid, vname(1,indxru_nbq)(1:lvar),
+     &                              NF_DOUBLE, 4, u3dgrd, rstru_nbq)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstru_nbq,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxru_nbq))
+        ierr=nf_put_att_text (ncid, rstru_nbq, 'long_name', lvar,
+     &                                  vname(2,indxru_nbq)(1:lvar))
+        lvar=lenstr(vname(3,indxru_nbq))
+        ierr=nf_put_att_text (ncid, rstru_nbq, 'units',     lvar,
+     &                                  vname(3,indxru_nbq)(1:lvar))
+        lvar=lenstr(vname(4,indxru_nbq))
+        ierr=nf_put_att_text (ncid, rstru_nbq, 'field',     lvar,
+     &                                  vname(4,indxru_nbq)(1:lvar))
+
+        call nf_add_attribute(ncid, rstru_nbq, indxru_nbq,
+     &                                   5, NF_DOUBLE, ierr)
+
+        lvar=lenstr(vname(1,indxrv_nbq))
+        ierr=nf_def_var (ncid, vname(1,indxrv_nbq)(1:lvar),
+     &                              NF_DOUBLE, 4, v3dgrd, rstrv_nbq)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrv_nbq,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxrv_nbq))
+        ierr=nf_put_att_text (ncid, rstrv_nbq, 'long_name', lvar,
+     &                                  vname(2,indxrv_nbq)(1:lvar))
+        lvar=lenstr(vname(3,indxrv_nbq))
+        ierr=nf_put_att_text (ncid, rstrv_nbq, 'units',     lvar,
+     &                                  vname(3,indxrv_nbq)(1:lvar))
+        lvar=lenstr(vname(4,indxrv_nbq))
+        ierr=nf_put_att_text (ncid, rstrv_nbq, 'field',     lvar,
+     &                                  vname(4,indxrv_nbq)(1:lvar))
+
+        call nf_add_attribute(ncid, rstrv_nbq, indxrv_nbq,
+     &                                   5, NF_DOUBLE, ierr)
+
+
+
+!
+! 3D rhs for M3FAST in XI- and ETA-directions.
+!
+        lvar=lenstr(vname(1,indxru_nbq_avg2))
+        ierr=nf_def_var (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
+     &                    NF_DOUBLE, 4, u3dgrd, rstru_nbq_avg2)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstru_nbq_avg2,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxru_nbq_avg2))
+        ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'long_name',
+     &                      lvar, vname(2,indxru_nbq_avg2)(1:lvar))
+        lvar=lenstr(vname(3,indxru_nbq_avg2))
+        ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'units', lvar,
+     &                       vname(3,indxru_nbq_avg2)(1:lvar))
+        lvar=lenstr(vname(4,indxru_nbq_avg2))
+        ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'field', lvar,
+     &                       vname(4,indxru_nbq_avg2)(1:lvar))
+
+        call nf_add_attribute(ncid, rstru_nbq_avg2, indxru_nbq_avg2,
+     &                                   5, NF_DOUBLE, ierr)
+
+        lvar=lenstr(vname(1,indxrv_nbq_avg2))
+        ierr=nf_def_var (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
+     &                    NF_DOUBLE, 4, v3dgrd, rstrv_nbq_avg2)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstrv_nbq_avg2,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxrv_nbq_avg2))
+        ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'long_name',
+     &                      lvar, vname(2,indxrv_nbq_avg2)(1:lvar))
+        lvar=lenstr(vname(3,indxrv_nbq_avg2))
+        ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'units',  lvar,
+     &                       vname(3,indxrv_nbq_avg2)(1:lvar))
+        lvar=lenstr(vname(4,indxrv_nbq_avg2))
+        ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'field',  lvar,
+     &                       vname(4,indxrv_nbq_avg2)(1:lvar))
+
+        call nf_add_attribute(ncid, rstrv_nbq_avg2, indxrv_nbq_avg2,
+     &                                   5, NF_DOUBLE, ierr)
+
+
+
+
+!
+! 3D rhs for M3FAST in XI- and ETA-directions.
+!
+        lvar=lenstr(vname(1,indxqdmu_nbq))
+        ierr=nf_def_var (ncid, vname(1,indxqdmu_nbq)(1:lvar),
+     &                    NF_DOUBLE, 4, u3dgrd, rstqdmu_nbq)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstqdmu_nbq,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxqdmu_nbq))
+        ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'long_name',
+     &                      lvar, vname(2,indxqdmu_nbq)(1:lvar))
+        lvar=lenstr(vname(3,indxqdmu_nbq))
+        ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'units', lvar,
+     &                       vname(3,indxqdmu_nbq)(1:lvar))
+        lvar=lenstr(vname(4,indxqdmu_nbq))
+        ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'field', lvar,
+     &                       vname(4,indxqdmu_nbq)(1:lvar))
+
+        call nf_add_attribute(ncid, rstqdmu_nbq, indxqdmu_nbq,
+     &                                   5, NF_DOUBLE, ierr)
+
+        lvar=lenstr(vname(1,indxqdmv_nbq))
+        ierr=nf_def_var (ncid, vname(1,indxqdmv_nbq)(1:lvar),
+     &                    NF_DOUBLE, 4, v3dgrd, rstqdmv_nbq)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxqdmv_nbq))
+        ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'long_name',
+     &                      lvar, vname(2,indxqdmv_nbq)(1:lvar))
+        lvar=lenstr(vname(3,indxqdmv_nbq))
+        ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'units',  lvar,
+     &                       vname(3,indxqdmv_nbq)(1:lvar))
+        lvar=lenstr(vname(4,indxqdmv_nbq))
+        ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'field',  lvar,
+     &                       vname(4,indxqdmv_nbq)(1:lvar))
+
+        call nf_add_attribute(ncid, rstqdmv_nbq, indxqdmv_nbq,
+     &                                   5, NF_DOUBLE, ierr)
+
+
+
+# endif  /* M3FAST */
+
+# endif  /* EXACT_RESTART */
 
 
 
@@ -1035,6 +1171,79 @@
           write(stdout,1) vname(1,indxrvfrc)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+        
+# ifdef M3FAST
+
+!
+! 3D rhs for M3FAST in XI- and ETA-directions.
+!
+
+        lvar=lenstr(vname(1,indxru_nbq))
+        ierr=nf_inq_varid (ncid, vname(1,indxru_nbq)(1:lvar),
+     &                                                 rstru_nbq)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxru_nbq)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+        lvar=lenstr(vname(1,indxrv_nbq))
+        ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq)(1:lvar),
+     &                                                 rstrv_nbq)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxrv_nbq)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+!
+! 3D rhs for M3FAST in XI- and ETA-directions.
+!
+
+        lvar=lenstr(vname(1,indxru_nbq_avg2))
+        ierr=nf_inq_varid (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
+     &                                            rstru_nbq_avg2)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxru_nbq_avg2)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+        lvar=lenstr(vname(1,indxrv_nbq_avg2))
+        ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
+     &                                            rstrv_nbq_avg2)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxrv_nbq_avg2)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+        
+    !
+    ! 3D rhs for M3FAST in XI- and ETA-directions.
+    !
+
+        lvar=lenstr(vname(1,indxqdmu_nbq))
+        ierr=nf_inq_varid (ncid, vname(1,indxqdmu_nbq)(1:lvar),
+     &                                            rstqdmu_nbq)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxqdmu_nbq)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+        lvar=lenstr(vname(1,indxqdmv_nbq))
+        ierr=nf_inq_varid (ncid, vname(1,indxqdmv_nbq)(1:lvar),
+     &                                            rstqdmv_nbq)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxqdmv_nbq)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+
+            
+# endif  /* M3FAST */
+        
 # endif
 
 #ifdef SEDIMENT

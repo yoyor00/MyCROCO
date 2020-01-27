@@ -219,11 +219,6 @@
 !----------------------------------------------------------
 !
 
-#ifdef RVTK_DEBUG_PERFRST
-      call check_tab3d(t(:,:,:,nstp,itrc),'t step3d_t','r')
-      call check_tab3d(Hz_bak(:,:,:),'Hz_bak step3d_t','r')
-#endif
-
           do j=Jstr,Jend
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
@@ -233,10 +228,6 @@
             enddo
           enddo                 !-->  discard FX,FE
 
-
-        if (k.eq.32) then
-          write(*,*)'step3d t(10,10,32,nnew)=',t(10,10,32,nnew,itrc)
-        endif
 
 
 # if defined AGRIF && defined AGRIF_CONSERV_TRA
@@ -339,9 +330,9 @@
           enddo               !--> discard FC
 
 
-        if (j.eq.10) then
-          write(*,*)'step3d (vadv) t(10,10,32,nnew)='
-     &                          ,t(10,10,32,nnew,itrc)
+        if (j.eq.1) then
+          write(*,*)'step3d (vadv) t(1,1,1,nnew)='
+     &                          ,t(1,1,1,nnew,itrc)
         endif
 
 
@@ -427,9 +418,9 @@
             enddo
           endif
 
-         if (j.eq.10) then
-           write(*,*)'step3d (forc) t(10,10,32,nnew)='
-     &                          ,t(10,10,32,nnew,itrc)
+         if (j.eq.1) then
+           write(*,*)'step3d (forc) t(1,1,1,nnew)='
+     &                          ,t(1,1,1,nnew,itrc)
          endif
 
 !
@@ -450,6 +441,10 @@
        enddo
 #  endif
 
+        write(*,*)'step3d (-1) t(1,1,1,nnew)='
+     &                        ,t(1,1,1,nnew,itrc)
+
+
 # ifdef TS_MIX_IMP
 #  ifdef BIO_HADV_WENO5
 #   undef TS_MIX_IMP 
@@ -469,6 +464,9 @@
 # else
 #  include "t3dmix_tridiagonal.h"
 # endif
+
+        write(*,*)'step3d (0) t(1,1,1,nnew)='
+     &                         ,t(1,1,1,nnew,itrc)
 
 # ifdef CONST_TRACERS
           do k=1,N
@@ -510,7 +508,14 @@
 !======================================================================
 !
       do itrc=1,NT
+
+        call check_tab3d(t(:,:,:,nnew,itrc),'t nnew bef t3dbc','r')
+        call check_tab3d(t(:,:,:,nstp,itrc),'t nstp bef t3dbc','r')
+
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
+        
+        call check_tab3d(t(:,:,:,nnew,itrc),'t aft t3dbc','r')
+
       enddo
 !
 !======================================================================
@@ -617,7 +622,6 @@
      &                  tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
         endif
 #  endif /* ZONAL_NUDGING */
-
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -835,8 +839,6 @@
           enddo
         enddo
         
-        write(*,*)'step3d (end) t(10,10,32,nnew)='
-     &                         ,t(10,10,32,nnew,itrc)
 #  undef I_RANGE
 #  undef J_RANGE
 # endif /* MASKING */

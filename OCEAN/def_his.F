@@ -1404,7 +1404,6 @@
 !
 # ifdef SALINITY
         if (wrt(indxBwflx)) then
-          write(*,*)'BBBB'
           lvar=lenstr(vname(1,indxBwflx))
           ierr=nf_def_var (ncid, vname(1,indxBwflx)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidBwflx)

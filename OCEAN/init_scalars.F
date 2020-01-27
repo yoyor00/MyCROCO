@@ -1389,12 +1389,12 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
-      vname(1,indxbvf)='bvf                                         '
-      vname(2,indxbvf)='Brunt Vaisala Frequency                     '
-      vname(3,indxbvf)='second-1                                    '
-      vname(4,indxbvf)='bvf, scalar, series                         '
-      vname(5,indxbvf)='brunt_vaisala_frequency                     '
-      vname(7,indxbvf)='                                            '
+      vname(1,indxbvf)='bvf                                       '
+      vname(2,indxbvf)='Brunt Vaisala Frequency                   '
+      vname(3,indxbvf)='second-1                                  '
+      vname(4,indxbvf)='bvf, scalar, series                       '
+      vname(5,indxbvf)='brunt_vaisala_frequency                   '
+      vname(7,indxbvf)='                                          '
 # endif
 
 # ifdef VIS_COEF_3D
@@ -1564,22 +1564,81 @@ CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
 # ifdef EXACT_RESTART
 
 CR      write(stdout,'(1x,A,I3)') 'indxrufrc =',indxrufrc
-      vname(1,indxrufrc)='rufrc                                     '
-      vname(2,indxrufrc)='barotropic forcing terms                  '
-      vname(3,indxrufrc)='meter second-2                            '
-      vname(4,indxrufrc)='rufrc, scalar, series                     '
-      vname(5,indxrufrc)='barotropic_forcing_terms                  '
-      vname(6,indxrufrc)='lat_u lon_u                               '
-      vname(7,indxrufrc)='                                          '
+      vname(1,indxrufrc)='rufrc                                   '
+      vname(2,indxrufrc)='barotropic forcing terms                '
+      vname(3,indxrufrc)='meter second-2                          '
+      vname(4,indxrufrc)='rufrc, scalar, series                   '
+      vname(5,indxrufrc)='barotropic_forcing_terms                '
+      vname(6,indxrufrc)='lat_u lon_u                             '
+      vname(7,indxrufrc)='                                        '
       
 CR      write(stdout,'(1x,A,I3)') 'indxrvfrc =',indxrvfrc
-      vname(1,indxrvfrc)='rvfrc                                     '
-      vname(2,indxrvfrc)='barotropic forcing terms                  '
-      vname(3,indxrvfrc)='meter second-2                            '
-      vname(4,indxrvfrc)='rvfrc, scalar, series                     '
-      vname(5,indxrvfrc)='barotropic_forcing_terms                  '
-      vname(6,indxrvfrc)='lat_v lon_v                               '
-      vname(7,indxrvfrc)='                                          '
+      vname(1,indxrvfrc)='rvfrc                                   '
+      vname(2,indxrvfrc)='barotropic forcing terms                '
+      vname(3,indxrvfrc)='meter second-2                          '
+      vname(4,indxrvfrc)='rvfrc, scalar, series                   '
+      vname(5,indxrvfrc)='barotropic_forcing_terms                '
+      vname(6,indxrvfrc)='lat_v lon_v                             '
+      vname(7,indxrvfrc)='                                        '
+      
+# ifdef M3FAST
+
+CR      write(stdout,'(1x,A,I3)') 'indxru_nbq =',indxru_nbq
+      vname(1,indxru_nbq)='ru_nbq                                 '
+      vname(2,indxru_nbq)='Fast momentum forcing terms            '
+      vname(3,indxru_nbq)='meter second-2                         '
+      vname(4,indxru_nbq)='ru_nbq, scalar, series                 '
+      vname(5,indxru_nbq)='Fast_momentum_forcing_terms            '
+      vname(6,indxru_nbq)='lat_u lon_u                            '
+      vname(7,indxru_nbq)='                                       '
+      
+CR      write(stdout,'(1x,A,I3)') 'indxrv_nbq =',indxrv_nbq
+      vname(1,indxrv_nbq)='rv_nbq                                 '
+      vname(2,indxrv_nbq)='Fast momentum forcing terms            '
+      vname(3,indxrv_nbq)='meter second-2                         '
+      vname(4,indxrv_nbq)='rv_nbq, scalar, series                 '
+      vname(5,indxrv_nbq)='Fast_momentum_forcing_terms            '
+      vname(6,indxrv_nbq)='lat_u lon_u                            '
+      vname(7,indxrv_nbq)='                                       '
+
+CR      write(stdout,'(1x,A,I3)') 'indxru_nbq_avg2 =',indxru_nbq_avg2
+      vname(1,indxru_nbq_avg2)='ru_nbq_avg2                       '
+      vname(2,indxru_nbq_avg2)='Fast momentum forcing terms       '
+      vname(3,indxru_nbq_avg2)='meter second-2                    '
+      vname(4,indxru_nbq_avg2)='ru_nbq_avg2, scalar, series       '
+      vname(5,indxru_nbq_avg2)='Fast_momentum_forcing_terms       '
+      vname(6,indxru_nbq_avg2)='lat_u lon_u                       '
+      vname(7,indxru_nbq_avg2)='                                  '
+      
+CR      write(stdout,'(1x,A,I3)') 'indxrv_nbq_avg2 =',indxrv_nbq_avg2
+      vname(1,indxrv_nbq_avg2)='rv_nbq_avg2                       '
+      vname(2,indxrv_nbq_avg2)='Fast momentum forcing terms       '
+      vname(3,indxrv_nbq_avg2)='meter second-2                    '
+      vname(4,indxrv_nbq_avg2)='rv_nbq_avg2, scalar, series       '
+      vname(5,indxrv_nbq_avg2)='Fast_momentum_forcing_terms       '
+      vname(6,indxrv_nbq_avg2)='lat_u lon_u                       '
+      vname(7,indxrv_nbq_avg2)='                                  '
+
+CR      write(stdout,'(1x,A,I3)') 'indxqdmu_nbq =',indxqdmu_nbq
+      vname(1,indxqdmu_nbq)='qdmu_nbq                             '
+      vname(2,indxqdmu_nbq)='Fast momentum forcing terms          '
+      vname(3,indxqdmu_nbq)='meter second-2                       '
+      vname(4,indxqdmu_nbq)='qdmu_nbq, scalar, series             '
+      vname(5,indxqdmu_nbq)='Fast_momentum_forcing_terms          '
+      vname(6,indxqdmu_nbq)='lat_u lon_u                          '
+      vname(7,indxqdmu_nbq)='                                     '
+      
+CR      write(stdout,'(1x,A,I3)') 'indxqdmv_nbq =',indxqdmv_nbq
+      vname(1,indxqdmv_nbq)='qdmv_nbq                             '
+      vname(2,indxqdmv_nbq)='Fast momentum forcing terms          '
+      vname(3,indxqdmv_nbq)='meter second-2                       '
+      vname(4,indxqdmv_nbq)='qdmv_nbq, scalar, series             '
+      vname(5,indxqdmv_nbq)='Fast_momentum_forcing_terms          '
+      vname(6,indxqdmv_nbq)='lat_u lon_u                          '
+      vname(7,indxqdmv_nbq)='                                     '
+
+
+# endif  /* M3FAST */
 
 # endif /* EXACT_RESTART */
 

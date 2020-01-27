@@ -426,10 +426,6 @@ C$    trd=omp_get_thread_num()
         enddo
       enddo
       
-        write(*,*)'step3d_fast ubar(i,j,kstp)=',ubar(10,10,kstp)
-        write(*,*)'step3d_fast ubar(i,j,kbak)=',ubar(10,10,kbak)
-        write(*,*)'step3d_fast ubar(i,j,kold)=',ubar(10,10,kold)
-
 !
 ! Depth-average ubar velocity at m+1/2
 !
@@ -466,12 +462,6 @@ C$    trd=omp_get_thread_num()
      &                                                              )
         enddo
       enddo
-      write(*,*)'step3d_fast DUon(i,j)=',iif,
-     &          DUon(10,10)
-      write(*,*)'step3d_fast Drhs(i,j),urhs(i,j)',iif,
-     &          Drhs(10,10),urhs(10,10)
-!      write(*,*)'step3d_fast DVom(i,j)=',iif,
-!     &          DVom(10,10),DVom(10,11)
 
 # ifdef OBC_VOLCONS
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
@@ -761,13 +751,6 @@ C$OMP END MASTER
         enddo
       enddo
       
-      
-        write(*,*)'step3d_fast DUon(i,j)=',iif,
-     &          DUon(10,10),DUon(11,10)
-        write(*,*)'step3d_fast DVom(i,j)=',iif,
-     &          DVom(10,10),DVom(10,11)
-        write(*,*)'step3d_fast zeta(10,10,knew)=',iif,
-     &           zeta(10,10,knew)
 
 # endif /* NBQ */
 !

@@ -41,6 +41,9 @@
 
 # if defined EXACT_RESTART
 # include "coupling.h"
+# if defined M3FAST
+# include "nbq.h"
+# endif
 # endif
 !======================================================
 !
@@ -172,7 +175,6 @@
 !
       lvar=lenstr(vname(1,indxTime))
       ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
-      write(*,*)'vname(1,indxTime)(1:lvar)=', vname(1,indxTime)(1:lvar)
       
 !! GC
 !! The following is done for backward compatibility: normally time
@@ -189,8 +191,6 @@
 
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
-        write(*,*)'ncid ',ncid ,'varid ',varid,'record ',record,
-     &       'start_time ',start_time
         if (ierr .eq. nf_noerr) then
           ierr=nf_get_att_text(ncid, varid, 'units', units)
           if (ierr .eq. nf_noerr) then
@@ -207,19 +207,11 @@
               goto 99                                    !--> ERROR
             endif
             start_time=start_time*time_scale
-            write(*,*)'  '
-            write(*,*)'TINDEX=',tindx
-            write(*,*)'START_TIME=',start_time,
-     &           ' TIME_SCALE=',time_scale
-            write(*,*)'  '
 #ifdef EXACT_RESTART
             if (tindx.eq.2) then
               forw_start=0
               if (record.lt.max_rec) then
-                write(*,*)'time_bak=start_time...'
-                write(*,*)'time_bak=',time_bak
                 time_bak=start_time
-                write(*,*)'time_bak=',time_bak
                 ierr=nf_get_var1_FTYPE (ncid, varid, record+1,
      &                                             start_time)
                 if (ierr .eq. nf_noerr) then
@@ -230,8 +222,6 @@
 !
                   if (abs(start_time-time_bak-dt) .lt. 0.001*dt) then
                     forw_start=1
-                    write(*,*)'forw_start=',forw_start
-                     write(*,*)' '
                   else
                     write(*,'(1x,2A,2I4/10x,4A/10x,A/)')
      &                'WARNING: Exact restart is requested, but ',
@@ -357,12 +347,8 @@
             start(2)=record+1
             ierr=nf_get_vara_int (ncid, varid, start, count, ibuff)
             if (ierr .eq. nf_noerr) then
-              write(*,*) '  '
-              write(*,*) 'ibuff',ibuff
-              write(*,*)'ntstart',ntstart
               if (ibuff(1) .eq. ntstart+1) then
                 forw_start=1
-                write(*,*)'forw_start',forw_start
               else
                 write(*,'(1x,3A,2I4/10x,4A/10x,A)')      'WARNING: ',
      &           'Exact restart is requested, but is not possible: ',
@@ -394,12 +380,6 @@
             endif
           endif
 
-          write(*,*)'    '
-          write(*,*)'END PROCEDURE....'
-          write(*,*)'time_bak=',time_bak
-          write(*,*)'start_time=',start_time
-          write(*,*)'dt=',dt
-          write(*,*)'forw_start=',forw_start
           
 #endif
         else
@@ -449,7 +429,7 @@
       endif
 
 #ifdef DIAGNOSTICS_UV
-          ntsdiags_uv_avg = ntsavg
+          ntsdiaM_avg = ntsavg
 #endif
 #ifdef DIAGNOSTICS_VRT
           ntsdiags_vrt_avg = ntsavg
@@ -458,7 +438,7 @@
           ntsdiags_ek_avg = ntsavg
 #endif
 #ifdef DIAGNOSTICS_TS
-          ntsdiags_ts_avg = ntsavg
+          ntsdia_avg = ntsavg
 #endif
 #ifdef DIAGNOSTICS_PV
           ntsdiags_pv_avg = ntsavg
@@ -739,9 +719,6 @@
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.'
       endif
       
-#  ifdef LMD_SKPP2005
-      write(*,*)'get_initial hbls(10,10)=',hbls(10,10,1)
-#  endif
 
 !
 !  vertical viscosity coefficient
@@ -764,8 +741,6 @@
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
         
-        write(*,*)'get_initial Akv(10,10,32)=',Akv(10,10,32)
-
 !
 !  vertical diffusion coefficient for potential temperature.
 !
@@ -897,11 +872,6 @@
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
         
-        
-       write(*,*)'get_initial trb(10,10,32,nstp,itke)=',
-     &                        trb(10,10,32,nstp,itke)
-       write(*,*)'get_initial trb(10,10,32,nstp,igls)=',
-     &                        trb(10,10,32,nstp,igls)
       
 # endif
 
@@ -921,17 +891,11 @@
           goto 99                                        !--> ERROR
         endif
       else
-!        MPI_master_only write(stdout,*)
-!     &     'WARNING: netCDF variable ''',
-!     &     vname(1,indxrufrc)(1:lvar),       ''' not found in ''',
-!     &     ininame(1:lstr), ''' ==> initialized to zero state.'
+        MPI_master_only write(stdout,*)
+     &     'WARNING: netCDF variable ''',
+     &     vname(1,indxrufrc)(1:lvar),       ''' not found in ''',
+     &     ininame(1:lstr), ''' ==> initialized to zero state.'
       endif
-
-      write(*,*)'get_initial rufrc_bak(10,10,3-nstp)=',
-     &                       rufrc_bak(10,10,3-nstp)
-      write(*,*)'get_initial rufrc_bak(10,10,nstp)=',
-     &                       rufrc_bak(10,10,nstp)
-     
      
 
 !  rvfrc
@@ -947,13 +911,152 @@
            goto 99                                        !--> ERROR
          endif
        else
-!        MPI_master_only write(stdout,*)
-!     &     'WARNING: netCDF variable ''',
-!     &     vname(1,indxrufrc)(1:lvar),       ''' not found in ''',
-!     &     ininame(1:lstr), ''' ==> initialized to zero state.'
+        MPI_master_only write(stdout,*)
+     &     'WARNING: netCDF variable ''',
+     &     vname(1,indxrvfrc)(1:lvar),       ''' not found in ''',
+     &     ininame(1:lstr), ''' ==> initialized to zero state.'
        endif
  
-     
+ 
+# ifdef M3FAST
+
+!
+! ru_nbq.
+!
+      lvar=lenstr(vname(1,indxru_nbq))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxru_nbq)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (ru_nbq(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, u3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxru_nbq)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxru_nbq)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+!
+! rv_nbq.
+!
+      lvar=lenstr(vname(1,indxrv_nbq))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxrv_nbq)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (rv_nbq(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, v3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxrv_nbq)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxrv_nbq)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+!
+! ru_nbq_avg2.
+!
+      lvar=lenstr(vname(1,indxru_nbq_avg2))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxru_nbq_avg2)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (ru_nbq_avg2(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, u3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxru_nbq_avg2)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxru_nbq_avg2)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+!
+! rv_nbq_avg2.
+!
+      lvar=lenstr(vname(1,indxrv_nbq_avg2))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxrv_nbq_avg2)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (rv_nbq_avg2(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, v3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxrv_nbq_avg2)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxrv_nbq_avg2)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+      
+      
+!
+! qdmu_nbq.
+!
+      lvar=lenstr(vname(1,indxqdmu_nbq))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxqdmu_nbq)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (qdmu_nbq(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, u3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxqdmu_nbq)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxqdmu_nbq)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+!
+! qdmv_nbq.
+!
+      lvar=lenstr(vname(1,indxqdmv_nbq))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxqdmv_nbq)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (qdmv_nbq(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, v3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxqdmv_nbq)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxqdmv_nbq)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+      
+      
+# endif  /* M3FAST */
      
 #  endif
 

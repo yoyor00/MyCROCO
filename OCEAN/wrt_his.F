@@ -112,6 +112,7 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
       start(2)=record
       count(1)=4
       count(2)=1
+      write(*,*) 'his start,count,ibuff',start,count,ibuff
       ierr=nf_put_vara_int (ncidhis, hisTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
          MPI_master_only write(stdout,1) 'time_step', record, ierr
