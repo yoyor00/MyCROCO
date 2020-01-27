@@ -3113,58 +3113,43 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvb)
 # if defined OUTPUTS_SURFACE && ! defined XIOS
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurft = ',indxsurft
-       nametrc='surf'
-       lvar=lenstr(nametrc)
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_t                       '
+       write(vname1,*) 'temp'
        vname(1,indxsurft)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxsurft)
        vname(2,indxsurft)='SST                                 '
-       write(vname3,*) trim(unitt),'Celsius                    '
+       write(vname3,*) 'Celsius'
        vname(3,indxsurft)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurfs = ',indxsurfs
-       nametrc='surf'
-       lvar=lenstr(nametrc)
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_s                       '
+       write(vname1,*) 'salt'
        vname(1,indxsurfs)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxsurfs)
        vname(2,indxsurfs)='SSS                                 '
-       write(vname3,*) trim(unitt),'PSU                        '
+       write(vname3,*) 'PSU'
        vname(3,indxsurfs)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurfz = ',indxsurfz
-       nametrc='surf'
-       lvar=lenstr(nametrc)
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_z                       '
+       write(vname1,*) 'zeta'
        vname(1,indxsurfz)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxsurfz)
        vname(2,indxsurfz)='SSH                                 '
-       write(vname3,*) trim(unitt),'Celsius                    '
+       write(vname3,*) 'm'
        vname(3,indxsurfz)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurfu = ',indxsurfu
-       nametrc='surf'
-       lvar=lenstr(nametrc)
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_u                       '
+       write(vname1,*) 'u'
        vname(1,indxsurfu)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxsurfu)
        vname(2,indxsurfu)='surface u                           '
-       write(vname3,*) trim(unitt),'meter second-1             '
+       write(vname3,*) 'meter second-1                         '
        vname(3,indxsurfu)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurfv = ',indxsurfv
-       nametrc='surf'
-       lvar=lenstr(nametrc)
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_v                       '
+       write(vname1,*) 'v'
        vname(1,indxsurfv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxsurfv)
-       vname(2,indxsurfv)='SST                                 '
-       write(vname3,*) trim(unitt),'meter second-1             '
+       vname(2,indxsurfv)='surface v                           '
+       write(vname3,*) 'meter second-1                         '
        vname(3,indxsurfv)=vname3
 
 
