@@ -20,7 +20,7 @@ climatology: filename
                           croco_clm.nc
 boundary: filename
                           croco_bry.nc
-initial: NRREC  filename
+initial: NRREC / filename
           1 
                           croco_ini.nc
 restart:          NRST, NRPFRST / filename

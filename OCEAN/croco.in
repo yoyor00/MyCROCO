@@ -22,7 +22,7 @@ climatology: filename
     CROCO_FILES/croco_clm.nc
 boundary: filename
     CROCO_FILES/croco_bry.nc
-initial: NRREC  filename
+initial: NRREC / filename
           1 
     CROCO_FILES/croco_ini.nc
 restart:          NRST, NRPFRST / filename
