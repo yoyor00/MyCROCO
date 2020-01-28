@@ -316,12 +316,9 @@
         do j=JstrR,JendR
          do l=1,2
            if(rmask(Istr+l-2,j)/=0)   then
-            if (j+jminmpi-1 .eq. 149 .and. l .eq. 2)
-     &          flag=.false.
              call ma1(flag,mynode,j,l,
      &            t_0,ijour,imois,ian,hnouest(1,j,l),rouest(1,1,j,l),
      &            gouest(1,1,j,l),nomd,fr1,fr2,num)
-              flag=.false.
            endif
          end do
         end do

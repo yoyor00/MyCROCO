@@ -567,6 +567,9 @@
 #  endif
 # endif
 #endif
+#ifdef TIDES_MAS
+# define MASKING
+#endif
 
 /*
 ======================================================================
