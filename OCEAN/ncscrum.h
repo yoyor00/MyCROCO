@@ -867,8 +867,14 @@
       integer rstHbbl
 #endif
 #endif
+# if defined GLS_MIXING
+      integer rstAkv,rstAkt
+# if defined SALINITY
+      integer rstAks
+# endif
+# endif
 #ifdef GLS_MIXING
-      integer rstAkv,rstAkt,rstTke,rstGls
+      integer rstTke,rstGls
 #endif
 # ifdef SEDIMENT
       integer rstSed(NST+2)
@@ -1315,8 +1321,14 @@
      &      , rstHbbl
 #endif
 #endif
+#if defined GLS_MIXING
+     &      , rstAkv,rstAkt
+# if defined SALINITY
+     &      , rstAks
+# endif
+#endif
 #ifdef GLS_MIXING
-     &      , rstAkv,rstAkt,rstTke,rstGls
+     &      , rstTke,rstGls
 #endif
 #ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc

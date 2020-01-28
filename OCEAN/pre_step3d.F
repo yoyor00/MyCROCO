@@ -698,7 +698,7 @@
       enddo     !<-- j
       
       
-        
+# ifdef M3FAST
         write(*,*)'pre_step3 ru_nbq_avg2=',ru_nbq_avg2(10,10,32)
         write(*,*)'pre_step3 Zt_avg1=',Zt_avg1(10,10)
         write(*,*)'pre_step3 ru_int_nbq=',ru_int_nbq(10,10,32)
@@ -714,7 +714,7 @@
       call check_tab2d(Zt_avg1,'prestep3d Zt_avg1','rint')
       call check_tab3d(ru_int_nbq,'prestep3d ru_int_nbq','uint')
 # endif
-      
+# endif
       
 # ifdef NBQ
 !----------------------------------------------------------

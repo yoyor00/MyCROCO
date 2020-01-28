@@ -37,6 +37,10 @@
 #    endif
 #   endif
 
+      call check_tab2d(trb(:,:,k,nnew,ig),
+     &                       'trb in gls smooth','r')
+
+
          DO j=jstr-1,jend+1              
             DO i=istr,iend+1          
                FX (i,j  )=( trb(i  ,j,k,nnew,ig) 
@@ -60,6 +64,11 @@
      &                 -FX(i  ,j)-FX(i+1,j-1))
             ENDDO
          ENDDO
+         
+      call check_tab2d(FX,'FX in gls smooth','r')
+      call check_tab2d(FE,'FE in gls smooth','r')
+      call check_tab2d(FE1(:,:,0),'FE1 in gls smooth','r')
+
          DO j=jstr,jend
             DO i=istr,iend+1
               FX(i,j)=FX(i,j  ) 

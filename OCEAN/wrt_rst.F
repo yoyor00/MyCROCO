@@ -24,7 +24,7 @@
 #include "ocean3d.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#if defined GLS_MIXING || defined LMD_MIXING
+#if defined GLS_MIXING
 # include "mixing.h"
 #endif
 #if defined EXACT_RESTART
@@ -159,8 +159,7 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-      write(*,*)'zeta(10,10,fast_indx_out)',
-     &           zeta(10,10,fast_indx_out)
+
 !
 ! 2D momentum component in XI-direction.
 !
@@ -228,7 +227,6 @@
 #  ifdef LMD_SKPP2005
         ierr=nf_fwrite(hbls(START_2D_ARRAY,nstp), ncidrst,
      &                             rstHbl, record, r2dvar)
-        write(*,*) 'wrt_rst rstHbl',rstHbl, rstT
 #  else
         ierr=nf_fwrite(hbl(START_2D_ARRAY), ncidrst,
      &                             rstHbl, record, r2dvar)
@@ -256,7 +254,7 @@
 
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING
 !
 ! Vertical viscosity coefficient.
 !
@@ -270,7 +268,7 @@
           goto 99                                         !--> ERROR
         endif
 !
-! Generic length scale.Write out vertical diffusion coefficient for potential temperature.
+! Write out vertical diffusion coefficient for potential temperature.
 !
 
         ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
@@ -281,6 +279,25 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+        
+# ifdef SALINITY
+!
+! Write out vertical diffusion coefficient for potential temperature.
+!
+
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,isalt), ncidrst,
+     &                             rstAks, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAks))
+          write(stdout,1) vname(1,indxAks)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+        
+# endif
+        
+# if defined GLS_MIXING
+
 !
 ! Turbulent kinetic energy.
 !
@@ -305,16 +322,10 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
-        
-        
-        write(*,*)'wrt_rst trb(10,10,32,nstp,itke)=',
-     &                        trb(10,10,32,nstp,itke)
-        write(*,*)'wrt_rst trb(10,10,32,nstp,igls)=',
-     &                        trb(10,10,32,nstp,igls)
-         
+
 
 # endif
-      
+# endif
 # endif
 
 # ifdef EXACT_RESTART

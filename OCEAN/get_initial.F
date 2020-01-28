@@ -756,11 +756,12 @@
             goto 99                                       !--> ERROR
           endif
         else
-!          MPI_master_only write(stdout,*)
-!     &     'WARNING: netCDF variable ''',
-!     &     vname(1,indxAkt)(1:lvar),       ''' not found in ''',
-!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+          MPI_master_only write(stdout,*)
+     &     'WARNING: netCDF variable ''',
+     &     vname(1,indxAkt)(1:lvar),       ''' not found in ''',
+     &     ininame(1:lstr), ''' ==> initialized to zero state.'
         endif
+
 
 #  ifdef SALINITY
 !
@@ -818,7 +819,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxTke)(1:lvar),
      &                                                    varid)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (trb(START_2D_ARRAY,0,1,itke), ncid,
+          ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,itke), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
             MPI_master_only write(stdout,2) vname(1,indxTke)(1:lvar)
@@ -838,7 +839,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxGls)(1:lvar),
      &                                                    varid)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (trb(START_2D_ARRAY,0,1,igls), ncid,
+          ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,igls), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
             MPI_master_only write(stdout,2) vname(1,indxGls)(1:lvar)

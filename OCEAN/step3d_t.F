@@ -441,9 +441,10 @@
        enddo
 #  endif
 
+        if (j.eq.1) then
         write(*,*)'step3d (-1) t(1,1,1,nnew)='
      &                        ,t(1,1,1,nnew,itrc)
-
+        endif
 
 # ifdef TS_MIX_IMP
 #  ifdef BIO_HADV_WENO5
@@ -465,9 +466,11 @@
 #  include "t3dmix_tridiagonal.h"
 # endif
 
+        if (j.eq.1) then
         write(*,*)'step3d (0) t(1,1,1,nnew)='
      &                         ,t(1,1,1,nnew,itrc)
-
+        endif
+        
 # ifdef CONST_TRACERS
           do k=1,N
             do i=Istr,Iend

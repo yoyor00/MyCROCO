@@ -459,7 +459,8 @@
 
 
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING
+
 
 !
 ! Vertical viscosity coefficient.
@@ -507,7 +508,34 @@
           call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
      &         NF_DOUBLE,ierr)
 
+#ifdef SALINITY
+!
+! Vertical diffusion coefficient for salinity.
+!
 
+          lvar=lenstr(vname(1,indxAks))
+          ierr=nf_def_var (ncid, vname(1,indxAks)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstAks)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAks,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxAks))
+          ierr=nf_put_att_text (ncid, rstAks, 'long_name',
+     &                     lvar,   vname(2,indxAks)(1:lvar))
+          lvar=lenstr(vname(3,indxAks))
+          ierr=nf_put_att_text (ncid, rstAks, 'units', lvar,
+     &         vname(3,indxAks)(1:lvar))
+          lvar=lenstr(vname(4,indxAks))
+          ierr=nf_put_att_text (ncid, rstAks, 'field', lvar,
+     &         vname(4,indxAks)(1:lvar))
+
+          call nf_add_attribute(ncid, rstAks, indxAks, 5,
+     &         NF_DOUBLE,ierr)
+
+#endif
+
+
+# if defined GLS_MIXING
 
 !
 ! Turbulent kinetic energy.
@@ -556,6 +584,7 @@
      &         NF_DOUBLE,ierr)
 
 #endif /* GLS_MIXING */
+#endif /* MIXING */
 #endif
 
 
@@ -1132,6 +1161,19 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+          
+# ifdef SALINITY
+!
+! Vertical diffusion coefficient for salinity.
+!
+          lvar=lenstr(vname(1,indxAks))
+          ierr=nf_inq_varid (ncid,vname(1,indxAks)(1:lvar), rstAks)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# endif
+
 !
 ! Turbulent kinetic energy.
 !
