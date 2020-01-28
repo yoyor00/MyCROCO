@@ -28,11 +28,7 @@
       PUBLIC set_scalar
       
 
-
-
-
       CONTAINS
-!#include "cppdefs.h"
 
 
       SUBROUTINE set_grid( cdgrd, plon, plat)
@@ -165,6 +161,7 @@
       !      
       END SUBROUTINE set_grid
 
+
 #ifdef MASKING
       SUBROUTINE set_mask(cdgrd)
 # include "param.h"
@@ -253,8 +250,8 @@
       END SUBROUTINE set_mask
 #endif
 
-      SUBROUTINE iom_set_domain_attr( cdid, ni_glo, nj_glo, ibegin, jbegin,
-     & ni, nj, zoom_ibegin, zoom_jbegin, zoom_ni, zoom_nj,
+      SUBROUTINE iom_set_domain_attr( cdid, ni_glo, nj_glo, ibegin,
+     & jbegin, ni, nj, zoom_ibegin, zoom_jbegin, zoom_ni, zoom_nj,
      & data_dim, data_ibegin, data_ni, data_jbegin, data_nj, 
      & lonvalue, latvalue, mask,nvertex, bounds_lon, bounds_lat, area )
       !!----------------------------------------------------------------------
@@ -276,9 +273,9 @@
       INTEGER , OPTIONAL, INTENT(in) :: data_jbegin, data_nj
       INTEGER , OPTIONAL, INTENT(in) :: zoom_ibegin, zoom_jbegin
       INTEGER , OPTIONAL, INTENT(in) :: zoom_ni, zoom_nj, nvertex
-      REAL, DIMENSION(:)   , OPTIONAL, INTENT(in) ::   lonvalue, latvalue
-      REAL, DIMENSION(:,:) , OPTIONAL, INTENT(in) ::   bounds_lon, 
-     & bounds_lat, area
+      REAL, DIMENSION(:)   , OPTIONAL, INTENT(in) :: lonvalue, latvalue
+      REAL, DIMENSION(:,:) , OPTIONAL, INTENT(in) :: bounds_lon, 
+     &                                               bounds_lat, area
 # if ! defined XIOS2
       LOGICAL,  DIMENSION(:,:) , OPTIONAL, INTENT(in) ::   mask
 # else
@@ -288,7 +285,7 @@
       !
 # if ! defined XIOS2
       IF ( xios_is_valid_domain     (cdid) ) THEN
-         CALL xios_set_domain_attr     ( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
+         CALL xios_set_domain_attr( did, ni_glo=ni_glo, nj_glo=nj_glo, 
      &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,  
      &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
      &    data_jbegin=data_jbegin, data_nj=data_nj ,  
@@ -299,8 +296,8 @@
      &    bounds_lat=bounds_lat)!RB, area=area )
       ENDIF
       IF ( xios_is_valid_domaingroup(cdid) ) THEN
-         CALL xios_set_domaingroup_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo,
-     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
+         CALL xios_set_domaingroup_attr(cdid, ni_glo=ni_glo,
+     &    nj_glo=nj_glo, ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
      &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
      &    data_jbegin=data_jbegin, data_nj=data_nj ,   
      &    zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
@@ -323,12 +320,12 @@
       ENDIF
       !
       IF ( xios_is_valid_domaingroup(cdid) ) THEN
-         CALL xios_set_domaingroup_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
-     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
+         CALL xios_set_domaingroup_attr( cdid, ni_glo=ni_glo,
+     &    nj_glo=nj_glo, ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
      &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
      &    data_jbegin=data_jbegin, data_nj=data_nj ,   
      &    lonvalue_1D=lonvalue, latvalue_1D=latvalue, mask_1D=mask,
-     & nvertex=nvertex, bounds_lon_1D=bounds_lon,                  
+     &    nvertex=nvertex, bounds_lon_1D=bounds_lon,                  
      &    bounds_lat_1D=bounds_lat, area=area, type='curvilinear')
       ENDIF
 # endif
@@ -342,9 +339,9 @@
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
       INTEGER         , OPTIONAL, INTENT(in) ::   ibegin, jbegin, ni, nj
 
-      IF ( xios_is_valid_zoom_domain     (cdid) ) THEN
-         CALL xios_set_zoom_domain_attr     ( cdid, ibegin=ibegin-1, 
-     &        jbegin=jbegin-1, ni=ni, nj=nj)
+      IF ( xios_is_valid_zoom_domain(cdid) ) THEN
+         CALL xios_set_zoom_domain_attr(cdid, ibegin=ibegin-1, 
+     &                                  jbegin=jbegin-1, ni=ni, nj=nj)
       ENDIF
       END SUBROUTINE iom_set_zoom_domain_attr
 # endif
@@ -491,7 +488,7 @@
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
       CHARACTER(LEN=*)          , INTENT(in) ::   type
       CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   name
-	  REAL                                   ::   value
+      REAL                                   ::   value
       LOGICAL :: ok
       TYPE(xios_file) :: file_hdl
       TYPE(xios_variable) :: var_hdl
@@ -510,7 +507,8 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_float
-	  
+  
+
       SUBROUTINE iom_set_file_global_attr_int(cdid, type, name, value)
 # include "param.h"
 # include "scalars.h"
@@ -547,8 +545,8 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_int
-	  
-	  
+  
+ 
       SUBROUTINE iom_set_file_attr( cdid, name, name_suffix )
 # include "param.h"
 # include "scalars.h"
@@ -566,10 +564,10 @@
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
       CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   name, name_suffix
       !!----------------------------------------------------------------------
-      IF ( xios_is_valid_file     (cdid) )   CALL xios_set_file_attr  
+      IF ( xios_is_valid_file     (cdid) )  CALL xios_set_file_attr  
      &    ( cdid, name=name, name_suffix=name_suffix )
       !
-      IF ( xios_is_valid_filegroup(cdid) )   CALL xios_set_filegroup_attr
+      IF ( xios_is_valid_filegroup(cdid) )  CALL xios_set_filegroup_attr
      & ( cdid, name=name, name_suffix=name_suffix )
       !
       CALL xios_solve_inheritance()
@@ -577,7 +575,7 @@
       END SUBROUTINE iom_set_file_attr
 
       
-      SUBROUTINE iom_get_file_attr( cdid, name, name_suffix, output_freq )
+      SUBROUTINE iom_get_file_attr(cdid, name, name_suffix, output_freq)
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -605,12 +603,12 @@
      &   llexist1,llexist2,llexist3
       !---------------------------------------------------------------------
       !
-      IF( PRESENT( name        ) )   name = ''          ! default values
-      IF( PRESENT( name_suffix ) )   name_suffix = ''
+      IF(PRESENT(name       )) name = ''          ! default values
+      IF(PRESENT(name_suffix)) name_suffix = ''
 # if ! defined XIOS2
-      IF( PRESENT( output_freq ) )   output_freq = ''
+      IF(PRESENT(output_freq)) output_freq = ''
 # else
-      IF( PRESENT( output_freq ) )   output_freq = xios_duration(0,0,0,0,0,0)
+      IF(PRESENT(output_freq)) output_freq = xios_duration(0,0,0,0,0,0)
 # endif
        IF ( xios_is_valid_file     (cdid) ) THEN
          CALL xios_solve_inheritance()
@@ -659,20 +657,15 @@
       ! 
 # if ! defined XIOS2
       CALL iom_set_domain_attr('scalarpoint', ni_glo=NNODES, nj_glo=1, 
-     &  ibegin=mynode+1, jbegin=1, ni=1, nj=1)
-!      CALL iom_set_domain_attr('scalarpoint', data_dim=2,data_ibegin = 1, 
-!     &                         data_ni = 1, data_jbegin = 1, data_nj = 1)
+     &                         ibegin=mynode+1, jbegin=1, ni=1, nj=1)
 # else
       CALL iom_set_domain_attr('scalarpoint', ni_glo=NNODES, nj_glo=1,
-     &  ibegin=mynode, jbegin=0, ni=1, nj=1)
-!      CALL iom_set_domain_attr('scalarpoint', data_dim=2,data_ibegin = 0,
-!     &                         data_ni = 1, data_jbegin = 0, data_nj = 1)
+     &                         ibegin=mynode, jbegin=0, ni=1, nj=1)
 # endif
-      CALL iom_set_domain_attr('scalarpoint', data_dim=2,data_ibegin = 1, 
-     &                         data_ni = 1, data_jbegin = 1, data_nj = 1)
-      zz=REAL(mynode+1)
-      CALL iom_set_domain_attr('scalarpoint', lonvalue=zz, 
-     &  latvalue=zz)
+      CALL iom_set_domain_attr('scalarpoint', data_dim=2, data_ibegin=1,
+     &                         data_ni=1, data_jbegin=1, data_nj=1)
+      zz = REAL(mynode+1)
+      CALL iom_set_domain_attr('scalarpoint', lonvalue=zz, latvalue=zz)
       !
       END SUBROUTINE set_scalar
 
@@ -907,22 +900,16 @@ C 				  endif
       CHARACTER(LEN=20)              ::   char_value
       INTEGER                        ::   ji, jg                   ! loop counters
       INTEGER                        ::   ix, iy                   ! i-,j- index
-      REAL       ,DIMENSION(11) ::   zlontao                  ! longitudes of tao    moorings
-      REAL      ,DIMENSION( 7) ::   zlattao                  ! latitudes  of tao    moorings
-      REAL        ,DIMENSION( 4) ::   zlonrama                 ! longitudes of rama   moorings
-      REAL       ,DIMENSION(11) ::   zlatrama                 ! latitudes  of rama   moorings
-      REAL        ,DIMENSION( 3) ::   zlonpira                 ! longitudes of pirata moorings
-      REAL     ,DIMENSION( 9) ::   zlatpira                 ! latitudes  of pirata moorings
-!!!!!!!!!!!!!!!!#if  defined XIOS2
-!!!!!!!!!!!!!!!!      TYPE(xios_duration)            ::   f_op, f_of
-!!!!!!!!!!!!!!!!#endif
+# ifdef NEMO_PIRATA
+      REAL            ,DIMENSION(11) ::   zlontao                  ! longitudes of tao    moorings
+      REAL            ,DIMENSION( 7) ::   zlattao                  ! latitudes  of tao    moorings
+      REAL            ,DIMENSION( 4) ::   zlonrama                 ! longitudes of rama   moorings
+      REAL            ,DIMENSION(11) ::   zlatrama                 ! latitudes  of rama   moorings
+      REAL            ,DIMENSION( 3) ::   zlonpira                 ! longitudes of pirata moorings
+      REAL            ,DIMENSION( 9) ::   zlatpira                 ! latitudes  of pirata moorings
+# endif
       !!----------------------------------------------------------------------
       !
-      ! frequency of the call of iom_put (attribut: freq_op)
-      WRITE(cl1,'(i1)') 1 
-!!!!!!!!!!!!!!!!!!      CALL iom_set_field_attr('field_definition', 
-!!!!!!!!!!!!!!!!!!     & freq_op = cl1//'ts', freq_offset='0ts')
-
       ! output file names (attribut: name)
       DO ji = 1, 9
          WRITE(cl1,'(i1)') ji
@@ -937,6 +924,7 @@ C 				  endif
          CALL iom_update_file_name('file'//cl3)
       END DO
 
+#ifdef NEMO_PIRATA
       ! Zooms...
       clgrd = (/ 'T', 'U', 'W' /)
       DO jg = 1, SIZE(clgrd)     ! grid type
@@ -964,12 +952,9 @@ C 				  endif
       CALL set_mooring( zlonrama, zlatrama )
       ! PIRATA moorings (attributs: ibegin, jbegin, name_suffix)
       zlonpira = (/ -38.0, -23.0, -10.0 /)
-      zlatpira = (/ -19.0, -14.0,  -8.0, 0.0, 4.0, 8.0, 12.0, 15.0, 20.0 /)
+      zlatpira = (/ -19.0, -14.0,  -8.0, 0.0, 4.0, 8.0, 12.0,15.0,20.0/)
       CALL set_mooring( zlonpira, zlatpira )
-
-
-
-
+# endif
       !
       END SUBROUTINE set_xmlatt
 
@@ -1140,10 +1125,11 @@ C 				  endif
 # endif
 
 # ifdef SPHERICAL
-      zlon       = MOD( plon       + 720., 360. )                                     ! plon between    0 and 360
-      zglam(:,:) = MOD( zglam(:,:) + 720., 360. )                                     ! glam between    0 and 360
-      IF( zlon > 270. )   zlon = zlon - 360.                                          ! zlon between  -90 and 270
-      IF( zlon <  90. )   WHERE( zglam(:,:) > 180. ) zglam(:,:) = zglam(:,:) - 360.   ! glam between -180 and 180
+      zlon       = MOD( plon       + 720., 360. )                       ! plon between    0 and 360
+      zglam(:,:) = MOD( zglam(:,:) + 720., 360. )                       ! glam between    0 and 360
+      IF( zlon > 270. ) zlon = zlon - 360.                              ! zlon between  -90 and 270
+      IF( zlon <  90. ) 
+     &      WHERE( zglam(:,:) > 180. ) zglam(:,:) = zglam(:,:) - 360.   ! glam between -180 and 180
 # endif
       zglam(:,:) = zglam(:,:) - zlon
       zgphi(:,:) = zgphi(:,:) - plat
@@ -1230,15 +1216,18 @@ C 				  endif
          IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
      &           = clname, output_freq = output_freq )
 # endif
-         IF( jn == 2 )   CALL iom_get_file_attr( cdid, name_suffix = clname )
+         IF( jn == 2 )   CALL iom_get_file_attr( cdid, 
+     &                                           name_suffix = clname )
 
          IF ( TRIM(clname) /= '' ) THEN 
 
             idx = INDEX(clname,'@expname@') + INDEX(clname,'@EXPNAME@')
             DO WHILE ( idx /= 0 ) 
-               clname = clname(1:idx-1)//TRIM(replace_blank(TRIM(title),"_"))
-     &          //clname(idx+9:LEN_TRIM(clname))
-               idx = INDEX(clname,'@expname@') + INDEX(clname,'@EXPNAME@')
+               clname = clname(1:idx-1)//
+     &                  TRIM(replace_blank(TRIM(title),"_"))//
+     &                  clname(idx+9:LEN_TRIM(clname))
+               idx = INDEX(clname,'@expname@') +  
+     &               INDEX(clname,'@EXPNAME@')
             END DO
 
 # if ! defined XIOS2
@@ -1260,6 +1249,12 @@ C 				  endif
               IF ( output_freq%timestep /= 0) THEN
                   WRITE(clfreq,'(I18,A2)')INT(output_freq%timestep),'ts'
                   itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE IF ( output_freq%second /= 0 ) THEN
+                  WRITE(clfreq,'(I19,A1)')INT(output_freq%second),'s'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
+              ELSE IF ( output_freq%minute /= 0 ) THEN
+                  WRITE(clfreq,'(I18,A2)')INT(output_freq%minute),'mi'
+                  itrlen = LEN_TRIM(ADJUSTL(clfreq))
               ELSE IF ( output_freq%hour /= 0 ) THEN
                   WRITE(clfreq,'(I19,A1)')INT(output_freq%hour),'h'
                   itrlen = LEN_TRIM(ADJUSTL(clfreq))
@@ -1273,68 +1268,69 @@ C 				  endif
                   WRITE(clfreq,'(I19,A1)')INT(output_freq%year),'y'
                   itrlen = LEN_TRIM(ADJUSTL(clfreq))
               ELSE
-                  if(mynode .eq. 0 ) print*,'error in the name of file id '
+                  if(mynode.eq.0) print*,'error in the name of file id '
      &           //TRIM(cdid),
-     & ' attribute output_freq is undefined -> cannot replace @freq@ in '
-     & //TRIM(clname) 
-				  STOP
-!                  CALL ctl_stop('error in the name of file id '
-!     &			  //TRIM(cdid),   
-!     & ' attribute output_freq is undefined -> cannot replace @freq@ in '
-!     & //TRIM(clname) )
+     & ' attribute output_freq is undefined -> cannot replace @freq@'//
+     & ' in '//TRIM(clname) 
+                  STOP
               ENDIF
               clname = clname(1:idx-1)//TRIM(ADJUSTL(clfreq))//
      &        clname(idx+6:LEN_TRIM(clname))
               idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
             END DO
 # endif
-            idx = INDEX(clname,'@startdate@') + INDEX(clname,'@STARTDATE@')
+            idx = INDEX(clname,'@startdate@') + 
+     &            INDEX(clname,'@STARTDATE@')
             DO WHILE ( idx /= 0 ) 
                cldate = iom_sdate( tdays+jday0  )
                clname = clname(1:idx-1)//TRIM(cldate)//
      &          clname(idx+11:LEN_TRIM(clname))
-               idx = INDEX(clname,'@startdate@') + INDEX(clname,'@STARTDATE@')
+               idx = INDEX(clname,'@startdate@') + 
+     &               INDEX(clname,'@STARTDATE@')
             END DO
 
-            idx = INDEX(clname,'@startdatefull@') 
-     &       + INDEX(clname,'@STARTDATEFULL@')
+            idx = INDEX(clname,'@startdatefull@') + 
+     &            INDEX(clname,'@STARTDATEFULL@')
             DO WHILE ( idx /= 0 ) 
                cldate = iom_sdate(tdays+jday0 , ldfull = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)//
      &          clname(idx+15:LEN_TRIM(clname))
-               idx = INDEX(clname,'@startdatefull@')
-     &           + INDEX(clname,'@STARTDATEFULL@')
+               idx = INDEX(clname,'@startdatefull@') +
+     &               INDEX(clname,'@STARTDATEFULL@')
             END DO
 
-            idx = INDEX(clname,'@enddate@') + INDEX(clname,'@ENDDATE@')
+            idx = INDEX(clname,'@enddate@') +
+     &            INDEX(clname,'@ENDDATE@')
             DO WHILE ( idx /= 0 ) 
                cldate = iom_sdate( tdays+jday0 + dt
      &          / day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)
      &          //clname(idx+9:LEN_TRIM(clname))
-               idx = INDEX(clname,'@enddate@') + INDEX(clname,'@ENDDATE@')
+               idx = INDEX(clname,'@enddate@') + 
+     &               INDEX(clname,'@ENDDATE@')
             END DO
 
-            idx = INDEX(clname,'@enddatefull@')
-     &        + INDEX(clname,'@ENDDATEFULL@')
+            idx = INDEX(clname,'@enddatefull@') + 
+     &            INDEX(clname,'@ENDDATEFULL@')
             DO WHILE ( idx /= 0 ) 
                cldate = iom_sdate( tdays+jday0 + dt  
      &          /day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE., 
      &           ldfull = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)
      &          //clname(idx+13:LEN_TRIM(clname))
-               idx = INDEX(clname,'@enddatefull@')
-     &           + INDEX(clname,'@ENDDATEFULL@')
+               idx = INDEX(clname,'@enddatefull@') +
+     &               INDEX(clname,'@ENDDATEFULL@')
             END DO
-            IF( jn == 1 )   CALL iom_set_file_attr( cdid, name
-     &               = clname )
-            IF( jn == 2 )   CALL iom_set_file_attr( cdid, name_suffix
-     &               = clname )
-	 
-	        CALL set_xml_global_att(cdid)
+
+            IF( jn == 1 ) CALL iom_set_file_attr( cdid,
+     &                                            name  = clname )
+            IF( jn == 2 ) CALL iom_set_file_attr( cdid,
+     &                                            name_suffix = clname )
+ 
+            CALL set_xml_global_att(cdid)
 
          ENDIF
-
+         !
       END DO
       !
       END SUBROUTINE iom_update_file_name
@@ -1429,7 +1425,9 @@ C 				  endif
       !
       END SUBROUTINE ymds2ju
 
-      SUBROUTINE ymds2ju_internal (year,month,day,sec,julian_day,julian_sec)
+
+      SUBROUTINE ymds2ju_internal (year,month,day,sec,julian_day,
+     &                             julian_sec)
       !---------------------------------------------------------------------
       !- Converts year, month, day and seconds into a julian day
       !-
@@ -1507,117 +1505,117 @@ C 				  endif
       !!                IPSL       , original version  
       !!
       !!---------------------------------------------------------------------
-	  IMPLICIT NONE
-	  !
-	  REAL,INTENT(IN) :: julian
+      IMPLICIT NONE
+      !
+      REAL,INTENT(IN) :: julian
       INTEGER,INTENT(OUT) :: year,month,day
-	  REAL,INTENT(OUT)    :: sec
-	  !
-	  INTEGER :: julian_day
-	  REAL    :: julian_sec
-      REAL,PARAMETER :: one_day = 86400.0	
+      REAL,INTENT(OUT)    :: sec
+      !
+      INTEGER :: julian_day
+      REAL    :: julian_sec
+      REAL,PARAMETER :: one_day = 86400.0
       !---------------------------------------------------------------------
-	  ! 
-	  julian_day = INT(julian)
-	  julian_sec = (julian-julian_day)*one_day
+      !   
+      julian_day = INT(julian)
+      julian_sec = (julian-julian_day)*one_day
       !
       CALL ju2ymds_internal(julian_day,julian_sec,year,month,day,sec)
       !
-	  END SUBROUTINE ju2ymds
+      END SUBROUTINE ju2ymds
 
 
       SUBROUTINE ju2ymds_internal (julian_day,julian_sec,year,
      &  month,day,sec)
-	  !---------------------------------------------------------------------
-	  !- This subroutine computes from the julian day the year,
-	  !- month, day and seconds
+      !---------------------------------------------------------------------
+      !- This subroutine computes from the julian day the year,
+      !- month, day and seconds
       !-
-	  !- In 1968 in a letter to the editor of Communications of the ACM
-	  !- (CACM, volume 11, number 10, October 1968, p.657) Henry F. Fliegel
-	  !- and Thomas C. Van Flandern presented such an algorithm.
-	  !-
-	  !- See also : http://www.magnet.ch/serendipity/hermetic/cal_stud/jdn.htm
-	  !-
-	  !- In the case of the Gregorian calendar we have chosen to use
-	  !- the Lilian day numbers. This is the day counter which starts
+      !- In 1968 in a letter to the editor of Communications of the ACM
+      !- (CACM, volume 11, number 10, October 1968, p.657) Henry F. Fliegel
+      !- and Thomas C. Van Flandern presented such an algorithm.
+      !-
+      !- See also : http://www.magnet.ch/serendipity/hermetic/cal_stud/jdn.htm
+      !-
+      !- In the case of the Gregorian calendar we have chosen to use
+      !- the Lilian day numbers. This is the day counter which starts
       !- on the 15th October 1582. This is the day at which Pope
-	  !- Gregory XIII introduced the Gregorian calendar.
-	  !- Compared to the true Julian calendar, which starts some 7980
-	  !- years ago, the Lilian days are smaler and are dealt with easily
+      !- Gregory XIII introduced the Gregorian calendar.
+      !- Compared to the true Julian calendar, which starts some 7980
+      !- years ago, the Lilian days are smaler and are dealt with easily
       !- on 32 bit machines. With the true Julian days you can only the
-	  !- fraction of the day in the real part to a precision of a 1/4 of
-	  !- a day with 32 bits.
-	  !---------------------------------------------------------------------
-	  IMPLICIT NONE
+      !- fraction of the day in the real part to a precision of a 1/4 of
+      !- a day with 32 bits.
+      !---------------------------------------------------------------------
+      IMPLICIT NONE
       !
-	  INTEGER,INTENT(IN) :: julian_day
-	  REAL,INTENT(IN)    :: julian_sec
-	  INTEGER,INTENT(OUT) :: year,month,day
-	  REAL,INTENT(OUT)    :: sec
-	  !
-	  INTEGER :: l,n,i,jd,j,d,m,y,ml
-	  INTEGER :: add_day
-	  REAL :: eps_day
-      REAL,PARAMETER :: one_day = 86400.0	
+      INTEGER,INTENT(IN) :: julian_day
+      REAL,INTENT(IN)    :: julian_sec
+      INTEGER,INTENT(OUT) :: year,month,day
+      REAL,INTENT(OUT)    :: sec
+      ! 
+      INTEGER :: l,n,i,jd,j,d,m,y,ml
+      INTEGER :: add_day
+      REAL :: eps_day
+      REAL,PARAMETER :: one_day = 86400.0
       REAL,PARAMETER :: one_year = 365.2425
       INTEGER :: mon_len(12)=(/31,28,31,30,3
      &     1,30,31,31,30,31,30,31/)
       !---------------------------------------------------------------------
-	  !	 
-	  eps_day = SPACING(one_day)
-	  !
-	  jd = julian_day
-	  sec = julian_sec
-	  IF (sec > (one_day-eps_day)) THEN
-	    add_day = INT(sec/one_day)
-	    sec = sec-add_day*one_day
-	    jd = jd+add_day
-	  ENDIF
-	  IF (sec < -eps_day) THEN
-		  sec = sec+one_day
-		  jd = jd-1
-	  ENDIF
-	  !
-      IF ( (one_year > 365.0).AND.(one_year < 366.0) ) THEN
-	      !-- Gregorian
-	     jd = jd+2299160
-	     !
-	     l = jd+68569
-         n = (4*l)/146097
-         l = l-(146097*n+3)/4
-	     i = (4000*(l+1))/1461001
-	     l = l-(1461*i)/4+31
-	     j = (80*l)/2447
-	     d = l-(2447*j)/80
-	     l = j/11
-		 m = j+2-(12*l)
-	     y = 100*(n-49)+i+l
-	  ELSE IF (    (ABS(one_year-365.0) <= EPSILON(one_year)) 
-     &  .OR.(ABS(one_year-366.0) <= EPSILON(one_year)) ) THEN
-	     !-- No leap or All leap
-	     y = jd/NINT(one_year)
-		 l = jd-y*NINT(one_year)
-         m = 1
-	     ml = 0
-	     DO WHILE (ml+mon_len(m) <= l)
-		    ml = ml+mon_len(m)
-		    m = m+1
-	     ENDDO
-		 d = l-ml+1
-      ELSE
-	     !-- others
-		 ml = NINT(one_year/12.)
-		 y = jd/NINT(one_year)
-		 l = jd-y*NINT(one_year)
-		 m = (l/ml)+1
-		 d = l-(m-1)*ml+1
+      !	 
+      eps_day = SPACING(one_day)
+      !
+      jd = julian_day
+      sec = julian_sec
+      IF (sec > (one_day-eps_day)) THEN
+        add_day = INT(sec/one_day)
+        sec = sec-add_day*one_day
+        jd = jd+add_day
       ENDIF
-	  !
-	  day = d
+      IF (sec < -eps_day) THEN
+        sec = sec+one_day
+        jd = jd-1
+      ENDIF
+      !
+      IF ( (one_year > 365.0).AND.(one_year < 366.0) ) THEN
+        !-- Gregorian
+        jd = jd+2299160
+        !
+        l = jd+68569
+        n = (4*l)/146097
+        l = l-(146097*n+3)/4
+        i = (4000*(l+1))/1461001
+        l = l-(1461*i)/4+31
+        j = (80*l)/2447
+        d = l-(2447*j)/80
+        l = j/11
+        m = j+2-(12*l)
+        y = 100*(n-49)+i+l
+      ELSE IF ((ABS(one_year-365.0) <= EPSILON(one_year)) 
+     &    .OR. (ABS(one_year-366.0) <= EPSILON(one_year))) THEN
+        !-- No leap or All leap
+        y = jd/NINT(one_year)
+        l = jd-y*NINT(one_year)
+        m = 1
+        ml = 0
+        DO WHILE (ml+mon_len(m) <= l)
+          ml = ml+mon_len(m)
+          m = m+1
+        ENDDO
+        d = l-ml+1
+      ELSE
+        !-- others
+        ml = NINT(one_year/12.)
+        y = jd/NINT(one_year)
+        l = jd-y*NINT(one_year)
+        m = (l/ml)+1
+        d = l-(m-1)*ml+1
+      ENDIF
+      !
+      day = d
       month = m
       year = y
       !
-	  END SUBROUTINE ju2ymds_internal
+      END SUBROUTINE ju2ymds_internal
 
    
       FUNCTION replace_blank(string,rep) RESULT(outs)
@@ -1657,7 +1655,7 @@ C 				  endif
       !
       END FUNCTION replace_blank
 
-		    
+
       END MODULE xios_module
 
 #include "cppdefs.h"
@@ -1745,7 +1743,7 @@ C 				  endif
 #  define JV_RANGE Jstr,JendR
 # endif
       !
-      cdname='roms'
+      cdname='croco'
       clname = cdname
 # ifdef AGRIF
       IF( TRIM(Agrif_CFixed()) /= '0' )
@@ -1798,17 +1796,17 @@ C 				  endif
 
 # ifdef SPHERICAL
       CALL set_grid( "rho", lonr, latr )
-      CALL set_grid( "b", lonr, latr )
-      CALL set_grid( "u", lonu, latu )
-      CALL set_grid( "v", lonv, latv )
-      CALL set_grid( "w", lonr, latr )
+      CALL set_grid( "b"  , lonr, latr )
+      CALL set_grid( "u"  , lonu, latu )
+      CALL set_grid( "v"  , lonv, latv )
+      CALL set_grid( "w"  , lonr, latr )
       CALL set_grid( "psi", lonu, latv )
 # else
       CALL set_grid( "rho", xr, yr )
-      CALL set_grid( "b", xr, yr )
-      CALL set_grid( "u", xp, yr )
-      CALL set_grid( "v", xr, yp )
-      CALL set_grid( "w", xr, yr )
+      CALL set_grid( "b"  , xr, yr )
+      CALL set_grid( "u"  , xp, yr )
+      CALL set_grid( "v"  , xr, yp )
+      CALL set_grid( "w"  , xr, yr )
       CALL set_grid( "psi", xp, yp )
 # endif
 
@@ -1823,11 +1821,11 @@ C 				  endif
  
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r )
-      CALL iom_set_axis_attr( "s_w", sc_w )
+      CALL iom_set_axis_attr( "s_w"  , sc_w )
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
 # else
-      ! fake axis to avoid chaning xml file 
+      ! fake axis to avoid changing xml file 
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
 # endif
       
@@ -1869,7 +1867,8 @@ C 				  endif
       IF( TRIM(Agrif_CFixed()) == '0' ) THEN
         CALL xios_get_handle(TRIM(cdname),roms_hdl)
       ELSE
-        CALL xios_get_handle(TRIM(cdname)//"."//TRIM(Agrif_CFixed()),roms_hdl)
+        CALL xios_get_handle(TRIM(cdname)//"."//
+     &                       TRIM(Agrif_CFixed()),roms_hdl)
       ENDIF
 # else
       CALL xios_get_handle(TRIM(cdname),roms_hdl)
@@ -1895,7 +1894,7 @@ C 				  endif
       IF( xios_is_valid_context(cdname) ) THEN
          CALL iom_swap( cdname )   ! swap to cdname context
          CALL xios_context_finalize() ! finalize the context
-         IF( cdname /= "roms" ) CALL iom_swap( "roms" )   ! return back to roms context
+         IF( cdname /= "croco" ) CALL iom_swap( "croco" )   ! return back to croco context
       ENDIF
       !
       END SUBROUTINE iom_context_finalize
@@ -2022,14 +2021,10 @@ C 				  endif
 #  endif
 
 
-!       ilc=iic   ! number of time step since start
        ilc=1+iic-ntstart   ! number of time step since restart
-       ! To be conform with clasic (no xios) croco file first 
-       ! time step must be writen
-       if (ilc == 0) ilc=1
-       CALL xios_update_calendar(ilc)
+       ! Must be > 1 to get 'once' variables 
+       call xios_update_calendar(max(ilc-1,1))
 
-!       call xios_send_field("scrum_time",time)
        call xios_send_field("time",time)
 
 ! static attributes
@@ -2622,7 +2617,6 @@ C 				  endif
 #  endif /* BBL */
 # endif /* SOLVE3D */
   
-
       return
       end
 

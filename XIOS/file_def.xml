@@ -1,16 +1,16 @@
-<file_definition type="one_file" name="./@expname@_@freq@_@startdate@" sync_freq="1h" min_digits="4">
+<file_definition type="one_file" name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
 
 	<file_group id="1ts" output_freq="1ts"  output_level="10" enabled=".false."/> <!-- 1 time step files -->
  	<file_group id="6s"  output_freq="6s"   output_level="10" enabled=".false."/> <!-- 6 seconds files -->
  	<file_group id="2mi" output_freq="2mi"  output_level="10" enabled=".false."/> <!-- 2 minutes files -->
  	<file_group id="3h"  output_freq="3h"   output_level="10" enabled=".false."/> <!-- 3 hours files -->
-	<file_group id="5d"  output_freq="5d"   output_level="10" enabled=".false."/> <!-- 5 days files -->
+	<file_group id="4d"  output_freq="4d"   output_level="10" enabled=".false."/> <!-- 4 days files -->
 	<file_group id="1mo" output_freq="1mo"  output_level="10" enabled=".false."/> <!-- real montly files -->
 	<file_group id="1y"  output_freq="1y"   output_level="10" enabled=".false."/> <!-- real yearly files -->
 
 	<file_group id="12h" output_freq="12h" output_level="10" enabled=".true.">
-		<file id="file1" name_suffix="_inst" >
-			<field_group id="grid_fields" operation="once">
+		<file id="file1" name_suffix="_inst" split_freq="5d" split_freq_format="%y-%mo-%d">
+			<field_group id="grid_fields1" operation="once">
 				<field field_ref="hc"        />
 				<field field_ref="theta_s"   />
 				<field field_ref="theta_b"   />
@@ -52,18 +52,19 @@
 	</file_group>
 
 	<file_group id="5d" output_freq="5d" output_level="10" enabled=".true.">
-		<file id="file2" name_suffix="_aver" >
-			<field_group id="grid_fields" operation="once">
+		<file id="file2" name_suffix="_aver" split_freq="5d" split_freq_format="%y-%mo-%d">
+			<field_group id="grid_fields2" operation="once">
 				<field field_ref="hc"        />
 				<field field_ref="theta_s"   />
 				<field field_ref="theta_b"   />
 				<field field_ref="Tcline"    />
 				<field field_ref="Vtransform"/>
 				<field field_ref="h"         />
+				<field field_ref="lon_rho"   />
+				<field field_ref="lat_rho"   />
 			</field_group>
 
 			<field_group id="avg_fields" operation="average">
-				<field field_ref="time" />
 				<field field_ref="zeta" />
 				<field field_ref="ubar" />
 				<field field_ref="vbar" />
@@ -156,21 +157,21 @@
 # endif
 
 # ifdef DIAGNOSTICS_VRT
-	<file_group id="VRT" output_freq="5d"  output_level="10" enabled=".trueE.">
+	<file_group id="VRT" output_freq="5d"  output_level="10" enabled=".true.">
 		<file id="file6" name_suffix="_VRT" split_freq="5d" split_freq_format="%y-%mo-%d">
 			<field_group id="vrt_fields" operation="average">
-				<field field_ref="vrtrate" name="vrt_rate"  />
-				<field field_ref="vrtadv" name="vrt_adv"  />
-				<field field_ref="vrtCor" name="vrt_cor"  />
-				<field field_ref="vrtPrsgrd" name="vrt_prsgrd"  />
-				<field field_ref="vrtHmix" name="vrt_hmix"  />
-				<field field_ref="vrtHdiff" name="vrt_hdiff" />
-				<field field_ref="vrtVmix2" name="vrt_nudg" />
-				<field field_ref="vrtBaro" name="vrt_baro" />
-				<field field_ref="vrtDrag" name="vrt_drag" />
-				<field field_ref="vrtWind" name="vrt_wind" />
+				<field field_ref="vrtrate"   name="vrt_rate"   />
+				<field field_ref="vrtadv"    name="vrt_adv"    />
+				<field field_ref="vrtCor"    name="vrt_cor"    />
+				<field field_ref="vrtPrsgrd" name="vrt_prsgrd" />
+				<field field_ref="vrtHmix"   name="vrt_hmix"   />
+				<field field_ref="vrtHdiff"  name="vrt_hdiff"  />
+				<field field_ref="vrtVmix2"  name="vrt_nudg"   />
+				<field field_ref="vrtBaro"   name="vrt_baro"   />
+				<field field_ref="vrtDrag"   name="vrt_drag"   />
+				<field field_ref="vrtWind"   name="vrt_wind"   />
 #  ifdef M3FAST
-				<field field_ref="vrtfast" name="vrt_fast" />
+				<field field_ref="vrtfast"   name="vrt_fast"   />
 #  endif
 			</field_group>
 		</file>
@@ -223,7 +224,7 @@
                 </file>
 	</file_group>
 
-	<file_group id="10min" output_freq="600s" output_level="10" enabled=".true."> 
+	<file_group id="10min" output_freq="600s" output_level="10" enabled=".false."> 
 		<file id="file21" name="BR08">
 			<field_group group_ref="Vertical_dimension_rho" operation="once"/>
 			<field field_ref="h" grid_ref= "PT_01_grid_T"   operation="once"/>
