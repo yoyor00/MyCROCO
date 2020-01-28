@@ -102,13 +102,13 @@
       blk_vname(4,1)='??????                                   '
 
       ! Specific_humidity 
-      blk_vname(1,2)='hu2m                                     '
+      blk_vname(1,2)='rh                                       '
       blk_vname(2,2)='Specific Humidity at surface             '
       blk_vname(3,2)='Kg/Kg                                    '
       blk_vname(4,2)='??????                                   '
 
       ! Precipitation_rate
-      blk_vname(1,3)='prate                                    '
+      blk_vname(1,3)='rain                                     '
       blk_vname(2,3)='Precipitation_rate                       '
       blk_vname(3,3)='kg/m^2/s                                 '
       blk_vname(4,3)='??????                                   '
@@ -120,13 +120,13 @@
       blk_vname(4,4)='??????                                   '
 
       ! Net short_Rad_Flux_surface 
-      blk_vname(1,5)='flsolaire                                '
+      blk_vname(1,5)='swhf                                     '
       blk_vname(2,5)='NET SHORT WAVE                           '
       blk_vname(3,5)='W/m^2                                    '
       blk_vname(4,5)='??????                                   '
 
       ! Downward_Long-Wave_Rad_Flux
-      blk_vname(1,6)='fltherm                                  '
+      blk_vname(1,6)='lwhf                                     '
       blk_vname(2,6)='Downward_Long-Wave_Rad_Flux              '
       blk_vname(3,6)='W/m^2                                    '
       blk_vname(4,6)='??????                                   '

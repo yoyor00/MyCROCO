@@ -31,6 +31,9 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
+# ifdef USE_CALENDAR
+      CHARACTER (len=19)    :: cdate,tool_sectodat
+#endif
 #ifdef FLOATS
       integer fltdim, NFVdim, Tinfovardim, NFTdim
      & , dim_Tinfo(3), dim_track(4), dim_fltgrd(2)
@@ -67,6 +70,15 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
+# ifdef USE_CALENDAR
+        if (nrpfrst.eq.1) then
+          cdate = tool_sectodat(time)
+          rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
+          rstname=TRIM(rstname)//cdate(1:2)//cdate(12:13)//cdate(15:16)
+          rstname=TRIM(rstname)//cdate(18:19)//'.nc'
+          lstr=lenstr(rstname)
+        end if 
+# endif
         if (ierr .ne. 0) goto 99
       endif
 !
