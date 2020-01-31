@@ -158,7 +158,6 @@ C$OMP MASTER
 #endif
       time=time_start+dt*float(iic-ntstart)
       tdays=time*sec2day
-      write(*,*)'TIME=',time
 
 #ifdef USE_CALENDAR
       time_mars=time_mars+dt
