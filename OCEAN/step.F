@@ -415,23 +415,6 @@ C$OMP BARRIER
 # endif
 
 
-#if defined RVTK_DEBUG && defined SOLVE3D
-C$OMP BARRIER
-C$OMP MASTER
-          do itrc=1,NT
-          call check_tab3d(Akt(:,:,1:N,itrc),'Akt bef step3d_t','w')
-          enddo
-#if defined GLS_MIXING
-          call check_tab3d(trb(:,:,1:N,nstp,igls),'gls bef gls','w')
-          call check_tab3d(trb(:,:,1:N,nstp,itke),'tke bef gls','w')
-          
-          call check_tab2d(trb(:,:,0,nstp,igls),
-     &                      'tke bef gls','r')
-          call check_tab2d(trb(:,:,0,nstp,itke),
-     &                      'gls bef gls','r')
-#endif
-C$OMP END MASTER
-#endif
 
       do tile=my_first,my_last
 # if defined ANA_VMIX
@@ -449,14 +432,13 @@ C$OMP END MASTER
 C$OMP BARRIER
 
 
-       write(*,*)'step1 Akt(22,6,2,itemp)='
-     &                         , Akt(22,6,2,itemp)
-       write(*,*)'step1 Akt(0,0,0,itemp)='
-     &                         , Akt(0,0,0,itemp)
+#if defined RVTK_DEBUG  && defined TS_MIX_ISO
+           call check_tab3d(dRdx,'dRdx in prestep','u')
+           call check_tab3d(dRde,'dRde in prestep','v')
+#endif
 
 
-
-#if defined RVTK_DEBUG && defined SOLVE3D
+#if defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
           do itrc=1,NT
@@ -479,8 +461,6 @@ C$OMP END MASTER
 
 #ifdef RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       write(*,*)'step t(10,10,32,nstp,itrc)=',t(10,10,32,nstp,itrc)
-       write(*,*)'step t(1,0,1,nstp,itrc)=',t(1,0,1,nstp,itrc)
        call check_tab3d(t(:,:,:,nstp,itrc),'t nstp bef prestep3d','r')
       enddo
 #endif
@@ -795,7 +775,7 @@ C$OMP BARRIER
           enddo
         endif
 
-#ifdef RVTK_DEBUG_PERFRST
+#ifdef RVTK_DEBUG_ADVANCED
         call check_tab2d(bustr,'bustr in step','u')
         call check_tab2d(bvstr,'bvstr in step','v')
 #endif
@@ -807,7 +787,7 @@ C$OMP BARRIER
         endif
 #endif
 
-#ifdef RVTK_DEBUG
+#ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST
@@ -852,6 +832,9 @@ C$OMP END MASTER
 #include "coupling.h"
 #ifdef AUTOTILING
 #include "autotiling.h"
+#endif
+#if defined RVTK_DEBUG_PERFRST
+# include "mixing.h"
 #endif
        integer range
       integer ntrds,trd,
@@ -931,12 +914,23 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+#if defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO
+           call check_tab3d(dRdx,'dRdx in step3d 0','u')
+           call check_tab3d(dRde,'dRde in step3d 0','v')
+#endif
+           
       do tile=my_first,my_last
         call step3d_uv2 (tile)
 # ifdef DIF_COEF_3D 
         call hdiff_coef (tile)
 # endif
       enddo
+
+#if defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO
+         call check_tab3d(dRdx,'dRdx in step3d 1','u')
+         call check_tab3d(dRde,'dRde in step3d 1','v')
+#endif
+      
 C$OMP BARRIER
 
 #endif /* SOLVE3D */
@@ -1094,6 +1088,7 @@ C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
       call check_tab3d(t(:,:,:,nnew,itrc),'t bef t3dmix','r')
+      call check_tab3d(t(:,:,:,nstp,itrc),'t nstp','r')
       enddo
 C$OMP END MASTER
 #endif
@@ -1103,6 +1098,18 @@ C$OMP END MASTER
 # if defined TS_DIF2 || defined TS_DIF4 
         call t3dmix (tile)
 # endif
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+      call check_tab3d(t(:,:,:,nnew,itrc),'t bef t3dmix','r')
+      call check_tab3d(t(:,:,:,nstp,itrc),'t nstp','r')
+      call check_tab3d(t(:,:,:,nrhs,itrc),'t nrhs','r')
+      enddo
+C$OMP END MASTER
+#endif
+
 # if defined SPONGE_DIF2
         call t3dmix_spg (tile)
 # endif

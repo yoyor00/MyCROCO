@@ -2527,6 +2527,7 @@ C$    integer  trd, omp_get_thread_num
 #  define JV_RANGE Jstr,JendR
 # endif
 
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N
@@ -2534,9 +2535,7 @@ C$    integer  trd, omp_get_thread_num
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
           enddo
-          do j=JV_RANGE 
-            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
-     &                                   *u(1,j,k,nrhs)
+          do j=JV_RANGE
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
@@ -2553,15 +2552,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
         do k=1,N
-          do j=JstrR,JendR
+          do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
-            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                         *v(IendR,j,k,nrhs)
 #   ifdef NBQ
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
 #   endif
+          enddo
+          do j=JV_RANGE
+            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR,j-1,k))
+     &                                         *v(IendR,j,k,nrhs)
           enddo
         enddo
       endif
@@ -2570,15 +2571,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
-            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                    *u(i,0,k,nrhs)
 #   ifdef NBQ
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
 #   endif
+          enddo
+          do i=IU_RANGE
+            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
+     &                                    *u(i,0,k,nrhs)
           enddo
         enddo
       endif
@@ -2587,15 +2590,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
-     &                                          *u(i,JendR,k,nrhs)
 #   ifdef NBQ
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #   endif
+          enddo
+          do i=IU_RANGE
+            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
+     &                                          *u(i,JendR,k,nrhs)
           enddo
         enddo
       endif

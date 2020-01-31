@@ -24,7 +24,7 @@
 #include "ocean3d.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#if defined GLS_MIXING
+#if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
 #endif
 #if defined EXACT_RESTART
@@ -442,11 +442,38 @@
          goto 99                                           !--> ERROR
        endif
 
-
-
-
-
 # endif  /* M3FAST */
+
+# ifdef TS_MIX_ISO_FILT
+!
+! density gradients for use in t3dmix
+!
+
+      ierr=nf_fwrite(dRdx(START_2D_ARRAY,1),
+     &                               ncidrst, rstdRdx,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxdRdx))
+        write(stdout,1) vname(1,indxdRdx)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+
+
+       ierr=nf_fwrite(dRde(START_2D_ARRAY,1),
+     &                               ncidrst, rstdRde,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxdRde))
+         write(stdout,1) vname(1,indxdRde)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+# endif
+
     
 # endif
 

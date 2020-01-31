@@ -125,6 +125,7 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
+      
       do j=Jstr,Jend
 !
 ! The vertical viscosity term is not added as an explicit divergence term
@@ -196,12 +197,6 @@
           WC(i,N)=0.
 # endif
         enddo
-
-
-        if (j.eq.10) then
-          write(*,*)'step3d_uv2 Akv(10,10,32)=',Akv(10,10,32)
-          write(*,*)'step3d_uv2 Akv(10,10,31)=',Akv(10,10,31)
-        endif
 
         do k=1,N-1
           do i=IstrU,Iend
@@ -324,10 +319,7 @@
 # endif
           enddo
         enddo        !--> discard DC,CF(:,0)
-        
-        if (j.eq.10) then
-          write(*,*)'step3d_uv2 u(10,10,32,nnew)=',u(10,10,32,nnew)
-        endif
+
         
 # if defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV
         do i=IstrU,Iend
@@ -726,6 +718,8 @@
           enddo
         enddo
 # endif /* DIAGNOSTICS_EK */
+
+
 !
 !--------------------------------------------------------------------
 !  Compute wet/dry masks for total velocity
@@ -741,6 +735,8 @@
 !
       call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)   
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+      
+      
 !
 !
 !--------------------------------------------------------------------
@@ -796,7 +792,7 @@
 !  Couple XI-component of velocity
 !--------------------------------------------------
 !
-      do j=JU_RANGE 
+      do j=JU_RANGE
         do i=IU_RANGE
           DC(i,0)=0.
           CF(i,0)=0.
@@ -875,11 +871,6 @@
             Huon(i,j,k)=FC(i,k)-DC(i,k)*FC(i,0)
           enddo
         enddo
-        
-        if (j.eq.10) then
-          write(*,*)'step3d_uv2 Huon(10,10,32)=',Huon(10,10,32)
-        endif
-        
 !
 !-------------------------------------------------
 ! Compute density XI gradients for use in t3dmix
@@ -915,11 +906,16 @@
         do i=IU_RANGE
           dRdx(i,j,N)=0.  ! no rotation at surface level
         enddo
+
 !
 !  Smooth vertically at interior points.
 !
 #  ifdef TS_MIX_ISO_FILT
+# ifdef EXACT_RESTART
+      if (mod(iic-1,ismooth).eq.0) then
+# else
       if (mod(iic-ntstart,ismooth).eq.0) then
+# endif
         do k=N-1,2,-1
           do i=IU_RANGE
             dRdx(i,j,k)=0.05*dRdx(i,j,k-1)+
@@ -932,6 +928,8 @@
         enddo
       endif
 #  endif /* TS_MIX_ISO_FILT */
+
+
 !
 # endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
@@ -1054,7 +1052,11 @@
 !  Smooth vertically at interior points.
 !
 #  ifdef TS_MIX_ISO_FILT
+# ifdef EXACT_RESTART
+      if (mod(iic-1,ismooth).eq.0) then
+# else
       if (mod(iic-ntstart,ismooth).eq.0) then
+# endif
         do k=N-1,2,-1
           do i=IV_RANGE
             dRde(i,j,k)=0.05*dRde(i,j,k-1)+
@@ -1073,6 +1075,7 @@
 !
         endif  !<-- j.ge.Jstr
       enddo    !<-- j loop
+      
 !
 !--------------------------------------------------------------------
 !

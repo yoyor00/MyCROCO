@@ -83,10 +83,6 @@
           enddo
 # endif /* DIAGNOSTICS_TS */
 
-        if (j.eq.1) then
-          write(*,*)'t3dmix_tri (0) t(1,1,1,nnew)='
-     &                        ,t(1,1,1,nnew,itrc)
-        endif
         
 !++
 !++ Explicit vertical Laplacian
@@ -114,12 +110,6 @@
 !
 
 
-
-        if (j.eq.1) then
-            write(*,*)'t3dmix_tri (1) t(1,1,1,nnew)='
-     &                        ,t(1,1,1,nnew,itrc)
-        endif
-   
    
           do i=istr,iend
 # ifdef TS_MIX_IMP
@@ -129,13 +119,6 @@
 # endif
      &                               /( z_r(i,j,2)-z_r(i,j,1) )
      
-          
-        if ((j.eq.1).and.(i.eq.1)) then
-           write(*,*)'t3dmix_tri FC(1,1)='
-     &                        ,FC(1,1)
-           write(*,*)'t3dmix_tri Akt(1,1,1,indx)='
-     &                        ,Akt(1,1,1,indx)
-        endif
      
      
 # ifdef VADV_ADAPT_IMP            
@@ -154,10 +137,6 @@
 # endif
           enddo
           
-        if (j.eq.1) then
-           write(*,*)'t3dmix_tri DC(1,1)='
-     &                        ,DC(1,1)
-        endif
           
           
           do k=2,N-1,+1
@@ -212,17 +191,7 @@
      &                        /(Hz(i,j,N)+FC(i,N-1)*(1.-CF(i,N-1)))
 # endif          
         enddo     
-          
-        if (j.eq.1) then
-          write(*,*)'t3dmix_tri (2) t(1,1,1,nnew)='
-     &                        ,t(1,1,1,nnew,itrc)
-          write(*,*)'t3dmix_tri (2) t(1,1,2,nnew)='
-     &                        ,t(1,1,2,nnew,itrc)
-          write(*,*)'t3dmix_tri (2) DC(i,k)='
-     &                        ,DC(1,1)
-           write(*,*)'t3dmix_tri (2) CF(i,k)='
-     &                        ,CF(1,1)
-        endif
+
           
           
           do k=N-1,1,-1
@@ -232,13 +201,7 @@
           enddo           !--> discard FC,CF,DC
 
 
-     
-        if (j.eq.1) then
-            write(*,*)'t3dmix_tri (3) t(1,1,1,nnew)='
-     &                        ,t(1,1,1,nnew,itrc)
-        endif
-     
-     
+
      
 # ifdef DIAGNOSTICS_TS
           do k=1,N

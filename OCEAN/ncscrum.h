@@ -556,6 +556,9 @@
       integer indxrvfrc
       parameter (indxrvfrc=indxrufrc+1)
       integer indxSUSTR, indxSVSTR
+# ifdef TS_MIX_ISO_FILT
+      integer indxdRdx,indxdRde
+# endif
 # ifdef M3FAST
       integer indxru_nbq,indxrv_nbq
       integer indxru_nbq_avg2,indxrv_nbq_avg2
@@ -566,10 +569,24 @@
      &           indxrv_nbq_avg2=indxru_nbq_avg2+1,
      &           indxqdmu_nbq=indxrv_nbq_avg2+1,
      &           indxqdmv_nbq=indxqdmu_nbq+1)
+# ifdef TS_MIX_ISO_FILT
+      parameter (indxdRdx=indxqdmv_nbq+1,
+     &           indxdRde=indxdRdx+1)
+      parameter (indxSUSTR=indxdRde+1,
+     &           indxSVSTR=indxdRde+2)
+# else
       parameter (indxSUSTR=indxqdmv_nbq+1,
      &           indxSVSTR=indxqdmv_nbq+2)
+# endif
+# else
+# ifdef TS_MIX_ISO_FILT
+      parameter (indxdRdx=indxrvfrc+1,
+     &           indxdRde=indxdRdx+1)
+      parameter (indxSUSTR=indxdRde+1,
+     &           indxSVSTR=indxdRde+2)
 # else
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
+# endif
 # endif
 # else
       integer indxSUSTR, indxSVSTR
@@ -887,6 +904,9 @@
       integer rstru_nbq_avg2,rstrv_nbq_avg2
       integer rstqdmu_nbq,rstqdmv_nbq
 # endif  /* M3FAST */
+# ifdef TS_MIX_ISO_FILT
+      integer rstdRdx,rstdRde
+# endif
 #endif
 #ifdef BBL
       integer rstBBL(2)
@@ -1337,6 +1357,9 @@
      &      , rstru_nbq_avg2,rstrv_nbq_avg2
      &      , rstqdmu_nbq,rstqdmv_nbq
 # endif  /* M3FAST */
+# ifdef TS_MIX_ISO_FILT
+     &      , rstdRdx,rstdRde
+# endif
 #endif
 # ifdef SEDIMENT
      &                         , rstSed

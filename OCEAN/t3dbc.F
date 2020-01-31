@@ -81,9 +81,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 # endif
 
 
-        write(*,*)'t3dbc ini t(0,0,1,nnew)='
-     &                    ,t(0,0,1,indx,itrc)
-
 
 !
 # ifndef EW_COM_PERIODIC
@@ -164,8 +161,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           enddo
         enddo
 
-       write(*,*)'t3dbc W t(0,1,1,nnew)='
-     &                         ,t(0,1,1,indx,itrc)
         
 #  elif defined OBC_COM_WEST && defined OBC_COM_TUPWIND
 !                                               Western edge Upwind BC
@@ -388,9 +383,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
           enddo
         enddo
-        
-             write(*,*)'t3dbc S t(1,0,1,nnew)='
-     &                         ,t(1,0,1,indx,itrc)
+
 
 
 #  elif defined OBC_COM_SOUTH && defined OBC_COM_TUPWIND
@@ -541,8 +534,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
-       write(*,*)'t3dbc bef corner t(0,0,1,nnew)='
-     &                    ,t(0,0,1,indx,itrc)
+
 
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
@@ -555,9 +547,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
         enddo
       endif
-      
-         write(*,*)'t3dbc corner t(0,0,1,nnew)='
-     &                    ,t(0,0,1,indx,itrc)
+
 
 # endif
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST

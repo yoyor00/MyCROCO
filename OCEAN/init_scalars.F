@@ -1598,7 +1598,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxrv_nbq =',indxrv_nbq
       vname(3,indxrv_nbq)='meter second-2                         '
       vname(4,indxrv_nbq)='rv_nbq, scalar, series                 '
       vname(5,indxrv_nbq)='Fast_momentum_forcing_terms            '
-      vname(6,indxrv_nbq)='lat_u lon_u                            '
+      vname(6,indxrv_nbq)='lat_v lon_v                            '
       vname(7,indxrv_nbq)='                                       '
 
 CR      write(stdout,'(1x,A,I3)') 'indxru_nbq_avg2 =',indxru_nbq_avg2
@@ -1616,7 +1616,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxrv_nbq_avg2 =',indxrv_nbq_avg2
       vname(3,indxrv_nbq_avg2)='meter second-2                    '
       vname(4,indxrv_nbq_avg2)='rv_nbq_avg2, scalar, series       '
       vname(5,indxrv_nbq_avg2)='Fast_momentum_forcing_terms       '
-      vname(6,indxrv_nbq_avg2)='lat_u lon_u                       '
+      vname(6,indxrv_nbq_avg2)='lat_v lon_v                       '
       vname(7,indxrv_nbq_avg2)='                                  '
 
 CR      write(stdout,'(1x,A,I3)') 'indxqdmu_nbq =',indxqdmu_nbq
@@ -1634,11 +1634,36 @@ CR      write(stdout,'(1x,A,I3)') 'indxqdmv_nbq =',indxqdmv_nbq
       vname(3,indxqdmv_nbq)='meter second-2                       '
       vname(4,indxqdmv_nbq)='qdmv_nbq, scalar, series             '
       vname(5,indxqdmv_nbq)='Fast_momentum_forcing_terms          '
-      vname(6,indxqdmv_nbq)='lat_u lon_u                          '
+      vname(6,indxqdmv_nbq)='lat_v lon_v                          '
       vname(7,indxqdmv_nbq)='                                     '
 
-
 # endif  /* M3FAST */
+
+# ifdef TS_MIX_ISO_FILT
+
+!
+! density gradients for use in t3dmix
+!
+CR      write(stdout,'(1x,A,I3)') 'indxdRdx =',indxdRdx
+      vname(1,indxdRdx)='dRdx                                 '
+      vname(2,indxdRdx)='Density gradient                     '
+      vname(3,indxdRdx)='                                     '
+      vname(4,indxdRdx)='dRdx, scalar, series                 '
+      vname(5,indxdRdx)='Density_gradient                     '
+      vname(6,indxdRdx)='lat_u lon_u                          '
+      vname(7,indxdRdx)='                                     '
+      
+CR      write(stdout,'(1x,A,I3)') 'indxdRde =',indxdRde
+      vname(1,indxdRde)='dRde                                 '
+      vname(2,indxdRde)='Density_gradient                     '
+      vname(3,indxdRde)='meter second-2                       '
+      vname(4,indxdRde)='dRde, scalar, series                 '
+      vname(5,indxdRde)='Density_gradient                     '
+      vname(6,indxdRde)='lat_v lon_v                          '
+      vname(7,indxdRde)='                                     '
+
+
+# endif
 
 # endif /* EXACT_RESTART */
 

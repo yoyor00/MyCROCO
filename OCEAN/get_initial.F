@@ -1058,6 +1058,56 @@
       
       
 # endif  /* M3FAST */
+
+# ifdef TS_MIX_ISO_FILT
+
+!
+! density gradients for use in t3dmix
+!
+
+      lvar=lenstr(vname(1,indxdRdx))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxdRdx)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (dRdx(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, u3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxdRdx)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxdRdx)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+!
+!
+!
+      lvar=lenstr(vname(1,indxdRde))
+      ierr=nf_inq_varid (ncid,
+     &                  vname(1,indxdRde)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (dRde(START_2D_ARRAY,1), ncid, varid,
+     &                                         record, v3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                           vname(1,indxdRde)(1:lvar)
+     &                         , record, ininame(1:lstr)
+     &                         , nf_strerror(ierr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1)
+     &                           vname(1,indxdRde)(1:lvar)
+     &                          ,ininame(1:lstr)
+     &                          ,nf_strerror(ierr)
+      endif
+#  endif
+
      
 #  endif
 

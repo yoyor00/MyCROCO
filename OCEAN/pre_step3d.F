@@ -167,25 +167,15 @@
       nadv=  nstp   !<-- do not remove: used in compute_tracer_fluxes.h
 
       if (FIRST_TIME_STEP) then
-        write(*,*)'EULER'
         cff=0.5*dt
         cff1=1.
         cff2=0.
       else
-        write(*,*)'LEAP FROG'
         cff=(1.-gamma)*dt
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
       
-      write(*,*)'pre_step3 Hz(10,10,32)=',Hz(10,10,32)
-      write(*,*)'pre_step3 Hz_bak(10,10,32)=',Hz_bak(10,10,32)
-      write(*,*)'pre_step3 Huon(10,10,32)=',Huon(10,10,32)
-      write(*,*)'pre_step3 Hvom(10,10,32)=',Hvom(10,10,32)
-      write(*,*)'pre_step3 We(10,10,32)=',We(10,10,32)
-# ifdef VADV_ADAPT_IMP
-      write(*,*)'pre_step3 Wi(10,10,32)=',Wi(10,10,32)
-# endif
 
       do k=1,N
         do j=JstrV-1,Jend
@@ -201,8 +191,7 @@
           enddo
         enddo
       enddo
-      
-      write(*,*)'pre_step3 Hz_half(10,10,32)=',Hz_half(10,10,32)
+
 !
 !  Set extended range
 !
@@ -698,23 +687,6 @@
       enddo     !<-- j
       
       
-# ifdef M3FAST
-        write(*,*)'pre_step3 ru_nbq_avg2=',ru_nbq_avg2(10,10,32)
-        write(*,*)'pre_step3 Zt_avg1=',Zt_avg1(10,10)
-        write(*,*)'pre_step3 ru_int_nbq=',ru_int_nbq(10,10,32)
-        write(*,*)'pre_step3 ru=',ru(10,10,32)
-
-        
-# ifdef RVTK_DEBUG_PERFRST
-      call check_tab3d(u(:,:,:,nstp),'prestep3d u(i,j,k,nstp)','uint')
-      call check_tab3d(u(:,:,:,indx),'prestep3d u(i,j,k,indx)','uint')
-!      call check_tab3d(u(:,:,:,nnew),'prestep3d u(i,j,k,nnew)','uint')
-      call check_tab3d(ru_nbq_avg2,'prestep3d ru_nbq_avg2','uint')
-      call check_tab2d(ru_int_nbq_2d,'prestep3d ru_int_nbq_2d','rint')
-      call check_tab2d(Zt_avg1,'prestep3d Zt_avg1','rint')
-      call check_tab3d(ru_int_nbq,'prestep3d ru_int_nbq','uint')
-# endif
-# endif
       
 # ifdef NBQ
 !----------------------------------------------------------

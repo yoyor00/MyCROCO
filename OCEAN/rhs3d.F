@@ -456,9 +456,6 @@
         enddo
 # endif
 
-        if (k.eq.32) then
-          write(*,*)'rhs3d init ru(10,10,32)=',ru(10,10,32)
-        endif
 
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -539,10 +536,7 @@
 #  endif
           enddo
         enddo
-        
-        if (k.eq.32) then
-          write(*,*)'rhs3d cor ru(10,10,32)=',ru(10,10,32)
-        endif
+
 
         do j=JstrV,Jend
           do i=Istr,Iend
@@ -1869,9 +1863,6 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
 !
 !======================================================================
 !
-        if (j.eq.10) then
-        write(*,*)'rhs3d ru(10,10,32)=',ru(10,10,32)
-        endif
 
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)

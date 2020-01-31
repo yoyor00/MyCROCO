@@ -330,12 +330,6 @@
           enddo               !--> discard FC
 
 
-        if (j.eq.1) then
-          write(*,*)'step3d (vadv) t(1,1,1,nnew)='
-     &                          ,t(1,1,1,nnew,itrc)
-        endif
-
-
 # ifdef DIAGNOSTICS_TS
        do k=1,N 
          do i=Istr,Iend
@@ -418,10 +412,6 @@
             enddo
           endif
 
-         if (j.eq.1) then
-           write(*,*)'step3d (forc) t(1,1,1,nnew)='
-     &                          ,t(1,1,1,nnew,itrc)
-         endif
 
 !
 !
@@ -440,11 +430,6 @@
             DC(i,0)=dt*pn(i,j)*pm(i,j)
        enddo
 #  endif
-
-        if (j.eq.1) then
-        write(*,*)'step3d (-1) t(1,1,1,nnew)='
-     &                        ,t(1,1,1,nnew,itrc)
-        endif
 
 # ifdef TS_MIX_IMP
 #  ifdef BIO_HADV_WENO5
@@ -466,10 +451,6 @@
 #  include "t3dmix_tridiagonal.h"
 # endif
 
-        if (j.eq.1) then
-        write(*,*)'step3d (0) t(1,1,1,nnew)='
-     &                         ,t(1,1,1,nnew,itrc)
-        endif
         
 # ifdef CONST_TRACERS
           do k=1,N
@@ -510,16 +491,11 @@
 !  apply land-sea mask and exchange periodic boundary conditions.
 !======================================================================
 !
+
       do itrc=1,NT
-
-        call check_tab3d(t(:,:,:,nnew,itrc),'t nnew bef t3dbc','r')
-        call check_tab3d(t(:,:,:,nstp,itrc),'t nstp bef t3dbc','r')
-
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
-        
-        call check_tab3d(t(:,:,:,nnew,itrc),'t aft t3dbc','r')
-
       enddo
+      
 !
 !======================================================================
 !  Compute biological fluxes

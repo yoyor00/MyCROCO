@@ -232,18 +232,6 @@
       ENDIF
 
 
-
-
- 
-        
-      DO k=0,N
-       call check_tab2d(trb(:,:,k,nstp,itke),
-     &                      'trbtke nstp in gls','r')
-       call check_tab2d(trb(:,:,k,nstp,igls),
-     &                      'trbgls nstp in gls','r')
-      ENDDO
-      
-      
       
 !
 !--------------------------------------------------------------------
@@ -300,15 +288,6 @@
 # undef FX
 # undef FE
 
-
-       
-      DO k=1,N-1
-       call check_tab2d(trb(:,:,k,nnew,itke),
-     &                      'trbtke nnew in gls','r')
-       call check_tab2d(trb(:,:,k,nnew,igls),
-     &                      'trbgls nnew in gls','r')
-      ENDDO
-     
      
 
 !
@@ -323,6 +302,8 @@
 !--------------------------------------------------------------------
 !
       tind  = nrhs
+
+       
       DO k=1,N-1
          DO j=jmin,jmax
             DO i=imin,imax 
@@ -372,18 +353,7 @@
            ENDDO
          ENDDO
       ENDDO
-      
-      
-             
-      DO k=1,N-1
-        call check_tab2d(trb(:,:,k,nnew,itke),
-     &                      'trbtke in gls 0','r')
-        call check_tab2d(trb(:,:,k,nnew,igls),
-     &                      'trbgls in gls 0','r')
-        call check_tab2d(shear2(:,:,k),
-     &                      'shear2 in gls 0','r')
-      ENDDO
-             
+
              
 !
 !--------------------------------------------------------------------
@@ -402,30 +372,7 @@
       ENDDO 
 
 
-       
-       write(*,*) 'imin,imax',imin,imax
-       call check_tab2d(bustr,
-     &                      'bustr','u')
-       call check_tab2d(bvstr,
-     &                      'bvstr','v')
-       call check_tab2d(ustar_bot_sq,
-     &                      'ustar_bot_sq','r')
-     
-     
 
-        
-      DO k=1,N
-         call check_tab2d(Akv(:,:,k),
-     &                      'Akv in gls 1','r')
-      ENDDO
-     
-      DO k=1,N-1
-         call check_tab2d(Akt(:,:,k,itemp),
-     &                      'Akt in gls 1','r')
-         call check_tab2d(bvf(:,:,k),
-     &                      'bvf in gls 1','r')
-      ENDDO
-        
 
       !--------------------------------------------------
       DO j=jmin,jmax         !<-- j-outer loop
@@ -512,14 +459,6 @@
                   trb( i,j,0,nnew,ig ) = trb_bot
                ENDDO
                        
-               if (j.eq.jmax) then
-                  call check_tab2d(ustar_bot_sq,
-     &                     'ustar_bot_sq','r')
-                  call check_tab2d(trb(:,:,0,nnew,ig),
-     &                      'trbtke in loop','r')
-                  call check_tab2d(trb(:,:,N,nnew,igls),
-     &                      'trbtke in loop','r')
-               endif
                        
                        
             ELSE
@@ -567,13 +506,7 @@
                   trb( i,j,N,nnew,ig ) = trb_sfc
                   trb( i,j,0,nnew,ig ) = trb_bot 
                ENDDO
-                       
-               if (j.eq.jmax) then
-                  call check_tab2d(trb(:,:,0,nnew,ig),
-     &                     'trbgls in loop','r')
-                  call check_tab2d(trb(:,:,N,nnew,igls),
-     &                      'trbgls in loop','r')
-               endif
+
                
             ENDIF               
             
@@ -622,11 +555,6 @@
 #  define FE ustar_bot_sq 
 #  define FE1 shear2       
       DO k=0,N
-      
-        call check_tab2d(trb(:,:,k,nnew,ig),
-     &                      'trbgls bef gls smooth','r')
-      
-      
 #        include "gls_smooth.h"
       ENDDO
 #  undef FX
@@ -640,9 +568,6 @@
 #  define FE ustar_bot_sq 
 #  define FE1 shear2       
       DO k=0,N
-         call check_tab2d(trb(:,:,k,nnew,ig),
-     &                    'trbtke bef gls smooth','r')
-       
 #        include "gls_smooth.h"
       ENDDO
 #  undef FX
@@ -652,11 +577,6 @@
 
 # undef I_EXT_RANGE
 # undef J_EXT_RANGE
-
-       write(*,*)'gls1 trb(1,1,1,nnew,itke)=',
-     &                        trb(1,1,1,nnew,itke)
-       write(*,*)'gls1 trb(1,1,1,nnew,igls)=',
-     &                        trb(1,1,1,nnew,igls)
 
 !
 !--------------------------------------------------------------------
@@ -895,12 +815,7 @@
           enddo
         enddo
       enddo
-      
-      
-       write(*,*)'gls trb(1,1,1,nnew,itke)=',
-     &                        trb(1,1,1,nnew,itke)
-       write(*,*)'gls trb(1,1,1,nnew,igls)=',
-     &                        trb(1,1,1,nnew,igls)
+
 !
 ! Exchange computational margines and/or periodic boundaries:
 !--------- ------------- -------- ------ -------- ----------- 

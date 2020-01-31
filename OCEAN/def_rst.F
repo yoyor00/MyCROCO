@@ -765,6 +765,54 @@
 
 # endif  /* M3FAST */
 
+
+# ifdef TS_MIX_ISO_FILT
+
+!
+! density gradients for use in t3dmix
+!
+        lvar=lenstr(vname(1,indxdRdx))
+        ierr=nf_def_var (ncid, vname(1,indxdRdx)(1:lvar),
+     &                    NF_DOUBLE, 4, u3dgrd, rstdRdx)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstdRdx,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxdRdx))
+        ierr=nf_put_att_text (ncid, rstdRdx, 'long_name',
+     &                      lvar, vname(2,indxdRdx)(1:lvar))
+        lvar=lenstr(vname(3,indxdRdx))
+        ierr=nf_put_att_text (ncid, rstdRdx, 'units', lvar,
+     &                       vname(3,indxdRdx)(1:lvar))
+        lvar=lenstr(vname(4,indxdRdx))
+        ierr=nf_put_att_text (ncid, rstdRdx, 'field', lvar,
+     &                       vname(4,indxdRdx)(1:lvar))
+
+        call nf_add_attribute(ncid, rstdRdx, indxdRdx,
+     &                                   5, NF_DOUBLE, ierr)
+
+        lvar=lenstr(vname(1,indxdRde))
+        ierr=nf_def_var (ncid, vname(1,indxdRde)(1:lvar),
+     &                    NF_DOUBLE, 4, v3dgrd, rstdRde)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstdRde,nf_collective)
+#endif
+        lvar=lenstr(vname(2,indxdRde))
+        ierr=nf_put_att_text (ncid, rstdRde, 'long_name',
+     &                      lvar, vname(2,indxdRde)(1:lvar))
+        lvar=lenstr(vname(3,indxdRde))
+        ierr=nf_put_att_text (ncid, rstdRde, 'units',  lvar,
+     &                       vname(3,indxdRde)(1:lvar))
+        lvar=lenstr(vname(4,indxdRde))
+        ierr=nf_put_att_text (ncid, rstdRde, 'field',  lvar,
+     &                       vname(4,indxdRde)(1:lvar))
+
+        call nf_add_attribute(ncid, rstdRde, indxdRde,
+     &                                   5, NF_DOUBLE, ierr)
+
+
+
+# endif /* TS_MIX_ISO_FILT */
+
 # endif  /* EXACT_RESTART */
 
 
@@ -1260,9 +1308,9 @@
           goto 99                                         !--> ERROR
         endif
         
-    !
-    ! 3D rhs for M3FAST in XI- and ETA-directions.
-    !
+!
+! 3D rhs for M3FAST in XI- and ETA-directions.
+!
 
         lvar=lenstr(vname(1,indxqdmu_nbq))
         ierr=nf_inq_varid (ncid, vname(1,indxqdmu_nbq)(1:lvar),
@@ -1285,7 +1333,33 @@
 
             
 # endif  /* M3FAST */
-        
+
+# ifdef TS_MIX_ISO_FILT
+!
+! density gradients for use in t3dmix
+!
+
+        lvar=lenstr(vname(1,indxdRdx))
+        ierr=nf_inq_varid (ncid, vname(1,indxdRdx)(1:lvar),
+     &                                            rstdRdx)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxdRdx)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+        lvar=lenstr(vname(1,indxdRde))
+        ierr=nf_inq_varid (ncid, vname(1,indxdRde)(1:lvar),
+     &                                            rstdRde)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxdRde)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+
+# endif /* TS_MIX_ISO_FILT */
+
+
 # endif
 
 #ifdef SEDIMENT

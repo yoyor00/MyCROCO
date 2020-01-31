@@ -215,7 +215,7 @@
 #ifdef EXACT_RESTART
 # define FIRST_TIME_STEP iic.eq.forw_start
 #else
-#define FIRST_TIME_STEP iic.eq.ntstart
+# define FIRST_TIME_STEP iic.eq.ntstart
 #endif
 #define FIRST_RST_TIME_STEP iic.eq.ntstart
 /* First time step after initialisation, always equal to iic.eq.ntstart

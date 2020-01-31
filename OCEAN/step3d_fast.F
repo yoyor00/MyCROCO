@@ -359,11 +359,6 @@ C$    trd=omp_get_thread_num()
       endif    ! FIRST_FAST_STEP
 # endif
 
-# ifdef RVTK_DEBUG_PERFRST
-      call check_tab3d(qdmu_nbq,'qdmu_nbqint INIT','uint')
-      call check_tab3d(qdmv_nbq,'qdmv_nbqint INIT','vint')
-# endif
-
 
 !
 !=====================================================================
@@ -401,10 +396,7 @@ C$    trd=omp_get_thread_num()
         cff2=-2.0*mybeta-0.5
         cff3= mybeta
       endif
-!
-# ifdef RVTK_DEBUG_ADVANCED
-       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
-# endif  
+
 !
 !----------------------------------------------------------------------
 !  Extrapolate (D,ubar,vbar) at m+1/2
@@ -467,9 +459,6 @@ C$    trd=omp_get_thread_num()
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
-      call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r')
-# endif 
 !
 !-----------------------------------------------------------------------
 ! Load RHS values into additional AGRIF shared array for nesting
@@ -1572,12 +1561,6 @@ C$OMP END MASTER
 
 # endif
 
-# ifdef RVTK_DEBUG_PERFRST
-       write(*,*) 'IstrU,Jstr',IstrU,Jstr
-       write(*,*) 'Istr,JstrV',IstrU,Jstr
-       call check_tab2d(bustr,'bustr','u')
-       call check_tab2d(bvstr,'bvstr','v')
-# endif
 
       endif
 #  undef UBOT
@@ -2042,10 +2025,7 @@ C$OMP END MASTER
 
 # else /* NBQ */
 
-# ifdef RVTK_DEBUG_PERFRST
-      call check_tab3d(qdmu_nbq,'qdmu_nbqint 0','u')
-      call check_tab3d(qdmv_nbq,'qdmv_nbqint 0','v')
-# endif
+
 
 !
 !********************************************************************
@@ -2107,10 +2087,6 @@ C$OMP END MASTER
 # endif /* NBQ */
 
 
-# ifdef RVTK_DEBUG_PERFRST
-      call check_tab3d(qdmu_nbq,'qdmu_nbqint bef PSOURCE','uint')
-      call check_tab3d(qdmv_nbq,'qdmv_nbqint bef PSOURCE','vint')
-# endif
 
 
 !
@@ -2189,10 +2165,7 @@ C$OMP END MASTER
       enddo
 # endif
 
-# ifdef RVTK_DEBUG
-      call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
-      call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
-# endif
+
 !
 !-----------------------------------------------------------------------
 !  U & V momentum open boundary conditions
@@ -2238,10 +2211,7 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-# ifdef RVTK_DEBUG
-      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-# endif  
+
 
 
 # ifdef NBQ

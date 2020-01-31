@@ -301,13 +301,6 @@ c********************************************************************
 # endif /* PGF_FLAT_BOTTOM */
 
 
-        if (k.eq.32) then
-          write(*,*)'in Prsgrd rho(10,10,32)=',rho(10,10,32)
-          write(*,*)'in Prsgrd z_r(10,10,32)=',z_r(10,10,32)
-          write(*,*)'in Prsgrd P(10,10,32)=',P(10,10,32)
-        endif
-
-
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*(
@@ -360,10 +353,6 @@ c********************************************************************
 
           enddo
         enddo
-        
-        if (k.eq.32) then
-          write(*,*)'in Prsgrd ru(10,10,32)=',ru(10,10,32)
-        endif
         
         
 !
