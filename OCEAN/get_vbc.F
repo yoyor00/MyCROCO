@@ -539,7 +539,6 @@
         enddo
       enddo
 #   endif
-#  endif /* BSTRESS_FAST */
 
 !
 ! Set boundary conditions
@@ -602,6 +601,8 @@
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
 #  endif
+#  endif /* BSTRESS_FAST */
+
 # endif /* SOLVE3D */
 #endif /* BBL */
 

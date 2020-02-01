@@ -1495,8 +1495,6 @@ C$OMP END MASTER
         endif
 
 
-# ifdef GLS_MIXING
-
 !
 ! Set boundary conditions
 !
@@ -1558,8 +1556,6 @@ C$OMP END MASTER
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
 #  endif
-
-# endif
 
 
       endif
