@@ -90,7 +90,6 @@
             if (req_rec.gt.0) then
               if (req_rec.le.max_rec) then
                 record=req_rec
-                write(*,*) 'record=',record
               else
                 write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')
      &           '### ERROR: get_initial :: requested restart time ',
@@ -335,12 +334,6 @@
           
 #endif
  
-        write(*,*)'ntstart=',ntstart
-        write(*,*)'nrecrst=',nrecrst
-        write(*,*)'nrechis=',nrechis
-# ifdef AVERAGES
-        write(*,*)'nrecavg=',nrecavg
-# endif
 
 #ifdef EXACT_RESTART
           if (tindx.eq.2 .and. record.lt.max_rec) then
@@ -350,7 +343,8 @@
               if (ibuff(1) .eq. ntstart+1) then
                 forw_start=1
               else
-                write(*,'(1x,3A,2I4/10x,4A/10x,A)')      'WARNING: ',
+              MPI_master_only
+     &       write(*,'(1x,3A,2I4/10x,4A/10x,A)')      'WARNING: ',
      &           'Exact restart is requested, but is not possible: ',
      &           'records', record,record+1, 'in ''',ininame(1:lstr),
      &           ''' are not consecutive time steps ==> proceeding ',
@@ -366,13 +360,15 @@
           if (tindx.eq.1) then
 
             if (forw_start.eq.1) then
-              write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
+            MPI_master_only
+     &               write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
      &                ': Exact restart from day =',
      &                 start_time*sec2day,  ' rec =', record,
      &          '(', ntstart, ',', nrecrst, ',', nrechis, ').'
             else
 #endif
-              write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
+            MPI_master_only
+     &               write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
      &                'get_initial: Restarted from day =',
      &                 start_time*sec2day,  ' rec =', record,
      &          '(', ntstart, ',', nrecrst, ',', nrechis, ').'
@@ -416,6 +412,11 @@
 #ifdef EXACT_RESTART
       if (tindx.eq.1 .and. forw_start.eq.0) forw_start=ntstart
 #endif
+
+# if defined OUTPUTS_SURFACE && ! defined XIOS
+       write(*,*) 'nrecsurf in get initial',nrecsurf
+#endif
+
 
 #ifdef AVERAGES
 

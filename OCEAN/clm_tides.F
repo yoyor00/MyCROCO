@@ -90,6 +90,7 @@
       ramp=TANH(dt*sec2day*float(iic-1))
 # endif
       cff=2.*pi*time
+      MPI_master_only write(*,*) 'time in tides is', time
 !
 # if defined SSH_TIDES
 #  ifdef TIDES_MAS

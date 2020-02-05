@@ -59,12 +59,11 @@
 !
 ! Conditions for writing output
 !
-!$$$      write(*,*)'IIC=',iic
-!$$$      write(*,*)'ILC=',ilc
-!$$$      write(*,*)'NTSTART=',ntstart
-!$$$      write(*,*)'NRST=',nrst
-!$$$      write(*,*)'NWRT=',nwrt
-!$$$      write(*,*)'NAVG=',navg
+       MPI_master_only write(*,*)'IIC=',iic
+       MPI_master_only write(*,*)'ILC=',ilc
+       MPI_master_only write(*,*)'NTSTART=',ntstart
+       MPI_master_only write(*,*)'NRST=',nrst
+       MPI_master_only write(*,*)'NWRT=',nwrt
       
       if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
 #ifdef EXACT_RESTART

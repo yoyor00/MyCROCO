@@ -93,6 +93,9 @@
       else
         record=1+mod(nrecrst-1, abs(nrpfrst))
       endif
+      
+      MPI_master_only write(*,*)'nrecrst=',nrecrst
+      MPI_master_only write(*,*)'record=',record
 
 !
 ! Write out evolving model variables:
