@@ -343,16 +343,16 @@
               if (ibuff(1) .eq. ntstart+1) then
                 forw_start=1
               else
-              MPI_master_only
-     &       write(*,'(1x,3A,2I4/10x,4A/10x,A)')      'WARNING: ',
+          MPI_master_only write(*,'(1x,3A,2I4/10x,4A/10x,A)')
+     &           'WARNING: ',
      &           'Exact restart is requested, but is not possible: ',
      &           'records', record,record+1, 'in ''',ininame(1:lstr),
      &           ''' are not consecutive time steps ==> proceeding ',
-     &                          'with', 'forward initial time step.'
+     &                         'with', 'forward initial time step.'
               endif
             else
-              write(*,2) 'time_step', record, ininame(1:lstr),
-     &                                      nf_strerror(ierr)
+             write(*,2) 'time_step', record, ininame(1:lstr),
+     &                                     nf_strerror(ierr)
               goto 99
             endif
           endif 
@@ -360,15 +360,13 @@
           if (tindx.eq.1) then
 
             if (forw_start.eq.1) then
-            MPI_master_only
-     &               write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
+          MPI_master_only write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
      &                ': Exact restart from day =',
      &                 start_time*sec2day,  ' rec =', record,
      &          '(', ntstart, ',', nrecrst, ',', nrechis, ').'
             else
 #endif
-            MPI_master_only
-     &               write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
+          MPI_master_only  write(*,'(6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
      &                'get_initial: Restarted from day =',
      &                 start_time*sec2day,  ' rec =', record,
      &          '(', ntstart, ',', nrecrst, ',', nrechis, ').'
