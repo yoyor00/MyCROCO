@@ -23,11 +23,12 @@
 !
           subroutine debug_ini()
           USE debug
+          implicit none
 #include "param.h"
 #include "scalars.h"
           character(len=80) :: filename
           character(len=80) :: tmp_string
-          integer :: nb, newunit
+          integer :: nb, new_unit
           
           filename="check_file"
 #if !defined RVTK_DEBUG_WRITE
