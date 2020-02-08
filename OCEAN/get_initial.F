@@ -384,7 +384,7 @@
         endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
         start(1)=1
-        start(2)=indx
+        start(2)=record
         count(1)=6
         count(2)=1
         ierr=nf_get_vara_int (ncid, varid, start, count, ibuff)
@@ -409,10 +409,6 @@
       endif
 #ifdef EXACT_RESTART
       if (tindx.eq.1 .and. forw_start.eq.0) forw_start=ntstart
-#endif
-
-# if defined OUTPUTS_SURFACE && ! defined XIOS
-       write(*,*) 'nrecsurf in get initial',nrecsurf
 #endif
 
 
