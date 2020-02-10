@@ -982,20 +982,31 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          indxWrk=indxBDLU(1)+itrc-1
          if (wrthis(indxWrk)) then
             work2d=bedldu(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+3*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
+     &           indxWrk,record,r2dvar,type)
+
+#  endif
          endif
       enddo
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
          if (wrthis(indxWrk)) then
             work2d=bedldv(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+4*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+2*NST),
+     &           indxWrk,record,r2dvar,type)
+
+#   endif
          endif
       enddo
-#  endif
-!     
 # endif /* SEDIMENT */
 !     
 # ifdef BBL
