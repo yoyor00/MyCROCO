@@ -23,7 +23,7 @@
 # else
 #  define bnew nstp      
 # endif  /* BEDLOAD */
-# ifndef BBL_MODEL
+# ifndef BBL
 #  define BSTRESS_UPWIND
 # endif
 !
@@ -454,8 +454,8 @@ C$OMP BARRIER
 ! Partition bedld into xi and eta directions, still at rho points.
 ! (FX_r and FE_r have dimensions of kg).
 !
-            FX_r(i,j)=angleu(i,j)*bedld*on_r(i,j)*dt(ng)
-            FE_r(i,j)=anglev(i,j)*bedld*om_r(i,j)*dt(ng)
+            FX_r(i,j)=angleu(i,j)*bedld*on_r(i,j)*dt
+            FE_r(i,j)=anglev(i,j)*bedld*om_r(i,j)*dt
 #   endif /* BSTRESS_UPWIND */
 #  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM */
 !
