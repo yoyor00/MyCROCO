@@ -20,12 +20,12 @@
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
+#include "param.h"
 #if defined MPI & !defined PARALLEL_FILES
 # include "mpi_cpl.h"
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
-#include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "forces.h"

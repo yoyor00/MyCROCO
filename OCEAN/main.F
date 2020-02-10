@@ -95,7 +95,7 @@
 !  (XIOS with OASIS is not done yet)
 !
 # if (defined XIOS && !defined AGRIF)
-      call xios_initialize( "roms",return_comm=MPI_COMM_WORLD )
+      call xios_initialize( "crocox",return_comm=MPI_COMM_WORLD )
 # elif (defined OA_COUPLING && !defined AGRIF)
       call cpl_prism_init  ! If AGRIF --> call cpl_prism_init in zoom.F
 # elif (defined OW_COUPLING && !defined AGRIF)
@@ -779,7 +779,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
       enddo
       call closecdf
 # ifdef XIOS
-      call iom_context_finalize( "roms")   ! needed for XIOS+AGRIF 
+      call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF 
 # endif
 #ifdef AGRIF
 !
@@ -790,7 +790,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
         Call Agrif_Instance(parcours % gr)
         call closecdf
 # ifdef XIOS
-        call iom_context_finalize( "roms") ! needed for XIOS+AGRIF 
+        call iom_context_finalize( "crocox") ! needed for XIOS+AGRIF 
 # endif
         parcours => parcours % next             
       enddo
@@ -806,16 +806,13 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 !     exe_time = start_time2 - start_time1
 !     if(mynode.eq.0) print*,'exe_time =',exe_time
 
-# if defined OA_COUPLING || defined OW_COUPLING
-      call prism_terminate_proto(ierr)       ! Finalize OASIS3
-# elif defined XIOS
-                             ! MPI finalize done by XIOS, XIOS+OASIS not coded
-      call xios_finalize()   ! end mpp communications with xios
-#  if !defined AGRIF      
-      call MPI_Finalize (ierr)
-#  endif 
+# if defined XIOS
+                               ! MPI finalize done by XIOS
+       call xios_finalize()   ! Even with OASIS, finalize is done by XIOS
+# elif defined OA_COUPLING || defined OW_COUPLING
+       call prism_terminate_proto(ierr)       ! Finalize OASIS3 (without XIOS)# else
 # else
-      call MPI_Finalize (ierr)
+-      call MPI_Finalize (ierr)
 # endif     
 #endif
 

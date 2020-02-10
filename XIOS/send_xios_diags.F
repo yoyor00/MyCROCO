@@ -900,16 +900,16 @@ C 				  endif
       CHARACTER(LEN=20)              ::   char_value
       INTEGER                        ::   ji, jg                   ! loop counters
       INTEGER                        ::   ix, iy                   ! i-,j- index
-# ifdef NEMO_PIRATA
       REAL            ,DIMENSION(11) ::   zlontao                  ! longitudes of tao    moorings
       REAL            ,DIMENSION( 7) ::   zlattao                  ! latitudes  of tao    moorings
       REAL            ,DIMENSION( 4) ::   zlonrama                 ! longitudes of rama   moorings
       REAL            ,DIMENSION(11) ::   zlatrama                 ! latitudes  of rama   moorings
       REAL            ,DIMENSION( 3) ::   zlonpira                 ! longitudes of pirata moorings
       REAL            ,DIMENSION( 9) ::   zlatpira                 ! latitudes  of pirata moorings
-# endif
       !!----------------------------------------------------------------------
       !
+      ! frequency of the call of iom_put (attribut: freq_op)
+      WRITE(cl1,'(i1)') 1
       ! output file names (attribut: name)
       DO ji = 1, 9
          WRITE(cl1,'(i1)') ji
@@ -924,7 +924,6 @@ C 				  endif
          CALL iom_update_file_name('file'//cl3)
       END DO
 
-#ifdef NEMO_PIRATA
       ! Zooms...
       clgrd = (/ 'T', 'U', 'W' /)
       DO jg = 1, SIZE(clgrd)     ! grid type
@@ -954,7 +953,6 @@ C 				  endif
       zlonpira = (/ -38.0, -23.0, -10.0 /)
       zlatpira = (/ -19.0, -14.0,  -8.0, 0.0, 4.0, 8.0, 12.0,15.0,20.0/)
       CALL set_mooring( zlonpira, zlatpira )
-# endif
       !
       END SUBROUTINE set_xmlatt
 
@@ -1743,7 +1741,7 @@ C 				  endif
 #  define JV_RANGE Jstr,JendR
 # endif
       !
-      cdname='croco'
+      cdname='crocox'
       clname = cdname
 # ifdef AGRIF
       IF( TRIM(Agrif_CFixed()) /= '0' )
@@ -1894,7 +1892,7 @@ C 				  endif
       IF( xios_is_valid_context(cdname) ) THEN
          CALL iom_swap( cdname )   ! swap to cdname context
          CALL xios_context_finalize() ! finalize the context
-         IF( cdname /= "croco" ) CALL iom_swap( "croco" )   ! return back to croco context
+         IF( cdname /= "crocox" ) CALL iom_swap( "crocox" )   ! return back to croco context
       ENDIF
       !
       END SUBROUTINE iom_context_finalize

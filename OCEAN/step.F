@@ -165,7 +165,7 @@ C$OMP MASTER
 #ifdef AGRIF
 # ifdef XIOS
 !      if( nbcoarse == 1 )then
-        call iom_swap( "roms" )
+        call iom_swap( "crocox" )
 !      endif
 # endif
 #endif
