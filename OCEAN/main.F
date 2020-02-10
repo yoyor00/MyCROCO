@@ -812,7 +812,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 # elif defined OA_COUPLING || defined OW_COUPLING
        call prism_terminate_proto(ierr)       ! Finalize OASIS3 (without XIOS)# else
 # else
--      call MPI_Finalize (ierr)
+       call MPI_Finalize (ierr)
 # endif     
 #endif
 

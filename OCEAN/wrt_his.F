@@ -989,10 +989,10 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
      &           indxWrk,record,r2dvar,type)
-
-#  endif
+#   endif
          endif
       enddo
+
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
          if (wrthis(indxWrk)) then
@@ -1007,6 +1007,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 #   endif
          endif
       enddo
+#  endif
 # endif /* SEDIMENT */
 !     
 # ifdef BBL
