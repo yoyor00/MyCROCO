@@ -594,22 +594,29 @@
       parameter (indxBostr=indxSUSTR+24)
 #ifdef SOLVE3D
 # ifdef SEDIMENT
-      integer indxSed, indxBTHK, indxBPOR 
+      integer indxSed, indxBTHK, indxBPOR
       parameter (indxSed=indxSUSTR+28,
      &           indxBTHK=indxSed, indxBPOR=indxSed+1)
-      integer, dimension(NST) :: indxBFRA    
+      integer, dimension(NST) :: indxBFRA
      & =(/(iloop,iloop=indxSed+2,indxSed+1+NST)/)
 #  ifdef SUSPLOAD
       integer, dimension(NST):: indxDFLX
      & =(/(iloop,iloop=indxSed+2+NST,indxSed+1+2*NST)/)
       integer, dimension(NST) ::indxEFLX
      & =(/(iloop,iloop=indxSed+2+2*NST,indxSed+1+3*NST)/)
-#  endif
-#  ifdef BEDLOAD
+#   ifdef BEDLOAD
       integer, dimension(NST):: indxBDLU
      & =(/(iloop,iloop=indxSed+2+3*NST,indxSed+1+4*NST)/)
       integer, dimension(NST) ::indxBDLV
      & =(/(iloop,iloop=indxSed+2+4*NST,indxSed+1+5*NST)/)
+#   endif
+#  else
+#   ifdef BEDLOAD
+      integer, dimension(NST):: indxBDLU
+     & =(/(iloop,iloop=indxSed+2+NST,indxSed+1+2*NST)/)
+      integer, dimension(NST) ::indxBDLV
+     & =(/(iloop,iloop=indxSed+2+2*NST,indxSed+1+3*NST)/)
+#   endif
 #  endif
 # endif
 # ifdef SST_SKIN
