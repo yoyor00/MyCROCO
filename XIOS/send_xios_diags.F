@@ -1834,7 +1834,7 @@ C 				  endif
 
       ! end file definition
 
-      ! Accademic test with dt> 1second are non comptabile with
+      ! Academic test with dt > 1 second are non comptabile with
       ! XIOS, set xios time step unit to 1 model time_step
       if (dt < 1) then
         dtime%second =  1
@@ -1955,7 +1955,7 @@ C 				  endif
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_TS
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
@@ -2139,8 +2139,7 @@ C 				  endif
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-      work2d=zeta(:,:,fast_indx_out)
-      call xios_send_field("zeta",work2d)
+      call xios_send_field("zeta",zeta(:,:,fast_indx_out))
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 
@@ -2177,11 +2176,10 @@ C 				  endif
       call xios_send_field("sustr",work2d)
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
-#ifdef BULK_SM_UPDATE
+# ifdef BULK_SM_UPDATE
       call xios_send_field("uwnd",uwnd)
       call xios_send_field("vwnd",vwnd)
-#endif
-
+# endif
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
       call xios_send_field("frq",frq(:,:,wstp))
@@ -2432,6 +2430,29 @@ C 				  endif
 #  endif
 
 
+
+#  ifdef DIAGNOSTICS_TS
+         itrc=1
+          call xios_send_field("T_rate", Trate(:,:,:,itrc))
+          call xios_send_field("T_adv", TXadv(:,:,:,itrc)
+     &           + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+          call xios_send_field("T_Hmix",THmix(:,:,:,itrc))
+          call xios_send_field("T_Vmix",TVmix(:,:,:,itrc))
+          call xios_send_field("T_Forc",TForc(:,:,:,itrc))
+#  ifdef SALINITY
+        itrc = 2
+          call xios_send_field("S_rate", Trate(:,:,:,itrc))
+          call xios_send_field("S_adv", TXadv(:,:,:,itrc)
+     &              + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+          call xios_send_field("S_Hmix",THmix(:,:,:,itrc))
+          call xios_send_field("S_Vmix",TVmix(:,:,:,itrc))
+          call xios_send_field("S_Forc",TForc(:,:,:,itrc))
+#  endif
+#  endif
+
+
+
+
 #  ifdef DIAGNOSTICS_VRT
           call xios_send_field("vrtrate", vrtrate(:,:))
           call xios_send_field("vrtadv", vrtXadv(:,:) + vrtYadv(:,:))
@@ -2441,7 +2462,9 @@ C 				  endif
           call xios_send_field("vrtHdiff",vrtHdiff(:,:))
 !          call xios_send_field("vrtVmix",vrtVmix(:,:))
           call xios_send_field("vrtVmix2",vrtVmix2(:,:))
+#  ifdef DIAGNOSTICS_BARO
           call xios_send_field("vrtBaro",vrtBaro(:,:))
+#  endif
           call xios_send_field("vrtDrag",vrtDrag(:,:))
           call xios_send_field("vrtWind",vrtWind(:,:))
 #  ifdef M3FAST
@@ -2460,7 +2483,9 @@ C 				  endif
           call xios_send_field("ekHdiff",ekHdiff(:,:))
           call xios_send_field("ekVmix",ekVmix(:,:))
           call xios_send_field("ekVmix2",ekVmix2(:,:))
+#  ifdef DIAGNOSTICS_BARO
           call xios_send_field("ekBaro",ekBaro(:,:))
+#  endif
           call xios_send_field("ekvol",ekvol(:,:))
           call xios_send_field("ekDrag",ekDrag(:,:))
           call xios_send_field("ekWind",ekWind(:,:))
