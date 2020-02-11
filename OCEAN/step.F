@@ -431,11 +431,6 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 
-#if defined RVTK_DEBUG  && defined TS_MIX_ISO
-           call check_tab3d(dRdx,'dRdx in prestep','u')
-           call check_tab3d(dRde,'dRde in prestep','v')
-#endif
-
 
 #if defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
@@ -913,10 +908,6 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-#if defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO
-           call check_tab3d(dRdx,'dRdx in step3d 0','u')
-           call check_tab3d(dRde,'dRde in step3d 0','v')
-#endif
            
       do tile=my_first,my_last
         call step3d_uv2 (tile)

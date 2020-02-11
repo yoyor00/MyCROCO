@@ -12,11 +12,13 @@
 #include "cppdefs.h"
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 
+# define DEBUG_MPI_MASTER_ONLY
+
           module debug
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
           integer start_debug
-          parameter (start_debug0=6)
+          parameter (start_debug0=464406)
           parameter (start_debug=start_debug0)
           parameter (start_debug_read=start_debug)
           end module debug
@@ -54,7 +56,7 @@
             debug_procs_units(nb)=new_unit
           enddo
 #else
-#if defined MPI
+#if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
           if (mynode == 0) then
             open(107,file="debug_infos",form="formatted")
             write(107,*)NNODES
@@ -118,7 +120,12 @@
 #if defined RVTK_DEBUG_WRITE
 #include "debug_indices.h"
 
-      if (iic.gt.start_debug) then
+
+      if (iic.gt.start_debug
+#if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+     &    .and.mynode.eq.0
+#endif
+     &    ) then
         write(*,*)'iic.gt.start_debug check_tab2d write'
 #if defined MPI
       i1 = i1 + iminmpi - 1
@@ -138,7 +145,11 @@
       write(107)tab
       endif
 # else
-      if (iic.gt.start_debug_read) then
+      if (iic.gt.start_debug_read
+#if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+     &    .and.mynode.eq.0
+#endif
+     &    ) then
         !write(*,*)'iic=',iic
         write(*,*)'iic.gt.start_debug_read check_tab2d read'
 
@@ -176,13 +187,13 @@
                      endif
                    enddo
                  enddo DebugExit
-#  ifdef MPI         
+#  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
       call MPI_allreduce(mystop,globstop,1,
      &                   MPI_LOGICAL,MPI_LOR,MPI_COMM_WORLD,ierr)
       mystop=globstop
 #  endif
       if (mystop) then
-#  ifdef MPI
+#  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
         call MPI_barrier(MPI_COMM_WORLD,ierr)
         call MPI_Finalize (ierr)
 #   endif
@@ -267,7 +278,11 @@
 #if defined RVTK_DEBUG_WRITE
 #include "debug_indices.h"
           
-          if (iic.gt.start_debug) then
+          if (iic.gt.start_debug
+#if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+     &    .and.mynode.eq.0
+#endif
+     &        ) then
             write(*,*)'iic.gt.start_debug check_tab3d write'
             
 #if defined MPI
@@ -288,7 +303,11 @@
       write(107)tab
       endif
 # else
-      if (iic.gt.start_debug_read) then
+      if (iic.gt.start_debug_read
+#if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+     &    .and.mynode.eq.0
+#endif
+     &    ) then
         !write(*,*)'iic ',iic
         write(*,*)'iic.gt.start_debug_read check_tab3d read'
 
@@ -328,13 +347,14 @@
                      enddo
                     enddo
                    enddo DebugExit
-#  ifdef MPI   
+      
+#  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
       call MPI_allreduce(mystop,globstop,1,
      &                   MPI_LOGICAL,MPI_LOR,MPI_COMM_WORLD,ierr)
       mystop=globstop
 #  endif
       if (mystop) then
-#  ifdef MPI
+#  if defined MPI && ! defined DEBUG_MPI_MASTER_ONLY
         call MPI_barrier(MPI_COMM_WORLD,ierr)
         call MPI_Finalize (ierr)
 #   endif
@@ -351,7 +371,11 @@
 # endif
 
 #if !defined RVTK_DEBUG_WRITE
-      if (iic.gt.start_debug_read) then
+      if (iic.gt.start_debug_read
+#if defined DEBUG_MPI_MASTER_ONLY && defined MPI
+     &    .and.mynode.eq.0
+#endif
+     &    ) then
         MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
      &       ,' ON GRID ',Agrif_CFixed()

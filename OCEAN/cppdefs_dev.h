@@ -41,7 +41,7 @@
    and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
    be defined from cppdefs.h, so not undefined here !!!!! 
 */
-#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
+#if defined RVTK_DEBUG && !defined RVTK_DEBUG_READ
 # define RVTK_DEBUG_WRITE
 #endif
 
