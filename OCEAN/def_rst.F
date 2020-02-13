@@ -213,7 +213,7 @@
 ! Define grid variables.
 ! ------ ---- ----------
 !        
-        if (total_rec.eq.1) then
+        if (total_rec.le.1) then
 # ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd 
      &                   ,r3dgrd, w3dgrd)
@@ -1441,7 +1441,7 @@
 ! Write grid variables.
 ! ----- ---- ----------
 !
-      if (total_rec.eq.1) call wrt_grid (ncid, rstname, lstr)
+      if (total_rec.le.1) call wrt_grid (ncid, rstname, lstr)
 #endif
   99  return                                              !--> ERROR
       end
