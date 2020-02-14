@@ -512,6 +512,8 @@
         goto 99                                           !--> ERROR
       endif
 
+<<<<<<< .merge_file_FzyCeK
+=======
 #ifdef MOVING_BATHY
 !
 ! Time evolving bathymetry (only needed for restart)
@@ -574,6 +576,7 @@
       endif
 #endif /* BBL */
 
+>>>>>>> .merge_file_HhAe4x
 #ifdef SOLVE3D
 !
 ! 3D momentum component in the XI-direction.
@@ -705,6 +708,53 @@
       endif
       enddo
 # endif /* SEDIMENT */
+<<<<<<< .merge_file_FzyCeK
+# ifdef BBL
+!
+! Ripple height
+!
+      got_inibed(1)=.true.
+      lvar=lenstr(vname(1,indxHrip))
+      ierr=nf_inq_varid (ncid, vname(1,indxHrip)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (Hripple, ncid, varid,
+     &                                        record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxHrip)(1:lvar)
+     &                                , record, ininame(1:lstr)
+     &                                , nf_strerror(ierr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,3) vname(1,indxHrip)(1:lvar)
+     &                                , ininame(1:lstr)
+     &                                , nf_strerror(ierr)
+        got_inibed(1)=.false.
+      endif
+!
+! Ripple length
+!
+      got_inibed(2)=.true.
+      lvar=lenstr(vname(1,indxLrip))
+      ierr=nf_inq_varid (ncid, vname(1,indxLrip)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (Lripple, ncid, varid,
+     &                                        record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxLrip)(1:lvar)
+     &                                , record, ininame(1:lstr)
+     &                                , nf_strerror(ierr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,3) vname(1,indxLrip)(1:lvar)
+     &                                , ininame(1:lstr)
+     &                                , nf_strerror(ierr)
+        got_inibed(2)=.false.
+      endif
+# endif /* BBL */
+=======
+>>>>>>> .merge_file_HhAe4x
 
 !======================================================
 ! Look for Hbl, Akt, Akv, ... (J. Gula)
@@ -825,6 +875,8 @@
       endif
 # endif
 
+
+
 # ifdef GLS_MIXING
 !
 !  turbulent kinetic energy.
@@ -886,6 +938,8 @@
 !     &     vname(1,indxLsc)(1:lvar),       ''' not found in ''',
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
+        
+      
 # endif
 
 

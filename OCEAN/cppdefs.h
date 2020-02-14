@@ -946,6 +946,7 @@
 # undef  BBL
 # undef  SEDIMENT
 # ifdef SEDIMENT
+#  define ANA_SEDIMENT
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA
@@ -995,6 +996,7 @@
 # define BBL
 # define SEDIMENT
 # ifdef SEDIMENT
+#  define ANA_SEDIMENT
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA

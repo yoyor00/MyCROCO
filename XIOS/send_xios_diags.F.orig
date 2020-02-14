@@ -508,7 +508,10 @@
       !
       END SUBROUTINE iom_set_file_global_attr_float
   
+<<<<<<< .merge_file_9oTPDy
+=======
 
+>>>>>>> .merge_file_ufGLx8
       SUBROUTINE iom_set_file_global_attr_int(cdid, type, name, value)
 # include "param.h"
 # include "scalars.h"
@@ -546,7 +549,11 @@
       !
       END SUBROUTINE iom_set_file_global_attr_int
   
+<<<<<<< .merge_file_9oTPDy
+  
+=======
  
+>>>>>>> .merge_file_ufGLx8
       SUBROUTINE iom_set_file_attr( cdid, name, name_suffix )
 # include "param.h"
 # include "scalars.h"
@@ -1773,9 +1780,9 @@ C 				  endif
       cldate = tool_sectodat(time)
       CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
 # else
-      iday=1
-      imonth=1       
-      iyear=1
+      iday=start_day
+      imonth=start_month       
+      iyear=start_year
       ihour=0
       iminute=0
       isec=0
@@ -1787,8 +1794,11 @@ C 				  endif
      &        start_date=cldate )
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-     & time_origin = xios_date(1979,01,01,00,00,00),
-     & start_date = xios_date(iyear,imonth,iday,ihour,iminute,isec))
+     &      start_date  = xios_date(start_year,start_month,start_day,
+     &                    start_hour,start_minute,start_second),
+     &      time_origin = xios_date(origin_year,origin_month,origin_day,
+     &                    origin_hour,origin_minute,origin_second))
+
 #endif
       ! horizontal grid definition
       CALL set_scalar

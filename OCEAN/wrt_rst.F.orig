@@ -223,6 +223,7 @@
           goto 99                                         !--> ERROR
         endif
       enddo
+<<<<<<< HEAD
     
 # if defined LMD_SKPP
 !
@@ -481,6 +482,8 @@
     
 # endif
 
+=======
+>>>>>>> master
 
 
 # ifdef SEDIMENT

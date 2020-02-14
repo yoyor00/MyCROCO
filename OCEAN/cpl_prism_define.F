@@ -58,7 +58,7 @@
 
 
       CALL prism_def_partition_proto(oasis_part_id, 
-     &     oasis_ig_paral, comp_ierror)
+     &     oasis_ig_paral, comp_ierror, LLm*MMm)
       IF ( comp_ierror /= PRISM_Ok ) THEN
         CALL prism_abort_proto ( comp_id, 'cpl_prism_grid',
      &       'Failure in prism_def_partition')

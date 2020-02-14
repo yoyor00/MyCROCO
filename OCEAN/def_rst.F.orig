@@ -348,7 +348,6 @@
         
        call nf_add_attribute(ncid, rstVb, indxVb, 5, NF_DOUBLE, ierr)
 
-
 #ifdef SOLVE3D
 !
 ! 3D momenta in XI- and ETA-directions.
@@ -414,6 +413,7 @@
 
           
         enddo
+<<<<<<< .merge_file_4Xjzaq
 
 
 
@@ -832,6 +832,9 @@
 
 
 
+=======
+#endif /* SOLVE3D */
+>>>>>>> .merge_file_t33ukL
 
 #ifdef SEDIMENT
 !
@@ -1198,6 +1201,7 @@
             goto 99                                       !--> ERROR
           endif
         enddo 
+<<<<<<< .merge_file_4Xjzaq
 #endif
 
 
@@ -1395,6 +1399,9 @@
 
 
 # endif
+=======
+#endif /* SOLVE3D */
+>>>>>>> .merge_file_t33ukL
 
 #ifdef SEDIMENT
 !

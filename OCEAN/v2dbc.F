@@ -65,7 +65,7 @@ C$    integer omp_get_thread_num
      &        ,bry_val,bry_pgr,bry_str,bry_cor
 #endif
       parameter (eps=1.D-20)
-#ifdef WET_DRY
+#if defined WET_DRY || defined OBC_REDUCED_PHYSICS
       real cff1,cff2
 #endif
 #include "boundary.h"
