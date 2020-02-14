@@ -18,7 +18,7 @@
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
           integer start_debug
-          parameter (start_debug0=464406)
+          parameter (start_debug0=6)
           parameter (start_debug=start_debug0)
           parameter (start_debug_read=start_debug)
           end module debug
