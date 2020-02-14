@@ -33,6 +33,10 @@
 #ifdef SPHERICAL
          <field id="lon_rho" long_name="longitude of RHO-points" unit="degree_east" />
          <field id="lat_rho" long_name="latitude of RHO-points" unit="degree_north" />
+         <field id="lon_u" long_name="longitude of U-points" unit="degree_east" />
+         <field id="lat_u" long_name="latitude of U-points" unit="degree_north" />
+         <field id="lon_v" long_name="longitude of V-points" unit="degree_east" />
+         <field id="lat_v" long_name="latitude of V-points" unit="degree_north" />
 #else
          <field id="x_rho" long_name="x-locations of RHO-points" unit="meter" />
          <field id="y_rho" long_name="y-locations of RHO-points" unit="none" />
@@ -52,8 +56,10 @@
          <field id="temp" long_name="potential temperature" unit="Celsius" grid_ref="rho_3D" />
 
 #ifdef SALINITY
+         <!-- SALINITY --> 
          <field id="salt" long_name="salinity" unit="PSU" grid_ref="rho_3D" />
          <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
+         <!--  END SALINITY --> 
 #endif
 
          <field id="w" long_name="vertical velocity" unit="meter second-1" grid_ref="rho_3D"/>
