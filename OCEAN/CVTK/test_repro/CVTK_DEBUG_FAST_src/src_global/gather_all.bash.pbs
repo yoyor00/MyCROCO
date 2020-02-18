@@ -1,0 +1,22 @@
+#!/bin/bash
+
+cd $PBS_O_WORKDIR
+echo $PBS_O_LOGNAME
+###===================================
+
+set -x
+#-----------------------
+source CONFIGURE_GLOBAL
+#-----------------------
+
+cd ${TESTROOTDIR}/REG
+./gather_recap.bash REG
+cd -
+
+cd ${TESTROOTDIR}/VORT
+./gather_recap.bash VORT
+cd -
+
+cd ${TESTROOTDIR}/KTEST
+./gather_recap.bash KTEST
+cd -

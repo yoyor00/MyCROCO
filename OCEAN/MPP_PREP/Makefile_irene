@@ -1,0 +1,25 @@
+NETCDF_ROOT=$(NETCDF_DIR)
+#NETCDF_INC=$(NETCDF_ROOT)/include
+#NETCDF_INC=$(nf-config --includedir)
+NETCDF_INC=/ccc/products/ccc_users_env/compil/Atos_7__x86_64/netcdf-fortran-4.4.4/intel--17.0.4.196__openmpi--2.0.2/hdf5__parallel/include
+#NETCDF_LIB=$(NETCDF_ROOT)/lib -lnetcdf -lnetcdff
+#NETCDF_LIB=$(nf-config --flibs)
+NETCDF_LIB=-L/ccc/products/ccc_users_env/compil/Atos_7__x86_64/netcdf-fortran-4.4.4/intel--17.0.4.196__openmpi--2.0.2/hdf5__parallel/lib -lnetcdff -L/ccc/products/ccc_users_env/compil/Atos_7__x86_64/netcdf-c-4.6.0/intel--17.0.4.196__openmpi--2.0.2/hdf5__parallel/lib -L/ccc/products/ccc_users_env/compil/Atos_7__x86_64/hdf5-1.8.20/intel--17.0.4.196__openmpi--2.0.2/parallel/lib -lnetcdf -lnetcdf -liomp5 -lpthread
+#
+F90=ifort
+#F90FLAGS= -O0 -C -debug -Wunused -traceback -w
+F90FLAGS= -O2  -Wunused -traceback -w
+LDFLAGS= 
+#
+SRCS = $(patsubst %.f90, %.o, $(wildcard *.f90))
+EXEC=mpp_optimiz
+
+$(EXEC): $(SRCS)
+	#$(F90) $(LDFLAGS) -o $@ $< -L$(NETCDF_LIB)
+	$(F90) $(LDFLAGS) -o $@ $< $(NETCDF_LIB)
+
+%.o: %.f90
+	$(F90) $(F90FLAGS) -c  $< -I$(NETCDF_INC) 
+
+clean:
+	rm -f *.o *.mod $(EXEC)
