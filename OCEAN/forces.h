@@ -81,13 +81,6 @@
       real bustr(GLOBAL_2D_ARRAY)
       real bvstr(GLOBAL_2D_ARRAY)
       common /forces_bustr/bustr /forces_bvstr/bvstr
-
-# if defined DISSIP_SHALLOW_BODY
-      real bustr_lim(GLOBAL_2D_ARRAY)
-      real bvstr_lim(GLOBAL_2D_ARRAY)
-      common /forces_bustr/bustr_lim /forces_bvstr/bvstr_lim
-#endif
-
 #ifndef ANA_BMFLUX
 !
 !  tbms      Time of surface momentum stresses.
@@ -166,27 +159,25 @@
 !
       real btflx(GLOBAL_2D_ARRAY,NT)
       common /forces_btflx/btflx
-# ifndef ANA_BTFLUX
-!
+
+# if defined BHFLUX || defined BWFLUX
 !  btflxg   Two-time level bottom tracer flux grided data.
 !  btflxp   Two-time level bottom tracer flux point data.
 !  tbtflx   Time of bottom tracer flux.
 !
       real btflxg(GLOBAL_2D_ARRAY,2,NT)
       common /btfdat_btflxg/btflxg
-
-      real sclbtf(NT), btf_tstart(NT), btf_tend(NT)
-      real btfclen(NT), tsbtf(NT)
-      real btf_tintrp(2,NT), btflxp(2,NT),  tbtflx(2,NT)
-      integer itbtf(NT), btfid(NT), btftid(NT),tbtfindx(NT)
-      logical lbtfgrd(NT), btfcycle(NT), btf_onerec(NT)
-      common /btfdat1/ sclbtf, btf_tstart, btf_tend, btfclen
-      common /btfdat2/ tsbtf,  btf_tintrp,   btflxp,        tbtflx
-      common /btfdat3/ itbtf,  btfid,        btftid,        tbtfindx
-      common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
-
+      
+      real btflxp(2,NT), btf_time(2,NT)
+      real btf_cycle(NT), btf_scale(NT)
+      integer itbtf(NT), btf_ncycle(NT), btf_rec(NT) 
+      integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
+      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
+      common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
+      common /btfdat3/  btf_tid, btf_id
 #   undef BTFLUX_DATA
-# endif /* !ANA_BTFLUX */
+# endif /*  BHFLUX */
+
 #ifdef QCORRECTION
 !
 !  HEAT FLUX CORRECTION
@@ -667,7 +658,7 @@
 
 #ifdef WAVE_MAKER
       integer Nfrq, Ndir
-      parameter (Nfrq=250, Ndir=50)
+      parameter (Nfrq=320, Ndir=50)
       real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
       real wd_bry(Ndir), wa_bry_d(Ndir)
       common /wave_maker/ wf_bry, wk_bry, wa_bry,

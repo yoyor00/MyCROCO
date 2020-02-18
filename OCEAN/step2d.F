@@ -153,10 +153,6 @@ C$    trd=omp_get_thread_num()
 # include "zoom.h"
         integer irhox, irhoy, irhot
 #endif
-#if defined DISSIP_SHALLOW_BARO
-        real u_1, u_2, cfl_1, cfl_2, depth_1, depth_2
-        real damping, lambda_cfl, lambda_h, dummy, uu, vv
-#endif
 #if defined INTERNAL || defined BODYTIDE
       real U0, omega
 #endif
@@ -1344,38 +1340,8 @@ C$OMP END MASTER
 #else
       cff2=2.*dtfast
 #endif
-#if defined DISSIP_SHALLOW_BARO
-      depth_1 = 10.
-      depth_2 = 50.
-      u_1 = 2.
-      u_2 = 5.
-      !cfl_1 = 0.5
-      !cfl_2 = 0.8
-      do j=Jstr-1,Jend
-         do i=Istr-1,Iend
-            damping_sw(i,j) = 0.
-         enddo
-      enddo
-#endif
       do j=Jstr,Jend
         do i=IstrU,Iend
-#if defined DISSIP_SHALLOW_BARO
-#ifdef DISSIP_SHALLOW_old
-           dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
-           lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
-           if (dummy.ge.depth_2) lambda_h=0.
-           lambda_h = max(0.,min(1.,lambda_h))
-           
-           dummy = abs(ubar(i,j,kstp))*pm_u(i,j)*dt
-           lambda_cfl = ((dummy-cfl_1)/(cfl_2-cfl_1))**2
-           if (dummy.le.cfl_1) lambda_cfl=0.
-           lambda_cfl = max(0.,min(1.,lambda_cfl))
-           
-           damping = lambda_h*lambda_cfl
-           damping_sw(i,j) = damping_sw(i,j)+damping*.5
-           damping_sw(i-1,j) = damping_sw(i-1,j)+damping*.5
-#endif
-#endif
           DUnew=( (Dstp(i,j)+Dstp(i-1,j))*ubar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
 #ifdef SOLVE3D
@@ -1392,39 +1358,6 @@ C$OMP END MASTER
      &                                                    )
 #ifdef MASKING
      &                                         *umask(i,j)
-#endif
-#if defined DISSIP_SHALLOW_BARO
-#ifndef DISSIP_SHALLOW_old
-           dummy = 0.5*(Dstp(i,j)+Dstp(i-1,j))
-           lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
-           if (dummy.ge.depth_2) lambda_h=0.
-           lambda_h = max(0.,min(1.,lambda_h))
-       
-           cfl_1 = u_1*pm_u(i,j)*dt
-           cfl_2 = u_2*pm_u(i,j)*dt
-
-           dummy = abs(0.5*DUnew/dummy)*pm_u(i,j)*dt
-           lambda_cfl = ((dummy-cfl_1)/(cfl_2-cfl_1))**2
-           if (dummy.le.cfl_1) lambda_cfl=0.
-           lambda_cfl = max(0.,min(1.,lambda_cfl))
-           
-           damping = lambda_h*lambda_cfl
-           damping_sw(i,j) = damping_sw(i,j)+damping*.5
-           damping_sw(i-1,j) = damping_sw(i-1,j)+damping*.5
-#ifdef DISSIP_SHALLOW_DEBUG
-           if ((mynode.eq.1312).and.(i.eq.11).and.(j.eq.46)) then
-               write(*,*) '-----------------'
-               write(*,*) 'mynode,i,j', mynode,i,j
-               write(*,*) 'ubar(i,j,kstp)', ubar(i,j,kstp)
-               write(*,*) '0.5*DUnew/dummy', 0.5*DUnew/dummy
-               write(*,*) 'rufrc(i,j)', rufrc(i,j)
-               write(*,*) 'rubar(i,j)', rubar(i,j)
-               write(*,*) 'damping', damping
-               write(*,*) '-----------------'
-           endif
-#endif
-#endif
-          DUnew = DUnew*(1.-damping)
 #endif
 #ifdef WET_DRY
           cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
@@ -1449,23 +1382,6 @@ C$OMP END MASTER
          
       do j=JstrV,Jend
         do i=Istr,Iend
-#if defined DISSIP_SHALLOW_BARO
-#ifdef DISSIP_SHALLOW_old
-           dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
-           lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
-           if (dummy.ge.depth_2) lambda_h=0.
-           lambda_h = max(0.,min(1.,lambda_h))
-
-           dummy = abs(vbar(i,j,kstp))*pn_v(i,j)*dt
-           lambda_cfl = ((dummy-cfl_1)/(cfl_2-cfl_1))**2
-           if (dummy.le.cfl_1) lambda_cfl=0.
-           lambda_cfl = max(0.,min(1.,lambda_cfl))
-
-           damping = lambda_h*lambda_cfl
-           damping_sw(i,j) = damping_sw(i,j)+damping*.5
-           damping_sw(i,j-1) = damping_sw(i,j-1)+damping*.5
-#endif
-#endif
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
      &        +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
 #ifdef SOLVE3D
@@ -1482,39 +1398,6 @@ C$OMP END MASTER
      &                                                    )
 #ifdef MASKING
      &                                         *vmask(i,j)
-#endif
-#if defined DISSIP_SHALLOW_BARO
-#ifndef DISSIP_SHALLOW_BARO_old
-           dummy = 0.5*(Dstp(i,j)+Dstp(i,j-1))
-           lambda_h = ((dummy-depth_2)/(depth_1-depth_2))**2
-           if (dummy.ge.depth_2) lambda_h=0.
-           lambda_h = max(0.,min(1.,lambda_h))
-       
-           cfl_1 = u_1*pn_v(i,j)*dt
-           cfl_2 = u_2*pn_v(i,j)*dt
-
-           dummy = abs(0.5*DVnew/dummy)*pn_v(i,j)*dt
-           lambda_cfl = ((dummy-cfl_1)/(cfl_2-cfl_1))**2
-           if (dummy.le.cfl_1) lambda_cfl=0.
-           lambda_cfl = max(0.,min(1.,lambda_cfl))
-           
-           damping = lambda_h*lambda_cfl
-           damping_sw(i,j) = damping_sw(i,j)+damping*.5
-           damping_sw(i,j-1) = damping_sw(i,j-1)+damping*.5
-#ifdef DISSIP_SHALLOW_DEBUG
-           if ((mynode.eq.1312).and.(i.eq.11).and.(j.eq.46)) then
-               write(*,*) '-----------------'
-               write(*,*) 'mynode,i,j', mynode,i,j
-               write(*,*) 'vbar(i,j,kstp)', vbar(i,j,kstp)
-               write(*,*) '0.5*DVnew/dummy', 0.5*DVnew/dummy
-               write(*,*) 'rvfrc(i,j)', rvfrc(i,j)
-               write(*,*) 'rvbar(i,j)', rvbar(i,j)
-               write(*,*) 'damping', damping
-               write(*,*) '-----------------'
-           endif
-#endif
-#endif
-          DVnew = DVnew*(1.-damping)
 #endif
 #ifdef WET_DRY
           cff1_WD=ABS(ABS(vmask_wet(i,j))-1.)

@@ -197,16 +197,6 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
-#ifdef DISSIP_SHALLOW_BARO
-!     
-!     Write out damping coefficient on the barotropic mode (shallow + large cfl)
-!     
-      if (wrthis(indxDSW)) then
-         work2d(:,:)=damping_sw(:,:)
-         call fillvalue2d(work2d,ncidhis,hisDSW,indxDSW,
-     &        record,r2dvar,type)
-      endif
-#endif
 #ifdef MOVING_BATHY
 !     
 !     Write out time evolving bathymetry
@@ -627,19 +617,20 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     
       if (wrthis(indxW)) then
 #ifdef NBQ
-         do k=1,N
+         do k=0,N
             do j=0,Mm+1
                do i=0,Lm+1
-                  workr(i,j,k)=wz(i,j,k,nstp)
+                  work(i,j,k)=wz(i,j,k,nstp)
                enddo
             enddo
          enddo
+         call fillvalue3d(work,ncidhis,hisW,indxW,record,w3dvar,type)
 #else
          do tile=0,NSUB_X*NSUB_E-1
             call Wvlcty (tile, workr) 
          enddo
-#endif
          call fillvalue3d(workr,ncidhis,hisW,indxW,record,r3dvar,type)
+#endif
          
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
       endif
@@ -773,7 +764,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 # endif
 
 !     
-!     Write out total heat flux 
+!     Write out total surface heat flux 
 !     
       if (wrthis(indxShflx)) then
          work2d=stflx(:,:,itemp)*rho0*Cp
@@ -788,9 +779,25 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
-      
+!     
+!     Write out bottom heat flux 
+!     
+      if (wrthis(indxBhflx)) then
+        work2d=btflx(:,:,itemp)*rho0*Cp
+     &       SWITCH rmask
+        ierr=nf_fwrite(work2d, ncidhis, hisBhflx, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBhflx))
+          MPI_master_only write(stdout,1)
+     &         vname(1,indxBhflx)(1:lvar), record, ierr
+     &         MYID
+            goto 99             !--> ERROR
+          endif
+CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
+      endif      
 #ifdef SALINITY    
-!     Write out surface salt flux  
+!     Write out surface salt flux
+!
 !       --> convert [psu.m.s-1] => [cm/days] : 
 !       stf_cff= 86400/0.01 = 1/stf_scale 
 !       After forcing reading (get_stflx.F), multiply by 0.01/86400.
@@ -812,8 +819,35 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
-      endif
+CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
+       endif
+!
+!     Write out bottom salt flux
+!
+       
+!       --> convert [psu.m.s-1] => [cm/days] : 
+!       btf_cff= 86400/0.01 = 1/btf_scale 
+!       After forcing reading (get_btflx.F), multiply by 0.01/86400.
+!       Then in get_vbc.F, mult. by salinity t(i,j,1,nstp,isalt)
+!
+      if (wrthis(indxBwflx)) then
+         do j=0,Mm+1
+            do i=0,Lm+1
+               work2d(i,j)=btf_cff*btflx(i,j,isalt)/
+     &              ( max(eps,t(i,j,1,nstp,isalt))) 
+     &              SWITCH rmask(i,j)
+            enddo
+        enddo
+         ierr=nf_fwrite(work2d, ncidhis, hisBwflx, record, r2dvar)
+         if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxBwflx))
+           MPI_master_only write(stdout,1)
+     &        vname(1,indxBwflx)(1:lvar), record, ierr
+     &           MYID
+            goto 99             !--> ERROR
+         endif
+      write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
+       endif        
 #endif      
 !     
 !     Write out surface heat flux component (W/m2)
@@ -1070,7 +1104,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
 !     
-#if defined MPI & !defined PARALLEL_FILE & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (ncidhis)
       if (nrpfhis.gt.0 .and. record.ge.nrpfhis) ncidhis=-1
 #else

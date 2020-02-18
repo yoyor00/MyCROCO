@@ -102,42 +102,45 @@
 # endif
 
 !**********************************************************************
+      integer inc_faststep
+      common/nbq_inc_faststep/inc_faststep
+      integer nb_faststep
+      common/nbq_nb_faststep/nb_faststep
+
       real DU_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DU_nbq/ DU_nbq
       real DV_nbq(GLOBAL_2D_ARRAY)
       common /nbq_DV_nbq/ DV_nbq
 
-# ifdef BSTRESS_FAST      
-      integer inc_faststep
-      common/nbq_inc_faststep/inc_faststep
-      integer nb_faststep
-      common/nbq_nb_faststep/nb_faststep
-      real rubar_sum(GLOBAL_2D_ARRAY)
-      common /nbq_rubar_sum/ rubar_sum
-      real rvbar_sum(GLOBAL_2D_ARRAY)
-      common /nbq_rvbar_sum/ rvbar_sum
-# endif
+      real ru_int_nbq_2d (GLOBAL_2D_ARRAY)  
+      common /nbq_ruint_2d/ru_int_nbq_2d
+      real rv_int_nbq_2d (GLOBAL_2D_ARRAY)  
+      common /nbq_rvint_2d/rv_int_nbq_2d
 
 # ifdef NBQ
       real rho_grd(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_grd/rho_grd
       real rho_bak(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_bak/rho_bak
-# endif
-
-# ifdef NBQ_MASS
+#  ifdef NBQ_MASS
       real rho_nbq_avg1(GLOBAL_2D_ARRAY,0:N)
       common /avg1_rhonbq/ rho_nbq_avg1
       real rhobar_nbq(GLOBAL_2D_ARRAY,4)
       common /nbq_rhobar/ rhobar_nbq
       real rhobar_nbq_avg1(GLOBAL_2D_ARRAY)
       common /nbq_rhobar_AVG1/ rhobar_nbq_avg1
-# endif
+#  endif
+# else
+      real rubar_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_rubar/ rubar_nbq
+      real rvbar_nbq(GLOBAL_2D_ARRAY)
+      common /nbq_rvbar/ rvbar_nbq
 
-      real ru_int_nbq_2d (GLOBAL_2D_ARRAY)  
-      common /nbq_ruint_2d/ru_int_nbq_2d
-      real rv_int_nbq_2d (GLOBAL_2D_ARRAY)  
-      common /nbq_rvint_2d/rv_int_nbq_2d
+      real rubar_sum(GLOBAL_2D_ARRAY)
+      common /nbq_rubar_sum/ rubar_sum
+      real rvbar_sum(GLOBAL_2D_ARRAY)
+      common /nbq_rvbar_sum/ rvbar_sum
+# endif
 
 !**********************************************************************
       real Hzw_half_nbq(GLOBAL_2D_ARRAY,0:N)
@@ -193,7 +196,7 @@
 
 !**********************************************************************
 # if defined OBC_NBQ && defined OBC_NBQORLANSKI
-#  ifdef OBC_WEST
+#  ifdef OBC_COM_WEST
       real qdmu_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_unbq_west/ qdmu_nbq_west
       real qdmv_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
@@ -205,7 +208,7 @@
       common /bry_rnbq_west/ rho_nbq_west
 #   endif
 #  endif
-#  ifdef OBC_EAST
+#  ifdef OBC_COM_EAST
       real qdmu_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_unbq_east/ qdmu_nbq_east
       real qdmv_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
@@ -217,7 +220,7 @@
       common /bry_rnbq_east/ rho_nbq_east
 #   endif
 #  endif
-#  ifdef OBC_SOUTH
+#  ifdef OBC_COM_SOUTH
       real qdmu_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_unbq_south/ qdmu_nbq_south
       real qdmv_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
@@ -229,7 +232,7 @@
       common /bry_rnbq_south/ rho_nbq_south
 #   endif
 #  endif
-#  ifdef OBC_NORTH
+#  ifdef OBC_COM_NORTH
       real qdmu_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_unbq_north/ qdmu_nbq_north
       real qdmv_nbq_north(GLOBAL_1D_ARRAYXI,N,2)

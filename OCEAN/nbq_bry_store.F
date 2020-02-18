@@ -11,13 +11,52 @@
 !
 #include "cppdefs.h"
 !
-#if defined OBC_NBQ && defined OBC_NBQORLANSKI
-!
 !======================================================================
 !                   subroutine nbq_bry_store
 !======================================================================
 !
-      subroutine nbq_bry_store_tile (Istr,Iend,Jstr,Jend) 
+#ifndef CHILD
+!
+# include "cppdefs.h"
+# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+      subroutine nbq_bry_store_tile (Istr,Iend,Jstr,Jend)
+#  ifdef AGRIF      
+      use AGRIF_Util
+      integer Istr,Iend,Jstr,Jend
+      if (AGRIF_Root()) then
+        call nbq_bry_store_parent_tile (Istr,Iend,Jstr,Jend)
+      else
+        call nbq_bry_store_child_tile (Istr,Iend,Jstr,Jend)
+      endif
+      return
+      end
+!
+! PARENT
+!
+      subroutine nbq_bry_store_parent_tile (Istr,Iend,Jstr,Jend)
+#  endif
+!
+! Set boundary arrays for U-component momentum qdmu_nbq for the parent grid.
+!
+# endif /* defined OBC_NBQ && defined OBC_NBQORLANSKI */
+#else
+# if defined OBC_NBQ && defined OBC_NBQORLANSKI
+!
+! CHILD
+!
+      subroutine nbq_bry_store_child_tile (Istr,Iend,Jstr,Jend)
+!
+! Set boundary arrays for U-component momentum
+! qdmu_nbq for the child grid.
+!
+# endif /* defined OBC_NBQ && defined OBC_NBQORLANSKI */
+#endif /* CHILD */
+!
+#if defined OBC_NBQ && defined OBC_NBQORLANSKI
+!
+! Common Code
+!
+# include "set_obc_definitions.h"
 !
 !----------------------------------------------------------------------
 !  Store boundary values of nbq variables 
@@ -32,7 +71,7 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-# ifdef OBC_WEST
+# ifdef OBC_COM_WEST
       if (WESTERN_EDGE) then
         do k=1,N
           do j=Jstr-1,Jend+1
@@ -55,9 +94,9 @@
         enddo
 #  endif
       endif
-# endif /* OBC_WEST */
+# endif /* OBC_COM_WEST */
 !
-# ifdef OBC_EAST
+# ifdef OBC_COM_EAST
       if (EASTERN_EDGE) then
         do k=1,N
           do j=Jstr-1,Jend+1
@@ -80,9 +119,9 @@
         enddo
 #  endif
       endif
-# endif /* OBC_EAST */
+# endif /* OBC_COM_EAST */
 !
-# ifdef OBC_SOUTH
+# ifdef OBC_COM_SOUTH
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=Istr-1,Iend+1
@@ -105,9 +144,9 @@
         enddo
 #  endif
       endif
-# endif /* OBC_SOUTH */
+# endif /* OBC_COM_SOUTH */
 !
-# ifdef OBC_NORTH
+# ifdef OBC_COM_NORTH
       if (NORTHERN_EDGE) then
         do k=1,N
           do i=Istr-1,Iend+1
@@ -130,9 +169,24 @@
         enddo
 #  endif
       endif
-# endif /* OBC_NORTH */
+# endif /* OBC_COM_NORTH */
 !
       return
       end
+#else
+# ifndef CHILD
+      subroutine nbq_bry_store_parent_empty
+      end
+# else
+      subroutine nbq_bry_store_child_empty
+      end
+# endif
 #endif /* OBC_NBQ && OBC_NBQORLANSKI */
+#ifndef CHILD
+# define CHILD
+# ifdef AGRIF
+#  include "nbq_bry_store.F"
+# endif
+# undef CHILD
+#endif  /* !CHILD */
 

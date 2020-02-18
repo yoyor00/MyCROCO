@@ -120,6 +120,7 @@
 !
 ! 2 process Rhum
 ! Relative humidity: Convert specific humidity to relative
+! (except from METEO-FRANCE fluxes where it's already RH)
 !
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
@@ -127,16 +128,17 @@
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
-        
+#ifndef AROME        
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
      &         exp((17.502*tairg(i,j,iblkrec))/
      &             (240.97+tairg(i,j,iblkrec)))
             Qsat=0.62197*(ew/(Pref-0.378*ew))
-            !rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
+            rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
+#endif        
 # ifdef MPI
 	call exchange_r2d_tile(1,Lm,1,Mm,
      &                         rhumg(START_2D_ARRAY,iblkrec))

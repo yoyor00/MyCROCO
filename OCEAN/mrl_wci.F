@@ -22,20 +22,24 @@
 # ifdef SOLVE3D
      &            A3d(1,1,trd),A3d(1,2,trd),A3d(1,3,trd),
 # endif
-     &            A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd),A2d(1,4,trd),
-     &            A2d(1,5,trd),A2d(1,6,trd),
-     &            A2d(1,7,trd),A2d(1,8,trd),A2d(1,9,trd),
-     &            A2d(1,10,trd),A2d(1,11,trd),
-     &            A2d(1,12,trd),A2d(1,13,trd),
-     &            A2d(1,14,trd))
+     &            A2d(1,1,trd) ,A2d(1,2,trd) ,A2d(1,3,trd) ,
+     &            A2d(1,4,trd) ,A2d(1,5,trd) ,A2d(1,6,trd) ,
+     &            A2d(1,7,trd) ,A2d(1,8,trd) ,A2d(1,9,trd) ,
+     &            A2d(1,10,trd),A2d(1,11,trd),A2d(1,12,trd),
+     &            A2d(1,13,trd)
+# if (defined WAVE_FRICTION && !defined WKB_WWAVE)\
+                        || defined WAVE_STREAMING
+     &            ,A2d(1,14,trd)
+# endif
+     &                  )
       return
       end
 
       subroutine mrl_wci_tile (istr,iend,jstr,jend, 
 # ifdef SOLVE3D
-     &                                                   wrk1,wrk2,wrk3,
+     &            wrk1,wrk2,wrk3,
 # endif
-     &           wh,fr,kw,brk,stk,Dstp,act,kD,inv_d,inv_f,frc,ebrk,erol
+     &            wh,fr,kw,brk,stk,Dstp,act,kD,inv_d,inv_f,frc,ebrk,erol
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE)\
                         || defined WAVE_STREAMING
      &           ,zob_my
@@ -139,7 +143,11 @@
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) \
                         || defined WAVE_STREAMING
       if (Zobt.gt.0.) then                     ! default Zob for wave
-        Zob_my=Zob                            ! dissipation or streaming
+        do j=jstr-1,jend+1                     ! dissipation or streaming
+          do i=istr-1,iend+1      
+            Zob_my(i,j)=Zob(i,j)
+          enddo
+        enddo                         
       else
         Zob_my=1.e-3
       endif
@@ -148,7 +156,7 @@
 
 ! Define Stokes drift computation
 
-# ifndef FLUME
+# ifndef SANDBAR
 #  define STOKES_DRIFT
 # endif
 
@@ -612,12 +620,6 @@
 ! kvf : vertical vortex force term (K term) at rho-point
 ! ======================================================
 !
-#  ifdef STOKES_DRIFT
-
-#   define kvr wrk3
-#   define kvfx stk
-#   define kvfy inv_f
-
       if (WESTERN_EDGE) then
         imin=IstrU-1
       else
@@ -628,6 +630,13 @@
       else
         jmin=JstrV
       endif
+
+#  ifdef STOKES_DRIFT
+
+#   define kvr wrk3
+#   define kvfx stk
+#   define kvfy inv_f
+
       do k=1,N-1
         do j=JstrV-1,jend+1             ! du/dz & dv/dz at horz u- &
           do i=IstrU-1,iend+1           ! v- & vert w-point

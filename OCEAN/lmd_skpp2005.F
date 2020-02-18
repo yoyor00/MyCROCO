@@ -93,10 +93,11 @@
 !======================================================================
       parameter (
      &   Cv=1.8,       ! Ratio of interior Brunt-Vaisala
-                       !     frequency "N" to that at the entrainment depth "he".
-#if defined DIURNAL_SRFLUX || defined ROBUST_DIURNAL_SRFLUX || defined BULK_FLUX
+                       ! frequency "N" to that at the entrainment depth "he".
+#if defined DIURNAL_SRFLUX || defined ROBUST_DIURNAL_SRFLUX \
+                           || defined BULK_FLUX || defined OA_COUPLING
      &   Ric=0.15,     ! Critical bulk Richardson number. (must be decreased
-     &                 ! in case of a diurnal cycle, see McWilliams et. al, 2009, jpo)
+     &                 ! in case of a diurnal cycle, see McWilliams et al., JPO 2009)
 #else
      &   Ric=0.45,
 #endif

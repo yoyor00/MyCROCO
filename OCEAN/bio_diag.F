@@ -48,9 +48,9 @@
       my_itrc(4)=iDet1
 # elif defined BIO_N2ChlPZD2
       my_itrc(1)=iNO3_
-      my_itrc(2)=iPhy2
-      my_itrc(3)=iZoo2
-      my_itrc(4)=iDet2
+      my_itrc(2)=iPhy1
+      my_itrc(3)=iZoo1
+      my_itrc(4)=iDet1
 # elif defined BIO_BioEBUS
       my_itrc(1)=iNO3_
       my_itrc(2)=iPhy2

@@ -76,7 +76,7 @@
 ! Interpolations of the parent values to get vnbqbry_east or vnbqclm
 !
 # ifdef CHILD
-!      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call vnbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -185,7 +185,8 @@
 !
 !  Replace external mode
 !
-#  define vsum grad
+#   ifdef NBQ
+#    define vsum grad
         vsum=0.
         do k=1,N
           do i=Istr,Iend
@@ -208,7 +209,8 @@
 #    endif
           enddo
         enddo
-#  undef vsum
+#    undef vsum
+#   endif /* NBQ */
 
 #  else
         do k=1,N                                     ! Southern edge closed
@@ -329,7 +331,8 @@
 !
 !  Replace external mode
 !
-#   define vsum grad
+#   ifdef NBQ
+#    define vsum grad
         vsum=0.
         do k=1,N
           do i=Istr,Iend
@@ -352,7 +355,8 @@
 #    endif
           enddo
         enddo
-#   undef vsum
+#    undef vsum
+#   endif /* NBQ */
 !
 #  else
         do k=1,N                                    ! Northern edge closed
@@ -469,7 +473,7 @@
 !
 !  Replace external mode
 !
-#  ifdef QDM_OBC_TANG_CORRECT
+#  if defined NBQ && defined QDM_OBC_TANG_CORRECT
 #   define vsum grad
         vsum=0.
         do k=1,N
@@ -608,7 +612,7 @@
 !
 !  Replace external mode
 !
-#   ifdef QDM_OBC_TANG_CORRECT
+#   if defined NBQ && defined QDM_OBC_TANG_CORRECT
 #    define vsum grad
         vsum=0.
         do k=1,N

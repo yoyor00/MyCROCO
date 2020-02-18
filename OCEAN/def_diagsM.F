@@ -61,6 +61,9 @@
 # if defined DIAGNOSTICS_BARO
 #  define vidMBaro diaMBaro
 # endif
+# if defined M3FAST
+#  define vidMfast diaMfast
+# endif
 #  if defined MRL_WCI
 #   define vidMvf diaMvf
 #   define vidMbrk diaMbrk
@@ -93,6 +96,9 @@
 #  define vidMrate diaMrate_avg
 # if defined DIAGNOSTICS_BARO
 #  define vidMBaro diaMBaro_avg
+# endif
+# if defined M3FAST
+#  define vidMfast diaMfast_avg
 # endif
 #  if defined MRL_WCI
 #   define vidMvf diaMvf_avg
@@ -550,6 +556,33 @@
         call nf_add_attribute(ncid, vidMBaro(itrc), indxMBaro+itrc-1, 5,
      &                        NF_FOUT, ierr)
 # endif
+# if defined M3FAST
+!
+! indxMfast
+!
+          lvar=lenstr(vname(1,indxMfast+itrc-1))
+          ierr=nf_def_var (ncid, vname(1,indxMfast+itrc-1)(1:lvar),
+     &                     NF_FOUT, 4, r3dgrd, vidMfast(itrc))
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxMfast+itrc-1))
+          ierr=nf_put_att_text (ncid, vidMfast(itrc), 'long_name',
+     &                      lvar, vname(2,indxMfast+itrc-1)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxMfast+itrc-1)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidMfast(itrc), 'long_name',
+     &                          lvar, text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxMfast+itrc-1))
+          ierr=nf_put_att_text (ncid, diaMfast(itrc), 'units', lvar,
+     &                          vname(3,indxMfast+itrc-1)(1:lvar))
+          lvar=lenstr(vname(4,indxMfast+itrc-1))
+          ierr=nf_put_att_text (ncid,vidMfast(itrc), 'field',
+     &                      lvar, vname(4,indxMfast+itrc-1)(1:lvar))
+
+        call nf_add_attribute(ncid, vidMfast(itrc), indxMfast+itrc-1, 5,
+     &                        NF_FOUT, ierr)
+# endif
 !
 #ifdef MRL_WCI
 !
@@ -999,6 +1032,19 @@
            goto 99                                       !--> ERROR
          endif
 # endif
+# if defined M3FAST
+!
+! indxMfast
+!
+         lvar=lenstr(vname(1,indxMfast+itrc-1))
+         ierr=nf_inq_varid (ncid, vname(1,indxMfast+itrc-1)(1:lvar),
+     &                      vidMfast(itrc))
+         if (ierr .ne. nf_noerr) then
+           write(stdout,1) vname(1,indxMfast+itrc-1)(1:lvar),
+     &                     ncname(1:lstr)
+           goto 99                                       !--> ERROR
+         endif
+# endif
 #if defined MRL_WCI
 !
 ! indxMvf
@@ -1184,6 +1230,9 @@
 #undef vidMrate
 # if defined DIAGNOSTICS_BARO
 #undef vidMBaro
+# endif
+# if defined M3FAST
+#undef vidMfast
 # endif
 !
 # ifdef AVERAGES

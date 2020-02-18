@@ -1,4 +1,4 @@
-! $Id: read_inp.F 1615 2014-12-17 13:27:07Z rblod $
+! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -27,6 +27,7 @@
 #endif
 #if defined PSOURCE || defined PSOURCE_NCFILE
 # include "sources.h"
+      integer Nsrc_dumb
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
@@ -37,7 +38,7 @@
 #ifdef MPI
       include 'mpif.h'
 #endif
-#ifdef M3FAST
+#ifdef NBQ
 # include "nbq.h"
 #endif
 #include "mpi_cpl.h"
@@ -68,10 +69,8 @@
 !
 #if defined BASIN
       fname='TEST_CASES/croco.in.Basin'
-#elif defined CANYON_A
-      fname='TEST_CASES/croco.in.Canyon_A'
-#elif defined CANYON_B
-      fname='TEST_CASES/croco.in.Canyon_B'
+#elif defined CANYON
+      fname='TEST_CASES/croco.in.Canyon'
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
@@ -80,6 +79,8 @@
 # else
       fname='TEST_CASES/croco.in.Grav_adj'
 # endif
+#elif defined I_SOLITON
+      fname='TEST_CASES/croco.in.Isoliton'
 #elif defined INNERSHELF
       fname='TEST_CASES/croco.in.Innershelf'
 #elif defined INTERNAL
@@ -104,8 +105,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
-#elif defined FLUME
-      fname='TEST_CASES/croco.in.Flume'
+#elif defined SANDBAR
+      fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
 #elif defined SINGLE_COLUMN && defined KATO_PHILIPS
@@ -123,22 +124,26 @@
 #elif defined SINGLE_COLUMN && defined FORCED_OSCNONROTBBL
       fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
-# ifdef NBQ
-      fname='TEST_CASES/croco.in.Tank_nbq'
-# else
       fname='TEST_CASES/croco.in.Tank'
-# endif
+#elif defined ACOUSTIC
+      fname='TEST_CASES/croco.in.Acoustic' 
 #elif defined SWASH
-# ifdef NBQ
-      fname='TEST_CASES/croco.in.Swash_nbq'
-# else
       fname='TEST_CASES/croco.in.Swash'
-# endif
+#elif defined KH_INST      
+      fname='TEST_CASES/croco.in.KH_INST'
 #elif defined IGW
 # ifdef NBQ
       fname='TEST_CASES/croco.in.IGW_nbq'
 # else
       fname='TEST_CASES/croco.in.IGW'
+# endif
+#elif defined TS_HADV_TEST
+# ifdef SOLID_BODY_ROT 
+      fname='TEST_CASES/croco.in.TS_adv_body'
+# elif defined DIAGONAL_ADV
+      fname='TEST_CASES/croco.in.TS_adv_diag'
+# elif defined SOLID_BODY_PER
+      fname='TEST_CASES/croco.in.TS_adv_rep'
 # endif
 #else
       fname='croco.in'
@@ -292,6 +297,26 @@
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 !
+#ifdef XIOS2
+!
+! origin_date is the origin date of time axis.
+! It must the same used in croco_tool for input files preprocessing
+! 
+      elseif (keyword(1:kwlen).eq.'origin_date') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,'(A)',err=95) origin_date
+          lstr=lenstr(origin_date)
+          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
+     &    origin_date(1:lstr)
+          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
+      READ(origin_date(1:2),fmt='(i2)') origin_day
+      READ(origin_date(4:5),fmt='(i2)') origin_month
+      READ(origin_date(7:10),fmt='(i4)') origin_year
+      READ(origin_date(12:13),fmt='(i2)') origin_hour
+      READ(origin_date(15:16),fmt='(i2)') origin_minute
+      READ(origin_date(18:19),fmt='(i2)') origin_second
+#endif
 #ifdef START_DATE
 !
 ! Start date
@@ -358,7 +383,7 @@
           goto 95
         endif
 
-#ifdef M3FAST
+#ifdef NBQ
 !     
 ! NBQ Time-stepping parameters
 !
@@ -1073,9 +1098,6 @@ c        close(testunit)
      &                    ,  wrthis(indxU),  wrthis(indxV)
      &                    , (wrthis(itrc), itrc=indxT,indxT+NT-1) 
 #endif
-#ifdef DISSIP_SHALLOW_BARO
-        wrthis(indxDSW) = .FALSE. ! force the writing
-#endif 
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
 #ifdef SOLVE3D
      &                        .or. wrthis(indxU) .or. wrthis(indxV)
@@ -1120,6 +1142,13 @@ c        close(testunit)
 # else 
      &                                          ,  dumboolean
 # endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+        || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+        || defined GLS_MIXING
+     &                                          ,  wrthis(indxbvf)
+# else
+     &                                          ,  dumboolean
+# endif
 # ifdef VIS_COEF_3D
      &                                          ,  wrthis(indxVisc)
 # else 
@@ -1152,17 +1181,27 @@ c        close(testunit)
 # endif
      &                                          ,  wrthis(indxShflx_rsw)
 # ifdef BULK_FLUX
-     &                                          , wrthis(indxShflx_rlw)
-     &                                          , wrthis(indxShflx_lat)
-     &                                          , wrthis(indxShflx_sen)
+     &                                          ,  wrthis(indxShflx_rlw)
+     &                                          ,  wrthis(indxShflx_lat)
+     &                                          ,  wrthis(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          ,  wrthis(indxBhflx)
+#else
+     &                                          ,  dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          ,  wrthis(indxBwflx)
+#else
+     &                                          ,  dumboolean
+#endif       
 # ifdef MOVING_BATHY
-     &                                          , wrthis(indxHm)
-# else
+     &                                          ,  wrthis(indxHm)
+# else 
      &                                          ,  dumboolean
 # endif
 # if defined BIOLOGY && !defined PISCES
@@ -1214,7 +1253,13 @@ c        close(testunit)
      &                                        .or. wrthis(indxShflx_lat)
      &                                        .or. wrthis(indxShflx_sen)
 # endif
-# if defined BIOLOGY && !defined PISCES
+# if defined BHFLUX
+     &                                        .or. wrthis(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrthis(indxBwflx)
+#endif 
+# if defined BIOLOGY &&         !defined PISCES
      &                                        .or. wrthis(indxHel)
 #  ifdef BIO_NChlPZD
      &                                        .or. wrthis(indxChC)
@@ -1264,10 +1309,6 @@ c        close(testunit)
      &  , wrthis(indxShflx_sen), 'write shflx_sen [W/m2]',
      &                                 'Sensible heat flux'
 # endif
-#ifdef DISSIP_SHALLOW_BARO
-     &  , wrthis(indxDSW), 'write damping_sw [1]',
-     &                                 'Damping coef on the barotropic mode'
-# endif        
 # ifdef MOVING_BATY
      &  , wrthis(indxHm), 'write Hm [m]',
      &                                 'Time evolving bathymetry'
@@ -1304,7 +1345,14 @@ c        close(testunit)
 # endif
      &  , wrthis(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                          'Short-wave surface radiation'
-
+# ifdef BHFLUX
+     &  , wrthis(indxBhflx), 'write Bhflx [W/m2]', 
+     &                       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrthis(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Bottom freshwater flux (E-P)'
+# endif        
 !
 ! Switches for GLS fields to be saved into history file.
 !
@@ -1361,8 +1409,12 @@ c        close(testunit)
 
       elseif (keyword(1:kwlen).eq.'auxiliary_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wrtavg(indxR), wrtavg(indxO)
-     &        ,  wrtavg(indxW),  wrtavg(indxAkv),  wrtavg(indxAkt)
+        read(input,*,err=95)
+     &                                             wrtavg(indxR)
+     &                                          ,  wrtavg(indxO)
+     &                                          ,  wrtavg(indxW)
+     &                                          ,  wrtavg(indxAkv)
+     &                                          ,  wrtavg(indxAkt)
 # ifdef SALINITY
      &                                          ,  wrtavg(indxAks)
 # else 
@@ -1415,6 +1467,16 @@ c        close(testunit)
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          , wrtavg(indxBhflx)
+#else
+     &                                          , dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          , wrtavg(indxBwflx)
+#else
+     &                                          , dumboolean
+#endif      
 # ifdef MOVING_BATHY
      &                                          , wrtavg(indxHm)
 # else 
@@ -1471,7 +1533,13 @@ c        close(testunit)
      &                                        .or. wrtavg(indxShflx_rlw)
      &                                        .or. wrtavg(indxShflx_lat)
      &                                        .or. wrtavg(indxShflx_sen)
-#  endif 
+#  endif
+# if defined BHFLUX
+     &                                        .or. wrtavg(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrtavg(indxBwflx)
+#endif 
 #  if defined BIOLOGY && !defined PISCES
      &                                        .or. wrtavg(indxHel)
 #   ifdef BIO_NChlPZD
@@ -1565,7 +1633,15 @@ c        close(testunit)
      &                      'Surface freshwater flux (E-P)'
 #  endif
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
-     &                      'Short-wave surface radiation.'
+     &                          'Short-wave surface radiation.'
+# ifdef BHFLUX
+     &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
+     &       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && define SALINITY
+     &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Surface freshwater flux (E-P)'
+# endif     
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -2453,7 +2529,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         qbarname=fname(1:lstr)
         MPI_master_only write(stdout,'(2x,A,2x,A)')
      &             'Runoff Data File:', qbarname(1:lstr)
-        read(input,*,err=95) Nsrc
+        read(input,*,err=95) Nsrc_dumb
         MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
@@ -2502,7 +2578,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'psource') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         
-        read(input,*,err=95) Nsrc
+        read(input,*,err=95) Nsrc_dumb
         MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
@@ -2547,6 +2623,24 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */
 !
+!
+! Hydrothermal forcing file name. Check its availability.
+!
+#if defined BHFLUX || ( defined BWFLUX && defined SALINITY)
+      elseif (keyword(1:kwlen).eq.'bottom_forcing') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        btfname=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &       'Bottom forcing file:', fname(1:lstr)
+#endif  /* BHFLUX || (SALINITY && BWFLUX )  */
+!
 ! Online forcing with CFSR
 !
 #ifdef ONLINE   /* JG Online */
@@ -2570,6 +2664,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */
+
+        
 
       else
         MPI_master_only write(stdout,'(/3(1x,A)/)')

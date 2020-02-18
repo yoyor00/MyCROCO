@@ -85,6 +85,10 @@
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
+      CASE ("psi")
+         vtype=p2dvar
+         nx_glo=LLm+1
+         ny_glo=MMm+1
       END SELECT
 
       ! From nf_fread.F
@@ -400,7 +404,7 @@
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
       CHARACTER(LEN=*)          , INTENT(in) ::   type
       CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   name
-	  REAL                                   ::   value
+      REAL                                   ::   value
       LOGICAL :: ok
       TYPE(xios_file) :: file_hdl
       TYPE(xios_variable) :: var_hdl
@@ -419,7 +423,7 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_float
-	  
+  
       SUBROUTINE iom_set_file_global_attr_int(cdid, type, name, value)
 # include "param.h"
 # include "scalars.h"
@@ -456,8 +460,8 @@
       CALL xios_solve_inheritance()
       !
       END SUBROUTINE iom_set_file_global_attr_int
-	  
-	  
+  
+  
       SUBROUTINE iom_set_file_attr( cdid, name, name_suffix )
 # include "param.h"
 # include "scalars.h"
@@ -1615,6 +1619,7 @@ C 				  endif
 # else
       TYPE(xios_duration) :: dtime    = xios_duration(0,
      &  0, 0, 0, 0, 0)
+      TYPE(xios_date)      :: time_origin
 !      TYPE(xios_date)     :: start_date
 # endif     
       TYPE(xios_context) :: ctx_hdl
@@ -1673,9 +1678,9 @@ C 				  endif
       READ(start_date(4:5),fmt='(i2)') imonth
       READ(start_date(7:10),fmt='(i4)') iyear
 # else
-      iday=1
-      imonth=1       
-      iyear=1970
+      iday=start_day
+      imonth=start_month       
+      iyear=start_year
 # endif
       WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')") 
      & iyear,imonth,iday
@@ -1684,9 +1689,11 @@ C 				  endif
      &        start_date=cldate )
 # else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-     &           start_date = xios_date(iyear,imonth,iday,0,0,0),
-     & time_origin = xios_date(1970,01,01,00,00,00) )
- 
+     &      start_date  = xios_date(start_year,start_month,start_day,
+     &                    start_hour,start_minute,start_second),
+     &      time_origin = xios_date(origin_year,origin_month,origin_day,
+     &                    origin_hour,origin_minute,origin_second))
+
 #endif
       ! horizontal grid definition
       CALL set_scalar
@@ -1697,12 +1704,14 @@ C 				  endif
       CALL set_grid( "u", lonu, latu )
       CALL set_grid( "v", lonv, latv )
       CALL set_grid( "w", lonr, latr )
+      CALL set_grid( "psi", lonu, latv )
 # else
       CALL set_grid( "rho", xr, yr )
       CALL set_grid( "b", xr, yr )
       CALL set_grid( "u", xp, yr )
       CALL set_grid( "v", xr, yp )
       CALL set_grid( "w", xr, yr )
+      CALL set_grid( "psi", xp, yp )
 # endif
  
       ! vertical grid definition
@@ -1722,7 +1731,7 @@ C 				  endif
 
       ! end file definition
 
-      ! Accademic test with dt> 1second are non comptabile with
+      ! Academic test with dt > 1 second are non comptabile with
       ! XIOS, set xios time step unit to 1 model time_step
       if (dt < 1) then
         dtime%second =  1
@@ -1842,7 +1851,7 @@ C 				  endif
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_TS
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
@@ -1866,6 +1875,13 @@ C 				  endif
 # include "work.h"
 # include "private_scratch.h"
 !
+#ifdef DIAGNOSTICS_EDDY
+      real workru(GLOBAL_2D_ARRAY,1:N)
+      common /work3d_r/ workru
+      real workrv(GLOBAL_2D_ARRAY,1:N)
+      common /work3d_r/ workrv
+      real GRho
+#endif
       integer tile
       integer Istr,Iend,Jstr,Jend
       integer i,j,k
@@ -2023,12 +2039,7 @@ C 				  endif
       call xios_send_field("Dcrit",Dcrit)
 # endif
 
-#ifdef NBQ     
-      work2d=zeta(:,:,fast_indx_out)/rhobar_nbq(:,:) - h(:,:)
-#else
-      work2d=zeta(:,:,fast_indx_out)
-#endif
-      call xios_send_field("zeta",work2d)
+      call xios_send_field("zeta",zeta(:,:,fast_indx_out))
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 
@@ -2065,7 +2076,10 @@ C 				  endif
       call xios_send_field("sustr",work2d)
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
-
+# ifdef BULK_SM_UPDATE
+      call xios_send_field("uwnd",uwnd)
+      call xios_send_field("vwnd",vwnd)
+# endif
 # ifdef WKB_WWAVE
       call xios_send_field("hrm",hrm(:,:,wstp))
       call xios_send_field("frq",frq(:,:,wstp))
@@ -2119,7 +2133,7 @@ C 				  endif
 
       call xios_send_field("rho",rho)
 
-!      call xios_send_field("bvf",bvf)
+      call xios_send_field("bvf",bvf)
 
       do k=0,N
          do j=0,Mm+1
@@ -2144,6 +2158,40 @@ C 				  endif
 
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
+
+#  ifdef DIAGNOSTICS_EDDY
+
+         GRho=-1*g/rho0
+
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+
+                  GRho=-1*g/rho0
+
+                  workru = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
+                  workrv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
+
+                enddo
+              enddo
+           enddo
+
+          call xios_send_field("uu", workru**2)
+          call xios_send_field("uv", workru*workrv)
+          call xios_send_field("vv", workrv**2)
+          call xios_send_field("ub", workru*GRho*rho)
+          call xios_send_field("vb", workrv*GRho*rho)
+          call xios_send_field("wb", workr *GRho*rho)
+          call xios_send_field("uT", workru*t(:,:,:,nstp,itemp))
+          call xios_send_field("vT", workrv*t(:,:,:,nstp,itemp))
+          call xios_send_field("wT", workr *t(:,:,:,nstp,itemp))
+          call xios_send_field("uS", workru*t(:,:,:,nstp,isalt))
+          call xios_send_field("vS", workrv*t(:,:,:,nstp,isalt))
+          call xios_send_field("wS", workr *t(:,:,:,nstp,isalt))
+
+#  endif
+
+
         
 #  ifdef VIS_COEF_3D
       call xios_send_field("visc3d",visc3d_r)
@@ -2253,8 +2301,12 @@ C 				  endif
           call xios_send_field("u_Hdiff",MHdiff(:,:,:,itrc))
           call xios_send_field("u_Vmix",MVmix(:,:,:,itrc))
           call xios_send_field("u_Vmix2",MVmix2(:,:,:,itrc))
+#  ifdef DIAGNOSTICS_BARO
           call xios_send_field("u_Baro",MBaro(:,:,:,itrc))
-
+#  endif
+#  ifdef M3FAST
+          call xios_send_field("u_fast",Mfast(:,:,:,itrc))
+#  endif
       itrc = 2
           call xios_send_field("v_rate", Mrate(:,:,:,itrc))
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
@@ -2265,9 +2317,53 @@ C 				  endif
           call xios_send_field("v_Hdiff",MHdiff(:,:,:,itrc))
           call xios_send_field("v_Vmix",MVmix(:,:,:,itrc))
           call xios_send_field("v_Vmix2",MVmix2(:,:,:,itrc))
+#  ifdef DIAGNOSTICS_BARO
           call xios_send_field("v_Baro",MBaro(:,:,:,itrc))
+#  endif
+#  ifdef M3FAST
+          call xios_send_field("v_fast",Mfast(:,:,:,itrc))
+#  endif
+#  endif
 
 
+
+#  ifdef DIAGNOSTICS_TS
+         itrc=1
+          call xios_send_field("T_rate", Trate(:,:,:,itrc))
+          call xios_send_field("T_adv", TXadv(:,:,:,itrc)
+     &           + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+          call xios_send_field("T_Hmix",THmix(:,:,:,itrc))
+          call xios_send_field("T_Vmix",TVmix(:,:,:,itrc))
+          call xios_send_field("T_Forc",TForc(:,:,:,itrc))
+#  ifdef SALINITY
+        itrc = 2
+          call xios_send_field("S_rate", Trate(:,:,:,itrc))
+          call xios_send_field("S_adv", TXadv(:,:,:,itrc)
+     &              + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
+          call xios_send_field("S_Hmix",THmix(:,:,:,itrc))
+          call xios_send_field("S_Vmix",TVmix(:,:,:,itrc))
+          call xios_send_field("S_Forc",TForc(:,:,:,itrc))
+#  endif
+#  endif
+
+
+
+
+#  ifdef DIAGNOSTICS_VRT
+          call xios_send_field("vrtrate", vrtrate(:,:))
+          call xios_send_field("vrtadv", vrtXadv(:,:) + vrtYadv(:,:))
+          call xios_send_field("vrtCor",vrtCor(:,:))
+          call xios_send_field("vrtPrsgrd",vrtPrsgrd(:,:))
+          call xios_send_field("vrtHmix",vrtHmix(:,:))
+          call xios_send_field("vrtHdiff",vrtHdiff(:,:))
+!          call xios_send_field("vrtVmix",vrtVmix(:,:))
+          call xios_send_field("vrtVmix2",vrtVmix2(:,:))
+          call xios_send_field("vrtBaro",vrtBaro(:,:))
+          call xios_send_field("vrtDrag",vrtDrag(:,:))
+          call xios_send_field("vrtWind",vrtWind(:,:))
+#  ifdef M3FAST
+          call xios_send_field("vrtfast",vrtfast(:,:))
+#  endif
 #  endif
 
 
@@ -2285,7 +2381,9 @@ C 				  endif
           call xios_send_field("ekvol",ekvol(:,:))
           call xios_send_field("ekDrag",ekDrag(:,:))
           call xios_send_field("ekWind",ekWind(:,:))
-
+#  ifdef M3FAST
+          call xios_send_field("ekfast",ekfast(:,:))
+#  endif
 #  endif
 
 

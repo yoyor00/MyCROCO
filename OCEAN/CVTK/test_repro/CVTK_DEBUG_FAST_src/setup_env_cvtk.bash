@@ -1,1 +1,0 @@
-src_global/setup_env_cvtk.bash

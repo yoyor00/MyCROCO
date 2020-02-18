@@ -21,6 +21,7 @@
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 #if defined MPI & !defined PARALLEL_FILES
+# include "mpi_cpl.h"
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif

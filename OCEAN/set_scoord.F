@@ -21,10 +21,10 @@
 # include "scalars.h"
       integer k
       real cff,cff1,cff2,cff3, ds, sc, csf
-#  ifdef BSTRESS_FAST
+# ifdef BSTRESS_FAST
 #  include "nbq.h"
       real Hz0,r_D,umag
-#  endif
+# endif
 !
 ! Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
 !
@@ -70,7 +70,7 @@
 ! Report information about vertical S-levels.
 !
 # ifdef WET_DRY
-      if (hmin.lt.D_wetdry) hmin=D_wetdry
+      if (hmin .lt. D_wetdry) hmin=D_wetdry
 # endif
       MPI_master_only write(stdout,'(/1x,A/,/1x,A,10x,A/)')
      &                       'Vertical S-coordinate System:',
@@ -91,11 +91,14 @@
      &                     k, sc_w(k),Cs_w(k), cff1,cff2,cff3
       enddo
 
-# if defined M3FAST && defined BSTRESS_FAST
+# ifdef BSTRESS_FAST
+#  ifdef BBL
+      inc_faststep=1
+#  else
       Hz0=(hc*(Sc_r(1)-Sc_w(0))+hmin*(Cs_r(1)-Cs_w(0)))
-#  ifdef NEW_S_COORD
+#   ifdef NEW_S_COORD
      &                                  *hmin/(hc+hmin)
-#  endif
+#   endif
       umag=0.5
       if (Zobt.ne.0.) then
         cff=vonKar/log(max(Hz0,Zobt+1.e-4)/Zobt)
@@ -107,10 +110,10 @@
       endif
       inc_faststep=MAX(1,MIN(inc_faststep_max,
      &                       INT(ndtfast*MIN(0.5, Hz0/(r_D*dt) ))))
+#  endif
       MPI_master_only write(stdout,'(/1x,A,I3)')
-     &         'Friction 3D Fast Time Step Increment: inc_faststep = ',
-     &                                            inc_faststep
-!     &                                          ,r_D,Hz0/(r_D*dt)
+     &         'Friction 3D Fast Timestep Increment: inc_faststep = ',
+     &                                               inc_faststep
 # endif /* BSTRESS_FAST */
 
       return

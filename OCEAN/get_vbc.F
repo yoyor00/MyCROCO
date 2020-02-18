@@ -1,6 +1,6 @@
 ! $Id: get_vbc.F 1615 2014-12-17 13:27:07Z rblod $
 !
-!======================================================================
+ 2                              !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -133,12 +133,30 @@
 #  endif /* !BULK_FLUX */
 # endif /* SOLVE3D */
 #endif /* !OA_COUPLING */
-
+!
+!---------------------------------------------------------------
+! Kinematic surface solar shortwave radiation flux [degC m/s].
+!---------------------------------------------------------------
+!
+#if (defined SOLVE3D && defined BHFLUX && !defined ANA_BTFLUX)
+      call get_btflux (itemp)
+#endif
+!
+!---------------------------------------------------------------
+! Kinematic bottom salt flux [PSU m/s].
+! (Analytical bottom salt flux is usually set to zero.)
+!---------------------------------------------------------------
+!
+#if ( defined SOLVE3D && defined SALINITY && defined BWFLUX \
+     &                                    !defined ANA_BTFLUX )
+      call get_btflux (isalt)
+#endif
+      
       return
       end
-!
+!     
 !====================================================================
-!                   subroutine set_vbc
+!     subroutine set_vbc
 !====================================================================
 !
       subroutine set_vbc (tile)
@@ -192,9 +210,6 @@
 #include "sources.h"
 #include "mpi_cpl.h"
       integer i,j,is, Istr,Iend,Jstr,Jend
-# if defined DISSIP_SHALLOW_BODY
-      integer k
-# endif
       real cff,cff1
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY)
@@ -394,7 +409,7 @@
 !
 !---------------------------------------------------------------
 ! Kinematic bottom salt flux [PSU m/s].
-! (Aanalytical bottom salt flux is usually set to zero.)
+! (Analytical bottom salt flux is usually set to zero.)
 !---------------------------------------------------------------
 !
 # ifdef SALINITY
@@ -499,7 +514,7 @@
         enddo
       endif
 
-#   ifdef LIMIT_BSTRESS0
+#   ifdef LIMIT_BSTRESS
 !
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted
@@ -510,67 +525,17 @@
       do j=Jstr,Jend
         do i=IstrU,Iend
           cff1=cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
-          bustr_lim(i,j)=SIGN(1.D0, bustr(i,j))*
-     &               MIN(ABS(bustr(i,j)),
-     &                   ABS(u(i,j,1,nrhs))*cff1)
-          do k=2,N
-              cff1=cff1 + cff*0.5*(Hz(i-1,j,k)+Hz(i,j,k))
-          enddo
-          bustr(i,j)=SIGN(1.D0, bustr(i,j))*
-     &               MIN(ABS(bustr(i,j)),
-     &                   ABS(u(i,j,1,nrhs))*cff1)
-# else
-# if defined DISSIP_SHALLOW_BODY
-          bustr_lim(i,j)=bustr(i,j)
-#  endif
           bustr(i,j)=SIGN(1.D0, bustr(i,j))* 
      &               MIN(ABS(bustr(i,j)),
      &                   ABS(u(i,j,1,nrhs))*cff1)
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v0
-          bustr_lim(i,j)=bustr_lim(i,j)-bustr(i,j)
-#  endif
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v1
-          if (ABS(bustr(i,j)).lt.ABS(bustr_lim(i,j))) then
-              bustr(i,j) = 0.
-          else
-              bustr_lim(i,j) = 0.
-          endif
-#  endif
-#  endif
         enddo
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
           cff1=cff*0.5*(Hz(i,j-1,1)+Hz(i,j,1))
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v2
-          bvstr_lim(i,j)=SIGN(1.D0, bvstr(i,j))*
-     &               MIN(ABS(bvstr(i,j)),
-     &                   ABS(v(i,j,1,nrhs))*cff1)
-          do k=2,N
-              cff1=cff1 + cff*0.5*(Hz(i,j-1,k)+Hz(i,j,k))
-          enddo
           bvstr(i,j)=SIGN(1.D0, bvstr(i,j))*
      &               MIN(ABS(bvstr(i,j)),
      &                   ABS(v(i,j,1,nrhs))*cff1)
-# else
-# if defined DISSIP_SHALLOW_BODY
-          bvstr_lim(i,j)=bvstr(i,j)
-#  endif
-          bvstr(i,j)=SIGN(1.D0, bvstr(i,j))*
-     &               MIN(ABS(bvstr(i,j)),
-     &                   ABS(v(i,j,1,nrhs))*cff1)
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v0
-          bvstr_lim(i,j)=bvstr_lim(i,j)-bvstr(i,j)
-#  endif
-# if defined DISSIP_SHALLOW_BODY && defined DISSIP_SHALLOW_BODY_v1
-          if (ABS(bvstr(i,j)).lt.ABS(bvstr_lim(i,j))) then
-              bvstr(i,j) = 0.
-          else
-              bvstr_lim(i,j) = 0.
-          endif
-#  endif
-#  endif
         enddo
       enddo
 #   endif
@@ -583,29 +548,17 @@
       IF (EASTERN_EDGE) THEN
         DO j=Jstr,Jend
           bustr(Iend+1,j)=bustr(Iend,j)
-# if defined DISSIP_SHALLOW_BODY
-          bustr_lim(Iend+1,j)=bustr_lim(Iend,j)
-#  endif
         END DO
         DO j=JstrV,Jend
           bvstr(Iend+1,j)=bvstr(Iend,j)
-# if defined DISSIP_SHALLOW_BODY
-          bvstr_lim(Iend+1,j)=bvstr_lim(Iend,j)
-#  endif
         END DO
       END IF
       IF (WESTERN_EDGE) THEN
         DO j=Jstr,Jend
           bustr(IstrU-1,j)=bustr(IstrU,j)
-# if defined DISSIP_SHALLOW_BODY
-          bustr_lim(IstrU-1,j)=bustr_lim(IstrU,j)
-#  endif
         END DO
         DO j=JstrV,Jend
           bvstr(Istr-1,j)=bvstr(Istr,j)
-# if defined DISSIP_SHALLOW_BODY
-          bvstr_lim(Istr-1,j)=bvstr_lim(Istr,j)
-#  endif
         END DO
       END IF
 #  endif
@@ -613,29 +566,17 @@
       IF (NORTHERN_EDGE) THEN
         DO i=IstrU,Iend
           bustr(i,Jend+1)=bustr(i,Jend)
-# if defined DISSIP_SHALLOW_BODY
-          bustr_lim(i,Jend+1)=bustr_lim(i,Jend)
-#  endif
         END DO
         DO i=Istr,Iend
           bvstr(i,Jend+1)=bvstr(i,Jend)
-# if defined DISSIP_SHALLOW_BODY
-          bvstr_lim(i,Jend+1)=bvstr_lim(i,Jend)
-#  endif
         END DO
       END IF
       IF (SOUTHERN_EDGE) THEN
         DO i=IstrU,Iend
           bustr(i,Jstr-1)=bustr(i,Jstr)
-# if defined DISSIP_SHALLOW_BODY
-          bustr_lim(i,Jstr-1)=bustr_lim(i,Jstr)
-#  endif
         END DO
         DO i=Istr,Iend
           bvstr(i,JstrV-1)=bvstr(i,JstrV)
-# if defined DISSIP_SHALLOW_BODY
-          bvstr_lim(i,JstrV-1)=bvstr_lim(i,JstrV)
-#  endif
         END DO
       END IF
 #  endif
@@ -643,53 +584,23 @@
       IF (SOUTHERN_EDGE.and.WESTERN_EDGE) THEN
         bustr(Istr,Jstr-1)=0.5*(bustr(Istr+1,Jstr-1)+bustr(Istr,Jstr))
         bvstr(Istr-1,Jstr)=0.5*(bvstr(Istr,Jstr)+bvstr(Istr-1,Jstr+1))
-# if defined DISSIP_SHALLOW_BODY
-        bustr_lim(Istr,Jstr-1)=0.5*(bustr_lim(Istr+1,Jstr-1)
-     &                       +bustr_lim(Istr,Jstr))
-        bvstr_lim(Istr-1,Jstr)=0.5*(bvstr_lim(Istr,Jstr)
-     &                       +bvstr_lim(Istr-1,Jstr+1))
-#  endif
       END IF
       IF (SOUTHERN_EDGE.and.EASTERN_EDGE) THEN
         bustr(Iend+1,Jstr-1)=0.5*(bustr(Iend+1,Jstr)+bustr(Iend,Jstr-1))
         bvstr(Iend+1,Jstr)=0.5*(bvstr(Iend+1,Jstr+1)+bvstr(Iend,Jstr))
-# if defined DISSIP_SHALLOW_BODY
-        bustr_lim(Iend+1,Jstr-1)=0.5*(bustr_lim(Iend+1,Jstr)
-     &                       +bustr_lim(Iend,Jstr-1))
-        bvstr_lim(Iend+1,Jstr)=0.5*(bvstr_lim(Iend+1,Jstr+1)
-     &                       +bvstr_lim(Iend,Jstr))
-#  endif
       END IF
       IF (NORTHERN_EDGE.and.WESTERN_EDGE) THEN
         bustr(Istr,Jend+1)=0.5*(bustr(Istr,Jend)+bustr(Istr+1,Jend+1))
         bvstr(Istr-1,Jend+1)=0.5*(bvstr(Istr-1,Jend)+bvstr(Istr,Jend+1))
-# if defined DISSIP_SHALLOW_BODY
-        bustr_lim(Istr,Jend+1)=0.5*(bustr_lim(Istr,Jend)
-     &                       +bustr_lim(Istr+1,Jend+1))
-        bvstr_lim(Istr-1,Jend+1)=0.5*(bvstr_lim(Istr-1,Jend)
-     &                       +bvstr_lim(Istr,Jend+1))
-#  endif
       END IF
       IF (NORTHERN_EDGE.and.EASTERN_EDGE) THEN
         bustr(Iend+1,Jend+1)=0.5*(bustr(Iend+1,Jend)+bustr(Iend,Jend+1))
         bvstr(Iend+1,Jend+1)=0.5*(bvstr(Iend+1,Jend)+bvstr(Iend,Jend+1))
-# if defined DISSIP_SHALLOW_BODY
-        bustr_lim(Iend+1,Jend+1)=0.5*(bustr_lim(Iend+1,Jend)
-     &                       +bustr_lim(Iend,Jend+1))
-        bvstr_lim(Iend+1,Jend+1)=0.5*(bvstr_lim(Iend+1,Jend)
-     &                       +bvstr_lim(Iend,Jend+1))
-#  endif
       END IF
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
-# if defined DISSIP_SHALLOW_BODY
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                       bustr_lim(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                       bvstr_lim(START_2D_ARRAY))
-#  endif
 #  endif
 # endif /* SOLVE3D */
 #endif /* BBL */
@@ -705,10 +616,19 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
+
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                      btflx(START_2D_ARRAY,itemp))
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                                      stflx(START_2D_ARRAY,isalt))
+     &                                     stflx(START_2D_ARRAY,isalt))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                     btflx(START_2D_ARRAY,isalt))
 #  endif
+      
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                      btflx(START_2D_ARRAY,itemp))
+
 # endif
 #endif
 #ifdef PSOURCE_NCFILE

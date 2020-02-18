@@ -110,17 +110,6 @@ C$    integer omp_get_thread_num
           vbar(i,j,2)=init
           vbar(i,j,3)=init
           vbar(i,j,4)=init
-
-#ifdef DISSIP_SHALLOW_BARO
-          damping_sw(i,j) = init
-#endif
-
-#ifdef DISSIP_SHALLOW_BODY
-          bustr_lim(i,j) = init
-          bvstr_lim(i,j) = init
-#endif
-
-
 #ifdef AVERAGES
           zeta_avg(i,j)=init 
           ubar_avg(i,j)=init
@@ -187,7 +176,9 @@ C$    integer omp_get_thread_num
             rho_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
+#  ifndef NBQ
             w_avg(i,j,k)=init
+#  endif
 # endif
 # ifdef MRL_WCI
             ust(i,j,k)=init
@@ -210,6 +201,10 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             MBaro(i,j,k,1)=init
             MBaro(i,j,k,2)=init
+# endif
+# if defined M3FAST
+            Mfast(i,j,k,1)=init
+            Mfast(i,j,k,2)=init
 # endif
 # endif
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
@@ -269,6 +264,10 @@ C$    integer omp_get_thread_num
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
 #  endif
+# if defined M3FAST
+            Mfast_avg(i,j,k,1)=init
+            Mfast_avg(i,j,k,2)=init
+#  endif
             MHmix_avg(i,j,k,1)=init
             MHmix_avg(i,j,k,2)=init
             MVmix_avg(i,j,k,1)=init
@@ -311,6 +310,9 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
+#  ifdef NBQ
+            w_avg(i,j,k)=init
+#  endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
@@ -439,6 +441,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             vrtBaro(i,j)=init
 # endif
+# if defined M3FAST
+            vrtfast(i,j)=init
+# endif
 #  ifdef AVERAGES
             vrtXadv_avg(i,j)=init
             vrtYadv_avg(i,j)=init
@@ -453,6 +458,9 @@ C$    integer omp_get_thread_num
             vrtDrag_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             vrtBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            vrtfast_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
           enddo
@@ -479,6 +487,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             ekBaro(i,j)=init
 # endif
+# if defined M3FAST
+            ekfast(i,j)=init
+# endif
 #  ifdef AVERAGES
             ekHadv_avg(i,j)=init
             ekHdiff_avg(i,j)=init
@@ -494,6 +505,9 @@ C$    integer omp_get_thread_num
             ekDrag_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             ekBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
 
@@ -511,6 +525,9 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_BARO
             ekBaro_mld(i,j)=init
 # endif
+# if defined M3FAST
+            ekfast_mld(i,j)=init
+# endif
 #  ifdef AVERAGES
             ekHadv_mld_avg(i,j)=init
             ekHdiff_mld_avg(i,j)=init
@@ -524,6 +541,9 @@ C$    integer omp_get_thread_num
             ekVmix2_mld_avg(i,j)=init
 # if defined DIAGNOSTICS_BARO
             ekBaro_mld_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_mld_avg(i,j)=init
 # endif
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EK */
@@ -764,10 +784,12 @@ C$    integer omp_get_thread_num
             stflxg(i,j,2,itrc)=init
 # endif
             btflx(i,j,itrc)=init
-# ifndef ANA_BTFLUX
+            
+# if BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
 # endif
+            
           enddo
         enddo
       enddo
@@ -881,7 +903,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # if defined PSOURCE_NCFILE
-          do i=1,Msrc
+          do i=1,Nsrc
            qbar(i)=init
            qbarg(i,1)=init
            qbarg(i,2)=init
@@ -1393,6 +1415,13 @@ C$    integer omp_get_thread_num
             rw_nbq_avg2(i,j,k)=init
             rw_int_nbq(i,j,k) =init
           enddo
+        enddo
+      enddo
+#  else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          rubar_nbq(i,j)=init
+          rvbar_nbq(i,j)=init
         enddo
       enddo
 #  endif/* NBQ */

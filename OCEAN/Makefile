@@ -15,7 +15,7 @@
 # Set machine dependent definitions and rules.
 #======================================================================
 
-include Make.inc
+include Makedefs
 #======================================================================
 # Model Configuration:
 #======================================================================
@@ -64,6 +64,7 @@ include Make.inc
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
+        param.F         ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
 	get_date.F	lenstr.F	closecdf.F	insert_node.F\
@@ -92,7 +93,7 @@ include Make.inc
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
         clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
-	get_psource.F   get_psource_ts.F\
+	get_psource.F   get_psource_ts.F get_btflux.F\
         cfb_stress.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
@@ -111,7 +112,7 @@ include Make.inc
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F	MessPass3D_nbq.F\
+	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -132,7 +133,7 @@ include Make.inc
 	trcsms_pisces.F90			trcini_pisces.F90\
 	pisces_ini.F90\
 \
-	module_oa_parameter.F90\
+	module_parameter_oa.F90\
 	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
 	module_oa_level.F90	module_oa_interface.F90\
@@ -161,13 +162,14 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
  AMROBJS=$(AMRRCS:.f=.o)
 
 
-
+%.mod : %.o
+	@touch $@
 
 #
 # Executable file.
 # ========= =====
 #
-$(SBIN):  depend $(OBJS90) $(OBJS) 
+$(SBIN):   $(OBJS90) $(OBJS) 
 	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
 	mv a.out $(SBIN)
 
@@ -220,14 +222,14 @@ setup_kwds.F: checkkwds read_inp.F
 partit: partit.o insert_node.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o lenstr.o $(LCDF)
 
-ncjoin: ncjoin.F lenstr.o
+ncjoin: ncjoin.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncjoin ncjoin.o lenstr.o $(LCDF)
 
-ncrename: ncrename.F lenstr.o
+ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix module*.F90 *.F90 *.F 
+	./cross_matrix  *.F90 *.F 
 
 mymodules: $(MOBJS) $(AMROBJS)
 #
@@ -261,8 +263,6 @@ my_barrier.o: my_barrier.f
 #
 # Include automatically generated dependency list:
 #
-include Makedefs.generic
 
-
-include Make.depend
+-include Make.depend
 

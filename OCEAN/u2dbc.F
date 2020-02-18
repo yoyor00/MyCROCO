@@ -76,7 +76,7 @@ C$    integer omp_get_thread_num
 #include "scalars.h"
 #include "forces.h"
 #include "zoom.h"
-#ifdef M3FAST
+#ifdef NBQ
 # include "nbq.h"
 #endif 
 !
@@ -87,6 +87,9 @@ C$    integer omp_get_thread_num
 !
 #ifdef CHILD
 #  ifdef SOLVE3D
+#   ifdef NBQ
+      if (M2bc_nbq_flag) then
+#   endif
       trd=0
 C$    trd=omp_get_thread_num()
       call u2dbc_interp_tile(Istr,Iend,Jstr,Jend
@@ -98,6 +101,9 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,6+4*NWEIGHT)
      &                    ,A1dXI(1,7+5*NWEIGHT)
      &                    ,A1dXI(1,8+5*NWEIGHT))
+#   ifdef NBQ
+       endif
+#   endif
 #  else
       Some coding is needed to have AGRIF without SOLVE3D.....
 #  endif
@@ -797,7 +803,7 @@ C$    trd=omp_get_thread_num()
 #endif
 
 !------------------------------------------------------------
-#ifdef M3FAST
+#ifdef NBQ
        if (M2bc_nbq_flag) then
 #endif
 !------------------------------------------------------------
@@ -886,7 +892,7 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif  /* WET_DRY */
 
-#ifdef M3FAST
+#ifdef NBQ
 !=======================================================================
 !  Computes normal boundary values of DU_nbq for NBQ OBCs
 !=======================================================================
@@ -969,7 +975,7 @@ C$    trd=omp_get_thread_num()
 !
       endif ! M2bc_nbq_flag
 !
-#endif /* M3FAST */
+#endif /* NBQ */
 
       return
       end

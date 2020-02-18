@@ -29,7 +29,7 @@
 clear all
 close all
 %
-floats=1;
+floats=0;
 step=2;
 vname='salt';
 makemovie=0;

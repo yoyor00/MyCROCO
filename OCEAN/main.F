@@ -278,7 +278,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       !calcul of start times and ntimes
 #ifdef ANA_INITIAL
       !if no init file set the start_date from croco.in
-      time=tool_datosec(run_start_date)
+      if (nrrec.eq.0) time=tool_datosec(run_start_date)
 #endif
       time_end=tool_datosec(run_end_date)
       ntimes=int((time_end-time)/dt)
@@ -644,7 +644,7 @@ C$OMP END MASTER
 
 !
 !----------------------------------------------------------------------
-!  Set initial non-Boussinesq parameters and variables
+!  Set initial non-Boussinesq (or fast 3D) parameters and variables
 !----------------------------------------------------------------------
 !
 #ifdef M3FAST
@@ -715,7 +715,7 @@ CR      write(*,*) '  0' MYID
 !
 #undef CR
       MPI_master_only write(stdout,'(/1x,A27/)') 
-     &                'MAIN: started time-steping.'
+     &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
 #ifdef USE_CALENDAR 
@@ -743,11 +743,15 @@ CR      write(*,*) '  0' MYID
       call computenbmaxtimes
 #endif
 
+#ifdef MPI_TIME
 ! Start Chrono
       start_time1=PMPI_Wtime()
+#endif
 
       do iicroot=ntstart,ntimes+1
+#ifdef MPI_TIME
         start_time1_1=PMPI_Wtime()
+#endif
 #ifdef USE_CALENDAR 
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
         if(time > time_end) goto 99 
@@ -772,18 +776,22 @@ CR      write(*,*) '  0' MYID
 #ifdef SOLVE3D
         enddo
 #endif
+#ifdef MPI_TIME
         start_time1_2=PMPI_Wtime()
         exe_time_1 = start_time1_2 - start_time1_1
           if (mynode.eq.0) write(97,*) exe_time_1
+#endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:
+#ifdef MPI_TIME
       start_time2=PMPI_Wtime()
       exe_time = start_time2 - start_time1
       MPI_master_only write(stdout,*) '*******************************'
       MPI_master_only write(stdout,*) 'temps time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
+#endif
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()

@@ -18,7 +18,7 @@
 !
 !  Set configuration parameters
 !
-#   ifdef FLUME_WAVES
+#   ifdef ROGUE_WAVE
 #    define WAVE_MAKER_SPECTRUM
 
 #   elif defined RIP && !defined MRL_WCI
@@ -56,8 +56,9 @@
 !
 !  Time & space origins
 !
-#   ifdef FLUME_WAVES
+#   ifdef ROGUE_WAVE
         x0=14.1
+        y0=0.
         time0=64.
 #   else
         x0=0.
@@ -74,22 +75,21 @@
 !  Initialisation
 !--------------------------------------------------------------------
 !
-#   ifdef FLUME_WAVES
+#   ifdef ROGUE_WAVE
 !
 !  Read file
 !
         if (FIRST_TIME_STEP) then
-!        open(117,file='datwaves_CORR1.txt',form='formatted',status='old')
+!         open(117,file='datwaves_CORR1.txt',form='formatted',status='old')
           open(117,file='datwaves.txt',form='formatted',status='old')
-          do k=1,320
-            read(117,*) wa_bry(k), wf_bry(k),
-     &                  wpha_bry(k), wk_bry(k)
-            wa_bry(k)=wa_bry(k)*0.154/0.05
-            !wpha_bry(k)=wpha_bry(k) + 1.5*pi
-            khd=h(1,1)*wf_bry(k)**2/g   ! recompute wavenumber
-            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                       khd*(K5+K6*khd)))))) )
-            wk_bry(k)=kh/h(1,:1,$s/1)
+          do k=1,Nfrq !--> Nfrq=320 in forces.h
+            read(117,*) wa_bry(k), wf_bry(k), wpha_bry(k), wk_bry(k)
+            wa_bry(k)=wa_bry(k)*0.154/0.05  ! correct amplitude
+            ! wpha_bry(k)=wpha_bry(k) + 1.5*pi
+!            khd=h(1,1)*wf_bry(k)**2/g      ! recompute wavenumber
+!            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+!     &                                       khd*(K5+K6*khd)))))) )
+!            wk_bry(k)=kh/h(1,1)
           enddo
         endif
         ramp=tanh(dt/2.*float(iic-ntstart))
@@ -188,7 +188,7 @@
         khd=h0*wf**2/g   ! compute wavenumber
         wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                   khd*(K5+K6*khd)))))) )/h0
-#   endif /* FLUME ... */
+#   endif /* ROGUE_WAVE ... */
 !
 !--------------------------------------------------------------------
 !  Sea level zetabry
@@ -246,7 +246,7 @@
      &                   (4.*sigma**3)*cos(2.*theta)
 #     endif
      &                    )*cff_spread
-#    endif /* FLUME ... */
+#    endif /* ROGUE_WAVE ... */
         enddo  ! j loop
 #   endif /* Z_FRC_BRY */
 !
@@ -258,7 +258,7 @@
         do j=JstrR,JendR
           h0=0.5*(h(0,j)+h(1,j))
           Du=h0
-#    if defined FLUME_WAVES || \
+#    if defined ROGUE_WAVE || \
      (defined WAVE_MAKER_SPECTRUM && !defined WAVE_MAKER_OBLIQUE \
                                   && !defined WAVE_MAKER_DSPREAD)
           do k=1,N
@@ -328,16 +328,13 @@
      &                    +cff2*cosh(2*wk*Zu)
 #     endif
           enddo
-#    endif /* FLUME_WAVES ... */
-
-        enddo  ! j loop
-
-        cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
-        do j=JstrR,JendR
+          cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
           do k=1,N
             ubry_west(j,k)=ubry_west(j,k) - cff1
           enddo
-        enddo
+#    endif /* ROGUE_WAVE */
+
+        enddo  ! j loop
 
 #   endif /* M3_FRC_BRY */
 
@@ -431,9 +428,8 @@
           Dr=h(0,j)
 #    ifdef WAVE_MAKER_SPECTRUM 
           do k=1,N
-#     ifdef WAVE_MAKER_DSPREAD
             wbry_west(j,k)=0. 
-#     else
+#     ifndef WAVE_MAKER_DSPREAD
             Zr=Dr+z_w(0,j,k)
             do iw=1,Nfrq
               wbry_west(j,k)=wbry_west(j,k)+
@@ -472,12 +468,6 @@
      &                 +cff2*sinh(2*wk*Zr)
           enddo
 #    endif /* WAVE_MAKER_SPECTRUM ... */
-
-          do k=1,N-1
-            wnbqbry_west(j,k)=0.5*wbry_west(j,k)*(Hz(0,j,k)+Hz(0,j,k+1))
-          enddo
-          wnbqbry_west(j,0)=0.5*wbry_west(j,0)*Hz(0,j,1)
-          wnbqbry_west(j,N)=0.5*wbry_west(j,N)*Hz(0,j,N)
 
         enddo  ! j loop
 #   endif /* W_FRC_BRY */

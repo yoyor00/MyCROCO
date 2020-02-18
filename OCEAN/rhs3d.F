@@ -52,14 +52,17 @@
 #  include "diags_pv.h"
 # endif
 
-#  if (defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV) && ! defined UV_HADV_C4
+#  if (defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+       defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV) && \
+      !defined UV_HADV_C4
       real  UFx4(PRIVATE_2D_SCRATCH_ARRAY),
      &      UFe4(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFx4(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFe4(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT ||\
+     defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
       real  UFxCor(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFeCor(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
@@ -369,127 +372,6 @@
 #  undef Uwrk
 # endif /* BODYFORCE */
 
-
-# if defined DISSIP_SHALLOW_BODY_v1 || defined DISSIP_SHALLOW_BODY_v0
-!====================================================================
-!
-!  If BSTRESS too large for CFL, apply part of it as a body force
-!
-!====================================================================
-!
-#  define Uwrk UFx
-#  define Vwrk VFe
-#  define wrk  UFe
-#  define levbfrc N
-!
-!  Apply bottom stress as a bodyforce: determine the thickness [m]
-!  of the bottom layer; then add in bottom stress as a bodyfoce.
-!
-      do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-          wrk(i,j)=0.
-        enddo
-      enddo
-        do j=JstrV-1,Jend
-          do i=IstrU-1,Iend
-            do k=1,levbfrc
-              wrk(i,j)=wrk(i,j)+Hz(i,j,k)
-            enddo
-          enddo
-        enddo
-
-!
-!  The value of 0.1 is arbitrary limitation assigment.
-!
-
-
-      do j=Jstr,Jend
-        do i=IstrU,Iend
-
-        cff = 1. !max(min(0.01/(abs(sustr(i,j)) *rho0),0.1),0.01)
-        Uwrk(i,j)=cff*bustr_lim(i,j)*4./((wrk(i-1,j)+wrk(i,j))
-     &                             *(pm (i-1,j)+pm (i,j))
-     &                             *(pn (i-1,j)+pn (i,j)))
-
-# ifdef DIAGNOSTICS_VRT
-          wrkDrag(i,j,1)= -bustr_lim(i,j)*om_u(i,j)
-     &                    SWITCH umask(i,j)
-# endif /* DIAGNOSTICS_VRT */
-
-        enddo
-      enddo
-      do j=JstrV,Jend
-        do i=Istr,Iend
-
-        cff = 1. !max(min(0.01/(abs(svstr(i,j)) *rho0),0.1),0.01)
-        Vwrk(i,j)=cff*bvstr_lim(i,j)*4./((wrk(i,j-1)+wrk(i,j))
-     &                             *(pm (i,j-1)+pm (i,j))
-     &                             *(pn (i,j-1)+pn (i,j)))
-
-# ifdef DIAGNOSTICS_VRT
-            wrkDrag(i,j,2)= -bvstr_lim(i,j)*on_v(i,j)
-     &                    SWITCH vmask(i,j)
-# endif /* DIAGNOSTICS_VRT */
-
-
-        enddo
-      enddo             !--> discard wrk
-      do k=1,levbfrc
-        do j=Jstr,Jend
-          do i=IstrU,Iend
-            ru(i,j,k)=ru(i,j,k)-Uwrk(i,j)*(Hz(i,j,k)+
-     &                                               Hz(i-1,j,k))
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
-            if (nnew.ne.3) then
-              Mbody(i,j,k,1) = Mbody(i,j,k,1)
-     &                       - Uwrk(i,j)*(Hz(i,j,k)+
-     &                                    Hz(i-1,j,k))
-     &                        SWITCH umask(i,j)
-            endif
-# endif
-# if defined DIAGNOSTICS_EK
-          if (nnew.ne.3) then
-          if (k.eq.1) then
-            ekwrkDrag(i,j,1)= 0.
-          endif
-            ekwrkDrag(i,j,1)=ekwrkDrag(i,j,1)
-     &                   - Uwrk(i,j)*(Hz(i,j,k)+
-     &                                Hz(i-1,j,k))
-     &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
-          endif
-# endif /* DIAGNOSTICS_EK */
-          enddo
-        enddo
-        do j=JstrV,Jend
-          do i=Istr,Iend
-            rv(i,j,k)=rv(i,j,k)-Vwrk(i,j)*(Hz(i,j,k)+
-     &                                               Hz(i,j-1,k))
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
-            if (nnew.ne.3) then
-              Mbody(i,j,k,2) = Mbody(i,j,k,2)
-     &                       -Vwrk(i,j)*(Hz(i,j,k)+
-     &                                   Hz(i,j-1,k))
-     &                        SWITCH vmask(i,j)
-            endif
-# endif
-# if defined DIAGNOSTICS_EK
-          if (k.eq.1) then
-            ekwrkDrag(i,j,2)= 0.
-          endif
-            ekwrkDrag(i,j,2)= ekwrkDrag(i,j,2)
-     &                    -Vwrk(i,j)*(Hz(i,j,k)+
-     &                                Hz(i,j-1,k))
-     &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
-# endif /* DIAGNOSTICS_EK */
-          enddo
-        enddo
-      enddo         !--> discard Uwrk,Vwrk
-#  undef wrk
-#  undef Vwrk
-#  undef Uwrk
-#  undef levbfrc
-# endif /* DISSIP_SHALLOW_BODY */
-
       do k=1,N
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)
@@ -527,7 +409,8 @@
 # else
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || \
+       defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
             UFxCor(i,j)=0.5*Hz(i,j,k)*fomn(i,j)
      &                 *(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFeCor(i,j)=0.5*Hz(i,j,k)*fomn(i,j)
@@ -797,20 +680,32 @@
 #     define UP5_MASKING
           cdif=0.5
 #    endif
+
 #    include "u_hadv_order5.h"
 #    include "v_hadv_order5.h"
-
-#    if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-#      if defined UV_HADV_UP5
-#        include "uhdiff_order5.h"
-#        include "vhdiff_order5.h"
-#      endif
-#    endif
 
 #    undef FLUX5
 #    undef FLUX3
 #    undef FLUX2
 #    undef UP5_MASKING
+
+#    if defined UV_HADV_UP5
+#      if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+#        define FLUX5 flux6
+#        define FLUX3 flux4
+#        define FLUX2 flux2
+           cdif=0.
+#          include "uhdiff_order5.h"
+#          include "vhdiff_order5.h"
+#        undef FLUX5
+#        undef FLUX3
+#        undef FLUX2
+#      endif
+#    endif
+
+
+
         endif
 #   endif /* WENO5 */
 
@@ -883,7 +778,8 @@
      &                      -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 
 #   else
-#     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
      &                         -0.125*(uxx(i,j)+uxx(i+1,j))
@@ -966,7 +862,8 @@
      &                      -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 
 #   else
-#     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
      &                        -0.125*(vee(i,j)+vee(i,j+1))
@@ -1048,7 +945,8 @@
      &                  )*( Hvom(i,j,k)+Hvom(i-1,j,k)
      &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   else
-#     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
      &                        -0.125*(uee(i,j)+uee(i,j-1))
@@ -1133,7 +1031,8 @@
      &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
 
 #   else
-#     if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK  || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+#     if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
      &                        -0.125*(vxx(i,j)+vxx(i-1,j))
@@ -1590,7 +1489,6 @@
 ! Finalize U vertical advection: compute flux divergences
 !----------------------------------------------------------
 !
-
 #  if defined DIAGNOSTICS_EK && ! defined DIAGNOSTICS_EK_FULL && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
              do i=istrU,iend

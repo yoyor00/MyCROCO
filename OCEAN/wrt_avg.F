@@ -259,8 +259,13 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !     
       if (wrtavg(indxW)) then
+# ifdef NBQ
+         work=w_avg
+         call fillvalue3d(work ,ncidavg,avgW,indxW,record,w3dvar,type)
+# else
          workr=w_avg
          call fillvalue3d(workr,ncidavg,avgW,indxW,record,r3dvar,type)
+# endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif   
 !     
@@ -401,8 +406,28 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
             goto 99             !--> ERROR
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
-      endif
+       endif
+!     
+!     Write out bottom heat flux 
+!     
+      if (wrtavg(indxBhflx)) then
+        work2d=btflx_avg(:,:,itemp)
+     &         SWITCH rmask
+!     
+!     Mult by mask to avoid erroneous data 
+!     over land if Qcorrection cppkeys applied
+!
+        ierr=nf_fwrite(work2d, ncidavg, avgBhflx, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBhflx))
+          write(stdout,1) vname(1,indxBhflx)(1:lvar), record, ierr
+     &         MYID
+          goto 99               !--> ERROR
+        endif
+CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID 
+      endif  
 #  ifdef SALINITY      
+!
 !     Write out surface E-P flux [cm/d]
 !     
       if (wrtavg(indxSwflx)) then
@@ -421,7 +446,27 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
             goto 99             !--> ERROR
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
-      endif
+       endif
+!
+!     Write out bottom fresh water flux [cm/d]
+!     
+      if (wrtavg(indxBwflx)) then
+         work2d=btflx_avg(:,:,isalt)
+     &         SWITCH rmask  
+!
+!        Mult by mask to avoid erroneous data over land 
+!        if SFlux cppkeys correction applied and also 
+!        to remove enormous wrong value diciding by eps.    
+!
+         ierr=nf_fwrite(work2d, ncidavg, avgBwflx, record, r2dvar)
+         if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxBwflx))
+            write(stdout,1) vname(1,indxBwflx)(1:lvar), record, ierr
+     &           MYID
+            goto 99             !--> ERROR
+         endif
+CR      write(*,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
+       endif
 #  endif
 !     Write out solar radiation flux [W/m2]
 !     
@@ -531,48 +576,61 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !     Write out sediment bed layer thickness, porosity, volume 
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !     
+      if (wrtavg(indxBTHK)) then
+         worksed_bed=bed_thick_avg
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(1),indxBTHK,
+     &        record,b3dvar,type)
+      endif
+!
+      if (wrtavg(indxBPOR)) then
+         worksed_bed=bed_poros_avg
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(1),indxBPOR,
+     &        record,b3dvar,type)
+      endif
+
       do itrc=1,NST
          indxWrk=indxBFRA(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
+         if (wrtavg(indxWrk)) then
             worksed_frac=bed_frac_avg(:,:,:,itrc)
             call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+2),
      &           indxWrk,record,b3dvar,type)
-!         endif
+         endif
       enddo
+
 #   ifdef SUSPLOAD
       do itrc=1,NST
          indxWrk=indxDFLX(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
+         if (wrtavg(indxWrk)) then
             work2d=settling_flux_avg(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+NST),
      &           indxWrk,record,r2dvar,type)
-!         endif
+         endif
       enddo
       do itrc=1,NST
          indxWrk=indxEFLX(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
+         if (wrtavg(indxWrk)) then
             work2d=ero_flux_avg(:,:,itrc)/dt
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+2*NST),
      &           indxWrk,record,r2dvar,type)
-!         endif
+         endif
       enddo
 #   endif
 #   ifdef BEDLOAD
       do itrc=1,NST
          indxWrk=indxBDLU(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
+         if (wrtavg(indxWrk)) then
             work2d=bedldu_avg(:,:,itrc)
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+3*NST),
      &           indxWrk,record,r2dvar,type)
-!         endif
+         endif
       enddo
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
+         if (wrtavg(indxWrk)) then
             work2d=bedldv_avg(:,:,itrc)
             call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+4*NST),
      &           indxWrk,record,r2dvar,type)
-!         endif
+         endif
       enddo
 #   endif
 #  endif /* SEDIMENT */

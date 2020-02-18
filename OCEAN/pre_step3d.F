@@ -31,9 +31,7 @@
      &                                            A2d(1,4,trd), 
 # endif           
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
-# ifndef M3FAST
      &                                          , A3d(1,4,trd)         
-# endif
      &                                                        )
       return
       end
@@ -44,9 +42,7 @@
      &                                                       WC, 
 # endif     
      &                                               FX,FE,WORK
-# ifndef M3FAST
      &                                                 ,Hz_half
-# endif
      &                                                         )  
 !
 !--------------------------------------------------------------------
@@ -85,9 +81,7 @@
 # ifdef VADV_ADAPT_IMP      
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
-# ifndef M3FAST
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
-# endif
 # ifdef WET_DRY
       real cff3,cff4,cff5
 #  endif
@@ -117,7 +111,7 @@
 # ifdef M3FAST
 #  define ru_nbq_avg1 ru_nbq
 #  define rv_nbq_avg1 rv_nbq
-#  ifdef M3FAST
+#  ifdef NBQ
 #   define rw_nbq_avg1 rw_nbq
 #  endif
 # endif

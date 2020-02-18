@@ -53,6 +53,7 @@
      &      , iwkb
 #endif
 #ifdef NC4PAR
+# include "mpi_cpl.h"
       include "mpif.h"
 #endif
 
@@ -93,9 +94,6 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
-# ifdef DISSIP_SHALLOW_BARO
-#  define vidDSW hisDSW
-# endif      
 # ifdef MOVING_BATHY
 #  define vidHm hisHm
 # endif
@@ -144,6 +142,10 @@
 #  define vidShflx_rlw hisShflx_rlw
 #  define vidShflx_lat hisShflx_lat
 #  define vidShflx_sen hisShflx_sen
+# endif
+# define vidBhflx hisBhflx
+# ifdef SALINITY
+#  define vidBwflx hisBwflx
 # endif
 # ifdef SST_SKIN
 #  define vidSST_skin hisSST_skin
@@ -230,6 +232,10 @@
 #  define vidShflx_lat avgShflx_lat
 #  define vidShflx_sen avgShflx_sen
 # endif
+# define vidBhflx avgBhflx
+#ifdef SALINITY
+# define vidBwflx avgBwflx
+#endif
 # ifdef SST_SKIN
 #  define vidSST_skin avgSST_skin
 # endif
@@ -252,8 +258,6 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
-      else
-        lvar=0
       endif
 !
 ! Decide whether to create a new file, or open existing one.
@@ -312,7 +316,8 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        MPI_master_only write(stdout,*)'CREATE HIS/AVG NC4 PARALLEL FILE'        
+        MPI_master_only write(stdout,*)
+     &       'CREATE HIS/AVG NC4 PARALLEL FILE'        
         ierr=nf_create_par(ncname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
@@ -565,25 +570,6 @@
 
         endif
 
-#ifdef DISSIP_SHALLOW_BARO
-        if (wrt(indxDSW)) then
-          lvar=lenstr(vname(1,indxDSW))
-          ierr=nf_def_var (ncid, vname(1,indxDSW)(1:lvar),
-     &                              NF_FOUT, 3, r2dgrd, vidDSW)
-          lvar=lenstr(vname(2,indxDSW))
-          ierr=nf_put_att_text (ncid, vidDSW, 'long_name', lvar,
-     &                                  vname(2,indxDSW)(1:lvar))
-          lvar=lenstr(vname(3,indxDSW))
-          ierr=nf_put_att_text (ncid, vidDSW, 'units',     lvar,
-     &                                  vname(3,indxDSW)(1:lvar))
-          lvar=lenstr(vname(4,indxDSW))
-          ierr=nf_put_att_text (ncid, vidDSW, 'field',     lvar,
-     &                                  vname(4,indxDSW)(1:lvar))
-
-          call nf_add_attribute(ncid, vidDSW, indxDSW, 5, NF_FOUT, ierr)
-
-        endif
-#endif
 #ifdef MOVING_BATHY 
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
@@ -860,11 +846,16 @@
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
+# ifdef NBQ
+          ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
+     &                               NF_FOUT, 4, w3dgrd, vidW)
+# else
           ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
      &                               NF_FOUT, 4, r3dgrd, vidW)
-#ifdef NC4PAR
+# endif
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidW,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxW))
           ierr=nf_put_att_text (ncid, vidW, 'long_name', lvar,
@@ -1375,6 +1366,66 @@
      &                                 vname(3,indxSwflx)(1:lvar))
             
           call nf_add_attribute(ncid, vidSwflx, indxSwflx, 5, 
+     &                          NF_FOUT, ierr)
+
+        endif
+# endif
+
+!
+! Bhflx [W/m2]
+!
+        if (wrt(indxBhflx)) then
+          lvar=lenstr(vname(1,indxBhflx))
+          ierr=nf_def_var (ncid, vname(1,indxBhflx)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidBhflx)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBhflx,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBhflx))
+          ierr=nf_put_att_text (ncid, vidBhflx, 'long_name', lvar,
+     &                                 vname(2,indxBhflx)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBhflx)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBhflx, 'long_name', lvar,
+     &                                               text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBhflx))
+          ierr=nf_put_att_text (ncid, vidBhflx, 'units',     lvar,
+     &                                 vname(3,indxBhflx)(1:lvar))
+
+          call nf_add_attribute(ncid, vidBhflx, indxBhflx, 5, 
+     &                          NF_FOUT, ierr)
+
+        endif
+!
+! Bwflx [cm/day]
+!
+# ifdef SALINITY
+        if (wrt(indxBwflx)) then
+          write(*,*)'BBBB'
+          lvar=lenstr(vname(1,indxBwflx))
+          ierr=nf_def_var (ncid, vname(1,indxBwflx)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidBwflx)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBwflx,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBwflx))
+          ierr=nf_put_att_text (ncid, vidBwflx, 'long_name', lvar,
+     &                                 vname(2,indxBwflx)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBwflx)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBwflx, 'long_name', lvar,
+     &                                               text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBwflx))
+          ierr=nf_put_att_text (ncid, vidBwflx, 'units',     lvar,
+     &                                 vname(3,indxBwflx)(1:lvar))
+            
+          call nf_add_attribute(ncid, vidBwflx, indxBwflx, 5, 
      &                          NF_FOUT, ierr)
 
         endif
@@ -2238,19 +2289,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
-!
-! Dissipation in shallow areas
-!
-#ifdef DISSIP_SHALLOW_BARO
-        if (wrt(indxDSW)) then
-          lvar=lenstr(vname(1,indxDSW))
-          ierr=nf_inq_varid (ncid, vname(1,indxDSW)(1:lvar), vidDSW)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxDSW)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-# endif
+
 !
 ! time evolving bathymetry
 !
@@ -2559,6 +2598,19 @@
             goto 99                                       !--> ERROR
           endif
         endif
+!
+! Bhflx     Bottom net heat flux [W/m2]
+!
+        if (wrt(indxBhflx)) then
+          lvar=lenstr(vname(1,indxBhflx))
+          ierr=nf_inq_varid (ncid,vname(1,indxBhflx)(1:lvar),
+     &                                                   vidBhflx)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxBhflx)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+        
 #ifdef SALINITY
 !
 ! Swflx    E-P flux [cm/day]
@@ -2569,6 +2621,18 @@
      &                                                   vidSwflx)
           if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxSwflx)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+!
+! Bwflx    Freshwater at bottom flux [cm/day]
+!
+        if (wrt(indxBwflx)) then
+          lvar=lenstr(vname(1,indxBwflx))
+          ierr=nf_inq_varid (ncid,vname(1,indxBwflx)(1:lvar),
+     &                                                   vidBwflx)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxBwflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2994,6 +3058,10 @@
 # undef vidShflx_lat
 # undef vidShflx_sen
 #endif
+#undef vidBhflx
+# ifdef SALINITY
+#  undef vidBwflx
+# endif
 #undef vidSST_skin
 #ifdef WAVE_IO
 # undef vidWAVE

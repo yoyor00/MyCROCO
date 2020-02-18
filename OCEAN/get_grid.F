@@ -22,10 +22,6 @@
 # include "ncscrum.h"
 # include "grid.h"
 # include "netcdf.inc"
-# ifdef M3FAST
-      integer i,j,Istr,Iend,Jstr,Jend
-#  include "compute_extended_bounds.h"
-# endif
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi

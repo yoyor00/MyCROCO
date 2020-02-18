@@ -46,8 +46,6 @@ eta       = 0.001;          % nondimensional periodic amplitude
 D0        = 10;             % tank depth
 Lt        = 10;             % tank length
 rho0      = 1024.4;
-
-masking   = 0;
 %
 %======================================================================
 
@@ -72,12 +70,6 @@ hr=squeeze(nc{'h'}(yindex,:));
 L=length(hr);
 xr=squeeze(nc{'x_rho'}(yindex,:));
 yr=squeeze(nc{'y_rho'}(yindex,:));
-if masking
- mask=squeeze(nc{'mask_rho'}(yindex,:));
-else
- mask=ones(size(xr));
-end
-%mask=mask./mask;
 dx=xr(2)-xr(1);
 % vertical grid parameters
 N=length(nc('s_rho'));
@@ -96,24 +88,23 @@ hc=nc.hc(:);
 % --- Model solution ---
 % ----------------------
 %
-kk=round(N/2);
+kk=round(N/2); % for w
 nc=netcdf(fname);
 t0    = nc{'scrum_time'}(1:tindex);
 zeta01= 100*squeeze(nc{'zeta'}(1:tindex,yindex,L-1));
 u01   = 100*squeeze(nc{'u'}(1:tindex,end,yindex,L/2));
-w01   = 100*squeeze(nc{'w'}(1:tindex,kk,yindex,L-1)); % z=-4.95m
+w01   = 100*squeeze(nc{'w'}(1:tindex,kk,yindex,L-1));
 o01   = 100*squeeze(nc{'omega'}(1:tindex,kk,yindex,L-1));
 
 % set vertical grid
 zr0=zeros(tend,N,L);
 for i=1:tend
- zeta0 = mask.*squeeze(nc{'zeta'}(i,yindex,:));
+ zeta0 = squeeze(nc{'zeta'}(i,yindex,:));
  zr0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'r',2));
  zw0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'w',2));
 end
 close(nc)
 zru0=0.5*(zr0(:,:,1:end-1)+zr0(:,:,2:end));
-
 %
 % ----------------------------
 % --- Analytical solutions ---
@@ -122,7 +113,7 @@ zru0=0.5*(zr0(:,:,1:end-1)+zr0(:,:,2:end));
 x      = xr(L-1);
 xu     = 0.5*(xr(L/2)+xr(L/2+1));
 z0     = squeeze(zru0(:,end,L-1)); 
-zz     = squeeze(zr0(:,kk,L-1)); %-4.95;
+zz     = squeeze(zw0(:,kk+1,L-1));
 
 % Non-hydrostatic case
 k      = pi/Lt;
@@ -175,8 +166,7 @@ ylabel('w (cm/s)')
 grid on
 
 if makepdf
- print -dpdf tank.pdf
- eval('!pdfcrop tank.pdf tank_series.pdf')
+ export_fig -transparent tank_series.pdf
 end
 
 %figure; 
@@ -185,7 +175,7 @@ end
 %subplot(2,1,2)
 %plot(t0,w02-w01); grid on
 
-%return
+return
 
 %============================================================
 % --- make animation ---
@@ -203,10 +193,7 @@ for tindex=tstr:tend % ---------------------------------- time loop
  disp(['Time index: ',num2str(tindex)])
 
  % vertical grid
- zeta=mask.*squeeze(nc{'zeta'}(tindex,yindex,:));
- if nbq,
-  zeta=mask.*(zeta/rho0-D0);
- end
+ zeta=squeeze(nc{'zeta'}(tindex,yindex,:));
  zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r',2));
  zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
  zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w',2));
@@ -256,7 +243,7 @@ for tindex=tstr:tend % ---------------------------------- time loop
 
  zeta3 =  eta*cos(k*xr2d-sig*time);
  u3    =  g*eta*k/sig*sin(k*xr2d)*sin(sig*time);
- w3    =  -g*eta*k^2/sig*cos(k*xr2d)*sin(sig*time).*(D0+zr);
+ w3    = -g*eta*k^2/sig*cos(k*xr2d)*sin(sig*time).*(D0+zr);
 
  % ----------------------------------------------------------
  % --- plot ---
@@ -282,13 +269,18 @@ for tindex=tstr:tend % ---------------------------------- time loop
  colormap(map);
 
  if nbq,
-  contourf(xr2d,zr,u1-u2,[cmin:cint:cmax]); hold on
+  contourf(xr2d,zr,u1-u2,[cmin:cint:cmax],'linestyle','none');
  else
-  contourf(xr2d,zr,u1-u3,[cmin:cint:cmax]); hold on
+  contourf(xr2d,zr,u1-u3,[cmin:cint:cmax],'linestyle','none');
  end
- quiver(xr2d,zr,ur1,wr1);
- shading flat; colorbar;
- ha=plot(xr,1000*zeta2,'color','g','LineWidth',2);
+ hold on
+ quiver(xr2d,zr,ur1,wr1,2);
+ colorbar;
+ if nbq,
+  ha=plot(xr,1000*zeta2,'color','g','LineWidth',2);
+ else
+  ha=plot(xr,1000*zeta3,'color','g','LineWidth',2);
+ end
  hn=plot(xr,1000*zeta1,'color','r','LineWidth',2);
  %legend([ha,hn],'Analytical','Numerical')
  grid on

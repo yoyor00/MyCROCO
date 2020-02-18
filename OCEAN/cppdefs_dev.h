@@ -38,10 +38,10 @@
 /*  
    Activate the RVTK_DEBUG procedure that will test the reproducibility 
    of parallel computation by comparing binary files produced by serial 
-   and parallel runs
+   and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
+   be defined from cppdefs.h, so not undefined here !!!!! 
 */
-#undef  RVTK_DEBUG
-#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP
+#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
 # define RVTK_DEBUG_WRITE
 #endif
 
@@ -105,6 +105,7 @@
 ======================================================================
 */ 
 #ifdef XIOS
+# define XIOS2
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
 # define key_iomput
@@ -133,30 +134,21 @@
    Activate NBQ choices for non-hydrostatic simulations
 ======================================================================
 */
-#if defined NBQ || defined M3FAST       /* General options */
-# ifdef NBQ
-#  define M3FAST
-# endif
+#ifdef NBQ              /* General options */
+# define M3FAST
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
 # define NBQ_IMP
-# define BSTRESS_FAST
 # undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
-# ifdef  TANK
-#  undef  NBQ_AM4
-# else
-#  define NBQ_AM4
+# ifdef TANK
+#  define NOT_NBQ_AM4
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
-# ifdef NBQ
-#  define HZR Hzr
-# else
-#  define HZR Hz
-# endif
+# define HZR Hzr
 /*
    NBQ Precise or Performance options (default: NBQ_PERF) 
 */
@@ -166,15 +158,12 @@
 # ifdef NBQ_PERF
 #  undef  NBQ_MASS
 #  define NBQ_GRID_SLOW
-#  ifdef NBQ
-#   define NBQ_HZCORRECT
-#  endif
+#  define NBQ_HZCORRECT
 # else
 #  define NBQ_MASS
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
-
 /*
    Options for wz HADV numerical schemes (default C4)
 */
@@ -198,9 +187,9 @@
 # elif defined W_VADV_WENO5
 # elif defined W_VADV_C2
 # else
-#  define W_VADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_VADV_SPLINES  /* Splines vertical advection             */
 #  undef  W_VADV_TVD      /* TVD vertical advection                 */
-#  undef  W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
+#  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
@@ -211,27 +200,52 @@
 #  define OBC_NBQ
 # endif
 # ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
-#  define OBC_NBQORLANSKI    /*  Radiative conditions           */
-#  undef  OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  define OBC_NBQORLANSKI    /*  NBQ Radiative conditions       */
+#  undef  OBC_NBQSPECIFIED   /*  NBQ Specified conditions       */
+#  define OBC_WORLANSKI      /*  W Radiative conditions         */
+#  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
-#  ifndef NBQ
-#   undef  OBC_NBQORLANSKI
-#   define OBC_NBQSPECIFIED
-#   undef  NBQ_NUDGING
-#   undef  NBQCLIMATOLOGY
-#   define NBQ_FRC_BRY
-#   undef W_FRC_BRY
-#  endif
 # endif
 
 #else                /* Hydrostatic mode */
 
 # define HZR Hz
 
-#endif  /* NBQ || M3FAST */
+#endif  /* NBQ */
+
+/*
+======================================================================
+   Activate FAST timestep 3D dynamics for hydrostatic simulations
+   -- Fast friction BSTRESS_FAST --
+======================================================================
+*/
+#ifdef BSTRESS_FAST
+# define M3FAST
+#endif
+#if !defined NBQ && defined M3FAST       /* General options */
+# define SOLVE3D
+# define M2FILTER_NONE  /* no filter with M3FAST */
+# undef  M2FILTER_POWER
+# define BSTRESS_FAST
+/*
+   use options from NBQ Open boundary conditions
+*/
+# if defined OBC_WEST  || defined OBC_EAST  || \
+     defined OBC_NORTH || defined OBC_SOUTH
+#  define OBC_NBQ
+# endif
+# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
+#  undef  OBC_NBQORLANSKI    /*  Radiative conditions           */
+#  define OBC_NBQSPECIFIED   /*  Specified conditions (forcing) */
+#  undef  NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef  NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
+#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
+# endif
+#endif  /* M3FAST */
 
 /*
 ======================================================================
@@ -560,8 +574,7 @@
 ======================================================================
 */
 #ifdef WAVE_MAKER
-# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN \
-                                || defined FLUME_WAVES
+# if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 #  define WAVE_MAKER_SPECTRUM
 # endif
 # ifdef WAVE_MAKER_SPECTRUM
@@ -583,10 +596,12 @@
 */
 #if defined PSOURCE
 #  define ANA_PSOURCE  /* ON: set vertical profil for qbar */
+#  undef RIVER_RAMP
 #endif
 #if defined PSOURCE_NCFILE
 # define PSOURCE
 # define ANA_PSOURCE
+# undef RIVER_RAMP
 #endif
 
 /*
@@ -651,7 +666,7 @@
 # ifndef WAVE_OFFLINE
 #  undef WKB_NUDGING
 # endif
-# if defined SHOREFACE || defined FLUME \
+# if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
 # endif
@@ -679,7 +694,7 @@
                       IF-less KPP --> KPP2005
 ======================================================================
 */
-#ifdef LMD_SKPP
+#if defined LMD_SKPP
 # define LMD_SKPP2005
 #endif
 #ifdef LMD_BKPP
@@ -708,17 +723,38 @@
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
 #endif
+/*
+======================================================================
+      Bottom forcing:
+      
+      By default:
+         define ANA_BTFLUX : set to zero in analytical.F
+         define ANA_BSFLUX
 
+
+      - define BHFLUX : bottom heat flux, Btflx(i,j,itemp), is read into
+                  the netcdf file croco_btf.nc
+      - define BWFLUX : bottom freshwater flux, Btflx(i,j,isalt), is read
+                   into a netcdf file(croco_btf.nc)
+======================================================================
+*/
+#if !defined ANA_BTFLUX
+#  define BHFLUX
+#endif
+#if !defined ANA_BSFLUX
+#  define BWFLUX
+#endif
 /*
 ======================================================================
     Bottom stress option:
 
     LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid 
     numerical instability associated with reversing bottom flow
+    NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
-#ifndef INNERSHELF
-# define LIMIT_BSTRESS
+#ifndef BSTRESS_FAST
+# define  LIMIT_BSTRESS
 #endif
 #ifdef BBL
 # ifdef OW_COUPLING
@@ -855,6 +891,11 @@
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
 # endif
+# ifdef NBQ
+#  define AGRIF_OBC_WSPECIFIED
+#  define AGRIF_OBC_NBQSPECIFIED
+# endif
+
 #endif /* AGRIF */
 
 /*

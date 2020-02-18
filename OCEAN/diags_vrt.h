@@ -34,6 +34,10 @@
       real vrtBaro(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
+# if defined M3FAST
+      real vrtfast(GLOBAL_2D_ARRAY)
+!CSDISTRIBUTE_RESHAPE vrtfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
 # ifdef AVERAGES
       real timediags_vrt_avg
       real vrtXadv_avg(GLOBAL_2D_ARRAY)
@@ -62,6 +66,10 @@
       real vrtBaro_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtBaro_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
+# if defined M3FAST
+      real vrtfast_avg(GLOBAL_2D_ARRAY)
+!CSDISTRIBUTE_RESHAPE vrtfast_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
 # endif
 
 
@@ -82,6 +90,9 @@
 # if defined DIAGNOSTICS_BARO
      &       /diag_vrtBaro/vrtBaro
 # endif
+# if defined M3FAST
+     &       /diag_vrtfast/vrtfast
+# endif
 
 # ifdef AVERAGES
       common /diag_timediags_vrt_avg/timediags_vrt_avg
@@ -98,6 +109,9 @@
      &       /diag_vrtDrag_avg/vrtDrag_avg
 # if defined DIAGNOSTICS_BARO
      &       /diag_vrtBaro_avg/vrtBaro_avg
+# endif
+# if defined M3FAST
+     &       /diag_vrtfast_avg/vrtfast_avg
 # endif
 # endif      
 
@@ -125,6 +139,10 @@
       real wrkBaro(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
+# if defined M3FAST
+      real wrkfast(GLOBAL_2D_ARRAY,2)
+!CSDISTRIBUTE_RESHAPE wrkfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
       common /diag_wrkXadv/wrkXadv   
      &       /diag_wrkYadv/wrkYadv
      &       /diag_wrkHdiff/wrkHdiff
@@ -136,6 +154,9 @@
      &       /diag_wrkVmix2/wrkVmix2
 # if defined DIAGNOSTICS_BARO
      &       /diag_wrkBaro/wrkBaro
+# endif
+# if defined M3FAST
+     &       /diag_wrkfast/wrkfast
 # endif
 #endif /*ifndef DIAGNOSTICS_UV */
 

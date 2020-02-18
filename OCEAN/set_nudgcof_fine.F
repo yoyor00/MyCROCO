@@ -28,6 +28,7 @@
 !     implicit none
       integer ierr
 # if defined MPI
+# include "mpi_cpl.h"
       include 'mpif.h'
 # endif
 # include "param.h"
@@ -84,6 +85,9 @@
 !
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.)! cosine profile
 !          wrk(i,j)=float(isp-ibnd)/float(isp)            ! linear profile
+# ifdef SPONGE_SED
+          sed_sponge(i,j)=1.
+# endif
         enddo
       enddo
 !
@@ -103,7 +107,7 @@
           M3nudgcof(i,j)=0.
 # endif
 # ifdef NBQ_NUDGING
-          NBQnudgcof(i,j)=dtfast*tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less)
+          NBQnudgcof(i,j)=0.
 # endif
         enddo
       enddo

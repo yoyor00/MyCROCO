@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifdef M3FAST
+#ifdef NBQ
 !
       subroutine grid_nbq_tile(Istr,Iend,Jstr,Jend,
      &                         Hzw_half_nbq_inv,Hzr_half_nbq_inv,
@@ -109,7 +109,7 @@
       do k=1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
-            Hzr_half_nbq_inv(i,j,k)=1./max(1.e-30,HZR(i,j,k))
+            Hzr_half_nbq_inv(i,j,k)=1./max(1.e-30,Hzr(i,j,k))
 # ifdef MASKING
      &                                            *rmask(i,j)
 # endif
@@ -120,7 +120,7 @@
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend+1
-            Hzu_half_qdmu(i,j,k)=0.5*(HZR(i-1,j,k)+HZR(i,j,k))*pm_u(i,j)
+            Hzu_half_qdmu(i,j,k)=0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
 # ifdef MASKING
      &                                                       *umask(i,j)
 # endif  
@@ -130,7 +130,7 @@
       do k=1,N
         do j=JstrV,Jend+1
           do i=Istr,Iend
-            Hzv_half_qdmv(i,j,k)=0.5*(HZR(i,j-1,k)+HZR(i,j,k))*pn_v(i,j)
+            Hzv_half_qdmv(i,j,k)=0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
 # ifdef MASKING
      &                                                       *vmask(i,j)
 # endif  

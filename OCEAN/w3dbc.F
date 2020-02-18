@@ -70,6 +70,10 @@
 !
 ! Interpolations of the parent values to get wbry_east or wclm
 !
+# ifdef CHILD
+      call w3dbc_interp_tile(Istr,Iend,Jstr,Jend)
+# endif
+
 # if defined W_FRC_BRY || defined WCLIMATOLOGY
       tau_in=dt*tauM_in
       tau_out=dt*tauM_out
@@ -101,7 +105,7 @@
          enddo
         enddo
 !
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
         do k=0,N
@@ -206,7 +210,7 @@
 #    endif
           enddo
         enddo
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
         do k=0,N
@@ -313,7 +317,7 @@
 #    endif
           enddo
         enddo
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
         do k=0,N
@@ -421,7 +425,7 @@
           enddo
         enddo
 !
-#   elif defined OBC_COM_M3ORLANSKI
+#   elif defined OBC_COM_WORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
         do k=0,N

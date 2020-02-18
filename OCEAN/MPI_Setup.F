@@ -55,8 +55,7 @@
 !       write(200+mynode,*) "passe la 1"
 !       print *,"passe la 1"
 !       stop '1'
-!# define    MPI_OPT  
-# ifndef MPI_OPT
+# ifndef MPI_NOLAND
       ii=mod(mynode,NP_XI)
       jj=mynode/NP_XI
 
@@ -283,7 +282,7 @@
 #  endif
       endif
 
-# endif /* MPI_OPT */
+# endif /* MPI_NOLAND */
        
        IF( .not. north_inter .or. .not.east_inter) CORNER_NE=.false.
        IF( .not. north_inter .or. .not.west_inter) CORNER_NW=.false.
@@ -392,6 +391,7 @@ c#  include "param.h"
       integer Istr,Iend,Jstr,Jend
 #  include "param.h"
 #  include "scalars.h"
+# include "mpi_cpl.h"
       include 'mpif.h'
 
       integer i,j,k,ierr

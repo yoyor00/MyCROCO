@@ -36,7 +36,6 @@ close all
 % User defined parameters
 %
 makepdf=0;
-%
 vname='zeta';
 tindex=11;
 %
@@ -92,7 +91,7 @@ end
 %
 % Parent
 %
-nc=netcdf('vortex_his.nc','r');
+nc=netcdf('vortex_his.nc');
 N=length(nc('s_rho'));
 time=round(nc{'scrum_time'}(tindex)/(24*3600));
 disp(['Day : ',num2str(time)])
@@ -120,10 +119,10 @@ end
 % Child
 %
 childhis='vortex_his.nc.1';
-nc=netcdf(childhis,'r');
 nestvortex=0;
 if exist(childhis)
   nestvortex=1;
+  nc=netcdf(childhis,'r');
   X=1e-3*nc{'x_rho'}(:);
   Y=1e-3*nc{'y_rho'}(:);
   if ddd==1
@@ -156,7 +155,6 @@ end
 %
 % Plots
 %
-%contour(X1,Y1,t1,[cmin:dc:cmax],'r')
 contourf(X1,Y1,t1,[cmin:dc:cmax])
 xlabel('X [km]')
 ylabel('Y [km]')
@@ -176,6 +174,7 @@ if nestvortex==1
   colorbar
   title(['Parent - Child : ',vname,' - Day ',num2str(time)])
 end
+set(gca,'fontsize',15)
 if makepdf
  export_fig -transparent -pdf vortex.pdf
 end

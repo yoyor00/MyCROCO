@@ -76,7 +76,7 @@
 ! Interpolations of the parent values to get unbqbry_east or unbqclm
 !
 # ifdef CHILD
-!      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
+      call unbq_bc_interp_tile(Istr,Iend,Jstr,Jend)
 # endif
 !
 # if defined NBQ_FRC_BRY || defined NBQ_NUDGING
@@ -184,7 +184,8 @@
 !
 !  Replace external mode
 !
-#  define usum grad
+#   ifdef NBQ
+#    define usum grad
         usum=0.
         do k=1,N
           do j=Jstr,Jend
@@ -207,7 +208,8 @@
 #    endif
           enddo
         enddo
-#  undef usum
+#    undef usum
+#   endif /* NBQ */
 !
 #  else           /* alternative to open */
         do k=1,N                                      ! Western edge closed
@@ -326,7 +328,8 @@
 !
 !  Replace external mode
 !
-#  define usum grad
+#   ifdef NBQ
+#    define usum grad
         usum=0.
         do k=1,N
           do j=Jstr,Jend
@@ -349,7 +352,8 @@
 #    endif
           enddo
         enddo
-#  undef vsum
+#    undef vsum
+#   endif /* NBQ */
 !
 #  else
         do k=1,N                                     ! Eastern edge closed
@@ -468,7 +472,7 @@
 !
 !  Replace external mode
 !
-#   ifdef QDM_OBC_TANG_CORRECT
+#   if defined NBQ && defined QDM_OBC_TANG_CORRECT
 #    define usum grad
         usum=0.
         do k=1,N
@@ -608,7 +612,7 @@
 !
 !  Replace external mode
 !
-#  ifdef QDM_OBC_TANG_CORRECT
+#  if defined NBQ && defined QDM_OBC_TANG_CORRECT
 #   define usum grad
         usum=0.
         do k=1,N

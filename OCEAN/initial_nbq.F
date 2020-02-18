@@ -16,30 +16,34 @@
 !
       implicit none
       integer tile, icall, trd
-#include "param.h"
-#include "private_scratch.h"
+# include "param.h"
+# include "private_scratch.h"
 !$    integer omp_get_thread_num
-#include "compute_tile_bounds.h"
+# include "compute_tile_bounds.h"
       trd=0
 !$    trd=omp_get_thread_num()
 
       call initial_nbq_tile (Istr,Iend,Jstr,Jend
+# ifdef NBQ
      &                     ,A3d(1,1,trd), A3d(1,2,trd)
      &                     ,A3d(1,3,trd), A3d(1,4,trd)
      &                     ,A3d(1,5,trd), A3d(1,6,trd)
-#ifdef NONLIN_EOS
+#  ifdef NONLIN_EOS
      &                     ,A2d(1,1,trd), A2d(1,2,trd)
-#endif
+#  endif
+# endif
      &                      )
       end subroutine initial_nbq
 !
       subroutine initial_nbq_tile (Istr,Iend,Jstr,Jend
+# ifdef NBQ
      &                           ,Hzw_half_nbq_inv, Hzr_half_nbq_inv
      &                           ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
      &                           ,Hzu_half_qdmu,Hzv_half_qdmv
-#ifdef NONLIN_EOS
+#  ifdef NONLIN_EOS
      &                           ,K_up, K_dw
-#endif
+#  endif
+# endif
      &                         )
 !
 !======================================================================
@@ -62,16 +66,18 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 
+# ifdef NBQ
        real Hzu_half_qdmu(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzv_half_qdmv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzw_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzr_half_nbq_inv(PRIVATE_2D_SCRATCH_ARRAY,N)
        real Hzw_half_nbq_inv_u(PRIVATE_2D_SCRATCH_ARRAY,0:N)
        real Hzw_half_nbq_inv_v(PRIVATE_2D_SCRATCH_ARRAY,0:N)
-# ifdef NONLIN_EOS      
+#  ifdef NONLIN_EOS      
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! work arrays for call
       real K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N)  ! to nonlinear EOS
-# endif  
+#  endif
+# endif
       integer i,j,k
 
 # include "compute_extended_bounds.h"
@@ -81,21 +87,23 @@
 # define JR_RANGE JstrR,JendR
 # define JV_RANGE Jstr,JendR
 !
-# ifdef NBQ_IMP
+# ifdef NBQ
+
+#  ifdef NBQ_IMP
         ifl_imp_nbq = 1
         MPI_master_only write(6,*)
         MPI_master_only write(6,*) '--------------------------------'
         MPI_master_only write(6,*) ' NBQ: semi-implicit integration '
         MPI_master_only write(6,*) '--------------------------------'
         MPI_master_only write(6,*)
-# else
+#  else
         ifl_imp_nbq = 0
         MPI_master_only write(6,*)
         MPI_master_only write(6,*) '---------------------------'
         MPI_master_only write(6,*) ' NBQ: explicit integration '
         MPI_master_only write(6,*) '---------------------------'
         MPI_master_only write(6,*)
-# endif
+#  endif
 !
 !----------------------------------------------------------------------
 !  Initialize parameters
@@ -113,11 +121,11 @@
 !
 !  Grid update time-step
 !
-# ifdef NBQ_GRID_SLOW
+#  ifdef NBQ_GRID_SLOW
         dtgrid_nbq = dt
-# else
+#  else
         dtgrid_nbq = dtfast
-# endif
+#  endif
 !
 !----------------------------------------------------------------------
 !  Initializes vertical grid spaces
@@ -157,7 +165,6 @@
 !   Compressible density initializations
 !----------------------------------------------------------------------
 !
-# ifdef NBQ
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -165,8 +172,7 @@
             enddo
           enddo
         enddo
-# endif
-# ifdef NBQ_MASS
+#  ifdef NBQ_MASS
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -195,7 +201,9 @@
             rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,1) 
           enddo
         enddo
-# endif
+#  endif
+
+# endif /* NBQ */
 !
 !----------------------------------------------------------------------
 !  NBQ Momentum initialization

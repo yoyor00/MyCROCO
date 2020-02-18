@@ -37,6 +37,7 @@
       character*65 vinfo(4)
 #endif
 #ifdef NC4PAR
+# include "mpi_cpl.h"
       include "mpif.h"
 #endif
 
@@ -397,6 +398,55 @@
 
           
         enddo
+        
+# ifdef GLS_MIXING
+!
+! Turbulent kinetic energy.
+!
+
+          lvar=lenstr(vname(1,indxTke))
+          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstTke)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTke,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxTke))
+          ierr=nf_put_att_text (ncid, rstTke, 'long_name',
+     &                     lvar,   vname(2,indxTke)(1:lvar))
+          lvar=lenstr(vname(3,indxTke))
+          ierr=nf_put_att_text (ncid, rstTke, 'units', lvar,
+     &         vname(3,indxTke)(1:lvar))
+          lvar=lenstr(vname(4,indxTke))
+          ierr=nf_put_att_text (ncid, rstTke, 'field', lvar,
+     &         vname(4,indxTke)(1:lvar))
+
+          call nf_add_attribute(ncid, rstTke, indxTke, 5,
+     &         NF_DOUBLE,ierr)
+
+!
+! Generic length scale.
+!
+
+          lvar=lenstr(vname(1,indxGls))
+          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstGls)
+#ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstGls,nf_collective)
+#endif
+          lvar=lenstr(vname(2,indxGls))
+          ierr=nf_put_att_text (ncid, rstGls, 'long_name',
+     &                     lvar,   vname(2,indxGls)(1:lvar))
+          lvar=lenstr(vname(3,indxGls))
+          ierr=nf_put_att_text (ncid, rstGls, 'units', lvar,
+     &         vname(3,indxGls)(1:lvar))
+          lvar=lenstr(vname(4,indxGls))
+          ierr=nf_put_att_text (ncid, rstGls, 'field', lvar,
+     &         vname(4,indxGls)(1:lvar))
+
+          call nf_add_attribute(ncid, rstGls, indxGls, 5,
+     &         NF_DOUBLE,ierr)
+
+#endif
 #endif
 #ifdef SEDIMENT
 !
@@ -587,7 +637,8 @@
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        write(*,'(6x,4A,1x,A,i4)') 'DEF_RST - Created new ',
+        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+     &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
 !

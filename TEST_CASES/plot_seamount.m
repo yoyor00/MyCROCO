@@ -31,6 +31,7 @@ close all
 makepdf=0;
 tndx=6;
 N=1;
+
 nc=netcdf('seamount_his.nc','r');
 time=(nc{'scrum_time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
@@ -40,16 +41,19 @@ u=squeeze(nc{'u'}(tndx,N,:,:));
 v=squeeze(nc{'v'}(tndx,N,:,:));
 close(nc);
 spd=1000*sqrt( u2rho_2d(u).^2+v2rho_2d(v).^2);
-contourf(x,y,spd,[0:0.5:5])
+contourf(x,y,spd,[0:0.5:5],'linestyle','none')
 axis image
 axis([0 500 0 500])
 caxis([0 3])
-shading flat
+xlabel('X [km]')
+ylabel('Y [km]')
 hold on
-contour(x,y,h,'k')
+contour(x,y,h,[1000:500:4000],'k')
 colorbar
 hold off
-title(['SEAMOUNT - bottom speed [mm/s] - day = ',num2str(time)])
+set(gca,'fontsize',15)
+title(['SEAMOUNT - bottom speed [mm/s] - day = ',num2str(time,'%4.1f')], ...
+       'fontsize',14)
 if makepdf
  export_fig -transparent -pdf seamount.pdf
 end

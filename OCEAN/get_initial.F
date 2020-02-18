@@ -50,6 +50,7 @@
       integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
+      CHARACTER(len=19)          :: tool_sectodat
 #include "netcdf.inc"
 !
 ! Open initial conditions netCDF file for reading. Check that all
@@ -134,6 +135,15 @@
 
       time=time*time_scale
       tdays=time*sec2day
+
+      start_date_run = tool_sectodat(time+origin_date_in_sec)
+
+      READ(start_date_run(1:2),fmt='(i2)') start_day
+      READ(start_date_run(4:5),fmt='(i2)') start_month
+      READ(start_date_run(7:10),fmt='(i4)') start_year
+      READ(start_date_run(12:13),fmt='(i2)') start_hour
+      READ(start_date_run(15:16),fmt='(i2)') start_minute
+      READ(start_date_run(18:19),fmt='(i2)') start_second
 
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then
@@ -472,10 +482,10 @@
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxHbl)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.'
+!        MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxHbl)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.'
       endif
 !
 !  vertical viscosity coefficient
@@ -492,10 +502,10 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxAkv)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+!         MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxAkv)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
 !
 !  vertical diffusion coefficient for potential temperature.
@@ -512,10 +522,10 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxAkt)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+!          MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxAkt)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
 
 #  ifdef SALINITY
@@ -534,10 +544,10 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxAks)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+!          MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxAks)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
 #  endif
 # endif
@@ -557,11 +567,10 @@
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxHbbl)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
-
+!        MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxHbbl)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
       endif
 # endif
 
@@ -581,10 +590,10 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxTke)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+!          MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxTke)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
 !
 !  generic length scale.
@@ -601,10 +610,10 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxGls)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+!          MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxGls)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
 !
 !  vertical mixing length scale.
@@ -621,28 +630,11 @@
             goto 99                                       !--> ERROR
           endif
         else
-        MPI_master_only write(stdout,*)
-     &     'WARNING: netCDF variable ''',
-     &     vname(1,indxLsc)(1:lvar),       ''' not found in ''',
-     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
+!          MPI_master_only write(stdout,*)
+!     &     'WARNING: netCDF variable ''',
+!     &     vname(1,indxLsc)(1:lvar),       ''' not found in ''',
+!     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
-# endif
-
-# ifdef DISSIP_SHALLOW_BARO
-      lvar=lenstr(vname(1,indxDSW))
-      ierr=nf_inq_varid (ncid, vname(1,indxDSW)(1:lvar), varid)
-      if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (damping_sw(START_2D_ARRAY), ncid, varid,
-     &                                           indx, r2dvar)
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxDSW)(1:lvar)
-     &         , indx, ininame(1:lstr), nf_strerror(ierr)
-          goto 99                                        !--> ERROR
-        endif
-      else
-        MPI_master_only write(stdout,3) vname(1,indxDSW)(1:lvar)
-     &                               , ininame(1:lstr)
-      endif
 # endif
 
 !======================================================

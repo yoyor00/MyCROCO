@@ -51,7 +51,10 @@
 ! indxSST         sea surface temperature
 ! indxdQdSST      Q-correction coefficient dQdSST
 ! indxSSS         sea surface salinity
-! indxQBAR         river runoff
+! indxQBAR        river runoff
+! indxBhflx       bottom hydrothermal heat flux
+! indxBwflx       bottom hydrothermal freshwater flux
+      
 !
 ! indxAi          fraction of cell covered by ice
 ! indxUi,indxVi   U,V-components of sea ice velocity
@@ -102,6 +105,7 @@
 !  indxMHdiff                    : horizontal diffusion term (implicit)
 !  indxMrate                     : tendency term
 !  indxMBaro                     : Barotropic coupling term
+!  indxMfast                     : Fast term
 !  indxMBtcr                     : forth-order truncation error
 !  indxMswd, indxMbdr            : surface wind & bed shear stresses (m2/s2)
 !  indxMvf, indxMbrk             : vortex force & breaking body force terms
@@ -128,6 +132,7 @@
 !  indxvrtWind                   : Wind stress term
 !  indxvrtDrag                   : Bottom drag term
 !  indxvrtBaro                   : Barotropic coupling term
+!  indxvrtfast                   : Fast term
 !
 ! ** DIAGNOSTICS_EK **
 !  indxekHadv,indxekHdiff        : Horizontal advection and diffusion terms
@@ -140,6 +145,7 @@
 !  indxekWind                    : Wind stress term
 !  indxekDrag                    : Bottom drag term
 !  indxekBaro                    : Barotropic coupling term
+!  indxekfast                    : Fast term
 !
 ! ** DIAGNOSTICS_PV **
 !  indxpvpv                        : Potential vorticity
@@ -178,10 +184,6 @@
       integer indxHm
       parameter (indxHm=5)
 #endif
-#ifdef DISSIP_SHALLOW_BARO
-      integer indxDSW
-      parameter (indxDSW=5) ! same index as MOVING_BATHY => mutually exclusive
-#endif				    
 #ifdef SOLVE3D
       integer indxU, indxV, indxT
       parameter (indxU=6, indxV=7, indxT=8)
@@ -319,6 +321,10 @@
       integer indxMBaro
       parameter (indxMBaro=indxMrate+2)
 # endif
+# if defined M3FAST
+      integer indxMfast
+      parameter (indxMfast=indxMrate+4)
+# endif
 # endif
 # ifdef DIAGNOSTICS_VRT
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
@@ -339,6 +345,10 @@
 # if defined DIAGNOSTICS_BARO
       integer indxvrtBaro
       parameter (indxvrtBaro=indxvrtDrag+1)
+# endif
+# if defined M3FAST
+      integer indxvrtfast
+      parameter (indxvrtfast=indxvrtDrag+2)
 # endif
 # endif
 # ifdef DIAGNOSTICS_EK
@@ -361,6 +371,10 @@
 # if defined DIAGNOSTICS_BARO
       integer indxekBaro
       parameter (indxekBaro=indxekDrag+1)
+# endif
+# if defined M3FAST
+      integer indxekfast
+      parameter (indxekfast=indxekDrag+2)
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
       integer indxekHadv_mld,indxekHdiff_mld,indxekVadv_mld,
@@ -686,6 +700,9 @@
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
+      integer indxBhflx,indxBwflx
+      parameter (indxBhflx=indxSUSTR+93)
+      parameter (indxBwflx=indxSUSTR+94)
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
@@ -768,7 +785,8 @@
 !                    _frc           forcing
 !                    _clm           climatology
 !                    _qbar          river runoff
-!
+!                    _btf           hydrothermal flux
+!     
 ! endings refer to:  ___Time  time [in seconds]
 !                    ___Tstep time step numbers and record numbers
 !   all objects      ___Z     free-surface
@@ -800,25 +818,31 @@
 !   ntuclm  momentum variables in current climatology file.
 !   ntww    wind induced wave data in current forcing file.
 !   ntbulkn bulk formula variables in current forcing file.
-!   ntqbar   river runoff in current forcing file.
+!   ntqbar  river runoff in current forcing file.
+!   ntbtf   bottom hydrothermal flux of tracer in current forcing file.
 !
 ! vname    character array for variable names and attributes;
 !=================================================================
 !
-      integer ncidfrc, ncidbulk, ncidclm,  ntsms ,
-     &        ntsrf,  ntssh,  ntsst, ntsss, ntuclm,
-     &        ntbulk, ncidqbar, ntqbar, ntww
+      integer ncidfrc, ncidbulk, ncidclm,  ntsms
+     &     , ncidqbar, ncidbtf
+     &     , ntsrf,  ntssh,  ntsst, ntsss, ntuclm
+     &     , ntbulk, ntqbar, ntww
 #ifdef SOLVE3D
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
+     &       , ntbtf(NT)
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
+#ifdef GLS_MIXING
+      integer rstTke,rstGls
+#endif
 # ifdef SEDIMENT
       integer rstSed(NST+2)
-# endif	
+#endif
 #endif
 #ifdef BBL
       integer rstBBL(2)
@@ -841,10 +865,7 @@
       integer  ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
-#ifdef DISSIP_SHALLOW_BARO
-     &      , hisDSW
-# endif
+     &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
 # ifdef MOVING_BATHY
      &      , hisHm
 # endif
@@ -914,6 +935,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro(2)
 # endif
+# if defined M3FAST
+     &      , diaMfast(2)
+# endif
 #  ifdef MRL_WCI
      &      , diaMvf(2), diaMbrk(2), diaMStCo(2)
      &      , diaMVvf(2), diaMPrscrt(2), diaMsbk(2)
@@ -931,6 +955,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro(2)
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast(2)
+# endif
 # endif
 
 # ifdef DIAGNOSTICS_EK
@@ -942,6 +969,9 @@
      &      , diags_ekVmix2(2), diags_ekWind(2), diags_ekDrag(2)
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro(2)
+# endif
+# if defined M3FAST
+     &      , diags_ekfast(2)
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
       integer diags_ekHadv_mld(2), diags_ekHdiff_mld(2)
@@ -995,7 +1025,7 @@
       integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
-     &      , avgShflx, avgSwflx, avgShflx_rsw
+     &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
 # ifdef MOVING_BATHY
      &      , avgHm
 # endif
@@ -1079,6 +1109,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
 # endif
+# if defined M3FAST
+     &      , diaMfast_avg(2)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
        integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg 
@@ -1090,6 +1123,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast_avg(2)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
        integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg 
@@ -1100,6 +1136,9 @@
      &      , diags_ekVmix2_avg(2), diags_ekWind_avg(2), diags_ekDrag_avg(2)
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
+# endif
+# if defined M3FAST
+     &      , diags_ekfast_avg(2)
 # endif
 #  ifdef DIAGNOSTICS_EK_MLD
        integer diags_ekHadv_mld_avg(2), diags_ekHdiff_mld_avg(2)
@@ -1213,8 +1252,10 @@
 #endif
 	
       common/incscrum/
-     &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
-     &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
+     &     ncidfrc, ncidbulk,ncidclm, ncidqbar, ncidbtf
+     &     , ntsms, ntsrf, ntssh, ntsst
+     &     , ntuclm, ntsss, ntbulk, ntqbar, ntww
+     
 #if defined MPI && defined PARALLEL_FILES
 !# ifndef EW_PERIODIC
      &      , xi_rho,  xi_u
@@ -1224,12 +1265,15 @@
 !# endif
 #endif
 #ifdef SOLVE3D
-     &                        ,  nttclm, ntstf, nttsrc
+     &     ,  nttclm, ntstf, nttsrc, ntbtf
 #endif
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
+#ifdef GLS_MIXING
+     &      , rstTke,rstGls
+#endif
 # ifdef SEDIMENT
      &                         , rstSed
 # endif
@@ -1240,10 +1284,8 @@
      &      , ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
-#ifdef DISSIP_SHALLOW_BARO
-     &      , hisDSW
-# endif
+     &     , hisShflx, hisSwflx, hisShflx_rsw
+     &     , hisBhflx, hisBwflx
 # ifdef MOVING_BATHY
      &      , hisHm
 # endif
@@ -1316,6 +1358,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
+# if defined M3FAST
+     &      , diaMfast
+# endif
 # ifdef MRL_WCI
      &      , diaMvf, diaMbrk, diaMStCo
      &      , diaMVvf, diaMPrscrt, diaMsbk
@@ -1330,6 +1375,9 @@
      &      , diaMVmix_avg, diaMVmix2_avg, diaMrate_avg
 # if defined DIAGNOSTICS_BARO
      &      , diaMBaro_avg
+# endif
+# if defined M3FAST
+     &      , diaMfast_avg
 # endif
 #  ifdef MRL_WCI
      &      , diaMvf_avg, diaMbrk_avg, diaMStCo_avg
@@ -1347,6 +1395,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro
 # endif
+# if defined M3FAST
+     &      , diags_vrtfast
+# endif
 # ifdef AVERAGES
      &      , nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
@@ -1356,6 +1407,9 @@
      &      , diags_vrtVmix2_avg, diags_vrtWind_avg, diags_vrtDrag_avg
 # if defined DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg
+# endif
+# if defined M3FAST
+     &      , diags_vrtfast_avg
 # endif
 # endif
 #endif
@@ -1369,6 +1423,9 @@
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro
 # endif
+# if defined M3FAST
+     &      , diags_ekfast
+# endif
 # ifdef AVERAGES
      &      , nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
@@ -1378,6 +1435,9 @@
      &      , diags_ekVmix2_avg, diags_ekWind_avg, diags_ekDrag_avg
 # if defined DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg
+# endif
+# if defined M3FAST
+     &      , diags_ekfast_avg
 # endif
 # endif
 #ifdef DIAGNOSTICS_EK_MLD
@@ -1459,6 +1519,7 @@
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
+     &      , avgBhflx, avgBwflx
 # ifdef MOVING_BATHY
      &      , avgHm
 # endif
@@ -1569,12 +1630,19 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-# if defined XIOS
       character*80 date_str, title, start_date
-# endif
+      character*80 origin_date, start_date_run
+      integer      start_day, start_month, start_year
+     &         ,   start_hour, start_minute, start_second
+     &         ,   origin_day, origin_month, origin_year
+     &         ,   origin_hour, origin_minute, origin_second
+
+      REAL(kind=8)             :: origin_date_in_sec
+
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname
 #ifdef AVERAGES
      &                                ,   avgname
 #endif
@@ -1654,10 +1722,16 @@
       character*75  vname(20, 90)
 #endif
 
-      common /cncscrum/       date_str,   title,  start_date
+      common /cncscrum/   date_str,   title,  start_date
+     &         ,   origin_date, start_date_run 
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname, origin_date_in_sec
+     &         ,   start_day, start_month, start_year
+     &         ,   start_hour, start_minute, start_second
+     &         ,   origin_day, origin_month, origin_year
+     &         ,   origin_hour, origin_minute, origin_second
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
