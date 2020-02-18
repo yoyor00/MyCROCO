@@ -344,8 +344,6 @@
             goto 99                                         !--> ERROR
           endif
           
-# endif /* EXACT_RESTART */
-          
 # ifdef M3FAST
 !
 ! 3D rhs for M3FAST in XI-direction.
@@ -458,7 +456,9 @@
        endif
        
 # endif /* TS_MIX_ISO_FILT */
-   
+
+# endif /* EXACT_RESTART */
+       
 # ifdef SEDIMENT
 !
 ! Write out sediment bed layer thickness, porosity, volume 

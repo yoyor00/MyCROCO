@@ -459,28 +459,34 @@ C$OMP END MASTER
 # endif
 
 
-#ifdef RVTK_DEBUG_PERFRST
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       call check_tab3d(t(:,:,:,nstp,itrc),'t nstp bef prestep3d','r')
+       call check_tab3d(t(:,:,:,nnew,itrc),'t nnew bef prestep3d','r')
       enddo
+      call check_tab3d(u(:,:,:,nnew),'u nnew bef prestep3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v nnew bef prestep3d','v')  
 #endif
-
-        call pre_step3d (tile)
-        
-#ifdef RVTK_DEBUG_PERFRST
+      
+      
+      call pre_step3d (tile)
+      
+      
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t nnew aft prestep3d','r')
+        call check_tab3d(t(:,:,:,nnew,itrc),'t nnew aft prestep3d','r')
       enddo
+      call check_tab3d(u(:,:,:,nnew),'u nnew aft prestep3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v nnew aft prestep3d','v')
 #endif
-
+      
 # ifdef AGRIF
-        if (.Not.Agrif_Root()) then
-          call uv3dpremix (tile)
-        endif
+      if (.Not.Agrif_Root()) then
+        call uv3dpremix (tile)
+      endif
 # endif
       enddo
-C$OMP BARRIER
-
+C     $OMP BARRIER
+      
       do tile=my_first,my_last
 # if defined UV_VIS2 || defined UV_VIS4 
         call uv3dmix (tile)
@@ -544,20 +550,17 @@ C$OMP BARRIER
 C$OMP MASTER
 
 
-#ifdef RVTK_DEBUG
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
+       call check_tab3d(t(:,:,:,nnew,itrc),'t nnew af #2 prestep3d','r')
       enddo
+      call check_tab3d(u(:,:,:,nnew),'u nnew after #2 prestep3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v nnew after #2 prestep3d','v')   
 #endif
-
-
+      
       nrhs=3
       nnew=3-nstp
 
-#ifdef RVTK_DEBUG
-      call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
-#endif
 
 #ifdef ONLINE_ANALYSIS
       call croco_oa(1)
