@@ -119,7 +119,7 @@ C$OMP END PARALLEL
 #if defined RVTK_DEBUG && defined  BULK_FLUX
 # include "forces.h"
 #endif
-#if defined RVTK_DEBUG_PERFRST
+#if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
 
@@ -398,7 +398,7 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
       enddo
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac in step ','r')
@@ -431,13 +431,14 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 
-#if defined RVTK_DEBUG  && defined TS_MIX_ISO_FILT
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined TS_MIX_ISO_FILT
            call check_tab3d(dRdx,'dRdx in prestep','u')
            call check_tab3d(dRde,'dRde in prestep','v')
 #endif
 
 
-#if defined RVTK_DEBUG_ADVANCED
+#if  defined RVTK_DEBUG_ADVANCED  && \
+    ( defined LMD_MIXING || defined GLS_MIXING )
 C$OMP BARRIER
 C$OMP MASTER
           do itrc=1,NT
@@ -600,7 +601,7 @@ C$OMP BARRIER
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
 #endif
-#if defined RVTK_DEBUG_PERFRST
+#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
 # include "forces.h"
 #endif
        integer range
@@ -832,7 +833,7 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 #include "autotiling.h"
 #endif
-#if defined RVTK_DEBUG_PERFRST
+#if defined LMD_MIXING 
 # include "mixing.h"
 #endif
        integer range
@@ -977,7 +978,7 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 #include "autotiling.h"
 #endif
-#if defined RVTK_DEBUG_PERFRST
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
        integer range
@@ -1013,7 +1014,7 @@ C$OMP BARRIER
 
         call omega (tile)
 
-#if defined RVTK_DEBUG && defined SOLVE3D
+#if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
           do itrc=1,NT
@@ -1035,7 +1036,7 @@ C$OMP END MASTER
         call gls_mixing (tile)
 # endif
 
-#if defined RVTK_DEBUG0 && defined SOLVE3D
+#if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
           do itrc=1,NT
@@ -1046,7 +1047,7 @@ C$OMP END MASTER
 
         call step3d_t (tile)
         
-#if defined RVTK_DEBUG0 && defined SOLVE3D
+#if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
           do itrc=1,NT
@@ -1056,7 +1057,7 @@ C$OMP END MASTER
 #endif
 
 
-#if defined RVTK_DEBUG && defined SOLVE3D
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
@@ -1082,7 +1083,7 @@ C$OMP END MASTER
 C$OMP BARRIER
 
 
-#if defined RVTK_DEBUG && defined SOLVE3D
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
@@ -1098,7 +1099,7 @@ C$OMP END MASTER
         call t3dmix (tile)
 # endif
 
-#if defined RVTK_DEBUG && defined SOLVE3D
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
@@ -1167,7 +1168,7 @@ C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
 
 
-#if defined RVTK_DEBUG && defined SOLVE3D
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT

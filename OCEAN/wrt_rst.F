@@ -241,6 +241,7 @@
      &                    ierr MYID
             goto 99                                         !--> ERROR
         endif
+# endif /* LMD_SKPP  */
         
 # if defined LMD_BKPP
 !
@@ -254,15 +255,12 @@
      &                    ierr MYID
             goto 99                                         !--> ERROR
         endif
-# endif
-
-# endif
+# endif /* LMD_BKPP  */         
 
 # if defined GLS_MIXING
 !
 ! Vertical viscosity coefficient.
 !
-
         ierr=nf_fwrite(Akv(START_2D_ARRAY,0), ncidrst,
      &                             rstAkv, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -274,7 +272,6 @@
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
-
         ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
      &                             rstAkt, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -282,13 +279,11 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif
-        
+        endif    
 # ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
-
         ierr=nf_fwrite(Akt(START_2D_ARRAY,0,isalt), ncidrst,
      &                             rstAks, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -296,16 +291,11 @@
           write(stdout,1) vname(1,indxAks)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif
-        
-# endif
-        
-# if defined GLS_MIXING
-
+        endif       
+# endif /* SALINITY  */
 !
 ! Turbulent kinetic energy.
 !
-
         ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,itke), ncidrst,
      &                             rstTke, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -317,7 +307,6 @@
 !
 ! Generic length scale.
 !
-
         ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,igls), ncidrst,
      &                             rstGls, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -326,17 +315,13 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
-
-
-# endif
-# endif
-# endif
+        
+# endif  /* GLS_MIXING  */
 
 # ifdef EXACT_RESTART
 !
 ! Write out forcing for barotropic equations in XI-direction.
 !
-
         ierr=nf_fwrite(rufrc_bak(START_2D_ARRAY,3-nstp), ncidrst,
      &                             rstrufrc, record, u2dvar)
 
@@ -346,12 +331,9 @@
      &                    ierr MYID
             goto 99                                         !--> ERROR
         endif
-
-
 !
 ! Write out forcing for barotropic equations in XI-direction.
 !
-
         ierr=nf_fwrite(rvfrc_bak(START_2D_ARRAY,3-nstp), ncidrst,
      &                             rstrvfrc, record, v2dvar)
 
@@ -360,11 +342,11 @@
             write(stdout,1) vname(1,indxrvfrc)(1:lvar), record,
      &                    ierr MYID
             goto 99                                         !--> ERROR
-        endif
-        
-        
+          endif
+          
+# endif /* EXACT_RESTART */
+          
 # ifdef M3FAST
-
 !
 ! 3D rhs for M3FAST in XI-direction.
 !
@@ -464,7 +446,6 @@
         goto 99                                           !--> ERROR
       endif
 
-
        ierr=nf_fwrite(dRde(START_2D_ARRAY,1),
      &                               ncidrst, rstdRde,
      &                               record, v3dvar)
@@ -475,14 +456,9 @@
      &                  MYID
          goto 99                                           !--> ERROR
        endif
-
-# endif
-
-    
-# endif
-
-
-
+       
+# endif /* TS_MIX_ISO_FILT */
+   
 # ifdef SEDIMENT
 !
 ! Write out sediment bed layer thickness, porosity, volume 

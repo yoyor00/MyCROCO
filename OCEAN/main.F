@@ -128,7 +128,9 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
+    defined RVTK_DEBUG_PERFRST
+      
       call debug_ini
 #endif
 !
