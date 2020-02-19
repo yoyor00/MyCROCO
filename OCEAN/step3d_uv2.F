@@ -67,6 +67,9 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
 # include "sources.h"
 # if defined M3NUDGING && defined M3CLIMATOLOGY
 #  include "climat.h"

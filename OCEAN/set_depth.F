@@ -47,6 +47,9 @@ C$    integer omp_get_thread_num
 # include "ocean3d.h"
 # include "coupling.h"
 # include "scalars.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
 # ifdef MRL_WCI
 #   include "forces.h"
 # endif
@@ -253,6 +256,11 @@ C$    integer omp_get_thread_num
      &                        Hzr(START_2D_ARRAY,1))
 #   endif
 #  endif 
+
+#ifdef NBQ
+!$acc update device(z_w,z_r,Hz_bak) async(sync_rho_rufrc_z_w)
+#endif
+
       return
       end
 !
@@ -497,6 +505,9 @@ C$    integer omp_get_thread_num
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+#ifdef OPENACC
+#  include "openacc.h"
+#endif
 #  ifdef MRL_WCI
 #    include "forces.h"
 #  endif
@@ -519,6 +530,15 @@ C$    integer omp_get_thread_num
 #   define JU_RANGE JstrR,JendR
 #   define JV_RANGE Jstr,JendR
 #  endif
+
+#if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      call check_tab3d(Hz,'Hz (set_HUV2)','r')    
+C$OMP END MASTER      
+#endif
+
+!$acc wait(sync_DU_avg1_avg2)
 
       do j=JU_RANGE
         do i=IU_RANGE

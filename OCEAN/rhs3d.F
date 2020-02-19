@@ -84,6 +84,9 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
 # ifdef NBQ
 #  include "nbq.h"
 # endif
@@ -1901,6 +1904,13 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
         endif
 
       enddo      !<-- j loop
+
+!$acc update device(rufrc,rvfrc) async(sync_rho_rufrc_z_w)
+      
+#ifdef RVTK_DEBUG
+      call check_tab2d(rufrc,'rufrc','u')
+      call check_tab2d(rvfrc,'rvfrc','v')
+#endif
 
       return
       end

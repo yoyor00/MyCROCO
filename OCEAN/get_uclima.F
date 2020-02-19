@@ -269,6 +269,9 @@ C$    integer  trd, omp_get_thread_num
      &                +cff2*vbclima(i,j,it2)
           enddo
         enddo
+#  ifdef OPENAC
+!$acc update device( ubclm, vbclm )
+#  endif
 # endif
 # if defined M3CLIMATOLOGY && defined SOLVE3D
         do k=1,N

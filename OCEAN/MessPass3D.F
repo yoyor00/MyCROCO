@@ -5,23 +5,31 @@
 #if defined MPI && defined SOLVE3D
 
 # ifndef MP_3PTS
+#  ifdef OPENACC_MPI
+      subroutine MessPass3D_tile_device (Istr,Iend,Jstr,Jend, A, nmax)
+#  else
       subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
+#  endif
 # else
+#  ifdef OPENACC_MPI
+      subroutine MessPass3D_3pts_tile_device (Istr,Iend,Jstr,Jend, A, nmax)
+#  else
       subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
+#  endif
 # endif
-!
-!======================================================================
-!
-! This subroutine is designed for ROMS-MPI code. It exchanges domain
-! boundary information, including 2 (or 3) ghost-cells in each
-! direction.
-!
-! Ping Wang 9/15/99.
-! Patrick Marchesiello 2012: generic number of ghost-cells Npts
-!
-!======================================================================
-!
-!     implicit none
+! !
+! !===================================================================
+! !
+! ! This subroutine is designed for ROMS-MPI code. It exchanges domain
+! ! boundary information, including 2 (or 3) ghost-cells in each
+! ! direction.
+! !
+! ! Ping Wang 9/15/99.
+! ! Patrick Marchesiello 2012: generic number of ghost-cells Npts
+! !
+! !====================================================================
+! !
+! !     implicit none
 # include "param.h"
 # include "scalars.h"
 # include "mpi_cpl.h"
@@ -54,6 +62,16 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &    jbuf_revW(size_E),                      jbuf_revE(size_E),
      &     buf_snd1(size_Z),  ibuf_sndS(size_X),  buf_snd3(size_Z),
      &     buf_rev1(size_Z),  ibuf_revS(size_X),  buf_rev3(size_Z)
+#ifdef OPENACC_MPI
+!$acc declare create(
+!$acc&  buf_snd4,ibuf_sndN,buf_snd2
+!$acc& ,buf_rev4,ibuf_revN,buf_rev2
+!$acc& ,jbuf_sndW,jbuf_sndE
+!$acc& ,jbuf_revW,jbuf_revE
+!$acc& ,buf_snd1,ibuf_sndS,buf_snd3
+!$acc& ,buf_rev1,ibuf_revS,buf_rev3
+!$acc& )
+#endif
 # else
       real, dimension(:), allocatable ::
      &     buf_snd4,  ibuf_sndN,  buf_snd2,
@@ -102,6 +120,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 ! Prepare to receive and send: sides....
         if (mdii.eq.0) then
           if ((WEST_INTER2)) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
@@ -109,13 +131,16 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-            call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
-     &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
-            call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
-     &                         p_W, 1, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         else
           if (EAST_INTER2) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
             do k=1,nmax
               do j=jmin,jmax
                 do ipts=1,Npts
@@ -124,16 +149,19 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-            call MPI_Irecv (jbuf_revE, jsize, MPI_DOUBLE_PRECISION,
-     &                        p_E, 1, MPI_COMM_WORLD, req(2), ierr)
-            call MPI_Send  (jbuf_sndE, jsize, MPI_DOUBLE_PRECISION,
-     &                        p_E, 2, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         endif
 
         if (mdjj.eq.0) then
           if (SOUTH_INTER2) then
-            ibuf_snds = 0.
+!             ibuf_snds = 0.
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
             do k=1,nmax
               do i=imin,imax
                 do jpts=1,Npts
@@ -141,14 +169,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-            call MPI_Irecv (ibuf_revS, isize, MPI_DOUBLE_PRECISION,
-     &                         p_S, 4, MPI_COMM_WORLD, req(3), ierr)
-            call MPI_Send  (ibuf_sndS, isize, MPI_DOUBLE_PRECISION,
-     &                         p_S, 3, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         else
           if (NORTH_INTER2) then
-            ibuf_sndn = 0.
+!             ibuf_sndn = 0.
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
             do k=1,nmax
               do i=imin,imax
                 do jpts=1,Npts
@@ -157,10 +188,9 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-            call MPI_Irecv (ibuf_revN, isize, MPI_DOUBLE_PRECISION,
-     &                         p_N, 3, MPI_COMM_WORLD, req(4), ierr)
-            call MPI_Send  (ibuf_sndN, isize, MPI_DOUBLE_PRECISION,
-     &                         p_N, 4, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         endif
 !
@@ -168,21 +198,28 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 !
         if (mdii.eq.0) then
           if (CORNER_SW) then
-            do k=1,nmax
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
+           do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
                   buf_snd1(k+nmax*(ipts-1+Npts*(jpts-1)))=A(ipts,jpts,k)
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev1, ksize, MPI_DOUBLE_PRECISION, p_SW,
-     &                                6, MPI_COMM_WORLD, req(5),ierr)
-            call MPI_Send  (buf_snd1, ksize, MPI_DOUBLE_PRECISION, p_SW,
-     &                                5, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         else
           if (CORNER_NE) then
-            do k=1,nmax
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
+           do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
                   buf_snd2(k+nmax*(ipts-1+Npts*(jpts-1)))=
@@ -190,15 +227,18 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev2, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  5, MPI_COMM_WORLD, req(6),ierr)
-            call MPI_Send  (buf_snd2, ksize, MPI_DOUBLE_PRECISION, p_NE,
-     &                                  6, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         endif
 
         if (mdii.eq.1) then
           if (CORNER_SE) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
             do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
@@ -207,14 +247,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
-            call MPI_Irecv (buf_rev3, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                8, MPI_COMM_WORLD, req(7),ierr)
-            call MPI_Send  (buf_snd3, ksize, MPI_DOUBLE_PRECISION, p_SE,
-     &                                7, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
           endif
         else
           if (CORNER_NW) then
-            do k=1,nmax
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
+           do k=1,nmax
               do jpts=1,Npts
                 do ipts=1,Npts
                   buf_snd4(k+nmax*(ipts-1+Npts*(jpts-1)))=
@@ -222,19 +265,159 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
                 enddo
               enddo
             enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
+          endif
+        endif
+      enddo   !<-- iter
+      
+      
+      
+! ! 
+! ! Send/Irecv Calls
+! ! 
+                            !  Message passing split into two stages
+                            !  in order to optimize Send-Recv pairing
+                            !  in such a way that if one subdomain
+      do iter=0,1           !  sends message to, say, its WESTERN
+        mdii=mod(ii+iter,2) !  neighbor, that neighbor is preparing
+        mdjj=mod(jj+iter,2) !  to receive this message first (i.e.
+                            !  message coming from its EASTERN side),
+                            !  rather than send his WEST
+                            !  bound message, similarly to the first
+                            !  subdomain.
+
+!
+! Prepare to receive and send: sides....
+        if (mdii.eq.0) then
+          if ((WEST_INTER2)) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( jbuf_revW, jbuf_sndW )    
+#endif
+            call MPI_Irecv (jbuf_revW, jsize, MPI_DOUBLE_PRECISION,
+     &                         p_W, 2, MPI_COMM_WORLD, req(1), ierr)
+            call MPI_Send  (jbuf_sndW, jsize, MPI_DOUBLE_PRECISION,
+     &                         p_W, 1, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        else
+          if (EAST_INTER2) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( jbuf_revE, jbuf_sndE )    
+#endif
+            call MPI_Irecv (jbuf_revE, jsize, MPI_DOUBLE_PRECISION,
+     &                        p_E, 1, MPI_COMM_WORLD, req(2), ierr)
+            call MPI_Send  (jbuf_sndE, jsize, MPI_DOUBLE_PRECISION,
+     &                        p_E, 2, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        endif
+
+        if (mdjj.eq.0) then
+          if (SOUTH_INTER2) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( ibuf_revS, ibuf_sndS )    
+#endif
+            call MPI_Irecv (ibuf_revS, isize, MPI_DOUBLE_PRECISION,
+     &                         p_S, 4, MPI_COMM_WORLD, req(3), ierr)
+            call MPI_Send  (ibuf_sndS, isize, MPI_DOUBLE_PRECISION,
+     &                         p_S, 3, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        else
+          if (NORTH_INTER2) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( ibuf_revN, ibuf_sndN )    
+#endif
+            call MPI_Irecv (ibuf_revN, isize, MPI_DOUBLE_PRECISION,
+     &                         p_N, 3, MPI_COMM_WORLD, req(4), ierr)
+            call MPI_Send  (ibuf_sndN, isize, MPI_DOUBLE_PRECISION,
+     &                         p_N, 4, MPI_COMM_WORLD,         ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        endif
+!
+! ...corners:
+!
+        if (mdii.eq.0) then
+          if (CORNER_SW) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( buf_rev1, buf_snd1 )    
+#endif
+            call MPI_Irecv (buf_rev1, ksize, MPI_DOUBLE_PRECISION, p_SW,
+     &                                6, MPI_COMM_WORLD, req(5),ierr)
+            call MPI_Send  (buf_snd1, ksize, MPI_DOUBLE_PRECISION, p_SW,
+     &                                5, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        else
+          if (CORNER_NE) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( buf_rev2, buf_snd2 )    
+#endif
+            call MPI_Irecv (buf_rev2, ksize, MPI_DOUBLE_PRECISION, p_NE,
+     &                                  5, MPI_COMM_WORLD, req(6),ierr)
+            call MPI_Send  (buf_snd2, ksize, MPI_DOUBLE_PRECISION, p_NE,
+     &                                  6, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        endif
+
+        if (mdii.eq.1) then
+          if (CORNER_SE) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( buf_rev3, buf_snd3 )    
+#endif
+            call MPI_Irecv (buf_rev3, ksize, MPI_DOUBLE_PRECISION, p_SE,
+     &                                8, MPI_COMM_WORLD, req(7),ierr)
+            call MPI_Send  (buf_snd3, ksize, MPI_DOUBLE_PRECISION, p_SE,
+     &                                7, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
+          endif
+        else
+          if (CORNER_NW) then
+#ifdef OPENACC_MPI
+!$acc host_data use_device( buf_rev4, buf_snd4 )    
+#endif
             call MPI_Irecv (buf_rev4, ksize, MPI_DOUBLE_PRECISION, p_NW,
      &                                7, MPI_COMM_WORLD, req(8),ierr)
             call MPI_Send  (buf_snd4, ksize, MPI_DOUBLE_PRECISION, p_NW,
      &                                8, MPI_COMM_WORLD,        ierr)
+#ifdef OPENACC_MPI
+!$acc end host_data    
+#endif
           endif
         endif
       enddo   !<-- iter
+    
+    
+      
+      
 
-!
-! Wait for completion of receive and fill ghost points: sides...
-!
+! !
+! ! Wait for completion of receive and fill ghost points: sides...
+! !
       if (WEST_INTER2) then
         call MPI_Wait (req(1),status(1,1),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -242,19 +425,33 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (WEST_INTER .and. .not. WEST_INTER2) then
-        do k=1,nmax
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
+       do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
               A(ipts-Npts,j,k)=A(ipts,j,k)
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
 
       if (EAST_INTER2) then
         call MPI_Wait (req(2),status(1,2),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -263,8 +460,15 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (EAST_INTER .and. .not. EAST_INTER2) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do j=jmin,jmax
             do ipts=1,Npts
@@ -272,11 +476,18 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
 
 
       if (SOUTH_INTER2) then
         call MPI_Wait (req(3),status(1,3),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -284,8 +495,15 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (SOUTH_INTER .and. .not. SOUTH_INTER2) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
        do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -293,10 +511,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
 
       if (NORTH_INTER2) then
         call MPI_Wait (req(4),status(1,4),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -305,8 +530,15 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (NORTH_INTER .and. .not. NORTH_INTER2) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do i=imin,imax
             do jpts=1,Npts
@@ -314,12 +546,19 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
 !
 ! ...corners:
 !
       if (CORNER_SW) then
         call MPI_Wait (req(5),status(1,5),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -328,9 +567,16 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (.not. CORNER_SW  .and.
      &   SOUTH_INTER .and.  WEST_INTER ) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -339,10 +585,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
        endif 
 
-      if (CORNER_NE) then
+       if (CORNER_NE) then
         call MPI_Wait (req(6),status(1,6),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -351,9 +604,16 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (.not. CORNER_NE  .and.
      &   NORTH_INTER .and.  EAST_INTER ) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -362,11 +622,18 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
        endif 
     
      
-      if (CORNER_SE) then
+       if (CORNER_SE) then
         call MPI_Wait (req(7),status(1,7),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -375,10 +642,17 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (.not. CORNER_SE .and.
      &   SOUTH_INTER .and.  EAST_INTER ) then
-       do k=1,nmax
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
+      do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
                A(Lmmpi+ipts,jpts-Npts,k)=
@@ -386,11 +660,18 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
        endif 
  
 
-      if (CORNER_NW) then
+       if (CORNER_NW) then
         call MPI_Wait (req(8),status(1,8),ierr)
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
         do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -399,9 +680,16 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
       endif
       if (.not. CORNER_NW  .and.
      &   NORTH_INTER .and.  WEST_INTER ) then
+#ifdef OPENACC_MPI
+!$acc kernels default(present)         
+!$acc loop independent collapse(3)
+#endif
        do k=1,nmax
           do jpts=1,Npts
             do ipts=1,Npts
@@ -409,6 +697,9 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
             enddo
           enddo
         enddo
+#ifdef OPENACC_MPI
+!$acc end kernels          
+#endif
        endif 
 
 # if defined AGRIF
@@ -427,6 +718,14 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 #  define MP_3PTS
 #  include "MessPass3D.F"
 #  undef MP_3PTS
+# endif
+
+# ifndef MP_3PTS
+# ifndef OPENACC_MPI
+#  define OPENACC_MPI
+#  include "MessPass3D.F"
+#  undef OPENACC_MPI
+# endif
 # endif
 
 #else

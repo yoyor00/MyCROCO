@@ -113,6 +113,10 @@ C$OMP END PARALLEL
 #endif
 #include "ocean2d.h"
 #include "ocean3d.h"
+#ifdef OPENACC
+#include "coupling.h"
+#include "openacc.h"
+#endif
 #if defined RVTK_DEBUG && defined  BULK_FLUX
 # include "forces.h"
 #endif
@@ -567,6 +571,7 @@ C$OMP BARRIER
        common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num 
+      real :: timet1, timet2, timet3
 
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -690,7 +695,8 @@ C$OMP BARRIER
                   ! Nevertheless, it makes sense,
                   ! since mpc will reverse one of
                   ! these loops to make zig-zag
-                  ! tile-processing sequence.               
+                  ! tile-processing sequence.
+        call system_clock(cput1, count_rate, count_max) 
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
 #ifdef M3FAST
@@ -724,7 +730,11 @@ C$OMP BARRIER
 #endif            
           enddo
         endif
-
+        call system_clock(cput2, count_rate, count_max)
+        if (cput2 < cput1) then
+            cput2 = cput2+(count_max-cput1)
+        endif
+        cput3=cput3+(cput2*1.d00-cput1*1.d0)/count_rate
 #if defined AGRIF && defined AGRIF_2WAY
         if (.not.agrif_root()) then
             call update2d()

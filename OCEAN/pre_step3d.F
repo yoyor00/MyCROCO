@@ -96,6 +96,9 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
 # ifdef PSOURCE
 #  include "sources.h"
 # endif
@@ -466,6 +469,11 @@
 !
 !======================================================================
 !
+
+#ifdef NBQ
+!$acc wait(sync_ruv_nbq_avg1)
+#endif
+
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
       u(:,:,:,nstp) = u(:,:,:,nnew)
       v(:,:,:,nstp) = v(:,:,:,nnew)
@@ -798,6 +806,11 @@
 
       enddo  
 !==  
+
+#ifdef NBQ
+!$acc update device(ru_int_nbq,rv_int_nbq,rw_int_nbq)
+!$acc& async(sync_ruv_int_nbq)
+#endif
 
 !==
 # endif /* NBQ */   

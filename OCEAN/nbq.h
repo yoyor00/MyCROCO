@@ -201,11 +201,13 @@
       common /bry_unbq_west/ qdmu_nbq_west
       real qdmv_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_vnbq_west/ qdmv_nbq_west
+!$acc declare create( qdmu_nbq_west, qdmv_nbq_west )      
 #   ifdef NBQ
       real qdmw_nbq_west(GLOBAL_1D_ARRAYETA,0:N,2)
       common /bry_wnbq_west/ qdmw_nbq_west
       real  rho_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_rnbq_west/ rho_nbq_west
+!$acc declare create( qdmw_nbq_west, rho_nbq_west )
 #   endif
 #  endif
 #  ifdef OBC_COM_EAST
@@ -213,11 +215,13 @@
       common /bry_unbq_east/ qdmu_nbq_east
       real qdmv_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_vnbq_east/ qdmv_nbq_east
+!$acc declare create( qdmu_nbq_east, qdmv_nbq_east )
 #   ifdef NBQ
       real qdmw_nbq_east(GLOBAL_1D_ARRAYETA,0:N,2)
       common /bry_wnbq_east/ qdmw_nbq_east
       real  rho_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_rnbq_east/ rho_nbq_east
+!$acc declare create( qdmw_nbq_east, rho_nbq_east )      
 #   endif
 #  endif
 #  ifdef OBC_COM_SOUTH
@@ -225,11 +229,13 @@
       common /bry_unbq_south/ qdmu_nbq_south
       real qdmv_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_vnbq_south/ qdmv_nbq_south
+!$acc declare create( qdmu_nbq_south, qdmv_nbq_south )
 #   ifdef NBQ
       real qdmw_nbq_south(GLOBAL_1D_ARRAYXI,0:N,2)
       common /bry_wnbq_south/ qdmw_nbq_south
       real  rho_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_rnbq_south/ rho_nbq_south
+!$acc declare create( qdmw_nbq_south, rho_nbq_south )
 #   endif
 #  endif
 #  ifdef OBC_COM_NORTH
@@ -237,11 +243,13 @@
       common /bry_unbq_north/ qdmu_nbq_north
       real qdmv_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_vnbq_north/ qdmv_nbq_north
+!$acc declare create( qdmu_nbq_north, qdmv_nbq_north )
 #   ifdef NBQ
       real qdmw_nbq_north(GLOBAL_1D_ARRAYXI,0:N,2)
       common /bry_wnbq_north/ qdmw_nbq_north
       real  rho_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_rnbq_north/ rho_nbq_north
+!$acc declare create( qdmw_nbq_north, rho_nbq_north )
 #   endif
 #  endif
 # endif     
@@ -250,6 +258,7 @@
 # ifdef NBQ_NUDGING
       real NBQnudgcof(GLOBAL_2D_ARRAY)
       common /nbq_nudg/ NBQnudgcof
+!$acc declare create( NBQnudgcof )      
 # endif
 
 !**********************************************************************

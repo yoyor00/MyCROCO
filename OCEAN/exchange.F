@@ -98,6 +98,110 @@
 #  undef exchange_3d_tile
 #  undef exchange_3d_3pts_tile
 #  undef KSTART
+
+# endif
+
+# ifdef OPENACC
+# define OPENACC_MPI
+
+# define exchange_2d_tile exchange_r2d_tile_device
+# define exchange_2d_3pts_tile exchange_r2d_3pts_tile_device
+# define JSTART JstrR
+# define ISTART IstrR
+# include "exchange_2d_tile.h"
+# undef ISTART 
+# undef JSTART 
+# undef exchange_2d_tile
+# undef exchange_2d_3pts_tile
+
+# define exchange_2d_tile exchange_u2d_tile_device
+# define exchange_2d_3pts_tile exchange_u2d_3pts_tile_device
+# define JSTART JstrR
+# define ISTART Istr
+# include "exchange_2d_tile.h"
+# undef ISTART 
+# undef JSTART 
+# undef exchange_2d_tile
+# undef exchange_2d_3pts_tile
+
+# define exchange_2d_tile exchange_v2d_tile_device
+# define exchange_2d_3pts_tile exchange_v2d_3pts_tile_device
+# define JSTART Jstr
+# define ISTART IstrR
+# include "exchange_2d_tile.h"
+# undef ISTART 
+# undef JSTART 
+# undef exchange_2d_tile
+# undef exchange_2d_3pts_tile
+
+# define exchange_2d_tile exchange_p2d_tile_device
+# define exchange_2d_3pts_tile exchange_p2d_3pts_tile_device
+# define JSTART Jstr
+# define ISTART Istr
+# include "exchange_2d_tile.h"
+# undef ISTART 
+# undef JSTART 
+# undef exchange_2d_tile
+# undef exchange_2d_3pts_tile
+
+# ifdef SOLVE3D
+#  define KSTART 1
+#  define exchange_3d_tile exchange_r3d_tile_device
+#  define exchange_3d_3pts_tile exchange_r3d_3pts_tile_device
+#  define JSTART JstrR
+#  define ISTART IstrR
+#  include "exchange_3d_tile.h"
+#  undef ISTART
+#  undef JSTART
+#  undef exchange_3d_tile
+#  undef exchange_3d_3pts_tile
+
+#  define exchange_3d_tile exchange_u3d_tile_device
+#  define exchange_3d_3pts_tile exchange_u3d_3pts_tile_device
+#  define JSTART JstrR
+#  define ISTART Istr
+#  include "exchange_3d_tile.h"
+#  undef ISTART
+#  undef JSTART
+#  undef exchange_3d_tile
+#  undef exchange_3d_3pts_tile
+
+#  define exchange_3d_tile exchange_v3d_tile_device
+#  define exchange_3d_3pts_tile exchange_v3d_3pts_tile_device
+#  define JSTART Jstr
+#  define ISTART IstrR
+#  include "exchange_3d_tile.h"
+#  undef ISTART
+#  undef JSTART
+#  undef exchange_3d_tile
+#  undef exchange_3d_3pts_tile
+
+#  define exchange_3d_tile exchange_p3d_tile_device
+#  define exchange_3d_3pts_tile exchange_p3d_3pts_tile_device
+#  define JSTART Jstr
+#  define ISTART Istr
+#  include "exchange_3d_tile.h"
+#  undef ISTART
+#  undef JSTART
+#  undef exchange_3d_tile
+#  undef exchange_3d_3pts_tile
+#  undef KSTART
+
+#  define KSTART 0
+#  define exchange_3d_tile exchange_w3d_tile_device
+#  define exchange_3d_3pts_tile exchange_w3d_3pts_tile_device
+#  define JSTART JstrR
+#  define ISTART IstrR
+#  include "exchange_3d_tile.h"
+#  undef ISTART
+#  undef JSTART
+#  undef exchange_3d_tile
+#  undef exchange_3d_3pts_tile
+#  undef KSTART
+
+#  undef OPENACC_MPI
+#  endif
+
 # endif
 #else
       subroutine exchange_empty

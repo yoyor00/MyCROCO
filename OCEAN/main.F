@@ -21,6 +21,9 @@
 !                                                                     
 !======================================================================
 !
+#ifdef OPENACC
+         USE openacc
+#endif
 #if defined OA_COUPLING || defined OW_COUPLING
          USE mod_prism
 #endif
@@ -40,7 +43,9 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
+#include "ocean3d.h"
 #include "mpi_cpl.h"
+#include "coupling.h"
 #ifdef FLOATS
 # include "floats.h"
 # include "ncscrum_floats.h"
@@ -49,6 +54,9 @@
 # include "sta.h"
 # include "nc_sta.h"
 #endif
+# include "openacc.h"
+# include "boundary.h"
+!====== "boundary.h" is needed by openacc get_bry.F 
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours     
 #endif 
@@ -118,6 +126,12 @@
       call init_auto_tiling
 #endif
 !
+!  Initialize debug procedure
+!
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+       call debug_ini
+#endif
+!
 !  Setup MPI domain decomposition
 !
 #ifdef MPI
@@ -126,12 +140,28 @@
       if (ierr.ne.0) goto 100        !--> ERROR
 #endif
 !
-!  Initialize debug procedure
-!
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
-      call debug_ini
+#ifdef _OPENACC
+        ngpus=0
+        devicenum=-1
+        device_type = 0
+        device_type = acc_get_device_type()
+
+        print *,"device_type=",device_type
+        print *,"acc_device_nvidia=",acc_device_nvidia
+
+        IF ( acc_device_nvidia == device_type ) THEN
+            ngpus=acc_get_num_devices( acc_device_nvidia )
+            !choose device to use by this rank
+            devicenum = MOD( mynode, ngpus )
+            !devicenum = 1
+            call acc_set_device_num( devicenum, acc_device_nvidia )
+        END IF
+        print *,mynode,":ngpus=",ngpus," devicenum=",devicenum
+        write(200+mynode,*) "ngpus=",ngpus," devicenum=",devicenum
+        !stop 'toto'
+        !Call acc_init after acc_set_device_num to avoid multiple contexts on device 0 in multi GPU systems
+        call acc_init( device_type )
 #endif
-!
 #define CR  !
 !
 !----------------------------------------------------------------------
@@ -246,10 +276,14 @@ CR      write(*,*) ' -8' MYID
 !  which may be needed by ana_initial 
 !  (here it is assumed that free surface zeta=0).
 !
+
+!$acc data copyin(z_w,z_r,HZR,Hz_bak)
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
+!$acc end data
+
 CR      write(*,*) ' -7' MYID
 !
 !  Make grid diagnostics
@@ -364,10 +398,12 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  in both 2D and 3D cases
 !
 #if defined  SOLVE3D || defined WET_DRY
+!$acc data copyin(z_w,z_r,HZR,Hz_bak)
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
+!$acc end data
 CR      write(*,*)  ' -5' MYID
 #endif
 !
@@ -384,11 +420,19 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
       enddo
 CR      write(*,*)  ' -4' MYID
+
+!$acc data copy(rho,
+#ifdef VAR_RHO_2D
+!$acc& rhoA,rhoS
+#endif
+!$acc& )
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call omega (tile)
         call rho_eos (tile)
       enddo
+!$acc end data
+
 CR      write(*,*)  ' -3' MYID
 #endif
 !
@@ -744,6 +788,41 @@ CR      write(*,*) '  0' MYID
       call computenbmaxtimes
 #endif
 
+!$acc data copyin(zeta,A2d,h,on_u,om_v,ubar,vbar,A3d
+!$acc& ,Hz,Hz_bak
+!$acc& ,pm_u,pn_v,pn_u,pm_v,om_u,on_v,fomn,pm,pn
+!$acc& ,om_r,on_r
+!$acc& ,rufrc,rvfrc
+!$acc& ,DU_avg1,DV_avg1,DU_avg2,DV_avg2,Zt_avg1,z_w,z_r
+!$acc& ,rufrc_bak,rvfrc_bak
+!$acc& ,u,v
+#ifdef MASKING
+!$acc& ,rmask,pmask,umask,vmask,pmask2
+#endif
+#if (defined CURVGRID && defined UV_ADV)
+!$acc& ,dmde,dndx
+#endif 
+#ifdef NBQ
+!$acc& ,rho_grd,qdmu_nbq,qdmv_nbq,qdmw_nbq
+!$acc& ,usurf_nbq,vsurf_nbq,wsurf_nbq,rho,rho_bak
+!$acc& ,ru_int_nbq,rv_int_nbq
+!$acc& ,ru_nbq_avg2,rv_nbq_avg2,rw_nbq_avg2,rw_nbq
+!$acc& ,zw_nbq,Hz_correct
+!$acc& ,DU_nbq,DV_nbq,ru_nbq,rv_nbq,dthetadiv_nbqdz
+!$acc& ,thetadiv_nbq,thetadiv2_nbq,thetadiv3_nbq,rho_nbq
+!$acc& ,soundspeed2_nbq,dZdxq_w,dZdyq_w,rw_int_nbq,Hzw_half_nbq
+! #  if defined NBQ_NUDGING && defined NBQCLIMATOLOGY
+! !$acc& ,NBQnudgcof
+! #  endif
+#endif
+#ifdef VAR_RHO_2D
+!$acc& ,rhoA,rhoS
+#endif
+#ifdef OPENACC
+#include "openacc_boundary.h"
+#endif
+!$acc& )
+      cput3 = 0.d00
       do iicroot=ntstart,ntimes+1
 #ifdef USE_CALENDAR 
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
@@ -769,10 +848,12 @@ CR      write(*,*) '  0' MYID
 #ifdef SOLVE3D
         enddo
 #endif
+#if !defined OPENACC
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
+#endif
       enddo                                !-->  end of time step
-
-  99  continue                             ! SHUTDOWN:
+!$acc end data 
+  99  continue   ! SHUTDOWN:
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()
@@ -815,6 +896,8 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
        call MPI_Finalize (ierr)
 # endif     
 #endif
+      print *,"step3d_fast time =",cput3
+      print *,"count_rate=",count_rate
 
       stop
       end

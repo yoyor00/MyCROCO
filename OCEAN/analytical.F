@@ -2521,6 +2521,9 @@ C$    integer  trd, omp_get_thread_num
             rnbqbry_west(j,k)=0.
           enddo
 #   endif
+!$acc update device( unbqbry_west, vnbqbry_west
+!$acc&          ,wnbqbry_west,rnbqbry_west 
+!$acc&          )          
         enddo
       endif
 # endif /* OBC_WEST */
@@ -2539,6 +2542,9 @@ C$    integer  trd, omp_get_thread_num
 #   endif
           enddo
         enddo
+!$acc update device( unbqbry_east, vnbqbry_east
+!$acc&          ,wnbqbry_east,rnbqbry_east
+!$acc&  )        
       endif
 # endif /* OBC_EAST */
 !
@@ -2556,6 +2562,9 @@ C$    integer  trd, omp_get_thread_num
 #   endif
           enddo
         enddo
+!$acc update device( vnbqbry_south, unbqbry_south
+!$acc&          ,wnbqbry_south,rnbqbry_south
+!$acc&          )        
       endif
 # endif /* OBC_SOUTH */
 !
@@ -2573,6 +2582,9 @@ C$    integer  trd, omp_get_thread_num
 #   endif
           enddo
         enddo
+!$acc update device( vnbqbry_north, unbqbry_north
+!$acc&          ,wnbqbry_north,rnbqbry_north
+!$acc&          )        
       endif
 # endif /* OBC_NORTH */
 !

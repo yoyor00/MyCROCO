@@ -33,6 +33,10 @@
 ! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
+      integer cput1, cput2, count_rate, count_max
+      real cput3
+      common /cputime/ cput1, cput2, count_rate, count_max, cput3
+
       real dt, dtfast, time, time2, time_start, tdays
 #ifdef USE_CALENDAR
       real time_mars, time_end

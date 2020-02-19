@@ -209,6 +209,9 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif
+# ifdef OPEANCC
+!$acc update device( ssh )      
+# endif
 
       return
       end

@@ -36,7 +36,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC=gfortran
+FC=pgfortran
 
 #
 # set MPI directories if needed
@@ -139,6 +139,11 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
+        elif [[ $FC == pgfortran ]] ; then
+                CPP1="cpp  -traditional -DLinux -D_OPENACC"
+                CFT1=pgfortran
+                FFLAGS1=" -g -fast -pg -r8 -i4 -Mprof=ccff -traceback\
+                -Mbackslash -Kieee  -Mpreprocess -mcmodel=medium "
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp  -traditional -DLinux"
 		CFT1=gfortran

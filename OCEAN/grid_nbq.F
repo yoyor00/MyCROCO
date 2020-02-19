@@ -91,6 +91,8 @@
 !          at m
 !----------------------------------------------------------------------
 !	
+
+!$acc kernels default(present)
       do k=1,N-1
         do j=jmin,jmax
           do i=imin,imax
@@ -174,6 +176,7 @@
           enddo
         enddo
       enddo          
+!$acc end kernels        
         
       return
       end subroutine grid_nbq_tile

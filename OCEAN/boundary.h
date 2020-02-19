@@ -124,6 +124,8 @@
       real zetabry_west(GLOBAL_1D_ARRAYETA),
      &    zetabry_west_dt(GLOBAL_1D_ARRAYETA,2)
       common /bry_zeta_west/ zetabry_west, zetabry_west_dt
+!!$acc declare create( zetabry_west )
+
 # endif
 # ifdef M2_FRC_BRY
       real ubarbry_west(GLOBAL_1D_ARRAYETA),

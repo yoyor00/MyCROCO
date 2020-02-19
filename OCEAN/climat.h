@@ -23,6 +23,7 @@
 #if defined ZCLIMATOLOGY || defined AGRIF
       real ssh(GLOBAL_2D_ARRAY)
       common /climat_ssh/ssh
+!$acc declare create(  ssh )
 #endif
 #ifdef ZCLIMATOLOGY
 # ifdef ZNUDGING
@@ -101,6 +102,7 @@
       real ubclm(GLOBAL_2D_ARRAY)
       real vbclm(GLOBAL_2D_ARRAY)
       common /climat_ubclm/ubclm /climat_vbclm/vbclm 
+!$acc declare create(  ubclm, vbclm)     
 #endif
 #if defined SOLVE3D && (defined M3CLIMATOLOGY || \
                         (defined AGRIF && !defined M3_FRC_BRY))

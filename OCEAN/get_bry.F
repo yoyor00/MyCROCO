@@ -471,6 +471,8 @@
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
           enddo
 #   endif
+          !zetabry_west(:) = -0.23
+!$acc update device( zetabry_west )          
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -479,6 +481,7 @@
             vbarbry_west(j)=cff1*vbarbry_west_dt(j,it1)
      &                     +cff2*vbarbry_west_dt(j,it2)
           enddo
+!$acc update device( ubarbry_west, vbarbry_west )          
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -490,6 +493,7 @@
      &                      +cff2*vbry_west_dt(j,k,it2)
             enddo
           enddo
+!$acc update device( ubry_west, vbry_west )          
 #   endif
 #   ifdef T_FRC_BRY
           do itrc=1,isalt
@@ -500,6 +504,7 @@
               enddo
             enddo
           enddo
+!$acc update device( tbry_west )          
 #   endif
 #  endif
         endif
@@ -518,6 +523,8 @@
      &                     -(patm2d(IendR,j)-paref)/(g*rho0)
           enddo
 #   endif
+          !zetabry_east(:) = -0.23
+!$acc update device( zetabry_east )          
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -526,6 +533,7 @@
             vbarbry_east(j)=cff1*vbarbry_east_dt(j,it1)
      &                     +cff2*vbarbry_east_dt(j,it2)
           enddo
+!$acc update device( ubarbry_east, vbarbry_east )          
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -537,6 +545,7 @@
      &                      +cff2*vbry_east_dt(j,k,it2)
             enddo
           enddo
+!$acc update device( ubry_east, vbry_east )          
 #   endif
 #   ifdef T_FRC_BRY
           do itrc=1,isalt
@@ -547,6 +556,7 @@
               enddo
             enddo
           enddo
+!$acc update device( tbry_east )
 #   endif
 #  endif
         endif
@@ -565,6 +575,8 @@
      &                      -(patm2d(i,JstrR)-paref)/(g*rho0)
           enddo
 #   endif
+          !zetabry_south(:) = -0.23
+!$acc update device( zetabry_south )
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR
@@ -573,6 +585,7 @@
             vbarbry_south(i)=cff1*vbarbry_south_dt(i,it1)
      &                      +cff2*vbarbry_south_dt(i,it2)
           enddo
+!$acc update device( ubarbry_south, vbarbry_south )          
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -584,6 +597,7 @@
      &                       +cff2*vbry_south_dt(i,k,it2)
             enddo
           enddo
+!$acc update device( ubry_south, vbry_south )          
 #   endif
 #   ifdef T_FRC_BRY
           do itrc=1,isalt
@@ -594,6 +608,7 @@
               enddo
             enddo
           enddo
+!$acc update device( tbry_south )          
 #   endif
 #  endif
         endif
@@ -612,6 +627,8 @@
      &                      -(patm2d(i,JendR)-paref)/(g*rho0)
           enddo
 #   endif
+          !zetabry_north(:) = -0.23
+!$acc update device( zetabry_north )
 #  endif
 #  ifdef M2_FRC_BRY
           do i=IstrR,IendR
@@ -620,6 +637,7 @@
             vbarbry_north(i)=cff1*vbarbry_north_dt(i,it1)
      &                      +cff2*vbarbry_north_dt(i,it2)
           enddo
+!$acc update device( ubarbry_north, vbarbry_north )          
 #  endif
 #  ifdef SOLVE3D
 #   ifdef M3_FRC_BRY
@@ -631,6 +649,7 @@
      &                       +cff2*vbry_north_dt(i,k,it2)
             enddo
           enddo
+!$acc update device( ubry_north, vbry_north)          
 #   endif
 #   ifdef T_FRC_BRY
           do itrc=1,isalt
@@ -641,6 +660,7 @@
               enddo
             enddo
           enddo
+!$acc update device( tbry_north )
 #   endif
 #  endif
         endif

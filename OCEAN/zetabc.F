@@ -83,6 +83,9 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,15+9*NWEIGHT))
 #endif
 ! 
+
+!$acc kernels default(present)
+
 #ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -417,7 +420,7 @@ C$    trd=omp_get_thread_num()
 #  endif
 
 #endif /* WET_DRY */
-
+!$acc end kernels
 
       return
       end

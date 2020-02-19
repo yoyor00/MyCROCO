@@ -26,6 +26,10 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
+#ifdef OPENACC_MPI
+!$acc kernels
+#endif
+!
 #ifdef EW_PERIODIC
 # ifdef NS_PERIODIC
 #  define J_RANGE Jstr,Jend
@@ -120,11 +124,22 @@
       endif
 # endif
 #endif
+#ifdef OPENACC_MPI
+!$acc end kernels
+#endif
 #ifdef MPI
 # ifndef MP_3PTS
+#  ifdef OPENACC_MPI
+      call MessPass2D_tile_device (Istr,Iend,Jstr,Jend,  A)
+#  else
       call MessPass2D_tile (Istr,Iend,Jstr,Jend,  A)
+#  endif      
 # else
+#  ifdef OPENACC_MPI
+      call MessPass2D_3pts_tile_device (Istr,Iend,Jstr,Jend,  A)
+#  else
       call MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend,  A)
+#  endif      
 # endif
 #endif
       return

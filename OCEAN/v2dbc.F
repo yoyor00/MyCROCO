@@ -107,6 +107,15 @@ C$    trd=omp_get_thread_num()
       Some coding is needed to have AGRIF without SOLVE3D.....
 #  endif
 #endif
+      if (SOUTHERN_EDGE) then
+!!$acc update device( zetabry_south )
+              !
+      endif
+      if (NORTHERN_EDGE) then
+!!$acc update device(  zetabry_north )
+      endif
+!
+!$acc kernels default(present)
 !
 #if defined M2_FRC_BRY || defined M2CLIMATOLOGY
       tau_in=dtfast*tauM_in
@@ -984,7 +993,7 @@ C$    trd=omp_get_thread_num()
 !
 #endif /* NBQ */
 
-
+!$acc end kernels
       return
       end
 #ifndef CHILD

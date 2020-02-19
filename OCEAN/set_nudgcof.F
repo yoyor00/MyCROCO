@@ -145,6 +145,16 @@
 # endif
         enddo
       enddo
+      
+# ifdef NBQ_NUDGING
+#  ifdef OPENACC
+!$acc update device( NBQnudgcof )
+!           write( 333,*) "NBQnudgcof 408,6,1 :",NBQnudgcof(408,6)
+! #  else
+!           write( 334,*) "NBQnudgcof 408,6,1 :",NBQnudgcof(408,6)
+#  endif
+# endif
+     
 !
 !  Apply nudging to other tracers and vertical levels
 !

@@ -22,6 +22,7 @@
 # endif
       real rufrc(GLOBAL_2D_ARRAY)
       real rvfrc(GLOBAL_2D_ARRAY)
+!$acc declare create( rufrc, rvfrc )      
       real rufrc_bak(GLOBAL_2D_ARRAY,2)
       real rvfrc_bak(GLOBAL_2D_ARRAY,2)
       common /coup_rufrc/rufrc

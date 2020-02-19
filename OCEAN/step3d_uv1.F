@@ -33,6 +33,9 @@
 # include "grid.h"
 # include "ocean3d.h"
 # include "scalars.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
 # ifdef MRL_WCI
 #   include "forces.h"
 # endif
@@ -51,11 +54,18 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-# ifdef MASKING
-#  define SWITCH *
-# else
-#  define SWITCH !
-# endif
+
+!$acc wait(sync_ruv_nbq_avg2)
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      call check_tab3d(ru_nbq_avg2,'ru_nbq_avg2','u')
+      call check_tab3d(rv_nbq_avg2,'rv_nbq_avg2','v')    
+      call check_tab3d(u(:,:,:,nnew),'u step3d_uv1_enter','u')
+      call check_tab3d(v(:,:,:,nnew),'v step3d_uv1_enter','v') 
+C$OMP END MASTER      
+#endif
 
       cff=0.25*dt
       do j=Jstr,Jend
@@ -150,6 +160,15 @@
           enddo
         endif
       enddo 
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      call check_tab3d(u(:,:,:,nnew),'u step3d_uv1','u')
+      call check_tab3d(v(:,:,:,nnew),'v step3d_uv1','v') 
+C$OMP END MASTER      
+#endif
+
 #else
       subroutine step3d_uv1_empty
 #endif

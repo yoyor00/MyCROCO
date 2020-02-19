@@ -27,6 +27,8 @@
       common /grid_Hz_bak/Hz_bak /grid_zw/z_w /grid_Huon/Huon
       common /grid_Hvom/Hvom
 
+!$acc declare create(z_r, z_w, Hz_bak)      
+
       real We(GLOBAL_2D_ARRAY,0:N)
 # ifdef VADV_ADAPT_IMP
       real Wi(GLOBAL_2D_ARRAY,0:N)

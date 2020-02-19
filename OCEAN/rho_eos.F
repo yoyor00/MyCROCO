@@ -112,6 +112,9 @@
 !
       implicit none
 #  include "param.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
       integer Istr,Iend,Jstr,Jend, i,j,k 
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), K0,
      &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N), K1,K2,
@@ -310,6 +313,9 @@
 #  include "ocean3d.h"
 #  include "coupling.h"
 #  include "scalars.h"
+#ifdef OPENACC
+# include "openacc.h"
+#endif
 #  include "mixing.h"
 !
 #  include "compute_extended_bounds.h"
@@ -466,6 +472,14 @@
 # endif /* VAR_RHO_2D */
 
       enddo    ! <-- j
+
+#ifdef NBQ
+!$acc update device(rho
+#ifdef VAR_RHO_2D
+!$acc& ,rhoA,rhoS
+#endif
+!$acc& ) async(sync_rho_rufrc_z_w)
+#endif
       return
       end
 

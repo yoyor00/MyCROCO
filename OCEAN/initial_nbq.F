@@ -155,11 +155,18 @@
             enddo
           enddo
         enddo
+!$acc data copyin(A3d,pn_v,Hz,pm_u,Hzw_half_nbq,z_r,z_w
+#ifdef MASKING
+!$acc&  ,rmask,pmask,umask,vmask,pmask2
+#endif
+!$acc&  )
         call grid_nbq_tile(Istr,Iend,Jstr,Jend
      &                    ,Hzw_half_nbq_inv,   Hzr_half_nbq_inv
      &                    ,Hzw_half_nbq_inv_u, Hzw_half_nbq_inv_v
      &                    ,Hzu_half_qdmu,      Hzv_half_qdmv
      &                    )
+     
+!$acc end data
 !
 !----------------------------------------------------------------------
 !   Compressible density initializations
