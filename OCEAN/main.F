@@ -274,7 +274,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
                                     ! in the case of restart run.
 C$OMP BARRIER
 # ifdef SOLVE3D
-        do tile=my_tile_range
+        do tile=0,NSUB_X*NSUB_E-1
           call set_depth (tile)     !<-- needed to initialize Hz_bak
         enddo
 C$OMP BARRIER
