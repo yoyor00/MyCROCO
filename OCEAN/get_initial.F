@@ -901,6 +901,7 @@
         if (ierr .ne. nf_noerr) then
          MPI_master_only write(stdout,2) vname(1,indxrufrc)(1:lvar)
      &                                , record, ininame(1:lstr)
+     &                                , nf_strerror(ierr)
           goto 99                                        !--> ERROR
         endif
       else
@@ -921,6 +922,7 @@
          if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxrvfrc)(1:lvar)
      &                                , record, ininame(1:lstr)
+     &                                , nf_strerror(ierr)
            goto 99                                        !--> ERROR
          endif
        else
@@ -1021,8 +1023,6 @@
      &                          ,ininame(1:lstr)
      &                          ,nf_strerror(ierr)
       endif
-      
-      
 !
 ! qdmu_nbq.
 !
@@ -1076,7 +1076,6 @@
 !
 ! density gradients for use in t3dmix
 !
-
       lvar=lenstr(vname(1,indxdRdx))
       ierr=nf_inq_varid (ncid,
      &                  vname(1,indxdRdx)(1:lvar), varid)
@@ -1118,10 +1117,11 @@
      &                          ,ininame(1:lstr)
      &                          ,nf_strerror(ierr)
       endif
-#  endif
+
+#  endif /* TS_MIX_ISO_FILT */
 
      
-#  endif
+#  endif  /* EXACT_RESTART */
 
 
 !

@@ -300,6 +300,15 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+!$$$#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
+!$$$      do itrc=1,NT
+!$$$       call check_tab3d(t(:,:,:,nrhs,itrc),'t nrhs bef set_vbc','r')
+!$$$      enddo
+!$$$      call check_tab3d(u(:,:,:,nrhs),'u nrhs bef set_vbc','u')
+!$$$      call check_tab3d(v(:,:,:,nrhs),'v nrhs bef set_vbc','v')  
+!$$$#endif
+      
       do tile=my_first,my_last
         call set_vbc (tile)
 # if defined  BBL && !defined M3FAST 
@@ -319,6 +328,15 @@ C$OMP BARRIER
 #  endif
 # endif
       enddo
+
+!$$$#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
+!$$$      do itrc=1,NT
+!$$$       call check_tab3d(t(:,:,:,nrhs,itrc),'t nrhs aft set_vbc','r')
+!$$$      enddo
+!$$$      call check_tab3d(u(:,:,:,nrhs),'u nrhs aft set_vbc','u')
+!$$$      call check_tab3d(v(:,:,:,nrhs),'v nrhs aft set_vbc','v')  
+!$$$#endif
+      
 C$OMP BARRIER
 
 # ifdef BULK_FLUX
@@ -820,13 +838,13 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST
-       call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r')
-       call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+       call check_tab2d(zeta(:,:,knew),'zeta aft step3d_fast','r')
+       call check_tab2d(ubar(:,:,knew),'ubar aft step3d_fast','u')
+       call check_tab2d(vbar(:,:,knew),'vbar aft step3d_fast','v')
 # else
-       call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
-       call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
+       call check_tab2d(zeta(:,:,knew),'zeta aft step2d','r')
+       call check_tab2d(ubar(:,:,knew),'ubar aft step2d','u')
+       call check_tab2d(vbar(:,:,knew),'vbar aft step2d','v')
 # endif
 C$OMP END MASTER       
 #endif
