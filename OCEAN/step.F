@@ -609,7 +609,6 @@ C$OMP BARRIER
 #elif defined RVTK_DEBUG_PERFRST && defined M3FAST
 # include "nbq.h"
 #endif
-#endif
 #if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
 # include "forces.h"
 #endif
@@ -742,7 +741,6 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST
-       write(*,*) 'qdmu_nbq bef step3d_fast', qdmu_nbq(1,0,1)
        call check_tab3d(qdmu_nbq,'qdmu_nbq bef step3d_fast','u')
 # endif
 C$OMP END MASTER
