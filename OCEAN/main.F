@@ -34,7 +34,7 @@
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces 
 #endif
-!     implicit none
+      implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
@@ -62,7 +62,7 @@
 #endif 
 #ifdef MPI
       include 'mpif.h'
-!     real*8 start_time2, start_time1, exe_time
+      real*8 start_time2, start_time1, exe_time
 #endif 
       integer :: iifroot, iicroot
 #ifdef WKB_WWAVE
@@ -80,6 +80,9 @@
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 #endif
+        character(len=6) :: local_rank_env
+        integer          :: local_rank_env_status, local_rank
+
      
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -94,6 +97,31 @@
 !  MPI parallelization, XIOS server, OASIS coupling, AGRIF nesting, 
 !----------------------------------------------------------------------
 !
+! Initialisation d'OpenACC Jean ZAY : still works with slurm envrionnement
+#if defined _OPENACC && defined MPI
+!$acc init
+      ! Initialisation d'OpenACC
+      ! Récupération du rang local du processus via la variable d'environnement
+      ! positionnée par Slurm, l'utilisation de MPI_Comm_rank n'étant pas encore
+      ! possible puisque cette routine est utilisée AVANT l'initialisation de MPI
+       call get_environment_variable(name="SLURM_LOCALID",
+!       call get_environment_variable(name="SLURM_PROCID", 
+     &          value=local_rank_env,
+     &          status=local_rank_env_status)
+ 
+        if (local_rank_env_status == 0) then
+            read(local_rank_env, *) local_rank
+                ngpus=acc_get_num_devices( acc_device_nvidia )
+                !choose device to use by this rank
+                devicenum = MOD( local_rank, ngpus )
+            ! Définition du GPU à utiliser via OpenACC
+            call acc_set_device_num( devicenum, acc_get_device_type())    
+        else
+            print *, 
+     &  "Erreur : impossible de déterminer le rang local du processus"
+            stop 1
+        end if
+#endif
 #ifdef MPI
 # if (!defined AGRIF && !defined OA_COUPLING && !defined OW_COUPLING)
       call MPI_Init (ierr)
@@ -135,12 +163,13 @@
 !  Setup MPI domain decomposition
 !
 #ifdef MPI
-!     start_time1=PMPI_Wtime()
-      call MPI_Setup (ierr)
-      if (ierr.ne.0) goto 100        !--> ERROR
+       start_time1=PMPI_Wtime()
+       call MPI_Setup (ierr)
+       print *,mynode," device num=",devicenum
+       if (ierr.ne.0) goto 100        !--> ERROR
 #endif
 !
-#ifdef _OPENACC
+#if defined _OPENACC && defined NOJEANZAY
         ngpus=0
         devicenum=-1
         device_type = 0
@@ -160,12 +189,13 @@
         write(200+mynode,*) "ngpus=",ngpus," devicenum=",devicenum
         !stop 'toto'
         !Call acc_init after acc_set_device_num to avoid multiple contexts on device 0 in multi GPU systems
-        call acc_init( device_type )
+        !call acc_init( device_type )
+        !stop 'totot'
 #endif
 #define CR  !
 !
 !----------------------------------------------------------------------
-!  Read in tunable model parameters in roms.in file
+!  Read in tunable model parameters in crocox.in file
 !----------------------------------------------------------------------
 !
       call read_inp (ierr)
@@ -309,10 +339,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
 #endif
 #ifdef USE_CALENDAR
-      ! compute start time and ntimes
+      !calcul of start times and ntimes
 #ifdef ANA_INITIAL
-      ! if no initial file set start_date from croco.in
-      if (nrrec.eq.0) time=tool_datosec(run_start_date)
+      !if no init file set the start_date from croco.in
+      time=tool_datosec(run_start_date)
 #endif
       time_end=tool_datosec(run_end_date)
       ntimes=int((time_end-time)/dt)
@@ -343,58 +373,11 @@ CR      write(*,*) ' -6' MYID
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
 !----------------------------------------------------------------------
-!  Bottom sediment parameters for BBL or SEDIMENT model
-!----------------------------------------------------------------------
-!
-#if (defined BBL && defined ANA_BSEDIM) || defined SEDIMENT
-!
-!  --- Set analytically ---
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-
-# if defined BBL && defined ANA_BSEDIM
-#  ifdef AGRIF
-        if (Agrif_lev_sedim.EQ.0) call ana_bsedim (tile)
-#  else
-        call ana_bsedim (tile)
-#  endif
-# endif
-!
-# ifdef SEDIMENT
-#  ifdef AGRIF
-        if (Agrif_lev_sedim.EQ.0) call ana_sediment (tile)
-#  else
-        call ana_sediment (tile)
-#  endif
-# endif
-      enddo
-#endif
-!
-!  --- Read from NetCDF file (to do) ---
-!
-#if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
-# ifdef AGRIF
-      if (Agrif_lev_sedim.EQ.0) call get_bsedim
-#  else
-      call get_bsedim
-#  endif
-#endif
-!
-#if defined SEDIMENT && !defined ANA_SEDIMENT
-# ifdef AGRIF
-      if (Agrif_lev_sedim.EQ.0) call get_sediment
-# else
-      call get_sediment
-# endif
-#endif
-!
-!----------------------------------------------------------------------
 !  Finalize grid setup
 !----------------------------------------------------------------------
 !
 !  Finalize vertical grid now that zeta is knowned
-!  zeta is also corrected here for Wetting/Drying
+!  zeta is also corrected here fr Wetting/Drying
 !  in both 2D and 3D cases
 !
 #if defined  SOLVE3D || defined WET_DRY
@@ -530,6 +513,52 @@ CR      write(*,*) ' -2' MYID
 #endif
 !
 CR      write(*,*) ' -1' MYID 
+!
+!----------------------------------------------------------------------
+!  Bottom sediment parameters for BBL or SEDIMENT model
+!----------------------------------------------------------------------
+!
+#if (defined BBL && defined ANA_BSEDIM) || defined SEDIMENT
+!
+!  --- Set analytically ---
+!
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+
+# if defined BBL && defined ANA_BSEDIM
+#  ifdef AGRIF
+        if (Agrif_lev_sedim.EQ.0) call ana_bsedim (tile)
+#  else
+        call ana_bsedim (tile)
+#  endif
+# endif
+# ifdef SEDIMENT
+#  ifdef AGRIF
+        if (Agrif_lev_sedim.EQ.0) call ana_sediment (tile)
+#  else
+        call ana_sediment (tile)
+#  endif
+# endif
+      enddo
+#endif
+!
+!  --- Read from NetCDF file ---
+!
+#if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
+# ifdef AGRIF
+      if (Agrif_lev_sedim.EQ.0) call get_bsedim
+#  else
+      call get_bsedim
+#  endif
+#endif
+!
+!#if defined SEDIMENT && !defined ANA_SEDIMENT
+!# ifdef AGRIF
+!      if (Agrif_lev_sedim.EQ.0) call get_sediment
+!# else
+!      call get_sediment
+!# endif
+!#endif
 !
 !----------------------------------------------------------------------
 !  Initialize XIOS I/O server
@@ -842,6 +871,7 @@ CR      write(*,*) '  0' MYID
 #ifdef AGRIF
           call Agrif_Step(step)
 #else
+          
           call step()
 #endif
 
@@ -854,6 +884,7 @@ CR      write(*,*) '  0' MYID
       enddo                                !-->  end of time step
 !$acc end data 
   99  continue   ! SHUTDOWN:
+
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()
@@ -880,25 +911,62 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
  100  continue
 
 #ifdef MPI
+
+!      call MPI_Allreduce( cput3, cput3, 1, MPI_DOUBLE
+!     &         , MPI_MAX, MPI_COMM_WORLD, ierr )
+
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
-!     start_time2=PMPI_Wtime()
-!     exe_time = start_time2 - start_time1
-!     if(mynode.eq.0) print*,'exe_time =',exe_time
+      start_time2=PMPI_Wtime()
+      exe_time = start_time2 - start_time1
+      if(mynode.eq.0) print*,'exe_time =',exe_time
 
-# if defined XIOS
-                               ! MPI finalize done by XIOS
-       call xios_finalize()   ! Even with OASIS, finalize is done by XIOS
-# elif defined OA_COUPLING || defined OW_COUPLING
-       call prism_terminate_proto(ierr)       ! Finalize OASIS3 (without XIOS)# else
+# if defined OA_COUPLING || defined OW_COUPLING
+      call prism_terminate_proto(ierr)       ! Finalize OASIS3
+# elif defined XIOS
+                             ! MPI finalize done by XIOS, XIOS+OASIS not coded
+      call xios_finalize()   ! end mpp communications with xios
+#  if !defined AGRIF      
+      call MPI_Finalize (ierr)
+#  endif 
 # else
-       call MPI_Finalize (ierr)
+      call MPI_Finalize (ierr)
 # endif     
 #endif
-      print *,"step3d_fast time =",cput3
-      print *,"count_rate=",count_rate
+
+      if (mynode == 0) then
+       print *,"step3d_fast time =",cput3
+       !print *,"count_rate=",count_rate
+      endif
 
       stop
       end
+
+#ifdef _OPENACCJ_JEANZAY
+        subroutine initialisation_openacc
+         USE openacc
+        character(len=6) :: local_rank_env
+        integer          :: local_rank_env_status, local_rank
+ 
+! Initialisation d'OpenACC
+!!!$acc init
+        call acc_init(  ) 
+! Récupération du rang local du processus via la variable d'environnement
+! positionnée par Slurm, l'utilisation de MPI_Comm_rank n'étant pas encore
+! possible puisque cette routine est utilisée AVANT l'initialisation de MPI
+        call get_environment_variable(name="SLURM_LOCALID", 
+     &  value=local_rank_env, status=local_rank_env_status)
+ 
+        if (local_rank_env_status == 0) then
+           read(local_rank_env, *) local_rank
+           ! Définition du GPU à utiliser via OpenACC
+           call acc_set_device_num(local_rank, acc_get_device_type())
+        else
+           print *, 
+     &     "Erreur : impossible de déterminer le rang local du processus"
+        stop 1
+        end if
+        end subroutine initialisation_openacc
+#endif
 
