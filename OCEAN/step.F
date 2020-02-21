@@ -226,6 +226,11 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
+#if defined RVTK_DEBUG_PERFRST
+       call check_tab3d(Hz_bak(:,:,:),'Hz_bak beg prestep3d','r')
+#endif
+
+
       if (may_day_flag.ne.0) return  !-->  EXIT
 
 #ifdef SOLVE3D
@@ -461,10 +466,8 @@ C$OMP END MASTER
 
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       call check_tab3d(t(:,:,:,nnew,itrc),'t nnew bef prestep3d','r')
+       call check_tab3d(t(:,:,:,nstp,itrc),'t nstp bef prestep3d','r')
       enddo
-      call check_tab3d(u(:,:,:,nnew),'u nnew bef prestep3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v nnew bef prestep3d','v')  
 #endif
       
       
@@ -603,10 +606,14 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
+#elif defined RVTK_DEBUG_PERFRST && defined M3FAST
+# include "nbq.h"
+#endif
 #endif
 #if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
 # include "forces.h"
 #endif
+
        integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
@@ -729,6 +736,18 @@ C$OMP BARRIER
 
 #endif  /* !defined SOLVE3D */
 
+
+       
+#ifdef RVTK_DEBUG_PERFRST
+C$OMP BARRIER
+C$OMP MASTER
+# ifdef M3FAST
+       write(*,*) 'qdmu_nbq bef step3d_fast', qdmu_nbq(1,0,1)
+       call check_tab3d(qdmu_nbq,'qdmu_nbq bef step3d_fast','u')
+# endif
+C$OMP END MASTER
+#endif
+
 #if defined BBL && defined BSTRESS_FAST
         if (mod(iif-1,inc_faststep).eq.0) then
           do tile=my_first,my_last
@@ -777,6 +796,15 @@ C$OMP BARRIER
 #endif            
           enddo
         endif
+
+#ifdef RVTK_DEBUG_PERFRST
+C$OMP BARRIER
+C$OMP MASTER
+# ifdef M3FAST
+       call check_tab3d(qdmu_nbq,'qdmu_nbq aft step3d_fast','u')
+# endif
+C$OMP END MASTER
+#endif
 
 #ifdef RVTK_DEBUG_ADVANCED
         call check_tab2d(bustr,'bustr in step','u')
@@ -837,6 +865,8 @@ C$OMP END MASTER
 #include "autotiling.h"
 #endif
 #if defined LMD_MIXING 
+# include "mixing.h"
+#elif defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
 # include "mixing.h"
 #endif
        integer range
