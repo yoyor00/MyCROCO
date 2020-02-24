@@ -55,8 +55,11 @@
 						<field field_ref="svstr" name="svstr" />
 						<field field_ref="u" name="u" />
 						<field field_ref="v" name="v" />
+						<field field_ref="w" name="w" />
 						<field field_ref="temp" name="temp" />
 						<field field_ref="salt" name="salt" />
+						<field field_ref="rho" name="rho" />
+					        <field field_ref="bvf" name="bvf" />
                                                 <field field_ref="AKv" name="AKv" />
                                                 <field field_ref="AKt" name="AKt" />
 					</field_group>
@@ -276,7 +279,15 @@
                       <field id="vv" field_ref="workru"> workrv * workrv </field>
                       <field id="uw" field_ref="workru"> workru * w </field>
                       <field id="vw" field_ref="workru"> workrv * w </field>
+                      <field id="ub" field_ref="workru"> workru * buoy </field>
+                      <field id="vb" field_ref="workru"> workrv * buoy </field>
                       <field id="wb" field_ref="workru"> w * buoy </field>
+                      <field id="uT" field_ref="workru"> workru * temp </field>
+                      <field id="vT" field_ref="workru"> workrv * temp </field>
+                      <field id="wT" field_ref="workru"> w * temp </field>
+                      <field id="uS" field_ref="workru"> workru * salt </field>
+                      <field id="vS" field_ref="workru"> workrv * salt </field>
+                      <field id="wS" field_ref="workru"> w * salt </field>
 					</field_group>
 
 				</file>
