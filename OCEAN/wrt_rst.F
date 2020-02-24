@@ -223,7 +223,8 @@
           goto 99                                         !--> ERROR
         endif
       enddo
-    
+
+#if ( defined LMD_MIXING || defined GLS_MIXING )
 # if defined LMD_SKPP
 !
 !     Write out depth of planetary boundary layer (m).
@@ -257,7 +258,6 @@
         endif
 # endif /* LMD_BKPP  */         
 
-# if defined GLS_MIXING
 !
 ! Vertical viscosity coefficient.
 !
@@ -279,7 +279,8 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif    
+        endif
+        
 # ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
@@ -292,7 +293,10 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif       
-# endif /* SALINITY  */
+# endif /* SALINITY  */       
+#endif  /* LMD_MIXING || GLS_MIXING */
+
+#if defined GLS_MIXING
 !
 ! Turbulent kinetic energy.
 !
@@ -316,9 +320,9 @@
           goto 99                                         !--> ERROR
         endif
         
-# endif  /* GLS_MIXING  */
+#endif  /* GLS_MIXING  */
 
-# ifdef EXACT_RESTART
+#ifdef EXACT_RESTART
 !
 ! Write out forcing for barotropic equations in XI-direction.
 !
@@ -456,8 +460,7 @@
        endif
        
 # endif /* TS_MIX_ISO_FILT */
-
-# endif /* EXACT_RESTART */
+#endif /* EXACT_RESTART */
        
 # ifdef SEDIMENT
 !

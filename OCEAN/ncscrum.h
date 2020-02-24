@@ -891,7 +891,7 @@
       integer rstHbbl
 #endif
 #endif
-# if defined GLS_MIXING
+# if ( defined LMD_MIXING || defined GLS_MIXING )
       integer rstAkv,rstAkt
 # if defined SALINITY
       integer rstAks
@@ -1351,7 +1351,7 @@
      &      , rstHbbl
 #endif
 #endif
-#if defined GLS_MIXING
+#if defined GLS_MIXING || defined LMD_MIXING 
      &      , rstAkv,rstAkt
 # if defined SALINITY
      &      , rstAks
