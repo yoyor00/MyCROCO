@@ -1747,7 +1747,7 @@ C 				  endif
 #  define JV_RANGE Jstr,JendR
 # endif
       !
-      cdname='roms'
+      cdname='crocox'
       clname = cdname
 # ifdef AGRIF
       IF( TRIM(Agrif_CFixed()) /= '0' )
@@ -1900,7 +1900,7 @@ C 				  endif
       IF( xios_is_valid_context(cdname) ) THEN
          CALL iom_swap( cdname )   ! swap to cdname context
          CALL xios_context_finalize() ! finalize the context
-         IF( cdname /= "roms" ) CALL iom_swap( "roms" )   ! return back to roms context
+         IF( cdname /= "crocox" ) CALL iom_swap( "crocox" )   ! return back to croco context
       ENDIF
       !
       END SUBROUTINE iom_context_finalize
