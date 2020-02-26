@@ -225,7 +225,6 @@
       enddo
 
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-# if defined LMD_SKPP
 !
 !     Write out depth of planetary boundary layer (m).
 !
@@ -235,14 +234,13 @@
 #  else
         ierr=nf_fwrite(hbl(START_2D_ARRAY), ncidrst,
      &                             rstHbl, record, r2dvar)
-#  endif
+#  endif /* LMD_SKPP2005  */
         if (ierr .ne. nf_noerr) then
-            lvar=lenstr(vname(1,indxHbl))
-            write(stdout,1) vname(1,indxHbl)(1:lvar), record,
-     &                    ierr MYID
-            goto 99                                         !--> ERROR
+          lvar=lenstr(vname(1,indxHbl))
+          write(stdout,1) vname(1,indxHbl)(1:lvar), record,
+     &         ierr MYID
+          goto 99               !--> ERROR
         endif
-# endif /* LMD_SKPP  */
         
 # if defined LMD_BKPP
 !
@@ -279,8 +277,7 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
-        endif
-        
+        endif   
 # ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.

@@ -4,20 +4,23 @@
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO specific routines (nesting) are under CeCILL-C l icense.
 ! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
-
-#define DEBUG_MPI_MASTER_ONLY
-
           module debug
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
+          
 # if defined RVTK_DEBUG_PERFRST
+# define DEBUG_MPI_MASTER_ONLY
+!
+!     define DEBUG_MPI_MASTER_ONLY : do the restartability test
+!     in case of a mpi run, but it only test the master node 0
+          
           integer start_debug,start_debug0,start_debug_read
           parameter (start_debug0=6)
           parameter (start_debug=start_debug0)

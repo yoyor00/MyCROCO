@@ -270,7 +270,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 #ifndef ANA_INITIAL
 #ifdef EXACT_RESTART
-      call get_initial (nrrec-1, 2) ! Set initial conditions
+          call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
 C$OMP BARRIER
 # ifdef SOLVE3D

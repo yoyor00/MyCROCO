@@ -393,8 +393,11 @@
             enddo
           enddo
 #if defined RVTK_DEBUG && defined SOLVE3D
-         call check_tab2d(t(:,:,k+1,nstp,itrc),'t(k+1) in ISO','r')
+          !write(*,*)'K+1=',k+1
+          !write(*,*)'(t(1,42,k+1,nstp,1)=',t(1,42,k+1,nstp,1)
+          call check_tab2d(t(:,:,k+1,nstp,itrc),'t(k+1) in ISO','r')
 #endif
+          !write(*,*)'END K+1...'
         endif   ! --> k.eq.0 .or. k.eq.N
 
 
@@ -899,7 +902,9 @@
 
 
 #if defined RVTK_DEBUG && defined SOLVE3D
-      call check_tab3d(t(:,:,:,nnew,itrc),'t in ISO','r')
+      !write(*,*)'(t(1,0,1,nnew,1)#2=',t(1,0,1,nnew,1)
+      call check_tab3d(t(:,:,:,nnew,itrc),'t in ISO #2','r')
+      !write(*,*)'=='
 #endif
 
 

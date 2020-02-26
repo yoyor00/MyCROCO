@@ -416,7 +416,6 @@
         enddo
         
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-# ifdef LMD_SKPP
 !
 ! Depth of planetary boundary layer.
 !     
@@ -463,7 +462,6 @@
      &       NF_DOUBLE,ierr)
         
 #  endif /*  LMD_BKPP  */
-# endif /*  LMD_SKPP  */
  
 !
 ! Vertical viscosity coefficient.
@@ -1169,7 +1167,6 @@
 #endif
 
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-# ifdef LMD_SKPP
 !
 ! Depth of planetary boundary layer.
 !
@@ -1179,6 +1176,7 @@
           write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+          
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
@@ -1190,7 +1188,6 @@
             goto 99                                       !--> ERROR
           endif
 #  endif /*  LMD_BKPP  */
-# endif /*  LMD_SKPP  */
 
 !
 ! Vertical viscosity coefficient.
