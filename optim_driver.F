@@ -33,7 +33,7 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
 
       integer i
 
-      sim_iicroot = iicroot
+      ad_sim_iicroot = iicroot
       ad_cost_counter = 1
       ad_cost = 1
       ad_counter = 0

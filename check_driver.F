@@ -21,7 +21,7 @@ c     perturbated ad_x
 
       double precision control_to_param,rand
       
-      sim_iicroot = iicroot
+      ad_sim_iicroot = iicroot
 
       open(unit=789, file="ad_check.dat", action="write",
      &     form='FORMATTED')

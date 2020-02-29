@@ -80,7 +80,7 @@ C     tangential vector
       double precision ad_xd(ad_array_size)
 
 C     time step of the main simulation
-      integer sim_iicroot
+      integer ad_sim_iicroot
 
 C     general iteration counter
       integer ad_counter
@@ -97,9 +97,9 @@ c     tidal period (M2)
       parameter(TM2 = 12.4206012*3600)
 
 c     backup
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
+      real ad_ubar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_ad_vbar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_zeta_bck(GLOBAL_2D_ARRAY,4)
       real zob_bck(GLOBAL_2D_ARRAY)
       real Zobt_bck
       real ad_cost
@@ -114,7 +114,7 @@ c     rms
       integer iic_bck
 
 C     commons
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
+      common /backup/ ad_ubar_bck, ad_ad_vbar_bck, ad_ad_zeta_bck, zob_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
       common /ad/ ad_array_node_size
@@ -126,5 +126,5 @@ C     commons
      &     ad_latr_f,ad_lonr_f,ad_h_f,ad_cpoint_node,ad_cpoint_id
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
-      common /state_info/ sim_iicroot,ad_counter,ad_cost_counter,
+      common /state_info/ ad_sim_iicroot,ad_counter,ad_cost_counter,
      &     ad_cost,ad_rms,ad_ta

@@ -101,7 +101,7 @@ C$AD NOCHECKPOINT
       do j=Jstr,Jend
          do i=Istr,Iend
 c            if ((zeta(i,j,knew)-ad_obs(i,j,k+1)) > 1D-10) then
-c               write(*,*) i,j,knew,sim_iicroot,k,sim_iicroot+k,
+c               write(*,*) i,j,knew,ad_sim_iicroot,k,ad_sim_iicroot+k,
 c     &              zeta(i,j,knew),ad_obs(i,j,k+1)
 c            end if
             delta_z = (zeta(i,j,knew)-ad_obs(i,j,k+1))
@@ -226,9 +226,9 @@ c      end do
 # include "ocean2d.h"
 # include "adparam.h"
 
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
+      real ad_ubar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_vbar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
       real Zobt_bck
 
@@ -237,12 +237,12 @@ c      end do
       integer knew_bck
       integer iic_bck
 
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
+      common /backup/ ad_ubar_bck, ad_vbar_bck, ad_zeta_bck, h_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
-      ubar_bck(:,:,:) = ubar(:,:,:)
-      vbar_bck(:,:,:) = vbar(:,:,:)
-      zeta_bck(:,:,:) = zeta(:,:,:)
+      ad_ubar_bck(:,:,:) = ubar(:,:,:)
+      ad_vbar_bck(:,:,:) = vbar(:,:,:)
+      ad_zeta_bck(:,:,:) = zeta(:,:,:)
       h_bck(:,:) = h(:,:)
       Zobt_bck = Zobt
 
@@ -268,9 +268,9 @@ c      end do
 # include "ocean2d.h"
 # include "adparam.h"
 
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
+      real ad_ubar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_vbar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_zeta_bck(GLOBAL_2D_ARRAY,4)
       real h_bck(GLOBAL_2D_ARRAY)
       real Zobt_bck
 
@@ -279,12 +279,12 @@ c      end do
       integer knew_bck
       integer iic_bck
 
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, h_bck,
+      common /backup/ ad_ubar_bck, ad_vbar_bck, ad_zeta_bck, h_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
-      ubar(:,:,:) = ubar_bck(:,:,:)
-      vbar(:,:,:) = vbar_bck(:,:,:)
-      zeta(:,:,:) = zeta_bck(:,:,:)
+      ubar(:,:,:) = ad_ubar_bck(:,:,:)
+      vbar(:,:,:) = ad_vbar_bck(:,:,:)
+      zeta(:,:,:) = ad_zeta_bck(:,:,:)
       h(:,:) = h_bck(:,:)
       Zobt = Zobt_bck
       zob(:,:) = Zobt

@@ -121,7 +121,7 @@ c      end do
             j=ad_j(k)
             delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
 c         delta_zob = (zob(i,j) - zob_bck(i,j))
-c         write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,sim_iicroot+k,
+c         write(*,*) 'AAAAA',mynode,i,j,knew,ad_sim_iicroot,k,ad_sim_iicroot+k,
 c     &        zeta(i,j,knew),ad_obs(i,j,ta+2),zob(i,j),zob_bck(i,j),
 c     &        delta_z,
 c     &        delta_zob
@@ -325,9 +325,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar_bck(:,:,:) = ubar(:,:,:)
-      vbar_bck(:,:,:) = vbar(:,:,:)
-      zeta_bck(:,:,:) = zeta(:,:,:)
+      ad_ubar_bck(:,:,:) = ubar(:,:,:)
+      ad_ad_vbar_bck(:,:,:) = vbar(:,:,:)
+      ad_zeta_bck(:,:,:) = zeta(:,:,:)
       zob_bck(:,:) = zob(:,:)
       zobt_bck = zobt
 
@@ -352,9 +352,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar(:,:,:) = ubar_bck(:,:,:)
-      vbar(:,:,:) = vbar_bck(:,:,:)
-      zeta(:,:,:) = zeta_bck(:,:,:)
+      ubar(:,:,:) = ad_ubar_bck(:,:,:)
+      vbar(:,:,:) = ad_ad_vbar_bck(:,:,:)
+      zeta(:,:,:) = ad_ad_zeta_bck(:,:,:)
       zob(:,:) = zob_bck(:,:)
       Zobt = Zobt_bck
 

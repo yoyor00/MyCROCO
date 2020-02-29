@@ -97,10 +97,10 @@ C$AD NOCHECKPOINT
 
       do j=Jstr,Jend
          do i=Istr,Iend
-c            write(*,*) i,j,knew,sim_iicroot+k,
-c     &           zeta(i,j,knew),ad_obs(i,j,sim_iicroot+k)
+c            write(*,*) i,j,knew,ad_sim_iicroot+k,
+c     &           zeta(i,j,knew),ad_obs(i,j,ad_sim_iicroot+k)
 
-            delta_z = (zeta(i,j,knew)-ad_obs(i,j,sim_iicroot+k))
+            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_sim_iicroot+k))
             icost = icost + delta_z*delta_z
          end do
 c         write(*,*) 'icost=',j,icost
@@ -203,9 +203,9 @@ c      end do
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar_bck(:,:,:) = ubar(:,:,:)
-      vbar_bck(:,:,:) = vbar(:,:,:)
-      zeta_bck(:,:,:) = zeta(:,:,:)
+      ad_ubar_bck(:,:,:) = ubar(:,:,:)
+      ad_vbar_bck(:,:,:) = vbar(:,:,:)
+      ad_zeta_bck(:,:,:) = zeta(:,:,:)
       rdrg2_bck = rdrg2
 
       kstp_bck = kstp
@@ -227,9 +227,9 @@ c      end do
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar(:,:,:) = ubar_bck(:,:,:)
-      vbar(:,:,:) = vbar_bck(:,:,:)
-      zeta(:,:,:) = zeta_bck(:,:,:)
+      ubar(:,:,:) = ad_ubar_bck(:,:,:)
+      vbar(:,:,:) = ad_vbar_bck(:,:,:)
+      zeta(:,:,:) = ad_zeta_bck(:,:,:)
       rdrg2 = rdrg2_bck
 
       kstp = kstp_bck

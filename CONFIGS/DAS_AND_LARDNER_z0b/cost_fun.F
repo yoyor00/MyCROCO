@@ -16,7 +16,7 @@
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
 
-C$AD BINOMIAL-CKP ad_nt*ad_ns+1 90 1
+C$AD BINOMIAL-CKP ad_nt*ad_ns+1 80 1
       do ta=1,ad_nt*ad_ns
          call step()
          if (mod(ta,ad_ns).eq.0) then
@@ -102,14 +102,14 @@ c            end if
 c         end do
 c      end do
 
-      if (mode.eq.1) then
-         do k=1,ncpoints
-            i=ad_i(k)
-            j=ad_j(k)
-            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
+c      if (mode.eq.1) then
+c         do k=1,ncpoints
+c            i=ad_i(k)
+c            j=ad_j(k)
+c            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
 c         delta_zob = (zob(i,j) - zob_bck(i,j))
-         end do
-      else if (mode.eq.2) then
+c         end do
+      if (mode.eq.2) then
          do j=Jstr,Jend
             do i=Istr,Iend
                delta_zob = (zob(i,j) - zob_bck(i,j))
@@ -122,8 +122,9 @@ c         delta_zob = (zob(i,j) - zob_bck(i,j))
                if (ad_obs(i,j,1).ne.spval) then
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
                   icost = icost + delta_z*delta_z
-c$$$                  write(*,*) 'AAAAA',mynode,i,j,knew,sim_iicroot,k,
-c$$$     &                 sim_iicroot+k,
+c$$$                  write(*,*) 'AAAAA',mynode,i,j,
+c$$$  knew,ad_sim_iicroot,k,
+c$$$     &                 ad_sim_iicroot+k,
 c$$$     &                 zeta(i,j,knew),ad_obs(i,j,ta+2),
 c$$$     &                 zob(i,j),zob_bck(i,j),
 c$$$     &                 delta_z,
@@ -266,9 +267,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar_bck(:,:,:) = ubar(:,:,:)
-      vbar_bck(:,:,:) = vbar(:,:,:)
-      zeta_bck(:,:,:) = zeta(:,:,:)
+      ad_ubar_bck(:,:,:) = ubar(:,:,:)
+      ad_vbar_bck(:,:,:) = vbar(:,:,:)
+      ad_zeta_bck(:,:,:) = zeta(:,:,:)
       zob_bck(:,:) = zob(:,:)
       zobt_bck = zobt
 
@@ -293,9 +294,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar(:,:,:) = ubar_bck(:,:,:)
-      vbar(:,:,:) = vbar_bck(:,:,:)
-      zeta(:,:,:) = zeta_bck(:,:,:)
+      ubar(:,:,:) = ad_ubar_bck(:,:,:)
+      vbar(:,:,:) = ad_vbar_bck(:,:,:)
+      zeta(:,:,:) = ad_zeta_bck(:,:,:)
       zob(:,:) = zob_bck(:,:)
       Zobt = Zobt_bck
 

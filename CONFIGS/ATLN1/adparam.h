@@ -27,8 +27,8 @@ C     tangential vector
       double precision ad_xd(ad_array_size)
 
 C     time step of the main simulation
-      integer sim_iicroot
+      integer ad_sim_iicroot
 
 C     commons
       common /obs_data/ ad_obs
-      common /state_info/ sim_iicroot
+      common /state_info/ ad_sim_iicroot

@@ -57,16 +57,16 @@ C     tangential vector
       double precision ad_xd(ad_array_size)
 
 C     time step of the main simulation
-      integer sim_iicroot
+      integer ad_sim_iicroot
 
 c     tidal period (M2)
       double precision TM2
       parameter(TM2 = 12.4206012)
 
 c     backup
-      real ubar_bck(GLOBAL_2D_ARRAY,4)
-      real vbar_bck(GLOBAL_2D_ARRAY,4)
-      real zeta_bck(GLOBAL_2D_ARRAY,4)
+      real ad_ubar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_vbar_bck(GLOBAL_2D_ARRAY,4)
+      real ad_zeta_bck(GLOBAL_2D_ARRAY,4)
       real zob_bck(GLOBAL_2D_ARRAY)
       real Zobt_bck
 
@@ -76,12 +76,12 @@ c     backup
       integer iic_bck
 
 C     commons
-      common /backup/ ubar_bck, vbar_bck, zeta_bck, zob_bck,
+      common /backup/ ad_ubar_bck, ad_vbar_bck, ad_zeta_bck, zob_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
       
       common /colloc_id/ ad_colloc
       common /collocation_coords/ ad_latr_f,ad_lonr_f,ad_h_f
       common /weighted_coefs/ W,SkW
       common /obs_data/ ad_obs
-      common /state_info/ sim_iicroot
+      common /state_info/ ad_sim_iicroot
       

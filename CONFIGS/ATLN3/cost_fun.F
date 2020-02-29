@@ -196,9 +196,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar_bck(:,:,:) = ubar(:,:,:)
-      vbar_bck(:,:,:) = vbar(:,:,:)
-      zeta_bck(:,:,:) = zeta(:,:,:)
+      ad_ubar_bck(:,:,:) = ubar(:,:,:)
+      ad_vbar_bck(:,:,:) = vbar(:,:,:)
+      ad_zeta_bck(:,:,:) = zeta(:,:,:)
       kstp_bck = kstp
       krhs_bck = krhs
       knew_bck = knew
@@ -218,9 +218,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ubar(:,:,:) = ubar_bck(:,:,:)
-      vbar(:,:,:) = vbar_bck(:,:,:)
-      zeta(:,:,:) = zeta_bck(:,:,:)
+      ubar(:,:,:) = ad_ubar_bck(:,:,:)
+      vbar(:,:,:) = ad_vbar_bck(:,:,:)
+      zeta(:,:,:) = ad_zeta_bck(:,:,:)
       kstp = kstp_bck
       krhs = krhs_bck
       knew = knew_bck
