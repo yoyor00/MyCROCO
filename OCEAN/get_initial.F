@@ -94,7 +94,7 @@
               if (req_rec.le.max_rec) then
                 record=req_rec
               else
-                write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')
+       MPI_master_only write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')
      &           '### ERROR: get_initial :: requested restart time ',
      &           'record',  req_rec, 'exceeds number',  'of records',
      &                       max_rec,  'available in netCDF file ''',
@@ -112,7 +112,8 @@
           goto 99
         endif
       else
-        write(stdout,'(/1x,4A/12x,A/)') '### ERROR: get_initial :: ',
+        MPI_master_only write(stdout,'(/1x,4A/12x,A/)')
+     &               '### ERROR: get_initial :: ',
      &               'Cannot open netCDF file ''',   ininame(1:lstr),
      &                                  '''.',     nf_strerror(ierr)
         goto 99                                           !--> ERROR
@@ -202,11 +203,12 @@
             elseif (units(1:3).eq.'day') then
               time_scale=day2sec
             else
-              write (stdout,'(/1x,4A/8x,3A/)') 'GET_INITIAL ',
+              MPI_master_only write(stdout,'(/1x,4A/8x,3A/)')
+     &              'GET_INITIAL ',
      &              'ERROR: unknown units of for variable ''', 
      &                               vname(1,indxTime)(1:lvar), '''',
      &                   'in netCDF file ''', ininame(1:lstr), '''.'
-              goto 99                                    !--> ERROR
+              goto 99                                     !--> ERROR
             endif
             start_time=start_time*time_scale
 #ifdef EXACT_RESTART
@@ -225,7 +227,7 @@
                   if (abs(start_time-time_bak-dt) .lt. 0.001*dt) then
                     forw_start=1
                   else
-                    write(*,'(/1x,2A,2I4/10x,4A/10x,A/)')
+              MPI_master_only write(stdout,'(/1x,2A,2I4/10x,4A/10x,A/)')
      &                'WARNING: Exact restart is requested, but ',
      &                'is not possible: records', record,record+1, 
      &                'in ''',   ininame(1:lstr),   ''' are not ',
@@ -233,13 +235,14 @@
      &                          'with forward initial time step.' 
                   endif
                 else
-                  write(*,2) vname(1,indxTime)(1:lvar), record,
+                  MPI_master_only write(stdout,2)
+     &                       vname(1,indxTime)(1:lvar), record,
      &                       ininame(1:lstr), nf_strerror(ierr)
                   goto 99
 
                 endif
               else
-                write(*,'(/1x,2A/10x,4A,A/)')
+                MPI_master_only write(stdout,'(/1x,2A/10x,4A,A/)')
      &                  'WARNING: Exact restart ',
      &                  'is requested, but is not possible: initial',
      &                  'file ''',  ininame(1:lstr),  ''' does not ',
@@ -250,7 +253,8 @@
             endif
 #endif
           else
-            write (stdout,'(/1x,2A/8x,5A/)') 'GET_INITIAL ERROR: ',
+            MPI_master_only write (stdout,'(/1x,2A/8x,5A/)')
+     &             'GET_INITIAL ERROR: ',
      &             'cannot read attribute ''units'' for variable',
      &             '''', vname(1,indxTime)(1:lvar),
      &             ''' in netCDF file ''',  ininame(1:lstr), '''.'
@@ -347,7 +351,7 @@
               if (ibuff(1) .eq. ntstart+1) then
                 forw_start=1
               else
-          MPI_master_only write(*,'(/1x,3A,2I4/10x,4A/10x,A)')
+          MPI_master_only write(stdout,'(/1x,3A,2I4/10x,4A/10x,A)')
      &           'WARNING: ',
      &           'Exact restart is requested, but is not possible: ',
      &           'records', record,record+1, 'in ''',ininame(1:lstr),
@@ -364,26 +368,24 @@
           if (tindx.eq.1) then
 
             if (forw_start.eq.1) then
-          MPI_master_only write(*,'(/6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
-     &                ': Exact restart from day =',
-     &                 start_time*sec2day,  ' rec =', record,
-     &          '(', ntstart, ',', nrecrst, ',', nrechis, ').'
+              MPI_master_only write(stdout,6)
+     &             start_time*sec2day, record,
+     &             ntstart, nrecrst, nrechis
             else
 #endif
-          MPI_master_only  write(*,'(/6x,A,F12.4,A,I4,A,I8,A,I4,A,I4,A)')
-     &                'get_initial: Restarted from day =',
-     &                 start_time*sec2day,  ' rec =', record,
-     &          '(', ntstart, ',', nrecrst, ',', nrechis, ').'
+              MPI_master_only  write(stdout,7)
+     &             'GET_INITIAL: Restarted from day =',
+     &             start_time*sec2day,  ' rec =', record,
+     &             ntstart, nrecrst, nrechis
 #ifdef EXACT_RESTART
             endif
           endif
-
-          
+     
 #endif
         else
-         MPI_master_only write(stdout,'(/1x,2A/)') 
-     &                            'GET_INITIAL ERROR: Cannot ',
-     &                            'read time and record indices.'
+          MPI_master_only write(stdout,'(/1x,2A/)') 
+     &         'GET_INITIAL ERROR: Cannot ',
+     &         'read time and record indices.'
           goto 99                                         !--> ERROR
         endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -1124,7 +1126,13 @@
      &         'i.e from a restart file produced by this code ',
      &    /21x'      => problem: run is not restartable ',
      &    /21x'      => check your initial file')      
- 
+
+ 6    format(/6x,'GET_INITIAL: Exact restart from day =',F12.4,
+     &     '  rec =',I4,'(',I8,',',I4,','I4,').')
+
+ 7    format(/6x,'GET_INITIAL: Restarted from day =',F12.4,
+     &     ' rec=',I4,'(',I8,',',I4,','I4').')
+      
       return
   99  may_day_flag=2
       return
