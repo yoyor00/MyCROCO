@@ -451,7 +451,15 @@
             if (ntstart.lt.1) ntstart=1
             ntimes=ntstart+ntimes-1
           endif
-!              
+
+!          write(*,*)'==============='
+!          write(*,*)'FORW_START=',forw_start
+!          write(*,*)'==============='
+!          write(*,*)'==============='
+!         write(*,*)'RECORD=',record
+!          write(*,*)'==============='
+
+!
 !
 ! Free-surface.
 !

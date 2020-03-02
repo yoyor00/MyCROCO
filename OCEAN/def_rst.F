@@ -124,7 +124,8 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
+        MPI_master_only
+     &       write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
         ierr=nf_create_par(rstname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
