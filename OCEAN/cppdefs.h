@@ -88,7 +88,8 @@
 # undef  USE_CALENDAR
                       /* Exact restart */
 # undef EXACT_RESTART
-/*!
+/*
+!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
 !
