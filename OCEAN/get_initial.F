@@ -375,7 +375,7 @@
 #endif
               MPI_master_only  write(stdout,7)
      &             'GET_INITIAL: Restarted from day =',
-     &             start_time*sec2day,  ' rec =', record,
+     &             start_time*sec2day, record,
      &             ntstart, nrecrst, nrechis
 #ifdef EXACT_RESTART
             endif
