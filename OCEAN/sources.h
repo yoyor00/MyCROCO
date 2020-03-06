@@ -18,42 +18,45 @@
 ! Qshape     Nondimensional shape function to distribute mass
 !             ass point Sources/Sinks vertically.
 !
-      real Qbar0(Nsrc)
+      real Qbar0(Msrc)
       common /sources_Qbar0/ Qbar0
 
-      real Qbar(Nsrc)
+      real Qbar(Msrc)
       common /sources_Qbar/ Qbar
 
-      real Qsrc(Nsrc,N)
+      real Qsrc(Msrc,N)
       common /source_Qsrc/ Qsrc
 
-      real Qshape(Nsrc,N)
+      real Qshape(Msrc,N)
       common /source_Qshape/ Qshape
 
 # ifdef SOLVE3D
-      real Tsrc(Nsrc,N,NT)
+      real Tsrc(Msrc,N,NT)
       common /source_Tsrc/ Tsrc
 
-      real Tsrc0(Nsrc,NT)
+      real Tsrc0(Msrc,NT)
       common /source_Tsrc0/ Tsrc0
 # endif
 
-      real lasrc(Nsrc)
+      real lasrc(Msrc)
       common /source_lasrc/ lasrc
 
-      real losrc(Nsrc)
+      real losrc(Msrc)
       common /source_losrc/ losrc
 
-      integer Dsrc(Nsrc)
+      integer Nsrc
+      common /source_Nsrc/ Nsrc
+      
+      integer Dsrc(Msrc)
       common /source_Dsrc/ Dsrc
 
-      integer Isrc(Nsrc)
+      integer Isrc(Msrc)
       common /source_Isrc/ Isrc
 
-      integer Jsrc(Nsrc)
+      integer Jsrc(Msrc)
       common /source_Jsrc/ Jsrc
 
-      logical Lsrc(Nsrc,30)
+      logical Lsrc(Msrc,30)
       common /source_Lsrc/ Lsrc
 
 #ifdef PSOURCE_NCFILE
@@ -61,7 +64,7 @@
 !  qbarg  |  Two-time-level grided data for river runoff [m3/s].
 !  tqbar     Time of river runoff data.
 !
-      real qbarg(Nsrc,2)
+      real qbarg(Msrc,2)
       common /qbardat_qbarg/qbarg
       real    qbar_time(2)
       real    qbar_cycle
@@ -70,11 +73,11 @@
       common /qbardat2/ qbar_cycle
       common /qbardat3/ itqbar, qbar_ncycle, qbar_rec, qbar_tid, qbar_id
 
-      real qbardir(Nsrc)
+      real qbardir(Msrc)
       common /source_qbardir/ qbardir
 
 # ifdef PSOURCE_NCFILE_TS
-      real tsrcg(Nsrc,2,NT)
+      real tsrcg(Msrc,2,NT)
       common /tsrcdat_tsrcg/tsrcg
       real    tsrc_time(2,NT)
       real    tsrc_cycle(NT)

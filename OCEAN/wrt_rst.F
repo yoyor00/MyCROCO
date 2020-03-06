@@ -225,7 +225,8 @@
       enddo
 
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-!
+# if (defined LMD_SKPP || defined GLS_MIXING )
+!     
 !     Write out depth of planetary boundary layer (m).
 !
 #  ifdef LMD_SKPP2005
@@ -241,6 +242,8 @@
      &         ierr MYID
           goto 99               !--> ERROR
         endif
+        
+# endif /* defined LMD_SKPP || defined GLS_MIXING  */
         
 # if defined LMD_BKPP
 !
