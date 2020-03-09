@@ -167,8 +167,8 @@ sed 's/'NPP=1'/'NPP=1'/' < param_bak1.h.$par1 > param_bak2.h.$par1
 \mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
 
 rm -Rf Compile_$par1 ; mkdir Compile_$par1
-cp param_bak1.h.$par1 Compile_$par1/param.h.OK
-cp cppdefs_bak1.h.$par1 Compile_$par1/cppdefs.h.OK
+cp param_bak1.h.$par1 param.h.OK.$par1
+cp cppdefs_bak1.h.$par1 cppdefs.h.OK.$par1
 
 #echo "qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash"
 #CI_CROCO_PWD=$PWD qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
@@ -223,8 +223,8 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
   \mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
     
   rm -Rf Compile_$par1 ; mkdir Compile_$par1
-  cp param_bak1.h.$par1 Compile_${par1}/param.h.OK
-  cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
+  cp param_bak1.h.$par1 param.h.OK.${par1}
+  cp cppdefs_bak1.h.$par1 cppdefs.h.OK.${par1}
     
     
   #   echo "qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash" 
@@ -283,8 +283,8 @@ if [ ${FLAG_MPI} -eq 1 ]; then
   sed 's/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
   \mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
   rm -Rf Compile_$par1 ; mkdir Compile_$par1
-  cp param_bak1.h.$par1 Compile_${par1}/param.h.OK
-  cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
+  cp param_bak1.h.$par1 param.h.OK.${par1}
+  cp cppdefs_bak1.h.$par1 cppdefs.h.OK.${par1}
     
   #  echo "qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash"
   #CI_CROCO_PWD=$PWD qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
