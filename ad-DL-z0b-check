@@ -1,0 +1,59 @@
+#!/bin/bash
+#OAR --project moise-modeling
+#OAR -l /nodes=1/cpu=1/core=2,walltime=5:00:00
+
+set -x
+set -e
+pwd=`pwd`
+#guix_cmd="guix time-machine --commit=c70261bfb993cebc23cd80042de3f52a8b7932a4 --"
+#guix_cmd=$pwd/.croco-guix-config-profile/bin/guix
+guix_cmd="guix time-machine --url=https://gitlab.inria.fr/bremond/guix.git --branch=check-master-mpich --"
+
+[ -f /applis/site/guix.sh ] && . /applis/site/guix.sh
+export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
+export PATH="$HOME/.config/guix/current/bin:${PATH}"
+
+
+
+if [ -f "$OAR_NODE_FILE" ]; then
+  nbcores=`cat $OAR_NODE_FILE|wc -l`
+  mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
+else
+  nbcores=2
+  mpirun_cmd="mpirun -n $nbcores"
+fi
+
+# guix environment setup
+packages="gcc-toolchain gfortran-toolchain make \
+        netcdf netcdf-fortran \
+        mpich openssh adjoinable-mpi \
+        openblas lapack \
+        openjdk coreutils binutils sed grep bash which"
+
+rm -f $pwd/.croco-guix-profile
+$guix_cmd environment --root=$pwd/.croco-guix-profile --pure --ad-hoc $packages -- echo guix environment setup
+
+mkdir -p RunC
+cd RunC
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/adparam.h
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/cost_fun.F
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/cppdefs-ad-ftides-obs.h
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/cppdefs-ad-ftides.h
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/croco-ad-ftides-obs.in
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/croco-ad-ftides-tgt.in
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/croco-ad-ftides.in
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/param.h
+ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/read_obs.F
+
+# without restart
+ln -sf cppdefs-ad-ftides-obs.h cppdefs.h
+$guix_cmd environment --pure --ad-hoc $packages -- ../OCEAN/jobcomp
+$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco croco-ad-ftides-obs.in
+
+# history -> obs
+cp ftides_his.nc obs.nc
+
+# use restart
+ln -sf cppdefs-ad-ftides.h cppdefs.h
+$guix_cmd environment --pure --ad-hoc $packages -- ../OCEAN/jobcomp
+$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco_adc croco-ad-ftides.in
