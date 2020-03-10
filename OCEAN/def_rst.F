@@ -417,6 +417,7 @@
         enddo
         
 #if ( defined LMD_MIXING || defined GLS_MIXING )
+# if ( defined LMD_SKPP || defined GLS_MIXING )        
 !
 ! Depth of planetary boundary layer.
 !     
@@ -439,6 +440,8 @@
         call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
      &       NF_DOUBLE,ierr)
         
+#  endif         /*  LMD_SKPP || GLS_MIXING  */
+
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
@@ -1168,7 +1171,8 @@
 #endif
 
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-!
+#  if (defined LMD_SKPP || defined GLS_MIXING )
+!     
 ! Depth of planetary boundary layer.
 !
           lvar=lenstr(vname(1,indxHbl))
@@ -1177,7 +1181,7 @@
           write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-          
+#  endif /*  LMD_SKPP || GLS_MIXING  */
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.

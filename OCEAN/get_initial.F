@@ -1121,7 +1121,7 @@
      &    /18x' >> EXACT_RESTART is defined <<',
      &    /21x'    - OK if it is a ''cold start'' ',
      &         'i.e from a 3rd-party initial file',
-     &    /21x'   - otherwise, if it a ''hot start'' ',
+     &    /21x'    - otherwise, if it a ''hot start'' ',
      &         'i.e from a restart file produced by this code ',
      &    /21x'      => problem: run is not restartable ',
      &    /21x'      => check your initial file')      
