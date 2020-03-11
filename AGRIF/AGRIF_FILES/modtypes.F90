@@ -179,9 +179,9 @@ type Agrif_Variable_c
 !
 !> \name Arrays containing the values of the grid variables (character)
 !> @{
-    character(4000)                             :: carray0
-    character(400), dimension(:)  , allocatable :: carray1
-    character(400), dimension(:,:), allocatable :: carray2
+    character(10000)                            :: carray0
+    character(500), dimension(:)  , allocatable :: carray1
+    character(500), dimension(:,:), allocatable :: carray2
 !> @}
 !---------------------------------------------------------------------------------------------------
 end type Agrif_Variable_c
