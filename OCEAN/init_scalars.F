@@ -727,6 +727,138 @@ CR      write(stdout,'(1x,A,I3)') 'indxTPAS = ',indxTPAS
       vname(6,indxNH4)='lat_rho lon_rho                           '
       vname(7,indxNH4)='                                          '
 
+#     if defined key_ligand
+      vname(1,indxLGW)='LGW                                       '
+      vname(2,indxLGW)='Ligands                                   '
+      vname(3,indxLGW)='umol L-1                                  '
+      vname(4,indxLGW)='Ligands, scalar, series                   '
+      vname(5,indxLGW)='                                          '
+      vname(6,indxLGW)='lat_rho lon_rho                           '
+      vname(7,indxLGW)='                                          '
+#     endif
+#     if defined key_pisces_quota
+      vname(1,indxDON)='DON                                       '
+      vname(2,indxDON)='DON                                       '
+      vname(3,indxDON)='umol L-1                                  '
+      vname(4,indxDON)='DON, scalar, series                       '
+      vname(5,indxDON)='                                          '
+      vname(6,indxDON)='lat_rho lon_rho                           '
+      vname(7,indxDON)='                                          '
+
+      vname(1,indxDOP)='DOP                                       '
+      vname(2,indxDOP)='DOP                                       '
+      vname(3,indxDOP)='umol L-1                                  '
+      vname(4,indxDOP)='DOP, scalar, series                       '
+      vname(5,indxDOP)='                                          '
+      vname(6,indxDOP)='lat_rho lon_rho                           '
+      vname(7,indxDOP)='                                          '
+
+      vname(1,indxPON)='PON                                       '
+      vname(2,indxPON)='PON                                       '
+      vname(3,indxPON)='umol L-1                                  '
+      vname(4,indxPON)='PON, scalar, series                       '
+      vname(5,indxPON)='                                          '
+      vname(6,indxPON)='lat_rho lon_rho                           '
+      vname(7,indxPON)='                                          '
+
+      vname(1,indxPOP)='POP                                       '
+      vname(2,indxPOP)='POP                                       '
+      vname(3,indxPOP)='umol L-1                                  '
+      vname(4,indxPOP)='POP, scalar, series                       '
+      vname(5,indxPOP)='                                          '
+      vname(6,indxPOP)='lat_rho lon_rho                           '
+      vname(7,indxPOP)='                                          '
+
+      vname(1,indxNPH)='NPH                                       '
+      vname(2,indxNPH)='N quota of nanophyto                      '
+      vname(3,indxNPH)='umol L-1                                  '
+      vname(4,indxNPH)='NPH, scalar, series                       '
+      vname(5,indxNPH)='                                          '
+      vname(6,indxNPH)='lat_rho lon_rho                           '
+      vname(7,indxNPH)='                                          '
+
+      vname(1,indxPPH)='PPH                                       '
+      vname(2,indxPPH)='P quota of nanophyto                      '
+      vname(3,indxPPH)='umol L-1                                  '
+      vname(4,indxPPH)='PPH, scalar, series                       '
+      vname(5,indxPPH)='                                          '
+      vname(6,indxPPH)='lat_rho lon_rho                           '
+      vname(7,indxPPH)='                                          '
+
+      vname(1,indxNDI)='NDI                                       '
+      vname(2,indxNDI)='N quota of diatoms                        '
+      vname(3,indxNDI)='umol L-1                                  '
+      vname(4,indxNDI)='NDI, scalar, series                       '
+      vname(5,indxNDI)='                                          '
+      vname(6,indxNDI)='lat_rho lon_rho                           '
+      vname(7,indxNDI)='                                          '
+
+      vname(1,indxPDI)='PDI                                       '
+      vname(2,indxPDI)='P quota of diatoms                        '
+      vname(3,indxPDI)='umol L-1                                  '
+      vname(4,indxPDI)='PDI, scalar, series                       '
+      vname(5,indxPDI)='                                          '
+      vname(6,indxPDI)='lat_rho lon_rho                           '
+      vname(7,indxPDI)='                                          '
+
+      vname(1,indxPIC)='PIC                                       '
+      vname(2,indxPIC)='Picophytoplankton                         '
+      vname(3,indxPIC)='umolC L-1                                 '
+      vname(4,indxPIC)='Picophytoplankton, scalar, series         '
+      vname(5,indxPIC)='                                          '
+      vname(6,indxPIC)='lat_rho lon_rho                           '
+      vname(7,indxPIC)='                                          '
+
+      vname(1,indxNPI)='NPI                                       '
+      vname(2,indxNPI)='N quota of picophyto                      '
+      vname(3,indxNPI)='umol L-1                                  '
+      vname(4,indxNPI)='NPI, scalar, series                       '
+      vname(5,indxNPI)='                                          '
+      vname(6,indxNPI)='lat_rho lon_rho                           '
+      vname(7,indxNPI)='                                          '
+
+      vname(1,indxPPI)='PPI                                       '
+      vname(2,indxPPI)='P quota of picophyto                      '
+      vname(3,indxPPI)='umol L-1                                  '
+      vname(4,indxPPI)='PPI, scalar, series                       '
+      vname(5,indxPPI)='                                          '
+      vname(6,indxPPI)='lat_rho lon_rho                           '
+      vname(7,indxPPI)='                                          '
+
+      vname(1,indxPFE)='PFE                                       '
+      vname(2,indxPFE)='Iron quota of picophyto                   '
+      vname(3,indxPFE)='umol L-1                                  '
+      vname(4,indxPFE)='PFE, scalar, series                       '
+      vname(5,indxPFE)='                                          '
+      vname(6,indxPFE)='lat_rho lon_rho                           '
+      vname(7,indxPFE)='                                          '
+
+      vname(1,indxPCH)='PCH                                       '
+      vname(2,indxPCH)='Chlorophyll of picophyto                  '
+      vname(3,indxPCH)='umol L-1                                  '
+      vname(4,indxPCH)='PCH, scalar, series                       '
+      vname(5,indxPCH)='                                          '
+      vname(6,indxPCH)='lat_rho lon_rho                           '
+      vname(7,indxPCH)='                                          '
+
+      vname(1,indxGON)='GON                                       '
+      vname(2,indxGON)='GON                                       '
+      vname(3,indxGON)='umol L-1                                  '
+      vname(4,indxGON)='GON, scalar, series                       '
+      vname(5,indxGON)='                                          '
+      vname(6,indxGON)='lat_rho lon_rho                           '
+      vname(7,indxGON)='                                          '
+
+      vname(1,indxGOP)='GOP                                       '
+      vname(2,indxGOP)='GOP                                       '
+      vname(3,indxGOP)='umol L-1                                  '
+      vname(4,indxGOP)='GOP, scalar, series                       '
+      vname(5,indxGOP)='                                          '
+      vname(6,indxGOP)='lat_rho lon_rho                           '
+      vname(7,indxGOP)='                                          '
+
+#     endif
+
 #  elif defined BIO_NChlPZD
 CR      write(stdout,'(1x,A,I3)') 'indxNO3 =',indxNO3
       vname(1,indxNO3)='NO3                                       '
@@ -4099,9 +4231,8 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series             ' 
-
-      write(stdout,'(1x,A,I3)') 'indxbioVSink(Nfld)='
-     &                          ,indxbioVSink+Nfld-1
+!      write(stdout,'(1x,A,I3)') 'indxbioVSink(Nfld)='
+!     &                          ,indxbioVSink+Nfld-1
       vname(1,indxbioVSink+Nfld-1)=
      &     'Cflx                            '  
       vname(2,indxbioVSink+Nfld-1)=
@@ -4220,9 +4351,8 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                      '  
       vname(4,indxbioVSink+Nnh4dep-1)=
      &     'Nh4dep           , scalar, series'  
-
-      write(stdout,'(1x,A,I3)') 'indxbioVSink(Nnitrpot)='
-     &                          ,indxbioVSink+Nnitrpot-1
+!      write(stdout,'(1x,A,I3)') 'indxbioVSink(Nnitrpot)='
+!     &                          ,indxbioVSink+Nnitrpot-1
       vname(1,indxbioVSink+Nnitrpot-1)=
      &     'Nfix                            '  
       vname(2,indxbioVSink+Nnitrpot-1)=
