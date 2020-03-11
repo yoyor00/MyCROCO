@@ -101,6 +101,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 /bin/cp -f ${SOURCE}/*.F90 $SCRDIR
 /bin/cp -f ${SOURCE}/*.F   $SCRDIR
 /bin/cp -f ${SOURCE}/*.h   $SCRDIR
+/bin/cp -f ${SOURCE}/*.h90   $SCRDIR
 /bin/cp -f ${SOURCE}/Make* $SCRDIR
 /bin/cp -f ${SOURCE}/testkeys.F $SCRDIR
 /bin/cp -f ${SOURCE}/jobcomp $SCRDIR
@@ -108,6 +109,7 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 /bin/cp -RLf ${AGRIF_SRC} $SCRDIR
 /bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
 /bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
+/bin/cp -f ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 /bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
@@ -153,7 +155,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp  -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8 "
+		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
