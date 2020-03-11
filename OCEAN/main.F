@@ -156,7 +156,6 @@
 !
 # if defined BIOLOGY && defined PISCES
       CALL trc_nam_pisces
-      CALL trc_sbc_pisces
 # endif
 !
 !
