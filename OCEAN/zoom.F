@@ -119,6 +119,7 @@
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
       USE trcini_pisces
+      USE p4zsbc
 # endif
       implicit none
       integer tile, ierr, trd, subs
@@ -237,7 +238,6 @@
 #  if defined BIOLOGY && defined PISCES
 !      call get_dust
       CALL trc_nam_pisces
-      CALL trc_sbc_pisces
 #  endif
 !
 !  Read sediment initial values and parameters from sediment.in file
