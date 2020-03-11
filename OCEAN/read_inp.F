@@ -1927,7 +1927,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 ! === === ===
 # ifdef AVERAGES
 !         wrtdiabio_avg=.true.
-        write(*,*)'=============='
+!        write(*,*)'=============='
       elseif (keyword(1:kwlen).eq.'diagbioFlux_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
 !     ==
