@@ -257,6 +257,138 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'nh4_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+#     if defined key_ligand
+          elseif (itrc.eq.iLGW_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'lgw_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'lgw_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+#     endif
+#     if defined key_pisces_quota
+          elseif (itrc.eq.iDON_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'don_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'don_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iDOP_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'dop_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'dop_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPON_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pon_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pon_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPOP_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pop_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pop_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iNPH_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'nph_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'nph_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPPH_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pph_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pph_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iNDI_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'ndi_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'ndi_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPDI_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pdi_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pdi_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPIC_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pic_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pic_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iNPI_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'npi_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'npi_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPPI_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'ppi_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'ppi_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPFE_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pfe_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pfe_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPCH_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'pch_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pch_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iGON_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'gon_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'gon_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iGOP_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'gop_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+                MPI_master_only write(stdout,3) 'gop_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+#     endif
 
 #  elif defined BIO_NChlPZD
 

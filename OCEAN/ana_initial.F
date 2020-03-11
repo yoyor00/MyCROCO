@@ -1223,6 +1223,74 @@ C$OMP BARRIER
               t(i,j,k,1,iNH4_)=1.e-2
               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
+#     if defined key_ligand
+            if (.not.got_tini(iLGW_))  then
+              t(i,j,k,1,iLGW_)=1.e-3
+              t(i,j,k,2,iLGW_)=t(i,j,k,1,iLGW_)
+            endif
+#     endif
+#     if defined key_pisces_quota
+            if (.not.got_tini(iDON_))  then
+              t(i,j,k,1,iDON_)=5.
+              t(i,j,k,2,iDON_)=t(i,j,k,1,iDON_)
+            endif
+            if (.not.got_tini(iDOP_))  then
+              t(i,j,k,1,iDOP_)=5.
+              t(i,j,k,2,iDOP_)=t(i,j,k,1,iDOP_)
+            endif
+            if (.not.got_tini(iPON_))  then
+              t(i,j,k,1,iPON_)=1.e-2
+              t(i,j,k,2,iPON_)=t(i,j,k,1,iPON_)
+            endif
+            if (.not.got_tini(iPOP_))  then
+              t(i,j,k,1,iPOP_)=1.e-2
+              t(i,j,k,2,iPOP_)=t(i,j,k,1,iPOP_)
+            endif
+            if (.not.got_tini(iNPH_))  then
+              t(i,j,k,1,iNPH_)=1.e-2
+              t(i,j,k,2,iNPH_)=t(i,j,k,1,iNPH_)
+            endif
+            if (.not.got_tini(iPPH_))  then
+              t(i,j,k,1,iPPH_)=1.e-2
+              t(i,j,k,2,iPPH_)=t(i,j,k,1,iPPH_)
+            endif
+            if (.not.got_tini(iNDI_))  then
+              t(i,j,k,1,iNDI_)=1.e-2
+              t(i,j,k,2,iNDI_)=t(i,j,k,1,iNDI_)
+            endif
+            if (.not.got_tini(iPDI_))  then
+              t(i,j,k,1,iPDI_)=1.e-2
+              t(i,j,k,2,iPDI_)=t(i,j,k,1,iPDI_)
+            endif
+            if (.not.got_tini(iPIC_))  then
+              t(i,j,k,1,iPIC_)=1.e-2
+              t(i,j,k,2,iPIC_)=t(i,j,k,1,iPIC_)
+            endif
+            if (.not.got_tini(iNPI_))  then
+              t(i,j,k,1,iNPI_)=1.e-2
+              t(i,j,k,2,iNPI_)=t(i,j,k,1,iNPI_)
+            endif
+            if (.not.got_tini(iPPI_))  then
+              t(i,j,k,1,iPPI_)=1.e-2
+              t(i,j,k,2,iPPI_)=t(i,j,k,1,iPPI_)
+            endif
+            if (.not.got_tini(iPFE_))  then
+              t(i,j,k,1,iPFE_)=1.e-2*5.E-6
+              t(i,j,k,2,iPFE_)=t(i,j,k,1,iPFE_)
+            endif
+            if (.not.got_tini(iPCH_))  then
+              t(i,j,k,1,iPCH_)=1.e-2*12./55.
+              t(i,j,k,2,iPCH_)=t(i,j,k,1,iPCH_)
+            endif
+            if (.not.got_tini(iGON_))  then
+              t(i,j,k,1,iGON_)=1.e-2
+              t(i,j,k,2,iGON_)=t(i,j,k,1,iGON_)
+            endif
+            if (.not.got_tini(iGOP_))  then
+              t(i,j,k,1,iGOP_)=1.e-2
+              t(i,j,k,2,iGOP_)=t(i,j,k,1,iGOP_)
+            endif
+#     endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tini(iChla)) then
                t(i,j,k,1,iChla)=0.08

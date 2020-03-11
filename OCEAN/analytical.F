@@ -985,6 +985,26 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iNCH_)=1.e-2*12./55.
             tclm(i,j,k,iDCH_)=1.e-2*12./55.
             tclm(i,j,k,iNH4_)=1.e-2
+#      if defined key_ligand
+            tclm(i,j,k,iLGW_)=1.e-3
+#      endif
+#      if defined key_pisces_quota
+            tclm(i,j,k,iDON_)=5.
+            tclm(i,j,k,iDOP_)=5.
+            tclm(i,j,k,iPON_)=1.e-2
+            tclm(i,j,k,iPOP_)=1.e-2
+            tclm(i,j,k,iNPH_)=1.e-2
+            tclm(i,j,k,iPPH_)=1.e-2
+            tclm(i,j,k,iNDI_)=1.e-2
+            tclm(i,j,k,iPDI_)=1.e-2
+            tclm(i,j,k,iPIC_)=1.e-2
+            tclm(i,j,k,iNPI_)=1.e-2
+            tclm(i,j,k,iPPI_)=1.e-2
+            tclm(i,j,k,iPFE_)=1.e-2*5.E-6
+            tclm(i,j,k,iPCH_)=1.e-2*12./55.
+            tclm(i,j,k,iGON_)=1.e-2
+            tclm(i,j,k,iGOP_)=1.e-2
+#      endif
 #   elif defined BIO_NChlPZD
             tclm(i,j,k,iChla)=0.08
             tclm(i,j,k,iPhy1)=0.1
@@ -1070,6 +1090,26 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iNCH_)) tclm(i,j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tclm(iDCH_)) tclm(i,j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tclm(iNH4_)) tclm(i,j,k,iNH4_)=0.01
+#      if defined key_ligand
+            if (.not.got_tclm(iLGW_)) tclm(i,j,k,iLGW_)=1.e-3
+#      endif
+#      if defined key_pisces_quota
+            if (.not.got_tclm(iDON_)) tclm(i,j,k,iDON_)=5.
+            if (.not.got_tclm(iDOP_)) tclm(i,j,k,iDOP_)=5.
+            if (.not.got_tclm(iPON_)) tclm(i,j,k,iPON_)=0.01
+            if (.not.got_tclm(iPOP_)) tclm(i,j,k,iPOP_)=0.01
+            if (.not.got_tclm(iNPH_)) tclm(i,j,k,iNPH_)=0.01
+            if (.not.got_tclm(iPPH_)) tclm(i,j,k,iPPH_)=0.01
+            if (.not.got_tclm(iNDI_)) tclm(i,j,k,iNDI_)=0.01
+            if (.not.got_tclm(iPDI_)) tclm(i,j,k,iPDI_)=0.01
+            if (.not.got_tclm(iPIC_)) tclm(i,j,k,iPIC_)=0.01
+            if (.not.got_tclm(iNPI_)) tclm(i,j,k,iNPI_)=0.01
+            if (.not.got_tclm(iPPI_)) tclm(i,j,k,iPPI_)=0.01
+            if (.not.got_tclm(iPFE_)) tclm(i,j,k,iPFE_)=0.01*5.e-6
+            if (.not.got_tclm(iPCH_)) tclm(i,j,k,iPCH_)=0.01*12./55.
+            if (.not.got_tclm(iGON_)) tclm(i,j,k,iGON_)=0.01
+            if (.not.got_tclm(iGOP_)) tclm(i,j,k,iGOP_)=0.01
+#      endif
 #   elif defined BIO_NChlPZD
             if (.not.got_tclm(iChla)) tclm(i,j,k,iChla)=0.08
             if (.not.got_tclm(iPhy1)) tclm(i,j,k,iPhy1)=0.1
@@ -2033,6 +2073,58 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iNH4_)) then
             Tsrc0(is,iNH4_)=1.e-2
           endif
+#      if defined key_ligand
+          if (.not.got_tsrc(iLGW_)) then
+            Tsrc0(is,iLGW_)=1.e-3
+          endif
+#      endif
+#      if defined key_pisces_quota
+!          if (.not.got_tsrc(iDON_)) then
+!            Tsrc0(is,iDON_)=5.
+!          endif
+!          if (.not.got_tsrc(iDOP_)) then
+!            Tsrc0(is,iDOP_)=5.
+!          endif
+          if (.not.got_tsrc(iPON_)) then
+            Tsrc0(is,iPON_)=1.e-2
+          endif
+          if (.not.got_tsrc(iPOP_)) then
+            Tsrc0(is,iPOP_)=1.e-2
+          endif
+          if (.not.got_tsrc(iNPH_)) then
+            Tsrc0(is,iNPH_)=1.e-2
+          endif
+          if (.not.got_tsrc(iPPH_)) then
+            Tsrc0(is,iPPH_)=1.e-2
+          endif
+          if (.not.got_tsrc(iNDI_)) then
+            Tsrc0(is,iNDI_)=1.e-2
+          endif
+          if (.not.got_tsrc(iPDI_)) then
+            Tsrc0(is,iPDI_)=1.e-2
+          endif
+          if (.not.got_tsrc(iPIC_)) then
+            Tsrc0(is,iPIC_)=1.e-2
+          endif
+          if (.not.got_tsrc(iNPI_)) then
+            Tsrc0(is,iNPI_)=1.e-2
+          endif
+          if (.not.got_tsrc(iPPI_)) then
+            Tsrc0(is,iPPI_)=1.e-2
+          endif
+          if (.not.got_tsrc(iPFE_)) then
+            Tsrc0(is,iPFE_)=1.e-2*5.e-6
+          endif
+          if (.not.got_tsrc(iPCH_)) then
+            Tsrc0(is,iPCH_)=1.e-2*12./55.
+          endif
+          if (.not.got_tsrc(iGON_)) then
+            Tsrc0(is,iGON_)=1.e-2
+          endif
+          if (.not.got_tsrc(iGOP_)) then
+            Tsrc0(is,iGOP_)=1.e-2
+          endif
+#      endif
 #   endif   /* PSOURCE_NCFILE_TS */  
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
@@ -2049,6 +2141,26 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iNCH_)=Tsrc0(is,iNCH_)
           Tsrc(is,k,iDCH_)=Tsrc0(is,iDCH_)
           Tsrc(is,k,iNH4_)=Tsrc0(is,iNH4_)
+#     if defined key_ligand
+          Tsrc(is,k,iLGW_)=Tsrc0(is,iLGW_)
+#     endif
+#     if defined key_pisces_quota
+!          Tsrc(is,k,iDON_)=Tsrc0(is,iDON_)
+!          Tsrc(is,k,iDOP_)=Tsrc0(is,iDOP_)
+          Tsrc(is,k,iPON_)=Tsrc0(is,iPON_)
+          Tsrc(is,k,iPOP_)=Tsrc0(is,iPOP_)
+          Tsrc(is,k,iNPH_)=Tsrc0(is,iNPH_)
+          Tsrc(is,k,iPPH_)=Tsrc0(is,iPPH_)
+          Tsrc(is,k,iNDI_)=Tsrc0(is,iNDI_)
+          Tsrc(is,k,iPDI_)=Tsrc0(is,iPDI_)
+          Tsrc(is,k,iPIC_)=Tsrc0(is,iPIC_)
+          Tsrc(is,k,iNPI_)=Tsrc0(is,iNPI_)
+          Tsrc(is,k,iPPI_)=Tsrc0(is,iPPI_)
+          Tsrc(is,k,iPFE_)=Tsrc0(is,iPFE_)
+          Tsrc(is,k,iPCH_)=Tsrc0(is,iPCH_)
+          Tsrc(is,k,iGON_)=Tsrc0(is,iGON_)
+          Tsrc(is,k,iGOP_)=Tsrc0(is,iGOP_)
+#     endif
 #  elif defined BIO_NChlPZD
 #   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iChla)) then
@@ -2654,6 +2766,26 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iNCH_)) tbry_west(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_west(j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tbry(iNH4_)) tbry_west(j,k,iNH4_)=1.e-2
+#     if defined key_ligand
+            if (.not.got_tbry(iLGW_)) tbry_west(j,k,iLGW_)=1.e-3
+#     endif
+#     if defined key_pisces_quota
+!            if (.not.got_tbry(iDON_)) tbry_west(j,k,iDON_)=5.
+!            if (.not.got_tbry(iDOP_)) tbry_west(j,k,iDOP_)=5.
+            if (.not.got_tbry(iPON_)) tbry_west(j,k,iPON_)=1.e-2
+            if (.not.got_tbry(iPOP_)) tbry_west(j,k,iPOP_)=1.e-2
+            if (.not.got_tbry(iNPH_)) tbry_west(j,k,iNPH_)=1.e-2
+            if (.not.got_tbry(iPPH_)) tbry_west(j,k,iPPH_)=1.e-2
+            if (.not.got_tbry(iNDI_)) tbry_west(j,k,iNDI_)=1.e-2
+            if (.not.got_tbry(iPDI_)) tbry_west(j,k,iPDI_)=1.e-2
+            if (.not.got_tbry(iPIC_)) tbry_west(j,k,iPIC_)=1.e-2
+            if (.not.got_tbry(iNPI_)) tbry_west(j,k,iNPI_)=1.e-2
+            if (.not.got_tbry(iPPI_)) tbry_west(j,k,iPPI_)=1.e-2
+            if (.not.got_tbry(iPFE_)) tbry_west(j,k,iPFE_)=1.e-2*5.E-6
+            if (.not.got_tbry(iPCH_)) tbry_west(j,k,iPCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iGON_)) tbry_west(j,k,iGON_)=1.e-2
+            if (.not.got_tbry(iGOP_)) tbry_west(j,k,iGOP_)=1.e-2
+#     endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tbry(iChla)) tbry_west(j,k,iChla)=0.08  
             if (.not.got_tbry(iPhy1)) tbry_west(j,k,iPhy1)=0.1
@@ -2730,6 +2862,26 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iNCH_)) tbry_east(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_east(j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tbry(iNH4_)) tbry_east(j,k,iNH4_)=1.e-2
+#     if defined key_ligand
+            if (.not.got_tbry(iLGW_)) tbry_east(j,k,iLGW_)=1.e-3
+#     endif
+#     if defined key_pisces_quota
+!            if (.not.got_tbry(iDON_)) tbry_east(j,k,iDON_)=5.
+!            if (.not.got_tbry(iDOP_)) tbry_east(j,k,iDOP_)=5.
+            if (.not.got_tbry(iPON_)) tbry_east(j,k,iPON_)=1.e-2
+            if (.not.got_tbry(iPOP_)) tbry_east(j,k,iPOP_)=1.e-2
+            if (.not.got_tbry(iNPH_)) tbry_east(j,k,iNPH_)=1.e-2
+            if (.not.got_tbry(iPPH_)) tbry_east(j,k,iPPH_)=1.e-2
+            if (.not.got_tbry(iNDI_)) tbry_east(j,k,iNDI_)=1.e-2
+            if (.not.got_tbry(iPDI_)) tbry_east(j,k,iPDI_)=1.e-2
+            if (.not.got_tbry(iPIC_)) tbry_east(j,k,iPIC_)=1.e-2
+            if (.not.got_tbry(iNPI_)) tbry_east(j,k,iNPI_)=1.e-2
+            if (.not.got_tbry(iPPI_)) tbry_east(j,k,iPPI_)=1.e-2
+            if (.not.got_tbry(iPFE_)) tbry_east(j,k,iPFE_)=1.e-2*5.E-6
+            if (.not.got_tbry(iPCH_)) tbry_east(j,k,iPCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iGON_)) tbry_east(j,k,iGON_)=1.e-2
+            if (.not.got_tbry(iGOP_)) tbry_east(j,k,iGOP_)=1.e-2
+#     endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tbry(iChla)) tbry_east(j,k,iChla)=0.08   
             if (.not.got_tbry(iPhy1)) tbry_east(j,k,iPhy1)=0.1
@@ -2806,6 +2958,26 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
              if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
              if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
+#     if defined key_ligand
+             if (.not.got_tbry(iLGW_)) tbry_north(j,k,iLGW_)=1.e-3
+#     endif
+#     if defined key_pisces_quota
+!             if (.not.got_tbry(iDON_)) tbry_north(j,k,iDON_)=5.
+!             if (.not.got_tbry(iDOP_)) tbry_north(j,k,iDOP_)=5.
+             if (.not.got_tbry(iPON_)) tbry_north(j,k,iPON_)=1.e-2
+             if (.not.got_tbry(iPOP_)) tbry_north(j,k,iPOP_)=1.e-2
+             if (.not.got_tbry(iNPH_)) tbry_north(j,k,iNPH_)=1.e-2
+             if (.not.got_tbry(iPPH_)) tbry_north(j,k,iPPH_)=1.e-2
+             if (.not.got_tbry(iNDI_)) tbry_north(j,k,iNDI_)=1.e-2
+             if (.not.got_tbry(iPDI_)) tbry_north(j,k,iPDI_)=1.e-2
+             if (.not.got_tbry(iPIC_)) tbry_north(j,k,iPIC_)=1.e-2
+             if (.not.got_tbry(iNPI_)) tbry_north(j,k,iNPI_)=1.e-2
+             if (.not.got_tbry(iPPI_)) tbry_north(j,k,iPPI_)=1.e-2
+             if (.not.got_tbry(iPFE_)) tbry_north(j,k,iPFE_)=1.e-2*5.E-6
+             if (.not.got_tbry(iPCH_)) tbry_north(j,k,iPCH_)=1.e-2*12./55.
+             if (.not.got_tbry(iGON_)) tbry_north(j,k,iGON_)=1.e-2
+             if (.not.got_tbry(iGOP_)) tbry_north(j,k,iGOP_)=1.e-2
+#     endif
 #  elif defined BIO_NChlPZD
              if (.not.got_tbry(iChla)) tbry_north(j,k,iChla)=0.08   
              if (.not.got_tbry(iPhy1)) tbry_north(j,k,iPhy1)=0.1
@@ -2884,6 +3056,24 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=
      &                                                    1.e-2*12./55.
              if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
+#     if defined key_ligand
+             if (.not.got_tbry(iLGW_)) tbry_south(j,k,iLGW_)=1.e-3
+#     endif
+#     if defined key_pisces_quota
+             if (.not.got_tbry(iPON_)) tbry_south(j,k,iPON_)=1.e-2
+             if (.not.got_tbry(iPOP_)) tbry_south(j,k,iPOP_)=1.e-2
+             if (.not.got_tbry(iNPH_)) tbry_south(j,k,iNPH_)=1.e-2
+             if (.not.got_tbry(iPPH_)) tbry_south(j,k,iPPH_)=1.e-2
+             if (.not.got_tbry(iNDI_)) tbry_south(j,k,iNDI_)=1.e-2
+             if (.not.got_tbry(iPDI_)) tbry_south(j,k,iPDI_)=1.e-2
+             if (.not.got_tbry(iPIC_)) tbry_south(j,k,iPIC_)=1.e-2
+             if (.not.got_tbry(iNPI_)) tbry_south(j,k,iNPI_)=1.e-2
+             if (.not.got_tbry(iPPI_)) tbry_south(j,k,iPPI_)=1.e-2
+             if (.not.got_tbry(iPFE_)) tbry_south(j,k,iPFE_)=1.e-2*5.E-6
+             if (.not.got_tbry(iPCH_)) tbry_south(j,k,iPCH_)=1.e-2*12./55.
+             if (.not.got_tbry(iGON_)) tbry_south(j,k,iGON_)=1.e-2
+             if (.not.got_tbry(iGOP_)) tbry_south(j,k,iGOP_)=1.e-2
+#     endif
 #  elif defined BIO_NChlPZD
              if (.not.got_tbry(iChla)) tbry_south(j,k,iChla)=0.08   
              if (.not.got_tbry(iPhy1)) tbry_south(j,k,iPhy1)=0.1

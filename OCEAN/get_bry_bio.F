@@ -61,7 +61,7 @@
 # ifdef SALINITY
                 got_tbry(isalt)=.false.
 # endif
-                write(stdout,3) 'bry_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'bry_time', bry_file(1:lstr)
 C     goto 99      !--> ERROR
               endif
 # ifdef PISCES
@@ -71,7 +71,7 @@ C     goto 99      !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'dic_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'dic_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iTAL_) then
@@ -80,7 +80,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'talk_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'talk_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iOXY_) then
@@ -89,7 +89,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'o2_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'o2_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iCAL_) then
@@ -98,7 +98,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'cal_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'cal_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iPO4_) then
@@ -107,7 +107,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'po4_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'po4_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iPOC_) then
@@ -116,7 +116,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'poc_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'poc_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iSIL_) then
@@ -125,7 +125,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'si_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'si_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iPHY_) then
@@ -134,7 +134,7 @@ c     goto 99                                     !--> ERROR
               ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'phy_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'phy_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iZOO_) then
@@ -143,7 +143,7 @@ c     goto 99                                     !--> ERROR
             !  ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'zoo_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'zoo_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iDOC_) then
@@ -152,7 +152,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'doc_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'doc_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iDIA_) then
@@ -161,7 +161,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'dia_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'dia_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iMES_) then
@@ -170,7 +170,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'mes_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'mes_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iBSI_) then
@@ -179,7 +179,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'bsi_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'bsi_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iFER_) then
@@ -188,7 +188,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'fer_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'fer_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iBFE_) then
@@ -197,7 +197,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'bfe_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'bfe_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iGOC_) then
@@ -206,7 +206,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'goc_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'goc_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iSFE_) then
@@ -215,7 +215,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'sfe_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'sfe_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iDFE_) then
@@ -224,7 +224,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'dfe_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'dfe_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iDSI_) then
@@ -233,7 +233,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'dsi_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'dsi_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iNFE_) then
@@ -242,7 +242,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'nfe_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'nfe_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iNCH_) then
@@ -251,7 +251,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'nch_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'nch_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iDCH_) then
@@ -260,7 +260,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'dch_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'dch_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iNO3_) then
@@ -269,7 +269,7 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'no3_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'no3_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
             elseif (itrc.eq.iNH4_) then
@@ -278,9 +278,157 @@ c     goto 99                                     !--> ERROR
              ! ierr_all=ierr_all+ierr
               if (ierr .ne. nf_noerr) then
                 got_tbry(itrc)=.false.
-                write(stdout,3) 'nh4_time', bry_file(1:lstr)
+                MPI_master_only write(stdout,3) 'nh4_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
+#    if defined key_ligand
+              elseif (itrc.eq.iLGW_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'lgw_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'lgw_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+#    endif
+#    if defined key_pisces_quota
+              elseif (itrc.eq.iDON_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'don_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'don_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iDOP_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'dop_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'dop_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPON_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pon_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pon_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPOP_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pop_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pop_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iNPH_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'nph_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'nph_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPPH_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pph_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pph_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iNDI_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'ndi_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'ndi_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPDI_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pdi_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pdi_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPIC_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pic_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pic_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iNPI_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'npi_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'npi_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPPI_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'ppi_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'ppi_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPFE_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pfe_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pfe_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iPCH_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'pch_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'pch_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iGON_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'gon_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'gon_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+              elseif (itrc.eq.iGOP_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'gop_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                MPI_master_only write(stdout,3) 'gop_time', bry_file(1:lstr)
+c     goto 99                                     !--> ERROR
+              endif
+#    endif
 
 # elif (defined BIO_NChlPZD || defined BIO_N2ChlPZD2)
             elseif (itrc.eq.iNO3_) then
