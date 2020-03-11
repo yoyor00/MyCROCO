@@ -294,7 +294,7 @@
           nrecavg=ibuff(4)
 #endif
 
-
+#define RESTART_DIAGS
 #if defined RESTART_DIAGS && ! defined XIOS
 
 
