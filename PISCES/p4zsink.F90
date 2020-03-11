@@ -3,45 +3,53 @@
 MODULE p4zsink
    !!======================================================================
    !!                         ***  MODULE p4zsink  ***
-   !! TOP :   PISCES Compute vertical flux of particulate matter due to gravitational sinking
+   !! TOP :  PISCES  vertical flux of particulate matter due to gravitational sinking
    !!======================================================================
    !! History :   1.0  !  2004     (O. Aumont) Original code
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
+   !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Change aggregation formula
+   !!             3.5  !  2012-07  (O. Aumont) Introduce potential time-splitting
+   !!----------------------------------------------------------------------
 #if defined key_pisces
-   !!----------------------------------------------------------------------
    !!   p4z_sink       :  Compute vertical flux of particulate matter due to gravitational sinking
+   !!   p4z_sink_alloc :  Allocate sinking speed variables
    !!----------------------------------------------------------------------
-   USE sms_pisces
-   USE trc
+   USE sms_pisces      !  PISCES Source Minus Sink variables
+!   USE iom             !  I/O manager
 
    IMPLICIT NONE
    PRIVATE
 
-   PUBLIC   p4z_sink    ! called in p4zbio.F90
+   PUBLIC   p4z_sink         ! called in p4zbio.F90
    PUBLIC   p4z_sink_alloc
 
    !!* Substitution
 #  include "ocean2pisces.h90"
 #  include "top_substitute.h90"
 
-   !! * Shared module variables
-   REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE, SAVE ::   &   !:
-     wsbio3, wsbio4,      &    !: POC and GOC sinking speeds
-     wscal                     !: Calcite and BSi sinking speeds
 
-   !! * Module variables
-   REAL(wp), PUBLIC, DIMENSION(:,:,:), ALLOCATABLE, SAVE ::   &   !:
-     sinking, sinking2,   &    !: POC sinking fluxes (different meanings depending on the parameterization
-     sinkcal, sinksil,    &    !: CaCO3 and BSi sinking fluxes
-     sinkfer,sinkfer2                   !: Small BFe sinking flux
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinking, sinking2  !: POC sinking fluxes 
+   !                                                          !  (different meanings depending on the parameterization)
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkingn, sinking2n  !: POC sinking fluxes 
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkingp, sinking2p  !: POC sinking fluxes 
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkcal, sinksil   !: CaCO3 and BSi sinking fluxes
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkfer            !: Small BFe sinking fluxes
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   sinkfer2           !: Big iron sinking fluxes
 
-   INTEGER  :: ik100 = 10
+   INTEGER  :: ik100
 
-
+   !!----------------------------------------------------------------------
+   !! NEMO/TOP 4.0 , NEMO Consortium (2018)
+   !! $Id: p4zsink.F90 10425 2018-12-19 21:54:16Z smasson $ 
+   !! Software governed by the CeCILL license (see ./LICENSE)
+   !!----------------------------------------------------------------------
 CONTAINS
 
+   !!----------------------------------------------------------------------
+   !!   'standard sinking parameterisation'                  ???
+   !!----------------------------------------------------------------------
 
-   SUBROUTINE p4z_sink ( kt, jnt )
+   SUBROUTINE p4z_sink ( kt, knt )
       !!---------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_sink  ***
       !!
@@ -50,198 +58,213 @@ CONTAINS
       !!
       !! ** Method  : - ???
       !!---------------------------------------------------------------------
-      INTEGER, INTENT(in) :: kt, jnt
+      INTEGER, INTENT(in) :: kt, knt
       INTEGER  ::   ji, jj, jk, jit
       INTEGER  ::   iiter1, iiter2
-      REAL(wp) ::   zagg1, zagg2, zagg3, zagg4
-      REAL(wp) ::   zagg , zaggfe, zaggdoc, zaggdoc2
-      REAL(wp) ::   zfact, zwsmax, zmax
-      REAL(wp) ::   zrfact2, zmsk
       INTEGER  ::   ik1
       CHARACTER (len=25) :: charout
+      REAL(wp) :: zmsk, zmax, zwsmax, zfact
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zw2d
       !!---------------------------------------------------------------------
 
-
-!    Sinking speeds of detritus is increased with depth as shown
-!    by data and from the coagulation theory
-!    -----------------------------------------------------------
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zmax = MAX( heup(ji,jj), hmld(ji,jj) )
-               zfact = MAX( 0., fsdepw(ji,jj,jk+1) - zmax ) / 5000.
-               wsbio4(ji,jj,jk) = wsbio2 + ( 200.- wsbio2 ) * zfact
-               wsbio3(ji,jj,jk) = wsbio
-               wscal (ji,jj,jk) = wsbio4(ji,jj,jk)
-            END DO
-         END DO
-      END DO
+      ! Initialization of some global variables
+      ! ---------------------------------------
+      prodpoc(:,:,:) = 0.
+      conspoc(:,:,:) = 0.
+      prodgoc(:,:,:) = 0.
+      consgoc(:,:,:) = 0.
 
       !
-       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-         WRITE(charout, FMT="('b-sink')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout)
-       ENDIF
-
-
-!   INITIALIZE TO ZERO ALL THE SINKING ARRAYS
-!   -----------------------------------------
-
+      !    Sinking speeds of detritus is increased with depth as shown
+      !    by data and from the coagulation theory
+      !    -----------------------------------------------------------
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               sinking (ji,jj,jk) = 0.e0
-               sinking2(ji,jj,jk) = 0.e0
-               sinkcal (ji,jj,jk) = 0.e0
-               sinkfer (ji,jj,jk) = 0.e0
-               sinksil (ji,jj,jk) = 0.e0
-               sinkfer2(ji,jj,jk) = 0.e0
+               zmax  = MAX( heup_01(ji,jj), hmld(ji,jj) )
+               zfact = MAX( 0., gdepw_n(ji,jj,jk+1) - zmax ) / wsbio2scale
+               wsbio4(ji,jj,jk) = wsbio2 + MAX(0., ( wsbio2max - wsbio2 )) * zfact
             END DO
          END DO
       END DO
 
-      IF( .NOT. ln_sink_new ) THEN
+      ! limit the values of the sinking speeds to avoid numerical instabilities  
+      wsbio3(:,:,:) = wsbio
 
+      !
+      !  Initializa to zero all the sinking arrays 
+      !   -----------------------------------------
+      sinking (:,:,:) = 0.e0
+      sinking2(:,:,:) = 0.e0
+      sinkcal (:,:,:) = 0.e0
+      sinkfer (:,:,:) = 0.e0
+      sinksil (:,:,:) = 0.e0
+      sinkfer2(:,:,:) = 0.e0
+
+      IF( .NOT. ln_sink_new ) THEN
 
 !      LIMIT THE VALUES OF THE SINKING SPEEDS 
 !      TO AVOID NUMERICAL INSTABILITIES
 
-      !
-      ! OA This is (I hope) a temporary solution for the problem that may 
-      ! OA arise in specific situation where the CFL criterion is broken 
-      ! OA for vertical sedimentation of particles. To avoid this, a time
-      ! OA splitting algorithm has been coded. A specific maximum
-      ! OA iteration number is provided and may be specified in the namelist 
-      ! OA This is to avoid very large iteration number when explicit free
-      ! OA surface is used (for instance). When niter?max is set to 1, 
-      ! OA this computation is skipped. The crude old threshold method is 
-      ! OA then applied. This also happens when niter exceeds nitermax.
-      IF( MAX( niter1max, niter2max ) == 1 ) THEN
-        iiter1 = 1
-        iiter2 = 1
+         !
+         ! OA This is (I hope) a temporary solution for the problem that may 
+         ! OA arise in specific situation where the CFL criterion is broken 
+         ! OA for vertical sedimentation of particles. To avoid this, a time
+         ! OA splitting algorithm has been coded. A specific maximum
+         ! OA iteration number is provided and may be specified in the namelist 
+         ! OA This is to avoid very large iteration number when explicit free
+         ! OA surface is used (for instance). When niter?max is set to 1, 
+         ! OA this computation is skipped. The crude old threshold method is 
+         ! OA then applied. This also happens when niter exceeds nitermax.
+
+         IF( MAX( niter1max, niter2max ) == 1 ) THEN
+           iiter1 = 1
+           iiter2 = 1
+         ELSE
+            iiter1 = 1
+            iiter2 = 1
+            DO jk = KRANGE
+               DO jj = JRANGE
+                  DO ji = IRANGE
+                     IF( tmask(ji,jj,jk) == 1) THEN
+                        zwsmax =  0.5 * e3t_n(ji,jj,K) / xstep
+                        iiter1 =  MAX( iiter1, INT( wsbio3(ji,jj,jk) / zwsmax ) )
+                        iiter2 =  MAX( iiter2, INT( wsbio4(ji,jj,jk) / zwsmax ) )
+                     ENDIF
+                  END DO
+               END DO
+            END DO
+            IF( lk_mpp ) THEN
+               CALL mpp_max( iiter1 )
+               CALL mpp_max( iiter2 )
+            ENDIF
+            iiter1 = MIN( iiter1, niter1max )
+            iiter2 = MIN( iiter2, niter2max )
+         ENDIF
+
+         DO jk = KRANGE
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  IF( tmask(ji,jj,jk) == 1 ) THEN
+                     zwsmax = 0.5 * e3t_n(ji,jj,K) / xstep
+                     wsbio3(ji,jj,jk) = MIN( wsbio3(ji,jj,jk), zwsmax * FLOAT( iiter1 ) )
+                     wsbio4(ji,jj,jk) = MIN( wsbio4(ji,jj,jk), zwsmax * FLOAT( iiter2 ) )
+                  ENDIF
+               END DO
+            END DO
+         END DO
+!        Compute the sedimentation term using p4zsink2 for all
+!        the sinking particles
+!        -----------------------------------------------------
+         DO jit = 1, iiter1
+            CALL p4z_sink2_std( wsbio3, sinking , jppoc, iiter1 )
+            CALL p4z_sink2_std( wsbio3, sinkfer , jpsfe, iiter1 )
+         END DO
+
+         DO jit = 1, iiter2
+            CALL p4z_sink2_std( wsbio4, sinking2, jpgoc, iiter2 )
+            CALL p4z_sink2_std( wsbio4, sinkfer2, jpbfe, iiter2 )
+            CALL p4z_sink2_std( wsbio4, sinksil , jpgsi, iiter2 )
+            CALL p4z_sink2_std( wsbio4, sinkcal , jpcal, iiter2 )
+         END DO
+
+         IF( ln_p5z ) THEN
+            sinkingn (:,:,:) = 0.e0
+            sinking2n(:,:,:) = 0.e0
+            sinkingp (:,:,:) = 0.e0
+            sinking2p(:,:,:) = 0.e0
+
+            !   Compute the sedimentation term using p4zsink2 for all the sinking particles
+            !   -----------------------------------------------------
+            DO jit = 1, iiter1
+               CALL p4z_sink2_std( wsbio3, sinkingn , jppon, iiter1 )
+               CALL p4z_sink2_std( wsbio3, sinkingp , jppop, iiter1 )
+            END DO
+
+
+            DO jit = 1, iiter2
+               CALL p4z_sink2_std( wsbio4, sinking2n, jpgon, iiter2 )
+               CALL p4z_sink2_std( wsbio4, sinking2p, jpgop, iiter2 )
+            END DO
+
+         ENDIF
+
       ELSE
-        iiter1 = 1
-        iiter2 = 1
-        DO jk = KRANGE
-          DO jj = JRANGE
-             DO ji = IRANGE
-                IF( tmask(ji,jj,K) == 1) THEN
-                   zwsmax =  0.5 * fse3t(ji,jj,K) / xstep
-                   iiter1 =  MAX( iiter1, INT( wsbio3(ji,jj,jk) / zwsmax ) )
-                   iiter2 =  MAX( iiter2, INT( wsbio4(ji,jj,jk) / zwsmax ) )
-                ENDIF
-             END DO
-          END DO
-        END DO
-        IF( lk_mpp ) THEN
-           CALL mpp_max( iiter1 )
-           CALL mpp_max( iiter2 )
+
+         CALL p4z_sink2_new( wsbio3, sinking , jppoc )
+         CALL p4z_sink2_new( wsbio3, sinkfer , jpsfe )
+         !
+         CALL p4z_sink2_new( wsbio4, sinking2, jpgoc )
+         CALL p4z_sink2_new( wsbio4, sinkfer2, jpbfe )
+         CALL p4z_sink2_new( wsbio4, sinksil , jpdsi )
+         CALL p4z_sink2_new( wsbio4 , sinkcal , jpcal )
+
+         IF( ln_p5z ) THEN
+            sinkingn (:,:,:) = 0.e0
+            sinking2n(:,:,:) = 0.e0
+            sinkingp (:,:,:) = 0.e0
+            sinking2p(:,:,:) = 0.e0
+
+            !   Compute the sedimentation term using p4zsink2 for all the sinking particles
+            !   -----------------------------------------------------
+            CALL p4z_sink2_new( wsbio3, sinkingn , jppon )
+            CALL p4z_sink2_new( wsbio3, sinkingp , jppop )
+            CALL p4z_sink2_new( wsbio4, sinking2n, jpgon )
+            CALL p4z_sink2_new( wsbio4, sinking2p, jpgop )
+         ENDIF
+
+     ENDIF
+
+     ik100 =10
+     IF( lk_iomput ) THEN
+       IF( knt == nrdttrc ) THEN
+          ALLOCATE( zw2d(PRIV_2D_BIOARRAY), zw3d(PRIV_3D_BIOARRAY) )
+          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
+          !
+          IF( iom_use( "EPC100" ) )  THEN
+              zw2d(:,:) = ( sinking(:,:,ik100) + sinking2(:,:,ik100) ) * zfact * tmask(:,:,1) ! Export of carbon at 100m
+              CALL iom_put( "EPC100"  , zw2d )
+          ENDIF
+          IF( iom_use( "EPFE100" ) )  THEN
+              zw2d(:,:) = ( sinkfer(:,:,ik100) + sinkfer2(:,:,ik100) ) * zfact * tmask(:,:,1) ! Export of iron at 100m
+              CALL iom_put( "EPFE100"  , zw2d )
+          ENDIF
+          IF( iom_use( "EPCAL100" ) )  THEN
+              zw2d(:,:) = sinkcal(:,:,ik100) * zfact * tmask(:,:,1) ! Export of calcite at 100m
+              CALL iom_put( "EPCAL100"  , zw2d )
+          ENDIF
+          IF( iom_use( "EPSI100" ) )  THEN
+              zw2d(:,:) =  sinksil(:,:,ik100) * zfact * tmask(:,:,1) ! Export of bigenic silica at 100m
+              CALL iom_put( "EPSI100"  , zw2d )
+          ENDIF
+          IF( iom_use( "EXPC" ) )  THEN
+              zw3d(:,:,:) = ( sinking(:,:,:) + sinking2(:,:,:) ) * zfact * tmask(:,:,:) ! Export of carbon in the water column
+              CALL iom_put( "EXPC"  , zw3d )
+          ENDIF
+          IF( iom_use( "EXPFE" ) )  THEN
+              zw3d(:,:,:) = ( sinkfer(:,:,:) + sinkfer2(:,:,:) ) * zfact * tmask(:,:,:) ! Export of iron 
+              CALL iom_put( "EXPFE"  , zw3d )
+          ENDIF
+          IF( iom_use( "EXPCAL" ) )  THEN
+              zw3d(:,:,:) = sinkcal(:,:,:) * zfact * tmask(:,:,:) ! Export of calcite 
+              CALL iom_put( "EXPCAL"  , zw3d )
+          ENDIF
+          IF( iom_use( "EXPSI" ) )  THEN
+              zw3d(:,:,:) = sinksil(:,:,:) * zfact * tmask(:,:,:) ! Export of bigenic silica
+              CALL iom_put( "EXPSI"  , zw3d )
+          ENDIF
+          ! 
+          DEALLOCATE( zw2d, zw3d )
         ENDIF
-        iiter1 = MIN( iiter1, niter1max )
-        iiter2 = MIN( iiter2, niter2max )
       ENDIF
-
-
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               IF( tmask(ji,jj,K) == 1 ) THEN
-                 zwsmax = 0.5 * fse3t(ji,jj,K) / xstep
-                 wsbio3(ji,jj,jk) = MIN( wsbio3(ji,jj,jk), zwsmax * FLOAT( iiter1 ) )
-                 wsbio4(ji,jj,jk) = MIN( wsbio4(ji,jj,jk), zwsmax * FLOAT( iiter2 ) )
-               ENDIF
-            END DO
-         END DO
-      END DO
-
-
-!   Compute the sedimentation term using p4zsink2 for all
-!   the sinking particles
-!   -----------------------------------------------------
-      DO jit = 1, iiter1
-        CALL p4z_sink2_std( wsbio3, sinking , jppoc, iiter1 )
-        CALL p4z_sink2_std( wsbio3, sinkfer , jpsfe, iiter1 )
-      END DO
-
-      DO jit = 1, iiter2
-        CALL p4z_sink2_std( wsbio4, sinking2, jpgoc, iiter2 )
-        CALL p4z_sink2_std( wsbio4, sinkfer2, jpbfe, iiter2 )
-        CALL p4z_sink2_std( wsbio4, sinksil , jpdsi, iiter2 )
-        CALL p4z_sink2_std( wscal , sinkcal , jpcal, iiter2 )
-      END DO
-
-    ELSE
-
-        CALL p4z_sink2_new( wsbio3, sinking , jppoc )
-        CALL p4z_sink2_new( wsbio3, sinkfer , jpsfe ) 
-        !
-        CALL p4z_sink2_new( wsbio4, sinking2, jpgoc )
-        CALL p4z_sink2_new( wsbio4, sinkfer2, jpbfe )
-        CALL p4z_sink2_new( wsbio4, sinksil , jpdsi )
-        CALL p4z_sink2_new( wscal , sinkcal , jpcal )
-
-   ENDIF
-
-
-     !
-       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-         WRITE(charout, FMT="('a-sink')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout)
-       ENDIF
-
-!  Exchange between organic matter compartments due to
-!  coagulation/disaggregation
-!  ---------------------------------------------------
-
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE
-               zfact = xstep * xdiss(ji,jj,jk)
-               !  Part I : Coagulation dependent on turbulence
-               zagg1 = 940.* zfact * trn(ji,jj,K,jppoc) * trn(ji,jj,K,jppoc)
-               zagg2 = 1.054e4 * zfact * trn(ji,jj,K,jppoc) * trn(ji,jj,K,jpgoc)
-
-               ! Part II : Differential settling
-
-               !  Aggregation of small into large particles
-               zagg3 = 0.66 * xstep * trn(ji,jj,K,jppoc) * trn(ji,jj,K,jpgoc)
-               zagg4 = 0.e0 * xstep * trn(ji,jj,K,jppoc) * trn(ji,jj,K,jppoc)
-
-               zagg   = zagg1 + zagg2 + zagg3 + zagg4
-               zaggfe = zagg * trn(ji,jj,K,jpsfe) / ( trn(ji,jj,K,jppoc) + rtrn )
-
-               ! Aggregation of DOC to small particles
-               zaggdoc = ( 80.* trn(ji,jj,K,jpdoc)         &
-                  &       + 698. * trn(ji,jj,K,jppoc) )    &
-                  &      *  zfact * trn(ji,jj,K,jpdoc)
-               zaggdoc2 = 1.05e4 * zfact * trn(ji,jj,K,jpgoc) * trn(ji,jj,K,jpdoc)
-
-               !  Update the trends
-               tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) - zagg + zaggdoc
-               tra(ji,jj,jk,jpgoc) = tra(ji,jj,jk,jpgoc) + zagg + zaggdoc2
-               tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) - zaggfe
-               tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + zaggfe
-               tra(ji,jj,jk,jpdoc) = tra(ji,jj,jk,jpdoc) - zaggdoc - zaggdoc2
-               !
-            END DO
-         END DO
-      END DO
-
-       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-         WRITE(charout, FMT="('agg')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout, ltra='tra')
-       ENDIF
-
-
+      !
 #if defined key_trc_diaadd
-      zrfact2 = 1.e3 * rfact2r
+      zfact = 1.e3 * rfact2r
       ik1  = ik100 + 1
       DO jj = JRANGE
          DO ji = IRANGE
-            zmsk = zrfact2 * tmask(ji,jj,KSURF)
+            zmsk = zfact * tmask(ji,jj,1)
             trc2d(ji,jj,jp_sinkco2) = ( sinking(ji,jj,ik1) + sinking2(ji,jj,ik1) ) * zmsk ! export of carbon at 100m
             trc2d(ji,jj,jp_sinkfer) = ( sinkfer(ji,jj,ik1) + sinkfer2(ji,jj,ik1) ) * zmsk ! export of biogenic iron
             trc2d(ji,jj,jp_sinkcal) =   sinkcal(ji,jj,ik1)  * zmsk   ! export of calcite
@@ -250,9 +273,15 @@ CONTAINS
       END DO
 #endif
 
-
+      !
+      IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+         WRITE(charout, FMT="('sink')")
+         CALL prt_ctl_trc_info(charout)
+         CALL prt_ctl_trc( charout, ltra='tra')
+!         CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
+      ENDIF
+      !
    END SUBROUTINE p4z_sink
-
 
    SUBROUTINE p4z_sink2_std( pwsink, psinkflx, jp_tra, kiter )
       !!---------------------------------------------------------------------
@@ -268,8 +297,8 @@ CONTAINS
 #ifdef AGRIF
       USE ocean2pisces
 #endif
-      INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index      
-      INTEGER , INTENT(in   )                         ::   kiter     ! number of iterations for time-splitting 
+      INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index
+      INTEGER , INTENT(in   )                         ::   kiter     ! number of iterations for time-splitting
       REAL(wp), INTENT(in   ), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   pwsink    ! sinking speed
       REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk+1) ::   psinkflx  ! sinking fluxe
       !!
@@ -285,9 +314,9 @@ CONTAINS
       DO jk = 1, jpk
          DO jj = JRANGE
             DO ji = IRANGE
-               zmask(ji,jj,jk) = tmask(ji,jj,K)
-               zdept(ji,jj,jk) = fse3t(ji,jj,K)
-               ztrn (ji,jj,jk) = trn(ji,jj,K,jp_tra)
+               zmask(ji,jj,jk) = tmask(ji,jj,jk)
+               zdept(ji,jj,jk) = e3t_n(ji,jj,K)
+               ztrn (ji,jj,jk) = trb(ji,jj,K,jp_tra)
            END DO
          END DO
       ENDDO
@@ -345,7 +374,7 @@ CONTAINS
                END DO
             END DO
          END DO
-         
+
          ! Slopes limitation
          DO jk = 2, jpk
             DO jj = JRANGE
@@ -356,14 +385,14 @@ CONTAINS
             END DO
          END DO
 
-         
+
          ! vertical advective flux
          DO jk = 1, jpk
-            DO jj = JRANGE   
-               DO ji = IRANGE  
-                  zigma = zwsink2(ji,jj,jk+1) * zstep / fse3w(ji,jj,jk+1)
+            DO jj = JRANGE
+               DO ji = IRANGE
+                  zigma = zwsink2(ji,jj,jk+1) * zstep / e3w_n(ji,jj,jk+1)
                   zew   = zwsink2(ji,jj,jk+1)
-                  psinkflx(ji,jj,jk+1) = -zew * ( ztrn(ji,jj,jk) - 0.5 * ( 1 + zigma ) * zakz(ji,jj,jk) ) * zstep 
+                  psinkflx(ji,jj,jk+1) = -zew * ( ztrn(ji,jj,jk) - 0.5 * ( 1 + zigma ) * zakz(ji,jj,jk) ) * zstep
                END DO
             END DO
          END DO
@@ -375,7 +404,7 @@ CONTAINS
                psinkflx(ji,jj,jpk+1) = 0.e0
             END DO
          END DO
-         
+
 
          DO jk = 1, jpk
             DO jj = JRANGE
@@ -435,7 +464,7 @@ CONTAINS
 #ifdef AGRIF
       USE ocean2pisces
 #endif
-      INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index      
+      INTEGER , INTENT(in   )                         ::   jp_tra    ! tracer index index
       REAL(wp), INTENT(in   ), DIMENSION(PRIV_2D_BIOARRAY, jpk) ::   pwsink    ! sinking speed
       REAL(wp), INTENT(inout), DIMENSION(PRIV_2D_BIOARRAY, jpk+1) ::   psinkflx  ! sinking fluxe
 !
@@ -476,13 +505,12 @@ CONTAINS
       DO jk = 1, jpk
          DO jj = JRANGE
             DO ji = IRANGE
-               zmask(ji,jj,jk) = tmask(ji,jj,K)
-               zdept(ji,jj,jk) = fse3t(ji,jj,K)
+               zmask(ji,jj,jk) = tmask(ji,jj,jk)
+               zdept(ji,jj,jk) = e3t_n(ji,jj,K)
                ztrn (ji,jj,jk) = trn(ji,jj,K,jp_tra)
            END DO
          END DO
       ENDDO
-
 
 !
 !-----------------------------------------------------------------------
@@ -520,6 +548,7 @@ CONTAINS
                     qc(ji,jk)=ztrn(ji,jj,jk)
                  ENDDO
               ENDDO
+!
 !
 !-----------------------------------------------------------------------
 !  Vertical sinking of suspended sediment.
@@ -634,7 +663,7 @@ CONTAINS
             DO ji=IRANGE
               cff=rfact2 *ABS(pwsink(ji,jj,jk))/rday*zmask(ji,jj,jk)
               FC(ji,jk+1)=0.
-              WL(ji,jk)=-fsdepw(ji,jj,jk+1)+cff !!! ATTENTION
+              WL(ji,jk)=-gdepw_n(ji,jj,jk+1)+cff !!! ATTENTION
               WR(ji,jk)=zdept(ji,jj,jk)*qc(ji,jk)
               ksource(ji,jk)=jk
             ENDDO
@@ -643,7 +672,7 @@ CONTAINS
           DO jk=1, jpk
             DO ks=2,jk
               DO ji=IRANGE
-                IF (WL(ji,jk).GT.-fsdepw(ji,jj,ks)) THEN
+                IF (WL(ji,jk).GT.-gdepw_n(ji,jj,ks)) THEN
                   ksource(ji,jk)=ks-1
                   FC(ji,jk+1)=FC(ji,jk+1)+WR(ji,ks)
                 ENDIF
@@ -656,7 +685,7 @@ CONTAINS
           DO jk=1,jpk-1
             DO ji=IRANGE
               ks=ksource(ji,jk)
-              cu=MIN(1.,(WL(ji,jk)+fsdepw(ji,jj,ks+1))*Hz_inv(ji,ks))
+              cu=MIN(1.,(WL(ji,jk)+gdepw_n(ji,jj,ks+1))*Hz_inv(ji,ks))
               FC(ji,jk+1)=FC(ji,jk+1)+                                      &
      &                  zdept(ji,jj,ks)*cu*                                  &
      &                  (qL(ji,ks)+                                      &
@@ -667,34 +696,35 @@ CONTAINS
           END DO
           DO ji=IRANGE
             DO jk=1,jpk-1
-               trn(ji,jj,K,jp_tra)=qc(ji,jk)+(FC(ji,jk)-FC(ji,jk+1))*Hz_inv(ji,jk) 
+               trn(ji,jj,K,jp_tra)=qc(ji,jk)+(FC(ji,jk)-FC(ji,jk+1))*Hz_inv(ji,jk)
                psinkflx(ji,jj,jk)=FC(ji,jk)
 !               psinkflx(ji,jj,jk)=(FC(ji,jk)-FC(ji,jk+1))*Hz_inv(ji,jk)
             ENDDO
           ENDDO
-        END DO 
-      END DO 
+        END DO
+      END DO
 
     !
    END SUBROUTINE p4z_sink2_new
-
 
    INTEGER FUNCTION p4z_sink_alloc()
       !!----------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_sink_alloc  ***
       !!----------------------------------------------------------------------
-      ALLOCATE( wsbio3 (PRIV_3D_BIOARRAY) , wsbio4  (PRIV_3D_BIOARRAY) ,                 & 
-         &      wscal  (PRIV_3D_BIOARRAY) ,     &
-         &      sinking(PRIV_2D_BIOARRAY,jpk+1) , sinking2(PRIV_2D_BIOARRAY,jpk+1) ,     &
-         &      sinkcal(PRIV_2D_BIOARRAY,jpk+1) , sinksil (PRIV_2D_BIOARRAY,jpk+1) ,     &
-#if defined key_kriest
-         &      xnumm(jpk) ,     &
-#else
-         &      sinkfer2(PRIV_2D_BIOARRAY,jpk+1) ,     &
-#endif
-         &      sinkfer (PRIV_2D_BIOARRAY,jpk+1) , STAT=p4z_sink_alloc )
+      INTEGER :: ierr(2)
+      !!----------------------------------------------------------------------
+      !
+      ierr(:) = 0
+      !
+      ALLOCATE( sinking (PRIV_3D_BIOARRAY), sinking2(PRIV_3D_BIOARRAY),     &                
+         &      sinkcal (PRIV_3D_BIOARRAY), sinksil (PRIV_3D_BIOARRAY),     &                
+         &      sinkfer2(PRIV_3D_BIOARRAY), sinkfer (PRIV_3D_BIOARRAY), STAT=ierr(1) )
          !
-      IF( p4z_sink_alloc /= 0 ) CALL ctl_warn('p4z_sink_alloc : failed to allocate arrays.')
+      IF( ln_p5z    ) ALLOCATE( sinkingn(PRIV_3D_BIOARRAY), sinking2n(PRIV_3D_BIOARRAY),     &
+         &                      sinkingp(PRIV_3D_BIOARRAY), sinking2p(PRIV_3D_BIOARRAY)   , STAT=ierr(2) )
+      !
+      p4z_sink_alloc = MAXVAL( ierr )
+      IF( p4z_sink_alloc /= 0 ) CALL ctl_warn( 'p4z_sink_alloc : failed to allocate arrays.' )
       !
    END FUNCTION p4z_sink_alloc
 
@@ -706,6 +736,6 @@ CONTAINS
    SUBROUTINE p4z_sink                    ! Empty routine
    END SUBROUTINE p4z_sink
 #endif 
-
+   
    !!======================================================================
-END MODULE  p4zsink
+END MODULE p4zsink

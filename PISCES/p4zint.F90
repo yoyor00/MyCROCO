@@ -9,12 +9,9 @@ MODULE p4zint
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
    !!----------------------------------------------------------------------
 #if defined key_pisces
-   !!----------------------------------------------------------------------
-   !!   'key_pisces'                                       PISCES bio-model
-   !!----------------------------------------------------------------------
    !!   p4z_int        :  interpolation and computation of various accessory fields
    !!----------------------------------------------------------------------
-   USE sms_pisces
+   USE sms_pisces      !  PISCES Source Minus Sink variables
 
    IMPLICIT NONE
    PRIVATE
@@ -24,10 +21,13 @@ MODULE p4zint
    !!* Substitution
 #  include "ocean2pisces.h90"
 
-   !! * Module variables
-   REAL(wp) :: &
-      xksilim = 16.5E-6        ! Half-saturation constant for the computation of the Si half-saturation constant
+   REAL(wp) ::   xksilim = 16.5e-6   ! Half-saturation constant for the Si half-saturation constant computation
 
+   !!----------------------------------------------------------------------
+   !! NEMO/TOP 4.0 , NEMO Consortium (2018)
+   !! $Id: p4zint.F90 10068 2018-08-28 14:09:04Z nicolasmartin $ 
+   !! Software governed by the CeCILL license (see ./LICENSE)
+   !!----------------------------------------------------------------------
 CONTAINS
 
    SUBROUTINE p4z_int
@@ -36,16 +36,13 @@ CONTAINS
       !!
       !! ** Purpose :   interpolation and computation of various accessory fields
       !!
-      !! ** Method  : - ???
       !!---------------------------------------------------------------------
-      !!
-      INTEGER  ::   ji, jj, jk
-      REAL(wp) ::   zdum
+      INTEGER  :: ji, jj, jk             ! dummy loop indices
+      REAL(wp) :: zvar                   ! local variable
       !!---------------------------------------------------------------------
-
+      !
       ! Computation of phyto and zoo metabolic rate
       ! -------------------------------------------
-
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
@@ -55,20 +52,18 @@ CONTAINS
          END DO
       END DO
 
-      ! Computation of the silicon dependant half saturation
-      ! constant for silica uptake
+      ! Computation of the silicon dependant half saturation  constant for silica uptake
       ! ---------------------------------------------------
-
       DO jj = JRANGE
          DO ji = IRANGE
-            zdum = trn(ji,jj,KSURF,jpsil) * trn(ji,jj,KSURF,jpsil)
-            xksimax(ji,jj) = MAX( xksimax(ji,jj), ( 1.+ 7.* zdum / ( xksilim * xksilim + zdum ) ) * 1e-6 )
+            zvar = trb(ji,jj,KSURF,jpsil) * trb(ji,jj,KSURF,jpsil)
+            xksimax(ji,jj) = MAX( xksimax(ji,jj), ( 1.+ 7.* zvar / ( xksilim * xksilim + zvar ) ) * 1e-6 )
          END DO
       END DO
-
+      !
       IF( nday_year == 365 ) THEN
-         xksi    = xksimax
-         xksimax = 0.e0
+         xksi   (:,:) = xksimax(:,:)
+         xksimax(:,:) = 0.
       ENDIF
       !
    END SUBROUTINE p4z_int
@@ -84,4 +79,4 @@ CONTAINS
 #endif 
 
    !!======================================================================
-END MODULE  p4zint
+END MODULE p4zint

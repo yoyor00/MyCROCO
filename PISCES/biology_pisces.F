@@ -34,15 +34,14 @@ C       implicit none
 
 #include "ocean2pisces.h90"
 
-
       CALL ocean_2_pisces( Istr,Iend,Jstr,Jend) 
 
       DO jn = 1, jptra
          DO jk = KRANGE
             DO j = JRANGE
                DO i = IRANGE          ! masked grid volume
-                  trn(i,j,K,jn) 
-     &           = MAX( 0., trn(i,j,K,jn) * 1.e-6 )
+                  trb(i,j,K,jn) 
+     &           = MAX( 0., trb(i,j,K,jn) * 1.e-6 )
                ENDDO
             ENDDO
          ENDDO
@@ -50,12 +49,12 @@ C       implicit none
       DO jk = KRANGE
          DO j = JRANGE
             DO i = IRANGE          ! masked grid volume
-                trn(i,j,K,jpno3) 
-     &        = trn(i,j,K,jpno3) / rno3
-                trn(i,j,K,jpnh4) 
-     &        = trn(i,j,K,jpnh4) / rno3
-                trn(i,j,K,jppo4) 
-     &        = trn(i,j,K,jppo4) / po4r
+                trb(i,j,K,jpno3) 
+     &        = trb(i,j,K,jpno3) / rno3
+                trb(i,j,K,jpnh4) 
+     &        = trb(i,j,K,jpnh4) / rno3
+                trb(i,j,K,jppo4) 
+     &        = trb(i,j,K,jppo4) / po4r
             ENDDO
          ENDDO
        ENDDO
@@ -66,8 +65,8 @@ C       implicit none
          DO jk = KRANGE
             DO j = JRANGE
                DO i = IRANGE          ! masked grid volume
-                  trn(i,j,K,jn) 
-     &          = trn(i,j,K,jn) * 1.e6
+                  trb(i,j,K,jn) 
+     &          = trb(i,j,K,jn) * 1.e6
                ENDDO
             ENDDO
          ENDDO
@@ -75,12 +74,12 @@ C       implicit none
       DO jk = KRANGE
          DO j = JRANGE
             DO i = IRANGE          ! masked grid volume
-               trn(i,j,K,jpno3)
-     &       = trn(i,j,K,jpno3) * rno3
-               trn(i,j,K,jpnh4) 
-     &       = trn(i,j,K,jpnh4) * rno3
-               trn(i,j,K,jppo4) 
-     &       = trn(i,j,K,jppo4) * po4r
+               trb(i,j,K,jpno3)
+     &       = trb(i,j,K,jpno3) * rno3
+               trb(i,j,K,jpnh4) 
+     &       = trb(i,j,K,jpnh4) * rno3
+               trb(i,j,K,jppo4) 
+     &       = trb(i,j,K,jppo4) * po4r
             ENDDO
          ENDDO
       ENDDO

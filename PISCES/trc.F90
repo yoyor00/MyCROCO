@@ -62,7 +62,6 @@ MODULE trc
    !! passive tracers restart (input and output)
    !! ------------------------------------------  
    INTEGER , PUBLIC  ::  ndttrc     !: frequency of step on passive tracers
-   INTEGER , PUBLIC  ::  nittrc000  !: first time step of passive tracers model
    LOGICAL , PUBLIC  ::  ln_rsttr     !: boolean term for restart i/o for passive tracers (namelist)
    LOGICAL , PUBLIC  ::  lrst_trc   !: logical to control the trc restart write
    INTEGER , PUBLIC  ::  nutwrs     !: output FILE for passive tracers restart
@@ -96,6 +95,9 @@ MODULE trc
 # if defined key_dtatrc
    INTEGER , PUBLIC, DIMENSION(jptra) ::   numtr   !: logical unit for passive tracers data
 # endif
+! Vertical axis used in the sediment module
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   profsed
+
    !!----------------------------------------------------------------------
    !! NEMO/TOP 3.3.1 , NEMO Consortium (2010)
    !! $Id: trc.F90 5385 2015-06-09 13:50:42Z cetlod $

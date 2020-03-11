@@ -10,50 +10,24 @@ MODULE par_pisces
    IMPLICIT NONE
    PUBLIC
 
-#if defined key_pisces  &&  defined key_kriest
-   !!---------------------------------------------------------------------
-   !!   'key_pisces' & 'key_kriest'                 PISCES bio-model + ???
-   !!---------------------------------------------------------------------
-   LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .TRUE.  !: PISCES flag 
-   LOGICAL, PUBLIC, PARAMETER ::   lk_kriest     = .TRUE.  !: Kriest flag 
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     =  23     !: number of passive tracers
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_2d  =  13     !: additional 2d output ('key_trc_diaadd')
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_3d  =  18     !: additional 3d output ('key_trc_diaadd')
-
-   ! assign an index in trc arrays for each LOBSTER prognostic variables
-   !    WARNING: be carefull about the order when reading the restart
-        !   !!gm  this warning should be obsolet with IOM
-   INTEGER, PUBLIC, PARAMETER ::   jpdic =  1    !: dissolved inoganic carbon concentration 
-   INTEGER, PUBLIC, PARAMETER ::   jptal =  2    !: total alkalinity 
-   INTEGER, PUBLIC, PARAMETER ::   jpoxy =  3    !: oxygen carbon concentration 
-   INTEGER, PUBLIC, PARAMETER ::   jpcal =  4    !: calcite  concentration 
-   INTEGER, PUBLIC, PARAMETER ::   jppo4 =  5    !: phosphate concentration 
-   INTEGER, PUBLIC, PARAMETER ::   jppoc =  6    !: small particulate organic phosphate concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpsil =  7    !: silicate concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpphy =  8    !: phytoplancton concentration 
-   INTEGER, PUBLIC, PARAMETER ::   jpzoo =  9    !: zooplancton concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpdoc = 10    !: dissolved organic carbon concentration 
-   INTEGER, PUBLIC, PARAMETER ::   jpdia = 11    !: Diatoms Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpmes = 12    !: Mesozooplankton Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpbsi = 13    !: (big) Silicate Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpfer = 14    !: Iron Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpnum = 15    !: Big iron particles Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpsfe = 16    !: number of particulate organic phosphate concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpdfe = 17    !: Diatoms iron Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpdsi = 18    !: Diatoms Silicate Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpnfe = 19    !: Nano iron Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpnch = 20    !: Nano Chlorophyll Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpdch = 21    !: Diatoms Chlorophyll Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpno3 = 22    !: Nitrates Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpnh4 = 23    !: Ammonium Concentration
-
-#elif defined key_pisces
+#if defined key_pisces
    !!---------------------------------------------------------------------
    !!   'key_pisces'   :                         standard PISCES bio-model
    !!---------------------------------------------------------------------
    LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .TRUE.  !: PISCES flag 
-   LOGICAL, PUBLIC, PARAMETER ::   lk_kriest     = .FALSE. !: Kriest flag 
+#if defined key_pisces_quota
+#   if defined key_ligand
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 40      !: number of PISCES passive tracers
+#   else
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 39      !: number of PISCES passive tracers
+#   endif
+#else
+#   if defined key_ligand
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 25      !: number of PISCES passive tracers
+#   else
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 24      !: number of PISCES passive tracers
+#   endif
+#endif
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces_2d  = 11      !: additional 2d output ('key_trc_diaadd')
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces_3d  = 16      !: additional 3d output ('key_trc_diaadd')
 
@@ -72,7 +46,7 @@ MODULE par_pisces
    INTEGER, PUBLIC, PARAMETER ::   jpdoc = 10    !: dissolved organic carbon concentration 
    INTEGER, PUBLIC, PARAMETER ::   jpdia = 11    !: Diatoms Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpmes = 12    !: Mesozooplankton Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpbsi = 13    !: (big) Silicate Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpgsi = 13    !: (big) Silicate Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpfer = 14    !: Iron Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpbfe = 15    !: Big iron particles Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpgoc = 16    !: big particulate organic phosphate concentration
@@ -84,6 +58,46 @@ MODULE par_pisces
    INTEGER, PUBLIC, PARAMETER ::   jpdch = 22    !: Diatoms Chlorophyll Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpno3 = 23    !: Nitrates Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpnh4 = 24    !: Ammonium Concentration
+#if defined key_ligand
+   INTEGER, PUBLIC, PARAMETER ::   jplgw = 25    !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpp4z = 25    !: Number of P4Z tracers
+#else
+   INTEGER, PUBLIC ::   jplgw    !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpp4z = 24    !: Number of p4z tracers
+#endif
+#if defined key_pisces_quota
+   INTEGER, PUBLIC, PARAMETER ::   jpdon = jpp4z + 1   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpdop = jpp4z + 2   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppon = jpp4z + 3    !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppop = jpp4z + 4   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpnph = jpp4z + 5   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppph = jpp4z + 6   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpndi = jpp4z + 7   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppdi = jpp4z + 8   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppic = jpp4z + 9   !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpnpi = jpp4z + 10  !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpppi = jpp4z + 11  !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppfe = jpp4z + 12  !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jppch = jpp4z + 13  !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpgon = jpp4z + 14  !: Ammonium Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpgop = jpp4z + 15  !: Ammonium Concentration
+#else
+   INTEGER, PUBLIC ::   jpdon    !: DON concentration 
+   INTEGER, PUBLIC ::   jpdop    !: DOP concentration 
+   INTEGER, PUBLIC ::   jppon    !: PON concentration
+   INTEGER, PUBLIC ::   jppop    !: POP concentration
+   INTEGER, PUBLIC ::   jpnph     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppph     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpndi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppdi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppic     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpnpi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpppi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppfe     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppch     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpgon    !: GON concentration
+   INTEGER, PUBLIC ::   jpgop    !: GOP concentration
+#endif
 
    INTEGER, PUBLIC ::   jp_flxco2  
    INTEGER, PUBLIC ::   jp_flxo2   
@@ -127,7 +141,6 @@ MODULE par_pisces
    !!   Default                                   No CFC geochemical model
    !!---------------------------------------------------------------------
    LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .FALSE.  !: CFC flag 
-   LOGICAL, PUBLIC, PARAMETER ::   lk_kriest     = .FALSE.  !: Kriest flag 
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces     =  0       !: No CFC tracers
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces_2d  =  0       !: No CFC additional 2d output arrays 
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces_3d  =  0       !: No CFC additional 3d output arrays 
