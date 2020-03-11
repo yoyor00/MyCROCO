@@ -39,6 +39,11 @@
 # endif
 
 #include "diags_pv.h"
+! diagnostic dissipation NJAL August 2017
+# if defined DIAGNOSTICS_DISS       
+      real alfa(PRIVATE_2D_SCRATCH_ARRAY), 
+     &     beta(PRIVATE_2D_SCRATCH_ARRAY)
+#endif
 #include "compute_auxiliary_bounds.h"
 
 
@@ -57,10 +62,18 @@
             enddo
           enddo
         enddo
-
-
-
-
+      enddo
+# if defined DIAGNOSTICS_DISS
+      do k=1,N
+          call alfabeta_k_tile(Istr,Iend,Jstr,Jend,k,alfa,beta)
+          do j=JstrR,JendR
+              do i=IstrR,IendR
+                  Trhs(i,j,k,1) = -alfa(i,j)*Trhs(i,j,k,1)
+                  Trhs(i,j,k,2) = beta(i,j)*Trhs(i,j,k,2)
+              enddo
+          enddo
+      enddo
+# endif /* DIAGNOSTICS_DISS */
 
 
 # if defined DIAGNOSTICS_PV_FULL

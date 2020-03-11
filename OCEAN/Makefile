@@ -54,7 +54,7 @@ include Makedefs
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
         w3dbc.F		nbq_bry_store.F\
 \
-	rho_eos.F	ab_ratio.F	alfabeta.F\
+	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
