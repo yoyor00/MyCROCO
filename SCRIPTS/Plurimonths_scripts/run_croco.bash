@@ -113,6 +113,22 @@ if [[ $NY_START == 1 && $NM_START == 1 ]]; then
 else
     RSTFLAG=1
 fi
+#  Exact restart 
+if [[ $EXACT_RST == 1 ]]; then
+    echo "Exact restart defined"
+    if [[ $NY == $NY_START && $NM == $NM_START ]]; then
+	NUMRECINI=1
+	echo "set NUMRECINI = $NUMRECINI"
+    else  # no exact restart
+	NUMRECINI=2
+	echo "set NUMRECINI = $NUMRECINI"
+    fi
+else
+    echo "No exact restart"
+    NUMRECINI=1
+    echo "set NUMRECINI = $NUMRECINI"
+fi
+
 #
 if [[ $RSTFLAG != 0 ]]; then
     NY=$NY_START
@@ -214,6 +230,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     echo "USING NUMAVG   = $NUMAVG"
     echo "USING NUMHIS   = $NUMHIS"
     echo "USING NUMRST   = $NUMRST"
+    echo "USING NUMRECINI = $NUMRECINI"
     
     if [ ! -f ${MODEL}_inter.in${ENDF} ]; then
 	echo "=="
@@ -222,8 +239,8 @@ while [[ $LEVEL != $NLEVEL ]]; do
 	exit 1
     fi
     sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-	-e 's/NUMAVG/'$NUMAVG'/' \
-	-e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}.in${ENDF}
+	-e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' \
+	-e 's/NUMRST/'$NUMRST'/' -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}.in${ENDF}
     
     LEVEL=$((LEVEL + 1))
 done

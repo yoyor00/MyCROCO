@@ -86,7 +86,10 @@
 # undef  LOGFILE
                       /* Calendar */
 # undef  USE_CALENDAR
-/*!
+                      /* Exact restart */
+# undef EXACT_RESTART
+/*
+!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
 !

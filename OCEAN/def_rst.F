@@ -124,7 +124,8 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
+        MPI_master_only
+     &       write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
         ierr=nf_create_par(rstname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
@@ -416,7 +417,7 @@
         enddo
         
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-# ifdef LMD_SKPP
+# if ( defined LMD_SKPP || defined GLS_MIXING )        
 !
 ! Depth of planetary boundary layer.
 !     
@@ -439,6 +440,8 @@
         call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
      &       NF_DOUBLE,ierr)
         
+#  endif         /*  LMD_SKPP || GLS_MIXING  */
+
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
@@ -463,7 +466,6 @@
      &       NF_DOUBLE,ierr)
         
 #  endif /*  LMD_BKPP  */
-# endif /*  LMD_SKPP  */
  
 !
 ! Vertical viscosity coefficient.
@@ -1169,8 +1171,8 @@
 #endif
 
 #if ( defined LMD_MIXING || defined GLS_MIXING )
-# ifdef LMD_SKPP
-!
+#  if (defined LMD_SKPP || defined GLS_MIXING )
+!     
 ! Depth of planetary boundary layer.
 !
           lvar=lenstr(vname(1,indxHbl))
@@ -1179,6 +1181,7 @@
           write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  endif /*  LMD_SKPP || GLS_MIXING  */
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
@@ -1190,7 +1193,6 @@
             goto 99                                       !--> ERROR
           endif
 #  endif /*  LMD_BKPP  */
-# endif /*  LMD_SKPP  */
 
 !
 ! Vertical viscosity coefficient.

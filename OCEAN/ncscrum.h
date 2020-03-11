@@ -885,7 +885,7 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
-#ifdef LMD_SKPP
+#if defined LMD_SKPP || defined GLS_MIXING
       integer rstHbl
 #ifdef LMD_BKPP
       integer rstHbbl
@@ -1345,7 +1345,7 @@
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
-#ifdef LMD_SKPP
+#if defined LMD_SKPP || defined GLS_MIXING
      &      , rstHbl
 #ifdef LMD_BKPP
      &      , rstHbbl

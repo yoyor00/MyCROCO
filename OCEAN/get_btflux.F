@@ -207,10 +207,10 @@ c**        call opencdf (btfname,N)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 btflx(i,j,itrc)=cff*btflxg(i,j,itbtf(itrc),itrc)
-                if ( i==10 .and. j==10) then
+!                if ( i==10 .and. j==10) then
 !                  write(*,*)'I=',i,' J=',j
 !                  write(*,*)'btflx(10,10,1)=',btflx(10,10,1)
-                endif
+!                endif
               enddo
             enddo
           else
