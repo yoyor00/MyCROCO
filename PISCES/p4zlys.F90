@@ -10,38 +10,40 @@ MODULE p4zlys
    !!              -   !  1999     (C. Le Quere) modifications
    !!             1.0  !  2004     (O. Aumont) modifications
    !!             2.0  !  2007-12  (C. Ethe, G. Madec)  F90
+   !!                  !  2011-02  (J. Simeon, J. Orr)  Calcon salinity dependence
+   !!             3.4  !  2011-06  (O. Aumont, C. Ethe) Improvment of calcite dissolution
+   !!             3.6  !  2015-05  (O. Aumont) PISCES quota
    !!----------------------------------------------------------------------
 #if defined key_pisces
-   !!----------------------------------------------------------------------
-   !!   'key_pisces'                                       PISCES bio-model
-   !!----------------------------------------------------------------------
    !!   p4z_lys        :   Compute the CaCO3 dissolution 
    !!   p4z_lys_init   :   Read the namelist parameters
    !!----------------------------------------------------------------------
-   USE sms_pisces
+   USE sms_pisces      !  PISCES Source Minus Sink variables
+   USE p4zche          !  Chemical model
+!   USE iom             !  I/O manager
 
    IMPLICIT NONE
    PRIVATE
 
-   PUBLIC   p4z_lys    ! called in p4zprg.F90
-   PUBLIC   p4z_lys_nam    ! called in p4zprg.F90
+   PUBLIC   p4z_lys         ! called in trcsms_pisces.F90
+   PUBLIC   p4z_lys_init    ! called in trcsms_pisces.F90
 
 #include "ocean2pisces.h90"
 
-   !! * Shared module variables
-   REAL(wp), PUBLIC ::   &
-     kdca = 0.327e3   ,  &  !:
-     nca  = 1.0             !:
+   REAL(wp), PUBLIC ::   kdca   !: diss. rate constant calcite
+   REAL(wp), PUBLIC ::   nca    !: order of reaction for calcite dissolution
 
-   !! * Module variables
-   REAL(wp) :: &
-      calcon = 1.03E-2        ! mean calcite concentration [Ca2+] in sea water [mole/kg solution]
-
-!   INTEGER ::  rmtss          !: number of seconds per month
+   REAL(wp) ::   calcon = 1.03E-2   ! mean calcite concentration [Ca2+] in sea water [mole/kg solution]
+ 
+   !!----------------------------------------------------------------------
+   !! NEMO/TOP 4.0 , NEMO Consortium (2018)
+   !! $Id: p4zlys.F90 10069 2018-08-28 14:12:24Z nicolasmartin $ 
+   !! Software governed by the CeCILL license (see ./LICENSE)
+   !!----------------------------------------------------------------------
 
 CONTAINS
 
-   SUBROUTINE p4z_lys( kt, jnt )
+   SUBROUTINE p4z_lys( kt, knt )
       !!---------------------------------------------------------------------
       !!                     ***  ROUTINE p4z_lys  ***
       !!
@@ -51,71 +53,40 @@ CONTAINS
       !!
       !! ** Method  : - ???
       !!---------------------------------------------------------------------
-      INTEGER, INTENT(in) ::   kt, jnt ! ocean time step
+      INTEGER, INTENT(in) ::   kt, knt   ! ocean time step and ???
+      !
       INTEGER  ::   ji, jj, jk, jn
-      REAL(wp) ::   zbot, zalk, zdic, zph, zremco3, zah2
-      REAL(wp) ::   zdispot, zfact, zalka
+      REAL(wp) ::   zdispot, zfact, zcalcon
       REAL(wp) ::   zomegaca, zexcess, zexcess0
-      REAL(wp) ::   zrfact2
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::   zco3
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zcaldiss, zmask
-      CHARACTER (len=25) :: charout
+      CHARACTER (len=25) ::   charout
+      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) ::   zco3, zcaldiss, zhinit, zhi, zco3sat
       !!---------------------------------------------------------------------
-
-         DO jk = KRANGE
-            DO jj = JRANGE
-               DO ji = IRANGE
-                  zco3(ji,jj,jk) = 0.
-                  zcaldiss(ji,jj,jk) = 0.
-               ENDDO
-            ENDDO
-         ENDDO
+      !
+      zco3    (:,:,:) = 0.
+      zcaldiss(:,:,:) = 0.
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zhinit(ji,jj,jk) = hi(ji,jj,jk) * 1000. / ( rhop(ji,jj,K) + rtrn )
+            END DO
+         END DO
+      END DO
+      !
       !     -------------------------------------------
       !     COMPUTE [CO3--] and [H+] CONCENTRATIONS
       !     -------------------------------------------
-      
-      DO jn = 1, 5                               !  BEGIN OF ITERATION
-         !
-!CDIR NOVERRCHK
-         DO jk = KRANGE
-!CDIR NOVERRCHK
-            DO jj = JRANGE
-!CDIR NOVERRCHK
-               DO ji = IRANGE
 
-                  ! SET DUMMY VARIABLE FOR TOTAL BORATE
-                  zbot  = borat(ji,jj,jk)
+      CALL solve_at_general( zhinit, zhi )
 
-                  ! SET DUMMY VARIABLE FOR TOTAL BORATE
-                  zbot  = borat(ji,jj,jk)
-                  zfact = rhop(ji,jj,K) / 1000. + rtrn
-
-                  ! SET DUMMY VARIABLE FOR [H+]
-                  zph   = hi(ji,jj,jk) * tmask(ji,jj,K) / zfact + ( 1.-tmask(ji,jj,K) ) * 1.e-9
-
-                  ! SET DUMMY VARIABLE FOR [SUM(CO2)]GIVEN 
-                  zdic  = trn(ji,jj,K,jpdic) / zfact
-                  zalka = trn(ji,jj,K,jptal) / zfact
-
-                  ! CALCULATE [ALK]([CO3--], [HCO3-])
-                  zalk  = zalka - (  akw3(ji,jj,jk) / zph - zph   &
-                     &             + zbot / (1.+ zph / akb3(ji,jj,jk) )  )
-
-                  ! CALCULATE [H+] and [CO3--]
-                  zah2 = SQRT( (zdic-zalk)*(zdic-zalk)+   &
-                     &     4.*(zalk*ak23(ji,jj,jk)/ak13(ji,jj,jk))   &
-                     &     *(2*zdic-zalk))
-
-                  zah2=0.5*ak13(ji,jj,jk)/zalk*((zdic-zalk)+zah2)
-                  zco3(ji,jj,jk) = zalk/(2.+zah2/ak23(ji,jj,jk))*zfact
-
-                  hi(ji,jj,jk)  = zah2*zfact
-
-               END DO
+      DO jk = KRANGE
+         DO jj = JRANGE
+            DO ji = IRANGE
+               zco3(ji,jj,jk) = trb(ji,jj,K,jpdic) * ak13(ji,jj,jk) * ak23(ji,jj,jk) / (zhi(ji,jj,jk)**2   &
+                  &             + ak13(ji,jj,jk) * zhi(ji,jj,jk) + ak13(ji,jj,jk) * ak23(ji,jj,jk) + rtrn )
+               hi  (ji,jj,jk) = zhi(ji,jj,jk) * rhop(ji,jj,K) / 1000.
             END DO
          END DO
-         !
-      END DO 
+      END DO
 
       !     ---------------------------------------------------------
       !        CALCULATE DEGREE OF CACO3 SATURATION AND CORRESPONDING
@@ -128,7 +99,11 @@ CONTAINS
             DO ji = IRANGE
 
                ! DEVIATION OF [CO3--] FROM SATURATION VALUE
-               zomegaca = ( calcon * zco3(ji,jj,jk) ) / aksp(ji,jj,jk)
+               ! Salinity dependance in zomegaca and divide by rhop/1000 to have good units
+               zcalcon  = calcon * ( salinprac(ji,jj,jk) / 35.0 )
+               zfact    = rhop(ji,jj,K) / 1000.0
+               zomegaca = ( zcalcon * zco3(ji,jj,jk) ) / ( aksp(ji,jj,jk) * zfact + rtrn )
+               zco3sat(ji,jj,jk) = aksp(ji,jj,jk) * zfact / ( zcalcon + rtrn )
 
                ! SET DEGREE OF UNDER-/SUPERSATURATION
                excess(ji,jj,jk) = 1. - zomegaca
@@ -138,48 +113,49 @@ CONTAINS
                ! AMOUNT CACO3 (12C) THAT RE-ENTERS SOLUTION
                !       (ACCORDING TO THIS FORMULATION ALSO SOME PARTICULATE
                !       CACO3 GETS DISSOLVED EVEN IN THE CASE OF OVERSATURATION)
-              zdispot = kdca * zexcess * trn(ji,jj,K,jpcal)
-# if defined key_off_degrad
-              zdispot = zdispot * facvol(ji,jj,jk)
-# endif
-
+               zdispot = kdca * zexcess * trb(ji,jj,K,jpcal)
               !  CHANGE OF [CO3--] , [ALK], PARTICULATE [CACO3],
               !       AND [SUM(CO2)] DUE TO CACO3 DISSOLUTION/PRECIPITATION
-
-              zcaldiss(ji,jj,jk) = zdispot * rfact2 / rmtss ! calcite dissolution
-              zco3(ji,jj,jk)     = zco3(ji,jj,jk) + zcaldiss(ji,jj,jk) 
+              zcaldiss(ji,jj,jk)  = zdispot * rfact2 / rmtss ! calcite dissolution
               !
-              tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) + 2. * zcaldiss(ji,jj,jk) 
-              tra(ji,jj,jk,jpcal) = tra(ji,jj,jk,jpcal) -      zcaldiss(ji,jj,jk) 
-              tra(ji,jj,jk,jpdic) = tra(ji,jj,jk,jpdic) +      zcaldiss(ji,jj,jk) 
+              tra(ji,jj,jk,jptal) = tra(ji,jj,jk,jptal) + 2. * zcaldiss(ji,jj,jk)
+              tra(ji,jj,jk,jpcal) = tra(ji,jj,jk,jpcal) -      zcaldiss(ji,jj,jk)
+              tra(ji,jj,jk,jpdic) = tra(ji,jj,jk,jpdic) +      zcaldiss(ji,jj,jk)
             END DO
          END DO
       END DO
- 
+      !
 
+      IF( lk_iomput .AND. knt == nrdttrc ) THEN
+         IF( iom_use( "PH"     ) ) CALL iom_put( "PH"    , -1. * LOG10( MAX( hi(:,:,:), rtrn ) ) * tmask(:,:,:) )
+         IF( iom_use( "CO3"    ) ) CALL iom_put( "CO3"   , zco3(:,:,:)     * 1.e+3               * tmask(:,:,:) )
+         IF( iom_use( "CO3sat" ) ) CALL iom_put( "CO3sat", zco3sat(:,:,:)  * 1.e+3               * tmask(:,:,:) )
+         IF( iom_use( "DCAL"   ) ) CALL iom_put( "DCAL"  , zcaldiss(:,:,:) * 1.e+3 * rfact2r     * tmask(:,:,:) )
+      ENDIF
+      !
 # if defined key_trc_diaadd
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               trc3d(ji,jj,K,jp_hi    )  = hi  (ji,jj,jk) * tmask(ji,jj,K)  ! PH
-               trc3d(ji,jj,K,jp_co3   )  = zco3(ji,jj,jk) * tmask(ji,jj,K)  ! Ion carbonate
-               trc3d(ji,jj,K,jp_co3sat)  = aksp(ji,jj,jk) / calcon * tmask(ji,jj,K)
+               trc3d(ji,jj,K,jp_hi    )  = hi  (ji,jj,jk) * tmask(ji,jj,jk)  ! PH
+               trc3d(ji,jj,K,jp_co3   )  = zco3(ji,jj,jk) * tmask(ji,jj,jk)  ! Ion carbonate
+               trc3d(ji,jj,K,jp_co3sat)  = aksp(ji,jj,jk) / calcon * tmask(ji,jj,jk)
             ENDDO
          ENDDO
       ENDDO
 # endif
-      !
-       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
-         WRITE(charout, FMT="('lys ')")
-         CALL prt_ctl_trc_info(charout)
-         CALL prt_ctl_trc( charout, ltra='tra')
-!        CALL prt_ctl_trc(tab4d=tra, mask=mask, clinfo=ctrcnm)
-       ENDIF
 
+      IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
+        WRITE(charout, FMT="('lys ')")
+        CALL prt_ctl_trc_info(charout)
+        CALL prt_ctl_trc( charout, ltra='tra')
+!       CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
+      ENDIF
+      !
    END SUBROUTINE p4z_lys
 
-   SUBROUTINE p4z_lys_nam
 
+   SUBROUTINE p4z_lys_init
       !!----------------------------------------------------------------------
       !!                  ***  ROUTINE p4z_lys_init  ***
       !!
@@ -191,24 +167,31 @@ CONTAINS
       !! ** input   :   Namelist nampiscal
       !!
       !!----------------------------------------------------------------------
-
+      INTEGER ::   ios   ! Local integer
+      !
       NAMELIST/nampiscal/ kdca, nca
-
-      REWIND( numnatp )                     ! read numnatp
-      READ  ( numnatp, nampiscal )
-
-      IF(lwp) THEN                         ! control print
-         WRITE(numout,*) ' '
-         WRITE(numout,*) ' Namelist parameters for CaCO3 dissolution, nampiscal'
-         WRITE(numout,*) ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-         WRITE(numout,*) '    diss. rate constant calcite (per month)   kdca      =', kdca
-         WRITE(numout,*) '    order of reaction for calcite dissolution nca       =', nca
+      !!----------------------------------------------------------------------
+      IF(lwp) THEN
+         WRITE(numout,*)
+         WRITE(numout,*) 'p4z_lys_init : initialization of CaCO3 dissolution'
+         WRITE(numout,*) '~~~~~~~~~~~~'
       ENDIF
-
-      ! Number of seconds per month 
-!      rmtss =  nyear_len(1) * rday / raamo
-
-   END SUBROUTINE p4z_lys_nam
+      !
+      REWIND( numnatp_ref )              ! Namelist nampiscal in reference namelist : Pisces CaCO3 dissolution
+      READ  ( numnatp_ref, nampiscal, IOSTAT = ios, ERR = 901)
+901   IF( ios /= 0 )   CALL ctl_nam ( ios , 'nampiscal in reference namelist', lwp )
+      REWIND( numnatp_cfg )              ! Namelist nampiscal in configuration namelist : Pisces CaCO3 dissolution
+      READ  ( numnatp_cfg, nampiscal, IOSTAT = ios, ERR = 902 )
+902   IF( ios >  0 )   CALL ctl_nam ( ios , 'nampiscal in configuration namelist', lwp )
+      IF(lwm) WRITE( numonp, nampiscal )
+      !
+      IF(lwp) THEN                         ! control print
+         WRITE(numout,*) '   Namelist : nampiscal'
+         WRITE(numout,*) '      diss. rate constant calcite (per month)        kdca =', kdca
+         WRITE(numout,*) '      order of reaction for calcite dissolution      nca  =', nca
+      ENDIF
+      !
+   END SUBROUTINE p4z_lys_init
 
 #else
    !!======================================================================
@@ -220,5 +203,6 @@ CONTAINS
       WRITE(*,*) 'p4z_lys: You should not have seen this print! error?', kt
    END SUBROUTINE p4z_lys
 #endif 
+
    !!======================================================================
-END MODULE  p4zlys
+END MODULE p4zlys

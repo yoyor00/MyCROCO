@@ -15,22 +15,22 @@
 #define wp  SELECTED_REAL_KIND(12,307)
 
 /* Model grid variables*/
-# define tmask(i,j,k)          rmask(i,j)
 # define tmask_i(i,j)          rmask(i,j)
-# define fsdept(i,j,k)         ((-1)*z_r(i,j,k))
-/* # define fsdepw(i,j,k)         ((-1)*z_w(i,j,k+1)) */
-# define fse3t(i,j,k)          Hz(i,j,k)
+# define tmask_o(i,j,k)        rmask(i,j)
+# define gdept_n(i,j,k)        ((-1)*(z_r(i,j,k)-z_w(i,j,N)))
+# define e3t_n(i,j,k)          Hz(i,j,k)
 # define glamt(i,j)            lonr(i,j)
 # define gphit(i,j)            latr(i,j)
 # define e1t(i,j)              om_r(i,j)
 # define e2t(i,j)              on_r(i,j)
-# define cvol(i,j,k)           e1t(i,j)*e2t(i,j)*fse3t(i,j,k)*rmask(i,j)
+# define cvol(i,j,k)           e1t(i,j)*e2t(i,j)*e3t_n(i,j,k)*rmask(i,j)
 
 
 /* Model specific variables */
 
 # define numout   stdout
 # define lwp      mynode .eq. 0
+# define lwm      mynode .eq. 0
 
 #if defined MPI
 # define lk_mpp .true.
@@ -38,10 +38,17 @@
 # define lk_mpp .false.
 #endif 
 
+#if defined key_iomput
+#define lk_iomput .true.
+#else
+#define lk_iomput .false.
+#endif
+
 # define jp_tem           itemp
 # define jp_sal           itemp+ntrc_salt
 # define tsn(i,j,k,n)     t(i,j,k,nnew,n)
 # define trn(i,j,k,n)     t(i,j,k,nnew,itemp+ntrc_salt+n) 
+# define trb(i,j,k,n)     t(i,j,k,nnew,itemp+ntrc_salt+n)
 
 
 # define rhop(i,j,k) (rho0+rho1(i,j,k))
@@ -53,10 +60,13 @@
 #   define hmld(i,j)  hbl(i,j)
 #endif
 #
-#if defined DIURNAL_INPUT_SRFLX
-#    define  qsr(i,j)  max(1.e-10,rho0*Cp*srflxbio(i,j))
-#else
 #    define  qsr(i,j)  max(1.e-10,rho0*Cp*srflx(i,j))
+#if defined DIURNAL_INPUT_SRFLX
+#    define l_trcdm2dc .true. 
+#    define  qsr_mean(i,j)  max(1.e-10,rho0*Cp*srflxbio(i,j))
+#else
+#    define  qsr_mean(i,j)  max(1.e-10,rho0*Cp*srflx(i,j))
+#    define l_trcdm2dc .false.
 #endif
 #
 # define nday_year     (int(tdays)+1)
@@ -66,10 +76,12 @@
 # define rmtss         (ryyss/raamo)
 # define nyear_len     year2day
 # define nit000        ntstart
+# define nittrc000     ntstart
 # define nitend        ntimes
 # define nwrite        nrst
 # define rdt           dt
 # define rpi           pi
+# define rad           pi
 
 # define jpk   N
 # define ikt   jpk

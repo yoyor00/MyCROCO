@@ -21,16 +21,18 @@ MODULE ocean2pisces
   include 'mpif.h'
 # include "mpi_cpl.h"
 # endif
+# define numout   stdout
   
 
-REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1) :: fse3w     ! W-vertical scale factor
-REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1) :: fsdepw    ! W-depht 
+REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1) :: e3w_n     ! W-vertical scale factor
+REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1) :: gdepw_n   ! W-depht
 
   INTEGER Istrp,Iendp,Jstrp,Jendp
 !$OMP threadprivate(Istrp,Iendp)
 !$OMP threadprivate(Jstrp,Jendp)
 
   PUBLIC iom_open, iom_close, iom_get, iom_put
+  PUBLIC iom_use
 
   INTERFACE iom_put
      MODULE PROCEDURE iom_p1d, iom_p2d, iom_p3d
@@ -53,11 +55,12 @@ REAL, DIMENSION(GLOBAL_2D_ARRAY,N+1) :: fsdepw    ! W-depht
 
 
   LOGICAL :: lwp        
+  LOGICAL :: lwm
   LOGICAL :: ln_ctl     = .false.
   LOGICAL :: ln_qsr_bio = .false.   
   REAL    :: rn_abs     = 0.58
   REAL    :: rn_si0     = 0.35
-  INTEGER :: numout    
+!  INTEGER :: numout    
   INTEGER :: jpdom_data = 1
 
 CONTAINS
@@ -77,7 +80,7 @@ CONTAINS
       DO k = 1, N+1
         DO j =  Jstr, Jend 
             DO i =  Istr, Iend 
-               fsdepw(i,j,N+2-k) = -z_w(i,j,k-1)
+               gdepw_n(i,j,N+2-k) = -(z_w(i,j,k-1)-z_w(i,j,N))
             END DO
          END DO
       END DO
@@ -86,15 +89,15 @@ CONTAINS
       DO k = 2, N
          DO j =  Jstr, Jend 
             DO i =  Istr, Iend 
-               fse3w(i,j,k) = -z_r(i,j,N+1-k) + z_r(i,j,N+2-k)
+               e3w_n(i,j,k) = -z_r(i,j,N+1-k) + z_r(i,j,N+2-k)
            END DO
          END DO
       END DO
 
       DO j =  Jstr, Jend 
          DO i =  Istr, Iend 
-            fse3w(i,j,1)   = -2 * z_r(i,j,N)
-            fse3w(i,j,N+1) = 2 * ( -z_w(i,j,0) + z_r(i,j,1) )
+            e3w_n(i,j,1)   = -2 * z_r(i,j,N)
+            e3w_n(i,j,N+1) = 2 * ( -z_w(i,j,0) + z_r(i,j,1) )
          END DO
       END DO
 
@@ -136,7 +139,9 @@ CONTAINS
       ENDIF
 #if defined key_agrif
       IF( .NOT. Agrif_Root() )   clfile = TRIM(clfile)//'.'//TRIM(Agrif_CFixed())
-      write(*,*) clfile
+! Modif SPOUS ASAP
+!      write(*,*) clfile
+! Modif SPOUS ASAP
       knum=Agrif_Get_Unit()
 #else
       knum=getunit()
@@ -177,6 +182,35 @@ CONTAINS
       ENDIF
       
    END SUBROUTINE ctl_opn
+
+   SUBROUTINE ctl_nam ( kios, cdnam, ldwp )
+      !!----------------------------------------------------------------------
+      !!                  ***  ROUTINE ctl_nam  ***
+      !!
+      !! ** Purpose :   Informations when error while reading a namelist
+      !!
+      !! ** Method  :   Fortan open
+      !!----------------------------------------------------------------------
+      INTEGER         , INTENT(inout) ::   kios    ! IO status after reading the namelist
+      CHARACTER(len=*), INTENT(in   ) ::   cdnam   ! group name of namelist for which error occurs
+      CHARACTER(len=5)                ::   clios   ! string to convert iostat in character for print
+      LOGICAL         , INTENT(in   ) ::   ldwp    ! boolean term for print
+      !!----------------------------------------------------------------------
+      !
+      WRITE (clios, '(I5.0)')   kios
+      IF( kios < 0 ) THEN
+         CALL ctl_warn( 'end of record or file while reading namelist '   &
+            &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios) )
+      ENDIF
+      !
+      IF( kios > 0 ) THEN
+         CALL ctl_stop( 'misspelled variable in namelist '   &
+            &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios) )
+      ENDIF
+      kios = 0
+      RETURN
+      !
+   END SUBROUTINE ctl_nam
 
 
    FUNCTION getunit()
@@ -362,6 +396,17 @@ CONTAINS
 #endif
    END SUBROUTINE iom_p3d
 
+   LOGICAL FUNCTION iom_use( cdname )
+      !!----------------------------------------------------------------------
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*), INTENT(in) ::   cdname
+      !!----------------------------------------------------------------------
+#if defined key_iomput
+      iom_use = xios_field_is_active( cdname )
+#else
+      iom_use = .FALSE.
+#endif
+   END FUNCTION iom_use
 
 END MODULE ocean2pisces
 
