@@ -62,7 +62,7 @@
             enddo
           enddo
         enddo
-      enddo
+
 # if defined DIAGNOSTICS_DISS
       do k=1,N
           call alfabeta_k_tile(Istr,Iend,Jstr,Jend,k,alfa,beta)
