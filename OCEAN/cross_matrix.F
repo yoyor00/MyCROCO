@@ -42,13 +42,13 @@
 
       implicit none
       integer max_name_size, max_names, max_string_size, input,iout
-      parameter (max_name_size=62, max_names=956, max_string_size=92,
+      parameter (max_name_size=62, max_names=956, max_string_size=300,
      &                                             input=11, iout=12)
-      character*62 fname(max_names)
+      character*300 fname(max_names)
       logical ismodule(max_names,max_names)
-      character*62 modname
+      character*300 modname
       character*4 sufname
-      character string*92, quote*1, double_quote*1, backslash*1
+      character string*300, quote*1, double_quote*1, backslash*1
       integer nsize(max_names), size,  lines, nmax,  n_disc,  n_excl, 
      &                              last_arg, iargc, iocheck, i,j,k,n,
      & my_iostat
@@ -397,3 +397,4 @@
       
       return
       end
+

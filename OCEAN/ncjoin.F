@@ -41,7 +41,11 @@ c--#define VERBOSE
       implicit none
 #include "netcdf.inc"
       integer maxdims, maxvars, maxnodes
+#ifdef PISCES
+      parameter (maxdims=32, maxvars=92, maxnodes=2048)
+#else
       parameter (maxdims=32, maxvars=64, maxnodes=2048)
+#endif
       character ncname0*160, ncname(0:maxnodes-1)*160, string*160
       character root*128, root_bak*128, sffx*8, sffx_bak*8
       character dimname(maxdims)*32, varname(maxvars)*32
