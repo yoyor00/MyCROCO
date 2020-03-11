@@ -102,6 +102,7 @@ ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 
 if [[ -e "namelist_pisces" ]] ; then
@@ -117,6 +118,7 @@ fi
 ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
 ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
 ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 
@@ -145,9 +147,9 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
                 FFLAGS1=" -g -fast -pg -r8 -i4 -Mprof=ccff -traceback\
                 -Mbackslash -Kieee  -Mpreprocess -mcmodel=medium "
 	elif [[ $FC == gfortran ]] ; then
-		CPP1="cpp  -traditional -DLinux"
+		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 "
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
