@@ -75,7 +75,7 @@
 # else
           indx=min(itrc,itemp)
 # endif
-# ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=t(i,j,k,nnew,itrc)
@@ -203,7 +203,7 @@
 
 
      
-# ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
               TVmix(i,j,k,itrc) = 
@@ -224,7 +224,7 @@
               t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
             enddo
           enddo
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=0.0

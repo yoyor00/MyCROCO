@@ -791,7 +791,7 @@
             enddo
           enddo
         enddo
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
         do k=1,N
           do j=jstr,jend
             do i=Istr,Iend
