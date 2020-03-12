@@ -1,6 +1,5 @@
 # ci croco
 # check this file with: https://gitlab.inria.fr/ci/lint
-timeout: 60 # timeout in minutes
 
 variables:
   TERM: "xterm-256color"
