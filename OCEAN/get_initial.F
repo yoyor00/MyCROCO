@@ -299,7 +299,7 @@
           nrecavg=ibuff(4)
 #endif
 
-#define RESTART_DIAGS
+#undef RESTART_DIAGS
 #if defined RESTART_DIAGS && ! defined XIOS
 
 
@@ -394,9 +394,16 @@
         count(2)=1
         ierr=nf_get_vara_int (ncid, varid, start, count, ibuff)
         if (ierr .eq. nf_noerr) then
+#if defined RESTART_DIAGS
           nrecsurf=ibuff(5)
 #ifdef AVERAGES
           nrecsurf_avg=ibuff(6)
+#endif
+#else
+          nrecsurf=0
+#ifdef AVERAGES
+          nrecsurf_avg=0
+#endif
 #endif
         endif
 #endif
