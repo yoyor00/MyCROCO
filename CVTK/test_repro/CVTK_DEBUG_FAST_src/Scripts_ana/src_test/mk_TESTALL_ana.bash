@@ -70,7 +70,7 @@ for testconf in `ls -1 ./Configure_Test/ `;do
   	  ierr=$(($ierr+1))
     else
   	  varname="$(echo -e ${TEST}_PR)"
-      varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
+	  varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
     fi
   done

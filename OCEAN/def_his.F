@@ -2882,7 +2882,7 @@
 !
 ! wst: vertical Stokes drift velocity (m/s) at rho-point
 !
-        if (wrthis(indxWST)) then
+        if (wrt(indxWST)) then
           lvar=lenstr(vname(1,indxWST))
           ierr=nf_inq_varid (ncid, vname(1,indxWST)(1:lvar), vidWST)
           if (ierr .ne. nf_noerr) then

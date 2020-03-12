@@ -746,11 +746,11 @@
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+92)
+      parameter (indxShflx_rswbio=indxSUSTR+130)
 #endif
       integer indxBhflx,indxBwflx
-      parameter (indxBhflx=indxSUSTR+93)
-      parameter (indxBwflx=indxSUSTR+94)
+      parameter (indxBhflx=indxSUSTR+131)
+      parameter (indxBwflx=indxSUSTR+132)
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)

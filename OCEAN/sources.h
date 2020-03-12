@@ -94,9 +94,9 @@
 #endif /* PSOURCE_NCFILE */
 
 # ifdef MPI
-      integer Isrc_mpi(Nsrc,0:NNODES-1)
+      integer Isrc_mpi(Msrc,0:NNODES-1)
       common /source_Isrc_mpi/ Isrc_mpi
-      integer Jsrc_mpi(Nsrc,0:NNODES-1)
+      integer Jsrc_mpi(Msrc,0:NNODES-1)
       common /source_Jsrc_mpi/ Jsrc_mpi
 # endif
 
