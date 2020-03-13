@@ -34,7 +34,7 @@
       real              cycle_length,    tstart,  tend,     cff
       integer ncid,     icycle,          tshift,  vartype,  lvar,
      &        varid,    trecord,         irec,    nvatts,   latt, 
-     &                  ntime,           i,ierr,  nvdims,   ldim,
+     &                  ntime,           i,ierr,ierr0,nvdims,ldim,
      &                                   size,    vdims(5), lenstr 
       character*16 varname, dimname, attname
 
@@ -47,9 +47,15 @@
 ! cycle_length. In the case when only one record is available,
 ! set negative cycle_length.
 !
-      ierr=nf_inq_var (ncid, varid, varname, vartype,
-     &                       nvdims,  vdims,  nvatts)
-      if (ierr .eq. nf_noerr) then
+!      ierr=nf_inq_var (ncid, varid, varname, vartype,
+!     &                       nvdims,  vdims,  nvatts)
+! bug if comilation with gfortran
+      ierr0=nf_inq_varname (ncid, varid, varname)
+      ierr=nf_inq_varndims (ncid, varid, nvdims)
+      ierr=nf_inq_vardimid (ncid, varid, vdims)
+      ierr=nf_inq_varnatts (ncid, varid, nvatts)
+
+      if (ierr0 .eq. nf_noerr) then
         lvar=lenstr(varname)
         ntime=0
         do i=1,nvdims
