@@ -258,7 +258,9 @@ CONTAINS
             WRITE(numout,4) bioname
          ENDIF
          ierr = nf_inq_varid(ncid,"dust_time",varid)
-         ierr = nf_inq_var  (ncid, varid, varname, vartype, nvdims,  vdims,  nvatts) 
+! bug if compilation with gfortran
+!         ierr =nf_inq_var (ncid, varid, varname, vartype, nvdims,  vdims,  nvatts) 
+         ierr =nf_inq_varnatts (ncid, varid, nvatts) 
          year2daydta = year2day
          DO ji = 1, nvatts
             ierr = nf_inq_attname (ncid, varid, ji, attname)
