@@ -520,7 +520,7 @@
           
 
 
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -555,7 +555,7 @@
 !  Initialize TVmix diag computation: 
 !  --> use Trate which needs recomputing anyway
 !
-#   ifdef DIAGNOSTICS_TS
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                Trate(i,j,k,itrc)=t(i,j,k,nnew,itrc)
