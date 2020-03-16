@@ -1,6 +1,7 @@
 #ifndef EXCLUDE_MAIN
 # define EXCLUDE_MAIN
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 # include "cppdefs.h"
 
@@ -277,6 +278,8 @@ c--#define AUTORENICE
  
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 #include "cppdefs.h"
 !
@@ -469,6 +472,9 @@ c--#define VERBOSE
                     stop
                   endif
 !
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 ! Lexical analysis of the file name: It is assumed that name of the
 ! file consists of root name (eg.: "history"); integer number which
@@ -478,6 +484,7 @@ c--#define VERBOSE
 ! number segment in the filename and; (4) MPI node number from the
 ! file name should match the number determined from global attribute
 ! "partition".
+<<<<<<< HEAD
 <<<<<<< HEAD
                                                ! Determine positions
                   digit=.false.                ! of starting and ending
@@ -532,6 +539,8 @@ c--#define VERBOSE
 ! Checking consistency of root name with previously found.
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !                                           ! Determine positions of
                   digit=.false.             ! starting and ending
                   is=0                      ! characters of MPI node
@@ -584,6 +593,9 @@ c--#define VERBOSE
 !
 ! Checking consistency of root name with previously found.
 !
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   ierr=nf_noerr
                   if (root_bak(1:1).eq.' ') then
@@ -595,6 +607,7 @@ c--#define VERBOSE
                       ierr=ierr+1
                       write(*,'(/8x,6A/17x,3A/)') 'WARNING: file ''',
 <<<<<<< HEAD
+<<<<<<< HEAD
      &                     nctestname(1:lncn),   ''' has different ',
      &                    'root name ''',  root(1:lvar),   ''' than',
      &                    'previously found root name ''',
@@ -605,6 +618,8 @@ c--#define VERBOSE
 ! Checking consistency of suffix with previously found..
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &                   ncname0(1:lstr),   ''' has different root ',
      &                   'name ''',      root(1:lvar),     ''' than',
      &                   'previously found root name ''',
@@ -614,6 +629,9 @@ c--#define VERBOSE
 !
 ! Checking consistency of suffix with previously found..
 !
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   if (sffx_bak(1:1).eq.' ') then
                     sffx_bak=sffx
@@ -623,8 +641,13 @@ c--#define VERBOSE
                     if (lvar.ne.lbak .or. sffx.ne.sffx_bak) then
                       ierr=ierr+1
 <<<<<<< HEAD
+<<<<<<< HEAD
                       write(*,'(/8x,7A/17x,3A/)')       'WARNING: ',
      &                  'file ''',  nctestname(1:lncn),   ''' has ',
+=======
+                      write(*,'(/8x,7A/17x,3A/)') 'WARNING: ',
+     &                  'file ''',     ncname0(1:lstr),   ''' has ',
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
                       write(*,'(/8x,7A/17x,3A/)') 'WARNING: ',
      &                  'file ''',     ncname0(1:lstr),   ''' has ',
@@ -635,9 +658,15 @@ c--#define VERBOSE
                     endif
                   endif
 <<<<<<< HEAD
+<<<<<<< HEAD
  
 ! Checking consistency of length of node number segment
  
+=======
+!
+! Checking consistency of length of node number segment
+!
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
 !
 ! Checking consistency of length of node number segment
@@ -649,6 +678,7 @@ c--#define VERBOSE
                     ierr=ierr+1
                     write(*,'(/8x,A,I2,1x,A/17x,3A,I2,A/)')
      &              'WARNING: number of digits in MPI node segment',
+<<<<<<< HEAD
 <<<<<<< HEAD
      &               code_size, 'in filename', '''',
      &               nctestname(1:lncn),
@@ -664,6 +694,8 @@ c--#define VERBOSE
                     write(*,'(/8x,3A,I3/17x,2A/17x,A,I3,A/)')
      &                   'WARNING: file ''', nctestname(1:lncn),
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &               code_size,'in file name', '''',ncname0(1:lstr),
      &              ''' is different than previously determined',
      &              code_size_bak, '.'
@@ -677,6 +709,9 @@ c--#define VERBOSE
                     ierr=ierr+1
                     write(*,'(/8x,3A,I3/17x,2A/17x,A,I3,A/)')
      &                   'WARNING: file ''', ncname0(1:lstr),
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &                   ''' belongs to different MPI node',   node,
      &                   '(as determined from its global attribute',
@@ -684,12 +719,15 @@ c--#define VERBOSE
      &                   ' determined from to the file name.'
                   endif
 <<<<<<< HEAD
+<<<<<<< HEAD
 #endif 
 ! Stop, if something is wrong.
  
                   if (ierr.ne.nf_noerr) goto 97
                 else
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 ! Stop, if something is wrong.
 !
@@ -699,11 +737,15 @@ c                  write(*,'(/8x,3A/17x,A,I2,A,I2,A/)')
 c   &              'WARNING: netCDF file ''',       ncname0(1:lstr),
 c   &              ''' corresponds to subdomain','inode,jnode =', i,
 c   &              ',', j, ' which already defined in another file.'
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   arg=arg-1
                   goto 5
                 endif
               else
+<<<<<<< HEAD
 <<<<<<< HEAD
                 write(*,'(/1x,2A/14x,3A/)')   '### WARNING: Cannot ',
      &           'aquire global attribute ''partition'' from netCDF',
@@ -785,6 +827,8 @@ c   &              ',', j, ' which already defined in another file.'
 !    ***   ***  *  ***  *   **  ***   ***   ***  *  ***  *
 !    ***           ***     **   ***   ***   ***     ***
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                 write(*,'(/8x,2A/17x,4A/)') 'WARNING: Cannot ',
      &                'aquire global attribute ''partition'' from ',
      &                'netCDF file ''',  ncname0(1:lstr),    '''. ',
@@ -856,11 +900,15 @@ c   &              ',', j, ' which already defined in another file.'
 !      *****    *********    ******   *******    *********
 !    ***   ***  *  ***  *   **  ***   ***   ***  *  ***  *
 !    ***           ***     **   ***   ***   ***     *** 
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !      *****       ***    ***   ***   ***   **      ***
 !          ***     ***    *********   ******        ***
 !    ***   ***     ***    ***   ***   ***  **       ***
 !      *****       ***    ***   ***   ***   ***     ***
+<<<<<<< HEAD
 <<<<<<< HEAD
  
  
@@ -964,6 +1012,8 @@ c**           endif
      &                 'the corresponding name from netCDF file ''',
      &                                  ncname(0)(1:lncn),    '''.'
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 !
 ! After this moment a set of files recorded as [ncname(0:nnodes-1),
@@ -1075,6 +1125,7 @@ c**           endif
      &              'name ''',  dimname(i)(1:ldim(i)),
      &              ''' with the same ID', 'in netCDF file ''',
      &               ncname(0)(1:lstr),    '''.'
+<<<<<<< HEAD
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   goto 97
                 endif
@@ -1140,12 +1191,19 @@ c**           endif
      &                       string(1:lstr),  ''' in netCDF file ''',
      &                       ncname(node)(1:lncn), '''.',
      &                                             nf_strerror(ierr)
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   goto 97
                 endif
               else
                 write(*,'(/1x,2A,I3/12x,3A/12x,A)')    '### ERROR: ',
+<<<<<<< HEAD
      &                 'Cannot determine name of variable with id =',
      &                  i, 'in netCDF file ''', ncname(node)(1:lncn),
+=======
+     &               'Cannot determine name and size of dimension #',
+     &                i,  'in netCDF file ''',  ncname(node)(1:lstr),
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
      &               'Cannot determine name and size of dimension #',
      &                i,  'in netCDF file ''',  ncname(node)(1:lstr),
@@ -1155,6 +1213,7 @@ c**           endif
               endif
             enddo
 #ifdef KEEP_CLOSED
+<<<<<<< HEAD
 <<<<<<< HEAD
             if (node.gt.0) then           ! Close all the files,
               ierr=nf_close(ncid(node))   ! except for MPI rank=0.
@@ -1357,6 +1416,8 @@ c**           endif
 !
         max_buff_size=size_XI*size_ETA*size_S
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
              if (node.gt.0) then
                ierr=nf_close(ncid(node))
                ncid(node)=-1
@@ -1536,12 +1597,16 @@ c**           endif
 ! possible MPI-subdomain (i.e., partial file).
 ! 
           max_buff_size=size_XI*size_ETA*size_S
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 ! Create combined netCDF file:   Once the completeness of the set of
 !------- -------- ------ -----   partial files have been established
 ! and dimensions survive consistency check, create the combined file,
 ! define its dimensions and copy global attributes.
+<<<<<<< HEAD
 <<<<<<< HEAD
  
         i=lenstr(root_bak)
@@ -1638,6 +1703,8 @@ c**           endif
         if (ierr .eq. nf_noerr) then
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
           i=lenstr(root_bak)
           if (sffx_bak(1:1).ne.' ') then
@@ -1721,6 +1788,9 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
 # ifdef VERBOSE
           write(*,'(1x,A)') 'Copying global attributes:'
 # endif
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
           do i=1,ngatts
             ierr=nf_inq_attname (ncid(0), nf_global, i, string)
@@ -1729,6 +1799,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
               if (string(1:lvar) .ne. 'partition') then
                 ierr=nf_copy_att (ncid(0), nf_global, string(1:lvar),
 <<<<<<< HEAD
+<<<<<<< HEAD
      &                                             nctarg, nf_global)
                 if (ierr .ne. nf_noerr) then
                   write(*,'(/1x,4A/12x,3A/12x,A)')     '### ERROR: ',
@@ -1736,16 +1807,22 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &             ''' into netCDF',  'file ''',  nctargname(1:ltrg),
      &                                     '''.',  nf_strerror(ierr)
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &                                            nctarg, nf_global)
                 if (ierr .ne. nf_noerr) then
                   write(*,'(/8x,4A/15x,3A/)')  'ERROR: Cannot ',
      &            'copy global attribute ''', string(1:lvar), '''',
      &            'into netCDF file ''',   ncname0(1:lstr),   '''.'
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   goto 97
                 endif
 # ifdef VERBOSE
                 write(*,'(20x,3A)') '''', string(1:lvar), ''''
+<<<<<<< HEAD
 <<<<<<< HEAD
 # endif
               endif
@@ -1811,6 +1888,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &                      'for variable ''', vname(i)(1:lvar), '''.',
      &                                               nf_strerror(ierr)
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 # endif      
               endif
             else
@@ -1862,12 +1941,16 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &                 '### ERROR: Cannot get name of attribute #',
      &                  j,  'for variable ''',  varname(i)(1:lvar),
      &                                    '''.', nf_strerror(ierr) 
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                     goto 97
                   endif
                 enddo
               else
                 write(*,'(/8x,4A/)') 'ERROR: Cannot define ',
+<<<<<<< HEAD
 <<<<<<< HEAD
      &                  'variable ''', vname(i)(1:lvar), '''.'
                 goto 97
@@ -1891,6 +1974,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
             part_type(i)=0
             do j=1,vdims(i)
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &                  'variable ''', varname(i)(1:lvar), '''.'
                 goto 97
               endif
@@ -1909,6 +1994,9 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
             series(i)=.false.
             part_type(i)=0
             do j=1,vardims(i)
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
               if (dimids(j,i).eq.id_xi_rho .or.
      &            dimids(j,i).eq.id_xi_u) then
@@ -1919,6 +2007,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
               elseif (dimids(j,i).eq.unlimdimid) then
                 series(i)=.true.
               endif
+<<<<<<< HEAD
 <<<<<<< HEAD
             enddo
  
@@ -1948,6 +2037,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
  
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
             enddo
           enddo       ! <-- i, variable ID.
 
@@ -1973,6 +2064,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
 
 !
 !
+<<<<<<< HEAD
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !     **     *     ***  *******    ***  *********  ********
 !      *    ***   ***   ***   ***  ***  *  ***  *  ***    *
@@ -1998,6 +2090,16 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
         endif
 #endif
 =======
+=======
+!     **     *     ***  *******    ***  *********  ********
+!      *    ***   ***   ***   ***  ***  *  ***  *  ***    *
+!       *   ***   ***   ***   ***  ***     ***     ***
+!       *  *** * ***    ***   **   ***     ***     ******
+!        * **  * **     ******     ***     ***     ***
+!        ***    ***     ***  **    ***     ***     ***    *
+!         *     **      ***   ***  ***     ***     ********
+!
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 ! Allocate necessary buffer arrays: here "max_*_size" is needed size
 ! of buffer array, as determined by processing of current file, while
@@ -2012,26 +2114,36 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
           if (allocated(bfr_out)) deallocate(bfr_out)
         endif
 # endif
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
         if (max_buff_size .gt. alloc_buff_size) then
           if (allocated(buff)) deallocate(buff)
           allocate(buff(max_buff_size))
           alloc_buff_size=max_buff_size
 <<<<<<< HEAD
+<<<<<<< HEAD
           write(*,*) 'allocated "buff" with  max_buff_size =',
      &                                         max_buff_size
         endif
 #ifdef FAST_MODE
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
           write(*,*) 'allocated "buff" with max_buff_size =',
      &                                         max_buff_size
         endif
 # ifdef FAST_MODE
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
         if (max_bfr_out .gt. alloc_bfr_out) then
           allocate(bfr_out(max_bfr_out))
           alloc_bfr_out=max_bfr_out
           write(*,*) 'allocated "bfr_out" with ',
+<<<<<<< HEAD
 <<<<<<< HEAD
      &               'max_bfr_out =', max_bfr_out
         endif
@@ -2092,6 +2204,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                   write(*,'(/8x,4A/)') '### ERROR: scalar variable ',
      &              '''', vname(i)(1:lvar), ''' has unknown type.'
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &        'max_bfr_out =', max_bfr_out
         endif
 # endif
@@ -2127,6 +2241,9 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                   lvar=lenstr(varname(i))
                   write(*,'(/8x,4A/)') '### ERROR: scalar variable ',
      &              '''', varname(i)(1:lvar), ''' has unknown type.'
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   goto 97
                 endif
@@ -2134,10 +2251,13 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                   if (vartype(i) .eq. nf_char) then
                     ierr=nf_put_var_text  (nctarg, varid(i), buff_str)
 <<<<<<< HEAD
+<<<<<<< HEAD
                   elseif (vartype(i) .eq. nf_byte) then
                     ierr=nf_put_var_int1   (nctarg, varid(i), buff)
                   elseif (vartype(i) .eq. nf_short) then
                     ierr=nf_put_var_int2   (nctarg, varid(i), buff)
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   elseif (vartype(i) .eq. nf_int) then
@@ -2148,6 +2268,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                     ierr=nf_put_var_double (nctarg, varid(i), buff)
                   endif
                   if (ierr .ne. nf_noerr) then
+<<<<<<< HEAD
 <<<<<<< HEAD
                     lvar=lenstr(vname(i))
                     write(*,'(/1x,4A/12x,3A/12x,A)')  '### ERROR: ',
@@ -2162,6 +2283,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                   write(*,'(/1x,4A/12x,A/)')  '### ERROR: Cannot ',
      &                 'read scalar variable ''', vname(i)(1:lvar),
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                     lvar=lenstr(varname(i))
                     write(*,'(/1x,4A/12x,3A/12x,A)') '### ERROR: ',
      &                           'Cannot write scalar variable ''',
@@ -2174,11 +2297,15 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                   lvar=lenstr(varname(i))
                   write(*,'(/1x,4A/12x,A/)')  '### ERROR: Cannot ',
      &               'read scalar variable ''', varname(i)(1:lvar),
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
      &                                    '''.', nf_strerror(ierr)
                   goto 97
                 endif
               elseif (part_type(i).eq.0) then
+<<<<<<< HEAD
 <<<<<<< HEAD
  
 ! Non-partitionable array.
@@ -2189,6 +2316,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 size=1
                 do j=1,vdims(i)
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 ! Non-partitionable array.
 !
@@ -2197,6 +2326,9 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &                                  varname(i)(1:lvar), '''...'
                 size=1
                 do j=1,vardims(i)
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   if (dimids(j,i).eq.unlimdimid) then
                     start(j)=rec
@@ -2208,6 +2340,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                   size=size*count(j)
                 enddo
 <<<<<<< HEAD
+<<<<<<< HEAD
                 if (vartype(i) .eq. nf_char .or.
      &              vartype(i) .eq. nf_byte) then
                   size=size*1
@@ -2216,20 +2349,31 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 elseif (vartype(i) .eq. nf_int .or.
      &                  vartype(i) .eq. nf_float) then
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                 if (vartype(i) .eq. nf_char) then
                   size=size*1
                 elseif (vartype(i) .eq. nf_int) then
                   size=size*4
                 elseif (vartype(i) .eq. nf_float) then
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   size=size*4
                 elseif (vartype(i) .eq. nf_double) then
                   size=size*8
                 else
 <<<<<<< HEAD
+<<<<<<< HEAD
                   lvar=lenstr(vname(i))
                   write(*,'(/8x,3A/)')  '### ERROR: variable ''',
      &                  vname(i)(1:lvar), ''' has unknown type.'
+=======
+                  lvar=lenstr(varname(i))
+                  write(*,'(/8x,3A/)') '### ERROR: variable ''',
+     &               varname(i)(1:lvar), ''' has unknown type.'
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
                   lvar=lenstr(varname(i))
                   write(*,'(/8x,3A/)') '### ERROR: variable ''',
@@ -2246,6 +2390,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 endif
  
                 if (vartype(i) .eq. nf_char) then
+<<<<<<< HEAD
 <<<<<<< HEAD
                   ierr=nf_get_vara_text  (ncid(0), vid(i,0),
      &                                    start,count, buff)
@@ -2356,6 +2501,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &                       vname(i)(1:lvar), ''''
 #endif
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   ierr=nf_get_vara_text   (ncid(0), i, start,
      &                                           count, buff)
                 elseif (vartype(i) .eq. nf_int) then
@@ -2452,13 +2599,20 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &                     'identified 2D-partitioned array ''',
      &                      varname(i)(1:lvar), ''''
 # endif
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                   endif
                   if (var_mask) then
                     size=1
                     size1=1
 <<<<<<< HEAD
+<<<<<<< HEAD
                     do j=1,vdims(i)
+=======
+                    do j=1,vardims(i)
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
                     do j=1,vardims(i)
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
@@ -2468,7 +2622,11 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                         start(j)=1
                         count(j)=dimsize(k,node)
 <<<<<<< HEAD
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
 
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
@@ -2494,7 +2652,11 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
 #endif
                         endif
 <<<<<<< HEAD
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
 
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
@@ -2521,6 +2683,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
 #endif
                     enddo
 <<<<<<< HEAD
+<<<<<<< HEAD
  
 ! Convert sizese to Bytes
  
@@ -2534,6 +2697,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                     elseif (vartype(i) .eq. nf_int .or.
      &                      vartype(i) .eq. nf_float) then
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 
 
                     if (vartype(i) .eq. nf_char) then
@@ -2543,6 +2708,9 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                       size=size*4
                       size1=size1*4
                     elseif (vartype(i) .eq. nf_float) then
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                       size=size*4
                       size1=size1*4
@@ -2551,6 +2719,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                       size1=size1*8
                     else
 <<<<<<< HEAD
+<<<<<<< HEAD
                       lvar=lenstr(vname(i))
                       write(*,'(/8x,4A/)') '### ERROR: variable ''',
      &                     vname(i)(1:lvar), ''' has unknown type.'
@@ -2558,12 +2727,17 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                     endif
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                       lvar=lenstr(varname(i))
                       write(*,'(/8x,4A/)') '### ERROR: variable ''',
      &                   varname(i)(1:lvar), ''' has unknown type.'
                       goto 97
                     endif
 
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
                     if (size .gt. 8*max_buff_size) then
                       if (allocated(buff)) deallocate(buff)
@@ -2572,6 +2746,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                       write(*,*) 'allocated "buff" with ',
      &                   'max_buff_size =', max_buff_size
                     endif
+<<<<<<< HEAD
 <<<<<<< HEAD
  
 #ifdef KEEP_CLOSED
@@ -2645,6 +2820,8 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                       goto 97
                     endif
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 
 
 
@@ -2698,13 +2875,20 @@ c?                  endif
      &                ncname(node)(1:lstr), '''.', nf_strerror(ierr)
                     goto 97
                   endif
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 #endif
 # ifdef VERBOSE
                     write(*,'(1x,A)')  'copying ...'
 # endif
 <<<<<<< HEAD
+<<<<<<< HEAD
  
+=======
+!
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
 !
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
@@ -2720,7 +2904,11 @@ c?                  endif
 ! variable in netCDF file, while all all "start(k)" [except unlimited
 ! dimension] are equal to 1.
 <<<<<<< HEAD
+<<<<<<< HEAD
  
+=======
+!
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 =======
 !
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
@@ -2728,6 +2916,7 @@ c?                  endif
 ! after they read from the partial netCDF files, relying on sub-array
 ! writing capability of "nf_put_vara_XXX". This results physical
 ! write into a large number of small records of size count(1).
+<<<<<<< HEAD
 <<<<<<< HEAD
  
  
@@ -3102,6 +3291,8 @@ c--#endif
         jstr=1                     ! practice in ROMS, however netCDF
         jmax=1                     ! is not restricted to do so].
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
                     if (ierr .eq. nf_noerr) then
 # ifdef FAST_MODE
@@ -3259,6 +3450,9 @@ c--#endif
       else                       ! the last one [this is the standard
         jstr=1                   ! practice in ROMS, however netCDF
         jmax=1                   ! is not restricted to do so.
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
         jmax1=1
       endif
@@ -3282,6 +3476,7 @@ c--#endif
       endif
       if (ndims.gt.4) then
 <<<<<<< HEAD
+<<<<<<< HEAD
         write(*,'(/1x,2A/12x,A/)')   '### ERROR: Exceeding limit of ',
      &                           '4 dimensions for partitioned array',
      &                        '[unlimited dimension does not count].'
@@ -3294,6 +3489,8 @@ c*   &                  'imax,jmax,kmax,lmax =', imax,jmax,kmax,lmax,
 c*   &                  'istr,jstr,kstr,lstr =', istr,jstr,kstr,lstr
  
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
         write(*,'(/1x,2A/12x,A/)') '### ERROR: Exceeding limit of ',
      &                         '4 dimensions for partitioned array',
      &                      '[unlimited dimension does not count].'
@@ -3305,6 +3502,9 @@ c*   & vardims, 'imax1,jmax1,kmax1,lmax1 =', imax1,jmax1,kmax1,lmax1,
 c*   &                  'imax,jmax,kmax,lmax =', imax,jmax,kmax,lmax,
 c*   &                  'istr,jstr,kstr,lstr =', istr,jstr,kstr,lstr
   
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
       do l=1,lmax
         ls=l-1
@@ -3323,6 +3523,7 @@ c*   &                  'istr,jstr,kstr,lstr =', istr,jstr,kstr,lstr
       enddo
       return
       end
+<<<<<<< HEAD
 <<<<<<< HEAD
  
 # if F_TYPE == 1
@@ -3344,6 +3545,8 @@ c*   &                  'istr,jstr,kstr,lstr =', istr,jstr,kstr,lstr
 # endif
 # ifdef F_TYPE
 =======
+=======
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 
 
 # if FUNC_TYPE == 3
@@ -3358,6 +3561,9 @@ c*   &                  'istr,jstr,kstr,lstr =', istr,jstr,kstr,lstr
 #  define FUNC_TYPE 1
 # endif
 # ifdef FUNC_TYPE
+<<<<<<< HEAD
+>>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
+=======
 >>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 #  include "ncjoin.F"
 # endif
