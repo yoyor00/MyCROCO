@@ -594,7 +594,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(4) = zsedtra(4) / ( 1.0 + zsedtra(4) * reac_fe2 * dtsed2 / 2.0 )
             ELSE
-               zsedtra(4) = ( zsedtra(4) * zalpha ) / ( 0.25 * zsedtra(4) * ( exp( reac_fe2 * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(4) = ( zsedtra(4) * zalpha ) / ( 0.25 * zsedtra(4) *   &
+               &            ( exp( reac_fe2 * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_fe2 * zalpha * dtsed2 / 2. ) )
             ENDIF
             zsedtra(1) = zalpha + 0.25 * zsedtra(4) 
@@ -608,7 +609,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(2) = zsedtra(2) / ( 1.0 + zsedtra(2) * reac_h2s * dtsed2 / 2.0 )
             ELSE
-               zsedtra(2) = ( zsedtra(2) * zalpha ) / ( 2.0 * zsedtra(2) * ( exp( reac_h2s * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(2) = ( zsedtra(2) * zalpha ) / ( 2.0 * zsedtra(2)   &
+               &            * ( exp( reac_h2s * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_h2s * zalpha * dtsed2 / 2. ) )
             ENDIF
             zsedtra(1) = zalpha + 2.0 * zsedtra(2)
@@ -620,7 +622,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(3) = zsedtra(3) / ( 1.0 + zsedtra(3) * reac_nh4 * zadsnh4 * dtsed2 / 2.0 )
             ELSE
-               zsedtra(3) = ( zsedtra(3) * zalpha ) / ( 2.0 * zsedtra(3) * ( exp( reac_nh4 * zadsnh4 * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(3) = ( zsedtra(3) * zalpha ) / ( 2.0 * zsedtra(3)   &
+               &            * ( exp( reac_nh4 * zadsnh4 * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_nh4 * zadsnh4 * zalpha * dtsed2 /2. ) )
             ENDIF
             zsedtra(1) = zalpha + 2.0 * zsedtra(3)
@@ -632,7 +635,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(6) = zsedtra(6) / ( 1.0 + zsedtra(6) * reac_feso * dtsed2 / 2.0 )
             ELSE
-               zsedtra(6) = ( zsedtra(6) * zalpha ) / ( 2.0 * zsedtra(6) * ( exp( reac_feso * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(6) = ( zsedtra(6) * zalpha ) / ( 2.0 * zsedtra(6)   &
+               &            * ( exp( reac_feso * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_feso * zalpha * dtsed2 /2. ) )
             ENDIF
             zsedtra(1) = zalpha + 2.0 * zsedtra(6)
@@ -645,7 +649,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(4) = zsedtra(4) / ( 1.0 + zsedtra(4) * reac_fes * dtsed2 / 2.0 )
             ELSE
-               zsedtra(4) = ( zsedtra(4) * zalpha ) / ( zsedtra(4) * ( exp( reac_fes * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(4) = ( zsedtra(4) * zalpha ) / ( zsedtra(4)  &
+               &            * ( exp( reac_fes * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_fes * zalpha * dtsed2 /2. ) )
             ENDIF
             zsedtra(2) = zalpha + zsedtra(4)
@@ -660,7 +665,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(2) = zsedtra(2) / ( 1.0 + zsedtra(2) * reac_feh2s * dtsed2 )
             ELSE
-               zsedtra(2) = ( zsedtra(2) * zalpha ) / ( 2.0 * zsedtra(2) * ( exp( reac_feh2s * zalpha * dtsed2 ) - 1.0 )  &
+               zsedtra(2) = ( zsedtra(2) * zalpha ) / ( 2.0 * zsedtra(2)   &
+               &            * ( exp( reac_feh2s * zalpha * dtsed2 ) - 1.0 )  &
                &            + zalpha * exp( reac_feh2s * zalpha * dtsed2 ) )
             ENDIF
             zsedtra(5) = zalpha + 2.0 * zsedtra(2)
@@ -688,7 +694,8 @@ jflag4:     DO jn = 1, 10
             IF (zalpha == 0.) THEN
                zsedtra(6) = zsedtra(6) / ( 1.0 + zsedtra(6) * reac_feso * dtsed2 / 2. )
             ELSE
-               zsedtra(6) = ( zsedtra(6) * zalpha ) / ( 2.0 * zsedtra(6) * ( exp( reac_feso * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(6) = ( zsedtra(6) * zalpha ) / ( 2.0 * zsedtra(6)         &
+               &            * ( exp( reac_feso * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_feso * zalpha * dtsed2 /2. ) )
             ENDIF
             zsedtra(1) = zalpha + 2.0 * zsedtra(6)
@@ -700,7 +707,8 @@ jflag4:     DO jn = 1, 10
             IF (zalpha == 0.) THEN
                zsedtra(3) = zsedtra(3) / ( 1.0 + zsedtra(3) * reac_nh4 * zadsnh4 * dtsed2 / 2.0) 
             ELSE
-               zsedtra(3) = ( zsedtra(3) * zalpha ) / ( 2.0 * zsedtra(3) * ( exp( reac_nh4 * zadsnh4 * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(3) = ( zsedtra(3) * zalpha ) / ( 2.0 * zsedtra(3)     &
+               &            * ( exp( reac_nh4 * zadsnh4 * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_nh4 * zadsnh4 * zalpha * dtsed2 /2. ) )
             ENDIF
             zsedtra(1) = zalpha + 2.0 * zsedtra(3)
@@ -712,7 +720,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(2) = zsedtra(2) / ( 1.0 + zsedtra(2) * reac_h2s * dtsed2 / 2.0 )
             ELSE
-               zsedtra(2) = ( zsedtra(2) * zalpha ) / ( 2.0 * zsedtra(2) * ( exp( reac_h2s * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(2) = ( zsedtra(2) * zalpha ) / ( 2.0 * zsedtra(2)   &
+               &            * ( exp( reac_h2s * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_h2s * zalpha * dtsed2 / 2. ) )
             ENDIF
             zsedtra(1) = zalpha + 2.0 * zsedtra(2)
@@ -726,7 +735,8 @@ jflag4:     DO jn = 1, 10
             IF ( zalpha == 0. ) THEN
                zsedtra(4) = zsedtra(4) / ( 1.0 + zsedtra(4) * reac_fe2 * dtsed2 / 2.0 )
             ELSE
-               zsedtra(4) = ( zsedtra(4) * zalpha ) / ( 0.25 * zsedtra(4) * ( exp( reac_fe2 * zalpha * dtsed2 / 2. ) - 1.0 )  &
+               zsedtra(4) = ( zsedtra(4) * zalpha ) / ( 0.25 * zsedtra(4)  &
+               &            * ( exp( reac_fe2 * zalpha * dtsed2 / 2. ) - 1.0 )  &
                &            + zalpha * exp( reac_fe2 * zalpha * dtsed2 / 2. ) )
             ENDIF
             zsedtra(1) = zalpha + 0.25 * zsedtra(4)

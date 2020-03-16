@@ -1,6 +1,8 @@
 #ifndef EXCLUDE_MAIN
 # define EXCLUDE_MAIN
-
+!
+#include "cppdefs.h"
+!
       program ncjoin
 
 
@@ -90,6 +92,7 @@ c--#define VERBOSE
 
       integer max_buff_size, alloc_buff_size
       real*8, allocatable, dimension(:) :: buff
+      character*500 buff_str
 #ifdef FAST_MODE
       integer max_bfr_out, alloc_bfr_out
       real*8, allocatable, dimension(:) :: bfr_out
@@ -962,8 +965,11 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 write(*,'(8x,3A)') 'Copy scalar variable: ''',
      &                            varname(i)(1:lvar), '''...'
 
+!RB we should have here one buffer per type
+!Here just a quick fix for character type, same changes in the
+! writing part below  
                 if (vartype(i) .eq. nf_char) then
-                  ierr=nf_get_var_text  (ncid(0), i, buff)
+                  ierr=nf_get_var_text  (ncid(0), i, buff_str)
                 elseif (vartype(i) .eq. nf_int) then
                   ierr=nf_get_var_int    (ncid(0), i, buff)
                 elseif (vartype(i) .eq. nf_float) then
@@ -978,7 +984,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 endif
                 if (ierr .eq. nf_noerr) then
                   if (vartype(i) .eq. nf_char) then
-                    ierr=nf_put_var_text  (nctarg, varid(i), buff)
+                    ierr=nf_put_var_text  (nctarg, varid(i), buff_str)
                   elseif (vartype(i) .eq. nf_int) then
                     ierr=nf_put_var_int    (nctarg, varid(i), buff)
                   elseif (vartype(i) .eq. nf_float) then

@@ -163,7 +163,8 @@ CONTAINS
 #define LOCALMM Mm
 #endif
       !
-      NAMELIST/nampissbc/ ln_dust, ln_river, ln_ndepo, ln_ironsed, sedfeinput, dustsolub, wdust, mfrac, nitrfix, diazolight, concfediaz 
+      NAMELIST/nampissbc/ ln_dust, ln_river, ln_ndepo, ln_ironsed, sedfeinput,   &
+      &                   dustsolub, wdust, mfrac, nitrfix, diazolight, concfediaz 
       !!----------------------------------------------------------------------
       !
       IF(lwp) THEN

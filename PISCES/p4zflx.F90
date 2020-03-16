@@ -65,7 +65,8 @@ CONTAINS
       REAL(wp) ::   zph, zdic, zsch_o2, zsch_co2
       REAL(wp) ::   zyr_dec, zdco2dt
       CHARACTER (len=25) ::   charout
-      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) ::   zkgco2, zkgo2, zh2co3, zoflx,  zpco2atm, oce_co2, zdpco2
+      REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) ::   zkgco2, zkgo2, zh2co3, &
+      &                                          zoflx,  zpco2atm, oce_co2, zdpco2
       REAL(wp), ALLOCATABLE, DIMENSION(:,:) ::   zw2d
       !!---------------------------------------------------------------------
       !
@@ -101,7 +102,8 @@ CONTAINS
             zsch_co2 = 2116.8 - 136.25 * ztc + 4.7353 * ztc2 - 0.092307 * ztc3 + 0.0007555 * ztc4
             zsch_o2  = 1920.4 - 135.6  * ztc + 5.2122 * ztc2 - 0.109390 * ztc3 + 0.0009377 * ztc4
             !  wind speed 
-            zws  = wndm(ji,jj) * wndm(ji,jj)
+            zws  = wndm(ji,jj)      &
+            &    * wndm(ji,jj)
             ! Compute the piston velocity for O2 and CO2
             zkgwan = 0.251 * zws
             zkgwan = zkgwan * xconv * ( 1.- fr_i(ji,jj) ) * tmask(ji,jj,1)

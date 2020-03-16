@@ -213,7 +213,8 @@ CONTAINS
             & zpwcp_inv_i(jwdic), zpwcp_inv_i(jwno3), zpwcp_inv_i(jwpo4), zpwcp_inv_i(jwfe2)
          WRITE(numsed,*)' '
          WRITE(numsed,*)'  Solid inputs :  Opale,      Clay,       POC,        CaCO3,        Fe'
-         WRITE(numsed,'(A4,10X,5(1PE10.3,2X))')'Rain : ',rain_tot(jsopal),rain_tot(jsclay),rain_tot(jspoc) + rain_tot(jspos) + rain_tot(jspor),&
+         WRITE(numsed,'(A4,10X,5(1PE10.3,2X))')'Rain : ',rain_tot(jsopal),rain_tot(jsclay),rain_tot(jspoc)   &
+            & + rain_tot(jspos) + rain_tot(jspor),&
             & rain_tot(jscal), rain_tot(jsfeo)
          WRITE(numsed,'(A12,6x,5(1PE10.3,2X))')' From Sed : ',fromsed_tot(jsopal), fromsed_tot(jsclay), &
             & fromsed_tot(jspoc)+fromsed_tot(jspos)+fromsed_tot(jspor), fromsed_tot(jscal),    &

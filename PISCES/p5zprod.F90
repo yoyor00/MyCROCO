@@ -166,7 +166,8 @@ CONTAINS
                   zpislopeadn(ji,jj,jk) = pislopen * trb(ji,jj,K,jpnch)    &
                   &                       /( trb(ji,jj,K,jpphy) * 12. + rtrn)
                   zpislopeadp(ji,jj,jk) = pislopep * ( 1. + zadap * EXP( -0.25 * epico(ji,jj,jk) ) )   &
-                  &                       * trb(ji,jj,K,jppch) /( trb(ji,jj,K,jppic) * 12. + rtrn)
+                  &                       * trb(ji,jj,K,jppch)   &
+                  &                       /( trb(ji,jj,K,jppic) * 12. + rtrn)
                   zpislopeadd(ji,jj,jk) = pisloped * trb(ji,jj,K,jpdch)    &
                      &                    /( trb(ji,jj,K,jpdia) * 12. + rtrn)
                   !
@@ -206,7 +207,8 @@ CONTAINS
                   zlim  = trb(ji,jj,K,jpsil) / ( trb(ji,jj,K,jpsil) + xksi1 )
                   zsilim = MIN( zprdia(ji,jj,jk) / ( zprmaxd(ji,jj,jk) + rtrn ), xlimsi(ji,jj,jk) )
                   zsilfac = 3.4 * EXP( -4.23 * zsilim ) * MAX( 0.e0, MIN( 1., 2.2 * ( zlim - 0.5 ) )  ) + 1.e0
-                  zsiborn = trb(ji,jj,K,jpsil) * trb(ji,jj,K,jpsil) * trb(ji,jj,K,jpsil)
+                  zsiborn = trb(ji,jj,K,jpsil) * trb(ji,jj,K,jpsil)   &
+                  &        * trb(ji,jj,K,jpsil)
                   IF (gphit(ji,jj) < -30 ) THEN
                     zsilfac2 = 1. + 2. * zsiborn / ( zsiborn + xksi2**3 )
                   ELSE

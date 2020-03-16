@@ -120,7 +120,8 @@ CONTAINS
                trc_data(ji,jj,14)  = MIN(trb(ji,jj,KSED,jpcal), 1E-4) * zwsbio4(ji,jj) * 1E3
                trc_data(ji,jj,15)  = tsn(ji,jj,KSED,jp_tem)
                trc_data(ji,jj,16)  = tsn(ji,jj,KSED,jp_sal)
-               trc_data(ji,jj,17 ) = ( trb(ji,jj,KSED,jpsfe) * zwsbio3(ji,jj) + trb(ji,jj,KSED,jpbfe)  &
+               trc_data(ji,jj,17 ) = ( trb(ji,jj,KSED,jpsfe) * zwsbio3(ji,jj)   &
+               &                     + trb(ji,jj,KSED,jpbfe)  &
                &                     * zwsbio4(ji,jj)  ) * 1E3 / ( trc_data(ji,jj,12 ) + trc_data(ji,jj,13 ) + rtrn )
                trc_data(ji,jj,17 ) = MIN(1E-3, trc_data(ji,jj,17 ) )
             ENDIF

@@ -90,7 +90,8 @@ CONTAINS
 
                !  Respiration rates of both zooplankton
                !  -------------------------------------
-               zrespz = resrat * zfact * trb(ji,jj,K,jpzoo) / ( xkmort + trb(ji,jj,K,jpzoo) )  &
+               zrespz = resrat * zfact * trb(ji,jj,K,jpzoo)   &
+                  &   / ( xkmort + trb(ji,jj,K,jpzoo) )       &
                   &   + resrat * zfact * 3. * nitrfac(ji,jj,jk)
 
                !  Zooplankton mortality. A square function has been selected with
@@ -108,15 +109,19 @@ CONTAINS
                zfoodlim  = MAX( 0. , zfood - min(xthresh,0.5*zfood) )
                zdenom    = zfoodlim / ( xkgraz + zfoodlim )
                zdenom2   = zdenom / ( zfood + rtrn )
-               zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpzoo) * (1. - nitrfac(ji,jj,jk))
+               zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk)    &
+               &           * trb(ji,jj,K,jpzoo) * (1. - nitrfac(ji,jj,jk))
 
                zgrazp    = zgraze  * xprefn * zcompaph  * zdenom2 
                zgrazm    = zgraze  * xprefc * zcompapoc * zdenom2 
                zgrazsd   = zgraze  * xprefd * zcompadi  * zdenom2 
 
-               zgrazpf   = zgrazp  * trb(ji,jj,K,jpnfe) / (trb(ji,jj,K,jpphy) + rtrn)
-               zgrazmf   = zgrazm  * trb(ji,jj,K,jpsfe) / (trb(ji,jj,K,jppoc) + rtrn)
-               zgrazsf   = zgrazsd * trb(ji,jj,K,jpdfe) / (trb(ji,jj,K,jpdia) + rtrn)
+               zgrazpf   = zgrazp  * trb(ji,jj,K,jpnfe)   &
+               &          / (trb(ji,jj,K,jpphy) + rtrn)
+               zgrazmf   = zgrazm  * trb(ji,jj,K,jpsfe)   &
+               &          / (trb(ji,jj,K,jppoc) + rtrn)
+               zgrazsf   = zgrazsd * trb(ji,jj,K,jpdfe)   &
+               &          / (trb(ji,jj,K,jpdia) + rtrn)
                !
                zgraztotc = zgrazp  + zgrazm  + zgrazsd 
                zgraztotf = zgrazpf + zgrazsf + zgrazmf 
@@ -164,10 +169,14 @@ CONTAINS
                tra(ji,jj,jk,jpzoo) = tra(ji,jj,jk,jpzoo) - zmortz + zepsherv * zgraztotc 
                tra(ji,jj,jk,jpphy) = tra(ji,jj,jk,jpphy) - zgrazp
                tra(ji,jj,jk,jpdia) = tra(ji,jj,jk,jpdia) - zgrazsd
-               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgrazp  * trb(ji,jj,K,jpnch)/(trb(ji,jj,K,jpphy)+rtrn)
-               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazsd * trb(ji,jj,K,jpdch)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazsd * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazsd * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
+               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch)   &
+               &       - zgrazp  * trb(ji,jj,K,jpnch)/(trb(ji,jj,K,jpphy)+rtrn)
+               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch)   &
+               &       - zgrazsd * trb(ji,jj,K,jpdch)/(trb(ji,jj,K,jpdia)+rtrn)
+               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi)   &
+               &       - zgrazsd * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
+               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazsd   &
+               &       * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
                tra(ji,jj,jk,jpnfe) = tra(ji,jj,jk,jpnfe) - zgrazpf
                tra(ji,jj,jk,jpdfe) = tra(ji,jj,jk,jpdfe) - zgrazsf
                tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) + zmortz - zgrazm

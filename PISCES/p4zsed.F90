@@ -112,7 +112,8 @@ CONTAINS
          DO jk = KRANGEL
             DO jj = JRANGE
                DO ji = IRANGE 
-                  zirondep(ji,jj,jk) = dust(ji,jj) * mfrac * zwdust * rfact2 * EXP( -gdept_n(ji,jj,K) / 540. )
+                  zirondep(ji,jj,jk) = dust(ji,jj) * mfrac * zwdust * rfact2   &
+                     &               * EXP( -gdept_n(ji,jj,K) / 540. )
                   zpdep   (ji,jj,jk) = zirondep(ji,jj,jk) * 0.023
                END DO
             END DO
@@ -347,7 +348,8 @@ CONTAINS
                zws3 = zwsbio3(ji,jj) * zdep
                zrivno3 = 1. - zbureff(ji,jj)
                zwstpoc = trb(ji,jj,KSED,jpgoc) * zws4 + trb(ji,jj,KSED,jppoc) * zws3
-               zpdenit  = MIN( 0.5 * ( trb(ji,jj,KSED,jpno3) - rtrn ) / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3 )
+               zpdenit  = MIN( 0.5 * ( trb(ji,jj,KSED,jpno3) - rtrn )   &
+                  &     / rdenit, zdenit2d(ji,jj) * zwstpoc * zrivno3 )
                z1pdenit = zwstpoc * zrivno3 - zpdenit
                zolimit = MIN( ( trb(ji,jj,KSED,jpoxy) - rtrn ) / o2ut, z1pdenit * ( 1.- nitrfac(ji,jj,ikt) ) )
                tra(ji,jj,ikt,jpdoc) = tra(ji,jj,ikt,jpdoc) + z1pdenit - zolimit
@@ -389,12 +391,14 @@ CONTAINS
                   zmudia = MAX( 0.,-0.001096*ztemp**2 + 0.057*ztemp -0.637 ) * 7.625
                   !       Potential nitrogen fixation dependant on temperature and iron
                   xdianh4 = trb(ji,jj,K,jpnh4) / ( concnnh4 + trb(ji,jj,K,jpnh4) )
-                  xdiano3 = trb(ji,jj,K,jpno3) / ( concnno3 + trb(ji,jj,K,jpno3) ) * (1. - xdianh4)
+                  xdiano3 = trb(ji,jj,K,jpno3) / ( concnno3   &
+                     &    + trb(ji,jj,K,jpno3) ) * (1. - xdianh4)
                   zlim = ( 1.- xdiano3 - xdianh4 )
                   IF( zlim <= 0.1 )   zlim = 0.01
                   zfact = zlim * rfact2
                   ztrfer = biron(ji,jj,jk) / ( concfediaz + biron(ji,jj,jk) )
-                  ztrpo4(ji,jj,jk) = trb(ji,jj,K,jppo4) / ( 1E-6 + trb(ji,jj,K,jppo4) )
+                  ztrpo4(ji,jj,jk) = trb(ji,jj,K,jppo4)   &
+                    &              / ( 1E-6 + trb(ji,jj,K,jppo4) )
                   ztrdp = ztrpo4(ji,jj,jk)
                   nitrpot(ji,jj,jk) =  zmudia * r1_rday * zfact * MIN( ztrfer, ztrdp ) * zlight(ji,jj,jk)
                END DO
@@ -409,13 +413,16 @@ CONTAINS
                   zmudia = MAX( 0.,-0.001096*ztemp**2 + 0.057*ztemp -0.637 ) * 7.625
                   !       Potential nitrogen fixation dependant on temperature and iron
                   xdianh4 = trb(ji,jj,K,jpnh4) / ( concnnh4 + trb(ji,jj,K,jpnh4) )
-                  xdiano3 = trb(ji,jj,K,jpno3) / ( concnno3 + trb(ji,jj,K,jpno3) ) * (1. - xdianh4)
+                  xdiano3 = trb(ji,jj,K,jpno3) / ( concnno3   &
+                     &    + trb(ji,jj,K,jpno3) ) * (1. - xdianh4)
                   zlim = ( 1.- xdiano3 - xdianh4 )
                   IF( zlim <= 0.1 )   zlim = 0.01
                   zfact = zlim * rfact2
                   ztrfer = biron(ji,jj,jk) / ( concfediaz + biron(ji,jj,jk) )
-                  ztrpo4(ji,jj,jk) = trb(ji,jj,K,jppo4) / ( 1E-6 + trb(ji,jj,K,jppo4) )
-                  ztrdop(ji,jj,jk) = trb(ji,jj,K,jpdop) / ( 1E-6 + trb(ji,jj,K,jpdop) ) * (1. - ztrpo4(ji,jj,jk))
+                  ztrpo4(ji,jj,jk) = trb(ji,jj,K,jppo4)   &
+                     &             / ( 1E-6 + trb(ji,jj,K,jppo4) )
+                  ztrdop(ji,jj,jk) = trb(ji,jj,K,jpdop)   &
+                     &             / ( 1E-6 + trb(ji,jj,K,jpdop) ) * (1. - ztrpo4(ji,jj,jk))
                   ztrdp = ztrpo4(ji,jj,jk) + ztrdop(ji,jj,jk)
                   nitrpot(ji,jj,jk) =  zmudia * r1_rday * zfact * MIN( ztrfer, ztrdp ) * zlight(ji,jj,jk)
                END DO

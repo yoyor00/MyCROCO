@@ -70,7 +70,8 @@ CONTAINS
       REAL(wp) ::   zosil, ztem, zdenitnh4, zolimic, zolimin, zolimip, zdenitrn, zdenitrp
       CHARACTER (len=25) :: charout
       REAL(wp), DIMENSION(PRIV_2D_BIOARRAY) :: ztempbac
-      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zdepbac, zolimi, zonitr, zdepprod, zfacsi, zfacsib, zdepeff, zfebact
+      REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zdepbac, zolimi, zonitr, zdepprod,   &
+      &                                        zfacsi, zfacsib, zdepeff, zfebact
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zw3d
       !!---------------------------------------------------------------------
       !
@@ -92,7 +93,8 @@ CONTAINS
             DO ji = IRANGE
                zdep = MAX( hmld(ji,jj), heup(ji,jj) )
                IF( gdept_n(ji,jj,K) < zdep ) THEN
-                  zdepbac(ji,jj,jk) = MIN( 0.7 * ( trb(ji,jj,K,jpzoo) + 2.* trb(ji,jj,K,jpmes) ), 4.e-6 )
+                  zdepbac(ji,jj,jk) = MIN( 0.7 * ( trb(ji,jj,K,jpzoo)   &
+                  &                      + 2.* trb(ji,jj,K,jpmes) ), 4.e-6 )
                   ztempbac(ji,jj)   = zdepbac(ji,jj,jk)
                ELSE
                   zdepmin = MIN( 1., zdep / gdept_n(ji,jj,K) )
@@ -114,7 +116,8 @@ CONTAINS
                   zremik = MAX( zremik, 2.74e-4 * xstep )
                   ! Ammonification in oxic waters with oxygen consumption
                   ! -----------------------------------------------------
-                  zolimit = zremik * ( 1.- nitrfac(ji,jj,jk) ) * trb(ji,jj,K,jpdoc) 
+                  zolimit = zremik * ( 1.- nitrfac(ji,jj,jk) )   &
+                  &                * trb(ji,jj,K,jpdoc) 
                   zolimi(ji,jj,jk) = MIN( ( trb(ji,jj,K,jpoxy) - rtrn ) / o2ut, zolimit ) 
                   ! Ammonification in suboxic waters with denitrification
                   ! -------------------------------------------------------
@@ -158,19 +161,26 @@ CONTAINS
                   zolimit = zremikc * ( 1.- nitrfac(ji,jj,jk) ) * trb(ji,jj,K,jpdoc) 
                   zolimic = MAX( 0.e0, MIN( ( trb(ji,jj,K,jpoxy) - rtrn ) / o2ut, zolimit ) ) 
                   zolimi(ji,jj,jk) = zolimic
-                  zolimin = zremikn * zolimic * trb(ji,jj,K,jpdon) / ( trb(ji,jj,K,jpdoc) + rtrn )
-                  zolimip = zremikp * zolimic * trb(ji,jj,K,jpdop) / ( trb(ji,jj,K,jpdoc) + rtrn ) 
+                  zolimin = zremikn * zolimic * trb(ji,jj,K,jpdon)   &
+                  &       / ( trb(ji,jj,K,jpdoc) + rtrn )
+                  zolimip = zremikp * zolimic * trb(ji,jj,K,jpdop)   &
+                  &       / ( trb(ji,jj,K,jpdoc) + rtrn ) 
 
                   ! Ammonification in suboxic waters with denitrification
                   ! -------------------------------------------------------
                   zammonic = zremikc * nitrfac(ji,jj,jk) * trb(ji,jj,K,jpdoc)
                   denitr(ji,jj,jk)  = zammonic * ( 1. - nitrfac2(ji,jj,jk) )
-                  denitr(ji,jj,jk)  = MAX(0., MIN(  ( trb(ji,jj,K,jpno3) - rtrn ) / rdenit, denitr(ji,jj,jk) ) )
+                  denitr(ji,jj,jk)  = MAX(0., MIN(  ( trb(ji,jj,K,jpno3) - rtrn )   &
+                  &                 / rdenit, denitr(ji,jj,jk) ) )
                   zoxyremc          = MAX(0., zammonic - denitr(ji,jj,jk))
-                  zdenitrn  = zremikn * denitr(ji,jj,jk) * trb(ji,jj,K,jpdon) / ( trb(ji,jj,K,jpdoc) + rtrn )
-                  zdenitrp  = zremikp * denitr(ji,jj,jk) * trb(ji,jj,K,jpdop) / ( trb(ji,jj,K,jpdoc) + rtrn )
-                  zoxyremn  = zremikn * zoxyremc * trb(ji,jj,K,jpdon) / ( trb(ji,jj,K,jpdoc) + rtrn )
-                  zoxyremp  = zremikp * zoxyremc * trb(ji,jj,K,jpdop) / ( trb(ji,jj,K,jpdoc) + rtrn )
+                  zdenitrn  = zremikn * denitr(ji,jj,jk) * trb(ji,jj,K,jpdon)   &
+                  &         / ( trb(ji,jj,K,jpdoc) + rtrn )
+                  zdenitrp  = zremikp * denitr(ji,jj,jk) * trb(ji,jj,K,jpdop)   &
+                  &         / ( trb(ji,jj,K,jpdoc) + rtrn )
+                  zoxyremn  = zremikn * zoxyremc * trb(ji,jj,K,jpdon)   &
+                  &         / ( trb(ji,jj,K,jpdoc) + rtrn )
+                  zoxyremp  = zremikp * zoxyremc * trb(ji,jj,K,jpdop)   &
+                  &         / ( trb(ji,jj,K,jpdoc) + rtrn )
 
                   tra(ji,jj,jk,jppo4) = tra(ji,jj,jk,jppo4) + zolimip + zdenitrp + zoxyremp
                   tra(ji,jj,jk,jpnh4) = tra(ji,jj,jk,jpnh4) + zolimin + zdenitrn + zoxyremn
@@ -221,8 +231,9 @@ CONTAINS
                ! Bacteries are obliged to take up iron from the water. Some
                ! studies (especially at Papa) have shown this uptake to be significant
                ! ----------------------------------------------------------
-               zbactfer = feratb *  rfact2 * 0.6 / rday * tgfunc(ji,jj,jk) * xlimbacl(ji,jj,jk)     &
-                  &              * trb(ji,jj,K,jpfer) / ( xkferb + trb(ji,jj,K,jpfer) )    &
+               zbactfer = feratb *  rfact2 * 0.6 / rday * tgfunc(ji,jj,jk) * xlimbacl(ji,jj,jk)   &
+                  &              * trb(ji,jj,K,jpfer)                                             &
+                  &              / ( xkferb + trb(ji,jj,K,jpfer) )                                &
                   &              * zdepprod(ji,jj,jk) * zdepeff(ji,jj,jk) * zdepbac(ji,jj,jk)
                tra(ji,jj,jk,jpfer) = tra(ji,jj,jk,jpfer) - zbactfer*0.33
                tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) + zbactfer*0.25
@@ -247,7 +258,8 @@ CONTAINS
          DO jj = JRANGE
             DO ji = IRANGE
                zdep     = MAX( hmld(ji,jj), heup_01(ji,jj) )
-               zsatur   = MAX( rtrn, ( sio3eq(ji,jj,jk) - trb(ji,jj,K,jpsil) ) / ( sio3eq(ji,jj,jk) + rtrn ) )
+               zsatur   = MAX( rtrn, ( sio3eq(ji,jj,jk) - trb(ji,jj,K,jpsil) )   &
+               &        / ( sio3eq(ji,jj,jk) + rtrn ) )
                zsatur2  = ( 1. + tsn(ji,jj,K,jp_tem) / 400.)**37
                znusil   = 0.225  * ( 1. + tsn(ji,jj,K,jp_tem) / 15.) * zsatur + 0.775 * zsatur2 * zsatur**9.25
                ! Remineralization rate of BSi depedant on T and saturation

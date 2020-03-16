@@ -215,7 +215,8 @@ CONTAINS
                !  -------------------------------
                zlim2   = xlimdia(ji,jj,jk) * xlimdia(ji,jj,jk)
                zlim1   = 0.25 * ( 1. - zlim2 ) / ( 0.25 + zlim2 ) 
-               zrespp2 = 1.e6 * xstep * (  wchld + wchldm * zlim1 ) * xdiss(ji,jj,jk) * zcompadi * trb(ji,jj,K,jpdia)
+               zrespp2 = 1.e6 * xstep * (  wchld + wchldm * zlim1 ) * xdiss(ji,jj,jk)   &
+               &        * zcompadi * trb(ji,jj,K,jpdia)
 
                !  Phytoplankton linear mortality 
                !  ------------------------------

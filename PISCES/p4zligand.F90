@@ -64,7 +64,8 @@ CONTAINS
                ! This is based on the idea that as LGW is lower
                ! there is a larger fraction of refractory OM
                zlgwr = max( rlgs , rlgw * exp( -2 * (trb(ji,jj,K,jplgw)*1e9) ) ) ! years
-               zlgwr = 1. / zlgwr * tgfunc(ji,jj,jk) * ( xstep / nyear_len ) * blim(ji,jj,jk) * trb(ji,jj,K,jplgw)
+               zlgwr = 1. / zlgwr * tgfunc(ji,jj,jk) * ( xstep / nyear_len )   &
+                  &  * blim(ji,jj,jk) * trb(ji,jj,K,jplgw)
                ! photochem loss of weak ligand
                zlgwpr = prlgw * xstep * etot(ji,jj,jk) * trb(ji,jj,K,jplgw) * (1. - fr_i(ji,jj))
                tra(ji,jj,jk,jplgw) = tra(ji,jj,jk,jplgw) + zlgwp - zlgwr - zlgwpr
