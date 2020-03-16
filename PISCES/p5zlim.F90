@@ -208,7 +208,8 @@ CONTAINS
                ! Michaelis-Menten Limitation term for nutrients Small bacteria
                ! -------------------------------------------------------------
                zbactnh4 = trb(ji,jj,K,jpnh4) / ( concbnh4 + trb(ji,jj,K,jpnh4) )
-               zbactno3 = trb(ji,jj,K,jpno3) / ( concbno3 + trb(ji,jj,K,jpno3) ) * (1. - zbactnh4)
+               zbactno3 = trb(ji,jj,K,jpno3) / ( concbno3   &
+                  &     + trb(ji,jj,K,jpno3) ) * (1. - zbactnh4)
                !
                zlim1    = zbactno3 + zbactnh4
                zlim2    = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concbpo4)
@@ -220,13 +221,17 @@ CONTAINS
                ! Michaelis-Menten Limitation term for nutrients Small flagellates
                ! -----------------------------------------------
                zfalim = (1.-fanano) / fanano
-               xnanonh4(ji,jj,jk) = (1. - fanano) * trb(ji,jj,K,jpnh4) / ( zfalim * zconc0nnh4 + trb(ji,jj,K,jpnh4) )
-               xnanono3(ji,jj,jk) = (1. - fanano) * trb(ji,jj,K,jpno3) / ( zfalim * zconc0n + trb(ji,jj,K,jpno3) )  &
+               xnanonh4(ji,jj,jk) = (1. - fanano) * trb(ji,jj,K,jpnh4)   &
+                  &                / ( zfalim * zconc0nnh4 + trb(ji,jj,K,jpnh4) )
+               xnanono3(ji,jj,jk) = (1. - fanano) * trb(ji,jj,K,jpno3)   &
+               &                    / ( zfalim * zconc0n + trb(ji,jj,K,jpno3) )  &
                &                    * (1. - xnanonh4(ji,jj,jk))
                !
                zfalim = (1.-fananop) / fananop
-               xnanopo4(ji,jj,jk) = (1. - fananop) * trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zfalim * zconc0npo4 )
-               xnanodop(ji,jj,jk) = trb(ji,jj,K,jpdop) / ( trb(ji,jj,K,jpdop) + xkdoc )   &
+               xnanopo4(ji,jj,jk) = (1. - fananop) * trb(ji,jj,K,jppo4)  &
+               &                   / ( trb(ji,jj,K,jppo4) + zfalim * zconc0npo4 )
+               xnanodop(ji,jj,jk) = trb(ji,jj,K,jpdop)   &
+               &                    / ( trb(ji,jj,K,jpdop) + xkdoc )   &
                &                    * ( 1.0 - xnanopo4(ji,jj,jk) )
                xnanodop(ji,jj,jk) = 0.
                !
@@ -251,13 +256,17 @@ CONTAINS
                ! Michaelis-Menten Limitation term for nutrients picophytoplankton
                ! ----------------------------------------------------------------
                zfalim = (1.-fapico) / fapico 
-               xpiconh4(ji,jj,jk) = (1. - fapico) * trb(ji,jj,K,jpnh4) / ( zfalim * zconc0pnh4 + trb(ji,jj,K,jpnh4) )
-               xpicono3(ji,jj,jk) = (1. - fapico) * trb(ji,jj,K,jpno3) / ( zfalim * zconc0p + trb(ji,jj,K,jpno3) )  &
+               xpiconh4(ji,jj,jk) = (1. - fapico) * trb(ji,jj,K,jpnh4)   &
+               &                   / ( zfalim * zconc0pnh4 + trb(ji,jj,K,jpnh4) )
+               xpicono3(ji,jj,jk) = (1. - fapico) * trb(ji,jj,K,jpno3)            &
+               &                    / ( zfalim * zconc0p + trb(ji,jj,K,jpno3) )   &
                &                    * (1. - xpiconh4(ji,jj,jk))
                !
                zfalim = (1.-fapicop) / fapicop 
-               xpicopo4(ji,jj,jk) = (1. - fapicop) * trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zfalim * zconc0ppo4 )
-               xpicodop(ji,jj,jk) = trb(ji,jj,K,jpdop) / ( trb(ji,jj,K,jpdop) + xkdoc )   &
+               xpicopo4(ji,jj,jk) = (1. - fapicop) * trb(ji,jj,K,jppo4)   &
+               &                   / ( trb(ji,jj,K,jppo4) + zfalim * zconc0ppo4 )
+               xpicodop(ji,jj,jk) = trb(ji,jj,K,jpdop)   &
+               &                    / ( trb(ji,jj,K,jpdop) + xkdoc )   &
                &                    * ( 1.0 - xpicopo4(ji,jj,jk) )
                xpicodop(ji,jj,jk) = 0.
                !
@@ -282,13 +291,17 @@ CONTAINS
                !   Michaelis-Menten Limitation term for nutrients Diatoms
                !   ------------------------------------------------------
                zfalim = (1.-fadiat) / fadiat 
-               xdiatnh4(ji,jj,jk) = (1. - fadiat) * trb(ji,jj,K,jpnh4) / ( zfalim * zconc1dnh4 + trb(ji,jj,K,jpnh4) )
-               xdiatno3(ji,jj,jk) = (1. - fadiat) * trb(ji,jj,K,jpno3) / ( zfalim * zconc1d + trb(ji,jj,K,jpno3) )  &
+               xdiatnh4(ji,jj,jk) = (1. - fadiat) * trb(ji,jj,K,jpnh4)   &
+               &                   / ( zfalim * zconc1dnh4 + trb(ji,jj,K,jpnh4) )
+               xdiatno3(ji,jj,jk) = (1. - fadiat) * trb(ji,jj,K,jpno3)   &
+               &                    / ( zfalim * zconc1d + trb(ji,jj,K,jpno3) )  &
                &                    * (1. - xdiatnh4(ji,jj,jk))
                !
                zfalim = (1.-fadiatp) / fadiatp
-               xdiatpo4(ji,jj,jk) = (1. - fadiatp) * trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zfalim * zconc0dpo4 )
-               xdiatdop(ji,jj,jk) = trb(ji,jj,K,jpdop) / ( trb(ji,jj,K,jpdop) + xkdoc )  &
+               xdiatpo4(ji,jj,jk) = (1. - fadiatp) * trb(ji,jj,K,jppo4)   &
+               &                    / ( trb(ji,jj,K,jppo4) + zfalim * zconc0dpo4 )
+               xdiatdop(ji,jj,jk) = trb(ji,jj,K,jpdop)  &
+               &                    / ( trb(ji,jj,K,jpdop) + xkdoc )  &
                &                    * ( 1.0 - xdiatpo4(ji,jj,jk) )
                xdiatdop(ji,jj,jk) = 0.
                !
@@ -331,10 +344,12 @@ CONTAINS
                ! N/P ratio of nanophytoplankton
                ! ------------------------------
                zfuptk = 0.23 * zfvn
-               zrpho = 2.24 * trb(ji,jj,K,jpnch) / ( trb(ji,jj,K,jpnph) * rno3 * 15. + rtrn )
+               zrpho = 2.24 * trb(ji,jj,K,jpnch)   &
+                  &  / ( trb(ji,jj,K,jpnph) * rno3 * 15. + rtrn )
                zrass = 1. - 0.2 - zrpho - zfuptk
                xqpnmax(ji,jj,jk) = ( zfuptk + zrpho ) * 0.0128 * 16. + zrass * 1./ 7.2 * 16.
-               xqpnmax(ji,jj,jk) = xqpnmax(ji,jj,jk) * trb(ji,jj,K,jpnph) / ( trb(ji,jj,K,jpphy) + rtrn ) + 0.13
+               xqpnmax(ji,jj,jk) = xqpnmax(ji,jj,jk) * trb(ji,jj,K,jpnph)   &
+                 &               / ( trb(ji,jj,K,jpphy) + rtrn ) + 0.13
                xqpnmin(ji,jj,jk) = 0.13 + 0.23 * 0.0128 * 16.
 
                ! Size estimation of picophytoplankton
@@ -345,10 +360,12 @@ CONTAINS
                ! N/P ratio of picophytoplankton
                ! ------------------------------
                zfuptk = 0.35 * zfvn
-               zrpho = 2.24 * trb(ji,jj,K,jppch) / ( trb(ji,jj,K,jpnpi) * rno3 * 15. + rtrn )
+               zrpho = 2.24 * trb(ji,jj,K,jppch)   &
+               &      / ( trb(ji,jj,K,jpnpi) * rno3 * 15. + rtrn )
                zrass = 1. - 0.4 - zrpho - zfuptk
                xqppmax(ji,jj,jk) =  (zrpho + zfuptk) * 0.0128 * 16. + zrass * 1./ 9. * 16.
-               xqppmax(ji,jj,jk) = xqppmax(ji,jj,jk) * trb(ji,jj,K,jpnpi) / ( trb(ji,jj,K,jppic) + rtrn ) + 0.13
+               xqppmax(ji,jj,jk) = xqppmax(ji,jj,jk) * trb(ji,jj,K,jpnpi)   &
+                  &              / ( trb(ji,jj,K,jppic) + rtrn ) + 0.13
                xqppmin(ji,jj,jk) = 0.13
 
                ! Size estimation of diatoms
@@ -361,10 +378,12 @@ CONTAINS
                ! N/P ratio of diatoms
                ! --------------------
                zfuptk = 0.2 * zfvn
-               zrpho = 2.24 * trb(ji,jj,K,jpdch) / ( trb(ji,jj,K,jpndi) * rno3 * 15. + rtrn )
+               zrpho = 2.24 * trb(ji,jj,K,jpdch) / ( trb(ji,jj,K,jpndi)   &
+               &      * rno3 * 15. + rtrn )
                zrass = 1. - 0.2 - zrpho - zfuptk
                xqpdmax(ji,jj,jk) = ( zfuptk + zrpho ) * 0.0128 * 16. + zrass * 1./ 7.2 * 16.
-               xqpdmax(ji,jj,jk) = xqpdmax(ji,jj,jk) * trb(ji,jj,K,jpndi) / ( trb(ji,jj,K,jpdia) + rtrn ) + 0.13
+               xqpdmax(ji,jj,jk) = xqpdmax(ji,jj,jk) * trb(ji,jj,K,jpndi)   &
+                  &              / ( trb(ji,jj,K,jpdia) + rtrn ) + 0.13
                xqpdmin(ji,jj,jk) = 0.13 + 0.2 * 0.0128 * 16.
 
             END DO
@@ -376,8 +395,10 @@ CONTAINS
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               zlim1 =  trb(ji,jj,K,jpnh4) / ( trb(ji,jj,K,jpnh4) + concnnh4 ) + trb(ji,jj,K,jpno3)    &
-               &        / ( trb(ji,jj,K,jpno3) + concnno3 ) * ( 1.0 - trb(ji,jj,K,jpnh4)   &
+               zlim1 =  trb(ji,jj,K,jpnh4) / ( trb(ji,jj,K,jpnh4) + concnnh4 )   &
+               &        + trb(ji,jj,K,jpno3)    &
+               &        / ( trb(ji,jj,K,jpno3) + concnno3 )   &
+               &        * ( 1.0 - trb(ji,jj,K,jpnh4)   &
                &        / ( trb(ji,jj,K,jpnh4) + concnnh4 ) )
                zlim2  = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concnpo4 )
                zlim3  = trb(ji,jj,K,jpfer) / ( trb(ji,jj,K,jpfer) +  5.E-11 ) 

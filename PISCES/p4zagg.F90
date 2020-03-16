@@ -80,14 +80,18 @@ CONTAINS
                   ! 1st term is shear aggregation of DOC-DOC
                   ! 2nd term is shear aggregation of DOC-POC
                   ! 3rd term is differential settling of DOC-POC
-                  zaggdoc  = ( ( 0.369 * 0.3 * trb(ji,jj,K,jpdoc) + 102.4 * trb(ji,jj,K,jppoc) ) * zfact       &
-                  &            + 2.4 * xstep * trb(ji,jj,K,jppoc) ) * 0.3 * trb(ji,jj,K,jpdoc)
+                  zaggdoc  = ( ( 0.369 * 0.3 * trb(ji,jj,K,jpdoc)       &
+                  &            + 102.4 * trb(ji,jj,K,jppoc) ) * zfact   &
+                  &            + 2.4 * xstep * trb(ji,jj,K,jppoc) )     &
+                  &            * 0.3 * trb(ji,jj,K,jpdoc)
                   ! transfer of DOC to GOC : 
                   ! 1st term is shear aggregation
                   ! 2nd term is differential settling 
-                  zaggdoc2 = ( 3.53E3 * zfact + 0.1 * xstep ) * trb(ji,jj,K,jpgoc) * 0.3 * trb(ji,jj,K,jpdoc)
+                  zaggdoc2 = ( 3.53E3 * zfact + 0.1 * xstep ) * trb(ji,jj,K,jpgoc)   &
+                  &          * 0.3 * trb(ji,jj,K,jpdoc)
                   ! tranfer of DOC to POC due to brownian motion
-                  zaggdoc3 =  114. * 0.3 * trb(ji,jj,K,jpdoc) *xstep * 0.3 * trb(ji,jj,K,jpdoc)
+                  zaggdoc3 =  114. * 0.3 * trb(ji,jj,K,jpdoc) *xstep   &
+                  &          * 0.3 * trb(ji,jj,K,jpdoc)
 
                   !  Update the trends
                   tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) - zagg + zaggdoc + zaggdoc3
@@ -124,15 +128,19 @@ CONTAINS
                   zaggpoc4 = zaggtmp * trb(ji,jj,K,jppoc)
 
                   zaggpoc   = zaggpoc1 + zaggpoc2 + zaggpoc3 + zaggpoc4
-                  zaggpon = zaggpoc * trb(ji,jj,K,jppon) / ( trb(ji,jj,K,jppoc) + rtrn)
-                  zaggpop = zaggpoc * trb(ji,jj,K,jppop) / ( trb(ji,jj,K,jppoc) + rtrn)
-                  zaggfe = zaggpoc * trb(ji,jj,K,jpsfe) / ( trb(ji,jj,K,jppoc)  + rtrn )
+                  zaggpon = zaggpoc * trb(ji,jj,K,jppon)   &
+                  &       / ( trb(ji,jj,K,jppoc) + rtrn)
+                  zaggpop = zaggpoc * trb(ji,jj,K,jppop)   &
+                  &       / ( trb(ji,jj,K,jppoc) + rtrn)
+                  zaggfe = zaggpoc * trb(ji,jj,K,jpsfe)    &
+                  &       / ( trb(ji,jj,K,jppoc)  + rtrn )
 
                   ! Aggregation of DOC to POC : 
                   ! 1st term is shear aggregation of DOC-DOC
                   ! 2nd term is shear aggregation of DOC-POC
                   ! 3rd term is differential settling of DOC-POC
-                  zaggtmp = ( ( 0.369 * 0.3 * trb(ji,jj,K,jpdoc) + 102.4 * trb(ji,jj,K,jppoc) ) * zfact       &
+                  zaggtmp = ( ( 0.369 * 0.3 * trb(ji,jj,K,jpdoc)   &
+                  &            + 102.4 * trb(ji,jj,K,jppoc) ) * zfact       &
                   &            + 2.4 * xstep * trb(ji,jj,K,jppoc) )
                   zaggdoc  = zaggtmp * 0.3 * trb(ji,jj,K,jpdoc)
                   zaggdon  = zaggtmp * 0.3 * trb(ji,jj,K,jpdon)

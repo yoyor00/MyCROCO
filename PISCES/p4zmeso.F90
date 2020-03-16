@@ -95,7 +95,8 @@ CONTAINS
 
                !  Respiration rates of both zooplankton
                !  -------------------------------------
-               zrespz    = resrat2 * zfact * ( trb(ji,jj,K,jpmes) / ( xkmort + trb(ji,jj,K,jpmes) )  &
+               zrespz    = resrat2 * zfact * ( trb(ji,jj,K,jpmes) / ( xkmort  &
+               &           + trb(ji,jj,K,jpmes) )  &
                &           + 3. * nitrfac(ji,jj,jk) )
 
                !  Zooplankton mortality. A square function has been selected with
@@ -118,27 +119,35 @@ CONTAINS
                zfoodlim  = MAX( 0., zfood - MIN( 0.5 * zfood, xthresh2 ) )
                zdenom    = zfoodlim / ( xkgraz2 + zfoodlim )
                zdenom2   = zdenom / ( zfood + rtrn )
-               zgraze2   = grazrat2 * xstep * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpmes) * (1. - nitrfac(ji,jj,jk)) 
+               zgraze2   = grazrat2 * xstep * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpmes) &
+               &           * (1. - nitrfac(ji,jj,jk)) 
 
                zgrazd    = zgraze2  * xpref2d  * zcompadi  * zdenom2 
                zgrazz    = zgraze2  * xpref2z  * zcompaz   * zdenom2 
                zgrazn    = zgraze2  * xpref2n  * zcompaph  * zdenom2 
                zgrazpoc  = zgraze2  * xpref2c  * zcompapoc * zdenom2 
 
-               zgraznf   = zgrazn   * trb(ji,jj,K,jpnfe) / ( trb(ji,jj,K,jpphy) + rtrn)
-               zgrazf    = zgrazd   * trb(ji,jj,K,jpdfe) / ( trb(ji,jj,K,jpdia) + rtrn)
-               zgrazpof  = zgrazpoc * trb(ji,jj,K,jpsfe) / ( trb(ji,jj,K,jppoc) + rtrn)
+               zgraznf   = zgrazn   * trb(ji,jj,K,jpnfe)   &
+               &          / ( trb(ji,jj,K,jpphy) + rtrn)
+               zgrazf    = zgrazd   * trb(ji,jj,K,jpdfe)   &
+               &          / ( trb(ji,jj,K,jpdia) + rtrn)
+               zgrazpof  = zgrazpoc * trb(ji,jj,K,jpsfe)   &
+               &          / ( trb(ji,jj,K,jppoc) + rtrn)
 
                !  Mesozooplankton flux feeding on GOC
                !  ----------------------------------
                zgrazffeg = grazflux  * xstep * wsbio4(ji,jj,jk)      &
-               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpgoc) * trb(ji,jj,K,jpmes) &
+               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpgoc)  &
+               &           * trb(ji,jj,K,jpmes)                      &
                &           * (1. - nitrfac(ji,jj,jk))
-               zgrazfffg = zgrazffeg * trb(ji,jj,K,jpbfe) / (trb(ji,jj,K,jpgoc) + rtrn)
-               zgrazffep = grazflux  * xstep *  wsbio3(ji,jj,jk)     &
-               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jppoc) * trb(ji,jj,K,jpmes) &
+               zgrazfffg = zgrazffeg * trb(ji,jj,K,jpbfe)   &
+               &           / (trb(ji,jj,K,jpgoc) + rtrn)
+               zgrazffep = grazflux  * xstep *  wsbio3(ji,jj,jk)      &
+               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jppoc)   &
+               &           * trb(ji,jj,K,jpmes)                       &
                &           * (1. - nitrfac(ji,jj,jk))
-               zgrazfffp = zgrazffep * trb(ji,jj,K,jpsfe) / (trb(ji,jj,K,jppoc) + rtrn)
+               zgrazfffp = zgrazffep * trb(ji,jj,K,jpsfe)   &
+               &           / (trb(ji,jj,K,jppoc) + rtrn)
                !
                zgraztotc = zgrazd + zgrazz + zgrazn + zgrazpoc + zgrazffep + zgrazffeg
                ! Compute the proportion of filter feeders
@@ -203,10 +212,14 @@ CONTAINS
                tra(ji,jj,jk,jpdia) = tra(ji,jj,jk,jpdia) - zgrazd
                tra(ji,jj,jk,jpzoo) = tra(ji,jj,jk,jpzoo) - zgrazz
                tra(ji,jj,jk,jpphy) = tra(ji,jj,jk,jpphy) - zgrazn
-               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgrazn * trb(ji,jj,K,jpnch) / ( trb(ji,jj,K,jpphy) + rtrn )
-               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazd * trb(ji,jj,K,jpdch) / ( trb(ji,jj,K,jpdia) + rtrn )
-               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazd * trb(ji,jj,K,jpdsi) / ( trb(ji,jj,K,jpdia) + rtrn )
-               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazd * trb(ji,jj,K,jpdsi) / ( trb(ji,jj,K,jpdia) + rtrn )
+               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgrazn * trb(ji,jj,K,jpnch)   &
+               &                   / ( trb(ji,jj,K,jpphy) + rtrn )
+               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazd * trb(ji,jj,K,jpdch)   &
+               &                   / ( trb(ji,jj,K,jpdia) + rtrn )
+               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazd * trb(ji,jj,K,jpdsi)   &
+               &                   / ( trb(ji,jj,K,jpdia) + rtrn )
+               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazd * trb(ji,jj,K,jpdsi)   &
+               &                   / ( trb(ji,jj,K,jpdia) + rtrn )
                tra(ji,jj,jk,jpnfe) = tra(ji,jj,jk,jpnfe) - zgraznf
                tra(ji,jj,jk,jpdfe) = tra(ji,jj,jk,jpdfe) - zgrazf
 
@@ -219,7 +232,8 @@ CONTAINS
                tra(ji,jj,jk,jpsfe) = tra(ji,jj,jk,jpsfe) - zgrazpof - zgrazfffp + zfracfe
                tra(ji,jj,jk,jpbfe) = tra(ji,jj,jk,jpbfe) + ferat3 * zmortzgoc - zgrazfffg     &
                  &                + zgraztotf * unass2 - zfracfe
-               zfracal = trb(ji,jj,K,jpcal) / (trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc) + rtrn )
+               zfracal = trb(ji,jj,K,jpcal) / (trb(ji,jj,K,jppoc)   &
+               &       + trb(ji,jj,K,jpgoc) + rtrn )
                zgrazcal = (zgrazffeg + zgrazpoc) * (1. - part2) * zfracal
                ! calcite production
                zprcaca = xfracal(ji,jj,jk) * zgrazn

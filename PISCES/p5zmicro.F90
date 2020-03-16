@@ -107,7 +107,8 @@ CONTAINS
 
                !   Michaelis-Menten mortality rates of microzooplankton
                !   -----------------------------------------------------
-               zrespz = resrat * zfact * ( trb(ji,jj,K,jpzoo) / ( xkmort + trb(ji,jj,K,jpzoo) )  &
+               zrespz = resrat * zfact * ( trb(ji,jj,K,jpzoo)   &
+               &        / ( xkmort + trb(ji,jj,K,jpzoo) )  &
                &        + 3. * nitrfac(ji,jj,jk) )
 
                !   Zooplankton mortality. A square function has been selected with
@@ -130,7 +131,8 @@ CONTAINS
                &           + xprefz * zcompaz + xprefp * zcompapi
                zfoodlim  = MAX( 0. , zfood - min(xthresh,0.5*zfood) )
                zdenom    = zfoodlim / ( xkgraz + zfoodlim )
-               zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpzoo) * (1. - nitrfac(ji,jj,jk)) 
+               zgraze    = grazrat * xstep * tgfunc2(ji,jj,jk)   &
+               &         * trb(ji,jj,K,jpzoo) * (1. - nitrfac(ji,jj,jk)) 
 
                !   An active switching parameterization is used here.
                !   We don't use the KTW parameterization proposed by 
@@ -155,22 +157,34 @@ CONTAINS
                !   Microzooplankton regular grazing on the different preys
                !   -------------------------------------------------------
                zgraznc   = zgraze  * ztmp1  * zdenom
-               zgraznn   = zgraznc * trb(ji,jj,K,jpnph) / (trb(ji,jj,K,jpphy) + rtrn)
-               zgraznp   = zgraznc * trb(ji,jj,K,jppph) / (trb(ji,jj,K,jpphy) + rtrn)
-               zgraznf   = zgraznc * trb(ji,jj,K,jpnfe) / (trb(ji,jj,K,jpphy) + rtrn)
+               zgraznn   = zgraznc * trb(ji,jj,K,jpnph)   &
+               &          / (trb(ji,jj,K,jpphy) + rtrn)
+               zgraznp   = zgraznc * trb(ji,jj,K,jppph)   &
+               &          / (trb(ji,jj,K,jpphy) + rtrn)
+               zgraznf   = zgraznc * trb(ji,jj,K,jpnfe)   &
+               &          / (trb(ji,jj,K,jpphy) + rtrn)
                zgrazpc   = zgraze  * ztmp2  * zdenom
-               zgrazpn   = zgrazpc * trb(ji,jj,K,jpnpi) / (trb(ji,jj,K,jppic) + rtrn)
-               zgrazpp   = zgrazpc * trb(ji,jj,K,jpppi) / (trb(ji,jj,K,jppic) + rtrn)
-               zgrazpf   = zgrazpc * trb(ji,jj,K,jppfe) / (trb(ji,jj,K,jppic) + rtrn)
+               zgrazpn   = zgrazpc * trb(ji,jj,K,jpnpi)   &
+               &          / (trb(ji,jj,K,jppic) + rtrn)
+               zgrazpp   = zgrazpc * trb(ji,jj,K,jpppi)   &
+               &          / (trb(ji,jj,K,jppic) + rtrn)
+               zgrazpf   = zgrazpc * trb(ji,jj,K,jppfe)   &
+               &          / (trb(ji,jj,K,jppic) + rtrn)
                zgrazz    = zgraze  * ztmp5   * zdenom
                zgrazpoc  = zgraze  * ztmp3   * zdenom
-               zgrazpon  = zgrazpoc * trb(ji,jj,K,jppon) / ( trb(ji,jj,K,jppoc) + rtrn )
-               zgrazpop  = zgrazpoc * trb(ji,jj,K,jppop) / ( trb(ji,jj,K,jppoc) + rtrn )
-               zgrazpof  = zgrazpoc* trb(ji,jj,K,jpsfe) / (trb(ji,jj,K,jppoc) + rtrn)
+               zgrazpon  = zgrazpoc * trb(ji,jj,K,jppon)   &
+               &          / ( trb(ji,jj,K,jppoc) + rtrn )
+               zgrazpop  = zgrazpoc * trb(ji,jj,K,jppop)   &
+               &          / ( trb(ji,jj,K,jppoc) + rtrn )
+               zgrazpof  = zgrazpoc* trb(ji,jj,K,jpsfe)    &
+               &          / (trb(ji,jj,K,jppoc) + rtrn)
                zgrazdc   = zgraze  * ztmp4  * zdenom
-               zgrazdn   = zgrazdc * trb(ji,jj,K,jpndi) / (trb(ji,jj,K,jpdia) + rtrn)
-               zgrazdp   = zgrazdc * trb(ji,jj,K,jppdi) / (trb(ji,jj,K,jpdia) + rtrn)
-               zgrazdf   = zgrazdc * trb(ji,jj,K,jpdfe) / (trb(ji,jj,K,jpdia) + rtrn)
+               zgrazdn   = zgrazdc * trb(ji,jj,K,jpndi)    &
+               &          / (trb(ji,jj,K,jpdia) + rtrn)
+               zgrazdp   = zgrazdc * trb(ji,jj,K,jppdi)    &
+               &          / (trb(ji,jj,K,jpdia) + rtrn)
+               zgrazdf   = zgrazdc * trb(ji,jj,K,jpdfe)    &
+               &          / (trb(ji,jj,K,jpdia) + rtrn)
                !
                zgraztotc = zgraznc + zgrazpoc + zgrazdc + zgrazz + zgrazpc
                zgraztotn = zgraznn + zgrazpn + zgrazpon + zgrazdn + zgrazz * no3rat3
@@ -271,11 +285,16 @@ CONTAINS
                tra(ji,jj,jk,jpdia) = tra(ji,jj,jk,jpdia) - zgrazdc
                tra(ji,jj,jk,jpndi) = tra(ji,jj,jk,jpndi) - zgrazdn
                tra(ji,jj,jk,jppdi) = tra(ji,jj,jk,jppdi) - zgrazdp
-               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgraznc * trb(ji,jj,K,jpnch)/(trb(ji,jj,K,jpphy)+rtrn)
-               tra(ji,jj,jk,jppch) = tra(ji,jj,jk,jppch) - zgrazpc * trb(ji,jj,K,jppch)/(trb(ji,jj,K,jppic)+rtrn)
-               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazdc * trb(ji,jj,K,jpdch)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazdc * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
-               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazdc * trb(ji,jj,K,jpdsi)/(trb(ji,jj,K,jpdia)+rtrn)
+               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgraznc * trb(ji,jj,K,jpnch)   &
+               &                    /(trb(ji,jj,K,jpphy)+rtrn)
+               tra(ji,jj,jk,jppch) = tra(ji,jj,jk,jppch) - zgrazpc * trb(ji,jj,K,jppch)   &
+               &                    /(trb(ji,jj,K,jppic)+rtrn)
+               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazdc * trb(ji,jj,K,jpdch)   &
+               &                    /(trb(ji,jj,K,jpdia)+rtrn)
+               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazdc * trb(ji,jj,K,jpdsi)   &
+               &                    /(trb(ji,jj,K,jpdia)+rtrn)
+               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazdc * trb(ji,jj,K,jpdsi)   &
+               &                    /(trb(ji,jj,K,jpdia)+rtrn)
                tra(ji,jj,jk,jpnfe) = tra(ji,jj,jk,jpnfe) - zgraznf
                tra(ji,jj,jk,jppfe) = tra(ji,jj,jk,jppfe) - zgrazpf
                tra(ji,jj,jk,jpdfe) = tra(ji,jj,jk,jpdfe) - zgrazdf

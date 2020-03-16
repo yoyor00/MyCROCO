@@ -108,7 +108,7 @@ ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB6
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        \cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+        \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
 fi
 #
@@ -149,7 +149,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none"
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
 		LDFLAGS1="$LDFLAGS1"
@@ -312,5 +312,7 @@ rm -f flags.tmp
 $MAKE depend
 $MAKE
   
-[ -f croco ] && mv croco $RUNDIR
+[[ -f croco  ]] && mv croco $RUNDIR
+[[ -f partit ]] && mv partit $RUNDIR
+[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #

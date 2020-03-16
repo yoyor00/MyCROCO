@@ -163,11 +163,13 @@ CONTAINS
                !     ------------------------
                zlim2   = xlimdia(ji,jj,jk) * xlimdia(ji,jj,jk)
                zlim1   = 0.25 * ( 1. - zlim2 ) / ( 0.25 + zlim2 ) 
-               zrespp2 = 1.e6 * xstep * (  wchld + wchldm * zlim1 ) * xdiss(ji,jj,jk) * zcompadi * trb(ji,jj,K,jpdia)
+               zrespp2 = 1.e6 * xstep * (  wchld + wchldm * zlim1 )   &
+               &       * xdiss(ji,jj,jk) * zcompadi * trb(ji,jj,K,jpdia)
 
                !     Phytoplankton mortality. 
                !     ------------------------
-               ztortp2 = mprat2 * xstep * trb(ji,jj,K,jpdia)  / ( xkmort + trb(ji,jj,K,jpdia) ) * zcompadi 
+               ztortp2 = mprat2 * xstep * trb(ji,jj,K,jpdia)   &
+               &       / ( xkmort + trb(ji,jj,K,jpdia) ) * zcompadi 
 
                zmortp2 = zrespp2 + ztortp2
 

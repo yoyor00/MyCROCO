@@ -536,9 +536,12 @@ CONTAINS
    DO jk = KRANGE
       DO jj = JRANGE
          DO ji = IRANGE
-            p_alknw_inf(ji,jj,jk) =  -trb(ji,jj,K,jppo4) * 1000. / (rhop(ji,jj,K) + rtrn) - sulfat(ji,jj,jk)  &
+            p_alknw_inf(ji,jj,jk) =  -trb(ji,jj,K,jppo4) * 1000. / (rhop(ji,jj,K) + rtrn) &
+            &              - sulfat(ji,jj,jk)  &
             &              - fluorid(ji,jj,jk)
-            p_alknw_sup(ji,jj,jk) =   (2. * trb(ji,jj,K,jpdic) + 2. * trb(ji,jj,K,jppo4) + trb(ji,jj,K,jpsil) )    &
+            p_alknw_sup(ji,jj,jk) =   (2. * trb(ji,jj,K,jpdic)   &
+            &                        + 2. * trb(ji,jj,K,jppo4)   &
+            &                          + trb(ji,jj,K,jpsil) )    &
             &               * 1000. / (rhop(ji,jj,K) + rtrn) + borat(ji,jj,jk) 
          END DO
       END DO
@@ -574,7 +577,8 @@ CONTAINS
    REAL(wp)  ::  zfact, p_alktot, zdic, zbot, zpt, zst, zft, zsit
    LOGICAL   ::  l_exitnow
    REAL(wp), PARAMETER :: pz_exp_threshold = 1.0
-   REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zalknw_inf, zalknw_sup, chmask, zh_min, zh_max, zeqn_absmin
+   REAL(wp), DIMENSION(PRIV_3D_BIOARRAY) :: zalknw_inf, zalknw_sup, &
+   &                                        chmask, zh_min, zh_max, zeqn_absmin
 
    CALL anw_infsup( zalknw_inf, zalknw_sup )
 
@@ -817,7 +821,8 @@ CONTAINS
 
       ierr(:) = 0
 
-      ALLOCATE( sio3eq(PRIV_3D_BIOARRAY), fekeq(PRIV_3D_BIOARRAY), chemc(PRIV_2D_BIOARRAY,3), chemo2(PRIV_3D_BIOARRAY), STAT=ierr(1) )
+      ALLOCATE( sio3eq(PRIV_3D_BIOARRAY), fekeq(PRIV_3D_BIOARRAY),        &
+         &      chemc(PRIV_2D_BIOARRAY,3), chemo2(PRIV_3D_BIOARRAY), STAT=ierr(1) )
 
       ALLOCATE( akb3(PRIV_3D_BIOARRAY)   , tempis(PRIV_3D_BIOARRAY),       &
          &      akw3(PRIV_3D_BIOARRAY)   , borat (PRIV_3D_BIOARRAY),       &

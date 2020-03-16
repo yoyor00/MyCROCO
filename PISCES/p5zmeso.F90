@@ -112,7 +112,8 @@ CONTAINS
 
                !   Michaelis-Menten mortality rates of mesozooplankton
                !   ---------------------------------------------------
-               zrespz   = resrat2 * zfact * ( trb(ji,jj,K,jpmes) / ( xkmort + trb(ji,jj,K,jpmes) )  &
+               zrespz   = resrat2 * zfact * ( trb(ji,jj,K,jpmes)   &
+               &          / ( xkmort + trb(ji,jj,K,jpmes) )  &
                &          + 3. * nitrfac(ji,jj,jk) )
 
                !   Zooplankton mortality. A square function has been selected with
@@ -135,7 +136,8 @@ CONTAINS
                &           + xpref2m * zcompames 
                zfoodlim  = MAX( 0., zfood - MIN( 0.5 * zfood, xthresh2 ) )
                zdenom    = zfoodlim / ( xkgraz2 + zfoodlim )
-               zgraze2   = grazrat2 * xstep * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpmes) * (1. - nitrfac(ji,jj,jk)) 
+               zgraze2   = grazrat2 * xstep * tgfunc2(ji,jj,jk)   &
+               &          * trb(ji,jj,K,jpmes) * (1. - nitrfac(ji,jj,jk)) 
 
                !   An active switching parameterization is used here.
                !   We don't use the KTW parameterization proposed by 
@@ -160,34 +162,51 @@ CONTAINS
                !   Mesozooplankton regular grazing on the different preys
                !   ------------------------------------------------------
                zgrazdc   = zgraze2 * ztmp4 * zdenom
-               zgrazdn   = zgrazdc * trb(ji,jj,K,jpndi) / ( trb(ji,jj,K,jpdia) + rtrn)
-               zgrazdp   = zgrazdc * trb(ji,jj,K,jppdi) / ( trb(ji,jj,K,jpdia) + rtrn)
-               zgrazdf   = zgrazdc * trb(ji,jj,K,jpdfe) / ( trb(ji,jj,K,jpdia) + rtrn)
+               zgrazdn   = zgrazdc * trb(ji,jj,K,jpndi)   &
+               &          / ( trb(ji,jj,K,jpdia) + rtrn)
+               zgrazdp   = zgrazdc * trb(ji,jj,K,jppdi)   &
+               &          / ( trb(ji,jj,K,jpdia) + rtrn)
+               zgrazdf   = zgrazdc * trb(ji,jj,K,jpdfe)   &
+               &          / ( trb(ji,jj,K,jpdia) + rtrn)
                zgrazz    = zgraze2 * ztmp5 * zdenom
                zgrazm    = zgraze2 * ztmp2 * zdenom
                zgraznc   = zgraze2 * ztmp1 * zdenom
-               zgraznn   = zgraznc * trb(ji,jj,K,jpnph) / ( trb(ji,jj,K,jpphy) + rtrn)
-               zgraznp   = zgraznc * trb(ji,jj,K,jppph) / ( trb(ji,jj,K,jpphy) + rtrn)
-               zgraznf   = zgraznc * trb(ji,jj,K,jpnfe) / ( trb(ji,jj,K,jpphy) + rtrn)
+               zgraznn   = zgraznc * trb(ji,jj,K,jpnph)   &
+               &          / ( trb(ji,jj,K,jpphy) + rtrn)
+               zgraznp   = zgraznc * trb(ji,jj,K,jppph)   &
+               &          / ( trb(ji,jj,K,jpphy) + rtrn)
+               zgraznf   = zgraznc * trb(ji,jj,K,jpnfe)   &
+               &          / ( trb(ji,jj,K,jpphy) + rtrn)
                zgrazpoc  = zgraze2 * ztmp3 * zdenom
-               zgrazpon  = zgrazpoc * trb(ji,jj,K,jppon) / ( trb(ji,jj,K,jppoc) + rtrn)
-               zgrazpop  = zgrazpoc * trb(ji,jj,K,jppop) / ( trb(ji,jj,K,jppoc) + rtrn)
-               zgrazpof  = zgrazpoc * trb(ji,jj,K,jpsfe) / ( trb(ji,jj,K,jppoc) + rtrn)
+               zgrazpon  = zgrazpoc * trb(ji,jj,K,jppon)  &
+               &          / ( trb(ji,jj,K,jppoc) + rtrn)
+               zgrazpop  = zgrazpoc * trb(ji,jj,K,jppop)  &
+               &          / ( trb(ji,jj,K,jppoc) + rtrn)
+               zgrazpof  = zgrazpoc * trb(ji,jj,K,jpsfe)  &
+               &          / ( trb(ji,jj,K,jppoc) + rtrn)
 
                !   Mesozooplankton flux feeding on GOC
                !   ----------------------------------
                zgrazffeg = grazflux  * xstep * wsbio4(ji,jj,jk)      &
-               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpgoc) * trb(ji,jj,K,jpmes)  &
+               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jpgoc)  &
+               &           * trb(ji,jj,K,jpmes)  &
                &           * (1. - nitrfac(ji,jj,jk))
-               zgrazfffg = zgrazffeg * trb(ji,jj,K,jpbfe) / (trb(ji,jj,K,jpgoc) + rtrn)
-               zgrazffng = zgrazffeg * trb(ji,jj,K,jpgon) / (trb(ji,jj,K,jpgoc) + rtrn)
-               zgrazffpg = zgrazffeg * trb(ji,jj,K,jpgop) / (trb(ji,jj,K,jpgoc) + rtrn)
+               zgrazfffg = zgrazffeg * trb(ji,jj,K,jpbfe)   &
+               &          / (trb(ji,jj,K,jpgoc) + rtrn)
+               zgrazffng = zgrazffeg * trb(ji,jj,K,jpgon)   &
+               &          / (trb(ji,jj,K,jpgoc) + rtrn)
+               zgrazffpg = zgrazffeg * trb(ji,jj,K,jpgop)   &
+               &          / (trb(ji,jj,K,jpgoc) + rtrn)
                zgrazffep = grazflux  * xstep *  wsbio3(ji,jj,jk)     &
-               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jppoc) * trb(ji,jj,K,jpmes)   &
+               &           * tgfunc2(ji,jj,jk) * trb(ji,jj,K,jppoc)  &
+               &           * trb(ji,jj,K,jpmes)   &
                &           * (1. - nitrfac(ji,jj,jk))
-               zgrazfffp = zgrazffep * trb(ji,jj,K,jpsfe) / (trb(ji,jj,K,jppoc) + rtrn)
-               zgrazffnp = zgrazffep * trb(ji,jj,K,jppon) / (trb(ji,jj,K,jppoc) + rtrn)
-               zgrazffpp = zgrazffep * trb(ji,jj,K,jppop) / (trb(ji,jj,K,jppoc) + rtrn)
+               zgrazfffp = zgrazffep * trb(ji,jj,K,jpsfe)   &
+               &           / (trb(ji,jj,K,jppoc) + rtrn)
+               zgrazffnp = zgrazffep * trb(ji,jj,K,jppon)   &
+               &           / (trb(ji,jj,K,jppoc) + rtrn)
+               zgrazffpp = zgrazffep * trb(ji,jj,K,jppop)   &
+               &           / (trb(ji,jj,K,jppoc) + rtrn)
                !
                zgraztotc  = zgrazdc + zgrazz + zgraznc + zgrazm + zgrazpoc + zgrazffep + zgrazffeg
 
@@ -322,10 +341,14 @@ CONTAINS
                tra(ji,jj,jk,jpnph) = tra(ji,jj,jk,jpnph) - zgraznn
                tra(ji,jj,jk,jppph) = tra(ji,jj,jk,jppph) - zgraznp
                tra(ji,jj,jk,jpnfe) = tra(ji,jj,jk,jpnfe) - zgraznf
-               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgraznc * trb(ji,jj,K,jpnch) / ( trb(ji,jj,K,jpphy) + rtrn )
-               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazdc * trb(ji,jj,K,jpdch) / ( trb(ji,jj,K,jpdia) + rtrn )
-               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazdc * trb(ji,jj,K,jpdsi) / ( trb(ji,jj,K,jpdia) + rtrn )
-               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazdc * trb(ji,jj,K,jpdsi) / ( trb(ji,jj,K,jpdia) + rtrn )
+               tra(ji,jj,jk,jpnch) = tra(ji,jj,jk,jpnch) - zgraznc * trb(ji,jj,K,jpnch)   &
+               &                    / ( trb(ji,jj,K,jpphy) + rtrn )
+               tra(ji,jj,jk,jpdch) = tra(ji,jj,jk,jpdch) - zgrazdc * trb(ji,jj,K,jpdch)   &
+               &                    / ( trb(ji,jj,K,jpdia) + rtrn )
+               tra(ji,jj,jk,jpdsi) = tra(ji,jj,jk,jpdsi) - zgrazdc * trb(ji,jj,K,jpdsi)   &
+               &                    / ( trb(ji,jj,K,jpdia) + rtrn )
+               tra(ji,jj,jk,jpgsi) = tra(ji,jj,jk,jpgsi) + zgrazdc * trb(ji,jj,K,jpdsi)   &
+               &                    / ( trb(ji,jj,K,jpdia) + rtrn )
 
                tra(ji,jj,jk,jppoc) = tra(ji,jj,jk,jppoc) - zgrazpoc - zgrazffep + zfracc
                prodpoc(ji,jj,jk) = prodpoc(ji,jj,jk) + zfracc

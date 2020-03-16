@@ -128,7 +128,8 @@ CONTAINS
 
                ! Michaelis-Menten Limitation term for nutrients Small bacteria
                ! -------------------------------------------------------------
-               zdenom = 1. /  ( concbno3 * concbnh4 + concbnh4 * trb(ji,jj,K,jpno3) + concbno3 * trb(ji,jj,K,jpnh4) )
+               zdenom = 1. /  ( concbno3 * concbnh4 + concbnh4 * trb(ji,jj,K,jpno3) &
+               &              + concbno3 * trb(ji,jj,K,jpnh4) )
                xnanono3(ji,jj,jk) = trb(ji,jj,K,jpno3) * concbnh4 * zdenom
                xnanonh4(ji,jj,jk) = trb(ji,jj,K,jpnh4) * concbno3 * zdenom
                !
@@ -141,14 +142,16 @@ CONTAINS
 
                ! Michaelis-Menten Limitation term for nutrients Small flagellates
                ! -----------------------------------------------
-               zdenom = 1. /  ( zconc0n * zconc0nnh4 + zconc0nnh4 * trb(ji,jj,K,jpno3) + zconc0n * trb(ji,jj,K,jpnh4) )
+               zdenom = 1. /  ( zconc0n * zconc0nnh4 + zconc0nnh4 * trb(ji,jj,K,jpno3)&
+               &              + zconc0n * trb(ji,jj,K,jpnh4) )
                xnanono3(ji,jj,jk) = trb(ji,jj,K,jpno3) * zconc0nnh4 * zdenom
                xnanonh4(ji,jj,jk) = trb(ji,jj,K,jpnh4) * zconc0n    * zdenom
                !
                zlim1    = xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk)
                zlim2    = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zconc0nnh4 )
                zratio   = trb(ji,jj,K,jpnfe) * z1_trbphy 
-               zironmin = xcoef1 * trb(ji,jj,K,jpnch) * z1_trbphy + xcoef2 * zlim1 + xcoef3 * xnanono3(ji,jj,jk)
+               zironmin = xcoef1 * trb(ji,jj,K,jpnch) * z1_trbphy   &
+               &        + xcoef2 * zlim1 + xcoef3 * xnanono3(ji,jj,jk)
                zlim3    = MAX( 0.,( zratio - zironmin ) / qnfelim )
                xnanopo4(ji,jj,jk) = zlim2
                xlimnfe (ji,jj,jk) = MIN( 1., zlim3 )
@@ -156,7 +159,8 @@ CONTAINS
                !
                !   Michaelis-Menten Limitation term for nutrients Diatoms
                !   ----------------------------------------------
-               zdenom   = 1. / ( zconc1d * zconc1dnh4 + zconc1dnh4 * trb(ji,jj,K,jpno3) + zconc1d * trb(ji,jj,K,jpnh4) )
+               zdenom   = 1. / ( zconc1d * zconc1dnh4 + zconc1dnh4 * trb(ji,jj,K,jpno3) &
+               &               + zconc1d * trb(ji,jj,K,jpnh4) )
                xdiatno3(ji,jj,jk) = trb(ji,jj,K,jpno3) * zconc1dnh4 * zdenom
                xdiatnh4(ji,jj,jk) = trb(ji,jj,K,jpnh4) * zconc1d    * zdenom
                !
@@ -164,7 +168,8 @@ CONTAINS
                zlim2    = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + zconc1dnh4  )
                zlim3    = trb(ji,jj,K,jpsil) / ( trb(ji,jj,K,jpsil) + xksi(ji,jj) )
                zratio   = trb(ji,jj,K,jpdfe) * z1_trbdia
-               zironmin = xcoef1 * trb(ji,jj,K,jpdch) * z1_trbdia + xcoef2 * zlim1 + xcoef3 * xdiatno3(ji,jj,jk)
+               zironmin = xcoef1 * trb(ji,jj,K,jpdch) * z1_trbdia  &
+               &        + xcoef2 * zlim1 + xcoef3 * xdiatno3(ji,jj,jk)
                zlim4    = MAX( 0., ( zratio - zironmin ) / qdfelim )
                xdiatpo4(ji,jj,jk) = zlim2
                xlimdfe (ji,jj,jk) = MIN( 1., zlim4 )
@@ -179,8 +184,11 @@ CONTAINS
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE
-               zlim1 =  ( trb(ji,jj,K,jpno3) * concnnh4 + trb(ji,jj,K,jpnh4) * concnno3 )    &
-                  &   / ( concnno3 * concnnh4 + concnnh4 * trb(ji,jj,K,jpno3) + concnno3 * trb(ji,jj,K,jpnh4) ) 
+               zlim1 =  ( trb(ji,jj,K,jpno3) * concnnh4  &
+                  &     + trb(ji,jj,K,jpnh4) * concnno3 )    &
+                  &   / ( concnno3 * concnnh4     &
+                  &   + concnnh4 * trb(ji,jj,K,jpno3) &
+                  &     + concnno3 * trb(ji,jj,K,jpnh4) ) 
                zlim2  = trb(ji,jj,K,jppo4) / ( trb(ji,jj,K,jppo4) + concnnh4 )
                zlim3  = trb(ji,jj,K,jpfer) / ( trb(ji,jj,K,jpfer) +  5.E-11   )
                ztem1  = MAX( 0., tsn(ji,jj,jk,jp_tem) )

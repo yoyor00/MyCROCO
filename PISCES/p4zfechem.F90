@@ -145,11 +145,13 @@ CONTAINS
                ! precipitation of Fe3+, creation of nanoparticles
                precip(ji,jj,jk) = MAX( 0., ( zFe3(ji,jj,jk) * 1E-9 - fe3sol ) ) * kfep * xstep
                !
-               ztrc   = ( trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc) + trb(ji,jj,K,jpcal) + trb(ji,jj,K,jpgsi) ) * 1.e6 
+               ztrc   = ( trb(ji,jj,K,jppoc) + trb(ji,jj,K,jpgoc)   &
+                  &   + trb(ji,jj,K,jpcal) + trb(ji,jj,K,jpgsi) ) * 1.e6 
                IF( ln_dust )  zdust  = dust(ji,jj) / ( wdust / rday ) * tmask(ji,jj,jk) &
                &  * EXP( -gdept_n(ji,jj,K) / 540. )
                IF (ln_ligand) THEN
-                  zxlam  = xlam1 * MAX( 1.E-3, EXP(-2 * etot(ji,jj,jk) / 10. ) * (1. - EXP(-2 * trb(ji,jj,K,jpoxy) / 100.E-6 ) ))
+                  zxlam  = xlam1 * MAX( 1.E-3, EXP(-2 * etot(ji,jj,jk) / 10. )   &
+                     &   * (1. - EXP(-2 * trb(ji,jj,K,jpoxy) / 100.E-6 ) ))
                ELSE
                   zxlam  = xlam1 * 1.0
                ENDIF
@@ -174,7 +176,8 @@ CONTAINS
                !  could be thought as an equivalent of colloidal pumping.
                !  It requires certainly some more work as it is very poorly constrained.
                !  ----------------------------------------------------------------
-               zlam1a   = ( 0.369  * 0.3 * trb(ji,jj,K,jpdoc) + 102.4  * trb(ji,jj,K,jppoc) ) * xdiss(ji,jj,jk)    &
+               zlam1a   = ( 0.369  * 0.3 * trb(ji,jj,K,jpdoc)                 &
+                   &      + 102.4  * trb(ji,jj,K,jppoc) ) * xdiss(ji,jj,jk)   &
                    &      + ( 114.   * 0.3 * trb(ji,jj,K,jpdoc) )
                zaggdfea = zlam1a * xstep * zfecoll
                !
@@ -207,7 +210,8 @@ CONTAINS
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
-                  zlam1a   = ( 0.369  * 0.3 * trb(ji,jj,K,jpdoc) + 102.4  * trb(ji,jj,K,jppoc) ) * xdiss(ji,jj,jk)    &
+                  zlam1a   = ( 0.369  * 0.3 * trb(ji,jj,K,jpdoc)                &
+                      &    + 102.4  * trb(ji,jj,K,jppoc) ) * xdiss(ji,jj,jk)    &
                       &    + ( 114.   * 0.3 * trb(ji,jj,K,jpdoc) )
                   !
                   zlam1b   = 3.53E3 *   trb(ji,jj,K,jpgoc) * xdiss(ji,jj,jk)

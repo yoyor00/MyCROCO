@@ -179,7 +179,8 @@ CONTAINS
          WRITE(numsed,*)' nb solid comp : ',jpsol
          WRITE(numsed,*)'(1=opal,2=clay,3=POC,4=CaCO3), 5=POS, 6=POR, 7=FEO, 8=FeS'
          WRITE(numsed,*)'weight mol 1,2,3,4,5,6,7'
-         WRITE(numsed,'(8(F0.2,3X))')mol_wgt(jsopal),mol_wgt(jsclay),mol_wgt(jspoc),mol_wgt(jscal),mol_wgt(jspos),mol_wgt(jspor),mol_wgt(jsfeo),mol_wgt(jsfes)
+         WRITE(numsed,'(8(F0.2,3X))')mol_wgt(jsopal),mol_wgt(jsclay),mol_wgt(jspoc),mol_wgt(jscal),   &
+         &                           mol_wgt(jspos),mol_wgt(jspor),mol_wgt(jsfeo),mol_wgt(jsfes)
          WRITE(numsed,*)'nb dissolved comp',jpwat
          WRITE(numsed,*)'1=silicic acid,,2=O2,3=DIC,4=NO3,5=PO4,6=Alk,7=NH4,8=ODU'
          WRITE(numsed,*)'redfield coef C,O,N P Dit '

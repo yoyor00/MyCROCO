@@ -148,7 +148,7 @@ CONTAINS
                   zconctemp2  = trb(ji,jj,K,jpdia) - zconctemp
                   !
                   zpislopeadn(ji,jj,jk) = pislopen * ( 1.+ zadap  * EXP( -0.25 * enano(ji,jj,jk) ) )  &
-                  &          * trb(ji,jj,K,jpnch) /( trb(ji,jj,K,jpphy) * 12. + rtrn)
+                  &    * trb(ji,jj,K,jpnch) /( trb(ji,jj,K,jpphy) * 12. + rtrn)
                   !
                   zpislopeadd(ji,jj,jk) = (pislopen * zconctemp2 + pisloped * zconctemp)  &
                   &    / ( trb(ji,jj,K,jpdia) + rtrn )   &
@@ -243,7 +243,8 @@ CONTAINS
                   zprorcan(ji,jj,jk) = zprbio(ji,jj,jk)  * xlimphy(ji,jj,jk) * trb(ji,jj,K,jpphy) * rfact2
                   zpronewn(ji,jj,jk)  = zprorcan(ji,jj,jk)* xnanono3(ji,jj,jk) / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn )
                   !
-                  zratio = trb(ji,jj,K,jpnfe) / ( trb(ji,jj,K,jpphy) * fecnm + rtrn )
+                  zratio = trb(ji,jj,K,jpnfe)   &
+                  &       /(trb(ji,jj,K,jpphy) * fecnm + rtrn)
                   zmax   = MAX( 0., ( 1. - zratio ) / ABS( 1.05 - zratio ) ) 
                   zprofen(ji,jj,jk) = fecnm * zprmaxn(ji,jj,jk) * ( 1.0 - fr_i(ji,jj) )  &
                   &             * ( 4. - 4.5 * xlimnfe(ji,jj,jk) / ( xlimnfe(ji,jj,jk) + 0.5 ) )    &
@@ -253,7 +254,8 @@ CONTAINS
                   zprorcad(ji,jj,jk) = zprdia(ji,jj,jk) * xlimdia(ji,jj,jk) * trb(ji,jj,K,jpdia) * rfact2
                   zpronewd(ji,jj,jk) = zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk) / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn )
                   !
-                  zratio = trb(ji,jj,K,jpdfe) / ( trb(ji,jj,K,jpdia) * fecdm + rtrn )
+                  zratio = trb(ji,jj,K,jpdfe) &
+                  &      / ( trb(ji,jj,K,jpdia) * fecdm + rtrn )
                   zmax   = MAX( 0., ( 1. - zratio ) / ABS( 1.05 - zratio ) ) 
                   zprofed(ji,jj,jk) = fecdm * zprmaxd(ji,jj,jk) * ( 1.0 - fr_i(ji,jj) )  &
                   &             * ( 4. - 4.5 * xlimdfe(ji,jj,jk) / ( xlimdfe(ji,jj,jk) + 0.5 ) )    &
