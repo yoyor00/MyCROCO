@@ -86,11 +86,11 @@ c--#define VERBOSE
 
       integer max_buff_size, alloc_buff_size
       real*8, allocatable, dimension(:) :: buff
+      character*8, allocatable, dimension(:) :: bufftext
 #ifdef FAST_MODE
       integer max_bfr_out, alloc_bfr_out
       real*8, allocatable, dimension(:) :: bfr_out
 #endif
-
 
 #ifdef AUTORENICE
       integer getpid, pid            ! Sometimes it makes sense to
@@ -104,7 +104,7 @@ c--#define VERBOSE
       write(*,'(/3A/)') 'Autorenice: executing ''',cmd(1:lstr),'''.'
       call system(cmd(1:lstr))
 #endif
-                                     ! initialize sizes of buffer 
+      ntest=-1                       ! initialize sizes of buffer 
       max_buff_size=0                ! arrays to be allocated. Here
       alloc_buff_size=0              ! "max_*" means needed size, and
 #ifdef FAST_MODE
@@ -929,6 +929,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
         if (max_buff_size .gt. alloc_buff_size) then
           if (allocated(buff)) deallocate(buff)
           allocate(buff(max_buff_size))
+          allocate(bufftext(max_buff_size))
           alloc_buff_size=max_buff_size
           write(*,*) 'allocated "buff" with max_buff_size =',
      &                                         max_buff_size
@@ -959,7 +960,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
      &                            varname(i)(1:lvar), '''...'
 
                 if (vartype(i) .eq. nf_char) then
-                  ierr=nf_get_var_text  (ncid(0), i, buff)
+                  ierr=nf_get_var_text  (ncid(0), i, bufftext)
                 elseif (vartype(i) .eq. nf_int) then
                   ierr=nf_get_var_int    (ncid(0), i, buff)
                 elseif (vartype(i) .eq. nf_float) then
@@ -974,7 +975,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 endif
                 if (ierr .eq. nf_noerr) then
                   if (vartype(i) .eq. nf_char) then
-                    ierr=nf_put_var_text  (nctarg, varid(i), buff)
+                    ierr=nf_put_var_text  (nctarg, varid(i), bufftext)
                   elseif (vartype(i) .eq. nf_int) then
                     ierr=nf_put_var_int    (nctarg, varid(i), buff)
                   elseif (vartype(i) .eq. nf_float) then
@@ -1032,8 +1033,10 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 endif
                 if (size .gt. 8*max_buff_size) then
                   if (allocated(buff)) deallocate(buff)
+                  if (allocated(bufftext)) deallocate(bufftext)
                   max_buff_size=(size+7)/8
                   allocate(buff(max_buff_size))
+                  allocate(bufftext(max_buff_size))
                   write(*,*) 'allocated "buff" with max_buff_size =',
      &                                              max_buff_size
                 endif
@@ -1213,8 +1216,10 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
 
                     if (size .gt. 8*max_buff_size) then
                       if (allocated(buff)) deallocate(buff)
+                      if (allocated(bufftext)) deallocate(bufftext)
                       max_buff_size=(size+7)/8
                       allocate(buff(max_buff_size))
+                      allocate(bufftext(max_buff_size))
                       write(*,*) 'allocated "buff" with ',
      &                   'max_buff_size =', max_buff_size
                     endif
@@ -1248,7 +1253,7 @@ c?                  endif
 
                       if (vartype(i) .eq. nf_char) then
                         ierr=nf_get_vara_text  (ncid(node), i, start,
-     &                                                   count, buff)
+     &                                                   count, bufftext)
                       elseif (vartype(i) .eq. nf_int) then
                         ierr=nf_get_vara_int   (ncid(node), i, start,
      &                                                   count, buff)
@@ -1306,7 +1311,7 @@ c?                  endif
 
 
                       if (vartype(i) .eq. nf_char) then
-                        call assembly_text (buff,count, bfr_out,
+                        call assembly_text (bufftext,count, bfr_out,
      &                                  start1,count1, vardims(i))
                       elseif (vartype(i) .eq. nf_int) then
                         call assembly_int  (buff,count, bfr_out,
