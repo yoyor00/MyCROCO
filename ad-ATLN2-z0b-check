@@ -1,0 +1,53 @@
+#!/bin/bash
+#OAR --project moise-modeling
+#OAR -l /nodes=1/cpu=1/core=2,walltime=5:00:00
+
+set -x
+set -e
+pwd=`pwd`
+#guix_cmd="guix time-machine --commit=c70261bfb993cebc23cd80042de3f52a8b7932a4 --"
+#guix_cmd=$pwd/.croco-guix-config-profile/bin/guix
+guix_cmd="guix time-machine --url=https://gitlab.inria.fr/bremond/guix.git --branch=check-master-mpich --"
+
+[ -f /applis/site/guix.sh ] && . /applis/site/guix.sh
+export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
+export PATH="$HOME/.config/guix/current/bin:${PATH}"
+
+
+
+if [ -f "$OAR_NODE_FILE" ]; then
+  nbcores=`cat $OAR_NODE_FILE|wc -l`
+  mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
+else
+  nbcores=1
+  mpirun_cmd="mpirun -n $nbcores"
+fi
+
+# guix environment setup
+packages="gcc-toolchain gfortran-toolchain make \
+        netcdf netcdf-fortran \
+        mpich openssh adjoinable-mpi \
+        openblas lapack \
+        openjdk coreutils binutils sed grep bash which gdb"
+
+rm -f $pwd/.croco-guix-profile
+$guix_cmd environment --root=$pwd/.croco-guix-profile --pure --ad-hoc $packages -- echo guix environment setup
+
+mkdir -p Run/CROCO_FILES
+cd Run
+ln -sf ../AD/CONFIGS/ATLN2/adparam.h
+ln -sf ../AD/CONFIGS/ATLN2/cost_fun.F
+ln -sf ../AD/CONFIGS/ATLN2/cppdefs.h
+ln -sf ../AD/CONFIGS/ATLN2/croco-est.in
+ln -sf ../AD/CONFIGS/ATLN2/croco-obs.in
+ln -sf ../AD/CONFIGS/ATLN2/param.h
+ln -sf ../AD/CONFIGS/ATLN2/read_obs.F
+
+# without restart
+$guix_cmd environment --pure --ad-hoc $packages -- ../OCEAN/jobcomp
+#$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco croco-obs.in
+
+# history -> obs
+#cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
+
+$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco_adc croco-est.in
