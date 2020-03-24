@@ -19,7 +19,7 @@ if [ -f "$OAR_NODE_FILE" ]; then
   nbcores=`cat $OAR_NODE_FILE|wc -l`
   mpirun_cmd="mpirun -n $nbcores -launcher ssh -launcher-exec /usr/bin/oarsh --machinefile $OAR_NODE_FILE"
 else
-  nbcores=1
+  nbcores=8
   mpirun_cmd="mpirun -n $nbcores"
 fi
 

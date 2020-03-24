@@ -10,16 +10,16 @@ c     real size of the problem per node (<= ad_array_size/nnodes)
 
 C     number of steps between cost function computations
       integer ad_ns
-      parameter (ad_ns = 18)
+      parameter (ad_ns = 1)
 
 C     number of cost function computations
       integer ad_nt
 c     parameter (ad_nt = 2400)
-      parameter (ad_nt = 20)
+      parameter (ad_nt = 55)
 
 C     start of assimilation in the obs file
       integer ad_ast
-      parameter (ad_ast = 188)
+      parameter (ad_ast = 388)
 
 C     number of time steps in the main file before assimilation
       integer ad_main_st

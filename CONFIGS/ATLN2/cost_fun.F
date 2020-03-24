@@ -5,7 +5,6 @@
       
       integer k
       
-C$AD BINOMIAL-CKP ad_ns+1 80 1
       do k=1,ad_ns
          call step()
       end do
@@ -31,6 +30,7 @@ C$AD BINOMIAL-CKP ad_ns+1 80 1
 c      sigma2 = ad_cost/ad_cost_counter
       icost = 0
 
+C$AD BINOMIAL-CKP ad_nt+1 90 1
       do ta=1,ad_nt
          call ad_step()
          call cost_fun_step(ad_x,icost,ad_nt,3)
