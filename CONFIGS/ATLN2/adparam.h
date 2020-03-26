@@ -1,4 +1,5 @@
 C     -*- fortran -*-
+
       
 C     size of the optimization problem
       integer ad_array_size
@@ -10,12 +11,12 @@ c     real size of the problem per node (<= ad_array_size/nnodes)
 
 C     number of steps between cost function computations
       integer ad_ns
-      parameter (ad_ns = 1)
+      parameter (ad_ns = 180)
 
 C     number of cost function computations
       integer ad_nt
 c     parameter (ad_nt = 2400)
-      parameter (ad_nt = 55)
+      parameter (ad_nt = 48)
 
 C     start of assimilation in the obs file
       integer ad_ast
@@ -27,9 +28,11 @@ C     number of time steps in the main file before assimilation
 
 c     observations
       double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt*ad_ns+3)
+      double precision ad_obs_time(ad_nt*ad_ns+3)
 
 c     state vector / process
       double precision ad_x(ad_array_size/nnodes)
+      double precision ad_dz(ad_array_size/nnodes)
 
 c     gradient vector / process
       double precision ad_g(ad_array_size/nnodes)
@@ -72,9 +75,14 @@ c     backup
       real ad_cost
 
 c     rms
-      real ad_rms
+      real ad_rms,ad_irms,ad_irms_f
+      integer ad_array_node_size_f
       integer ad_ta
 
+c     spval
+      real ad_spval
+      parameter(ad_spval = -999)
+      
       integer kstp_bck
       integer krhs_bck
       integer knew_bck
@@ -85,10 +93,10 @@ C     commons
      &     zob_bck,
      &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
 
-      common /ad/ ad_array_node_size
+      common /ad/ ad_array_node_size, ad_dz
 
       common /ad_timings/ ad_dir_time,ad_adj_time
 
-      common /ad_obs_data/ ad_obs
+      common /ad_obs_data/ ad_obs, ad_obs_time
       common /ad_state_info/ ad_sim_iicroot,ad_counter,ad_cost_counter,
-     &     ad_cost,ad_rms,ad_ta
+     &     ad_cost,ad_rms,ad_irms,ad_irms_f,ad_ta

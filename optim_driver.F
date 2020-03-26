@@ -45,8 +45,13 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
 
       call init_control(ad_x,ad_g)
 
+      call AMPI_Reduce(ad_array_node_size, ad_array_node_size_f,
+     &     1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
-
+      if (mynode.eq.0) then
+         write(*,*) 'sum of all ad_array_node_size:',
+     &        ad_array_node_size_f
+      endif
 c      MPI_master_only write(*,*) 'A1##>',ad_x_f
 c      MPI_master_only write(*,*) 'B1##>',ad_g_f
 
@@ -181,6 +186,11 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
      &        MPI_SUM,
      &        0, MPI_COMM_WORLD, ierr)
 
+         call AMPI_Reduce(ad_irms, ad_irms_f, 1, AMPI_ADOUBLE_PRECISION,
+     &        MPI_SUM,0,MPI_COMM_WORLD,ierr)
+
+         ad_rms = sqrt(ad_irms_f) / ad_array_node_size_f
+         
          if (mynode.eq.0) then
             cost = cost_f
          end if
@@ -197,7 +207,7 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
          end if
 
          df1 = cost
-
+         
          ad_counter = ad_counter+1
       end do
 
@@ -213,8 +223,6 @@ C     ...
       return
       end subroutine state_control
 
-
-
       subroutine handle_err(errcode)
       implicit none
 # include "netcdf.inc"
@@ -225,102 +233,3 @@ C     ...
       end
 
 
-      function rms()
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-
-      double precision rms,irms,crms
-      integer i,j,ne,cne,ierr
-
-      ne = 0
-      irms = 0
-      rms = 0
-      cne = 0
-      crms = 0
-
-      call rms_fun_step(irms,ne)
-
-#ifdef MPI
-#ifdef AMPI
-      call AMPI_Reduce(irms, crms, 1, AMPI_ADOUBLE_PRECISION,
-     &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
-      call AMPI_Reduce(ne, cne, 1, MPI_INTEGER,
-     &     MPI_SUM,0,MPI_COMM_WORLD,ierr)
-#endif
-#else
-      crms = irms
-      cne = ne
-#endif
-
-      if (mynode.eq.0) then
-         if (cne.gt.0) then
-            rms = sqrt(crms)/cne
-         else
-            rms = 0
-         end if
-      end if
-
-      end function rms
-
-      subroutine rms_fun_step(irms,ne)
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-
-      double precision irms
-      integer ne
-      integer ntrds,trd,my_first,my_last,tile,range
-
-#ifdef OPENMP
-      ntrds=omp_get_num_threads()
-      trd=omp_get_thread_num()
-#else
-      ntrds=1
-      trd=0
-#endif
-      range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
-      my_first=trd*range
-      my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
-
-      do tile=my_first,my_last
-         call rms_fun_step_2d(tile,irms,ne)
-      end do
-
-      end subroutine rms_fun_step
-
-      subroutine rms_fun_step_2d(tile,irms,ne)
-
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-      integer tile
-      double precision irms
-      integer ne
-# include "compute_tile_bounds.h"
-
-      call rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,irms,ne)
-
-      end subroutine rms_fun_step_2d
-
-      subroutine rms_fun_step_2d_tile(Istr,Iend,Jstr,Jend,
-     &     irms,ne)
-      implicit none
-# include "adinc.h"
-# include "adparam.h"
-
-      integer Istr,Iend,Jstr,Jend,i,j
-      integer k,ne
-      double precision delta_z, delta_zob, irms
-
-      do j=Jstr,Jend
-         do i=Istr,Iend
-            if (ad_obs(i,j,1).ne.spval) then
-               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ad_nt+2))
-               irms = irms + delta_z*delta_z
-               ne = ne+1
-            end if
-         end do
-      end do
-
-      end subroutine rms_fun_step_2d_tile

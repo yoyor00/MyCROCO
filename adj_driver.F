@@ -15,7 +15,6 @@ c     this file is not differentiated
 
       double precision cost, icost, costb
       double precision xbck(Sn), eps
-      double precision rms
 
       integer ierr
 
@@ -46,8 +45,6 @@ c        directly the computation of cost_fun.
          write (*,*) '--------------------------------------'
          write (*,*) 'end cost:',ad_dir_time
          write (*,*) '--------------------------------------'
-
-         ad_rms = rms()
 
 c     call restore_croco_state()
 

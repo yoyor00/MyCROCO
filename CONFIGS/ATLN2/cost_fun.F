@@ -4,14 +4,13 @@
 # include "adparam.h"
       
       integer k
-      
+
+C$AD BINOMIAL-CKP ad_ns+1 95 1
       do k=1,ad_ns
          call step()
       end do
 
       end subroutine ad_step
-
-
       
       subroutine cost_fun(ad_x, cost)
       implicit none
@@ -28,17 +27,17 @@
       call set_state(ad_x)
 
 c      sigma2 = ad_cost/ad_cost_counter
-      icost = 0
-
-C$AD BINOMIAL-CKP ad_nt+1 90 1
+      icost=0
+      cost=0
       do ta=1,ad_nt
          call ad_step()
-         call cost_fun_step(ad_x,icost,ad_nt,3)
-      end do
-      cost=icost
-      write(*,*) '==cost==>',cost,sqrt(icost)
-      cost=cost
+         call cost_fun_step(ad_x,icost,ta,3)
+         write(*,*) '==icost3==>',icost
+         ad_irms = cost
       
+         cost=cost+icost
+      end do
+
       ad_cost = cost
       ad_ta = ad_nt*ad_ns
       write (*,*) 'cost=',cost
@@ -99,7 +98,7 @@ C$AD BINOMIAL-CKP ad_nt+1 90 1
 
 c      do j=Jstr,Jend
 c         do i=Istr,Iend
-c            if (ad_obs(i,j,1).ne.spval) then
+c            if (ad_obs(i,j,1).ne.ad_spval) then
 c               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
 c               delta_zob = (zob(i,j) - zob_bck(i,j))
 c               icost = icost + delta_z*delta_z + 1.0D-2*
@@ -125,13 +124,21 @@ c         end do
             end do
          end do
       else if (mode.eq.3) then
+         k=0
          do j=Jstr,Jend
             do i=Istr,Iend
-               if (ad_obs(i,j,1).ne.spval) then
+               if (rmask(i,j).ne.0) then
+                  k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
+                  ad_dz(k)=delta_z
                   icost = icost + delta_z*delta_z
+c                  write(*,*) 'AAAAA',ad_cost_counter,time,
+c     &                 ad_obs_time(ta),zeta(i,j,knew),
+c     &                 ad_obs(i,j,ta+2),
+c     &                 ad_obs(i,j,ta+1),
+c     &                 ad_obs(i,j,ta)
 c$$$                  write(*,*) 'AAAAA',mynode,i,j,
-c$$$  knew,ad_sim_iicroot,k,
+c$$$     &                 knew,ad_sim_iicroot,k,
 c$$$     &                 ad_sim_iicroot+k,
 c$$$     &                 zeta(i,j,knew),ad_obs(i,j,ta+2),
 c$$$     &                 zob(i,j),zob_bck(i,j),
@@ -150,13 +157,17 @@ c$$$     &                 ad_obs(i,j,ta-2)
          end do
       end if
 
+      write(*,*) '===cost_fun_step==='
+      write(*,*) 'min delta_z',minval(ad_dz)
+      write(*,*) 'max delta_z',maxval(ad_dz)
+      write(*,*) '==================='
+      
       end subroutine cost_fun_step_2d_tile
 
       subroutine set_state(ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      double precision rms
       integer ntrds,trd,my_first,my_last,tile,range
 
 #ifdef OPENMP
@@ -206,7 +217,7 @@ c$$$     &                 ad_obs(i,j,ta-2)
       k=0
       do j=Jstr,Jend
          do i=Istr,Iend
-            if (ad_obs(i,j,1).ne.spval) then
+            if (rmask(i,j).ne.0) then
                k=k+1
                zob(i,j)= ad_x(k)
             end if
@@ -225,6 +236,9 @@ c$$$     &                 ad_obs(i,j,ta-2)
       write(*, *) 'mynode=',mynode
 #endif
 
+      write(*, *) 'k, ad_array_node_size', k, ad_array_node_size
+      write(*, *) 'min ad_x', minval(ad_x(1:k))
+      write(*, *) 'max ad_x', maxval(ad_x(1:k))
       write(*, *) 'ad_counter=',ad_counter
       write(*, *) 'min zob=',zobmin
       write(*, *) 'max zob=',zobmax
@@ -377,7 +391,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       k=0
       do j=Jstr,Jend
          do i=Istr,Iend
-            if (ad_obs(i,j,1).ne.spval) then
+            if (rmask(i,j).ne.0) then
                k=k+1
                ad_x(k)=zob(i,j)
             end if
@@ -389,6 +403,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
      &     ad_array_node_size,
      &     ad_array_size/nnodes
 
+      write(*,*) 'minad_x,maxad_x',minval(ad_x),maxval(ad_x)
+      write(*,*) 'minh,maxh',minval(h),maxval(h)
+      write(*,*) 'minobs,maxobs',minval(ad_obs),maxval(ad_obs)
       
       end subroutine init_local_arrays_2d_tile
 
