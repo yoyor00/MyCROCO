@@ -294,9 +294,7 @@
           nrecavg=ibuff(4)
 #endif
 
-c -- #undef RESTART_DIAGS
 #if defined RESTART_DIAGS && ! defined XIOS
-
 
 #ifdef DIAGNOSTICS_VRT
           nrecdiags_vrt=ibuff(3)

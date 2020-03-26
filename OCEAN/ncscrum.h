@@ -756,9 +756,14 @@
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+94)
 #endif
-      integer indxBhflx,indxBwflx
-      parameter (indxBhflx=indxSUSTR+95)
-      parameter (indxBwflx=indxSUSTR+96)
+#if defined ANA_BTFLUX || defined ANA_BTFLUX
+      integer indxBhflx
+      parameter (indxBhflx=indxSUSTR+131)
+#endif
+#if (defined BWFLUX || defined ANA_BSFLUX) && defined SALINTY
+      integer indxBwflx
+      parameter (indxBwflx=indxSUSTR+132)
+#endif
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
