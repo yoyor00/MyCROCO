@@ -1791,7 +1791,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxTVmix+itrc-1)
 #  endif
 # endif
 
-#if defined BHFLUX || defined ANA_BTFLUX
+#if defined BHFLUX
 CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
       vname(1,indxBhflx)='bhflux                                 '
       vname(2,indxBhflx)='bottom net heat flux                   '
@@ -1800,7 +1800,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
       vname(5,indxBhflx)='                                       '
       vname(6,indxBhflx)='lat_rho lon_rho                        '
 #endif
-#if (defined BWFLUX || defined ANA_BSFLUX) && defined SALINTY
+#if defined BWFLUX && defined SALINTY
 CR      write(stdout,'(1x,A,I3)') 'indxBwflx =',indxBwflx
       vname(1,indxBwflx)='bwflux                                 '
       vname(2,indxBwflx)='bottom freshwater flux (E-P)          '

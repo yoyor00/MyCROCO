@@ -756,11 +756,11 @@
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+94)
 #endif
-#if defined ANA_BTFLUX || defined ANA_BTFLUX
+#if defined BHFLUX
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
 #endif
-#if (defined BWFLUX || defined ANA_BSFLUX) && defined SALINTY
+#if defined BWFLUX  && defined SALINTY
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif

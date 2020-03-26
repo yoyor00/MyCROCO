@@ -752,7 +752,7 @@
 #if !defined ANA_BTFLUX
 #  define BHFLUX
 #endif
-#if !defined ANA_BSFLUX
+#if !defined ANA_BSFLUX && defined SALINITY
 #  define BWFLUX
 #endif
 /*

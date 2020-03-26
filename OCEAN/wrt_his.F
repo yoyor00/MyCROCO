@@ -782,6 +782,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
+#ifdef BHFLUX
 !     
 !     Write out bottom heat flux 
 !     
@@ -797,7 +798,8 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
             goto 99             !--> ERROR
           endif
 CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
-      endif      
+        endif
+#endif
 #ifdef SALINITY    
 !     Write out surface salt flux
 !
@@ -824,7 +826,8 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
          endif
 CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
        endif
-!
+# ifdef BWFLUX
+!     
 !     Write out bottom salt flux
 !
        
@@ -850,7 +853,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
             goto 99             !--> ERROR
          endif
       write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
-       endif        
+      endif
+# endif
 #endif      
 !     
 !     Write out surface heat flux component (W/m2)

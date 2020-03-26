@@ -356,6 +356,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  ifdef BHFLX
         if (wrtavg(indxBhflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -364,6 +365,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  endif
 #ifdef SALINITY
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
@@ -374,6 +376,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  ifdef BWFLUX
         if (wrtavg(indxBwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -382,7 +385,8 @@ C$    integer omp_get_thread_num
      &               ( max(eps,t(i,j,1,nstp,isalt)) ) )
             enddo
           enddo
-        endif        
+        endif
+#  endif
 #endif
         if (wrtavg(indxShflx_rsw)) then
           do j=JstrR,JendR
