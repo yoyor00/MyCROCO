@@ -959,6 +959,9 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 write(*,'(8x,3A)') 'Copy scalar variable: ''',
      &                            varname(i)(1:lvar), '''...'
 
+!RB we should have here one buffer per type
+!Here just a quick fix for character type, same changes in the
+! writing part below  
                 if (vartype(i) .eq. nf_char) then
                   ierr=nf_get_var_text  (ncid(0), i, bufftext)
                 elseif (vartype(i) .eq. nf_int) then
