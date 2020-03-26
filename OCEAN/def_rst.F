@@ -416,17 +416,17 @@
           
         enddo
         
-#if ( defined LMD_MIXING || defined GLS_MIXING )
-# if ( defined LMD_SKPP || defined GLS_MIXING )        
+# if defined LMD_MIXING 
 !
 ! Depth of planetary boundary layer.
 !     
+#  if defined LMD_SKPP
         lvar=lenstr(vname(1,indxHbl))
         ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
      &       NF_DOUBLE, 3, r2dgrd, rstHbl)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstHbl,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxHbl))
         ierr=nf_put_att_text (ncid, rstHbl, 'long_name',
      &       lvar,   vname(2,indxHbl)(1:lvar))
@@ -439,8 +439,7 @@
         
         call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
      &       NF_DOUBLE,ierr)
-        
-#  endif         /*  LMD_SKPP || GLS_MIXING  */
+#  endif        
 
 #  ifdef LMD_BKPP
 !
@@ -449,9 +448,9 @@
         lvar=lenstr(vname(1,indxHbbl))
         ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
      &       NF_DOUBLE, 3, r2dgrd, rstHbbl)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstHbbl,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxHbbl))
         ierr=nf_put_att_text (ncid, rstHbbl, 'long_name',
      &       lvar,   vname(2,indxHbbl)(1:lvar))
@@ -467,6 +466,53 @@
         
 #  endif /*  LMD_BKPP  */
  
+# endif /* LMD_MIXING */
+
+# if defined GLS_MIXING
+!
+! Turbulent kinetic energy.
+!
+          lvar=lenstr(vname(1,indxTke))
+          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstTke)
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTke,nf_collective)
+#  endif
+          lvar=lenstr(vname(2,indxTke))
+          ierr=nf_put_att_text (ncid, rstTke, 'long_name',
+     &                     lvar,   vname(2,indxTke)(1:lvar))
+          lvar=lenstr(vname(3,indxTke))
+          ierr=nf_put_att_text (ncid, rstTke, 'units', lvar,
+     &         vname(3,indxTke)(1:lvar))
+          lvar=lenstr(vname(4,indxTke))
+          ierr=nf_put_att_text (ncid, rstTke, 'field', lvar,
+     &         vname(4,indxTke)(1:lvar))
+
+          call nf_add_attribute(ncid, rstTke, indxTke, 5,
+     &         NF_DOUBLE,ierr)
+
+!
+! Generic length scale.
+!
+          lvar=lenstr(vname(1,indxGls))
+          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstGls)
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstGls,nf_collective)
+#  endif
+          lvar=lenstr(vname(2,indxGls))
+          ierr=nf_put_att_text (ncid, rstGls, 'long_name',
+     &                     lvar,   vname(2,indxGls)(1:lvar))
+          lvar=lenstr(vname(3,indxGls))
+          ierr=nf_put_att_text (ncid, rstGls, 'units', lvar,
+     &         vname(3,indxGls)(1:lvar))
+          lvar=lenstr(vname(4,indxGls))
+          ierr=nf_put_att_text (ncid, rstGls, 'field', lvar,
+     &         vname(4,indxGls)(1:lvar))
+
+          call nf_add_attribute(ncid, rstGls, indxGls, 5,
+     &         NF_DOUBLE,ierr)
+
 !
 ! Vertical viscosity coefficient.
 !
@@ -474,9 +520,9 @@
         lvar=lenstr(vname(1,indxAkv))
         ierr=nf_def_var (ncid, vname(1,indxAkv)(1:lvar),
      &       NF_DOUBLE, 4, w3dgrd, rstAkv)
-#ifdef NC4PAR
+#  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstAkv,nf_collective)
-#endif
+#  endif
         lvar=lenstr(vname(2,indxAkv))
         ierr=nf_put_att_text (ncid, rstAkv, 'long_name',
      &       lvar,   vname(2,indxAkv)(1:lvar))
@@ -497,9 +543,9 @@
         lvar=lenstr(vname(1,indxAkt))
         ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
      &       NF_DOUBLE, 4, w3dgrd, rstAkt)
-#ifdef NC4PAR
+#  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstAkt,nf_collective)
-#endif
+#  endif
         lvar=lenstr(vname(2,indxAkt))
         ierr=nf_put_att_text (ncid, rstAkt, 'long_name',
      &       lvar,   vname(2,indxAkt)(1:lvar))
@@ -513,7 +559,7 @@
         call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
      &       NF_DOUBLE,ierr)
         
-# ifdef SALINITY
+#  ifdef SALINITY
 !
 ! Vertical diffusion coefficient for salinity.
 !
@@ -521,9 +567,9 @@
           lvar=lenstr(vname(1,indxAks))
           ierr=nf_def_var (ncid, vname(1,indxAks)(1:lvar),
      &         NF_DOUBLE, 4, w3dgrd, rstAks)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstAks,nf_collective)
-#endif
+#   endif
           lvar=lenstr(vname(2,indxAks))
           ierr=nf_put_att_text (ncid, rstAks, 'long_name',
      &                     lvar,   vname(2,indxAks)(1:lvar))
@@ -537,56 +583,57 @@
           call nf_add_attribute(ncid, rstAks, indxAks, 5,
      &         NF_DOUBLE,ierr)
 
-# endif /* SALINITY  */
-
-# if defined GLS_MIXING
-!
-! Turbulent kinetic energy.
-!
-          lvar=lenstr(vname(1,indxTke))
-          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
-     &         NF_DOUBLE, 4, w3dgrd, rstTke)
-#ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstTke,nf_collective)
-#endif
-          lvar=lenstr(vname(2,indxTke))
-          ierr=nf_put_att_text (ncid, rstTke, 'long_name',
-     &                     lvar,   vname(2,indxTke)(1:lvar))
-          lvar=lenstr(vname(3,indxTke))
-          ierr=nf_put_att_text (ncid, rstTke, 'units', lvar,
-     &         vname(3,indxTke)(1:lvar))
-          lvar=lenstr(vname(4,indxTke))
-          ierr=nf_put_att_text (ncid, rstTke, 'field', lvar,
-     &         vname(4,indxTke)(1:lvar))
-
-          call nf_add_attribute(ncid, rstTke, indxTke, 5,
-     &         NF_DOUBLE,ierr)
-
-!
-! Generic length scale.
-!
-          lvar=lenstr(vname(1,indxGls))
-          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
-     &         NF_DOUBLE, 4, w3dgrd, rstGls)
-#ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstGls,nf_collective)
-#endif
-          lvar=lenstr(vname(2,indxGls))
-          ierr=nf_put_att_text (ncid, rstGls, 'long_name',
-     &                     lvar,   vname(2,indxGls)(1:lvar))
-          lvar=lenstr(vname(3,indxGls))
-          ierr=nf_put_att_text (ncid, rstGls, 'units', lvar,
-     &         vname(3,indxGls)(1:lvar))
-          lvar=lenstr(vname(4,indxGls))
-          ierr=nf_put_att_text (ncid, rstGls, 'field', lvar,
-     &         vname(4,indxGls)(1:lvar))
-
-          call nf_add_attribute(ncid, rstGls, indxGls, 5,
-     &         NF_DOUBLE,ierr)
+#  endif /* SALINITY  */
 
 # endif /* GLS_MIXING */
           
-#endif /* LMD_MIXING || GLS_MIXING */
+
+# if defined LMD_MIXING || defined GLS_MIXING
+#  ifdef M3FAST
+!
+!  Bottom stress u component 
+!        
+        lvar=lenstr(vname(1,indxBustr))
+        ierr=nf_def_var (ncid, vname(1,indxBustr)(1:lvar),
+     &       NF_DOUBLE, 3, u2dgrd, rstBustr)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstBustr,nf_collective)
+#   endif
+        lvar=lenstr(vname(2,indxBustr))
+        ierr=nf_put_att_text (ncid, rstBustr, 'long_name',
+     &       lvar,   vname(2,indxBustr)(1:lvar))
+        lvar=lenstr(vname(3,indxBustr))
+        ierr=nf_put_att_text (ncid, rstBustr, 'units', lvar,
+     &       vname(3,indxBustr)(1:lvar))
+        lvar=lenstr(vname(4,indxBustr))
+        ierr=nf_put_att_text (ncid, rstBustr, 'field', lvar,
+     &       vname(4,indxBustr)(1:lvar))
+        
+        call nf_add_attribute(ncid, rstBustr, indxBustr, 5,
+     &       NF_DOUBLE,ierr)
+!
+!  Bottom stress v component 
+!        
+        lvar=lenstr(vname(1,indxBvstr))
+        ierr=nf_def_var (ncid, vname(1,indxBvstr)(1:lvar),
+     &       NF_DOUBLE, 3, v2dgrd, rstBvstr)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstBvstr,nf_collective)
+#   endif
+        lvar=lenstr(vname(2,indxBvstr))
+        ierr=nf_put_att_text (ncid, rstBvstr, 'long_name',
+     &       lvar,   vname(2,indxBvstr)(1:lvar))
+        lvar=lenstr(vname(3,indxBvstr))
+        ierr=nf_put_att_text (ncid, rstBvstr, 'units', lvar,
+     &       vname(3,indxBvstr)(1:lvar))
+        lvar=lenstr(vname(4,indxBvstr))
+        ierr=nf_put_att_text (ncid, rstBvstr, 'field', lvar,
+     &       vname(4,indxBvstr)(1:lvar))
+        
+        call nf_add_attribute(ncid, rstBvstr, indxBvstr, 5,
+     &       NF_DOUBLE,ierr)
+#  endif /* M3FAST */
+# endif
 
 # ifdef EXACT_RESTART
 !
@@ -1170,18 +1217,19 @@
         enddo 
 #endif
 
-#if ( defined LMD_MIXING || defined GLS_MIXING )
-#  if (defined LMD_SKPP || defined GLS_MIXING )
-!     
+#if defined LMD_MIXING 
+!
 ! Depth of planetary boundary layer.
 !
+#  ifdef LMD_SKPP
           lvar=lenstr(vname(1,indxHbl))
           ierr=nf_inq_varid (ncid,vname(1,indxHbl)(1:lvar), rstHbl)
           if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-#  endif /*  LMD_SKPP || GLS_MIXING  */
+#  endif
+          
 #  ifdef LMD_BKPP
 !
 ! Depth of bottom planetary boundary layer.
@@ -1194,36 +1242,7 @@
           endif
 #  endif /*  LMD_BKPP  */
 
-!
-! Vertical viscosity coefficient.
-!
-          lvar=lenstr(vname(1,indxAkv))
-          ierr=nf_inq_varid (ncid,vname(1,indxAkv)(1:lvar), rstAkv)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-!
-! Vertical diffusion coefficient for potential temperature.
-!
-          lvar=lenstr(vname(1,indxAkt))
-          ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), rstAkt)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-          
-# ifdef SALINITY
-!
-! Vertical diffusion coefficient for salinity.
-!
-          lvar=lenstr(vname(1,indxAks))
-          ierr=nf_inq_varid (ncid,vname(1,indxAks)(1:lvar), rstAks)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# endif /* SALINITY  */
+# endif /* LMD_MIXING */
 
 # if defined GLS_MIXING
 !
@@ -1244,10 +1263,62 @@
           write(stdout,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+!
+! Vertical viscosity coefficient.
+!
+          lvar=lenstr(vname(1,indxAkv))
+          ierr=nf_inq_varid (ncid,vname(1,indxAkv)(1:lvar), rstAkv)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! Vertical diffusion coefficient for potential temperature.
+!
+          lvar=lenstr(vname(1,indxAkt))
+          ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), rstAkt)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+          
+#  ifdef SALINITY
+!
+! Vertical diffusion coefficient for salinity.
+!
+          lvar=lenstr(vname(1,indxAks))
+          ierr=nf_inq_varid (ncid,vname(1,indxAks)(1:lvar), rstAks)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  endif /* SALINITY  */
 # endif /* GLS_MIXING */
-          
-#endif /* LMD_MIXING || GLS_MIXING */
-          
+
+
+# ifdef M3FAST
+#  if defined LMD_MIXING || defined GLS_MIXING
+!
+! Bottom stress u component
+!
+          lvar=lenstr(vname(1,indxBustr))
+          ierr=nf_inq_varid (ncid,vname(1,indxBustr)(1:lvar), rstBustr)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxBustr)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+! Bottom stress v component
+!
+          lvar=lenstr(vname(1,indxBvstr))
+          ierr=nf_inq_varid (ncid,vname(1,indxBvstr)(1:lvar), rstBvstr)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxBvstr)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  endif
+# endif
+                    
 # ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.

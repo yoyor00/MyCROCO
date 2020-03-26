@@ -22,6 +22,7 @@
 #include "ncscrum.h"
 #include "ocean2d.h"
 #include "ocean3d.h"
+#include "forces.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
 #if defined GLS_MIXING || defined LMD_MIXING
@@ -48,7 +49,7 @@
 #endif
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), nf_fwrite
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
      &   , ibuff(4)
@@ -56,9 +57,9 @@
 #ifdef SOLVE3D
      &      , itrc
 #endif
-#  ifdef SEDIMENT
+#ifdef SEDIMENT
      &      , indxWrk
-#  endif
+#endif
 #ifdef FLOATS
       integer i, j, startTinfo(3), starttrack(4)
      &  ,countTinfo(3), counttrack(4), level
@@ -123,14 +124,14 @@
         goto 99                                           !--> ERROR
       endif
 
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
-#ifdef AVERAGES
+# ifdef AVERAGES
       ibuff(6)=nrecsurf_avg
-#else
+# else
       ibuff(6)=0
-#endif
+# endif
       start(1)=1
       start(2)=record
       count(2)=1
@@ -224,28 +225,28 @@
         endif
       enddo
 
-#if ( defined LMD_MIXING || defined GLS_MIXING )
-# if (defined LMD_SKPP || defined GLS_MIXING )
-!     
+# if defined LMD_MIXING 
+!
 !     Write out depth of planetary boundary layer (m).
 !
-#  ifdef LMD_SKPP2005
-        ierr=nf_fwrite(hbls(START_2D_ARRAY,nstp), ncidrst,
+#  ifdef LMD_SKPP
+#   ifdef LMD_SKPP2005
+        ierr=nf_fwrite(hbls(START_2D_ARRAY,3-nstp), ncidrst,
      &                             rstHbl, record, r2dvar)
-#  else
-        ierr=nf_fwrite(hbl(START_2D_ARRAY), ncidrst,
-     &                             rstHbl, record, r2dvar)
-#  endif /* LMD_SKPP2005  */
+!#   else
+!        ierr=nf_fwrite(hbl(START_2D_ARRAY), ncidrst,
+!     &                             rstHbl, record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxHbl))
           write(stdout,1) vname(1,indxHbl)(1:lvar), record,
      &         ierr MYID
           goto 99               !--> ERROR
         endif
+#   endif /* LMD_SKPP2005  */
+#  endif /* LMD_SKPP  */  
         
-# endif /* defined LMD_SKPP || defined GLS_MIXING  */
-        
-# if defined LMD_BKPP
+#  if defined LMD_BKPP
+#   if defined LMD_BKPP2005
 !
 !     Write out depth of bottom planetary boundary layer (m).
 !
@@ -257,46 +258,11 @@
      &                    ierr MYID
             goto 99                                         !--> ERROR
         endif
-# endif /* LMD_BKPP  */         
+#   endif /* LMD_BKPP2005  */
+#  endif /* LMD_BKPP  */         
+# endif /* LMD_MIXING */
 
-!
-! Vertical viscosity coefficient.
-!
-        ierr=nf_fwrite(Akv(START_2D_ARRAY,0), ncidrst,
-     &                             rstAkv, record, w3dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxAkv))
-          write(stdout,1) vname(1,indxAkv)(1:lvar), record,
-     &                    ierr MYID
-          goto 99                                         !--> ERROR
-        endif
-!
-! Write out vertical diffusion coefficient for potential temperature.
-!
-        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
-     &                             rstAkt, record, w3dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxAkt))
-          write(stdout,1) vname(1,indxAkt)(1:lvar), record,
-     &                    ierr MYID
-          goto 99                                         !--> ERROR
-        endif   
-# ifdef SALINITY
-!
-! Write out vertical diffusion coefficient for potential temperature.
-!
-        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,isalt), ncidrst,
-     &                             rstAks, record, w3dvar)
-        if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxAks))
-          write(stdout,1) vname(1,indxAks)(1:lvar), record,
-     &                    ierr MYID
-          goto 99                                         !--> ERROR
-        endif       
-# endif /* SALINITY  */       
-#endif  /* LMD_MIXING || GLS_MIXING */
-
-#if defined GLS_MIXING
+# if defined GLS_MIXING
 !
 ! Turbulent kinetic energy.
 !
@@ -319,10 +285,73 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
-        
-#endif  /* GLS_MIXING  */
+!
+! Vertical viscosity coefficient.
+!
+        ierr=nf_fwrite(Akv(START_2D_ARRAY,0), ncidrst,
+     &                             rstAkv, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkv))
+          write(stdout,1) vname(1,indxAkv)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
+! Write out vertical diffusion coefficient for potential temperature.
+!
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
+     &                             rstAkt, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkt))
+          write(stdout,1) vname(1,indxAkt)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif   
+        write(*,*)  'Akt at time', iic
+        write(*,*) 'Akt in rst', Akt(152,31,:,itemp)
+#  ifdef SALINITY
+!
+! Write out vertical diffusion coefficient for potential temperature.
+!
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,isalt), ncidrst,
+     &                             rstAks, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAks))
+          write(stdout,1) vname(1,indxAks)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif       
+#  endif /* SALINITY  */       
+# endif  /* GLS_MIXING  */
 
-#ifdef EXACT_RESTART
+# if defined LMD_MIXING || defined GLS_MIXING
+#  if defined M3FAST
+!
+! Write out bottom stress u component 
+!
+        ierr=nf_fwrite(bustr(START_2D_ARRAY), ncidrst,
+     &                             rstBustr, record, u2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBustr))
+          write(stdout,1) vname(1,indxBustr)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif       
+!
+! Write out bottom stress v component 
+!
+        ierr=nf_fwrite(bvstr(START_2D_ARRAY), ncidrst,
+     &                             rstBvstr, record, v2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBvstr))
+          write(stdout,1) vname(1,indxBvstr)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif       
+#  endif
+# endif
+
+# ifdef EXACT_RESTART
 !
 ! Write out forcing for barotropic equations in XI-direction.
 !
@@ -348,7 +377,7 @@
             goto 99                                         !--> ERROR
           endif
           
-# ifdef M3FAST
+#  ifdef M3FAST
 !
 ! 3D rhs for M3FAST in XI-direction.
 !
@@ -430,9 +459,9 @@
          goto 99                                           !--> ERROR
        endif
 
-# endif  /* M3FAST */
+#  endif  /* M3FAST */
 
-# ifdef TS_MIX_ISO_FILT
+#  ifdef TS_MIX_ISO_FILT
 !
 ! density gradients for use in t3dmix
 !
@@ -459,8 +488,8 @@
          goto 99                                           !--> ERROR
        endif
        
-# endif /* TS_MIX_ISO_FILT */
-#endif /* EXACT_RESTART */
+#  endif /* TS_MIX_ISO_FILT */
+# endif /* EXACT_RESTART */
        
 # ifdef SEDIMENT
 !

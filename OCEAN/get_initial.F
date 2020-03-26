@@ -19,6 +19,7 @@
 # include "ncscrum.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
+# include "forces.h"
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
@@ -34,13 +35,7 @@
 #ifdef NBQ
 # include "grid.h"
 #endif
-
-!======================================================
-! Look for Hbl, Akt, Akv, ... (J. Gula)
-!======================================================
-# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 # include "mixing.h"
-# endif
 
 # if defined EXACT_RESTART
 # include "coupling.h"
@@ -299,7 +294,7 @@
           nrecavg=ibuff(4)
 #endif
 
-#undef RESTART_DIAGS
+c -- #undef RESTART_DIAGS
 #if defined RESTART_DIAGS && ! defined XIOS
 
 
@@ -321,7 +316,7 @@
           nrecdiags_pv_avg=ibuff(4)
 # endif
 #endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
           nrecdiags_eddy=ibuff(3)
 # ifdef AVERAGES
           nrecdiags_eddy_avg=ibuff(4)
@@ -711,23 +706,20 @@
       enddo
 # endif /* SEDIMENT */
 
-!======================================================
-! Look for Hbl, Akt, Akv, ... (J. Gula)
-!======================================================
-
-# if defined LMD_SKPP || defined GLS_MIXING
+# ifdef LMD_MIXING
 !
 !  hbl
 !
+#  ifdef LMD_SKPP
+#   ifdef LMD_SKPP2005
       lvar=lenstr(vname(1,indxHbl))
       ierr=nf_inq_varid (ncid, vname(1,indxHbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
-#  ifdef LMD_SKPP2005
         ierr=nf_fread (hbls(START_2D_ARRAY,1), ncid, varid,
-#  else
-        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
-#  endif
-     &                                         record, r2dvar)
+!#   else
+!        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
+!#   endif
+     &                                         1, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
      &                                , record, ininame(1:lstr)
@@ -738,7 +730,94 @@
         MPI_master_only write(stdout,4) vname(1,indxHbl)(1:lvar)
      &                                , ininame(1:lstr)
       endif
+#   endif /* LMD_SKPP2005 */
+#  endif/* LMD_SKPP */
 
+#  ifdef LMD_BKPP
+#   ifdef LMD_BKPP2005
+!
+!  hbbl
+!
+      lvar=lenstr(vname(1,indxHbbl))
+      ierr=nf_inq_varid (ncid, vname(1,indxHbbl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
+     &                                           1, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
+     &         , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+
+        MPI_master_only write(stdout,4) vname(1,indxHbbl)(1:lvar)
+     &                                  , ininame(1:lstr)
+      endif
+      
+#   endif /* LMD_BKPP2005 */
+#  endif /* LMD_BKPP */
+# endif /* LMD_MIXING */
+      
+# ifdef GLS_MIXING
+!
+!  turbulent kinetic energy.
+!
+        lvar=lenstr(vname(1,indxTke))
+        ierr=nf_inq_varid (ncid, vname(1,indxTke)(1:lvar),
+     &                                                    varid)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,itke), ncid,
+     &                                    varid, record, w3dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2) vname(1,indxTke)(1:lvar)
+     &                , record, ininame(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        else
+          
+        MPI_master_only write(stdout,4) vname(1,indxTke)(1:lvar)
+     &                                  , ininame(1:lstr)          
+      endif
+      
+!
+!  generic length scale.
+!
+        lvar=lenstr(vname(1,indxGls))
+        ierr=nf_inq_varid (ncid, vname(1,indxGls)(1:lvar),
+     &                                                    varid)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,igls), ncid,
+     &                                    varid, record, w3dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2) vname(1,indxGls)(1:lvar)
+     &                , record, ininame(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        else
+          
+        MPI_master_only write(stdout,4) vname(1,indxGls)(1:lvar)
+     &                                  , ininame(1:lstr)          
+      endif
+      
+!
+!  vertical mixing length scale.
+!
+        lvar=lenstr(vname(1,indxLsc))
+        ierr=nf_inq_varid (ncid, vname(1,indxLsc)(1:lvar),
+     &                                                    varid)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_fread (Lscale(START_2D_ARRAY,0), ncid,
+     &                                    varid, record, w3dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2) vname(1,indxLsc)(1:lvar)
+     &                , record, ininame(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        else
+          
+        MPI_master_only write(stdout,4) vname(1,indxLsc)(1:lvar)
+     &                                  , ininame(1:lstr)          
+        endif
 !
 !  vertical viscosity coefficient
 !
@@ -801,93 +880,49 @@
         endif
         
 #  endif /* SALINITY */
-# endif
+# endif  /* GLS_MIXING */
 
-# ifdef LMD_BKPP
+# if defined LMD_MIXING || defined GLS_MIXING  
+#  if defined M3FAST
 !
-!  hbbl
+!  bustr
 !
-      lvar=lenstr(vname(1,indxHbbl))
-      ierr=nf_inq_varid (ncid, vname(1,indxHbbl)(1:lvar), varid)
+      lvar=lenstr(vname(1,indxBustr))
+      ierr=nf_inq_varid (ncid, vname(1,indxBustr)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
-     &                                           record, r2dvar)
+      ierr=nf_fread (bustr(START_2D_ARRAY), ncid,
+     &                                     varid, record, u2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
-     &         , record, ininame(1:lstr)
+         MPI_master_only write(stdout,2) vname(1,indxBustr)(1:lvar)
+     &                                , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-
-        MPI_master_only write(stdout,4) vname(1,indxHbbl)(1:lvar)
+        
+        MPI_master_only write(stdout,5) vname(1,indxBustr)(1:lvar)
      &                                  , ininame(1:lstr)
       endif
-      
-# endif
-      
-# ifdef GLS_MIXING
+!  
+!  bvstr
 !
-!  turbulent kinetic energy.
-!
-        lvar=lenstr(vname(1,indxTke))
-        ierr=nf_inq_varid (ncid, vname(1,indxTke)(1:lvar),
-     &                                                    varid)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,itke), ncid,
-     &                                    varid, record, w3dvar)
-          if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxTke)(1:lvar)
-     &                , record, ininame(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        else
-          
-        MPI_master_only write(stdout,4) vname(1,indxTke)(1:lvar)
-     &                                  , ininame(1:lstr)          
-      endif
-      
-!
-!  generic length scale.
-!
-        lvar=lenstr(vname(1,indxGls))
-        ierr=nf_inq_varid (ncid, vname(1,indxGls)(1:lvar),
-     &                                                    varid)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,igls), ncid,
-     &                                    varid, record, w3dvar)
-          if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxGls)(1:lvar)
-     &                , record, ininame(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        else
-          
-        MPI_master_only write(stdout,4) vname(1,indxGls)(1:lvar)
-     &                                  , ininame(1:lstr)          
-      endif
-      
-!
-!  vertical mixing length scale.
-!
-        lvar=lenstr(vname(1,indxLsc))
-        ierr=nf_inq_varid (ncid, vname(1,indxLsc)(1:lvar),
-     &                                                    varid)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (Lscale(START_2D_ARRAY,0), ncid,
-     &                                    varid, record, w3dvar)
-          if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxLsc)(1:lvar)
-     &                , record, ininame(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        else
-          
-        MPI_master_only write(stdout,4) vname(1,indxLsc)(1:lvar)
-     &                                  , ininame(1:lstr)          
+       lvar=lenstr(vname(1,indxBvstr))
+       ierr=nf_inq_varid (ncid, vname(1,indxBvstr)(1:lvar), varid)
+       if (ierr .eq. nf_noerr) then
+       ierr=nf_fread (bvstr(START_2D_ARRAY), ncid,
+     &                                     varid, record, v2dvar)
+         if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname(1,indxBvstr)(1:lvar)
+     &                                , record, ininame(1:lstr)
+           goto 99                                        !--> ERROR
+         endif
+       else
+         
+         MPI_master_only write(stdout,5)  vname(1,indxBvstr)(1:lvar)
+     &                        , ininame(1:lstr)
         endif
+#  endif        
 # endif
-        
-        
+                
 # if defined EXACT_RESTART
 !
 !  rufrc
@@ -926,7 +961,7 @@
      &                        , ininame(1:lstr)
         endif
        
-# ifdef M3FAST
+#  ifdef M3FAST
 !
 ! ru_nbq.
 !
@@ -1046,9 +1081,9 @@
      &                          ,ininame(1:lstr)
       endif
       
-# endif  /* M3FAST */
+#  endif  /* M3FAST */
 
-# ifdef TS_MIX_ISO_FILT
+#  ifdef TS_MIX_ISO_FILT
 !
 ! density gradients for use in t3dmix
 !
