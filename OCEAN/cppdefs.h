@@ -281,6 +281,9 @@
 */
 # undef  DIAGNOSTICS_TS
 # undef  DIAGNOSTICS_UV
+
+# define RESTART_DIAGS
+
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD

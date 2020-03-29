@@ -423,6 +423,36 @@ CR      write(stdout,'(1x,A,I3)') 'indxBostr =',indxBostr
 #endif
       vname(7,indxBostr)='                                        '
 
+#ifdef M3FAST
+# if defined LMD_MIXING || defined GLS_MIXING
+CR      write(stdout,'(1x,A,I3)') 'indxBustr =',indxBustr
+      vname(1,indxBustr)='bustr                                   '
+      vname(2,indxBustr)='Kinematic u bottom stress component     '
+      vname(3,indxBustr)='N/m2                                    '
+      vname(4,indxBustr)='                                        '
+      vname(5,indxBustr)='                                        '
+#  ifdef SPHERICAL
+      vname(6,indxBustr)='lat_u lon_u                             '
+!#  else
+!      vname(6,indxBustr)='x_rho y_rho                            '
+#  endif
+      vname(7,indxBustr)='                                        '
+
+CR      write(stdout,'(1x,A,I3)') 'indxBvstr =',indxBvstr
+      vname(1,indxBvstr)='bvstr                                   '
+      vname(2,indxBvstr)='Kinematic v bottom stress component     '
+      vname(3,indxBvstr)='N/m2                                    '
+      vname(4,indxBvstr)='                                        '
+      vname(5,indxBvstr)='                                        '
+#  ifdef SPHERICAL
+      vname(6,indxBvstr)='lat_v lon_v                             '
+!#  else
+!      vname(6,indxBvstr)='x_rho y_rho                            '
+#  endif
+      vname(7,indxBvstr)='                                        '
+# endif
+#endif
+
 CR      write(stdout,'(1x,A,I3)') 'indxWstr=',indxWstr
       vname(1,indxWstr)='wstr                                     '
       vname(2,indxWstr)='Kinematic wind stress                    '
@@ -1761,7 +1791,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxTVmix+itrc-1)
 #  endif
 # endif
 
-#if defined BHFLUX || defined ANA_BTFLUX
+#if defined BHFLUX
 CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
       vname(1,indxBhflx)='bhflux                                 '
       vname(2,indxBhflx)='bottom net heat flux                   '
@@ -1770,7 +1800,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
       vname(5,indxBhflx)='                                       '
       vname(6,indxBhflx)='lat_rho lon_rho                        '
 #endif
-#if (defined BWFLUX || defined ANA_BSFLUX) && defined SALINTY
+#if defined BWFLUX && defined SALINTY
 CR      write(stdout,'(1x,A,I3)') 'indxBwflx =',indxBwflx
       vname(1,indxBwflx)='bwflux                                 '
       vname(2,indxBwflx)='bottom freshwater flux (E-P)          '

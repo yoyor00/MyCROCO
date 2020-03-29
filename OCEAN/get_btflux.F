@@ -10,8 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && (!defined ANA_BTFLUX || !defined ANA_BSFLUX)
-
+#if defined SOLVE3D && ( defined BHFLUX || defined BWFLUX )
       subroutine get_btflux (itrc)
 !
 !  Read in point or grided bottom hydrothermal heat flux at the appropriate

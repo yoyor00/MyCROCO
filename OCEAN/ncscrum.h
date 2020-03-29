@@ -45,6 +45,7 @@
 !
 ! indxSSH         observed sea surface height (from climatology)
 ! indxSUSTR,indxSVSTR  surface U-, V-momentum stress (wind forcing)
+! indxBUSTR,indxBVSTR  bottom  U-, V-momentum stress 
 ! indxShflx       net surface heat flux.
 ! indxShflx_rsw   shortwave radiation flux
 ! indxSwflx       surface fresh water flux
@@ -550,7 +551,7 @@
       parameter (indxbvf=indxSSH+1)
 #endif
 
-# ifdef EXACT_RESTART
+#ifdef EXACT_RESTART
       integer indxrufrc
       parameter (indxrufrc=indxSSH+2)
       integer indxrvfrc
@@ -569,35 +570,42 @@
      &           indxrv_nbq_avg2=indxru_nbq_avg2+1,
      &           indxqdmu_nbq=indxrv_nbq_avg2+1,
      &           indxqdmv_nbq=indxqdmu_nbq+1)
-# ifdef TS_MIX_ISO_FILT
+#  ifdef TS_MIX_ISO_FILT
       parameter (indxdRdx=indxqdmv_nbq+1,
      &           indxdRde=indxdRdx+1)
       parameter (indxSUSTR=indxdRde+1,
      &           indxSVSTR=indxdRde+2)
-# else
+#  else
       parameter (indxSUSTR=indxqdmv_nbq+1,
      &           indxSVSTR=indxqdmv_nbq+2)
-# endif
+#  endif
 # else
-# ifdef TS_MIX_ISO_FILT
+#  ifdef TS_MIX_ISO_FILT
       parameter (indxdRdx=indxrvfrc+1,
      &           indxdRde=indxdRdx+1)
       parameter (indxSUSTR=indxdRde+1,
      &           indxSVSTR=indxdRde+2)
-# else
+#  else
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
+#  endif
 # endif
-# endif
-# else
+#else     
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
-# endif
+#endif
+#ifdef M3FAST
+#  if defined LMD_MIXING || defined GLS_MIXING
+      integer indxBUSTR, indxBVSTR
+      parameter (indxBUSTR=indxSUSTR+2,
+     &           indxBVSTR=indxSUSTR+3)
+#  endif      
+#endif
   
       integer indxTime2
-      parameter (indxTime2=indxSUSTR+2)
+      parameter (indxTime2=indxSUSTR+4)
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
-      parameter (indxShflx=indxSUSTR+3)
+      parameter (indxShflx=indxSUSTR+5)
 # ifdef SALINITY
       integer indxSwflx
       parameter (indxSwflx=indxShflx+1, indxShflx_rsw=indxShflx+2)
@@ -629,17 +637,17 @@
 #endif /* SOLVE3D */
 
       integer indxWstr
-      parameter (indxWstr=indxSUSTR+21)
+      parameter (indxWstr=indxSUSTR+23)
       integer indxUWstr
-      parameter (indxUWstr=indxSUSTR+22)
+      parameter (indxUWstr=indxSUSTR+24)
       integer indxVWstr
-      parameter (indxVWstr=indxSUSTR+23)
+      parameter (indxVWstr=indxSUSTR+25)
       integer indxBostr
-      parameter (indxBostr=indxSUSTR+24)
+      parameter (indxBostr=indxSUSTR+26)
 #ifdef SOLVE3D
 # ifdef SEDIMENT
       integer indxSed, indxBTHK, indxBPOR
-      parameter (indxSed=indxSUSTR+28,
+      parameter (indxSed=indxSUSTR+30,
      &           indxBTHK=indxSed, indxBPOR=indxSed+1)
       integer, dimension(NST) :: indxBFRA
      & =(/(iloop,iloop=indxSed+2,indxSed+1+NST)/)
@@ -665,7 +673,7 @@
 # endif
 # ifdef SST_SKIN
       integer indxSST_skin
-      parameter (indxSST_skin=indxSUSTR+31)
+      parameter (indxSST_skin=indxSUSTR+33)
 # endif 
 #endif /* SOLVE3D */
 
@@ -673,9 +681,9 @@
       integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot, 
      &        indxZbapp, indxBostrw
 # ifdef SEDIMENT 
-      parameter (indxBBL=indxSUSTR+32+6*NST,
+      parameter (indxBBL=indxSUSTR+34+6*NST,
 # else
-      parameter (indxBBL=indxSUSTR+32, 
+      parameter (indxBBL=indxSUSTR+35, 
 # endif
      &           indxAbed  =indxBBL,    indxHrip  =indxAbed+1,
      &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3, 
@@ -694,7 +702,7 @@
 # endif
 #else /* BBL */
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
-      parameter (indxWWA=indxSUSTR+32, indxWWD=indxWWA+1, 
+      parameter (indxWWA=indxSUSTR+34, indxWWD=indxWWA+1, 
      &           indxWWP=indxWWA+2
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
@@ -706,9 +714,9 @@
 #if defined MRL_WCI || defined OW_COUPLING
       integer indxSUP, indxUST2D,indxVST2D
 # ifdef SEDIMENT 
-      parameter (indxSUP=indxSUSTR+44+6*NST,
+      parameter (indxSUP=indxSUSTR+46+6*NST,
 # else
-      parameter (indxSUP  =indxSUSTR+44,
+      parameter (indxSUP  =indxSUSTR+47,
 # endif      
      &           indxUST2D =indxSUP+1, indxVST2D=indxSUP+2)
 # ifdef SOLVE3D
@@ -738,19 +746,24 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+90)
+      parameter (indxQBAR=indxSUSTR+92)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+91)
+      parameter (indxTsrc=indxSUSTR+93)
 # endif
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+130)
+      parameter (indxShflx_rswbio=indxSUSTR+94)
 #endif
-      integer indxBhflx,indxBwflx
+#if defined BHFLUX
+      integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
+#endif
+#if defined BWFLUX  && defined SALINTY
+      integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
+#endif
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
@@ -885,24 +898,27 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
-#if defined LMD_SKPP || defined GLS_MIXING
+# if defined LMD_SKPP
       integer rstHbl
-#ifdef LMD_BKPP
+# endif
+# ifdef LMD_BKPP
       integer rstHbbl
-#endif
-#endif
-# if ( defined LMD_MIXING || defined GLS_MIXING )
+# endif
+# if defined GLS_MIXING
       integer rstAkv,rstAkt
-# if defined SALINITY
+#  if defined SALINITY
       integer rstAks
-# endif
-# endif
-#ifdef GLS_MIXING
+#  endif
       integer rstTke,rstGls
-#endif
+# endif
+# ifdef M3FAST
+#  if defined LMD_MIXING || defined GLS_MIXING
+      integer rstBustr, rstBvstr
+#  endif       
+# endif      
 # ifdef SEDIMENT
       integer rstSed(NST+2)
-#endif
+# endif
 #endif
 #ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
@@ -1345,21 +1361,24 @@
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
-#if defined LMD_SKPP || defined GLS_MIXING
+# if defined LMD_SKPP 
      &      , rstHbl
-#ifdef LMD_BKPP
-     &      , rstHbbl
-#endif
-#endif
-#if defined GLS_MIXING || defined LMD_MIXING 
-     &      , rstAkv,rstAkt
-# if defined SALINITY
-     &      , rstAks
 # endif
-#endif
-#ifdef GLS_MIXING
+# ifdef LMD_BKPP
+     &      , rstHbbl
+# endif
+# if defined GLS_MIXING
+     &      , rstAkv,rstAkt
+#  if defined SALINITY
+     &      , rstAks
+#  endif
      &      , rstTke,rstGls
-#endif
+# endif
+# ifdef M3FAST
+#  if defined GLS_MIXING || defined LMD_MIXING
+     &      , rstBustr,rstBvstr
+#  endif      
+# endif     
 #ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
 # ifdef M3FAST

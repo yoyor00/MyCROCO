@@ -143,8 +143,10 @@
 #  define vidShflx_lat hisShflx_lat
 #  define vidShflx_sen hisShflx_sen
 # endif
+#ifdef BHFLUX
 # define vidBhflx hisBhflx
-# ifdef SALINITY
+#endif
+# if defined SALINITY && defined BWFLUX
 #  define vidBwflx hisBwflx
 # endif
 # ifdef SST_SKIN
@@ -232,8 +234,10 @@
 #  define vidShflx_lat avgShflx_lat
 #  define vidShflx_sen avgShflx_sen
 # endif
+#ifdef BHFLUX
 # define vidBhflx avgBhflx
-#ifdef SALINITY
+#endif
+#if defined BWFLUX && defined SALINITY
 # define vidBwflx avgBwflx
 #endif
 # ifdef SST_SKIN
@@ -1371,6 +1375,7 @@
         endif
 # endif
 
+# ifdef BHFLUX
 !
 ! Bhflx [W/m2]
 !
@@ -1399,10 +1404,12 @@
      &                          NF_FOUT, ierr)
 
         endif
-!
+# endif
+        
+# if defined BWFLUX && defined SALINITY
+!     
 ! Bwflx [cm/day]
-!
-# ifdef SALINITY
+!        
         if (wrt(indxBwflx)) then
           lvar=lenstr(vname(1,indxBwflx))
           ierr=nf_def_var (ncid, vname(1,indxBwflx)(1:lvar),
@@ -2597,7 +2604,8 @@
             goto 99                                       !--> ERROR
           endif
         endif
-!
+#ifdef BHFLUX
+!     
 ! Bhflx     Bottom net heat flux [W/m2]
 !
         if (wrt(indxBhflx)) then
@@ -2609,6 +2617,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
+#endif
         
 #ifdef SALINITY
 !
@@ -2623,7 +2632,8 @@
             goto 99                                       !--> ERROR
           endif
         endif
-!
+# ifdef BWFLUX
+!     
 ! Bwflx    Freshwater at bottom flux [cm/day]
 !
         if (wrt(indxBwflx)) then
@@ -2635,6 +2645,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
+# endif
 #endif
 !
 ! Shflx     Surface shortwave radiation [W/m2]
@@ -3057,10 +3068,12 @@
 # undef vidShflx_lat
 # undef vidShflx_sen
 #endif
-#undef vidBhflx
-# ifdef SALINITY
+#ifdef BHFLUX
+# undef vidBhflx
+#endif
+#if defined BWFLUX & defined SALINITY
 #  undef vidBwflx
-# endif
+#endif
 #undef vidSST_skin
 #ifdef WAVE_IO
 # undef vidWAVE

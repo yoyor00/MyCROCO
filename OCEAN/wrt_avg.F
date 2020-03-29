@@ -176,7 +176,7 @@ CR      write(*,*) 'wrt_avg:  Wstr' MYID
 !     
       if (wrtavg(indxUWstr)) then
          ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, u2dvar)
-         if (ierr .ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxUWstr))
             write(stdout,1) vname(1,indxUWstr)(1:lvar), record, ierr
      &           MYID
@@ -407,6 +407,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
        endif
+#  ifdef BHFLUX
 !     
 !     Write out bottom heat flux 
 !     
@@ -425,7 +426,8 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
           goto 99               !--> ERROR
         endif
 CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID 
-      endif  
+      endif
+#  endif
 #  ifdef SALINITY      
 !
 !     Write out surface E-P flux [cm/d]
@@ -447,7 +449,8 @@ CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
        endif
-!
+#   ifdef BWFLUX
+!     
 !     Write out bottom fresh water flux [cm/d]
 !     
       if (wrtavg(indxBwflx)) then
@@ -467,6 +470,7 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
          endif
 CR      write(*,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
        endif
+#   endif
 #  endif
 !     Write out solar radiation flux [W/m2]
 !     
