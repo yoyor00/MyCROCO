@@ -66,16 +66,18 @@
 !
       if (ilc.gt.ntsdia_avg) then
 
-        if (mod(ilc-1,nwrtdia_avg).eq.1) then
+        if (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.1) then
           cff =1.0
           cff1=0.0
-        elseif (mod(ilc-1,nwrtdia_avg).gt.1) then
+        elseif (mod(ilc-ntsdia_avg,nwrtdia_avg).gt.1) then
           cff =1.0
           cff1=1.0
-        elseif (mod(ilc-1,nwrtdia_avg).eq.0) then
+        elseif (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.0) then
           cff =1.0/float(nwrtdia_avg)
           cff1=1.0
-          if (ZEROTH_TILE) timedia_avg=timedia_avg+float(nwrtdia_avg)*dt
+          if (ZEROTH_TILE) then
+            timedia_avg=timedia_avg+float(nwrtdia_avg)*dt
+          endif
         endif
 
         do itrc=1,NT

@@ -419,14 +419,14 @@
 
 #ifdef AVERAGES
 
-      if (tindx.eq.1) then
-        if (ntstart.gt.1) then
-          MPI_master_only write(stdout,'(/4x,A,I5,A,I5/)')
-     &         'Adjusting averaging phase ntsavg =',  ntsavg,
-     &                          ' ---> ', ntsavg + ntstart-1
-          ntsavg=ntsavg + ntstart-1
-        endif
-      endif
+!      if (tindx.eq.1) then
+!        if (ntstart.gt.1) then
+!          MPI_master_only write(stdout,'(/4x,A,I5,A,I5/)')
+!     &         'Adjusting averaging phase ntsavg =',  ntsavg,
+!     &                          ' ---> ', ntsavg + ntstart-1
+!          ntsavg=ntsavg + ntstart-1
+!        endif
+!      endif
 
 #ifdef DIAGNOSTICS_UV
           ntsdiaM_avg = ntsavg

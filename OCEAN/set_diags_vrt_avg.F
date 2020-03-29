@@ -52,20 +52,20 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
-      ilc=1+iic-ntsdiags_vrt_avg  ! number of time step since restart
+      ilc=1+iic-ntstart  ! number of time step since restart
 !
 ! calculation of averaged fluxes will only be performed if ntsdiags_vrt_avg
 ! is a positive number
 !
 
 
-      if (iic.gt.ntsdiags_vrt_avg) then
-        if (mod(iic-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.1) then
+      if (ilc.gt.ntsdiags_vrt_avg) then
+        if (mod(ilc-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.1) then
 
           if (ZEROTH_TILE) then
             timediags_vrt_avg=time
       MPI_master_only write(*,*) 'started averaging vrt',iic,
-     &                       ntsdiags_vrt_avg,nwrtdiags_vrt_avg
+     &                    ntsdiags_vrt_avg,nwrtdiags_vrt_avg
           endif
 
 
@@ -145,7 +145,7 @@
           enddo
 # endif
 
-        elseif (mod(iic-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).gt.1) then
+        elseif (mod(ilc-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).gt.1) then
 
           if (ZEROTH_TILE) timediags_vrt_avg=timediags_vrt_avg+time
 
@@ -251,7 +251,7 @@
           enddo
 # endif
 
-        elseif (mod(iic-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.0) then
+        elseif (mod(ilc-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.0) then
 
           cff=1./float(nwrtdiags_vrt_avg)
           if (ZEROTH_TILE) then
@@ -363,7 +363,7 @@
 # endif
 
         endif
-      endif       !<-- iic.gt.ntsavg
+      endif       !<-- ilc.gt.ntsavg
 
       return
       end
