@@ -307,8 +307,6 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif   
-        write(*,*)  'Akt at time', iic
-        write(*,*) 'Akt in rst', Akt(152,31,:,itemp)
 #  ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
