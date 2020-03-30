@@ -813,7 +813,7 @@
           endif
         else
           
-        MPI_master_only write(stdout,4) vname(1,indxLsc)(1:lvar)
+        MPI_master_only write(stdout,3) vname(1,indxLsc)(1:lvar)
      &                                  , ininame(1:lstr)          
         endif
 !
@@ -880,7 +880,7 @@
 #  endif /* SALINITY */
 # endif  /* GLS_MIXING */
 
-# if defined LMD_MIXING || defined GLS_MIXING  
+# if defined LMD_MIXING
 #  if defined M3FAST
 !
 !  bustr

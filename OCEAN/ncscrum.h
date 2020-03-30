@@ -594,7 +594,7 @@
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
 #endif
 #ifdef M3FAST
-#  if defined LMD_MIXING || defined GLS_MIXING
+#  if defined LMD_MIXING
       integer indxBUSTR, indxBVSTR
       parameter (indxBUSTR=indxSUSTR+2,
      &           indxBVSTR=indxSUSTR+3)

@@ -1096,6 +1096,7 @@ c**       ierr=nf_create (ncname0(1:lstr), nf_clobber, nctarg)
                 write(*,'(8x,2A,I3,1x,3A)') 'Assembly partitioned ',
      &                     'array type', part_type(i),  'name = ''',
      &                                     varname(i)(1:lvar), ''''
+              !!gc  bfr_out=0.
                 do node=0,nnodes-1
                   var_mask=.true.
                   if (part_type(i).eq.1 .and. lvar.gt.6) then 

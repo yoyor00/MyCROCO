@@ -322,7 +322,7 @@
 #  endif /* SALINITY  */       
 # endif  /* GLS_MIXING  */
 
-# if defined LMD_MIXING || defined GLS_MIXING
+# if defined LMD_MIXING
 #  if defined M3FAST
 !
 ! Write out bottom stress u component 

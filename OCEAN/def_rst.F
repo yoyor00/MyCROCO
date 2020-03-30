@@ -588,7 +588,7 @@
 # endif /* GLS_MIXING */
           
 
-# if defined LMD_MIXING || defined GLS_MIXING
+# if defined LMD_MIXING
 #  ifdef M3FAST
 !
 !  Bottom stress u component 
@@ -1297,7 +1297,7 @@
 
 
 # ifdef M3FAST
-#  if defined LMD_MIXING || defined GLS_MIXING
+#  if defined LMD_MIXING
 !
 ! Bottom stress u component
 !
