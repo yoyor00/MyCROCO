@@ -1281,19 +1281,7 @@
 !
       if (total_rec.le.1) call wrt_grid (ncid, ncname, lstr)
 #endif
-#if defined AVRH
-!
-! Set initial average timediaM.
-! --- ------- ------- --------
-!
-      if (ntsdiaM_avg.eq.1) then
-        timediaM_avg=time-0.5*float(nwrtdiaM_avg)*dt
-      else
-        timediaM_avg=time-0.5*float(nwrtdiaM_avg)
-     &                       *dt+float(ntsdiaM_avg)*dt
-      endif
-#endif
-!
+
   11  format(/' DEF_DIAGSM - unable to create diag file: ',a)
   20  format(/' DEF_DIAGSM - error while writing variable: ',a,
      &        /,15x,'into diag  file: ',a)

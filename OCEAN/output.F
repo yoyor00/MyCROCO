@@ -83,14 +83,14 @@
 #if defined DIAGNOSTICS_UV
      &    .or. (mod(ilc-1,nwrtdiaM).eq.0 .and. wrtdiaM(3))
 # ifdef AVERAGES
-     &    .or. (mod(ilc-1,nwrtdiaM_avg).eq.0 .and. wrtdiaM_avg(3))
+     &    .or. (mod(ilc-ntsdiaM_avg,nwrtdiaM_avg).eq.0 .and. wrtdiaM_avg(3))
 # endif
 #endif
 #if defined DIAGNOSTICS_VRT
      &    .or. (mod(iic-ntstart,nwrtdiags_vrt).eq.0
      &    .and. wrtdiags_vrt(indxTime))
 # ifdef AVERAGES
-     &    .or. (mod(iic-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.0
+     &    .or. (mod(ilc-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.0
      &    .and. wrtdiags_vrt_avg(indxTime))
 # endif
 # endif
@@ -98,7 +98,7 @@
      &    .or. (mod(iic-ntstart,nwrtdiags_ek).eq.0
      &    .and. wrtdiags_ek(indxTime))
 # ifdef AVERAGES
-     &    .or. (mod(iic-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.0
+     &    .or. (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.0
      &    .and. wrtdiags_ek_avg(indxTime))
 # endif
 # endif
@@ -106,13 +106,13 @@
      &    .or. (mod(iic-ntstart,nwrtdiags_pv).eq.0
      &    .and. wrtdiags_pv(indxTime))
 # ifdef AVERAGES
-     &    .or. (mod(iic-ntsdiags_pv_avg,nwrtdiags_pv_avg).eq.0
+     &    .or. (mod(ilc-ntsdiags_pv_avg,nwrtdiags_pv_avg).eq.0
      &    .and. wrtdiags_pv_avg(indxTime))
 # endif
 # endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
-     &    .or. (mod(iic-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).eq.0
+     &    .or. (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).eq.0
      &    .and. wrtdiags_eddy_avg(indxTime))
 # endif
 # endif
@@ -120,7 +120,7 @@
      &    .or. (mod(iic-ntstart,nwrtsurf).eq.0
      &    .and. wrtsurf(indxTime))
 # ifdef AVERAGES
-     &    .or. (mod(iic-ntssurf_avg,nwrtsurf_avg).eq.0
+     &    .or. (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.0
      &    .and. wrtsurf_avg(indxTime))
 # endif
 # endif

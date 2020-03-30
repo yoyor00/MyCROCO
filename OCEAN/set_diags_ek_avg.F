@@ -390,8 +390,8 @@
 
 # ifdef DIAGNOSTICS_EK_MLD
 
-      if (iic.gt.ntsdiags_ek_avg) then
-        if (mod(iic-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.1) then
+      if (ilc.gt.ntsdiags_ek_avg) then
+        if (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.1) then
 
              do j=JstrR,JendR
                 do i=IstrR,IendR 
@@ -453,7 +453,7 @@
            enddo
           enddo
 # endif
-        elseif (mod(iic-ntsdiags_ek_avg,nwrtdiags_ek_avg).gt.1) then
+        elseif (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).gt.1) then
 
              do j=JstrR,JendR
                 do i=IstrR,IendR 
@@ -538,7 +538,7 @@
            enddo
           enddo
 # endif
-        elseif (mod(iic-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.0) then
+        elseif (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.0) then
 
           cff=1./float(nwrtdiags_ek_avg)
 
@@ -625,7 +625,7 @@
           enddo
 # endif
         endif
-      endif       !<-- iic.gt.ntsavg
+      endif       !<-- ilc.gt.ntsavg
 
 
 
