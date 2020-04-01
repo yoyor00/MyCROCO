@@ -218,6 +218,7 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
+
           do j=Jstr,Jend
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
@@ -226,6 +227,8 @@
      &                                                           )
             enddo
           enddo                 !-->  discard FX,FE
+
+
 
 # if defined AGRIF && defined AGRIF_CONSERV_TRA
           IF (Agrif_Root()) Then
@@ -326,6 +329,7 @@
             enddo
           enddo               !--> discard FC
 
+
 # ifdef DIAGNOSTICS_TS
        do k=1,N 
          do i=Istr,Iend
@@ -407,6 +411,8 @@
               enddo
             enddo
           endif
+
+
 !
 !
 !======================================================================
@@ -445,6 +451,7 @@
 #  include "t3dmix_tridiagonal.h"
 # endif
 
+        
 # ifdef CONST_TRACERS
           do k=1,N
             do i=Istr,Iend
@@ -484,9 +491,11 @@
 !  apply land-sea mask and exchange periodic boundary conditions.
 !======================================================================
 !
+
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
       enddo
+      
 !
 !======================================================================
 !  Compute biological fluxes
@@ -592,7 +601,6 @@
      &                  tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
         endif
 #  endif /* ZONAL_NUDGING */
-
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -809,6 +817,7 @@
             enddo
           enddo
         enddo
+        
 #  undef I_RANGE
 #  undef J_RANGE
 # endif /* MASKING */

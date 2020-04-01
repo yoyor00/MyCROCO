@@ -45,6 +45,14 @@
 # define RVTK_DEBUG_WRITE
 #endif
 
+/* 
+   GILDAS Take care need to use a debug.F specific 
+*/
+
+#if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
+# define RVTK_DEBUG_WRITE
+#endif
+
 /*
     Constant tracer option (for debugging)
 */
@@ -567,6 +575,9 @@
 #  endif
 # endif
 #endif
+#ifdef TIDES_MAS
+# define MASKING
+#endif
 
 /*
 ======================================================================
@@ -741,7 +752,7 @@
 #if !defined ANA_BTFLUX
 #  define BHFLUX
 #endif
-#if !defined ANA_BSFLUX
+#if !defined ANA_BSFLUX && defined SALINITY
 #  define BWFLUX
 #endif
 /*

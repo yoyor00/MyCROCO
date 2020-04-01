@@ -263,6 +263,10 @@
         
      <!-- U grid -->
      <field_group id="u" grid_ref="u_2D">
+#ifdef SPHERICAL
+         <field id="lon_u" long_name="longitude of U-points" unit="degree_east" />
+         <field id="lat_u" long_name="latitude of U-points" unit="degree_north" />
+#endif
          <field id="ubar" long_name="vertically integrated u-momentum component" unit="meter second-1"/>
          <field id="sustr" long_name="surface u-momentum stress" unit="N/m2" />
          <field id="bustr" long_name="bottom  u-momentum stress" unit="N/m2" />
@@ -291,6 +295,10 @@
 
      <!-- V grid -->
      <field_group id="v" grid_ref="v_2D">
+#ifdef SPHERICAL
+         <field id="lon_v" long_name="longitude of V-points" unit="degree_east" />
+         <field id="lat_v" long_name="latitude of V-points" unit="degree_north" />
+#endif
          <field id="vbar" long_name="vertically integrated v-momentum component" unit="meter second-1"/>
          <field id="svstr" long_name="surface v-momentum stress" unit="N/m2" />
          <field id="bvstr" long_name="bottom  v-momentum stress" unit="N/m2" />

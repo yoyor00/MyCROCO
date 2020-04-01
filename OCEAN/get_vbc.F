@@ -539,7 +539,6 @@
         enddo
       enddo
 #   endif
-#  endif /* BSTRESS_FAST */
 
 !
 ! Set boundary conditions
@@ -602,6 +601,8 @@
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
 #  endif
+#  endif /* BSTRESS_FAST */
+
 # endif /* SOLVE3D */
 #endif /* BBL */
 
@@ -652,5 +653,12 @@ C$OMP END MASTER
 # endif
 #endif
 
+#if defined RVTK_DEBUG_ADVANCED
+      call check_tab3d(u(:,:,:,nrhs),'#end u in get_vbc','u')
+      call check_tab3d(u(:,:,:,nrhs),'#end v in get_vbc','v')
+      
+      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in get_vbc','r')
+      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in get_vbc','r')
+#endif
       return
       end

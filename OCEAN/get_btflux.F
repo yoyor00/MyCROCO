@@ -10,8 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && (!defined ANA_BTFLUX || !defined ANA_BSFLUX)
-
+#if defined SOLVE3D && ( defined BHFLUX || defined BWFLUX )
       subroutine get_btflux (itrc)
 !
 !  Read in point or grided bottom hydrothermal heat flux at the appropriate
@@ -201,16 +200,16 @@ c**        call opencdf (btfname,N)
 ! Time interpolation is not performed in this case.
 !
       if (btf_cycle(itrc).lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           if (lbtfgrd(itrc).eq.1) then
             cff=btf_scale(itrc)
             do j=JstrR,JendR
               do i=IstrR,IendR
                 btflx(i,j,itrc)=cff*btflxg(i,j,itbtf(itrc),itrc)
-                if ( i==10 .and. j==10) then
+!                if ( i==10 .and. j==10) then
 !                  write(*,*)'I=',i,' J=',j
 !                  write(*,*)'btflx(10,10,1)=',btflx(10,10,1)
-                endif
+!                endif
               enddo
             enddo
           else

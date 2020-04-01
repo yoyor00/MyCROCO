@@ -20,11 +20,11 @@ climatology: filename
                           croco_clm.nc
 boundary: filename
                           croco_bry.nc
-initial: NRREC  filename
-          1 
+initial: NRREC / filename
+         NUMRECINI 
                           croco_ini.nc
 restart:          NRST, NRPFRST / filename
-                  NUMRST   -1
+                  NUMRST   0
                           croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T     NUMHIS     0

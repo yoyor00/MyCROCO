@@ -282,6 +282,13 @@
         enddo
       enddo
 
+#if defined RVTK_DEBUG && defined SOLVE3D
+      call check_tab3d(t(:,:,:,nstp,itrc),'t begin ISO','r')
+      call check_tab3d(dRdx,'dRdx begin ISO','u')
+      call check_tab3d(dRde,'dRde begin ISO','v')
+#endif
+
+
 !==================================================================
 !                ---------------------
 !               /                    /
@@ -385,7 +392,18 @@
      &                                  )
             enddo
           enddo
+#if defined RVTK_DEBUG && defined SOLVE3D
+          !write(*,*)'K+1=',k+1
+          !write(*,*)'(t(1,42,k+1,nstp,1)=',t(1,42,k+1,nstp,1)
+          call check_tab2d(t(:,:,k+1,nstp,itrc),'t(k+1) in ISO','r')
+#endif
+          !write(*,*)'END K+1...'
         endif   ! --> k.eq.0 .or. k.eq.N
+
+
+
+
+
 
         if (k.gt.0) then
 !========================================================
@@ -861,6 +879,9 @@
             enddo
           enddo
 
+
+
+
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
@@ -878,6 +899,14 @@
 
         endif  ! <-- k.gt.0
       enddo   ! --> k
+
+
+#if defined RVTK_DEBUG && defined SOLVE3D
+      !write(*,*)'(t(1,0,1,nnew,1)#2=',t(1,0,1,nnew,1)
+      call check_tab3d(t(:,:,:,nnew,itrc),'t in ISO #2','r')
+      !write(*,*)'=='
+#endif
+
 
 # ifdef TS_MIX_IMP
       do j=jstr,jend 

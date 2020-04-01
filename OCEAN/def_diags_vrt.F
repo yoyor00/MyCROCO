@@ -1013,18 +1013,6 @@
    1  format(/1x,'def_diags_vrt ERROR: Cannot find variable ''',
      &                   A, ''' in netCDF file ''', A, '''.'/)
 
-#if defined AVRH
-!
-! Set initial average timediags_vrt.
-! --- ------- ------- --------
-!
-      if (ntsdiags_vrt_avg.eq.1) then
-        timediags_vrt_avg=time-0.5*float(nwrtdiags_vrt_avg)*dt
-      else
-        timediags_vrt_avg=time-0.5*float(nwrtdiags_vrt_avg)
-     &                       *dt+float(ntsdiags_vrt_avg)*dt
-      endif
-#endif
 !
   11  format(/' def_diags_vrt - unable to create diag file: ',a)
   20  format(/' def_diags_vrt - error while writing variable: ',a,

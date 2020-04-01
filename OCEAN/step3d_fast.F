@@ -321,7 +321,7 @@ C$    trd=omp_get_thread_num()
       enddo
 # endif
  
-# define M3FAST_REINIT
+# undef M3FAST_REINIT
 # if defined BSTRESS_FAST && defined M3FAST_REINIT
 !
 !  Reinitialise fast mode at each first fast step
@@ -358,6 +358,8 @@ C$    trd=omp_get_thread_num()
 #  endif
       endif    ! FIRST_FAST_STEP
 # endif
+
+
 !
 !=====================================================================
 ! AB3 Forward Step: compute total depth of water column and vertically
@@ -394,10 +396,7 @@ C$    trd=omp_get_thread_num()
         cff2=-2.0*mybeta-0.5
         cff3= mybeta
       endif
-!
-# ifdef RVTK_DEBUG_ADVANCED
-       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
-# endif  
+
 !
 !----------------------------------------------------------------------
 !  Extrapolate (D,ubar,vbar) at m+1/2
@@ -418,6 +417,7 @@ C$    trd=omp_get_thread_num()
 # endif /* NBQ_MASS */
         enddo
       enddo
+      
 !
 ! Depth-average ubar velocity at m+1/2
 !
@@ -459,9 +459,6 @@ C$    trd=omp_get_thread_num()
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
-      call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r')
-# endif 
 !
 !-----------------------------------------------------------------------
 ! Load RHS values into additional AGRIF shared array for nesting
@@ -697,6 +694,8 @@ C$OMP END MASTER
       enddo
 #  undef zab3
 
+
+
 # else /* NBQ */
 !
 !********************************************************************
@@ -740,6 +739,8 @@ C$OMP END MASTER
 #  endif
         enddo
       enddo
+      
+
 # endif /* NBQ */
 !
 !-----------------------------------------------------------------------
@@ -1456,6 +1457,7 @@ C$OMP END MASTER
      &                   SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
             enddo
           enddo
+          
         elseif (rdrg2.gt.0.) then
           do j=JstrV-1,Jend+1
             do i=IstrU-1,Iend+1
@@ -1491,6 +1493,70 @@ C$OMP END MASTER
             enddo
           enddo
         endif
+
+
+!
+! Set boundary conditions
+!
+#  ifndef EW_PERIODIC
+      IF (EASTERN_EDGE) THEN
+        DO j=Jstr,Jend
+          bustr(Iend+1,j)=bustr(Iend,j)
+        END DO
+        DO j=JstrV,Jend
+          bvstr(Iend+1,j)=bvstr(Iend,j)
+        END DO
+      END IF
+      IF (WESTERN_EDGE) THEN
+        DO j=Jstr,Jend
+          bustr(IstrU-1,j)=bustr(IstrU,j)
+        END DO
+        DO j=JstrV,Jend
+          bvstr(Istr-1,j)=bvstr(Istr,j)
+        END DO
+      END IF
+#  endif
+#  ifndef NS_PERIODIC
+      IF (NORTHERN_EDGE) THEN
+        DO i=IstrU,Iend
+          bustr(i,Jend+1)=bustr(i,Jend)
+        END DO
+        DO i=Istr,Iend
+          bvstr(i,Jend+1)=bvstr(i,Jend)
+        END DO
+      END IF
+      IF (SOUTHERN_EDGE) THEN
+        DO i=IstrU,Iend
+          bustr(i,Jstr-1)=bustr(i,Jstr)
+        END DO
+        DO i=Istr,Iend
+          bvstr(i,JstrV-1)=bvstr(i,JstrV)
+        END DO
+      END IF
+#  endif
+#  if !defined EW_PERIODIC && !defined NS_PERIODIC
+      IF (SOUTHERN_EDGE.and.WESTERN_EDGE) THEN
+        bustr(Istr,Jstr-1)=0.5*(bustr(Istr+1,Jstr-1)+bustr(Istr,Jstr))
+        bvstr(Istr-1,Jstr)=0.5*(bvstr(Istr,Jstr)+bvstr(Istr-1,Jstr+1))
+      END IF
+      IF (SOUTHERN_EDGE.and.EASTERN_EDGE) THEN
+        bustr(Iend+1,Jstr-1)=0.5*(bustr(Iend+1,Jstr)+bustr(Iend,Jstr-1))
+        bvstr(Iend+1,Jstr)=0.5*(bvstr(Iend+1,Jstr+1)+bvstr(Iend,Jstr))
+      END IF
+      IF (NORTHERN_EDGE.and.WESTERN_EDGE) THEN
+        bustr(Istr,Jend+1)=0.5*(bustr(Istr,Jend)+bustr(Istr+1,Jend+1))
+        bvstr(Istr-1,Jend+1)=0.5*(bvstr(Istr-1,Jend)+bvstr(Istr,Jend+1))
+      END IF
+      IF (NORTHERN_EDGE.and.EASTERN_EDGE) THEN
+        bustr(Iend+1,Jend+1)=0.5*(bustr(Iend+1,Jend)+bustr(Iend,Jend+1))
+        bvstr(Iend+1,Jend+1)=0.5*(bvstr(Iend+1,Jend)+bvstr(Iend,Jend+1))
+      END IF
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
+#  endif
+
 
       endif
 #  undef UBOT
@@ -1954,6 +2020,9 @@ C$OMP END MASTER
       enddo   !<-- k=0,N   
 
 # else /* NBQ */
+
+
+
 !
 !********************************************************************
 !
@@ -2011,7 +2080,11 @@ C$OMP END MASTER
         enddo
       endif
 
-# endif /* NBQ */ 
+# endif /* NBQ */
+
+
+
+
 !
 !-----------------------------------------------------------------------
 ! Apply point sources for river runoff simulations
@@ -2088,10 +2161,7 @@ C$OMP END MASTER
       enddo
 # endif
 
-# ifdef RVTK_DEBUG
-      call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
-      call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
-# endif
+
 !
 !-----------------------------------------------------------------------
 !  U & V momentum open boundary conditions
@@ -2137,10 +2207,7 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-# ifdef RVTK_DEBUG
-      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-# endif  
+
 
 
 # ifdef NBQ
@@ -3719,6 +3786,8 @@ C$OMP END MASTER
      &                                                          - h(i,j)
           enddo
         enddo
+        
+
 !
 !-----------------------------------------------------------------------
 !  Set masking for zeta, including wet/dry conditions

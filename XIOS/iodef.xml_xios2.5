@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <simulation>
-
-	<context id="roms">
-		<!-- <calendar_type="Gregorian" start_date="1999-01-15 12:00:00" time_origin="1970-01-01 00:00:00" /> -->
+	<context id="crocox">
 
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->
@@ -45,7 +43,7 @@
             
             
 		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
-			<file_group id="12h" output_freq="12h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+			<file_group id="3h" output_freq="3h"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
 				<file id="file1" name_suffix="_inst" split_freq="5d" split_freq_format="%y-%mo-%d">
 
 					<field_group id="inst_fields" operation="instant">
@@ -57,11 +55,10 @@
 						<field field_ref="svstr" name="svstr" />
 						<field field_ref="u" name="u" />
 						<field field_ref="v" name="v" />
-						<field field_ref="w" name="w" />
 						<field field_ref="temp" name="temp" />
 						<field field_ref="salt" name="salt" />
-						<field field_ref="rho" name="rho" />
-					    <field field_ref="bvf" name="bvf" />
+                                                <field field_ref="AKv" name="AKv" />
+                                                <field field_ref="AKt" name="AKt" />
 					</field_group>
 
 				</file>
@@ -77,10 +74,10 @@
                         <field field_ref="time" name="time" />
                         <field field_ref="u" name="u" />
                         <field field_ref="v" name="v" />
+                        <field field_ref="zeta" name="zeta" />
 # if defined HOURLY_3D
                         <field field_ref="temp" name="temp" />
                         <field field_ref="salt" name="salt" />
-                        <field field_ref="zeta" name="zeta" />
 #  endif
                     </field_group>
 
@@ -279,15 +276,7 @@
                       <field id="vv" field_ref="workru"> workrv * workrv </field>
                       <field id="uw" field_ref="workru"> workru * w </field>
                       <field id="vw" field_ref="workru"> workrv * w </field>
-                      <field id="ub" field_ref="workru"> workru * buoy </field>
-                      <field id="vb" field_ref="workru"> workrv * buoy </field>
                       <field id="wb" field_ref="workru"> w * buoy </field>
-                      <field id="uT" field_ref="workru"> workru * temp </field>
-                      <field id="vT" field_ref="workru"> workrv * temp </field>
-                      <field id="wT" field_ref="workru"> w * temp </field>
-                      <field id="uS" field_ref="workru"> workru * salt </field>
-                      <field id="vS" field_ref="workru"> workrv * salt </field>
-                      <field id="wS" field_ref="workru"> w * salt </field>
 					</field_group>
 
 				</file>

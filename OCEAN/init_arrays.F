@@ -662,10 +662,7 @@ C$    integer omp_get_thread_num
 !
 !  Initialize sediment module arrays.
 !
-#  if !defined ANA_SEDIMENT
-      got_inibed(1:2)=.false.
       got_inised(1:3)=.false.
-#  endif
       do j=JstrR,JendR
         do i=IstrR,IendR
            Ssize(i,j)=init
@@ -688,6 +685,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* SEDIMENT */
 # ifdef BBL
+      got_inibed(1:2)=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
           Abed(i,j)=init

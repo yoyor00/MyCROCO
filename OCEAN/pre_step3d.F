@@ -175,6 +175,13 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
+      
+#if defined RVTK_DEBUG_PERFRST
+       call check_tab3d(Hz(:,:,:),'Hz in prestep3d','r')
+       call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
+       call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
+#endif
+
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -189,6 +196,7 @@
           enddo
         enddo
       enddo
+
 !
 !  Set extended range
 !
@@ -520,6 +528,8 @@
 # endif 
 
 # ifdef M3FAST
+
+              
               qdm_nstp = u(i,j,k,nstp)*0.5*(Hz(i  ,j,k)+
      &                                      Hz(i-1,j,k))
               qdm_indx = u(i,j,k,indx)*0.5*(Hz_bak(i  ,j,k)+
@@ -557,6 +567,10 @@
           enddo
 # endif
          endif
+        
+         
+         
+         
 !
 !======================================================================
 !
@@ -676,6 +690,8 @@
 !======================================================================
 !
       enddo     !<-- j
+      
+      
       
 # ifdef NBQ
 !----------------------------------------------------------

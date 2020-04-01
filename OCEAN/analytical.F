@@ -1576,7 +1576,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_sediment
 !======================================================================
 !
-#if defined SEDIMENT
+#ifdef SEDIMENT
       subroutine ana_sediment (tile)
       implicit none
 # include "param.h"
@@ -1623,38 +1623,17 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
 # ifdef BBL
-#  ifndef ANA_SEDIMENT
-          if(.not.got_inibed(1)) then
-#  endif
-            Hripple(i,j)=Hrip
-#  ifndef ANA_SEDIMENT
-          endif
-          if(.not.got_inibed(2)) then
-#  endif
-            Lripple(i,j)=Lrip
-#  ifndef ANA_SEDIMENT
-          endif
-#  endif
-# endif /* BBL */
+          if(.not.got_inibed(1)) Hripple(i,j)=Hrip
+          if(.not.got_inibed(2)) Lripple(i,j)=Lrip
+# endif
           do ilay=1,NLAY
-# ifndef ANA_SEDIMENT
-            if(.not.got_inised(1)) then
-# endif
-              bed_thick(i,j,ilay)=Bthk(ilay)
-
-# ifndef ANA_SEDIMENT
-            endif
-            if(.not.got_inised(2)) then
-# endif
-              bed_poros(i,j,ilay)=Bpor(ilay)
-# ifndef ANA_SEDIMENT
-            endif
+            if(.not.got_inised(1)) bed_thick(i,j,ilay)=Bthk(ilay)
+            if(.not.got_inised(2)) bed_poros(i,j,ilay)=Bpor(ilay)
             if(.not.got_inised(3)) then
-# endif
-            do ised=1,NST
-              bed_frac(i,j,ilay,ised)=Bfr(ilay,ised)
-            enddo
-
+              do ised=1,NST
+                bed_frac(i,j,ilay,ised)=Bfr(ilay,ised)
+              enddo
+            endif
             bed_age(i,j,ilay)=time
             bot_thick(i,j) = 0.003
             do ised=1,NST
@@ -1668,9 +1647,6 @@ C$    integer  trd, omp_get_thread_num
 # endif
               bed_mass(i,j,ilay,2,ised)=bed_mass(i,j,ilay,1,ised)
             enddo
-# ifndef ANA_SEDIMENT
-          endif
-# endif
           enddo
           cff1=1.0
           cff2=1.0
@@ -1740,8 +1716,6 @@ C$    integer  trd, omp_get_thread_num
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_thick_tot(START_2D_ARRAY,2))
 #  endif
-# endif
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1751,6 +1725,7 @@ C$    integer  trd, omp_get_thread_num
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 Sdens(START_2D_ARRAY))
 # endif
+
       return
       end
 #endif /* SEDIMENT */
@@ -2250,7 +2225,7 @@ C$    integer  trd, omp_get_thread_num
 
 #  else
 
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
@@ -2307,7 +2282,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
@@ -2363,7 +2338,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
@@ -2419,7 +2394,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)
@@ -2527,6 +2502,7 @@ C$    integer  trd, omp_get_thread_num
 #  define JV_RANGE Jstr,JendR
 # endif
 
+
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N
@@ -2534,9 +2510,7 @@ C$    integer  trd, omp_get_thread_num
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
           enddo
-          do j=JV_RANGE 
-            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
-     &                                   *u(1,j,k,nrhs)
+          do j=JV_RANGE
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
@@ -2553,15 +2527,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
         do k=1,N
-          do j=JstrR,JendR
+          do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
-            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                         *v(IendR,j,k,nrhs)
 #   ifdef NBQ
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
 #   endif
+          enddo
+          do j=JV_RANGE
+            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR,j-1,k))
+     &                                         *v(IendR,j,k,nrhs)
           enddo
         enddo
       endif
@@ -2570,15 +2546,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
-            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                    *u(i,0,k,nrhs)
 #   ifdef NBQ
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
 #   endif
+          enddo
+          do i=IU_RANGE
+            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
+     &                                    *u(i,0,k,nrhs)
           enddo
         enddo
       endif
@@ -2587,15 +2565,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
-     &                                          *u(i,JendR,k,nrhs)
 #   ifdef NBQ
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #   endif
+          enddo
+          do i=IU_RANGE
+            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
+     &                                          *u(i,JendR,k,nrhs)
           enddo
         enddo
       endif

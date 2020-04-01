@@ -76,6 +76,9 @@ C$    integer omp_get_thread_num
 !  field into array for holding fast-time averaged free surface.
 !----------------------------------------------------------------------
 !
+
+      !!write(*,*)'set_depth zeta(10,10,1)=',zeta(10,10,1)
+
       if (iic.eq.0) then
         do j=J_RANGE
           do i=I_RANGE
@@ -150,6 +153,11 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
 
+
+      !!write(*,*)'set_depth Hz_bak(10,10,32)=',Hz(10,10,32)
+      !!write(*,*)'set_depth zetatmp(10,10)=',Zt_avg1(10,10)
+
+
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
 
@@ -212,6 +220,7 @@ C$    integer omp_get_thread_num
 #  endif 
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 
+
 #  ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)
             Hz(i,j,k) =Hz(i,j,k)*(1.+rho_grd(i,j,k))
@@ -221,7 +230,9 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-#  ifdef M3FAST
+      !!write(*,*)'set_depth Hz(10,10,32)=',Hz(10,10,32)
+
+#  if defined M3FAST && ! defined EXACT_RESTART
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         do k=1,N,+1
           do j=J_RANGE
@@ -232,6 +243,12 @@ C$    integer omp_get_thread_num
         enddo
       endif
 #  endif
+
+
+      !!write(*,*)'set_depth Hz(10,10,32)=',Hz(10,10,32)
+      !!write(*,*)'set_depth Hz_bak(10,10,32)=',Hz_bak(10,10,32)
+
+
 
 #  undef I_RANGE
 #  undef J_RANGE

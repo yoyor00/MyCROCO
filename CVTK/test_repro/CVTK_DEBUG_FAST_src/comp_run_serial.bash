@@ -17,6 +17,8 @@ par1='SERIAL'
 # Compilation
 msg1="- Compilation failure for ${TEST_NAME} : ${par1}..."
 msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
+cp -Rf param.h.OK.${par1} param.h.OK
+cp -Rf cppdefs.h.OK.${par1} cppdefs.h.OK
 ./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 1 ; }
 mv croco croco_${par1}.exe
 

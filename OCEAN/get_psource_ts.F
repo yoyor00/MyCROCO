@@ -624,7 +624,7 @@ C     R      write(*,*)'Enter set_psource_ts_tile...'
 !     Load time invariant QBAR data.
 !     
           if (tsrc_cycle(itrc).lt.0.) then
-            if (FIRST_TIME_STEP) then
+            if (FIRST_RST_TIME_STEP) then
               do i=1,Nsrc
                 Tsrc0(i,itrc)=tsrcg(i,ittsrc(itrc),itrc)
               enddo

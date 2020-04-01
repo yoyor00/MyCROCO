@@ -59,28 +59,35 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-      ilc=1+iic-ntsdiags_pv_avg   ! number of time step since restart
+      ilc=1+iic-ntstart   ! number of time step since restart
 !
 ! calculation of averaged fluxes will only be performed if ntsdiags_pv_avg
 ! is a positive number
 !
       if (ilc.gt.ntsdiags_pv_avg) then
 
-        if (mod(ilc-1,nwrtdiags_pv_avg).eq.1) then
+        if (mod(ilc-ntsdiags_pv_avg,nwrtdiags_pv_avg).eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
-            MPI_master_only write(*,*) 'started averaging pv',iic,
-     &                       ntsdiags_pv_avg,nwrtdiags_pv_avg
+            timediags_pv_avg=time
+      MPI_master_only write(*,*) 'started averaging pv',iic,
+     &                     ntsdiags_pv_avg,nwrtdiags_pv_avg
           endif
-        elseif (mod(ilc-1,nwrtdiags_pv_avg).gt.1) then
+        elseif (mod(ilc-ntsdiags_pv_avg,nwrtdiags_pv_avg).gt.1) then
           cff =1.0
           cff1=1.0
-        elseif (mod(ilc-1,nwrtdiags_pv_avg).eq.0) then
+          if (ZEROTH_TILE) then
+           timediags_pv_avg=timediags_pv_avg+time
+          endif
+        elseif (mod(ilc-ntsdiags_pv_avg,nwrtdiags_pv_avg).eq.0) then
           cff =1.0/float(nwrtdiags_pv_avg)
           cff1=1.0
-          if (ZEROTH_TILE) timediags_pv_avg=timediags_pv_avg+
-     &                                  float(nwrtdiags_pv_avg)*dt
+          if (ZEROTH_TILE) then
+            timediags_pv_avg=cff*(timediags_pv_avg+time)
+            MPI_master_only write(*,*) 'finished averaging pv',
+     &                 iic,ntsdiags_pv_avg,nwrtdiags_pv_avg
+          endif
         endif
 
         do iflux=1,2

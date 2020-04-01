@@ -1228,6 +1228,7 @@ C$OMP END MASTER
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1=1.5+cff3                  ! maximum stability (with
         endif                            ! special care for startup)
+        
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=rufrc(i,j)-rubar(i,j)
@@ -1727,8 +1728,8 @@ C$OMP END MASTER
 #ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u')
-       call check_tab2d(vbar(:,:,knew),'vbar step2d #2','v')
+       call check_tab2d(ubar(:,:,knew),'ubar in step2d #2','u')
+       call check_tab2d(vbar(:,:,knew),'vbar in step2d #2','v')
 C$OMP END MASTER       
 #endif   
 !

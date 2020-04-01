@@ -86,7 +86,10 @@
 # undef  LOGFILE
                       /* Calendar */
 # undef  USE_CALENDAR
-/*!
+                      /* Exact restart */
+# undef EXACT_RESTART
+/*
+!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
 !
@@ -278,6 +281,9 @@
 */
 # undef  DIAGNOSTICS_TS
 # undef  DIAGNOSTICS_UV
+
+# define RESTART_DIAGS
+
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
@@ -946,6 +952,7 @@
 # undef  BBL
 # undef  SEDIMENT
 # ifdef SEDIMENT
+#  define ANA_SEDIMENT
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA
@@ -995,6 +1002,7 @@
 # define BBL
 # define SEDIMENT
 # ifdef SEDIMENT
+#  define ANA_SEDIMENT
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA

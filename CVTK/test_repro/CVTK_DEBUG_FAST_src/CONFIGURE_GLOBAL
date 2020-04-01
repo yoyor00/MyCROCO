@@ -6,22 +6,21 @@
 #  CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
 #  DATADIR: "$CI_PROJECT_DIR/.datadir"
 #  CVTKWORK: "$CI_PROJECT_DIR/.datawork"
-#  CROCO_CI_MPIRUN: "mpirun.mpich"
 #--
 #--
 
-#Add in case of dev/debug local interactive and not CI integration
-#export CROCOROOT="/local/tmp/3/gcambon/2019_MERGE"
+##Add in case of dev/debug local interactive and not CI integration
+#export CROCOROOT="/local/tmp/3/gcambon/CI_2019"
 #export CI_PROJECT_DIR=$CROCOROOT/croco/builds/0/project-0
 #export CVTKWORK=$CI_PROJECT_DIR/.datawork
 #export CVTKHOME="$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
 #export DATADIR=$CI_PROJECT_DIR/.datadir
-#export CROCO_CI_MPIRUN=mpirun.mpich
 #--
 
 # Interactive and CI 
+CROCO_CI_MPIRUN=/usr/bin/mpirun.mpich
 CI_FC=gfortran
-CI_MPIF90=mpif90
+CI_MPIF90=/usr/bin/mpif90
 CI_CROCO_PWD=$(pwd)
 SOURCE_CROCO="$CI_PROJECT_DIR/OCEAN"
 TESTROOTDIR=${CVTKWORK}

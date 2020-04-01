@@ -579,7 +579,10 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
             call fillvalue3d(workr,ncidhis,hisT(itrc),
      &           indxT+itrc-1,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
-         endif   
+!      write(*,*)'t(10,10,32,nstp,itrc)=',t(10,10,32,nstp,itrc)
+!      write(*,*)'nstp=',nstp
+
+      endif   
       enddo
 !     
 !     Density anomaly.
@@ -779,6 +782,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
+#ifdef BHFLUX
 !     
 !     Write out bottom heat flux 
 !     
@@ -794,7 +798,8 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
             goto 99             !--> ERROR
           endif
 CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
-      endif      
+        endif
+#endif
 #ifdef SALINITY    
 !     Write out surface salt flux
 !
@@ -821,7 +826,8 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
          endif
 CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
        endif
-!
+# ifdef BWFLUX
+!     
 !     Write out bottom salt flux
 !
        
@@ -847,7 +853,8 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
             goto 99             !--> ERROR
          endif
       write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
-       endif        
+      endif
+# endif
 #endif      
 !     
 !     Write out surface heat flux component (W/m2)
@@ -1025,20 +1032,32 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          indxWrk=indxBDLU(1)+itrc-1
          if (wrthis(indxWrk)) then
             work2d=bedldu(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+3*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
+     &           indxWrk,record,r2dvar,type)
+#   endif
          endif
       enddo
+
       do itrc=1,NST
          indxWrk=indxBDLV(1)+itrc-1
          if (wrthis(indxWrk)) then
             work2d=bedldv(:,:,itrc)
+#   ifdef SUSPLOAD
             call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+4*NST),
      &           indxWrk,record,r2dvar,type)
+#   else
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+2*NST),
+     &           indxWrk,record,r2dvar,type)
+
+#   endif
          endif
       enddo
 #  endif
-!     
 # endif /* SEDIMENT */
 !     
 # ifdef BBL
