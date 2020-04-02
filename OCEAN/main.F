@@ -31,6 +31,11 @@
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces 
 #endif
+#ifdef NHMG
+          USE nhmg, only : nhmg_init
+          USE nhmg, only : nhmg_matrices
+          USE nhmg, only : nhmg_clean
+#endif
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -41,6 +46,9 @@
 #include "grid.h"
 #include "ocean2d.h"
 #include "mpi_cpl.h"
+#ifdef NHMG
+# include "ocean3d.h"
+#endif
 #ifdef FLOATS
 # include "floats.h"
 # include "ncscrum_floats.h"
@@ -56,6 +64,9 @@
       include 'mpif.h'
 !     real*8 start_time2, start_time1, exe_time
 #endif 
+# if defined NHMG
+      integer halo
+# endif
       integer :: iifroot, iicroot
 #ifdef WKB_WWAVE
       integer winterp
@@ -182,6 +193,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call init_arrays (tile) 
       enddo 
 CR      write(*,*) '-11' MYID
+!
+!----------------------------------------------------------------------
+!  Allocate NHMG grids
+!----------------------------------------------------------------------
+!
+#ifdef NHMG
+      call nhmg_init(Lm,Mm,N,NP_XI,NP_ETA)
+#endif
 !
 !----------------------------------------------------------------------
 !  Set horizontal grid, model bathymetry and Land/Sea mask
@@ -368,6 +387,23 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call set_depth (tile)
       enddo
 CR      write(*,*)  ' -5' MYID
+#endif
+!
+!----------------------------------------------------------------------
+!  Set NHMG horizontal and vertical grids 
+!  then set matrices coefficients for the elliptic problem
+!----------------------------------------------------------------------
+!
+#ifdef NHMG
+# ifdef THREE_GHOST_POINTS
+      halo = 3
+# else
+      halo = 2
+# endif
+      call nhmg_matrices(Lm,Mm,N,halo,padd_X,padd_E,dzdxi,dzdeta,Hz,
+     &                   z_r,
+     &                   om_r(0:Lm+1,0:Mm+1),
+     &                   on_r(0:Lm+1,0:Mm+1)    )
 #endif
 !
 !----------------------------------------------------------------------
@@ -736,6 +772,12 @@ CR      write(*,*) '  0' MYID
 #endif
       iic = ntstart
 
+#ifdef  NHMG
+      ! indexes for nhmg ab2 pressure corrections
+      iprec1 = 1
+      iprec2 = 2
+#endif
+
 #ifdef AGRIF
       iind = -1
       grids_at_level = -1
@@ -796,6 +838,11 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 #endif
 
  100  continue
+
+#ifdef NHMG  
+      ! write nhmg statistics to fort.10
+      call nhmg_clean()
+#endif
 
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
