@@ -47,6 +47,25 @@
 #  endif
 # endif
 
+# ifdef NHMG
+      real wz(GLOBAL_2D_ARRAY,0:N,3)
+      real nhdu(GLOBAL_2D_ARRAY,1:N,2)
+      real nhdv(GLOBAL_2D_ARRAY,1:N,2)
+      real nhdw(GLOBAL_2D_ARRAY,0:N,2)
+      real dzdxi(GLOBAL_2D_ARRAY,1:N)
+      real dzdeta(GLOBAL_2D_ARRAY,1:N)
+      real Hz_half(GLOBAL_2D_ARRAY,N)
+      real Pnh(GLOBAL_2D_ARRAY,N)
+      common /ocean_wz/wz
+      common /ocean_nhdu/nhdu 
+      common /ocean_nhdv/nhdv
+      common /ocean_nhdw/nhdw
+      common /ocean_dzdxi/dzdxi
+      common /ocean_dzdeta/dzdeta
+      common /grid_Hz_half/Hz_half
+      common /ocean_pnh/Pnh
+# endif
+
 # if defined UV_VIS4 && defined UV_MIX_GEO
       real z_u(GLOBAL_2D_ARRAY,N)
       real z_v(GLOBAL_2D_ARRAY,N)
