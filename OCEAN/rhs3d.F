@@ -22,13 +22,20 @@
       trd=omp_get_thread_num()
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
      &                                    A3d(1,1,trd), A3d(1,2,trd),
+# ifdef NHMG
+     &                                    A3d(1,5,trd),
+# endif
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
       return
       end
 
-      subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
+      subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv,
+# ifdef NHMG
+     &                                                  rw,
+# endif
+                                                        CF,FC,DC,
      &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -78,6 +85,9 @@
      &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
      &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
+# ifdef NHMG
+     &    ,rw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -1280,6 +1290,57 @@
       enddo    ! <-- k
 
       do j=Jstr,Jend
+
+# if defined UV_COR & defined NHMG
+!     Vertical component of Coriolis on vertical velocity
+!     We are re-using FC as a work array
+         do k = 1,N
+            do i=Istr,Iend
+              FC(i,k) = 0.5*fomn(i,j)*Hz(i,j,k)*( 
+     &                 dzdeta(i,j,k)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+     &                - dzdxi(i,j,k)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs)) )
+            enddo
+         enddo
+
+         do k = 1,N-1
+            do i=Istr,Iend
+              rw(i,j,k)= rw(i,j,k) + 0.5*(FC(i,k+1)+FC(i,k))
+            enddo
+         enddo
+         do i=Istr,Iend
+            rw(i,j,N) = rw(i,j,N) + FC(i,N)
+         enddo
+#  ifdef NONTRAD_COR
+         ! FC is the vertical momentum at W-points
+         do k = 1,N
+            do i=Istr,Iend
+               FC(i,k) = 0.5*Hz(i,j,k)*(
+     &  +(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+     &    * ( fetaomn(i,j) * (1+dzdxi(i,j,k)**2)
+     &      - fxiomn(i,j)*dzdxi(i,j,k)*dzdeta(i,j,k) )
+     &  -(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+     &    * ( fxiomn(i,j) * (1+dzdeta(i,j,k)**2)
+     &       +fetaomn(i,j)*dzdxi(i,j,k)*dzdeta(i,j,k) ))
+            enddo
+         enddo
+         do k = 1,N-1
+            do i=Istr,Iend
+               rw(i,j,k) = rw(i,j,k) + 0.5*(FC(i,k)+FC(i,k+1))
+     & +wz(i,j,k,nrhs)*0.5*Hz(i,j,k)*(
+     &   -fxiomn(i,j)*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
+     &   +fetaomn(i,j)*( dzdxi(i,j,k)+ dzdxi(i,j,k+1)) )
+            enddo
+         enddo
+         do i=Istr,Iend
+            rw(i,j,N) = rw(i,j,N) + FC(i,N)
+     & +wz(i,j,N,nrhs)*Hz(i,j,N)*(
+     & -fxiomn(i,j)*dzdeta(i,j,N)
+     & +fetaomn(i,j)* dzdxi(i,j,N) )
+         enddo
+
+#  endif
+
+# endif
 
 # ifdef UV_ADV
 !
