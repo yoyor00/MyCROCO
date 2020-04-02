@@ -1427,6 +1427,17 @@ C$    integer omp_get_thread_num
 #  endif/* NBQ */
 # endif /* M3FAST */
 
+# ifdef NHMG
+      do k=0,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            wz(i,j,k,1)=init
+            wz(i,j,k,2)=init
+          enddo
+        enddo
+      enddo
+# endif
+
 #endif /* SOLVE3D */
 
       return
