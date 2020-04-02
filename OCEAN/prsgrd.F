@@ -34,12 +34,18 @@ c********************************************************************
       trd=omp_get_thread_num()
       call prsgrd_tile (Istr,Iend,Jstr,Jend, 
      &                  A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
+# ifdef NHMG
+     &                  A3d(1,5,trd),
+# endif
      &                  A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                  A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
       return
       end
 !
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
+# ifdef NHMG
+     &                        rw,
+# endif
      &                                       dR,dZ, FC,dZx,rx,dRx)
 !
       implicit none
@@ -54,6 +60,9 @@ c********************************************************************
      &    dZx(PRIVATE_2D_SCRATCH_ARRAY),
      &     rx(PRIVATE_2D_SCRATCH_ARRAY),
      &    dRx(PRIVATE_2D_SCRATCH_ARRAY)
+# ifdef NHMG
+     &    ,rw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
 !
       parameter (OneFifth=0.2, OneTwelfth=1./12., epsil=0.) !1.E-10) 
 !
@@ -539,6 +548,9 @@ c********************************************************************
       trd=omp_get_thread_num()
       call prsgrd_tile (Istr,Iend,Jstr,Jend, 
      &                  A3d(1,1,trd), A3d(1,2,trd),
+# ifdef NHMG
+     &                  A3d(1,5,trd),
+# endif
      &                  A2d(1,1,trd), A2d(1,2,trd)
 #  ifdef MRL_WCI
      &                 ,A2d(1,3,trd), A2d(1,4,trd)
@@ -548,7 +560,11 @@ c********************************************************************
       end
 !
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, 
-     &                          ru,rv,rsurf, pgrd
+     &     ru,rv,
+# ifdef NHMG
+     &           rw,
+# endif
+     &              rsurf, pgrd
 #  ifdef MRL_WCI
      &                                     ,FC,rx
 #  endif
@@ -564,6 +580,9 @@ c********************************************************************
 #  ifdef MRL_WCI
      &    ,FC(PRIVATE_2D_SCRATCH_ARRAY),    cff2,
      &     rx(PRIVATE_2D_SCRATCH_ARRAY)
+#  endif
+#  ifdef NHMG
+     &    ,rw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 #  endif
 #  include "grid.h"
 #  include "ocean3d.h"
@@ -846,7 +865,41 @@ c********************************************************************
 # endif /* PGF_BASIC_JACOBIAN */
 !
 !======================================================================
+
+# ifdef NHMG
 !
+!--------------------------------------------------------------------
+! hydrostatic pressure gradient for the vertical flux
+!       dpdz = -zx*dpdx - zy*dpdy (See Molemaker et al., 2018)
+!--------------------------------------------------------------------
+!
+!     We are re-using dR as a work arrayo
+
+      do j=Jstr,Jend
+         do k = 1,N
+            do i=Istr,Iend
+              dR(i,k) = dzdxi(i,j,k) *(                                
+     $              ru(i  ,j,k  )/(Hz(i,j,k)+Hz(i-1,j,k)) 
+     $            + ru(i+1,j,k  )/(Hz(i,j,k)+Hz(i+1,j,k)))
+     $            +     dzdeta(i,j,k) *(                               
+     $              rv(i,j  ,k  )/(Hz(i,j,k)+Hz(i,j-1,k)) 
+     $            + rv(i,j+1,k  )/(Hz(i,j,k)+Hz(i,j+1,k)))
+            enddo
+         enddo
+
+         do k = 1,N-1
+            do i=Istr,Iend
+              rw(i,j,k)=-0.25*(dR(i,k+1)+dR(i,k))*(Hz(i,j,k+1)+Hz(i,j,k))
+            enddo
+         enddo
+         do i=Istr,Iend
+            rw(i,j,N) = -0.5*dR(i,N)*Hz(i,j,N)
+         enddo
+      enddo
+
+# endif
+
+!     
 !  add in wave effect using POM-Jacobian
 !  =====================================
 !
