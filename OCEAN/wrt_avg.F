@@ -155,6 +155,28 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
          call fillvalue2d(work2d,ncidavg,avgBostr,indxBostr,
      &        record,r2dvar,type)
       endif
+      
+!
+!     Write out kinematic U  bottom stress (N/m2).
+!
+      if (wrtavg(indxBustr)) then
+         work2d=bustr_avg
+         call fillvalue2d(work2d,ncidavg,avgBustr,indxBustr,
+     &        record,u2dvar,type)
+      endif
+      
+      
+!
+!     Write out kinematic V  bottom stress (N/m2).
+!
+      if (wrtavg(indxBvstr)) then
+         work2d=bvstr_avg
+         call fillvalue2d(work2d,ncidavg,avgBvstr,indxBvstr,
+     &        record,v2dvar,type)
+      endif
+      
+      
+      
 !     
 !--   Atmospheric forcing : no mask, no fill value
 !     

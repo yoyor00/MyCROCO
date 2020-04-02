@@ -130,6 +130,8 @@
 # define vidSed hisSed
 # define vidBBL hisBBL
 # define vidBostr hisBostr
+# define vidBustr hisBustr
+# define vidBvstr hisBvstr
 # define vidWstr hisWstr
 # define vidUWstr hisUWstr
 # define vidVWstr hisVWstr
@@ -202,6 +204,8 @@
 # define vidSed avgSed
 # define vidBBL avgBBL
 # define vidBostr avgBostr
+# define vidBustr avgBustr
+# define vidBvstr avgBvstr
 # define vidWstr avgWstr
 # define vidUWstr avgUWstr
 # define vidVWstr avgVWstr
@@ -910,6 +914,61 @@
      &                                 vname(3,indxBostr)(1:lvar))
 
           call nf_add_attribute(ncid, vidBostr,indxBostr,5, 
+     &                          NF_FOUT, ierr)
+
+        endif
+        
+        
+
+        if (wrt(indxBustr)) then
+          lvar=lenstr(vname(1,indxBustr))
+          ierr=nf_def_var (ncid, vname(1,indxBustr)(1:lvar),
+     &                             NF_FOUT, 3, u2dgrd, vidBustr)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBustr,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBustr))
+          ierr=nf_put_att_text (ncid, vidBustr, 'long_name', lvar,
+     &                                 vname(2,indxBustr)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBustr)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBustr, 'long_name', lvar,
+     &                                               text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBustr))
+          ierr=nf_put_att_text (ncid, vidBustr, 'units',     lvar,
+     &                                 vname(3,indxBustr)(1:lvar))
+
+          call nf_add_attribute(ncid, vidBustr,indxBustr,5,
+     &                          NF_FOUT, ierr)
+
+        endif
+        
+
+        if (wrt(indxBvstr)) then
+          lvar=lenstr(vname(1,indxBvstr))
+          ierr=nf_def_var (ncid, vname(1,indxBvstr)(1:lvar),
+     &                             NF_FOUT, 3, v2dgrd, vidBvstr)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidBvstr,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxBvstr))
+          ierr=nf_put_att_text (ncid, vidBvstr, 'long_name', lvar,
+     &                                 vname(2,indxBvstr)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxBvstr)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBvstr, 'long_name', lvar,
+     &                                               text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxBvstr))
+          ierr=nf_put_att_text (ncid, vidBvstr, 'units',     lvar,
+     &                                 vname(3,indxBvstr)(1:lvar))
+
+          call nf_add_attribute(ncid, vidBvstr,indxBvstr,5,
      &                          NF_FOUT, ierr)
 
         endif
@@ -2321,6 +2380,34 @@
             goto 99                                       !--> ERROR
           endif
         endif
+        
+        
+!
+! bustr     Kinematic U bottom stress (N/m2)
+!
+        if (wrt(indxBustr)) then
+          lvar=lenstr(vname(1,indxBustr))
+          ierr=nf_inq_varid (ncid,vname(1,indxBustr)(1:lvar),
+     &                                                   vidBustr)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxBustr)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+        
+        
+!
+! bvstr     Kinematic V bottom stress (N/m2)
+!
+        if (wrt(indxBvstr)) then
+          lvar=lenstr(vname(1,indxBvstr))
+          ierr=nf_inq_varid (ncid,vname(1,indxBvstr)(1:lvar),
+     &                                                   vidBvstr)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxBvstr)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
 !
 ! wstr     Kinematic surface wind stress (N/m2)
 !
@@ -3044,6 +3131,8 @@
 #undef vidSed
 #undef vidBBL
 #undef vidBostr
+#undef vidBustr
+#undef vidBvstr
 #undef vidWstr
 #undef vidUWstr
 #undef vidVWstr

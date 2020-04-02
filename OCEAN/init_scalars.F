@@ -3251,6 +3251,55 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvb)
        vname(5,indxeddyvb)='                                '
        vname(7,indxeddyvb)='                                '
 
+
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyubu = ',indxeddyubu
+       write(vname1,*) 'ubustr                              '
+       vname(1,indxeddyubu)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyubu)
+       vname(2,indxeddyubu)='ubustr                         '
+       write(vname3,*) 'meter3 second-3                     '
+       vname(3,indxeddyubu)=vname3
+       vname(4,indxeddyubu)='                               '
+       vname(5,indxeddyubu)='                               '
+       vname(7,indxeddyubu)='                               '
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyvbv = ',indxeddyvbv
+       write(vname1,*) 'vbvstr                              '
+       vname(1,indxeddyvbv)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyvbv)
+       vname(2,indxeddyvbv)='vbvstr                         '
+       write(vname3,*) 'meter3 second-3                     '
+       vname(3,indxeddyvbv)=vname3
+       vname(4,indxeddyvbv)='                               '
+       vname(5,indxeddyvbv)='                               '
+       vname(7,indxeddyvbv)='                               '
+
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyusu = ',indxeddyusu
+       write(vname1,*) 'usustr                              '
+       vname(1,indxeddyusu)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyusu)
+       vname(2,indxeddyusu)='usustr                         '
+       write(vname3,*) 'meter3 second-3                     '
+       vname(3,indxeddyusu)=vname3
+       vname(4,indxeddyusu)='                               '
+       vname(5,indxeddyusu)='                               '
+       vname(7,indxeddyusu)='                               '
+
+CR       write(stdout,'(1x,A,I3)') 'indxeddyvsv = ',indxeddyvsv
+       write(vname1,*) 'vsvstr                              '
+       vname(1,indxeddyvsv)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyvsv)
+       vname(2,indxeddyvsv)='vsvstr                         '
+       write(vname3,*) 'meter3 second-3                     '
+       vname(3,indxeddyvsv)=vname3
+       vname(4,indxeddyvsv)='                               '
+       vname(5,indxeddyvsv)='                               '
+       vname(7,indxeddyvsv)='                               '
+
+
+
 #endif  /* DIAGNOSTICS_EDDY */
 
 
