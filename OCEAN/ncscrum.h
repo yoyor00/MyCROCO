@@ -45,7 +45,7 @@
 !
 ! indxSSH         observed sea surface height (from climatology)
 ! indxSUSTR,indxSVSTR  surface U-, V-momentum stress (wind forcing)
-! indxBUSTR,indxBVSTR  bottom  U-, V-momentum stress 
+! indxBustr,indxBvstr  bottom  U-, V-momentum stress
 ! indxShflx       net surface heat flux.
 ! indxShflx_rsw   shortwave radiation flux
 ! indxSwflx       surface fresh water flux
@@ -413,8 +413,8 @@
 # endif
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
       integer indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
-     &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw
-     &        indxeddyubu,indxeddyvbv
+     &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw,
+     &        indxeddyubu,indxeddyvbv,
      &        indxeddyusu,indxeddyvsv
       parameter (indxeddyuu=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
@@ -599,14 +599,7 @@
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
 #endif
-#ifdef M3FAST
-#  if defined LMD_MIXING
-      integer indxBUSTR, indxBVSTR
-      parameter (indxBUSTR=indxSUSTR+2,
-     &           indxBVSTR=indxSUSTR+3)
-#  endif      
-#endif
-  
+
       integer indxTime2
       parameter (indxTime2=indxSUSTR+4)
 #ifdef SOLVE3D

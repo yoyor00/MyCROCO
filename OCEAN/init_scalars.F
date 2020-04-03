@@ -423,8 +423,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxBostr =',indxBostr
 #endif
       vname(7,indxBostr)='                                        '
 
-#ifdef M3FAST
-# if defined LMD_MIXING
+
 CR      write(stdout,'(1x,A,I3)') 'indxBustr =',indxBustr
       vname(1,indxBustr)='bustr                                   '
       vname(2,indxBustr)='Kinematic u bottom stress component     '
@@ -450,8 +449,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxBvstr =',indxBvstr
 !      vname(6,indxBvstr)='x_rho y_rho                            '
 #  endif
       vname(7,indxBvstr)='                                        '
-# endif
-#endif
+
 
 CR      write(stdout,'(1x,A,I3)') 'indxWstr=',indxWstr
       vname(1,indxWstr)='wstr                                     '
