@@ -424,6 +424,14 @@ C$    integer omp_get_thread_num
            enddo
           enddo
         enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            eddyusu_avg(i,j)=init
+            eddyvsv_avg(i,j)=init
+            eddyubu_avg(i,j)=init
+            eddyvbv_avg(i,j)=init
+          enddo
+        enddo
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EDDY */
 

@@ -186,6 +186,22 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+        if (wrtavg(indxBustr)) then
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              bustr_avg(i,j)=cff*( cff1*bustr_avg(i,j)+
+     &                                  bustr(i,j)*rho0)
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxBvstr)) then
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              bvstr_avg(i,j)=cff*( cff1*bvstr_avg(i,j)+
+     &                                  bvstr(i,j)*rho0)
+            enddo
+          enddo
+        endif
         if (wrtavg(indxWstr)) then
           do j=Jstr,Jend
             do i=Istr,Iend

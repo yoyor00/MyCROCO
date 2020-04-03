@@ -223,6 +223,30 @@ CR           write(*,*) 'wrt_his: wrtVBAR' MYID
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  bostr' MYID
       endif
+      
+!
+!     Write out kinematic U-bottom stress (N/m2).
+!
+      if (wrthis(indxBustr)) then
+         work2d=bustr*rho0
+         call fillvalue2d(work2d,ncidhis,hisBustr,indxBustr,
+     &        record,u2dvar,type)
+CR      write(*,*) 'wrt_his:  bustr' MYID
+      endif
+      
+      
+      
+!
+!     Write out kinematic V-bottom stress (N/m2).
+!
+      if (wrthis(indxBvstr)) then
+         work2d=bvstr*rho0
+         call fillvalue2d(work2d,ncidhis,hisBvstr,indxBvstr,
+     &        record,v2dvar,type)
+CR      write(*,*) 'wrt_his:  bvstr' MYID
+      endif
+      
+
 !     
 !--   Atmospheric forcing : no mask, no fill value
 !     

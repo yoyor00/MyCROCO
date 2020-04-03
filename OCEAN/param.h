@@ -886,7 +886,7 @@
       parameter (ntrc_diapv=0)
 # endif
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      parameter (ntrc_diaeddy=10)
+      parameter (ntrc_diaeddy=12)
 # else
       parameter (ntrc_diaeddy=0)
 # endif
