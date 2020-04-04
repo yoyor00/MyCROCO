@@ -25,6 +25,7 @@
       real,dimension(0:LLm+1,0:MMm+1)  ::   zmask
       integer,dimension(0:NNODES-1) :: mymynode!,myistr,myjstr,
 !    &    myiend,myjend
+      integer,dimension(0:NNODES-1) :: mymynode2
       integer ncid,varid,nerr
       integer ip1,im1,jp1,jm1,inu2
       integer Npts
@@ -131,9 +132,11 @@
       CORNER_SE=SOUTH_INTER .and.  EAST_INTER
       CORNER_NE=NORTH_INTER .and.  EAST_INTER
 
+      mynode2=mynode
 # else
-  !   ! read mask
-      nerr= nf_open('croco_grd.nc',
+      ! read mask
+      !nerr= nf_open('croco_grd.nc',
+      nerr= nf_open('gigatl1_grd_masked.nc',
      &   NF_NOWRITE, ncid)
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
       nerr= nf_get_var_double(ncid, varid, zmask)   
@@ -159,7 +162,7 @@
       inu=0 ; inu2=0
       myproc(:,:)=mpi_proc_null 
       mymynode(:)=0
-      
+      mymynode2(:)=0
       ! loop on all sub-domain
       do j=0,NP_ETA-1
         do i=0,NP_XI-1  
@@ -189,12 +192,14 @@
           if(sum(zmask(lbx:ubx,lby:uby))>0.)then
             myproc(i,j)=inu
             mymynode(inu)=inu
+            mymynode2(inu)=inu2
             inu=inu+1 
           endif
           inu2=inu2+1                           
         enddo
       enddo 
             
+      mynode2=mymynode2(mynode)
       mynode=mymynode(mynode)
       !
       do j=0,NP_ETA -1

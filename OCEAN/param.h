@@ -194,8 +194,12 @@
       parameter (LLm0=2937, MMm0=2334,  N=100) ! <-- MEGATL3
 #  elif defined  MEGATL
       parameter (LLm0=8811, MMm0=7002,  N=200) ! <-- MEGATL
+#  elif defined  GIGATL6
+      parameter (LLm0=1500, MMm0=2000,  N=50) ! <-- GIGATL6
 #  elif defined  GIGATL3
       parameter (LLm0=3000, MMm0=4000,  N=100) ! <-- GIGATL3
+#  elif defined  GIGATL1
+      parameter (LLm0=10500, MMm0=14000,  N=100) ! <-- GIGATL1
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -229,8 +233,13 @@
 !
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      integer NP_XI, NP_ETA, NNODES, NNODES2
+#ifndef MPI_NOLAND
+      parameter (NP_XI=100,  NP_ETA=100,  NNODES=NP_XI*NP_ETA) !GIGATL1
+#else
+      parameter (NP_XI=100,  NP_ETA=100,
+     &           NNODES=6582, NNODES2=NP_XI*NP_ETA) !GIGATL1
+#endif
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP

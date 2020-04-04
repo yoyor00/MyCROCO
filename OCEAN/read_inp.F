@@ -429,7 +429,11 @@
 #endif
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
+#if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+          MPI_master_only write(*,*) 'mynode',mynode,mynode2
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+#endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
           call insert_node (fname, lstr, mynode, NNODES, ierr)
 #endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
@@ -448,9 +452,12 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) fname 
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
         open(testunit,file=fname(1:lstr), status='old', err=97)
         close(testunit)
         grdname=fname(1:lstr)
@@ -496,9 +503,12 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         frcname=fname(1:lstr)
@@ -513,9 +523,12 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
 c        open (testunit, file=fname(1:lstr), status='old', err=97)
 c        close(testunit)
         bioname=fname(1:lstr)
@@ -531,9 +544,12 @@ c        close(testunit)
           call cancel_kwd (keyword(1:kwlen), ierr)
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#  if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bulkname=fname(1:lstr)
@@ -555,9 +571,12 @@ c        close(testunit)
 # endif
         read(input,'(A)',err=95) fname 
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         clmname=fname(1:lstr)
@@ -578,9 +597,12 @@ c        close(testunit)
 #  endif
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#  if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bry_file=fname(1:lstr)
@@ -601,9 +623,12 @@ c        close(testunit)
 #  endif
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#  if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           brywkb_file=fname(1:lstr)
@@ -621,7 +646,10 @@ c        close(testunit)
         read(input,*,err=95) nrst, nrpfrst
         read(input,'(A)',err=95)  fname 
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
 #ifdef USE_CALENDAR
@@ -640,7 +668,10 @@ c        close(testunit)
         read(input,*,err=95) ldefhis, nwrt, nrpfhis
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
 #ifdef USE_CALENDAR
@@ -660,7 +691,10 @@ c        close(testunit)
         read(input,*,err=95) ntsavg, navg, nrpfavg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
 #ifdef USE_CALENDAR
@@ -687,7 +721,10 @@ c        close(testunit)
         if (nwrtdia.eq.0) nwrtdia = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianame=fname(1:lstr)
@@ -704,7 +741,10 @@ c        close(testunit)
         if (nwrtdia_avg.eq.0) nwrtdia_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianame_avg=fname(1:lstr)
@@ -725,7 +765,10 @@ c        close(testunit)
         if (nwrtdiaM.eq.0) nwrtdiaM = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianameM=fname(1:lstr)
@@ -742,7 +785,10 @@ c        close(testunit)
         if (nwrtdiaM_avg.eq.0) nwrtdiaM_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianameM_avg=fname(1:lstr)
@@ -766,7 +812,10 @@ c        close(testunit)
         if (nwrtdiags_vrt.eq.0) nwrtdiags_vrt = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_vrtname=fname(1:lstr)
@@ -784,8 +833,11 @@ c        close(testunit)
         if (nwrtdiags_vrt_avg.eq.0) nwrtdiags_vrt_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_vrtname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -809,7 +861,10 @@ c        close(testunit)
         if (nwrtdiags_ek.eq.0) nwrtdiags_ek = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_ekname=fname(1:lstr)
@@ -827,7 +882,10 @@ c        close(testunit)
         if (nwrtdiags_ek_avg.eq.0) nwrtdiags_ek_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_ekname_avg=fname(1:lstr)
@@ -851,7 +909,10 @@ c        close(testunit)
         if (nwrtdiags_pv.eq.0) nwrtdiags_pv = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_pvname=fname(1:lstr)
@@ -869,7 +930,10 @@ c        close(testunit)
         if (nwrtdiags_pv_avg.eq.0) nwrtdiags_pv_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_pvname_avg=fname(1:lstr)
@@ -893,7 +957,10 @@ c        close(testunit)
         if (nwrtdiags_eddy.eq.0) nwrtdiags_eddy = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_eddyname=fname(1:lstr)
@@ -911,7 +978,10 @@ c        close(testunit)
         if (nwrtdiags_eddy_avg.eq.0) nwrtdiags_eddy_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         diags_eddyname_avg=fname(1:lstr)
@@ -935,7 +1005,10 @@ c        close(testunit)
         if (nwrtsurf.eq.0) nwrtsurf = nwrt
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         surfname=fname(1:lstr)
@@ -953,7 +1026,10 @@ c        close(testunit)
         if (nwrtsurf_avg.eq.0) nwrtsurf_avg = navg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         surfname_avg=fname(1:lstr)
@@ -977,7 +1053,10 @@ c        close(testunit)
         read(input,*,err=95) ldefdiabio, nwrtdiabio, nrpfdiabio
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianamebio=fname(1:lstr)
@@ -993,7 +1072,10 @@ c        close(testunit)
      &                       nwrtdiabio_avg, nrpfdiabio_avg
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianamebio_avg=fname(1:lstr)
@@ -1018,7 +1100,10 @@ c        close(testunit)
           read(input,'(A)',err=95) fposnam
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+          call insert_node (fposnam, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
           call insert_node (fposnam, lstr, mynode, NNODES, ierr)
 # endif
           fltname=fname(1:lstr)
@@ -1048,7 +1133,10 @@ c        close(testunit)
           read(input,'(A)',err=95) staposname
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+          call insert_node (staposname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
           call insert_node (staposname, lstr, mynode, NNODES, ierr)
 # endif
           staname=fname(1:lstr)
@@ -2655,7 +2743,10 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
