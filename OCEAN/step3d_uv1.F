@@ -19,16 +19,27 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call step3d_uv1_tile (Istr,Iend,Jstr,Jend,  A3d(1,1,trd),
-     &                              A3d(1,2,trd), A2d(1,1,trd))
+     &                      A3d(1,2,trd),
+#ifdef NHMG
+     &                      A3d(1,5,trd), !<- this is rw
+#endif
+     &                      A2d(1,1,trd))
       return
       end
 
-      subroutine step3d_uv1_tile (Istr,Iend,Jstr,Jend, ru,rv,DC)
+      subroutine step3d_uv1_tile (Istr,Iend,Jstr,Jend, ru,rv,
+#ifdef NHMG
+     &                                           rw,
+#endif
+     &                                           DC)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 # include "param.h"
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),
+#ifdef NHMG
+     &     rw(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+#endif
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  cff
 # include "grid.h"
 # include "ocean3d.h"
@@ -149,6 +160,27 @@
             enddo
           enddo
         endif
+
+# if defined NHMG
+        do k=1,N
+          ! dt is hidden in DC(i,0)
+          if (k.eq.N)then
+             do i=Istr,Iend
+                DC(i,0)=dt*pm(i,j)*pn(i,j)
+             enddo
+          else
+             do i=Istr,Iend
+                DC(i,0)=dt*pm(i,j)*pn(i,j)
+             enddo
+          endif
+          do i=Istr,Iend
+             wz(i,j,k,nnew)=wz(i,j,k,nnew)+DC(i,0)*rw(i,j,k)
+#  if defined MASKING
+             wz(i,j,k,nnew)=wz(i,j,k,nnew)*rmask(i,j)
+#  endif
+          enddo
+        enddo
+# endif /* NHMG */
       enddo 
 #else
       subroutine step3d_uv1_empty
