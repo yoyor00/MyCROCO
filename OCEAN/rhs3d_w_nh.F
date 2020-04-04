@@ -9,7 +9,7 @@
 # undef  NBQ_WFREESLIP
 #endif
 
-#if defined SOLVE3D && defined NBQ
+#if defined SOLVE3D && (defined NBQ || defined NHMG)
 
       SUBROUTINE rhs3d_w_nh(tile)
 
@@ -29,7 +29,12 @@
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A3d(1,3,trd),    !<-- A3d(1,1,trd), A3d(1,2,trd) contain ru,rv 
      &             A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),    !<-- A3d(1,3,trd) contains rw 
      &             A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd), 
-     &             A2d(1,7,trd), A3d(1,4,trd), A3d(1,5,trd)     !<-- A3d(1,3,trd) and A3d(1,4,trd) should 
+     &             A2d(1,7,trd),
+# ifdef NHMG
+     &             A2d(1,8,trd), A2d(1,9,trd),
+     &             A2d(1,10,trd), A2d(1,11,trd),
+# endif
+                                  A3d(1,4,trd), A3d(1,5,trd)     !<-- A3d(1,3,trd) and A3d(1,4,trd) should
      &                                                     )    !<-- be available at this point ...
       return
       END
@@ -38,7 +43,11 @@
       
       SUBROUTINE rhs3d_w_tile (istr, iend,   jstr,   jend, rw ,
      &                           CF,   FC,  We_r ,    lap, Hzw, 
-     &                          WFx,  WFe, HUon_w, HVom_w       )      
+     &                          WFx,  WFe,
+# ifdef NHMG
+     &                   div_zx,div_zy,Udiv_zx,Vdiv_zy,
+# endif
+                                           HUon_w, HVom_w       )
       IMPLICIT NONE
       !!
       INTEGER  :: Istr,Iend,Jstr,Jend
@@ -56,6 +65,12 @@
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )      
       REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      ) 
       REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
+# ifdef NHMG
+      REAL     :: div_zx(PRIVATE_1D_SCRATCH_ARRAY,1:N)
+      REAL     :: div_zy(PRIVATE_1D_SCRATCH_ARRAY,1:N)
+      REAL     :: Udiv_zx(PRIVATE_1D_SCRATCH_ARRAY,1:N)
+      REAL     :: Vdiv_zy(PRIVATE_1D_SCRATCH_ARRAY,1:N)
+# endif
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       !!    
@@ -625,6 +640,72 @@
 
 # endif /* W_HADV */
 
+# if defined NHMG && defined UV_ADV
+!====================================================================
+!     Pseudo forces for the equation of vertical Flux
+!     (Molemaker et al., in progress, 2020)
+!====================================================================
+
+      do j=jstr,jend
+        do k=1,N
+          do i=Istr,Iend
+            div_zx(i,k) = 0.5*Huon(i+1,j,k)*(dzdxi(i,j,k)+dzdxi(i+1,j,k))
+     &                   -0.5*Huon(i  ,j,k)*(dzdxi(i,j,k)+dzdxi(i-1,j,k))
+     &                   +0.5*Hvom(i,j+1,k)*(dzdxi(i,j,k)+dzdxi(i,j+1,k))
+     &                   -0.5*Hvom(i,j  ,k)*(dzdxi(i,j,k)+dzdxi(i,j-1,k))
+          div_zy(i,k) = 0.5*Huon(i+1,j,k)*(dzdeta(i,j,k)+dzdeta(i+1,j,k))
+     &                 -0.5*Huon(i  ,j,k)*(dzdeta(i,j,k)+dzdeta(i-1,j,k))
+     &                 +0.5*Hvom(i,j+1,k)*(dzdeta(i,j,k)+dzdeta(i,j+1,k))
+     &                 -0.5*Hvom(i,j  ,k)*(dzdeta(i,j,k)+dzdeta(i,j-1,k))
+          enddo
+        enddo
+        k=1
+          do i=Istr,Iend
+            div_zx(i,k) = div_zx(i,k)
+     &                   +0.5*  We(i,j,k  )*(dzdxi(i,j,k)+dzdxi(i,j,k+1))
+            div_zy(i,k) = div_zy(i,k)
+     &                   +0.5*  We(i,j,k  )*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
+          enddo
+        do k=2,N-1
+          do i=Istr,Iend
+            div_zx(i,k) = div_zx(i,k)
+     &                 +0.5*  We(i,j,k  )*(dzdxi(i,j,k)+dzdxi(i,j,k+1))
+     &                 -0.5*  We(i,j,k-1)*(dzdxi(i,j,k)+dzdxi(i,j,k-1))
+            div_zy(i,k) = div_zy(i,k)
+     &               +0.5*  We(i,j,k  )*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
+     &               -0.5*  We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
+          enddo
+        enddo
+        k=N
+          do i=Istr,Iend
+            div_zx(i,k) = div_zx(i,k)
+     &                 -0.5*  We(i,j,k-1)*(dzdxi(i,j,k)+dzdxi(i,j,k-1))
+            div_zy(i,k) = div_zy(i,k)
+     &                 -0.5*  We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
+          enddo
+
+        do k=1,N
+          do i=Istr,Iend
+            Udiv_zx(i,k) = 0.5*(u(i,j,k,nrhs) + u(i+1,j,k,nrhs))*div_zx(i,k)
+            Vdiv_zy(i,k) = 0.5*(v(i,j,k,nrhs) + v(i,j+1,k,nrhs))*div_zy(i,k)
+          enddo
+        enddo
+
+        do k=1,N-1
+          do i=Istr,Iend
+            rw(i,j,k) = rw(i,j,k)
+     &              - 0.5*(Udiv_zx(i,k) + Udiv_zx(i,k+1))
+     &              - 0.5*(Vdiv_zy(i,k) + Vdiv_zy(i,k+1))
+          enddo
+        enddo
+        k=N
+          do i=Istr,Iend
+            rw(i,j,k) = rw(i,j,k) - Udiv_zx(i,k) - Vdiv_zy(i,k)
+          enddo
+
+      enddo
+
+# endif
 
 # if defined UV_ADV && defined W_VADV
 !
