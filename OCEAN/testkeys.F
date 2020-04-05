@@ -28,5 +28,7 @@ XIOSISDEFINED
 #ifdef NBQ
 NBQISDEFINED
 #endif
-
+#ifdef NHMG
+NHMGISDEFINED
+#endif
 
