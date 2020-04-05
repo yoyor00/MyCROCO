@@ -47,7 +47,7 @@
 !
 # endif /* NBQ || NHMG */
 #endif /* CHILD */
-#ifdef NBQ
+#if defined NBQ || defined NHMG
 !
 ! Common Code
 !
@@ -575,4 +575,4 @@
 #else
       subroutine w3dbc_empty
       end
-#endif /* NBQ */
+#endif /* NBQ || NHMG */
