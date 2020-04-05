@@ -298,7 +298,7 @@
         enddo
       enddo
 
-#ifdef NBQ
+#if defined NBQ || defined NHMG
 !
 !  Compute XI- and ETA-components of diffusive wz flux.
 !
@@ -349,7 +349,9 @@
             cff1=pm(i,j)*pn(i,j)
             wz(i,j,k,indx)=wz(i,j,k,indx)+dt*cff1
      &                     *(FX(i+1,j)-FX(i,j)+FE(i,j+1)-FE(i,j))
-!    &                                    /(Hz(i,j,k)+Hz(i,j,kp))
+# if defined NHMG
+    &                                    /(Hz(i,j,k)+Hz(i,j,kp))
+# endif
           enddo
         enddo
       enddo ! <-- k
