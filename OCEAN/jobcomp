@@ -69,6 +69,14 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 # set XIOS directory if needed
 #
 XIOS_ROOT_DIR=$HOME/xios-1.0
+
+#
+# set NHMG directory if needed
+#
+NHMG=../croco/NHMG
+NHMGLIB="-L${NHMG}/lib -lnhmg"
+NHMGINC="-I${NHMG}/include"
+
 #
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -197,6 +205,17 @@ fi
 FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
 CFT1=${CROCO_CFT1-$CFT1}
 
+#
+# determine if NHMG is required
+#
+unset COMPILENHMG
+echo "Checking COMPILENHMG..."
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+	echo " => NHMG activated"
+	COMPILENHMG=TRUE
+	LDFLAGS1="$NHMGLIB $LDFLAGS1"
+	FFLAGS1="$NHMGINC $FFLAGS1"
+fi
 #
 # determine if XIOS compilation is required
 #
