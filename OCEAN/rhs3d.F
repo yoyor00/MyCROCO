@@ -35,7 +35,7 @@
 # ifdef NHMG
      &                                                  rw,
 # endif
-                                                        CF,FC,DC,
+     &                                                   CF,FC,DC,
      &                                 wrk1,wrk2, UFx,UFe, VFx,VFe)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k

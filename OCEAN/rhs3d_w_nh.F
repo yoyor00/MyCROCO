@@ -34,7 +34,7 @@
      &             A2d(1,8,trd), A2d(1,9,trd),
      &             A2d(1,10,trd), A2d(1,11,trd),
 # endif
-                                  A3d(1,4,trd), A3d(1,5,trd)     !<-- A3d(1,3,trd) and A3d(1,4,trd) should
+     &                             A3d(1,4,trd), A3d(1,5,trd)     !<-- A3d(1,3,trd) and A3d(1,4,trd) should
      &                                                     )    !<-- be available at this point ...
       return
       END
@@ -47,7 +47,7 @@
 # ifdef NHMG
      &                   div_zx,div_zy,Udiv_zx,Vdiv_zy,
 # endif
-                                           HUon_w, HVom_w       )
+     &                                      HUon_w, HVom_w       )
       IMPLICIT NONE
       !!
       INTEGER  :: Istr,Iend,Jstr,Jend
