@@ -423,7 +423,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -757,6 +757,9 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#ifdef NHMG
+      USE nhmg, only : nhmg_matrices
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -793,6 +796,10 @@ C$OMP END MASTER
       integer omp_get_num_threads, omp_get_thread_num 
       integer itrc
       
+# if defined NHMG
+      integer halo
+# endif
+
       real t1,t2,t3
 
       ntrds=omp_get_num_threads()
@@ -817,6 +824,15 @@ C$OMP BARRIER
       enddo
 # endif
 
+# ifdef NHMG
+#   ifdef THREE_GHOST_POINTS
+      halo = 3
+#   else
+      halo = 2
+#   endif
+      call nhmg_matrices(Lm,Mm,N,halo,padd_X,padd_E,dzdxi,dzdeta,Hz,z_r)
+# endif
+
 C$OMP BARRIER
 
       do tile=my_first,my_last
@@ -837,7 +853,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -864,6 +880,10 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #endif /* SOLVE3D */
+#ifdef  NHMG
+      iprec1 = 1+mod(iprec1,2)
+      iprec2 = 1+mod(iprec2,2)
+#endif
 !
 #if defined AGRIF && defined AGRIF_2WAY
 !
