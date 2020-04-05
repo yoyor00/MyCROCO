@@ -335,6 +335,9 @@ C$    integer omp_get_thread_num
 #  include "ocean3d.h"
 #  include "scalars.h"
 !
+# if defined NHMG
+      real grad(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
 #  ifdef MRL_WCI
 #    include "forces.h"
 #  endif
@@ -580,6 +583,9 @@ C$    integer omp_get_thread_num
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+# if defined NHMG
+      real grad(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
 #  ifdef MRL_WCI
 #    include "forces.h"
 #  endif
