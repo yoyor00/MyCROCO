@@ -54,7 +54,7 @@
       real nhdw(GLOBAL_2D_ARRAY,0:N,2)
       real dzdxi(GLOBAL_2D_ARRAY,1:N)
       real dzdeta(GLOBAL_2D_ARRAY,1:N)
-      real Hz_half(GLOBAL_2D_ARRAY,N)
+!      real Hz_half(GLOBAL_2D_ARRAY,N)
       real Pnh(GLOBAL_2D_ARRAY,N)
       common /ocean_wz/wz
       common /ocean_nhdu/nhdu 
@@ -62,7 +62,7 @@
       common /ocean_nhdw/nhdw
       common /ocean_dzdxi/dzdxi
       common /ocean_dzdeta/dzdeta
-      common /grid_Hz_half/Hz_half
+!      common /grid_Hz_half/Hz_half
       common /ocean_pnh/Pnh
 # endif
 
