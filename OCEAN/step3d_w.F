@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined NBQ
+#if defined SOLVE3D && (defined NBQ || defined NHMG)
 
 # define NBQ_WDIF
 
@@ -86,6 +86,7 @@
 !  Apply right-hand-side
 !---------------------------------------------------------------------- 
 !
+#if defined NBQ
       DO j=Jstr,Jend
         DO k=1,N
           DO i=Istr,Iend
@@ -94,6 +95,25 @@
           ENDDO
         ENDDO
       ENDDO  
+# endif /*NBQ */
+
+# if defined NGMG
+      ! TODO: implement vertical mixing on wz for NHMG
+      do j=Jstr,Jend
+        do k=1,N-1
+          do i=Istr,Iend
+            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &            +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+     &            /(0.5*(Hz(i,j,k)+Hz(i,j,k+1)))
+          enddo
+        enddo
+        do i=Istr,Iend
+           wz(i,j,N,nnew)=wz(i,j,N,nnew)
+     &          +dt*pn(i,j)*pm(i,j)*rw(i,N,k)
+     &          /(0.5*Hz(i,j,N))
+        enddo
+      enddo
+# endif /* NHMG */
 
 # ifdef NBQ_FREESLIP
 !      DO j=Jstr,Jend
