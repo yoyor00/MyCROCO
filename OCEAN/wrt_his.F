@@ -616,7 +616,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !     
       if (wrthis(indxW)) then
-#ifdef NBQ
+#if defined NBQ || defined NHMG
          do k=0,N
             do j=0,Mm+1
                do i=0,Lm+1
