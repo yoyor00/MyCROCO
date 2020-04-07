@@ -2,6 +2,7 @@
 # coding: utf-8
 import numpy as np
 import argparse
+import matplotlib; matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
@@ -9,11 +10,11 @@ from netCDF4 import Dataset
 from matplotlib.font_manager import FontProperties
 import sys
 
-#myfile='benguela-008x008_052'
-#myncfile='croco_grd.nc'
+#myfile='GIGATL6-0037x0027_0708'
+#myncfile='gigatl6_grd.nc'
 
 if len(sys.argv) != 3:
-	print ("Usage : mpp_plot.py GRID_FILE COVDTA_FILE")
+	print "Usage : mpp_plot.py GRID_FILE COVDTA_FILE"
 	sys.exit (1)
 
 myncfile=sys.argv[1]
@@ -38,7 +39,8 @@ vlevel=np.arange(0,6000,100)
 
 plt.contourf(lon2d,lat2d,bathy,levels=vlevel)
 
-plt.title('Bathymetry (m)')
+#plt.title('Bathymetry (m) '+str(myfile))
+plt.title(str(myfile))
 plt.ylabel('Latitude',fontsize=14)
 plt.xlabel('Longitude',fontsize=14)
 plt.colorbar()
@@ -58,7 +60,6 @@ L0=file.readline()
 L0=int(L0.replace('#',''))
 for i in range(L0):
 	L00=file.readline().split()
-
 	L1=file.readline().split()
 	LON1=lon2d[max(int(L1[1])-NPTS,0),max(int(L1[0])-NPTS,0)]
 	LAT1=lat2d[max(int(L1[1])-NPTS,0),max(int(L1[0])-NPTS,0)]    
@@ -96,18 +97,15 @@ for i in range(L0):
 	path = mpath.Path(verts, codes)
 	patch = mpatches.PathPatch(path, facecolor='b', alpha=0.2)
 	ax.add_patch(patch)		
-	ax.add_patch(patch)
 
-	mynum=int(L00[1]) -1
-	t = plt.text((LON1+LON2)/2., (LAT1+LAT3)/2.,str(mynum), fontproperties=font1,
-             **alignment)	
-
+	#mynum=int(L00[1]) -1
+	#t = plt.text((LON1+LON2)/2., (LAT1+LAT3)/2.,str(mynum), fontproperties=font1,
+    #         **alignment)	
 iend=i
-
 L0=file.readline()
 L0=int(L0.replace('# vides:',''))
 for i in range(L0):
-	L00=file.readline()
+	L0=file.readline().split()
 	L1=file.readline().split()
 	LON1=lon2d[max(int(L1[1])-NPTS,0),max(int(L1[0])-NPTS,0)]
 	LAT1=lat2d[max(int(L1[1])-NPTS,0),max(int(L1[0])-NPTS,0)]    
@@ -130,12 +128,9 @@ for i in range(L0):
 
 
 	L000=file.readline()
-	L000=file.readline()
-	L000=file.readline()
-	L000=file.readline()
 
 	path_data = [
-    (Path.MOVETO, (LON1,LAT1)),
+   (Path.MOVETO, (LON1,LAT1)),
     (Path.LINETO, (LON2,LAT2)),
     (Path.LINETO, (LON3,LAT3)),
     (Path.LINETO, (LON4,LAT4)),
@@ -143,11 +138,15 @@ for i in range(L0):
 
 	codes, verts = zip(*path_data)
 	path = mpath.Path(verts, codes)
-	patch = mpatches.PathPatch(path, facecolor='r', alpha=0.2)
+	#path = mpatches.Polygon(verts,facecolor='white',linewidth=2,edgecolor='black',hatch='x',fill=True,alpha=0.2)
+	#ax.add_patch(path)	
+	patch = mpatches.PathPatch(path,hatch='x', facecolor='w',  alpha=0.2)
 	ax.add_patch(patch)	
-#	t = plt.text((LON1+LON2)/2., (LAT1+LAT3)/2., str(i+iend), fontproperties=font1,
+	#t = plt.text((LON1+LON2)/2., (LAT1+LAT3)/2., str(i+iend), fontproperties=font1,
 #             **alignment)	
 
 file.close()
 
-plt.show()
+#plt.show()
+plt.savefig(myfile+'.png',dpi=200)
+

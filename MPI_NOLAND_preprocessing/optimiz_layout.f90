@@ -1,7 +1,7 @@
-PROGRAM mpp_optimiz_nc
+PROGRAM optimiz_layout
    !!---------------------------------------------------------------------
    !!
-   !!                       PROGRAM MPP_OPTIMIZ_NC
+   !!                       PROGRAM MPP_OPTIMIZ
    !!                     ***********************
    !!
    !!  PURPOSE :
@@ -13,11 +13,8 @@ PROGRAM mpp_optimiz_nc
    !!              and determine the optimal.
    !!
    !!              Optimization is done with respect to the maximum number of
-   !!              sea processors and to the maximum numbers of procs (jprocx)
+   !!              sea processors and to the maximum numbers of procs (max_number_proc)
    !!                     
-   !!              Optional optimization can be performed takink into account
-   !!              the maximum available processor memory ppmcal. This is
-   !!              activated if jpmen =1
    !!
    !! history:
    !! --------
@@ -25,16 +22,15 @@ PROGRAM mpp_optimiz_nc
    !!       f90       : 03-06 (Molines JM), namelist as input
    !!                 : 05-05 (Molines JM), bathy in ncdf
    !!                 : 18-05 (Benshila R), adaptation for CROCO 
+   !!                 : 2020-04 (Theetten S),  split in two codes and clean.
+   !!                                          (new code is my_layout.f90)
+   !!
    !!----------------------------------------------------------------------
    !! * modules used
     USE netcdf
 
     IMPLICIT NONE
-
-    INTEGER ::  jprocx=250   !: maximum number of proc. (Read from namelist)
-    INTEGER ::  jpmem=0      !: memory constraint (1) or no constraint (0)
-       !                     !  (use 1 with caution as the memory size of 
-       !                     !   the code lays on CROCO estimates ...)
+    INTEGER ::  max_number_proc=250   !: maximum number of proc. (Read from namelist)
        !
     INTEGER ::  &
          jpk =     31,    & !: vertical levels (namelist)
@@ -42,45 +38,33 @@ PROGRAM mpp_optimiz_nc
          eta_rho ,    & !: J-size of the model (namelist)
          Npts    =  2,    & !: number of ghost cells
          numnam  =  4       !: logical unit for the namelist
-    NAMELIST /namspace/ jpk, Npts
-    NAMELIST /namproc/ jprocx, jpmem
+    LOGICAL :: OBC_NORTH, OBC_SOUTH, OBC_EAST, OBC_WEST    
+    NAMELIST /namspace/ jpk, Npts,   &
+            OBC_NORTH, OBC_SOUTH, OBC_EAST, OBC_WEST
+    INTEGER :: min_nb_proc_NP_XI,min_nb_proc_NP_ETA
+    NAMELIST /namproc/ min_nb_proc_NP_XI,min_nb_proc_NP_ETA,max_number_proc
 
     INTEGER ::  jpnix ,jpnjx  
     REAL(kind=8) :: xlen,ylen
 
-    !
-    ! Following variables are used only if jpmem=1
-    REAL(KIND=4) ::  ppmpt ,   &
-         ppmcal = 225000000., &  !: maximum memory of one processor for a given machine (in 8 byte words)
-         ppmin  = 0.4,         & !: minimum ratio to fill the memory
-         ppmax  = 0.9            !: maximum ration to fill the memory
-    ! Aleph
-    !     PARAMETER(ppmcal= 16000000.)
-    !Brodie
-    !     PARAMETER(ppmcal=250000000.)
-    ! Uqbar
-    !     PARAMETER(ppmcal=3750000000.)
-    ! Zahir
-    !     PARAMETER(ppmcal=225000000.)
 
     CHARACTER(LEN=80) :: cbathy, &       !: File name of the netcdf bathymetry (namelist)
         &                clvar           !: Variable name in netcdf for the bathy to be read
-    CHARACTER(LEN=80) :: covdta, cdum
+    CHARACTER(LEN=80) :: covdta
     NAMELIST /namfile/ cbathy, covdta
-    NAMELIST /namparam/ ppmcal, ppmin, ppmax
     
     INTEGER :: iumout = 16
     INTEGER :: ji,jj,jni,jnj,jni2,jnj2
     INTEGER :: imoy,isurf,ivide
     INTEGER :: in
     INTEGER :: ipi,ipj
-    INTEGER :: inf10,inf30,inf50,iptx,isw
+    INTEGER :: inf10,inf30,inf50,iptx
     INTEGER :: iii,iij,iiii,iijj,iimoy,iinf10,iinf30,iinf50
     !
     INTEGER,DIMENSION(:,:),ALLOCATABLE     ::  ippdi, ippdj ,iidom, ijdom
     INTEGER ::  LLm, MMm, NP_XI,NP_ETA
     !
-    REAL(KIND=4)                           ::  zmin,zmax,zper,zmem
+    REAL(KIND=4)                           ::  zmin,zmax,zper
     REAL(KIND=4)                           ::  zzmin,zzmax,zperx
     REAL(KIND=4),DIMENSION(:,:),ALLOCATABLE  ::  zmask ! xi_rho - eta_rho
     REAL(KIND=4),DIMENSION(:,:),ALLOCATABLE  ::  ztemp ! xi_rho - eta_rho
@@ -106,26 +90,18 @@ PROGRAM mpp_optimiz_nc
     READ(numnam,namfile)
 
     REWIND(numnam)
-    READ(numnam,namparam)
-
-    REWIND(numnam)
     READ(numnam,namproc)
 
-    ! estimated  code size expressed in number of 3D arrays : 
-    ! A3d + A2d + arrays in common (here for Benguela ref)
-    !!!!! CAUTION  here it's a super raw estimate
-    ppmpt = 6.+30./jpk + 85./jpk + 3.*4/jpk + 20 +10 +2*2 +2 +4+6
-    
-    jpnix = jprocx ; jpnjx= jprocx
+    jpnix = max_number_proc ; jpnjx= max_number_proc
 
     ALLOCATE (ippdi(jpnix,jpnjx), ippdj(jpnix,jpnjx) )
     ALLOCATE (iidom(jpnix,jpnjx), ijdom(jpnix,jpnjx) )
-    ALLOCATE (nlei(jprocx), nldi(jprocx) )
-    ALLOCATE (nlej(jprocx), nldj(jprocx) )
+    ALLOCATE (nlei(max_number_proc), nldi(max_number_proc) )
+    ALLOCATE (nlej(max_number_proc), nldj(max_number_proc) )
     ! empty processors
-    ALLOCATE (nleiv(jprocx), nldiv(jprocx) )
-    ALLOCATE (nlejv(jprocx), nldjv(jprocx) )
-    ALLOCATE (ICOUNT(jprocx) ) 
+    ALLOCATE (nleiv(max_number_proc), nldiv(max_number_proc) )
+    ALLOCATE (nlejv(max_number_proc), nldjv(max_number_proc) )
+    ALLOCATE (ICOUNT(max_number_proc) ) 
 
     OPEN(iumout,FILE='processor.layout')
     
@@ -165,18 +141,13 @@ PROGRAM mpp_optimiz_nc
        END DO
     END DO
  
-  !   DO jj=1,eta_rho
-  !     DO ji=1,xi_rho
-  !       zmask(ji,jj)=  MIN(REAL(1.,kind=4),MAX(REAL(0.,kind=4),zmask(ji,jj)))  ! Old vector coding rule ...
-  !     END DO
-  !  END DO
    
     PRINT *,'Number of pts     :', eta_Rho*eta_rho
     PRINT *,'Number of sea pts :', INT(SUM(zmask))
     PRINT *
 
     !
-    !  0. Main loop on all possible combination of processors up to jprocx
+    !  0. Main loop on all possible combination of processors up to max_number_proc
     ! --------------------------------------------------------------------
     iii=1 ; iij=1
     iiii=xi_rho ; iijj=eta_rho
@@ -191,15 +162,17 @@ PROGRAM mpp_optimiz_nc
     Mmm = eta_rho-2!TRANSFER(OBC_NORTH,zdumm)-TRANSFER(OBC_SOUTH,zdumm)  ! NS boundary or not 
 
     
-    DO jni=1,jpnix
-       DO jnj=1,jpnjx        !
+    !DO jni=1,jpnix
+    !   DO jnj=1,jpnjx        !
+    DO jni=min_nb_proc_NP_XI,jpnix
+       DO jnj=min_nb_proc_NP_ETA,jpnjx        !
         
           !  1. Global characteristics of the jni x jnj decomposition
           ! ---------------------------------------------------------
           !
 
           ! Limitation of the maximum number of PE's
-          IF(jni*jnj > jprocx) goto 1000
+          IF(jni*jnj > max_number_proc) goto 1000
           !
           NP_XI=jni
           NP_ETA=jnj        
@@ -213,17 +186,6 @@ PROGRAM mpp_optimiz_nc
           ipi=chunk_size_X+2*Npts  ! Interior + Ghost cells
           ipj=chunk_size_E+2*Npts   
 
-      !    IF(((ipi+2)/2 - (ipi+1)/2 )> 0)  go to 1000
-      !    IF(((ipj+2)/2 - (ipj+1)/2) > 0)  go to 1000
-
-          ! Memory optimization ?
-          isw=0
-          zmem=ppmpt*ipi*ipj*jpk
-          IF(zmem > ppmcal) go to 1000
-          IF(jpmem == 1) THEN
-             IF(zmem.GT.ppmax*ppmcal.OR.zmem.LT.ppmin*ppmcal) isw=1
-          ENDIF
-          IF(isw.EQ.1) go to 1000
           in=in+1
           !
           WRITE(iumout,*) '--> number of CPUs ',jni*jnj
@@ -462,49 +424,4 @@ PROGRAM mpp_optimiz_nc
     WRITE(*,*) ' % sup                            ', zperx
     WRITE(*,*)
 
-    !
-    ! 8. Write optimum in a file
-    ! --------------------------
-    !
-    WRITE(cdum,'(a,1h-,i3.3,1hx,i3.3,1h_,i3.3)') TRIM(covdta),iii,iij,iii*iij-iptx
-    OPEN (20,file=cdum)
-    WRITE(20,'(a,i5)')'#',iii*iij -iptx
-    DO jjc=1,iii*iij-iptx
-       WRITE(20,'(a,i5)')'#',jjc
-       WRITE(20,'(2i5)')nldi(jjc),nldj(jjc)
-       WRITE(20,'(2i5)')nlei(jjc),nldj(jjc)
-       WRITE(20,'(2i5)')nlei(jjc),nlej(jjc)
-       WRITE(20,'(2i5)')nldi(jjc),nlej(jjc)
-       WRITE(20,'(2i5)')nldi(jjc),nldj(jjc)
-       WRITE(20,'(2i5)') 9999,9999
-       ! Write warnings on standard entry if very few water points (arbitrary <20)
-       ! We could test the ratio instead
-       IF (icount(jjc).LT.20) THEN
-          WRITE(iumout,*)' proc ji=',jjc,' water points:', icount(jjc)
-          WRITE(iumout,*) ' ji from ',nldi(jjc), ' to :',nlei(jjc)
-          WRITE(iumout,*) ' jj /  mask value for all ji'
-          DO jj=nldj(jjc),nlej(jjc)
-             WRITE(iumout,900) jj,(INT(zmask(ji,jj)),ji=nldi(jjc),nlei(jjc))
-          ENDDO
-  900           FORMAT(1x,i4,1x,9(10i1,1x))
-       ENDIF
-    END DO
-    WRITE(20,'(a,i5)')'# vides:',iptx
-    DO jjc=1,iptx
-       WRITE(20,'(a,i5)')'# vide ',jjc
-       WRITE(20,'(2i5)')nldiv(jjc),nldjv(jjc)
-       WRITE(20,'(2i5)')nleiv(jjc),nldjv(jjc)
-       WRITE(20,'(2i5)')nleiv(jjc),nlejv(jjc)
-       WRITE(20,'(2i5)')nldiv(jjc),nlejv(jjc)
-       WRITE(20,'(2i5)')nldiv(jjc),nldjv(jjc)
-       WRITE(20,'(2i5)')nleiv(jjc),nlejv(jjc)
-       WRITE(20,'(2i5)')nldiv(jjc),nlejv(jjc)
-       WRITE(20,'(2i5)')nleiv(jjc),nldjv(jjc)
-       WRITE(20,'(2i5)') 9999,9999
-    END DO
-    CLOSE(20)
-    IF(iumout .NE. 6) CLOSE(iumout)
-    !
-    STOP
-    !
-END PROGRAM mpp_optimiz_nc
+     END PROGRAM optimiz_layout
