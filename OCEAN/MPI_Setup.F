@@ -134,11 +134,9 @@
 
       mynode2=mynode
 # else
-  !   ! read mask
+      ! read mask
       !nerr= nf_open('croco_grd.nc',
-      !nerr= nf_open('./INIT/GRD/gigatl6_grd_masked.nc',
-      !nerr= nf_open('gigatl1_grd_masked.nc',
-      nerr= nf_open('gigatl1_grd.nc',
+      nerr= nf_open('gigatl1_grd_masked.nc',
      &   NF_NOWRITE, ncid)
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
       nerr= nf_get_var_double(ncid, varid, zmask)   
@@ -203,7 +201,6 @@
             
       mynode2=mymynode2(mynode)
       mynode=mymynode(mynode)
-
       !
       do j=0,NP_ETA -1
         do i=0,NP_XI  -1      

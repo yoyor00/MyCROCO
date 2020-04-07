@@ -27,7 +27,6 @@
 #endif
 #if defined PSOURCE || defined PSOURCE_NCFILE
 # include "sources.h"
-      integer Nsrc_dumb
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
@@ -431,7 +430,7 @@
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 #if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
-          !write(*,*) mynode,mynode2
+          MPI_master_only write(*,*) 'mynode',mynode,mynode2
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #endif
 #if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
@@ -507,7 +506,7 @@
 # if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
-#if defined MPI && defined PARALLEL_FILE && !defined MPI_NOLAND
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
           call insert_node (fname, lstr, mynode, NNODES, ierr)
 #endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
@@ -1057,7 +1056,7 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
-# if defined MPI && defined PARALLEL_FILES
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
         call insert_node (fname, lstr, mynode, NNODES, ierr)
 # endif
         dianamebio=fname(1:lstr)
@@ -1213,6 +1212,8 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
      &                                             wrthis(indxBostr)
+     &                                          ,  wrthis(indxBustr)
+     &                                          ,  wrthis(indxBvstr)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
@@ -1231,8 +1232,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+        || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+        || defined GLS_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1258,6 +1259,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
      &                                          ,  wrthis(indxBostr)
+     &                                          ,  wrthis(indxBustr)
+     &                                          ,  wrthis(indxBvstr)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
@@ -1333,6 +1336,8 @@ c        close(testunit)
      &                                        .or. wrthis(indxHbbl)
 # endif
      &                                        .or. wrthis(indxBostr)
+     &                                        .or. wrthis(indxBustr)
+     &                                        .or. wrthis(indxBvstr)
      &                                        .or. wrthis(indxWstr)
      &                                        .or. wrthis(indxUWstr)
      &                                        .or. wrthis(indxVWstr)
@@ -1433,6 +1438,8 @@ c        close(testunit)
 #  endif
 # endif /* BIOLOGY */
      &  , wrthis(indxBostr), 'write Bostr', 'Bottom Stress.'
+     &  , wrthis(indxBustr), 'write Bustr', 'U-Bottom Stress.'
+     &  , wrthis(indxBvstr), 'write Bvstr', 'V-Bottom Stress.'
      &  , wrthis(indxWstr),  'write Wstress', 'Wind Stress.'
      &  , wrthis(indxUWstr), 'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrthis(indxVWstr), 'write V-Wstress comp.', 'V-Wind Stress.'
@@ -1547,6 +1554,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
      &                                          ,  wrtavg(indxBostr)
+     &                                          ,  wrtavg(indxBustr)
+     &                                          ,  wrtavg(indxBvstr)
      &                                          ,  wrtavg(indxWstr)
      &                                          ,  wrtavg(indxUWstr)
      &                                          ,  wrtavg(indxVWstr)
@@ -1619,6 +1628,8 @@ c        close(testunit)
      &                                        .or. wrtavg(indxHbbl)
 #  endif
      &                                        .or. wrtavg(indxBostr)
+     &                                        .or. wrtavg(indxBustr)
+     &                                        .or. wrtavg(indxBvstr)
      &                                        .or. wrtavg(indxWstr)
      &                                        .or. wrtavg(indxUWstr)
      &                                        .or. wrtavg(indxVWstr)
@@ -1722,6 +1733,8 @@ c        close(testunit)
 #   endif
 #  endif   /* BIOLOGY */
      &  , wrtavg(indxBostr),'write Bostr', 'Bottom Stress.'
+     &  , wrtavg(indxBustr),'write Bustr', 'U-Bottom Stress.'
+     &  , wrtavg(indxBvstr),'write Bvstr', 'V-Bottom Stress.'
      &  , wrtavg(indxWstr), 'write Wstr', 'Wind Stress.'
      &  , wrtavg(indxUWstr),'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrtavg(indxVWstr),'write V-Wstress comp.', 'V-Wind Stress.'
