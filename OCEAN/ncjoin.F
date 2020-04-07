@@ -98,7 +98,6 @@ c--#define VERBOSE
       real*8, allocatable, dimension(:) :: bfr_out
 #endif
 
-
 #ifdef AUTORENICE
       integer getpid, pid            ! Sometimes it makes sense to
       character*32 cmd               ! run ncjoin in the background
@@ -606,7 +605,7 @@ c   &              ',', j, ' which already defined in another file.'
                 dimsize(i,nnodes)=Mmm+2 
                 size_ETA=max(size_ETA,dimsize(i,node))
                 ETA_rho=max(ETA_rho, dimsize(i,nnodes))
-            enddo
+              enddo
 
             elseif (lvar.eq.5.and.dimname(i)(1:lvar).eq.'eta_v') then
               id_eta_v=i
@@ -1319,6 +1318,7 @@ c?                  endif
                         write(*,*) 'allocated "bfr_out" with ',
      &                     'max_bfr_out =', max_bfr_out 
                       endif
+
 
                       if (vartype(i) .eq. nf_char) then
                         call assembly_text (buff,count, bfr_out,
