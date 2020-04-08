@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 set -e
 set -u
 
@@ -49,17 +49,18 @@ do
 
   line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
-  [ ! -z $toto ] && sed -e "${line} s/$toto/2700/" $file > tmp.txt && \mv tmp.txt $file
+  [ ! -z $toto ] && sed -e "${line} s/$toto/300/" $file > tmp.txt && \mv tmp.txt $file
 done
 
 for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in )
 do 
-    sed '2c 79 137 37 117 3 3 3 3' $file > tmp.txt && \mv tmp.txt $file
+    #sed '2c 79 137 37 117 3 3 3 3' $file > tmp.txt && \mv tmp.txt $file
+    sed '2c $nest_position_reg' $file > tmp.txt && \mv tmp.txt $file
 done
 
 ##exit
 
-ln -sf $dir_home/Configure_Test_ana $dir_test/
+ln -sf $dir_home/Configure_Test_reg $dir_test/
 
 # configure files
 ln -sf $dir_home/../CONFIGURE_GLOBAL $dir_test/

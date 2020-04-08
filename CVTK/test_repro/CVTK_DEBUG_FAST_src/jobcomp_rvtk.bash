@@ -20,6 +20,7 @@
 # Note that environment variables overwrite hard-coded
 # options
 
+set -x
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
@@ -87,7 +88,7 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 #
 # clean scratch area
 #
-#####rm -rf $SCRDIR
+rm -rf $SCRDIR
 mkdir $SCRDIR
 
 #
@@ -98,40 +99,40 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 #
 # copy SOURCE code
 #
-/bin/cp -f ${SOURCE}/*.F90 $SCRDIR
-/bin/cp -f ${SOURCE}/*.F   $SCRDIR
-/bin/cp -f ${SOURCE}/*.h   $SCRDIR
-/bin/cp -f ${SOURCE}/*.h90   $SCRDIR
-/bin/cp -f ${SOURCE}/Make* $SCRDIR
-/bin/cp -f ${SOURCE}/testkeys.F $SCRDIR
-/bin/cp -f ${SOURCE}/jobcomp $SCRDIR
-/bin/cp -f ${SOURCE}/amr.in $SCRDIR
-/bin/cp -RLf ${AGRIF_SRC} $SCRDIR
-/bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/SED/* $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+
+ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
+ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
+ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
+ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
+ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
+ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
+ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
+ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        /bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+        \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
 fi
 #
 # overwrite with local files
 #
-/bin/cp -f *.F90 $SCRDIR
-/bin/cp -f *.F $SCRDIR
-/bin/cp -f *.h $SCRDIR
-/bin/cp -f Make* $SCRDIR
-/bin/cp -f jobcomp $SCRDIR
-#
+
+ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
+ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
+ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
+ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
+ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 #
 # RVTK  files  DEBUG CPP KEYS
 #
-/bin/cp -f cppdefs_dev_cvtk.h ${SCRDIR}/cppdefs_dev.h
-/bin/cp -f ${SCRDIR}/cppdefs.h.OK ${SCRDIR}/cppdefs.h
-/bin/cp -f ${SCRDIR}/param.h.OK ${SCRDIR}/param.h
+/bin/cp -f cppdefs.h.OK ${SCRDIR}/cppdefs.h
+/bin/cp -f param.h.OK ${SCRDIR}/param.h
 #
 # Change directory
 #
@@ -153,7 +154,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
-		CPP1="cpp  -traditional -DLinux"
+		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
 		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
 #		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
@@ -220,9 +221,10 @@ if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff"
         CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
         FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
-        ln -s $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
+        ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/field_def.xml_full $RUNDIR/field_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/domain_def.xml $RUNDIR/domain_def.xml
+        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/iodef.xml $RUNDIR/iodef.xml
 fi
 
@@ -317,5 +319,7 @@ rm -f flags.tmp
 $MAKE depend
 $MAKE
   
-[ -f croco ] && mv croco $RUNDIR
+[[ -f croco  ]] && mv croco $RUNDIR
+#[[ -f partit ]] && mv partit $RUNDIR
+#[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #
