@@ -837,7 +837,7 @@
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
-# ifdef NBQ
+# if defined NBQ || defined NHMG
           ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
      &                               NF_FOUT, 4, w3dgrd, vidW)
 # else
