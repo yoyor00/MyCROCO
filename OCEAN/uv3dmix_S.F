@@ -350,7 +350,7 @@
             wz(i,j,k,indx)=wz(i,j,k,indx)+dt*cff1
      &                     *(FX(i+1,j)-FX(i,j)+FE(i,j+1)-FE(i,j))
 # if defined NHMG
-    &                                    /(Hz(i,j,k)+Hz(i,j,kp))
+     &                                    /(Hz(i,j,k)+Hz(i,j,kp))
 # endif
           enddo
         enddo
