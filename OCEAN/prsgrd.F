@@ -162,9 +162,9 @@ c********************************************************************
       GRho=g/rho0
       HalfGRho=0.5*GRho
 
-      do j=JstrV-1,Jend
+      do j=JstrV-1,Jend+1
         do k=1,N-1
-          do i=IstrU-1,Iend
+          do i=IstrU-1,Iend+1
             dZ(i,k)=z_r(i,j,k+1)-z_r(i,j,k)
 # ifdef SPLIT_EOS 
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
@@ -177,14 +177,14 @@ c********************************************************************
 # endif
           enddo
         enddo
-        do i=IstrU-1,Iend
+        do i=IstrU-1,Iend+1
           dR(i,N)=dR(i,N-1)
           dR(i,0)=dR(i,1)
           dZ(i,N)=dZ(i,N-1)
           dZ(i,0)=dZ(i,1)
         enddo
         do k=N,1,-1               !--> irreversible
-          do i=IstrU-1,Iend
+          do i=IstrU-1,Iend+1
             cff=2.*dZ(i,k)*dZ(i,k-1)
             dZ(i,k)=cff/(dZ(i,k)+dZ(i,k-1))
 
@@ -201,7 +201,7 @@ c********************************************************************
           enddo
         enddo
 
-        do i=IstrU-1,Iend
+        do i=IstrU-1,Iend+1
           P(i,j,N)=g*z_w(i,j,N) + GRho*( rho(i,j,N)
      &            +0.5*(rho(i,j,N)-rho(i,j,N-1))*(z_w(i,j,N)-z_r(i,j,N))
      &              /(z_r(i,j,N)-z_r(i,j,N-1)) )*(z_w(i,j,N)-z_r(i,j,N))
@@ -213,7 +213,7 @@ c********************************************************************
 #  endif
         enddo
         do k=N-1,1,-1
-          do i=IstrU-1,Iend
+          do i=IstrU-1,Iend+1
             P(i,j,k)=P(i,j,k+1)+HalfGRho*( (rho(i,j,k+1)+rho(i,j,k))
      &                                    *(z_r(i,j,k+1)-z_r(i,j,k))
      &     -OneFifth*( (dR(i,k+1)-dR(i,k))*( z_r(i,j,k+1)-z_r(i,j,k)
@@ -250,8 +250,8 @@ c********************************************************************
       do k=N,1,-1    !<-- k loop
 
 # ifndef PGF_FLAT_BOTTOM
-        do j=Jstr,Jend
-          do i=imin,imax
+        do j=Jstr,Jend+1
+          do i=imin,imax+1
             FC(i,j)=(z_r(i,j,k)-z_r(i-1,j,k))
 #  ifdef MASKING
      &                              *umask(i,j)
@@ -274,21 +274,21 @@ c********************************************************************
 
 #  ifndef EW_PERIODIC
         if (WESTERN_EDGE) then         ! Extrapolate elementary
-          do j=Jstr,Jend               ! differences near physical
+          do j=Jstr,Jend+1             ! differences near physical
             FC(imin-1,j)=FC(imin,j)    ! boundaries to compencate.
             rx(imin-1,j)=rx(imin,j)    ! for reduced loop ranges.
           enddo
         endif
         if (EASTERN_EDGE) then
-          do j=Jstr,Jend
+          do j=Jstr,Jend+1
             FC(imax+1,j)=FC(imax,j)
             rx(imax+1,j)=rx(imax,j)
           enddo
         endif
 #  endif
 
-        do j=Jstr,Jend
-          do i=IstrU-1,Iend
+        do j=Jstr,Jend+1
+          do i=IstrU-1,Iend+1
             cff=2.*FC(i,j)*FC(i+1,j)
             if (cff.gt.epsil) then
               dZx(i,j)=cff/(FC(i,j)+FC(i+1,j))
@@ -310,8 +310,8 @@ c********************************************************************
         enddo                 !--> discard FC, rx
 # endif /* PGF_FLAT_BOTTOM */
 
-        do j=Jstr,Jend
-          do i=IstrU,Iend
+        do j=Jstr,Jend+1
+          do i=IstrU,Iend+1
             ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*(
      &                                             P(i-1,j,k)-P(i,j,k)
 # ifndef PGF_FLAT_BOTTOM
@@ -386,8 +386,8 @@ c********************************************************************
         jmax=Jend+1
 #  endif
 
-        do j=jmin,jmax
-          do i=Istr,Iend
+        do j=jmin,jmax+1
+          do i=Istr,Iend+1
             FC(i,j)=(z_r(i,j,k)-z_r(i,j-1,k))
 #  ifdef MASKING
      &                              *vmask(i,j)
@@ -409,21 +409,21 @@ c********************************************************************
         enddo
  
         if (SOUTHERN_EDGE) then
-          do i=Istr,Iend
+          do i=Istr,Iend+1
             FC(i,jmin-1)=FC(i,jmin)
             rx(i,jmin-1)=rx(i,jmin)
           enddo
         endif
         if (NORTHERN_EDGE) then
-          do i=Istr,Iend
+          do i=Istr,Iend+1
             FC(i,jmax+1)=FC(i,jmax)
             rx(i,jmax+1)=rx(i,jmax)
           enddo
         endif
 
 
-        do j=JstrV-1,Jend
-          do i=Istr,Iend
+        do j=JstrV-1,Jend+1
+          do i=Istr,Iend+1
             cff=2.*FC(i,j)*FC(i,j+1)
             if (cff.gt.epsil) then      
               dZx(i,j)=cff/(FC(i,j)+FC(i,j+1))
@@ -445,8 +445,8 @@ c********************************************************************
         enddo                 !--> discard FC, rx
 # endif /* PGF_FLAT_BOTTOM */
 
-        do j=JstrV,Jend
-          do i=Istr,Iend
+        do j=JstrV,Jend+1
+          do i=Istr,Iend+1
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
 # if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
      &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
