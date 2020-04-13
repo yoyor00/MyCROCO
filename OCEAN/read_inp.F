@@ -410,7 +410,7 @@
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 #if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
@@ -429,7 +429,7 @@
         read(input,'(A)',err=95) fname 
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         open(testunit,file=fname(1:lstr), status='old', err=97)
         close(testunit)
@@ -477,7 +477,7 @@
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
@@ -494,7 +494,7 @@
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
 c        open (testunit, file=fname(1:lstr), status='old', err=97)
 c        close(testunit)
@@ -512,7 +512,7 @@ c        close(testunit)
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 #  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
@@ -536,7 +536,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname 
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
@@ -559,7 +559,7 @@ c        close(testunit)
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 #  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
@@ -582,7 +582,7 @@ c        close(testunit)
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 #  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode, NNODES, ierr)
+          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
@@ -602,7 +602,7 @@ c        close(testunit)
         read(input,'(A)',err=95)  fname 
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
 #ifdef USE_CALENDAR
         nrst=ceiling((dt_rst*3600.)/dt)
@@ -621,7 +621,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
 #ifdef USE_CALENDAR
         nwrt=ceiling((dt_his*3600.)/dt)
@@ -641,7 +641,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
 #ifdef USE_CALENDAR
         navg=ceiling((dt_avg*3600.)/dt)
@@ -668,7 +668,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianame=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -685,7 +685,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianame_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -706,7 +706,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianameM=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -723,7 +723,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianameM_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -747,7 +747,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_vrtname=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -765,7 +765,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_vrtname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -790,7 +790,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_ekname=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -808,7 +808,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_ekname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -832,7 +832,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_pvname=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -850,7 +850,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_pvname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -874,7 +874,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_eddyname=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -892,7 +892,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_eddyname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -916,7 +916,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         surfname=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -934,7 +934,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         surfname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -958,7 +958,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianamebio=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -974,7 +974,7 @@ c        close(testunit)
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianamebio_avg=fname(1:lstr)
         MPI_master_only write(stdout,
@@ -999,7 +999,7 @@ c        close(testunit)
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-          call insert_node (fposnam, lstr, mynode, NNODES, ierr)
+          call insert_node (fposnam, lstr, mynode2, NNODES2, ierr)
 # endif
           fltname=fname(1:lstr)
           MPI_master_only write(stdout,
@@ -1029,7 +1029,7 @@ c        close(testunit)
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
-          call insert_node (staposname, lstr, mynode, NNODES, ierr)
+          call insert_node (staposname, lstr, mynode2, NNODES2, ierr)
 # endif
           staname=fname(1:lstr)
           MPI_master_only write(stdout,

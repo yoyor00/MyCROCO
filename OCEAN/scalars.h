@@ -536,11 +536,12 @@
       logical EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2
       logical EAST_INTER, WEST_INTER, NORTH_INTER, SOUTH_INTER
       logical CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE
-      integer mynode, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE, p_NW,p_NE
-      common /comm_setup/ mynode, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE,
-     &  p_NW,p_NE, EAST_INTER, WEST_INTER, NORTH_INTER, SOUTH_INTER,
-     & EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2,
-     & CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE
+      integer mynode, mynode2, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE,
+     & p_NW,p_NE,NNODES2
+      common /comm_setup/ mynode, mynode2, ii,jj, p_W,p_E,p_S,p_N,
+     & p_SW,p_SE, p_NW,p_NE, EAST_INTER, WEST_INTER, NORTH_INTER,
+     & SOUTH_INTER, EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2,
+     & CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE,NNODES2
 
 #endif
 
