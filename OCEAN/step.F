@@ -822,12 +822,7 @@ C$OMP BARRIER
 # endif
 
 # ifdef NHMG
-#   ifdef THREE_GHOST_POINTS
-      halo = 3
-#   else
-      halo = 2
-#   endif
-      call nhmg_matrices(Lm,Mm,N,halo,padd_X,padd_E,dzdxi,dzdeta,Hz,z_r)
+      call nhmg_matrices(dzdxi,dzdeta,Hz,z_r)
 # endif
 
 C$OMP BARRIER

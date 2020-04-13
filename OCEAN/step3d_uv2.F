@@ -931,14 +931,7 @@
           enddo
        enddo
 
-# ifdef THREE_GHOST_POINTS
-      halo = 3
-# else
-      halo = 2
-# endif
-
-         call nhmg_solve(Lm,Mm,N,halo,padd_X,padd_E,
-     &          u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew) )
+         call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
 
 !    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
 !         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)

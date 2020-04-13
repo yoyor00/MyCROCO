@@ -940,7 +940,7 @@
       cff = 1./cdt
 
 # ifdef NHMG_DOUBLE_PROJ
-      if (icc.lt.0) then !! this will never be true and we will always do a projection in pre_step ('double projection')
+      if (.false.) then !! this will never be true and we will always do a projection in pre_step ('double projection')
 # else
       if (iic.ge.(ntstart+2)) then
 # endif
@@ -1094,14 +1094,7 @@
          enddo
       endif  ! surface_neumann !
 
-# ifdef THREE_GHOST_POINTS
-      halo = 3
-# else
-      halo = 2
-# endif
-         call nhmg_solve(Lm,Mm,N,halo,padd_X,padd_E,
-     &          u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew) )
-!    &                              z_w(:,:,:)  )
+      call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
 
 !NG june 2018: get non-hydrostatic pressure (Pnh)
 !         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,

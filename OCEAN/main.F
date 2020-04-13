@@ -197,7 +197,12 @@ CR      write(*,*) '-11' MYID
 !----------------------------------------------------------------------
 !
 #ifdef NHMG
-      call nhmg_init(Lm,Mm,N,NP_XI,NP_ETA)
+# ifdef THREE_GHOST_POINTS
+      halo = 3
+# else
+      halo = 2
+# endif
+      call nhmg_init(Lm,Mm,N,NP_XI,NP_ETA,padd_X,padd_E)
 #endif
 !
 !----------------------------------------------------------------------
@@ -393,17 +398,9 @@ CR      write(*,*)  ' -5' MYID
 !----------------------------------------------------------------------
 !
 #ifdef NHMG
-! TODO: remove set halo in other routines because halo is now known
-! also remove halo from nhmg_matrices
-# ifdef THREE_GHOST_POINTS
-      halo = 3
-# else
-      halo = 2
-# endif
-      call nhmg_matrices(Lm,Mm,N,halo,padd_X,padd_E,dzdxi,dzdeta,Hz,
-     &                   z_r,
+      call nhmg_matrices(dzdxi,dzdeta,Hz,z_r,
      &                   om_r(0:Lm+1,0:Mm+1),
-     &                   on_r(0:Lm+1,0:Mm+1)    )
+     &                   on_r(0:Lm+1,0:Mm+1))
 #endif
 !
 !----------------------------------------------------------------------
