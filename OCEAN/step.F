@@ -758,15 +758,16 @@ C$OMP END MASTER
       use Agrif_Util
 #endif
 #ifdef NHMG
-      USE nhmg, only : nhmg_matrices
+      USE nhmg
 #endif
       implicit none
 #include "param.h"
+#include "nbq.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef M3FAST
-# include "nbq.h"
-#endif
+!#ifdef M3FAST
+!# include "nbq.h"
+!#endif
 #ifdef FLOATS
 # include "floats.h"
 #endif
@@ -795,10 +796,6 @@ C$OMP END MASTER
 #endif
       integer omp_get_num_threads, omp_get_thread_num 
       integer itrc
-      
-# if defined NHMG
-      integer halo
-# endif
 
       real t1,t2,t3
 
@@ -861,7 +858,7 @@ C$OMP BARRIER
 #  endif
 # endif
         call step3d_uv1 (tile)
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
 #  else

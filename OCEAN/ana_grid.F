@@ -585,7 +585,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  else
           h(i,j)=12.0-0.0125*Length_XI/float(LLm+1)*cff + 3.
 #  endif
-#  ifdef MASKING
+#  if defined MASKING || defined NHMG_MASKING
           rmask(i,j)=1.0
           if (h(i,j).lt.0.01) then
             h(i,j)=0.01
@@ -739,7 +739,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !  Set masking at RHO-points.
 !----------------------------------------------------------------------
 !
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
 #  ifdef RIVER
       do j=JstrR,JendR             ! Set mask to all-water status,
         do i=IstrR,IendR           ! then mask out 8-point wide strip

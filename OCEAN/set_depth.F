@@ -39,6 +39,7 @@ C$    integer omp_get_thread_num
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
 # include "param.h"
+# include "nbq.h"
 # include "grid.h"
 # ifdef AGRIF
 # include "zoom.h"
@@ -50,9 +51,9 @@ C$    integer omp_get_thread_num
 # ifdef MRL_WCI
 #   include "forces.h"
 # endif
-# ifdef M3FAST
-#  include "nbq.h"
-# endif
+!# ifdef M3FAST
+!#  include "nbq.h"
+!# endif
       real eps
       parameter (eps=1.e-14)
 !
@@ -336,6 +337,8 @@ C$    integer omp_get_thread_num
 #  include "scalars.h"
 !
 # if defined NHMG
+!     TODO: remove this allocation
+!     allocating a 2D array on the heap is against croco policy
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 #  ifdef MRL_WCI

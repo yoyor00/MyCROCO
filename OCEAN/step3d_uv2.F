@@ -59,12 +59,13 @@
 !-------------------------------------------------------------------- 
 !
 #ifdef NHMG
-      use nhmg, only : nhmg_solve, get_pnh
+      use nhmg
       use mg_grids
       use mg_tictoc, only : tic, toc
 #endif
       implicit none
 # include "param.h"
+# include "nbq.h"
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
@@ -93,10 +94,6 @@
      &       ,is
 # endif
 
-# ifdef NHMG
-      integer halo
-# endif
-
       real BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
@@ -104,7 +101,10 @@
 # ifdef VADV_ADAPT_IMP
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
+! allocating a 2D scratch array
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
+! is not the usual croco policy
+! grad should be passed as a A2d array in step3d_uv2_tile
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
@@ -302,7 +302,7 @@
 !###########################
         do k=1,N
           do i=IstrU,Iend
-# ifdef NHMG
+# ifdef NHMG2
 ! TODO: explain why NHMG does differently
             u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
 # else
@@ -559,7 +559,7 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
-# ifdef NHMG
+# ifdef NHMG2
 ! TODO: explain why NHMG does differently
               v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
 #  else
@@ -660,7 +660,7 @@
         write(*,*)"DIAGNOSTICS_UV and NHMG cpp keys are incompatible"
         stop
 # endif
-
+# if defined NHMG2
         do k=1,N
           do i=Istr,Iend
             FC(i,k)=-0.5*dt*( Akv(i,j,k)+Akv(i,j,k-1) )
@@ -731,7 +731,7 @@
              wz(i,j,k,nnew)=DC(i,k)-CF(i,k+1)*wz(i,j,k+1,nnew)
           enddo
         enddo
-
+#endif
         call toc(1,'croco_step3d_uv2_1')
 # endif  /* NHMG */
       enddo                     ! <-- j
@@ -2400,10 +2400,15 @@
 !--------------------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.
 !--------------------------------------------------------------------
-#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#  ifdef THREE_GHOST_POINTS_UV
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        wz(START_2D_ARRAY,0,nnew))
+#  else
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                                 wz(START_2D_ARRAY,0,nnew))
-#   endif
+#  endif
+# endif
 
 #  endif
 

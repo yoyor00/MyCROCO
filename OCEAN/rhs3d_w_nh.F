@@ -45,7 +45,8 @@
      &                           CF,   FC,  We_r ,    lap, Hzw, 
      &                          WFx,  WFe,
 # ifdef NHMG
-     &                   div_zx,div_zy,Udiv_zx,Vdiv_zy,
+     &                         div_zx, div_zy,
+     &                         Udiv_zx, Vdiv_zy,
 # endif
      &                                      HUon_w, HVom_w       )
       IMPLICIT NONE
@@ -194,13 +195,19 @@
         ENDDO
       ENDDO      
 # else
+# if defined NBQ
+! in NBQ this is where rw starts gather terms
+!
+! in NHMG rw already contains terms
+! gathered in prsgrd.F and rhs3d.F
       DO k = 0, N
          DO j = jstr,jend   
             DO i = istr,iend        
               rw(i,j,k) = 0.            
             ENDDO
          ENDDO
-      ENDDO 
+      ENDDO
+# endif
 # endif
 
 # if defined UV_ADV && defined W_HADV
@@ -303,14 +310,20 @@
 !
         DO j=Jstr,Jend
           DO i=Istr,Iend+1
-            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
-     &                                     )*Huon_w(i,j,k)
-          ENDDO    
+            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs) )
+# ifndef NHMG2
+! TODO: why should we have something special for NHMG???
+     &                                     *Huon_w(i,j,k)
+# endif
+         ENDDO
         ENDDO
         DO j=jstr,jend+1
           DO i=istr,iend
-            WFe(i,j)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs)
-     &                                     )*Hvom_w(i,j,k)
+            WFe(i,j)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs) )
+# ifndef NHMG2
+! TODO: why should we have something special for NHMG???
+     &                                     *Hvom_w(i,j,k)
+# endif
           ENDDO
         ENDDO
 

@@ -269,3 +269,17 @@
 #endif /* M3FAST */
 
   
+#if defined NHMG
+      real nhdu(GLOBAL_2D_ARRAY,1:N,2)
+      real nhdv(GLOBAL_2D_ARRAY,1:N,2)
+      real nhdw(GLOBAL_2D_ARRAY,0:N,2)
+      real dzdxi(GLOBAL_2D_ARRAY,1:N)
+      real dzdeta(GLOBAL_2D_ARRAY,1:N)
+      real Pnh(GLOBAL_2D_ARRAY,N)
+      common /ocean_nhdu/nhdu
+      common /ocean_nhdv/nhdv
+      common /ocean_nhdw/nhdw
+      common /ocean_dzdxi/dzdxi
+      common /ocean_dzdeta/dzdeta
+      common /ocean_pnh/Pnh
+#endif

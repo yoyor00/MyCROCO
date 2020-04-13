@@ -51,6 +51,7 @@ c********************************************************************
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
 # include "param.h"
+#  include "nbq.h"
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),   OneFifth,
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),   OneTwelfth,
      &      P(PRIVATE_2D_SCRATCH_ARRAY,N),   epsil,dpth,cff1,cff2,
@@ -324,6 +325,9 @@ c********************************************************************
 # else
      &                                                               )
 # endif
+
+
+
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
@@ -573,6 +577,7 @@ c********************************************************************
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
+#  include "nbq.h"
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),  cff,
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),  cff1,
      &  rsurf(PRIVATE_2D_SCRATCH_ARRAY),    gamma,
@@ -873,7 +878,7 @@ c********************************************************************
 !       dpdz = -zx*dpdx - zy*dpdy (See Molemaker et al., 2018)
 !--------------------------------------------------------------------
 !
-!     We are re-using dR as a work arrayo
+!     We are re-using dR as a work array
 
       do j=Jstr,Jend
          do k = 1,N

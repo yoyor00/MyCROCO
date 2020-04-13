@@ -1452,7 +1452,7 @@ C$OMP END MASTER
 # else          
           DUnew = dtfast*M2nudgcof(i,j)*(ubclm(i,j)-ubar(i,j,knew))
 # endif
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
      &                 * umask(i,j)
 # endif 
 # ifdef WET_DRY
@@ -1472,7 +1472,7 @@ C$OMP END MASTER
 # else
           DVnew = dtfast*M2nudgcof(i,j)*(vbclm(i,j)-vbar(i,j,knew))    
 # endif      
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
      &                 * vmask(i,j)
 # endif 
 # ifdef WET_DRY
@@ -1498,7 +1498,7 @@ C$OMP END MASTER
       do j=Jstr,Jend
         do i=IstrU,Iend
           DUnew = dtfast*omega*U0*cos(omega*time)
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
      &                 * umask(i,j)
 # endif
 # ifdef WET_DRY
@@ -1515,7 +1515,7 @@ C$OMP END MASTER
         do i=Istr,Iend
           DVnew = dtfast*0.5*(f(i,j)+f(i,j-1))*
      &                   U0*sin(omega*time)
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
      &                 * vmask(i,j)
 # endif
 # ifdef WET_DRY

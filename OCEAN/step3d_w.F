@@ -97,22 +97,15 @@
       ENDDO  
 # endif /*NBQ */
 
-# if defined NGMG
-      ! TODO: implement vertical mixing on wz for NHMG
-      do j=Jstr,Jend
-        do k=1,N-1
-          do i=Istr,Iend
+# if defined NHMG
+      DO j=Jstr,Jend
+        DO k=1,N
+          DO i=Istr,Iend
             wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &            +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
-     &            /(0.5*(Hz(i,j,k)+Hz(i,j,k+1)))
-          enddo
-        enddo
-        do i=Istr,Iend
-           wz(i,j,N,nnew)=wz(i,j,N,nnew)
-     &          +dt*pn(i,j)*pm(i,j)*rw(i,N,k)
-     &          /(0.5*Hz(i,j,N))
-        enddo
-      enddo
+     &                +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+          ENDDO
+        ENDDO
+      ENDDO
 # endif /* NHMG */
 
 # ifdef NBQ_FREESLIP

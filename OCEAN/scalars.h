@@ -42,9 +42,6 @@
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
-#ifdef NHMG
-     &      , iprec1, iprec2
-#endif
 #ifdef FLOATS
      &      , nfp1, nf, nfm1, nfm2, nfm3
 #endif
@@ -56,9 +53,6 @@
      &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
-#endif
-#ifdef NHMG
-     &                       iprec1, iprec2,
 #endif
 #ifdef FLOATS
      &                       nfp1, nf, nfm1, nfm2, nfm3,

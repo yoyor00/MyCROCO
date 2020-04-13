@@ -210,6 +210,37 @@
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
 
+# elif defined NHMG
+# define HZR Hz
+/*
+   Options for wz HADV numerical schemes (default C4)
+*/
+# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_HADV_TVD
+# elif defined W_HADV_WENO5
+# elif defined W_HADV_C4
+# elif defined W_HADV_C2
+# else
+#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_HADV_TVD      /* TVD vertical advection                 */
+#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
+# endif
+/*
+   Options for wz VADV numerical schemes (default SPLINES)
+*/
+# ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_VADV_TVD
+# elif defined W_VADV_WENO5
+# elif defined W_VADV_C2
+# else
+#  undef  W_VADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_VADV_TVD      /* TVD vertical advection                 */
+#  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
+#  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
+# endif
+
 #else                /* Hydrostatic mode */
 
 # define HZR Hz

@@ -63,12 +63,13 @@
 !--------------------------------------------------------------------
 !
 #ifdef NHMG
-      use nhmg, only : nhmg_solve, get_pnh
+      use nhmg
       use mg_grids
       use mg_tictoc, only : tic, toc
 #endif
       implicit none
 # include "param.h"
+# include "nbq.h"
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
      &       ,imin,imax,jmin,jmax,nadv,iAkt
 # ifdef PSOURCE
@@ -87,9 +88,6 @@
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
-# ifdef NHMG
-      integer halo
-#  endif
 # ifdef WET_DRY
       real cff3,cff4,cff5
 #  endif
@@ -107,9 +105,9 @@
 # ifdef PSOURCE
 #  include "sources.h"
 # endif
-# ifdef M3FAST
-#  include "nbq.h"
-# endif
+!# ifdef M3FAST
+!#  include "nbq.h"
+!# endif
 # ifdef MASKING
 #  define SWITCH *
 # else
@@ -842,17 +840,17 @@
 
         do k=1,N-1
           do i=Istr,Iend
-             wz(i,j,k,nnew)=( wz(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j,k+1))
-     &                                 +cdt*pn(i,j)*pm(i,j)*rw(i,j,k)
-     &                     ) / (0.5*(Hz_half(i,j,k)+Hz_half(i,j,k+1)))
+             wz(i,j,k,nnew)=(wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
+     &                       +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+     &                      )/(Hz_half(i,j,k)+Hz_half(i,j,k+1))
              wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+Hz(i,j,k+1))
           enddo
         enddo
         !surface special treatment
         do i=Istr,Iend
-             wz(i,j,N,nnew)=( wz(i,j,N,nstp)*0.5*Hz(i,j,N)
-     &                            +cdt*pn(i,j)*pm(i,j)*rw(i,j,N)
-     &                     ) / (0.5*Hz_half(i,j,N))
+             wz(i,j,N,nnew)=(wz(i,j,N,nstp)*Hz(i,j,N)
+     &                       +dt*pn(i,j)*pm(i,j)*rw(i,j,N)
+     &                      )/Hz_half(i,j,N)
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
         enddo
         
@@ -862,38 +860,35 @@
         cff2=0.5-gamma       
         do k=1,N-1
            do i=Istr,Iend
-              wz(i,j,k,nnew)=(cff1*wz(i,j,k,nstp)*(Hz(i,j,k  )+     
-     &                                             Hz(i,j,k+1))   
-     &                       +cff2*wz(i,j,k,indx)*(Hz_bak(i,j,k  )+ 
-     &                                             Hz_bak(i,j,k+1)) 
-     &                       +2.*cdt*pn(i,j)*pm(i,j)*(rw(i,j,k)
-     &                         )   
-     &                       ) / (Hz_half(i,j,k)+Hz_half(i,j,k+1)) 
+              wz(i,j,k,nnew)=(cff1*wz(i,j,k,nstp)*(Hz(i,j,k  )+
+     &                                             Hz(i,j,k+1))
+     &                       +cff2*wz(i,j,k,indx)*(Hz_bak(i,j,k  )+
+     &                                             Hz_bak(i,j,k+1))
+     &                       +2.*cdt*pn(i,j)*pm(i,j)*rw(i,j,k)
+     &                       )/(Hz_half(i,j,k)+Hz_half(i,j,k+1))
               wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
-     &                                          Hz(i,j,k+1)) 
+     &                                          Hz(i,j,k+1))
            enddo
         enddo     
         !surface special treatment
         do i=Istr,Iend
              wz(i,j,N,nnew)=( cff1*wz(i,j,N,nstp)*Hz(i,j,N)
      &                       +cff2*wz(i,j,N,indx)*Hz_bak(i,j,N)
-     &                       +2.*cdt*pn(i,j)*pm(i,j)*(rw(i,j,N)
-     &                         )
-     &                      ) / Hz_half(i,j,N)              
-             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   
+     &                       +2.*cdt*pn(i,j)*pm(i,j)*rw(i,j,N)
+     &                      )/Hz_half(i,j,N)
+             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
         enddo
   
       endif
-!
-      do i=Istr,Iend
-         DC(i,0)=pm(i,j)*pn(i,j)
-      enddo
 !
 !======================================================================
 !
 !  Compute implicit vertical advection/viscosity
 !
 # ifdef VADV_ADAPT_IMP
+      do i=Istr,Iend
+         DC(i,0)=pm(i,j)*pn(i,j)
+      enddo
 #  undef  TRIDIAG_TRA
 #  undef  TRIDIAG_U
 #  undef  TRIDIAG_V
@@ -932,7 +927,7 @@
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
-# ifdef NBQ || defined NHMG
+# if defined NBQ || defined NHMG
       call w3dbc_tile (Istr,Iend,Jstr,Jend, WORK)      
 # endif
 
@@ -1109,8 +1104,8 @@
 !    &                              z_w(:,:,:)  )
 
 !NG june 2018: get non-hydrostatic pressure (Pnh)
-         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,
-     &                Pnh,dt,rho0)    
+!         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,
+!     &                Pnh,dt,rho0)
 !NG june 2018: get non-hydrostatic pressure (Pnh)
          
          ! add the non-hydro correction (du, dv, dw are in flux form)
@@ -1185,7 +1180,7 @@
      &                             u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ    
+#   if defined NBQ || defined NHMG
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,nnew))
 #   endif
@@ -1194,7 +1189,7 @@
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ || defined NHMG
+#   if defined NBQ || defined NHMG
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,nnew))   
 #   endif

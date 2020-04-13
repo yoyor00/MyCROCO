@@ -35,6 +35,7 @@
           USE nhmg, only : nhmg_init
           USE nhmg, only : nhmg_matrices
           USE nhmg, only : nhmg_clean
+          USE nhmg, only : iprec1, iprec2, halo
 #endif
 !     implicit none
       integer tile, subs, trd, ierr
@@ -64,9 +65,6 @@
       include 'mpif.h'
 !     real*8 start_time2, start_time1, exe_time
 #endif 
-# if defined NHMG
-      integer halo
-# endif
       integer :: iifroot, iicroot
 #ifdef WKB_WWAVE
       integer winterp
@@ -395,6 +393,8 @@ CR      write(*,*)  ' -5' MYID
 !----------------------------------------------------------------------
 !
 #ifdef NHMG
+! TODO: remove set halo in other routines because halo is now known
+! also remove halo from nhmg_matrices
 # ifdef THREE_GHOST_POINTS
       halo = 3
 # else

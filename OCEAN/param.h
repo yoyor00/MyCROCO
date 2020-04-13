@@ -353,19 +353,19 @@
 
 #if defined AGRIF || defined AUTOTILING
       integer NSA, N2d,N3d,N1dXI,N1dETA
-#if !defined NBQ
-      parameter (NSA=28)
-#else
+#if defined NBQ || defined NHMG
       parameter (NSA=35)
+#else
+      parameter (NSA=28)
 #endif
       common /scrum_private_param/ N2d,N3d,N1dXI,N1dETA
 #else
       integer NSA, N2d,N3d, size_XI,size_ETA
       integer se,sse, sz,ssz
-#if !defined NBQ
-      parameter (NSA=28)
-#else
+#if defined NBQ || defined NHMG
       parameter (NSA=35)
+#else
+      parameter (NSA=28)
 #endif
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)
