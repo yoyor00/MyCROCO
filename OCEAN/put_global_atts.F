@@ -40,11 +40,11 @@
 #endif
 #include "netcdf.inc"
 #if defined MPI && defined PARALLEL_FILES
-      integer*4 ibuff(4)
-# ifdef NCJOIN_UCLA
-      integer chunk_size_X,margin_X,chunk_size_E,margin_E
-      integer Istrmpi,Iendmpi,Jstrmpi,Jendmpi, i_X,j_E
-# endif
+      integer*4 ibuff(6)
+!# ifdef NCJOIN_UCLA
+!      integer chunk_size_X,margin_X,chunk_size_E,margin_E
+!      integer Istrmpi,Iendmpi,Jstrmpi,Jendmpi, i_X,j_E
+!# endif
 !
 ! Put global attribute 'partition' which identifies subdomain
 ! within the processor grid individually for each file.
@@ -54,7 +54,7 @@
       ibuff(3)=NP_XI
       ibuff(4)=NP_ETA
       ierr=nf_put_att_int (ncid, nf_global, 'partition',
-     &                                  nf_int, 4, ibuff)
+     &                                  nf_int, 4, ibuff(1:4))
 
 
 # ifdef NCJOIN_UCLA
@@ -62,33 +62,37 @@
 ! Put global attribute 'partition_ucla' which identifies subdomain
 ! within the processor grid individually for each file.
 !
-      chunk_size_X=(LLm+NP_XI-1)/NP_XI        
-      margin_X=(NP_XI*chunk_size_X-LLm)/2    
-      chunk_size_E=(MMm+NP_ETA-1)/NP_ETA     
-      margin_E=(NP_ETA*chunk_size_E-MMm)/2
+   !   chunk_size_X=(LLm+NP_XI-1)/NP_XI        
+   !   margin_X=(NP_XI*chunk_size_X-LLm)/2    
+   !   chunk_size_E=(MMm+NP_ETA-1)/NP_ETA     
+   !   margin_E=(NP_ETA*chunk_size_E-MMm)/2
       
-      j_E=mynode/NP_XI 
-      i_X=mynode-j_E*NP_XI
+   !   j_E=mynode/NP_XI 
+   !   i_X=mynode-j_E*NP_XI
 
-      istrmpi=1+i_X*chunk_size_X-margin_X
-      istrmpi=max(istrmpi,1)
+    !  istrmpi=1+i_X*chunk_size_X-margin_X
+    !  istrmpi=max(istrmpi,1)
 
-      jstrmpi=1+j_E*chunk_size_E-margin_E
-      jstrmpi=max(jstrmpi,1)
+    !  jstrmpi=1+j_E*chunk_size_E-margin_E
+    !  jstrmpi=max(jstrmpi,1)
  
 !      if (.not.XiPeriodic) then
-               if (ii.gt.0) istrmpi=istrmpi+1
+ !              if (ii.gt.0) istrmpi=istrmpi+1
 !      endif
 !      if (.not.EtaPeriodic) then
-               if (jj.gt.0) jstrmpi=jstrmpi+1
+ !              if (jj.gt.0) jstrmpi=jstrmpi+1
 !      endif
 
       ibuff(1)=mynode
-      ibuff(2)=NP_XI*NP_ETA
-      ibuff(3)=istrmpi
-      ibuff(4)=jstrmpi
+      ibuff(2)=NNODES
+      ibuff(3)=iminmpi
+      ibuff(4)=jminmpi
+      ibuff(5)=LLm
+      ibuff(6)= MMm
+      if (ii.gt.0) ibuff(3)=ibuff(3)+1
+      if (jj.gt.0) ibuff(4)=ibuff(4)+1
       ierr=nf_put_att_int (ncid, nf_global, 
-     &                 'partition_ucla',nf_int, 4, ibuff)
+     &                 'partition_ucla',nf_int, 6, ibuff)
 
 # endif
 
