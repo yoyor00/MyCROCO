@@ -55,7 +55,7 @@ done
 for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in )
 do 
     #sed '2c 79 137 37 117 3 3 3 3' $file > tmp.txt && \mv tmp.txt $file
-    sed '2c $nest_position_reg' $file > tmp.txt && \mv tmp.txt $file
+    sed "2c $nest_position_reg" $file > tmp.txt && \mv tmp.txt $file
 done
 
 ##exit
