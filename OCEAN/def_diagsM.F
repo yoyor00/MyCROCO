@@ -240,7 +240,7 @@
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTstep,nf_collective)
 #endif
-        ierr=nf_put_att_text (ncid, diaTstep, 'long_name', 48,
+        ierr=nf_put_att_text (ncid, vidTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
 !
 ! Time.
