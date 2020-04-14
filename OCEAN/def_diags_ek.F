@@ -1603,18 +1603,6 @@
    1  format(/1x,'def_diags_ek ERROR: Cannot find variable ''',
      &                   A, ''' in netCDF file ''', A, '''.'/)
 
-#if defined AVRH
-!
-! Set initial average timediags_ek.
-! --- ------- ------- --------
-!
-      if (ntsdiags_ek_avg.eq.1) then
-        timediags_ek_avg=time-0.5*float(nwrtdiags_ek_avg)*dt
-      else
-        timediags_ek_avg=time-0.5*float(nwrtdiags_ek_avg)
-     &                       *dt+float(ntsdiags_ek_avg)*dt
-      endif
-#endif
 !
   11  format(/' def_diags_ek - unable to create diag file: ',a)
   20  format(/' def_diags_ek - error while writing variable: ',a,

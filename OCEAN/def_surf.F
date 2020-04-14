@@ -627,19 +627,7 @@
    1  format(/1x,'def_surf ERROR: Cannot find variable ''',
      &                   A, ''' in netCDF file ''', A, '''.'/)
 
-#if defined AVRH
-!
-! Set initial average timesurf.
-! --- ------- ------- --------
-!
-      if (ntssurf_avg.eq.1) then
-        timesurf_avg=time-0.5*float(nwrtsurf_avg)*dt
-      else
-        timesurf_avg=time-0.5*float(nwrtsurf_avg)
-     &                       *dt+float(ntssurf_avg)*dt
-      endif
-#endif
-!
+
   11  format(/' def_surf - unable to create diag file: ',a)
   20  format(/' def_surf - error while writing variable: ',a,
      &        /,15x,'into diag  file: ',a)

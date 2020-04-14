@@ -2888,17 +2888,6 @@
 !
         if (total_rec.le.1) call wrt_grid (ncid, ncname, lstr)
 #endif
-#if defined AVRH
-!
-! Set initial average time.
-! --- ------- ------- -----
-!
-      if (ntsavg.eq.1) then
-        time_avg=time-0.5*float(navg)*dt
-      else
-        time_avg=time-0.5*float(navg)*dt+float(ntsavg)*dt
-      endif
-#endif
 
   99  return
       end
