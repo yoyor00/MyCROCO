@@ -52,15 +52,16 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
-      ilc=1+iic-ntssurf_avg  ! number of time step since restart
+      ilc=1+iic-ntstart  ! number of time step since restart
 !
 ! calculation of averaged fluxes will only be performed if ntssurf_avg
 ! is a positive number
 !
 
 
-      if (iic.gt.ntssurf_avg) then
-        if (mod(iic-ntssurf_avg,nwrtsurf_avg).eq.1) then
+      if (ilc.gt.ntssurf_avg) then
+
+        if (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.1) then
 
           if (ZEROTH_TILE) then
             timesurf_avg=time
@@ -96,7 +97,7 @@
           enddo
 
 
-        elseif (mod(iic-ntssurf_avg,nwrtsurf_avg).gt.1) then
+        elseif (mod(ilc-ntssurf_avg,nwrtsurf_avg).gt.1) then
 
           if (ZEROTH_TILE) timesurf_avg=timesurf_avg+time
 
@@ -135,7 +136,7 @@
      &                       v(i,j,N,nstp)
            enddo
           enddo
-        elseif (mod(iic-ntssurf_avg,nwrtsurf_avg).eq.0) then
+        elseif (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.0) then
 
           cff=1./float(nwrtsurf_avg)
           if (ZEROTH_TILE) then

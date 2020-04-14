@@ -232,8 +232,32 @@
      &          'GET_INITIAL -- ',
      &          'Processing data for time =', tdays, 'record =', indx
       endif
+
       if (ntstart.lt.1) ntstart=1
       ntimes=ntstart+ntimes-1
+
+#ifdef AVERAGES
+#ifdef DIAGNOSTICS_UV
+          ntsdiaM_avg = ntsavg
+#endif
+#ifdef DIAGNOSTICS_VRT
+          ntsdiags_vrt_avg = ntsavg
+#endif
+#ifdef DIAGNOSTICS_EK
+          ntsdiags_ek_avg = ntsavg
+#endif
+#ifdef DIAGNOSTICS_TS
+          ntsdia_avg = ntsavg
+#endif
+#ifdef DIAGNOSTICS_PV
+          ntsdiags_pv_avg = ntsavg
+#endif
+#ifdef DIAGNOSTICS_EDDY
+          ntsdiags_eddy_avg = ntsavg
+#endif
+#endif
+
+
 !
 ! Free-surface.
 !
