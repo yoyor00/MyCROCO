@@ -115,7 +115,10 @@
 !        ENDDO
 !      ENDDO  
 # endif
-  
+
+# if defined NHMG
+#   undef NBQ_WDIF
+# endif
 # ifdef NBQ_WDIF
 !
 !====================================================================     
