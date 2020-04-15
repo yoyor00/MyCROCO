@@ -287,7 +287,7 @@
         enddo
         do k=N-1,1,-1
           do i=IstrU,Iend
-              DC(i,k)=DC(i,k)-CF(i,k)*DC(i,k+1)
+            DC(i,k)=DC(i,k)-CF(i,k)*DC(i,k+1)
 
             cff=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
             CF(i,0)=CF(i,0)+cff
@@ -302,7 +302,7 @@
 !###########################
         do k=1,N
           do i=IstrU,Iend
-# ifdef NHMG2
+# if defined NHMG
 ! TODO: explain why NHMG does differently
             u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
 # else
@@ -559,7 +559,7 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
-# ifdef NHMG2
+# if defined NHMG
 ! TODO: explain why NHMG does differently
               v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
 #  else
@@ -2370,6 +2370,9 @@
 #  else
       ! We've modified u and v, wz needs to be made consistent
       do j=Jstr,Jend
+         do i=Istr,Iend
+            wz(i,j,0,nnew)=0.
+         enddo
         do k=1,N
           do i=Istr,Iend
             DC(i,0)=pm(i,j)*pn(i,j)
