@@ -36,6 +36,7 @@
           USE nhmg, only : nhmg_matrices
           USE nhmg, only : nhmg_clean
           USE nhmg, only : iprec1, iprec2, halo
+          USE nhmg, only : ew_perio, ns_perio
 #endif
 !     implicit none
       integer tile, subs, trd, ierr
@@ -201,6 +202,16 @@ CR      write(*,*) '-11' MYID
       halo = 3
 # else
       halo = 2
+# endif
+# if defined EW_PERIODIC
+      ew_perio = .true.
+# else
+      ew_perio = .false.
+# endif
+# if defined NS_PERIODIC
+      ns_perio = .true.
+# else
+      ns_perio = .false.
 # endif
       call nhmg_init(Lm,Mm,N,NP_XI,NP_ETA,padd_X,padd_E)
 #endif
