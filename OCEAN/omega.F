@@ -146,9 +146,10 @@
           do i=Istr,Iend
             We(i,j,k)=We(i,j,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
+# if ! defined NHMG
      &         -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)*om_r(i,j)*on_r(i,j)
-
             wrk(i)=wrk(i)+Hz(i,j,k)
+# endif
 !
 !---------------------------------------------------------
 !  Compute the horizontal Courant number
@@ -166,6 +167,16 @@
 !  isosurfaces
 !---------------------------------------------------------
 !
+# if defined NHMG
+        do i=Istr,Iend
+          wrk(i)=We(i,j,N)/(z_w(i,j,N)-z_w(i,j,0))
+        enddo
+        do k=N-1,1,-1
+          do i=Istr,Iend
+            We(i,j,k)=We(i,j,k)-wrk(i)*(z_w(i,j,k)-z_w(i,j,0))
+          enddo
+        enddo
+# else
         do i=Istr,Iend
           wrk2(i)=0.
           wrk(i)=We(i,j,N)/wrk(i)
@@ -176,6 +187,7 @@
             We(i,j,k)=We(i,j,k)-wrk(i)*wrk2(i)
           enddo
         enddo
+# endif
         do i=Istr,Iend
            We(i,j,N)=0.
 # ifdef VADV_ADAPT_IMP
