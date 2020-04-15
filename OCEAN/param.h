@@ -233,13 +233,18 @@
 !
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES, NNODES2
-#ifndef MPI_NOLAND
-      parameter (NP_XI=100,  NP_ETA=100,  NNODES=NP_XI*NP_ETA) !GIGATL1
-#else
+      integer NP_XI, NP_ETA, NNODES
+# ifdef GIGATL1
+#  ifndef MPI_NOLAND
+      parameter (NP_XI=100,  NP_ETA=100,  NNODES=NP_XI*NP_ETA) ! hard-coded GIGATL1
+#  else
+      integer  NNODES2
       parameter (NP_XI=100,  NP_ETA=100,
-     &           NNODES=6582, NNODES2=NP_XI*NP_ETA) !GIGATL1
-#endif
+     &           NNODES=6582, NNODES2=NP_XI*NP_ETA) !hard-coded GIGATL1
+#  endif
+# else
+      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+# endif /* GIGATL1 */ 
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
