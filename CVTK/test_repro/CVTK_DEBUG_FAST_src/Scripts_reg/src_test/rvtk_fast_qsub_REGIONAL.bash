@@ -25,9 +25,6 @@ echo "Remove *.exe* *.log* "
 echo "Remove the CHECKFILE"
 [ -f check_file ] && /bin/rm check_file
 
-#echo "Remove AGRIF_FixedGrids.in"
-#/bin/rm -f AGRIF_FixedGrids.in 
-#echo " " 
 
 #=============================================================================================
 #===

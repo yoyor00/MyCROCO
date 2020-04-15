@@ -26,19 +26,6 @@ echo "Remove *.exe* *.log* "
 echo "Remove the CHECKFILE"
 [ -f check_file ] && /bin/rm check_file
 
-#echo "Remove AGRIF_FixedGrids.in"
-#/bin/rm -f AGRIF_FixedGrids.in 
-#echo " " 
-
-#=============================================================================================
-# Sources
-#
-#sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
-#sed -n '$p' tmp1 > tmp2
-#eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
-#rm -f tmp1 tmp2
-#echo 'Sources code: '$SOURCE
-#===
 source CONFIGURE_GLOBAL
 #===
 SOURCE_CVTK=${SOURCE_CROCO}/../CVTK/test_repro/CVTK_DEBUG_FAST_src
