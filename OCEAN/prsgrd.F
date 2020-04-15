@@ -33,9 +33,9 @@ c********************************************************************
 # include "compute_tile_bounds.h" 
       trd=omp_get_thread_num()
       call prsgrd_tile (Istr,Iend,Jstr,Jend, 
-     &                  A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
+     &                  A3d(1,1,trd), A3d(1,2,trd), A3d(1,5,trd),
 # ifdef NHMG
-     &                  A3d(1,5,trd),
+     &                  A3d(1,3,trd),
 # endif
      &                  A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                  A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
@@ -898,6 +898,7 @@ c********************************************************************
             enddo
          enddo
          do i=Istr,Iend
+            rw(i,j,0) = 0.
             rw(i,j,N) = -0.5*dR(i,N)*Hz(i,j,N)
          enddo
       enddo
