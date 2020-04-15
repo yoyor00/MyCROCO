@@ -1022,10 +1022,10 @@
       endif
 #  endif
 
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_half(START_2D_ARRAY,1))
-#  endif
+# endif
 
 !    Multiply u,v,w to get back fluxes for use inside mg_solve
          do k=1,N
@@ -1052,7 +1052,6 @@
 
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!!  TODO It should be possible, in the long term, to avoid these at all
          call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &        u(START_2D_ARRAY,1,nnew))
          call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
