@@ -4,15 +4,23 @@ The CROCO-NH branch of CROCO has been developed by
 
 Molemaker M. J. nmolem@atmos.ucla.edu
 Roullet, G.     roullet@univ-brest.fr
-Ducousso, N.
+Ducousso, N.    Nicolas.Ducousso@ifremer.fr
 Grima, N.       Nicolas.Grima@univ-brest.fr
 
-It was originally maintained on
+The branch was originally maintained on
 https://github.com/ducousso/CROCO-NH
-it is now merged into the main CROCO repository.
+
+and the first version of the NHMG library was on
+https://github.com/ngrigri/NHMG
+
+The branch is now merged into the main CROCO repository.
 
 CROCO-NH enforces the incompressibility by solving a Poisson equation
 for the non-hydrostatic pressure, the computation of the hydrostatic
 pressure remains unchanged. The Poisson equation is solved using a
 geometric multigrid algorithm, whose source is in the CROCO/NHMG
 folder.
+
+CROCO-NH prognoses wz, the "contravariant" component of the vertical
+velocity, viz. the flux through sigma surfaces. In CROCO-NH, contrary
+to CROCO-NBQ, wz is not the true vertical velocity, it is Omega.
