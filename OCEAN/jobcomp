@@ -107,7 +107,7 @@ NHMG_SRC=${ROOT_DIR}/NHMG
 # copy SOURCE code
 # update and time stamp preserve to allow MAKE to recompile only what's needed
 #
-COPY="cp -pu"
+COPY="cp -fpu"
 
 ls ${SOURCE}/*.F               > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.F   $SCRDIR
 ls ${SOURCE}/*.F90             > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.F90 $SCRDIR
