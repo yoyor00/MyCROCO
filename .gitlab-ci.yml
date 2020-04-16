@@ -14,18 +14,20 @@ before_script:
   - mkdir -p $CVTKWORK
   - cd $DATADIR
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
-#  - cd $CVTKHOME/Scripts_ana
-#  - ./create_link_master_ana.sh
-#  - cd -
-#  - cd $CVTKHOME/Scripts_vort
-#  - ./create_link_master_vort.sh
-#  - cd -
+  - cd $CVTKHOME/Scripts_ana
+  - ./create_link_master_ana.sh
+  - cd -
+  - cd $CVTKHOME/Scripts_vort
+  - ./create_link_master_vort.sh
+  - cd -
   - cd $CVTKHOME/Scripts_reg
   - ./create_link_master_reg.sh
   - cd -
 
 
-run:
+run1:
+  only:
+    - schedules  
   script:
 #    - echo "HELLO WORLD"
 #    - cd $CVTKWORK/KTEST
@@ -39,6 +41,16 @@ run:
     - echo "gather_recap.bash REG"
     - ./gather_recap.bash REG
     - /bin/sh -c '! grep failed REG_gather_recap_*_git*'
+run2:
+  script:
+    - cd $CVTKWORK/KTEST
+    - exec ./mk_TestDIR_ana.bash UPWELLING
+    - ./mk_TESTALL_ana.bash
+    - echo "gather_recap.bash KTEST"
+    - ./gather_recap.bash KTEST
+    - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
+
+
 
   artifacts:
      paths:
