@@ -69,14 +69,6 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 # set XIOS directory if needed
 #
 XIOS_ROOT_DIR=$HOME/xios-1.0
-
-#
-# set NHMG directory if needed
-#
-NHMG=../croco/NHMG
-NHMGLIB="-L${NHMG}/lib -lnhmg"
-NHMGINC="-I${NHMG}/include"
-
 #
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -88,47 +80,65 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 
 #
 # clean scratch area
-#
-rm -rf $SCRDIR
-mkdir $SCRDIR
+# quite radical, force to recompile everything
+# during a debug period, we may want to recompile
+# only files that have changed
+#rm -rf $SCRDIR
+#mkdir $SCRDIR
 
+if [ -d $SCRDIR ] ; then
+    echo "${SCRDIR} exists"
+else
+    echo "create ${SCRDIR}"
+    mkdir $SCRDIR
+fi
 #
 # AGRIF sources directory
 #
 AGRIF_SRC=${ROOT_DIR}/AGRIF
 
 #
-# copy SOURCE code
+# NHMG sources directory
 #
+NHMG_SRC=${ROOT_DIR}/NHMG
 
-ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
-ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
-ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
-ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
-ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
-ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
-ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
-ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
-ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
-ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
-ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+
+#
+# copy SOURCE code
+# update and time stamp preserve to allow MAKE to recompile only what's needed
+#
+COPY="cp -pu"
+
+ls ${SOURCE}/*.F               > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.F   $SCRDIR
+ls ${SOURCE}/*.F90             > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.F90 $SCRDIR
+ls ${SOURCE}/*.h               > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/Make*             > /dev/null  2>&1 && ${COPY} ${SOURCE}/Make* $SCRDIR
+ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && ${COPY} ${SOURCE}/jobcomp $SCRDIR
+ls ${SOURCE}/amr.in            > /dev/null  2>&1 && ${COPY} ${SOURCE}/amr.in $SCRDIR
+ls ${AGRIF_SRC}                > /dev/null  2>&1 && ${COPY} -r ${AGRIF_SRC} $SCRDIR
+ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/XIOS/*.F $SCRDIR
+ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/PISCES/SED/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+ls ${NHMG_SRC}                 > /dev/null  2>&1 && ${COPY} -r ${NHMG_SRC} $SCRDIR
 
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
+        ${COPY} -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
 fi
 #
 # overwrite with local files
-#
-
-ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
-ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
-ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
-ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
-ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
-ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
+# okay, here we really want the user scripts to overwrite the default ones from CROCO
+# keeping the time stamp (-p) makes MAKE smarter
+COPY="\cp -pf"
+ls *.F90   > /dev/null  2>&1 && ${COPY} *.F90 $SCRDIR
+ls *.F     > /dev/null  2>&1 && ${COPY} *.F $SCRDIR
+ls *.h     > /dev/null  2>&1 && ${COPY} *.h $SCRDIR
+ls *.h90   > /dev/null  2>&1 && ${COPY} *.h90 $SCRDIR
+ls Make*   > /dev/null  2>&1 && ${COPY} Make* $SCRDIR
+ls jobcomp > /dev/null  2>&1 && ${COPY} jobcomp $SCRDIR
 
 # Change directory
 #
@@ -198,6 +208,105 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	FFLAGS1="$FFLAGS1 $MPIINC"
 	CFT1="${MPIF90}"
 fi
+#
+# Determine if NHMG is required
+# and check if a configuration submission is needed.
+# To force a configuration submission, 
+# please remove the "config.log" file in $NHMG_WORK
+#
+echo ""
+echo "*****************************"
+echo "** Checking COMPILENHMG... **"
+echo "*****************************"
+NHMG_WORK=${SCRDIR%/*}/NHMG
+# Transform relative path to absolute path (if needed).
+# Because configure command accept only absolute path.
+NHMG_WORK=`readlink -f ${NHMG_WORK}`
+NHMGPATH=$NHMG_WORK
+
+# NHMG_LIB is where the dynamic library libnhmg.so will be stored.
+# The user needs to have its shell aware of this path before
+# execution. This is done by adding this path to the LD_LIBRARY_PATH
+# environement variable
+NHMG_LIB=$RUNDIR/nhmg_lib
+
+NHMG_SRCDIR=$NHMG_WORK
+echo "NHMG_SRCDIR is ${NHMG_SRCDIR}"
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+    if [[ $COMPILEAGRIF ]] ; then
+        echo ""
+        echo "*******************************************"
+        echo "** You CAN'T use AGRIF and NHMG together **"
+        echo "*******************************************"
+        echo ""
+        exit
+    fi
+    if [[ ! $COMPILEMPI ]] ; then
+        echo ""
+        echo "******************************************"
+        echo "** You have to activate MPI to use NHMG **"
+        echo "******************************************"
+        echo ""
+        exit
+    fi
+	echo "=> NHMG key is activated in cppdefs.h file"
+
+    # The NHMG library will be installed in $NHMG_LIB
+
+    # Check if a config.log file exist in CROCO's NHMG directory?
+    if [[ -f ${NHMG_WORK}/config.log ]] ; then
+
+        # Check if exit = 0 in the CROCO's NHMG config.log file ?
+        oexit=`grep -e 'exit' ${NHMG_SRCDIR}/config.log | grep -Po 'exit \K[^ ]+'`
+        # if oexit='0' no configuration is needed except if options are different
+        if [[ ${oexit} == '0' ]] ; then   
+           CONFIGNHMG=FALSE
+
+           # Test if configure options are similar or different !
+           # If one of them is different a configuration step will be made.
+           #
+           # Test prefix
+           oprefix=`grep -e '$ ./configure' ${NHMG_SRCDIR}/config.log | grep -Po 'prefix=\K[^ ]+'`
+           if [[ ! ${oprefix} == ${NHMGPATH} ]] ; then
+               echo "NHMGPATH is different: ${oprefix} <=> ${NHMGPATH}"       
+               CONFIGNHMG=TRUE
+           fi
+           # Test the mpi fortran compiler
+           ompif90=`grep -e '$ ./configure' ${NHMG_SRCDIR}/config.log | grep -Po 'MPI_F90=\K[^ ]+'`
+           if [[ ! ${ompif90} == ${MPIF90} ]] ; then 
+               echo "MPIF90 is different: ${ompif90} <=> ${MPIF90}"  
+               CONFIGNHMG=TRUE
+           fi
+           # Test the mpi include path
+           ompiinc=`grep -e '$ ./configure' ${NHMG_SRCDIR}/config.log | grep -Po 'MPI_INC=\K[^ ]+'`
+           dummy="${MPIINC%% *}"
+           if [[ ! ${ompiinc} == ${dummy} ]] ; then               
+               echo "MPIINC is different: ${ompiinc} <=> ${dummy}" 
+               CONFIGNHMG=TRUE
+           fi
+           # test the mpi library path
+           ompilib=`grep -e '$ ./configure' ${NHMG_SRCDIR}/config.log | grep -Po 'MPI_LIB=\K[^ ]+'`
+           dummy="${MPILIB%% *}"
+           if [[ ! ${ompilib} == ${dummy} ]] ; then
+               echo "MPILIB is different: ${ompilib} <=> ${dummy}"
+               CONFIGNHMG=TRUE
+           fi
+        else
+           echo "oexit: $oexit"
+	       CONFIGNHMG=TRUE       # else configuration is needed
+        fi
+    else
+       CONFIGNHMG=TRUE           # no config.log file => submit ./configure
+    fi
+    echo 'Configure NHMG: '${CONFIGNHMG}
+
+    # Compilation will be made and managed by the command make
+	COMPILENHMG=TRUE
+    echo 'Compile NHMG: '${COMPILENHMG}
+
+	LDFLAGS1=" $LDFLAGS1 -L${NHMG_LIB} -lnhmg"
+	FFLAGS1="$FFLAGS1 -I${NHMGPATH}/include"
+fi
 
 #
 # Take environment variables for compiler and options
@@ -205,17 +314,6 @@ fi
 FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
 CFT1=${CROCO_CFT1-$CFT1}
 
-#
-# determine if NHMG is required
-#
-unset COMPILENHMG
-echo "Checking COMPILENHMG..."
-if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
-	echo " => NHMG activated"
-	COMPILENHMG=TRUE
-	LDFLAGS1="$NHMGLIB $LDFLAGS1"
-	FFLAGS1="$NHMGINC $FFLAGS1"
-fi
 #
 # determine if XIOS compilation is required
 #
@@ -285,6 +383,66 @@ if [[ $COMPILEAGRIF ]] ; then
 fi
 
 #
+# Configure NHMG library (if needed)
+#
+if [[ $CONFIGNHMG == 'TRUE' ]] ; then
+    echo ""
+    echo "************************"
+    echo "** NHMG configuration **"
+    echo "************************"
+    echo "  - prefix: ", ${NHMGPATH}
+    echo "  - MPI_F90:", ${MPIF90}
+    echo "  - MPI_INC:", ${MPIINC}
+    echo "  - MPI_LIB:", ${MPILIB}
+    wwa=`pwd`
+    cd NHMG
+    echo $wwa
+    echo `pwd`
+    cp -r autotools/* .
+    automake --add-missing
+    aclocal; automake; autoconf
+    #
+    # To know "configure" available options
+    # please enter "../NHMG/configure --help | grep -e '--enable-'"
+    # If you change here an option, you have to remove the config.log file
+    # in the CROCO's NHMG directory (if it is present).
+    # "rm ../NHMG/config.log"
+    #
+    # Options "--prefix=","--enable-mpicroco","MPI_F90=","MPI_INC", "MPI_LIB"
+    # have to be present and set (they are not options :-)
+    #
+    ./configure --prefix="${NHMGPATH}" --enable-netcdf --libdir=${NHMG_LIB} \
+        --enable-mpicroco MPI_F90="${MPIF90}" MPI_INC="${MPIINC}" MPI_LIB="${MPILIB}"
+#  Enables netcdf for NHMG development
+#   ./configure --prefix="${NHMGPATH}" --enable-netcdf \
+#       --enable-mpicroco MPI_F90="${MPIF90}" MPI_INC="${MPIINC}" MPI_LIB="${MPILIB}"
+    ${MAKE} clean
+    cd ${wwa}
+fi
+
+#
+# Compile NHMG library and install it in $NHMG_LIB
+#
+if [[ $COMPILENHMG == 'TRUE' ]] ; then
+    echo ""
+    echo "**********************"
+    echo "** NHMG compilation **"
+    echo "**********************"
+    wwa=`pwd`
+    cd NHMG
+    # make command check timestamp source files and compile them only if it is necessary
+    ${MAKE} install
+    result=$?
+    if [ $result == 0 ] ; then
+        echo "NHMG has been correctly compiled and installed"
+    else
+        echo "error during the compilation of the NHMG library"
+        exit 1
+    fi
+    cd ${wwa}
+fi
+
+#
 # determine if OPENMP compilation is needed
 #
 unset COMPILEOMP
@@ -330,3 +488,13 @@ $MAKE
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #
+#
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+    echo ""
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "** Please verify your LD_LIBRARY_PATH for NHMG library. "
+    echo "** You can update it using one of these two commands: "
+    echo "** (csh)  setenv LD_LIBRARY_PATH \$LD_LIBRARY_PATH:${NHMG_LIB}"
+    echo "** (bash) export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NHMG_LIB}"
+    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+fi
