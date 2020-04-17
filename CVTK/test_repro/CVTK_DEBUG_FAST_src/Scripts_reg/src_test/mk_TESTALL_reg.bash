@@ -10,12 +10,12 @@ source CONFIGURE_GLOBAL
 
 for testconf in `ls -1 ./Configure_Test/ `;do
     [ -d $testconf ] && rm -rf 	$testconf 
-  echo -e ${FMT_BLUEBLD}"=============================="${FMT_ORD}
-  echo -e ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
-  echo -e ${FMT_BLUEBLD}"=============================="${FMT_ORD}
-  rm -rf $testconf
-./mk_TestDIR_reg.bash $testconf
-echo "  "  
+    echo -e ${FMT_BLUEBLD}"=============================="${FMT_ORD}
+    echo -e ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
+    echo -e ${FMT_BLUEBLD}"=============================="${FMT_ORD}
+    rm -rf $testconf
+    ./mk_TestDIR_reg.bash $testconf
+    echo "  "  
 done
 
 found=0
@@ -70,7 +70,7 @@ for testconf in `ls -1 ./Configure_Test/ `;do
   	  ierr=$(($ierr+1))
     else
   	  varname="$(echo -e ${TEST}_PR)"
-      varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
+	  varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
     fi
   done
@@ -96,17 +96,17 @@ elif  [ $ierr -le  3 ]; then
   echo -e ${FMT_ORANGE}""
   cat  fancy_almost.txt
   echo -e ""${FMT_ORD}
-  exit 1
+  #GC#exit 1
 elif  [ $ierr -le  9 ]; then
   echo -e ${FMT_RED}""
   cat  fancy_failure.txt
   echo -e ""${FMT_ORD}
-  exit 1
+  #GC#exit 1
 else
   echo -e ${FMT_RED2}""
   cat  fancy_critical.txt
   echo -e ""${FMT_ORD}
-  exit 1
+  #GC#exit 1
 fi
 
 

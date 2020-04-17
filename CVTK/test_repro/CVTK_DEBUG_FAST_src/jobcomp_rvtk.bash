@@ -20,7 +20,8 @@
 # Note that environment variables overwrite hard-coded
 # options
 
-set -x
+#set -x
+
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR

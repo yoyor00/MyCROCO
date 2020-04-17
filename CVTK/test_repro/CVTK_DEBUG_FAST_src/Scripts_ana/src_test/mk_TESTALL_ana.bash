@@ -96,17 +96,17 @@ elif  [ $ierr -le  3 ]; then
   echo -e ${FMT_ORANGE}""
   cat  fancy_almost.txt
   echo -e ""${FMT_ORD}
-  exit 1
+  #GC#exit 1
 elif  [ $ierr -le  9 ]; then
   echo -e ${FMT_RED}""
   cat  fancy_failure.txt
   echo -e ""${FMT_ORD}
-  exit 1
+  #GC#exit 1
 else
   echo -e ${FMT_RED2}""
   cat  fancy_critical.txt
   echo -e ""${FMT_ORD}
-  exit 1
+  #GC#exit 1
 fi
 
 

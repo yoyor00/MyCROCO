@@ -10,9 +10,8 @@ source "$CVTKHOME/CONFIGURE_GLOBAL"
 source "$CVTKHOME/CONFIGURE_ANA"
 
 rm -Rf $dir_test
-mkdir -p $dir_test
-mkdir -p $dir_web
 mkdir -p $dir_test/Junk
+[[ ! -d  $dir_web ]] && mkdir -p $dir_web
 
 #
 \cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/TEST_CASES_CVTK/.
@@ -44,7 +43,7 @@ ln -sf $dir_home/../gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
 ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
 ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
-ln -sf $dir_web/Log_Summary $dir_test/
+ln -sf $dir_web $dir_test/
 ln -sf  $dir_home/../print/* $dir_test/
 
 # ana specific and programms

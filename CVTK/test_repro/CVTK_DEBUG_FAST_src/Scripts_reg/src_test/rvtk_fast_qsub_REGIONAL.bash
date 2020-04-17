@@ -21,7 +21,7 @@ echo "=> CONFIG "$mytest
 
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
-[ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
+[ ! -z "$(ls *.log* 2>/dev/null)" ] && /bin/rm *.log*
 echo "Remove the CHECKFILE"
 [ -f check_file ] && /bin/rm check_file
 
@@ -90,7 +90,7 @@ for par in SERIAL OPENMP MPI ; do
     # 3- DEFINE THE NAME OF THE CONFIG
     sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     \mv cppdefs.h.$par.tmp cppdefs.h.$par
-    
+     
     # 4- DEFINE THE VARIOUS CPPKEYS
     #=4.1
     for EXAMPLE in $LIST_KEY_PHYS
@@ -176,15 +176,18 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
     
     par1='OPENMP'
     if [ $Is2DV_Y == 1 ]; then
+	echo " "
 	echo "OPEN-MP 1X2 NPP=2 TEST $mytest"
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=2'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=2'/' < param.h.$par1.tmp > param.h.$par1
     elif [ $Is2DV_X == 1 ]; then
+	echo " "
 	echo "OPEN-MP 2x1 NPP=2 TEST $mytest"
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=1'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=2'/' < param.h.$par1.tmp > param.h.$par1
     else
-	echo "MPI ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
+	echo " "
+	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=4'/' < param.h.$par1.tmp > param.h.$par1
     fi
@@ -216,7 +219,6 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
     fi  
 
     #else
-    
     #  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
     #  \mv tmp.txt ${TEST_NAME}_steps     
 fi 
@@ -230,13 +232,16 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     
     par1='MPI'
     if [ $Is2DV_Y == 1 ]; then
+	echo " "
 	echo "MPI 1X2 TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=1,\ NP_ETA=2'/' < param.h.$par1 > param.h.$par.tmp
 	
     elif [ $Is2DV_X == 1 ]; then
+	echo " "
 	echo "MPI 2X1 TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param.h.$par1 > param.h.$par.tmp
-    else	
+    else
+	echo " "
 	echo "MPI ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
     fi
@@ -272,27 +277,31 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     fi  
 fi
 
-if [  "$SUCCESS" -ne 0 ]; then
-    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
-    echo  
-    echo "SOMETHING WRONG HAPPENED"
-    echo "EXITING ..."
-    echo
-    #  echo  > /dev/stdin
-    #  echo -e "$(tput setaf 1 ; tput bold)SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} $(tput sgr0)" > /dev/stdin
-    #  echo -e "$(tput setaf 1 ; tput bold)EXITING ...$(tput sgr0)"  > /dev/stdin
-    #  echo  > /dev/stdin
-    echo  | tee -a mylog.txt
-    echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
-    echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt 
-    echo  | tee -a mylog.txt
-    exit  1
-fi
+#########################################################################################################
+# 5 - Fancy printing in case of failure
+##############################################################################
+
+# if [  "$SUCCESS" -ne 0 ]; then
+#     sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
+#     echo  
+#     echo "SOMETHING WRONG HAPPENED"
+#     echo "EXITING ..."
+#     echo
+
+#     # echo  | tee -a mylog.txt
+#     # echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+#     # echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt 
+#     # echo  | tee -a mylog.txt
+
+#     #exit  1
+# fi
+#########################################################################################################
+
 
 #########################################################################################################
-# 5- Extract results
+# 6 - Extract results
 ##############################################################################
 #  runs
-#echo ' '
+echo " "
 echo "EXTRACTION $mytest"
 Fextract_results $FLAG_MPI $FLAG_OPENMP

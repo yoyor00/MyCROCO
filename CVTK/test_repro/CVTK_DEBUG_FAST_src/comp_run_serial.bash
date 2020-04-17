@@ -2,8 +2,7 @@
 #===================================
 
 #set -x
-set -e
-set -u
+set -eu
 
 source CONFIGURE_GLOBAL
 source configure_file

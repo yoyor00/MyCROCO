@@ -4,6 +4,7 @@
 source configure_file
 ###########################
 
+#set -x 
 # Get revision of sources
 #-------------------------
 numrev0=`sed -n '/revision/{n;p;}' gitinfos`
@@ -23,6 +24,7 @@ echo -e "   - Run Tests"
 ./$SCRIPT_RVTK > Recap_${TEST_NAME}.git${numrev}
 cat mylog.txt
 if [ $? -gt 0 ]; then
-  exit
+    echo "EXITING"
+    exit
 fi  	
 

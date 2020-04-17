@@ -25,32 +25,29 @@ before_script:
   - cd -
 
 
+#run:
 run1:
-  only:
-    - schedules  
+#  only:
+#    - schedules  
   script:
-#    - echo "HELLO WORLD"
-#    - cd $CVTKWORK/KTEST
-##    - exec ./mk_TestDIR_ana.bash UPWELLING
-#    - ./mk_TESTALL_ana.bash
-#    - echo "gather_recap.bash KTEST"
-#    - ./gather_recap.bash KTEST
-#    - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
     - cd $CVTKWORK/REG
     - ./mk_TESTALL_reg.bash
-    - echo "gather_recap.bash REG"
     - ./gather_recap.bash REG
     - /bin/sh -c '! grep failed REG_gather_recap_*_git*'
+    
 run2:
   script:
     - cd $CVTKWORK/KTEST
-    - exec ./mk_TestDIR_ana.bash UPWELLING
+##    - exec ./mk_TestDIR_ana.bash UPWELLING
     - ./mk_TESTALL_ana.bash
-    - echo "gather_recap.bash KTEST"
     - ./gather_recap.bash KTEST
     - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
-
-
+run3:
+  script:
+    - cd $CVTKWORK/VORT
+    - ./mk_TESTALL_vort.bash
+    - ./gather_recap.bash VORT
+    - /bin/sh -c '! grep failed VORT_gather_recap_*_git*'
 
   artifacts:
      paths:
