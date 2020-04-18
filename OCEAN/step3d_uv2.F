@@ -901,37 +901,38 @@
 #  endif
 
 !! only do this for neumann nhmg conditions
-       nh_ubar = 0.
-       nh_vbar = 0.
-       do k=1,N
-         do j=Jstr,Jend
-            do i=Istr,Iend+1
-                nh_ubar(i,j) = nh_ubar(i,j) + u(i,j,k,nnew)
+      if (surface_neumann) then
+         nh_ubar = 0.
+         nh_vbar = 0.
+         do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend+1
+                  nh_ubar(i,j) = nh_ubar(i,j) + u(i,j,k,nnew)
+               enddo
+            enddo
+            do j=Jstr,Jend+1
+               do i=Istr,Iend
+                  nh_vbar(i,j) = nh_vbar(i,j) + v(i,j,k,nnew)
+               enddo
             enddo
          enddo
-         do j=Jstr,Jend+1
-           do i=Istr,Iend
-              nh_vbar(i,j) = nh_vbar(i,j) + v(i,j,k,nnew)
-           enddo
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               nh_wcor(i,j) = wz(i,j,N,nnew) +
+     &              (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+            enddo
          enddo
-       enddo
-       do j=Jstr,Jend
-          do i=Istr,Iend
-             nh_wcor(i,j) = wz(i,j,N,nnew) +
-     &         (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
-          enddo
-       enddo
-       do k=1,N
-          do j=Jstr,Jend
-             do i=Istr,Iend
-                wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
-     &                         * (z_w(i,j,k)-z_w(i,j,0))
-     &                         / (z_w(i,j,N)-z_w(i,j,0))
-             enddo
-          enddo
-       enddo
-
-         call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
+         do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend
+                  wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
+     &                 * (z_w(i,j,k)-z_w(i,j,0))
+     &                 / (z_w(i,j,N)-z_w(i,j,0))
+               enddo
+            enddo
+         enddo
+      endif
+       call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
 
 !    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
 !         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
