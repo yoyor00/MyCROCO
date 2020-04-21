@@ -67,7 +67,7 @@ fi
 if [ ! -z "$res_omp" ] ||  [ ! -z "$res_mpi" ] ; then
     sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps
-    msg1="- Repro failure for ${TEST_NAME} ..."
+    msg1="      => Repro failure for ${TEST_NAME} ..."
     msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
     echo -e "   $msg2" | tee -a mylog.txt
 else

@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 set -e
 set -u
 
@@ -30,7 +30,7 @@ do
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
   [ ! -z $toto ] && sed -e "${line} s/$toto/10/" $file > tmp.txt && \mv tmp.txt $file
 done
-
+ 
 ln -sf $dir_home/Configure_Test_ana $dir_test/
 
 # configure files
@@ -57,3 +57,4 @@ ln -sf Configure_Test_ana Configure_Test
 cd -
 #
 echo 'Well done: Finish linking'
+

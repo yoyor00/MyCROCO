@@ -24,8 +24,6 @@ before_script:
   - ./create_link_master_reg.sh
   - cd -
 
-
-#run:
 run1:
 #  only:
 #    - schedules  
@@ -34,21 +32,25 @@ run1:
     - ./mk_TESTALL_reg.bash
     - ./gather_recap.bash REG
     - /bin/sh -c '! grep failed REG_gather_recap_*_git*'
-    
+  artifacts:
+     paths:
+       - $CVTKWORK/ftp
 run2:
   script:
     - cd $CVTKWORK/KTEST
-##    - exec ./mk_TestDIR_ana.bash UPWELLING
+#    - exec ./mk_TestDIR_ana.bash UPWELLING
     - ./mk_TESTALL_ana.bash
     - ./gather_recap.bash KTEST
     - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
+  artifacts:
+     paths:
+       - $CVTKWORK/ftp
 run3:
   script:
     - cd $CVTKWORK/VORT
     - ./mk_TESTALL_vort.bash
     - ./gather_recap.bash VORT
     - /bin/sh -c '! grep failed VORT_gather_recap_*_git*'
-
   artifacts:
      paths:
        - $CVTKWORK/ftp
