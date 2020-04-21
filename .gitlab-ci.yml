@@ -15,7 +15,7 @@ before_script:
   - cd $DATADIR
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
 
-run1:
+reg_run:
 #  only:
 #    - schedules  
   script:
@@ -33,7 +33,23 @@ run1:
       - $CVTKWORK/ftp
     when: always
 
-run2:
+vort_run:
+  script:
+    - cd $CVTKHOME/Scripts_vort
+    - ./create_link_master_vort.sh
+    - cd -
+    - cd $CVTKWORK/VORT
+    
+    - ./mk_TESTALL_vort.bash
+    - ./gather_recap.bash VORT
+    - /bin/sh -c '! grep failed VORT_gather_recap_*_git*'
+
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+    when: always
+    
+ana_run:
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
@@ -49,20 +65,3 @@ run2:
     paths:
       - $CVTKWORK/ftp
     when: always
-
-run3:
-  script:
-    - cd $CVTKHOME/Scripts_vort
-    - ./create_link_master_vort.sh
-    - cd -
-    - cd $CVTKWORK/VORT
-    
-    - ./mk_TESTALL_vort.bash
-    - ./gather_recap.bash VORT
-    - /bin/sh -c '! grep failed VORT_gather_recap_*_git*'
-
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-    when: always
-
