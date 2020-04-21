@@ -16,8 +16,8 @@ before_script:
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
 
 reg_run:
-#  only:
-#    - schedules  
+  only:
+    - schedules  
   script:
     - cd $CVTKHOME/Scripts_reg
     - ./create_link_master_reg.sh
@@ -34,6 +34,8 @@ reg_run:
     when: always
 
 vort_run:
+  only:
+    - schedules  
   script:
     - cd $CVTKHOME/Scripts_vort
     - ./create_link_master_vort.sh
