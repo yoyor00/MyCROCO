@@ -30,6 +30,11 @@ do
   line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
   [ ! -z $toto ] && sed -e "${line} s/$toto/5/" $file > tmp.txt && \mv tmp.txt $file
+
+  line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
+  [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
+  [ ! -z $toto ] && sed -e "${line} s/$toto/900/" $file > tmp.txt && \mv tmp.txt $file
+  
 done
 
 for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/croco.in.1)
@@ -41,6 +46,11 @@ do
   line=$(($(grep -n 'restart:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
   [ ! -z $toto ] && sed -e "${line} s/$toto/15/" $file > tmp.txt && \mv tmp.txt $file
+
+    line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
+  [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
+  [ ! -z $toto ] && sed -e "${line} s/$toto/300/" $file > tmp.txt && \mv tmp.txt $file
+  
 done
 
 for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in )
