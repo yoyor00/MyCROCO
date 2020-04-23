@@ -78,36 +78,33 @@ for par in SERIAL OPENMP MPI ; do
     echo 'PARA=' $par
     for EXAMPLE in $LIST_KEY0
     do
-	sed 's/'define\ \ \*$EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+	sed '/'${EXAMPLE}[[:graph:]]'/! s/'define\ \ \*$EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
 	\mv cppdefs.h.$par.tmp cppdefs.h.$par
     done
     
     # 2- DEFINE THE TYPE OF DEBUG TEST 
-    sed 's/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+    sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     \mv cppdefs.h.$par.tmp cppdefs.h.$par
     
     
     # 3- DEFINE THE NAME OF THE CONFIG
-    sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+    #sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+    sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     \mv cppdefs.h.$par.tmp cppdefs.h.$par
     
     # 4- DEFINE THE VARIOUS CPPKEYS
     #=4.1
     for EXAMPLE in $LIST_KEY_PHYS
     do
-	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+	sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
 	\mv cppdefs.h.$par.tmp cppdefs.h.$par
     done
     #==4.2
     for EXAMPLE in $LIST_KEY_NEST
     do
 	echo $EXAMPLE
-	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
-	/bin/mv cppdefs.h.$par.tmp cppdefs.h.$par
-	if [ "$LIST_KEY_NEST" = "AGRIF" ]; then
-	    sed 's/'define\ \ \*AGRIF_2W'/'undef\ AGRIF_2W'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
-	    /bin/mv cppdefs.h.$par.tmp cppdefs.h.$par
-	fi
+	sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+	\mv cppdefs.h.$par.tmp cppdefs.h.$par
     done
 done
 
@@ -153,8 +150,9 @@ sed 's/'NPP=1'/'NPP=1'/' < param.h.$par1 > param.h.$par1
 
 Fqsub_serial
 myreturn=$?
-
+#echo "SUCCESS="$SUCCESS
 SUCCESS=$(($SUCCESS+$myreturn))
+#echo "SUCCESS="$SUCCESS
 if [ "$myreturn" -eq 1 ]; then
     SUCCESS_COMP=$(($SUCCESS_COMP+1))
     sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
@@ -191,7 +189,7 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=4'/' < param.h.$par1.tmp > param.h.$par1
     fi	 
-    sed 's/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
+    sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
     \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
     #
     [ -e  param.h.OK ] && \rm param.h.OK
@@ -201,8 +199,9 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
     #
     Fqsub_openmp
     myreturn=$?
-	
+#    echo "SUCCESS="$SUCCESS
     SUCCESS=$(($SUCCESS+$myreturn))
+#    echo "SUCCESS="$SUCCESS
     if [ "$myreturn" -eq 1 ]; then
 	SUCCESS_COMP=$(($SUCCESS_COMP+1))
 	sed -e '1c N' ${TEST_NAME}_steps > tmp.txt
@@ -245,9 +244,7 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     fi
     \mv param.h.$par1.tmp param.h.$par1
     #
-    sed 's/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
-    \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
-    sed 's/'define\ \ \*MPI_NOLAND'/'undef\ MPI_NOLAND'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
+    sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
     \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
     #
     [ -e  param.h.OK ] && \rm param.h.OK
@@ -258,9 +255,9 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     #
     Fqsub_mpi
     myreturn=$?
-    
+#    echo "SUCCESS="$SUCCESS
     SUCCESS=$(($SUCCESS+myreturn))
-    
+#    echo "SUCCESS="$SUCCESS
     if [ "$myreturn" -eq 1 ]; then
 	SUCCESS_COMP=$(($SUCCESS_COMP+1))
 	sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
@@ -275,24 +272,24 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     fi  
 fi
 
-#########################################################################################################
-# 5 - Fancy printing in case of failure
 ##############################################################################
-
-# if [  "$SUCCESS" -ne 0 ]; then
-#     sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
-#     echo  
-#     echo "SOMETHING WRONG HAPPENED"
-#     echo "EXITING ..."
-#     echo
-
-#     # echo  | tee -a mylog.txt
-#     # echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
-#     # echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt 
-#     # echo  | tee -a mylog.txt
-
-#     #exit  1
-# fi
+echo "&&&&&&&&&&&&&&&&&&&&&&&&&"
+echo "Final SUCESS is "$SUCCESS
+echo " "
+if [  "$SUCCESS" -ne 0 ]; then
+    #sed not needed
+    #sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
+    echo  
+    echo "SOMETHING WRONG HAPPENED"
+    echo "EXITING ..."
+    echo
+    #     # echo  | tee -a mylog.txt
+    #     # echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    #     # echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt 
+    #     # echo  | tee -a mylog.txt
+    
+    #     #exit  1
+fi
 #########################################################################################################
 
 
@@ -300,7 +297,6 @@ fi
 # 6 - Extract results
 ##############################################################################
 #  runs
-#echo ' '
 echo " "
 echo "EXTRACTION $mytest"
 Fextract_results $FLAG_MPI $FLAG_OPENMP
