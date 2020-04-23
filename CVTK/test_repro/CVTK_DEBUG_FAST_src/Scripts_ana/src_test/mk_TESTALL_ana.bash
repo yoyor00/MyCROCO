@@ -57,30 +57,30 @@ for testconf in `ls -1 ./Configure_Test/ `;do
   REPRO_OUT=$(sed '3,3!d' ${testconf}/${testconf}_steps)
   for TEST in "COMPIL_OUT" "EXEC_OUT" "REPRO_OUT"
   do
-    key="${TEST}" 
-    eval var='$'$key
-    if [ "${var}" == 'Y' ]; then
+      key="${TEST}" 
+      eval var='$'$key
+      if [ "${var}" == 'Y' ]; then
   	  varname="$(echo -e ${TEST}_PR)"
   	  varvalue="$(echo -e ${FMT_GREENBLD}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
-    elif 	[ "${var}" == 'N' ]; then
+      elif 	[ "${var}" == 'N' ]; then
   	  varname="$(echo -e ${TEST}_PR)"
   	  varvalue="$(echo -e ${FMT_REDBLD}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
   	  ierr=$(($ierr+1))
-    else
+      else
   	  varname="$(echo -e ${TEST}_PR)"
-      varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
+	  varvalue="$(echo -e ${FMT_RVERT}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
-    fi
+      fi
   done
   if [ ${FANCY_OUTPUT} -eq 1 ] ;then
-    format="%-12s %20s %29s %29s \n"
+      format="%-12s %20s %29s %29s \n"
   else
-    format="%-12s %20s %20s %20s \n"
+      format="%-12s %20s %20s %20s \n"
   fi
   printf "$format" $testconf $COMPIL_OUT_PR $EXEC_OUT_PR $REPRO_OUT_PR
-
+  
   i=$(($i+1)) 
 done  
 
