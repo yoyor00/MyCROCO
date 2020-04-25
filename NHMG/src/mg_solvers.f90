@@ -55,6 +55,8 @@ contains
     call global_sum(1,res0,bnorm)
     bnorm = sqrt(bnorm)
 
+    if (bnorm.gt.9d99) stop
+
     ! residual returns both 'r' and its norm
     call compute_residual(1,rnorm) 
     rnorm = rnorm/bnorm

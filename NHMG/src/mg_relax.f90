@@ -369,15 +369,15 @@ contains
     
     j = 1
     do it = 1,nsweeps
-       do rb = 1, 2 ! Red black loop
+!       do rb = 1, 2 ! Red black loop
           do i = 1, nx
-             do k = 1+mod(i+rb,2),nz,2
+             do k = 1,nz!+mod(i+rb,2),nz,2
                 call comp_rhs_xz(rhs,b,p,cA,nz,k,j,i)
                 p(k,j,i) = p(k,j,i)*(1.-omega) + omega*rhs/ca(1,k,j,i)                   
              enddo
           enddo
        call fill_halo(lev,p)
-       enddo
+!       enddo
     enddo
 
   end subroutine relax_xz_RB
