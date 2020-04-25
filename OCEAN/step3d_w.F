@@ -41,6 +41,9 @@
       SUBROUTINE step3d_w_tile (Istr,Iend,Jstr,Jend, rw, BC,CF,FC,DC)
 !----------------------------------------------------------------------
 !     
+#ifdef NHMG
+      use nhmg
+#endif
       IMPLICIT NONE
 # include "param.h"
 # include "grid.h"
@@ -99,12 +102,24 @@
 
 # if defined NHMG
       DO j=Jstr,Jend
-        DO k=1,N
-          DO i=Istr,Iend
-            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &                +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
-          ENDDO
-        ENDDO
+         if (surface_neumann) then
+            DO k=1,N-1
+               DO i=Istr,Iend
+                  wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &                 +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+               ENDDO
+            ENDDO
+            DO i=Istr,Iend
+               wz(i,j,N,nnew)=0.
+            ENDDO
+         else
+            DO k=1,N
+               DO i=Istr,Iend
+                  wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &                 +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+               ENDDO
+            ENDDO
+         endif
       ENDDO
 # endif /* NHMG */
 
