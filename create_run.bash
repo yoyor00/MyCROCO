@@ -160,7 +160,7 @@ if [[ $copy_tag == 1 ]] ; then
     cp -Rf $SOURCES_DIR/$DIRO/croco_stations.in Misc/
     
     #PISCES
-    cp -Rf $SOURCES_DIR/PISCES/namelist_pisces .
+    cp -Rf $SOURCES_DIR/PISCES/*namelist* .
 
     # XIOS
     DIRO='XIOS'
