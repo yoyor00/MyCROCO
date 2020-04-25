@@ -13,9 +13,11 @@
 #if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 
           module debug
+!$AGRIF_DO_NOT_TREAT
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
-          end module debug
+!$AGRIF_END_DO_NOT_TREAT
+         end module debug
 !
 !======================================================================
 !                    debug_ini

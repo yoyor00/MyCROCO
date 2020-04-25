@@ -1069,17 +1069,6 @@
 !
       if (total_rec.le.1) call wrt_grid (ncid, ncname, lstr)
 #endif
-#if defined AVRH
-!
-! Set initial average timedia.
-! --- ------- ------- --------
-!
-      if (ntsdia_avg.eq.1) then
-        timedia_avg=time-0.5*float(nwrtdia_avg)*dt
-      else
-        timedia_avg=time-0.5*float(nwrtdia_avg)*dt+float(ntsdia_avg)*dt
-      endif
-#endif
 !
   11  format(/' DEF_DIAGS - unable to create diag file: ',a)
   20  format(/' DEF_DIAGS - error while writing variable: ',a,
