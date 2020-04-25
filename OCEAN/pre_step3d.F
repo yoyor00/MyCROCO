@@ -88,6 +88,8 @@
       real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
+      real Hu(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hv(PRIVATE_2D_SCRATCH_ARRAY)
 # ifdef WET_DRY
       real cff3,cff4,cff5
 #  endif
@@ -181,6 +183,11 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
+      do j=JstrV-1,Jend
+         do i=IstrU-1,Iend
+            zw(i,j,0) = 0.
+        enddo
+      enddo
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -192,7 +199,8 @@
      &                                  +Wi(i,j,k)-Wi(i,j,k-1)     
 # endif     
      &                                                       )
-          enddo
+            zw(i,j,k) = zw(i,j,k-1) + Hz_half(i,j,k)
+         enddo
         enddo
       enddo
 !
@@ -852,6 +860,8 @@
      &                       +dt*pn(i,j)*pm(i,j)*rw(i,j,N)
      &                      )/Hz_half(i,j,N)
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
+            wz(i,j,0,nnew)=0.D0
+            wz(i,j,0,indx)=0.D0
         enddo
         
       else  ! NOT FIRST_TIME_STEP
@@ -877,6 +887,8 @@
      &                       +2.*cdt*pn(i,j)*pm(i,j)*rw(i,j,N)
      &                      )/Hz_half(i,j,N)
              wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
+             wz(i,j,0,nnew)=0.D0
+             wz(i,j,0,indx)=0.D0
         enddo
   
       endif
@@ -1027,12 +1039,15 @@
      &                        Hz_half(START_2D_ARRAY,1))
 # endif
 
-!    Multiply u,v,w to get back fluxes for use inside mg_solve
+!     Multiply u,v,w to get back fluxes for use inside mg_solve
+      hu = 0
+      hv = 0
          do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend+1
                   u(i,j,k,nnew) = u(i,j,k,nnew)
      &                *(0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k)))/pn_u(i,j)
+                  hu(i,j) = hu(i,j)+0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))
                enddo
             enddo
 
@@ -1040,6 +1055,7 @@
                do i=Istr,Iend
                   v(i,j,k,nnew) = v(i,j,k,nnew)
      &                 *(0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k)))/pm_v(i,j)
+                  hv(i,j) = hv(i,j)+0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))
                enddo
             enddo
 
@@ -1078,19 +1094,33 @@
 
          do j=Jstr,Jend
             do i=Istr,Iend
-               nh_wcor(i,j) = wz(i,j,N,nnew) + 
-     &         (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+               nh_wcor(i,j) = wz(i,j,N,nnew)
+!     &        +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+            enddo
+         enddo
+         do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend+1
+                  u(i,j,k,nnew) = u(i,j,k,nnew) - nh_ubar(i,j)
+     & *0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))/hu(i,j)
+               enddo
+            enddo
+            do j=Jstr,Jend+1
+               do i=Istr,Iend
+                  v(i,j,k,nnew) = v(i,j,k,nnew) - nh_vbar(i,j)
+     & *0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))/hv(i,j)
+               enddo
             enddo
          enddo
          do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend
                   wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j) 
-     &                           * (z_w(i,j,k)-z_w(i,j,0))
-     &                           / (z_w(i,j,N)-z_w(i,j,0))
+     &                           * (zw(i,j,k)-zw(i,j,0))
+     &                           / (zw(i,j,N)-zw(i,j,0))
                enddo
             enddo
-         enddo
+         enddo         
       endif  ! surface_neumann !
 
       call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
@@ -1104,6 +1134,31 @@
          ! add the non-hydrostatic pressure gradient to rufrc, rvfrc
 
          do k=1,N    
+
+            if (surface_neumann) then
+
+            do j=Jstr,Jend
+               do i=Istr,Iend+1
+                  u(i,j,k,nnew) = u(i,j,k,nnew) + nh_ubar(i,j)
+     & *0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))/hu(i,j)
+               enddo
+            enddo
+            do j=Jstr,Jend+1
+               do i=Istr,Iend
+                  v(i,j,k,nnew) = v(i,j,k,nnew) + nh_vbar(i,j)
+     & *0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))/hv(i,j)
+               enddo
+            enddo
+
+               do j=Jstr,Jend
+                  do i=Istr,Iend
+                     wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
+     &                    * (zw(i,j,k)-zw(i,j,0))
+     &                    / (zw(i,j,N)-zw(i,j,0))
+                  enddo
+               enddo
+            endif
+
             do j=Jstr,Jend
                do i=IstrU,Iend
                   u(i,j,k,nnew) = (u(i,j,k,nnew) + grid(1)%du(k,j,i))
@@ -1121,7 +1176,7 @@
                   rvfrc(i,j) = rvfrc(i,j) + on_v(i,j)*grid(1)%dv(k,j,i)*cff
                enddo
             enddo
-            
+
             do j=Jstr,Jend
                do i=Istr,Iend
                   wz(i,j,k,nnew) = (wz(i,j,k,nnew) + grid(1)%dw(k+1,j,i))

@@ -103,6 +103,10 @@
 # endif
 ! allocating a 2D scratch array
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
+      real Ubt(PRIVATE_2D_SCRATCH_ARRAY)
+      real Vbt(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hu(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hv(PRIVATE_2D_SCRATCH_ARRAY)
 ! is not the usual croco policy
 ! grad should be passed as a A2d array in step3d_uv2_tile
       real dpth,aa,cc
@@ -297,12 +301,14 @@
 
         do i=IstrU,Iend
           DC(i,0)=(DC(i,0)*on_u(i,j)-DU_avg1(i,j,nnew))
-     &                             /(CF(i,0)*on_u(i,j))
-        enddo
+!     &                             /(CF(i,0)*on_u(i,j))
+          Ubt(i,j) = DC(i,0)
+          DC(i,0) = DC(i,0)/(CF(i,0)*on_u(i,j))
+       enddo
 !###########################
         do k=1,N
           do i=IstrU,Iend
-# if defined NHMG
+# if defined NHMG2
 ! TODO: explain why NHMG does differently
             u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
 # else
@@ -554,12 +560,14 @@
 
           do i=Istr,Iend
             DC(i,0)=(DC(i,0)*om_v(i,j)-DV_avg1(i,j,nnew))
-     &                               /(CF(i,0)*om_v(i,j))
+!     &                               /(CF(i,0)*om_v(i,j))
+            Vbt(i,j) = DC(i,0)
+            DC(i,0) = DC(i,0)/(CF(i,0)*om_v(i,j))
           enddo
 !###########################
           do k=1,N
             do i=Istr,Iend
-# if defined NHMG
+# if defined NHMG2
 ! TODO: explain why NHMG does differently
               v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
 #  else
@@ -650,9 +658,34 @@
         enddo        !--> discard DC,CF(:,0)
 # endif
         endif
+      enddo                     ! <-- j
 !
+
+# ifdef NHMG2
+      do j=Jstr,Jend
+         do i=Istr,Iend
+           wz(i,j,0,nnew)=0.
+           DC(i,0) = - (Ubt(i+1,j)-Ubt(i,j)+Vbt(i,j+1)-Vbt(i,j))
+         ! DC(i,0) is the wz barotropic correction at the surface
+           DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
+         ! DC(i,0) is divided by the total depth
+           DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
+         enddo
+         do k=1,N
+            do i=Istr,Iend
+            ! at this time, Huon and Hvom CANNOT used : they are
+            ! defined at n+1/2 instead of n+1
+!            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+!     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
+            enddo
+         enddo
+      enddo
+# endif NHMG
+
 # ifdef NHMG
-        call tic(1,'croco_step3d_uv2_1')
+      call tic(1,'croco_step3d_uv2_1')
+      do j=Jstr,Jend
+
 !--------------------------------------------------------------------
 ! Time step w equation
 !
@@ -732,9 +765,9 @@
           enddo
         enddo
 #endif
+      enddo                     ! <-- j
         call toc(1,'croco_step3d_uv2_1')
 # endif  /* NHMG */
-      enddo                     ! <-- j
 
 !-------------------------------------------------------------------
 ! DIAGNOSTICS
@@ -867,12 +900,14 @@
 
 !!
 !   Multiply u,v,w to go from velocity units to fluxes
-
+         hu = 0.
+         hv = 0.
       do k=1,N
          do j=Jstr,Jend
             do i=Istr,Iend+1
                u(i,j,k,nnew) = u(i,j,k,nnew)
      &              *(0.5*(Hz(i,j,k) + Hz(i-1,j,k))) / pn_u(i,j)
+               hu(i,j)=hu(i,j)+0.5*(Hz(i,j,k) + Hz(i-1,j,k))
             enddo
          enddo
 
@@ -880,6 +915,7 @@
             do i=Istr,Iend
                v(i,j,k,nnew) = v(i,j,k,nnew)
      &              *(0.5*(Hz(i,j,k) + Hz(i,j-1,k))) / pm_v(i,j)
+               hv(i,j)=hv(i,j)+0.5*(Hz(i,j,k) + Hz(i,j-1,k))
             enddo
          enddo
 
@@ -900,8 +936,6 @@
      &                        v(START_2D_ARRAY,1,nnew))
 #  endif
 
-!! only do this for neumann nhmg conditions
-      if (surface_neumann) then
          nh_ubar = 0.
          nh_vbar = 0.
          do k=1,N
@@ -916,13 +950,27 @@
                enddo
             enddo
          enddo
+      if (surface_neumann) then
+!! only do this for neumann nhmg conditions
          do j=Jstr,Jend
             do i=Istr,Iend
-               nh_wcor(i,j) = wz(i,j,N,nnew) +
-     &              (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+               nh_wcor(i,j) = wz(i,j,N,nnew)
+ !    &            +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
             enddo
          enddo
          do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend+1
+                  u(i,j,k,nnew) = u(i,j,k,nnew) - nh_ubar(i,j)
+     & *0.5*(Hz(i,j,k) + Hz(i-1,j,k))/hu(i,j)
+               enddo
+            enddo
+            do j=Jstr,Jend+1
+               do i=Istr,Iend
+                  v(i,j,k,nnew) = v(i,j,k,nnew) - nh_vbar(i,j)
+     & *0.5*(Hz(i,j,k) + Hz(i,j-1,k))/hv(i,j)
+               enddo
+            enddo
             do j=Jstr,Jend
                do i=Istr,Iend
                   wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
@@ -936,12 +984,38 @@
 
 !    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
 !         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
-
 !     At this point u,v,w are fluxes with the dimension of m^3/s
+       if (surface_neumann) then
+          do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend+1
+                  u(i,j,k,nnew) = u(i,j,k,nnew) + nh_ubar(i,j)
+     & *0.5*(Hz(i,j,k) + Hz(i-1,j,k))/hu(i,j)
+               enddo
+            enddo
+            do j=Jstr,Jend+1
+               do i=Istr,Iend
+                  v(i,j,k,nnew) = v(i,j,k,nnew) + nh_vbar(i,j)
+     & *0.5*(Hz(i,j,k) + Hz(i,j-1,k))/hv(i,j)
+               enddo
+            enddo
+            do j=Jstr,Jend
+               do i=Istr,Iend
+!                  wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
+!     &                 * (z_w(i,j,k)-z_w(i,j,0))
+!     &                 / (z_w(i,j,N)-z_w(i,j,0))
+               enddo
+            enddo
+         enddo
+      endif
+
+      nh_ubar = 0
+      nh_vbar = 0
       do k=1,N
          do j=Jstr,Jend
             do i=Istr,Iend+1
                nhdu(i,j,k,iprec1) = grid(1)%du(k,j,i)/dt !stored as a trend
+               nh_ubar(i,j) = nh_ubar(i,j)+grid(1)%du(k,j,i)
                u(i,j,k,nnew) = (u(i,j,k,nnew) + grid(1)%du(k,j,i) )
      &              /(0.5*(Hz(i,j,k) + Hz(i-1,j,k))) * pn_u(i,j)
             enddo
@@ -950,6 +1024,7 @@
          do j=Jstr,Jend+1
             do i=Istr,Iend
                nhdv(i,j,k,iprec1) = grid(1)%dv(k,j,i)/dt !stored as a trend
+               nh_vbar(i,j) = nh_vbar(i,j)+grid(1)%dv(k,j,i)
                v(i,j,k,nnew) = (v(i,j,k,nnew) + grid(1)%dv(k,j,i) )
      &              /(0.5*(Hz(i,j,k) + Hz(i,j-1,k))) * pm_v(i,j)
             enddo
@@ -963,6 +1038,12 @@
             enddo
          enddo
       enddo
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_ubar(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_vbar(START_2D_ARRAY))
+#endif
 !     Now: u,v,w are fluxes with the dimension of m/s
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
@@ -2362,54 +2443,68 @@
 # endif
 # endif
 
-# ifdef NHMG
+# ifdef NHMG2
 !--------------------------------------------------------------------
 ! Coupling wz
 !--------------------------------------------------------------------
 !
 #  ifdef NO_SPLIT
 #  else
-      ! We've modified u and v, wz needs to be made consistent
+!     We now apply the barotropic correction to u, v and wz
+      do j=Jstr,Jend+1
+         do i=Istr,Iend+1
+            Ubt(i,j) = nh_ubar(i,j)
+            Vbt(i,j) = nh_vbar(i,j)
+         enddo
+      enddo
       do j=Jstr,Jend
          do i=Istr,Iend
-            wz(i,j,0,nnew)=0.
+           wz(i,j,0,nnew)=0.
+           DC(i,0) = - (Ubt(i+1,j)-Ubt(i,j)+Vbt(i,j+1)-Vbt(i,j))
+         ! DC(i,0) is the wz barotropic correction at the surface
+           DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
+         ! DC(i,0) is divided by the total depth
+           DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
          enddo
-        do k=1,N
-          do i=Istr,Iend
-            DC(i,0)=pm(i,j)*pn(i,j)
+         do k=1,N
+            do i=Istr,Iend
             ! at this time, Huon and Hvom CANNOT used : they are
             ! defined at n+1/2 instead of n+1
-            wz(i,j,k,nnew)=wz(i,j,k-1,nnew)
-     &      - DC(i,0)*(
-     &       +0.5*(Hz(i,j,k)+Hz(i+1,j,k))*on_u(i+1,j)*u(i+1,j,k,nnew)
-     &       -0.5*(Hz(i-1,j,k)+Hz(i,j,k))*on_u(i,j)*u(i,j,k,nnew)
-     &       +0.5*(Hz(i,j,k)+Hz(i,j+1,k))*om_v(i,j+1)*v(i,j+1,k,nnew)
-     &       -0.5*(Hz(i,j-1,k)+Hz(i,j,k))*om_v(i,j)*v(i,j,k,nnew) )
-          enddo
-        enddo
+!            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+!     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
+            enddo
+         enddo
       enddo
-!
+      do j=Jstr,Jend
+         do i=IstrU,Iend+1
+!            Ubt(i,j) = (nh_ubar(i,j))*pn_u(i,j)/hu(i,j)
+            Ubt(i,j) = Ubt(i,j)*pn_u(i,j)/hu(i,j)
+!            ubar(i,j,kstp) = ubar(i,j,kstp)-Ubt(i,j)
+         enddo
+      enddo
+      do j=JstrV,Jend+1
+         do i=Istr,Iend
+!            Vbt(i,j) = (nh_vbar(i,j))*pm_v(i,j)/hv(i,j)
+            Vbt(i,j) = Vbt(i,j)*pm_v(i,j)/hv(i,j)
+!            vbar(i,j,kstp) = vbar(i,j,kstp)-Vbt(i,j)
+         enddo
+      enddo
+      do k=1,N
+         do j=Jstr,Jend
+            do i=IstrU,Iend+1
+               u(i,j,k,nnew) = u(i,j,k,nnew) -  Ubt(i,j)
+            enddo
+         enddo
+         do j=JstrV,Jend+1
+            do i=Istr,Iend
+               v(i,j,k,nnew) = v(i,j,k,nnew) -  Vbt(i,j)
+            enddo
+         enddo
+      enddo
 
-!--------------------------------------------------------------------
-! Update physical boundary values
-!--------------------------------------------------------------------
-      call w3dbc_tile (Istr,Iend,Jstr,Jend, grad)
-!--------------------------------------------------------------------
-! Exchange periodic boundaries and computational margins.
-!--------------------------------------------------------------------
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#  ifdef THREE_GHOST_POINTS_UV
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))
-#  else
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                                 wz(START_2D_ARRAY,0,nnew))
-#  endif
 # endif
-
-#  endif
-
-# endif /* NHMG */
+!
+# endif NHMG
 
 # if defined DIAGNOSTICS_EK  
 
