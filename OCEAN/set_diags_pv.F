@@ -46,11 +46,6 @@
 #endif
 #include "compute_auxiliary_bounds.h"
 
-
-
-
-
-
         do itrc=1,NT
           do k=1,N
             do j=JstrR,JendR
@@ -76,23 +71,7 @@
 # endif /* DIAGNOSTICS_DISS */
 
 
-# if defined DIAGNOSTICS_PV_FULL
 
-! ------- ------------- ------ ------ - -----
-      do k=0,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-
-            pv(i,j,k) = 0.
-
-            pvd(i,j,k) = 0.
-
-          enddo
-         enddo
-       enddo
-! ------- ------------- ------ ------ - -----
-
-# endif
 
       return
       end

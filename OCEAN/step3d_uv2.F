@@ -291,6 +291,48 @@
      &                             /(CF(i,0)*on_u(i,j))
         enddo
 !###########################
+# if defined DIAGNOSTICS_PV_FULL
+
+! ------- ------------- ------ ------ - -----
+      do k=1,N-1
+        do i=IstrU,Iend
+        
+            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
+     
+            cff= 2.*(u(i,j,k+1,nnew) - u(i,j,k,nnew))
+     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
+     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+     
+            BC(i,k)= (u(i,j,k+1,nnew)**2 - u(i,j,k,nnew)**2)
+     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
+     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+
+            pv(i,j,k) = -  FC(i,k) * cff**2
+     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
+     &                *  om_u(i,j)*on_u(i,j) SWITCH
+
+         enddo
+       enddo
+       
+      do k=2,N-1
+        do i=IstrU,Iend-1
+        
+            pvd(i,j,k) = ( FC(i,k  ) * BC(i,k  )
+     &                 - FC(i,k-1) * BC(i,k-1) )
+     &                 /( z_r(i,j,k  )+z_r(i-1,j,k  )
+     &                   -z_r(i,j,k-1)-z_r(i-1,j,k-1))
+     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
+     &                *  om_u(i,j)*on_u(i,j) SWITCH
+     
+         enddo
+       enddo
+! ------- ------------- ------ ------ - -----
+
+# endif
+
+
+
+!###########################
         do k=1,N
           do i=IstrU,Iend
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
@@ -544,6 +586,8 @@
             DC(i,0)=(DC(i,0)*om_v(i,j)-DV_avg1(i,j,nnew))
      &                               /(CF(i,0)*om_v(i,j))
           enddo
+          
+
 !###########################
           do k=1,N
             do i=Istr,Iend
@@ -1864,7 +1908,7 @@
      &                            + Mfast(i,j,k,1)
 # endif
      &                            + MHmix(i,j,k,1,3-nstp)
-     &                            + MHdiff(i,j,k,1))
+     &                            + 0.*MHdiff(i,j,k,1))
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
