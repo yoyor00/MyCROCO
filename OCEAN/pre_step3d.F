@@ -1095,21 +1095,7 @@
          do j=Jstr,Jend
             do i=Istr,Iend
                nh_wcor(i,j) = wz(i,j,N,nnew)
-!     &        +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
-            enddo
-         enddo
-         do k=1,N
-            do j=Jstr,Jend
-               do i=Istr,Iend+1
-                  u(i,j,k,nnew) = u(i,j,k,nnew) - nh_ubar(i,j)
-     & *0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))/hu(i,j)
-               enddo
-            enddo
-            do j=Jstr,Jend+1
-               do i=Istr,Iend
-                  v(i,j,k,nnew) = v(i,j,k,nnew) - nh_vbar(i,j)
-     & *0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))/hv(i,j)
-               enddo
+     &        +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
             enddo
          enddo
          do k=1,N
@@ -1136,20 +1122,6 @@
          do k=1,N    
 
             if (surface_neumann) then
-
-            do j=Jstr,Jend
-               do i=Istr,Iend+1
-                  u(i,j,k,nnew) = u(i,j,k,nnew) + nh_ubar(i,j)
-     & *0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))/hu(i,j)
-               enddo
-            enddo
-            do j=Jstr,Jend+1
-               do i=Istr,Iend
-                  v(i,j,k,nnew) = v(i,j,k,nnew) + nh_vbar(i,j)
-     & *0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))/hv(i,j)
-               enddo
-            enddo
-
                do j=Jstr,Jend
                   do i=Istr,Iend
                      wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)

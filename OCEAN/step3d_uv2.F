@@ -662,6 +662,13 @@
 !
 
 # ifdef NHMG2
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   Ubt(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   Vbt(START_2D_ARRAY))
+#endif
+      if (.not.surface_neumann) then
       do j=Jstr,Jend
          do i=Istr,Iend
            wz(i,j,0,nnew)=0.
@@ -675,11 +682,12 @@
             do i=Istr,Iend
             ! at this time, Huon and Hvom CANNOT used : they are
             ! defined at n+1/2 instead of n+1
-!            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-!     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
+            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
             enddo
          enddo
       enddo
+      endif
 # endif NHMG
 
 # ifdef NHMG
@@ -955,22 +963,10 @@
          do j=Jstr,Jend
             do i=Istr,Iend
                nh_wcor(i,j) = wz(i,j,N,nnew)
- !    &            +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+     &            +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
             enddo
          enddo
          do k=1,N
-            do j=Jstr,Jend
-               do i=Istr,Iend+1
-                  u(i,j,k,nnew) = u(i,j,k,nnew) - nh_ubar(i,j)
-     & *0.5*(Hz(i,j,k) + Hz(i-1,j,k))/hu(i,j)
-               enddo
-            enddo
-            do j=Jstr,Jend+1
-               do i=Istr,Iend
-                  v(i,j,k,nnew) = v(i,j,k,nnew) - nh_vbar(i,j)
-     & *0.5*(Hz(i,j,k) + Hz(i,j-1,k))/hv(i,j)
-               enddo
-            enddo
             do j=Jstr,Jend
                do i=Istr,Iend
                   wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
@@ -987,18 +983,6 @@
 !     At this point u,v,w are fluxes with the dimension of m^3/s
        if (surface_neumann) then
           do k=1,N
-            do j=Jstr,Jend
-               do i=Istr,Iend+1
-                  u(i,j,k,nnew) = u(i,j,k,nnew) + nh_ubar(i,j)
-     & *0.5*(Hz(i,j,k) + Hz(i-1,j,k))/hu(i,j)
-               enddo
-            enddo
-            do j=Jstr,Jend+1
-               do i=Istr,Iend
-                  v(i,j,k,nnew) = v(i,j,k,nnew) + nh_vbar(i,j)
-     & *0.5*(Hz(i,j,k) + Hz(i,j-1,k))/hv(i,j)
-               enddo
-            enddo
             do j=Jstr,Jend
                do i=Istr,Iend
 !                  wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
@@ -1038,6 +1022,30 @@
             enddo
          enddo
       enddo
+!--------------------------------------------------------------------
+! Coupling wz
+!--------------------------------------------------------------------
+!
+!     We now apply the barotropic correction to wz
+      do j=Jstr,Jend
+         do i=Istr,Iend
+           wz(i,j,0,nnew)=0.
+           DC(i,0) = - (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+         ! DC(i,0) is the wz barotropic correction at the surface
+           DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
+         ! DC(i,0) is divided by the total depth
+           DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
+         enddo
+         do k=1,N
+            do i=Istr,Iend
+            ! at this time, Huon and Hvom CANNOT used : they are
+            ! defined at n+1/2 instead of n+1
+            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
+            enddo
+         enddo
+      enddo
+
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   nh_ubar(START_2D_ARRAY))
@@ -2448,19 +2456,11 @@
 ! Coupling wz
 !--------------------------------------------------------------------
 !
-#  ifdef NO_SPLIT
-#  else
-!     We now apply the barotropic correction to u, v and wz
-      do j=Jstr,Jend+1
-         do i=Istr,Iend+1
-            Ubt(i,j) = nh_ubar(i,j)
-            Vbt(i,j) = nh_vbar(i,j)
-         enddo
-      enddo
+!     We now apply the barotropic correction to wz
       do j=Jstr,Jend
          do i=Istr,Iend
            wz(i,j,0,nnew)=0.
-           DC(i,0) = - (Ubt(i+1,j)-Ubt(i,j)+Vbt(i,j+1)-Vbt(i,j))
+           DC(i,0) = - (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
          ! DC(i,0) is the wz barotropic correction at the surface
            DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
          ! DC(i,0) is divided by the total depth
@@ -2470,25 +2470,27 @@
             do i=Istr,Iend
             ! at this time, Huon and Hvom CANNOT used : they are
             ! defined at n+1/2 instead of n+1
-!            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-!     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
+            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
             enddo
          enddo
       enddo
+#if defined JUNK
       do j=Jstr,Jend
          do i=IstrU,Iend+1
 !            Ubt(i,j) = (nh_ubar(i,j))*pn_u(i,j)/hu(i,j)
             Ubt(i,j) = Ubt(i,j)*pn_u(i,j)/hu(i,j)
-!            ubar(i,j,kstp) = ubar(i,j,kstp)-Ubt(i,j)
+            ubar(i,j,knew) = ubar(i,j,kstp)-Ubt(i,j)
          enddo
       enddo
       do j=JstrV,Jend+1
          do i=Istr,Iend
 !            Vbt(i,j) = (nh_vbar(i,j))*pm_v(i,j)/hv(i,j)
             Vbt(i,j) = Vbt(i,j)*pm_v(i,j)/hv(i,j)
-!            vbar(i,j,kstp) = vbar(i,j,kstp)-Vbt(i,j)
+            vbar(i,j,knew) = vbar(i,j,kstp)-Vbt(i,j)
          enddo
       enddo
+      ! DONT CORRECT u and v => BLOW UP
       do k=1,N
          do j=Jstr,Jend
             do i=IstrU,Iend+1
@@ -2501,8 +2503,7 @@
             enddo
          enddo
       enddo
-
-# endif
+#endif JUNK
 !
 # endif NHMG
 
