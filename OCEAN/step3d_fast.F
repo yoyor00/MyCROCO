@@ -199,9 +199,7 @@ C$    trd=omp_get_thread_num()
 # include "ocean3d.h"
 # include "coupling.h"
 # include "forces.h"
-#ifdef NBQ
        real :: sum_nbq
-#endif
 # ifdef MRL_WCI
       real vstu,ustv,dudx,dvdx,dude,dvde
 # endif
