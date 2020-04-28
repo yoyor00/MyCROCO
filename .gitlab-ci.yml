@@ -34,8 +34,6 @@ reg_run:
     when: always
 
 vort_run:
-  only:
-    - schedules  
   script:
     - cd $CVTKHOME/Scripts_vort
     - ./create_link_master_vort.sh
