@@ -299,30 +299,32 @@
         
             FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
      
-            cff= 2.*(u(i,j,k+1,nnew) - u(i,j,k,nnew))
+            cff=  (u(i,j,k+1,nnew) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
+     &           - u(i,j,k  ,nnew) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
      &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
      &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
      
-            BC(i,k)= (u(i,j,k+1,nnew)**2 - u(i,j,k,nnew)**2)
+            BC(i,k)= ((u(i,j,k+1,nnew) / (Hz(i,j,k+1)+Hz(i-1,j,k+1)))**2
+     &             - ( u(i,j,k  ,nnew) / (Hz(i,j,k  )+Hz(i-1,j,k  )))**2)
      &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
      &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
 
             pv(i,j,k) = -  FC(i,k) * cff**2
-     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
-     &                *  om_u(i,j)*on_u(i,j) SWITCH
+!     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+!     &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
 
          enddo
        enddo
        
       do k=2,N-1
-        do i=IstrU,Iend-1
+        do i=IstrU,Iend
         
             pvd(i,j,k) = ( FC(i,k  ) * BC(i,k  )
      &                 - FC(i,k-1) * BC(i,k-1) )
-     &                 /( z_r(i,j,k  )+z_r(i-1,j,k  )
-     &                   -z_r(i,j,k-1)-z_r(i-1,j,k-1))
-     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
-     &                *  om_u(i,j)*on_u(i,j) SWITCH
+     &                 /( z_w(i,j,k  )+z_w(i-1,j,k  )
+     &                   -z_w(i,j,k-1)-z_w(i-1,j,k-1))
+!     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+!     &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
      
          enddo
        enddo
@@ -1908,7 +1910,7 @@
      &                            + Mfast(i,j,k,1)
 # endif
      &                            + MHmix(i,j,k,1,3-nstp)
-     &                            + 0.*MHdiff(i,j,k,1))
+     &                            + MHdiff(i,j,k,1))
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
