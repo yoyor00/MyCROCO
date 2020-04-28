@@ -1,32 +1,9 @@
-<<<<<<< HEAD
       program partit
  
 ! Generic netCDF partitioning tool: reads netCDF files corresonding to
 ! the whole physical grid and prepares multiple files which hold data
 ! corresponding to different subdomains.  These files can be then read
 ! in parallel by different MPI processes.
-=======
-! $Id: partit.F 1458 2014-02-03 15:01:25Z gcambon $
-!
-!======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
-! CROCO website : http://www.croco-ocean.org
-!======================================================================
-!
-!
-#include "cppdefs.h"
-!
-      program partit 
-!
-! Generic netCDF partitioning tool: reads netCDF files corresonding
-! to the whole physical grid and prepares multiple files which hold
-! data corresponding to different subdomains. These files can be
-! then read in parallel by different MPI processes. 
->>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
 !
 ! Usage:  partit NP_XI NP_ETA ncname1 ... ncnameN
 ! ------  where NP_XI  number of subdomains along XI-direction
@@ -379,7 +356,6 @@ c--#define VERBOSE
           ncname(node)=src_name(1:lsrc)
           lstr=lsrc
           ierr=0
-<<<<<<< HEAD
           call insert_node (ncname(node), lstr, node, nnodes, ierr)
  
           if (ierr. eq. 0) then
@@ -393,16 +369,6 @@ c--#define VERBOSE
      &                'create netCDF file ''', ncname(node)(1:lstr),
      &                                    '''.',  nf_strerror(ierr)
             endif
-=======
-          call insert_node (ncname(node), lstr, node, NNODES, ierr)
-          if (ierr. ne. 0) goto 97     !--> next file
-!          ierr=nf_create (ncname(node)(1:lstr),nf_clobber,ncid(node))
-          ierr=nf_create (ncname(node)(1:lstr),
-     &                    nf_64bit_offset,ncid(node))
-          if (ierr .eq. nf_noerr) then
-            write(stdout,'(12x,3A)') 'Created partitioned file ''',
-     &                                  ncname(node)(1:lstr), '''.' 
->>>>>>> 5ab9970a... compilation stuff with pisces + ncjoin with gfortran
           else
             ierr_all=ierr_all+1
           endif

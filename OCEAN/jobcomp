@@ -142,7 +142,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
         elif [[ $FC == pgfortran ]] ; then
-                CPP1="cpp  -traditional -DLinux -D_OPENACC"
+                CPP1="cpp  -traditional -DLinux -D_OPENACC  -DXLF"
                 CFT1=pgfortran
                 FFLAGS1=" -g -fast -pg -r8 -i4 -Mprof=ccff -traceback\
                 -Mbackslash -Kieee  -Mpreprocess -mcmodel=medium "
