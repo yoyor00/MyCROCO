@@ -21,8 +21,6 @@ numrev=`head -$ligne2 gitinfos | tail -1 | tr -d '\n' | tr -d ' '`
 #==
 for testREGO in `ls Configure_Test` ; do  
     testREG=`echo $testREGO | cut -d/ -f2-`
-    #echo $testREG
-    #echo "$testREG/Recap_${testREG}_${today}_*.git* Log_Summary"
     cp $testREG/Recap_${testREG}_${today}.git* Junk
 done
 
@@ -34,6 +32,4 @@ done
 cd -
 
 mv Junk/gather_recap_tmp "./$1_gather_recap_${today}_git${numrev}"
-#cp -rf "./$1_gather_recap_${today}_git${numrev}" .
-##rm -Rf Junk/*
 cp "./$1_gather_recap_${today}_git${numrev}" $CVTKWORK/ftp
