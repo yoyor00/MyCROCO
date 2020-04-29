@@ -404,6 +404,21 @@
       enddo
 # endif
 
+# if defined TS_HADV_TEST && defined SOLID_BODY_PER
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+             u(i,j,k,nstp) = u(i,j,k,nnew)
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+             v(i,j,k,nstp) = v(i,j,k,nnew)
+          enddo
+        enddo
+      enddo
+# endif
+
       do j=Jstr,Jend
 
         do i=Istr,Iend
@@ -474,11 +489,6 @@
 !
 !======================================================================
 !
-# if defined TS_HADV_TEST && defined SOLID_BODY_PER
-      u(:,:,:,nstp) = u(:,:,:,nnew)
-      v(:,:,:,nstp) = v(:,:,:,nnew)
-# endif
-
         do i=IstrU,Iend
           DC(i,0)=pm_u(i,j)*pn_u(i,j)
         enddo
@@ -828,14 +838,35 @@
 !
 !--------------------------------------------------------------------
 !
+
 # if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
-      u(:,:,:,nnew) = u(:,:,:,nstp)  
-      v(:,:,:,nnew) = v(:,:,:,nstp)
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            u(i,j,k,nnew) = u(i,j,k,nstp)
+          enddo
+        enddo
+      do j=JstrV,Jend
+         do i=Istr,Iend
+            v(i,j,k,nnew) = v(i,j,k,nstp)
+          enddo
+        enddo
+      enddo
 # endif
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
-      cff           = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))  
-      u(:,:,:,nnew) = u(:,:,:,nstp) * cff 
-      v(:,:,:,nnew) = v(:,:,:,nstp) * cff
+      cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
+      do k=1,N
+        do j=Jstr,JendR
+          do i=IstrU,IendR
+            u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+          enddo
+        enddo
+        do j=JstrV,JendR
+          do i=Istr,IendR
+            v(i,j,k,nnew) = v(i,j,k,nstp) * cff
+          enddo
+        enddo
+      enddo
 # endif
 !
 !--------------------------------------------------------------------
@@ -876,7 +907,6 @@
 #  define IU_RANGE Istr,IendR
 #  define IV_RANGE IstrR,IendR
 # endif
-
 # ifdef NS_PERIODIC
 #  define JU_RANGE Jstr,Jend
 #  define JV_RANGE Jstr,Jend
@@ -910,6 +940,7 @@
 #   endif
 #  endif
 # endif
+
 !
 !======================================================================
 ! Prepare to start two-dimensional time stepping:
