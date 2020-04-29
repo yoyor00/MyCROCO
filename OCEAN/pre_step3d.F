@@ -398,17 +398,31 @@
 
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
       do k=1,N
-        do j=Jstr,Jend
-          do i=IstrU,Iend
+        do j=JstR,JendR
+          do i=IstrR,IendR
              u(i,j,k,nstp) = u(i,j,k,nnew)
           enddo
         enddo
-        do j=JstrV,Jend
-          do i=Istr,Iend
+        do j=JstrR,JendR
+          do i=IstR,IendR
              v(i,j,k,nstp) = v(i,j,k,nnew)
           enddo
         enddo
       enddo
+
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nstp))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nstp))
+#   else
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,nstp))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,nstp))
+#   endif
+#  endif
 # endif
 
       do j=Jstr,Jend
@@ -826,12 +840,12 @@
 # if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
       do k=1,N
         do j=Jstr,Jend
-          do i=IstrU,Iend
+        do j=JstrR,JendR
             u(i,j,k,nnew) = u(i,j,k,nstp)
           enddo
         enddo
-      do j=JstrV,Jend
-         do i=Istr,Iend
+        do j=JstrR,JendR
+          do i=IstrR,IendR
             v(i,j,k,nnew) = v(i,j,k,nstp)
           enddo
         enddo
@@ -840,13 +854,13 @@
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
       cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
       do k=1,N
-        do j=Jstr,JendR
-          do i=IstrU,IendR
+        do j=JstrR,JendR
+          do i=IstrR,IendR
             u(i,j,k,nnew) = u(i,j,k,nstp) * cff
           enddo
         enddo
-        do j=JstrV,JendR
-          do i=Istr,IendR
+        do j=JstrR,JendR
+          do i=IstrR,IendR
             v(i,j,k,nnew) = v(i,j,k,nstp) * cff
           enddo
         enddo

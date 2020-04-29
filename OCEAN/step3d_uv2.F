@@ -1063,13 +1063,13 @@
 # if defined TS_HADV_TEST 
 #  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
      do k=1,N
-        do j=Jstr,JendR
-          do i=IstrU,IendR
+        do j=jstrR,jendR
+          do i=IstrR,iendR
             u(i,j,k,nnew) = u(i,j,k,nstp)
           enddo
         enddo
-        do j=JstrV,JendR
-          do i=Istr,IendR
+        do j=jstrR,jendR
+          do i=IstrR,iendR
             v(i,j,k,nnew) = v(i,j,k,nstp)
           enddo
         enddo
@@ -1078,14 +1078,14 @@
 #  if defined SOLID_BODY_PER
       cff = cos(2.*pi*(time+dt)/(float(ntimes)*dt))
       do k=1,N
-        do j=Jstr,JendR
-          do i=IstrU,IendR
-            u(i,j,k,nnew) = u(i,j,k,nstp) * cff
-            u(i,j,k,nrhs) = u(i,j,k,nstp)
+        do j=jstrR,jendR
+          do i=IstrR,iendR
+             u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+             u(i,j,k,nrhs) = u(i,j,k,nstp)
           enddo
         enddo
-        do j=JstrV,JendR
-          do i=Istr,IendR
+        do j=JstrR,jendR
+          do i=istrR,iendR
             v(i,j,k,nnew) = v(i,j,k,nstp) * cff
             v(i,j,k,nrhs) = v(i,j,k,nstp)
           enddo
@@ -1095,9 +1095,9 @@
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nnew))
+     &                             u(START_2D_ARRAY,1,nrhs))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nnew))
+     &                             v(START_2D_ARRAY,1,nrhs))
 #   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nrhs))
@@ -1105,9 +1105,10 @@
      &                        v(START_2D_ARRAY,1,nrhs))
 #   endif
 #  endif
+
       do j=Jstr,Jend
         do k=1,N
-          do i=IstrU,Iend
+          do i=Istr,Iend
             Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
      &                                         *u(i,j,k,nnew)
           enddo
