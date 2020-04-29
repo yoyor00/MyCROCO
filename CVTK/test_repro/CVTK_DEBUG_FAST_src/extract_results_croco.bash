@@ -6,8 +6,9 @@ set -u
 source CONFIGURE_GLOBAL
 source configure_file
 
-cd $SUBMIT_DIR 
-echo "   - Test repro" | tee -a mylog.txt
+cd $SUBMIT_DIR
+#echo "    " | tee -a mylog.txt
+#echo "   - Test repro" | tee -a mylog.txt
 #echo "$CI_CROCO_PWD"
 
 
@@ -34,15 +35,15 @@ if [ $FLAG_OPENMP -eq 1 ]; then
     #=============================================
     # OPENMP
     echo "===================" > $fileout_openmp
-  echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp
-  ${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
-  res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
-  echo 'res_omp='$res_omp >> $fileout_openmp
-  if [ -z "$res_omp" ] ; then 
-      echo 'check [passed]'  >> $fileout_openmp
-  else
-  echo 'check [failed]'  >> $fileout_openmp
-  fi
+    echo 'OPENMP CHECK (BUGBIN detection)' >> $fileout_openmp
+    ${GREP_CMD} BUGBIN $filein_openmp >> $fileout_openmp
+    res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
+    echo 'res_omp='$res_omp >> $fileout_openmp
+    if [ -z "$res_omp" ] ; then 
+	echo 'check [passed]'  >> $fileout_openmp
+    else
+	echo 'check [failed]'  >> $fileout_openmp
+    fi
 else
     res_omp=""  
 fi
@@ -50,33 +51,33 @@ fi
 if [ $FLAG_MPI -eq 1 ]; then
     #MPI
     echo "===================" > $fileout_mpi
-  echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
-  ${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
-  res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
-  echo 'res_mpi='$res_mpi >> $fileout_mpi
-  if [ -z "$res_mpi" ] ; then 
-      echo 'check mpi [passed]'  >> $fileout_mpi
-  else
-    echo 'check mpi [failed]'  >> $fileout_mpi
-  fi
+    echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
+    ${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
+    res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
+    echo 'res_mpi='$res_mpi >> $fileout_mpi
+    if [ -z "$res_mpi" ] ; then 
+	echo 'check mpi [passed]'  >> $fileout_mpi
+    else
+	echo 'check mpi [failed]'  >> $fileout_mpi
+    fi
 else
     res_mpi=""  
 fi
 
 if [ ! -z "$res_omp" ] ||  [ ! -z "$res_mpi" ] ; then
     sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
-  \mv tmp.txt ${TEST_NAME}_steps
-  msg1="- Repro failure for ${TEST_NAME} ..."
-  msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
-  echo -e "   $msg2" | tee -a mylog.txt
+    \mv tmp.txt ${TEST_NAME}_steps
+    msg1="      => Repro failure for ${TEST_NAME} ..."
+    msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
+    echo -e "   $msg2" | tee -a mylog.txt
 else
     if [ $FLAG_MPI -eq 1 -o  $FLAG_OPENMP -eq 1 ]; then
-      sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
-    \mv tmp.txt ${TEST_NAME}_steps
-  else
-      sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
-    \mv tmp.txt ${TEST_NAME}_steps
-  fi
+ 	sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
+ 	\mv tmp.txt ${TEST_NAME}_steps
+    else
+ 	sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+ 	\mv tmp.txt ${TEST_NAME}_steps
+    fi
 fi  
 
 

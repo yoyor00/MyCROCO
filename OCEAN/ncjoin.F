@@ -1329,7 +1329,9 @@ c**           endif
                 write(*,'(16x,2A,I3,1x,3A)')  'Assembly partitioned ',
      &                       'array type', part_type(i),  'name = ''',
      &                                         vname(i)(1:lvar), ''''
+#ifdef FAST_MODE
                 bfr_out=0.
+#endif
                 do node=0,nnodes-1
                   var_mask=.true.   ! always set to true for  
                                     ! compatibility with croco

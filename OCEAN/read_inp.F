@@ -1912,6 +1912,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'VSink term of index (his)', iflux
         enddo
 !     == 
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       elseif (keyword(1:kwlen).eq.'diagbioGasExc_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrtdiabioGasExc(iflux),
@@ -1924,6 +1925,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'write equation terms ',
      &         'GasExc term of index (his)', iflux
         enddo      
+#  endif
 ! === === ===
 # ifdef AVERAGES
 !         wrtdiabio_avg=.true.
@@ -1955,6 +1957,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'VSink term of index (avg)', iflux
         enddo
 !     == 
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       elseif (keyword(1:kwlen).eq.'diagbioGasExc_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)   
         read(input,*,err=95) (wrtdiabioGasExc_avg(iflux),
@@ -1967,6 +1970,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'write equation terms ',
      &         'GasExc term of index (avg)', iflux
         enddo      
+#  endif
 # endif  /* AVERAGES */
 #endif /* DIAGNOSTICS_BIO */
 

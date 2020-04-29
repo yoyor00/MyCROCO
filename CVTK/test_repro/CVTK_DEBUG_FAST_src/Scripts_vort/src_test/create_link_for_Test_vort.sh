@@ -1,5 +1,7 @@
 #!/bin/bash
 #echo '============================================================='
+#set -x
+set -e
 echo 'Create the link between TESTROOT . and '$PWD
 
 source ../CONFIGURE_VORT
