@@ -34,7 +34,7 @@ C$    trd=omp_get_thread_num()
      &                   , A2d(1, 9,trd), A2d(1,10,trd)
      &                   , A2d(1,11,trd), A2d(1,12,trd)
      &                   , A2d(1,13,trd), A2d(1,14,trd)
-     &                   , A2d(1,15,trd), A2d(1,16,trd)
+     &                   , A2d(1,15,trd), A2d(1,16,trd), A2d(1,17,trd)
 # ifdef NBQ
      &                   , A3d(1, 1,trd), A3d(1, 2,trd)
      &                   , A3d(1, 3,trd), A3d(1, 4,trd)
@@ -56,7 +56,7 @@ C$    trd=omp_get_thread_num()
      &                          ,urhs,vrhs 
      &                          ,DUon,DVom
      &                          ,ru_ext_nbq_sum, rv_ext_nbq_sum
-     &                          ,ru_ext_nbq_old, rv_ext_nbq_old
+     &                          ,ru_ext_nbq_old, rv_ext_nbq_old,work
 # ifdef NBQ
      &                          ,Hzw_half_nbq_inv,  Hzr_half_nbq_inv 
      &                          ,Hzw_half_nbq_inv_u,Hzw_half_nbq_inv_v
@@ -396,7 +396,10 @@ C$    trd=omp_get_thread_num()
       endif
 !
 # ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
+C$OMP END MASTER
 # endif  
 !
 !----------------------------------------------------------------------
@@ -460,7 +463,10 @@ C$    trd=omp_get_thread_num()
 # endif
 
 # ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r')
+C$OMP END MASTER
 # endif 
 !
 !-----------------------------------------------------------------------
@@ -553,8 +559,11 @@ C$OMP END MASTER
             usurf_nbq(i,j)=(qdmu_nbq(i,j,N)  
      &                     *2./(Hz(i,j,N)+Hz(i-1,j,N))
 #  ifdef MRL_WCI
-     &                     +ust(i,j,N)*umask_wet(i,j)
+     &                     +ust(i,j,N)
+#   ifdef WET_DRY
+     &                      *umask_wet(i,j)
 #  endif
+# endif
      &                     )
 #  ifdef MASKING
      &                     *umask(i,j) 
@@ -569,7 +578,10 @@ C$OMP END MASTER
             vsurf_nbq(i,j)=(qdmv_nbq(i,j,N)              
      &                     *2./(Hz(i,j,N)+Hz(i,j-1,N))
 #  ifdef MRL_WCI
-     &                     +vst(i,j,N)*vmask_wet(i,j)
+     &                     +vst(i,j,N)
+#   ifdef WET_DRY
+     &                      *vmask_wet(i,j)
+#   endif
 #  endif
      &                      )
 #  ifdef MASKING
@@ -1342,8 +1354,11 @@ C$OMP END MASTER
 # endif
 
 # if defined RVTK_DEBUG && defined NBQ
+C$OMP BARRIER
+C$OMP MASTER
        call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','u')
        call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','v')
+C$OMP END MASTER     
 # endif  
 !
 !=====================================================================
@@ -2063,9 +2078,9 @@ C$OMP END MASTER
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DU_nbq(i,j)=DU_nbq(i,j)*umask_wet(i,j)
-#  ifdef MRL_WCI
-          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
-#  endif
+!#  ifdef MRL_WCI
+!          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+!#  endif
           do k=1,N
             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
           enddo
@@ -2078,9 +2093,9 @@ C$OMP END MASTER
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DV_nbq(i,j)=DV_nbq(i,j)*vmask_wet(i,j)
-#  ifdef MRL_WCI
-          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
-#  endif
+!#  ifdef MRL_WCI
+!          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+!#  endif
           do k=1,N
             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
           enddo
@@ -2089,8 +2104,11 @@ C$OMP END MASTER
 # endif
 
 # ifdef RVTK_DEBUG
+C$OMP BARRIER
+C$OMP MASTER
       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
       call check_tab3d(qdmv_nbq,'qdmv_nbqint','vint')
+C$OMP END MASTER
 # endif
 !
 !-----------------------------------------------------------------------
@@ -2138,8 +2156,11 @@ C$OMP END MASTER
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
 # ifdef RVTK_DEBUG
+C$OMP BARRIER
+C$OMP MASTER
       call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
       call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
+C$OMP END MASTER
 # endif  
 
 
@@ -3053,7 +3074,10 @@ C$OMP END MASTER
       enddo
             
 # if defined RVTK_DEBUG && defined NBQ
+C$OMP BARRIER
+C$OMP MASTER
       call check_tab3d(rho_nbq,'rho_nbq','r')
+C$OMP END MASTER
 # endif    
 
 !=====================================================================
@@ -3249,12 +3273,18 @@ C$OMP END MASTER
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) 
      &                             +cff1*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+#  ifdef WET_DRY
+     &  *umask_wet(i,j)
+#  endif
 # endif
      &                                                   )
           DU_avg2(i,j)=DU_avg2(i,j)+cff2*on_u(i,j)*( DUnew 
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+#  ifdef WET_DRY
+     & *umask_wet(i,j)
+#  endif
 # endif
      &                                                   )
         enddo
@@ -3278,12 +3308,18 @@ C$OMP END MASTER
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) 
      &                              +cff1*om_v(i,j)*(DVnew
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+     &                +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+#  ifdef WET_DRY
+     & *vmask_wet(i,j)
+#  endif
 # endif
      &                                                   )
           DV_avg2(i,j)=DV_avg2(i,j)+cff2*om_v(i,j)*( DVnew
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+     &                +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+#  ifdef WET_DRY
+     & * vmask_wet(i,j)
+#  endif
 # endif
      &                                                   )
         enddo
@@ -3881,9 +3917,12 @@ C$OMP END MASTER
 #  endif
 
 #  ifdef RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
         call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step3d_fast','r')
         call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step3d_fast','u')
         call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step3d_fast','v')
+C$OMP END MASTER
 #  endif   
       endif
 
