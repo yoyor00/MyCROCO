@@ -302,8 +302,8 @@ C$    trd=omp_get_thread_num()
         i=Isrc(is)
         j=Jsrc(is)
 # endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
+        if ( (imin+1) .le.i .and. i.le.imax .and.
+     &       (jmin+1) .le.j .and. j.le.jmax) then
           if (Dsrc(is).eq.0) then
             urhs(i,j)=2.*Qbar(is)/( on_u(i,j)
      &                             *(Drhs(i-1,j)+Drhs(i,j)) )
