@@ -1,13 +1,22 @@
 #!/bin/bash
 #set -x
+set -e
+set -u
+
+source CONFIGURE_GLOBAL
 source CONFIGURE_VORT
+
+echo "   - SOURCE_CROCO="$SOURCE_CROCO
 
 [ ! -d gitinfos ] && ./git_process.bash
 
+numrev0=`sed -n '/revision/{n;p;}' gitinfos`
+numrev=`echo $numrev0 | tr -d [:blank:]`
+echo  "   - Testing CROCO Rev$numrev"
 # Directory creation
-echo "======================================================"
+#echo "======================================================"
 [ ! -d $1 ] && mkdir $1
-echo 'Create and setup dir. : ' $1
+echo '   - Create and setup dir. : ' $1
 
 rm -Rf Configure_Test ; ln -sf  Configure_Test_vort Configure_Test
 
@@ -21,6 +30,6 @@ export mytest=$1
 ./test_croco_vort.sh
 cd -
 
-echo "======================================================"
-echo "  "
+#echo "======================================================"
+#echo "  "
 

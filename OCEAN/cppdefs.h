@@ -266,6 +266,8 @@
 # define AVERAGES
 # define AVERAGES_K
 # undef  OUTPUTS_SURFACE /* 2d surface fields with higher sampling */
+                     /* Parralel reproducity  */
+# undef  RVTK_DEBUG
 /*
 !                        Diagnostics 
 !---------------------------------
@@ -388,7 +390,8 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-
+# undef  RVTK_DEBUG
+                      
 #elif defined CANYON
 /*
 !                       Canyon Example
@@ -406,7 +409,8 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# define NO_FRCFILE
+# define NO_FRCFILE     
+# undef  RVTK_DEBUG
 
 #elif defined EQUATOR
 /*
@@ -436,6 +440,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined INNERSHELF
 /*
@@ -482,7 +487,8 @@
 #   define T_FRC_BRY
 #  endif
 # endif
-# define NO_FRCFILE
+# define NO_FRCFILE      
+# undef  RVTK_DEBUG
 
 #elif defined SINGLE_COLUMN
 /*
@@ -514,6 +520,8 @@
 # define ANA_BTFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
+      
+# undef  RVTK_DEBUG
 
 #elif defined INTERNAL
 /*
@@ -555,7 +563,8 @@
 #  define  M3NUDGING
 #  define  TNUDGING
 # endif
-# define NO_FRCFILE
+# define NO_FRCFILE      
+# undef  RVTK_DEBUG
 
 #elif defined IGW
 /*
@@ -606,7 +615,8 @@
 # define M3NUDGING
 # define TNUDGING
 # undef  ONLINE_ANALYSIS
-
+# undef  RVTK_DEBUG
+                      
 #elif defined RIVER
 /*
 !                       River run-off test problem
@@ -646,7 +656,8 @@
 #  endif
 # endif
 # define NO_FRCFILE
-
+# undef  RVTK_DEBUG
+                      
 #elif defined SEAMOUNT
 /*
 !                       Seamount Example
@@ -668,7 +679,8 @@
 # define ANA_BTFLUX
 # define ANA_BSFLUX
 # define NO_FRCFILE
-
+# undef  RVTK_DEBUG
+                      
 # elif defined SHELFRONT
 /*
 !                       Shelf Front Example
@@ -689,8 +701,9 @@
 # define ANA_BTFLUX
 # define ANA_BSFLUX
 # define EW_PERIODIC
-# define NO_FRCFILE
-
+# define NO_FRCFILE  
+# undef  RVTK_DEBUG
+                      
 #elif defined SOLITON
 /*
 !                       Equatorial Rossby Wave Example
@@ -706,6 +719,8 @@
 # define EW_PERIODIC
 # define ANA_SMFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
+                      
 
 #elif defined THACKER
 /*
@@ -732,6 +747,8 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
+                      
 
 # elif defined OVERFLOW
 /*
@@ -751,7 +768,9 @@
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
-# define NO_FRCFILE
+# define NO_FRCFILE  
+# undef  RVTK_DEBUG
+                      
 /*
 !                       Plume Example
 !                       ===== =======
@@ -787,7 +806,9 @@
 #  define LMD_NONLOCAL
 #  undef  MLCONVEC
 # endif
-# define NO_FRCFILE
+# define NO_FRCFILE    
+# undef  RVTK_DEBUG
+                      
 
 #elif defined UPWELLING
 /*
@@ -817,7 +838,8 @@
 # define LMD_CONVEC
 # define EW_PERIODIC
 # define NO_FRCFILE
-
+# undef  RVTK_DEBUG
+                      
 #elif defined VORTEX
 /*
 !                       Baroclinic Vortex Example (TEST AGRIF)
@@ -850,7 +872,8 @@
 # define M3NUDGING
 # define TNUDGING
 # define NO_FRCFILE
-
+# undef  RVTK_DEBUG
+                      
 #elif defined JET
 /*
 !                       Baroclinic JET Example
@@ -901,7 +924,8 @@
 #  define LMD_CONVEC
 # endif 
 # define NO_FRCFILE
-
+# undef  RVTK_DEBUG
+                      
 #elif defined SHOREFACE
 /*
 !                       PLANAR BEACH Example
@@ -952,6 +976,8 @@
 #  define TNUDGING
 #  define ANA_TCLIMA
 # endif
+# undef  RVTK_DEBUG
+                      
 
 #elif defined SANDBAR
 /*
@@ -1004,6 +1030,9 @@
 #  define MORPHODYN
 # endif
 # define NO_FRCFILE
+      
+# undef  RVTK_DEBUG
+                      
 
 #elif defined RIP
 /*
@@ -1118,6 +1147,8 @@
 # endif
 # undef  DIAGNOSTICS_UV
 
+# undef  RVTK_DEBUG
+                      
 #elif defined SWASH
 /*
 !                       SWASH PLANAR BEACH Example
@@ -1158,6 +1189,8 @@
 # define WET_DRY
 # define NO_FRCFILE
 
+# undef  RVTK_DEBUG
+                      
 #elif defined TANK
 /*
 !                       Tank Example
@@ -1184,6 +1217,8 @@
 # define ANA_STFLUX
 # define NO_FRCFILE
 
+# undef  RVTK_DEBUG
+                      
 #elif defined ACOUSTIC 
 /*
 !                       ACOUSTIC WAVE TESTCASE 
@@ -1205,6 +1240,9 @@
 # define ANA_SRFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+      
+# undef  RVTK_DEBUG
+                      
 
 #elif defined GRAV_ADJ
 /*
@@ -1257,6 +1295,9 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
+      
+# undef  RVTK_DEBUG
+                      
 
 #elif defined KH_INST 
 /*
@@ -1295,6 +1336,9 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
+      
+# undef  RVTK_DEBUG
+                      
 
 #elif defined TS_HADV_TEST
 /*
@@ -1333,6 +1377,8 @@
 #undef  TS_HADV_WENO5
 #undef  TS_HADV_C6
 
+# undef  RVTK_DEBUG
+                      
 #endif /* END OF CONFIGURATION CHOICE */
 
 #include "cppdefs_dev.h"
