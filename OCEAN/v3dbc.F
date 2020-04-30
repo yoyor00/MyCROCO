@@ -60,6 +60,9 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 # include "ocean3d.h"
 # include "climat.h"
 # include "scalars.h"
+# if defined MRL_WCI || defined OW_COUPLING
+# include "forces.h"
+# endif
 # include "boundary.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
       real grad(PRIVATE_2D_SCRATCH_ARRAY), cff,eps,
