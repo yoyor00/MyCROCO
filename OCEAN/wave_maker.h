@@ -59,11 +59,6 @@
 #    endif
 #   endif
 !
-#   ifdef WAVE_MAKER_BICHROMATIC
-        wa=0.707*sqrt(wa1**2+wa2**2)
-        wp=2./(wf1+wf2)
-#   endif
-!
         wf=2*pi/wp        ! frequency
 !
 !  Time & space origins
@@ -111,6 +106,7 @@
 !  Build wave spectrum
 !
         if (FIRST_TIME_STEP) then
+
           fmin=0.2*wf  ! frequency spread
           fmax=5.0*wf
           df=(fmax-fmin)/Nfrq
@@ -173,7 +169,9 @@
             wpha_bry(iw)=wpha_bry(iw)*2.*pi
           enddo
 #    endif /* WAVE_MAKER_DSPREAD */
+
         endif ! FIRST_TIME_STEP
+
         ramp=tanh(dt/wp*float(iic-ntstart))
 
 #   elif defined WAVE_MAKER_BICHROMATIC
@@ -190,6 +188,10 @@
         khd=h0*wf2**2/g
         wk2=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                    khd*(K5+K6*khd)))))) )/h0
+        wk=0.5*(wk1+wk2);
+        wa=0.707*sqrt(wa1**2+wa2**2)
+        wf=0.5*(wf1+wf2)
+        wp=2*pi/wf
 #   else
 !
 !  Monochromatic waves
@@ -344,8 +346,9 @@
 
         enddo  ! j loop
 
-        cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
-        do j=JstrR,JendR
+        do j=JstrR,JendR                  ! compensation flow
+          Du=0.5*(h(0,j)+h(1,j))
+          cff1=0.5*g*wa*wa*wk/(wf*Du)
           do k=1,N
             ubry_west(j,k)=ubry_west(j,k) - cff1
           enddo
