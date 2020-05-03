@@ -134,14 +134,14 @@
          itrc=1
 
 
-         call fillvalue3d_w(pv,nciddiags_pv,diags_pvpv(itrc),
+         call fillvalue3d(pv,nciddiags_pv,diags_pvpv(itrc),
      &                      indxpvpv,
-     &                      record,pw3dvar,type)
+     &                      record,r3dvar,type)
 
 
          call fillvalue3d_w(pvd,nciddiags_pv,diags_pvpvd(itrc),
      &                      indxpvpvd,
-     &                      record,pw3dvar,type)
+     &                      record,w3dvar,type)
 
 # endif
 !---------------------------------------------------------------

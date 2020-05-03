@@ -138,16 +138,16 @@
 # if defined DIAGNOSTICS_PV_FULL
 
 
-         call fillvalue3d_w(pv_avg,nciddiags_pv_avg,
+         call fillvalue3d(pv_avg,nciddiags_pv_avg,
      &                      diags_pvpv_avg(itrc),
      &                      indxpvpv,
-     &                      record,pw3dvar,type)
+     &                      record,r3dvar,type)
 
 
          call fillvalue3d_w(pvd_avg,nciddiags_pv_avg,
      &                      diags_pvpvd_avg(itrc),
      &                      indxpvpvd,
-     &                      record,pw3dvar,type)
+     &                      record,w3dvar,type)
 
 !---------------------------------------------------------------
 # endif

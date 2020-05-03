@@ -91,6 +91,9 @@
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+# ifdef DIAGNOSTICS_PV
+      real cff1 , cff2
+# endif
 # ifdef VADV_ADAPT_IMP
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
@@ -125,7 +128,31 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
-      
+
+!###########################
+# if defined DIAGNOSTICS_DISS
+        do k=1,N
+          do j=JstrR,JendR
+                Mrhs(Istr,j,k,1) =  0.
+                Mrhs(IendR,j,k,1)=  0.
+          enddo
+          do i=Istr,IendR
+                Mrhs(i,JstrR,k,1) =  0.
+                Mrhs(i,JendR,k,1)=  0.
+          enddo
+          do j=Jstr,JendR
+                Mrhs(IstrR,j,k,2) =  0.
+                Mrhs(IendR,j,k,2)=  0.
+          enddo
+          do i=IstrR,IendR
+                Mrhs(i,Jstr,k,2) =  0.
+                Mrhs(i,JendR,k,2)=  0.
+          enddo
+        enddo
+# endif
+!###########################
+            
+            
       do j=Jstr,Jend
 !
 ! The vertical viscosity term is not added as an explicit divergence term
@@ -290,47 +317,7 @@
           DC(i,0)=(DC(i,0)*on_u(i,j)-DU_avg1(i,j,nnew))
      &                             /(CF(i,0)*on_u(i,j))
         enddo
-!###########################
-# if defined DIAGNOSTICS_PV_FULL
-
-! ------- ------------- ------ ------ - -----
-      do k=1,N-1
-        do i=IstrU,Iend
         
-            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
-     
-            cff=  (u(i,j,k+1,nnew) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
-     &           - u(i,j,k  ,nnew) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
-     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
-     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
-     
-            BC(i,k)= ((u(i,j,k+1,nnew) / (Hz(i,j,k+1)+Hz(i-1,j,k+1)))**2
-     &             - ( u(i,j,k  ,nnew) / (Hz(i,j,k  )+Hz(i-1,j,k  )))**2)
-     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
-     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
-
-            pv(i,j,k) = -  FC(i,k) * cff**2
-!     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-!     &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
-
-         enddo
-       enddo
-       
-      do k=2,N-1
-        do i=IstrU,Iend
-        
-            pvd(i,j,k) = ( FC(i,k  ) * BC(i,k  )
-     &                 - FC(i,k-1) * BC(i,k-1) )
-     &                 /( z_w(i,j,k  )+z_w(i-1,j,k  )
-     &                   -z_w(i,j,k-1)-z_w(i-1,j,k-1))
-!     &                *  0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-!     &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
-     
-         enddo
-       enddo
-! ------- ------------- ------ ------ - -----
-
-# endif
 
 
 
@@ -338,6 +325,54 @@
         do k=1,N
           do i=IstrU,Iend
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
+          enddo
+        enddo        !--> discard DC,CF(:,0)
+!###########################
+            
+!###########################
+# if defined DIAGNOSTICS_DISS
+
+! ------- ------------- ------ ------ - -----
+      do k=1,N-1
+        do i=IstrU,Iend
+        
+            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
+     
+            cff1= 2.* (2.*MVmix(i,j,k+1,1) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
+     &               - 2.*MVmix(i,j,k,1) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
+     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
+     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+
+            BC(i,k)= 0.25 * (u(i,j,k+1,nrhs) + u(i,j,k+1,nnew)
+     &                     + u(i,j,k  ,nrhs) + u(i,j,k  ,nnew)) * cff1
+
+         enddo
+       enddo
+       
+      do i=IstrU,Iend
+          FC(i,0)= 0.
+          BC(i,0)= 0.
+          FC(i,N)= 1.
+          BC(i,N)= 0.
+!          BC(i,N)= 0.5 * (u(i,j,k,nrhs)+u(i,j,k,nnew)) * sustr(i,j)
+      enddo
+      
+      do k=1,N
+        do i=IstrU,Iend
+            Mrhs(i,j,k,1) =  ( FC(i,k  ) * BC(i,k  )
+     &                       - FC(i,k-1) * BC(i,k-1) )
+     &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
+         enddo
+       enddo
+! ------- ------------- ------ ------ - -----
+
+# endif
+            
+            
+            
+!###########################
+        do k=1,N
+          do i=IstrU,Iend
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MVmix(i,j,k,1)=-( MVmix(i,j,k,1) - u(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
@@ -425,6 +460,10 @@
           enddo
         enddo        !--> discard DC,CF(:,0)
 # endif
+
+
+
+
 !
 !--------------------------------------------------------------------
 ! Time step momentum equation in the ETA-direction.
@@ -589,11 +628,60 @@
      &                               /(CF(i,0)*om_v(i,j))
           enddo
           
+          
 
 !###########################
           do k=1,N
             do i=Istr,Iend
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
+          enddo
+        enddo        !--> discard DC,CF(:,0)
+!###########################
+            
+!###########################
+# if defined DIAGNOSTICS_DISS
+
+! ------- ------------- ------ ------ - -----
+      do k=1,N-1
+        do i=Istr,Iend
+        
+            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i,j-1,k))
+     
+            cff1= 2.* (2.*MVmix(i,j,k+1,2)/(Hz(i,j,k+1)+Hz(i,j-1,k+1))
+     &               - 2.*MVmix(i,j,k  ,2)/(Hz(i,j,k  )+Hz(i,j-1,k  )) )
+     &                 /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
+     &                   -z_r(i,j,k  )-z_r(i,j-1,k  ))
+
+            BC(i,k)= 0.25 * (v(i,j,k+1,nrhs) + v(i,j,k+1,nnew)
+     &                     + v(i,j,k  ,nrhs) + v(i,j,k  ,nnew)) * cff1
+
+         enddo
+       enddo
+       
+      do i=Istr,Iend
+          FC(i,0)= 0.
+          BC(i,0)= 0.
+          FC(i,N)= 1.
+          BC(i,N)= 0.
+!          BC(i,N)= 0.5 * (v(i,j,k,nrhs)+v(i,j,k,nnew)) * svstr(i,j)
+      enddo
+      
+      do k=1,N
+        do i=Istr,Iend
+            Mrhs(i,j,k,2) =  ( FC(i,k  ) * BC(i,k  )
+     &                       - FC(i,k-1) * BC(i,k-1) )
+     &                *  om_v(i,j)*on_v(i,j) SWITCH vmask(i,j)
+         enddo
+       enddo
+! ------- ------------- ------ ------ - -----
+
+# endif
+            
+            
+            
+!###########################
+          do k=1,N
+            do i=Istr,Iend
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
@@ -1895,6 +1983,9 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
+
+
+
 #if defined DIAGNOSTICS_PV
 ! Add non conservative terms to rhs.
 
@@ -1914,6 +2005,7 @@
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+     &                            - Mrhs(i,j,k,1)
 # endif
               enddo
             enddo
@@ -1935,6 +2027,7 @@
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
      &        * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+     &                            - Mrhs(i,j,k,2)
 # endif
               enddo
             enddo

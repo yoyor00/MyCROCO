@@ -572,9 +572,17 @@ C$    integer omp_get_thread_num
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pv(i,j,k)=init
-            pvd(i,j,k)=init
 #  ifdef AVERAGES
             pv_avg(i,j,k)=init
+#  endif /* AVERAGES */
+          enddo
+        enddo
+      enddo
+      do k=0,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            pvd(i,j,k)=init
+#  ifdef AVERAGES
             pvd_avg(i,j,k)=init
 #  endif /* AVERAGES */
           enddo
