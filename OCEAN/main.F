@@ -850,7 +850,9 @@ CR      write(*,*) '  0' MYID
 #include "openacc_boundary.h"
 #endif
 !$acc& )
+#ifdef NBQ
       cput3 = 0.d00
+#endif      
       do iicroot=ntstart,ntimes+1
 #ifdef USE_CALENDAR 
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
@@ -934,11 +936,12 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 # endif     
 #endif
 
+#ifdef NBQ
       if (mynode == 0) then
        print *,"step3d_fast time =",cput3
        !print *,"count_rate=",count_rate
       endif
-
+#endif
       stop
       end
 
