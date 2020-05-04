@@ -188,17 +188,17 @@ C$    trd=omp_get_thread_num()
           cy=min(cff,max(dft*dfy,-cff))
 #   endif
  
-          ubar(Istr,j,knew)=( cff*ubar(Istr,j,kstp)
-     &                       +cx*ubar(Istr+1,j,knew)
-     &                    -max(cy,0.)*grad(Istr,j  )
-     &                    -min(cy,0.)*grad(Istr,j+1)
-     &                                   )/(cff+cx)
+          ubar(Istr,j,knew)=( cff*ubar(Istr  ,j,kstp)
+     &                        +cx*ubar(Istr+1,j,knew)
+     &                     -max(cy,0.)*grad(Istr,j  )
+     &                     -min(cy,0.)*grad(Istr,j+1)
+     &                                     )/(cff+cx)
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
           ubar(Istr,j,knew)=(1.-tau)*ubar(Istr,j,knew)
 #    ifdef M2_FRC_BRY
      &                            +tau*ubarbry_west(j)
 #    else
-     &                              +tau*ubclm(Istr,j)
+     &                            +tau*ubclm(Istr,j)
 #    endif
 #   endif
 #   ifdef MASKING
@@ -209,8 +209,8 @@ C$    trd=omp_get_thread_num()
 !                                            Western edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-          cff=0.5*(h(Istr-1,j)+h(Istr,j)+
-     &             zeta(Istr-1,j,kstp)+zeta(Istr,j,kstp))
+          cff=0.5*(h(Istr-1,j)+zeta(Istr-1,j,kstp)+
+     &             h(Istr  ,j)+zeta(Istr  ,j,kstp))
           hx=sqrt(g/cff)
           cx=dtfast*cff*hx*0.5*(pm(Istr-1,j)+pm(Istr,j))
           zx=(0.5+cx)*zeta(istr,j,kstp)+(0.5-cx)*zeta(istr-1,j,kstp)
@@ -220,56 +220,45 @@ C$    trd=omp_get_thread_num()
      &                           )*(1.-0.292893218813452/cx)**2
           endif
 #   ifdef OBC_REDUCED_PHYSICS
-          cff1=1.0/(0.5*(h(Istr-1,j)+
-     &                     zeta(Istr-1,j,knew)+
-     &                     h(Istr  ,j)+
-     &                     zeta(Istr  ,j,knew)))
-          bry_str=cff1*(sustr(Istr,j)-
-     &              bustr(Istr,j))
-
+          cff1=1.0/(0.5*(h(Istr-1,j)+zeta(Istr-1,j,kstp)+
+     &                   h(Istr  ,j)+zeta(Istr  ,j,kstp)))
+          bry_str=cff1*(sustr(Istr,j)-bustr(Istr,j))
 #    ifdef UV_COR
-          bry_cor=0.125*(vbar(Istr-1,j  ,knew)+
-     &                  vbar(Istr-1,j+1,knew)+
-     &                  vbar(Istr  ,j  ,knew)+
-     &                  vbar(Istr  ,j+1,knew))*
-     &                  (f(Istr-1,j)+f(Istr  ,j))
-
+          bry_cor=0.125*(vbar(Istr-1,j  ,kstp)+
+     &                   vbar(Istr-1,j+1,kstp)+
+     &                   vbar(Istr  ,j  ,kstp)+
+     &                   vbar(Istr  ,j+1,kstp))*
+     &                  (f(Istr-1,j)+f(Istr,j))
 #    else
-           bry_cor=0.
+          bry_cor=0.
 #    endif
-           bry_pgr=-g*(zeta(Istr  ,j,knew)-
-     &             zeta(Istr-1,j,knew))*
-     &             0.5*(pm(Istr-1,j)+
-     &                     pm(Istr  ,j))
+          bry_pgr=-g*(zeta(Istr,j,kstp)-zeta(Istr-1,j,kstp))*
+     &                          0.5*(pm(Istr-1,j)+pm(Istr,j))
 
-
-           Cx=1.0/SQRT(g*0.5*(h(Istr-1,j)+
-     &                          zeta(Istr-1,j,knew)+
-     &                          h(Istr  ,j)+
-     &                          zeta(Istr  ,j,knew)))
-           cff2=om_u(Istr,j)*Cx
-           bry_val=ubar(Istr+1,j,knew)+
+          Cx=1.0/SQRT(g*0.5*(h(Istr-1,j)+zeta(Istr-1,j,kstp)+
+     &                       h(Istr  ,j)+zeta(Istr  ,j,kstp)))
+          cff2=om_u(Istr,j)*Cx
+          bry_val=ubar(Istr+1,j,kstp)+
      &                cff2*(bry_pgr+
      &                      bry_cor+
      &                      bry_str)
 #   endif
-  
           ubar(Istr,j,knew)= 0.5*( (1.-cx)*ubar(Istr  ,j,kstp)
      &                                 +cx*ubar(Istr+1,j,kstp)
 #   ifdef M2_FRC_BRY
 #    ifdef OBC_REDUCED_PHYSICS
-     &                                        +bry_val
+     &                                     +bry_val
 #    else
-     &                                        +ubarbry_west(j)
+     &                                     +ubarbry_west(j)
 #    endif
 #   elif defined M2CLIMATOLOGY
-     &                                          +ubclm(Istr,j)
+     &                                     +ubclm(Istr,j)
 #    endif
-     &                                          -hx*( zx
+     &                                     -hx*( zx
 #   ifdef Z_FRC_BRY
      &                                        -zetabry_west(j)
 #   elif defined ZCLIMATOLOGY
-     &                                          -ssh(Istr-1,j)
+     &                                        -ssh(Istr-1,j)
 #   endif
      &                           ))
 #   ifdef MASKING
@@ -367,9 +356,9 @@ C$    trd=omp_get_thread_num()
 #   endif
  
           ubar(Iend+1,j,knew)=( cff*ubar(Iend+1,j,kstp)
-     &                             +cx*ubar(Iend,j,knew)
-     &                      -max(cy,0.)*grad(Iend+1,j  )
-     &                      -min(cy,0.)*grad(Iend+1,j+1)
+     &                          +cx*ubar(Iend  ,j,knew)
+     &                     -max(cy,0.)*grad(Iend+1,j  )
+     &                     -min(cy,0.)*grad(Iend+1,j+1)
      &                                       )/(cff+cx)
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
           ubar(Iend+1,j,knew)=(1.-tau)*ubar(Iend+1,j,knew)
@@ -387,8 +376,8 @@ C$    trd=omp_get_thread_num()
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
-          cff=0.5*(h(Iend,j)+h(Iend+1,j)+
-     &             zeta(Iend,j,kstp)+zeta(Iend+1,j,kstp))
+          cff=0.5*(h(Iend  ,j)+zeta(Iend  ,j,kstp)+
+     &             h(Iend+1,j)+zeta(Iend+1,j,kstp))
           hx=sqrt(g/cff)
           cx=dtfast*cff*hx*0.5*(pm(Iend,j)+pm(Iend+1,j))
           zx=(0.5+cx)*zeta(iend,j,kstp)+(0.5-cx)*zeta(iend+1,j,kstp)
@@ -398,35 +387,24 @@ C$    trd=omp_get_thread_num()
      &                           )*(1.-0.292893218813452/cx)**2
           endif
 #   ifdef OBC_REDUCED_PHYSICS
-          cff1=1.0/(0.5*(h(Iend,j)+
-     &                     zeta(Iend,j,knew)+
-     &                     h(Iend+1  ,j)+
-     &                     zeta(Iend+1  ,j,knew)))
-          bry_str=cff1*(sustr(Iend+1,j)-
-     &              bustr(Iend+1,j))
-
+          cff1=1.0/(0.5*(h(Iend  ,j)+zeta(Iend  ,j,kstp)+
+     &                   h(Iend+1,j)+zeta(Iend+1,j,kstp)))
+          bry_str=cff1*(sustr(Iend+1,j)-bustr(Iend+1,j))
 #    ifdef UV_COR
-          bry_cor=0.125*(vbar(Iend,j  ,knew)+
-     &                  vbar(Iend,j+1,knew)+
-     &                  vbar(Iend+1  ,j  ,knew)+
-     &                  vbar(Iend+1  ,j+1,knew))*
-     &                  (f(Iend,j)+f(Iend+1  ,j))
-          
+          bry_cor=0.125*(vbar(Iend  ,j  ,kstp)+
+     &                   vbar(Iend  ,j+1,kstp)+
+     &                   vbar(Iend+1,j  ,kstp)+
+     &                   vbar(Iend+1,j+1,kstp))*
+     &                   (f(Iend,j)+f(Iend+1,j))
 #    else
           bry_cor=0.
 #    endif
-          bry_pgr=-g*(zeta(Iend+1  ,j,knew)-
-     &             zeta(Iend,j,knew))*
-     &             0.5*(pm(Iend,j)+
-     &                     pm(Iend+1,j))
-
-
-          Cx=1.0/SQRT(g*0.5*(h(Iend,j)+
-     &                          zeta(Iend,j,knew)+
-     &                          h(Iend+1 ,j)+
-     &                          zeta(Iend+1  ,j,knew)))
+          bry_pgr=-g*(zeta(Iend+1,j,kstp)-zeta(Iend,j,kstp))*
+     &                          0.5*(pm(Iend,j)+pm(Iend+1,j))
+          Cx=1.0/SQRT(g*0.5*(h(Iend  ,j)+zeta(Iend  ,j,kstp)+
+     &                       h(Iend+1,j)+zeta(Iend+1,j,kstp)))
           cff2=om_u(Iend+1,j)*Cx
-          bry_val=ubar(Iend,j,knew)+
+          bry_val=ubar(Iend,j,kstp)+
      &                cff2*(bry_pgr+
      &                      bry_cor+
      &                      bry_str)
@@ -438,18 +416,18 @@ C$    trd=omp_get_thread_num()
      &                                   +cx*ubar(Iend  ,j,kstp)
 #   ifdef M2_FRC_BRY
 #    ifdef OBC_REDUCED_PHYSICS
-     &                                          +bry_val
+     &                                       +bry_val
 #    else
-     &                                          +ubarbry_east(j)
+     &                                       +ubarbry_east(j)
 #    endif
 #   elif defined M2CLIMATOLOGY
-     &                                          +ubclm(Iend+1,j)
+     &                                       +ubclm(Iend+1,j)
 #    endif
-     &                                          +hx*( zx
+     &                                       +hx*( zx
 #   ifdef Z_FRC_BRY
-     &                                          -zetabry_east(j)
+     &                                         -zetabry_east(j)
 #   elif defined ZCLIMATOLOGY
-     &                                              -ssh(Iend,j)
+     &                                         -ssh(Iend,j)
 #   endif
      &                             ))
         enddo
@@ -556,16 +534,16 @@ C$    trd=omp_get_thread_num()
 #   endif
  
           ubar(i,Jstr-1,knew)=( cff*ubar(i,Jstr-1,kstp)
-     &                             +cx*ubar(i,Jstr,knew)
-     &                      -max(cy,0.)*grad(i-1,Jstr-1)
-     &                      -min(cy,0.)*grad(i  ,Jstr-1)
+     &                          +cx*ubar(i,Jstr  ,knew)
+     &                     -max(cy,0.)*grad(i-1,Jstr-1)
+     &                     -min(cy,0.)*grad(i  ,Jstr-1)
      &                                       )/(cff+cx)
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
           ubar(i,Jstr-1,knew)=(1.-tau)*ubar(i,Jstr-1,knew)
 #    ifdef M2_FRC_BRY
      &                               +tau*ubarbry_south(i)
 #    else
-     &                                +tau*ubclm(i,Jstr-1)
+     &                               +tau*ubclm(i,Jstr-1)
 #    endif
 #   endif
 #   ifdef MASKING
@@ -576,11 +554,11 @@ C$    trd=omp_get_thread_num()
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
-          cff=sqrt(0.5*g*(h(i-1,Jstr-1)+h(i,Jstr-1)+
-     &                    zeta(i-1,Jstr-1,kstp)+zeta(i,Jstr-1,kstp)))
+          cff=sqrt(0.5*g*(h(i-1,Jstr-1)+zeta(i-1,Jstr-1,kstp)+
+     &                    h(i  ,Jstr-1)+zeta(i  ,Jstr-1,kstp)))
           cx=dtfast*0.5*cff*(pn(i-1,Jstr-1)+pn(i,Jstr-1))
           ubar(i,Jstr-1,knew)=(ubar(i,Jstr-1,kstp)
-     &                        +cx*ubar(i,Jstr,knew) )/(1.+cx)     
+     &                     +cx*ubar(i,Jstr  ,knew) )/(1.+cx)     
 #   ifdef MASKING
      &                         *umask(i,Jstr-1)
 #   endif
@@ -685,16 +663,16 @@ C$    trd=omp_get_thread_num()
 #   endif
  
           ubar(i,Jend+1,knew)=( cff*ubar(i,Jend+1,kstp)
-     &                             +cx*ubar(i,Jend,knew)
-     &                      -max(cy,0.)*grad(i-1,Jend+1)
-     &                      -min(cy,0.)*grad(i  ,Jend+1)
+     &                          +cx*ubar(i,Jend  ,knew)
+     &                     -max(cy,0.)*grad(i-1,Jend+1)
+     &                     -min(cy,0.)*grad(i  ,Jend+1)
      &                                       )/(cff+cx)
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
           ubar(i,Jend+1,knew)=(1.-tau)*ubar(i,Jend+1,knew)
 #    ifdef M2_FRC_BRY
      &                               +tau*ubarbry_north(i)
 #    else
-     &                                +tau*ubclm(i,Jend+1)
+     &                               +tau*ubclm(i,Jend+1)
 #    endif
 #   endif
 #   ifdef MASKING
@@ -705,12 +683,11 @@ C$    trd=omp_get_thread_num()
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
         do i=IstrU,Iend
-          cff=sqrt(0.5*g*(h(i-1,Jend+1)+h(i,Jend+1)+
-     &                    zeta(i-1,Jend+1,kstp)+zeta(i,Jend+1,kstp)))
+          cff=sqrt(0.5*g*(h(i-1,Jend+1)+zeta(i-1,Jend+1,kstp)+
+     &                    h(i  ,Jend+1)+zeta(i  ,Jend+1,kstp)))
           cx=dtfast*0.5*cff*(pn(i-1,Jend+1)+pn(i,Jend+1))
-     &                    
           ubar(i,Jend+1,knew)=(ubar(i,Jend+1,kstp)
-     &                         +cx*ubar(i,Jend,knew))/(1.+cx)
+     &                     +cx*ubar(i,Jend  ,knew))/(1.+cx)
 #   ifdef MASKING
      &                        *umask(i,Jend+1)
 #   endif
