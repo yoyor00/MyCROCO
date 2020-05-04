@@ -1260,10 +1260,10 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
       if (FIRST_FAST_STEP) then
-# if defined RVTK_DEBUG && defined NBQ
-       call check_tab3d_device(ru_int_nbq,'ru_int_nbq (A0)','u')
-       call check_tab3d_device(rv_int_nbq,'rv_int_nbq (A0)','v')
-# endif  
+!# if defined RVTK_DEBUG && defined NBQ
+!       call check_tab3d_device(ru_int_nbq,'ru_int_nbq (A0)','u')
+!       call check_tab3d_device(rv_int_nbq,'rv_int_nbq (A0)','v')
+!# endif  
 !
 !$acc kernels default(present)
         do j=Jstr,Jend
