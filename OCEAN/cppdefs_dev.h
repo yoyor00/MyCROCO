@@ -279,7 +279,7 @@
                   || defined SOLITON  || defined JET \
                   || defined ACOUSTIC || defined VORTEX \
                   || defined THACKER  || defined TANK \
-                  || defined KH_INST
+                  || defined KH_INST  || defined TS_HADV_TEST
 # define PGF_FLAT_BOTTOM
 #elif defined RIP
 # define PGF_BASIC_JACOBIAN

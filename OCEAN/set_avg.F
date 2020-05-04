@@ -135,7 +135,7 @@ C$    integer omp_get_thread_num
           cff1=0.0
           if (ZEROTH_TILE) then
             time_avg=time
-            MPI_master_only write(*,*) 'start avg',iic,ntsavg,navg
+            !MPI_master_only write(*,*) 'start avg',iic,ntsavg,navg
           endif
         elseif (mod(ilc-ntsavg,navg).gt.1) then
           cff =1.0
@@ -148,7 +148,7 @@ C$    integer omp_get_thread_num
           cff1=1.0
           if (ZEROTH_TILE) then
             time_avg=cff*(time_avg+time)
-            MPI_master_only write(*,*) 'finish avg',iic,ntsavg,navg
+            !MPI_master_only write(*,*) 'finish avg',iic,ntsavg,navg
           endif
         endif
 

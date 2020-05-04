@@ -117,7 +117,7 @@ C$OMP END PARALLEL
 #include "coupling.h"
 #include "openacc.h"
 #endif
-#if defined RVTK_DEBUG && defined  BULK_FLUX
+#if defined RVTK_DEBUG && ( defined  BULK_FLUX || defined MRL_WCI )
 # include "forces.h"
 #endif
 #ifdef STATIONS
@@ -397,7 +397,10 @@ C$OMP BARRIER
 #  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-      call check_tab2d(wac(:,:,wnew),'wac in step ','r')
+      call check_tab2d(wac(:,:,wnew),'wac in prestep ','r')
+#   ifdef  WAVE_ROLLER
+      call check_tab2d(war(:,:,wnew),'war in prestep ','r')
+#   endif
 C$OMP END MASTER
 #  endif
 # endif
@@ -407,6 +410,12 @@ C$OMP END MASTER
         call  mrl_wci (tile)
       enddo
 C$OMP BARRIER
+#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+C$OMP MASTER
+      call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
+      call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
+C$OMP END MASTER
+#  endif
 # endif
 
       do tile=my_first,my_last
@@ -549,6 +558,9 @@ C$OMP BARRIER
 #include "scalars.h"
 #include "ncscrum.h"
 #include "ocean2d.h"
+#if defined RVTK_DEBUG && defined MRL_WCI 
+# include "forces.h"
+#endif
 #ifdef FLOATS
 # include "floats.h"
 #endif
@@ -608,6 +620,12 @@ C$OMP BARRIER
           call mrl_wci (tile)
         enddo
 C$OMP BARRIER
+#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+C$OMP MASTER
+      call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
+      call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
+C$OMP END MASTER
+#  endif
 # endif
 #endif
 

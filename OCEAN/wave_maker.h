@@ -32,7 +32,7 @@
 #    define WAVE_MAKER_OBLIQUE
         wp=11.            ! period
         wa=0.4            ! amplitude
-        wd=-20.           ! incidence angle (deg)
+        wd=-10.           ! incidence angle (deg)
         wds=30.           ! directional spread (deg)
                           !  -> crest length = wl/(2*sin(wds))
 #   elif defined SWASH
@@ -42,6 +42,12 @@
         wf2=2*pi*0.462
         wa1=0.09
         wa2=0.01
+#    elif defined SWASH_GLOBEX_B3
+#     define WAVE_MAKER_BICHROMATIC
+        wf1=2*pi*0.42     ! GLOBEX B3
+        wf2=2*pi*0.462
+        wa1=0.07
+        wa2=0.03
 #    elif defined SWASH_GLOBEX_A3
 #     define WAVE_MAKER_JONSWAP
         wp=2.25           ! period
@@ -52,6 +58,7 @@
         wa=0.0442
 #    endif
 #   endif
+!
         wf=2*pi/wp        ! frequency
 !
 !  Time & space origins
@@ -99,6 +106,7 @@
 !  Build wave spectrum
 !
         if (FIRST_TIME_STEP) then
+
           fmin=0.2*wf  ! frequency spread
           fmax=5.0*wf
           df=(fmax-fmin)/Nfrq
@@ -161,7 +169,9 @@
             wpha_bry(iw)=wpha_bry(iw)*2.*pi
           enddo
 #    endif /* WAVE_MAKER_DSPREAD */
+
         endif ! FIRST_TIME_STEP
+
         ramp=tanh(dt/wp*float(iic-ntstart))
 
 #   elif defined WAVE_MAKER_BICHROMATIC
@@ -178,6 +188,10 @@
         khd=h0*wf2**2/g
         wk2=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                    khd*(K5+K6*khd)))))) )/h0
+        wk=0.5*(wk1+wk2);
+        wa=0.707*sqrt(wa1**2+wa2**2)
+        wf=0.5*(wf1+wf2)
+        wp=2*pi/wf
 #   else
 !
 !  Monochromatic waves
@@ -328,13 +342,17 @@
      &                    +cff2*cosh(2*wk*Zu)
 #     endif
           enddo
-          cff1=0.5*g*wa*wa*wk/(wf*Du)       ! compensation flow
-          do k=1,N
-            ubry_west(j,k)=ubry_west(j,k) - cff1
-          enddo
 #    endif /* ROGUE_WAVE */
 
         enddo  ! j loop
+
+        do j=JstrR,JendR                  ! compensation flow
+          Du=0.5*(h(0,j)+h(1,j))
+          cff1=0.5*g*wa*wa*wk/(wf*Du)
+          do k=1,N
+            ubry_west(j,k)=ubry_west(j,k) - cff1
+          enddo
+        enddo
 
 #   endif /* M3_FRC_BRY */
 
@@ -371,7 +389,7 @@
 
 #    elif defined WAVE_MAKER_BICHROMATIC && defined WAVE_MAKER_OBLIQUE
           do k=1,N
-              vbry_west(j,k)=0.
+            vbry_west(j,k)=0.
           enddo
 
 #    elif defined WAVE_MAKER_OBLIQUE
@@ -453,9 +471,9 @@
           do k=0,N   
             Zr=Dr+z_w(0,j,k)     
             wbry_west(j,k)=cff1*sinh(wk1*Zr)
-     &                    +cff2*sinh(wk1*Zr)
+     &                    +cff2*sinh(wk2*Zr)
      &                  +cff3*sinh(2*wk1*Zr)
-     &                  +cff4*sinh(2*wk1*Zr)
+     &                  +cff4*sinh(2*wk2*Zr)
           enddo
 #    else
           theta=(xr(0,j)-x0)*cos(wd)*cos(wds)*wk

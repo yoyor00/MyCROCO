@@ -302,8 +302,8 @@ C$    trd=omp_get_thread_num()
         i=Isrc(is)
         j=Jsrc(is)
 # endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
+        if ( (imin+1) .le.i .and. i.le.imax .and.
+     &       (jmin+1) .le.j .and. j.le.jmax) then
           if (Dsrc(is).eq.0) then
             urhs(i,j)=2.*Qbar(is)/( on_u(i,j)
      &                             *(Drhs(i-1,j)+Drhs(i,j)) )
@@ -1365,15 +1365,12 @@ C$OMP END MASTER
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DUnew=DUnew*umask_wet(i,j)
-# ifdef MRL_WCI
-          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
-# endif
 #endif
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
 #ifdef SOLVE3D
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)*umask_wet(i,j)
 # endif
      &                                                   )
 #endif
@@ -1405,15 +1402,12 @@ C$OMP END MASTER
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                        +cff2_WD*(1.-cff1_WD)
           DVnew=DVnew*vmask_wet(i,j)
-# ifdef MRL_WCI
-          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
-# endif
 #endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
 #ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)*vmask_wet(i,j)
 # endif
      &                                                   )
 #endif

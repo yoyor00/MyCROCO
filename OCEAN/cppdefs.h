@@ -1307,7 +1307,7 @@
 */
 # undef  KH_INSTY
 # undef  KH_INST3D
-# define MPI
+# undef MPI
 # define NBQ
 # undef  NBQ_PRECISE
 # undef  XIOS
