@@ -1837,7 +1837,8 @@ C$OMP END MASTER
             enddo
             enddo    
 
-        do k=0,N
+!        do k=0,N
+        do k=1,N
            do j=Jstr,Jend
             do i=IstrU,Iend  
               if (k.gt.1.and.k.lt.N) then 
@@ -1860,7 +1861,8 @@ C$OMP END MASTER
           enddo     	
         enddo
 
-        do k=0,N
+!        do k=0,N
+        do k=1,N
           do j=JstrV,Jend
             do i=Istr,Iend
               if (k.gt.1.and.k.lt.N) then 
@@ -2337,7 +2339,7 @@ C$OMP END MASTER
 ! !  X-component dZdx*qdmu for horizontal divergence
 ! !---------------------------------------------------------------------
 ! !
-
+      k2=1
 !$acc kernels default(present)
 
 #define dZdxq_u FC3D
