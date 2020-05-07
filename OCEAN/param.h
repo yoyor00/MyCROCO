@@ -49,14 +49,22 @@
 #elif defined GRAV_ADJ
 # ifdef NBQ
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
-      parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
+!     parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
+      parameter (LLm0=256,  MMm0=1,    N=32)   !  10 mm resolution
+# elif defined NHMG
+!     parameter (LLm0=512,  MMm0=1,    N=64)   !   5 mm resolution
+      parameter (LLm0=256,  MMm0=1,    N=32)   !  10 mm resolution
 # else
 !     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
       parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
 !     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
 #elif defined I_SOLITON
+# ifdef NHMG
+      parameter (LLm0=64,   MMm0=1,    N=64)
+# else
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
+# endif
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
@@ -218,7 +226,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP

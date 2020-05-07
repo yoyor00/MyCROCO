@@ -24,7 +24,6 @@
 # set source, compilation and run directories
 #
 SOURCE=../croco/OCEAN
-SOURCE=/home/roullet/dev/croco/merging/croco/OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -42,6 +41,9 @@ FC=gfortran
 #
 # set MPI directories if needed
 #
+#MPIF90="/opt/local/libexec/openmpi-gcc49/mpif90"
+#MPILIB="-L/opt/local/lib/openmpi-gcc49"
+#MPIINC="-I/opt/local/include/openmpi-gcc49"
 MPIF90="mpif90"
 MPILIB=""
 MPIINC=""
@@ -58,6 +60,8 @@ MPIINC=""
 #
 #NETCDFLIB="-L/usr/local/lib -lnetcdf"
 #NETCDFINC="-I/usr/local/include"
+#NETCDFLIB="-L/opt/local/lib -lnetcdff -lnetcdf"
+#NETCDFINC="-I/opt/local/include"
 NETCDFLIB=$(nf-config --flibs)
 NETCDFINC=-I$(nf-config --includedir)
 
@@ -103,43 +107,44 @@ AGRIF_SRC=${ROOT_DIR}/AGRIF
 #
 NHMG_SRC=${ROOT_DIR}/NHMG
 
-
 #
 # copy SOURCE code
 # update and time stamp preserve to allow MAKE to recompile only what's needed
 #
-COPY="cp -puf"
-
-ls ${SOURCE}/*.F               > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.F   $SCRDIR
-ls ${SOURCE}/*.F90             > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.F90 $SCRDIR
-ls ${SOURCE}/*.h               > /dev/null  2>&1 && ${COPY} ${SOURCE}/*.h   $SCRDIR
-ls ${SOURCE}/Make*             > /dev/null  2>&1 && ${COPY} ${SOURCE}/Make* $SCRDIR
-ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && ${COPY} ${SOURCE}/jobcomp $SCRDIR
-ls ${SOURCE}/amr.in            > /dev/null  2>&1 && ${COPY} ${SOURCE}/amr.in $SCRDIR
-ls ${AGRIF_SRC}                > /dev/null  2>&1 && ${COPY} -r ${AGRIF_SRC} $SCRDIR
-ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/XIOS/*.F $SCRDIR
-ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/PISCES/* $SCRDIR
-ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/PISCES/SED/* $SCRDIR
-ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && ${COPY} ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
-ls ${NHMG_SRC}                 > /dev/null  2>&1 && ${COPY} -r ${NHMG_SRC} $SCRDIR
+ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
+ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
+ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
+ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
+ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
+ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
+ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
+ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+ls ${NHMG_SRC}                 > /dev/null  2>&1 && \cp -r ${NHMG_SRC} $SCRDIR
 
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        ${COPY} -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
+        \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
+fi
+if [[ -e "nhmg_namelist" ]] ; then
+        echo "  file nhmg_namelist exists in Run directory"
+else
+        \cp -f ${ROOT_DIR}/NHMG/nhmg_namelist* $RUNDIR
+        echo "  file nhmg_namelist copied from source directory"
 fi
 #
 # overwrite with local files
-# okay, here we really want the user scripts to overwrite the default ones from CROCO
-# keeping the time stamp (-p) makes MAKE smarter
-COPY="cp -pf"
-ls *.F90  > /dev/null  2>&1 && ${COPY} *.F90 $SCRDIR
-ls *.F     > /dev/null  2>&1 && ${COPY} *.F $SCRDIR
-ls *.h     > /dev/null  2>&1 && ${COPY} *.h $SCRDIR
-ls *.h90   > /dev/null  2>&1 && ${COPY} *.h90 $SCRDIR
-ls Make*   > /dev/null  2>&1 && ${COPY} Make* $SCRDIR
-ls jobcomp > /dev/null  2>&1 && ${COPY} jobcomp $SCRDIR
+#
+ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
+ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
+ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
+ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
+ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 
 # Change directory
 #
@@ -223,19 +228,26 @@ echo "*****************************"
 NHMG_WORK=${SCRDIR%/*}/NHMG
 # Transform relative path to absolute path (if needed).
 # Because configure command accept only absolute path.
-NHMG_WORK=`readlink -f ${NHMG_WORK}`
+if [[ $OS == Darwin ]] ; then   
+ NHMG_WORK=`greadlink -f ${NHMG_WORK}`
+else
+ NHMG_WORK=`readlink -f ${NHMG_WORK}`
+fi
+#
 NHMGPATH=$NHMG_WORK
-
 # NHMG_LIB is where the dynamic library libnhmg.so will be stored.
 # The user needs to have its shell aware of this path before
 # execution. This is done by adding this path to the LD_LIBRARY_PATH
 # environement variable
-NHMG_LIB=`readlink -f ${SCRDIR%/*}`
-
+if [[ $OS == Darwin ]] ; then 
+ NHMG_LIB=`greadlink -f ${SCRDIR%/*}`
+else
+ NHMG_LIB=`readlink -f ${SCRDIR%/*}`
+fi
+#
 NHMG_SRCDIR=$NHMG_WORK
 echo "NHMG_SRCDIR is ${NHMG_SRCDIR}"
 echo "NHMG_LIB is ${NHMG_LIB}"
-
 if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
     if [[ $COMPILEAGRIF ]] ; then
         echo ""
@@ -254,21 +266,16 @@ if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
         exit
     fi
 	echo "=> NHMG key is activated in cppdefs.h file"
-
     # The NHMG library will be installed in $NHMG_LIB
-
     # Check if the dynamic library exists in CROCO's NHMG_LIB directory
     if [[ -f ${NHMG_LIB}/libnhmg.so.0 ]] ; then
         COMPILENHMG=FALSE
     else
         COMPILENHMG=TRUE
     fi
-
     echo 'Compile NHMG: '${COMPILENHMG}
-
-    LDFLAGS1=" $LDFLAGS1 -L${NHMG_LIB} -lnhmg"
+    LDFLAGS1="$LDFLAGS1 -L${NHMG_LIB} -lnhmg"
     FFLAGS1="$FFLAGS1 -I${NHMG_SRCDIR}/src"
-
 fi
 
 #
@@ -357,7 +364,7 @@ if [[ $COMPILENHMG == 'TRUE' ]] ; then
     wwa=`pwd`
     cd NHMG/src
     # make command check timestamp source files and compile them only if it is necessary
-    ${MAKE}
+    $MAKE FC="$CFT1" LDFLAGS="$NETCDFLIB" FFLAGS="-c -O3 -fPIC -frecord-marker=4 $MPIINC $NETCDFINC"
     cp libnhmg.* ${NHMG_LIB}
     result=$?
     if [ $result == 0 ] ; then

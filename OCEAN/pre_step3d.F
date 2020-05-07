@@ -183,11 +183,13 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
+# ifdef NHMG
       do j=JstrV-1,Jend
          do i=IstrU-1,Iend
             zw(i,j,0) = 0.
         enddo
       enddo
+# endif
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -199,7 +201,9 @@
      &                                  +Wi(i,j,k)-Wi(i,j,k-1)     
 # endif     
      &                                                       )
+# ifdef NHMG
             zw(i,j,k) = zw(i,j,k-1) + Hz_half(i,j,k)
+# endif
          enddo
         enddo
       enddo

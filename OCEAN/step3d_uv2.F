@@ -662,12 +662,12 @@
 !
 
 # ifdef NHMG2
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   Ubt(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   Vbt(START_2D_ARRAY))
-#endif
+#  endif
       if (.not.surface_neumann) then
       do j=Jstr,Jend
          do i=Istr,Iend
@@ -688,7 +688,7 @@
          enddo
       enddo
       endif
-# endif NHMG
+# endif
 
 # ifdef NHMG
       call tic(1,'croco_step3d_uv2_1')
@@ -2505,7 +2505,7 @@
       enddo
 #endif JUNK
 !
-# endif NHMG
+# endif /* NHMG */
 
 # if defined DIAGNOSTICS_EK  
 

@@ -3,15 +3,17 @@
        solver_prec    = 1.d-6,         !- Solver precision
        solver_maxiter = 10,            !- maximum of solver iterations
        solver_cycle   = 'V',           !- cycle multi grid type 'F' or 'V'
-       nskip          = 1,             !- solve for pressure every nskip iterations, nskip=1 is the standard
-       order          = 1,             !- for pressure interpolation in time: 0=nearest, 1=linear, 2=quadratic, 3=cubic
+       nskip          = 0,             !- solve for pressure every nskip iterations, nskip=1 is the standard
+       order          = 0,             !- for pressure interpolation in time: 0=nearest, 1=linear, 2=quadratic, 3=cubic
        nsmall         = 8,             !- Smallest size for a local domain; triggers a gather
        ns_coarsest    = 40,            !-
        ns_pre         = 3,             !-
        ns_post        = 2,             !-
        relax_method   = 'GS',          !- 'Gauss-Seidel','GS','Red-Black','RB','Four-Color','FC'
        netcdf_output  = .false.,        !- .false. or .true.
-       output_freq    = 100,             !- frequency of solver statistics
-       surface_neumann = .false.,
+       output_freq    = 10000,             !- frequency of solver statistics
+       surface_neumann = .true.,
+       east_west_perio = .false.,
+       north_south_perio = .false.,
 /
 
