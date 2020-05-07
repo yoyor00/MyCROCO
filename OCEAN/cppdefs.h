@@ -266,7 +266,7 @@
 # define AVERAGES
 # define AVERAGES_K
 # undef  OUTPUTS_SURFACE /* 2d surface fields with higher sampling */
-                     /* Parralel reproducity  */
+                     /* Parallel reproducibility  */
 # undef  RVTK_DEBUG
 /*
 !                        Diagnostics 
@@ -520,7 +520,6 @@
 # define ANA_BTFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
-      
 # undef  RVTK_DEBUG
 
 #elif defined INTERNAL
@@ -721,7 +720,6 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
                       
-
 #elif defined THACKER
 /*
 !                       Thacker Example
@@ -749,7 +747,6 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
                       
-
 # elif defined OVERFLOW
 /*
 !                       Gravitational/Overflow Example
@@ -809,7 +806,6 @@
 # define NO_FRCFILE    
 # undef  RVTK_DEBUG
                       
-
 #elif defined UPWELLING
 /*
 !                       Upwelling Example
@@ -977,7 +973,6 @@
 #  define ANA_TCLIMA
 # endif
 # undef  RVTK_DEBUG
-                      
 
 #elif defined SANDBAR
 /*
@@ -1030,9 +1025,7 @@
 #  define MORPHODYN
 # endif
 # define NO_FRCFILE
-      
 # undef  RVTK_DEBUG
-                      
 
 #elif defined RIP
 /*
@@ -1059,7 +1052,6 @@
 #  define RIP_TOPO_2D
 # endif
 # undef ANA_TIDES
-!
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
@@ -1146,7 +1138,6 @@
 #  undef  ANA_BPFLUX
 # endif
 # undef  DIAGNOSTICS_UV
-
 # undef  RVTK_DEBUG
                       
 #elif defined SWASH
@@ -1188,7 +1179,6 @@
 # define T_FRC_BRY
 # define WET_DRY
 # define NO_FRCFILE
-
 # undef  RVTK_DEBUG
                       
 #elif defined TANK
@@ -1216,7 +1206,6 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
-
 # undef  RVTK_DEBUG
                       
 #elif defined ACOUSTIC 
@@ -1240,9 +1229,7 @@
 # define ANA_SRFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-      
 # undef  RVTK_DEBUG
-                      
 
 #elif defined GRAV_ADJ
 /*
@@ -1266,6 +1253,7 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined I_SOLITON
 /*
@@ -1295,10 +1283,8 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
-      
 # undef  RVTK_DEBUG
                       
-
 #elif defined KH_INST 
 /*
 !                       Kelvin-Helmholtz Instability Example
@@ -1336,10 +1322,8 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
-      
 # undef  RVTK_DEBUG
                       
-
 #elif defined TS_HADV_TEST
 /*
 !                Horizontal TRACER ADVECTION EXAMPLE 
@@ -1371,12 +1355,11 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-#define TS_HADV_UP3    /* Choose specific advection scheme */
-#undef  TS_HADV_C4
-#undef  TS_HADV_UP5
-#undef  TS_HADV_WENO5
-#undef  TS_HADV_C6
-
+# define TS_HADV_UP3    /* Choose specific advection scheme */
+# undef  TS_HADV_C4
+# undef  TS_HADV_UP5
+# undef  TS_HADV_WENO5
+# undef  TS_HADV_C6
 # undef  RVTK_DEBUG
                       
 #endif /* END OF CONFIGURATION CHOICE */
