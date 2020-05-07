@@ -1382,19 +1382,22 @@
 !
         endif  !<-- j.ge.Jstr
       enddo    !<-- j loop
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-#  ifdef THREE_GHOST_POINTS_UV
+
+# ifdef NHMG
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#   ifdef THREE_GHOST_POINTS_UV
       call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                   nh_ubar(START_2D_ARRAY))
       call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                   nh_vbar(START_2D_ARRAY))
-#  else
+#   else
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   nh_ubar(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   nh_vbar(START_2D_ARRAY))
+#   endif
 #  endif
-#endif
+# endif /* NHMG */
 !
 !--------------------------------------------------------------------
 !
@@ -2510,7 +2513,7 @@
             enddo
          enddo
       enddo
-#endif JUNK
+#endif /* JUNK */
 !
 # endif /* NHMG */
 
