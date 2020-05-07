@@ -21,7 +21,7 @@
 # options
 
 #set -x
-
+set -e  #<= IMPORTANT TO KEEP 
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
@@ -169,11 +169,12 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
 #		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
 #                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
-                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-			-fbounds-check "
+#                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+#			-fbounds-check "
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
