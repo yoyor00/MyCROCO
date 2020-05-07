@@ -20,6 +20,8 @@
 # Note that environment variables overwrite hard-coded
 # options
 
+#set -x
+
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
@@ -87,7 +89,7 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 #
 # clean scratch area
 #
-#####rm -rf $SCRDIR
+rm -rf $SCRDIR
 mkdir $SCRDIR
 
 #
@@ -96,42 +98,54 @@ mkdir $SCRDIR
 AGRIF_SRC=${ROOT_DIR}/AGRIF
 
 #
-# copy SOURCE code
+# NHMG sources directory
 #
-/bin/cp -f ${SOURCE}/*.F90 $SCRDIR
-/bin/cp -f ${SOURCE}/*.F   $SCRDIR
-/bin/cp -f ${SOURCE}/*.h   $SCRDIR
-/bin/cp -f ${SOURCE}/*.h90   $SCRDIR
-/bin/cp -f ${SOURCE}/Make* $SCRDIR
-/bin/cp -f ${SOURCE}/testkeys.F $SCRDIR
-/bin/cp -f ${SOURCE}/jobcomp $SCRDIR
-/bin/cp -f ${SOURCE}/amr.in $SCRDIR
-/bin/cp -RLf ${AGRIF_SRC} $SCRDIR
-/bin/cp -f ${ROOT_DIR}/XIOS/*.F $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/* $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/SED/* $SCRDIR
-/bin/cp -f ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+NHMG_SRC=${ROOT_DIR}/NHMG
+
+#
+# copy SOURCE code
+# update and time stamp preserve to allow MAKE to recompile only what's needed
+#
+ls ${SOURCE}/*.F               > /dev/null  2>&1 && \cp ${SOURCE}/*.F   $SCRDIR
+ls ${SOURCE}/*.F90             > /dev/null  2>&1 && \cp ${SOURCE}/*.F90 $SCRDIR
+ls ${SOURCE}/*.h               > /dev/null  2>&1 && \cp ${SOURCE}/*.h   $SCRDIR
+ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
+ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
+ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
+ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
+ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
+ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+ls ${NHMG_SRC}                 > /dev/null  2>&1 && \cp -r ${NHMG_SRC} $SCRDIR
+
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        /bin/cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+        \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
+fi
+if [[ -e "nhmg_namelist" ]] ; then
+        echo "  file nhmg_namelist exists in Run directory"
+else
+        \cp -f ${ROOT_DIR}/NHMG/nhmg_namelist* $RUNDIR
+        echo "  file nhmg_namelist copied from source directory"
 fi
 #
 # overwrite with local files
 #
-/bin/cp -f *.F90 $SCRDIR
-/bin/cp -f *.F $SCRDIR
-/bin/cp -f *.h $SCRDIR
-/bin/cp -f Make* $SCRDIR
-/bin/cp -f jobcomp $SCRDIR
-#
+
+ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
+ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
+ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
+ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
+ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 #
 # RVTK  files  DEBUG CPP KEYS
 #
-/bin/cp -f cppdefs_dev_cvtk.h ${SCRDIR}/cppdefs_dev.h
-/bin/cp -f ${SCRDIR}/cppdefs.h.OK ${SCRDIR}/cppdefs.h
-/bin/cp -f ${SCRDIR}/param.h.OK ${SCRDIR}/param.h
+/bin/cp -f cppdefs.h.OK ${SCRDIR}/cppdefs.h
+/bin/cp -f param.h.OK ${SCRDIR}/param.h
 #
 # Change directory
 #
@@ -153,11 +167,13 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
-		CPP1="cpp  -traditional -DLinux"
+		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
-#		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+#		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
+#                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
+                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+			-fbounds-check "
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
@@ -201,6 +217,68 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	FFLAGS1="$FFLAGS1 $MPIINC"
 	CFT1="${MPIF90}"
 fi
+#
+# Determine if NHMG is required
+# and check if a configuration submission is needed.
+# To force a configuration submission, 
+# please remove the "config.log" file in $NHMG_WORK
+#
+echo ""
+echo "*****************************"
+echo "** Checking COMPILENHMG... **"
+echo "*****************************"
+NHMG_WORK=${SCRDIR%/*}/NHMG
+# Transform relative path to absolute path (if needed).
+# Because configure command accept only absolute path.
+if [[ $OS == Darwin ]] ; then
+ NHMG_WORK=`greadlink -f ${NHMG_WORK}`
+else
+ NHMG_WORK=`readlink -f ${NHMG_WORK}`
+fi
+#
+NHMGPATH=$NHMG_WORK
+# NHMG_LIB is where the dynamic library libnhmg.so will be stored.
+# The user needs to have its shell aware of this path before
+# execution. This is done by adding this path to the LD_LIBRARY_PATH
+# environement variable
+if [[ $OS == Darwin ]] ; then
+ NHMG_LIB=`greadlink -f ${SCRDIR%/*}`
+else
+ NHMG_LIB=`readlink -f ${SCRDIR%/*}`
+fi
+#
+NHMG_SRCDIR=$NHMG_WORK
+echo "NHMG_SRCDIR is ${NHMG_SRCDIR}"
+echo "NHMG_LIB is ${NHMG_LIB}"
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+    if [[ $COMPILEAGRIF ]] ; then
+        echo ""
+        echo "*******************************************"
+        echo "** You CAN'T use AGRIF and NHMG together **"
+        echo "*******************************************"
+        echo ""
+        exit
+    fi
+    if [[ ! $COMPILEMPI ]] ; then
+        echo ""
+        echo "******************************************"
+        echo "** You have to activate MPI to use NHMG **"
+        echo "******************************************"
+        echo ""
+        exit
+    fi
+	echo "=> NHMG key is activated in cppdefs.h file"
+    # The NHMG library will be installed in $NHMG_LIB
+    # Check if the dynamic library exists in CROCO's NHMG_LIB directory
+    if [[ -f ${NHMG_LIB}/libnhmg.so.0 ]] ; then
+        COMPILENHMG=FALSE
+    else
+        COMPILENHMG=TRUE
+    fi
+    echo 'Compile NHMG: '${COMPILENHMG}
+    LDFLAGS1="$LDFLAGS1 -L${NHMG_LIB} -lnhmg"
+    FFLAGS1="$FFLAGS1 -I${NHMG_SRCDIR}/src"
+fi
 
 #
 # Take environment variables for compiler and options
@@ -220,9 +298,10 @@ if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff"
         CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
         FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
-        ln -s $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
+        ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/field_def.xml_full $RUNDIR/field_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/domain_def.xml $RUNDIR/domain_def.xml
+        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/iodef.xml $RUNDIR/iodef.xml
 fi
 
@@ -275,6 +354,30 @@ if [[ $COMPILEAGRIF ]] ; then
 	mv -f CROCOFILES/private_scratch_AMR.h CROCOFILES/private_scratch.h
 fi
 
+
+#
+# Compile NHMG library and install it in $NHMG_LIB
+#
+if [[ $COMPILENHMG == 'TRUE' ]] ; then
+    echo ""
+    echo "**********************"
+    echo "** NHMG compilation **"
+    echo "**********************"
+    wwa=`pwd`
+    cd NHMG/src
+    # make command check timestamp source files and compile them only if it is necessary
+    $MAKE FC="$CFT1" LDFLAGS="$NETCDFLIB" FFLAGS="-c -O3 -fPIC -frecord-marker=4 $MPIINC $NETCDFINC"
+    cp libnhmg.* ${NHMG_LIB}
+    result=$?
+    if [ $result == 0 ] ; then
+        echo "NHMG has been correctly compiled and installed"
+    else
+        echo "error during the compilation of the NHMG library"
+        exit 1
+    fi
+    cd ${wwa}
+fi
+
 #
 # determine if OPENMP compilation is needed
 #
@@ -317,5 +420,17 @@ rm -f flags.tmp
 $MAKE depend
 $MAKE
   
-[ -f croco ] && mv croco $RUNDIR
+[[ -f croco  ]] && mv croco $RUNDIR
+#[[ -f partit ]] && mv partit $RUNDIR
+#[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #
+#
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+    echo ""
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "** Please verify your LD_LIBRARY_PATH for NHMG library. "
+    echo "** You can update it using one of these two commands: "
+    echo "** (csh)  setenv LD_LIBRARY_PATH \$LD_LIBRARY_PATH:${NHMG_LIB}"
+    echo "** (bash) export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NHMG_LIB}"
+    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+fi
