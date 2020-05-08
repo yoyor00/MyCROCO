@@ -308,7 +308,7 @@
 !###########################
         do k=1,N
           do i=IstrU,Iend
-# if defined NHMG2
+# if defined NHMG
 ! TODO: explain why NHMG does differently
             u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
 # else
@@ -567,7 +567,7 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
-# if defined NHMG2
+# if defined NHMG
 ! TODO: explain why NHMG does differently
               v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
 #  else
@@ -1030,6 +1030,7 @@
          enddo
       enddo
 
+# if defined JUNK
 !--------------------------------------------------------------------
 ! Coupling wz
 !--------------------------------------------------------------------
@@ -1053,6 +1054,7 @@
             enddo
          enddo
       enddo
+# endif JUNK
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -2489,6 +2491,25 @@
      &                                 Mfast(START_2D_ARRAY,1,2))
 # endif
 # endif
+
+# if defined NHMG
+      ! We've modified u and v, wz needs to be made consistent
+      do j=Jstr,Jend
+        do k=1,N          
+          do i=Istr,Iend
+            DC(i,0)=pm(i,j)*pn(i,j)
+            ! at this time, Huon and Hvom CANNOT used : they are 
+            ! defined at n+1/2 instead of n+1
+            wz(i,j,k,nnew)=wz(i,j,k-1,nnew) 
+     &      - DC(i,0)*( 
+     &       +0.5*(Hz(i,j,k)+Hz(i+1,j,k))*on_u(i+1,j)*u(i+1,j,k,nnew)
+     &       -0.5*(Hz(i-1,j,k)+Hz(i,j,k))*on_u(i,j)*u(i,j,k,nnew)
+     &       +0.5*(Hz(i,j,k)+Hz(i,j+1,k))*om_v(i,j+1)*v(i,j+1,k,nnew)
+     &       -0.5*(Hz(i,j-1,k)+Hz(i,j,k))*om_v(i,j)*v(i,j,k,nnew) )
+          enddo
+        enddo
+      enddo
+#endif
 
 # ifdef NHMG2
 !--------------------------------------------------------------------
