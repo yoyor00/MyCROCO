@@ -1001,9 +1001,9 @@
           do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend
-!                  wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
-!     &                 * (z_w(i,j,k)-z_w(i,j,0))
-!     &                 / (z_w(i,j,N)-z_w(i,j,0))
+                  wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
+     &                 * (z_w(i,j,k)-z_w(i,j,0))
+     &                 / (z_w(i,j,N)-z_w(i,j,0))
                enddo
             enddo
          enddo
