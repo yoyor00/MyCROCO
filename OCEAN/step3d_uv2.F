@@ -309,8 +309,12 @@
         do k=1,N
           do i=IstrU,Iend
 # if defined NHMG
-! TODO: explain why NHMG does differently
-            u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
+!     TODO: explain why NHMG does differently
+             if (surface_neumann) then
+                u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
+             else
+                u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
+             endif
 # else
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
 # endif
@@ -569,7 +573,12 @@
             do i=Istr,Iend
 # if defined NHMG
 ! TODO: explain why NHMG does differently
-              v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
+             if (surface_neumann) then
+                v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
+             else
+                v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
+             endif
+
 #  else
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
 #  endif
@@ -2493,6 +2502,7 @@
 # endif
 
 # if defined NHMG
+      if (.not.surface_neumann) then
       ! We've modified u and v, wz needs to be made consistent
       do j=Jstr,Jend
         do k=1,N          
@@ -2509,9 +2519,9 @@
           enddo
         enddo
       enddo
-#endif
 
-# ifdef NHMG2
+      else
+      
 !--------------------------------------------------------------------
 ! Coupling wz
 !--------------------------------------------------------------------
@@ -2535,6 +2545,7 @@
             enddo
          enddo
       enddo
+      endif
 #if defined JUNK
       do j=Jstr,Jend
          do i=IstrU,Iend+1
