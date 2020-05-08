@@ -1172,7 +1172,7 @@ C$OMP END MASTER
           dudx = 0.5*( urhs(i+1,j)-urhs(i-1,j) )
           dvdx = 0.5*( vrhs(i,j) - vrhs(i-1,j)
      &                 +vrhs(i,j+1) - vrhs(i-1,j+1) )
-          rubar(i,j) = rubar(i,j) + 0.5*om_u(i,j)*
+          rubar(i,j) = rubar(i,j) + 0.5*on_u(i,j)*
      &                      ( Drhs(i-1,j)+Drhs(i,j) )
      &               *( ust2d(i,j)*dudx + vstu*dvdx )
         enddo
@@ -1184,9 +1184,8 @@ C$OMP END MASTER
      &                 +ust2d(i,j-1)+ust2d(i+1,j-1) )
           dude = 0.5*( urhs(i,j) - urhs(i,j-1)
      &                 +urhs(i+1,j) - urhs(i+1,j-1) )
-!          dvde = 0.5*( vrhs(i,j-1)-vrhs(i,j+1) )
           dvde = 0.5*( vrhs(i,j+1)-vrhs(i,j-1) )
-          rvbar(i,j) = rvbar(i,j) + 0.5*on_v(i,j)*
+          rvbar(i,j) = rvbar(i,j) + 0.5*om_v(i,j)*
      &                      ( Drhs(i,j-1)+Drhs(i,j) )
      &               *( ustv*dude + vst2d(i,j)*dvde )
         enddo
