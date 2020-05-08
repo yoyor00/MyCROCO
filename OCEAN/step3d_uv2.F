@@ -992,9 +992,9 @@
           do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend
-                  wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
-     &                 * (z_w(i,j,k)-z_w(i,j,0))
-     &                 / (z_w(i,j,N)-z_w(i,j,0))
+!                  wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
+!     &                 * (z_w(i,j,k)-z_w(i,j,0))
+!     &                 / (z_w(i,j,N)-z_w(i,j,0))
                enddo
             enddo
          enddo
@@ -1139,7 +1139,7 @@
 #  endif
 # endif
 # if defined NHMG
-             nh_ubar(i,j)=(nh_ubar(i,j)-CF(i,0))
+!             nh_ubar(i,j)=(nh_ubar(i,j)-CF(i,0))
 # ifdef MASKING
      &                                *umask(i,j)
 # endif
@@ -1282,7 +1282,7 @@
      &                 +vst(i,j,k)*(vmask(i,j)-1.0)
 #  endif
 # if defined NHMG
-             nh_vbar(i,j)=(nh_vbar(i,j)-CF(i,0))
+!             nh_vbar(i,j)=(nh_vbar(i,j)-CF(i,0))
 # ifdef MASKING
      &                                *vmask(i,j)
 # endif
@@ -1381,7 +1381,8 @@
 !
 !
         endif  !<-- j.ge.Jstr
-      enddo    !<-- j loop
+      enddo                     !<-- j loop
+#if defined NHMG
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1394,6 +1395,7 @@
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   nh_vbar(START_2D_ARRAY))
 #  endif
+#endif
 #endif
 !
 !--------------------------------------------------------------------

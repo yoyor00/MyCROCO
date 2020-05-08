@@ -376,7 +376,7 @@
             do k=1,N
               v(i,j,k,1)  = 0.
               v(i,j,k,2)  = 0.
-#   ifdef NBQ
+#   if defined NBQ || defined NHMG
               wz(i,j,k,1) = -0.01*du*hup0*
      &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
      &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
@@ -387,7 +387,7 @@
             enddo
           enddo
         enddo
-#   ifdef NBQ
+#   if defined NBQ || defined NHMG
         do j=JR_RANGE
           do i=IR_RANGE
               wz(i,j,0,:)=0.
@@ -403,13 +403,13 @@
               v(i,j,k,1)=0.
               u(i,j,k,2)=0.
               v(i,j,k,2)=0.
-#   ifdef NBQ
+#   if defined NBQ || defined NHMG
               wz(i,j,k,:)=0.
 #   endif
             enddo
           enddo
         enddo
-#   ifdef NBQ
+#   if defined NBQ || defined NHMG
         do j=JR_RANGE
           do i=IR_RANGE
              wz(i,j,0,1)=0.

@@ -94,7 +94,7 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  include "nbq.h"
 # endif
 # ifdef MRL_WCI

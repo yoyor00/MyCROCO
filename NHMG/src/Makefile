@@ -1,7 +1,7 @@
 .SUFFIXES: .o .f90
 
-#FC = mpif90
-#FFLAGS = -c -O3 -frecord-marker=4 -fPIC -I/usr/include
+FC = mpif90
+FFLAGS = -c -O3 -frecord-marker=4 -fPIC -I/usr/include
 
 .f90.o:
 	$(FC) $(FFLAGS) $*.f90 -o $*.o

@@ -45,6 +45,7 @@
         sc_r(k)=cff*(float(k-N)-0.5)
         Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
      &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
+
       enddo
 # else
       hc= Tcline
@@ -53,6 +54,7 @@
         sc     = ds*(float(k-N)-0.5)
         Cs_r(k)=CSF(sc, theta_s,theta_b)
         sc_r(k)=sc      
+        Cs_r(k) = sc_r(k)
       enddo
       
       sc_w(0) = -1.0
@@ -64,6 +66,7 @@
         sc     = ds*float(k-N)
         Cs_w(k)=CSF(sc, theta_s,theta_b)
         sc_w(k)=sc      
+        Cs_w(k) = sc_w(k)
       enddo            
 # endif
 !
