@@ -94,7 +94,7 @@
 # include "coupling.h"
 # include "forces.h"
 # include "scalars.h"
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  include "nbq.h"
 # endif
 # ifdef MRL_WCI
@@ -1291,7 +1291,7 @@
 
       do j=Jstr,Jend
 
-# if defined UV_COR & defined NHMG
+# if defined UV_COR && defined NHMG
 !     Vertical component of Coriolis on vertical velocity
 !     We are re-using FC as a work array
          do k = 1,N
@@ -1301,7 +1301,6 @@
      &                - dzdxi(i,j,k)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs)) )
             enddo
          enddo
-
          do k = 1,N-1
             do i=Istr,Iend
               rw(i,j,k)= rw(i,j,k) + 0.5*(FC(i,k+1)+FC(i,k))
@@ -1337,10 +1336,8 @@
      & -fxiomn(i,j)*dzdeta(i,j,N)
      & +fetaomn(i,j)* dzdxi(i,j,N) )
          enddo
-
 #  endif
-
-# endif
+# endif /* UV_COR && defined NHMG */
 
 # ifdef UV_ADV
 !
