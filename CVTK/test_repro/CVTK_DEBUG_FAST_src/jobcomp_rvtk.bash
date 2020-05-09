@@ -21,7 +21,6 @@
 # options
 
 #set -x
-
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
@@ -109,7 +108,7 @@ ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDI
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
-ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -Rf ${ROOT_DIR}/PISCES/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 
@@ -322,7 +321,11 @@ rm -f flags.tmp
 $MAKE depend
 $MAKE
   
-[[ -f croco  ]] && mv croco $RUNDIR
+if [ -f croco  ]; then
+    mv croco $RUNDIR
+else
+    exit 1
+fi
 #[[ -f partit ]] && mv partit $RUNDIR
 #[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #
