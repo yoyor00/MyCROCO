@@ -246,7 +246,6 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     \mv param.h.$par1.tmp param.h.$par1
     #
     sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
-    #sed 's/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
     \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
     #
     [ -e  param.h.OK ] && \rm param.h.OK
@@ -279,17 +278,28 @@ echo "&&&&&&&&&&&&&&&&&&&&&&&&&"
 echo "Final SUCESS is "$SUCCESS
 echo " "
 if [  "$SUCCESS" -ne 0 ]; then
-    #sed not neede
-    #sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
-    echo  
-    echo "SOMETHING WRONG HAPPENED"
-    echo "EXITING ..."
-    echo
+    #sed not needed 
+    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
+    #echo
+    echo "Final SUCESS -ne 0 => "
+    echo "      SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME}"
+    #echo "EXITING ..."
+    # echo
+    #echo  | tee -a mylog.txt
+    #echo -e "Final SUCESS is "$SUCCESS | tee -a mylog.txt
+    #echo -e "Final SUCESS_COMP is "$SUCCESS_COMP | tee -a mylog.txt
+    #echo -e "Final SUCESS_EXE is "$SUCCESS_EXE | tee -a mylog.txt
+    #echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    #echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt
+    # if [ "$SUCCESS_COMP" -ne 0 ]; then
+    # 	echo -e "${FMT_REDBLD}A COMPILATION ERROR WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    # fi
+    # if [ "$SUCCESS_COMP" -eq 0 ] &&  [ "$SUCCESS_EXE" -ne 0 ]; then
+    # 	echo -e "${FMT_REDBLD}COMPILATION IS OK WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    # 	echo -e "${FMT_REDBLD}AN EXECUTION ERROR WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    # fi
+  
     #     # echo  | tee -a mylog.txt
-    #     # echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
-    #     # echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt 
-    #     # echo  | tee -a mylog.txt
-    
     #     #exit  1
 fi
 #########################################################################################################
