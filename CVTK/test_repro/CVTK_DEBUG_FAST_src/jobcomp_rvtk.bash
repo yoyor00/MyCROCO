@@ -21,7 +21,7 @@
 # options
 
 #set -x
-set -e  #<= IMPORTANT TO KEEP 
+set -e   
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
