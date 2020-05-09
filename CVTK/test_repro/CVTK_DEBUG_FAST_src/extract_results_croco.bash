@@ -11,7 +11,6 @@ cd $SUBMIT_DIR
 #echo "   - Test repro" | tee -a mylog.txt
 #echo "$CI_CROCO_PWD"
 
-
 numrev0=`sed -n '/revision/{n;p;}' gitinfos`
 numrev=`echo $numrev0 | tr -d [:blank:]`
 today=`date +%Y%m%d`

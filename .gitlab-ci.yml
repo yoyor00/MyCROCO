@@ -26,7 +26,7 @@ reg_run:
     
     - ./mk_TESTALL_reg.bash
     - ./gather_recap.bash REG > /dev/null 2>&1
-    - /bin/sh -c '! grep -i failure failed REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i failure REG_gather_recap_*_git*' > /dev/null 2>&1
 
   artifacts:
     paths:
@@ -55,11 +55,12 @@ ana_run:
     - ./create_link_master_ana.sh
     - cd -	
     - cd $CVTKWORK/KTEST
-    
+   
 #    - exec ./mk_TestDIR_ana.bash UPWELLING
     - ./mk_TESTALL_ana.bash
     - ./gather_recap.bash KTEST > /dev/null 2>&1
-    - /bin/sh -c '! grep failure failed KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1
     
   artifacts:
     paths:

@@ -279,11 +279,11 @@ if [  "$SUCCESS" -ne 0 ]; then
     #sed not needed 
     sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
     #echo
-    echo "SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME}"
-    echo "Final SUCESS -ne 0"
+    echo "Final SUCESS -ne 0 => "
+    echo "      SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME}"
     #echo "EXITING ..."
     # echo
-    echo  | tee -a mylog.txt
+    #echo  | tee -a mylog.txt
     #echo -e "Final SUCESS is "$SUCCESS | tee -a mylog.txt
     #echo -e "Final SUCESS_COMP is "$SUCCESS_COMP | tee -a mylog.txt
     #echo -e "Final SUCESS_EXE is "$SUCCESS_EXE | tee -a mylog.txt
