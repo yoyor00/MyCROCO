@@ -1131,8 +1131,8 @@
 #  define JV_RANGE Jstr,JendR
 # endif
 # if defined NHMG
-!      nh_ubar = 0
-!      nh_vbar = 0
+      nh_ubar = 0
+      nh_vbar = 0
 # endif
 !
 !--------------------------------------------------
@@ -1172,19 +1172,23 @@
         enddo
         do k=N,1,-1
           do i=IU_RANGE
-             u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
-# ifdef MASKING
-     &                                *umask(i,j)
-#  ifdef MRL_WCI
-     &               +ust(i,j,k)*(umask(i,j)-1.0)
-#  endif
-# endif
 # if defined NHMG
-!             nh_ubar(i,j)=(nh_ubar(i,j)-CF(i,0))
-# ifdef MASKING
+               if (surface_neumann) then
+                  u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
+#   ifdef MASKING
+     &                 *umask(i,j)
+#   endif
+                  ! if Dirichlet: no barotropic correction
+               endif
+# else
+             u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
+#    ifdef MASKING
      &                                *umask(i,j)
-# endif
-# endif
+#      ifdef MRL_WCI
+     &               +ust(i,j,k)*(umask(i,j)-1.0)
+#      endif
+#    endif
+# endif /* NHMG */
 # ifdef WET_DRY
             u(i,j,k,nnew)=u(i,j,k,nnew)*umask_wet(i,j)
 #  ifdef MRL_WCI
@@ -1316,19 +1320,23 @@
           enddo
           do k=N,1,-1
             do i=IV_RANGE
+# if defined NHMG
+               if (surface_neumann) then
+                  v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
+#   ifdef MASKING
+     &                 *vmask(i,j)
+#   endif
+                  ! if Dirichlet: no barotropic correction
+               endif
+# else
               v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0)) 
 # ifdef MASKING
      &                                  *vmask(i,j)
 #  ifdef MRL_WCI
      &                 +vst(i,j,k)*(vmask(i,j)-1.0)
 #  endif
-# if defined NHMG
-!             nh_vbar(i,j)=(nh_vbar(i,j)-CF(i,0))
-# ifdef MASKING
-     &                                *vmask(i,j)
 # endif
-# endif
-# endif
+# endif /* NHMG */
 # ifdef WET_DRY
               v(i,j,k,nnew)=v(i,j,k,nnew)*vmask_wet(i,j)
 #  ifdef MRL_WCI

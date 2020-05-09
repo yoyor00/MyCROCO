@@ -54,7 +54,7 @@
         sc     = ds*(float(k-N)-0.5)
         Cs_r(k)=CSF(sc, theta_s,theta_b)
         sc_r(k)=sc      
-        Cs_r(k) = sc_r(k)
+!        Cs_r(k) = sc_r(k)
       enddo
       
       sc_w(0) = -1.0
@@ -66,7 +66,7 @@
         sc     = ds*float(k-N)
         Cs_w(k)=CSF(sc, theta_s,theta_b)
         sc_w(k)=sc      
-        Cs_w(k) = sc_w(k)
+!        Cs_w(k) = sc_w(k)
       enddo            
 # endif
 !
