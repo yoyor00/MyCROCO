@@ -2,7 +2,7 @@
 #===================================
 
 #set -x
-set -eu
+#set -eu
 
 source CONFIGURE_GLOBAL
 source configure_file
