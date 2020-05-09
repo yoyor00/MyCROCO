@@ -16,7 +16,9 @@ par1='SERIAL'
 # Compilation
 msg1="- Compilation failure for ${TEST_NAME} : ${par1}..."
 msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
-./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 1 ; }
+./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 1 ; }
+#echo 'output message status is' $?
+#
 mv croco croco_${par1}.exe
 
 # Run (and produce check file)
