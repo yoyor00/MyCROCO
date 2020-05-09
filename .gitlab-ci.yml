@@ -26,7 +26,7 @@ reg_run:
     
     - ./mk_TESTALL_reg.bash
     - ./gather_recap.bash REG > /dev/null 2>&1
-    - /bin/sh -c '! grep failed REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i failure failed REG_gather_recap_*_git*' > /dev/null 2>&1
 
   artifacts:
     paths:
@@ -42,7 +42,7 @@ vort_run:
     
     - ./mk_TESTALL_vort.bash
     - ./gather_recap.bash VORT > /dev/null 2>&1
-    - /bin/sh -c '! grep failed VORT_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i failure failed VORT_gather_recap_*_git*' > /dev/null 2>&1
 
   artifacts:
     paths:
@@ -59,7 +59,7 @@ ana_run:
 #    - exec ./mk_TestDIR_ana.bash UPWELLING
     - ./mk_TESTALL_ana.bash
     - ./gather_recap.bash KTEST > /dev/null 2>&1
-    - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep failure failed KTEST_gather_recap_*_git*' > /dev/null 2>&1
     
   artifacts:
     paths:
