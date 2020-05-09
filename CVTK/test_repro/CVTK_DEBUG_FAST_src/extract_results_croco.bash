@@ -40,11 +40,11 @@ if [ $FLAG_OPENMP -eq 1 ]; then
 	res_omp=`${GREP_CMD} BUGBIN $filein_openmp`
 	echo 'res_omp='$res_omp >> $fileout_openmp
 	if [ -z "$res_omp" ] ; then 
-	    echo 'check [passed]'  >> $fileout_openmp
+	    echo 'check [Parallel reproducibility passed]'  >> $fileout_openmp
 	    sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
 	    \mv tmp.txt ${TEST_NAME}_steps
 	else
-	    echo 'check [failed]'  >> $fileout_openmp
+	    echo 'check [Parallel reproducibility failure]'  >> $fileout_openmp
 	    sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
 	    \mv tmp.txt ${TEST_NAME}_steps
 	fi
@@ -66,11 +66,11 @@ if [ $FLAG_MPI -eq 1 ]; then
 	res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
 	echo 'res_mpi='$res_mpi >> $fileout_mpi
 	if [ -z "$res_mpi" ] ; then 
-	    echo 'check mpi [passed]'  >> $fileout_mpi
+	    echo 'check mpi [Parallel reproducibility passed]'  >> $fileout_mpi
 	    sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 
 	    \mv tmp.txt ${TEST_NAME}_steps
 	else
-	    echo 'check mpi [failed]'  >> $fileout_mpi
+	    echo 'check mpi [Parallel reproducibility failure]'  >> $fileout_mpi
 	    sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
 	    \mv tmp.txt ${TEST_NAME}_steps
 	fi
