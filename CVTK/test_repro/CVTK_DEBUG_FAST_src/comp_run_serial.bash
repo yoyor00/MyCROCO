@@ -2,8 +2,7 @@
 #===================================
 
 #set -x
-set -e
-set -u
+#set -eu
 
 source CONFIGURE_GLOBAL
 source configure_file
@@ -26,10 +25,10 @@ msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
 ./croco_${par1}.exe $CROCOIN > serial_${TEST_NAME}.log 2>&1  || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 2 ; }
 
 # Additional check in case of clean stop before the end
-SUCCESS=1
-grep 'MAIN: DONE'  serial_${TEST_NAME}.log || SUCCESS=0
+SUCCESS_TMP=1
+grep 'MAIN: DONE'  serial_${TEST_NAME}.log || SUCCESS_TMP=0
 
-if [  "$SUCCESS" -eq 0 ]; then
+if [  "$SUCCESS_TMP" -eq 0 ]; then
   echo -e "   $msg2" | tee -a mylog.txt
   echo -e $msg1 
   exit 2 

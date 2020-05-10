@@ -1,12 +1,12 @@
 #!/bin/bash
 #
 #======================================================================
-# ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
+# CROCO is a branch of ROMS developped at IRD and INRIA, in France
 # The two other branches from UCLA (Shchepetkin et al) 
 # and Rutgers University (Arango et al) are under MIT/X style license.
-# ROMS_AGRIF specific routines (nesting) are under CeCILL-C license.
+# CROCO specific routines (nesting) are under CeCILL-C license.
 # 
-# ROMS_AGRIF website : http://www.croco-ocean.org
+# CROCO website : http://www.croco-ocean.org
 #======================================================================
 #
 #---------------------------------------------------------------------
@@ -18,69 +18,44 @@
 
 echo "=============================================="
 echo "=> CONFIG "$mytest
-echo " "
-echo "=> MPIRUN COMMAND: "$MPIRUN
+
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
-[ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
+[ ! -z "$(ls *.log* 2>/dev/null)" ] && /bin/rm *.log*
 echo "Remove the CHECKFILE"
 [ -f check_file ] && /bin/rm check_file
 
-#echo "Remove AGRIF_FixedGrids.in"
-#/bin/rm -f AGRIF_FixedGrids.in 
-#echo " " 
 
 #=============================================================================================
-# Sources
-#
-#sed -n -e '/SOURCE=/p' jobcomp_rvtk.bash > tmp1
-#sed -n '$p' tmp1 > tmp2
-#eval "SOURCE=`sed -n -e '/SOURCE=/ s/.*\= *//p' tmp2`"
-#rm -f tmp1 tmp2
-#echo 'Sources code: '$SOURCE
 #===
 source CONFIGURE_GLOBAL
 #===
+echo " "
+echo "=> MPIRUN COMMAND: "$MPIRUN
+#
 SOURCE_CVTK=${SOURCE_CROCO}/../CVTK/test_repro/CVTK_DEBUG_FAST_src
 echo 'Sources CVTK tests: '$SOURCE_CVTK
 #
 # Get updated files
 #
-#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_dev_cvtk.h cppdefs_dev_cvtk.h
-#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.SERIAL
-#/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.SERIAL
-#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.OPENMP
-#/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.OPENMP
-#/bin/cp ${SOURCE_CVTK}/Config_files/cppdefs_cvtk.h cppdefs_bak1.h.MPI
-#/bin/cp ${SOURCE_CVTK}/Config_files/param_cvtk.h param_bak0.h.MPI
-#==
-/bin/cp ${SOURCE_CROCO}/cppdefs_dev.h cppdefs_dev_cvtk.h
-sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs_dev_cvtk.h > cppdefs_dev_cvtk.h.tmp
-mv cppdefs_dev_cvtk.h.tmp cppdefs_dev_cvtk.h
+\cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.SERIAL
+sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.SERIAL > cppdefs.h.SERIAL.tmp
+mv cppdefs.h.SERIAL.tmp cppdefs.h.SERIAL
+\cp ${SOURCE_CROCO}/param.h param.h.SERIAL
 
-/bin/cp ${SOURCE_CROCO}/cppdefs.h cppdefs_bak1.h.SERIAL
-/bin/cp ${SOURCE_CROCO}/param.h param_bak0.h.SERIAL
+\cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.OPENMP
+sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.OPENMP > cppdefs.h.OPENMP.tmp
+mv cppdefs.h.OPENMP.tmp cppdefs.h.OPENMP
+\cp ${SOURCE_CROCO}/param.h param.h.OPENMP
 
-/bin/cp ${SOURCE_CROCO}/cppdefs.h cppdefs_bak1.h.OPENMP
-/bin/cp ${SOURCE_CROCO}/param.h param_bak0.h.OPENMP
+\cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.MPI
+sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.MPI > cppdefs.h.MPI.tmp
+mv cppdefs.h.MPI.tmp cppdefs.h.MPI
+\cp ${SOURCE_CROCO}/param.h param.h.MPI
 
-/bin/cp ${SOURCE_CROCO}/cppdefs.h cppdefs_bak1.h.MPI
-/bin/cp ${SOURCE_CROCO}/param.h param_bak0.h.MPI 
-
-#==
-
-# Source config file
-#LIST_KEY0='PSOURCE PSOURCE_NCFILE FRC_BRY CLIMATOLOGY TIDES AGRIF AGRIF_2WAY BULK_FLUX MPI OPENMP'
-#LIST_KEY_PHYS='REGIONAL FRC_BRY CLIMATOLOGY TIDES BULK_FLUX'
-#LIST_KEY_PAR='OPENMP MPI' ; FLAG_MPI=1 ; FLAG_OPENMP=1
-#LIST_KEY_NEST=''
-#KEY_DEBUG='RVTK_DEBUG'
-#LIST_WORDS='ETALON difference: ABNORMAL ERROR BUGBIN GRID#'
-#CONFIG_NAME='BENGUELA_VHR'
-#/bin/ln -sf AGRIF_FixedGrids.in.REGIONAL AGRIF_FixedGrids.in
 
 #List of test cases with only one points in one direction
-LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER'
+LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER TANK I_SOLITON KH_INST SANDBAR'
 LIST_2DV_Y='OVERFLOW SHELFRONT'
 
 source configure_file
@@ -94,7 +69,7 @@ Is2DV_Y=0
 #
 #   FILL THE CPPDEFS.H 
 # Title
-echo TESTS OF $LIST_CONFIG
+echo TESTS OF $CONFIG_NAME
 #
 # 1- UNDEF ALL THE KEYS
 #
@@ -103,36 +78,33 @@ for par in SERIAL OPENMP MPI ; do
     echo 'PARA=' $par
     for EXAMPLE in $LIST_KEY0
     do
-	sed 's/'define\ \ \*$EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+	sed '/'${EXAMPLE}[[:graph:]]'/! s/'define\ \ \*$EXAMPLE'/'undef\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+	\mv cppdefs.h.$par.tmp cppdefs.h.$par
     done
     
     # 2- DEFINE THE TYPE OF DEBUG TEST 
-    sed 's/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-    /bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+    sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+    \mv cppdefs.h.$par.tmp cppdefs.h.$par
     
     
     # 3- DEFINE THE NAME OF THE CONFIG
-    sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-    /bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
-    
+    #sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+    sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+    \mv cppdefs.h.$par.tmp cppdefs.h.$par
+     
     # 4- DEFINE THE VARIOUS CPPKEYS
     #=4.1
     for EXAMPLE in $LIST_KEY_PHYS
     do
-	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
+	sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+	\mv cppdefs.h.$par.tmp cppdefs.h.$par
     done
     #==4.2
     for EXAMPLE in $LIST_KEY_NEST
     do
 	echo $EXAMPLE
-	sed 's/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-	/bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
-	if [ "$LIST_KEY_NEST" = "AGRIF" ]; then
-	    sed 's/'define\ \ \*AGRIF_2W'/'undef\ AGRIF_2W'/' < cppdefs_bak1.h.$par > cppdefs_bak2.h.$par
-	    /bin/mv cppdefs_bak2.h.$par cppdefs_bak1.h.$par
-	fi
+	sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
+	\mv cppdefs.h.$par.tmp cppdefs.h.$par
     done
 done
 
@@ -147,127 +119,196 @@ echo '==============================='
 echo 'START TESTING ...             '
 #echo '==============================='
 
-# 3- 'MPI'
+SUCCESS=0
+SUCCESS_COMP=0
+SUCCESS_EXEC=0
+if [ ! -f ${TEST_NAME}_steps ]; then 
+    echo 'Y' > ${TEST_NAME}_steps
+    echo 'Y' >> ${TEST_NAME}_steps
+    echo 'Y' >> ${TEST_NAME}_steps
+fi
+
+
 ##############################################################################
 # Serial runs
 ##############################################################################
 echo "KEYS TESTED : "$LIST_KEY_PHYS
- #echo ''
+#echo ''
 par1='SERIAL'
 echo "SERIAL NPP=1 TEST $mytest"
 [ -f check_file ] && /bin/rm check_file
-sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=1'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-sed 's/'NPP=1'/'NPP=1'/' < param_bak1.h.$par1 > param_bak2.h.$par1
-/bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
+sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=1'/' < param.h.$par1 > param.h.$par1.tmp
+sed 's/'NPP=1'/'NPP=1'/' < param.h.$par1 > param.h.$par1
+\mv param.h.$par1.tmp param.h.$par1
 
-rm -Rf Compile_$par1 ; mkdir Compile_$par1
-cp param_bak1.h.$par1 Compile_$par1/param.h.OK
-cp cppdefs_bak1.h.$par1 Compile_$par1/cppdefs.h.OK
+[ -e  param.h.OK ] && \rm param.h.OK
+[ -e  param.h.OK ] && \rm cppdefs.h.OK
 
-#echo "qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash"
-#qsub -h -N ${TEST_NAME}_SE comp_run_serial.bash
-#myjobid_serial="`qselect -N ${TEST_NAME}_SE -u $USER`"
+\cp param.h.$par1 param.h.OK
+\cp cppdefs.h.$par1 cppdefs.h.OK
+
 Fqsub_serial
+myreturn=$?
+#echo "SUCCESS="$SUCCESS
+SUCCESS=$(($SUCCESS+$myreturn))
+#echo "SUCCESS="$SUCCESS
+if [ "$myreturn" -eq 1 ]; then
+    SUCCESS_COMP=$(($SUCCESS_COMP+1))
+    sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps 
+    sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps 
+fi  
+if [ "$myreturn" -eq 2 ]; then
+    SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
+    sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
+    \mv tmp.txt ${TEST_NAME}_steps 
+fi  
 
 # 4- 
 ##############################################################################
 # Openmp runs
 ##############################################################################
-if [ ${FLAG_OPENMP} = 1 ]; then 
+if [ ${FLAG_OPENMP} -eq 1 ]; then 
     
     par1='OPENMP'
     if [ $Is2DV_Y == 1 ]; then
+	echo " "
 	echo "OPEN-MP 1X2 NPP=2 TEST $mytest"
-	export OMP_NUM_THREADS=2
-	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=2'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
-	
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=1,\ NSUB_E=2'/' < param.h.$par1 > param.h.$par1.tmp
+	sed 's/'NPP=4'/'NPP=2'/' < param.h.$par1.tmp > param.h.$par1
     elif [ $Is2DV_X == 1 ]; then
+	echo " "
 	echo "OPEN-MP 2x1 NPP=2 TEST $mytest"
-	export OMP_NUM_THREADS=2
-	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=1'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-	sed 's/'NPP=4'/'NPP=2'/' < param_bak1.h.$par1 > param_bak2.h.$par1
-	
+	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=1'/' < param.h.$par1 > param.h.$par1.tmp
+	sed 's/'NPP=4'/'NPP=2'/' < param.h.$par1.tmp > param.h.$par1
     else
-	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} NPP=${NBPROCS} TEST $mytest"
-	export OMP_NUM_THREADS=${NBPROCS}
-	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=${NBPROCS_X},\ NSUB_E=${NBPROCS_Y}'/' < param_bak0.h.$par1 > param_bak1.h.$par1
-	sed 's/'NPP=4'/'NPP=${NBPROCS}'/' < param_bak1.h.$par1 > param_bak2.h.$par1
-	
-    fi	 
-    /bin/mv param_bak2.h.$par1 param_bak1.h.$par1 ; rm param_bak0.h.$par1
-    sed 's/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
-    /bin/mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
-    
-    rm -Rf Compile_$par1 ; mkdir Compile_$par1
-    cp param_bak1.h.$par1 Compile_${par1}/param.h.OK
-    cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
-    
-    #   echo "qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash" 
-    #qsub -N ${TEST_NAME}_OM -W depend=afterok:$myjobid_serial comp_run_openmp.bash
-    
-    #   echo ""myjobid_openmp=`qselect -N ${TEST_NAME}_OM -u $USER`""
-    #myjobid_openmp="`qselect -N ${TEST_NAME}_OM -u $USER`"
+	echo " "
+	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
+	sed 's/'NPP=4'/'NPP=4'/' < param.h.$par1.tmp > param.h.$par1
+    fi
+    \mv param.h.$par1.tmp param.h.$par1
+    #
+    sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
+    \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
+    #
+    [ -e  param.h.OK ] && \rm param.h.OK
+    [ -e  cppdefs.h.OK ] && \rm cppdefs.h.OK
+    \cp param.h.$par1 param.h.OK
+    \cp cppdefs.h.$par1 cppdefs.h.OK
+    #
     Fqsub_openmp
+    myreturn=$?
+#    echo "SUCCESS="$SUCCESS
+    SUCCESS=$(($SUCCESS+$myreturn))
+#    echo "SUCCESS="$SUCCESS
+    if [ "$myreturn" -eq 1 ]; then
+	SUCCESS_COMP=$(($SUCCESS_COMP+1))
+	sed -e '1c N' ${TEST_NAME}_steps > tmp.txt
+	\mv tmp.txt ${TEST_NAME}_steps 
+	sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+	\mv tmp.txt ${TEST_NAME}_steps 
+    fi  
+    if [ "$myreturn" -eq 2 ]; then
+	SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
+	sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
+	\mv tmp.txt ${TEST_NAME}_steps 
+    fi  
+
+    #else
+    #  sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+    #  \mv tmp.txt ${TEST_NAME}_steps     
 fi 
 
 ###############################################################################
-
 # 4- RVTK_DEBUG_REG_DEV
 ##############################################################################
 # Mpi runs
 ##############################################################################
-if [ ${FLAG_MPI} = 1 ]; then 
+if [ ${FLAG_MPI} -eq 1 ]; then 
     
     par1='MPI'
     if [ $Is2DV_Y == 1 ]; then
-	echo "MPI  TEST $mytest"
-	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=1,\ NP_ETA=2'/' < param_bak0.h.$par1 > param_bak1.h.$par
+	echo " "
+	echo "MPI 1X2 TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=1,\ NP_ETA=2'/' < param.h.$par1 > param.h.$par.tmp
 	
     elif [ $Is2DV_X == 1 ]; then
+	echo " "
 	echo "MPI 2X1 TEST $mytest"
-	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param_bak0.h.$par1 > param_bak1.h.$par
-    
-    else	
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param.h.$par1 > param.h.$par.tmp
+    else
+	echo " "
 	echo "MPI ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
-	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param_bak0.h.$par1 > param_bak1.h.$par1
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
     fi
-    
-    rm param_bak0.h.$par1
-    sed 's/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs_bak1.h.$par1 > cppdefs_bak2.h.$par1
-    /bin/mv cppdefs_bak2.h.$par1 cppdefs_bak1.h.$par1
-    rm -Rf Compile_$par1 ; mkdir Compile_$par1
-    cp param_bak1.h.$par1 Compile_${par1}/param.h.OK
-    cp cppdefs_bak1.h.$par1 Compile_${par1}/cppdefs.h.OK
-    
-    #  echo "qsub -N mpi_${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash"
-    #qsub -N ${TEST_NAME}_MP -W depend=afterok:$myjobid_serial comp_run_mpi.bash
-    
-    #  echo "myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`""
-    #myjobid_mpi="`qselect -N ${TEST_NAME}_MP -u $USER`"
+    \mv param.h.$par1.tmp param.h.$par1
+    #
+    sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*$par1'/'define\ $par1'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
+    \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
+    #
+    [ -e  param.h.OK ] && \rm param.h.OK
+    [ -e  cppdefs.h.OK ] && \rm cppdefs.h.OK
+
+    \cp param.h.$par1 param.h.OK
+    \cp cppdefs.h.$par1 cppdefs.h.OK
+    #
     Fqsub_mpi
+    myreturn=$?
+#    echo "SUCCESS="$SUCCESS
+    SUCCESS=$(($SUCCESS+myreturn))
+#    echo "SUCCESS="$SUCCESS
+    if [ "$myreturn" -eq 1 ]; then
+	SUCCESS_COMP=$(($SUCCESS_COMP+1))
+	sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
+	\mv tmp.txt ${TEST_NAME}_steps 
+	sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
+	\mv tmp.txt ${TEST_NAME}_steps 
+    fi  
+    if [ "$myreturn" -eq 2 ]; then
+	SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
+	sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
+	\mv tmp.txt ${TEST_NAME}_steps 
+    fi  
 fi
 
+##############################################################################
+echo "&&&&&&&&&&&&&&&&&&&&&&&&&"
+echo "Final SUCESS is "$SUCCESS
+echo " "
+if [  "$SUCCESS" -ne 0 ]; then
+    #sed not needed 
+    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
+    #echo
+    echo "Final SUCESS -ne 0 => "
+    echo "      SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME}"
+    #echo "EXITING ..."
+    # echo
+    #echo  | tee -a mylog.txt
+    #echo -e "Final SUCESS is "$SUCCESS | tee -a mylog.txt
+    #echo -e "Final SUCESS_COMP is "$SUCCESS_COMP | tee -a mylog.txt
+    #echo -e "Final SUCESS_EXE is "$SUCCESS_EXE | tee -a mylog.txt
+    #echo -e "${FMT_REDBLD}SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    #echo -e "${FMT_REDBLD}EXITING ...${FMT_ORD}"  | tee -a mylog.txt
+    # if [ "$SUCCESS_COMP" -ne 0 ]; then
+    # 	echo -e "${FMT_REDBLD}A COMPILATION ERROR WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    # fi
+    # if [ "$SUCCESS_COMP" -eq 0 ] &&  [ "$SUCCESS_EXE" -ne 0 ]; then
+    # 	echo -e "${FMT_REDBLD}COMPILATION IS OK WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    # 	echo -e "${FMT_REDBLD}AN EXECUTION ERROR WITH ${CONFIG_NAME} ${FMT_ORD}" | tee -a mylog.txt
+    # fi
+  
+    #     # echo  | tee -a mylog.txt
+    #     #exit  1
+fi
 #########################################################################################################
-# 5- Extract results
+
+
+#########################################################################################################
+# 6 - Extract results
 ##############################################################################
 #  runs
-#echo ' '
+echo " "
 echo "EXTRACTION $mytest"
-#if [[ ${FLAG_MPI} = 1 &&  ${FLAG_OPENMP} = 1 ]]; then 
-#    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash"
-#    qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_mpi}:${myjobid_openmp} extract_results_croco.bash
-#    
-#elif [ ${FLAG_OPENMP} = 1 ]; then 
-#    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_openmp} extract_results_croco.bash"
-#    qsub -N ${TEST_NAME}_EX -W depend=afterany:${myjobid_openmp} extract_results_croco.bash
-#    
-#elif [ ${FLAG_MPI} = 1 ]; then 
-#    #echo "qsub -N ${TEST_NAME}_EX -W depend=afterok:${myjobid_mpi} extract_results_croco.bash"
-#    qsub -N ${TEST_NAME}_EX -W depend=afterany:`qselect -N mpi_${TEST_NAME} -u $USER` extract_results_croco.bash
-#fi
-#########################################################################################################
-
-
-#qrls `qselect -N ${TEST_NAME}_SE`
 Fextract_results $FLAG_MPI $FLAG_OPENMP
