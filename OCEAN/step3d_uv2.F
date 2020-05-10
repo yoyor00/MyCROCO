@@ -309,10 +309,10 @@
         do k=1,N
           do i=IstrU,Iend
 # if defined NHMG
-!     TODO: explain why NHMG does differently
              if (surface_neumann) then
                 u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
              else
+! With Dirichlet BC the velocity is not corrected
                 u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
              endif
 # else
@@ -572,10 +572,10 @@
           do k=1,N
             do i=Istr,Iend
 # if defined NHMG
-! TODO: explain why NHMG does differently
              if (surface_neumann) then
                 v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
              else
+! With Dirichlet BC the velocity is not corrected
                 v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
              endif
 
@@ -669,35 +669,6 @@
         endif
       enddo                     ! <-- j
 !
-
-# ifdef NHMG2
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                   Ubt(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                   Vbt(START_2D_ARRAY))
-#  endif
-      if (.not.surface_neumann) then
-      do j=Jstr,Jend
-         do i=Istr,Iend
-           wz(i,j,0,nnew)=0.
-           DC(i,0) = - (Ubt(i+1,j)-Ubt(i,j)+Vbt(i,j+1)-Vbt(i,j))
-         ! DC(i,0) is the wz barotropic correction at the surface
-           DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
-         ! DC(i,0) is divided by the total depth
-           DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
-         enddo
-         do k=1,N
-            do i=Istr,Iend
-            ! at this time, Huon and Hvom CANNOT used : they are
-            ! defined at n+1/2 instead of n+1
-            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
-            enddo
-         enddo
-      enddo
-      endif
-# endif
 
 # ifdef NHMG
       call tic(1,'croco_step3d_uv2_1')
@@ -997,7 +968,7 @@
 !    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
 !         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
 !     At this point u,v,w are fluxes with the dimension of m^3/s
-       if (surface_neumann) then
+       if (surface_neumann.and.vanishing_wtop) then
           do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend
@@ -1038,32 +1009,6 @@
             enddo
          enddo
       enddo
-
-# if defined JUNK
-!--------------------------------------------------------------------
-! Coupling wz
-!--------------------------------------------------------------------
-!
-!     We now apply the barotropic correction to wz
-      do j=Jstr,Jend
-         do i=Istr,Iend
-           wz(i,j,0,nnew)=0.
-           DC(i,0) = - (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
-         ! DC(i,0) is the wz barotropic correction at the surface
-           DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
-         ! DC(i,0) is divided by the total depth
-           DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
-         enddo
-         do k=1,N
-            do i=Istr,Iend
-            ! at this time, Huon and Hvom CANNOT used : they are
-            ! defined at n+1/2 instead of n+1
-            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
-            enddo
-         enddo
-      enddo
-# endif JUNK
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -1178,8 +1123,8 @@
 #   ifdef MASKING
      &                 *umask(i,j)
 #   endif
-                  ! if Dirichlet: no barotropic correction
-               endif
+                  nh_ubar(i,j) = nh_ubar(i,j)+CF(i,0)
+               endif ! if Dirichlet: no barotropic correction
 # else
              u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
 #    ifdef MASKING
@@ -1326,8 +1271,8 @@
 #   ifdef MASKING
      &                 *vmask(i,j)
 #   endif
-                  ! if Dirichlet: no barotropic correction
-               endif
+                  nh_vbar(i,j) = nh_vbar(i,j)+CF(i,0)
+               endif ! if Dirichlet: no barotropic correction
 # else
               v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0)) 
 # ifdef MASKING
@@ -2510,79 +2455,53 @@
 # endif
 
 # if defined NHMG
-      if (.not.surface_neumann) then
-      ! We've modified u and v, wz needs to be made consistent
-      do j=Jstr,Jend
-        do k=1,N          
-          do i=Istr,Iend
-            DC(i,0)=pm(i,j)*pn(i,j)
-            ! at this time, Huon and Hvom CANNOT used : they are 
-            ! defined at n+1/2 instead of n+1
-            wz(i,j,k,nnew)=wz(i,j,k-1,nnew) 
-     &      - DC(i,0)*( 
-     &       +0.5*(Hz(i,j,k)+Hz(i+1,j,k))*on_u(i+1,j)*u(i+1,j,k,nnew)
-     &       -0.5*(Hz(i-1,j,k)+Hz(i,j,k))*on_u(i,j)*u(i,j,k,nnew)
-     &       +0.5*(Hz(i,j,k)+Hz(i,j+1,k))*om_v(i,j+1)*v(i,j+1,k,nnew)
-     &       -0.5*(Hz(i,j-1,k)+Hz(i,j,k))*om_v(i,j)*v(i,j,k,nnew) )
-          enddo
-        enddo
-      enddo
-
-      else
-      
 !--------------------------------------------------------------------
 ! Coupling wz
 !--------------------------------------------------------------------
 !
+      if (surface_neumann) then
+
 !     We now apply the barotropic correction to wz
-      do j=Jstr,Jend
-         do i=Istr,Iend
-           wz(i,j,0,nnew)=0.
-           DC(i,0) = - (nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
-         ! DC(i,0) is the wz barotropic correction at the surface
-           DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
-         ! DC(i,0) is divided by the total depth
-           DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
-         enddo
-         do k=1,N
-            do i=Istr,Iend
-            ! at this time, Huon and Hvom CANNOT used : they are
-            ! defined at n+1/2 instead of n+1
-            wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &      - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
-            enddo
-         enddo
-      enddo
-      endif
-#if defined JUNK
-      do j=Jstr,Jend
-         do i=IstrU,Iend+1
-!            Ubt(i,j) = (nh_ubar(i,j))*pn_u(i,j)/hu(i,j)
-            Ubt(i,j) = Ubt(i,j)*pn_u(i,j)/hu(i,j)
-            ubar(i,j,knew) = ubar(i,j,kstp)-Ubt(i,j)
-         enddo
-      enddo
-      do j=JstrV,Jend+1
-         do i=Istr,Iend
-!            Vbt(i,j) = (nh_vbar(i,j))*pm_v(i,j)/hv(i,j)
-            Vbt(i,j) = Vbt(i,j)*pm_v(i,j)/hv(i,j)
-            vbar(i,j,knew) = vbar(i,j,kstp)-Vbt(i,j)
-         enddo
-      enddo
-      ! DONT CORRECT u and v => BLOW UP
-      do k=1,N
          do j=Jstr,Jend
-            do i=IstrU,Iend+1
-               u(i,j,k,nnew) = u(i,j,k,nnew) -  Ubt(i,j)
-            enddo
-         enddo
-         do j=JstrV,Jend+1
             do i=Istr,Iend
-               v(i,j,k,nnew) = v(i,j,k,nnew) -  Vbt(i,j)
+               wz(i,j,0,nnew)=0.
+               DC(i,0) = - (nh_ubar(i+1,j)-nh_ubar(i,j)
+     &                     +nh_vbar(i,j+1)-nh_vbar(i,j))
+               ! DC(i,0) is the wz barotropic correction at the surface
+               DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
+               ! DC(i,0) is divided by the total depth
+               DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
+            enddo
+            do k=1,N
+               do i=Istr,Iend
+                  ! at this time, Huon and Hvom CANNOT used : they are
+                  ! defined at n+1/2 instead of n+1
+                  wz(i,j,k,nnew) = wz(i,j,k,nnew)
+     &                 - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
             enddo
          enddo
       enddo
-#endif JUNK
+
+      else ! Dirichlet BC
+
+         ! We've modified u and v, wz needs to be made consistent
+         do j=Jstr,Jend
+            do k=1,N
+               do i=Istr,Iend
+                  DC(i,0)=pm(i,j)*pn(i,j)
+                  ! at this time, Huon and Hvom CANNOT used : they are
+                  ! defined at n+1/2 instead of n+1
+                  wz(i,j,k,nnew)=wz(i,j,k-1,nnew)
+     &                 - DC(i,0)*(
+     &       +0.5*(Hz(i,j,k)+Hz(i+1,j,k))*on_u(i+1,j)*u(i+1,j,k,nnew)
+     &       -0.5*(Hz(i-1,j,k)+Hz(i,j,k))*on_u(i,j)*u(i,j,k,nnew)
+     &       +0.5*(Hz(i,j,k)+Hz(i,j+1,k))*om_v(i,j+1)*v(i,j+1,k,nnew)
+     &       -0.5*(Hz(i,j-1,k)+Hz(i,j,k))*om_v(i,j)*v(i,j,k,nnew) )
+               enddo
+            enddo
+         enddo
+
+      endif
 !
 # endif /* NHMG */
 

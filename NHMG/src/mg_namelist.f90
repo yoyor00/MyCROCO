@@ -36,6 +36,7 @@ module mg_namelist
   integer(kind=ip)  :: output_freq = 100000000 ! Number of iterations between output of statistics
 
   logical           :: surface_neumann  = .true.
+  logical           :: vanishing_wtop  = .true.
 
   logical           :: east_west_perio = .false.
   logical           :: north_south_perio = .false.
@@ -57,6 +58,7 @@ module mg_namelist
        netcdf_output , &
        output_freq   , &
        surface_neumann, &
+       vanishing_wtop, &
        east_west_perio, &
        north_south_perio
 
@@ -196,6 +198,7 @@ contains
           write(*,*)'  - netcdf_output : ', netcdf_output
           write(*,*)'  - output freq   : ', output_freq
           write(*,*)'  - surf neumann  : ', surface_neumann
+          write(*,*)'  - vanishing wtop: ', vanishing_wtop
 ! these parameters are overwritten in nhmg_init()
 !          write(*,*)'  - E/W periodic  : ', east_west_perio
 !          write(*,*)'  - N/S periodic  : ', north_south_perio

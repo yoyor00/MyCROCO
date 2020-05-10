@@ -102,7 +102,7 @@
 
 # if defined NHMG
       DO j=Jstr,Jend
-         if (surface_neumann) then
+         if (surface_neumann.and.vanishing_wtop) then
             DO k=1,N-1
                DO i=Istr,Iend
                   wz(i,j,k,nnew)=wz(i,j,k,nnew)
