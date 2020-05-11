@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LIST_KEY0='REGIONAL MPI OPENMP BSTRESS_FAST'
+LIST_KEY0='REGIONAL MPI OPENMP'
 # => Keys that will put to undef at the begining of the rvtk scripts
 
 TEST_NAME='RIP'

@@ -275,13 +275,13 @@ fi
 
 ##############################################################################
 echo "&&&&&&&&&&&&&&&&&&&&&&&&&"
-echo "Final SUCESS is "$SUCCESS
+echo "Final SUCCESS is "$SUCCESS
 echo " "
 if [  "$SUCCESS" -ne 0 ]; then
     #sed not needed 
     sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
     #echo
-    echo "Final SUCESS -ne 0 => "
+    echo "Final SUCCESS -ne 0 => "
     echo "      SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME}"
     #echo "EXITING ..."
     # echo
