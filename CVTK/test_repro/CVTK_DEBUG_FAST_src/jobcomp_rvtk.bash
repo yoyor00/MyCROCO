@@ -21,10 +21,6 @@
 # options
 
 #set -x
-<<<<<<< HEAD
-=======
-set -e   
->>>>>>> 515dd722... Still update to handle the new CI procedure
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
