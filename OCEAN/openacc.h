@@ -9,6 +9,9 @@
       integer            :: devicenum
       integer            :: device_type
 
+      character(len=6) :: local_rank_env
+      integer          :: local_rank_env_status, local_rank
+
 
 #define ACC_TILE_X  Lm     
 #define ACC_TILE_Y  Mm    

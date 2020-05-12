@@ -80,8 +80,6 @@
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 #endif
-        character(len=6) :: local_rank_env
-        integer          :: local_rank_env_status, local_rank
 
      
 #ifdef AUTOTILING

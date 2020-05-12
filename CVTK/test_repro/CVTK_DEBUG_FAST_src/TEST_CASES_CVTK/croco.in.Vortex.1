@@ -2,7 +2,7 @@ title:
         Vortex Example Zoom #1 (DON'T FORGET make_vortex.m)
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               10        960       50       1
+               1        960       50       1
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1          200          1.
@@ -21,11 +21,11 @@ climatology: filename
                           XXXXX
 
 restart:          NRST, NRPFRST / filename
-                  10   -1
+                  9   -1
                           vortex_rst.nc.1
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T      10      0
+            T      9      0
                           vortex_his.nc.1
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
