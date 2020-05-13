@@ -50,4 +50,4 @@ $guix_cmd environment --pure --ad-hoc $packages -- ../OCEAN/jobcomp
 # history -> obs
 #cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
 
-$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco_adj croco-est.in
+$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco_adc croco-est.in
