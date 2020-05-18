@@ -1289,8 +1289,8 @@ c        close(testunit)
 #else
      &                                          ,  dumboolean
 #endif       
-# ifdef MOVING_BATHY
-     &                                          ,  wrthis(indxHm)
+# ifdef MORPHODYN
+     &                                          , wrthis(indxHm)
 # else 
      &                                          ,  dumboolean
 # endif
@@ -1412,7 +1412,7 @@ c        close(testunit)
      &  , wrthis(indxShflx_sen), 'write shflx_sen [W/m2]',
      &                                 'Sensible heat flux'
 # endif
-# ifdef MOVING_BATY
+# ifdef MORPHODYN
      &  , wrthis(indxHm), 'write Hm [m]',
      &                                 'Time evolving bathymetry'
 # endif 
@@ -1584,7 +1584,7 @@ c        close(testunit)
 #else
      &                                          , dumboolean
 #endif      
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
      &                                          , wrtavg(indxHm)
 # else 
      &                                          ,  dumboolean
@@ -1706,7 +1706,7 @@ c        close(testunit)
      &  , wrtavg(indxShflx_sen), 'write shflx_sen [W/m2]',
      &                                 'Sensible heat flux.'
 #  endif
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
      &  , wrtavg(indxHm), 'write Hm [m]',
      &                                 'Time evolving bathymetry.'
 # endif

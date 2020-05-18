@@ -1026,8 +1026,9 @@ C$OMP BARRIER
 #  endif
         call set_depth_morphodyn (tile)
       enddo
-# endif
 C$OMP BARRIER
+# endif
+
 #endif /* SOLVE3D */
 
 #ifdef FLOATS

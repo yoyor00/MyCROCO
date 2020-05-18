@@ -63,11 +63,11 @@
       real hinv(GLOBAL_2D_ARRAY)
       real f(GLOBAL_2D_ARRAY)
       real fomn(GLOBAL_2D_ARRAY)
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
       real dh(GLOBAL_2D_ARRAY)
 # endif      
       common /grid_h/h /grid_hinv/hinv /grid_f/f /grid_fomn/fomn
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
       common /grid_dh/dh
 # endif      
       

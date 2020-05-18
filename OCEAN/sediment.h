@@ -101,7 +101,7 @@
       real bedldv(GLOBAL_2D_ARRAY,NST)
       common /sed_bedload/ bedldu, bedldv  
 # endif
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
       real bed_thick_tot(GLOBAL_2D_ARRAY,2)
       common /sed_morph/ bed_thick_tot
 # endif

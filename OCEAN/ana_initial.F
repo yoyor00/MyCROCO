@@ -49,8 +49,8 @@
 #ifdef INTERNAL
       real cff
 #endif
-#if defined IGW
-      real    cff,sig,rhom,depth
+#ifdef IGW
+      real cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
       real temp, SiO4
@@ -60,6 +60,9 @@
 #endif
 #ifdef TANK
       real ETA0, depth, Lt,cff
+#endif
+#ifdef MOVING_BATHY
+      real cff
 #endif
 #ifdef RIP
       integer iper
@@ -190,15 +193,11 @@
         Lt=10.
         do j=JR_RANGE
           do i=IR_RANGE
-#  ifndef MOVING_BATHY       
-#   ifndef TANKY
+#  ifndef TANKY
             zeta(i,j,1)=ETA0*cos(pi*xr(i,j)/Lt)
-#   else
-            zeta(i,j,1)=ETA0*cos(pi*yr(i,j)/Lt)
-#   endif
 #  else
-            zeta(i,j,1)=0.
-#  endif        
+            zeta(i,j,1)=ETA0*cos(pi*yr(i,j)/Lt)
+#  endif
             ubar(i,j,1)=0.
             vbar(i,j,1)=0.
             zeta(i,j,2)=zeta(i,j,1)
@@ -608,7 +607,6 @@
         enddo
 
 #  elif defined TANK
-#   ifndef MOVING_BATHY
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -617,8 +615,8 @@
             enddo
           enddo
         enddo
-#   else
-        cff=((2.510e-4)**2)/g
+#  elif defined MOVING_BATHY
+        cff=((0.92461)**2)/g
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -627,8 +625,6 @@
             enddo
           enddo
         enddo
-#   endif
-
 #  elif defined EQUATOR
         do k=1,N
           do j=JstrR,JendR

@@ -34,6 +34,7 @@
 #undef  SANDBAR         /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
+#undef  MOVING_BATHY    /* Moving Bathymetry Example */
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  I_SOLITON       /* Internal Soliton Example */
@@ -1275,7 +1276,7 @@
 # define ANA_STFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-      
+                      
 #elif defined MOVING_BATHY
 /*
 !                       Moving Bathy Example

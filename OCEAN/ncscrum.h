@@ -181,7 +181,7 @@
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
       integer indxHm
       parameter (indxHm=5)
 #endif
@@ -943,7 +943,7 @@
       integer rstdRdx,rstdRde
 # endif
 #endif
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
       integer rstHm
 #endif
 #ifdef BBL
@@ -969,7 +969,7 @@
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
      &      , hisHm
 # endif
 # ifdef BBL
@@ -1135,7 +1135,7 @@
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
      &      , avgHm
 # endif
 # ifdef SOLVE3D
@@ -1418,7 +1418,7 @@
      &                         , rstSed
 # endif
 #endif
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
      &                         , rstHm
 #endif
 #ifdef BBL
@@ -1430,7 +1430,8 @@
      &      , hisBustr, hisBvstr
      &     , hisShflx, hisSwflx, hisShflx_rsw
      &     , hisBhflx, hisBwflx
-# ifdef MOVING_BATHY
+     &      , hisShflx, hisSwflx, hisShflx_rsw
+# ifdef MORPHODYN
      &      , hisHm
 # endif
 #ifdef SOLVE3D
@@ -1675,7 +1676,7 @@
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
      &      , avgBhflx, avgBwflx
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
      &      , avgHm
 # endif
 # ifdef SOLVE3D
