@@ -2,7 +2,7 @@ title:
         SANDBAR Example 
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               36000      0.1      30      100
+               36000      0.1      10      100
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0.0d0      1.e16
@@ -11,7 +11,7 @@ initial: NRREC  filename
           0
 
 sediments: input file
-           TEST_CASES/sediment_sandbar.in
+           sediment_sandbar.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T          
