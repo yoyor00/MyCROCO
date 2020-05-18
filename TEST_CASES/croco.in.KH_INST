@@ -2,10 +2,10 @@ title:
 	Kelvin-Helmoltz instability Example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               4000      0.12      10      50 
+               1600      0.3      20      50 
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
-                   1           200           1.e2
+                   1           10           1.e2
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0          0        1.e16 
@@ -15,11 +15,11 @@ initial: NRREC  filename
                           khinst_rst.nc
 
 restart:          NRST, NRPFRST / filename
-                  4000      -1
+                  1600      -1
                           khinst_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     500      0 
+            T     400      0 
                          khinst_his.nc 
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)

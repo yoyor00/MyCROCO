@@ -1716,7 +1716,7 @@ C$    integer  trd, omp_get_thread_num
             enddo
           endif
 # endif
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
           bed_thick_tot(i,j,2)=0.
           do ilay=1,NLAY
             bed_thick_tot(i,j,2)=bed_thick_tot(i,j,2)+
@@ -1748,7 +1748,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bot_thick(START_2D_ARRAY))
-#  ifdef MOVING_BATHY
+#  ifdef MORPHODYN
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_thick_tot(START_2D_ARRAY,1))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,

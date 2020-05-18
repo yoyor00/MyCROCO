@@ -143,6 +143,7 @@
 # undef  NBQ_THETAIMP
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
+# undef  M3FAST_REINIT
 # ifdef TANK
 #  define NOT_NBQ_AM4
 # endif
