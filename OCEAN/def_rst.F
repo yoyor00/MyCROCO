@@ -484,7 +484,7 @@
         enddo
 #endif /* SEDIMENT */
 
-#ifdef MOVING_BATHY 
+#ifdef MORPHODYN 
         lvar=lenstr(vname(1,indxHm))
         ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
      &                            NF_DOUBLE, 3, r2dgrd, rstHm)
@@ -814,7 +814,7 @@
         enddo
 #endif /* SEDIMENT */
 
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
 !
 ! Time evolving bathymetry
 !

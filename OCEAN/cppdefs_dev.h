@@ -255,7 +255,8 @@
 */
 #if defined SOLVE3D
 # define VAR_RHO_2D
-# if !defined NONLIN_EOS && !defined INNERSHELF
+# if !defined NONLIN_EOS && !defined INNERSHELF \
+                         && !defined MOVING_BATHY
 #  define RESET_RHO0
 # endif
 #endif
@@ -782,20 +783,32 @@
 #   define BEDLOAD_MPM
 #  endif
 # endif
-/* 
-     Morphodynamics (bed evolution feedback on circulation):
-     MORPHODYN or MOVING_BATHY (equivalent) must be defined
-     in cppdefs.h (default is undefined)
-*/
-# if defined MORPHODYN || defined MOVING_BATHY
-#  ifdef MOVING_BATHY
-#  else
-#   define MOVING_BATHY
-#  endif
-# else
-#  undef  MOVING_BATHY
-# endif
 #endif /* SEDIMENT */
+
+/* 
+======================================================================
+          Hydro-morphodynamic coupling (Moving Bathymetry)
+     
+ -> MORPHODYN: Morphodynamics (bed evolution & feedback on circulation)
+               ... must be defined for coupling with SEDIMENT model
+ -> ANA_MORPHODYN: Analytical function of oscillating bathymetry 
+                  (ifndef SEDIMENT)
+
+    MORPHODYN or ANA_MORPHODYN must be defined in cppdefs.h 
+    ANA_MORPHODYN triggers MORPHODYN below
+    ANA_MORPHODYN and SEDIMENT are incompatible for now
+    MORPHODYN && NBQ needs NBQ_FREESLIP
+======================================================================
+*/
+#ifdef ANA_MORPHODYN
+# define MORPHODYN
+#endif
+#ifdef SEDIMENT
+# undef  ANA_MORPHODYN
+#endif
+#if defined MORPHODYN && defined NBQ
+# define NBQ_FREESLIP
+#endif
 /*
 ======================================================================
                               OBCs

@@ -94,7 +94,7 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
 #  define vidHm hisHm
 # endif
 # ifdef WAVE_IO
@@ -199,7 +199,7 @@
 # define vidWstr avgWstr
 # define vidUWstr avgUWstr
 # define vidVWstr avgVWstr
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
 #  define vidHm avgHm
 # endif
 # ifdef WAVE_IO
@@ -561,7 +561,7 @@
 
         endif
 
-#ifdef MOVING_BATHY 
+#ifdef MORPHODYN 
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
@@ -2224,7 +2224,7 @@
 !
 ! time evolving bathymetry
 !
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), vidHm)
@@ -2969,7 +2969,7 @@
 # undef vidKVF
 # undef vidCALP
 # undef vidKAPS
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
 #  undef vidHm
 # endif
 #endif

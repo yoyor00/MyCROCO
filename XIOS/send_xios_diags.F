@@ -2143,7 +2143,7 @@ C 				  endif
       call xios_send_field("ubar",ubar(:,:,fast_indx_out))
       call xios_send_field("vbar",vbar(:,:,fast_indx_out))
 
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
       call xios_send_field("hmorph",h)
 # endif
 # ifdef WET_DRY

@@ -693,7 +693,7 @@ C$    integer omp_get_thread_num
           Bvstrw(i,j)=init
           Bustrcwmax(i,j)=init
           Bvstrcwmax(i,j)=init
-#ifdef MOVING_BATHY 
+#ifdef MORPHODYN 
           dh(i,j)=init
 #endif
         enddo

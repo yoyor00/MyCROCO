@@ -27,7 +27,7 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
 # include "grid.h"
 #endif
 #ifdef BBL
@@ -230,7 +230,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 # endif /* SEDIMENT */
 #endif /* SOLVE3D */
 
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
 !     
 !     Write out time evolving bathymetry
 !     

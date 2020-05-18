@@ -394,7 +394,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxVb = ',indxVb
       vname(7,indxVb)='                                           '
       vname(11,indxVb)=' '
 
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
 CR      write(stdout,'(1x,A,I3)') 'indxHm =',indxHm
       vname(1,indxHm)='hmorph                                     '
       vname(2,indxHm)='moving bathymetry                          '
