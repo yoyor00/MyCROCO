@@ -124,6 +124,8 @@
       fname='TEST_CASES/croco.in.FORCED_OSCNONROTBBL'
 #elif defined TANK
       fname='TEST_CASES/croco.in.Tank'
+#elif defined MOVING_BATHY
+      fname='TEST_CASES/croco.in.MovBat'
 #elif defined ACOUSTIC
       fname='TEST_CASES/croco.in.Acoustic' 
 #elif defined SWASH
