@@ -1,29 +1,27 @@
 #!/bin/bash
 #echo '============================================================='
 #set -x
-set -e
+#set -e
 echo 'Create the link between TESTROOT . and '$PWD
 
-source ../CONFIGURE_REG
+source ../CONFIGURE_ANA
 
 #echo 'common scripts
 ln -sf $dir_home/../CONFIGURE_GLOBAL .
-ln -sf $dir_home/../CONFIGURE_REG .
+ln -sf $dir_home/../CONFIGURE_ANA .
 
 [ -d TEST_CASES ] && rm TEST_CASES
 ln -sf $dir_home/../TEST_CASES_CVTK TEST_CASES
-ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in .
-ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in.1 .
-ln -sf $dir_home/../TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in .
-ln -sf $dir_datafile/CROCO_FILES .
-ln -sf $dir_datafile/DATA .
+ln -sf $dir_home/../TEST_CASES_CVTK/*.nc* .
 ln -sf $dir_home/../jobcomp_rvtk.bash .
 ln -sf $dir_home/../extract_results_croco.bash .
 ln -sf $dir_home/../comp_run_*.bash .
 
 
+
+
 # specific scripts
-ln -sf $dir_home/src_test/test_croco_reg.sh .
-ln -sf $dir_home/src_test/rvtk_fast_qsub_REGIONAL.bash .
+ln -sf $dir_home/../test_croco.sh .
+ln -sf $dir_home/../rvtk_fast_qsub.bash .
 #echo 'Process namelist files'
 cp -Rf jobcomp_rvtk.bash jobcomp_rvtk.bash.BACK

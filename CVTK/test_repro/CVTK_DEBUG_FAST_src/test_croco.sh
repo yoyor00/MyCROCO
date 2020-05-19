@@ -19,7 +19,7 @@ touch Recap_${TEST_NAME}.git${numrev}
 rm -f mylog.txt
 touch mylog.txt
 
-SCRIPT_RVTK=rvtk_fast_qsub_VORT.bash
+SCRIPT_RVTK=rvtk_fast_qsub.bash
 echo -e "   - Run Tests" 
 ./$SCRIPT_RVTK > Recap_${TEST_NAME}.git${numrev}
 cat mylog.txt

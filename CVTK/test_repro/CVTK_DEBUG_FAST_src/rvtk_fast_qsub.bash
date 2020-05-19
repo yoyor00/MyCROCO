@@ -21,7 +21,7 @@ echo "=> CONFIG "$mytest
 
 echo "Remove *.exe* *.log* "
 [ ! -z "$(ls *.exe* 2>/dev/null)" ] && /bin/rm *.exe*
-[ ! -z "$(ls *.log* 2>/dev/null)" ] &&/bin/rm *.log*
+[ ! -z "$(ls *.log* 2>/dev/null)" ] && /bin/rm *.log*
 echo "Remove the CHECKFILE"
 [ -f check_file ] && /bin/rm check_file
 
@@ -91,7 +91,7 @@ for par in SERIAL OPENMP MPI ; do
     #sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     \mv cppdefs.h.$par.tmp cppdefs.h.$par
-    
+     
     # 4- DEFINE THE VARIOUS CPPKEYS
     #=4.1
     for EXAMPLE in $LIST_KEY_PHYS
@@ -121,9 +121,17 @@ echo 'START TESTING ...             '
 
 SUCCESS=0
 SUCCESS_COMP=0
+SUCCESS_COMP_SERIAL=0
+SUCCESS_COMP_OPENMP=0
+SUCCESS_COMP_MPI=0
 SUCCESS_EXEC=0
+SUCCESS_EXEC_SERIAL=0
+SUCCESS_EXEC_OPENMP=0
+SUCCESS_EXEC_MPI=0
+
 if [ ! -f ${TEST_NAME}_steps ]; then 
     echo 'Y' > ${TEST_NAME}_steps
+    echo 'Y' >> ${TEST_NAME}_steps
     echo 'Y' >> ${TEST_NAME}_steps
     echo 'Y' >> ${TEST_NAME}_steps
 fi
@@ -149,21 +157,22 @@ sed 's/'NPP=1'/'NPP=1'/' < param.h.$par1 > param.h.$par1
 
 Fqsub_serial
 myreturn=$?
+echo "myreturn is "$myreturn
 #echo "SUCCESS="$SUCCESS
 SUCCESS=$(($SUCCESS+$myreturn))
 #echo "SUCCESS="$SUCCESS
 if [ "$myreturn" -eq 1 ]; then
-    SUCCESS_COMP=$(($SUCCESS_COMP+1))
+    SUCCESS_COMP_SERIAL=$(($SUCCESS_COMP_SERIAL+1))
     sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps 
     sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps 
 fi  
 if [ "$myreturn" -eq 2 ]; then
-    SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
+    SUCCESS_EXEC_SERIAL=$(($SUCCESS_EXEC_SERIAL+1))
     sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps 
-fi
+fi  
 
 # 4- 
 ##############################################################################
@@ -183,11 +192,13 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
 	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=1'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=2'/' < param.h.$par1.tmp > param.h.$par1
     else
-	echo " "	
-	echo "OPEN-MP 2X2 NPP=4 TEST $mytest"
-	sed 's/'NSUB_X=1,\ \ \*NSUB_E=NPP'/'NSUB_X=2,\ NSUB_E=2'/' < param.h.$par1 > param.h.$par1.tmp
+	echo " "
+	echo "OPEN-MP ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
 	sed 's/'NPP=4'/'NPP=4'/' < param.h.$par1.tmp > param.h.$par1
-    fi	 
+    fi
+    \mv param.h.$par1.tmp param.h.$par1
+    #
     sed '/'${par1}[[:graph:]]'/!s/'undef\ \ \*${par1}'/'define\ ${par1}'/' < cppdefs.h.$par1 > cppdefs.h.$par1.tmp
     \mv cppdefs.h.$par1.tmp cppdefs.h.$par1
     #
@@ -198,18 +209,19 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
     #
     Fqsub_openmp
     myreturn=$?
+    echo "myreturn is "$myreturn
 #    echo "SUCCESS="$SUCCESS
     SUCCESS=$(($SUCCESS+$myreturn))
 #    echo "SUCCESS="$SUCCESS
     if [ "$myreturn" -eq 1 ]; then
-	SUCCESS_COMP=$(($SUCCESS_COMP+1))
+	SUCCESS_COMP_OPENMP=$(($SUCCESS_COMP_OPENMP+1))
 	sed -e '1c N' ${TEST_NAME}_steps > tmp.txt
 	\mv tmp.txt ${TEST_NAME}_steps 
 	sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
 	\mv tmp.txt ${TEST_NAME}_steps 
     fi  
     if [ "$myreturn" -eq 2 ]; then
-	SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
+	SUCCESS_EXEC_MPI=$(($SUCCESS_EXEC_MPI+1))
 	sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
 	\mv tmp.txt ${TEST_NAME}_steps 
     fi  
@@ -238,8 +250,8 @@ if [ ${FLAG_MPI} -eq 1 ]; then
 	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=1'/' < param.h.$par1 > param.h.$par.tmp
     else
 	echo " "
-	echo "MPI 2X2 TEST $mytest"
-	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=2,\ NP_ETA=2'/' < param.h.$par1 > param.h.$par1.tmp
+	echo "MPI ${NBPROCS_X}X${NBPROCS_Y} TEST $mytest"
+	sed 's/'NP_XI=1,\ \ \*NP_ETA=4'/'NP_XI=${NBPROCS_X},\ NP_ETA=${NBPROCS_Y}'/' < param.h.$par1 > param.h.$par1.tmp
     fi
     \mv param.h.$par1.tmp param.h.$par1
     #
@@ -254,18 +266,19 @@ if [ ${FLAG_MPI} -eq 1 ]; then
     #
     Fqsub_mpi
     myreturn=$?
+    echo "myreturn is "$myreturn
 #    echo "SUCCESS="$SUCCESS
     SUCCESS=$(($SUCCESS+myreturn))
 #    echo "SUCCESS="$SUCCESS
     if [ "$myreturn" -eq 1 ]; then
-	SUCCESS_COMP=$(($SUCCESS_COMP+1))
+	SUCCESS_COMP_MPI=$(($SUCCESS_COMP_MPI+1))
 	sed -e '1c N' ${TEST_NAME}_steps > tmp.txt 
 	\mv tmp.txt ${TEST_NAME}_steps 
 	sed -e '2c ?' ${TEST_NAME}_steps > tmp.txt 
 	\mv tmp.txt ${TEST_NAME}_steps 
     fi  
     if [ "$myreturn" -eq 2 ]; then
-	SUCCESS_EXEC=$(($SUCCESS_EXEC+1))
+	SUCCESS_EXEC_MPI=$(($SUCCESS_EXEC_MPI+1))
 	sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
 	\mv tmp.txt ${TEST_NAME}_steps 
     fi  
@@ -307,6 +320,5 @@ fi
 # 6 - Extract results
 ##############################################################################
 #  runs
-echo " "
 echo "EXTRACTION $mytest"
 Fextract_results $FLAG_MPI $FLAG_OPENMP

@@ -51,14 +51,15 @@ if [ $FLAG_OPENMP -eq 1 ]; then
 		sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt 	
 	    else
 		echo '... Parallel reproducibility unknown'  >> $fileout_openmp
-		sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt
+		sed -e '3c ?__exec_failure' ${TEST_NAME}_steps > tmp.txt
 	    fi
 	fi
 	\mv tmp.txt ${TEST_NAME}_steps
     fi
 else
     res_omp=""
-    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+    sed -e '3c ?__no_openmp' ${TEST_NAME}_steps > tmp.txt 
+    #sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps	
 fi
 
@@ -72,27 +73,27 @@ if [ $FLAG_MPI -eq 1 ]; then
 	${GREP_CMD} BUGBIN $filein_mpi >> $fileout_mpi
 	res_mpi=`${GREP_CMD} BUGBIN $filein_mpi`
 	echo 'res_mpi='$res_mpi >> $fileout_mpi
-	if [ -n "$res_mpi" ] ; then 
+	if [ -n "$res_mpi" ]  ; then 
 	    echo 'check mpi [Parallel reproducibility failed]'  >> $fileout_mpi
-	    sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
+	    sed -e '4c N' ${TEST_NAME}_steps > tmp.txt 
 	else
 	    if [[ $execflag == 'Y' ]]; then 
 		echo 'check mpi [Parallel reproducibility passed]'  >> $fileout_mpi
-		sed -e '3c Y' ${TEST_NAME}_steps > tmp.txt
+		sed -e '4c Y' ${TEST_NAME}_steps > tmp.txt
 	    else
 		echo '... Parallel reproducibility unknown'  >> $fileout_mpi
-		sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt
+		sed -e '4c ?__exec_failure' ${TEST_NAME}_steps > tmp.txt
 	    fi
 	fi
 	\mv tmp.txt ${TEST_NAME}_steps
     fi
 else
     res_mpi=""
-    sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
+    sed -e '4c ?__no_mpi' ${TEST_NAME}_steps > tmp.txt 
+    #sed -e '4c ?' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps
 fi
 
-#
 # if [[ -d $filein_openmp && ! -z "$res_omp" ]] || [[ -d $filein_mpi  && ! -z "$res_mpi" ]] ; then
 #     sed -e '3c N' ${TEST_NAME}_steps > tmp.txt 
 #     \mv tmp.txt ${TEST_NAME}_steps

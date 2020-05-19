@@ -1,6 +1,7 @@
 #!/bin/bash
 #===================================
 
+set -u
 ###set -x
 ###DO NOT USE SET -E !
 
@@ -32,7 +33,7 @@ echo "execution_status is "$exec_status
 #  =0, OK or  clean stop before the end (bugbin or blow up)
 # !=0, KO and bad stop before the end (input problem)
 
-grep 'BUGBIN' openmp_${NBPROCS}_${TEST_NAME}.log > /dev/null 2>&1
+grep 'BUGBIN' mpi_${NBPROCS}_${TEST_NAME}.log > /dev/null 2>&1
 bugbin_detec=$?
 echo "bugbin detection flag is " $bugbin_detec
 
