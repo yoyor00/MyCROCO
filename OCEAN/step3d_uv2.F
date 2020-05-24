@@ -1992,6 +1992,9 @@
           do k=1,N
             do j=JU_RANGE
               do i=IU_RANGE
+# if defined DIAGNOSTICS_PV_FULL
+                pv(i,j,k) = Mrhs(i,j,k,1)
+# endif
                 Mrhs(i,j,k,1) = (MVmix2(i,j,k,1)
      &                            + MVmix(i,j,k,1)
 # if defined DIAGNOSTICS_BARO
@@ -2005,7 +2008,9 @@
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+# if ! defined DIAGNOSTICS_PV_FULL
      &                            - Mrhs(i,j,k,1)
+# endif
 # endif
               enddo
             enddo
@@ -2014,6 +2019,9 @@
           do k=1,N
             do j=JV_RANGE
               do i=IV_RANGE
+# if defined DIAGNOSTICS_PV_FULL
+                pvd(i,j,k) = Mrhs(i,j,k,2)
+# endif
                 Mrhs(i,j,k,2) = (MVmix2(i,j,k,2)
      &                            + MVmix(i,j,k,2)
 # if defined DIAGNOSTICS_BARO
@@ -2027,7 +2035,9 @@
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
      &        * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+# if ! defined DIAGNOSTICS_PV_FULL
      &                            - Mrhs(i,j,k,2)
+# endif
 # endif
               enddo
             enddo

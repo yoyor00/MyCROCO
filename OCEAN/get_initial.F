@@ -289,7 +289,11 @@
         if (ierr .eq. nf_noerr) then
           ntstart=ibuff(1)
           nrecrst=ibuff(2)
+#if defined NO_RESTART_HIS
+          nrechis=0
+#else
           nrechis=ibuff(3)
+#endif
 #ifdef AVERAGES
           nrecavg=ibuff(4)
 #endif

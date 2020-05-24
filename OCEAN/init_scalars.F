@@ -3088,7 +3088,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
 
 #ifdef DIAGNOSTICS_PV_FULL
 CR       write(stdout,'(1x,A,I3)') 'indxpvpv = ',indxpvpv
-       nametrc='ek_vmix_trans'
+       nametrc='u_vmix_trans'
        unitt='PVU'
        write(vname1,*) trim(nametrc)
        vname(1,indxpvpv)=vname1
@@ -3101,7 +3101,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
        vname(7,indxpvpv)='                                '
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvpvd = ',indxpvpvd
-       nametrc='ek_vmix_diss'
+       nametrc='v_vmix_trans'
        unitt='PVU'
        write(vname1,*) trim(nametrc)
        vname(1,indxpvpvd)=vname1

@@ -57,8 +57,8 @@
 						<field field_ref="v" name="v" />
 						<field field_ref="temp" name="temp" />
 						<field field_ref="salt" name="salt" />
-                                                <field field_ref="AKv" name="AKv" />
-                                                <field field_ref="AKt" name="AKt" />
+                        <field field_ref="AKv" name="AKv" />
+                        <field field_ref="AKt" name="AKt" />
 					</field_group>
 
 				</file>
@@ -118,7 +118,7 @@
                         <field field_ref="bvstr" name="bvstr"  />
 						<field field_ref="sustr" name="sustr"  />
 						<field field_ref="svstr" name="svstr"  />
-# ifdef  DEBUG_BULK
+# ifdef DEBUG_BULK
                         <field field_ref="uwnd" name="uwnd"  />
                         <field field_ref="vwnd" name="vwnd"  />
                         <field field_ref="shflx" name="shflx"  />
@@ -131,6 +131,16 @@
 						<field field_ref="salt" name="salt"  />
 						<field field_ref="rho" name="rho"  />
 					    <field field_ref="bvf" name="bvf" />
+                        <field field_ref="AKv" name="AKv" />
+                        <field field_ref="AKt" name="AKt" />
+                        
+# ifdef GLS_MIXING
+                        <field field_ref="tke" name="tke" />
+                        <field field_ref="gls" name="gls" />
+# endif
+#ifdef DIF_COEF_3D
+                        <field field_ref="diff3d" name="diff3d" />
+# endif
 					</field_group>
 
 				</file>

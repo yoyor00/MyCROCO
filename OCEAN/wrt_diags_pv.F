@@ -136,12 +136,12 @@
 
          call fillvalue3d(pv,nciddiags_pv,diags_pvpv(itrc),
      &                      indxpvpv,
-     &                      record,r3dvar,type)
+     &                      record,u3dvar,type)
 
 
-         call fillvalue3d_w(pvd,nciddiags_pv,diags_pvpvd(itrc),
+         call fillvalue3d(pvd,nciddiags_pv,diags_pvpvd(itrc),
      &                      indxpvpvd,
-     &                      record,w3dvar,type)
+     &                      record,v3dvar,type)
 
 # endif
 !---------------------------------------------------------------

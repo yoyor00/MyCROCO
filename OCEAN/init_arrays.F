@@ -578,7 +578,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-      do k=0,N
+      do k=1,N
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pvd(i,j,k)=init

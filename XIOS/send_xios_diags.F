@@ -2346,8 +2346,8 @@ C 				  endif
       call xios_send_field("hbbl",work2d)
 #  endif
 #  ifdef GLS_MIXING
-!      call xios_send_field("tke",tke(:,:,:,nstp))
-!      call xios_send_field("gls",gls(:,:,:,nstp))
+      call xios_send_field("tke",tke(:,:,:,nstp))
+      call xios_send_field("gls",gls(:,:,:,nstp))
       call xios_send_field("Lscale",Lscale)
 #  endif
 
