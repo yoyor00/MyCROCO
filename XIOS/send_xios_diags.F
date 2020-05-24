@@ -2346,8 +2346,8 @@ C 				  endif
       call xios_send_field("hbbl",work2d)
 #  endif
 #  ifdef GLS_MIXING
-      call xios_send_field("tke",tke(:,:,:,nstp))
-      call xios_send_field("gls",gls(:,:,:,nstp))
+      call xios_send_field("tke",trb(:,:,:,nstp,itke))
+      call xios_send_field("gls",trb(:,:,:,nstp,igls))
       call xios_send_field("Lscale",Lscale)
 #  endif
 
@@ -2486,9 +2486,18 @@ C 				  endif
 #  endif
 
 
-
-
-
+# ifdef DIAGNOSTICS_PV
+          call xios_send_field("u_rhs", Mrhs(:,:,:,1))
+          call xios_send_field("v_rhs", Mrhs(:,:,:,2))
+          call xios_send_field("T_rhs", Trhs(:,:,:,1))
+#  ifdef SALINITY
+          call xios_send_field("S_rhs", Trhs(:,:,:,2))
+#  endif
+# ifdef DIAGNOSTICS_PV_FULL
+          call xios_send_field("u_vmix_trans", pv(:,:,:))
+          call xios_send_field("v_vmix_trans", pvd(:,:,:))
+#  endif
+#  endif
 
 #  if defined BIOLOGY
 #   if defined PISCES

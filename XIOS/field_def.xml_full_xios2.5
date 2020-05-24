@@ -461,4 +461,28 @@
 #endif
 
 
+# ifdef DIAGNOSTICS_PV
+     <field_group id="u_rhs" grid_ref="u_3D">
+         <field id="u_rhs" long_name="u rhs" unit="meter second-2" grid_ref="u_3D"/>
+     </field_group>
+     <field_group id="v_rhs" grid_ref="v_3D">
+         <field id="v_rhs" long_name="v rhs" unit="meter second-2" grid_ref="v_3D"/>
+     </field_group>
+     <field_group id="TS_dia" grid_ref="rho_3D">
+         <field id="T_rhs" long_name="T rhs" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  ifdef SALINITY
+         <field id="S_rhs" long_name="S rhs" unit="PSU second-1" grid_ref="rho_3D"/>
+#  endif
+    </field_group>
+# ifdef DIAGNOSTICS_PV_FULL
+     <field_group id="u_trans" grid_ref="u_3D">
+         <field id="u_vmix_trans" long_name="u_vmix_trans" unit="meter second-2" grid_ref="u_3D"/>
+     </field_group>
+     <field_group id="v_trans" grid_ref="v_3D">
+         <field id="u_vmix_trans" long_name="u_vmix_trans" unit="meter second-2" grid_ref="v_3D"/>
+     </field_group>
+#  endif
+#  endif
+
+
    </field_definition>

@@ -294,7 +294,26 @@
 		</file_definition>
 # endif
 		
+# ifdef DIAGNOSTICS_PV
+		<file_definition type="one_file"  name="./HIS/@expname@_@freq@" sync_freq="5d" min_digits="4">
+			<file_group id="PV" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+				<file id="file10" name_suffix="_PV" split_freq="5d" split_freq_format="%y-%mo-%d">
+					
+					<field_group id="PV_fields" operation="average">
+						<field field_ref="u_rhs" name="u_rhs"  />
+						<field field_ref="v_rhs" name="v_rhs"  />
+						<field field_ref="T_rhs" name="temp_rhs"  />
+						<field field_ref="S_rhs" name="salt_rhs"  />
+# ifdef DIAGNOSTICS_PV_FULL
+						<field field_ref="u_vmix_trans" name="u_vmix_trans"  />
+						<field field_ref="v_vmix_trans" name="v_vmix_trans"  />
+#  endif
+					</field_group>
 
+				</file>
+			</file_group>
+		</file_definition>
+# endif
 
 		<!-- ========================================================================== -->
 		<!-- ========================================================================== -->

@@ -3089,11 +3089,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
 #ifdef DIAGNOSTICS_PV_FULL
 CR       write(stdout,'(1x,A,I3)') 'indxpvpv = ',indxpvpv
        nametrc='u_vmix_trans'
-       unitt='PVU'
+       unitt='meter second-1 second-1'
        write(vname1,*) trim(nametrc)
        vname(1,indxpvpv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
-       vname(2,indxpvpv)='potential vorticity             '
+       vname(2,indxpvpv)='                                '
        write(vname3,*) trim(unitt)
        vname(3,indxpvpv)=vname3
        vname(4,indxpvpv)='                                '
@@ -3102,11 +3102,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvpv)
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvpvd = ',indxpvpvd
        nametrc='v_vmix_trans'
-       unitt='PVU'
+       unitt='meter second-1 second-1'
        write(vname1,*) trim(nametrc)
        vname(1,indxpvpvd)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxpvpvd)
-       vname(2,indxpvpvd)='potential vorticity using div   '
+       vname(2,indxpvpvd)='                                '
        write(vname3,*) trim(unitt)
        vname(3,indxpvpvd)=vname3
        vname(4,indxpvpvd)='                                '
