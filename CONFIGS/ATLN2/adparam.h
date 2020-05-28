@@ -1,9 +1,7 @@
 C     -*- fortran -*-
 
-      
 C     size of the optimization problem
       integer ad_array_size
-c      parameter (ad_array_size=900)
       parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
 
 c     real size of the problem per node (<= ad_array_size/nnodes)
