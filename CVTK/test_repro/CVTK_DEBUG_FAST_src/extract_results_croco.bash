@@ -58,7 +58,7 @@ if [ $FLAG_OPENMP -eq 1 ]; then
     fi
 else
     res_omp=""
-    sed -e '3c ?__no_openmp' ${TEST_NAME}_steps > tmp.txt 
+    sed -e '3c ?_no_omp_test' ${TEST_NAME}_steps > tmp.txt 
     #sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps	
 fi
@@ -89,7 +89,7 @@ if [ $FLAG_MPI -eq 1 ]; then
     fi
 else
     res_mpi=""
-    sed -e '4c ?__no_mpi' ${TEST_NAME}_steps > tmp.txt 
+    sed -e '4c ?_no_mpi_test' ${TEST_NAME}_steps > tmp.txt 
     #sed -e '4c ?' ${TEST_NAME}_steps > tmp.txt 
     \mv tmp.txt ${TEST_NAME}_steps
 fi

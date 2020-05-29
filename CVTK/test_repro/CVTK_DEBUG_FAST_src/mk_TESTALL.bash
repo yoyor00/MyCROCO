@@ -74,11 +74,11 @@ for testconf in `ls -1 ./Configure_Test/ `;do
   do
       key="${TEST}" 
       eval var='$'$key
-      if [ "${var}" == 'Y' ]; then
+      if [ "${var}" == 'Y' ] || [ "${var}" == '?_no_omp_test' ] || [ "${var}" == '?_no_mpi_test' ]; then
   	  varname="$(echo -e ${TEST}_PR)"
   	  varvalue="$(echo -e ${FMT_GREENBLD}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
-      elif 	[ "${var}" == 'N' ]; then
+      elif [ "${var}" == 'N' ] ; then
   	  varname="$(echo -e ${TEST}_PR)"
   	  varvalue="$(echo -e ${FMT_REDBLD}${var}${FMT_ORD})"
   	  eval "$varname=\$varvalue"
