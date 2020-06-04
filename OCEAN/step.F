@@ -275,9 +275,6 @@ C$OMP BARRIER
 # ifdef ANA_WWAVE
         call ana_wwave (tile)
 # endif
-# ifdef ANA_MOVING_BATHY
-        call ana_hmorph (tile)
-# endif
         call rho_eos (tile)
         call set_HUV (tile)
 # if defined BIOLOGY
@@ -835,8 +832,6 @@ C$OMP BARRIER
       enddo
 # endif
 
-C$OMP BARRIER
-
       do tile=my_first,my_last
         call set_HUV2 (tile)
       enddo
@@ -988,6 +983,16 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+# ifdef MORPHODYN
+      do tile=my_first,my_last
+#  ifdef ANA_MORPHODYN
+        call ana_morphodyn (tile)
+#  endif
+        call set_depth_morphodyn (tile)
+      enddo
+C$OMP BARRIER
+# endif
 
 #endif /* SOLVE3D */
 

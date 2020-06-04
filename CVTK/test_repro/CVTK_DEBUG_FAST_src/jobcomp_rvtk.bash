@@ -21,7 +21,6 @@
 # options
 
 #set -x
-
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
@@ -322,7 +321,11 @@ rm -f flags.tmp
 $MAKE depend
 $MAKE
   
-[[ -f croco  ]] && mv croco $RUNDIR
+if [ -f croco  ]; then
+    mv croco $RUNDIR
+else
+    exit 1
+fi
 #[[ -f partit ]] && mv partit $RUNDIR
 #[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #

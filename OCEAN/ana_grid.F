@@ -217,11 +217,11 @@ C$    integer omp_get_thread_num
                      f0=1.E-4
 #  endif
 # elif defined TANK
-#  ifndef MOVING_BATHY 
                      depth=10.
-#  else
+                     f0=0.
+                     beta=0.
+# elif defined MOVING_BATHY
                      depth=0.394
-#  endif
                      f0=0.
                      beta=0.
 # else
@@ -317,18 +317,16 @@ C$    integer omp_get_thread_num
                      Length_XI =200.e+3 
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined TANK
-#  ifndef MOVING_BATHY
-#   ifndef TANKY
+#  ifndef TANKY
                      Length_XI =10.0
                      Length_ETA=Length_ETA_ISO_GRID
-#   else
+#  else
                      Length_ETA=10.0
                      Length_XI =Length_XI_ISO_GRID
-#   endif
-#  else
+#  endif
+# elif defined MOVING_BATHY
                      Length_XI =4.0
                      Length_ETA=Length_ETA_ISO_GRID
-#  endif
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -370,11 +368,10 @@ C$    integer omp_get_thread_num
 # ifdef EQUATOR
       y0=y0-0.5*Length_ETA  
 # endif
-# if defined INTERNAL || defined THACKER
+# if defined INTERNAL || defined THACKER || defined MOVING_BATHY
       x0=x0-0.5*Length_XI
       y0=y0-0.5*Length_ETA  
 # endif
-
 
 CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
 CR     &                                'x0=',x0, 'y0=',y0, mynode
@@ -703,21 +700,18 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       enddo
 
 # elif defined TANK
-#  ifndef MOVING_BATHY
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
         enddo
       enddo
-#  else
+# elif defined MOVING_BATHY
       cff=1./(0.03686)**2
       do j=JstrR,JendR
         do i=IstrR,IendR
-          h(i,j)=depth-0.1*exp(-cff*((xr(i,j)-2.)**2+
-     &                               (yr(i,j)-el*0.5)**2)) 
+          h(i,j)=depth-0.1*exp(-cff*xr(i,j)**2)
         enddo
       enddo
-#  endif      
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR

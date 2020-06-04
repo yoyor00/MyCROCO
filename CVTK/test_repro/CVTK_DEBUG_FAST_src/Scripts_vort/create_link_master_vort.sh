@@ -59,8 +59,8 @@ ln -sf $dir_web $dir_test/
 ln -sf  $dir_home/../print/* $dir_test/
 
 # ana specific and programms
-ln -sf $dir_home/src_test/mk_TestDIR_vort.bash $dir_test/
-ln -sf $dir_home/src_test/mk_TESTALL_vort.bash $dir_test/
+ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
+ln -sf $dir_home/../mk_TESTALL.bash $dir_test/
 
 # cleaning
 rm -Rf $dir_test/Configure_Test; 

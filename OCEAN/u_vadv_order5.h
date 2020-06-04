@@ -37,13 +37,6 @@
           FC(i,N-1)=vel*
      &              FLUX2(
      &              u(i,j,N-1,nrhs), u(i,j,N,nrhs), vel, cdif)
-
-#   ifdef MOVING_BATHY
-          FC(i,0)=0.5*u(i,j,1,nrhs)*
-     &            (We(i  ,j,0)+
-     &             We(i-1,j,0))
-#   else
           FC(i,0)=0.
-#   endif
           FC(i,N)=0.
         enddo

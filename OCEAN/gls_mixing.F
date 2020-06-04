@@ -11,33 +11,16 @@
 #include "cppdefs.h"
 
 #if defined SOLVE3D && defined GLS_MIXING 
-!======================================================================
-!                 ***  SUBROUTINE  gls_mixing  ***
-!
-!   Vertical mixing coefficients computed from the gls turbulent  
-!  closure parameterization (3 schemes: k-epsilon, k-omega, k-gen)
-!
-! *** References :
-!  
-! Umlauf, L., and H. Burchard, A generic length-scale equation 
-! for geophysical turbulence models, J. Mar. Res., 61, 235-265, 2003
-!
-! Umlauf, L., and H. Burchard, Second-order turbulence closure models 
-!                        Cont. Shelf. Res., 25, 795-827, 2005
-!
-! Duhaut, T., Notes sur les schemas de turbulence a deux equations, 
-!                     Technical Report. IFREMER report , 2009   
-!
-! *** History :
-!      !  2016-11 (F. Lemarié) : original code inspired by the Mars3D 
-!                                implementation by S. Petton, A.-C. Bennis,  
-!                                T. Duhaut, V. Garnier, F. Dumas 
-!
-!======================================================================
-!
+
 # define PSI_SMOOTH
 # define TKE_SMOOTH
+
 # undef  GLS_HADV_UP1
+# undef  GLS_VADV_UP1
+
+# ifdef GLS_MIXING_3D
+#  undef GLS_SHEAR_3D
+# endif
 !
 !=======================================================================
 
@@ -66,7 +49,31 @@
      &                             shear2, diss, ustar_sfc_sq, 
      &                             ustar_bot_sq, DC, FC, CF, RH ) 
 
-!-----------------------------------------------------------------------                                                                
+!
+!======================================================================
+!                 ***  SUBROUTINE  gls_mixing  ***
+!
+!   Vertical mixing coefficients computed from the gls turbulent  
+!  closure parameterization (3 schemes: k-epsilon, k-omega, k-gen)
+!
+! *** References :
+!  
+! Umlauf, L., and H. Burchard, A generic length-scale equation 
+! for geophysical turbulence models, J. Mar. Res., 61, 235-265, 2003
+!
+! Umlauf, L., and H. Burchard, Second-order turbulence closure models 
+!                        Cont. Shelf. Res., 25, 795-827, 2005
+!
+! Duhaut, T., Notes sur les schemas de turbulence a deux equations, 
+!                     Technical Report. IFREMER report , 2009   
+!
+! *** History :
+!      !  2016-11 (F. Lemarié) : original code inspired by the Mars3D 
+!                                implementation by S. Petton, A.-C. Bennis,  
+!                                T. Duhaut, V. Garnier, F. Dumas 
+!
+!======================================================================
+!
       IMPLICIT NONE
 # include "param.h"
       ! Local integers
@@ -92,26 +99,26 @@
       REAL            ::  trb_sfc  , trb_bot  , z0_s, z0_b , gls_min
       REAL            ::  HUon_w   , HVom_w   , trb_min(2), Denom
       ! Parameter values      
-      REAL, PARAMETER ::  eps_min =  1.0E-12     ! min value for dissipation rate
-      REAL, PARAMETER ::  tke_min =  1.0E-06     ! min value for TKE
+      REAL, PARAMETER ::  eps_min =  1.0E-12 ! min value for dissipation rate
+      REAL, PARAMETER ::  tke_min =  1.0E-06 ! min value for TKE
 # ifdef GLS_MIXING_3D
-      REAL, PARAMETER ::  eps     =  1.0E-04     ! min stable stratification
-      REAL, PARAMETER ::  nuws    =  1.0E-06     ! background value for diffusivities 
-      REAL, PARAMETER ::  nuwm    =  1.0E-06     ! background value for viscosities
+      REAL, PARAMETER ::  eps     =  1.0E-04 ! min stable stratification
+      REAL, PARAMETER ::  nuws    =  1.0E-06 ! background value for diffusivities 
+      REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background value for viscosities
 # else
-      REAL, PARAMETER ::  eps     =  1.0E-14     ! min stable stratification
-      REAL, PARAMETER ::  nuws    =  0.1E-04     ! background value for diffusivities 
-      REAL, PARAMETER ::  nuwm    =  1.0E-04     ! background value for viscosities
+      REAL, PARAMETER ::  eps     =  1.0E-14 ! min stable stratification
+      REAL, PARAMETER ::  nuws    =  0.1E-04 ! background value for diffusivities 
+      REAL, PARAMETER ::  nuwm    =  1.0E-04 ! background value for viscosities
 # endif      
-      REAL, PARAMETER ::  galp    =  0.53        ! parameter for Galperin 
-                                                 ! mixing length limitation
+      REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin 
+                                             ! mixing length limitation
 # include "scalars.h"
-      !REAL, PARAMETER ::  chk     =  2.E+05/g    ! charnock coefficient (Stacey, 1999)
-      REAL, PARAMETER ::  chk     =  1400./g       ! charnock coefficient
+      !REAL, PARAMETER ::  chk     =  2.E+05/g ! charnock coefficient (Stacey, 1999)
+      REAL, PARAMETER ::  chk     =  1400./g  ! charnock coefficient
       !
       ! Choice of GLS model (!!! warning, it requires rn<0 !!!)
       REAL            :: rp,    rm,    rn              !<-- n,m and p exponents
-      REAL            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for the psi equation
+      REAL            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for psi equation
       REAL            :: OneOverSig(2)    !<-- inverse of Schmidt number for tke and psi
 # if defined GLS_KOMEGA                            /* K-omega model */
       PARAMETER( rp    = -1.0 , rm    = 0.5  , rn     = -1.0           )
@@ -136,8 +143,8 @@
       REAL, PARAMETER :: e3 = -1.0 / rn
 # if defined PSI_SMOOTH || defined TKE_SMOOTH
       ! 9-point isotropic laplacian filter
-      REAL, PARAMETER :: smth_a = 1.D0/12.D0
-      REAL, PARAMETER :: smth_b = 3.D0/16.D0 
+      REAL, PARAMETER :: smth_a = 1./12.
+      REAL, PARAMETER :: smth_b = 3./16.
 # endif
 !
 !--------------------------------------------------------------------
@@ -197,15 +204,22 @@
 ! Initialization of various constants
 !--------------------------------------------------------------------
 !
-      cm0     =  ( (a2*a2 - 3.0*a3*a3 + 3.0*a1*nn)/(3.0*nn*nn) )**0.25  ! Compute cmu0 
-      cm0inv2 = 1./cm0**2                                               ! inverse of cmu0 squared   
-      ! minimum value of alpha_n to ensure that alpha_m is positive
+! Compute cmu0 and inverse of cmu0 squared
+!
+      cm0     =  ( (a2*a2 - 3.0*a3*a3 + 3.0*a1*nn)/(3.0*nn*nn) )**0.25
+      cm0inv2 = 1./cm0**2
+!  
+! Minimum value of alpha_n to ensure that alpha_m is positive
+!
       alpha_n_min = 0.5*( - ( sf_d1 + sf_nb0 )  
      &             + sqrt(  ( sf_d1 + sf_nb0 )**2    
      &            - 4. * sf_d0 *( sf_d4 + sf_nb1 ) ) ) 
-     &                            / ( sf_d4 + sf_nb1 )  
-      cff     = (cm0**3 )*(tke_min**1.5) / eps_min              ! Compute gls_min consistently
-      gls_min = (cm0**rp)*(tke_min**rm ) * ( cff**rn )          !  with eps_min/tke_min         
+     &                            / ( sf_d4 + sf_nb1 )
+!
+! Compute gls_min consistently with eps_min/tke_min
+!
+      cff     = (cm0**3 )*(tke_min**1.5) / eps_min 
+      gls_min = (cm0**rp)*(tke_min**rm ) * ( cff**rn )
       
       trb_min(itke) = tke_min
       trb_min(igls) = gls_min
@@ -219,7 +233,6 @@
      &                      +cff**2*rm/9.*(2.+4.*rm))
 # endif
 
-!--------------------------------------------------
       IF (FIRST_TIME_STEP) THEN
         DO k=0,N
           DO j=jmin,jmax
@@ -235,55 +248,85 @@
 ! Horizontal advection (first-order upwind)
 !--------------------------------------------------------------------
 !
-# define FX ustar_sfc_sq      
-# define FE ustar_bot_sq      
-      DO ig = 1,ngls      
-         DO k=1,N-1
 # ifdef GLS_HADV_UP1
-           DO j=jmin,jmax
-               DO i=imin,imax+1
-                  HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
+#  define FX ustar_sfc_sq      
+#  define FE ustar_bot_sq      
+      DO ig=1,ngls      
+        DO k=1,N-1
+          DO j=jmin,jmax
+            DO i=imin,imax+1
+              HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
 #  ifdef MASKING
      &                        *umask(i,j)   
 #  endif
-                  FX(i,j)=
+              FX(i,j)=
      &              trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &             +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)   
-               ENDDO
             ENDDO
+          ENDDO
       
-            DO j=jmin,jmax+1
-               DO i=imin,imax  
-                  HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
+          DO j=jmin,jmax+1
+             DO i=imin,imax  
+               HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
 #  ifdef MASKING
      &                        *vmask(i,j)           
 #  endif
-                  FE(i,j)=
+               FE(i,j)=
      &              trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &             +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
-               ENDDO
-            ENDDO
+             ENDDO
+          ENDDO
 !
-            DO j=jmin,jmax
-               DO i=imin,imax          
-                  cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
-                  trb(i,j,k,nnew,ig)= trb(i,j,k,nstp,ig) 
-     &                           -dt*cff*pm(i,j)*pn(i,j)
-     &                             *(  FX(i+1,j)-FX(i,j)
-     &                               + FE(i,j+1)-FE(i,j) ) 
-               ENDDO
+          DO j=jmin,jmax
+            DO i=imin,imax          
+              cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
+              trb(i,j,k,nnew,ig)= trb(i,j,k,nstp,ig) 
+     &                         -dt*cff*pm(i,j)*pn(i,j)
+     &                           *(  FX(i+1,j)-FX(i,j)
+     &                             + FE(i,j+1)-FE(i,j) ) 
             ENDDO
-# else
-            DO j=jmin,jmax
-               DO i=imin,imax  
-                  trb(i,j,k,nnew,ig)=trb(i,j,k,nstp,ig)
-               ENDDO
-            ENDDO   
-# endif            
-         ENDDO
+          ENDDO
+        ENDDO
       ENDDO         
-# undef FX
-# undef FE
+#  undef FX
+#  undef FE
+# else
+      DO ig=1,ngls      
+        DO k=1,N-1
+          DO j=jmin,jmax
+            DO i=imin,imax  
+              trb(i,j,k,nnew,ig)=trb(i,j,k,nstp,ig)
+            ENDDO
+          ENDDO   
+        ENDDO
+      ENDDO     
+# endif /* GLS_HADV_UP1 */
+!
+!--------------------------------------------------------------------
+! Vertical advection (first-order upwind)
+!--------------------------------------------------------------------
+!
+# ifdef GLS_VADV_UP1
+      DO ig=1,ngls      
+        DO j=jmin,jmax
+          DO k=1,N
+            DO i=imin,imax
+              cff=0.5*(We(i,j,k)+We(i,j,k-1))
+              FC(i,k)=trb(i,j,k-1,nstp,ig)*max(cff,0.)
+     &               +trb(i,j,k  ,nstp,ig)*min(cff,0.) 
+            ENDDO
+          ENDDO
+          DO k=1,N-1
+            DO i=imin,imax          
+              cff=2./(Hz(i,j,k)+Hz(i,j,k+1))
+              trb(i,j,k,nnew,ig)= trb(i,j,k,nnew,ig) 
+     &                         -dt*cff*pm(i,j)*pn(i,j)
+     &                            *(FC(i,k+1)-FC(i,k))
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO         
+# endif /* GLS_VADV_UP1 */
 !
 !--------------------------------------------------------------------
 !  Compute the vertical shear (or complete deformation rate D)
@@ -300,18 +343,18 @@
          DO j=jmin,jmax
             DO i=imin,imax 
                cff = 1. / ( Hz( i, j, k ) + Hz( i, j, k+1 ) )
-               du  = cff*( u(i, j, k+1,tind)+u(i+1, j, k+1,tind)      ! dudz
+               du  = cff*( u(i, j, k+1,tind)+u(i+1, j, k+1,tind)     ! dudz
      &                    -u(i, j, k  ,tind)-u(i+1, j, k  ,tind))
-               dv  = cff*( v(i, j, k+1,tind)+v(i, j+1, k+1,tind)      ! dvdz
+               dv  = cff*( v(i, j, k+1,tind)+v(i, j+1, k+1,tind)     ! dvdz
      &                    -v(i, j, k  ,tind)-v(i, j+1, k  ,tind))
-# ifdef GLS_MIXING_3D
+# ifdef GLS_SHEAR_3D
 #  ifdef NBQ
                dw  = 0.5*pm(i,j)
-     &                  *( wz(i+1,j,k,tind)-wz(i-1,j,k,tind))         ! dwdx
-               shear2(i,j,k) = (du+dw)*(du+dw)
+     &                  *( wz(i+1,j,k,tind)-wz(i-1,j,k,tind))        ! dwdx
+               shear2(i,j,k) = (du+dw)**2
                dw  = 0.5*pn(i,j)
-     &                  *( wz(i,j+1,k,tind)-wz(i,j-1,k,tind))         ! dwdy
-               shear2(i,j,k) = (dv+dw)*(dv+dw) + shear2(i,j,k)
+     &                  *( wz(i,j+1,k,tind)-wz(i,j-1,k,tind))        ! dwdy
+               shear2(i,j,k) = shear2(i,j,k) + (dv+dw)**2
 #  else
                shear2(i,j,k) = du*du + dv*dv
 #  endif
@@ -326,8 +369,8 @@
 #  else
                dw = 0.
 #  endif
-               shear2(i,j,k) = 2.*(du*du + dv*dv + dw*dw) 
-     &                                              + shear2(i,j,k) 
+               shear2(i,j,k) = shear2(i,j,k) +
+     &                         2.*(du*du + dv*dv + dw*dw) 
                du  = 0.125*pn(i,j)*
      &                        (u(i,j+1,k  ,tind)+u(i+1,j+1,k  ,tind) ! dudy
      &                        -u(i,j-1,k  ,tind)-u(i+1,j-1,k  ,tind)

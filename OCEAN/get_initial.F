@@ -22,16 +22,13 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef MOVING_BATHY
-# include "grid.h"
-#endif
 #ifdef BBL
 # include "bbl.h"
 #endif
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#ifdef NBQ
+#if defined NBQ || defined MORPHODYN
 # include "grid.h"
 #endif
 
@@ -313,7 +310,7 @@
         goto 99                                           !--> ERROR
       endif
 
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
 !
 ! Time evolving bathymetry (only needed for restart)
 !

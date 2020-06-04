@@ -197,7 +197,7 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
-#ifdef MOVING_BATHY
+#ifdef MORPHODYN
 !     
 !     Write out time evolving bathymetry
 !     

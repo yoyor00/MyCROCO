@@ -10,9 +10,6 @@
 !======================================================================
 !
 #include "cppdefs.h"
-# ifdef M3FAST
-#   undef FIX_HZ
-# endif
 #if defined SOLVE3D || defined WET_DRY
 
       subroutine set_depth (tile)
@@ -152,10 +149,6 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent 
         do i=I_RANGE            !!!          with omega.F
-
-#  ifdef MOVING_BATHY
-          h(i,j)=h(i,j)+dh(i,j)
-#  endif
           z_w(i,j,0)=-h(i,j)
         enddo
 
@@ -183,17 +176,11 @@ C$    integer omp_get_thread_num
             z_w0=cff_w+cff1_w*h(i,j) 
             z_r0=cff_r+cff1_r*h(i,j)            
 #  ifdef NEW_S_COORD
-#   ifdef MOVING_BATHY
-            hinv(i,j)=1./(h(i,j)+hc)
-#   endif
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_w0*hinv(i,j)) 
             z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
 #  else
-#   ifdef MOVING_BATHY
-            hinv(i,j)=1./h(i,j)
-#   endif
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
 #  endif
@@ -245,9 +232,6 @@ C$    integer omp_get_thread_num
      &                        Hz(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
-#   ifdef MOVING_BATHY
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
-#   endif
 #   ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
@@ -255,6 +239,130 @@ C$    integer omp_get_thread_num
 #  endif 
       return
       end
+
+#  ifdef MORPHODYN
+!======================================================================
+!
+!                    subroutine set_depth_movbat
+!
+!======================================================================
+!
+
+      subroutine set_depth_morphodyn (tile)
+      implicit none
+#   include "param.h"
+      integer tile, trd
+C$    integer omp_get_thread_num
+#   include "compute_tile_bounds.h"
+      call set_depth_morphodyn_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine set_depth_morphodyn_tile (Istr,Iend,Jstr,Jend)
+
+      implicit none
+      integer Istr,Iend,Jstr,Jend, i,j,k
+      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+#   include "param.h"
+#   include "grid.h"
+#   ifdef AGRIF
+#    include "zoom.h"
+#   endif
+#   include "ocean2d.h"
+#   include "ocean3d.h"
+#   include "coupling.h"
+#   include "scalars.h"
+#   ifdef MRL_WCI
+#    include "forces.h"
+#   endif
+#   ifdef M3FAST
+#    include "nbq.h"
+#   endif
+      real eps
+      parameter (eps=1.e-14)
+!
+#   include "compute_auxiliary_bounds.h"
+!
+#   ifdef EW_PERIODIC
+#    define I_RANGE Istr,Iend
+#   else
+#    define I_RANGE IstrR,IendR
+#   endif
+#   ifdef NS_PERIODIC
+#    define J_RANGE Jstr,Jend
+#   else
+#    define J_RANGE JstrR,JendR
+#   endif
+
+      do j=J_RANGE              !!! WARNING: Setting must be consistent 
+        do i=I_RANGE            !!!          with omega.F
+          h(i,j)=h(i,j)+dh(i,j)
+          z_w(i,j,0)=-h(i,j)
+        enddo
+
+        do k=1,N,+1
+#   ifdef NEW_S_COORD
+          cff_w =hc*sc_w(k)
+          cff_r =hc*sc_r(k)
+          cff1_w=Cs_w(k)
+          cff1_r=Cs_r(k)
+#   else
+          cff_w =hc*(sc_w(k)-Cs_w(k))
+          cff_r =hc*(sc_r(k)-Cs_r(k))
+          cff1_w=Cs_w(k)
+          cff1_r=Cs_r(k)
+#   endif
+          do i=I_RANGE
+#   ifdef M3FAST
+            zetatmp=zeta(i,j,knew)
+#   else
+            zetatmp=Zt_avg1(i,j)
+#   endif
+#   if defined MASKING && !defined WET_DRY
+            zetatmp=zetatmp*rmask(i,j)
+#   endif
+            z_w0=cff_w+cff1_w*h(i,j) 
+            z_r0=cff_r+cff1_r*h(i,j)            
+#   ifdef NEW_S_COORD
+            hinv(i,j)=1./(h(i,j)+hc)
+            z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
+     &                                       *(1.+z_w0*hinv(i,j)) 
+            z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
+     &                                       *(1.+z_r0*hinv(i,j))
+#   else
+            hinv(i,j)=1./h(i,j)
+            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))      
+            z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
+#   endif
+            Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
+#   ifdef NBQ_MASS
+            Hzr(i,j,k)=Hz(i,j,k)
+            Hz(i,j,k) =Hz(i,j,k)*(1.+rho_grd(i,j,k))
+     &                              +rho_nbq(i,j,k) 
+#   endif
+          enddo
+        enddo
+      enddo
+
+#   undef I_RANGE
+#   undef J_RANGE
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+     &                        z_w(START_2D_ARRAY,0))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, 
+     &                        z_r(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,1))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
+#     ifdef NBQ_MASS
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        Hzr(START_2D_ARRAY,1))
+#   endif
+#   endif 
+      return
+      end
+#  endif /* MORPHODYN */
 !
 !======================================================================
 !

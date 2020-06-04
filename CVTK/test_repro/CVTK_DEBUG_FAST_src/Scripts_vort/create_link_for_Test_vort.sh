@@ -24,7 +24,7 @@ ln -sf $dir_home/../extract_results_croco.bash .
 ln -sf $dir_home/../comp_run_*.bash .
 
 # specific scripts
-ln -sf $dir_home/src_test/test_croco_vort.sh .
-ln -sf $dir_home/src_test/rvtk_fast_qsub_VORT.bash .
+ln -sf $dir_home/../test_croco.sh .
+ln -sf $dir_home/../rvtk_fast_qsub.bash .
 #echo 'Process namelist files'
 cp -Rf jobcomp_rvtk.bash jobcomp_rvtk.bash.BACK

@@ -129,8 +129,12 @@ C$    trd=omp_get_thread_num()
 # else
       real,parameter :: thetaimp_nbq = 1.
 # endif
+
+# if defined TANK || defined SWASH
       real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
-!     real,parameter :: gammau=1.0    ! 1.0 --> second-order
+# else
+      real,parameter :: gammau=1.0    ! 1.0 --> second-order
+# endif
       real,parameter :: gammau_2=(1./3.)*(1.-gammau)
 
       real
@@ -196,7 +200,8 @@ C$    trd=omp_get_thread_num()
         integer irhox, irhoy, irhot
 # endif
 # if defined INTERNAL || defined BODYTIDE
-      real U0, omega
+      real,parameter :: U0 = 0.02
+      real,parameter :: omega = 2.*pi/(12.4*3600.)
 # endif
 # ifdef ACOUSTIC
       real dist_d  
@@ -321,8 +326,7 @@ C$    trd=omp_get_thread_num()
       enddo
 # endif
  
-# undef M3FAST_REINIT
-# if defined BSTRESS_FAST && defined M3FAST_REINIT
+# ifdef M3FAST_REINIT
 !
 !  Reinitialise fast mode at each first fast step
 !
@@ -411,11 +415,11 @@ C$OMP END MASTER
       do j=JstrV-2,Jend+1
         do i=IstrU-2,Iend+1
 # ifdef NBQ_MASS
-          Drhs(i,j)=cff1*(zeta(i,j,kstp )+h(i,j))*rhobar_nbq(i,j,kstp)
+          Drhs(i,j)=cff1*(zeta(i,j,kstp)+h(i,j))*rhobar_nbq(i,j,kstp)
      &             +cff2*(zeta(i,j,kbak)+h(i,j))*rhobar_nbq(i,j,kbak)
      &             +cff3*(zeta(i,j,kold)+h(i,j))*rhobar_nbq(i,j,kold)
 # else
-          Drhs(i,j)=cff1*(zeta(i,j,kstp )+h(i,j))
+          Drhs(i,j)=cff1*(zeta(i,j,kstp)+h(i,j))
      &             +cff2*(zeta(i,j,kbak)+h(i,j))
      &             +cff3*(zeta(i,j,kold)+h(i,j))
 # endif /* NBQ_MASS */
@@ -1129,7 +1133,7 @@ C$OMP END MASTER
           dudx = 0.50*( urhs(i+1,j)-urhs(i-1,j  ) )
           dvdx = 0.50*( vrhs(i  ,j)-vrhs(i-1,j  )
      &                 +vrhs(i,j+1)-vrhs(i-1,j+1) )
-          rubar(i,j) = rubar(i,j) + 0.5*om_u(i,j)*
+          rubar(i,j) = rubar(i,j) + 0.5*on_u(i,j)*
      &                      ( Drhs(i-1,j)+Drhs(i,j) )
      &               *( ust2d(i,j)*dudx + vstu*dvdx )
         enddo
@@ -1142,7 +1146,7 @@ C$OMP END MASTER
           dude = 0.50*( urhs(i,j  )-urhs(i  ,j-1)
      &                 +urhs(i+1,j)-urhs(i+1,j-1) )
           dvde = 0.50*( vrhs(i,j+1)-vrhs(i  ,j-1) )
-          rvbar(i,j) = rvbar(i,j) + 0.5*on_v(i,j)*
+          rvbar(i,j) = rvbar(i,j) + 0.5*om_v(i,j)*
      &                      ( Drhs(i,j-1)+Drhs(i,j) )
      &               *( ustv*dude + vst2d(i,j)*dvde )
         enddo
@@ -1859,6 +1863,10 @@ C$OMP END MASTER
 #  ifdef UV_COR_NT
               dum_s=dum_s+ntcoru(i,j,k)
 #  endif
+#  if defined INTERNAL || defined BODYTIDE
+              dum_s=dum_s+0.5*omega*U0*cos(omega*time)
+     &                       *(Hz(i-1,j,k)+Hz(i,j,k))
+#  endif
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bustr(i,j)
 #  endif
@@ -1946,6 +1954,11 @@ C$OMP END MASTER
               dum_s=dum_s*Hzv_half_qdmv(i,j,k)
 #  ifdef UV_COR_NT
               dum_s=dum_s+ntcorv(i,j,k)
+#  endif
+#  if defined INTERNAL || defined BODYTIDE
+              dum_s=dum_s+0.25*(f(i,j)+f(i,j-1))*
+     &                       U0*sin(omega*time)*
+     &                       (Hz(i,j,k)+Hz(i,j-1,k))
 #  endif
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bvstr(i,j)
@@ -3420,49 +3433,6 @@ C$OMP END MASTER
         enddo
       enddo
 # endif /* M2NUDGING */
-!
-!-----------------------------------------------------------------------
-!  Body force for the Internal Tide test case
-!-----------------------------------------------------------------------
-!
-# if defined INTERNAL || defined BODYTIDE
-      omega=2.*pi/(12.4*3600.)
-      U0=0.02
-      do j=Jstr,Jend
-        do i=IstrU,Iend
-          DUnew = dtfast*omega*U0*cos(omega*time)
-#  ifdef MASKING
-     &                 * umask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                 * umask_wet(i,j)
-#  endif
-          ubar(i,j,knew)=ubar(i,j,knew) + DUnew
-          DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*DUnew*
-     &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
-          DU_avg2(i,j)     =DU_avg2(i,j)      +cff2*DUnew*
-     &                         (Dnew(i,j)+Dnew(i-1,j))*on_u(i,j)
-        enddo
-      enddo
-
-      do j=JstrV,Jend
-        do i=Istr,Iend
-          DVnew = dtfast*0.5*(f(i,j)+f(i,j-1))*
-     &                   U0*sin(omega*time)
-#  ifdef MASKING
-     &                 * vmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                 * vmask_wet(i,j)
-#  endif
-          vbar(i,j,knew)=vbar(i,j,knew) + DVnew
-          DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*DVnew*
-     &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-          DV_avg2(i,j)     =DV_avg2(i,j)      +cff2*DVnew*
-     &                         (Dnew(i,j)+Dnew(i,j-1))*om_v(i,j)
-        enddo
-      enddo
-# endif /* INTERNAL */
 !
 !----------------------------------------------------------------------- 
 ! Set boundary conditions and compute integral mass flux accross
