@@ -224,6 +224,10 @@ C$    integer omp_get_thread_num
                      depth=0.394
                      f0=0.
                      beta=0.
+# elif defined DUNE
+                     depth=4.
+                     f0=0.
+                     beta=0.
 # else
                      depth=???
                      f0=???
@@ -326,6 +330,9 @@ C$    integer omp_get_thread_num
 #  endif
 # elif defined MOVING_BATHY
                      Length_XI =4.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined DUNE
+                     Length_XI =100.0
                      Length_ETA=Length_ETA_ISO_GRID
 # else
                      Length_XI =???
@@ -710,6 +717,16 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth-0.1*exp(-cff*xr(i,j)**2)
+        enddo
+      enddo
+# elif defined DUNE
+!      cff=(1./16)**2
+      cff=0.5*(1./10)**2
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+!         h(i,j)=depth*(1-0.5*exp(-cff*((xr(i,j)-0.5*xl)**2 ))) 
+          h(i,j)=depth*(1-0.5*exp(-cff*( (2*(i-25))**2 )))
+!          h(i,j)=depth
         enddo
       enddo
 # else

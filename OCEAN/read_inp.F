@@ -146,6 +146,8 @@
 # elif defined SOLID_BODY_PER
       fname='TEST_CASES/croco.in.TS_adv_rep'
 # endif
+#elif defined DUNE
+      fname='TEST_CASES/croco.in.Dune'
 #else
       fname='croco.in'
 #endif

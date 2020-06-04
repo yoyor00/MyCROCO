@@ -113,6 +113,10 @@
      &                     , A2d(1,6,trd),A2d(1,7,trd)     
      &                     , A2d(1,8,trd),A2d(1,9,trd)     
 #  endif      
+#  ifdef BEDLOAD_WULIN
+     &                     , A2d(1,6,trd),A2d(1,7,trd)
+     &                     , A2d(1,8,trd),A2d(1,9,trd)
+#  endif 
      &  )
 C$OMP BARRIER
 # endif /* BEDLOAD */
@@ -167,7 +171,7 @@ C$OMP BARRIER
 !
       subroutine sed_bedload_tile (Istr, Iend, Jstr, Jend,
      &                             tau_w,FX,FE,FX_r,FE_r
-#  ifdef BEDLOAD_MPM
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN
      &                            ,tau_wX,tau_wE
      &                            ,angleu,anglev
 #  endif
@@ -183,7 +187,7 @@ C$OMP BARRIER
       real FE(PRIVATE_2D_SCRATCH_ARRAY)
       real FX_r(PRIVATE_2D_SCRATCH_ARRAY)
       real FE_r(PRIVATE_2D_SCRATCH_ARRAY)
-#  ifdef BEDLOAD_MPM
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN 
       real tau_wX(PRIVATE_2D_SCRATCH_ARRAY)
       real tau_wE(PRIVATE_2D_SCRATCH_ARRAY)
       real angleu(PRIVATE_2D_SCRATCH_ARRAY)
@@ -265,7 +269,7 @@ C$OMP BARRIER
 ! Compute maximum bottom stress for MPM bedload
 !-----------------------------------------------------------------------
 !
-#  ifdef BEDLOAD_MPM 
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN
 #   ifdef BBL
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
@@ -293,6 +297,8 @@ C$OMP BARRIER
      &                  cff2*0.5*(bvstr(i,j)+bvstr(i,j+1)))+         
      &                  cff4*(cff2*bvstr(i,j+1)+                        
      &                  cff1*0.5*(bvstr(i,j)+bvstr(i,j+1)))
+#    elif BSTRESS_WENO5
+!    TODO 
 #    endif
             tau_w(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))*             
      &                          (bustr(i,j)+bustr(i+1,j))+             
@@ -301,7 +307,7 @@ C$OMP BARRIER
        enddo
       enddo
 #   endif /* BBL */
-#  endif /* BEDLOAD_MPM */
+#  endif /* BEDLOAD_MPM or BEDLOAD_WULIN */
 !
 !-----------------------------------------------------------------------
 !  Compute bedload sediment transport.
@@ -337,13 +343,13 @@ C$OMP BARRIER
           tau_mean(i,j)=tau_cur*(1.0+1.2*((tau_wav(i,j)/  
      &                  (tau_cur+tau_wav(i,j)+eps))**3.2))
 !
-#  elif defined BEDLOAD_MPM && !defined BSTRESS_UPWIND
+#  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) && !defined BSTRESS_UPWIND
           cff1=0.5*(bustr(i,j)+bustr(i+1,j))
           cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
           Umag=SQRT(cff1*cff1+cff2*cff2)+eps
           angleu(i,j)=cff1/Umag
           anglev(i,j)=cff2/Umag
-#  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM */
+#  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM or BEDLOAD_WULIN */
         enddo
       enddo
 !
@@ -430,34 +436,51 @@ C$OMP BARRIER
      &                                                    on_r(i,j)*dt
             FE_r(i,j)=(bedld_x*SIN(phic(i,j))+bedld_y*COS(phic(i,j)))*
      &                                                    om_r(i,j)*dt
-#  elif defined BEDLOAD_MPM
-#   ifdef BSTRESS_UPWIND
+
+#  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) && defined BSTRESS_UPWIND
 !
-! Magnitude of bed load at rho points. Meyer-Peter Muller formulation.
+! Magnitude of bed load at rho points. Meyer-Peter Muller/ Wu & Lin formulation.
 ! bedld has dimensions of kg m-1 s-1. Use partitions of stress 
 ! from upwind direction, still at rho points.
 ! FX_r and FE_r have dimensions of kg.
 !
+#     ifdef BEDLOAD_MPM
             bedld=8.0*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.0)**1.5)
      &                                   *smgdr*SIGN(1.0,tau_wX(i,j))
+#     elif defined BEDLOAD_WULIN
+            cff=ABS(tau_wX(i,j))/tau_ce(ised)-1
+            bedld=0.0053*(MAX(cff, 0.0)**2.2)*smgdr*SIGN(1.0,tau_wX(i,j))
+#     endif
             FX_r(i,j)=bedld*on_r(i,j)*dt
+#     ifdef BEDLOAD_MPM
             bedld=8.0*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.0)**1.5)
      &                                   *smgdr*SIGN(1.0,tau_wE(i,j))
+#     elif defined BEDLOAD_WULIN
+            cff=ABS(tau_wE(i,j))/tau_ce(ised)-1
+            bedld=0.0053*(MAX(cff, 0.0)**2.2)*smgdr*SIGN(1.0,tau_wE(i,j))
+#     endif
             FE_r(i,j)=bedld*om_r(i,j)*dt
-#   else
+
+#  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) && !defined BSTRESS_UPWIND
 !
-! Magnitude of bed load at rho points. Meyer-Peter Muller formulation.
+! Magnitude of bed load at rho points. Meyer-Peter Muller /Wu & Lin formulation.
 ! (BEDLD has dimensions of kg m-1 s-1).
 !
+#     ifdef BEDLOAD_MPM
             bedld=8.0*(MAX((tau_w(i,j)*osmgd-0.047),0.0)**1.5)*smgdr
+#     elif defined BEDLOAD_WULIN
+            cff=(tau_w(i,j)/tau_ce(ised))-1
+            bedld=0.0053*(MAX(cff,0.0)**2.2)*smgdr
+#     endif
 !
 ! Partition bedld into xi and eta directions, still at rho points.
 ! (FX_r and FE_r have dimensions of kg).
 !
             FX_r(i,j)=angleu(i,j)*bedld*on_r(i,j)*dt
             FE_r(i,j)=anglev(i,j)*bedld*om_r(i,j)*dt
-#   endif /* BSTRESS_UPWIND */
-#  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM */
+
+#  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM or BEDLOAD_WULIN */
+
 !
 ! Correct for along-direction slope. Limit slope to 0.9*sed angle.
 !
@@ -474,7 +497,7 @@ C$OMP BARRIER
             a_slopex=1.7*dzdx
             a_slopey=1.7*dzdy
 !
-! Add contriubiton of bed slope to bed load transport fluxes.
+! Add contribution of bed slope to bed load transport fluxes.
 !
             FX_r(i,j)=FX_r(i,j)*(1.0+a_slopex)
             FE_r(i,j)=FE_r(i,j)*(1.0+a_slopey)

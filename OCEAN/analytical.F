@@ -648,6 +648,12 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
+# elif defined DUNE
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+           ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1299,6 +1305,13 @@ C$    integer  trd, omp_get_thread_num
 !
 !       --> climatology computed in ana_initial
 !
+# elif defined DUNE
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ubclm(i,j)=0.58
+          vbclm(i,j)=0.
+        enddo
+      enddo
 #  else
       do j=JstrR,JendR
         do i=IstrR,IendR

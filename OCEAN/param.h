@@ -151,6 +151,8 @@
 !     parameter (LLm0=4000, MMm0=1,    N=400)  !  1 mm resolution
 #elif defined CALDEIRA
       parameter (LLm0=100,  MMm0=100,  N=50)
+#elif defined DUNE
+      parameter (LLm0=50,  MMm0=1,  N=20)   ! DUNE 2m
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -457,7 +459,11 @@
       parameter (NGRAV=0, NSAND=2, NMUD=0) 
 !      parameter (NST=NGRAV+NSAND+NMUD) ! robustness?
       parameter (NST=2)  ! NST=NGRAV+NSAND+NMUD
+# if defined DUNE
+      parameter (NLAY=11)
+# else
       parameter (NLAY=1)
+# endif
       parameter (ntrc_sed=NST)
 # else
       parameter (ntrc_sed=0)

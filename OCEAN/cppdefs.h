@@ -40,6 +40,7 @@
 #undef  I_SOLITON       /* Internal Soliton Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
+#undef  DUNE            /* Dune test case Example */
 #define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
@@ -1390,13 +1391,67 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-# define TS_HADV_UP3    /* Choose specific advection scheme */
-# undef  TS_HADV_C4
-# undef  TS_HADV_UP5
-# undef  TS_HADV_WENO5
-# undef  TS_HADV_C6
-# undef  RVTK_DEBUG
-                      
+#define TS_HADV_UP3    /* Choose specific advection scheme */
+#undef  TS_HADV_C4
+#undef  TS_HADV_UP5
+#undef  TS_HADV_WENO5
+#undef  TS_HADV_C6
+#undef  RVTK_DEBUG
+
+#elif defined DUNE
+/*
+!                Dune test case example 
+!                ========== ====== =====
+!
+*/
+
+# undef  OPENMP
+# undef  MPI
+# define DEBUG
+# define DIAG_CFL
+# undef  NC4PAR
+
+# define UV_ADV
+# define NEW_S_COORD
+# undef  UV_COR
+# define SOLVE3D
+# undef AVERAGES
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+
+# define ANA_GRID
+# define ANA_INITIAL
+# undef ANA_VMIX
+# define SALINITY
+# undef NONLIN_EOS
+# undef UV_VIS2
+# define WET_DRY
+
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_BSFLUX
+# define ANA_BTFLUX
+# define ANA_SMFLUX
+
+# define OBC_WEST
+# define OBC_EAST
+# define ANA_SSH
+# define ZCLIMATOLOGY
+# define ANA_M2CLIMA
+# define M2CLIMATOLOGY
+
+# undef BBL
+# define SEDIMENT
+# ifdef SEDIMENT
+#  define ANA_SEDIMENT
+#  define MORPHODYN
+# endif
+
+# define GLS_MIXING
+# define NO_FRCFILE
+
+
 #endif /* END OF CONFIGURATION CHOICE */
 
 #include "cppdefs_dev.h"
