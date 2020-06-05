@@ -1391,12 +1391,12 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-#define TS_HADV_UP3    /* Choose specific advection scheme */
-#undef  TS_HADV_C4
-#undef  TS_HADV_UP5
-#undef  TS_HADV_WENO5
-#undef  TS_HADV_C6
-#undef  RVTK_DEBUG
+# define TS_HADV_UP3    /* Choose specific advection scheme */
+# undef  TS_HADV_C4
+# undef  TS_HADV_UP5
+# undef  TS_HADV_WENO5
+# undef  TS_HADV_C6
+# undef  RVTK_DEBUG
 
 #elif defined DUNE
 /*
