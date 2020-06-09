@@ -34,7 +34,7 @@ execflag=`sed -n 2p ${TEST_NAME}_steps`
 echo "execflag is "$execflag
 
 if [ $FLAG_OPENMP -eq 1 ]; then
-    if [ -e $filein_openmp ]; then
+    if [ -s $filein_openmp ]; then
 	#=============================================
 	# OPENMP
 	echo "===================" > $fileout_openmp
@@ -55,7 +55,11 @@ if [ $FLAG_OPENMP -eq 1 ]; then
 	    fi
 	fi
 	\mv tmp.txt ${TEST_NAME}_steps
-    fi
+   else
+        #sed -e '3c ?__comp_failure' ${TEST_NAME}_steps > tmp.txt
+        sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt
+        \mv tmp.txt ${TEST_NAME}_steps
+   fi
 else
     res_omp=""
     sed -e '3c ?_no_omp_test' ${TEST_NAME}_steps > tmp.txt 
@@ -66,7 +70,7 @@ fi
 #
 
 if [ $FLAG_MPI -eq 1 ]; then
-    if [ -e $filein_mpi ]; then
+    if [ -s $filein_mpi ]; then
 	#MPI
 	echo "===================" > $fileout_mpi
 	echo 'MPI CHECK (BUGBIN detection)' >> $fileout_mpi
@@ -86,6 +90,10 @@ if [ $FLAG_MPI -eq 1 ]; then
 	    fi
 	fi
 	\mv tmp.txt ${TEST_NAME}_steps
+    else
+        #sed -e '4c ?__comp_failure' ${TEST_NAME}_steps > tmp.txt
+        sed -e '4c ?' ${TEST_NAME}_steps > tmp.txt
+        \mv tmp.txt ${TEST_NAME}_steps
     fi
 else
     res_mpi=""
