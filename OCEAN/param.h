@@ -30,6 +30,8 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
+#elif defined CHANNEL
+      parameter (LLm0=50,   MMm0=3,   N=20)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
@@ -186,6 +188,8 @@
       parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
 #  elif defined SEINE 
       parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
+#  elif defined VILAINE
+      parameter (LLm0=180,   MMm0=130,   N=10) ! VILAINE
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -220,7 +224,8 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES     
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+!      parameter (NP_XI=14,  NP_ETA=6,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=11,  NP_ETA=12,  NNODES=84)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -314,7 +319,7 @@
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
 # else
-      parameter (Msrc=100)        ! ====== == ===== =======
+      parameter (Msrc=0)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
@@ -400,8 +405,9 @@
 !----------------------------------------------------------------------
 !
 #ifdef SOLVE3D
-      integer   NT, itemp
+      integer   NT, itemp, NTot
       integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
+      integer   ntrc_subs, ntrc_substot
 !
       parameter (itemp=1)
 # ifdef SALINITY 
@@ -447,6 +453,21 @@
 # else
       parameter (ntrc_bio=0)
 # endif /* BIOLOGY */
+
+/*! === SUBSTANCE ===*/
+!
+# ifdef SUBSTANCE
+! ntrc_subs : number of advected substances (not fixed, neither benthic)
+      INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
+      INTEGER,PARAMETER :: lchain=200
+      integer  itsubs1,itsubs2,ntfix
+      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+      parameter (itsubs1= itemp+ntrc_salt+1 )
+      parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
+# else
+      parameter (ntrc_subs=0, ntrc_substot=0)
+# endif /* SUBSTANCE */
+
 !
 # ifdef SEDIMENT
 ! NGRAV          Number of gravel classes
@@ -471,7 +492,24 @@
 !
 ! Total number of tracers
 !
+# ifdef SUBSTANCE
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
+      parameter (NTot=NT+ntfix)
+# elif defined MUSTANG
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+2*ntrc_subs)
+      parameter (NTot=NT+ntfix)
+# else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
+      parameter (NTot=NT)
+# endif /* SUBSTANCE */
+
+
+# ifdef MUSTANG 
+   ! vertical dimension (ksdmin:ksdmax) of variables in sediment
+   ! (ksdmax=max number of layers)
+      integer ksdmin,ksdmax
+      parameter (ksdmin=1,ksdmax=10)
+# endif /* MUSTANG */
 
 # if defined BBL && defined AGRIF
       integer Agrif_lev_sedim

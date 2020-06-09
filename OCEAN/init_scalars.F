@@ -214,6 +214,9 @@ C$OMP END PARALLEL
       ncidbulk=-1
       ncidclm=-1
       ncidqbar=-1
+# if (defined WAVE_OFFLINE && defined MUSTANG)
+      ncidwave=-1
+#endif
 #ifdef DIAGNOSTICS_TS
       nciddia=-1
 # ifdef AVERAGES
@@ -1819,7 +1822,45 @@ CR      write(stdout,'(1x,A,I3)') 'indxBSD =',indxBSD
 # endif /* BBL */
 #endif /* SOLVE3D */
 
-#if (defined MRL_WCI || defined BBL) && !defined  ANA_WWAVE
+#if (defined MUSTANG || defined MRL_WCI || defined BBL) \
+ && !defined  ANA_WWAVE
+
+CR      write(stdout,'(1x,A,I3)') 'indxWWA',indxWWA
+
+# ifdef MUSTANG
+      vname(1,indxWWA)='hs                                        '
+      vname(2,indxWWA)='significant wave height                   '
+      vname(3,indxWWA)='meter                                     '
+      vname(4,indxWWA)='Awave,scalar, series                      '
+      vname(5,indxWWA)='                                          '
+      vname(6,indxWWA)='lat_rho lon_rho                           '
+
+CR      write(stdout,'(1x,A,I3)') 'indxWWD =',indxWWD
+      vname(1,indxWWD)='dir                                       '
+      vname(2,indxWWD)='wave direction                            '
+      vname(3,indxWWD)='degrees                                   '
+      vname(4,indxWWD)='Dwave, scalar, series                     '     
+      vname(5,indxWWD)='                                          '
+      vname(6,indxWWD)='lat_rho lon_rho                           '
+      vname(7,indxWWD)='                                          '
+
+CR      write(stdout,'(1x,A,I3)') 'indxWWP =',indxWWP
+      vname(1,indxWWP)='t01                                       '
+      vname(2,indxWWP)='wave Period                               '
+      vname(3,indxWWP)='second                                    '
+      vname(4,indxWWP)='Pwave, scalar, series                     '
+      vname(5,indxWWP)='                                          '
+      vname(6,indxWWP)='lat_rho lon_rho                           '
+      vname(7,indxWWP)='                                          '
+
+      vname(1,indxWWU)='ubr                                       '
+      vname(2,indxWWU)='wave orbital velocity                     '
+      vname(3,indxWWU)='meter per second                          '
+      vname(4,indxWWU)='Uwave,scalar, series                      '
+      vname(5,indxWWU)='                                          '
+      vname(6,indxWWU)='lat_rho lon_rho                           '
+      vname(7,indxWWU)='                                          '
+# else
 CR      write(stdout,'(1x,A,I3)') 'indxWWA',indxWWA
       vname(1,indxWWA)='Awave                                     '
       vname(2,indxWWA)='wind induced wave amplitude               '
@@ -1832,7 +1873,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxWWD =',indxWWD
       vname(1,indxWWD)='Dwave                                     '
       vname(2,indxWWD)='wind induced wave direction               '
       vname(3,indxWWD)='degrees                                   '
-      vname(4,indxWWD)='Dwave, scalar, series                     '     
+      vname(4,indxWWD)='Dwave, scalar, series                     '
       vname(5,indxWWD)='                                          '
       vname(6,indxWWD)='lat_rho lon_rho                           '
       vname(7,indxWWD)='                                          '
@@ -1845,6 +1886,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxWWP =',indxWWP
       vname(5,indxWWP)='                                          '
       vname(6,indxWWP)='lat_rho lon_rho                           '
       vname(7,indxWWP)='                                          '
+# endif  /* MUSTANG */
 
 # ifdef WAVE_OFFLINE_BREAKING 
 CR      write(stdout,'(1x,A,I3)') 'indxWEB =',indxWEB

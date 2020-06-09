@@ -174,6 +174,11 @@
       elseif (may_day_flag.eq.7) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: KPP algoritm failure'
+#ifdef SUBSTANCE
+      elseif (may_day_flag.eq.77) then
+        MPI_master_only write(stdout,'(/1x,A/)')
+     &           'ERROR: READ parasubstance.txt'
+#endif
       endif
 
       return

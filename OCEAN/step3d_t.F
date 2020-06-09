@@ -33,6 +33,14 @@
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
+#ifdef SUBSTANCE
+          !USE comsubstance
+          USE comsubstance , ONLY : nv_grav,nvp,ws_part
+#ifdef MUSTANG
+          USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO
+          USE comMUSTANG, ONLY : flx_w2s_sum_CROCO
+#endif
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -53,6 +61,13 @@
 # ifdef PSOURCE
      &       ,is
 # endif
+#ifdef SUBSTANCE
+      integer isouspas,nbsouspas(PRIVATE_1D_SCRATCH_ARRAY)
+      real :: cflm,cfl_loc,dz_cflm,ws_cflm
+#if !defined TS_MIX_IMP
+      real CD(PRIVATE_1D_SCRATCH_ARRAY,0:N)
+#endif
+#endif
 # ifdef AGRIF
 # include "zoom.h"
 # endif
@@ -442,7 +457,15 @@
          endif
 #  endif
 # else
+#  if !defined MUSTANG
 #  include "t3dmix_tridiagonal.h"
+#  else
+      if (itrc .le. 2 .or. itrc .ge.itsubs1+nvp+1 ) then   ! for passive tracers only
+#  include "t3dmix_tridiagonal.h"
+      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then
+#  include "t3dmix_tridiagonal_chute.h"
+      endif
+#  endif
 # endif
 
 # ifdef CONST_TRACERS

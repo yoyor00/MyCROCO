@@ -30,6 +30,9 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
+# if defined SUBSTANCE
+      USE comsubstance,  ONLY : cini_wat
+# endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -40,6 +43,12 @@
 # include "sediment.h"
 #endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
+#if defined SUBSTANCE
+      integer :: iv
+#endif
+#ifdef CHANNEL
+      real cff
+#endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
@@ -203,6 +212,48 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+#elif defined CHANNEL 
+
+      DO j=JR_RANGE
+!        zeta(IstrR,j,1)=0.04
+!        zeta(IstrR+1,j,1)=0.04
+!        zeta(IstrR,j,2)=zeta(IstrR,j,1)
+!        zeta(IstrR+1,j,2)=zeta(IstrR+1,j,1)
+!        ubar(IstrR,j,1)=0.58
+!        ubar(IstrR+1,j,1)=0.58
+!        ubar(IstrR,j,2)=ubar(IstrR,j,1)
+!        ubar(IstrR+1,j,2)=ubar(IstrR+1,j,1)
+!        DO i=IstrR+2,IendR
+        DO i=IR_RANGE
+          zeta(i,j,1)=0.04+xr(i,j)*(0.033-0.04)/xl
+          zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+!          write(*,*)'anainitial zeta:',i,j,zeta(i,j,1)
+!          zeta(i,j,1)=(0.033-0.04)/(IendR-IstrR)*i+0.04           
+!          write(*,*)'anainitial zeta:',i,j,zeta(i,j,1)
+          zeta(i,j,2)=zeta(i,j,1)
+          ! dune
+          !V0 : ubar(i,j,1)=0.55*(1.+exp(-((xr(i,j)-0.5*xl)/10.0)**2))
+          ! rappel h(i,j)=depth*(1-0.5*exp(-cff*(xr(i,j)-0.5*xl)**2)) avec  cff=0.5*(1./10)**2
+          cff=0.5*(1./10)**2
+          if (i.gt.0) then
+            ubar(i,j,1)=0.58/(1-
+     &      0.5*exp(-cff*(  0.5*(xr(i,j)+xr(i-1,j)) -0.5*xl)**2))
+!          write(*,*)'anainitial ubar:',i,j,ubar(i,j,1)
+!            ubar(i,j,1)=0.58/(1-
+!     &      0.5*exp(-cff*(2.0*(i-25.0 ))**2))
+!          write(*,*)'anainitial ubar:',i,j,ubar(i,j,1)
+          else
+            ubar(i,j,1)=0.58
+          endif 
+!          ubar(i,j,1)=0.58/(1.-exp(-0.5*(( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)/10.0)**2))
+          ! flat
+          !ubar(i,j,1)=0.6
+          vbar(i,j,1)=0.
+          ubar(i,j,2)=ubar(i,j,1)
+          vbar(i,j,2)=vbar(i,j,1)
+        END DO
+      END DO
+      
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -486,6 +537,22 @@
              enddo
           enddo
         enddo
+#  elif defined CHANNEL
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                t(i,j,k,1,itemp)=10.
+                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#  ifdef SALINITY
+                t(i,j,k,1,isalt)=35.
+                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
+     &            on_u(i,j),pm(i,j),pn(i,j)
+#  endif
+            enddo
+          enddo
+        enddo
+
 #  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
         do k=1,N
           do j=JR_RANGE
@@ -1097,6 +1164,57 @@ C$OMP BARRIER
       enddo
 # endif /*PASSIVE_TRACER */
 !
+!
+!--------------------------------------------------------------------
+!  Initial conditions for tracer-Substance
+!--------------------------------------------------------------------
+!
+# ifdef SUBSTANCE 
+      do k=1,N
+        do j=JR_RANGE
+          do i=IR_RANGE
+            do iv=itsubs1,itsubs2
+              if (.not.got_tini(iv)) then
+#  if defined REGIONAL && !defined ANA_PSOURCE
+!               if (h(i,j).lt.300) then
+
+                   t(i,j,k,1,iv)=cini_wat(iv)
+!                else
+!                 t(i,j,k,1,itpas)=0.
+!               endif
+#  elif defined TFLAT2DV
+                if (h(i,j).gt.0) then
+                  !!t(i,j,k,1,iv)=cini_wat(iv)
+! ################# CAS TFLAT2DV vase+diss
+                  if (iv<=itsubs1+1) then
+                     if( i>79.and.i<151) then
+                       t(i,j,k,1,iv)=cini_wat(iv)   !#
+                     else
+                       t(i,j,k,1,iv)=0.
+                     endif
+                  else
+                     t(i,j,k,1,iv)=cini_wat(iv)
+                  endif
+! ################# CAS TFLAT2DV vase+diss FIN
+                else
+                     t(i,j,k,1,iv)=0.
+                endif
+#  elif defined CHANNEL
+                       t(i,j,k,1,iv)=cini_wat(iv)  
+#  else
+                if (h(i,j).lt.300) then
+                  t(i,j,k,1,iv)=cini_wat(iv)
+                else
+                  t(i,j,k,1,iv)=0.
+                endif
+#  endif
+               endif
+            enddo
+          enddo
+        enddo
+      enddo
+# endif /*SUBSTANCE */
+
 !----------------------------------------------------------------------
 !  Initial conditions for sediment tracer variables.
 !----------------------------------------------------------------------

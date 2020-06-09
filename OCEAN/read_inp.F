@@ -489,6 +489,26 @@
         MPI_master_only write(stdout,'(2x,A,2x,A)')
      &             'Forcing Data File:', frcname(1:lstr)
 #endif  /* !defined NO_FRCFILE */
+
+!
+
+# if defined WAVE_OFFLINE && defined MUSTANG 
+! Forcing file name. Check its availability.
+!
+      elseif (keyword(1:kwlen).eq.'wave_offline') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        wave_file=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &             'Wave Data File:', wave_file(1:lstr)
+#endif  /* !defined WAVE_OFFLINE */
+
 !
 ! Biology forcing: iron dust deposition. 
 !

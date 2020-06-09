@@ -123,25 +123,19 @@ include Makedefs
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
+\
 
+ SRCSUB = \
+        module_substance.F      module_MUSTANG.F
 
  SRCS90 = \
 	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
-	p4zsbc.F90      p4zsed.F90	        trcwri_pisces.F90\
-	p4zagg.F90      p4zfechem.F90           p4zligand.F90   p4zpoc.F90\
-	p4zsms.F90      p5zlim.F90              p5zmeso.F90\
-	p5zmicro.F90    p5zmort.F90             p5zprod.F90\
-	p4zbio.F90      trcsms_pisces.F90	trcini_pisces.F90\
-	pisces_ini.F90  oce_sed.F90             par_sed.F90     sedadv.F90\
-	sedarr.F90      sedbtb.F90              sedchem.F90     sedco3.F90\
-	seddiff.F90     seddsr.F90              seddta.F90      sed.F90\
-	sedini.F90      sedinitrc.F90           sedinorg.F90     sedmat.F90\
-	sedmbc.F90      sedmodel.F90            sed_oce.F90     sedorg.F90\
-	sedrst.F90      sedsfc.F90              sedstp.F90      sedwri.F90\
-	setavg_sed.F90\
+	p4zsed.F90	p4zbio.F90		trcwri_pisces.F90\
+	trcsms_pisces.F90			trcini_pisces.F90\
+	pisces_ini.F90\
 \
 	module_parameter_oa.F90\
 	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
@@ -149,8 +143,12 @@ include Makedefs
 	module_oa_level.F90	module_oa_interface.F90\
 	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
 \
-	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
+	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90\
 \
+        comsubstance.F90        substance.F90\
+\
+        comMUSTANG.F90  coupleur_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+        sed_MUSTANG.F90 initMUSTANG.F90\
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
@@ -161,11 +159,13 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 
  RCS = $(SRCS:.F=.f)
-
  RCS90 = $(SRCS90:.F90=.f90)
+ RCSUB = $(SRCSUB:.F=.f)
+
 
  OBJS = $(RCS:.f=.o)
  OBJS90 = $(RCS90:.f90=.o)
+ OBJSUB = $(RCSUB:.f=.o)
 
  SBIN = croco
 
@@ -177,20 +177,18 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 %.mod : %.o
 	@touch $@
 
+#
+# Executable file.
+# ========= =====
+#
+$(SBIN): $(OBJSUB)  $(OBJS90) $(OBJS) 
+	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
+	mv a.out $(SBIN)
 
 #
 # Everything
 # ==========
 all: tools depend $(SBIN)
-
-#
-# Executable file.
-# ========= =====
-#
-$(SBIN):   $(OBJS90) $(OBJS) 
-	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
-	 mv a.out $(SBIN)
-
 #
 # Auxiliary utility programs and List of Dependecies:
 # ========= ======= ======== === ==== == ============
@@ -229,27 +227,17 @@ checkdefs: check_switches1.F setup_kwds.F
 check_switches1.F: cppcheck cppdefs.h
 	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
 	./cppcheck
-
 check_srcs.F: srcscheck Makefile
 	./srcscheck
-
 setup_kwds.F: checkkwds read_inp.F
 	./checkkwds
+partit: partit.o insert_node.o lenstr.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o lenstr.o $(LCDF)
 
-partit: partit.F insert_node.o lenstr.o
-	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f
-	$(CFT) -c $(FFLAGS) partit._.f -o partit.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o  lenstr.o $(LCDF)
-
-ncjoin: ncjoin.F lenstr.o
-	$(CPP) -P $(CPPFLAGS) ncjoin.F | ./mpc  > ncjoin._.f
-	$(CFT) -c $(FFLAGS) ncjoin._.f -o ncjoin.o
+ncjoin: ncjoin.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncjoin ncjoin.o lenstr.o $(LCDF)
 
-
-ncrename: ncrename.F lenstr.o
-	$(CPP) -P $(CPPFLAGS) ncrename.F | ./mpc > ncrename._.f
-	$(CFT) -c $(FFLAGS) ncrename._.f -o ncrename.o
+ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
@@ -289,5 +277,4 @@ my_barrier.o: my_barrier.f
 #
 
 -include Make.depend
-
 

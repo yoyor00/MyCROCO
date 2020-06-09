@@ -73,6 +73,9 @@
 !             positive clockwise wrt North      
 !********************************************************************!
       implicit none
+!# ifdef key_MUSTANG
+!     USE sed_MUSTANG,  ONLY : z0sed
+!# endif
 # include "param.h"
 # include "bbl.h"
 # include "forces.h"
@@ -151,6 +154,47 @@
 !---------------------------------------------------------------------
 !  Set currents above bed.
 !---------------------------------------------------------------------
+! z0sed,frofony,frofonx : a transmettre 
+!# ifdef key_MUSTANG
+!      DO j=JstrV-1,Jend+1
+!        DO i=IstrU-1,Iend+1
+!         Zr(i,j)=  max(z_r(i,j,1)-z_w(i,j,0),z0sed(i,j)+1.E-4)
+!       enddo
+!      enddo
+!
+!      DO j=JstrV-1,Jend+1
+!        DO i=IstrU-1,Iend+1
+!          Zu= 0.5*(Zr(i-1,j)+Zr(i,j))
+!          Zv= 0.5*(Zr(i,j-1)+Zr(i,j))
+!          vit2=SQRT(0.0625_rsh*(v(i,j,1,nrhs)+v(i-1,j,1,nrhs)+
+!     &             v(i,j+1,1,nrhs)+v(i-1,j+1,1,nrhs))**2
+!     &             +u(i,j,1,nrhs)**2) *u(i,j,1,nrhs)
+!          frofonbblx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i-1,j)+Zr(i,j))/
+!     &             z0sed(i,j)))**(-2)*vit2
+!
+!          vit2=SQRT(0.0625_rsh*(u(i,j,1,nrhs)+u(i,j-1,1,nrhs)+
+!     &             u(i+1,j,1,nrhs)+u(i+1,j-1,1,nrhs))**2
+!     &             +v(i,j,1,nrhs)**2) *v(i,j,1,nrhs)
+!          frofonbbly(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j-1)+Zr(i,j))/
+!     &             z0sed(i,j)))**(-2)*vit2
+!       enddo
+!      enddo
+!
+!      DO j=JstrV-1,Jend
+!        DO i=IstrU-1,Iend
+!          tenfonc(i,j)=SQRT(     &
+!                     ((frofonx(i,j)+frofonx(i+1,j))/2 )**2   &
+!                    +((frofony(i,j)+frofony(i,j+1))/2 )**2   &
+!                           )*(rho(i,j,1)+rho0)
+!       enddo
+!      enddo
+!
+!#  ifdef WET_DRY AND MASKING
+!          tenfon(i,j)=tenfonc(i,j)*rmask_wet(i,j)
+!#  endif
+
+
+!# else
 !
       DO j=JstrV-1,Jend+1
         DO i=IstrU-1,Iend+1
@@ -516,7 +560,7 @@
         enddo
       enddo
 
-# ifdef LIMIT_BSTRESS
+# ifdef LIMIT_BSTRESS0
 !---------------------------------------------------------------------
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted
@@ -693,6 +737,8 @@
       return
       end
 !====================================================================!
+!#endif 
+!======== key_MUSTANG
 #else
       subroutine bblm_empty
       end

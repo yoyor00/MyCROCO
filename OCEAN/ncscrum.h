@@ -177,7 +177,7 @@
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
-#ifdef MORPHODYN
+#if defined MORPHODYN ||  defined MUSTANG_MORPHODYN_byHYDRO
       integer indxHm
       parameter (indxHm=5)
 #endif
@@ -470,9 +470,22 @@
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
-      parameter (indxO=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
-     &    +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
-     &               +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
+      parameter (indxO=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+
+     &     +ntrc_substot
+# ifdef MUSTANG
+     &              +ntrc_subs+6
+# ifdef key_MUSTANG_specif_outputs
+     &              +3*ntrc_subs +2
+# ifdef key_MUSTANG_V2
+     &              +1*ntrc_subs +12
+# endif
+# ifdef key_MUSTANG_bedload
+     &              +4*ntrc_subs +3
+#  endif
+#  endif
+#  endif
+     &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
+     &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
 # ifdef BIOLOGY
@@ -660,8 +673,14 @@
      &           indxZbapp =indxAbed+4, indxBostrw=indxAbed+5)
 # ifndef ANA_WWAVE
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
+# ifdef MUSTANG
+     &          ,indxWWU
+# endif
       parameter (indxWWA=indxAbed+6, indxWWD=indxWWA+1, 
      &           indxWWP=indxWWA+2
+# ifdef MUSTANG
+     &          ,indxWWU=indxWWA+7 
+# endif
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
@@ -672,8 +691,14 @@
 # endif
 #else /* BBL */
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
+# ifdef MUSTANG
+     &          ,indxWWU
+# endif
       parameter (indxWWA=indxSUSTR+32, indxWWD=indxWWA+1, 
      &           indxWWP=indxWWA+2
+# ifdef MUSTANG
+     &          ,indxWWU=indxWWA+7
+# endif
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
@@ -848,6 +873,9 @@
       integer ncidfrc, ncidbulk, ncidclm,  ntsms ,
      &        ntsrf,  ntssh,  ntsst, ntsss, ntuclm,
      &        ntbulk, ncidqbar, ntqbar, ntww
+#if defined WAVE_OFFLINE 
+      integer ncidwave
+#endif
 #ifdef SOLVE3D
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
 #endif
@@ -885,7 +913,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# ifdef MORPHODYN
+# if defined MORPHODYN  || defined MUSTANG_MORPHODYN_byHYDRO
      &      , hisHm
 # endif
 # ifdef BBL
@@ -932,6 +960,22 @@
 #   endif   
      & )
 # endif
+
+
+#  if defined MUSTANG 
+      integer hisMust(ntrc_subs+6
+# ifdef key_MUSTANG_specif_outputs
+     &   +3*ntrc_subs + 2
+# ifdef key_MUSTANG_V2
+     &   +1*ntrc_subs + 12
+# ifdef key_MUSTANG_bedload
+     &   +4*ntrc_subs + 3
+# endif
+# endif
+# endif
+     & )
+# endif
+
 # if defined DIAGNOSTICS_TS 
       integer nciddia, nrecdia, nrpfdia
      &      , diaTime, diaTime2, diaTstep
@@ -1089,6 +1133,9 @@
 #   endif
      & )
 #  endif
+#  ifdef MUSTANG 
+     integer avgMust(ntrc_subs+6)
+# endif
 # endif
 # ifdef BBL
       integer avgBBL(6)
@@ -1273,6 +1320,9 @@
       common/incscrum/
      &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
      &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
+#if defined WAVE_OFFLINE
+     &      , ncidwave
+#endif
 #if defined MPI && defined PARALLEL_FILES
 !# ifndef EW_PERIODIC
      &      , xi_rho,  xi_u
@@ -1302,7 +1352,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# ifdef MORPHODYN
+# if defined MORPHODYN  || defined MUSTANG_MORPHODYN_byHYDRO
      &      , hisHm
 # endif
 #ifdef SOLVE3D
@@ -1338,6 +1388,9 @@
 # endif  /* BIOLOGY */
 # ifdef SEDIMENT
      &      , hisSed
+# endif
+# ifdef MUSTANG
+     &      , hisMust
 # endif
 #endif
 #ifdef BBL
@@ -1712,6 +1765,9 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
+#if defined WAVE_OFFLINE
+     &                                ,   wave_file
+#endif
 #ifdef ASSIMILATION
      &                      ,  aparnam,   assname
 #endif
@@ -1795,6 +1851,9 @@
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
+#endif
+#if defined WAVE_OFFLINE
+     &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION
      &                      ,  aparnam,   assname

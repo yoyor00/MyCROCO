@@ -679,7 +679,6 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* SEDIMENT */
 # ifdef BBL
-      got_inibed(1:2)=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
           Abed(i,j)=init
@@ -693,7 +692,7 @@ C$    integer omp_get_thread_num
           Bvstrw(i,j)=init
           Bustrcwmax(i,j)=init
           Bvstrcwmax(i,j)=init
-#ifdef MORPHODYN 
+#ifdef MORPHODYN || MUSTANG_MORPHODYN_byHYDRO
           dh(i,j)=init
 #endif
         enddo
@@ -888,13 +887,17 @@ C$    integer omp_get_thread_num
           srflxg(i,j,1)=init
           srflxg(i,j,2)=init
 # endif
-# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
+# if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
           wwag(i,j,1)=init
           wwdg(i,j,1)=init
           wwpg(i,j,1)=init
           wwag(i,j,2)=init
           wwdg(i,j,2)=init
           wwpg(i,j,2)=init
+# ifdef MUSTANG
+          wwug(i,j,1)=init
+          wwug(i,j,2)=init
+#endif
 #  ifdef WAVE_OFFLINE_BREAKING
           wweb(i,j,1)=init
           wweb(i,j,2)=init

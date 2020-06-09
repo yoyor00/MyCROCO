@@ -31,6 +31,9 @@
 ! both read and write operations) the code has been unified to
 ! guarantee that both functions are exactly adjoint. 
 !            
+#if defined MUSTANG
+      USE comMUSTANG, only: nk_nivsed_out
+#endif
       implicit none
 #include "param.h"
       real A(GLOBAL_2D_ARRAY,N+1)
@@ -136,6 +139,13 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifdef SEDIMENT
       elseif (vert_type.eq.3) then
         count(3)=NLAY
+        count(4)=1                !--> 3D BED-grid
+        start(3)=1
+        start(4)=record
+#endif
+#ifdef MUSTANG
+      elseif (vert_type.eq.3) then
+        count(3)=nk_nivsed_out
         count(4)=1                !--> 3D BED-grid
         start(3)=1
         start(4)=record

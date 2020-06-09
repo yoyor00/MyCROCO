@@ -77,7 +77,6 @@
 !--------------------------------------------------------------------
 !  bustr |  XI- and ETA-components of kinematic bottom momentum flux
 !  bvstr |  (drag) defined at horizontal U- and V-points [m^2/s^2].
-!
       real bustr(GLOBAL_2D_ARRAY)
       real bvstr(GLOBAL_2D_ARRAY)
       common /forces_bustr/bustr /forces_bvstr/bvstr
@@ -564,9 +563,11 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
-#if defined BBL || defined MRL_WCI 
+#if defined BBL || defined MRL_WCI \
+     ||  (defined MUSTANG && defined WAVE_OFFLINE) 
 !--------------------------------------------------------------------
 ! Awave  | for present time   | wave amplitude [m]
+!                             | significant wave height [m] (MUSTANG)
 ! Pwave  | for present time   | wave direction [radians]
 ! Dwave  | for present time   | wave period [s]
 !--------------------------------------------------------------------
@@ -599,6 +600,15 @@
       real wwag(GLOBAL_2D_ARRAY,2)
       real wwdg(GLOBAL_2D_ARRAY,2)
       real wwpg(GLOBAL_2D_ARRAY,2)
+# ifdef MUSTANG
+      real Uwave(GLOBAL_2D_ARRAY)
+!--------------------------------------------------------------------
+! Uwave  | for present time   | wave orbital bottom valocity [m/s] 
+!--------------------------------------------------------------------
+      common /bbl_Uwave/Uwave
+      real wwug(GLOBAL_2D_ARRAY,2)
+      common /wwf_wwug/wwug
+# endif
       common /wwf_wwag/wwag /wwf_wwdg/wwdg /wwf_wwpg/wwpg
       real wwfrq(GLOBAL_2D_ARRAY)
       common /wwf_wwfrq/wwfrq
@@ -623,37 +633,46 @@
       common /wwf_wwer/wwer
 #   endif
 #  endif /* MRL_WCI */
-      real    ww_cycle,wwv_time(2),
-     &        wwap(2),wwdp(2),wwpp(2),
-     &        wwebp(2),wwedp(2),wwerp(2),
-     &        wwa_scale,wwd_scale,wwp_scale,
-     &        wweb_scale,wwed_scale,wwer_scale,
-     &        wwagrd,wwdgrd,wwpgrd,
-     &        wwebgrd,wwedgrd,wwergrd
-      integer ww_ncycle, ww_rec, itww,
-     &        ww_file_id, ww_tid,  
-     &        wwa_id, wwp_id, wwd_id
+      real    ww_cycle,wwv_time(2)
+      real    wwap(2),wwdp(2),wwpp(2)
+      real    wwebp(2),wwedp(2),wwerp(2)
+      real    wwa_scale,wwd_scale,wwp_scale
+      real    wweb_scale,wwed_scale,wwer_scale
+      real    wwagrd,wwdgrd,wwpgrd
+      real    wwebgrd,wwedgrd,wwergrd
+# ifdef MUSTANG
+      real    wwup(2),wwugrd,wwu_scale
+# endif
+      integer ww_ncycle, ww_rec, itww
+      integer ww_file_id, ww_tid  
+      integer wwa_id, wwp_id, wwd_id
+# ifdef MUSTANG
+      integer wwu_id
+# endif
 #   ifdef MRL_WCI
-     &       ,wweb_id, wwed_id, wwer_id
+      integer web_id, wwed_id, wwer_id
 #   endif
 #   ifdef BBL
-     &       ,wwu_id
+      integer wwu_id
 #   endif
-      common /wwdat/ ww_cycle, wwv_time,
-     &       wwap,wwdp,wwpp,
-     &       wwebp,wwedp,wwerp,
-     &       wwa_scale,wwd_scale,wwp_scale,
-     &       wweb_scale,wwed_scale,wwer_scale,
-     &       wwagrd,wwdgrd,wwpgrd, 
-     &       wwebgrd,wwedgrd,wwergrd,
-     &       ww_ncycle,ww_rec,itww,
-     &       ww_file_id,ww_tid, 
-     &       wwa_id, wwp_id, wwd_id
+      common /wwdat/ ww_cycle, wwv_time
+      common /wwdat/ wwap,wwdp,wwpp
+      common /wwdat/ wwebp,wwedp,wwerp
+      common /wwdat/ wwa_scale,wwd_scale,wwp_scale
+      common /wwdat/ wweb_scale,wwed_scale,wwer_scale
+      common /wwdat/ wwagrd,wwdgrd,wwpgrd
+      common /wwdat/ wwebgrd,wwedgrd,wwergrd
+      common /wwdat/ ww_ncycle,ww_rec,itww
+      common /wwdat/ ww_file_id,ww_tid
+      common /wwdat/ wwa_id, wwp_id, wwd_id
+# ifdef MUSTANG
+      common /wwdat/ wwu_id,wwugrd,wwu_scale,wwup
+# endif
 #   ifdef MRL_WCI
-     &       ,wweb_id, wwed_id, wwer_id
+      common /wwdat/ wweb_id, wwed_id, wwer_id
 #   endif
 #   ifdef BBL
-     &       ,wwu_id
+      common /wwdat/ wwu_id
 #   endif
 # endif /* WAVE_OFFLINE */
 #endif /* BBL || MRL_WCI */
@@ -663,8 +682,8 @@
       parameter (Nfrq=320, Ndir=50)
       real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
       real wd_bry(Ndir), wa_bry_d(Ndir)
-      common /wave_maker/ wf_bry, wk_bry, wa_bry,
-     &                    wd_bry, wa_bry_d
+      common /wave_maker/ wf_bry, wk_bry, wa_bry
+      common /wave_maker/ wd_bry, wa_bry_d
 # ifdef WAVE_MAKER_DSPREAD
       real wpha_bry(Nfrq,Ndir)
 # else

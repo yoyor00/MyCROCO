@@ -13,9 +13,23 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels 
                                ! into history netCDF file.
+#if defined SUBSTANCE
+      USE comsubstance, ONLY : cv_watfix,nv_adv
+#endif
+#if defined MUSTANG
+      USE comsubstance, ONLY : nv_adv,nvpc,nvp
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
+      USE comMUSTANG, only: nk_nivsed_out,var3D_cvsed,var3D_dzs,
+     &   var3D_TEMP,var3D_SAL
+#if defined key_MUSTANG_specif_outputs
+     &   ,nv_out3Dnv_specif, nv_out2D_specif
+     &   ,varspecif3Dnv_save,varspecif2D_save
+#endif
+#     include "coupleur_define_MUSTANG.h"
+#endif
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
-     &   , start(2), count(2), nf_fwrite, cff
+     &   , start(2), count(2), nf_fwrite, cff,ik
 #ifdef OUTPUTS_SURFACE
      &   , ibuff(6)
 #else
@@ -56,6 +70,23 @@
 #endif
 #include "work.h"
 #include "netcdf.inc"
+
+#if defined MUSTANG
+      integer  nv_out,indx2
+      logical  maskout_sed(GLOBAL_2D_ARRAY)
+      real var2D_ksma(GLOBAL_2D_ARRAY),
+     &     var2D_eptot(GLOBAL_2D_ARRAY),
+     &     var2D_tenfon(GLOBAL_2D_ARRAY)
+      real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
+     &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
+#if defined key_MUSTANG_specif_outputs
+      real workrsed_nv(GLOBAL_2D_ARRAY),
+     &     workrsed1_nv(GLOBAL_2D_ARRAY)
+#endif
+      integer :: Istr2,Jstr2,Iend2,Jend2
+      integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
+
+#endif
 
 # ifdef MASKING
 #  define SWITCH *
@@ -197,7 +228,7 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
-#ifdef MORPHODYN
+#if defined MORPHODYN || defined  MUSTANG_MORPHODYN_byHYDRO
 !     
 !     Write out time evolving bathymetry
 !     
@@ -581,6 +612,174 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
          endif   
       enddo
+#if defined SUBSTANCE
+      do itrc=1,ntfix
+         if (wrthis(indxT+NT+itrc)) then
+!             write(*,*)'in wrt_his',itrc,indxT,NT,
+!     &                 indxT+NT+itrc,
+!     &                 wrthis(indxT+NT+itrc)
+            workr=cv_watfix(:,:,:,itrc)
+#ifdef MASKING
+            if (iic.eq.0) then
+!     We do that because the mask has been applied if iic ==0 !
+               do k=1,N
+                  workr(:,:,k)=workr(:,:,k)
+     &                         SWITCH rmask(:,:)
+               enddo
+            endif
+#endif
+            call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
+     &           indxT+NT+itrc-1,record,r3dvar,type)
+CR      write(*,*) 'wrt_his substance:  cv_watfix  ',indxT+NT+itrc-1,hisT(NT+itrc)
+CR      write(*,*) 'wrt_his substance:  cv_watfix  ' MYID
+         endif
+      enddo
+#endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MUSTANG
+#if defined MUSTANG
+#ifdef MPI
+#define LOCALLM Lmmpi
+#define LOCALMM Mmmpi
+#else
+#define LOCALLM Lm
+#define LOCALMM Mm
+#endif
+      chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
+      margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
+      chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
+      margin_E=(NSUB_E*chunk_size_E-LOCALMM)/2
+
+      Istr2=1-margin_X
+      Iend2=Istr2+chunk_size_X-1
+      Istr2=max(Istr2,1)
+      Iend2=min(Iend2,LOCALLM)
+      Jstr2=1+-margin_E
+      Jend2=Jstr2+chunk_size_E-1
+      Jstr2=max(Jstr2,1)
+      Jend2=min(Jend2,LOCALMM)
+
+!      write(*,*) 'wrt_his mustang'
+      nv_out=ntrc_subs
+      CALL sed_MUSTANG_outres(Istr2,Iend2,Jstr2,Jend2,
+     &       nv_out,h,
+     &       maskout_sed,var2D_ksma,var2D_tenfon,var2D_eptot
+!#ifdef key_MUSTANG_specif_outputs
+!     &       ,varspecif3Dnv_out
+!#endif
+     &      )
+
+
+
+      indx=indxT+ntrc_salt+ntrc_substot+1
+CR      write(*,*) 'wrt_his var2D_ksma0' MYID
+      if (wrthis(indx)) then
+         work2d=var2D_ksma(:,:)
+CR      write(*,*) 'wrt_his var2D_ksma1',indx,wrthis(indx),hisMust(1)
+         call fillvalue2d(work2d,ncidhis,hisMust(1),indx,
+     &        record,r2dvar,type)
+      endif
+      indx=indxT+ntrc_salt+ntrc_substot+2
+CR      write(*,*) 'wrt_his var2D_eptot',indx,wrthis(indx),hisMust(2)
+      if (wrthis(indx)) then
+         work2d=var2D_eptot(:,:)
+         call fillvalue2d(work2d,ncidhis,hisMust(2),indx,
+     &        record,r2dvar,type)
+      endif
+CR      write(*,*) 'wrt_his var2D_eptot'  MYID
+      indx=indxT+ntrc_salt+ntrc_substot+3
+CR      write(*,*) 'wrt_his var2D_tenfon',indx,wrthis(indx),hisMust(3)
+CR      write(*,*) 'write res var2D_tenfon[20,2]=',var2D_tenfon(20,2)
+      if (wrthis(indx)) then
+         work2d=var2D_tenfon(:,:)
+         call fillvalue2d(work2d,ncidhis,hisMust(3),indx,
+     &        record,r2dvar,type)
+      endif
+CR      write(*,*) 'wrt_his var2D_tenfon'  MYID
+      indx=indxT+ntrc_salt+ntrc_substot+4
+CR      write(*,*) 'wrt_his var3D_dzs',indx,wrthis(indx),hisMust(4)
+      if (wrthis(indx)) then
+         do k=1,nk_nivsed_out
+          workrsed(:,:,k)=var3D_dzs(k,:,:)
+         enddo
+         call fillvalue3d(workrsed,ncidhis,hisMust(4),indx,
+     &        record,b3dvar,type)
+      endif
+CR      write(*,*) 'wrt_his var2D_dzs'   MYID
+      indx=indxT+ntrc_salt+ntrc_substot+5
+CR      write(*,*) 'wrt_his var3D_TEMP',indx,wrthis(indx),hisMust(5)
+      if (wrthis(indx)) then
+         do k=1,nk_nivsed_out
+          workrsed(:,:,k)=var3D_TEMP(k,:,:)
+         enddo
+         call fillvalue3d(workrsed,ncidhis,hisMust(5),indx,
+     &        record,b3dvar,type)
+      endif
+CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
+      indx=indxT+ntrc_salt+ntrc_substot+6
+CR      write(*,*) 'wrt_his var3D_SAL',indx,wrthis(indx),hisMust(6),indx
+      if (wrthis(indx)) then
+         do k=1,nk_nivsed_out
+          workrsed(:,:,k)=var3D_SAL(k,:,:)
+         enddo
+         call fillvalue3d(workrsed,ncidhis,hisMust(6),indx,
+     &        record,b3dvar,type)
+      endif
+      do itrc=1,nv_out
+         indx=indxT+NT+ntfix+itrc+6 -1
+CR         write(*,*) 'wrt_his var3D_cvsed',indx
+         indx=indxT+ntrc_salt+ntrc_substot+itrc+6
+CR       write(*,*) 'wrt_his var3D_cvsed',indx,wrthis(indx),hisMust(itrc+6)
+         if (wrthis(indx)) then
+          do k=1,nk_nivsed_out
+           workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+          enddo
+          workrsed1=workrsed(:,:,:)
+CR          write(*,*) 'wrt_his mustang av ecriture'
+          call fillvalue3d(workrsed1,ncidhis,hisMust(itrc+6),
+     &        indx,record,b3dvar,type)
+         endif
+!CR       write(*,*) 'wrt_his mustang:  ',itrc,'/',nv_out
+      enddo
+
+#ifdef key_MUSTANG_specif_outputs
+      ik=0
+      do itrc=1,nv_out
+!CR     write(*,*) 'wrt_his var3Dspecif'
+       do k=1,nv_out3Dnv_specif
+         ik=ik+1
+         indx=indx+1
+         if (wrthis(indx)) then
+!           work2d(:,:)=varspecif3Dnv_out(k,itrc,:,:)
+           work2d(:,:)=varspecif3Dnv_save(k,itrc,:,:)
+!           write(*,*) 'wrt_his mustang specif_outputs AV ecriture',ik,itrc,k
+!           write(*,*) 'hisMust(',ntrc_subs+6+ik,')=',hisMust(ntrc_subs+6+ik)
+!           write(*,*) 'indx=',indx
+!           write(*,*) 'record=',record
+!           write(*,*) 'work2d(10,2)=',work2d(10,2)
+!           write(*,*) 'work2d(10,2)sav',varspecif3Dnv_save(k,itrc,10,2)
+!           write(*,*) 'work2d(10,2)out',varspecif3Dnv_out(k,itrc,10,2)
+           call fillvalue2d(work2d,ncidhis,
+     &       hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
+!CR      write(*,*) 'wrt_his var3Dspecif',wrthis(indx),indx,hisMust(ntrc_subs+6+ik)
+!           write(*,*) 'wrt_his mustang specif_outputs AP ecriture'
+!           write(*,*) ' '
+         endif
+!CR     write(*,*) 'wrt_his mustang:  ',itrc,'/',nv_out
+       enddo
+      enddo
+      do k=1,nv_out2D_specif
+         ik=ik+1
+         indx=indx+1
+         if (wrthis(indx)) then
+           work2d(:,:)=varspecif2D_save(k,:,:)
+           call fillvalue2d(work2d,ncidhis,
+     &       hisMust(ntrc_subs+6+ik),indx,record,r2dvar,type)
+!CR     write(*,*) 'wrt_his mustang:  ',itrc,'/',nv_out
+         endif
+      enddo
+#endif
+#endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MUSTANG
 !     
 !     Density anomaly.
 !     

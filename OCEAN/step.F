@@ -25,6 +25,9 @@
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "mpi_cpl.h"
+#ifdef MUSTANG
+#include "coupleur_define_MUSTANG.h"
+#endif   
        
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
@@ -903,6 +906,11 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#ifdef MUSTANG
+      USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition, MUSTANG_morpho
+      USE comMUSTANG , ONLY : l_morphocoupl,t_morpho
+#include "coupleur_define_MUSTANG.h"
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -934,6 +942,10 @@ C$OMP END MASTER
        integer chunk_size_sta, Mcpstr,Mcpend, sta_str
        common /sta_step/ sta_str
 #endif
+#ifdef MUSTANG
+       integer :: Istr2,Jstr2,Iend2,Jend2
+       integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
+#endif
       integer omp_get_num_threads, omp_get_thread_num 
       integer itrc
       
@@ -957,7 +969,54 @@ C$OMP BARRIER
 # ifdef GLS_MIXING
         call gls_mixing (tile)
 # endif
+#ifdef MUSTANG
+
+#ifdef MPI
+#define LOCALLM Lmmpi
+#define LOCALMM Mmmpi
+#else
+#define LOCALLM Lm
+#define LOCALMM Mm
+#endif
+      chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
+      margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
+      chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
+      margin_E=(NSUB_E*chunk_size_E-LOCALMM)/2
+
+      Istr2=1-margin_X
+      Iend2=Istr2+chunk_size_X-1
+      Istr2=max(Istr2,1)
+      Iend2=min(Iend2,LOCALLM)
+      Jstr2=1+-margin_E
+      Jend2=Jstr2+chunk_size_E-1
+      Jstr2=max(Jstr2,1)
+      Jend2=min(Jend2,LOCALMM)
+      CALL MUSTANG_update(ISTR2,IEND2,JSTR2,JEND2,
+     &         RESIDUAL_THICKNESS_WAT,
+     &         WATER_CONCENTRATION,Z0HYDRO,
+#ifdef key_MUSTANG_V2
+     &         CELL_DX,CELL_DY,
+#endif
+     &         BATHY_H0,WATER_ELEVATION,
+#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
+     &         BAROTROP_VELOCITY_U,
+     &         BAROTROP_VELOCITY_V,
+#endif
+     &         RHOREF, CELL_SURF,SALREF_LIN,TEMPREF_LIN,
+     &         TRANSPORT_TIME_STEP)
+#endif
         call step3d_t (tile)
+
+#ifdef MUSTANG
+        CALL MUSTANG_deposition(ISTR2,IEND2,
+     &                JSTR2,JEND2,
+     &           WATER_ELEVATION,CELL_SURF,BATHY_H0,
+#if defined key_MUSTANG_slipdeposit
+     &           CELL_DX,CELL_DY,
+#endif
+     &           RESIDUAL_THICKNESS_WAT,WATER_CONCENTRATION)
+#endif
+
 # ifdef SEDIMENT
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim)
@@ -993,6 +1052,46 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 # endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! MUSTANG MORPHO
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#if defined MUSTANG  && defined SUBSTANCE
+
+       IF (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) THEN
+!    IF (l_morphocoupl .AND. CURRENT_TIME .GE. tstart_dyninsed ) THEN
+!#ifdef key_MARS
+!            IF (CURRENT_TIME .GE. t_morpho .AND. MOD(nbouc,1) == 0) THEN
+!#else
+!            IF(CURRENT_TIME .GE. t_morpho) THEN
+
+         CALL MUSTANG_morpho(ISTR2,IEND2,JSTR2,JEND2,              
+     &                     BATHY_H0,              
+     &                WATER_ELEVATION,                              
+#if (defined key_oasis && defined key_oasis_mars_ww3) || (defined MUSTANG_MOVING_BATHY_byHYDRO)
+     &                                 DHSED,                       
+#endif                                     
+#ifdef key_MUSTANG_bedload
+     &                                 CELL_DX,CELL_DY,             
+#endif                                     
+     &                RESIDUAL_THICKNESS_WAT)
+       END IF
+
+#ifdef MUSTANG_MORPHODYN_byHYDRO
+      do tile=my_first,my_last
+        call set_depth_morphodyn (tile)
+      enddo
+!!! remise a 0 de dhsed:
+      do j=JSTR2,JEND2   
+        do i=ISTR2,IEND2
+          DHSED(i,j)=0.0_rsh
+        enddo
+      enddo
+# endif
+
+#endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #endif /* SOLVE3D */
 

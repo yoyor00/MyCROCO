@@ -886,11 +886,17 @@ C$    integer  trd, omp_get_thread_num
 # include "ocean3d.h"
 # include "scalars.h"
 # include "sediment.h"
+# if defined SUBSTANCE
+      USE comsubstance, ONLY : cobc_wat
+# endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    cff,cff1
 # if defined IGW
       real    sig,rhom,depth
 # endif  
+# if defined SUBSTANCE
+      integer iv
+# endif 
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -1203,6 +1209,24 @@ C$    integer  trd, omp_get_thread_num
               tclm(i,j,k,itpas)=0.0
             endif
 #  endif
+          enddo
+        enddo
+      enddo
+# endif
+
+# ifdef SUBSTANCE
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            do iv=itsubs1,itsubs2
+#  ifdef ANA_TCLIMA
+               tclm(i,j,k,iv)=cobc_wat(iv)
+#  else
+               if (.not.got_tclm(iv)) then
+                tclm(i,j,k,iv)=cobc_wat(iv)
+               endif
+#  endif
+            enddo
           enddo
         enddo
       enddo
@@ -2303,6 +2327,9 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
+# if defined SUBSTANCE
+      USE comsubstance, ONLY : cobc_wat
+# endif
       implicit none          
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
@@ -2386,7 +2413,11 @@ C$    integer  trd, omp_get_thread_num
         else 
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
-            zetabry_west(j)=0.0
+#         ifdef CHANNEL
+            zetabry_west(j)=0.0464  !valeur??
+#         else
+            zetabry_west(j)=0.0  
+#         endif
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
@@ -2394,10 +2425,74 @@ C$    integer  trd, omp_get_thread_num
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
+#         ifdef CHANNEL
+!            ubarbry_west(j)=0.6
+! pour s accorder avec MARS: valeur de ubar modelise apres forcage en ssh
+            ubarbry_west(j)=0.58
+            vbarbry_west(j)=0.0
+#         else
             ubarbry_west(j)=0.0
             vbarbry_west(j)=0.0
+#         endif
           enddo
 #   endif
+#   if defined SOLVE3D && \
+     (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+          do k=1,N
+            do j=JstrR,JendR
+#    ifdef M3_FRC_BRY
+#         ifdef CHANNEL
+! pour s accorder avec MARS: valeur de ubar modelise apres forcage en ssh
+              ubry_west(j,k)=0.58
+              vbry_west(j,k)=0.0
+#         else
+              ubry_west(j,k)=0.0
+              vbry_west(j,k)=0.0
+#         endif
+#    endif
+#    ifdef W_FRC_BRY
+              wbry_west(j,k)=wz(0,j,k,1)
+#    endif
+#    ifdef T_FRC_BRY
+#    ifdef SUBSTANCE
+#     ifdef CHANNEL
+            tbry_west(j,k,1)=10. ! temperature
+#          ifdef SALINITY
+            tbry_west(j,k,2)=35. ! salinity
+            tbry_west(j,k,3)=851.2 ! traceur 1 MES   # SABLEGRO 
+            tbry_west(j,k,4)=851.2 ! traceur 1 MES  # SABLEFIN
+#          else
+            tbry_west(j,k,2)=851.2 ! traceur 1 MES   # SABLEGRO 
+            tbry_west(j,k,3)=851.2 ! traceur 1 MES  # SABLEFIN
+#          endif
+
+#     else
+            do itrc=1,itsubs1-1
+              tbry_west(j,k,itrc)=0.
+            enddo
+            do itrc=itsubs1,NT
+            write(*,*) 'cobc_wat',itrc,itsubs1,NT,cobc_wat(itrc)
+              tbry_west(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#     endif
+#   else
+#     if defined TFLAT2DV
+              tbry_west(j,k,1)=10. ! temperature
+              tbry_west(j,k,2)=35. ! salinity
+              tbry_west(j,k,3)=0. ! traceur 1 MES   # SABLEGRO  CAS TEST T2FLAT
+              tbry_west(j,k,4)=0. ! traceur 1 MES  # SABLEFIN
+              tbry_west(j,k,5)=0. ! traceur 1 MES  # VASE
+#     else
+              do itrc=1,NT
+                tbry_west(j,k,itrc)=t(0,j,k,1,itrc)    ! ou =0. ??
+              enddo
+#     endif
+#    endif
+#    endif
+            enddo
+          enddo
+#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+
         endif
 #  endif /* WAVE_MAKER */
       endif
@@ -2433,9 +2528,30 @@ C$    integer  trd, omp_get_thread_num
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
 #   ifdef T_FRC_BRY
-              do itrc=1,NT
-                tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
-              enddo
+#   ifdef SUBSTANCE
+#     ifdef CHANNEL
+            tbry_east(j,k,1)=10. ! temperature
+#          ifdef SALINITY
+            tbry_east(j,k,2)=35. ! salinity
+            tbry_east(j,k,3)=851.2 ! traceur 1 MES   # SABLEGRO 
+            tbry_east(j,k,4)=851.2 ! traceur 1 MES  # SABLEFIN
+#          else
+            tbry_east(j,k,2)=851.2 ! traceur 1 MES   # SABLEGRO 
+            tbry_east(j,k,3)=851.2 ! traceur 1 MES  # SABLEFIN
+#          endif
+#     else
+            do itrc=1,itsubs1-1
+              tbry_east(j,k,itrc)=0.
+            enddo
+            do itrc=itsubs1,NT
+              tbry_east(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#     endif
+#   else
+            do itrc=1,NT
+              tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)  ! ou =0. ??
+            enddo
+#   endif
 #   endif
             enddo
           enddo
@@ -2443,7 +2559,11 @@ C$    integer  trd, omp_get_thread_num
         else 
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
+#   ifdef CHANNEL
+            zetabry_east(j)=0.0394  ! valeur?
+#   else
             zetabry_east(j)=0.0
+#   endif
 #   ifdef OBC_PATM
             zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
 #   endif
@@ -2451,10 +2571,59 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
-            ubarbry_east(j)=0.0
-            vbarbry_east(j)=0.0
+#   ifdef CHANNEL
+            ubarbry_east(j)=0.58
+            vbarbry_east(j)=0.
+#   else
+            ubarbry_east(j)=0.
+            vbarbry_east(j)=0.
+#   endif
           enddo
 #  endif
+#  if defined SOLVE3D && \
+     (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+          do k=1,N
+            do j=JstrR,JendR
+#   ifdef M3_FRC_BRY
+#      ifdef CHANNEL
+              ubry_east(j,k)=0.58
+              vbry_east(j,k)=0.0
+#      else
+              ubry_east(j,k)=0.0
+              vbry_east(j,k)=0.0
+#      endif
+#   endif
+#   ifdef W_FRC_BRY
+              wbry_east(j,k)=wz(Iend+1,j,k,1)
+#   endif
+#   ifdef T_FRC_BRY
+#   ifdef SUBSTANCE
+#   ifdef CHANNEL
+             tbry_east(j,k,1)=10. ! temperature
+#            ifdef SALINITY
+             tbry_east(j,k,2)=35. ! salinity
+#            endif
+             do itrc=itsubs1,NT
+              tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
+             enddo
+#   else
+
+            do itrc=1,itsubs1-1
+              tbry_east(j,k,itrc)=0.
+            enddo
+            do itrc=itsubs1,NT
+              tbry_east(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#   endif
+#   else
+            do itrc=1,NT
+              tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)  ! ou =0. ??
+            enddo
+#   endif
+#   endif
+            enddo
+          enddo
+#  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         endif
       endif
 # endif /* OBC_EAST */
@@ -2489,9 +2658,18 @@ C$    integer  trd, omp_get_thread_num
               wbry_south(i,k)=wz(i,0,k,1)
 #   endif
 #   ifdef T_FRC_BRY
-              do itrc=1,NT
-                tbry_south(i,k,itrc)=t(i,0,k,1,itrc)
-              enddo
+#   ifdef SUBSTANCE
+            do itrc=1,itsubs1-1
+              tbry_south(j,k,itrc)=0.
+            enddo
+            do itrc=itsubs1,NT
+              tbry_south(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#   else
+            do itrc=1,NT
+              tbry_south(i,k,itrc)= t(i,0,k,1,itrc)  ! =0.??
+            enddo
+#   endif
 #   endif
             enddo
           enddo
@@ -2545,9 +2723,18 @@ C$    integer  trd, omp_get_thread_num
               wbry_north(i,k)=wz(i,Jend+1,k,1)
 #   endif
 #   ifdef T_FRC_BRY
-              do itrc=1,NT
-                tbry_north(i,k,itrc)=t(i,Jend+1,k,1,itrc)
-              enddo
+#   ifdef SUBSTANCE
+            do itrc=1,itsubs1-1
+              tbry_north(j,k,itrc)=0.
+            enddo
+            do itrc=itsubs1,NT
+              tbry_north(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#   else
+            do itrc=1,NT
+              tbry_north(i,k,itrc)=t(i,Jend+1,k,1,itrc) ! =0.??
+            enddo
+#   endif
 #   endif
             enddo
           enddo

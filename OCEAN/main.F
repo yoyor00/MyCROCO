@@ -31,6 +31,13 @@
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces 
 #endif
+#ifdef SUBSTANCE
+          !USE comsubstance
+          USE substance , ONLY : substance_read_alloc
+#endif
+#ifdef MUSTANG
+          USE initMUSTANG
+#endif
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -72,11 +79,18 @@
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 #endif
-     
+#ifdef MUSTANG
+#include "coupleur_define_MUSTANG.h"
+#include "ocean3d.h"
+#endif     
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
       NSUB_X = 1
       NSUB_E = NPP
+#endif
+#ifdef MUSTANG
+       integer :: Istr2,Jstr2,Iend2,Jend2
+       integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
 #endif
 !
 #include "dynderivparam.h"
@@ -168,6 +182,25 @@
       call init_sediment
 #  endif
 # endif
+#endif
+ 
+!
+!   module SUBSTANCE
+!
+#ifdef SUBSTANCE
+      call substance_read_alloc(may_day_flag,indxT)
+   !  &                            wrthis(indxT+2:indxT+2+ntrc_substot))
+#endif
+
+!   module MUSTANG
+!
+#ifdef MUSTANG
+     ! general initialization ( parameters ..)
+      CALL MUSTANG_initialization(
+#ifdef key_MUSTANG_flocmod
+     &           TRANSPORT_TIME_STEP,
+#endif
+     &           RHOREF)
 #endif
 !
 !----------------------------------------------------------------------
@@ -352,6 +385,52 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # else
       call get_sediment
 # endif
+#endif
+!
+!----------------------------------------------------------------------
+!  MUSTANG : initialization sediment concentrations
+!----------------------------------------------------------------------
+!
+#ifdef MUSTANG
+#ifdef MPI
+#define LOCALLM Lmmpi
+#define LOCALMM Mmmpi
+#else
+#define LOCALLM Lm
+#define LOCALMM Mm
+#endif
+      chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
+      margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
+      chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
+      margin_E=(NSUB_E*chunk_size_E-LOCALMM)/2
+
+      Istr2=1-margin_X
+      Iend2=Istr2+chunk_size_X-1
+      Istr2=max(Istr2,1)
+      Iend2=min(Iend2,LOCALLM)
+      Jstr2=1+-margin_E
+      Jend2=Jstr2+chunk_size_E-1
+      Jstr2=max(Jstr2,1)
+      Jend2=min(Jend2,LOCALMM)
+
+       CALL MUSTANG_init_sediment(Istr2,Iend2,Jstr2,Jend2,
+     &     0,BATHY_H0,WATER_ELEVATION,
+#if (defined key_oasis && defined key_oasis_croco_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO
+     &     DHSED,
+#endif
+#if defined key_MUSTANG_debug && defined SPHERICAL
+     &     LATITUDE,LONGITUDE,
+#endif  
+#if defined key_MUSTANG_V2
+#if defined key_MUSTANG_bedload
+     &     CELL_DX,CELL_DY,
+#endif 
+#endif 
+     &     vname,indxT,ntrc_salt,
+     &     RESIDUAL_THICKNESS_WAT,Z0HYDRO,
+     &     WATER_CONCENTRATION)
+
+
 #endif
 !
 !----------------------------------------------------------------------
@@ -695,6 +774,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
       call croco_oa(0)
 #endif
 
+#ifdef MUSTANG
+!   module MUSTANG - CPP keys and some parameters verfication
+      CALL MUSTANG_compatibility(vname,indxT,ntrc_salt)
+#endif
 
 CR      write(*,*) '  0' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT

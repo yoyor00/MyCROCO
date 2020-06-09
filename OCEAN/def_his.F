@@ -35,7 +35,15 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+# ifdef MUSTANG 
+      USE comMUSTANG, only:nk_nivsed_out,nv_out3Dnv_specif
+     &      , nv_out2D_specif,nv_out3Dk_specif
+# endif
+!
       implicit none
+# ifdef MUSTANG 
+      integer indx,ik
+# endif
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3), auxil(2), checkdims
@@ -47,7 +55,7 @@
      &      , indxWrk
 #endif
 #ifdef SOLVE3D
-     &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4), w3dgrd(4), itrc
+     &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4), w3dgrd(4), itrc,itrv
 #endif
 #if defined MRL_WCI
      &      , iwkb
@@ -76,6 +84,7 @@
 # define vidU hisU
 # define vidV hisV
 # define vidT hisT
+# define vidM hisMust
 # define vidR hisR
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
@@ -94,7 +103,7 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
-# ifdef MORPHODYN
+# if defined MORPHODYN  || defined  MUSTANG_MORPHODYN_byHYDRO
 #  define vidHm hisHm
 # endif
 # ifdef WAVE_IO
@@ -162,6 +171,7 @@
 # define vidV avgV
 # define vidT avgT
 # define vidR avgR
+# define vidM avgMust
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
@@ -199,7 +209,7 @@
 # define vidWstr avgWstr
 # define vidUWstr avgUWstr
 # define vidVWstr avgVWstr
-# ifdef MORPHODYN
+# if defined MORPHODYN  || defined  MUSTANG_MORPHODYN_byHYDROYDRO
 #  define vidHm avgHm
 # endif
 # ifdef WAVE_IO
@@ -334,6 +344,9 @@
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
 #ifdef SEDIMENT
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
+#endif
+#ifdef  MUSTANG 
+        ierr=nf_def_dim (ncid, 's_b',      nk_nivsed_out,  b3dgrd(3))
 #endif
 #ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
@@ -561,11 +574,14 @@
 
         endif
 
-#ifdef MORPHODYN 
+# if defined MORPHODYN  || defined  MUSTANG_MORPHODYN_byHYDROYDRO
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
      &                              NF_FOUT, 3, r2dgrd, vidHm)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidHm,nf_collective)
+# endif
 #ifndef AVRH
           lvar=lenstr(vname(2,indxHm))
           ierr=nf_put_att_text (ncid, vidHm, 'long_name', lvar,
@@ -650,7 +666,7 @@
 !
 ! Tracer variables.
 !
-        do itrc=1,NT
+        do itrc=1,NTot
           if (wrt(indxT+itrc-1)) then
             lvar=lenstr(vname(1,indxT+itrc-1))
             ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
@@ -680,6 +696,69 @@
 
             endif
       enddo
+
+# ifdef MUSTANG
+      do itrc=1,3
+       indx=indxT+ntrc_salt+ntrc_substot+itrc
+       lvar=lenstr(vname(1,indx))
+       ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidM(itrc))   ! 2D: ksmax,Eptot,Tenfon
+# ifdef NC4PAR
+       ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
+# endif
+       call nf_add_attribute(ncid,vidM(itrc),indx,5, NF_FOUT, ierr)
+!       write(*,*)'idVAR',indx,vname(1,indx),vidM(itrc)
+      end do
+      
+      do itrc=1,3
+       indx=indxT+ntrc_salt+ntrc_substot+itrc+3
+       ierr=nf_def_var (ncid, vname(1,indx),
+     &                             NF_FOUT, 4, b3dgrd, vidM(itrc+3))  ! 3D: dzs,tempsed,salsed
+# ifdef NC4PAR
+       ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
+# endif
+!       call nf_add_attribute(ncid,vidM(itrc+3),indx,NF_FOUT, ierr)
+!       write(*,*)'idVAR',indx,vname(1,indx),vidM(itrc+3)
+      end do
+      do itrc=1,ntrc_subs
+       indx=indxT+ntrc_salt+ntrc_substot+itrc+6
+       ierr=nf_def_var (ncid, vname(1,indx),
+     &                             NF_FOUT, 4, b3dgrd, vidM(itrc+6))  ! 3D: traceurSed
+# ifdef NC4PAR
+       ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
+# endif
+       call nf_add_attribute(ncid,vidM(itrc+6),indx, 5, NF_FOUT, ierr)
+!       write(*,*)'idVAR',indx,vname(1,indx),vidM(itrc+6)
+      end do
+# ifdef key_MUSTANG_specif_outputs
+      ik=0
+      do itrc=1,ntrc_subs
+       do itrv=1,nv_out3Dnv_specif
+        ik=ik+1
+        indx=indx+1
+        ierr=nf_def_var (ncid, vname(1,indx),
+     &                             NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
+# endif
+       call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs), 5, indx,NF_FOUT, ierr)
+!        write(*,*)'idVAR',indx,vname(1,indx),vidM(ik+6+ntrc_subs)
+       end do
+      end do
+      do itrv=1,nv_out2D_specif
+        ik=ik+1
+        indx=indx+1
+        ierr=nf_def_var (ncid, vname(1,indx),
+     &                             NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
+# endif
+       call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5, NF_FOUT, ierr)
+
+!        write(*,*)'idVAR',indx,vname(1,indx),vidM(ik+6+ntrc_subs)
+      end do
+# endif
+#endif
 !
 ! Density anomaly.
 !
@@ -2224,7 +2303,7 @@
 !
 ! time evolving bathymetry
 !
-# ifdef MORPHODYN
+# if defined MORPHODYN || defined  MUSTANG_MORPHODYN_byHYDRO
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), vidHm)
@@ -2306,7 +2385,7 @@
 !
 ! Tracer variables.
 !
-        do itrc=1,NT
+        do itrc=1,NTot
           if (wrt(indxT+itrc-1)) then
             lvar=lenstr(vname(1,indxT+itrc-1))
             ierr=nf_inq_varid (ncid, vname(1,indxT+itrc-1)(1:lvar),
@@ -2588,6 +2667,47 @@
         endif
 !
 # endif
+
+# ifdef MUSTANG
+      do itrc=1,3
+       indx=indxT+ntrc_salt+ntrc_substot+itrc
+       lvar=lenstr(vname(1,indx))
+       ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc))   ! 2D: ksmax,Eptot,Tenfon
+!       write(*,*)'IDVAR',vname(1,indx),vidM(itrc)
+      end do
+      do itrc=1,3
+       indx=indxT+ntrc_salt+ntrc_substot+itrc+3                 ! 3D: dzs,tempsed,salsed
+       lvar=lenstr(vname(1,indx))
+       ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+3))
+       write(*,*)'IDVAR',vname(1,indx),vidM(itrc+3)
+      end do
+      do itrc=1,ntrc_subs
+       indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
+       lvar=lenstr(vname(1,indx))
+       ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+6))
+!       write(*,*)'IDVAR',vname(1,indx),vidM(itrc+6)
+      end do
+# ifdef key_MUSTANG_specif_outputs
+      ik=0
+      do itrc=1,ntrc_subs
+       do itrv=1,nv_out3Dnv_specif
+        ik=ik+1
+        indx=indx+1
+        lvar=lenstr(vname(1,indx))
+        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
+!       write(*,*)'idVAR',indx,vname(1,indx),vidM(ik+6+ntrc_subs)
+       end do
+      end do
+      do itrv=1,nv_out2D_specif
+        ik=ik+1
+        indx=indx+1
+        lvar=lenstr(vname(1,indx))
+        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
+!        write(*,*)'idVAR',indx,vname(1,indx),vidM(ik+6+ntrc_subs)
+      end do
+# endif
+#endif
+
 
 # if defined BIOLOGY & !defined PISCES
 !
@@ -2969,7 +3089,7 @@
 # undef vidKVF
 # undef vidCALP
 # undef vidKAPS
-# ifdef MORPHODYN
+#if defined MORPHODYN || defined  MUSTANG_MORPHODYN_byHYDRO
 #  undef vidHm
 # endif
 #endif
