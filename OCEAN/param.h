@@ -223,9 +223,8 @@
 !
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES     
-!      parameter (NP_XI=14,  NP_ETA=6,  NNODES=NP_XI*NP_ETA)
-      parameter (NP_XI=11,  NP_ETA=12,  NNODES=84)
+      integer NP_XI, NP_ETA, NNODES
+      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
