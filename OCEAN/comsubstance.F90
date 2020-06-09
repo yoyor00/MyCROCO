@@ -11,11 +11,11 @@
    !!        ! 2018-08 (B. Thouvenin) adapted from MARS for key SUBSTANCE   !! 
    !!======================================================================
 
+#if defined SUBSTANCE
 
    !! * Modules used
    USE module_substance
 
-#if defined SUBSTANCE
    !-------------------------------------------------------------------
    !  definition of rsh, rlg...
    !-------------------------------------------------------------------
