@@ -221,7 +221,7 @@ if [ ${FLAG_OPENMP} -eq 1 ]; then
 	\mv tmp.txt ${TEST_NAME}_steps 
     fi  
     if [ "$myreturn" -eq 2 ]; then
-	SUCCESS_EXEC_MPI=$(($SUCCESS_EXEC_MPI+1))
+	SUCCESS_EXEC_OPENMP=$(($SUCCESS_EXEC_OPENMP+1))
 	sed -e '2c N' ${TEST_NAME}_steps > tmp.txt 
 	\mv tmp.txt ${TEST_NAME}_steps 
     fi  
@@ -291,6 +291,7 @@ echo " "
 if [  "$SUCCESS" -ne 0 ]; then
     #sed not needed 
     sed -e '3c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
+    sed -e '4c ?' ${TEST_NAME}_steps > tmp.txt ; \mv tmp.txt ${TEST_NAME}_steps
     #echo
     echo "Final SUCCESS -ne 0 => "
     echo "      SOMETHING WRONG HAPPENED WITH ${CONFIG_NAME}"
