@@ -1,6 +1,6 @@
 #!/bin/bash
 #OAR --project moise-modeling
-#OAR -l /nodes=1/cpu=1/core=2,walltime=5:00:00
+#OAR -l /nodes=1/cpu=2/core=8,walltime=15:00:00
 
 set -x
 set -e
@@ -50,4 +50,4 @@ $guix_cmd environment --pure --ad-hoc $packages -- ../OCEAN/jobcomp
 # history -> obs
 #cp CROCO_FILES/croco_his.nc CROCO_FILES/obs.nc
 
-$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco_adc croco-est.in
+$guix_cmd environment --pure --ad-hoc $packages -- $mpirun_cmd ./croco_adj croco-est.in

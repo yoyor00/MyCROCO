@@ -90,9 +90,9 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
 
       dx=1.e-10
       df1=cost
-      epsrel=1.e-4
-      niter=200
-      nsim=200
+      epsrel=1.e-12
+      niter=2000
+      nsim=2000
       normtype = 'dfn'
       io=6
       imp=5
