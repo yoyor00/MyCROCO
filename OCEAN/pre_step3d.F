@@ -1039,8 +1039,14 @@
 #  endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Hz_half(START_2D_ARRAY,1))
+!
+!     DO NOT EXCHANGE:
+!     1/ it's not needed
+!     2/ Hz_Half doesn't have the proper shape, it's (PRIVATE_2D_SCRATCH_ARRAY, N)
+!     not (GLOBAL_2D_ARRAY, N)
+!
+!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+!     &                        Hz_half(START_2D_ARRAY,1))
 # endif
 
 !     Multiply u,v,w to get back fluxes for use inside mg_solve
