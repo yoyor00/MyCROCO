@@ -248,7 +248,7 @@
 !
 !----------------------------------------------------------------------
 ! OA coupling parametrization for current feedback on wind-stress  
-! (Renault et al., Sc. Reports 2017)
+! (Renault et al., JAMES 2020)
 !----------------------------------------------------------------------
 !
 #ifdef SMFLUX_CFB

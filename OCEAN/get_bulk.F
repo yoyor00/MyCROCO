@@ -526,7 +526,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # include "forces.h"
 # include "scalars.h"
 # include "grid.h"
-# if defined SMFLUX_CFB && defined STFLUX_CFB
+# if defined SMFLUX_CFB && defined CFB_WIND
 #  include "ocean3d.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
@@ -541,13 +541,13 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifdef DIURNAL_INPUT_SRFLX
       real val55
 # endif /* DIURNAL_INPUT_SRFLX */
-# if defined SMFLUX_CFB && defined STFLUX_CFB
+# if defined SMFLUX_CFB && defined CFB_WIND
       integer imax,jmax
 # endif
 !
 # include "compute_extended_bounds.h"
 !
-# if defined SMFLUX_CFB && defined STFLUX_CFB
+# if defined SMFLUX_CFB && defined CFB_WIND
 #  ifdef MPI
        imax=IendR+1
        jmax=JendR+1
@@ -593,7 +593,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
 # ifdef BULK_SMFLUX
 #  ifdef BULK_SM_UPDATE
-#   if defined SMFLUX_CFB && defined STFLUX_CFB
+#   if defined SMFLUX_CFB && defined CFB_WIND
 !     
 !     Compute relative winds ---
 !     
@@ -615,19 +615,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
      &                         0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
               enddo
             enddo
-#    ifndef CFB_WIND
-!
-!  If coupling parametrization is based on wind-stress correction, not wind (CFB_STRESS), 
-!  keep absolute wind components (uwnd,vwnd); in this case, only relative wind speed (wspd) 
-!  is used for heat flux computation in bulk_flux)
-!
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                uwnd(i,j)=uwndg(i,j,itbulk)
-                vwnd(i,j)=vwndg(i,j,itbulk)
-              enddo
-            enddo
-#    endif
 #    ifndef EW_PERIODIC
             if (WESTERN_EDGE) then
               do j=Jstr,Jend
@@ -668,16 +655,16 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 #    endif
 #    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
-     &           wspd(START_2D_ARRAY))
+     &                             wspd(START_2D_ARRAY))
 #    endif
-#   else /* SMFLUX_CFB */
+#   else
             do j=JstrR,JendR
               do i=IstrR,IendR
                 uwnd(i,j)=uwndg(i,j,itbulk)
                 vwnd(i,j)=vwndg(i,j,itbulk)
               enddo
             enddo
-#   endif /* SMFLUX_CFB */
+#   endif /* SMFLUX_CFB && CFB_WIND */
 #  else /* BULK_SM_UPDATE */
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -803,7 +790,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           enddo
 # ifdef BULK_SMFLUX
 #  ifdef BULK_SM_UPDATE
-# if defined SMFLUX_CFB && defined STFLUX_CFB
+#   if defined SMFLUX_CFB && defined CFB_WIND
 !     
 !     Compute relative winds ---
 !     
@@ -811,35 +798,21 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           do j=JstrR,JendR
             do i=IstrR,imax
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
-     &             -cff*u(i,j,N,nrhs)
+     &                                       -cff*u(i,j,N,nrhs)
             enddo
           enddo
           do j=JstrR,jmax
             do i=IstrR,IendR+1
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
-     &             -cff*v(i,j,N,nrhs)
+     &                                       -cff*v(i,j,N,nrhs)
             enddo
           enddo
           do j=JstrR,min(JendR,Mm)
             do i=IstrR,min(IendR,Lm)
               wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
-     &             0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
+     &                       0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
             enddo
           enddo
-#    ifndef CFB_WIND
-!
-!  If coupling parametrization is based on wind-stress correction, not wind (CFB_STRESS),
-!  keep absolute wind components (uwnd,vwnd); in this case, only relative wind speed (wspd) 
-!  is used for heat flux computation in bulk_flux)
-!
-!
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                uwnd(i,j)=uwndg(i,j,itbulk)
-                vwnd(i,j)=vwndg(i,j,itbulk)
-              enddo
-            enddo
-#    endif
 #    ifndef EW_PERIODIC
           if (WESTERN_EDGE) then
             do j=Jstr,Jend
@@ -880,7 +853,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 #    endif
 #    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
-     &         wspd(START_2D_ARRAY))
+     &                           wspd(START_2D_ARRAY))
 #    endif
 #   else
           do j=JstrR,JendR
@@ -889,7 +862,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
             enddo
           enddo
-#   endif /* SMFLUX_CFB */
+#   endif /* SMFLUX_CFB && CFB_WIND */
 #  else 
           do j=JstrR,JendR
             do i=IstrR,IendR
