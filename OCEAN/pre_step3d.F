@@ -1138,7 +1138,7 @@
 
          do k=1,N    
 
-            if (surface_neumann.and.vanishing_wtop) then
+            if (surface_neumann) then
                do j=Jstr,Jend
                   do i=Istr,Iend
                      wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)

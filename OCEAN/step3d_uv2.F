@@ -968,7 +968,7 @@
 !    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
 !         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
 !     At this point u,v,w are fluxes with the dimension of m^3/s
-       if (surface_neumann.and.vanishing_wtop) then
+       if (surface_neumann) then
           do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend
