@@ -90,6 +90,9 @@
 
       real bedload_coeff, morph_fac
       common /bed_coeff/ bedload_coeff, morph_fac 
+
+      real tau_ce_2d(GLOBAL_2D_ARRAY,NST)
+      common /hidexp/ tau_ce_2d
   
 # ifdef SUSPLOAD
       real settling_flux(GLOBAL_2D_ARRAY,NST)
@@ -99,7 +102,7 @@
 # ifdef BEDLOAD
       real bedldu(GLOBAL_2D_ARRAY,NST)
       real bedldv(GLOBAL_2D_ARRAY,NST)
-      common /sed_bedload/ bedldu, bedldv  
+      common /sed_bedload/ bedldu, bedldv
 # endif
 # ifdef MORPHODYN
       real bed_thick_tot(GLOBAL_2D_ARRAY,2)

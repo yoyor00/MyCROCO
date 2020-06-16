@@ -2,13 +2,13 @@ title:
         Dune Test case 
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                4032000    0.3     60      100
+               1382400    1        5      1000
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0      10000
 
 sediments: input file
-           TEST_CASES/sediment_dune.in
+           sediment_dune.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T
@@ -17,11 +17,11 @@ initial: NRREC  filename
           0
 
 restart:          NRST, NRPFRST / filename
-                  4032000   0
+                  1382400   0
                           dune_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     12000        0
+            T     86400        0
                           dune_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)

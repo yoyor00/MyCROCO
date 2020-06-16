@@ -772,19 +772,21 @@
 #ifdef SEDIMENT
 # define SUSPLOAD
 # define BEDLOAD
+# undef  BED_ARMOR
 # ifdef BEDLOAD
-#  undef  SLOPE_NEMETH
-#  define  SLOPE_LESSER
+#  undef  BEDLOAD_SOULSBY
+#  define BEDLOAD_MPM
 #  ifdef DUNE
-#   undef BEDLOAD_SOULSBY
-#   undef BEDLOAD_MPM
+#   undef  SUSPLOAD
+#   undef  BEDLOAD_SOULSBY
+#   undef  BEDLOAD_MPM
 #   define BEDLOAD_WULIN
-#   undef SUSPLOAD
-#   undef SLOPE_NEMETH
+#   undef  SLOPE_NEMETH
 #   define SLOPE_LESSER
-#   undef SLOPE_KIRWAN
-#  elif (defined WAVE_OFFLINE || defined WKB_WWAVE || defined ANA_WWAVE\
-                            || defined OW_COUPLING)
+#   undef  SLOPE_KIRWAN
+#   define TAU_CRIT_WULIN
+#  elif (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
+         defined ANA_WWAVE    || defined OW_COUPLING)
 #   define BEDLOAD_SOULSBY
 #   define Z0_BL  /* Mandatory with BEDLOAD_SOULSBY */
 #   define Z0_RIP
