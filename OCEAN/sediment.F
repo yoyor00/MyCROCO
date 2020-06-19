@@ -416,7 +416,7 @@ C$OMP BARRIER
             theta_max1=SQRT((theta_mean+                       
      &                       cff1*COS(phicw(i,j)))**2+    
      &                      (cff1*SIN(phicw(i,j)))**2)
-            theta_max2=SQRT((theta_mean+tau_ce_2d(i,j,ised)+
+            theta_max2=SQRT((theta_mean+
      &                       cff2*COS(phicw(i,j)+pi))**2+ 
      &                      (cff2*SIN(phicw(i,j)+pi))**2)
             theta_max=MAX(theta_max1,theta_max2)

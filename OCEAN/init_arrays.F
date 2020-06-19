@@ -659,12 +659,15 @@ C$    integer omp_get_thread_num
       got_inised(1:3)=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
-           Ssize(i,j)=init
-           Sdens(i,j)=init
-           taucb(i,j)=init
-           w_set(i,j)=init
-           Hripple(i,j)=init
-           Lripple(i,j)=init
+          Ssize(i,j)=init
+          Sdens(i,j)=init
+          taucb(i,j)=init
+          w_set(i,j)=init
+          Hripple(i,j)=init
+          Lripple(i,j)=init
+          do ised=1,NST
+            tau_ce_2d(i,j,ised)=tau_ce(ised)
+          enddo
           do ilay=1,NLAY
             bed_thick(i,j,ilay)=init
             bed_poros(i,j,ilay)=init
