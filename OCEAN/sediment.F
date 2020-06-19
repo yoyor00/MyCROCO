@@ -12,6 +12,7 @@
 !
 ! Adapted from John Warner's code to CROCO by R. Benshila, CNRS 2015
 ! -- modifs: P. Marchesiello, Dec 2015
+!                             Jun 2020
 !
 !======================================================================
 !
@@ -33,9 +34,6 @@
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
 # undef  NEUMANN
-
-# define BEDLOAD_WULIN
-# undef  BEDLOAD_MPM
 !
       subroutine sediment (tile)
 !
@@ -169,8 +167,7 @@ C$OMP BARRIER
      &                             tau_w,FX,FE,FX_r,FE_r
 #  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN
      &                            ,tau_wX,tau_wE,angleu,anglev
-#  endif
-#  ifdef BEDLOAD_SOULSBY
+#  elif defined BEDLOAD_SOULSBY
      &                            ,phic,phicw,tau_wav,tau_mean 
 #  endif      
      &                            )
@@ -207,10 +204,6 @@ C$OMP BARRIER
       real theta_max, theta_max1, theta_max2
       real phi_x1, phi_x2, phi_x, phi_y
       real bedld_x, bedld_y, tau_cur, waven, wavec
-#  endif
-#  ifdef BED_ARMOR
-      integer ised0
-      real ph,pe
 #  endif
       real kdmax,Kbh,Kbh2,Kdh,Fwave
       real rhs_bed, bed_change
@@ -325,59 +318,6 @@ C$OMP BARRIER
 #  endif /* BEDLOAD_MPM or BEDLOAD_WULIN */
 !
 !-----------------------------------------------------------------------
-! Compute Hiding/Exposure (Armoring) following Wu & Lin (2014)
-!
-! Resuspension of smaller size classes may be reduced due to hiding, 
-! and the coarser grains resuspend more easily due to exposure. 
-! Bed erosion may become limited when selective entrainment of the fine 
-! fraction causes "bed armoring": the remaining coarser grains inhibit 
-! resuspension of the fine grains.
-!-----------------------------------------------------------------------
-!
-#  ifdef BED_ARMOR
-!
-! Modulate critical stress tau_ce with hiding/exposure effects 
-! using hidden and exposed probabilities of each sediment particle 
-! in the bed material
-!
-      do j=J_EXT_RANGE
-        do i=I_EXT_RANGE
-          do ised=1,NST
-            ph=0.
-            pe=0.
-            do ised0=1,NST
-              cff =1./(Sd(ised)+Sd(ised0))
-              ph=ph+bed_frac(i,j,1,ised0)*cff*Sd(ised0)  ! prob hiding
-              pe=pe+bed_frac(i,j,1,ised0)*cff*Sd(ised )  ! prob exposure
-            enddo
-            tau_ce_2d(i,j,ised)=tau_ce(ised)*(pe/ph)**(-0.6)
-          enddo
-        enddo
-      enddo
-!
-#  undef DEBUG_ARMOR
-#  ifdef DEBUG_ARMOR
-      do ised=1,NST
-        MPI_master_only write(*,*) '================================'
-        MPI_master_only write(*,*) ' ised      :',ised
-        MPI_master_only write(*,*) ' Sd        :',1.e3*Sd(ised)
-        MPI_master_only write(*,*) ' bed_frac  :',bed_frac(25,1,1,ised)
-        MPI_master_only write(*,*) ' tau_ce_2d :',rho0*tau_ce_2d(25,1,ised)
-        MPI_master_only write(*,*) '================================'
-      enddo
-#  endif
-!    
-#  else
-      do ised=1,NST
-        do j=J_EXT_RANGE
-          do i=I_EXT_RANGE
-            tau_ce_2d(i,j,ised)=tau_ce(ised)
-          enddo
-        enddo
-      enddo
-#  endif
-!
-!-----------------------------------------------------------------------
 !  Compute angles
 !-----------------------------------------------------------------------
 !      
@@ -476,7 +416,7 @@ C$OMP BARRIER
             theta_max1=SQRT((theta_mean+                       
      &                       cff1*COS(phicw(i,j)))**2+    
      &                      (cff1*SIN(phicw(i,j)))**2)
-            theta_max2=SQRT((theta_mean+tau_ce_2d(i,j,ised)
+            theta_max2=SQRT((theta_mean+tau_ce_2d(i,j,ised)+
      &                       cff2*COS(phicw(i,j)+pi))**2+ 
      &                      (cff2*SIN(phicw(i,j)+pi))**2)
             theta_max=MAX(theta_max1,theta_max2)
@@ -528,7 +468,7 @@ C$OMP BARRIER
             cff=ABS(tau_wX(i,j))/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)
 #   endif
-     &                                   *smgdr*SIGN(1.,tau_wX(i,j))
+     &                                 *smgdr*SIGN(1.,tau_wX(i,j))
             FX_r(i,j)=bedld*on_r(i,j)*dt
 #   ifdef BEDLOAD_MPM
             bedld=8.*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.)**1.5)
@@ -536,7 +476,7 @@ C$OMP BARRIER
             cff=ABS(tau_wE(i,j))/tau_ce_2d(i,j,ised)-1
             bedld=0.0053*(MAX(cff,0.)**2.2)
 #   endif
-     &                                  *smgdr*SIGN(1.0,tau_wE(i,j))
+     &                                 *smgdr*SIGN(1.,tau_wE(i,j))
             FE_r(i,j)=bedld*om_r(i,j)*dt
 
 #  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) &&\
@@ -547,7 +487,7 @@ C$OMP BARRIER
 #   ifdef BEDLOAD_MPM
             bedld=8.*(MAX((tau_w(i,j)*osmgd-0.047),0.)**1.5)*smgdr
 #   elif defined BEDLOAD_WULIN
-            cff=ABS(tau_w(i,j))/tau_ce_2d(i,j,ised)-1
+            cff=tau_w(i,j)/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr
 #   endif
 !
@@ -608,7 +548,8 @@ C$OMP BARRIER
             FE_r(i,j)=FE_r(i,j) MORPH_FAC
 !
 !-----------------------------------------------------------------------
-! Apply bedload transport rate coefficient. Also limit
+! Apply bedload 
+! transport rate coefficient. Also limit
 ! bedload to the fraction of each sediment class.
 !-----------------------------------------------------------------------
 !
@@ -673,27 +614,27 @@ C$OMP BARRIER
 #  if !defined EW_PERIODIC && !defined NS_PERIODIC
         if ((SOUTHERN_EDGE).and.(WESTERN_EDGE)) then
           FX_r(Istr-1,Jstr-1)=0.5*(FX_r(Istr  ,Jstr-1)+     
-     &                                FX_r(Istr-1,Jstr  ))
+     &                             FX_r(Istr-1,Jstr  ))
           FE_r(Istr-1,Jstr-1)=0.5*(FE_r(Istr  ,Jstr-1)+       
-     &                                FE_r(Istr-1,Jstr  ))
+     &                             FE_r(Istr-1,Jstr  ))
         endif
         if ((SOUTHERN_EDGE).and.(EASTERN_EDGE)) then
           FX_r(Iend+1,Jstr-1)=0.5*(FX_r(Iend  ,Jstr-1)+      
-     &                                FX_r(Iend+1,Jstr  ))
+     &                             FX_r(Iend+1,Jstr  ))
           FE_r(Iend+1,Jstr-1)=0.5*(FE_r(Iend  ,Jstr-1)+       
-     &                                FE_r(Iend+1,Jstr  ))
+     &                             FE_r(Iend+1,Jstr  ))
         endif
         if ((NORTHERN_EDGE).and.(WESTERN_EDGE)) then
           FX_r(Istr-1,Jend+1)=0.5*(FX_r(Istr-1,Jend  )+       
-     &                                FX_r(Istr  ,Jend+1))
+     &                             FX_r(Istr  ,Jend+1))
           FE_r(Istr-1,Jend+1)=0.5*(FE_r(Istr-1,Jend  )+      
-     &                                FE_r(Istr  ,Jend+1))
+     &                             FE_r(Istr  ,Jend+1))
         endif
         if ((NORTHERN_EDGE).and.(EASTERN_EDGE)) then
           FX_r(Iend+1,Jend+1)=0.5*(FX_r(Iend+1,Jend  )+      
-     &                                FX_r(Iend  ,Jend+1))
+     &                             FX_r(Iend  ,Jend+1))
           FE_r(Iend+1,Jend+1)=0.5*(FE_r(Iend+1,Jend  )+    
-     &                                FE_r(Iend  ,Jend+1))
+     &                             FE_r(Iend  ,Jend+1))
         endif
 #  endif
 
@@ -1462,40 +1403,6 @@ C$OMP BARRIER
       enddo
 !
 !-----------------------------------------------------------------------
-! Critical shear stress recalculated (Wu & Lin (2014))
-! including hiding and exposure effects with hidden and exposed
-! probabilities of each sediment particle in the bed material
-! ifdef BEDLOAD => done in bedload routine
-!-----------------------------------------------------------------------
-!
-#  ifndef BEDLOAD
-#   ifdef BED_ARMOR
-      do j=J_EXT_RANGE
-        do i=I_EXT_RANGE
-          do ised=1,NST
-            ph=0.
-            pe=0.
-            do ised0=1,NST
-              cff =1./(Sd(ised)+Sd(ised0))
-              ph=ph+bed_frac(i,j,1,ised0)*cff*Sd(ised0)  ! prob hiding
-              pe=pe+bed_frac(i,j,1,ised0)*cff*Sd(ised )  ! prob exposure
-            enddo
-            tau_ce_2d(i,j,ised)=tau_ce(ised)*(pe/ph)**(-0.6)
-          enddo
-        enddo
-      enddo
-#   else
-      do ised=1,NST
-        do j=J_EXT_RANGE
-          do i=I_EXT_RANGE
-            tau_ce_2d(i,j,ised)=tau_ce(ised)
-          enddo
-        enddo
-      enddo
-#   endif
-#  endif
-!
-!-----------------------------------------------------------------------
 !  Compute erosion flux and resuspended load
 !-----------------------------------------------------------------------
 !
@@ -2107,6 +2014,9 @@ C$OMP BARRIER
 !
 # endif /* MORPHODYN */
 
+#  undef I_EXT_RANGE
+#  undef J_EXT_RANGE
+
       return
       end
 !
@@ -2134,14 +2044,129 @@ C$OMP BARRIER
 # include "sediment.h"
       integer Istr,Iend,Jstr,Jend
       integer i,j,ised
-      real cff1,cff2,cff3,cff4,eps
+      real cff,cff1,cff2,cff3,cff4,eps
       parameter (eps=1.D-20)
+#  if defined BED_HIDEXP || defined BED_ARMOR
+      integer ised0
+      real ph,pe, phik,phim,phis, invlog2
+#  endif
 !
 # include "compute_auxiliary_bounds.h"
+
+# define I_EXT_RANGE Istr-1,Iend+1
+# define J_EXT_RANGE Jstr-1,Jend+1
 !
+!-----------------------------------------------------------------------
+! Compute Hiding/Exposure and Armoring
+!
+! Hiding /Exposure: 
+! Resuspension of smaller size classes may be reduced due to hiding, 
+! and the coarser grains resuspend more easily due to exposure. 
+!
+! Armoring:
+! In addition, bed erosion may become limited when selective entrainment 
+! of the fine fraction causes "bed armoring": the remaining coarser 
+! grains inhibit resuspension of the fine grains.
+!-----------------------------------------------------------------------
+!
+#  ifdef BED_HIDEXP
+#   ifdef BED_HIDEXP_WULIN
+!
+! Modulate critical stress tau_ce with hiding/exposure effects 
+! using hidden and exposed probabilities of each sediment particle 
+! in the bed material (Wu & Lin 2014)
+!
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          do ised=1,NST
+            ph=0.
+            pe=0.
+            do ised0=1,NST
+              cff =1./(Sd(ised)+Sd(ised0))
+              ph=ph+bed_frac(i,j,1,ised0)*cff*Sd(ised0)  ! prob hiding
+              pe=pe+bed_frac(i,j,1,ised0)*cff*Sd(ised )  ! prob exposure
+            enddo
+            tau_ce_2d(i,j,ised)=tau_ce(ised)*(pe/ph)**(-0.6)
+          enddo
+        enddo
+      enddo
+#   else
+!
+!  Hiding/exposure factor is function of sediment size:
+!  (d(ised)/dm)^(-gamma), e.g., Wilcock & Crowe (2003)
+!
+      invlog2=1./log(2.)
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          phim=0.
+          do ised=1,NST
+            phik=-log(Sd(ised))*invlog2
+            phim=phim+phik*bed_frac(i,j,1,ised)
+          enddo
+          cff=2.**(phim)  ! 1/mean(Sd)
+          do ised=1,NST
+            cff1=1-0.67/(1+exp(1.5-Sd(ised)*cff)) ! or 1.
+            tau_ce_2d(i,j,ised)=tau_ce(ised)*(Sd(ised)*cff)**(-cff1)
+          enddo
+        enddo
+      enddo
+#   endif
+#  else
+      do ised=1,NST
+        do j=J_EXT_RANGE
+          do i=I_EXT_RANGE
+            tau_ce_2d(i,j,ised)=tau_ce(ised)
+          enddo
+        enddo
+      enddo
+#  endif
+!
+#  ifdef BED_ARMOR
+!
+! Bed erosion may become limited when selective entrainment of the fine 
+! fraction causes "bed armoring": the remaining coarser grains inhibit 
+! resuspension of the fine grains.
+! Formulation in Blaas et al. (2007) from Garcia and Parker (1991) 
+!
+      invlog2=1./log(2.)
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          phim=0.
+          phis=0.
+          do ised=1,NST
+            phik=-log(Sd(ised))*invlog2
+            phim=phim+phik*bed_frac(i,j,1,ised) ! mean
+          enddo
+          do ised=1,NST
+            phik=-log(Sd(ised))*invlog2
+            phis=phis+((phik-phim)**2)*bed_frac(i,j,1,ised) ! std
+          enddo
+          phis=SQRT(phis)
+          cff=1./(1.-0.29*phis)**5. ! 1/lambda**5
+          do ised=1,NST
+            tau_ce_2d(i,j,ised)=tau_ce_2d(i,j,ised)*cff
+          enddo
+        enddo
+      enddo
+#  endif
+
+#  undef DEBUG_ARMOR
+#  ifdef DEBUG_ARMOR
+      do ised=1,NST
+        MPI_master_only write(*,*) '================================'
+        MPI_master_only write(*,*) ' ised      :',ised
+        MPI_master_only write(*,*) ' Sd        :',1.e3*Sd(ised)
+        MPI_master_only write(*,*) ' bed_frac  :',bed_frac(25,1,1,ised)
+        MPI_master_only write(*,*) ' tau_ce_2d :',rho0*tau_ce_2d(25,1,ised)
+        MPI_master_only write(*,*) '================================'
+      enddo
+#  endif
+!
+!-----------------------------------------------------------------------
 !  Update mean surface properties.
 !  Sd50 must be positive definite, due to BBL routines.
 !  Srho must be >1000, due to (s-1) in BBL routines
+!-----------------------------------------------------------------------
 !
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
@@ -2269,6 +2294,9 @@ C$OMP BARRIER
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 Sdens(START_2D_ARRAY))
 # endif
+
+#  undef I_EXT_RANGE
+#  undef J_EXT_RANGE
 
       return
       end

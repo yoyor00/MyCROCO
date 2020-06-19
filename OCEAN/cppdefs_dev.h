@@ -773,9 +773,8 @@
 # define SUSPLOAD
 # define BEDLOAD
 # undef  BED_ARMOR
+# undef  BED_HIDEXP
 # ifdef BEDLOAD
-#  undef  BEDLOAD_SOULSBY
-#  define BEDLOAD_MPM
 #  ifdef DUNE
 #   undef  SUSPLOAD
 #   undef  BEDLOAD_SOULSBY
@@ -790,8 +789,10 @@
 #   define BEDLOAD_SOULSBY
 #   define Z0_BL  /* Mandatory with BEDLOAD_SOULSBY */
 #   define Z0_RIP
+#   define SLOPE_LESSER
 #  else
 #   define BEDLOAD_MPM
+#   define SLOPE_LESSER
 #  endif
 # endif
 #endif /* SEDIMENT */
