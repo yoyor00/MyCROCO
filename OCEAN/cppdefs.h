@@ -1432,7 +1432,8 @@
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
-
+# undef RVTK_DEBUG
+# undef RVTK_DEBUG_ADVANCED
 
 #endif /* END OF CONFIGURATION CHOICE */
 

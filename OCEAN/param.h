@@ -154,7 +154,11 @@
 #elif defined CALDEIRA
       parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined DUNE
-      parameter (LLm0=50,   MMm0=1,    N=20)   ! DUNE 2m
+# ifdef ANA_DUNE
+      parameter (LLm0=150,  MMm0=1,  N=20)     !  DUNE 2m
+# else
+      parameter (LLm0=50,   MMm0=1,  N=20)     !  DUNE 2m
+# endif    
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -477,11 +481,17 @@
 !
       integer    NGRAV, NSAND, NMUD, NST, NLAY
       parameter (NGRAV=0, NSAND=2, NMUD=0) 
-!      parameter (NST=NGRAV+NSAND+NMUD) ! robustness?
-      parameter (NST=2)  ! NST=NGRAV+NSAND+NMUD
 # if defined DUNE
+#  ifdef ANA_DUNE
+      parameter (NST=1)
+      parameter (NLAY=11)
+#  else
+      parameter (NST=2)
       parameter (NLAY=10)
+#  endif
 # else
+!     parameter (NST=NGRAV+NSAND+NMUD) ! robustness?
+      parameter (NST=2)  ! NST=NGRAV+NSAND+NMUD
       parameter (NLAY=1)
 # endif
       parameter (ntrc_sed=NST)

@@ -772,18 +772,31 @@
 #ifdef SEDIMENT
 # define SUSPLOAD
 # define BEDLOAD
-# undef  BED_ARMOR
-# undef  BED_HIDEXP
+# undef BED_ARMOR
 # ifdef BEDLOAD
+#  undef  BEDLOAD_SOULSBY
+#  define BEDLOAD_MPM
+#  ifndef BBL
+#    define BSTRESS_UPWIND
+#    undef BSTRESS_WENO5
+#  endif
 #  ifdef DUNE
+#   undef ANA_DUNE
 #   undef  SUSPLOAD
-#   undef  BEDLOAD_SOULSBY
 #   undef  BEDLOAD_MPM
 #   define BEDLOAD_WULIN
 #   undef  SLOPE_NEMETH
 #   define SLOPE_LESSER
 #   undef  SLOPE_KIRWAN
 #   define TAU_CRIT_WULIN
+#   define BSTRESS_UPWIND
+#   undef BSTRESS_WENO5
+#   ifdef ANA_DUNE
+#     undef BSTRESS_UPWIND
+#     undef BSTRESS_WENO5
+#     undef BEDLOAD_WULIN
+#     define BEDLOAD_MARIEU
+#   endif
 #  elif (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
          defined ANA_WWAVE    || defined OW_COUPLING)
 #   define BEDLOAD_SOULSBY

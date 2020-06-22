@@ -96,8 +96,7 @@
 #  endif      
 #endif
 #ifdef DUNE
-      real slopessh
-      real cff
+      real cff, cff2
 #endif
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
@@ -1002,16 +1001,18 @@
               t(i,j,k,1,itemp)=10.
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 
+#   ifdef ANA_DUNE
+              cff2=1.67
+#   else
+              cff2=0.58
+#   endif     
               cff=0.5*(1./10)**2
-!              ubar(i,j,1) = 0.58
-              ubar(i,j,1) = 0.58/(1-
+              ubar(i,j,1) = cff2/(1-
      &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
               ubar(i,j,:) = ubar(i,j,1)
               vbar(i,j,1) = 0.
               vbar(i,j,:) = vbar(i,j,1)
 
-!              slopessh=7e-5
-!              zeta(i,j,1) = -slopessh*xr(i,j)
               zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
               zeta(i,j,:) = zeta(i,j,1)
             enddo

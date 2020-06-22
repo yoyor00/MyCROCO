@@ -25,11 +25,6 @@
 #  define bnew nstp      
 # endif  /* BEDLOAD */
 !
-# ifndef BBL
-#  define BSTRESS_UPWIND
-#  undef  BSTRESS_WENO5
-# endif
-!
 # define MORPH_FAC *morph_fac
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
@@ -165,7 +160,8 @@ C$OMP BARRIER
 !
       subroutine sed_bedload_tile (Istr, Iend, Jstr, Jend,
      &                             tau_w,FX,FE,FX_r,FE_r
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+          defined BEDLOAD_MARIEU
      &                            ,tau_wX,tau_wE,angleu,anglev
 #  elif defined BEDLOAD_SOULSBY
      &                            ,phic,phicw,tau_wav,tau_mean 
@@ -179,7 +175,8 @@ C$OMP BARRIER
       real FE(PRIVATE_2D_SCRATCH_ARRAY)
       real FX_r(PRIVATE_2D_SCRATCH_ARRAY)
       real FE_r(PRIVATE_2D_SCRATCH_ARRAY)
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN 
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+          defined BEDLOAD_MARIEU
       real tau_wX(PRIVATE_2D_SCRATCH_ARRAY)
       real tau_wE(PRIVATE_2D_SCRATCH_ARRAY)
       real angleu(PRIVATE_2D_SCRATCH_ARRAY)
@@ -205,6 +202,10 @@ C$OMP BARRIER
       real phi_x1, phi_x2, phi_x, phi_y
       real bedld_x, bedld_y, tau_cur, waven, wavec
 #  endif
+#  ifdef BSTRESS_WENO5
+      real :: flux5_weno
+#     define WENO5 flux5_weno
+#  endif
       real kdmax,Kbh,Kbh2,Kdh,Fwave
       real rhs_bed, bed_change
       integer imin,imax,jmin,jmax
@@ -218,6 +219,7 @@ C$OMP BARRIER
 #  include "scalars.h"
 #  include "grid.h"
 #  include "ocean3d.h"
+#  include "ocean2d.h"
 #  include "sediment.h"
 #  include "forces.h"
 #  ifdef WKB_WWAVE
@@ -262,7 +264,8 @@ C$OMP BARRIER
 ! Compute maximum bottom stress for MPM bedload
 !-----------------------------------------------------------------------
 !
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+          defined BEDLOAD_MARIEU
 #   ifdef BBL
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
@@ -291,27 +294,29 @@ C$OMP BARRIER
      &                  cff4*(cff2*bvstr(i,j+1)+                        
      &                  cff1*0.5*(bvstr(i,j)+bvstr(i,j+1)))
 #    elif defined BSTRESS_WENO5
-            cff1=0.5*(1.0+SIGN(1.0,bustr(i  ,j)))
-            cff2=0.5*(1.0-SIGN(1.0,bustr(i  ,j)))
-            tau_wX(i,j)=cff1*weno5_interp(
-     &                       bustr(i-3,j),bustr(i-2,j),bustr(i-1,j),
-     &                       bustr(i  ,j),bustr(i+1,j),bustr(i+2,j)) +
-     &                  cff2*weno5_interp(
-     &                       bustr(i+2,j),bustr(i+1,j),bustr(i  ,j),
-     &                       bustr(i-1,j),bustr(i-2,j),bustr(i-3,j))
-            cff1=0.5*(1.0+SIGN(1.0,bvstr(i  ,j)))
-            cff2=0.5*(1.0-SIGN(1.0,bvstr(i  ,j)))
-            tau_wE(i,j)=cff1*weno5_interp(
+            IF ((( i.eq.imin ).and.(imin.lt.imax ) ).or.
+     &          (( j.eq.jmin ).and.(jmin.lt.jmax ) ) ) THEN
+              tau_wX(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))*
+     &                             (bustr(i,j)+bustr(i+1,j)))
+              tau_wE(i,j)=0.5*SQRT((bvstr(i,j)+bvstr(i,j+1))*
+     &                             (bvstr(i,j)+bvstr(i,j+1)))
+            ELSE
+              cff1=0.5*(1.0+SIGN(1.0,bustr(i  ,j)))
+              cff2=0.5*(1.0-SIGN(1.0,bustr(i  ,j)))
+              cff=SIGN(1.0,bustr(i  ,j))
+              tau_wX(i,j)=cff1*WENO5(
+     &                      bustr(i-3,j),bustr(i-2,j),bustr(i-1,j),
+     &                      bustr(i  ,j),bustr(i+1,j),bustr(i+2,j),cff)
+              cff1=0.5*(1.0+SIGN(1.0,bvstr(i  ,j)))
+              cff2=0.5*(1.0-SIGN(1.0,bvstr(i  ,j)))
+              cff=SIGN(1.0,bvstr(i  ,j))  
+              tau_wE(i,j)=cff1*WENO5(
      &                       bvstr(i,j-3),bvstr(i,j-2),bvstr(i,j-1),
-     &                       bvstr(i,j  ),bvstr(i,j+1),bvstr(i,j+2)) +
-     &                  cff2*weno5_interp(
-     &                       bvstr(i,j+2),bvstr(i,j+1),bvstr(i,j  ),
-     &                       bvstr(i,j-1),bvstr(i,j-2),bvstr(i,j-3))
+     &                       bvstr(i,j  ),bvstr(i,j+1),bvstr(i,j+2),cff)
+            ENDIF
 #    endif
-            tau_w(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))*             
-     &                          (bustr(i,j)+bustr(i+1,j))+             
-     &                          (bvstr(i,j)+bvstr(i,j+1))*             
-     &                          (bvstr(i,j)+bvstr(i,j+1)))
+            tau_w(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2
+     &                          +(bvstr(i,j)+bvstr(i,j+1))**2)
        enddo
       enddo
 #   endif /* BBL */
@@ -351,7 +356,7 @@ C$OMP BARRIER
           tau_mean(i,j)=tau_cur*(1.+1.2*((tau_wav(i,j)/  
      &                  (tau_cur+tau_wav(i,j)+eps))**3.2))
 !
-#  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) \
+#  elif (!defined BEDLOAD_SOULSBY) \
      && !defined BSTRESS_UPWIND && !defined BSTRESS_WENO5
           cff1=0.5*(bustr(i,j)+bustr(i+1,j))
           cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
@@ -394,11 +399,11 @@ C$OMP BARRIER
      &      Kdh*(K5+K6*Kdh))))))
             waven = SQRT(Kbh2)/Dstp           
 #   endif
-            wavec=SQRT(g/waven*tanh(waven*Dstp))
-            cff4=MIN(waven*Dstp,kdmax)
-            cff1=-0.1875*wavec*(waven*Dstp)**2/(SINH(cff4))**4
-            cff2=0.125*g*(2*Awave(i,j))**2/(wavec*Dstp+eps)
-            cff3=pi*2*Max(Awave(i,j),eps)/(Pwave(i,j)*SINH(cff4)+eps)
+            wavec=SQRT(g/waven*tanh(waven*Dstp))                     !?
+            cff4=MIN(waven*Dstp,kdmax)                                 
+            cff1=-0.1875*wavec*(waven*Dstp)**2/(SINH(cff4))**4       !?
+            cff2=0.125*g*(2*Awave(i,j))**2/(wavec*Dstp+eps)          !?
+            cff3=pi*2*Max(Awave(i,j),eps)/(Pwave(i,j)*SINH(cff4)+eps)!?
 !
 ! Compute wave asymmetry factor, based on the note of Soulsby
 !
@@ -455,7 +460,7 @@ C$OMP BARRIER
             FE_r(i,j)=(bedld_x*SIN(phic(i,j))+bedld_y*COS(phic(i,j)))*
      &                                                    om_r(i,j)*dt
 
-#  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) &&\
+#  elif (!defined BEDLOAD_SOULSBY) &&\
         (defined BSTRESS_UPWIND || defined BSTRESS_WENO5)
 !
 ! ---------  Meyer-Peter Muller or Wu & Lin  --------------
@@ -464,22 +469,27 @@ C$OMP BARRIER
 !
 #   ifdef BEDLOAD_MPM
             bedld=8.*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.)**1.5)
+     &                                 *smgdr*SIGN(1.,tau_wX(i,j))  
 #   elif defined BEDLOAD_WULIN
             cff=ABS(tau_wX(i,j))/tau_ce_2d(i,j,ised)-1.
-            bedld=0.0053*(MAX(cff,0.)**2.2)
+            bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr*SIGN(1.,tau_wX(i,j))
+#   elif defined BEDLOAD_MARIEU
+!            bedld=(0.001*(ubar(i,j,nnew))**3)*rho0
+            bedld=(0.001*(u(i,j,1,nnew))**3)*rho0
 #   endif
-     &                                 *smgdr*SIGN(1.,tau_wX(i,j))
             FX_r(i,j)=bedld*on_r(i,j)*dt
 #   ifdef BEDLOAD_MPM
             bedld=8.*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.)**1.5)
+     &                        *smgdr*SIGN(1.,tau_wE(i,j))
 #   elif defined BEDLOAD_WULIN
             cff=ABS(tau_wE(i,j))/tau_ce_2d(i,j,ised)-1
-            bedld=0.0053*(MAX(cff,0.)**2.2)
+            bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr*SIGN(1.,tau_wE(i,j))
+#   elif defined BEDLOAD_MARIEU
+            bedld=0.
 #   endif
-     &                                 *smgdr*SIGN(1.,tau_wE(i,j))
             FE_r(i,j)=bedld*om_r(i,j)*dt
 
-#  elif (defined BEDLOAD_MPM || defined BEDLOAD_WULIN) &&\
+#  elif (!defined BEDLOAD_SOULSBY) &&\
         (!defined BSTRESS_UPWIND || !defined BSTRESS_WENO5)
 !
 ! Use mean stress tau_w at rho points
@@ -489,6 +499,9 @@ C$OMP BARRIER
 #   elif defined BEDLOAD_WULIN
             cff=tau_w(i,j)/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr
+#   elif defined BEDLOAD_MARIEU
+            bedld=(0.001*(ubar(i,j,nnew))**3)*rho0
+!            bedld=(0.001*(u(i,j,1,nnew))**3)*rho0
 #   endif
 !
 ! Partition bedld into xi and eta directions, still at rho points.
@@ -548,8 +561,7 @@ C$OMP BARRIER
             FE_r(i,j)=FE_r(i,j) MORPH_FAC
 !
 !-----------------------------------------------------------------------
-! Apply bedload 
-! transport rate coefficient. Also limit
+! Apply bedload transport rate coefficient. Also limit
 ! bedload to the fraction of each sediment class.
 !-----------------------------------------------------------------------
 !
@@ -1426,7 +1438,7 @@ C$OMP BARRIER
      &            MIN(MAX(0.,cff2*(cff*tau_w(i,j)-1.)),      
      &                MIN(cff3*bot_thick(i,j) MORPH_FAC ,cff4)+
      &                settling_flux(i,j,ised))
-            ero_flux(i,j,ised)=ero_flux(i,j,ised)
+            ero_flux(i,j,ised)=ero_flux(i,j,ised)  !?
 #  ifdef SPONGE_SED
      &                             *sed_sponge(i,j)
 #  endif
@@ -2426,7 +2438,7 @@ C$OMP BARRIER
         elseif (icard.eq.8) then
           read(iunit,*,err=60) morph_fac                     
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      morph_fac, 'morph_fac   Mophological factor.'
+     &      morph_fac, 'morph_fac   Morphological factor.'
 
         endif ! icard 
 !
@@ -2458,61 +2470,6 @@ C$OMP BARRIER
 
       return
       end
-!                 
-!====================================================================
-!
-!  WENO5 interpolation for bedload fluxes
-!
-!=====================================================================
-!
-# ifdef BSTRESS_WENO5
-      function weno5_interp(a, b, c, d, e, f)
-        implicit none
-        REAL    :: weno5_interp
-        REAL    :: a, b, c, d, e, f        
-        REAL    :: IS0, IS1, IS2
-        REAl    :: d0, d1, d2
-        REAl    :: a0, a1, a2
-        REAL    :: w0, w1, w2
-        REAL    :: p0, p1, p2
-        REAL    :: Eps, cff1, cff2, T5
-        
-!  --> from 1.e-7 (smoother) to 1.e-5 (sharper)
-        Eps = 1.e-6
-        ! Weigths coefficients
-        d0=1./10.
-        d1=6./10.
-        d2=3./10.
-        ! other coefficients
-        cff1=13./12.
-        cff2=1./6.
-        
-! Nonlinear Smoothness Indicators
-        IS0 = cff1*(a - 2.*b + c)**2
-     &                        + 0.25*(a - 4.*b + 3*c)**2
-        IS1 = cff1*(b - 2.*c + d)**2
-     &                        + 0.25*(b- d)**2
-        IS2 = cff1*(c - 2.*d + e)**2
-     &                        + 0.25*(3.*c - 4.*d + e)**2       
-        a0  = d0/(Eps+IS0)**2
-        a1  = d1/(Eps+IS1)**2
-        a2  = d2/(Eps+IS2)**2
-
-! Normalized Weigths
-        w0  = a0/(a0+a1+a2)
-        w1  = a1/(a0+a1+a2)
-        w2  = a2/(a0+a1+a2)
-! Polynomials
-        p0  = cff2*(2.*a - 7.*b + 11.*c)
-        p1  = cff2*(-b   + 5.*c + 2.*d)
-        p2  = cff2*(2.*c + 5.*d   - e)
-! Combination
-        weno5_interp = w0*p0 + w1*p1 +w2*p2
-        
-        return
-
-      end function weno5_interp
-# endif
 
 #else       
       subroutine sediment_empty

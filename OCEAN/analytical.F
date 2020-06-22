@@ -1332,7 +1332,11 @@ C$    integer  trd, omp_get_thread_num
 # elif defined DUNE
       do j=JstrR,JendR
         do i=IstrR,IendR
+#   if defined ANA_DUNE
+          ubclm(i,j)=1.67
+#   else
           ubclm(i,j)=0.58
+#   endif
           vbclm(i,j)=0.
         enddo
       enddo

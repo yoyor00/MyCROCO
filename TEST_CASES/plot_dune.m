@@ -32,10 +32,15 @@ fname='dune_his.nc';
 %
 % Read data
 %
-j=2;
-tndx=17;
+j=2; 
+% Remember you are plotting for time (in days output) = tndx - 1 
+% For instance tndx=20 for 19 days simulated
+tndx=20; 
 %
+
 nc=netcdf(fname);
+% assuming two classes of sand, the second the finer
+sandname = ncreadatt(fname,'/','Sd sand_2')*1e6; %um
 time=nc{'scrum_time'}(:)./86400;
 tndx=min(tndx,length(time));
 disp([ 'tndx = ',num2str(tndx), ...
@@ -75,44 +80,90 @@ h2=repmat(hmorph,[NL 1]);
 zbed=-h2;
 zbed(2:end,:)=-h2(2:end,:)-cumsum(bedthick(2:end,:),1);
 %
-%  Plot u and bed stratigraphy
+%  Plot bed stratigraphy
 %
-figure('position',[500 500 600 600])
+figure('position',[600 600 700 700])
 subplot(2,1,1)
-hold on
-pcolor(xbed,zbed,100*bedfrac);
-line(xr,-hmorph,'color','k','Linewidth',2)
-line(xr,-h,     'color','r','Linewidth',2,'linestyle','--')
-hold off
-caxis([30 70])
+%subplot(3,1,1)
+%hold on
+%pcolor(xbed,zbed,100*bedfrac);
+%%Cdata = test.CData;
+%line(xr,-hmorph,'color','k','Linewidth',2)
+%line(xr,-h,     'color','r','Linewidth',2,'linestyle','--')
+%hold off
+%caxis([40 60])
+%%caxis([0 100])
+%colorbar
+%%colorbar('Ticks',[0,25,50,75,100])
+%axis([-Inf Inf -8 0])
+%ylabel('Depth [m]','Fontsize',15)
+%title({'DUNE Test Case' [' Fine Sand Fraction ',num2str(sandname),'um - Day ', ...
+%        num2str(time(tndx))] })
+%%set(gca,'fontsize',15);
+%set(gcf,'PaperPositionMode','auto');
+%hold off
+%
+%%
+%%  Plot bed stratigraphy different VERSION only boxes
+%%
+%subplot(3,1,2)
+%hold on
+
+plot(x,-hmorph,'color','k','Linewidth',2)
+axis([-Inf Inf -8 0])
+
+[foo, Sx]=size(x);
+for ik=1:Sx-1
+  for jk=1:NL-1
+   line([ x(ik)-1 x(ik)-1]      ,[ zbed(jk,ik) zbed(jk+1,ik)   ],'Color','k');
+   line([ x(ik)-1 x(ik+1)-1 ]   ,[ zbed(jk,ik) zbed(jk,ik)     ],'Color','k');
+   line([ x(ik+1)-1  x(ik+1)-1 ],[ zbed(jk,ik) zbed(jk+1,ik)   ],'Color','k');
+   line([ x(ik)-1 x(ik+1)-1 ]   ,[ zbed(jk+1,ik) zbed(jk+1,ik) ],'Color','k');
+   patch( [ x(ik)-1  x(ik+1)-1  x(ik+1)-1 x(ik)-1 ] ,...
+          [ zbed(jk,ik) zbed(jk,ik) zbed(jk+1,ik) zbed(jk+1,ik) ],...
+          [ bedfrac(jk,ik)*100 bedfrac(jk,ik)*100 bedfrac(jk,ik)*100 bedfrac(jk,ik)*100 ])
+  end
+end
+line(x,-h,'color','r','Linewidth',2,'linestyle','--')
+
+hold off 
+%caxis([0 100])
+caxis([40 60])
 colorbar
-axis([-Inf Inf -8 -1])
-title(['DUNE Test Case - Fine Sand Fraction - Day ', ...
-        num2str(time(tndx))])
-set(gca,'fontsize',15);
-set(gcf,'PaperPositionMode','auto');
+%colorbar('Ticks',[0,25,50,75,100]) 
+ylabel('Depth [m]','Fontsize',15)
+title({'DUNE Test Case' [' Fine Sand Fraction ',num2str(sandname),'um - Day ', ...
+        num2str(time(tndx))] })
+%%set(gca,'fontsize',15);
+%set(gcf,'PaperPositionMode','auto');
+
+
 hold off
 
+%
+%  Plot evolution bed
+%
 nc=netcdf(fname);
 hmorph=squeeze(nc{'hmorph'}(:,j,:));
 close(nc)
 subplot(2,1,2)
-line(xr,-hmorph( 1,:),'color','k','Linewidth',2)
+line(xr,-hmorph( 1,:),'color','k','Linewidth',2) %topo init
 hold on
-for n=1:5
+for n=1:4
  it=2^(n-1)+1;
- if it<=tndx
+ if it<tndx
   line(xr,-hmorph(it,:),'color','k','Linewidth',2)
  end
 end
+line(xr,-hmorph(tndx,:),'color','r','Linewidth',2) %topo at tndx
 hold off
 grid on
-axis([-1 101 -4.5 -1.5])
-title(['DUNE Test Case - Bed evolution: 0 1 2 4 8 16 days'])
-set(gca,'fontsize',15);
-set(gcf,'PaperPositionMode','auto');
+axis([-Inf Inf -4.5 0])
+title({'DUNE Test Case'  ['Bed evolution: 0 1 2 4 8 ',num2str(time(tndx)),' days']}) 
+xlabel('Distance [m]','Fontsize',15)
+ylabel('Depth [m]','Fontsize',15)
 
-export_fig -transparent dune.pdf
+export_fig dune.png
 
 return
 
