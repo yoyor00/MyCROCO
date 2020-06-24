@@ -25,10 +25,16 @@
 #  define bnew nstp      
 # endif  /* BEDLOAD */
 !
+# ifndef BBL
+#  define BSTRESS_UPWIND
+# endif
+!
 # define MORPH_FAC *morph_fac
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
 # undef  NEUMANN
+
+# undef  SED_SLUMP /* correct bedload for slumping */
 !
       subroutine sediment (tile)
 !
@@ -102,9 +108,16 @@
       call sed_bedload_tile (Istr,Iend,Jstr,Jend,
      &                       A2d(1,1,trd), A2d(1,2,trd), 
      &                       A2d(1,3,trd), A2d(1,4,trd),
-     &                       A2d(1,5,trd), A2d(1,6,trd), 
-     &                       A2d(1,7,trd), A2d(1,8,trd),
-     &                       A2d(1,9,trd) )
+     &                       A2d(1,5,trd),
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+      defined BEDLOAD_MARIEU
+     &                       A2d(1,6,trd), A2d(1,7,trd), 
+     &                       A2d(1,8,trd), A2d(1,9,trd)
+#  elif defined BEDLOAD_SOULSBY
+     &                       A2d(1,6,trd), A2d(1,7,trd), 
+     &                       A2d(1,8,trd)
+#  endif
+     &                      )
 C$OMP BARRIER
 # endif /* BEDLOAD */
 # ifdef SUSPLOAD
@@ -161,10 +174,10 @@ C$OMP BARRIER
       subroutine sed_bedload_tile (Istr, Iend, Jstr, Jend,
      &                             tau_w,FX,FE,FX_r,FE_r
 #  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-          defined BEDLOAD_MARIEU
+      defined BEDLOAD_MARIEU
      &                            ,tau_wX,tau_wE,angleu,anglev
 #  elif defined BEDLOAD_SOULSBY
-     &                            ,phic,phicw,tau_wav,tau_mean 
+     &                            ,tau_m,phic,phicw 
 #  endif      
      &                            )
 !
@@ -176,35 +189,30 @@ C$OMP BARRIER
       real FX_r(PRIVATE_2D_SCRATCH_ARRAY)
       real FE_r(PRIVATE_2D_SCRATCH_ARRAY)
 #  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-          defined BEDLOAD_MARIEU
+      defined BEDLOAD_MARIEU 
       real tau_wX(PRIVATE_2D_SCRATCH_ARRAY)
       real tau_wE(PRIVATE_2D_SCRATCH_ARRAY)
       real angleu(PRIVATE_2D_SCRATCH_ARRAY)
       real anglev(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
 #  ifdef BEDLOAD_SOULSBY
+      real tau_m(PRIVATE_2D_SCRATCH_ARRAY)
       real phic(PRIVATE_2D_SCRATCH_ARRAY)
       real phicw(PRIVATE_2D_SCRATCH_ARRAY)
-      real tau_wav(PRIVATE_2D_SCRATCH_ARRAY)
-      real tau_mean(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
       integer i, j, k, ised
       real eps, Dstp
       real cff, cff1, cff2, cff3, cff4, cff5,cff6
       real a_slopex, a_slopey, sed_angle
-      real bedld, bedld_mass, dzdx, dzdy
+      real bedld, bedld_mass, dzdx, dzdy, dzdxdy
       real smgd, smgdr, osmgd, Umag
       real Ua, Ra, phi, Clim
       real weno5_interp
 #  ifdef BEDLOAD_SOULSBY
-      real theta_mean, theta_wav, w_asym
+      real theta_m, theta_w, w_asym
       real theta_max, theta_max1, theta_max2
       real phi_x1, phi_x2, phi_x, phi_y
-      real bedld_x, bedld_y, tau_cur, waven, wavec
-#  endif
-#  ifdef BSTRESS_WENO5
-      real :: flux5_weno
-#     define WENO5 flux5_weno
+      real bedld_x, bedld_y, waven, wavec
 #  endif
       real kdmax,Kbh,Kbh2,Kdh,Fwave
       real rhs_bed, bed_change
@@ -215,6 +223,11 @@ C$OMP BARRIER
       parameter (K1=0.6666666666, K2=0.3555555555,
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
+#  ifdef SED_SLUMP
+      real slopefac_wet_local, slopefac_dry_local
+      real sedslope_crit_wet, sedslope_crit_dry
+      real slopefac_wet, slopefac_dry
+#  endif
 #  include "param.h"
 #  include "scalars.h"
 #  include "grid.h"
@@ -261,16 +274,38 @@ C$OMP BARRIER
 #  endif /* NS_PERIODIC */
 !
 !-----------------------------------------------------------------------
-! Compute maximum bottom stress for MPM bedload
+! Compute maximum bottom stress components at rho points
 !-----------------------------------------------------------------------
 !
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-          defined BEDLOAD_MARIEU
+#  ifdef BEDLOAD_SOULSBY
 #   ifdef BBL
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
-          tau_w(i,j)=sqrt( bustrcwmax(i,j)**2
-     &                   + bvstrcwmax(i,j)**2)
+          tau_w(i,j) = SQRT( bustrw(i,j)*bustrw(i,j)+ 
+     &                       bvstrw(i,j)*bvstrw(i,j))
+          tau_m(i,j) = SQRT( bustrcwmax(i,j)*bustrcwmax(i,j)
+     &                     + bvstrcwmax(i,j)*bvstrcwmax(i,j) )
+        enddo
+      enddo
+#   else
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          tau_w(i,j) = 0.
+          tau_m(i,j) = 0.5*SQRT((bustr(i,j)+bustr(i+1,j))* 
+     &                          (bustr(i,j)+bustr(i+1,j))+ 
+     &                          (bvstr(i,j)+bvstr(i,j+1))* 
+     &                          (bvstr(i,j)+bvstr(i,j+1)))
+        enddo
+      enddo
+#   endif
+!
+#  else
+!
+#   ifdef BBL
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          tau_w(i,j)=SQRT( bustrcwmax(i,j)*bustrcwmax(i,j)
+     &                   + bvstrcwmax(i,j)*bvstrcwmax(i,j) )
         enddo
       enddo
 #   else
@@ -293,34 +328,15 @@ C$OMP BARRIER
      &                  cff2*0.5*(bvstr(i,j)+bvstr(i,j+1)))+         
      &                  cff4*(cff2*bvstr(i,j+1)+                        
      &                  cff1*0.5*(bvstr(i,j)+bvstr(i,j+1)))
-#    elif defined BSTRESS_WENO5
-            IF ((( i.eq.imin ).and.(imin.lt.imax ) ).or.
-     &          (( j.eq.jmin ).and.(jmin.lt.jmax ) ) ) THEN
-              tau_wX(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))*
-     &                             (bustr(i,j)+bustr(i+1,j)))
-              tau_wE(i,j)=0.5*SQRT((bvstr(i,j)+bvstr(i,j+1))*
-     &                             (bvstr(i,j)+bvstr(i,j+1)))
-            ELSE
-              cff1=0.5*(1.0+SIGN(1.0,bustr(i  ,j)))
-              cff2=0.5*(1.0-SIGN(1.0,bustr(i  ,j)))
-              cff=SIGN(1.0,bustr(i  ,j))
-              tau_wX(i,j)=cff1*WENO5(
-     &                      bustr(i-3,j),bustr(i-2,j),bustr(i-1,j),
-     &                      bustr(i  ,j),bustr(i+1,j),bustr(i+2,j),cff)
-              cff1=0.5*(1.0+SIGN(1.0,bvstr(i  ,j)))
-              cff2=0.5*(1.0-SIGN(1.0,bvstr(i  ,j)))
-              cff=SIGN(1.0,bvstr(i  ,j))  
-              tau_wE(i,j)=cff1*WENO5(
-     &                       bvstr(i,j-3),bvstr(i,j-2),bvstr(i,j-1),
-     &                       bvstr(i,j  ),bvstr(i,j+1),bvstr(i,j+2),cff)
-            ENDIF
 #    endif
-            tau_w(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2
-     &                          +(bvstr(i,j)+bvstr(i,j+1))**2)
+            tau_w(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))* 
+     &                          (bustr(i,j)+bustr(i+1,j))+ 
+     &                          (bvstr(i,j)+bvstr(i,j+1))* 
+     &                          (bvstr(i,j)+bvstr(i,j+1)))
        enddo
       enddo
 #   endif /* BBL */
-#  endif /* BEDLOAD_MPM or BEDLOAD_WULIN */
+#  endif /* SOULSBY or other */
 !
 !-----------------------------------------------------------------------
 !  Compute angles
@@ -347,23 +363,14 @@ C$OMP BARRIER
           phicw(i,j)=Dwave(i,j)-phic(i,j)  ! Dwave assumed in CROCO 
                                            ! grid convention
 !
-! Compute stress components at rho points.
-!
-          tau_cur=SQRT(bustrc(i,j)*bustrc(i,j)+  
-     &                 bvstrc(i,j)*bvstrc(i,j))
-          tau_wav(i,j)=SQRT(bustrw(i,j)*bustrw(i,j)+ 
-     &                      bvstrw(i,j)*bvstrw(i,j))
-          tau_mean(i,j)=tau_cur*(1.+1.2*((tau_wav(i,j)/  
-     &                  (tau_cur+tau_wav(i,j)+eps))**3.2))
-!
-#  elif (!defined BEDLOAD_SOULSBY) \
-     && !defined BSTRESS_UPWIND && !defined BSTRESS_WENO5
+#  elif !defined BEDLOAD_SOULSBY && \
+        !defined BSTRESS_UPWIND && !defined BSTRESS_WENO5
           cff1=0.5*(bustr(i,j)+bustr(i+1,j))
           cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
           Umag=SQRT(cff1*cff1+cff2*cff2)+eps
           angleu(i,j)=cff1/Umag
           anglev(i,j)=cff2/Umag
-#  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM or BEDLOAD_WULIN */
+#  endif /* BEDLOAD_SOULSBY */
         enddo
       enddo
 !
@@ -399,29 +406,28 @@ C$OMP BARRIER
      &      Kdh*(K5+K6*Kdh))))))
             waven = SQRT(Kbh2)/Dstp           
 #   endif
-            wavec=SQRT(g/waven*tanh(waven*Dstp))                     !?
-            cff4=MIN(waven*Dstp,kdmax)                                 
-            cff1=-0.1875*wavec*(waven*Dstp)**2/(SINH(cff4))**4       !?
-            cff2=0.125*g*(2*Awave(i,j))**2/(wavec*Dstp+eps)          !?
-            cff3=pi*2*Max(Awave(i,j),eps)/(Pwave(i,j)*SINH(cff4)+eps)!?
+            wavec=SQRT(g/waven*tanh(waven*Dstp))
+            cff4=MIN(waven*Dstp,kdmax)
+            cff1=-0.1875*wavec*(waven*Dstp)**2/(SINH(cff4))**4
+!            cff2=0.125*g*(2*Awave(i,j))**2/(wavec*Dstp+eps)
+!            cff3=pi*2*Max(Awave(i,j),eps)/(Pwave(i,j)*SINH(cff4)+eps)
 !
 ! Compute wave asymmetry factor, based on the note of Soulsby
 !
             cff1=MIN(0.375*(2*Awave(i,j)/Dstp)*         
-     &                    ((waven*Dstp)/(SINH(cff4))**3),0.15)
+     &                     ((waven*Dstp)/(SINH(cff4))**3),0.15)
             w_asym=2.*cff1/(1.+cff1**2.)
 !
 ! Compute nondimensional stresses.
 !
-            theta_wav=tau_wav(i,j)*osmgd+eps
-            theta_mean=tau_mean(i,j)*osmgd
-!
-            cff1=theta_wav*(1.+w_asym)
-            cff2=theta_wav*(1.-w_asym)
-            theta_max1=SQRT((theta_mean+                       
+            theta_w=tau_w(i,j)*osmgd+eps
+            theta_m=tau_m(i,j)*osmgd
+            cff1=theta_w*(1.+w_asym)
+            cff2=theta_w*(1.-w_asym)
+            theta_max1=SQRT((theta_m+                       
      &                       cff1*COS(phicw(i,j)))**2+    
      &                      (cff1*SIN(phicw(i,j)))**2)
-            theta_max2=SQRT((theta_mean+
+            theta_max2=SQRT((theta_m+
      &                       cff2*COS(phicw(i,j)+pi))**2+ 
      &                      (cff2*SIN(phicw(i,j)+pi))**2)
             theta_max=MAX(theta_max1,theta_max2)
@@ -429,17 +435,16 @@ C$OMP BARRIER
 ! Motion initiation factor.
 !
             cff3=0.5*(1.+SIGN(1.,                            
-     &                   theta_max/(tau_ce_2d(i,j,ised)*osmgd)-1.))
+     &               theta_max/(tau_ce_2d(i,j,ised)*osmgd)-1.))
 !
 ! Compute bed loads in parallel and perpendicular direction of currents
 !
-            phi_x1=12.*SQRT(theta_mean)*
-     &             MAX((theta_mean-tau_ce_2d(i,j,ised)*osmgd),0.)
+            phi_x1=12.*SQRT(theta_m)*
+     &             MAX((theta_m-tau_ce_2d(i,j,ised)*osmgd),0.)
             phi_x2=12.*(0.9534+0.1907*COS(2.*phicw(i,j)))* 
-     &             SQRT(theta_wav)*theta_mean+                  
-     &             12.*(0.229*w_asym*theta_wav**1.5*  
-     &                      COS(phicw(i,j)))
-!           phi_x=MAX(phi_x1,phi_x2) !  <- original
+     &                               SQRT(theta_w)*theta_m +
+     &             12.*(0.229*w_asym*theta_w**1.5*COS(phicw(i,j)))
+!            phi_x=MAX(phi_x1,phi_x2) !  <- original
             IF (ABS(phi_x2).gt.phi_x1) THEN
               phi_x=phi_x2
             ELSE
@@ -447,20 +452,20 @@ C$OMP BARRIER
             END IF
             bedld_x=phi_x*smgdr*cff3
 !
-            cff5=theta_wav**1.5+1.5*(theta_mean**1.5)
-            phi_y=12.*0.1907*theta_wav*theta_wav*       
-     &            (theta_mean*SIN(2.0*phicw(i,j))+1.2*w_asym*  
-     &            SIN(phicw(i,j)))/cff5*cff3
+            cff5=theta_w**1.5+1.5*(theta_m**1.5)
+            phi_y=12.*0.1907*theta_w*theta_w*
+     &                      (theta_m*SIN(2.0*phicw(i,j)) +
+     &            1.2*w_asym*SIN(phicw(i,j)))/cff5*cff3
             bedld_y=phi_y*smgdr
 !
 ! Partition bedld into xi and eta directions, still at rho points.
 !
-            FX_r(i,j)=(bedld_x*COS(phic(i,j))-bedld_y*SIN(phic(i,j)))* 
-     &                                                    on_r(i,j)*dt
-            FE_r(i,j)=(bedld_x*SIN(phic(i,j))+bedld_y*COS(phic(i,j)))*
-     &                                                    om_r(i,j)*dt
+            FX_r(i,j)=(bedld_x*COS(phic(i,j)) -
+     &                 bedld_y*SIN(phic(i,j)))*on_r(i,j)*dt
+            FE_r(i,j)=(bedld_x*SIN(phic(i,j)) +
+     &                 bedld_y*COS(phic(i,j)))*om_r(i,j)*dt
 
-#  elif (!defined BEDLOAD_SOULSBY) &&\
+#  elif !defined BEDLOAD_SOULSBY &&\
         (defined BSTRESS_UPWIND || defined BSTRESS_WENO5)
 !
 ! ---------  Meyer-Peter Muller or Wu & Lin  --------------
@@ -469,27 +474,26 @@ C$OMP BARRIER
 !
 #   ifdef BEDLOAD_MPM
             bedld=8.*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.)**1.5)
-     &                                 *smgdr*SIGN(1.,tau_wX(i,j))  
 #   elif defined BEDLOAD_WULIN
             cff=ABS(tau_wX(i,j))/tau_ce_2d(i,j,ised)-1.
-            bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr*SIGN(1.,tau_wX(i,j))
+            bedld=0.0053*(MAX(cff,0.)**2.2)
 #   elif defined BEDLOAD_MARIEU
-!            bedld=(0.001*(ubar(i,j,nnew))**3)*rho0
-            bedld=(0.001*(u(i,j,1,nnew))**3)*rho0
+            bedld=(0.001*(ubar(i,j,knew))**3)*rho0
 #   endif
+     &                                 *smgdr*SIGN(1.,tau_wX(i,j))
             FX_r(i,j)=bedld*on_r(i,j)*dt
 #   ifdef BEDLOAD_MPM
             bedld=8.*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.)**1.5)
-     &                        *smgdr*SIGN(1.,tau_wE(i,j))
 #   elif defined BEDLOAD_WULIN
             cff=ABS(tau_wE(i,j))/tau_ce_2d(i,j,ised)-1
-            bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr*SIGN(1.,tau_wE(i,j))
+            bedld=0.0053*(MAX(cff,0.)**2.2)
 #   elif defined BEDLOAD_MARIEU
             bedld=0.
 #   endif
+     &                                 *smgdr*SIGN(1.,tau_wE(i,j))
             FE_r(i,j)=bedld*om_r(i,j)*dt
 
-#  elif (!defined BEDLOAD_SOULSBY) &&\
+#  elif !defined BEDLOAD_SOULSBY &&\
         (!defined BSTRESS_UPWIND || !defined BSTRESS_WENO5)
 !
 ! Use mean stress tau_w at rho points
@@ -500,8 +504,7 @@ C$OMP BARRIER
             cff=tau_w(i,j)/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr
 #   elif defined BEDLOAD_MARIEU
-            bedld=(0.001*(ubar(i,j,nnew))**3)*rho0
-!            bedld=(0.001*(u(i,j,1,nnew))**3)*rho0
+            bedld=(0.001*(ubar(i,j,knew))**3)*rho0
 #   endif
 !
 ! Partition bedld into xi and eta directions, still at rho points.
@@ -510,7 +513,7 @@ C$OMP BARRIER
             FX_r(i,j)=angleu(i,j)*bedld*on_r(i,j)*dt
             FE_r(i,j)=anglev(i,j)*bedld*om_r(i,j)*dt
 
-#  endif /* BEDLOAD_SOULSBY or BEDLOAD_MPM or BEDLOAD_WULIN */
+#  endif /* BEDLOAD_SOULSBY */
 !
 !-----------------------------------------------------------------------
 ! Correct for along-direction slope. 
@@ -561,7 +564,8 @@ C$OMP BARRIER
             FE_r(i,j)=FE_r(i,j) MORPH_FAC
 !
 !-----------------------------------------------------------------------
-! Apply bedload transport rate coefficient. Also limit
+! Apply bedload 
+! transport rate coefficient. Also limit
 ! bedload to the fraction of each sediment class.
 !-----------------------------------------------------------------------
 !
@@ -667,22 +671,20 @@ C$OMP BARRIER
      &              0.5*(1.-SIGN(1.,FX_r(i-1,j)))*    
      &              (cff2*FX_r(i  ,j)+                   
      &               cff1*0.5*(FX_r(i-1,j)+FX_r(i,j)))
-#  ifdef MASKING
-            FX(i,j)=FX(i,j)*umask(i,j)
-#  endif
-#  ifdef WET_DRY
-            FX(i,j)=FX(i,j)*umask_wet(i,j)
-#  endif
+
 #  ifdef SLOPE_KIRWAN
             dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
             a_slopex=(MAX(0.,abs(dzdx)-0.01)
      &               *SIGN(1.,dzdx)*0.1)
      &               *om_r(i,j)*dt
             FX(i,j)=FX(i,j)+a_slopex MORPH_FAC
-#   ifdef MASKING
-            FX(i,j)=FX(i,j)*umask(i,j)
-#   endif
 #  endif /* SLOPE_KIRWAN */
+#  ifdef MASKING
+            FX(i,j)=FX(i,j)*umask(i,j)
+#  endif
+#  ifdef WET_DRY
+            FX(i,j)=FX(i,j)*umask_wet(i,j)
+#  endif
           enddo
         enddo
         do j=Jstr,Jend+1
@@ -695,24 +697,113 @@ C$OMP BARRIER
      &              0.5*(1.-SIGN(1.,FE_r(i,j-1)))*      
      &              (cff2*FE_r(i  ,j)+                    
      &               cff1*0.5*(FE_r(i,j-1)+FE_r(i,j)))
-#  ifdef MASKING
-            FE(i,j)=FE(i,j)*vmask(i,j)
-#  endif
-#  ifdef WET_DRY
-            FE(i,j)=FE(i,j)*vmask_wet(i,j)
-#  endif
 #  ifdef SLOPE_KIRWAN
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j)
             a_slopey=(MAX(0.,abs(dzdy)-0.01)
      &               *SIGN(1.,dzdy)*0.1)
      &               *on_r(i,j)*dt
             FE(i,j)=FE(i,j)+a_slopey MORPH_FAC
-#   ifdef MASKING
-            FE(i,j)=FE(i,j)*vmask(i,j)
-#   endif
 #  endif /* SLOPE_KIRWAN */
+#  ifdef MASKING
+            FE(i,j)=FE(i,j)*vmask(i,j)
+#  endif
+#  ifdef WET_DRY
+            FE(i,j)=FE(i,j)*vmask_wet(i,j)
+#  endif
           enddo
         enddo
+!
+#  ifdef SED_SLUMP
+!-----------------------------------------------------------------------
+!  Sed slump computation to allow slumping for wet areas everywhere
+!  and at the wet/dry interface.
+!
+!  sedslopes are the critical slopes to allow slumping.
+!  slopefac are the scale factors for sediment movement.
+!-----------------------------------------------------------------------
+!
+        sedslope_crit_wet=0.1  ! Critical wet bed slope for slumping
+        sedslope_crit_dry=0.1  ! Critical dry bed slope for slumping.
+        slopefac_wet=0.1       ! Bedload wet bed slumping factor
+        slopefac_dry=0.1       ! Bedload dry bed slumping factor.
+!
+        cff2=Srho(ised)*(1.-bed_poros(i,j,1))
+        slopefac_dry_local=cff2*dt*slopefac_dry
+        slopefac_wet_local=cff2*dt*slopefac_wet
+!
+        slopefac_wet_local=slopefac_wet_local MORPH_FAC
+        slopefac_dry_local=slopefac_dry_local MORPH_FAC
+!
+!  U-direction slumping
+!
+        DO j=Jstr,Jend
+          DO i=Istr,Iend+1
+            dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
+            dzdy=(h(i,j)-h(i,j-1))/on_v(i,j)
+            dzdxdy=sqrt(dzdx**2.+dzdy**2.)
+!  For the wet part
+            cff=ABS(dzdxdy)-sedslope_crit_wet
+            cff1=(0.5+SIGN(0.5,cff))
+            cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
+            cff2=cff*slopefac_wet_local*SIGN(1.,dzdx)
+#   ifdef MASKING
+            cff2=cff2*umask(i,j)
+#   ifdef WET_DRY
+            cff2=cff2*umask_wet(i,j)
+#    endif
+#   endif
+            FX(i,j)=FX(i,j)+cff2
+!  For the dry part
+            cff=ABS(dzdx)-sedslope_crit_dry
+            cff1=(0.5+SIGN(0.5,cff))
+            cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
+            cff2=cff*slopefac_dry_local*SIGN(1.,dzdx)
+#   ifdef MASKING
+            cff2=cff2*umask(i,j)
+#    ifdef WET_DRY
+            cff2=cff2*(1.-umask_wet(i,j))*
+     &               ((1.-umask_wet(i-1,j))*umask_wet(i+1,j)+
+     &                (1.-umask_wet(i+1,j))*umask_wet(i-1,j))
+#    endif
+#   endif
+            FX(i,j)=FX(i,j)+cff2
+          END DO
+        END DO
+!
+        DO j=Jstr,Jend+1
+          DO i=Istr,Iend
+            dzdy=(h(i,j)-h(i,j-1))/on_v(i,j) ! positive is downhill
+            dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
+            dzdxdy=sqrt(dzdx**2.+dzdy**2.)
+! For the wet part
+            cff=ABS(dzdxdy)-sedslope_crit_wet
+            cff1=(0.5+SIGN(0.5,cff))
+            cff=0.5_r8*cff*cff1/(pm(i,j)*pn(i,j))
+            cff2=cff*slopefac_wet_local*SIGN(1.,dzdy)
+#   ifdef MASKING
+            cff2=cff2*vmask(i,j)
+#    ifdef WET_DRY
+            cff2=cff2*vmask_wet(i,j)
+#    endif
+#   endif
+            FE(i,j)=FE(i,j)+cff2
+! For the dry part
+            cff=ABS(dzdy)-sedslope_crit_dry
+            cff1=(0.5+SIGN(0.5,cff))
+            cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
+            cff2=cff*slopefac_dry_local*SIGN(1.,dzdy)
+#   ifdef MASKING
+            cff2=cff2*vmask(i,j)
+#    ifdef WET_DRY
+            cff2=cff2*(1.-vmask_wet(i,j))*
+     &               ((1.-vmask_wet(i,j-1))*vmask_wet(i,j+1)+
+     &                (1.-vmask_wet(i,j+1))*vmask_wet(i,j-1))
+#    endif
+#   endif
+            FE(i,j)=FE(i,j)+cff2
+          END DO
+        END DO
+#  endif /* SED_SLUMP */
 !
 !-----------------------------------------------------------------------
 ! Limit fluxes to prevent bottom from breaking thru water surface.
@@ -724,7 +815,7 @@ C$OMP BARRIER
 ! Total thickness available.
 !
 #  ifdef WET_DRY
-            Dstp=MAX(z_w(i,j,N)-z_w(i,j,0)-Dcrit(i,j),0.)
+            Dstp=MAX(z_w(i,j,N)-z_w(i,j,0)-1.5*Dcrit(i,j),0.)
 #  else
             Dstp=MAX(z_w(i,j,N)-z_w(i,j,0)-0.01,0.)  !!!
 #  endif
@@ -735,10 +826,11 @@ C$OMP BARRIER
      &               FE(i,j+1)-FE(i,j))*pm(i,j)*pn(i,j)
             bed_change=rhs_bed/(Srho(ised)*(1.-bed_poros(i,j,1)))
 !
-! Limit that change to be less than available.
+! Limit that change to be less than available (if accretional)
 !
             cff=MAX(bed_change-Dstp,0.)
             cff1=cff/ABS(bed_change+eps)
+            cff1=cff1*0.5*(1.-SIGN(1.,bed_change))
             FX(i+1,j  )=FX(i+1,j  )*(1.-cff1)
             FX(i  ,j  )=FX(i  ,j  )*(1.-cff1)
             FE(i  ,j+1)=FE(i  ,j+1)*(1.-cff1)
@@ -746,7 +838,9 @@ C$OMP BARRIER
           END DO
         END DO
 !
-! Apply boundary conditions
+!-----------------------------------------------------------------------
+! Apply closed boundary conditions on (FX,FE) if any
+!-----------------------------------------------------------------------
 !
 #  ifndef EW_PERIODIC
 #   ifndef OBC_WEST
@@ -794,6 +888,7 @@ C$OMP BARRIER
 #  endif
             bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,nstp,ised)-   
      &                                    cff,0.)
+
 #  if !defined SUSPLOAD
             do k=2,NLAY
               bed_mass(i,j,k,nnew,ised)=bed_mass(i,j,k,nstp,ised)
@@ -1438,7 +1533,7 @@ C$OMP BARRIER
      &            MIN(MAX(0.,cff2*(cff*tau_w(i,j)-1.)),      
      &                MIN(cff3*bot_thick(i,j) MORPH_FAC ,cff4)+
      &                settling_flux(i,j,ised))
-            ero_flux(i,j,ised)=ero_flux(i,j,ised)  !?
+            ero_flux(i,j,ised)=ero_flux(i,j,ised)
 #  ifdef SPONGE_SED
      &                             *sed_sponge(i,j)
 #  endif
@@ -2438,7 +2533,7 @@ C$OMP BARRIER
         elseif (icard.eq.8) then
           read(iunit,*,err=60) morph_fac                     
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      morph_fac, 'morph_fac   Morphological factor.'
+     &      morph_fac, 'morph_fac   Mophological factor.'
 
         endif ! icard 
 !
@@ -2470,6 +2565,61 @@ C$OMP BARRIER
 
       return
       end
+!                 
+!====================================================================
+!
+!  WENO5 interpolation for bedload fluxes
+!
+!=====================================================================
+!
+# ifdef BSTRESS_WENO5
+      function weno5_interp(a, b, c, d, e, f)
+        implicit none
+        REAL    :: weno5_interp
+        REAL    :: a, b, c, d, e, f        
+        REAL    :: IS0, IS1, IS2
+        REAl    :: d0, d1, d2
+        REAl    :: a0, a1, a2
+        REAL    :: w0, w1, w2
+        REAL    :: p0, p1, p2
+        REAL    :: Eps, cff1, cff2, T5
+        
+!  --> from 1.e-7 (smoother) to 1.e-5 (sharper)
+        Eps = 1.e-6
+        ! Weigths coefficients
+        d0=1./10.
+        d1=6./10.
+        d2=3./10.
+        ! other coefficients
+        cff1=13./12.
+        cff2=1./6.
+        
+! Nonlinear Smoothness Indicators
+        IS0 = cff1*(a - 2.*b + c)**2
+     &                        + 0.25*(a - 4.*b + 3*c)**2
+        IS1 = cff1*(b - 2.*c + d)**2
+     &                        + 0.25*(b- d)**2
+        IS2 = cff1*(c - 2.*d + e)**2
+     &                        + 0.25*(3.*c - 4.*d + e)**2       
+        a0  = d0/(Eps+IS0)**2
+        a1  = d1/(Eps+IS1)**2
+        a2  = d2/(Eps+IS2)**2
+
+! Normalized Weigths
+        w0  = a0/(a0+a1+a2)
+        w1  = a1/(a0+a1+a2)
+        w2  = a2/(a0+a1+a2)
+! Polynomials
+        p0  = cff2*(2.*a - 7.*b + 11.*c)
+        p1  = cff2*(-b   + 5.*c + 2.*d)
+        p2  = cff2*(2.*c + 5.*d   - e)
+! Combination
+        weno5_interp = w0*p0 + w1*p1 +w2*p2
+        
+        return
+
+      end function weno5_interp
+# endif
 
 #else       
       subroutine sediment_empty

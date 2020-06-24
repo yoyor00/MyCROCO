@@ -299,24 +299,24 @@ C$    integer  trd, omp_get_thread_num
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Ssize(i,j)=1.5e-4  ! d50 [m]
-          Sdens(i,j)=2650.0  ! rho sediment [kg/m^3]
-          taucb(i,j)=0.16    ! critical bedload stress [N/m^2]
-          w_set(i,j)=0.013   ! analytical settling velocity [m/s]
-          Hripple(i,j)=0.01   ! analytical initial ripple height [m]
-          Lripple(i,j)=0.10   ! analytical initial ripple length [m]
+          Ssize(i,j)=1.5e-4     ! d50 [m]
+          Sdens(i,j)=2650.0     ! rho sediment [kg/m^3]
+          taucb(i,j)=0.16/rho0  ! critical bedload stress [m^2/s^2]
+          w_set(i,j)=0.013      ! analytical settling velocity [m/s]
+          Hripple(i,j)=0.01     ! analytical initial ripple height [m]
+          Lripple(i,j)=0.10     ! analytical initial ripple length [m]
         enddo
       enddo
 # else
       !ANA_BSEDIM: no values provided for SSIZE and SDENS.
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Ssize(i,j)=1.5e-4  ! d50 [m]
-          Sdens(i,j)=2650.0  ! rho sediment [kg/m^3]
-          taucb(i,j)=0.16    ! critical bedload stress [N/m^2]
-          w_set(i,j)=0.013   ! analytical settling velocity [m/s]
-          Hripple(i,j)=0.01   ! analytical initial ripple height [m]
-          Lripple(i,j)=0.10   ! analytical initial ripple length [m]
+          Ssize(i,j)=1.5e-4     ! d50 [m]
+          Sdens(i,j)=2650.0     ! rho sediment [kg/m^3]
+          taucb(i,j)=0.16/rho0  ! critical bedload stress [m^2/s^2]
+          w_set(i,j)=0.013      ! analytical settling velocity [m/s]
+          Hripple(i,j)=0.01     ! analytical initial ripple height [m]
+          Lripple(i,j)=0.10     ! analytical initial ripple length [m]
         enddo
       enddo
 # endif
@@ -1332,7 +1332,7 @@ C$    integer  trd, omp_get_thread_num
 # elif defined DUNE
       do j=JstrR,JendR
         do i=IstrR,IendR
-#   if defined ANA_DUNE
+#   ifdef ANA_DUNE
           ubclm(i,j)=1.67
 #   else
           ubclm(i,j)=0.58

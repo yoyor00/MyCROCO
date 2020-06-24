@@ -69,8 +69,10 @@
 !     rlength = ripple length (m)
 !                                
 !  input: Awave, Pwave, Dwave, h, Zob, d50, u,v
-!         NB! Dwave is assumed to be direction waves are coming from
-!             positive clockwise wrt North      
+!         NB! Dwave is assumed to be in Cartesian convention (CROCO): 
+!             the direction to where the vector points, measured 
+!             counterclockwise from the positive x-axis of the
+!             model grid (must account for grid angle)
 !********************************************************************!
       implicit none
 !# ifdef key_MUSTANG
@@ -99,11 +101,15 @@
      &  Fwave, Kbh, Kbh2, Kdh, phic, phicw, 
      &  rhbio, rhbiomax, rhgt, rhmax, rhmin, rhfac, 
      &  rlbio, rlen, rlmin, rhosed, rhow,
-     &  tau_bf, tau_c, tau_cb, tau_ex, tau_up,tau_w,
-     &  tau_wb, tau_cs, tau_cw, tau_cwb, tau_cws, tau_en,
-     &  thetw, twopi, Ucur, Vcur, Ubc, visk, wset, 
-     &  znot, znotc, znot_bl, znot_rip
-      parameter (Ubc = 0.01)               
+     &  tau_bf, tau_cb, tau_ex, tau_up, tau_en,
+     &  tau_w, tau_ws, tau_c, tau_cs, tau_cw, tau_cws,
+     &  thetw, twopi, Ucur, Vcur, Ubc, visk, 
+     &  znots, znot, znota, znot_bl, znot_rip,
+     &  eps, zomin, zomax
+      parameter (Ubc   = 1.e-2,  ! minimum orbital velocity for waves
+     &           eps   = 1.e-10, ! small number to avoid zero division
+     &           zomin = 1.e-6,  ! minimum roughness
+     &           zomax = 1.e-1)  ! maximum roughness
       real
      &            tauc(PRIVATE_2D_SCRATCH_ARRAY),
      &            tauw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -134,7 +140,7 @@
 #endif
 !
 !---------------------------------------------------------------------
-!  Initalize to default values + set b(u,v)str to old time level value.
+!  Initalize to default values
 !---------------------------------------------------------------------
 !
       twopi=2.0*pi
@@ -142,59 +148,23 @@
       rhmin = 1.0d-3    ! user-defined minimum ripple height [m]  
       rlmin = 1.0d-2    ! user-defined minimum ripple length [m]  
       rhfac = 1.0d0/EXP(4.11d0)
-
+!
+!-----------------------------------------------------------------------
+!  Initalize stresses due to currents and waves.
+!-----------------------------------------------------------------------
+!
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          tauc(i,j)=0.0       ! [m^2/s^2]
-          taucw(i,j)=0.0
-          taucwmax(i,j)=0.0
-       enddo
+          tauc(i,j)=0.       ! [m^2/s^2]
+          tauw(i,j)=0.
+          taucw(i,j)=0.
+          taucwmax(i,j)=0.
+        enddo
       enddo
 !
-!---------------------------------------------------------------------
+!-----------------------------------------------------------------------
 !  Set currents above bed.
-!---------------------------------------------------------------------
-! z0sed,frofony,frofonx : a transmettre 
-!# ifdef key_MUSTANG
-!      DO j=JstrV-1,Jend+1
-!        DO i=IstrU-1,Iend+1
-!         Zr(i,j)=  max(z_r(i,j,1)-z_w(i,j,0),z0sed(i,j)+1.E-4)
-!       enddo
-!      enddo
-!
-!      DO j=JstrV-1,Jend+1
-!        DO i=IstrU-1,Iend+1
-!          Zu= 0.5*(Zr(i-1,j)+Zr(i,j))
-!          Zv= 0.5*(Zr(i,j-1)+Zr(i,j))
-!          vit2=SQRT(0.0625_rsh*(v(i,j,1,nrhs)+v(i-1,j,1,nrhs)+
-!     &             v(i,j+1,1,nrhs)+v(i-1,j+1,1,nrhs))**2
-!     &             +u(i,j,1,nrhs)**2) *u(i,j,1,nrhs)
-!          frofonbblx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i-1,j)+Zr(i,j))/
-!     &             z0sed(i,j)))**(-2)*vit2
-!
-!          vit2=SQRT(0.0625_rsh*(u(i,j,1,nrhs)+u(i,j-1,1,nrhs)+
-!     &             u(i+1,j,1,nrhs)+u(i+1,j-1,1,nrhs))**2
-!     &             +v(i,j,1,nrhs)**2) *v(i,j,1,nrhs)
-!          frofonbbly(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j-1)+Zr(i,j))/
-!     &             z0sed(i,j)))**(-2)*vit2
-!       enddo
-!      enddo
-!
-!      DO j=JstrV-1,Jend
-!        DO i=IstrU-1,Iend
-!          tenfonc(i,j)=SQRT(     &
-!                     ((frofonx(i,j)+frofonx(i+1,j))/2 )**2   &
-!                    +((frofony(i,j)+frofony(i,j+1))/2 )**2   &
-!                           )*(rho(i,j,1)+rho0)
-!       enddo
-!      enddo
-!
-!#  ifdef WET_DRY AND MASKING
-!          tenfon(i,j)=tenfonc(i,j)*rmask_wet(i,j)
-!#  endif
-
-
-!# else
+!-----------------------------------------------------------------------
 !
       DO j=JstrV-1,Jend+1
         DO i=IstrU-1,Iend+1
@@ -215,10 +185,15 @@
         enddo
       enddo
 !
+!=======================================================================
+!  Compute bottom stresses.
+!=======================================================================
+!
 ! start main j,i loop
 !
       DO j=JstrV-1,Jend
         DO i=IstrU-1,Iend
+!
           rhbio = 0.0d0
           rlbio = 0.0d0
           rlen = Lripple(i,j)
@@ -231,21 +206,22 @@
 # endif
 !
 !---------------------------------------------------------------------
-!  Compute bed wave orbital velocity (m/s) and excursion amplitude
-!  (m) from wind-induced waves.  Use Dean & Dalrymple 1991 6th degree
-!  polynomial expr. to approximate wave number on shoaling water
+! Compute bed wave orbital velocity (m/s), excursion amplitude (m)
+! from wind-induced waves, and angle between current and waves.
 !---------------------------------------------------------------------
+!
+! Use Dean & Dalrymple 1991 6th-degree polynomial to approximate 
+! wavenumber on shoaling water.
 !
           Fwave=twopi/Pwave(i,j)
           Kdh=(h(i,j)+z_w(i,j,N))*Fwave*Fwave/g
-          Kbh2=Kdh*Kdh+
-     &         Kdh/(1.0+Kdh*(K1+Kdh*(K2+Kdh*(K3+Kdh*(K4+
-     &              Kdh*(K5+K6*Kdh))))))
+          Kbh2=Kdh*Kdh+Kdh/(1.+Kdh*(K1+Kdh*(K2+Kdh*(K3+Kdh*(K4+
+     &                         Kdh*(K5+K6*Kdh))))))
           Kbh = SQRT(Kbh2)
 !
 !  Compute bed wave orbital velocity and excursion amplitude.
 !
-          Ab=Awave(i,j)/SINH(Kbh)
+          Ab=Awave(i,j)/SINH(Kbh) + eps
           Ub(i,j)=Fwave*Ab
 # ifdef MASKING
      &                                   *rmask(i,j)
@@ -265,302 +241,296 @@
 # ifdef WET_DRY
      &                                   *rmask_wet(i,j)
 # endif
+     &                                   + eps
 !
 !  Compute angle between currents and waves (radians)
 !
-          if (Ucur .ne. 0.0) then
+          if (Ucur .ne. 0.) then
             phic=ATAN2(Vcur,Ucur)
           else
-            phic=(pi/2.0)*SIGN(1.0,Vcur)
+            phic=0.5*pi*SIGN(1.,Vcur)
           endif
-          phicw=Dwave(i,j)-phic  ! Dwave in cartesian convention
+          phicw=Dwave(i,j)-phic  ! Dwave in CROCO grid convention
 !
 !---------------------------------------------------------------------
-!  Determine skin roughness from sediment size and
-!  set default logarithmic profile consistent with current-only case
-!  
-! Establish local median grain size for all calculations in this subroutine 
-! and determine local values of critical stresses.
-! Since most parameterizations have been derived ignoring multiple grain sizes, 
-! we apply this single d50 also in the case of mixed beds. 
+! Sediment parameters:
+! Establish local median grain size for all calculations in this 
+! subroutine. Since most parameterizations have been derived ignoring 
+! multiple grain sizes, we apply this single d50 also in the case of 
+! mixed beds. 
 !---------------------------------------------------------------------
 !
 # if defined ANA_BSEDIM || defined SEDIMENT
-
           d50 = Ssize(i,j)             ! [m]
           tau_cb = taucb(i,j)          ! [m^2/s^2]
-#  ifdef ANA_BSEDIM
-     &      /rhow
-#  endif
-          wset = w_set(i,j)            ! [m/s]
           rhosed = Sdens(i,j)/rhow     ! [ ] relative density
-          
-# endif /* ANA_BSEDIM || SEDIMENT */ 
+# else
+          d50 = 0.16e-3       ! default values: fine sand
+          tau_cb = 0.17/rhow
+          rhosed = 2650./rhow
+# endif /* ANA_BSEDIM || SEDIMENT */
 
-! critical stress for transition to sheet flow (Li&Amos'01, eq.11)
-          tau_up = 0.172*(rhosed-1.)*g*(d50**0.624) ! [m^2/s^2]
-
-! critical stress for initiation to suspended load 
-!                        (Bagnold'66, Li&Amos'01, eq.9)
-!         tau_crs = max(0.64*wset*wset,ustr_shields)         ! [m^2/s^2]
-
-! threshold stress for break off (Grant & Madsen,1982)   
-          tau_bf = 0.79*(visk**(-0.6))*(((rhosed-1.)*g)**0.3)
-     &                                  *(d50**0.9)*tau_cb   ! [m^2/s^2]
-
-          znotc= d50/12.0
-          znot = MAX(Zob(i,j),znotc)
+# ifdef Z0_RIP
 !---------------------------------------------------------------------
-!  set tauc acc. to current-only case (max znot & skin friction) [m/s]
+! Determine critical stresses for ripple formation
+!---------------------------------------------------------------------
+! Transition to sheet flow (Li&Amos'01, eq.11)
+            tau_up = 0.172*(rhosed-1.)*g*(d50**0.624) ! [m^2/s^2]
+! Break off (Grant & Madsen,1982)   
+            tau_bf = 0.79*(visk**(-0.6))*(((rhosed-1.)*g)**0.3)
+     &                           *(d50**0.9)*tau_cb   ! [m^2/s^2]
+# endif
+!
+!---------------------------------------------------------------------
+! Determine skin roughness from sediment size
+! & set effective roughness length based on user value
 !---------------------------------------------------------------------
 !
-          cff1 = vonKar/LOG(Zr(i,j)/znot)
-          cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
-          tauc(i,j)= cff2*Umag(i,j)*Umag(i,j)        ! [m^2/s^2] 
-
-          cff1 = vonKar/LOG(Zr(i,j)/znotc)
-          tau_cs = cff1*cff1*Umag(i,j)*Umag(i,j)     ! [m^2/s^2] 
+          znots = d50/12.0            ! Nikuradse grain roughness
+          znota = MAX(Zob(i,j),znots) ! default apparent roughness
 !
 !---------------------------------------------------------------------
 ! If significant waves (Ub > Ubc= 0.01 m/s):
-!  Wave-current interaction case according to Soulsby 1995.  
-!  Otherwise: tauw = tauc for sediment purposes
+! Wave-current interaction case according to Soulsby 1995.  
+! Otherwise: tauw = tauc for sediment purposes
 !---------------------------------------------------------------------
 !
-          if(Ub(i,j).gt.Ubc) then 
-
+!
+          if(Ub(i,j).gt.Ubc) then   !<======
+!
+!---------------------------------------------------------------------
 ! Determine skin stresses for pure waves and combined flow (m^2/s^2)
-! using Soulsby approximation of the wave friction factor
-!  fw = 2*scf1*(znotc/Ab)**scf2;  tauw = fw*Ub^2/2
- 
-            tau_w = scf1*((znotc*Fwave)**scf2)*(Ub(i,j)**scf3)
- 
+! using Soulsby approximation of the wave friction factor fw
+!---------------------------------------------------------------------
+
+! Pure wave skin stress
+!  fw=2*scf1*(znots/Ab)**scf2, tau_ws=0.5fw*Ub**2.
+            tau_ws = scf1*((znots*Fwave)**scf2)*(Ub(i,j)**scf3)
+
+! current-only skin stress
+            cff1 = vonKar/LOG(Zr(i,j)/znots)
+            tau_cs = cff1*cff1*Umag(i,j)*Umag(i,j)     ! [m^2/s^2] 
+
 !  combined wave-current skin stress 
-            tau_cw= tau_cs*
-     &          (1.+scf4*((tau_w/(tau_w+tau_cs))**scf5))
+            tau_cws= tau_cs*(1.+scf4*((tau_ws/(tau_ws+tau_cs))**scf5))
  
-!  Maximum of combined wave-current skin stress component for sediment
-            tau_cws = SQRT((tau_cw+tau_w*COS(phicw))**2
-     &                          + (tau_w*SIN(phicw))**2) 
-            
-!            tauw(i,j)=tau_cws             ! [m^2/s^2]
-            taucwmax(i,j)=tau_cws
-            tauw(i,j)=tau_w                       
-!  combined wave-current stress using znot
-            tau_w = scf1*((znot*Fwave)**scf2)*(Ub(i,j)**scf3)
-    
-!  combined wave-current stress 
-            tau_cw= tauc(i,j)*
-     &          (1.+scf4*((tau_w/(tau_w+tauc(i,j)))**scf5))
+!  Maximum of combined wave-current skin stress
+            tau_cws = SQRT((tau_cws + tau_ws*COS(phicw))**2
+     &                              +(tau_ws*SIN(phicw))**2)
+
+!  Store for sediment model 
+            taucwmax(i,j) = tau_cws      ! [m^2/s^2]
+            tauw(i,j)     = tau_ws
 
 # ifdef Z0_BL
 !---------------------------------------------------------------------
-!  Compute bedload roughness for ripple predictor & sediment purposes.
-!  At high transport stages, friction depends on thickness of bedload layer.
-!  Shear stress due to combined grain & bedload roughness is to be used 
-!  to predict ripples and onset of suspension (Li & Amos 2001)
+! Compute apparent bedload roughness for ripple predictor (and sediment 
+! resuspension if needed). At high transport stages, friction depends on 
+! thickness of bedload layer (Li & Amos 2001).
 !---------------------------------------------------------------------
 !
-            tau_ex=max((tau_cws-tau_cb),0.0)
+            tau_ex=max((tau_cws-tau_cb),0.)
             cff=(1./((rhosed-1.)*g*d50))
             znot_bl=17.4*d50*(cff*tau_ex)**0.75
-            znotc = znotc + znot_bl
+            znota = znots + znot_bl
 !
 !---------------------------------------------------------------------
-!  Compute stresses for sediment purposes [m^2/s^2], 
+!  Compute bedload stress for sediment purpose [m^2/s^2], 
 !  using grain + bedload roughness.
 !---------------------------------------------------------------------
 !
-            cff1=vonKar/LOG(Zr(i,j)/znotc)
+            cff1=vonKar/LOG(Zr(i,j)/znota)
             cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
             tau_c = cff2*Umag(i,j)*Umag(i,j)    
-            tau_wb = scf1*((znotc*Fwave)**scf2)*(Ub(i,j)**scf3)
-            tau_cw= tau_c*(1.+scf4*((tau_wb/(tau_wb+tau_c))**scf5))
-!
-!  Maximum of combined wave-current stress component for sediment purposes
-!
-            tau_cwb = SQRT((tau_cw+tau_wb*COS(phicw))**2 +
-     &                            (tau_wb*SIN(phicw))**2)
-            taucwmax(i,j)=tau_cwb
-            tauw(i,j)=tau_wb
+            tau_w = scf1*((znota*Fwave)**scf2)*(Ub(i,j)**scf3)
+            tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**1.5))
+            tau_cw = SQRT((tau_cw+tau_w*COS(phicw))**2 +
+     &                           (tau_w*SIN(phicw))**2)
+
+            taucwmax(i,j) = tau_cw
+            tauw(i,j)     = tau_w
 
 #  ifdef Z0_RIP        
 !---------------------------------------------------------------------
-!  Determine bedform roughness  ripple height (m)
-!  and ripple length (m) for sandy beds.
-!
-!  Use structure according to Li & Amos 2001
-!  See Li & Amos 2001 for further references
+! Determine bedform roughness ripple height (m) and ripple length (m) 
+! for sandy beds. Use structure according to Li & Amos (2001).
 !---------------------------------------------------------------------
 !
-! check median grain diameter
-!
-            if (d50.ge.0.063d-3) then
-!
-! enhanced skin stress if pre-exisiting ripples (Nielsen, 1986)
+            if (d50 .ge. 0.063e-3) then
               rhmax=0.8*rlen/pi
               rhgt=max(min(rhmax,rhgt),rhmin)
-          
               tau_en=max(tau_cws,tau_cws*(rlen/(rlen-pi*rhgt))**2) 
-          
+! 
               if ((tau_cws.lt.tau_cb).and.(tau_en.ge.tau_cb)) then 
-! local transp.
                 rhgt = (19.6*(SQRT(tau_cws/tau_cb))+20.9)*d50
-                rlen = rhgt/0.12
-              elseif ((tau_cws.ge.tau_cb).and.(tau_cwb.lt.tau_bf)) then
-! bed load in eq. range
-                rhgt = (22.15*(SQRT(tau_cwb/tau_cb))+6.38)*d50
-                rlen = rhgt/0.12
-              elseif ((tau_cwb.ge.tau_bf).and.(tau_cwb.lt.tau_up)) then
-! break off regime
-                rlen = 535.*d50
-                rhgt = 0.15*rlen*(SQRT(tau_up)-SQRT(tau_cwb))/
+                rlen = rhgt/0.12       ! local transport
+              elseif ((tau_cws.ge.tau_cb).and.(tau_cw.lt.tau_bf)) then
+                rhgt = (22.15*(SQRT(tau_cw/tau_cb))+6.38)*d50
+                rlen = rhgt/0.12       ! bed load in eq. range
+              elseif ((tau_cw.ge.tau_bf).and.(tau_cw.lt.tau_up)) then
+                rlen = 535.*d50        ! break off regime
+                rhgt = 0.15*rlen*(SQRT(tau_up)-SQRT(tau_cw))/
      &                           (SQRT(tau_up)-SQRT(tau_bf )) 
-              elseif  (tau_cwb.ge.tau_up) then 
-! sheet flow, plane bed
-                rlen = 0.0
-                rhgt = 0.0
+              elseif  (tau_cw.ge.tau_up) then 
+                rlen = 0.              ! sheet flow, plane bed
+                rhgt = 0.
               else 
-! tau_en < tau_cb: no transport, pre-existing conditions
-                rhgt=Hripple(i,j) 
-                rlen=Lripple(i,j) 
+                rhgt=Hripple(i,j) ! tau_en < tau_cb: no transport, 
+                rlen=Lripple(i,j) ! pre-existing conditions
               endif !tau_cws
             endif !d50
-#  endif /* Z0_BL */
-# endif /* Z0_RIP */       
-
-# ifdef Z0_BIO
+#  endif /* Z0_RIP */
+   
+#  ifdef Z0_BIO
 !---------------------------------------------------------------------
-!  Determine (biogenic) bedform roughness  ripple height (m)
-!  and ripple length (m) for silty beds 
-!  using Harris & Wiberg 2001.
+! Determine (biogenic) bedform roughness, ripple height (m)
+! and ripple length (m) for silty beds 
+! using Harris & Wiberg 2001.
 !---------------------------------------------------------------------
-!   rlbio -> user defined or input field...
 !
-            if (d50.lt.0.063d-3) then
-              rlbio = 0.1d0 ! 10 cm default biogenic r.length (Wheatcroft 1994) 
+! Use 10 cm default biogenic ripple length rlbio (Wheatcroft 1994) 
+!
+            if (d50.lt.0.063e-3) then
+              rlbio = 0.1d0 
               thetw = tau_cws*(1./((rhosed-1.)*g*d50))
-              rhbio = (thetw**(-1.67d0))*rlbio*rhfac
+              rhbio = (thetw**(-1.67))*rlbio*rhfac
               rhgt = min(rhbio,rhbiomax)
               rlen = rlbio
             endif
-# endif /* Z0_BIO */
+#  endif /* Z0_BIO */
 
-# if defined Z0_RIP || defined Z0_BIO
-!ripple roughness using Grant & Madsen (1982) roughness length
-
+#  if defined Z0_RIP || defined Z0_BIO
+!---------------------------------------------------------------------
+! Ripple roughness using Grant & Madsen (1982) roughness length
+!
+! Total roughness znota consists of grain-scale roughness +
+! bedload thickness + sandy ripple-enhanced roughness + silty 
+! biogenic ripple roughness.
+!---------------------------------------------------------------------
+!
             znot_rip = 0.92*rhgt*rhgt/(max(rlen,rlmin))
-            znotc = znotc+znot_rip
+            znota = znota + znot_rip
+
+#  endif /* Z0_RIP || Z0_BIO */
+!
+!---------------------------------------------------------------------
+! Limit total roughness between Zob and zomax
+!---------------------------------------------------------------------
+!
+            znota = min(zomax,max(znota,Zob(i,j)))
+
+# endif /* Z0_BL */    
 !
 !---------------------------------------------------------------------
 ! Compute bottom stress components based on total roughness [m/s]^2
+! and store for use in computing flow drag and eddy diffusivity/viscosity
 !---------------------------------------------------------------------
 !
-            cff1  = vonKar/LOG(Zr(i,j)/znotc)
+            cff1  = vonKar/LOG(Zr(i,j)/znota)
             cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
             tau_c = cff2*Umag(i,j)*Umag(i,j)  
-            tau_w = scf1*((znotc*Fwave)**scf2)*(Ub(i,j)**scf3)
+            tau_w = scf1*((znota*Fwave)**scf2)*(Ub(i,j)**scf3)
             tau_cw= tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**scf5))
-
-# endif /* Z0_RIP || Z0_BIO */
-!---------------------------------------------------------------------
-!  Compute effective bottom shear velocity [m/s]
-!  relevant for flow and eddy-diffusivities/viscosity
-!---------------------------------------------------------------------
 !
-            taucw(i,j)=tau_cw
-            tauw(i,j)=tau_w
-          
-          else ! (Ub < Ubc)   
-
+            taucw(i,j) = tau_cw
+            !tauw(i,j)  = tau_w
+            !tauc(i,j)  = tau_c
+!          
+          else ! (Ub < Ubc)  <================
+!
+!---------------------------------------------------------------------
 ! If current-only: tauw = tauc(skin) for use in sediment.F (ifdef BBL)
 ! tauc for current still depending on roughness due to current ripples 
 ! (ifdef Z0_RIP)
+!---------------------------------------------------------------------
 !
-            taucwmax(i,j)=tauc(i,j)
-            tauw(i,j)=0.0
-
 # ifdef Z0_RIP    
             if(tau_cs.gt.tau_up) then
-              rhgt=0.0
-              rlen=0.0
+              rhgt=0.
+              rlen=0.
             else if(tau_cs.lt.tau_cb) then
               rhgt=Hripple(i,j) 
               rlen=Lripple(i,j) 
             else
               rlen=1000.*d50               ! Yalin (1964)
-              rhgt=7.4*(rlen/100.)**1.19   ! Allen (1970)
+              rhgt=0.0308*rlen**1.19       ! Allen (1970)
             endif
  
-            znotc = znot + 0.92*rhgt*rhgt/(max(rlen,rlmin))
-
-            cff1=vonKar/LOG(Zr(i,j)/znotc)
-            cff2=MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
-            taucw(i,j)=cff2*Umag(i,j)*Umag(i,j)
-# else
-            taucw(i,j)=tauc(i,j)
+            znota = znota + 0.92*rhgt*rhgt/(max(rlen,rlmin))
+            znota = min(zomax,max(znota,Zob(i,j)))
 # endif
-          endif
+            cff1=vonKar/LOG(Zr(i,j)/znota)
+            cff2=MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
+            tau_c=cff2*Umag(i,j)*Umag(i,j)
+!
+            tauc(i,j)     = tau_c
+            taucw(i,j)    = tau_c
+            taucwmax(i,j) = tau_c
+            tauw(i,j)     = 0.
+
+          endif ! (Ub < Ubc)  <================
 !
 !---------------------------------------------------------------------
 !  Load variables for output purposes.
 !---------------------------------------------------------------------
 !
-          Abed(i,j)    = Ab    SWITCH rmask(i,j)
-          Hripple(i,j) = rhgt  SWITCH rmask(i,j)
-          Lripple(i,j) = rlen  SWITCH rmask(i,j)
-         Zbnot(i,j)    = znot  SWITCH rmask(i,j)
-         Zbapp(i,j)    = znotc SWITCH rmask(i,j)
+          Abed(i,j)    = Ab        SWITCH rmask(i,j)
+          Hripple(i,j) = rhgt      SWITCH rmask(i,j)
+          Lripple(i,j) = rlen      SWITCH rmask(i,j)
+         Zbnot(i,j)    = znots     SWITCH rmask(i,j)
+         Zbapp(i,j)    = znota     SWITCH rmask(i,j)
 
        enddo
       enddo  ! end main loop
 !
 !---------------------------------------------------------------------
-!  Compute kinematic bottom stress components for flow
+!  Compute kinematic bottom stress components (m2/s2) for flow
 !  due to combined current and wind-induced waves.
 !---------------------------------------------------------------------
 !
       do j=Jstr,Jend
         do i=IstrU,Iend
-          cff1=0.5*(taucw(i-1,j)+taucw(i,j))
-          anglec=Ur(i,j)/(0.5*(Umag(i-1,j)+Umag(i,j)+1.e-10))
+          cff1=0.5*(taucw(i-1,j)+taucw(i,j))   ! interp at u point
+          anglec=Ur(i,j)/(0.5*(Umag(i-1,j)+Umag(i,j)))
           bustr(i,j)=cff1*anglec SWITCH umask(i,j)
         enddo
       enddo
 
       do j=JstrV,Jend
         do i=Istr,Iend
-          cff1=0.5*(taucw(i,j-1)+taucw(i,j))
-          anglec=Vr(i,j)/(0.5*(Umag(i,j-1)+Umag(i,j)+1.e-10))
+          cff1=0.5*(taucw(i,j-1)+taucw(i,j))    ! interp at v point
+          anglec=Vr(i,j)/(0.5*(Umag(i,j-1)+Umag(i,j)))
           bvstr(i,j)=cff1*anglec SWITCH vmask(i,j)
         enddo
       enddo
+!
+!  Compute skin stress components at rho points
 !
       do j=Jstr,Jend
         do i=Istr,Iend
           Ucur=0.5*(Ur(i,j)+Ur(i+1,j))
           Vcur=0.5*(Vr(i,j)+Vr(i,j+1))
 !
-          anglec=Ucur/(Umag(i,j)+1.e-10)
+          anglec=Ucur/Umag(i,j)
           anglew=cos(Dwave(i,j))
-          bustrc(i,j)=taucw(i,j)*anglec
-          bustrw(i,j)=tauw(i,j) *anglew
+          bustrc(i,j)=tauc(i,j)*anglec
+          bustrw(i,j)=tauw(i,j)*anglew
           bustrcwmax(i,j)=taucwmax(i,j)*anglew
 !          Ubot(i,j)=Ub(i,j)*anglew
 !          Ur(i,j)=Ucur
 !
-          anglec=Vcur/(Umag(i,j)+1.e-10)
+          anglec=Vcur/Umag(i,j)
           anglew=sin(Dwave(i,j))
-          bvstrc(i,j)=taucw(i,j)*anglec
-          bvstrw(i,j)=tauw(i,j) *anglew
+          bvstrc(i,j)=tauc(i,j)*anglec
+          bvstrw(i,j)=tauw(i,j)*anglew
           bvstrcwmax(i,j)=taucwmax(i,j)*anglew
 !          Vbot(i,j)=Ub(i,j)*anglew
 !          Vr(i,j)=Vcur
-
+!
         enddo
       enddo
 
-# ifdef LIMIT_BSTRESS0
+# ifdef LIMIT_BSTRESS
 !---------------------------------------------------------------------
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted

@@ -695,7 +695,7 @@ C$    integer omp_get_thread_num
           Bvstrw(i,j)=init
           Bustrcwmax(i,j)=init
           Bvstrcwmax(i,j)=init
-#ifdef MORPHODYN || MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN || defined MUSTANG_MORPHODYN_byHYDRO
           dh(i,j)=init
 #endif
         enddo

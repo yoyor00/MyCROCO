@@ -154,12 +154,6 @@
 #  define Zob Zob_my
 # endif
 
-! Define Stokes drift computation
-
-# ifndef SANDBAR
-#  define STOKES_DRIFT
-# endif
-
 ! explicit wavenumber estimator
 
 # undef  KH_SOULSBY
@@ -348,7 +342,18 @@
 !  Finalize wave parameter computation
 !----------------------------------------------------------------------
 !
-          stk(i,j) =act(i,j)*kw(i,j)*inv_d(i,j)  ! depth-averaged Stokes
+# ifdef STOKES_DRIFT
+!
+! Depth averaged Stokes drift
+! ===========================
+!
+#  ifdef STOKES_U2010
+          stk(i,j)=act(i,j)*kw(i,j)*inv_d(i,j)  ! U2010: deep water 
+#  else
+          stk(i,j)=0.125*(wh(i,j)**2)*fr(i,j)*inv_d(i,j) ! Ursell
+#  endif
+# endif
+
 # ifdef MASKING
            kw(i,j) = kw(i,j)*rmask(i,j)
            kD(i,j) = kD(i,j)*rmask(i,j)
@@ -366,7 +371,7 @@
           frc(i,j) =frc(i,j)*rmask_wet(i,j)
 # endif   /* WET_DRY */
         enddo
-      enddo              ! <-- discard inv_d (ifndef BBL_F00)
+      enddo              ! <-- discard inv_d
 
 !
 ! sup : quasi-static sea-level response, set-up. no interaction.
@@ -374,7 +379,7 @@
 !
       do j=jstrR,jendR
         do i=istrR,iendR
-          sup(i,j) =-0.125*(wh(i,j)**2)*kw(i,j)
+          sup(i,j)=-0.125*(wh(i,j)**2)*kw(i,j)
      &              /max(sinh(2.*min(kD(i,j),khmax)),eps)
 #  ifdef MASKING
      &                                        *rmask(i,j)
@@ -481,21 +486,6 @@
 ! Conservative 3D wave-current interaction variables.
 ! ===================================================
 !
-! We estimate cell-averaged 3D Stokes drift velocity (ust_r) by
-! presuming that roller Stokes drift has the same z-dependency as
-! the primary waves.  Analytical volume-averaging operation is
-! applied to 3D Stokes drift velocity such that:
-!
-!   u^st = 0.5*g*A^2/frq*k/dz/(1-exp(-4*k*D))*
-!         ( exp(2*k*(z_up +h-D)) -exp(-2*k*(z_up +h+D))
-!          -exp(2*k*(z_low+h-D)) +exp(-2*k*(z_low+h+D)) )
-!
-! in which sinh, cosh, and tanh functions in u^st are expanded to
-! exponential function so as not to be singular when kD gets very
-! large.  Here 0.5*g*A^2/frq is equivalent to wave action density.
-! The similar rule is also adapted in computation of CalP, Kapsrf,
-! and Akw terms (see the code below).
-!
 #  define ust_r wrk1
 #  define inv_dz wrk2
 #  define inv_ex inv_f
@@ -504,9 +494,29 @@
 ! ==========================================
 !
 #  ifdef STOKES_DRIFT
+!
+! Cell-averaged 3D Stokes drift velocity (ust_r) is estimated by
+! presuming that roller Stokes drift has the same z-dependency as
+! the primary waves.  
+!
+#   if STOKES_U2010
+!
+! Analytical volume-averaging operation is applied to 3D Stokes 
+! drift velocity such that:
+!
+!   ust_r = 0.5*g*A^2/frq*k/dz/(1-exp(-4*k*D))*
+!         ( exp(2*k*(z_up +h-D)) -exp(-2*k*(z_up +h+D))
+!          -exp(2*k*(z_low+h-D)) +exp(-2*k*(z_low+h+D)) )
+!
+! in which sinh, cosh, and tanh functions in ust are expanded to
+! exponential function so as not to be singular when kD gets very
+! large.  Here 0.5*g*A^2/frq is equivalent to wave action density.
+! The similar rule is also adapted in computation of CalP, Kapsrf,
+! and Akw terms (see the code below).
+!
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
-          inv_ex(i,j)=1.0/max(1.0-exp(-4.*kD(i,j)),eps)
+          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
           ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)
           cff1 = exp( 2.*kw(i,j)*(z_w(i,j,0)+h(i,j)-Dstp(i,j)))
      &          -exp(-2.*kw(i,j)*(z_w(i,j,0)+h(i,j)+Dstp(i,j)))
@@ -519,6 +529,25 @@
           enddo
         enddo
       enddo                 ! <-- keep ust_r, inv_dz, &inv_ex
+#   else /* URSELL */
+!
+!  Ursell: ust_r = 1/8*frq*k*Hrms**2*cosh(2*k(z+h)/sinh(k*D)**2 
+!
+      do j=jstr-1,jend+1
+        do i=istr-1,iend+1
+          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
+          ust_ker=0.125*(wh(i,j)**2)*fr(i,j)*kw(i,j)
+          do k=1,N
+            inv_dz(i,j,k)=1./Hz(i,j,k)
+            ust_r(i,j,k)=ust_ker*
+     &                   COSH(2.*kw(i,j)*(z_w(i,j,k)+h(i,j)))/
+     &                   max(SINH(min(kD(i,j),khmax)),eps)**2
+!     &                   (SINH(kD(i,j)+eps))**2
+          enddo
+        enddo
+      enddo                 ! <-- keep ust_r, inv_dz, &inv_ex
+#   endif
+
 !
 ! Horizontal interpolation of ust_r to u- & v- points.
 ! *** Notice that mask should NOT be applied.
@@ -1002,7 +1031,7 @@
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
 #   ifndef LH53_STREAMING /* turbulent cases */
-          abot  =wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
+          abot  =wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
           delta =0.160455*((abot/Zob(i,j))**0.83)*Zob(i,j)  ! BBL thickness
           inv_k =min(max(a_frc*delta,eps),Dstp(i,j))
           kfrc  =1./inv_k          ! vertical scale for wave friction

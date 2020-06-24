@@ -1406,6 +1406,7 @@
 */
 # undef  OPENMP
 # undef  MPI
+# undef  ANA_DUNE
 # define M2FILTER_NONE
 # define UV_ADV
 # define NEW_S_COORD
