@@ -434,7 +434,7 @@
 !
             taucw(i,j) = tau_cw
             !tauw(i,j)  = tau_w
-            !tauc(i,j)  = tau_c
+            tauc(i,j)  = tau_c
 !          
           else ! (Ub < Ubc)  <================
 !
