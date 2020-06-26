@@ -2984,16 +2984,11 @@ C$OMP END MASTER
             rho_nbq(i,j,k) = rho_nbq(i,j,k)  
      &                       - dtfast*(thetadiv_nbq(i,j,k)+
      &                                 thetadiv3_nbq(i,j,k))
-
-!# ifdef NBQ_NUDGING
-!            rho_nbq(i,j,k)=rho_nbq(i,j,k)*(1.-NBQnudgcof(i,j))
-!     &                       +rnbqclm(i,j,k).*NBQnudgcof(i,j)
-!# endif
           enddo
         enddo
       enddo
 
-      call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work)
+!      call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) !!! leave commented
 !
 !# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 !      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
