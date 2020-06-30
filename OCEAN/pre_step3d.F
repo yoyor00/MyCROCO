@@ -1136,18 +1136,7 @@
          ! add the non-hydro correction (du, dv, dw are in flux form)
          ! add the non-hydrostatic pressure gradient to rufrc, rvfrc
 
-         do k=1,N    
-
-            if (surface_neumann) then
-               do j=Jstr,Jend
-                  do i=Istr,Iend
-                     wz(i,j,k,nnew) = wz(i,j,k,nnew) + nh_wcor(i,j)
-     &                    * (zw(i,j,k)-zw(i,j,0))
-     &                    / (zw(i,j,N)-zw(i,j,0))
-                  enddo
-               enddo
-            endif
-
+         do k=1,N
             do j=Jstr,Jend
                do i=IstrU,Iend
                   u(i,j,k,nnew) = (u(i,j,k,nnew) + grid(1)%du(k,j,i))
