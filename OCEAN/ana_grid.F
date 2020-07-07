@@ -625,7 +625,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           cff=(float(i       ) )
 #  endif
 #  ifdef SANDBAR_OFFSHORE
-! Roelvink & Renier 1995: LIP-1B
+! Roelvink & Reniers 1995: LIP-1B
           xx=xr(i,j)
           if (xx.lt.60) then
             h(i,j)=0.045*xx-5.072
@@ -642,14 +642,17 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             h(i,j) = p1*xx**8 + p2*xx**7 + p3*xx**6 + p4*xx**5 +
      &               p5*xx**4 + p6*xx**3 + p7*xx**2 + p8*xx    + p9
           else
-            p1= 2.3103564e-06
-            p2=-6.6743544e-04
-            p3= 4.8311074e-02  
-            p4=-6.1127152e-01
-            h(i,j) = p1*xx**3 + p2*xx**2 + p3*xx + p4
+            p1=-1.9020388e-08   
+            p2= 1.5830131e-05  
+            p3=-5.2211926e-03   
+            p4= 8.5241672e-01  
+            p5=-6.8789990e+01   
+            p6= 2.1899957e+03
+            h(i,j) = p1*xx**5 + p2*xx**4 + p3*xx**3 + p4*xx**2 +
+     &               p5*xx + p6
           endif
 #  elif defined SANDBAR_ONSHORE
-! Roelvink & Renier 1995: LIP-1C
+! Roelvink & Reniers 1995: LIP-1C
           xx=xr(i,j)
           if (xx.lt.60) then
             h(i,j)=0.046*xx-5.030
