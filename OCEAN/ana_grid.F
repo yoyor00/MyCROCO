@@ -68,7 +68,7 @@ C$    integer omp_get_thread_num
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
 # ifdef SANDBAR
-      real p1,p2,p3,p4
+      real p1,p2,p3,p4,p5,p6,p7,p8,p9,xx
 # endif
 # ifdef RIVER
       integer is,i0,j0
@@ -197,7 +197,11 @@ C$    integer omp_get_thread_num
                      f0=0.   
                      beta=0.
 # elif defined SANDBAR
+#  ifdef SANDBAR_RS89
                      depth=0.6
+#  else
+                     depth=4.1
+#  endif
                      f0=0.   
                      beta=0.
 # elif defined SWASH
@@ -313,7 +317,11 @@ C$    integer omp_get_thread_num
                      Length_XI =1180.0 
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SANDBAR
-                     Length_XI =32.0 
+#  ifdef SANDBAR_RS89
+                     Length_XI =32.
+#  else
+                     Length_XI =200.
+#  endif
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
                      Length_XI =110.0 
@@ -616,20 +624,76 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  else
           cff=(float(i       ) )
 #  endif
-!
-! Grasso et al. 2009
-!          p1 = -6.953e-05
-!          p2 =  0.003705 
-!          p3 = -0.06435
-!          p4 =  0.5716
-!
+#  ifdef SANDBAR_OFFSHORE
+! Roelvink & Renier 1995: LIP-1B
+          xx=xr(i,j)
+          if (xx.lt.60) then
+            h(i,j)=0.045*xx-5.072
+          elseif (xx.lt.155) then
+            p1= 2.0248857e-13  
+            p2=-1.6816888e-10
+            p3= 6.0096243e-08
+            p4=-1.2062750e-05
+            p5= 1.4867780e-03
+            p6=-1.1517387e-01
+            p7= 5.4737722e+00  
+            p8=-1.4584417e+02
+            p9= 1.6643119e+03
+            h(i,j) = p1*xx**8 + p2*xx**7 + p3*xx**6 + p4*xx**5 +
+     &               p5*xx**4 + p6*xx**3 + p7*xx**2 + p8*xx    + p9
+          else
+            p1= 2.3103564e-06
+            p2=-6.6743544e-04
+            p3= 4.8311074e-02  
+            p4=-6.1127152e-01
+            h(i,j) = p1*xx**3 + p2*xx**2 + p3*xx + p4
+          endif
+#  elif defined SANDBAR_ONSHORE
+! Roelvink & Renier 1995: LIP-1C
+          xx=xr(i,j)
+          if (xx.lt.60) then
+            h(i,j)=0.046*xx-5.030
+          elseif (xx.lt.132) then
+            p1= 2.0248857e-13  
+            p2=-1.6816888e-10
+            p3= 6.0096243e-08
+            p4=-1.2062750e-05
+            p5= 1.4867780e-03
+            p6=-1.1517387e-01
+            p7= 5.4737722e+00  
+            p8=-1.4584417e+02
+            p9= 1.6643119e+03
+            h(i,j) = p1*xx**8 + p2*xx**7 + p3*xx**6 + p4*xx**5 +
+     &               p5*xx**4 + p6*xx**3 + p7*xx**2 + p8*xx    + p9
+          elseif (xx.lt.148) then
+            p1= 1.3962608e-06  
+            p2=-1.0173009e-03   
+            p3= 2.9624882e-01  
+            p4=-4.3100772e+01   
+            p5= 3.1327157e+03
+            p6=-9.1000749e+04
+            h(i,j) = p1*xx**5 + p2*xx**4 + p3*xx**3 + p4*xx**2 +
+     &               p5*xx + p6
+          else
+            p1= 2.4317010e-09
+            p2=-2.6496177e-06   
+            p3= 1.1973712e-03  
+            p4=-2.8726165e-01   
+            p5= 3.8590179e+01  
+            p6=-2.7524761e+03   
+            p7= 8.1436949e+04
+            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 + p4*xx**3 +
+     &               p5*xx**2 + p6*xx + p7
+          endif
+#  elif defined SANDBAR_RS89
 ! Roelvink & Stive 1989
           p1 =  -6.228e-06
           p2 =   0.0004507
           p3 =     0.01459
           p4 =     -0.6769
-!
-          h(i,j) = p1*xr(i,j)**3 + p2*xr(i,j)**2 + p3*xr(i,j) + p4
+          xx=xr(i,j)/10.
+          h(i,j) = p1*xx**3 + p2*xx**2 + p3*xx + p4
+#  endif
           h(i,j) = min(-h(i,j),depth)
         enddo
       enddo

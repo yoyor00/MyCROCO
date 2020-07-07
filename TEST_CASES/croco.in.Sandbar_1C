@@ -11,7 +11,7 @@ initial: NRREC  filename
           0
                 sandbar_ini.nc
 sediments: input file
-           sediment_sandbar_1B.in
+           sediment_sandbar_1C.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T          
@@ -102,7 +102,7 @@ wave_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
                       T   T     F      T     T       T      T     T    T
 
 wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
-            0.32       0.0       8.      0.0       0.8    0.45
+            0.19       0.0       5.      0.0       0.8    0.45
 
 wkb_roller:  roller_sinb  roller_fraction
                 0.1          1. 

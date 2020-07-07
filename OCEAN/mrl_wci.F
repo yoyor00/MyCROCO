@@ -353,7 +353,6 @@
           stk(i,j)=0.125*(wh(i,j)**2)*fr(i,j)*inv_d(i,j) ! Ursell
 #  endif
 # endif
-
 # ifdef MASKING
            kw(i,j) = kw(i,j)*rmask(i,j)
            kD(i,j) = kD(i,j)*rmask(i,j)
@@ -499,7 +498,7 @@
 ! presuming that roller Stokes drift has the same z-dependency as
 ! the primary waves.  
 !
-#   if STOKES_U2010
+#   ifdef STOKES_U2010
 !
 ! Analytical volume-averaging operation is applied to 3D Stokes 
 ! drift velocity such that:
@@ -542,7 +541,6 @@
             ust_r(i,j,k)=ust_ker*
      &                   COSH(2.*kw(i,j)*(z_w(i,j,k)+h(i,j)))/
      &                   max(SINH(min(kD(i,j),khmax)),eps)**2
-!     &                   (SINH(kD(i,j)+eps))**2
           enddo
         enddo
       enddo                 ! <-- keep ust_r, inv_dz, &inv_ex

@@ -760,10 +760,9 @@ C$OMP BARRIER
      &                               *(1 -exp (-cff1**5 ) )
 # endif
 # if defined WET_DRY && defined WAVE_BREAK_SWASH
-!  Add dissipation near wet-dry interface (e.g., swash zone; SANDBAR case)
-          wsb(i,j,wnew)=wsb(i,j,wnew)*(1.+2.*
-     &                  (1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
-     &                                 (z_w(i,j,N)-z_w(i,j,0)))) )
+!  Add dissipation near shoreline (e.g., SANDBAR case)
+          wsb(i,j,wnew)=wsb(i,j,wnew)*
+     &                  max(1.,(0.5/(Dstp(i,j)-Dcrit(i,j)+eps)**0.2))
 # endif
 # ifdef WAVE_ROLLER
           wcr(i,j,wnew) = frq(i,j,wnew)*(inv_k**2)   ! c/k
@@ -771,12 +770,12 @@ C$OMP BARRIER
      &                    *wvn(i,j,wnew)/max(frq(i,j,wnew)**2,eps)
 # endif
 # if (defined BBL || defined MRL_WCI) && !defined WAVE_OFFLINE
-          cosw = inv_k*wkx(i,j,wnew)            ! cosine wave direction (xi)
-          sinw = inv_k*wke(i,j,wnew)            ! sine wave direction (eta)
+          cosw = inv_k*wkx(i,j,wnew)         ! cos wave direction (xi)
+          sinw = inv_k*wke(i,j,wnew)         ! sin wave direction (eta)
 #  ifdef BBL
 !          wfrq(i,j) = frq(i,j,wnew)             ! used in M.Blaas BBL
 !          orbital   = 0.5*wfrq(i,j)
-!     &        *hrm(i,j,wnew)/max(sinh(khn),eps) ! orbital velocity magnitude
+!     &        *hrm(i,j,wnew)/max(sinh(khn),eps) ! orbital vel. magnitude
 !          uorb(i,j) = orbital*cosw              ! orbital velocity (xi)
 !          vorb(i,j) = orbital*sinw              ! orbital velocity (eta)
           inv_f= 1.0/max(frq(i,j,wnew),eps)

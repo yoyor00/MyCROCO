@@ -981,9 +981,11 @@
 !                       SANDBAR Example
 !                       ======= =======
 !
-!   Roelvink, J.A. and Stive, M.J.F., 1989: Bar-generating cross-shore 
-!       flow mechanisms on a beach. Journal of Geophysical Research
+!   Roelvink, J. A. and Reniers, A. (1995). Lip 11d delta flume experiments 
+!   – data report. Technical report, Delft, The Netherlands, Delft Hydraulics
 */
+# define SANDBAR_OFFSHORE /* LIP-1B */
+# undef  SANDBAR_ONSHORE  /* LIP-1C */
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
@@ -997,7 +999,6 @@
 # define ANA_SRFLUX
 # define ANA_SST
 # define ANA_BTFLUX
-# define NS_PERIODIC
 # define OBC_WEST
 # define SPONGE
 # define WET_DRY
@@ -1009,14 +1010,13 @@
 #  define WAVE_ROLLER
 #  define WAVE_FRICTION
 #  define WAVE_BREAK_SWASH
-#  undef  WAVE_STREAMING
+#  define WAVE_STREAMING
 #  undef  WAVE_RAMP
 # endif
 # define LMD_MIXING
 # define LMD_SKPP
 # define LMD_BKPP
 # define LMD_VMIX_SWASH
-# undef  GLS_MIXING
 # define BBL
 # define SEDIMENT
 # ifdef SEDIMENT
@@ -1433,8 +1433,7 @@
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
-# undef RVTK_DEBUG
-# undef RVTK_DEBUG_ADVANCED
+# undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */
 

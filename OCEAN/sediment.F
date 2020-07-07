@@ -19,23 +19,23 @@
 #include "cppdefs.h"
 #ifdef SEDIMENT
 
-# ifdef BEDLOAD
+# ifdef BEDLOAD /* for bedload scheme */
 #  define bnew nnew
 # else
 #  define bnew nstp      
-# endif  /* BEDLOAD */
-!
+# endif
 # ifndef BBL
 #  define BSTRESS_UPWIND
 # endif
-!
-# define MORPH_FAC *morph_fac
+# undef  BEDLOAD_UP1
+# undef  BEDLOAD_SLUMP
+# define BEDLOAD_SHALLOW_LIMIT
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
 # undef  NEUMANN
-
-# undef  SED_SLUMP /* correct bedload for slumping */
 !
+# define MORPH_FAC *morph_fac
+
       subroutine sediment (tile)
 !
 !=======================================================================
@@ -113,7 +113,7 @@
       defined BEDLOAD_MARIEU
      &                       A2d(1,6,trd), A2d(1,7,trd), 
      &                       A2d(1,8,trd), A2d(1,9,trd)
-#  elif defined BEDLOAD_SOULSBY
+#  elif (defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA)
      &                       A2d(1,6,trd), A2d(1,7,trd), 
      &                       A2d(1,8,trd)
 #  endif
@@ -148,9 +148,11 @@ C$OMP BARRIER
 !======================================================================
 !                                                                      !
 !  This routine computes sediment bedload transport using the Meyer-   !
-!  Peter and Muller (1948) formulation  for unidirectional flow and    !
-!  Souksby and Damgaard (2005) algorithm that accounts for combined    !
-!  effect of currents and waves.                                       !
+!  Peter and Muller (1948) formulation  for unidirectional flow,       !
+!  Soulsby and Damgaard (2005) algorithm that accounts for combined    !
+!  effect of currents and waves, and SANTOSS formulation               !
+!  (Van der A 2013), treating phase-lag and wave asymetry effects      !
+!  in half-cycles (from Warner et al. implementation in COAWST)        !
 !                                                                      !
 !  References:                                                         !
 !                                                                      !
@@ -166,8 +168,13 @@ C$OMP BARRIER
 !    coupled wave, current, and sediment-transport model, Computers    !
 !    & Geosciences, 34, 1284-1306.                                     !
 !                                                                      !
-!  Wu W. & Lin Q. (2014) - Nonuniform sediment transport under non-    !
+!  Wu W. & Lin Q., 2014: Nonuniform sediment transport under non-      !
 !    breaking waves and currents. Coastal Engineering, 90, pp 1-11.    !
+!                                                                      !
+!  Van der A, D. A., Ribberink, J. S., van der Werf, J. J.,            !
+!    O’Donoghue, T., Buijsrogge, R. H., and Kranenburg, W. M., 2013:   !
+!    Practical sand transport formula for non-breaking waves and       !
+!    currents. Coastal Engineering, 76, 26-42                          !
 !                                                                      !
 !======================================================================
 !
@@ -176,7 +183,7 @@ C$OMP BARRIER
 #  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
       defined BEDLOAD_MARIEU
      &                            ,tau_wX,tau_wE,angleu,anglev
-#  elif defined BEDLOAD_SOULSBY
+#  elif (defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA)
      &                            ,tau_m,phic,phicw 
 #  endif      
      &                            )
@@ -195,11 +202,12 @@ C$OMP BARRIER
       real angleu(PRIVATE_2D_SCRATCH_ARRAY)
       real anglev(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
-#  ifdef BEDLOAD_SOULSBY
+#  if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
       real tau_m(PRIVATE_2D_SCRATCH_ARRAY)
       real phic(PRIVATE_2D_SCRATCH_ARRAY)
       real phicw(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
+!
       integer i, j, k, ised
       real eps, Dstp
       real cff, cff1, cff2, cff3, cff4, cff5,cff6
@@ -207,15 +215,9 @@ C$OMP BARRIER
       real bedld, bedld_mass, dzdx, dzdy, dzdxdy
       real smgd, smgdr, osmgd, Umag
       real Ua, Ra, phi, Clim
-      real weno5_interp
-#  ifdef BEDLOAD_SOULSBY
-      real theta_m, theta_w, w_asym
-      real theta_max, theta_max1, theta_max2
-      real phi_x1, phi_x2, phi_x, phi_y
-      real bedld_x, bedld_y, waven, wavec
-#  endif
       real kdmax,Kbh,Kbh2,Kdh,Fwave
       real rhs_bed, bed_change
+      real twopi, otwopi, sqrt2
       integer imin,imax,jmin,jmax
       parameter (eps = 1.e-20)
       parameter (kdmax = 100.)
@@ -223,7 +225,35 @@ C$OMP BARRIER
       parameter (K1=0.6666666666, K2=0.3555555555,
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
-#  ifdef SED_SLUMP
+#  ifdef BEDLOAD_SOULSBY
+      real theta_m, theta_w, w_asym
+      real theta_max, theta_max1, theta_max2
+      real phi_x1, phi_x2, phi_x, phi_y
+      real bedld_x, bedld_y, waven, wavec
+#  endif
+#  ifdef BEDLOAD_VANDERA
+      real wavecycle, alphac, alphaw
+      real ksd_wbl, ustrc_wbl, thck_wbl, udelta_wbl
+      real phic_sgwbl, fd_wbl
+      real Hs, Td, depth, k_wn, c_w
+      real d50, d50_mix, d90, rhos
+      real urms, uhat, ahat, phi_curwave
+      real theta, fd, ksw, eta, alpha, tau_wRe
+      real ursell_no, RR_asymwave, beta_asymwave
+      real r, Su, Au, Sk, Ak, T_cu, T_tu
+      real ucrest_r, utrough_r, T_crest, T_trough
+      real umax, umin, uhat_c, uhat_t, mag_uc, mag_ut
+      real dsf_c, dsf_t, theta_c, theta_t
+      real theta_cx, theta_cy, theta_tx, theta_ty
+      real mag_theta_c, mag_theta_t, mag_bstrc
+      real om_cc, om_tt, om_ct, om_tc
+      real bedld_cx, bedld_cy, bedld_tx, bedld_ty
+      real bedld_x, bedld_y
+      real kh_calc    ! functions
+      real mu_calc, ksw_calc, fw_calc, fwi_calc
+      real dsf_calc, w_s_calc, w_sc_calc, theta_cr_calc
+#  endif
+#  ifdef BEDLOAD_SLUMP
       real slopefac_wet_local, slopefac_dry_local
       real sedslope_crit_wet, sedslope_crit_dry
       real slopefac_wet, slopefac_dry
@@ -273,11 +303,39 @@ C$OMP BARRIER
 #   define J_EXT_RANGE jmin,jmax
 #  endif /* NS_PERIODIC */
 !
+      twopi=2.*pi
+      otwopi=1./twopi
+      sqrt2=SQRT(2.)
+!
+#  ifdef BEDLOAD_VANDERA
+        alphac=1.0   ! bedload scale fac for curr contrib
+        alphaw=1.0   ! bedload scale fac for wave contrib
+#  endif
+!
 !-----------------------------------------------------------------------
 ! Compute maximum bottom stress components at rho points
 !-----------------------------------------------------------------------
 !
-#  ifdef BEDLOAD_SOULSBY
+#  ifdef BEDLOAD_VANDERA
+#   ifdef BBL
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          tau_m(i,j) = SQRT( bustrc(i,j)*bustrc(i,j)+ 
+     &                       bvstrc(i,j)*bvstrc(i,j))
+        enddo
+      enddo
+#   else
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          tau_m(i,j) = 0.5*SQRT((bustr(i,j)+bustr(i+1,j))* 
+     &                          (bustr(i,j)+bustr(i+1,j))+ 
+     &                          (bvstr(i,j)+bvstr(i,j+1))* 
+     &                          (bvstr(i,j)+bvstr(i,j+1)))
+        enddo
+      enddo
+#   endif
+!
+#  elif defined BEDLOAD_SOULSBY
 #   ifdef BBL
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
@@ -300,7 +358,6 @@ C$OMP BARRIER
 #   endif
 !
 #  else
-!
 #   ifdef BBL
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
@@ -350,10 +407,10 @@ C$OMP BARRIER
 !
       do j=J_EXT_RANGE
        do i=I_EXT_RANGE
-#  ifdef BEDLOAD_SOULSBY
+#  if defined BEDLOAD_VANDERA || defined BEDLOAD_SOULSBY
 !
-! Compute angle between currents and waves, measure CCW from current
-! direction toward wave vector.
+! Compute angle between currents and waves
+! .. from current direction toward wave vector.
 !
           if (bustrc(i,j).eq.0.) then
             phic(i,j)=0.5*pi*SIGN(1.,bvstrc(i,j))
@@ -362,9 +419,16 @@ C$OMP BARRIER
           endif
           phicw(i,j)=Dwave(i,j)-phic(i,j)  ! Dwave assumed in CROCO 
                                            ! grid convention
+#   ifdef BEDLOAD_VANDERA
 !
-#  elif !defined BEDLOAD_SOULSBY && \
-        !defined BSTRESS_UPWIND && !defined BSTRESS_WENO5
+! Convert phicw to angle between waves and current
+!  .. from wave direction towards current vector
+!
+          phicw(i,j)=twopi-phicw(i,j)
+!
+#   endif
+#  elif !defined BEDLOAD_VANDERA && !defined BEDLOAD_SOULSBY &&\
+        !defined BSTRESS_UPWIND
           cff1=0.5*(bustr(i,j)+bustr(i+1,j))
           cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
           Umag=SQRT(cff1*cff1+cff2*cff2)+eps
@@ -383,17 +447,206 @@ C$OMP BARRIER
 ! FX_r and FE_r have dimensions of kg.
 !-----------------------------------------------------------------------
 !
+#  ifdef BEDLOAD_MARIEU
+        smgdr=Srho(ised)
+#  else
         smgd=(Srho(ised)/rho0-1.)*g*Sd(ised)
         osmgd=1./smgd 
         smgdr=SQRT(smgd)*Sd(ised)*Srho(ised)
+#  endif
+!
+#  ifdef BEDLOAD_VANDERA
+        rhos=Srho(ised)          ! (kg/m3)
+        d50=Sd(ised)             ! (m)
+        d90=1.3*d50              ! (m)
+#  endif
 !
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
-#  ifdef BEDLOAD_SOULSBY
+!
+#  ifdef BEDLOAD_VANDERA
+!
+! ---------  Van der A formulation  -------------
+!
+! VA-2013 equation 1 is solved:
+! The transport formula is based on the wave “half-cycle” concept: 
+! The wave-averaged net sand transport rate in the wave boundary 
+! layer is described as the difference between sand transported 
+! during the positive “crest” and the negative “trough” half-cycles. 
+! Phase-lag and wave asymetry effects are taken into account.
+!
+! Wave & sediment parameters
+!
+            depth=z_w(i,j,N)+h(i,j)             ! (m)
+            Hs=2.*Awave(i,j)                    ! (m)
+            Td=MAX(Pwave(i,j),1.)               ! (s)
+            phi_curwave=phicw(i,j)              ! angle cw
+            k_wn=kh_calc(Td,depth)/depth        ! Wave number 
+            c_w=twopi/(k_wn*Td)                 ! Wave speed
+
+            IF(NST>1) THEN 
+              d50_mix=Sdens(i,j)
+            ELSE
+             d50_mix=d50
+            ENDIF
+!
+! Compute bed wave orbital velocity (m/s) & excursion amplitude
+!
+            urms=twopi/Td*Awave(i,j)/(SINH(k_wn*depth)+eps)
+# ifdef MASKING
+     &                                          *rmask(i,j)
+# endif
+# ifdef WET_DRY
+     &                                      *rmask_wet(i,j)
+# endif
+            uhat=urms*sqrt2
+            ahat=uhat*Td*otwopi
+! 
+! Magnitude of stress for computing current velocity 
+! at the wave boundary layer
+!
+            mag_bstrc=tau_m(i,j)
+#  ifdef MASKING
+     &                             *rmask(i,j)
+#  endif
+#  ifdef WET_DRY
+     &                         *rmask_wet(i,j)
+#  endif
+!
+! Compute near bottom current at wave boundary layer (wbl)
+! Use wbl thickness based on Madsen to get near bottom current velocity. 
+! Make sure that wbl is under total depth and greater than apparent 
+! roughness.
+!
+# ifdef BEDLOAD_VANDERA_ZEROCURR
+            udelta_wbl=0.
+# else
+            thck_wbl=0.1
+            !thck_wbl=5.*sqrt(2.72e-6*Td/twopi)
+            ksd_wbl=Zbapp(i,j)
+            ustrc_wbl=sqrt(mag_bstrc)
+            cff1=MAX(MIN(0.9*depth, thck_wbl), 1.1*ksd_wbl)
+            cff2=LOG(cff1/ksd_wbl)
+            udelta_wbl=(ustrc_wbl/vonKar)*cff2
+# endif
+!
+! Ruessink et al. provides equations for calculating skewness parameters
+! Uses Malarkey and Davies equations to get "r" and "phi"
+! common to both crest and trough.
+!
+            CALL skewness_params(Hs, Td, depth, r, phi, ursell_no)
+!        
+! Abreu et al. use skewness params (r, phi) to get representative critical 
+! orbital velocity for crest and trough cycles.
+! 
+            CALL abreu_points(r, phi, uhat, Td,
+     &                        T_crest, T_trough,
+     &                        T_cu, T_tu, umax, umin,
+     &                        RR_asymwave, beta_asymwave)
+!
+! Representative crest half cycle water particle velocity
+! as well as full cycle orbital velocity and excursion.
+! VA2013 Equation 10, 11.
+!
+            uhat_c=umax
+            uhat_t=umin
+            ucrest_r=0.5*sqrt2*uhat_c
+            utrough_r=0.5*sqrt2*uhat_t
+! 
+! Full wave cycle 
+! 
+            CALL full_wave_cycle_stress_factors(d50, d90, osmgd,
+     &                                           Td, c_w, depth,
+     &                                              phi_curwave,
+     &                                  RR_asymwave, uhat, ahat,
+     &                                    umax, umin, mag_bstrc,
+     &                            T_crest, T_trough, T_cu, T_tu,
+     &                                       ksd_wbl, ustrc_wbl,
+     &                             thck_wbl, udelta_wbl, fd_wbl,
+     &                                 alpha, eta, ksw, tau_wRe )
+!
+! Bed shear stress (Shields parameter) for Crest half cycle 
+! alpha VA2013 Eqn. 19  
+!
+            CALL half_wave_cycle_stress_factors( T_cu, T_crest,
+     &                                               ahat, ksw,
+     &                                           fd_wbl, alpha,
+     &                                          alphac, alphaw,
+     &                                              d50, osmgd,
+     &               ucrest_r, uhat_c, udelta_wbl, phi_curwave,
+     &                                         tau_wRe,  dsf_c,
+     &                         theta_cx, theta_cy, mag_theta_c )
+!
+! Compute sediment load entrained during each crest half cycle
+!
+            wavecycle=1.
+            CALL sandload_vandera( wavecycle,
+     &                             Hs, Td,  depth, RR_asymwave,
+     &                                 d50, d50_mix, rhos, c_w,
+     &                                              eta, dsf_c,
+     &                                   T_crest, T_cu, uhat_c,
+     &                               mag_theta_c, om_cc, om_ct )
+!
+! Bed shear stress (Shields parameter) for Trough half cycle 
+! alpha VA2013 Eqn. 19  
+!
+            CALL half_wave_cycle_stress_factors( T_tu, T_trough, 
+     &                                                ahat, ksw,
+     &                                            fd_wbl, alpha,
+     &                                           alphac, alphaw,
+     &                                               d50, osmgd,
+     &               utrough_r, uhat_t, udelta_wbl, phi_curwave,
+     &                                           tau_wRe, dsf_t,
+     &                          theta_tx, theta_ty, mag_theta_t )
+!
+! Compute sediment load entrained during each trough half cycle
+!
+            wavecycle=-1.
+            CALL sandload_vandera( wavecycle,
+     &                              Hs, Td,  depth, RR_asymwave,
+     &                                  d50, d50_mix, rhos, c_w,
+     &                                               eta, dsf_t,
+     &                                   T_trough, T_tu, uhat_t,
+     &                                mag_theta_t, om_tt, om_tc )
+!
+! Compute sediment load entrained during crest and trough half cycles
+!
+            cff1=MAX(0.5*T_crest/T_cu, 0.)
+            cff2=sqrt(mag_theta_c)*(om_cc+cff1*om_tc)  
+            cff3=(theta_cx/mag_theta_c)
+            bedld_cx=cff2*cff3
+            cff3=(theta_cy/mag_theta_c)
+            bedld_cy=cff2*cff3
+!
+            cff1=MAX(0.5*T_trough/T_tu, 0.)
+            cff2=sqrt(mag_theta_t)*(om_tt+cff1*om_ct)
+            cff3=(theta_tx/mag_theta_t)
+            bedld_tx=cff2*cff3
+            cff3=(theta_ty/mag_theta_t)
+            bedld_ty=cff2*cff3
+!
+! Total bedload (kg m-1 sec-1). Use velocity-load equation 1 of VA2013 
+!
+            bedld_x=smgdr*( bedld_cx*T_crest+
+     &                      bedld_tx*T_trough )/Td
+            bedld_y=smgdr*( bedld_cy*T_crest+
+     &                      bedld_ty*T_trough )/Td
+!
+! Partition bedld into xi and eta directions, still at rho points
+! (FX_r and FE_r have dimensions of kg).
+! bedload is wave aligned (CROCO grid convention)
+!
+            FX_r(i,j)=(bedld_x*COS(Dwave(i,j)) -
+     &                 bedld_y*SIN(Dwave(i,j)))*on_r(i,j)*dt
+            FE_r(i,j)=(bedld_x*SIN(Dwave(i,j)) +
+     &                 bedld_y*COS(Dwave(i,j)))*om_r(i,j)*dt
+!
+#  elif defined BEDLOAD_SOULSBY
 !
 ! ---------  Soulsby formulation  -------------
 !
 ! Compute wave asymmetry factor, based on Fredosoe and Deigaard.
+! (and the note of Soulsby)
 !
             Dstp=z_w(i,j,N)+h(i,j)  
 #   ifdef WKB_WWAVE
@@ -407,16 +660,10 @@ C$OMP BARRIER
             waven = SQRT(Kbh2)/Dstp           
 #   endif
             wavec=SQRT(g/waven*tanh(waven*Dstp))
-            cff4=MIN(waven*Dstp,kdmax)
-            cff1=-0.1875*wavec*(waven*Dstp)**2/(SINH(cff4))**4
-!            cff2=0.125*g*(2*Awave(i,j))**2/(wavec*Dstp+eps)
-!            cff3=pi*2*Max(Awave(i,j),eps)/(Pwave(i,j)*SINH(cff4)+eps)
-!
-! Compute wave asymmetry factor, based on the note of Soulsby
-!
-            cff1=MIN(0.375*(2*Awave(i,j)/Dstp)*         
-     &                     ((waven*Dstp)/(SINH(cff4))**3),0.15)
-            w_asym=2.*cff1/(1.+cff1**2.)
+            cff1=MIN(waven*Dstp,kdmax)
+            cff2=MIN(0.375*(2*Awave(i,j)/Dstp)*         
+     &                     ((waven*Dstp)/(SINH(cff1))**3),0.15)
+            w_asym=2.*cff2/(1.+cff2**2.)
 !
 ! Compute nondimensional stresses.
 !
@@ -478,7 +725,7 @@ C$OMP BARRIER
             cff=ABS(tau_wX(i,j))/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)
 #   elif defined BEDLOAD_MARIEU
-            bedld=(0.001*(ubar(i,j,knew))**3)*rho0
+            bedld=(0.001*ubar(i,j,knew)**3)
 #   endif
      &                                 *smgdr*SIGN(1.,tau_wX(i,j))
             FX_r(i,j)=bedld*on_r(i,j)*dt
@@ -504,7 +751,7 @@ C$OMP BARRIER
             cff=tau_w(i,j)/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr
 #   elif defined BEDLOAD_MARIEU
-            bedld=(0.001*(ubar(i,j,knew))**3)*rho0
+            bedld=(0.001*ubar(i,j,knew)**3)*smgdr
 #   endif
 !
 ! Partition bedld into xi and eta directions, still at rho points.
@@ -595,8 +842,9 @@ C$OMP BARRIER
             FX_r(i,j)=FX_r(i,j)*rmask_wet(i,j)
             FE_r(i,j)=FE_r(i,j)*rmask_wet(i,j)
 #  endif
-          enddo
-        enddo
+!
+          enddo ! I_EXT_RANGE
+        enddo  ! J_EXT_RANGE
 
 #  ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
@@ -663,6 +911,7 @@ C$OMP BARRIER
 !
         do j=Jstr,Jend
           do i=Istr,Iend+1
+#  ifdef BEDLOAD_UP1
             cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
             FX(i,j)=0.5*(1.+SIGN(1.,FX_r(i-1,j)))*     
@@ -671,7 +920,10 @@ C$OMP BARRIER
      &              0.5*(1.-SIGN(1.,FX_r(i-1,j)))*    
      &              (cff2*FX_r(i  ,j)+                   
      &               cff1*0.5*(FX_r(i-1,j)+FX_r(i,j)))
-
+#  else
+            FX(i,j)=0.5*(FX_r(i-1,j)+FX_r(i,j))
+#  endif
+!
 #  ifdef SLOPE_KIRWAN
             dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
             a_slopex=(MAX(0.,abs(dzdx)-0.01)
@@ -689,6 +941,7 @@ C$OMP BARRIER
         enddo
         do j=Jstr,Jend+1
           do i=Istr,Iend
+#  ifdef BEDLOAD_UP1
             cff1=0.5*(1.+SIGN(1.,FE_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FE_r(i,j)))
             FE(i,j)=0.5*(1.+SIGN(1.0,FE_r(i,j-1)))*     
@@ -697,6 +950,9 @@ C$OMP BARRIER
      &              0.5*(1.-SIGN(1.,FE_r(i,j-1)))*      
      &              (cff2*FE_r(i  ,j)+                    
      &               cff1*0.5*(FE_r(i,j-1)+FE_r(i,j)))
+#  else
+            FE(i,j)=0.5*(FE_r(i,j-1)+FX_r(i,j))
+#  endif
 #  ifdef SLOPE_KIRWAN
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j)
             a_slopey=(MAX(0.,abs(dzdy)-0.01)
@@ -713,7 +969,7 @@ C$OMP BARRIER
           enddo
         enddo
 !
-#  ifdef SED_SLUMP
+#  ifdef BEDLOAD_SLUMP
 !-----------------------------------------------------------------------
 !  Sed slump computation to allow slumping for wet areas everywhere
 !  and at the wet/dry interface.
@@ -778,7 +1034,7 @@ C$OMP BARRIER
 ! For the wet part
             cff=ABS(dzdxdy)-sedslope_crit_wet
             cff1=(0.5+SIGN(0.5,cff))
-            cff=0.5_r8*cff*cff1/(pm(i,j)*pn(i,j))
+            cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
             cff2=cff*slopefac_wet_local*SIGN(1.,dzdy)
 #   ifdef MASKING
             cff2=cff2*vmask(i,j)
@@ -803,7 +1059,7 @@ C$OMP BARRIER
             FE(i,j)=FE(i,j)+cff2
           END DO
         END DO
-#  endif /* SED_SLUMP */
+#  endif /* BEDLOAD_SLUMP */
 !
 !-----------------------------------------------------------------------
 ! Limit fluxes to prevent bottom from breaking thru water surface.
@@ -886,13 +1142,20 @@ C$OMP BARRIER
 #  ifdef SPONGE_SED
      &                             *sed_sponge(i,j)
 #  endif
+
+#  ifdef BEDLOAD_SHALLOW_LIMIT
+            cff=cff/max(1.,(0.5/(z_w(i,j,N)-z_w(i,j,0)
+     &                           -Dcrit(i,j)+eps)**2))
+#  endif
+
             bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,nstp,ised)-   
      &                                    cff,0.)
-
 #  if !defined SUSPLOAD
-            do k=2,NLAY
-              bed_mass(i,j,k,nnew,ised)=bed_mass(i,j,k,nstp,ised)
-            enddo
+            if (NLAY.gt.1) then
+              do k=2,NLAY
+                bed_mass(i,j,k,nnew,ised)=bed_mass(i,j,k,nstp,ised)
+              enddo
+            endif
 #  endif
             bed_thick(i,j,1)=MAX(bed_thick(i,j,1)-            
      &                           cff/(Srho(ised)*              
@@ -1560,7 +1823,6 @@ C$OMP BARRIER
       return
       end
 # endif /* SUSPLOAD */
-
 !
 !=======================================================================
 !                                                                      !
@@ -2117,7 +2379,11 @@ C$OMP BARRIER
 !  Store bed evolution
 !-----------------------------------------------------------------------
 !
-       dh(:,:)=bed_thick_tot(:,:,nstp)-bed_thick_tot(:,:,nnew)
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          dh(i,j)=bed_thick_tot(i,j,nstp)-bed_thick_tot(i,j,nnew)
+        enddo
+      enddo
 !
 # endif /* MORPHODYN */
 
@@ -2565,62 +2831,1113 @@ C$OMP BARRIER
 
       return
       end
-!                 
-!====================================================================
-!
-!  WENO5 interpolation for bedload fluxes
-!
-!=====================================================================
-!
-# ifdef BSTRESS_WENO5
-      function weno5_interp(a, b, c, d, e, f)
-        implicit none
-        REAL    :: weno5_interp
-        REAL    :: a, b, c, d, e, f        
-        REAL    :: IS0, IS1, IS2
-        REAl    :: d0, d1, d2
-        REAl    :: a0, a1, a2
-        REAL    :: w0, w1, w2
-        REAL    :: p0, p1, p2
-        REAL    :: Eps, cff1, cff2, T5
-        
-!  --> from 1.e-7 (smoother) to 1.e-5 (sharper)
-        Eps = 1.e-6
-        ! Weigths coefficients
-        d0=1./10.
-        d1=6./10.
-        d2=3./10.
-        ! other coefficients
-        cff1=13./12.
-        cff2=1./6.
-        
-! Nonlinear Smoothness Indicators
-        IS0 = cff1*(a - 2.*b + c)**2
-     &                        + 0.25*(a - 4.*b + 3*c)**2
-        IS1 = cff1*(b - 2.*c + d)**2
-     &                        + 0.25*(b- d)**2
-        IS2 = cff1*(c - 2.*d + e)**2
-     &                        + 0.25*(3.*c - 4.*d + e)**2       
-        a0  = d0/(Eps+IS0)**2
-        a1  = d1/(Eps+IS1)**2
-        a2  = d2/(Eps+IS2)**2
 
-! Normalized Weigths
-        w0  = a0/(a0+a1+a2)
-        w1  = a1/(a0+a1+a2)
-        w2  = a2/(a0+a1+a2)
-! Polynomials
-        p0  = cff2*(2.*a - 7.*b + 11.*c)
-        p1  = cff2*(-b   + 5.*c + 2.*d)
-        p2  = cff2*(2.*c + 5.*d   - e)
-! Combination
-        weno5_interp = w0*p0 + w1*p1 +w2*p2
-        
-        return
+# ifdef BEDLOAD_VANDERA
+!======================================================================!
+!======================================================================!
+!                          VANDERA FUNCTIONS                           !
+!                                                                      !
+!   Subroutines and functions required for the sediment bedload        !
+!   calculations using Van der A's formulations.                       !  
+!                                                                      !
+! Tarandeep S. Kalra; Chris Sherwood; John C. Warner                   !
+!======================================================================!
+!======================================================================!
+!
+      SUBROUTINE sandload_vandera( wavecycle,
+     &                                   Hs, Td,  depth, RR,
+     &                              d50, d50_mix, rhos, c_w,
+     &                                             eta, dsf,
+     &                       T_i, T_iu, uhat_i, mag_theta_i,
+     &                                         om_ii, om_iy )
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real wavecycle
+      real Hs, Td, depth, RR
+      real d50, d50_mix, rhos, c_w
+      real eta, dsf
+      real T_i, T_iu
+      real uhat_i, mag_theta_i
+      real om_ii, om_iy
+!
+! local variables
+! 
+      real m_fac,n_fac
+      parameter(m_fac=11., n_fac=1.2)
+      real alpha_fac
+      parameter(alpha_fac=8.2)
+      real xi
+      parameter(xi=1.7) ! Based on Santoss_core.m
+      real eps
+      parameter(eps=1.0E-14)
+      real eps_eff, P
+      real om_i, theta_diff, theta_ieff, theta_cr
+      real w_s, ws_eta, ws_dsf
+      real w_sc_eta, w_sc_dsf
+      real cff, cff1_eta, cff1_dsf
+      real w_s_calc, w_sc_calc, theta_cr_calc
+! 
+! Find settling velocity based on Soulsby (1997). 
+! VA2013 Use 0.8*d50 for settling velocity (text under equation 28).
+!
+      w_s=w_s_calc(0.8*d50, rhos)
+!
+! VA2013 Equation 29, for crest cycle
+!
+      ws_eta=w_sc_calc(Hs, Td, depth, RR, w_s, eta)
+      ws_dsf=w_sc_calc(Hs, Td, depth, RR, w_s, dsf)
+      IF(wavecycle.eq.1.) THEN
+        w_sc_eta=MAX(w_s+ws_eta,0.)
+        w_sc_dsf=MAX(w_s+ws_dsf,0.)
+      ENDIF
+!
+! VA2013 Equation 30, for trough cycle
+!
+      IF(wavecycle.eq.-1.) THEN
+!        w_sc_eta=(w_s-ws_eta)
+!        w_sc_dsf=(w_s-ws_dsf)
+        w_sc_eta=MAX(w_s-ws_eta,0.36*w_s)
+        w_sc_dsf=MAX(w_s-ws_dsf,0.36*w_s)
+!        w_sc_eta=MIN(w_s-ws_eta,0.)
+!        w_sc_dsf=MIN(w_s-ws_dsf,0.)
+      ENDIF
+!
+! VA2013 Equation 33, Phase lag parameter
+!
+      cff=1.-(wavecycle*xi*uhat_i/c_w)
+!
+      IF( (T_i-T_iu).eq.0. ) THEN 
+        cff1_eta=0.
+        cff1_dsf=0.
+      ELSE
+        cff1_eta=(1./(2.*(T_i-T_iu)*w_sc_eta))
+        cff1_dsf=(1./(2.*(T_i-T_iu)*w_sc_dsf))
+      ENDIF 
+!
+      IF(eta.gt.0.) THEN
+!
+! For ripple regime 
+!
+        P=alpha_fac*eta*cff*cff1_eta
+      ELSEIF(eta.eq.0.)THEN
+!
+! For sheet flow regime 
+!
+        P=alpha_fac*dsf*cff*cff1_dsf
+      ENDIF
+!
+! Hiding/exposure correction factor
+!
+!      eps_eff=(d50/d50_mix)**0.25 
+      eps_eff=1. 
+!
+! CRS for multiple sed types
+!
+      theta_ieff=eps_eff*mag_theta_i
+! 
+! Find critical Shields parameters based on Soulsby (1997).
+!
+      theta_cr=theta_cr_calc(d50, rhos)
+!
+! Sand load entrained in the flow during each half-cycle
+!
+      theta_diff=MAX((theta_ieff-theta_cr),0.)
+      om_i=m_fac*(theta_diff)**n_fac
+!
+! VA2013 Equation 23-26, Sandload entrained during half cycle 
+ 
+      IF(P.lt.eps) THEN
+ 
+! This is Taran's addition if there are no waves then phase lag=0.0
+! 
+        om_ii=1. 
+        om_iy=0.
+      ELSEIF(P.gt.eps.and.P.lt.1.) THEN
+        om_ii=om_i
+        om_iy=0.
+      ELSE
+        om_ii=om_i/P
+        cff=1./P
+        om_iy=om_i*(1.-cff)
+      ENDIF
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE full_wave_cycle_stress_factors( d50, d90, osmgd,
+     &                                            Td, c_w, depth,
+     &                                               phi_curwave,
+     &                                            RR, uhat, ahat,
+     &                                                umax, umin,
+     &                                                 mag_bstrc,
+     &                                      T_c, T_t, T_cu, T_tu,
+     &                                                ksd, ustrc,
+     &                                          delw, udelta, fd,
+     &                                   alpha, eta, ksw, tau_wRe )
+!
+! Iterative solution to obtain current and wave related bed roughness,
+! computed from converged time-averaged Shields parameter (VA2013 
+! Apendix A). Also, compute full-cycle friction factor and wave Reynolds 
+! stress
+!
+!  This subroutine returns the following:
+!  eta                 : ripple height
+!  udelta              : current velocity at the wave boundary layer
+!  fd                  : current friction factor  
+!  tau_wRe             : Wave averaged Reynolds stress
+!  T_c, T_t, T_cu, T_tu: Updated time periods in half cycles 
+!                        based on current velocity
+! 
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+!
+!  Imported variable declarations.
+!  
+! Input the crest or trough half cycle velocity
+! d50 -- grain size in meters
+! Different for crest and trough half cycles
+!       
+      real d50, d90, osmgd
+      real Td, c_w, depth
+      real phi_curwave
+      real RR, uhat, ahat
+      real umax, umin
+      real mag_bstrc
+      real T_c, T_t, T_cu, T_tu
+      real udelta, delw, fd
+      real alpha, eta, ksw, tau_wRe
+!
+!  Local variables
+! 
+      integer iter
+      integer total_iters
+      parameter (total_iters=15)
+      real tol,von_k
+      parameter(tol=0.001, von_k=0.41)
+      real eps
+      parameter(eps=1.0E-14)
+      real crs_fac
+      parameter(crs_fac=1.)
+      real theta_timeavg_old, theta_timeavg, theta_hat_i
+      real psi  ! maximum mobility number
+      real rlen ! ripple length
+      real ksd, ustrc
+      real fw
+      real alpha_w, fwd
+      real ustarw
+      real ksw_calc, ksd_calc, fw_calc
+      real fd_calc_madsen, fd_calc_santoss, mu_calc
+!
+! Maximum mobility number at crest and trough
+! For irregular waves, use Rayleigh distributed maximum value
+! - VA2013, text under equation Appendix B.4
+!
+      psi=(1.27*uhat)**2*osmgd
+!
+! Use Appendix B eqn B.1 and B.2 to get ripple height and length
+!
+      CALL ripple_dim(psi, d50, eta, rlen)
+!
+      eta=eta*ahat
+      rlen=rlen*ahat
+!
+! Initiliaze with theta_timeavg=0 and theta_hat_i=theta_timeavg
+!
+      theta_timeavg=0.
+      theta_timeavg_old=0.
+!
+! Calculate friction factor fd
+!
+#  if defined BEDLOAD_VANDERA_FD_MADSEN
+      fd=fd_calc_madsen(udelta, mag_bstrc)
+#  elif defined BEDLOAD_VANDERA_ZEROCURR
+      fd=0.
+#  endif
+!
+      DO iter=1,total_iters !---- ! Iterative solution
+!
+! Wave related bed roughness - VA2013 A.5
+!
+        ksw=ksw_calc(d50, mu_calc(d50), theta_timeavg, eta, rlen)
+!
+! Full-cycle wave friction factor - VA2013 Appendix Eq A.4
+!
+        fw=fw_calc(ahat, ksw)
+!
+#  if defined BEDLOAD_VANDERA_FD_SANTOSS &&\
+     !defined BEDLOAD_VANDERA_ZEROCURR
+!
+! Current-related bed roughness - VA2013 Appendix A.1
+!
+        ksd=ksd_calc(d50, d90, mu_calc(d50), theta_timeavg, eta, rlen)
+!
+! Friction factor from ksd, udelta, delta
+!
+        fd=fd_calc_santoss(udelta, delw, ksd)
+!
+#  endif
+!
+! Time-averaged absolute Shields stress - VA2013 Appendix Eq. A.3
+!
+        theta_timeavg=osmgd*(0.50*fd*udelta**2.+
+     &                       0.25*fw*uhat**2.)
+!
+        IF(ABS(theta_timeavg-theta_timeavg_old).lt.tol) THEN
+          EXIT
+        ENDIF
+        theta_timeavg_old=theta_timeavg
+!
+      ENDDO  ! end iterations ----
+!
+! Full-cycle current friction factor - VA2013 Eq 20
+!
+      alpha=udelta/(udelta+uhat)
+      fwd=alpha*fd+(1.0-alpha)*fw
+!
+! Wave Reynolds stress - VA2013 Eq 22
+! (contribution associated with progressive surface waves)
+!
+#  ifdef BEDLOAD_VANDERA_WAVE_AVG_STRESS
+      alpha_w=0.424
+      tau_wRe=MAX((rho0*fwd*alpha_w*uhat**3./(2.*c_w)),eps)
+#  else 
+      tau_wRe=0.
+#  endif
+!        
+! Compute the change in time period based on converged udelta 
+! (current velocity at wave boundary layer)
+!
+#  ifndef BEDLOAD_VANDERA_ZEROCURR
+      CALL current_timeperiod(udelta, phi_curwave, umax, umin, RR,
+     &                        T_c, T_t, Td)
+#  endif
+!
+! Calculate the effect of surface waves 
+!
+#  ifdef BEDLOAD_VANDERA_SURFACE_WAVE
+      CALL surface_wave_mod(Td, depth, uhat, T_c, T_cu, T_t, T_tu)
+#  endif 
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE half_wave_cycle_stress_factors( T_iu, T_i, ahat, ksw,
+     &                                                      fd, alpha,
+     &                                                 alphac, alphaw,
+     &                                                     d50, osmgd,
+     &                              ui_r, uhat_i, udelta, phi_curwave,
+     &                                                   tau_wRe, dsf,
+     &                                theta_ix, theta_iy, mag_theta_i )
+!
+!  This subroutine returns the following:
+!  dsf                 : sheetflow thickness
+!  theta_ix, theta_iy  : Shields parameter in x and y dir. 
+!  mag_theta_i         : Magnitude of Shields parameter for half cycle
+! 
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+!  
+! Input the crest or trough half cycle velocity
+! d50 -- grain size in meters
+! Different for crest and trough half cycles 
+!       
+      real T_iu, T_i, ahat, ksw
+      real fd, alpha
+      real alphac, alphaw
+      real d50, osmgd
+      real ui_r, uhat_i, udelta, phi_curwave
+      real tau_wRe
+      real dsf, theta_ix, theta_iy, mag_theta_i
+      real fwi_calc, dsf_calc
+!
+!  Local variables
+! 
+      real eps
+      parameter(eps = 1.0E-14)
+      real fw_i, fwd_i
+      real alpha_w, fwd, k, c_w
+      real theta_hat_i
+      real ui_rx, ui_ry, mag_ui
+!        
+! Wave friction factor for wave and crest half cycle - VA2013 Eq 21
+! 
+      fw_i=fwi_calc(T_iu, T_i, ahat, ksw)
+!
+! Wave current friction factor (Madsen and Grant) - VA2013 Eq 18
+! Different for crest and trough 
+!
+      fwd_i=alpha*fd+(1.0-alpha)*fw_i
+!
+! Magnitude of Shields parameter - VA2013 Eq 17
+! 
+      theta_hat_i=0.5*fwd_i*uhat_i**2*osmgd
+!
+! Sheet flow thickness - VA2013 Appendix C C.1 
+!
+      dsf=dsf_calc(d50, theta_hat_i) ! this dsf is in m 
+!
+! Compute velocity magnitude based on representative velocities
+!  - VA2013 Eq 12 
+!
+! Get the representative trough half cycle water particle velocity
+! as well as full cycle orbital velocity and excursion
+!
+      ui_rx=udelta*COS(phi_curwave)*alphac+ui_r*alphaw
+      ui_ry=udelta*SIN(phi_curwave)*alphac
+!
+! mag_ui is set to a min value to avoid non-zero division
+!
+      mag_ui=MAX( SQRT(ui_rx*ui_rx+ui_ry*ui_ry), eps )
+!
+! Magnitude of Shields parameter - VA2013 Eq 17
+! 
+      mag_theta_i=MAX(0.5*fwd_i*osmgd*(mag_ui**2.), eps)
+!
+! Shields parameter in crest cycle
+! rho0 is required for non-dimensionalizing 
+!
+      theta_ix=ABS(mag_theta_i)*ui_rx/(mag_ui)+tau_wRe*osmgd/rho0
+      theta_iy=ABS(mag_theta_i)*ui_ry/(mag_ui)
+!
+! mag_theta_i is set to a min value to avoid non-zero division
+!
+      mag_theta_i=MAX( sqrt(theta_ix*theta_ix+theta_iy*theta_iy),eps )
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE current_timeperiod(unet, phi_curwave, umax, umin,
+     &                              RR, T_c, T_t, Td)
+!
+! This subroutine returns the following:
+! T_c, T_t  : Time period in crest and trough cycle
+!
+! Modify the crest and trough time periods based on current velocity
+! This function was developed by Chris Sherwood and Tarandeep Kalra
+!
+! The basis for these formulations are formed from Appendix A.3 
+! in SANTOSS report (Report nb: SANTOSS_UT_IR3 Date: January 2010)
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real unet, phi_curwave
+      real umax, umin
+      real RR, Td
+      real T_c, T_t
+!
+!  Local variables
+!
+      real unet_xdir, udelta, delt
+!
+      unet_xdir=unet*cos(phi_curwave)
+      IF(RR.eq.0.5) THEN
+        T_c=0.5*Td
+        T_t=0.5*Td
+        IF(unet_xdir.ge.umax) THEN
+          T_c=Td
+          T_t=0.
+        ELSEIF(unet_xdir.le.umin) THEN
+          T_c=0.
+          T_t=Td
+        ELSEIF(unet_xdir.lt.0.0.and.unet_xdir.gt.umin) THEN
+          delt=ASIN(-unet/umin)/pi
+          T_t=T_t*(1.-2.*delt)
+          T_c=Td-T_t
+        ELSEIF(unet_xdir.gt.0.0.and.unet_xdir.lt.umax) THEN
+          delt=ASIN(unet_xdir/(-umax))/pi
+          T_c=T_c*(1.-2.*delt)
+          T_t=Td-T_c
+        ELSEIF(unet_xdir.eq.0.) THEN
+          T_c=T_c
+          T_t=T_t
+        ENDIF
+      ELSEIF(RR.gt.0.5) THEN
+        T_c=T_c
+        T_t=T_t
+        IF(unet_xdir.ge.umax) THEN
+          T_c=Td
+          T_t=0.
+        ELSEIF(unet_xdir<=umin) THEN
+          T_c=0.
+          T_t=Td
+        ELSEIF(unet_xdir.lt.0.0.and.unet_xdir.gt.umin) THEN
+          delt=ASIN(-unet_xdir/umin)/pi
+          T_t=T_t*(1.-2.*delt)
+          T_c=Td-T_t
+        ELSEIF(unet_xdir.gt.0.0.and.unet_xdir.lt.umax) THEN
+          delt=ASIN(unet_xdir/(-umax))/pi
+          T_c=T_c*(1.-2.*delt)
+          T_t=Td-T_c
+        ELSEIF(unet_xdir.eq.0.) THEN
+          T_c=T_c
+          T_t=T_t
+        ENDIF
+      ENDIF
+      T_c=MAX(T_c,0.)
+      T_t=MAX(T_t,0.)
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE surface_wave_mod(Td, depth, uhat, T_c, T_cu, T_t, T_tu)
+! 
+! This subroutine returns the following:
+! T_c, T_cu, T_t, T_tu  : Change in time period in crest and 
+!                         trough cycle due to particle displacement
+!                         under surface waves. 
+!
+! Crest period extension for horizontal particle displacement.
+! Tuning factor eps_eff = 0.55 from measurements GWK Schretlen 2010         
+! Equations in Appendix B of SANTOSS Report (SANTOSS_UT_IR3, 2010) 
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real Td, depth, uhat
+      real T_c, T_cu, T_t, T_tu
+!
+!  Local variables
+!
+      real eps
+      parameter(eps = 1.0E-14)
+      real k_wn, eps_eff, c
+      real delta_Tc, delta_Tt
+      real T_c_new, T_cu_new
+      real T_t_new, T_tu_new
+      real kh_calc
+!
+      k_wn=kh_calc(Td,depth)/depth
+      c=2.*pi/(k_wn*Td)
+!
+      eps_eff=0.55
+!
+      delta_Tc=eps_eff*uhat/(c*pi-eps_eff*2.*uhat)
+      T_c_new=T_c+delta_Tc
+!
+! Avoid non zero values for time periods 
+!
+      T_c_new=MAX( T_c_new, 0. )
+      T_cu_new=MAX( T_cu*T_c_new/T_c, 0. )
+!
+      delta_Tt=eps_eff*uhat/(c*pi+eps_eff*2.*uhat)
+      T_t_new=T_t-delta_Tt
+      T_t_new=MAX( T_t_new, 0. )
+      T_tu_new=MAX( T_tu*T_t_new/T_t, 0. )
+!
+      T_c=T_c_new
+      T_cu=T_cu_new
+      T_t=T_t_new
+      T_tu=T_tu_new
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE ripple_dim(psi, d50, eta, rlen)
+! 
+! This subroutine returns the following:
+! eta, rlen : Ripple dimensions: (height and length) 
+!
+! Calculate ripple dimensions of O'Donoghue et al. 2006
+! based on VA2013 Appendix B
+!        
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+      real psi, d50
+      real eta, rlen
+      real d50_mm 
+      real m_eta, m_lambda, n_eta, n_lambda 
+      real eps
+      parameter(eps=1.0E-14)
+!     
+      d50_mm=0.001*d50
+      IF(d50_mm.lt.0.22) THEN
+        m_eta=0.55
+        m_lambda=0.73
+      ELSEIF(d50_mm.ge.0.22.and.d50_mm.lt.0.30) THEN
+        m_eta=0.55+(0.45*(d50_mm-0.22)/(0.30-0.22))
+        m_lambda=0.73+(0.27*(d50_mm-0.22)/(0.30-0.22))
+      ELSE
+        m_eta=1.
+        m_lambda=1.
+      ENDIF
+! 
+! Smooth transition between ripple regime and bed sheet flow regime 
+!
+      IF(psi.le.190.) THEN
+        n_eta=1.
+      ELSEIF(psi.gt.190..and.psi.lt.240.) THEN
+        n_eta=0.5*(1.+cos(pi*(psi-190.)/(50.)))
+      ELSEIF(psi.ge.240.) THEN
+        n_eta=0.
+      ENDIF
+      n_lambda=n_eta
+!
+      eta=MAX(0.,m_eta*n_eta*(0.275-0.022*psi**0.42))
+      rlen=MAX(eps,m_lambda*n_lambda*(1.97-0.44*psi**0.21))
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE skewness_params( H_s, T, depth, r, phi, Ur )
+!        
+! Ruessink et al. (2012) provides equations for calculating skewness 
+! parameters. Uses Malarkey and Davies equations to get "bb" and "r",
+! given input of H_s, T and depth 
+!
+! r     - skewness/asymmetry parameter r=2b/(1+b^2)      [value]
+! phi   - skewness/asymmetry parameter                   [value]
+! Su    - umax/(umax-umin)                               [value]
+! Au    - amax/(amax-amin)                               [value]
+! alpha - tmax/pi                                        [value]
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real H_s, T, depth
+      real Ur
+      real r, phi
+      real kh_calc
+!
+! Local variables 
+! 
+      real p1,p2,p3,p4,p5,p6
+      parameter(p1=0.,p2=0.857,p3=-0.471,p4=0.297,p5=0.815,p6=0.672)
+      real B, psi, bb
+      real k_wn, cff
+      real Su, Au
+!
+! Ruessink et al. (2012), Coastal Engineering 65:56-63.
+!
+! k is the local wave number computed with linear wave theory.
+!
+      k_wn=kh_calc(T,depth)/depth    
+!
+! Ursell number defined as 3/(32*pi^2) * Hs*L^2/h^3 
+!               (Fourier coeff for NL terms)
+!
+      Ur=0.375*H_s/(k_wn*k_wn*depth**3.)
+!
+! Ruessink et al. (2012), Eq 9
+!
+      cff=EXP((p3-log10(Ur))/p4)
+      B=p1+((p2-p1)/(1.+cff))
+!
+      psi=-90.*deg2rad*(1.-TANH(p5/Ur**p6))
+!
+#  ifdef BEDLOAD_VANDERA_ASYM_LIMITS
+      B=MIN(B,0.8554) ! according to fig.2, max values w.r.t Ur=24
+      psi=MAX(psi,-1.4233) 
+#  endif     
+! 
+! Markaley and Davies, equation provides bb which is "b" in paper
+! Check from where CRS found these equations
+! 
+      bb=sqrt(2.)*B/(sqrt(2.*B**2.+9.))
+      r=2.*bb/(bb**2.+1.)
+!
+! Ruessink et al., 2012 under Equation 12.
+!
+      phi=-psi-0.5*pi
+!
+! Skewness Su and asymmetry Au 
+!          
+      Su=B*cos(psi)
+      Au=B*sin(psi)
+!
+      RETURN
+      END
+!
+!======================================================================
+!
+      SUBROUTINE abreu_points( r, phi, Uw, T, T_c, T_t,
+     &                            T_cu, T_tu, umax, umin, RR, beta )
+! 
+!  Calculate umax, umin, and phases of asymmetrical wave orbital velocity 
+!
+!  Use the asymmetry parameters from Ruessink et al, 2012
+!  to get the umax, umin and phases of asymettrical wave 
+!  orbital velocity to be used by Van Der A. 
+!  T_c is duration of crest
+!  T_cu Duration of accerating flow within crest half cycle
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real r, phi, Uw, T
+      real T_c, T_t, T_cu, T_tu
+      real umax, umin, RR, beta
+!
+! Local variables 
+! 
+      real b, c, ratio, tmt, tmc, tzd, tzu
+      real omega, w, phi_new
+      real P, F0, betar_0
+!     real T_tu, T_cu, T_c, T_t
+      real cff1, cff2, cff
+      real Sk, Ak
+!
+      omega=2.*pi/T
+!
+      phi_new=-phi
 
-      end function weno5_interp
-# endif
-
+! Malarkey and Davies (Under equation 16b) 
+      P=SQRT(1.-r*r)
+!
+! Malarkey and Davies (Under equation 16b) 
+!
+      b=r/(1.+P)
+!
+! Appendix E of Malarkey and Davies 
+!
+      c=b*SIN(phi_new)
+!
+      cff1=4.*c*(b*b-c*c)+(1.-b*b)*(1.+b*b-2.*c*c)
+      cff2=(1.+b*b)**2.-4.*c*c
+      ratio=cff1/cff2
+!
+! These "if" conditionals prevent ASIN to be between [-1,1] and prevent NaNs
+! Not a problem in the MATLAB code
+!
+      IF(ratio.gt.1.)THEN
+        ratio=1.
+      ENDIF
+      IF(ratio.lt.-1.)THEN
+        ratio=-1.
+      ENDIF
+      tmc=ASIN(ratio)
+!
+      cff1=4.*c*(b*b-c*c)-(1.-b*b)*(1.+b*b-2.*c*c)
+      cff2=(1.+b*b)**2.-4.*c*c
+      ratio=cff1/cff2
+      IF(ratio.gt.1.)THEN
+        ratio=1.
+      ENDIF
+      IF(ratio.lt.-1.)THEN
+        ratio=-1.
+      ENDIF
+      tmt=ASIN(ratio)
+!       
+      IF(tmc.lt.0.) THEN
+        tmc=tmc+2.*pi
+      ENDIF
+      IF(tmt.lt.0.) THEN
+        tmt=tmt+2.*pi
+      ENDIF
+! 
+! Non dimensional umax and umin, under E5 in Malarkey and Davies 
+! 
+      umax=1.+c
+      umin=umax-2.
+!
+!     Dimensionalize
+!
+      umax=umax*Uw
+      umin=umin*Uw
+!
+! phase of zero upcrossing and downcrossing (radians)
+!
+      tzu=ASIN(b*SIN(phi_new))
+      tzd=2.*ACOS(c)+tzu
+! 
+! MD, equation 17
+!
+      RR=0.5*(1.+b*SIN(phi_new))
+! 
+! MD, under equation 18
+! 
+      IF(r.le.0.5) THEN
+        F0=1.0-0.27*(2.*r)**(2.1)
+      ELSE
+        F0=0.59+0.14*(2.*r)**(-6.2)
+      ENDIF
+!
+! MD, Equation 15a,b 
+!
+      IF(r.ge.0..and.r.lt.0.5)THEN
+        betar_0=0.5*(1.+r)
+      ELSEIF(r.gt.0.5.and.r.lt.1.)THEN
+        cff1=4.*r*(1.+r)
+        cff2=cff1+1.
+        betar_0=cff1/cff2
+      ENDIF
+!
+! MD, Equation 18
+!
+      cff=SIN((0.5*pi-ABS(phi_new))*F0)/SIN(0.5*pi*F0)
+      beta=0.5+(betar_0-0.5)*cff
+!
+! MD, Table 1, get asymmetry parameterization
+! using GSSO (10a,b)
+!
+      cff=SQRT(2.*(1.+b*b)**3.)
+      Sk=3.*SIN(phi_new)/cff
+      Ak=-3.*COS(phi_new)/cff
+!
+! These are the dimensional fractions of wave periods needed by Van der A eqn.
+!
+      w=1./omega
+      T_c=(tzd-tzu)*w
+      T_t=T-T_c
+      T_cu=(tmc-tzu)*w
+      T_tu=(tmt-tzd)*w
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION kh_calc(Td,depth)
+!
+! Calculate wave number from Wave period and depth 
+!
+! Soulsby (2006) "Simplified calculation of wave orbital velocities"
+! Wallingford Report TR 155, February 2006
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real kh_calc
+      real Td, depth
+      real cff
+      real x, y, t, omega
+!
+      omega=2.*pi/Td
+!
+! depth (i.e.x) cannot go negative to avoid negative wave number
+!
+      IF(depth.lt.0.) THEN 
+        x=0.
+      ELSE 
+        x=omega**2.*depth/g
+      ENDIF 
+!
+      IF(x.lt.1.) THEN
+        y=SQRT(x)
+      ELSE
+        y=x
+      ENDIF
+!
+! Iteratively solving 3 times for eqn.7 of Soulsby 1997 by using 
+! eqns. (12a-14)
+!      
+      t=TANH(y)
+      cff=(y*t-x)/(t+y*(1.-t*t))
+      y=y-cff
+!
+      t=TANH(y)
+      cff=(y*t-x)/(t+y*(1.-t*t))
+      y=y-cff
+      t=TANH(y)
+      cff=(y*t-x)/(t+y*(1.-t*t))
+      y=y-cff
+      kh_calc=y
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION w_s_calc(d50, rhos)
+!
+! Critical Shields parameter from Soulsby (1997).
+! Dynamics of Marine Sands 
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real w_s_calc
+      real nu
+      parameter(nu=1.36E-6)
+      real d50, rhos
+      real s, dstar
+      real cff, cff1
+!
+      s=rhos/rho0
+      dstar=(g*(s-1)/(nu*nu))**(1./3.)*d50
+      cff=nu/d50
+      cff1=10.36
+      w_s_calc=cff*(sqrt(cff1*cff1+1.049*dstar**3.)-cff1)
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION w_sc_calc(Hs, Td, depth, RR, w_s, zws) 
+! 
+! Second order Stokes theory to get vertical velocity of water particle
+! at a given elevation based on santoss_core.m
+! 
+      implicit none 
+      real w_sc_calc
+      real eps_inv
+      parameter (eps_inv=1.0E14)
+      real pi
+      parameter (pi=3.14159265358979323846)
+      real Hs, Td, depth, RR, zws, w_s
+      real cff, worb1, worb2, worb 
+!      
+      worb1=pi*Hs*zws/(Td*depth)
+      worb2=worb1*2.*(RR+RR-1.)
+!
+!  Using the SANTOSS model formulation 
+! 
+      cff=1./8.
+      worb=cff*worb1*SQRT(64.-(-worb1+
+     &          SQRT(worb1**2.+32.*
+     &               worb2**2.))**2./(worb2**2.))+
+     &               worb2*SIN(2.*ACOS(cff*(-worb1+
+     &          SQRT(worb1**2.+32.*worb2**2.))/worb2))
+!
+! Prevent worb from going to Infinity when worb2=0.0 
+! 
+      worb=MIN(worb, eps_inv)
+      w_sc_calc=worb
+!
+      RETURN  
+      END
+! 
+!======================================================================
+!
+      FUNCTION mu_calc(d50)
+!
+! Bed roughness factor based on grain size - VA2013 Appendix A
+! required for current and wave related bed roughness. 
+!
+      implicit none
+      real mu_calc
+      real d50, d50_mm
+!
+      d50_mm=d50*1000.
+!
+      IF(d50_mm.le.0.15) THEN
+        mu_calc=6.
+      ELSEIF(d50_mm.gt.0.15.and.d50_mm.lt.0.2) THEN
+        mu_calc=6.-5.*((d50_mm-0.15)/(0.2-0.15))
+      ELSEIF(d50_mm.ge.0.2) THEN
+        mu_calc=1.
+      ENDIF
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION ksd_calc(d50, d90, mu, theta_timeavg, eta, rlen)
+!
+! Current-related bed roughness - VA2013 Appendix A.1
+!
+      implicit none
+      real ksd_calc
+      real d50, d90, mu, theta_timeavg, eta, rlen
+      real ripple_fac
+!
+      rlen=MAX(rlen,d50)
+      ripple_fac=0.4*eta**2./rlen
+      ksd_calc=MAX( 3.*d90, d50*(mu+6.*(theta_timeavg-1.)) )
+     &         + ripple_fac
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION ksw_calc(d50, mu, theta_timeavg, eta, rlen)
+!
+! Wave related bed roughness - VA2013 Eq A.5
+! 
+      implicit none
+      real ksw_calc
+      real d50, mu, theta_timeavg, eta, rlen
+      real ripple_fac, ksw
+!
+      rlen=MAX(rlen,d50)
+      ripple_fac=0.4*eta**2./rlen
+      ksw_calc=MAX( d50, d50*(mu+6.*(theta_timeavg-1.)) )
+     &         + ripple_fac
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION fw_calc(ahat, ksw)
+!
+! Full-cycle wave friction factor - VA2013 Eq A.4
+!
+      implicit none
+      real fw_calc
+      real ahat, ksw, ratio, fw
+!
+      ratio=ahat/ksw
+      IF(ratio.gt.1.587) THEN
+        fw_calc=0.00251*EXP(5.21*(ratio)**(-0.19))
+      ELSE
+        fw_calc=0.3
+      ENDIF
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION fd_calc_santoss(udelta, delta, ksd)
+!
+! Current friction factor Assuming logarithmic velocity profile.
+! - VA2013 Eq 20
+!
+      implicit none
+      real fd_calc_santoss
+      real udelta, delta, ksd
+      real min_udelta
+      parameter(min_udelta=1.0E-4)
+      real von_k
+      parameter(von_k=0.41)
+ 
+      IF(udelta.lt.min_udelta) THEN
+        fd_calc_santoss=0.
+      ELSE
+        fd_calc_santoss=2.*(von_k/LOG(30.*delta/ksd))**2.
+      ENDIF
+     
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION fd_calc_madsen(udelta, mag_bstrc)
+!
+! Current friction factor from current stresses. 
+! 
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+!
+      real fd_calc_madsen
+      real eps
+      parameter(eps=1.E-14)
+      real min_udelta
+      parameter(min_udelta=1.0E-4)
+      real udelta, mag_bstrc
+! 
+      IF(udelta.lt.min_udelta) THEN
+        fd_calc_madsen=0.
+      ELSE
+        fd_calc_madsen=MAX((mag_bstrc/(0.5*udelta*udelta)),eps)
+!        fd_calc_madsen=MIN(fd_calc_madsen,2.) 
+      ENDIF
+!     
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION fwi_calc(T_iu, T_i, ahat, ksw)
+!
+! Wave friction factor for half cycles - VA2013 Eq 21
+!       
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real fwi_calc
+      real eps
+      parameter(eps = 1.0E-14)
+      real T_iu, T_i, ahat, ksw
+      real c1, ratio, fwi
+      real cff1, cff2, cff3
+!
+      fwi_calc=0.3
+!      
+      c1=2.6
+      ratio=ahat/ksw
+      IF(ratio.gt.1.587) THEN
+        cff1=MAX( (T_iu/T_i),0. )
+        cff2=(2.*cff1)**c1
+        cff3=cff2*ratio
+!
+! These "if" condition prevents arithematic overflow error
+! when 0.0**-0.19
+!
+        IF(cff3.le.0.) THEN 
+          fwi_calc=0.
+        ELSE 
+          fwi_calc=0.00251*EXP(5.21*(cff3)**(-0.19))
+        END IF
+      END IF 
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION dsf_calc(d50, theta_i)
+!
+! Sheet flow thickness - VA2013 Appendix C.1.
+!       
+      implicit none
+      real dsf_calc
+      real d50, theta_i
+      real d50_mm
+      real cff
+!
+      d50_mm=d50*1000.
+      IF(d50_mm.le.0.15)THEN
+        cff=25.*theta_i
+      ELSEIF(d50_mm.gt.0.15.and.d50_mm.lt.0.2)THEN
+        cff=25.-(12.*(d50_mm-0.15)/0.05)
+      ELSEIF(d50_mm.ge.0.2)THEN
+        cff=13.*theta_i
+      ENDIF
+      dsf_calc=MAX(d50*cff,d50)
+!
+      RETURN
+      END
+! 
+!======================================================================
+!
+      FUNCTION theta_cr_calc(d50, rhos)
+!
+! Critical Shields parameter from Soulsby (1997).
+!
+      implicit none
+#  include "param.h"
+#  include "scalars.h"
+      real theta_cr_calc
+      real nu
+      parameter(nu=1.36E-6)
+      real d50, rhos
+      real s, dstar
+      real cff1, cff2
+!
+      s=rhos/rho0
+      dstar=(g*(s-1)/(nu*nu))**(1./3.)*d50
+      cff1=0.3/(1.+1.2*dstar)
+      cff2=0.055*(1.-EXP(-0.02*dstar))
+      theta_cr_calc=cff1+cff2
+!
+      RETURN
+      END
+# endif /* BEDLOAD_VANDERA */
+!======================================================================
+!
 #else       
       subroutine sediment_empty
       end

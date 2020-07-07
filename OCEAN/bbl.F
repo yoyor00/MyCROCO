@@ -275,10 +275,10 @@
 ! Determine critical stresses for ripple formation
 !---------------------------------------------------------------------
 ! Transition to sheet flow (Li&Amos'01, eq.11)
-            tau_up = 0.172*(rhosed-1.)*g*(d50**0.624) ! [m^2/s^2]
+          tau_up = 0.172*(rhosed-1.)*g*(d50**0.624)        ! [m^2/s^2]
 ! Break off (Grant & Madsen,1982)   
-            tau_bf = 0.79*(visk**(-0.6))*(((rhosed-1.)*g)**0.3)
-     &                           *(d50**0.9)*tau_cb   ! [m^2/s^2]
+          tau_bf = 0.79*(visk**(-0.6))*(((rhosed-1.)*g)**0.3)
+     &                                *(d50**0.9)*tau_cb   ! [m^2/s^2]
 # endif
 !
 !---------------------------------------------------------------------
@@ -289,12 +289,12 @@
           znots = d50/12.0            ! Nikuradse grain roughness
           znota = MAX(Zob(i,j),znots) ! default apparent roughness
 !
+!
 !---------------------------------------------------------------------
 ! If significant waves (Ub > Ubc= 0.01 m/s):
 ! Wave-current interaction case according to Soulsby 1995.  
 ! Otherwise: tauw = tauc for sediment purposes
 !---------------------------------------------------------------------
-!
 !
           if(Ub(i,j).gt.Ubc) then   !<======
 !
@@ -315,8 +315,10 @@
             tau_cws= tau_cs*(1.+scf4*((tau_ws/(tau_ws+tau_cs))**scf5))
  
 !  Maximum of combined wave-current skin stress
+#  ifdef SED_TAUCWMAX
             tau_cws = SQRT((tau_cws + tau_ws*COS(phicw))**2
      &                              +(tau_ws*SIN(phicw))**2)
+#  endif
 
 !  Store for sediment model 
             taucwmax(i,j) = tau_cws      ! [m^2/s^2]
@@ -344,11 +346,14 @@
             tau_c = cff2*Umag(i,j)*Umag(i,j)    
             tau_w = scf1*((znota*Fwave)**scf2)*(Ub(i,j)**scf3)
             tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**1.5))
+#  ifdef SED_TAUCWMAX
             tau_cw = SQRT((tau_cw+tau_w*COS(phicw))**2 +
      &                           (tau_w*SIN(phicw))**2)
-
+#  endif
+!
             taucwmax(i,j) = tau_cw
             tauw(i,j)     = tau_w
+            tauc(i,j)     = tau_c
 
 #  ifdef Z0_RIP        
 !---------------------------------------------------------------------
@@ -434,7 +439,7 @@
 !
             taucw(i,j) = tau_cw
             !tauw(i,j)  = tau_w
-            tauc(i,j)  = tau_c
+            !tauc(i,j)  = tau_c
 !          
           else ! (Ub < Ubc)  <================
 !
@@ -474,11 +479,11 @@
 !  Load variables for output purposes.
 !---------------------------------------------------------------------
 !
-          Abed(i,j)    = Ab        SWITCH rmask(i,j)
-          Hripple(i,j) = rhgt      SWITCH rmask(i,j)
-          Lripple(i,j) = rlen      SWITCH rmask(i,j)
-         Zbnot(i,j)    = znots     SWITCH rmask(i,j)
-         Zbapp(i,j)    = znota     SWITCH rmask(i,j)
+          Abed(i,j)    = Ab              SWITCH rmask(i,j)
+          Hripple(i,j) = rhgt            SWITCH rmask(i,j)
+          Lripple(i,j) = rlen            SWITCH rmask(i,j)
+         Zbnot(i,j)    = znots           SWITCH rmask(i,j)
+         Zbapp(i,j)    = (znots+znot_bl) SWITCH rmask(i,j)
 
        enddo
       enddo  ! end main loop

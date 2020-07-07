@@ -679,9 +679,9 @@
 
 #ifdef MRL_WCI
 /* Stokes drift */
-# ifndef SANDBAR
+!# ifndef SANDBAR
 #  define STOKES_DRIFT
-# endif
+!# endif
 /* Bottom streaming */
 # ifdef WAVE_STREAMING
 #  define WAVE_BODY_STREAMING
@@ -774,34 +774,51 @@
 ======================================================================
 */
 #ifdef SEDIMENT
+
 # define SUSPLOAD
 # define BEDLOAD
 # undef  BED_ARMOR
 # undef  BED_HIDEXP
+# undef  SED_TAUCWMAX
+
 # ifdef BEDLOAD
 #  ifdef DUNE
 #   undef  SUSPLOAD
-#   define BEDLOAD_WULIN
+#   undef  BEDLOAD_SOULSBY
 #   undef  BEDLOAD_MPM
-#   define SLOPE_LESSER
+#   define BEDLOAD_WULIN
 #   undef  SLOPE_NEMETH
+#   define SLOPE_LESSER
 #   undef  SLOPE_KIRWAN
 #   define TAU_CRIT_WULIN
-#   ifdef ANA_DUNE
-#     undef  BEDLOAD_WULIN
-#     define BEDLOAD_MARIEU
+#   ifdef BEDLOAD_MARIEU
+#    undef  SLOPE_LESSER
 #   endif
+
 #  elif (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
          defined ANA_WWAVE    || defined OW_COUPLING)
-#   define BEDLOAD_SOULSBY
-#   define Z0_BL  /* Mandatory with BEDLOAD_SOULSBY */
+#   undef  BEDLOAD_SOULSBY
+#   define BEDLOAD_VANDERA
+#   define Z0_BL
 #   undef  Z0_RIP
 #   define SLOPE_LESSER
 #  else
 #   define BEDLOAD_MPM
 #   define SLOPE_LESSER
 #  endif
-# endif
+
+#  ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
+#   define BEDLOAD_VANDERA_ZEROCURR
+#   ifndef BEDLOAD_VANDERA_ZEROCURR
+#    define BEDLOAD_VANDERA_FD_MADSEN
+#    undef  BEDLOAD_VANDERA_FD_SANTOSS
+#   endif
+#   define BEDLOAD_VANDERA_ASYM_LIMITS
+#   undef  BEDLOAD_VANDERA_SURFACE_WAVE
+#   undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
+#  endif
+# endif /* BEDLOAD */
+
 #endif /* SEDIMENT */
 
 /* 
