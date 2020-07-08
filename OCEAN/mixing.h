@@ -63,7 +63,7 @@
       real diff3d_v(GLOBAL_2D_ARRAY,N)
       common /mixing_diff3d_u/diff3d_u 
       common /mixing_diff3d_v/diff3d_v
-# ifdef TS_DIF_SMAGO
+# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
       real diff3d_r(GLOBAL_2D_ARRAY,N)
       common /mixing_diff3d_r/diff3d_r
 # endif

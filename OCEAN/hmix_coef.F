@@ -513,6 +513,7 @@
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             diff3d_r(i,j,k)=Pr*visc3d_r(i,j,k)
+          enddo
         enddo
       enddo
 
