@@ -45,7 +45,7 @@
       real horcon, cff,cff0,cff1,cff2,cff3,cff4,cff5
 # ifdef UV_VIS_SMAGO_3D
       real Ric, Pr
-      parameter (horcon=0.05, Ric=0.25, Pr=0.3)
+      parameter (horcon=0.01, Ric=0.25, Pr=0.3)
 # else
       parameter (horcon=0.1)
 # endif
@@ -210,31 +210,16 @@
 !
 !      Lv = Hz          --> Akv
 !
-#  ifdef SWASH0
-      do j=jmin,jmax
-        do i=imin,imax
-          cff=z_w(i,j,N)-z_w(i,j,0)
-          dZdt=abs(zeta(i,j,knew)-zeta(i,j,kstp))/dtfast
-          dZdt0=0.01*sqrt(g*cff)
-          Bbr=max(0,INT(min(1.,dZdt/dZdt0-5.)))
-          cff0=om_r(i,j)*on_r(i,j)
-          cff1=0.01*cff0
-          cff2=0.01*cff0/dt
-          do k=1,N
-            cff3=cff1*sqrt(2.*defrate(i,j,k))
-            cff3=cff3*(1.+10.*Bbr*cff*dZdt)
-            visc3d_r(i,j,k)=min(cff2,cff3)
-          enddo
-        enddo
-      enddo
-#  endif
-      do k=1,N
+      do k=1,N-1
         kp=min(k+1,N)
         do j=jmin,jmax
           do i=imin,imax
+            cff=Hz(i,j,k)
+!            cff=min( 0.5*(z_w(i,j,N)-z_w(i,j,0)),
+!     &               sqrt(om_r(i,j)*on_r(i,j))  )
             Akv(i,j,k)=0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
      &                                       *pm(i,j)*pn(i,j)
-     &                                   *Hz(i,j,k)*Hz(i,j,k)
+     &                                       *cff*cff
 #   if !defined LMD_MIXING && !defined BVF_MIXING \
                            && !defined GLS_MIXING
      &                                              + Akv_bak
@@ -513,6 +498,7 @@
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             diff3d_r(i,j,k)=Pr*visc3d_r(i,j,k)
+          enddo
         enddo
       enddo
 

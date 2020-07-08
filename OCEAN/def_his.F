@@ -36,14 +36,11 @@
 ! by CPP.
 !
 # ifdef MUSTANG 
-      USE comMUSTANG, only:nk_nivsed_out,nv_out3Dnv_specif
-     &      , nv_out2D_specif,nv_out3Dk_specif
+      USE comMUSTANG, only:nk_nivsed_out, nv_out3Dnv_specif,
+     &                     nv_out2D_specif, nv_out3Dk_specif
 # endif
 !
       implicit none
-# ifdef MUSTANG 
-      integer indx,ik
-# endif
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3), auxil(2), checkdims
@@ -60,6 +57,9 @@
 #if defined MRL_WCI
      &      , iwkb
 #endif
+# ifdef MUSTANG 
+     &      , indx,ik
+# endif
 
 #include "param.h"
 #include "scalars.h"
@@ -84,13 +84,8 @@
 # define vidU hisU
 # define vidV hisV
 # define vidT hisT
-# define vidM hisMust
 # define vidR hisR
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
 # define vidbvf hisbvf
-#endif
 # define vidO hisO
 # define vidW hisW
 # define vidVisc hisVisc
@@ -103,39 +98,26 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
-# if defined MORPHODYN  || defined  MUSTANG_MORPHODYN_byHYDRO
-#  define vidHm hisHm
-# endif
-# ifdef WAVE_IO
-#  define vidWAVE hisWAVE
-# endif
-# if defined MRL_WCI
-#  define vidSUP hisSUP
-#  define vidUST2D hisUST2D
-#  define vidVST2D hisVST2D
-#  define vidUST hisUST
-#  define vidVST hisVST
-#  define vidWST hisWST
-#  define vidAkb hisAkb
-#  define vidAkw hisAkw
-#  define vidKVF hisKVF
-#  define vidCALP hisCALP
-#  define vidKAPS hisKAPS
-# endif
-# ifdef BIOLOGY
-#  define vidHel hisHel
-#  ifdef BIO_NChlPZD
-#   define vidChC hisChC
-#   ifdef OXYGEN
-#     define vidU10 hisU10
-#     define vidKvO2 hisKvO2
-#     define vidO2sat hisO2sat
-#   endif
-#  elif defined BIO_BioEBUS 
-#   define vidAOU hisAOU 		
-#   define vidwind10 hiswind10 	
-#  endif
-# endif  /* BIOLOGY */
+# define vidHm hisHm
+# define vidWAVE hisWAVE
+# define vidSUP hisSUP
+# define vidUST2D hisUST2D
+# define vidVST2D hisVST2D
+# define vidUST hisUST
+# define vidVST hisVST
+# define vidWST hisWST
+# define vidAkb hisAkb
+# define vidAkw hisAkw
+# define vidKVF hisKVF
+# define vidCALP hisCALP
+# define vidKAPS hisKAPS
+# define vidHel hisHel
+# define vidChC hisChC
+# define vidU10 hisU10
+# define vidKvO2 hisKvO2
+# define vidO2sat hisO2sat
+# define vidAOU hisAOU 		
+# define vidwind10 hiswind10 	
 # define vidSed hisSed
 # define vidBBL hisBBL
 # define vidBostr hisBostr
@@ -143,18 +125,13 @@
 # define vidUWstr hisUWstr
 # define vidVWstr hisVWstr
 # define vidShflx hisShflx
-#ifdef SALINITY
-#  define vidSwflx hisSwflx
-#endif
-#define vidShflx_rsw hisShflx_rsw
-# ifdef BULK_FLUX
-#  define vidShflx_rlw hisShflx_rlw
-#  define vidShflx_lat hisShflx_lat
-#  define vidShflx_sen hisShflx_sen
-# endif
-# ifdef SST_SKIN
-#  define vidSST_skin hisSST_skin
-# endif
+# define vidSwflx hisSwflx
+# define vidShflx_rsw hisShflx_rsw
+# define vidShflx_rlw hisShflx_rlw
+# define vidShflx_lat hisShflx_lat
+# define vidShflx_sen hisShflx_sen
+# define vidSST_skin hisSST_skin
+# define vidM hisMust
 
 #else
 
@@ -171,12 +148,7 @@
 # define vidV avgV
 # define vidT avgT
 # define vidR avgR
-# define vidM avgMust
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
 # define vidbvf avgbvf
-#endif
 # define vidO avgO
 # define vidW avgW
 # define vidVisc avgVisc
@@ -189,58 +161,41 @@
 # define vidTke avgTke
 # define vidGls avgGls
 # define vidLsc avgLsc
-# if defined BIOLOGY & !defined PISCES
-#  define vidHel avgHel
-#  ifdef BIO_NChlPZD
-#   define vidChC avgChC
-#   ifdef OXYGEN
-#    define vidU10 avgU10
-#    define vidKvO2 avgKvO2
-#    define vidO2sat avgO2sat
-#   endif
-#  elif defined BIO_BioEBUS
-#   define vidAOU avgAOU		
-#   define vidwind10 avgwind10	
-#  endif
-# endif  /* BIOLOGY */
+# define vidHel avgHel
+# define vidChC avgChC
+# define vidU10 avgU10
+# define vidKvO2 avgKvO2
+# define vidO2sat avgO2sat
+# define vidAOU avgAOU		
+# define vidwind10 avgwind10	
 # define vidSed avgSed
 # define vidBBL avgBBL
 # define vidBostr avgBostr
 # define vidWstr avgWstr
 # define vidUWstr avgUWstr
 # define vidVWstr avgVWstr
-# if defined MORPHODYN  || defined  MUSTANG_MORPHODYN_byHYDROYDRO
-#  define vidHm avgHm
-# endif
-# ifdef WAVE_IO
-#  define vidWAVE avgWAVE
-# endif
-# if defined MRL_WCI
-#  define vidSUP avgSUP
-#  define vidUST2D avgUST2D
-#  define vidVST2D avgVST2D
-#  define vidUST avgUST
-#  define vidWST avgWST
-#  define vidVST avgVST
-#  define vidAkb avgAkb
-#  define vidAkw avgAkw
-#  define vidKVF avgKVF
-#  define vidCALP avgCALP
-#  define vidKAPS avgKAPS
-# endif
+# define vidHm avgHm
+# define vidWAVE avgWAVE
+# define vidSUP avgSUP
+# define vidUST2D avgUST2D
+# define vidVST2D avgVST2D
+# define vidUST avgUST
+# define vidWST avgWST
+# define vidVST avgVST
+# define vidAkb avgAkb
+# define vidAkw avgAkw
+# define vidKVF avgKVF
+# define vidCALP avgCALP
+# define vidKAPS avgKAPS
 # define vidShflx avgShflx
-#ifdef SALINITY
-#  define vidSwflx avgSwflx
-#endif
+# define vidSwflx avgSwflx
 # define vidShflx_rsw avgShflx_rsw
-# if defined BULK_FLUX
-#  define vidShflx_rlw avgShflx_rlw
-#  define vidShflx_lat avgShflx_lat
-#  define vidShflx_sen avgShflx_sen
-# endif
-# ifdef SST_SKIN
-#  define vidSST_skin avgSST_skin
-# endif
+# define vidShflx_rlw avgShflx_rlw
+# define vidShflx_lat avgShflx_lat
+# define vidShflx_sen avgShflx_sen
+# define vidSST_skin avgSST_skin
+# define vidM avgMust
+
 #endif
 !
 ! Put time record index into file name. In  the case when model 
@@ -479,14 +434,16 @@
         call nf_add_attribute(ncid, vidTime2, indxTime2, 5, 
      &       NF_FOUT, ierr)
 
-!===============================================================
+!=======================================================================
 !
 ! Define primary variables
 !
-!===============================================================
+!=======================================================================
 
 !
+!-----------------------------------------------------------------------
 ! Free-surface.
+!-----------------------------------------------------------------------
 !
         if (wrt(indxZ)) then
           lvar=lenstr(vname(1,indxZ))
@@ -516,7 +473,9 @@
 
        endif
 !
+!-----------------------------------------------------------------------
 ! 2D momenta in XI- and ETA-directions.
+!-----------------------------------------------------------------------
 !
         if (wrt(indxUb)) then
           lvar=lenstr(vname(1,indxUb))
@@ -574,14 +533,19 @@
 
         endif
 
-# if defined MORPHODYN  || defined  MUSTANG_MORPHODYN_byHYDROYDRO
+#if defined MORPHODYN || defined MUSTANG_MORPHODYN_byHYDROYDRO
+!
+!-----------------------------------------------------------------------
+!  Time-dependent bathymetry
+!-----------------------------------------------------------------------
+!
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
      &                              NF_FOUT, 3, r2dgrd, vidHm)
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHm,nf_collective)
-# endif
+#endif
 #ifndef AVRH
           lvar=lenstr(vname(2,indxHm))
           ierr=nf_put_att_text (ncid, vidHm, 'long_name', lvar,
@@ -602,11 +566,13 @@
           call nf_add_attribute(ncid, vidHm, indxHm, 5, NF_FOUT, ierr)
 
         endif
-#endif 
+#endif /* MORPHODYN */
 
 #ifdef SOLVE3D
 !
+!-----------------------------------------------------------------------
 ! 3D momenta in XI- and ETA-directions.
+!-----------------------------------------------------------------------
 !
         if (wrt(indxU)) then
           lvar=lenstr(vname(1,indxU))
@@ -664,7 +630,9 @@
 
         endif
 !
+!-----------------------------------------------------------------------
 ! Tracer variables.
+!-----------------------------------------------------------------------
 !
         do itrc=1,NTot
           if (wrt(indxT+itrc-1)) then
@@ -696,71 +664,70 @@
 
             endif
       enddo
-
+!
+!-----------------------------------------------------------------------
+!  MUSTANG sediment model output
+!-----------------------------------------------------------------------
+!
 # ifdef MUSTANG
       do itrc=1,3
        indx=indxT+ntrc_salt+ntrc_substot+itrc
        lvar=lenstr(vname(1,indx))
        ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &                             NF_FOUT, 3, r2dgrd, vidM(itrc))   ! 2D: ksmax,Eptot,Tenfon
-# ifdef NC4PAR
+     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,Tenfon
+#  ifdef NC4PAR
        ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
-# endif
+#  endif
        call nf_add_attribute(ncid,vidM(itrc),indx,5, NF_FOUT, ierr)
-!       write(*,*)'idVAR',indx,vname(1,indx),vidM(itrc)
-      end do
+      enddo
       
       do itrc=1,3
        indx=indxT+ntrc_salt+ntrc_substot+itrc+3
        ierr=nf_def_var (ncid, vname(1,indx),
-     &                             NF_FOUT, 4, b3dgrd, vidM(itrc+3))  ! 3D: dzs,tempsed,salsed
-# ifdef NC4PAR
+     &            NF_FOUT, 4, b3dgrd, vidM(itrc+3)) ! 3D: dzs,tempsed,salsed
+#  ifdef NC4PAR
        ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
-# endif
-!       call nf_add_attribute(ncid,vidM(itrc+3),indx,NF_FOUT, ierr)
-!       write(*,*)'idVAR',indx,vname(1,indx),vidM(itrc+3)
-      end do
+#  endif
+      enddo
       do itrc=1,ntrc_subs
        indx=indxT+ntrc_salt+ntrc_substot+itrc+6
        ierr=nf_def_var (ncid, vname(1,indx),
-     &                             NF_FOUT, 4, b3dgrd, vidM(itrc+6))  ! 3D: traceurSed
-# ifdef NC4PAR
+     &            NF_FOUT, 4, b3dgrd, vidM(itrc+6)) ! 3D: traceurSed
+#  ifdef NC4PAR
        ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
-# endif
+#  endif
        call nf_add_attribute(ncid,vidM(itrc+6),indx, 5, NF_FOUT, ierr)
-!       write(*,*)'idVAR',indx,vname(1,indx),vidM(itrc+6)
-      end do
-# ifdef key_MUSTANG_specif_outputs
+      enddo
+#  ifdef key_MUSTANG_specif_outputs
       ik=0
       do itrc=1,ntrc_subs
        do itrv=1,nv_out3Dnv_specif
         ik=ik+1
         indx=indx+1
         ierr=nf_def_var (ncid, vname(1,indx),
-     &                             NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
-# ifdef NC4PAR
+     &            NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
-# endif
+#   endif
        call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs), 5, indx,NF_FOUT, ierr)
-!        write(*,*)'idVAR',indx,vname(1,indx),vidM(ik+6+ntrc_subs)
-       end do
-      end do
+       enddo
+      enddo
       do itrv=1,nv_out2D_specif
         ik=ik+1
         indx=indx+1
         ierr=nf_def_var (ncid, vname(1,indx),
-     &                             NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
-# ifdef NC4PAR
+     &            NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
-# endif
+#   endif
        call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5, NF_FOUT, ierr)
-
-!        write(*,*)'idVAR',indx,vname(1,indx),vidM(ik+6+ntrc_subs)
-      end do
-# endif
-#endif
+      enddo
+#  endif
+# endif /* MUSTANG */
 !
+!-----------------------------------------------------------------------
 ! Density anomaly.
+!-----------------------------------------------------------------------
 !
         if (wrt(indxR)) then
           lvar=lenstr(vname(1,indxR))
@@ -789,13 +756,14 @@
           call nf_add_attribute(ncid, vidR, indxR, 5, NF_FOUT, ierr)
 
         endif
+!
+!-----------------------------------------------------------------------
+! Brunt Vaisala Frequency.
+!-----------------------------------------------------------------------
+!
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
-!----------------------------------------------------------------------------
-!
-! Brunt Vaisala Frequency.
-!
         if (wrt(indxbvf)) then
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
@@ -821,8 +789,10 @@
 
         endif
 # endif
-!----------------------------------------------------------------------------
-! AOU and pCO2
+!
+!-----------------------------------------------------------------------
+! BIO_BioEBUS : AOU and pCO2
+!-----------------------------------------------------------------------
 !
 # if defined BIOLOGY && defined BIO_BioEBUS
         if (wrt(indxAOU)) then
@@ -878,11 +848,11 @@
           call nf_add_attribute(ncid, vidwind10, indxWIND10, 5, 
      &    NF_FOUT, ierr)
         endif
-
-# endif
-!--------------------------------------------------------------------------- 
+# endif /* BIO_BioEBUS */
 !
+!-----------------------------------------------------------------------
 ! S-coordinate "omega" vertical velocity.
+!-----------------------------------------------------------------------
 !
         if (wrt(indxO)) then
           lvar=lenstr(vname(1,indxO))
@@ -912,7 +882,9 @@
 
         endif
 !
+!-----------------------------------------------------------------------
 ! True vertical velocity.
+!-----------------------------------------------------------------------
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
@@ -3025,11 +2997,7 @@
 #undef vidV
 #undef vidT
 #undef vidR
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
 #undef vidbvf
-#endif
 #undef vidO
 #undef vidW
 #undef vidW
@@ -3043,20 +3011,13 @@
 #undef vidTke
 #undef vidGls
 #undef vidLsc
-#if defined BIOLOGY & !defined PISCES 
-# undef vidHel
-# ifdef BIO_NChlPZD
-#  undef vidChC
-#  ifdef OXYGEN
-#   undef vidU10
-#   undef vidKvO2
-#   undef vidO2sat
-#  endif
-# elif defined BIO_BioEBUS
-#  undef vidAOU 
-#  undef vidwind10	
-# endif
-#endif  /* BIOLOGY */
+#undef vidHel
+#undef vidChC
+#undef vidU10
+#undef vidKvO2
+#undef vidO2sat
+#undef vidAOU 
+#undef vidwind10	
 #undef vidSed
 #undef vidBBL
 #undef vidBostr
@@ -3064,35 +3025,26 @@
 #undef vidUWstr
 #undef vidVWstr
 #undef vidShflx
-#ifdef SALINITY
-# undef vidSwflx
-#endif
+#undef vidSwflx
 #undef vidShflx_rsw
-#if defined BULK_FLUX
-# undef vidShflx_rlw
-# undef vidShflx_lat
-# undef vidShflx_sen
-#endif
+#undef vidShflx_rlw
+#undef vidShflx_lat
+#undef vidShflx_sen
 #undef vidSST_skin
-#ifdef WAVE_IO
-# undef vidWAVE
-#endif
-#ifdef MRL_WCI
-# undef vidSUP
-# undef vidUST2D
-# undef vidVST2D
-# undef vidUST
-# undef vidVST
-# undef vidWST
-# undef vidAkb
-# undef vidAkw
-# undef vidKVF
-# undef vidCALP
-# undef vidKAPS
-#if defined MORPHODYN || defined  MUSTANG_MORPHODYN_byHYDRO
-#  undef vidHm
-# endif
-#endif
+#undef vidWAVE
+#undef vidSUP
+#undef vidUST2D
+#undef vidVST2D
+#undef vidUST
+#undef vidVST
+#undef vidWST
+#undef vidAkb
+#undef vidAkw
+#undef vidKVF
+#undef vidCALP
+#undef vidKAPS
+#undef vidHm
+#undef vidM
 
 #ifdef AVERAGES
 # ifndef AVRH
