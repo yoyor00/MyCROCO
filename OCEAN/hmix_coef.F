@@ -194,7 +194,7 @@
           do k=1,N
             cff1=2.*defrate(i,j,k)               ! D²
 #  ifdef UV_VIS_SMAGO_3D
-!      Buoyancy correction (Lilly, 1962)
+!  Buoyancy correction (Lilly, 1962)
             cff2=sqrt(max(0.,1.-(bvf(i,j,k)/max(cff1,1.e-12))/Ric))
             visc3d_r(i,j,k)=cff*sqrt(cff1)*cff2
 #  else
@@ -214,18 +214,15 @@
         kp=min(k+1,N)
         do j=jmin,jmax
           do i=imin,imax
-            cff=Hz(i,j,k)
-!            cff=min( 0.5*(z_w(i,j,N)-z_w(i,j,0)),
-!     &               sqrt(om_r(i,j)*on_r(i,j))  )
             Akv(i,j,k)=0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
      &                                       *pm(i,j)*pn(i,j)
-     &                                       *cff*cff
+     &                                       *Hz(i,j,k)*Hz(i,j,k)
 #   if !defined LMD_MIXING && !defined BVF_MIXING \
                            && !defined GLS_MIXING
      &                                              + Akv_bak
 #   endif
 !
-!      Apply SGS Prandtl number for tracers
+!  Apply SGS Prandtl number for tracers
 !
             Akt(i,j,k,itemp)=Pr*Akv(i,j,k)
 #   ifdef SALINITY                               
