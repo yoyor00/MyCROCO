@@ -210,7 +210,7 @@
 !
 !      Lv = Hz          --> Akv
 !
-      do k=1,N-1
+      do k=1,N
         kp=min(k+1,N)
         do j=jmin,jmax
           do i=imin,imax
