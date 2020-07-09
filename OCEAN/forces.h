@@ -600,7 +600,7 @@
       real wwag(GLOBAL_2D_ARRAY,2)
       real wwdg(GLOBAL_2D_ARRAY,2)
       real wwpg(GLOBAL_2D_ARRAY,2)
-# ifdef MUSTANG
+#  ifdef MUSTANG
       real Uwave(GLOBAL_2D_ARRAY)
 !--------------------------------------------------------------------
 ! Uwave  | for present time   | wave orbital bottom valocity [m/s] 
@@ -608,7 +608,7 @@
       common /bbl_Uwave/Uwave
       real wwug(GLOBAL_2D_ARRAY,2)
       common /wwf_wwug/wwug
-# endif
+#  endif
       common /wwf_wwag/wwag /wwf_wwdg/wwdg /wwf_wwpg/wwpg
       real wwfrq(GLOBAL_2D_ARRAY)
       common /wwf_wwfrq/wwfrq
@@ -640,21 +640,21 @@
       real    wweb_scale,wwed_scale,wwer_scale
       real    wwagrd,wwdgrd,wwpgrd
       real    wwebgrd,wwedgrd,wwergrd
-# ifdef MUSTANG
+#  ifdef MUSTANG
       real    wwup(2),wwugrd,wwu_scale
-# endif
+#  endif
       integer ww_ncycle, ww_rec, itww
       integer ww_file_id, ww_tid  
       integer wwa_id, wwp_id, wwd_id
-# ifdef MUSTANG
+#  ifdef MUSTANG
       integer wwu_id
-# endif
-#   ifdef MRL_WCI
-      integer web_id, wwed_id, wwer_id
-#   endif
-#   ifdef BBL
+#  endif
+#  ifdef MRL_WCI
+      integer wweb_id, wwed_id, wwer_id
+#  endif
+#  ifdef BBL
       integer wwu_id
-#   endif
+#  endif
       common /wwdat/ ww_cycle, wwv_time
       common /wwdat/ wwap,wwdp,wwpp
       common /wwdat/ wwebp,wwedp,wwerp
@@ -665,15 +665,15 @@
       common /wwdat/ ww_ncycle,ww_rec,itww
       common /wwdat/ ww_file_id,ww_tid
       common /wwdat/ wwa_id, wwp_id, wwd_id
-# ifdef MUSTANG
+#  ifdef MUSTANG
       common /wwdat/ wwu_id,wwugrd,wwu_scale,wwup
-# endif
-#   ifdef MRL_WCI
-      common /wwdat/ web_id, wwed_id, wwer_id
-#   endif
-#   ifdef BBL
+#  endif
+#  ifdef MRL_WCI
+      common /wwdat/ wweb_id, wwed_id, wwer_id
+#  endif
+#  ifdef BBL
       common /wwdat/ wwu_id
-#   endif
+#  endif
 # endif /* WAVE_OFFLINE */
 #endif /* BBL || MRL_WCI */
 
