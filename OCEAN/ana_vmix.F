@@ -53,24 +53,6 @@
           enddo
         enddo
       enddo
-# elif defined SED_TEST2
-!--------------------------------------------------------------------
-! parabolic profile with kappa u* = 0.009 m/s; i.e. u* = 0.0225 m/s
-! NB! typical for flow of constant depth
-! doesn't make sense on slope-shelf geometry
-!--------------------------------------------------------------------
-      kappustr = 0.009
-      do k=1,N-1
-        do j=Jstr,Jend
-           do i=Istr,Iend
-              Akv(i,j,k)=kappustr*(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))*
-     &                (1.0-(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))/
-     &                (h(i,j)+zeta(i,j,knew)))
-              Akt(i,j,k,itemp)=Akt_bak(itemp)
-              Akt(i,j,k,isalt)=Akv(i,j,k)
-          enddo
-        enddo
-      enddo
 # elif defined UPWELLING
       cff=1./150.
       do k=1,N-1

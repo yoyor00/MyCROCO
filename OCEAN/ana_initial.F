@@ -952,18 +952,6 @@
           enddo
         enddo
 
-#  elif  defined SED_TEST2 
-        do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              t(i,j,k,1,itemp)=20.0
-              t(i,j,k,1,isalt)=0.0
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-            enddo
-          enddo
-        enddo
-
 #  elif defined UPWELLING
         do k=1,N
           do j=JR_RANGE

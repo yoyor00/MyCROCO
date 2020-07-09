@@ -180,10 +180,6 @@ C$    integer omp_get_thread_num
                      depth=150.
                      f0=-8.26E-5
                      beta=0.
-# elif defined SED_TEST2
-                     depth=10.0    
-                     f0=1.E-4
-                     beta=0.
 # elif defined RIVER
                      depth=150.
                      f0=8.26E-5
@@ -304,9 +300,6 @@ C$    integer omp_get_thread_num
 # elif defined UPWELLING
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
-# elif defined SED_TEST2
-                     Length_XI =25000.0
-                     Length_ETA= 2500.0
 # elif defined RIVER
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
@@ -539,17 +532,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           else
             h(i,j)=1660.
           endif
-        enddo
-      enddo
-
-# elif defined SED_TEST2
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          val1=user(3)            !ocean-side depth
-          val2=user(4)            !nearshore depth
-          val3=user(5)/3.0        ! ~ width of slope
-          h(i,j)=0.5*(val1+
-     &     (val1-val2)*TANH((7000.0-xr(i,j))/val3))  
         enddo
       enddo
 

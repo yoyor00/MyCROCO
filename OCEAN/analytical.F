@@ -277,7 +277,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_extended_bounds.h"
 !
-# if defined SED_TEST2 || defined REGIONAL
+# ifdef REGIONAL
 !
 ! taucb=critical threshold stress for initiation of motion 
 ! (=bedload for coarse grains). 
@@ -392,14 +392,6 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-0.05/rho0
         enddo
       enddo
-# elif defined SED_TEST2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          windamp=0.5+
-     &            0.5*TANH((time-user(9))/user(10))
-          sustr(i,j)=windamp*user(1)
-        enddo
-      enddo
 # elif defined UPWELLING
       if (tdays.le.2.) then
         windamp=-0.1*sin(pi*tdays/4.)/rho0
@@ -412,7 +404,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # elif defined SHOREFACE
-#  if !defined MRL_WCI
+#  ifndef MRL_WCI
       windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
       wcos = cos(10.0/180.0*pi)
       do j=jstr-1,jend+1
@@ -440,22 +432,14 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface momentum flux (wind stress) component in the
 !  ETA-direction (m^2/s^2) at horizontal V-points.
 !
-# if defined SED_TEST2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          windamp=0.5+
-     &            0.5*TANH((time-user(9))/user(10))
-          svstr(i,j)= windamp*user(2)
-        enddo
-      enddo
-# elif defined INNERSHELF
+# ifdef INNERSHELF
       do j=JstrR,JendR
         do i=IstrR,IendR
           svstr(i,j)=0.07/rho0
         enddo
       enddo
 # elif defined SHOREFACE 
-#  if !defined MRL_WCI
+#  ifndef MRL_WCI
       windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
       wsin = sin(10.0/180.0*pi)
       do j=jstr-1,jend+1
@@ -1540,16 +1524,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set wind induced wave amplitude (m), direction (radians) and
 !  period (s) at RHO-points.
 !
-# if defined SED_TEST2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          Awave(i,j)=1.0
-          Dwave(i,j)=270.*deg2rad
-          Pwave(i,j)=10.
-        enddo
-      enddo
-
-# elif defined SHOREFACE
+# ifdef SHOREFACE
       do j=JstrR,JendR
         do i=IstrR,IendR
           Awave(i,j)=0.707    ! wave amplitude (m)
@@ -1635,18 +1610,18 @@ C$    integer  trd, omp_get_thread_num
           wfrq(i,j)=cfrq
           wdrx(i,j)=cos(cdir)
           wdre(i,j)=sin(cdir)
-        enddo
-      enddo
 #   ifdef WET_DRY
-          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
+          if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
           endif
 #   endif
-#  endif
-# endif
+        enddo
+      enddo
+#  endif /* MRL_WCI */
+# endif /* SHOREFACE or else */
       return
       end
 #endif /* ANA_WWAVE */

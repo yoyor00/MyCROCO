@@ -669,7 +669,7 @@
       common /wwdat/ wwu_id,wwugrd,wwu_scale,wwup
 # endif
 #   ifdef MRL_WCI
-      common /wwdat/ wweb_id, wwed_id, wwer_id
+      common /wwdat/ web_id, wwed_id, wwer_id
 #   endif
 #   ifdef BBL
       common /wwdat/ wwu_id
