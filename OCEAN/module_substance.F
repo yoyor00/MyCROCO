@@ -8,7 +8,7 @@
 #include "ncscrum.h"
 #include "scalars.h"
 #include "forces.h"
-
+#include "grid.h"
 
       end module module_substance
 #else

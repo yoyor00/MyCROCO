@@ -34,6 +34,7 @@
 #ifdef SUBSTANCE
           !USE comsubstance
           USE substance , ONLY : substance_read_alloc
+          USE substance , ONLY : substance_surfcell
 #endif
 #ifdef MUSTANG
           USE initMUSTANG
@@ -186,7 +187,9 @@
  
 !
 !   module SUBSTANCE
-!
+!----------------------------------------------------------------------
+!  computing cell surfaces need for MUSTANG and BIOLink
+!----------------------------------------------------------------------
 #ifdef SUBSTANCE
       call substance_read_alloc(may_day_flag,indxT)
    !  &                            wrthis(indxT+2:indxT+2+ntrc_substot))
@@ -386,6 +389,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
       call get_sediment
 # endif
 #endif
+
+!----------------------------------------------------------------------
+!  computing cell surfaces need for MUSTANG and BIOLink
+!----------------------------------------------------------------------
+#ifdef SUBSTANCE
+      call substance_surfcell
+#endif
+!
 !
 !----------------------------------------------------------------------
 !  MUSTANG : initialization sediment concentrations
@@ -408,24 +419,26 @@ C$OMP PARALLEL DO PRIVATE(tile)
       Iend2=Istr2+chunk_size_X-1
       Istr2=max(Istr2,1)
       Iend2=min(Iend2,LOCALLM)
-      Jstr2=1+-margin_E
+!RB      Jstr2=1+-margin_E
+      Jstr2=1-margin_E
       Jend2=Jstr2+chunk_size_E-1
       Jstr2=max(Jstr2,1)
       Jend2=min(Jend2,LOCALMM)
 
        CALL MUSTANG_init_sediment(Istr2,Iend2,Jstr2,Jend2,
-     &     0,BATHY_H0,WATER_ELEVATION,
-#if (defined key_oasis && defined key_oasis_croco_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO
+     &     0,WATER_ELEVATION,
+!     &     0,BATHY_H0,WATER_ELEVATION,
+#if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
      &     DHSED,
 #endif
-#if defined key_MUSTANG_debug && defined SPHERICAL
-     &     LATITUDE,LONGITUDE,
-#endif  
-#if defined key_MUSTANG_V2
-#if defined key_MUSTANG_bedload
-     &     CELL_DX,CELL_DY,
-#endif 
-#endif 
+!#if defined key_MUSTANG_debug && defined SPHERICAL
+!     &     LATITUDE,LONGITUDE,
+!#endif  
+!#if defined key_MUSTANG_V2
+!#if defined key_MUSTANG_bedload
+!     &     CELL_DX,CELL_DY,
+!#endif 
+!#endif 
      &     vname,indxT,ntrc_salt,
      &     RESIDUAL_THICKNESS_WAT,Z0HYDRO,
      &     WATER_CONCENTRATION)

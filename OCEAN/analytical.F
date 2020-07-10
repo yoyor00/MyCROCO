@@ -2394,6 +2394,9 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
 #         ifdef CHANNEL
             zetabry_west(j)=0.0464  !valeur??
+#           ifdef  key_ANA_bedload
+              zetabry_west(j)=0.04814
+#           endif
 #         else
             zetabry_west(j)=0.0  
 #         endif
@@ -2408,6 +2411,9 @@ C$    integer  trd, omp_get_thread_num
 !            ubarbry_west(j)=0.6
 ! pour s accorder avec MARS: valeur de ubar modelise apres forcage en ssh
             ubarbry_west(j)=0.58
+# if defined key_ANA_bedload
+            ubarbry_west(j)=1.667
+# endif
             vbarbry_west(j)=0.0
 #         else
             ubarbry_west(j)=0.0
@@ -2423,6 +2429,9 @@ C$    integer  trd, omp_get_thread_num
 #         ifdef CHANNEL
 ! pour s accorder avec MARS: valeur de ubar modelise apres forcage en ssh
               ubry_west(j,k)=0.58
+# if defined key_ANA_bedload
+              ubry_west(j)=1.667
+# endif
               vbry_west(j,k)=0.0
 #         else
               ubry_west(j,k)=0.0
@@ -2540,6 +2549,9 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
 #   ifdef CHANNEL
             zetabry_east(j)=0.0394  ! valeur?
+#          ifdef  key_ANA_bedload
+            zetabry_east(j)=0.00808  ! valeur?
+#          endif
 #   else
             zetabry_east(j)=0.0
 #   endif
@@ -2552,6 +2564,9 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
 #   ifdef CHANNEL
             ubarbry_east(j)=0.58
+# if defined key_ANA_bedload
+            ubarbry_east(j)=1.667
+# endif
             vbarbry_east(j)=0.
 #   else
             ubarbry_east(j)=0.
@@ -2566,6 +2581,9 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef M3_FRC_BRY
 #      ifdef CHANNEL
               ubry_east(j,k)=0.58
+# if defined key_ANA_bedload
+              ubry_east(j)=1.667
+# endif
               vbry_east(j,k)=0.0
 #      else
               ubry_east(j,k)=0.0

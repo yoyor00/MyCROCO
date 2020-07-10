@@ -14,7 +14,7 @@
       subroutine wrt_his       ! fields at requested levels 
                                ! into history netCDF file.
 #if defined SUBSTANCE
-      USE comsubstance, ONLY : cv_watfix,nv_adv
+      USE comsubstance, ONLY : cvfix_wat,nv_adv
 #endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nv_adv,nvpc,nvp
@@ -117,7 +117,7 @@
       endif
 
 
-!#define CR  
+#undef CR  
 CR      write(*,*) 'wrt_his: Entry  ' MYID 
 !     
 !     Write out evolving model variables:
@@ -228,10 +228,13 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
-#if defined MORPHODYN || defined  MUSTANG_MORPHODYN_byHYDRO
+#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
 !     
 !     Write out time evolving bathymetry
-!     
+CR        write(*,*) 'wrt_his: wrtHm' 
+CR        write(*,*) 'wrt_his:',wrthis(indxHm),indxHm
+CR        write(*,*) 'wrt_his:' ,work2d(10,2),ncidhis
+
       if (wrthis(indxHm)) then
          work2d(:,:)=h(:,:)
          call fillvalue2d(work2d,ncidhis,hisHm,indxHm,
@@ -614,11 +617,11 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
       enddo
 #if defined SUBSTANCE
       do itrc=1,ntfix
-         if (wrthis(indxT+NT+itrc)) then
+         if (wrthis(indxT+NT+itrc-1)) then
 !             write(*,*)'in wrt_his',itrc,indxT,NT,
 !     &                 indxT+NT+itrc,
 !     &                 wrthis(indxT+NT+itrc)
-            workr=cv_watfix(:,:,:,itrc)
+            workr=cvfix_wat(:,:,:,itrc)
 #ifdef MASKING
             if (iic.eq.0) then
 !     We do that because the mask has been applied if iic ==0 !
@@ -630,8 +633,8 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 #endif
             call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
      &           indxT+NT+itrc-1,record,r3dvar,type)
-CR      write(*,*) 'wrt_his substance:  cv_watfix  ',indxT+NT+itrc-1,hisT(NT+itrc)
-CR      write(*,*) 'wrt_his substance:  cv_watfix  ' MYID
+CR      write(*,*) 'wrt_his substance:  cvfix_wat  ',indxT+NT+itrc-1,hisT(NT+itrc)
+CR      write(*,*) 'wrt_his substance:  cvfix_wat  ' MYID
          endif
       enddo
 #endif
@@ -653,7 +656,8 @@ CR      write(*,*) 'wrt_his substance:  cv_watfix  ' MYID
       Iend2=Istr2+chunk_size_X-1
       Istr2=max(Istr2,1)
       Iend2=min(Iend2,LOCALLM)
-      Jstr2=1+-margin_E
+!RB      Jstr2=1+-margin_E
+      Jstr2=1-margin_E
       Jend2=Jstr2+chunk_size_E-1
       Jstr2=max(Jstr2,1)
       Jend2=min(Jend2,LOCALMM)
@@ -675,6 +679,7 @@ CR      write(*,*) 'wrt_his var2D_ksma0' MYID
       if (wrthis(indx)) then
          work2d=var2D_ksma(:,:)
 CR      write(*,*) 'wrt_his var2D_ksma1',indx,wrthis(indx),hisMust(1)
+CR      write(*,*) 'wrt_his var2D_ksma1',ncidhis,record
          call fillvalue2d(work2d,ncidhis,hisMust(1),indx,
      &        record,r2dvar,type)
       endif
@@ -688,7 +693,7 @@ CR      write(*,*) 'wrt_his var2D_eptot',indx,wrthis(indx),hisMust(2)
 CR      write(*,*) 'wrt_his var2D_eptot'  MYID
       indx=indxT+ntrc_salt+ntrc_substot+3
 CR      write(*,*) 'wrt_his var2D_tenfon',indx,wrthis(indx),hisMust(3)
-CR      write(*,*) 'write res var2D_tenfon[20,2]=',var2D_tenfon(20,2)
+CR      write(*,*) 'write res var2D_tenfon[19,2]=',var2D_tenfon(19,2)
       if (wrthis(indx)) then
          work2d=var2D_tenfon(:,:)
          call fillvalue2d(work2d,ncidhis,hisMust(3),indx,

@@ -177,7 +177,7 @@
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
-#if defined MORPHODYN ||  defined MUSTANG_MORPHODYN_byHYDRO
+#if defined MORPHODYN ||  defined MORPHODYN_MUSTANG_byHYDRO
       integer indxHm
       parameter (indxHm=5)
 #endif
@@ -913,7 +913,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# if defined MORPHODYN  || defined MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN  || defined MORPHODYN_MUSTANG_byHYDRO
      &      , hisHm
 # endif
 # ifdef BBL
@@ -1352,7 +1352,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# if defined MORPHODYN  || defined MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN  || defined MORPHODYN_MUSTANG_byHYDRO
      &      , hisHm
 # endif
 #ifdef SOLVE3D

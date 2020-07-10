@@ -45,28 +45,31 @@
       ! irk_mod : rang (position) dans le modele de la variable dans tableaux gerant substances
       ! irk_fil : rang (position) dans le fichier de donnees de la variable
   
-      !INTEGER       ,DIMENSION(:),ALLOCATABLE    :: irk_mod,irk_fil
+      INTEGER       ,DIMENSION(:),ALLOCATABLE    :: irk_mod,irk_fil
    
 
       !  gestion des variables forcantes variables with time
       !LOGICAL                                  :: l_driv_cst
       !REAL(KIND=rlg)                           :: dt_driv,t_driv
 
+      CHARACTER(LEN=lchain),DIMENSION(ntfix)  :: standard_name_var_fix,name_var_fix
       ! ----------------------------------------------------------------------------
       ! MATRIX
       ! ----------------------------------------------------------------------------
    
       REAL(KIND=rsh),DIMENSION(:)  ,ALLOCATABLE :: cini_wat,cini_air,cobc_wat
-      REAL(KIND=rsh),DIMENSION(:)  ,ALLOCATABLE :: typart,typdiss
+      REAL(KIND=rsh),DIMENSION(:)  ,ALLOCATABLE :: typdiss
       REAL(KIND=rsh),DIMENSION(:)  ,ALLOCATABLE :: sub_flx_atm,cv_rain
-      CHARACTER(LEN=lchain),DIMENSION(:) ,ALLOCATABLE :: obc_cv_name
-      CHARACTER(LEN=lchain),DIMENSION(:) ,ALLOCATABLE :: init_cv_name
+      CHARACTER(LEN=lchain),DIMENSION(:) ,ALLOCATABLE :: obc_cv_name,name_var,standard_name_var
+      CHARACTER(LEN=lchain),DIMENSION(:) ,ALLOCATABLE :: init_cv_name,unit_var
       REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE           :: ws_part
       REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: ws_free_min, ws_free_max
-   
       ! REAL,ALLOCATABLE,DIMENSION(:,:,:,:) :: phicon
       ! REAL,ALLOCATABLE,DIMENSION(:,:,:,:) :: phicon_drycell
       ! REAL,DIMENSION(:,:,:),ALLOCATABLE   :: phicon_atm
+
+      REAL(KIND=rsh),DIMENSION(:), PUBLIC  ,ALLOCATABLE        :: unit_modif_mudbio_N2dw
+      LOGICAL, PUBLIC,DIMENSION(:),ALLOCATABLE                 :: l_subs2D
 
 #ifdef MUSTANG
       REAL(KIND=rsh),DIMENSION(:,:)    ,ALLOCATABLE :: ws_free_para, ws_hind_para
@@ -74,10 +77,6 @@
       REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE :: tocd      
       REAL(KIND=rsh), DIMENSION(:)     ,ALLOCATABLE :: cini_sed_r
       REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE :: diam_sed,ros
-
-      LOGICAL, PUBLIC,DIMENSION(:),ALLOCATABLE                 :: l_subs2D
-      INTEGER,PUBLIC,DIMENSION(:),ALLOCATABLE                  :: irk_fil
-      REAL(KIND=rsh),DIMENSION(:), PUBLIC  ,ALLOCATABLE        :: unit_modif_mudbio_N2dw
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
    INTEGER                          :: ibedload1,ibedload2
 #endif
@@ -108,7 +107,7 @@
       REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE                  :: cini_wat_fix
       LOGICAL,DIMENSION(:),ALLOCATABLE               :: l_out_subs_fix
       CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE :: init_cv_name_fix
-      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE	         :: cv_watfix
+      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE  :: cvfix_wat
 
 #ifdef key_benthic
    ! ---------------------------------------------------------------------------
@@ -133,7 +132,15 @@
       LOGICAL         :: l_cvrain_readfile,l_subflxatm_readfile
       REAL(KIND=rsh)            :: sflx_sub_atm_depth
 
-   
+#if ! defined key_MARS
+#if defined MUSTANG || defined BIOLink 
+     ! ----------------------------------------------------------------------------
+     !  declaration and evaluation of surface cells if not known in hydro host model
+     !    needing for MUSTANG and Bloom/oyster
+     ! ----------------------------------------------------------------------------
+     REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE            :: surf_cell
+#endif
+#endif
 
 #endif /* SUBSTANCE */
 # undef  F90CODE

@@ -75,6 +75,10 @@
 # define iwarnlog stdout
 # define NAME_SUBS vname(1,indxT+ntrc_salt+isubs)
 
+!/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!/*         Directory where are namelists files
+!/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+# define REPFICNAMELIST 'FIC_NAMELIST'
 
 !/* Spatial Grid limits definition  of loops
 !/*   inside the domain - except meshes at open boundaries
@@ -143,7 +147,8 @@
 # define WATER_ELEVATION zeta
 # define CELL_DX om_r
 # define CELL_DY on_r
-# define CELL_SURF om_r*on_r
+# define CELL_SURF surf_cell
+/*# define CELL_SURF cell_surf_MUSTANG*/
 # define BAROTROP_VELOCITY_U ubar
 # define BAROTROP_VELOCITY_V vbar
 # define TIME_STEP dt   /* in MARS :  time step declared in rlg and therefore also in MUSTANG */
@@ -203,10 +208,10 @@
 # define HTOT_NEAR_W htot(i-1,j)
 # define HTOT_NEAR_N htot(i,j+1)
 # define HTOT_NEAR_S htot(i,j-1)
-# define SURF_NEAR_E surf(i+1,j)
-# define SURF_NEAR_W surf(i-1,j)
-# define SURF_NEAR_N surf(i,j+1)
-# define SURF_NEAR_S surf(i,j-1)
+# define SURF_NEAR_E surf_cell(i+1,j)
+# define SURF_NEAR_W surf_cell(i-1,j)
+# define SURF_NEAR_N surf_cell(i,j+1)
+# define SURF_NEAR_S surf_cell(i,j-1)
 # define V_NEAR_E (v(i+1,j-1)+v(i+1,j))
 # define V_NEAR_W (v(i-1,j-1)+v(i-1,j))
 # define U_NEAR_N (u(i-1,j+1)+u(i,j+1))

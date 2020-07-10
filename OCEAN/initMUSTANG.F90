@@ -201,18 +201,10 @@
   
  !!===========================================================================================
    SUBROUTINE MUSTANG_init_sediment(ifirst,ilast,jfirst,jlast,iappel,  &
-           BATHY_H0,WATER_ELEVATION,                                   &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO  
+           WATER_ELEVATION,                                   &
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
            dhsed,                                                      &
 #endif
-#ifdef key_MUSTANG_debug
-           LATITUDE,LONGITUDE,                                         &
-#endif 
-#ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
-           CELL_DX,CELL_DY,                                            &
-#endif 
-#endif 
 !#ifdef key_CROCO
            vname,indxT,ntrc_salt,                                      &
 !#endif
@@ -256,7 +248,6 @@
    !! * Arguments 
    INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast,iappel
    REAL(KIND=rsh),INTENT(IN)              :: h0fond
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)       :: BATHY_H0                         
    REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)        :: z0hydro                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
@@ -264,19 +255,9 @@
    INTEGER, INTENT(IN)                    :: indxT,ntrc_salt
    character*75 ,DIMENSION(20,500), INTENT(IN)  :: vname
 !#endif
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO  
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
 #endif
-#ifdef key_MUSTANG_debug
-   REAL(KIND=rlg),DIMENSION(ARRAY_LATLON),INTENT(IN)            :: LATITUDE,LONGITUDE                    
-#endif 
-#ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_DX),INTENT(IN)      :: CELL_DX   
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_DY),INTENT(IN)      :: CELL_DY   
-#endif 
-#endif 
-
    !! * Local declarations
     INTEGER   :: i,j,k,iv,isplit
 #ifdef key_MUSTANG_V2
@@ -314,7 +295,7 @@
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ! evaluation of slope for bedload
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined MUSTANG_MOVING_BATHY_byHYDRO
+#if defined MORPHODYN_MUSTANG_byHYDRO
       it_morphoYes=0
 #endif
 #ifdef key_MARS
@@ -419,7 +400,7 @@
       !IF(l_morphocoupl .AND. .NOT.l_initfromfile)THEN
       ! appelle meme si pas morpho pour si dredging et initialisation de hsed dans tous les cas, meme si initfromfile
       CALL MUSTANG_morphoinit(ifirst,ilast,jfirst,jlast,BATHY_H0,h0fond,WATER_ELEVATION   &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO  
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
                                                    ,dhsed               &
 #endif
              )
@@ -471,12 +452,12 @@
         ENDDO
         ENDDO
         IF(i_MUSTANG_debug==0) THEN
-          write(ierrorlog,*) 'CAUTION : the point for debug is not well known  '
-          write(ierrorlog,*) '*****************************************************'
-          write(ierrorlog,*) 'lat_debug and lon_debug do not correspond to one point in the grid'
-          write(ierrorlog,*) 'choose i_MUSTANG_debug et j_MUSTANG_debug directly in paraMUSTANGV2.txt'
-          write(ierrorlog,*) 'or change lat_debug and lon_debug'
-          write(ierrorlog,*) 'simulation stopped'
+          MPI_master_only write(ierrorlog,*) 'CAUTION : the point for debug is not well known  '
+          MPI_master_only write(ierrorlog,*) '*****************************************************'
+          MPI_master_only write(ierrorlog,*) 'lat_debug and lon_debug do not correspond to one point in the grid'
+          MPI_master_only write(ierrorlog,*) 'choose i_MUSTANG_debug et j_MUSTANG_debug directly in paraMUSTANGV2.txt'
+          MPI_master_only write(ierrorlog,*) 'or change lat_debug and lon_debug'
+          MPI_master_only write(ierrorlog,*) 'simulation stopped'
           stop    
         ENDIF
      ENDIF
@@ -522,7 +503,6 @@
    CHARACTER(len=19)     :: tool_sectodat
    INTEGER               :: iv,ivpc,isubs,IERR_MPI
    REAL(KIND=rlg)        :: tool_datosec,dtsedc,dtsedd,dtsedb
-   REAL(KIND=rlg)        :: subdt_bioturb,dt_consolid,dt_diffused,dt_bioturb
 
 #ifdef key_MUSTANG_V2
    NAMELIST/namsedim_init/ l_repsed,filrepsed,l_unised,fileinised,          &
@@ -621,9 +601,9 @@ IF(rw == 'r')THEN
 !==================
 
 #ifdef key_MUSTANG_V2
-    filepc='./paraMUSTANGV2.txt'
+    filepc=REPFICNAMELIST//'/paraMUSTANGV2.txt'
 #else
-    filepc='./paraMUSTANGV1.txt'
+    filepc=REPFICNAMELIST//'/paraMUSTANGV1.txt'
 #endif
     OPEN(50,file=filepc,status='old',form='formatted',access='sequential')
     READ(50,namsedim_init)
@@ -647,14 +627,18 @@ IF(rw == 'r')THEN
     xsigma1sg=xsigma1/GRAVITY
     IF(csed_mud_ini==0.0_rsh)csed_mud_ini=cfreshmud
     tstart_dyninsed=tool_datosec(date_start_dyninsed)
+    t_dyninsed=tstart_dyninsed
     tstart_morpho=tool_datosec(date_start_morpho)
     dtsedc=365._rlg*86400._rlg
+    MPI_master_only write(*,*) 'init dtsedc=',dtsedc
     dtsedd=dtsedc
     dtsedb=dtsedc
     IF(l_consolid) THEN
        dtsedc=dt_consolid
+       MPI_master_only write(*,*) 'init dt_consolid=',dt_consolid
     ELSE
        dt_consolid=dtsedc
+       MPI_master_only write(*,*) 'init dt_consolid=',dt_consolid
     ENDIF
     IF(l_diffused) THEN
        dtsedd=dt_diffused
@@ -680,7 +664,13 @@ IF(rw == 'r')THEN
       subdt_bioturb=dtsedb
     ENDIF    
     subdt_consol= MIN(dtsedb,dtsedc,dt_dyninsed)
-    
+#ifdef key_MUSTANG_V2    
+    IF(l_dzsminuni) THEN 
+       coeff_dzsmin=0._rsh        
+    ELSE           
+       coeff_dzsmin=1._rsh  
+    ENDIF   
+#endif  
     IF(l_morphocoupl) THEN
     t_morpho=tstart_morpho
        IF(l_MF_dhsed) THEN
@@ -699,7 +689,7 @@ IF(rw == 'r')THEN
     IF(l_consolid .OR. l_bioturb .OR. l_diffused .OR. l_biodiffs)l_dyn_insed=.TRUE.
 
 #if defined key_oasis && defined key_oasis_mars_ww3  
-    IF(l_ww3morpho==.TRUE.)l_transfer2hydro_dhsed = .TRUE.    
+    IF(l_ww3morpho)l_transfer2hydro_dhsed = .TRUE.    
 #endif
 
     READ(50,namsedoutput)
@@ -721,8 +711,12 @@ IF(rw == 'r')THEN
     READ(50,namflocmod)
 #endif
     CLOSE(50)                                  
+       MPI_master_only write(*,*) 'initEND0 dt_consolid=',dt_consolid
 
 ELSE
+       MPI_master_only write(*,*) 'initEND1 dt_consolid=',dt_consolid
+
+
 ! namelists writing for information
 !==================================
      IF_MPI (MASTER) THEN
@@ -780,11 +774,11 @@ ELSE
        MPI_master_only WRITE(iscreenlog,*) '*** END FLOCMOD INIT *** '    
     
        IF (.not.l_ADS .and. .not.l_ASH) THEN
-        write(ierrorlog,*) 'CAUTION : incompatible flocculation kernel options : '
-        write(ierrorlog,*) '*****************************************************'
-        write(ierrorlog,*) 'l_ADS=',l_ADS
-        write(ierrorlog,*) 'l_ASH=',l_ASH
-        write(ierrorlog,*) 'simulation stopped'
+        MPI_master_only write(ierrorlog,*) 'CAUTION : incompatible flocculation kernel options : '
+        MPI_master_only write(ierrorlog,*) '*****************************************************'
+        MPI_master_only write(ierrorlog,*) 'l_ADS=',l_ADS
+        MPI_master_only write(ierrorlog,*) 'l_ASH=',l_ASH
+        MPI_master_only write(ierrorlog,*) 'simulation stopped'
         stop
       ENDIF
 #endif
@@ -1411,6 +1405,11 @@ ENDIF
         ELSE
           dzs(:,i,j)=0.0_rsh
         ENDIF
+#ifdef CHANNEL
+    dzs(1,i,j)=1.
+    dzs(2,i,j)=1.
+    dzs(3:11,i,j)=0.1
+#endif
       ENDDO
     ENDDO
 
@@ -1418,9 +1417,9 @@ ENDIF
     IF(.NOT. l_dzsmaxuni) THEN
        IF_MPI (MASTER) THEN
             IF(dzsmaxuni == 0.0_rsh) THEN
-               write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_repsed=.FALSE.'
-               write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file (l_repsed=T)'
-               write(ierrorlog,*)' if l_repsed=.FALSE. dzsmax must be evaluated from dzsmaxuni not null'
+               MPI_master_only write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_repsed=.FALSE.'
+               MPI_master_only write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file (l_repsed=T)'
+               MPI_master_only write(ierrorlog,*)' if l_repsed=.FALSE. dzsmax must be evaluated from dzsmaxuni not null'
 
                CALL_MPI MPI_FINALIZE(IERR_MPI)
                STOP
@@ -1433,12 +1432,12 @@ ENDIF
         ! max depth giving the lowest value of dzsma to inform, setting by default = 50m
        dzsmaxmin=dzsmaxuni/100._rsh
        h0max_def=50.0_rsh
-       write(iscreenlog,*)
-       write(iscreenlog,*)'DZSMAX NON UNIFORM'
-       write(iscreenlog,*)'by default linearly computed in MUSTANG_sedinit (sedim.F90)'
-       write(iscreenlog,*)'from dzsmaxuni (',dzsmaxuni,'m) to dzsmaxuni/100 (',dzsmaxmin,'m) depending on water depth'
-       write(iscreenlog,*)'dzsmax minimum for depth > ',h0max_def
-       write(iscreenlog,*)'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
+       MPI_master_only write(iscreenlog,*)
+       MPI_master_only write(iscreenlog,*)'DZSMAX NON UNIFORM'
+       MPI_master_only write(iscreenlog,*)'by default linearly computed in MUSTANG_sedinit (sedim.F90)'
+       MPI_master_only write(iscreenlog,*)'from dzsmaxuni (',dzsmaxuni,'m) to dzsmaxuni/100 (',dzsmaxmin,'m) depending on water depth'
+       MPI_master_only write(iscreenlog,*)'dzsmax minimum for depth > ',h0max_def
+       MPI_master_only write(iscreenlog,*)'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
        dzsmax(PROC_IN_ARRAY)=(h0max_def-BATHY_H0(PROC_IN_ARRAY))/h0max_def*dzsmaxuni+dzsmaxmin
        WHERE (dzsmax(PROC_IN_ARRAY) > dzsmaxuni ) dzsmax(PROC_IN_ARRAY)=dzsmaxuni
        WHERE (dzsmax(PROC_IN_ARRAY) < dzsmaxmin ) dzsmax(PROC_IN_ARRAY)=dzsmaxmin
@@ -1538,7 +1537,8 @@ ENDIF
              MPI_master_only WRITE(iscreenlog,*)
              MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
              MPI_master_only WRITE(iscreenlog,*)'WARNING : the maximum number of saved sed. layers has been evaluated from dzsmaxuni=',dzsmaxuni
-             MPI_master_only WRITE(iscreenlog,*)'            if dzsmax is not uniform, it could be smaller than dzsmaxuni and then there may be points where '
+             MPI_master_only WRITE(iscreenlog,*)'            if dzsmax is not uniform, it could be smaller than dzsmaxuni and  &
+                           then there may be points where '
              MPI_master_only WRITE(iscreenlog,*)'             this number is not sufficient to describe the maximum thickness'
              MPI_master_only WRITE(iscreenlog,*)
              MPI_master_only WRITE(iscreenlog,*)'This option is not recommended with l_dzsmaxuni=.False.'
@@ -1595,7 +1595,7 @@ ENDIF
    !!===========================================================================
 
  SUBROUTINE MUSTANG_morphoinit(ifirst,ilast,jfirst,jlast,BATHY_H0,h0fond,WATER_ELEVATION  &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO  
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
                   ,dhsed                                                &
 #endif
                   )
@@ -1630,7 +1630,7 @@ ENDIF
    REAL(KIND=rsh),INTENT(IN)              :: h0fond
    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)        :: BATHY_H0                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO  
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                       
 #endif
    !! * Local declarations
@@ -1668,11 +1668,11 @@ ENDIF
         ! call a special routine if morpho must be intialize at 0 in some meshes
         !     routine in sed_MUSTANG_HOST
       
-        IF(l_morphomesh == .TRUE. ) CALL MUSTANG_morphoinit_mesh
+        IF(l_morphomesh) CALL MUSTANG_morphoinit_mesh
      
       !!  *2*  deallocate unused array   !!!
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if !defined MUSTANG_MOVING_BATHY_byHYDRO
+#if !defined MORPHODYN_MUSTANG_byHYDRO
         IF(.NOT. l_MF_dhsed )  DEALLOCATE (hsed_previous)
 #endif
 #if defined key_oasis && defined key_oasis_mars_ww3          
@@ -1707,7 +1707,7 @@ ENDIF
       ENDDO       
 
       IF(l_morphocoupl .OR. l_dredging)THEN
-#if !defined MUSTANG_MOVING_BATHY_byHYDRO
+#if !defined MORPHODYN_MUSTANG_byHYDRO
         IF (l_MF_dhsed) THEN
 #endif
          DO j=jfirst,jlast
@@ -1720,7 +1720,7 @@ ENDIF
              hsed_previous(i,j)=hsed(i,j)
            ENDDO
          ENDDO       
-#if !defined MUSTANG_MOVING_BATHY_byHYDRO
+#if !defined MORPHODYN_MUSTANG_byHYDRO
         END IF
 #endif
         
@@ -1833,15 +1833,16 @@ ENDIF
          END IF
 #endif
 
-#if defined MUSTANG_MOVING_BATHY_byHYDRO
+#if defined MORPHODYN_MUSTANG_byHYDRO
 !$OMP DO SCHEDULE(static) PRIVATE(i,j)
            DO j=jfirst,jlast
              DO i=ifirst,ilast
                dhsed(i,j)=hsed0(i,j)-hsed(i,j)
+              ! dhsed_savedd(i,j)=dhsed(i,j)
 #ifdef key_MUSTANG_debug
                IF (i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
              ! if (i.eq.20.and.j.eq.2) then
-                write(*,*) 'dhsed(',i,',',j,') initial:',dhsed(i,j),hsed0(i,j),hsed(i,j)
+                MPI_master_only write(*,*) 'dhsed(',i,',',j,') initial:',dhsed(i,j),hsed0(i,j),hsed(i,j)
                ENDIF
 #endif
              ENDDO
@@ -1956,7 +1957,8 @@ ENDIF
         E0_sand(iv)=E0_sand_Cst   ! read in paraMUSTANGV2.txt
       ELSE IF(E0_sand_option == 1 .AND. ros(iv) .GT. 1000_rsh) THEN
         ! E0_sand computed from the formulation of Van Rijn (1984)
-        E0_sand(iv)=0.000005_rsh*ros(iv)*((ros(iv)/1000.0_rsh-1.0_rsh)*9.81*diam_sed(iv))**0.5_rsh*(diam_sed(iv)*((ros(iv)/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
+        E0_sand(iv)=0.000005_rsh*ros(iv)*((ros(iv)/1000.0_rsh-1.0_rsh)*9.81*diam_sed(iv))**0.5_rsh*(diam_sed(iv)  &
+          &   *((ros(iv)/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
       ELSE IF (E0_sand_option == 2) THEN
         ! E0_sand computed as a function of mean sand diameter (expression deduced from erodimetry experiments)
         E0_sand(iv)=(stresscri0(iv)**n_eros_sand)* MIN(0.27,1000*diam_sed(iv)-0.01)

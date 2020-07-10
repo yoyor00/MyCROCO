@@ -232,6 +232,17 @@ C$    integer omp_get_thread_num
 #  else
                      depth=4.
 #  endif
+
+# elif defined CHANNEL
+# ifdef key_ANA_bedload
+                     depth=6.
+#else
+
+                     depth=4.
+#endif
+                     f0=0.
+                     beta=0.
+
 # else
                      depth=???
                      f0=???
@@ -343,6 +354,14 @@ C$    integer omp_get_thread_num
                      Length_XI =100.0
 #  endif
                      Length_ETA=Length_ETA_ISO_GRID
+# elif defined CHANNEL
+                      Length_XI = 100.
+                      Length_ETA= 100.
+# if defined key_ANA_bedload
+                      Length_XI = 300.
+                      Length_ETA= 300.
+# endif
+
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -791,6 +810,23 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # endif
         enddo
       enddo
+
+# elif defined CHANNEL
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#  ifdef MPI
+          cff=(float(i +ii*Lm) )
+#  else
+          cff=(float(i       ) )
+#  endif
+         h(i,j)=depth*(1.-0.5*exp(-0.5*(1./10)**2*(2.0*
+     &      (cff-25.0))**2.0))
+# if defined key_ANA_bedload
+          h(i,j)=depth*(1.-2./6.*exp(-0.01*(xr(i,j)-150.)**2))
+# endif
+        enddo
+      enddo
+
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR

@@ -987,22 +987,20 @@ C$OMP BARRIER
       Iend2=Istr2+chunk_size_X-1
       Istr2=max(Istr2,1)
       Iend2=min(Iend2,LOCALLM)
-      Jstr2=1+-margin_E
+!RB Jstr2=1+-margin_E
+      Jstr2=1-margin_E
       Jend2=Jstr2+chunk_size_E-1
       Jstr2=max(Jstr2,1)
       Jend2=min(Jend2,LOCALMM)
       CALL MUSTANG_update(ISTR2,IEND2,JSTR2,JEND2,
      &         RESIDUAL_THICKNESS_WAT,
      &         WATER_CONCENTRATION,Z0HYDRO,
-#ifdef key_MUSTANG_V2
-     &         CELL_DX,CELL_DY,
-#endif
-     &         BATHY_H0,WATER_ELEVATION,
+     &         WATER_ELEVATION,
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
      &         BAROTROP_VELOCITY_U,
      &         BAROTROP_VELOCITY_V,
 #endif
-     &         RHOREF, CELL_SURF,SALREF_LIN,TEMPREF_LIN,
+     &         RHOREF,SALREF_LIN,TEMPREF_LIN,
      &         TRANSPORT_TIME_STEP)
 #endif
         call step3d_t (tile)
@@ -1010,10 +1008,7 @@ C$OMP BARRIER
 #ifdef MUSTANG
         CALL MUSTANG_deposition(ISTR2,IEND2,
      &                JSTR2,JEND2,
-     &           WATER_ELEVATION,CELL_SURF,BATHY_H0,
-#if defined key_MUSTANG_slipdeposit
-     &           CELL_DX,CELL_DY,
-#endif
+     &           WATER_ELEVATION,
      &           RESIDUAL_THICKNESS_WAT,WATER_CONCENTRATION)
 #endif
 
@@ -1066,24 +1061,25 @@ C$OMP BARRIER
 !            IF(CURRENT_TIME .GE. t_morpho) THEN
 
          CALL MUSTANG_morpho(ISTR2,IEND2,JSTR2,JEND2,              
-     &                     BATHY_H0,              
      &                WATER_ELEVATION,                              
-#if (defined key_oasis && defined key_oasis_mars_ww3) || (defined MUSTANG_MOVING_BATHY_byHYDRO)
+#if (defined key_oasis && defined key_oasis_mars_ww3) || (defined MORPHODYN_MUSTANG_byHYDRO)
      &                                 DHSED,                       
-#endif                                     
-#ifdef key_MUSTANG_bedload
-     &                                 CELL_DX,CELL_DY,             
 #endif                                     
      &                RESIDUAL_THICKNESS_WAT)
        END IF
 
-#ifdef MUSTANG_MORPHODYN_byHYDRO
+#ifdef MORPHODYN_MUSTANG_byHYDRO
       do tile=my_first,my_last
         call set_depth_morphodyn (tile)
       enddo
 !!! remise a 0 de dhsed:
+#ifdef MPI
+       do j=JSTR2-1,JEND2+1
+         do i=ISTR2-1,IEND2+1
+#else
       do j=JSTR2,JEND2   
         do i=ISTR2,IEND2
+#endif
           DHSED(i,j)=0.0_rsh
         enddo
       enddo

@@ -124,11 +124,12 @@
                                 coef_z0_coupl,z0_hydro_mud,z0_hydro_bed,                       &
                                 xbioturbmax_part,xbioturbk_part,dbiotu0_part,dbiotum_part,     &
                                 xbioturbmax_diss,xbioturbk_diss,dbiotu0_diss,dbiotum_diss,     &
-                                xbioturbmax,xbioturbk,dbiotu0,dbiotum,frmud_db_max,frmud_db_min
+                                xbioturbmax,xbioturbk,dbiotu0,dbiotum,frmud_db_max,frmud_db_min, &
+                                dt_consolid,dt_diffused,dt_bioturb,subdt_bioturb
    REAL(KIND=rsh),PUBLIC                                :: hsed_new,coef_erolat,coef_tenfon_lat
    REAL(KIND=rsh),PUBLIC                                :: sed_difint,sed_difsed 
    
-   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC       :: alp1,alp2,alp3,alp4,alp5
+   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC       :: alp1,alp2,alp3,alp4,alp5,typart
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC       :: diamstar,ws_sand,rosmrowsros,       &
                                                            stresscri0,tetacri0,xnielsen
    INTEGER       ,DIMENSION(:)      ,ALLOCATABLE        :: D0_funcT_opt
@@ -153,7 +154,7 @@
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: fludif,fluconsol,fluconsol_drycell,flu_dyninsed
    
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed,z0sed,hsed0,dzsmax,hsed_previous
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MUSTANG_MOVING_BATHY_byHYDRO
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: dhsed_save
 #endif
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfon,tenfonc,tenfonw
@@ -276,7 +277,7 @@
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC  :: flx_bx,flx_by
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC    :: slope_dhdx,slope_dhdy
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC    :: sedimask_h0plusxe
-#if defined MUSTANG_MOVING_BATHY_byHYDRO
+#if defined MORPHODYN_MUSTANG_byHYDRO
    INTEGER  :: it_morphoYes
 #endif
 #endif
@@ -427,6 +428,12 @@
    ALLOCATE(stresscri0(nvp))
    ALLOCATE(tetacri0(nvp))
    ALLOCATE(xnielsen(nvp))
+#if ! defined key_MARS
+   ALLOCATE (typart(-1:nv_adv))
+   typart(-1:0)=0.0_rsh
+   typart(1:nvpc)=1.0_rsh
+   typart(nvpc+1:nv_adv)=0.0_rsh
+#endif
 #ifdef key_MUSTANG_V2
    ALLOCATE(E0_sand(nvp))
    E0_sand(1:nvp)=0.0_rsh
@@ -750,7 +757,7 @@
        ALLOCATE(h0_bedrock(ARRAY_h0_bedrock))
        ALLOCATE(hsed0(PROC_IN_ARRAY))
        ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-#if defined MUSTANG_MOVING_BATHY_byHYDRO
+#if defined MORPHODYN_MUSTANG_byHYDRO
        ALLOCATE(dhsed_save(PROC_IN_ARRAY))
 #endif
        hsed0(PROC_IN_ARRAY)=0.0_rsh

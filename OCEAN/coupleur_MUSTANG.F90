@@ -74,9 +74,6 @@
 
    IMPLICIT NONE
    
-#include "ocean3d.h"
-#include "grid.h"
-
    !! * Interface
    
    

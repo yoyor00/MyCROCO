@@ -449,7 +449,13 @@
    INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
    INTEGER i,j,k
    REAL    vit2
-   REAL(KIND=rsh),DIMENSION(ifirst-1:ilast+1,jfirst-1:jlast+1)  :: Zr 
+
+# ifdef MPI
+   REAL(KIND=rsh),DIMENSION(ifirst-2:ilast+1,jfirst-2:jlast+1)  :: Zr
+   REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch  
+# else
+   REAL(KIND=rsh),DIMENSION(ifirst-1:ilast+1,jfirst-1:jlast+1)  :: Zr
+# endif
 
 # ifdef WAVE_OFFLINE
    REAL(KIND=rsh)                                   :: fws2ij,courant,alpha,beta,cosamb,sinamb
@@ -466,13 +472,8 @@
 #  ifdef BBL
       do j=jfirst,jlast
         do i=ifirst,ilast
-!#  ifdef BBL
-!#    ifdef key_MUSTANG
-!          tenfon(i,j)=tenfonc(i,j)
-!#    else
           tenfon(i,j)=sqrt( bustrcwmax(i,j)**2 &
                         +bvstrcwmax(i,j)**2)*RHOREF
-!     #  endif
 #  ifdef WET_DRY AND MASKING
           tenfon(i,j)=tenfonc(i,j)*rmask_wet(i,j)
 #  endif
@@ -484,20 +485,40 @@
 !          tenfon(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2 &
 !                        +(bvstr(i,j)+bvstr(i,j+2))**2)*RHOREF
 # ifdef MUSTANG
+# ifdef MPI
+      DO j=jfirst-2,jlast+1
+        DO i=ifirst-2,ilast+1
+# else
       DO j=jfirst-1,jlast+1
         DO i=ifirst-1,ilast+1
+#  endif
          Zr(i,j)=  max(z_r(i,j,1)-z_w(i,j,0),z0sed(i,j)+1.E-4)
        enddo
       enddo
 
+# ifdef MPI
+!#ifdef key_MUSTANG_tenfonUbar
+!      workexch(:,:) = z_w(:,:,0) 
+!      call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+!          &          workexch(START_2D_ARRAY))
+!      z_w(:,:,0)=workexch(:,:)
+!      workexch(:,:) = z_w(:,:,N)    
+!      call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+!          &          workexch(START_2D_ARRAY))
+!      z_w(:,:,N)=workexch(:,:)
+!#endif
+      DO j=jfirst-1,jlast
+        DO i=ifirst-2,ilast
+# else   
       DO j=jfirst,jlast
         DO i=ifirst-1,ilast
+#  endif
           raphbx(i,j)=ABS(u(i+1,j,1,nrhs))/(ABS(u(i+1,j,1,nrhs))+epsilon_MUSTANG)
 #ifdef key_MUSTANG_tenfonUbar
           vit2=SQRT(0.0625_rsh*(vbar(i,j,nrhs)+vbar(i+1,j,nrhs)+  &
                   vbar(i,j-1,nrhs)+vbar(i+1,j-1,nrhs))**2         &
                   +ubar(i+1,j,nrhs)**2) *ubar(i+1,j,nrhs)
-           frofonx(i,j)=0.16_rsh*(LOG( ( z_w(i,j,N)-z_w(i,j,0))/   &
+          frofonx(i,j)=0.16_rsh*(LOG( ( z_w(i,j,N)-z_w(i,j,0))/   &
                   (z0sed(i,j)*2.718)))**(-2)*vit2
 #else
           vit2=SQRT(0.0625_rsh*(v(i,j,1,nrhs)+v(i+1,j,1,nrhs)+  &
@@ -506,22 +527,23 @@
           frofonx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i+1,j)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
 #endif
-!         if (i==25 .AND. j==3) then
-!             write(*,*) 'frofonx',vit2,frofonx(i,j)
-!             write(*,*) 'frofonx z',N,z_w(i,j,N),z_w(i,j,0)
-!         endif
        enddo
       enddo
-
+# ifdef MPI
+      DO j=jfirst-2,jlast
+        DO i=ifirst-1,ilast
+# else   
       DO j=jfirst-1,jlast
         DO i=ifirst,ilast
+#  endif  
           raphby(i,j)=ABS(v(i,j+1,1,nrhs))/(ABS(v(i,j+1,1,nrhs))+epsilon_MUSTANG)
 #ifdef key_MUSTANG_tenfonUbar
           vit2=SQRT(0.0625_rsh*(ubar(i,j,nrhs)+ubar(i,j+1,nrhs)+  &
                   ubar(i-1,j+1,nrhs)+ubar(i-1,j,nrhs))**2         &
                   +vbar(i,j+1,nrhs)**2) *vbar(i,j+1,nrhs)
           frofony(i,j)=0.16_rsh*(LOG( (z_w(i,j,N)-z_w(i,j,0))  /   &
-                  z0sed(i,j)))**(-2)*vit2
+                  (z0sed(i,j)*2.718)))**(-2)*vit2
+
 #else
           vit2=SQRT(0.0625_rsh*(u(i,j,1,nrhs)+u(i,j+1,1,nrhs)+  &
                   u(i-1,j+1,1,nrhs)+u(i-1,j,1,nrhs))**2         &
@@ -529,14 +551,15 @@
           frofony(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j+1)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
 #endif
-!         if (i==25 .AND. j==3) then
-!             write(*,*) 'frofony',vit2,frofony(i,j)
-!         endif
        enddo
       enddo
-
+# ifdef MPI
+      DO j=jfirst-1,jlast
+        DO i=ifirst-1,ilast
+# else   
       DO j=jfirst,jlast
         DO i=ifirst,ilast
+#  endif  
            tenfonc(i,j)=SQRT(((frofonx(i,j)*raphbx(i,j)+frofonx(i-1,j)        &
                      *raphbx(i-1,j))/(raphbx(i,j)                             &
                      +raphbx(i-1,j)+epsilon_MUSTANG))**2+((frofony(i,j)*raphby(i,j)   &
@@ -609,6 +632,10 @@
 #  endif
         enddo
       enddo
+!# if !defined MPI
+!      tenfonc(ifirst,:)=tenfonc(ifirst+1,:)
+!      tenfonc(ilast,:)=tenfonc(ilast-1,:)
+!#  endif
 
 #  endif
 #  endif
@@ -816,6 +843,7 @@
 
 ! CVSED
  
+      c_sedtot(:,:,:)=0.0_rsh
       do iv=-1,nv_tot 
 
        IF (iv==-1) THEN
@@ -825,26 +853,47 @@
        ELSE
           WRITE(nomcv,10) iv
        ENDIF
-   10 FORMAT('concen',i2.2)
+   10  FORMAT('concen',i2.2)
 
-      ierr=nf_inq_varid (ncid,nomcv, varid)
-      if (ierr .eq. nf_noerr) then
+       ierr=nf_inq_varid (ncid,nomcv, varid)
+       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
 
-         c_sedtot(k,:,:)=0.0_rsh
-         do k=ksdmin,ksdmax
+        do k=ksdmin,ksdmax
             cv_sed(iv,k,:,:)=tmp3d(:,:,k)
-            c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)  
-         enddo
+            c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)*typart(iv)  
+        enddo
 
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) nomcv, indx, inised_name(1:lstr)
           goto 99                                         !--> ERROR
         endif
-      else
-        MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)
-        goto 99                                           !--> ERROR
-      endif
+       
+       else
+        if (iv > nvpc .and. iv < nvp+1 ) then
+         ! not constitutive particulate  variables (Initial in M/Msed converted to M/m3 sed)
+         IF (irkm_var_assoc(iv) >0) THEN
+           do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=cini_sed(iv)*cv_sed(irkm_var_assoc(iv),k,:,:)
+           enddo
+         ELSE
+           do k=ksdmin,ksdmax
+            cv_sed(iv,k,:,:)=cini_sed(iv)*c_sedtot(k,:,:)
+           enddo
+         END IF
+         MPI_master_only  write(stdout,3) nomcv, inised_name(1:lstr)
+        else if (iv > nvp) then
+          ! dissolved variables (M/m3 EI)
+          do k=ksdmin,ksdmax
+            cv_sed(iv,k,:,:)=cini_sed(iv)             
+          enddo
+         MPI_master_only  write(stdout,3) nomcv,vname(1,indxT+ntrc_salt+iv), &
+                                          inised_name(1:lstr)
+        else
+         MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)
+         goto 99                          !--> ERROR
+        endif
+       endif
       enddo
      
      do k=ksdmin,ksdmax
@@ -859,9 +908,9 @@
                                  /15x,'in input NetCDF file:',1x,A/)
   2   format(/1x,'SEDINIT_FROMFILE - error while reading variable:',1x, A, &
          2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
-  3   format(/1x,'SEDINIT_FROMFILE - unable to find variable:',    1x,A, &
+  3   format(/1x,'SEDINIT_FROMFILE - unable to find variable:',    1x,A,/10x,A, &
      &                            /15x,'in input NetCDF file:',1x,A,  &
-         1x,'-> analytical value'/)
+         1x,'-> analytical value (cini_sed)'/)
       return
   99  may_day_flag=2
       return

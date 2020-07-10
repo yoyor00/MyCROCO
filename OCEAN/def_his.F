@@ -469,7 +469,8 @@
           ierr=nf_put_att_text (ncid, vidZ, 'field',     lvar,
      &                                  vname(4,indxZ)(1:lvar))
 
-          call nf_add_attribute(ncid, vidZ, indxZ, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidZ, indxZ, 5, NF_FOUT, 
+     &         ierr)
 
        endif
 !
@@ -529,11 +530,12 @@
           ierr=nf_put_att_text (ncid, vidVb, 'field',     lvar,
      &                                  vname(4,indxVb)(1:lvar))
 
-          call nf_add_attribute(ncid, vidVb, indxVb, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidVb, indxVb, 5, NF_FOUT, 
+     &         ierr)
 
         endif
 
-#if defined MORPHODYN || defined MUSTANG_MORPHODYN_byHYDROYDRO
+#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
 !
 !-----------------------------------------------------------------------
 !  Time-dependent bathymetry
@@ -563,7 +565,8 @@
           ierr=nf_put_att_text (ncid, vidHm, 'field',     lvar,
      &                                  vname(4,indxHm)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHm, indxHm, 5, NF_FOUT, ierr)
+          call nf_add_attribute(ncid, vidHm, indxHm, 5, NF_FOUT, 
+     &         ierr)
 
         endif
 #endif /* MORPHODYN */
@@ -2275,7 +2278,7 @@
 !
 ! time evolving bathymetry
 !
-# if defined MORPHODYN || defined  MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN || defined  MORPHODYN_MUSTANG_byHYDRO
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), vidHm)

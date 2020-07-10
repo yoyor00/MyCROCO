@@ -63,11 +63,11 @@
       real hinv(GLOBAL_2D_ARRAY)
       real f(GLOBAL_2D_ARRAY)
       real fomn(GLOBAL_2D_ARRAY)
-# if defined MORPHODYN || defined MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
       real dh(GLOBAL_2D_ARRAY)
 # endif      
       common /grid_h/h /grid_hinv/hinv /grid_f/f /grid_fomn/fomn
-# if defined MORPHODYN  || defined MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN  || defined MORPHODYN_MUSTANG_byHYDRO
       common /grid_dh/dh
 # endif      
       

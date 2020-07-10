@@ -214,39 +214,27 @@
 #elif defined CHANNEL 
 
       DO j=JR_RANGE
-!        zeta(IstrR,j,1)=0.04
-!        zeta(IstrR+1,j,1)=0.04
-!        zeta(IstrR,j,2)=zeta(IstrR,j,1)
-!        zeta(IstrR+1,j,2)=zeta(IstrR+1,j,1)
-!        ubar(IstrR,j,1)=0.58
-!        ubar(IstrR+1,j,1)=0.58
-!        ubar(IstrR,j,2)=ubar(IstrR,j,1)
-!        ubar(IstrR+1,j,2)=ubar(IstrR+1,j,1)
-!        DO i=IstrR+2,IendR
         DO i=IR_RANGE
-          zeta(i,j,1)=0.04+xr(i,j)*(0.033-0.04)/xl
           zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
-!          write(*,*)'anainitial zeta:',i,j,zeta(i,j,1)
-!          zeta(i,j,1)=(0.033-0.04)/(IendR-IstrR)*i+0.04           
-!          write(*,*)'anainitial zeta:',i,j,zeta(i,j,1)
+# if defined key_ANA_bedload
+          zeta(i,j,1)=0.0337+xr(i,j)*(0.006-0.0337)/xl
+# endif
           zeta(i,j,2)=zeta(i,j,1)
-          ! dune
-          !V0 : ubar(i,j,1)=0.55*(1.+exp(-((xr(i,j)-0.5*xl)/10.0)**2))
-          ! rappel h(i,j)=depth*(1-0.5*exp(-cff*(xr(i,j)-0.5*xl)**2)) avec  cff=0.5*(1./10)**2
           cff=0.5*(1./10)**2
           if (i.gt.0) then
             ubar(i,j,1)=0.58/(1-
      &      0.5*exp(-cff*(  0.5*(xr(i,j)+xr(i-1,j)) -0.5*xl)**2))
-!          write(*,*)'anainitial ubar:',i,j,ubar(i,j,1)
-!            ubar(i,j,1)=0.58/(1-
-!     &      0.5*exp(-cff*(2.0*(i-25.0 ))**2))
-!          write(*,*)'anainitial ubar:',i,j,ubar(i,j,1)
+# if defined key_ANA_bedload
+           ubar(i,j,1)=1.667/(1.-
+     &         2./6.*exp(-0.01*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2 ))
+           ubar(-1,j,1)=1.667
+# endif
           else
             ubar(i,j,1)=0.58
+# if defined key_ANA_bedload
+            ubar(i,j,1)=1.667
+# endif
           endif 
-!          ubar(i,j,1)=0.58/(1.-exp(-0.5*(( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)/10.0)**2))
-          ! flat
-          !ubar(i,j,1)=0.6
           vbar(i,j,1)=0.
           ubar(i,j,2)=ubar(i,j,1)
           vbar(i,j,2)=vbar(i,j,1)

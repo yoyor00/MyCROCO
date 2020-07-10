@@ -27,6 +27,7 @@
 
       USE module_substance
 
+#include "ocean3d.h"
 
       end module module_MUSTANG
 #else

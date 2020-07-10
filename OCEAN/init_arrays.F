@@ -681,6 +681,15 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif /* SEDIMENT */
+
+# ifdef  MUSTANG && MORPHODYN_MUSTANG_byHYDRO
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          dh(i,j)=init
+        enddo
+      enddo
+# endif
+
 # ifdef BBL
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -695,7 +704,7 @@ C$    integer omp_get_thread_num
           Bvstrw(i,j)=init
           Bustrcwmax(i,j)=init
           Bvstrcwmax(i,j)=init
-# if defined MORPHODYN || defined MUSTANG_MORPHODYN_byHYDRO
+# if defined MORPHODYN 
           dh(i,j)=init
 #endif
         enddo
