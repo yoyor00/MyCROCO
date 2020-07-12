@@ -31,7 +31,7 @@
 #undef  JET             /* Baroclinic Jet Example */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  RIP             /* Rip Current Test Case */
-#define SANDBAR         /* Bar-generating Flume Example */
+#undef  SANDBAR         /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
 #undef  MOVING_BATHY    /* Moving Bathymetry Example */
@@ -42,7 +42,7 @@
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
 #undef  DUNE            /* Dune test case Example */
 #undef  CHANNEL         /* Channel test case */
-#undef  REGIONAL        /* REGIONAL Applications */
+#define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
