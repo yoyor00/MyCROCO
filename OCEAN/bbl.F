@@ -334,17 +334,17 @@
             tau_ex=max((tau_cws-tau_cb),0.)
             cff=(1./((rhosed-1.)*g*d50))
             znot_bl=17.4*d50*(cff*tau_ex)**0.75
-            znota = znots + znot_bl
+            znot_bl= znots + znot_bl
 !
 !---------------------------------------------------------------------
 !  Compute bedload stress for sediment purpose [m^2/s^2], 
 !  using grain + bedload roughness.
 !---------------------------------------------------------------------
 !
-            cff1=vonKar/LOG(Zr(i,j)/znota)
+            cff1=vonKar/LOG(Zr(i,j)/znot_bl)
             cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
             tau_c = cff2*Umag(i,j)*Umag(i,j)    
-            tau_w = scf1*((znota*Fwave)**scf2)*(Ub(i,j)**scf3)
+            tau_w = scf1*((znot_bl*Fwave)**scf2)*(Ub(i,j)**scf3)
             tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**1.5))
 #  ifdef SED_TAUCWMAX
             tau_cw = SQRT((tau_cw+tau_w*COS(phicw))**2 +
@@ -414,7 +414,7 @@
 !---------------------------------------------------------------------
 !
             znot_rip = 0.92*rhgt*rhgt/(max(rlen,rlmin))
-            znota = znota + znot_rip
+            znota = znot_bl + znot_rip
 
 #  endif /* Z0_RIP || Z0_BIO */
 !
@@ -424,7 +424,7 @@
 !
             znota = min(zomax,max(znota,Zob(i,j)))
 
-# endif /* Z0_BL */    
+# endif /* Z0_BL */
 !
 !---------------------------------------------------------------------
 ! Compute bottom stress components based on total roughness [m/s]^2
@@ -479,11 +479,11 @@
 !  Load variables for output purposes.
 !---------------------------------------------------------------------
 !
-          Abed(i,j)    = Ab              SWITCH rmask(i,j)
-          Hripple(i,j) = rhgt            SWITCH rmask(i,j)
-          Lripple(i,j) = rlen            SWITCH rmask(i,j)
-         Zbnot(i,j)    = znots           SWITCH rmask(i,j)
-         Zbapp(i,j)    = (znots+znot_bl) SWITCH rmask(i,j)
+          Abed(i,j)    = Ab            SWITCH rmask(i,j)
+          Hripple(i,j) = rhgt          SWITCH rmask(i,j)
+          Lripple(i,j) = rlen          SWITCH rmask(i,j)
+         Zbnot(i,j)    = znots         SWITCH rmask(i,j)
+         Zbapp(i,j)    = znota         SWITCH rmask(i,j)
 
        enddo
       enddo  ! end main loop

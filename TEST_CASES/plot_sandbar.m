@@ -88,6 +88,8 @@ zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w',2));
 zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
 zwu=0.5*(zw(:,1:end-1)+zw(:,2:end));
 dz1=zr(1,:)-zw(1,:);
+dzu1=zru(1,:)-zwu(1,:);
+dzu3=zru(3,:)-zwu(1,:);
 %
 xr2d=repmat(xr,[N 1]);
 xu2d=repmat(xu,[N 1]);
@@ -110,9 +112,7 @@ u=squeeze(nc{'u'}(tindex,:,yindex,:));
 w=squeeze(nc{'w'}(tindex,:,yindex,:));
 
 % ... sediment concentration ...                 ---> xr,zr
-Cbot=squeeze(nc{'sand_1'}(tindex0,1,yindex,:));
-Cbot=Cbot.*(dz1./0.01).^1.2; % fitting to Rouse profile
-Cbot=max(0.,Cbot);
+C=squeeze(nc{'sand_1'}(tindex0,:,yindex,:));
 
 % ... total viscosity
 Akv=squeeze(nc{'AKv'}(tindex,:,yindex,:));
@@ -121,11 +121,17 @@ Akv=squeeze(nc{'AKv'}(tindex,:,yindex,:));
 Akb=squeeze(nc{'Akb'}(tindex,:,yindex,:));
 
 % ... wave setup ...  
-sup=squeeze(nc{'zeta'}(tindex0,yindex,:)); % init time
+sup=squeeze(nc{'zeta'}(tindex0,yindex,:)); % mid exp time
 sup(hr<0)=sup(hr<0)+hr(hr<0)-Dcrit;
 
 % ... u undertow ...
-ubot =squeeze(nc{'u'}(tindex0,3,yindex,:)); % init time
+ubot =squeeze(nc{'u'}(tindex0,3,yindex,:)); % mid exp time; avoid streaming
+ubot=ubot.*log(dzu3/0.09);   % fitting to log law
+
+% ... sediment concentration ...                 ---> xr,zr
+Cbot=squeeze(nc{'sand_1'}(tindex0,1,yindex,:)); % mid exp time
+Cbot=Cbot.*(dz1./0.025).^1.5;  % fitting to Rouse profile
+Cbot=max(0.,Cbot);
 
 % ... hrms ...  
 hrms =squeeze(nc{'hrm'}(tindex0,yindex,:)); % init time
@@ -175,7 +181,6 @@ x_ubot_d1B= [65 102 130 138 145 152 160 170];
 
 x_Cbot_d1B= [65 102 130 138 145 152 160 170];
   Cbot_d1B= [0.3 0.2 0.9  3 1.9 0.8 0.9 0.9];
-
 % -----------
 
 x_hrms_d1C=[20  40  65 100 115 130 132 138 145 152 160 170]; % --- LIP-1C 7hr
@@ -303,4 +308,61 @@ end
 
 return
 %
+%==================================================
+
+if Expname=='1B',
+
+ i0=[20 31 39 42 44 46 48 51];
+ L=length(i0);
+
+ figure('position',[100 100 1000 300])
+ for i=1:L
+  ii=i0(i);
+  subplot(1,L,i)
+  plot(u(:,ii),zru(:,ii)-zru(1,ii)); axis([-0.4 0 0 2])
+  title(['x=',num2str(round(xu(ii)))])
+  xlabel('U(m/s)')
+  if i==1, ylabel('Depth(m)'); end
+  grid on
+ end
+ 
+ figure('position',[100 100 1000 300])
+ for i=1:L
+  ii=i0(i);
+  subplot(1,L,i)
+  plot(C(:,ii),zr(:,ii)-zr(1,ii)); axis([0 3 0 2])
+  title(['x=',num2str(round(xu(ii)))])
+  xlabel('C(m/s)')
+  if i==1, ylabel('Depth(m)'); end
+  grid on
+ end
+
+else
+
+ i0=[20 31 35 39 41 46 48];
+ L=length(i0);
+
+ figure('position',[100 100 1000 300])
+ for i=1:L
+  ii=i0(i);
+  subplot(1,L,i)
+  plot(u(:,ii),zru(:,ii)-zru(1,ii)); axis([-0.3 0 0 2])
+  title(['x=',num2str(round(xu(ii)))])
+  xlabel('U(m/s)')
+  if i==1, ylabel('Depth(m)'); end
+  grid on
+ end
+ 
+ figure('position',[100 100 1000 300])
+ for i=1:L
+  ii=i0(i);
+  subplot(1,L,i)
+  plot(C(:,ii),zr(:,ii)-zr(1,ii)); axis([0 1 0 2])
+  title(['x=',num2str(round(xu(ii)))])
+  xlabel('C(m/s)')
+  if i==1, ylabel('Depth(m)'); end
+  grid on
+ end
+
+end
 

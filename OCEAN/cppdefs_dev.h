@@ -678,14 +678,7 @@
 #endif
 
 #ifdef MRL_WCI
-/* Stokes drift */
-!# ifndef SANDBAR
-#  define STOKES_DRIFT
-!# endif
-/* Bottom streaming */
-# ifdef WAVE_STREAMING
-#  define WAVE_BODY_STREAMING
-# endif
+# define STOKES_DRIFT    /* Stokes drift */
 /* Default WCI is with input file data (WAVE_OFFLINE)  */
 # if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
 #  define WAVE_OFFLINE
@@ -937,7 +930,7 @@
 
    Set land mask value to _FillValue
 */ 
-#define  FILLVAL
+#undef  FILLVAL
 
 /* 
   Write start_date information in netCDF output

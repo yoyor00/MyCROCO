@@ -90,6 +90,7 @@
 # include "wkb_wwave.h"
 # include "forces.h"
 # ifdef BBL
+#  include "bbl.h"
 #  include "coupling.h"
 # endif
 # include "boundary.h"
@@ -191,10 +192,14 @@
 # endif
 # ifdef WAVE_FRICTION
       cfrc = 0.5/sqrt(pi)
-      if (Zobt.gt.0.) then                     ! default Zob for wave
-        do j=jstr-1,jend+1                     ! dissipation or streaming
+      if (Zobt.gt.0.) then          ! roughness used for wave
+        do j=jstr-1,jend+1          ! dissipation or streaming
           do i=istr-1,iend+1      
+#  ifdef BBL
+            Zob_my(i,j)=Zbapp(i,j)
+#  else
             Zob_my(i,j)=Zob(i,j)
+#  endif
           enddo
         enddo                         
       else

@@ -87,12 +87,15 @@
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
+# ifdef BBL
+#  include "bbl.h"
+# endif
       integer istr,iend,jstr,jend,i,j,imin,jmin 
       real    cff,cff1,cff2,cff3,cff4,inv_g,khd,kh,umag,
      &   eps,wave_ramp,wramp2,kbrk,fb,fb0,fb1,fb2,inv_fbs,
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
-     &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,
+     &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
      &   a_frc,kfrc,Hrms,urms,fw,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
@@ -119,13 +122,13 @@
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
 # endif
       parameter ( eps=1.e-10, 
-     &            bconst=0.03D0,              ! breaking contribution to KPP
-     &            a_kv=1.2D0,                 ! breaking scale for eddy visc.
-     &            a_brk=0.2D0,                ! breaking scale for body force
-     &            a_frc=3.D0,                 ! friction scale for body force
-     &            khmax=20.D0,                ! deep-water limit for k x dep
-     &            c1o3=0.3333333333333333,    ! 1/3
-     &            c4o3=1.3333333333333333     ! 4/3
+     &            bconst=0.03,              ! breaking contribution to KPP
+     &            a_kv=1.2,                 ! breaking scale for eddy visc.
+     &            a_brk=0.2,                ! breaking scale for body force
+     &            a_frc=3.,                 ! friction scale for body force
+     &            khmax=20.,                ! deep-water limit for k*H
+     &            c1o3=0.3333333333333333,  ! 1/3
+     &            c4o3=1.3333333333333333   ! 4/3
      &           )
 !
 # ifndef WKB_WWAVE
@@ -145,13 +148,28 @@
       if (Zobt.gt.0.) then                     ! default Zob for wave
         do j=jstr-1,jend+1                     ! dissipation or streaming
           do i=istr-1,iend+1      
+#  ifdef BBL
+            Zob_my(i,j)=Zbapp(i,j)
+#  else
             Zob_my(i,j)=Zob(i,j)
+#  endif
           enddo
         enddo                         
       else
         Zob_my=1.e-3
       endif
 #  define Zob Zob_my
+# endif
+
+# ifdef MASKING
+#  define SWITCH *
+# else
+#  define SWITCH !
+# endif
+# ifdef WET_DRY
+#  define SWITCH_WET *
+# else
+#  define SWITCH_WET !
 # endif
 
 ! explicit wavenumber estimator
@@ -172,12 +190,6 @@
 # undef  FB_FUNC2
 # define FB_FUNC3
 # undef  FB_WSCALE
-
-! vertical distribution function F_B(z) for bottom streaming
-
-# undef  FF_FUNC1
-# undef  FF_FUNC2
-# define FF_FUNC3
 
 ! initial ramping coefficients
 
@@ -319,9 +331,9 @@
           frc(i,j)=wramp2*wepd(i,j)*kw(i,j)
      &                             *inv_f(i,j)      ! 2DH friction term
 #  elif defined WAVE_FRICTION
-          abot=wh(i,j)/max(2.D0*sinh(min(kD(i,j),khmax)),eps)
+          abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
-          fw=1.39*(Zob(i,j)/max(abot,eps))**0.52         ! Soulsby (1995)
+          fw=1.39*(Zob(i,j)/max(abot,eps))**0.52    ! Soulsby (1995)
           cff=0.5/sqrt(pi)*fw*urms**3               ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
@@ -380,12 +392,8 @@
         do i=istrR,iendR
           sup(i,j)=-0.125*(wh(i,j)**2)*kw(i,j)
      &              /max(sinh(2.*min(kD(i,j),khmax)),eps)
-#  ifdef MASKING
-     &                                        *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                                        *rmask_wet(i,j)
-#  endif
+     &                                  SWITCH rmask(i,j)
+     &                                  SWITCH_WET rmask_wet(i,j)
         enddo
       enddo
 !
@@ -612,12 +620,8 @@
           actp =0.125*g*(wh(i,j)**2)/max(fr(i,j),eps)
           calP(i,j) = actp*inv_g*tanh(kD(i,j))
      &                    *( cff1+cff2+cff3+cff4 )
-#  ifdef MASKING
-     &                                 *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                                 *rmask_wet(i,j)
-#  endif
+     &                            SWITCH rmask(i,j)
+     &                            SWITCH_WET rmask_wet(i,j)
           cff=0.0
           do k=1,N
             cff = cff +  d2kv(k)*
@@ -631,12 +635,8 @@
 #  else
           Kapsrf(i,j) = cff*actp*inv_ex(i,j)
 #  endif
-#  ifdef MASKING
-     &                           *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                           *rmask_wet(i,j)
-#  endif
+     &                            SWITCH rmask(i,j)
+     &                            SWITCH_WET rmask_wet(i,j)
         enddo
       enddo      ! <-- discard kv, dkvdz, d2kv, & inv_ex
 #  undef kv
@@ -691,12 +691,8 @@
         do j=jmin,jend               ! copy into a shared array
           do i=imin,iend
             kvf(i,j,k)=0.5*( kvr(i,j,k)+kvr(i,j,k-1) )
-#   ifdef MASKING
-     &                                     *rmask(i,j)
-#   endif
-#   ifdef WET_DRY
-     &                                     *rmask_wet(i,j)
-#   endif
+     &                            SWITCH rmask(i,j)
+     &                            SWITCH_WET rmask_wet(i,j)
           enddo
         enddo
       enddo           ! <-- discard ust_r, kvfx, kvfy, kvr
@@ -736,12 +732,8 @@
      &                   -exp(-kw(i,j)*(z_w(i,j,k)+h(i,j)+Dstp(i,j))) )
             cff3 = cff2**2
             Akw(i,j,k) = cff*(cff3-E_pre(i,j,k))
-#  ifdef MASKING
-     &                               *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                               *rmask_wet(i,j)
-#  endif
+     &                            SWITCH rmask(i,j)
+     &                            SWITCH_WET rmask_wet(i,j)
             E_pre(i,j,k) = cff3   ! store this for the next time step.
           enddo
         enddo
@@ -760,12 +752,8 @@
             cff2 = cff1*( exp( kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
      &                   -exp(-kw(i,j)*(z_w(i,j,k)+h(i,j)+Dstp(i,j))) )
             Akw(i,j,k) = 0.1*kw(i,j)*fr(i,j)*cff2**3
-#  ifdef MASKING
-     &                               *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
-     &                               *rmask_wet(i,j)
-#  endif
+     &                            SWITCH rmask(i,j)
+     &                            SWITCH_WET rmask_wet(i,j)
           enddo
         enddo
       enddo
@@ -972,12 +960,8 @@
           do i=istr,iendR
             brk3dx(i,j,k)=0.5*( brk_r(i-1,j,k)*wdrx(i-1,j)
      &                         +brk_r(i  ,j,k)*wdrx(i  ,j) )
-#   ifdef MASKING
-     &                                         *umask(i,j)
-#   endif
-#   ifdef WET_DRY
-     &                                         *umask_wet(i,j)
-#   endif
+     &                            SWITCH umask(i,j)
+     &                            SWITCH_WET umask_wet(i,j)
           enddo
         enddo
 
@@ -985,12 +969,8 @@
           do i=istrR,iendR
             brk3de(i,j,k)=0.5*( brk_r(i,j-1,k)*wdre(i,j-1)
      &                         +brk_r(i,j  ,k)*wdre(i,j  ) )
-#   ifdef MASKING
-     &                                         *vmask(i,j)
-#   endif
-#   ifdef WET_DRY
-     &                                         *vmask_wet(i,j)
-#   endif
+     &                            SWITCH vmask(i,j)
+     &                            SWITCH_WET vmask_wet(i,j)
           enddo
         enddo
       enddo       ! <-- discard brk_r, but keep ust_r
@@ -1001,139 +981,66 @@
 !
 ! 3D bottom streaming acceleration term defined as a body force.
 ! ==============================================================
+! The effect of bottom streaming in momentum balance is accounted for 
+! by using wave dissipation due to bottom friction frc_r (depending
+! on bed roughness) with an upward decaying vertical distribution fb:
 !
-!  Convert wave-induced bottom streaming as a grid-averaged body
-!  force. Similarly to the breaking acceleration, we can invoke one
-!  of the following three kernal functions:
+!   fb ~ cosh(kfrc*(zeta-z)) (normalized so that integral is 1)
 !
-!   FUNC1: fb~1-tanh(kf(h+z))^4 : Warner et al (2008)
-!   FUNC2: fb~1-tanh(kf(h+z))^2 : modified from the above
-!   FUNC3: fb~cosh(kf(zeta-z))  : analogous to primary wave
-!
-!  Notice that for now the z-coordinate is inverted, and thus defined
-!  from the bottom.  The length scale, k_wd^-1, is referenced to the
-!  turbulent wave bottom boundary layer thickness, delta, which is
-!  evaluated by Eq (2.45) in Fredsoe & Deigaard (Mechanics of Caostal
-!  Sediment Transport, 1992, p.25).  There is also another option to
-!  identify the laminar bottom streaming by Longuet-Higgins (1953),
-!  which is required to reproduce Xu & Bowen (1994) and Lentz et al.
-!  (2008).
+! kfrc is the inverse of decaying scale varying with the wave boundary
+! layer thickness, estimated based on bed roughness.
 !
 #  ifdef WAVE_STREAMING
-#   define LH53_STREAMING
-#   ifdef WAVE_BODY_STREAMING
-#    undef LH53_STREAMING
-#   endif
 #   define frc_r wrk3
 #   define frc2d stk
+!
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
-#   ifndef LH53_STREAMING /* turbulent cases */
-          abot  =wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
-          delta =0.160455*((abot/Zob(i,j))**0.83)*Zob(i,j)  ! BBL thickness
-          inv_k =min(max(a_frc*delta,eps),Dstp(i,j))
-          kfrc  =1./inv_k          ! vertical scale for wave friction
-#    ifdef FF_FUNC1
-          fn1   =3.*(exp(-2.*kfrc*Dstp(i,j))+exp(-4.*kfrc*Dstp(i,j)))
-          fn2   =exp(-6.*kfrc*Dstp(i,j))
-          fb1   =c4o3*inv_k        ! fb1: at z=-h (z_w at k=0)
-          fb2   =c4o3*inv_k*(fn1+2.*fn2)/(1.+fn1+fn2)
-          intfb =fb2-fb1           ! intfb = \int^D gb(z') dz'
-          fb0   =1./intfb          ! 1/[\int^D gb(z') dz']
-#    elif defined FF_FUNC2
-          fn1   =exp(-2.*kfrc*Dstp(i,j))
-          fb1   =inv_k
-          fb2   =2.*inv_k*fn1/(1.+fn1)
-          intfb =fb2-fb1
-          fb0   =1./intfb
-#    elif defined FF_FUNC3
-          fb1   =1.-exp(-2.*kfrc*Dstp(i,j))
-          fb0   =1./(exp(-2.*kfrc*Dstp(i,j))-1.0)
-#    endif
-          do k=1,N,+1              ! <-- irreversible
-#    ifdef FF_FUNC1
-            dd  =h(i,j)+z_w(i,j,k)
-            fn1 =3.*(exp(-2.*kfrc*dd)+exp(-4.*kfrc*dd))
-            fn2 =exp(-6.*kfrc*dd)
-            fb2 =c4o3*inv_k*(fn1+2.*fn2)/(1.+fn1+fn2)
-#    elif defined FF_FUNC2
-            fn1 =exp(-2.*kfrc*(h(i,j)+z_w(i,j,k)))
-            fb2 =2.*inv_k*fn1/(1.+fn1)
-#    elif defined FF_FUNC3
-            fb2 =exp( kfrc*(z_w(i,j,N)-z_w(i,j,k)-Dstp(i,j)))
-     &          -exp(-kfrc*(z_w(i,j,N)-z_w(i,j,k)+Dstp(i,j)))
-#    endif
-            fb =fb0*inv_dz(i,j,k)*(fb2-fb1)
-            frc_r(i,j,k) = fb*frc(i,j)
-            fb1=fb2
+          ks=30.*Zob(i,j)
+          abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
+          delta=0.09*ks*(abot/ks)**0.82                ! WBL thickness
+          kfrc=1./min(max(a_frc*delta,eps),Dstp(i,j))  ! friction scale
+          frc2d(i,j)=0.
+          intfb=0.
+          do k=1,N
+            cff=(z_r(i,j,N)-z_r(i,j,k))/Dstp(i,j)
+            intfb=intfb+Hz(i,j,k)*COSH(kfrc*cff)
           enddo
-#   else  /* LH53_STREAMING (laminar streaming) */
-          frc2d(i,j)=0.0
-          beta=sqrt(fr(i,j)/(Akv(i,j,0)+Akv(i,j,1)))
-          cff =wramp2*(wh(i,j)**2)*(fr(i,j)**2)*kw(i,j)
-     &         /max(16.0*(sinh(min(kD(i,j),khmax))**2)*beta,eps)
-          bz1 =beta*(h(i,j)+z_w(i,j,0))
-          cff1=2.*exp(-bz1)*(bz1*sin(bz1)+cos(bz1))-1.-exp(-2.*bz1)
-          cff3=1.D0 !min(1.0, pi/beta/Hz(i,j,1)) ! <-- unresolved viscous layer
-          do k=1,N,+1              ! <-- irreversible
-            bz2 =beta*(h(i,j)+z_w(i,j,k))
-            cff2=2.*exp(-bz2)*(bz2*sin(bz2)+cos(bz2))-1.-exp(-2.*bz2)
-            frc_r(i,j,k)=-cff*(cff2-cff1)*inv_dz(i,j,k)*cff3
-            cff1=cff2
-            cff3=1.0
-            frc2d(i,j) = frc2d(i,j) + frc_r(i,j,k)*Hz(i,j,k)
+          do k=1,N
+            cff=(z_r(i,j,N)-z_r(i,j,k))/Dstp(i,j)
+            fb=COSH(kfrc*cff)/intfb
+            frc_r(i,j,k)=fb*frc(i,j)
+            frc2d(i,j)=frc2d(i,j) + frc_r(i,j,k)*Hz(i,j,k)
           enddo
-#   endif  /* !LH53_STREAMING */
         enddo
       enddo
+!
       do j=jstrR,jendR
         do i=istr,iendR
-#   ifdef LH53_STREAMING
           frc2dx(i,j)=0.5*( frc2d(i-1,j)*wdrx(i-1,j)
      &                     +frc2d(i  ,j)*wdrx(i  ,j) )
-#    ifdef MASKING
-     &                                   *umask(i,j)
-#    endif
-#    ifdef WET_DRY
-     &                                   *umask_wet(i,j)
-#    endif
-#   else
+     &                            SWITCH umask(i,j)
+     &                            SWITCH_WET umask_wet(i,j)
           do k=1,N
             frc3dx(i,j,k)=0.5*( frc_r(i-1,j,k)*wdrx(i-1,j)
      &                         +frc_r(i  ,j,k)*wdrx(i  ,j) )
-#    ifdef MASKING
-     &                                         *umask(i,j)
-#    endif
-#    ifdef WET_DRY
-     &                                         *umask_wet(i,j)
-#    endif
+     &                            SWITCH umask(i,j)
+     &                            SWITCH_WET umask_wet(i,j)
           enddo
-#   endif
         enddo
       enddo
       do j=jstr,jendR
         do i=istrR,iendR
-#   ifdef LH53_STREAMING
           frc2de(i,j)=0.5*( frc2d(i,j-1)*wdre(i,j-1)
      &                     +frc2d(i,j  )*wdre(i,j  ) )
-#    ifdef MASKING
-     &                                   *vmask(i,j)
-#    endif
-#    ifdef WET_DRY
-     &                                   *vmask_wet(i,j)
-#    endif
-#   else
+     &                            SWITCH vmask(i,j)
+     &                            SWITCH_WET vmask_wet(i,j)
           do k=1,N
             frc3de(i,j,k)=0.5*( frc_r(i,j-1,k)*wdre(i,j-1)
      &                         +frc_r(i,j  ,k)*wdre(i,j  ) )
-#    ifdef MASKING
-     &                                         *vmask(i,j)
-#    endif
-#    ifdef WET_DRY
-     &                                         *vmask_wet(i,j)
-#    endif
+     &                            SWITCH vmask(i,j)
+     &                            SWITCH_WET vmask_wet(i,j)
           enddo
-#   endif
         enddo
       enddo       ! <-- discard frc_r, frc2d
 #   undef frc_r
@@ -1147,7 +1054,6 @@
                         || defined WAVE_STREAMING
 #   undef Zob
 # endif
-
 !
 ! Open boundary condition (valid only for idealized situations)
 ! =============================================================
@@ -1234,7 +1140,7 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       call exchange_u3d_tile (istr,iend,jstr,jend,brk3dx)
       call exchange_v3d_tile (istr,iend,jstr,jend,brk3de)
 #   endif
-#   if defined WAVE_STREAMING  && defined WAVE_BODY_STREAMING
+#   ifdef WAVE_STREAMING
       call exchange_u3d_tile (istr,iend,jstr,jend,frc3dx)
       call exchange_v3d_tile (istr,iend,jstr,jend,frc3de)
 #   endif

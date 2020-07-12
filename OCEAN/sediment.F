@@ -27,7 +27,9 @@
 # ifndef BBL
 #  define BSTRESS_UPWIND
 # endif
-# undef  BEDLOAD_UP1
+# ifndef SANDBAR
+#  define BEDLOAD_UP1
+# endif
 # undef  BEDLOAD_SLUMP
 # define BEDLOAD_SHALLOW_LIMIT
 !
@@ -521,9 +523,13 @@ C$OMP BARRIER
 # ifdef BEDLOAD_VANDERA_ZEROCURR
             udelta_wbl=0.
 # else
-            thck_wbl=0.1
-            !thck_wbl=5.*sqrt(2.72e-6*Td/twopi)
-            ksd_wbl=Zbapp(i,j)
+#  ifdef BBL
+            ksd_wbl=30.*Zbapp(i,j)
+#  else
+            ksd_wbl=30.*Zob(i,j)
+#  endif
+            thck_wbl =0.09*ksd_wbl*(ahat/ksd_wbl)**0.82
+            !thck_wbl=0.1
             ustrc_wbl=sqrt(mag_bstrc)
             cff1=MAX(MIN(0.9*depth, thck_wbl), 1.1*ksd_wbl)
             cff2=LOG(cff1/ksd_wbl)
@@ -3601,6 +3607,7 @@ C$OMP BARRIER
 !
       RETURN
       END
+
 ! 
 !======================================================================
 !
@@ -3608,22 +3615,37 @@ C$OMP BARRIER
 !
 ! Calculate wave number from Wave period and depth 
 !
-! Soulsby (2006) "Simplified calculation of wave orbital velocities"
-! Wallingford Report TR 155, February 2006
+!#  define KH_HUNT
 !
       implicit none
 #  include "param.h"
 #  include "scalars.h"
       real kh_calc
       real Td, depth
-      real cff
-      real x, y, t, omega
+      real omega, Khd
+      real cff, x, y, t
+#  ifdef KH_HUNT
+      real K1, K2, K3, K4, K5, K6
+      parameter (K1=0.6666666666, K2=0.3555555555,
+     &           K3=0.1608465608, K4=0.0632098765,
+     &           K5=0.0217540484, K6=0.0065407983)
+#  endif
 !
       omega=2.*pi/Td
 !
-! depth (i.e.x) cannot go negative to avoid negative wave number
+#  ifdef KH_HUNT
 !
-      IF(depth.lt.0.) THEN 
+! Hunt (1979) "Direct solutions of wave dispersion equation"
+!
+      Khd=depth*omega*omega/g
+      kh_calc= SQRT( Khd*Khd+
+     &         Khd/(1.+Khd*(K1+Khd*(K2+Khd*(K3+Khd*(K4+
+     &         Khd*(K5+K6*Khd)))))) )
+#  else
+!
+! Soulsby (2006) "Simplified calculation of wave orbital velocities"
+!
+      IF(depth.lt.0.) THEN  ! avoid negative wavenumber
         x=0.
       ELSE 
         x=omega**2.*depth/g
@@ -3634,10 +3656,11 @@ C$OMP BARRIER
       ELSE
         y=x
       ENDIF
-!
-! Iteratively solving 3 times for eqn.7 of Soulsby 1997 by using 
-! eqns. (12a-14)
 !      
+      t=TANH(y)   ! Iteratively solving 3 times (Soulsby 1997)
+      cff=(y*t-x)/(t+y*(1.-t*t))
+      y=y-cff
+!
       t=TANH(y)
       cff=(y*t-x)/(t+y*(1.-t*t))
       y=y-cff
@@ -3645,10 +3668,9 @@ C$OMP BARRIER
       t=TANH(y)
       cff=(y*t-x)/(t+y*(1.-t*t))
       y=y-cff
-      t=TANH(y)
-      cff=(y*t-x)/(t+y*(1.-t*t))
-      y=y-cff
+!
       kh_calc=y
+#  endif /* KH_HUNT */
 !
       RETURN
       END
