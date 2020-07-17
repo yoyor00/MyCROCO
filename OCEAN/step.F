@@ -834,6 +834,7 @@ C$OMP BARRIER
         call set_depth (tile)
       enddo
 # endif
+C$OMP BARRIER
 
       do tile=my_first,my_last
         call set_HUV2 (tile)
