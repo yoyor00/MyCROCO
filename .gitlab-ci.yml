@@ -6,7 +6,7 @@ variables:
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
-  CROCO_CI_MPIRUN: "mpirun.mpich"
+  CROCO_CI_MPIRUN: "mpirun.openmpi"
   
   
 before_script:
@@ -24,7 +24,6 @@ ana_run:
     - cd -	
     - cd $CVTKWORK/KTEST
    
-#    - exec ./mk_TestDIR_ana.bash UPWELLING
     - ./mk_TESTALL.bash CONFIGURE_ANA ana
     - ./gather_recap.bash KTEST > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
@@ -36,23 +35,23 @@ ana_run:
       - $CVTKWORK/ftp
     when: always
 
-#vort_run:
-#  script:
-#    - cd $CVTKHOME/Scripts_vort
-#    - ./create_link_master_vort.sh
-#    - cd -
-#    - cd $CVTKWORK/VORT
+vort_run:
+  script:
+    - cd $CVTKHOME/Scripts_vort
+    - ./create_link_master_vort.sh
+    - cd -
+    - cd $CVTKWORK/VORT
     
-#    - ./mk_TESTALL.bash CONFIGURE_VORT vort
-#    - ./gather_recap.bash VORT > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
+    - ./mk_TESTALL.bash CONFIGURE_VORT vort
+    - ./gather_recap.bash VORT > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
 
-#  artifacts:
-#    paths:
-#      - $CVTKWORK/ftp
-#    when: always
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+    when: always
     
 reg_run:
   only:
