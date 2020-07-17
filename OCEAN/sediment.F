@@ -1215,7 +1215,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zob(i,j))
+          Ssize(i,j)=cff2
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo
@@ -1261,18 +1261,10 @@ C$OMP BARRIER
 # endif
 # if !defined EW_PERIODIC && !defined NS_PERIODIC
       if (SOUTHERN_EDGE.and.WESTERN_EDGE) then
-        taucb(Istr-1,Jstr-1)=
-     &  0.5*(taucb(Istr,Jstr-1)
-     &      +taucb(Istr-1,Jstr))
-        Ssize(Istr-1,Jstr-1)=
-     &  0.5*(Ssize(Istr,Jstr-1)
-     &      +Ssize(Istr-1,Jstr))
-        w_set(Istr-1,Jstr-1)=
-     &  0.5*(w_set(Istr,Jstr-1)
-     &      +w_set(Istr-1,Jstr))
-        Sdens(Istr-1,Jstr-1)=
-     &  0.5*(Sdens(Istr,Jstr-1)
-     &      +Sdens(Istr-1,Jstr))
+        taucb(Istr-1,Jstr-1)=0.5*(taucb(Istr,Jstr-1)+taucb(Istr-1,Jstr))
+        Ssize(Istr-1,Jstr-1)=0.5*(Ssize(Istr,Jstr-1)+Ssize(Istr-1,Jstr))
+        w_set(Istr-1,Jstr-1)=0.5*(w_set(Istr,Jstr-1)+w_set(Istr-1,Jstr))
+        Sdens(Istr-1,Jstr-1)=0.5*(Sdens(Istr,Jstr-1)+Sdens(Istr-1,Jstr))
       endif
       if (SOUTHERN_EDGE.and.EASTERN_EDGE) then
         taucb(Iend+1,Jstr-1)=
@@ -2560,7 +2552,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zob(i,j))
+          Ssize(i,j)=cff2
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo

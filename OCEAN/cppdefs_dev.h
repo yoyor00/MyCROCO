@@ -793,7 +793,7 @@
 #   undef  BEDLOAD_SOULSBY
 #   define BEDLOAD_VANDERA
 #   define Z0_BL
-#   undef  Z0_RIP
+#   define Z0_RIP
 #   define SLOPE_LESSER
 #  else
 #   define BEDLOAD_MPM

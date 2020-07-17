@@ -12,10 +12,10 @@ ROMS - Sediment - Test
       0.4 0.4
 
 5 Hrip             
-       0.01 
+       0.02 
 
 6 Lrip
-       0.1
+       0.16
 
 7 bedload_coeff 
        1. 
