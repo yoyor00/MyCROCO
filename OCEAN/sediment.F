@@ -1267,46 +1267,22 @@ C$OMP BARRIER
         Sdens(Istr-1,Jstr-1)=0.5*(Sdens(Istr,Jstr-1)+Sdens(Istr-1,Jstr))
       endif
       if (SOUTHERN_EDGE.and.EASTERN_EDGE) then
-        taucb(Iend+1,Jstr-1)=
-     &  0.5*(taucb(Iend,Jstr-1)
-     &      +taucb(Iend+1,Jstr))
-        Ssize(Iend+1,Jstr-1)=
-     &  0.5*(Ssize(Iend,Jstr-1)
-     &      +Ssize(Iend+1,Jstr))
-        w_set(Iend+1,Jstr-1)=
-     &  0.5*(w_set(Iend,Jstr-1)
-     &      +w_set(Iend+1,Jstr))
-        Sdens(Iend+1,Jstr-1)=
-     &  0.5*(Sdens(Iend,Jstr-1)
-     &      +Sdens(Iend+1,Jstr))
+        taucb(Iend+1,Jstr-1)=0.5*(taucb(Iend,Jstr-1)+taucb(Iend+1,Jstr))
+        Ssize(Iend+1,Jstr-1)=0.5*(Ssize(Iend,Jstr-1)+Ssize(Iend+1,Jstr))
+        w_set(Iend+1,Jstr-1)=0.5*(w_set(Iend,Jstr-1)+w_set(Iend+1,Jstr))
+        Sdens(Iend+1,Jstr-1)=0.5*(Sdens(Iend,Jstr-1)+Sdens(Iend+1,Jstr))
       endif
       if (NORTHERN_EDGE.and.WESTERN_EDGE) then
-        taucb(Istr-1,Jend+1)=
-     &  0.5*(taucb(Istr,Jend+1)
-     &      +taucb(Istr-1,Jend))
-        Ssize(Istr-1,Jend+1)=
-     &  0.5*(Ssize(Istr,Jend+1)
-     &      +Ssize(Istr-1,Jend))
-        w_set(Istr-1,Jend+1)=
-     &  0.5*(w_set(Istr,Jend+1)
-     &      +w_set(Istr-1,Jend))
-        Sdens(Istr-1,Jend+1)=
-     &  0.5*(Sdens(Istr,Jend+1)
-     &      +Sdens(Istr-1,Jend))
+        taucb(Istr-1,Jend+1)=0.5*(taucb(Istr,Jend+1)+taucb(Istr-1,Jend))
+        Ssize(Istr-1,Jend+1)=0.5*(Ssize(Istr,Jend+1)+Ssize(Istr-1,Jend))
+        w_set(Istr-1,Jend+1)=0.5*(w_set(Istr,Jend+1)+w_set(Istr-1,Jend))
+        Sdens(Istr-1,Jend+1)=0.5*(Sdens(Istr,Jend+1)+Sdens(Istr-1,Jend))
       endif
       if (NORTHERN_EDGE.and.EASTERN_EDGE) then
-        taucb(Iend+1,Jend+1)=
-     &   0.5*(taucb(Iend,Jend+1)
-     &       +taucb(Iend+1,Jend))
-        Ssize(Iend+1,Jend+1)=
-     &   0.5*(Ssize(Iend,Jend+1)
-     &       +Ssize(Iend+1,Jend))
-        w_set(Iend+1,Jend+1)=
-     &   0.5*(w_set(Iend,Jend+1)
-     &       +w_set(Iend+1,Jend))
-        Sdens(Iend+1,Jend+1)=
-     &   0.5*(Sdens(Iend,Jend+1)
-     &       +Sdens(Iend+1,Jend))
+        taucb(Iend+1,Jend+1)=0.5*(taucb(Iend,Jend+1)+taucb(Iend+1,Jend))
+        Ssize(Iend+1,Jend+1)=0.5*(Ssize(Iend,Jend+1)+Ssize(Iend+1,Jend))
+        w_set(Iend+1,Jend+1)=0.5*(w_set(Iend,Jend+1)+w_set(Iend+1,Jend))
+        Sdens(Iend+1,Jend+1)=0.5*(Sdens(Iend,Jend+1)+Sdens(Iend+1,Jend))
       endif
 # endif
 
@@ -1487,7 +1463,7 @@ C$OMP BARRIER
 #  ifndef BBL
 #   include "forces.h"
 #  endif
-   
+!
       integer Istr,Iend,Jstr,Jend
       real Hz_inv(PRIVATE_1D_SCRATCH_ARRAY,N),  
      &    Hz_inv2(PRIVATE_1D_SCRATCH_ARRAY,N), 
@@ -1807,7 +1783,6 @@ C$OMP BARRIER
           enddo  ! i loop
         enddo    ! ised loop 
       enddo      ! j loop 
-
 !
 !  Exchange for output purpose
 !
@@ -2598,63 +2573,30 @@ C$OMP BARRIER
 # endif
 # if !defined EW_PERIODIC && !defined NS_PERIODIC
       if (SOUTHERN_EDGE.and.WESTERN_EDGE) then
-        taucb(Istr-1,Jstr-1)=
-     &  0.5*(taucb(Istr,Jstr-1)
-     &      +taucb(Istr-1,Jstr))
-        Ssize(Istr-1,Jstr-1)=
-     &  0.5*(Ssize(Istr,Jstr-1)
-     &      +Ssize(Istr-1,Jstr))
-        w_set(Istr-1,Jstr-1)=
-     &  0.5*(w_set(Istr,Jstr-1)
-     &      +w_set(Istr-1,Jstr))
-        Sdens(Istr-1,Jstr-1)=
-     &  0.5*(Sdens(Istr,Jstr-1)
-     &      +Sdens(Istr-1,Jstr))
+        taucb(Istr-1,Jstr-1)=0.5*(taucb(Istr,Jstr-1)+taucb(Istr-1,Jstr))
+        Ssize(Istr-1,Jstr-1)=0.5*(Ssize(Istr,Jstr-1)+Ssize(Istr-1,Jstr))
+        w_set(Istr-1,Jstr-1)=0.5*(w_set(Istr,Jstr-1)+w_set(Istr-1,Jstr))
+        Sdens(Istr-1,Jstr-1)=0.5*(Sdens(Istr,Jstr-1)+Sdens(Istr-1,Jstr))
       endif
       if (SOUTHERN_EDGE.and.EASTERN_EDGE) then
-        taucb(Iend+1,Jstr-1)=
-     &  0.5*(taucb(Iend,Jstr-1)
-     &      +taucb(Iend+1,Jstr))
-        Ssize(Iend+1,Jstr-1)=
-     &  0.5*(Ssize(Iend,Jstr-1)
-     &      +Ssize(Iend+1,Jstr))
-        w_set(Iend+1,Jstr-1)=
-     &  0.5*(w_set(Iend,Jstr-1)
-     &      +w_set(Iend+1,Jstr))
-        Sdens(Iend+1,Jstr-1)=
-     &  0.5*(Sdens(Iend,Jstr-1)
-     &      +Sdens(Iend+1,Jstr))
+        taucb(Iend+1,Jstr-1)=0.5*(taucb(Iend,Jstr-1)+taucb(Iend+1,Jstr))
+        Ssize(Iend+1,Jstr-1)=0.5*(Ssize(Iend,Jstr-1)+Ssize(Iend+1,Jstr))
+        w_set(Iend+1,Jstr-1)=0.5*(w_set(Iend,Jstr-1)+w_set(Iend+1,Jstr))
+        Sdens(Iend+1,Jstr-1)=0.5*(Sdens(Iend,Jstr-1)+Sdens(Iend+1,Jstr))
       endif
       if (NORTHERN_EDGE.and.WESTERN_EDGE) then
-        taucb(Istr-1,Jend+1)=
-     &  0.5*(taucb(Istr,Jend+1)
-     &      +taucb(Istr-1,Jend))
-        Ssize(Istr-1,Jend+1)=
-     &  0.5*(Ssize(Istr,Jend+1)
-     &      +Ssize(Istr-1,Jend))
-        w_set(Istr-1,Jend+1)=
-     &  0.5*(w_set(Istr,Jend+1)
-     &      +w_set(Istr-1,Jend))
-        Sdens(Istr-1,Jend+1)=
-     &  0.5*(Sdens(Istr,Jend+1)
-     &      +Sdens(Istr-1,Jend))
+        taucb(Istr-1,Jend+1)=0.5*(taucb(Istr,Jend+1)+taucb(Istr-1,Jend))
+        Ssize(Istr-1,Jend+1)=0.5*(Ssize(Istr,Jend+1)+Ssize(Istr-1,Jend))
+        w_set(Istr-1,Jend+1)=0.5*(w_set(Istr,Jend+1)+w_set(Istr-1,Jend))
+        Sdens(Istr-1,Jend+1)=0.5*(Sdens(Istr,Jend+1)+Sdens(Istr-1,Jend))
       endif
       if (NORTHERN_EDGE.and.EASTERN_EDGE) then
-        taucb(Iend+1,Jend+1)=
-     &   0.5*(taucb(Iend,Jend+1)
-     &       +taucb(Iend+1,Jend))
-        Ssize(Iend+1,Jend+1)=
-     &   0.5*(Ssize(Iend,Jend+1)
-     &       +Ssize(Iend+1,Jend))
-        w_set(Iend+1,Jend+1)=
-     &   0.5*(w_set(Iend,Jend+1)
-     &       +w_set(Iend+1,Jend))
-        Sdens(Iend+1,Jend+1)=
-     &   0.5*(Sdens(Iend,Jend+1)
-     &       +Sdens(Iend+1,Jend))
+        taucb(Iend+1,Jend+1)=0.5*(taucb(Iend,Jend+1)+taucb(Iend+1,Jend))
+        Ssize(Iend+1,Jend+1)=0.5*(Ssize(Iend,Jend+1)+Ssize(Iend+1,Jend))
+        w_set(Iend+1,Jend+1)=0.5*(w_set(Iend,Jend+1)+w_set(Iend+1,Jend))
+        Sdens(Iend+1,Jend+1)=0.5*(Sdens(Iend,Jend+1)+Sdens(Iend+1,Jend))
       endif
 # endif
-
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
