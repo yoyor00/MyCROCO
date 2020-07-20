@@ -682,7 +682,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* SEDIMENT */
 
-# ifdef  MUSTANG && MORPHODYN_MUSTANG_byHYDRO
+# if defined  MUSTANG && defined MORPHODYN_MUSTANG_byHYDRO
       do j=JstrR,JendR
         do i=IstrR,IendR
           dh(i,j)=init
