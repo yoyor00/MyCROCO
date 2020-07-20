@@ -549,9 +549,16 @@ C$OMP END MASTER
 ! Compute wet/dry masks
 !-----------------------------------------------------------------------
 !
+
 #ifdef WET_DRY
       call wetdry_tile (Istr,Iend,Jstr,Jend)
+!RB this barrier seems to have a benefic effect
+! in some cases with wetdry but not sure it is
+! the proper fix      
+C$OMP BARRIER
 #endif
+
+
 !
 !-----------------------------------------------------------------------
 ! Set boundary conditions for the free-surface
