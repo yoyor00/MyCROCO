@@ -8,7 +8,7 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0      10000
 
 sediments: input file
-           sediment_dune.in
+           TEST_CASES/sediment_dune.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T

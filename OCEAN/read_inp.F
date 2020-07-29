@@ -147,7 +147,11 @@
       fname='TEST_CASES/croco.in.TS_adv_rep'
 # endif
 #elif defined DUNE
+# ifdef ANA_DUNE
+      fname='TEST_CASES/croco.in.Ana_dune'
+# else
       fname='TEST_CASES/croco.in.Dune'
+# endif      
 #else
       fname='croco.in'
 #endif
