@@ -25,7 +25,14 @@
 ! REVISION HISTORY:
 !
 !> @authors
-!> @date 2015 January
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Initial version
+!! - B. Lemieux-Dudon
+!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
+!!  - doxygen comments
+!! - Francis Auclair, B. Lemieux-Dudon, C. Nguyen
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!> @date 2015
 !> @todo
 !
 !------------------------------------------------------------------------------

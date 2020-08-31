@@ -21,16 +21,20 @@
 ! REVISION HISTORY:
 !
 !> @authors
-!! - Francis Auclair, Jochem Floor
-!!  - Initial version and algorithm.
-!! - Benedicte Lemieux-Dudon
-!!  - stand alone version with a greatly reduced amont of tested code variable.
-!!  - newvar_oa implements a pointer version of var_oa which may is more efficient
-!!    in the case of large set of variable code.
-!!    Code test can be time consuming since they are applied inside the time, period and space loops in main_oa.
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Initial version
+!! - B. Lemieux-Dudon
+!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
+!!  - newvar_oa : var_oa pointer version in case of long list
+!!    of if-statement to determine which var-config the function
+!!    var_oa should return (cf, repated call to construct the correlation
+!!    product between psi_oa and the requested model fields which 
+!!    are applied inside the time, period and space loops in main_oa).
+!! - Francis Auclair, B. Lemieux-Dudon, C. Nguyen
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
 !> @date 2015 January
-!> @todo Benedicte Lemieux-Dudon
-!! - apply a selective use of module variables. 
+!> @todo BLXD Croco-OA interface 2020
+!! WARNING only var-config type 11 and 99 have been tested
 !------------------------------------------------------------------------------
 
       real function var_oa(                                           &
@@ -42,12 +46,14 @@
            ,lv_v                                                      &
            ,ls1_v                                              ) 
 
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-      use module_oa_level
+     use module_oa_variables, only : vardp_test_oa
+! BLXD 2020 removing useless modules
+!     use module_oa_time
+!     use module_oa_space
+!     use module_oa_periode
+!     use module_oa_stock
+     use module_oa_level
+! BLXD 2020 module_oa_upd does not exist anymore
 !     use module_oa_upd
 !     use module_nrj
       use scalars
@@ -78,6 +84,22 @@
       elseif (ivar_v.eq.3) then
          var_oa = wz(i_v,j_v,k_v,nstp) 
 #  endif
+      elseif (ivar_v.eq.4) then
+         var_oa = u(i_v,j_v,k_v,nstp)
+      elseif (ivar_v.eq.5) then
+         var_oa = v(i_v,j_v,k_v,nstp)
+      elseif (ivar_v.eq.6) then
+         var_oa = ubar(i_v,j_v,fast_indx_out)
+      elseif (ivar_v.eq.7) then
+         var_oa = vbar(i_v,j_v,fast_indx_out)
+      elseif (ivar_v.eq.8) then
+         var_oa = t(i_v,j_v,k_v,nstp,itemp)
+# ifdef SALINITY
+      elseif (ivar_v.eq.9) then
+         var_oa = t(i_v,j_v,k_v,nstp,isalt)
+# endif
+      elseif (ivar_v.eq.11) then
+         var_oa = rho(i_v,j_v,k_v)
       elseif (ivar_v.eq.20) then
          var_oa = wlev_oa(v2lev_oa(lv_v))%z(ls1_v)
 
@@ -93,7 +115,9 @@
       elseif (ivar_v.eq.100) then
 !........sum of the squared vel_u and vel_v at t-grid : 
 !        "kinetic energy without rho factor" just to provide and example to handle "mixed" variables
-!        var_oa = ( ( vel_u(i_v,j_v,k_v) + vel_u(i_v+1,j_v,k_v) )**2 + ( vel_v(i_v,j_v,k_v) + vel_v(i_v,j_v+1,k_v) )**2 ) / 8.0
+!        var_oa = ( ( u(i_v,j_v,k_v) + u(i_v+1,j_v,k_v) )**2 + ( v(i_v,j_v,k_v) + v(i_v,j_v+1,k_v) )**2 ) / 8.0
+! BLXD add a comment to notify termination
+         stop
       endif
 
       return

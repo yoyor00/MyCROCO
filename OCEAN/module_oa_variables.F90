@@ -17,8 +17,14 @@
 ! REVISION HISTORY:
 !
 !> @authors
-!> @date 2015 January
-!> @todo
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Initial version
+!! - Francis Auclair, B. Lemieux-Dudon, C. Nguyen
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - BLXD nzvc_oa variables moved to the module_oa_interface with
+!!    parametrized dimension maxtyp_oa.
+!> @date 2015
+!> @todo  shall we estimate nmsimult_oa ?
 !
 !------------------------------------------------------------------------------
 
@@ -28,7 +34,7 @@
 
       module module_oa_variables
 
-!      use module_parameter
+!      use module_interface_oa, only : maxtyp_oa                         ! Max. number of predef. configuration types
       
 !.....parameters:
  
@@ -40,18 +46,21 @@
 
 !.....variables:
 
-      integer                                                         &
+      integer::                                                         &
            nzv_oa                                                     & ! nombre de variables (configurations)
            ,nzvs_oa                                                   & ! nombre total de points (taille de la structure spatiale 2d du vecteur d etat)
            ,nzvs3d_oa                                                   ! nombre total de points (taille de la structure spatiale 3d du vecteur d etat)
 
+! BLXD ltrec_oa and if_first_rec_oa are debugging variables
       integer,dimension(:),allocatable::                              & ! (nmv_oa)
            swt_d_oa                                                   & ! caracteristiques spatiales de la variable (voir notebook_wavelet)
            ,swt_t_oa                                                  & ! caracteristiques temporelles de la variable (voir notebook_wavelet)          
            ,tv_oa                                                     & ! variable symphonie associee         
            ,cnb_oa                                                    & ! call number: position of the call in the baroclinic / barotropic time step.
            ,tvc_oa                                                    & ! configuration de la variable associee
-           ,updv_oa                                                     ! flag pour la mise a jour automatique d'une variable
+           ,updv_oa                                                   & ! records 1st temporal OA in simulation 
+           ,ltrec_oa                                                  & ! ...
+           ,if_first_rec_oa
 
       integer,dimension(:),allocatable::                              & ! (nmv_oa+1)
            begvs_oa                                                   & ! structure 2d du vecteur d etat
@@ -68,7 +77,9 @@
       integer,dimension(:,:,:),allocatable::                          & ! ( 0:meco+1,0:neco+1,nmv_oa)
            ij2l_oa                                                      ! transformation (i,j) --> l (l=  structure 2d du vecteur d etat)
 
-      integer:: nzvc_oa(200)
+      !! #BLXD variables moved to the module_oa_interface with parametrized dimensio, maxtyp_oa
+      !integer:: nzvc_oa(200)
+      !integer:: nzvc_oa(maxtyp_oa)  ! #BLXD
 
       integer                                                         &
            flag_nrj_oa                                                  ! flag pour le calcul de l'energie
@@ -77,7 +88,8 @@
            save_oa                                                    & ! sauvegarde finale de la variable dans un fichier
            ,tupd_oa                                                     ! pour variables communes
 
-      real :: pi_oa 
+      ! BLXD parameter moved to the module_oa_interface
+      !real :: pi_oa 
 
 !     pour tester les sorties "online":
 
