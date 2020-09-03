@@ -26,17 +26,18 @@ include Makedefs
 #======================================================================
 # SRCS: source codes files are sorted into groups, separated by
 # blanc lines:
-#   1) main driving part;	   2) 2D time stepping engine;
-#   3) 3D time stepping engine;	   4) sea-water EOS routines;
-#   5) vertical mixing schemes;    6) on-fly model diagnostic routines;
-#   7) netCDF I/O routines;	   8) main forcing routines;
-#   9) Wave forcing routines;	  10) Online surface forcing routines;
-#  11) Floats routines;		  12) Stations routines;
-#  13) biology/sediment routines; 14) PISCES routines
-#  15) MPI routines;		  16) AGRIF routines;           
-#  17) non-hydrostatic engine     18) OASIS coupling interface;
+#   1) main driving part;		 2) 2D time stepping engine;
+#   3) 3D time stepping engine;		 4) non-hydrostatic engine
+#   5) sea-water EOS;			 6) vertical mixing schemes;    
+#   7) on-fly model diagnostics;	 8) netCDF I/O routines;	   
+#   9) main forcing;			10) Wave forcing routines;
+#  11) Online surface forcing;		12) Floats routines;
+#  13) Station diagnostics;		14) biology/sediment routines;
+#  15) PISCES biology;			16) MPI routines;
+#  17) AGRIF routines;			18) OASIS coupling interface;
 #
-# SRC90: additional F90 routines for the non-hydrostatic engine
+# SRC90: additional F90 routines for PISCES code and Non-hydrostatic
+#        analysis routines
 #======================================================================
 
  SRCS = 		step.F		read_inp.F\
@@ -44,7 +45,7 @@ include Makedefs
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
-	step2d.F	u2dbc.F		v2dbc.F		zetabc.F\
+	step2d.F 	u2dbc.F		v2dbc.F		zetabc.F\
 	obc_volcons.F\
 \
 	pre_step3d.F	step3d_t.F	step3d_uv1.F	step3d_uv2.F\
@@ -66,8 +67,9 @@ include Makedefs
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
 	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
-	debug.F \
+	debug.F\
 \
+        param.F         ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
 	get_date.F	lenstr.F	closecdf.F	insert_node.F\
@@ -79,6 +81,16 @@ include Makedefs
 	wrt_bio_diags.F	wrt_bio_diags_avg.F\
 	set_avg.F	set_diags_avg.F	set_diagsM_avg.F\
 	set_bio_diags_avg.F\
+	def_diags_vrt.F	wrt_diags_vrt.F\
+	set_diags_vrt.F	set_diags_vrt_avg.F	wrt_diags_vrt_avg.F\
+	def_diags_ek.F	wrt_diags_ek.F\
+	set_diags_ek.F	set_diags_ek_avg.F	wrt_diags_ek_avg.F\
+	def_diags_pv.F	wrt_diags_pv.F\
+	set_diags_pv.F	set_diags_pv_avg.F	wrt_diags_pv_avg.F\
+	def_diags_eddy.F\
+	set_diags_eddy_avg.F	wrt_diags_eddy_avg.F\
+	def_surf.F	wrt_surf.F\
+	set_surf_avg.F	wrt_surf_avg.F\
 \
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
@@ -87,6 +99,7 @@ include Makedefs
         clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F\
+        cfb_stress.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
 \
@@ -137,7 +150,11 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
+ TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+
+
  RCS = $(SRCS:.F=.f)
+
  RCS90 = $(SRCS90:.F90=.f90)
 
  OBJS = $(RCS:.f=.o)
@@ -148,6 +165,10 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
  AMRRCS=$(AMRSRCS:.F=.f)
 
  AMROBJS=$(AMRRCS:.f=.o)
+
+
+%.mod : %.o
+	@touch $@
 
 #======================================================================
 #
@@ -265,23 +286,35 @@ m1qn3.o: m1qn3.F
 # Auxiliary utility programs and List of Dependecies:
 # ========= ======= ======== === ==== == ============
 #
-  TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 
 tools: $(TOOLS)
 
 mpc: mpc.F
 	$(CPP) -P $(CPPFLAGS) mpc.F > mpc_.f
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o mpc mpc_.f
-cross_matrix: cross_matrix.o
+
+cross_matrix: mpc cross_matrix.F 
+	$(CPP) -P $(CPPFLAGS) cross_matrix.F | ./mpc > cross_matrix_.f
+	$(CFT) -c $(FFLAGS) cross_matrix_.f -o cross_matrix.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cross_matrix cross_matrix.o
-cppcheck: cppcheck.o
+
+cppcheck:  mpc cppcheck.F 
+	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
+	$(CFT) -c $(FFLAGS) cppcheck_.f -o cppcheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
-srcscheck: srcscheck.o
+
+srcscheck: mpc srcscheck.F 
+	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
+	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
-checkkwds: checkkwds.o
+
+checkkwds: mpc checkkwds.F 
+	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
+	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o	
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
 	rm -f setup_kwds.F
+
 checkdefs: check_switches1.F setup_kwds.F
 
 check_switches1.F: cppcheck cppdefs.h
@@ -293,13 +326,15 @@ setup_kwds.F: checkkwds read_inp.F
 	./checkkwds
 partit: partit.o insert_node.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o lenstr.o $(LCDF)
+
 ncjoin: ncjoin.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncjoin ncjoin.o lenstr.o $(LCDF)
+
 ncrename: ncrename.o lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix module*.F90 *.F90 *.F
+	./cross_matrix  *.F90 *.F 
 
 mymodules: $(MOBJS) $(AMROBJS)
 #
