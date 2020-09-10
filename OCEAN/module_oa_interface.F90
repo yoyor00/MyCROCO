@@ -132,8 +132,8 @@ module module_interface_oa
     !        ,temhat_oa_t	                                          & !(0:imax+1,0:jmax+1,0:kmax+1)    
     !        ,salhat_oa_t 					                            !(0:imax+1,0:jmax+1,0:kmax+1)
     
-    integer, parameter :: nper_test=2
-    double precision, dimension(1:nper_test) :: period_test_oa, amp_test_oa 
+    integer :: nper_test=0
+    double precision, allocatable, dimension(:) :: period_test_oa, amp_test_oa 
 
 
     real             :: pi_oa
@@ -674,6 +674,8 @@ CONTAINS
 
       namelist / oa_numbers / nzc_oa
       namelist / oa_names / nzc_oa_names, nzc_oa_vartyp
+      namelist / oa_test / nper_test
+      namelist / oa_test_signal / period_test_oa, amp_test_oa 
 
       filin= trim(directory_in) // txtslash // 'namelist_oa'
 
@@ -699,9 +701,27 @@ CONTAINS
 !        nzvc_oa est le nombre de variables impliquees dans la config
          nzv_oa = nzv_oa + nzvc_oa( nzc_oa_vartyp(ic_r) )
 
+        ! If one of several var-config code set to 99 => Test function
+        ! A single analytical function can be tested against different atoms
+        if ( (nzc_oa_vartyp(ic_r)==99) .and. (nper_test==0) ) then
+          read(unit=90, nml  = oa_test)
+        end if
+
       enddo
 
       endif oa_analysis_requested 
+
+      oa_test_requested : if (nper_test > 0) then
+          ! BLXD nper_test = -1 hardcoded test function 
+          call allocate_namelist_test_oa(nper_test) 
+          
+          read(unit=90, nml  = oa_test_signal)
+        
+          do ic_r = 1, nper_test
+            if(if_print_node) write(io_unit,*) 'OA test function (period,amplitude) ', period_test_oa, amp_test_oa 
+          end do
+
+      endif oa_test_requested 
 
       close(90)
 
@@ -4395,8 +4415,8 @@ CONTAINS
 
       subroutine test_oa(         &   
        ichoix                     & 
-      ,iic_oa                & 
-      ,dti                     & 
+      ,iic_oa                     & 
+      ,dti                        & 
       ,imin, imax                 &
       ,jmin, jmax                 &
       ,kmin, kmax )
@@ -4426,9 +4446,9 @@ CONTAINS
       integer, intent(in) ::                                          &
        ichoix
 
-      integer :: i, j, k
+      integer :: i, j, k, iper
       double precision                                                &
-       time_t, amp_t
+       time_t
 
       !if(if_print_node) write(io_unit2,*) 'IN TEST_OA ichoix ',ichoix
 
@@ -4436,17 +4456,29 @@ CONTAINS
 !************************************************************************
 !      initialisations
 !************************************************************************
-      !TODO documenter le choix de config 99 et enlever l'affectation
-      !de ifl_test_oa ici car elle est faite dans le notebook.
-      !ifl_test_oa = 1
-
-      ! #BLXD hardcoded test function
-      period_test_oa(1) = 43200.D0 
-      period_test_oa(2) = 21600.D0
-      amp_test_oa(1) = 5.D0 
-      amp_test_oa(2) = 3.D0
-
-      vardp_test_oa = 0.D0
+        !TODO documenter le choix de config 99 et enlever l'affectation
+        !de ifl_test_oa ici car elle est faite dans le notebook.
+        !ifl_test_oa = 1
+        
+        ! BLXD hardcoded test function
+        
+        if (nper_test == -1) then 
+        
+          call allocate_namelist_test_oa(1) 
+          amp_test_oa(1)    = 0.D0 
+          period_test_oa(1) = 0.D0
+        
+          !call allocate_namelist_test_oa(2) 
+          !period_test_oa(1) = 43200.D0 
+          !period_test_oa(2) = 21600.D0
+          !amp_test_oa(1) = 5.D0 
+          !amp_test_oa(2) = 3.D0
+        
+        end if
+        
+        
+        !useless
+        vardp_test_oa(:,:,:) = 0.D0
      
 !STDALONE      if (ichoix.eq.1) then
 !ichoix is either 0 or 1 never both
@@ -4458,20 +4490,31 @@ CONTAINS
 !************************************************************************
 ! variable a tester
        time_t = dti * real(iic_oa)
-       !amp_t = time_t/period_test_oa(4)
-       
-       do k=kmin,kmax
-       do j=jmin,jmax
-       do i=imin,imax !0,imax+1
-          ! #BLXD changing test function here two harmonics
-             vardp_test_oa(i,j,k)=  amp_test_oa(1) * cos(2.d0*pi_oa/period_test_oa(1)*time_t)   &
-                                  + amp_test_oa(2) * cos(2.d0*pi_oa/period_test_oa(2)*time_t)
-          ! #BLXD 1 harmonic
-          !   vardp_test_oa(i,j,k)=  amp_test_oa(2) * cos(2.d0*pi_oa/period_test_oa(2)*time_t)
-                                   !amp_test_oa(1) * cos(2.d0*pi_oa/period_test_oa(1)*time_t)
-       enddo
-       enddo
-       enddo
+      
+        if (nper_test /= -1) then 
+           ! BLXD namelist test function
+           ! test fonction is a LC of nper_test harmonics
+           vardp_test_oa(:,:,:) = 0.D0
+
+           do k=kmin,kmax
+           do j=jmin,jmax
+           do i=imin,imax !0,imax+1
+             do iper=1,nper_test
+                 vardp_test_oa(i,j,k) = vardp_test_oa(i,j,k) + amp_test_oa(iper) * cos(2.d0*pi_oa/period_test_oa(iper)*time_t)
+             enddo
+           enddo
+           enddo
+           enddo
+        else
+           ! BLXD hardcoded test function
+           do k=kmin,kmax
+           do j=jmin,jmax
+           do i=imin,imax !0,imax+1
+                 vardp_test_oa(i,j,k) = amp_test_oa(1) * cos(2.d0*pi_oa/period_test_oa(1)*time_t)
+           enddo
+           enddo
+           enddo
+        end if
 
       endif
 
@@ -4677,6 +4720,24 @@ CONTAINS
           deallocate( nzc_oa_vartyp )
 
       end subroutine deallocate_namelist_oa
+
+      subroutine allocate_namelist_test_oa(n)
+
+      implicit none
+      integer, intent(in) :: n
+
+          allocate( period_test_oa(1:n) )
+          allocate( amp_test_oa(1:n) )
+
+      end subroutine allocate_namelist_test_oa
+
+      subroutine deallocate_namelist_test_oa
+
+      implicit none
+
+          deallocate( period_test_oa, amp_test_oa )
+
+      end subroutine deallocate_namelist_test_oa
 
       subroutine allocate_part1_oa( &
          imin, imax                 &
