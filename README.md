@@ -16,13 +16,13 @@ F(i,j,k,t) = 5 cos( W<sub>S2</sub> t ) + 3 cos( W<sub>S4</sub> t )
 
 ![IGW Internal Tides - Online Analysis of rho with Morlet S2+S4](TEST_CASES/IGW_OA/MorletWaveletAnalysis/IGW_tidal_forcing_S2/IGW_S2_rho_oa_MorletS2S4_200-240.gif)
 
-Plots were done installing and modifying the [![pyroms tools]()](https://github.com/ESMG/pyroms) for Croco.
 <!-- [![IGW Internal Tides](https://img.youtube.com/vi/AB84oYuNDKA/0.jpg)](https://www.youtube.com/watch?v=AB84oYuNDKA) -->
 <!-- [![IGW Internal Tides](https://img.youtube.com/vi/tsKXy_j93yA/0.jpg)](https://www.youtube.com/watch?v=tsKXy_j93yA) -->
-
+<!--
 [![IGW Internal Tides - Full Online Analysis of rho with Morlet S2+S4 16 days (youtube video) ]()](https://www.youtube.com/watch?v=tsKXy_j93yA)
-
-<!-- IGW Internal Tides : https://www.youtube.com/watch?v=AB84oYuNDKA -->
+-->
+- IGW Internal Tides - Full Online Analysis of rho with Morlet S2+S4 16 days (youtube video) : https://www.youtube.com/watch?v=tsKXy_j93yA
+- Plots were done installing and modifying the pyroms tools for Croco : https://github.com/ESMG/pyroms.
 
 **Current status**
 
