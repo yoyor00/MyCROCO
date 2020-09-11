@@ -21,6 +21,7 @@
 			<axis id="s_rho"/>
 			<axis id="s_w"/>
 			<axis id="s_b"/> <!-- For Sediment -->
+			<axis id="s_rhoS"/> <!-- For Sediment + PISCES -->
 		</axis_definition>
 
 		<scalar_definition>
@@ -37,6 +38,7 @@
 			<grid id="v_2D">		<domain domain_ref="v"  />				</grid>
 			<grid id="w_2D">		<domain domain_ref="w"  />				</grid>
 			<grid id="rho_3D"> 		<domain domain_ref="rho"/>	<axis axis_ref="s_rho"/></grid>
+			<grid id="rho_3DS"> 		<domain domain_ref="rho"/>	<axis axis_ref="s_rhoS"/></grid>
 			<grid id="u_3D">		<domain domain_ref="u"  />	<axis axis_ref="s_rho"/></grid>
 			<grid id="v_3D">		<domain domain_ref="v"  />	<axis axis_ref="s_rho"/></grid>
 			<grid id="w_3D">		<domain domain_ref="w"  />	<axis axis_ref="s_w"  /></grid>

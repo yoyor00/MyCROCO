@@ -472,6 +472,7 @@ CONTAINS
         END DO
      ENDIF
 
+#if defined key_iomput
      IF( lk_iomput ) THEN
         IF( knt == nrdttrc ) THEN
           zrfact2 = 1.e3 * rfact2r
@@ -480,6 +481,7 @@ CONTAINS
           CALL iom_put( "REMINF" , zfolimi(:,:,:)  * tmask(:,:,:)  * 1.e+9 * zrfact2 )  ! Remineralisation rate
         ENDIF
      ENDIF
+#endif
 
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('poc2')")

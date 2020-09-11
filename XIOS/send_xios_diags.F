@@ -15,6 +15,9 @@
 
       MODULE xios_module
       USE xios
+#ifdef key_pisces
+      USE trc, ONLY : profsed
+#endif
       IMPLICIT NONE
 
       PUBLIC set_grid
@@ -1825,6 +1828,10 @@ C 				  endif
 # else
       ! fake axis to avoid changing xml file 
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
+# endif
+
+#ifdef key_pisces
+      IF(ALLOCATED(profsed))  CALL iom_set_axis_attr("s_rhoS", profsed)
 # endif
       
       ! time axis (for ROMS tools)

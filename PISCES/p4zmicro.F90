@@ -196,6 +196,7 @@ CONTAINS
          END DO
       END DO
       !
+#if defined key_iomput
       IF( lk_iomput ) THEN
          IF( knt == nrdttrc ) THEN
            ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
@@ -214,6 +215,7 @@ CONTAINS
            DEALLOCATE( zw3d )
          ENDIF
       ENDIF
+#endif
       !
 #if defined key_trc_diaadd
       DO jk = KRANGE

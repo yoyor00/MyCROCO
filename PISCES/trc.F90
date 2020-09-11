@@ -74,7 +74,7 @@ MODULE trc
    !! --------------------------------------------------
    INTEGER , PUBLIC ::   nwritetrc   !: time step frequency for concentration outputs (namelist)
    
-# if defined key_trc_diaadd && ! defined key_iomput
+# if defined key_trc_diaadd && ! defined XIOS
 
    !! additional 2D/3D outputs namelist
    !! --------------------------------------------------

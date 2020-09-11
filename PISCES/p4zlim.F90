@@ -224,6 +224,7 @@ CONTAINS
          END DO
       END DO
       !
+#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
         IF( iom_use( "xfracal" ) )   CALL iom_put( "xfracal", xfracal(:,:,:) * tmask(:,:,:) )  ! euphotic layer deptht
         IF( iom_use( "LNnut"   ) )   CALL iom_put( "LNnut"  , xlimphy(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
@@ -231,6 +232,7 @@ CONTAINS
         IF( iom_use( "LNFe"    ) )   CALL iom_put( "LNFe"   , xlimnfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
         IF( iom_use( "LDFe"    ) )   CALL iom_put( "LDFe"   , xlimdfe(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
       ENDIF
+#endif
       !
    END SUBROUTINE p4z_lim
 

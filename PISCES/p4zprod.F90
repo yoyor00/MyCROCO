@@ -342,6 +342,7 @@ CONTAINS
         END DO
      ENDIF
 
+#if defined key_iomput
      IF( lk_iomput ) THEN
        IF( knt == nrdttrc ) THEN
           zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
@@ -487,6 +488,7 @@ CONTAINS
           !
        ENDIF
      ENDIF
+#endif
 
 #if defined key_trc_diaadd 
       !   Supplementary diagnostics

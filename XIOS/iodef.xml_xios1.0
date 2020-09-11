@@ -49,6 +49,8 @@
      <axis id="s_w" />
  <!-- For Sediment -->
      <axis id="s_b" />
+ <!-- For Sediment in PISCES model -->
+     <axis id="s_rhoS" />
    </axis_definition>
 
    <domain_definition src="./domain_def.xml"/>
@@ -56,6 +58,7 @@
    <grid_definition>    
      <grid id="rho_2D" domain_ref="rho"/>
      <grid id="rho_3D" domain_ref="rho" axis_ref="s_rho"/>
+     <grid id="rho_3DS" domain_ref="rho" axis_ref="s_rhoS"/>
      <grid id="u_2D" domain_ref="u"/>
      <grid id="u_3D" domain_ref="u" axis_ref="s_rho"/>
      <grid id="v_2D" domain_ref="v"/>
