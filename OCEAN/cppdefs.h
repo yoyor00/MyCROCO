@@ -328,7 +328,6 @@
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
 #   define key_pisces
-#   define key_ligand
 #  endif
 #  ifdef BIO_NChlPZD
 #   define  OXYGEN
