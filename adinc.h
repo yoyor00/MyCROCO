@@ -25,3 +25,5 @@ c common includes for AD tools
       parameter (mynode=0)
       parameter (nnodes=1)
 #endif
+
+#include "adcppdefs.h"

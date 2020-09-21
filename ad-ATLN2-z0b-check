@@ -36,6 +36,7 @@ $guix_cmd environment --root=$pwd/.croco-guix-profile --pure --ad-hoc $packages 
 mkdir -p Run/CROCO_FILES
 cd Run
 ln -sf CROCO_FILES/obs.nc
+echo '#define AD_ATLN' > adcppdefs.h
 
 ln -sf ../AD/CONFIGS/ATLN2/adparam.h
 ln -sf ../AD/CONFIGS/ATLN2/cost_fun.F

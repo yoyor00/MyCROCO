@@ -35,6 +35,8 @@ $guix_cmd environment --root=$pwd/.croco-guix-profile --pure --ad-hoc $packages 
 
 mkdir -p RunC
 cd RunC
+echo '#define AD_DL' > adcppdefs.h
+
 ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/adparam.h
 ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/cost_fun.F
 ln -sf ../AD/CONFIGS/DAS_AND_LARDNER_z0b/cppdefs-ad-ftides-obs.h
