@@ -1,7 +1,3 @@
-#ifndef MASKING
-#define rmask(X,Y) 1
-#endif
-      
       subroutine ad_step()
       implicit none
 # include "adinc.h"

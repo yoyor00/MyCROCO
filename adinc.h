@@ -26,4 +26,8 @@ c common includes for AD tools
       parameter (nnodes=1)
 #endif
 
+#ifndef MASKING
+#define rmask(X,Y) 1
+#endif
+
 #include "adcppdefs.h"
