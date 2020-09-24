@@ -9,7 +9,7 @@ c     real size of the problem per node (<= ad_array_size/nnodes)
 
 C     number of steps between cost function computations
       integer ad_ns
-#if defined AD_DL
+#if defined AD_DL_Z0B_CTRL
       parameter (ad_ns = 10)
 #elif defined AD_ATLN
       parameter (ad_ns = 180)
@@ -18,7 +18,7 @@ C     number of steps between cost function computations
 C     number of cost function computations
       integer ad_nt
 c     parameter (ad_nt = 2400)
-#if defined AD_DL
+#if defined AD_DL_Z0B_CTRL
       parameter (ad_nt = 240)
 #elif defined AD_ATLN
       parameter (ad_nt = 48)
@@ -26,7 +26,7 @@ c     parameter (ad_nt = 2400)
 
 C     start of assimilation in the obs file
       integer ad_ast
-#if defined AD_DL
+#if defined AD_DL_Z0B_CTRL
       parameter (ad_ast = 1200)
 #elif defined AD_ATLN
       parameter (ad_ast = 388)

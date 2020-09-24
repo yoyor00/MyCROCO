@@ -29,5 +29,3 @@ c common includes for AD tools
 #ifndef MASKING
 #define rmask(X,Y) 1
 #endif
-
-#include "adcppdefs.h"
