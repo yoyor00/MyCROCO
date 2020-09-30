@@ -76,6 +76,8 @@
 !
       IMPLICIT NONE
 # include "param.h"
+# include "mixing.h"
+
       ! Local integers
       INTEGER         ::   Istr, Iend, Jstr, Jend
       INTEGER         ::   i,       j,    k, tind, kref
@@ -94,7 +96,7 @@
       REAL            ::  cff , cff1 , cff2, cff3m, cff3p
       REAL            ::  invk, invG, Bprod, Sprod, epsilon
       REAL            ::  alpha_n, alpha_m, c_mu, c_mu_prim
-      REAL            ::  alpha_n_min, alpha_m_max, cm0, cm0inv2, gls
+      REAL            ::  alpha_n_min, alpha_m_max, cm0inv2, gls
       REAL            ::  flux_top , flux_bot , lgthsc, L_lim, du,dv,dw
       REAL            ::  trb_sfc  , trb_bot  , z0_s, z0_b , gls_min
       REAL            ::  HUon_w   , HVom_w   , trb_min(2), Denom
@@ -116,23 +118,6 @@
       !REAL, PARAMETER ::  chk     =  2.E+05/g ! charnock coefficient (Stacey, 1999)
       REAL, PARAMETER ::  chk     =  1400./g  ! charnock coefficient
       !
-      ! Choice of GLS model (!!! warning, it requires rn<0 !!!)
-      REAL            :: rp,    rm,    rn              !<-- n,m and p exponents
-      REAL            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for psi equation
-      REAL            :: OneOverSig(2)    !<-- inverse of Schmidt number for tke and psi
-# if defined GLS_KOMEGA                            /* K-omega model */
-      PARAMETER( rp    = -1.0 , rm    = 0.5  , rn     = -1.0           )
-      PARAMETER( beta1 = 0.555, beta2 = 0.833, beta3m = -0.6, beta3p = 1.0)
-      PARAMETER( OneOverSig = (/ 0.5, 0.5 /) )       
-# elif defined GLS_KEPSILON                      /* K-epsilon model */
-      PARAMETER( rp    = 3.0 , rm    = 1.5 , rn     = -1.0             )
-      PARAMETER( beta1 = 1.44, beta2 = 1.92, beta3m = -0.4, beta3p = 1.0)
-      PARAMETER( OneOverSig = (/ 1.0, 0.7692 /) )  
-# else                                                 /* GEN model */
-      PARAMETER( rp    = 0.0, rm    = 1.0 , rn     = -0.67             )
-      PARAMETER( beta1 = 1.0, beta2 = 1.22, beta3m =  0.05, beta3p = 1.0)
-      PARAMETER( OneOverSig = (/ 1.25, 0.9345 /) ) 
-# endif
 # ifdef MRL_WCI
       REAL :: cmu_fac, cb_wallE, gls_sigp_cb
       REAL, PARAMETER :: zalp = 0.05     ! fraction of wave energy
@@ -157,7 +142,6 @@
 # include "ocean3d.h"
 # include "forces.h"
 # include "grid.h"
-# include "mixing.h"
 # include "averages.h"
 !
 !--------------------------------------------------------------------
@@ -521,6 +505,7 @@
                   cff         = 0.5*( trb( i,j,  1,nnew,itke )
      &                            +   trb( i,j,  0,nnew,itke ) )
                   lgthsc      = vonKar*(0.5*Hz(i,j,1)+z0_b)
+              !    lgthsc      = vonKar*(z0_b)  !RB
                   trb_bot     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
      &                                               *(cff**rm)) 
                   flux_bot    =-rn*cm0**(rp+1.)

@@ -144,6 +144,10 @@
 #  endif /* LMD_SKPP || LMD_BKPP */
 
 # elif defined GLS_MIXING
+!
+! Generic Length Scale
+!      
+
       real trb(GLOBAL_2D_ARRAY,0:N,2,NGLS)
       common /gls_trb/trb
       real Lscale(GLOBAL_2D_ARRAY,0:N)
@@ -151,7 +155,27 @@
       integer kbl(GLOBAL_2D_ARRAY)
       common /gls_kbl/ kbl 
       real hbl(GLOBAL_2D_ARRAY  )      
-      common /gls_hbl/ hbl 
+      common /gls_hbl/ hbl
+      real cm0
+      common /gls_cm0/ cm0 
+
+      ! Choice of GLS model (!!! warning, it requires rn<0 !!!)
+      real            :: rp,    rm,    rn              !<-- n,m and p exponents
+      real            :: beta1, beta2, beta3m, beta3p  !<-- beta terms for psi equation
+      real            :: OneOverSig(2)   !<-- inverse of Schmidt number for tke and psi
+#  if defined GLS_KOMEGA                            /* K-omega model */
+      parameter( rp    = -1.0 , rm    = 0.5  , rn     = -1.0           )
+      parameter( beta1 = 0.555, beta2 = 0.833, beta3m = -0.6, beta3p = 1.0)
+      parameter( OneOverSig = (/ 0.5, 0.5 /) )       
+#  elif defined GLS_KEPSILON                      /* K-epsilon model */
+      parameter( rp    = 3.0 , rm    = 1.5 , rn     = -1.0             )
+      parameter( beta1 = 1.44, beta2 = 1.92, beta3m = -0.4, beta3p = 1.0)
+      parameter( OneOverSig = (/ 1.0, 0.7692 /) )  
+#  else                                                 /* GEN model */
+      parameter( rp    = 0.0, rm    = 1.0 , rn     = -0.67             )
+      parameter( beta1 = 1.0, beta2 = 1.22, beta3m =  0.05, beta3p = 1.0)
+      parameter( OneOverSig = (/ 1.25, 0.9345 /) ) 
+#  endif
 # endif /* GLS_MIXING */
 
 #else
