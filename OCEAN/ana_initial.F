@@ -43,7 +43,7 @@
 # include "sediment.h"
 #endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
-#if defined SUBSTANCE
+#if defined SUBSTANCE || defined SEDIMENT
       integer :: iv
 #endif
 #ifdef CHANNEL
@@ -1197,17 +1197,16 @@ C$OMP BARRIER
 !----------------------------------------------------------------------
 !
 # ifdef SEDIMENT
-      do k=1,N
-        do j=JR_RANGE
-          do i=IR_RANGE
-            if (.not.got_tini(isand)) then
-              t(i,j,k,1,isand)=Csed(1)
-              t(i,j,k,2,isand)=t(i,j,k,1,isand)
-            endif
-            if (.not.got_tini(isilt)) then
-              t(i,j,k,1,isilt)=Csed(2)
-              t(i,j,k,2,isilt)=t(i,j,k,1,isilt)
-            endif
+      do itrc=1,NST
+        iv=itrc_sed+itrc-1 
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              if (.not.got_tini(iv)) then
+                t(i,j,k,1,iv)=Csed(itrc)
+                t(i,j,k,2,iv)=t(i,j,k,1,iv)
+              endif
+            enddo
           enddo
         enddo
       enddo

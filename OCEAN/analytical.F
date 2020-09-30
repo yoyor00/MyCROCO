@@ -878,7 +878,7 @@ C$    integer  trd, omp_get_thread_num
 # if defined IGW
       real    sig,rhom,depth
 # endif  
-# if defined SUBSTANCE
+# if defined SUBSTANCE || defined SEDIMENT
       integer iv
 # endif 
 !
@@ -1163,23 +1163,22 @@ C$    integer  trd, omp_get_thread_num
 # endif /* BIOLOGY */
 
 # ifdef SEDIMENT
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+      do itrc=1,NST
+        iv=ised+itrc-1
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
-            tclm(i,j,k,isand)=0. !Csed(1)
-            tclm(i,j,k,isilt)=0. !Csed(2)
+              tclm(i,j,k,iv)=0. !Csed(itrc)
 #  else   
-            if (.not.got_tclm(isand)) then
-              tclm(i,j,k,isand)=0. !Csed(1)
-            endif
-            if (.not.got_tclm(isilt)) then
-              tclm(i,j,k,isilt)=0. !Csed(2)
-            endif
+              if (.not.got_tclm(iv)) then
+                tclm(i,j,k,iv)=0. !Csed(itrc)
+              endif
 #  endif
+            enddo
           enddo
         enddo
-      enddo
+      enddo  
 # endif /* SEDIMENT */
 
 # ifdef PASSIVE_TRACER
