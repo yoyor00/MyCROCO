@@ -268,7 +268,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-#ifndef ANA_INITIAL
+
+#ifdef ANA_INITIAL
+      if (nrrec.ne.0) then          ! read from NetCDF file
+#endif
 #ifdef EXACT_RESTART
           call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
@@ -282,11 +285,8 @@ C$OMP BARRIER
 
 #endif
       call get_initial (nrrec, 1)   ! Set initial conditions
-#else
-      if (nrrec.ne.0) then          ! read from NetCDF file
-        call get_initial (nrrec, 1)
+#ifdef ANA_INITIAL
       endif
-
 #endif
                                 ! Set initial model clock: at this
       time=start_time           ! moment "start_time" (global scalar)
