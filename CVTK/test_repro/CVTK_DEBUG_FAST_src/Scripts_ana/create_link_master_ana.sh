@@ -10,9 +10,8 @@ source "$CVTKHOME/CONFIGURE_GLOBAL"
 source "$CVTKHOME/CONFIGURE_ANA"
 
 rm -Rf $dir_test
-mkdir -p $dir_test
-mkdir -p $dir_web
 mkdir -p $dir_test/Junk
+[[ ! -d  $dir_web ]] && mkdir -p $dir_web
 
 #
 \cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/TEST_CASES_CVTK/.
@@ -31,7 +30,7 @@ do
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
   [ ! -z $toto ] && sed -e "${line} s/$toto/10/" $file > tmp.txt && \mv tmp.txt $file
 done
-
+ 
 ln -sf $dir_home/Configure_Test_ana $dir_test/
 
 # configure files
@@ -44,12 +43,12 @@ ln -sf $dir_home/../gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
 ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
 ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
-ln -sf $dir_web/Log_Summary $dir_test/
-ln -sf  $dir_home/../print/* $dir_test/
+ln -sf $dir_web $dir_test/
+ln -sf $dir_home/../print/* $dir_test/
 
 # ana specific and programms
-ln -sf $dir_home/src_test/mk_TestDIR_ana.bash $dir_test/
-ln -sf $dir_home/src_test/mk_TESTALL_ana.bash $dir_test/
+ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
+ln -sf $dir_home/../mk_TESTALL.bash $dir_test/
 
 # cleaning
 rm -Rf $dir_test/Configure_Test; 
@@ -58,3 +57,4 @@ ln -sf Configure_Test_ana Configure_Test
 cd -
 #
 echo 'Well done: Finish linking'
+
