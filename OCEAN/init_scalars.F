@@ -1126,20 +1126,13 @@ CR      write(stdout,'(1x,A,I3)') 'indxN2O =',indxN2O
 # endif /* BIOLOGY */
 
 # ifdef SEDIMENT
-      do i=1,NGRAV
-       write(nametrc,'(A,I1)') 'gravel_',i
-CR        write(stdout,'(1x,A,I3,1x,I3)') 'indgrav Nb',i, indxGRAV(i)
-        vname(1,indxgrav(i))=TRIM(nametrc)
-        vname(2,indxgrav(i))=TRIM(nametrc)//" sediment"
-        vname(3,indxgrav(i))='kg/m3                               '
-        vname(4,indxgrav(i))='gravel, scalar, series              '
-        vname(5,indxgrav(i))='                                    '
-        vname(6,indxgrav(i))='lat_rho lon_rho                     '     
-        vname(7,indxgrav(i))='                                    '
-      enddo
 
       do i=1,NSAND
-       write(nametrc,'(A,I1)') 'sand_',i
+       if( i < 10) then 
+          write(nametrc,'(A,I1)') 'sand_0',i
+       else
+          write(nametrc,'(A,I2)') 'sand_',i
+       endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'indxsand Nb',i, indxSAND(i)
         vname(1,indxsand(i))=TRIM(nametrc)
         vname(2,indxsand(i))=TRIM(nametrc)//" sediment"
@@ -1151,7 +1144,11 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'indxsand Nb',i, indxSAND(i)
       enddo
 
       do i=1,NMUD
-       write(nametrc,'(A,I1)') 'mud_',i
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'mud_0',i
+        else
+          write(nametrc,'(A,I2)') 'mud_',i
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'indxmud Nb',i, indxMUD(i)
         vname(1,indxmud(i))=TRIM(nametrc)
         vname(2,indxmud(i))=TRIM(nametrc)//" sediment"
@@ -1161,6 +1158,30 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'indxmud Nb',i, indxMUD(i)
         vname(6,indxmud(i))='lat_rho lon_rho                      '     
         vname(7,indxmud(i))='                                     '
       enddo
+
+      do i=1,NGRAV
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'gravel_0',i
+        else
+          write(nametrc,'(A,I2)') 'gravel_',i
+        endif   
+CR        write(stdout,'(1x,A,I3,1x,I3)') 'indgrav Nb',i, indxGRAV(i)
+        vname(1,indxgrav(i))=TRIM(nametrc)
+        vname(2,indxgrav(i))=TRIM(nametrc)//" sediment"
+        vname(3,indxgrav(i))='kg/m3                               '
+        vname(4,indxgrav(i))='gravel, scalar, series              '
+        vname(5,indxgrav(i))='                                    '
+        vname(6,indxgrav(i))='lat_rho lon_rho                     '     
+        vname(7,indxgrav(i))='                                    '
+      enddo
+
+CR      write(stdout,'(1x,A,I3)') 'indxATHK =',indxATHK
+      vname(1,indxATHK)='act_thick                                '
+      vname(2,indxATHK)='Thickness of sediment active layer       '
+      vname(3,indxATHK)='m                                        '     
+      vname(5,indxATHK)='                                         '
+      vname(6,indxATHK)='lat_rho lon_rho                          ' 
+      vname(7,indxATHK)='                                         '
       
 CR      write(stdout,'(1x,A,I3)') 'indxBTHK =',indxBTHK
       vname(1,indxBTHK)='bed_thick                                '
@@ -1178,18 +1199,23 @@ CR      write(stdout,'(1x,A,I3)') 'indxBPOR =',indxBPOR
       vname(6,indxBPOR)='lat_rho lon_rho                          ' 
       vname(7,indxBPOR)='                                         '    
 
-      do i=1,NGRAV
-        write(nametrc,'(A,I1)') 'bed_frac_grav_',i
-CR      write(stdout,'(1x,A,I3,1x,I3)') 'indxBFRA_grav  Nb',i, indxBFRA(i)
-        vname(1,indxBFRA(i))=TRIM(nametrc)                       
-        vname(2,indxBFRA(i))='vol. fraction of gravel in bed layer'
-        vname(3,indxBFRA(i))='no units                            '
-        vname(5,indxBFRA(i))='                                    '
-        vname(6,indxBFRA(i))='lat_rho lon_rho                     '
-        vname(7,indxBFRA(i))='                                    '
-      enddo
-      do i=NGRAV+1,NGRAV+NSAND
-        write(nametrc,'(A,I1)') 'bed_frac_sand_',i
+
+# if defined MIXED_BED || defined COHESIVE_BED
+CR      write(stdout,'(1x,A,I3)') 'indxBTCR =',indxBTCR
+      vname(1,indxBTCR)='bed_tau_crit                             ' 
+      vname(2,indxBTCR)='Bed tau critical in each layer           ' 
+      vname(3,indxBTCR)='N/m2                                     ' 
+      vname(5,indxBTCR)='                                         ' 
+      vname(6,indxBTCR)='lat_rho lon_rho                          ' 
+      vname(7,indxBTCR)='                                         '    
+# endif
+
+      do i=isand1,isand2
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'bed_frac_sand_0',i
+        else
+          write(nametrc,'(A,I2)') 'bed_frac_sand_',i
+        endif   
 CR      write(stdout,'(1x,A,I3,1x,I3)') 'indxBFRA_sand  Nb',i, indxBFRA(i)
         vname(1,indxBFRA(i))=TRIM(nametrc)                       
         vname(2,indxBFRA(i))='vol. fraction of sand in bed layer  '
@@ -1198,8 +1224,14 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indxBFRA_sand  Nb',i, indxBFRA(i)
         vname(6,indxBFRA(i))='lat_rho lon_rho                     '
         vname(7,indxBFRA(i))='                                    '
       enddo
-      do i=NGRAV+NSAND+1,NGRAV+NSAND+NMUD
-        write(nametrc,'(A,I1)') 'bed_frac_mud_',i
+      itrc=0
+      do i=imud1,imud2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'bed_frac_mud_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'bed_frac_mud_',itrc
+        endif   
 CR      write(stdout,'(1x,A,I3,1x,I3)') 'indxBFRA_mud  Nb',i, indxBFRA(i)
         vname(1,indxBFRA(i))  =TRIM(nametrc)                       
         vname(2,indxBFRA(i))  ='vol. fraction of mud in bed layer '
@@ -1208,22 +1240,30 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indxBFRA_mud  Nb',i, indxBFRA(i)
         vname(6,indxBFRA(i))='lat_rho lon_rho                     '
         vname(7,indxBFRA(i))='                                    '
       enddo
-
-#  ifdef SUSPLOAD
-      do i=1,NGRAV
-       write(nametrc,'(A,I1)') 'dflx_gravel_',i
-CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_dflx Nb',i, indxDFLX(i)
-        vname(1,indxDFLX(i))=TRIM(nametrc)
-        vname(2,indxDFLX(i))=TRIM(nametrc)                          
-        vname(3,indxDFLX(i))='kg/m2/s                             '
-        vname(4,indxDFLX(i))='gravel, scalar, series              '
-        vname(5,indxDFLX(i))='                                    '
-        vname(6,indxDFLX(i))='lat_rho lon_rho                     '     
-        vname(7,indxDFLX(i))='                                    '
+      itrc=0
+      do i=igrav1,igrav2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'bed_frac_grav_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'bed_frac_grav_',itrc
+        endif   
+CR      write(stdout,'(1x,A,I3,1x,I3)') 'indxBFRA_grav  Nb',i, indxBFRA(i)
+        vname(1,indxBFRA(i))=TRIM(nametrc)                       
+        vname(2,indxBFRA(i))='vol. fraction of gravel in bed layer'
+        vname(3,indxBFRA(i))='no units                            '
+        vname(5,indxBFRA(i))='                                    '
+        vname(6,indxBFRA(i))='lat_rho lon_rho                     '
+        vname(7,indxBFRA(i))='                                    '
       enddo
 
-      do i=NGRAV+1,NGRAV+NSAND
-       write(nametrc,'(A,I1)') 'dflx_sand_',i
+#  ifdef SUSPLOAD
+      do i=isand1,isand2
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'dflx_sand_0',i
+        else
+          write(nametrc,'(A,I2)') 'dflx_sand_',i
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_dflx Nb',i, indxDFLX(i)
         vname(1,indxDFLX(i))=TRIM(nametrc)
         vname(2,indxDFLX(i))=TRIM(nametrc)//" sediment"
@@ -1234,8 +1274,14 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_dflx Nb',i, indxDFLX(i)
         vname(7,indxDFLX(i))='                                    '
       enddo
 
-      do i=NGRAV+NSAND+1,NGRAV+NSAND+NMUD
-       write(nametrc,'(A,I1)') 'dflx_mud_',i
+      itrc=0
+      do i=imud1,imud2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'dflx_mud_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'dflx_mud_',itrc
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_dflx Nb',i, indxDFLX(i)
         vname(1,indxDFLX(i))=TRIM(nametrc)
         vname(2,indxDFLX(i))=TRIM(nametrc)//" sediment"
@@ -1246,20 +1292,30 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_dflx Nb',i, indxDFLX(i)
         vname(7,indxDFLX(i))='                                    '
       enddo
 
-      do i=1,NGRAV
-       write(nametrc,'(A,I1)') 'eflx_gravel_',i
-CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_eflx Nb',i, indxEFLX(i)
-        vname(1,indxEFLX(i))=TRIM(nametrc)
-        vname(2,indxEFLX(i))=TRIM(nametrc)//" sediment"
-        vname(3,indxEFLX(i))='kg/m2/s                             '
-        vname(4,indxEFLX(i))='gravel, scalar, series              '
-        vname(5,indxEFLX(i))='                                    '
-        vname(6,indxEFLX(i))='lat_rho lon_rho                     '     
-        vname(7,indxEFLX(i))='                                    '
+      itrc=0 
+      do i=igrav1,igrav2
+       itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'dflx_grav_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'dflx_grav_',itrc
+        endif   
+CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_dflx Nb',i, indxDFLX(i)
+        vname(1,indxDFLX(i))=TRIM(nametrc)
+        vname(2,indxDFLX(i))=TRIM(nametrc)                          
+        vname(3,indxDFLX(i))='kg/m2/s                             '
+        vname(4,indxDFLX(i))='gravel, scalar, series              '
+        vname(5,indxDFLX(i))='                                    '
+        vname(6,indxDFLX(i))='lat_rho lon_rho                     '     
+        vname(7,indxDFLX(i))='                                    '
       enddo
 
-      do i=NGRAV+1,NGRAV+NSAND
-       write(nametrc,'(A,I1)') 'eflx_sand_',i
+      do i=isand1,isand2
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'eflx_sand_0',i
+        else
+          write(nametrc,'(A,I2)') 'eflx_sand_',i
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_eflx Nb',i, indxEFLX(i)
         vname(1,indxEFLX(i))=TRIM(nametrc)
         vname(2,indxEFLX(i))=TRIM(nametrc)//" sediment"
@@ -1270,8 +1326,14 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_eflx Nb',i, indxEFLX(i)
         vname(7,indxEFLX(i))='                                    '
       enddo
 
-      do i=NGRAV+NSAND+1,NGRAV+NSAND+NMUD
-       write(nametrc,'(A,I1)') 'eflx_mud_',i
+      itrc=0
+      do i=imud1,imud2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'eflx_mud_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'eflx_mud_',itrc
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_eflx Nb',i, indxEFLX(i)
         vname(1,indxEFLX(i))=TRIM(nametrc)
         vname(2,indxEFLX(i))=TRIM(nametrc)//" sediment"
@@ -1282,22 +1344,31 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_eflx Nb',i, indxEFLX(i)
         vname(7,indxEFLX(i))='                                    '
       enddo
 
+      itrc=0
+      do i=igrav1,igrav2
+       itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'dflx_grav_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'dflx_grav_',itrc
+        endif   
+CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_eflx Nb',i, indxEFLX(i)
+        vname(1,indxEFLX(i))=TRIM(nametrc)
+        vname(2,indxEFLX(i))=TRIM(nametrc)//" sediment"
+        vname(3,indxEFLX(i))='kg/m2/s                             '
+        vname(4,indxEFLX(i))='gravel, scalar, series              '
+        vname(5,indxEFLX(i))='                                    '
+        vname(6,indxEFLX(i))='lat_rho lon_rho                     '     
+        vname(7,indxEFLX(i))='                                    '
+      enddo
 #  endif
 #  ifdef BEDLOAD
-      do i=1,NGRAV
-       write(nametrc,'(A,I1)') 'bdlu_gravel_',i
-CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_bdlu Nb',i, indxBDLU(i)
-        vname(1,indxBDLU(i))=TRIM(nametrc)
-        vname(2,indxBDLU(i))=TRIM(nametrc)
-        vname(3,indxBDLU(i))='kg/m2/s                             '
-        vname(4,indxBDLU(i))='gravel, scalar, series              '
-        vname(5,indxBDLU(i))='                                    '
-        vname(6,indxBDLU(i))='lat_rho lon_rho                     '     
-        vname(7,indxBDLU(i))='                                    '
-      enddo
-
-      do i=NGRAV+1,NGRAV+NSAND
-       write(nametrc,'(A,I1)') 'bdlu_sand_',i
+      do i=isand1,isand2
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'bdlu_sand_0',i
+        else
+          write(nametrc,'(A,I2)') 'bdlu_sand_',i
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_bdlu Nb',i, indxBDLU(i)
         vname(1,indxBDLU(i))=TRIM(nametrc)
         vname(2,indxBDLU(i))=TRIM(nametrc)
@@ -1308,8 +1379,14 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_bdlu Nb',i, indxBDLU(i)
         vname(7,indxBDLU(i))='                                    '
       enddo
 
-      do i=NGRAV+NSAND+1,NGRAV+NSAND+NMUD
-       write(nametrc,'(A,I1)') 'bdlu_mud_',i
+      itrc=0
+      do i=imud1,imud2
+       itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'bdlu_mud_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'bdlu_mud_',itrc
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_bdlu Nb',i, indxBDLU(i)
         vname(1,indxBDLU(i))=TRIM(nametrc)
         vname(2,indxBDLU(i))=TRIM(nametrc)
@@ -1319,21 +1396,31 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_bdlu Nb',i, indxBDLU(i)
         vname(6,indxBDLU(i))='lat_rho lon_rho                     '     
         vname(7,indxBDLU(i))='                                    '
       enddo
-      
-      do i=1,NGRAV
-       write(nametrc,'(A,I1)') 'bdlv_gravel_',i
-CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_bdlv_ Nb',i, indxBDLV(i)
-        vname(1,indxBDLV(i))=TRIM(nametrc)
-        vname(2,indxBDLV(i))=TRIM(nametrc)
-        vname(3,indxBDLV(i))='kg/m2/s                             '
-        vname(4,indxBDLV(i))='gravel bdlv, scalar, series         '
-        vname(5,indxBDLV(i))='                                    '
-        vname(6,indxBDLV(i))='lat_rho lon_rho                     '     
-        vname(7,indxBDLV(i))='                                    '
-      enddo
 
-      do i=NGRAV+1,NGRAV+NSAND
-       write(nametrc,'(A,I1)') 'bdlv_sand_',i
+      itrc=0
+      do i=igrav1,igrav2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'bdlu_grav_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'bdlu_grav_',itrc
+        endif   
+CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_bdlu Nb',i, indxBDLU(i)
+        vname(1,indxBDLU(i))=TRIM(nametrc)
+        vname(2,indxBDLU(i))=TRIM(nametrc)
+        vname(3,indxBDLU(i))='kg/m2/s                             '
+        vname(4,indxBDLU(i))='gravel, scalar, series              '
+        vname(5,indxBDLU(i))='                                    '
+        vname(6,indxBDLU(i))='lat_rho lon_rho                     '     
+        vname(7,indxBDLU(i))='                                    '
+      enddo
+      
+      do i=isand1,isand2
+        if( i < 10) then 
+          write(nametrc,'(A,I1)') 'bdlv_sand_0',i
+        else
+          write(nametrc,'(A,I2)') 'bdlv_sand_',i
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_bdlv_ Nb',i, indxBDLV(i)
         vname(1,indxBDLV(i))=TRIM(nametrc)
         vname(2,indxBDLV(i))=TRIM(nametrc)
@@ -1344,13 +1431,37 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'sand_bdlv_ Nb',i, indxBDLV(i)
         vname(7,indxBDLV(i))='                                    '
       enddo
 
-      do i=NGRAV+NSAND+1,NGRAV+NSAND+NMUD
-       write(nametrc,'(A,I1)') 'bdlv_mud_',i
+      itrc=0
+      do i=imud1,imud2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'bdlv_mud_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'bdlv_mud_',itrc
+        endif   
 CR        write(stdout,'(1x,A,I3,1x,I3)') 'mud_bdlv Nb',i, indxBDLV(i)
         vname(1,indxBDLV(i))=TRIM(nametrc)
         vname(2,indxBDLV(i))=TRIM(nametrc)
         vname(3,indxBDLV(i))='kg/m2/s                             '
         vname(4,indxBDLV(i))='mud bdlv, scalar, series            '
+        vname(5,indxBDLV(i))='                                    '
+        vname(6,indxBDLV(i))='lat_rho lon_rho                     '     
+        vname(7,indxBDLV(i))='                                    '
+      enddo
+
+      itrc=0
+      do i=igrav1,igrav2
+        itrc=itrc+1
+        if( itrc < 10) then 
+          write(nametrc,'(A,I1)') 'bdlv_grav_0',itrc
+        else
+          write(nametrc,'(A,I2)') 'bdlv_grav_',itrc
+        endif   
+CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_bdlv_ Nb',i, indxBDLV(i)
+        vname(1,indxBDLV(i))=TRIM(nametrc)
+        vname(2,indxBDLV(i))=TRIM(nametrc)
+        vname(3,indxBDLV(i))='kg/m2/s                             '
+        vname(4,indxBDLV(i))='gravel bdlv, scalar, series         '
         vname(5,indxBDLV(i))='                                    '
         vname(6,indxBDLV(i))='lat_rho lon_rho                     '     
         vname(7,indxBDLV(i))='                                    '
@@ -1489,6 +1600,18 @@ CR      write(stdout,'(1x,A,I3)') 'indxShflx_sen =',indxShflx_sen
       vname(6,indxShflx_sen)='lat_rho lon_rho                     '
       vname(7,indxShflx_sen)='                                    '  
       vname(7,indxShflx_sen)='  '         
+#  ifdef READ_PATM
+CR      write(stdout,'(1x,A,I3)') 'inxPatm =',inxPatm
+      vname(1,indxPatm)='patm                                     '
+      vname(2,indxPatm)='Atmospheric Pressure                     '
+      vname(3,indxPatm)='millibar                                 '
+      vname(4,indxPatm)='                                         '
+      vname(4,indxPatm)='                                         '
+      vname(6,indxPatm)='lat_rho lon_rho                          '
+      vname(7,indxPatm)='                                         '
+      vname(7,indxPatm)='  '
+#  endif
+
 # endif /* BULK_FLUX */
 
 # ifdef SST_SKIN

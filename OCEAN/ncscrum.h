@@ -629,8 +629,9 @@
       parameter (indxBostr=indxSUSTR+24)
 #ifdef SOLVE3D
 # ifdef SEDIMENT
-      integer indxSed, indxBTHK, indxBPOR
-      parameter (indxSed=indxSUSTR+28,
+      integer indxSed, indxATHK, indxBTHK, indxBPOR
+      parameter (indxATHK=indxSUSTR+27, 
+     &           indxSed=indxSUSTR+28,
      &           indxBTHK=indxSed, indxBPOR=indxSed+1)
       integer, dimension(NST) :: indxBFRA
      & =(/(iloop,iloop=indxSed+2,indxSed+1+NST)/)
@@ -652,6 +653,14 @@
       integer, dimension(NST) ::indxBDLV
      & =(/(iloop,iloop=indxSed+2+2*NST,indxSed+1+3*NST)/)
 #   endif
+#  endif
+#  if defined MIXED_BED || defined COHESIVE_BED
+      integer indxBTCR
+#   if defined BEDLOAD && defined SUSPLOAD
+      parameter (indxBTCR=indxSed+1+5*NST+1)
+#   else      
+      parameter (indxBTCR=indxSed+1+3*NST+1)
+#   endif      
 #  endif
 # endif
 # ifdef SST_SKIN
@@ -951,13 +960,16 @@
 # endif  /* BIOLOGY */
       integer hisT(NT)
 # ifdef SEDIMENT
-      integer hisSed(NST+2
+      integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
 #   endif   
 #  ifdef BEDLOAD
      &      +2*NST
-#   endif   
+#   endif
+#  if defined MIXED_BED || defined COHESIVE_BED
+     &      +1
+#  endif   
      & )
 # endif
 
@@ -1124,13 +1136,16 @@
       integer avgSST_skin
 #  endif
 #  ifdef SEDIMENT
-      integer avgSed(NST+2
+      integer avgSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
 #   endif
 #  ifdef BEDLOAD
      &      +2*NST
 #   endif
+#  if defined MIXED_BED || defined COHESIVE_BED
+     &      +1
+#  endif   
      & )
 #  endif
 #  ifdef MUSTANG 

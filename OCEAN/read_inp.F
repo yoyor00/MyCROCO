@@ -151,7 +151,9 @@
       fname='TEST_CASES/croco.in.Ana_dune'
 # else
       fname='TEST_CASES/croco.in.Dune'
-# endif      
+# endif  
+#elif defined SED_TOY
+      fname='TEST_CASES/croco.in.Sed_toy'
 #else
       fname='croco.in'
 #endif
@@ -474,8 +476,8 @@
                                    !defined OA_COUPLING) \
           || (defined BULK_FLUX  && \
                                       (!defined BULK_SMFLUX || \
-                                       !defined BULK_EP)) \
-        )
+                                       !defined BULK_EP) )\
+          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
 !
 !
 ! Forcing file name. Check its availability.
@@ -496,7 +498,7 @@
 
 !
 
-# if defined WAVE_OFFLINE && defined MUSTANG 
+# if defined WAVE_OFFLINE && defined MUSTANG
 ! Forcing file name. Check its availability.
 !
       elseif (keyword(1:kwlen).eq.'wave_offline') then
@@ -2236,12 +2238,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'sediment_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) 
-     &                   (wrthis(itrc), itrc=indxSed,indxSed+NST+1
+     &                   (wrthis(itrc), itrc=indxSed-1,indxSed+NST+1
 #  ifdef SUSPLOAD
      &                                       +2*NST
 #  endif
 #  ifdef BEDLOAD
      &                                       +2*NST 
+#  endif     
+#  if defined MIXED_BED || defined COHESIVE_BED
+     &                                       + 1
 #  endif     
      &  ) 
 #  ifdef AVERAGES
@@ -2251,12 +2256,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  endif
 #  ifdef BEDLOAD
      &                                       +2*NST 
-#  endif     
-          wrtavg(itrc)=wrthis(itrc)
+#  endif
+         wrtavg(itrc)=wrthis(itrc)
         enddo
 #  endif
-        MPI_master_only write(stdout,'(2(/6x,L1,2x,A,1x,A))')
-     &    wrthis(indxBTHK), 'write bed_thick ', 
+        MPI_master_only write(stdout,'(3(/6x,L1,2x,A,1x,A))')
+     &    wrthis(indxATHK), 'write act_thick ', 
+     &                            'thickness of active bed layer.'
+     &  , wrthis(indxBTHK), 'write bed_thick ', 
      &                            'thickness of sediment bed layer.'
      &  , wrthis(indxBPOR), 'write bed_poros ', 
      &                             'porosity of sediment bed layer.'
@@ -2268,12 +2275,12 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef SUSPLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
-     &          wrthis(indxDFLX(itrc)), 'write erosion flux(',itrc,
+     &          wrthis(indxDFLX(itrc)), 'write deposition flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
-     &          wrthis(indxEFLX(itrc)), 'write deposition flux(',itrc,
+     &          wrthis(indxEFLX(itrc)), 'write erosion flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
 #  endif
@@ -2289,6 +2296,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                   ') for sediment of index ',itrc,'.'
         enddo
 #  endif
+#  if defined MIXED_BED || defined COHESIVE_BED
+        MPI_master_only write(stdout,'(6x,L1,2x,A,1x,A)')
+     &      wrthis(indxBTCR), 'write bed_tau_crit ',
+     &                            'critical stress of bed layer.'
+#  endif     
 # endif /* SEDIMENT */
 #endif
 #ifdef BBL

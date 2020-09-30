@@ -1141,23 +1141,29 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !     Write out sediment bed layer thickness, porosity, volume 
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !     
+      if (wrthis(indxATHK)) then
+         call fillvalue2d(bot_thick,ncidhis,hisSed(1),indxATHK,
+     &        record,r2dvar,type)
+      endif
+
       if (wrthis(indxBTHK)) then
          worksed_bed=bed_thick
-         call fillvalue3d(worksed_bed,ncidhis,hisSed(1),indxBTHK,
+         call fillvalue3d(worksed_bed,ncidhis,hisSed(2),indxBTHK,
      &        record,b3dvar,type)
       endif
 !     
       if (wrthis(indxBPOR)) then
          worksed_bed=bed_poros
-         call fillvalue3d(worksed_bed,ncidhis,hisSed(2),indxBPOR,
+         call fillvalue3d(worksed_bed,ncidhis,hisSed(3),indxBPOR,
      &        record,b3dvar,type)
       endif
+
 !     
       do itrc=1,NST
          indxWrk=indxBFRA(1)+itrc-1
          if (wrthis(indxWrk)) then
             worksed_frac=bed_frac(:,:,:,itrc)
-            call fillvalue3d(worksed_frac,ncidhis,hisSed(itrc+2),
+            call fillvalue3d(worksed_frac,ncidhis,hisSed(itrc+3),
      &           indxWrk,record,b3dvar,type)
          endif
       enddo
@@ -1168,7 +1174,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          indxWrk=indxDFLX(1)+itrc-1
          if (wrthis(indxWrk)) then
             work2d=settling_flux(:,:,itrc)/dt
-            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -1176,7 +1182,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          indxWrk=indxEFLX(1)+itrc-1
          if (wrthis(indxWrk)) then
             work2d=ero_flux(:,:,itrc)/dt
-            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+2*NST),
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+2*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -1187,11 +1193,11 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          if (wrthis(indxWrk)) then
             work2d=bedldu(:,:,itrc)
 #   ifdef SUSPLOAD
-            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+3*NST),
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
 #   else
 
-            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+NST),
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+NST),
      &           indxWrk,record,r2dvar,type)
 #   endif
          endif
@@ -1202,16 +1208,25 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          if (wrthis(indxWrk)) then
             work2d=bedldv(:,:,itrc)
 #   ifdef SUSPLOAD
-            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+4*NST),
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
 #   else
-            call fillvalue2d(work2d,ncidhis,hisSed(itrc+2+2*NST),
+            call fillvalue2d(work2d,ncidhis,hisSed(itrc+3+2*NST),
      &           indxWrk,record,r2dvar,type)
 
 #   endif
          endif
       enddo
 #  endif
+
+#  if defined MIXED_BED || defined COHESIVE_BED
+      if (wrthis(indxBTCR)) then
+         worksed_bed=bed_bctr
+         call fillvalue3d(worksed_bed,ncidhis,hisSed(ubound(hisSed)),indxBTCR,
+     &        record,b3dvar,type)
+      endif
+#  endif
+
 # endif /* SEDIMENT */
 !     
 # ifdef BBL

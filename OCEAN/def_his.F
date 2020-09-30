@@ -1704,30 +1704,60 @@
 !            Deposition/Erosion fluxes
 ! bdlu_ ; bdlv_
 !
+      indxWrk=indxSed-1
+      if (wrt(indxWrk)) then
+        lvar=lenstr(vname(1,indxWrk))
+        ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
+     &                              NF_FOUT, 3, r2dgrd, vidSed(1))
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidZ,nf_collective)
+#endif
+#ifndef AVRH
+          lvar=lenstr(vname(2,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(1), 'long_name', lvar,
+     &                                  vname(2,indxWrk)(1:lvar))
+#else
+          text='averaged '/ /vname(2,indxWrk)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidSed(1), 'long_name', lvar,
+     &                                            text(1:lvar))
+#endif
+          lvar=lenstr(vname(3,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(1), 'units',     lvar,
+     &                                  vname(3,indxWrk)(1:lvar))
+          lvar=lenstr(vname(4,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(1), 'field',     lvar,
+     &                                  vname(4,indxWrk)(1:lvar))
+
+          call nf_add_attribute(ncid, vidSed(1), indxWrk, 5, NF_FOUT, 
+     &         ierr)
+
+        endif
+!
         do itrc=1,2+NST
          indxWrk=indxSed+itrc-1
          if (wrt(indxWrk)) then
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                             NF_FOUT, 4, b3dgrd, vidSed(itrc))
+     &                             NF_FOUT, 4, b3dgrd, vidSed(itrc+1))
 #  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
+          ierr=nf_var_par_access(ncid,vidSed(itrc+1),nf_collective)
 #  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
      &                                  vname(2,indxWrk)(1:lvar))
 #  else
           text='averaged '/ /vname(2,indxWrk)
           lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
      &                                              text(1:lvar))
 #  endif
           lvar=lenstr(vname(3,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(itrc), 'units',     lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',     lvar,
      &                                  vname(3,indxWrk)(1:lvar))
 
-          call nf_add_attribute(ncid, vidSed(itrc), indxWrk, 5, 
+          call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5, 
      &                                                 NF_FOUT, ierr)
 
          endif
@@ -1744,28 +1774,58 @@
          if (wrt(indxWrk)) then
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                             NF_FOUT, 3, r2dgrd, vidSed(itrc))
+     &                             NF_FOUT, 3, r2dgrd, vidSed(itrc+1))
 #  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
+          ierr=nf_var_par_access(ncid,vidSed(itrc+1),nf_collective)
 #  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
      &                                  vname(2,indxWrk)(1:lvar))
 #  else
           text='averaged '/ /vname(2,indxWrk)
           lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
      &                                              text(1:lvar))
 #  endif
           lvar=lenstr(vname(3,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(itrc), 'units',     lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',     lvar,
      &                                  vname(3,indxWrk)(1:lvar))
 
-          call nf_add_attribute(ncid, vidSed(itrc), indxWrk, 5, 
+          call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5, 
      &                                                 NF_FOUT, ierr)
          endif
         enddo
+
+#  if defined MIXED_BED || defined COHESIVE_BED
+         indxWrk=indxBTCR
+         if (wrt(indxWrk)) then
+          lvar=lenstr(vname(1,indxWrk))
+          ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
+     &                             NF_FOUT, 4, b3dgrd, vidSed(itrc+1))
+#   ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidSed(itrc+1),nf_collective)
+#   endif
+#   ifndef AVRH
+          lvar=lenstr(vname(2,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
+     &                                  vname(2,indxWrk)(1:lvar))
+#   else
+          text='averaged '/ /vname(2,indxWrk)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
+     &                                              text(1:lvar))
+#   endif
+          lvar=lenstr(vname(3,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',     lvar,
+     &                                  vname(3,indxWrk)(1:lvar))
+
+          call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5, 
+     &                                                 NF_FOUT, ierr)
+
+         endif
+#  endif
+
 !
 # endif /* SEDIMENT */
 
