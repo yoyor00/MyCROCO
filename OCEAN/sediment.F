@@ -123,6 +123,11 @@
 C$OMP BARRIER
 # endif /* BEDLOAD */
 # ifdef SUSPLOAD
+#  ifdef SED_FLOCS
+      call sed_flocmod_tile (Istr,Iend,Jstr,Jend,             
+     &                             A2d(1,1,trd) )
+#  endif
+C$OMP BARRIER
       call sed_settling_tile (Istr,Iend,Jstr,Jend, 
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd),
@@ -134,10 +139,15 @@ C$OMP BARRIER
       call sed_fluxes_tile (Istr,Iend,Jstr,Jend,A2d(1,1,trd))
 C$OMP BARRIER
 # endif /* SUSPLOAD */
-!
+
+# if defined COHESIVE_BED || defined MIXED_BED
+      call sed_bed_cohesive_tile (Istr,Iend,Jstr,Jend,
+     &                   A2d(1,1,trd), A2d(1,2,trd) )
+# else
       call sed_bed_tile (Istr,Iend,Jstr,Jend,
      &                   A2d(1,1,trd), A2d(1,2,trd) ,
      &                   A2d(1,3,trd), A2d(1,4,trd) )
+# endif
 C$OMP BARRIER
 !
       call sed_surf_tile (Istr,Iend,Jstr,Jend)     
@@ -486,11 +496,11 @@ C$OMP BARRIER
             k_wn=kh_calc(Td,depth)/depth        ! Wave number 
             c_w=twopi/(k_wn*Td)                 ! Wave speed
 
-            IF(NST>1) THEN 
+            if(NST>1) then 
               d50_mix=Sdens(i,j)
-            ELSE
+            else
              d50_mix=d50
-            ENDIF
+            endif
 !
 ! Compute bed wave orbital velocity (m/s) & excursion amplitude
 !
@@ -540,12 +550,12 @@ C$OMP BARRIER
 ! Uses Malarkey and Davies equations to get "r" and "phi"
 ! common to both crest and trough.
 !
-            CALL skewness_params(Hs, Td, depth, r, phi, ursell_no)
+            call skewness_params(Hs, Td, depth, r, phi, ursell_no)
 !        
 ! Abreu et al. use skewness params (r, phi) to get representative critical 
 ! orbital velocity for crest and trough cycles.
 ! 
-            CALL abreu_points(r, phi, uhat, Td,
+            call abreu_points(r, phi, uhat, Td,
      &                        T_crest, T_trough,
      &                        T_cu, T_tu, umax, umin,
      &                        RR_asymwave, beta_asymwave)
@@ -561,7 +571,7 @@ C$OMP BARRIER
 ! 
 ! Full wave cycle 
 ! 
-            CALL full_wave_cycle_stress_factors(d50, d90, osmgd,
+            call full_wave_cycle_stress_factors(d50, d90, osmgd,
      &                                           Td, c_w, depth,
      &                                              phi_curwave,
      &                                  RR_asymwave, uhat, ahat,
@@ -574,7 +584,7 @@ C$OMP BARRIER
 ! Bed shear stress (Shields parameter) for Crest half cycle 
 ! alpha VA2013 Eqn. 19  
 !
-            CALL half_wave_cycle_stress_factors( T_cu, T_crest,
+            call half_wave_cycle_stress_factors( T_cu, T_crest,
      &                                               ahat, ksw,
      &                                           fd_wbl, alpha,
      &                                          alphac, alphaw,
@@ -586,7 +596,7 @@ C$OMP BARRIER
 ! Compute sediment load entrained during each crest half cycle
 !
             wavecycle=1.
-            CALL sandload_vandera( wavecycle,
+            call sandload_vandera( wavecycle,
      &                             Hs, Td,  depth, RR_asymwave,
      &                                 d50, d50_mix, rhos, c_w,
      &                                              eta, dsf_c,
@@ -596,7 +606,7 @@ C$OMP BARRIER
 ! Bed shear stress (Shields parameter) for Trough half cycle 
 ! alpha VA2013 Eqn. 19  
 !
-            CALL half_wave_cycle_stress_factors( T_tu, T_trough, 
+            call half_wave_cycle_stress_factors( T_tu, T_trough, 
      &                                                ahat, ksw,
      &                                            fd_wbl, alpha,
      &                                           alphac, alphaw,
@@ -608,7 +618,7 @@ C$OMP BARRIER
 ! Compute sediment load entrained during each trough half cycle
 !
             wavecycle=-1.
-            CALL sandload_vandera( wavecycle,
+            call sandload_vandera( wavecycle,
      &                              Hs, Td,  depth, RR_asymwave,
      &                                  d50, d50_mix, rhos, c_w,
      &                                               eta, dsf_t,
@@ -687,8 +697,16 @@ C$OMP BARRIER
 !
 ! Motion initiation factor.
 !
+#   if defined COHESIVE_BED || defined MIXED_BED
+ ! Check that both sediment class and bed critical stresses are exceeded
+             cff3=0.5_r8*(1.+SIGN(1.,                            
+     &                   theta_max/                                     
+     &          (max(tau_ce(ised),bed_bctr(i,j,1))*osmgd)-1.))
+
+#  else
             cff3=0.5*(1.+SIGN(1.,                            
      &               theta_max/(tau_ce_2d(i,j,ised)*osmgd)-1.))
+#  endif
 !
 ! Compute bed loads in parallel and perpendicular direction of currents
 !
@@ -698,11 +716,11 @@ C$OMP BARRIER
      &                               SQRT(theta_w)*theta_m +
      &             12.*(0.229*w_asym*theta_w**1.5*COS(phicw(i,j)))
 !            phi_x=MAX(phi_x1,phi_x2) !  <- original
-            IF (ABS(phi_x2).gt.phi_x1) THEN
+            if (ABS(phi_x2).gt.phi_x1) then
               phi_x=phi_x2
-            ELSE
+            else
               phi_x=phi_x1
-            END IF
+            end if
             bedld_x=phi_x*smgdr*cff3
 !
             cff5=theta_w**1.5+1.5*(theta_m**1.5)
@@ -998,8 +1016,8 @@ C$OMP BARRIER
 !
 !  U-direction slumping
 !
-        DO j=Jstr,Jend
-          DO i=Istr,Iend+1
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
             dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j)
             dzdxdy=sqrt(dzdx**2.+dzdy**2.)
@@ -1029,11 +1047,11 @@ C$OMP BARRIER
 #    endif
 #   endif
             FX(i,j)=FX(i,j)+cff2
-          END DO
-        END DO
+          end do
+        end do
 !
-        DO j=Jstr,Jend+1
-          DO i=Istr,Iend
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j) ! positive is downhill
             dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
             dzdxdy=sqrt(dzdx**2.+dzdy**2.)
@@ -1063,16 +1081,16 @@ C$OMP BARRIER
 #    endif
 #   endif
             FE(i,j)=FE(i,j)+cff2
-          END DO
-        END DO
+          end do
+        end do
 #  endif /* BEDLOAD_SLUMP */
 !
 !-----------------------------------------------------------------------
 ! Limit fluxes to prevent bottom from breaking thru water surface.
 !-----------------------------------------------------------------------
 !
-        DO j=Jstr,Jend
-          DO i=Istr,Iend
+        do j=Jstr,Jend
+          do i=Istr,Iend
 !
 ! Total thickness available.
 !
@@ -1097,8 +1115,8 @@ C$OMP BARRIER
             FX(i  ,j  )=FX(i  ,j  )*(1.-cff1)
             FE(i  ,j+1)=FE(i  ,j+1)*(1.-cff1)
             FE(i  ,j  )=FE(i  ,j  )*(1.-cff1)
-          END DO
-        END DO
+          end do
+        end do
 !
 !-----------------------------------------------------------------------
 ! Apply closed boundary conditions on (FX,FE) if any
@@ -1198,15 +1216,15 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
           cff3=0.0
-          DO ised=1,NST
+          do ised=1,NST
             cff3=cff3+bed_mass(i,j,1,nnew,ised)
-          END DO
-          IF (cff3.eq.0.0) THEN
+          end do
+          if (cff3.eq.0.0) then
             cff3=eps
-          END IF
-          DO ised=1,NST
+          end if
+          do ised=1,NST
             bed_frac(i,j,1,ised)=bed_mass(i,j,1,nnew,ised)/cff3
-          END DO
+          end do
 !
           cff1=1.
           cff2=1.
@@ -1723,7 +1741,7 @@ C$OMP BARRIER
       integer i,j,ised,ised0
       integer indx
       integer imin,jmin,imax,jmax
-      real cff,cff1,cff2,cff3,cff4,tau_water,Zr
+      real cff,cff1,cff2,cff3,cff4,cff5,tau_water,Zr
       real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
 #  ifdef BED_ARMOR
       integer ised0
@@ -1762,7 +1780,17 @@ C$OMP BARRIER
 !  Calculate critical shear stress in Pa
 !  => change for COHESIVE bed here
 !
+
+#  if defined COHESIVE_BED
+            cff = rho0/bed_bctr(i,j,1)
+#  elif defined MIXED_BED
+            cff = MAX(bot_dprp(i,j)*bed_bctr(i,j,1)/rho0+          
+     &            (1.-bot_dprp(i,j))*tau_ce(ised),           
+     &            tau_ce(ised))
+            cff=1./cff
+#  else
             cff=1./tau_ce_2d(i,j,ised)
+#  endif
 !
 !  Compute erosion, ero_flux (kg/m2).
 !
@@ -1770,10 +1798,22 @@ C$OMP BARRIER
             cff2=dt*Erate(ised)*cff1
             cff3=Srho(ised)*cff1
             cff4=bed_mass(i,j,1,bnew,ised)
+            cff5=settling_flux(i,j,ised)
+#  if defined SED_TAU_CD_CONST || defined SED_TAU_CD_LIN
+             if (tau_w(i,j).GT.tau_cd(ised) ) then
+                cff5=0.0
+             endif
+#  endif
+# if defined SED_TAU_CD_LIN
+             if (tau_w(i,j).LE.tau_cd(ised).AND.                      
+     &                       tau_cd(ised,ng).GT.0.0) then
+                cff5=(1.0-tau_w(i,j)/tau_cd(ised)*cff5
+             endif
+# endif            
             ero_flux(i,j,ised)=                                     
      &            MIN(MAX(0.,cff2*(cff*tau_w(i,j)-1.)),      
      &                MIN(cff3*bot_thick(i,j) MORPH_FAC ,cff4)+
-     &                settling_flux(i,j,ised))
+     &                cff5)
             ero_flux(i,j,ised)=ero_flux(i,j,ised)
 #  ifdef SPONGE_SED
      &                             *sed_sponge(i,j)
@@ -1784,6 +1824,10 @@ C$OMP BARRIER
 !                        
             t(i,j,1,nnew,indx)=t(i,j,1,nnew,indx)+ero_flux(i,j,ised)
      &                                                    /Hz(i,j,1)
+#  if defined SED_TAU_CD_CONST || defined SED_TAU_CD_LIN
+     &                       + (settling_flux(i,j,ised)-cff5)/Hz(i,j,1)
+            settling_flux(i,j,ised)=cff5
+#  endif
           enddo  ! i loop
         enddo    ! ised loop 
       enddo      ! j loop 
@@ -1795,6 +1839,12 @@ C$OMP BARRIER
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                          ero_flux(START_2D_ARRAY,ised))
       enddo
+#   if defined SED_TAU_CD_CONST || defined SED_TAU_CD_LIN
+      do ised=1,NST
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                          settling_flux(START_2D_ARRAY,ised))
+      enddo  
+#   endif 
 #  endif
 
       return
@@ -1812,6 +1862,8 @@ C$OMP BARRIER
 !                                                                      !
 !=======================================================================
 !
+# if ! defined COHESIVE_BED && ! defined MIXED_BED
+
       subroutine sed_bed_tile (Istr,Iend,Jstr,Jend,
      &                         tau_w,dep_mass,Awrk1,Awrk2)
 !
@@ -2364,12 +2416,1131 @@ C$OMP BARRIER
 !
 # endif /* MORPHODYN */
 
-#  undef I_EXT_RANGE
-#  undef J_EXT_RANGE
+# undef I_EXT_RANGE
+# undef J_EXT_RANGE
 
       return
       end
+
+# else
+**********************************************************************
+      subroutine sed_bed_cohesive_tile (                       
+     &                         Istr,Iend,Jstr,Jend,tau_w,dep_mass)
+!***********************************************************************
 !
+      implicit none
+# include "param.h"
+# include "bbl.h"
+# include "forces.h"
+# include "grid.h"
+# include "ocean3d.h"
+# include "scalars.h"
+# include "sediment.h"
+      integer Istr,Iend,Jstr,Jend
+      real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
+      real dep_mass(PRIVATE_1D_SCRATCH_ARRAY,NST)
+      integer Ksed, i, ised, j, k, ks, nnn, indx
+      real cff, cff1, cff2, cff3,cff4,eps
+      real thck_avail, thck_to_add
+      real nlysm(NST)   !!!!???(OpenMP)
+      integer imin,imax,jmin,jmax
+      real add,newlayer_thick
+
+   !   parameter (eps = 1.0E-14,newlayer_thick=0.001)
+    !  parameter (eps = 1.0E-14,newlayer_thick=0.0005) !BEDTOY
+      parameter (eps = 1.0E-14,newlayer_thick=0.001)
+
+# if defined MIXED_BED
+      real pcoh 
+# endif
+# if defined COHESIVE_BED || defined MIXED_BED
+      real alpha, bzactv, frt, tcb_top, tcb_bot
+      real tcr(NLAY)  !!!!???(OpenMP)
+# endif
+# if defined COHESIVE_BED || defined MIXED_BED
+      real bmz(NLAY)
+# endif
+# if defined SED_FLOCS && defined SED_DEFLOC
+      real masseq(NMUD)
+# endif
+
+
+# ifdef EW_PERIODIC
+#  define I_EXT_RANGE Istr-1,Iend+1
+# else
+      if (WESTERN_EDGE) then
+        imin=Istr
+      else
+        imin=Istr-1
+      endif
+      if (EASTERN_EDGE) then
+        imax=Iend
+      else
+        imax=Iend+1
+      endif
+#  define I_EXT_RANGE imin,imax
+# endif
+# ifdef NS_PERIODIC
+#  define J_EXT_RANGE Jstr-1,Jend+1
+# else
+      if (SOUTHERN_EDGE) then
+        jmin=Jstr
+      else
+        jmin=Jstr-1
+      endif
+      if (NORTHERN_EDGE) then
+        jmax=Jend
+      else
+        jmax=Jend+1
+      endif
+#  define J_EXT_RANGE jmin,jmax
+# endif
+
+! KLUDGE alert
+! minlayer_thick = 0.0005
+      minlayer_thick = newlayer_thick
+
+!
+!-----------------------------------------------------------------------
+! Compute sediment bed layer stratigraphy.
+!-----------------------------------------------------------------------
+!
+
+! why MPM ???
+
+# if defined BEDLOAD_MPM || defined SUSPLOAD
+#  ifdef BBL
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          tau_w(i,j)=SQRT(bustrcwmax(i,j)*bustrcwmax(i,j)+              
+     &                    bvstrcwmax(i,j)*bvstrcwmax(i,j))
+#   ifdef WET_DRY
+          tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
+#   endif
+        enddo
+      enddo
+#  else
+       do j=J_EXT_RANGE
+         do i=I_EXT_RANGE
+          tau_w(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))*             
+     &                           (bustr(i,j)+bustr(i+1,j))+             
+     &                           (bvstr(i,j)+bvstr(i,j+1))*             
+     &                           (bvstr(i,j)+bvstr(i,j+1)))
+#   ifdef WET_DRY
+          tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
+#   endif
+        enddo
+      enddo
+#  endif
+# endif
+!
+!-----------------------------------------------------------------------
+!  Update bed properties according to ero_flux and dep_flux.
+!-----------------------------------------------------------------------
+!
+# ifdef SUSPLOAD
+      J_LOOP : do j=Jstr,Jend
+!
+!  The deposition and resuspension of sediment on the bottom "bed"
+!  is due to precipitation flux FC(:,0), already computed, and the
+!  resuspension (erosion, hence called ero_flux). The resuspension is
+!  applied to the bottom-most grid box value qc(:,1) so the total mass
+!  is conserved. Restrict "ero_flux" so that "bed" cannot go negative
+!  after both fluxes are applied.
+!
+      do i=Istr,Iend
+         SED_LOOP: do ised=1,NST  
+            dep_mass(i,ised)=0.0
+#  ifdef SED_MORPH
+            ! Apply morphology factor.
+             ero_flux(i,j,ised)=ero_flux(i,j,ised)   MORPH_FAC
+             settling_flux(i,j,ised)=settling_flux(i,j,ised)  MORPH_FAC            
+#  endif
+
+            !  Update bed mass arrays.
+            bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,bnew,ised)-     
+     &        (ero_flux(i,j,ised)-                                       
+     &        settling_flux(i,j,ised)),                                  
+     &        0.0)
+            do k=2,NLAY
+               bed_mass(i,j,k,nnew,ised)=bed_mass(i,j,k,nstp,ised)
+            enddo
+         enddo SED_LOOP
+      
+         cff3=0.0
+         do ised=1,NST
+            cff3=cff3+bed_mass(i,j,1,nnew,ised)
+         enddo
+
+         if (cff3.eq.0.0) then 
+            cff3=eps 
+         endif 
+         bed_thick(i,j,1)=0.0
+         do ised=1,NST
+            bed_frac(i,j,1,ised)=bed_mass(i,j,1,nnew,ised)/cff3
+            bed_thick(i,j,1)=MAX(bed_thick(i,j,1)+                      
+     &        bed_mass(i,j,1,nnew,ised)/                                
+     &        (Srho(ised)*                                         
+     &        (1.0-bed_poros(i,j,1))),0.0)
+         enddo
+      enddo
+      
+      enddo J_LOOP 
+# endif /* SUSPLOAD section */
+!
+!-----------------------------------------------------------------------
+!  At this point, all deposition or erosion is complete, and
+!  has been added/subtracted to top layer. Thickness has NOT been corrected.
+!-----------------------------------------------------------------------
+!
+!!!!! taucb ????
+      J_LOOP_CB : do j=Jstr,Jend
+        I_LOOP_CB: do i=Istr,Iend
+!       Calculate active layer thickness, bot_thick(i,j).
+!       (trunk version allows this to be zero...this has minimum of 6*D50)
+          bot_thick(i,j)=MAX(0.0,                                 
+     &                          0.007*                               
+     &                          (tau_w(i,j)-taucb(i,j))*rho0)+   
+     &                          6.0*Ssize(i,j)
+# if defined COHESIVE_BED 
+          bot_thick(i,j)=MAX(0.0,                                 
+     &                          0.007*                               
+     &                          (tau_w(i,j)*rho0-bed_bctr(i,j,1)))+    
+     &                          6.0*Ssize(i,j)
+# endif
+# if defined MIXED_BED
+          cff1=             MAX(0.0,                                 
+     &                          0.007*                               
+     &                          (tau_w(i,j)*rho0-bed_bctr(i,j,1)))+    
+     &                          6.0*Ssize(i,j)
+          cff2=             MAX(0.0,                                 
+     &                          0.007*                               
+     &                          (tau_w(i,j)-taucb(i,j))*rho0)+   
+     &                          6.0*Ssize(i,j)
+          bot_thick(i,j)=MAX(cff1,cff2)
+# endif
+# ifdef MORPHODYN
+           ! Apply morphology factor.
+           bot_thick(i,j)=MAX( bot_thick(i,j)*morph_fac,      
+     &          bot_thick(i,j))
+# endif
+# if defined COHESIVE_BED || defined MIXED_BED
+!  Find first layer with tc > tb
+!  Remember, the critical stresses apply to the TOP of each layer
+          Ksed = 1
+          bzactv = 0.0
+          frt = 0.0 ! CRS
+          cff1 = rho0*tau_w(i,j)
+          tcb_top = bed_bctr(i,j,1)
+          tcb_bot = bed_bctr(i,j,2)
+#  if defined MIXED_BED
+!         Calc. tau crit for bottom of next layer
+!         Update cohesive property of seds in top layer
+          cff3 = 0.0
+          cff4 = 1.0
+          do ised=imud1,imud2
+             cff3=cff3+bed_frac(i,j,1,ised)
+             cff4=cff4*tau_ce(ised)**bed_frac(i,j,1,ised)
+          enddo
+          do ised=isand1,isand2
+             cff4=cff4*tau_ce(ised)**bed_frac(i,j,1,ised)
+          enddo   
+          pcoh=min(max((cff3-transN)/(transC-transN)        
+     &      ,0.0),1.0)
+          tcb_top = pcoh*bed_bctr(i,j,1)+(pcoh-1.0)*cff4*rho0   !BF
+#  endif
+          if(cff1 .GT. tcb_top)then
+!            Calculate tcb_temp for next layer
+             tcb_bot = bed_bctr(i,j,Ksed+1)
+#  if defined MIXED_BED
+!            Recalculate cohesive fraction and mean grain tau crit
+!            Note that Ksed is used for grain props, and Ksed+1 for
+!            bed tau crit at bottom of layer Ksed
+             cff3 = 0.0
+             cff4 = 1.0
+             do ised=imud1,imud2
+                cff3=cff3+bed_frac(i,j,Ksed,ised)
+                cff4=cff4*tau_ce(ised)**bed_frac(i,j,Ksed,ised)
+             enddo
+             do ised=isand1,isand2
+                cff4=cff4*tau_ce(ised)**bed_frac(i,j,Ksed,ised)
+             enddo   
+!            Calculate cohesive behavior and blended tau crit
+             pcoh=min(max((cff3-transN)/(transC-transN),    
+     &            0.0),1.0)
+             tcb_bot =pcoh*bed_bctr(i,j,Ksed+1)+(pcoh-1.0)*cff4*rho0  !BF
+#  endif
+             do while ( (Ksed.LE.(NLAY-1)) .AND.                        
+     &            (cff1 .GT. tcb_bot))
+!ALA   Instead of adding entire 2nd layer, add just what is needed
+!ALA!               Add entire layer
+!ALA                bzactv = bzactv + bed_thick(i,j,Ksed)
+!       Add thickness equivalent to difference between cff1 and tcb_bot
+                if (cff1.GT.bed_bctr(i,j,Ksed+1)) then
+                   bzactv = bzactv + bed_thick(i,j,Ksed)
+                   tcb_top = tcb_bot
+                   tcb_bot = bed_bctr(i,j,Ksed+1)
+                else
+                   bzactv = bzactv + MIN(bed_thick(i,j,Ksed),           
+     &                      (MAX(0.0,0.007*(cff1-tcb_bot))))
+                   tcb_top = cff1
+                   tcb_bot = bed_bctr(i,j,Ksed+1)   
+                endif
+#  if defined MIXED_BED
+!               Recalculate cohesive fraction and mean grain tau crit
+                cff3 = 0.0
+                cff4 = 1.0
+                do ised=imud1,imud2
+                   cff3=cff3+bed_frac(i,j,Ksed,ised)
+                   cff4=cff4*tau_ce(ised)**bed_frac(i,j,Ksed,ised)
+                enddo
+                do ised=isand1,isand2
+                   cff4=cff4*tau_ce(ised)**bed_frac(i,j,Ksed,ised)
+                enddo
+!               Calculate cohesive behavior and blended tau crit
+                pcoh=min(max((cff3-transN)/(transC-transN), 
+     &               0.0),1.0)
+                tcb_bot = pcoh*bed_bctr(i,j,Ksed+1)+(pcoh-1.0)*cff4 
+     &                         *rho0                                      !BF
+#  endif
+                Ksed = Ksed+1
+             enddo
+             frt = MAX(0.0,(cff1-tcb_top) ) /                        
+     &            MAX( eps,                                             
+     &            ( tcb_bot-tcb_top ))
+          endif
+          bzactv = bzactv+frt*bed_thick(i,j,Ksed)
+          bzactv = MAX( bzactv, 6.0*Ssize(i,j) ) !CRS
+          bot_thick(i,j)=min(bot_thick(i,j),bzactv) !?CRS
+!          bot_thick(i,j)=max(bot_thick(i,j),bzactv) !?CRS
+# endif /* defined COHESIVE_BED || defined MIXED_BED */
+        enddo I_LOOP_CB
+      enddo J_LOOP_CB
+
+        J_LOOP2 : do j=Jstr,Jend
+        do i=Istr,Iend
+
+!
+!          Calculate net deposition and erosion
+           cff=0.0
+           cff2=0.0
+           do ised=1,NST
+              cff=cff+settling_flux(i,j,ised)
+              cff2=cff2+ero_flux(i,j,ised)
+              dep_mass(i,ised)=0.0
+              if ((ero_flux(i,j,ised)-settling_flux(i,j,ised)).lt.      
+     &             0.0) then
+                 dep_mass(i,ised)=settling_flux(i,j,ised)-              
+     &                ero_flux(i,j,ised)
+              endif
+           enddo
+           bot_dnet(i,j)=cff-cff2
+
+           if ( cff-cff2.GT.0.0) then ! NET deposition
+              !  Deposition. Determine if we need to create a new bed layer 
+
+# if defined COHESIVE_BED || defined MIXED_BED
+!
+!  Calculate tau_crit of deposited bed
+!
+!  Calculate new mass in top layer
+             bmz(1) = 0.0
+             do ised=1,NST
+                bmz(1) = bmz(1)+bed_mass(i,j,1,nnew,ised)
+             enddo
+             if (NLAY.GT.1) then
+!  Average of cff1 and cff2, where
+!    cff1 = linear extension of previous tcr slope to new surface
+!    cff2 = minimum deposition
+                cff1 = bed_bctr(i,j, 1) -                               
+     &             bot_dnet(i,j) *                                  
+     &             (bed_bctr(i,j,2)-bed_bctr(i,j,1)) /                
+     &             (bmz(1)-bot_dnet(i,j))
+                cff2 = MAX( rho0*tau_w(i,j) , tcr_min )
+                bed_bctr(i,j,1) = MIN(bed_bctr(i,j,1),                
+     &                                 MAX( 0.5*(cff1+cff2), cff2 ))
+!                cff1 = bot_dnet(i,j)/MAX(bmz(1),eps)
+!                cff2 = bed_bctr(i,j,1)+bed_bctr(i,j,2)-2*tcr_min
+!                bed_bctr(i,j,1) =bed_bctr(i,j,1) - cff1*cff2 
+             else
+!  TODO: Not sure what mud tau_crit should be for single-layer bed.
+!  Try weighted average of dep and old value
+                cff1 = (bed_bctr(i,j,1)*(bmz(1)-bot_dnet(i,j))     
+     &                  + cff2*bot_dnet(i,j)) / bmz(1)
+                bed_bctr(i,j,1) = MAX( cff1, cff2 )
+             endif
+# endif
+              ! (no test for age here)
+              bed_age(i,j,1)=time
+              if(bed_thick(i,j,1).gt.                                   
+     &             MAX(bot_thick(i,j),newlayer_thick)) then
+                 ! Top layer is too thick
+                 if (NLAY.gt.2) then
+                    if(bed_thick(i,j,2).lt.minlayer_thick) then
+                    ! Layer 2 is smaller than minimum size
+                    ! Instead of pushing down all layers, just combine top 2 layers
+                       cff=0.0
+                       cff1=0.0
+                       cff2=0.0
+                       do ised=1,NST
+                          cff =cff +dep_mass(i,ised)
+                          cff1=cff1+bed_mass(i,j,1,nnew,ised)
+                          cff2=cff2+bed_mass(i,j,2,nnew,ised)
+                       enddo
+# if defined COHESIVE_BED || defined MIXED_BED
+!
+!   Assign new tau_crit at 2nd layer
+!
+                    bed_bctr(i,j,2)= bed_bctr(i,j,2) -                
+     &       (cff1-cff)/(cff1+cff2)*(bed_bctr(i,j,3)-bed_bctr(i,j,1))
+!                  taucb(i,j,2) = 0.5*( taucb(i,j,1)+         
+!     &                                        taucb(i,j,2) )
+# endif
+!
+
+                       !  Update bed mass
+                       do ised=1,NST
+                          bed_mass(i,j,2,nnew,ised)=                    
+     &                         MAX(bed_mass(i,j,2,nnew,ised)+           
+     &                         bed_mass(i,j,1,nnew,ised)-               
+     &                         dep_mass(i,ised),0.0)
+                          bed_mass(i,j,1,nnew,ised)=dep_mass(i,ised)
+                       enddo
+                       ! ALA - average time and porosity
+                       ! ALA CHECK WITH CRS cff1 or cff1-cff for first layer
+                       bed_age(i,j,2)=(bed_age(i,j,1)*cff1+         
+     &                         bed_age(i,j,2)*cff2)/(cff1+cff2)
+                       bed_age(i,j,1)=time
+                       bed_poros(i,j,2)=(bed_poros(i,j,1)*cff1+         
+     &                         bed_poros(i,j,2)*cff2)/(cff1+cff2)
+                       ! ALA CHECK WITH CRS POROSITY OF 1ST LAYER
+                       bed_poros(i,j,1)=bed_poros(i,j,1)
+                    else
+                    ! Layer 2 is > minlayer thick, need another layer
+                    !  Combine bottom layers.
+                       cff1=0.0
+                       cff2=0.0
+                       do ised=1,NST
+                          cff1=cff1+bed_mass(i,j,NLAY-1,nnew,ised)
+                          cff2=cff2+bed_mass(i,j,NLAY,nnew,ised)
+                       enddo
+                       bed_poros(i,j,NLAY)=                             
+     &                      (bed_poros(i,j,NLAY-1)*cff1+                
+     &                      bed_poros(i,j,NLAY)*cff2)/(cff1+cff2)
+                       bed_age(i,j,NLAY)=                             
+     &                      (bed_age(i,j,NLAY-1)*cff1+                
+     &                      bed_age(i,j,NLAY)*cff2)/(cff1+cff2)
+# if defined COHESIVE_BED || defined MIXED_BED
+!
+!   Assign tcrit at top of new bottom bed tcrit for NLAY-1
+              bed_bctr(i,j,NLAY)= bed_bctr(i,j,NLAY-1)
+!              taucb(i,j,NLAY)=taucb(i,j,NLAY-1) +                &
+!     &            cff2*(taucb(i,j,NLAY)-taucb(i,j,NLAY-1))/cff1
+# endif
+
+                       do ised=1,NST
+                          bed_mass(i,j,NLAY,nnew,ised)=                 
+     &                         bed_mass(i,j,NLAY-1,nnew,ised)+          
+     &                         bed_mass(i,j,NLAY  ,nnew,ised)
+                       enddo
+                       !
+                       !  Push layers down.
+                       do k=NLAY-1,2,-1
+                          bed_poros(i,j,k)=bed_poros(i,j,k-1)
+                          bed_age(i,j,k)=bed_age(i,j,k-1)
+                          do ised =1,NST
+                             bed_mass(i,j,k,nnew,ised)=                 
+     &                            bed_mass(i,j,k-1,nnew,ised)
+                          enddo
+# if defined COHESIVE_BED || defined MIXED_BED
+                bed_bctr(i,j,k)=bed_bctr(i,j,k-1)
+# endif
+                       enddo
+                       !  Set new top parameters for top 2 layers
+# if defined COHESIVE_BED || defined MIXED_BED
+                       !  Tau_crit at top already determined
+                       !  Set tau_crit at 2nd layer
+                       cff=0.0
+                       cff1=0.0
+                       do ised=1,NST
+                          cff =cff +dep_mass(i,ised)
+                          cff1=cff1+bed_mass(i,j,1,nnew,ised)
+                       enddo
+
+                       cff2 = (bed_bctr(i,j,2)-bed_bctr(i,j,1))/cff1
+                       bed_bctr(i,j,2) = bed_bctr(i,j,1)+cff*cff2
+# endif
+
+                       do ised=1,NST
+                          bed_mass(i,j,2,nnew,ised)=                    
+     &                         MAX(bed_mass(i,j,2,nnew,ised)-           
+     &                         dep_mass(i,ised),0.0)
+                          bed_mass(i,j,1,nnew,ised)=dep_mass(i,ised)
+                       enddo
+                    endif
+                 elseIF (NLAY.eq.2) then 
+                  ! NBED=2
+                  !
+# if defined COHESIVE_BED || defined MIXED_BED
+                    !  Tau_crit at top already determined 
+                    !  Set tau_crit at 2nd layer
+                    cff=0.0
+                    cff1=0.0
+                    do ised=1,NST
+                       cff =cff +dep_mass(i,ised)
+                       cff1=cff1+bed_mass(i,j,1,nnew,ised)
+                    enddo
+                    cff2 = (bed_bctr(i,j,2)-bed_bctr(i,j,1))/cff1
+                    bed_bctr(i,j,2) = bed_bctr(i,j,1)+cff*cff2
+# endif
+                    cff1=0.0
+                    cff2=0.0
+                    do ised=1,NST
+                       cff1=cff1+bed_mass(i,j,1,nnew,ised)
+                       cff2=cff2+bed_mass(i,j,2,nnew,ised)
+                    enddo
+                    do ised=1,NST
+                       bed_mass(i,j,2,nnew,ised)=                       
+     &                      MAX(bed_mass(i,j,2,nnew,ised)+              
+     &                      bed_mass(i,j,1,nnew,ised)-                  
+     &                      dep_mass(i,ised),0.0)
+                       bed_mass(i,j,1,nnew,ised)=dep_mass(i,ised)
+                    enddo
+                    ! ALA - average time and porosity
+                    bed_age(i,j,2)=(bed_age(i,j,1)*cff1+            
+     &                      bed_age(i,j,2)*cff2)/(cff1+cff2)
+                    bed_age(i,j,1)=time
+                    bed_poros(i,j,2)=(bed_poros(i,j,1)*cff1+            
+     &                      bed_poros(i,j,2)*cff2)/(cff1+cff2)
+                    ! ALA CHECK WITH CRS POROSITY OF 1ST LAYER
+                    bed_poros(i,j,1)=bed_poros(i,j,1)                    
+                 else
+                 ! NBED=1
+                 endif
+              else
+                ! Net deposition has occurred, but no new bed layer was created 
+             endif
+           else
+                ! Net erosion occurred
+# if defined COHESIVE_BED || defined MIXED_BED
+              bmz(1) = 0.0
+              do ised=1,NST
+                 bmz(1) = bmz(1)+bed_mass(i,j,1,nnew,ised)
+              enddo
+!  recalc tc for top of bed, based on linear
+!  interpolation and mass removed / orig. mass in top layer
+              bed_bctr(i,j,1)=bed_bctr(i,j,1)+                        
+     &             MIN(1.0,-bot_dnet(i,j)/MAX(eps,bmz(1)))*      
+     &             MAX(0.0,(bed_bctr(i,j,2)-bed_bctr(i,j,1)))     
+# endif
+                bed_age(i,j,1)=time
+                if (NLAY.eq.2) then 
+                 ! NBED=2
+                    do ised=1,NST
+                       bed_mass(i,j,2,nnew,ised)=                       
+     &                      MAX(bed_mass(i,j,2,nnew,ised)+              
+     &                      bed_mass(i,j,1,nnew,ised)-                  
+     &                      dep_mass(i,ised),0.0)
+                       bed_mass(i,j,1,nnew,ised)=dep_mass(i,ised)
+                    enddo
+                elseif (NLAY.eq.1) then
+                ! ALF NO NEED TO do ANYTHING
+                else
+                endif
+           endif
+
+          ! Recalculate thickness and fractions for all layers.
+           do k=1,NLAY
+              cff3=0.0
+              do ised=1,NST
+                 cff3=cff3+bed_mass(i,j,k,nnew,ised)
+              enddo
+              if (cff3.eq.0.0) then 
+                 cff3=eps 
+              endif 
+              bed_thick(i,j,k)=0.0
+              do ised=1,NST
+                 bed_frac(i,j,k,ised)=bed_mass(i,j,k,nnew,ised)/cff3
+                 bed_thick(i,j,k)=MAX(bed_thick(i,j,k)+                 
+     &                         bed_mass(i,j,k,nnew,ised)/               
+     &                         (Srho(ised)*                          
+     &                (1.0-bed_poros(i,j,k))),0.0)
+              enddo
+           enddo
+        enddo
+      enddo J_LOOP2
+
+      J_LOOP3 : do j=Jstr,Jend
+        I_LOOP3 : do i=Istr,Iend
+          if (bot_thick(i,j).gt.bed_thick(i,j,1)) then
+            if (NLAY.eq.1) then
+              bot_thick(i,j)=bed_thick(i,j,1)
+            else
+              thck_to_add=bot_thick(i,j)-bed_thick(i,j,1)
+              thck_avail=0.0
+              Ksed=1                                        ! initialize
+              do k=2,NLAY
+                if (thck_avail.lt.thck_to_add) then
+                  thck_avail=thck_avail+bed_thick(i,j,k)
+                  Ksed=k
+                endif
+              enddo
+!
+!  Catch here if there was not enough bed material.
+!
+              if (thck_avail.lt.thck_to_add) then
+                bot_thick(i,j)=bed_thick(i,j,1)+thck_avail
+                thck_to_add=thck_avail
+              endif
+!
+!  Update bed mass of top layer and fractional layer.
+!
+              cff2=MAX(thck_avail-thck_to_add,0.0)/                  
+     &             MAX(bed_thick(i,j,Ksed),eps)         
+              do ised=1,NST
+                cff1=0.0
+                do k=1,Ksed
+                  cff1=cff1+bed_mass(i,j,k,nnew,ised)
+                enddo
+                cff3=cff2*bed_mass(i,j,Ksed,nnew,ised)
+                bed_mass(i,j,1   ,nnew,ised)=cff1-cff3
+                bed_mass(i,j,Ksed,nnew,ised)=cff3
+              enddo
+!
+!  Update thickness of fractional layer ksource_sed.
+!
+              bed_thick(i,j,Ksed)=MAX(thck_avail-thck_to_add,0.0)
+
+# if defined COHESIVE_BED || defined MIXED_BED
+!
+! Update tau_cr of fractional layer   !RB debug
+ !           IF (Ksed < NLAY ) then
+            bed_bctr(i,j,Ksed) = bed_bctr(i,j,Ksed+1)-              
+     &                 cff2*(bed_bctr(i,j,Ksed+1)-bed_bctr(i,j,Ksed))
+  !          endif
+# endif
+
+!
+!  Update bed fraction of top layer.
+!
+              cff3=0.0
+              do ised=1,NST
+                cff3=cff3+bed_mass(i,j,1,nnew,ised)
+              enddo
+              if (cff3.eq.0.0) then
+                 cff3=eps
+              endif
+              do ised=1,NST
+                bed_frac(i,j,1,ised)=bed_mass(i,j,1,nnew,ised)/cff3
+              enddo
+!
+!  Upate bed thickness of top layer.
+!
+              bed_thick(i,j,1)=bot_thick(i,j)
+!
+!  Pull all layers closer to the surface.
+!
+              do k=Ksed,NLAY
+                ks=Ksed-2
+                bed_thick(i,j,k-ks)=bed_thick(i,j,k)
+                bed_poros(i,j,k-ks)=bed_poros(i,j,k)
+                bed_age(i,j,k-ks)=bed_age(i,j,k)
+
+# if defined COHESIVE_BED || defined MIXED_BED
+                bed_bctr(i,j,k-ks)=bed_bctr(i,j,k)
+# endif
+
+                do ised=1,NST
+                  bed_frac(i,j,k-ks,ised)=bed_frac(i,j,k,ised)
+                  bed_mass(i,j,k-ks,nnew,ised)=bed_mass(i,j,k,nnew,ised)
+                enddo
+              enddo
+!
+!  Add new layers onto the bottom. Split what was in the bottom layer to
+!  fill these new empty cells. ("ks" is the number of new layers).
+!
+              ks=Ksed-2
+              cff=1.0/REAL(ks+1)
+# if defined COHESIVE_BED || defined MIXED_BED
+#undef BF_TCR
+#  if defined BF_TCR
+          bmz(1) = 0.0
+          do ised=1,NST
+             bmz(1) = bmz(1)+bed_mass(i,j,1,nnew,ised)
+          enddo
+          do k=2,NLAY
+             bmz(k) = bmz(k-1)
+             do ised=1,NST
+                bmz(k)=bmz(k)+bed_mass(i,j,k,nnew,ised)
+             enddo
+          enddo
+          tcr(1) = tcr_min
+          do k=2,NLAY
+             tcr(k) = tcr_min
+             if (bmz(k-1).GT.eps) then
+!                tcr(k) = exp((log(bmz(k-1))-                            
+!     &               bottom(i,j,idoff))/                                
+!     &               bottom(i,j,idslp))
+                tcr(k) = exp((log(bmz(k-1))-                            
+     &                    tcr_off)/                                 
+     &                    tcr_slp)
+             endif
+             tcr(k) = MIN( MAX( tcr(k), tcr_min), tcr_max )
+          enddo
+#  else
+!alf              cff1 = cff*(tcr_max-taucb(i,j,NLAY-ks))
+!alf          Use the value from the bottom layer as max.
+              cff1 = cff*(bed_bctr(i,j,NLAY)-bed_bctr(i,j,NLAY-ks))
+#  endif
+
+! Interpolate bottom layer to tau_crit_max
+! TODO: should be the reference profile and not tau_crit_max
+                  do k=NLAY-1,NLAY-ks,-1
+#  if defined BF_TCR
+                     bed_bctr(i,j,k)=tcr(k)
+#  else
+                     bed_bctr(i,j,k)=bed_bctr(i,j,NLAY-ks)+           
+     &                       REAL(k-NLAY+ks) * cff1
+#  endif
+                  enddo
+# endif
+              ! ALA CHECK WITH CRS about bed_frac 
+              nnn=0
+              do ised=1,NST
+                 nlysm(ised)=newlayer_thick*REAL(ks+1)*          
+     &                  (Srho(ised)*                                 
+     &                  (1.0-bed_poros(i,j,NLAY-ks)))*               
+     &                  bed_frac(i,j,NLAY-ks,ised)
+                  IF (ks.gt.0) then
+                        if (bed_mass(i,j,NLAY-ks,nnew,ised).gt.         
+     &                       nlysm(ised)) then
+                           nnn=nnn+1
+                           nlysm(ised)=                                 
+     &                           newlayer_thick*REAL(ks)*        
+     &                          (Srho(ised)*                         
+     &                          (1.0-bed_poros(i,j,NLAY-ks)))*       
+     &                          bed_frac(i,j,NLAY-ks,ised)
+                        endif
+                    endif
+              enddo
+              if (nnn.eq.NST) then
+                  bed_thick(i,j,NLAY)=bed_thick(i,j,NLAY-ks)-           
+     &                                newlayer_thick*REAL(ks)
+                  do ised=1,NST
+                     bed_mass(i,j,NLAY,nnew,ised)=                      
+     &                  bed_mass(i,j,NLAY-ks,nnew,ised)-nlysm(ised)
+                  enddo
+                  do k=NLAY-1,NLAY-ks,-1
+                     bed_thick(i,j,k)=newlayer_thick
+                     bed_age(i,j,k)=bed_age(i,j,NLAY-ks)
+                     do ised=1,NST
+                        bed_frac(i,j,k,ised)=bed_frac(i,j,NLAY-ks,ised)
+                        bed_mass(i,j,k,nnew,ised)=                      
+     &                           nlysm(ised)/REAL(ks)
+                     enddo
+                  enddo
+              else
+                 cff=1.0/REAL(ks+1)
+                  do k=NLAY,NLAY-ks,-1
+                     bed_thick(i,j,k)=bed_thick(i,j,NLAY-ks)*cff
+                     bed_age(i,j,k)=bed_age(i,j,NLAY-ks)
+                     do ised=1,NST
+                        bed_frac(i,j,k,ised)=bed_frac(i,j,NLAY-ks,ised)
+                        bed_mass(i,j,k,nnew,ised)=                      
+     &                             bed_mass(i,j,NLAY-ks,nnew,ised)*cff
+                     enddo
+                  enddo
+              endif
+            endif  ! NLAY > 1
+          endif  ! increase top bed layer
+# if defined MIXED_BED
+!
+!         Update cohesive property of seds in top layer
+          cff1 = 0.0
+          do ised=imud1,imud2
+             cff1=cff1+bed_frac(i,j,1,ised)
+          enddo
+          bot_dprp(i,j)=min(max((cff1-transN)/                  
+     &     (transC-transN),0.0),1.0)
+# endif
+          enddo I_LOOP3 
+
+# if defined SED_FLOCS && defined SED_DEFLOC
+          I_LOOP_DFL: do i=Istr,Iend
+!        Activate defloc in all layers but the top one
+!            do k=2,NLAY 
+!        Activate defloc in all layers
+            do k=1,NLAY
+              alpha = MIN((time-bed_age(i,j,k))/t_dfloc,      
+     &                  1.0)
+              cff3=0.0
+              do ised=1,NST
+                cff3=cff3+bed_mass(i,j,k,nnew,ised)
+              enddo
+              cff1 = 0.0
+              do ised=imud1,imud2
+                cff1 = cff1+bed_mass(i,j,k,nnew,ised)
+              enddo
+              do ised=imud1,imud2
+                indx= imud1-NSAND 
+                masseq(indx)=mud_frac_eq(indx)*cff1
+                bed_mass(i,j,k,nnew,ised)=alpha*masseq(indx)+           
+     &                  bed_mass(i,j,k,nnew,ised)*(1.0-alpha)
+                bed_frac(i,j,k,ised)=bed_mass(i,j,k,nnew,ised)/cff3
+              enddo
+            enddo
+          enddo I_LOOP_DFL
+# endif
+
+# if defined COHESIVE_BED || defined MIXED_BED
+         I_LOOP_CB2: do i=Istr,Iend
+!
+!  Key to this algorithm: "mass available depth" (mad) [kg/m2]
+!  present tau crit profile (tcp)
+!  representative tau crit profile (tcr)          
+!  Compute depth and mass depth of sediment column
+!  Compute cumulative depth
+!  Compute mass depth
+          bmz(1) = 0.0
+          do ised=1,NST
+             bmz(1) = bmz(1)+bed_mass(i,j,1,nnew,ised)
+          enddo
+          do k=2,NLAY
+             bmz(k) = bmz(k-1)
+             do ised=1,NST
+                bmz(k)=bmz(k)+bed_mass(i,j,k,nnew,ised)
+             enddo
+          enddo
+
+!  Calculate representative critical shear stress profile
+!  Note that the values are for the TOP of the layer...we
+!  assume the bottom of the bottom layer has tcr = tcr_max
+          tcr(1) = tcr_min
+          do k=2,NLAY
+             tcr(k) = tcr_min
+             if (bmz(k-1).GT.eps) then
+!                tcr(k) = exp((log(bmz(k-1))-                            &
+!     &               bottom(i,j,idoff))/                                &
+!     &               bottom(i,j,idslp))
+                tcr(k) = exp((log(bmz(k-1))-                            
+     &                    tcr_off)/                                 
+     &                    tcr_slp)
+             endif
+             tcr(k) = MIN( MAX( tcr(k), tcr_min), tcr_max )
+          enddo
+!          ks=Ksed-2
+!          do k=NLAY,NLAY-ks,-1
+!             taucb(i,j,k)=tcr(k)
+!          enddo
+!  Relax tau crit profile taucb(i,j,k) 
+!  towards representative profile tcr...100 x slower for "swelling"
+!  than consolidation
+!  TODO - make the factor an input parameter
+          if( bed_bctr(i,j,1).LE.tcr(1)) then
+!             alpha = MIN(dt/bottom(i,j,idtim),1.0)
+             alpha = MIN(dt/tcr_tim,1.0)
+          else
+!             alpha = MIN(dt/(100.0*bottom(i,j,idtim)),1.0)
+             alpha = MIN(dt/(100.0*tcr_tim),1.0)
+          endif
+          do k=1,NLAY
+             bed_bctr(i,j,k)=bed_bctr(i,j,k)+                         
+     &            alpha*(tcr(k)-bed_bctr(i,j,k))
+             bed_bctr(i,j,k)=                                          
+     &          MIN( MAX( bed_bctr(i,j,k), tcr_min), tcr_max )
+          enddo
+!ALA    Enforce last layer = tcr_max
+!ALA          bed_bctr(i,j,NLAY)= tcr_max
+        enddo I_LOOP_CB2
+# endif /* cohesive bed */
+
+      enddo J_LOOP3
+!
+!-----------------------------------------------------------------------
+!  Apply periodic or gradient boundary conditions to property arrays.
+!-----------------------------------------------------------------------
+!
+! Set boundary conditions
+!
+# ifndef EW_PERIODIC
+      if (EASTERN_EDGE) then
+        do j=Jstr,Jend
+          do k=1,NLAY
+            do ised=1,NST
+            bed_mass(Iend+1,j,k,nnew,ised)=
+     &                       bed_mass(Iend,j,k,nnew,ised)
+            bed_frac(Iend+1,j,k,ised)=
+     &                        bed_frac(Iend,j,k,ised)
+             enddo
+             bed_thick(Iend+1,j,k)=bed_thick(Iend,j,k)
+             bed_poros(Iend+1,j,k)=bed_poros(Iend,j,k)
+             bed_age(Iend+1,j,k)=bed_age(Iend,j,k)
+#  if defined MIXED_BED || defined COHESIVE_BED
+             bed_bctr(Iend+1,j,k)=bed_bctr(Iend,j,k)
+#  endif
+           enddo
+           bot_thick(Iend+1,j)=bot_thick(Iend,j)
+         enddo
+        endif
+      if (WESTERN_EDGE) then
+        do j=Jstr,Jend
+          do k=1,NLAY
+            do ised=1,NST
+            bed_mass(Istr-1,j,k,nnew,ised)=
+     &                       bed_mass(Istr,j,k,nnew,ised)
+            bed_frac(Istr-1,j,k,ised)=
+     &                        bed_frac(Istr,j,k,ised)
+             enddo
+             bed_thick(Istr-1,j,k)=bed_thick(Istr,j,k)
+             bed_poros(Istr-1,j,k)=bed_poros(Istr,j,k)
+             bed_age(Istr-1,j,k)=bed_age(Istr,j,k)
+#  if defined MIXED_BED || defined COHESIVE_BED
+             bed_bctr(Istr-1,j,k)=bed_bctr(Istr,j,k)
+#  endif
+           enddo
+           bot_thick(Istr-1,j)=bot_thick(Istr,j)
+        enddo
+      endif
+# endif
+# ifndef NS_PERIODIC
+      if (NORTHERN_EDGE) then
+        do i=Istr,Iend
+          do k=1,NLAY
+            do ised=1,NST
+              bed_mass (i,Jend+1,k,nnew,ised)=
+     &                            bed_mass(i,Jend,k,nnew,ised)
+              bed_frac (i,Jend+1,k,ised)=
+     &                            bed_frac(i,Jend,k,ised)
+            enddo
+            bed_thick(i,Jend+1,k)=bed_thick(i,Jend,k)
+            bed_poros(i,Jend+1,k)=bed_poros(i,Jend,k)
+            bed_age  (i,Jend+1,k)=bed_age(i,Jend,k)
+#  if defined MIXED_BED || defined COHESIVE_BED
+            bed_bctr (i,Jend+1,k)=bed_bctr(i,Jend,k)
+#  endif
+          enddo
+          bot_thick  (i,Jend+1)=bot_thick(i,Jend)
+        enddo
+      endif
+      if (SOUTHERN_EDGE) then
+        do i=Istr,Iend
+          do k=1,NLAY
+            do ised=1,NST
+              bed_mass (i,Jstr-1,k,nnew,ised)=
+     &                            bed_mass(i,Jstr,k,nnew,ised)
+              bed_frac (i,Jstr-1,k,ised)=
+     &                            bed_frac(i,Jstr,k,ised)
+            enddo
+            bed_thick(i,Jstr-1,k)=bed_thick(i,Jstr,k)
+            bed_poros(i,Jstr-1,k)=bed_poros(i,Jstr,k)
+            bed_age  (i,Jstr-1,k)=bed_age(i,Jend,k)
+#  if defined MIXED_BED || defined COHESIVE_BED
+            bed_bctr (i,Jstr-1,k)=bed_bctr(i,Jend,k)
+#  endif
+          enddo
+          bot_thick  (i,Jstr-1)=bot_thick(i,Jstr)
+        enddo
+      endif
+# endif
+# if !defined EW_PERIODIC && !defined NS_PERIODIC
+      if (SOUTHERN_EDGE.and.WESTERN_EDGE) then
+        bed_mass(Istr-1,Jstr-1,:,nnew,:)=
+     &  0.5*(bed_mass(Istr,Jstr-1,:,nnew,:)
+     &      +bed_mass(Istr-1,Jstr,:,nnew,:))
+        bed_frac(Istr-1,Jstr-1,:,:)=
+     &  0.5*(bed_frac(Istr,Jstr-1,:,:)
+     &      +bed_frac(Istr-1,Jstr,:,:))
+        bed_thick(Istr-1,Jstr-1,:)=
+     &  0.5*(bed_thick(Istr,Jstr-1,:)
+     &      +bed_thick(Istr-1,Jstr,:))
+        bed_poros(Istr-1,Jstr-1,:)=
+     &  0.5*(bed_poros(Istr,Jstr-1,:)
+     &      +bed_poros(Istr-1,Jstr,:))
+        bed_age(Istr-1,Jstr-1,:)=
+     &  0.5*(bed_age(Istr,Jstr-1,:)
+     &      +bed_age(Istr-1,Jstr,:))
+#  if defined MIXED_BED || defined COHESIVE_BED
+        bed_bctr(Istr-1,Jstr-1,:)=
+     &  0.5*(bed_bctr(Istr,Jstr-1,:)
+     &      +bed_bctr(Istr-1,Jstr,:))
+# endif
+      endif
+      if (SOUTHERN_EDGE.and.EASTERN_EDGE) then
+        bed_mass(Iend+1,Jstr-1,:,nnew,:)=
+     &  0.5*(bed_mass(Iend,Jstr-1,:,nnew,:)
+     &      +bed_mass(Iend+1,Jstr,:,nnew,:))
+        bed_frac(Iend+1,Jstr-1,:,:)=
+     &  0.5*(bed_frac(Iend,Jstr-1,:,:)
+     &      +bed_frac(Iend+1,Jstr,:,:))
+        bed_thick(Iend+1,Jstr-1,:)=
+     &  0.5*(bed_thick(Iend,Jstr-1,:)
+     &      +bed_thick(Iend+1,Jstr,:))
+        bed_poros(Iend+1,Jstr-1,:)=
+     &  0.5*(bed_poros(Iend,Jstr-1,:)
+     &      +bed_poros(Iend+1,Jstr,:))
+        bed_age(Iend+1,Jstr-1,:)=
+     &  0.5*(bed_age(Iend,Jstr-1,:)
+     &      +bed_age(Iend+1,Jstr,:))
+#  if defined MIXED_BED || defined COHESIVE_BED
+        bed_bctr(Iend+1,Jstr-1,:)=
+     &  0.5*(bed_bctr(Iend,Jstr-1,:)
+     &      +bed_bctr(Iend+1,Jstr,:))
+#  endif
+      endif
+      if (NORTHERN_EDGE.and.WESTERN_EDGE) then
+        bed_mass(Istr-1,Jend+1,:,nnew,:)=
+     &  0.5*(bed_mass(Istr,Jend+1,:,nnew,:)
+     &      +bed_mass(Istr-1,Jend,:,nnew,:))
+        bed_frac(Istr-1,Jend+1,:,:)=
+     &  0.5*(bed_frac(Istr,Jend+1,:,:)
+     &      +bed_frac(Istr-1,Jend,:,:))
+        bed_thick(Istr-1,Jend+1,:)=
+     &  0.5*(bed_thick(Istr,Jend+1,:)
+     &      +bed_thick(Istr-1,Jend,:))
+        bed_poros(Istr-1,Jend+1,:)=
+     &  0.5*(bed_poros(Istr,Jend+1,:)
+     &      +bed_poros(Istr-1,Jend,:))
+        bed_age(Istr-1,Jend+1,:)=
+     &  0.5*(bed_age(Istr,Jend+1,:)
+     &      +bed_age(Istr-1,Jend,:))
+#  if defined MIXED_BED || defined COHESIVE_BED
+        bed_bctr(Istr-1,Jend+1,:)=
+     &  0.5*(bed_bctr(Istr,Jend+1,:)
+     &      +bed_bctr(Istr-1,Jend,:))
+#  endif
+      endif
+      if (NORTHERN_EDGE.and.EASTERN_EDGE) then
+        bed_mass(Iend+1,Jend+1,:,nnew,:)=
+     &   0.5*(bed_mass(Iend,Jend+1,:,nnew,:)
+     &       +bed_mass(Iend+1,Jend,:,nnew,:))
+        bed_frac(Iend+1,Jend+1,:,:)=
+     &   0.5*(bed_frac(Iend,Jend+1,:,:)
+     &       +bed_frac(Iend+1,Jend,:,:))
+        bed_thick(Iend+1,Jend+1,:)=
+     &   0.5*(bed_thick(Iend,Jend+1,:)
+     &       +bed_thick(Iend+1,Jend,:))
+        bed_poros(Iend+1,Jend+1,:)=
+     &   0.5*(bed_poros(Iend,Jend+1,:)
+     &       +bed_poros(Iend+1,Jend,:))
+        bed_age(Iend+1,Jend+1,:)=
+     &   0.5*(bed_age(Iend,Jend+1,:)
+     &       +bed_age(Iend+1,Jend,:))
+#  if defined MIXED_BED || defined COHESIVE_BED
+        bed_bctr(Iend+1,Jend+1,:)=
+     &   0.5*(bed_bctr(Iend,Jend+1,:)
+     &       +bed_bctr(Iend+1,Jend,:))
+#  endif
+      endif
+# endif
+
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      do ised=1,NST
+        do k=1,NLAY
+          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_frac(START_2D_ARRAY,k,ised))
+          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_mass(START_2D_ARRAY,k,nnew,ised))
+         enddo 
+      enddo
+      do k=1,NLAY
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_poros(START_2D_ARRAY,k))
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_thick(START_2D_ARRAY,k))
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_age(START_2D_ARRAY,k))
+#  if defined MIXED_BED || defined COHESIVE_BED
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_bctr(START_2D_ARRAY,k))
+#  endif
+      enddo   
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bot_thick(START_2D_ARRAY))
+# endif
+!
+!-----------------------------------------------------------------------
+!  Store total bed thickness
+!-----------------------------------------------------------------------
+!
+# ifdef MORPHODYN
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          bed_thick_tot(i,j,nnew)=0.
+          do k=1,NLAY
+            bed_thick_tot(i,j,nnew)=bed_thick_tot(i,j,nnew)+
+     &                              bed_thick(i,j,k)
+          enddo
+        enddo
+      enddo
+!
+! Set boundary conditions
+!
+#  ifndef EW_PERIODIC
+      if (EASTERN_EDGE) then
+        do j=Jstr,Jend
+          bed_thick_tot(Iend+1,j,nnew)=bed_thick_tot(Iend,j,nnew)
+         enddo
+      endif
+      if (WESTERN_EDGE) then
+        do j=Jstr,Jend
+          bed_thick_tot(Istr-1,j,nnew)=bed_thick_tot(Istr,j,nnew)
+        enddo
+      endif
+#  endif
+#  ifndef NS_PERIODIC
+      if (NORTHERN_EDGE) then
+        do i=Istr,Iend
+          bed_thick_tot(i,Jend+1,nnew)=bed_thick_tot(i,Jend,nnew)
+        enddo
+      endif
+      if (SOUTHERN_EDGE) then
+        do i=Istr,Iend
+          bed_thick_tot(i,Jstr-1,nnew)=bed_thick_tot(i,Jstr,nnew)
+        enddo
+      endif
+#  endif
+#  if !defined EW_PERIODIC && !defined NS_PERIODIC
+      if (SOUTHERN_EDGE.and.WESTERN_EDGE) then
+        bed_thick_tot(Istr-1,Jstr-1,nnew)=
+     &  0.5*(bed_thick_tot(Istr,Jstr-1,nnew)
+     &      +bed_thick_tot(Istr-1,Jstr,nnew))
+      endif
+      if (SOUTHERN_EDGE.and.EASTERN_EDGE) then
+        bed_thick_tot(Iend+1,Jstr-1,nnew)=
+     &  0.5*(bed_thick_tot(Iend,Jstr-1,nnew)
+     &      +bed_thick_tot(Iend+1,Jstr,nnew))
+      endif
+      if (NORTHERN_EDGE.and.WESTERN_EDGE) then
+        bed_thick_tot(Istr-1,Jend+1,nnew)=
+     &  0.5*(bed_thick_tot(Istr,Jend+1,nnew)
+     &      +bed_thick_tot(Istr-1,Jend,nnew))
+      endif
+      if (NORTHERN_EDGE.and.EASTERN_EDGE) then
+        bed_thick_tot(Iend+1,Jend+1,nnew)=
+     &   0.5*(bed_thick_tot(Iend,Jend+1,nnew)
+     &       +bed_thick_tot(Iend+1,Jend,nnew))
+      endif
+#  endif
+!
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                         bed_thick_tot(START_2D_ARRAY,nnew))
+#  endif
+!
+!-----------------------------------------------------------------------
+!  Store bed evolution
+!-----------------------------------------------------------------------
+!
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          dh(i,j)=bed_thick_tot(i,j,nstp)-bed_thick_tot(i,j,nnew)
+        enddo
+      enddo
+# endif
+      return
+      end
+
+# endif
 !=======================================================================
 !                                                                      !
 !  This routine computed sediment surface layer (sediment-water        !
@@ -2531,7 +3702,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=cff2
+          Ssize(i,j)=MIN(cff2,Zobt) !   cff2
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo
@@ -2637,6 +3808,8 @@ C$OMP BARRIER
 !
       integer Nclass, i, icard, iunit, lstr, nl
       integer lenstr
+      real rdum
+      logical ldum
       parameter (iunit=50)
 #  ifdef TAU_CRIT_WULIN
       real cff1,cff2
@@ -2745,6 +3918,118 @@ C$OMP BARRIER
             MPI_master_only write(stdout,'(f10.5,2x,A)')
      &      morph_fac, 'morph_fac   Mophological factor.'
 
+# ifdef MIXED_BED
+        elseif (icard.eq.9) then
+          read(iunit,*,err=60) transC                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      transC, 'transC   Cohesive transition.'
+
+        elseif (icard.eq.10) then
+          read(iunit,*,err=60) transN                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      transN, 'transC   Noncohesive transition.'
+# else
+        elseif (icard.eq.9) then
+          read(iunit,*,err=60) rdum                     
+        elseif (icard.eq.10) then
+          read(iunit,*,err=60) rdum                     
+# endif
+# if defined COHESIVE_BED || defined MIXED_BED
+        elseif (icard.eq.11) then
+          read(iunit,*,err=60) tcr_min                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      tcr_min, 'tcr_min   Mud min taucr.'
+
+        elseif (icard.eq.12) then
+          read(iunit,*,err=60) tcr_max                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      tcr_max, 'tcr_max   Mud max taucr.'
+
+        elseif (icard.eq.13) then
+          read(iunit,*,err=60) tcr_slp                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      tcr_slp, 'tcr_slp   Mud taucr slope.'
+
+        elseif (icard.eq.14) then
+          read(iunit,*,err=60) tcr_off                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      tcr_off, 'tcr_off   Mud profile offset.'
+
+        elseif (icard.eq.15) then
+          read(iunit,*,err=60) tcr_tim                     
+            MPI_master_only write(stdout,'(f10.1,2x,A)')
+     &      tcr_tim, 'tcr_tim   Mud consolidation rate.'
+
+# endif
+# ifdef SED_FLOCS
+        elseif (icard.eq.16) then
+          read(iunit,*,err=60) l_ADS,l_ASH,l_COLLFRAG,l_testcase                     
+            MPI_master_only write(stdout,'(L10,2x,A)')
+     &      l_ADS, 'l_ADS   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(L10,2x,A)')
+     &      l_ASH, 'l_ASH   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(L10,2x,A)')
+     &      l_COLLFRAG, 'l_COLLFRAG   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(L10,2x,A)')
+     &      l_testcase, 'l_testcase   Mud consomidation rate.'
+
+        elseif (icard.eq.17) then
+          read(iunit,*,err=60) f_dp0  ,f_nf   ,f_dmax,f_nb_frag,
+     &                         f_alpha,f_beta ,f_ater,f_ero_frac,
+     &                         f_ero_nbfrag,f_collfragparam,
+     &                         f_clim,f_ero_iv                       
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_dp0, 'f_dp0   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_nf, 'f_nf   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_dmax, 'f_dmax   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_nb_frag, 'f_nb_frag   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_alpha, 'f_alpha   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_beta, 'f_beta   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_ater, 'f_ater   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_ero_frac, 'f_ero_frac   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_ero_nbfrag, 'f_ero_nbfrag   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_collfragparam, 'f_collfragparam   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      f_clim, 'f_clim   Mud consomidation rate.'
+            MPI_master_only write(stdout,'(I10,2x,A)')
+     &      f_ero_iv, 'f_ero_iv   Mud consomidation rate.'
+
+#  ifdef SED_DEFLOC
+        elseif (icard.eq.18) then
+          read(iunit,*,err=60) (mud_frac_eq(nl),nl=1,NMUD)
+           do nl=1,NMUD
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      mud_frac_eq(nl), 'mud_frac_eq   Equilibrium fractional class'
+           enddo
+        elseif (icard.eq.19) then
+          read(iunit,*,err=60) t_dfloc                     
+            MPI_master_only write(stdout,'(f10.5,2x,A)')
+     &      t_dfloc, 't_dfloc   Floc decomposition rate.'
+#  else
+        elseif (icard.eq.18) then
+          read(iunit,*,err=60) rdum
+        elseif (icard.eq.19) then
+          read(iunit,*,err=60) rdum
+#  endif
+# else
+        elseif (icard.eq.16) then
+          read(iunit,*,err=60) ldum                     
+        elseif (icard.eq.17) then
+          read(iunit,*,err=60) rdum                   
+        elseif (icard.eq.18) then
+          read(iunit,*,err=60) rdum
+        elseif (icard.eq.19) then
+          read(iunit,*,err=60) rdum                     
+# endif
         endif ! icard 
 !
 !  Read until last input card ID.
@@ -2773,6 +4058,13 @@ C$OMP BARRIER
  100  format(/,
      &       'Number of size classes in sediment computation:'i2)
 
+
+       do i=1,NST
+       tau_ce_2d(:,:,i)=tau_ce(i)
+       enddo
+# ifdef SED_FLOCS
+       call initialize_sedflocs
+# endif
       return
       end
 
@@ -2788,7 +4080,7 @@ C$OMP BARRIER
 !======================================================================!
 !======================================================================!
 !
-      SUBROUTINE sandload_vandera( wavecycle,
+      subroutine sandload_vandera( wavecycle,
      &                                   Hs, Td,  depth, RR,
      &                              d50, d50_mix, rhos, c_w,
      &                                             eta, dsf,
@@ -2832,45 +4124,45 @@ C$OMP BARRIER
 !
       ws_eta=w_sc_calc(Hs, Td, depth, RR, w_s, eta)
       ws_dsf=w_sc_calc(Hs, Td, depth, RR, w_s, dsf)
-      IF(wavecycle.eq.1.) THEN
+      if(wavecycle.eq.1.) then
         w_sc_eta=MAX(w_s+ws_eta,0.)
         w_sc_dsf=MAX(w_s+ws_dsf,0.)
-      ENDIF
+      endif
 !
 ! VA2013 Equation 30, for trough cycle
 !
-      IF(wavecycle.eq.-1.) THEN
+      if(wavecycle.eq.-1.) then
 !        w_sc_eta=(w_s-ws_eta)
 !        w_sc_dsf=(w_s-ws_dsf)
         w_sc_eta=MAX(w_s-ws_eta,0.36*w_s)
         w_sc_dsf=MAX(w_s-ws_dsf,0.36*w_s)
 !        w_sc_eta=MIN(w_s-ws_eta,0.)
 !        w_sc_dsf=MIN(w_s-ws_dsf,0.)
-      ENDIF
+      endif
 !
 ! VA2013 Equation 33, Phase lag parameter
 !
       cff=1.-(wavecycle*xi*uhat_i/c_w)
 !
-      IF( (T_i-T_iu).eq.0. ) THEN 
+      if( (T_i-T_iu).eq.0. ) then 
         cff1_eta=0.
         cff1_dsf=0.
-      ELSE
+      else
         cff1_eta=(1./(2.*(T_i-T_iu)*w_sc_eta))
         cff1_dsf=(1./(2.*(T_i-T_iu)*w_sc_dsf))
-      ENDIF 
+      endif 
 !
-      IF(eta.gt.0.) THEN
+      if(eta.gt.0.) then
 !
 ! For ripple regime 
 !
         P=alpha_fac*eta*cff*cff1_eta
-      ELSEIF(eta.eq.0.)THEN
+      elseif(eta.eq.0.)then
 !
 ! For sheet flow regime 
 !
         P=alpha_fac*dsf*cff*cff1_dsf
-      ENDIF
+      endif
 !
 ! Hiding/exposure correction factor
 !
@@ -2892,27 +4184,27 @@ C$OMP BARRIER
 !
 ! VA2013 Equation 23-26, Sandload entrained during half cycle 
  
-      IF(P.lt.eps) THEN
+      if(P.lt.eps) then
  
 ! This is Taran's addition if there are no waves then phase lag=0.0
 ! 
         om_ii=1. 
         om_iy=0.
-      ELSEIF(P.gt.eps.and.P.lt.1.) THEN
+      elseif(P.gt.eps.and.P.lt.1.) then
         om_ii=om_i
         om_iy=0.
-      ELSE
+      else
         om_ii=om_i/P
         cff=1./P
         om_iy=om_i*(1.-cff)
-      ENDIF
+      endif
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE full_wave_cycle_stress_factors( d50, d90, osmgd,
+      subroutine full_wave_cycle_stress_factors( d50, d90, osmgd,
      &                                            Td, c_w, depth,
      &                                               phi_curwave,
      &                                            RR, uhat, ahat,
@@ -2985,7 +4277,7 @@ C$OMP BARRIER
 !
 ! Use Appendix B eqn B.1 and B.2 to get ripple height and length
 !
-      CALL ripple_dim(psi, d50, eta, rlen)
+      call ripple_dim(psi, d50, eta, rlen)
 !
       eta=eta*ahat
       rlen=rlen*ahat
@@ -3003,7 +4295,7 @@ C$OMP BARRIER
       fd=0.
 #  endif
 !
-      DO iter=1,total_iters !---- ! Iterative solution
+      do iter=1,total_iters !---- ! Iterative solution
 !
 ! Wave related bed roughness - VA2013 A.5
 !
@@ -3031,12 +4323,12 @@ C$OMP BARRIER
         theta_timeavg=osmgd*(0.50*fd*udelta**2.+
      &                       0.25*fw*uhat**2.)
 !
-        IF(ABS(theta_timeavg-theta_timeavg_old).lt.tol) THEN
+        if(ABS(theta_timeavg-theta_timeavg_old).lt.tol) then
           EXIT
-        ENDIF
+        endif
         theta_timeavg_old=theta_timeavg
 !
-      ENDDO  ! end iterations ----
+      enddo  ! end iterations ----
 !
 ! Full-cycle current friction factor - VA2013 Eq 20
 !
@@ -3057,22 +4349,22 @@ C$OMP BARRIER
 ! (current velocity at wave boundary layer)
 !
 #  ifndef BEDLOAD_VANDERA_ZEROCURR
-      CALL current_timeperiod(udelta, phi_curwave, umax, umin, RR,
+      call current_timeperiod(udelta, phi_curwave, umax, umin, RR,
      &                        T_c, T_t, Td)
 #  endif
 !
 ! Calculate the effect of surface waves 
 !
 #  ifdef BEDLOAD_VANDERA_SURFACE_WAVE
-      CALL surface_wave_mod(Td, depth, uhat, T_c, T_cu, T_t, T_tu)
+      call surface_wave_mod(Td, depth, uhat, T_c, T_cu, T_t, T_tu)
 #  endif 
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE half_wave_cycle_stress_factors( T_iu, T_i, ahat, ksw,
+      subroutine half_wave_cycle_stress_factors( T_iu, T_i, ahat, ksw,
      &                                                      fd, alpha,
      &                                                 alphac, alphaw,
      &                                                     d50, osmgd,
@@ -3155,12 +4447,12 @@ C$OMP BARRIER
 !
       mag_theta_i=MAX( sqrt(theta_ix*theta_ix+theta_iy*theta_iy),eps )
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE current_timeperiod(unet, phi_curwave, umax, umin,
+      subroutine current_timeperiod(unet, phi_curwave, umax, umin,
      &                              RR, T_c, T_t, Td)
 !
 ! This subroutine returns the following:
@@ -3185,58 +4477,58 @@ C$OMP BARRIER
       real unet_xdir, udelta, delt
 !
       unet_xdir=unet*cos(phi_curwave)
-      IF(RR.eq.0.5) THEN
+      if(RR.eq.0.5) then
         T_c=0.5*Td
         T_t=0.5*Td
-        IF(unet_xdir.ge.umax) THEN
+        if(unet_xdir.ge.umax) then
           T_c=Td
           T_t=0.
-        ELSEIF(unet_xdir.le.umin) THEN
+        elseif(unet_xdir.le.umin) then
           T_c=0.
           T_t=Td
-        ELSEIF(unet_xdir.lt.0.0.and.unet_xdir.gt.umin) THEN
+        elseif(unet_xdir.lt.0.0.and.unet_xdir.gt.umin) then
           delt=ASIN(-unet/umin)/pi
           T_t=T_t*(1.-2.*delt)
           T_c=Td-T_t
-        ELSEIF(unet_xdir.gt.0.0.and.unet_xdir.lt.umax) THEN
+        elseif(unet_xdir.gt.0.0.and.unet_xdir.lt.umax) then
           delt=ASIN(unet_xdir/(-umax))/pi
           T_c=T_c*(1.-2.*delt)
           T_t=Td-T_c
-        ELSEIF(unet_xdir.eq.0.) THEN
+        elseif(unet_xdir.eq.0.) then
           T_c=T_c
           T_t=T_t
-        ENDIF
-      ELSEIF(RR.gt.0.5) THEN
+        endif
+      elseif(RR.gt.0.5) then
         T_c=T_c
         T_t=T_t
-        IF(unet_xdir.ge.umax) THEN
+        if(unet_xdir.ge.umax) then
           T_c=Td
           T_t=0.
-        ELSEIF(unet_xdir<=umin) THEN
+        elseif(unet_xdir<=umin) then
           T_c=0.
           T_t=Td
-        ELSEIF(unet_xdir.lt.0.0.and.unet_xdir.gt.umin) THEN
+        elseif(unet_xdir.lt.0.0.and.unet_xdir.gt.umin) then
           delt=ASIN(-unet_xdir/umin)/pi
           T_t=T_t*(1.-2.*delt)
           T_c=Td-T_t
-        ELSEIF(unet_xdir.gt.0.0.and.unet_xdir.lt.umax) THEN
+        elseif(unet_xdir.gt.0.0.and.unet_xdir.lt.umax) then
           delt=ASIN(unet_xdir/(-umax))/pi
           T_c=T_c*(1.-2.*delt)
           T_t=Td-T_c
-        ELSEIF(unet_xdir.eq.0.) THEN
+        elseif(unet_xdir.eq.0.) then
           T_c=T_c
           T_t=T_t
-        ENDIF
-      ENDIF
+        endif
+      endif
       T_c=MAX(T_c,0.)
       T_t=MAX(T_t,0.)
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE surface_wave_mod(Td, depth, uhat, T_c, T_cu, T_t, T_tu)
+      subroutine surface_wave_mod(Td, depth, uhat, T_c, T_cu, T_t, T_tu)
 ! 
 ! This subroutine returns the following:
 ! T_c, T_cu, T_t, T_tu  : Change in time period in crest and 
@@ -3286,12 +4578,12 @@ C$OMP BARRIER
       T_t=T_t_new
       T_tu=T_tu_new
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE ripple_dim(psi, d50, eta, rlen)
+      subroutine ripple_dim(psi, d50, eta, rlen)
 ! 
 ! This subroutine returns the following:
 ! eta, rlen : Ripple dimensions: (height and length) 
@@ -3310,37 +4602,37 @@ C$OMP BARRIER
       parameter(eps=1.0E-14)
 !     
       d50_mm=0.001*d50
-      IF(d50_mm.lt.0.22) THEN
+      if(d50_mm.lt.0.22) then
         m_eta=0.55
         m_lambda=0.73
-      ELSEIF(d50_mm.ge.0.22.and.d50_mm.lt.0.30) THEN
+      elseif(d50_mm.ge.0.22.and.d50_mm.lt.0.30) then
         m_eta=0.55+(0.45*(d50_mm-0.22)/(0.30-0.22))
         m_lambda=0.73+(0.27*(d50_mm-0.22)/(0.30-0.22))
-      ELSE
+      else
         m_eta=1.
         m_lambda=1.
-      ENDIF
+      endif
 ! 
 ! Smooth transition between ripple regime and bed sheet flow regime 
 !
-      IF(psi.le.190.) THEN
+      if(psi.le.190.) then
         n_eta=1.
-      ELSEIF(psi.gt.190..and.psi.lt.240.) THEN
+      elseif(psi.gt.190..and.psi.lt.240.) then
         n_eta=0.5*(1.+cos(pi*(psi-190.)/(50.)))
-      ELSEIF(psi.ge.240.) THEN
+      elseif(psi.ge.240.) then
         n_eta=0.
-      ENDIF
+      endif
       n_lambda=n_eta
 !
       eta=MAX(0.,m_eta*n_eta*(0.275-0.022*psi**0.42))
       rlen=MAX(eps,m_lambda*n_lambda*(1.97-0.44*psi**0.21))
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE skewness_params( H_s, T, depth, r, phi, Ur )
+      subroutine skewness_params( H_s, T, depth, r, phi, Ur )
 !        
 ! Ruessink et al. (2012) provides equations for calculating skewness 
 ! parameters. Uses Malarkey and Davies equations to get "bb" and "r",
@@ -3406,12 +4698,12 @@ C$OMP BARRIER
       Su=B*cos(psi)
       Au=B*sin(psi)
 !
-      RETURN
-      END
+      return
+      end
 !
 !======================================================================
 !
-      SUBROUTINE abreu_points( r, phi, Uw, T, T_c, T_t,
+      subroutine abreu_points( r, phi, Uw, T, T_c, T_t,
      &                            T_cu, T_tu, umax, umin, RR, beta )
 ! 
 !  Calculate umax, umin, and phases of asymmetrical wave orbital velocity 
@@ -3460,31 +4752,31 @@ C$OMP BARRIER
 ! These "if" conditionals prevent ASIN to be between [-1,1] and prevent NaNs
 ! Not a problem in the MATLAB code
 !
-      IF(ratio.gt.1.)THEN
+      if(ratio.gt.1.)then
         ratio=1.
-      ENDIF
-      IF(ratio.lt.-1.)THEN
+      endif
+      if(ratio.lt.-1.)then
         ratio=-1.
-      ENDIF
+      endif
       tmc=ASIN(ratio)
 !
       cff1=4.*c*(b*b-c*c)-(1.-b*b)*(1.+b*b-2.*c*c)
       cff2=(1.+b*b)**2.-4.*c*c
       ratio=cff1/cff2
-      IF(ratio.gt.1.)THEN
+      if(ratio.gt.1.)then
         ratio=1.
-      ENDIF
-      IF(ratio.lt.-1.)THEN
+      endif
+      if(ratio.lt.-1.)then
         ratio=-1.
-      ENDIF
+      endif
       tmt=ASIN(ratio)
 !       
-      IF(tmc.lt.0.) THEN
+      if(tmc.lt.0.) then
         tmc=tmc+2.*pi
-      ENDIF
-      IF(tmt.lt.0.) THEN
+      endif
+      if(tmt.lt.0.) then
         tmt=tmt+2.*pi
-      ENDIF
+      endif
 ! 
 ! Non dimensional umax and umin, under E5 in Malarkey and Davies 
 ! 
@@ -3507,21 +4799,21 @@ C$OMP BARRIER
 ! 
 ! MD, under equation 18
 ! 
-      IF(r.le.0.5) THEN
+      if(r.le.0.5) then
         F0=1.0-0.27*(2.*r)**(2.1)
-      ELSE
+      else
         F0=0.59+0.14*(2.*r)**(-6.2)
-      ENDIF
+      endif
 !
 ! MD, Equation 15a,b 
 !
-      IF(r.ge.0..and.r.lt.0.5)THEN
+      if(r.ge.0..and.r.lt.0.5)then
         betar_0=0.5*(1.+r)
-      ELSEIF(r.gt.0.5.and.r.lt.1.)THEN
+      elseif(r.gt.0.5.and.r.lt.1.)then
         cff1=4.*r*(1.+r)
         cff2=cff1+1.
         betar_0=cff1/cff2
-      ENDIF
+      endif
 !
 ! MD, Equation 18
 !
@@ -3543,8 +4835,8 @@ C$OMP BARRIER
       T_cu=(tmc-tzu)*w
       T_tu=(tmt-tzd)*w
 !
-      RETURN
-      END
+      return
+      end
 
 ! 
 !======================================================================
@@ -3583,17 +4875,17 @@ C$OMP BARRIER
 !
 ! Soulsby (2006) "Simplified calculation of wave orbital velocities"
 !
-      IF(depth.lt.0.) THEN  ! avoid negative wavenumber
+      if(depth.lt.0.) then  ! avoid negative wavenumber
         x=0.
-      ELSE 
+      else 
         x=omega**2.*depth/g
-      ENDIF 
+      endif 
 !
-      IF(x.lt.1.) THEN
+      if(x.lt.1.) then
         y=SQRT(x)
-      ELSE
+      else
         y=x
-      ENDIF
+      endif
 !      
       t=TANH(y)   ! Iteratively solving 3 times (Soulsby 1997)
       cff=(y*t-x)/(t+y*(1.-t*t))
@@ -3610,8 +4902,8 @@ C$OMP BARRIER
       kh_calc=y
 #  endif /* KH_HUNT */
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3636,8 +4928,8 @@ C$OMP BARRIER
       cff1=10.36
       w_s_calc=cff*(sqrt(cff1*cff1+1.049*dstar**3.)-cff1)
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3672,8 +4964,8 @@ C$OMP BARRIER
       worb=MIN(worb, eps_inv)
       w_sc_calc=worb
 !
-      RETURN  
-      END
+      return  
+      end
 ! 
 !======================================================================
 !
@@ -3688,16 +4980,16 @@ C$OMP BARRIER
 !
       d50_mm=d50*1000.
 !
-      IF(d50_mm.le.0.15) THEN
+      if(d50_mm.le.0.15) then
         mu_calc=6.
-      ELSEIF(d50_mm.gt.0.15.and.d50_mm.lt.0.2) THEN
+      elseif(d50_mm.gt.0.15.and.d50_mm.lt.0.2) then
         mu_calc=6.-5.*((d50_mm-0.15)/(0.2-0.15))
-      ELSEIF(d50_mm.ge.0.2) THEN
+      elseif(d50_mm.ge.0.2) then
         mu_calc=1.
-      ENDIF
+      endif
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3715,8 +5007,8 @@ C$OMP BARRIER
       ksd_calc=MAX( 3.*d90, d50*(mu+6.*(theta_timeavg-1.)) )
      &         + ripple_fac
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3734,8 +5026,8 @@ C$OMP BARRIER
       ksw_calc=MAX( d50, d50*(mu+6.*(theta_timeavg-1.)) )
      &         + ripple_fac
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3748,14 +5040,14 @@ C$OMP BARRIER
       real ahat, ksw, ratio, fw
 !
       ratio=ahat/ksw
-      IF(ratio.gt.1.587) THEN
+      if(ratio.gt.1.587) then
         fw_calc=0.00251*EXP(5.21*(ratio)**(-0.19))
-      ELSE
+      else
         fw_calc=0.3
-      ENDIF
+      endif
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3772,14 +5064,14 @@ C$OMP BARRIER
       real von_k
       parameter(von_k=0.41)
  
-      IF(udelta.lt.min_udelta) THEN
+      if(udelta.lt.min_udelta) then
         fd_calc_santoss=0.
-      ELSE
+      else
         fd_calc_santoss=2.*(von_k/LOG(30.*delta/ksd))**2.
-      ENDIF
+      endif
      
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3798,15 +5090,15 @@ C$OMP BARRIER
       parameter(min_udelta=1.0E-4)
       real udelta, mag_bstrc
 ! 
-      IF(udelta.lt.min_udelta) THEN
+      if(udelta.lt.min_udelta) then
         fd_calc_madsen=0.
-      ELSE
+      else
         fd_calc_madsen=MAX((mag_bstrc/(0.5*udelta*udelta)),eps)
 !        fd_calc_madsen=MIN(fd_calc_madsen,2.) 
-      ENDIF
+      endif
 !     
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3828,7 +5120,7 @@ C$OMP BARRIER
 !      
       c1=2.6
       ratio=ahat/ksw
-      IF(ratio.gt.1.587) THEN
+      if(ratio.gt.1.587) then
         cff1=MAX( (T_iu/T_i),0. )
         cff2=(2.*cff1)**c1
         cff3=cff2*ratio
@@ -3836,15 +5128,15 @@ C$OMP BARRIER
 ! These "if" condition prevents arithematic overflow error
 ! when 0.0**-0.19
 !
-        IF(cff3.le.0.) THEN 
+        if(cff3.le.0.) then 
           fwi_calc=0.
-        ELSE 
+        else 
           fwi_calc=0.00251*EXP(5.21*(cff3)**(-0.19))
-        END IF
-      END IF 
+        end if
+      end if 
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3859,17 +5151,17 @@ C$OMP BARRIER
       real cff
 !
       d50_mm=d50*1000.
-      IF(d50_mm.le.0.15)THEN
+      if(d50_mm.le.0.15)then
         cff=25.*theta_i
-      ELSEIF(d50_mm.gt.0.15.and.d50_mm.lt.0.2)THEN
+      elseif(d50_mm.gt.0.15.and.d50_mm.lt.0.2)then
         cff=25.-(12.*(d50_mm-0.15)/0.05)
-      ELSEIF(d50_mm.ge.0.2)THEN
+      elseif(d50_mm.ge.0.2)then
         cff=13.*theta_i
-      ENDIF
+      endif
       dsf_calc=MAX(d50*cff,d50)
 !
-      RETURN
-      END
+      return
+      end
 ! 
 !======================================================================
 !
@@ -3893,11 +5185,1149 @@ C$OMP BARRIER
       cff2=0.055*(1.-EXP(-0.02*dstar))
       theta_cr_calc=cff1+cff2
 !
-      RETURN
-      END
+      return
+      end
 # endif /* BEDLOAD_VANDERA */
 !======================================================================
 !
+# ifdef SED_FLOCS
+
+
+      subroutine initialize_sedflocs 
+!
+!=======================================================================
+!                                                                      !
+!  This routine initialize structure variables in the module using     !
+!  first touch distribution policy. In shared-memory configuration,    !
+!  this operation actually performs the propagation of the "shared     !
+!  arrays" across the cluster,  unless another policy is specified     !
+!  to  override the default.                                           !
+!                                                                      !
+!=======================================================================
+!
+      implicit none
+
+#  include "param.h"
+#  include "scalars.h"
+#  include "sediment.h"
+
+      integer i, itrc, j, k
+      logical f_test
+      real f_weight,mult,dfragmax
+      integer  iv1,iv2,iv3,indx
+      real mu 
+      real myeps
+      mu = 0.001
+      myeps = epsilon(1.0)
+!
+! ALA the rest of the initialization
+!
+!      l_ADS=.false.
+!      l_ASH=.true.
+!      l_COLLFRAG=.false.
+!      f_dp0=0.000004
+!      f_nf=1.9
+!      f_dmax=0.001500
+!      f_nb_frag=2.0
+!      f_alpha=0.35
+!      f_beta=0.15
+!      f_ater=0.0
+!      f_ero_frac=0.0
+!      f_ero_nbfrag=2.0
+!      f_ero_iv=1
+!      f_collfragparam=0.01
+
+
+!!--------------------------------------------------
+!! floc characteristics
+      do itrc=1,NMUD
+         indx= imud1 +itrc-1
+         f_diam(itrc)=Sd(indx)
+         f_vol(itrc)=pi/6.0*(f_diam(itrc))**3.0
+         f_rho(itrc)=rhoref+(2650.0-rhoref)*                         
+     &     (f_dp0/f_diam(itrc))**(3.0-f_nf)
+         f_mass(itrc)=f_vol(itrc)*(f_rho(itrc)-rhoref)
+      enddo
+      f_mass(NMUD+1)=f_mass(NMUD)*2.0+1.0
+      if (f_diam(1).eq.f_dp0)  then
+          f_mass(1)=f_vol(1)*Srho(imud1)
+      endif
+!TODO - This wont parallelize
+      write(*,*) ' '
+      write(*,*) 'FLOCMOD INIT  '
+  !    write(*,*) 'NAT, NPT, NMUD, NNS:', NAT,NPT,NMUD,NNS
+      write(*,*) "class diameter (um)  volume (m3)  density (kg/m3)
+     &    mass (kg)"
+      do itrc=1,NMUD
+         write(*,*) itrc,f_diam(itrc)*1e6,f_vol(itrc),
+     &     f_rho(itrc),f_mass(itrc)
+      enddo
+      write(*,*) 'f_mass(0) and f_mass(NMUD+1): ',
+     & f_mass(0),f_mass(NMUD+1)
+      write(*,*) ' '
+      write(*,*) ' PARAMETERS '
+      write(*,*) "Primary particle size (f_dp0)              
+     &                   : ",f_dp0
+      write(*,*) "Fractal dimension (f_nf)                  
+     &         : ",f_nf
+      write(*,*) "Flocculation efficiency (f_alpha)         
+     &         : ",f_alpha
+      write(*,*) "Floc break up parameter (f_beta)          
+     &         : ",f_beta
+      write(*,*) "Nb of fragments (f_nb_frag)                   
+     &         : ",f_nb_frag
+      write(*,*) "Ternary fragmentation (f_ater)                     
+     &         : ",f_ater
+      write(*,*) "Floc erosion (% of mass) (f_ero_frac)               
+     &         : ",f_ero_frac
+      write(*,*) "Nb of fragments by erosion (f_ero_nbfrag)           
+     &         : ",f_ero_nbfrag
+      write(*,*) "fragment class (f_ero_iv)                           
+     &         : ",f_ero_iv
+      write(*,*) "Boolean for differential settling aggregation (L_ADS)
+     &         : ",l_ADS
+      write(*,*) "Boolean for shear aggregation (L_ASH)                
+     &          :",l_ASH
+      write(*,*) "Boolean for collision fragmenation (L_COLLFRAG)      
+     &         : ",l_COLLFRAG
+      write(*,*) "Collision fragmentation parameter (f_collfragparam)  
+     &         : ",f_collfragparam
+      write(*,*) "Boolean for test case from Verney (L_TESTCASE)       
+     &         : ",l_testcase
+      write(*,*) ' '
+      write(*,*) 'Value of eps   : ',myeps
+      write(*,*) ' '
+
+! kernels computation former subroutine flocmod_kernels
+
+
+!!--------------------------------------------------------------------------
+!! * Executable part
+      f_test=.true.
+      dfragmax=0.00003
+! compute collision probability former subroutine flocmod_agregation_statistics
+
+      do iv1=1,NMUD
+        do iv2=1,NMUD
+          f_coll_prob_sh(iv1,iv2)=1.0/6.0*(f_diam(iv1)+           
+     &            f_diam(iv2))**3.0
+
+          f_coll_prob_ds(iv1,iv2)=0.25*pi*(f_diam(iv1)+              
+     &            f_diam(iv2))**2.0*g/mu*abs((f_rho(iv1)-         
+     &            rhoref)*f_diam(iv1)**2.0-(f_rho(iv2)-rhoref)*      
+     &            f_diam(iv2)**2.0)
+        enddo
+      enddo
+
+  !********************************************************************************
+  ! agregation : GAIN : f_g1_sh and f_g1_ds
+  !********************************************************************************
+      do iv1=1,NMUD
+        do iv2=1,NMUD
+          do iv3=iv2,NMUD
+            if((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1-1)    .and.     
+     &            ((f_mass(iv2)+f_mass(iv3)) .le. f_mass(iv1))) then
+              f_weight=(f_mass(iv2)+f_mass(iv3)-f_mass(iv1-1))/         
+     &                   (f_mass(iv1)-f_mass(iv1-1))
+            elseif ((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1) .and.     
+     &            ((f_mass(iv2)+f_mass(iv3)) .lt. f_mass(iv1+1))) then
+              if (iv1 .eq. NMUD) then
+                f_weight=1.0
+              else
+                f_weight=1.0-(f_mass(iv2)+f_mass(iv3)-              
+     &                 f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1))
+              endif
+            else
+              f_weight=0.0
+            endif
+            f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*                       
+     &            f_coll_prob_sh(iv2,iv3)*(f_mass(iv2)+                 
+     &            f_mass(iv3))/f_mass(iv1)
+            f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*                       
+     &            f_coll_prob_ds(iv2,iv3)*(f_mass(iv2)+                 
+     &            f_mass(iv3))/f_mass(iv1)
+          enddo
+        enddo
+      enddo
+
+  !********************************************************************************
+  ! Shear fragmentation : GAIN : f_g3
+  !********************************************************************************
+
+      do iv1=1,NMUD
+        do iv2=iv1,NMUD
+          if (f_diam(iv2).gt.dfragmax) then
+           ! binary fragmentation
+            if (f_mass(iv2)/f_nb_frag .gt. f_mass(iv1-1) 
+     &            .and. f_mass(iv2)/f_nb_frag .le. f_mass(iv1)) then
+              if (iv1 .eq. 1) then
+                 f_weight=1.0
+              else
+                 f_weight=(f_mass(iv2)/f_nb_frag-f_mass(iv1-1))/        
+     &                (f_mass(iv1)-f_mass(iv1-1))
+              endif
+            elseif (f_mass(iv2)/f_nb_frag .gt. f_mass(iv1)               
+     &            .and. f_mass(iv2)/f_nb_frag .lt. f_mass(iv1+1)) then
+              f_weight=1.0-(f_mass(iv2)/f_nb_frag-f_mass(iv1))/      
+     &              (f_mass(iv1+1)-f_mass(iv1))
+
+            else
+              f_weight=0.0
+            endif
+          else
+            f_weight=0.0
+          endif
+
+          f_g3(iv2,iv1)=f_g3(iv2,iv1)+(1.0-f_ero_frac)*(1.0-        
+     &            f_ater)*f_weight*f_beta*f_diam(iv2)*((f_diam(iv2)-    
+     &            f_dp0)/f_dp0)**(3.0-f_nf)*f_mass(iv2)/             
+     &            f_mass(iv1)
+
+         ! ternary fragmentation
+          if (f_diam(iv2).gt.dfragmax) then
+            if (f_mass(iv2)/(2.0*f_nb_frag) .gt. f_mass(iv1-1) .and.  
+     &          f_mass(iv2)/(2.0*f_nb_frag) .le. f_mass(iv1)) then
+              if (iv1 .eq. 1) then
+                 f_weight=1.0
+              else
+                 f_weight=(f_mass(iv2)/(2.0*f_nb_frag)-              
+     &                f_mass(iv1-1))/(f_mass(iv1)-f_mass(iv1-1))
+              endif
+
+            elseif (f_mass(iv2)/(2.0*f_nb_frag) .gt. f_mass(iv1)      
+     &           .and. f_mass(iv2)/(2.0*f_nb_frag) .lt.              
+     &            f_mass(iv1+1)) then
+
+              f_weight=1.0-(f_mass(iv2)/(2.0*f_nb_frag)-          
+     &                 f_mass(iv1))/(f_mass(iv1+1)-f_mass(iv1))
+
+            else
+              f_weight=0.0
+
+            endif
+            ! update for ternary fragments
+            f_g3(iv2,iv1)=f_g3(iv2,iv1)+(1.0-f_ero_frac)*(f_ater)*    
+     &            f_weight*f_beta*f_diam(iv2)*((f_diam(iv2)-f_dp0)/     
+     &            f_dp0)**(3.0-f_nf)*f_mass(iv2)/f_mass(iv1)
+
+            ! Floc erosion
+
+            if ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.         
+     &            f_mass(f_ero_iv)) then
+
+              if (((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.     
+     &            f_mass(iv1-1)) .and. (f_mass(iv2)-f_mass(f_ero_iv)*   
+     &            f_ero_nbfrag) .le. f_mass(iv1)) then
+
+                 if (iv1 .eq. 1) then
+                    f_weight=1.0
+                 else
+                    f_weight=(f_mass(iv2)-f_mass(f_ero_iv)*             
+     &                      f_ero_nbfrag-f_mass(iv1-1))/(f_mass(iv1)-   
+     &                      f_mass(iv1-1))
+                 endif
+
+              elseif ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.  
+     &            f_mass(iv1) .and. (f_mass(iv2)-f_mass(f_ero_iv)*      
+     &            f_ero_nbfrag) .lt. f_mass(iv1+1)) then
+
+                 f_weight=1.0-(f_mass(iv2)-f_mass(f_ero_iv)*         
+     &                    f_ero_nbfrag-f_mass(iv1))/(f_mass(iv1+1)-     
+     &                    f_mass(iv1))
+
+              else
+                 f_weight=0.0
+              endif
+              ! update for eroded floc masses
+              f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_weight*f_beta*   
+     &            f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**    
+     &            (3.0-f_nf)*(f_mass(iv2)-f_mass(f_ero_iv)*          
+     &            f_ero_nbfrag)/f_mass(iv1)
+
+              if (iv1 .eq. f_ero_iv) then
+                 f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_beta*         
+     &              f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**  
+     &              (3.0-f_nf)*f_ero_nbfrag*f_mass(f_ero_iv)/        
+     &              f_mass(iv1)
+              endif
+           endif
+        endif ! condition on dfragmax
+       enddo
+      enddo
+
+  !********************************************************************************
+  !  Shear agregation : LOSS : f_l1
+  !********************************************************************************
+      do iv1=1,NMUD
+        do iv2=1,NMUD
+          if(iv2 .eq. iv1) then
+            mult=2.0
+          else
+            mult=1.0
+          endif
+          f_l1_sh(iv2,iv1)=mult*f_alpha*f_coll_prob_sh(iv2,iv1)
+          f_l1_ds(iv2,iv1)=mult*f_alpha*f_coll_prob_ds(iv2,iv1)
+        enddo
+      enddo
+
+  !********************************************************************************
+  !  Shear fragmentation : LOSS : f_l2
+  !********************************************************************************
+      do iv1=1,NMUD
+        f_l3(iv1)=0.0
+        if (f_diam(iv1).gt.dfragmax) then
+        ! shear fragmentation
+           f_l3(iv1)=f_l3(iv1)+(1.0-f_ero_frac)*f_beta*f_diam(iv1)*  
+     &            ((f_diam(iv1)-f_dp0)/f_dp0)**(3.0-f_nf)
+          ! shear erosion
+          if ((f_mass(iv1)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.            
+     &            f_mass(f_ero_iv)) then
+           f_l3(iv1)=f_l3(iv1)+f_ero_frac*f_beta*f_diam(iv1)*           
+     &            ((f_diam(iv1)-f_dp0)/f_dp0)**(3.0-f_nf)
+          endif
+        endif
+      end do
+
+      write(*,*) ' '
+      write(*,*) 'Sum of kernal coefficients:'
+      write(*,*) 'f_coll_prob_sh',sum(f_coll_prob_sh)
+      write(*,*) 'f_coll_prob_ds',sum(f_coll_prob_ds)
+      write(*,*) 'f_g1_sh',sum(f_g1_sh)
+      write(*,*) 'f_g1_ds',sum(f_g1_ds)
+      write(*,*) 'f_l1_sh',sum(f_l1_sh)
+      write(*,*) 'f_l1_ds',sum(f_l1_ds)
+      write(*,*) 'f_g3',sum(f_g3)
+      write(*,*) 'f_l3',sum(f_l3)
+      write(*,*) ' '
+      write(*,*) ' end FLOCMOD INIT  '
+
+      return
+      end subroutine initialize_sedflocs
+
+!
+!***********************************************************************
+      subroutine sed_flocmod_tile (Istr,Iend,Jstr,Jend,             
+     &                             Hz_inv)
+
+!***********************************************************************
+!
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+#  include "ocean3d.h"
+#  include "mixing.h"
+#  include "bbl.h"
+#  include "sediment.h"
+#  include "forces.h"
+
+      integer Istr,Iend,Jstr,Jend! 
+      real, dimension(PRIVATE_1D_SCRATCH_ARRAY,N) :: Hz_inv
+
+
+
+      integer :: i, indx, ised, j, k, ks
+!
+!  Variable declarations for floc model
+!
+      integer  :: iv1
+      real :: Gval,diss,mneg,dttemp,f_dt
+      real :: dt1,f_csum,epsilon8
+      real :: cvtotmud,tke_av, gls_av, exp1, exp2, exp3, ustr2,effecz
+
+      real, dimension(PRIVATE_1D_SCRATCH_ARRAY,N,NT) :: susmud    ! RB pb OPENNMP
+
+      real,dimension(1:NMUD)     :: cv_tmp,NNin,NNout
+!  f_mneg_param : negative mass tolerated to avoid small sub time step (g/l)
+      real, parameter :: f_mneg_param=0.000
+
+      epsilon8=epsilon(1.0)
+!     epsilon8=1.e-8
+!
+!--------------------------------------------------------------------------
+! * Executable part
+!
+      do j=Jstr,Jend
+!
+!  Extract mud variables from tracer arrays, place them into
+!  scratch arrays, and restrict their values to be positive definite.
+        do k=1,N
+          do i=Istr,Iend
+            Hz_inv(i,k)=1.0/Hz(i,j,k)
+          end do
+        end do
+        do ised=1,NMUD
+          indx =itrc_mud+ised-1
+          do k=1,N
+            do i=Istr,Iend
+!               susmud(i,k,ised)=MAX(t(i,j,k,nstp,indx),0.0)
+              susmud(i,k,ised)=t(i,j,k,nnew,indx)!*Hz_inv(i,k)
+      !        write(*,*) 'susmud : ', i, j,k,susmud(i,k,ised),t(i,j,k,nnew,indx)
+
+            enddo
+          enddo
+        enddo
+
+! min concentration below which flocculation processes are not calculated
+!      f_clim=0.001 
+        exp1 = 3.0+rp/rn
+        exp2 = 1.5+rm/rn
+        exp3 = -1.0/rn
+
+        do i=Istr,Iend
+          do k=1,N
+            f_dt=dt
+            dttemp=0.0
+            ! concentration of all mud classes in one grid cell
+            cvtotmud=0.0
+            do ised=1,NMUD
+              cv_tmp(ised)=susmud(i,k,ised) 
+              cvtotmud=cvtotmud+cv_tmp(ised)
+              NNin(ised)=cv_tmp(ised)/f_mass(ised)
+            enddo
+
+            do iv1=1,NMUD
+              if (NNin(iv1).lt.0.0) then
+                WRITE(*,*) '***************************************'
+                WRITE(*,*) 'CAUTION, negative mass at cell i,j,k :',  
+     &                          i,j,k
+                WRITE(*,*) '***************************************'        
+              endif
+            enddo
+
+           ! write(*,*) 'cvtotmud, f_clim : ', cvtotmud, f_clim
+            !stop
+            if (cvtotmud .gt. f_clim) then
+
+# if defined FLOC_TURB_DISS && !defined FLOC_BBL_DISS
+!
+!ALA dissipation from turbulence clossure
+!
+!trb(:,:,:,nstp,itke)
+
+              if (k.eq.1) then
+                tke_av = trb(i,j,k-1,nnew,itke)
+                gls_av = trb(i,j,k-1,nnew,igls)
+              elseif (k.eq.N) then
+                tke_av = trb(i,j,k,nnew,itke)
+                gls_av = trb(i,j,k,nnew,igls)
+              else 
+                tke_av = 0.5*(trb(i,j,k-1,nnew,itke)+trb(i,j,k,nnew,itke))
+                gls_av = 0.5*(trb(i,j,k-1,nnew,igls)+trb(i,j,k,nnew,igls))
+              endif
+!               exp1 = 3.0+gls_p/gls_n
+!               exp2 = 1.5+gls_m/gls_n
+!               exp3 = -1.0/gls_n
+              diss = cm0**exp1*tke_av**exp2*gls_av**exp3
+         !     write(*,*) cm0,exp1,tke_av,exp2,gls_av,exp3
+         !     stop
+# elif defined FLOC_BBL_DISS && !defined FLOC_TURB_DISS
+!
+!ALA dissipation from wavecurrent bottom stress
+! NOT READY FOR PRIME TIME
+! NEEDS VERTICAL DISTRIBUTION
+! As first cut, use turbulence closure
+!
+              if (k.eq.1) then
+                tke_av = trb(i,j,k-1,nnew,itke)
+                gls_av = trb(i,j,k-1,nnew,igls)
+              elseif (k.eq.N) then
+                tke_av = trb(i,j,k,nnew,itke)
+                gls_av = trb(i,j,k,nnew,igls)
+              else 
+                tke_av = 0.5*trb(i,j,k-1,nnew,itke)+                  
+     &                       0.5*trb(i,j,k,nnew,itke)
+                gls_av = 0.5*trb(i,j,k-1,nnew,igls)+                  
+     &                       0.5*trb(i,j,k,nnew,igls)
+              endif
+              diss = cm0**exp1*tke_av**exp2*gls_av**exp3
+!
+!  MODifY THE BOTTOM LAYER TO INCLUDE WAVECURRENT STRESS
+!
+              if (k.eq.1) then       
+#  ifdef BBL
+                ustr2 =sqrt((bustrcwmax(i,j)**2.0+                  
+     &                       bvstrcwmax(i,j)**2.0 ))
+                effecz = (ustr2**0.5)*Pwave(i,j)*0.5/pi
+                diss = MAX((ustr2**(1.5))/(vonKar*effecz),diss)
+#  else
+                ustr2 =sqrt((bustr(i,j)**2.0+bvstr(i,j)**2.0 ))
+                diss = MAX((ustr2**(1.5))/(vonKar*                  
+     &                       (z_r(i,j,1)-zw(i,j,0))),diss)
+#  endif
+              endif
+# else 
+              diss = epsilon8
+              if (l_testcase) then
+!                  if (j.eq.1.and.i.eq.1.and.k.eq.1) then
+!                     WRITE(*,*) 'VERNEY ET AL TESTCASE FOR FLOCS'
+!                  endif
+              else    
+                WRITE(*,*) 'CAUTION :'
+                WRITE(*,*) 'CHOOSE A DISSIPATION MODEL FOR FLOCS'
+                WRITE(*,*) 'SIMULATION STOPPED'
+                STOP
+              endif                 
+# endif              
+              call flocmod_comp_g(k,i,j,Gval,diss) 
+    !          write(*,*) ' Gval, diss : ' , Gval, diss, l_testcase
+   !           stop
+
+              do while (dttemp .le. dt)
+
+                call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
+                call flocmod_mass_control(NNout,mneg)
+                if (mneg .gt. f_mneg_param) then
+                  do while (mneg .gt. f_mneg_param)
+                    f_dt=MIN(f_dt/2.0,dt-dttemp)
+                    if (f_dt.lt.epsilon8) then
+                      call flocmod_mass_redistribute(NNin)
+                      dttemp=dt
+                      exit
+                    endif
+                    call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
+                    call flocmod_mass_control(NNout,mneg)   
+                  enddo
+                else
+                  if (f_dt.lt.dt) then
+                    do while (mneg .lt.f_mneg_param) 
+                      if (dttemp+f_dt .eq. dt) then
+                        call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
+                        exit
+                      else
+                        dt1=f_dt
+                        f_dt=MIN(2.0*f_dt,dt-dttemp)
+                        call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
+                        call flocmod_mass_control(NNout,mneg)
+                        if (mneg .gt. f_mneg_param) then 
+                          f_dt=dt1
+                          call flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
+                          exit
+                        endif
+                      endif
+                    enddo
+                  endif
+                endif
+                dttemp=dttemp+f_dt
+                NNin(:)=NNout(:) ! update new Floc size distribution
+                    ! redistribute negative masses if any on positive classes, 
+                    ! depends on f_mneg_param
+                call flocmod_mass_redistribute(NNin)
+                if (dttemp.eq.dt) exit
+              enddo ! loop on full dt
+            endif ! only if cvtotmud > f_clim
+
+            ! update mass concentration for all mud classes
+            do ised=1,NMUD
+              susmud(i,k,ised)=NNin(ised)*f_mass(ised)
+            enddo
+          enddo
+        enddo
+!
+!-----------------------------------------------------------------------
+!  Update global tracer variables.
+!-----------------------------------------------------------------------
+!
+        do ised=1,NMUD
+          indx = itrc_mud+ised-1
+          do k=1,N
+            do i=Istr,Iend
+              t(i,j,k,nnew,indx)=susmud(i,k,ised)    !*Hz(i,j,k)
+       !   write(*,*) 'susmud : ', i, j,k,susmud(i,k,ised),t(i,j,k,nnew,indx)
+           enddo
+          enddo
+        enddo
+            
+      end do  !J_LOOP
+
+      return
+
+      end subroutine sed_flocmod_tile
+
+
+      subroutine flocmod_collfrag(Gval)
+
+  !&E--------------------------------------------------------------------------
+  !&E                 ***  ROUTINE flocmod_collfrag  ***
+  !&E
+  !&E ** Purpose : computation of collision fragmentation term, 
+  !&E              based on McAnally and Mehta, 2001
+  !&E
+  !&E ** Description :
+  !&E
+  !&E ** Called by : flocmod_comp_fsd
+  !&E
+  !&E ** External calls : 
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History :
+  !&E     ! 2013-09 (Romaric Verney)
+  !&E
+  !&E--------------------------------------------------------------------------
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+#  include "sediment.h"
+      real,intent(in) :: Gval
+
+  !! * Local declarations
+      integer       iv1,iv2,iv3
+      real f_fp,f_fy,f_cfcst,gcolfragmin,gcolfragmax
+      real gcolfragiv1,gcolfragiv2,f_weight,mult
+      real cff1, cff2
+      real, dimension(NMUD)::  fdiam,fmass  !RB check dim
+! shorten names
+!RB to change
+      fdiam=f_diam
+      fmass=f_mass(1:NMUD)
+!  !!--------------------------------------------------------------------------
+  !! * Executable part
+
+      f_fp=0.1
+      f_fy=1e-10
+      f_cfcst=3.0/16.0
+      f_g4(1:NMUD,1:NMUD,1:NMUD)=0.0
+      f_l4(1:NMUD,1:NMUD)=0.0
+      cff1=2.0/(3.0-f_nf)
+      cff2=1.0/rhoref
+
+      do iv1=1,NMUD
+       do iv2=1,NMUD
+        do iv3=iv2,NMUD
+           ! fragmentation after collision probability based on 
+     ! Gval for particles iv2 and iv3
+           ! gcolfrag=(collision induced shear) / (floc strength)
+
+           gcolfragmin=2.0*(Gval*(fdiam(iv2)+fdiam(iv3)))            
+     &          **2.0*fmass(iv2)*fmass(iv3)/(pi*f_fy*f_fp*           
+     &          fdiam(iv3)**2.0*(fmass(iv2)+fmass(iv3))              
+     &          *((f_rho(iv3)-rhoref)*cff2)**cff1)
+
+           gcolfragmax=2.0*(Gval*(fdiam(iv2)+fdiam(iv3)))            
+     &          **2.0*fmass(iv2)*fmass(iv3)/(pi*f_fy*f_fp*           
+     &          fdiam(iv2)**2.0*(fmass(iv2)+fmass(iv3))              
+     &          *((f_rho(iv2)-rhoref)*cff2)**cff1)
+
+
+           ! first case : iv3 not eroded, iv2 eroded forming 2 particles
+     ! : iv3+f_cfcst*iv2 / iv2-f_cfcst*iv2
+           if (gcolfragmin.lt.1.0 .and. gcolfragmax.ge.1.0) then  
+
+              if (((fmass(iv3)+f_cfcst*fmass(iv2)).gt.fmass(iv1-1))     
+     &             .and. ((fmass(iv3)+f_cfcst*fmass(iv2)).le.           
+     &             fmass(iv1))) then
+
+                 f_weight=((fmass(iv3)+f_cfcst*fmass(iv2)-              
+     &                     fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1)))
+
+              elseif (fmass(iv3)+f_cfcst*fmass(iv2).gt.fmass(iv1)       
+     &              .and. fmass(iv3)+f_cfcst*fmass(iv2).lt.             
+     &              fmass(iv1+1)) then
+
+                 if (iv1.eq.NMUD) then 
+                    f_weight=1.0
+                 else
+
+                    f_weight=1.0-((fmass(iv3)+f_cfcst*fmass(iv2)-    
+     &                      fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
+                 endif
+
+              else
+                 f_weight=0.0
+              endif
+
+              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
+     &            (f_coll_prob_sh(iv2,iv3))*(fmass(iv3)+   
+     &            f_cfcst*fmass(iv2))/fmass(iv1)
+
+              if (fmass(iv2)-f_cfcst*fmass(iv2).gt.fmass(iv1-1)         
+     &            .and. fmass(iv2)-f_cfcst*fmass(iv2).le.               
+     &            fmass(iv1)) then
+
+                 f_weight=((fmass(iv2)-f_cfcst*fmass(iv2)-              
+     &                     fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1)))
+
+              elseif (fmass(iv2)-f_cfcst*fmass(iv2).gt.fmass(iv1)       
+     &            .and. fmass(iv2)-f_cfcst*fmass(iv2).lt.               
+     &            fmass(iv1+1)) then
+
+                 if (iv1.eq.NMUD) then 
+                    f_weight=1.0
+                 else
+
+                    f_weight=1.0-((fmass(iv2)-f_cfcst*fmass(iv2)-    
+     &                       fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
+                 endif
+
+              else
+                 f_weight=0.0
+              endif
+
+              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
+     &            (f_coll_prob_sh(iv2,iv3))*(fmass(iv2)-   
+     &            f_cfcst*fmass(iv2))/fmass(iv1)
+
+
+              ! second case : iv3 eroded and iv2 eroded forming 3 particles : 
+        !iv3-f_cfcst*iv3 / iv2-f_cfcst*iv2 / f_cfcst*iv3+f_cfcst*iv2
+           elseif (gcolfragmin.ge.1.0 .and. gcolfragmax.ge.          
+     &            1.0) then  
+
+              if (f_cfcst*fmass(iv2)+f_cfcst*fmass(iv3).gt.             
+     &            fmass(iv1-1) .and. f_cfcst*fmass(iv2)+f_cfcst*        
+     &            fmass(iv3).le.fmass(iv1)) then
+
+                 f_weight=((f_cfcst*fmass(iv2)+f_cfcst*fmass(iv3)-      
+     &                   fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1)))
+
+              elseif (f_cfcst*fmass(iv2)+f_cfcst*fmass(iv3).gt.         
+     &            fmass(iv1) .and. f_cfcst*fmass(iv2)+f_cfcst*          
+     &            fmass(iv3).lt.fmass(iv1+1)) then
+
+                 if (iv1.eq.NMUD) then 
+                    f_weight=1.0
+                 else
+
+                    f_weight=1.0-((f_cfcst*fmass(iv2)+f_cfcst*       
+     &                 fmass(iv3)-fmass(iv1))/(fmass(iv1+1)-            
+     &                 fmass(iv1)))
+                 endif
+
+              else
+                 f_weight=0.0
+              endif
+
+              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
+     &            (f_coll_prob_sh(iv2,iv3))*(f_cfcst*      
+     &            fmass(iv2)+f_cfcst*fmass(iv3))/fmass(iv1)
+
+              if ((1.0-f_cfcst)*fmass(iv2).gt.fmass(iv1-1)           
+     &            .and. (1.0-f_cfcst)*fmass(iv2).le.                 
+     &            fmass(iv1)) then
+
+                 f_weight=((1.0-f_cfcst)*fmass(iv2)-                 
+     &                    fmass(iv1-1))/(fmass(iv1)-fmass(iv1-1))
+
+              elseif ((1.0-f_cfcst)*fmass(iv2).gt.fmass(iv1)         
+     &            .and. (1.0-f_cfcst)*fmass(iv2).lt.                 
+     &            fmass(iv1+1)) then
+
+                 if (iv1.eq.NMUD) then 
+                    f_weight=1.0
+                 else
+
+                    f_weight=1.0-(((1.0-f_cfcst)*fmass(iv2)-      
+     &                      fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
+                 endif
+
+              else
+                 f_weight=0.0
+              endif
+
+              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
+     &                  (f_coll_prob_sh(iv2,iv3))*         
+     &                  ((1.0-f_cfcst)*fmass(iv2))/fmass(iv1) 
+
+
+              if ((1.0-f_cfcst)*fmass(iv3).gt.fmass(iv1-1) .and.     
+     &            (1.0-f_cfcst)*fmass(iv3).le.fmass(iv1)) then
+
+                 f_weight=((1.0-f_cfcst)*fmass(iv3)-fmass(iv1-1))    
+     &                   /(fmass(iv1)-fmass(iv1-1))
+
+              elseif ((1.0-f_cfcst)*fmass(iv3).gt.fmass(iv1)         
+     &            .and. (1.0-f_cfcst)*fmass(iv3).lt.                 
+     &            fmass(iv1+1)) then
+
+                 if (iv1.eq.NMUD) then 
+                    f_weight=1.0
+                 else
+
+                    f_weight=1.0-(((1.0-f_cfcst)*fmass(iv3)-      
+     &                       fmass(iv1))/(fmass(iv1+1)-fmass(iv1)))
+                 endif
+
+              else
+                 f_weight=0.0
+              endif
+
+              f_g4(iv2,iv3,iv1)=f_g4(iv2,iv3,iv1)+f_weight*             
+     &                  (f_coll_prob_sh(iv2,iv3))*         
+     &                  ((1.0-f_cfcst)*fmass(iv3))/fmass(iv1)
+
+
+           endif ! end collision test case
+        enddo
+       enddo
+      enddo
+
+      do iv1=1,NMUD
+       do iv2=1,NMUD
+
+        gcolfragiv1=2.0*(Gval*(fdiam(iv1)+fdiam(iv2)))**2.0*      
+     &            fmass(iv1)*fmass(iv2)/(pi*f_fy*f_fp*fdiam(iv1)        
+     &            **2.0*(fmass(iv1)+fmass(iv2))*                     
+     &            ((f_rho(iv1)-                            
+     &            rhoref)*cff2)**cff1)
+
+        gcolfragiv2=2.0*(Gval*(fdiam(iv1)+fdiam(iv2)))**2.0*      
+     &            fmass(iv1)*fmass(iv2)/(pi*f_fy*f_fp*fdiam(iv2)        
+     &            **2.0*(fmass(iv1)+fmass(iv2))*                     
+     &            ((f_rho(iv2)-                            
+     &            rhoref)*cff2)**cff1)    
+
+        mult=1.0
+        if (iv1.eq.iv2) mult=2.0
+
+        if (iv1.eq.MAX(iv1,iv2) .and. gcolfragiv1.ge.1.0) then
+           f_l4(iv2,iv1)=f_l4(iv2,iv1)+mult*                            
+     &            (f_coll_prob_sh(iv1,iv2))
+        elseif (iv1.eq.MIN(iv1,iv2) .and. gcolfragiv2.ge.1.0) then
+           f_l4(iv2,iv1)=f_l4(iv2,iv1)+mult*                            
+     &            (f_coll_prob_sh(iv1,iv2))
+        endif
+
+       enddo
+      enddo
+
+      f_g4(1:NMUD,1:NMUD,1:NMUD)=                                          
+     &            f_g4(1:NMUD,1:NMUD,1:NMUD)*f_collfragparam
+      f_l4(1:NMUD,1:NMUD)=f_l4(1:NMUD,1:NMUD)*f_collfragparam
+
+      return
+      end subroutine flocmod_collfrag
+
+
+      subroutine flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
+
+  !&E--------------------------------------------------------------------------
+  !&E                 ***  ROUTINE flocmod_comp_fsd  ***
+  !&E
+  !&E ** Purpose : computation of floc size distribution
+  !&E
+  !&E ** Description :
+  !&E
+  !&E ** Called by : flocmod_main
+  !&E
+  !&E ** External calls : 
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History :
+  !&E     ! 2013-09 (Romaric Verney)
+  !&E
+  !&E--------------------------------------------------------------------------
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+#  include "sediment.h"
+
+  !! * Arguments
+      real,intent(in) :: Gval
+      real,dimension(1:NMUD),intent(in)  :: NNin
+      real,dimension(1:NMUD),intent(out) :: NNout
+      real,intent(in) :: f_dt
+
+  !! * Local declarations
+      integer  iv1,iv2,iv3
+      real tmp_g1,tmp_g3,tmp_l1,tmp_l3,tmp_l4,tmp_g4
+      real,dimension(1:NMUD,1:NMUD,1:NMUD)     :: f_g1_tmp
+      real,dimension(1:NMUD,1:NMUD)           :: f_l1_tmp
+      
+  !!--------------------------------------------------------------------------
+  !! * Executable part
+
+      tmp_g1=0.0
+      tmp_g3=0.0
+      tmp_g4=0.0
+      tmp_l1=0.0
+      tmp_l3=0.0
+      tmp_l4=0.0    
+      f_g1_tmp(1:NMUD,1:NMUD,1:NMUD)=0.0
+      f_l1_tmp(1:NMUD,1:NMUD)=0.0
+
+      if (l_COLLFRAG) call flocmod_collfrag(Gval)
+
+      do iv1=1,NMUD
+       do iv2=1,NMUD
+        do iv3=1,NMUD
+           if (l_ASH) then
+              f_g1_tmp(iv2,iv3,iv1)=f_g1_tmp(iv2,iv3,iv1)+              
+     &            f_g1_sh(iv2,iv3,iv1)*Gval   
+           endif
+           if (l_ADS) then
+              f_g1_tmp(iv2,iv3,iv1)=f_g1_tmp(iv2,iv3,iv1)+              
+     &            f_g1_ds(iv2,iv3,iv1)   
+           endif
+
+           tmp_g1=tmp_g1+(NNin(iv3)*(f_g1_tmp(iv2,iv3,iv1))*NNin(iv2))
+
+           if (l_COLLFRAG) then
+              tmp_g4=tmp_g4+(NNin(iv3)*                                 
+     &            (f_g4(iv2,iv3,iv1)*Gval)*NNin(iv2))
+           endif
+        enddo
+
+        tmp_g3=tmp_g3+f_g3(iv2,iv1)*NNin(iv2)*             
+     &            Gval**1.5
+
+        if (l_ASH) then
+           f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+                         
+     &           f_l1_sh(iv2,iv1)*Gval
+        endif
+        if (l_ADS) then
+           f_l1_tmp(iv2,iv1)=f_l1_tmp(iv2,iv1)+                         
+     &            f_l1_ds(iv2,iv1)*Gval
+        endif
+
+        tmp_l1=tmp_l1+(f_l1_tmp(iv2,iv1))*NNin(iv2)
+
+        if (l_COLLFRAG) then
+           tmp_l4=tmp_l4+(f_l4(iv2,iv1)*Gval)*NNin(iv2)
+        endif
+       enddo
+
+       tmp_l1=tmp_l1*NNin(iv1)
+       tmp_l4=tmp_l4*NNin(iv1)
+       tmp_l3=f_l3(iv1)*Gval**1.5*NNin(iv1)
+
+       NNout(iv1)=NNin(iv1)+ f_dt*(tmp_g1+tmp_g3+tmp_g4-(tmp_l1+        
+     &            tmp_l3+tmp_l4))
+
+       tmp_g1=0.0
+       tmp_g3=0.0
+       tmp_g4=0.0
+       tmp_l1=0.0
+       tmp_l3=0.0
+       tmp_l4=0.0    
+      enddo
+
+      return
+      end subroutine flocmod_comp_fsd
+
+
+
+      subroutine flocmod_mass_control(NN,mneg)
+
+  !&E--------------------------------------------------------------------------
+  !&E                 ***  ROUTINE flocmod_mass_control  ***
+  !&E
+  !&E ** Purpose : Compute mass in every class after flocculation and 
+  !&E              returns negative mass if any
+  !&E
+  !&E ** Description :
+  !&E
+  !&E ** Called by : flocmod_main
+  !&E
+  !&E ** External calls : 
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History :
+  !&E     ! 2013-09 (Romaric Verney)
+  !&E
+  !&E--------------------------------------------------------------------------
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+#  include "sediment.h"
+
+  !! * Local declarations
+      integer      :: iv1
+      real,intent(out)     :: mneg
+      real,dimension(1:NMUD),intent(in)     :: NN
+      !real,DIMENSION(0:NMUD+1)      :: f_mass
+
+  !!--------------------------------------------------------------------------
+  !! * Executable part
+
+      mneg=0.0
+
+      do iv1=1,NMUD
+       if (NN(iv1).lt.0.0) then
+         mneg=mneg-NN(iv1)*f_mass(iv1)
+       endif
+      enddo
+
+      return
+      end subroutine flocmod_mass_control
+
+
+      subroutine flocmod_mass_redistribute(NN)
+
+  !&E--------------------------------------------------------------------------
+  !&E                 ***  ROUTINE flocmod_mass_redistribute  ***
+  !&E
+  !&E ** Purpose : based on a tolerated negative mass parameter, negative masses  
+  !&E              are redistributed linearly towards remaining postive masses 
+  !&E              and negative masses are set to 0
+  !&E                   
+  !&E ** Description :
+  !&E
+  !&E ** Called by : flocmod_main
+  !&E
+  !&E ** External calls : 
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History :
+  !&E     ! 2013-09 (Romaric Verney)
+  !&E
+  !&E--------------------------------------------------------------------------
+  !! * Modules used
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+#  include "sediment.h"
+
+  !! * Local declarations
+      integer      :: iv
+      real     :: npos
+      real     :: mneg
+      real, dimension(1:NMUD),intent(inout)     :: NN
+      real, dimension(1:NMUD)                   :: NNtmp
+      !real,DIMENSION(0:NMUD+1)      :: f_mass
+  !!--------------------------------------------------------------------------
+  !! * Executable part
+
+      mneg=0.0
+      npos=0.0
+      NNtmp(:)=NN(:)
+
+      do iv=1,NMUD
+       if (NN(iv).lt.0.0) then
+         mneg=mneg-NN(iv)*f_mass(iv)
+         NNtmp(iv)=0.0
+       else
+         npos=npos+1.0
+       endif
+      enddo
+
+      if (mneg.gt.0.0) then 
+       if (npos.eq.0.0) then
+         write(*,*) 'CAUTION : all floc sizes have negative mass!'
+         write(*,*) 'SIMULATION STOPPED'
+         STOP    
+       else
+         do iv=1,NMUD
+           if (NN(iv).gt.0.0) then
+              NN(iv)=NN(iv)-mneg/sum(NNtmp)*NN(iv)/                     
+     &            f_mass(iv)
+           else
+              NN(iv)=0.0
+           endif
+         enddo
+       endif
+      endif
+
+      return
+
+      end subroutine flocmod_mass_redistribute
+
+
+      subroutine flocmod_comp_g(k,i,j,Gval,diss)
+  !&E--------------------------------------------------------------------------
+  !&E                 ***  ROUTINE flocmod_comp_g  ***
+  !&E
+  !&E ** Purpose : compute shear rate to estimate shear aggregation and erosion  
+  !&E 
+  !&E ** Description :
+  !&E
+  !&E ** Called by : flocmod_main
+  !&E
+  !&E ** External calls : 
+  !&E
+  !&E ** Reference :
+  !&E
+  !&E ** History :
+  !&E     ! 2013-09 (Romaric Verney)
+  !&E
+  !&E--------------------------------------------------------------------------
+      implicit none 
+#  include "param.h"
+#  include "scalars.h"
+#  include "sediment.h"
+
+  !! * Local declarations
+      integer,  intent(in)      :: k,i,j
+      real,intent(out)     :: Gval
+      real     :: htn,ustar,z,diss,nueau
+! l_testcase - if .TRUE. sets G(t) to values from lab experiment
+  !!--------------------------------------------------------------------------
+  !! * Executable part
+  !    nueau=1.06e-6
+  !    ustar=sqrt(tenfon(i,j)/rhoref)
+  !    htn=h0(i,j)+ssh(i,j)
+  !    z=(1.0+sig(k))*htn
+      
+!
+! ALA from CRS
+!
+       nueau = 1.5E-6
+      if (l_testcase) then
+        ! reproducing flocculation experiment Verney et al., 2011
+       Gval=0.0
+       if (time .lt. 7201.0) then
+        Gval=1.0
+       elseif (time .lt. 8401.0) then
+        Gval=2.0
+       elseif (time .lt. 9601.0) then
+        Gval=3.0  
+       elseif (time .lt. 10801.0) then
+        Gval=4.0
+       elseif (time .lt. 12601.0) then
+        Gval=12.0
+       elseif (time .lt. 13801.0) then
+        Gval=4.0
+       elseif (time .lt. 15001.0) then
+        Gval=3.0
+       elseif (time .lt. 16201.0) then
+        Gval=2.0
+       elseif (time .lt. 21601.0) then
+        Gval=1.0
+       elseif (time .lt. 25201.0) then
+        Gval=0.0
+       elseif (time .lt. 30601.0) then
+        Gval=1.0
+       elseif (time .lt. 31801.0) then
+        Gval=2.0                     
+       elseif (time .lt. 33001.0) then
+        Gval=3.0       
+       elseif (time .lt. 34201.0) then
+        Gval=4.0
+       elseif (time .lt. 36001.0) then
+        Gval=12.0
+       elseif (time .lt. 37201.0) then
+        Gval=4.0
+       elseif (time .lt. 38401.0) then
+        Gval=3.0
+       elseif (time .lt. 39601.0) then
+        Gval=2.0
+       elseif (time .lt. 45001.0) then
+        Gval=1.0
+       elseif (time .lt. 48601.0) then
+        Gval=0.0
+       elseif (time .lt. 54001.0) then
+        Gval=1.0
+       elseif (time .lt. 55201.0) then
+        Gval=2.0                     
+       elseif (time .lt. 56401.0) then
+        Gval=3.0       
+       elseif (time .lt. 57601.0) then
+        Gval=4.0
+       else 
+        Gval=12.0
+       endif
+      else
+         Gval=sqrt(diss/nueau)
+      endif
+! NO KLUDGE
+!      Gval = 12.0
+      return
+      end subroutine flocmod_comp_g
+      
+# endif /* SED_FLOCS */
+
 #else       
       subroutine sediment_empty
       end
