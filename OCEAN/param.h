@@ -496,7 +496,6 @@
 #  elif defined SED_TOY
       parameter (NSAND=4, NMUD=15, NGRAV=0) 
       parameter (NLAY=20)
-#   endif      
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)
