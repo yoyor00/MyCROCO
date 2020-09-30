@@ -421,6 +421,16 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
+# elif defined SED_TOY 
+      cff1=0.0001
+      if (time.gt.3000.) then
+        cff1=0.0
+      endif
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+            sustr(i,j)=cff1
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -878,7 +888,7 @@ C$    integer  trd, omp_get_thread_num
 # if defined IGW
       real    sig,rhom,depth
 # endif  
-# if defined SUBSTANCE || defined SEDIMENT
+# if defined SUBSTANCE
       integer iv
 # endif 
 !
@@ -1163,22 +1173,23 @@ C$    integer  trd, omp_get_thread_num
 # endif /* BIOLOGY */
 
 # ifdef SEDIMENT
-      do itrc=1,NST
-        iv=ised+itrc-1
-        do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
-              tclm(i,j,k,iv)=0. !Csed(itrc)
+            tclm(i,j,k,isand)=0. !Csed(1)
+            tclm(i,j,k,isilt)=0. !Csed(2)
 #  else   
-              if (.not.got_tclm(iv)) then
-                tclm(i,j,k,iv)=0. !Csed(itrc)
-              endif
+            if (.not.got_tclm(isand)) then
+              tclm(i,j,k,isand)=0. !Csed(1)
+            endif
+            if (.not.got_tclm(isilt)) then
+              tclm(i,j,k,isilt)=0. !Csed(2)
+            endif
 #  endif
-            enddo
           enddo
         enddo
-      enddo  
+      enddo
 # endif /* SEDIMENT */
 
 # ifdef PASSIVE_TRACER
@@ -1662,8 +1673,11 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "sediment.h"
 # include "bbl.h"
-      real    cff1,cff2,cff3,cff4
-      integer Istr,Iend,Jstr,Jend, i,j, ilay, ised
+      real    cff1,cff2,cff3,cff4,cff5
+      integer Istr,Iend,Jstr,Jend, i,j, k,ilay, ised
+      real bmz(NLAY)
+      real alpha, bzactv, frt, tcb_top, tcb_bot
+      real tcr(NLAY) 
 !
 # undef DEBUG 
 # ifdef DEBUG
@@ -1672,6 +1686,8 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # include "compute_extended_bounds.h"
+
+         
 
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1688,7 +1704,9 @@ C$    integer  trd, omp_get_thread_num
               enddo
             endif
             bed_age(i,j,ilay)=time
-            bot_thick(i,j) = 0.003
+!            bot_thick(i,j) = 0.003
+            bot_thick(i,j) = 0.00
+
             do ised=1,NST
               bed_mass(i,j,ilay,1,ised)=
      &                     bed_thick(i,j,ilay)*
@@ -1715,6 +1733,13 @@ C$    integer  trd, omp_get_thread_num
           Ssize(i,j)=cff2
           w_set(i,j)=cff3                ! [m/s]
           Sdens(i,j)=MAX(cff4,1050.)
+   !      cff5=0
+   !       do ilay=1,NLAY
+   !          do ised=1,2
+   !             cff5 = cff5 + bed_mass(i,j,ilay,1,ised)
+   !       enddo 
+   !       bed_bctr(i,j,ilay) = exp ( (log(cff5) - tcr_off ) /tcr_slp   ) 
+   !      enddo
 # ifdef DEBUG
           if(j.eq.jck.and.i.eq.ick) then
             write(6,*) '********** ANA_SEDIMENT ***********'
@@ -1742,6 +1767,80 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
+# if defined COHESIVE_BED || defined MIXED_BED
+       
+      do j=JstrR,JendR         
+        do i=IstrR,IendR
+         bed_bctr(i,j,1) =  0.1
+      !
+!  Key to this algori thm: "mass available depth" (mad) [kg/m2]
+!  present tau crit profile (tcp)
+!  representative tau crit profile (tcr)          
+!  Compute depth and mass depth of sediment column
+!  Compute cumulative depth
+!  Compute mass depth
+          bmz(1) = 0.0
+          do ised=1,NST
+             bmz(1) = bmz(1)+bed_mass(i,j,1,1,ised)
+          enddo
+          do k=2,NLAY
+             bmz(k) = bmz(k-1)
+             do ised=1,NST
+                bmz(k)=bmz(k)+bed_mass(i,j,k,1,ised)
+             enddo
+          enddo
+
+!  Calculate representative critical shear stress profile
+!  Note that the values are for the TOP of the layer...we
+!  assume the bottom of the bottom layer has tcr = tcr_max
+          tcr(1) =  0.1
+          do k=2,NLAY
+             tcr(k) = tcr_min
+             if (bmz(k-1).GT.1.e-14) then
+!                tcr(k) = exp((log(bmz(k-1))-                            &
+!     &               bottom(i,j,idoff))/                                &
+!     &               bottom(i,j,idslp))
+                tcr(k) = exp((log(bmz(k-1))-                            
+     &                    tcr_off)/                                 
+     &                    tcr_slp)
+             endif
+          !   tcr(k) = MIN( MAX( tcr(k), tcr_min), tcr_max )
+          enddo
+!          ks=Ksed-2
+!          do k=NLAY,NLAY-ks,-1
+!             taucb(i,j,k)=tcr(k)
+!          enddo
+!  Relax tau crit profile taucb(i,j,k) 
+!  towards representative profile tcr...100 x slower for "swelling"
+!  than consolidation
+!  TODO - make the factor an input parameter
+    !      if( bed_bctr(i,j,1).LE.tcr(1)) then
+!             alpha = MIN(dt/bottom(i,j,idtim),1.0)
+    !         alpha = MIN(dt/tcr_tim,1.0)
+    !      else
+!             alpha = MIN(dt/(100.0*bottom(i,j,idtim)),1.0)
+     !        alpha = MIN(dt/(100.0*tcr_tim),1.0)
+     !     endif
+          do k=1,NLAY
+    !         bed_bctr(i,j,k)=bed_bctr(i,j,k)+                         
+    ! &            alpha*(tcr(k)-bed_bctr(i,j,k))
+             bed_bctr(i,j,k)=                                          
+     &          MIN( MAX( tcr(k), tcr_min), tcr_max )
+          enddo
+!ALA    Enforce last layer = tcr_max
+!ALA          bed_bctr(i,j,NLAY)= tcr_max
+        enddo 
+      enddo 
+
+#  ifdef SED_TOY      
+      bed_bctr(:,:,:) =  5.2
+      bed_bctr(:,:,1) = 0.03
+      bed_bctr(:,:,2) = 0.0911460784453711
+      bed_bctr(:,:,3) =0.918694902789539
+      bed_bctr(:,:,4) = 3.54929559677213
+#  endif      
+# endif
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       do ised=1,NST
         do ilay=1,NLAY
@@ -1760,6 +1859,10 @@ C$    integer  trd, omp_get_thread_num
      &                 bed_thick(START_2D_ARRAY,ilay))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_age(START_2D_ARRAY,ilay))
+#  if defined COHESIVE_BED || defined MIXED_BED
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_bctr(START_2D_ARRAY,ilay))
+#  endif
       enddo
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bot_thick(START_2D_ARRAY))
@@ -1778,7 +1881,6 @@ C$    integer  trd, omp_get_thread_num
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 Sdens(START_2D_ARRAY))
 # endif
-
       return
       end
 #endif /* SEDIMENT */

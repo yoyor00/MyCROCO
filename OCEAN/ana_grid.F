@@ -234,15 +234,17 @@ C$    integer omp_get_thread_num
 #  endif
 
 # elif defined CHANNEL
-# ifdef key_ANA_bedload
+#  ifdef key_ANA_bedload
                      depth=6.
-#else
-
+#  else
                      depth=4.
-#endif
+#  endif
                      f0=0.
                      beta=0.
-
+# elif defined SED_TOY
+                     depth=20.
+                     f0=0.0
+                     beta=0.0
 # else
                      depth=???
                      f0=???
@@ -357,11 +359,13 @@ C$    integer omp_get_thread_num
 # elif defined CHANNEL
                       Length_XI = 100.
                       Length_ETA= 100.
-# if defined key_ANA_bedload
+#  if defined key_ANA_bedload
                       Length_XI = 300.
                       Length_ETA= 300.
-# endif
-
+#  endif
+# elif defined SED_TOY
+                      Length_XI=40.0
+                      Length_ETA=30.0
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -824,6 +828,13 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # if defined key_ANA_bedload
           h(i,j)=depth*(1.-2./6.*exp(-0.01*(xr(i,j)-150.)**2))
 # endif
+        enddo
+      enddo
+
+#elif defined SED_TOY
+      do j=JstrR,JendR
+        do i=JstrR,JendR
+          h(i,j)=Depth
         enddo
       enddo
 

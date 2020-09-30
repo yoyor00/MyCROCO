@@ -42,6 +42,7 @@
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
 #undef  DUNE            /* Dune test case Example */
 #undef  CHANNEL         /* Channel test case */
+#undef  SED_TOY         /* 1D sdiment test case */
 #define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
@@ -523,6 +524,40 @@
 # define ANA_BTFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
+# undef  RVTK_DEBUG
+
+#elif defined SED_TOY
+/*
+!                       Sediment Single Column Example
+!                       ======== ====== ====== =======
+*/
+# undef  OPENMP
+# undef  MPI
+# define EW_PERIODIC
+# define NS_PERIODIC
+# define SOLVE3D
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define GLS_MIXING
+# ifdef GLS_MIXING
+#  define GLS_KOMEGA
+#  define KanCla_94
+# endif 
+# define SEDIMENT
+#  ifdef SEDIMENT
+#   define ANA_SEDIMENT 
+#   define SUSPLOAD
+#   undef  BEDLOAD
+#   undef MORPHODYN
+#   define MIXED_BED
+#   define SED_TAU_CD_CONST
+#   define SED_FLOCS
+#   define FLOC_TURB_DISS
+# endif
 # undef  RVTK_DEBUG
 
 #elif defined INTERNAL

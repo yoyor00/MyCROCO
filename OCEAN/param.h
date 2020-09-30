@@ -158,7 +158,9 @@
       parameter (LLm0=150,  MMm0=1,  N=20)     !  DUNE 2m
 # else
       parameter (LLm0=50,   MMm0=1,  N=20)     !  DUNE 2m
-# endif    
+# endif
+#elif defined SED_TOY
+      parameter (LLm0=4,   MMm0=3,  N=20)     !  DUNE 2m
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -475,27 +477,31 @@
 
 !
 # ifdef SEDIMENT
-! NGRAV          Number of gravel classes
 ! NSAND          Number of sand classes
-! NMUD           Number of mud classes  
+! NMUD           Number of mud classes
+! NGRAV          Number of gravel classes (not implemented...)
 ! NST            Number of sediment (tracer) size classes
 ! NLAY           Number of layers in sediment bed
 !
-      integer    NGRAV, NSAND, NMUD, NST, NLAY
-      parameter (NGRAV=0, NSAND=2, NMUD=0) 
-# if defined DUNE
-#  ifdef ANA_DUNE
-      parameter (NST=1)
+      integer NSAND, NMUD, NGRAV, NST, NLAY
+#  if defined DUNE
+      parameter (NSAND=2, NMUD=0, NGRAV=0)      
+#   ifdef ANA_DUNE
+    !  parameter (NST=1)
       parameter (NLAY=11)
-#  else
-      parameter (NST=2)
+#   else
+    !  parameter (NST=2)
       parameter (NLAY=10)
-#  endif
-# else
-!     parameter (NST=NGRAV+NSAND+NMUD) ! robustness?
-      parameter (NST=2)  ! NST=NGRAV+NSAND+NMUD
+#   endif
+#  elif defined SED_TOY
+      parameter (NSAND=4, NMUD=15, NGRAV=0) 
+      parameter (NLAY=20)
+#   endif      
+#  else
+      parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)
-# endif
+#  endif
+      parameter (NST=NSAND+NMUD+NGRAV) 
       parameter (ntrc_sed=NST)
 # else
       parameter (ntrc_sed=0)
@@ -552,7 +558,7 @@
      &          , itrc_bio
 # endif
 # ifdef SEDIMENT
-     &          , itrc_sed
+     &          , itrc_sed, itrc_sand, itrc_mud, itrc_grav
 # endif
 # ifdef SALINITY
      &          , isalt
@@ -663,7 +669,7 @@
 # endif   /* BIOLOGY */
 
 # ifdef SEDIMENT
-     &          , isand, isilt
+     &          ,isand1,imud1,isand2,imud2,igrav1,igrav2
 # endif
 
 !
@@ -918,7 +924,12 @@
 
 # ifdef SEDIMENT
       parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
-      parameter (isand=itrc_sed, isilt=isand+1)
+      parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
+      parameter (itrc_grav=itrc_mud+NGRAV)
+      parameter (isand1=1,imud1=isand1+NSAND)
+      parameter (igrav1=imud1+NMUD)
+      parameter (isand2=isand1+NSAND-1,imud2=imud1+NMUD-1)
+      parameter (igrav2=igrav1+NGRAV-1)
 # endif
 
 !

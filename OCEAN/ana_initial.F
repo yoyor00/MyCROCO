@@ -211,36 +211,47 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
-#elif defined CHANNEL 
+# elif defined CHANNEL 
 
       DO j=JR_RANGE
         DO i=IR_RANGE
           zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
-# if defined key_ANA_bedload
+#  if defined key_ANA_bedload
           zeta(i,j,1)=0.0337+xr(i,j)*(0.006-0.0337)/xl
-# endif
+#  endif
           zeta(i,j,2)=zeta(i,j,1)
           cff=0.5*(1./10)**2
           if (i.gt.0) then
             ubar(i,j,1)=0.58/(1-
      &      0.5*exp(-cff*(  0.5*(xr(i,j)+xr(i-1,j)) -0.5*xl)**2))
-# if defined key_ANA_bedload
+#  if defined key_ANA_bedload
            ubar(i,j,1)=1.667/(1.-
      &         2./6.*exp(-0.01*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2 ))
            ubar(-1,j,1)=1.667
-# endif
+#  endif
           else
             ubar(i,j,1)=0.58
-# if defined key_ANA_bedload
+#  if defined key_ANA_bedload
             ubar(i,j,1)=1.667
-# endif
+#  endif
           endif 
           vbar(i,j,1)=0.
           ubar(i,j,2)=ubar(i,j,1)
           vbar(i,j,2)=vbar(i,j,1)
-        END DO
-      END DO
+        enddo
+      enddo
       
+# elif defined SED_TOY
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=0.
+            zeta(i,j,2)=0.
+            ubar(i,j,1)=1.
+            vbar(i,j,1)=0.
+            ubar(i,j,2)=ubar(i,j,1)
+            vbar(i,j,2)=0.            
+          enddo
+        enddo
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -378,6 +389,18 @@
          enddo
        enddo
        print*,'CFL_max = ',cmax
+
+#  elif defined SED_TOY
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              u(i,j,k,1)=1.
+              u(i,j,k,2)=u(i,j,k,1)
+              v(i,j,k,1)=0.
+              v(i,j,k,2)=v(i,j,k,1)
+            enddo
+          enddo
+        enddo
 
 #  elif defined KH_INST
 !
@@ -1062,6 +1085,21 @@ C$OMP MASTER
         call ana_jet_tile (Istr1,Iend1,Jstr1,Jend1,1)
 C$OMP END MASTER
 C$OMP BARRIER
+
+#  elif defined SED_TOY
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=18.
+              t(i,j,k,2,itemp)=18.
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=35.
+              t(i,j,k,2,isalt)=35.
+#   endif
+            enddo
+          enddo
+        enddo
+
 #  else
         do k=1,N
           do j=JR_RANGE
@@ -1210,7 +1248,23 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+
+#  ifdef SED_TOY
+      do iv=itrc_mud,itrc_mud+NMUD-1
+        do k=1,5
+          do j=JR_RANGE
+            do i=IR_RANGE
+              if (.not.got_tini(iv)) then
+                t(i,j,k,1,iv)=1./7.5
+                t(i,j,k,2,iv)=t(i,j,k,1,iv)
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
 #  endif
+
+# endif
 !
 !----------------------------------------------------------------------
 !  Initial conditions for skin temperature
