@@ -1710,7 +1710,7 @@
         ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
      &                              NF_FOUT, 3, r2dgrd, vidSed(1))
 #ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidZ,nf_collective)
+          ierr=nf_var_par_access(ncid,vidSed(1),nf_collective)
 #endif
 #ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
@@ -2808,14 +2808,17 @@
 ! Sediment bed layer thickness, porosity, volume fraction of 
 ! size class ised in sediment layer, bed fluxes (2+5*NST r2dgrd variables)
 !
-        do itrc=1,2+  NST
+        do itrc=1,3+  NST
 #  ifdef SUSPLOAD
      &             +2*NST
 #  endif
 #  ifdef BEDLOAD
      &             +2*NST
 #  endif                         
-         indxWrk=indxSed+itrc-1
+#  if defined MIXED_BED || defined COHESIVE_BED
+     &             +1
+#  endif
+         indxWrk=indxSed+itrc-2
          if (wrt(indxWrk)) then
            lvar=lenstr(vname(1,indxWrk))
            ierr=nf_inq_varid (ncid,vname(1,indxWrk)(1:lvar), 

@@ -198,7 +198,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     
 !     Barotropic mode variables: free-surface and 2D momentum
 !     components in XI-,ETA-directions.
-!     
+!
       if (wrthis(indxZ)) then
          work2d=zeta(:,:,fast_indx_out)
 #ifdef WET_DRY
@@ -1141,8 +1141,10 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !     Write out sediment bed layer thickness, porosity, volume 
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
 !     
+
       if (wrthis(indxATHK)) then
-         call fillvalue2d(bot_thick,ncidhis,hisSed(1),indxATHK,
+         work2d=bot_thick
+         call fillvalue2d(work2d,ncidhis,hisSed(1),indxATHK,
      &        record,r2dvar,type)
       endif
 
