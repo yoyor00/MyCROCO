@@ -82,7 +82,7 @@
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
       if (ierr .eq. nf_noerr) then
-        ierr=checkdims (ncid, ininame(1:lstr), lstr, max_rec)
+        ierr=checkdims (ncid, ininame, lstr, max_rec)
         if (ierr. eq. nf_noerr) then
           if (max_rec.gt.0) then
             if (req_rec.gt.0) then

@@ -20,8 +20,8 @@
 # Note that environment variables overwrite hard-coded
 # options
 
-#
 #set -x
+#
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
 #
@@ -43,12 +43,12 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC=$CI_FC
+FC=gfortran
 
 #
 # set MPI directories if needed
 #
-MPIF90=$CI_MPIF90
+MPIF90="mpif90"
 MPILIB=""
 MPIINC=""
 
@@ -109,12 +109,13 @@ ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
-        \cp -f ${SOURCE}/PISCES/namelist_pisces* $RUNDIR
+        \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
 fi
 #
@@ -124,17 +125,15 @@ fi
 ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
 ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
 ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 #
-#
 # RVTK  files  DEBUG CPP KEYS
 #
-/bin/cp -f cppdefs_dev_cvtk.h ${SCRDIR}/cppdefs_dev.h
 /bin/cp -f cppdefs.h.OK ${SCRDIR}/cppdefs.h
 /bin/cp -f param.h.OK ${SCRDIR}/param.h
 #
-
 # Change directory
 #
 cd $SCRDIR
@@ -150,16 +149,18 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-#		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
-                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
-                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
+		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
+#                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
+#                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
-		CPP1="cpp  -traditional -DLinux"
+		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-#		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8 "
-		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-			-fbounds-check -finit-real=nan -finit-integer=8888"
+#		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
+#                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+#			-fbounds-check -finit-real=nan -finit-integer=8888"
+                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+			-fbounds-check "
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
@@ -320,5 +321,11 @@ rm -f flags.tmp
 $MAKE depend
 $MAKE
   
-[ -f croco ] && mv croco $RUNDIR
+if [ -f croco  ]; then
+    mv croco $RUNDIR
+else
+    exit 1
+fi
+#[[ -f partit ]] && mv partit $RUNDIR
+#[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #
