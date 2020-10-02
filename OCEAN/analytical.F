@@ -360,7 +360,7 @@ C$    integer  trd, omp_get_thread_num
 
       windamp = 0.
 
-# ifdef BASIN
+# if defined BASIN || defined GYRE
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
       do j=JstrR,JendR
