@@ -88,9 +88,9 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
 #endif
       ad_counter = ad_counter + 1
 
-      dx=1.e-10
+      dx=1.e-8
       df1=cost
-      epsrel=1.e-12
+      epsrel=1.e-5
       niter=2000
       nsim=2000
       normtype = 'dfn'

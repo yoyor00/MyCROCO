@@ -5,7 +5,7 @@
       
       integer k
 
-C$AD BINOMIAL-CKP ad_ns+1 95 1
+C$AD BINOMIAL-CKP ad_ns+1 80 1            
       do k=1,ad_ns
          call step()
       end do
@@ -18,7 +18,6 @@ C$AD BINOMIAL-CKP ad_ns+1 95 1
 # include "adparam.h"
 
       double precision cost,icost
-      double precision sigma2
       integer ta,k,xk
 
       integer i,j
@@ -26,18 +25,19 @@ C$AD BINOMIAL-CKP ad_ns+1 95 1
 
       call set_state(ad_x)
 
-c      sigma2 = ad_cost/ad_cost_counter
       icost=0
       cost=0
+
       do ta=1,ad_nt
          call ad_step()
-         call cost_fun_step(ad_x,icost,ta,3)
+         call cost_fun_step(ad_x,icost,ta*ad_ns,3)
          write(*,*) '==icost3==>',icost
-         ad_irms = cost
-      
-         cost=cost+icost
+c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       end do
 
+      cost = icost
+      ad_irms = icost
+      
       ad_cost = cost
       ad_ta = ad_nt*ad_ns
       write (*,*) 'cost=',cost
@@ -130,7 +130,7 @@ c         end do
                if (rmask(i,j).ne.0) then
                   k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
-                  ad_dz(k)=delta_z
+                  ad_dz(k) = delta_z
                   icost = icost + delta_z*delta_z
 c                  write(*,*) 'AAAAA',ad_cost_counter,time,
 c     &                 ad_obs_time(ta),zeta(i,j,knew),
@@ -220,12 +220,12 @@ c$$$     &                 ad_obs(i,j,ta-2)
             if (rmask(i,j).ne.0) then
                k=k+1
                zob(i,j)= ad_x(k)
-            end if
-            if (zobmin.gt.zob(i,j)) then
-               zobmin=zob(i,j)
-            end if
-            if (zobmax.lt.zob(i,j)) then
-               zobmax=zob(i,j)
+               if (zobmin.gt.zob(i,j)) then
+                  zobmin=zob(i,j)
+               end if
+               if (zobmax.lt.zob(i,j)) then
+                  zobmax=zob(i,j)
+               end if
             end if
          end do
       end do
@@ -339,8 +339,6 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
-
-
 
       subroutine init_local_arrays(ad_x)
       implicit none

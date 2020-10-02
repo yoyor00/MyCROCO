@@ -7,6 +7,7 @@ case $1 in
   --env-ok)
     shift;;
   *)
+    set -x
     # guix environment setup
     [ -f /applis/site/guix.sh ] && . /applis/site/guix.sh
     export PATH="$HOME/.guix-profile/bin${PATH:+:}$PATH"
@@ -14,12 +15,12 @@ case $1 in
     pwd=`pwd`
     rm -f $pwd/.croco-guix-profile
     packages="gcc-toolchain gfortran-toolchain make \
-        netcdf netcdf-fortran \                
-        mpich openssh adjoinable-mpi \         
-        openblas lapack \            
-        openjdk coreutils binutils sed grep bash which"
-    guix_cmd="guix time-machine --url=https://gitlab.inria.fr/bremond/guix.git --branch=check-master-mpich --"
-    exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve 'OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
+        netcdf netcdf-fortran \
+        mpich openssh adjoinable-mpi \
+        openblas lapack \
+        openjdk coreutils binutils sed grep bash which time"
+    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=https://gitlab.inria.fr/bremond/guix.git --branch=check-master-mpich --"
+    exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
 ################################################################################
@@ -40,14 +41,19 @@ cd RunC
 
 # 1. first run with ANA_INITIAL to build obs.nc file
 ln -sf ../AD/croco.in.AD-DL-Z0B-CTRL-OBS.in
-rm -f cppdefs.h # std cppdefs.h from OCEAN must be used
+cp -f ../OCEAN/cppdefs.h .
+sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
+sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
 ../OCEAN/jobcomp
-./croco croco.in.AD-DL-Z0B-CTRL-OBS.in
+$mpirun_cmd time -v ./croco croco.in.AD-DL-Z0B-CTRL-OBS.in
 cp ftides_his.nc obs.nc
 
 # 2. second run with restart and control with obs.nc file
 ln -sf ../AD/croco.in.AD-DL-Z0B-CTRL.in
 cp ../OCEAN/cppdefs.h .
-sed -i 's/define ANA_INITIAL/undef ANA_INITIAL/' cppdefs.h
+sed -i 's/define REGIONAL/undef REGIONAL/' cppdefs.h
+sed -i 's/undef[\t ]*AD_DL_Z0B_CTRL/define AD_DL_Z0B_CTRL/' cppdefs.h
+sed -i 's/define[\t ]*ANA_INITIAL/undef ANA_INITIAL/' cppdefs.h
 ../OCEAN/jobcomp
-$mpirun_cmd ./croco_adc croco-ad-ftides.in
+$mpirun_cmd time -v ./croco_adc croco.in.AD-DL-Z0B-CTRL.in
+$mpirun_cmd time -v ./croco_adj croco.in.AD-DL-Z0B-CTRL.in

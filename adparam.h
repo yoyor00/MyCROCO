@@ -10,7 +10,7 @@ c     real size of the problem per node (<= ad_array_size/nnodes)
 C     number of steps between cost function computations
       integer ad_ns
 #if defined AD_DL_Z0B_CTRL
-      parameter (ad_ns = 10)
+      parameter (ad_ns = 2400)
 #elif defined AD_ATLN
       parameter (ad_ns = 180)
 #endif
@@ -19,7 +19,7 @@ C     number of cost function computations
       integer ad_nt
 c     parameter (ad_nt = 2400)
 #if defined AD_DL_Z0B_CTRL
-      parameter (ad_nt = 240)
+      parameter (ad_nt = 1)
 #elif defined AD_ATLN
       parameter (ad_nt = 48)
 #endif

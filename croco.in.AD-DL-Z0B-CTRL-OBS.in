@@ -5,7 +5,7 @@ start_date:
 01/04/2014 00:00:00
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               4     60      1       1
+               8640     60      1       1
 
 initial: NRREC  filename
           0 
@@ -13,7 +13,7 @@ initial: NRREC  filename
 
 restart:          NRST, NRPFRST / filename
                   1200      -1
-                          ftides_rst.nc
+                          ftides_rst_obs.nc
                           
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T      1      0 
@@ -32,8 +32,8 @@ primary_averages: zeta UBAR VBAR
 rho0:
       1025.
 
-bottom_drag:     RDRG(m/s),      RDRG2, Zob [m],  Cdb_min, Cdb_max
-                 0.0d-04         0.20d-05     0.d-3        1.d-4    1.d-1
+bottom_drag:     RDRG(m/s),      RDRG2, Zobt [m],  Cdb_min, Cdb_max
+                 0.0d-04         0.0     0.008        1.d-4    1.d-1
 
 gamma2:
                  1.
