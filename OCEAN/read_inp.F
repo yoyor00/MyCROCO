@@ -1750,7 +1750,7 @@ c        close(testunit)
      &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
      &       'Bottom net heat flux'        
 #endif
-# if defined BWFLUX && define SALINITY
+# if defined BWFLUX && defined SALINITY
      &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]', 
      &                       'Surface freshwater flux (E-P)'
 # endif     
