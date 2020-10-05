@@ -423,6 +423,9 @@
 ! Wavenumber : copy into shared arrays for output
 ! ===============================================
 !
+      MPI_master_only write(*,*) 'DIR wdrx(155,275) = ',wdrx(155,275)
+      MPI_master_only write(*,*) 'DIR wdre(155,275) = ',wdre(155,275)
+      
       do j=jstrR,jendR
         do i=istrR,iendR
           wwkx(i,j)=kw(i,j)*wdrx(i,j)

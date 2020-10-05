@@ -20,7 +20,8 @@ MY_CONFIG_PATH=${CROCO_DIR}
 #
 # Name of the configuration directory defined by the user
 #
-MY_CONFIG_NAME='Run_BENGUELA_LR'
+#MY_CONFIG_NAME='Run_BENGUELA_LR'
+MY_CONFIG_NAME='SANDBAR'
 #
 #
 # END USER SECTION

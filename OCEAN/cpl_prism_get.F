@@ -38,7 +38,7 @@
       INTEGER    :: iok_taux, iok_tauy, iok_taum
       INTEGER    :: iok_srflx, iok_itemp , iok_isalt
       INTEGER    :: iok_wdry                                   ! OW_COUPLING 
-      INTEGER    :: iok_wt0m1, iok_whs, iok_wcdir, iok_wsdir   ! OW_COUPLING 
+      INTEGER    :: iok_wt0m1, iok_whs, iok_wdir               ! OW_COUPLING 
       INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm      ! OW_COUPLING 
       INTEGER    :: iok_wtwox, iok_wtwoy, iok_wtaux, iok_wtauy ! OW_COUPLING 
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
@@ -97,8 +97,7 @@
       iok_wdry = 0
       iok_wt0m1 = 0
       iok_whs = 0
-      iok_wcdir = 0
-      iok_wsdir = 0
+      iok_wdir = 0
       iok_wbhd = 0
       iok_wubr = 0
       iok_wfoc = 0
@@ -229,7 +228,7 @@
             if (iok_wt0m1 /= 0)  then
 !              Transmit to CROCO field : wfrq(:,:)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               wfrq = rmask * (2*pi) / max(tab_t_tmp, eps) 
+               wfrq = rmask * (2*pi) / max(tab_t_tmp, eps)
             endif
          end if
 !-------------------------------------------------
@@ -241,31 +240,57 @@
 !              Transmit to CROCO field : whrm(:,:)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                whrm = rmask * tab_t_tmp * 0.70710678
-            endif
+             endif
          end if
+!$$$!-------------------------------------------------
+!$$$!        wave_cdir : cos of mean direction 
+!$$$         if (srcv_clname(i)=='RRMCDIR'//clevel) then
+!$$$            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+!$$$     &  tab_t_tmp, rcvtime, iok_wcdir)
+!$$$            if (iok_wcdir /= 0)  then
+!$$$!              Transmit to CROCO field : wdrx(:,:)
+!$$$               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!$$$               wdrx = rmask * tab_t_tmp
+!$$$            endif
+!$$$         end if
+!$$$!-------------------------------------------------
+!$$$!        wave_sdir : sin of mean direction
+!$$$         if (srcv_clname(i)=='RRMSDIR'//clevel) then
+!$$$            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+!$$$     &  tab_t_tmp, rcvtime, iok_wsdir)
+!$$$            if (iok_wsdir /= 0)  then
+!$$$!              Transmit to CROCO field : wdre(:,:)
+!$$$               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!$$$               wdre = rmask * tab_t_tmp 
+!$$$            endif
+!$$$         endif
+!$$$  !-------------------------------------------------
+
 !-------------------------------------------------
-!        wave_cdir : cos of mean direction 
-         if (srcv_clname(i)=='RRMCDIR'//clevel) then
+!     wave_dir :  mean direction + then we apply croco grid rotation ( -angler)
+!                                  and projection on xi/eta trigo croco_grid
+         if (srcv_clname(i)=='RRM_DIR'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wcdir)
-            if (iok_wcdir /= 0)  then
-!              Transmit to CROCO field : wdrx(:,:)
+     &  tab_t_tmp, rcvtime, iok_wdir)
+            if (iok_wdir /= 0)  then
+!              Transmit to CROCO field : wdr then compute wdrx(:,:) + wdre(:,:)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               wdrx = rmask * tab_t_tmp
-            endif
+               !wdrx = rmask * cos(tab_t_tmp - angler)
+               !wdre = rmask * sin(tab_t_tmp - angler) 
+! Debug try to remove - angler
+               wdrx = rmask * cos(tab_t_tmp)
+               wdre = rmask * sin(tab_t_tmp)
+!
+! ca marche  pas les print a cet endroit
+               MPI_master_only print *,'DIR tab_t_tmp = ',tab_t_tmp(5,5)
+               MPI_master_only print *,'angler    = ',angler(5,5)
+               MPI_master_only print *,'cos(tab_t_tmp - angler) = ',
+     &                          cos(tab_t_tmp(5,5) - angler(5,5))
+               MPI_master_only print *,'wdrx      = ',wdrx(5,5)
+               MPI_master_only print *,'wdre      = ',wdre(5,5)
+!     
+             endif
          end if
-!-------------------------------------------------
-!        wave_sdir : sin of mean direction
-         if (srcv_clname(i)=='RRMSDIR'//clevel) then
-            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wsdir)
-            if (iok_wsdir /= 0)  then
-!              Transmit to CROCO field : wdre(:,:)
-               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               wdre = rmask * tab_t_tmp 
-            endif
-         endif
-!-------------------------------------------------
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
          if (srcv_clname(i)=='RRM_BHD'//clevel) then

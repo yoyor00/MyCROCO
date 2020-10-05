@@ -123,15 +123,15 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     
       if (wrtavg(indxZ)) then
          work2d=zeta_avg
-# ifdef WET_DRY
-         do j=0,Mm
-            do i=0,Lm
-               if (h(i,j) .le. Dcrit(i,j)) then
-                 work2d(i,j)=work2d(i,j)+h(i,j)
-               endif
-            enddo
-         enddo
-# endif
+!$$$# ifdef WET_DRY
+!$$$         do j=0,Mm
+!$$$            do i=0,Lm
+!$$$               if (h(i,j) .le. Dcrit(i,j)) then
+!$$$                 work2d(i,j)=work2d(i,j)+h(i,j)
+!$$$               endif
+!$$$            enddo
+!$$$         enddo
+!$$$# endif
          call fillvalue2d(work2d,ncidavg,avgZ,indxZ,
      &                   record,r2dvar,type)
       endif
