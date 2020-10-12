@@ -195,7 +195,9 @@
 #  elif defined RIP_TOPO_2D
       wave_ramp = tanh(192.0*dt*sec2day*float(iic-ntstart))
 #  else
-      wave_ramp = tanh(12.0*dt*sec2day*float(iic-ntstart))
+      wave_ramp = tanh(12.0*dt*sec2day*float(iic-ntstart))  ! ramp de 2 heures
+      !wave_ramp = tanh(6.0*dt*sec2day*float(iic-ntstart))   ! ramp de 4 heures
+      !wave_ramp = tanh(2.0*dt*sec2day*float(iic-ntstart))    ! ramp de 12 heures
 #  endif
 # else
       wave_ramp = 1.0
@@ -423,8 +425,8 @@
 ! Wavenumber : copy into shared arrays for output
 ! ===============================================
 !
-      MPI_master_only write(*,*) 'DIR wdrx(155,275) = ',wdrx(155,275)
-      MPI_master_only write(*,*) 'DIR wdre(155,275) = ',wdre(155,275)
+!!!      if (mynode.eq.7) write(*,*) 'DIR wdrx(5,5) = ',wdrx(5,5)
+!!!      if (mynode.eq.7) write(*,*) 'DIR wdre(5,5) = ',wdre(5,5)      
       
       do j=jstrR,jendR
         do i=istrR,iendR
@@ -432,6 +434,9 @@
           wwke(i,j)=kw(i,j)*wdre(i,j)
         enddo
       enddo
+
+!!!      if (mynode.eq.7) write(*,*) 'DIR wwkx(5,5) = ',wwkx(5,5)
+!!!      if (mynode.eq.7) write(*,*) 'DIR wwke(5,5) = ',wwke(5,5)      
 !
 ! 2DH depth-averaged Stokes drift and breaking acceleration
 ! =========================================================

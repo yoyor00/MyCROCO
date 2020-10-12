@@ -285,6 +285,7 @@ CR      write(*,*) 'wrt_his:  VWstr' MYID
 
 #ifdef WAVE_IO
       if (wrthis(indxHRM)) then
+!        write(*,*) 'AAAAA wrt_his:  wrtHRM' MYID
         ierr=nf_fwrite (whrm(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(1), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -297,6 +298,7 @@ CR      write(*,*) 'wrt_his:  VWstr' MYID
 CR      write(*,*) 'wrt_his:  wrtHrm' MYID
       endif
       if (wrthis(indxFRQ)) then
+!        write(*,*) 'AAAAA wrt_his:  wrtFRQ' MYID
         ierr=nf_fwrite (wfrq(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(2), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -310,6 +312,7 @@ CR      write(*,*) 'wrt_his:  wrtFrq' MYID
       endif
 # ifdef WKB_WWAVE
       if (wrthis(indxWAC)) then
+!        write(*,*) 'AAAAA wrt_his:  wrtWAC' MYID
         ierr=nf_fwrite (wac(START_2D_ARRAY,wstp), ncidhis,
      &                                   hisWAVE(3), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -319,10 +322,15 @@ CR      write(*,*) 'wrt_his:  wrtFrq' MYID
      &                    nf_strerror(ierr) MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(*,*) 'wrt_his:  wrtWac' MYID
+      write(*,*) 'wrt_his:  wrtWac' MYID
       endif
 # endif
       if (wrthis(indxWKX)) then
+! GC
+!     write(*,*) 'AAAAA wrt_his:  wrtWkx' MYID
+!wwkx(:,:)=0
+!     Gc
+        !MPI_master_only write(*,*) 'WKX(:,3)= ',wwkx(:,3)
         ierr=nf_fwrite (wwkx(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(4), record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -332,9 +340,11 @@ CR      write(*,*) 'wrt_his:  wrtWac' MYID
      &                    nf_strerror(ierr) MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(*,*) 'wrt_his:  wrtWkx' MYID
       endif
       if (wrthis(indxWKE)) then
+!        wwke(:,:)=0
+        !MPI_master_only write(*,*) 'WKE(:,3)= ',wwke(:,3)
+!        write(*,*) 'wrt_his:  wrtWkx' MYID
         ierr=nf_fwrite (wwke(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(5), record, r2dvar)
         if (ierr .ne. nf_noerr) then

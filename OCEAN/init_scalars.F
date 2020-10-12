@@ -1,4 +1,4 @@
-! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
+ ! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -313,7 +313,8 @@ C$OMP END PARALLEL
 ! Initialisation at one blanck space
       vname(:,:)='  '
 
-#undef CR
+!     #undef CR
+!#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='scrum_time'
       vname(2,indxTime)='time since initialization'

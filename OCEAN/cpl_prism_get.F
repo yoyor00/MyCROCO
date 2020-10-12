@@ -229,6 +229,11 @@
 !              Transmit to CROCO field : wfrq(:,:)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                wfrq = rmask * (2*pi) / max(tab_t_tmp, eps)
+!     gc
+               where ( wfrq > 1000. )  
+                 wfrq = 0.
+               end where
+!     End gc
             endif
          end if
 !-------------------------------------------------
@@ -270,43 +275,51 @@
 !     wave_dir :  mean direction + then we apply croco grid rotation ( -angler)
 !                                  and projection on xi/eta trigo croco_grid
          if (srcv_clname(i)=='RRM_DIR'//clevel) then
-            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wdir)
-            if (iok_wdir /= 0)  then
-!              Transmit to CROCO field : wdr then compute wdrx(:,:) + wdre(:,:)
-               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               !wdrx = rmask * cos(tab_t_tmp - angler)
-               !wdre = rmask * sin(tab_t_tmp - angler) 
-! Debug try to remove - angler
-               wdrx = rmask * cos(tab_t_tmp)
-               wdre = rmask * sin(tab_t_tmp)
-!
-! ca marche  pas les print a cet endroit
-               MPI_master_only print *,'DIR tab_t_tmp = ',tab_t_tmp(5,5)
-               MPI_master_only print *,'angler    = ',angler(5,5)
-               MPI_master_only print *,'cos(tab_t_tmp - angler) = ',
-     &                          cos(tab_t_tmp(5,5) - angler(5,5))
-               MPI_master_only print *,'wdrx      = ',wdrx(5,5)
-               MPI_master_only print *,'wdre      = ',wdre(5,5)
+           call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &          tab_t_tmp, rcvtime, iok_wdir)
+           if (iok_wdir /= 0)  then
+!     Transmit to CROCO field : wdr then compute wdrx(:,:) + wdre(:,:)
+             call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+             wdrx = rmask * cos(tab_t_tmp - angler)
+             wdre = rmask * sin(tab_t_tmp - angler) 
+!     Debug try to remove - angler
+!wdrx = rmask * cos(tab_t_tmp)
+!wdre = rmask * sin(tab_t_tmp)
 !     
-             endif
-         end if
-!        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
+!     ca marche  pas les print a cet endroit
+!$$$  if (mynode.eq.7) print *,'DIR tab_t_tmp =',tab_t_tmp(5,5)
+!$$$  if (mynode.eq.7) print *,'angler    = ',angler(5,5)
+!$$$  if (mynode.eq.7) print *,'cos(tab_t_tmp - angler) = ',
+!$$$  &                          cos(tab_t_tmp(5,5) - angler(5,5))
+!$$$  if (mynode.eq.7) print *,'sin(tab_t_tmp - angler) = ',
+!$$$  &                          sin(tab_t_tmp(5,5) - angler(5,5))
+!!if (mynode.eq.7) print *,'wdrx      = ',wdrx(5,5)
+!     !if (mynode.eq.7) print *,'wdre      = ',wdre(5,5)
+             
+!             if (mod(ilc-1,nwrt).eq.0)  then
+!               print *,'wdrx      = ',wdrx(:,:)
+!               print *,'wdre      = ',wdre(:,:)
+!             endif
+!     
+           endif
+         endif
+!     wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
          if (srcv_clname(i)=='RRM_BHD'//clevel) then
-            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wbhd)
+           call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &          tab_t_tmp, rcvtime, iok_wbhd)
 !            if (iok_wbhd /= 0)  then
-!!              Transmit to CROCO field : stflx(:,:,itemp)
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
-!            endif
+!     !              Transmit to CROCO field : stflx(:,:,itemp)
+!     call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!     stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
+!     endif
          endif
 !-------------------------------------------------
 !        wave_ubr : rms amplitude of orbital bottom velocity of the waves (m/s)
 !        not tested/performed yet
          if (srcv_clname(i)=='RRM_UBR'//clevel) then
-            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+
+           call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wubr)
 !            if (iok_wubr /= 0)  then
 !!              Transmit to CROCO field : stflx(:,:,itemp)
