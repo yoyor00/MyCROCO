@@ -395,13 +395,13 @@
 #endif 
             endif
          endif
+#endif
+      END DO
+
+#ifdef OW_COUPLING
 !-------------------------------------------------
-!        Update CROCO wind stress accounting for wave bulk
-!      MPI_master_only print *,'entering sustr = sustr - tawx + twox'
-!      MPI_master_only print *,'sustr = ',sustr(5,5)
-!      MPI_master_only print *,'tawx = ',tawx(5,5)
-!      MPI_master_only print *,'twox = ',twox(5,5)
-!
+!    Update CROCO wind stress accounting for wave bulk
+!-------------------------------------------------
 # if defined WAVE_SMFLUX
          sustr = twox
          svstr = twoy
@@ -409,11 +409,7 @@
          sustr = sustr - tawx + twox
          svstr = svstr - tawy + twoy
 # endif
-!
-!      MPI_master_only print *,'sustr = ',sustr(5,5)
-!
-#endif
-      END DO 
+#endif 
 !-------------------------------------------------
 !
 #ifdef OA_COUPLING
