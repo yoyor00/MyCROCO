@@ -473,7 +473,6 @@
                                      !defined WKB_WWAVE && \
                                      !defined OW_COUPLING) \
           || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_EP   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
                                    !defined OA_COUPLING) \
