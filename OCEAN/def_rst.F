@@ -871,7 +871,7 @@
 ! Write grid variables.
 ! ----- ---- ----------
 !
-      if (total_rec.eq.1) call wrt_grid (ncid, rstname, lstr)
+      if (total_rec.le.1) call wrt_grid (ncid, rstname, lstr)
 #endif
   99  return                                              !--> ERROR
       end

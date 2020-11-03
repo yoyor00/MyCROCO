@@ -42,6 +42,9 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#ifdef SST_SKIN
+# include "forces.h"
+#endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 #if defined SUBSTANCE || defined SEDIMENT
       integer :: iv
