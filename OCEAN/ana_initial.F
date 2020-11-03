@@ -30,6 +30,9 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
+# if defined SUBSTANCE
+      USE comsubstance,  ONLY : cini_wat
+# endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -39,7 +42,16 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#ifdef SST_SKIN
+# include "forces.h"
+#endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
+#if defined SUBSTANCE
+      integer :: iv
+#endif
+#ifdef CHANNEL
+      real cff
+#endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
@@ -85,6 +97,9 @@
 #  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
 #  include "work.h"
 #  endif      
+#endif
+#ifdef DUNE
+      real cff, cff2
 #endif
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
@@ -199,6 +214,36 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+#elif defined CHANNEL 
+
+      DO j=JR_RANGE
+        DO i=IR_RANGE
+          zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+# if defined key_ANA_bedload
+          zeta(i,j,1)=0.0337+xr(i,j)*(0.006-0.0337)/xl
+# endif
+          zeta(i,j,2)=zeta(i,j,1)
+          cff=0.5*(1./10)**2
+          if (i.gt.0) then
+            ubar(i,j,1)=0.58/(1-
+     &      0.5*exp(-cff*(  0.5*(xr(i,j)+xr(i-1,j)) -0.5*xl)**2))
+# if defined key_ANA_bedload
+           ubar(i,j,1)=1.667/(1.-
+     &         2./6.*exp(-0.01*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2 ))
+           ubar(-1,j,1)=1.667
+# endif
+          else
+            ubar(i,j,1)=0.58
+# if defined key_ANA_bedload
+            ubar(i,j,1)=1.667
+# endif
+          endif 
+          vbar(i,j,1)=0.
+          ubar(i,j,2)=ubar(i,j,1)
+          vbar(i,j,2)=vbar(i,j,1)
+        END DO
+      END DO
+      
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -482,6 +527,22 @@
              enddo
           enddo
         enddo
+#  elif defined CHANNEL
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                t(i,j,k,1,itemp)=10.
+                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#  ifdef SALINITY
+                t(i,j,k,1,isalt)=35.
+                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
+     &            on_u(i,j),pm(i,j),pn(i,j)
+#  endif
+            enddo
+          enddo
+        enddo
+
 #  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
         do k=1,N
           do j=JR_RANGE
@@ -882,18 +943,6 @@
           enddo
         enddo
 
-#  elif  defined SED_TEST2 
-        do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              t(i,j,k,1,itemp)=20.0
-              t(i,j,k,1,isalt)=0.0
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-            enddo
-          enddo
-        enddo
-
 #  elif defined UPWELLING
         do k=1,N
           do j=JR_RANGE
@@ -916,6 +965,35 @@
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #   endif
+            enddo
+          enddo
+        enddo
+
+#  elif defined DUNE
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=0.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+
+#   ifdef ANA_DUNE
+              cff2=1.67
+#   else
+              cff2=0.58
+#   endif     
+              cff=0.5*(1./10)**2
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
+              ubar(i,j,:) = ubar(i,j,1)
+              vbar(i,j,1) = 0.
+              vbar(i,j,:) = vbar(i,j,1)
+
+              zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+              zeta(i,j,:) = zeta(i,j,1)
             enddo
           enddo
         enddo
@@ -1066,6 +1144,57 @@ C$OMP BARRIER
       enddo
 # endif /*PASSIVE_TRACER */
 !
+!
+!--------------------------------------------------------------------
+!  Initial conditions for tracer-Substance
+!--------------------------------------------------------------------
+!
+# ifdef SUBSTANCE 
+      do k=1,N
+        do j=JR_RANGE
+          do i=IR_RANGE
+            do iv=itsubs1,itsubs2
+              if (.not.got_tini(iv)) then
+#  if defined REGIONAL && !defined ANA_PSOURCE
+!               if (h(i,j).lt.300) then
+
+                   t(i,j,k,1,iv)=cini_wat(iv)
+!                else
+!                 t(i,j,k,1,itpas)=0.
+!               endif
+#  elif defined TFLAT2DV
+                if (h(i,j).gt.0) then
+                  !!t(i,j,k,1,iv)=cini_wat(iv)
+! ################# CAS TFLAT2DV vase+diss
+                  if (iv<=itsubs1+1) then
+                     if( i>79.and.i<151) then
+                       t(i,j,k,1,iv)=cini_wat(iv)   !#
+                     else
+                       t(i,j,k,1,iv)=0.
+                     endif
+                  else
+                     t(i,j,k,1,iv)=cini_wat(iv)
+                  endif
+! ################# CAS TFLAT2DV vase+diss FIN
+                else
+                     t(i,j,k,1,iv)=0.
+                endif
+#  elif defined CHANNEL
+                       t(i,j,k,1,iv)=cini_wat(iv)  
+#  else
+                if (h(i,j).lt.300) then
+                  t(i,j,k,1,iv)=cini_wat(iv)
+                else
+                  t(i,j,k,1,iv)=0.
+                endif
+#  endif
+               endif
+            enddo
+          enddo
+        enddo
+      enddo
+# endif /*SUBSTANCE */
+
 !----------------------------------------------------------------------
 !  Initial conditions for sediment tracer variables.
 !----------------------------------------------------------------------
