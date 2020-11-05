@@ -72,6 +72,14 @@
       integer lwgrd, wid
       common /smsdat5/ lwgrd, wid
 #endif /* !ANA_SMFLUX */
+
+#if defined SINGLE_COLUMN_GRADP
+      real gdzetadx,gdzetady,omga
+      parameter (gdzetadx=1.875e-3,gdzetady=0.)
+!      parameter (omga=1./(12.4*3600.))
+      parameter (omga=0.)
+#endif
+
 !
 !  BOTTOM MOMENTUM FLUX:
 !--------------------------------------------------------------------

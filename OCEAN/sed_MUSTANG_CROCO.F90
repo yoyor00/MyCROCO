@@ -460,6 +460,9 @@
 # ifdef WAVE_OFFLINE
    REAL(KIND=rsh)                                   :: fws2ij,courant,alpha,beta,cosamb,sinamb
 # endif
+# ifdef key_tenfon_upwind   
+   REAL(KIND=rsh)                                   :: cff4,cff1,cff2,cff3,tenfonx,tenfony
+# endif  
    
    !!--------------------------------------------------------------------------
    !! * Executable part
@@ -497,16 +500,20 @@
       enddo
 
 # ifdef MPI
-!#ifdef key_MUSTANG_tenfonUbar
-!      workexch(:,:) = z_w(:,:,0) 
-!      call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-!          &          workexch(START_2D_ARRAY))
-!      z_w(:,:,0)=workexch(:,:)
-!      workexch(:,:) = z_w(:,:,N)    
-!      call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-!          &          workexch(START_2D_ARRAY))
-!      z_w(:,:,N)=workexch(:,:)
-!#endif
+# ifdef key_MUSTANG_tenfonUbar
+       call exchange_w3d_tile (ifirst,ilast,jfirst,jlast,  &
+     &                        z_w(START_2D_ARRAY,0))
+       call exchange_w3d_tile (ifirst,ilast,jfirst,jlast,  &
+     &                        z_w(START_2D_ARRAY,N))
+       call exchange_w3d_tile (ifirst,ilast,jfirst,jlast,  &
+     &                        z_w(START_2D_ARRAY,N))
+       call exchange_w3d_tile (ifirst-1,ilast,jfirst-1,jlast,  &
+     &                        z_w(START_2D_ARRAY,N))
+
+#endif
+#endif
+
+# ifdef MPI
       DO j=jfirst-1,jlast
         DO i=ifirst-2,ilast
 # else   
@@ -518,14 +525,24 @@
           vit2=SQRT(0.0625_rsh*(vbar(i,j,nrhs)+vbar(i+1,j,nrhs)+  &
                   vbar(i,j-1,nrhs)+vbar(i+1,j-1,nrhs))**2         &
                   +ubar(i+1,j,nrhs)**2) *ubar(i+1,j,nrhs)
+#ifdef MPI
+          if (float(i +ii*Lm) .GE. 0) then
+#else
+          if (float(i       ) .GE. 0) then
+#endif
           frofonx(i,j)=0.16_rsh*(LOG( ( z_w(i,j,N)-z_w(i,j,0))/   &
                   (z0sed(i,j)*2.718)))**(-2)*vit2
+          else
+          frofonx(i,j)=0.
+          endif
+
 #else
           vit2=SQRT(0.0625_rsh*(v(i,j,1,nrhs)+v(i+1,j,1,nrhs)+  &
                   v(i,j-1,1,nrhs)+v(i+1,j-1,1,nrhs))**2         &
                   +u(i+1,j,1,nrhs)**2) *u(i+1,j,1,nrhs)   
           frofonx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i+1,j)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
+
 #endif
        enddo
       enddo
@@ -541,9 +558,16 @@
           vit2=SQRT(0.0625_rsh*(ubar(i,j,nrhs)+ubar(i,j+1,nrhs)+  &
                   ubar(i-1,j+1,nrhs)+ubar(i-1,j,nrhs))**2         &
                   +vbar(i,j+1,nrhs)**2) *vbar(i,j+1,nrhs)
+#ifdef MPI
+          if (float(j +jj*Mm) .GE. 0) then
+#else
+          if (float(j       ) .GE. 0) then
+#endif
           frofony(i,j)=0.16_rsh*(LOG( (z_w(i,j,N)-z_w(i,j,0))  /   &
                   (z0sed(i,j)*2.718)))**(-2)*vit2
-
+          else
+          frofony(i,j)=0.
+          endif
 #else
           vit2=SQRT(0.0625_rsh*(u(i,j,1,nrhs)+u(i,j+1,1,nrhs)+  &
                   u(i-1,j+1,1,nrhs)+u(i-1,j,1,nrhs))**2         &
@@ -553,6 +577,7 @@
 #endif
        enddo
       enddo
+
 # ifdef MPI
       DO j=jfirst-1,jlast
         DO i=ifirst-1,ilast
@@ -560,11 +585,34 @@
       DO j=jfirst,jlast
         DO i=ifirst,ilast
 #  endif  
-           tenfonc(i,j)=SQRT(((frofonx(i,j)*raphbx(i,j)+frofonx(i-1,j)        &
+# ifdef key_tenfon_upwind
+            cff1=0.5*(1.0+SIGN(1.0,frofonx(i,j)))
+            cff2=0.5*(1.0-SIGN(1.0,frofonx(i,j)))
+            cff3=0.5*(1.0+SIGN(1.0,frofonx(i-1  ,j)))
+            cff4=0.5*(1.0-SIGN(1.0,frofonx(i-1 ,j)))
+            tenfonx=cff3*(cff1*frofonx(i-1,j)+                     &
+                       cff2*0.5*(frofonx(i-1,j)+frofonx(i,j)))+    &
+                       cff4*(cff2*frofonx(i,j)+                   &
+                       cff1*0.5*(frofonx(i-1,j)+frofonx(i,j)))
+
+            cff1=0.5*(1.0+SIGN(1.0,frofony(i,j)))
+            cff2=0.5*(1.0-SIGN(1.0,frofony(i,j)))
+            cff3=0.5*(1.0+SIGN(1.0,frofony(i,j-1)))
+            cff4=0.5*(1.0-SIGN(1.0,frofony(i,j-1)))
+            tenfony=cff3*(cff1*frofony(i,j-1)+                      &
+                      cff2*0.5*(frofony(i,j-1)+frofony(i,j)))+      &
+                       cff4*(cff2*frofony(i,j)+                     &
+                       cff1*0.5*(frofony(i,j-1)+frofony(i,j)))
+
+            tenfonc(i,j)=SQRT(tenfonx**2+tenfony**2)*(rho(i,j,1)+rho0)
+# else
+            tenfonc(i,j)=SQRT(((frofonx(i,j)*raphbx(i,j)+frofonx(i-1,j)        &
                      *raphbx(i-1,j))/(raphbx(i,j)                             &
                      +raphbx(i-1,j)+epsilon_MUSTANG))**2+((frofony(i,j)*raphby(i,j)   &
                      +frofony(i,j-1)*raphby(i,j-1))/(raphby(i,j)              &
                      +raphby(i,j-1)+epsilon_MUSTANG))**2)*(rho(i,j,1)+rho0)
+# endif
+
 # ifdef WAVE_OFFLINE
             fws2ij=fws2
             IF (l_fricwave .AND. Uwave(i,j)*Pwave(i,j) > 0.0_rsh .AND.  &

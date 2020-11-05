@@ -1405,13 +1405,22 @@ ENDIF
         ELSE
           dzs(:,i,j)=0.0_rsh
         ENDIF
-#ifdef CHANNEL
-    dzs(1,i,j)=1.
-    dzs(2,i,j)=1.
-    dzs(3:11,i,j)=0.1
-#endif
       ENDDO
     ENDDO
+#if defined CHANNEL  || defined DUNE
+#if defined key_ANA_bedload  || defined ANA_DUNE
+!    dzs(1,i,j)=1.
+!    dzs(2,i,j)=1.
+!    dzs(3:11,i,j)=0.1
+    dzs(:,:,:)=0.2727
+#else
+!    dzs(1,i,j)=1.
+!    dzs(2,i,j)=1.
+!    dzs(3:10,i,j)=0.1
+    dzs(:,:,:)=0.3
+#endif
+#endif
+!    dzs(:,:,:)=0.3
 
 ! DZSmax non uniform
     IF(.NOT. l_dzsmaxuni) THEN

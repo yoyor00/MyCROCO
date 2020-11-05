@@ -2494,9 +2494,9 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
 #         ifdef CHANNEL
             zetabry_west(j)=0.0464  !valeur??
-#           ifdef  key_ANA_bedload
-              zetabry_west(j)=0.04814
-#           endif
+!#           ifdef  key_ANA_bedload
+!              zetabry_west(j)=0.04814
+!#           endif
 #         else
             zetabry_west(j)=0.0  
 #         endif
@@ -2649,9 +2649,9 @@ C$    integer  trd, omp_get_thread_num
           do j=JstrR,JendR
 #   ifdef CHANNEL
             zetabry_east(j)=0.0394  ! valeur?
-#          ifdef  key_ANA_bedload
-            zetabry_east(j)=0.00808  ! valeur?
-#          endif
+!#          ifdef  key_ANA_bedload
+!            zetabry_east(j)=0.00808  ! valeur?
+!#          endif
 #   else
             zetabry_east(j)=0.0
 #   endif

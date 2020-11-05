@@ -30,8 +30,16 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
+#elif defined SINGLE_COLUMN_GRADP
+      parameter (LLm0=5 ,   MMm0=5,    N=100)   !
 #elif defined CHANNEL
+# ifdef key_ANA_bedload
+      parameter (LLm0=150, MMm0=3,   N=20)
+#elif defined BOSSE
+      parameter (LLm0=50,   MMm0=50,   N=20)
+# else
       parameter (LLm0=50,   MMm0=3,   N=20)
+# endif
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
@@ -230,7 +238,15 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
+#ifdef BOSSE
+      parameter (NP_XI=3,  NP_ETA=3,  NNODES=NP_XI*NP_ETA)
+#elif defined VILAINE
+      parameter (NP_XI=11,  NP_ETA=12,  NNODES=84)
+#elif defined CHANNEL
+      parameter (NP_XI=3,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
+#else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+#endif
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -326,6 +342,9 @@
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
 # else
+# ifdef VILAINE
+      parameter (Msrc=2)        ! ====== == ===== =======
+# endif
       parameter (Msrc=0)        ! ====== == ===== =======
 # endif
 #endif
@@ -468,7 +487,11 @@
       INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
       INTEGER,PARAMETER :: lchain=200
       integer  itsubs1,itsubs2,ntfix
-      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# ifdef SINGLE_COLUMN_GRADP
+      parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# else
+      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+# endif
       parameter (itsubs1= itemp+ntrc_salt+1 )
       parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
 # else
@@ -524,7 +547,11 @@
    ! vertical dimension (ksdmin:ksdmax) of variables in sediment
    ! (ksdmax=max number of layers)
       integer ksdmin,ksdmax
-      parameter (ksdmin=1,ksdmax=10)
+# ifdef key_ANA_bedload
+      parameter (ksdmin=1,ksdmax=11)
+# else
+       parameter (ksdmin=1,ksdmax=10)
+# endif
 # endif /* MUSTANG */
 
 # if defined BBL && defined AGRIF

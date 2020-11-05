@@ -28,12 +28,19 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real cff, kappustr
+# ifdef SINGLE_COLUMN_GRADP
+      real ustar0
+# endif
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
 # include "mixing.h"
 # include "scalars.h"
 # ifdef MRL_WCI
+#  include "ocean2d.h"
+#  include "forces.h"
+# endif
+# ifdef SINGLE_COLUMN_GRADP
 #  include "ocean2d.h"
 #  include "forces.h"
 # endif
@@ -76,6 +83,25 @@
             Akt(i,j,k,itemp)=Akv(i,j,k)
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akv(i,j,k)
+#  endif
+          enddo
+        enddo
+      enddo
+# elif defined SINGLE_COLUMN_GRADP
+      do k=1,N-1
+        do j=Jstr,Jend
+          do i=Istr,Iend
+              ustar0=sqrt(
+     &                  sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
+     &                       +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2  )
+     &                 )
+              Akv(i,j,k)=0.41*ustar0 *(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))
+     &                *(1.0-(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))/
+     &                (h(i,j)+zeta(i,j,knew)))
+              Akt(i,j,k,itemp)=Akv(i,j,k)
+!              Akt(i,j,k,itemp)=Akt_bak(itemp)
+#  ifdef SALINITY
+              Akt(i,j,k,isalt)=Akv(i,j,k)
 #  endif
           enddo
         enddo

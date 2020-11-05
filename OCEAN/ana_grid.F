@@ -61,6 +61,9 @@ C$    integer omp_get_thread_num
       real Length_XI,Length_ETA, depth, f0,beta, 
      &     cff,y, x0,y0,dx,dy, NSUB
 !
+# if defined CHANNEL && defined BOSSE
+      real   Rij,cffi,cffj
+# endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
 # endif
@@ -241,6 +244,10 @@ C$    integer omp_get_thread_num
 #  endif
                      f0=0.
                      beta=0.
+# elif defined SINGLE_COLUMN_GRADP
+                     depth=5.
+                     f0=1.E-4
+                     beta=0.
 # elif defined SED_TOY
                      depth=20.
                      f0=0.0
@@ -357,12 +364,15 @@ C$    integer omp_get_thread_num
 #  endif
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined CHANNEL
-                      Length_XI = 100.
-                      Length_ETA= 100.
+                     Length_XI = 100.
+                     Length_ETA= 100.
 #  if defined key_ANA_bedload
-                      Length_XI = 300.
-                      Length_ETA= 300.
+                     Length_XI = 300.
+                     Length_ETA= 300.
 #  endif
+# elif defined SINGLE_COLUMN_GRADP
+                     Length_XI = 10.e+3
+                     Length_ETA= 10.e+3
 # elif defined SED_TOY
                       Length_XI=40.0
                       Length_ETA=30.0
@@ -804,13 +814,10 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
 # ifdef ANA_DUNE
          cff=0.01
-         h(i,j)=depth-2*exp(-cff*(xr(i,j)-0.5*xl)**2)
+         h(i,j)=depth-2.*exp(-cff*(xr(i,j)-0.5*xl)**2)
 # else
-!        cff=(1./16)**2
          cff=0.5*(1./10)**2
-!         h(i,j)=depth*(1-0.5*exp(-cff*((xr(i,j)-0.5*xl)**2 ))) 
-         h(i,j)=depth*(1-0.5*exp(-cff*( (2*(i-25))**2 )))
-!          h(i,j)=depth
+         h(i,j)=depth*(1.-0.5*exp(-cff*( (2.*(i-25))**2 )))
 # endif
         enddo
       enddo
@@ -818,16 +825,44 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 # elif defined CHANNEL
       do j=JstrR,JendR
         do i=IstrR,IendR
+!!! CAS CLASSIQUE
 #  ifdef MPI
           cff=(float(i +ii*Lm) )
 #  else
           cff=(float(i       ) )
 #  endif
-         h(i,j)=depth*(1.-0.5*exp(-0.5*(1./10)**2*(2.0*
+          h(i,j)=depth*(1.-0.5*exp(-0.5*(1./10)**2*(2.0*
      &      (cff-25.0))**2.0))
-# if defined key_ANA_bedload
-          h(i,j)=depth*(1.-2./6.*exp(-0.01*(xr(i,j)-150.)**2))
+!!! CAS ANALYTIQUE 
+#if defined key_ANA_bedload
+          h(i,j)=depth-2.*exp(-0.01*(xr(i,j)-0.5*xl)**2)
+#endif
+!!! CAS BOSSE 
+#if defined BOSSE
+          cff=0.5*(1./10)**2
+#  ifdef MPI
+          cffi=(float(i +ii*Lm) )
+          cffj=(float(j +jj*Mm) )
+#  else
+          cffi=(float(i       ) )
+          cffj=(float(j       ) )
+#  endif
+         if (xr(i,j).lt.4.0_rsh) then
+          h(i,j)=depth
+         else
+          Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
+     &                (cffj-25.0_rsh)**2.0_rsh )
+          h(i,j)=depth*(1.-0.5*exp(-cff*(2.0_rsh*(Rij))**2.0))
+         endif
 # endif
+        enddo
+      enddo
+
+# elif defined SINGLE_COLUMN_GRADP
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=depth
+!          rmask(i,j)=1.0
         enddo
       enddo
 

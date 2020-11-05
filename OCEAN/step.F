@@ -1054,6 +1054,8 @@ C$OMP BARRIER
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if defined MUSTANG  && defined SUBSTANCE
 
+#ifdef MORPHODYN_MUSTANG_byHYDRO
+
        IF (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) THEN
 !    IF (l_morphocoupl .AND. CURRENT_TIME .GE. tstart_dyninsed ) THEN
 !#ifdef key_MARS
@@ -1069,7 +1071,6 @@ C$OMP BARRIER
      &                RESIDUAL_THICKNESS_WAT)
        END IF
 
-#ifdef MORPHODYN_MUSTANG_byHYDRO
       do tile=my_first,my_last
         call set_depth_morphodyn (tile)
       enddo

@@ -712,7 +712,8 @@
 #   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
 #   endif
-       call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs), 5, indx,NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx,5,
+     &            NF_FOUT, ierr)
        enddo
       enddo
       do itrv=1,nv_out2D_specif
@@ -723,7 +724,8 @@
 #   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),nf_collective)
 #   endif
-       call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5, NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5,
+     &           NF_FOUT, ierr)
       enddo
 #  endif
 # endif /* MUSTANG */

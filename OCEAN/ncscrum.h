@@ -979,7 +979,7 @@
 # ifdef key_MUSTANG_specif_outputs
      &   +3*ntrc_subs + 2
 # ifdef key_MUSTANG_V2
-     &   +1*ntrc_subs + 12
+     &   +1*ntrc_subs + 13
 # ifdef key_MUSTANG_bedload
      &   +4*ntrc_subs + 3
 # endif

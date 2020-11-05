@@ -50,7 +50,10 @@
       integer :: iv
 #endif
 #ifdef CHANNEL
-      real cff
+      real cff,cff2
+#ifdef BOSSE
+      real Rij,cffi,cffj
+#endif
 #endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
@@ -214,33 +217,44 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
-# elif defined CHANNEL 
+#elif defined CHANNEL 
 
       DO j=JR_RANGE
         DO i=IR_RANGE
           zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
-#  if defined key_ANA_bedload
-          zeta(i,j,1)=0.0337+xr(i,j)*(0.006-0.0337)/xl
-#  endif
-          zeta(i,j,2)=zeta(i,j,1)
+          zeta(i,j,:)=zeta(i,j,1)
+#   ifdef key_ANA_bedload
+          cff2=1.67
+#   else
+          cff2=0.58
+#   endif     
           cff=0.5*(1./10)**2
-          if (i.gt.0) then
-            ubar(i,j,1)=0.58/(1-
-     &      0.5*exp(-cff*(  0.5*(xr(i,j)+xr(i-1,j)) -0.5*xl)**2))
-#  if defined key_ANA_bedload
-           ubar(i,j,1)=1.667/(1.-
-     &         2./6.*exp(-0.01*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2 ))
-           ubar(-1,j,1)=1.667
-#  endif
-          else
-            ubar(i,j,1)=0.58
-#  if defined key_ANA_bedload
-            ubar(i,j,1)=1.667
-#  endif
-          endif 
+#   ifndef MPI       
+            if (i.GT.1) then  ! en sequentiel xr(i-1,j) n existe pas!
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
+            else
+              ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(xr(i,j)-0.5*xl)**2))
+            endif
+#   else
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
+#   endif     
+#   ifdef BOSSE
+#     ifdef MPI
+              cffi=(float(i +ii*Lm))
+              cffj=(float(j +jj*Mm))
+#     else
+              cffi=(float(i))
+              cffj=(float(j))
+#     endif
+              Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
+     &                    (cffj-25.0_rsh)**2.0_rsh )
+              ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(2.0_rsh*(Rij))**2.))
+#   endif
           vbar(i,j,1)=0.
-          ubar(i,j,2)=ubar(i,j,1)
-          vbar(i,j,2)=vbar(i,j,1)
+          ubar(i,j,:)=ubar(i,j,1)
+          vbar(i,j,:)=vbar(i,j,1)
         enddo
       enddo
       
@@ -550,7 +564,7 @@
              enddo
           enddo
         enddo
-#  elif defined CHANNEL
+#  elif defined CHANNEL || defined SINGLE_COLUMN_GRADP
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -559,8 +573,6 @@
 #  ifdef SALINITY
                 t(i,j,k,1,isalt)=35.
                 t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
-     &            on_u(i,j),pm(i,j),pn(i,j)
 #  endif
             enddo
           enddo
@@ -1020,6 +1032,19 @@
             enddo
           enddo
         enddo
+#  elif defined SINGLE_COLUMN_GRADP
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                t(i,j,k,1,itemp)=10.
+                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#  ifdef SALINITY
+                t(i,j,k,1,isalt)=32.0
+                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#  endif
+            enddo
+          enddo
+        enddo
 
 #  elif defined REGIONAL
         do k=1,N
@@ -1168,7 +1193,12 @@ C$OMP BARRIER
      &                     )
 !
                  t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
-
+#  elif defined SINGLE_COLUMN_GRADP
+            if (k.gt.int(N/2)) then
+                t(i,j,k,1,itpas)=1.
+              else
+                t(i,j,k,1,itpas)=0
+              endif
 #  else
             if (h(i,j).lt.300) then
               t(i,j,k,1,itpas)=1.
@@ -1219,6 +1249,8 @@ C$OMP BARRIER
                 endif
 #  elif defined CHANNEL
                        t(i,j,k,1,iv)=cini_wat(iv)  
+#  elif defined SINGLE_COLUMN_GRADP
+                       t(i,j,k,1,iv)=cini_wat(iv)
 #  else
                 if (h(i,j).lt.300) then
                   t(i,j,k,1,iv)=cini_wat(iv)

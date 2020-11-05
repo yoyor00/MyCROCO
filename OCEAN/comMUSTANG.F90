@@ -584,6 +584,7 @@
       ! 9 : stateconsol_save
 #endif
    ALLOCATE(varspecif3Dk_save(nv_out3Dk_specif,ksdmin:ksdmax,PROC_IN_ARRAY))
+   varspecif3Dk_save(1:nv_out3Dnv_specif,ksdmin:ksdmax,PROC_IN_ARRAY)= 0.0_rsh
 
     nv_out3Dnv_specif=3
       ! 1 : toce_save
@@ -602,6 +603,7 @@
 #endif
    ALLOCATE(varspecif3Dnv_save(nv_out3Dnv_specif,nvpc,PROC_IN_ARRAY))
    ALLOCATE(varspecif3Dnv_out(nv_out3Dnv_specif,nvpc,PROC_IN_ARRAY))
+   varspecif3Dnv_save(1:nv_out3Dnv_specif,1:nvpc,PROC_IN_ARRAY)= 0.0_rsh
    
     nv_out2D_specif=2
       ! 1 : frmudsup 

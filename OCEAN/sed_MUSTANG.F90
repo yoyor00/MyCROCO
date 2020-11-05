@@ -428,7 +428,10 @@
     CALL sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref,BATHY_H0,WATER_ELEVATION)
 #else
             !! To Program
+!    CALL sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref)
+#ifndef BUGJUMP
     CALL sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref)
+#endif
 #endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -663,6 +666,27 @@
                                 rhoref,                 &
 #endif
                              dt_true)
+
+#if defined MPI && defined key_MUSTANG_bedload
+       if (float(ifirst+ii*Lm) .EQ. IMIN_GRID) then
+        flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
+        flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+       endif
+!#if defined BOSSE
+       if (float(jfirst+jj*Mm) .EQ. JMIN_GRID) then
+        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
+        flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
+       endif
+!#endif
+#endif
+#if (!defined MPI && defined key_MUSTANG_bedload)
+        flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
+        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
+!#if defined BOSSE
+        flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+        flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
+!#endif
+#endif
 
 #if defined key_MARS
 #if defined key_MUSTANG_bedload && defined key_MPI_2D 
@@ -1032,9 +1056,9 @@
    ! north boundary
    !    IF (jlast == JMAX_GRID) hsed(:,jlast)=hsed(:,jlast-1)
    ! West boundary
-       IF (ifirst == IMIN_GRID) hsed(ifirst,:)=hsed(ifirst+1,:)
+   !    IF (ifirst == IMIN_GRID) hsed(ifirst,:)=hsed(ifirst+1,:)
    ! East boundary
-       IF (ilast == IMAX_GRID) hsed(ilast,:)=hsed(ilast-1,:)
+   !    IF (ilast == IMAX_GRID) hsed(ilast,:)=hsed(ilast-1,:)
 #endif
 
 
@@ -1146,7 +1170,8 @@
 #endif
 
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && ! defined MUSTANG_MOVING_BATHY_byHYDRO
+#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && ! defined MORPHODYN_MUSTANG_byHYDRO
+
 !
 !     8. reevaluate bottom slope for bedload
 !     ---------------------------------------------------------------------
@@ -1177,7 +1202,7 @@
 
 !$OMP SINGLE
         t_morpho=t_morpho+dt_morpho
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && defined MUSTANG_MOVING_BATHY_byHYDRO
+#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && defined MORPHODYN_MUSTANG_byHYDRO
         it_morphoYes=1
 #endif
 !$OMP END SINGLE
@@ -1374,10 +1399,12 @@
      DO l = 1,nv_out
          unitmudbinv=1._rsh/unit_modif_mudbio_N2dw(irk_fil(l))
          var3D_cvsed(:,:,:,l)=0.0_rsh
-
+#ifndef BUGJUMP
          CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,l,unitmudbinv,mask_h0,  &
                                         cv_sed(l,:,:,:),var3D_cvsed(:,:,:,l))
-
+#else
+         var3D_cvsed(:,:,:,l)=cv_sed(l,:,:,:)
+#endif
      ENDDO
 
 #ifdef key_BLOOM_insed
@@ -1411,9 +1438,12 @@
      DO l = 1,nv_out3Dk_specif
          unitmudbinv=1._rsh
          var3D_specifout(:,:,:,l)=0.0_rsh
-
+#ifndef BUGJUMP
          CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,0,unitmudbinv,mask_h0,  &
                                         varspecif3Dk_save(l,:,:,:),var3D_specifout(:,:,:,l))
+#else
+         var3D_specifout(:,:,:,l)=varspecif3Dk_save(l,:,:,:)
+#endif
      ENDDO
 #endif
 
@@ -2597,7 +2627,7 @@
                 IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
                     IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
 #ifdef key_MUSTANG_debug
-                       IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. t> t_start_debug) THEN
+                       IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
                          print *,'    SPLIT SURFACE LAYER BECAUSE dzs > dzsmax '
                          print *,ksmax,'  layers become', ksmax+1, 'layers'
                        END IF
@@ -4675,7 +4705,7 @@
                 IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
                     IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
 #ifdef key_MUSTANG_debug
-                       IF ( l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. t> t_start_debug) THEN
+                       IF ( l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
                          print *,'    SPLIT SURFACE LAYER BECAUSE dzs > dzsmax '
                          print *,ksmax,'  layers become', ksmax+1, 'layers'
                        END IF
@@ -9239,7 +9269,9 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
         crel_mud_kij=ros(1)*((1.0_rsh- poro_gravsan)/poro_gravsan)*frac_mud/(1-frac_mud)
         poro_kij=poro_gravsan-(1-poro_gravsan)*frac_mud/(1-frac_mud)
        ! poro_mud_kij=1.0_rsh/ros(1)
-
+# if defined key_ANA_bedload ||  defined ANA_DUNE  ||  defined DUNE 
+        poro_kij=0.4
+# endif
       END IF
 
     ELSE 
@@ -9631,6 +9663,9 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
 
 
    !! * Modules used  
+# if defined key_ANA_bedload || defined ANA_DUNE
+#  include "ocean2d.h"
+# endif
 
    !! * Arguments
    INTEGER,INTENT(IN)                                      :: i,j,ksmax
@@ -9647,7 +9682,9 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
    REAL(KIND=rsh),DIMENSION(nvpc) :: toce_loc
    REAL(KIND=rsh),PARAMETER :: m=0.6_rsh ! for hinding / exposure processes
    REAL(KIND=rsh), PARAMETER :: tand30=0.577350269189626  ! TAND(30.0_rsh)=TAN(30*NUMBER_PI/180)=TAN(0.523599)
-
+# ifdef key_tenfon_upwind   
+   REAL(KIND=rsh)                                   ::  cff4,cff1,cff2,cff3,tenfonx,tenfony
+# endif
    !!---------------------------------------------------------------------------
    !! * Executable part
 
@@ -9695,13 +9732,18 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
        toce_loc(iv)=stresscri0(iv)
      END IF
 
+# if defined key_ANA_bedload || defined ANA_DUNE
+     phi_bed=0.001*ubar(i,j,nrhs)**3.0_rsh
+     qb=phi_bed & !  m2/s
+                  *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
+# else
      phi_bed=0.0053_rsh*(max((tenfon(i,j)/toce_loc(iv))-1.0_rsh,0.0_rsh))**2.2_rsh
 
      ! Calculation of the rate of transport by bedload for class iv.
      ! We multiply by ros (iv) so we choose to have qb in kg/m/ s and not in m2/s     
      qb=phi_bed*sqrt((ros(iv)/rhoref-1.0_rsh)*GRAVITY*diam_sed(iv)**3.0_rsh)  &
                     *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
-
+# endif
      !qb_ini(iv,i,j)=qb !pour ecriture en sortie
 
      !============Projection sur x et y en fonction de la direction de la tension sur le fond ==============
@@ -9717,7 +9759,33 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
      flx_byij(iv)=qb*((frofony(i,j)*raphby(i,j)+frofony(i,j-1)   &
                     *raphby(i,j-1))/(raphby(i,j)                 &
                     +raphby(i,j-1)+epsilon_MUSTANG))*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
+# if defined key_ANA_bedload || defined ANA_DUNE
+     flx_byij(iv)=0.
+#endif
+#if defined key_tenfon_upwind
+            cff1=0.5*(1.0+SIGN(1.0,frofonx(i,j)))
+            cff2=0.5*(1.0-SIGN(1.0,frofonx(i,j)))
+            cff3=0.5*(1.0+SIGN(1.0,frofonx(i-1  ,j)))
+            cff4=0.5*(1.0-SIGN(1.0,frofonx(i-1 ,j)))
+            tenfonx=cff3*(cff1*frofonx(i-1,j)+                     &
+                       cff2*0.5*(frofonx(i-1,j)+frofonx(i,j)))+    &
+                       cff4*(cff2*frofonx(i,j)+                   &
+                       cff1*0.5*(frofonx(i-1,j)+frofonx(i,j)))
 
+            cff1=0.5*(1.0+SIGN(1.0,frofony(i,j)))
+            cff2=0.5*(1.0-SIGN(1.0,frofony(i,j)))
+            cff3=0.5*(1.0+SIGN(1.0,frofony(i,j-1)))
+            cff4=0.5*(1.0-SIGN(1.0,frofony(i,j-1)))
+            tenfony=cff3*(cff1*frofony(i,j-1)+                      &
+                      cff2*0.5*(frofony(i,j-1)+frofony(i,j)))+      &
+                       cff4*(cff2*frofony(i,j)+                     &
+                       cff1*0.5*(frofony(i,j-1)+frofony(i,j)))
+
+            tenfonc(i,j)=SQRT(tenfonx**2+tenfony**2)*(rho(i,j,1)+rho0)
+
+     flx_bxij(iv)=qb*tenfonx*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
+     flx_byij(iv)=qb*tenfony*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
+#endif
 
 
 #ifdef key_MUSTANG_debug
@@ -9775,11 +9843,11 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
      ! sedimask_h0plusxe : = 1 si BATHY_H0(i,j)+WATER_ELEVATION(i,j) .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
 
-     flx_bxij(iv)=(flx_bxij(iv)+abs(flx_bxij(iv)))*0.5_rsh*raphbx(i,j)*sedimask_h0plusxe(i+1,j)+ &
-                  (flx_bxij(iv)-abs(flx_bxij(iv)))*0.5_rsh*raphbx(i-1,j)*sedimask_h0plusxe(i-1,j)
+     !flx_bxij(iv)=(flx_bxij(iv)+abs(flx_bxij(iv)))*0.5_rsh*raphbx(i,j)*sedimask_h0plusxe(i+1,j)+ &
+     !             (flx_bxij(iv)-abs(flx_bxij(iv)))*0.5_rsh*raphbx(i-1,j)*sedimask_h0plusxe(i-1,j)
 
-     flx_byij(iv)=(flx_byij(iv)+abs(flx_byij(iv)))*0.5_rsh*raphby(i,j)*sedimask_h0plusxe(i,j+1)+ &
-                  (flx_byij(iv)-abs(flx_byij(iv)))*0.5_rsh*raphby(i,j-1)*sedimask_h0plusxe(i,j-1)
+     !flx_byij(iv)=(flx_byij(iv)+abs(flx_byij(iv)))*0.5_rsh*raphby(i,j)*sedimask_h0plusxe(i,j+1)+ &
+     !             (flx_byij(iv)-abs(flx_byij(iv)))*0.5_rsh*raphby(i,j-1)*sedimask_h0plusxe(i,j-1)
 
 
     ! Morphological factor
