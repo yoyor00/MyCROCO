@@ -344,13 +344,30 @@
 
    ! exchange erosion and settling fluxes
 !$OMP DO SCHEDULE(RUNTIME)
+
+
+      DO j=jfirst-1,jlast+1
+      DO i=ifirst,ilast
+        DO iv=1,nvp
+            CORFLUY_SAND(i,j+1,IV_HOSTMODEL)=corfluy(iv,i,j)
+        ENDDO
+      ENDDO
+      ENDDO
+
+      DO j=jfirst,jlast
+      DO i=ifirst-1,ilast+1
+        DO iv=1,nvp
+            CORFLUX_SAND(i+1,j,IV_HOSTMODEL)=corflux(iv,i,j)
+        ENDDO
+      ENDDO
+      ENDDO
+
+
       DO j=jfirst,jlast
       DO i=ifirst,ilast
 
         DO iv=1,nvp
             SETTL_FLUX_w2s(i,j,IV_HOSTMODEL)=flx_w2s(iv,i,j)
-            CORFLUX_SAND(i,j,IV_HOSTMODEL)=corflux(iv,i,j)
-            CORFLUY_SAND(i,j,IV_HOSTMODEL)=corfluy(iv,i,j)
         ENDDO
         DO iv=1,nv_adv
             EROS_FLUX_s2w(i,j,IV_HOSTMODEL)=flx_s2w(iv,i,j)

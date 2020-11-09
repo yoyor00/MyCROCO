@@ -172,7 +172,7 @@
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: roswat_bot
 
 #ifdef key_sand2D
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE    :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
+   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC  :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
 #endif
 
 !#ifdef key_dredging

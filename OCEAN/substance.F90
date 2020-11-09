@@ -42,6 +42,11 @@ MODULE substance
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: cini_sed_n
 #endif
 
+#if defined MUSTANG && defined key_sand2D
+   LOGICAL,DIMENSION(:),ALLOCATABLE,PUBLIC                :: l_outsandrouse
+#endif
+
+
    !!----------------------------------------------------------------------
    
 CONTAINS
@@ -67,7 +72,7 @@ CONTAINS
 !! tableaux (_n) lues pdimensionnes par namelist (par nombre de substance de tel ou tel type) 
 !! tableaux (_r) intermediaires dimensionnes au nombre de substances, sera recopie ensuite dans tableau final dimensionne a NT
 !!                apres avoir rajoute des variables supplementaires et reordonnes au besoin (pour biolo et contaminant)  
-#if defined MUSTANG && defined sand2D
+#if defined MUSTANG && defined key_sand2D
    LOGICAL, DIMENSION(ntrc_subs)                :: l_outsandrouse_r,l_sand2D_r
 #endif
 
@@ -274,7 +279,7 @@ CONTAINS
      diam_r(ivp)=diam_n(ivr)
      ros_r(ivp)=ros_n(ivr)
      l_bedload_r(ivp)=l_bedload_n(ivr)
-#ifdef sand2D
+#ifdef key_sand2D
      l_sand2D_r(ivp)=l_sand2D_n(ivr)
      l_outsandrouse_r(ivp)=l_outsandrouse_n(ivr)
 #endif
@@ -634,9 +639,9 @@ CONTAINS
       ws_free_max(:)=0.0
 #endif
    ENDIF
-  !ALLOCATE(l_subs2D(itsubs1:itsubs2))
-  ! l_subs2D(:)=.false.
-#if defined sand2D
+   ALLOCATE(l_subs2D(-1:nvp))
+   l_subs2D(:)=.false.
+#if defined key_sand2D
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
 #endif
@@ -1217,11 +1222,11 @@ ENDDO
      ros(iv)=ros_r(irk_fil(iv))
    END DO
 #ifdef key_sand2D
-!   DO iv=1,igrav2
-!     l_subs2D(iv)=.TRUE.
-!   ENDDO
+   DO iv=igrav1,igrav2
+     l_subs2D(iv)=.TRUE.
+   ENDDO
    DO iv=isand1,isand2
-!     l_subs2D(iv)=l_sand2D_r(iv)
+     l_subs2D(iv)=l_sand2D_r(irk_fil(iv))
      l_outsandrouse(iv)=l_outsandrouse_r(irk_fil(iv))
    ENDDO
 #endif
@@ -1240,8 +1245,8 @@ ENDDO
 
 ! pour CROCO a revoir
     ALLOCATE(unit_modif_mudbio_N2dw(nv_tot))
-    ALLOCATE(l_subs2D(nv_adv))
-    l_subs2D(:)=.false.
+!    ALLOCATE(l_subs2D(nv_adv))
+!    l_subs2D(:)=.false.
     DO iv=1,nv_tot
         unit_modif_mudbio_N2dw(iv)=1.0
     ENDDO

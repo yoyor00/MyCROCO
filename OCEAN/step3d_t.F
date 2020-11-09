@@ -35,10 +35,14 @@
 
 #ifdef SUBSTANCE
           !USE comsubstance
-          USE comsubstance , ONLY : nv_grav,nvp,ws_part
+          USE comsubstance , ONLY : nv_grav,nvp,ws_part,nv_sand
 #ifdef MUSTANG
-          USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO
-          USE comMUSTANG, ONLY : flx_w2s_sum_CROCO
+          USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
+          USE comMUSTANG, ONLY : flx_w2s_sum_CROCO,corflux_CROCO
+#ifdef SAND2D
+          USE comsubstance, ONLY : l_subs2D
+#endif
+
 #endif
 #endif
       implicit none
@@ -185,6 +189,26 @@
           endif
 # endif
 !
+
+# if defined MUSTANG && defined MUSTANG_CORFLUX
+         if (k==1) then
+           if (itrc>=itsubs1+nv_grav .AND.
+     &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
+
+             do j=Jstr,Jend
+                do i=Istr,Iend+1
+                FX(i,j)=FX(i,j)*corflux_CROCO(i,j,itrc)
+                enddo
+             enddo
+             do j=Jstr,Jend+1
+                do i=Istr,Iend
+                FE(i,j)=FE(i,j)*corfluy_CROCO(i,j,itrc)
+                enddo
+             enddo
+            endif
+          endif
+# endif 
+
 !----------------------------------------------------------
 ! Apply point sources for river runoff simulations
 !----------------------------------------------------------
@@ -203,6 +227,12 @@
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
+
+# if defined MUSTANG && defined SAND2D
+! Faire somme des FX en k=1
+#endif
+
+
 #  ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i-1,j).eq.1) then
@@ -235,10 +265,39 @@
 !
           do j=Jstr,Jend
             do i=Istr,Iend
+# if defined MUSTANG && defined SAND2D
+         if (l_subs2D(itrc-itsubs1+1)) then
+              if (k.eq.1) then
+
+
+             t(i,j,k,nnew,itrc)=( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
+     &                     -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                          +FE(i,j+1)-FE(i,j)
+     &                                                           )
+     &                      +dt* flx_s2w_CROCO(i,j,itrc)
+     &                       )/(Hz(i,j,k)+flx_w2s_CROCO(i,j,itrc)*dt)
+
+               flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
+     &               *t(i,j,1,nnew,itrc)*dt
+              endif
+         else
+               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
+     &                     -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                          +FE(i,j+1)-FE(i,j)
+     &                                                           )
+
+         endif
+
+
+#else
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                     -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                          +FE(i,j+1)-FE(i,j)
      &                                                           )
+
+
+
+#endif
             enddo
           enddo                 !-->  discard FX,FE
 
@@ -335,10 +394,18 @@
 !----------------------------------------------------------
 !
           do k=1,N
+
+# if defined MUSTANG && defined SAND2D
+           if (.not.l_subs2D(itrc-itsubs1+1)) then
+# endif
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)-CF(i,0)*(FC(i,k)
      &                                                      -FC(i,k-1))
             enddo
+
+# if defined MUSTANG && defined SAND2D
+           endif
+# endif
           enddo               !--> discard FC
 
 # ifdef DIAGNOSTICS_TS
@@ -463,7 +530,16 @@
       if (itrc .le. 2 .or. itrc .ge.itsubs1+nvp+1 ) then   ! for passive tracers only
 #  include "t3dmix_tridiagonal.h"
       elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then
+
+# if defined MUSTANG && defined SAND2D
+         if (.not.l_subs2D(itrc-itsubs1+1)) then
 #  include "t3dmix_tridiagonal_chute.h"
+         endif
+
+# else
+#  include "t3dmix_tridiagonal_chute.h"
+# endif
+
       endif
 #  endif
 # endif
