@@ -171,7 +171,7 @@
           nrecdiags_pv_avg=ibuff(4)
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#ifdef DIAGNOSTICS_EDDY
           nrecdiags_eddy=ibuff(3)
 # ifdef AVERAGES
           nrecdiags_eddy_avg=ibuff(4)
@@ -249,7 +249,7 @@
 #ifdef DIAGNOSTICS_PV
           ntsdiags_pv_avg = ntsavg
 #endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#ifdef DIAGNOSTICS_EDDY
           ntsdiags_eddy_avg = ntsavg
 #endif
 #endif

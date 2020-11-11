@@ -123,7 +123,6 @@
             endif
          end if  
 !-------------------------------------------------
-#ifdef SALINITY
          if (srcv_clname(i)=='RRMEVPR'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_isalt) 
@@ -134,7 +133,6 @@
                stflx(:,:,isalt) = tab_t_tmp * t(:,:,N,nstp,isalt) / 1000.
             endif
          end if
-#endif
 !-------------------------------------------------
          if (srcv_clname(i)=='RRMSTFL'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
@@ -397,9 +395,6 @@
 #endif 
             endif
          endif
-#endif 
-      END DO 
-#ifdef OW_COUPLING
 !-------------------------------------------------
 !        Update CROCO wind stress accounting for wave bulk
 !      MPI_master_only print *,'entering sustr = sustr - tawx + twox'
@@ -414,11 +409,11 @@
          sustr = sustr - tawx + twox
          svstr = svstr - tawy + twoy
 # endif
-#endif
 !
 !      MPI_master_only print *,'sustr = ',sustr(5,5)
 !
-!#endif
+#endif
+      END DO 
 !-------------------------------------------------
 !
 #ifdef OA_COUPLING

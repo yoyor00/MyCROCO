@@ -36,8 +36,6 @@
  
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
-!       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<=ntimes-ntstart+1) )then
-
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
@@ -78,9 +76,8 @@ C$OMP END PARALLEL
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
+         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
-           write(125,*) ntimes,ntstart,nbstep3d,oasis_time
          endif
          oasis_time = oasis_time + dt
        endif 
@@ -470,7 +467,7 @@ C$OMP BARRIER
         call set_diags_pv (tile)
 # endif
 
-# if defined AVERAGES && ! defined XIOS
+# ifdef AVERAGES
         call set_avg (tile)
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg
@@ -834,6 +831,7 @@ C$OMP BARRIER
         call set_depth (tile)
       enddo
 # endif
+C$OMP BARRIER
 
       do tile=my_first,my_last
         call set_HUV2 (tile)

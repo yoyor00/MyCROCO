@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EDDY && defined AVERAGES && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY && defined AVERAGES
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics 
@@ -22,7 +22,7 @@
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
@@ -50,7 +50,7 @@
 # include "work.h"
 #endif
 #include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -131,47 +131,6 @@
          itrc=1
 
        if (wrtdiags_eddy_avg(1)) then
-!---------------------------------------------------------------
-! indxeddyubu
-!
-        call fillvalue2d(eddyubu_avg,nciddiags_eddy_avg,diags_eddyubu_avg(1),
-     &                      indxeddyubu,
-     &                      record,u2dvar,type)
-
-!---------------------------------------------------------------
-! indxeddyvbv
-!
-        call fillvalue2d(eddyvbv_avg,nciddiags_eddy_avg,diags_eddyvbv_avg(1),
-     &                      indxeddyvbv,
-     &                      record,v2dvar,type)
-!---------------------------------------------------------------
-! indxeddyusu
-!
-        call fillvalue2d(eddyusu_avg,nciddiags_eddy_avg,diags_eddyusu_avg(1),
-     &                      indxeddyusu,
-     &                      record,u2dvar,type)
-
-!---------------------------------------------------------------
-! indxeddyvsv
-!
-        call fillvalue2d(eddyvsv_avg,nciddiags_eddy_avg,diags_eddyvsv_avg(1),
-     &                      indxeddyvsv,
-     &                      record,v2dvar,type)
-
-
-!---------------------------------------------------------------
-! indxeddyugsu
-!
-        call fillvalue2d(eddyugsu_avg,nciddiags_eddy_avg,diags_eddyugsu_avg(1),
-     &                      indxeddyugsu,
-     &                      record,u2dvar,type)
-
-!---------------------------------------------------------------
-! indxeddyvgsv
-!
-        call fillvalue2d(eddyvgsv_avg,nciddiags_eddy_avg,diags_eddyvgsv_avg(1),
-     &                      indxeddyvgsv,
-     &                      record,v2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyuu
@@ -241,7 +200,7 @@
 ! to access data immediately after it is written.
 !---------------------------------------------------------------
 !
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES
       ierr=nf_close (nciddiags_eddy_avg)
       if (nrpfdiags_eddy_avg.gt.0 .and. record.ge.nrpfdiags_eddy_avg)
      &            nciddiags_eddy_avg=-1
@@ -267,7 +226,7 @@
         may_day_flag=3
       endif
 
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1,
      &                        1, MPI_COMM_WORLD,  ierr)

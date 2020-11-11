@@ -273,7 +273,7 @@
       integer qdmwnbqid, rhonbqid, wzid, wzspongeid
 #  endif
 # endif
-# if defined WET_DRY || defined MRL_WCI
+# ifdef WET_DRY
       integer rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
 # endif
       integer tspongeid, uspongeid, vspongeid,wspongeid
@@ -286,7 +286,7 @@
 # endif
       common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
      &  tspongeid, uspongeid, vspongeid, rmaskid,wspongeid
-# if defined WET_DRY || defined MRL_WCI
+# ifdef WET_DRY
      &        ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
 # endif
 # ifdef M3FAST
@@ -302,7 +302,7 @@
      & , warid, wsrid,wcrid  
 #  endif         
 # endif
-# if defined WET_DRY || defined MRL_WCI
+# ifdef WET_DRY
       real rmask_childs(GLOBAL_2D_ARRAY)
       common/rmask_child/rmask_childs
 # endif
