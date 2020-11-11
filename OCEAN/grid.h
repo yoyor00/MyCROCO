@@ -149,7 +149,7 @@
       common /mask_p2/pmask2
 #endif
 
-#ifdef WET_DRY
+#if defined WET_DRY || defined MRL_WCI 
       real rmask_wet(GLOBAL_2D_ARRAY)
       real pmask_wet(GLOBAL_2D_ARRAY)
       real umask_wet(GLOBAL_2D_ARRAY)
