@@ -548,17 +548,53 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
 
 # ifdef PASSIVE_TRACER
 CR      write(stdout,'(1x,A,I3)') 'indxTPAS = ',indxTPAS
-      vname(1,indxTPAS)='tpas                                     '
-      vname(2,indxTPAS)='passive tracer                           '
-      vname(3,indxTPAS)='no unit                                  '
-      vname(4,indxTPAS)='passive tracer, scalar, series           '
-      vname(5,indxTPAS)='                                         '
+      vname(1,indxTPAS1)='tpas1                                     '
+      vname(2,indxTPAS1)='passive tracer                           '
+      vname(3,indxTPAS1)='no unit                                  '
+      vname(4,indxTPAS1)='passive tracer, scalar, series           '
+      vname(5,indxTPAS1)='                                         '
 #  ifdef SPHERICAL
-      vname(6,indxTPAS)='lat_rho lon_rho                          '
+      vname(6,indxTPAS1)='lat_rho lon_rho                          '
 #  else
-      vname(6,indxTPAS)='x_rho y_rho                              '
+      vname(6,indxTPAS1)='x_rho y_rho                              '
 #  endif
-      vname(7,indxTPAS)='                                         '
+      vname(7,indxTPAS1)='                                         '
+
+      vname(1,indxTPAS2)='tpas2                                     '
+      vname(2,indxTPAS2)='passive tracer                           '
+      vname(3,indxTPAS2)='no unit                                  '
+      vname(4,indxTPAS2)='passive tracer, scalar, series           '
+      vname(5,indxTPAS2)='                                         '
+#  ifdef SPHERICAL
+      vname(6,indxTPAS2)='lat_rho lon_rho                          '
+#  else
+      vname(6,indxTPAS2)='x_rho y_rho                              '
+#  endif
+      vname(7,indxTPAS2)='                                         '
+      
+      vname(1,indxTPAS3)='tpas3                                     '
+      vname(2,indxTPAS3)='passive tracer                           '
+      vname(3,indxTPAS3)='no unit                                  '
+      vname(4,indxTPAS3)='passive tracer, scalar, series           '
+      vname(5,indxTPAS3)='                                         '
+#  ifdef SPHERICAL
+      vname(6,indxTPAS3)='lat_rho lon_rho                          '
+#  else
+      vname(6,indxTPAS3)='x_rho y_rho                              '
+#  endif
+      vname(7,indxTPAS3)='                                         '
+      
+      vname(1,indxTPAS4)='tpas4                                     '
+      vname(2,indxTPAS4)='passive tracer                           '
+      vname(3,indxTPAS4)='no unit                                  '
+      vname(4,indxTPAS4)='passive tracer, scalar, series           '
+      vname(5,indxTPAS4)='                                         '
+#  ifdef SPHERICAL
+      vname(6,indxTPAS4)='lat_rho lon_rho                          '
+#  else
+      vname(6,indxTPAS4)='x_rho y_rho                              '
+#  endif
+      vname(7,indxTPAS4)='                                         '
 # endif /* PASSIVE_TRACER */
 
 # ifdef BIOLOGY

@@ -194,8 +194,11 @@
       parameter (indxS=indxT+1)
 # endif
 # ifdef PASSIVE_TRACER
-      integer indxTPAS
-      parameter (indxTPAS=indxT+ntrc_salt+1)
+      integer indxTPAS1, indxTPAS2, indxTPAS3, indxTPAS4
+      parameter (indxTPAS1=indxT+ntrc_salt+1)
+      parameter (indxTPAS2=indxT+ntrc_salt+2)
+      parameter (indxTPAS3=indxT+ntrc_salt+3)
+      parameter (indxTPAS4=indxT+ntrc_salt+4)
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES

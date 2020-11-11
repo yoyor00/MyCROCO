@@ -438,7 +438,7 @@
       parameter (ntrc_salt=0)
 # endif
 # ifdef PASSIVE_TRACER
-      parameter (ntrc_pas=1)
+      parameter (ntrc_pas=4)
 # else
       parameter (ntrc_pas=0)
 # endif
@@ -521,7 +521,7 @@
      &          , isalt
 # endif
 # ifdef PASSIVE_TRACER
-     &          , itpas
+     &          , itpas1,itpas2,itpas3,itpas4
 # endif
 !
 # ifdef BIOLOGY
@@ -633,7 +633,10 @@
       parameter (isalt=itemp+1)
 # endif
 # ifdef PASSIVE_TRACER
-      parameter (itpas=itemp+ntrc_salt+1)
+      parameter (itpas1=itemp+ntrc_salt+1)
+      parameter (itpas2=itemp+ntrc_salt+2)
+      parameter (itpas3=itemp+ntrc_salt+3)
+      parameter (itpas4=itemp+ntrc_salt+4)
 # endif
 
 !
