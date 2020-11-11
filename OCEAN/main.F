@@ -500,7 +500,7 @@ CR      write(*,*) ' -2' MYID
 !  Read tidal harmonics from NetCDF file
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
       call get_tides
 #endif
 !

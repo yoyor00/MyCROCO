@@ -330,7 +330,7 @@ C$OMP END MASTER
         ENDIF
 #  endif
 # endif
-# if defined SSH_TIDES || defined UV_TIDES
+# if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 #  ifdef AGRIF
         IF (Agrif_Root()) call clm_tides (tile)
 #  else
@@ -728,7 +728,7 @@ C$OMP BARRIER
 # ifdef BBL
           call bblm (tile)
 # endif
-# if defined SSH_TIDES || defined UV_TIDES
+# if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
 #   ifdef AGRIF
           IF (Agrif_Root()) call clm_tides (tile)
 #   else

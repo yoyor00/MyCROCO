@@ -80,7 +80,7 @@ C$    integer omp_get_thread_num
 #ifdef SEDIMENT
      &       ,ilay
 #endif
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
      &       ,itide
 #endif
       real init    !!!!  0xFFFA5A5A ==> NaN
@@ -1168,7 +1168,7 @@ C$    integer omp_get_thread_num
       endif
 # endif /* OBC_NORTH */
 #endif
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
 !
 ! Initialize array for tidal elevation forcing.
 !
