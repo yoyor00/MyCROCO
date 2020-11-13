@@ -617,6 +617,20 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
      &        record,r3dvar,type)           
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
+!
+!     Brunt vaisala frequency.
+!
+      if (wrthis(indxbvf)) then
+         work=bvf
+         call fillvalue3d_w(work,ncidhis,hisbvf,indxbvf,
+     &           record,w3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtbvf' MYID
+      endif
+# endif
+
 !     
 !     S-coordinate omega vertical velocity (m/s).
 !     
