@@ -199,10 +199,7 @@
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
      &        indxDIA, indxMES, indxBSI, indxFER, indxBFE,
      &        indxGOC, indxSFE, indxDFE, indxDSI, indxNFE,
-     &        indxNCH, indxDCH, indxNO3, indxNH4, indxLGW,
-     &        indxDON, indxDOP, indxPON, indxPOP, indxNPH,
-     &        indxPPH, indxNDI, indxPDI, indxPIC, indxNPI,
-     &        indxPPI, indxPFE, indxPCH, indxGON, indxGOP
+     &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxT+ntrc_salt+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2,
      &           indxCAL=indxDIC+3, indxPO4=indxDIC+4,
@@ -215,7 +212,15 @@
      &           indxDFE =indxDIC+17, indxDSI=indxDIC+18,
      &           indxNFE =indxDIC+19, indxNCH=indxDIC+20,
      &           indxDCH =indxDIC+21, indxNO3=indxDIC+22,
-     &           indxNH4 =indxDIC+23, indxLGW=indxDIC+24)
+     &           indxNH4 =indxDIC+23)
+#    ifdef key_ligand
+      integer indxLGW
+      parameter (indxLGW=indxDIC+24)
+#     endif
+#    ifdef key_pisces_quota
+     integer  indxDON, indxDOP, indxPON, indxPOP, indxNPH,
+     &        indxPPH, indxNDI, indxPDI, indxPIC, indxNPI,
+     &        indxPPI, indxPFE, indxPCH, indxGON, indxGOP
 #     ifdef key_ligand
       parameter (indxDON=indxDIC+25, indxDOP=indxDIC+26,
      &           indxPON=indxDIC+27, indxPOP=indxDIC+28,
@@ -235,6 +240,7 @@
      &           indxPCH=indxDIC+36, indxGON=indxDIC+37,
      &           indxGOP=indxDIC+38)
 #     endif
+#  endif
 #  elif defined BIO_NChlPZD
       integer indxNO3, indxChla,
      &        indxPhy1,indxZoo1,
