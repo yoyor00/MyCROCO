@@ -282,8 +282,11 @@
 # ifdef DIAGNOSTICS_TS
       integer indxTXadv,indxTYadv,indxTVadv, 
      &        indxTHmix,indxTVmix,indxTForc,indxTrate
+# ifdef DIAGNOSTICS_TSVAR
+     &       ,indxTVmixt
+# endif
 #  if defined DIAGNOSTICS_TS_MLD
-     &      , indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
+     &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld
 #  endif
@@ -291,7 +294,12 @@
      &           indxTYadv=indxTXadv+NT,
      &           indxTVadv=indxTYadv+NT,
      &           indxTHmix=indxTVadv+NT,
-     &           indxTVmix=indxTHmix+NT, 
+# ifdef DIAGNOSTICS_TSVAR
+     &           indxTVmixt=indxTHmix+NT,
+     &           indxTVmix=indxTVmixt+NT,
+# else
+     &           indxTVmix=indxTHmix+NT,
+# endif
      &           indxTForc=indxTVmix+NT,
      &           indxTrate=indxTForc+NT
 #  if defined DIAGNOSTICS_TS_MLD
@@ -1013,6 +1021,9 @@
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv(NT), diaTYadv(NT), diaTVadv(NT)
      &      , diaTHmix(NT), diaTVmix(NT)
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt(NT)
+#  endif
      &      , diaTForc(NT), diaTrate(NT)
 #  if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld(NT), diaTYadv_mld(NT), diaTVadv_mld(NT)
@@ -1188,6 +1199,9 @@
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg(NT), diaTYadv_avg(NT), diaTVadv_avg(NT)
      &      , diaTHmix_avg(NT), diaTVmix_avg(NT)
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt_avg(NT)
+#  endif
      &      , diaTForc_avg(NT), diaTrate_avg(NT)
 #   if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg(NT), diaTYadv_mld_avg(NT)
@@ -1462,6 +1476,9 @@
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv, diaTYadv, diaTVadv, diaTHmix
      &      , diaTVmix, diaTForc, diaTrate
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt
+#  endif
 # if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld, diaTYadv_mld, diaTVadv_mld, diaTHmix_mld
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
@@ -1471,6 +1488,9 @@
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
      &      , diaTHmix_avg, diaTVmix_avg, diaTForc_avg
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt_avg
+# endif
      &      , diaTrate_avg
 #  if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg, diaTYadv_mld_avg, diaTVadv_mld_avg

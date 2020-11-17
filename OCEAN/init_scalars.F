@@ -1834,7 +1834,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
       vname(5,indxBhflx)='                                       '
       vname(6,indxBhflx)='lat_rho lon_rho                        '
 #endif
-#if defined BWFLUX && defined SALINTY
+#if defined BWFLUX && defined SALINITY
 CR      write(stdout,'(1x,A,I3)') 'indxBwflx =',indxBwflx
       vname(1,indxBwflx)='bwflux                                 '
       vname(2,indxBwflx)='bottom freshwater flux (E-P)          '
@@ -2253,6 +2253,24 @@ CR       write(stdout,'(20x,A)') vname(1,indxTVmix+itrc-1)
        vname(5,indxTVmix+itrc-1)='                                '
        vname(6,indxTVmix+itrc-1)='                                '
        vname(7,indxTVmix+itrc-1)='                                '
+
+# ifdef DIAGNOSTICS_TSVAR
+
+CR       write(stdout,'(1x,A,I3)') 'indxTVmixt = ',indxTVmixt+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_vmix_trans                 '
+       vname(1,indxTVmixt+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTVmixt+itrc-1)
+       vname(2,indxTVmixt+itrc-1)='Vertical mixing term            '
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxTVmixt+itrc-1)=vname3
+       vname(4,indxTVmixt+itrc-1)='                                '
+       vname(5,indxTVmixt+itrc-1)='                                '
+       vname(6,indxTVmixt+itrc-1)='                                '
+       vname(7,indxTVmixt+itrc-1)='                                '
+
+# endif
 
 CR       write(stdout,'(1x,A,I3)') 'indxTForc = ',indxTForc+itrc-1
        nametrc=vname(1,indxT+itrc-1) 
@@ -3150,7 +3168,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvpvd)
        vname(7,indxpvpvd)='                                '
 # endif
 
-      do itrc=1,NT
+      do itrc=1,NTA
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))

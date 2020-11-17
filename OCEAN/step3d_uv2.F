@@ -331,7 +331,7 @@
             
 !###########################
 # if defined DIAGNOSTICS_DISS
-
+! Compute the transport part of ke_vmix : d/dz[ Akv u du/dz]
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
         do i=IstrU,Iend
@@ -640,6 +640,7 @@
             
 !###########################
 # if defined DIAGNOSTICS_DISS
+! Compute the transport part of ke_vmix : d/dz[ Akv v dv/dz]
 
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
@@ -2004,7 +2005,7 @@
      &                            + Mfast(i,j,k,1)
 # endif
      &                            + MHmix(i,j,k,1,3-nstp)
-     &                            + MHdiff(i,j,k,1))
+     &                            + MHdiff(i,j,k,1) )
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))

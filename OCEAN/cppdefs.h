@@ -301,6 +301,12 @@
 #  undef  DIAGNOSTICS_TS_MLD
 # endif
 
+# define DIAGNOSTICS_TSVAR
+# ifdef DIAGNOSTICS_TSVAR
+#  define  DIAGNOSTICS_TS
+#  define  DIAGNOSTICS_TS_ADV
+# endif
+
 # define  DIAGNOSTICS_VRT
 # define  DIAGNOSTICS_EK
 # ifdef DIAGNOSTICS_EK

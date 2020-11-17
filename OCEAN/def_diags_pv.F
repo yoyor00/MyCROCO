@@ -305,7 +305,7 @@
 
 
 
-        do itrc=1,NT
+        do itrc=1,NTA
 
           if (wrt(itrc)) then
 
@@ -627,7 +627,7 @@
 
 ! ---------------------------------
 
-      do itrc=1,NT
+      do itrc=1,NTA
         if (wrt(itrc)) then
 !
 !

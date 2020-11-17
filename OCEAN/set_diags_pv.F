@@ -46,7 +46,7 @@
 #endif
 #include "compute_auxiliary_bounds.h"
 
-        do itrc=1,NT
+        do itrc=1,NTA
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR 

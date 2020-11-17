@@ -257,7 +257,66 @@
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
           enddo
         enddo
+        
+        
+
+# if  defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+
+!----------------------------------------------------------
+! Compute fluxes FX and FE
+!----------------------------------------------------------
+!
+#  undef PREDICTOR
+
+# if  defined TS_HADV_WENO5
+#  define TS_HADV_C6
+#  undef TS_HADV_WENO5
+#  include "compute_horiz_tracer_fluxes.h"
+#  undef TS_HADV_C6
+#  define TS_HADV_WENO5
+
+# elif defined TS_HADV_UP5
+#  define TS_HADV_C6
+#  undef TS_HADV_UP5
+#  include "compute_horiz_tracer_fluxes.h"
+#  undef TS_HADV_C6
+#  define TS_HADV_UP5
+
+# elif defined TS_HADV_UP3
+#  define TS_HADV_C4
+#  undef TS_HADV_UP3
+#  include "compute_horiz_tracer_fluxes.h"
+#  undef TS_HADV_C4
+#  define TS_HADV_UP3
+
+# endif
+!
+        
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              THmix(i,j,k,itrc)=( TXadv(i,j,k,itrc)+TYadv(i,j,k,itrc)
+     &                         +(FX(i+1,j)-FX(i,j))
+     &                         +(FE(i,j+1)-FE(i,j)) ) SWITCH rmask(i,j)
+              TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
+              TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
+          enddo
+        enddo
+        
+# else
+
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              THmix(i,j,k,itrc)=0.
+          enddo
+        enddo
+        
+# endif
+        
 # endif /* DIAGNOSTICS_TS */
+
+
+
+
 
         enddo    !<-- k
       enddo    !<-- itrc
@@ -662,15 +721,22 @@
 #  endif /* DIAGNOSTICS_TS_ADV */
 !
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
+
 #  ifdef DIAGNOSTICS_TS
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
 #  endif
+              TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-              TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
-              THmix(i,j,k,itrc)=0.
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+
+# if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 && !defined TS_DIF2 && !defined TS_DIF4
+
+# include "finalize_diagnostics_tsadv.h"
+
+# endif
             enddo
           enddo
         enddo

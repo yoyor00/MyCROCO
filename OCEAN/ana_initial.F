@@ -86,7 +86,7 @@
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
 #endif
-#ifdef RREXTRA 
+#if defined RREXTRA || defined GULFSTREAM
       integer xc,yc,radius
       real rr,rhotarget,drho 
       real xr(0:Lm,0:Mm)  
@@ -1011,6 +1011,39 @@ C$OMP BARRIER
 !  Initial conditions for passive tracer
 !--------------------------------------------------------------------
 !
+# if defined PASSIVE_TRACER && defined GULFSTREAM
+        t(:,:,:,1,itpas1)=0.
+        t(:,:,:,1,itpas2)=0.
+        t(:,:,:,1,itpas3)=0.
+        t(:,:,:,1,itpas4)=0.
+        xc = 2000. ! center of the patch in km
+        yc = 2000.
+        radius = 500 ! km
+        do j=JR_RANGE
+          do i=IR_RANGE
+            xr(i,j) = (1./pm(i,j))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km
+            yr(i,j) = (1./pn(i,j))*(float(j+jminmpi-1-1)+0.5)*1.e-3
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            if (rr.le.radius) then
+                do k=1,N
+                    if (k.ge.29) then
+                    t(i,j,k,1,itpas1)=0.1
+                    t(i,j,k,1,itpas2)=0.3
+                    t(i,j,k,1,itpas3)=0.5
+                    t(i,j,k,1,itpas4)=1.
+                    endif
+                enddo ! k loop
+            endif
+          enddo
+        enddo
+        
+        t(:,:,:,2,itpas1)=t(:,:,:,1,itpas1)
+        t(:,:,:,2,itpas2)=t(:,:,:,1,itpas2)
+        t(:,:,:,2,itpas3)=t(:,:,:,1,itpas3)
+        t(:,:,:,2,itpas4)=t(:,:,:,1,itpas4)
+        
+# endif /*PASSIVE_TRACER && GULFSTREAM */
+
 # if defined PASSIVE_TRACER && defined RREXTRA
       if (.not.got_tini(itpas1)) then ! consider if no tracer1 there are no other tracer either    
         ! ------ COMPUTE RHO AND SET UP GRID ------       

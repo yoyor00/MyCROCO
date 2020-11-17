@@ -671,16 +671,27 @@
      &                      -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                              /(dt*cff1)
      &                                       SWITCH rmask(i,j)
+
 !
 ! Divide all diagnostic terms by the cell volume
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
 ! of diag terms are: (unit of tracers)* s-1.
 !
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
+
+              cff=cff1/Hz(i,j,k)
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
 # ifdef TS_SPONGE_IMP
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
+              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
 # endif
+
+
+# ifdef DIAGNOSTICS_TSVAR
+
+# include "finalize_diagnostics_tsadv.h"
+
+# endif
+
             enddo
           enddo
         enddo

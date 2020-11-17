@@ -428,7 +428,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef SOLVE3D
-      integer   NT, itemp
+      integer   NT, NTA, itemp
       integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
 !
       parameter (itemp=1)
@@ -481,8 +481,14 @@
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
 !
+! Total number of active tracers
+!
+      parameter (NTA=itemp+ntrc_salt)
+
+!
 ! Total number of tracers
 !
+
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
 
 # if defined BBL && defined AGRIF
@@ -875,9 +881,9 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=15*NT)
+      parameter (ntrc_diats=16*NT)
 #  else
-      parameter (ntrc_diats=7*NT)
+      parameter (ntrc_diats=8*NT)
 #  endif
 # else
       parameter (ntrc_diats=0)

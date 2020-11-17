@@ -200,9 +200,49 @@
             enddo
           enddo           !--> discard FC,CF,DC
 
+!###########################
+# if defined DIAGNOSTICS_TSVAR
+          do k=1,N-1
+            do i=Istr,Iend
+
+# ifdef TS_MIX_IMP
+            FC(i,k)= (Akt(i,j,k,indx)+Akz(i,j,k))
+# else
+            FC(i,k)=  Akt(i,j,k,indx)
+# endif
+
+            cff1= (TVmix(i,j,k+1,itrc)/ Hz(i,j,k+1)
+     &           - TVmix(i,j,k  ,itrc)/ Hz(i,j,k  ) )
+     &            /( z_r(i,j,k+1) -z_r(i,j,k  ))
+
+        BC(i,k)= 0.25 * (t(i,j,k+1,nstp,itrc) + t(i,j,k+1,nnew,itrc)
+     &                +  t(i,j,k  ,nstp,itrc) + t(i,j,k  ,nnew,itrc)
+     &                ) * cff1
 
 
-     
+            enddo
+          enddo
+          
+          do i=Istr,Iend
+              FC(i,0)= 0.
+              BC(i,0)= 0.
+              FC(i,N)= 1.
+              BC(i,N)= 0.
+          enddo
+          
+          do k=1,N
+            do i=Istr,Iend
+                TVmixt(i,j,k,itrc) =  ( FC(i,k  ) * BC(i,k  )
+     &                                - FC(i,k-1) * BC(i,k-1) )
+     &                                / ( pm(i,j)*pn(i,j) )
+#  ifdef MASKING
+     &                                                 * rmask(i,j)
+#  endif
+             enddo
+           enddo
+# endif
+!###########################
+
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
