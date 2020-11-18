@@ -21,8 +21,7 @@ c common includes for AD tools
       include 'mpif.h'
 # endif
 # else
-      integer mynode, nnodes
-      parameter (mynode=0)
+      integer nnodes
       parameter (nnodes=1)
 #endif
 

@@ -201,19 +201,19 @@ all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc $(SBIN)_tgt $(SBIN)_div
 # =========== =====
 #
 $(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) #-lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape  -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_adc:  $(ADJ_OBJS) $(TAP_TARGET)_d.o check_driver.o $(OBJS90) $(OBJS) main_adc.o $(MPI_ADJ_OBJS) 
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_div: $(DIV_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 # $Id: Makefile 3922 2011-05-19 08:54:39Z llh $
 

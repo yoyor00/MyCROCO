@@ -13,6 +13,8 @@ C     number of steps between cost function computations
       parameter (ad_ns = 2400)
 #elif defined AD_ATLN
       parameter (ad_ns = 180)
+#elif defined INTERNAL
+      parameter (ad_ns = 16)
 #endif
 
 C     number of cost function computations
@@ -22,6 +24,8 @@ c     parameter (ad_nt = 2400)
       parameter (ad_nt = 1)
 #elif defined AD_ATLN
       parameter (ad_nt = 48)
+#elif defined INTERNAL
+      parameter (ad_nt = 1)
 #endif
 
 C     start of assimilation in the obs file
@@ -30,6 +34,8 @@ C     start of assimilation in the obs file
       parameter (ad_ast = 1200)
 #elif defined AD_ATLN
       parameter (ad_ast = 388)
+#elif defined INTERNAL
+      parameter (ad_ast = 1)
 #endif
 
 C     number of time steps in the main file before assimilation
@@ -37,7 +43,7 @@ C     number of time steps in the main file before assimilation
       parameter (ad_main_st = 1)
 
 c     observations
-      double precision ad_obs(GLOBAL_2D_ARRAY, ad_nt*ad_ns+3)
+      double precision ad_obs(GLOBAL_2D_ARRAY,ad_nt*ad_ns+3)
       double precision ad_obs_time(ad_nt*ad_ns+3)
 
 c     state vector / process
@@ -80,8 +86,8 @@ c     backup
       real ad_ubar_bck(GLOBAL_2D_ARRAY,4)
       real ad_vbar_bck(GLOBAL_2D_ARRAY,4)
       real ad_zeta_bck(GLOBAL_2D_ARRAY,4)
-      real zob_bck(GLOBAL_2D_ARRAY)
-      real Zobt_bck
+      real h_bck(GLOBAL_2D_ARRAY)
+      real ht_bck
       real ad_cost
 
 c     rms
@@ -99,8 +105,8 @@ c     rms
 
 C     commons
       common /ad_backup/ ad_ubar_bck, ad_vbar_bck, ad_zeta_bck,
-     &     zob_bck,
-     &     kstp_bck, krhs_bck, knew_bck, iic_bck, Zobt_bck
+     &     h_bck,
+     &     kstp_bck, krhs_bck, knew_bck, iic_bck, ht_bck
 
       common /ad/ ad_array_node_size, ad_dz
 

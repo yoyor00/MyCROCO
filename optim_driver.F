@@ -45,8 +45,14 @@ c     ndz must be >= 6*ad_array_size+1 in DIS mode
 
       call init_control(ad_x,ad_g)
 
+#ifdef MPI
+#ifdef AMPI
       call AMPI_Reduce(ad_array_node_size, ad_array_node_size_f,
      &     1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+#endif
+#else
+      ad_array_node_size_f = ad_array_node_size
+#endif
 
       if (mynode.eq.0) then
          write(*,*) 'sum of all ad_array_node_size:',

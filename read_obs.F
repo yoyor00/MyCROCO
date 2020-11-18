@@ -25,13 +25,13 @@ c     this file is not differentiated
       if (retval .ne. nf_noerr) call handle_err(retval)
 
       do k=ad_ast,ad_ast+ad_nt*ad_ns+1
+         write (*,*) '---->',k,k-ad_ast+1,ad_ast+ad_nt*ad_ns+1
          retval = nf_fread(ad_obs(START_2D_ARRAY,k-ad_ast+1),ncid,varid,
      &        k,r2dvar)
-c         write (*,*) '---->',k,k-ad_ast+1,ad_ast+ad_nt*ad_ns+1
          if (retval .ne. nf_noerr) call handle_err(retval)
 
-         retval = nf_fread(ad_obs_time(k-ad_ast+1),ncid,timeid,
-     &        k,r2dvar)
+c         retval = nf_fread(ad_obs_time(k-ad_ast+1),ncid,timeid,
+c     &        k,r2dvar)
 
          if (retval .ne. nf_noerr) call handle_err(retval)
 c     write (*,*) 'max_val ad_obs:',k,maxval(ad_obs)

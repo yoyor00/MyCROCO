@@ -94,15 +94,15 @@ c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
 
       integer ta,mode
       integer Istr,Iend,Jstr,Jend,i,j,k
-      double precision delta_z, delta_zob, icost
+      double precision delta_z, delta_h, icost
 
 c      do j=Jstr,Jend
 c         do i=Istr,Iend
 c            if (ad_obs(i,j,1).ne.ad_spval) then
 c               delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
-c               delta_zob = (zob(i,j) - zob_bck(i,j))
+c               delta_h = (h(i,j) - h_bck(i,j))
 c               icost = icost + delta_z*delta_z + 1.0D-2*
-c     &              delta_zob*delta_zob/
+c     &              delta_h*delta_h/
 c     &              (h(i,j)*h(i,j))
 c               ad_cost_counter = ad_cost_counter + 1
 c            end if
@@ -114,13 +114,13 @@ c         do k=1,ncpoints
 c            i=ad_i(k)
 c            j=ad_j(k)
 c            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
-c         delta_zob = (zob(i,j) - zob_bck(i,j))
+c         delta_h = (h(i,j) - h_bck(i,j))
 c         end do
       if (mode.eq.2) then
          do j=Jstr,Jend
             do i=Istr,Iend
-               delta_zob = (zob(i,j) - zob_bck(i,j))
-               icost = icost + delta_zob*delta_zob
+               delta_h = (h(i,j) - h_bck(i,j))
+               icost = icost + delta_h*delta_h
             end do
          end do
       else if (mode.eq.3) then
@@ -141,9 +141,9 @@ c$$$                  write(*,*) 'AAAAA',mynode,i,j,
 c$$$     &                 knew,ad_sim_iicroot,k,
 c$$$     &                 ad_sim_iicroot+k,
 c$$$     &                 zeta(i,j,knew),ad_obs(i,j,ta+2),
-c$$$     &                 zob(i,j),zob_bck(i,j),
+c$$$     &                 h(i,j),h_bck(i,j),
 c$$$     &                 delta_z,
-c$$$     &                 delta_zob
+c$$$     &                 delta_h
 c$$$                  write(*,*) 'BBBBB',mynode,zeta(i,j,knew),
 c$$$     &                 ad_obs(i,j,ta+3),
 c$$$     &                 ad_obs(i,j,ta+2),
@@ -197,6 +197,10 @@ c$$$     &                 ad_obs(i,j,ta-2)
 
       call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
 
+      call set_depth(tile)
+
+      call grid_stiffness(tile)
+
       end subroutine set_state_2d
 
       subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x)
@@ -205,31 +209,31 @@ c$$$     &                 ad_obs(i,j,ta-2)
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend, i,j,k,cpoint
-      double precision lzob
+      double precision lh
       character*6 counter_str
 
-      double precision zobmin,zobmax
+      double precision ad_hmin,ad_hmax
       
 #include "compute_extended_bounds.h"
-      zobmin=1.e99
-      zobmax=0.
+      ad_hmin=1.e99
+      ad_hmax=0.
 
       k=0
       do j=Jstr,Jend
          do i=Istr,Iend
             if (rmask(i,j).ne.0) then
                k=k+1
-               zob(i,j)= ad_x(k)
-               if (zobmin.gt.zob(i,j)) then
-                  zobmin=zob(i,j)
+               h(i,j)= ad_x(k)
+               if (ad_hmin.gt.h(i,j)) then
+                  ad_hmin=h(i,j)
                end if
-               if (zobmax.lt.zob(i,j)) then
-                  zobmax=zob(i,j)
+               if (ad_hmax.lt.h(i,j)) then
+                  ad_hmax=h(i,j)
                end if
             end if
          end do
       end do
-               
+
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
@@ -240,8 +244,8 @@ c$$$     &                 ad_obs(i,j,ta-2)
       write(*, *) 'min ad_x', minval(ad_x(1:k))
       write(*, *) 'max ad_x', maxval(ad_x(1:k))
       write(*, *) 'ad_counter=',ad_counter
-      write(*, *) 'min zob=',zobmin
-      write(*, *) 'max zob=',zobmax
+      write(*, *) 'min h=',ad_hmin
+      write(*, *) 'max h=',ad_hmax
       write(*, *) '*******************'
 
 
@@ -254,9 +258,9 @@ c$$$     &                 ad_obs(i,j,ta-2)
       do j=Jstr,Jend
          do i=Istr,Iend
 #ifdef SPHERICAL
-            write(99, *) lonr(i,j),latr(i,j),zob(i,j)
+            write(99, *) lonr(i,j),latr(i,j),h(i,j)
 #else
-            write(99, *) xr(i,j),yr(i,j),zob(i,j)
+            write(99, *) xr(i,j),yr(i,j),h(i,j)
 #endif
          end do
       end do
@@ -296,8 +300,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       ad_ubar_bck(:,:,:) = ubar(:,:,:)
       ad_vbar_bck(:,:,:) = vbar(:,:,:)
       ad_zeta_bck(:,:,:) = zeta(:,:,:)
-      zob_bck(:,:) = zob(:,:)
-      zobt_bck = zobt
+      h_bck(:,:) = h(:,:)
 
       kstp_bck = kstp
       krhs_bck = krhs
@@ -309,8 +312,8 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       write(*,*) 'kstp=',kstp
       write(*,*) 'krhs=',krhs
       write(*,*) 'iic=',iic
-      write(*,*) 'minzob',minval(zob_bck)
-      write(*,*) 'maxzob',maxval(zob_bck)
+      write(*,*) 'minh',minval(h_bck)
+      write(*,*) 'maxh',maxval(h_bck)
       write(*,*) '----------'
 
       end subroutine save_croco_state
@@ -323,8 +326,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       ubar(:,:,:) = ad_ubar_bck(:,:,:)
       vbar(:,:,:) = ad_vbar_bck(:,:,:)
       zeta(:,:,:) = ad_zeta_bck(:,:,:)
-      zob(:,:) = zob_bck(:,:)
-      Zobt = Zobt_bck
+      h(:,:) = h_bck(:,:)
 
       kstp = kstp_bck
       krhs = krhs_bck
@@ -391,7 +393,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
          do i=Istr,Iend
             if (rmask(i,j).ne.0) then
                k=k+1
-               ad_x(k)=zob(i,j)
+               ad_x(k)=1900
             end if
          end do
       end do
