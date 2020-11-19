@@ -2,16 +2,16 @@
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      
+
       integer k
 
-C$AD BINOMIAL-CKP ad_ns+1 80 1            
+C$AD BINOMIAL-CKP ad_ns+1 80 1
       do k=1,ad_ns
          call step()
       end do
 
       end subroutine ad_step
-      
+
       subroutine cost_fun(ad_x, cost)
       implicit none
 # include "adinc.h"
@@ -37,7 +37,7 @@ c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
 
       cost = icost
       ad_irms = icost
-      
+
       ad_cost = cost
       ad_ta = ad_nt*ad_ns
       write (*,*) 'cost=',cost
@@ -161,7 +161,7 @@ c$$$     &                 ad_obs(i,j,ta-2)
       write(*,*) 'min delta_z',minval(ad_dz)
       write(*,*) 'max delta_z',maxval(ad_dz)
       write(*,*) '==================='
-      
+
       end subroutine cost_fun_step_2d_tile
 
       subroutine set_state(ad_x)
@@ -209,30 +209,37 @@ c$$$     &                 ad_obs(i,j,ta-2)
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend, i,j,k,cpoint
-      double precision lh
+      double precision cff1,cff,depth,ridge_width,ridge_height
       character*6 counter_str
 
-      double precision ad_hmin,ad_hmax
-      
 #include "compute_extended_bounds.h"
-      ad_hmin=1.e99
-      ad_hmax=0.
 
-      k=0
-      do j=Jstr,Jend
-         do i=Istr,Iend
-            if (rmask(i,j).ne.0) then
-               k=k+1
-               h(i,j)= ad_x(k)
-               if (ad_hmin.gt.h(i,j)) then
-                  ad_hmin=h(i,j)
-               end if
-               if (ad_hmax.lt.h(i,j)) then
-                  ad_hmax=h(i,j)
-               end if
-            end if
-         end do
-      end do
+      k=ad_array_node_size
+      depth=ad_x(3)
+      ridge_width=ad_x(2)
+      ridge_height=ad_x(1)
+
+      write(*,*) '########',ad_x(1),'...',ad_x(2),'...',ad_x(3)
+
+
+      cff1=1./(ridge_width*ridge_width)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          if ((xr(i,j).gt.ridge_width).or.
+     &       (xr(i,j).lt.(-ridge_width))) then
+            cff=0.
+          else
+            cff=1-(xr(i,j)*xr(i,j)*cff1);
+          endif
+          h(i,j)=depth-ridge_height*cff*cff;
+#   ifdef INTERNALSHELF
+          if (xr(i,j).ge.0.) then
+            h(i,j)=depth-ridge_height
+          endif
+#   endif
+        enddo
+      enddo
+
 
       write(*, *) '**** set_state ****'
 
@@ -244,8 +251,6 @@ c$$$     &                 ad_obs(i,j,ta-2)
       write(*, *) 'min ad_x', minval(ad_x(1:k))
       write(*, *) 'max ad_x', maxval(ad_x(1:k))
       write(*, *) 'ad_counter=',ad_counter
-      write(*, *) 'min h=',ad_hmin
-      write(*, *) 'max h=',ad_hmax
       write(*, *) '*******************'
 
 
@@ -280,14 +285,14 @@ c$$$     &                 ad_obs(i,j,ta-2)
 
       integer ierr
       integer k
-      
+
       do k=1,ad_array_size/nnodes
          ad_g(k)=0.
          ad_x(k)=0.
       end do
-      
+
       call init_local_arrays(ad_x)
-      
+
 c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 
       end subroutine init_control
@@ -322,6 +327,18 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       implicit none
 # include "adinc.h"
 # include "adparam.h"
+      integer ntrds,trd,my_first,my_last,tile,range
+
+#ifdef OPENMP
+      ntrds=omp_get_num_threads()
+      trd=omp_get_thread_num()
+#else
+      ntrds=1
+      trd=0
+#endif
+      range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
+      my_first=trd*range
+      my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
       ubar(:,:,:) = ad_ubar_bck(:,:,:)
       vbar(:,:,:) = ad_vbar_bck(:,:,:)
@@ -333,6 +350,10 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       knew = knew_bck
       iic = iic_bck
 
+      do tile=my_first,my_last
+         call restore_croco_state_2d(tile, ad_x)
+      end do
+
       write(*,*) 'restore+++'
       write(*,*) 'knew=',knew
       write(*,*) 'kstp=',kstp
@@ -341,6 +362,21 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
+
+      subroutine restore_croco_state_2d(tile)
+
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+      integer tile
+# include "compute_tile_bounds.h"
+
+      call set_depth(tile)
+
+      call grid_stiffness(tile)
+
+      end subroutine restore_croco_state_2d
+
 
       subroutine init_local_arrays(ad_x)
       implicit none
@@ -387,18 +423,19 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j,k
-      
+
+# include "compute_extended_bounds.h"
       k=0
-      do j=Jstr,Jend
-         do i=Istr,Iend
-            if (rmask(i,j).ne.0) then
-               k=k+1
-               ad_x(k)=1900
-            end if
-         end do
-      end do
-      ad_array_node_size=k
-      
+
+c     ridge_height
+      ad_x(1)=800
+c     ridge_width=30.e3
+      ad_x(2)=30.e3
+c     depth
+      ad_x(3)=2000
+
+      ad_array_node_size=3
+
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,
      &     ad_array_size/nnodes
@@ -406,7 +443,5 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       write(*,*) 'minad_x,maxad_x',minval(ad_x),maxval(ad_x)
       write(*,*) 'minh,maxh',minval(h),maxval(h)
       write(*,*) 'minobs,maxobs',minval(ad_obs),maxval(ad_obs)
-      
+
       end subroutine init_local_arrays_2d_tile
-
-
