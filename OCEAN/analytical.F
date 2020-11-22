@@ -2522,7 +2522,6 @@ C$    integer  trd, omp_get_thread_num
             enddo
 #    endif
             do itrc=itsubs1,NT
-            write(*,*) 'cobc_wat',itrc,itsubs1,NT,cobc_wat(itrc)
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #   else
@@ -2612,7 +2611,7 @@ C$    integer  trd, omp_get_thread_num
               tbry_west(j,k,itrc)=0.
             enddo
             do itrc=itsubs1,NT
-            write(*,*) 'cobc_wat',itrc,itsubs1,NT,cobc_wat(itrc)
+            !write(*,*) 'cobc_wat',itrc,itsubs1,NT,cobc_wat(itrc)
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #     endif
