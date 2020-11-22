@@ -32,6 +32,8 @@
       parameter (LLm0=60,   MMm0=50,   N=10)
 #elif defined SINGLE_COLUMN_GRADP
       parameter (LLm0=5 ,   MMm0=5,    N=100)   !
+#elif defined TFLAT2DV
+      parameter (LLm0=200,   MMm0=3,   N=10)
 #elif defined CHANNEL
 # ifdef key_ANA_bedload
       parameter (LLm0=150, MMm0=3,   N=20)
@@ -328,6 +330,8 @@
       parameter (D_wetdry=0.01)
 # elif defined SANDBAR
       parameter (D_wetdry=0.1)
+# elif defined TFLAT2DV
+      parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
 # endif
@@ -489,6 +493,8 @@
       integer  itsubs1,itsubs2,ntfix
 # ifdef SINGLE_COLUMN_GRADP
       parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  elif defined TFLAT2DV
+      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 # else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 # endif
@@ -549,6 +555,8 @@
       integer ksdmin,ksdmax
 # ifdef key_ANA_bedload
       parameter (ksdmin=1,ksdmax=11)
+# elif defined TFLAT2DV
+      parameter (ksdmin=1,ksdmax=2)
 # else
        parameter (ksdmin=1,ksdmax=10)
 # endif

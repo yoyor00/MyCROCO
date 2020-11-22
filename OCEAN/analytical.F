@@ -631,6 +631,15 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
+# elif defined TFLAT2DV && defined ANA_TIDES
+      omega=2.*pi/(12.0*3600)
+      ETA0=2.0
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j)=ETA0*sin(omega*time)
+        enddo
+      enddo
+
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
@@ -1303,7 +1312,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TFLAT2DV)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -2462,11 +2471,22 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
+#   if defined TFLAT2DV
+! exactement comme obc2cas.f de MARS (castest33)
+!           zetabry_west(j)=2.0*sin(2.*pi*time/(12.0*3600.0))
+           zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#   endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
+#   ifdef TFLAT2DV
+!          ubarbry_west(j)=
+!     & 1.15*sin(2.*pi*(time+1.84*3600.)/(12.0*3600.0))-0.025
+          ubarbry_west(j)=0.
+#   else
             ubarbry_west(j)=ubar(1,j,1)
+#   endif
             vbarbry_west(j)=vbar(0,j,1)
           enddo
 #   endif
@@ -2475,7 +2495,13 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
+#       ifdef TFLAT2DV
+!            ubry_west(j,k)=(-0.37513434*exp(-0.21399211*k)+1.1719674)*
+!     &          (1.6*sin(2.*pi*(time+2.*3600.)/(12.0*3600.0) ) -0.1 )
+            ubry_west(j,k)=0.
+#       else
               ubry_west(j,k)=u(1,j,k,1)
+#       endif
               vbry_west(j,k)=v(0,j,k,1)
 #    endif
 #    ifdef W_FRC_BRY
@@ -2486,6 +2512,28 @@ C$    integer  trd, omp_get_thread_num
                 tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
               enddo
 #    endif
+#   ifdef SUBSTANCE
+#    if defined TFLAT2DV
+            tbry_west(j,k,1)=10. ! temperature
+            tbry_west(j,k,2)=35.5 ! salinity
+#    else
+            do itrc=1,itsubs1-1
+              tbry_west(j,k,itrc)=0.
+            enddo
+#    endif
+            do itrc=itsubs1,NT
+            write(*,*) 'cobc_wat',itrc,itsubs1,NT,cobc_wat(itrc)
+              tbry_west(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#   else
+#    if defined TFLAT2DV
+              tbry_west(j,k,1)=10. ! temperature
+              tbry_west(j,k,2)=35.5 ! salinity
+              tbry_west(j,k,3)=0. ! traceur 1 MES   # SABLEGRO  CAS TEST T2FLAT
+              tbry_west(j,k,4)=0. ! traceur 1 MES  # SABLEFIN
+              tbry_west(j,k,5)=0.02 ! traceur 1 MES  # VASE
+#    endif
+#   endif
             enddo
           enddo
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
@@ -2503,6 +2551,11 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
+#   if defined TFLAT2DV
+! exactement comme obc2cas.f de MARS (castest33)
+!           zetabry_west(j)=2.0*sin(2.*pi*time/(12.0*3600.0))
+           zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#   endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY

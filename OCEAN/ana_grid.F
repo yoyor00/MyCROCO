@@ -64,6 +64,9 @@ C$    integer omp_get_thread_num
 # if defined CHANNEL && defined BOSSE
       real   Rij,cffi,cffj
 # endif
+# ifdef TFLAT2DV
+      real depth_shallow,depth_deep
+# endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
 # endif
@@ -248,6 +251,11 @@ C$    integer omp_get_thread_num
                      depth=5.
                      f0=1.E-4
                      beta=0.
+# elif defined TFLAT2DV
+                     depth_shallow=-4.
+                     depth_deep=16.
+                     f0=0.
+                     beta=0.
 # elif defined SED_TOY
                      depth=20.
                      f0=0.0
@@ -373,6 +381,9 @@ C$    integer omp_get_thread_num
 # elif defined SINGLE_COLUMN_GRADP
                      Length_XI = 10.e+3
                      Length_ETA= 10.e+3
+# elif defined TFLAT2DV
+                     Length_ETA=1500.0
+                     Length_XI =100000.0
 # elif defined SED_TOY
                       Length_XI=40.0
                       Length_ETA=30.0
@@ -865,6 +876,22 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !          rmask(i,j)=1.0
         enddo
       enddo
+
+# elif defined TFLAT2DV
+      do j=JstrR,JendR
+        h(IstrR,j)=depth_deep
+        h(IstrR+1,j)=depth_deep
+        rmask(IstrR,j)=1.0
+        rmask(IstrR+1,j)=1.0
+        do i=IstrR+2,IendR
+          h(i,j)=depth_deep-REAL(i+iminmpi-2)/REAL(LLm)
+     &                 *(depth_deep-depth_shallow)
+          rmask(i,j)=1.0
+        enddo
+      enddo
+      rmask(IstrR:IendR,JstrR:1)=0.0
+      rmask(IstrR:IendR,3:JendR)=0.0
+      rmask(IendR-1:IendR,2)=0.0
 
 #elif defined SED_TOY
       do j=JstrR,JendR

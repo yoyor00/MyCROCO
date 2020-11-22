@@ -43,8 +43,9 @@
 #undef  DUNE            /* Dune test case Example */
 #undef  CHANNEL         /* Channel test case Example  Dhysed */
 #undef  SINGLE_COLUMN_GRADP  /* 1DV vertical Example  Dhysed */
+#define TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
 #undef  SED_TOY         /* 1D sdiment test case */
-#define  REGIONAL        /* REGIONAL Applications */
+#undef  REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
@@ -1597,6 +1598,76 @@
 # undef key_MUSTANG_debug
 # undef key_MUSTANG_specif_outputs
 
+#elif defined TFLAT2DV
+/*
+!                       TFLAT2DV  Example
+!                       ===== =======
+*/
+# undef  OPENMP
+# undef  MPI
+# undef  NONLIN_EOS
+# define UV_ADV
+# define NEW_S_COORD
+# define UV_COR
+# define SOLVE3D
+# define UV_VIS2
+# define TS_DIF2
+# define SPONGE
+
+# define GLS_MIXING
+# undef ANA_VMIX
+
+# undef PSOURCE
+# define MASKING
+
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_BTFLUX
+# define ANA_BSFLUX
+
+# undef PASSIVE_TRACER
+# define SUBSTANCE
+# define ANA_PASSIVE
+# define ANA_INITIAL 
+# define WET_DRY
+
+# define SALINITY
+# define OBC_WEST
+# define FRC_BRY
+#ifdef FRC_BRY
+#  define ANA_BRY
+#  define Z_FRC_BRY
+#  define OBC_M2CHARACT
+#  define OBC_REDUCED_PHYSICS
+#  define M2_FRC_BRY
+#  undef M3_FRC_BRY
+#  define T_FRC_BRY
+#  undef  OBC_TORLANSKI
+#  undef  OBC_TSPECIFIED
+#  define OBC_TUPWIND
+# endif
+
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+
+
+# define MUSTANG
+# define key_noTSdiss_insed 
+# define key_nofluxwat_IWS 
+
+# undef key_MUSTANG_V2
+# undef key_MUSTANG_bedload
+# undef MORPHODYN_MUSTANG_byHYDRO
+# undef key_MUSTANG_tenfonUbar
+# undef key_DUNEtenfondecentred
+
+# undef key_ANA_bedload
+# undef key_MUSTANG_debug
+# undef key_MUSTANG_specif_outputs
 
 #endif /* END OF CONFIGURATION CHOICE */
 

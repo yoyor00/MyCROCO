@@ -95,11 +95,10 @@
      &                  sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                       +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2  )
      &                 )
-              Akv(i,j,k)=0.41*ustar0 *(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))
-     &                *(1.0-(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))/
+              Akv(i,j,k)=0.41*ustar0 *(h(i,j)+z_w(i,j,k))*
+     &                (1.0-(h(i,j)+z_w(i,j,k))/
      &                (h(i,j)+zeta(i,j,knew)))
               Akt(i,j,k,itemp)=Akv(i,j,k)
-!              Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akv(i,j,k)
 #  endif

@@ -345,6 +345,7 @@
    ! exchange erosion and settling fluxes
 !$OMP DO SCHEDULE(RUNTIME)
 
+# if defined MUSTANG && defined MUSTANG_CORFLUX 
 
       DO j=jfirst-1,jlast+1
       DO i=ifirst,ilast
@@ -361,7 +362,7 @@
         ENDDO
       ENDDO
       ENDDO
-
+# endif
 
       DO j=jfirst,jlast
       DO i=ifirst,ilast
