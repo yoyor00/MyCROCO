@@ -43,9 +43,9 @@
 #undef  DUNE            /* Dune test case Example */
 #undef  CHANNEL         /* Channel test case Example  Dhysed */
 #undef  SINGLE_COLUMN_GRADP  /* 1DV vertical Example  Dhysed */
-#define TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
+#undef  TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
 #undef  SED_TOY         /* 1D sdiment test case */
-#undef  REGIONAL        /* REGIONAL Applications */
+#define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
