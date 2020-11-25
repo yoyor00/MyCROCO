@@ -1510,14 +1510,15 @@
 
 # define USE_CALENDAR
 # define WET_DRY
-# undef PASSIVE_TRACER
-# define SUBSTANCE
+# undef  PASSIVE_TRACER
 # define ANA_PASSIVE
 
+# define SUBSTANCE
 # define MUSTANG
+# define key_MUSTANG_V2
 # define key_noTSdiss_insed
 # define key_nofluxwat_IWS
-# define key_MUSTANG_V2
+
 # define key_MUSTANG_bedload
 # define MORPHODYN_MUSTANG_byHYDRO
 # undef  key_MUSTANG_tenfonUbar
@@ -1525,22 +1526,22 @@
 # define key_tenfon_upwind
 # undef key_ANA_bedload   /* avec undef BOSSE */
 
-# define BUGJUMP
+# undef key_MUSTANG_slipdeposit 
+# undef key_MUSTANG_lateralerosion
+
+# undef BUGJUMP           /* a priori inutile */
 
 # undef key_MUSTANG_debug
 # define key_MUSTANG_specif_outputs
 
-/*
-# undef MUSTANG
-# undef key_noTSdiss_insed
-# undef key_nofluxwat_IWS
-# undef key_MUSTANG_V2
 # undef key_sand2D
+# if defined key_sand2D
+#  define key_CROCO
+# endif
+
+/* CLES MUSTANG INOPERANTES POUR LE MOMENT
 # undef key_MUSTANG_flocmod
 # undef key_MUSTANG_splitlayersurf
-# undef key_MUSTANG_specif_outputs
-# undef key_MUSTANG_bedload
-# undef key_MUSTANG_debug
 # undef key_MUSTANG_add_consol_outputs
 */
 
