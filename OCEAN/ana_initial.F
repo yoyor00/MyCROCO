@@ -229,8 +229,16 @@
           cff2=0.58
 #   endif     
           cff=0.5*(1./10)**2
-          ubar(i,j,1) = cff2/(1-
-     &               0.5*exp(-cff*(xp(i,j)-0.5*xl)**2))
+#   ifndef MPI       
+            if (i.GT.1) then  ! en sequentiel xr(i-1,j) n existe pas!
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
+            else
+              ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(xr(i,j)-0.5*xl)**2))
+            endif
+#   else
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
 #   endif     
 #   ifdef BOSSE
 #     ifdef MPI

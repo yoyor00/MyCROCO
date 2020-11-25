@@ -177,34 +177,22 @@
 # define COURANTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
 # define COURANTV_ij BAROTROP_VELOCITY_V(i,j+1,3) 
 
-# define COURANTV_ip1jm1 BAROTROP_VELOCITY_V(i+1,j,3) 
-# define COURANTV_ip1j   BAROTROP_VELOCITY_V(i+1,j+1,3) 
-# define COURANTV_im1jm1 BAROTROP_VELOCITY_V(i-1,j,3)
-# define COURANTV_im1j   BAROTROP_VELOCITY_V(i-1,j+1,3)
-
-# define COURANTU_im1jp1 BAROTROP_VELOCITY_U(i,j+1,3) 
-# define COURANTU_ijp1   BAROTROP_VELOCITY_U(i+1,j+1,3) 
-# define COURANTU_im1jm1 BAROTROP_VELOCITY_U(i,j-1,3) 
-# define COURANTU_ijm1   BAROTROP_VELOCITY_U(i+1,j-1,3) 
-
-
 !/* name of fluxes exchange between MUSTANG and hydro model 
 !*/
 # define EROS_FLUX_s2w flx_s2w_CROCO /* Erosion flux from sediment to water  */
 
-/* if TEMP and SAL not inclued in other concentrations table
 !#if ! defined key_MARS  
+/* if TEMP and SAL not inclued in other concentrations table  */      
 !# define EROS_FLUX_TEMP_s2w ??
 !# define EROS_FLUX_SAL_s2w ??
 !#endif
-*/
 
 # define SETTL_FLUX_w2s flx_w2s_CROCO  /* Tendance Flux de depot eau vers sediment (=flx_s2w in MARS) only for particulate */
 # define CORFLUX_SAND corflux_CROCO /* correction transport Flux  for sands in hydro module (=corflux (iv,i,j))*/
 # define CORFLUY_SAND corfluy_CROCO
 # define SETTL_FLUXSUM_w2s flx_w2s_sum_CROCO /* effective deposit Flux (sum) from water to sediment in hydro model (=flx_w2s_sum in MARS)*/
 
-/* to locate the number of variables simulated by MUSTANG in the host hydro model (used in coupleur to tranfer exchange arrays  */      
+!/* to locate the number of variables simulated by MUSTANG in the host hydro model (used in coupleur to tranfer exchange arrays  */      
 # define IV_HOSTMODEL itsubs1+iv-1
 # define ITEMP_HOSTMODEL itemp
 # define ISAL_HOSTMODEL itemp+1
@@ -213,36 +201,30 @@
 
 
 
-/* Lateral Erosion
+!/* Lateral Erosion
 !   in neighboring cells (could depend on grid architecture) 
 !*/
-
 # define HTOT_NEAR_E htot(i+1,j)
 # define HTOT_NEAR_W htot(i-1,j)
 # define HTOT_NEAR_N htot(i,j+1)
 # define HTOT_NEAR_S htot(i,j-1)
-# define SURF_NEAR_E CELL_SURF(i+1,j)
-# define SURF_NEAR_W CELL_SURF(i-1,j)
-# define SURF_NEAR_N CELL_SURF(i,j+1)
-# define SURF_NEAR_S CELL_SURF(i,j-1)
-# define V_NEAR_E (COURANTV_ip1jm1 + COURANTV_ip1j)
-# define V_NEAR_W (COURANTV_im1jm1 + COURANTV_im1j)
-# define U_NEAR_N (COURANTU_im1jp1 + COURANTU_ijp1)
-# define U_NEAR_S (COURANTU_im1jm1 + COURANTU_ijm1)
+# define SURF_NEAR_E surf_cell(i+1,j)
+# define SURF_NEAR_W surf_cell(i-1,j)
+# define SURF_NEAR_N surf_cell(i,j+1)
+# define SURF_NEAR_S surf_cell(i,j-1)
+# define V_NEAR_E (v(i+1,j-1)+v(i+1,j))
+# define V_NEAR_W (v(i-1,j-1)+v(i-1,j))
+# define U_NEAR_N (u(i-1,j+1)+u(i,j+1))
+# define U_NEAR_S (u(i-1,j-1)+u(i,j-1))
 
 !/* sliding proces of fluid mud
 !   slope of the bottom in the neighboring cells (could depend on grid architecture)
 !*/
-!/*
 # define SLOPE_W ((h0(i-1,j)-h0(i,j))/dx(i,j))
 # define SLOPE_E ((h0(i+1,j)-h0(i,j))/dx(i,j))
 # define SLOPE_N ((h0(i,j+1)-h0(i,j))/dy(i,j))
 # define SLOPE_S ((h0(i,j-1)-h0(i,j))/dy(i,j))
-!*/
-# define SLOPE_W ((BATHY_H0(i-1,j)-BATHY_H0(i,j))/CELL_DX(i,j))
-# define SLOPE_E ((BATHY_H0(i+1,j)-BATHY_H0(i,j))/CELL_DX(i,j))
-# define SLOPE_N ((BATHY_H0(i,j+1)-BATHY_H0(i,j))/CELL_DY(i,j))
-# define SLOPE_S ((BATHY_H0(i,j-1)-BATHY_H0(i,j))/CELL_DY(i,j))
+
 
 #endif
 

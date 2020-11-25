@@ -434,7 +434,8 @@
 #endif
     
 #ifdef key_MUSTANG_debug
-#if defined key_MARS  || defined SPHERICAL
+! for CROCO :
+!#if defined key_MUSTANG_debug && defined SPHERICAL
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ! initialization of position of point where we want informations for debug
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
@@ -460,7 +461,6 @@
           stop    
         ENDIF
      ENDIF
-#endif
 #endif
     
     PRINT_DBG*, 'END MUSTANG_init_sediment'

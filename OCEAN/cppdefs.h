@@ -43,9 +43,9 @@
 #undef  DUNE            /* Dune test case Example */
 #undef  CHANNEL         /* Channel test case Example  Dhysed */
 #undef  SINGLE_COLUMN_GRADP  /* 1DV vertical Example  Dhysed */
-#undef TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
+#undef  TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
 #undef  SED_TOY         /* 1D sdiment test case */
-#define  REGIONAL        /* REGIONAL Applications */
+#define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
@@ -1510,15 +1510,14 @@
 
 # define USE_CALENDAR
 # define WET_DRY
-# undef  PASSIVE_TRACER
+# undef PASSIVE_TRACER
+# define SUBSTANCE
 # define ANA_PASSIVE
 
-# define SUBSTANCE
 # define MUSTANG
-# define key_MUSTANG_V2
 # define key_noTSdiss_insed
 # define key_nofluxwat_IWS
-
+# define key_MUSTANG_V2
 # define key_MUSTANG_bedload
 # define MORPHODYN_MUSTANG_byHYDRO
 # undef  key_MUSTANG_tenfonUbar
@@ -1526,19 +1525,22 @@
 # define key_tenfon_upwind
 # undef key_ANA_bedload   /* avec undef BOSSE */
 
-# undef key_MUSTANG_slipdeposit 
-# undef key_MUSTANG_lateralerosion
-
-# undef BUGJUMP           /* a priori inutile */
+# define BUGJUMP
 
 # undef key_MUSTANG_debug
 # define key_MUSTANG_specif_outputs
 
+/*
+# undef MUSTANG
+# undef key_noTSdiss_insed
+# undef key_nofluxwat_IWS
+# undef key_MUSTANG_V2
 # undef key_sand2D
-
-/* CLES MUSTANG INOPERANTES POUR LE MOMENT
 # undef key_MUSTANG_flocmod
 # undef key_MUSTANG_splitlayersurf
+# undef key_MUSTANG_specif_outputs
+# undef key_MUSTANG_bedload
+# undef key_MUSTANG_debug
 # undef key_MUSTANG_add_consol_outputs
 */
 

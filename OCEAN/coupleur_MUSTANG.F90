@@ -345,8 +345,9 @@
    ! exchange erosion and settling fluxes
 !$OMP DO SCHEDULE(RUNTIME)
 
-# if defined MUSTANG && defined MUSTANG_CORFLUX
-      DO j=jfirst-1,jlast
+# if defined MUSTANG && defined MUSTANG_CORFLUX 
+
+      DO j=jfirst-1,jlast+1
       DO i=ifirst,ilast
         DO iv=1,nvp
             CORFLUY_SAND(i,j+1,IV_HOSTMODEL)=corfluy(iv,i,j)
@@ -355,14 +356,13 @@
       ENDDO
 
       DO j=jfirst,jlast
-      DO i=ifirst-1,ilast
+      DO i=ifirst-1,ilast+1
         DO iv=1,nvp
             CORFLUX_SAND(i+1,j,IV_HOSTMODEL)=corflux(iv,i,j)
         ENDDO
       ENDDO
       ENDDO
 # endif
-
 
       DO j=jfirst,jlast
       DO i=ifirst,ilast

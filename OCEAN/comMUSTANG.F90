@@ -159,9 +159,6 @@
 #endif
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfon,tenfonc,tenfonw
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: raphbx,raphby,frofonx,frofony
-#if defined key_tenfon_upwind
-   REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: tenfonx,tenfony
-#endif
    REAL(KIND=rlg),DIMENSION(:,:),ALLOCATABLE       :: phieau_s2w,phieau_s2w_consol,phieau_s2w_drycell
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: ustarbot,htot,alt_cw1
 #if defined key_MARS
@@ -175,7 +172,7 @@
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: roswat_bot
 
 #ifdef key_sand2D
-   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE    :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
+   REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC  :: rouse2D,sum_tmp  ! definition nombre de Rouse2D et SUM(dzcche*((htot-hzed)/hzed)**rouse) 
 #endif
 
 !#ifdef key_dredging
@@ -674,9 +671,6 @@
 
    ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1),raphby(PROC_IN_ARRAY_m1p1) )
    ALLOCATE( frofonx(PROC_IN_ARRAY_m1p1),frofony(PROC_IN_ARRAY_m1p1) )
-#ifdef key_tenfon_upwind
-   ALLOCATE( tenfonx(PROC_IN_ARRAY),tenfony(PROC_IN_ARRAY) )
-#endif
    ALLOCATE( dry_cell(PROC_IN_ARRAY))
    raphbx(PROC_IN_ARRAY_m1p1)=0.0_rsh
    raphby(PROC_IN_ARRAY_m1p1)=0.0_rsh

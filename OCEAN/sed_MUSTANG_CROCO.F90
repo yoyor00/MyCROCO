@@ -461,7 +461,7 @@
    REAL(KIND=rsh)                                   :: fws2ij,courant,alpha,beta,cosamb,sinamb
 # endif
 # ifdef key_tenfon_upwind   
-   REAL(KIND=rsh)                                   :: cff4,cff1,cff2,cff3
+   REAL(KIND=rsh)                                   :: cff4,cff1,cff2,cff3,tenfonx,tenfony
 # endif  
    
    !!--------------------------------------------------------------------------
@@ -498,6 +498,20 @@
          Zr(i,j)=  max(z_r(i,j,1)-z_w(i,j,0),z0sed(i,j)+1.E-4)
        enddo
       enddo
+
+# ifdef MPI
+# ifdef key_MUSTANG_tenfonUbar
+       call exchange_w3d_tile (ifirst,ilast,jfirst,jlast,  &
+     &                        z_w(START_2D_ARRAY,0))
+       call exchange_w3d_tile (ifirst,ilast,jfirst,jlast,  &
+     &                        z_w(START_2D_ARRAY,N))
+       call exchange_w3d_tile (ifirst,ilast,jfirst,jlast,  &
+     &                        z_w(START_2D_ARRAY,N))
+       call exchange_w3d_tile (ifirst-1,ilast,jfirst-1,jlast,  &
+     &                        z_w(START_2D_ARRAY,N))
+
+#endif
+#endif
 
 # ifdef MPI
       DO j=jfirst-1,jlast
@@ -576,7 +590,7 @@
             cff2=0.5*(1.0-SIGN(1.0,frofonx(i,j)))
             cff3=0.5*(1.0+SIGN(1.0,frofonx(i-1  ,j)))
             cff4=0.5*(1.0-SIGN(1.0,frofonx(i-1 ,j)))
-            tenfonx(i,j)=cff3*(cff1*frofonx(i-1,j)+                     &
+            tenfonx=cff3*(cff1*frofonx(i-1,j)+                     &
                        cff2*0.5*(frofonx(i-1,j)+frofonx(i,j)))+    &
                        cff4*(cff2*frofonx(i,j)+                   &
                        cff1*0.5*(frofonx(i-1,j)+frofonx(i,j)))
@@ -585,12 +599,12 @@
             cff2=0.5*(1.0-SIGN(1.0,frofony(i,j)))
             cff3=0.5*(1.0+SIGN(1.0,frofony(i,j-1)))
             cff4=0.5*(1.0-SIGN(1.0,frofony(i,j-1)))
-            tenfony(i,j)=cff3*(cff1*frofony(i,j-1)+                      &
+            tenfony=cff3*(cff1*frofony(i,j-1)+                      &
                       cff2*0.5*(frofony(i,j-1)+frofony(i,j)))+      &
                        cff4*(cff2*frofony(i,j)+                     &
                        cff1*0.5*(frofony(i,j-1)+frofony(i,j)))
 
-            tenfonc(i,j)=SQRT(tenfonx(i,j)**2+tenfony(i,j)**2)*(rho(i,j,1)+rho0)
+            tenfonc(i,j)=SQRT(tenfonx**2+tenfony**2)*(rho(i,j,1)+rho0)
 # else
             tenfonc(i,j)=SQRT(((frofonx(i,j)*raphbx(i,j)+frofonx(i-1,j)        &
                      *raphbx(i-1,j))/(raphbx(i,j)                             &
