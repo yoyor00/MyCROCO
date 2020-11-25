@@ -36,7 +36,11 @@
 #endif
       implicit none
 #include "param.h"
+#if defined MUSTANG
+      real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
+#else
       real A(GLOBAL_2D_ARRAY,N+1)
+#endif
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4) 
      &      , i,j,k, shift,  ierr

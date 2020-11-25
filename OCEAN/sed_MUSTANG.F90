@@ -488,19 +488,7 @@
 #endif
 
 #else
-#ifdef MPI
-   do iv=isand1,isand2
-     workexch(:,:) = corflux(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corflux(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = corfluy(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corfluy(iv,:,:) = workexch(:,:)
-   enddo
-#endif
+            !! To Program
 #endif
     
       ! corflux are interpolated on mesh edges (in u & v)
@@ -530,20 +518,7 @@
         CALL sed_obc_corflu
 !$OMP END SINGLE
 #else
-
-#ifdef MPI
-   do iv=isand1,isand2
-     workexch(:,:) = corflux(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corflux(iv,:,:) = workexch(:,:)
-
-     workexch(:,:) = corfluy(iv,:,:)
-     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-          &          workexch(START_2D_ARRAY))
-     corfluy(iv,:,:) = workexch(:,:)
-   enddo
-#endif
+            !! To Program
 
 #endif 
         !! for substances which are sorbed or associated with sand variables
@@ -624,13 +599,8 @@
    sedimask_h0plusxe(:,:)=0.0_rsh
 !$OMP END SINGLE
 !$OMP DO SCHEDULE(RUNTIME) private(i,j,iv) 
-#if defined MPI
-  DO j=jfirst-1,jlast+1
-    DO i=ifirst-1,ilast+1
-#else
-   DO j=jfirst,jlast
-     DO i=ifirst,ilast
-#endif
+   DO j=jfirst-1,jlast+1
+     DO i=ifirst-1,ilast+1
          IF (htot(i,j) .GT. hmin_bedload) THEN
            sedimask_h0plusxe(i,j)=1.0_rsh
          ENDIF
@@ -697,20 +667,20 @@
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
        endif
-!#if defined BOSSE
+#if (!defined CHANNEL || (defined CHANNEL && defined BOSSE))
        if (float(jfirst+jj*Mm) .EQ. JMIN_GRID) then
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
        endif
-!#endif
+#endif
 #endif
 #if (!defined MPI && defined key_MUSTANG_bedload)
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
-        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
-!#if defined BOSSE
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+#if (!defined CHANNEL || (defined CHANNEL && defined BOSSE))
+        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
-!#endif
+#endif
 #endif
 
 #if defined key_MARS
@@ -745,8 +715,29 @@
 #if defined key_MARS && defined key_MPI_2D
       CALL sed_exchange_s2w_MARS
 #else
-            !! To Program
+#if defined MPI
+   DO iv=-1,nv_adv
+     workexch(:,:) = flx_s2w_corip1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_s2w_corip1(iv,:,:) = workexch(:,:)
 
+     workexch(:,:) = flx_s2w_corim1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_s2w_corim1(iv,:,:) = workexch(:,:)
+
+     workexch(:,:) = flx_s2w_corjp1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_s2w_corjp1(iv,:,:) = workexch(:,:)
+
+     workexch(:,:) = flx_s2w_corjm1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_s2w_corjm1(iv,:,:) = workexch(:,:)
+   enddo
+#endif
 #endif
 
       ! correction : neighboring cells of eroded laterally  dry cell receive one fraction of eroded sediment 
@@ -898,6 +889,7 @@
 #ifdef key_MUSTANG_slipdeposit
    USE sed_MUSTANG_MARS,    ONLY :  sed_exchange_w2s_MARS
 #endif
+
 #if defined key_BLOOM_insed
    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_cvwat_MARS
 #endif
@@ -916,6 +908,10 @@
 
    !! * Local declarations
    INTEGER        :: iappel,iexchge_MPI_cvwat
+#if ! defined key_MARS && defined key_MUSTANG_slipdeposit && defined MPI
+   REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch    
+   INTEGER        :: iv
+#endif
    !! * Executable part 
   
    !deposit if strong bottom slope 
@@ -953,15 +949,49 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef key_MUSTANG_slipdeposit
    IF(slopefac .NE. 0.0_rsh) THEN
+#if defined key_MARS 
      CALL sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast,h0fond)  
-
 ! exchange MPI
-#if defined key_MARS && defined key_MPI_2D 
-         CALL sed_exchange_w2s_MARS
-             
+#    if defined key_MPI_2D 
+     CALL sed_exchange_w2s_MARS
+#    endif
 #else
-            !! To Program
-           ! no need in CROCO
+!#    if defined MPI
+!     CALL sed_MUSTANG_slipdepo(ifirst-1,ilast+1,jfirst-1,jlast+1,   &
+!                            h0fond)
+!#    else
+!     CALL sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast,           &
+!                            h0fond)
+!#    endif
+     CALL sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast,h0fond)
+#if defined MPI
+   DO iv=isand2+1,nvp
+     workexch(:,:) = flx_w2s_corim1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_w2s_corim1(iv,:,:) = workexch(:,:)
+
+     workexch(:,:) = flx_w2s_corip1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_w2s_corip1(iv,:,:) = workexch(:,:)
+
+     workexch(:,:) = flx_w2s_corjm1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_w2s_corjm1(iv,:,:) = workexch(:,:)
+
+     workexch(:,:) = flx_w2s_corjp1(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_w2s_corjp1(iv,:,:) = workexch(:,:)
+
+     workexch(:,:) = flx_w2s_corin(iv,:,:)
+     call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
+          &          workexch(START_2D_ARRAY))
+     flx_w2s_corin(iv,:,:) = workexch(:,:)
+   enddo
+#endif
 #endif
    ENDIF 
 #endif
@@ -1205,7 +1235,6 @@
 #ifdef key_MARS
       CALL sed_bottom_slope_bedload_MARS(ifirst,ilast,jfirst,jlast,BATHY_H0,CELL_DX,CELL_DY)
 #else
-! MANQUE QQ CHOSE CH20200619
       DO j=jfirst,jlast
         DO i=ifirst,ilast
           IF (BATHY_H0(i+1,j).LE. -valmanq .OR. BATHY_H0(i-1,j).LE. -valmanq) then
@@ -1220,7 +1249,6 @@
           ENDIF
         ENDDO
       ENDDO
-! MANQUE QQ CHOSE CH20200619 fin
 #endif
 
 #endif
@@ -2218,17 +2246,9 @@
 
 #ifdef key_sand2D
               IF(l_subs2D(ivp)) THEN
-#ifdef key_CROCO
-! with SAN2D in CROCO, transport is done in the bottom layer (in MARS, we consider the full depth although advection is done using the bottom velocity)
-! i.e. in CROCO, C is representative of the bottom layer, in MARS C is representative of the depth averaged men concentration
-                extrap=(hzi(1)-aref_sand)/som
-                corflux(ivp,i,j)=einstein/alogaltc1sz0
-                corfluy(ivp,i,j)=einstein/alogaltc1sz0
-#else
                 extrap=(hzisdbot(1)-aref_sand)/som 
                 corflux(ivp,i,j)=einstein/LOG(htot(i,j)/(2.718_rsh*z0sed(i,j)))
                 corfluy(ivp,i,j)=einstein/LOG(htot(i,j)/(2.718_rsh*z0sed(i,j)))
-#endif
               ELSE
 #endif
                 extrap=(hzi(1)-aref_sand)/som
@@ -2882,7 +2902,9 @@
 
 #if defined key_MUSTANG_lateralerosion
                    ! memorisation of lateral erosion for dry cell
+                     write(*,*)'lateral erosion 0',htot(i,j),h0fond,coef_erolat
                    IF(htot(i,j).LE.h0fond .AND. coef_erolat .NE. 0.0_rsh) THEN
+                     write(*,*)'lateral erosion 1',htot(i,j),h0fond,coef_erolat
                      DO iv=-1,nv_adv
                        flx_s2w_corip1(iv,i,j)=flx_s2w_corip1(iv,i,j)+  &
                                               flx_s2w_eroij(iv)*eroe/ero*CELL_SURF(i,j)/SURF_NEAR_E
@@ -2892,6 +2914,11 @@
                                               flx_s2w_eroij(iv)*eros/ero*CELL_SURF(i,j)/SURF_NEAR_S
                        flx_s2w_corjp1(iv,i,j)=flx_s2w_corjp1(iv,i,j)+  &
                                               flx_s2w_eroij(iv)*eron/ero*CELL_SURF(i,j)/SURF_NEAR_N
+                       write(*,*)'flx_s2w_corip1',flx_s2w_corip1(iv,i,j)
+                       write(*,*)'flx_s2w_corim1',flx_s2w_corim1(iv,i,j)
+                       write(*,*)'flx_s2w_corjm1',flx_s2w_corjm1(iv,i,j)
+                       write(*,*)'flx_s2w_corjp1',flx_s2w_corjp1(iv,i,j)
+
                      ENDDO
 #if ! defined key_nofluxwat_IWS
                      phieau_s2w_corip1(i,j)=phieau_s2w_corip1(i,j)+phieau_ero_ij*eroe/ero
@@ -3264,6 +3291,7 @@
 #if defined key_MUSTANG_lateralerosion
                 ! lateral erosion :  wet cell (cellule mouillee)
                 IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN
+                   write(*,*)'l_erolat_wet_cell'
 #if defined key_MARS && defined key_castest_estuary
                   !PLH : precaution for test case ESTUAR (secteur amont ou le courant fluvial peut etre fort)
                   IF(i.le.id(j)-4) THEN
@@ -3279,6 +3307,7 @@
                     eros=max(0.0_rsh,coef_tenfon_lat/4.0_rsh*U_NEAR_S**2-toce)*max(0.0_rsh,heaus-heau_milieu)
                     eron=max(0.0_rsh,coef_tenfon_lat/4.0_rsh*U_NEAR_N**2-toce)*max(0.0_rsh,heaun-heau_milieu)
                     ero=ero+coef_erolat*(eroe+erow+eros+eron)
+                   write(*,*)'l_erolat_wet_cell',ero
 #ifdef key_castest_estuary
                   ENDIF
 #endif                                                                         
@@ -3289,6 +3318,7 @@
 #if defined key_MUSTANG_lateralerosion
               ! lateral erosion :  dry cell 
               IF (coef_erolat .NE. 0.0_rsh) THEN
+                   write(*,*)'l_erolat_dry_cell'
 #ifdef key_castest_estuary
                !PLH : precaution for test case ESTUAR (secteur amont ou le courant fluvial peut etre fort)
                IF(i.le.id(j)-2) THEN                                                                         
@@ -3302,6 +3332,7 @@
                  eros=coef_erolat*max(0.0_rsh,coef_tenfon_lat/4.0_rsh*U_NEAR_S**2-toce)*heaus
                  eron=coef_erolat*max(0.0_rsh,coef_tenfon_lat/4.0_rsh*U_NEAR_N**2-toce)*heaun
                  ero=eroe+erow+eros+eron
+                   write(*,*)'l_erolat_dry_cell',ero
 #ifdef key_castest_estuary
                ENDIF
 #endif
@@ -5789,7 +5820,11 @@
  
 !!==============================================================================
 #if defined key_MUSTANG_slipdeposit
-  SUBROUTINE sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast,h0fond)
+  SUBROUTINE sed_MUSTANG_slipdepo(ifirst,ilast,jfirst,jlast,  &
+!#if !defined key_MARS
+!                               CELL_DX,CELL_DY,                     &
+!#endif
+                               h0fond)
    
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_slipdepo  ***
@@ -9715,9 +9750,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
    REAL(KIND=rsh),DIMENSION(nvpc) :: toce_loc
    REAL(KIND=rsh),PARAMETER :: m=0.6_rsh ! for hinding / exposure processes
    REAL(KIND=rsh), PARAMETER :: tand30=0.577350269189626  ! TAND(30.0_rsh)=TAN(30*NUMBER_PI/180)=TAN(0.523599)
-# ifdef key_tenfon_upwind   
-   REAL(KIND=rsh)                                   ::  cff4,cff1,cff2,cff3,tenfonx,tenfony
-# endif
    !!---------------------------------------------------------------------------
    !! * Executable part
 
@@ -9796,28 +9828,8 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
      flx_byij(iv)=0.
 #endif
 #if defined key_tenfon_upwind
-            cff1=0.5*(1.0+SIGN(1.0,frofonx(i,j)))
-            cff2=0.5*(1.0-SIGN(1.0,frofonx(i,j)))
-            cff3=0.5*(1.0+SIGN(1.0,frofonx(i-1  ,j)))
-            cff4=0.5*(1.0-SIGN(1.0,frofonx(i-1 ,j)))
-            tenfonx=cff3*(cff1*frofonx(i-1,j)+                     &
-                       cff2*0.5*(frofonx(i-1,j)+frofonx(i,j)))+    &
-                       cff4*(cff2*frofonx(i,j)+                   &
-                       cff1*0.5*(frofonx(i-1,j)+frofonx(i,j)))
-
-            cff1=0.5*(1.0+SIGN(1.0,frofony(i,j)))
-            cff2=0.5*(1.0-SIGN(1.0,frofony(i,j)))
-            cff3=0.5*(1.0+SIGN(1.0,frofony(i,j-1)))
-            cff4=0.5*(1.0-SIGN(1.0,frofony(i,j-1)))
-            tenfony=cff3*(cff1*frofony(i,j-1)+                      &
-                      cff2*0.5*(frofony(i,j-1)+frofony(i,j)))+      &
-                       cff4*(cff2*frofony(i,j)+                     &
-                       cff1*0.5*(frofony(i,j-1)+frofony(i,j)))
-
-            tenfonc(i,j)=SQRT(tenfonx**2+tenfony**2)*(rho(i,j,1)+rho0)
-
-     flx_bxij(iv)=qb*tenfonx*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
-     flx_byij(iv)=qb*tenfony*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
+     flx_bxij(iv)=qb*tenfonx(i,j)*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
+     flx_byij(iv)=qb*tenfony(i,j)*roswat_bot(i,j)/(tenfonc(i,j)+epsilon_MUSTANG)
 #endif
 
 
@@ -9876,12 +9888,11 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
      ! sedimask_h0plusxe : = 1 si BATHY_H0(i,j)+WATER_ELEVATION(i,j) .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
 
-     !flx_bxij(iv)=(flx_bxij(iv)+abs(flx_bxij(iv)))*0.5_rsh*raphbx(i,j)*sedimask_h0plusxe(i+1,j)+ &
-     !             (flx_bxij(iv)-abs(flx_bxij(iv)))*0.5_rsh*raphbx(i-1,j)*sedimask_h0plusxe(i-1,j)
+     flx_bxij(iv)=(flx_bxij(iv)+abs(flx_bxij(iv)))*0.5_rsh*raphbx(i,j)*sedimask_h0plusxe(i+1,j)+ &
+                  (flx_bxij(iv)-abs(flx_bxij(iv)))*0.5_rsh*raphbx(i-1,j)*sedimask_h0plusxe(i-1,j)
 
-     !flx_byij(iv)=(flx_byij(iv)+abs(flx_byij(iv)))*0.5_rsh*raphby(i,j)*sedimask_h0plusxe(i,j+1)+ &
-     !             (flx_byij(iv)-abs(flx_byij(iv)))*0.5_rsh*raphby(i,j-1)*sedimask_h0plusxe(i,j-1)
-
+     flx_byij(iv)=(flx_byij(iv)+abs(flx_byij(iv)))*0.5_rsh*raphby(i,j)*sedimask_h0plusxe(i,j+1)+ &
+                  (flx_byij(iv)-abs(flx_byij(iv)))*0.5_rsh*raphby(i,j-1)*sedimask_h0plusxe(i,j-1)
 
     ! Morphological factor
 
