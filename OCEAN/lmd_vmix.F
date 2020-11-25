@@ -624,6 +624,9 @@ C$OMP BARRIER
 # endif
         enddo
       enddo
+
+
+      
 !
 !------------------------------------------------
 !  Apply background small viscosity

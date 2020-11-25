@@ -54,7 +54,7 @@ include Makedefs
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
         w3dbc.F		nbq_bry_store.F\
 \
-	rho_eos.F	ab_ratio.F	alfabeta.F\
+	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
@@ -93,7 +93,7 @@ include Makedefs
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
         clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
-	get_psource.F   get_psource_ts.F\
+	get_psource.F   get_psource_ts.F get_btflux.F\
         cfb_stress.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\

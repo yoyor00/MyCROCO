@@ -33,6 +33,10 @@
 #ifdef SPHERICAL
          <field id="lon_rho" long_name="longitude of RHO-points" unit="degree_east" />
          <field id="lat_rho" long_name="latitude of RHO-points" unit="degree_north" />
+         <field id="lon_u" long_name="longitude of U-points" unit="degree_east" />
+         <field id="lat_u" long_name="latitude of U-points" unit="degree_north" />
+         <field id="lon_v" long_name="longitude of V-points" unit="degree_east" />
+         <field id="lat_v" long_name="latitude of V-points" unit="degree_north" />
 #else
          <field id="x_rho" long_name="x-locations of RHO-points" unit="meter" />
          <field id="y_rho" long_name="y-locations of RHO-points" unit="none" />
@@ -52,8 +56,10 @@
          <field id="temp" long_name="potential temperature" unit="Celsius" grid_ref="rho_3D" />
 
 #ifdef SALINITY
+         <!-- SALINITY --> 
          <field id="salt" long_name="salinity" unit="PSU" grid_ref="rho_3D" />
          <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
+         <!--  END SALINITY --> 
 #endif
 
          <field id="w" long_name="vertical velocity" unit="meter second-1" grid_ref="rho_3D"/>
@@ -445,6 +451,22 @@
     </field_group>
 #endif
 
+#ifdef DIAGNOSTICS_TS
+     <field_group id="TS_dia" grid_ref="rho_3D">
+         <field id="T_rate" long_name="T rate" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_adv" long_name="T adv" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_Hmix" long_name="T Hmix" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_Vmix" long_name="T Vmix" unit="Celsius second-1" grid_ref="rho_3D"/>
+         <field id="T_Forc" long_name="T Forc" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  ifdef SALINITY
+         <field id="S_rate" long_name="S rate" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_adv" long_name="S adv" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_Hmix" long_name="S Hmix" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_Vmix" long_name="S Vmix" unit="PSU second-1" grid_ref="rho_3D"/>
+         <field id="S_Forc" long_name="S Forc" unit="PSU second-1" grid_ref="rho_3D"/>
+#  endif
+    </field_group>
+#endif
 
 
 #ifdef DIAGNOSTICS_EK
@@ -487,6 +509,9 @@
 
 #ifdef DIAGNOSTICS_EDDY
      <field_group id="eddy" grid_ref="rho_3D">
+         <field id="workru" long_name="workru" unit="meter second-1"/>
+         <field id="workrv" long_name="workrv" unit="meter second-1"/>
+         <field id="buoy" long_name="buoyancy" unit="meter second-2"/>
          <field id="uu" long_name="uu" unit="meter2 second-2"/>
          <field id="uv" long_name="uv" unit="meter2 second-2"/>
          <field id="vv" long_name="vv" unit="meter2 second-2"/>
@@ -501,6 +526,30 @@
          <field id="wS" long_name="wS" unit="PSU meter second-1"/>
     </field_group>
 #endif
+
+
+# ifdef DIAGNOSTICS_PV
+     <field_group id="u_rhs" grid_ref="u_3D">
+         <field id="u_rhs" long_name="u rhs" unit="meter second-2" grid_ref="u_3D"/>
+     </field_group>
+     <field_group id="v_rhs" grid_ref="v_3D">
+         <field id="v_rhs" long_name="v rhs" unit="meter second-2" grid_ref="v_3D"/>
+     </field_group>
+     <field_group id="TS_dia" grid_ref="rho_3D">
+         <field id="T_rhs" long_name="T rhs" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  ifdef SALINITY
+         <field id="S_rhs" long_name="S rhs" unit="PSU second-1" grid_ref="rho_3D"/>
+#  endif
+    </field_group>
+# ifdef DIAGNOSTICS_PV_FULL
+     <field_group id="u_trans" grid_ref="u_3D">
+         <field id="u_vmix_trans" long_name="u_vmix_trans" unit="meter second-2" grid_ref="u_3D"/>
+     </field_group>
+     <field_group id="v_trans" grid_ref="v_3D">
+         <field id="v_vmix_trans" long_name="v_vmix_trans" unit="meter second-2" grid_ref="v_3D"/>
+     </field_group>
+#  endif
+#  endif
 
 
    </field_definition>

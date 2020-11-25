@@ -1,56 +1,43 @@
 <domain_definition>
 
-	<domain_group id="rho">
-		<domain id="rho" long_name="grid Rho"/>
+    <domain_group id="rho">
+        <!--   My zoom: example of hand defined zoom   -->
+        <!-- <domain id="myzoom" zoom_ibegin="10" zoom_jbegin="10" zoom_ni="5" zoom_nj="5" /> -->
+        <domain id="rho" long_name="grid Rho"/>
+        <!-- <domain id="1point" zoom_ibegin="1" zoom_jbegin="1" zoom_ni="1" zoom_nj="1" /> -->
+     </domain_group>
 
-		<domain id="PT_01_T" 	domain_ref="rho"><zoom_domain ibegin="607"  jbegin="291"  ni="1"    nj="1"	/></domain>
-		<domain id="PT_02_T" 	domain_ref="rho"><zoom_domain ibegin="583"  jbegin="254"  ni="1"    nj="1"	/></domain>
-		<domain id="PT_03_T" 	domain_ref="rho"><zoom_domain ibegin="263"  jbegin="342"  ni="1"    nj="1"	/></domain>
-		<domain id="PT_04_T" 	domain_ref="rho"><zoom_domain ibegin="496"  jbegin="415"  ni="1"    nj="1"	/></domain>
-		<domain id="PT_05_T" 	domain_ref="rho"><zoom_domain ibegin="350"  jbegin="385"  ni="1"    nj="1"	/></domain>
+     <domain_group id="u">
+        <domain id="u" long_name="grid U"/>
+     </domain_group>
 
-		<domain id="zoom_1_T" 	domain_ref="rho"><zoom_domain ibegin="480"  jbegin="380"  ni="205"  nj="155"	/></domain>
-		<domain id="zoom_2_T" 	domain_ref="rho"><zoom_domain ibegin="100"  jbegin="200"  ni="100"  nj="100"	/></domain>
-	</domain_group>
+     <domain_group id="v">
+        <domain id="v" long_name="grid V"/>
+     </domain_group>
 
-	<domain_group id="u">
-		<domain id="u" long_name="grid U"/>
+     <domain_group id="w">
+        <domain id="w" long_name="grid W"/>
+     </domain_group>
 
-		<domain id="PT_01_U" 	domain_ref="u">  <zoom_domain ibegin="607"  jbegin="291"  ni="2"    nj="1"	/></domain>
-		<domain id="PT_02_U" 	domain_ref="u">  <zoom_domain ibegin="583"  jbegin="254"  ni="2"    nj="1"	/></domain>
-		<domain id="PT_03_U" 	domain_ref="u">  <zoom_domain ibegin="263"  jbegin="342"  ni="2"    nj="1"	/></domain>
-		<domain id="PT_04_U" 	domain_ref="u">  <zoom_domain ibegin="496"  jbegin="415"  ni="2"    nj="1"	/></domain>
+     <domain_group id="b">
+        <domain id="b" long_name="grid sed"/>
+     </domain_group>
 
-		<domain id="zoom_1_U" 	domain_ref="u">  <zoom_domain ibegin="480"  jbegin="380"  ni="206"  nj="155"	/></domain>
-		<domain id="zoom_2_U" 	domain_ref="u">  <zoom_domain ibegin="100"  jbegin="200"  ni="101"  nj="100"	/></domain>
- 	</domain_group>
+     <domain_group id="psi">
+        <domain id="psi" long_name="grid psi"/>
+     </domain_group>
 
- 	<domain_group id="v">
-		<domain id="v" long_name="grid V"/>
 
-		<domain id="PT_01_V" 	domain_ref="v">  <zoom_domain ibegin="607"  jbegin="291"  ni="1"    nj="2"	/></domain>
-		<domain id="PT_02_V" 	domain_ref="v">  <zoom_domain ibegin="583"  jbegin="254"  ni="1"    nj="2"	/></domain>
-		<domain id="PT_03_V" 	domain_ref="v">  <zoom_domain ibegin="263"  jbegin="342"  ni="1"    nj="2"	/></domain>
-		<domain id="PT_04_V" 	domain_ref="v">  <zoom_domain ibegin="496"  jbegin="415"  ni="1"    nj="2"	/></domain>
+     <!-- <domain_group id="scalarpoint_1">
+         <domain id="scalarpoint_1" long_name="scalar"/> -->
+         <!-- for mooring
+         <domain id="1point" zoom_ibegin="1" zoom_jbegin="1" zoom_ni="1" zoom_nj="1" />
+         -->
+      <!-- </domain_group> -->
 
-		<domain id="zoom_1_V" 	domain_ref="v">  <zoom_domain ibegin="480"  jbegin="380"  ni="205"  nj="156"	/></domain>
-		<domain id="zoom_2_V" 	domain_ref="v">  <zoom_domain ibegin="100"  jbegin="200"  ni="100"  nj="101"	/></domain>
-	</domain_group>
+      <!-- <domain_group id="scalarpoint">
+         <domain id="scalarpoint" long_name="scalar"/>
+      </domain_group> -->
 
- 	<domain_group id="w">
-		<domain id="w" long_name="grid W"/>
- 	</domain_group>
 
-	 <domain_group id="b">
-		<domain id="b" long_name="grid sed"/>
-	</domain_group>
-
-	 <domain_group id="psi">
-		<domain id="psi" long_name="grid psi"/>
-	</domain_group>
-
-	<domain_group id="scalarpoint">
-		<domain id="scalarpoint" long_name="scalar"/>
-	</domain_group>
-
-</domain_definition>
+   </domain_definition>

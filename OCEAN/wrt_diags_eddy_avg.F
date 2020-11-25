@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EDDY && defined AVERAGES
+#if defined DIAGNOSTICS_EDDY && defined AVERAGES && ! defined XIOS
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics 
@@ -131,6 +131,34 @@
          itrc=1
 
        if (wrtdiags_eddy_avg(1)) then
+       
+       
+!---------------------------------------------------------------
+! indxeddyubu
+!
+        call fillvalue2d(eddyubu_avg,nciddiags_eddy_avg,diags_eddyubu_avg(1),
+     &                      indxeddyubu,
+     &                      record,u2dvar,type)
+
+!---------------------------------------------------------------
+! indxeddyvbv
+!
+        call fillvalue2d(eddyvbv_avg,nciddiags_eddy_avg,diags_eddyvbv_avg(1),
+     &                      indxeddyvbv,
+     &                      record,v2dvar,type)
+!---------------------------------------------------------------
+! indxeddyusu
+!
+        call fillvalue2d(eddyusu_avg,nciddiags_eddy_avg,diags_eddyusu_avg(1),
+     &                      indxeddyusu,
+     &                      record,u2dvar,type)
+
+!---------------------------------------------------------------
+! indxeddyvsv
+!
+        call fillvalue2d(eddyvsv_avg,nciddiags_eddy_avg,diags_eddyvsv_avg(1),
+     &                      indxeddyvsv,
+     &                      record,v2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyuu

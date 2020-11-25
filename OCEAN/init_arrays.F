@@ -63,11 +63,11 @@ C$    integer omp_get_thread_num
 # include "diags_pv.h"
 #endif
 
-#ifdef DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # include "diags_eddy.h"
 #endif
 
-#if defined OUTPUTS_SURFACE && defined AVERAGES
+#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
 # include "surf.h"
 #endif
       integer Istr,Iend,Jstr,Jend, i,j
@@ -80,7 +80,7 @@ C$    integer omp_get_thread_num
 #ifdef SEDIMENT
      &       ,ilay
 #endif
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
      &       ,itide
 #endif
       real init    !!!!  0xFFFA5A5A ==> NaN
@@ -148,7 +148,8 @@ C$    integer omp_get_thread_num
           DV_avg2(i,j)=0. !init
 #endif
 
-#if defined OUTPUTS_SURFACE && defined AVERAGES
+#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+
           surft_avg(i,j)=0. ! init
           surfs_avg(i,j)=0. ! init
           surfz_avg(i,j)=0. ! init
@@ -360,16 +361,18 @@ C$    integer omp_get_thread_num
               TXadv(i,j,k,itrc)=init
               TYadv(i,j,k,itrc)=init
               TVadv(i,j,k,itrc)=init
-              THmix(i,j,k,itrc)=init
-              TVmix(i,j,k,itrc)=init
-              TForc(i,j,k,itrc)=init
-              Trate(i,j,k,itrc)=init
+#ifdef DIAGNOSTICS_TSVAR
+              TVmixt(i,j,k,itrc)=init
+#endif
 #  ifdef AVERAGES
               TXadv_avg(i,j,k,itrc)=init
               TYadv_avg(i,j,k,itrc)=init
               TVadv_avg(i,j,k,itrc)=init
               THmix_avg(i,j,k,itrc)=init
               TVmix_avg(i,j,k,itrc)=init
+#ifdef DIAGNOSTICS_TSVAR
+              TVmixt_avg(i,j,k,itrc)=init
+#endif
               TForc_avg(i,j,k,itrc)=init
               Trate_avg(i,j,k,itrc)=init
 #  endif /* AVERAGES*/
@@ -399,10 +402,19 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
 #  endif /* AVERAGES*/
+          enddo
+        enddo
+      enddo
+#  endif  /*DIAGNOSTICS_TS_MLD*/
+# endif /*DIAGNOSTICS_TS*/
 
 
-# ifdef DIAGNOSTICS_EDDY
+
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #  ifdef AVERAGES
+        do k=1,N
+          do j=JstrR,JendR
+           do i=IstrR,IendR
             eddyuu_avg(i,j,k)=init
             eddyvv_avg(i,j,k)=init
             eddyuv_avg(i,j,k)=init
@@ -411,15 +423,19 @@ C$    integer omp_get_thread_num
             eddywb_avg(i,j,k)=init
             eddyuw_avg(i,j,k)=init
             eddyvw_avg(i,j,k)=init
-#  endif /* AVERAGES */
-# endif /* DIAGNOSTICS_EDDY */
-
-
+           enddo
           enddo
         enddo
-      enddo
-#  endif
-# endif /*DIAGNOSTICS_TS*/
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            eddyusu_avg(i,j)=init
+            eddyvsv_avg(i,j)=init
+            eddyubu_avg(i,j)=init
+            eddyvbv_avg(i,j)=init
+          enddo
+        enddo
+#  endif /* AVERAGES */
+# endif /* DIAGNOSTICS_EDDY */
 
 
 
@@ -558,16 +574,24 @@ C$    integer omp_get_thread_num
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pv(i,j,k)=init
-            pvd(i,j,k)=init
 #  ifdef AVERAGES
             pv_avg(i,j,k)=init
+#  endif /* AVERAGES */
+          enddo
+        enddo
+      enddo
+      do k=1,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            pvd(i,j,k)=init
+#  ifdef AVERAGES
             pvd_avg(i,j,k)=init
 #  endif /* AVERAGES */
           enddo
         enddo
       enddo
 # endif
-      do itrc=1,NT
+      do itrc=1,NTA
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -786,10 +810,12 @@ C$    integer omp_get_thread_num
             stflxg(i,j,2,itrc)=init
 # endif
             btflx(i,j,itrc)=init
-# ifndef ANA_BTFLUX
+            
+# if BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
 # endif
+            
           enddo
         enddo
       enddo
@@ -903,7 +929,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # if defined PSOURCE_NCFILE
-          do i=1,Msrc
+          do i=1,Nsrc
            qbar(i)=init
            qbarg(i,1)=init
            qbarg(i,2)=init
@@ -1144,7 +1170,7 @@ C$    integer omp_get_thread_num
       endif
 # endif /* OBC_NORTH */
 #endif
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
 !
 ! Initialize array for tidal elevation forcing.
 !

@@ -19,6 +19,9 @@
       real TVadv(GLOBAL_2D_ARRAY,N,NT)
       real THmix(GLOBAL_2D_ARRAY,N,NT)
       real TVmix(GLOBAL_2D_ARRAY,N,NT)
+#ifdef DIAGNOSTICS_TSVAR
+      real TVmixt(GLOBAL_2D_ARRAY,N,NT)
+#endif
       real TForc(GLOBAL_2D_ARRAY,N,NT)
       real Trate(GLOBAL_2D_ARRAY,N,NT)
 !
@@ -40,6 +43,9 @@
       real TVadv_avg(GLOBAL_2D_ARRAY,N,NT)
       real THmix_avg(GLOBAL_2D_ARRAY,N,NT)
       real TVmix_avg(GLOBAL_2D_ARRAY,N,NT)
+#ifdef DIAGNOSTICS_TSVAR
+      real TVmixt_avg(GLOBAL_2D_ARRAY,N,NT)
+# endif
       real TForc_avg(GLOBAL_2D_ARRAY,N,NT)
       real Trate_avg(GLOBAL_2D_ARRAY,N,NT)
 !
@@ -59,6 +65,9 @@
      &       /diag_TVadv/TVadv  
      &       /diag_THmix/THmix
      &       /diag_TVmix/TVmix
+#ifdef DIAGNOSTICS_TSVAR
+     &       /diag_TVmixt/TVmixt
+# endif
      &       /diag_TForc/TForc
      &       /diag_Trate/Trate
 !
@@ -80,6 +89,9 @@
      &       /diag_TVadv_avg/TVadv_avg   
      &       /diag_THmix_avg/THmix_avg
      &       /diag_TVmix_avg/TVmix_avg
+#ifdef DIAGNOSTICS_TSVAR
+     &       /diag_TVmixt_avg/TVmixt_avg
+# endif
      &       /diag_TForc_avg/TForc_avg
      &       /diag_Trate_avg/Trate_avg
 !

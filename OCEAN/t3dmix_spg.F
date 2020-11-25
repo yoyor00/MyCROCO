@@ -226,6 +226,9 @@
       jmax=jend+1
 # endif
 
+   
+   
+   
 # ifdef TS_MIX_S
 !==================================================================
 !
@@ -325,6 +328,9 @@
           diff3v(i,j)=0.5*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
         enddo
       enddo
+      
+
+     
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
 !==========================================================
@@ -359,6 +365,7 @@
           enddo
         endif
  
+
         if (k.eq.0 .or. k.eq.N) then
 !========================================================
 ! Set bottom and top boundary condition  (FC = 0).
@@ -427,7 +434,7 @@
             enddo
           enddo
 
-
+          
           if (k.lt.N) then
 !========================================================
 ! Compute the vertical component
@@ -488,10 +495,12 @@
             enddo
           endif  ! <-- k.lt.N
 
+
 !++========================================================
 !++ Perform time stepping
 !++========================================================
 
+        
           do j=jstr,jend
             do i=istr,iend
 #  ifdef TS_SPONGE_IMP
@@ -508,8 +517,10 @@
 #  endif
             enddo
           enddo
+          
 
-#  ifdef DIAGNOSTICS_TS
+
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
 !
@@ -544,7 +555,7 @@
 !  Initialize TVmix diag computation: 
 !  --> use Trate which needs recomputing anyway
 !
-#   ifdef DIAGNOSTICS_TS
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                Trate(i,j,k,itrc)=t(i,j,k,nnew,itrc)
@@ -603,6 +614,7 @@
         enddo           !--> discard FC,CF,DC
 #   undef FC 
 
+
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 !  Add TVmix correction term to previous TVmix computation
@@ -628,6 +640,7 @@
 #  undef LT
 #  undef GT
 # endif /* TS_MIX_S */
+
 !
 !=================================================================
 !
@@ -658,16 +671,27 @@
      &                      -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                              /(dt*cff1)
      &                                       SWITCH rmask(i,j)
+
 !
 ! Divide all diagnostic terms by the cell volume
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
 ! of diag terms are: (unit of tracers)* s-1.
 !
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
+
+              cff=cff1/Hz(i,j,k)
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
 # ifdef TS_SPONGE_IMP
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
+              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
 # endif
+
+
+# ifdef DIAGNOSTICS_TSVAR
+
+# include "finalize_diagnostics_tsadv.h"
+
+# endif
+
             enddo
           enddo
         enddo
@@ -778,7 +802,7 @@
             enddo
           enddo
         enddo
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
         do k=1,N
           do j=jstr,jend
             do i=Istr,Iend

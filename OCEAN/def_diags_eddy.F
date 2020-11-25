@@ -13,7 +13,7 @@
 # include "cppdefs.h"
 #endif
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
 #ifndef AVRH
       subroutine def_diags_eddy (ncid, total_rec, ierr)
@@ -62,6 +62,10 @@
 #  define viddiags_uw diags_eddyuw
 #  define viddiags_vw diags_eddyvw
 #  define viddiags_wb diags_eddywb
+#  define viddiags_ubu diags_eddyubu
+#  define viddiags_vbv diags_eddyvbv
+#  define viddiags_usu diags_eddyusu
+#  define viddiags_vsv diags_eddyvsv
 
 #else
 
@@ -80,6 +84,10 @@
 #  define viddiags_uw diags_eddyuw_avg
 #  define viddiags_vw diags_eddyvw_avg
 #  define viddiags_wb diags_eddywb_avg
+#  define viddiags_ubu diags_eddyubu_avg
+#  define viddiags_vbv diags_eddyvbv_avg
+#  define viddiags_usu diags_eddyusu_avg
+#  define viddiags_vsv diags_eddyvsv_avg
 
 #endif
 !
@@ -498,8 +506,119 @@
 
        call nf_add_attribute(ncid,viddiags_wb(itrc)
      &                       ,indxeddywb+itrc-1,5,NF_FOUT, ierr)
+
+!------------------------------
+!
+! indxeddyubu
+!
+           lvar=lenstr(vname(1,indxeddyubu+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyubu+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, u2dgrd, viddiags_ubu(itrc))
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyubu+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_ubu(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyubu+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyubu+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_ubu(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyubu+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_ubu(itrc), 'units',
+     &                          lvar,vname(3,indxeddyubu+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyubu+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_ubu(itrc), 'field',
+     &                       lvar, vname(4,indxeddyubu+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_ubu(itrc)
+     &                       ,indxeddyubu+itrc-1,5,NF_FOUT, ierr)
 !
 !------------------------------
+!
+! indxeddyvbv
+!
+           lvar=lenstr(vname(1,indxeddyvbv+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyvbv+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, v2dgrd, viddiags_vbv(itrc))
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyvbv+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_vbv(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyvbv+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyvbv+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_vbv(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyvbv+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_vbv(itrc), 'units',
+     &                          lvar,vname(3,indxeddyvbv+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyvbv+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_vbv(itrc), 'field',
+     &                       lvar, vname(4,indxeddyvbv+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_vbv(itrc)
+     &                       ,indxeddyvbv+itrc-1,5,NF_FOUT, ierr)
+     
+
+!------------------------------
+!
+! indxeddyusu
+!
+           lvar=lenstr(vname(1,indxeddyusu+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyusu+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, u2dgrd, viddiags_usu(itrc))
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyusu+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_usu(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyusu+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyusu+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_usu(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyusu+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_usu(itrc), 'units',
+     &                          lvar,vname(3,indxeddyusu+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyusu+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_usu(itrc), 'field',
+     &                       lvar, vname(4,indxeddyusu+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_usu(itrc)
+     &                       ,indxeddyusu+itrc-1,5,NF_FOUT, ierr)
+!
+!------------------------------
+!
+! indxeddyvsv
+!
+           lvar=lenstr(vname(1,indxeddyvsv+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyvsv+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, v2dgrd, viddiags_vsv(itrc))
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyvsv+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_vsv(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyvsv+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyvsv+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_vsv(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyvsv+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_vsv(itrc), 'units',
+     &                          lvar,vname(3,indxeddyvsv+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyvsv+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_vsv(itrc), 'field',
+     &                       lvar, vname(4,indxeddyvsv+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_vsv(itrc)
+     &                       ,indxeddyvsv+itrc-1,5,NF_FOUT, ierr)
+     
+     
+     
+     
 
         endif
 
@@ -741,6 +860,71 @@
 
 ! ---------------------------------
 
+!
+!
+! indxeddyubu
+!
+          lvar=lenstr(vname(1,indxeddyubu+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyubu+itrc-1)(1:lvar),
+     &                                            viddiags_ubu(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyubu+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+
+
+! ---------------------------------
+
+!
+!
+! indxeddyvbv
+!
+          lvar=lenstr(vname(1,indxeddyvbv+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyvbv+itrc-1)(1:lvar),
+     &                                            viddiags_vbv(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyvbv+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+
+
+! ---------------------------------
+
+!
+!
+! indxeddyusu
+!
+          lvar=lenstr(vname(1,indxeddyusu+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyusu+itrc-1)(1:lvar),
+     &                                            viddiags_usu(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyusu+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+!
+
+
+! ---------------------------------
+
+!
+!
+! indxeddyvsv
+!
+          lvar=lenstr(vname(1,indxeddyvsv+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyvsv+itrc-1)(1:lvar),
+     &                                            viddiags_vsv(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyvsv+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+
+! ---------------------------------
+
 
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
@@ -799,6 +983,10 @@
 #undef viddiags_wb
 #undef viddiags_uw
 #undef viddiags_vw
+#undef viddiags_ubu
+#undef viddiags_vbv
+#undef viddiags_usu
+#undef viddiags_vsv
 !
 # ifdef AVERAGES
 #  ifndef AVRH

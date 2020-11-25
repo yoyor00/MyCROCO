@@ -54,10 +54,13 @@
 !
 */
                       /* Configuration Name */
-# define BENGUELA_LR
+# define GIGATL1
+# define MPI_TIME
                       /* Parallelization */
 # undef  OPENMP
-# undef  MPI
+# define  MPI
+# undef  MPI_OPT
+
                       /* I/O server */
 # undef  XIOS
                       /* Non-hydrostatic option */
@@ -71,9 +74,9 @@
                       /* Wave-current interactions */
 # undef  MRL_WCI
                       /* Open Boundary Conditions */
-# undef  TIDES
+# define  TIDES
 # define OBC_EAST
-# define OBC_WEST
+# undef OBC_WEST
 # define OBC_NORTH
 # define OBC_SOUTH
                       /* Applications */
@@ -85,8 +88,11 @@
 # undef  BBL
                       /* dedicated croco.log file */
 # undef  LOGFILE
-                      /* Calendar */
-# undef  USE_CALENDAR
+                      /* Calendar feature */
+# undef START_DATE
+# undef USE_CALENDAR 
+
+# define EXACT_RESTART
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -96,9 +102,9 @@
 */
                       /* Parallelization */
 # ifdef MPI
-#  undef  PARALLEL_FILES
+#  define  PARALLEL_FILES
 #  undef  NC4PAR
-#  undef  MPI_NOLAND
+#  define  MPI_NOLAND
 # endif
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
@@ -115,6 +121,7 @@
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
+# define CROCO_QH
 # define UV_ADV
                       /* Equation of State */
 # define SALINITY
@@ -143,21 +150,21 @@
 # undef  TS_DIF4
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
-# undef  TS_VADV_SPLINES
-# define TS_VADV_AKIMA
+# define  TS_VADV_SPLINES
+# undef TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
-# undef  VADV_ADAPT_IMP
+# define  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
-# undef  BSTRESS_FAST
-# define LIMIT_BSTRESS
+# define  BSTRESS_FAST
+# undef LIMIT_BSTRESS
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
-# define LMD_MIXING
-# undef  GLS_MIXING
+# undef LMD_MIXING
+# define  GLS_MIXING
 # ifdef LMD_MIXING
 #  define LMD_SKPP
 #  define LMD_BKPP
@@ -168,7 +175,7 @@
 #  undef  MLCONVEC
 # endif
                       /* Surface Forcing */
-# undef BULK_FLUX
+# define BULK_FLUX
 # ifdef BULK_FLUX
 #  define BULK_FAIRALL
 #  define BULK_LW
@@ -176,7 +183,7 @@
 #  define BULK_SMFLUX
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
-#  undef  ONLINE
+#  define  ONLINE
 #  ifdef ONLINE 
 #   undef  AROME
 #   undef  ERA_ECMWF
@@ -191,8 +198,13 @@
 #  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# undef SMFLUX_CFB
-# undef  SEA_ICE_NOFLUX
+# define SMFLUX_CFB
+# define SEA_ICE_NOFLUX /* no flux under sea ice */
+
+# define QCORRECTION 
+# define SFLX_CORR
+# define SFLX_CORR_COEF
+
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
 #  define MRL_WCI
@@ -215,7 +227,7 @@
 #  endif
 # endif
                       /* Lateral Forcing */
-# define CLIMATOLOGY
+# undef CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
@@ -229,7 +241,7 @@
 #  undef  ROBUST_DIAG
 # endif
 
-# undef  FRC_BRY
+# define  FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
@@ -241,9 +253,9 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # undef PSOURCE
-# undef PSOURCE_NCFILE
+# define PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
-#  undef PSOURCE_NCFILE_TS
+#  define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
@@ -267,6 +279,7 @@
 # define AVERAGES
 # define AVERAGES_K
 # undef  OUTPUTS_SURFACE
+      
                      /* Parallel reproducibility  */
 # undef  RVTK_DEBUG
 /*
@@ -279,29 +292,41 @@
 !--------------------------------------------
 !
 */
+
+# undef DO_NOT_OVERWRITE
+
+
 # undef  DIAGNOSTICS_TS
-# undef  DIAGNOSTICS_UV
+# define  DIAGNOSTICS_UV
 # ifdef DIAGNOSTICS_TS
-#  undef  DIAGNOSTICS_TS_ADV
+#  define  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 # endif
 
-# undef  DIAGNOSTICS_VRT
-# undef  DIAGNOSTICS_EK
+# define DIAGNOSTICS_TSVAR
+# ifdef DIAGNOSTICS_TSVAR
+#  define  DIAGNOSTICS_TS
+#  define  DIAGNOSTICS_TS_ADV
+# endif
+
+# define  DIAGNOSTICS_VRT
+# define  DIAGNOSTICS_EK
 # ifdef DIAGNOSTICS_EK
-#  undef DIAGNOSTICS_EK_FULL
+#  define DIAGNOSTICS_EK_FULL
 #  undef DIAGNOSTICS_EK_MLD
 # endif
 
-# undef  DIAGNOSTICS_PV
-# undef  DIAGNOSTICS_DISS
-# ifdef  DIAGNOSTICS_DISS
+# define DIAGNOSTICS_BARO
+# define DIAGNOSTICS_PV
+
+# define DIAGNOSTICS_DISS
+# ifdef DIAGNOSTICS_DISS
 #  define DIAGNOSTICS_PV
 # endif
 
-# undef  DIAGNOSTICS_EDDY
+# define DIAGNOSTICS_EDDY
 
-# undef  TENDENCY
+# undef TENDENCY
 # ifdef TENDENCY
 #  define DIAGNOSTICS_UV
 # endif
@@ -390,6 +415,57 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
                       
+
+#elif defined GYRE
+/*
+!                       Gyre Example
+!                       ===== =======
+*/
+
+# define TOPOLIN
+
+
+# undef OPENMP
+# define MPI
+# define UV_ADV
+# define UV_COR
+# undef UV_VIS2
+# define SOLVE3D
+# undef TS_DIF2
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define ANA_SRFLUX
+
+# define NO_FRCFILE
+                      /* Vertical Mixing */
+# undef  BODYFORCE
+# undef  BVF_MIXING
+# undef  LMD_MIXING
+# define  GLS_MIXING
+# ifdef LMD_MIXING
+#  define LMD_SKPP
+#  define LMD_BKPP
+#  define LMD_RIMIX
+#  define LMD_CONVEC
+#  undef  LMD_DDMIX
+#  define LMD_NONLOCAL
+#  undef  MLCONVEC
+# endif
+
+# define AVERAGES
+
+# define DIAGNOSTICS_UV
+# define DIAGNOSTICS_VRT
+# define  DIAGNOSTICS_EK
+
+# ifdef DIAGNOSTICS_EK
+#  define DIAGNOSTICS_EK_FULL
+#  undef DIAGNOSTICS_EK_MLD
+# endif
+
 #elif defined CANYON
 /*
 !                       Canyon Example
