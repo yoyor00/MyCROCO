@@ -971,7 +971,7 @@
       integer rstdRdx,rstdRde
 # endif
 #endif
-#ifdef MORPHODYN
+#ifdef MOVING_BATHY
       integer rstHm
 #endif
 #ifdef BBL
@@ -995,8 +995,9 @@
       integer  ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
-# ifdef MORPHODYN
+     &      , hisBustr, hisBvstr
+     &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
+# ifdef MOVING_BATHY
      &      , hisHm
 # endif
 # ifdef BBL
@@ -1160,8 +1161,9 @@
       integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
-     &      , avgShflx, avgSwflx, avgShflx_rsw
-# ifdef MORPHODYN
+     &      , avgBustr, avgBvstr
+     &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
+# ifdef MOVING_BATHY
      &      , avgHm
 # endif
 # ifdef SOLVE3D
@@ -1444,7 +1446,7 @@
      &                         , rstSed
 # endif
 #endif
-#ifdef MORPHODYN
+#ifdef MOVING_BATHY
      &                         , rstHm
 #endif
 #ifdef BBL
@@ -1453,8 +1455,10 @@
      &      , ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
+     &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# ifdef MORPHODYN
+     &      , hisBhflx, hisBwflx
+# ifdef MOVING_BATHY
      &      , hisHm
 # endif
 #ifdef SOLVE3D
@@ -1698,7 +1702,8 @@
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
-# ifdef MORPHODYN
+     &      , avgBhflx, avgBwflx
+# ifdef MOVING_BATHY
      &      , avgHm
 # endif
 # ifdef SOLVE3D

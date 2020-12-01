@@ -45,8 +45,8 @@
 # define RVTK_DEBUG_WRITE
 #endif
 
-/* 
-   GILDAS Take care need to use a debug.F specific 
+/*
+      Activate the RVTK_DEBUG_PERFRST write procedure 
 */
 
 #if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ

@@ -15,7 +15,18 @@
 !$AGRIF_DO_NOT_TREAT
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
-!$AGRIF_END_DO_NOT_TREAT
+          
+# if defined RVTK_DEBUG_PERFRST
+# define DEBUG_MPI_MASTER_ONLY
+!
+!     define DEBUG_MPI_MASTER_ONLY : do the restartability test
+!     in case of a mpi run, but it only test the master node 0
+          
+          integer start_debug,start_debug0,start_debug_read
+          parameter (start_debug0=6)
+          parameter (start_debug=start_debug0)
+          parameter (start_debug_read=start_debug)
+# endif         
          end module debug
 !
 !======================================================================
