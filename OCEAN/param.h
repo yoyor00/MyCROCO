@@ -247,12 +247,12 @@
      &           NNODES=6582, NNODES2=NP_XI*NP_ETA) !hard-coded GIGATL1
 #  endif
 # else
-      parameter (NP_XI=4,  NP_ETA=2,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
 # endif /* GIGATL1 */ 
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
-      parameter (NPP=8)
+      parameter (NPP=4)
 # ifdef AUTOTILING
       common/distrib/NSUB_X, NSUB_E
 # else
