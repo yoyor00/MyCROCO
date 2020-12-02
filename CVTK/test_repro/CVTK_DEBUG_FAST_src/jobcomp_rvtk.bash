@@ -156,12 +156,16 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-#		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
+		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8  -ffree-line-length-none"
 #                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
-                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-			-fbounds-check "
+#                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+#			-fbounds-check"
 		LDFLAGS1="$LDFLAGS1"
+		gfortversion=`gfortran -dumpversion | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$/&00/'`
+		if  [ $gfortversion -ge 100000 ]; then
+		    FFLAGS1="$FFLAGS1 -fallow-argument-mismatch"
+		fi
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
         CPP1="cpp -traditional -DLinux"

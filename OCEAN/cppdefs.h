@@ -53,11 +53,11 @@
 !
 */
                       /* Configuration Name */
-# define GIGATL1
-# define MPI_TIME
+# define BENGUELA_LR
+# undef MPI_TIME
                       /* Parallelization */
 # undef  OPENMP
-# define  MPI
+# undef  MPI
 # undef  MPI_OPT
 
                       /* I/O server */
@@ -73,9 +73,9 @@
                       /* Wave-current interactions */
 # undef  MRL_WCI
                       /* Open Boundary Conditions */
-# define  TIDES
+# undef  TIDES
 # define OBC_EAST
-# undef OBC_WEST
+# define OBC_WEST
 # define OBC_NORTH
 # define OBC_SOUTH
                       /* Applications */
@@ -87,7 +87,7 @@
 # undef  BBL
                       /* dedicated croco.log file */
 # undef  LOGFILE
-                      /* Calendar feature */
+                      /* Calendar */
 # undef START_DATE
 # undef USE_CALENDAR 
 
@@ -101,9 +101,9 @@
 */
                       /* Parallelization */
 # ifdef MPI
-#  define  PARALLEL_FILES
+#  undef  PARALLEL_FILES
 #  undef  NC4PAR
-#  define  MPI_NOLAND
+#  undef  MPI_NOLAND
 # endif
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
@@ -120,7 +120,7 @@
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
-# define CROCO_QH
+# undef CROCO_QH
 # define UV_ADV
                       /* Equation of State */
 # define SALINITY
@@ -149,21 +149,21 @@
 # undef  TS_DIF4
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
-# define  TS_VADV_SPLINES
-# undef TS_VADV_AKIMA
+# undef  TS_VADV_SPLINES
+# define TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
-# define  VADV_ADAPT_IMP
+# undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
-# define  BSTRESS_FAST
-# undef LIMIT_BSTRESS
+# undef  BSTRESS_FAST
+# define LIMIT_BSTRESS
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
-# undef LMD_MIXING
-# define  GLS_MIXING
+# define LMD_MIXING
+# undef  GLS_MIXING
 # ifdef LMD_MIXING
 #  define LMD_SKPP
 #  define LMD_BKPP
@@ -174,7 +174,7 @@
 #  undef  MLCONVEC
 # endif
                       /* Surface Forcing */
-# define BULK_FLUX
+# undef BULK_FLUX
 # ifdef BULK_FLUX
 #  define BULK_FAIRALL
 #  define BULK_LW
@@ -182,7 +182,7 @@
 #  define BULK_SMFLUX
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
-#  define  ONLINE
+#  undef  ONLINE
 #  ifdef ONLINE 
 #   undef  AROME
 #   undef  ERA_ECMWF
@@ -197,13 +197,8 @@
 #  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# define SMFLUX_CFB
-# define SEA_ICE_NOFLUX /* no flux under sea ice */
-
-# define QCORRECTION 
-# define SFLX_CORR
-# define SFLX_CORR_COEF
-
+# undef SMFLUX_CFB
+# undef  SEA_ICE_NOFLUX
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
 #  define MRL_WCI
@@ -226,7 +221,7 @@
 #  endif
 # endif
                       /* Lateral Forcing */
-# undef CLIMATOLOGY
+# define CLIMATOLOGY
 # ifdef CLIMATOLOGY
 #  define ZCLIMATOLOGY
 #  define M2CLIMATOLOGY
@@ -240,7 +235,7 @@
 #  undef  ROBUST_DIAG
 # endif
 
-# define  FRC_BRY
+# undef  FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
@@ -252,9 +247,9 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # undef PSOURCE
-# define PSOURCE_NCFILE
+# undef PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE                    
-#  define PSOURCE_NCFILE_TS
+#  undef PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
@@ -277,52 +272,52 @@
                       /* Input/Output */
 # define AVERAGES
 # define AVERAGES_K
-# define OUTPUTS_SURFACE /* 2d surface fields with higher sampling */
+# undef OUTPUTS_SURFACE
 # undef HOURLY_VELOCITIES
-
+                     /* Parallel reproducibility  */
+# undef  RVTK_DEBUG
+                     /* Exact restart */
+# undef EXACT_RESTART
 /*
 !                        Diagnostics 
-!---------------------------------
-! Tracers, momentum balances
-! Mixing layer balances 
-! Vertically integrated vorticity and energy balances 
+!--------------------------------------------
+! 3D Tracer & momentum balance
+! 2D Mixing layer balance 
+! Depth-mean vorticity and energy balance
 ! Eddy terms
-!---------------------------------
+!--------------------------------------------
 !
 */
-
 # undef DO_NOT_OVERWRITE
 
-
 # undef  DIAGNOSTICS_TS
-# define  DIAGNOSTICS_UV
+# undef  DIAGNOSTICS_UV
 # ifdef DIAGNOSTICS_TS
-#  define  DIAGNOSTICS_TS_ADV
+#  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 # endif
 
-# define DIAGNOSTICS_TSVAR
+# undef DIAGNOSTICS_TSVAR
 # ifdef DIAGNOSTICS_TSVAR
 #  define  DIAGNOSTICS_TS
 #  define  DIAGNOSTICS_TS_ADV
 # endif
 
-# define  DIAGNOSTICS_VRT
-# define  DIAGNOSTICS_EK
+# undef  DIAGNOSTICS_VRT
+# undef  DIAGNOSTICS_EK
 # ifdef DIAGNOSTICS_EK
-#  define DIAGNOSTICS_EK_FULL
+#  undef DIAGNOSTICS_EK_FULL
 #  undef DIAGNOSTICS_EK_MLD
 # endif
 
-# define DIAGNOSTICS_BARO
-# define DIAGNOSTICS_PV
-
-# define DIAGNOSTICS_DISS
+# undef DIAGNOSTICS_BARO
+# undef DIAGNOSTICS_PV
+# undef DIAGNOSTICS_DISS
 # ifdef DIAGNOSTICS_DISS
 #  define DIAGNOSTICS_PV
 # endif
 
-# define DIAGNOSTICS_EDDY
+# undef  DIAGNOSTICS_EDDY
 
 # undef TENDENCY
 # ifdef TENDENCY
@@ -413,6 +408,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined GYRE
 /*
@@ -436,7 +432,6 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define ANA_SRFLUX
-
 # define NO_FRCFILE
                       /* Vertical Mixing */
 # undef  BODYFORCE
@@ -463,7 +458,8 @@
 #  define DIAGNOSTICS_EK_FULL
 #  undef DIAGNOSTICS_EK_MLD
 # endif
-
+# undef  RVTK_DEBUG
+                      
 #elif defined CANYON
 /*
 !                       Canyon Example
@@ -482,6 +478,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined EQUATOR
 /*
@@ -511,6 +508,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined INNERSHELF
 /*
@@ -558,6 +556,7 @@
 #  endif
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined SINGLE_COLUMN
 /*
@@ -589,6 +588,7 @@
 # define ANA_BTFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
+# undef  RVTK_DEBUG
 
 #elif defined INTERNAL
 /*
@@ -631,6 +631,7 @@
 #  define  TNUDGING
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined IGW
 /*
@@ -681,6 +682,7 @@
 # define M3NUDGING
 # define TNUDGING
 # undef  ONLINE_ANALYSIS
+# undef  RVTK_DEBUG
 
 #elif defined RIVER
 /*
@@ -721,6 +723,7 @@
 #  endif
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined SEAMOUNT
 /*
@@ -743,6 +746,7 @@
 # define ANA_BTFLUX
 # define ANA_BSFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 # elif defined SHELFRONT
 /*
@@ -765,6 +769,7 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined SOLITON
 /*
@@ -781,6 +786,7 @@
 # define EW_PERIODIC
 # define ANA_SMFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined THACKER
 /*
@@ -807,6 +813,7 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 # elif defined OVERFLOW
 /*
@@ -827,6 +834,8 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
+                      
 /*
 !                       Plume Example
 !                       ===== =======
@@ -863,6 +872,7 @@
 #  undef  MLCONVEC
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined UPWELLING
 /*
@@ -892,6 +902,7 @@
 # define LMD_CONVEC
 # define EW_PERIODIC
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined VORTEX
 /*
@@ -925,6 +936,7 @@
 # define M3NUDGING
 # define TNUDGING
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined JET
 /*
@@ -976,6 +988,7 @@
 #  define LMD_CONVEC
 # endif 
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined SHOREFACE
 /*
@@ -1027,6 +1040,7 @@
 #  define TNUDGING
 #  define ANA_TCLIMA
 # endif
+# undef  RVTK_DEBUG
 
 #elif defined SANDBAR
 /*
@@ -1079,6 +1093,7 @@
 #  define MORPHODYN
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined RIP
 /*
@@ -1105,7 +1120,6 @@
 #  define RIP_TOPO_2D
 # endif
 # undef ANA_TIDES
-!
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
@@ -1192,6 +1206,7 @@
 #  undef  ANA_BPFLUX
 # endif
 # undef  DIAGNOSTICS_UV
+# undef  RVTK_DEBUG
 
 #elif defined SWASH
 /*
@@ -1232,6 +1247,7 @@
 # define T_FRC_BRY
 # define WET_DRY
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined TANK
 /*
@@ -1258,7 +1274,43 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
+      
+#elif defined MOVING_BATHY
+/*
+!                       Moving Bathy Example
+!                       ====== ===== =======
 
+  Auclair et al., Ocean Mod. 2014: Implementation of a time-dependent 
+     bathymetry in a free-surface ocean model: Application to internal 
+     wave generation
+
+*/
+# undef  MPI
+# define ANA_MORPHODYN
+# define NBQ
+# define NBQ_PRECISE
+# define M2FILTER_NONE
+# define SOLVE3D
+# define NEW_S_COORD
+# undef  PASSIVE_TRACER
+# define UV_ADV
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_VMIX
+# define ANA_BTFLUX
+# define ANA_SMFLUX
+# define ANA_SRFLUX
+# define ANA_STFLUX
+# define NO_FRCFILE
+# undef  RVTK_DEBUG
+      
 #elif defined ACOUSTIC 
 /*
 !                       ACOUSTIC WAVE TESTCASE 
@@ -1280,6 +1332,7 @@
 # define ANA_SRFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined GRAV_ADJ
 /*
@@ -1303,6 +1356,7 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined I_SOLITON
 /*
@@ -1332,6 +1386,7 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined KH_INST 
 /*
@@ -1341,7 +1396,7 @@
 */
 # undef  KH_INSTY
 # undef  KH_INST3D
-# define MPI
+# undef MPI
 # define NBQ
 # undef  NBQ_PRECISE
 # undef  XIOS
@@ -1370,6 +1425,7 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined TS_HADV_TEST
 /*
@@ -1407,6 +1463,7 @@
 #undef  TS_HADV_UP5
 #undef  TS_HADV_WENO5
 #undef  TS_HADV_C6
+# undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */
 
