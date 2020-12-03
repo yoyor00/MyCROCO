@@ -2389,7 +2389,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
-#ifdef WKB_WWAVE
+#if defined WKB_WWAVE
 !
 ! WKB primary waves and empirical breaking model parameters
 !

@@ -6,34 +6,71 @@ variables:
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
-  CROCO_CI_MPIRUN: "mpirun.mpich"
+  CROCO_CI_MPIRUN: "mpirun.openmpi"
+  
   
 before_script:
   - mkdir -p $DATADIR
   - mkdir -p $CVTKWORK
   - cd $DATADIR
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
-  - cd $CVTKHOME/Scripts_ana
-  - ./create_link_master_ana.sh
-  - cd ..
-#  - cd ./Scripts_vort
-#  - ./create_link_master_vort.sh
-#  - cd ..
-#  - cd ./Scripts_reg
-#  - ./create_link_master_reg.sh
-#  - cd ..
 
-
-
-run:
+ana_run:
+  only:
+    - pushes    
   script:
+    - cd $CVTKHOME/Scripts_ana
+    - ./create_link_master_ana.sh
+    - cd -	
     - cd $CVTKWORK/KTEST
-#    - exec ./mk_TestDIR_ana.bash UPWELLING
-    - ./mk_TESTALL_ana.bash
-    - echo "gather_recap.bash KTEST"
-    - ./gather_recap.bash KTEST
-    - /bin/sh -c '! grep failed KTEST_gather_recap_*_git*'
+   
+    - ./mk_TESTALL.bash CONFIGURE_ANA ana
+    - ./gather_recap.bash KTEST > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1
     
   artifacts:
     paths:
       - $CVTKWORK/ftp
+    when: always
+
+vort_run:
+  script:
+    - cd $CVTKHOME/Scripts_vort
+    - ./create_link_master_vort.sh
+    - cd -
+    - cd $CVTKWORK/VORT
+    
+    - ./mk_TESTALL.bash CONFIGURE_VORT vort
+    - ./gather_recap.bash VORT > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
+
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+    when: always
+    
+reg_run:
+  only:
+    - schedules  
+  script:
+    - cd $CVTKHOME/Scripts_reg
+    - ./create_link_master_reg.sh
+    - cd -
+    - cd $CVTKWORK/REG
+    
+    - ./mk_TESTALL.bash CONFIGURE_REG reg
+    - ./gather_recap.bash REG > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+
+
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+    when: always
+

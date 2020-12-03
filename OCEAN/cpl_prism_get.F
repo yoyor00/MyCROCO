@@ -272,7 +272,7 @@
 !$$$  !-------------------------------------------------
 
 !-------------------------------------------------
-!     wave_dir :  mean direction + then we apply croco grid rotation ( -angler)
+!     wave_dir :  mean direction + then we apply croco grid rotation (-angler)
 !                                  and projection on xi/eta trigo croco_grid
          if (srcv_clname(i)=='RRM_DIR'//clevel) then
            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
@@ -282,25 +282,6 @@
              call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
              wdrx = rmask * cos(tab_t_tmp - angler)
              wdre = rmask * sin(tab_t_tmp - angler) 
-!     Debug try to remove - angler
-!wdrx = rmask * cos(tab_t_tmp)
-!wdre = rmask * sin(tab_t_tmp)
-!     
-!     ca marche  pas les print a cet endroit
-!$$$  if (mynode.eq.7) print *,'DIR tab_t_tmp =',tab_t_tmp(5,5)
-!$$$  if (mynode.eq.7) print *,'angler    = ',angler(5,5)
-!$$$  if (mynode.eq.7) print *,'cos(tab_t_tmp - angler) = ',
-!$$$  &                          cos(tab_t_tmp(5,5) - angler(5,5))
-!$$$  if (mynode.eq.7) print *,'sin(tab_t_tmp - angler) = ',
-!$$$  &                          sin(tab_t_tmp(5,5) - angler(5,5))
-!!if (mynode.eq.7) print *,'wdrx      = ',wdrx(5,5)
-!     !if (mynode.eq.7) print *,'wdre      = ',wdre(5,5)
-             
-!             if (mod(ilc-1,nwrt).eq.0)  then
-!               print *,'wdrx      = ',wdrx(:,:)
-!               print *,'wdre      = ',wdre(:,:)
-!             endif
-!     
            endif
          endif
 !     wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
