@@ -16,8 +16,10 @@ before_script:
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
 
 ana_run:
-  only:
-    - pushes    
+# comment / uncomment to launch the CI ana_run when push and schedules
+# as vor_tun
+#  only:
+#    - pushes    
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
