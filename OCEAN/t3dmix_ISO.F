@@ -905,7 +905,7 @@
 
 #if defined RVTK_DEBUG && defined SOLVE3D
       !write(*,*)'(t(1,0,1,nnew,1)#2=',t(1,0,1,nnew,1)
-      call check_tab3d(t(:,:,:,nnew,itrc),'t in ISO #2','r')
+      !!call check_tab3d(t(:,:,:,nnew,itrc),'t in ISO #2','r')
       !write(*,*)'=='
 #endif
 
