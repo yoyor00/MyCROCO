@@ -152,7 +152,7 @@
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
       real  tnu2(NT),tnu4(NT)
-# ifndef NONLIN_EOS
+# if !defined NONLIN_EOS || definded MUSTANG
       real R0,T0,S0, Tcoef, Scoef
 # endif
       real weight(6,0:NWEIGHT)
@@ -174,7 +174,7 @@
       integer numthreads,     ntstart,   ntimes,  ninfo  &
      &      , nfast,  nrrec,     nrst,    nwrt
 #ifdef AVERAGES
-     &                                 , ntsavg,  navg   &
+     &                                 , ntsavg,  navg   
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc     

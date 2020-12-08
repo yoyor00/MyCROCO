@@ -408,6 +408,10 @@
 # undef  TS_HADV_RSUP3  /* Rotated-Split UP3  lateral advection */
 # undef  TS_HADV_RSUP5  /* Pseudo R-Split UP5 lateral advection */
 #endif
+
+#ifdef MUSTANG
+# define TS_HADV_WENO5
+#endif
 /* 
   Options for split-rotated advection-diffusion schemes
 */
@@ -501,6 +505,11 @@
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
 #endif
+
+#ifdef MUSTANG
+# define TS_VADV_WENO5
+#endif
+
 /*
 ======================================================================
    SPONGE:  

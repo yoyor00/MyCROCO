@@ -152,7 +152,7 @@
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
       real  tnu2(NT),tnu4(NT)
-# ifndef NONLIN_EOS
+# if !defined NONLIN_EOS || defined MUSTANG
       real R0,T0,S0, Tcoef, Scoef
 # endif
       real weight(6,0:NWEIGHT)

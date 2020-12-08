@@ -1407,20 +1407,19 @@ ENDIF
         ENDIF
       ENDDO
     ENDDO
-#if defined CHANNEL  || defined DUNE
-#if defined key_ANA_bedload  || defined ANA_DUNE
-!    dzs(1,i,j)=1.
-!    dzs(2,i,j)=1.
-!    dzs(3:11,i,j)=0.1
-    dzs(:,:,:)=0.2727
-#else
-!    dzs(1,i,j)=1.
-!    dzs(2,i,j)=1.
-!    dzs(3:10,i,j)=0.1
-    dzs(:,:,:)=0.3
-#endif
-#endif
+!#if defined CHANNEL  || defined DUNE
+!#if defined key_ANA_bedload  || defined ANA_DUNE
+!!    dzs(1,i,j)=1.
+!!    dzs(2,i,j)=1.
+!!    dzs(3:11,i,j)=0.1
+!    dzs(:,:,:)=0.2727
+!#else
+!!    dzs(1,i,j)=1.
+!!    dzs(2,i,j)=1.
+!!    dzs(3:10,i,j)=0.1
 !    dzs(:,:,:)=0.3
+!#endif
+!#endif
 
 ! DZSmax non uniform
     IF(.NOT. l_dzsmaxuni) THEN

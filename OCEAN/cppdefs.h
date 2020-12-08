@@ -1536,6 +1536,7 @@
 
 # undef key_sand2D
 # if defined key_sand2D
+#  define SAND2D
 #  define key_CROCO
 # endif
 
