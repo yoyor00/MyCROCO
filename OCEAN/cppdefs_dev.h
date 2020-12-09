@@ -793,8 +793,14 @@
 #   define SLOPE_LESSER
 #   undef  SLOPE_KIRWAN
 #   define TAU_CRIT_WULIN
-#   ifdef BEDLOAD_MARIEU
-#    undef  SLOPE_LESSER
+#   ifdef ANA_DUNE
+#     undef  BEDLOAD_WULIN
+#     define BEDLOAD_MARIEU
+#     undef  BSTRESS_UPWIND
+#     undef  SLOPE_LESSER
+#     undef  BEDLOAD_UP1       /* choose one interpolation for bedload fluxes */
+#     undef  BEDLOAD_UP5
+#     define BEDLOAD_WENO5
 #   endif
 
 #  elif (defined WAVE_OFFLINE || defined WKB_WWAVE ||\

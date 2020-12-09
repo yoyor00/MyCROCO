@@ -231,14 +231,13 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined DUNE
-                     f0=0.
-                     beta=0.
 #  ifdef ANA_DUNE
                      depth=6.                 
 #  else
                      depth=4.
 #  endif
-
+                     f0=0.
+                     beta=0.
 # elif defined CHANNEL
 #  ifdef key_ANA_bedload
                      depth=6.
@@ -827,12 +826,15 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          cff=0.01
          h(i,j)=depth-2.*exp(-cff*(xr(i,j)-0.5*xl)**2)
 # else
-         cff=0.5*(1./10)**2
-         h(i,j)=depth*(1.-0.5*exp(-cff*( (2.*(i-25))**2 )))
+#  ifdef MPI
+         cff=(float(i +ii*Lm) )
+#  else
+         cff=(float(i       ) )
+#  endif
+         h(i,j)=depth*(1.-0.5*exp(-(0.5*(1./10)**2)*( (2.*(cff-25))**2 )))
 # endif
         enddo
       enddo
-
 # elif defined CHANNEL
       do j=JstrR,JendR
         do i=IstrR,IendR

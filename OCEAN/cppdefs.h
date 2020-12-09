@@ -1439,12 +1439,11 @@
 #elif defined DUNE
 /*
 !                Dune test case example 
-!                ========== ====== =====
+!                ==== ==== ==== =======
 !
 */
-# undef  OPENMP
 # undef  MPI
-# undef  ANA_DUNE
+# undef  ANA_DUNE           /* Bedload Marieu test case */
 # define M2FILTER_NONE
 # define UV_ADV
 # define NEW_S_COORD
@@ -1470,6 +1469,11 @@
 #  define MORPHODYN
 # endif
 # define GLS_MIXING
+# undef  LMD_MIXING
+# ifdef LMD_MIXING
+#   define LMD_SKPP
+#   define LMD_BKPP
+# endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 

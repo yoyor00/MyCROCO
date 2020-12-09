@@ -2,7 +2,7 @@ title:
         Dune Test case 
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                24000    0.3     5       100
+                72000    0.3     5       100
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0        10000
@@ -17,11 +17,11 @@ initial: NRREC  filename
           0
 
 restart:          NRST, NRPFRST / filename
-                  24000   0
+                  72000   0
                           dune_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     200        0
+            T     2000        0
                           dune_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
@@ -32,9 +32,6 @@ auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL B
 
 gls_history_fields:   TKE  GLS  Lscale
                       T     T    T
-
-bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
-                     10*T
 
 rho0:
       1024.4
@@ -47,12 +44,6 @@ gamma2:
 
 lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
                26.65           10.            0.        0.28                0.
-
-vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
-                  1.e-5   1.e-5
-
-sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
-                   XXX                XXX
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
               1.       30.       0.1       100.

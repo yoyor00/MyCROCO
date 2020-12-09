@@ -30,7 +30,8 @@
  two ghost zones is then exchanged by message passing. 
 */
 #if defined TS_HADV_UP5   || defined TS_HADV_C6 || \
-    defined TS_HADV_WENO5 || defined BIO_HADV_WENO5
+    defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+    defined BEDLOAD_UP5   || defined BEDLOAD_WENO5
 # define THREE_GHOST_POINTS
 # define THREE_GHOST_POINTS_TS
 #endif
@@ -62,7 +63,7 @@
 #   else
 #    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
 #    define START_2D_ARRAY -2,0
-#    define START_2D_ARRAY -2,0
+/*#    define START_2D_ARRAY -2,0*/
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_1D_ARRAYETA 0
 #   endif
@@ -124,7 +125,10 @@
 #endif
 
 #define PRIVATE_1D_SCRATCH_ARRAY Istr-2:Iend+2
+
 #define PRIVATE_2D_SCRATCH_ARRAY Istr-2:Iend+2,Jstr-2:Jend+2
+#define PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY Istr-3:Iend+3,Jstr-3:Jend+3
+
 #define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2:Iend+2
 #define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2:Jend+2
 

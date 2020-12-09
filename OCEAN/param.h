@@ -170,7 +170,7 @@
       parameter (LLm0=50,   MMm0=1,  N=20)     !  DUNE 2m
 # endif
 #elif defined SED_TOY
-      parameter (LLm0=4,   MMm0=3,  N=20)     !  DUNE 2m
+      parameter (LLm0=4,   MMm0=3,  N=20)     !
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -244,7 +244,7 @@
       parameter (NP_XI=3,  NP_ETA=3,  NNODES=NP_XI*NP_ETA)
 #elif defined VILAINE
       parameter (NP_XI=11,  NP_ETA=12,  NNODES=84)
-#elif defined CHANNEL
+#elif defined CHANNEL || defined DUNE
       parameter (NP_XI=3,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
 #else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
@@ -256,7 +256,11 @@
 # ifdef AUTOTILING
       common/distrib/NSUB_X, NSUB_E
 # else
+#  ifdef DUNE
+      parameter (NSUB_X=NPP, NSUB_E=1)
+#  else 
       parameter (NSUB_X=1, NSUB_E=NPP)
+#  endif
 # endif
 #else
       parameter (NPP=1)
@@ -513,13 +517,12 @@
 ! NLAY           Number of layers in sediment bed
 !
       integer NSAND, NMUD, NGRAV, NST, NLAY
-#  if defined DUNE
-      parameter (NSAND=2, NMUD=0, NGRAV=0)      
+#  if defined DUNE      
 #   ifdef ANA_DUNE
-    !  parameter (NST=1)
+      parameter (NSAND=1, NMUD=0, NGRAV=0)
       parameter (NLAY=11)
 #   else
-    !  parameter (NST=2)
+      parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=10)
 #   endif
 #  elif defined SED_TOY

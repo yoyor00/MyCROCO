@@ -24,10 +24,10 @@
 # else
 #  define bnew nstp      
 # endif
-# ifndef BBL
+# if !defined BBL && !defined ANA_DUNE
 #  define BSTRESS_UPWIND
 # endif
-# ifndef SANDBAR
+# if !defined SANDBAR && !defined ANA_DUNE 
 #  define BEDLOAD_UP1
 # endif
 # undef  BEDLOAD_SLUMP
@@ -202,17 +202,29 @@ C$OMP BARRIER
 !
       implicit none
       integer Istr,Iend,Jstr,Jend
-      real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
-      real FX(PRIVATE_2D_SCRATCH_ARRAY)
-      real FE(PRIVATE_2D_SCRATCH_ARRAY)
-      real FX_r(PRIVATE_2D_SCRATCH_ARRAY)
-      real FE_r(PRIVATE_2D_SCRATCH_ARRAY)
 #  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
       defined BEDLOAD_MARIEU 
-      real tau_wX(PRIVATE_2D_SCRATCH_ARRAY)
-      real tau_wE(PRIVATE_2D_SCRATCH_ARRAY)
-      real angleu(PRIVATE_2D_SCRATCH_ARRAY)
-      real anglev(PRIVATE_2D_SCRATCH_ARRAY)
+#    if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+      real FX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     FE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY), 
+     &     FX_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     FE_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     tau_w(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     tau_wX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     tau_wE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     angleu(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
+     &     anglev(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+#    else
+      real FX(PRIVATE_2D_SCRATCH_ARRAY),
+     &     FE(PRIVATE_2D_SCRATCH_ARRAY),
+     &     FX_r(PRIVATE_2D_SCRATCH_ARRAY),
+     &     FE_r(PRIVATE_2D_SCRATCH_ARRAY),
+     &     tau_w(PRIVATE_2D_SCRATCH_ARRAY),
+     &     tau_wX(PRIVATE_2D_SCRATCH_ARRAY),
+     &     tau_wE(PRIVATE_2D_SCRATCH_ARRAY),
+     &     angleu(PRIVATE_2D_SCRATCH_ARRAY),
+     &     anglev(PRIVATE_2D_SCRATCH_ARRAY)
+#    endif
 #  endif
 #  if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
       real tau_m(PRIVATE_2D_SCRATCH_ARRAY)
@@ -237,6 +249,13 @@ C$OMP BARRIER
       parameter (K1=0.6666666666, K2=0.3555555555,
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
+#  if defined BEDLOAD_WENO5
+      real :: flux5_weno
+#     define FLUX5 flux5_weno
+#  elif defined BEDLOAD_UP5
+      real :: flux5
+#     define FLUX5 flux5
+#  endif
 #  ifdef BEDLOAD_SOULSBY
       real theta_m, theta_w, w_asym
       real theta_max, theta_max1, theta_max2
@@ -284,6 +303,12 @@ C$OMP BARRIER
 #  include "mixing.h"
 #  include "compute_auxiliary_bounds.h"
 
+!
+!-----------------------------------------------------------------------
+! Boundary Indexes in X-direction
+!-----------------------------------------------------------------------
+!
+# ifndef THREE_GHOST_POINTS
 #  ifdef EW_PERIODIC
 #   define I_EXT_RANGE Istr-1,Iend+1
 #  else
@@ -297,8 +322,37 @@ C$OMP BARRIER
       else
         imax=Iend+1
       endif
-#   define I_EXT_RANGE imin,imax
-#  endif /* EW_PERIODIC */
+#     define I_EXT_RANGE imin,imax
+#  endif
+# else
+#   define I_EXT_RANGE Istr-3,Iend+3
+#   ifdef EW_PERIODIC
+      imin=1
+      imax=LOCALLM+1
+#   else
+#    ifdef MPI
+      if (WESTERN_EDGE) then
+        imin=3
+      else
+        imin=1
+      endif
+      if (EASTERN_EDGE) then
+        imax=Lmmpi-1
+      else
+        imax=Lmmpi+1
+      endif
+#    else
+      imin=3
+      imax=Lm-1 
+#    endif
+#   endif
+# endif
+!
+!-----------------------------------------------------------------------
+! Boundary Indexes in Y-direction
+!-----------------------------------------------------------------------
+!
+# ifndef THREE_GHOST_POINTS
 #  ifdef NS_PERIODIC
 #   define J_EXT_RANGE Jstr-1,Jend+1
 #  else
@@ -312,8 +366,50 @@ C$OMP BARRIER
       else
         jmax=Jend+1
       endif
-#   define J_EXT_RANGE jmin,jmax
-#  endif /* NS_PERIODIC */
+#     define J_EXT_RANGE jmin,jmax
+#  endif
+# else
+#   define J_EXT_RANGE Jstr-3,Jend+3
+#   ifdef NS_PERIODIC
+      jmin=1
+      jmax=LOCALMM+1
+#   else
+#    ifdef MPI
+      if (SOUTHERN_EDGE) then
+        jmin=3
+      else
+        jmin=1
+      endif
+      if (NORTHERN_EDGE) then
+        jmax=Mmmpi-1
+      else
+        jmax=Mmmpi+1
+      endif
+#    else
+      jmin=3
+      jmax=Mm-1
+#    endif
+#   endif
+# endif
+!
+!------------------------------------------------------------------------
+! Exchange global arrays for Bedload Marieu test case (5th order interp.)
+!------------------------------------------------------------------------
+!
+#  ifdef BEDLOAD_MARIEU
+#   if defined MPI && defined THREE_GHOST_POINTS
+      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        bustr(START_2D_ARRAY))
+      call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        om_r)
+      call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        on_r)
+      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        ubar(START_2D_ARRAY,knew))
+#   endif
+#  endif
+!
+!-----------------------------------------------------------------------
 !
       twopi=2.*pi
       otwopi=1./twopi
@@ -446,7 +542,7 @@ C$OMP BARRIER
           Umag=SQRT(cff1*cff1+cff2*cff2)+eps
           angleu(i,j)=cff1/Umag
           anglev(i,j)=cff2/Umag
-#  endif /* BEDLOAD_SOULSBY */
+#  endif /* BEDLOAD_VANDERA || BEDLOAD_SOULSBY */
         enddo
       enddo
 !
@@ -736,8 +832,7 @@ C$OMP BARRIER
             FE_r(i,j)=(bedld_x*SIN(phic(i,j)) +
      &                 bedld_y*COS(phic(i,j)))*om_r(i,j)*dt
 
-#  elif !defined BEDLOAD_SOULSBY &&\
-        (defined BSTRESS_UPWIND || defined BSTRESS_WENO5)
+#  elif !defined BEDLOAD_SOULSBY && defined BSTRESS_UPWIND
 !
 ! ---------  Meyer-Peter Muller or Wu & Lin  --------------
 !
@@ -764,8 +859,7 @@ C$OMP BARRIER
      &                                 *smgdr*SIGN(1.,tau_wE(i,j))
             FE_r(i,j)=bedld*om_r(i,j)*dt
 
-#  elif !defined BEDLOAD_SOULSBY &&\
-        (!defined BSTRESS_UPWIND || !defined BSTRESS_WENO5)
+#  elif !defined BEDLOAD_SOULSBY && !defined BSTRESS_UPWIND
 !
 ! Use mean stress tau_w at rho points
 !
@@ -934,8 +1028,24 @@ C$OMP BARRIER
 !-----------------------------------------------------------------------
 !
         do j=Jstr,Jend
-          do i=Istr,Iend+1
-#  ifdef BEDLOAD_UP1
+           do i=Istr,Iend+1
+#  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+            cff=SIGN(1.0,FX_r(i  ,j))
+            cff1=0.5*(1.0+SIGN(1.0,FX_r(i  ,j)))
+            cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
+            IF ( (( i.lt.imin ) .or. ( i.gt.imax )).and.( imin.lt.imax ) ) THEN
+               FX(i,j)=0.5*(1.+SIGN(1.,FX_r(i-1,j)))*
+     &              (cff1*FX_r(i-1,j)+
+     &               cff2*0.5*(FX_r(i-1,j)+FX_r(i,j)))+
+     &              0.5*(1.-SIGN(1.,FX_r(i-1,j)))*
+     &              (cff2*FX_r(i  ,j)+
+     &               cff1*0.5*(FX_r(i-1,j)+FX_r(i,j)))
+            ELSE
+               FX(i,j)=FLUX5(
+     &                      FX_r(i-3,j),FX_r(i-2,j),FX_r(i-1,j),
+     &                      FX_r(i  ,j),FX_r(i+1,j),FX_r(i+2,j),cff)
+            ENDIF
+#  elif defined BEDLOAD_UP1
             cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
             FX(i,j)=0.5*(1.+SIGN(1.,FX_r(i-1,j)))*     
@@ -965,7 +1075,23 @@ C$OMP BARRIER
         enddo
         do j=Jstr,Jend+1
           do i=Istr,Iend
-#  ifdef BEDLOAD_UP1
+#  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+            cff=SIGN(1.0,FE_r(i  ,j))
+            cff1=0.5*(1.+SIGN(1.0,FE_r(i  ,j)))
+            cff2=0.5*(1.-SIGN(1.,FE_r(i,j)))
+            IF ( (( j.lt.jmin ) .or. ( j.gt.jmax )).and.( jmin.lt.jmax ) ) THEN
+               FE(i,j)=0.5*(1.+SIGN(1.,FE_r(i,j-1)))*
+     &              (cff1*FE_r(i,j-1)+
+     &               cff2*0.5*(FE_r(i,j-1)+FE_r(i,j)))+
+     &              0.5*(1.-SIGN(1.,FE_r(i,j-1)))*
+     &              (cff2*FE_r(i  ,j)+
+     &               cff1*0.5*(FE_r(i,j-1)+FE_r(i,j)))
+            ELSE
+               FE(i,j)=FLUX5(
+     &                      FE_r(i,j-3),FE_r(i,j-2),FE_r(i,j-1),
+     &                      FE_r(i  ,j),FE_r(i,j+1),FE_r(i,j+2),cff)
+            ENDIF
+#  elif defined BEDLOAD_UP1
             cff1=0.5*(1.+SIGN(1.,FE_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FE_r(i,j)))
             FE(i,j)=0.5*(1.+SIGN(1.0,FE_r(i,j-1)))*     
@@ -1309,6 +1435,16 @@ C$OMP BARRIER
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#    ifdef THREE_GHOST_POINTS
+         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                 taucb(START_2D_ARRAY))
+         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                 Ssize(START_2D_ARRAY))
+         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                 w_set(START_2D_ARRAY))
+         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                 Sdens(START_2D_ARRAY))
+#    else
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1317,6 +1453,7 @@ C$OMP BARRIER
      &                 w_set(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 Sdens(START_2D_ARRAY))
+#    endif
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1429,18 +1566,38 @@ C$OMP BARRIER
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       do ised=1,NST
         do k=1,NLAY
+#        ifdef THREE_GHOST_POINTS
+          call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_mass(START_2D_ARRAY,k,nnew,ised))
+          call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_frac(START_2D_ARRAY,k,ised))
+#        else
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_mass(START_2D_ARRAY,k,nnew,ised))
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                 bed_frac(START_2D_ARRAY,k,ised))
+     &                 bed_frac(START_2D_ARRAY,k,ised))         
+#        endif
         enddo 
-        call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+#        ifdef THREE_GHOST_POINTS
+          call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                 bedldu(START_2D_ARRAY,ised))
-        call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+          call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                 bedldv(START_2D_ARRAY,ised))
+#        else
+          call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bedldu(START_2D_ARRAY,ised))
+          call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bedldv(START_2D_ARRAY,ised))
+#        endif
       enddo
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                 bed_thick(START_2D_ARRAY,1))
+
+#     ifdef THREE_GHOST_POINTS
+       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                  bed_thick(START_2D_ARRAY,1))
+#     else
+       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                  bed_thick(START_2D_ARRAY,1))
+#     endif
 #  endif
 
       return 
@@ -3906,7 +4063,7 @@ C$OMP BARRIER
         elseif (icard.eq.6) then
           read(iunit,*,err=60) Lrip                     
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      Lrip, 'Lrip   Init. riple height (m).'
+     &      Lrip, 'Lrip   Init. ripple height (m).'
 
         elseif (icard.eq.7) then
           read(iunit,*,err=60) bedload_coeff                     
@@ -3916,7 +4073,7 @@ C$OMP BARRIER
         elseif (icard.eq.8) then
           read(iunit,*,err=60) morph_fac                     
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      morph_fac, 'morph_fac   Mophological factor.'
+     &      morph_fac, 'morph_fac   Morphological factor.'
 
 # ifdef MIXED_BED
         elseif (icard.eq.9) then
@@ -3927,7 +4084,7 @@ C$OMP BARRIER
         elseif (icard.eq.10) then
           read(iunit,*,err=60) transN                     
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      transN, 'transC   Noncohesive transition.'
+     &      transN, 'transC   Non cohesive transition.'
 # else
         elseif (icard.eq.9) then
           read(iunit,*,err=60) rdum                     
@@ -6327,7 +6484,28 @@ C$OMP BARRIER
       end subroutine flocmod_comp_g
       
 # endif /* SED_FLOCS */
+!
+!====================================================================
+!
+!  UP5 interpolation for bedload fluxes
+!
+!=====================================================================
+!
+# ifdef BEDLOAD_UP5
+      function flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+        implicit none 
+        REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
+        REAL    :: ua
+        REAL    :: flux5, flux6
 
+        flux6 = ( 37.*(q_i+q_im1) - 8.*(q_ip1+q_im2)
+     &       +(q_ip2+q_im3) )/60.0
+
+        flux5= flux6-sign(1.,ua)*(
+     &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
+        return
+      end function flux5
+# endif
 #else       
       subroutine sediment_empty
       end

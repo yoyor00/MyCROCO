@@ -102,7 +102,7 @@
 #  endif      
 #endif
 #ifdef DUNE
-      real cff, cff2
+      real cff, cff2, cff3
 #endif
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
@@ -1032,21 +1032,23 @@
 #   endif
               t(i,j,k,1,itemp)=10.
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-
 #   ifdef ANA_DUNE
               cff2=1.67
+              cff3=3
 #   else
               cff2=0.58
+              cff3=1
 #   endif     
               cff=0.5*(1./10)**2
               ubar(i,j,1) = cff2/(1-
      &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
-              ubar(i,j,:) = ubar(i,j,1)
-              vbar(i,j,1) = 0.
-              vbar(i,j,:) = vbar(i,j,1)
+              ubar(i,j,2) = ubar(i,j,1)
 
-              zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
-              zeta(i,j,:) = zeta(i,j,1)
+              vbar(i,j,1) = 0.
+              vbar(i,j,2) = vbar(i,j,1)
+
+              zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)*cff3/xl
+              zeta(i,j,2) = zeta(i,j,1)
             enddo
           enddo
         enddo
