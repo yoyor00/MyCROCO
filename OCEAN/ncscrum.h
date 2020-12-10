@@ -1428,9 +1428,8 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
-     &     , hisShflx, hisSwflx, hisShflx_rsw
-     &     , hisBhflx, hisBwflx
      &      , hisShflx, hisSwflx, hisShflx_rsw
+     &      , hisBhflx, hisBwflx
 # ifdef MORPHODYN
      &      , hisHm
 # endif
