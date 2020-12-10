@@ -1024,7 +1024,7 @@
 */
 # define SANDBAR_OFFSHORE /* LIP-1B */
 !# define SANDBAR_ONSHORE  /* LIP-1C */
-# define  OPENMP
+# undef  OPENMP
 # undef  MPI
 # define SOLVE3D
 # define UV_ADV
@@ -1065,7 +1065,7 @@
 #  define MORPHODYN
 # endif
 # define NO_FRCFILE
-# define  RVTK_DEBUG
+# undef  RVTK_DEBUG
 
 #elif defined RIP
 /*
