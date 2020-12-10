@@ -229,22 +229,6 @@
 # endif
       integer iseq1, iseq2, jseq1, jseq2 
       logical mystop     
-
-      if (typevar == 'w') then
-        do k=1,N
-          write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k
-          call check_tab2d(tab(START_2D_ARRAY,k),
-     &                     TRIM(comment_k),'r')
-        enddo
-        return
-      elseif (typevar == 'wint') then
-        do k=1,N
-          write(comment_k,'(a,a,i0)')TRIM(comment),' layer : ',k
-          call check_tab2d(tab(START_2D_ARRAY,k),
-     &                         TRIM(comment_k),'rint')
-        enddo
-        return
-      endif        
           
 # if defined OPENMP && !defined MPI
           mynode=0 
