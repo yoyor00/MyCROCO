@@ -202,34 +202,42 @@ C$OMP BARRIER
 !
       implicit none
       integer Istr,Iend,Jstr,Jend
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-      defined BEDLOAD_MARIEU 
-#    if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
-      real FX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     FE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY), 
-     &     FX_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     FE_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     tau_w(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     tau_wX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     tau_wE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     angleu(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY),
-     &     anglev(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-#    else
-      real FX(PRIVATE_2D_SCRATCH_ARRAY),
-     &     FE(PRIVATE_2D_SCRATCH_ARRAY),
-     &     FX_r(PRIVATE_2D_SCRATCH_ARRAY),
-     &     FE_r(PRIVATE_2D_SCRATCH_ARRAY),
-     &     tau_w(PRIVATE_2D_SCRATCH_ARRAY),
-     &     tau_wX(PRIVATE_2D_SCRATCH_ARRAY),
-     &     tau_wE(PRIVATE_2D_SCRATCH_ARRAY),
-     &     angleu(PRIVATE_2D_SCRATCH_ARRAY),
-     &     anglev(PRIVATE_2D_SCRATCH_ARRAY)
+#  ifdef THREE_GHOST_POINTS
+      real  FX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,FE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY) 
+     &     ,FX_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,FE_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,tau_w(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+#    if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+      defined BEDLOAD_MARIEU
+     &     ,tau_wX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,tau_wE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,angleu(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,anglev(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
 #    endif
-#  endif
-#  if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
-      real tau_m(PRIVATE_2D_SCRATCH_ARRAY)
-      real phic(PRIVATE_2D_SCRATCH_ARRAY)
-      real phicw(PRIVATE_2D_SCRATCH_ARRAY)
+#    if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
+     &     ,tau_m(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,phic(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+     &     ,phicw(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
+#    endif
+#  else
+      real  FX(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,FE(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,FX_r(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,FE_r(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,tau_w(PRIVATE_2D_SCRATCH_ARRAY)
+#    if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+      defined BEDLOAD_MARIEU
+     &     ,tau_wX(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,tau_wE(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,angleu(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,anglev(PRIVATE_2D_SCRATCH_ARRAY)
+#    endif
+#    if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
+     &     ,tau_m(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,phic(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,phicw(PRIVATE_2D_SCRATCH_ARRAY)
+#    endif
 #  endif
 !
       integer i, j, k, ised
