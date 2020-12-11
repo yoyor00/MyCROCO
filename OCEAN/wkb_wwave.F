@@ -24,6 +24,9 @@
 # ifdef WAVE_FRICTION
      &      ,A2d(1,9,trd)
 #endif
+# ifdef WAVE_ROLLER
+     &      ,A2d(1,10,trd)
+#endif
      &   )
       return
       end
@@ -32,6 +35,9 @@
      &                     cgx,cge, acx,ace, Dstp, rkx,rke,rwac
 # ifdef WAVE_FRICTION
      &      ,zob_my
+#endif
+# ifdef WAVE_ROLLER
+     &      ,rwar
 #endif
      &  )
 !
@@ -59,6 +65,9 @@
      &                                             Dstp,rkx,rke,rwac
 # ifdef WAVE_FRICTION
       real Zob_my(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
+# ifdef WAVE_ROLLER
+      real rwar(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
       real, dimension(3) :: wkb_bry
       real sbc, kh, kk, nw, cg, a0, ax, ax1, ax2, ay, ay1, ay2,
@@ -495,10 +504,16 @@ C$OMP BARRIER
           rkx(i,j) =w1*wkx(i,j,wstp)+w2*wkx(i,j,wbak)+w3*wkx(i,j,wold)
           rke(i,j) =w1*wke(i,j,wstp)+w2*wke(i,j,wbak)+w3*wke(i,j,wold)
           rwac(i,j)=w1*wac(i,j,wstp)+w2*wac(i,j,wbak)+w3*wac(i,j,wold)
+#  ifdef WAVE_ROLLER
+          rwar(i,j)=w1*war(i,j,wstp)+w2*war(i,j,wbak)+w3*war(i,j,wold)
+#  endif          
 # else
           rkx(i,j) =w1*wkx(i,j,wstp)+w2*wkx(i,j,wbak)
           rke(i,j) =w1*wke(i,j,wstp)+w2*wke(i,j,wbak)
           rwac(i,j)=w1*wac(i,j,wstp)+w2*wac(i,j,wbak)
+#  ifdef WAVE_ROLLER
+          rwar(i,j)=w1*war(i,j,wstp)+w2*war(i,j,wbak)
+#  endif   
 # endif
         enddo
       enddo
@@ -663,17 +678,7 @@ C$OMP BARRIER
 !---------------------------------------------------------------------
 !
 # ifdef WAVE_ROLLER
-#  define rwar rwac
-      do j=jstr-1,jend+1                  ! time stepping
-        do i=istr-1,iend+1
-#  ifdef WKB_AB3
-          rwar(i,j)=w1*war(i,j,wstp)+w2*war(i,j,wbak)+w3*war(i,j,wold)
-#  else
-          rwar(i,j)=w1*war(i,j,wstp)+w2*war(i,j,wbak)
-#  endif
-        enddo
-      enddo
-      do j=jstr-1,jend+1                  ! phase velocity (not Cg)
+      do j=jstr-1,jend+1                    ! phase velocity (not Cg)
         do i=istr-1,iend+1
           cgx(i,j)=wcr(i,j,wstp)*rkx(i,j)
           cge(i,j)=wcr(i,j,wstp)*rke(i,j)
@@ -708,14 +713,13 @@ C$OMP BARRIER
 # endif
      &                )-wkb_roller*wsb(i,j,wstp)+wsr(i,j,wstp) )
 #  ifdef MASKING
-          war(i,j,wnew) =war(i,j,wnew)*rmask(i,j)
+          war(i,j,wnew) = war(i,j,wnew)*rmask(i,j)
 #  endif
 !#  ifdef WET_DRY
 !          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j) ! unstable
 !#  endif
         enddo
       enddo           ! <--- discard acx,ace
-#  undef rwar
 # endif    /* WAVE_ROLLER */
 !
 !---------------------------------------------------------------------

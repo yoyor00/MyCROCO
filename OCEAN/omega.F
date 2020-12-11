@@ -85,9 +85,6 @@
      &          fcu=4.*c_max*(c_max-c_min))
 #  endif
 # endif
-# ifdef MOVING_BATHY
-      real cmorph
-# endif
 
 # include "grid.h"
 # include "ocean3d.h"
@@ -115,13 +112,6 @@
         cdt = (1.-2*gamma)*dt        !<-- Predictor
       endif
 # endif
-# ifdef MOVING_BATHY
-      if(nrhs.eq.3) then
-        cmorph=1.                    !<-- Corrector
-      else
-        cmorph=0.                    !<-- Predictor
-      endif
-# endif
 !
 !---------------------------------------------------------
 ! 
@@ -129,25 +119,22 @@
 !
 !---------------------------------------------------------
 !  Integrate divergence of horizontal mass fluxes
+!  ... accounting for the breathing of grid dHz/dt
 !---------------------------------------------------------
 !
         do i=Istr,Iend 
 # ifdef VADV_ADAPT_IMP
           Wi(i,j,0)=0.
 # endif
-# ifdef MOVING_BATHY
-          We(i,j,0)=cmorph*om_r(i,j)*on_r(i,j)*dh(i,j)/dt
-# else
           We(i,j,0)=0.
-# endif
           wrk(i)=0.
         enddo
         do k=1,N,+1
           do i=Istr,Iend
             We(i,j,k)=We(i,j,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-     &         -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)*om_r(i,j)*on_r(i,j)
-
+     &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
+     &                                  *om_r(i,j)*on_r(i,j)
             wrk(i)=wrk(i)+Hz(i,j,k)
 !
 !---------------------------------------------------------

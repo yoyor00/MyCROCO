@@ -1215,17 +1215,50 @@
 !--------------------------------------------------------------------
 !
 # if defined TS_HADV_TEST 
-#    if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
-      u(:,:,:,nnew) = u(:,:,:,nstp) 
-      v(:,:,:,nnew) = v(:,:,:,nstp)
-#    endif
-#    if defined SOLID_BODY_PER
-      cff           = cos(2.*pi*(time+dt)/(float(ntimes)*dt)) 
-      u(:,:,:,nnew) = u(:,:,:,nstp) * cff
-      v(:,:,:,nnew) = v(:,:,:,nstp) * cff
-      u(:,:,:,nrhs) = u(:,:,:,nstp)
-      v(:,:,:,nrhs) = v(:,:,:,nstp)
-#    endif      
+#  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
+     do k=1,N
+        do j=Jstr,JendR
+          do i=IstrU,IendR
+            u(i,j,k,nnew) = u(i,j,k,nstp)
+          enddo
+        enddo
+        do j=JstrV,JendR
+          do i=Istr,IendR
+            v(i,j,k,nnew) = v(i,j,k,nstp)
+          enddo
+        enddo
+      enddo
+#  endif
+#  if defined SOLID_BODY_PER
+      cff = cos(2.*pi*(time+dt)/(float(ntimes)*dt))
+      do k=1,N
+        do j=Jstr,JendR
+          do i=IstrU,IendR
+            u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+            u(i,j,k,nrhs) = u(i,j,k,nstp)
+          enddo
+        enddo
+        do j=JstrV,JendR
+          do i=Istr,IendR
+            v(i,j,k,nnew) = v(i,j,k,nstp) * cff
+            v(i,j,k,nrhs) = v(i,j,k,nstp)
+          enddo
+        enddo
+      enddo
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nnew))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nnew))
+#   else
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,nrhs))
+#   endif
+#  endif
       do j=Jstr,Jend
         do k=1,N
           do i=IstrU,Iend
@@ -1240,7 +1273,7 @@
           enddo
         enddo
       enddo
-#  endif
+# endif
 !
 !--------------------------------------------------------------------
 ! Apply mass point sources

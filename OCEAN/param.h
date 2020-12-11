@@ -142,15 +142,15 @@
       parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution
 # endif
 #elif defined TANK
-# ifndef MOVING_BATHY
-#  ifndef TANKY
+# ifndef TANKY
       parameter (LLm0=50,   MMm0=1,    N=50)   ! 20 cm resolution
-#  else
-      parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
-#  endif
 # else
-      parameter (LLm0=4000, MMm0=1,    N=30)   !  1 mm resolution
+      parameter (LLm0=1,    MMm0=50,   N=50)   ! 20 cm resolution
 # endif
+#elif defined MOVING_BATHY
+      parameter (LLm0=500,  MMm0=1,    N=50)   !  8 mm resolution
+!     parameter (LLm0=1000, MMm0=1,    N=100)  !  4 mm resolution
+!     parameter (LLm0=4000, MMm0=1,    N=400)  !  1 mm resolution
 #elif defined CALDEIRA
       parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined REGIONAL

@@ -49,8 +49,8 @@
 #ifdef INTERNAL
       real cff
 #endif
-#if defined IGW
-      real    cff,sig,rhom,depth
+#ifdef IGW
+      real cff,sig,rhom,depth
 #endif 
 #ifdef BIOLOGY
       real temp, SiO4
@@ -60,6 +60,9 @@
 #endif
 #ifdef TANK
       real ETA0, depth, Lt,cff
+#endif
+#ifdef MOVING_BATHY
+      real cff
 #endif
 #ifdef RIP
       integer iper
@@ -80,7 +83,7 @@
 #ifdef TS_HADV_TEST 
       real cff,cff1,cx,cy,cmax,xx,yy
 #  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
-      real psi(PRIVATE_2D_SCRATCH_ARRAY)
+#  include "work.h"
 #  endif      
 #endif
 #ifdef JET
@@ -190,15 +193,11 @@
         Lt=10.
         do j=JR_RANGE
           do i=IR_RANGE
-#  ifndef MOVING_BATHY       
-#   ifndef TANKY
+#  ifndef TANKY
             zeta(i,j,1)=ETA0*cos(pi*xr(i,j)/Lt)
-#   else
-            zeta(i,j,1)=ETA0*cos(pi*yr(i,j)/Lt)
-#   endif
 #  else
-            zeta(i,j,1)=0.
-#  endif        
+            zeta(i,j,1)=ETA0*cos(pi*yr(i,j)/Lt)
+#  endif
             ubar(i,j,1)=0.
             vbar(i,j,1)=0.
             zeta(i,j,2)=zeta(i,j,1)
@@ -294,44 +293,56 @@
         enddo
 #    endif
 #    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
-       cff  = - xl / pi
-       cff1 =   pi / xl
-       do j=Jstr-2,Jend+2
-         do i=Istr-2,Iend+2
-           psi(i,j) = cff * (sin(cff1*xp(i,j)))**2 * (sin(cff1*yp(i,j)))**2
-         enddo
-       enddo
-       cff  = pm(1,1)
-       do j=Jstr,Jend
-         do k=1,N
-           do i=IstrU,Iend
-             u(i,j,k,1)  = - cff * (psi(i,j+1)-psi(i,j))
-             u(i,j,k,2)  =  u(i,j,k,1)
+
+# define psi work2d
+        cff  = - xl / pi
+        cff1 =   pi / xl
+        do j=Jstr,Jend+1
+          do i=Istr,Iend+1
+            psi(i,j) =  cff * (sin(cff1*xp(i,j)))**2
+     &                      * (sin(cff1*yp(i,j)))**2
+          enddo
+        enddo
+
+#     if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+        call exchange_p2d_tile(Istr,Iend,Jstr,Jend,psi)
+#     endif
+
+        cff  = pm(1,1)
+        do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              u(i,j,k,1)  = - cff * (psi(i,j+1)-psi(i,j))
+              u(i,j,k,2)  =  u(i,j,k,1)
 #    if defined SOLID_BODY_PER
-             u(i,j,k,3)  =  u(i,j,k,1)                
+              u(i,j,k,3)  =  u(i,j,k,1)           
 #    endif
-           enddo
-           do i=Istr,Iend
-              if (j.ge.JstrV) then
-                v(i,j,k,1) = cff * (psi(i+1,j)-psi(i,j))
-                v(i,j,k,2) = v(i,j,k,1)
+            enddo
+          enddo
+        enddo
+        do k=1,N
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              v(i,j,k,1) =    cff * (psi(i+1,j)-psi(i,j))
+              v(i,j,k,2) = v(i,j,k,1)
 #    if defined SOLID_BODY_PER
-                v(i,j,k,3) = v(i,j,k,1)                
+              v(i,j,k,3) = v(i,j,k,1)        
 #    endif
-              end if
-           enddo
-         enddo
-       enddo       
+            enddo
+          enddo
+        enddo
 #    endif
+# undef psi
        cmax = 0.D0
-       do j=Jstr+1,Jend-1
-         do i=Istr+1,Iend-1
+       do j=JstrV,Jend-1
+         do i=IstrU,Iend-1
             cx = dt*( MAX(u(i+1,j,N,1),0.)-MIN(u(i,j,N,1),0.) )*pm(i,j)
             cy = dt*( MAX(v(i,j+1,N,1),0.)-MIN(v(i,j,N,1),0.) )*pn(i,j)
             cmax = MAX( cx+cy, cmax )
          enddo
        enddo
        print*,'CFL_max = ',cmax
+
 #  elif defined KH_INST
 !
 ! Traditional KH instability: 
@@ -517,7 +528,7 @@
               t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #   endif
-             enddo
+            enddo
           enddo
         enddo
 #  elif defined TS_HADV_TEST && ( defined SOLID_BODY_ROT || defined SOLID_BODY_PER )
@@ -531,8 +542,8 @@
 #   ifdef SALINITY
               t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
-             enddo
+#  endif
+            enddo
           enddo
         enddo
 #  elif defined CANYON
@@ -608,7 +619,6 @@
         enddo
 
 #  elif defined TANK
-#   ifndef MOVING_BATHY
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -617,8 +627,8 @@
             enddo
           enddo
         enddo
-#   else
-        cff=((2.510e-4)**2)/g
+#  elif defined MOVING_BATHY
+        cff=((0.92461)**2)/g
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -627,8 +637,6 @@
             enddo
           enddo
         enddo
-#   endif
-
 #  elif defined EQUATOR
         do k=1,N
           do j=JstrR,JendR
@@ -1425,12 +1433,22 @@ C$OMP BARRIER
      &                             u(START_2D_ARRAY,1,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,1))
-#ifdef NBQ
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,2))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,2))
+#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,3))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,3))
+#    endif
+#    ifdef NBQ
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,1))
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,2))
-#endif
+#    endif
 #   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,1))
@@ -1440,13 +1458,18 @@ C$OMP BARRIER
      &                        u(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,2))
-
-#ifdef NBQ
+#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,3))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,3))
+#    endif
+#    ifdef NBQ
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,1))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,2))
-#endif
+#    endif
 #   endif
 #  endif /* SOLVE3D */
 # endif /* ANA_INITIAL */

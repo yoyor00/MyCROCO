@@ -22,7 +22,7 @@
 !  ana_bmflux     Analytical kinematic bottom momentum flux.
 !  ana_btflux     Analytical kinematic bottom flux of tracer
 !                            type variables.
-!  ana_hmorph     Analytical dynamic bathymetry
+!  ana_morphodyn  Analytical dynamic bathymetry
 !  ana_bsedim     Analytical bottom sediment grain size
 !                            and density.
 !  ana_smflux     Analytical kinematic surface momentum flux
@@ -180,11 +180,11 @@
 #endif /* SOLVE3D */
 !
 !======================================================================
-!                   subroutine ana_hmorph
+!                   subroutine ana_moving_bathy
 !======================================================================
 !
-#ifdef ANA_MOVING_BATHY
-      subroutine ana_hmorph (tile)
+#ifdef ANA_MORPHODYN
+      subroutine ana_morphodyn (tile)
       implicit none
 # include "param.h"
       integer tile
@@ -192,11 +192,11 @@
 C$    integer  trd, omp_get_thread_num
 #endif
 # include "compute_tile_bounds.h"
-      call ana_hmorph_tile (Istr,Iend,Jstr,Jend)
+      call ana_morphodyn_tile (Istr,Iend,Jstr,Jend)
       return
       end 
       
-      subroutine ana_hmorph_tile (Istr,Iend,Jstr,Jend)
+      subroutine ana_morphodyn_tile (Istr,Iend,Jstr,Jend)
 !
 !----------------------------------------------------------------------
 !  This routine sets bathymetry increment
@@ -229,23 +229,21 @@ C$    integer  trd, omp_get_thread_num
      &                                                 -h(i,j)
         enddo
       enddo
-# elif defined TANK
+# elif defined MOVING_BATHY
        cff=1./(0.03686)**2
-       cff1=2.+0.001*sin(2.*pi/10.5*time)
+       cff1=1.e-3*sin(2.*pi/10.05*time)
        do j=JstrR,JendR
          do i=IstrR,IendR
-           dh(i,j)=0.394-0.1*exp(-cff*((xr(i,j)-cff1)**2+
-      &                                (yr(i,j)-el*0.5)**2)) 
-      &                                              -h(i,j)
+           dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2) 
+     &                   - h(i,j)
          enddo
        enddo
-
 # else
         dh(:,:) =??? 
 # endif
       return
       end
-#endif /* ANA_MOVING_BATHY */ 
+#endif /* ANA_MORPHODYN */ 
 !
 !======================================================================
 !                   subroutine ana_bsedim
@@ -1678,7 +1676,7 @@ C$    integer  trd, omp_get_thread_num
             enddo
           endif
 # endif
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
           bed_thick_tot(i,j,2)=0.
           do ilay=1,NLAY
             bed_thick_tot(i,j,2)=bed_thick_tot(i,j,2)+
@@ -1710,7 +1708,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bot_thick(START_2D_ARRAY))
-#  ifdef MOVING_BATHY
+#  ifdef MORPHODYN
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_thick_tot(START_2D_ARRAY,1))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,

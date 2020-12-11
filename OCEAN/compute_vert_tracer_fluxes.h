@@ -38,11 +38,7 @@
           enddo               !--> discard CF
           do i=Istr,Iend
             FC(i,N)=0.
-#  ifdef MOVING_BATHY
-            FC(i,0)=We(i,j,0)*t(i,j,1,nadv,itrc)
-#  else
             FC(i,0)=0.
-#  endif
             CF(i,0)=dt*pm(i,j)*pn(i,j)
           enddo
 
@@ -81,11 +77,7 @@
             enddo
           enddo            !--> discard CF
           do i=istr,iend
-#  ifdef MOVING_BATHY
-            FC(i,0)=We(i,j,0)*t(i,j,1,nadv,itrc)
-#  else
             FC(i,0)=0.
-#  endif
             FC(i,N)=0.
             CF(i,0)=dt*pm(i,j)*pn(i,j)
           enddo
@@ -138,11 +130,7 @@
      &                       -0.08333333333333*t(i,j,N-2,nadv,itrc)
      &                                                            )
 
-#  ifdef MOVING_BATHY
-            FC(i,0)=We(i,j,0)*t(i,j,1,nadv,itrc)
-#  else
             FC(i,0)=0.
-#  endif
             FC(i,N )=0.
             CF(i,0)=dt*pm(i,j)*pn(i,j)
           enddo
@@ -161,11 +149,7 @@
            enddo
          enddo
          do i=Istr,Iend
-#  ifdef MOVING_BATHY
-            FC(i,0)=We(i,j,0)*t(i,j,1,nadv,itrc)
-#  else
             FC(i,0)=0.
-#  endif
            FC(i,N )=0.
            CF(i,0 )=dt*pm(i,j)*pn(i,j)
          enddo
@@ -188,13 +172,7 @@
             enddo
           enddo
           do i=Istr,Iend
-#  ifdef MOVING_BATHY
-            FC(i,0)=We(i,j,0)*2.
-     &                       (0.58333333333333*t(i,j,1,nstp,itrc)-
-     &                        0.08333333333333*t(i,j,2,nstp,itrc))
-#  else
             FC(i, 0)=0.0
-#  endif
             FC(i,  1)=We(i,j,  1)*(        0.5*t(i,j,  1,nadv,itrc)
      &                       +0.58333333333333*t(i,j,  2,nadv,itrc)
      &                       -0.08333333333333*t(i,j,  3,nadv,itrc)

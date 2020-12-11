@@ -1894,7 +1894,7 @@ C$OMP BARRIER
 !  Store total bed thickness
 !-----------------------------------------------------------------------
 !
-# ifdef MOVING_BATHY
+# ifdef MORPHODYN
       do j=Jstr,Jend
         do i=Istr,Iend
           bed_thick_tot(i,j,nnew)=0.
@@ -1965,7 +1965,7 @@ C$OMP BARRIER
 !
        dh(:,:)=bed_thick_tot(:,:,nstp)-bed_thick_tot(:,:,nnew)
 !
-# endif /* MOVING_BATHY*/
+# endif /* MORPHODYN */
 
       return
       end
