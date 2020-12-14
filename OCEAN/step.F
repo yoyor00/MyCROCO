@@ -1070,6 +1070,18 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
 
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
+        !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
+      enddo
+      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v step3d','v')
+C$OMP END MASTER
+#endif
+
 C$OMP MASTER
 #ifdef AUTOTILING
       call end_timing
@@ -1083,16 +1095,8 @@ C$OMP MASTER
 #endif      
 C$OMP END MASTER
 C$OMP BARRIER
-
-#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
-C$OMP MASTER
-      do itrc=1,NT
-        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
-      enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v step3d','v')
-C$OMP END MASTER
-#endif
-      
+  
       return
-      end
+      end      
+
+      
