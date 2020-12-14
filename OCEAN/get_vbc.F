@@ -653,11 +653,14 @@ C$OMP END MASTER
 #endif
 
 #if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
       call check_tab3d(u(:,:,:,nrhs),'#end u in get_vbc','u')
-      call check_tab3d(u(:,:,:,nrhs),'#end v in get_vbc','v')
+      call check_tab3d(v(:,:,:,nrhs),'#end v in get_vbc','v')
       
       call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in get_vbc','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in get_vbc','r')
+C$OMP END MASTER
 #endif
       return
       end
