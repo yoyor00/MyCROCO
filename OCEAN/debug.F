@@ -42,7 +42,6 @@
           character(len=80) :: filename
           character(len=80) :: tmp_string
           integer :: nb, new_unit
-          parameter (new_unit=1000)          
           filename="check_file"
             
 #if !defined RVTK_DEBUG_WRITE
@@ -56,8 +55,7 @@
      &           "check_file_",nbprocs_in,'_',nb
 !RB : quickfix before updation conv to deal with newunit
 !$AGRIF_DO_NOT_TREAT
-          !!  open(newunit=new_unit,
-            open(unit=new_unit,
+           open(newunit=new_unit,
      &           file=filename,form='unformatted',
      &           status='OLD')
 !$AGRIF_END_DO_NOT_TREAT
