@@ -59,8 +59,12 @@
 !
 ! Conditions for writing output
 !
-      if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0 .or.
-     &         (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
+      
+      if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
+#ifdef EXACT_RESTART
+     &                    .or.      mod(ilc,nrst).eq.0
+#endif
+     &     .or. (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
 #ifdef AVERAGES
      &    .or. (mod(ilc-ntsavg,navg).eq.0 .and. wrtavg(indxTime))
 #endif
@@ -106,13 +110,13 @@
      &    .and. wrtdiags_pv_avg(indxTime))
 # endif
 # endif
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
      &    .or. (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).eq.0
      &    .and. wrtdiags_eddy_avg(indxTime))
 # endif
 # endif
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
      &    .or. (mod(iic-ntstart,nwrtsurf).eq.0
      &    .and. wrtsurf(indxTime))
 # ifdef AVERAGES
@@ -153,7 +157,11 @@
 !
 ! Get record number
 !
-        if (mod(ilc-1,nrst).eq.0) nrecrst=nrecrst+1
+        if (mod(ilc-1,nrst).eq.0
+#ifdef EXACT_RESTART
+     &                      .or. mod(ilc,nrst).eq.0
+#endif
+     &                      )     nrecrst=nrecrst+1
         if (mod(ilc-1,nwrt).eq.0) nrechis=nrechis+1
 #ifdef AVERAGES
         if (mod(ilc-1,navg).eq.0) nrecavg=nrecavg+1
@@ -194,13 +202,13 @@
      &                            nrecdiags_pv_avg=nrecdiags_pv_avg+1
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
         if (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg) .eq.0)
      &                     nrecdiags_eddy_avg=nrecdiags_eddy_avg+1
 # endif
 #endif
-# ifdef OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
         if (mod(iic-ntstart,nwrtsurf) .eq.0)
      &                                    nrecsurf=nrecsurf+1
 # ifdef AVERAGES
@@ -242,7 +250,11 @@
 !        write(*,*) "wrtdiaM ",wrtdiaM
 !        write(*,*) "wrtdiaM_avg ",wrtdiaM_avg
 !
-        if (mod(ilc-1,nrst).eq.0) call wrt_rst
+        if (mod(ilc-1,nrst).eq.0
+#ifdef EXACT_RESTART
+     &       .or. mod(ilc,nrst).eq.0
+#endif
+     &       ) call wrt_rst
 #ifndef XIOS
         if (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime)) call wrt_his
 #  ifdef AVERAGES
@@ -315,7 +327,7 @@
 # endif
 #endif
 
-#if defined DIAGNOSTICS_EDDY
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
 # ifdef AVERAGES
         if (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg) .eq.0
      &      .and. iic.gt.ntstart+1
@@ -325,7 +337,7 @@
 # endif
 #endif
 
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
         if (mod(iic-ntstart,nwrtsurf).eq.0
      &      .and. ldefsurf 
      &      .and. wrtsurf(indxTime)) 

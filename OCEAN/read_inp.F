@@ -1,4 +1,4 @@
-! $Id: read_inp.F 1615 2014-12-17 13:27:07Z rblod $
+! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -236,13 +236,13 @@
       wrtdiags_pv_avg(NT+1)=.false.
 #endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       wrtdiags_eddy(3)=.false.
 #ifdef AVERAGES
       wrtdiags_eddy_avg(3)=.false.
 #endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       wrtsurf(3)=.false.
 #ifdef AVERAGES
       wrtsurf_avg(3)=.false.
@@ -298,6 +298,26 @@
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 !
+#ifdef XIOS2
+!
+! origin_date is the origin date of time axis.
+! It must the same used in croco_tool for input files preprocessing
+! 
+      elseif (keyword(1:kwlen).eq.'origin_date') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,'(A)',err=95) origin_date
+          lstr=lenstr(origin_date)
+          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
+     &    origin_date(1:lstr)
+          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
+      READ(origin_date(1:2),fmt='(i2)') origin_day
+      READ(origin_date(4:5),fmt='(i2)') origin_month
+      READ(origin_date(7:10),fmt='(i4)') origin_year
+      READ(origin_date(12:13),fmt='(i2)') origin_hour
+      READ(origin_date(15:16),fmt='(i2)') origin_minute
+      READ(origin_date(18:19),fmt='(i2)') origin_second
+#endif
 #ifdef START_DATE
 !
 ! Start date
@@ -433,6 +453,9 @@
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
         open(testunit,file=fname(1:lstr), status='old', err=97)
         close(testunit)
         grdname=fname(1:lstr)
@@ -448,7 +471,6 @@
                                      !defined WKB_WWAVE && \
                                      !defined OW_COUPLING) \
           || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_EP   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
                                    !defined OA_COUPLING) \
@@ -481,6 +503,9 @@
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         frcname=fname(1:lstr)
@@ -498,6 +523,9 @@
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
 c        open (testunit, file=fname(1:lstr), status='old', err=97)
 c        close(testunit)
         bioname=fname(1:lstr)
@@ -516,6 +544,9 @@ c        close(testunit)
 #  if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bulkname=fname(1:lstr)
@@ -540,6 +571,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         clmname=fname(1:lstr)
@@ -563,6 +597,9 @@ c        close(testunit)
 #  if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bry_file=fname(1:lstr)
@@ -586,6 +623,9 @@ c        close(testunit)
 #  if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
+#if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+          call insert_node (fname, lstr, mynode, NNODES, ierr)
+#endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           brywkb_file=fname(1:lstr)
@@ -769,6 +809,9 @@ c        close(testunit)
 # if defined MPI && defined PARALLEL_FILES
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
         diags_vrtname_avg=fname(1:lstr)
         MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
@@ -865,7 +908,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_PV */
 
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !
 ! Diagnostics eddy file name.
 !
@@ -907,7 +950,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_EDDY */
 
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 ! surface outputs file name.
 !
@@ -1106,6 +1149,8 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
      &                                             wrthis(indxBostr)
+     &                                          ,  wrthis(indxBustr)
+     &                                          ,  wrthis(indxBvstr)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
@@ -1124,8 +1169,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+        || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+        || defined GLS_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1151,6 +1196,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
      &                                          ,  wrthis(indxBostr)
+     &                                          ,  wrthis(indxBustr)
+     &                                          ,  wrthis(indxBvstr)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
@@ -1162,14 +1209,24 @@ c        close(testunit)
 # endif
      &                                          ,  wrthis(indxShflx_rsw)
 # ifdef BULK_FLUX
-     &                                          , wrthis(indxShflx_rlw)
-     &                                          , wrthis(indxShflx_lat)
-     &                                          , wrthis(indxShflx_sen)
+     &                                          ,  wrthis(indxShflx_rlw)
+     &                                          ,  wrthis(indxShflx_lat)
+     &                                          ,  wrthis(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          ,  wrthis(indxBhflx)
+#else
+     &                                          ,  dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          ,  wrthis(indxBwflx)
+#else
+     &                                          ,  dumboolean
+#endif       
 # ifdef MORPHODYN
      &                                          , wrthis(indxHm)
 # else 
@@ -1216,6 +1273,8 @@ c        close(testunit)
      &                                        .or. wrthis(indxHbbl)
 # endif
      &                                        .or. wrthis(indxBostr)
+     &                                        .or. wrthis(indxBustr)
+     &                                        .or. wrthis(indxBvstr)
      &                                        .or. wrthis(indxWstr)
      &                                        .or. wrthis(indxUWstr)
      &                                        .or. wrthis(indxVWstr)
@@ -1229,7 +1288,13 @@ c        close(testunit)
      &                                        .or. wrthis(indxShflx_lat)
      &                                        .or. wrthis(indxShflx_sen)
 # endif
-# if defined BIOLOGY && !defined PISCES
+# if defined BHFLUX
+     &                                        .or. wrthis(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrthis(indxBwflx)
+#endif 
+# if defined BIOLOGY &&         !defined PISCES
      &                                        .or. wrthis(indxHel)
 #  ifdef BIO_NChlPZD
      &                                        .or. wrthis(indxChC)
@@ -1310,6 +1375,8 @@ c        close(testunit)
 #  endif
 # endif /* BIOLOGY */
      &  , wrthis(indxBostr), 'write Bostr', 'Bottom Stress.'
+     &  , wrthis(indxBustr), 'write Bustr', 'U-Bottom Stress.'
+     &  , wrthis(indxBvstr), 'write Bvstr', 'V-Bottom Stress.'
      &  , wrthis(indxWstr),  'write Wstress', 'Wind Stress.'
      &  , wrthis(indxUWstr), 'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrthis(indxVWstr), 'write V-Wstress comp.', 'V-Wind Stress.'
@@ -1321,7 +1388,14 @@ c        close(testunit)
 # endif
      &  , wrthis(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                          'Short-wave surface radiation'
-
+# ifdef BHFLUX
+     &  , wrthis(indxBhflx), 'write Bhflx [W/m2]', 
+     &                       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrthis(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Bottom freshwater flux (E-P)'
+# endif        
 !
 ! Switches for GLS fields to be saved into history file.
 !
@@ -1378,8 +1452,12 @@ c        close(testunit)
 
       elseif (keyword(1:kwlen).eq.'auxiliary_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wrtavg(indxR), wrtavg(indxO)
-     &        ,  wrtavg(indxW),  wrtavg(indxAkv),  wrtavg(indxAkt)
+        read(input,*,err=95)
+     &                                             wrtavg(indxR)
+     &                                          ,  wrtavg(indxO)
+     &                                          ,  wrtavg(indxW)
+     &                                          ,  wrtavg(indxAkv)
+     &                                          ,  wrtavg(indxAkt)
 # ifdef SALINITY
      &                                          ,  wrtavg(indxAks)
 # else 
@@ -1413,6 +1491,8 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
      &                                          ,  wrtavg(indxBostr)
+     &                                          ,  wrtavg(indxBustr)
+     &                                          ,  wrtavg(indxBvstr)
      &                                          ,  wrtavg(indxWstr)
      &                                          ,  wrtavg(indxUWstr)
      &                                          ,  wrtavg(indxVWstr)
@@ -1432,6 +1512,16 @@ c        close(testunit)
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          , wrtavg(indxBhflx)
+#else
+     &                                          , dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          , wrtavg(indxBwflx)
+#else
+     &                                          , dumboolean
+#endif      
 # ifdef MORPHODYN
      &                                          , wrtavg(indxHm)
 # else 
@@ -1475,6 +1565,8 @@ c        close(testunit)
      &                                        .or. wrtavg(indxHbbl)
 #  endif
      &                                        .or. wrtavg(indxBostr)
+     &                                        .or. wrtavg(indxBustr)
+     &                                        .or. wrtavg(indxBvstr)
      &                                        .or. wrtavg(indxWstr)
      &                                        .or. wrtavg(indxUWstr)
      &                                        .or. wrtavg(indxVWstr)
@@ -1488,7 +1580,13 @@ c        close(testunit)
      &                                        .or. wrtavg(indxShflx_rlw)
      &                                        .or. wrtavg(indxShflx_lat)
      &                                        .or. wrtavg(indxShflx_sen)
-#  endif 
+#  endif
+# if defined BHFLUX
+     &                                        .or. wrtavg(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrtavg(indxBwflx)
+#endif 
 #  if defined BIOLOGY && !defined PISCES
      &                                        .or. wrtavg(indxHel)
 #   ifdef BIO_NChlPZD
@@ -1572,6 +1670,8 @@ c        close(testunit)
 #   endif
 #  endif   /* BIOLOGY */
      &  , wrtavg(indxBostr),'write Bostr', 'Bottom Stress.'
+     &  , wrtavg(indxBustr),'write Bustr', 'U-Bottom Stress.'
+     &  , wrtavg(indxBvstr),'write Bvstr', 'V-Bottom Stress.'
      &  , wrtavg(indxWstr), 'write Wstr', 'Wind Stress.'
      &  , wrtavg(indxUWstr),'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrtavg(indxVWstr),'write V-Wstress comp.', 'V-Wind Stress.'
@@ -1582,7 +1682,15 @@ c        close(testunit)
      &                      'Surface freshwater flux (E-P)'
 #  endif
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
-     &                      'Short-wave surface radiation.'
+     &                          'Short-wave surface radiation.'
+# ifdef BHFLUX
+     &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
+     &       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Surface freshwater flux (E-P)'
+# endif     
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -1816,7 +1924,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_PV */
 
 
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !
 ! Switches for fields to be saved into eddy diagnostics file.
 !
@@ -1846,7 +1954,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_EDDY */
 
 
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 ! Switches for fields to be saved into surface outputs file.
 !
@@ -2372,7 +2480,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif /* AVERAGES */
 #endif /* MRL_WCI */
 
-#if defined MRL_WCI || defined OW_COUPLING
+#if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
 !
 ! Wave history fields
 !
@@ -2568,6 +2676,27 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */
 !
+!
+! Hydrothermal forcing file name. Check its availability.
+!
+#if defined BHFLUX || ( defined BWFLUX && defined SALINITY)
+      elseif (keyword(1:kwlen).eq.'bottom_forcing') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        btfname=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &       'Bottom forcing file:', fname(1:lstr)
+#endif  /* BHFLUX || (SALINITY && BWFLUX )  */
+!
 ! Online forcing with CFSR
 !
 #ifdef ONLINE   /* JG Online */
@@ -2591,6 +2720,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */
+
+        
 
       else
         MPI_master_only write(stdout,'(/3(1x,A)/)')

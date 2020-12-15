@@ -355,7 +355,22 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-        call get_initial
+!! GC change for EXACT_RESTART
+!!        call get_initial
+!==================== FOR EXACT_RESTART as in main.F ====================
+#ifdef EXACT_RESTART
+        call get_initial (nrrec-1, 2) ! Set initial conditions
+                                    ! in the case of restart run.
+C$OMP BARRIER
+# ifdef SOLVE3D
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_depth (tile) !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+# endif
+#endif
+      call get_initial (nrrec, 1)   ! Set initial conditions        
+!==================================================================
 # else
         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/)
      &   ,lbound(Zt_avg1),ubound(Zt_avg1),zetaid,torestore=.true.)
@@ -447,7 +462,21 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif        
 
         if (Agrif_Parent_Nb_Step() == 0) then
-          call get_initial
+!!     call get_initial 
+!==================== FOR EXACT_RESTART as in main.F ====================
+#ifdef EXACT_RESTART
+          call get_initial (nrrec-1, 2) ! Set initial conditions
+                                        ! in the case of restart run.
+C$OMP BARRIER
+# ifdef SOLVE3D
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_depth (tile) !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+# endif
+#endif
+      call get_initial (nrrec, 1)   ! Set initial conditions        
+!==================================================================
         endif
 # endif /* AGRIF_ADAPTIVE */
 # ifdef ANA_INITIAL

@@ -128,7 +128,9 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
+    defined RVTK_DEBUG_PERFRST
+      
       call debug_ini
 #endif
 !
@@ -265,14 +267,31 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-#ifndef ANA_INITIAL
-      call get_initial               ! Set initial conditions
-#else
-      if (nrrec.ne.0) then           ! read from NetCDF file
-        call get_initial
-      endif
+
+#ifdef ANA_INITIAL
+      if (nrrec.ne.0) then          ! read from NetCDF file
+#endif
+#ifdef EXACT_RESTART
+          call get_initial (nrrec-1, 2) ! Set initial conditions
+                                    ! in the case of restart run.
+C$OMP BARRIER
+# ifdef SOLVE3D
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_depth (tile)     !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+# endif
 
 #endif
+      call get_initial (nrrec, 1)   ! Set initial conditions
+#ifdef ANA_INITIAL
+      endif
+#endif
+                                ! Set initial model clock: at this
+      time=start_time           ! moment "start_time" (global scalar)
+      tdays=time*sec2day        ! is set by get_initial or analytically
+                                ! --> copy it into threadprivate "time"
+
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
 #ifdef ANA_INITIAL
@@ -480,7 +499,7 @@ CR      write(*,*) ' -2' MYID
 !  Read tidal harmonics from NetCDF file
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
       call get_tides
 #endif
 !
@@ -743,7 +762,15 @@ CR      write(*,*) '  0' MYID
       call computenbmaxtimes
 #endif
 
+#ifdef MPI_TIME
+! Start Chrono
+      start_time1=PMPI_Wtime()
+#endif
+
       do iicroot=ntstart,ntimes+1
+#ifdef MPI_TIME
+        start_time1_1=PMPI_Wtime()
+#endif
 #ifdef USE_CALENDAR 
         MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
         if(time > time_end) goto 99 
@@ -768,10 +795,22 @@ CR      write(*,*) '  0' MYID
 #ifdef SOLVE3D
         enddo
 #endif
+#ifdef MPI_TIME
+        start_time1_2=PMPI_Wtime()
+        exe_time_1 = start_time1_2 - start_time1_1
+          if (mynode.eq.0) write(97,*) exe_time_1
+#endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:
+#ifdef MPI_TIME
+      start_time2=PMPI_Wtime()
+      exe_time = start_time2 - start_time1
+      MPI_master_only write(stdout,*) '*******************************'
+      MPI_master_only write(stdout,*) 'temps time-stepping : ',exe_time
+      MPI_master_only write(stdout,*) '*******************************'
+#endif
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()

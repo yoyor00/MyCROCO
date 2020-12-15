@@ -46,7 +46,7 @@
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
-#ifdef BASIN
+#if defined BASIN || defined GYRE
       real cff1,cff2
 #endif
 #ifdef INTERNAL
@@ -92,6 +92,12 @@
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
 #endif
+#if defined RREXTRA || defined GULFSTREAM
+      integer xc,yc,radius
+      real rr,rhotarget,drho 
+      real xr(0:Lm,0:Mm)  
+      real yr(0:Lm,0:Mm)  
+#endif 
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -473,7 +479,7 @@
 !
       if (nrrec.eq.0) then
 !
-#  ifdef BASIN
+#  if defined BASIN || defined GYRE
         cff1=(44.690/39.382)**2
         cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
         do k=1,N
@@ -1016,58 +1022,124 @@ C$OMP BARRIER
 !  Initial conditions for passive tracer
 !--------------------------------------------------------------------
 !
-# ifdef PASSIVE_TRACER 
-      do k=1,N
+# if defined PASSIVE_TRACER && defined GULFSTREAM
+        t(:,:,:,1,itpas1)=0.
+        t(:,:,:,1,itpas2)=0.
+        t(:,:,:,1,itpas3)=0.
+        t(:,:,:,1,itpas4)=0.
+        xc = 2000. ! center of the patch in km
+        yc = 2000.
+        radius = 500 ! km
         do j=JR_RANGE
           do i=IR_RANGE
-            if (.not.got_tini(itpas)) then
-#  if defined REGIONAL && !defined ANA_PSOURCE
-              if (h(i,j).lt.300) then
-!             if (z_r(i,j,k).lt.-800 .and.
-!     &           z_r(i,j,k).gt.-1200 ) then
-                t(i,j,k,1,itpas)=1
-              else
-                 t(i,j,k,1,itpas)=0
-              endif
-#  elif defined SHOREFACE || defined RIP
-            if (h(i,j).lt.2) then
-              t(i,j,k,1,itpas)=1.
-            else
-              t(i,j,k,1,itpas)=0
-            endif
-            t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
-#  elif defined KH_INST
-              zdye10 = -0.65*depth
-              t(i,j,k,1,itpas1) =
-     &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
-!    &                     )/Scoef      
-     &                     )
-!
-                 t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
-
-              zdye20 = -0.35*depth
-              t(i,j,k,1,itpas2) =
-!
-     &            + 35 +0.05* drho* (
-     &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
-!    &                     )/Scoef      
-     &                     )
-!
-                 t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
-
-#  else
-            if (h(i,j).lt.300) then
-              t(i,j,k,1,itpas)=1.
-            else
-              t(i,j,k,1,itpas)=0
-            endif
-#  endif
+            xr(i,j) = (1./pm(i,j))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km
+            yr(i,j) = (1./pn(i,j))*(float(j+jminmpi-1-1)+0.5)*1.e-3
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            if (rr.le.radius) then
+                do k=1,N
+                    if (k.ge.29) then
+                    t(i,j,k,1,itpas1)=0.1
+                    t(i,j,k,1,itpas2)=0.3
+                    t(i,j,k,1,itpas3)=0.5
+                    t(i,j,k,1,itpas4)=1.
+                    endif
+                enddo ! k loop
             endif
           enddo
         enddo
-      enddo
-# endif /*PASSIVE_TRACER */
+        
+        t(:,:,:,2,itpas1)=t(:,:,:,1,itpas1)
+        t(:,:,:,2,itpas2)=t(:,:,:,1,itpas2)
+        t(:,:,:,2,itpas3)=t(:,:,:,1,itpas3)
+        t(:,:,:,2,itpas4)=t(:,:,:,1,itpas4)
+        
+# endif /*PASSIVE_TRACER && GULFSTREAM */
+
+# if defined PASSIVE_TRACER && defined RREXTRA
+      if (.not.got_tini(itpas1)) then ! consider if no tracer1 there are no other tracer either    
+        ! ------ COMPUTE RHO AND SET UP GRID ------       
+        call rho_eos !(tile) 
+        do j=JstrR,JendR ! compute grid coordinates (approx)  
+          do i=IstrR,IendR
+            xr(i,j) = (1./pm(1,1))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km 
+            yr(i,j) = (1./pn(1,1))*(float(j+jminmpi-1-1)+0.5)*1.e-3
+          enddo
+        enddo
+        ! ------ FIRST TRACER PATCH ------
+        xc = 400. ! center of the patch in km    
+        yc = 600.
+        radius = 10 ! km 
+        rhotarget = 1027.70 
+        drho = 0.01
+        t(:,:,:,1,itpas1)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            if (rr.le.radius) then
+              do k=1,N
+                 if ((rho(i,j,k)+rho0).ge.rhotarget-drho) then 
+                   if ((rho(i,j,k)+rho0).le.rhotarget+drho) then
+                     write(*,*) ' coucou tracer 1 ' 
+                     t(i,j,k,1,itpas1)=0.1
+                   endif  
+                 endif  
+              enddo ! k loop
+            endif
+          enddo ! i loop 
+        enddo ! j loop 
+        ! ------ SECOND TRACER PATCH (BELOW FIRST) ------
+        rhotarget = 1027.80 
+        t(:,:,:,1,itpas2)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            if (rr.le.radius) then
+              do k=1,N
+                 if ((rho(i,j,k)+rho0).ge.rhotarget) then 
+                     t(i,j,k,1,itpas2)=0.1
+                 endif  
+              enddo ! k loop
+            endif
+          enddo ! i loop 
+        enddo ! j loop 
+        ! ------ THIRD  TRACER PATCH ------
+        xc = 600. ! center of the patch in km    
+        yc = 600.
+        radius = 10 ! km 
+        rhotarget = 1027.70 
+        drho = 0.01
+        t(:,:,:,1,itpas3)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            if (rr.le.radius) then
+              do k=1,N
+                 if ((rho(i,j,k)+rho0).ge.rhotarget-drho) then 
+                   if ((rho(i,j,k)+rho0).le.rhotarget+drho) then 
+                     t(i,j,k,1,itpas3)=0.1
+                   endif  
+                 endif  
+              enddo ! k loop
+            endif
+          enddo ! i loop 
+        enddo ! j loop 
+        ! ------ FOURTH TRACER PATCH (BELOW THIRD) ------
+        rhotarget = 1027.90 
+        t(:,:,:,1,itpas4)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            if (rr.le.radius) then
+              do k=1,N
+                 if ((rho(i,j,k)+rho0).ge.rhotarget) then 
+                     t(i,j,k,1,itpas4)=0.1
+                 endif  
+              enddo ! k loop
+            endif
+          enddo ! i loop 
+        enddo ! j loop 
+      endif ! got_tini(itpas) 
+# endif /*PASSIVE_TRACER && RREXTRA */
 !
 !----------------------------------------------------------------------
 !  Initial conditions for sediment tracer variables.

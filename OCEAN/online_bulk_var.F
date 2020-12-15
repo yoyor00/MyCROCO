@@ -40,13 +40,19 @@
       implicit none
 # include "param.h"
 # include "online.h"
+# include "ncscrum.h"
       integer, intent(in) :: bvar
       character bulkyear*4, bulkmonth1*1, bulkmonth2*2
       integer lenstr
       ! If first iteration, Y and M from roms.in file
       if(itbulkO(bvar).eq.0) then
+# if defined XIOS2
+        bulkyearnum(bvar)=start_year
+        bulkmonthnum(bvar)=start_month
+# else
         bulkyearnum(bvar)=yearnum
         bulkmonthnum(bvar)=monthnum
+# endif
       endif
 
       ! Variable to add the year in the name

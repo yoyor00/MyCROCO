@@ -388,6 +388,8 @@
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_WEST
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
+
+
         do k=1,N
           do j=JstrV,Jend
 #    ifdef NBQ_FRC_BRY

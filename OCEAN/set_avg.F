@@ -135,7 +135,11 @@ C$    integer omp_get_thread_num
           cff1=0.0
           if (ZEROTH_TILE) then
             time_avg=time
+<<<<<<< HEAD
             !MPI_master_only write(*,*) 'start avg',iic,ntsavg,navg
+=======
+            MPI_master_only write(*,*) 'start avg',iic,ntsavg,navg
+>>>>>>> dev_2019_perfrst_hotfix
           endif
         elseif (mod(ilc-ntsavg,navg).gt.1) then
           cff =1.0
@@ -148,7 +152,11 @@ C$    integer omp_get_thread_num
           cff1=1.0
           if (ZEROTH_TILE) then
             time_avg=cff*(time_avg+time)
+<<<<<<< HEAD
             !MPI_master_only write(*,*) 'finish avg',iic,ntsavg,navg
+=======
+            MPI_master_only write(*,*) 'finish avg',iic,ntsavg,navg
+>>>>>>> dev_2019_perfrst_hotfix
           endif
         endif
 
@@ -183,6 +191,22 @@ C$    integer omp_get_thread_num
      &                         0.5*sqrt((bustr(i,j)+bustr(i+1,j))**2
      &                                 +(bvstr(i,j)+bvstr(i,j+1))**2)
      &                                                          *rho0)
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxBustr)) then
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              bustr_avg(i,j)=cff*( cff1*bustr_avg(i,j)+
+     &                                  bustr(i,j)*rho0)
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxBvstr)) then
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              bvstr_avg(i,j)=cff*( cff1*bvstr_avg(i,j)+
+     &                                  bvstr(i,j)*rho0)
             enddo
           enddo
         endif
@@ -367,6 +391,16 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  ifdef BHFLX
+        if (wrtavg(indxBhflx)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              btflx_avg(i,j,itemp)=cff*(cff1*btflx_avg(i,j,itemp)+
+     &                                       btflx(i,j,itemp)*(rho0*Cp))
+            enddo
+          enddo
+        endif
+#  endif
 #ifdef SALINITY
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
@@ -377,6 +411,17 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#  ifdef BWFLUX
+        if (wrtavg(indxBwflx)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              btflx_avg(i,j,isalt)=cff*(cff1*btflx_avg(i,j,isalt)+
+     &                               stf_cff*btflx(i,j,isalt) /
+     &               ( max(eps,t(i,j,1,nstp,isalt)) ) )
+            enddo
+          enddo
+        endif
+#  endif
 #endif
         if (wrtavg(indxShflx_rsw)) then
           do j=JstrR,JendR

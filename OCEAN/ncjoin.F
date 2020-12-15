@@ -879,6 +879,7 @@ c**           endif
           nctargname=root_bak(1:i)
         endif
         ltrg=lenstr(nctargname)
+<<<<<<< HEAD
  
         j=0
         do i=1,ltrg
@@ -888,6 +889,18 @@ c**           endif
           nctargname=nctargname(j:ltrg)
           ltrg=ltrg-j+1
         endif
+=======
+
+
+!        j=0
+!        do i=1,ltrg
+!          if (nctargname(i:i).eq.'/') j=i+1
+!        enddo
+!        if (j.gt.0) then
+!          nctargname=nctargname(j:ltrg)
+!          ltrg=ltrg-j+1
+!        endif
+>>>>>>> dev_2019_perfrst_hotfix
  
 !--> create...
  

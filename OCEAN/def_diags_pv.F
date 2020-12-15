@@ -305,7 +305,7 @@
 
 
 
-        do itrc=1,NT
+        do itrc=1,NTA
 
           if (wrt(itrc)) then
 
@@ -357,7 +357,7 @@
 !          
           lvar=lenstr(vname(1,indxpvpv))
           ierr=nf_def_var (ncid, vname(1,indxpvpv)(1:lvar),
-     &                     NF_FOUT, 4, pw3dgrd, viddiags_pv(itrc))
+     &                     NF_FOUT, 4, u3dgrd, viddiags_pv(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_pv(itrc),nf_collective)
 #endif
@@ -388,7 +388,7 @@
 !          
           lvar=lenstr(vname(1,indxpvpvd))
           ierr=nf_def_var (ncid, vname(1,indxpvpvd)(1:lvar),
-     &                     NF_FOUT, 4, pw3dgrd, viddiags_pvd(itrc))
+     &                     NF_FOUT, 4, v3dgrd, viddiags_pvd(itrc))
 #ifdef NC4PAR
            ierr=nf_var_par_access(ncid,viddiags_pvd(itrc),nf_collective)
 #endif
@@ -627,7 +627,7 @@
 
 ! ---------------------------------
 
-      do itrc=1,NT
+      do itrc=1,NTA
         if (wrt(itrc)) then
 !
 !

@@ -861,6 +861,9 @@
             enddo
           enddo
 
+
+
+
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 ! Tracer diagnostics
@@ -868,7 +871,9 @@
           do j=jstr,jend
             do i=istr,iend
               cff1=pm(i,j)*pn(i,j)
-              THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+     &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
      &                         +(FC(i,j,k2)-FC(i,j,k1))/cff1
      &                                   SWITCH rmask(i,j)
@@ -916,11 +921,20 @@
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
 ! of diag terms are: (unit of tracers)* s-1.
 !
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
+
+              cff=cff1/Hz(i,j,k)
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
 # ifdef TS_MIX_IMP
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
+              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
 # endif
+
+# if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
+
+# include "finalize_diagnostics_tsadv.h"
+
+# endif
+
             enddo
           enddo
         enddo

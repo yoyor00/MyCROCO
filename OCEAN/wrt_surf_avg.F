@@ -9,7 +9,8 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined OUTPUTS_SURFACE && defined AVERAGES
+#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics 

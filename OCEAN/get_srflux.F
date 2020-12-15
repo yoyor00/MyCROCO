@@ -235,7 +235,7 @@
 ! Time interpolation is not performed in this case.
 !
       if (srf_cycle.lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           if (lsrfgrd.eq.1) then
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -347,7 +347,7 @@
 !
 ! Initialize fixed parameters
 !
-      if (FIRST_TIME_STEP) then
+      if (FIRST_RST_TIME_STEP) then
         do j=JstrR,JendR
           do i=IstrR,IendR
             phi=latr(i,j)*deg2rad

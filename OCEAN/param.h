@@ -30,6 +30,8 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
+#elif defined GYRE
+      parameter (LLm0=120,   MMm0=100,   N=40)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
@@ -184,6 +186,24 @@
       parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
 #  elif defined SEINE 
       parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
+#  elif defined  BAHAZ
+      parameter (LLm0=1250, MMm0=2250,  N=100) ! <-- BAHAZ
+#  elif defined  MEGATL9
+      parameter (LLm0=979, MMm0=778,  N=100) ! <-- MEGATL9
+#  elif defined  MEGATL6
+      parameter (LLm0=1468, MMm0=1167,  N=50) ! <-- MEGATL6
+#  elif defined  MEGATL3
+      parameter (LLm0=2937, MMm0=2334,  N=100) ! <-- MEGATL3
+#  elif defined  MEGATL
+      parameter (LLm0=8811, MMm0=7002,  N=200) ! <-- MEGATL
+#  elif defined  GIGATL6
+      parameter (LLm0=1500, MMm0=2000,  N=50) ! <-- GIGATL6
+#  elif defined  GIGATL3
+      parameter (LLm0=3000, MMm0=4000,  N=100) ! <-- GIGATL3
+#  elif defined  GIGATL1
+      parameter (LLm0=10500, MMm0=14000,  N=100) ! <-- GIGATL1
+#  elif defined  RREXTRA
+      parameter (LLm0=1000, MMm0=1500,  N=100) ! <-- RREXTRA
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
@@ -217,8 +237,18 @@
 !
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES     
+      integer NP_XI, NP_ETA, NNODES
+# ifdef GIGATL1
+#  ifndef MPI_NOLAND
+      parameter (NP_XI=100,  NP_ETA=100,  NNODES=NP_XI*NP_ETA) ! hard-coded GIGATL1
+#  else
+      integer  NNODES2
+      parameter (NP_XI=100,  NP_ETA=100,
+     &           NNODES=6582, NNODES2=NP_XI*NP_ETA) !hard-coded GIGATL1
+#  endif
+# else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+# endif /* GIGATL1 */ 
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -277,7 +307,7 @@
 ! Tides
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
 # if defined IGW
@@ -398,7 +428,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef SOLVE3D
-      integer   NT, itemp
+      integer   NT, NTA, itemp
       integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
 !
       parameter (itemp=1)
@@ -408,7 +438,7 @@
       parameter (ntrc_salt=0)
 # endif
 # ifdef PASSIVE_TRACER
-      parameter (ntrc_pas=1)
+      parameter (ntrc_pas=4)
 # else
       parameter (ntrc_pas=0)
 # endif
@@ -463,8 +493,14 @@
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
 !
+! Total number of active tracers
+!
+      parameter (NTA=itemp+ntrc_salt)
+
+!
 ! Total number of tracers
 !
+
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
 
 # if defined BBL && defined AGRIF
@@ -503,7 +539,7 @@
      &          , isalt
 # endif
 # ifdef PASSIVE_TRACER
-     &          , itpas
+     &          , itpas1,itpas2,itpas3,itpas4
 # endif
 !
 # ifdef BIOLOGY
@@ -619,7 +655,10 @@
       parameter (isalt=itemp+1)
 # endif
 # ifdef PASSIVE_TRACER
-      parameter (itpas=itemp+ntrc_salt+1)
+      parameter (itpas1=itemp+ntrc_salt+1)
+      parameter (itpas2=itemp+ntrc_salt+2)
+      parameter (itpas3=itemp+ntrc_salt+3)
+      parameter (itpas4=itemp+ntrc_salt+4)
 # endif
 
 !
@@ -876,9 +915,9 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=15*NT)
+      parameter (ntrc_diats=16*NT)
 #  else
-      parameter (ntrc_diats=7*NT)
+      parameter (ntrc_diats=8*NT)
 #  endif
 # else
       parameter (ntrc_diats=0)
@@ -907,12 +946,12 @@
 # else
       parameter (ntrc_diapv=0)
 # endif
-# ifdef DIAGNOSTICS_EDDY
-      parameter (ntrc_diaeddy=10)
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+      parameter (ntrc_diaeddy=12)
 # else
       parameter (ntrc_diaeddy=0)
 # endif
-# ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       parameter (ntrc_surf=5)
 # else
       parameter (ntrc_surf=0)

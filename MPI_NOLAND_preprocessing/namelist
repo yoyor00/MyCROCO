@@ -12,30 +12,33 @@
 &NAMSPACE
     jpk =30
     Npts = 2
+    OBC_NORTH = .TRUE.
+    OBC_SOUTH = .FALSE.
+    OBC_EAST  = .FALSE.
+    OBC_WEST  = .TRUE.
 /
 !'''''''''''''''''''''''''''''''''''''
 !      namproc
 !''''''''''''''''''''''''''''''''''''
-!   jprocx = maximum number of proc
-!   jpmem = 0 : dont care about the use of memory
-!           1 : try to optimize the use of memory (deprecated)
+!   min_nb_proc_NP_XI = minimum number of proc in XI axis
+!   min_nb_proc_NP_ETA = minimum number of proc in ETA axis
+!   max_number_proc = maximum number of proc
 !
 &NAMPROC
-     jprocx=220
-     jpmem = 0
+     min_nb_proc_NP_XI=20
+     min_nb_proc_NP_ETA=20
+     max_number_proc=1000
 /
-!''''''''''''''''''''''''''''''''''''''
-!      namparam
-!''''''''''''''''''''''''''''''''''''''
-!  only if jpmeme =1 
-!  ppmcal = CPU memory (octet)
-!  ppmin = ??
-!  ppmax = ??
+'''''''''''''''''''''''''''''''''''''
+!      namlayout (only used in my_layout)
+!''''''''''''''''''''''''''''''''''''
+!   nb_proc_NP_XI  = number of proc in XI axis
+!   nb_proc_NP_ETA =  number of proc in ETA axis
 !
-&NAMPARAM
-   ppmcal = 225000000.
-   ppmin = 0.4
-   ppmax = 0.9
+!
+&NAMLAYOUT
+     nb_proc_NP_XI = 37
+     nb_proc_NP_ETA = 27
 /
 !
 !'''''''''''''''''''''''''''''''''''''''
@@ -46,6 +49,6 @@
 ! covdta = Root for the overdata file name .
 ! Complete name will be {covdta}.{NP_XI}x{NP_ETA}_{NPP}
 &NAMFILE
-     cbathy='croco_grd.nc'
-     covdta = 'benguela'
+     cbathy='gigatl6_grd.nc'
+     covdta = 'GIGATL6'
 /

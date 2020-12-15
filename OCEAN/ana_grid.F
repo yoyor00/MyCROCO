@@ -92,6 +92,10 @@ C$    integer omp_get_thread_num
                      depth=5000.
                      f0=1.E-4 
                      beta=2.E-11
+# elif defined GYRE
+                     depth=5000.
+                     f0=1.E-4
+                     beta=2.E-11
 # elif defined SINGLE_COLUMN
 #  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF 
                      depth=50.
@@ -241,6 +245,9 @@ C$    integer omp_get_thread_num
       if (Agrif_Root()) then
 # endif
 # if defined BASIN
+                     Length_XI =3600.0e+3
+                     Length_ETA=2800.0e+3
+# elif defined GYRE
                      Length_XI =3600.0e+3
                      Length_ETA=2800.0e+3
 # elif defined SINGLE_COLUMN
@@ -445,7 +452,29 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=depth
         enddo
       enddo
-
+# elif defined GYRE
+#   if defined TOPOEXP
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          cff = (1./xl)**2
+          h(i,j)=depth * ( 1. - exp(-75.*(xr(i,j)/xl)))
+     &    * ( 1. - 0.*exp(-cff*((xr(i,j)-0.5*el)**2
+     &                          +(yr(i,j)-0.5*el)**2)))
+        enddo
+      enddo
+#   elif defined TOPOLIN
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=min(depth, xr(i,j)/150.0e+3 * depth)
+        enddo
+      enddo
+#   else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=depth
+        enddo
+      enddo
+#   endif
 # elif defined CANYON
       do j=JstrR,JendR
         do i=IstrR,IendR
