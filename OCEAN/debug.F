@@ -17,8 +17,6 @@
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
 !$AGRIF_END_DO_NOT_TREAT
-<<<<<<< HEAD
-=======
 # if defined RVTK_DEBUG_PERFRST
 # define DEBUG_MPI_MASTER_ONLY
 !
@@ -30,7 +28,6 @@
           parameter (start_debug=start_debug0)
           parameter (start_debug_read=start_debug)
 # endif         
->>>>>>> dev_2019_perfrst_hotfix
          end module debug
 !
 !======================================================================

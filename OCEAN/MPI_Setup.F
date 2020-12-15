@@ -132,15 +132,11 @@
       CORNER_SE=SOUTH_INTER .and.  EAST_INTER
       CORNER_NE=NORTH_INTER .and.  EAST_INTER
 
-<<<<<<< HEAD
       NNODES2=NP_XI*NP_ETA
-=======
->>>>>>> dev_2019_perfrst_hotfix
       mynode2=mynode
 # else
-      ! read mask
-      !nerr= nf_open('croco_grd.nc',
-      nerr= nf_open('gigatl1_grd_masked.nc',
+  !   ! read mask
+      nerr= nf_open('croco_grd.nc',
      &   NF_NOWRITE, ncid)
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
       nerr= nf_get_var_double(ncid, varid, zmask)   

@@ -1279,11 +1279,11 @@
 /*
 !                       Moving Bathy Example
 !                       ====== ===== =======
-
-  Auclair et al., Ocean Mod. 2014: Implementation of a time-dependent 
-     bathymetry in a free-surface ocean model: Application to internal 
-     wave generation
-
+!
+!  Auclair et al., Ocean Mod. 2014: Implementation of a time-dependent 
+!     bathymetry in a free-surface ocean model: Application to internal 
+!     wave generation
+!
 */
 # undef  MPI
 # define ANA_MORPHODYN

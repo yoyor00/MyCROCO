@@ -243,9 +243,6 @@
           ENDDO  
         ENDDO
       ENDIF
-
-
-      
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
@@ -329,15 +326,7 @@
           ENDDO
         ENDDO
       ENDDO         
-<<<<<<< HEAD
 # endif /* GLS_VADV_UP1 */
-=======
-# undef FX
-# undef FE
-
-     
-
->>>>>>> dev_2019_perfrst_hotfix
 !
 !--------------------------------------------------------------------
 !  Compute the vertical shear (or complete deformation rate D)
@@ -350,8 +339,6 @@
 !--------------------------------------------------------------------
 !
       tind  = nrhs
-
-       
       DO k=1,N-1
          DO j=jmin,jmax
             DO i=imin,imax 
@@ -401,8 +388,6 @@
            ENDDO
          ENDDO
       ENDDO
-
-             
 !
 !--------------------------------------------------------------------
 !  Compute ustar squared at the surface and at the bottom
@@ -418,9 +403,6 @@
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
       ENDDO 
-
-
-
 
       !--------------------------------------------------
       DO j=jmin,jmax         !<-- j-outer loop
@@ -484,7 +466,6 @@
                ENDDO
             ENDDO  
             
-
             ! Boundary conditions
             IF( ig == itke ) THEN
                DO i=imin,imax            
@@ -506,9 +487,6 @@
                   trb( i,j,N,nnew,ig ) = trb_sfc
                   trb( i,j,0,nnew,ig ) = trb_bot
                ENDDO
-                       
-                       
-                       
             ELSE
                DO i=imin,imax
                   ! surface
@@ -554,8 +532,6 @@
                   trb( i,j,N,nnew,ig ) = trb_sfc
                   trb( i,j,0,nnew,ig ) = trb_bot 
                ENDDO
-
-               
             ENDIF               
             
             ! tridiagonal resolution 
@@ -863,7 +839,6 @@
           enddo
         enddo
       enddo
-
 !
 ! Exchange computational margines and/or periodic boundaries:
 !--------- ------------- -------- ------ -------- ----------- 

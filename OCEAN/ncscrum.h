@@ -995,12 +995,8 @@
       integer  ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-<<<<<<< HEAD
-     &      , hisShflx, hisSwflx, hisShflx_rsw
-=======
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
->>>>>>> dev_2019_perfrst_hotfix
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -1165,12 +1161,8 @@
       integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
-<<<<<<< HEAD
-     &      , avgShflx, avgSwflx, avgShflx_rsw
-=======
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
->>>>>>> dev_2019_perfrst_hotfix
 # ifdef MORPHODYN
      &      , avgHm
 # endif
@@ -1465,10 +1457,7 @@
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-<<<<<<< HEAD
-=======
      &      , hisBhflx, hisBwflx
->>>>>>> dev_2019_perfrst_hotfix
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -1713,10 +1702,7 @@
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
-<<<<<<< HEAD
-=======
      &      , avgBhflx, avgBwflx
->>>>>>> dev_2019_perfrst_hotfix
 # ifdef MORPHODYN
      &      , avgHm
 # endif
