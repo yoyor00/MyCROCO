@@ -59,7 +59,7 @@ C$    integer omp_get_thread_num
 # include "scalars.h"
 !
       real Length_XI,Length_ETA, depth, f0,beta, 
-     &     cff,y, x0,y0,dx,dy, NSUB
+     &     cff, y, x0,y0,dx,dy, NSUB
 !
 # if defined CHANNEL && defined BOSSE
       real   Rij,cffi,cffj
@@ -199,11 +199,7 @@ C$    integer omp_get_thread_num
                      f0=0.   
                      beta=0.
 # elif defined SANDBAR
-#  ifdef SANDBAR_RS89
-                     depth=0.6
-#  else
                      depth=4.1
-#  endif
                      f0=0.   
                      beta=0.
 # elif defined SWASH
@@ -337,11 +333,7 @@ C$    integer omp_get_thread_num
                      Length_XI =1180.0 
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SANDBAR
-#  ifdef SANDBAR_RS89
-                     Length_XI =32.
-#  else
                      Length_XI =200.
-#  endif
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
                      Length_XI =110.0 
@@ -653,7 +645,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! Roelvink & Reniers 1995: LIP-1B
           xx=xr(i,j)
           if (xx.lt.60) then
-            h(i,j)=0.045*xx-5.072
+            h(i,j)=0.045*xx-5.2704
           elseif (xx.lt.155) then
             p1= 2.0248857e-13  
             p2=-1.6816888e-10
@@ -680,7 +672,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 ! Roelvink & Reniers 1995: LIP-1C
           xx=xr(i,j)
           if (xx.lt.60) then
-            h(i,j)=0.046*xx-5.030
+            h(i,j)=0.046*xx-5.3304
           elseif (xx.lt.132) then
             p1= 2.0248857e-13  
             p2=-1.6816888e-10
@@ -713,14 +705,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 + p4*xx**3 +
      &               p5*xx**2 + p6*xx + p7
           endif
-#  elif defined SANDBAR_RS89
-! Roelvink & Stive 1989
-          p1 =  -6.228e-06
-          p2 =   0.0004507
-          p3 =     0.01459
-          p4 =     -0.6769
-          xx=xr(i,j)/10.
-          h(i,j) = p1*xx**3 + p2*xx**2 + p3*xx + p4
 #  endif
           h(i,j) = min(-h(i,j),depth)
         enddo
@@ -823,7 +807,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
 # ifdef ANA_DUNE
-         cff=0.01
          h(i,j)=depth-2.*exp(-cff*(xr(i,j)-0.5*xl)**2)
 # else
 #  ifdef MPI
@@ -831,7 +814,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  else
          cff=(float(i       ) )
 #  endif
-         h(i,j)=depth*(1.-0.5*exp(-(0.5*(1./10)**2)*( (2.*(cff-25))**2 )))
+         h(i,j)=depth*(1.-0.5*exp(-5.e-3*(2.*(cff-25.))**2))
 # endif
         enddo
       enddo

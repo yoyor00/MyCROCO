@@ -147,6 +147,14 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
          call fillvalue2d(work2d,ncidavg,avgVb,indxVb,
      &                   record,v2dvar,type)
       endif
+
+#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+      if (wrtavg(indxHm)) then
+         work2d=h_avg
+         call fillvalue2d(work2d,ncidavg,avgHm,indxHm,
+     &                    record,r2dvar,type)
+      endif
+#endif
 !     
 !     Write out kinematic bottom stress (N/m2).
 !     

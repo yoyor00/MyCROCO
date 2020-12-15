@@ -1856,7 +1856,7 @@ c        close(testunit)
            if (wrtdiags_eddy(itrc)) wrtdiags_eddy(3)=.true.
            MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_eddy(itrc),
-     &         'write potential vorticity terms '
+     &         'write Reynolds stress terms '
         enddo
 
 # ifdef AVERAGES
@@ -1868,7 +1868,7 @@ c        close(testunit)
           if (wrtdiags_eddy_avg(itrc)) wrtdiags_eddy_avg(3)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiags_eddy_avg(itrc),
-     &         'write potential vorticity terms '
+     &         'write Reynolds stress terms '
        enddo
 # endif /* AVERAGES  */
 #endif /*DIAGNOSTICS_EDDY */

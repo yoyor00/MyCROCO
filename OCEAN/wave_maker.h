@@ -57,6 +57,17 @@
         wp=2.
         wa=0.0442
 #    endif
+#   elif defined SANDBAR && !defined MRL_WCI
+#     define WAVE_MAKER_JONSWAP
+#     ifdef SANDBAR_OFFSHORE
+        wp=5.             ! period
+        wa=0.49           ! amplitude
+        gamma=3.3         ! JONSWAP peakedness parameter
+#     else
+        wp=8.             ! period
+        wa=0.21           ! amplitude
+        gamma=3.3         ! JONSWAP peakedness parameter
+#     endif
 #   endif
 !
         wf=2*pi/wp        ! frequency
@@ -77,6 +88,10 @@
 !
         wd =wd *deg2rad  ! incidence angle 
         wds=wds*deg2rad  ! directional spread
+!
+#   ifdef WAVE_MAKER_JONSWAP
+#    define WAVE_MAKER_SPECTRUM
+#   endif
 !
 !--------------------------------------------------------------------
 !  Initialisation
@@ -313,15 +328,6 @@
      &                    +cff2*cosh(wk2*Zu)
      &                    +cff3*cosh(2*wk1*Zu)
      &                    +cff4*cosh(2*wk2*Zu)
-          enddo
-          cff1=0.5*g*wa1*wa1*wk1/(wf1*Du)
-          cff2=0.5*g*wa2*wa2*wk2/(wf2*Du)
-          !cff1=0.5*wa1*wa1*wk1*wf1/(sinh(wk1*Du))**2
-          !cff2=0.5*wa2*wa2*wk2*wf2/(sinh(wk2*Du))**2
-          do k=1,N
-            ubry_west(j,k)=ubry_west(j,k)   ! compensation flow
-     &                       -cff1 !*cosh(2*wk1*Zu)
-     &                       -cff2 !*cosh(2*wk2*Zu)
           enddo
 #    else
           xu=0.5*(xr(0,j)+xr(1,j))-x0

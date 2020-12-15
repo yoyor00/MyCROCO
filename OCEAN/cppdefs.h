@@ -1023,7 +1023,8 @@
 !   – data report. Technical report, Delft, The Netherlands, Delft Hydraulics
 */
 # define SANDBAR_OFFSHORE /* LIP-1B */
-!# define SANDBAR_ONSHORE  /* LIP-1C */
+# undef  SANDBAR_ONSHORE  /* LIP-1C */
+# undef  NBQ  /* wave-resolved model */
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
@@ -1040,29 +1041,62 @@
 # define OBC_WEST
 # define SPONGE
 # define WET_DRY
-# define MRL_WCI
-# ifdef MRL_WCI
-#  define WKB_WWAVE
-#  define MRL_CEW
-#  define WKB_OBC_WEST
-#  define WAVE_ROLLER
-#  define WAVE_FRICTION
-#  define WAVE_BREAK_SWASH
-#  define WAVE_STREAMING
-#  undef  WAVE_RAMP
-# endif
-# define LMD_MIXING
-# define LMD_SKPP
-# define LMD_BKPP
-# define LMD_VMIX_SWASH
-# define BBL
-# define SEDIMENT
-# ifdef SEDIMENT
-#  define ANA_SEDIMENT
-#  define TCLIMATOLOGY
-#  define TNUDGING
-#  define ANA_TCLIMA
-#  define MORPHODYN
+# ifndef NBQ /* wave-averaged model */
+#  define MRL_WCI
+#  ifdef MRL_WCI
+#   define WKB_WWAVE
+#   define MRL_CEW
+#   define WKB_OBC_WEST
+#   define WAVE_ROLLER
+#   define WAVE_FRICTION
+#   define WAVE_BREAK_SWASH
+#   undef  WAVE_STREAMING
+#   undef  WAVE_RAMP
+#  endif
+#  define LMD_MIXING
+#  undef  GLS_MIXING
+#  undef  GLS_KOMEGA
+#  ifdef LMD_MIXING
+#   define LMD_SKPP
+#   define LMD_BKPP
+#    define LMD_VMIX_SWASH
+#  endif
+#  define BBL
+#  define SEDIMENT
+#  ifdef SEDIMENT
+#   define ANA_SEDIMENT
+#   define TCLIMATOLOGY
+#   define TNUDGING
+#   define ANA_TCLIMA
+#   define MORPHODYN
+#  endif
+# else      /* wave-resolved model */
+#  define MPI
+#  define NBQ_PRECISE
+#  define WAVE_MAKER
+#  define UV_ADV
+#  define UV_HADV_WENO5
+#  define UV_VADV_WENO5
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+#  define GLS_MIXING_3D
+#  define GLS_KOMEGA
+#  define ANA_BRY
+#  define Z_FRC_BRY
+#  define M2_FRC_BRY
+#  define M3_FRC_BRY
+#  define T_FRC_BRY
+#  define AVERAGES
+#  define AVERAGES_K
+#  define DIAGNOSTICS_EDDY
+#  define SEDIMENT
+#  ifdef SEDIMENT
+#   define ANA_SEDIMENT
+#   define TCLIMATOLOGY
+#   define TNUDGING
+#   define ANA_TCLIMA
+#   define MORPHODYN
+#  endif
 # endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG

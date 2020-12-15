@@ -54,14 +54,15 @@
 # define vidTime2 diags_eddyTime2
 # define vidTstep diags_eddyTstep
 
-#  define viddiags_uu diags_eddyuu
-#  define viddiags_vv diags_eddyvv
-#  define viddiags_uv diags_eddyuv
-#  define viddiags_ub diags_eddyub
-#  define viddiags_vb diags_eddyvb
-#  define viddiags_uw diags_eddyuw
-#  define viddiags_vw diags_eddyvw
-#  define viddiags_wb diags_eddywb
+# define viddiags_zz diags_eddyzz
+# define viddiags_uu diags_eddyuu
+# define viddiags_vv diags_eddyvv
+# define viddiags_uv diags_eddyuv
+# define viddiags_ub diags_eddyub
+# define viddiags_vb diags_eddyvb
+# define viddiags_uw diags_eddyuw
+# define viddiags_vw diags_eddyvw
+# define viddiags_wb diags_eddywb
 
 #else
 
@@ -72,14 +73,15 @@
 # define vidTime2 diags_eddyTime2_avg
 # define vidTstep diags_eddyTstep_avg
 
-#  define viddiags_uu diags_eddyuu_avg
-#  define viddiags_vv diags_eddyvv_avg
-#  define viddiags_uv diags_eddyuv_avg
-#  define viddiags_ub diags_eddyub_avg
-#  define viddiags_vb diags_eddyvb_avg
-#  define viddiags_uw diags_eddyuw_avg
-#  define viddiags_vw diags_eddyvw_avg
-#  define viddiags_wb diags_eddywb_avg
+# define viddiags_zz diags_eddyzz_avg
+# define viddiags_uu diags_eddyuu_avg
+# define viddiags_vv diags_eddyvv_avg
+# define viddiags_uv diags_eddyuv_avg
+# define viddiags_ub diags_eddyub_avg
+# define viddiags_vb diags_eddyvb_avg
+# define viddiags_uw diags_eddyuw_avg
+# define viddiags_vw diags_eddyvw_avg
+# define viddiags_wb diags_eddywb_avg
 
 #endif
 !
@@ -288,6 +290,33 @@
           itrc=1
 
           if (wrt(itrc)) then
+
+!------------------------------
+!
+! indxeddyzz
+!          
+           lvar=lenstr(vname(1,indxeddyzz+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxeddyzz+itrc-1)(1:lvar),
+     &                      NF_FOUT, 3, r2dgrd, viddiags_zz(itrc))
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxeddyzz+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_zz(itrc), 'long_name',
+     &                       lvar, vname(2,indxeddyzz+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxeddyzz+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_zz(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxeddyzz+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_zz(itrc), 'units',
+     &                          lvar,vname(3,indxeddyzz+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxeddyzz+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_zz(itrc), 'field',
+     &                       lvar, vname(4,indxeddyzz+itrc-1)(1:lvar))
+
+            call nf_add_attribute(ncid,viddiags_zz(itrc)
+     &                       ,indxeddyzz+itrc-1,5,NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -614,6 +643,22 @@
 
 !
 !
+! indxeddyzz
+!
+          lvar=lenstr(vname(1,indxeddyzz+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxeddyzz+itrc-1)(1:lvar),
+     &                                            viddiags_zz(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxeddyzz+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr) 
+            goto 99                                       !--> ERROR
+          endif
+!
+
+! ---------------------------------
+
+!
+!
 ! indxeddyuu
 !
           lvar=lenstr(vname(1,indxeddyuu+itrc-1))
@@ -791,6 +836,7 @@
 #undef vidTime2
 #undef vidTstep
 !
+#undef viddiags_zz
 #undef viddiags_uu
 #undef viddiags_vv
 #undef viddiags_uv

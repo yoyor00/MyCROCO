@@ -2027,7 +2027,7 @@ C$OMP BARRIER
 !                                                                      !
 !=======================================================================
 !
-# if ! defined COHESIVE_BED && ! defined MIXED_BED
+# if !defined COHESIVE_BED && !defined MIXED_BED
 
       subroutine sed_bed_tile (Istr,Iend,Jstr,Jend,
      &                         tau_w,dep_mass,Awrk1,Awrk2)
@@ -2611,8 +2611,8 @@ C$OMP BARRIER
       integer imin,imax,jmin,jmax
       real add,newlayer_thick
 
-   !   parameter (eps = 1.0E-14,newlayer_thick=0.001)
-    !  parameter (eps = 1.0E-14,newlayer_thick=0.0005) !BEDTOY
+!     parameter (eps = 1.0E-14,newlayer_thick=0.001)
+!     parameter (eps = 1.0E-14,newlayer_thick=0.0005) !BEDTOY
       parameter (eps = 1.0E-14,newlayer_thick=0.001)
 
 # if defined MIXED_BED

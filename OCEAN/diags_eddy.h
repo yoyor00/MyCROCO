@@ -6,6 +6,8 @@
 #ifdef DIAGNOSTICS_EDDY
 # ifdef AVERAGES
       real timediags_eddy_avg
+      real eddyzz_avg(GLOBAL_2D_ARRAY)
+CSDISTRIBUTE_RESHAPE eddyzz_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real eddyuu_avg(GLOBAL_2D_ARRAY,N)
 CSDISTRIBUTE_RESHAPE eddyuu_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real eddyvv_avg(GLOBAL_2D_ARRAY,N)
@@ -26,7 +28,8 @@ CSDISTRIBUTE_RESHAPE eddyvw_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 
 # ifdef AVERAGES
       common /diag_timediags_eddy_avg/timediags_eddy_avg
-      common /diag_eddyuu_avg/eddyuu_avg
+      common /diag_eddyzz_avg/eddyzz_avg
+     &       /diag_eddyuu_avg/eddyuu_avg
      &       /diag_eddyvv_avg/eddyvv_avg
      &       /diag_eddyuv_avg/eddyuv_avg
      &       /diag_eddyub_avg/eddyub_avg

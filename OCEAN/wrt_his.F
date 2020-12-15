@@ -622,10 +622,10 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       Jend2=min(Jend2,LOCALMM)
 #endif
 
-          write(*,*) 'wrt_his traceurs',NT,itsubs1,itsubs2
+CR    write(*,*) 'wrt_his: tracers ',NT,itsubs1,itsubs2
       do itrc=1,NT
          if (wrthis(indxT+itrc-1)) then
-          write(*,*) 'traceurs:',itrc,'/',NT
+CR         write(*,*) 'tracers:',itrc,'/',NT
 #if defined MUSTANG & defined SAND2D
 ! Z= (h(i,j)+zeta(i,j,knew)+z_w(i,j,k))
 ! H= (h(i,j)+zeta(i,j,knew))

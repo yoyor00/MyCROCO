@@ -15,11 +15,11 @@
 # define PSI_SMOOTH
 # define TKE_SMOOTH
 
-# undef  GLS_HADV_UP1
-# undef  GLS_VADV_UP1
+# define GLS_HADV_UP1
+# define GLS_VADV_UP1
 
 # ifdef GLS_MIXING_3D
-#  undef GLS_SHEAR_3D
+#  define GLS_SHEAR_3D
 # endif
 !
 !=======================================================================
@@ -102,9 +102,9 @@
       REAL            ::  HUon_w   , HVom_w   , trb_min(2), Denom
       ! Parameter values      
       REAL, PARAMETER ::  eps_min =  1.0E-12 ! min value for dissipation rate
-      REAL, PARAMETER ::  tke_min =  1.0E-06 ! min value for TKE
+      REAL, PARAMETER ::  tke_min =  1.0E-10 ! min value for TKE
 # ifdef GLS_MIXING_3D
-      REAL, PARAMETER ::  eps     =  1.0E-04 ! min stable stratification
+      REAL, PARAMETER ::  eps     =  1.0E-05 ! min stable stratification
       REAL, PARAMETER ::  nuws    =  1.0E-06 ! background value for diffusivities 
       REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background value for viscosities
 # else

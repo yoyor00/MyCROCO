@@ -399,10 +399,21 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
 #  endif /* AVERAGES*/
+          enddo
+        enddo
+      enddo
+#  endif /* DIAGNOSTICS_TS_MLD */
+# endif /*DIAGNOSTICS_TS*/
 
-
-# ifdef DIAGNOSTICS_EDDY
-#  ifdef AVERAGES
+# if defined DIAGNOSTICS_EDDY && defined AVERAGES
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          eddyzz_avg(i,j)=init
+        enddo
+      enddo
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
             eddyuu_avg(i,j,k)=init
             eddyvv_avg(i,j,k)=init
             eddyuv_avg(i,j,k)=init
@@ -411,162 +422,151 @@ C$    integer omp_get_thread_num
             eddywb_avg(i,j,k)=init
             eddyuw_avg(i,j,k)=init
             eddyvw_avg(i,j,k)=init
-#  endif /* AVERAGES */
-# endif /* DIAGNOSTICS_EDDY */
-
-
           enddo
         enddo
       enddo
-#  endif
-# endif /*DIAGNOSTICS_TS*/
-
-
+# endif /* DIAGNOSTICS_EDDY */
 
 # ifdef DIAGNOSTICS_VRT
-        do j=jstrR,jendR             ! 3-D primitive
-          do i=istrR,iendR           ! variables.
-
-            vrtXadv(i,j)=init 
-            vrtYadv(i,j)=init
-            vrtHdiff(i,j)=init
-            vrtCor(i,j)=init
-            vrtPrsgrd(i,j)=init
-            vrtHmix(i,j)=init
-            vrtVmix(i,j)=init
-            vrtrate(i,j)=init
-            vrtVmix2(i,j)=init
-            vrtWind(i,j)=init
-            vrtDrag(i,j)=init
-# if defined DIAGNOSTICS_BARO
-            vrtBaro(i,j)=init
-# endif
-# if defined M3FAST
-            vrtfast(i,j)=init
-# endif
+      do j=jstrR,jendR             ! 3-D primitive
+        do i=istrR,iendR           ! variables.
+          vrtXadv(i,j)=init 
+          vrtYadv(i,j)=init
+          vrtHdiff(i,j)=init
+          vrtCor(i,j)=init
+          vrtPrsgrd(i,j)=init
+          vrtHmix(i,j)=init
+          vrtVmix(i,j)=init
+          vrtrate(i,j)=init
+          vrtVmix2(i,j)=init
+          vrtWind(i,j)=init
+          vrtDrag(i,j)=init
+#  if defined DIAGNOSTICS_BARO
+          vrtBaro(i,j)=init
+#  endif
+#  if defined M3FAST
+          vrtfast(i,j)=init
+#  endif
 #  ifdef AVERAGES
-            vrtXadv_avg(i,j)=init
-            vrtYadv_avg(i,j)=init
-            vrtHdiff_avg(i,j)=init
-            vrtCor_avg(i,j)=init
-            vrtPrsgrd_avg(i,j)=init
-            vrtHmix_avg(i,j)=init
-            vrtVmix_avg(i,j)=init
-            vrtrate_avg(i,j)=init
-            vrtVmix2_avg(i,j)=init
-            vrtWind_avg(i,j)=init
-            vrtDrag_avg(i,j)=init
-# if defined DIAGNOSTICS_BARO
-            vrtBaro_avg(i,j)=init
-# endif
-# if defined M3FAST
-            vrtfast_avg(i,j)=init
-# endif
+          vrtXadv_avg(i,j)=init
+          vrtYadv_avg(i,j)=init
+          vrtHdiff_avg(i,j)=init
+          vrtCor_avg(i,j)=init
+          vrtPrsgrd_avg(i,j)=init
+          vrtHmix_avg(i,j)=init
+          vrtVmix_avg(i,j)=init
+          vrtrate_avg(i,j)=init
+          vrtVmix2_avg(i,j)=init
+          vrtWind_avg(i,j)=init
+          vrtDrag_avg(i,j)=init
+#   if defined DIAGNOSTICS_BARO
+          vrtBaro_avg(i,j)=init
+#   endif
+#   if defined M3FAST
+          vrtfast_avg(i,j)=init
+#   endif
 #  endif /* AVERAGES */
-          enddo
         enddo
+      enddo
 # endif /* DIAGNOSTICS_VRT */
 
-
 # ifdef DIAGNOSTICS_EK
-        do j=jstrR,jendR             ! 3-D primitive
-          do i=istrR,iendR           ! variables.
-
-            ekHadv(i,j)=init 
-            ekHdiff(i,j)=init
-            ekVadv(i,j)=init            
-            ekCor(i,j)=init
-            ekPrsgrd(i,j)=init
-            ekHmix(i,j)=init
-            ekVmix(i,j)=init
-            ekrate(i,j)=init
-            ekvol(i,j)=init
-            ekVmix2(i,j)=init
-            ekWind(i,j)=init
-            ekDrag(i,j)=init
-# if defined DIAGNOSTICS_BARO
-            ekBaro(i,j)=init
-# endif
-# if defined M3FAST
-            ekfast(i,j)=init
-# endif
+      do j=jstrR,jendR             ! 3-D primitive
+        do i=istrR,iendR           ! variables.
+          ekHadv(i,j)=init 
+          ekHdiff(i,j)=init
+          ekVadv(i,j)=init            
+          ekCor(i,j)=init
+          ekPrsgrd(i,j)=init
+          ekHmix(i,j)=init
+          ekVmix(i,j)=init
+          ekrate(i,j)=init
+          ekvol(i,j)=init
+          ekVmix2(i,j)=init
+          ekWind(i,j)=init
+          ekDrag(i,j)=init
+#  if defined DIAGNOSTICS_BARO
+          ekBaro(i,j)=init
+#  endif
+#  if defined M3FAST
+          ekfast(i,j)=init
+#  endif
 #  ifdef AVERAGES
-            ekHadv_avg(i,j)=init
-            ekHdiff_avg(i,j)=init
-            ekVadv_avg(i,j)=init           
-            ekCor_avg(i,j)=init
-            ekPrsgrd_avg(i,j)=init
-            ekHmix_avg(i,j)=init
-            ekVmix_avg(i,j)=init
-            ekrate_avg(i,j)=init
-            ekvol_avg(i,j)=init
-            ekVmix2_avg(i,j)=init
-            ekWind_avg(i,j)=init
-            ekDrag_avg(i,j)=init
-# if defined DIAGNOSTICS_BARO
-            ekBaro_avg(i,j)=init
-# endif
-# if defined M3FAST
-            ekfast_avg(i,j)=init
-# endif
+          ekHadv_avg(i,j)=init
+          ekHdiff_avg(i,j)=init
+          ekVadv_avg(i,j)=init           
+          ekCor_avg(i,j)=init
+          ekPrsgrd_avg(i,j)=init
+          ekHmix_avg(i,j)=init
+          ekVmix_avg(i,j)=init
+          ekrate_avg(i,j)=init
+          ekvol_avg(i,j)=init
+          ekVmix2_avg(i,j)=init
+          ekWind_avg(i,j)=init
+          ekDrag_avg(i,j)=init
+#   ifdef DIAGNOSTICS_BARO
+          ekBaro_avg(i,j)=init
+#   endif
+#   if defined M3FAST
+          ekfast_avg(i,j)=init
+#   endif
 #  endif /* AVERAGES */
 
-# ifdef DIAGNOSTICS_EK_MLD
-            ekHadv_mld(i,j)=init 
-            ekHdiff_mld(i,j)=init
-            ekVadv_mld(i,j)=init            
-            ekCor_mld(i,j)=init
-            ekPrsgrd_mld(i,j)=init
-            ekHmix_mld(i,j)=init
-            ekVmix_mld(i,j)=init
-            ekrate_mld(i,j)=init
-            ekvol_mld(i,j)=init
-            ekVmix2_mld(i,j)=init
-# if defined DIAGNOSTICS_BARO
-            ekBaro_mld(i,j)=init
-# endif
-# if defined M3FAST
-            ekfast_mld(i,j)=init
-# endif
-#  ifdef AVERAGES
-            ekHadv_mld_avg(i,j)=init
-            ekHdiff_mld_avg(i,j)=init
-            ekVadv_mld_avg(i,j)=init           
-            ekCor_mld_avg(i,j)=init
-            ekPrsgrd_mld_avg(i,j)=init
-            ekHmix_mld_avg(i,j)=init
-            ekVmix_mld_avg(i,j)=init
-            ekrate_mld_avg(i,j)=init
-            ekvol_mld_avg(i,j)=init
-            ekVmix2_mld_avg(i,j)=init
-# if defined DIAGNOSTICS_BARO
-            ekBaro_mld_avg(i,j)=init
-# endif
-# if defined M3FAST
-            ekfast_mld_avg(i,j)=init
-# endif
-#  endif /* AVERAGES */
-# endif /* DIAGNOSTICS_EK */
-
-          enddo
+#  ifdef DIAGNOSTICS_EK_MLD
+          ekHadv_mld(i,j)=init 
+          ekHdiff_mld(i,j)=init
+          ekVadv_mld(i,j)=init            
+          ekCor_mld(i,j)=init
+          ekPrsgrd_mld(i,j)=init
+          ekHmix_mld(i,j)=init
+          ekVmix_mld(i,j)=init
+          ekrate_mld(i,j)=init
+          ekvol_mld(i,j)=init
+          ekVmix2_mld(i,j)=init
+#   if defined DIAGNOSTICS_BARO
+          ekBaro_mld(i,j)=init
+#   endif
+#   if defined M3FAST
+          ekfast_mld(i,j)=init
+#   endif
+#   ifdef AVERAGES
+          ekHadv_mld_avg(i,j)=init
+          ekHdiff_mld_avg(i,j)=init
+          ekVadv_mld_avg(i,j)=init           
+          ekCor_mld_avg(i,j)=init
+          ekPrsgrd_mld_avg(i,j)=init
+          ekHmix_mld_avg(i,j)=init
+          ekVmix_mld_avg(i,j)=init
+          ekrate_mld_avg(i,j)=init
+          ekvol_mld_avg(i,j)=init
+          ekVmix2_mld_avg(i,j)=init
+#    ifdef DIAGNOSTICS_BARO
+          ekBaro_mld_avg(i,j)=init
+#    endif
+#    if defined M3FAST
+          ekfast_mld_avg(i,j)=init
+#    endif
+#   endif /* AVERAGES */
+#  endif /* DIAGNOSTICS_EK_MLD */
         enddo
+      enddo
 # endif /* DIAGNOSTICS_EK */
 
 # ifdef DIAGNOSTICS_PV
-# if defined DIAGNOSTICS_PV_FULL
+#  if defined DIAGNOSTICS_PV_FULL
       do k=1,N
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pv(i,j,k)=init
             pvd(i,j,k)=init
-#  ifdef AVERAGES
+#   ifdef AVERAGES
             pv_avg(i,j,k)=init
             pvd_avg(i,j,k)=init
-#  endif /* AVERAGES */
+#   endif /* AVERAGES */
           enddo
         enddo
       enddo
-# endif
+#  endif
       do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
@@ -579,7 +579,6 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-
       do itrc=1,2
         do k=1,N
           do j=JstrR,JendR
@@ -592,7 +591,6 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-
 # endif /* DIAGNOSTICS_PV */
 
 # ifdef DIAGNOSTICS_BIO

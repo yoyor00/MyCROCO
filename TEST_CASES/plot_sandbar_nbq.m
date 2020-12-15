@@ -35,7 +35,8 @@ close all
 %
 % --- model params ---
 %
-fname      = 'sandbar_his.nc'; % croco file name
+fname      = 'sandbar_avg.nc';               % croco file name
+dianame    = 'sandbar_diags_eddy_avg_1B.nc'; %
 
 Expname    = '1B';     % LIP experiment : 1B: offshore migration
                        %                  1C: onshore  migration
@@ -46,6 +47,7 @@ else
 end
 
 morph_cpl  = 1;        % feedback to currents
+sedim      = 1;
 makepdf    = 0;        % make pdf file
 %
 %======================================================================
@@ -58,12 +60,11 @@ yindex = 2; % Mm=1 with NS no-slip conditions
 %
 nc=netcdf(fname,'r');
 tindex  =length(nc{'scrum_time'}(:)); % reads last record
-tindex0 =min(tindex,5);               %  2 h
+tindex0 =min(tindex,3);               %  2 h
 %
 % horizontal grid
 hr=squeeze(nc{'h'}(yindex,:));
 xr=squeeze(nc{'x_rho'}(yindex,:));
-hu=0.5*(hr(1:end-1)+hr(2:end));
 xu=0.5*(xr(1:end-1)+xr(2:end));
 L=length(hr);
 %
@@ -71,8 +72,11 @@ L=length(hr);
 if morph_cpl,
  hnew=squeeze(nc{'hmorph'}(tindex,yindex,:));
  h=hnew;
+ hi=squeeze(nc{'hmorph'}(tindex0,yindex,:));
 else
  h=hr;
+ hnew=h;
+ hi=h;
 end
 %
 % vertical grid
@@ -81,7 +85,7 @@ theta_s=nc.theta_s(:);
 theta_b=nc.theta_b(:); 
 hc=nc.hc(:); 
 zeta=squeeze(nc{'zeta'}(tindex,yindex,:));
-Dcrit=1.1*nc{'Dcrit'}(:);
+Dcrit=nc{'Dcrit'}(:);
 zeta(h<Dcrit)=zeta(h<Dcrit)-h(h<Dcrit); % add land topo
 zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r',2));
 zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w',2));
@@ -100,10 +104,9 @@ Du  =zwu(N+1,:)-zwu(1,:);
 Du2d=repmat(Du,[N 1]);
 
 % ---------------------------------------------------------------------
-% --- read/compute model fields (tindex) ---
+% --- read/compute 3D model fields (tindex) ---
 % --------------------------------------------------------------------
-time=morph_fac/86400*(nc{'scrum_time'}(tindex)- ...
-                      nc{'scrum_time'}(1));
+time=morph_fac/86400*nc{'scrum_time'}(tindex);
 
 % ... zonal velocity ...                         ---> xu,zu
 u=squeeze(nc{'u'}(tindex,:,yindex,:));
@@ -111,26 +114,27 @@ u=squeeze(nc{'u'}(tindex,:,yindex,:));
 % ... vertical velocity ...                      ---> xr,zw
 w=squeeze(nc{'w'}(tindex,:,yindex,:));
 
-% ... sediment concentration ...                 ---> xr,zr
-C=2*squeeze(nc{'sand_01'}(tindex,:,yindex,:));
-
 % ... total viscosity
 Akv=squeeze(nc{'AKv'}(tindex,:,yindex,:));
 
-% ... viscosity due to wave breaking ...
-Akb=squeeze(nc{'Akb'}(tindex,:,yindex,:));
-
 % ... wave setup ...  
 sup=squeeze(nc{'zeta'}(tindex0,yindex,:)); % mid exp time
-sup(hr<0)=sup(hr<0)+hr(hr<0)-Dcrit;
+%sup(hr<0)=sup(hr<0)+hr(hr<0)-Dcrit;
+
+if sedim,
+% ... sediment concentration ...                 ---> xr,zr
+ C=2*squeeze(nc{'sand_01'}(tindex,:,yindex,:));
+end
 
 % ---------------------------------------------------------------------
-% --- read/compute bottom model fields (tindx0) ---
+% --- read/compute bottom model fields (tindex0) ---
 % --------------------------------------------------------------------
 
 % ... u undertow ...
+method=2;
 zob=1.e-4;zref=0.1; 
 u0=squeeze(nc{'u'}(tindex0,:,yindex,:));
+hu=0.5*(h(1:end-1)+h(2:end));
 L=length(hu);
 hu2d=repmat(hu,[N 1]);
 zzu=hu2d+zru;
@@ -140,28 +144,28 @@ for ix=1:L
  ubot(ix)=squeeze(u0(nn,ix));
 end
 
-% ... sediment concentration ...                 ---> xr,zr
-C0=2*squeeze(nc{'sand_01'}(tindex0,:,yindex,:));
-zref=0.01;
-L=length(h);
-h2d=repmat(h,[N 1]);
-zz=h2d+zr;
-for ix=1:L
- nn=min(find(zz(:,ix)>zref));
- if isempty(nn), nn=N; end
- Cbot(ix)=squeeze(C(nn,ix));
+% ... sediment concentration ...
+if sedim
+ C0=2*squeeze(nc{'sand_01'}(tindex0,:,yindex,:));
+ zref=0.01;
+ L=length(h);
+ h2d=repmat(h,[N 1]);
+ zz=h2d+zr;
+ for ix=1:L
+  nn=min(find(zz(:,ix)>zref));
+  if isempty(nn), nn=N; end
+  Cbot(ix)=squeeze(C0(nn,ix));
+ end
 end
 
-% ... hrms ...  
-hrms =squeeze(nc{'hrm'}(tindex0,yindex,:)); % init time
+close(nc)
 
-% ... ripple height ...  
-rhgt=squeeze(nc{'Hripple'}(tindex0,yindex,:)); % init time
-% ... ripple length ...  
-rlen=squeeze(nc{'Lripple'}(tindex0,yindex,:)); % init time
-% ... Zb app ...  
-zbapp=squeeze(nc{'Zbapp'}(tindex0,yindex,:)); % init time
-
+% ... Hrms ...
+nc=netcdf(dianame,'r');
+zz=squeeze(nc{'zz'}(tindex0,yindex,:)); 
+z0=sup;
+z0(hi<Dcrit)=z0(hi<Dcrit)-hi(hi<Dcrit); % add slope
+hrms=4*sqrt(zz-z0.^2)/sqrt(2);
 close(nc)
 
 zeta(D<Dcrit)=NaN;
@@ -241,7 +245,7 @@ end
 % --- plot ---
 %=============================================================
 %
-figure('Position',[50 50 600 800])
+figure('Position',[50 200 600 600])
 xmin=20; xmax=190;
 %
 % section u ...
@@ -279,7 +283,6 @@ hold off
 %
 h2=subplot(4,1,2);
 h2.Position = h2.Position + [0 -0.05 0 -0.05];
-zmin=0; zmax=1;
 plot(xr,hrms,'b',x_hrms_d,hrms_d,'b*','LineWidth',2); hold on
 legend('Model','Flume','Location','SouthWest')
 grid on
@@ -305,18 +308,21 @@ hold off
 %
 % Sand Concentration ...
 %
-h4=subplot(4,1,4);
-h4.Position = h4.Position + [0 0.0 0 -0.05];
-zmin=0; zmax=4;
-plot(xr,Cbot,'b',x_Cbot_d,Cbot_d,'b*','LineWidth',2); hold on;
-legend('Model','Flume','Location','SouthWest')
-grid on
-axis([xmin xmax zmin zmax])
-thour=floor(time*24);
-xlabel('X [m]','Fontsize',15)
-ylabel('C [g/l]','Fontsize',15)
-set(gca,'Fontsize',15)
-hold off
+if sedim
+ h4=subplot(4,1,4);
+ h4.Position = h4.Position + [0 0.0 0 -0.05];
+ %zmin=-Inf; zmax=Inf;
+ zmin=0; zmax=4;
+  plot(xr,Cbot,'b',x_Cbot_d,Cbot_d,'b*','LineWidth',2); hold on;
+ legend('Model','Flume','Location','SouthWest')
+ grid on
+ axis([xmin xmax zmin zmax])
+  thour=floor(time*24);
+ xlabel('X [m]','Fontsize',15)
+ ylabel('C [g/l]','Fontsize',15)
+ set(gca,'Fontsize',15)
+ hold off
+end
 
 if makepdf
  if Expname=='1B',
@@ -386,11 +392,4 @@ else
 
 end
 
-%
-% Ripple plot
-%
-figure;
-plot(xr,100*rhgt,xr,10*rlen,xr,1000*zbapp,xr,-h);
-grid on
-legend('rhgt (cm)','rlen (dm)','zbapp (mm)','bathy (m)')
 

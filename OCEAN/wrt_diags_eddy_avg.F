@@ -133,6 +133,13 @@
        if (wrtdiags_eddy_avg(1)) then
 
 !---------------------------------------------------------------
+! indxeddyzz
+!
+        call fillvalue2d(eddyzz_avg,nciddiags_eddy_avg,diags_eddyzz_avg(1),
+     &                      indxeddyzz,
+     &                      record,r2dvar,type)
+
+!---------------------------------------------------------------
 ! indxeddyuu
 !
         call fillvalue3d(eddyuu_avg,nciddiags_eddy_avg,diags_eddyuu_avg(1),

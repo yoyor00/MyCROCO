@@ -71,8 +71,8 @@
           cff1=0.0
           if (ZEROTH_TILE) then
             timedia_avg=time
-            MPI_master_only write(*,*) 'started averaging',
-     &                  iic, ntsdia_avg,nwrtdia_avg
+!            MPI_master_only write(*,*) 'started averaging',
+!     &                  iic, ntsdia_avg,nwrtdia_avg
           endif
         elseif (mod(ilc-ntsdia_avg,nwrtdia_avg).gt.1) then
           cff =1.0
@@ -85,8 +85,8 @@
           cff1=1.0
           if (ZEROTH_TILE) then
             timedia_avg=cff*(timedia_avg+time)
-            MPI_master_only write(*,*) 'finished averaging eddy',
-     &                  iic,ntsdia_avg,nwrtdia_avg
+!            MPI_master_only write(*,*) 'finished averaging',
+!     &                  iic,ntsdia_avg,nwrtdia_avg
           endif
         endif
 

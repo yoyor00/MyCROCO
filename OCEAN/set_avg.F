@@ -176,6 +176,16 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+      if (wrtavg(indxHm)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              h_avg(i,j)=cff*( cff1*h_avg(i,j)
+     &                                 +h(i,j))
+            enddo
+          enddo
+        endif
+#endif
         if (wrtavg(indxBostr)) then
           do j=Jstr,Jend
             do i=Istr,Iend

@@ -3296,13 +3296,19 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvMrhs+itrc-1)
        vname(7,indxpvMrhs+itrc-1)='                                '
 
       enddo  ! 1,2
-
-
 #endif  /* DIAGNOSTICS_PV */
 
-
-
 #ifdef DIAGNOSTICS_EDDY
+CR       write(stdout,'(1x,A,I3)') 'indxeddyzz = ',indxeddyzz
+       write(vname1,*) 'zz                                  '
+       vname(1,indxeddyzz)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyzz)
+       vname(2,indxeddyzz)='zz                              '
+       write(vname3,*) 'meter2                              '
+       vname(3,indxeddyzz)=vname3
+       vname(4,indxeddyzz)='                                '
+       vname(5,indxeddyzz)='                                '
+       vname(7,indxeddyzz)='                                '
 
 CR       write(stdout,'(1x,A,I3)') 'indxeddyuu = ',indxeddyuu
        write(vname1,*) 'uu                                    '
@@ -3391,13 +3397,9 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvb)
        vname(4,indxeddyvb)='                                '
        vname(5,indxeddyvb)='                                '
        vname(7,indxeddyvb)='                                '
-
 #endif  /* DIAGNOSTICS_EDDY */
 
-
-
 #ifdef OUTPUTS_SURFACE
-
 CR       write(stdout,'(1x,A,I3)') 'indxsurft = ',indxsurft
        nametrc='surf'
        lvar=lenstr(nametrc)
