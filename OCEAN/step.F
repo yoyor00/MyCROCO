@@ -559,7 +559,7 @@ C$OMP BARRIER
 #include "scalars.h"
 #include "ncscrum.h"
 #include "ocean2d.h"
-#if defined RVTK_DEBUG && defined MRL_WCI 
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined MRL_WCI 
 # include "forces.h"
 #endif
 #ifdef FLOATS
@@ -573,9 +573,9 @@ C$OMP BARRIER
 #elif defined RVTK_DEBUG_PERFRST && defined M3FAST
 # include "nbq.h"
 #endif
-#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
-# include "forces.h"
-#endif
+!#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
+!# include "forces.h"
+!#endif
        integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
