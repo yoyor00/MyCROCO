@@ -39,7 +39,7 @@
 #ifdef MUSTANG
           USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
           USE comMUSTANG, ONLY : flx_w2s_sum_CROCO,corflux_CROCO
-#ifdef SAND2D
+#ifdef key_sand2D
           USE comsubstance, ONLY : l_subs2D
 #endif
 
@@ -228,7 +228,7 @@
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
 
-# if defined MUSTANG && defined SAND2D
+# if defined MUSTANG && defined key_sand2D
 ! Faire somme des FX en k=1
 #endif
 
@@ -265,7 +265,7 @@
 !
           do j=Jstr,Jend
             do i=Istr,Iend
-# if defined MUSTANG && defined SAND2D
+# if defined MUSTANG && defined key_sand2D
          if (l_subs2D(itrc-itsubs1+1)) then
               if (k.eq.1) then
 
@@ -395,7 +395,7 @@
 !
           do k=1,N
 
-# if defined MUSTANG && defined SAND2D
+# if defined MUSTANG && defined key_sand2D
            if (.not.l_subs2D(itrc-itsubs1+1)) then
 # endif
             do i=Istr,Iend
@@ -403,7 +403,7 @@
      &                                                      -FC(i,k-1))
             enddo
 
-# if defined MUSTANG && defined SAND2D
+# if defined MUSTANG && defined key_sand2D
            endif
 # endif
           enddo               !--> discard FC
@@ -531,7 +531,7 @@
 #  include "t3dmix_tridiagonal.h"
       elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then
 
-# if defined MUSTANG && defined SAND2D
+# if defined MUSTANG && defined key_sand2D
          if (.not.l_subs2D(itrc-itsubs1+1)) then
 #  include "t3dmix_tridiagonal_chute.h"
          endif

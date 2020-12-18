@@ -25,7 +25,7 @@
      &   ,nv_out3Dnv_specif, nv_out2D_specif
      &   ,varspecif3Dnv_save,varspecif2D_save
 #endif
-#ifdef SAND2D  
+#ifdef key_sand2D  
       USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
       USE substance,    ONLY : l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp,rouse2d
@@ -626,7 +626,7 @@ CR    write(*,*) 'wrt_his: tracers ',NT,itsubs1,itsubs2
       do itrc=1,NT
          if (wrthis(indxT+itrc-1)) then
 CR         write(*,*) 'tracers:',itrc,'/',NT
-#if defined MUSTANG & defined SAND2D
+#if defined MUSTANG & defined key_sand2D
 ! Z= (h(i,j)+zeta(i,j,knew)+z_w(i,j,k))
 ! H= (h(i,j)+zeta(i,j,knew))
            if (itrc>=itsubs1+nv_grav .AND.

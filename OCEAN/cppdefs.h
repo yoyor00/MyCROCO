@@ -1554,8 +1554,6 @@
 # define SUBSTANCE
 # define MUSTANG
 # define key_MUSTANG_V2
-# define key_noTSdiss_insed
-# define key_nofluxwat_IWS
 
 # define key_MUSTANG_bedload
 # define MORPHODYN_MUSTANG_byHYDRO
@@ -1574,8 +1572,8 @@
 
 # undef key_sand2D
 # if defined key_sand2D
-#  define SAND2D
 #  define key_CROCO
+#  define MUSTANG_CORFLUX
 # endif
 
 /* CLES MUSTANG INOPERANTES POUR LE MOMENT

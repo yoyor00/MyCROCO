@@ -412,6 +412,11 @@
 #ifdef MUSTANG
 # define TS_HADV_WENO5
 #endif
+#if defined SUBSTANCE
+#   define key_noTSdiss_insed
+#   define key_nofluxwat_IWS
+#endif
+
 /* 
   Options for split-rotated advection-diffusion schemes
 */
