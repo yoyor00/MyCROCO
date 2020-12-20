@@ -22,7 +22,7 @@ boundary: filename
     CROCO_FILES/croco_bry.nc
 initial: NRREC  filename
           2
-    CROCO_FILES/croco_rst.00000.nc
+    OUT_seg12/croco_rst.00000.nc
 restart:          NRST, NRPFRST / filename
 		  6      2
     OUT/croco_rst.nc
