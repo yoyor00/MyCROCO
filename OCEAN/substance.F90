@@ -53,7 +53,7 @@ CONTAINS
 
    !!======================================================================
 
-  SUBROUTINE substance_read_alloc(may_day_flag,indxT)
+  SUBROUTINE substance_read_alloc(may_day_flag,indxT,indxTsrc)
       !!-------------------------------------------------------------------
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
@@ -61,7 +61,7 @@ CONTAINS
    
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
-   INTEGER,INTENT(IN)                        ::  indxT
+   INTEGER,INTENT(IN)                        ::  indxT,indxTsrc
    
    !! * Local declarations
    LOGICAL                                   :: l_varassoc
@@ -852,6 +852,27 @@ CONTAINS
      !            TRIM(ADJUSTL(ADJUSTR(name_var_mod(iv)))),ivr,irk_fil(iv),wrthis(ivr)
    END DO
     ! MPI_master_only write(*,*)' indice wrthis tot',wrthis(1:indX+ntrc_substot)
+
+#ifdef PSOURCE_NCFILE_TS
+   DO isubs=1,ntrc_subs
+          indx=indxT+ntrc_salt+isubs
+!          vname(1,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src         '
+!          vname(2,indxTsrc+ntrc_salt+isubs)='Tracer source concentration     '
+!          vname(3,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''
+!          vname(4,indxTsrc+ntrc_salt+isubs)='                                '
+!          vname(5,indxTsrc+ntrc_salt+isubs)='                                '
+!          vname(6,indxTsrc+ntrc_salt+isubs)='                                '
+!          vname(7,indxTsrc+ntrc_salt+isubs)='                                '
+          vname(1,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src        '
+          vname(2,indxTsrc+isubs+1)='Tracer source concentration     '
+          vname(3,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''
+          vname(4,indxTsrc+isubs+1)='                                '
+          vname(5,indxTsrc+isubs+1)='                                '
+          vname(6,indxTsrc+isubs+1)='                                '
+          vname(7,indxTsrc+isubs+1)='                                '
+     write(*,*)'Traceurs SUBSTANCE:',vname(1,indxTsrc+ntrc_salt+isubs)
+    enddo
+#endif
 
 #ifdef MUSTANG
 #ifdef MORPHODYN_MUSTANG_byHYDRO

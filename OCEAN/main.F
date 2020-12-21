@@ -191,7 +191,7 @@
 !  computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
 #ifdef SUBSTANCE
-      call substance_read_alloc(may_day_flag,indxT)
+      call substance_read_alloc(may_day_flag,indxT,indxTsrc)
    !  &                            wrthis(indxT+2:indxT+2+ntrc_substot))
 #endif
 

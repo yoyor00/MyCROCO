@@ -27,6 +27,10 @@
       integer is,i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle,
      &     itrc
       integer s(2),c(2)
+# if defined SUBSTANCE
+      character*20 nametrc
+      character*60 vname1
+# endif
 !     #define CR
 !     
 !     Initialization: Inquire about the contents of forcing NetCDF file:
@@ -626,9 +630,23 @@ c     goto 99                                     !--> ERROR
 c     goto 99                                     !--> ERROR
             endif
 #   endif
-            
 #endif   /* PISCES */              
 #endif /* BIOLOGY  */
+#if defined SUBSTANCE 
+          elseif (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+            got_tsrc(itrc)=.true.
+            nametrc=vname(1,indxTsrc+itrc-1)
+            write(vname1,*) trim(nametrc),'_time'
+            lvar=lenstr(vname1)
+            ierr=nf_inq_varid (ncidqbar,vname1(1:lvar),
+     &            tsrc_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tsrc(itrc)=.false.
+              MPI_master_only write(stdout,3) vname1, qbarname(1:lstr)
+c     goto 99           !--> ERROR
+          endif
+#endif /* SUBSTANCE  */
+
           endif
 
 !     Read in Netcdf file the concentration
@@ -646,7 +664,12 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
             if (ierr .ne. nf_noerr) then
               write(stdout,3) vname(1,indxTsrc+itrc-1)(1:lvar), 
      &             qbarname(1:lstr)
+#if defined SUBSTANCE           
+              write(stdout,*)'on ne lit pas cette variable'
+              got_tsrc(itrc)=.false.
+#else
               goto 99           !--> ERROR
+#endif /* SUBSTANCE  */
             endif
 !     
 !     
@@ -712,7 +735,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           c=(/ 1,Nsrc /)
           ierr=nf_get_vara_FTYPE(ncidqbar,tsrc_id(itrc),s,c,
      &         tsrcg(1:Nsrc,i,itrc))
-          
+
           ittsrc(itrc)=i
           MPI_master_only write(stdout,
      &         '(6x,A,2x,I2,1x,A,1x,g12.4,1x,I4)') 
@@ -761,11 +784,12 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 # include "compute_extended_bounds.h"
 !     
 C     R      write(*,*)'Enter set_psource_ts_tile...'
+           write(*,*)'Enter set_psource_ts_tile...'
       do itrc=1,NT
         if (got_tsrc(itrc)) then
           it1=3-ittsrc(itrc)
           it2=ittsrc(itrc)
-          cff=time+0.5*dt
+          cff=time+0.5*dt 
           cff1=tsrc_time(it2,itrc)-cff
           cff2=cff-tsrc_time(it1,itrc)
 !     
@@ -814,6 +838,7 @@ C     R    &                  'Tsrc0(i,itrc)=',Tsrc0(i,itrc)
       end
 #else
       subroutine get_psource_ts_empty
+           write(*,*)'get_psource_ts_empty'
       return
       end
 #endif /* PSOURCE_NCFILE_TS */
