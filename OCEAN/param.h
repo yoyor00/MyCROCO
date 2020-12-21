@@ -242,9 +242,8 @@
 #  ifndef MPI_NOLAND
       parameter (NP_XI=100,  NP_ETA=100,  NNODES=NP_XI*NP_ETA) ! hard-coded GIGATL1
 #  else
-      integer  NNODES2
       parameter (NP_XI=100,  NP_ETA=100,
-     &           NNODES=6582, NNODES2=NP_XI*NP_ETA) !hard-coded GIGATL1
+     &           NNODES=6582,)
 #  endif
 # else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
