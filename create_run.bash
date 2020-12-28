@@ -88,6 +88,7 @@ if [ ! -d $SOURCES_DIR ]; then
 fi
 
 # Check if tools are there
+copy_tools=1
 if [ ! -d $TOOLS_DIR ]; then 
   echo  " WARNING : croco_tools directory not found "
   echo -n " Do you want to proceed without MATLAB tools ? [Y/n] "
