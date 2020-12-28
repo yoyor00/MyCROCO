@@ -188,6 +188,7 @@ if [[ $copy_tools == 1 ]] ; then
     echo '         '
 
     cp -Rf $TOOLS_DIR/start.m .
+    cp -Rf $TOOLS_DIR/oct_start.m .
     cp -Rf $TOOLS_DIR/crocotools_param.m .
     cp -Rf $TOOLS_DIR/Town/town.dat Misc/
     #
