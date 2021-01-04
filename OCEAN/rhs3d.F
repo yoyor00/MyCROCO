@@ -1658,7 +1658,6 @@
           enddo
         endif
 # endif /* UV_ADV */
-
 !
 !======================================================================
 !
@@ -1680,7 +1679,7 @@
 #  ifndef WAVE_SFC_BREAK
      &                           +cff*om_u(i,j)*brk3dx(i,j,k)
 #  endif
-#  if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#  ifdef WAVE_STREAMING
      &                           +cff*om_u(i,j)*frc3dx(i,j,k)
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -1689,13 +1688,12 @@
 #   ifndef WAVE_SFC_BREAK
               Mbrk(i,j,k,1) = cff*om_u(i,j)*brk3dx(i,j,k)
 #   endif
-#   if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#   ifdef WAVE_STREAMING
               Mfrc(i,j,k,1) = cff*om_u(i,j)*frc3dx(i,j,k)
 #   endif
             endif
-#  endif
+#  endif /* DIAGNOSTICS_UV */
           enddo
-
 
           do i=istr,iend
             cff  =0.5*om_v(i,j)*(Hz(i,j-1,k)+Hz(i,j,k))
@@ -1703,14 +1701,13 @@
      &                  +ust(i,j-1,k) +ust(i+1,j-1,k) )
             dude =0.5*( u(i  ,j,k,nrhs) -u(i  ,j-1,k,nrhs)
      &                 +u(i+1,j,k,nrhs) -u(i+1,j-1,k,nrhs) )
-ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
             dvde =0.5*( v(i,j+1,k,nrhs) -v(i,j-1,k,nrhs) )
             rv(i,j,k) =rv(i,j,k) + cff
      &                            *(ustv*dude+vst(i,j,k)*dvde)
 #  ifndef WAVE_SFC_BREAK
      &                            +cff*on_v(i,j)*brk3de(i,j,k)
 #  endif
-#  if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#  ifdef WAVE_STREAMING
      &                            +cff*on_v(i,j)*frc3de(i,j,k)
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -1719,25 +1716,14 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
 #   ifndef WAVE_SFC_BREAK
               Mbrk(i,j,k,2) = cff*on_v(i,j)*brk3de(i,j,k)
 #   endif
-#   if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#   ifdef WAVE_STREAMING
               Mfrc(i,j,k,2) = cff*on_v(i,j)*frc3de(i,j,k)
 #   endif
             endif
-#  endif
+#  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
-
-#  if defined WAVE_STREAMING && !defined WAVE_BODY_STREAMING
-        do i=IstrU,iend
-          ru(i,j,1) =ru(i,j,1) + om_u(i,j)*on_u(i,j)*frc2dx(i,j)
-        enddo
-        do i=istr,iend
-          rv(i,j,1) =rv(i,j,1) + om_v(i,j)*on_v(i,j)*frc2de(i,j)
-        enddo
-#  endif
-
 # endif   /* MRL_WCI */
-
 !
 !======================================================================
 !

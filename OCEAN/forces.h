@@ -546,7 +546,7 @@
       real brk3de(GLOBAL_2D_ARRAY,N)
       common /forces_brk3dx/brk3dx /forces_brk3de/brk3de
 #  endif
-#  ifdef WAVE_BODY_STREAMING
+#  ifdef WAVE_STREAMING
       real frc3dx(GLOBAL_2D_ARRAY,N)
       real frc3de(GLOBAL_2D_ARRAY,N)
       common /forces_frc3dx/frc3dx /forces_frc3de/frc3de
