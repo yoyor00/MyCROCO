@@ -644,8 +644,21 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  ifdef SANDBAR_OFFSHORE
 ! Roelvink & Reniers 1995: LIP-1B
           xx=xr(i,j)
-          if (xx.lt.60) then
+          if (xx.lt.20) then
+            h(i,j)=-depth
+          elseif (xx.lt.70) then
             h(i,j)=0.045*xx-5.2704
+            p1=-2.8536e-16
+            p2= 1.7329e-13
+            p3=-2.8702e-11
+            p4=-2.5872e-09
+            p5= 1.4173e-06
+            p6=-1.8127e-04
+            p7= 1.0116e-02
+            p8=-2.0651e-01
+            p9=-2.7021e+00
+            h(i,j) = p1*xx**8 + p2*xx**7 + p3*xx**6 + p4*xx**5 +
+     &               p5*xx**4 + p6*xx**3 + p7*xx**2 + p8*xx    + p9
           elseif (xx.lt.155) then
             p1= 2.0248857e-13  
             p2=-1.6816888e-10
@@ -671,8 +684,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  elif defined SANDBAR_ONSHORE
 ! Roelvink & Reniers 1995: LIP-1C
           xx=xr(i,j)
-          if (xx.lt.60) then
-            h(i,j)=0.046*xx-5.3304
+          if (xx.lt.20) then
+            h(i,j)=-depth
+          elseif (xx.lt.70) then
+            p1=-2.8536e-16
+            p2= 1.7329e-13
+            p3=-2.8702e-11
+            p4=-2.5872e-09
+            p5= 1.4173e-06
+            p6=-1.8127e-04
+            p7= 1.0116e-02
+            p8=-2.0651e-01
+            p9=-2.7021e+00
+            h(i,j) = p1*xx**8 + p2*xx**7 + p3*xx**6 + p4*xx**5 +
+     &               p5*xx**4 + p6*xx**3 + p7*xx**2 + p8*xx    + p9
           elseif (xx.lt.132) then
             p1= 2.0248857e-13  
             p2=-1.6816888e-10

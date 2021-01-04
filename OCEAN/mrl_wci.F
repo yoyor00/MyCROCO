@@ -242,8 +242,8 @@
           cff =wramp2*( wsr(i,j,wnew)+           ! for breaking term
      &           (1.-wkb_roller)*wsb(i,j,wnew) ) ! primary + roller
 #  endif
-          brk(i,j)=cff*kw(i,j)                  ! 2DH breaking term
-          frc(i,j)=wramp2*wfc(i,j,wnew)*kw(i,j) ! 2DH friction term
+          brk(i,j)=cff*kw(i,j)                   ! 2DH breaking term
+          frc(i,j)=wramp2*wfc(i,j,wnew)*kw(i,j)  ! 2DH friction term
 #  ifdef MRL_CEW
           kD(i,j)=kw(i,j)*Dstp(i,j)
 #  else
@@ -251,7 +251,7 @@
           kD(i,j)=kw(i,j)*Dstp(i,j)
 #  endif
 #  ifndef WAVE_ROLLER
-          act(i,j)=wramp2*max(wac(i,j,wnew),0.)         ! wave action density
+          act(i,j)=wramp2*max(wac(i,j,wnew),0.)  ! wave action density
 #  else
           act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
      &                    +max(war(i,j,wnew),0.))
@@ -354,22 +354,10 @@
 !  Finalize wave parameter computation
 !----------------------------------------------------------------------
 !
-# ifdef STOKES_DRIFT
-!
-! Depth averaged Stokes drift
-! ===========================
-!
-#  ifdef STOKES_U2010
-          stk(i,j)=act(i,j)*kw(i,j)*inv_d(i,j)  ! U2010: deep water 
-#  else
-          stk(i,j)=0.125*(wh(i,j)**2)*fr(i,j)*inv_d(i,j) ! Ursell
-#  endif
-# endif
 # ifdef MASKING
            kw(i,j) = kw(i,j)*rmask(i,j)
            kD(i,j) = kD(i,j)*rmask(i,j)
           act(i,j) =act(i,j)*rmask(i,j)
-          stk(i,j) =stk(i,j)*rmask(i,j)
           brk(i,j) =brk(i,j)*rmask(i,j)
           frc(i,j) =frc(i,j)*rmask(i,j)
 # endif   /* MASKING */
@@ -377,7 +365,6 @@
            kw(i,j) = kw(i,j)*rmask_wet(i,j)
            kD(i,j) = kD(i,j)*rmask_wet(i,j)
           act(i,j) =act(i,j)*rmask_wet(i,j)
-          stk(i,j) =stk(i,j)*rmask_wet(i,j)
           brk(i,j) =brk(i,j)*rmask_wet(i,j)
           frc(i,j) =frc(i,j)*rmask_wet(i,j)
 # endif   /* WET_DRY */
@@ -442,25 +429,18 @@
         enddo
       enddo
 !
-! 2DH depth-averaged Stokes drift and breaking acceleration
-! =========================================================
+! 2DH depth-averaged breaking acceleration
+! =========================================
 !
       do j=jstrR,jendR
         do i=istr,iendR
-# ifdef STOKES_DRIFT
-          ust2d(i,j)  =0.5*(stk(i-1,j)*wdrx(i-1,j)+stk(i,j)*wdrx(i,j))
-# endif
           brk2dx(i,j) =0.5*(brk(i-1,j)*wdrx(i-1,j)+brk(i,j)*wdrx(i,j))
           frc2dx(i,j) =0.5*(frc(i-1,j)*wdrx(i-1,j)+frc(i,j)*wdrx(i,j))
 # ifdef MASKING
-#  ifdef STOKES_DRIFT
-          ust2d(i,j)  = ust2d(i,j)*umask(i,j)
-#  endif
           brk2dx(i,j) =brk2dx(i,j)*umask(i,j)
           frc2dx(i,j) =frc2dx(i,j)*umask(i,j)
 # endif
 # ifdef WET_DRY
-! no mask wet for ustokes here 
           brk2dx(i,j) =brk2dx(i,j)*umask_wet(i,j)
           frc2dx(i,j) =frc2dx(i,j)*umask_wet(i,j)
 # endif
@@ -468,25 +448,18 @@
       enddo
       do j=jstr,jendR
         do i=istrR,iendR
-# ifdef STOKES_DRIFT
-          vst2d(i,j)  =0.5*(stk(i,j-1)*wdre(i,j-1)+stk(i,j)*wdre(i,j))
-# endif
           brk2de(i,j) =0.5*(brk(i,j-1)*wdre(i,j-1)+brk(i,j)*wdre(i,j))
           frc2de(i,j) =0.5*(frc(i,j-1)*wdre(i,j-1)+frc(i,j)*wdre(i,j))
 # ifdef MASKING
-#  ifdef STOKES_DRIFT
-          vst2d(i,j)  = vst2d(i,j)*vmask(i,j)
-#  endif
           brk2de(i,j) =brk2de(i,j)*vmask(i,j)
           frc2de(i,j) =frc2de(i,j)*vmask(i,j)
 # endif
 # ifdef WET_DRY
-! no wetdry mask for vstokes here 
           brk2de(i,j) =brk2de(i,j)*vmask_wet(i,j)
           frc2de(i,j) =frc2de(i,j)*vmask_wet(i,j)
 # endif
         enddo
-      enddo       ! <-- discard stk
+      enddo
 
 # ifdef SOLVE3D
 !
@@ -494,8 +467,6 @@
 ! ===================================================
 !
 #  define ust_r wrk1
-#  define inv_dz wrk2
-#  define inv_ex inv_f
 !
 ! 3D depth-dependent Stokes drift velocities
 ! ==========================================
@@ -506,57 +477,21 @@
 ! presuming that roller Stokes drift has the same z-dependency as
 ! the primary waves.  
 !
-#   ifdef STOKES_U2010
-!
-! Analytical volume-averaging operation is applied to 3D Stokes 
-! drift velocity such that:
-!
-!   ust_r = 0.5*g*A^2/frq*k/dz/(1-exp(-4*k*D))*
-!         ( exp(2*k*(z_up +h-D)) -exp(-2*k*(z_up +h+D))
-!          -exp(2*k*(z_low+h-D)) +exp(-2*k*(z_low+h+D)) )
-!
-! in which sinh, cosh, and tanh functions in ust are expanded to
-! exponential function so as not to be singular when kD gets very
-! large.  Here 0.5*g*A^2/frq is equivalent to wave action density.
-! The similar rule is also adapted in computation of CalP, Kapsrf,
-! and Akw terms (see the code below).
+! Ursell: ust_r = 1/8*Hrms**2*frq*k*cosh(2k(z+h)/sinh(kD)**2 
 !
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
-          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
-          ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)
-          cff1 = exp( 2.*kw(i,j)*(z_w(i,j,0)+h(i,j)-Dstp(i,j)))
-     &          -exp(-2.*kw(i,j)*(z_w(i,j,0)+h(i,j)+Dstp(i,j)))
-          do k=1,N,+1              ! <-- irreversible
-            inv_dz(i,j,k)=1./Hz(i,j,k)
-            cff2 = exp( 2.*kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
-     &            -exp(-2.*kw(i,j)*(z_w(i,j,k)+h(i,j)+Dstp(i,j)))
-            ust_r(i,j,k)=ust_ker*inv_dz(i,j,k)*( cff2-cff1 )
-            cff1=cff2
-          enddo
-        enddo
-      enddo                 ! <-- keep ust_r, inv_dz, &inv_ex
-#   else /* URSELL */
-!
-!  Ursell: ust_r = 1/8*frq*k*Hrms**2*cosh(2*k(z+h)/sinh(k*D)**2 
-!
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
-          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
-          ust_ker=0.125*(wh(i,j)**2)*fr(i,j)*kw(i,j)
-          do k=1,N
-            inv_dz(i,j,k)=1./Hz(i,j,k)
-            ust_r(i,j,k)=ust_ker*
-     &                   COSH(2.*kw(i,j)*(z_w(i,j,k)+h(i,j)))/
+          ust_ker=0.125*(wh(i,j)**2)*fr(i,j)*kw(i,j) /
      &                   max(SINH(min(kD(i,j),khmax)),eps)**2
+          do k=1,N
+            ust_r(i,j,k)=ust_ker*
+     &                   COSH(2.*kw(i,j)*(z_w(i,j,k)+h(i,j)))
           enddo
         enddo
-      enddo                 ! <-- keep ust_r, inv_dz, &inv_ex
-#   endif
-
+      enddo                 ! <-- keep ust_r
 !
 ! Horizontal interpolation of ust_r to u- & v- points.
-! *** Notice that mask should NOT be applied.
+! *** Note that mask should NOT be applied.
 !
       do k=1,N
         do j=jstrR,jendR
@@ -572,13 +507,37 @@
           enddo
         enddo
       enddo
-#  else
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
-          inv_ex(i,j)=1.0/max(1.0-exp(-4.*kD(i,j)),eps)
-          do k=1,N
-            inv_dz(i,j,k)=1./Hz(i,j,k)
+!
+!  2DH depth-averaged Stokes drift 
+!
+      do j=JstrR,JendR
+        do i=Istr,IendR
+          cff1=0.5*(Hz(i-1,j,1)+Hz(i,j,1))
+          ust2d(i,j)=cff1*ust(i,j,1)
+          DO k=2,N
+            cff1=0.5*(Hz(i-1,j,k)+Hz(i,j,k))
+            ust2d(i,j)=ust2d(i,j)+cff1*ust(i,j,k)
           enddo
+          cff2=2./(Dstp(i-1,j)+Dstp(i,j))
+          ust2d(i,j)=ust2d(i,j)*cff2
+#   ifdef MASKING
+          ust2d(i,j)=ust2d(i,j)*umask(i,j)
+#   endif
+        enddo
+      enddo
+      do j=Jstr,JendR
+        do i=IstrR,IendR
+          cff1=0.5*(Hz(i,j-1,1)+Hz(i,j,1))
+          vst2d(i,j)=cff1*vst(i,j,1)
+          do k=2,N
+            cff1=0.5*(Hz(i,j-1,k)+Hz(i,j,k))
+            vst2d(i,j)=vst2d(i,j)+cff1*vst(i,j,k)
+          enddo
+          cff2=2./(Dstp(i,j-1)+Dstp(i,j))
+          vst2d(i,j)=vst2d(i,j)*cff2
+#   ifdef MASKING
+          vst2d(i,j)=vst2d(i,j)*vmask(i,j)
+#   endif
         enddo
       enddo
 #  endif /* STOKES_DRIFT */
@@ -586,6 +545,8 @@
 ! calP & Kapsrf: surface pressure & Bernoulli head at rho-point
 ! =============================================================
 !
+#  define inv_ex inv_f
+#  define inv_dz wrk2
 #  define kv wrk4
 #  define dkvdz wrk5
 #  define d2kv  wrk6
@@ -613,6 +574,7 @@
      &             exp( 2.*kw(i,j)*(dd-Dstp(i,j)))
      &           + exp(-2.*kw(i,j)*(dd+Dstp(i,j))) )
           enddo
+          inv_ex(i,j)=1.0/max(1.0-exp(-4.*kD(i,j)),eps)
           cff1 =-2.0*exp(-2.*kD(i,j))*inv_ex(i,j)*dkvdz(N)
           cff2 = dkvdz(0)/max(tanh(2.*kD(i,j)),eps)
           cff3 = cff3*inv_ex(i,j)
@@ -863,6 +825,7 @@
 #   endif
           kvb   =bconst*vs*wh(i,j) ! depth-averaged Akb
           do k=1,N,+1              ! <-- irreversible
+            inv_dz(i,j,k)=1./Hz(i,j,k)
 #   ifdef FKV_FUNC1
             dd  =z_w(i,j,N)-z_w(i,j,k)
             fn1 =3.*(exp(-2.*kbrk*dd)+exp(-4.*kbrk*dd))
@@ -935,6 +898,7 @@
 #    endif
 
           do k=1,N,+1              ! <-- irreversible
+            inv_dz(i,j,k)=1./Hz(i,j,k)
 #    ifdef FB_FUNC1
             dd  =z_w(i,j,N)-z_w(i,j,k)
             fn1 =3.*(exp(-2.*kbrk*dd)+exp(-4.*kbrk*dd))
