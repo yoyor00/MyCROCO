@@ -20,7 +20,7 @@
       trd=omp_get_thread_num()
       call mrl_wci_tile (istr,iend,jstr,jend,
 # ifdef SOLVE3D
-     &            A3d(1,1,trd),A3d(1,2,trd),A3d(1,3,trd),
+     &            A3d(1,1,trd),A3d(1,2,trd),
 # endif
      &            A2d(1,1,trd) ,A2d(1,2,trd) ,A2d(1,3,trd) ,
      &            A2d(1,4,trd) ,A2d(1,5,trd) ,A2d(1,6,trd) ,
@@ -36,7 +36,7 @@
 
       subroutine mrl_wci_tile (istr,iend,jstr,jend, 
 # ifdef SOLVE3D
-     &            wrk1,wrk2,wrk3,
+     &            wrk1,wrk2,
 # endif
      &            wh,fr,kw,brk,stk,Dstp,act,kD,inv_d,inv_f,frc,ebrk,erol
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) || defined WAVE_STREAMING
@@ -115,7 +115,6 @@
       integer  k,kk 
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk2(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &         wrk3(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &         wrk4(0:N),wrk5(0:N),wrk6(0:N), kvsurf
 # endif
       parameter ( eps    = 1.e-10, 
@@ -167,6 +166,9 @@
 # else
 #  define SWITCH_WET !
 # endif
+
+# undef WAVE_STREAMING
+# define STOKES_DRIFT
 
 ! explicit wavenumber estimator
 
@@ -479,7 +481,7 @@
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           ust_ker=0.125*(wh(i,j)**2)*fr(i,j)*kw(i,j) /
-     &                   max(SINH(min(kD(i,j),khmax)),eps)**2
+     &                   max(SINH(kD(i,j)),eps)**2
           do k=1,N
             ust_r(i,j,k)=ust_ker*
      &                   COSH(2.*kw(i,j)*(z_w(i,j,k)+h(i,j)))
@@ -543,7 +545,6 @@
 ! =============================================================
 !
 #  define inv_ex inv_f
-#  define inv_dz wrk2
 #  define kv wrk4
 #  define dkvdz wrk5
 #  define d2kv  wrk6
@@ -619,7 +620,7 @@
 
 #  ifdef STOKES_DRIFT
 
-#   define kvr wrk3
+#   define kvr wrk2
 #   define kvfx stk
 #   define kvfy inv_f
 
@@ -822,7 +823,6 @@
 #   endif
           kvb   =bconst*vs*wh(i,j) ! depth-averaged Akb
           do k=1,N,+1              ! <-- irreversible
-            inv_dz(i,j,k)=1./Hz(i,j,k)
 #   ifdef FKV_FUNC1
             dd  =z_w(i,j,N)-z_w(i,j,k)
             fn1 =3.*(exp(-2.*kbrk*dd)+exp(-4.*kbrk*dd))
@@ -835,7 +835,7 @@
             fb2 =exp( kbrk*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
      &          -exp(-kbrk*(z_w(i,j,k)+h(i,j)+Dstp(i,j)))
 #   endif
-            fb =fb0*inv_dz(i,j,k)*(fb2-fb1)
+            fb =fb0*(fb2-fb1)/Hz(i,j,k)
             kb0(k) = kvb*fb*Dstp(i,j)
             fb1=fb2     ! recursive procedure
           enddo
@@ -860,7 +860,7 @@
 #  endif    /* LMD_MIXING */
 
 #  ifndef WAVE_SFC_BREAK
-#   define brk_r wrk3
+#   define brk_r wrk2
 !
 ! 3D breaking acceleration term defined as a body force.
 ! =====================================================
@@ -895,7 +895,6 @@
 #    endif
 
           do k=1,N,+1              ! <-- irreversible
-            inv_dz(i,j,k)=1./Hz(i,j,k)
 #    ifdef FB_FUNC1
             dd  =z_w(i,j,N)-z_w(i,j,k)
             fn1 =3.*(exp(-2.*kbrk*dd)+exp(-4.*kbrk*dd))
@@ -908,7 +907,7 @@
             fb2 =exp( kbrk*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
      &          -exp(-kbrk*(z_w(i,j,k)+h(i,j)+Dstp(i,j)))
 #    endif
-            fb =fb0*inv_dz(i,j,k)*(fb2-fb1)
+            fb =fb0*(fb2-fb1)/Hz(i,j,k)
             brk_r(i,j,k) = fb*brk(i,j)
             fb1=fb2     ! recursive procedure
           enddo
@@ -952,7 +951,7 @@
 ! layer thickness, estimated based on bed roughness.
 !
 #  ifdef WAVE_STREAMING
-#   define frc_r wrk3
+#   define frc_r wrk2
 #   define frc2d stk
 !
       do j=jstr-1,jend+1
@@ -1007,7 +1006,6 @@
 #   undef frc_r
 #   undef frc2d
 #  endif   /* WAVE_STREAMING */
-#  undef inv_dz
 
 # endif       /* SOLVE3D */
 
