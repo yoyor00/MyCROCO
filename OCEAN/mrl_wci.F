@@ -471,8 +471,8 @@
 ! Ursell: ust = 1/8 Hrms^2 f k -----------
 !                               sinh[kD]^2
 !
-#  undef STOKES_DRIFT_URSELL
-#  ifdef STOKES_DRIFT_URSELL
+#   undef STOKES_DRIFT_URSELL
+#   ifdef STOKES_DRIFT_URSELL
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           ust_ker=0.125*(wh(i,j)**2)*fr(i,j)*kw(i,j)/
@@ -482,7 +482,7 @@
           enddo
         enddo
       enddo                 ! <-- keep ust_r
-#  else
+#   else
 !
 ! Here, sinh, cosh, and tanh functions are expanded to
 ! exponential function so as not to be singular when kD gets very
@@ -506,6 +506,7 @@
           enddo
         enddo
       enddo
+#   endif
 !
 ! Horizontal interpolation of ust_r to u- & v- points.
 ! (mask not applied).
@@ -524,7 +525,6 @@
           enddo
         enddo
       enddo
-#  endif
 !
 !  2DH depth-averaged Stokes drift 
 !
