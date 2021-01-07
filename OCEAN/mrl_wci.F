@@ -89,7 +89,7 @@
 #  include "bbl.h"
 # endif
       integer istr,iend,jstr,jend,i,j,imin,jmin 
-      real    cff,cff1,cff2,cff3,cff4,inv_g,khd,kh,umag,
+      real    cff,cff1,cff2,cff3,cff4,inv_g,khd,kh,
      &   eps,wave_ramp,wramp2,kbrk,fb,fb0,fb1,fb2,inv_fbs,
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
@@ -109,7 +109,7 @@
      &           ebrk(PRIVATE_2D_SCRATCH_ARRAY),
      &           erol(PRIVATE_2D_SCRATCH_ARRAY)
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) || defined WAVE_STREAMING
-     &           ,zob_my(PRIVATE_2D_SCRATCH_ARRAY)
+     &        ,zob_my(PRIVATE_2D_SCRATCH_ARRAY)
 # endif 
 # ifdef SOLVE3D
       integer  k,kk 
@@ -190,14 +190,14 @@
 
 # if defined WAVE_RAMP
 #  if defined RIP_TOPO_2D
-      wave_ramp = tanh(192.0*dt*sec2day*float(iic-ntstart))
+      wave_ramp = tanh(192.*dt*sec2day*float(iic-ntstart))
 #  else
-      wave_ramp = tanh(12.0*dt*sec2day*float(iic-ntstart))
+      wave_ramp = tanh(12.*dt*sec2day*float(iic-ntstart))
 #  endif
 # else
-      wave_ramp = 1.0
+      wave_ramp = 1.
 # endif
-      if (iic.eq.0) wave_ramp=1.0
+      if (iic.eq.0) wave_ramp=1.
       wramp2= wave_ramp**2
 !
 ! Evaluate 2DH wave-current interaction variables.
@@ -206,7 +206,7 @@
 ! 2DH Stokes velocities, breaking, roller and bottom-friction 
 ! dissipation terms, defined at horizontal rho-points.
 !
-      inv_g = 1.0/g
+      inv_g = 1./g
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
 # ifdef SOLVE3D
@@ -214,7 +214,7 @@
 # else
           Dstp(i,j)=h(i,j)+zeta(i,j,knew)
 # endif          
-          inv_d(i,j)=1.0/Dstp(i,j)
+          inv_d(i,j)=1./Dstp(i,j)
 
 # ifdef WKB_WWAVE
 !----------------------------------------------------------------------
@@ -256,10 +256,10 @@
 !
           wh(i,j)=wave_ramp*whrm(i,j)
           fr(i,j)=wfrq(i,j)
-          inv_f(i,j)=1.0/max(fr(i,j),eps)
+          inv_f(i,j)=1./max(fr(i,j),eps)
           khd=Dstp(i,j)*(fr(i,j)**2)*inv_g
 #  ifdef KH_SOULSBY
-          if (khd.ge.1.0D0) then        ! explicit wavenumber estimator
+          if (khd.ge.1.) then ! explicit wavenumber estimator
            kh=khd
           else
            kh=sqrt(khd)
@@ -284,21 +284,21 @@
           ebrk(i,j)=wramp2*wepb(i,j)                ! ep_b/rho (m3/s3)
 #  else
 #   ifdef WAVE_BREAK_TG86
-          cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.0*pi)
+          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
           ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
 #   elif defined WAVE_BREAK_TG86A
-          cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.0*pi)
+          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
           ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
-     &                           (1.0-(1.0+cff1**2)**(-2.5))
+     &                           (1.-(1.+cff1**2)**(-2.5))
 #   elif defined WAVE_BREAK_CT93
-          cff=3.0/16.0*sqrt(pi)*g*(wave_btg**3)/(2.0*pi)
+          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
           ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
-     &              *( 1.0+tanh(8.0*(cff1-1.0)) )*
-     &               ( 1.0-(1.0+cff1**2)**(-2.5) )
+     &              *( 1.+tanh(8.0*(cff1-1.)) )*
+     &               ( 1.-(1.0+cff1**2)**(-2.5) )
 #   elif defined WAVE_BREAK_R93
-          cff=0.25*g*(wave_btg**3)/(2.0*pi)
+          cff=0.25*g*(wave_btg**3)/(2.*pi)
           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
           ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
      &                          *(1-exp (-cff1**5 ))
@@ -458,45 +458,35 @@
 ! ===================================================
 !
 #  define ust_r wrk1
+#  define inv_ex inv_f
 !
 ! 3D depth-dependent Stokes drift velocities
 ! ==========================================
 !
 #  ifdef STOKES_DRIFT
 !
-! Cell-averaged 3D Stokes drift velocity (ust_r) is estimated by
-! presuming that roller Stokes drift has the same z-dependency as
-! the primary waves.  
+! Cell-averaged 3D Stokes drift velocity (ust_r) is estimated 
+! assuming in surfzone that roller Stokes drift has the same 
+! z-dependency as the primary waves:  
+!
 !                              cosh[2k(z+h)]
-! Ursell: ust = 1/8 Hrms^2 f k -----------
+!          ust = 1/8 Hrms^2 f k -----------     (Ursell)
 !                               sinh[kD]^2
 !
-#   undef STOKES_DRIFT_URSELL
-#   ifdef STOKES_DRIFT_URSELL
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
-          ust_ker=0.125*(wh(i,j)**2)*fr(i,j)*kw(i,j)/
-     &                                      max(SINH(kD(i,j)),eps)**2
-          do k=1,N
-            ust_r(i,j,k)=ust_ker*COSH(2.*kw(i,j)*(z_w(i,j,k)+h(i,j)))
-          enddo
-        enddo
-      enddo                 ! <-- keep ust_r
-#   else
+! Here, sinh and cosh functions are expanded to exponential function 
+! so as not to be singular when kD gets very large (offshore). 
+! Analytical volume-averaging operation is also applied, so that:
 !
-! Here, sinh, cosh, and tanh functions are expanded to
-! exponential function so as not to be singular when kD gets very
-! large.  
+!          ust = act*k*(1-exp(-4kD))/dz *
+!                ( exp(2k(z_up+h-D)) - exp(-2k(z_up+h+D))
+!                 -exp(2k(z_dw+h-D)) + exp(-2k(z_dw+h+D)) )
 !
-!   ust = act*k/dz/(1-exp(-4*k*D))*
-!         ( exp(2*k*(z_up +h-D)) -exp(-2*k*(z_up +h+D))
-!          -exp(2*k*(z_low+h-D)) +exp(-2*k*(z_low+h+D)) )
-!
-!   act=0.5*g*A^2/frq is wave action density.
+!          where act=0.5*g*A^2/frq is wave action density.
 !
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
-          ust_ker=act(i,j)*kw(i,j)/max(1.-exp(-4.*kD(i,j)),eps)
+          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
+          ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)
           cff1=0.
           do k=1,N,+1              ! <-- irreversible
             cff2=exp( 2.*kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
@@ -506,7 +496,6 @@
           enddo
         enddo
       enddo
-#   endif
 !
 ! Horizontal interpolation of ust_r to u- & v- points.
 ! (mask not applied).
@@ -563,11 +552,9 @@
 ! calP & Kapsrf: surface pressure & Bernoulli head at rho-point
 ! =============================================================
 !
-#  define inv_ex inv_f
 #  define kv wrk4
 #  define dkvdz wrk5
-#  define d2kv  wrk6
-#  define actp umag
+#  define d2kv wrk6
       do j=jstr,jend        ! kv (k dot v) at rho-point
         do i=istr,iend      ! and its 1st & 2nd derivertives
           do k=1,N          ! at rho-point
@@ -591,17 +578,18 @@
      &             exp( 2.*kw(i,j)*(dd-Dstp(i,j)))
      &           + exp(-2.*kw(i,j)*(dd+Dstp(i,j))) )
           enddo
-          inv_ex(i,j)=1.0/max(1.0-exp(-4.*kD(i,j)),eps)
-          cff1 =-2.0*exp(-2.*kD(i,j))*inv_ex(i,j)*dkvdz(N)
+#  ifndef STOKES_DRIFT
+          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
+#  endif
+          cff1 =-2.*exp(-2.*kD(i,j))*inv_ex(i,j)*dkvdz(N)
           cff2 = dkvdz(0)/max(tanh(2.*kD(i,j)),eps)
           cff3 = cff3*inv_ex(i,j)
-          cff4 =-2.0*kw(i,j)*kvsurf
-          actp =0.125*g*(wh(i,j)**2)/max(fr(i,j),eps)
-          calP(i,j) = actp*inv_g*tanh(kD(i,j))
+          cff4 =-2.*kw(i,j)*kvsurf
+          calP(i,j) = act(i,j)*inv_g*tanh(kD(i,j))
      &                    *( cff1+cff2+cff3+cff4 )
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
-          cff=0.0
+          cff=0.
           do k=1,N
             cff = cff +  d2kv(k)*
      &         ( exp( 2.*kw(i,j)*(z_w(i,j,N)-z_r(i,j,k)-Dstp(i,j)))
@@ -610,9 +598,9 @@
 #  define KAPSRF_SAFE
 #  ifdef KAPSRF_SAFE
           Kapsrf(i,j) = ( 0.5*Kapsrf(i,j)  ! time-filter to suppress noises
-     &                   +0.5*cff*actp*inv_ex(i,j) )
+     &                   +0.5*cff*act(i,j)*inv_ex(i,j) )
 #  else
-          Kapsrf(i,j) = cff*actp*inv_ex(i,j)
+          Kapsrf(i,j) = cff*act(i,j)*inv_ex(i,j)
 #  endif
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
@@ -697,6 +685,7 @@
 ! =======================================================================
 !
 #  define WAVE_NONBRK_VMIX_QIAO
+!
 #  ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */
 !
 !  In Uchiyama et al 2010:
@@ -819,21 +808,21 @@
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           inv_k =min(max(a_kv*wh(i,j),eps),Dstp(i,j))
-          kbrk  =1.0/inv_k         ! vertical scale for breaking
+          kbrk  =1./inv_k          ! vertical scale for breaking
 #   ifdef FKV_FUNC1
           fn1   =3.*(exp(-2.*kbrk*Dstp(i,j))+exp(-4.*kbrk*Dstp(i,j)))
           fn2   =exp(-6.*kbrk*Dstp(i,j))
           fb1   =c4o3*inv_k*(fn1+2.*fn2)/(1.+fn1+fn2)
           intfb =c4o3*inv_k - fb1  ! intfb = \int^D gb(z') dz'
-          fb0   =1.D0/intfb        ! 1/[\int^D gb(z') dz']
+          fb0   =1./intfb          ! 1/[\int^D gb(z') dz']
 #   elif defined FKV_FUNC2
           fn1   =exp(-2.*kbrk*Dstp(i,j))
           fb1   =2.*inv_k*fn1/(1.+fn1)
           intfb =inv_k - fb1
-          fb0   =1.D0/intfb
+          fb0   =1./intfb
 #   elif defined FKV_FUNC3
-          fb1   =0.0               ! fb1 = \int gb dz at z = -h
-          fb0   =1.D0/(1.-exp(-2.*kbrk*Dstp(i,j)))
+          fb1   =0.                ! fb1 = \int gb dz at z = -h
+          fb0   =1./(1.-exp(-2.*kbrk*Dstp(i,j)))
 #   endif
 #   ifndef WAVE_ROLLER
           vs    =ebrk(i,j)**c1o3   ! representative velocity scale
@@ -861,8 +850,8 @@
           do k=1,N-1
             Akb(i,j,k)=0.5*(kb0(k)+kb0(k+1))
           enddo
-          Akb(i,j,0)=0.D0
-          Akb(i,j,N)=max(1.5*kb0(N)-0.5*kb0(N-1),0.0)
+          Akb(i,j,0)=0.
+          Akb(i,j,N)=max(1.5*kb0(N)-0.5*kb0(N-1),0.)
 #   ifdef MASKING
           do k=0,N
             Akb(i,j,k)=Akb(i,j,k)*rmask(i,j)
@@ -892,25 +881,25 @@
           enddo                    ! <-- discard inv_d
 #   else
 #    ifdef FB_WSCALE
-          inv_k =1.0/max(2.0*kw(i,j),eps)  ! Stokes scale
+          inv_k =1./max(2.*kw(i,j),eps)  ! Stokes scale
 #    else
           inv_k =min(max(a_brk*wh(i,j),eps),Dstp(i,j))
 #    endif
-          kbrk  =1.0/inv_k         ! vertical scale for breaking
+          kbrk  =1./inv_k          ! vertical scale for breaking
 #    ifdef FB_FUNC1
           fn1   =3.*(exp(-2.*kbrk*Dstp(i,j))+exp(-4.*kbrk*Dstp(i,j)))
           fn2   =exp(-6.*kbrk*Dstp(i,j))
           fb1   =c4o3*inv_k*(fn1+2.*fn2)/(1.+fn1+fn2)
           intfb =c4o3*inv_k - fb1  ! intfb = \int^D gb(z') dz'
-          fb0   =1.D0/intfb        ! 1/[\int^D gb(z') dz']
+          fb0   =1./intfb          ! 1/[\int^D gb(z') dz']
 #    elif defined FB_FUNC2
           fn1   =exp(-2.*kbrk*Dstp(i,j))
           fb1   =2.*inv_k*fn1/(1.+fn1)
           intfb =inv_k - fb1
-          fb0   =1.D0/intfb
+          fb0   =1./intfb
 #    elif defined FB_FUNC3
-          fb1   =0.0               ! fb1 = \int gb dz at z = -h
-          fb0   =1.D0/(1.-exp(-2.*kbrk*Dstp(i,j)))
+          fb1   =0.                ! fb1 = \int gb dz at z = -h
+          fb0   =1./(1.-exp(-2.*kbrk*Dstp(i,j)))
 #    endif
 
           do k=1,N,+1              ! <-- irreversible
