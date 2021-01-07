@@ -469,19 +469,24 @@
 ! assuming in surfzone that roller Stokes drift has the same 
 ! z-dependency as the primary waves:  
 !
-!                              cosh[2k(z+h)]
+!                               cosh[2k(z+h)]
 !          ust = 1/8 Hrms^2 f k -----------     (Ursell)
-!                               sinh[kD]^2
+!                                sinh[kD]^2
+!
+!                           cosh[2k(z+h)]
+!              = 2 act k^2  ----------- 
+!                            sinh[2kD]
+!
+! with act=0.5gA^2/frq the wave action density (frq^2=gk*tanh(kD))
 !
 ! Here, sinh and cosh functions are expanded to exponential function 
 ! so as not to be singular when kD gets very large (offshore). 
-! Analytical volume-averaging operation is also applied, so that:
+! In addition, analytical volume-averaging operation at z_r levels
+! (between surrounding z_w levels: z_dw and z_up) gives:
 !
-!          ust = act*k*(1-exp(-4kD))/dz *
+!          ust = act*k/(1-exp(-4kD))/dz *
 !                ( exp(2k(z_up+h-D)) - exp(-2k(z_up+h+D))
 !                 -exp(2k(z_dw+h-D)) + exp(-2k(z_dw+h+D)) )
-!
-!          where act=0.5*g*A^2/frq is wave action density.
 !
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
