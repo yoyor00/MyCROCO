@@ -2466,6 +2466,17 @@ C 				  endif
 #  ifdef M3FAST
           call xios_send_field("u_fast",Mfast(:,:,:,itrc))
 #  endif
+#  ifdef MRL_WCI
+          call xios_send_field("u_vf",Mvf(:,:,:,itrc))
+          call xios_send_field("u_brk",Mbrk(:,:,:,itrc))
+          call xios_send_field("u_StCo",MStCo(:,:,:,itrc))
+          call xios_send_field("u_Vvf",MVvf(:,:,:,itrc))
+          call xios_send_field("u_Prscrt",MPrscrt(:,:,:,itrc))
+          call xios_send_field("u_sbk",Msbk(:,:,:,itrc))
+          call xios_send_field("u_bwf",Mbwf(:,:,:,itrc))
+          call xios_send_field("u_frc",Mfrc(:,:,:,itrc))
+#  endif
+
       itrc = 2
           call xios_send_field("v_rate", Mrate(:,:,:,itrc))
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
@@ -2482,6 +2493,17 @@ C 				  endif
 #  ifdef M3FAST
           call xios_send_field("v_fast",Mfast(:,:,:,itrc))
 #  endif
+#  ifdef MRL_WCI
+          call xios_send_field("v_vf",Mvf(:,:,:,itrc))
+          call xios_send_field("v_brk",Mbrk(:,:,:,itrc))
+          call xios_send_field("v_StCo",MStCo(:,:,:,itrc))
+          call xios_send_field("v_Vvf",MVvf(:,:,:,itrc))
+          call xios_send_field("v_Prscrt",MPrscrt(:,:,:,itrc))
+          call xios_send_field("v_sbk",Msbk(:,:,:,itrc))
+          call xios_send_field("v_bwf",Mbwf(:,:,:,itrc))
+          call xios_send_field("v_frc",Mfrc(:,:,:,itrc))
+#  endif
+
 #  endif
 
 
