@@ -784,7 +784,6 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 # include "compute_extended_bounds.h"
 !     
 C     R      write(*,*)'Enter set_psource_ts_tile...'
-           write(*,*)'Enter set_psource_ts_tile...'
       do itrc=1,NT
         if (got_tsrc(itrc)) then
           it1=3-ittsrc(itrc)
