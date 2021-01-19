@@ -229,6 +229,7 @@
         wwer_scale=1.
 # if defined MUSTANG
         wwu_scale=1.
+        wwd_scale=1.  !we need direction in degrees in sed_skinstress 
 # endif
      
       endif                   !<-- itww.eq.0 .or. iic.eq.0
