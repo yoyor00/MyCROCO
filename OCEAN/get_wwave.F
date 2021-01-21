@@ -604,12 +604,16 @@
 # if defined CURVGRID || !defined SHOREFACE
       do j=jstrR,jendR
         do i=istrR,iendR
-#  ifndef SHOREFACE
+#  if !defined SHOREFACE && !defined MUSTANG 
 !         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
           Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
 #  ifdef CURVGRID
+# ifdef MUSTANG
+          Dwave(i,j)=Dwave(i,j)-angler(i,j)*180./pi
+# else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
+# end
 #  endif
         enddo
       enddo
