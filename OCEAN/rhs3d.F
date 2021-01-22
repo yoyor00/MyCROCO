@@ -78,6 +78,7 @@
      &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
      &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
+      real wrk4(0:N)
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -379,7 +380,10 @@
 !====================================================================
 !
 !  Add in Coriolis, Stokes-Coriolis and curvilinear transformation 
-!  terms, if any.
+!  terms (metrics terms), if any.
+!
+!  Note: For diagnostics, Metrics terms are stored with Coriolis 
+!  terms, although ideally they should be with Advection term
 !
 !====================================================================
 !
@@ -406,14 +410,14 @@
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
-# else
+#  else
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-# endif
+#  endif
           enddo
         enddo
 
-# ifdef CROCO_QH
+#  ifdef CROCO_QH
 !--------------------------------------------------------------------
 !  Compute Non-traditional Coriolis pseudo-force
 !    RU = -e W cos(a) * dV     [m4/s2]
@@ -447,7 +451,7 @@
             VFe(i,j)=VFe(i,j) - cff*sina(i,j)
           enddo
         enddo
-# endif
+#  endif
 
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -456,7 +460,7 @@
      &                         +0.5*(UFe(i,j)+UFe(i-1,j))
 #  endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
               MCor(i,j,k,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)
@@ -465,7 +469,7 @@
      &                        SWITCH umask(i,j)
 #   endif
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkCor(i,j,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
@@ -475,7 +479,7 @@
      &                         +0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.kbl(i,j)) then
                 ekwrkCor_mld(i,j,1)=0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
@@ -484,7 +488,7 @@
      &                         +0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# endif
+#   endif
             endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
@@ -510,7 +514,7 @@
      &                         -0.5*(VFx(i,j)+VFx(i,j-1))
 #  endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MCor(i,j,k,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
      &                        SWITCH vmask(i,j)
@@ -519,7 +523,7 @@
      &                        SWITCH vmask(i,j)
 #   endif
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.1) then
               ekwrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -529,7 +533,7 @@
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
      &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.kbl(i,j)) then
               ekwrkCor_mld(i,j,2)=
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -539,10 +543,10 @@
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
      &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# endif
+#   endif
             endif
 #  endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -1661,7 +1665,17 @@
 !
 !======================================================================
 !
-! Add combined vortex-force and advection terms & breaking terms
+!  Add combined vortex-force and advection terms & breaking terms
+!                                                & streaming terms
+!
+!  Diagnostics
+!  -----------
+!  Residual VF term: resVF = ust_H.grad_H(u) = VF - As - Ms 
+!  ResVF: stored here in Mvf
+!  As: -grad(ust*u) is Advection by Stokes drift (stored in Madv)
+!  Ms: metric terms involving Stokes drift (stored in MStCo)
+!  Full diagnostics of VF and corrected advection are  in
+!  a second step
 !
 !======================================================================
 !
@@ -1723,6 +1737,7 @@
 #  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
+
 # endif   /* MRL_WCI */
 !
 !======================================================================
@@ -1779,6 +1794,89 @@
         endif
 
       enddo      !<-- j loop
+
+# if defined DIAGNOSTICS_UV && defined MRL_WCI
+!
+!======================================================================
+!  Full horizotal 'J' vortex force term: for diagnostics only.  
+!
+!  Replace in Mvf and subtract Stokes advection from Madv (where 
+!  Lagrangian advection was previsouly stored):
+!  A = Al - As = Al + Ms + ResVF - VF     (Ms stored in MStCo)
+!                                         (ResVF stored in Mvf)
+!  with A = -grad(u*u) & Al = -grad(ul*u)
+!  Note: Ms is left in MStCo even though it should be in Madv
+!  (for now)
+!======================================================================
+#  define Dudz UFx
+#  define Dvdz VFx
+#  define Vort wrk2
+      if (nnew.ne.3) then  ! corrector step
+!
+!  Get vertical Stokes drift "wst" at rho-point
+!
+        call wstokes_tile (istr,iend,jstr,jend, wrk1)
+!
+!  du/dz & dv/dz at horz u- & v- & vert rho-point
+!
+        do k=1,N
+          kp1=MIN(N,k+1)
+          km1=MAX(1,k-1)
+          do j=JstrV-1,Jend+1
+            do i=IstrU-1,Iend+1
+              Dudz(i,j) = 2.*(u(i,j,kp1,nrhs)-u(i,j,km1,nrhs))
+     &                          /(z_r(i-1,j,kp1)+z_r(i,j,kp1)-
+     &                            z_r(i-1,j,km1)-z_r(i,j,km1))
+              Dvdz(i,j) = 2.*(v(i,j,k+1,nrhs)-v(i,j,k-1,nrhs))
+     &                          /(z_r(i,j-1,kp1)+z_r(i,j,kp1)-
+     &                            z_r(i,j-1,km1)-z_r(i,j,km1))
+            enddo
+          enddo
+!
+!  Vorticity (dv/dx -du/dy) at psi-point
+!
+          do j=Jstr,Jend+1
+            do i=Istr,Iend+1
+              Vort(i,j)=(v(i,j,k,nrhs)-v(i-1,j  ,k,nrhs))/om_p(i,j) -
+     &                  (u(i,j,k,nrhs)-u(i  ,j-1,k,nrhs))/on_p(i,j)
+            enddo
+          enddo
+!
+!  VFx = vst * (dv/dx -du/dy) - wst * du/dz, at u-point
+!
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              cff=0.25*(Hz(i-1,j,k)+Hz(i,j,k))*om_u(i,j)*on_u(i,j)
+              cff1=cff*( 0.25*(Vort(i,j)+Vort(i,j+1))*
+     &                             (vst(i  ,j,k)+vst(i  ,j+1,k)+
+     &                              vst(i-1,j,k)+vst(i-1,j+1,k))
+     &                     - (wst(i,j,k)+wst(i-1,j,k))*Dudz(i,j) )
+              cff2=Mvf(i,j,k,1)-cff1
+              MXadv(i,j,k,1)=MXadv(i,j,k,1)+cff2 ! Al + ResVF - VF
+              Mvf(i,j,k,1)=cff1
+            enddo
+          enddo
+!
+!  VFy = - ust * (dv/dx -du/dy) - wst * dv/dz, at v-point
+!
+          do i=Istr,Iend
+            do j=JstrV,Jend
+              cff=0.25*(Hz(i,j,k)+Hz(i,j-1,k))*on_v(i,j)*om_v(i,j)
+              cff1=-cff*( 0.25*(Vort(i,j)+Vort(i+1,j))*
+     &                             (ust(i,j  ,k)+ust(i+1,j  ,k)+
+     &                              ust(i,j-1,k)+ust(i+1,j-1,k))
+     &                     + (wst(i,j,k)+wst(i,j-1,k))*Dvdz(i,j) )
+              cff2=Mvf(i,j,k,2)-cff1
+              MXadv(i,j,k,2)=MXadv(i,j,k,2)+cff2 ! Al + ResVF - VF
+              Mvf(i,j,k,2)=cff1
+            enddo
+          enddo
+        enddo
+      endif ! corrector step
+#  undef Vort
+#  undef Dudz
+#  undef Dvdz
+# endif   /* DIAGNOSTICS_UV & MRL_WCI */
 
       return
       end
