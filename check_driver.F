@@ -7,7 +7,7 @@ c     this file is not differentiated
 # include "adparam.h"
       integer iicroot
       integer ierr
-      integer k
+      integer i,k
       double precision icost,costb,cost,cost_p
       double precision ad_eps,ad_check_tgt,n_ad_g
       double precision ad_check_div
@@ -32,12 +32,36 @@ c     perturbated ad_x
 
 c     1. compute gradient with adjoint
       icost=0
+
       call save_croco_state()
+c$$$      do k=1,32
+c$$$         do i=0,nfast+2
+c$$$            call step()
+c$$$         end do
+c$$$      enddo
+c$$$      call restore_croco_state()
+c$$$      next_kstp=kstp
+c$$$      time_start=time
+c$$$      iif = -1
+c$$$      nbstep3d = 0
+c$$$      iic = ntstart
+c$$$      do k=1,32
+c$$$         do i=0,nfast+2
+c$$$            call step()
+c$$$         end do
+c$$$      enddo
+c$$$      call restore_croco_state()
+      write(*,*) '========'
+      write(*,*) 'cost_fun'
+      write(*,*) '========'
       call cost_fun(ad_x, icost)
       call restore_croco_state()
       costb=1
       cost=icost
       call save_croco_state()
+      write(*,*) '=========='
+      write(*,*) 'cost_fun_b'
+      write(*,*) '=========='
       call cost_fun_b(ad_x,ad_g,cost,costb)
       call restore_croco_state()
 
@@ -46,6 +70,9 @@ c     2. compute tangent
       ad_d(1)=0
 
       call save_croco_state()
+      write(*,*) '=========='
+      write(*,*) 'cost_fun_d'
+      write(*,*) '=========='
       call cost_fun_d(ad_x, ad_g, cost, ad_d)
       call restore_croco_state()
       

@@ -3,12 +3,16 @@
 # include "adinc.h"
 # include "adparam.h"
 
-      integer k
+      integer k,iifroot
 
-C$AD BINOMIAL-CKP ad_ns+1 80 1
+      write(*,*) 'start ad_step'
+C$XAD BINOMIAL-CKP ad_ns+1 30 1
       do k=1,ad_ns
-         call step()
+         do iifroot = 0,nfast+2
+            call step()
+         end do
       end do
+      write(*,*) 'end ad_step'
 
       end subroutine ad_step
 
@@ -28,9 +32,15 @@ C$AD BINOMIAL-CKP ad_ns+1 80 1
       icost=0
       cost=0
 
+      next_kstp=kstp
+      time_start=time
+      iif = -1
+      nbstep3d = 0
+      iic = ntstart
+
       do ta=1,ad_nt
          call ad_step()
-         call cost_fun_step(ad_x,icost,ta*ad_ns,3)
+         call cost_fun_step(ad_x,icost,ta,3)
          write(*,*) '==icost3==>',icost
 c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       end do
@@ -115,7 +125,15 @@ c            i=ad_i(k)
 c            j=ad_j(k)
 c            delta_z = (zeta(i,j,knew)-ad_obs(i,j,ta+2))
 c         delta_h = (h(i,j) - h_bck(i,j))
+c     end do
+c      do j=Jstr,Jend
+c         do i=Istr,Iend
+c            write(*,*) ta,i,j,zeta(i,j,knew),ad_obs(i,j,ta+1),
+c     &           ad_obs(i,j,ta+2)
 c         end do
+c      end do
+
+      write(*,*) '===cost_fun_step==='
       if (mode.eq.2) then
          do j=Jstr,Jend
             do i=Istr,Iend
@@ -129,37 +147,34 @@ c         end do
             do i=Istr,Iend
                if (rmask(i,j).ne.0) then
                   k=k+1
-                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+2)
-                  ad_dz(k) = delta_z
+                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+1)
                   icost = icost + delta_z*delta_z
-c                  write(*,*) 'AAAAA',ad_cost_counter,time,
-c     &                 ad_obs_time(ta),zeta(i,j,knew),
-c     &                 ad_obs(i,j,ta+2),
-c     &                 ad_obs(i,j,ta+1),
-c     &                 ad_obs(i,j,ta)
+c$$$                  write(*,*) 'AAAAA',ad_cost_counter,time,
+c$$$     &                 ad_obs_time(ta),zeta(i,j,knew),
+c$$$     &                 ad_obs(i,j,ta+2),
+c$$$     &                 ad_obs(i,j,ta+1),
+c$$$     &                 ad_obs(i,j,ta)
 c$$$                  write(*,*) 'AAAAA',mynode,i,j,
 c$$$     &                 knew,ad_sim_iicroot,k,
 c$$$     &                 ad_sim_iicroot+k,
 c$$$     &                 zeta(i,j,knew),ad_obs(i,j,ta+2),
 c$$$     &                 h(i,j),h_bck(i,j),
 c$$$     &                 delta_z,
-c$$$     &                 delta_h
-c$$$                  write(*,*) 'BBBBB',mynode,zeta(i,j,knew),
-c$$$     &                 ad_obs(i,j,ta+3),
-c$$$     &                 ad_obs(i,j,ta+2),
-c$$$     &                 ad_obs(i,j,ta+1),
-c$$$     &                 ad_obs(i,j,ta),
-c$$$     &                 ad_obs(i,j,ta-1),
-c$$$     &                 ad_obs(i,j,ta-2)
+c$$$  &                 delta_h
+c$$$                  if (zeta(i,j,knew).gt.0) then
+c$$$                     write(*,*) 'BBBBB',ta,mynode,i,j,zeta(i,j,knew),
+c$$$     &                    ad_obs(i,j,ta+2),
+c$$$     &                    ad_obs(i,j,ta+1),
+c$$$     &                    ad_obs(i,j,ta),
+c$$$     &                    ad_obs(i,j,ta-1),
+c$$$     &                    ad_obs(i,j,ta-2)
+c$$$                  end if
                   ad_cost_counter = ad_cost_counter + 1
                end if
             end do
          end do
       end if
 
-      write(*,*) '===cost_fun_step==='
-      write(*,*) 'min delta_z',minval(ad_dz)
-      write(*,*) 'max delta_z',maxval(ad_dz)
       write(*,*) '==================='
 
       end subroutine cost_fun_step_2d_tile
@@ -168,7 +183,7 @@ c$$$     &                 ad_obs(i,j,ta-2)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      integer ntrds,trd,my_first,my_last,tile,range
+      integer ntrds,trd,my_first,my_last,tile,subs,range,ierr
 
 #ifdef OPENMP
       ntrds=omp_get_num_threads()
@@ -181,9 +196,61 @@ c$$$     &                 ad_obs(i,j,ta-2)
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
+      call init_scalars(ierr)
+
+      do tile=0,NSUB_X*NSUB_E-1
+        call start_timers()
+        call init_arrays (tile)
+      enddo
       do tile=my_first,my_last
          call set_state_2d(tile, ad_x)
       end do
+
+c      call check_tab2d(h(:,:),'h initialisation #1','r')
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call setup_grid1 (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call setup_grid2 (tile)
+      enddo
+
+      call set_scoord
+      call set_weights
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_depth (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call grid_stiffness (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+c      do tile=0,NSUB_X*NSUB_E-1
+c        call set_depth (tile)
+c      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+c      do tile=0,NSUB_X*NSUB_E-1
+c        call set_HUV (tile)
+# ifdef RESET_RHO0
+c        call reset_rho0 (tile)
+# endif
+c      enddo
+CR      write(*,*)  ' -4' MYID
+C$OMP PARALLEL DO PRIVATE(tile)
+c      do tile=0,NSUB_X*NSUB_E-1
+c         call omega (tile)
+c         call rho_eos (tile)
+c      enddo
+CR      write(*,*)  ' -3' MYID
+
 
       end subroutine set_state
 
@@ -197,9 +264,9 @@ c$$$     &                 ad_obs(i,j,ta-2)
 
       call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
 
-      call set_depth(tile)
+c      call set_depth(tile)
 
-      call grid_stiffness(tile)
+c      call grid_stiffness(tile)
 
       end subroutine set_state_2d
 
@@ -215,11 +282,13 @@ c$$$     &                 ad_obs(i,j,ta-2)
 #include "compute_extended_bounds.h"
 
       k=ad_array_node_size
-      depth=ad_x(3)
-      ridge_width=ad_x(2)
+      depth=2000
+      ridge_width=30.e3
       ridge_height=ad_x(1)
 
       write(*,*) '########',ad_x(1),'...',ad_x(2),'...',ad_x(3)
+
+      h_bck(:,:) = h(:,:)
 
 
       cff1=1./(ridge_width*ridge_width)
@@ -237,9 +306,11 @@ c$$$     &                 ad_obs(i,j,ta-2)
             h(i,j)=depth-ridge_height
           endif
 #   endif
+c          if (h(i,j).ne.h_bck(i,j)) then
+c             write(*,*) '#######/////', h(i,j) - h_bck(i,j)
+c          endif
         enddo
       enddo
-
 
       write(*, *) '**** set_state ****'
 
@@ -305,18 +376,40 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       ad_ubar_bck(:,:,:) = ubar(:,:,:)
       ad_vbar_bck(:,:,:) = vbar(:,:,:)
       ad_zeta_bck(:,:,:) = zeta(:,:,:)
+      ad_rufrc_bck(:,:) = rufrc(:,:)
+      ad_rvfrc_bck(:,:) = rvfrc(:,:)
+      ad_rufrc_bak_bck(:,:,:) = rufrc_bak(:,:,:)
+      ad_rvfrc_bak_bck(:,:,:) = rvfrc_bak(:,:,:)
+      ad_du_avg1_bck(:,:,:) = du_avg1(:,:,:)
+      ad_dv_avg1_bck(:,:,:) = dv_avg1(:,:,:)
+      ad_zt_avg1_bck(:,:) = zt_avg1(:,:)
+      ad_du_avg2_bck(:,:) = du_avg2(:,:)
+      ad_dv_avg2_bck(:,:) = dv_avg2(:,:)
       h_bck(:,:) = h(:,:)
 
       kstp_bck = kstp
       krhs_bck = krhs
       knew_bck = knew
       iic_bck = iic
+      nbstep3d_bck =nbstep3d
+      nnew_bck = nnew
+
+      time_bck = time
+      iif_bck = iif
+      nstp_bck = nstp
+
+
+
+      ad_u_bck(:,:,:,:) = u(:,:,:,:)
+      ad_v_bck(:,:,:,:) = v(:,:,:,:)
+      ad_t_bck(:,:,:,:,:) = t(:,:,:,:,:)
 
       write(*,*) 'save------'
       write(*,*) 'knew=',knew
       write(*,*) 'kstp=',kstp
       write(*,*) 'krhs=',krhs
       write(*,*) 'iic=',iic
+      write(*,*) 'nstp=',nstp
       write(*,*) 'minh',minval(h_bck)
       write(*,*) 'maxh',maxval(h_bck)
       write(*,*) '----------'
@@ -343,15 +436,34 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       ubar(:,:,:) = ad_ubar_bck(:,:,:)
       vbar(:,:,:) = ad_vbar_bck(:,:,:)
       zeta(:,:,:) = ad_zeta_bck(:,:,:)
+      rufrc(:,:) = ad_rufrc_bck(:,:)
+      rvfrc(:,:) = ad_rvfrc_bck(:,:)
+      rufrc_bak(:,:,:) = ad_rufrc_bak_bck(:,:,:)
+      rvfrc_bak(:,:,:) = ad_rvfrc_bak_bck(:,:,:)
+      du_avg1(:,:,:) = ad_du_avg1_bck(:,:,:)
+      dv_avg1(:,:,:) = ad_dv_avg1_bck(:,:,:)
+      zt_avg1(:,:) = ad_zt_avg1_bck(:,:)
+      du_avg2(:,:) = ad_du_avg2_bck(:,:)
+      dv_avg2(:,:) = ad_dv_avg2_bck(:,:)
       h(:,:) = h_bck(:,:)
 
       kstp = kstp_bck
       krhs = krhs_bck
       knew = knew_bck
       iic = iic_bck
+      nbstep3d = nbstep3d_bck
+      nnew = nnew_bck
+
+      time = time_bck
+      iif = iif_bck
+      nstp = nstp_bck
+
+      u(:,:,:,:) = ad_u_bck(:,:,:,:)
+      v(:,:,:,:) = ad_v_bck(:,:,:,:)
+      t(:,:,:,:,:) = ad_t_bck(:,:,:,:,:)
 
       do tile=my_first,my_last
-         call restore_croco_state_2d(tile, ad_x)
+         call restore_croco_state_2d(tile)
       end do
 
       write(*,*) 'restore+++'
@@ -359,6 +471,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       write(*,*) 'kstp=',kstp
       write(*,*) 'krhs=',krhs
       write(*,*) 'iic=',iic
+      write(*,*) 'nstp=',nstp
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
@@ -428,13 +541,13 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       k=0
 
 c     ridge_height
-      ad_x(1)=800
+      ad_x(1)=1600
 c     ridge_width=30.e3
       ad_x(2)=30.e3
 c     depth
       ad_x(3)=2000
 
-      ad_array_node_size=3
+      ad_array_node_size=1
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,

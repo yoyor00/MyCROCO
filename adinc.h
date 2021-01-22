@@ -7,6 +7,8 @@ c common includes for AD tools
 # include "grid.h"
 # include "scalars.h"
 # include "ocean2d.h"
+# include "ocean3d.h"
+# include "coupling.h"
 # include "ncscrum.h"
 # include "private_scratch.h"
       real*QUAD buff(6)
