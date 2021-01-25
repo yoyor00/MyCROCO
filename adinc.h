@@ -8,6 +8,7 @@ c common includes for AD tools
 # include "scalars.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
+# include "mixing.h"
 # include "coupling.h"
 # include "ncscrum.h"
 # include "private_scratch.h"

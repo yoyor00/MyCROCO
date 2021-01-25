@@ -511,6 +511,14 @@ C ************************* control ***********************
       IF (POPBIT()) cc = IBSET(cc,0)
       END
 
+      SUBROUTINE PUSHPOINTER8(CC)
+      write(*,*) 'AD: I PUSH A POINTER AND I DO NOT KNOW WHAT DO DO'
+      END
+
+      SUBROUTINE POPPOINTER8(CC)
+      write(*,*) 'AD: I POP A POINTER AND I DO NOT KNOW WHAT DO DO'
+      END
+      
 C ************************* pointer ************************
 c Don't know how to write a PUSH/POPPOINTER() in Fortran
 c Maybe one should always call the C version instead...

@@ -176,7 +176,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F step.F step2d.F  v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
+ADJ_SRCS=cost_fun.F get_vbc.F diag.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
@@ -369,10 +369,12 @@ $(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
-	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
-
-
+	${TAPENADE} $^ -noisize -noisize77 -msglevel 10 -msginfile -nocheckpoint "step3d_uv_thread step3d_t_thread omega_tile rho_eos rho_eos_tile set_vbc prsgrd rhs3d pre_step3d pre_step3d_tile set_depth set_depth_tile set_huv set_huv_tile set_huv2 set_huv2_tile exchange_r2d_tile exchange_u2d_tile exchange_v2d_tile exchange_u3d_tile exchange_v3d_tile exchange_r3d_tile exchange_r2d_tile exchange_w3d_tile prsgrd_tile rhs3d_tile" -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h  
+	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_b.f 
+	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_b.f
+	sed -i 's/PARAMETER n/PARAMETER :: n/g' $(TAP_TARGET)_b.f 
+	sed -i 's/PARAMETER m/PARAMETER :: m/g' $(TAP_TARGET)_b.f
 
 cmaker.f: cmaker.F
 	$(CPP) -P $(CPPFLAGS) $^ | ./mpc > $@
@@ -393,11 +395,16 @@ $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
 	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) $(AMPIINC)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_d.f 
+	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_d.f
 
 $(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
 	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_d.f 
+	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_d.f
+
 
 fortranSupport.o : fortranSupport.F
 	$(CFT) $(FFLAGS) $(CPPFLAGS) -I /usr/include -I /usr/local/include -c $^ -o $@

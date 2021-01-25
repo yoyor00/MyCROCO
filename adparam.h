@@ -130,7 +130,6 @@ c     rms
       real ad_v_bck(GLOBAL_2D_ARRAY,N,3)
       real ad_t_bck(GLOBAL_2D_ARRAY,N,3,NT)
 
-
 C     commons
       common /ad_backup/ ad_ubar_bck, ad_vbar_bck, ad_zeta_bck,
      &     ad_rufrc_bck,ad_rvfrc_bck,ad_rufrc_bak_bck,ad_rvfrc_bak_bck,

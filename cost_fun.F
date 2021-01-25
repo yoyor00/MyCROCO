@@ -1,3 +1,4 @@
+C$AD NOCHECKPOINT
       subroutine ad_step()
       implicit none
 # include "adinc.h"
@@ -6,7 +7,7 @@
       integer k,iifroot
 
       write(*,*) 'start ad_step'
-C$XAD BINOMIAL-CKP ad_ns+1 30 1
+C$XAD BINOMIAL-CKP ad_ns+1 32 1
       do k=1,ad_ns
          do iifroot = 0,nfast+2
             call step()
@@ -196,61 +197,9 @@ c$$$                  end if
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
-      call init_scalars(ierr)
-
-      do tile=0,NSUB_X*NSUB_E-1
-        call start_timers()
-        call init_arrays (tile)
-      enddo
       do tile=my_first,my_last
          call set_state_2d(tile, ad_x)
       end do
-
-c      call check_tab2d(h(:,:),'h initialisation #1','r')
-
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call setup_grid1 (tile)
-      enddo
-
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call setup_grid2 (tile)
-      enddo
-
-      call set_scoord
-      call set_weights
-
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
-      enddo
-
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call grid_stiffness (tile)
-      enddo
-
-C$OMP PARALLEL DO PRIVATE(tile)
-c      do tile=0,NSUB_X*NSUB_E-1
-c        call set_depth (tile)
-c      enddo
-
-C$OMP PARALLEL DO PRIVATE(tile)
-c      do tile=0,NSUB_X*NSUB_E-1
-c        call set_HUV (tile)
-# ifdef RESET_RHO0
-c        call reset_rho0 (tile)
-# endif
-c      enddo
-CR      write(*,*)  ' -4' MYID
-C$OMP PARALLEL DO PRIVATE(tile)
-c      do tile=0,NSUB_X*NSUB_E-1
-c         call omega (tile)
-c         call rho_eos (tile)
-c      enddo
-CR      write(*,*)  ' -3' MYID
-
 
       end subroutine set_state
 
@@ -280,37 +229,11 @@ c      call grid_stiffness(tile)
       character*6 counter_str
 
 #include "compute_extended_bounds.h"
+      k = 1
+      
+      rdrg2 = ad_x(1)
 
-      k=ad_array_node_size
-      depth=2000
-      ridge_width=30.e3
-      ridge_height=ad_x(1)
-
-      write(*,*) '########',ad_x(1),'...',ad_x(2),'...',ad_x(3)
-
-      h_bck(:,:) = h(:,:)
-
-
-      cff1=1./(ridge_width*ridge_width)
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          if ((xr(i,j).gt.ridge_width).or.
-     &       (xr(i,j).lt.(-ridge_width))) then
-            cff=0.
-          else
-            cff=1-(xr(i,j)*xr(i,j)*cff1);
-          endif
-          h(i,j)=depth-ridge_height*cff*cff;
-#   ifdef INTERNALSHELF
-          if (xr(i,j).ge.0.) then
-            h(i,j)=depth-ridge_height
-          endif
-#   endif
-c          if (h(i,j).ne.h_bck(i,j)) then
-c             write(*,*) '#######/////', h(i,j) - h_bck(i,j)
-c          endif
-        enddo
-      enddo
+      write(*,*) '########',ad_x(1)
 
       write(*, *) '**** set_state ****'
 
@@ -331,15 +254,15 @@ c          endif
       write(counter_str, 910) mynode,ad_counter
       open(unit=99,file='z0b.'//counter_str)
       write(99, *) Iend-Istr+1,Jend-Jstr+1,0
-      do j=Jstr,Jend
-         do i=Istr,Iend
+c      do j=Jstr,Jend
+c         do i=Istr,Iend
 #ifdef SPHERICAL
-            write(99, *) lonr(i,j),latr(i,j),h(i,j)
+c            write(99, *) lonr(i,j),latr(i,j),h(i,j)
 #else
-            write(99, *) xr(i,j),yr(i,j),h(i,j)
+c            write(99, *) xr(i,j),yr(i,j),h(i,j)
 #endif
-         end do
-      end do
+c         end do
+c      end do
       close(99)
 
 
@@ -538,14 +461,10 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       integer Istr,Iend,Jstr,Jend,i,j,k
 
 # include "compute_extended_bounds.h"
-      k=0
+      k=1
 
-c     ridge_height
-      ad_x(1)=1600
-c     ridge_width=30.e3
-      ad_x(2)=30.e3
-c     depth
-      ad_x(3)=2000
+c     rdrg2
+      ad_x(1)=1.5D-6
 
       ad_array_node_size=1
 
