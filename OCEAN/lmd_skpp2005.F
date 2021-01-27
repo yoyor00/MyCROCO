@@ -193,7 +193,7 @@
 !
 #  ifdef MRL_WCI
           cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
-          ustokes=0.25/g*(wfrq(i,j)**3)*(Awave(i,j)**2) *cff
+          ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
           Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
 #  else
           Langmuir(i,j)=0.35  ! Liu et al (2014)
