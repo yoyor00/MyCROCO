@@ -8,7 +8,6 @@
 !     
 !     ROMS_AGRIF website : http://roms.mpl.ird.fr
 !======================================================================
-!     
 #include "cppdefs.h"
 
 #ifdef XIOS

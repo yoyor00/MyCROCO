@@ -1,4 +1,3 @@
-!
 !======================================================================
 ! ROMS_AGRIF is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
@@ -14,7 +13,6 @@
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics 
 ! netCDF file.
-
 !---------------------------------------------------------------
 !
       subroutine wrt_diags_eddy_avg

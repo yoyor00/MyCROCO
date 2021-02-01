@@ -11,7 +11,6 @@
 !
 #include "cppdefs.h"
 #if defined DIAGNOSTICS_TS && defined AVERAGES
-!
 !---------------------------------------------------------------
 ! Write time-averaged diags flux fields into averages netCDF file
 ! Writes requested model fields at requested levels into

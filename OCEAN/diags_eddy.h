@@ -1,7 +1,7 @@
 ! This is include file "diags_ek.h"
 !  ==== == ======= ==== ==========
 !
-
+!
 
 # if defined DIAGNOSTICS_EDDY  && ! defined XIOS
 # ifdef AVERAGES

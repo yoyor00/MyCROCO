@@ -15,6 +15,7 @@
                                         ! script file using keywords
                                         ! to recognize variables.
 !     implicit none
+
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"

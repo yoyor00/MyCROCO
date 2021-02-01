@@ -122,7 +122,7 @@
                srflx = tab_t_tmp / (rho0*Cp) 
             endif
          end if  
-!-------------------------------------------------
+!--------------------------------------------------
 #ifdef SALINITY
          if (srcv_clname(i)=='RRMEVPR'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
