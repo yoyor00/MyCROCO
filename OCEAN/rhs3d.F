@@ -78,7 +78,6 @@
      &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
      &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
-      real wrk4(0:N)
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -380,10 +379,7 @@
 !====================================================================
 !
 !  Add in Coriolis, Stokes-Coriolis and curvilinear transformation 
-!  terms (metrics terms), if any.
-!
-!  Note: For diagnostics, Metrics terms are stored with Coriolis 
-!  terms, although ideally they should be with Advection term
+!  terms, if any.
 !
 !====================================================================
 !
@@ -1665,17 +1661,7 @@
 !
 !======================================================================
 !
-!  Add combined vortex-force and advection terms & breaking terms
-!                                                & streaming terms
-!
-!  Diagnostics
-!  -----------
-!  Residual VF term: resVF = ust_H.grad_H(u) = VF - As - Ms 
-!  ResVF: stored here in Mvf
-!  As: -grad(ust*u) is Advection by Stokes drift (stored in Madv)
-!  Ms: metric terms involving Stokes drift (stored in MStCo)
-!  Full diagnostics of VF and corrected advection are  in
-!  a second step
+! Add combined vortex-force and advection terms & breaking terms
 !
 !======================================================================
 !
@@ -1737,7 +1723,6 @@
 #  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
-
 # endif   /* MRL_WCI */
 !
 !======================================================================
@@ -1794,89 +1779,6 @@
         endif
 
       enddo      !<-- j loop
-
-# if defined DIAGNOSTICS_UV && defined MRL_WCI
-!
-!======================================================================
-!  Full horizotal 'J' vortex force term: for diagnostics only.  
-!
-!  Replace in Mvf and subtract Stokes advection from Madv (where 
-!  Lagrangian advection was previsouly stored):
-!  A = Al - As = Al + Ms + ResVF - VF     (Ms stored in MStCo)
-!                                         (ResVF stored in Mvf)
-!  with A = -grad(u*u) & Al = -grad(ul*u)
-!  Note: Ms is left in MStCo even though it should be in Madv
-!  (for now)
-!======================================================================
-#  define Dudz UFx
-#  define Dvdz VFx
-#  define Vort wrk2
-      if (nnew.ne.3) then  ! corrector step
-!
-!  Get vertical Stokes drift "wst" at rho-point
-!
-        call wstokes_tile (istr,iend,jstr,jend, wrk1)
-!
-!  du/dz & dv/dz at horz u- & v- & vert rho-point
-!
-        do k=1,N
-          kp1=MIN(N,k+1)
-          km1=MAX(1,k-1)
-          do j=JstrV-1,Jend+1
-            do i=IstrU-1,Iend+1
-              Dudz(i,j) = 2.*(u(i,j,kp1,nrhs)-u(i,j,km1,nrhs))
-     &                          /(z_r(i-1,j,kp1)+z_r(i,j,kp1)-
-     &                            z_r(i-1,j,km1)-z_r(i,j,km1))
-              Dvdz(i,j) = 2.*(v(i,j,k+1,nrhs)-v(i,j,k-1,nrhs))
-     &                          /(z_r(i,j-1,kp1)+z_r(i,j,kp1)-
-     &                            z_r(i,j-1,km1)-z_r(i,j,km1))
-            enddo
-          enddo
-!
-!  Vorticity (dv/dx -du/dy) at psi-point
-!
-          do j=Jstr,Jend+1
-            do i=Istr,Iend+1
-              Vort(i,j)=(v(i,j,k,nrhs)-v(i-1,j  ,k,nrhs))/om_p(i,j) -
-     &                  (u(i,j,k,nrhs)-u(i  ,j-1,k,nrhs))/on_p(i,j)
-            enddo
-          enddo
-!
-!  VFx = vst * (dv/dx -du/dy) - wst * du/dz, at u-point
-!
-          do j=Jstr,Jend
-            do i=IstrU,Iend
-              cff=0.25*(Hz(i-1,j,k)+Hz(i,j,k))*om_u(i,j)*on_u(i,j)
-              cff1=cff*( 0.25*(Vort(i,j)+Vort(i,j+1))*
-     &                             (vst(i  ,j,k)+vst(i  ,j+1,k)+
-     &                              vst(i-1,j,k)+vst(i-1,j+1,k))
-     &                     - (wst(i,j,k)+wst(i-1,j,k))*Dudz(i,j) )
-              cff2=Mvf(i,j,k,1)-cff1
-              MXadv(i,j,k,1)=MXadv(i,j,k,1)+cff2 ! Al + ResVF - VF
-              Mvf(i,j,k,1)=cff1
-            enddo
-          enddo
-!
-!  VFy = - ust * (dv/dx -du/dy) - wst * dv/dz, at v-point
-!
-          do i=Istr,Iend
-            do j=JstrV,Jend
-              cff=0.25*(Hz(i,j,k)+Hz(i,j-1,k))*on_v(i,j)*om_v(i,j)
-              cff1=-cff*( 0.25*(Vort(i,j)+Vort(i+1,j))*
-     &                             (ust(i,j  ,k)+ust(i+1,j  ,k)+
-     &                              ust(i,j-1,k)+ust(i+1,j-1,k))
-     &                     + (wst(i,j,k)+wst(i,j-1,k))*Dvdz(i,j) )
-              cff2=Mvf(i,j,k,2)-cff1
-              MXadv(i,j,k,2)=MXadv(i,j,k,2)+cff2 ! Al + ResVF - VF
-              Mvf(i,j,k,2)=cff1
-            enddo
-          enddo
-        enddo
-      endif ! corrector step
-#  undef Vort
-#  undef Dudz
-#  undef Dvdz
-# endif   /* DIAGNOSTICS_UV & MRL_WCI */
 
       return
       end

@@ -112,7 +112,7 @@ ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SC
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 
-if [[ -e "namelist_pisces" ]] ; then
+if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
 else
         \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR

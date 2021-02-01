@@ -230,7 +230,6 @@
                         <field field_ref="SFe"       name="SFe" />
                         <field field_ref="NFe"       name="NFe" />
                         <field field_ref="NH4"       name="NH4" />
-                        <field field_ref="LGW"       name="LGW"/>			    
 		</field_group>
             </file>
 

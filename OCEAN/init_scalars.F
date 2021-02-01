@@ -46,7 +46,7 @@
 # endif
 
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+# ifdef DIAGNOSTICS_EDDY
 #include "diags_eddy.h"
 # endif
 
@@ -254,23 +254,23 @@ C$OMP END PARALLEL
 # endif
 # endif
 
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#ifdef DIAGNOSTICS_EDDY
       nciddiags_eddy=-1
       nrecdiags_eddy=0
 # ifdef AVERAGES
       nciddiags_eddy_avg=-1
       nrecdiags_eddy_avg=0
 # endif
-#endif
+# endif
 
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#ifdef OUTPUTS_SURFACE
       ncidsurf=-1
       nrecsurf=0
 # ifdef AVERAGES
       ncidsurf_avg=-1
       nrecsurf_avg=0
 # endif
-#endif
+# endif
 
 #ifdef DIAGNOSTICS_BIO
       nciddiabio=-1
@@ -315,7 +315,7 @@ C$OMP END PARALLEL
 
 #undef CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
-      vname(1,indxTime)='ocean_time'
+      vname(1,indxTime)='scrum_time'
       vname(2,indxTime)='time since initialization'
 #ifdef USE_CALENDAR
       vname(3,indxTime)='seconds since 1900-01-01'
@@ -421,32 +421,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxBostr =',indxBostr
       vname(6,indxBostr)='x_rho y_rho                             '
 #endif
       vname(7,indxBostr)='                                        '
-
-CR      write(stdout,'(1x,A,I3)') 'indxBustr =',indxBustr
-      vname(1,indxBustr)='bustr                                   '
-      vname(2,indxBustr)='Kinematic u bottom stress component     '
-      vname(3,indxBustr)='N/m2                                    '
-      vname(4,indxBustr)='                                        '
-      vname(5,indxBustr)='                                        '
-#  ifdef SPHERICAL
-      vname(6,indxBustr)='lat_u lon_u                             '
-!#  else
-!      vname(6,indxBustr)='x_rho y_rho                            '
-#  endif
-      vname(7,indxBustr)='                                        '
-
-CR      write(stdout,'(1x,A,I3)') 'indxBvstr =',indxBvstr
-      vname(1,indxBvstr)='bvstr                                   '
-      vname(2,indxBvstr)='Kinematic v bottom stress component     '
-      vname(3,indxBvstr)='N/m2                                    '
-      vname(4,indxBvstr)='                                        '
-      vname(5,indxBvstr)='                                        '
-#  ifdef SPHERICAL
-      vname(6,indxBvstr)='lat_v lon_v                             '
-!#  else
-!      vname(6,indxBvstr)='x_rho y_rho                            '
-#  endif
-      vname(7,indxBvstr)='                                        '
 
 CR      write(stdout,'(1x,A,I3)') 'indxWstr=',indxWstr
       vname(1,indxWstr)='wstr                                     '
@@ -3163,7 +3137,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvMrhs+itrc-1)
 
 
 
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#ifdef DIAGNOSTICS_EDDY
 
 CR       write(stdout,'(1x,A,I3)') 'indxeddyuu = ',indxeddyuu
        write(vname1,*) 'uu                                    '
@@ -3253,78 +3227,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvb)
        vname(5,indxeddyvb)='                                '
        vname(7,indxeddyvb)='                                '
 
-CR       write(stdout,'(1x,A,I3)') 'indxeddyubu = ',indxeddyubu
-       write(vname1,*) 'ubustr                              '
-       vname(1,indxeddyubu)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyubu)
-       vname(2,indxeddyubu)='ubustr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyubu)=vname3
-       vname(4,indxeddyubu)='                               '
-       vname(5,indxeddyubu)='                               '
-       vname(7,indxeddyubu)='                               '
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyvbv = ',indxeddyvbv
-       write(vname1,*) 'vbvstr                              '
-       vname(1,indxeddyvbv)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyvbv)
-       vname(2,indxeddyvbv)='vbvstr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyvbv)=vname3
-       vname(4,indxeddyvbv)='                               '
-       vname(5,indxeddyvbv)='                               '
-       vname(7,indxeddyvbv)='                               '
-
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyusu = ',indxeddyusu
-       write(vname1,*) 'usustr                              '
-       vname(1,indxeddyusu)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyusu)
-       vname(2,indxeddyusu)='usustr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyusu)=vname3
-       vname(4,indxeddyusu)='                               '
-       vname(5,indxeddyusu)='                               '
-       vname(7,indxeddyusu)='                               '
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyvsv = ',indxeddyvsv
-       write(vname1,*) 'vsvstr                              '
-       vname(1,indxeddyvsv)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyvsv)
-       vname(2,indxeddyvsv)='vsvstr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyvsv)=vname3
-       vname(4,indxeddyvsv)='                               '
-       vname(5,indxeddyvsv)='                               '
-       vname(7,indxeddyvsv)='                               '
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyugsu = ',indxeddyugsu
-       write(vname1,*) 'ugsustr                              '
-       vname(1,indxeddyugsu)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyugsu)
-       vname(2,indxeddyugsu)='ugsustr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyugsu)=vname3
-       vname(4,indxeddyugsu)='                               '
-       vname(5,indxeddyugsu)='                               '
-       vname(7,indxeddyugsu)='                               '
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyvgsv = ',indxeddyvgsv
-       write(vname1,*) 'vgsvstr                              '
-       vname(1,indxeddyvgsv)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyvgsv)
-       vname(2,indxeddyvgsv)='vgsvstr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyvgsv)=vname3
-       vname(4,indxeddyvgsv)='                               '
-       vname(5,indxeddyvgsv)='                               '
-       vname(7,indxeddyvgsv)='                               '
-
 #endif  /* DIAGNOSTICS_EDDY */
 
 
 
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#ifdef OUTPUTS_SURFACE
 
 CR       write(stdout,'(1x,A,I3)') 'indxsurft = ',indxsurft
        nametrc='surf'

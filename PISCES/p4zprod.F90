@@ -296,7 +296,7 @@ CONTAINS
       !   Update the arrays TRA which contain the biological sources and sinks
       DO jk = KRANGE
          DO jj = JRANGE
-           DO ji =1 ,jpi
+            DO ji = IRANGE
               IF( etot_ndcy(ji,jj,jk) > 1.E-3 ) THEN
                  zproreg  = zprorcan(ji,jj,jk) - zpronewn(ji,jj,jk)
                  zproreg2 = zprorcad(ji,jj,jk) - zpronewd(ji,jj,jk)
@@ -328,7 +328,7 @@ CONTAINS
          zpligprod1(:,:,:) = 0.0    ;    zpligprod2(:,:,:) = 0.0
          DO jk = KRANGE
             DO jj = JRANGE
-              DO ji =1 ,jpi
+               DO ji = IRANGE
                  IF( etot_ndcy(ji,jj,jk) > 1.E-3 ) THEN
                     zdocprod = excretd * zprorcad(ji,jj,jk) + excretn * zprorcan(ji,jj,jk)
                     zfeup    = texcretn * zprofen(ji,jj,jk) + texcretd * zprofed(ji,jj,jk)

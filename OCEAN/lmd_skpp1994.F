@@ -57,6 +57,8 @@
       real lmd_nubl, lmd_cs, lmd_Cv, Ric, lmd_betaT, lmd_epsilon,
      &     lmd_cekman, lmd_cmonob, lmd_Cstar, lmd_Cg, lmd_nu0c,
      &     ustarb 
+      real su_r, sv_r, ustokes
+!======================================================================
       parameter (
      &   lmd_nubl=0.01,    ! Maximum allowed boundary layer
                            ! viscosity and diffusivity [m^2/s].
@@ -95,7 +97,7 @@
                            ! viscosity and  diffusivity due
                            ! to shear instability, [m^2/s];
      &                                                           )
-
+!======================================================================
 # undef LMD_SKPP_MONOB
 # define HBL_SMOOTH
 
@@ -144,8 +146,21 @@
 # ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
 # else
-          ustar(i,j)=sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                         +(0.5*(svstr(i,j)+svstr(i,j+1)))**2))
+          su_r=0.5*(sustr(i,j)+sustr(i+1,j))
+          sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+          ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
+# endif
+# ifdef LMD_LANGMUIR
+!
+!  Turbulent Langmuir number (McWilliams et al 1997)
+!
+#  ifdef MRL_WCI
+          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
+          ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
+          Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
+#  else
+          Langmuir(i,j)=0.35  ! Liu et al (2014)
+#  endif
 # endif
         enddo
       enddo
@@ -235,8 +250,8 @@
           enddo
         enddo       !--> discard Bflux (will be recomputed later)
 
-        call lmd_wscale_ER_tile (Istr,Iend,Jstr,Jend, Bflux,
-     &                                       sigma,wm,ws)
+        call lmd_wscale_ER_tile (Istr,Iend,Jstr,Jend,
+     &                                Bflux,sigma,wm,ws)
 # undef sigma
 # undef wm
 !                               !--> discard sigma, wm (not used)

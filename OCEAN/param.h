@@ -636,7 +636,11 @@
      &            iBFE_=iDIC_+14, iGOC_=iDIC_+15, iSFE_=iDIC_+16,
      &            iDFE_=iDIC_+17, iDSI_=iDIC_+18, iNFE_=iDIC_+19,
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
-     &            iNH4_=iDIC_+23, iLGW_=iDIC_+24)
+     &            iNH4_=iDIC_+23)
+#    ifdef key_ligand
+      parameter (iLGW_=iDIC_+24)
+#     endif
+#   ifdef key_pisces_quota
 #   ifdef key_ligand
       parameter (iDON_=iDIC_+25, iDOP_=iDIC_+26, iPON_=iDIC_+27,
      &	         iPOP_=iDIC_+28, iNPH_=iDIC_+29, iPPH_=iDIC_+30,
@@ -650,6 +654,7 @@
      &           iNPI_=iDIC_+33, iPPI_=iDIC_+34, iPFE_=iDIC_+35,
      &           iPCH_=iDIC_+36, iGON_=iDIC_+37, iGOP_=iDIC_+38)
 #   endif
+#endif
 #   ifdef key_trc_diaadd
       parameter (Nhi       = 1,
      &            Nco3      = 2,

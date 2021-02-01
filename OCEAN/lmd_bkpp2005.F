@@ -301,8 +301,6 @@
               Ks0=cff*ws(i,j)*hbbl(i,j)
 #  endif
 # endif
-
-# ifdef LMD_SKPP
 !
 !-----------------------------------------------------------------
 ! If BBL reaches into SBL, take max of surface and bottom values. 
@@ -310,6 +308,7 @@
 ! in lmd_vmix.F.
 !-----------------------------------------------------------------
 !
+# ifdef LMD_SKPP
 #  ifdef LMD_SKPP2005
               zsbl=z_w(i,j,N)-hbls(i,j,3-nstp)
 #  else
@@ -322,34 +321,18 @@
                 Ks0=max(Ks(i,j,k),Ks0)
 #  endif
               endif
-# endif   /* LMD_KPP */
+# endif   /* LMD_SKPP */
               Kv(i,j,k)=Kv0
               Kt(i,j,k)=Kt0
-#  ifdef SALINITY
+# ifdef SALINITY
               Ks(i,j,k)=Ks0
-#  endif
-
-
-# if defined MLCONVEC
-!
-!  Add convective adjustment in the ML for unresolved convective cells
-!
-            if (bvf(i,j,k).lt.0.) then
-                  Kv(i,j,k)=Kv(i,j,k)+lmd_nu0c
-                  Kt(i,j,k)=Kt(i,j,k)+lmd_nu0c
-#  ifdef SALINITY
-                  Ks(i,j,k)=Ks(i,j,k)+lmd_nu0c
-#  endif
-            endif
 # endif
-
-
+!
+!-----------------------------------------------------------------
+!  Add convective adjustment if needed
+!-----------------------------------------------------------------
+!
 # ifdef LMD_CONVEC
-!
-!-----------------------------------------------------------------
-!  Add convective adjustment
-!-----------------------------------------------------------------
-!
             else  !<-- k > kbbl(i,j)
 
                if (bvf(i,j,k).lt.0.) then

@@ -64,11 +64,11 @@ C$    integer omp_get_thread_num
 # include "diags_pv.h"
 #endif
 
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#ifdef DIAGNOSTICS_EDDY
 # include "diags_eddy.h"
 #endif
 
-#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+#if defined OUTPUTS_SURFACE && defined AVERAGES
 # include "surf.h"
 #endif
       integer Istr,Iend,Jstr,Jend, i,j
@@ -149,7 +149,7 @@ C$    integer omp_get_thread_num
           DV_avg2(i,j)=0. !init
 #endif
 
-#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+#if defined OUTPUTS_SURFACE && defined AVERAGES
           surft_avg(i,j)=0. ! init
           surfs_avg(i,j)=0. ! init
           surfz_avg(i,j)=0. ! init
@@ -400,18 +400,10 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
 #  endif /* AVERAGES*/
-          enddo
-        enddo
-      enddo
-#  endif /*DIAGNOSTICS_TS_MLD*/
-# endif /*DIAGNOSTICS_TS*/
 
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+# ifdef DIAGNOSTICS_EDDY
 #  ifdef AVERAGES
-        do k=1,N
-          do j=JstrR,JendR
-           do i=IstrR,IendR
             eddyuu_avg(i,j,k)=init
             eddyvv_avg(i,j,k)=init
             eddyuv_avg(i,j,k)=init
@@ -420,20 +412,15 @@ C$    integer omp_get_thread_num
             eddywb_avg(i,j,k)=init
             eddyuw_avg(i,j,k)=init
             eddyvw_avg(i,j,k)=init
-            if (k .eq. N) then
-             eddyusu_avg(i,j)=init
-             eddyugsu_avg(i,j)=init
-             eddyvsv_avg(i,j)=init
-             eddyvgsv_avg(i,j)=init
-             eddyubu_avg(i,j)=init
-             eddyvbv_avg(i,j)=init
-            endif
-           enddo
-          enddo
-        enddo
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EDDY */
 
+
+          enddo
+        enddo
+      enddo
+#  endif
+# endif /*DIAGNOSTICS_TS*/
 
 
 

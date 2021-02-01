@@ -2705,7 +2705,7 @@
          if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxSST_skin)(1:lvar), ncname(1:lstr)
           goto 99                                       !--> ERROR
-  endif
+         endif
        endif
 # endif
 

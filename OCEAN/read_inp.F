@@ -237,17 +237,17 @@
       wrtdiags_pv_avg(NT+1)=.false.
 #endif
 #endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#ifdef DIAGNOSTICS_EDDY
       wrtdiags_eddy(3)=.false.
-# ifdef AVERAGES
+#ifdef AVERAGES
       wrtdiags_eddy_avg(3)=.false.
-# endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#endif
+#ifdef OUTPUTS_SURFACE
       wrtsurf(3)=.false.
-# ifdef AVERAGES
+#ifdef AVERAGES
       wrtsurf_avg(3)=.false.
-# endif
+#endif
 #endif
 #ifdef DIAGNOSTICS_BIO
       wrtdiabioFlux(NumFluxTerms+1)=.false.
@@ -866,7 +866,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_PV */
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY
 !
 ! Diagnostics eddy file name.
 !
@@ -908,7 +908,7 @@ c        close(testunit)
 # endif
 #endif /*DIAGNOSTICS_EDDY */
 
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#ifdef OUTPUTS_SURFACE
 !
 ! surface outputs file name.
 !
@@ -1107,8 +1107,6 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95)
      &                                             wrthis(indxBostr)
-     &                                          ,  wrthis(indxBustr)
-     &                                          ,  wrthis(indxBvstr)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
@@ -1154,8 +1152,6 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
      &                                          ,  wrthis(indxBostr)
-     &                                          ,  wrthis(indxBustr)
-     &                                          ,  wrthis(indxBvstr)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
@@ -1221,8 +1217,6 @@ c        close(testunit)
      &                                        .or. wrthis(indxHbbl)
 # endif
      &                                        .or. wrthis(indxBostr)
-     &                                        .or. wrthis(indxBustr)
-     &                                        .or. wrthis(indxBvstr)
      &                                        .or. wrthis(indxWstr)
      &                                        .or. wrthis(indxUWstr)
      &                                        .or. wrthis(indxVWstr)
@@ -1317,8 +1311,6 @@ c        close(testunit)
 #  endif
 # endif /* BIOLOGY */
      &  , wrthis(indxBostr), 'write Bostr', 'Bottom Stress.'
-     &  , wrthis(indxBustr), 'write Bustr', 'U-Bottom Stress.'
-     &  , wrthis(indxBvstr), 'write Bvstr', 'V-Bottom Stress.'
      &  , wrthis(indxWstr),  'write Wstress', 'Wind Stress.'
      &  , wrthis(indxUWstr), 'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrthis(indxVWstr), 'write V-Wstress comp.', 'V-Wind Stress.'
@@ -1422,8 +1414,6 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
      &                                          ,  wrtavg(indxBostr)
-     &                                          ,  wrtavg(indxBustr)
-     &                                          ,  wrtavg(indxBvstr)
      &                                          ,  wrtavg(indxWstr)
      &                                          ,  wrtavg(indxUWstr)
      &                                          ,  wrtavg(indxVWstr)
@@ -1486,8 +1476,6 @@ c        close(testunit)
      &                                        .or. wrtavg(indxHbbl)
 #  endif
      &                                        .or. wrtavg(indxBostr)
-     &                                        .or. wrtavg(indxBustr)
-     &                                        .or. wrtavg(indxBvstr)
      &                                        .or. wrtavg(indxWstr)
      &                                        .or. wrtavg(indxUWstr)
      &                                        .or. wrtavg(indxVWstr)
@@ -1585,8 +1573,6 @@ c        close(testunit)
 #   endif
 #  endif   /* BIOLOGY */
      &  , wrtavg(indxBostr),'write Bostr', 'Bottom Stress.'
-     &  , wrtavg(indxBustr),'write Bustr', 'U-Bottom Stress.'
-     &  , wrtavg(indxBvstr),'write Bvstr', 'V-Bottom Stress.'
      &  , wrtavg(indxWstr), 'write Wstr', 'Wind Stress.'
      &  , wrtavg(indxUWstr),'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrtavg(indxVWstr),'write V-Wstress comp.', 'V-Wind Stress.'
@@ -1831,7 +1817,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_PV */
 
 
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY
 !
 ! Switches for fields to be saved into eddy diagnostics file.
 !
