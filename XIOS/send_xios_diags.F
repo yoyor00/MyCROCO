@@ -1991,6 +1991,8 @@ C 				  endif
       common /work3d_r/ workru
       real workrv(GLOBAL_2D_ARRAY,1:N)
       common /work3d_r/ workrv
+
+      real workrsu(GLOBAL_2D_ARRAY)
       common /work2d_r/ workrsu
       real workrsv(GLOBAL_2D_ARRAY)
       common /work2d_r/ workrsv
