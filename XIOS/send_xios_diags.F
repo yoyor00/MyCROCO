@@ -8,6 +8,7 @@
 !     
 !     ROMS_AGRIF website : http://roms.mpl.ird.fr
 !======================================================================
+!     
 #include "cppdefs.h"
 
 #ifdef XIOS
@@ -1990,6 +1991,19 @@ C 				  endif
       common /work3d_r/ workru
       real workrv(GLOBAL_2D_ARRAY,1:N)
       common /work3d_r/ workrv
+      common /work2d_r/ workrsu
+      real workrsv(GLOBAL_2D_ARRAY)
+      common /work2d_r/ workrsv
+
+      real workrbu(GLOBAL_2D_ARRAY)
+      common /work2d_r/ workrbu
+      real workrbv(GLOBAL_2D_ARRAY)
+      common /work2d_r/ workrbv
+
+      real workrug(GLOBAL_2D_ARRAY)
+      common /work2d_r/ workrug
+      real workrvg(GLOBAL_2D_ARRAY)
+      common /work3d_r/ workrvg
       real GRho
 #endif
       integer tile
@@ -2216,6 +2230,14 @@ C 				  endif
 #  endif
 # endif
 
+# ifdef OW_COUPLING
+      call xios_send_field("hrm",whrm)
+      call xios_send_field("frq",wfrq)
+      call xios_send_field("wkx",wwkx)
+      call xios_send_field("wke",wwke)
+      call xios_send_field("epb",wepb)
+      call xios_send_field("epd",wepd)
+#  endif
 ! ------ 3D variables
 ! nstp vs nnew : present choice follows set_avg.F
 #  ifdef SOLVE3D
@@ -2279,8 +2301,34 @@ C 				  endif
 
                   GRho=-1*g/rho0
 
-                  workru = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
-                  workrv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
+                  workru(i,j,k) = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
+                  workrv(i,j,k) = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
+                if (k.eq.N) then
+                  workrsu(i,j) = 0.5*(sustr(i+1,j)+sustr(i,j))
+                  workrsv(i,j) = 0.5*(svstr(i,j+1)+svstr(i,j))
+                  workrbu(i,j) = 0.5*(bustr(i+1,j)+bustr(i,j))
+                  workrbv(i,j) = 0.5*(bvstr(i,j+1)+bvstr(i,j))
+
+                  workrug(i,j) = 0.5*(
+     &                    -g/f(i+1,j)*(vmask(i+1,j+1)
+     &              *(zeta(i+1,j+1,nstp)-zeta(i+1,j,nstp))
+     &                   *0.5*(pm(i+1,j+1)+pm(i+1,j))
+     &                    ) + 
+     &                    -g/f(i,j)*(vmask(i,j+1)
+     &              *(zeta(i,j+1,nstp)-zeta(i,j,nstp))
+     &                   *0.5*(pm(i,j+1)+pm(i,j))
+     &                    ) 
+     &                    )
+                  workrvg(i,j) = 0.5*(
+     &                     g/f(i,j+1)*(umask(i+1,j+1)
+     &              *(zeta(i+1,j+1,nstp)-zeta(i,j+1,nstp))
+     &                   *0.5*(pn(i+1,j+1)+pn(i,j+1)) ) + 
+     &                     g/f(i,j)*(umask(i+1,j)
+     &              *(zeta(i+1,j,nstp)-zeta(i,j,nstp))
+     &                   *0.5*(pn(i+1,j)+pn(i,j)) )
+     &                    )
+
+                endif
 
                 enddo
               enddo
@@ -2292,6 +2340,14 @@ C 				  endif
           call xios_send_field("ub", workru*GRho*rho)
           call xios_send_field("vb", workrv*GRho*rho)
           call xios_send_field("wb", workr *GRho*rho)
+          call xios_send_field("uw", workru*workr)
+          call xios_send_field("vw", workrv*workr)
+          call xios_send_field("usustr", workru(:,:,N)*workrsu)
+          call xios_send_field("vsvstr", workrv(:,:,N)*workrsv)
+          call xios_send_field("ugsustr", workrug*workrsu)
+          call xios_send_field("vgsvstr", workrvg*workrsv)
+          call xios_send_field("ubustr", workru(:,:,1)*workrbu)
+          call xios_send_field("vbvstr", workrv(:,:,1)*workrbv)
           call xios_send_field("uT", workru*t(:,:,:,nstp,itemp))
           call xios_send_field("vT", workrv*t(:,:,:,nstp,itemp))
           call xios_send_field("wT", workr *t(:,:,:,nstp,itemp))
@@ -2344,11 +2400,11 @@ C 				  endif
 #  endif
 #  ifdef LMD_SKPP
 #   ifdef LMD_SKPP2005
-!      work2d=hbls(:,:,nstp)
+      work2d=hbls(:,:,nstp)
 #   else
-!      work2d=hbl
+      work2d=hbl
 #   endif
-!      call xios_send_field("hbl",work2d)
+      call xios_send_field("hbl",work2d)
 #  elif defined GLS_MIXING
 !      work2d=hbl
 !      call xios_send_field("hbl",work2d)
@@ -2666,6 +2722,7 @@ C 				  endif
          call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
 !     
 #  endif /* BBL */
+
 # endif /* SOLVE3D */
   
       return
