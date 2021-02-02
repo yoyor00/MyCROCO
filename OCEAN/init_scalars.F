@@ -214,7 +214,6 @@ C$OMP END PARALLEL
       ncidbulk=-1
       ncidclm=-1
       ncidqbar=-1
-      ncidbtf=-1
 #ifdef DIAGNOSTICS_TS
       nciddia=-1
 # ifdef AVERAGES
