@@ -1,9 +1,9 @@
 ! This is include file "diags_ek.h"
 !  ==== == ======= ==== ==========
 !
-!
 
-# if defined DIAGNOSTICS_EDDY  && ! defined XIOS
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+
 # ifdef AVERAGES
       real timediags_eddy_avg
       real eddyuu_avg(GLOBAL_2D_ARRAY,N)
@@ -54,9 +54,3 @@ CSDISTRIBUTE_RESHAPE eddyvgsv_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
      &       /diag_eddyvgsv_avg/eddyvgsv_avg
 # endif
 #endif /* DIAGNOSTICS_EDDY*/
-
-
-
-
-
- 

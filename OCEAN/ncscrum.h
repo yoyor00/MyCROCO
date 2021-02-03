@@ -45,13 +45,16 @@
 !
 ! indxSSH         observed sea surface height (from climatology)
 ! indxSUSTR,indxSVSTR  surface U-, V-momentum stress (wind forcing)
+! indxBustr,indxBvstr  bottom  U-, V-momentum stress
 ! indxShflx       net surface heat flux.
 ! indxShflx_rsw   shortwave radiation flux
 ! indxSwflx       surface fresh water flux
 ! indxSST         sea surface temperature
 ! indxdQdSST      Q-correction coefficient dQdSST
 ! indxSSS         sea surface salinity
-! indxQBAR         river runoff
+! indxQBAR        river runoff
+! indxBhflx       bottom hydrothermal heat flux
+! indxBwflx       bottom hydrothermal freshwater flux
 !
 ! indxAi          fraction of cell covered by ice
 ! indxUi,indxVi   U,V-components of sea ice velocity
@@ -435,21 +438,30 @@
      &           indxpvpvd=indxpvpv+1)
 # endif
 # endif
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       integer indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
-     &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw
+     &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw,
+     &        indxeddyubu,indxeddyvbv,
+     &        indxeddyusu,indxeddyvsv,
+     &        indxeddyugsu,indxeddyvgsv
       parameter (indxeddyuu=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
-     &                                                  +ntrc_diapv+1,
+     &                                               +ntrc_diapv+400,
      &           indxeddyvv=indxeddyuu+1,
      &           indxeddyuv=indxeddyvv+1,
      &           indxeddyub=indxeddyuv+1,
      &           indxeddyvb=indxeddyub+1,
      &           indxeddywb=indxeddyvb+1,
      &           indxeddyuw=indxeddywb+1,
-     &           indxeddyvw=indxeddyuw+1)
+     &           indxeddyvw=indxeddyuw+1,
+     &           indxeddyubu=indxeddyvw+1,
+     &           indxeddyvbv=indxeddyubu+1,
+     &           indxeddyusu=indxeddyvbv+1,
+     &           indxeddyvsv=indxeddyusu+1,
+     &           indxeddyugsu=indxeddyvsv+1,
+     &           indxeddyvgsv=indxeddyugsu+1)
 # endif
-# ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
      &        indxsurfv
       parameter (indxsurft=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
@@ -613,17 +625,19 @@
 #endif /* SOLVE3D */
 
       integer indxWstr
-      parameter (indxWstr=indxSUSTR+21)
+      parameter (indxWstr=indxSUSTR+23)
       integer indxUWstr
-      parameter (indxUWstr=indxSUSTR+22)
+      parameter (indxUWstr=indxSUSTR+24)
       integer indxVWstr
-      parameter (indxVWstr=indxSUSTR+23)
+      parameter (indxVWstr=indxSUSTR+25)
       integer indxBostr
-      parameter (indxBostr=indxSUSTR+24)
+      parameter (indxBostr=indxSUSTR+26)
+      integer indxBustr, indxBvstr
+      parameter (indxBustr=indxSUSTR+27,  indxBvstr=indxBustr+1)
 #ifdef SOLVE3D
 # ifdef SEDIMENT
       integer indxSed, indxBTHK, indxBPOR
-      parameter (indxSed=indxSUSTR+28,
+      parameter (indxSed=indxSUSTR+30,
      &           indxBTHK=indxSed, indxBPOR=indxSed+1)
       integer, dimension(NST) :: indxBFRA
      & =(/(iloop,iloop=indxSed+2,indxSed+1+NST)/)
@@ -649,7 +663,7 @@
 # endif
 # ifdef SST_SKIN
       integer indxSST_skin
-      parameter (indxSST_skin=indxSUSTR+31)
+      parameter (indxSST_skin=indxSUSTR+33)
 # endif 
 #endif /* SOLVE3D */
 
@@ -657,9 +671,9 @@
       integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot, 
      &        indxZbapp, indxBostrw
 # ifdef SEDIMENT 
-      parameter (indxBBL=indxSUSTR+32+6*NST,
+      parameter (indxBBL=indxSUSTR+34+6*NST,
 # else
-      parameter (indxBBL=indxSUSTR+32, 
+      parameter (indxBBL=indxSUSTR+35, 
 # endif
      &           indxAbed  =indxBBL,    indxHrip  =indxAbed+1,
      &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3, 
@@ -678,7 +692,7 @@
 # endif
 #else /* BBL */
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
-      parameter (indxWWA=indxSUSTR+32, indxWWD=indxWWA+1, 
+      parameter (indxWWA=indxSUSTR+34, indxWWD=indxWWA+1, 
      &           indxWWP=indxWWA+2
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
@@ -690,9 +704,9 @@
 #if defined MRL_WCI || defined OW_COUPLING
       integer indxSUP, indxUST2D,indxVST2D
 # ifdef SEDIMENT 
-      parameter (indxSUP=indxSUSTR+44+6*NST,
+      parameter (indxSUP=indxSUSTR+46+6*NST,
 # else
-      parameter (indxSUP  =indxSUSTR+44,
+      parameter (indxSUP  =indxSUSTR+47,
 # endif      
      &           indxUST2D =indxSUP+1, indxVST2D=indxSUP+2)
 # ifdef SOLVE3D
@@ -722,15 +736,23 @@
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+90)
+      parameter (indxQBAR=indxSUSTR+92)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+91)
+      parameter (indxTsrc=indxSUSTR+93)
 # endif
 #endif /* PSOURCE_NCFILE */
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+92)
+      parameter (indxShflx_rswbio=indxSUSTR+94)
+#endif
+#if defined BHFLUX
+      integer indxBhflx
+      parameter (indxBhflx=indxSUSTR+131)
+#endif
+#if defined BWFLUX  && defined SALINTY
+      integer indxBwflx
+      parameter (indxBwflx=indxSUSTR+132)
 #endif
 #ifdef ICE
       integer indxAi
@@ -814,7 +836,8 @@
 !                    _frc           forcing
 !                    _clm           climatology
 !                    _qbar          river runoff
-!
+!                    _btf           hydrothermal flux
+!     
 ! endings refer to:  ___Time  time [in seconds]
 !                    ___Tstep time step numbers and record numbers
 !   all objects      ___Z     free-surface
@@ -846,7 +869,7 @@
 !   ntuclm  momentum variables in current climatology file.
 !   ntww    wind induced wave data in current forcing file.
 !   ntbulkn bulk formula variables in current forcing file.
-!   ntqbar   river runoff in current forcing file.
+!   ntqbar  river runoff in current forcing file.
 !
 ! vname    character array for variable names and attributes;
 !=================================================================
@@ -864,7 +887,7 @@
       integer rstT(NT)
 # ifdef SEDIMENT
       integer rstSed(NST+2)
-# endif	
+# endif
 #endif
 #ifdef MORPHODYN
       integer rstHm
@@ -890,6 +913,7 @@
       integer  ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
+     &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
 # ifdef MORPHODYN
      &      , hisHm
@@ -1019,16 +1043,19 @@
      &      , diags_pvMrhs(2), diags_pvTrhs(2)
 # endif
 
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       integer nciddiags_eddy, nrecdiags_eddy, nrpfdiags_eddy
      &      , diags_eddyTime, diags_eddyTime2, diags_eddyTstep
      &      , diags_eddyuu(2), diags_eddyvv(2), diags_eddyuv(2)
      &      , diags_eddyub(2), diags_eddyvb(2), diags_eddywb(2)
      &      , diags_eddyuw(2), diags_eddyvw(2)
+     &      , diags_eddyubu(2), diags_eddyvbv(2)
+     &      , diags_eddyusu(2), diags_eddyvsv(2)
+     &      , diags_eddyugsu(2), diags_eddyvgsv(2)
 # endif
 
-# ifdef OUTPUTS_SURFACE
-      integer ncidsurf, nrecsurf, nrpfsurf 
+# if defined OUTPUTS_SURFACE && ! defined XIOS
+      integer ncidsurf, nrecsurf, nrpfsurf
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft(2), surf_surfs(2),  surf_surfz(2)
      &      , surf_surfu(2), surf_surfv(2)
@@ -1050,7 +1077,8 @@
       integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
-     &      , avgShflx, avgSwflx, avgShflx_rsw
+     &      , avgBustr, avgBvstr
+     &      , avgShflx, avgSwflx, avgShflx_rsw, avgBhflx, avgBwflx
 # ifdef MORPHODYN
      &      , avgHm
 # endif
@@ -1184,15 +1212,18 @@
 #  endif
      &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(2)
 #  endif
-#  ifdef DIAGNOSTICS_EDDY
-       integer nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg 
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+       integer nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
      &      , diags_eddyuu_avg(2), diags_eddyvv_avg(2), diags_eddyuv_avg(2)
      &      , diags_eddyub_avg(2), diags_eddyvb_avg(2), diags_eddywb_avg(2)
      &      , diags_eddyuw_avg(2), diags_eddyvw_avg(2)
+     &      , diags_eddyubu_avg(2), diags_eddyvbv_avg(2)
+     &      , diags_eddyusu_avg(2), diags_eddyvsv_avg(2)
+     &      , diags_eddyugsu_avg(2), diags_eddyvgsv_avg(2)
 #  endif
-#  ifdef OUTPUTS_SURFACE
-       integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg 
+# if defined OUTPUTS_SURFACE && ! defined XIOS
+       integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
      &      , surfTime_avg, surfTime2_avg, surfTstep_avg
      &      , surf_surft_avg(2), surf_surfs_avg(2), surf_surfz_avg(2)
      &      , surf_surfu_avg(2), surf_surfv_avg(2)
@@ -1253,13 +1284,13 @@
      &      , wrtdiags_pv_avg(NT+1)
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &      , wrtdiags_eddy(3)
 # ifdef AVERAGES
      &      , wrtdiags_eddy_avg(3)
 # endif
 #endif
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &      , wrtsurf(3)
 # ifdef AVERAGES
      &      , wrtsurf_avg(3)
@@ -1307,7 +1338,8 @@
      &      , ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
+     &      , hisBustr, hisBvstr
+     &     , hisShflx, hisSwflx, hisShflx_rsw
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -1498,20 +1530,26 @@
      &      , diags_pvTrhs_avg, diags_pvMrhs_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &      , nciddiags_eddy, nrecdiags_eddy, nrpfdiags_eddy
      &      , diags_eddyTime, diags_eddyTstep
      &      , diags_eddyuu, diags_eddyvv, diags_eddyuv, diags_eddyub
      &      , diags_eddyvb, diags_eddywb, diags_eddyuw, diags_eddyvw
+     &      , diags_eddyubu, diags_eddyvbv
+     &      , diags_eddyusu, diags_eddyvsv
+     &      , diags_eddyugsu, diags_eddyvgsv
 # ifdef AVERAGES
      &      , nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
      &      , diags_eddyuu_avg, diags_eddyvv_avg, diags_eddyuv_avg
      &      , diags_eddyub_avg, diags_eddyvb_avg, diags_eddywb_avg
      &      , diags_eddyuw_avg, diags_eddyvw_avg
+     &      , diags_eddyubu_avg, diags_eddyvbv_avg
+     &      , diags_eddyusu_avg, diags_eddyvsv_avg
+     &      , diags_eddyugsu_avg, diags_eddyvgsv_avg
 # endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &      , ncidsurf, nrecsurf, nrpfsurf
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft, surf_surfs,  surf_surfz
@@ -1540,7 +1578,9 @@
      &      , ncidavg,  nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
+     &      , avgBustr, avgBvstr
      &      , avgShflx, avgSwflx, avgShflx_rsw
+     &      , avgBhflx, avgBwflx
 # ifdef MORPHODYN
      &      , avgHm
 # endif
@@ -1629,13 +1669,13 @@
      &      , wrtdiags_pv_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &      , wrtdiags_eddy
 # ifdef AVERAGES
      &      , wrtdiags_eddy_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &      , wrtsurf
 # ifdef AVERAGES
      &      , wrtsurf_avg
@@ -1652,9 +1692,18 @@
 # endif
 #endif
       character*80 date_str, title, start_date
+      character*80 origin_date, start_date_run
+      integer      start_day, start_month, start_year
+     &         ,   start_hour, start_minute, start_second
+     &         ,   origin_day, origin_month, origin_year
+     &         ,   origin_hour, origin_minute, origin_second
+
+      REAL(kind=8)             :: origin_date_in_sec
+
       character*180 ininame,  grdname,  hisname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname
 #ifdef AVERAGES
      &                                ,   avgname
 #endif
@@ -1688,13 +1737,13 @@
      &                                ,  diags_pvname_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
 # ifdef AVERAGES
      &                                ,  diags_eddyname_avg
 # endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &                                ,  surfname
 # ifdef AVERAGES
      &                                ,  surfname_avg
@@ -1734,11 +1783,16 @@
       character*75  vname(20, 90)
 #endif
 
-      common /cncscrum/
-     &             date_str,   title,  start_date,
-     &             ininame,  grdname, hisname
+      common /cncscrum/   date_str,   title,  start_date
+     &         ,   origin_date, start_date_run 
+     &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname, origin_date_in_sec
+     &         ,   start_day, start_month, start_year
+     &         ,   start_hour, start_minute, start_second
+     &         ,   origin_day, origin_month, origin_year
+     &         ,   origin_hour, origin_minute, origin_second
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
@@ -1772,13 +1826,13 @@
      &                                ,  diags_pvname_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
 # ifdef AVERAGES
      &                                ,  diags_eddyname_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &                                ,  surfname
 # ifdef AVERAGES
      &                                ,  surfname_avg
