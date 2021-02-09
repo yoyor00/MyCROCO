@@ -13,7 +13,7 @@
 # include "cppdefs.h"
 #endif
 
-#ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
 
 #ifndef AVRH
       subroutine def_diags_eddy (ncid, total_rec, ierr)
@@ -48,7 +48,6 @@
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
-
       character*60 text
 
 !
@@ -590,7 +589,6 @@
        call nf_add_attribute(ncid,viddiags_ubu(itrc)
      &                       ,indxeddyubu+itrc-1,5,NF_FOUT, ierr)
 
-
 !
 !------------------------------
 !
@@ -714,7 +712,6 @@
        call nf_add_attribute(ncid,viddiags_ugsu(itrc)
      &                       ,indxeddyugsu+itrc-1,5,NF_FOUT, ierr)
 
-
 !
 !------------------------------
 !
@@ -748,7 +745,9 @@
      &                       ,indxeddyvgsv+itrc-1,5,NF_FOUT, ierr)
 
 
+
         endif
+
 !
 ! Leave definition mode.
 ! ----- ---------- -----
@@ -781,7 +780,7 @@
         MPI_master_only write(stdout,*) "Open file in parallel"
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
      &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
-#endif 
+#endif
         if (ierr. ne. nf_noerr) then
           ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
@@ -800,7 +799,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 #endif
             endif
@@ -809,7 +808,7 @@
         endif
 !
         if (ierr. ne. nf_noerr) then
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES
           if (mynode.eq.0) then
             create_new_file=.true.
             goto 10
@@ -1028,18 +1027,6 @@
    1  format(/1x,'def_diags_eddy ERROR: Cannot find variable ''',
      &                   A, ''' in netCDF file ''', A, '''.'/)
 
-#if defined AVRH
-!
-! Set initial average timediags_eddy.
-! --- ------- ------- --------
-!
-      if (ntsdiags_eddy_avg.eq.1) then
-        timediags_eddy_avg=time-0.5*float(nwrtdiags_eddy_avg)*dt
-      else
-        timediags_eddy_avg=time-0.5*float(nwrtdiags_eddy_avg)
-     &                       *dt+float(ntsdiags_eddy_avg)*dt
-      endif
-#endif
 !
   11  format(/' def_diags_eddy - unable to create diag file: ',a)
   20  format(/' def_diags_eddy - error while writing variable: ',a,
