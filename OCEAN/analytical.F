@@ -99,7 +99,7 @@
 !                   subroutine ana_btflux
 !======================================================================
 !
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRANSPORT
 # if defined ANA_BTFLUX || defined ANA_BSFLUX || defined ANA_BPFLUX 
       subroutine ana_btflux_tile (Istr,Iend,Jstr,Jend, itrc)
 !
@@ -123,6 +123,7 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
+#  if defined TEMPERATURE       
       if (itrc.eq.itemp) then
 !
 !----------------------------------------------------------------------
@@ -146,9 +147,10 @@
 # endif
           enddo
         enddo
-!
+      end if
+#  endif /* TEMPERATURE */        
 #  ifdef SALINITY
-      elseif (itrc.eq.isalt) then
+      if (itrc.eq.isalt) then
 !
 !----------------------------------------------------------------------
 !  Set kinematic bottom salt flux (m/s) at horizontal RHO-points,
@@ -160,8 +162,18 @@
             btflx(i,j,isalt)=0.
           enddo
         enddo
+      end if
 #  endif /* SALINITY */
-      else
+    
+#  if defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+#  endif /* SALINITY && TEMPERATURE*/
+#  if !defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.itemp) then
+#  endif /* !SALINITY && TEMPERATURE*/
+#  if defined SALINITY && !defined TEMPERATURE
+      if (itrc.ne.isalt) then
+#  endif /* SALINITY && !TEMPERATURE*/
 !
 !----------------------------------------------------------------------
 !  Set kinematic surface flux of additional tracers, 
@@ -173,11 +185,13 @@
             btflx(i,j,itrc)=0.
           enddo
         enddo
+#  if defined SALINITY || defined TEMPERATURE
       endif
+#  endif /* SALINITY || TEMPERATURE*/      
       return
       end
 # endif /* ANA_BTFLUX */
-#endif /* SOLVE3D */
+#endif /* SOLVE3D && TRANSPORT */
 !
 !======================================================================
 !                   subroutine ana_moving_bathy
@@ -817,6 +831,9 @@ C$    integer  trd, omp_get_thread_num
 c
 # include "compute_auxiliary_bounds.h"
 c
+# ifdef TRANSPORT
+# ifdef TEMPERATURE
+      
       if (itrc.eq.itemp) then
 !
 !  Set kinematic surface heat flux [degC m/s] at horizontal
@@ -833,9 +850,11 @@ c
 #endif
           enddo
         enddo
+      endif
 !
+# endif /* TEMPERATURE */        
 #ifdef SALINITY
-      elseif (itrc.eq.isalt) then
+      if (itrc.eq.isalt) then
 !
 !  Set kinematic surface freshwater flux (m/s) at horizontal
 !  RHO-points, scaling by surface salinity is done in STEP3D.
@@ -845,8 +864,18 @@ c
             stflx(i,j,isalt)=0.
           enddo
         enddo
+      endif
 #endif /* SALINITY */
-      else
+# if defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+# endif /* SALINITY && TEMPERATURE */
+# if !defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.itemp) then
+# endif /* !SALINITY && TEMPERATURE */
+# if defined SALINITY && !defined TEMPERATURE
+      if (itrc.ne.isalt) then
+# endif /* SALINITY && !TEMPERATURE */
+      
 !
 !  Set kinematic surface flux of additional tracers, if any.
 !
@@ -855,7 +884,10 @@ c
             stflx(i,j,itrc)=0.
           enddo
         enddo
+# if defined SALINITY || defined TEMPERATURE
       endif
+# endif /* SALINITY || TEMPERATURE*/
+# endif /* TRANSPORT */
       return
       end
 #endif /* ANA_STFLUX || ANA_SSFLUX */
@@ -943,7 +975,9 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
+#  ifdef TEMPERATURE          
             tclm(i,j,k,itemp)=t(i,j,k,1,itemp)
+#  endif /* TEMPERATURE */            
 #  ifdef SALINITY
             tclm(i,j,k,isalt)=t(i,j,k,1,isalt)
 #  endif /* SALINITY */
@@ -960,7 +994,11 @@ C$    integer  trd, omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
+#    ifdef TEMPERATURE          
             temp=t(i,j,k,1,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
                SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -1070,7 +1108,11 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iOXY_)) tclm(i,j,k,iOXY_)=200.
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
+#    ifdef TEMPERATURE                    
               temp=t(i,j,k,1,itemp)
+#    else
+            temp=25.
+#   endif              
               if (temp.lt.8.) then
                  SiO4=30.
               elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2080,9 +2122,13 @@ C$    integer  trd, omp_get_thread_num
 # ifdef RIVER
       do k=1,N
         do is=1,Nsrc
+#  if defined TEMPERATURE        
           Tsrc(is,k,itemp)=Tsrc0(is,itemp)
 !          Tsrc(is,k,itemp)=4.+10.*exp(z_r(Isrc(is),Jsrc(is),k)/50.)
+#  endif
+#  if defined SALINITY          
           Tsrc(is,k,isalt)=Tsrc0(is,isalt)
+#  endif          
 #  ifdef PASSIVE_TRACER
           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
 #  endif
@@ -2092,16 +2138,23 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
+#   if defined TEMPERATURE
           if (.not.got_tsrc(itemp)) then
              Tsrc0(is,itemp)=5.
           endif
+#   endif        
+#   if defined SALINITY          
           if (.not.got_tsrc(isalt)) then
              Tsrc0(is,isalt)=2.
           endif
+#   endif          
 #  endif
+
+# if defined TRANSPORT
           do itrc=1,NT
             Tsrc(is,k,itrc)=Tsrc0(is,itrc)
           enddo
+# endif
 #  ifdef PASSIVE_TRACER
 #   ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(itpas)) then
@@ -2128,7 +2181,11 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do is=1,Nsrc
 !     Fill with analytical value  if not find in netcdf file
+#   ifdef TEMPERATURE        
           temp=Tsrc0(is,itemp)
+#   else
+            temp=25.
+#   endif          
           if (temp.lt.8.) then
             SiO4=30.
           elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2507,7 +2564,7 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef W_FRC_BRY
               wbry_west(j,k)=wz(0,j,k,1)
 #    endif
-#    ifdef T_FRC_BRY
+#    if defined T_FRC_BRY && defined TRANSPORT
               do itrc=1,NT
                 tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
               enddo
@@ -2667,7 +2724,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined  T_FRC_BRY && defined TRANSPORT
 #   ifdef SUBSTANCE
 #     ifdef CHANNEL
             tbry_east(j,k,1)=10. ! temperature
@@ -2806,7 +2863,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_south(i,k)=wz(i,0,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined  T_FRC_BRY && defined TRANSPORT
 #   ifdef SUBSTANCE
             do itrc=1,itsubs1-1
               tbry_south(j,k,itrc)=0.
@@ -2871,7 +2928,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_north(i,k)=wz(i,Jend+1,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined  T_FRC_BRY && defined TRANSPORT
 #   ifdef SUBSTANCE
             do itrc=1,itsubs1-1
               tbry_north(j,k,itrc)=0.
@@ -3082,7 +3139,11 @@ C$    integer  trd, omp_get_thread_num
       if (WESTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
+#    ifdef TEMPERATURE          
             temp=tbry_west(j,k,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3178,7 +3239,11 @@ C$    integer  trd, omp_get_thread_num
       if (EASTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
+#    ifdef TEMPERATURE          
             temp=tbry_east(j,k,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3274,7 +3339,11 @@ C$    integer  trd, omp_get_thread_num
        if (NORTHERN_EDGE) then
          do k=1,N
            do j=IstrR,IendR
+#    ifdef TEMPERATURE           
              temp=tbry_north(j,k,itemp)
+#    else
+            temp=25.
+#   endif             
              if (temp.lt.8.) then
                SiO4=30.
              elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3370,7 +3439,11 @@ C$    integer  trd, omp_get_thread_num
        if (SOUTHERN_EDGE) then
          do k=1,N
            do j=IstrR,IendR
+#    ifdef TEMPERATURE           
              temp=tbry_south(j,k,itemp)
+#    else
+            temp=25.
+#   endif             
              if (temp.lt.8.) then
                SiO4=30.
              elseif (temp.ge.8. .and. temp.le.11.) then

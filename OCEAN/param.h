@@ -440,10 +440,18 @@
 !
 #ifdef SOLVE3D
       integer   NT, itemp, NTot
-      integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
+      integer   ntrc_temp,ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
       integer   ntrc_subs, ntrc_substot
 !
+# ifdef TEMPERATURE 
       parameter (itemp=1)
+      parameter (ntrc_temp=1)
+# else
+      parameter (itemp=0)
+      parameter (ntrc_temp=0)
+# endif
+
+
 # ifdef SALINITY 
       parameter (ntrc_salt=1)
 # else

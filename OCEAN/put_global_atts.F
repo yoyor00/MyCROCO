@@ -271,8 +271,9 @@
       ierr=nf_put_att_text(ncid, nf_global, 'ini_file',lvar,
      &                                       ininame(1:lvar))
 #endif
-#if !defined ANA_SMFLUX || !defined ANA_STFLUX \
- || !defined ANA_BTFLUX \
+#if (defined TEMPERATURE && !defined ANA_SMFLUX) \
+ || (defined TEMPERATURE && !defined ANA_STFLUX) \
+ || (defined TEMPERATURE && !defined ANA_BTFLUX) \
  || (defined BBL && !defined ANA_BSEDIM)  \
  || (defined BBL && !defined ANA_WWAVE)   \
  || (defined SALINITY && !defined ANA_SSFLUX)  \
@@ -385,7 +386,8 @@
      &                                             'meter4 second-1')
 #endif
 #ifdef SOLVE3D
-# ifdef TS_DIF2
+# ifdef TRANSPORT
+#  ifdef TS_DIF2
       ierr=nf_put_att_FTYPE(ncid,nf_global,'tnu2',nf_ftype, 1,tnu2)
       ierr=nf_put_att_text (ncid,nf_global,'tnu2_expl',40,
      &                    'Laplacian mixing coefficient for tracers')
@@ -398,6 +400,7 @@
      &                   'biharmonic mixing coefficient for tracers')
       ierr=nf_put_att_text (ncid,nf_global,'units',15,
      &                                             'meter4 second-1')
+#  endif
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING
 !
@@ -409,13 +412,14 @@
      &         'background vertical mixing coefficient for momentum')
       ierr=nf_put_att_text (ncid,nf_global,'Akv_bak_units',15,
      &                                             'meter2 second-1')
-
+#  if defined SALINITY || defined TEMPERATURE
       ierr=nf_put_att_FTYPE(ncid,nf_global,'Akt_bak',nf_ftype, NT,
      &                                                       Akt_bak)
       ierr=nf_put_att_text (ncid,nf_global,'Akt_bak_expl', 50,
      &          'background vertical mixing coefficient for tracers')
       ierr=nf_put_att_text (ncid,nf_global,'Akt_bak_units', 15,
      &                                             'meter2 second-1')
+#  endif
 # endif
 #endif
 !

@@ -56,7 +56,9 @@
      &                      exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
      &                     +exp(cff*(z_w(i,j,0)-z_w(i,j,k)))
      &                                                     )
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
+#  endif
           enddo
         enddo
       enddo
@@ -66,7 +68,9 @@
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=0.002+0.008*exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
+# ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
+#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
@@ -80,7 +84,9 @@
             Akv(i,j,k)=0.011*(h(i,j)+z_w(i,j,k))*
      &                 (1.0-(h(i,j)+z_w(i,j,k))/
      &                  (h(i,j)+zeta(i,j,knew)))
+# ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akv(i,j,k)
+#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akv(i,j,k)
 #  endif
@@ -98,7 +104,9 @@
               Akv(i,j,k)=0.41*ustar0 *(h(i,j)+z_w(i,j,k))*
      &                (1.0-(h(i,j)+z_w(i,j,k))/
      &                (h(i,j)+zeta(i,j,knew)))
+#  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akv(i,j,k)
+#  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akv(i,j,k)
 #  endif
@@ -110,7 +118,9 @@
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=Akv_bak
+# ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
+#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
@@ -121,8 +131,10 @@
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
+# ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,itemp))
+#  endif
 #  ifdef SALINITY
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,isalt))

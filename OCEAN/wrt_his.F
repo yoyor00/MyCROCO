@@ -599,6 +599,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     
 !     Tracer variables.
 !     
+#ifdef TRANSPORT
 #if defined MUSTANG
 #ifdef MPI
 #define LOCALLM Lmmpi
@@ -624,7 +625,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 
 CR    write(*,*) 'wrt_his: tracers ',NT,itsubs1,itsubs2
       do itrc=1,NT
-         if (wrthis(indxT+itrc-1)) then
+         if (wrthis(indxV+itrc)) then
 CR         write(*,*) 'tracers:',itrc,'/',NT
 #if defined MUSTANG & defined key_sand2D
 ! Z= (h(i,j)+zeta(i,j,knew)+z_w(i,j,k))
@@ -676,10 +677,11 @@ CR         write(*,*) 'tracers:',itrc,'/',NT
             endif
 #endif
             call fillvalue3d(workr,ncidhis,hisT(itrc),
-     &           indxT+itrc-1,record,r3dvar,type)
+     &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
          endif   
       enddo
+#endif /* TRANSPORT */
 #if defined SUBSTANCE
       do itrc=1,ntfix
          if (wrthis(indxT+NT+itrc-1)) then
@@ -926,7 +928,9 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
                do i=1,Lm
                   workr(i,j,k)=
 #   ifdef TS_DIF2
+#    ifdef TEMPERATURE
      &                 diff2(i,j,itemp)
+#     endif
 #    ifdef TS_DIF_SMAGO
      &                 +diff3d_r(i,j,k)
 #    endif
@@ -958,12 +962,14 @@ CR      write(*,*) 'wrt_his:  wrtAkv' MYID
 !     
 !     Write out vertical diffusion coefficient for potential temperature.
 !     
+# ifdef TEMPERATURE
       if (wrthis(indxAkt)) then
          work=Akt(:,:,:,itemp)
          call fillvalue3d_w(work,ncidhis,hisAkt,indxAkt,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       endif
+# endif
 # ifdef SALINITY
 !     
 !     Write out vertical diffusion coefficient for salinity.
@@ -1035,6 +1041,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 !     
 !     Write out total heat flux 
 !     
+#if defined TEMPERATURE 
       if (wrthis(indxShflx)) then
          work2d=stflx(:,:,itemp)*rho0*Cp
      &          SWITCH rmask
@@ -1048,6 +1055,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
+#endif      
       
 #ifdef SALINITY    
 !     Write out surface salt flux  
@@ -1079,7 +1087,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !     Write out surface heat flux component (W/m2)
 !         
       if (wrthis(indxShflx_rsw)) then
-# ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE 
          work2d=shflx_rsw*rho0*Cp
          ierr=nf_fwrite(work2d, ncidhis, hisShflx_rsw, record,
      &        r2dvar)
@@ -1096,7 +1104,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
             goto 99             !--> ERROR
          endif
       endif
-# ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE 
       if (wrthis(indxShflx_rlw)) then
          work2d=shflx_rlw*rho0*Cp
          ierr=nf_fwrite(work2d, ncidhis, hisShflx_rlw, record,
@@ -1139,7 +1147,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          endif
       endif
 # endif
-# ifdef SST_SKIN
+# if defined SST_SKIN && defined TEMPERATURE
 !     
 !     Write out skin temperature (degC)
 !     

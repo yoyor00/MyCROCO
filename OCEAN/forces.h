@@ -121,9 +121,11 @@
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
+# if defined TRANSPORT
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
-# ifdef BULK_FLUX
+# endif /* TRANSPORT */
+# if defined BULK_FLUX && defined TEMPERATURE
       real shflx_rsw(GLOBAL_2D_ARRAY)
       common /frc_shflx_rsw/shflx_rsw
       real shflx_rlw(GLOBAL_2D_ARRAY)
@@ -132,14 +134,15 @@
       common /frc_shflx_lat/shflx_lat
       real shflx_sen(GLOBAL_2D_ARRAY)
       common /frc_shflx_sen/shflx_sen
-# endif
-# ifdef SST_SKIN
+# endif /* BULK_FLUX && TEMPERATURE */
+# if defined SST_SKIN && defined TEMPERATURE
       real sst_skin(GLOBAL_2D_ARRAY)
       common /frc_sst_skin/ sst_skin
       real dT_skin(GLOBAL_2D_ARRAY)
       common /frc_dT_skin/ dT_skin
-# endif
-# if !defined ANA_STFLUX || !defined ANA_SSFLUX
+# endif/* SST_SKIN && TEMPERATURE */
+# if defined TRANSPORT
+#  if !defined ANA_STFLUX || !defined ANA_SSFLUX
 !
 !  stflxg   Two-time level surface tracer flux grided data.
 !  stflxp   Two-time level surface tracer flux point  data.
@@ -157,6 +160,7 @@
       common /stfdat3/  stf_tid, stf_id
 #   undef STFLUX_DATA
 # endif /* !ANA_STFLUX || !ANA_SSFLUX */
+# endif /* TRANSPORT */
 !
 !  BOTTOM TRACER FLUXES:
 !--------------------------------------------------------------------
@@ -164,6 +168,7 @@
 !         horizontal RHO-points. Physical dimensions [degC m/s] -
 !         temperature; [PSU m/s] - salinity.
 !
+# if defined TRANSPORT
       real btflx(GLOBAL_2D_ARRAY,NT)
       common /forces_btflx/btflx
 # ifndef ANA_BTFLUX
@@ -186,17 +191,22 @@
       common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
 
 #   undef BTFLUX_DATA
-# endif /* !ANA_BTFLUX */
-#ifdef QCORRECTION
+#  endif /* !ANA_BTFLUX */
+# endif /* TRANSPORT */
+
+# if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
+      real dqdt(GLOBAL_2D_ARRAY)
+      common /forces_dqdt/dqdt 
+# endif /* QCORRECTION */
+# if defined QCORRECTION && defined TEMPERATURE
 !
 !  HEAT FLUX CORRECTION
 !--------------------------------------------------------------------
 !  dqdt     Kinematic surface net heat flux sensitivity to SST [m/s].
 !  sst      Current sea surface temperature [degree Celsius].
 !
-      real dqdt(GLOBAL_2D_ARRAY)
       real sst(GLOBAL_2D_ARRAY)
-      common /forces_dqdt/dqdt /forces_sst/sst
+      common /forces_sst/sst
 #  ifndef ANA_SST
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
@@ -222,7 +232,8 @@
 
 #    undef SST_DATA
 #  endif /* !ANA_SST */
-# endif /* QCORRECTION */
+# endif /* QCORRECTION && TEMPERATURE */
+
 # if defined SALINITY && defined SFLX_CORR
 !
 !  SALT FLUX CORRECTION
@@ -275,7 +286,7 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
-#ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE
 !
 !  HEAT FLUX BULK FORMULATION
 !--------------------------------------------------------------------
@@ -413,7 +424,7 @@
       common /bulkdat2_bio/ radswbiop
 # endif
       common /bulkdat2_wspd/ wspdp 
-#endif /* BULK_FLUX */
+# endif /* BULK_FLUX && TEMPERATURE */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
 !--------------------------------------------------------------------
