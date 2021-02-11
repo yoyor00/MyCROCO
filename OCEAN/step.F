@@ -999,7 +999,7 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
-
+# if defined TRANSPORT 
       do tile=my_first,my_last
 # if defined TS_DIF2 || defined TS_DIF4 
         call t3dmix (tile)
@@ -1008,6 +1008,8 @@ C$OMP BARRIER
         call t3dmix_spg (tile)
 # endif
       enddo
+# endif /* TRANSPORT */
+      
 C$OMP BARRIER
 
 # ifdef MORPHODYN

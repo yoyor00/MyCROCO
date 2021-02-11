@@ -177,16 +177,18 @@
 !
 ! Tracer variables.
 !
+#  ifdef TRANSPORT
       do itrc=1,NT
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxT+itrc-1))
-          write(stdout,1) vname(1,indxT+itrc-1)(1:lvar), record,
+          lvar=lenstr(vname(1,indxV+itrc))
+          write(stdout,1) vname(1,indxV+itrc)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
       enddo
+# endif
 
 # ifdef SEDIMENT
 !

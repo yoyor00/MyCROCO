@@ -468,7 +468,13 @@
    independent from that selected for the two active tracers (TS_HADV)
 */
 #ifdef BIO_HADV_WENO5
-# define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
+#  if defined TEMPERATURE && defined SALINITY       
+#    define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
+#  elif defined TEMPERATURE || defined SALINITY
+#    define NTRA_T3DMIX 1    /* TS_HADV applied over the 2 active tracers */
+#  else
+#    define NTRA_T3DMIX 0    /* TS_HADV applied over the 2 active tracers */
+#  endif
 #else
 # define NTRA_T3DMIX NT   /* TS_HADV applied over all NT tracers       */
 #endif
@@ -919,6 +925,8 @@
 */
 #ifndef SOLVE3D                    
 # undef AVERAGES_K
+# undef TRANSPORT
+# undef TEMPERATURE
 # undef SALINITY
 # undef NONLIN_EOS
 # undef SPLIT_EOS
@@ -965,5 +973,16 @@
 # undef AGRIF_OBC_TSPECIFIED
 # undef SEDIMENT
 # undef BIOLOGY
+#endif
+
+#if !defined KEY_TRANSPORT /*si on n'a pas de clef KEY_TRANSPORT  */
+#define TRANSPORT
+#define TEMPERATURE
+#endif
+   
+
+#if defined SALINITY || defined TEMPERATURE || \
+	defined PASSIVE_TRACER || defined SUBSTANCE
+# define TRANSPORT
 #endif
 

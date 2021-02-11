@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined TCLIMATOLOGY && !defined ANA_TCLIMA
+#if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRANSPORT
 
                              ! Read tracer(s) climatology
       subroutine get_tclima  ! fields from climatology file
@@ -45,6 +45,7 @@
 
           got_tclm(itrc)=.false.
 
+# ifdef TEMPERATURE
           if (itrc.eq.itemp) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'tclm_time', tclm_tid(itrc))
@@ -53,8 +54,10 @@
               write(stdout,3) 'tclm_time', clmname(1:lstr)
               goto 99                                     !--> ERROR
             endif
+          endif
+# endif
 # ifdef SALINITY
-          elseif (itrc.eq.isalt) then
+          if (itrc.eq.isalt) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'sclm_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -62,10 +65,11 @@
               write(stdout,3) 'sclm_time', clmname(1:lstr)
               goto 99                                     !--> ERROR
             endif
+          endif
 # endif
 # ifdef BIOLOGY
-# ifdef PISCES
-          elseif (itrc.eq.iDIC_) then
+#  ifdef PISCES
+          if (itrc.eq.iDIC_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'dic_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -257,8 +261,9 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'nh4_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #     if defined key_ligand
-          elseif (itrc.eq.iLGW_) then
+          if (itrc.eq.iLGW_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'lgw_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -266,9 +271,10 @@ c              goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'lgw_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #     endif
 #     if defined key_pisces_quota
-          elseif (itrc.eq.iDON_) then
+          if (itrc.eq.iDON_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'don_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -388,11 +394,12 @@ c              goto 99                                     !--> ERROR
                 MPI_master_only write(stdout,3) 'gop_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #     endif
 
 #  elif defined BIO_NChlPZD
 
-          elseif (itrc.eq.iNO3_) then
+          if (itrc.eq.iNO3_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'no3_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -432,8 +439,9 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'det_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #   ifdef OXYGEN
-          elseif (itrc.eq.iO2) then
+          if (itrc.eq.iO2) then
            got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'o2_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -441,9 +449,10 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'o2_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #   endif
 #  elif defined BIO_N2ChlPZD2
-          elseif (itrc.eq.iNO3_) then
+          if (itrc.eq.iNO3_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'no3_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -499,9 +508,10 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'ldet_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #  elif defined BIO_BioEBUS 
 
-          elseif (itrc.eq.iNO3_) then
+          if (itrc.eq.iNO3_) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'no3_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -589,8 +599,9 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'o2_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif	    
+          endif	    
 #    ifdef NITROUS_OXIDE
-         elseif (itrc.eq.iN2O) then
+         if (itrc.eq.iN2O) then
             got_tclm(itrc)=.true.
             ierr=nf_inq_varid (ncidclm, 'n2o_time', tclm_tid(itrc))
             if (ierr .ne. nf_noerr) then
@@ -598,18 +609,18 @@ c              goto 99                                     !--> ERROR
               write(stdout,3) 'n2o_time', clmname(1:lstr)
 c              goto 99                                     !--> ERROR
             endif
+          endif
 #     endif
 
 #  endif
 # endif /* BIOLOGY */
-          endif
 
           if (got_tclm(itrc)) then
-            lvar=lenstr(vname(1,indxT+itrc-1))
-            ierr=nf_inq_varid(ncidclm, vname(1,indxT+itrc-1)(1:lvar),
+            lvar=lenstr(vname(1,indxV+itrc))
+            ierr=nf_inq_varid(ncidclm, vname(1,indxV+itrc)(1:lvar),
      &                                                tclm_id(itrc))
             if (ierr .ne. nf_noerr) then
-              write(stdout,3) vname(1,indxT+itrc-1)(1:lvar),
+              write(stdout,3) vname(1,indxV+itrc)(1:lvar),
      &                                     clmname(1:lstr)
               goto 99                                      !--> ERROR
             endif
@@ -669,8 +680,8 @@ c              goto 99                                     !--> ERROR
      &                              ncidclm, tclm_id(itrc),
      &                              tclm_rec(itrc), r3dvar)
          if (ierr.ne.NF_NOERR) then
-           lvar=lenstr(vname(1,indxT+itrc-1))
-           write(stdout,6) vname(1,indxT+itrc-1)(1:lvar),
+           lvar=lenstr(vname(1,indxV+itrc))
+           write(stdout,6) vname(1,indxV+itrc)(1:lvar),
      &                                      tclm_rec(itrc)
            goto 99                                        !--> ERROR
          endif

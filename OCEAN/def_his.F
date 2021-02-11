@@ -650,36 +650,38 @@
 !
 ! Tracer variables.
 !
+# ifdef TRANSPORT
         do itrc=1,NT
-          if (wrt(indxT+itrc-1)) then
-            lvar=lenstr(vname(1,indxT+itrc-1))
-            ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
+          if (wrt(indxV+itrc)) then
+            lvar=lenstr(vname(1,indxV+itrc))
+            ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidT(itrc))
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidT(itrc),nf_collective)
 # endif
 # ifndef AVRH
-            lvar=lenstr(vname(2,indxT+itrc-1))
+            lvar=lenstr(vname(2,indxV+itrc))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'long_name',
-     &                         lvar, vname(2,indxT+itrc-1)(1:lvar))
+     &                         lvar, vname(2,indxV+itrc)(1:lvar))
 # else
-            text='averaged '/ /vname(2,indxT+itrc-1)
+            text='averaged '/ /vname(2,indxV+itrc)
             lvar=lenstr(text)
             ierr=nf_put_att_text (ncid, vidT(itrc), 'long_name',
      &                                          lvar, text(1:lvar))
 # endif
-            lvar=lenstr(vname(3,indxT+itrc-1))
+            lvar=lenstr(vname(3,indxV+itrc))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'units', lvar,
-     &                               vname(3,indxT+itrc-1)(1:lvar))
-            lvar=lenstr(vname(4,indxT+itrc-1))
+     &                               vname(3,indxV+itrc)(1:lvar))
+            lvar=lenstr(vname(4,indxV+itrc))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'field', lvar,
-     &                               vname(4,indxT+itrc-1)(1:lvar))
+     &                               vname(4,indxV+itrc)(1:lvar))
 
-            call nf_add_attribute(ncid,vidT(itrc),indxT+itrc-1,5,
+            call nf_add_attribute(ncid,vidT(itrc),indxV+itrc,5,
      &           NF_FOUT, ierr)
 
             endif
       enddo
+# endif
 !
 ! Density anomaly.
 !
@@ -1077,6 +1079,7 @@
 !
 ! Vertical diffusion coefficient for potential temperature.
 !
+# ifdef TEMPERATURE
         if (wrt(indxAkt)) then
           lvar=lenstr(vname(1,indxAkt))
           ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
@@ -1105,6 +1108,7 @@
      &                                                           ierr)
 
         endif
+# endif
 # ifdef SALINITY
 !
 ! Vertical diffusion coefficient for salinity.
@@ -1306,6 +1310,7 @@
 !
 ! Shflx [W/m2]
 !
+# ifdef TEMPERATURE
         if (wrt(indxShflx)) then
           lvar=lenstr(vname(1,indxShflx))
           ierr=nf_def_var (ncid, vname(1,indxShflx)(1:lvar),
@@ -1331,6 +1336,7 @@
      &                          NF_FOUT, ierr)
 
         endif
+# endif
 !
 ! Swflx [cm/day]
 !
@@ -1364,6 +1370,7 @@
 !
 ! Short wave Shflx_rsw [W/m2]
 !
+# ifdef TEMPERATURE
       if (wrt(indxShflx_rsw)) then
         lvar=lenstr(vname(1,indxShflx_rsw))
         ierr=nf_def_var (ncid, vname(1,indxShflx_rsw)(1:lvar),
@@ -1389,8 +1396,10 @@
      &                                                   NF_FOUT, ierr)   
 
       endif
+# endif
 
-# ifdef BULK_FLUX
+
+# if defined BULK_FLUX && defined TEMPERATURE
 !
 ! Long wave Shflx [W/m2]
 !
@@ -1475,7 +1484,7 @@
      &       NF_FOUT, ierr)
         
       endif
-# endif  /* BULK_FLUX */
+# endif  /* BULK_FLUX && TEMPERATURE  */
 
 # if defined BIOLOGY & !defined PISCES
 !
@@ -1754,7 +1763,7 @@
         enddo
 # endif /* BBL */
 
-# ifdef SST_SKIN
+# if defined SST_SKIN && defined TEMPERATURE
 ! Skin temperature
       if (wrt(indxT)) then
         lvar=lenstr(vname(1,indxSST_skin))
@@ -2306,18 +2315,20 @@
 !
 ! Tracer variables.
 !
+# ifdef TRANSPORT
         do itrc=1,NT
-          if (wrt(indxT+itrc-1)) then
-            lvar=lenstr(vname(1,indxT+itrc-1))
-            ierr=nf_inq_varid (ncid, vname(1,indxT+itrc-1)(1:lvar),
+          if (wrt(indxV+itrc)) then
+            lvar=lenstr(vname(1,indxV+itrc))
+            ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                 vidT(itrc))
             if (ierr .ne. nf_noerr) then
-              write(stdout,1) vname(1,indxT+itrc-1)(1:lvar),
+              write(stdout,1) vname(1,indxV+itrc)(1:lvar),
      &                                       ncname(1:lstr) 
               goto 99                                     !--> ERROR
             endif
           endif
         enddo
+# endif
 !
 ! Density anomaly.
 !
@@ -2430,6 +2441,7 @@
 !
 ! Vertical diffusion coefficient for potential temperature.
 !
+# ifdef TEMPERATURE
         if (wrt(indxAkt)) then
           lvar=lenstr(vname(1,indxAkt))
           ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), vidAkt)
@@ -2438,6 +2450,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
+# endif
 
 # ifdef SALINITY
 !
@@ -2520,6 +2533,7 @@
 !
 ! Shflx     Surface net heat flux [W/m2]
 !
+# ifdef TEMPERATURE
         if (wrt(indxShflx)) then
           lvar=lenstr(vname(1,indxShflx))
           ierr=nf_inq_varid (ncid,vname(1,indxShflx)(1:lvar),
@@ -2529,6 +2543,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
+#endif
 #ifdef SALINITY
 !
 ! Swflx    E-P flux [cm/day]
@@ -2546,6 +2561,7 @@
 !
 ! Shflx     Surface shortwave radiation [W/m2]
 !
+# ifdef TEMPERATURE
         if (wrt(indxShflx_rsw)) then
          lvar=lenstr(vname(1,indxShflx_rsw))
          ierr=nf_inq_varid (ncid,vname(1,indxShflx_rsw)(1:lvar),
@@ -2555,7 +2571,8 @@
           goto 99                                       !--> ERROR
          endif
         endif
-# ifdef BULK_FLUX
+#endif
+# if defined BULK_FLUX && defined TEMPERATURE
 !
         if (wrt(indxShflx_rlw)) then
          lvar=lenstr(vname(1,indxShflx_rlw))
@@ -2694,7 +2711,7 @@
          endif
         enddo
 # endif /* BBL */
-# ifdef SST_SKIN
+# if defined SST_SKIN && defined TEMPERATURE
 !
 ! sst_skin     surface skin temperature (degC)
 !

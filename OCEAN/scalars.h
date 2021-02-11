@@ -151,7 +151,9 @@
       real  theta_s,   theta_b,   Tcline,  hc
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
+# ifdef TRANSPORT
       real  tnu2(NT),tnu4(NT)
+# endif
 # ifndef NONLIN_EOS
       real R0,T0,S0, Tcoef, Scoef
 # endif
@@ -235,7 +237,7 @@
 #endif
 
       logical ldefhis
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRANSPORT
       logical got_tini(NT)
 #endif
 #ifdef SEDIMENT
@@ -306,7 +308,10 @@
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
-     &           , rx0,       rx1,       tnu2,    tnu4
+     &           , rx0,       rx1
+# ifdef TRANSPORT
+     &           ,       tnu2,    tnu4
+# endif
 # ifndef NONLIN_EOS
      &                      , R0,T0,S0,  Tcoef,   Scoef
 # endif
@@ -339,7 +344,7 @@
 #ifdef STATIONS
      &                      , nsta, nrpfsta
 #endif
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRANSPORT
      &                      , got_tini 
 #endif
 #ifdef SEDIMENT
@@ -422,8 +427,11 @@
 
 # if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
+      common /scalars_akv/ Akv_bak
+#  ifdef TRANSPORT
       real Akt_bak(NT)
-      common /scalars_akt/ Akv_bak, Akt_bak 
+      common /scalars_akt/ Akt_bak 
+#  endif
 # endif
 !
 !-----------------------------------------------------------------------
@@ -493,7 +501,7 @@
 #ifdef OBC_VOLCONS
      &        , bc_flux, ubar_xs
 #endif
-#ifdef BIOLOGY
+#if defined BIOLOGY && defined TRANSPORT
      &        , global_sum(0:2*NT+1)
 #endif
 #ifdef RESET_RHO0
