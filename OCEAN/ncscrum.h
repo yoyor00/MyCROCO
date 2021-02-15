@@ -288,17 +288,20 @@
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1,
      &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV)/)
       integer, dimension(NSAND) :: indxSAND 
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1+NGRAV,
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1+
+     &	NGRAV,
      &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+NSAND)/)
       integer, dimension(NMUD)   :: indxMUD
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1+
      &  NGRAV+NSAND,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+NSAND+NMUD)/)
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+
+     &  NSAND+NMUD)/)
 # endif
 
 # if(!defined ANA_BSEDIM  && !defined SEDIMENT)
       integer indxBSD, indxBSS
-      parameter (indxBSD=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1,
+      parameter (indxBSD=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &           ntrc_bio+1,
      &           indxBSS=101)
 # endif
 
@@ -310,7 +313,8 @@
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld
 #  endif
-      parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+1,
+      parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &           ntrc_bio+ntrc_sed+1,
      &           indxTYadv=indxTXadv+NT,
      &           indxTVadv=indxTYadv+NT,
      &           indxTHmix=indxTVadv+NT,
@@ -333,7 +337,8 @@
       integer indxMXadv,indxMYadv,indxMVadv,indxMCor,
      &        indxMPrsgrd,indxMHmix,indxMVmix,indxMrate,
      &        indxMVmix2,indxMHdiff
-      parameter (indxMXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxMXadv=indxV+ntrc_temp+ntrc_salt+
+     &           ntrc_pas+ntrc_bio+ntrc_sed
      &                                                  +ntrc_diats+1,
      &           indxMYadv=indxMXadv+2,
      &           indxMVadv=indxMYadv+2,
@@ -357,8 +362,9 @@
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
      &        indxvrtPrsgrd,indxvrtHmix,indxvrtVmix,indxvrtrate,
      &        indxvrtVmix2,indxvrtWind,indxvrtDrag
-      parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
-     &                                         +ntrc_diats+ntrc_diauv+1,
+      parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &                         ntrc_bio+ntrc_sed
+     &                        +ntrc_diats+ntrc_diauv+1,
      &           indxvrtYadv=indxvrtXadv+1,
      &           indxvrtHdiff=indxvrtYadv+1,
      &           indxvrtCor=indxvrtHdiff+1,
@@ -382,8 +388,9 @@
       integer indxekHadv,indxekHdiff,indxekVadv,indxekCor,
      &        indxekPrsgrd,indxekHmix,indxekVmix,indxekrate,
      &        indxekvol,indxekVmix2,indxekWind,indxekDrag
-      parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
+      parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &           ntrc_bio+ntrc_sed+
+     &           ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
      &           indxekHdiff=indxekHadv+1,
      &           indxekVadv=indxekHdiff+1,     
      &           indxekCor=indxekVadv+1,
@@ -428,8 +435,9 @@
 # endif
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
-      parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
-     &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
+      parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &                ntrc_bio+ntrc_sed+
+     &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+2)
 # ifdef DIAGNOSTICS_PV_FULL
       integer indxpvpv,indxpvpvd
@@ -440,7 +448,8 @@
 # ifdef DIAGNOSTICS_EDDY
       integer indxeddyzz,indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
      &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw
-      parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &                  ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &                                                  +ntrc_diapv+1,
      &           indxeddyuu=indxeddyzz+1,
@@ -455,7 +464,8 @@
 # ifdef OUTPUTS_SURFACE
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
      &        indxsurfv
-      parameter (indxsurft=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxsurft=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &	                ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &                                     +ntrc_diapv+ntrc_diaeddy+1,
      &           indxsurfs=indxsurft+1,
@@ -468,7 +478,8 @@
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
      &        , indxGasExcFlux
 #  endif
-      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &	                ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &                            +ntrc_diapv+ntrc_diaeddy+ntrc_surf+1)
       parameter (indxbioVSink=indxbioFlux+NumFluxTerms)
@@ -479,7 +490,8 @@
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
-      parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
+     &	                ntrc_bio+ntrc_sed
      &     +ntrc_substot
 # ifdef MUSTANG
      &              +ntrc_subs+6
