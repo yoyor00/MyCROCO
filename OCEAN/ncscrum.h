@@ -1754,7 +1754,7 @@
 # endif
 #endif
       character*80 date_str, title, start_date
-      character*180 ininame,  grdname,  hisname
+      character*180 ininame,  grdname,  hisname, dragname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES
@@ -1841,7 +1841,7 @@
 
       common /cncscrum/
      &             date_str,   title,  start_date,
-     &             ininame,  grdname, hisname
+     &             ininame,  grdname, hisname, dragname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES

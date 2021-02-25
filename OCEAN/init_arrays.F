@@ -49,6 +49,7 @@ C$    integer omp_get_thread_num
 #include "diagnostics.h"
 #include "boundary.h"
 #include "sources.h"
+#include "bottom_drag_2d.h"
 #include "nbq.h"
 
 #ifdef DIAGNOSTICS_VRT
@@ -110,6 +111,10 @@ C$    integer omp_get_thread_num
           vbar(i,j,2)=init
           vbar(i,j,3)=init
           vbar(i,j,4)=init
+
+#ifdef BOTTOM_DRAG_2D
+          RDRG2_2D(i,j)=0. !init
+#endif
 #ifdef AVERAGES
           zeta_avg(i,j)=init 
           ubar_avg(i,j)=init

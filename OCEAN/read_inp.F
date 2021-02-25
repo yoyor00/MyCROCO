@@ -500,7 +500,23 @@
 
 !
 
-# if defined WAVE_OFFLINE && defined MUSTANG
+! Bottom_drag file name. Check its availability.
+#if defined BOTTOM_DRAG_2D 
+      elseif (keyword(1:kwlen).eq.'bottom_drag_2d') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname) 
+# if defined MPI && defined PARALLEL_FILES
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        dragname=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &             'Bottom Drag 2D Data File:', dragname(1:lstr)
+#endif
+
+# if defined WAVE_OFFLINE && defined MUSTANG 
 ! Forcing file name. Check its availability.
 !
       elseif (keyword(1:kwlen).eq.'wave_offline') then
