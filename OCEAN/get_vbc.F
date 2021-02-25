@@ -72,6 +72,17 @@
 #  endif
 # endif
 !
+!---------------------------------------------------------------
+! Bottom Drag 2D
+!---------------------------------------------------------------
+!
+#ifdef BOTTOM_DRAG_2D
+      call get_bottom_drag_2d
+#endif  /* BOTTOM_DRAG_2D */
+!
+!
+!
+!
 # ifdef SOLVE3D
 !
 !---------------------------------------------------------------
@@ -208,6 +219,9 @@
 #include "climat.h"
 #include "sources.h"
 #include "mixing.h"
+#ifdef BOTTOM_DRAG_2D
+#include "bottom_drag_2d.h"
+#endif
 #include "mpi_cpl.h"
 #include "sediment.h"
 #include "bbl.h"
@@ -472,6 +486,31 @@
 !  Set bottom stress using logarithmic or linear
 !  and/or quadratic formulation.
 !
+#  ifdef BOTTOM_DRAG_2D
+        do j=JstrV,Jend
+          do i=Istr,Iend
+
+            cff=0.25*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs)+v(i-1,j,1,nrhs)+
+     &                                            v(i-1,j+1,1,nrhs))
+            bustr(i,j)=u(i,j,1,nrhs)*(
+     &                         (RDRG2_2D(i,j)+RDRG2_2D(i-1,j))/2.
+     &                         *sqrt(
+     &                         u(i,j,1,nrhs)*u(i,j,1,nrhs)+cff*cff
+     &                                                            ))
+          enddo
+        enddo
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            cff=0.25*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs)+u(i,j-1,1,nrhs)+
+     &                                            u(i+1,j-1,1,nrhs))
+            bvstr(i,j)=v(i,j,1,nrhs)*(
+     &                         (RDRG2_2D(i,j)+RDRG2_2D(i,j-1))/2.
+     &                         *sqrt(
+     &                         cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs)
+     &                                                            ))
+          enddo
+        enddo
+#  else
 #   define CDRAG wrk
       if (maxval(Zob).ne.0.) then
         do j=JstrV-1,Jend     !! for currents
@@ -526,6 +565,7 @@
           enddo
         enddo
       endif
+#  endif /* BOTTOM_DRAG_2D */
 
 #   ifdef LIMIT_BSTRESS
 !

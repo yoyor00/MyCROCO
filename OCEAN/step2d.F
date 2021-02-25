@@ -138,6 +138,9 @@ C$    trd=omp_get_thread_num()
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "coupling.h"
+#if defined BOTTOM_DRAG_2D
+#include "bottom_drag_2d.h"
+#endif
 # include "forces.h"
 # ifdef MRL_WCI
       real vstu,ustv,dudx,dvdx,dude,dvde
@@ -1138,7 +1141,30 @@ C$OMP BARRIER
 ! Linear and/or quadratic bottom stress.
 !-----------------------------------------------------------------------
 !
-# ifdef BBL
+#if defined BOTTOM_DRAG_2D
+        do j=jstr,jend
+          do i=IstrU,iend 
+            cff=0.25*( vbar(i  ,j,kstp)+vbar(i  ,j+1,kstp)
+     &                +vbar(i-1,j,kstp)+vbar(i-1,j+1,kstp))
+ 
+            rubar(i,j)=rubar(i,j)-ubar(i,j,kstp)*(
+     &                      ((RDRG2_2D(i,j)+RDRG2_2D(i-1,j))/2.)
+     &              *sqrt(ubar(i,j,kstp)*ubar(i,j,kstp)+cff*cff)
+     &                                     )*om_u(i,j)*on_u(i,j)
+          enddo
+        enddo
+        do j=JstrV,jend
+          do i=istr,iend
+            cff=0.25*( ubar(i,j  ,kstp)+ubar(i+1,j  ,kstp)
+     &                +ubar(i,j-1,kstp)+ubar(i+1,j-1,kstp))
+ 
+            rvbar(i,j)=rvbar(i,j)-vbar(i,j,kstp)*(
+     &                        (RDRG2_2D(i,j)+RDRG2_2D(i,j-1))/2.
+     &              *sqrt(cff*cff+vbar(i,j,kstp)*vbar(i,j,kstp))
+     &                                     )*om_v(i,j)*on_v(i,j)
+          enddo
+        enddo
+#elif defined BBL
         do j=Jstr,Jend
           do i=IstrU,Iend
             rubar(i,j)=rubar(i,j) - bustr(i,j)

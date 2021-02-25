@@ -292,6 +292,11 @@
       ierr=nf_put_att_text(ncid, nf_global, 'qbar_file',lvar,
      &                                       qbarname(1:lvar))
 #endif
+#ifdef BOTTOM_DRAG_2D
+      lvar=lenstr(dragname)
+      ierr=nf_put_att_text(ncid, nf_global,'drag_file', lvar,
+     &                                       dragname(1:lvar))
+#endif
 #ifdef ASSIMILATION
       lvar=lenstr(assname)
       ierr=nf_put_att_text(ncid, nf_global,'ass_file', lvar,
