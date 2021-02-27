@@ -12,6 +12,7 @@
                                       ! Read gridded bottom_drag parameters
       subroutine get_bottom_drag_2d   ! from bottom_drag_2d netCDF file. 
                                       ! Scale them. 
+      ! author : Marie-Lou Bachely and Cristele Chevalier IRD
 #if defined BOTTOM_DRAG_2D
       implicit none
 # include "param.h"

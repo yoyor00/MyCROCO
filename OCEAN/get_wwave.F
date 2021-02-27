@@ -10,7 +10,8 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined  WAVE_OFFLINE && ( defined MUSTANG || defined BBL || defined MRL_WCI )
+# if defined RADIATION_WAVE_FORCE_OFFLINE || ( defined  WAVE_OFFLINE && \
+    ( defined MUSTANG || defined BBL || defined MRL_WCI ))
 
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
@@ -117,6 +118,44 @@
           write(stdout,3) vname(1,indxWWP)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
+
+
+# if defined RADIATION_WAVE_FORCE_OFFLINE
+! Check if radiation wave force is present, and if so, if field or scalar series
+        lvar=lenstr(vname(1,indxFX))
+        ierr=nf_inq_varid (ncidwave,vname(1,indxFX)(1:lvar),fx_id)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_inq_varndims (ncidwave, fx_id, i)
+          if (ierr. eq. nf_noerr) then
+            if (i.gt.2) then ! fx is a 3D(x,y,t) field
+              fxgrd=1.
+            else ! fx is a 2D(x,y) field
+              fxgrd=0.
+            endif
+          endif
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,3) vname(1,indxFX)(1:lvar),wave_file(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+        
+        lvar=lenstr(vname(1,indxFY))
+        ierr=nf_inq_varid (ncidwave,vname(1,indxFY)(1:lvar),fy_id)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_inq_varndims (ncidwave, fy_id, i)
+          if (ierr. eq. nf_noerr) then
+            if (i.gt.2) then ! fy is a 3D(x,y,t) field
+              fygrd=1.
+            else ! fy is a 2D(x,y) field
+              fygrd=0.
+            endif
+          endif
+        endif
+        if (ierr .ne. nf_noerr) then
+          write(stdout,3) vname(1,indxFY)(1:lvar),wave_file(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# endif
 
 # if defined MUSTANG
 ! Check if wave orbital velocity present, and if so, if field or scalar series
@@ -226,7 +265,10 @@
         wwp_scale=1.
         wweb_scale=1.
         wwed_scale=1.
-        wwer_scale=1.
+        wwer_scale=1. 
+# if defined RADIATION_WAVE_FORCE_OFFLINE
+        FXFY_scale=1.
+# endif
 # if defined MUSTANG
         wwu_scale=1.
         wwd_scale=1.  !we need direction in degrees in sed_skinstress 
@@ -296,7 +338,42 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wind-wave period', ww_rec
         goto 99                                         !--> ERROR
+      endif
+
+! Read radiation wave force
+# if defined RADIATION_WAVE_FORCE_OFFLINE
+!     read radiation wave force only at first step 
+!     if it is a 2D array (x,y)
+      if (iic.eq.0) then
+        if (fxgrd.eq.0) then
+          ierr=nf_fread (FXwave2D_read(START_2D_ARRAY), ncidwave, fx_id,
+     &                                           1, r2dvar)
+        endif
+        if (fygrd.eq.0) then
+          ierr=nf_fread (FYwave2D_read(START_2D_ARRAY), ncidwave, fy_id,
+     &                                           1, r2dvar)
+        endif
+      endif
+!     for 3D FX, FY arrays, read at each time step 
+      if (fxgrd.eq.1.) then
+        ierr=nf_fread (FXwave3D_read(START_2D_ARRAY,i), ncidwave, fx_id,
+     &                                           ww_rec, r2dvar)
+      endif
+      if (ierr .ne. nf_noerr) then
+        write(stdout,6) 'radiation wave force FX', ww_rec
+        goto 99                                         !--> ERROR
+      endif
+
+      if (fygrd.eq.1.) then
+        ierr=nf_fread (FYwave3D_read(START_2D_ARRAY,i), ncidwave, fy_id,
+     &                                           ww_rec, r2dvar)
+      endif
+      if (ierr .ne. nf_noerr) then
+        write(stdout,6) 'radiation wave force FY', ww_rec
+        goto 99                                         !--> ERROR
       endif       
+# endif
+
 ! Read orbital velocity
 # if defined MUSTANG
       if (wwugrd.eq.1.) then
@@ -422,6 +499,9 @@
       real    fac,fac1,fac2,fac11,fac12,fac21,fac22,fac31,fac32,
      &                      fac41,fac42,fac51,fac52,fac61,fac62,
      &        wwA, wwD, wwP, wwe, Dstp,cfrq,hrms
+# ifdef RADIATION_WAVE_FORCE_OFFLINE
+     &       , FXwave1D_ , FYwave1D_
+# endif
 # ifdef MUSTANG
      &       , wwU, fac71, fac72
 # endif
@@ -486,6 +566,12 @@
 
                 Pwave(i,j)=(wwpgrd)*wwp_scale*wwpg(i,j,itww) +
      &                     (1.-wwpgrd)*wwP
+# if defined RADIATION_WAVE_FORCE_OFFLINE
+                FXwave3D(i,j)=(fxgrd)*FXFY_scale*FXwave3D_read(i,j,itww) +
+     &                      (1.-fxgrd)*FXFY_scale*FXwave2D_read(i,j)
+                FYwave3D(i,j)=(fygrd)*FXFY_scale*FYwave3D_read(i,j,itww) +
+     &                      (1.-fygrd)*FXFY_scale*FYwave2D_read(i,j)
+# endif
 # if defined MUSTANG
                 Uwave(i,j)=(wwugrd)*wwu_scale*wwug(i,j,itww) +
      &                     (1.-wwugrd)*wwU
@@ -529,6 +615,12 @@
         fac31=fac*fac1
         fac32=fac*fac2
         wwP=fac31*wwpp(it1)+fac32*wwpp(it2)
+
+# if defined RADIATION_WAVE_FORCE_OFFLINE
+        fac=FXFY_scale/(fac1+fac2)
+        fac41=fac*fac1
+        fac42=fac*fac2
+#endif
 # if defined MUSTANG
         fac=wwu_scale/(fac1+fac2)
         fac71=fac*fac1
@@ -564,6 +656,14 @@
 
             Pwave(i,j)=wwpgrd*(fac31*wwpg(i,j,it1)+fac32*wwpg(i,j,it2))
      &                +(1.-wwpgrd)*wwP
+# if defined RADIATION_WAVE_FORCE_OFFLINE
+            FXwave3D(i,j)=fxgrd*(fac41*FXwave3D_read(i,j,it1)+ 
+     &                         fac42*FXwave3D_read(i,j,it2))
+     &                +(1.-fxgrd)*FXwave2D_read(i,j)
+            FYwave3D(i,j)=fygrd*(fac41*FYwave3D_read(i,j,it1)+ 
+     &                         fac42*FYwave3D_read(i,j,it2))
+     &                +(1.-fygrd)*FYwave2D_read(i,j)
+#endif
 # if defined MUSTANG
             Uwave(i,j)=wwugrd*(fac71*wwug(i,j,it1)+fac72*wwug(i,j,it2))
      &                +(1.-wwugrd)*wwU
@@ -626,7 +726,8 @@
 !   for other muddy areas (still needs work).
 !--------------------------------------------------------------------
 !
-# if !defined SHOREFACE || defined MEKONG
+# if (!defined SHOREFACE || defined MEKONG) && \
+     !defined RADIATION_WAVE_FORCE_OFFLINE
       do j=jstrR,jendR
         do i=istrR,iendR
 #  ifdef MEKONG

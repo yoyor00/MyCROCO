@@ -372,6 +372,30 @@
 #  undef Uwrk
 # endif /* BODYFORCE */
 
+# ifdef RADIATION_WAVE_FORCE
+      call radiation_wave_force_tile (istr,iend,jstr,jend)
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+
+                
+            ru(i,j,k)=ru(i,j,k)
+     &                      + FXwave_z(i,j,k)*om_u(i,j)*on_u(i,j)
+
+          enddo
+        enddo
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)=rv(i,j,k)
+     &                      + FYwave_z(i,j,k)*om_v(i,j)*on_v(i,j)
+
+          enddo
+        enddo
+      enddo  
+# endif /* RADIATION_WAVE_FORCE */
+
+
+
       do k=1,N
 
 # if defined UV_COR || (defined CURVGRID && defined UV_ADV)

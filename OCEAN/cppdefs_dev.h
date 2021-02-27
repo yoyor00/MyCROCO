@@ -667,6 +667,11 @@
 ======================================================================
 */
 
+/*  Radiation Stress */
+#if defined RADIATION_WAVE_FORCE_OFFLINE
+# define RADIATION_WAVE_FORCE
+#endif
+
 #if defined MRL_WCI || defined WKB_WWAVE
 /*  Wave breaking dissipation (both WKB and WCI) */
 # undef  WAVE_SFC_BREAK

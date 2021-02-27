@@ -70,6 +70,8 @@
 ! indxWWA          wind induced wave Amplitude
 ! indxWWD          wind induced wave Direction
 ! indxWWP          wind induced wave Period
+! indxFX           u wave radiation force
+! indxFY           v wave radiation force
 ! indxWEB          wave dissipation by breaking,
 ! indxWED          wave dissipation by friction,
 ! indxWER          wave dissipation by roller breaking,
@@ -706,7 +708,7 @@
      &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3, 
      &           indxZbapp =indxAbed+4, indxBostrw=indxAbed+5)
 # ifndef ANA_WWAVE
-      integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
+      integer indxWWA,indxWWD,indxWWP,indxFX, indxFY, indxWEB,indxWED,indxWER
 # ifdef MUSTANG
      &          ,indxWWU
 # endif
@@ -719,12 +721,16 @@
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
 #  endif
+#  ifdef RADIATION_WAVE_FORCE_OFFLINE
+     &          ,indxFX=indxWWA+3
+     &          ,indxFY=indxWWA+4
+#  endif
      &                             )                                            
 # endif
 # ifndef ANA_BSEDIM
 # endif
 #else /* BBL */
-      integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
+      integer indxWWA,indxWWD,indxWWP,indxFX, indxFY,indxWEB,indxWED,indxWER
 # ifdef MUSTANG
      &          ,indxWWU
 # endif
@@ -736,6 +742,10 @@
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
+#  endif
+#  ifdef RADIATION_WAVE_FORCE_OFFLINE
+     &          ,indxFX=indxWWA+3
+     &          ,indxFY=indxWWA+4
 #  endif
      &                             )                                            
 #endif  /* BBL */
@@ -907,7 +917,7 @@
       integer ncidfrc, ncidbulk, ncidclm,  ntsms ,
      &        ntsrf,  ntssh,  ntsst, ntsss, ntuclm,
      &        ntbulk, ncidqbar, ntqbar, ntww
-#if defined WAVE_OFFLINE 
+#if defined WAVE_OFFLINE || defined RADIATION_WAVE_FORCE_OFFLINE
       integer ncidwave
 #endif
 #if defined SOLVE3D && defined TRANSPORT
@@ -1366,7 +1376,7 @@
       common/incscrum/
      &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
      &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
-#if defined WAVE_OFFLINE
+#if defined WAVE_OFFLINE || defined RADIATION_WAVE_FORCE_OFFLINE
      &      , ncidwave
 #endif
 #if defined MPI && defined PARALLEL_FILES
@@ -1820,7 +1830,7 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#if defined WAVE_OFFLINE
+#if defined WAVE_OFFLINE || defined RADIATION_WAVE_FORCE_OFFLINE
      &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION
@@ -1907,7 +1917,7 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#if defined WAVE_OFFLINE
+#if defined WAVE_OFFLINE || defined RADIATION_WAVE_FORCE_OFFLINE
      &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION

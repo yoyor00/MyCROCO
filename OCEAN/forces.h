@@ -583,7 +583,8 @@
 #endif   /* MRL_WCI */
 
 #if defined BBL || defined MRL_WCI \
-     ||  (defined MUSTANG && defined WAVE_OFFLINE) 
+     ||  (defined MUSTANG && defined WAVE_OFFLINE)\
+     ||  defined RADIATION_WAVE_FORCE_OFFLINE
 !--------------------------------------------------------------------
 ! Awave  | for present time   | wave amplitude [m]
 !                             | significant wave height [m] (MUSTANG)
@@ -595,7 +596,26 @@
       real Pwave(GLOBAL_2D_ARRAY)
       common /bbl_Awave/Awave /bbl_Dwave/Dwave /bbl_Pwave/Pwave
 
-# ifdef WAVE_OFFLINE
+# ifdef RADIATION_WAVE_FORCE_OFFLINE
+      real FXwave(GLOBAL_2D_ARRAY)
+      real FYwave(GLOBAL_2D_ARRAY)
+      real FXwave_z(GLOBAL_2D_ARRAY,N)
+      real FYwave_z(GLOBAL_2D_ARRAY,N)
+      common /wave_force_XY/ FXwave, FYwave,
+     &                       FXwave_z, FYwave_z
+      real FXFY_scale
+      real FXwave3D_read(GLOBAL_2D_ARRAY,2)
+      real FYwave3D_read(GLOBAL_2D_ARRAY,2)
+      real FXwave3D(GLOBAL_2D_ARRAY)
+      real FYwave3D(GLOBAL_2D_ARRAY)
+      common /FXFYread3D/FXFY_scale, FXwave3D_read, FYwave3D_read,
+     &                       FXwave3D,FYwave3D
+      real FXwave2D_read(GLOBAL_2D_ARRAY)
+      real FYwave2D_read(GLOBAL_2D_ARRAY)
+      common /FXFYread2D/FXwave2D_read, FYwave2D_read
+# endif
+
+# if defined WAVE_OFFLINE || defined RADIATION_WAVE_FORCE_OFFLINE
 !--------------------------------------------------------------------
 !  wweb  |                    | breaking dissipation [m3/s3]
 !  wwed  |  for present time  | frictional dissipation [m3/s3]
@@ -668,6 +688,10 @@
 #  ifdef MUSTANG
       integer wwu_id
 #  endif
+#  ifdef RADIATION_WAVE_FORCE_OFFLINE
+      integer  fx_id, fy_id
+      integer  fxgrd, fygrd
+#  endif
 #  ifdef MRL_WCI
       integer wweb_id, wwed_id, wwer_id
 #  endif
@@ -686,6 +710,9 @@
       common /wwdat/ wwa_id, wwp_id, wwd_id
 #  ifdef MUSTANG
       common /wwdat/ wwu_id,wwugrd,wwu_scale,wwup
+#  endif
+#  ifdef RADIATION_WAVE_FORCE_OFFLINE
+      common /wwdat/ fx_id, fy_id,fxgrd, fygrd
 #  endif
 #  ifdef MRL_WCI
       common /wwdat/ wweb_id, wwed_id, wwer_id

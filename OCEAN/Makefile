@@ -97,6 +97,7 @@ include Makedefs
 	get_bottom_drag_2d.F \
         cfb_stress.F\
 \
+	radiation_wave_force.F \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
 \
 	online_bulk_var.F		online_get_bulk.F\

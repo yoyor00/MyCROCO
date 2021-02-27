@@ -479,7 +479,9 @@
           || (defined BULK_FLUX  && \
                                       (!defined BULK_SMFLUX || \
                                        !defined BULK_EP) )\
-          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
+          || ( defined WAVE_OFFLINE && !defined MUSTANG )  \
+                  || (defined RADIATION_WAVE_FORCE_OFFLINE) \
+        )  
 !
 !
 ! Forcing file name. Check its availability.
