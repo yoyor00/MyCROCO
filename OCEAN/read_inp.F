@@ -523,7 +523,9 @@ h! Read input parameters according to the keyword:
           || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
           || ( defined BULK_FLUX    && !defined SALINITY ) \
-          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
+          || ( defined WAVE_OFFLINE && !defined MUSTANG ) \
+          || (defined RADIATION_WAVE_FORCE_OFFLINE) \
+        )  
 !
 !
 ! Forcing file name. Check its availability.

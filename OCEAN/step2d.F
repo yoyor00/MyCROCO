@@ -1247,6 +1247,33 @@ C$OMP BARRIER
       enddo
 # endif
 !
+
+!-----------------------------------------------------------------------
+! Add Wave Force
+!-----------------------------------------------------------------------
+
+#ifdef RADIATION_WAVE_FORCE
+      call radiation_wave_force_tile (istr,iend,jstr,jend)
+        
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+          rubar(i,j)=rubar(i,j) + FXwave(i,j)
+     &                 *om_u(i,j)*on_u(i,j)
+        enddo
+      enddo
+
+
+      do j=JstrV,Jend
+        do i=Istr,Iend
+          rvbar(i,j)=rvbar(i,j) + FYwave(i,j)
+     &                 *om_v(i,j)*on_v(i,j)
+        enddo
+      enddo
+#endif
+      
+
+
+
 !-----------------------------------------------------------------------
 ! Coupling between 2D and 3D parts.
 !--------- ------- -- --- -- ------

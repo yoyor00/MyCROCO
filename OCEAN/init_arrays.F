@@ -119,6 +119,12 @@ C$    integer omp_get_thread_num
 #ifdef BOTTOM_DRAG_2D
           RDRG2_2D(i,j)=0. !init
 #endif
+
+#ifdef RADIATION_WAVE_FORCE
+          FXwave(i,j)=0. !init
+          FYwave(i,j)=0. !init
+#endif
+
 #ifdef AVERAGES
           zeta_avg(i,j)=init
           ubar_avg(i,j)=init
@@ -1016,7 +1022,8 @@ C$    integer omp_get_thread_num
           srflxg(i,j,1)=init
           srflxg(i,j,2)=init
 # endif
-# if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
+# if ( ((defined MUSTANG || defined BBL || defined MRL_WCI) && \
+       defined WAVE_OFFLINE) || defined RADIATION_WAVE_FORCE_OFFLINE) 
           wwag(i,j,1)=init
           wwdg(i,j,1)=init
           wwpg(i,j,1)=init
@@ -1026,6 +1033,10 @@ C$    integer omp_get_thread_num
 #  ifdef MUSTANG
           wwug(i,j,1)=init
           wwug(i,j,2)=init
+#endif
+#  ifdef RADIATION_WAVE_FORCE_OFFLINE
+          FXwave3D_read(i,j,2)=init
+          FYwave3D_read(i,j,2)=init
 #  endif
 #  ifdef WAVE_OFFLINE_BREAKING
           wweb(i,j,1)=init

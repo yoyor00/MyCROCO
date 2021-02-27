@@ -2295,7 +2295,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxBSD =',indxBSD
 # endif /* BBL */
 #endif /* SOLVE3D */
 
-#if (defined MUSTANG || defined MRL_WCI || defined BBL) \
+#if (defined MUSTANG || defined MRL_WCI || defined BBL \
+     || defined RADIATION_WAVE_FORCE_OFFLINE) \
      && !defined  ANA_WWAVE
 
 CR      write(stdout,'(1x,A,I3)') 'indxWWA',indxWWA
@@ -2361,6 +2362,16 @@ CR      write(stdout,'(1x,A,I3)') 'indxWWP =',indxWWP
       vname(7,indxWWP)='                                          '
 # endif  /* MUSTANG */
 
+# ifdef RADIATION_WAVE_FORCE_OFFLINE
+CR      write(stdout,'(1x,A,I3)') 'indxFX =',indxFX
+      vname(1,indxFX)='FXwave                                    '
+      vname(2,indxFX)='u radiation wave force                    '
+      vname(3,indxFX)='                                      '
+CR      write(stdout,'(1x,A,I3)') 'indxFY =',indxFY
+      vname(1,indxFY)='FYwave                                    '
+      vname(2,indxFY)='v radiation wave force                    '
+      vname(3,indxFY)='                                      '
+# endif /* RADIATION_WAVE_FORCE_OFFLINE */
 # ifdef WAVE_OFFLINE_BREAKING
 CR      write(stdout,'(1x,A,I3)') 'indxWEB =',indxWEB
       vname(1,indxWEB)='Eb                                        '
