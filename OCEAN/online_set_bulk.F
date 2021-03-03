@@ -56,13 +56,13 @@
 # ifndef BULK_SM_UPDATE
       real cff7,cff8
 # endif
-# ifdef CFB_WIND
+# if defined SMFLUX_CFB && defined CFB_WIND
       integer imax,jmax
 # endif   
 !     
 # include "compute_extended_bounds.h"
 !
-# ifdef CFB_WIND
+# if defined SMFLUX_CFB && defined CFB_WIND
 #  ifdef MPI
        imax=IendR+1
        jmax=JendR+1
@@ -161,7 +161,7 @@
             enddo
           enddo
         elseif (blkvar_id.eq.9) then
-# ifdef CFB_WIND
+# if defined SMFLUX_CFB && defined CFB_WIND
 !
 !     Compute relative winds ---
 !     
@@ -239,9 +239,9 @@
 #   ifdef BULK_SM_UPDATE
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
-#   else 
-              sustr(i,j)=cff7*sustrg(i,j,it1)+cff8*sustrg(i,j,it2)
-              svstr(i,j)=cff7*svstrg(i,j,it1)+cff8*svstrg(i,j,it2)
+!#   else  # pas possible ... 
+!              sustr(i,j)=cff7*sustrg(i,j,it1)+cff8*sustrg(i,j,it2)
+!              svstr(i,j)=cff7*svstrg(i,j,it1)+cff8*svstrg(i,j,it2)
 #   endif /* BULK_SM_UPDATE */
 #  endif 
             enddo
