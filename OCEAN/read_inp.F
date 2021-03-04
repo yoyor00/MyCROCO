@@ -152,6 +152,8 @@
 # else
       fname='TEST_CASES/croco.in.Dune'
 # endif  
+#elif defined CHANNEL 
+      fname='TEST_CASES/croco.in.Channel'
 #elif defined SED_TOY
       fname='TEST_CASES/croco.in.Sed_toy'
 #else
