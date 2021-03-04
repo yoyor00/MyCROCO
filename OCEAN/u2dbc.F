@@ -114,7 +114,7 @@ C$    trd=omp_get_thread_num()
       tau_out=dtfast*tauM_out
 #endif
 !
-#ifdef OBC_COM_M2CHARACT
+#if defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST  || defined OBC_COM_M2CHARACT_WEST
       grad = 1.
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -265,7 +265,7 @@ C$    trd=omp_get_thread_num()
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2SPECIFIED
+#  elif defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_WEST
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
         do j=Jstr,Jend
@@ -372,7 +372,7 @@ C$    trd=omp_get_thread_num()
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2CHARACT
+#  elif defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
