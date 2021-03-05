@@ -391,7 +391,7 @@
 !
 !---------------------------------------------------------------
 ! Kinematic bottom salt flux [PSU m/s].
-! (Aanalytical bottom salt flux is usually set to zero.)
+! (Analytical bottom salt flux is usually set to zero.)
 !---------------------------------------------------------------
 !
 # ifdef SALINITY
@@ -584,6 +584,8 @@
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
 #  endif
+#  endif /* BSTRESS_FAST */
+
 # endif /* SOLVE3D */
 #endif /* BBL */
 
@@ -625,5 +627,34 @@ C$OMP END MASTER
 # endif
 #endif
 
+#if defined RVTK_DEBUG_ADVANCED
+C$OMP BARRIER
+C$OMP MASTER
+      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')
+      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v')
+      
+      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
+      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r')
+C$OMP END MASTER
+#endif
+C$OMP BARRIER
+#if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+C$OMP MASTER
+      call check_tab2d(uwndg(:,:,1),'uwndg1 set_vbc','u')
+      call check_tab2d(uwndg(:,:,2),'uwndg2 set_vbc','u')
+      call check_tab2d(vwndg(:,:,1),'vwndg1 set_vbc','v')
+      call check_tab2d(vwndg(:,:,2),'vwndg2 set_vbc','v')
+      call check_tab2d(tair(:,:),'tair set_vbc','r')
+      call check_tab2d(rhum(:,:),'rhum set_vbc','r')
+      call check_tab2d(prate(:,:),'prate set_vbc','r')
+      call check_tab2d(radlw(:,:),'radlw set_vbc','r')
+      call check_tab2d(radsw(:,:),'radsw set_vbc','r')
+      call check_tab2d(wspd(:,:),'wspd set_vbc','r')
+      call check_tab2d(uwnd(:,:),'uwnd set_vbc','u')
+      call check_tab2d(vwnd(:,:),'vwnd set_vbc','v')
+C$OMP END MASTER
+#endif
+
+      
       return
       end
