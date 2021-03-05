@@ -328,6 +328,12 @@
       real patmg(GLOBAL_2D_ARRAY,2)
 # endif
 # ifdef BULK_SM_UPDATE
+# ifdef ONLINE
+      ! these 2 variables are used only in the initialisation stage
+      ! with the ONLINE interpolation to correct a bug [to be improved]
+      real uwndg_norot(GLOBAL_2D_ARRAY,2)
+      real radswg_down(GLOBAL_2D_ARRAY,2)
+# endif
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
 # endif

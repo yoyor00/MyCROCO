@@ -179,7 +179,7 @@
      &                I_RANGE,J_RANGE,
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
-     &                radswg(GLOBAL_2D_ARRAY,iblkrec))
+     &       radswg_down(GLOBAL_2D_ARRAY,iblkrec))
 
 #  endif      
       elseif (blkvar_id.eq.5) then
@@ -199,7 +199,8 @@
 #  if defined ERA_ECMWF || defined AROME
             radswg(i,j,iblkrec)=blk_dum1(i,j)
 #  else
-            radswg(i,j,iblkrec)=radswg(i,j,iblkrec)-blk_dum1(i,j)
+            radswg(i,j,iblkrec)=radswg_down(i,j,iblkrec)
+     &                         -blk_dum1(i,j)
 #  endif      
             if (1e-10.gt.abs(radswg(i,j,iblkrec))) then
               radswg(i,j,iblkrec)=0.
@@ -236,7 +237,7 @@
      &                I_RANGE,J_RANGE,
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
-     &                uwndg(GLOBAL_2D_ARRAY,iblkrec))
+     &                uwndg_norot(GLOBAL_2D_ARRAY,iblkrec))
 
 # else
        USE_BULK_SM_UPDATE !
@@ -259,16 +260,17 @@
         do j=J_RANGE
           do i=I_RANGE
 #  ifndef CFB_WIND
-            wspdg(i,j,iblkrec)=sqrt(uwndg(i,j,iblkrec)*uwndg(i,j,iblkrec)
-     &                             +vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
+            wspdg(i,j,iblkrec)= sqrt(uwndg_norot(i,j,iblkrec)
+     &                              *uwndg_norot(i,j,iblkrec)
+     &                        +vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
 #  endif
 #  ifdef CURVGRID
-            blk_dum1(i,j)=uwndg(i,j,iblkrec)*COS(angler(i,j))+
+            blk_dum1(i,j)=uwndg_norot(i,j,iblkrec)*COS(angler(i,j))+
      &                    vwndg(i,j,iblkrec)*SIN(angler(i,j))
             blk_dum2(i,j)=vwndg(i,j,iblkrec)*COS(angler(i,j))-
-     &                         uwndg(i,j,iblkrec)*SIN(angler(i,j))
+     &                    uwndg_norot(i,j,iblkrec)*SIN(angler(i,j))
 #  else
-            blk_dum1(i,j)=uwndg(i,j,iblkrec)
+            blk_dum1(i,j)=uwndg_norot(i,j,iblkrec)
             blk_dum2(i,j)=vwndg(i,j,iblkrec)
 #  endif
            enddo
