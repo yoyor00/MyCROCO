@@ -313,7 +313,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
       
-#  if defined RVTK_DEBUG_ADVANCED && defined ONLINE
+#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
@@ -335,7 +335,7 @@ C$OMP END MASTER
         call bulk_flux (tile)   
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG_ADVANCED && defined ONLINE
+#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
@@ -350,13 +350,19 @@ C$OMP MASTER
       call check_tab2d(wspd(:,:),'wspd prestep3d_aftbulk','r')
       call check_tab2d(uwnd(:,:),'uwnd prestep3d_aftbulk','u')
       call check_tab2d(vwnd(:,:),'vwnd prestep3d_aftbulk','v')
-
-      call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','u')
-      call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','v')      
 C$OMP END MASTER
 C$OMP BARRIER
 #  endif
 # endif /* BULK_FLUX */
+      
+C$OMP BARRIER
+# if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+C$OMP MASTER      
+      call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','u')
+      call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','v')      
+C$OMP END MASTER
+C$OMP BARRIER
+# endif
 
       if (may_day_flag.ne.0) return  !-->  EXIT
 
