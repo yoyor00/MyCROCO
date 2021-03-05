@@ -876,7 +876,6 @@ C$    integer omp_get_thread_num
           vwndg(i,j,2)=init
 # ifdef ONLINE
           uwndg_norot(i,j,1)=init
-          uwndg_norot(i,j,1)=init
           radswg_down(i,j,2)=init
           radswg_down(i,j,2)=init
 #  endif
