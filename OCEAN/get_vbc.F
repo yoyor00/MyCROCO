@@ -663,7 +663,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif
 C$OMP BARRIER
-#if defined RVTK_DEBUG_ADVANCED && defined ONLINE
+#if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 set_vbc','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 set_vbc','u')
