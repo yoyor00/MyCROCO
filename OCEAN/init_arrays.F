@@ -852,18 +852,18 @@ C$    integer omp_get_thread_num
           radswg (i,j,2)=init
           wspdg(i,j,1)=init
           wspdg(i,j,2)=init
-#  ifdef BULK_SM_UPDATE
+# ifdef BULK_SM_UPDATE
           uwndg(i,j,1)=init
           vwndg(i,j,1)=init
           uwndg(i,j,2)=init
           vwndg(i,j,2)=init
-# ifdef ONLINE
+#  ifdef ONLINE
           uwndg_norot(i,j,1)=init
           uwndg_norot(i,j,2)=init
           radswg_down(i,j,1)=init
           radswg_down(i,j,2)=init
 #  endif
-#  endif
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
           radswbiog (i,j,1)=init
           radswbiog (i,j,2)=init
