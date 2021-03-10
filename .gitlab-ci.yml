@@ -16,8 +16,8 @@ before_script:
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
 
 ana_run:
-  only:
-    - pushes    
+#  only:
+#    - pushes    
   script:
     - cd $CVTKHOME/Scripts_ana
     - ./create_link_master_ana.sh
