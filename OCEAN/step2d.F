@@ -1044,8 +1044,8 @@ C$OMP BARRIER
 # ifdef MRL_WCI
 #  if defined CURVGRID && defined UV_ADV
           cff1 = Drhs(i,j)*(
-     &    0.5*( dndx(i,j)*(vst2d(i,j)+vst2d(i,j+1))
-     &          -dmde(i,j)*(ust2d(i,j)+ust2d(i+1,j)) ))
+     &           0.5*( dndx(i,j)*(vst2d(i,j)+vst2d(i,j+1))
+     &                -dmde(i,j)*(ust2d(i,j)+ust2d(i+1,j))) )
 #  else
           cff1 = 0.0
 #  endif
@@ -1377,9 +1377,12 @@ C$OMP BARRIER
 #ifdef SOLVE3D
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
-     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)*umask_wet(i,j)
+     &                +(Dnew(i,j)+Dnew(i-1,j))*ust2d(i,j)
+#  ifdef WET_DRY
+     &                                    *umask_wet(i,j)
+#  endif
 # endif
-     &                                                   )
+     &                                                  )
 #endif
         enddo
       enddo
@@ -1414,7 +1417,10 @@ C$OMP BARRIER
 #ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
 # ifdef MRL_WCI
-     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)*vmask_wet(i,j)
+     &                 +(Dnew(i,j)+Dnew(i,j-1))*vst2d(i,j)
+#  ifdef WET_DRY
+     &                                     *vmask_wet(i,j)
+#  endif
 # endif
      &                                                   )
 #endif

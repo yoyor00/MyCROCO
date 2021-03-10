@@ -90,6 +90,7 @@
       real nu0c, Cv, Ric, Ri_inv, 
      &     betaT,epssfc,Cstar,Cg,C_Ek
       real ustarb
+      real su_r, sv_r, ustokes
 !======================================================================
       parameter (
      &   Cv=1.8,       ! Ratio of interior Brunt-Vaisala
@@ -182,8 +183,21 @@
 # ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
 # else
-          ustar(i,j)=sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                         +(0.5*(svstr(i,j)+svstr(i,j+1)))**2))
+          su_r=0.5*(sustr(i,j)+sustr(i+1,j))
+          sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+          ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
+# endif
+# ifdef LMD_LANGMUIR
+!
+!  Turbulent Langmuir number (McWilliams et al 1997)
+!
+#  ifdef MRL_WCI
+          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
+          ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
+          Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
+#  else
+          Langmuir(i,j)=0.35  ! Liu et al (2014)
+#  endif
 # endif
 
         enddo

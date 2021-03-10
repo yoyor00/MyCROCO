@@ -1967,7 +1967,11 @@ CR      write(stdout,'(1x,A,I3)') 'indxBhflx =',indxBhflx
       vname(5,indxBhflx)='                                       '
       vname(6,indxBhflx)='lat_rho lon_rho                        '
 #endif
+<<<<<<< HEAD
 #if defined BWFLUX && defined SALINITY
+=======
+#if defined BWFLUX && defined SALINTY
+>>>>>>> master
 CR      write(stdout,'(1x,A,I3)') 'indxBwflx =',indxBwflx
       vname(1,indxBwflx)='bwflux                                 '
       vname(2,indxBwflx)='bottom freshwater flux (E-P)          '
@@ -3483,6 +3487,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvsv)
        vname(5,indxeddyvsv)='                               '
        vname(7,indxeddyvsv)='                               '
 
+<<<<<<< HEAD
+=======
 CR       write(stdout,'(1x,A,I3)') 'indxeddyugsu = ',indxeddyugsu
        write(vname1,*) 'ugsustr                              '
        vname(1,indxeddyugsu)=vname1
@@ -3505,6 +3511,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvgsv)
        vname(5,indxeddyvgsv)='                               '
        vname(7,indxeddyvgsv)='                               '
 
+>>>>>>> master
 
 
 #endif  /* DIAGNOSTICS_EDDY */
@@ -3550,7 +3557,11 @@ CR       write(stdout,'(1x,A,I3)') 'indxsurfv = ',indxsurfv
        vname(1,indxsurfv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxsurfv)
        vname(2,indxsurfv)='surface v                           '
+<<<<<<< HEAD
+       write(vname3,*) 'meter second-1                         '
+=======
        write(vname3,*) trim(unitt),'meter second-1             '
+>>>>>>> master
        vname(3,indxsurfv)=vname3
 
 

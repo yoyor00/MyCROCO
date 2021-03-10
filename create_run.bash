@@ -88,6 +88,7 @@ if [ ! -d $SOURCES_DIR ]; then
 fi
 
 # Check if tools are there
+copy_tools=1
 if [ ! -d $TOOLS_DIR ]; then 
   echo  " WARNING : croco_tools directory not found "
   echo -n " Do you want to proceed without MATLAB tools ? [Y/n] "
@@ -187,6 +188,7 @@ if [[ $copy_tools == 1 ]] ; then
     echo '         '
 
     cp -Rf $TOOLS_DIR/start.m .
+    cp -Rf $TOOLS_DIR/oct_start.m .
     cp -Rf $TOOLS_DIR/crocotools_param.m .
     cp -Rf $TOOLS_DIR/Town/town.dat Misc/
     #

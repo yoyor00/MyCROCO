@@ -55,6 +55,10 @@
 ! indxQBAR        river runoff
 ! indxBhflx       bottom hydrothermal heat flux
 ! indxBwflx       bottom hydrothermal freshwater flux
+<<<<<<< HEAD
+      
+=======
+>>>>>>> master
 !
 ! indxAi          fraction of cell covered by ice
 ! indxUi,indxVi   U,V-components of sea ice velocity
@@ -453,8 +457,12 @@
       integer indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
      &        indxeddyvb,indxeddywb,indxeddyuw,indxeddyvw,
      &        indxeddyubu,indxeddyvbv,
+<<<<<<< HEAD
+     &        indxeddyusu,indxeddyvsv
+=======
      &        indxeddyusu,indxeddyvsv,
      &        indxeddyugsu,indxeddyvgsv
+>>>>>>> master
       parameter (indxeddyuu=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &                                               +ntrc_diapv+400,
@@ -468,9 +476,13 @@
      &           indxeddyubu=indxeddyvw+1,
      &           indxeddyvbv=indxeddyubu+1,
      &           indxeddyusu=indxeddyvbv+1,
+<<<<<<< HEAD
+     &           indxeddyvsv=indxeddyusu+1)
+=======
      &           indxeddyvsv=indxeddyusu+1,
      &           indxeddyugsu=indxeddyvsv+1,
      &           indxeddyvgsv=indxeddyugsu+1)
+>>>>>>> master
 # endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
@@ -922,7 +934,10 @@
 !   ntww    wind induced wave data in current forcing file.
 !   ntbulkn bulk formula variables in current forcing file.
 !   ntqbar  river runoff in current forcing file.
+<<<<<<< HEAD
 !   ntbtf   bottom hydrothermal flux of tracer in current forcing file.
+=======
+>>>>>>> master
 !
 ! vname    character array for variable names and attributes;
 !=================================================================
@@ -961,6 +976,7 @@
 # ifdef SEDIMENT
       integer rstSed(NST+2)
 # endif
+<<<<<<< HEAD
 #endif
 #ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
@@ -972,6 +988,8 @@
 # ifdef TS_MIX_ISO_FILT
       integer rstdRdx,rstdRde
 # endif
+=======
+>>>>>>> master
 #endif
 #ifdef MORPHODYN
       integer rstHm
@@ -998,7 +1016,11 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
+<<<<<<< HEAD
      &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
+=======
+     &      , hisShflx, hisSwflx, hisShflx_rsw
+>>>>>>> master
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -1138,7 +1160,10 @@
      &      , diags_eddyuw(2), diags_eddyvw(2)
      &      , diags_eddyubu(2), diags_eddyvbv(2)
      &      , diags_eddyusu(2), diags_eddyvsv(2)
+<<<<<<< HEAD
+=======
      &      , diags_eddyugsu(2), diags_eddyvgsv(2)
+>>>>>>> master
 # endif
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -1310,7 +1335,10 @@
      &      , diags_eddyuw_avg(2), diags_eddyvw_avg(2)
      &      , diags_eddyubu_avg(2), diags_eddyvbv_avg(2)
      &      , diags_eddyusu_avg(2), diags_eddyvsv_avg(2)
+<<<<<<< HEAD
+=======
      &      , diags_eddyugsu_avg(2), diags_eddyvgsv_avg(2)
+>>>>>>> master
 #  endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS
        integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
@@ -1460,8 +1488,12 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
+<<<<<<< HEAD
      &      , hisShflx, hisSwflx, hisShflx_rsw
      &      , hisBhflx, hisBwflx
+=======
+     &     , hisShflx, hisSwflx, hisShflx_rsw
+>>>>>>> master
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -1665,7 +1697,10 @@
      &      , diags_eddyvb, diags_eddywb, diags_eddyuw, diags_eddyvw
      &      , diags_eddyubu, diags_eddyvbv
      &      , diags_eddyusu, diags_eddyvsv
+<<<<<<< HEAD
+=======
      &      , diags_eddyugsu, diags_eddyvgsv
+>>>>>>> master
 # ifdef AVERAGES
      &      , nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
@@ -1674,7 +1709,10 @@
      &      , diags_eddyuw_avg, diags_eddyvw_avg
      &      , diags_eddyubu_avg, diags_eddyvbv_avg
      &      , diags_eddyusu_avg, diags_eddyvsv_avg
+<<<<<<< HEAD
+=======
      &      , diags_eddyugsu_avg, diags_eddyvgsv_avg
+>>>>>>> master
 # endif
 #endif
 # if defined OUTPUTS_SURFACE && ! defined XIOS

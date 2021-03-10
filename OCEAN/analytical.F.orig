@@ -1595,14 +1595,19 @@ C$    integer  trd, omp_get_thread_num
           wdre(i,j)=sin(wdir)
         enddo
       enddo
+<<<<<<< HEAD
+#  endif
+#  ifdef WET_DRY
+          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
+=======
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
+>>>>>>> master
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
           endif
-#   endif
 #  endif
 # endif
       return
@@ -2610,6 +2615,7 @@ C$    integer  trd, omp_get_thread_num
 #  define JU_RANGE JstrR,JendR
 #  define JV_RANGE Jstr,JendR
 # endif
+
 
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then

@@ -315,7 +315,10 @@
           nrecdiags_pv_avg=ibuff(4)
 # endif
 #endif
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
           nrecdiags_eddy=ibuff(3)
 # ifdef AVERAGES

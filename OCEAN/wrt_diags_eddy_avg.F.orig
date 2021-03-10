@@ -131,6 +131,11 @@
          itrc=1
 
        if (wrtdiags_eddy_avg(1)) then
+<<<<<<< HEAD
+       
+       
+=======
+>>>>>>> master
 !---------------------------------------------------------------
 ! indxeddyubu
 !
@@ -157,6 +162,8 @@
         call fillvalue2d(eddyvsv_avg,nciddiags_eddy_avg,diags_eddyvsv_avg(1),
      &                      indxeddyvsv,
      &                      record,v2dvar,type)
+<<<<<<< HEAD
+=======
 
 
 !---------------------------------------------------------------
@@ -172,6 +179,7 @@
         call fillvalue2d(eddyvgsv_avg,nciddiags_eddy_avg,diags_eddyvgsv_avg(1),
      &                      indxeddyvgsv,
      &                      record,v2dvar,type)
+>>>>>>> master
 
 !---------------------------------------------------------------
 ! indxeddyuu

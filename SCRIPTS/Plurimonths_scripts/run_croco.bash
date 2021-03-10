@@ -205,6 +205,9 @@ done
 NUMTIMES=0
 NUMTIMES=$((NDAYS * 24 * 3600))
 NUMTIMES=$((NUMTIMES / DT))
+if [[ $TIME_SCHED == 0 ]]; then
+	NUMTIMES=$((NUMTIMES * 12))
+fi
 
 LEVEL=0
 while [[ $LEVEL != $NLEVEL ]]; do

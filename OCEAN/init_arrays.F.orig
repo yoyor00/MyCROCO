@@ -149,6 +149,10 @@ C$    integer omp_get_thread_num
 #endif
 
 #if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
           surft_avg(i,j)=0. ! init
           surfs_avg(i,j)=0. ! init
           surfz_avg(i,j)=0. ! init
@@ -404,8 +408,14 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+<<<<<<< HEAD
+#  endif  /*DIAGNOSTICS_TS_MLD*/
+# endif /*DIAGNOSTICS_TS*/
+
+=======
 #  endif /*DIAGNOSTICS_TS_MLD*/
 # endif /*DIAGNOSTICS_TS*/
+>>>>>>> master
 
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
@@ -421,6 +431,22 @@ C$    integer omp_get_thread_num
             eddywb_avg(i,j,k)=init
             eddyuw_avg(i,j,k)=init
             eddyvw_avg(i,j,k)=init
+<<<<<<< HEAD
+           enddo
+          enddo
+        enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            eddyusu_avg(i,j)=init
+            eddyvsv_avg(i,j)=init
+            eddyubu_avg(i,j)=init
+            eddyvbv_avg(i,j)=init
+          enddo
+        enddo
+#  endif /* AVERAGES */
+# endif /* DIAGNOSTICS_EDDY */
+
+=======
             if (k .eq. N) then
              eddyusu_avg(i,j)=init
              eddyugsu_avg(i,j)=init
@@ -436,6 +462,7 @@ C$    integer omp_get_thread_num
 # endif /* DIAGNOSTICS_EDDY */
 
 
+>>>>>>> master
 
 
 # ifdef DIAGNOSTICS_VRT
@@ -873,11 +900,19 @@ C$    integer omp_get_thread_num
           vwndg(i,j,1)=init
           uwndg(i,j,2)=init
           vwndg(i,j,2)=init
+<<<<<<< HEAD
+# ifdef ONLINE
+=======
 #  ifdef ONLINE
+>>>>>>> master
           uwndg_norot(i,j,1)=init
           uwndg_norot(i,j,2)=init
           radswg_down(i,j,1)=init
           radswg_down(i,j,2)=init
+<<<<<<< HEAD
+#  endif
+=======
+>>>>>>> master
 #  endif
 # endif
 # ifdef DIURNAL_INPUT_SRFLX

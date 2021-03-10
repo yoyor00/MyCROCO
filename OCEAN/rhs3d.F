@@ -406,14 +406,14 @@
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
-# else
+#  else
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-# endif
+#  endif
           enddo
         enddo
 
-# ifdef CROCO_QH
+#  ifdef CROCO_QH
 !--------------------------------------------------------------------
 !  Compute Non-traditional Coriolis pseudo-force
 !    RU = -e W cos(a) * dV     [m4/s2]
@@ -447,7 +447,7 @@
             VFe(i,j)=VFe(i,j) - cff*sina(i,j)
           enddo
         enddo
-# endif
+#  endif
 
 
         do j=Jstr,Jend
@@ -457,7 +457,7 @@
      &                         +0.5*(UFe(i,j)+UFe(i-1,j))
 #  endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
               MCor(i,j,k,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)
@@ -466,7 +466,7 @@
      &                        SWITCH umask(i,j)
 #   endif
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkCor(i,j,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
@@ -476,7 +476,7 @@
      &                         +0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.kbl(i,j)) then
                 ekwrkCor_mld(i,j,1)=0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
@@ -485,7 +485,7 @@
      &                         +0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# endif
+#   endif
             endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
@@ -512,7 +512,7 @@
      &                         -0.5*(VFx(i,j)+VFx(i,j-1))
 #  endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MCor(i,j,k,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
      &                        SWITCH vmask(i,j)
@@ -521,7 +521,7 @@
      &                        SWITCH vmask(i,j)
 #   endif
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.1) then
               ekwrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -531,7 +531,7 @@
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
      &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.kbl(i,j)) then
               ekwrkCor_mld(i,j,2)=
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -541,10 +541,10 @@
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
      &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# endif
+#   endif
             endif
 #  endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -1660,7 +1660,6 @@
           enddo
         endif
 # endif /* UV_ADV */
-
 !
 !======================================================================
 !
@@ -1682,7 +1681,7 @@
 #  ifndef WAVE_SFC_BREAK
      &                           +cff*om_u(i,j)*brk3dx(i,j,k)
 #  endif
-#  if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#  ifdef WAVE_STREAMING
      &                           +cff*om_u(i,j)*frc3dx(i,j,k)
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -1691,13 +1690,12 @@
 #   ifndef WAVE_SFC_BREAK
               Mbrk(i,j,k,1) = cff*om_u(i,j)*brk3dx(i,j,k)
 #   endif
-#   if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#   ifdef WAVE_STREAMING
               Mfrc(i,j,k,1) = cff*om_u(i,j)*frc3dx(i,j,k)
 #   endif
             endif
-#  endif
+#  endif /* DIAGNOSTICS_UV */
           enddo
-
 
           do i=istr,iend
             cff  =0.5*om_v(i,j)*(Hz(i,j-1,k)+Hz(i,j,k))
@@ -1705,14 +1703,13 @@
      &                  +ust(i,j-1,k) +ust(i+1,j-1,k) )
             dude =0.5*( u(i  ,j,k,nrhs) -u(i  ,j-1,k,nrhs)
      &                 +u(i+1,j,k,nrhs) -u(i+1,j-1,k,nrhs) )
-ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
             dvde =0.5*( v(i,j+1,k,nrhs) -v(i,j-1,k,nrhs) )
             rv(i,j,k) =rv(i,j,k) + cff
      &                            *(ustv*dude+vst(i,j,k)*dvde)
 #  ifndef WAVE_SFC_BREAK
      &                            +cff*on_v(i,j)*brk3de(i,j,k)
 #  endif
-#  if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#  ifdef WAVE_STREAMING
      &                            +cff*on_v(i,j)*frc3de(i,j,k)
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -1721,25 +1718,14 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
 #   ifndef WAVE_SFC_BREAK
               Mbrk(i,j,k,2) = cff*on_v(i,j)*brk3de(i,j,k)
 #   endif
-#   if defined WAVE_STREAMING && defined WAVE_BODY_STREAMING
+#   ifdef WAVE_STREAMING
               Mfrc(i,j,k,2) = cff*on_v(i,j)*frc3de(i,j,k)
 #   endif
             endif
-#  endif
+#  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
-
-#  if defined WAVE_STREAMING && !defined WAVE_BODY_STREAMING
-        do i=IstrU,iend
-          ru(i,j,1) =ru(i,j,1) + om_u(i,j)*on_u(i,j)*frc2dx(i,j)
-        enddo
-        do i=istr,iend
-          rv(i,j,1) =rv(i,j,1) + om_v(i,j)*on_v(i,j)*frc2de(i,j)
-        enddo
-#  endif
-
 # endif   /* MRL_WCI */
-
 !
 !======================================================================
 !
