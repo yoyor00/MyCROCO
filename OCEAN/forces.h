@@ -328,6 +328,12 @@
       real patmg(GLOBAL_2D_ARRAY,2)
 # endif
 # ifdef BULK_SM_UPDATE
+# ifdef ONLINE
+      ! these 2 variables are used only in the initialisation stage
+      ! with the ONLINE interpolation to correct a bug [to be improved]
+      real uwndg_norot(GLOBAL_2D_ARRAY,2)
+      real radswg_down(GLOBAL_2D_ARRAY,2)
+# endif
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
 # endif
@@ -546,7 +552,7 @@
       real brk3de(GLOBAL_2D_ARRAY,N)
       common /forces_brk3dx/brk3dx /forces_brk3de/brk3de
 #  endif
-#  ifdef WAVE_BODY_STREAMING
+#  ifdef WAVE_STREAMING
       real frc3dx(GLOBAL_2D_ARRAY,N)
       real frc3de(GLOBAL_2D_ARRAY,N)
       common /forces_frc3dx/frc3dx /forces_frc3de/frc3de

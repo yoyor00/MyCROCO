@@ -147,7 +147,8 @@ CONTAINS
          CALL prt_ctl_trc( charout, ltra='tra')
 !         CALL prt_ctl_trc(tab4d=tra, mask=tmask, clinfo=ctrcnm)
       ENDIF
-
+ 
+#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
          ALLOCATE( zw2d(PRIV_2D_BIOARRAY) )  
          IF( iom_use( "Cflx"  ) )  THEN
@@ -174,6 +175,7 @@ CONTAINS
          !
          DEALLOCATE( zw2d )
       ENDIF
+#endif
       !
 #if defined key_trc_diaadd
       DO jj = JRANGE

@@ -143,8 +143,8 @@
 # undef  TS_DIF4
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
-# undef  TS_VADV_SPLINES
-# define TS_VADV_AKIMA
+# define TS_VADV_SPLINES
+# undef  TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
@@ -163,9 +163,9 @@
 #  define LMD_BKPP
 #  define LMD_RIMIX
 #  define LMD_CONVEC
-#  undef  LMD_DDMIX
 #  define LMD_NONLOCAL
-#  undef  MLCONVEC
+#  undef  LMD_DDMIX
+#  undef  LMD_LANGMUIR
 # endif
                       /* Surface Forcing */
 # undef BULK_FLUX
@@ -191,7 +191,7 @@
 #  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# undef SMFLUX_CFB
+# undef  SMFLUX_CFB
 # undef  SEA_ICE_NOFLUX
                       /* Wave-current interactions */
 # ifdef OW_COUPLING
@@ -200,7 +200,8 @@
 # endif
 # ifdef MRL_WCI
 #  ifndef OW_COUPLING
-#   define WAVE_OFFLINE
+#   undef  WAVE_OFFLINE
+#   define ANA_WWAVE
 #   undef  WKB_WWAVE
 #  endif
 #  undef  WAVE_ROLLER
@@ -210,7 +211,7 @@
 #  ifdef WKB_WWAVE
 #   undef  WKB_OBC_NORTH
 #   undef  WKB_OBC_SOUTH
-#   undef  WKB_OBC_WEST
+#   define WKB_OBC_WEST
 #   undef  WKB_OBC_EAST
 #  endif
 # endif
@@ -328,7 +329,6 @@
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
 #   define key_pisces
-#   define key_ligand
 #  endif
 #  ifdef BIO_NChlPZD
 #   define  OXYGEN
@@ -340,8 +340,6 @@
 #  define DIAGNOSTICS_BIO
 #  if defined DIAGNOSTICS_BIO && defined PISCES
 #   define key_trc_diaadd
-#   define key_trc_dia3d
-#   define key_iomput
 #  endif
 # endif
                       /*   Lagrangian floats model    */

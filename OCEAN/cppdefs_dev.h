@@ -108,9 +108,6 @@
 # define XIOS2
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define key_iomput
-#else
-# undef key_iomput
 #endif
   
 /*
@@ -677,10 +674,7 @@
 #endif
 
 #ifdef MRL_WCI
-/* Bottom streaming */
-# ifdef WAVE_STREAMING
-#  define WAVE_BODY_STREAMING
-# endif
+# define STOKES_DRIFT    /* Stokes drift */
 /* Default WCI is with input file data (WAVE_OFFLINE)  */
 # if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
 #  define WAVE_OFFLINE
@@ -714,11 +708,8 @@
 #ifdef BIOLOGY
 # ifdef PISCES
 #  undef DIURNAL_INPUT_SFLX    /* Under Development */
-#  define key_trc_pisces
-#  define key_passivetrc
 #  ifdef DIAGNOSTICS_BIO
 #   define key_trc_diaadd
-#   define key_trc_dia3d
 #  endif
 # endif
 # ifdef BIO_BioEBUS

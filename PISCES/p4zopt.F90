@@ -288,6 +288,7 @@ CONTAINS
          END DO
       ENDIF
 
+#if defined key_iomput
       IF( lk_iomput ) THEN
         IF( knt == nrdttrc ) THEN
            IF( iom_use( "Heup"  ) ) CALL iom_put( "Heup" , heup(:,:  ) * tmask(:,:,1) )  ! euphotic layer deptht
@@ -295,6 +296,7 @@ CONTAINS
            IF( iom_use( "PAR"   ) ) CALL iom_put( "PAR"  , emoy(:,:,:) * tmask(:,:,:) )  ! Photosynthetically Available Radiation
         ENDIF
       ENDIF
+#endif
       !
 #if defined key_trc_diaadd
       DO jk = KRANGE

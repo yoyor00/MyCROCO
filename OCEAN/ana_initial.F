@@ -39,6 +39,9 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
+#ifdef SST_SKIN
+# include "forces.h"
+#endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3

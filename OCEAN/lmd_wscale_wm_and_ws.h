@@ -45,3 +45,14 @@
                 ws=vonKar*(a_s*ustar3-c_s*zetahat)**r3
               endif
             endif
+
+# ifdef LMD_LANGMUIR
+!
+! Enhanced turbulent velocity scale due to Langmuir turbulence
+!
+            cff1=max(eps,Langmuir(i,j))
+            cff=sqrt(1+0.104/cff1**2+0.034/cff1**4)   ! Van Roekel et al. (2012)
+            wm=wm*cff
+            ws=ws*cff
+# endif
+

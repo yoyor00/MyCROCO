@@ -203,12 +203,14 @@ CONTAINS
       ! computation of dzdep = total thickness of solid material rained [cm] in each cell
       dzdep(1:jpoce) = raintg(1:jpoce) * rdtsed(2) 
 
+#if defined key_iomput
       IF( lk_iomput ) THEN
           IF( iom_use("sflxclay" ) ) CALL iom_put( "sflxclay", dust(:,:) * conv2 * 1E4 )
           IF( iom_use("sflxcal" ) )  CALL iom_put( "sflxcal", trc_data(:,:,13) )
           IF( iom_use("sflxbsi" ) )  CALL iom_put( "sflxbsi", trc_data(:,:,10) )
           IF( iom_use("sflxpoc" ) )  CALL iom_put( "sflxpoc", trc_data(:,:,11) + trc_data(:,:,12) )
       ENDIF
+#endif
 
    END SUBROUTINE sed_dta
 

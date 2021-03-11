@@ -1481,7 +1481,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
-     &     cff1,cff2,Hrms,cfrq,cdir,cw,ch,cr,sbc,dd,cgo,
+     &     cff1,cff2,Hrms,cfrq,cw,ch,cr,sbc,dd,cgo,
      &     dsup,Btg,cosw,sinw,eps,nw,wh
       parameter (eps=1.0e-10)
 # include "param.h"
@@ -1511,17 +1511,16 @@ C$    integer  trd, omp_get_thread_num
 # elif defined SHOREFACE
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Awave(i,j)=0.707    ! wave amplitude (m)
-          Dwave(i,j)=-10.     ! wave direction (deg)
-          Pwave(i,j)=10.      ! wave period (s)
+          Awave(i,j)=0.707           ! wave amplitude (m)
+          Dwave(i,j)=-10.*deg2rad    ! wave direction (rad)
+          Pwave(i,j)=10.             ! wave period (s)
         enddo
       enddo
-      wamp = Awave(i,j)
-      wdir = Dwave(i,j)
-      wprd = Pwave(i,j)
-      cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
-      cdir = wdir*deg2rad   ! wave direction (rad)
-      ho=h(1,1)             ! offshore depth
+      wamp=Awave(1,1)
+      wdir=Dwave(1,1)
+      wprd=Pwave(1,1)
+      cfrq=2.*pi/wprd     ! peak wave frequency (rad/s)
+      ho=h(1,1)           ! offshore depth
 #   ifdef OBC_EAST
       ho=h(LLm,1)
 #   endif
@@ -1534,7 +1533,7 @@ C$    integer  trd, omp_get_thread_num
       cgo=co*0.5*(1.+2.*kh/sinh(2.*kh))
       do j=jstrR,jendR
         do i=istrR,iendR
-          dsup=0.0
+          dsup=0.
           do k=1,4
             dd = h(i,j) + z_w(i,j,N) + dsup
             khd = dd*cfrq*cfrq/g
@@ -1546,13 +1545,13 @@ C$    integer  trd, omp_get_thread_num
             cw=sqrt(g/kw*tanh(kh))
             nw=0.5*(1.+2.*kh/sinh(2.*kh))  ! n=Cg/C
             ks=sqrt(cgo/(2.*nw*cw))        ! shoaling coefficient
-            kr=sqrt(cos(cdir)/cos(cdir))   ! refraction coefficient
-            cosw=cos(cdir)
-            sinw=sin(cdir)
+            kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
+            cosw=cos(wdir)
+            sinw=sin(wdir)
             gamw=0.31
             cff1=gamw*dd
             cff2=2.0*wamp*ks*kr
-            wh = min(cff1,cff2)
+            wh=min(cff1,cff2)
             dsup=-0.125*(wh**2)*kw/sinh(2.*kw*dd) ! wave set-up
           enddo
 !
@@ -1563,7 +1562,7 @@ C$    integer  trd, omp_get_thread_num
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
 #  ifdef WET_DRY
-          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
+          if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
@@ -1576,15 +1575,15 @@ C$    integer  trd, omp_get_thread_num
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Awave(i,j)=0.707    ! wave amplitude (m)
-          Dwave(i,j)=-10.     ! wave direction (deg)
-          Pwave(i,j)=10.      ! wave period (s)
+          Awave(i,j)=0.707            ! wave amplitude (m)
+          Dwave(i,j)=-10.*deg2rad     ! wave direction (rad)
+          Pwave(i,j)=10.              ! wave period (s)
         enddo
       enddo
 #  ifdef MRL_WCI
-      Hrms=2*Awave(1,1)          ! offshore RMS wave height (m)
-      cfrq=2.0*pi/Pwave(1,1)     ! peak wave frequency (rad/s)
-      cdir=Dwave(1,1)*deg2rad    ! wave direction rad
+      Hrms=2.*Awave(1,1)         ! offshore RMS wave height (m)
+      cfrq=2.*pi/Pwave(1,1)      ! peak wave frequency (rad/s)
+      wdir=Dwave(1,1)            ! wave direction (rad)
 !
 !  Fill global arrays
 !
@@ -1592,12 +1591,12 @@ C$    integer  trd, omp_get_thread_num
         do i=istr-1,iend+1
           whrm(i,j)=Hrms
           wfrq(i,j)=cfrq
-          wdrx(i,j)=cos(cdir)
-          wdre(i,j)=sin(cdir)
+          wdrx(i,j)=cos(wdir)
+          wdre(i,j)=sin(wdir)
         enddo
       enddo
 #   ifdef WET_DRY
-          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
+          if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.

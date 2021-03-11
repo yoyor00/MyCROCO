@@ -125,6 +125,7 @@ CONTAINS
             tra(:,:,jk,jpfer) = tra(:,:,jk,jpfer) + zirondep(:,:,jk) 
          ENDDO
          ! 
+#if defined key_iomput
          IF( lk_iomput ) THEN
             IF( knt == nrdttrc ) THEN
                 IF( iom_use( "Irondep" ) )   &
@@ -133,6 +134,7 @@ CONTAINS
                 &  CALL iom_put( "pdust"  , dust(:,:) / ( wdust * rday )  * tmask(:,:,1) ) ! dust concentration at surface
             ENDIF
          ENDIF
+#endif
          !
 #if defined key_trc_diaadd
          zrfact2 = 1.e+3 * rfact2r
@@ -236,8 +238,10 @@ CONTAINS
          IF( ln_ironsed ) THEN
             tra(:,:,:,jpfer) = tra(:,:,:,jpfer) + ironsed(:,:,:) * rfact2
             !
+#if defined key_iomput
             IF( lk_iomput .AND. knt == nrdttrc .AND. iom_use( "Ironsed" ) )   &
                &   CALL iom_put( "Ironsed", ironsed(:,:,:) * 1.e+3 * tmask(:,:,:) ) ! iron inputs from sediments
+#endif
 #if defined key_trc_diaadd
         DO jk = KRANGE
            DO jj = JRANGE
@@ -484,6 +488,7 @@ CONTAINS
          !
       ENDIF
 
+#if defined key_iomput
       IF( lk_iomput ) THEN
          IF( knt == nrdttrc ) THEN
             zfact = 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
@@ -506,6 +511,7 @@ CONTAINS
             IF( iom_use("Sdenit" ) ) CALL iom_put( "Sdenit", sdenit (:,:) * zfact * rno3 )
          ENDIF
       ENDIF
+#endif
       !
 #if defined key_trc_diaadd
         zfact = 1.e+3 * rfact2r

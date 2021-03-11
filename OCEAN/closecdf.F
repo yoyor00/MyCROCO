@@ -67,14 +67,14 @@
 # endif
 #endif
 
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && !  defined XIOS
       if (nciddiags_eddy.ne.-1) ierr=nf_close(nciddiags_eddy)
 # ifdef AVERAGES
       if (nciddiags_eddy_avg.ne.-1) ierr=nf_close(nciddiags_eddy_avg)
 # endif
 #endif
 
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       if (ncidsurf.ne.-1) ierr=nf_close(ncidsurf)
 # ifdef AVERAGES
       if (ncidsurf_avg.ne.-1) ierr=nf_close(ncidsurf_avg)

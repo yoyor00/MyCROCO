@@ -31,18 +31,13 @@ MODULE sedrst
 
    !!* Substitution
 #  include "ocean2pisces.h90"
-! modif SPOUS ASAP
-!#  include "netcdf.inc"
-! modif SPOUS ASAP
 
 CONTAINS         ! Write model prognostic
 
       SUBROUTINE sed_rst_wri      ! variables into restart
                                   ! netCDF file.
-! modif SPOUS ASAP
 # include "netcdf.inc"
-! modif SPOUS ASAP
-				  
+
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
       &  , start(2), count(2), ibuff(4), nf_fwrite, itrc  
       INTEGER :: ji, jj, jk, jn
@@ -254,9 +249,7 @@ CONTAINS         ! Write model prognostic
 
       SUBROUTINE def_rst_sed( ncid, total_rec, ierr)  ! restart netCDF
 
-! modif SPOUS ASAP
 # include "netcdf.inc"
-! modif SPOUS ASAP
 
       logical :: create_new_file
       integer :: ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim    &
@@ -595,9 +588,7 @@ CONTAINS         ! Write model prognostic
 !
 !======================================================
 
-! modif SPOUS ASAP
 # include "netcdf.inc"
-! modif SPOUS ASAP
 
       real(wp) :: time_scale
       integer  :: itrc

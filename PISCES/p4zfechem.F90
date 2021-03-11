@@ -235,6 +235,7 @@ CONTAINS
       ENDIF
       !  Output of some diagnostics variables
       !     ---------------------------------
+#if defined key_iomput
       IF( lk_iomput ) THEN
          IF( knt == nrdttrc ) THEN
             zrfact2 = 1.e3 * rfact2r  ! conversion from mol/L/timestep into mol/m3/s
@@ -248,6 +249,7 @@ CONTAINS
             IF( iom_use("LGWCOLL"))  CALL iom_put("LGWCOLL", zlcoll3d(:,:,:) * 1e9 * tmask(:,:,:) * zrfact2 )
          ENDIF
       ENDIF
+#endif
 
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('fechem')")

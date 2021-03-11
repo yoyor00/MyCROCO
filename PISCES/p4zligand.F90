@@ -79,6 +79,7 @@ CONTAINS
       !
       !  Output of some diagnostics variables
       !     ---------------------------------
+#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
          ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
          IF( iom_use( "LIGREM" ) ) THEN
@@ -95,6 +96,7 @@ CONTAINS
          ENDIF
          DEALLOCATE( zw3d )
       ENDIF
+#endif
       !
       IF(ln_ctl)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('ligand1')")
