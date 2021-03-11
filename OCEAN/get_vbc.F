@@ -538,7 +538,7 @@
         enddo
       enddo
 #   endif
-
+#  endif /* BSTRESS_FAST */
 !
 ! Set boundary conditions
 !
