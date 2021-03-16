@@ -1,9 +1,13 @@
 C     -*- fortran -*-
 
+#ifndef SOLVE3D
+#define NT 1
+#endif      
+      
 C     size of the optimization problem
       integer ad_array_size
-c      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
-      parameter (ad_array_size=1)
+      parameter (ad_array_size=(lm+1+padd_x)*(mm+1+padd_e)*nnodes)
+c      parameter (ad_array_size=1)
 
 c     real size of the problem per node (<= ad_array_size/nnodes)
       integer ad_array_node_size

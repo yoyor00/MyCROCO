@@ -49,3 +49,13 @@ c     write (*,*) 'max_val ad_obs:',k,maxval(ad_obs)
 
       
       end subroutine read_obs
+
+
+      subroutine handle_err(errcode)
+      implicit none
+# include "netcdf.inc"
+      integer errcode
+
+      print *, 'Error: ', nf_strerror(errcode)
+      stop 2
+      end

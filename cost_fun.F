@@ -1,4 +1,3 @@
-C$AD NOCHECKPOINT
       subroutine ad_step()
       implicit none
 # include "adinc.h"
@@ -7,7 +6,7 @@ C$AD NOCHECKPOINT
       integer k,iifroot
 
       write(*,*) 'start ad_step'
-C$XAD BINOMIAL-CKP ad_ns+1 32 1
+C$XAD BINOMIAL-CKP ad_ns+1 1 1
       do k=1,ad_ns
          do iifroot = 0,nfast+2
             call step()
@@ -163,12 +162,14 @@ c$$$     &                 h(i,j),h_bck(i,j),
 c$$$     &                 delta_z,
 c$$$  &                 delta_h
 c$$$                  if (zeta(i,j,knew).gt.0) then
-c$$$                     write(*,*) 'BBBBB',ta,mynode,i,j,zeta(i,j,knew),
-c$$$     &                    ad_obs(i,j,ta+2),
-c$$$     &                    ad_obs(i,j,ta+1),
-c$$$     &                    ad_obs(i,j,ta),
-c$$$     &                    ad_obs(i,j,ta-1),
-c$$$     &                    ad_obs(i,j,ta-2)
+c$$$                     if ((ta.gt.3).and.(ta.lt.ad_ns*ad_nt)) then
+c$$$                        write(*,*) 'BBBBB',ta,mynode,i,j,zeta(i,j,knew),
+c$$$     &                       ad_obs(i,j,ta+2),
+c$$$     &                       ad_obs(i,j,ta+1),
+c$$$     &                       ad_obs(i,j,ta),
+c$$$     &                       ad_obs(i,j,ta-1),
+c$$$     &                       ad_obs(i,j,ta-2)
+c$$$                     end if
 c$$$                  end if
                   ad_cost_counter = ad_cost_counter + 1
                end if
@@ -407,9 +408,9 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       integer tile
 # include "compute_tile_bounds.h"
 
-      call set_depth(tile)
+c      call set_depth(tile)
 
-      call grid_stiffness(tile)
+c      call grid_stiffness(tile)
 
       end subroutine restore_croco_state_2d
 
@@ -464,7 +465,7 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
       k=1
 
 c     rdrg2
-      ad_x(1)=1.5D-6
+      ad_x(1)=1.0D-5
 
       ad_array_node_size=1
 

@@ -176,14 +176,22 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 # =========
 #
 
-ADJ_SRCS=cost_fun.F get_vbc.F diag.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
+ADJ_SRCS=cost_fun.F get_vbc.F step.F step2d.F pre_step3d.F set_depth.F grid_stiffness.F rho_eos.F ana_vmix.F omega.F prsgrd.F rhs3d.F step3d_uv1.F step3d_uv2.F step3d_t.F t3dbc.F u3dbc.F v3dbc.F v2dbc.F u2dbc.F exchange.F analytical.F MessPass2D.F zetabc.F set_avg.F debug.F dummy.F get_ij.F distance.F xtime.F
 ADJ_PSRCS=$(ADJ_SRCS:.F=.tap.f)
 TAP_TARGET=autodiff
 ADJ_OBJS=$(TAP_TARGET)_b.o m1qn3.o treeverse.o adBinomial.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o adj_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
 
-TGT_SRCS=$(ADJ_SRCS)
+TGT_SRCS= $(ADJ_SRCS) ana_initial.F ana_grid.F wrt_his.F def_his.F setup_grid1.F setup_grid2.F insert_node.F checkdims.F put_global_atts.F def_grid_3d.F wrt_grid.F lenstr.F nf_fread.F fillvalue.F wvlcty.F nf_add_attribute.F init_scalars.F timers_roms.F init_arrays.F get_date.F nf_fread_y.F nf_fread_x.F set_scoord.F set_weights.F get_initial.F closecdf.F cost_driver.F analytical.F
 TGT_PSRCS=$(TGT_SRCS:.F=.tap.f)
+TGT_PSRCS_DBG= main_cost.tap.f $(TGT_PSRCS)
 TGT_OBJS=$(TAP_TARGET)_d.o m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o tgt_driver.o cost_fun.o get_ij.o distance.o xtime.o code_insertion.o
+TGT_OBJS_DBG=$(TAP_TARGET)_context_d.o m1qn3.o adContext.o treeverse.o adBufferC.o adBuffer.o  adStack.o code_insertion.o  read_obs.o analytical.o t3dbc.o v3dbc.o exchange.o zetabc.o u2dbc.o v2dbc.o pre_step3d.o u3dbc.o get_vbc.o diag.o ana_vmix.o output.o  check_kwds.o  read_inp.o init_scalars.o timers_roms.o init_arrays.o ana_grid.o setup_grid1.o setup_grid2.o set_scoord.o set_weights.o set_depth.o grid_stiffness.o get_initial.o ana_initial.o set_depth.o rho_eos.o omega.o wrt_his.o step.o closecdf.o wrt_rst.o lenstr.o
+
+ADJ_OBJS_DBG1=$(TAP_TARGET)_context1_d.o m1qn3.o adDebug.o treeverse.o adBufferC.o adBuffer.o  adStack.o code_insertion.o  read_obs.o analytical.o t3dbc.o v3dbc.o exchange.o zetabc.o u2dbc.o v2dbc.o pre_step3d.o u3dbc.o get_vbc.o diag.o ana_vmix.o output.o  check_kwds.o  read_inp.o init_scalars.o timers_roms.o init_arrays.o ana_grid.o setup_grid1.o setup_grid2.o set_scoord.o set_weights.o set_depth.o grid_stiffness.o get_initial.o ana_initial.o set_depth.o rho_eos.o omega.o wrt_his.o step.o closecdf.o wrt_rst.o lenstr.o  cost_fun.o
+
+ADJ_OBJS_DBG2=$(TAP_TARGET)_context2_b.o m1qn3.o adDebug.o treeverse.o adBufferC.o adBuffer.o  adStack.o code_insertion.o  read_obs.o analytical.o t3dbc.o v3dbc.o exchange.o zetabc.o u2dbc.o v2dbc.o pre_step3d.o u3dbc.o get_vbc.o diag.o ana_vmix.o output.o  check_kwds.o  read_inp.o init_scalars.o timers_roms.o init_arrays.o ana_grid.o setup_grid1.o setup_grid2.o set_scoord.o set_weights.o set_depth.o grid_stiffness.o get_initial.o ana_initial.o set_depth.o rho_eos.o omega.o wrt_his.o step.o closecdf.o wrt_rst.o lenstr.o  cost_fun.o
+
+
 
 DIV_OBJS=m1qn3.o treeverse.o adBufferC.o adBuffer.o adDebug.o adStack.o read_obs.o optim_driver.o div_driver.o cost_fun.o get_ij.o distance.o xtime.o
 
@@ -194,7 +202,7 @@ TGT_CONTEXT_OBJS=$(TAP_TARGET)_d.o cost_fun.o contextAD.o
 #
 # Everything
 # ==========
-all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc $(SBIN)_tgt $(SBIN)_div
+all: tools depend $(SBIN) $(SBIN)_tgt_dbg $(SBIN)_adj_dbg1 $(SBIN)_adj_dbg2
 
 #
 # Executables files.
@@ -210,6 +218,15 @@ $(SBIN)_adc:  $(ADJ_OBJS) $(TAP_TARGET)_d.o check_driver.o $(OBJS90) $(OBJS) mai
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_tgt: $(TGT_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_tgt_dbg: $(TGT_OBJS_DBG) $(OBJS90) $(OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_adj_dbg1: $(ADJ_OBJS_DBG1) $(OBJS90) $(OBJS)
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
+
+$(SBIN)_adj_dbg2: $(ADJ_OBJS_DBG2) $(OBJS90) $(OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lblas #-lampiCommon  -lampiTape   -lampiBookkeeping -lblas -lampiPlainC
 
 $(SBIN)_div: $(DIV_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_TGT_OBJS)
@@ -280,6 +297,18 @@ adBufferCtest : adStack.c adBuffer.c adBufferCtest.c
 
 m1qn3.o: m1qn3.F
 	$(CFT) $(FFLAGS) -c $^ -o $@
+
+
+pre_step3d.tap.f: pre_step3d.F
+	$(CPP) -P $(CPPFLAGS) -D__TAPENADE__ pre_step3d.F > pre_step3d.1.f
+	emacs -Q --script fsplit.el pre_step3d.1.f pre_step3d.tap.f	
+
+pre_step3d.f: pre_step3d.F
+	$(CPP) -P $(CPPFLAGS) pre_step3d.F > pre_step3d.2.f
+	emacs -Q --script fsplit.el pre_step3d.2.f pre_step3d.f
+
+pre_step3d.o: pre_step3d.f
+	$(CFT) -c $(FFLAGS) pre_step3d.f -o $@
 
 
 #
@@ -359,6 +388,18 @@ clobber: clean
 plotter: plotter.F
 	f77 -n32 -o plotter plotter.F $(LIBNCAR)
 
+$(TAP_TARGET)_context_d.o: $(TAP_TARGET)_context_d.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
+$(TAP_TARGET)_context1_d.o: $(TAP_TARGET)_context1_d.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
+$(TAP_TARGET)_context2_b.o: $(TAP_TARGET)_context2_b.f
+	ln -sf empty_code_insertion.h code_insertion.h
+	$(CFT) -c $(FFLAGS) $*.f -o $*.o
+
 $(TAP_TARGET)_d.o: $(TAP_TARGET)_d.f
 	ln -sf empty_code_insertion.h code_insertion.h
 	$(CFT) -c $(FFLAGS) $*.f -o $*.o
@@ -369,7 +410,7 @@ $(TAP_TARGET)_b.o: $(TAP_TARGET)_b.f
 
 $(TAP_TARGET)_b.f: $(ADJ_PSRCS)
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -msglevel 10 -msginfile -nocheckpoint "step3d_uv_thread step3d_t_thread omega_tile rho_eos rho_eos_tile set_vbc prsgrd rhs3d pre_step3d pre_step3d_tile set_depth set_depth_tile set_huv set_huv_tile set_huv2 set_huv2_tile exchange_r2d_tile exchange_u2d_tile exchange_v2d_tile exchange_u3d_tile exchange_v3d_tile exchange_r3d_tile exchange_r2d_tile exchange_w3d_tile prsgrd_tile rhs3d_tile" -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} $^ -noisize -noisize77 -msglevel 10 -msginfile -nocheckpoint "step3d_uv_thread step3d_t_thread omega_tile rho_eos rho_eos_tile set_vbc prsgrd rhs3d pre_step3d pre_step3d_tile step3d_uv2_tile set_depth set_depth_tile set_huv set_huv_tile set_huv2 set_huv2_tile exchange_r2d_tile exchange_u2d_tile exchange_v2d_tile exchange_u3d_tile exchange_v3d_tile exchange_r3d_tile exchange_r2d_tile exchange_w3d_tile prsgrd_tile rhs3d_tile" -head "cost_fun(ad_x)\(cost)" -r8 -reverse -output $(TAP_TARGET) $(AMPIINC)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h  
 	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_b.f 
 	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_b.f
@@ -391,6 +432,10 @@ main_adj.f: main.F
 main_adc.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_CHECK $^ | ./mpc > $@
 
+main_cost.tap.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DSTATE_CONTROL -DAD_COST $^ | ./mpc > $@
+
+
 $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
 	ln -sf empty_code_insertion.h code_insertion.h
 	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -output $(TAP_TARGET) $(AMPIINC)
@@ -398,13 +443,33 @@ $(TAP_TARGET)_d.f: $(TGT_PSRCS) #main_tgt.f
 	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_d.f 
 	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_d.f
 
-$(TAP_TARGET)_context_d.f: $(TGT_PSRCS) main_tgt.f
+$(TAP_TARGET)_context_d.f: $(TGT_PSRCS_DBG)
 	ln -sf empty_code_insertion.h code_insertion.h
-	${TAPENADE} $^ -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8 -context -output $(TAP_TARGET) $(AMPIINC)
+	${TAPENADE} -d -fixinterface -context -noisize -noisize77 -tracelevel 10 -msglevel 20 -msginfile -head "cost_fun(cost)/(ad_x)" -r8  -output $(TAP_TARGET)_context $(AMPIINC) $^
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
-	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_d.f 
-	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_d.f
+	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_context_d.f 
+	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_context_d.f
+	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context_d.f	
+	sed -i 's/\(ADDEBUGTGT_CALL([^,]*\), 0, 0/\1, 10, 10/g' $(TAP_TARGET)_context_d.f
 
+$(TAP_TARGET)_context1_d.f: $(TGT_PSRCS_DBG)
+	ln -sf empty_code_insertion.h code_insertion.h
+	${TAPENADE} -d -fixinterface -context -debugADJ -noisize -noisize77 -msginfile -head "cost_fun(cost)/(ad_x)" -r8  -output $(TAP_TARGET)_context1 $(AMPIINC) $^
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_context1_d.f 
+	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_context1_d.f
+	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context_d.f	
+	sed -i 's/\(ADDEBUGTGT_CALL([^,]*\), 0, 0/\1, 10, 10/g' $(TAP_TARGET)_context1_d.f
+
+$(TAP_TARGET)_context2_b.f: $(TGT_PSRCS_DBG)
+	ln -sf empty_code_insertion.h code_insertion.h
+	${TAPENADE} -b -fixinterface -context -debugADJ -noisize -noisize77 -msginfile -nocheckpoint "step3d_uv_thread step3d_t_thread omega_tile rho_eos rho_eos_tile set_vbc prsgrd rhs3d pre_step3d pre_step3d_tile set_depth set_depth_tile set_huv set_huv_tile set_huv2 set_huv2_tile exchange_r2d_tile exchange_u2d_tile exchange_v2d_tile exchange_u3d_tile exchange_v3d_tile exchange_r3d_tile exchange_r2d_tile exchange_w3d_tile prsgrd_tile rhs3d_tile" -head "cost_fun(cost)/(ad_x)" -r8  -output $(TAP_TARGET)_context2 $(AMPIINC) $^
+	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
+	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_context2_b.f 
+	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_context2_b.f
+	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context_d.f	
+	sed -i 's/\(ADDEBUGBWD_CALL([^,]*\), 0/\1, 10/g' $(TAP_TARGET)_context2_b.f
+	sed -i 's/IF (.FALSE./IF (.TRUE./g' $(TAP_TARGET)_context2_b.f
 
 fortranSupport.o : fortranSupport.F
 	$(CFT) $(FFLAGS) $(CPPFLAGS) -I /usr/include -I /usr/local/include -c $^ -o $@
