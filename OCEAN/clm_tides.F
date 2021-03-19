@@ -75,13 +75,9 @@
      &        Vtide(PRIVATE_2D_SCRATCH_ARRAY)
 !
 # include "compute_auxiliary_bounds.h"
-# ifdef MPI
-#  define IRANGE Istr-1,Iend+1
-#  define JRANGE Jstr-1,Jend+1
-# else
-#  define IRANGE IstrR,IendR
-#  define JRANGE JstrR,JendR
-# endif
+
+#    define I_RANGE Istr-1,Iend+1
+#    define J_RANGE Jstr-1,Jend+1      
 !
       angle=0.
       phase=0.
@@ -254,16 +250,17 @@
 !  Add tidal elevation (m) to sea surface height climatology.
 !---------------------------------------------------------------------
 !
-      do j=JRANGE
-        do i=IRANGE
+      do j=J_RANGE
+        do i=I_RANGE
           Etide(i,j)=0.
         enddo
       enddo
+      etide=0
       do itide=1,Ntides
         if (Tperiod(itide).gt.0.) then
           omega_loc=cff/Tperiod(itide)
-          do j=JRANGE
-            do i=IRANGE
+          do j=J_RANGE
+            do i=I_RANGE
               Etide(i,j)=Etide(i,j)+ramp*
      &                   SSH_Tamp(i,j,itide)*
      &                   COS(omega_loc-SSH_Tphase(i,j,itide))
@@ -398,8 +395,8 @@
         end do
        end if
 #  ifdef MASKING
-       do j=JRANGE
-         do i=IRANGE
+       do j=J_RANGE
+         do i=I_RANGE
            Etide(i,j)=Etide(i,j)*ramp*rmask(i,j)
          end do
        end do 
@@ -410,8 +407,8 @@
 !  Add sub-tidal forcing and adjust climatology to include tides.
 !----------------------------------------------------------------
 #  if defined ZCLIMATOLOGY
-      do j=JRANGE
-        do i=IRANGE
+      do j=J_RANGE
+        do i=I_RANGE
           ssh(i,j)=ssh(i,j)+Etide(i,j)
 #   ifdef WET_DRY
           if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
@@ -426,9 +423,10 @@
 !----------------------------------------------------------------
 #  ifdef Z_FRC_BRY
 #   if defined OBC_WEST
+        zetabry_west=0.
       if (WESTERN_EDGE) then
-        do j=JstrR,JendR
-          zetabry_west(j)=zetabry_west(j)+Etide(Istr-1,j)
+        do j=JstrV-1,Jend 
+          zetabry_west(j)= zetabry_west(j)+Etide(Istr-1,j)
 #ifdef TIDES_MAS_DBG
          if (j+jminmpi-1 .eq. 149) 
      &     write(102,*)'Etide',tool_sectodat(time),
@@ -444,7 +442,7 @@
 #   endif
 #   if defined OBC_EAST
       if (EASTERN_EDGE) then
-        do j=JstrR,JendR
+        do j=JstrV-1,Jend
           zetabry_east(j)=zetabry_east(j)+Etide(Iend+1,j)
 #    ifdef WET_DRY
           if (zetabry_east(j) .lt. Dcrit(Iend+1,j)-h(Iend+1,j)) then
@@ -456,7 +454,7 @@
 #   endif
 #   if defined OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        do i=IstrR,IendR
+        do i=IstrU-1,Iend
           zetabry_south(i)=zetabry_south(i)+Etide(i,Jstr-1)
 #    ifdef WET_DRY
           if (zetabry_south(i) .lt. Dcrit(i,Jstr-1)-h(i,Jstr-1)) then
@@ -468,7 +466,7 @@
 #   endif
 #   if defined OBC_NORTH
       if (NORTHERN_EDGE) then
-        do i=IstrR,IendR
+        do i=IstrU-1,Iend
           zetabry_north(i)=zetabry_north(i)+Etide(i,Jend+1)
 #    ifdef WET_DRY
           if (zetabry_north(i) .lt. Dcrit(i,Jend+1)-h(i,Jend+1)) then
