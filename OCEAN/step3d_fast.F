@@ -4056,7 +4056,9 @@ C$OMP END MASTER
         write(stdout,'(A,2I6/)')
      &                                       '  IINT IFAST  =',iic,iif
 
-        call wrt_his   ! get output during blow-up
+!     GC quik fix Comment this because it blocks the correct mpi_abort
+!     croco do not hang out  
+!!      call wrt_his            ! get output during blow-up
 
         may_day_flag=1
 # ifdef MPI
