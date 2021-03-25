@@ -384,7 +384,7 @@
 # endif /* SOLVE3D */
 #endif /* !OA_COUPLING */
 
-#if defined SOLVE3D && defined TRANSPORT
+#if defined SOLVE3D && defined TRACERS
 !
 !---------------------------------------------------------------
 !  Kinematic bottom temperature (heat) flux [degC m/s].

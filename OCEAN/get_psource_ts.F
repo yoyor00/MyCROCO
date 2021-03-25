@@ -10,7 +10,7 @@
 !======================================================================
 !     
 #include "cppdefs.h"
-#if defined PSOURCE_NCFILE_TS && defined TRANSPORT
+#if defined PSOURCE_NCFILE_TS && defined TRACERS
       subroutine get_psource_ts
 !     
 !     Read in point or grided sea river runoff tracer 

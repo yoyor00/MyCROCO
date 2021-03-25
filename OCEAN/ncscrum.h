@@ -188,7 +188,7 @@
       integer indxU, indxV
       parameter (indxU=6, indxV=7)
 
-#ifdef TRANSPORT
+#ifdef TRACERS
 # ifdef TEMPERATURE
       integer indxT
       parameter (indxT=indxV+1)
@@ -899,14 +899,14 @@
       integer ncidfrc, ncidbulk, ncidclm,  ntsms ,
      &        ntsrf,  ntssh,  ntsst, ntsss, ntuclm,
      &        ntbulk, ncidqbar, ntqbar, ntww
-#if defined SOLVE3D && defined TRANSPORT
+#if defined SOLVE3D && defined TRACERS
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV
-# if defined TRANSPORT
+# if defined TRACERS
       integer rstT(NT)
 # endif	
 # ifdef SEDIMENT
@@ -1129,7 +1129,7 @@
       integer avgAOU, avgWIND10
 #  endif
 # endif  /* BIOLOGY */
-# if defined TRANSPORT
+# if defined TRACERS
       integer avgT(NT)
 # endif
 #  ifdef BULK_FLUX
@@ -1163,8 +1163,8 @@
      &        avgCALP, avgKAPS, avgWST
 #  endif
 # endif
-# if defined SOLVE3D && defined TRANSPORT
-#  if defined DIAGNOSTICS_TS && defined TRANSPORT
+# if defined SOLVE3D && defined TRACERS
+#  if defined DIAGNOSTICS_TS && defined TRACERS
       integer nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg(NT), diaTYadv_avg(NT), diaTVadv_avg(NT)
@@ -1344,14 +1344,14 @@
      &      , eta_rho, eta_v
 !# endif
 #endif
-#if defined SOLVE3D && defined TRANSPORT
+#if defined SOLVE3D && defined TRACERS
      &                        ,  nttclm, ntstf, nttsrc
 #endif
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV
-# if defined TRANSPORT
+# if defined TRACERS
      &                         ,   rstT
 # endif
 # ifdef SEDIMENT
@@ -1615,7 +1615,7 @@
 # endif
 # ifdef SOLVE3D
      &      , avgU,    avgV
-#  if defined TRANSPORT
+#  if defined TRACERS
      &      ,     avgT
 #  endif
      &      ,     avgR

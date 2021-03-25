@@ -16,7 +16,7 @@
 !
       implicit none
       integer tile
-# if defined TRANSPORT      
+# if defined TRACERS      
       integer trd, omp_get_thread_num
 # include "param.h"
 # include "private_scratch.h"
@@ -29,11 +29,11 @@
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                                                A3d(1,1,trd))
-# endif /* TRANSPORT */      
+# endif /* TRACERS */      
       return
       end
 
-# if defined TRANSPORT
+# if defined TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
@@ -863,7 +863,7 @@
 
       return
       end
-# endif  /* TRANSPORT */      
+# endif  /* TRACERS */      
 !
 !======================================================================
 !

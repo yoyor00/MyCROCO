@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# if defined SOLVE3D && defined TRANSPORT
+# if defined SOLVE3D && defined TRACERS
       subroutine t3dbc_tile(Istr,Iend,Jstr,Jend,indx,itrc,grad)
 #  ifdef AGRIF      
       use Agrif_Util
@@ -37,7 +37,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 # endif /* SOLVE3D */
 #else
-# if defined SOLVE3D && defined TRANSPORT
+# if defined SOLVE3D && defined TRACERS
 !
 ! CHILD
 !
@@ -48,7 +48,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 # endif /* SOLVE3D */
 #endif /* CHILD */
-# if defined SOLVE3D && defined TRANSPORT
+# if defined SOLVE3D && defined TRACERS
 !
 ! Common Code
 !

@@ -56,11 +56,11 @@
    ttclm      time of read in climatology for tracer type variables.
 */
 #ifdef SOLVE3D
-# if defined TRANSPORT && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
+# if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
       real tclm(GLOBAL_2D_ARRAY,N,NT)
       common /climat_tclm/tclm
 # endif
-# if defined TRANSPORT && defined TCLIMATOLOGY
+# if defined TRACERS && defined TCLIMATOLOGY
 #  ifdef TNUDGING
       real Tnudgcof(GLOBAL_2D_ARRAY,N,NT)
       common /climat_Tnudgcof/Tnudgcof
@@ -168,7 +168,7 @@
       common /climat_vbclmzon/vbclmzon
       common /climat_uclmzon/uclmzon
       common /climat_vclmzon/vclmzon
-# ifdef TRANSPORT
+# ifdef TRACERS
       real tzon(GLOBAL_1D_ETA,N,NT)
       common /climat_tzon/tzon
       real tclmzon(GLOBAL_1D_ETA,N,NT)

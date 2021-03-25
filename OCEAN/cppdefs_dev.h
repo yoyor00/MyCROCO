@@ -925,7 +925,7 @@
 */
 #ifndef SOLVE3D                    
 # undef AVERAGES_K
-# undef TRANSPORT
+# undef TRACERS
 # undef TEMPERATURE
 # undef SALINITY
 # undef NONLIN_EOS
@@ -975,14 +975,17 @@
 # undef BIOLOGY
 #endif
 
-#if !defined KEY_TRANSPORT /*si on n'a pas de clef KEY_TRANSPORT  */
-#define TRANSPORT
+#if !defined NO_TRACER /* then the user implicitly wants to calculate tracers */
+#define TRACERS
+#endif
+
+#if !defined NO_TEMPERATURE /* then the user implicitly wants to calculate temperature */
 #define TEMPERATURE
 #endif
    
 
 #if defined SALINITY || defined TEMPERATURE || \
 	defined PASSIVE_TRACER || defined SUBSTANCE
-# define TRANSPORT
+# define TRACERS
 #endif
 

@@ -413,7 +413,7 @@
 !
 ! Tracer variables.
 !
-#ifdef TRANSPORT 
+#ifdef TRACERS 
       do itrc=1,NT
         got_tini(itrc)=.true.
         lvar=lenstr(vname(1,indxV+itrc))
@@ -434,7 +434,7 @@
           got_tini(itrc)=.false.
         endif
       enddo
-#endif /* TRANSPORT */
+#endif /* TRACERS */
 
 # ifdef SEDIMENT
 !

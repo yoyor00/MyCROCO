@@ -177,7 +177,7 @@
 !
 ! Tracer variables.
 !
-#  ifdef TRANSPORT
+#  ifdef TRACERS
       do itrc=1,NT
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)

@@ -388,7 +388,7 @@
 !
 ! Tracer variables.
 !
-#if defined TRANSPORT
+#if defined TRACERS
         do itrc=1,NT
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
@@ -411,7 +411,7 @@
 
           
         enddo
-#endif /* TRANSPORT */
+#endif /* TRACERS */
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -769,7 +769,7 @@
 !
 ! Tracer variables.
 !
-#if defined TRANSPORT
+#if defined TRACERS
         do itrc=1,NT
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
@@ -780,7 +780,7 @@
             goto 99                                       !--> ERROR
           endif
         enddo 
-#endif /* TRANSPORT */
+#endif /* TRACERS */
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT

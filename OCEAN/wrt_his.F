@@ -560,7 +560,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     
 !     Tracer variables.
 !     
-#ifdef TRANSPORT
+#ifdef TRACERS
       do itrc=1,NT
          if (wrthis(indxV+itrc)) then
             workr=t(:,:,:,nstp,itrc)
@@ -582,7 +582,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
          endif   
       enddo
-#endif /* TRANSPORT */
+#endif /* TRACERS */
 !     
 !     Density anomaly.
 !     

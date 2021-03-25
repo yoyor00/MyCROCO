@@ -218,7 +218,7 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 !     
 !     Tracer variables.
 !     
-#  ifdef TRANSPORT
+#  ifdef TRACERS
       do itrc=1,NT
          if (wrtavg(indxV+itrc)) then
             workr=t_avg(:,:,:,itrc)

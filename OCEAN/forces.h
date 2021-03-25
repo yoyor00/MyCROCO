@@ -114,10 +114,10 @@
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
-# if defined TRANSPORT
+# if defined TRACERS
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 # if defined BULK_FLUX && defined TEMPERATURE
       real shflx_rsw(GLOBAL_2D_ARRAY)
       common /frc_shflx_rsw/shflx_rsw
@@ -134,7 +134,7 @@
       real dT_skin(GLOBAL_2D_ARRAY)
       common /frc_dT_skin/ dT_skin
 # endif/* SST_SKIN && TEMPERATURE */
-# if defined TRANSPORT
+# if defined TRACERS
 #  if !defined ANA_STFLUX || !defined ANA_SSFLUX
 !
 !  stflxg   Two-time level surface tracer flux grided data.
@@ -153,7 +153,7 @@
       common /stfdat3/  stf_tid, stf_id
 #   undef STFLUX_DATA
 # endif /* !ANA_STFLUX || !ANA_SSFLUX */
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 !
 !  BOTTOM TRACER FLUXES:
 !--------------------------------------------------------------------
@@ -161,7 +161,7 @@
 !         horizontal RHO-points. Physical dimensions [degC m/s] -
 !         temperature; [PSU m/s] - salinity.
 !
-# if defined TRANSPORT
+# if defined TRACERS
       real btflx(GLOBAL_2D_ARRAY,NT)
       common /forces_btflx/btflx
 # ifndef ANA_BTFLUX
@@ -185,7 +185,7 @@
 
 #   undef BTFLUX_DATA
 #  endif /* !ANA_BTFLUX */
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 
 # if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
       real dqdt(GLOBAL_2D_ARRAY)

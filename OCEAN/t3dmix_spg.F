@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined SPONGE_DIF2 && defined TRANSPORT
+#if defined SOLVE3D && defined SPONGE_DIF2 && defined TRACERS
 !
 # ifdef TCLIMATOLOGY
 #  define CLIMAT_TS_SPONGE

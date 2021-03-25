@@ -151,7 +151,7 @@
       real  theta_s,   theta_b,   Tcline,  hc
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
-# ifdef TRANSPORT
+# ifdef TRACERS
       real  tnu2(NT),tnu4(NT)
 # endif
 # ifndef NONLIN_EOS
@@ -237,7 +237,7 @@
 #endif
 
       logical ldefhis
-#if defined SOLVE3D && defined TRANSPORT
+#if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
 #endif
 #ifdef SEDIMENT
@@ -309,7 +309,7 @@
      &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
      &           , rx0,       rx1
-# ifdef TRANSPORT
+# ifdef TRACERS
      &           ,       tnu2,    tnu4
 # endif
 # ifndef NONLIN_EOS
@@ -344,7 +344,7 @@
 #ifdef STATIONS
      &                      , nsta, nrpfsta
 #endif
-#if defined SOLVE3D && defined TRANSPORT
+#if defined SOLVE3D && defined TRACERS
      &                      , got_tini 
 #endif
 #ifdef SEDIMENT
@@ -428,7 +428,7 @@
 # if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
       common /scalars_akv/ Akv_bak
-#  ifdef TRANSPORT
+#  ifdef TRACERS
       real Akt_bak(NT)
       common /scalars_akt/ Akt_bak 
 #  endif
@@ -501,7 +501,7 @@
 #ifdef OBC_VOLCONS
      &        , bc_flux, ubar_xs
 #endif
-#if defined BIOLOGY && defined TRANSPORT
+#if defined BIOLOGY && defined TRACERS
      &        , global_sum(0:2*NT+1)
 #endif
 #ifdef RESET_RHO0

@@ -4594,7 +4594,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
 # endif /* PISCES */
 #endif /* DIAGNOSTICS_BIO */
 
-#if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRANSPORT
+#if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
 !     
 !     flag to read in climatology for tracer type variables.
 !     

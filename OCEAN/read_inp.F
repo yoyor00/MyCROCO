@@ -201,7 +201,7 @@
       wrtavg(indxTime)=.false.
 #endif
 
-#ifdef TRANSPORT
+#ifdef TRACERS
 # ifdef DIAGNOSTICS_TS
       wrtdia3D(NT+1)=.false.
 # ifdef AVERAGES
@@ -233,7 +233,7 @@
       wrtdiags_ek_avg(3)=.false.
 #endif
 #endif
-#if defined DIAGNOSTICS_PV && defined TRANSPORT
+#if defined DIAGNOSTICS_PV && defined TRACERS
       wrtdiags_pv(NT+1)=.false.
 #ifdef AVERAGES
       wrtdiags_pv_avg(NT+1)=.false.
@@ -1080,7 +1080,7 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
-# ifdef TRANSPORT
+# ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT) 
 # endif
 #endif
@@ -1098,7 +1098,7 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
-# ifdef TRANSPORT
+# ifdef TRACERS
         do itrc=1,NT
           if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
@@ -1391,7 +1391,7 @@ c        close(testunit)
      &                                    ,  wrtavg(indxVb)
 # ifdef SOLVE3D
      &                    ,  wrtavg(indxU),  wrtavg(indxV)
-# ifdef TRANSPORT
+# ifdef TRACERS
      &                    , (wrtavg(itrc), itrc=indxV+1,indxV+NT)
 #  endif
 # endif
@@ -1409,7 +1409,7 @@ c        close(testunit)
 # ifdef SOLVE3D
      &  , wrtavg(indxU),  'write U    ', '3D U-momentum component.'
      &  , wrtavg(indxV),  'write V    ', '3D V-momentum component.'
-#  ifdef TRANSPORT
+#  ifdef TRACERS
          do itrc=1,NT
           if (wrtavg(indxV+itrc)) wrtavg(indxTime)=.true.
           MPI_master_only write(stdout,
@@ -1712,7 +1712,7 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'diag3D_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef TRANSPORT
+# ifdef TRACERS
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
@@ -1721,11 +1721,11 @@ c        close(testunit)
      &        'write Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
-# endif  /* TRANSPORT */
+# endif  /* TRACERS */
 # ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         read(input,*,err=95)  (wrtdia2D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia2D(itrc)) wrtdia2D(NT+1)=.true.
@@ -1734,7 +1734,7 @@ c        close(testunit)
      &        'write Hbl Integrated Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
-#  endif  /* TRANSPORT */
+#  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
 # ifdef AVERAGES
@@ -1743,7 +1743,7 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'diag3D_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
@@ -1752,12 +1752,12 @@ c        close(testunit)
      &        'write Avg Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
-#  endif  /* TRANSPORT */
+#  endif  /* TRACERS */
 !
 #  ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#   ifdef TRANSPORT
+#   ifdef TRACERS
         read(input,*,err=95) (wrtdia2D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia2D_avg(itrc)) wrtdia2D_avg(NT+1)=.true.
@@ -1766,7 +1766,7 @@ c        close(testunit)
      &        'write Avg Hbl Integrated  Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
-#  endif  /* TRANSPORT */
+#  endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */
 
@@ -1876,7 +1876,7 @@ c        close(testunit)
 !!          wrtdiags_pv=.true.
       elseif (keyword(1:kwlen).eq.'diags_pv_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef TRANSPORT
+# ifdef TRACERS
         read(input,*,err=95)  (wrtdiags_pv(itrc), itrc=1,NT)
          do itrc=1,NT
            if (wrtdiags_pv(itrc)) wrtdiags_pv(3)=.true.
@@ -1884,13 +1884,13 @@ c        close(testunit)
      &         wrtdiags_pv(itrc),
      &         'write potential vorticity terms '
         enddo
-# endif /* TRANSPORT  */
+# endif /* TRACERS  */
 
 # ifdef AVERAGES
 !!         wrtdiags_pv_avg=.true.
       elseif (keyword(1:kwlen).eq.'diags_pv_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         read(input,*,err=95) (wrtdiags_pv_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdiags_pv_avg(itrc)) wrtdiags_pv_avg(3)=.true.
@@ -1898,7 +1898,7 @@ c        close(testunit)
      &        wrtdiags_pv_avg(itrc),
      &         'write potential vorticity terms '
        enddo
-#  endif /* TRANSPORT  */
+#  endif /* TRACERS  */
 # endif /* AVERAGES  */
 #endif /*DIAGNOSTICS_PV */
 
@@ -2142,14 +2142,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'tracer_diff2') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         read(input,*,err=95) (tnu2(itrc),itrc=1,NT)
         do itrc=1,NT
           MPI_master_only write(stdout,7) tnu2(itrc), itrc, itrc
    7      format(1pe10.3,'  tnu2(',i2,')  Horizontal Laplacian '
      &     ,'mixing coefficient (m2/s)',/,32x,'for tracer ',i2,'.')
         enddo
-#  endif /* TRANSPORT */
+#  endif /* TRACERS */
 # endif
 # ifdef TS_DIF4
 !
@@ -2157,14 +2157,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'tracer_diff4') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         read(input,*,err=95) (tnu4(itrc),itrc=1,NT)
         do itrc=1,NT
           MPI_master_only write(stdout,8) tnu4(itrc), itrc, itrc
    8      format(1pe10.3,'  tnu4(',i2,')  Horizontal biharmonic'
      &    ,' mixing coefficient [m4/s]',/,32x,'for tracer ',i2,'.')
         enddo
-#  endif /* TRANSPORT */
+#  endif /* TRACERS */
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
@@ -2174,13 +2174,13 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'vertical_mixing') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRANSPORT
+#  ifdef TRACERS
          read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
-#  endif /* TRANSPORT */
+#  endif /* TRACERS */
         MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &           '(1pe10.3,2x,A,I2,A,1x,A/32x,A,I2,A)')
@@ -2188,7 +2188,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &           'Background vertical mixing coefficient, m2/s,',
      &                                  'for tracer ', itrc, '.' 
         enddo
-#  endif /* TRANSPORT */
+#  endif /* TRACERS */
 # endif
 # ifdef BODYFORCE
       elseif (keyword(1:kwlen).eq.'bodyforce') then
@@ -2579,9 +2579,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  else
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
      &                                     (Lsrc(is,itrc), itrc=1,30),
-#   ifdef TRANSPORT
+#   ifdef TRACERS
      &                                     (Tsrc0(is,itrc), itrc=1,NT)
-#   endif /* TRANSPORT */
+#   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */ 
 
         MPI_master_only write(stdout,'(3(/6x,i6,2x,A),(/6x,F6.0,2x,A))')
@@ -2600,23 +2600,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           Jsrc_mpi(is,mynode)=-1
         endif
 #  endif
-#  ifdef TRANSPORT
+#  ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &         '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
      &         Lsrc(is,itrc), 'write Lsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
         enddo
-#  endif /* TRANSPORT */
+#  endif /* TRACERS */
 #  ifndef PSOURCE_NCFILE_TS
-#   ifdef TRANSPORT
+#   ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &         '(6x,1pe10.3,2x,A,I2,A,2x,A,I2,A)')
      &         Tsrc0(is,itrc), 'write Tsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
         enddo
-#   endif /* TRANSPORT */
+#   endif /* TRACERS */
 #  endif
       enddo
 # else   
@@ -2629,7 +2629,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
           read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
-#  if defined SOLVE3D &&  defined TRANSPORT
+#  if defined SOLVE3D &&  defined TRACERS
      &                                    ,(Lsrc(is,itrc), itrc=1,NT)
      &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
 #  endif
@@ -2651,7 +2651,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
            Jsrc_mpi(is,mynode)=-1
           endif
 #  endif
-#  if defined SOLVE3D && defined TRANSPORT
+#  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT
             MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')

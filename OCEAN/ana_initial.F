@@ -473,7 +473,7 @@
 !
       if (nrrec.eq.0) then
 !
-#  if defined TRANSPORT
+#  if defined TRACERS
 #  ifdef BASIN
         cff1=(44.690/39.382)**2
         cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
@@ -1087,7 +1087,7 @@ C$OMP BARRIER
         enddo
 #  endif
 !
-#  endif /*TRANSPORT */        
+#  endif /*TRACERS */        
       endif   !  nrrec.eq.0.
 !
 # endif /*SOLVE3D */
@@ -1566,7 +1566,7 @@ C$OMP BARRIER
 #  endif /* SOLVE3D */
 # endif /* ANA_INITIAL */
 # ifdef SOLVE3D
-# ifdef TRANSPORT
+# ifdef TRACERS
       do itrc=1,NT
         if (.not.got_tini(itrc)) then
 #  ifdef THREE_GHOST_POINTS_TS
@@ -1582,7 +1582,7 @@ C$OMP BARRIER
 #  endif
         endif
       enddo
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 # endif
 #endif
 #undef IR_RANGE

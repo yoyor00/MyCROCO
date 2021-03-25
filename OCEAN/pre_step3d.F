@@ -247,7 +247,7 @@
 !
 !======================================================================
 !
-# ifdef TRANSPORT
+# ifdef TRACERS
       do itrc=1,NT
         do k=1,N
 
@@ -364,7 +364,7 @@
 
         enddo   ! <-- k
       enddo       ! <-- itrc
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
@@ -434,7 +434,7 @@
 # endif
 
       do j=Jstr,Jend
-# ifdef TRANSPORT
+# ifdef TRACERS
 
         do i=Istr,Iend
 # ifndef VADV_ADAPT_IMP 
@@ -445,9 +445,9 @@
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
 
         enddo
-#  endif /* TRANSPORT */
+#  endif /* TRACERS */
 
-# if defined TRANSPORT
+# if defined TRACERS
         do itrc=1,NT
 !
 !----------------------------------------------------------------------
@@ -499,7 +499,7 @@
 # endif          
 !
         enddo   !<-- itrc  !--> discard DC
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 !
 !======================================================================
 !
@@ -885,7 +885,7 @@
 ! Set PHYSICAL lateral boundary conditions for tracers.
 !======================================================================
 !
-# if defined TRANSPORT
+# if defined TRACERS
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI

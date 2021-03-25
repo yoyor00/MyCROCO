@@ -650,7 +650,7 @@
 !
 ! Tracer variables.
 !
-# ifdef TRANSPORT
+# ifdef TRACERS
         do itrc=1,NT
           if (wrt(indxV+itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
@@ -2315,7 +2315,7 @@
 !
 ! Tracer variables.
 !
-# ifdef TRANSPORT
+# ifdef TRACERS
         do itrc=1,NT
           if (wrt(indxV+itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))

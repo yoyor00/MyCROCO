@@ -99,7 +99,7 @@
 !                   subroutine ana_btflux
 !======================================================================
 !
-#if defined SOLVE3D && defined TRANSPORT
+#if defined SOLVE3D && defined TRACERS
 # if defined ANA_BTFLUX || defined ANA_BSFLUX || defined ANA_BPFLUX 
       subroutine ana_btflux_tile (Istr,Iend,Jstr,Jend, itrc)
 !
@@ -191,7 +191,7 @@
       return
       end
 # endif /* ANA_BTFLUX */
-#endif /* SOLVE3D && TRANSPORT */
+#endif /* SOLVE3D && TRACERS */
 !
 !======================================================================
 !                   subroutine ana_moving_bathy
@@ -822,7 +822,7 @@ C$    integer  trd, omp_get_thread_num
 c
 # include "compute_auxiliary_bounds.h"
 c
-# ifdef TRANSPORT
+# ifdef TRACERS
 # ifdef TEMPERATURE
       
       if (itrc.eq.itemp) then
@@ -878,7 +878,7 @@ c
 # if defined SALINITY || defined TEMPERATURE
       endif
 # endif /* SALINITY || TEMPERATURE*/
-# endif /* TRANSPORT */
+# endif /* TRACERS */
       return
       end
 #endif /* ANA_STFLUX || ANA_SSFLUX */
@@ -2024,7 +2024,7 @@ C$    integer  trd, omp_get_thread_num
 #   endif          
 #  endif
 
-# if defined TRANSPORT
+# if defined TRACERS
           do itrc=1,NT
             Tsrc(is,k,itrc)=Tsrc0(is,itrc)
           enddo
@@ -2418,7 +2418,7 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef W_FRC_BRY
               wbry_west(j,k)=wz(0,j,k,1)
 #    endif
-#    if defined T_FRC_BRY && defined TRANSPORT
+#    if defined T_FRC_BRY && defined TRACERS
               do itrc=1,NT
                 tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
               enddo
@@ -2475,7 +2475,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
-#   if defined  T_FRC_BRY && defined TRANSPORT
+#   if defined  T_FRC_BRY && defined TRACERS
               do itrc=1,NT
                 tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
               enddo
@@ -2531,7 +2531,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_south(i,k)=wz(i,0,k,1)
 #   endif
-#   if defined  T_FRC_BRY && defined TRANSPORT
+#   if defined  T_FRC_BRY && defined TRACERS
               do itrc=1,NT
                 tbry_south(i,k,itrc)=t(i,0,k,1,itrc)
               enddo
@@ -2587,7 +2587,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_north(i,k)=wz(i,Jend+1,k,1)
 #   endif
-#   if defined  T_FRC_BRY && defined TRANSPORT
+#   if defined  T_FRC_BRY && defined TRACERS
               do itrc=1,NT
                 tbry_north(i,k,itrc)=t(i,Jend+1,k,1,itrc)
               enddo

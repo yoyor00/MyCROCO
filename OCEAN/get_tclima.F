@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRANSPORT
+#if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
 
                              ! Read tracer(s) climatology
       subroutine get_tclima  ! fields from climatology file

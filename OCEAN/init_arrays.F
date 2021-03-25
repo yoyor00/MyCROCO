@@ -323,7 +323,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-# ifdef TRANSPORT      
+# ifdef TRACERS      
       do itrc=1,NT
         got_tini(itrc)=.false.
         do k=1,N
@@ -338,7 +338,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-# endif /* TRANSPORT */
+# endif /* TRACERS */
 
 # if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
       do itrc=1,NT
@@ -380,7 +380,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#  if defined DIAGNOSTICS_TS_MLD  && defined TRANSPORT
+#  if defined DIAGNOSTICS_TS_MLD  && defined TRACERS
       do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -790,7 +790,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 #ifdef SOLVE3D
-# if defined TRANSPORT
+# if defined TRACERS
       do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -810,7 +810,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#endif /* TRANSPORT */
+#endif /* TRACERS */
       do j=JstrR,JendR
         do i=IstrR,IendR
 # if defined TEMPERATURE && defined QCORRECTION
@@ -960,7 +960,7 @@ C$    integer omp_get_thread_num
       enddo
 #endif
 #ifdef SOLVE3D
-# if defined TNUDGING && defined TCLIMATOLOGY && defined TRANSPORT 
+# if defined TNUDGING && defined TCLIMATOLOGY && defined TRACERS 
 
       do itrc=1,NT
         do k=1,N
@@ -972,7 +972,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# if (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)) && defined TRANSPORT 
+# if (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)) && defined TRACERS 
 
       do itrc=1,NT
         do k=1,N
@@ -984,7 +984,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRANSPORT 
+# if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS 
       do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
@@ -1041,7 +1041,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 #endif
-#if (defined T_FRC_BRY && defined TRANSPORT) || defined M2_FRC_BRY || \
+#if (defined T_FRC_BRY && defined TRACERS) || defined M2_FRC_BRY || \
       defined M3_FRC_BRY || defined Z_FRC_BRY
 !
 ! Initialize boundary arrays (see "boundary.h").
@@ -1059,7 +1059,7 @@ C$    integer omp_get_thread_num
           vbarbry_west(j)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRANSPORT))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
 
         do k=1,N
           do j=JstrR,JendR
@@ -1067,7 +1067,7 @@ C$    integer omp_get_thread_num
             ubry_west(j,k)=init
             vbry_west(j,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRANSPORT 
+#   if defined T_FRC_BRY && defined TRACERS 
             do itrc=1,NT
               tbry_west(j,k,itrc)=init
             enddo
@@ -1091,14 +1091,14 @@ C$    integer omp_get_thread_num
           vbarbry_east(j)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRANSPORT))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
         do k=1,N
           do j=JstrR,JendR
 #   ifdef M3_FRC_BRY
             ubry_east(j,k)=init
             vbry_east(j,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRANSPORT
+#   if defined T_FRC_BRY && defined TRACERS
             do itrc=1,NT
               tbry_east(j,k,itrc)=init
             enddo
@@ -1122,14 +1122,14 @@ C$    integer omp_get_thread_num
           vbarbry_south(i)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRANSPORT))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
         do k=1,N
           do i=IstrR,IendR
 #   ifdef M3_FRC_BRY
             ubry_south(i,k)=init
             vbry_south(i,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRANSPORT
+#   if defined T_FRC_BRY && defined TRACERS
             do itrc=1,NT
               tbry_south(i,k,itrc)=init
             enddo
@@ -1153,14 +1153,14 @@ C$    integer omp_get_thread_num
           vbarbry_north(i)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRANSPORT))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
         do k=1,N
           do i=IstrR,IendR
 #   ifdef M3_FRC_BRY
             ubry_north(i,k)=init
             vbry_north(i,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRANSPORT
+#   if defined T_FRC_BRY && defined TRACERS
             do itrc=1,NT
               tbry_north(i,k,itrc)=init
             enddo
@@ -1228,7 +1228,7 @@ C$    integer omp_get_thread_num
         enddo
 #endif
 #if defined TS_DIF2 || defined SPONGE_DIF2
-# if defined TRANSPORT        
+# if defined TRACERS        
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -1244,7 +1244,7 @@ C$    integer omp_get_thread_num
 # endif          
 #endif
 #ifdef TS_DIF4
-# if defined TRANSPORT          
+# if defined TRACERS          
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR

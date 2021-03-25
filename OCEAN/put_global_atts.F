@@ -386,7 +386,7 @@
      &                                             'meter4 second-1')
 #endif
 #ifdef SOLVE3D
-# ifdef TRANSPORT
+# ifdef TRACERS
 #  ifdef TS_DIF2
       ierr=nf_put_att_FTYPE(ncid,nf_global,'tnu2',nf_ftype, 1,tnu2)
       ierr=nf_put_att_text (ncid,nf_global,'tnu2_expl',40,

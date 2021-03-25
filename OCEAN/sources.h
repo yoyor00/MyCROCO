@@ -30,7 +30,7 @@
       real Qshape(Msrc,N)
       common /source_Qshape/ Qshape
 
-# if defined TRANSPORT
+# if defined TRACERS
       real Tsrc(Msrc,N,NT)
       common /source_Tsrc/ Tsrc
 
@@ -56,7 +56,7 @@
       integer Jsrc(Msrc)
       common /source_Jsrc/ Jsrc
 
-# if defined TRANSPORT
+# if defined TRACERS
       logical Lsrc(Msrc,NT)
       common /source_Lsrc/ Lsrc
 # endif
@@ -78,7 +78,7 @@
       real qbardir(Msrc)
       common /source_qbardir/ qbardir
 
-# if defined PSOURCE_NCFILE_TS && defined TRANSPORT
+# if defined PSOURCE_NCFILE_TS && defined TRACERS
       real tsrcg(Msrc,2,NT)
       common /tsrcdat_tsrcg/tsrcg
       real    tsrc_time(2,NT)

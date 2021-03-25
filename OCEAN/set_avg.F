@@ -235,7 +235,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-# ifdef TRANSPORT
+# ifdef TRACERS
         do itrc=1,NT
           if (wrtavg(indxV+itrc)) then
             do k=1,N

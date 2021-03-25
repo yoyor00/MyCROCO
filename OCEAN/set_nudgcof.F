@@ -148,7 +148,7 @@
 !
 !  Apply nudging to other tracers and vertical levels
 !
-# if defined TNUDGING && defined TRANSPORT
+# if defined TNUDGING && defined TRACERS
       do itrc=1,NT       ! includes BIOLOGY variables
         do k=1,N
           do j=JstrR,JendR
@@ -171,7 +171,7 @@
 ! Interior nudging
 !
 # ifdef ROBUST_DIAG
-#  if defined TNUDGING  && defined TRANSPORT
+#  if defined TNUDGING  && defined TRACERS
       do k=1,N 
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -235,7 +235,7 @@
       enddo
 #  endif /* UV_VIS2 || UV_VIS4 || SPONGE_VIS2 */
 
-#  if (defined TS_DIF2 || defined TS_DIF4 || defined SPONGE_DIF2) && defined TRANSPORT
+#  if (defined TS_DIF2 || defined TS_DIF4 || defined SPONGE_DIF2) && defined TRACERS
 !
 !  Add Diffusivity for all tracers
 !
