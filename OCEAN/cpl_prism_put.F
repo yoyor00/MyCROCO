@@ -124,7 +124,7 @@
          endif
          
          if (ssnd_clname(i)=='SRMVOCE'//clevel) then
-           !
+!
 !     Proceed rotation from xi/eta croco_grid coordinate
 !     to East - North coordinate
 !
