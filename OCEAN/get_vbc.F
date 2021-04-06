@@ -473,14 +473,13 @@
      &                 SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
           enddo
         enddo
-      elseif (rdrg2.gt.0.) then
+      elseif (maxval(rdrg2).gt.0.) then
         do j=JstrV,Jend
           do i=Istr,Iend
-
             cff=0.25*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs)+v(i-1,j,1,nrhs)+
      &                                            v(i-1,j+1,1,nrhs))
-            bustr(i,j)=u(i,j,1,nrhs)*(rdrg2*sqrt(
-     &                         u(i,j,1,nrhs)*u(i,j,1,nrhs)+cff*cff
+            bustr(i,j)=u(i,j,1,nrhs)*(0.5*(rdrg2(i,j)+rdrg2(i-1,j))
+     &                 *sqrt( u(i,j,1,nrhs)*u(i,j,1,nrhs)+cff*cff
      &                                                            ))
           enddo
         enddo
@@ -488,8 +487,8 @@
           do i=IstrU,Iend
             cff=0.25*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs)+u(i,j-1,1,nrhs)+
      &                                            u(i+1,j-1,1,nrhs))
-            bvstr(i,j)=v(i,j,1,nrhs)*(rdrg2*sqrt(
-     &                         cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs)
+            bvstr(i,j)=v(i,j,1,nrhs)*(0.5*(rdrg2(i,j)+rdrg2(i,j-1))
+     &                 *sqrt( cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs)
      &                                                            ))
           enddo
         enddo

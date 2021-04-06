@@ -97,7 +97,7 @@
 ! Scoef    Saline contraction coefficient in linear EOS;
 !
 ! rdrg     Linear bottom drag coefficient.
-! rdrg2    Quadratic bottom drag coefficient.
+! rdrg2t   Quadratic bottom drag coefficient.
 ! Cdb_max  Maximum bottom drag coefficient allowed.
 ! Cdb_min  Minimum bottom drag coefficient to avoid the 
 !                law-of-the-wall to extend indefinitely.
@@ -145,7 +145,7 @@
 !                        the ripple var. is set in ana_bsedim (ifndef SEDIMENT)
 !
       real time_avg, time2_avg, rho0
-     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
+     &               , rdrg, rdrg2t, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
@@ -302,7 +302,7 @@
 #endif
 
       common /scalars_main/
-     &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
+     &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2t
      &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
 #ifdef SOLVE3D

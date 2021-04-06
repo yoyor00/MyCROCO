@@ -2119,11 +2119,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'bottom_drag') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
+        read(input,*,err=95) rdrg, rdrg2t, Zobt, Cdb_min, Cdb_max
         MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
-     &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
-     &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &      Zobt, 'Zobt      Bottom roughness for logarithmic law (m).',
+     &     rdrg,  'rdrg    Linear bottom drag coefficient (m/si).',
+     &    rdrg2t, 'rdrg2t  Quadratic bottom drag coefficient.',
+     &      Zobt, 'Zobt    Bottom roughness for logarithmic law (m).',
      &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
      &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
 !

@@ -171,7 +171,9 @@
       common /reduc_v/vreduc
 #endif
       real zob(GLOBAL_2D_ARRAY)
-      common /Z0B_VAR/zob
+      common /z0b_var/zob
+      real rdrg2(GLOBAL_2D_ARRAY)
+      common /rdrg2_var/rdrg2
 
 #if defined UV_COR_NT || defined CROCO_QH
       real e(GLOBAL_2D_ARRAY)

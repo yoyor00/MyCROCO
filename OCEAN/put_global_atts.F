@@ -437,8 +437,8 @@
      &                                                       Cdb_min)
         ierr=nf_put_att_text (ncid,nf_global,'Cdb_expl',37,
      &                         'Range of quadratic drag coefficient')
-      elseif (rdrg2.gt.0.) then
-        ierr=nf_put_att_FTYPE(ncid,nf_global,'rdrg2',nf_ftype,1,rdrg2)
+      elseif (maxval(rdrg2).gt.0.) then
+        ierr=nf_put_att_FTYPE(ncid,nf_global,'rdrg2',nf_ftype,1,maxval(rdrg2))
         ierr=nf_put_att_text (ncid,nf_global,'rdrg2_expl',26,
      &                                  'quadratic drag coefficient')
         ierr=nf_put_att_text (ncid,nf_global,'rdrg2_units',14,

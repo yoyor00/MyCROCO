@@ -103,8 +103,8 @@
       if (Zobt.ne.0.) then
         cff=vonKar/log(max(Hz0,Zobt+1.e-4)/Zobt)
         r_D=umag*MIN(Cdb_max,MAX(Cdb_min,cff*cff))
-      else if (rdrg2.gt.0.) then
-        r_D=rdrg+rdrg2*umag
+      else if (rdrg2t.gt.0.) then
+        r_D=rdrg+rdrg2t*umag
       else if (rdrg.gt.0.0) then
         r_D=rdrg
       endif

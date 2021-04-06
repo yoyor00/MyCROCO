@@ -1083,13 +1083,14 @@ C$OMP END MASTER
           enddo
         enddo
 #  else
-      if (rdrg2.gt.0.) then
+      if (maxval(rdrg2).gt.0.) then
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=0.25*( vbar(i  ,j,kstp)+vbar(i  ,j+1,kstp)
      &                +vbar(i-1,j,kstp)+vbar(i-1,j+1,kstp))
- 
-            rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+rdrg2
+            cff1=0.5*(rdrg2(i,j)+rdrg2(i-1,j))
+
+            rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+cff1
      &              *sqrt(ubar(i,j,kstp)*ubar(i,j,kstp)+cff*cff)
      &                               )*om_u(i,j)*on_u(i,j)
           enddo
@@ -1098,8 +1099,9 @@ C$OMP END MASTER
           do i=Istr,Iend
             cff=0.25*( ubar(i,j  ,kstp)+ubar(i+1,j  ,kstp)
      &                +ubar(i,j-1,kstp)+ubar(i+1,j-1,kstp))
+            cff1=0.5*(rdrg2(i,j)+rdrg2(i,j-1))
  
-            rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+rdrg2
+            rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+cff1
      &              *sqrt(cff*cff+vbar(i,j,kstp)*vbar(i,j,kstp))
      &                               )*om_v(i,j)*on_v(i,j)
           enddo
@@ -1475,7 +1477,7 @@ C$OMP END MASTER
      &                   SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
             enddo
           enddo
-        elseif (rdrg2.gt.0.) then
+        elseif (maxval(rdrg2).gt.0.) then
           do j=JstrV-1,Jend+1
             do i=IstrU-1,Iend+1
               UBOT(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))
@@ -1486,7 +1488,8 @@ C$OMP END MASTER
             do i=Istr,Iend
               cff=0.25*(VBOT(i  ,j)+VBOT(i  ,j+1)+
      &                  VBOT(i-1,j)+VBOT(i-1,j+1))
-              bustr(i,j)=rdrg2*UBOT(i,j)*
+              cff1=0.5*(rdrg2(i,j)+rdrg2(i-1,j))
+              bustr(i,j)=cff1*UBOT(i,j)*
      &                   SQRT(UBOT(i,j)*UBOT(i,j)+cff*cff)
             enddo
           enddo
@@ -1494,7 +1497,8 @@ C$OMP END MASTER
             do i=IstrU,Iend
               cff=0.25*(UBOT(i,j  )+UBOT(i+1,j  )+
      &                  UBOT(i,j-1)+UBOT(i+1,j-1))
-              bvstr(i,j)=rdrg2*VBOT(i,j)*
+              cff1=0.5*(rdrg2(i,j)+rdrg2(i,j-1))
+              bvstr(i,j)=cff1*VBOT(i,j)*
      &                    SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
             enddo
           enddo

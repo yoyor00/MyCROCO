@@ -16,7 +16,7 @@
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
-      real zob_temp
+      real cff
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -321,33 +321,48 @@
       endif
       vreduc(:,:)=min(vreduc(:,:),1.0)
 # endif
-# ifdef Z0B_VAR
-      zob(:,:)=0.0
+# ifdef BDRAG_2D
+      zob(:,:)=zobt
+      rdrg2(:,:)=rdrg2t       
       ierr=nf_inq_varid (ncid, 'z0b', varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (zob(START_2D_ARRAY), ncid, varid, 0, v2dvar)
+        ierr=nf_fread (zob(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
           write(stdout,2) 'zob', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-      else
-        write(stdout,1) 'zob', grdname(1:lstr)
-        goto 99                                           !--> ERROR
-      endif
-      ! write(stdout,*)'zob',
-     !&  minval(zob),maxval(zob),minloc(zob),maxloc(zob)
-       zob(:,:)=max(zob(:,:),1e-7)
-       zob_temp=max(zob(:,:))
-#ifdef MPI
+        zob(:,:)=max(zob(:,:),1e-7)
+        cff=maxval(zob(:,:))
+# ifdef MPI
           if (NNODES.gt.1) then         ! Perform global max
-            call MPI_allreduce(zob_temp,zobt,1,
+            call MPI_allreduce(cff,zobt,1,
      &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
           endif
-# endif
+#  endif
+      else
+        ierr=nf_inq_varid (ncid, 'rdrg2', varid)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_fread (rdrg2(START_2D_ARRAY), ncid, varid, 0, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,2) 'rdrg2', grdname(1:lstr)
+            goto 99                                         !--> ERROR
+          endif         
+          cff=maxval(rdrg2(:,:))
+# ifdef MPI
+          if (NNODES.gt.1) then         ! Perform global max
+            call MPI_allreduce(cff,rdrg2t,1,
+     &              MPI_DOUBLE_PRECISION, MPI_MAX,MPI_COMM_WORLD,ierr)
+          endif
+#  endif
+        else        
+          write(stdout,1) 'z0b or rdrg2', grdname(1:lstr)
+          goto 99                                           !--> ERROR
+        endif 
+      endif
 # else 
-       zob(:,:)=zobt 
+      zob(:,:)=zobt
+      rdrg2(:,:)=rdrg2t 
 # endif
-
 
       ierr=nf_close(ncid)
       return                                      !--> NORMAL RETURN

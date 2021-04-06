@@ -1130,13 +1130,13 @@ C$OMP BARRIER
           enddo
         enddo
 #else
-      if (rdrg2.gt.0.) then
+      if (maxval(rdrg2).gt.0.) then
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=0.25*( vbar(i  ,j,kstp)+vbar(i  ,j+1,kstp)
      &                +vbar(i-1,j,kstp)+vbar(i-1,j+1,kstp))
- 
-            rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+rdrg2
+            cff1=0.5* (rdrg2(i,j)+rdrg2(i-1,j)) 
+            rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+cff1
      &              *sqrt(ubar(i,j,kstp)*ubar(i,j,kstp)+cff*cff)
      &                               )*om_u(i,j)*on_u(i,j)
           enddo
@@ -1145,8 +1145,8 @@ C$OMP BARRIER
           do i=Istr,Iend
             cff=0.25*( ubar(i,j  ,kstp)+ubar(i+1,j  ,kstp)
      &                +ubar(i,j-1,kstp)+ubar(i+1,j-1,kstp))
- 
-            rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+rdrg2
+            cff1=0.5* (rdrg2(i,j)+rdrg2(i,j-1))  
+            rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+cff1
      &              *sqrt(cff*cff+vbar(i,j,kstp)*vbar(i,j,kstp))
      &                               )*om_v(i,j)*on_v(i,j)
           enddo
