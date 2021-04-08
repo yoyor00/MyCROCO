@@ -88,14 +88,16 @@
       call get_bulk
 #   endif
 #  elif !defined ANA_STFLUX
+#   if defined TEMPERATURE
       call get_stflux (itemp)
+#   endif
 #  endif
 !
 !---------------------------------------------------------------
 ! Flux correction to surface net heat flux.
 !---------------------------------------------------------------
 !
-#  if defined QCORRECTION && !defined ANA_SST
+#  if defined QCORRECTION && !defined ANA_SST && defined TEMPERATURE
       call get_sst
 #  endif
 !
@@ -125,7 +127,7 @@
 !
 #  ifndef BULK_FLUX
 #   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-#    ifndef ANA_SRFLUX
+#    if !defined ANA_SRFLUX  && defined TEMPERATURE
       call get_srflux
 #    endif
 #   endif
@@ -244,6 +246,7 @@
 !  --- The Bulk routine is actually called from step.F ---
 !---------------------------------------------------------------
 !
+#  if defined TEMPERATURE
 #  ifdef BULK_FLUX
 #   ifdef ONLINE
       call set_bulk_tile_online (Istr,Iend,Jstr,Jend)
@@ -274,6 +277,7 @@
 #    endif
 #   endif
 #  endif /* BULK_FLUX */
+#  endif /* TEMPERATURE */
 !
 !---------------------------------------------------------------
 ! Simplest sea ice correction to T,S fluxes
@@ -296,7 +300,7 @@
 ! Flux correction to surface net heat flux.
 !---------------------------------------------------------------
 !
-#  ifdef QCORRECTION
+#  if defined QCORRECTION && defined TEMPERATURE
 #   ifdef ANA_SST
       call ana_sst_tile (Istr,Iend,Jstr,Jend)
 #   else
@@ -366,10 +370,12 @@
 ! Diurnal modulation of surface solar shortwave radiation flux
 !---------------------------------------------------------------
 !
+#  ifdef TEMPERATURE
 #  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #   ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 #   endif
+#  endif
 #  endif
 !
 !---------------------------------------------------------------
@@ -380,8 +386,10 @@
 #  ifdef WET_DRY
       do j=JstrR,JendR
         do i=IstrR,IendR
+#   ifdef TEMPERATURE
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
           srflx(i,j)=srflx(i,j)*rmask_wet(i,j)
+#   endif
 !          sustr(i,j)=sustr(i,j)*umask_wet(i,j)
 !          svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   ifdef SALINITY
@@ -393,17 +401,19 @@
 # endif /* SOLVE3D */
 #endif /* !OA_COUPLING */
 
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRACERS
 !
 !---------------------------------------------------------------
 !  Kinematic bottom temperature (heat) flux [degC m/s].
 !  (Analytical bottom heat flux is usually set to zero.)
 !---------------------------------------------------------------
 !
+# ifdef TEMPERATURE
 # ifdef ANA_BTFLUX
       call ana_btflux_tile (Istr,Iend,Jstr,Jend, itemp) 
 # else
       call set_btflux_tile (Istr,Iend,Jstr,Jend, itemp)
+# endif
 # endif
 !
 !---------------------------------------------------------------
@@ -612,22 +622,19 @@
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
+#  ifdef TEMPERATURE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
-
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      btflx(START_2D_ARRAY,itemp))
+#  endif
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                     stflx(START_2D_ARRAY,isalt))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                     btflx(START_2D_ARRAY,isalt))
 #  endif
-      
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                                      btflx(START_2D_ARRAY,itemp))
-
 # endif
 #endif
 #ifdef PSOURCE_NCFILE

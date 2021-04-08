@@ -251,8 +251,9 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+# ifdef TRACERS
         do itrc=1,NT
-          if (wrtavg(indxT+itrc-1)) then
+          if (wrtavg(indxV+itrc)) then
             do k=1,N
               do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -263,6 +264,7 @@ C$    integer omp_get_thread_num
             enddo
           endif
         enddo
+# endif    
         if (wrtavg(indxR)) then
           do k=1,N
             do j=JstrR,JendR
@@ -375,6 +377,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
+# ifdef TEMPERATURE
         if (wrtavg(indxShflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -392,8 +395,11 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+# endif
 #  endif
-#ifdef SALINITY
+
+
+# ifdef SALINITY
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -428,7 +434,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  ifdef BULK_FLUX
+#  if defined BULK_FLUX && defined TEMPERATURE
         if (wrtavg(indxShflx_rlw)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -454,7 +460,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-#  ifdef SST_SKIN
+#  if defined SST_SKIN && defined TEMPERATURE
         if (wrtavg(indxT)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -481,14 +487,18 @@ C$    integer omp_get_thread_num
           do k=1,N
             do j=Jstr,Jend
               do i=Istr,Iend
-                diff3d_avg(i,j,k)=cff*(cff1*diff3d_avg(i,j,k)+
+                diff3d_avg(i,j,k)=cff*(cff1*diff3d_avg(i,j,k)
 #   ifdef TS_DIF2
-     &                      diff2(i,j,itemp)
+#    ifdef TEMPERATURE
+     &                      +diff2(i,j,itemp)
+#    endif
 #    ifdef TS_DIF_SMAGO
      &                     +diff3d_r(i,j,k)
 #    endif
 #   elif defined TS_DIF4
-     &                      diff4(i,j,itemp)
+#    ifdef TEMPERATURE
+     &                     + diff4(i,j,itemp)
+#    endif
 #    ifdef TS_DIF_SMAGO
      &                     +diff3d_r(i,j,k)*om_r(i,j)*on_r(i,j)
 #    endif
@@ -511,6 +521,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#    ifdef TEMPERATURE
         if (wrtavg(indxAkt)) then
           do k=0,N
             do j=JstrR,JendR
@@ -521,6 +532,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+#   endif
 #   ifdef SALINITY
         if (wrtavg(indxAks)) then
           do k=0,N

@@ -31,7 +31,7 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-# ifdef USE_CALENDAR
+#ifdef USE_CALENDAR
       CHARACTER (len=19)    :: cdate,tool_sectodat
 #endif
 #ifdef FLOATS
@@ -69,7 +69,7 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
-# ifdef USE_CALENDAR
+#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
@@ -77,7 +77,7 @@
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if 
-# endif
+#endif
         if (ierr .ne. 0) goto 99
       endif
 !
@@ -157,7 +157,7 @@
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
 #endif
         ierr=nf_def_dim (ncid, 'time', nf_unlimited, timedim)
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#if defined OUTPUTS_SURFACE && ! defined XIOS
         ierr=nf_def_dim (ncid, 'auxil',    6,        auxil(1))
 #else
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
@@ -393,28 +393,28 @@
 !
 ! Tracer variables.
 !
+# if defined TRACERS
         do itrc=1,NT
-          lvar=lenstr(vname(1,indxT+itrc-1))
-          ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
+          lvar=lenstr(vname(1,indxV+itrc))
+          ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
-# ifdef NC4PAR
+#  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
-# endif
-          lvar=lenstr(vname(2,indxT+itrc-1))
+#  endif
+          lvar=lenstr(vname(2,indxV+itrc))
           ierr=nf_put_att_text (ncid, rstT(itrc), 'long_name',
-     &                     lvar,   vname(2,indxT+itrc-1)(1:lvar))
-          lvar=lenstr(vname(3,indxT+itrc-1))
+     &                     lvar,   vname(2,indxV+itrc)(1:lvar))
+          lvar=lenstr(vname(3,indxV+itrc))
           ierr=nf_put_att_text (ncid, rstT(itrc), 'units', lvar,
-     &         vname(3,indxT+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxT+itrc-1))
+     &         vname(3,indxV+itrc)(1:lvar))
+          lvar=lenstr(vname(4,indxV+itrc))
           ierr=nf_put_att_text (ncid, rstT(itrc), 'field', lvar,
-     &         vname(4,indxT+itrc-1)(1:lvar))
+     &         vname(4,indxV+itrc)(1:lvar))
 
-          call nf_add_attribute(ncid, rstT(itrc), indxT+itrc-1, 5, 
-     &         NF_DOUBLE,ierr)
-
-          
+          call nf_add_attribute(ncid, rstT(itrc), indxV+itrc, 5, 
+     &         NF_DOUBLE,ierr)          
         enddo
+# endif
         
 # if defined LMD_MIXING 
 !
@@ -464,8 +464,7 @@
         call nf_add_attribute(ncid, rstHbbl, indxHbbl, 5,
      &       NF_DOUBLE,ierr)
         
-#  endif /*  LMD_BKPP  */
- 
+#  endif /*  LMD_BKPP  */ 
 # endif /* LMD_MIXING */
 
 # if defined GLS_MIXING
@@ -535,7 +534,8 @@
         
         call nf_add_attribute(ncid, rstAkv, indxAkv, 5,
      &       NF_DOUBLE,ierr)
-        
+
+#  ifdef TEMPERATURE        
 !     
 ! Vertical diffusion coefficient for potential temperature.
 !     
@@ -543,9 +543,9 @@
         lvar=lenstr(vname(1,indxAkt))
         ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
      &       NF_DOUBLE, 4, w3dgrd, rstAkt)
-#  ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstAkt,nf_collective)
-#  endif
+#   endif
         lvar=lenstr(vname(2,indxAkt))
         ierr=nf_put_att_text (ncid, rstAkt, 'long_name',
      &       lvar,   vname(2,indxAkt)(1:lvar))
@@ -558,7 +558,8 @@
         
         call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
      &       NF_DOUBLE,ierr)
-        
+#  endif /* TEMPERATURE  */       
+
 #  ifdef SALINITY
 !
 ! Vertical diffusion coefficient for salinity.
@@ -582,12 +583,9 @@
 
           call nf_add_attribute(ncid, rstAks, indxAks, 5,
      &         NF_DOUBLE,ierr)
-
 #  endif /* SALINITY  */
-
 # endif /* GLS_MIXING */
           
-
 # if defined LMD_MIXING
 #  ifdef M3FAST
 !
@@ -633,7 +631,7 @@
         call nf_add_attribute(ncid, rstBvstr, indxBvstr, 5,
      &       NF_DOUBLE,ierr)
 #  endif /* M3FAST */
-# endif
+# endif /* LMD_MIXING */
 
 # ifdef EXACT_RESTART
 !
@@ -642,9 +640,9 @@
         lvar=lenstr(vname(1,indxrufrc))
         ierr=nf_def_var (ncid, vname(1,indxrufrc)(1:lvar),
      &                         NF_DOUBLE, 3, u2dgrd, rstrufrc)
-#ifdef NC4PAR
+#  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstrufrc,nf_collective)
-#endif
+#  endif
         lvar=lenstr(vname(2,indxrufrc))
         ierr=nf_put_att_text (ncid, rstrufrc, 'long_name', lvar,
      &                         vname(2,indxrufrc)(1:lvar))
@@ -662,9 +660,9 @@
         lvar=lenstr(vname(1,indxrvfrc))
         ierr=nf_def_var (ncid, vname(1,indxrvfrc)(1:lvar),
      &                         NF_DOUBLE, 3, v2dgrd, rstrvfrc)
-#ifdef NC4PAR
+#  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstrvfrc,nf_collective)
-#endif
+#  endif
         lvar=lenstr(vname(2,indxrvfrc))
         ierr=nf_put_att_text (ncid, rstrvfrc, 'long_name', lvar,
      &                         vname(2,indxrvfrc)(1:lvar))
@@ -678,16 +676,15 @@
      &                         indxrvfrc, 5, NF_DOUBLE, ierr)
 
 #  ifdef M3FAST
-
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
 !
         lvar=lenstr(vname(1,indxru_nbq))
         ierr=nf_def_var (ncid, vname(1,indxru_nbq)(1:lvar),
      &                              NF_DOUBLE, 4, u3dgrd, rstru_nbq)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstru_nbq,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxru_nbq))
         ierr=nf_put_att_text (ncid, rstru_nbq, 'long_name', lvar,
      &                                  vname(2,indxru_nbq)(1:lvar))
@@ -704,9 +701,9 @@
         lvar=lenstr(vname(1,indxrv_nbq))
         ierr=nf_def_var (ncid, vname(1,indxrv_nbq)(1:lvar),
      &                              NF_DOUBLE, 4, v3dgrd, rstrv_nbq)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstrv_nbq,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxrv_nbq))
         ierr=nf_put_att_text (ncid, rstrv_nbq, 'long_name', lvar,
      &                                  vname(2,indxrv_nbq)(1:lvar))
@@ -726,9 +723,9 @@
         lvar=lenstr(vname(1,indxru_nbq_avg2))
         ierr=nf_def_var (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
      &                    NF_DOUBLE, 4, u3dgrd, rstru_nbq_avg2)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstru_nbq_avg2,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxru_nbq_avg2))
         ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'long_name',
      &                      lvar, vname(2,indxru_nbq_avg2)(1:lvar))
@@ -745,9 +742,9 @@
         lvar=lenstr(vname(1,indxrv_nbq_avg2))
         ierr=nf_def_var (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
      &                    NF_DOUBLE, 4, v3dgrd, rstrv_nbq_avg2)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstrv_nbq_avg2,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxrv_nbq_avg2))
         ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'long_name',
      &                      lvar, vname(2,indxrv_nbq_avg2)(1:lvar))
@@ -767,9 +764,9 @@
         lvar=lenstr(vname(1,indxqdmu_nbq))
         ierr=nf_def_var (ncid, vname(1,indxqdmu_nbq)(1:lvar),
      &                    NF_DOUBLE, 4, u3dgrd, rstqdmu_nbq)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstqdmu_nbq,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxqdmu_nbq))
         ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'long_name',
      &                      lvar, vname(2,indxqdmu_nbq)(1:lvar))
@@ -786,9 +783,9 @@
         lvar=lenstr(vname(1,indxqdmv_nbq))
         ierr=nf_def_var (ncid, vname(1,indxqdmv_nbq)(1:lvar),
      &                    NF_DOUBLE, 4, v3dgrd, rstqdmv_nbq)
-#ifdef NC4PAR
+#   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
-#endif
+#   endif
         lvar=lenstr(vname(2,indxqdmv_nbq))
         ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'long_name',
      &                      lvar, vname(2,indxqdmv_nbq)(1:lvar))
@@ -801,19 +798,19 @@
 
         call nf_add_attribute(ncid, rstqdmv_nbq, indxqdmv_nbq,
      &                                   5, NF_DOUBLE, ierr)
+#  endif  /* M3FAST */
 
-# endif  /* M3FAST */
-
-# ifdef TS_MIX_ISO_FILT
+#  ifdef TRACERS
+#   ifdef TS_MIX_ISO_FILT
 !
 ! density gradients for use in t3dmix
 !
         lvar=lenstr(vname(1,indxdRdx))
         ierr=nf_def_var (ncid, vname(1,indxdRdx)(1:lvar),
      &                    NF_DOUBLE, 4, u3dgrd, rstdRdx)
-#ifdef NC4PAR
+#    ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstdRdx,nf_collective)
-#endif
+#    endif
         lvar=lenstr(vname(2,indxdRdx))
         ierr=nf_put_att_text (ncid, rstdRdx, 'long_name',
      &                      lvar, vname(2,indxdRdx)(1:lvar))
@@ -830,9 +827,9 @@
         lvar=lenstr(vname(1,indxdRde))
         ierr=nf_def_var (ncid, vname(1,indxdRde)(1:lvar),
      &                    NF_DOUBLE, 4, v3dgrd, rstdRde)
-#ifdef NC4PAR
+#    ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstdRde,nf_collective)
-#endif
+#    endif
         lvar=lenstr(vname(2,indxdRde))
         ierr=nf_put_att_text (ncid, rstdRde, 'long_name',
      &                      lvar, vname(2,indxdRde)(1:lvar))
@@ -846,9 +843,10 @@
         call nf_add_attribute(ncid, rstdRde, indxdRde,
      &                                   5, NF_DOUBLE, ierr)
 
-# endif /* TS_MIX_ISO_FILT */
-
-#endif  /* EXACT_RESTART */
+#   endif /* TS_MIX_ISO_FILT */
+#  endif /* TRACERS */
+# endif  /* EXACT_RESTART */
+#endif /* SOLVE3D */
 
 #ifdef SEDIMENT
 !
@@ -1205,19 +1203,20 @@
 !
 ! Tracer variables.
 !
+# if defined TRACERS
         do itrc=1,NT
-          lvar=lenstr(vname(1,indxT+itrc-1))
-          ierr=nf_inq_varid (ncid, vname(1,indxT+itrc-1)(1:lvar),
+          lvar=lenstr(vname(1,indxV+itrc))
+          ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
           if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indxT+itrc-1)(1:lvar),
+            write(stdout,1) vname(1,indxV+itrc)(1:lvar),
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         enddo 
-#endif
+# endif
 
-#if defined LMD_MIXING 
+# if defined LMD_MIXING 
 !
 ! Depth of planetary boundary layer.
 !
@@ -1241,7 +1240,6 @@
             goto 99                                       !--> ERROR
           endif
 #  endif /*  LMD_BKPP  */
-
 # endif /* LMD_MIXING */
 
 # if defined GLS_MIXING
@@ -1272,6 +1270,9 @@
           write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+
+#  ifdef TEMPERATURE
+
 !
 ! Vertical diffusion coefficient for potential temperature.
 !
@@ -1281,6 +1282,7 @@
           write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  endif
           
 #  ifdef SALINITY
 !
@@ -1339,7 +1341,7 @@
           goto 99                                         !--> ERROR
         endif
         
-# ifdef M3FAST
+#  ifdef M3FAST
         
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
@@ -1407,9 +1409,10 @@
           goto 99                                         !--> ERROR
         endif
        
-# endif  /* M3FAST */
+#  endif  /* M3FAST */
 
-# ifdef TS_MIX_ISO_FILT
+#  ifdef TRACERS
+#   ifdef TS_MIX_ISO_FILT
 !
 ! density gradients for use in t3dmix
 !
@@ -1432,9 +1435,10 @@
           goto 99                                         !--> ERROR
         endif
 
-# endif /* TS_MIX_ISO_FILT */
-
+#   endif /* TS_MIX_ISO_FILT */
+#  endif /* TRACERS */
 # endif /* EXACT_RESTART */
+#endif /* SOLVE3D */
 
 #ifdef SEDIMENT
 !
@@ -1502,9 +1506,7 @@
           write(stdout,1) vname(1,indxLrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-# endif /* BBL */
-
-#endif /* SOLVE3D */
+#endif /* BBL */
 !
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
      &             'DEF_RST -- Opened ',

@@ -15,7 +15,9 @@
       subroutine step3d_t (tile)
 !
       implicit none
-      integer tile, trd, omp_get_thread_num
+      integer tile
+# if defined TRACERS      
+      integer trd, omp_get_thread_num
 # include "param.h"
 # include "private_scratch.h"
 # include "ocean3d.h"
@@ -27,9 +29,11 @@
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                                                A3d(1,1,trd))
+# endif /* TRACERS */      
       return
       end
 
+# if defined TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
@@ -138,7 +142,14 @@
         do k=1,N
 
 # ifdef BIO_HADV_WENO5
-          if (itrc .le. 2) then
+#   if defined TEMPERATURE && defined SALINITY
+        if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+          if (itrc .le. 1) then
+#   else 
+          if (itrc .le. 0) then
+#   endif
+                
 # endif
 !
 !----------------------------------------------------------
@@ -260,7 +271,7 @@
         
         
 
-# if  defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+# if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
 
 !----------------------------------------------------------
 ! Compute fluxes FX and FE
@@ -423,6 +434,7 @@
 ! the Large et al. 1994 KPP scheme.
 !----------------------------------------------------------
 !
+#  ifdef TEMPERATURE          
           if (itrc.eq.itemp) then
             do k=1,N-1
               do i=Istr,Iend
@@ -436,8 +448,10 @@
 # endif
               enddo
             enddo
+          end if
+#  endif /* TEMPERATURE */            
 # ifdef SALINITY 
-          elseif (itrc.eq.isalt) then
+          if (itrc.eq.isalt) then
             do k=1,N-1
               do i=Istr,Iend
                 FC(i,k)=0.
@@ -448,14 +462,18 @@
 # endif
               enddo
             enddo
-# endif
           endif
+# endif /* SALINITY */
 !
-# ifdef SALINITY 
+
+#  if defined SALINITY || defined TEMPERATURE 
+#   if defined SALINITY && defined TEMPERATURE 
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
-# else
+#   elif defined SALINITY                   
+          if (itrc.eq.isalt) then
+#   elif defined TEMPERATURE 
           if (itrc.eq.itemp) then
-# endif
+#   endif
             do k=1,N
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+FC(i,k )
@@ -466,12 +484,12 @@
 #  ifdef MASKING
      &                                             * rmask(i,j)
 #  endif
-# endif  /* DIAGNOSTICS_TS */
+#  endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
           endif
-
-
+#  endif  /* defined SALINITY || TEMPERATURE  */
+          
 !
 !
 !======================================================================
@@ -493,17 +511,25 @@
 # ifdef TS_MIX_IMP
 #  ifdef BIO_HADV_WENO5
 #   undef TS_MIX_IMP 
+#   if defined TEMPERATURE && defined SALINITY       
          if (itrc .gt. 2) then   ! for passive tracers only
+#   elif defined TEMPERATURE || defined SALINITY
+         if (itrc. gt. 1) then   ! for passive tracers only
+#   endif
+                 
 #   include "t3dmix_tridiagonal.h"
 #   define TS_MIX_IMP
+#   if defined TEMPERATURE || defined SALINITY                 
          else
+#   endif                 
 #  endif
          do k=1,N
            do i=istr,iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
            enddo
          enddo
-#  ifdef BIO_HADV_WENO5
+#  if defined BIO_HADV_WENO5 && (defined TEMPERATURE || defined SALINITY)
+         
          endif
 #  endif
 # else
@@ -827,7 +853,11 @@
 #  endif /* DIAGNOSTICS_TS_MLD */
 
 #  ifdef DIAGNOSTICS_DEBUG
-        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
+        if (istr.eq.1 .and. jstr.eq.1
+#   ifdef TEMPERATURE
+     &       .and. itrc.eq.itemp
+#   endif /* TEMPERATURE */
+     &       ) then
           i=5
           j=5
 #   if defined DIAGNOSTICS_TS_MLD
@@ -906,6 +936,7 @@
 
       return
       end
+# endif  /* TRACERS */      
 !
 !======================================================================
 !

@@ -584,8 +584,9 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     
 !     Tracer variables.
 !     
+#ifdef TRACERS
       do itrc=1,NT
-         if (wrthis(indxT+itrc-1)) then
+         if (wrthis(indxV+itrc)) then
             workr=t(:,:,:,nstp,itrc)
 #ifdef MASKING
             if (iic.eq.0) then
@@ -601,13 +602,14 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
             endif
 #endif
             call fillvalue3d(workr,ncidhis,hisT(itrc),
-     &           indxT+itrc-1,record,r3dvar,type)
+     &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 !      write(*,*)'t(10,10,32,nstp,itrc)=',t(10,10,32,nstp,itrc)
 !      write(*,*)'nstp=',nstp
 
       endif   
       enddo
+#endif /* TRACERS */
 !     
 !     Density anomaly.
 !     
@@ -698,7 +700,9 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
                do i=1,Lm
                   workr(i,j,k)=
 #   ifdef TS_DIF2
+#    ifdef TEMPERATURE
      &                 diff2(i,j,itemp)
+#     endif
 #    ifdef TS_DIF_SMAGO
      &                 +diff3d_r(i,j,k)
 #    endif
@@ -730,12 +734,14 @@ CR      write(*,*) 'wrt_his:  wrtAkv' MYID
 !     
 !     Write out vertical diffusion coefficient for potential temperature.
 !     
+# ifdef TEMPERATURE
       if (wrthis(indxAkt)) then
          work=Akt(:,:,:,itemp)
          call fillvalue3d_w(work,ncidhis,hisAkt,indxAkt,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       endif
+# endif
 # ifdef SALINITY
 !     
 !     Write out vertical diffusion coefficient for salinity.
@@ -807,6 +813,7 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 !     
 !     Write out total surface heat flux 
 !     
+#if defined TEMPERATURE 
       if (wrthis(indxShflx)) then
          work2d=stflx(:,:,itemp)*rho0*Cp
      &          SWITCH rmask
@@ -820,6 +827,8 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
+#endif
+
 #ifdef BHFLUX
 !     
 !     Write out bottom heat flux 
@@ -838,6 +847,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
 CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
         endif
 #endif
+
 #ifdef SALINITY    
 !     Write out surface salt flux
 !
@@ -898,7 +908,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 !     Write out surface heat flux component (W/m2)
 !         
       if (wrthis(indxShflx_rsw)) then
-# ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE 
          work2d=shflx_rsw*rho0*Cp
          ierr=nf_fwrite(work2d, ncidhis, hisShflx_rsw, record,
      &        r2dvar)
@@ -915,7 +925,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
             goto 99             !--> ERROR
          endif
       endif
-# ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE 
       if (wrthis(indxShflx_rlw)) then
          work2d=shflx_rlw*rho0*Cp
          ierr=nf_fwrite(work2d, ncidhis, hisShflx_rlw, record,
@@ -958,7 +968,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          endif
       endif
 # endif
-# ifdef SST_SKIN
+# if defined SST_SKIN && defined TEMPERATURE
 !     
 !     Write out skin temperature (degC)
 !     

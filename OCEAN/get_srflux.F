@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && !defined ANA_SRFLUX
+#if defined SOLVE3D && !defined ANA_SRFLUX && defined TEMPERATURE
 
                               ! Read point or grided shortwave
       subroutine get_srflux   ! radiation flux at the appropriate
@@ -318,7 +318,7 @@
       end
 #endif /* SOLVE3D && !ANA_SRFLUX */
 !--------------------------------------------------------------------
-#if defined SOLVE3D && defined ANA_DIURNAL_SW
+#if defined SOLVE3D && defined ANA_DIURNAL_SW && defined TEMPERATURE
       subroutine ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 !
 !--------------------------------------------------------------------
@@ -403,4 +403,4 @@
       subroutine diurnal_srflux_empty
       return
       end
-#endif /* SOLVE3D && ANA_DIURNAL_SW */
+#endif /* SOLVE3D && ANA_DIURNAL_SW && TEMPERATURE */

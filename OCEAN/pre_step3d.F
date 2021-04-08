@@ -255,12 +255,19 @@
 !
 !======================================================================
 !
+# ifdef TRACERS
       do itrc=1,NT
         do k=1,N
 
 # ifdef BIO_HADV_WENO5
+#   if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then
-# endif
+#   elif defined TEMPERATURE || defined SALINITY
+          if (itrc .le. 1) then
+#   else 
+          if (itrc .le. 0) then
+#  endif
+# endif /* BIO_HADV_WENO5 */
 !
 !----------------------------------------------------------
 ! Advection for active tracers: Compute fluxes FX and FE
@@ -365,6 +372,7 @@
 
         enddo   ! <-- k
       enddo       ! <-- itrc
+# endif /* TRACERS */
 
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
@@ -434,6 +442,7 @@
 # endif
 
       do j=Jstr,Jend
+# ifdef TRACERS
 
         do i=Istr,Iend
 # ifndef VADV_ADAPT_IMP 
@@ -444,7 +453,9 @@
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
 
         enddo
-        
+#  endif /* TRACERS */
+
+# if defined TRACERS
         do itrc=1,NT
 !
 !----------------------------------------------------------------------
@@ -496,6 +507,7 @@
 # endif          
 !
         enddo   !<-- itrc  !--> discard DC
+# endif /* TRACERS */
 !
 !======================================================================
 !
@@ -889,6 +901,7 @@
 ! Set PHYSICAL lateral boundary conditions for tracers.
 !======================================================================
 !
+# if defined TRACERS
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -901,6 +914,7 @@
 #  endif
 # endif
       enddo
+# endif
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)

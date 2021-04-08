@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined SPONGE_DIF2
+#if defined SOLVE3D && defined SPONGE_DIF2 && defined TRACERS
 !
 # ifdef TCLIMATOLOGY
 #  define CLIMAT_TS_SPONGE
@@ -549,7 +549,9 @@
 #   ifdef SALINITY
         indx=min(itrc,isalt)
 #   else
+#    ifdef TEMPERATURE
         indx=min(itrc,itemp)
+#    endif
 #   endif
 !
 !  Initialize TVmix diag computation: 
@@ -762,7 +764,11 @@
 !  DEBUG DIAGS
 !
 #  ifdef DIAGNOSTICS_DEBUG
+#   ifdef TEMPERATURE 
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
+#   else
+       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.1) then
+#   endif /* TEMPERATURE */
          i=5
          j=5
 #   if defined DIAGNOSTICS_TS_MLD

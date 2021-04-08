@@ -185,7 +185,11 @@
 
         do k=1,N                                       ! NONLINEAR
           do i=IstrR,IendR                             !  EQUATION
+#  ifdef TEMPERATURE
             Tt=t(i,j,k,nrhs,itemp)                     !  OF STATE
+#  else
+            Tt=25
+#  endif
 #  ifdef SALINITY
             Ts=max(t(i,j,k,nrhs,isalt), 0.)
 #  else
@@ -330,7 +334,10 @@
       do j=JstrR,JendR
         do k=1,N
           do i=IstrR,IendR
-            rho1(i,j,k)=R0 -Tcoef*(t(i,j,k,nrhs,itemp)-T0)
+            rho1(i,j,k)=R0 
+#  ifdef TEMPERATURE
+     &                      -Tcoef*(t(i,j,k,nrhs,itemp)-T0)
+#  endif
 #  ifdef SALINITY
      &                     +Scoef*(t(i,j,k,nrhs,isalt)-S0)
 #  endif
@@ -552,7 +559,11 @@
 !
 !  Compute density anomaly sigma-t(T,S) from nonlinear EOS
 !
-            Tt=t(i,j,k,1,itemp)
+#  ifdef TEMPERATURE
+            Tt=t(i,j,k,1,itemp)                    
+#  else
+            Tt=25
+#  endif
 #   ifdef SALINITY
             Ts=max(t(i,j,k,1,isalt), 0.)
 #   else
@@ -569,7 +580,10 @@
 !
 !  Compute density anomaly sigma-t from linear EOS
 !
-            rho1(i,j,k)=R0 -Tcoef*(t(i,j,k,nrhs,itemp)-T0)
+            rho1(i,j,k)=R0 
+#  ifdef TEMPERATURE
+     &                     -Tcoef*(t(i,j,k,nrhs,itemp)-T0)
+#  endif
 #   ifdef SALINITY
      &                     +Scoef*(t(i,j,k,nrhs,isalt)-S0)
 #   endif

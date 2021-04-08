@@ -10,7 +10,8 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined QCORRECTION && !defined ANA_SST
+#if defined QCORRECTION && !defined ANA_SST  && defined TEMPERATURE
+
 
       subroutine get_sst
 !

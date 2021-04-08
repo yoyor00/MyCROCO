@@ -240,14 +240,16 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 !     
 !     Tracer variables.
 !     
+#  ifdef TRACERS
       do itrc=1,NT
-         if (wrtavg(indxT+itrc-1)) then
+         if (wrtavg(indxV+itrc)) then
             workr=t_avg(:,:,:,itrc)
-            call fillvalue3d(workr,ncidavg,avgT(itrc),indxT+itrc-1,
+            call fillvalue3d(workr,ncidavg,avgT(itrc),indxV+itrc,
      &           record,r3dvar,type)           
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
       enddo
+# endif
 !     
 !     Density anomaly.
 !     
@@ -291,7 +293,7 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif   
 !     
-#  ifdef SST_SKIN
+#  if defined SST_SKIN && defined TEMPERATURE
 !     
 !     Write out skin temperature (degC)
 !     
@@ -338,12 +340,14 @@ CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
 !     
 !     Write out vertical diffusion coefficient for potential temperature.
 !     
+#    ifdef TEMPERATURE
       if (wrtavg(indxAkt)) then
          work=Akt_avg(:,:,:,itemp)
          call fillvalue3d_w(work,ncidavg,avgAkt,indxAkt,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       endif
+#    endif /* TEMPERATURE */
 #    ifdef SALINITY
 !     
 !     Write out vertical diffusion coefficient for salinity.
@@ -410,6 +414,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
 #  endif
 
+#    ifdef TEMPERATURE
 !     
 !     Write out total heat flux [W/m2]
 !     
@@ -429,6 +434,7 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
        endif
+# endif
 #  ifdef BHFLUX
 !     
 !     Write out bottom heat flux 
