@@ -203,42 +203,28 @@ C$OMP BARRIER
       implicit none
       integer Istr,Iend,Jstr,Jend
 #  ifdef THREE_GHOST_POINTS
-      real  FX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,FE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY) 
-     &     ,FX_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,FE_r(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,tau_w(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-#    if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-      defined BEDLOAD_MARIEU
-     &     ,tau_wX(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,tau_wE(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,angleu(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,anglev(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-#    endif
-#    if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
-     &     ,tau_m(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,phic(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-     &     ,phicw(PRIVATE_2D_5TH_ORDER_SCRATCH_ARRAY)
-#    endif
+#   define PRIVATE_2D_SCRATCH_ARRAY_COM PRIVATE_2D_SCRATCH_ARRAY_3PTS
 #  else
-      real  FX(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,FE(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,FX_r(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,FE_r(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,tau_w(PRIVATE_2D_SCRATCH_ARRAY)
-#    if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-      defined BEDLOAD_MARIEU
-     &     ,tau_wX(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,tau_wE(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,angleu(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,anglev(PRIVATE_2D_SCRATCH_ARRAY)
-#    endif
-#    if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
-     &     ,tau_m(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,phic(PRIVATE_2D_SCRATCH_ARRAY)
-     &     ,phicw(PRIVATE_2D_SCRATCH_ARRAY)
-#    endif
+#   define PRIVATE_2D_SCRATCH_ARRAY_COM PRIVATE_2D_SCRATCH_ARRAY
 #  endif
+      real  FX(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,FE(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,FX_r(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,FE_r(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,tau_w(PRIVATE_2D_SCRATCH_ARRAY_COM)
+#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
+      defined BEDLOAD_MARIEU
+     &     ,tau_wX(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,tau_wE(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,angleu(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,anglev(PRIVATE_2D_SCRATCH_ARRAY_COM)
+#  endif
+#  if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
+     &     ,tau_m(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,phic(PRIVATE_2D_SCRATCH_ARRAY_COM)
+     &     ,phicw(PRIVATE_2D_SCRATCH_ARRAY_COM)
+#  endif
+#  undef PRIVATE_2D_SCRATCH_ARRAY_COM
 !
       integer i, j, k, ised
       real eps, Dstp
@@ -310,7 +296,6 @@ C$OMP BARRIER
 #  include "bbl.h"
 #  include "mixing.h"
 #  include "compute_auxiliary_bounds.h"
-
 !
 !-----------------------------------------------------------------------
 ! Boundary Indexes in X-direction
@@ -646,7 +631,7 @@ C$OMP BARRIER
             !thck_wbl=0.1
             ustrc_wbl=sqrt(mag_bstrc)
             cff1=MAX(MIN(0.9*depth, thck_wbl), 1.1*ksd_wbl)
-            cff2=LOG(cff1/ksd_wbl)
+            cff2=LOG(30.*cff1/ksd_wbl)
             udelta_wbl=(ustrc_wbl/vonKar)*cff2
 # endif
 !
@@ -802,7 +787,7 @@ C$OMP BARRIER
 ! Motion initiation factor.
 !
 #   if defined COHESIVE_BED || defined MIXED_BED
- ! Check that both sediment class and bed critical stresses are exceeded
+! Check that both sediment class and bed critical stresses are exceeded
              cff3=0.5_r8*(1.+SIGN(1.,                            
      &                   theta_max/                                     
      &          (max(tau_ce(ised),bed_bctr(i,j,1))*osmgd)-1.))
@@ -1041,7 +1026,8 @@ C$OMP BARRIER
             cff=SIGN(1.0,FX_r(i  ,j))
             cff1=0.5*(1.0+SIGN(1.0,FX_r(i  ,j)))
             cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
-            IF ( (( i.lt.imin ) .or. ( i.gt.imax )).and.( imin.lt.imax ) ) THEN
+            IF ( (( i.lt.imin ) .or. ( i.gt.imax )) 
+     &                          .and.( imin.lt.imax ) ) THEN
                FX(i,j)=0.5*(1.+SIGN(1.,FX_r(i-1,j)))*
      &              (cff1*FX_r(i-1,j)+
      &               cff2*0.5*(FX_r(i-1,j)+FX_r(i,j)))+
@@ -2719,14 +2705,13 @@ C$OMP BARRIER
 #  ifdef SED_MORPH
             ! Apply morphology factor.
              ero_flux(i,j,ised)=ero_flux(i,j,ised)   MORPH_FAC
-             settling_flux(i,j,ised)=settling_flux(i,j,ised)  MORPH_FAC            
+             settling_flux(i,j,ised)=settling_flux(i,j,ised)  MORPH_FAC
 #  endif
 
             !  Update bed mass arrays.
-            bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,bnew,ised)-     
-     &        (ero_flux(i,j,ised)-                                       
-     &        settling_flux(i,j,ised)),                                  
-     &        0.0)
+            bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,bnew,ised)-
+     &                                   (ero_flux(i,j,ised)-
+     &                                    settling_flux(i,j,ised)), 0.)
             do k=2,NLAY
                bed_mass(i,j,k,nnew,ised)=bed_mass(i,j,k,nstp,ised)
             enddo
@@ -2866,7 +2851,7 @@ C$OMP BARRIER
                 pcoh=min(max((cff3-transN)/(transC-transN), 
      &               0.0),1.0)
                 tcb_bot = pcoh*bed_bctr(i,j,Ksed+1)+(pcoh-1.0)*cff4 
-     &                         *rho0                                      !BF
+     &                         *rho0                                 !BF
 #  endif
                 Ksed = Ksed+1
              enddo
@@ -3078,7 +3063,7 @@ C$OMP BARRIER
                     bed_poros(i,j,2)=(bed_poros(i,j,1)*cff1+            
      &                      bed_poros(i,j,2)*cff2)/(cff1+cff2)
                     ! ALA CHECK WITH CRS POROSITY OF 1ST LAYER
-                    bed_poros(i,j,1)=bed_poros(i,j,1)                    
+                    bed_poros(i,j,1)=bed_poros(i,j,1)
                  else
                  ! NBED=1
                  endif
@@ -3179,10 +3164,10 @@ C$OMP BARRIER
 # if defined COHESIVE_BED || defined MIXED_BED
 !
 ! Update tau_cr of fractional layer   !RB debug
- !           IF (Ksed < NLAY ) then
+!           IF (Ksed < NLAY ) then
             bed_bctr(i,j,Ksed) = bed_bctr(i,j,Ksed+1)-              
      &                 cff2*(bed_bctr(i,j,Ksed+1)-bed_bctr(i,j,Ksed))
-  !          endif
+!           endif
 # endif
 
 !
@@ -3227,7 +3212,7 @@ C$OMP BARRIER
               ks=Ksed-2
               cff=1.0/REAL(ks+1)
 # if defined COHESIVE_BED || defined MIXED_BED
-#undef BF_TCR
+#  undef BF_TCR
 #  if defined BF_TCR
           bmz(1) = 0.0
           do ised=1,NST
@@ -3867,7 +3852,7 @@ C$OMP BARRIER
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1
-          Ssize(i,j)=MIN(cff2,Zobt) !   cff2
+          Ssize(i,j)=cff2
           w_set(i,j)=cff3
           Sdens(i,j)=MAX(cff4,1050.)
         enddo
@@ -4128,7 +4113,7 @@ C$OMP BARRIER
 # endif
 # ifdef SED_FLOCS
         elseif (icard.eq.16) then
-          read(iunit,*,err=60) l_ADS,l_ASH,l_COLLFRAG,l_testcase                     
+          read(iunit,*,err=60) l_ADS,l_ASH,l_COLLFRAG,l_testcase
             MPI_master_only write(stdout,'(L10,2x,A)')
      &      l_ADS, 'l_ADS   Mud consomidation rate.'
             MPI_master_only write(stdout,'(L10,2x,A)')
@@ -4424,7 +4409,7 @@ C$OMP BARRIER
       parameter(eps=1.0E-14)
       real crs_fac
       parameter(crs_fac=1.)
-      real theta_timeavg_old, theta_timeavg, theta_hat_i
+      real theta_avg_old, theta_avg, theta_hat_i
       real psi  ! maximum mobility number
       real rlen ! ripple length
       real ksd, ustrc
@@ -4447,10 +4432,10 @@ C$OMP BARRIER
       eta=eta*ahat
       rlen=rlen*ahat
 !
-! Initiliaze with theta_timeavg=0 and theta_hat_i=theta_timeavg
+! Initiliaze with theta_avg=0 and theta_hat_i=theta_avg
 !
-      theta_timeavg=0.
-      theta_timeavg_old=0.
+      theta_avg=0.
+      theta_avg_old=0.
 !
 ! Calculate friction factor fd
 !
@@ -4464,7 +4449,7 @@ C$OMP BARRIER
 !
 ! Wave related bed roughness - VA2013 A.5
 !
-        ksw=ksw_calc(d50, mu_calc(d50), theta_timeavg, eta, rlen)
+        ksw=ksw_calc(d50, mu_calc(d50), theta_avg, eta, rlen)
 !
 ! Full-cycle wave friction factor - VA2013 Appendix Eq A.4
 !
@@ -4475,7 +4460,7 @@ C$OMP BARRIER
 !
 ! Current-related bed roughness - VA2013 Appendix A.1
 !
-        ksd=ksd_calc(d50, d90, mu_calc(d50), theta_timeavg, eta, rlen)
+        ksd=ksd_calc(d50, d90, mu_calc(d50), theta_avg, eta, rlen)
 !
 ! Friction factor from ksd, udelta, delta
 !
@@ -4485,13 +4470,13 @@ C$OMP BARRIER
 !
 ! Time-averaged absolute Shields stress - VA2013 Appendix Eq. A.3
 !
-        theta_timeavg=osmgd*(0.50*fd*udelta**2.+
-     &                       0.25*fw*uhat**2.)
+        theta_avg=osmgd*(0.50*fd*udelta**2.+
+     &                   0.25*fw*uhat**2.)
 !
-        if(ABS(theta_timeavg-theta_timeavg_old).lt.tol) then
+        if (ABS(theta_avg-theta_avg_old).lt.tol) then
           EXIT
         endif
-        theta_timeavg_old=theta_timeavg
+        theta_avg_old=theta_avg
 !
       enddo  ! end iterations ----
 !
@@ -5158,18 +5143,18 @@ C$OMP BARRIER
 ! 
 !======================================================================
 !
-      FUNCTION ksd_calc(d50, d90, mu, theta_timeavg, eta, rlen)
+      FUNCTION ksd_calc(d50, d90, mu, theta_avg, eta, rlen)
 !
 ! Current-related bed roughness - VA2013 Appendix A.1
 !
       implicit none
       real ksd_calc
-      real d50, d90, mu, theta_timeavg, eta, rlen
+      real d50, d90, mu, theta_avg, eta, rlen
       real ripple_fac
 !
       rlen=MAX(rlen,d50)
       ripple_fac=0.4*eta**2./rlen
-      ksd_calc=MAX( 3.*d90, d50*(mu+6.*(theta_timeavg-1.)) )
+      ksd_calc=MAX( 3.*d90, d50*(mu+6.*(theta_avg-1.)) )
      &         + ripple_fac
 !
       return
@@ -5177,18 +5162,18 @@ C$OMP BARRIER
 ! 
 !======================================================================
 !
-      FUNCTION ksw_calc(d50, mu, theta_timeavg, eta, rlen)
+      FUNCTION ksw_calc(d50, mu, theta_avg, eta, rlen)
 !
 ! Wave related bed roughness - VA2013 Eq A.5
 ! 
       implicit none
       real ksw_calc
-      real d50, mu, theta_timeavg, eta, rlen
+      real d50, mu, theta_avg, eta, rlen
       real ripple_fac, ksw
 !
       rlen=MAX(rlen,d50)
       ripple_fac=0.4*eta**2./rlen
-      ksw_calc=MAX( d50, d50*(mu+6.*(theta_timeavg-1.)) )
+      ksw_calc=MAX( d50, d50*(mu+6.*(theta_avg-1.)) )
      &         + ripple_fac
 !
       return
@@ -5420,7 +5405,7 @@ C$OMP BARRIER
 !TODO - This wont parallelize
       write(*,*) ' '
       write(*,*) 'FLOCMOD INIT  '
-  !    write(*,*) 'NAT, NPT, NMUD, NNS:', NAT,NPT,NMUD,NNS
+!     write(*,*) 'NAT, NPT, NMUD, NNS:', NAT,NPT,NMUD,NNS
       write(*,*) "class diameter (um)  volume (m3)  density (kg/m3)
      &    mass (kg)"
       do itrc=1,NMUD
@@ -5484,17 +5469,17 @@ C$OMP BARRIER
         enddo
       enddo
 
-  !********************************************************************************
-  ! agregation : GAIN : f_g1_sh and f_g1_ds
-  !********************************************************************************
+!********************************************************************************
+! agregation : GAIN : f_g1_sh and f_g1_ds
+!********************************************************************************
       do iv1=1,NMUD
         do iv2=1,NMUD
           do iv3=iv2,NMUD
-            if((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1-1)    .and.     
+            if((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1-1)    .and.
      &            ((f_mass(iv2)+f_mass(iv3)) .le. f_mass(iv1))) then
               f_weight=(f_mass(iv2)+f_mass(iv3)-f_mass(iv1-1))/         
      &                   (f_mass(iv1)-f_mass(iv1-1))
-            elseif ((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1) .and.     
+            elseif ((f_mass(iv2)+f_mass(iv3)) .gt. f_mass(iv1) .and.
      &            ((f_mass(iv2)+f_mass(iv3)) .lt. f_mass(iv1+1))) then
               if (iv1 .eq. NMUD) then
                 f_weight=1.0
@@ -5505,19 +5490,19 @@ C$OMP BARRIER
             else
               f_weight=0.0
             endif
-            f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*                       
+            f_g1_sh(iv2,iv3,iv1)=f_weight*f_alpha*
      &            f_coll_prob_sh(iv2,iv3)*(f_mass(iv2)+                 
      &            f_mass(iv3))/f_mass(iv1)
-            f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*                       
+            f_g1_ds(iv2,iv3,iv1)=f_weight*f_alpha*
      &            f_coll_prob_ds(iv2,iv3)*(f_mass(iv2)+                 
      &            f_mass(iv3))/f_mass(iv1)
           enddo
         enddo
       enddo
 
-  !********************************************************************************
-  ! Shear fragmentation : GAIN : f_g3
-  !********************************************************************************
+!********************************************************************************
+! Shear fragmentation : GAIN : f_g3
+!********************************************************************************
 
       do iv1=1,NMUD
         do iv2=iv1,NMUD
@@ -5531,7 +5516,7 @@ C$OMP BARRIER
                  f_weight=(f_mass(iv2)/f_nb_frag-f_mass(iv1-1))/        
      &                (f_mass(iv1)-f_mass(iv1-1))
               endif
-            elseif (f_mass(iv2)/f_nb_frag .gt. f_mass(iv1)               
+            elseif (f_mass(iv2)/f_nb_frag .gt. f_mass(iv1)
      &            .and. f_mass(iv2)/f_nb_frag .lt. f_mass(iv1+1)) then
               f_weight=1.0-(f_mass(iv2)/f_nb_frag-f_mass(iv1))/      
      &              (f_mass(iv1+1)-f_mass(iv1))
@@ -5577,7 +5562,7 @@ C$OMP BARRIER
 
             ! Floc erosion
 
-            if ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.         
+            if ((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.
      &            f_mass(f_ero_iv)) then
 
               if (((f_mass(iv2)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.     
@@ -5605,13 +5590,13 @@ C$OMP BARRIER
               endif
               ! update for eroded floc masses
               f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_weight*f_beta*   
-     &            f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**    
+     &            f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**
      &            (3.0-f_nf)*(f_mass(iv2)-f_mass(f_ero_iv)*          
      &            f_ero_nbfrag)/f_mass(iv1)
 
               if (iv1 .eq. f_ero_iv) then
                  f_g3(iv2,iv1)=f_g3(iv2,iv1)+f_ero_frac*f_beta*         
-     &              f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**  
+     &              f_diam(iv2)*(max(myeps,(f_diam(iv2)-f_dp0))/f_dp0)**
      &              (3.0-f_nf)*f_ero_nbfrag*f_mass(f_ero_iv)/        
      &              f_mass(iv1)
               endif
@@ -5620,9 +5605,9 @@ C$OMP BARRIER
        enddo
       enddo
 
-  !********************************************************************************
-  !  Shear agregation : LOSS : f_l1
-  !********************************************************************************
+!********************************************************************************
+!  Shear agregation : LOSS : f_l1
+!********************************************************************************
       do iv1=1,NMUD
         do iv2=1,NMUD
           if(iv2 .eq. iv1) then
@@ -5635,9 +5620,9 @@ C$OMP BARRIER
         enddo
       enddo
 
-  !********************************************************************************
-  !  Shear fragmentation : LOSS : f_l2
-  !********************************************************************************
+!********************************************************************************
+!  Shear fragmentation : LOSS : f_l2
+!********************************************************************************
       do iv1=1,NMUD
         f_l3(iv1)=0.0
         if (f_diam(iv1).gt.dfragmax) then
@@ -5645,7 +5630,7 @@ C$OMP BARRIER
            f_l3(iv1)=f_l3(iv1)+(1.0-f_ero_frac)*f_beta*f_diam(iv1)*  
      &            ((f_diam(iv1)-f_dp0)/f_dp0)**(3.0-f_nf)
           ! shear erosion
-          if ((f_mass(iv1)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.            
+          if ((f_mass(iv1)-f_mass(f_ero_iv)*f_ero_nbfrag) .gt.
      &            f_mass(f_ero_iv)) then
            f_l3(iv1)=f_l3(iv1)+f_ero_frac*f_beta*f_diam(iv1)*           
      &            ((f_diam(iv1)-f_dp0)/f_dp0)**(3.0-f_nf)
@@ -5755,7 +5740,7 @@ C$OMP BARRIER
                 WRITE(*,*) '***************************************'
                 WRITE(*,*) 'CAUTION, negative mass at cell i,j,k :',  
      &                          i,j,k
-                WRITE(*,*) '***************************************'        
+                WRITE(*,*) '***************************************'
               endif
             enddo
 
@@ -5834,8 +5819,8 @@ C$OMP BARRIER
               endif                 
 # endif              
               call flocmod_comp_g(k,i,j,Gval,diss) 
-    !          write(*,*) ' Gval, diss : ' , Gval, diss, l_testcase
-   !           stop
+!             write(*,*) ' Gval, diss : ' , Gval, diss, l_testcase
+!             stop
 
               do while (dttemp .le. dt)
 
@@ -5911,31 +5896,31 @@ C$OMP BARRIER
 
       subroutine flocmod_collfrag(Gval)
 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_collfrag  ***
-  !&E
-  !&E ** Purpose : computation of collision fragmentation term, 
-  !&E              based on McAnally and Mehta, 2001
-  !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_comp_fsd
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
-  !&E--------------------------------------------------------------------------
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE flocmod_collfrag  ***
+!&E
+!&E ** Purpose : computation of collision fragmentation term, 
+!&E              based on McAnally and Mehta, 2001
+!&E
+!&E ** Description :
+!&E
+!&E ** Called by : flocmod_comp_fsd
+!&E
+!&E ** External calls : 
+!&E
+!&E ** Reference :
+!&E
+!&E ** History :
+!&E     ! 2013-09 (Romaric Verney)
+!&E
+!&E--------------------------------------------------------------------------
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
 #  include "sediment.h"
       real,intent(in) :: Gval
 
-  !! * Local declarations
+!! * Local declarations
       integer       iv1,iv2,iv3
       real f_fp,f_fy,f_cfcst,gcolfragmin,gcolfragmax
       real gcolfragiv1,gcolfragiv2,f_weight,mult
@@ -5946,7 +5931,7 @@ C$OMP BARRIER
       fdiam=f_diam
       fmass=f_mass(1:NMUD)
 !  !!--------------------------------------------------------------------------
-  !! * Executable part
+!! * Executable part
 
       f_fp=0.1
       f_fy=1e-10
@@ -6155,7 +6140,7 @@ C$OMP BARRIER
        enddo
       enddo
 
-      f_g4(1:NMUD,1:NMUD,1:NMUD)=                                          
+      f_g4(1:NMUD,1:NMUD,1:NMUD)=
      &            f_g4(1:NMUD,1:NMUD,1:NMUD)*f_collfragparam
       f_l4(1:NMUD,1:NMUD)=f_l4(1:NMUD,1:NMUD)*f_collfragparam
 
@@ -6165,42 +6150,42 @@ C$OMP BARRIER
 
       subroutine flocmod_comp_fsd(NNin,NNout,Gval,f_dt)
 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_comp_fsd  ***
-  !&E
-  !&E ** Purpose : computation of floc size distribution
-  !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
-  !&E--------------------------------------------------------------------------
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE flocmod_comp_fsd  ***
+!&E
+!&E ** Purpose : computation of floc size distribution
+!&E
+!&E ** Description :
+!&E
+!&E ** Called by : flocmod_main
+!&E
+!&E ** External calls : 
+!&E
+!&E ** Reference :
+!&E
+!&E ** History :
+!&E     ! 2013-09 (Romaric Verney)
+!&E
+!&E--------------------------------------------------------------------------
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
 #  include "sediment.h"
 
-  !! * Arguments
+!! * Arguments
       real,intent(in) :: Gval
       real,dimension(1:NMUD),intent(in)  :: NNin
       real,dimension(1:NMUD),intent(out) :: NNout
       real,intent(in) :: f_dt
 
-  !! * Local declarations
+!! * Local declarations
       integer  iv1,iv2,iv3
       real tmp_g1,tmp_g3,tmp_l1,tmp_l3,tmp_l4,tmp_g4
       real,dimension(1:NMUD,1:NMUD,1:NMUD)     :: f_g1_tmp
       real,dimension(1:NMUD,1:NMUD)           :: f_l1_tmp
       
-  !!--------------------------------------------------------------------------
-  !! * Executable part
+!!--------------------------------------------------------------------------
+!! * Executable part
 
       tmp_g1=0.0
       tmp_g3=0.0
@@ -6274,37 +6259,37 @@ C$OMP BARRIER
 
       subroutine flocmod_mass_control(NN,mneg)
 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_mass_control  ***
-  !&E
-  !&E ** Purpose : Compute mass in every class after flocculation and 
-  !&E              returns negative mass if any
-  !&E
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
-  !&E--------------------------------------------------------------------------
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE flocmod_mass_control  ***
+!&E
+!&E ** Purpose : Compute mass in every class after flocculation and 
+!&E              returns negative mass if any
+!&E
+!&E ** Description :
+!&E
+!&E ** Called by : flocmod_main
+!&E
+!&E ** External calls : 
+!&E
+!&E ** Reference :
+!&E
+!&E ** History :
+!&E     ! 2013-09 (Romaric Verney)
+!&E
+!&E--------------------------------------------------------------------------
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
 #  include "sediment.h"
 
-  !! * Local declarations
+!! * Local declarations
       integer      :: iv1
       real,intent(out)     :: mneg
       real,dimension(1:NMUD),intent(in)     :: NN
       !real,DIMENSION(0:NMUD+1)      :: f_mass
 
-  !!--------------------------------------------------------------------------
-  !! * Executable part
+!!--------------------------------------------------------------------------
+!! * Executable part
 
       mneg=0.0
 
@@ -6320,40 +6305,40 @@ C$OMP BARRIER
 
       subroutine flocmod_mass_redistribute(NN)
 
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_mass_redistribute  ***
-  !&E
-  !&E ** Purpose : based on a tolerated negative mass parameter, negative masses  
-  !&E              are redistributed linearly towards remaining postive masses 
-  !&E              and negative masses are set to 0
-  !&E                   
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
-  !&E--------------------------------------------------------------------------
-  !! * Modules used
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE flocmod_mass_redistribute  ***
+!&E
+!&E ** Purpose : based on a tolerated negative mass parameter, negative masses  
+!&E              are redistributed linearly towards remaining postive masses 
+!&E              and negative masses are set to 0
+!&E                   
+!&E ** Description :
+!&E
+!&E ** Called by : flocmod_main
+!&E
+!&E ** External calls : 
+!&E
+!&E ** Reference :
+!&E
+!&E ** History :
+!&E     ! 2013-09 (Romaric Verney)
+!&E
+!&E--------------------------------------------------------------------------
+!! * Modules used
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
 #  include "sediment.h"
 
-  !! * Local declarations
+!! * Local declarations
       integer      :: iv
       real     :: npos
       real     :: mneg
       real, dimension(1:NMUD),intent(inout)     :: NN
       real, dimension(1:NMUD)                   :: NNtmp
       !real,DIMENSION(0:NMUD+1)      :: f_mass
-  !!--------------------------------------------------------------------------
-  !! * Executable part
+!!--------------------------------------------------------------------------
+!! * Executable part
 
       mneg=0.0
       npos=0.0
@@ -6391,39 +6376,39 @@ C$OMP BARRIER
 
 
       subroutine flocmod_comp_g(k,i,j,Gval,diss)
-  !&E--------------------------------------------------------------------------
-  !&E                 ***  ROUTINE flocmod_comp_g  ***
-  !&E
-  !&E ** Purpose : compute shear rate to estimate shear aggregation and erosion  
-  !&E 
-  !&E ** Description :
-  !&E
-  !&E ** Called by : flocmod_main
-  !&E
-  !&E ** External calls : 
-  !&E
-  !&E ** Reference :
-  !&E
-  !&E ** History :
-  !&E     ! 2013-09 (Romaric Verney)
-  !&E
-  !&E--------------------------------------------------------------------------
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE flocmod_comp_g  ***
+!&E
+!&E ** Purpose : compute shear rate to estimate shear aggregation and erosion  
+!&E 
+!&E ** Description :
+!&E
+!&E ** Called by : flocmod_main
+!&E
+!&E ** External calls : 
+!&E
+!&E ** Reference :
+!&E
+!&E ** History :
+!&E     ! 2013-09 (Romaric Verney)
+!&E
+!&E--------------------------------------------------------------------------
       implicit none 
 #  include "param.h"
 #  include "scalars.h"
 #  include "sediment.h"
 
-  !! * Local declarations
+!! * Local declarations
       integer,  intent(in)      :: k,i,j
       real,intent(out)     :: Gval
       real     :: htn,ustar,z,diss,nueau
 ! l_testcase - if .TRUE. sets G(t) to values from lab experiment
-  !!--------------------------------------------------------------------------
-  !! * Executable part
-  !    nueau=1.06e-6
-  !    ustar=sqrt(tenfon(i,j)/rhoref)
-  !    htn=h0(i,j)+ssh(i,j)
-  !    z=(1.0+sig(k))*htn
+!!--------------------------------------------------------------------------
+!! * Executable part
+!    nueau=1.06e-6
+!    ustar=sqrt(tenfon(i,j)/rhoref)
+!    htn=h0(i,j)+ssh(i,j)
+!    z=(1.0+sig(k))*htn
       
 !
 ! ALA from CRS

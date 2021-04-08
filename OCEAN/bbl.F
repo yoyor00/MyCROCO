@@ -340,7 +340,7 @@
             cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
             tau_c = cff2*Umag(i,j)*Umag(i,j)    
             tau_w = scf1*((znot_bl*Fwave)**scf2)*(Ub(i,j)**scf3)
-            tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**1.5))
+            tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**scf5))
 #  ifdef SED_TAUCWMAX
             tau_cw = SQRT((tau_cw+tau_w*COS(phicw))**2 +
      &                           (tau_w*SIN(phicw))**2)
