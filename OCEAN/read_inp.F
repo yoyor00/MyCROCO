@@ -301,7 +301,7 @@
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 !
-#ifdef XIOS2
+#ifdef XIOS
 !
 ! origin_date is the origin date of time axis.
 ! It must the same used in croco_tool for input files preprocessing

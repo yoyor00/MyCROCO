@@ -46,7 +46,7 @@
       integer lenstr
       ! If first iteration, Y and M from roms.in file
       if(itbulkO(bvar).eq.0) then
-# if defined XIOS2
+# if defined XIOS
         bulkyearnum(bvar)=start_year
         bulkmonthnum(bvar)=start_month
 # else

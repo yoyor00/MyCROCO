@@ -49,15 +49,18 @@
 #endif
 
          <field id="zeta" long_name="free-surface" unit="meter" />
-         <field id="temp_surf" long_name="surface temperature" unit="Celsius" />
-         <field id="salt_surf" long_name="surface salinity" unit="PSU" />
          <field id="bostr" long_name="Kinematic bottom stress" unit="N/m2" />
          <field id="wstr" long_name="Kinematic wind stress" unit="N/m2" />
+
+#ifdef TEMPERATURE
          <field id="temp" long_name="potential temperature" unit="Celsius" grid_ref="rho_3D" />
+         <field id="temp_surf" long_name="surface temperature" unit="Celsius" />
+#endif
 
 #ifdef SALINITY
          <!-- SALINITY --> 
          <field id="salt" long_name="salinity" unit="PSU" grid_ref="rho_3D" />
+         <field id="salt_surf" long_name="surface salinity" unit="PSU" />
          <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
          <!--  END SALINITY --> 
 #endif
@@ -402,7 +405,9 @@
          <!-- END MRL_WCI -->
 #endif
          <field id="AKv" long_name="vertical viscosity coefficient" unit="meter2 second-1" grid_ref="w_3D"/>
+#ifdef TEMPERATURE
          <field id="AKt" long_name="temperature vertical diffusion coefficient" unit="meter2 second-1" grid_ref="w_3D"/>
+#endif         
 #ifdef SALINITY
          <!-- SALINITY --> 
          <field id="AKs" long_name="salinity vertical diffusion coefficient" unit="meter2 second-1" grid_ref="w_3D"/>
@@ -453,11 +458,13 @@
 
 #ifdef DIAGNOSTICS_TS
      <field_group id="TS_dia" grid_ref="rho_3D">
+#  ifdef TEMPERATURE
          <field id="T_rate" long_name="T rate" unit="Celsius second-1" grid_ref="rho_3D"/>
          <field id="T_adv" long_name="T adv" unit="Celsius second-1" grid_ref="rho_3D"/>
          <field id="T_Hmix" long_name="T Hmix" unit="Celsius second-1" grid_ref="rho_3D"/>
          <field id="T_Vmix" long_name="T Vmix" unit="Celsius second-1" grid_ref="rho_3D"/>
          <field id="T_Forc" long_name="T Forc" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  endif         
 #  ifdef SALINITY
          <field id="S_rate" long_name="S rate" unit="PSU second-1" grid_ref="rho_3D"/>
          <field id="S_adv" long_name="S adv" unit="PSU second-1" grid_ref="rho_3D"/>
@@ -535,8 +542,10 @@
      <field_group id="v_rhs" grid_ref="v_3D">
          <field id="v_rhs" long_name="v rhs" unit="meter second-2" grid_ref="v_3D"/>
      </field_group>
+#  ifdef TEMPERATURE
      <field_group id="TS_dia" grid_ref="rho_3D">
          <field id="T_rhs" long_name="T rhs" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  endif         
 #  ifdef SALINITY
          <field id="S_rhs" long_name="S rhs" unit="PSU second-1" grid_ref="rho_3D"/>
 #  endif
