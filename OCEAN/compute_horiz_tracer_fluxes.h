@@ -140,9 +140,6 @@
 #   endif
 #  endif
 !-------------------------------------------------------------------
-
-
-
           do j=Jstr,Jend
             do i=I_EXT_RANGE
               FX(i,j)=(t(i,j,k,nadv,itrc)-t(i-1,j,k,nadv,itrc))

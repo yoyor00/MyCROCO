@@ -30,8 +30,6 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
-#elif defined GYRE
-      parameter (LLm0=120,   MMm0=100,   N=40)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR

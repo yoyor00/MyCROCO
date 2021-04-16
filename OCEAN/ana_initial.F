@@ -46,7 +46,7 @@
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
-#if defined BASIN || defined GYRE
+#if defined BASIN
       real cff1,cff2
 #endif
 #ifdef INTERNAL
@@ -480,7 +480,7 @@
       if (nrrec.eq.0) then
 !
 #  if defined TRACERS
-#  if defined BASIN || defined GYRE
+#  if defined BASIN
         cff1=(44.690/39.382)**2
         cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
 #    if defined TEMPERATURE
