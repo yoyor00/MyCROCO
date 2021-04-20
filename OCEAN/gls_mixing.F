@@ -453,7 +453,7 @@
 # ifdef TEMPERATURE
      &                    -Akt(i,j,k,itemp)*( cff3m*MAX(bvf(i,j,k),0.)
 #  endif      
-# ifdef SALINITY && !defined TEMPERATURE
+# if defined SALINITY && !defined TEMPERATURE
      &                    -Akt(i,j,k,isalt)*( cff3m*MAX(bvf(i,j,k),0.)
 #  endif      
      &                                     +  cff3p*MIN(bvf(i,j,k),0.) )
