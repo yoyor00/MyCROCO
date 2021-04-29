@@ -200,8 +200,6 @@
       parameter (LLm0=3000, MMm0=4000,  N=100) ! <-- GIGATL3
 #  elif defined  GIGATL1
       parameter (LLm0=10500, MMm0=14000,  N=100) ! <-- GIGATL1
-#  elif defined  RREXTRA
-      parameter (LLm0=1000, MMm0=1500,  N=100) ! <-- RREXTRA
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
