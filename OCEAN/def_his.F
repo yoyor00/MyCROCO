@@ -145,7 +145,7 @@
 #  define vidShflx_lat hisShflx_lat
 #  define vidShflx_sen hisShflx_sen
 # endif
-#ifdef BHFLUX
+#if defined TEMPERATURE && defined BHFLUX
 # define vidBhflx hisBhflx
 #endif
 # if defined SALINITY && defined BWFLUX
@@ -1440,7 +1440,7 @@
         endif
 # endif
 
-# ifdef BHFLUX
+# if defined BHFLUX && defined TEMPERATURE
 !
 ! Bhflx [W/m2]
 !
@@ -3162,7 +3162,7 @@
 # undef vidShflx_lat
 # undef vidShflx_sen
 #endif
-#ifdef BHFLUX
+#if defined BHFLUX && defined TEMPERATURE
 # undef vidBhflx
 #endif
 #if defined BWFLUX & defined SALINITY

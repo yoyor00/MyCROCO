@@ -139,7 +139,8 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#if (defined SOLVE3D && defined BHFLUX && !defined ANA_BTFLUX)
+#if ( defined SOLVE3D && defined TEMPERATURE && defined BHFLUX \
+     && !defined ANA_BTFLUX )
       call get_btflux (itemp)
 #endif
 !
@@ -149,7 +150,7 @@
 !---------------------------------------------------------------
 !
 #if ( defined SOLVE3D && defined SALINITY && defined BWFLUX \
-     &                                    !defined ANA_BTFLUX )
+     && !defined ANA_BTFLUX )
       call get_btflux (isalt)
 #endif
       

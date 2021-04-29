@@ -604,8 +604,6 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
             call fillvalue3d(workr,ncidhis,hisT(itrc),
      &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
-!      write(*,*)'t(10,10,32,nstp,itrc)=',t(10,10,32,nstp,itrc)
-!      write(*,*)'nstp=',nstp
 
       endif   
       enddo

@@ -300,7 +300,6 @@ c********************************************************************
         enddo                 !--> discard FC, rx
 # endif /* PGF_FLAT_BOTTOM */
 
-
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*(
@@ -353,8 +352,6 @@ c********************************************************************
 
           enddo
         enddo
-        
-        
 !
 ! ETA-component of pressure gradient term:
 !-------------- -- -------- -------- -----

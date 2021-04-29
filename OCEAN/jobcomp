@@ -137,20 +137,16 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 	if [[ $FC == ifort || $FC == ifc ]] ; then
 		CPP1="cpp -traditional -DLinux -DIfort"
 		CFT1=ifort
-		FFLAGS1="-O0 -fno-alias -i4 -r8 -fp-model precise"
+		FFLAGS1="-O3 -fno-alias -i4 -r8 -fp-model precise"
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
 		CFT1=gfortran
-		FFLAGS1="-O0 -fdefault-real-8 -fdefault-double-8"
-		#		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
+		FFLAGS1="-O3 -fdefault-real-8 -fdefault-double-8"
+#		 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
-		gfortversion=`gfortran -dumpversion | sed -e 's/\.\([0-9][0-9]\)/\1/g' -e 's/\.\([0-9]\)/0\1/g' -e 's/^[0-9]\{3,4\}$/&00/'`
-		if  [ $gfortversion -ge 100000 ]; then
-		    FFLAGS1="$FFLAGS1 -fallow-argument-mismatch"
-		fi
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======
@@ -210,7 +206,7 @@ XIOS_ROOT_DIR=${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}
 if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         echo " => XIOS activated"
         COMPILEXIOS=TRUE
-        LDFLAGS1="$XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff $LDFLAGS1"
+        LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff"
         CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
         FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
         ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.

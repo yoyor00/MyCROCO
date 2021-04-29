@@ -808,7 +808,7 @@ CR      write(*,*) '  0' MYID
       start_time2=PMPI_Wtime()
       exe_time = start_time2 - start_time1
       MPI_master_only write(stdout,*) '*******************************'
-      MPI_master_only write(stdout,*) 'temps time-stepping : ',exe_time
+      MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 

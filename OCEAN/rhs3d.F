@@ -449,7 +449,6 @@
         enddo
 #  endif
 
-
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=ru(i,j,k)+0.5*(UFx(i,j)+UFx(i-1,j))
@@ -503,7 +502,6 @@
 #  endif
           enddo
         enddo
-
 
         do j=JstrV,Jend
           do i=Istr,Iend
@@ -1741,7 +1739,6 @@
 !
 !======================================================================
 !
-
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
 # ifndef BODYFORCE

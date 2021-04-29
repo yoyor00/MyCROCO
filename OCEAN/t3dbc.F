@@ -79,9 +79,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
       tau_in=dt*tauT_in
       tau_out=dt*tauT_out
 # endif
-
-
-
 !
 # ifndef EW_COM_PERIODIC
 !
@@ -160,8 +157,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
           enddo
         enddo
-
-        
 #  elif defined OBC_COM_WEST && defined OBC_COM_TUPWIND
 !                                               Western edge Upwind BC
 !                                               ======= ==== ====== ==
@@ -383,9 +378,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
           enddo
         enddo
-
-
-
 #  elif defined OBC_COM_SOUTH && defined OBC_COM_TUPWIND
 !                                           Southern edge Upwind BC
 !                                           ======== ==== ====== ==
@@ -535,7 +527,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
 
-
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         do k=1,N
@@ -547,8 +538,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
         enddo
       endif
-
-
 # endif
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
