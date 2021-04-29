@@ -764,6 +764,9 @@
 #ifndef BSTRESS_FAST
 # define  LIMIT_BSTRESS
 #endif
+#ifdef INNERSHELF
+# undef  LIMIT_BSTRESS
+#endif
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
