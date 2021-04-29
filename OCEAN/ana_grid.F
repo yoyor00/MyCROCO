@@ -452,7 +452,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=20.+0.5*(depth-20.)*(1.+tanh((yr(i,j)-cff)/10000.))
         enddo
       enddo
-
 # elif defined INNERSHELF
       do j=JstrR,JendR
         do i=IstrR,IendR
