@@ -207,15 +207,17 @@
 ! dissipation terms, defined at horizontal rho-points.
 !
       inv_g = 1./g
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
+      do j=JstrR,JendR
+        do i=IstrR,IendR
 # ifdef SOLVE3D
           Dstp(i,j)=h(i,j)+z_w(i,j,N)
 # else
           Dstp(i,j)=h(i,j)+zeta(i,j,knew)
 # endif          
+# ifdef WET_DRY
+          Dstp(i,j)=max(Dstp(i,j),Dcrit(i,j))
+# endif
           inv_d(i,j)=1./Dstp(i,j)
-
 # ifdef WKB_WWAVE
 !----------------------------------------------------------------------
 !  Wave parameters from WKB model
