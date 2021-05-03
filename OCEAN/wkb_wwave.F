@@ -209,6 +209,7 @@
 !----------------------------------------------------------------------
 !
       if (iwave.eq.1) then
+!
 # define ANA_INI_WKB
 
 # ifdef ANA_INI_WKB
@@ -298,9 +299,6 @@
         do j=jstrR,jendR
           do i=istrR,iendR
             Dstp(i,j)=h(i,j)+zeta(i,j,knew)
-# ifdef WET_DRY
-            Dstp(i,j)=max(Dstp(i,j),Dcrit(i,j))
-# endif
             dsup=0.0
             do k=1,4
               dd = Dstp(i,j) + dsup         !+ wkb_tide
@@ -393,9 +391,6 @@
           do i=istrR,iendR
 #  ifdef WAVE_OFFLINE
             Dstp(i,j)=h(i,j)+zeta(i,j,knew)
-#   ifdef WET_DRY
-            Dstp(i,j)=max(Dstp(i,j),Dcrit(i,j))
-#   endif
             khd = Dstp(i,j)*wfrq(i,j)*wfrq(i,j)/g
             kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
      &                   +khd*(0.3555555555  + khd*(0.1608465608
@@ -534,9 +529,6 @@ C$OMP BARRIER
 #  endif
 # else
           Dstp(i,j)=h(i,j)+zeta(i,j,knew)
-# endif
-# ifdef WET_DRY
-          Dstp(i,j)=max(Dstp(i,j),Dcrit(i,j))
 # endif
           cgx(i,j)=wcg(i,j,wstp)*rkx(i,j)
           cge(i,j)=wcg(i,j,wstp)*rke(i,j)
@@ -743,9 +735,6 @@ C$OMP BARRIER
 !
       do j=jstrR,jendR
         do i=istrR,iendR
-# ifdef WET_DRY
-          Dstp(i,j)=max(Dstp(i,j),Dcrit(i,j))
-# endif
           wvn(i,j,wnew)=max(sqrt(wkx(i,j,wnew)**2+wke(i,j,wnew)**2),eps)
           inv_k =1.0/wvn(i,j,wnew)
           khn =min(wvn(i,j,wnew)*Dstp(i,j),khmax)
@@ -757,7 +746,6 @@ C$OMP BARRIER
           wsb(i,j,wnew) =sbc*((1.0/Dstp(i,j))**5)
      &                      *(hrm(i,j,wnew)**7)    ! ep_b/rho/sigma
 # elif defined WAVE_BREAK_TG86A
-
           cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
           wsb(i,j,wnew)=sbc/(Dstp(i,j)**3)*(hrm(i,j,wnew)**5)
      &                                    *(1.0-(1.0+peg**2)**(-2.5))
@@ -920,7 +908,7 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
 # ifdef SOLVE3D
-          wlen=pi/wvn(i,j,wnew) ! L/2 = (2*pi/k)/2
+          wlen=pi/wvn(i,j,wnew)  ! L/2 = (2*pi/k)/2
           if (h(i,j)+zeta(i,j,knew).le.wlen) then
             wrk1(i,j)=0.5*(ubar(i,j,knew)+ubar(i+1,j,knew))
             wrk2(i,j)=0.5*(vbar(i,j,knew)+vbar(i,j+1,knew))

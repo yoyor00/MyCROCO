@@ -51,10 +51,6 @@ C$    integer omp_get_thread_num
 #include "sources.h"
 #include "nbq.h"
 
-#ifdef WKB_WWAVE
-# include "wkb_wwave.h"
-#endif
-
 #ifdef DIAGNOSTICS_VRT
 # include "diags_vrt.h"
 #endif
@@ -123,10 +119,6 @@ C$    integer omp_get_thread_num
           sup(i,j)=init 
           ust2d(i,j)=init
           vst2d(i,j)=init
-# ifdef WKB_WWAVE
-          wvn(i,j,1)=1.e-10
-          wvn(i,j,2)=1.e-10
-# endif
 # ifdef AVERAGES
           sup_avg(i,j)=init 
           ust2d_avg(i,j)=init
@@ -138,7 +130,6 @@ C$    integer omp_get_thread_num
           umask_wet(i,j)=1
           vmask_wet(i,j)=1
           pmask_wet(i,j)=1
-          Dcrit(i,j)=D_wetdry
 #endif
 #ifdef SOLVE3D
           rufrc(i,j)=init
