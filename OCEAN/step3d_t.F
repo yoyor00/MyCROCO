@@ -508,6 +508,23 @@
 #  endif
 
 # ifdef TS_MIX_IMP
+
+#  ifdef MUSTANG
+#   undef TS_MIX_IMP 
+      if (itrc .le. 2 .or. itrc .ge.itsubs1+nvp+1 ) then   ! for passive tracers only
+#   include "t3dmix_tridiagonal.h"
+      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
+#   if defined key_sand2D
+         if (.not.l_subs2D(itrc-itsubs1+1)) then
+#    include "t3dmix_tridiagonal_chute.h"
+         endif
+#   else
+#    include "t3dmix_tridiagonal_chute.h"
+#   endif /* key_sand2D */
+      endif
+#   define TS_MIX_IMP
+#  endif  /* MUSTANG */
+
 #  ifdef BIO_HADV_WENO5
 #   undef TS_MIX_IMP 
          if (itrc .gt. 2) then   ! for passive tracers only
@@ -523,26 +540,25 @@
 #  ifdef BIO_HADV_WENO5
          endif
 #  endif
-# else
+
+# else /* TS_MIX_IMP */
+
 #  if !defined MUSTANG
-#  include "t3dmix_tridiagonal.h"
+#   include "t3dmix_tridiagonal.h"
 #  else
       if (itrc .le. 2 .or. itrc .ge.itsubs1+nvp+1 ) then   ! for passive tracers only
-#  include "t3dmix_tridiagonal.h"
-      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then
-
-# if defined MUSTANG && defined key_sand2D
+#   include "t3dmix_tridiagonal.h"
+      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
+#   if defined key_sand2D
          if (.not.l_subs2D(itrc-itsubs1+1)) then
-#  include "t3dmix_tridiagonal_chute.h"
+#    include "t3dmix_tridiagonal_chute.h"
          endif
-
-# else
-#  include "t3dmix_tridiagonal_chute.h"
-# endif
-
+#   else
+#    include "t3dmix_tridiagonal_chute.h"
+#   endif /* key_sand2D */
       endif
-#  endif
-# endif
+#  endif /* MUSTANG */
+# endif /* TS_MIX_IMP */
 
 # ifdef CONST_TRACERS
           do k=1,N
