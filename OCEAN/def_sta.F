@@ -36,6 +36,9 @@
       integer lstr, lvar, stadim, ftimedim, twodim
       integer pgrd(2), temp(2), checkdims
       integer lenstr
+# ifdef MUSTANG 
+      integer itrc
+# endif
 # ifdef SOLVE3D
       integer trcdim
 #  ifdef ALL_SIGMA
@@ -387,6 +390,40 @@
 #   endif
        endif ! salinity
 #  endif  /* SALINITY */
+
+#  ifdef MUSTANG
+       do itrc=1,NT-2
+#   ifdef ALL_SIGMA
+        vinfo(1)=vname(1,indxT+2+itrc-1)
+        vinfo(2)='concentration'
+        vinfo(3)='kg/m3'
+        lvar=lenstr(vinfo(1))
+        ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_FTYPE,
+     &                    3,allSigma,staMUS(itrc))
+        lvar=lenstr(vinfo(2))
+        ierr=nf_put_att_text(ncid,staMUS(itrc),'long_name',lvar,
+     &                         vinfo(2)(1:lvar))
+        lvar=lenstr(vinfo(3))
+        ierr=nf_put_att_text(ncid,staMUS(itrc),'units',lvar,
+     &                         vinfo(3)(1:lvar))
+#   else
+        vinfo(1)=vname(1,indxT+2+itrc-1)
+        vinfo(2)='concentration'
+        vinfo(3)='kg/m3'
+        lvar=lenstr(vinfo(1))
+        ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_FTYPE,
+     &                    2,pgrd,staMUS(itrc))
+        lvar=lenstr(vinfo(2))
+        ierr=nf_put_att_text(ncid,staMUS(itrc),'long_name',lvar,
+     &                         vinfo(2)(1:lvar))
+        lvar=lenstr(vinfo(3))
+        ierr=nf_put_att_text(ncid,staMUS(itrc),'units',lvar,
+     &                         vinfo(3)(1:lvar))
+#   endif
+       enddo
+#  endif  /* MUSTANG*/
+
+
 !
 !  Define density anomaly.
 !
@@ -695,6 +732,17 @@
         endif
        endif
 #  endif  /* SALINITY */
+#  ifdef MUSTANG
+       do itrc=1,NT-2
+        vinfo(1)=vname(1,indxT+2+itrc-1)
+        lvar=lenstr(vinfo(1))
+        ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staMUS(itrc))
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+       enddo
+# endif
 !
 !  Define density anomaly.
 !

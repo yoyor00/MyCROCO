@@ -41,7 +41,7 @@
      &        istalon,           istalat,         istadpt,
      &        istatem,           istasal,         istaden, 
      &        istau,             istav,           istaz
-      parameter (NSTAVARS=12,
+      parameter (NSTAVARS=12+NT-2,
      &        istagrd=-1,        istatstr=0,  
      &        istaxgrd=1,        istaygrd=2,      istazgrd=3, 
      &        istalon=4,         istalat=5,       istadpt=6,
