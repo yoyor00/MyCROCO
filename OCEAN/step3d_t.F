@@ -550,7 +550,7 @@
 #   include "t3dmix_tridiagonal.h"
       elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
 #   if defined key_sand2D
-          if (.not.l_subs2D(itrc-itsubs1+1)) then
+         if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    include "t3dmix_tridiagonal_chute.h"
          endif
 #   else
