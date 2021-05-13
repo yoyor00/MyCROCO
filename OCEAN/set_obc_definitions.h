@@ -43,7 +43,7 @@
 /* PARENT OBC DEFINITIONS */
 
 #ifndef CHILD
-# ifdef CHANNEL
+# ifdef DUNE
 #  define OBC_COM_EAST
 #  define OBC_COM_WEST
 #  ifdef OBC_TSPECIFIED
@@ -55,22 +55,6 @@
 #  define OBC_COM_ZCHAPMAN
 #  define OBC_COM_M2SPECIFIED_WEST
 #  define OBC_COM_M2CHARACT_EAST
-# elif defined TFLAT2DV
-#  define OBC_COM_WEST
-#  ifdef OBC_TSPECIFIED
-#   define OBC_COM_TSPECIFIED
-#  endif
-#  ifdef OBC_M3ORLANSKI
-#   define OBC_COM_M3ORLANSKI
-#  endif
-#  ifdef OBC_M2CHARACT
-#   define OBC_COM_M2CHARACT
-#   define OBC_COM_ZSPECIFIED
-#  endif
-#  ifdef OBC_TUPWIND
-#   define OBC_COM_TUPWIND
-#  endif
-#  undef OBC_TORLANSKI
 # else
 #  ifdef OBC_EAST
 #   define OBC_COM_EAST

@@ -600,10 +600,14 @@ IF(rw == 'r')THEN
 ! namelists reading
 !==================
 
-#ifdef key_MUSTANG_V2
-    filepc=REPFICNAMELIST//'/paraMUSTANGV2.txt'
+#ifdef key_CROCO
+    filepc=REPFICNAMELIST//'/'//SEDNAMV
 #else
+# ifdef key_MUSTANG_V2
+    filepc=REPFICNAMELIST//'/paraMUSTANGV2.txt'
+# else
     filepc=REPFICNAMELIST//'/paraMUSTANGV1.txt'
+# endif
 #endif
     OPEN(50,file=filepc,status='old',form='formatted',access='sequential')
     READ(50,namsedim_init)
@@ -911,7 +915,7 @@ ENDIF
              MPI_master_only WRITE(ierrorlog,*)' The "SAND" variables should be stored in variable.dat '
              MPI_master_only WRITE(ierrorlog,*)'in order of decreasing diameters (the coarsest sand to the finest sand)'
              MPI_master_only WRITE(ierrorlog,*)' It is not the case : (see in variable.dat) '
-             MPI_master_only WRITE(ierrorlog,*)' diam_r(',irk_fil(iv),')=',diam_sed(irk_fil(iv)),' > diam_r(',irk_fil(iv2),')=',diam_sed(irk_fil(iv2))
+!             MPI_master_only WRITE(ierrorlog,*)' diam_r(',irk_fil(iv),')=',diam_sed(irk_fil(iv)),' > diam_r(',irk_fil(iv2),')=',diam_sed(irk_fil(iv2))
 
              CALL_MPI MPI_FINALIZE(IERR_MPI)
              STOP
@@ -1540,17 +1544,17 @@ ENDIF
                                 epmax_nivsed_out*1000,'mmeters (integration below)'
            MPI_master_only WRITE(iscreenlog,*)'the last layer saved in the sediment output file will be that  ',  &
                               'the bottom of which exceeds the desired maximum thickness '          
-           MPI_master_only WRITE(iscreenlog,*)'number of sediment layers in output file :',nk_nivsed_out,'INT(',epmax_nivsed_out,'/',dzs_estim,'+3)'
+!           MPI_master_only WRITE(iscreenlog,*)'number of sediment layers in output file :',nk_nivsed_out,'INT(',epmax_nivsed_out,'/',dzs_estim,'+3)'
            IF (.NOT. l_dzsmaxuni) THEN
              MPI_master_only WRITE(iscreenlog,*)
-             MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-             MPI_master_only WRITE(iscreenlog,*)'WARNING : the maximum number of saved sed. layers has been evaluated from dzsmaxuni=',dzsmaxuni
+!             MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+!             MPI_master_only WRITE(iscreenlog,*)'WARNING : the maximum number of saved sed. layers has been evaluated from dzsmaxuni=',dzsmaxuni
              MPI_master_only WRITE(iscreenlog,*)'            if dzsmax is not uniform, it could be smaller than dzsmaxuni and  &
                            then there may be points where '
              MPI_master_only WRITE(iscreenlog,*)'             this number is not sufficient to describe the maximum thickness'
              MPI_master_only WRITE(iscreenlog,*)
              MPI_master_only WRITE(iscreenlog,*)'This option is not recommended with l_dzsmaxuni=.False.'
-             MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+!             MPI_master_only WRITE(iscreenlog,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
            ENDIF
        ENDIF_MPI
      ELSE IF(choice_nivsed_out == 4 ) THEN

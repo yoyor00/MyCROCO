@@ -95,7 +95,7 @@ c********************************************************************
 # ifdef POT_TIDES
 #  include "tides.h"
 # endif
-# if defined SINGLE_COLUMN_GRADP
+# ifdef SED_TOY
 #  include "forces.h"
 # endif
 !
@@ -306,11 +306,11 @@ c********************************************************************
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*(
-# if defined SINGLE_COLUMN_GRADP
+# ifdef SED_TOY
      &     -gdzetadx*cos(2.*pi*omga*time)*om_u(i,j)
 # else
      &                                             P(i-1,j,k)-P(i,j,k)
-# ifndef PGF_FLAT_BOTTOM
+#   ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i-1,j,k))
      &                                      *(z_r(i,j,k)-z_r(i-1,j,k))
      &     -OneFifth*( (dRx(i,j)-dRx(i-1,j))*( z_r(i,j,k)-z_r(i-1,j,k)
@@ -442,19 +442,19 @@ c********************************************************************
         do j=JstrV,Jend
           do i=Istr,Iend
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
-# if defined SINGLE_COLUMN_GRADP
+# ifdef SED_TOY
      &     -gdzetady*cos(2.*pi*omga*time)*on_v(i,j)
 # else
 
-# if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
+#  if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
      &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
-# elif defined FORCED_OSCNONROTBBL
+#  elif defined FORCED_OSCNONROTBBL
      &     -gdzetady*cos(omega*time)*on_v(i,j)+
-# elif defined FORCED_NONROTBBL
+#  elif defined FORCED_NONROTBBL
      &     -gdzetady*on_v(i,j)+
-# endif
+#  endif
      &                                             P(i,j-1,k)-P(i,j,k)
-# ifndef PGF_FLAT_BOTTOM
+#  ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i,j-1,k))
      &                                      *(z_r(i,j,k)-z_r(i,j-1,k))
      &     -OneFifth*( (dRx(i,j)-dRx(i,j-1))*( z_r(i,j,k)-z_r(i,j-1,k)
@@ -462,7 +462,7 @@ c********************************************************************
      &                -(dZx(i,j)-dZx(i,j-1))*( rho(i,j,k)-rho(i,j-1,k)
      &                             -OneTwelfth*(dRx(i,j)+dRx(i,j-1)) )
      &                                                             ))
-#   endif
+#  endif
 # endif
      &                                                               )
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL

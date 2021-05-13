@@ -240,7 +240,7 @@ C$    integer omp_get_thread_num
       return
       end
 
-#  if defined  MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+#  ifdef MORPHODYN
 !======================================================================
 !
 !                    subroutine set_depth_movbat

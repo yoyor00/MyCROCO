@@ -80,6 +80,24 @@
 !/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 # define REPFICNAMELIST 'FIC_NAMELIST'
 
+# ifdef key_CROCO
+#  ifdef DUNE
+#   ifdef ANA_DUNE
+#     define SEDNAM  'parasubstance_MUSTANG_Ana_dune.txt'
+#     define SEDNAMV 'paraMUSTANGV2_Ana_dune.txt'
+#   else
+#     define SEDNAM  'parasubstance_MUSTANG_Dune.txt'
+#     define SEDNAMV 'paraMUSTANGV2_Dune.txt'
+#   endif
+#  elif defined SED_TOY
+#   define SEDNAM  'parasubstance_MUSTANG_Sed_toy.txt'
+#   define SEDNAMV 'paraMUSTANGV1_Sed_toy.txt'
+#  elif defined TFLAT2DV
+#   define SEDNAM  'parasubstance_MUSTANG_Tflat2dv.txt'
+#   define SEDNAMV 'paraMUSTANGV2_Tflat2dv.txt'
+#  endif
+# endif
+
 !/* Spatial Grid limits definition  of loops
 !/*   inside the domain - except meshes at open boundaries
 !*/

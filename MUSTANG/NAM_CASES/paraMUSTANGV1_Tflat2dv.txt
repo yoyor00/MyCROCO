@@ -1,80 +1,71 @@
 :=============================================================================
-:             MODULE MUSTANG  --- version V2 ----
+:             MODULE MUSTANG   --- version V1 ----
 :    NAMELIST FOR SEDIMENT BEHAVIOUR AND MANAGEMENT PARAMETERS
 :=============================================================================
 :
 : namsedim_init            : relative to sediment initialization
-: namsedim_layer           : relative to sediment layers characterization and active layer
+: namsedim_layer           : relative to sediment layers characterization
 : namsedim_bottomstress    : relative to bottom shear stress
 : namsedim_deposition      : relative to sediment deposition
 : namsedim_erosion         : relative to sediment erosion
-: namsedim_poro            : relative to porosity
-: namsedim_bedload         : relative to sediment bedload
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-: namsedim_time_dyninsed   : relative to time step for the calculation 
-:                             of consolidation/diffusion or bioturbation in sediment
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
 : namsedim_morpho          : relative to morphodynamic
 : namtempsed               : relative to temperature estimation in sediment (if ! defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file sediment
-: namsedim_debug           : output for debug
 : namflocmod               : parameters using for FLOCMOD module (only if key_MUSTANG_flocmod)
 
 
 :------------------------------------------------------------------------------
-:  namsedim_init : Namelist relative to sediment initialization et definition
+:  namsedim_init : Namelist relative to sediment initialization
 :------------------------------------------------------------------------------
 &namsedim_init
-   date_start_dyninsed='01/01/2000 00:00:00'   ! starting date for dynamic processes in sediment
-   date_start_morpho='01/01/2019 00:00:00'   ! starting date for dynamic processes in sediment
+   date_start_dyninsed='30/01/2000 00:00:00'   ! starting date for dynamic processes in sediment
+   date_start_morpho='08/01/1990 00:00:00'   ! starting date for morphodynamic processes 
    l_repsed=.false.        ! boolean set to .true. if sedimentary variables are initialized from a previous run
-   filrepsed='./repsed.nc' ! file from which the model is initialized for the continuation of a previous run
+   filrepsed='./CROCO_FILES/croco_sedini.nc' ! file from which the model is initialized for the continuation of a previous run
                            ! ATTENTION : filrepsed must be given if l_bathy_actu=.T. in order to read new h0 even if l_repsed=.F.
    l_initsed_vardiss=.false.! set to .true. if initialization of dissolved variables, temperature and salinity in sediment 
                            ! will be done with concentrations in water at bottom (k=1)
    l_unised = .true.       ! boolean set to true for a uniform bottom initialization
    fileinised =  './Init.nc' ! File for initialisation (if l_unised is False)
-   l_z0seduni=.TRUE.       ! .true. if z0sed uniform (not vary with space (used only TRUE)) 
-   z0seduni = 0.0001       ! uniforme bed roughness (m)
-   z0sedmud = 0.0001       ! mud (i.e.minimum) bed roughness (m) (used only if l_unised is false) 
+   l_z0seduni=.true.       ! boolean set to false for z0sed computation from sediment diameter (if true, z0seduni is used)
+   z0seduni = 0.0001      ! uniforme bed roughness (m)
+   z0sedmud = 0.0001      ! mud (i.e.minimum) bed roughness (m) (used only if l_unised is false)
    z0sedbedrock = 0.005    ! bed roughness for bedrock (not sediment) (m) (used only if l_unised is false)
-   hseduni = 3.            ! initial uniform sediment thickness(m)
-   cseduni= 702.0         ! initial sediment concentration
-   l_init_hsed=.false.      ! .true. if we want to adjust the sediment thickness in order to be coherent with sediment parameters
+   hseduni = 0.1541        ! initial uniform sediment thickness(m)
+   cseduni= 978.3          ! initial sediment concentration
+   l_init_hsed=.FALSE.     ! .true. if we want to adjust the sediment thickness in order to be coherent with sediment parameters
                            !  calculation of a new hseduni based on cseduni, cvolmax values, and csed_ini  of each sediment,
-   csed_mud_ini = 300.0    ! mud concentration into initial sediment (if =0. ==> csed_mud_ini=cfreshmud)
+   csed_mud_ini = 300.0      ! mud concentration into initial sediment (if =0. ==> csed_mud_ini=cfreshmud)
    ksmiuni = 1             ! lower grid cell indices in the sediment
-   ksmauni = 11             ! upper grid cell indices in the sediment
-   sini_sed=35.           ! initial interstitial water uniform salinity (in the sediment)
-   tini_sed=10.           ! initial interstitial water uniform temperature  (in the sediment)
-   poro_mud_ini=0. /      ! initial porosity of mud fraction
-
-:------------------------------------------------------------------------------------------
-:  namsedim_layer : Namelist relative to sediment layers characterization and active layer
+   ksmauni = 2             ! upper grid cell indices in the sediment
+   sini_sed=35.5           ! initial interstitial water uniform salinity (in the sediment)
+   tini_sed=10.0 /         ! initial interstitial water uniform temperature  (in the sediment)
+:
+:
+:------------------------------------------------------------------------------
+:  namsedim_layer : Namelist relative to sediment layers characterization
 :------------------------------------------------------------------------------
 &namsedim_layer
-   l_dzsminuni=.FALSE.  ! .true. if dzsmin vary with space (not used)
-   dzsminuni=1.0e-5     ! minimum sediment layer thickness(m)
-   dzsmax_bottom=0.1    ! maximum thickness of bottom layers which result from the fusion when ksdmax is exceeded (m)
+   dzsmin=1.0e-5        ! minimum sediment layer thickness(m)
+   dzsmax_bottom=10.    ! maximum thickness of bottom layers which result from the fusion when ksdmax is exceeded (m)
    l_dzsmaxuni=.TRUE.   ! boolean set to .true. if user define (in sed_init) dzsmax variable with space (depend on i,j)
    dzsmaxuni=10.        ! uniform value of dzsmax : maximum thickness for the superficial sediment layer (m)
                         !    must be >0    if l_dzsmaxuni=.TRUE.
                         !               or if l_dzsmaxuni=.FALSE. and l_repsed=.FALSE.
                         !               or if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. but dzsmax(i,j) not present in filrepsed
                         !    must be =0 if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. and dzsmax readed in filrepsed
-   nlayer_surf_sed=5 / ! number of layers below the sediment surface that can not be melted (max thickness=dzsmax)
-   k1HW97=0.07          ! Computation of active layer thickness (Harris and Wiberg, 1997) 
-   k2HW97=6.0           ! ref values : k1HW97=0.07 k2HW97=6.0
-   fusion_para_activlayer=1. /  !  Criterion cohesiveness for fusion in active layer
-                                !  = 0 : no fusion,  = 1 : frmudcr1 (default), > 1 : between frmudcr1 & frmudcr2
-
+   nlayer_surf_sed=1 / ! number of layers below the sediment surface that can not be melted (max thickness=dzsmax)
+:
+:
 :------------------------------------------------------------------------------
 :  namsedim_bottomstress : Namelist relative to bottom shear stress
 :------------------------------------------------------------------------------
 &namsedim_bottomstress
-   l_fricwave=.false. ! boolean set to .true. if using wave related friction factor for bottom shear stress 
+   l_fricwave=.false.            ! boolean set to .true. if using wave related friction factor for bottom shear stress 
    fricwav=0.06                  ! wave related friction factor (used for bottom shear stress computation)
    l_z0hydro_coupl_init= .FALSE. ! boolean set to true if evaluation of z0 hydro depending on sediment composition at the beginning of the simulation
    l_z0hydro_coupl=.FALSE.       ! boolean set to true if evaluation of z0 hydro depending on sediment composition along the run
@@ -96,7 +87,7 @@
                     !     value by default=0.02 correspond to Van Rijn experiments -  DO NOT CHANGED IF NOT EXPERT
    cvolmaxsort=0.58 ! maximum volumic concentration of sorted sand
    cvolmaxmel=0.67  ! maximum volumic concentration of mixed sediments
-   slopefac=0.0 /  ! Slope effect multiplicative on deposit
+   slopefac=0.01 /  ! Slope effect multiplicative on deposit
 :
 :
 :------------------------------------------------------------------------------
@@ -118,64 +109,28 @@
                          !     E0_sand_option= 0 E0_sand= E0_sand_Cst read in this namelist 
                          !     E0_sand_option= 1 E0_sand evaluated with Van Rijn (1984) formulation 
                          !     E0_sand_option= 2 E0_sand evaluated with erodimetry formulation (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
-                         !     E0_sand_option= 3  then E0_sand evaluated with Wu and Lin (2014) formulation
-   E0_sand_Cst=0.0000      !0.0002     ! Constant erosion flux for sand (used if E0_sand_option= 0) 
+   E0_sand_Cst=0.0002   !0.0002 Constant erosion flux for sand (used if E0_sand_option= 0) 
    E0_sand_para=1.       ! coefficient used to modulate erosion flux for sand   (=1 if no correction )
    n_eros_sand=1.6       ! parameters for erosion flux for sand (E0_sand*corfluero*(tenfo/toce-1.)**n_eros_sand )
                          ! WARNING : choose parameters compatible with E0_sand_option (example : n_eros_sand=1.6 for E0_sand_option=1)
    E0_mud=0.0002          ! parameters for erosion flux for pure mud 
-   E0_mud_para_indep=1.  ! parameter to correct E0_mud in case of erosion class by class in non cohesive regime
    n_eros_mud=1.         ! E0_mud*corfluero*(tenfo/toce-1.)**n_eros_mud
    ero_option = 1        ! choice of erosion formulation for mixing sand-mud
                          !   ero_option= 0 : pure mud behavior (for all particles and whatever the mixture)
                          !   ero_option= 1 : linear interpolation between sand and mud behavior, depend on proportions of the mixture
                          !   ero_option= 2 : formulation derived from that of J. Vareilles (2013)
                          !   ero_option= 3 : formulations proposed by B. Mengual (2015) with exponential coefficients depend on proportions of the mixture
-   l_xexp_ero_cst=.FALSE.!  .true. if xexp_ero estimated from empirical formulation, depending on frmudcr1 
    xexp_ero = 2.0        ! used only if ero_option=3 : adjustment on exponential variation  (more brutal when xexp_ero high)
    corfluer1=0.01         ! correction factors for erosion flux computations : Increases the erosion flow when the concentration of mud in the sediment is low (mud cream)
-   corfluer2=350.        ! corfluero=1.+corfluer1*MAX(0.0_rsh,corfluer2-csed_tot_surface) typically, increase erosion flow if Crelmud <350 g/L  
-   htncrit_eros=0.0      ! critical water height so as to prevent erosion under a given threshold (the threshold value is different for flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
-   tau_cri_option=1      !  0: Shields ; 1: Wu and Lin (2014)
-   tau_cri_mud_option_eroindep=1 !  0: x1toce_mud*cmudr**x2toce_mud
-                                 !  1: toce_meansan if somsan>eps (else->case0)
-                                 !  2: minval(toce_sand*cvsed/cvsed+eps) if >0 (else->case0)
-                                 !  3: min( case 0; toce(isand2) )
-   l_eroindep_noncoh=.TRUE. !  .TRUE. in order to activate independant erosion for the different sediment classes sands and muds  
-                            !.FALSE. mixture mud/sand eroded as in version V1
-   l_eroindep_mud=.FALSE.   !  .TRUE. if mud erosion independant fro sands erosion
-                            ! .FALSE. if mud erosion porporitionnal to total sand erosion
-   l_peph_suspension=.FALSE. / !  Hindering / exposure processes in critical shear stress estimate for suspension
-
-:------------------------------------------------------------------------------
-:  namsedim_poro : Namelist relative to porosity
-:------------------------------------------------------------------------------
-&namsedim_poro
-   poro_option=2   !  1 or 2, 1: Wu and Li (2017) / 2: mix ideal coarse/fine packing (option 1 incompatible with consolidation)
-   poro_min=0.2    ! minimum porosity below which consolidation is stopped
-   Awooster=0.42   ! formulation of  Wooster et al. (2008) for estimating porosity associated to the non-cohesive sediment
-   Bwooster=-0.458 ! see Cui et al. (1996)
-   Bmax_wu=0.65 /  ! maximum portion of the coarse sediment class participating in filling
+   corfluer2=350.        ! corfluero=1.+corfluer1*MAX(0.0_rsh,corfluer2-csed_tot_surface) typically, increase erosion flow if Crelmud <350 g/L 
+   htncrit_eros=0.0  /   ! critical water height so as to prevent erosion under a given threshold (the threshold value is different for flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
 :
 :
-:------------------------------------------------------------------------------
-:  namsedim_bedload : Namelist relative to sediment bedload 
-:------------------------------------------------------------------------------
-&namsedim_bedload
-   l_peph_bedload=.FALSE.  ! Hindering / exposure processes in critical shear stress estimate for bedload
-   l_slope_effect_bedload=.TRUE. ! Accounting for slope effects in bedload fluxes (Lesser formulation)
-   alphabs=1.0            !  Slope effects --> Default coefficients Lesser et al. (2004)
-   alphabn=1.5            !  default is 1.5 but alphabn can be higher, until 5-10 (Gerald Herling experience)
-   hmin_bedload=0.1       ! no bedload in u/v directions if h0+ssh <= hmin_bedload in neighbouring cells
-   l_fsusp=.FALSE. /      ! limitation erosion fluxes of non-coh sediment in case of simultaneous bedload transport, 
-                          ! according to Wu & Lin formulations
-                          ! should be T only if erosion flux is fitted to total transport; should not if E0_sand_option=3 (Wu & Lin)
-   
 :------------------------------------------------------------------------------
 :  namsedim_lateral_erosion : Namelist relative to lateral sediment erosion
 :------------------------------------------------------------------------------
 &namsedim_lateral_erosion
-   coef_erolat=0.000            !  slope effect multiplicative factor 
+   coef_erolat=0.000           !0.002  slope effect multiplicative factor 
    coef_tenfon_lat=5.0          !  parameter to evaluate the lateral stress as a function of the average tangential velocity on the vertical
    l_erolat_wet_cell=.FALSE. /  ! .true in order to take into account wet cells lateral erosion
 :
@@ -211,8 +166,8 @@
    xdifs2 = 0.0               ! diffusion coefficients within the sediment (NOT USED)
    xdifsi1 = 1.e-6            ! diffusion coefficients at the water sediment interface
    xdifsi2 = 0.0              ! diffusion coefficients at the water sediment interface (NOT USED)
-   epdifi = 0.01               ! diffusion thickness in the water at the sediment-water interface
-   fexcs=0.5 /                 ! factor of eccentricity of concentrations in vertical fluxes evaluation (.5 a 1) 
+   epdifi = 0.01              ! diffusion thickness in the water at the sediment-water interface
+   fexcs=0.5 /                ! factor of eccentricity of concentrations in vertical fluxes evaluation (.5 a 1) 
 :                             !  (numerical scheme for dissolved diffusion/advection(by consol) in sediment)
 
 :------------------------------------------------------------------------------
@@ -242,11 +197,12 @@
 :------------------------------------------------------------------------------
 :  namsedim_morpho : Namelist relative to morphodynamic
 :------------------------------------------------------------------------------
+
 &namsedim_morpho
-  l_morphocoupl=.true.            ! .true if coupling module morphodynamic  
+  l_morphocoupl=.false.            ! .true if coupling module morphodynamic  
   MF = 1.0                         ! morphological factor : multiplication factor for morphological evolutions, equivalent to a "time acceleration" 
                                    ! (morphological evolutions over a MF*T duration are assumed to be equal to MF * the morphological evolutions over T). 
-  dt_morpho = 600.                  ! time step for morphodynamic (s)
+  dt_morpho = 60.                  ! time step for morphodynamic (s)
   l_morphomesh = .false.           ! .true. in order to define meshes where morphodynamic is not applied (morpho=0)
                                    !       to program in routine sed_MUSTANG_morphoinit_mesh in initMUSTANG.F90       
   l_dredging = .false.             ! .true. if taking into account dredging (works only if key_dredging - not operational)
@@ -294,30 +250,14 @@
 :  ep_nivsed_out (mm) : 5 values of sediment layer thickness (mm), beginning with surface layer (used if choice_nivsed_out=4).
 :  epmax_nivsed_out (mm) : maximum thickness (mm) for output each layers of sediment (used if choice_nivsed_out=3). 
                           Below the layer which bottom level exceed this thickness, an addition layer is an integrative layer till bottom
-:  l_outsed_flx_bedload  : true if output bedload fluxes (6 2D variables per constitutive particulate variable)
-:  l_outsed_flx_WS       : true if output fluxes threw interface Water/sediment (2 2D variables per constitutive particulate variable)
-:  l_outsed_poro         : true if output porosity 
-:  l_outsed_activlayer   : true if output active layer diagnostics ( 3 2D variables)
-:  l_outsed_surf         : true if output mesh surfaces
 :------------------------------------------------------------------------------
 &namsedoutput
    l_outsed_saltemp =.TRUE.     ! true if output Salinity and Temperature in sediment
-   l_outsed_poro  = .TRUE. 
-   l_outsed_activlayer  =.FALSE.
-   l_outsed_surf =.FALSE. 
-   l_outsed_flx_Bload_all=.TRUE.
-   l_outsed_flx_WS_all=.TRUE.
+   l_outsed_poro  = .FALSE. 
+   l_outsed_flx_WS_all=.FALSE.
    l_outsed_toce=.TRUE.
-   l_outsed_frmudsup=.FALSE.
-   l_outsed_bil_Bload_all=.FALSE.
-   l_outsed_fsusp=.FALSE.
+   l_outsed_frmudsup=.TRUE.
    l_outsed_dzs_ksmax=.TRUE.
-   l_outsed_peph=.FALSE.
-   l_outsed_eroiter=.FALSE.
-   l_outsed_z0sed=.FALSE.
-   l_outsed_flx_WS_int=.FALSE.
-   l_outsed_flx_Bload_int=.FALSE.
-   l_outsed_bil_Bload_int=.FALSE.
    name_out_hsed='HSED'         ! name of variable saved in sediment output file
    name_out_nbniv='NBNIV'
    name_out_dzs='DZS'
@@ -338,18 +278,6 @@
    epmax_nivsed_out=0./        ! maximum thickness (mm) for output each layers of sediment (used if choice_nivsed_out=3). 
                                !  Below the layer which bottom level exceed this thickness, an addition layer is an integrative layer till bottom
 
-:------------------------------------------------------------------------------
-:  Namelist relative to debug MUSTANG V2 (if key_MUSTANG_debug)
-:------------------------------------------------------------------------------
-&namsedim_debug
-   l_debug_effdep = .FALSE.  ! .true. if print some informations for debugging MUSTANG deposition
-   l_debug_erosion = .FALSE. ! .true. if  print informations for debugging  in erosion routines
-   date_start_debug='01/01/2019 00:00:00' ! starting date for write debuggng informations 
-   lon_debug= 0.00d0        ! define mesh where we print these informations
-   lat_debug= 0.00d0
-   i_MUSTANG_debug=10        ! indexes of the mesh where we print these informations
-   j_MUSTANG_debug=2   /   ! taking into account only if lon_debug and lat_debug = 0.
-:
 :---------------------------------------------------------------------------------------
 :  Namelist relative to module FLOCMOD (key_flocmod)
 :--------------------------------------------------------------------------------------

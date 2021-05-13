@@ -148,7 +148,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
      &                   record,v2dvar,type)
       endif
 
-#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+#ifdef MORPHODYN
       if (wrtavg(indxHm)) then
          work2d=h_avg
          call fillvalue2d(work2d,ncidavg,avgHm,indxHm,

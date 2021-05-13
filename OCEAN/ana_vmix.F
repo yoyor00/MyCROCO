@@ -28,7 +28,7 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real cff, kappustr
-# ifdef SINGLE_COLUMN_GRADP
+# ifdef SED_TOY
       real ustar0
 # endif
 # include "param.h"
@@ -40,7 +40,7 @@
 #  include "ocean2d.h"
 #  include "forces.h"
 # endif
-# ifdef SINGLE_COLUMN_GRADP
+# ifdef SED_TOY
 #  include "ocean2d.h"
 #  include "forces.h"
 # endif
@@ -87,7 +87,7 @@
           enddo
         enddo
       enddo
-# elif defined SINGLE_COLUMN_GRADP
+# elif defined SED_TOY
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend

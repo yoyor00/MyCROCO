@@ -176,7 +176,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+#ifdef MORPHODYN
       if (wrtavg(indxHm)) then
           do j=JstrR,JendR
             do i=IstrR,IendR

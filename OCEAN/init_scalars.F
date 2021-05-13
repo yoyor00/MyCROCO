@@ -214,7 +214,7 @@ C$OMP END PARALLEL
       ncidbulk=-1
       ncidclm=-1
       ncidqbar=-1
-# if (defined WAVE_OFFLINE && defined MUSTANG)
+#if (defined WAVE_OFFLINE && defined MUSTANG)
       ncidwave=-1
 #endif
 #ifdef DIAGNOSTICS_TS
@@ -397,7 +397,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxVb = ',indxVb
       vname(7,indxVb)='                                           '
       vname(11,indxVb)=' '
 
-#ifdef MORPHODYN
+#if defined MORPHODYN && defined USGS
 CR      write(stdout,'(1x,A,I3)') 'indxHm =',indxHm
       vname(1,indxHm)='hmorph                                     '
       vname(2,indxHm)='moving bathymetry                          '
@@ -1125,7 +1125,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxN2O =',indxN2O
 
 # endif /* BIOLOGY */
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 
       do i=1,NSAND
        if( i < 10) then 

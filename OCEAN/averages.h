@@ -29,7 +29,7 @@
       common /avg_svstr/svstr_avg
       real srflx_avg(GLOBAL_2D_ARRAY)
       common /avg_srflx/srflx_avg
-# if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+# ifdef MORPHODYN
       real h_avg(GLOBAL_2D_ARRAY)
       common /avg_h/h_avg
 # endif

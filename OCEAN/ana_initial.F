@@ -39,7 +39,7 @@
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "scalars.h"
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 # include "sediment.h"
 #endif
 #ifdef SST_SKIN
@@ -48,12 +48,6 @@
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 #if defined SUBSTANCE || defined SEDIMENT
       integer :: iv
-#endif
-#ifdef CHANNEL
-      real cff,cff2
-#ifdef BOSSE
-      real Rij,cffi,cffj
-#endif
 #endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
@@ -98,11 +92,14 @@
 #ifdef TS_HADV_TEST 
       real cff,cff1,cx,cy,cmax,xx,yy
 #  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
-#  include "work.h"
+#   include "work.h"
 #  endif      
 #endif
 #ifdef DUNE
-      real cff, cff2, cff3
+      real cff, cff2
+# ifdef DUNE3D
+      real Rij,cffi,cffj
+# endif
 #endif
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
@@ -217,50 +214,39 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
-#elif defined CHANNEL 
 
-      DO j=JR_RANGE
-        DO i=IR_RANGE
-          zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
-          zeta(i,j,:)=zeta(i,j,1)
-#   ifdef key_ANA_bedload
-          cff2=1.67
-#   else
-          cff2=0.58
-#   endif     
-          cff=0.5*(1./10)**2
-          ubar(i,j,1) = cff2/(1-
-     &               0.5*exp(-cff*(xp(i,j)-0.5*xl)**2))
-
-#   ifdef BOSSE
-#     ifdef MPI
+# elif defined DUNE
+        cff=0.5*(1./10)**2
+#    ifdef ANA_DUNE
+        cff2=1.67
+#    else
+        cff2=0.58
+#    endif
+        do j=JR_RANGE
+          do i=IR_RANGE
+#    if defined DUNE3D && defined MUSTANG
+#      ifdef MPI
               cffi=(float(i +ii*Lm))
               cffj=(float(j +jj*Mm))
-#     else
+#      else
               cffi=(float(i))
               cffj=(float(j))
-#     endif
+#      endif
               Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
      &                    (cffj-25.0_rsh)**2.0_rsh )
               ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(2.0_rsh*(Rij))**2.))
-#   endif
-          vbar(i,j,1)=0.
-          ubar(i,j,:)=ubar(i,j,1)
-          vbar(i,j,:)=vbar(i,j,1)
-        enddo
-      enddo
-      
-# elif defined SED_TOY
-        do j=JR_RANGE
-          do i=IR_RANGE
-            zeta(i,j,1)=0.
-            zeta(i,j,2)=0.
-            ubar(i,j,1)=1.
-            vbar(i,j,1)=0.
-            ubar(i,j,2)=ubar(i,j,1)
-            vbar(i,j,2)=0.            
+#    else
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*(xp(i,j)-0.5*xl)**2))
+#    endif
+              ubar(i,j,:) = ubar(i,j,1)
+              vbar(i,j,1) = 0.
+              vbar(i,j,:) = vbar(i,j,1)
+              zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+              zeta(i,j,:) = zeta(i,j,1)
           enddo
         enddo
+      
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -398,18 +384,6 @@
          enddo
        enddo
        print*,'CFL_max = ',cmax
-
-#  elif defined SED_TOY
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              u(i,j,k,1)=1.
-              u(i,j,k,2)=u(i,j,k,1)
-              v(i,j,k,1)=0.
-              v(i,j,k,2)=v(i,j,k,1)
-            enddo
-          enddo
-        enddo
 
 #  elif defined KH_INST
 !
@@ -556,45 +530,6 @@
              enddo
           enddo
         enddo
-#  elif defined CHANNEL || defined SINGLE_COLUMN_GRADP
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-                t(i,j,k,1,itemp)=10.
-                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#  ifdef SALINITY
-                t(i,j,k,1,isalt)=0.
-                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#  endif
-            enddo
-          enddo
-        enddo
-#  elif defined TFLAT2DV
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-                t(i,j,k,1,itemp)=10.
-!     &           -0.001_rsh/(9.81_rsh*0.0016)*z_r(i,j,k)
-                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#  ifdef SALINITY
-                t(i,j,k,1,isalt)=35.5
-                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-!                x=(i-1)*0.5*(pm(i-1,j)+pm(i,j))
-!                x=(i-1)*om_u(i,j)
-                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
-     &            on_u(i,j),pm(i,j),pn(i,j)
-!                IF (x < 30000.0_rsh ) THEN
-!                  t(i,j,k,1,isalt)=35.5
-!                ELSE IF (x > 80000.0_rsh ) THEN
-!                  t(i,j,k,1,isalt)= 0.0_rsh
-!                ELSE
-!                  t(i,j,k,1,isalt)=35.5*(1.0_rsh-(x-30000.0_rsh)/50000.0_rsh)
-!                END IF
-!                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#  endif
-            enddo
-          enddo
-        enddo
 
 #  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
         do k=1,N
@@ -650,7 +585,7 @@
 #   ifdef SALINITY
               t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#  endif
+#   endif
             enddo
           enddo
         enddo
@@ -766,9 +701,9 @@
 !  Configuration from Pelletier et al.: linear shear within mixed layer 
 !
         htemp0 = 10.
-#   ifdef SALINITY
+#    ifdef SALINITY
         hsalt0 = 10.
-#   endif
+#    endif
         drho   = 1.2    ! Value to be replaced by script (originally 1.2)
 !
         do j=JR_RANGE
@@ -904,7 +839,7 @@
           enddo
         enddo
 
-#  elif defined  INTERNAL
+#  elif defined INTERNAL
         cff=((2.e-3)**2)/g
         do k=1,N
           do j=JR_RANGE
@@ -958,7 +893,7 @@
           enddo
         enddo
 
-#   elif defined  RIVER
+#  elif defined RIVER
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1022,50 +957,6 @@
           enddo
         enddo
 
-#  elif defined DUNE
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-#   ifdef SALINITY
-              t(i,j,k,1,isalt)=0.
-              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
-              t(i,j,k,1,itemp)=10.
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef ANA_DUNE
-              cff2=1.67
-              cff3=3
-#   else
-              cff2=0.58
-              cff3=1
-#   endif     
-              cff=0.5*(1./10)**2
-              ubar(i,j,1) = cff2/(1-
-     &               0.5*exp(-cff*( 0.5*(xr(i,j)+xr(i-1,j))-0.5*xl)**2))
-              ubar(i,j,2) = ubar(i,j,1)
-
-              vbar(i,j,1) = 0.
-              vbar(i,j,2) = vbar(i,j,1)
-
-              zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)*cff3/xl
-              zeta(i,j,2) = zeta(i,j,1)
-            enddo
-          enddo
-        enddo
-#  elif defined SINGLE_COLUMN_GRADP
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-                t(i,j,k,1,itemp)=10.
-                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#  ifdef SALINITY
-                t(i,j,k,1,isalt)=32.0
-                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#  endif
-            enddo
-          enddo
-        enddo
-
 #  elif defined REGIONAL
         do k=1,N
           do j=JR_RANGE
@@ -1102,7 +993,6 @@
 !
       endif  ! nrrec.eq.0.
 !
-
 ! This is a quick fix to get the initialisation reproducible 
 ! (and right...) with OpenMP or tiling. This initialisation is performed
 ! on the whole domain (or MPI subdomain). 
@@ -1110,11 +1000,11 @@
 ! re-written to make it properly
 !  
 #ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
 #else
-#define LOCALLM Lm
-#define LOCALMM Mm
+# define LOCALLM Lm
+# define LOCALMM Mm
 #endif
 C$OMP MASTER
       Istr1=1
@@ -1134,15 +1024,56 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
+#  elif defined TFLAT2DV
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+                t(i,j,k,1,itemp)=10.
+!     &           -0.001_rsh/(9.81_rsh*0.0016)*z_r(i,j,k)
+                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+                t(i,j,k,1,isalt)=35.5
+                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+!                x=(i-1)*0.5*(pm(i-1,j)+pm(i,j))
+!                x=(i-1)*om_u(i,j)
+                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
+     &            on_u(i,j),pm(i,j),pn(i,j)
+!                IF (x < 30000.0_rsh ) THEN
+!                  t(i,j,k,1,isalt)=35.5
+!                ELSE IF (x > 80000.0_rsh ) THEN
+!                  t(i,j,k,1,isalt)= 0.0_rsh
+!                ELSE
+!                  t(i,j,k,1,isalt)=35.5*(1.0_rsh-(x-30000.0_rsh)/50000.0_rsh)
+!                END IF
+!                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+            enddo
+          enddo
+        enddo
+
+#  elif defined DUNE
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=0.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
+            enddo
+          enddo
+        enddo
+
 #  elif defined SED_TOY
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              t(i,j,k,1,itemp)=18.
-              t(i,j,k,2,itemp)=18.
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #   ifdef SALINITY
-              t(i,j,k,1,isalt)=35.
-              t(i,j,k,2,isalt)=35.
+              t(i,j,k,1,isalt)=0.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #   endif
             enddo
           enddo
@@ -1213,7 +1144,7 @@ C$OMP BARRIER
      &                     )
 !
                  t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
-#  elif defined SINGLE_COLUMN_GRADP
+#  elif defined SED_TOY
             if (k.gt.int(N/2)) then
                 t(i,j,k,1,itpas)=1.
               else
@@ -1227,7 +1158,6 @@ C$OMP BARRIER
               else
                 t(i,j,k,1,itpas)=0
               endif
-
 #  else
             if (h(i,j).lt.300) then
               t(i,j,k,1,itpas)=1.
@@ -1276,9 +1206,9 @@ C$OMP BARRIER
                 else
                      t(i,j,k,1,iv)=0.
                 endif
-#  elif defined CHANNEL
+#  elif defined DUNE && defined MUSTANG
                        t(i,j,k,1,iv)=cini_wat(iv)  
-#  elif defined SINGLE_COLUMN_GRADP
+#  elif defined SED_TOY
                        t(i,j,k,1,iv)=cini_wat(iv)
 #  else
                 if (h(i,j).lt.300) then
@@ -1298,7 +1228,7 @@ C$OMP BARRIER
 !  Initial conditions for sediment tracer variables.
 !----------------------------------------------------------------------
 !
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       do itrc=1,NST
         iv=itrc_sed+itrc-1 
         do k=1,N
@@ -1312,22 +1242,6 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
-
-#  ifdef SED_TOY
-      do iv=itrc_mud,itrc_mud+NMUD-1
-        do k=1,5
-          do j=JR_RANGE
-            do i=IR_RANGE
-              if (.not.got_tini(iv)) then
-                t(i,j,k,1,iv)=1./7.5
-                t(i,j,k,2,iv)=t(i,j,k,1,iv)
-              endif
-            enddo
-          enddo
-        enddo
-      enddo
-#  endif
-
 # endif
 !
 !----------------------------------------------------------------------

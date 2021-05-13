@@ -24,7 +24,7 @@
 &namsedim_init
    date_start_dyninsed='30/01/2000 00:00:00'   ! starting date for dynamic processes in sediment
    date_start_morpho='08/01/1990 00:00:00'   ! starting date for morphodynamic processes 
-   l_repsed=.true.        ! boolean set to .true. if sedimentary variables are initialized from a previous run
+   l_repsed=.false.        ! boolean set to .true. if sedimentary variables are initialized from a previous run
    filrepsed='./CROCO_FILES/croco_sedini.nc' ! file from which the model is initialized for the continuation of a previous run
                            ! ATTENTION : filrepsed must be given if l_bathy_actu=.T. in order to read new h0 even if l_repsed=.F.
    l_initsed_vardiss=.false.! set to .true. if initialization of dissolved variables, temperature and salinity in sediment 
@@ -41,7 +41,7 @@
                            !  calculation of a new hseduni based on cseduni, cvolmax values, and csed_ini  of each sediment,
    csed_mud_ini = 300.0      ! mud concentration into initial sediment (if =0. ==> csed_mud_ini=cfreshmud)
    ksmiuni = 1             ! lower grid cell indices in the sediment
-   ksmauni = 2             ! upper grid cell indices in the sediment
+   ksmauni = 1             ! upper grid cell indices in the sediment
    sini_sed=35.5           ! initial interstitial water uniform salinity (in the sediment)
    tini_sed=10.0 /         ! initial interstitial water uniform temperature  (in the sediment)
 :
@@ -51,14 +51,14 @@
 :------------------------------------------------------------------------------
 &namsedim_layer
    dzsmin=1.0e-5        ! minimum sediment layer thickness(m)
-   dzsmax_bottom=0.1    ! maximum thickness of bottom layers which result from the fusion when ksdmax is exceeded (m)
+   dzsmax_bottom=10.    ! maximum thickness of bottom layers which result from the fusion when ksdmax is exceeded (m)
    l_dzsmaxuni=.TRUE.   ! boolean set to .true. if user define (in sed_init) dzsmax variable with space (depend on i,j)
    dzsmaxuni=10.        ! uniform value of dzsmax : maximum thickness for the superficial sediment layer (m)
                         !    must be >0    if l_dzsmaxuni=.TRUE.
                         !               or if l_dzsmaxuni=.FALSE. and l_repsed=.FALSE.
                         !               or if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. but dzsmax(i,j) not present in filrepsed
                         !    must be =0 if l_dzsmaxuni=.FALSE. and l_repsed=.TRUE. and dzsmax readed in filrepsed
-   nlayer_surf_sed=5 / ! number of layers below the sediment surface that can not be melted (max thickness=dzsmax)
+   nlayer_surf_sed=1 / ! number of layers below the sediment surface that can not be melted (max thickness=dzsmax)
 :
 :
 :------------------------------------------------------------------------------
@@ -109,12 +109,12 @@
                          !     E0_sand_option= 0 E0_sand= E0_sand_Cst read in this namelist 
                          !     E0_sand_option= 1 E0_sand evaluated with Van Rijn (1984) formulation 
                          !     E0_sand_option= 2 E0_sand evaluated with erodimetry formulation (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
-   E0_sand_Cst=0.0002   !0.0002 Constant erosion flux for sand (used if E0_sand_option= 0) 
+   E0_sand_Cst=0.   !0.0002 Constant erosion flux for sand (used if E0_sand_option= 0) 
    E0_sand_para=1.       ! coefficient used to modulate erosion flux for sand   (=1 if no correction )
    n_eros_sand=1.6       ! parameters for erosion flux for sand (E0_sand*corfluero*(tenfo/toce-1.)**n_eros_sand )
                          ! WARNING : choose parameters compatible with E0_sand_option (example : n_eros_sand=1.6 for E0_sand_option=1)
-   E0_mud=0.0002          ! parameters for erosion flux for pure mud 
-   n_eros_mud=1.         ! E0_mud*corfluero*(tenfo/toce-1.)**n_eros_mud
+   E0_mud=0.000          ! parameters for erosion flux for pure mud 
+   n_eros_mud=0.         ! E0_mud*corfluero*(tenfo/toce-1.)**n_eros_mud
    ero_option = 1        ! choice of erosion formulation for mixing sand-mud
                          !   ero_option= 0 : pure mud behavior (for all particles and whatever the mixture)
                          !   ero_option= 1 : linear interpolation between sand and mud behavior, depend on proportions of the mixture

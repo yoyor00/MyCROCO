@@ -26,28 +26,51 @@ clear all
 close all
 %================== User defined parameters ===========================
 
+% choose here if you are using usgs (1) or mustang (0) model output file
+usgs=1
+
 fname='dune_his.nc';
+
+j=2;
+tndx=16; % daily outputs
 
 %======================================================================
 %
 % Read data
 %
-j=2;
-tndx=20;
-%
+
 nc=netcdf(fname);
-time=nc{'scrum_time'}(:)./86400;
-tndx=min(tndx,length(time));
-disp([ 'tndx = ',num2str(tndx), ...
-    ' - Time = ',num2str(time(tndx)),' days' ])
+
+if  usgs == 1 
+   time=nc{'scrum_time'}(:)./86400;
+   tndx=min(tndx,length(time));
+   disp([ 'tndx = ',num2str(tndx), ...
+       ' - Time = ',num2str(time(tndx)),' days' ])
+end
+   
 h=squeeze(nc{'h'}(j,:));
 x=squeeze(nc{'x_rho'}(j,:));
 zeta=squeeze(nc{'zeta'}(tndx,j,:));
 L=length(zeta);
 %
-hmorph  =squeeze(nc{'hmorph'}(tndx,j,:));
-bedthick=squeeze(nc{'bed_thick'}(tndx,:,j,:));
-bedfrac =100*squeeze(nc{'bed_frac_sand_2'}(tndx,:,j,:));
+
+if usgs ~= 1
+    var_hmorph='Hm';
+    hmorph  =squeeze(nc{var_hmorph}(tndx,j,:));
+    bedthick=flipud(squeeze(nc{'DZS'}(tndx,:,j,:)));
+    bed_sand_1=squeeze(nc{'GRAV_sed'}(tndx,:,j,:));
+    bed_sand_2=squeeze(nc{'SAND_sed'}(tndx,:,j,:));
+    bed_tot=squeeze(bed_sand_1) + squeeze(bed_sand_2);
+    bed_frac_sand_1=bed_sand_1./bed_tot;
+    bed_frac_sand_2=bed_sand_2./bed_tot;
+    bedfrac =flipud(100*bed_frac_sand_2);
+else
+    var_hmorph='hmorph';
+    hmorph  =squeeze(nc{var_hmorph}(tndx,j,:));
+    bedthick=squeeze(nc{'bed_thick'}(tndx,:,j,:));
+    bedfrac =100*squeeze(nc{'bed_frac_sand_02'}(tndx,:,j,:));
+end
+
 NL=size(bedfrac,1);
 %
 u=squeeze(nc{'u'}(tndx,:,j,:));
@@ -67,9 +90,12 @@ xu=0.5*(xr(:,1:end-1)+xr(:,2:end));
 zu=0.5*(zr(:,1:end-1)+zr(:,2:end));
 %
 NL=NL+1;
+
 bedthick=padarray(bedthick,1,'replicate','pre');
 bedfrac =padarray(bedfrac, 1,'replicate','pre');
 bedfrac(2:end-1,:)=bedfrac(3:end,:);
+
+
 xbed=repmat(x,[NL 1]);
 h2=repmat(hmorph,[NL 1]);
 zbed=-h2;
@@ -84,25 +110,32 @@ hold on;
 line(xr,-hmorph,'color','k','Linewidth',2)
 line(xr,-h,     'color','r','Linewidth',2,'linestyle','--')
 hold off
-caxis([40 60])
+%caxis([40 60])
+caxis([20 80])
 colorbar
-axis([-Inf Inf -8 -1])
+%axis([-Inf Inf -8 -1])
+axis([2 98 -8 -1])
 grid on
-title(['DUNE Test Case - Fine Sand Fraction - Day ', ...
-        num2str(time(tndx))])
+if usgs ~= 1
+   title(['DUNE/MUSTANG - Fine Sand Fraction - Day ', ...
+        num2str(tndx)])
+else
+   title(['DUNE/USGS - Fine Sand Fraction  - Day ', ...
+        num2str(tndx)])
+end
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
 hold off
 
 % plot bed evolution
 nc=netcdf(fname);
-hmorph=squeeze(nc{'hmorph'}(:,j,:));
+hmorph=squeeze(nc{var_hmorph}(:,j,:));
 close(nc)
 subplot(2,1,2)
 line(xr,-hmorph( 1,:),'color','k','Linewidth',2)
 hold on
 for n=1:5
- it=2^(n-1)+1;
+ it=(2^(n-1));
  if it<=tndx
   line(xr,-hmorph(it,:),'color','k','Linewidth',2)
  end
@@ -110,11 +143,15 @@ end
 hold off
 grid on
 axis([-1 101 -4.5 -1.5])
-title(['DUNE Test Case - Bed evolution: 0 1 2 4 8 16 days'])
+title(['DUNE Test Case - Bed evolution: 0 2 4 8 16 days'])
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
+if usgs ~= 1
+ export_fig -transparent dune_mustang.pdf
+else
+ export_fig -transparent dune_usgs.pdf
+end
 
-export_fig -transparent dune.pdf
 
 return
 

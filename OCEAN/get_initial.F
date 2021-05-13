@@ -19,7 +19,7 @@
 # include "ncscrum.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 # include "sediment.h"
 #endif
 #ifdef BBL
@@ -44,7 +44,7 @@
 
       real time_scale
       integer itrc
-#if defined SEDIMENT || defined BBL
+#if (defined SEDIMENT && defined USGS) || defined BBL
      &      ,  indxWrk
 #endif
       integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,
@@ -310,7 +310,7 @@
         goto 99                                           !--> ERROR
       endif
 
-#ifdef MORPHODYN
+#if defined MORPHODYN && defined USGS
 !
 ! Time evolving bathymetry (only needed for restart)
 !
@@ -433,7 +433,7 @@
         endif
       enddo
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !
 ! Bed thickness
 !

@@ -29,7 +29,7 @@
     nv_bent=0 
     nv_grav=0
     nv_sand=2
-    nv_mud=1
+    nv_mud=0
     nv_sorb=0 /
 
 :-----------------------------------------------------------------------------
@@ -108,15 +108,15 @@
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
       cini_wat_n(1)=0.0
-      cini_sed_n(1)=0.2
+      cini_sed_n(1)=0.5
       cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
-      l_bedload_n(1)=.FALSE.
+      l_bedload_n(1)=.TRUE.
       init_cv_name_n(1)='GRAV'
       obc_cv_name_n(1)='GRAV'
-      tocd_n(1)=1000.
-      ros_n(1)=2600.0
-      diam_n(1)=0.008
+      tocd_n(1)=0.5
+      ros_n(1)=2650.0
+      diam_n(1)=0.0006
       l_sand2D_n(1)=.FALSE.
       l_outsandrouse_n(1)=.FALSE. 
     name_var_n(2)='SAND'
@@ -126,15 +126,15 @@
       flx_atm_n(2)=0.0
       cv_rain_n(2)=0.0
       cini_wat_n(2)=0.0
-      cini_sed_n(2)=0.2
+      cini_sed_n(2)=0.5
       cini_air_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
-      l_bedload_n(2)=.FALSE.
+      l_bedload_n(2)=.TRUE.
       init_cv_name_n(2)='SAND'
       obc_cv_name_n(2)='SAND'
-      tocd_n(2)=1000.
-      ros_n(2)=2600.0
-      diam_n(2)=0.0002
+      tocd_n(2)=0.5
+      ros_n(2)=2650.0
+      diam_n(2)=0.000255
       l_sand2D_n(2)=.FALSE.
       l_outsandrouse_n(2)=.FALSE.  /
     
@@ -197,7 +197,7 @@
       cv_rain_n(1)=0.0
       cini_wat_n(1)=1.0
       cobc_wat_n(1)=1.
-      cini_sed_n(1)=0.6
+      cini_sed_n(1)=0.4
       cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='MES'

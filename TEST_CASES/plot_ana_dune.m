@@ -26,9 +26,13 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-fname='dune_his.nc';
+% choose here if you are using usgs (1) or mustang (0) model output file
+usgs=1
+    
+fname='ana_dune_his.nc';
+
 j=2;
-tndx=6;
+tndx=2; % half hourly outputs
 
 %======================================================================
 
@@ -37,12 +41,25 @@ tndx=6;
 %----------------------------------------------------------
 %
 nc=netcdf(fname);
-t=nc{'scrum_time'}(:);
+t0=nc{'scrum_time'}(:);
+
+nt=size(t0);
+t=zeros(nt);
+for i=2:nt(1)
+  t(i)=t0(i)-t0(1);
+end
 tndx=min(tndx,length(t));
 disp([ 'tndx = ',num2str(tndx), ...
     ' - Time = ',num2str(t(tndx)/3600),' hr' ])
 x=squeeze(nc{'x_rho'}(j,:));
-hm=squeeze(nc{'hmorph'}(:,j,:));
+
+if usgs ~= 1
+    var_hmorph='Hm';
+else
+    var_hmorph='hmorph';
+end
+hm=squeeze(nc{var_hmorph}(:,j,:));
+close(nc);
 
 %----------------------------------------------------------
 % Analytical solution
@@ -146,11 +163,21 @@ text(120,-3.8,'Analytical', ...
 hold off
 grid on
 axis([120 240 -7 -3])
-title(['ANA-DUNE Test Case - Bed evolution'])
+if usgs ~= 1
+   title(['ANA-DUNE Test Case  (MUSTANG) - Bed evolution' ])
+else
+   title(['ANA-DUNE Test Case  (USGS) - Bed evolution'])
+end
+
+
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
 
-export_fig -transparent ana_dune.pdf
+if usgs ~= 1
+ export_fig -transparent ana_dune_mustang.pdf
+else
+ export_fig -transparent ana_dune_usgs.pdf
+end
 
 return
 

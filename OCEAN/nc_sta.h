@@ -47,6 +47,9 @@
 # ifdef SALINITY
      &      , staSal
 # endif
+# ifdef MUSTANG
+     &      , staMUS(NT-2)
+# endif
 #endif
       logical wrtsta(stafield)
 
@@ -64,6 +67,10 @@
 # ifdef SALINITY
      &      , staSal
 # endif
+# ifdef MUSTANG
+     &      , staMUS
+# endif
+
 #endif
      &      , wrtsta
 

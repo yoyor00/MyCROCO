@@ -17,6 +17,10 @@
 
 # define GLS_HADV_UP1
 # define GLS_VADV_UP1
+# ifdef DUNE
+#   undef GLS_HADV_UP1
+#   undef GLS_VADV_UP1      
+# endif
 
 # ifdef GLS_MIXING_3D
 #  define GLS_SHEAR_3D

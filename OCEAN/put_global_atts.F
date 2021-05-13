@@ -23,7 +23,7 @@
 #include "strings.h"
 #include "grid.h"
 
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 # include "sediment.h"
       character(32) namatt
       integer i,j
@@ -509,7 +509,7 @@
 !
 ! Sediment parameters
 !
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       do i=1, NST
         write(namatt,'(A,I1)') ' sand_',i
         ierr=nf_put_att_FTYPE(ncid,nf_global,'Sd'//TRIM(namatt),

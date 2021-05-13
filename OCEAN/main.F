@@ -176,7 +176,7 @@
 !
 !  Read sediment initial values and parameters from sediment.in file
 !
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 #  ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call init_sediment
 #  else
@@ -311,10 +311,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
-#ifdef ANA_INITIAL
+# ifdef ANA_INITIAL
       ! if no initial file set start_date from croco.in
       if (nrrec.eq.0) time=tool_datosec(run_start_date)
-#endif
+# endif
       time_end=tool_datosec(run_end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
@@ -347,7 +347,8 @@ CR      write(*,*) ' -6' MYID
 !  Bottom sediment parameters for BBL or SEDIMENT model
 !----------------------------------------------------------------------
 !
-#if (defined BBL && defined ANA_BSEDIM) || defined SEDIMENT
+#if (defined BBL && defined ANA_BSEDIM) || (defined SEDIMENT  &&\ 
+     defined USGS )
 !
 !  --- Set analytically ---
 !
@@ -362,7 +363,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif
 # endif
 !
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 #  ifdef AGRIF
         if (Agrif_lev_sedim.EQ.0) call ana_sediment (tile)
 #  else
@@ -382,7 +383,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif
 #endif
 !
-#if defined SEDIMENT && !defined ANA_SEDIMENT
+#if defined SEDIMENT && defined USGS && !defined ANA_SEDIMENT
 # ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call get_sediment
 # else
@@ -390,26 +391,27 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
-!----------------------------------------------------------------------
-!  computing cell surfaces need for MUSTANG and BIOLink
-!----------------------------------------------------------------------
-#ifdef SUBSTANCE
-      call substance_surfcell
-#endif
-!
 !
 !----------------------------------------------------------------------
 !  MUSTANG : initialization sediment concentrations
 !----------------------------------------------------------------------
 !
 #ifdef MUSTANG
-#ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
-#else
-#define LOCALLM Lm
-#define LOCALMM Mm
+!----------------------------------------------------------------------
+!  computing cell surfaces need for MUSTANG and BIOLink
+!----------------------------------------------------------------------
+#ifdef SUBSTANCE
+      call substance_surfcell
 #endif
+
+
+# ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+# else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+# endif
       chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
       margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
       chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
@@ -420,7 +422,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       Istr2=max(Istr2,1)
       Iend2=min(Iend2,LOCALLM)
 !RB      Jstr2=1+-margin_E
-      Jstr2=1-margin_E
+      Jstr2=1-margin_E  ! ou 1-margin_E ?
       Jend2=Jstr2+chunk_size_E-1
       Jstr2=max(Jstr2,1)
       Jend2=min(Jend2,LOCALMM)
@@ -428,9 +430,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
        CALL MUSTANG_init_sediment(Istr2,Iend2,Jstr2,Jend2,
      &     0,WATER_ELEVATION,
 !     &     0,BATHY_H0,WATER_ELEVATION,
-#if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN_MUSTANG_byHYDRO
+# if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
      &     DHSED,
-#endif
+# endif
 !#if defined key_MUSTANG_debug && defined SPHERICAL
 !     &     LATITUDE,LONGITUDE,
 !#endif  
@@ -454,7 +456,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  zeta is also corrected here for Wetting/Drying
 !  in both 2D and 3D cases
 !
-#if defined  SOLVE3D || defined WET_DRY
+#if defined SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)

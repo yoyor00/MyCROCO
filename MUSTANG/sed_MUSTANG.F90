@@ -690,20 +690,20 @@
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
        endif
-#if (!defined CHANNEL || (defined CHANNEL && defined BOSSE))
+# if (!defined DUNE    || (defined DUNE    && defined DUNE3D))
        if (float(jfirst+jj*Mm) .EQ. JMIN_GRID) then
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
        endif
-#endif
+# endif
 #endif
 #if (!defined MPI && defined key_MUSTANG_bedload)
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
-#if (!defined CHANNEL || (defined CHANNEL && defined BOSSE))
+# if (!defined DUNE    || (defined DUNE    && defined DUNE3D))
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
-#endif
+# endif
 #endif
 
 #if defined key_MARS

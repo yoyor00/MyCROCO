@@ -48,7 +48,7 @@
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
-#if defined SEDIMENT || defined BBL
+#if (defined SEDIMENT && defined USGS) || defined BBL
      &      , indxWrk
 #endif
 #ifdef SOLVE3D
@@ -297,7 +297,7 @@
         ierr=nf_def_dim (ncid, 'xi_u',     xi_u,     u2dgrd(1))
         ierr=nf_def_dim (ncid, 'eta_rho',  eta_rho,  r2dgrd(2))
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
 #endif
 #ifdef  MUSTANG 
@@ -535,7 +535,7 @@
 
         endif
 
-#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+#ifdef MORPHODYN
 !
 !-----------------------------------------------------------------------
 !  Time-dependent bathymetry
@@ -1696,7 +1696,7 @@
 #  endif
 # endif
 !
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !
 ! bed_thick  Sediment bed layer thickness (m)
 ! bed_poros  Bed porosity (-)
@@ -2340,7 +2340,7 @@
 !
 ! time evolving bathymetry
 !
-# if defined MORPHODYN || defined  MORPHODYN_MUSTANG_byHYDRO
+# ifdef MORPHODYN
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), vidHm)
@@ -2805,7 +2805,7 @@
 #  endif
 # endif
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !
 ! Sediment bed layer thickness, porosity, volume fraction of 
 ! size class ised in sediment layer, bed fluxes (2+5*NST r2dgrd variables)

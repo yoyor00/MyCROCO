@@ -11,19 +11,22 @@
 !
 #if defined AUTOTILING
       real,dimension(:,:,:), pointer :: A2d, A3d
-#if defined SEDIMENT || defined LMD_MIXING
+#if (defined SEDIMENT && defined USGS) ||\
+    defined LMD_MIXING
       integer,dimension(:,:),pointer :: B2d
 #endif
 
 #else
       real A2d(N2d,NSA,0:NPP-1), A3d(N3d,7,0:NPP-1)
-#if defined SEDIMENT || defined LMD_MIXING
+#if (defined SEDIMENT && defined USGS) ||\
+	 defined LMD_MIXING
       integer B2d(N2d,0:NPP-1)
 #endif
 
 #endif
 
       common/private_scratch/ A2d,A3d
-#if defined SEDIMENT || defined LMD_MIXING
+#if (defined SEDIMENT && defined USGS) ||\
+	 defined LMD_MIXING
       common/private_scratch_bis/ B2d 
 #endif

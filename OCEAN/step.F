@@ -818,7 +818,7 @@ C$OMP END MASTER
 #include "ocean2d.h"
 #include "coupling.h"
 #ifdef AUTOTILING
-#include "autotiling.h"
+# include "autotiling.h"
 #endif
        integer range
       integer ntrds,trd,
@@ -935,7 +935,7 @@ C$OMP END MASTER
 #ifdef MUSTANG
       USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition, MUSTANG_morpho
       USE comMUSTANG , ONLY : l_morphocoupl,t_morpho
-#include "coupleur_define_MUSTANG.h"
+# include "coupleur_define_MUSTANG.h"
 #endif
       implicit none
 #include "param.h"
@@ -953,7 +953,7 @@ C$OMP END MASTER
 #include "coupling.h"
 #include "grid.h"
 #ifdef AUTOTILING
-#include "autotiling.h"
+# include "autotiling.h"
 #endif
        integer range
       integer ntrds,trd,
@@ -995,15 +995,17 @@ C$OMP BARRIER
 # ifdef GLS_MIXING
         call gls_mixing (tile)
 # endif
-#ifdef MUSTANG
 
-#ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
-#else
-#define LOCALLM Lm
-#define LOCALMM Mm
-#endif
+
+# if defined SEDIMENT && defined MUSTANG
+
+#  ifdef MPI
+#    define LOCALLM Lmmpi
+#    define LOCALMM Mmmpi
+#  else
+#    define LOCALLM Lm
+#    define LOCALMM Mm
+#  endif
       chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
       margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
       chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
@@ -1022,29 +1024,32 @@ C$OMP BARRIER
      &         RESIDUAL_THICKNESS_WAT,
      &         WATER_CONCENTRATION,Z0HYDRO,
      &         WATER_ELEVATION,
-#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
+#  if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
      &         BAROTROP_VELOCITY_U,
      &         BAROTROP_VELOCITY_V,
-#endif
+#  endif
      &         RHOREF,SALREF_LIN,TEMPREF_LIN,
      &         TRANSPORT_TIME_STEP)
-#endif
+# endif
+
         call step3d_t (tile)
 
-#ifdef MUSTANG
+# ifdef SEDIMENT        
+#   ifdef MUSTANG
         CALL MUSTANG_deposition(ISTR2,IEND2,
      &                JSTR2,JEND2,
      &           WATER_ELEVATION,
      &           RESIDUAL_THICKNESS_WAT,WATER_CONCENTRATION)
-#endif
+#   endif
 
-# ifdef SEDIMENT
-#  ifdef AGRIF
+#   if defined SEDIMENT && defined USGS
+#     ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim)
      &  call sediment (tile)
-#  else
+#     else
         call sediment (tile)
-#  endif
+#     endif
+#   endif
 # endif
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
@@ -1064,22 +1069,19 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+
 # ifdef MORPHODYN
+
+#  ifdef USGS
       do tile=my_first,my_last
-#  ifdef ANA_MORPHODYN
+#   ifdef ANA_MORPHODYN
         call ana_morphodyn (tile)
-#  endif
+#   endif
         call set_depth_morphodyn (tile)
       enddo
 C$OMP BARRIER
-# endif
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! MUSTANG MORPHO
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined MUSTANG  && defined SUBSTANCE
-
-#ifdef MORPHODYN_MUSTANG_byHYDRO
+#  elif defined MUSTANG && defined SUBSTANCE
 
        IF (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) THEN
 !    IF (l_morphocoupl .AND. CURRENT_TIME .GE. tstart_dyninsed ) THEN
@@ -1090,31 +1092,29 @@ C$OMP BARRIER
 
          CALL MUSTANG_morpho(ISTR2,IEND2,JSTR2,JEND2,              
      &                WATER_ELEVATION,                              
-#if (defined key_oasis && defined key_oasis_mars_ww3) || (defined MORPHODYN_MUSTANG_byHYDRO)
+#     if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN
      &                                 DHSED,                       
-#endif                                     
+#     endif                                     
      &                RESIDUAL_THICKNESS_WAT)
        END IF
 
       do tile=my_first,my_last
         call set_depth_morphodyn (tile)
       enddo
-!!! remise a 0 de dhsed:
-#ifdef MPI
+
+#     ifdef MPI
        do j=JSTR2-1,JEND2+1
          do i=ISTR2-1,IEND2+1
-#else
+#     else
       do j=JSTR2,JEND2   
         do i=ISTR2,IEND2
-#endif
+#     endif
           DHSED(i,j)=0.0_rsh
         enddo
       enddo
-# endif
+#  endif
 
-#endif
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# endif
 
 #endif /* SOLVE3D */
 

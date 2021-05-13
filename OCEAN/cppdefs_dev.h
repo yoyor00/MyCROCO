@@ -410,11 +410,13 @@
 #endif
 
 #ifdef MUSTANG
-# define TS_HADV_WENO5
-#endif
-#if defined SUBSTANCE
-#   define key_noTSdiss_insed
-#   define key_nofluxwat_IWS
+#   define TS_HADV_WENO5
+#   ifdef DUNE
+#     undef  TS_HADV_WENO5
+#     define TS_HADV_UP3
+#   elif defined SED_TOY || defined TFLAT2DV
+#     undef  TS_HADV_UP3
+#   endif
 #endif
 
 /* 
@@ -513,6 +515,12 @@
 
 #ifdef MUSTANG
 # define TS_VADV_WENO5
+# ifdef DUNE
+#   undef  TS_VADV_WENO5
+#   define TS_VADV_AKIMA
+# elif defined SED_TOY || defined TFLAT2DV
+#   undef  TS_VADV_AKIMA
+# endif
 #endif
 
 /*
@@ -527,7 +535,7 @@
 # endif
 # define SPONGE_DIF2
 # define SPONGE_VIS2
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 #  define SPONGE_SED
 # endif
 #endif
@@ -777,10 +785,13 @@
 
 /*
 ======================================================================
-                Sediment dynamics models
+                Sediment dynamics models (USGS/Mustang)
 ======================================================================
 */
 #ifdef SEDIMENT
+
+# undef SUBSTANCE
+# define USGS
 
 # define SUSPLOAD
 # define BEDLOAD
@@ -788,51 +799,111 @@
 # undef  BED_HIDEXP
 # undef  SED_TAUCWMAX
 
+# ifdef MUSTANG
+#   undef  USGS
+#   define SUBSTANCE
+#   ifdef SUBSTANCE
+#      define key_noTSdiss_insed
+#      define key_nofluxwat_IWS
+#   endif
+#   define key_MUSTANG_V2
+#   undef  PASSIVE_TRACER
+#   define ANA_PASSIVE
+#   define key_CROCO
+#   undef  key_MUSTANG_tenfonUbar
+#   undef  key_MUSTANG_slipdeposit 
+#   undef  key_MUSTANG_lateralerosion
+#   undef  key_MUSTANG_debug
+#   undef  key_DUNEtenfondecentred
+#   undef  key_sand2D
+#   undef  key_MUSTANG_specif_outputs
+#   undef  key_ANA_bedload
+#   if defined SED_TOY || defined TFLAT2DV
+#     undef  BEDLOAD
+#   endif
+# else
+#   define ANA_SEDIMENT
+# endif
+
 # ifdef BEDLOAD
-#  ifdef DUNE
-#   undef  SUSPLOAD
-#   undef  BEDLOAD_SOULSBY
-#   undef  BEDLOAD_MPM
-#   define BEDLOAD_WULIN
-#   undef  SLOPE_NEMETH
-#   define SLOPE_LESSER
-#   undef  SLOPE_KIRWAN
-#   define TAU_CRIT_WULIN
-#   ifdef ANA_DUNE
-#     undef  BEDLOAD_WULIN
-#     define BEDLOAD_MARIEU
-#     undef  BSTRESS_UPWIND
-#     undef  SLOPE_LESSER
-#     undef  BEDLOAD_UP1       /* choose one interpolation for bedload fluxes */
-#     undef  BEDLOAD_UP5
-#     define BEDLOAD_WENO5
-#   endif
+#   ifdef DUNE
+#     undef SUSPLOAD
+#     define USE_CALENDAR
+#     ifdef USGS               
+#       undef  BEDLOAD_SOULSBY
+#       undef  BEDLOAD_MPM
+#       define BEDLOAD_WULIN
+#       undef  SLOPE_NEMETH
+#       define SLOPE_LESSER
+#       undef  SLOPE_KIRWAN
+#       define TAU_CRIT_WULIN
+#       ifdef ANA_DUNE
+#         undef  BEDLOAD_WULIN
+#         define BEDLOAD_MARIEU
+#         undef  BSTRESS_UPWIND
+#         undef  SLOPE_LESSER
+#         undef  BEDLOAD_UP1             /* choose one interpolation for bedload fluxes */
+#         undef  BEDLOAD_UP5
+#         define BEDLOAD_WENO5
+#       endif
+#     elif defined MUSTANG
+#       define WET_DRY
+#       define SALINITY
+#       define key_tenfon_upwind
+#       define key_MUSTANG_bedload
+#       define key_MUSTANG_specif_outputs
+#       ifdef DUNE3D
+#         define MUSTANG_CORFLUX
+#       endif
+#       ifdef ANA_DUNE
+#         undef  key_tenfon_upwind
+#         define key_ANA_bedload
+#       endif
+#     endif
 
-#  elif (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
+#   elif (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
          defined ANA_WWAVE    || defined OW_COUPLING)
-#   undef  BEDLOAD_SOULSBY
-#   define BEDLOAD_VANDERA
-#   define Z0_BL
-#   define Z0_RIP
-#   define SLOPE_LESSER
-#  else
-#   define BEDLOAD_MPM
-#   define SLOPE_LESSER
+#     undef  BEDLOAD_SOULSBY
+#     define BEDLOAD_VANDERA
+#     define Z0_BL
+#     define Z0_RIP
+#     define SLOPE_LESSER
+#   else
+#     define BEDLOAD_MPM
+#     define SLOPE_LESSER
+#   endif
+
+#   ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
+#     define BEDLOAD_VANDERA_ZEROCURR
+#     ifndef BEDLOAD_VANDERA_ZEROCURR
+#       define BEDLOAD_VANDERA_FD_MADSEN
+#       undef  BEDLOAD_VANDERA_FD_SANTOSS
+#     endif
+#     define BEDLOAD_VANDERA_ASYM_LIMITS
+#     undef  BEDLOAD_VANDERA_SURFACE_WAVE
+#     undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
+#   endif
+
+
+# else
+
+#  undef key_MUSTANG_bedload
+#  ifdef SED_TOY
+#    undef   key_MUSTANG_V2
+#    undef   ANA_PASSIVE
+#    define  SALINITY
+#    define  TS_HADV_UP3
+#    define  TS_VADV_AKIMA
+#  endif
+#  ifdef TFLAT2DV
+#    define  key_sand2D
+#    define  SAND2D
 #  endif
 
-#  ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
-#   define BEDLOAD_VANDERA_ZEROCURR
-#   ifndef BEDLOAD_VANDERA_ZEROCURR
-#    define BEDLOAD_VANDERA_FD_MADSEN
-#    undef  BEDLOAD_VANDERA_FD_SANTOSS
-#   endif
-#   define BEDLOAD_VANDERA_ASYM_LIMITS
-#   undef  BEDLOAD_VANDERA_SURFACE_WAVE
-#   undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
-#  endif
 # endif /* BEDLOAD */
 
 #endif /* SEDIMENT */
+
 
 /* 
 ======================================================================
@@ -854,6 +925,9 @@
 #endif
 #ifdef SEDIMENT
 # undef  ANA_MORPHODYN
+# if defined MORPHODYN && defined MUSTANG
+#   define MORPHODYN_MUSTANG_byHYDRO
+# endif
 #endif
 #if defined MORPHODYN && defined NBQ
 # define NBQ_FREESLIP
@@ -964,9 +1038,9 @@
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
 */ 
 #ifdef NC4PAR
-#define NF_CLOBBER nf_mpiio 
+# define NF_CLOBBER nf_mpiio 
 #else
-#define NF_CLOBBER nf_64bit_offset
+# define NF_CLOBBER nf_64bit_offset
 #endif
 /*
 ======================================================================

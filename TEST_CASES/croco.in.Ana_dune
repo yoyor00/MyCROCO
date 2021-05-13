@@ -1,28 +1,30 @@
 title:
-        Dune Test case 
+        Dune Test case (Analytical case)
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                72000    0.3     5       100
+                72000    0.1     60       100
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0        10000
 
-sediments: input file
-           TEST_CASES/sediment_ana_dune.in
+run_start_date:
+01/01/2019 00:00:00
+run_end_date:
+01/01/2019 06:00:00
 
-sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
-                         20*T
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                   0.5       6       6
 
 initial: NRREC  filename
           0
 
 restart:          NRST, NRPFRST / filename
                   72000   0
-                          dune_rst.nc
+                          ana_dune_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
             T     2000        0
-                          dune_his.nc
+                          ana_dune_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
@@ -32,6 +34,16 @@ auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL B
 
 gls_history_fields:   TKE  GLS  Lscale
                       T     T    T
+
+sediments: input file  (USGS Sediment model)
+           TEST_CASES/sediment_ana_dune.in
+
+sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
+                         20*T
+
+sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
+               FIC_NAMELIST/parasubstance_MUSTANG_Ana_dune.txt
+               FIC_NAMELIST/paraMUSTANGV2_Ana_dune.txt
 
 rho0:
       1024.4

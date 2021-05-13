@@ -177,7 +177,7 @@
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
-#if defined MORPHODYN ||  defined MORPHODYN_MUSTANG_byHYDRO
+#if defined MORPHODYN
       integer indxHm
       parameter (indxHm=5)
 #endif
@@ -276,8 +276,8 @@
 #     endif
 #  endif
 # endif /* BIOLOGY */
-# ifdef SEDIMENT
-      integer, dimension(NGRAV) ::  indxGRAV
+# if defined SEDIMENT && defined USGS
+      integer, dimension(NGRAV) :: indxGRAV
      & =(/(iloop,iloop=indxT+ntrc_salt+ntrc_pas+ntrc_bio+1,
      &  indxT+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV)/)
       integer, dimension(NSAND) :: indxSAND 
@@ -288,7 +288,7 @@
      &  indxT+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+NSAND+NMUD)/)
 # endif
 
-# if(!defined ANA_BSEDIM  && !defined SEDIMENT)
+# if(!defined ANA_BSEDIM  && !defined USGS)
       integer indxBSD, indxBSS
       parameter (indxBSD=indxT+ntrc_salt+ntrc_pas+ntrc_bio+1,
      &           indxBSS=101)
@@ -475,16 +475,16 @@
      &     +ntrc_substot
 # ifdef MUSTANG
      &              +ntrc_subs+6
-# ifdef key_MUSTANG_specif_outputs
+#   ifdef key_MUSTANG_specif_outputs
      &              +3*ntrc_subs +2
-# ifdef key_MUSTANG_V2
+#     ifdef key_MUSTANG_V2
      &              +1*ntrc_subs +12
-# endif
-# ifdef key_MUSTANG_bedload
+#     endif
+#     ifdef key_MUSTANG_bedload
      &              +4*ntrc_subs +3
-#  endif
-#  endif
-#  endif
+#     endif
+#   endif
+# endif
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
@@ -629,7 +629,7 @@
       integer indxBostr
       parameter (indxBostr=indxSUSTR+24)
 #ifdef SOLVE3D
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       integer indxSed, indxATHK, indxBTHK, indxBPOR
       parameter (indxATHK=indxSUSTR+27, 
      &           indxSed=indxSUSTR+28,
@@ -673,7 +673,7 @@
 #ifdef BBL
       integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot, 
      &        indxZbapp, indxBostrw
-# ifdef SEDIMENT 
+# if defined SEDIMENT && defined USGS
       parameter (indxBBL=indxSUSTR+32+6*NST,
 # else
       parameter (indxBBL=indxSUSTR+32, 
@@ -718,7 +718,7 @@
 
 #if defined MRL_WCI || defined OW_COUPLING
       integer indxSUP, indxUST2D,indxVST2D
-# ifdef SEDIMENT 
+# if defined SEDIMENT && defined USGS
       parameter (indxSUP=indxSUSTR+44+6*NST,
 # else
       parameter (indxSUP  =indxSUSTR+44,
@@ -894,11 +894,11 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       integer rstSed(NST+2)
 # endif	
 #endif
-#ifdef MORPHODYN
+#if defined MORPHODYN
       integer rstHm
 #endif
 #ifdef BBL
@@ -923,7 +923,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# if defined MORPHODYN  || defined MORPHODYN_MUSTANG_byHYDRO
+# if defined MORPHODYN
      &      , hisHm
 # endif
 # ifdef BBL
@@ -960,7 +960,7 @@
 #  endif
 # endif  /* BIOLOGY */
       integer hisT(NT)
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
@@ -1137,7 +1137,7 @@
 #  ifdef SST_SKIN
       integer avgSST_skin
 #  endif
-#  ifdef SEDIMENT
+#  if defined SEDIMENT && defined USGS
       integer avgSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
@@ -1356,7 +1356,7 @@
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
      &                         , rstSed
 # endif
 #endif
@@ -1370,7 +1370,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# if defined MORPHODYN  || defined MORPHODYN_MUSTANG_byHYDRO
+# ifdef MORPHODYN
      &      , hisHm
 # endif
 #ifdef SOLVE3D
@@ -1404,7 +1404,7 @@
      &      , hisAOU, hisWIND10
 #  endif
 # endif  /* BIOLOGY */
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
      &      , hisSed
 # endif
 # ifdef MUSTANG
@@ -1642,7 +1642,7 @@
 #  ifdef SST_SKIN
      &      , avgSST_skin
 #  endif
-#  ifdef SEDIMENT
+#  if defined SEDIMENT && defined USGS
      &      , avgSed
 #  endif
 # endif
@@ -1723,7 +1723,7 @@
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
 #ifdef AVERAGES
-     &                                ,   avgname
+     &                                ,  avgname
 #endif
 #ifdef DIAGNOSTICS_TS 
      &                                ,  dianame
@@ -1789,13 +1789,17 @@
      &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION
-     &                      ,  aparnam,   assname
+     &                     ,   aparnam,   assname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname
 #endif
 #ifdef SEDIMENT
+#  ifdef USGS
      &                                ,   sedname
+#  elif defined MUSTANG
+     &                 ,   sednam_must,   sednam_vmust
+#  endif
 #endif
 
 #ifdef SOLVE3D
@@ -1876,13 +1880,17 @@
      &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION
-     &                      ,  aparnam,   assname
+     &                     ,   aparnam,   assname
 #endif
 #ifdef SEDIMENT
-     &                      ,  sedname
+# ifdef USGS
+     &                                ,   sedname
+# elif defined MUSTANG
+     &                 ,   sednam_must,   sednam_vmust
+# endif
 #endif
 #ifdef BIOLOGY
-     &                      ,  bioname
+     &                                ,   bioname
 #endif
-     &                      ,  vname
+     &                                ,   vname
 

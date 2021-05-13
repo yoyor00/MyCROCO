@@ -1,17 +1,18 @@
 title:
-        Dune Test case 
+        Dune Test case
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               1728000    1     5      1
+               1728000    1     20      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0      10000
 
-sediments: input file
-           TEST_CASES/sediment_dune.in
-
-sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
-                         20*T
+run_start_date:
+01/01/2019 00:00:00
+run_end_date:
+20/01/2019 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                   24       24       24
 
 initial: NRREC  filename
           0
@@ -30,6 +31,16 @@ primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
 auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
                              T   F    T   F    T    F   F      F       20*T
 
+sediments: input file  (USGS Sediment model)
+               TEST_CASES/sediment_dune.in
+
+sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
+                         20*T
+
+sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
+               FIC_NAMELIST/parasubstance_MUSTANG_Dune.txt
+               FIC_NAMELIST/paraMUSTANGV2_Dune.txt
+
 gls_history_fields:   TKE  GLS  Lscale
                       T     T    T
 
@@ -47,9 +58,5 @@ lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
               1.       30.       0.1       100.
-
-lateral_visc:   VISC2,    VISC4    [m^2/sec for all]
-                 0.        0.
-
 
 

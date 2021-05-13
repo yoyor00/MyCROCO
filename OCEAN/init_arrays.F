@@ -44,7 +44,9 @@ C$    integer omp_get_thread_num
 #include "climat.h"
 #include "scalars.h"
 #include "tides.h"
-#include "sediment.h"
+#if defined SEDIMENT && defined USGS
+# include "sediment.h"
+#endif
 #include "bbl.h"
 #include "diagnostics.h"
 #include "boundary.h"
@@ -77,7 +79,7 @@ C$    integer omp_get_thread_num
      &       ,iflux
 # endif
 #endif
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
      &       ,ilay
 #endif
 #if defined SSH_TIDES || defined UV_TIDES
@@ -650,7 +652,7 @@ C$    integer omp_get_thread_num
         enddo
 # endif 
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !
 !  Initialize sediment module arrays.
 !
@@ -680,7 +682,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* SEDIMENT */
 
-# if defined  MUSTANG && defined MORPHODYN_MUSTANG_byHYDRO
+# if defined MUSTANG && defined MORPHODYN
       do j=JstrR,JendR
         do i=IstrR,IendR
           dh(i,j)=init

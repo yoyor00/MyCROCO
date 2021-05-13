@@ -25,7 +25,7 @@
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
-#if defined SEDIMENT || defined BBL
+#if (defined SEDIMENT && defined USGS) || defined BBL
      &      ,  indxWrk
 #endif
 #ifdef SOLVE3D
@@ -149,7 +149,7 @@
         ierr=nf_def_dim (ncid, 'xi_u',     xi_u,     u2dgrd(1))
         ierr=nf_def_dim (ncid, 'eta_rho',  eta_rho,  r2dgrd(2))
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
 #endif
 #ifdef SOLVE3D
@@ -412,7 +412,7 @@
         enddo
 #endif /* SOLVE3D */
 
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 !
 ! Sediment bed thickness
 !
@@ -779,7 +779,7 @@
         enddo 
 #endif /* SOLVE3D */
 
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 !
 ! Bed thickness
 !

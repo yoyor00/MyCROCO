@@ -33,18 +33,18 @@
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
-#ifdef SUBSTANCE
+# ifdef SUBSTANCE
           !USE comsubstance
           USE comsubstance , ONLY : nv_grav,nvp,ws_part,nv_sand
-#ifdef MUSTANG
+#  ifdef MUSTANG
           USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
           USE comMUSTANG, ONLY : flx_w2s_sum_CROCO,corflux_CROCO
-#ifdef key_sand2D
+#   ifdef key_sand2D
           USE comsubstance, ONLY : l_subs2D
-#endif
+#   endif
+#  endif
+# endif
 
-#endif
-#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -55,7 +55,7 @@
 # include "sources.h"
 # include "forces.h"
 # ifdef DIAGNOSTICS_TS
-# include "diagnostics.h"
+#  include "diagnostics.h"
 # endif
 # ifdef DIAGNOSTICS_PV
 #  include "diags_pv.h"
@@ -65,15 +65,15 @@
 # ifdef PSOURCE
      &       ,is
 # endif
-#ifdef SUBSTANCE
+# ifdef SUBSTANCE
       integer isouspas,nbsouspas(PRIVATE_1D_SCRATCH_ARRAY)
       real :: cflm,cfl_loc,dz_cflm,ws_cflm
-#if !defined TS_MIX_IMP
+#  if !defined TS_MIX_IMP
       real CD(PRIVATE_1D_SCRATCH_ARRAY,0:N)
-#endif
-#endif
+#  endif
+# endif
 # ifdef AGRIF
-# include "zoom.h"
+#  include "zoom.h"
 # endif
       real FX(PRIVATE_2D_SCRATCH_ARRAY),
      &     FE(PRIVATE_2D_SCRATCH_ARRAY),   cff,
@@ -228,9 +228,9 @@
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
 
-# if defined MUSTANG && defined key_sand2D
+#  if defined MUSTANG && defined key_sand2D
 ! Faire somme des FX en k=1
-#endif
+#  endif
 
 
 #  ifdef MASKING
@@ -289,7 +289,7 @@
          endif
 
 
-#else
+# else
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                     -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                          +FE(i,j+1)-FE(i,j)
@@ -297,7 +297,7 @@
 
 
 
-#endif
+# endif
             enddo
           enddo                 !-->  discard FX,FE
 
@@ -508,6 +508,23 @@
 #  endif
 
 # ifdef TS_MIX_IMP
+
+#  ifdef MUSTANG
+#   undef TS_MIX_IMP 
+      if (itrc .le. 2 .or. itrc .ge.itsubs1+nvp+1 ) then   ! for passive tracers only
+#   include "t3dmix_tridiagonal.h"
+      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
+#   if defined key_sand2D
+         if (.not.l_subs2D(itrc-itsubs1+1)) then
+#    include "t3dmix_tridiagonal_chute.h"
+         endif
+#   else
+#    include "t3dmix_tridiagonal_chute.h"
+#   endif /* key_sand2D */
+      endif
+#   define TS_MIX_IMP
+#  endif  /* MUSTANG */
+
 #  ifdef BIO_HADV_WENO5
 #   undef TS_MIX_IMP 
          if (itrc .gt. 2) then   ! for passive tracers only
@@ -523,26 +540,25 @@
 #  ifdef BIO_HADV_WENO5
          endif
 #  endif
-# else
+
+# else /* TS_MIX_IMP */
+
 #  if !defined MUSTANG
-#  include "t3dmix_tridiagonal.h"
+#   include "t3dmix_tridiagonal.h"
 #  else
       if (itrc .le. 2 .or. itrc .ge.itsubs1+nvp+1 ) then   ! for passive tracers only
-#  include "t3dmix_tridiagonal.h"
-      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then
-
-# if defined MUSTANG && defined key_sand2D
-         if (.not.l_subs2D(itrc-itsubs1+1)) then
-#  include "t3dmix_tridiagonal_chute.h"
+#   include "t3dmix_tridiagonal.h"
+      elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
+#   if defined key_sand2D
+          if (.not.l_subs2D(itrc-itsubs1+1)) then
+#    include "t3dmix_tridiagonal_chute.h"
          endif
-
-# else
-#  include "t3dmix_tridiagonal_chute.h"
-# endif
-
+#   else
+#    include "t3dmix_tridiagonal_chute.h"
+#   endif /* key_sand2D */
       endif
-#  endif
-# endif
+#  endif /* MUSTANG */
+# endif /* TS_MIX_IMP */
 
 # ifdef CONST_TRACERS
           do k=1,N

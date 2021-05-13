@@ -24,7 +24,7 @@
 #include "ocean3d.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 # include "sediment.h"
 #endif
 #ifdef MORPHODYN
@@ -42,7 +42,7 @@
 #ifdef SOLVE3D
      &      , itrc
 #endif
-#  ifdef SEDIMENT
+#  if defined SEDIMENT & defined USGS
      &      , indxWrk
 #  endif
 #ifdef FLOATS
@@ -188,7 +188,7 @@
         endif
       enddo
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !
 ! Write out sediment bed layer thickness, porosity, volume 
 ! fraction of size class in sediment bed (2+2*NST b3dgrd variables)

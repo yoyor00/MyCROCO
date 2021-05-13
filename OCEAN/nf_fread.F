@@ -140,7 +140,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         count(4)=1                !--> 3D W-grid
         start(3)=1
         start(4)=record
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
       elseif (vert_type.eq.3) then
         count(3)=NLAY
         count(4)=1                !--> 3D BED-grid

@@ -58,11 +58,15 @@ C$    integer omp_get_thread_num
 # include "grid.h"
 # include "scalars.h"
 !
-      real Length_XI,Length_ETA, depth, f0,beta, 
-     &     cff, y, x0,y0,dx,dy, NSUB
+      real Length_XI, Length_ETA, depth, f0, beta, 
+     &     cff, y, x0, y0, dx, dy, NSUB
 !
-# if defined CHANNEL && defined BOSSE
-      real   Rij,cffi,cffj
+# ifdef DUNE 
+#   ifdef DUNE3D
+      real Rij,cffi,cffj,cff1
+#   elif defined ANA_DUNE
+      real cff2
+#   endif
 # endif
 # ifdef TFLAT2DV
       real depth_shallow,depth_deep
@@ -234,15 +238,7 @@ C$    integer omp_get_thread_num
 #  endif
                      f0=0.
                      beta=0.
-# elif defined CHANNEL
-#  ifdef key_ANA_bedload
-                     depth=6.
-#  else
-                     depth=4.
-#  endif
-                     f0=0.
-                     beta=0.
-# elif defined SINGLE_COLUMN_GRADP
+# elif defined SED_TOY
                      depth=5.
                      f0=1.E-4
                      beta=0.
@@ -251,10 +247,6 @@ C$    integer omp_get_thread_num
                      depth_deep=16.
                      f0=0.
                      beta=0.
-# elif defined SED_TOY
-                     depth=20.
-                     f0=0.0
-                     beta=0.0
 # else
                      depth=???
                      f0=???
@@ -357,27 +349,21 @@ C$    integer omp_get_thread_num
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined DUNE
 #  ifdef ANA_DUNE
-                     Length_XI =300.0
+                     Length_XI = 300.0
 #  else
-                     Length_XI =100.0
+                     Length_XI = 100.0
 #  endif
+#  ifdef MUSTANG
+                     Length_ETA=Length_XI
+#  else                     
                      Length_ETA=Length_ETA_ISO_GRID
-# elif defined CHANNEL
-                     Length_XI = 100.
-                     Length_ETA= 100.
-#  if defined key_ANA_bedload
-                     Length_XI = 300.
-                     Length_ETA= 300.
 #  endif
-# elif defined SINGLE_COLUMN_GRADP
+# elif defined SED_TOY
                      Length_XI = 10.e+3
                      Length_ETA= 10.e+3
 # elif defined TFLAT2DV
-                     Length_ETA=1500.0
-                     Length_XI =100000.0
-# elif defined SED_TOY
-                      Length_XI=40.0
-                      Length_ETA=30.0
+                     Length_ETA= 1500.0
+                     Length_XI = 100000.0
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -428,7 +414,7 @@ CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
 CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
 !----------------------------------------------------------------------
-! Setup rectangulag grid:  coordinates (XI,ETA) at PSI- and RHO-points.
+! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
 !----------------------------------------------------------------------
 !
       do j=JstrR,JendR
@@ -828,58 +814,44 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=depth-0.1*exp(-cff*xr(i,j)**2)
         enddo
       enddo
+
 # elif defined DUNE
+#  ifdef ANA_DUNE
+      cff2=0.01
+#  elif defined DUNE3D
+      cff1=0.5*(1./10)**2
+#  endif
       do j=JstrR,JendR
         do i=IstrR,IendR
-# ifdef ANA_DUNE
-         h(i,j)=depth-2.*exp(-cff*(xr(i,j)-0.5*xl)**2)
-# else
 #  ifdef MPI
          cff=(float(i +ii*Lm) )
-#  else
+#  else  
          cff=(float(i       ) )
 #  endif
-         h(i,j)=depth*(1.-0.5*exp(-5.e-3*(2.*(cff-25.))**2))
-# endif
-        enddo
-      enddo
-# elif defined CHANNEL
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-!!! CAS CLASSIQUE
-#  ifdef MPI
-          cff=(float(i +ii*Lm) )
-#  else
-          cff=(float(i       ) )
-#  endif
-          h(i,j)=depth*(1.-0.5*exp(-0.5*(1./10)**2*(2.0*
-     &      (cff-25.0))**2.0))
-!!! CAS ANALYTIQUE 
-#if defined key_ANA_bedload
-          h(i,j)=depth-2.*exp(-0.01*(xr(i,j)-0.5*xl)**2)
-#endif
-!!! CAS BOSSE 
-#if defined BOSSE
-          cff=0.5*(1./10)**2
-#  ifdef MPI
+#  ifdef ANA_DUNE
+         h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
+#  elif defined DUNE3D
+#    ifdef MPI
           cffi=(float(i +ii*Lm) )
           cffj=(float(j +jj*Mm) )
-#  else
+#    else   
           cffi=(float(i       ) )
           cffj=(float(j       ) )
-#  endif
+#    endif 
          if (xr(i,j).lt.4.0_rsh) then
           h(i,j)=depth
-         else
+         else 
           Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
      &                (cffj-25.0_rsh)**2.0_rsh )
-          h(i,j)=depth*(1.-0.5*exp(-cff*(2.0_rsh*(Rij))**2.0))
+          h(i,j)=depth*(1.-0.5*exp(-cff1*(2.0_rsh*(Rij))**2.0))
          endif
-# endif
+#  else 
+         h(i,j)=depth*(1.-0.5*exp(-5.e-3*(2.*(cff-25.))**2))
+#  endif
         enddo
       enddo
 
-# elif defined SINGLE_COLUMN_GRADP
+# elif defined SED_TOY
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
@@ -902,13 +874,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       rmask(IstrR:IendR,JstrR:1)=0.0
       rmask(IstrR:IendR,3:JendR)=0.0
       rmask(IendR-1:IendR,2)=0.0
-
-#elif defined SED_TOY
-      do j=JstrR,JendR
-        do i=JstrR,JendR
-          h(i,j)=Depth
-        enddo
-      enddo
 
 # else
       do j=JstrR,JendR

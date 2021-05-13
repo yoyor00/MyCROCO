@@ -104,6 +104,7 @@ ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SC
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
+ls ${ROOT_DIR}/MUSTANG/*        > /dev/null  2>&1 && \cp ${ROOT_DIR}/MUSTANG/* $SCRDIR
 
 if [[ -e "namelist_pisces" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
@@ -111,6 +112,15 @@ else
         \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
 fi
+
+if [[ -d FIC_NAMELIST ]]; then
+        echo "  Mustang namelist directory FIC_NAMELIST exists"
+else
+        mkdir -p $RUNDIR/FIC_NAMELIST
+        \cp -rf ${ROOT_DIR}/MUSTANG/NAM_CASES/*txt $RUNDIR/FIC_NAMELIST/.
+        echo "  file para*txt copied from source directory"
+fi
+
 #
 # overwrite with local files
 #

@@ -40,12 +40,10 @@
 #undef  I_SOLITON       /* Internal Soliton Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
-#undef  DUNE            /* Dune test case Example */
-#undef  CHANNEL         /* Channel test case Example  Dhysed */
-#undef  SINGLE_COLUMN_GRADP  /* 1DV vertical Example  Dhysed */
+#undef  DUNE            /* Dune test case Example */ 
+#undef  SED_TOY         /* 1DV vertical Example Dhysed */
 #undef  TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
-#undef  SED_TOY         /* 1D sdiment test case */
-#define REGIONAL        /* REGIONAL Applications */
+#define  REGIONAL         /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
@@ -366,7 +364,8 @@
 # endif
                       /*   Sediment dynamics model     */
 # ifdef SEDIMENT
-#  define ANA_SEDIMENT
+#  undef  MUSTANG
+#  define USGS
 #  undef  ANA_SPFLUX
 #  undef  ANA_BPFLUX
 # endif
@@ -528,39 +527,6 @@
 # define NS_PERIODIC
 # undef  RVTK_DEBUG
 
-#elif defined SED_TOY
-/*
-!                       Sediment Single Column Example
-!                       ======== ====== ====== =======
-*/
-# undef  OPENMP
-# undef  MPI
-# define EW_PERIODIC
-# define NS_PERIODIC
-# define SOLVE3D
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_SRFLUX
-# define ANA_STFLUX
-# define ANA_BTFLUX
-# define GLS_MIXING
-# ifdef GLS_MIXING
-#  define GLS_KOMEGA
-#  define KanCla_94
-# endif 
-# define SEDIMENT
-#  ifdef SEDIMENT
-#   define ANA_SEDIMENT 
-#   define SUSPLOAD
-#   undef  BEDLOAD
-#   undef MORPHODYN
-#   define MIXED_BED
-#   define SED_TAU_CD_CONST
-#   define SED_FLOCS
-#   define FLOC_TURB_DISS
-# endif
-# undef  RVTK_DEBUG
 
 #elif defined INTERNAL
 /*
@@ -1434,8 +1400,8 @@
                       
 #elif defined TS_HADV_TEST
 /*
-!                Horizontal TRACER ADVECTION EXAMPLE 
-!                ========== ====== ========= =======
+!                       Horizontal TRACER ADVECTION EXAMPLE 
+!                       ========== ====== ========= =======
 !
 */
 # undef  SOLID_BODY_ROT   /* Example with spatially varying velocity */
@@ -1472,12 +1438,15 @@
 
 #elif defined DUNE
 /*
-!                Dune test case example 
-!                ==== ==== ==== =======
+!                       Dune test case example
+!                       ==== ==== ==== =======
 !
 */
+# undef  ANA_DUNE           /* Analytical test case (Marieu) */
+# undef  DUNE3D             /* 3d example from "Bosse" DHYSED (Only with Mustang sediment model) */
+
+# undef  OPENMP
 # undef  MPI
-# undef  ANA_DUNE           /* Bedload Marieu test case */
 # define M2FILTER_NONE
 # define UV_ADV
 # define NEW_S_COORD
@@ -1499,165 +1468,77 @@
 # define M2CLIMATOLOGY
 # define SEDIMENT
 # ifdef SEDIMENT
-#  define ANA_SEDIMENT
+#  define USGS       
+#  undef  MUSTANG
 #  define MORPHODYN
 # endif
 # define GLS_MIXING
 # undef  LMD_MIXING
 # ifdef LMD_MIXING
-#   define LMD_SKPP
-#   define LMD_BKPP
+#  define LMD_SKPP
+#  define LMD_BKPP
 # endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-#elif defined CHANNEL
-/*
-!                       CHANNEL Example DHYSED
-!                       ===== ==================
-*/
-# undef BOSSE
 
-# undef  OPENMP
-# define  MPI
-# define  NC4PAR
-# define UV_ADV
-# undef UV_COR
+#elif defined SED_TOY
+/*
+!                       SED TOY (1D Single Column GradP example)
+!                       === === === ====== ====== ===== ========
+*/
+# undef OPENMP
+# undef MPI
+
+# undef  UV_ADV
 # define NEW_S_COORD
+# undef  UV_COR
 # define SOLVE3D
+# undef  NONLIN_EOS
+# undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_SRFLUX
-# define ANA_SSFLUX
-# define ANA_BTFLUX
-# define ANA_BSFLUX
-# define NO_FRCFILE
-# define GLS_MIXING
-# define  SALINITY
-# define OBC_M2CHARACT
-# define ANA_BRY
-# define  Z_FRC_BRY
-# define M2_FRC_BRY
-# undef M3_FRC_BRY
-# undef T_FRC_BRY
-# define OBC_WEST
-# define OBC_EAST
-# undef MASKING
-
-# define USE_CALENDAR
-# define WET_DRY
-# undef  PASSIVE_TRACER
-# define ANA_PASSIVE
-
-# define SUBSTANCE
-# define MUSTANG
-# define key_MUSTANG_V2
-
-# define key_MUSTANG_bedload
-# define MORPHODYN_MUSTANG_byHYDRO
-# undef  key_MUSTANG_tenfonUbar
-# undef key_DUNEtenfondecentred
-# define key_tenfon_upwind
-# undef key_ANA_bedload   /* avec undef BOSSE */
-
-# undef key_MUSTANG_slipdeposit 
-# undef key_MUSTANG_lateralerosion
-
-# undef BUGJUMP           /* a priori inutile */
-
-# undef key_MUSTANG_debug
-# define key_MUSTANG_specif_outputs
-
-# undef key_sand2D
-# if defined key_sand2D
-#  define key_CROCO
-#  define MUSTANG_CORFLUX
-# endif
-
-/* CLES MUSTANG INOPERANTES POUR LE MOMENT
-# undef key_MUSTANG_flocmod
-# undef key_MUSTANG_splitlayersurf
-# undef key_MUSTANG_add_consol_outputs
-*/
-
-#elif defined SINGLE_COLUMN_GRADP
-/*
-*/
-# undef  OPENMP
-# undef  MPI
-# undef NC4PAR
-
-# undef  NONLIN_EOS
-# undef UV_ADV
-# define NEW_S_COORD
-# undef UV_COR
-# define SOLVE3D
-# undef UV_VIS2
-
-# define SALINITY
-# undef  LMD_MIXING
-# undef  GLS_MIXING
 # define ANA_VMIX
-
-# define ANA_GRID
 # define ANA_SMFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define ANA_SSFLUX
 # define ANA_BTFLUX
 # define ANA_BSFLUX
-
-# define ANA_INITIAL 
-
 # define EW_PERIODIC
 # define NS_PERIODIC
+# define SEDIMENT
+# ifdef SEDIMENT
+#  define MUSTANG
+#  undef  MORPHODYN
+#  undef  BBL
+# endif
+# define NO_FRCFILE
+# undef  RVTK_DEBUG
 
-# undef MASKING
-
-# undef SEDIMENT
-# undef  BBL
-
-# undef PASSIVE_TRACER
-# undef ANA_PASSIVE
-
-# define SUBSTANCE
-# define  MUSTANG
-# define key_noTSdiss_insed 
-# define key_nofluxwat_IWS 
-# undef key_MUSTANG_V2
-# undef key_MUSTANG_bedload
-# undef MORPHODYN_MUSTANG_byHYDRO
-# undef key_MUSTANG_tenfonUbar
-# undef key_DUNEtenfondecentred
-
-# undef key_ANA_bedload
-# undef key_MUSTANG_debug
-# undef key_MUSTANG_specif_outputs
 
 #elif defined TFLAT2DV
 /*
 !                       TFLAT2DV  Example
-!                       ===== =======
+!                       ========  =======
 */
 # undef  OPENMP
 # undef  MPI
+
 # undef  NONLIN_EOS
+# define SALINITY
 # define UV_ADV
 # define NEW_S_COORD
 # define UV_COR
 # define SOLVE3D
 # define UV_VIS2
+# define ANA_INITIAL
+# define WET_DRY
 # define TS_DIF2
 # define SPONGE
-
-# define GLS_MIXING
-# undef ANA_VMIX
-
-# undef PSOURCE
+# undef  ANA_VMIX
+# undef  PSOURCE
 # define MASKING
-
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1666,46 +1547,27 @@
 # define ANA_SSFLUX
 # define ANA_BTFLUX
 # define ANA_BSFLUX
-
-# undef PASSIVE_TRACER
-# define SUBSTANCE
-# define ANA_PASSIVE
-# define ANA_INITIAL 
-# define WET_DRY
-
-# define SALINITY
 # define OBC_WEST
 # define FRC_BRY
-#ifdef FRC_BRY
+# ifdef FRC_BRY
 #  define ANA_BRY
 #  define Z_FRC_BRY
 #  define OBC_M2CHARACT
 #  define OBC_REDUCED_PHYSICS
 #  define M2_FRC_BRY
-#  undef M3_FRC_BRY
+#  undef  M3_FRC_BRY
 #  define T_FRC_BRY
 #  undef  OBC_TORLANSKI
 #  undef  OBC_TSPECIFIED
 #  define OBC_TUPWIND
 # endif
-
-# define TS_HADV_WENO5
-# define TS_VADV_WENO5
-
-
-# define MUSTANG
-# define key_noTSdiss_insed 
-# define key_nofluxwat_IWS 
-
-# undef key_MUSTANG_V2
-# undef key_MUSTANG_bedload
-# undef MORPHODYN_MUSTANG_byHYDRO
-# undef key_MUSTANG_tenfonUbar
-# undef key_DUNEtenfondecentred
-
-# undef key_ANA_bedload
-# undef key_MUSTANG_debug
-# undef key_MUSTANG_specif_outputs
+# define SEDIMENT
+# ifdef SEDIMENT
+#  define MUSTANG
+# endif
+# define GLS_MIXING
+# define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */
 

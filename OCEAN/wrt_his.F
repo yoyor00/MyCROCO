@@ -60,7 +60,7 @@
 #include "ocean3d.h"
 #include "mixing.h"
 #include "mpi_cpl.h"
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 # include "sediment.h"
       integer indxWrk
 #endif
@@ -233,7 +233,7 @@ CR      write(*,*) 'wrt_his: wrtUBAR' MYID
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
       endif    
 
-#if defined MORPHODYN || defined MORPHODYN_MUSTANG_byHYDRO
+#ifdef MORPHODYN
 !     
 !     Write out time evolving bathymetry
 CR        write(*,*) 'wrt_his: wrtHm' 
@@ -600,13 +600,13 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     Tracer variables.
 !     
 #if defined MUSTANG
-#ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
-#else
-#define LOCALLM Lm
-#define LOCALMM Mm
-#endif
+# ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+# else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+# endif
       chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
       margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
       chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
@@ -616,6 +616,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       Iend2=Istr2+chunk_size_X-1
       Istr2=max(Istr2,1)
       Iend2=min(Iend2,LOCALLM)
+!      Jstr2=1+-margin_E
       Jstr2=1+-margin_E
       Jend2=Jstr2+chunk_size_E-1
       Jstr2=max(Jstr2,1)
@@ -705,13 +706,13 @@ CR      write(*,*) 'wrt_his substance:  cvfix_wat  ' MYID
 #endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!MUSTANG
 #if defined MUSTANG
-#ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
-#else
-#define LOCALLM Lm
-#define LOCALMM Mm
-#endif
+# ifdef MPI
+#   define LOCALLM Lmmpi
+#   define LOCALMM Mmmpi
+# else
+#   define LOCALLM Lm
+#   define LOCALMM Mm
+# endif
       chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
       margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
       chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
@@ -1201,7 +1202,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 #  endif
 #  endif /* BIOLOGY */
 !     
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !     
 !     Write out sediment bed layer thickness, porosity, volume 
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)

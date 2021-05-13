@@ -421,16 +421,6 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
-# elif defined SED_TOY 
-      cff1=0.0001
-      if (time.gt.3000.) then
-        cff1=0.0
-      endif
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-            sustr(i,j)=cff1
-        enddo
-      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1181,14 +1171,14 @@ C$    integer  trd, omp_get_thread_num
 #  undef temp
 # endif /* BIOLOGY */
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       do itrc=1,NST
          iv=itrc_sed+itrc-1
          do k=1,N
            do j=JstrR,JendR
              do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
-               tclm(i,j,k,iv)=0. !Csed(itrc)
+               tclm(i,j,k,iv)=0.   !Csed(itrc)
 #  else   
                if (.not.got_tclm(iv)) then
                  tclm(i,j,k,iv)=0. !Csed(itrc)
@@ -1331,7 +1321,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !       --> climatology computed in ana_initial
 !
-# elif defined DUNE
+#  elif defined DUNE
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef ANA_DUNE
@@ -1648,7 +1638,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_sediment
 !======================================================================
 !
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
       subroutine ana_sediment (tile)
       implicit none
 # include "param.h"
@@ -1840,13 +1830,6 @@ C$    integer  trd, omp_get_thread_num
         enddo 
       enddo 
 
-#  ifdef SED_TOY      
-      bed_bctr(:,:,:) =  5.2
-      bed_bctr(:,:,1) = 0.03
-      bed_bctr(:,:,2) = 0.0911460784453711
-      bed_bctr(:,:,3) =0.918694902789539
-      bed_bctr(:,:,4) = 3.54929559677213
-#  endif      
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -2539,14 +2522,7 @@ C$    integer  trd, omp_get_thread_num
         else 
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
-#         ifdef CHANNEL
-            zetabry_west(j)=0.0464  !valeur??
-!#           ifdef  key_ANA_bedload
-!              zetabry_west(j)=0.04814
-!#           endif
-#         else
             zetabry_west(j)=0.0  
-#         endif
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
@@ -2559,18 +2535,8 @@ C$    integer  trd, omp_get_thread_num
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
-#         ifdef CHANNEL
-!            ubarbry_west(j)=0.6
-! pour s accorder avec MARS: valeur de ubar modelise apres forcage en ssh
-            ubarbry_west(j)=0.58
-# if defined key_ANA_bedload
-            ubarbry_west(j)=1.667
-# endif
-            vbarbry_west(j)=0.0
-#         else
             ubarbry_west(j)=0.0
             vbarbry_west(j)=0.0
-#         endif
           enddo
 #   endif
 #   if defined SOLVE3D && \
@@ -2578,35 +2544,14 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
-#         ifdef CHANNEL
-! pour s accorder avec MARS: valeur de ubar modelise apres forcage en ssh
-              ubry_west(j,k)=0.58
-# if defined key_ANA_bedload
-              ubry_west(j)=1.667
-# endif
-              vbry_west(j,k)=0.0
-#         else
               ubry_west(j,k)=0.0
               vbry_west(j,k)=0.0
-#         endif
 #    endif
 #    ifdef W_FRC_BRY
               wbry_west(j,k)=wz(0,j,k,1)
 #    endif
 #    ifdef T_FRC_BRY
-#    ifdef SUBSTANCE
-#     ifdef CHANNEL
-            tbry_west(j,k,1)=10. ! temperature
-#          ifdef SALINITY
-            tbry_west(j,k,2)=35. ! salinity
-            tbry_west(j,k,3)=851.2 ! traceur 1 MES   # SABLEGRO 
-            tbry_west(j,k,4)=851.2 ! traceur 1 MES  # SABLEFIN
-#          else
-            tbry_west(j,k,2)=851.2 ! traceur 1 MES   # SABLEGRO 
-            tbry_west(j,k,3)=851.2 ! traceur 1 MES  # SABLEFIN
-#          endif
-
-#     else
+#      ifdef SUBSTANCE
             do itrc=1,itsubs1-1
               tbry_west(j,k,itrc)=0.
             enddo
@@ -2614,20 +2559,19 @@ C$    integer  trd, omp_get_thread_num
             !write(*,*) 'cobc_wat',itrc,itsubs1,NT,cobc_wat(itrc)
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
-#     endif
-#   else
-#     if defined TFLAT2DV
+#      else
+#        if defined TFLAT2DV
               tbry_west(j,k,1)=10. ! temperature
               tbry_west(j,k,2)=35. ! salinity
               tbry_west(j,k,3)=0. ! traceur 1 MES   # SABLEGRO  CAS TEST T2FLAT
               tbry_west(j,k,4)=0. ! traceur 1 MES  # SABLEFIN
               tbry_west(j,k,5)=0. ! traceur 1 MES  # VASE
-#     else
-              do itrc=1,NT
-                tbry_west(j,k,itrc)=t(0,j,k,1,itrc)    ! ou =0. ??
-              enddo
-#     endif
-#    endif
+#        else
+            do itrc=1,NT
+              tbry_west(j,k,itrc)=t(0,j,k,1,itrc)    ! ou =0. ??
+            enddo
+#        endif
+#      endif
 #    endif
             enddo
           enddo
@@ -2668,30 +2612,18 @@ C$    integer  trd, omp_get_thread_num
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
 #   ifdef T_FRC_BRY
-#   ifdef SUBSTANCE
-#     ifdef CHANNEL
-            tbry_east(j,k,1)=10. ! temperature
-#          ifdef SALINITY
-            tbry_east(j,k,2)=35. ! salinity
-            tbry_east(j,k,3)=851.2 ! traceur 1 MES   # SABLEGRO 
-            tbry_east(j,k,4)=851.2 ! traceur 1 MES  # SABLEFIN
-#          else
-            tbry_east(j,k,2)=851.2 ! traceur 1 MES   # SABLEGRO 
-            tbry_east(j,k,3)=851.2 ! traceur 1 MES  # SABLEFIN
-#          endif
-#     else
+#    ifdef SUBSTANCE
             do itrc=1,itsubs1-1
               tbry_east(j,k,itrc)=0.
             enddo
             do itrc=itsubs1,NT
               tbry_east(j,k,itrc)=cobc_wat(itrc)
             enddo
-#     endif
-#   else
+#    else
             do itrc=1,NT
               tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)  ! ou =0. ??
             enddo
-#   endif
+#    endif
 #   endif
             enddo
           enddo
@@ -2699,14 +2631,7 @@ C$    integer  trd, omp_get_thread_num
         else 
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
-#   ifdef CHANNEL
-            zetabry_east(j)=0.0394  ! valeur?
-!#          ifdef  key_ANA_bedload
-!            zetabry_east(j)=0.00808  ! valeur?
-!#          endif
-#   else
             zetabry_east(j)=0.0
-#   endif
 #   ifdef OBC_PATM
             zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
 #   endif
@@ -2714,16 +2639,8 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
-#   ifdef CHANNEL
-            ubarbry_east(j)=0.58
-# if defined key_ANA_bedload
-            ubarbry_east(j)=1.667
-# endif
-            vbarbry_east(j)=0.
-#   else
             ubarbry_east(j)=0.
             vbarbry_east(j)=0.
-#   endif
           enddo
 #  endif
 #  if defined SOLVE3D && \
@@ -2731,31 +2648,14 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #   ifdef M3_FRC_BRY
-#      ifdef CHANNEL
-              ubry_east(j,k)=0.58
-# if defined key_ANA_bedload
-              ubry_east(j)=1.667
-# endif
-              vbry_east(j,k)=0.0
-#      else
               ubry_east(j,k)=0.0
               vbry_east(j,k)=0.0
-#      endif
 #   endif
 #   ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
 #   ifdef T_FRC_BRY
-#   ifdef SUBSTANCE
-#   ifdef CHANNEL
-             tbry_east(j,k,1)=10. ! temperature
-#            ifdef SALINITY
-             tbry_east(j,k,2)=35. ! salinity
-#            endif
-             do itrc=itsubs1,NT
-              tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
-             enddo
-#   else
+#     ifdef SUBSTANCE
 
             do itrc=1,itsubs1-1
               tbry_east(j,k,itrc)=0.
@@ -2763,12 +2663,11 @@ C$    integer  trd, omp_get_thread_num
             do itrc=itsubs1,NT
               tbry_east(j,k,itrc)=cobc_wat(itrc)
             enddo
-#   endif
-#   else
+#     else
             do itrc=1,NT
               tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)  ! ou =0. ??
             enddo
-#   endif
+#     endif
 #   endif
             enddo
           enddo

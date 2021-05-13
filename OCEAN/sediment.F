@@ -17,7 +17,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifdef SEDIMENT
+#if defined SEDIMENT && defined USGS
 
 # ifdef BEDLOAD /* for bedload scheme */
 #  define bnew nnew
@@ -4200,8 +4200,9 @@ C$OMP BARRIER
      &       i2,15x,'in input script: ',a)
 
  195  write(stdout,205) sedname
- 205  format(/,'sediment inputfile ',A,/, 
-     &   ' not found sediment initialization', ' from restart file')
+ 205  format(/,'sediment inputfile : ',A,/, 
+     &   ' inputfile not found or bad sediment initialization')
+      stop
 
   90  close(iunit)
       write(stdout,100) Nclass

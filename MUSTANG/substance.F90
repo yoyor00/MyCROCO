@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 #ifdef MUSTANG
-#include "coupleur_define_MUSTANG.h"
+# include "coupleur_define_MUSTANG.h"
 #endif
 
 MODULE substance
@@ -67,7 +67,7 @@ CONTAINS
    LOGICAL                                   :: l_varassoc
    INTEGER                                   :: ivpc,ivp,iv,iv0,indx,ivTS
    INTEGER                                   :: isubs,nballoc,ivr,it,ntypvar
-                                  
+
 
 !! tableaux (_n) lues pdimensionnes par namelist (par nombre de substance de tel ou tel type) 
 !! tableaux (_r) intermediaires dimensionnes au nombre de substances, sera recopie ensuite dans tableau final dimensionne a NT
@@ -99,7 +99,7 @@ CONTAINS
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
 #endif
-                                                
+   
                                               
    !! *  define namelists reading in parasubstance.txt
    
@@ -167,7 +167,11 @@ CONTAINS
    !   WRITE(stdout,*) 'namelist file defining simulated substances (other than temperature and salinity) :'
    !   WRITE(stdout,*) TRIM(name_filesubs)
 #ifdef MUSTANG
+# ifdef key_CROCO
+   OPEN(500,file=REPFICNAMELIST//'/'//SEDNAM,status='old',form='formatted',access='sequential')
+# else
    OPEN(500,file=REPFICNAMELIST//'/parasubstance_MUSTANG.txt',status='old',form='formatted',access='sequential')
+# endif
 #else
    OPEN(500,file=REPFICNAMELIST//'/parasubstance.txt',status='old',form='formatted',access='sequential')
    nv_grav=0
@@ -687,7 +691,7 @@ CONTAINS
        MPI_master_only   WRITE(stdout,*)' '
        MPI_master_only   WRITE(stdout,*)'the SORB variable :',name_var(irk_fil(isubs))
        MPI_master_only   WRITE(stdout,*)'does not have associated constitutive part. variable'
-       MPI_master_only   WRITE(stdout,*)'See parasubstance_MUSTANG.txt to give exactly the name of the constitutive associated variable'
+!       MPI_master_only   WRITE(stdout,*)'See parasubstance_MUSTANG.txt to give exactly the name of the constitutive associated variable'
        MPI_master_only   WRITE(stdout,*)'otherwise, it is not a SORB variable, but a NoCP variable '
        may_day_flag=78
        goto 99
@@ -854,7 +858,7 @@ CONTAINS
     ! MPI_master_only write(*,*)' indice wrthis tot',wrthis(1:indX+ntrc_substot)
 
 #ifdef PSOURCE_NCFILE_TS
-   DO isubs=1,ntrc_subs
+   DO: isubs=1,ntrc_subs
           indx=indxT+ntrc_salt+isubs
 !          vname(1,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src         '
 !          vname(2,indxTsrc+ntrc_salt+isubs)='Tracer source concentration     '
@@ -954,7 +958,7 @@ CONTAINS
     ! MPI_master_only  WRITE(*,*)' indice wrthis state variable MUSTANG',isubs,  &
     !             TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))),ivr,indx,irk_fil(isubs),wrthis(indx)
    ENDDO
-#ifdef  key_MUSTANG_specif_outputs
+#ifdef key_MUSTANG_specif_outputs
 ! seulement variables nv_out3Dnv_specif  et  nv_out3Dk_specif RAF: nv_out2D_specif)
    DO isubs=1,ntrc_subs
       ! 1 : toce_save

@@ -18,7 +18,9 @@
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#include "sediment.h"
+#if defined SEDIMENT && defined USGS                                        
+# include "sediment.h"
+#endif
 #ifdef FLOATS
 # include "ncscrum_floats.h"
 #endif
@@ -147,15 +149,17 @@
       fname='TEST_CASES/croco.in.TS_adv_rep'
 # endif
 #elif defined DUNE
-# ifdef ANA_DUNE
+# ifdef DUNE3D
+      fname='TEST_CASES/croco.in.Dune3d'
+# elif defined ANA_DUNE
       fname='TEST_CASES/croco.in.Ana_dune'
 # else
       fname='TEST_CASES/croco.in.Dune'
-# endif  
-#elif defined CHANNEL 
-      fname='TEST_CASES/croco.in.Channel'
+# endif
 #elif defined SED_TOY
       fname='TEST_CASES/croco.in.Sed_toy'
+#elif defined TFLAT2DV
+      fname='TEST_CASES/croco.in.Tflat2dv'
 #else
       fname='croco.in'
 #endif
@@ -1316,7 +1320,7 @@ c        close(testunit)
      &                                 'Sensible heat flux'
 # endif
 # ifdef MORPHODYN
-     &  , wrthis(indxHm), 'write Hm [m]',
+     &  , wrthis(indxHm),   'write Hm [m]',
      &                                 'Time evolving bathymetry'
 # endif 
 # if defined BIOLOGY && !defined PISCES
@@ -2066,7 +2070,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
      &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
      &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &      Zobt, 'Zobt      Bottom roughness for logarithmic law (m).',
+     &     Zobt, 'Zobt     Bottom roughness for logarithmic law (m).',
      &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
      &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
 !
@@ -2224,44 +2228,42 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    Scoef, 'Scoef    Saline contraction coefficient',
      &                                                '(kg/m3/PSU).'
 # endif
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 !
-! Sediments input file name.
+! Sediments input file name for USGS.
 !
       elseif (keyword(1:kwlen).eq.'sediments') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) sedname
-        lstr=lenstr(sedname)
-    
+        
         MPI_master_only write(stdout,
      &              '(/9x,A,2x,A)')
      &        'Sediment input file:',sedname
-
       elseif (keyword(1:kwlen).eq.'sediment_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) 
      &                   (wrthis(itrc), itrc=indxSed-1,indxSed+NST+1
-#  ifdef SUSPLOAD
+#   ifdef SUSPLOAD
      &                                       +2*NST
-#  endif
-#  ifdef BEDLOAD
+#   endif
+#   ifdef BEDLOAD
      &                                       +2*NST 
-#  endif     
-#  if defined MIXED_BED || defined COHESIVE_BED
+#   endif     
+#   if defined MIXED_BED || defined COHESIVE_BED
      &                                       + 1
-#  endif     
+#   endif     
      &  ) 
-#  ifdef AVERAGES
+#   ifdef AVERAGES
         do itrc=indxSed,indxSed+NST+1
-#  ifdef SUSPLOAD
+#   ifdef SUSPLOAD
      &                                       +2*NST
-#  endif
-#  ifdef BEDLOAD
+#   endif
+#   ifdef BEDLOAD
      &                                       +2*NST 
-#  endif
+#   endif
          wrtavg(itrc)=wrthis(itrc)
         enddo
-#  endif
+#   endif
         MPI_master_only write(stdout,'(3(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxATHK), 'write act_thick ', 
      &                            'thickness of active bed layer.'
@@ -2274,7 +2276,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxBFRA(itrc)), 'write bed_frac(',itrc,
      &                   ') Sediment fraction of index ',itrc,'.'
         enddo
-#  ifdef SUSPLOAD
+#   ifdef SUSPLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxDFLX(itrc)), 'write deposition flux(',itrc,
@@ -2285,8 +2287,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxEFLX(itrc)), 'write erosion flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
-#  endif
-#  ifdef BEDLOAD
+#   endif
+#   ifdef BEDLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxBDLU(itrc)), 'write xi-bedload flux(',itrc,
@@ -2297,12 +2299,29 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxBDLU(itrc)), 'write eta-bedload flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
-#  endif
-#  if defined MIXED_BED || defined COHESIVE_BED
+#   endif
+#   if defined MIXED_BED || defined COHESIVE_BED
         MPI_master_only write(stdout,'(6x,L1,2x,A,1x,A)')
      &      wrthis(indxBTCR), 'write bed_tau_crit ',
      &                            'critical stress of bed layer.'
-#  endif     
+#   endif
+# elif defined SEDIMENT && defined MUSTANG
+!
+! Sediments input file name for Mustang.
+!
+      elseif (keyword(1:kwlen).eq.'sediments_mustang') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) sednam_must
+        read(input,'(A)',err=95) sednam_vmust
+        lstr=lenstr(sednam_must)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Sediment input file for Mustang:',
+     &          sednam_must(1:lstr)
+        lstr=lenstr(sednam_vmust)
+        MPI_master_only write(stdout,'(7x,A,2x,A/)')
+     &         'Sediment input file for Mustang (version):',
+     &          sednam_vmust(1:lstr)
+
 # endif /* SEDIMENT */
 #endif
 #ifdef BBL
@@ -2664,7 +2683,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 ! Check CPP-switches for consistency. This operation is split into
 ! two stages because the first subroutine, "check_switches1", is
 ! generated by special program cppcheck (file cppcheck.F) by
-! examining and documention all available switches in cppdefs.h.
+! examining and documentation all available switches in cppdefs.h.
 ! This subroutine creates log of all switches defined in "cppdefs.h",
 ! as well as traps multiply defined global configurations (project
 ! switches, such as REGIONAL, etc).
