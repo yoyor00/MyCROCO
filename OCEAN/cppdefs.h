@@ -1443,8 +1443,8 @@
 !
 */
 # undef  ANA_DUNE           /* Analytical test case (Marieu) */
-# undef  DUNE3D             /* 3d example from "Bosse" DHYSED (Only with Mustang sediment model) */
-
+# undef  DUNE3D             /* 3d example from "Bosse" DHYSED          */
+                            /*      (Only with Mustang sediment model) */
 # undef  OPENMP
 # undef  MPI
 # define M2FILTER_NONE

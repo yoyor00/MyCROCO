@@ -1029,23 +1029,12 @@ C$OMP BARRIER
           do j=JR_RANGE
             do i=IR_RANGE
                 t(i,j,k,1,itemp)=10.
-!     &           -0.001_rsh/(9.81_rsh*0.0016)*z_r(i,j,k)
                 t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #   ifdef SALINITY
                 t(i,j,k,1,isalt)=35.5
                 t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-!                x=(i-1)*0.5*(pm(i-1,j)+pm(i,j))
-!                x=(i-1)*om_u(i,j)
-                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
-     &            on_u(i,j),pm(i,j),pn(i,j)
-!                IF (x < 30000.0_rsh ) THEN
-!                  t(i,j,k,1,isalt)=35.5
-!                ELSE IF (x > 80000.0_rsh ) THEN
-!                  t(i,j,k,1,isalt)= 0.0_rsh
-!                ELSE
-!                  t(i,j,k,1,isalt)=35.5*(1.0_rsh-(x-30000.0_rsh)/50000.0_rsh)
-!                END IF
-!                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+!                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
+!     &            on_u(i,j),pm(i,j),pn(i,j)
 #   endif
             enddo
           enddo

@@ -139,7 +139,7 @@ if [[ $copy_tag == 1 ]] ; then
     echo '         '
     
     cd $MY_CONFIG_PATH'/'$MY_CONFIG_NAME
-    mkdir Misc TEST_CASES NAMELIST_OANALYSIS CROCO_FILES SCRATCH DATA
+    mkdir Misc TEST_CASES NAMELIST_OANALYSIS CROCO_FILES SCRATCH DATA FIC_NAMELIST
     
     #OCEAN
     DIRO='OCEAN'
@@ -162,7 +162,10 @@ if [[ $copy_tag == 1 ]] ; then
     #PISCES
     cp -Rf $SOURCES_DIR/PISCES/*namelist* .
 
-    # XIOS
+    #MUSTANG
+    cp -Rf $SOURCES_DIR/MUSTANG/NAM_CASES/*txt FIC_NAMELIST/.
+
+	# XIOS
     DIRO='XIOS'
     cp -Rf $SOURCES_DIR/$DIRO/iodef.xml .
     cp -Rf $SOURCES_DIR/$DIRO/domain_def.xml .
