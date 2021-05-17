@@ -145,10 +145,11 @@ C     commons
      &     nbstep3d_bck,
      &     ad_u_bck, ad_v_bck, ad_t_bck
 
-      common /ad/ ad_array_node_size, ad_dz
+      common /ad/ ad_dz, ad_array_node_size
 
       common /ad_timings/ ad_dir_time,ad_adj_time
 
       common /ad_obs_data/ ad_obs, ad_obs_time
       common /ad_state_info/ ad_sim_iicroot,ad_counter,ad_cost_counter,
-     &     ad_cost,ad_rms,ad_irms,ad_irms_f,ad_ta
+     &     ad_ta,
+     &     ad_rms,ad_irms,ad_irms_f,ad_cost

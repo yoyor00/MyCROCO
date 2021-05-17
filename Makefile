@@ -458,8 +458,8 @@ $(TAP_TARGET)_context1_d.f: $(TGT_PSRCS_DBG)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_context1_d.f 
 	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_context1_d.f
-	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context_d.f	
-	sed -i 's/\(ADDEBUGTGT_CALL([^,]*\), 0, 0/\1, 10, 10/g' $(TAP_TARGET)_context1_d.f
+	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context1_d.f
+	echo #sed -i 's/\(ADDEBUGTGT_CALL([^,]*\), 0, 0/\1, 10, 10/g' $(TAP_TARGET)_context1_d.f
 
 $(TAP_TARGET)_context2_b.f: $(TGT_PSRCS_DBG)
 	ln -sf empty_code_insertion.h code_insertion.h
@@ -467,9 +467,9 @@ $(TAP_TARGET)_context2_b.f: $(TGT_PSRCS_DBG)
 	ln -sf adtool_ampi_turn_code_insertion.h code_insertion.h
 	sed -i 's/REAL, DIMENSION(\*, \*, \*)/REAL, DIMENSION(:, :, :)/g' $(TAP_TARGET)_context2_b.f 
 	sed -i 's/REAL, DIMENSION(:, :, :), POINTER a/REAL, DIMENSION(:, :, :), POINTER :: a/g' $(TAP_TARGET)_context2_b.f
-	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context_d.f	
-	sed -i 's/\(ADDEBUGBWD_CALL([^,]*\), 0/\1, 10/g' $(TAP_TARGET)_context2_b.f
-	sed -i 's/IF (.FALSE./IF (.TRUE./g' $(TAP_TARGET)_context2_b.f
+	sed -i 's/CHARACTER\*(/CHARACTER(/g' $(TAP_TARGET)_context2_b.f
+	echo #sed -i 's/\(ADDEBUGBWD_CALL([^,]*\), 0/\1, 10/g' $(TAP_TARGET)_context2_b.f
+	echo #sed -i 's/IF (.FALSE./IF (.TRUE./g' $(TAP_TARGET)_context2_b.f
 
 fortranSupport.o : fortranSupport.F
 	$(CFT) $(FFLAGS) $(CPPFLAGS) -I /usr/include -I /usr/local/include -c $^ -o $@
