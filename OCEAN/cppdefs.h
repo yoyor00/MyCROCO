@@ -37,7 +37,7 @@
 #undef  MOVING_BATHY    /* Moving Bathymetry Example */
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
-#undef  I_SOLITON       /* Internal Soliton Example */
+#undef  ISOLITON        /* Internal Soliton Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
 #define REGIONAL        /* REGIONAL Applications */
@@ -1288,12 +1288,12 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-#elif defined I_SOLITON
+#elif defined ISOLITON
 /*
 !                       Gravitational Adjustment Example
 !                       ============= ========== =======
 !
-!  Internal soliton case I_SOLITON (non-hydrostatic) is setup from:
+!  Internal soliton case ISOLITON (non-hydrostatic) is setup from:
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
 !  The degeneration of large-scale interfacial gravity waves in lakes. 
 !  J. Fluid Mech., 434:181-207. 
