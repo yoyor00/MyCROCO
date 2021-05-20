@@ -11,7 +11,7 @@ initial: NRREC  filename
           0
 
 sediments: input file
-           sediment_sandbar.in
+           TEST_CASES/sediment_sandbar.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T          

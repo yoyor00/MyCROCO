@@ -414,7 +414,11 @@
       parameter (ntrc_salt=0)
 # endif
 # ifdef PASSIVE_TRACER
+#  ifdef KH_INST
+      parameter (ntrc_pas=2)
+#  else
       parameter (ntrc_pas=1)
+#  endif
 # else
       parameter (ntrc_pas=0)
 # endif
@@ -515,7 +519,7 @@
      &          , isalt
 # endif
 # ifdef PASSIVE_TRACER
-     &          , itpas1,itpas2,itpas3,itpas4
+     &          , itpas
 # endif
 !
 # ifdef BIOLOGY
@@ -631,10 +635,7 @@
       parameter (isalt=itemp+1)
 # endif
 # ifdef PASSIVE_TRACER
-      parameter (itpas1=itemp+ntrc_salt+1)
-      parameter (itpas2=itemp+ntrc_salt+2)
-      parameter (itpas3=itemp+ntrc_salt+3)
-      parameter (itpas4=itemp+ntrc_salt+4)
+      parameter (itpas=itemp+ntrc_salt+1)
 # endif
 
 !
@@ -718,7 +719,7 @@
 
 #  elif defined BIO_NChlPZD
 #   ifdef OXYGEN
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrcpas+1)
 #   else
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
 #   endif

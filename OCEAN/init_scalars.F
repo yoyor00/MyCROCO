@@ -550,54 +550,25 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
 # endif /* SALINITY */
 
 # ifdef PASSIVE_TRACER
-CR      write(stdout,'(1x,A,I3)') 'indxTPAS = ',indxTPAS
-      vname(1,indxTPAS1)='tpas1                                     '
-      vname(2,indxTPAS1)='passive tracer                           '
-      vname(3,indxTPAS1)='no unit                                  '
-      vname(4,indxTPAS1)='passive tracer, scalar, series           '
-      vname(5,indxTPAS1)='                                         '
+      do i=1,ntrc_pas
+        if( i < 10) then
+           write(nametrc,'(A,I1)') 'tpas0',i
+        else
+           write(nametrc,'(A,I2)') 'tpas',i
+        endif
+ CR       write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
+        vname(1,indxTPAS(i))=TRIM(nametrc)
+        vname(2,indxTPAS(i))=TRIM(nametrc)//" passive tracer"
+        vname(3,indxTPAS(i))='no unit                             '
+        vname(4,indxTPAS(i))='passive tracer, scalar, series      '
+        vname(5,indxTPAS(i))='                                   '
 #  ifdef SPHERICAL
-      vname(6,indxTPAS1)='lat_rho lon_rho                          '
+        vname(6,indxTPAS(i))='lat_rho lon_rho                     '
 #  else
-      vname(6,indxTPAS1)='x_rho y_rho                              '
+        vname(6,indxTPAS(i))='x_rho y_rho                         '
 #  endif
-      vname(7,indxTPAS1)='                                         '
-
-      vname(1,indxTPAS2)='tpas2                                     '
-      vname(2,indxTPAS2)='passive tracer                           '
-      vname(3,indxTPAS2)='no unit                                  '
-      vname(4,indxTPAS2)='passive tracer, scalar, series           '
-      vname(5,indxTPAS2)='                                         '
-#  ifdef SPHERICAL
-      vname(6,indxTPAS2)='lat_rho lon_rho                          '
-#  else
-      vname(6,indxTPAS2)='x_rho y_rho                              '
-#  endif
-      vname(7,indxTPAS2)='                                         '
-      
-      vname(1,indxTPAS3)='tpas3                                     '
-      vname(2,indxTPAS3)='passive tracer                           '
-      vname(3,indxTPAS3)='no unit                                  '
-      vname(4,indxTPAS3)='passive tracer, scalar, series           '
-      vname(5,indxTPAS3)='                                         '
-#  ifdef SPHERICAL
-      vname(6,indxTPAS3)='lat_rho lon_rho                          '
-#  else
-      vname(6,indxTPAS3)='x_rho y_rho                              '
-#  endif
-      vname(7,indxTPAS3)='                                         '
-      
-      vname(1,indxTPAS4)='tpas4                                     '
-      vname(2,indxTPAS4)='passive tracer                           '
-      vname(3,indxTPAS4)='no unit                                  '
-      vname(4,indxTPAS4)='passive tracer, scalar, series           '
-      vname(5,indxTPAS4)='                                         '
-#  ifdef SPHERICAL
-      vname(6,indxTPAS4)='lat_rho lon_rho                          '
-#  else
-      vname(6,indxTPAS4)='x_rho y_rho                              '
-#  endif
-      vname(7,indxTPAS4)='                                         '
+        vname(7,indxTPAS(i))='                                    '
+      enddo
 # endif /* PASSIVE_TRACER */
 
 # ifdef BIOLOGY

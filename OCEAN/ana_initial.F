@@ -1121,23 +1121,23 @@ C$OMP BARRIER
             t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
 #  elif defined KH_INST
               zdye10 = -0.65*depth
-              t(i,j,k,1,itpas1) =
+              t(i,j,k,1,itpas) =
      &            + 35 +0.05* drho* (
      &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
 !    &                     )/Scoef
      &                     )
 !
-                 t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
+                 t(i,j,k,2,itpas) = t(i,j,k,1,itpas)
 
               zdye20 = -0.35*depth
-              t(i,j,k,1,itpas2) =
+              t(i,j,k,1,itpas+1) =
 !
      &            + 35 +0.05* drho* (
      &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
 !    &                     )/Scoef 
      &                     )
 !
-                 t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
+                 t(i,j,k,2,itpas+1) = t(i,j,k,1,itpas+1)
 
 #  else
             if (h(i,j).lt.300) then
