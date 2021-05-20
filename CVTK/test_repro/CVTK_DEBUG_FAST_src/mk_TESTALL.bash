@@ -17,7 +17,7 @@ scripttype=$2 # $2 => ana ; vort ou reg
 
 ./git_process.bash
 
-for testconf in RIP SANDBAR SHOREFACE;do
+for testconf in $(ls -1 ./Configure_Test/);do
   [ -d $testconf ] && rm -rf 	$testconf 
   echo -e ${FMT_BLUEBLD}"=============================="${FMT_ORD}
   echo -e ${FMT_BLUEBLD}"TESTING $testconf :"${FMT_ORD}
@@ -28,7 +28,7 @@ for testconf in RIP SANDBAR SHOREFACE;do
 done
 
 found=0
-for testconf in RIP SANDBAR SHOREFACE; do
+for testconf in $(ls -1 ./Configure_Test/);do
   ls $testconf/jobcomp_OPENMP* > /dev/null 2>&1
   if [ $? -gt 0 ]; then
     if [ $found -eq 0 ]; then
@@ -49,7 +49,7 @@ done
 
 i=1
 ierr=0
-for testconf in RIP SANDBAR SHOREFACE;do
+for testconf in $(ls -1 ./Configure_Test/);do
   if [ $i -eq 1 ]; then	
   echo "  "
   # if [ ${FANCY_OUTPUT} -eq 1 ] ;then
