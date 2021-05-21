@@ -731,6 +731,7 @@
 # define AVERAGES
 # define EW_PERIODIC
 # define ANA_SMFLUX
+# define ANA_BTFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
