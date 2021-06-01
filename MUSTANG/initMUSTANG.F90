@@ -87,7 +87,7 @@
    !&E
    !&E==========================================================================
    !! * Modules used
-#include "coupleur_define_MUSTANG.h"
+#include "coupler_define_MUSTANG.h"
 
    USE comMUSTANG
 
@@ -229,7 +229,7 @@
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-   USE coupleur_MUSTANG,  ONLY : coupl_conv2MUSTANG
+   USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
    USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
 #ifdef key_MUSTANG_splitlayersurf
    USE sed_MUSTANG,  ONLY : sed_MUSTANG_split_surflayer

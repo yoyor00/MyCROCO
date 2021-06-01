@@ -124,12 +124,12 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-    module_substance.F      module_MUSTANG.F\
+        module_substance.F  module_MUSTANG.F\
 \
 
 
  SRCS90 = \
-	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
+        par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
@@ -156,8 +156,9 @@ include Makedefs
 \
         comsubstance.F90        substance.F90\
 \
-        comMUSTANG.F90  coupleur_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-        sed_MUSTANG.F90 initMUSTANG.F90
+        comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+        sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 
@@ -259,7 +260,7 @@ ncrename: ncrename.F lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix  *.F90 *.F 
+	./cross_matrix  *.F90 *.F
 
 mymodules: $(MOBJS) $(AMROBJS)
 #

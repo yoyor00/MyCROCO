@@ -1028,13 +1028,11 @@ C$OMP BARRIER
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-                t(i,j,k,1,itemp)=10.
-                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 #   ifdef SALINITY
-                t(i,j,k,1,isalt)=35.5
-                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-!                 write(*,*) 'ana_initial =',i,j,k,om_u(i,j),
-!     &            on_u(i,j),pm(i,j),pn(i,j)
+              t(i,j,k,1,isalt)=35.5
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #   endif
             enddo
           enddo
@@ -1142,11 +1140,9 @@ C$OMP BARRIER
 #  elif defined TFLAT2DV
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
-!              if (h(i,j).lt.300) then
-!               t(i,j,k,1,itpas)=0.1 * z_r(i,j,k) + 22.
-              else
-                t(i,j,k,1,itpas)=0
-              endif
+            else
+              t(i,j,k,1,itpas)=0
+            endif
 #  else
             if (h(i,j).lt.300) then
               t(i,j,k,1,itpas)=1.
@@ -1172,33 +1168,27 @@ C$OMP BARRIER
             do iv=itsubs1,itsubs2
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
-!               if (h(i,j).lt.300) then
-
-                   t(i,j,k,1,iv)=cini_wat(iv)
-!                else
-!                 t(i,j,k,1,itpas)=0.
-!               endif
+                t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined TFLAT2DV
                 if (h(i,j).gt.0) then
-                  !!t(i,j,k,1,iv)=cini_wat(iv)
-! ################# CAS TFLAT2DV vase+diss
+! ---------------- mud+diss case -----------------!
                   if (iv<=itsubs1+1) then
                      if( i>79.and.i<151) then
-                       t(i,j,k,1,iv)=cini_wat(iv)   !#
+                       t(i,j,k,1,iv)=cini_wat(iv)
                      else
                        t(i,j,k,1,iv)=0.
                      endif
                   else
                      t(i,j,k,1,iv)=cini_wat(iv)
                   endif
-! ################# CAS TFLAT2DV vase+diss FIN
+! ------------------------------------------------!
                 else
                      t(i,j,k,1,iv)=0.
                 endif
 #  elif defined DUNE && defined MUSTANG
-                       t(i,j,k,1,iv)=cini_wat(iv)  
+                t(i,j,k,1,iv)=cini_wat(iv)  
 #  elif defined SED_TOY
-                       t(i,j,k,1,iv)=cini_wat(iv)
+                t(i,j,k,1,iv)=cini_wat(iv)
 #  else
                 if (h(i,j).lt.300) then
                   t(i,j,k,1,iv)=cini_wat(iv)

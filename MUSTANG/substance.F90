@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 #ifdef MUSTANG
-# include "coupleur_define_MUSTANG.h"
+# include "coupler_define_MUSTANG.h"
 #endif
 
 MODULE substance

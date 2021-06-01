@@ -113,7 +113,7 @@
    !&E
    !&E==========================================================================
 
-#include "coupleur_define_MUSTANG.h"
+#include "coupler_define_MUSTANG.h"
 
    !! * Modules used
 
@@ -142,7 +142,6 @@
  CONTAINS
  
  !!===========================================================================================
- 
   SUBROUTINE sed_MUSTANG_settlveloc(ifirst,ilast,jfirst,jlast,   &
                      h0fond,rhoref,WATER_CONCENTRATION) !  (t de ocean3d) directement dans les bons ordres de dimensions
 
@@ -164,7 +163,7 @@
    !&E  need to be know by hydrodynamic code:
    !&E         kmax=NB_LAYER_WAT  : connu via coupleur_dimhydro_MUSTANG.h
    !&E          
-   !&E  need to be know by code treated substance (if not ==> coupleur_MUSTANG.F90)
+   !&E  need to be know by code treated substance (if not ==> coupler_MUSTANG.F90)
    !&E         imud1, nvpc, nvp, nv_adv, isand1,isand2
    !&E         f_ws(iv) (if key_MUSTANG_flocmod)
    !&E         ws_free_opt,ws_free_para,ws_free_min,ws_free_max,ws_hind_opt,ws_hind_para :    
@@ -431,9 +430,9 @@
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-   USE module_substance,ONLY : bustr,bvstr
+   USE module_substance, ONLY : bustr,bvstr
 # ifdef WAVE_OFFLINE
-   USE module_substance,ONLY : Uwave, Dwave,Pwave
+   USE module_substance, ONLY : Uwave, Dwave,Pwave
 # endif
 
 

@@ -165,7 +165,7 @@ if [[ $copy_tag == 1 ]] ; then
     #MUSTANG
     cp -Rf $SOURCES_DIR/MUSTANG/NAM_CASES/*txt FIC_NAMELIST/.
 
-	# XIOS
+	#XIOS
     DIRO='XIOS'
     cp -Rf $SOURCES_DIR/$DIRO/iodef.xml .
     cp -Rf $SOURCES_DIR/$DIRO/domain_def.xml .

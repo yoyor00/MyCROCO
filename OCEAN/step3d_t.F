@@ -34,7 +34,6 @@
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
 # ifdef SUBSTANCE
-          !USE comsubstance
           USE comsubstance , ONLY : nv_grav,nvp,ws_part,nv_sand
 #  ifdef MUSTANG
           USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
@@ -227,12 +226,6 @@
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
-
-#  if defined MUSTANG && defined key_sand2D
-! Faire somme des FX en k=1
-#  endif
-
-
 #  ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i-1,j).eq.1) then
@@ -268,8 +261,6 @@
 # if defined MUSTANG && defined key_sand2D
          if (l_subs2D(itrc-itsubs1+1)) then
               if (k.eq.1) then
-
-
              t(i,j,k,nnew,itrc)=( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                     -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                          +FE(i,j+1)-FE(i,j)
@@ -287,16 +278,11 @@
      &                                                           )
 
          endif
-
-
 # else
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                     -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                          +FE(i,j+1)-FE(i,j)
      &                                                           )
-
-
-
 # endif
             enddo
           enddo                 !-->  discard FX,FE
@@ -516,10 +502,10 @@
       elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
 #   if defined key_sand2D
          if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    include "t3dmix_tridiagonal_chute.h"
+#    include "t3dmix_tridiagonal_settling.h"
          endif
 #   else
-#    include "t3dmix_tridiagonal_chute.h"
+#    include "t3dmix_tridiagonal_settling.h"
 #   endif /* key_sand2D */
       endif
 #   define TS_MIX_IMP
@@ -551,10 +537,10 @@
       elseif(itrc .ge. itsubs1+nv_grav.and. itrc .le. itsubs1+nvp) then ! sediment tracers
 #   if defined key_sand2D
          if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    include "t3dmix_tridiagonal_chute.h"
+#    include "t3dmix_tridiagonal_settling.h"
          endif
 #   else
-#    include "t3dmix_tridiagonal_chute.h"
+#    include "t3dmix_tridiagonal_settling.h"
 #   endif /* key_sand2D */
       endif
 #  endif /* MUSTANG */

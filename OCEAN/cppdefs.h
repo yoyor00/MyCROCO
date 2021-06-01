@@ -42,8 +42,8 @@
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
 #undef  DUNE            /* Dune test case Example */ 
 #undef  SED_TOY         /* 1DV vertical Example Dhysed */
-#undef  TFLAT2DV        /* 2DV bancs decouvrants Example  Dhysed */
-#define  REGIONAL         /* REGIONAL Applications */
+#undef  TFLAT2DV        /* 2DV uncovering sand bar with tide Example  Dhysed */
+#define  REGIONAL       /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
@@ -1487,8 +1487,8 @@
 !                       SED TOY (1D Single Column GradP example)
 !                       === === === ====== ====== ===== ========
 */
-# undef OPENMP
-# undef MPI
+# undef  OPENMP
+# undef  MPI
 
 # undef  UV_ADV
 # define NEW_S_COORD

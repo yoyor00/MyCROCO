@@ -30,7 +30,7 @@
       USE substance,    ONLY : l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp,rouse2d
 #endif
-#     include "coupleur_define_MUSTANG.h"
+#     include "coupler_define_MUSTANG.h"
 #endif
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
@@ -88,9 +88,7 @@
       real workrsed_nv(GLOBAL_2D_ARRAY),
      &     workrsed1_nv(GLOBAL_2D_ARRAY)
 #endif
-      integer :: Istr2,Jstr2,Iend2,Jend2
-      integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
-
+#     include "compute_tile_bounds.h"
 #endif
 
 # ifdef MASKING
@@ -599,50 +597,21 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     
 !     Tracer variables.
 !     
-#if defined MUSTANG
-# ifdef MPI
-#   define LOCALLM Lmmpi
-#   define LOCALMM Mmmpi
-# else
-#   define LOCALLM Lm
-#   define LOCALMM Mm
-# endif
-      chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
-      margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
-      chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
-      margin_E=(NSUB_E*chunk_size_E-LOCALMM)/2
-
-      Istr2=1-margin_X
-      Iend2=Istr2+chunk_size_X-1
-      Istr2=max(Istr2,1)
-      Iend2=min(Iend2,LOCALLM)
-!      Jstr2=1+-margin_E
-      Jstr2=1+-margin_E
-      Jend2=Jstr2+chunk_size_E-1
-      Jstr2=max(Jstr2,1)
-      Jend2=min(Jend2,LOCALMM)
-#endif
 
 CR    write(*,*) 'wrt_his: tracers ',NT,itsubs1,itsubs2
       do itrc=1,NT
          if (wrthis(indxT+itrc-1)) then
 CR         write(*,*) 'tracers:',itrc,'/',NT
 #if defined MUSTANG & defined key_sand2D
-! Z= (h(i,j)+zeta(i,j,knew)+z_w(i,j,k))
-! H= (h(i,j)+zeta(i,j,knew))
            if (itrc>=itsubs1+nv_grav .AND.
      &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
      &         .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
             workr=t(:,:,:,nstp,itrc)
-            do j=Jstr2,Jend2
-              do i=Istr2,Iend2
+            do j=Jstr,Jend
+              do i=Istr,Iend
                 DO k=1,N
            IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
-           ! if (i.eq.81 .or. i.eq.80 ) then
-!           write(*,*) 'sum_tmp=',i,j,sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
-!           write(*,*) 'rouse2D=',i,j,rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-           ! endif
            workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
      &       (  (z_w(i,j,N)-z_r(i,j,k))
      &          /(z_r(i,j,k)-z_w(i,j,0))

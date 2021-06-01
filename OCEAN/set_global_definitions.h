@@ -63,7 +63,6 @@
 #   else
 #    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
 #    define START_2D_ARRAY -2,0
-/*#    define START_2D_ARRAY -2,0*/
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_1D_ARRAYETA 0
 #   endif
@@ -193,7 +192,7 @@
 #define ZEROTH_TILE Istr+Jstr.eq.2
 
 /*
-  Occasinally a subroutine designed to process a tile may be called
+  Occasionally a subroutine designed to process a tile may be called
  to process the whole domain. If it is necessary to distinguish
  whether it is being called for the whole domain (SINGLE_TILE_MODE)
  or a tile. This switch is the same for MPI/nonMPI code.

@@ -68,11 +68,11 @@
 
    !! * Modules used
    USE module_MUSTANG
-                           
+
    IMPLICIT NONE
    
 !!#include "coupleur_dimhydro_MUSTANG.h"
-#include "coupleur_define_MUSTANG.h"
+#include "coupler_define_MUSTANG.h"
 
   !! * Accessibility
 
@@ -382,7 +382,7 @@
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-#include "coupleur_define_MUSTANG.h"
+#include "coupler_define_MUSTANG.h"
 
 #ifdef key_MARS
    USE parameters,   ONLY : l_testcase
@@ -457,7 +457,7 @@
 #endif   
 
 !  allocation of spatial variables  
-!  dimensions defined dans coupleur_define_MUSTANG.h
+!  dimensions defined dans coupler_define_MUSTANG.h
 !  dimensions in MARS :  PROC_IN_ARRAY       = limin:limax,ljmin:ljmax
 !                        PROC_IN_ARRAY_m1p2  = liminm1:limaxp2,ljminm1:ljmaxp2
 !                        PROC_IN_ARRAY_m1p1  = liminm1:limaxp1,ljminm1:ljmaxp1

@@ -192,7 +192,7 @@
    !&E
    !&E
    !&E===================================================================================================================
-#include "coupleur_define_MUSTANG.h"
+#include "coupler_define_MUSTANG.h"
 #ifdef key_MARS
 #   include "toolcpp.h"
 #endif
@@ -220,7 +220,7 @@
 #endif
 
    USE comMUSTANG 
-   USE coupleur_MUSTANG 
+   USE coupler_MUSTANG 
 
    IMPLICIT NONE
 

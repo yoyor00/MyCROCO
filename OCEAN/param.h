@@ -491,13 +491,13 @@
       INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
       INTEGER,PARAMETER :: lchain=200
       integer  itsubs1,itsubs2,ntfix
-# ifdef SED_TOY
+#  ifdef SED_TOY
       parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-# elif defined TFLAT2DV
+#  elif defined TFLAT2DV
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-# else
+#  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-# endif
+#  endif
       parameter (itsubs1= itemp+ntrc_salt+1 )
       parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
 # else
@@ -583,7 +583,6 @@
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf
-
 # ifdef BIOLOGY
      &          , itrc_bio
 # endif

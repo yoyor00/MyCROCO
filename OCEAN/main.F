@@ -22,22 +22,22 @@
 !======================================================================
 !
 #if defined OA_COUPLING || defined OW_COUPLING
-         USE mod_prism
+          USE mod_prism
 #endif
 #ifdef XIOS
-          USE xios          ! XIOS module
+          USE xios           ! XIOS module
 #endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces 
 #endif
-#ifdef SUBSTANCE
-          !USE comsubstance
+#ifdef SUBSTANCE          
           USE substance , ONLY : substance_read_alloc
           USE substance , ONLY : substance_surfcell
 #endif
-#ifdef MUSTANG
+#ifdef MUSTANG  
           USE initMUSTANG
+          USE plug_MUSTANG_CROCO
 #endif
 !     implicit none
       integer tile, subs, trd, ierr
@@ -81,17 +81,13 @@
       character*19 :: tool_sectodat
 #endif
 #ifdef MUSTANG
-#include "coupleur_define_MUSTANG.h"
-#include "ocean3d.h"
+# include "coupler_define_MUSTANG.h"
+# include "ocean3d.h"
 #endif     
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
       NSUB_X = 1
       NSUB_E = NPP
-#endif
-#ifdef MUSTANG
-       integer :: Istr2,Jstr2,Iend2,Jend2
-       integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
 #endif
 !
 #include "dynderivparam.h"
@@ -170,7 +166,7 @@
 !  PISCES biogeochemeical model parameters
 !
 # if defined BIOLOGY && defined PISCES
-      CALL trc_nam_pisces
+      call trc_nam_pisces
 # endif
 !
 !
@@ -185,24 +181,22 @@
 # endif
 #endif
  
-!
-!   module SUBSTANCE
-!----------------------------------------------------------------------
-!  computing cell surfaces need for MUSTANG and BIOLink
-!----------------------------------------------------------------------
 #ifdef SUBSTANCE
+!
+!  Computing cell surfaces need for MUSTANG and BIOLink
+!
       call substance_read_alloc(may_day_flag,indxT,indxTsrc)
    !  &                            wrthis(indxT+2:indxT+2+ntrc_substot))
 #endif
 
-!   module MUSTANG
-!
 #ifdef MUSTANG
-     ! general initialization ( parameters ..)
-      CALL MUSTANG_initialization(
-#ifdef key_MUSTANG_flocmod
+!
+!  General initialization for MUSTANG ( parameters ..)
+!
+      call MUSTANG_initialization(
+# ifdef key_MUSTANG_flocmod
      &           TRANSPORT_TIME_STEP,
-#endif
+# endif
      &           RHOREF)
 #endif
 !
@@ -347,8 +341,8 @@ CR      write(*,*) ' -6' MYID
 !  Bottom sediment parameters for BBL or SEDIMENT model
 !----------------------------------------------------------------------
 !
-#if (defined BBL && defined ANA_BSEDIM) || (defined SEDIMENT  &&\ 
-     defined USGS )
+#if (defined BBL && defined ANA_BSEDIM) || (defined SEDIMENT  &&\
+      defined USGS )
 !
 !  --- Set analytically ---
 !
@@ -400,52 +394,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !  computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-#ifdef SUBSTANCE
+# ifdef SUBSTANCE
       call substance_surfcell
-#endif
-
-
-# ifdef MPI
-#   define LOCALLM Lmmpi
-#   define LOCALMM Mmmpi
-# else
-#   define LOCALLM Lm
-#   define LOCALMM Mm
 # endif
-      chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
-      margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
-      chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
-      margin_E=(NSUB_E*chunk_size_E-LOCALMM)/2
-
-      Istr2=1-margin_X
-      Iend2=Istr2+chunk_size_X-1
-      Istr2=max(Istr2,1)
-      Iend2=min(Iend2,LOCALLM)
-!RB      Jstr2=1+-margin_E
-      Jstr2=1-margin_E  ! ou 1-margin_E ?
-      Jend2=Jstr2+chunk_size_E-1
-      Jstr2=max(Jstr2,1)
-      Jend2=min(Jend2,LOCALMM)
-
-       CALL MUSTANG_init_sediment(Istr2,Iend2,Jstr2,Jend2,
-     &     0,WATER_ELEVATION,
-!     &     0,BATHY_H0,WATER_ELEVATION,
-# if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
-     &     DHSED,
-# endif
-!#if defined key_MUSTANG_debug && defined SPHERICAL
-!     &     LATITUDE,LONGITUDE,
-!#endif  
-!#if defined key_MUSTANG_V2
-!#if defined key_MUSTANG_bedload
-!     &     CELL_DX,CELL_DY,
-!#endif 
-!#endif 
-     &     vname,indxT,ntrc_salt,
-     &     RESIDUAL_THICKNESS_WAT,Z0HYDRO,
-     &     WATER_CONCENTRATION)
-
-
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call MUSTANG_init_sediment_main (tile)
+      enddo
+CR      write(*,*)  ' -5' MYID0
 #endif
 !
 !----------------------------------------------------------------------
@@ -790,8 +746,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 
 #ifdef MUSTANG
-!   module MUSTANG - CPP keys and some parameters verfication
-      CALL MUSTANG_compatibility(vname,indxT,ntrc_salt)
+      call MUSTANG_compatibility(vname,indxT,ntrc_salt)
 #endif
 
 CR      write(*,*) '  0' MYID

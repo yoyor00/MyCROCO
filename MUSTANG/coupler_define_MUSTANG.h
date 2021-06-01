@@ -43,7 +43,7 @@
 #if defined MUSTANG
 
    !&E==========================================================================
-   !&E                   ***  coupleur_define_MUSTANG  ***
+   !&E                   ***  coupler_define_MUSTANG  ***
    !&E
    !&E
    !&E ** Purpose : definitions of dimensions, variables and parameters 
@@ -95,6 +95,17 @@
 #  elif defined TFLAT2DV
 #   define SEDNAM  'parasubstance_MUSTANG_Tflat2dv.txt'
 #   define SEDNAMV 'paraMUSTANGV2_Tflat2dv.txt'
+#  endif
+# endif
+
+# ifdef key_CROCO
+#  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
+#  ifdef MPI
+#   define I_EXT_RANGE Istr-1,Iend+1
+#   define J_EXT_RANGE Jstr-1,Jend+1
+#  else
+#   define I_EXT_RANGE Istr,Iend
+#   define J_EXT_RANGE Jstr,Jend
 #  endif
 # endif
 

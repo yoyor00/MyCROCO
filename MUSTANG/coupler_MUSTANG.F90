@@ -41,7 +41,7 @@
 #include "cppdefs.h"
 !---------------------------------------------------------------------------
 !
-                     MODULE coupleur_MUSTANG
+                     MODULE coupler_MUSTANG
 !
 !---------------------------------------------------------------------------
    
@@ -49,7 +49,7 @@
 #if defined MUSTANG 
 
    !&E==========================================================================
-   !&E                   ***  MODULE  coupleur_MUSTANG  ***
+   !&E                   ***  MODULE  coupler_MUSTANG  ***
    !&E
    !&E
    !&E ** Purpose : concerns coupling MUSTANG with hydro code
@@ -67,7 +67,7 @@
 #ifdef key_MARS
 #include "toolcpp.h"
 #endif
-#include "coupleur_define_MUSTANG.h"
+#include "coupler_define_MUSTANG.h"
 
    USE comMUSTANG
    USE comsubstance
@@ -391,5 +391,5 @@
    !!==============================================================================
 #endif
 
-END MODULE coupleur_MUSTANG
+END MODULE coupler_MUSTANG
 

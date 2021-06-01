@@ -26,7 +26,7 @@
 #include "ocean2d.h"
 #include "mpi_cpl.h"
 #ifdef MUSTANG
-#include "coupleur_define_MUSTANG.h"
+# include "coupler_define_MUSTANG.h"
 #endif   
        
 #ifdef AGRIF
@@ -116,7 +116,7 @@ C$OMP END PARALLEL
 #endif
 #include "ocean2d.h"
 #include "ocean3d.h"
-#if defined RVTK_DEBUG && ( defined  BULK_FLUX || defined MRL_WCI )
+#if defined RVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
 # include "forces.h"
 #endif
 #ifdef STATIONS
@@ -132,12 +132,12 @@ C$OMP END PARALLEL
       integer itrc
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num 
 
@@ -591,17 +591,17 @@ C$OMP BARRIER
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
 #endif
-       integer range
+      integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num 
 
@@ -820,18 +820,18 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 # include "autotiling.h"
 #endif
-       integer range
+      integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num 
       integer itrc
@@ -933,9 +933,12 @@ C$OMP END MASTER
       use Agrif_Util
 #endif
 #ifdef MUSTANG
-      USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition, MUSTANG_morpho
-      USE comMUSTANG , ONLY : l_morphocoupl,t_morpho
-# include "coupleur_define_MUSTANG.h"
+      use plug_MUSTANG_CROCO, only: mustang_update_dh
+      use plug_MUSTANG_CROCO, only: mustang_update_main
+      use plug_MUSTANG_CROCO, only: mustang_deposition_main
+      use plug_MUSTANG_CROCO, only: mustang_morpho_main
+      use comMUSTANG , only : l_morphocoupl,t_morpho
+# include "coupler_define_MUSTANG.h"
 #endif
       implicit none
 #include "param.h"
@@ -955,22 +958,18 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 # include "autotiling.h"
 #endif
-       integer range
+      integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
-#endif
-#ifdef MUSTANG
-       integer :: Istr2,Jstr2,Iend2,Jend2
-       integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num 
       integer itrc
@@ -996,50 +995,14 @@ C$OMP BARRIER
         call gls_mixing (tile)
 # endif
 
-
 # if defined SEDIMENT && defined MUSTANG
-
-#  ifdef MPI
-#    define LOCALLM Lmmpi
-#    define LOCALMM Mmmpi
-#  else
-#    define LOCALLM Lm
-#    define LOCALMM Mm
-#  endif
-      chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
-      margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
-      chunk_size_E=(LOCALMM+NSUB_E-1)/NSUB_E
-      margin_E=(NSUB_E*chunk_size_E-LOCALMM)/2
-
-      Istr2=1-margin_X
-      Iend2=Istr2+chunk_size_X-1
-      Istr2=max(Istr2,1)
-      Iend2=min(Iend2,LOCALLM)
-!RB Jstr2=1+-margin_E
-      Jstr2=1-margin_E
-      Jend2=Jstr2+chunk_size_E-1
-      Jstr2=max(Jstr2,1)
-      Jend2=min(Jend2,LOCALMM)
-      CALL MUSTANG_update(ISTR2,IEND2,JSTR2,JEND2,
-     &         RESIDUAL_THICKNESS_WAT,
-     &         WATER_CONCENTRATION,Z0HYDRO,
-     &         WATER_ELEVATION,
-#  if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-     &         BAROTROP_VELOCITY_U,
-     &         BAROTROP_VELOCITY_V,
-#  endif
-     &         RHOREF,SALREF_LIN,TEMPREF_LIN,
-     &         TRANSPORT_TIME_STEP)
+        call mustang_update_main (tile)
 # endif
-
         call step3d_t (tile)
 
 # ifdef SEDIMENT        
 #   ifdef MUSTANG
-        CALL MUSTANG_deposition(ISTR2,IEND2,
-     &                JSTR2,JEND2,
-     &           WATER_ELEVATION,
-     &           RESIDUAL_THICKNESS_WAT,WATER_CONCENTRATION)
+        call mustang_deposition_main (tile)
 #   endif
 
 #   if defined SEDIMENT && defined USGS
@@ -1071,48 +1034,21 @@ C$OMP BARRIER
 
 
 # ifdef MORPHODYN
-
-#  ifdef USGS
       do tile=my_first,my_last
-#   ifdef ANA_MORPHODYN
+#  ifdef USGS
+#    ifdef ANA_MORPHODYN
         call ana_morphodyn (tile)
-#   endif
+#    endif
+#  elif defined MUSTANG && defined SUBSTANCE
+        IF_MUSTANG_MORPHO_CPL
+     &  call mustang_morpho_main (tile)
+#  endif
         call set_depth_morphodyn (tile)
+#  if defined MUSTANG && defined SUBSTANCE
+        call mustang_update_dh (tile)
+#  endif
       enddo
 C$OMP BARRIER
-
-#  elif defined MUSTANG && defined SUBSTANCE
-
-       IF (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) THEN
-!    IF (l_morphocoupl .AND. CURRENT_TIME .GE. tstart_dyninsed ) THEN
-!#ifdef key_MARS
-!            IF (CURRENT_TIME .GE. t_morpho .AND. MOD(nbouc,1) == 0) THEN
-!#else
-!            IF(CURRENT_TIME .GE. t_morpho) THEN
-
-         CALL MUSTANG_morpho(ISTR2,IEND2,JSTR2,JEND2,              
-     &                WATER_ELEVATION,                              
-#     if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN
-     &                                 DHSED,                       
-#     endif                                     
-     &                RESIDUAL_THICKNESS_WAT)
-       END IF
-
-      do tile=my_first,my_last
-        call set_depth_morphodyn (tile)
-      enddo
-
-#     ifdef MPI
-       do j=JSTR2-1,JEND2+1
-         do i=ISTR2-1,IEND2+1
-#     else
-      do j=JSTR2,JEND2   
-        do i=ISTR2,IEND2
-#     endif
-          DHSED(i,j)=0.0_rsh
-        enddo
-      enddo
-#  endif
 
 # endif
 
