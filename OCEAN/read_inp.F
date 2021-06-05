@@ -79,7 +79,7 @@
 # else
       fname='TEST_CASES/croco.in.Grav_adj'
 # endif
-#elif defined I_SOLITON
+#elif defined ISOLITON
       fname='TEST_CASES/croco.in.Isoliton'
 #elif defined INNERSHELF
       fname='TEST_CASES/croco.in.Innershelf'
@@ -201,7 +201,8 @@
       wrtavg(indxTime)=.false.
 #endif
 
-#ifdef DIAGNOSTICS_TS
+#ifdef TRACERS
+# ifdef DIAGNOSTICS_TS
       wrtdia3D(NT+1)=.false.
 # ifdef AVERAGES
       wrtdia3D_avg(NT+1)=.false.
@@ -210,6 +211,7 @@
       wrtdia2D(NT+1)=.false.
 #  ifdef AVERAGES
       wrtdia2D_avg(NT+1)=.false.
+#   endif
 #  endif
 # endif
 #endif
@@ -231,7 +233,7 @@
       wrtdiags_ek_avg(3)=.false.
 #endif
 #endif
-#ifdef DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_PV && defined TRACERS
       wrtdiags_pv(NT+1)=.false.
 #ifdef AVERAGES
       wrtdiags_pv_avg(NT+1)=.false.
@@ -1078,7 +1080,9 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
-     &                    , (wrthis(itrc), itrc=indxT,indxT+NT-1) 
+# ifdef TRACERS
+     &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT) 
+# endif
 #endif
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
 #ifdef SOLVE3D
@@ -1094,12 +1098,14 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
+# ifdef TRACERS
         do itrc=1,NT
-          if (wrthis(indxT+itrc-1)) wrthis(indxTime)=.true.
+          if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
-     &                     wrthis(indxT+itrc-1), 'write T(', itrc,
+     &                     wrthis(indxV+itrc), 'write T(', itrc,
      &                              ')  Tracer of index', itrc,'.'
         enddo
+# endif
 #endif
 
 #if !defined SOLVE3D && defined RIP
@@ -1120,7 +1126,11 @@ c        close(testunit)
      &                                          ,  wrthis(indxO)
      &                                          ,  wrthis(indxW)
      &                                          ,  wrthis(indxAkv)
+# ifdef TEMPERATURE
      &                                          ,  wrthis(indxAkt)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrthis(indxAks)
 # else 
@@ -1159,13 +1169,21 @@ c        close(testunit)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
+# ifdef TEMPERATURE
      &                                          ,  wrthis(indxShflx)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrthis(indxSwflx)
 # else 
      &                                          ,  dumboolean
 # endif
+# ifdef TEMPERATURE
      &                                          ,  wrthis(indxShflx_rsw)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef BULK_FLUX
      &                                          , wrthis(indxShflx_rlw)
      &                                          , wrthis(indxShflx_lat)
@@ -1199,7 +1217,9 @@ c        close(testunit)
      &                                        .or. wrthis(indxO) 
      &                                        .or. wrthis(indxW)
      &                                        .or. wrthis(indxAkv)
+# ifdef TEMPERATURE
      &                                        .or. wrthis(indxAkt)
+# endif
 # ifdef SALINITY
      &                                        .or. wrthis(indxAks)
 # endif
@@ -1226,11 +1246,15 @@ c        close(testunit)
      &                                        .or. wrthis(indxWstr)
      &                                        .or. wrthis(indxUWstr)
      &                                        .or. wrthis(indxVWstr)
+# ifdef TEMPERATURE
      &                                        .or. wrthis(indxShflx)
+# endif
 # ifdef SALINITY
      &                                        .or. wrthis(indxSwflx)
 # endif
+# ifdef TEMPERATURE
      &                                        .or. wrthis(indxShflx_rsw)
+# endif
 # if defined BULK_FLUX
      &                                        .or. wrthis(indxShflx_rlw)
      &                                        .or. wrthis(indxShflx_lat)
@@ -1258,8 +1282,10 @@ c        close(testunit)
      &  , wrthis(indxO),    'write Omega', 'Omega vertical velocity.'
      &  , wrthis(indxW),    'write W    ', 'True vertical velocity.'
      &  , wrthis(indxAkv),  'write Akv  ', 'Vertical viscosity.'
+# ifdef TEMPERATURE
      &  , wrthis(indxAkt),  'write Akt  ',
      &                      'Vertical diffusivity for temperature.'
+# endif
 # ifdef SALINITY
      &  , wrthis(indxAks),  'write Aks  ',
      &                      'Vertical diffusivity for salinity.'
@@ -1322,14 +1348,18 @@ c        close(testunit)
      &  , wrthis(indxWstr),  'write Wstress', 'Wind Stress.'
      &  , wrthis(indxUWstr), 'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrthis(indxVWstr), 'write V-Wstress comp.', 'V-Wind Stress.'
+# ifdef TEMPERATURE
      &  , wrthis(indxShflx), 'write Shflx [W/m2]', 
      &                       'Surface net heat flux'
+# endif
 # ifdef SALINITY
      &  , wrthis(indxSwflx), 'write Swflx [cm/day]', 
      &                       'Surface freshwater flux (E-P)'
 # endif
+# ifdef TEMPERATURE
      &  , wrthis(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                          'Short-wave surface radiation'
+# endif
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -1361,7 +1391,9 @@ c        close(testunit)
      &                                    ,  wrtavg(indxVb)
 # ifdef SOLVE3D
      &                    ,  wrtavg(indxU),  wrtavg(indxV)
-     &                    , (wrtavg(itrc), itrc=indxT,indxT+NT-1)
+# ifdef TRACERS
+     &                    , (wrtavg(itrc), itrc=indxV+1,indxV+NT)
+#  endif
 # endif
         if ( wrtavg(indxZ) .or. wrtavg(indxUb) .or. wrtavg(indxVb)
 # ifdef SOLVE3D
@@ -1377,18 +1409,25 @@ c        close(testunit)
 # ifdef SOLVE3D
      &  , wrtavg(indxU),  'write U    ', '3D U-momentum component.'
      &  , wrtavg(indxV),  'write V    ', '3D V-momentum component.'
-        do itrc=1,NT
-          if (wrtavg(indxT+itrc-1)) wrtavg(indxTime)=.true.
+#  ifdef TRACERS
+         do itrc=1,NT
+          if (wrtavg(indxV+itrc)) wrtavg(indxTime)=.true.
           MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
-     &                      wrtavg(indxT+itrc-1), 'write T(',
+     &                      wrtavg(indxV+itrc), 'write T(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
         enddo
+#  endif
 
       elseif (keyword(1:kwlen).eq.'auxiliary_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxR), wrtavg(indxO)
-     &        ,  wrtavg(indxW),  wrtavg(indxAkv),  wrtavg(indxAkt)
+     &        ,  wrtavg(indxW),  wrtavg(indxAkv)
+# ifdef TEMPERATURE
+     &                                          ,  wrtavg(indxAkt)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrtavg(indxAks)
 # else 
@@ -1427,13 +1466,21 @@ c        close(testunit)
      &                                          ,  wrtavg(indxWstr)
      &                                          ,  wrtavg(indxUWstr)
      &                                          ,  wrtavg(indxVWstr)
+# ifdef TEMPERATURE
      &                                          ,  wrtavg(indxShflx)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrtavg(indxSwflx)
 # else 
      &                                          ,  dumboolean
 # endif
+# ifdef TEMPERATURE
      &                                          ,  wrtavg(indxShflx_rsw)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef BULK_FLUX
      &                                          , wrtavg(indxShflx_rlw)
      &                                          , wrtavg(indxShflx_lat)
@@ -1464,7 +1511,10 @@ c        close(testunit)
 # endif
 
         if ( wrtavg(indxR) .or. wrtavg(indxO) .or. wrtavg(indxW)
-     &                   .or. wrtavg(indxAkv) .or. wrtavg(indxAkt)
+     &                   .or. wrtavg(indxAkv) 
+#  ifdef TEMPERATURE
+     &                                        .or. wrtavg(indxAkt)
+#  endif
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxAks)
 #  endif
@@ -1491,11 +1541,15 @@ c        close(testunit)
      &                                        .or. wrtavg(indxWstr)
      &                                        .or. wrtavg(indxUWstr)
      &                                        .or. wrtavg(indxVWstr)
+#  ifdef TEMPERATURE
      &                                        .or. wrtavg(indxShflx)
+#  endif
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxSwflx)
 #  endif
+#  ifdef TEMPERATURE
      &                                        .or. wrtavg(indxShflx_rsw)
+#  endif
      &     
 #  ifdef BULK_FLUX
      &                                        .or. wrtavg(indxShflx_rlw)
@@ -1525,8 +1579,10 @@ c        close(testunit)
      &  , wrtavg(indxO),    'write Omega', 'Omega vertical velocity.'
      &  , wrtavg(indxW),    'write W    ', 'True vertical velocity.'
      &  , wrtavg(indxAkv),  'write Akv  ', 'Vertical viscosity'
+#  ifdef TEMPERATURE
      &  , wrtavg(indxAkt),  'write Akt  ',
      &                      'Vertical diffusivity for temperature.'
+#  endif
 #  ifdef SALINITY
      &  , wrtavg(indxAks),  'write Aks  ',
      &                         'Vertical diffusivity for salinity.'
@@ -1590,14 +1646,18 @@ c        close(testunit)
      &  , wrtavg(indxWstr), 'write Wstr', 'Wind Stress.'
      &  , wrtavg(indxUWstr),'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrtavg(indxVWstr),'write V-Wstress comp.', 'V-Wind Stress.'
+#  ifdef TEMPERATURE
      &  , wrtavg(indxShflx),'write Shflx [W/m2]', 
      &                      'Surface net heat flux.'
+#  endif
 #  ifdef SALINITY
      &  , wrtavg(indxSwflx),'write Swflx [cm/day]', 
      &                      'Surface freshwater flux (E-P)'
 #  endif
+#  ifdef TEMPERATURE
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                      'Short-wave surface radiation.'
+#  endif
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -1652,6 +1712,7 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'diag3D_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef TRACERS
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
@@ -1660,9 +1721,11 @@ c        close(testunit)
      &        'write Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+# endif  /* TRACERS */
 # ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95)  (wrtdia2D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia2D(itrc)) wrtdia2D(NT+1)=.true.
@@ -1671,6 +1734,7 @@ c        close(testunit)
      &        'write Hbl Integrated Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
 # ifdef AVERAGES
@@ -1679,6 +1743,7 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'diag3D_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
@@ -1687,10 +1752,12 @@ c        close(testunit)
      &        'write Avg Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#  endif  /* TRACERS */
 !
 #  ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#   ifdef TRACERS
         read(input,*,err=95) (wrtdia2D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia2D_avg(itrc)) wrtdia2D_avg(NT+1)=.true.
@@ -1699,6 +1766,7 @@ c        close(testunit)
      &        'write Avg Hbl Integrated  Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#  endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */
 
@@ -1808,6 +1876,7 @@ c        close(testunit)
 !!          wrtdiags_pv=.true.
       elseif (keyword(1:kwlen).eq.'diags_pv_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef TRACERS
         read(input,*,err=95)  (wrtdiags_pv(itrc), itrc=1,NT)
          do itrc=1,NT
            if (wrtdiags_pv(itrc)) wrtdiags_pv(3)=.true.
@@ -1815,11 +1884,13 @@ c        close(testunit)
      &         wrtdiags_pv(itrc),
      &         'write potential vorticity terms '
         enddo
+# endif /* TRACERS  */
 
 # ifdef AVERAGES
 !!         wrtdiags_pv_avg=.true.
       elseif (keyword(1:kwlen).eq.'diags_pv_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (wrtdiags_pv_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdiags_pv_avg(itrc)) wrtdiags_pv_avg(3)=.true.
@@ -1827,6 +1898,7 @@ c        close(testunit)
      &        wrtdiags_pv_avg(itrc),
      &         'write potential vorticity terms '
        enddo
+#  endif /* TRACERS  */
 # endif /* AVERAGES  */
 #endif /*DIAGNOSTICS_PV */
 
@@ -2070,12 +2142,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'tracer_diff2') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (tnu2(itrc),itrc=1,NT)
         do itrc=1,NT
           MPI_master_only write(stdout,7) tnu2(itrc), itrc, itrc
    7      format(1pe10.3,'  tnu2(',i2,')  Horizontal Laplacian '
      &     ,'mixing coefficient (m2/s)',/,32x,'for tracer ',i2,'.')
         enddo
+#  endif /* TRACERS */
 # endif
 # ifdef TS_DIF4
 !
@@ -2083,12 +2157,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'tracer_diff4') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (tnu4(itrc),itrc=1,NT)
         do itrc=1,NT
           MPI_master_only write(stdout,8) tnu4(itrc), itrc, itrc
    8      format(1pe10.3,'  tnu4(',i2,')  Horizontal biharmonic'
      &    ,' mixing coefficient [m4/s]',/,32x,'for tracer ',i2,'.')
         enddo
+#  endif /* TRACERS */
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
@@ -2098,10 +2174,13 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'vertical_mixing') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
+#  ifdef TRACERS
+         read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
+#  endif /* TRACERS */
         MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'
+#  ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &           '(1pe10.3,2x,A,I2,A,1x,A/32x,A,I2,A)')
@@ -2109,6 +2188,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &           'Background vertical mixing coefficient, m2/s,',
      &                                  'for tracer ', itrc, '.' 
         enddo
+#  endif /* TRACERS */
 # endif
 # ifdef BODYFORCE
       elseif (keyword(1:kwlen).eq.'bodyforce') then
@@ -2428,7 +2508,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
-#ifdef WKB_WWAVE
+#if defined WKB_WWAVE
 !
 ! WKB primary waves and empirical breaking model parameters
 !
@@ -2499,7 +2579,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  else
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
      &                                     (Lsrc(is,itrc), itrc=1,30),
+#   ifdef TRACERS
      &                                     (Tsrc0(is,itrc), itrc=1,NT)
+#   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */ 
 
         MPI_master_only write(stdout,'(3(/6x,i6,2x,A),(/6x,F6.0,2x,A))')
@@ -2518,19 +2600,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           Jsrc_mpi(is,mynode)=-1
         endif
 #  endif
+#  ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &         '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
      &         Lsrc(is,itrc), 'write Lsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
         enddo
+#  endif /* TRACERS */
 #  ifndef PSOURCE_NCFILE_TS
+#   ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &         '(6x,1pe10.3,2x,A,I2,A,2x,A,I2,A)')
      &         Tsrc0(is,itrc), 'write Tsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
         enddo
+#   endif /* TRACERS */
 #  endif
       enddo
 # else   
@@ -2543,7 +2629,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
           read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
-#  ifdef SOLVE3D
+#  if defined SOLVE3D &&  defined TRACERS
      &                                    ,(Lsrc(is,itrc), itrc=1,NT)
      &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
 #  endif
@@ -2565,7 +2651,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
            Jsrc_mpi(is,mynode)=-1
           endif
 #  endif
-#  ifdef SOLVE3D
+#  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT
             MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')

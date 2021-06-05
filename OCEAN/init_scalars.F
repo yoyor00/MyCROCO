@@ -1,4 +1,4 @@
-! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
+ ! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
 !
 !
 !======================================================================
@@ -314,7 +314,8 @@ C$OMP END PARALLEL
 ! Initialisation at one blanck space
       vname(:,:)='  '
 
-#undef CR
+!     #undef CR
+!#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='scrum_time'
       vname(2,indxTime)='time since initialization'
@@ -517,7 +518,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxV = ',indxV
 !      vname(6,indxV)='x_v y_v                                     '
 #endif
       vname(7,indxV)='                                            '
-                
+#if defined TEMPERATURE                
 CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(1,indxT)='temp                                        '
       vname(2,indxT)='potential temperature                       '
@@ -530,6 +531,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(6,indxT)='x_rho y_rho                                 '
 #endif
       vname(7,indxT)='                                            '
+#endif /* TEMPERATURE */
                 
 # ifdef SALINITY
 CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
@@ -1606,6 +1608,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxAkv =',indxAkv
       vname(6,indxAkv)='lat_rho lon_rho                           '
       vname(7,indxAkv)='                                          '
             
+# ifdef TEMPERATURE            
 CR      write(stdout,'(1x,A,I3)') 'indxAkt =',indxAkt         
       vname(1,indxAkt)='AKt                                       '
       vname(2,indxAkt)='temperature vertical diffusion coefficient'
@@ -1615,6 +1618,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxAkt =',indxAkt
      &                               / /  'at_w_location          '
       vname(6,indxAkt)='lat_rho lon_rho                           '
       vname(7,indxAkt)='                                          '
+# endif
+
 
 # ifdef SALINITY
 CR      write(stdout,'(1x,A,I3)') 'indxAks =',indxAks             
@@ -4590,7 +4595,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
 # endif /* PISCES */
 #endif /* DIAGNOSTICS_BIO */
 
-#if defined TCLIMATOLOGY && !defined ANA_TCLIMA
+#if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
 !     
 !     flag to read in climatology for tracer type variables.
 !     

@@ -55,7 +55,7 @@
       parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
 !     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
-#elif defined I_SOLITON
+#elif defined ISOLITON
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
@@ -399,9 +399,17 @@
 !
 #ifdef SOLVE3D
       integer   NT, itemp
-      integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
+      integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
 !
+# ifdef TEMPERATURE 
       parameter (itemp=1)
+      parameter (ntrc_temp=1)
+# else
+      parameter (itemp=0)
+      parameter (ntrc_temp=0)
+# endif
+
+
 # ifdef SALINITY 
       parameter (ntrc_salt=1)
 # else

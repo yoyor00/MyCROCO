@@ -10,7 +10,7 @@
 !======================================================================
 !     
 #include "cppdefs.h"
-#if defined PSOURCE_NCFILE_TS
+#if defined PSOURCE_NCFILE_TS && defined TRACERS
       subroutine get_psource_ts
 !     
 !     Read in point or grided sea river runoff tracer 
@@ -48,6 +48,7 @@ c     *        if (may_day_flag.ne.0) return    !-->  EXIT
 
         do itrc=1,NT
           got_tsrc(itrc)=.FALSE.
+#ifdef TEMPERATURE
           if (itrc.eq.itemp) then
             got_tsrc(itrc)=.true.
             ierr=nf_inq_varid (ncidqbar,'temp_src_time', tsrc_tid(itrc))
@@ -56,6 +57,7 @@ c     *        if (may_day_flag.ne.0) return    !-->  EXIT
               MPI_master_only write(stdout,3) 'temp_src_time', qbarname(1:lstr)
 c              goto 99           !--> ERROR
             endif
+#endif /* TEMPERATURE  */ 
 #ifdef SALINITY
           elseif (itrc.eq.isalt) then
             got_tsrc(itrc)=.true.

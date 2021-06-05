@@ -102,7 +102,11 @@
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
 # ifdef NONLIN_EOS 
+#  ifdef TEMPERATURE
           Tt=t(i,j,N,nstp,itemp)
+#  else
+          Tt=0.
+#  endif
 #  ifdef SALINITY
           Ts=max(0.,t(i,j,N,nstp,isalt))
           sqrtTs=sqrt(Ts)
@@ -126,7 +130,11 @@
 !   Linear Equation of state thermal expansion and saline
 !   contraction coefficients:
 !
+#  ifdef TEMPERATURE
           alpha(i,j)=abs(Tcoef)
+#  else
+          alpha(i,j)=0.
+#  endif
 #  ifdef SALINITY
           beta(i,j)=abs(Scoef)
 #  else

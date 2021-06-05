@@ -25,7 +25,9 @@ MY_CONFIG_NAME='Run_BENGUELA_LR'
 # END USER MODIFICATIONS
 #==========================================================================================
 
-while getopts :hd:s:t:n: V
+x_f=0
+
+while getopts :hfd:s:t:n: V
 do
   case $V in
     ('h') cat <<EOF
@@ -45,6 +47,7 @@ Script to setup your own croco configuration.
      - MY_CONFIG_NAME  : name of the configuration
 EOF
     exit 0;;
+    ('f')  x_f=1;;
     ('d')  x_d=${OPTARG};;
     ('s')  x_s=${OPTARG};;
     ('t')  x_t=${OPTARG};;
@@ -66,6 +69,7 @@ echo " - CONFIG_DIR   : ${MY_CONFIG_PATH}"
 echo " - CONFIG_NAME  : ${MY_CONFIG_NAME}"
 
 
+if [ $x_f -eq 0 ]; then
 echo -n " Do you want to proceed ? [Y/n] "
 read answer
 answer=`echo $answer | sed 's/^[yY].*$/y/'`
@@ -78,6 +82,7 @@ if [  -z "$answer" -o "x$answer" = "xy" ]; then
       exit
 fi
 unset -v answer
+fi
 
 # Check if source are there
 if [ ! -d $SOURCES_DIR ]; then 

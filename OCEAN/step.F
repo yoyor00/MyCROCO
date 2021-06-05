@@ -76,7 +76,7 @@ C$OMP END PARALLEL
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
+         if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
          endif
          oasis_time = oasis_time + dt
@@ -999,7 +999,7 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
-
+# if defined TRACERS 
       do tile=my_first,my_last
 # if defined TS_DIF2 || defined TS_DIF4 
         call t3dmix (tile)
@@ -1008,6 +1008,8 @@ C$OMP BARRIER
         call t3dmix_spg (tile)
 # endif
       enddo
+# endif /* TRACERS */
+      
 C$OMP BARRIER
 
 # ifdef MORPHODYN

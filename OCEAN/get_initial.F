@@ -413,26 +413,28 @@
 !
 ! Tracer variables.
 !
+#ifdef TRACERS 
       do itrc=1,NT
         got_tini(itrc)=.true.
-        lvar=lenstr(vname(1,indxT+itrc-1))
-        ierr=nf_inq_varid (ncid, vname(1,indxT+itrc-1)(1:lvar),
+        lvar=lenstr(vname(1,indxV+itrc))
+        ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                    varid)
         if (ierr .eq. nf_noerr) then
           ierr=nf_fread (t(START_2D_ARRAY,1,1,itrc), ncid,  varid,
      &                                               indx, r3dvar)
 
           if (ierr .ne. nf_noerr) then
-        MPI_master_only write(stdout,2) vname(1,indxT+itrc-1)(1:lvar)
+        MPI_master_only write(stdout,2) vname(1,indxV+itrc)(1:lvar)
      &                                , indx, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,3) vname(1,indxT+itrc-1)(1:lvar),
+        MPI_master_only write(stdout,3) vname(1,indxV+itrc)(1:lvar),
      &                                    ininame(1:lstr)
           got_tini(itrc)=.false.
         endif
       enddo
+#endif /* TRACERS */
 
 # ifdef SEDIMENT
 !
@@ -548,6 +550,7 @@
 !
 !  vertical diffusion coefficient for potential temperature.
 !
+#if defined TEMPERATURE
         lvar=lenstr(vname(1,indxAkt))
         ierr=nf_inq_varid (ncid, vname(1,indxAkt)(1:lvar),
      &                                                    varid)
@@ -565,6 +568,7 @@
 !     &     vname(1,indxAkt)(1:lvar),       ''' not found in ''',
 !     &     ininame(1:lstr), ''' ==> initialized to zero state.' 
         endif
+#endif /* TEMPERATURE */
 
 #  ifdef SALINITY
 !
