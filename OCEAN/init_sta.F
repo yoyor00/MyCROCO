@@ -136,8 +136,8 @@
           stainfo(istagrd,i)=FLOAT(STgrd(i)) ! each station belongs 
           if (stacoor(i).eq.0) then          ! to this grid initially
 # ifdef MPI
-            stax0(i)=stax0(i)-ii*Lm
-            stay0(i)=stay0(i)-jj*Mm
+            stax0(i)=stax0(i)-iminmpi+1
+            stay0(i)=stay0(i)-jminmpi+1
 # endif
             if (stax0(i).ge.0 .and. stax0(i).lt.LOCALLM+1 .and.
      &          stay0(i).ge.0 .and. stay0(i).lt.LOCALMM+1) then
