@@ -41,8 +41,7 @@
 
       use module_oa_type
 
-      integer::                                                        &
-           nzlevel_oa                      
+      integer::nzlevel_oa                      
 
       type(type_level),dimension(:),allocatable::wlev_oa
 

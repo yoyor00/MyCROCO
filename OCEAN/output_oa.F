@@ -58,7 +58,7 @@
       use xios_module
       use module_interface_oa, only : tvar_oa
      & ,tgv3d_oa, tgv_oa, tgvnam_oa, nzvc_oa
-     & ,verbose_oa
+     & ,verbose_oa, io_hist, directory_out_oa
       use module_oa_variables,  only : tv_oa     
      & ,tupd_oa  ! BLXD added for test
       use module_oa_periode,    only : begc_oa, tvc_oa, tc_oa, nzc_oa

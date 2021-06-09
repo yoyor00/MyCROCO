@@ -18,8 +18,8 @@
 !
 !> @details Procedures included in the module are:
 !!
-!! - init_oa                 : reads the user namelist with global parameters (configuration, variable, domain, scales, frequency,..) 
-!!                             initialization of the spatial, temporal and scale structures needed to stack/unstack analyses.
+!! - init_parameter_oa       : reads the user namelist with global parameters (configuration, variable, domain, scales, frequency,..) 
+!! - init_oa                 : initialization of the spatial, temporal and scale structures needed to stack/unstack analyses.
 !! - rdnotebook_init_oa      : reading of the 1st namelist which defines the config-variables to analyse during the simulation.
 !! - rdnotebook_oa           : reading of specific namelists each describing a perticular OA analysis to perform.
 !! - init_configuration_oa   : example of initialization of "mixed" variables configuration (composite).
@@ -32,6 +32,7 @@
 !! - upd_init_oa        : prepares output arrays var2d_oa and var3d_oa and related parameters.
 !! - main_oa            : main routine which performs the time convolution between the requested field and the OA atom (Fourier, wavelet, Dirac)
 !!                        method without pointer, calls function var_oa.
+!! - init_test_oa       : removed 
 !! - test_oa            : OA test functions application.
 !! - psi_oa             : wavelet fonction
 !! - psi_p2s_oa         : function which transforms the time period to the wavelet scale (s).
@@ -44,165 +45,167 @@
 !! - subsave_oa         : calls var_upd_oa (outputs in file have been removed).
 !! - allocate__*_oa     : dynamic variable allocation.
 !! - deallocate_*_oa    : deallocation.
-!! REMOVED:
+!! REMOVED :
 !! - struct_oa          : REMOVED (sauvegarde de la structure spatio-temporelle de la configuration).
 !! - pressure_i_oa      : REMOVED (fonction pour le calcul de l'anomalie de pression).
 !! - subsave_init_oa    : REMOVED (preparation des fichiers de sauvegarde)
+!! ADDED module routines
+!! - count_nmsimult_oa  : pre-calculates the state vector dimension as the number of simultaneously openened convolution windows.
 !! ADDED sources :
 !! - output_oa          : OA updates global output array looping on tiles to finally send global array to XIOS
 !! - var2d_oa, var3d_oa : called by output_oa
 !! - module_parameter_oa: recycled module to allocate var3d_oa, var2d_oa to the croco GLOBAL_3D_ARRAY, 2D_ARRAY 
+!! - online_spectral_diags : main routine called by Croco main.F and step.F 
+!!                           supporting tile-threads and possible dual OpenMP-MPI parallelization of the horizontal domain
+!
 ! REVISION HISTORY:
 !
 !> @authors 
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
 !!  - Symphonie/NHOMS initial version (2006)
 !! - B. Lemieux-Dudon
-!!  - Handles the analysis netCDF $output with specific routines 
+!!  - Croco-OA tile-thread compliant version (2021) 
+!!    supporting tile-threads and possible dual OpenMP-MPI parallelization of the horizontal domain
+!!     => online_spectral_diags : main routine called by Croco main.F and step.F
+!!     => module_tile_oa : tile-compliant state vector spatial structure
+!!  - Handles the analysis netCDF output with specific routines 
 !!    that are tile-thread compatible
-!!     => output_oa : OA strictly updates array tiles to finally send the global array to XIOS
+!!     => output_oa : strictly updates array tiles to finally send the global array to XIOS
 !!     => var2d_oa_out, var3d_oa_out : 2D using Croco working arrays work2d, work2d2
 !!     => module_parameter_oa : allocating var3d_oa, var2d_oa to the croco GLOBAL_3D_ARRAY, 2D_ARRAY 
-
+!!  - Memory optimization with by pre-calculates the state vector dimension and reduce the allocated size
+!!  - Croco-OA interface 1st version (2020)
+!!  - Memory oprimization when tracking isopycnal levels (lev_init_oa,..)
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
 !
 !> @date 2021
-!> @todo BLXD Modify Croco-OnlineA module interface.
+!> @todo BLXD Modified 2020 Croco-OnlineA module interface.
 !! - The CROCO-OnlineAnalysis module interface must be modified : 
 !!   Interface = mix between the Stand-alone and Original OnlineA versions 
 !!   => Croco arrays are passed as arguments to the OnlineA routines with reduced 
 !!   dimension range. It leads to memory duplication.
 !> @todo BLXD general requirement to organize precision consistency
-!!    eventhough compiling with double prec option (ifort, gfortran, -r8, croco preproc.)
-!!    cf ifort, gfortran jobcomp -r8; croco mpc.F preproc?
+!!    eventhough compiling with double prec option
+!!    (ifort, gfortran jobcomp -r8 + mpc.F preproc not applied to F90)
 !!    double precision type is obsolete 
 !!    Module with wp declaration and use of KIND(wp) ?
-!! @todo remove from Makefile this useless version of module_parameter_oa
+!> @todo remove from Makefile this useless version of module_parameter_oa
 !------------------------------------------------------------------------------
 
-module module_interface_oa
+      module module_interface_oa
 
-    implicit none
+      !use module_
+      implicit none
 
-    !> Maximum number of predefined configuration/var types (TODO check public/private attributes)
-    integer, parameter :: maxtyp_oa = 100 ! #BLXD TODO estimate the a priori # of possible config. maxtyp_oa   
 
-    
-    !> Maximum number of analysis of the same type requested simultaneously
-    integer, parameter :: maxcfg_oa = 10                           
+      !! MPI subdomain dependent param
+      !> sub. init_parameter_oa sets these parameters which are MPI subdomain dependent 
+      integer :: mynode
+      logical :: if_print_node
 
-    !> Maximum number of mixed variables (composites) ( rm module_oa_upd )
-    integer, parameter :: nmvar_oa = 10                              
+      !! Non MPI dependent param
+      !> sub. init_parameter_oa sets the logical to .true. if user effectively requests for analysis
+      logical             :: if_oa
 
-    !> Analysed 3D fields
-    !! Dimensions are space dimensions i, j, k, and the index of the analysed variable has returned by tvar_oa
-    complex(8), dimension(:,:,:,:), allocatable :: var3d_oa
+      ! TODO SEE IF THOSE CROCO TIME PARAM DECLARED HERE ONLY
+      !> First and last simulation iteration indices
+      integer :: kount0, nt_max                                      
+
+      !> External time step
+      double precision :: dti
+
+      !  BLXD BUG !!!!  TODO io_unit also declared in module_oa variables
+      integer :: io_unit
  
-    !> Analysed 2D fields
-    !! Dimensions are space dimensions i, j, k, and the index of the analysed variable has returned by tvar_oa
-    complex(8), dimension(:,:,:), allocatable   :: var2d_oa
+      !> Directory in is currently hardcoded to INPUT, directory out is set in the namelist_oa 
+      character(len=200)  :: directory_in_oa, directory_out_oa
+      integer             :: verbose_oa
+      integer, parameter  :: io_nml=90, io_hist=91
+      character(len=1), parameter :: txtslash='/'
 
-    !> Returns the index of the analysed variable (required for var3d_oa and var2d_oa)
-    !! dimension 1 : OA configuration-variable as requested in the namelist, tc_oa(ic), e.g., isopycne analysis has OA analysis index 20 
-    !! dimension 2 : if several OA configuration-variable of the same type are requested, their rank, tvc_oa(ic) 
-    !!               e.g. 1 for first OA analysis 20, 2 for the second OA analysis 20,... etc.
-    !! dimension 3 : # of variables involved in the configuration (see composite config. with several variables)
-    ! integer, dimension(1:maxtyp_oa,1:maxcfg_oa,1:10)  :: tvar_oa
-    integer, dimension(1:maxtyp_oa,1:maxcfg_oa,1:nmvar_oa)  :: tvar_oa
+      !TODO hist_io --> history, io_unit --> alternative to stdout? 
+      logical             :: if_sphe_deg2rad, if_extend_dom, if_chks ! TODO remove if_checks
+      real                :: unite_oa    !< namelist parameters time units 
+      real                :: pi_oa       !< TODO? double precision, real(8)
 
-    ! #BLXD brought from module_oa_space
-    integer,dimension(maxtyp_oa)::                                  &  ! changed 100 to 200 jwf 20070619
-         tgv3d_oa                                                   &  ! #BLXD TODO estimate the a priori # of possible config. maxtyp_oa   
-         ,tgv_oa                                                       ! type de point de la grille c auquel est associee la variable symphonie
-    
-    character(len=5),dimension(maxtyp_oa) :: tgvnam_oa
+      !! CHECK IF PARAM DECLARED HERE
+      integer :: nper_test
+      double precision, allocatable, dimension(:) :: period_test_oa, amp_test_oa 
 
-    ! #BLXD brought from module_oa_variable
-    integer:: nzvc_oa(maxtyp_oa)
+      ! BLXD in var_time_oa Maximum number of openned convolution windows
+      ! integer :: nmsimult_oa_max
 
-    !> Size of the last dimension of arrays var2d_oa and var3d_oa, respectively
-    !! Number of 2D field analysis, number of 3D field analysis, respectively 
-    integer :: nzupd2d_oa, nzupd3d_oa
-   
-    !> Variable useful for NHOMS energy analysis
-    !! kept since applied as condition in main_oa BLD TODO change allocated size ?
-    integer, dimension(1:6000) :: des_oa  
+      !> Maximum number of predefined configuration/var types (TODO check public/private attributes)
+      integer, parameter :: maxtyp_oa = 100 ! #BLXD set the # of possible config. maxtyp_oa   
 
-    ! Variable applied in NHOMS varcomp_oa : not useful in the STAND-ALONE OA version
-    ! integer, dimension(5,300)  :: outw_oa
+      integer, parameter :: nmsgnv_oa = 99 ! #BLXD set the # of possible config. maxtyp_oa   
 
-    ! Variable applied in NHOMS varmain_oa : not useful in the STAND-ALONE OA version
-    ! integer :: nzvar_oa  
+      !> Maximum number of analysis of the same type requested simultaneously
+      integer, parameter :: max_idcfg_oa = 10                           
+      
+      !> Maximum number of mixed variables (composites) ( rm module_oa_upd )
+      integer, parameter :: nmvar_oa = 5                              
+
+      ! #BLXD brought from module_oa_space
+      integer,dimension(maxtyp_oa) ::                                  &  ! changed 100 to 200 jwf 20070619
+            tgv3d_oa                                                   &  !
+            ,tgv_oa                                                       ! type de point de la grille c auquel est associee la variable symphonie
+       
+      character(len=5),dimension(maxtyp_oa) :: tgvnam_oa
+
+      ! #BLXD brought from module_oa_variable
+      integer:: nzvc_oa(maxtyp_oa)
+
+      !> Last dimension of the allocatable array var?d_oa
+      integer :: nzupd3d_oa, nzupd2d_oa
  
-    ! Variable applied in NHOMS varmain_oa : not useful in the STAND-ALONE OA version
-    ! character(len=90) :: name_var_oa (nmvar_oa)         
+      !> Analysed 3D fields
+      !! Dimensions are space dimensions i, j, k, and the index of the analysed variable has returned by tvar_oa
+      complex(8), dimension(:,:,:,:), allocatable :: var3d_oa
+      
+      !> Analysed 2D fields
+      !! Dimensions are space dimensions i, j, k, and the index of the analysed variable has returned by tvar_oa
+      complex(8), dimension(:,:,:), allocatable   :: var2d_oa
+      
+      !> Returns the index of the analysed variable (required for var3d_oa and var2d_oa)
+      !! dimension 1 : OA configuration-variable as requested in the namelist, tc_oa(ic), e.g., isopycne analysis has OA analysis index 20 
+      !! dimension 2 : if several OA configuration-variable of the same type are requested, their rank, tvc_oa(ic) 
+      !!               e.g. 1 for first OA analysis 20, 2 for the second OA analysis 20,... etc.
+      !! dimension 3 : # of variables involved in the configuration (see composite config. with several variables)
+      ! integer, dimension(1:maxtyp_oa,1:max_idcfg_oa,1:10)  :: tvar_oa
+      integer, dimension(1:maxtyp_oa,1:max_idcfg_oa,1:nmvar_oa)  :: tvar_oa
 
-    ! NHOMS variables used in rhmoyen_oa :
-    ! double precision, dimension(:,:,:), allocatable ::              &    
-    !         rhphat_oa_t                                             & !(0:imax+1,0:jmax+1,0:kmax+1)    
-    !        ,temhat_oa_t	                                          & !(0:imax+1,0:jmax+1,0:kmax+1)    
-    !        ,salhat_oa_t 					                            !(0:imax+1,0:jmax+1,0:kmax+1)
-    
-    integer :: nper_test
-    double precision, allocatable, dimension(:) :: period_test_oa, amp_test_oa 
+      ! BLXD added in module_oa_variables croco2021 May 06
+      !      removed from module variables declared in module_interface_oa
+      !      with wrong size
+      !      integer, dimension(1:6000) :: des_oa  
+      !
+      ! Variable useful for NHOMS energy analysis if you wish to call OA at specific point in the code
+      ! for specific variable that are updated at some irregular code place or time step (e.g., time splitting)
+      ! depnds on iv_m so it should have nzv_oa size has cnb_oa 
 
+#ifdef OA_TRACES
+      ! BLXD integer, dimension(1:nzv_oa) :: io_traces
+#endif
 
-    real             :: pi_oa
-    logical          :: isopycne_analysis
-    logical          :: if_dom_chk, if_extend_dom
-
-    integer :: itgt_glob, jtgt_glob, ktgt
-
-    !double precision, dimension(:,:,:), allocatable, target :: anyv3d_oa
-
-    !integer  :: n3d, n2d
-    integer :: nodoa
-    integer, parameter :: verbose_oa=6
-    logical :: if_print_node
-    integer :: io_unit
-    integer, parameter :: io_hist=500
-
-    character(len=200)  :: directory_in, directory_out
-
-    ! #BLD TODO better handle of public/private attribute (XIOS2,...etc)
-    public  :: maxtyp_oa, init_oa, main_oa, var2d_oa, var3d_oa,        &
-               tvar_oa, tgv3d_oa, tgv_oa, tgvnam_oa, nzvc_oa
-    private :: des_oa, nmvar_oa,                                       &
-               psi_oa, psi_p2s_oa,                                     &
-               isopycne_analysis,                                      &
-               directory_in, directory_out, nodoa,                     &
-               if_dom_chk, if_extend_dom
-               !n3d, n2d,                                               &
+      integer :: itgt_glob, jtgt_glob, ktgt
 
 
-CONTAINS 
-                                                                                         
-!------------------------------------------------------------------------------
+      contains
+
+!----------------------------------------------------------------------
 ! PROCEDURE
 !
 !> @note
 !
 ! DESCRIPTION: lecture des namelists pour initialiser les parametres
 !  d'analyse (configutation, variable, frequence, echelles analysees).
-!  initilisation des structures spatiales, frequentielles et 
-!  temporelles du vecteur d'etat.
 !
 !
 !> @brief reads OA namelists and set global ananalysis parameters.
-!!  construction of the spatial, temporal and scale structures needed
-!!  to stack and unstack the analysis in the state vector. 
 !
 !> @details sets the configuration, variables, frequency of analysis
-!!  scales and area to analyse,... 
-!!  several array-pointer allocation to vectorize the analysis.
-!!  The state vector is an derived data type array whose dimension
-!!  is the # of convolution windows (time structure) and whose field
-!!  is the # of grid point to analyse (spatial structure). 
-!
-!> @details OA stand-alone version WARNING :
-!! 1) To avoid array memory duplication when passing arguments to the init_oa subroutine,
-!!    the calling program should set the array dimension ranges by using lbound and ubound fonctions,
-!!    see *_*_lbound, *_*_ubound dummy variables.   
+!   scales and area to analyse,... 
 !
 ! REVISION HISTORY:
 !
@@ -210,440 +213,158 @@ CONTAINS
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
 !!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
-!!  - namelists, doxygen comments, Stand-alone version, optimization
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - namelists, doxygen comments, stand-alone, optimization (2015)
+!!  - Croco-OA interface 1st version (2020)
+!!  - Croco Tile-thread compliant version (2021)
 !> @date 2021
-!> @todo BLXD Modify Croco-OnlineA module interface.
-!!   Interface = mix between the Stand-alone and Original OnlineA versions 
-!!   => Croco arrays are passed as arguments to the OnlineA routines with reduced 
-!!   dimension range. It leads to memory duplication.
 !> @todo specific module to set consitent precisions 
 !!       with real(KIND=wp)... etc 
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------
+!
+      !subroutine finalize_parameter_oa
+      !
+      !use module_tile_oa, only : deallocate_tile_space_str
+      !implicit none 
+      !return
+      !end subroutine finalize_parameter_oa
 
-      subroutine init_oa(         &
-       directory_in_oa            & 
-      ,directory_out_oa           &
-      ,io_unit_oa                 &
-      ,if_print_node_oa           &
-      ,mynode_oa                  &
-      ,iic_oa                     &
-      ,kount0                     &
-      ,nt_max                     & 
-      ,dti                        &
-      ,imin, imax                 &
-      ,jmin, jmax                 &
-      ,kmin, kmax                 &
-      ,lon_t                      & !(-1:imax+2,-1:jmax+2)            
-      ,lon_t_lbound               &
-      ,lon_t_ubound               &
-      ,lat_t                      & !(-1:imax+2,-1:jmax+2)            
-      ,lat_t_lbound               &
-      ,lat_t_ubound               &
-      ,lon_u                      & !(0:imax+2,0:jmax+2)              
-      ,lon_u_lbound               &
-      ,lon_u_ubound               &
-      ,lat_u                      & !(0:imax+2,0:jmax+2)              
-      ,lat_u_lbound               &
-      ,lat_u_ubound               &
-      ,lon_v                      & !(0:imax+2,0:jmax+2)              
-      ,lon_v_lbound               &
-      ,lon_v_ubound               &
-      ,lat_v                      & !(0:imax+2,0:jmax+2)              
-      ,lat_v_lbound               &
-      ,lat_v_ubound               &
-      ,lon_f                      & !(0:imax+2,0:jmax+2)              
-      ,lon_f_lbound               &
-      ,lon_f_ubound               &
-      ,lat_f                      & !(0:imax+2,0:jmax+2)              
-      ,lat_f_lbound               &
-      ,lat_f_ubound               &
-      ,mask_t                     & !(-1:imax+2,-1:jmax+2,0:kmax+1)
-      ,mask_t_lbound              &
-      ,mask_t_ubound              &
-      ,mask_f                     & !(0:imax+1,0:jmax+1,0:kmax+1)
-      ,mask_f_lbound              &
-      ,mask_f_ubound              &
-      ,mask_u                     & !(0:imax+1,0:jmax+1,0:kmax+1)
-      ,mask_u_lbound              &
-      ,mask_u_ubound              &
-      ,mask_v                     & !(0:imax+1,0:jmax+1,0:kmax+1)
-      ,mask_v_lbound              &
-      ,mask_v_ubound              &
-      ,h_w                        & !(0:imax+1,0:jmax+1)              
-      ,h_w_lbound                 &
-      ,h_w_ubound                 &
-      ,h_u                        & !(0:imax+1,0:jmax+1)              
-      ,h_u_lbound                 &
-      ,h_u_ubound                 &
-      ,h_v                        & !(0:imax+1,0:jmax+1)              
-      ,h_v_lbound                 &
-      ,h_v_ubound                 &
-      ,h_f                        & !(0:imax+1,0:jmax+1)              
-      ,h_f_lbound                 &
-      ,h_f_ubound                 &
-      ,rhp_t                      &
-      ,rhp_t_lbound               &
-      ,rhp_t_ubound               &
-      ,depth_t                    & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
-      ,depth_t_lbound             &
-      ,depth_t_ubound         ) 
+!     logical function init_parameter_oa(     &
+      subroutine init_parameter_oa(     &
+     &  io_unit_oa                      &
+     & ,if_print_node_oa                &
+     & ,mynode_oa                       &
+     & ,dti_oa                          & 
+     & ,kount0_oa                       &
+     & ,nt_max_oa                       &
+     & ,ntiles )
 
-
-      use module_oa_variables !swt_d_oa
+      use module_oa_variables
       use module_oa_time
-      use module_oa_space
+      use module_oa_space 
       use module_oa_periode
       use module_oa_stock
-!      use scalars
+      use module_tile_oa, only : allocate_tile_space_str
+      use module_grd_oa, only  : allocate_tile_grid_tmp_str
+      !use module_isopycne_oa, only  : allocate_tile_isopycne_str
 
       implicit none
 
       !> Time integration step (s)
-      double precision, intent(in) :: dti
+      double precision, intent(in) :: dti_oa
 
-      !> Current model integration iteration
-      integer, intent(in) :: iic_oa 
+!     !> Current model integration iteration
+!     integer, intent(in) :: iic_oa 
 
       !> First and last simulation iteration indices
-      integer, intent(in) :: kount0, nt_max                                        
+      integer, intent(in) :: kount0_oa, nt_max_oa                                       
 
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields are analysed inside grid point domain [imin,imax]x[jmin,jmax]x[kmin,kmax]:
-      !! - Namelist index parameters must be set consistently
-      !! - Dimension extension of the fields passed in argument for analysis must be inside [imin,imax]x[jmin,jmax]x[kmin,kmax]
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax            &
-      ,kmin, kmax
+      !> Number of Croco tiles
+      integer, intent(in) :: ntiles                                       
 
-      !> Isopycne analysis (i.e., configuraion code 20)
-      !! Lower and upper index bounds of the 3-Dimensional density array
-      integer, dimension(3), intent(in) :: rhp_t_lbound, rhp_t_ubound
-
-      !> 3-Dimensional density array at t-grid point
-      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)), intent(in) :: &
-        rhp_t
-
-      !> Isopycne analysis (i.e., configuraion code 20)
-      !! Lower and upper index bounds of the 3-Dimensional depth array
-      integer, dimension(3), intent(in) :: depth_t_lbound, depth_t_ubound
-
-      !> 3-Dimensional depth array at t-grid point
-      double precision, dimension(depth_t_lbound(1):depth_t_ubound(1),depth_t_lbound(2):depth_t_ubound(2),depth_t_lbound(3):depth_t_ubound(3)), intent(in) :: &
-        depth_t
-
-      ! Lower and upper index bounds of the 2-Dimensional coordinate arrays passed from the calling code
-      integer, dimension(2), intent(in) ::  &
-        lon_t_lbound, lon_t_ubound          & !< Lower and upper index bounds of longitude array at t-grid point
-       ,lon_u_lbound, lon_u_ubound          & !< Lower and upper index bounds of longitude array at u-grid point
-       ,lon_v_lbound, lon_v_ubound          & !< Lower and upper index bounds of longitude array at v-grid point
-       ,lon_f_lbound, lon_f_ubound          & !< Lower and upper index bounds of longitude array at f-grid point
-       ,lat_t_lbound, lat_t_ubound          & !< Lower and upper index bounds of latitude array at t-grid point
-       ,lat_u_lbound, lat_u_ubound          & !< Lower and upper index bounds of latitude array at u-grid point
-       ,lat_v_lbound, lat_v_ubound          & !< Lower and upper index bounds of latitude array at v-grid point
-       ,lat_f_lbound, lat_f_ubound          & !< Lower and upper index bounds of latitude array at f-grid point
-       ,h_w_lbound, h_w_ubound              & !< Lower and upper index bounds of ocean thickness array at w-grid point TOCHECK
-       ,h_u_lbound, h_u_ubound              & !< Lower and upper index bounds of ocean thickness array at u-grid point
-       ,h_v_lbound, h_v_ubound              & !< Lower and upper index bounds of ocean thickness array at v-grid point
-       ,h_f_lbound, h_f_ubound                !< Lower and upper index bounds of ocean thickness array at f-grid point
-
-
-      ! 2-Dimensional array coordinate arrays passed from the calling code
-      double precision, dimension(lon_t_lbound(1):lon_t_ubound(1),lon_t_lbound(2):lon_t_ubound(2)), intent(in) :: lon_t  !< Longitude array at u-grid point
-      double precision, dimension(lon_u_lbound(1):lon_u_ubound(1),lon_u_lbound(2):lon_u_ubound(2)), intent(in) :: lon_u  !< Longitude array at u-grid point
-      double precision, dimension(lon_v_lbound(1):lon_v_ubound(1),lon_v_lbound(2):lon_v_ubound(2)), intent(in) :: lon_v  !< Longitude array at v-grid point
-      double precision, dimension(lon_f_lbound(1):lon_f_ubound(1),lon_f_lbound(2):lon_f_ubound(2)), intent(in) :: lon_f  !< Longitude array at f-grid point
-      double precision, dimension(lat_t_lbound(1):lat_t_ubound(1),lat_t_lbound(2):lat_t_ubound(2)), intent(in) :: lat_t  !< Latitude array at t-grid point
-      double precision, dimension(lat_u_lbound(1):lat_u_ubound(1),lat_u_lbound(2):lat_u_ubound(2)), intent(in) :: lat_u  !< Latitude array at u-grid point
-      double precision, dimension(lat_v_lbound(1):lat_v_ubound(1),lat_v_lbound(2):lat_v_ubound(2)), intent(in) :: lat_v  !< Latitude array at v-grid point
-      double precision, dimension(lat_f_lbound(1):lat_f_ubound(1),lat_f_lbound(2):lat_f_ubound(2)), intent(in) :: lat_f  !< Latitude array at f-grid point
-      double precision, dimension(h_w_lbound(1):h_w_ubound(1),h_w_lbound(2):h_w_ubound(2)), intent(in) :: h_w            !< Ocean thickness array at w-grid point
-      double precision, dimension(h_u_lbound(1):h_u_ubound(1),h_u_lbound(2):h_u_ubound(2)), intent(in) :: h_u            !< Ocean thickness array at u-grid point
-      double precision, dimension(h_v_lbound(1):h_v_ubound(1),h_v_lbound(2):h_v_ubound(2)), intent(in) :: h_v            !< Ocean thickness array at v-grid point
-      double precision, dimension(h_f_lbound(1):h_f_ubound(1),h_f_lbound(2):h_f_ubound(2)), intent(in) :: h_f            !< Ocean thickness array at f-grid point           
-
-      ! Lower and upper index bounds for the 3-Dimensional mask passed from the calling code
-      integer, dimension(3), intent(in) ::  &
-        mask_t_lbound, mask_t_ubound        & !< Lower and upper index bounds of mask array at t-grid point
-       ,mask_u_lbound, mask_u_ubound        & !< Lower and upper index bounds of mask array at u-grid point
-       ,mask_v_lbound, mask_v_ubound        & !< Lower and upper index bounds of mask array at v-grid point
-       ,mask_f_lbound, mask_f_ubound          !< Lower and upper index bounds of mask array at f-grid point
-
-      !> 3-Dimensional mask arrays passed from the calling code
-      integer, dimension(mask_t_lbound(1):mask_t_ubound(1),mask_t_lbound(2):mask_t_ubound(2),mask_t_lbound(3):mask_t_ubound(3)), intent(in) :: &
-       mask_t
-      integer, dimension(mask_u_lbound(1):mask_u_ubound(1),mask_u_lbound(2):mask_u_ubound(2),mask_u_lbound(3):mask_u_ubound(3)), intent(in) :: &
-       mask_u
-      integer, dimension(mask_v_lbound(1):mask_v_ubound(1),mask_v_lbound(2):mask_v_ubound(2),mask_v_lbound(3):mask_v_ubound(3)), intent(in) :: &
-       mask_v
-      integer, dimension(mask_f_lbound(1):mask_f_ubound(1),mask_f_lbound(2):mask_f_ubound(2),mask_f_lbound(3):mask_f_ubound(3)), intent(in) :: &
-       mask_f
-
-      integer                                                         &
-           iv_s                                                       &
-          ,ic_s                                                       &
-          ,i_s                                                        &
-          ,j_s                                                        &
-          ,k_s                                                        &
-          ,ls_s                                                       &
-          ,ls1_s     
-                    
-      character(len=200)   :: directory_in_oa, directory_out_oa
       integer, intent(in) :: io_unit_oa, mynode_oa
       logical, intent(in) :: if_print_node_oa
 
-      ! TODO #BLXD modified croco-OnlineA interface => use crodo pi parameter 
+      integer :: ic_s
+
+      ! Parameter initializion
+      ! TODO remove from module_oa_interface 
       pi_oa = acos(-1.)
 
-      directory_in  = directory_in_oa
-      directory_out = directory_out_oa
-      if_print_node = if_print_node_oa
-      nodoa = mynode_oa
-      io_unit = io_unit_oa
+      directory_in_oa  = "INPUT"
 
-!.....History file:
-      call history_oa(4,-1,-1,-1,-1)
+      ! Test configuration set to .false. by default
+      ifl_test_oa = 0
+
+      ! Isopycne configuration set to .false. by default
+      isopycne_analysis = .false.
+
+      ! BLXD pointers
+      io_unit = io_unit_oa
+      mynode  = mynode_oa
+      if_print_node = if_print_node_oa
+      dti = dti_oa
+      kount0 = kount0_oa 
+      nt_max = nt_max_oa
+
+      !open(unit=io_unit,file=trim(directory_out)//'/'//'trace.out')    
+      if(if_print_node) write(io_unit,*) ' '
+      if(if_print_node) write(io_unit,*) '..Begin Online Analysis OA LOG FILE'
 
 !.....nombre de variables par configuration:
 !     de 1 à 99 => configuration n'impliquant qu'une seule variable
-      do ic_s=1,99
+!     sup a 100 => conf. a +s variables
+!     BLXD TODO Specific init routine for nzvc_oa ?  
+!     From 100 to parameter maxtyp_oa=200 => configuration including several variables
+
+      do ic_s=1,nmsgnv_oa
          nzvc_oa(ic_s) = 1
       enddo
-
-!..... No energy variable so far!
-      des_oa=0.
-
-!     From 100 to parameter maxtyp_oa=200 => configuration including several variables
-!     TODO : parameters max_single_oa_var_index = 99, min_mixed_oa_var_index = 100
       nzvc_oa(100) = 2 
+
+!..... BLXD removing des_oa initialization : 
+!      WRONG type (integer) - WRONG array size 1:6000 instead of 1:nzv_oa
+!..... No energy variable so far!
+!      des_oa=0.
+
+!.....lecture des nzc_oa configuration et calcul du nombre total de var. associe  nzv_oa
+!     BLXD include composite configuration with several variables requires nzvc_oa
+      call rdnotebook_init_oa
+
+!.....test si calcul oa ou pas
+      if_no_analysis_requested : if(nzv_oa.eq.0) then
+
+        if(if_print_node) write(io_unit,*) '...OA LOG FILE : WARNING zero analysis requested (nzv_oa=0)'
+
+!.....flag returning false to croco, either function or module flag
+!        init_parameter_oa = .false.
+         if_oa = .false.
+
+        return
+
+      else
+
+!.....allocations dynamiques des parametres pour analyse ssi nzv_oa /= 0
+        call allocate_part1_oa( )
+
+!.....BLXD MOVING des_oa INITIALISATION HERE with correct type (integer) an array size (nzv_oa)
+!     just allocated in allocate_part1
+!       No energy variable so far!
+        des_oa(1:nzv_oa) = 0 
+
 
 !.....definition des ondelettes de morlet:
 
-      ! TODO #BLXD use pi_oa or croco pi parameter
-      fb_oa=2.                ! definition de l''ondelette de morlet complexe
-      fc_oa=6./2./3.14159274  ! par defaut fb_oa=2. et fc_oa=6./3.14159274/2.
+        ! BLXD appropriate place to init wavelet param, namelist can be a better place ?
+        ! TODO use pi_oa or croco pi parameter
+        fb_oa=2.                ! definition de l''ondelette de morlet complexe
+        fc_oa=6./2./3.14159274  ! par defaut fb_oa=2. et fc_oa=6./3.14159274/2.
+        fc_oa=6./2./pi_oa
 
-!.....lecture des nzc_oa configuration et calcul du nombre total de var. associe  nzv_oa:
-      call rdnotebook_init_oa
+!.....lecture du notebook.oa: 
+!      #BLXD removing the use of 2D grid parameter. Still contains the call to var_copy_oa
+        call rdnotebook_oa( )
 
-!.....allocations dynamiques: nzv_oa
-      call allocate_part1_oa(  &
-         imin, imax            &
-        ,jmin, jmax            &
-        ,kmin, kmax )
+        call var_grid_oa
 
-!.....lecture du notebook.oa: #BLXD remove lon_t...etc
-      call rdnotebook_oa(                            &
-                          imin, imax                 &
-                         ,jmin, jmax                 &
-                         ,kmin, kmax                 &
-                         ,lon_t                      &
-                         ,lon_t_lbound               &
-                         ,lon_t_ubound               &
-                         ,lat_t                      &
-                         ,lat_t_lbound               &
-                         ,lat_t_ubound               &
-                         ,dti                        & 
-                         ,kount0                     &
-                         ,nt_max )
+!.....BLXD here we know the # of tiles ntiles from module_tile_oa
+        call allocate_tile_space_str(ntiles)
+        call allocate_tile_grid_tmp_str(ntiles)
 
-
-!     test si calcul ou pas
-      if_no_analysis_requested : if(nzv_oa.eq.0) then
-        if(if_print_node) write(io_unit,*) 'ONLINE ANALYSIS WARNING : zero analysis requested (nzv_oa=0)'
-        return
-      end if if_no_analysis_requested
-            
-
-      if (ifl_test_oa==1) then
-        call test_oa( ichoix=0      & ! Initialisation 
-          ,iic_oa=iic_oa            & 
-          ,dti=dti                  & 
-          ,imin=imin, imax=imax     &
-          ,jmin=jmin, jmax=jmax     &
-          ,kmin=kmin, kmax=kmax )
-       endif
-
-!.....quelques initialisations directes:
-      
-!     test si calcul ou pas
-!      if(nzv_oa.eq.0) return   BLXD moved up   
-
-!.....association de chaque variable a un pt de la grille c:
-
-      call var_grid_oa
- 
-
-!.....initialisation de la structure spatiale:
-
-      call var_space_oa(.false.                     & ! calculate the dimensions of the matrices associated to the spatial structure (without putting in data)
-                        ,imin, imax                 &
-                        ,jmin, jmax                 &
-                        ,kmin, kmax                 &
-                        ,lon_t                      &
-                        ,lon_t_lbound               &
-                        ,lon_t_ubound               &
-                        ,lat_t                      &
-                        ,lat_t_lbound               &
-                        ,lat_t_ubound               &
-                        ,lon_u                      &
-                        ,lon_u_lbound               &
-                        ,lon_u_ubound               &
-                        ,lat_u                      &
-                        ,lat_u_lbound               &
-                        ,lat_u_ubound               &
-                        ,lon_v                      &
-                        ,lon_v_lbound               &
-                        ,lon_v_ubound               &
-                        ,lat_v                      &
-                        ,lat_v_lbound               &
-                        ,lat_v_ubound               &
-                        ,lon_f                      &
-                        ,lon_f_lbound               &
-                        ,lon_f_ubound               &
-                        ,lat_f                      &
-                        ,lat_f_lbound               &
-                        ,lat_f_ubound               &
-                        ,mask_t                     &
-                        ,mask_t_lbound              &
-                        ,mask_t_ubound              &
-                        ,mask_f                     &
-                        ,mask_f_lbound              &
-                        ,mask_f_ubound              &
-                        ,mask_u                     &
-                        ,mask_u_lbound              &
-                        ,mask_u_ubound              &
-                        ,mask_v                     &
-                        ,mask_v_lbound              &
-                        ,mask_v_ubound              &
-                        ,h_w                        &
-                        ,h_w_lbound                 &
-                        ,h_w_ubound                 &
-                        ,h_u                        &
-                        ,h_u_lbound                 &
-                        ,h_u_ubound                 &
-                        ,h_v                        &
-                        ,h_v_lbound                 &
-                        ,h_v_ubound                 &
-                        ,h_f                        &
-                        ,h_f_lbound                 &
-                        ,h_f_ubound )
-
-      call allocate_part2_oa( &                       ! allocation of all spatial variables
-         imin, imax           &
-        ,jmin, jmax )
-
-      call var_space_oa(.true.                      & ! calculation of values (these 3 steps are used for frequency & time as well)
-                        ,imin, imax                 &
-                        ,jmin, jmax                 &
-                        ,kmin, kmax                 &
-                        ,lon_t                      &
-                        ,lon_t_lbound               &
-                        ,lon_t_ubound               &
-                        ,lat_t                      &
-                        ,lat_t_lbound               &
-                        ,lat_t_ubound               &
-                        ,lon_u                      &
-                        ,lon_u_lbound               &
-                        ,lon_u_ubound               &
-                        ,lat_u                      &
-                        ,lat_u_lbound               &
-                        ,lat_u_ubound               &
-                        ,lon_v                      &
-                        ,lon_v_lbound               &
-                        ,lon_v_ubound               &
-                        ,lat_v                      &
-                        ,lat_v_lbound               &
-                        ,lat_v_ubound               &
-                        ,lon_f                      &
-                        ,lon_f_lbound               &
-                        ,lon_f_ubound               &
-                        ,lat_f                      &
-                        ,lat_f_lbound               &
-                        ,lat_f_ubound               &
-                        ,mask_t                     &
-                        ,mask_t_lbound              &
-                        ,mask_t_ubound              &
-                        ,mask_f                     &
-                        ,mask_f_lbound              &
-                        ,mask_f_ubound              &
-                        ,mask_u                     &
-                        ,mask_u_lbound              &
-                        ,mask_u_ubound              &
-                        ,mask_v                     &
-                        ,mask_v_lbound              &
-                        ,mask_v_ubound              &
-                        ,h_w                        &
-                        ,h_w_lbound                 &
-                        ,h_w_ubound                 &
-                        ,h_u                        &
-                        ,h_u_lbound                 &
-                        ,h_u_ubound                 &
-                        ,h_v                        &
-                        ,h_v_lbound                 &
-                        ,h_v_ubound                 &
-                        ,h_f                        &
-                        ,h_f_lbound                 &
-                        ,h_f_ubound )
-
-!.....initialisation boite d'heisenberg:
-!     attention reprendre calcul selon ondelette
-      call box_oa
-
-!.....initialisation de la structure frequentielle:
-      call var_per_oa( .false., dti )
-      call allocate_part3_oa   
-      call var_per_oa( .true., dti )
-
-
-!.....initialisation de la structure temporelle:
-      call var_time_oa(.false., kount0, nt_max, dti )
-      call allocate_part4_oa
-      call var_time_oa(.true., kount0, nt_max, dti )
-
-      call allocate_part5_oa
-
-!.....initialisation du facteur de reconstruction
-      call var_rec_oa( dti )
-
-!.....History file:        
-      call history_oa(6,-1,-1,-1,-1)
-
-!.....ecriture du fichier de structure:
-
-      !STDALONE call struct_oa
-
-!.....History file:
-      call history_oa(5,-1,-1,-1,-1, iic_oa, nt_max )
-
-!.....initialisation eventuelle des "levels"
-      if (isopycne_analysis) then
-        !if ( present(rhp_t) .and. present(depth_t) ) then
-            call lev_init_oa( rhp_t, rhp_t_lbound, rhp_t_ubound ) 
-        !else
-        !    stop "3D density array must be passed as argument to the OA module (see subroutine initial_oa)" 
+        !if ( isopycne_analysis ) then
+        !    call allocate_tile_isopycne_str(ntiles)
         !endif
-      endif
 
+! TODO DEALLOCATE NULLIFY AFTER init_parameter_oa terminated for all trd
+! REQUIRES OMP BARRIER
 
-    !STDALONE!......initialisation de variables symphonie:
-    !STDALONE
-    !STDALONE      call var_upd_oa (-1,-1,-1)
+!.....if function returning true : init_parameter_oa = .true.
+        if_oa = .true.
 
-    !STDALONE !......initialisation de l'energie
-    !STDALONE 
-    !STDALONE       call nrj_init_oa
+      end if if_no_analysis_requested
 
-!......preparation des variables communes pour la sauvegarde:
-
-      call upd_init_oa( imin, imax    &
-                       ,jmin, jmax    &
-                       ,kmin, kmax    )
-
-      return
-
-      end subroutine init_oa
+      return 
+      end subroutine init_parameter_oa
+!      end function init_parameter_oa
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -669,11 +390,10 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
-!!  - parameters in ascii file change into namelists, doxygen comments 
-!!  - stand-alone version, doxygen, cleaning symphonie variables
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - namelists, doxygen comments, stand-alone version (2015)
+!!  - Croco version (2020)
 !> @date 2021
 !> @todo BLXD 
 !! - organize the io unit parameters, cleaning
@@ -689,35 +409,43 @@ CONTAINS
 
       implicit none
 
-      integer             :: ic_r  !< Configuration index
+      integer             :: ic_r  !< Dummy configuration index, test function # of harmonics 
       character(len=250)  :: filin !< namelist filename
 
       namelist / oa_numbers / nzc_oa
-      namelist / oa_names / nzc_oa_names, nzc_oa_vartyp
-      namelist / oa_test / nper_test
+      namelist / oa_names   / nzc_oa_names, nzc_oa_vartyp
+      namelist / oa_test    / nper_test
       namelist / oa_test_signal / period_test_oa, amp_test_oa 
-      namelist / oa_checks / if_dom_chk, if_extend_dom, &
-                    itgt_glob, jtgt_glob, ktgt
+      namelist / oa_checks / if_chks, verbose_oa, directory_out_oa &
+                            ,itgt_glob, jtgt_glob, ktgt
+      namelist / oa_params / if_extend_dom, unite_oa, nmsimult_oa_max, if_sphe_deg2rad
 
+      ! Namelist default values 
+      ! TODO BLXD also read directory_in_oa in namelist 
+      ! TODO BLXD check directory_in, io_unit in module_oa_variables
 
-      nper_test     = 0
-      if_dom_chk    = .false.
-      if_extend_dom = .false.
+      directory_out_oa = "OUTPUT"
+      if_chks    = .false.
+      verbose_oa    = 6
+      unite_oa      = 1
       if_extend_dom = .false.
       itgt_glob=-999 ; jtgt_glob=-999 ; ktgt=-999
+      ! TODO RM nmsimult_oa_max : should't be useful anymore
+      nmsimult_oa_max=500
+      if_sphe_deg2rad=.false.
 
-      filin= trim(directory_in) // txtslash // 'namelist_oa'
+      ! TODO read verbose_oa, directory_out_oa in namelist, history_oa ?
 
-! #BLXD TODO organize the io unit parameters
+      filin= trim(directory_in_oa) // txtslash // 'namelist_oa'
 
-      open(unit=90, file = filin)
-      read(unit=90, nml  = oa_numbers)
+      open(unit=io_nml, file = filin)
+      read(unit=io_nml, nml  = oa_numbers)
 
       oa_analysis_requested : if (nzc_oa /= 0) then
     
       call allocate_namelist_oa 
 
-      read(unit=90, nml  = oa_names)
+      read(unit=io_nml, nml  = oa_names)
      
       nzv_oa = 0
 
@@ -733,17 +461,25 @@ CONTAINS
         ! If one of several var-config code set to 99 => Test function
         ! A single analytical function can be tested against different atoms
         if ( (nzc_oa_vartyp(ic_r)==99) .and. (nper_test==0) ) then
-          read(unit=90, nml  = oa_test)
+          read(unit=io_nml, nml  = oa_test)
         end if
 
       enddo
 
+
       oa_test_requested : if (nper_test > 0) then
-          ! BLXD nper_test = -1 hardcoded test function 
-          call allocate_namelist_test_oa(nper_test) 
           
-          read(unit=90, nml  = oa_test_signal)
-        
+          call allocate_namelist_test_oa(nper_test) 
+          read(unit=io_nml, nml  = oa_test_signal)
+
+      else if  (nper_test == -1 ) then      
+          ! BLXD nper_test = -1 hardcoded test function 
+          if(if_print_node) write(io_unit,*) 'OA hardcoded test function'
+          nper_test = 1 
+          call allocate_namelist_test_oa(nper_test) 
+          amp_test_oa(1)    = 0.D0 
+          period_test_oa(1) = 0.D0
+
       endif oa_test_requested 
 
       if (nper_test > 0) then
@@ -754,12 +490,11 @@ CONTAINS
 
       end if
 
+      read(unit=io_nml, nml  = oa_checks)
 
-      read(unit=90, nml  = oa_checks)
-
+      read(unit=io_nml, nml  = oa_params)
 
       endif oa_analysis_requested 
-
 
       close(90)
 
@@ -771,11 +506,214 @@ CONTAINS
 !
 !> @note
 !
+! DESCRIPTION: allocate/deallocate namelist parameters 
+!
+!> @brief allocation of names and type of requested OA analysis
+!
+!> @details variable allocation according to nzc_oa the number of type of 
+!!  requested OA analysis :
+!! - nzc_oa_names  \: names of the requested analysis,
+!! - nzc_oa_vartyp \: configuration code of the requested analysis.
+!
+! REVISION HISTORY:
+!
+!> @authors
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - namelists, doxygen comments, stand-alone (2015)
+!!  - Croco version (2020)
+!> @date 2021
+!> @todo
+!------------------------------------------------------------------------------
+
+      subroutine allocate_namelist_oa
+
+      use module_oa_variables , only : nzc_oa_names, nzc_oa_vartyp
+      use module_oa_periode , only : nzc_oa
+
+      implicit none
+
+          allocate( nzc_oa_names(1:nzc_oa) )
+          allocate( nzc_oa_vartyp(1:nzc_oa) )
+
+      end subroutine allocate_namelist_oa
+
+      subroutine deallocate_namelist_oa
+
+      use module_oa_variables , only : nzc_oa_names, nzc_oa_vartyp
+
+      implicit none
+
+          deallocate( nzc_oa_names )
+          deallocate( nzc_oa_vartyp )
+
+      end subroutine deallocate_namelist_oa
+
+
+      subroutine allocate_namelist_test_oa(n)
+
+      implicit none
+      integer, intent(in) :: n
+
+          allocate( period_test_oa(1:n) )
+          allocate( amp_test_oa(1:n) )
+
+      end subroutine allocate_namelist_test_oa
+
+      subroutine deallocate_namelist_test_oa
+
+      implicit none
+
+          deallocate( period_test_oa, amp_test_oa )
+
+      end subroutine deallocate_namelist_test_oa
+
+!------------------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
+! DESCRIPTION: allocate/deallocate namelits parameters related to
+!  a given variable-configuration analysis.
+!
+!> @brief allocate/deallocate namelist parameters related to
+!  a given variable-configuration analysis (e.g., rho, M2)
+!
+!> @details parameters are array of size nzv_oa 
+!!  
+!
+! REVISION HISTORY:
+!
+!> @authors
+!> @date 2021
+!> @todo
+!------------------------------------------------------------------------------
+
+      subroutine allocate_part1_oa( )
+
+      use module_oa_variables
+      use module_oa_time
+      use module_oa_space
+      use module_oa_periode
+      use module_oa_stock
+
+      implicit none
+
+!.....definition de toutes les tailles maximales des differentes structures
+!     (temporelle-spatiale-frequentielle)
+!
+!     #BLXD old NHOMS allocation
+!     allocate (rhphat_oa_t(1:imax,1:jmax,1:kmax))
+!     allocate (temhat_oa_t(1:imax,1:jmax,1:kmax))
+!     allocate (salhat_oa_t(1:imax,1:jmax,1:kmax))       
+
+!.....module_var:
+
+! BLXD bug tvc_oa must have the size of the # of configurations 
+      allocate (                                                      &
+         swt_d_oa(nzv_oa)                                             &   !< caracteristiques spatiales de la variable (voir notebook_oa)
+        ,swt_t_oa(nzv_oa)                                             &   !< caracteristiques temporelles de la variable (voir notebook_oa)          
+        ,tv_oa   (nzv_oa)                                             &   !< code variable associe 
+        ,cnb_oa  (nzv_oa)                                             &   !< call number: pos. of call regarding time splitting
+!        ,tvc_oa  (nzv_oa)                                             &   !< configuration associee a une variable    
+        ,updv_oa (nzv_oa)                                             &   !< flag de remise a jour    
+        ,save_oa (nzv_oa)                                             &   !< flag de sauvegarde
+        ,tupd_oa (nzv_oa)                                             &   !< pour variables communes
+        ,ltrec_oa (nzv_oa)                                            &   !< pour garder le 1er OA record de la simu
+        ,if_first_rec_oa (nzv_oa)                                     &   ! ...
+        !,tvar_oa (200,10,10)                                         &   !STDANDLONE known size, allocated elsewere
+         )
+
+      ! BLXD bug des_oa allocated here at the right size
+       allocate ( des_oa(nzv_oa) ) 
+
+      ! BLXD croco2021 tile-thread => spatial structure now handled in module_tile_oa.F90
+      !allocate (                                                      &
+      !   begvs_oa(nzv_oa+1)                                           &   ! structure 2d du vecteur d etat
+      !  ,begvt_oa(nzv_oa+1)                                           &   ! structure temporelle du vecteur d etat
+      !   )
+
+      allocate (                                                      &
+         begvt_oa(nzv_oa+1)                                           &   ! structure temporelle du vecteur d etat
+         )
+
+      allocate (                                                      &
+         lat_oa  (2,nzv_oa)                                           &   ! latitude  min, max de la structure 2d du vecteur d etat
+        ,lon_oa  (2,nzv_oa)                                           &   ! longitude  ...
+        ,h_oa    (2,nzv_oa)                                           &   ! profondeur ...  
+        ,k_oa    (2,nzv_oa)                                           &   ! niveaux verticaux min et max de la structure 3d du vecteur d etat
+        ,ptij_oa (2,nzv_oa)                                           &   ! point particulier demande par l utilisateur
+         )
+  
+      allocate (                                                      &
+         dx_oa   (nzv_oa)                                             &   ! resolution horizontale suivant x demandee par l utilisateur
+        ,dy_oa   (nzv_oa)                                             &   ! resolution horizontale suivant y demandee par l utilisateur
+        ,dk_oa   (nzv_oa)                                             &   ! resolution verticale   suivant z demandee par l utilisateur
+         )
+ 
+      allocate(                                                       &
+         nzpt_per_oa(nzv_oa)                                          &   ! nombre de points de discretisation par periode
+         )
+
+      allocate (                                                      &
+         kount_user_oa(3,nzv_oa)                                      &   ! description des periodes choisies par l utilisateur
+         )
+
+      allocate (                                                      &
+         t0_oa (nzv_oa)                                               &   ! date de la premiere sortie
+                 )
+ 
+      allocate (                                                      &
+         tpsi_oa (nzv_oa)                                             &   ! type d atome utilise
+         )
+
+      allocate (                                                      &
+         swt_wfpf_oa (nzv_oa)                                        &    ! calcul du coef wf ou du spectre pf (choix utilisateur)
+        ,fl_rec_oa   (nzv_oa)                                         &   ! flag de reconstruction
+         )
+
+      allocate (                                                      &
+         dori_oa      (nzv_oa)                                        &   ! configuration frequentielle choisie par l utilisateur
+        ,delta_t_oa   (nzv_oa)                                        &   ! nombre de periodes etudiees
+         )
+
+      allocate (                                                      &
+         per_oa (3,nzv_oa)                                            &   ! preriodes min, max, delta de chaque variable (ou configuration)
+         )
+
+      allocate (                                                      &
+         begvp_oa (nzv_oa+1)                                          &   ! structure frequentielle du vecteur d etat
+         )
+
+      allocate (                                                      &   ! Configuration type index
+         tc_oa (nzc_oa)                                               &
+        ,tvc_oa(nzc_oa)                                               &   ! If several config. of the type is requested
+         )   
+
+      allocate (                                                      &
+         begc_oa (nzc_oa+1)                                           &
+         )   
+
+      return
+      end subroutine allocate_part1_oa
+
+      subroutine deallocate_part1_oa( )
+      implicit none
+      !deallocate()  
+      return
+      end subroutine deallocate_part1_oa
+
+!------------------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
 ! DESCRIPTION: 
 !
-!> @brief Read each specific namelist which describes each requested OA analysis.
+!> @brief Read each specific namelist parameters associated to each requested OA analysis.
 !!
-!> @details The specific namelist describes each configuration or variable requested for analysis, 
+!> @details The namelist parameters describe the configuration-variable online analysis, 
 !! with especially the horizontal and vertical part of the domain to analyse, 
 !! at which simulation time steps (e.g., defines the convolution window time characteristic,...), 
 !! at which time scales (e.g., wavelet scale, fourier period).
@@ -786,79 +724,31 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
-!! - B. Lemieux-Dudon 
-!!  - parameters in ascii file change into namelists, doxygen comments 
-!!  - stand-alone version, doxygen, cleaning symphonie variables
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
-!> @date 2021 January
-!> @todo
-!
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - namelists, doxygen comments, stand-alone version (2015)
+!!  - add new croco sub. tool_datetosec
+!!  - Croco version (2020)
+!> @date 2021
+!> @todo BLXD 
+!! - test new croco sub. tool_datetosec
+!! - organize the io unit parameters, cleaning
 !------------------------------------------------------------------------------
-      subroutine rdnotebook_oa(   &
-       imin, imax                 &
-      ,jmin, jmax                 &
-      ,kmin, kmax                 &
-      ,lon_t                      &
-      ,lon_t_lbound               &
-      ,lon_t_ubound               &
-      ,lat_t                      &
-      ,lat_t_lbound               &
-      ,lat_t_ubound               &
-      ,dti                     &
-      ,kount0                     &
-      ,nt_max )
+
+      subroutine rdnotebook_oa( )
 
       use module_oa_variables
       use module_oa_time
       use module_oa_space
       use module_oa_periode
       use module_oa_stock
-!      use module_oa_upd
+!     use module_oa_upd
 !     use module_nrj
 
       implicit none
 
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields WILL BE ANALYSED at grid points inside [imin,imax]x[jmin,jmax]x[kmin,kmax]
-      !! Index parameters in the namelist must be set accordingly
-      !! For all fields passed in argument for analysis: 
-      !! [imin,imax] must be included in [lbound(1),ubound(1)]  
-      !! [jmin,jmax] must be included in [lbound(2),ubound(2)]
-      !! [kmin,kmax] must be included in [lbound(3),ubound(3)]
-      !! BLXD : TODO reduced array dimension => duplicated memory !!!
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax            &
-      ,kmin, kmax
 
-      !> Time integration step
-      double precision, intent(in) :: dti
-      
-      !> First and last simulation iteration index
-      integer, intent(in) :: kount0, nt_max                                        
-
-      !> Lower and upper index bounds of the 2-Dimensional coordinate arrays passed from the calling code
-      integer, dimension(2), intent(in) ::  &
-        lon_t_lbound, lon_t_ubound          & !< Lower and upper index bounds of longitude array at t-grid point
-       ,lat_t_lbound, lat_t_ubound            !< Lower and upper index bounds of latitude array at t-grid point
-
-      !> 2-Dimensional array coordinate arrays passed from the calling code
-      double precision, dimension(lon_t_lbound(1):lon_t_ubound(1),lon_t_lbound(2):lon_t_ubound(2)), intent(in) :: lon_t  !< Longitude array at t-grid point
-      double precision, dimension(lat_t_lbound(1):lat_t_ubound(1),lat_t_lbound(2):lat_t_ubound(2)), intent(in) :: lat_t  !< Latitude array at t-grid point
-
-      integer ::                                                      &
-           iv_r                                                       &
-          ,ip_r                                                       &
-          ,ic_r                                                      
-
-      real    ::                                                      &
-           dt_r 
-
-      integer ::                                                      &
-           nzupd2d_r                                                  &
-          ,nzupd3d_r
-
+      !> Local Namelist parameters
       integer :: TPSI_W,     &  !< Type of atom (0:Dirac, 1:Ondelette de Morlet, 2:Windowed Fourier, 3: Fourier)
                  SAVE_W,     &  !< Not applied (0,1:variable utilisateur,2:variable commune)
                  UPDV_W,     &  !< Variable remise à jour interactivement? Keep it to 2.
@@ -876,7 +766,7 @@ CONTAINS
 
       integer , dimension(1:2) :: K_W    !< Niveaux verticaux Min et Max K1,K2  (-99 pour colonne entiere)
 
-      !> Not applied : requires a routine to convert date YYYY,MM,DD,HH,MM,SS to the simulation time step index
+      !> TODO test the routine to convert date YYYY,MM,DD,HH,MM,SS to the simulation time step index
       integer, dimension(1:6) :: DATE_DEB, & !< Annee, Mois, Jour, Heure, Min., Sec. --> ex : 2011,01,1,00,01,18
                                  DATE_FIN    !< Annee, Mois, Jour, Heure, Min., Sec. --> ex : 2011,01,1,00,15,15
 
@@ -893,13 +783,18 @@ CONTAINS
       real, dimension(1:3)  :: PER_W     !< Minimum, Maximum time period (s) (wavelets & fourier windows) or Length (Dirac brush), 0 for delta Dirac
                                          !! step determining # of periods to be examined (-99=optimum)
 
-      real    :: lat_g, lon_g
-
-      double precision :: time_from_croco_tref_in_sec
+      !> Local 
       character(len=250)  :: filin !< namelist filename
 
-      integer :: izv_oa
-      !integer :: i1, i2, i3, i4, i5, i6, kdtk_out
+      integer ::                                                      &
+           iv_r                                                       &
+          ,ip_r                                                       &
+          ,ic_r                                                      
+
+      real    :: dt_r
+
+      double precision    :: time_from_croco_tref_in_sec
+      integer             :: izv_oa
 
       namelist /oa_parameters/ TPSI_W, SAVE_W, UPDV_W, SWT_WFPF_W, FL_REC_W, PER_W,    &
                                DORI_W, DELTA_T_W, NZPT_PER_W, CNB_W, SWT_T_W, SWT_D_W, &
@@ -908,25 +803,21 @@ CONTAINS
    
       oa_analysis_requested : if (nzc_oa /=0) then
     
-!.....lecture en heures ou en secondes:
-!     si heures: unite_oa = 3600
-!     si secondes: unite_oa = 1   
-   
-      unite_oa = 1
+!..... add unite_oa to namelist i) seconds unite_oa=1, ii) hours unite_oa=3600
       
       izv_oa = 0 ! Must be equal to nzv_oa at the end of the oa_config loop
 
-      if(if_print_node) write(io_unit,*) 'Loop on Online Analysis configurations'
+      if(if_print_node) write(io_unit,*) '...Loop on Online Analysis configurations'
       oa_config_loop : do ic_r = 1 , nzc_oa
        
-        if(if_print_node) write(io_unit,*) 'ic_r ', ic_r
+         if(if_print_node) write(io_unit,*) '...Configuration index ', ic_r
 
 !..... namelist lue:
  
-         filin = trim(directory_in) // txtslash // 'namelist_' // trim( nzc_oa_names(ic_r) ) // '_oa'
+         filin = trim(directory_in_oa) // txtslash // 'namelist_' // trim( nzc_oa_names(ic_r) ) // '_oa'
 
-         open(unit=90, file=filin)
-         read(unit=90, nml  = oa_parameters)
+         open(unit=io_nml, file=filin)
+         read(unit=io_nml, nml  = oa_parameters)
 
 !..... HYP : config. ic_r has a single variable ie, nzvc_oa( nzc_oa_vartyp(ic_r) ) = 1
          izv_oa = izv_oa + 1
@@ -934,7 +825,7 @@ CONTAINS
 !......lecture d'une configuration:
 !
          tv_oa(izv_oa) = nzc_oa_vartyp(ic_r)        ! type of variable (of config. izv_oa)
-         if(if_print_node) write(io_unit,*) 'Variable type ', tv_oa(izv_oa)
+         if(if_print_node) write(io_unit,*) '...Variable type ', tv_oa(izv_oa)
   
 !......mise a jour de la config.:
 
@@ -955,10 +846,6 @@ CONTAINS
          cnb_oa(izv_oa)      = CNB_W          ! call number which may be used to define where a variable needs to be called.
 !        pour les bilans energetiques cette variable est mise a jour automatiquement un peu plus loin.
 
-         if ( tv_oa (izv_oa)==20 ) then
-            isopycne_analysis = .true.
-         endif
-
          if ( per_oa(1,izv_oa).gt. per_oa(2,izv_oa) ) then
             if(if_print_node) write (io_unit,*) " ERROR : per_oa (1,",izv_oa,") trop grand"
             stop
@@ -978,10 +865,8 @@ CONTAINS
          swt_t_oa(izv_oa) = SWT_T_W
          swt_d_oa(izv_oa) = SWT_D_W
 
-! STDALONE : requires a subroutine to convert date YYYY, MM, DD, HH, MM, SS to the model time step index
-!        call datetokount(i1,i2,i3,i4,i5,i6)
-!        kount_user_oa(1,izv_oa) = kdtk_out
-! #BLXD 2020 dev new croco sub. tool_datetosec to test
+! #BLXD 2020 dev new croco sub. tool_datetosec
+!            convert date YYYY, MM, DD, HH, MM, SS to the model time step index
 !            TODO test with swt_t_oa=4 (even though not used ) then remove
 
          call tool_datetosec( DATE_DEB(1), DATE_DEB(2), DATE_DEB(3), &
@@ -1014,7 +899,7 @@ CONTAINS
          ! The nzvt_oa convolution windows are defined over the model time index 
          ! intervals [ kountv_oa(1,:), kountv_oa(2,:) ]
          ! Being given the width of the convolution window 2*dkount_tot_t
-         ! and its time index center k and being given the simulation time window :
+         ! and its time index center at k and being given the simulation time window :
          ! - the 1st possible convolution window can start at the 1st model time index
          ! which is the 'now' time index of the restart just before the 1st 
          ! model time step from now to after, ie kountv_oa(1, izvt_oa=1 ) = kount0
@@ -1043,6 +928,7 @@ CONTAINS
             ! BLD 2020 change kount_user_oa(2,izv_oa) = nt_max-1
             kount_user_oa(2,izv_oa) = nt_max
          endif
+
          if(if_print_node) write(io_unit,*) '=> SWT_T_OA option is ',swt_t_oa(izv_oa)
          if(if_print_node) write(io_unit,*) '   OA analysis over Time steps ',kount_user_oa(1,izv_oa),kount_user_oa(2,izv_oa)
          if(if_print_node) write(io_unit,*) '   Simu Time step interval including initial and last',kount0,nt_max
@@ -1053,8 +939,8 @@ CONTAINS
          end if                     
         
          dt_r = DT_W
-
          kount_user_oa(3,izv_oa) = max(1,int ( dt_r * unite_oa / dti ))
+
          if(if_print_node) write(io_unit,*) '   OA analysis time discretization ',kount_user_oa(3,izv_oa)
         
          t0_oa(izv_oa) = T0_W
@@ -1074,12 +960,14 @@ CONTAINS
          k_oa(1,izv_oa) = K_W(1)
          k_oa(2,izv_oa) = K_W(2)
 
-         if (k_oa(1,izv_oa).eq.-99) then
-            k_oa(1,izv_oa) = 1 
-         endif
-         if (k_oa(2,izv_oa).eq.-99) then
-            k_oa(2,izv_oa) = kmax
-         endif
+!.....TODO IMPT Move this in extend_domain
+! 
+!         if (k_oa(1,izv_oa).eq.-99) then
+!            k_oa(1,izv_oa) = 1 
+!         endif
+!         if (k_oa(2,izv_oa).eq.-99) then
+!            k_oa(2,izv_oa) = kmax
+!         endif
         
          dx_oa(izv_oa) = DX_W
          dy_oa(izv_oa) = DY_W
@@ -1088,53 +976,55 @@ CONTAINS
          ptij_oa(2,izv_oa) = PTIJ_W(2)
 
 !  attention, test uniquement sur les points z et aps sur les points,x,y,rot
-
+!  BLXD unit conv can be moved in init_oa
 #ifdef SPHERICAL
-        ! #BLXD 2020 change
-        if(if_print_node) write(io_unit,*) 'SPHERICAL : degrees converted to rads'
+         ! #BLXD 2020 change
+         if ( if_sphe_deg2rad ) then
+         if(if_print_node) write(io_unit,*) 'SPHERICAL (nml) : degrees converted to rads'
 
-        lat_oa(1,izv_oa)=LAT_W(1)*pi_oa/180.
-        lat_oa(2,izv_oa)=LAT_W(2)*pi_oa/180.     
-        lon_oa(1,izv_oa)=LON_W(1)*pi_oa/180.
-        lon_oa(2,izv_oa)=LON_W(2)*pi_oa/180.
-#else
-
-         if(if_print_node) write(io_unit,*) 'NOT SPHERICAL : coordinates xr, xp are in meters'
-
+         lat_oa(1,izv_oa)=LAT_W(1)*pi_oa/180.D0
+         lat_oa(2,izv_oa)=LAT_W(2)*pi_oa/180.D0     
+         lon_oa(1,izv_oa)=LON_W(1)*pi_oa/180.D0
+         lon_oa(2,izv_oa)=LON_W(2)*pi_oa/180.D0
+         else 
+         if(if_print_node) write(io_unit,*) 'SPHERICAL (nml) : degrees NOT converted to rads'
+         endif
+#else    
+         
+         if(if_print_node) write(io_unit,*) 'NOT SPHERICAL (nml) : coordinates xr, xp are in meters'
+         
          lat_oa(1,izv_oa) = LAT_W(1)
          lat_oa(2,izv_oa) = LAT_W(2)
          lon_oa(1,izv_oa) = LON_W(1)
          lon_oa(2,izv_oa) = LON_W(2)
 #endif
 
-         if ( k_oa(1,izv_oa) .gt. k_oa(2,izv_oa) ) then
-            if(if_print_node) write (io_unit,*) " k_oa(2,:) trop grand > kmax = N !"
-            stop
-         endif
-         if ( k_oa(2,izv_oa).gt.kmax ) then
-            if(if_print_node) write (io_unit,*) " k_oa(2,:) trop grand > kmax = N !"
-            stop
-         endif
-         if ( k_oa(1,izv_oa).lt.kmin ) then
-            if(if_print_node) write (io_unit,*) " k_oa(1,:) trop petit < kmin !"
-            stop
-         endif
+!.....NHOMS configuration treatment and nrj eliminated
 
-!STDALONE configuration treatment and nrj eliminated
+!.....extend_domain_oa eliminated
 
-!.....test validity of the namelist parameters
-!      call test_domain_validity_oa
+!.....treatment of specific variable configuration
+
+!.....TODO ? Move this in extend_domain. Not sure
+ 
+         if ( tv_oa (izv_oa)==20 ) then
+            isopycne_analysis = .true.
+            if(if_print_node) write (io_unit,*) "....Isopycne analysis requested"
+         else if ( (tv_oa (izv_oa)==99) .or. (tv_oa (izv_oa)==98) ) then
+            ifl_test_oa = 1
+            if(if_print_node) write (io_unit,*) "....Test analysis requested"
+         endif
 
 !.....treatment of "test" variable configuration
-         call init_test_oa(izv_oa)
+!     BLXD REMOVED SUBROUTINE    call init_test_oa(izv_oa)
  
 !.....treatment of "mixed" variable configuration
 !.....HYP : config. ic_r has 1 variable ie, nzvc_oa( nzc_oa_vartyp(ic_r) ) = 1
 
-      if ( nzvc_oa( nzc_oa_vartyp(ic_r) ) >= 100 ) then
-         if(if_print_node) write(io_unit,*) 'Composite configuration : init_configuration_oa'
-         call init_configuration_oa(izv_oa)
-      endif
+         if ( nzvc_oa( nzc_oa_vartyp(ic_r) ) >= 2 ) then
+            if(if_print_node) write(io_unit,*) 'Composite configuration : init_configuration_oa'
+            call init_configuration_oa(izv_oa)
+         endif
 
 
       enddo oa_config_loop
@@ -1149,7 +1039,7 @@ CONTAINS
       ! #BLXD DO NOT DEALLOCATE AND MAKE PUBLIC 
       ! - nzc_oa_names (config name in namelist) 
       ! - nzc_oa_vartyp (possibly composite config-variable name)
-      ! might be useful to construct OA analysis variable field_def.xml, send_xios_diags.F
+      ! TODO useful to construct OA analysis variable field_def.xml ?
       ! write( vnam_oa, fmt='(a5,5,i3.3,a1,i3.3)') tgvnam_oa(tv_oa(iv)),'3d_r_',nzc_oa_names(ic),'_',tgvnam_oa(nzc_oa_vartyp(tv_oa(iv)))
 
       call deallocate_namelist_oa
@@ -1178,29 +1068,6 @@ CONTAINS
       return
 
       end subroutine rdnotebook_oa
-
-!------------------------------------------------------------------------------
-! PROCEDURE
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-!> @brief Test the validity of some of the namelist parameters. 
-!
-!> @details Tests: 
-!! - temporary version which selects the full horizontal domain
-!
-! REVISION HISTORY:
-!
-!> @authors B. Lemieux-D.
-!> @date 2021 January
-!> @todo BLXD WARNING temporary version which selects the proper 
-!        2Dzx latitudinal j-index (cf if_extend_dom)
-!
-!------------------------------------------------------------------------------
-
-
 
 
 !------------------------------------------------------------------------------
@@ -1234,13 +1101,13 @@ CONTAINS
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
 !!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
-!!  - stand-alone version, cleaning specific symphonie variable treatment.
-!> @date 2021 January
-!> @todo
+!!  - Croco version (2020-2021), Stand alone version (2015)
+!> @date 2021
+!> @todo BLXD var_oa_copy moved to module_oa_variable ? 
 !------------------------------------------------------------------------------
       subroutine init_configuration_oa(izv_oa)
 
-      use module_oa_variables
+      use module_oa_variables, only : tv_oa
 
       implicit none
 
@@ -1287,8 +1154,6 @@ CONTAINS
             stop
          endif
 
-
-
 ! Uncomment these lines and adapt them if you wish to call the OA treatment at specific
 ! point of the code (cf time splitting), for specific variables that are updated
 ! at some irregular time step or code place. 
@@ -1312,45 +1177,6 @@ CONTAINS
 !
 ! DESCRIPTION: 
 !
-!> @brief prepares the OA test variable.
-!
-!> @details 
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - Francis Auclair and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
-!> @date 2021
-!> @todo shall we keep such routine ?
-!
-!------------------------------------------------------------------------------
-      subroutine init_test_oa(izv_oa)
-
-      use module_oa_variables , only : ifl_test_oa, tv_oa
-
-      implicit none
-
-      integer, intent(in) :: izv_oa
-
-!-------------------------------------------
-!     Test configuration (99)
-!-------------------------------------------
-         if (tv_oa(izv_oa).eq.99) then
-            ifl_test_oa = 1
-         else 
-            ifl_test_oa = 0
-         endif
-
-      end subroutine init_test_oa
-
-!------------------------------------------------------------------------------
-! PROCEDURE
-!
-!> @note
-!
-! DESCRIPTION: 
-!
 !> @brief Handles "mixed" variables configuration. 
 !
 !> @details Configuration codes for mixed variables involves several variables,
@@ -1361,6 +1187,8 @@ CONTAINS
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
 !!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - Croco version (2020), stand alone version (2015)
 !> @date 2021
 !> @todo BLXD declare var_oa_copy to module_oa_variable ? 
 !------------------------------------------------------------------------------
@@ -1394,6 +1222,13 @@ CONTAINS
         nzpt_per_oa(nzvnew_c)     = nzpt_per_oa(nzvold_c)
         cnb_oa(nzvnew_c)          = cnb_oa(nzvold_c)
         dori_oa(nzvnew_c)         = dori_oa(nzvold_c)
+        ! BLXD croco2021 added very IMPT
+        des_oa(nzvnew_c)          = des_oa(nzvold_c)
+        ! BLXD croco2020 
+        ! added but not formally needed since not init. yet (var_time_oa)
+        ! useful to check first conv. wind. for each var/cfg
+        ltrec_oa       (nzvnew_c) = ltrec_oa       (nzvold_c)
+        if_first_rec_oa(nzvnew_c) = if_first_rec_oa(nzvold_c)
         swt_t_oa(nzvnew_c)        = swt_t_oa(nzvold_c)
         swt_d_oa(nzvnew_c)        = swt_d_oa(nzvold_c)
         kount_user_oa(1,nzvnew_c) = kount_user_oa(1,nzvold_c)
@@ -1416,439 +1251,13 @@ CONTAINS
        return
        end subroutine var_copy_oa
 
-!------------------------------------------------------------------------------
-! PROCEDURE
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-!> @brief The size of the horizontal and vertical domain over which analysis will be conducted 
-!! is calculated, i.e., nzvs_oa and nzvs3d_oa respectively (flag_s equals true). 
-!! All the variable analysis are stored in a single vector, called state vector, 
-!! which piles up all the domain points requested for analysis. 
-!! Variables enabling conversion from vector index to domain indices 
-!! are initialized (flag_s equals false).
-!! initialise la structure spatiale du vecteur d'etat tel qu'il a ete specifie dans le notebook_oa. 
-!
-!> @details Spatial domain options are set in the OA namelist with SWT_D_W parameter.  
-!! - if set to 1: analysis is requested over the region [lat1,lat2],[lon1,lon2]. 
-!! - if set to 2: analysis is requested at point (I,J).
-!! - if set to 3: analysis is requested over the ocean colum [Hmin,Hmax] in the horizontal 
-!!   domain the (Lat,Lon)
-!! The domain to analyse is more over defined by the namelist parameters:
-!! - dx_oa(iv_g), dy_oa(iv_g) : steps in i,j indices
-!! - k_oa(1,iv_g),k_oa(2,iv_g),dk_oa(iv_g) : first, last k indices and k index step
-!!
-!! Variables:
-!! - nzvs_oa,   begvs_oa    : 2d struture of the state vector
-!! - nzvs3d_oa, begvs3d_oa  : 3d structure of the state vector
-!! - ij2l_oa, l2i_oa, l2j_oa : conversion l <--> (i,j)
-!!
-!! The section of the state vector defined by indices begvs3d_oa(ls_l), begvs3d_oa(ls_l+1)-1
-!! corresponds to the points to analyse over one given (i,j) ocean column for a given variable
-!! with index iv_g. For each variable, the number of (i,j) points to analyse is given by index ls_l
-!! which ranges from begvs_oa(iv_g) to begvs_oa(iv_g+1)-1. 
-!!
-!! For each variables: 
-!! - the grid point is needed to get the mask value, i.e., tgv_oa.
-!! - the 2d/3d attribute is required to construct the vertical part of the state vector, i.e., tgv3d_oa.
-!!
-!! The kmin3d_oa parameter stores the lowest analysed k index.
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version 2006
-!! - Benedicte Lemieux-Dudon
-!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
-!> @date 2021
-!> @todo BLXD Modify Croco-OnlineA module interface.
-!! - The CROCO-OnlineAnalysis module interface must be modified : 
-!!   Interface = mix between the Stand-alone and Original OnlineA versions 
-!!   => Croco arrays are passed as arguments to the OnlineA routines with reduced 
-!!   dimension range. It leads to memory duplication.
-!------------------------------------------------------------------------------
-      subroutine var_space_oa(    &
-       flag_s                     &
-      ,imin, imax                 &
-      ,jmin, jmax                 &
-      ,kmin, kmax                 &
-      ,lon_t                      & !(-1:imax+2,-1:jmax+2)            
-      ,lon_t_lbound               &
-      ,lon_t_ubound               &
-      ,lat_t                      & !(-1:imax+2,-1:jmax+2)            
-      ,lat_t_lbound               &
-      ,lat_t_ubound               &
-      ,lon_u                      & !(0:imax+2,0:jmax+2)              
-      ,lon_u_lbound               &
-      ,lon_u_ubound               &
-      ,lat_u                      & !(0:imax+2,0:jmax+2)              
-      ,lat_u_lbound               &
-      ,lat_u_ubound               &
-      ,lon_v                      & !(0:imax+2,0:jmax+2)              
-      ,lon_v_lbound               &
-      ,lon_v_ubound               &
-      ,lat_v                      & !(0:imax+2,0:jmax+2)              
-      ,lat_v_lbound               &
-      ,lat_v_ubound               &
-      ,lon_f                      & !(0:imax+2,0:jmax+2)              
-      ,lon_f_lbound               &
-      ,lon_f_ubound               &
-      ,lat_f                      & !(0:imax+2,0:jmax+2)              
-      ,lat_f_lbound               &
-      ,lat_f_ubound               &
-      ,mask_t                     & !(-1:imax+2,-1:jmax+2,0:kmax+1)
-      ,mask_t_lbound              &
-      ,mask_t_ubound              &
-      ,mask_f                     & !(0:imax+1,0:jmax+1,0:kmax+1)
-      ,mask_f_lbound              &
-      ,mask_f_ubound              &
-      ,mask_u                     & !(0:imax+1,0:jmax+1,0:kmax+1)
-      ,mask_u_lbound              &
-      ,mask_u_ubound              &
-      ,mask_v                     & !(0:imax+1,0:jmax+1,0:kmax+1)
-      ,mask_v_lbound              &
-      ,mask_v_ubound              &
-      ,h_w                        & !(0:imax+1,0:jmax+1)              
-      ,h_w_lbound                 &
-      ,h_w_ubound                 &
-      ,h_u                        & !(0:imax+1,0:jmax+1)              
-      ,h_u_lbound                 &
-      ,h_u_ubound                 &
-      ,h_v                        & !(0:imax+1,0:jmax+1)              
-      ,h_v_lbound                 &
-      ,h_v_ubound                 &
-      ,h_f                        & !(0:imax+1,0:jmax+1)              
-      ,h_f_lbound                 &
-      ,h_f_ubound )
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-! #BLXD check 2020
-      use scalars, only : iminmpi, jminmpi
-
-
-      implicit none
-
-
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields are analysed inside grid point domain [imin,imax]x[jmin,jmax]x[kmin,kmax]:
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax            &
-      ,kmin, kmax
-
-      logical, intent(in) :: flag_s          !< Flag to distinguish calls to var_space_oa before and after OA array allocation
-
-      ! Lower and upper index bounds of the 2-Dimensional coordinate arrays passed from the calling code
-      integer, dimension(2), intent(in) ::  &
-        lon_t_lbound, lon_t_ubound          & !< Lower and upper index bounds of longitude array at t-grid point
-       ,lon_u_lbound, lon_u_ubound          & !< Lower and upper index bounds of longitude array at u-grid point
-       ,lon_v_lbound, lon_v_ubound          & !< Lower and upper index bounds of longitude array at v-grid point
-       ,lon_f_lbound, lon_f_ubound          & !< Lower and upper index bounds of longitude array at f-grid point
-       ,lat_t_lbound, lat_t_ubound          & !< Lower and upper index bounds of latitude array at t-grid point
-       ,lat_u_lbound, lat_u_ubound          & !< Lower and upper index bounds of latitude array at u-grid point
-       ,lat_v_lbound, lat_v_ubound          & !< Lower and upper index bounds of latitude array at v-grid point
-       ,lat_f_lbound, lat_f_ubound          & !< Lower and upper index bounds of latitude array at f-grid point
-       ,h_w_lbound, h_w_ubound              & !< Lower and upper index bounds of ocean thickness array at w-grid point TOCHECK
-       ,h_u_lbound, h_u_ubound              & !< Lower and upper index bounds of ocean thickness array at u-grid point
-       ,h_v_lbound, h_v_ubound              & !< Lower and upper index bounds of ocean thickness array at v-grid point
-       ,h_f_lbound, h_f_ubound                !< Lower and upper index bounds of ocean thickness array at f-grid point
-
-
-      ! 2-Dimensional array coordinate arrays passed from the calling code
-      double precision, dimension(lon_t_lbound(1):lon_t_ubound(1),lon_t_lbound(2):lon_t_ubound(2)), intent(in) :: lon_t  !< Longitude array at t-grid point
-      double precision, dimension(lon_u_lbound(1):lon_u_ubound(1),lon_u_lbound(2):lon_u_ubound(2)), intent(in) :: lon_u  !< Longitude array at u-grid point
-      double precision, dimension(lon_v_lbound(1):lon_v_ubound(1),lon_v_lbound(2):lon_v_ubound(2)), intent(in) :: lon_v  !< Longitude array at v-grid point
-      double precision, dimension(lon_f_lbound(1):lon_f_ubound(1),lon_f_lbound(2):lon_f_ubound(2)), intent(in) :: lon_f  !< Longitude array at f-grid point
-      double precision, dimension(lat_t_lbound(1):lat_t_ubound(1),lat_t_lbound(2):lat_t_ubound(2)), intent(in) :: lat_t  !< Latitude array at t-grid point
-      double precision, dimension(lat_u_lbound(1):lat_u_ubound(1),lat_u_lbound(2):lat_u_ubound(2)), intent(in) :: lat_u  !< Latitude array at u-grid point
-      double precision, dimension(lat_v_lbound(1):lat_v_ubound(1),lat_v_lbound(2):lat_v_ubound(2)), intent(in) :: lat_v  !< Latitude array at v-grid point
-      double precision, dimension(lat_f_lbound(1):lat_f_ubound(1),lat_f_lbound(2):lat_f_ubound(2)), intent(in) :: lat_f  !< Latitude array at f-grid point
-      double precision, dimension(h_w_lbound(1):h_w_ubound(1),h_w_lbound(2):h_w_ubound(2)), intent(in) :: h_w            !< Ocean thickness array at w-grid point TOCHECK
-      double precision, dimension(h_u_lbound(1):h_u_ubound(1),h_u_lbound(2):h_u_ubound(2)), intent(in) :: h_u            !< Ocean thickness array at u-grid point
-      double precision, dimension(h_v_lbound(1):h_v_ubound(1),h_v_lbound(2):h_v_ubound(2)), intent(in) :: h_v            !< Ocean thickness array at v-grid point
-      double precision, dimension(h_f_lbound(1):h_f_ubound(1),h_f_lbound(2):h_f_ubound(2)), intent(in) :: h_f            !< Ocean thickness array at f-grid point           
-
-      ! Lower and upper index bounds for the 3-Dimensional mask passed from the calling code
-      integer, dimension(3), intent(in) ::  &
-        mask_t_lbound, mask_t_ubound        & !< Lower and upper index bounds of mask array at t-grid point
-       ,mask_u_lbound, mask_u_ubound        & !< Lower and upper index bounds of mask array at t-grid point
-       ,mask_v_lbound, mask_v_ubound        & !< Lower and upper index bounds of mask array at t-grid point
-       ,mask_f_lbound, mask_f_ubound          !< Lower and upper index bounds of mask array at t-grid point
-
-      !> 3-Dimensional mask arrays passed from the calling code
-      integer,dimension(mask_t_lbound(1):mask_t_ubound(1),mask_t_lbound(2):mask_t_ubound(2),mask_t_lbound(3):mask_t_ubound(3)), intent(in) :: &
-       mask_t
-      integer,dimension(mask_u_lbound(1):mask_u_ubound(1),mask_u_lbound(2):mask_u_ubound(2),mask_u_lbound(3):mask_u_ubound(3)), intent(in) :: &
-       mask_u
-      integer,dimension(mask_v_lbound(1):mask_v_ubound(1),mask_v_lbound(2):mask_v_ubound(2),mask_v_lbound(3):mask_v_ubound(3)), intent(in) :: &
-       mask_v
-      integer,dimension(mask_f_lbound(1):mask_f_ubound(1),mask_f_lbound(2):mask_f_ubound(2),mask_f_lbound(3):mask_f_ubound(3)), intent(in) :: &
-       mask_f
-
-
-      integer :: i, j, k                                              &                          
-           ,iv_g                                                      &
-           ,mykmin                                                    &
-           ,msk_g                                                     &
-           ,ls_g
-
-      real    ::                                                      &
-            lat_g                                                     &
-           ,lon_g                                                     &
-           ,h_g                                                         
-
-      real    ::                                                      &
-            latmin_g                                                  &
-           ,lonmin_g                                                  &
-           ,latmax_g                                                  &
-           ,lonmax_g
-
-      integer :: io_nodoa, ii_glob, jj_glob
-
-      nzvs_oa = 0
-      nzvs3d_oa = 0      
-
-      do iv_g = 1 , nzv_oa
-
-         if(if_print_node) write (io_unit,*) '#iv_g  = ', iv_g
-
-!.....test k_oa type
-! #BLXD Croco T-grid indices 1:N, W-grid indices from 0:N and kmin=1,kmax=N 
-! #BLXD  if (k_oa(2,iv_g).eq.kmax+1.and.(tgv_oa(tv_oa(iv_g)).eq.1.or.tgv_oa(tv_oa(iv_g)).eq.2 .or.tgv_oa(tv_oa(iv_g)).eq.3 )) then
-! #BLXD     k_oa(2,iv_g)=kmax
-! #BLXD     if (k_oa(1,iv_g).eq.kmax+1) k_oa(1,iv_g)=kmax
-         if (k_oa(1,iv_g).eq.0 .and.(tgv_oa(tv_oa(iv_g)).eq.1.or.tgv_oa(tv_oa(iv_g)).eq.2 .or.tgv_oa(tv_oa(iv_g)).eq.3 )) then
-            k_oa(1,iv_g)=1
-            if (k_oa(2,iv_g).eq.0) k_oa(2,iv_g)=1
-         endif
-         
-         if (flag_s) then
-            begvs_oa( iv_g ) = nzvs_oa + 1
-
-
-         end if
-
-!.....configuration spatiale n°1 ou 3: 
-         if (flag_s.eq..false.) then
-
-             if_test_domain : if (swt_d_oa(iv_g).eq.1.or.swt_d_oa(iv_g).eq.3) then
-
-
-                      if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
-                         latmin_g = lat_t  (imin,jmin)
-                         lonmin_g = lon_t  (imin,jmin)
-                         latmax_g = lat_t  (imax,jmax)
-                         lonmax_g = lon_t  (imax,jmax)
-                      elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
-                         latmin_g = lat_u  (imin,jmin)
-                         lonmin_g = lon_u  (imin,jmin)
-                         latmax_g = lat_u  (imax,jmax)
-                         lonmax_g = lon_u  (imax,jmax)
-                      elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
-                         latmin_g = lat_v  (imin,jmin)
-                         lonmin_g = lon_v  (imin,jmin)
-                         latmax_g = lat_v  (imax,jmax)
-                         lonmax_g = lon_v  (imax,jmax)
-                      else
-                         latmin_g = lat_f  (imin,jmin)
-                         lonmin_g = lon_f  (imin,jmin)
-                         latmax_g = lat_f  (imax,jmax)
-                         lonmax_g = lon_f  (imax,jmax)
-                      endif
-
-
-
-
-                 end if if_test_domain
-
-         endif
-
-!.....configuration spatiale n°1 ou 3: 
-
-         lon_lat_depth_range : if (swt_d_oa(iv_g).eq.1.or.swt_d_oa(iv_g).eq.3) then
-          !STDALONE  do i = 0 , imax + 1 , dx_oa(iv_g)
-          !STDALONE     do j = 0 , jmax + 1 , dy_oa(iv_g)
-
-            do i = imin, imax, dx_oa(iv_g)
-               do j = jmin, jmax, dy_oa(iv_g)
-
-                  if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
-                     h_g   = h_w     (i,j)
-                     lat_g = lat_t  (i,j)
-                     lon_g = lon_t  (i,j)
-
-           !STDALONE depending on the staggered grid last k-level kmax+1 may exist or not 
-           !STDALONE The calling code prerequisite is having kmax t-centered cells
-                     msk_g = mask_t(i,j,kmax) 
-
-                  elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
-                     h_g   = h_u     (i,j)
-                     lat_g = lat_u  (i,j)
-                     lon_g = lon_u  (i,j)
-           !STDALONE TODO CHECK msk_g = mask_u(i,j,kmax+1) 
-                     msk_g = mask_u(i,j,kmax) 
-                  elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
-                     h_g   = h_v     (i,j)
-                     lat_g = lat_v  (i,j)
-                     lon_g = lon_v  (i,j)
-            !STDALONE TODO CHECK msk_g = mask_v(i,j,kmax+1) 
-                     msk_g = mask_v(i,j,kmax) 
-                  else
-                     h_g   = h_f     (i,j)
-                     lat_g = lat_f  (i,j)
-                     lon_g = lon_f  (i,j)
-            !STDALONE TODO CHECK msk_g = mask_f(i,j,kmax+1) 
-                     msk_g = mask_f(i,j,kmax) 
-                  endif
-
-#ifdef SPHERICAL
-! #BLXD 2020 change
-                lat_g=lat_g*pi_oa/180.D0
-                lon_g=lon_g*pi_oa/180.D0
-#endif
-
-
-                  if_spatial_dom_ok : if (                            &
-                       msk_g.eq.1              .and.                  &
-                       lat_g.ge.lat_oa(1,iv_g) .and.                  &
-                       lat_g.le.lat_oa(2,iv_g) .and.                  &
-                       lon_g.ge.lon_oa(1,iv_g) .and.                  &
-                       lon_g.le.lon_oa(2,iv_g) .and.                  &
-                       ( (h_g.ge.h_oa(1,iv_g)  .and.                  &
-                       h_g.le.h_oa(2,iv_g) )                          &
-                       .or.swt_d_oa(iv_g).ne.3) )                     &
-                       then
-
-!-------->structure 2d:
-
-                     nzvs_oa          = nzvs_oa + 1
-                     if (flag_s) then
-                      l2i_oa (nzvs_oa)  = i
-                      l2j_oa (nzvs_oa)  = j
-                      ij2l_oa(i,j,iv_g)= nzvs_oa
-                     endif
-
-!-------->structure 3d:
-                     
-                     mykmin=0
-                     if (flag_s) then
-                        begvs3d_oa(nzvs_oa) = nzvs3d_oa + 1
-                     end if
-                     if (tgv3d_oa(tv_oa(iv_g)).eq.2) then
-                        nzvs3d_oa          = nzvs3d_oa + 1
-                     else
-                        do k = k_oa(1,iv_g),k_oa(2,iv_g),dk_oa(iv_g)
-                           if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
-                              msk_g = mask_t(i,j,k) 
-                           elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
-                              msk_g = mask_u(i,j,k) 
-                           elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
-                              msk_g = mask_v(i,j,k) 
-                           else
-                              msk_g = mask_f(i,j,k) 
-                           endif
-                           if ( msk_g.eq.1 ) then
-                              if ( mykmin.eq.0.and.flag_s ) then
-                                 kmin3d_oa(nzvs_oa)=k            
-                                 mykmin=1
-                              endif
-                              nzvs3d_oa          = nzvs3d_oa + 1
-                           endif
-                        enddo
-                     endif
-                     
-                  endif if_spatial_dom_ok
-               enddo
-            enddo
-         endif lon_lat_depth_range
-         
-!.....configuration spatiale n°2:
-
-         if (swt_d_oa(iv_g).eq.2) then
-            i = ptij_oa(1,iv_g)
-            j = ptij_oa(2,iv_g)
-            if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
-            !STDALONE TODO CHECK msk_g = mask_t(i,j,kmax+1) 
-               msk_g = mask_t(i,j,kmax) 
-            elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
-            !STDALONE TODO CHECK msk_g = mask_u(i,j,kmax+1)
-               msk_g = mask_u(i,j,kmax) 
-            elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
-            !STDALONE TODO CHECK msk_g = mask_v(i,j,kmax+1) 
-               msk_g = mask_v(i,j,kmax) 
-            else
-            !STDALONE TODO CHECK msk_g = mask_f(i,j,kmax+1)  
-               msk_g = mask_f(i,j,kmax) 
-            endif
-            if ( msk_g.eq.1 ) then
-               nzvs_oa          = nzvs_oa + 1
-
-               if (flag_s) then
-                l2i_oa (nzvs_oa)  = ptij_oa(1,iv_g)
-                l2j_oa (nzvs_oa)  = ptij_oa(2,iv_g)
-                ij2l_oa(i,j,iv_g)= nzvs_oa
-               endif
-
-!-------->structure 3d:
-
-               mykmin=0
-               if (flag_s) begvs3d_oa(nzvs_oa) = nzvs3d_oa + 1
-               if (tgv3d_oa(tv_oa(iv_g)).eq.2) then
-                  nzvs3d_oa          = nzvs3d_oa + 1
-               else
-                  do k = k_oa(1,iv_g),k_oa(2,iv_g),dk_oa(iv_g)
-                     if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
-                        msk_g = mask_t(i,j,k) 
-                     elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
-                        msk_g = mask_u(i,j,k) 
-                     elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
-                        msk_g = mask_v(i,j,k) 
-                     else
-                        msk_g = mask_f(i,j,k) 
-                     endif
-                     if ( msk_g.eq.1 ) then
-                        if ( mykmin.eq.0.and.flag_s ) then
-                           kmin3d_oa(nzvs_oa)=k            
-                           mykmin=1
-                        endif
-                        nzvs3d_oa          = nzvs3d_oa + 1
-                     endif
-                  enddo
-               endif
-
-            endif
-
-         endif
-
-      enddo
-
-!.....last point:
-      if (flag_s) then
-
-       begvs3d_oa( nzvs_oa + 1 ) = nzvs3d_oa + 1
-       begvs_oa  ( nzv_oa  + 1 ) = nzvs_oa + 1
-    
-
-
-      endif
-
-      return
-      end subroutine var_space_oa
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
 !
 !> @note
 !
-! DESCRIPTION: 
+! DESCRIPTION: a completer en fonction des variables a traiter  
 !
 !> @brief Specifies the number of dimensions of the variable to analyse, 
 !! and at which grid point fields are defined.
@@ -1865,18 +1274,14 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
-!! - Benedicte Lemieux-Dudon
-!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - Croco version (2020)
 !> @date 2021
-!> @todo BLXD
-!! consistency between OA and Croco grid points in particular w and f
-!
+!> @todo use croco grid definition ?
 !------------------------------------------------------------------------------
       subroutine var_grid_oa
     
-
       !use module_oa_space , only : tgv3d_oa, tgv_oa, tgvnam_oa 
 
       implicit none
@@ -1891,6 +1296,8 @@ CONTAINS
       tgv3d_oa(2) = 3
       tgvnam_oa(2) = 'del_v'
 
+!     BLXD croco should avoid k=0  for w-grid point
+!     2D rmask is appropriate for w-grid point
 !.....vitesse vel_w:
       tgv_oa(3)   = 1 
       tgv3d_oa(3) = 3
@@ -1936,6 +1343,11 @@ CONTAINS
       tgv3d_oa(20) = 3
       tgvnam_oa(20) = 'isplv'
 
+!.....test variable vardp_test_oa mais 2D:
+      tgv_oa(98)   = 1 
+      tgv3d_oa(98) = 2
+      tgvnam_oa(98) = 'test_'
+
 !.....test variable vardp_test_oa:
       tgv_oa(99)   = 1 
       tgv3d_oa(99) = 3
@@ -1948,6 +1360,689 @@ CONTAINS
 
       return
       end subroutine var_grid_oa
+
+!------------------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
+! DESCRIPTION:  initilisation des structures spatiales, frequentielles et 
+!!  temporelles du vecteur d'etat.
+!
+!> @brief construction of the spatial, temporal and scale structures needed
+!!  to stack and unstack the analysis in the state vector. 
+!!     
+!!
+!> @details several array-pointer allocation to vectorize the analysis.
+!!   The state vector is an derived data type array whose dimension
+!!   is the # of convolution windows (time structure) and whose field
+!!   is the # of grid point to analyse (spatial structure). 
+!!   Spatial structures are croco tile-thread dependent.
+!!  
+!! 1) Croco tile-thread version : OA module variables which are related to horizontal
+!!    subdomain are now embeded in a derived type array having the dimension of the
+!!    number of tiles. This routine is called within a tile loop in main.F.
+!!    see, init_online_spectral_diags(Istr,Iend,Jstr,Jend,tile) 
+!! 2) OA stand-alone/croco version WARNING : 
+!!    Memory duplication when passing arguments to the init_oa subroutine :
+!!    - the calling program should set the exact array dimension ranges 
+!!      using lbound and ubound fonctions.   
+!!    - for croco tile-thread version => use pointers (applied for grid arrays only)
+!
+! REVISION HISTORY:
+!
+!> @authors
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - Croco Tile-thread compliant version (2021) => module_tile_oa
+!!  - temporary use of pointer to croco grid arrays => module_grd_oa
+!!    in order to build the spatial structure of the OA state vector.
+!!  - Croco-OA interface 1st version (2020)
+!!  - namelists, doxygen comments, Stand-alone version, optimization (2015)
+!! @todo reintroduce pointers for isopycne tracking and/or function var_oa ?
+!------------------------------------------------------------------------------
+!
+      subroutine init_oa( tile          &
+      ,iic_oa                           &
+      ,imin, imax                 &
+      ,jmin, jmax                 &
+      ,kmin, kmax                 &
+      ,lon_t_oa                         & !(-1:imax+2,-1:jmax+2)            
+      ,lat_t_oa                         & !(-1:imax+2,-1:jmax+2)            
+      ,lon_u_oa                         & !(0:imax+2,0:jmax+2)              
+      ,lat_u_oa                         & !(0:imax+2,0:jmax+2)              
+      ,lon_v_oa                         & !(0:imax+2,0:jmax+2)              
+      ,lat_v_oa                         & !(0:imax+2,0:jmax+2)              
+      ,lon_f_oa                         & !(0:imax+2,0:jmax+2)              
+      ,lat_f_oa                         & !(0:imax+2,0:jmax+2)              
+      ,mask_t_oa                        & !(-1:imax+2,-1:jmax+2,0:kmax+1)
+      ,mask_f_oa                        & !(0:imax+1,0:jmax+1,0:kmax+1)
+      ,mask_u_oa                        & !(0:imax+1,0:jmax+1,0:kmax+1)
+      ,mask_v_oa                        & !(0:imax+1,0:jmax+1,0:kmax+1)
+      ,h_w_oa                           & !(0:imax+1,0:jmax+1)              
+      ,h_u_oa                           & !(0:imax+1,0:jmax+1)              
+      ,h_v_oa                           & !(0:imax+1,0:jmax+1)              
+      ,h_f_oa                           & !(0:imax+1,0:jmax+1)              
+      ,rhp_t                            & 
+      ,depth_t                          & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
+      ) 
+
+      use module_grd_oa, only  : associate_grid_oa_ptr, nullify_grid_oa_ptr 
+      use module_tile_oa, only : allocate_begvs_oa, allocate_begvs3d_oa
+      use module_oa_variables
+      use module_oa_time
+      use module_oa_space
+      use module_oa_periode
+      use module_oa_stock
+!      use scalars
+
+      implicit none
+
+      !> Current model integration iteration
+      integer, intent(in) :: iic_oa 
+
+      !> Grid index range for the analysis of fields passed in argument to the OA module 
+      !! Grid index are Roms-Croco tile(-thread) indices.
+      !! If no tile(-thread) grid index are MPI subdomain index
+      !! If no tile(-thread) and no MPI subdomain decomposition => full domain grid range
+      integer, intent(in) ::       &
+             imin, imax            & 
+            ,jmin, jmax            &
+            ,kmin, kmax
+
+      !> tile parameter from croco
+      integer, intent(in) :: tile
+
+      !> 3-Dimensional density array at t-grid point
+      double precision, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: rhp_t
+                                                                          
+      !> 3-Dimensional depth array at t-grid point
+      double precision, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: depth_t
+
+      ! 2-Dimensional array coordinate arrays passed from the calling code
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lon_t_oa  !< Longitude at u-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lon_u_oa  !< Longitude at u-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lon_v_oa  !< Longitude at v-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lon_f_oa  !< Longitude at f-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lat_t_oa  !< Latitude at t-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lat_u_oa  !< Latitude at u-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lat_v_oa  !< Latitude at v-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: lat_f_oa  !< Latitude at f-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: h_w_oa    !< Ocean thickness at w-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: h_u_oa    !< Ocean thickness at u-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: h_v_oa    !< Ocean thickness at v-grid point
+      double precision, dimension(imin:imax,jmin:jmax), intent(in), target :: h_f_oa    !< Ocean thickness at f-grid point           
+
+
+      !> 3-Dimensional mask arrays passed from the calling code
+      integer, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: mask_t_oa
+      integer, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: mask_u_oa
+      integer, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: mask_v_oa
+      integer, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: mask_f_oa
+
+      !> Lower and upper index bounds of the 3-Dimensional density array (see if pst%imin,...)
+      integer, dimension(3)  ::  rhp_t_lbound, rhp_t_ubound
+
+
+!.....History file:
+      if(if_print_node) write(io_unit,*) '...OA HISTORY file initialization'
+      call history_oa(4,-1,-1,-1,-1, -1)
+
+!.....initialisation de la structure spatiale:
+!
+!     BLXD croco2021 tile-thread : 
+!     - s(tile)%begvs_oa   : can be alloc. bef. the 1st var_space_oa call (nzv_oa size)
+!     - s(tile)%begvs3d_oa : cannot be allocated. bef. size calculated in var_space_oa
+
+      if(if_print_node) write(io_unit,*) '...ALLOCATING allocate_begvs_oa size(nzv_oa+1)'
+
+      call allocate_begvs_oa(imin,imax,jmin,jmax,kmin,kmax,tile) 
+
+      if(if_print_node) write(io_unit,*) '...TEMPORARY Pointer association'
+
+      call associate_grid_oa_ptr( tile                    &
+                        ,imin, imax                       &
+                        ,jmin, jmax                       &
+                        ,kmin, kmax                       &
+                        ,lon_t_oa                         &
+                        ,lat_t_oa                         &
+                        ,lon_u_oa                         &
+                        ,lat_u_oa                         &
+                        ,lon_v_oa                         &
+                        ,lat_v_oa                         &
+                        ,lon_f_oa                         &
+                        ,lat_f_oa                         &
+                        ,mask_t_oa                        &
+                        ,mask_f_oa                        &
+                        ,mask_u_oa                        &
+                        ,mask_v_oa                        &
+                        ,h_w_oa                           &
+                        ,h_u_oa                           &
+                        ,h_v_oa                           &
+                        ,h_f_oa                           )
+
+      
+      if(if_print_node) write(io_unit,*) '...OA ENTERING var_space_oa .false. : calc. space dim'
+
+      call var_space_oa(.false., tile ) 
+
+      if(if_print_node) write(io_unit,*) '...OA ALLOCATING allocate_begvs3d_oa size(nzvs_oa+1)'
+
+      call allocate_begvs3d_oa(tile) 
+
+      if(if_print_node) write(io_unit,*) '...OA ENTERING var_space_oa .true. : set spatial variables'
+
+      call var_space_oa(.true., tile )
+
+!.....BLXD horizontal grid information no longer needed
+!     nullify pointers 
+       
+      call nullify_grid_oa_ptr( tile ) 
+
+
+!.....initialisation boite d'heisenberg:
+!     attention reprendre calcul selon ondelette
+      call box_oa
+
+!     BLXD TODO CHECK if kount0, nt_max, dti needs to be passed as argt
+!               this will be true if they are no longer module variables
+!               => var_time_oa, var_par_oa, count_nmsimult_oa ?
+
+!.....initialisation de la structure frequentielle:
+
+      call var_per_oa( .false., dti )
+
+      call allocate_part3_oa   
+
+      call var_per_oa( .true., dti )
+
+!.....initialisation de la structure temporelle:
+
+      call var_time_oa(.false., kount0, nt_max, dti )
+
+      call allocate_part4_oa
+
+      call var_time_oa(.true., kount0, nt_max, dti )
+
+!.....initialisation du facteur de reconstruction
+
+      call var_rec_oa( dti )
+
+!.....Calculate the size of the module_oa_stock array structure wf_oa
+
+      call pre_allocate_part5_oa()
+
+      call count_nmsimult_oa( 0                       & ! ichoix
+                          ,1                          & ! ivar_m
+                          ,kount0                     &
+                          ,nt_max                     &
+                          ,dti                        &
+                          ,tile                       &
+                          ,nzw_oa) 
+
+      ! BLXD Pay attention that nzw_oa is now set to nmsimult_oa in count_nmsimult_oa
+      ! nmsimult_oa and nwz_oa are both used for the same purpose 
+      ! one should be now removed, 
+      ! TODO namelist par. nmsimult_oa_max not really useful
+
+      call allocate_part5_oa()
+
+!.....History file:        
+      call history_oa(6,-1,-1,-1,-1, tile)
+
+   
+!.....ecriture du fichier de structure:
+
+      !STDALONE call struct_oa
+
+!.....History file:
+      call history_oa(5,-1,-1,-1,-1, tile, iic_oa, nt_max )
+
+!.....test initialization if any
+      if (ifl_test_oa==1) then
+        call test_init_oa( imin=imin, imax=imax     &
+                          ,jmin=jmin, jmax=jmax     &
+                          ,kmin=kmin, kmax=kmax )
+      endif
+
+!.....initialisation eventuelle des "levels"
+      if (isopycne_analysis) then
+        rhp_t_lbound = (/imin,jmin,kmin/)
+        rhp_t_ubound = (/imax,jmax,kmax/)
+        !if ( present(rhp_t) .and. present(depth_t) ) then
+            call lev_init_oa( tile, rhp_t, rhp_t_lbound, rhp_t_ubound ) 
+        !else
+        !    stop "3D density array must be passed as argument to the OA module (see subroutine initial_oa)" 
+        !endif
+      endif
+
+      ! OLD symphonie initialisations
+      !......initialisation de variables symphonie:
+      !    call var_upd_oa (-1,-1,-1)
+      !......initialisation de l'energie
+      !     call nrj_init_oa
+
+      call upd_init_oa( imin, imax    &
+                       ,jmin, jmax    &
+                       ,kmin, kmax    )
+
+! BLXD IMPT barrier instruction : see init_online_spectral_diags_tile
+! DEALLOCATES THE GRID STRUCTURE, POINTERS HAVE ALREADY BEEN NULLIFIED
+! C$OMP BARRIER
+!        call deallocate_tile_grid_tmp_str()
+
+      return
+      end subroutine init_oa
+
+!------------------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
+! DESCRIPTION:  initialise la structure spatiale du vecteur d'etat.
+!
+!> @brief The size of the horizontal and vertical domain over which analyses will be conducted 
+!! is calculated, i.e., nzvs_oa and nzvs3d_oa respectively (flag_s equals true). 
+!! All the variable analysis are stored in a single vector, called state vector, 
+!! which vectorizes all the domain points requested for analysis. 
+!! Variables enabling conversion from vector index to domain indices 
+!! are initialized (flag_s equals false).
+!
+!> @details Spatial domain options are set in the OA namelist with SWT_D_W parameter.  
+!! - if set to 1: analysis is requested over the region [lat1,lat2],[lon1,lon2]. 
+!! - if set to 2: analysis is requested at point (I,J).
+!! - if set to 3: analysis is requested over the ocean colum [Hmin,Hmax] in the horizontal 
+!!   domain the (Lat,Lon)
+!! The domain to analyse is more over defined by the namelist parameters:
+!! - dx_oa(iv_g), dy_oa(iv_g) : steps in i,j indices
+!! - k_oa(1,iv_g),k_oa(2,iv_g),dk_oa(iv_g) : first, last k indices and k index step
+!!
+!! Variables:
+!! - nzvs_oa,   begvs_oa    : 2d struture of the state vector
+!! - nzvs3d_oa, begvs3d_oa  : 3d structure of the state vector
+!! - ij2l_oa, l2i_oa, l2j_oa : conversion l <--> (i,j)
+!!
+!! The section of the state vector defined by indices begvs3d_oa(ls_l), begvs3d_oa(ls_l+1)-1
+!! corresponds to the points to analyse over one given (i,j) ocean column for a given variable
+!! with index iv_g. For each variable, the number of (i,j) points to analyse is given by index ls_l
+!! which ranges from begvs_oa(iv_g) to begvs_oa(iv_g+1)-1. 
+!!
+!! For each variables: 
+!! - the grid point is needed to get the mask value, i.e., tgv_oa.
+!! - the 2d/3d attribute is required to construct the vertical part of the state vector, i.e., tgv3d_oa.
+!!
+!! The kmin3d_oa parameter stores the lowest analysed k index.
+!
+! REVISION HISTORY:
+!
+!> @authors
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Symphonie/NHOMS initial version 2006
+!! - Benedicte Lemieux-Dudon
+!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - Croco Tile-thread compliant version (2021)
+!> @date 2021
+!> @todo BLXD Modify Croco-OnlineA module interface.
+!! - The CROCO-OnlineAnalysis module interface must be modified : 
+!!   Interface = mix between the Stand-alone and Original OnlineA versions 
+!!   => Croco arrays are passed as arguments to the OnlineA routines with reduced 
+!!   dimension range. It leads to memory duplication.
+!------------------------------------------------------------------------------
+      subroutine var_space_oa( flag_s, tile )
+
+      use module_grd_oa, only  : grd, pg, get_3D_grid_mask &
+     &                          ,get_2D_subdomain_minmax
+      use module_tile_oa, only : st, pst
+      use module_oa_variables
+      use module_oa_time
+      use module_oa_space
+      use module_oa_periode
+      use module_oa_stock
+
+      implicit none
+
+      logical, intent(in) :: flag_s
+      integer, intent(in) :: tile
+      
+
+      integer :: i, j, k, grd_pt_code                                 &                          
+           ,iv_g                                                      &
+           ,mykmin                                                    &
+           ,msk_g                                                     &
+           ,ls_g
+
+      real    ::                                                      &
+            lat_g                                                     &
+           ,lon_g                                                     &
+           ,h_g                                                         
+
+      real    ::                                                      &
+            latmin_g                                                  &
+           ,lonmin_g                                                  &
+           ,latmax_g                                                  &
+           ,lonmax_g
+
+      integer :: io_nodoa, num !, ii_glob, jj_glob
+      integer          :: imin, imax, jmin, jmax, kmin, kmax
+      integer, pointer :: nzvs_oa => null(), nzvs3d_oa => null()
+
+!.... Grid and Space structure : temporary pointer association
+      pg  => grd(tile)
+      pst => st(tile) 
+
+!.... Initialisation of the size of the spatial structure
+      pst%nzvs_oa   = 0
+      pst%nzvs3d_oa = 0      
+
+!.... Local pointers pointing toward 2D/3D the spatial structure size, resp.
+!     just to handle the counts
+      nzvs_oa => pst%nzvs_oa ; nzvs3d_oa => pst%nzvs3d_oa
+
+!.... Checking grid size consistency
+      if(if_print_node) write (io_unit,*) 'Dimension for grid and space structure ', tile
+      if(if_print_node) write (io_unit,*) pg%imin,pst%imin
+      if(if_print_node) write (io_unit,*) pg%imax,pst%imax
+      if(if_print_node) write (io_unit,*) pg%jmin,pst%jmin
+      if(if_print_node) write (io_unit,*) pg%jmax,pst%jmax
+      if(if_print_node) write (io_unit,*) pg%kmin,pst%kmin
+      if(if_print_node) write (io_unit,*) pg%kmax,pst%kmax
+
+      if ( ( pg%imin /= pst%imin ) .or. &
+           ( pg%imax /= pst%imax ) .or. &
+           ( pg%jmin /= pst%jmin ) .or. &
+           ( pg%jmax /= pst%jmax ) .or. &
+           ( pg%kmin /= pst%kmin ) .or. &
+           ( pg%kmax /= pst%kmax ) ) then
+        if(if_print_node) write (io_unit,*) 'STOP : error with tile dim for grid and space structure ', tile
+        stop
+      else
+!.... Local variable (just to shorten loop instructions)
+        imin=pg%imin ; imax=pg%imax ; kmin=pg%kmin
+        jmin=pg%jmin ; jmax=pg%jmax ; kmax=pg%kmax
+      endif
+
+      spa_var_loop : do iv_g = 1 , nzv_oa
+
+#ifdef OA_TRACES
+         if (flag_s) then
+             io_nodoa = set_io_nodoa(iv_g,mynode,8,7) ! [7/8](odd/even-iv)000+mynode
+         else
+             io_nodoa = set_io_nodoa(iv_g,mynode,6,5) ! [5/6](odd/even-iv)000+mynode
+         end if
+#endif
+
+         if (flag_s.eq..false.) then
+
+            if(if_print_node) write (io_unit,*) '...var_space_oa .false. loop #iv_g  = ', iv_g
+
+!.... Check user values
+            if (k_oa(1,iv_g).eq.-99) then
+               k_oa(1,iv_g) = 1 
+            endif
+            if (k_oa(2,iv_g).eq.-99) then
+               k_oa(2,iv_g) = kmax
+            endif
+
+            if ( k_oa(1,iv_g) .gt. k_oa(2,iv_g) ) then
+               if(if_print_node) write (io_unit,*) " k_oa(2,:) trop grand > kmax = N !"
+               stop
+            endif
+            if ( k_oa(2,iv_g).gt.kmax ) then
+               if(if_print_node) write (io_unit,*) " k_oa(2,:) trop grand > kmax = N !"
+               stop
+            endif
+            if ( k_oa(1,iv_g).lt.kmin ) then
+               if(if_print_node) write (io_unit,*) " k_oa(1,:) trop petit < kmin !"
+               stop
+            endif
+
+!..... #BLXD Croco T-grid indices 1:N, W-grid indices from 0:N and kmin=1,kmax=N 
+            if ( k_oa(1,iv_g).eq.0 .and.       &
+                (tgv_oa(tv_oa(iv_g)).eq.1      &
+             .or.tgv_oa(tv_oa(iv_g)).eq.2      &
+             .or.tgv_oa(tv_oa(iv_g)).eq.3      &
+! Humm p grid point is the 2D vorticity grid point
+! Should also start to 1 and not zero ( not w-grid point )
+!            .or.tgv_oa(tv_oa(iv_g)).eq.3      &
+               ) ) then
+                k_oa(1,iv_g)=1
+                if (k_oa(2,iv_g).eq.0) k_oa(2,iv_g)=1
+            endif
+
+            if_domain_lonlat_1 : if (swt_d_oa(iv_g).eq.1.or.swt_d_oa(iv_g).eq.3) then
+
+                ! BLD TODO ADD here missed checks dependent of imin,imax,.. ?
+                !if ( if_chks ) then
+                !
+                !    call domain_checks()
+                !end if
+
+                if ( if_extend_dom ) then
+
+                    ! USEFUL? TO TEST BLXD
+                    grd_pt_code = mod(tgv_oa(tv_oa(iv_g)),5)
+
+                    call get_2D_subdomain_minmax( imin,imax,jmin, jmax &
+                                          ,grd_pt_code, pg               &
+                                          ,latmin_g, lonmin_g, latmax_g, lonmax_g )
+
+                    call extend_domain_oa(iv_g,if_extend_dom,lonmin_g,latmin_g,lonmax_g,latmax_g)
+
+                end if
+
+            end if if_domain_lonlat_1
+
+         else ! flag_s .true. 
+
+            if(if_print_node) write (io_unit,*) '...var_space_oa .false. loop #iv_g  = ', iv_g
+
+            ! BLXD nzvs_oa => pst%nzvs_oa which is properly initialized to zero
+            pst%begvs_oa( iv_g ) = nzvs_oa + 1
+
+         end if
+
+!.....configuration spatiale n°1 ou 3: 
+
+         spatial_config1_3 : if (swt_d_oa(iv_g).eq.1.or.swt_d_oa(iv_g).eq.3) then
+
+#ifdef OA_TRACES
+            if (verbose_oa>=10) then
+                write (io_nodoa,*) 'VAR_SPACE_OA j=',jmin, jmax, dy_oa(iv_g),tile
+                write (io_nodoa,*) 'VAR_SPACE_OA i=',imin, imax, dx_oa(iv_g),tile
+            end if
+#endif
+
+            jloop : do j = jmin, jmax, dy_oa(iv_g)
+                iloop : do i = imin, imax, dx_oa(iv_g)
+
+       
+                  ! BLXD TODO TEST
+                  grd_pt_code = mod(tgv_oa(tv_oa(iv_g)),5)
+                  call get_3D_grid_mask( i, j , kmax, grd_pt_code, pg, &
+                                         h_g, lat_g, lon_g, msk_g )
+#ifdef OA_TRACES
+            if (verbose_oa>=10) then
+               write (io_nodoa,*) "all lon, lat, h, i, j ", lon_g, lat_g,h_g, i,j
+            end if
+#endif
+
+#ifdef SPHERICAL
+         if ( if_sphe_deg2rad ) then
+! BLXD 2020 change
+                lat_g=lat_g*pi_oa/180.D0
+                lon_g=lon_g*pi_oa/180.D0
+         endif
+#endif
+
+
+                  if_spatial_dom_ok_loopij : if (                     &
+                       msk_g.eq.1              .and.                  &
+                       lat_g.ge.lat_oa(1,iv_g) .and.                  &
+                       lat_g.le.lat_oa(2,iv_g) .and.                  &
+                       lon_g.ge.lon_oa(1,iv_g) .and.                  &
+                       lon_g.le.lon_oa(2,iv_g) .and.                  &
+                       ( (h_g.ge.h_oa(1,iv_g)  .and.                  &
+                       h_g.le.h_oa(2,iv_g) )                          &
+                       .or.swt_d_oa(iv_g).ne.3) )                     &
+                       then
+
+#ifdef OA_TRACES
+            if ( verbose_oa>=10 ) then
+               write (io_nodoa,*) "unmasked lon, lat, h, i, j ", lon_g, lat_g,h_g, i,j
+            end if
+#endif
+
+!-------->structure 2d:
+
+                     nzvs_oa          = nzvs_oa + 1
+                     if (flag_s) then
+                     pst%l2i_oa (nzvs_oa)  = i
+                     pst%l2j_oa (nzvs_oa)  = j
+                     pst%ij2l_oa(i,j,iv_g)= nzvs_oa
+                     endif
+
+!-------->structure 3d:
+! #BLXD line_begin - line_end => SUBROUTINE                     
+                     mykmin=0
+                     ! BLXD nzvs_oa => pst%nzvs_oa which is properly initialized to zero
+                     if (flag_s) pst%begvs3d_oa(nzvs_oa) = nzvs3d_oa + 1
+                     if (tgv3d_oa(tv_oa(iv_g)).eq.2) then
+                        nzvs3d_oa          = nzvs3d_oa + 1
+                     else
+                        do k = k_oa(1,iv_g),k_oa(2,iv_g),dk_oa(iv_g)
+                           if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
+                              msk_g = pg%mask_t(i,j,k) 
+                           elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
+                              msk_g = pg%mask_u(i,j,k) 
+                           elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
+                              msk_g = pg%mask_v(i,j,k) 
+                           else
+                              msk_g = pg%mask_f(i,j,k) 
+                           endif
+                           if ( msk_g.eq.1 ) then
+                              if ( mykmin.eq.0.and.flag_s ) then
+                                 pst%kmin3d_oa(nzvs_oa)=k            
+                                 mykmin=1
+                              endif
+                              nzvs3d_oa          = nzvs3d_oa + 1
+                           endif
+                        enddo
+                     endif
+! #BLXD line_end                  
+                  endif if_spatial_dom_ok_loopij
+
+               enddo iloop
+            enddo jloop
+
+         endif spatial_config1_3
+         
+!.....configuration spatiale n°2:
+
+         spatial_config2 : if (swt_d_oa(iv_g).eq.2) then
+            i = ptij_oa(1,iv_g)
+            j = ptij_oa(2,iv_g)
+            if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
+               msk_g = pg%mask_t(i,j,kmax) 
+            elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
+               msk_g = pg%mask_u(i,j,kmax) 
+            elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
+               msk_g = pg%mask_v(i,j,kmax) 
+            else
+               msk_g = pg%mask_f(i,j,kmax) 
+            endif
+
+            if_spatial_dom_ok_pointij : if ( msk_g.eq.1 ) then
+               nzvs_oa          = nzvs_oa + 1
+
+               if (flag_s) then
+                pst%l2i_oa (nzvs_oa)  = ptij_oa(1,iv_g)
+                pst%l2j_oa (nzvs_oa)  = ptij_oa(2,iv_g)
+                pst%ij2l_oa(i,j,iv_g)= nzvs_oa
+               endif
+
+!-------->structure 3d:
+! #BLXD line_begin 2 TIMES THESE LINES => subroutine
+               mykmin=0
+               if (flag_s) pst%begvs3d_oa(nzvs_oa) = nzvs3d_oa + 1
+               if (tgv3d_oa(tv_oa(iv_g)).eq.2) then
+                  nzvs3d_oa          = nzvs3d_oa + 1
+               else
+                  do k = k_oa(1,iv_g),k_oa(2,iv_g),dk_oa(iv_g)
+                     if (mod(tgv_oa(tv_oa(iv_g)),5).eq.1) then
+                        msk_g = pg%mask_t(i,j,k) 
+                     elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.2) then
+                        msk_g = pg%mask_u(i,j,k) 
+                     elseif (mod(tgv_oa(tv_oa(iv_g)),5).eq.3) then
+                        msk_g = pg%mask_v(i,j,k) 
+                     else
+                        msk_g = pg%mask_f(i,j,k) 
+                     endif
+                     if ( msk_g.eq.1 ) then
+                        if ( mykmin.eq.0.and.flag_s ) then
+                           pst%kmin3d_oa(nzvs_oa)=k            
+                           mykmin=1
+                        endif
+                        nzvs3d_oa          = nzvs3d_oa + 1
+                     endif
+                  enddo
+               endif
+! #BLXD line_end
+
+            endif if_spatial_dom_ok_pointij
+
+         endif spatial_config2
+
+      enddo spa_var_loop
+
+!.....last point:
+      if (flag_s) then
+
+       pst%begvs3d_oa( nzvs_oa + 1 ) = nzvs3d_oa + 1
+       pst%begvs_oa  ( nzv_oa  + 1 ) = nzvs_oa + 1
+    
+      endif
+
+!.....Local pointers nullified
+      nzvs_oa   => null()
+      nzvs3d_oa => null()
+
+!.....Specific module_tile_oa and module_grd_oa pointer nullified
+      pg  => null()
+      pst => null() 
+
+      return
+      end subroutine var_space_oa
+
+      subroutine extend_domain_oa( iv_g, if_extend_dom,  lonmin_g,latmin_g,lonmax_g,latmax_g )
+
+      use module_oa_space, only : lon_oa, lat_oa
+! BLXD USEFUL ? TODO REMOVE
+      implicit none
+
+      integer, intent(in) :: iv_g
+
+      real, intent(inout) :: lonmin_g,latmin_g,lonmax_g,latmax_g
+
+      integer :: io_nodoa
+
+      logical, intent(in) :: if_extend_dom
+
+#ifdef SPHERICAL
+        if ( if_sphe_deg2rad ) then
+
+        latmin_g=latmin_g*pi_oa/180. !D0
+        lonmin_g=lonmin_g*pi_oa/180. !D0
+        latmax_g=latmax_g*pi_oa/180. !D0
+        lonmax_g=lonmax_g*pi_oa/180. !D0
+
+        end if
+#endif
+
+      end subroutine extend_domain_oa
+
+
 !------------------------------------------------------------------------------
 ! PROCEDURE
 !
@@ -1984,7 +2079,7 @@ CONTAINS
 !!  - Symphonie/NHOMS initial version 2006
 !! - Benedicte Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - Croco-OnlineA module interface (2020)
 !> @date 2021
 !> @todo consistency with var_time_oa change
 !! - remove goto syntax ? intent attribute ?
@@ -2012,8 +2107,7 @@ CONTAINS
          p_p                                                          &   !< Time scale
         ,t0c,dtc,w0c,dwc                                                  !< Wavelet resolution : Heisenberg parameters
 
-      logical :: flag_p                                                   !< Flag to distinguish calls to var_space_oa before and after OA array allocation
-         
+      logical :: flag_p
 
       t0c = 0.
       w0c = 6.0
@@ -2125,6 +2219,25 @@ CONTAINS
 
       end subroutine var_per_oa
 
+      subroutine allocate_part3_oa
+
+      ! BLXD change name allocate_nzvp_oa ?
+      !use module_oa_variables
+      use module_oa_time
+      use module_oa_periode
+
+      implicit none
+
+      allocate (                                                      &   
+       resv_oa (nzvp_oa)                                              &  ! resolution temporelle pour le calcul de la convolution
+       )
+      allocate (                                                      &  ! periodes associees a la structure vectorielle du vecteur d etat, 
+       perv_oa (2,nzvp_oa)                                            &  ! facteurs de reconstruction associes a l'ondelette
+       )
+
+      return
+      end subroutine allocate_part3_oa
+
 !------------------------------------------------------------------------------
 ! PROCEDURE
 !
@@ -2145,8 +2258,8 @@ CONTAINS
 !!   of interest (c.f., perv_oa(1,ip_t) ).
 !! - SWT_T_W, swt_t_oa : defines the time domain where analysis are requested
 !!   * 1 : from T1 to T2 #BLXD to test with tool_datetosec TODO 
-!!   * 2 : from T1 to the end, NOT AVAILABLE YET 
-!!   * 3 : from date to T1, NOT AVAILABLE YET 
+!!   * 2 : single date T1 at the end, NOT AVAILABLE YET TO TEST 
+!!   * 3 : single date T1, NOT AVAILABLE YET TO TEST
 !!   * 4 : the entire simulation.
 !!   Check : the only namelist parameters are DATE_DEB, DATE_END (pattern is 2011, 01, 1, 00, 01, 18).
 !!   kount_user_oa(1:2,nzv_oa) is calculated from DATE_DEB, DATE_END in terms of model time steps.
@@ -2201,29 +2314,28 @@ CONTAINS
       integer, intent(in)          :: kount0,                         &  !< First simulation iteration
                                       nt_max                             !< Last integration iteration
 
+      logical, intent(in) :: flag_t
+
       integer                                                         &
             k                                                         &
            ,dkount_tot_t                                              &
            ,iv_t                                                      &
-           ,ls_t                                                      &
-           ,ls1_t                                                     &
-           ,val                                                       &     !test nmw_oa
-           ,comptt(nzv_oa)                                            &
+           !,ls_t                                                      &
+           !,ls1_t                                                     &
            ,ip_t                                                      &
            ,ip1_t                                                     &
-           ,ip2_t                                                     &
-           ,ls_s,ls1_s                                                &
-           ,i_s,j_s,k_s
+           ,ip2_t                                                     !&
+           !,ls_s,ls1_s                                                &
+           !,i_s,j_s,k_s
 
-      character*40                                                    &
-           nameid
+      integer, dimension(1:nzv_oa) :: comptt
+      !character*40                                                    &
+      !     nameid
 
-      logical                                                         &
-           flag_t
-
+      integer :: nzw_oa_tmp
 
       nzvt_oa  = 0
-      nzw_oa   = 0
+      nzw_oa_tmp   = 0
 
 
 !---- >boucle sur toutes les variables:
@@ -2311,9 +2423,9 @@ CONTAINS
 !     configuration temporelle numero 1: periode
 !     configuration temporelle numero 4: simu
 !     
-!     atomes differents de fourier => Morlet or windowed Fourier
+!     atomes differents de fourier => Dirac, Morlet or windowed Fourier
 !----------------------------------------------------------------
-            if ((swt_t_oa(iv_t).eq.1.or.swt_t_oa(iv_t).eq.4).and.tpsi_oa(iv_t).ne.3 ) then
+            not_fourier : if ((swt_t_oa(iv_t).eq.1.or.swt_t_oa(iv_t).eq.4).and.tpsi_oa(iv_t).ne.3 ) then
 
                simulation_window : do k = kount_user_oa(1,iv_t),kount_user_oa(2,iv_t),kount_user_oa(3,iv_t)
                   nzvt_oa             = nzvt_oa + 1
@@ -2379,7 +2491,7 @@ CONTAINS
                    endif
                   endif ! second pass
                enddo simulation_window
-            endif
+            endif not_fourier
 
 
 !----------------------------------------------------------------
@@ -2387,33 +2499,40 @@ CONTAINS
 !     
 !     atome: fourier
 !----------------------------------------------------------------
+            ! BLXD I would prefer
             ! if ((swt_t_oa(iv_t).eq.1.or.swt_t_oa(iv_t).eq.4).and.tpsi_oa(iv_t).eq.3 ) then
-            ! tpsi_oa == 3 => swt_t_oa(iv_t).eq.4)
-            if ( tpsi_oa(iv_t).eq.3 ) then
+            ! But ok with init_parameter_oa : tpsi_oa == 3 => swt_t_oa(iv_t).eq.4)
+            fourier : if ( swt_t_oa(iv_t).eq.4 .and. tpsi_oa(iv_t).eq.3 ) then
                nzvt_oa             = nzvt_oa + 1
 
                if (flag_t) then
-                kountv_oa(1,nzvt_oa) = nt_max-1                           &
-                    - int ( int( real(nt_max-1-kount0+1) * dti         &
+                kountv_oa(1,nzvt_oa) = nt_max-1                       &
+                    - int ( int( real(nt_max-1-kount0+1) * dti        &
                            / perv_oa(1,ip_t) )                        &
                          * perv_oa(1,ip_t)/dti ) + 1             
                 kountv_oa(2,nzvt_oa) = nt_max-1  
                 per_t2p_oa (nzvt_oa) = ip_t
+                ! One single Fourier analysis using all the simulation window for integration  
                 comptt(iv_t)       = 1
-
                endif
-            endif
+
+            endif fourier
 
 
 !----------------------------------------------------------------
-!     configuration temporelle numero 2: a la fin de la simulation:
+!     configuration temporelle numero 2: une date a la fin de la simulation
+!     0 : dirac, 1 : ondelette, 2 : windowed Fourier
 !----------------------------------------------------------------
             if (swt_t_oa(iv_t).eq.2) then
                nzvt_oa             = nzvt_oa + 1
                if (flag_t) then
                 kountv_oa(1,nzvt_oa) = nt_max - 1 - 2*dkount_tot_t
                 kountv_oa(2,nzvt_oa) = nt_max - 1      
+! BLXD TODO change nt_max - 1  to nt_max
+                !kountv_oa(1,nzvt_oa) = nt_max - 2*dkount_tot_t
+                !kountv_oa(2,nzvt_oa) = nt_max      
                 per_t2p_oa (nzvt_oa)  = ip_t
+! BLXD TODO change nt_max - 1  to nt_max in the if instruction as well
                 if (    kountv_oa(1,nzvt_oa).lt.kount0                 &
                     .or.kountv_oa(1,nzvt_oa).gt.nt_max-1                   &
                     .or.kountv_oa(2,nzvt_oa).lt.kount0                 &
@@ -2422,8 +2541,8 @@ CONTAINS
                   kountv_oa(1,nzvt_oa) = -9999
                   kountv_oa(2,nzvt_oa) = -9999
                 else
-                   ! #BLXD BUG ? comptt(iv_t)       = 1
-                   comptt(iv_t)=comptt(iv_t)+1
+! BLXD one vriable a single date of conv. window at a single date
+                   comptt(iv_t)       = 1
                 endif
                endif
             endif
@@ -2435,6 +2554,7 @@ CONTAINS
                nzvt_oa             = nzvt_oa + 1
 
                if (flag_t) then
+! BLXD TODO change nt_max - 1  to nt_max in the if instruction as well
                kountv_oa(1,nzvt_oa) = kount_user_oa(1,iv_t) - dkount_tot_t
                kountv_oa(2,nzvt_oa) = kount_user_oa(1,iv_t) + dkount_tot_t
                per_t2p_oa (nzvt_oa) = ip_t
@@ -2455,7 +2575,7 @@ CONTAINS
 !.....enddo ip_t
 
             ! #BLD TODO CHECK counting effective analysis ( <= # of requested OA nzv_oa)
-            if (flag_t) nzw_oa   = nzw_oa + comptt(iv_t)
+            if (flag_t) nzw_oa_tmp   = nzw_oa_tmp + comptt(iv_t)
 
          enddo loop_on_requested_period
 
@@ -2469,14 +2589,403 @@ CONTAINS
 
 #ifdef OA_TRACES
          if (flag_t) then
-             if(if_print_node) write (io_unit,*) '#REQUESTED OA nzvt_oa = ', nzvt_oa-1
-             if(if_print_node) write (io_unit,*) '#EFFECTIVE OA nzw_oa  = ', nzw_oa
+             if(if_print_node) write (io_unit,*) '#REQUESTED OA nzvt_oa     = ', nzvt_oa-1
+             if(if_print_node) write (io_unit,*) '#EFFECTIVE OA nzw_oa_tmp  = ', nzw_oa_tmp
+             nzw_oa = nzw_oa_tmp
          end if
 #endif
 
       return
       end subroutine var_time_oa
 
+      subroutine allocate_part4_oa
+
+      ! BLXD change name allocate_nzvt_oa ?
+      !use module_oa_variables
+      use module_oa_time
+      !use module_oa_space
+      use module_oa_periode
+      use module_oa_stock
+
+      implicit none
+
+      ! calcul des kounts de debut et de fin pour chaque variable (ou configuration)
+      allocate (                                                      &
+       kountv_oa (2,nzvt_oa)                                          &
+       ) 
+    
+      allocate (                                                      & 
+       tallocated_oa(nzvt_oa)                                         &
+       )
+
+      allocate (                                                      &
+       per_t2p_oa (nzvt_oa)                                           &  ! transformation structure temporelle --> structure frequentielle
+       )
+
+      return
+      end subroutine allocate_part4_oa
+
+      subroutine pre_allocate_part5_oa
+
+      use module_oa_stock
+
+      implicit none
+
+      tallocated_oa(:)   = -1
+      return
+      end subroutine pre_allocate_part5_oa
+
+      subroutine allocate_part5_oa
+
+      !use module_oa_variables
+      use module_oa_time
+      !use module_oa_space
+      !use module_oa_periode
+      use module_oa_stock
+
+      implicit none
+
+      integer                                                         &
+       l_a
+
+
+      allocate (                                                      &
+       wf_oa (nmsimult_oa)                                            &           ! vecteur d etat resultat (w) contenant les analyses
+       )
+
+      do l_a=1,nmsimult_oa
+         nullify(wf_oa(l_a)%coef)
+      enddo
+
+      tallocated_oa(:)   = -1
+      wf_oa(:)%t_indice  = -1
+      wf_oa(:)%config    = -1
+      wf_oa(:)%variable  = -1
+
+
+      return
+      end subroutine allocate_part5_oa
+
+!----------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
+! DESCRIPTION: 
+! Optimization de la memoire pour allouer la structure temporelle
+! du vecteur d'etat a sa juste taille qui correspond au nombre
+! maximum de fenetres de convolution ouvertes a un meme pas de temps 
+! de simulation.
+! 
+!> @brief memory optimization pre-calculating the size of 
+!   temporal structure of the state vector (wf_oa dimension) 
+!   using the exact same algo applied in main_oa.
+!
+!> @details nmsimult_oa based on the number of requested 
+!!  config, variable, and frequency of analysis during the simulation
+!   vectorize the analysis.
+!!   The state vector is an derived data type array whose dimension
+!!   is the # of convolution windows (time structure) and whose field
+!!   is the # of grid point to analyse (spatial structure). 
+!!
+! REVISION HISTORY:
+!
+!> @authors
+!! - B. Lemieux-Dudon
+!!  - Croco-OA interface 1st version (2020)
+!!  - Croco Tile-thread compliant version (2021)
+!!  - Memory optimization
+!> @date 2021
+!
+!> @todo nmsimult_oa_max in namelist can be kept to stop if the
+!!  number of analysis ovrepasses if the number of analyses 
+!!  exceeds the memory capacity
+!> @todo declare psi as real(KIND=wp) with specific module handl. prec. 
+!! @todo revise if convolution windows are simulatenously defined over
+!!   the slow and fast modes.
+!! @todo revise as the algo for main_oa subroutine evolves. 
+!----------------------------------------------------------------------
+
+      subroutine count_nmsimult_oa( ichoix                 &
+                          ,ivar_m                          &
+                          ,kount0                          &
+                          ,nt_max                          &
+                          ,dti                             &
+                          ,tile                            &
+                          ,nzw_oa_tmp) 
+
+
+      use module_tile_oa, only : st, pst, ntiles
+      use module_oa_variables
+      use module_oa_time
+      use module_oa_space
+      use module_oa_periode
+      use module_oa_stock
+!      use module_oa_upd
+!      use scalars
+
+      implicit none
+
+      !> Tile dependent calculation, ichoix set to zero in "regular" cases
+      integer, intent(in) :: tile, ichoix
+
+      !> To handle specific calls to main_oa with variables updated at different position in the calling code
+      integer, intent(in), optional :: ivar_m
+
+      !> Time integration step
+      double precision, intent(in) :: dti
+
+      !> First and last simulation iteration index
+      integer, intent(in) :: nt_max, kount0                                        
+
+      !> To set the mx number of conv. windows simultaneously under calculatio,
+      integer, intent(inout) :: nzw_oa_tmp
+
+      !TODO declare flag here if only needed here
+      logical :: ifl_test_composite
+
+      integer                                                         &
+         iv_m                                                         &
+        ,ic_m                                                         &
+        ,lt_m                                                         &
+        ,ls_m                                                         &
+        ,ls1_m
+
+      integer                                                         &
+         i_m                                                          &
+        ,j_m                                                          &
+        ,k_m                                                          &
+        ,kpt_m                                                        &
+        ,lp_m                                                          
+
+      !> For the model integration iteration
+      integer :: iic_oa 
+
+      !> Count of total size of the stock structure / process IO
+      integer :: imsimult_oa, io_nodoa
+
+      !> For checking the count of spatial structure size coef
+      !! might set the logical to false if to mudch time consuling at init time
+      logical, parameter :: if_count_space=.true. 
+      integer, dimension(1:ntiles,1:nzc_oa,1:nzv_oa,1:nzvt_oa) ::     &
+         intper_count_space                                           &
+        ,sglper_count_space
+   
+! BLXD : double precision ? 
+      complex                                                         &
+         psi_m
+
+!---------------------------------------------------------------------------
+!.....periodes discretisees:
+!---------------------------------------------------------------------------
+
+!.... The size of the module_oa_stock structure wf_oa is only dependent of
+!     conf ic_m, var iv_m , and specific conv. window lt_m
+!     It is independent of the tile which is related to the 2D horizontal domain
+!     "tile-decomposition"
+      imsimult_oa = 0 
+      nmsimult_oa = 0 
+
+!.... For each conf ic_m, var iv_m , and specific conv. window lt_m
+!     One can check the # of analysed spatial points i,j,k 
+      sglper_count_space(tile, :,:,:) = 0
+      intper_count_space(tile, :,:,:) = 0
+
+
+      oa_analysis_requested : if (nzv_oa.ne.0) then
+
+!.... Pointer to tile structure
+      pst => st(tile)
+
+!.....flag variable composite 
+      ifl_test_composite = .true.      
+
+      loop_timestepping : do iic_oa = kount0, nt_max
+
+      loop_ic : do ic_m = 1 , nzc_oa
+      loop_iv : do iv_m = begc_oa(ic_m),begc_oa(ic_m+1)-1
+         !STDALONE to call main_oa at specific location for composite varaible confguration
+         if (present(ivar_m)) then
+            ifl_test_composite = (tv_oa(iv_m).eq.ivar_m)
+         endif
+
+!........ce test est utilise pour les appels cibles lors des calculs energetiques:
+!         if ( (ichoix.ge.0.or.ifl_test_composite) .and. ( tv_oa(iv_m).ne.20) ) then
+!---------------------------------------------------------------------------
+!.....periodes discretisees:
+!---------------------------------------------------------------------------
+
+     if_discrete_per : if (dori_oa(iv_m).eq.1) then
+
+      time_of_analysis_loop : do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
+
+!.....test pour le calcul:
+       tstp_match_convol_window : if ( iic_oa.ge.kountv_oa(1,lt_m) .and. iic_oa.le.kountv_oa(2,lt_m)                  &
+            .and.               mod( int( (iic_oa-kountv_oa(1,lt_m)), kind=8 ), resv_oa(per_t2p_oa(lt_m)) ).eq.0      &
+            .and.               ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )                                           &
+                             ) then
+
+! #BLXD ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 ) = calling main_oa for particular variable
+
+!........allocation if necessary (if variable isn't allocated yet, it is done.., at user-specified kount):
+
+
+!........precalcul de l'indice temporel prenant en compte la translation (u):
+
+         kpt_m =  iic_oa - ( int((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2) )
+
+          if (tallocated_oa(lt_m).eq.-1) then
+            imsimult_oa = imsimult_oa + 1
+            nmsimult_oa = max(nmsimult_oa,imsimult_oa)
+            !tallocated_oa(lt_m) = imsimult_oa
+            tallocated_oa(lt_m) = lt_m 
+          endif
+
+!........precalcul de l'indice temporel prenant en compte la translation (u):
+!
+         kpt_m =  iic_oa - ( int((kountv_oa(1,lt_m)+kountv_oa(2,lt_m))/2) )
+
+!........precalcul de psi:
+
+          psi_m = psi_oa(                                                       &
+                    tpsi_oa(iv_m)                                               &
+                   ,psi_p2s_oa(                                                 &
+                                     tpsi_oa(iv_m)                              &         
+                                    ,perv_oa(1,per_t2p_oa(lt_m)),fb_oa,fc_oa )  &                                     
+                   ,real(kpt_m)* dti                                            &
+                   ,dti*resv_oa(per_t2p_oa(lt_m))                               &           
+                   ,fb_oa,fc_oa  ) 
+#ifdef OA_TRACES
+         if ( ( lt_m==ltrec_oa(iv_m) ) ) then
+         if (iv_m==1) then
+         io_nodoa = 10000+mynode
+         write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)),  perv_oa(2,per_t2p_oa(lt_m))
+         else if (iv_m==2) then
+         io_nodoa = 20000+mynode
+         write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)),  perv_oa(2,per_t2p_oa(lt_m))
+         end if
+         end if
+#endif
+!........boucle spatiale:
+
+           !horizontal_space_loop : do ls_m = pst%begvs_oa(iv_m),pst%begvs_oa(iv_m+1)-1
+           ! i_m = pst%l2i_oa(ls_m)
+           ! j_m = pst%l2j_oa(ls_m)
+           !
+           ! vertical_space_loop : do ls1_m = pst%begvs3d_oa(ls_m),pst%begvs3d_oa(ls_m+1)-1
+           ! k_m = pst%kmin3d_oa(ls_m) + (ls1_m - pst%begvs3d_oa(ls_m))* dk_oa(iv_m)
+           ! sglper_count_space(tile, ic_m,iv_m,lt_m) = sglper_count_space(tile, ic_m,iv_m,lt_m) + 1
+           !
+           !
+           ! enddo vertical_space_loop
+           !enddo  horizontal_space_loop
+
+       else if ( (kountv_oa(2,lt_m).le.iic_oa.or.iic_oa.eq.nt_max)      &
+     &        .and.(ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)               &
+     &        .and.(ichoix.eq.des_oa(iv_m)                               &
+     &        .or.des_oa(iv_m).eq.0)                                     &
+     &                        ) then
+            if ( tallocated_oa(lt_m)==lt_m) then
+               if ( imsimult_oa .lt. 1 ) then
+                write(io_unit,*)'ERROR : isimult_oa cannot be samller than 1 ',mynode
+               endif
+               imsimult_oa = imsimult_oa - 1
+               tallocated_oa(lt_m)=-1
+            endif
+       endif tstp_match_convol_window
+
+      enddo time_of_analysis_loop
+ 
+!.....periodes integrees:
+!---------------------------------------------------------------------------
+      elseif (dori_oa(iv_m).eq.2) then if_discrete_per
+!---------------------------------------------------------------------------
+
+      time_of_analysis_loop2 : do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
+
+!.....test pour le calcul:
+
+       tstp_match_convol_window2 : if ( iic_oa.ge.kountv_oa(1,lt_m).and.                                     &
+                               iic_oa.le.kountv_oa(2,lt_m).and.                                      &
+                               mod( int((iic_oa-kountv_oa(1,lt_m)),kind=8),                          &
+                                    resv_oa(per_t2p_oa(lt_m)) ).eq.0                                 &
+                                     .and.                                                           &
+                                     (ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)                         &
+                             ) then
+
+!........allocation si necessaire:
+          if (tallocated_oa(lt_m).eq.-1) then
+            imsimult_oa = imsimult_oa + 1
+            nmsimult_oa = max(nmsimult_oa,imsimult_oa)
+            tallocated_oa(lt_m) = lt_m
+          endif
+
+
+!........boucle spatiale:
+           !horizontal_space_loop2 : do ls_m = pst%begvs_oa(iv_m),pst%begvs_oa(iv_m+1)-1
+           ! i_m = pst%l2i_oa(ls_m)
+           ! j_m = pst%l2j_oa(ls_m)
+           !
+           ! vertical_space_loop2 : do ls1_m = pst%begvs3d_oa(ls_m),pst%begvs3d_oa(ls_m+1)-1
+           ! k_m = pst%kmin3d_oa(ls_m) + (ls1_m-pst%begvs3d_oa(ls_m))* dk_oa(iv_m)
+           !
+           ! intper_count_space(tile, ic_m,iv_m,lt_m) = intper_count_space(tile, ic_m,iv_m,lt_m) + 1
+           !
+           !
+           ! enddo vertical_space_loop2
+           !enddo horizontal_space_loop2
+         !enddo period_of_analysis_loop2
+
+       else if ( (kountv_oa(2,lt_m).le.iic_oa.or.iic_oa.eq.nt_max)      &
+             .and.(ichoix.eq.cnb_oa(iv_m).or.ichoix.lt.0)                            &
+             .and.(ichoix.eq.des_oa(iv_m)                                            &
+             .or.des_oa(iv_m).eq.0)                                                  &
+                             ) then
+            if ( tallocated_oa(lt_m)==lt_m) then
+               if ( imsimult_oa .lt. 1 ) then
+                write(io_unit,*)'ERROR : isimult_oa cannot be samller than 1 ',mynode
+               endif
+            imsimult_oa = imsimult_oa - 1
+            tallocated_oa(lt_m)=-1
+            endif
+       endif tstp_match_convol_window2
+
+      enddo time_of_analysis_loop2
+      endif if_discrete_per
+
+!.....enddo associe a iv_m et ic_m:
+      enddo loop_iv
+      enddo loop_ic
+
+      enddo loop_timestepping
+
+      if (if_print_node) then
+        write(io_unit,*)'... OA precalculation of wf_oa array size (per tile) = ',tile,nmsimult_oa
+      endif
+      nzw_oa_tmp = nmsimult_oa !BLXD TODO clean nzw_oa or nmsimult_oa
+
+      !do ic_m = 1 , nzc_oa
+      !do iv_m = begc_oa(ic_m),begc_oa(ic_m+1)-1
+      !  if (dori_oa(iv_m).eq.1) then
+      !      do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
+      !      if (if_print_node) write(io_unit,*)'tile,ic,tv_oa,SGLPER OUT = ',tile,ic_m, tv_oa(iv_m),sglper_count_space(tile, ic_m,iv_m,lt_m)
+      !      end do
+      !  elseif (dori_oa(iv_m).eq.2) then
+      !      do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
+      !      if (if_print_node) write(io_unit,*)'tile,ic,tv_oa,INTPER OUT = ',tile,ic_m, tv_oa(iv_m),intper_count_space(tile, ic_m,iv_m,lt_m)
+      !      end do
+      !  endif
+      !enddo
+      !enddo
+
+!.....Pointer to tile struct. nullified
+
+      pst => null()
+
+      endif oa_analysis_requested
+
+      return
+      end subroutine count_nmsimult_oa
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -2649,10 +3158,10 @@ CONTAINS
 #ifdef OA_TRACES
                            if ( ( lt_p==ltrec_oa(iv_p) ) ) then
                              if (iv_p==1) then 
-                             io_nodoa = io_trc(1)+nodoa !1000+nodoa
+                             io_nodoa = io_trc(1)+mynode !1000+mynode
                              write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)), signal_r
                              else if (iv_p==2) then
-                             io_nodoa = io_trc(2)+nodoa !2000+nodoa
+                             io_nodoa = io_trc(2)+mynode !2000+mynode
                              write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)), signal_r
                              end if
                             end if
@@ -2672,10 +3181,10 @@ CONTAINS
                         if(if_print_node) write (io_unit,*) '       => REC FACTOR ip_p ?  ',perv_oa(1,ip_p), perv_oa(2,ip_p)
                         if ( ( lt_p==ltrec_oa(iv_p) ) ) then
                             if (iv_p==1) then
-                             io_nodoa = io_trc(1)+nodoa !1000+nodoa
+                             io_nodoa = io_trc(1)+mynode !1000+mynode
                             write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)), perv_oa(2,ip_p)
                             else if (iv_p==2) then
-                             io_nodoa = io_trc(2)+nodoa !2000+nodoa
+                             io_nodoa = io_trc(2)+mynode !2000+mynode
                             write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)), perv_oa(2,ip_p)
                             end if
                         end if
@@ -2747,171 +3256,11 @@ CONTAINS
 !
 !> @note 
 !
-! DESCRIPTION: 
-!
-!> @brief
-!
-!> @details 
-!
-!
-! REVISION HISTORY:
-!
-!> @authors 
-!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Initial version
-!! - B. Lemieux-Dudon : 
-!!  - modification in the tracking of isopycnal levels (lev_init_oa,..)
-!!      - ifl_l flag eliminated, replaced by counting analysis of type 20 in nzlevel_oa, 
-!!        and testing if nzlevel_oa>0.
-!!      - enables to diminish the size of the structured type array wlev, now sized 
-!!        to nzlevel_oa intead of nzv_oa (the total number of OA analysis requested 
-!!        in the simulation).
-!!  - stand-alone version : 
-!!      - reading isopycne data in a file not maintained. ut only the possibility
-!!      - isopycne values can be picked along the rhp_t field profile (according to namelist parameters).
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
-!> @date 2015
-!> @todo
-!! - reading isopycne targets in a parameter file ?
-!------------------------------------------------------------------------------
-      subroutine  lev_init_oa( rhp_t, rhp_t_lbound, rhp_t_ubound )
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-      use module_oa_level
-
-      implicit none
-
-      !> Lower and upper index bounds of the 3-Dimensional density array
-      integer, dimension(3), intent(in) ::  &
-        rhp_t_lbound, rhp_t_ubound
-
-      ! 3-Dimensional density array passed in arguments to the OA module
-      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)) :: &
-        rhp_t  !< Density array at t-grid point
-
-
-      integer                                                         &             
-       i_l                                                            &
-      ,j_l                                                            &
-      ,k_l                                                            &
-      ,ls_l                                                           &
-      ,ls1_l                                                          &
-      ,iv_l                                                           &
-      ,izlevel_oa
-
-   !STDALONE   double precision                                                &
-   !STDALONE    val_l(1:kmax+1)
-   !STDALONE
-   !STDALONE   integer ifl_l
-   !STDALONE
-   !STDALONE   character*30 file_l
-
-   !STDALONE !.....mise a jour du flag ifl_l: variable(s) de type 20 ?
-   !STDALONE        ifl_l = 0
-   !STDALONE        do iv_l = 1 , nzv_oa
-   !STDALONE           if (tv_oa(iv_l).eq.20) then
-   !STDALONE              ifl_l = 1
-   !STDALONE           endif
-   !STDALONE        enddo
-
-
-!.....Counter of the number of requested isopycne analysis
-!     Test nzlevel_oa>0 replaces ifl_l flag
-!     This loop can be applied to reduce the size of the wlev structure allocation to nzlevel_oa
-      nzlevel_oa = 0
-      do iv_l = 1 , nzv_oa
-         if (tv_oa(iv_l).eq.20) then
-            nzlevel_oa = nzlevel_oa + 1
-            !ifl_l = 1
-         endif
-      enddo
-
-!.....si variables de type 20:
-
-   !STDALONE if (ifl_l.eq.1) then
-
-      variable_type_20_requested : if ( nzlevel_oa>0 ) then
-
-   !STDALONE The array of structured type wlev is sized to nzlevel_oa intead of
-   !STDALONE of nzv_oa (the total number of OA analysis requested in trhe simulation)
-
-          call allocate_lev_part1_oa
-
-          izlevel_oa = 0
-
-    !STDALONE To read the target density in a file, adpat the following lines to your directories
-    !STDALONE !.....lecture du fichier contenant les caracteristiques des isopycnes
-    !STDALONE !     a suivre:
-    !STDALONE       open(unit=10,file='DATA/isopycnes.in')
-    !STDALONE       file_l ='DATA/'//dom_c//'isopycnes.dat'
-    !STDALONE       open(unit=11,file=file_l)
-    !STDALONE         iv_l = 1
-    !STDALONE         ls_l  =begvs_oa(iv_l)
-    !STDALONE         do ls1_l=begvs3d_oa(ls_l),begvs3d_oa(ls_l+1)-1
-    !STDALONE           read (10,*) val_l(ls1_l-begvs3d_oa(ls_l)+1)
-    !STDALONE           write(11,*) val_l(ls1_l-begvs3d_oa(ls_l)+1)
-    !STDALONE         enddo
-    !STDALONE       close(10)
-    !STDALONE       close(11)
-
-!.....construction de la structure de variables necessaire
-!     au suivi des isopycnes:
-
-       variable_loop : do iv_l = 1 , nzv_oa
-
-         if (tv_oa(iv_l).eq.20) then
-
-   !STDALONE allocation is performed earlier with the array of structured type wlev sized to nzlevel_oa
-   !STDALONE instead of being sized to nzv_oa (the total number of OA analysis requested in trhe simulation)        
-   !STDALONE if (izlevel_oa.eq.0) call allocate_lev_part1_oa
-
-            izlevel_oa            = izlevel_oa + 1
-            lev2v_oa (izlevel_oa) = iv_l
-            v2lev_oa (iv_l)       = izlevel_oa
-            call allocate_lev_part2_oa(                               &
-              izlevel_oa                                              &
-             ,iv_l                                                    &
-             ,begvs3d_oa(begvs_oa(iv_l+1))-begvs3d_oa(begvs_oa(iv_l)) &
-                                           )
-            do ls_l  =begvs_oa(iv_l),begvs_oa(iv_l+1)-1
-             i_l = l2i_oa(ls_l)
-             j_l = l2j_oa(ls_l)
-             do ls1_l=begvs3d_oa(ls_l),begvs3d_oa(ls_l+1)-1
-              k_l = kmin3d_oa(ls_l) + (ls1_l - begvs3d_oa(ls_l))* dk_oa(iv_l)
-              wlev_oa(izlevel_oa)%rhp(ls1_l-begvs3d_oa(begvs_oa(iv_l))+1) = rhp_t(i_l,j_l,k_l)
-              !if(if_print_node) write(io_unit2,*) i_l, j_l, k_l, rhp_t(i_l,j_l,k_l)
-   !STDALONE                                                              = val_l(ls1_l - begvs3d_oa(ls_l)+1)
-             enddo
-            enddo
-         endif
-
-       enddo variable_loop
-       !isopycne_analysis = .true.
-
-      !else variable_type_20_requested
-!......calls to lev_upd_oa will be disabled
-       !isopycne_analysis = .false.
-
-      endif variable_type_20_requested
-
-      return
-      end subroutine  lev_init_oa
-
-
-!------------------------------------------------------------------------------
-! PROCEDURE
-!
-!> @note 
-!
 ! DESCRIPTION: preparation des variables communes.
 !
 !> @brief Allocate and initializes output variables and related parameters.
 !
-!> @details preparation des variables communes.
+!> @details
 !
 ! REVISION HISTORY:
 !
@@ -2921,10 +3270,11 @@ CONTAINS
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
 !!  - doxygen comments, cleaning
-!!  - modified allocation dimension tvar_oa(1:maxtyp_oa,1:maxcfg_oa,1:nmvar_oa)
+!!  - tvar_oa modified alloc dim., bug with tvc_oa alloc. dim nzc_oa <- nzv_oa
 !!  - Croco-OnlineA module interface, 1st version, Spring 2020
 !> @date 2021
 !------------------------------------------------------------------------------
+
       subroutine upd_init_oa(     &
        imin, imax                 &
       ,jmin, jmax                 &
@@ -2963,7 +3313,7 @@ CONTAINS
       nzupd3d_oa = 0
       nzupd2d_oa = 0
 
-      tvar_oa(1:maxtyp_oa,1:maxcfg_oa,1:nmvar_oa) = 0.
+      tvar_oa(1:maxtyp_oa,1:max_idcfg_oa,1:nmvar_oa) = 0.
 
       set_tvar_oa_loop_config : do ic_u = 1 , nzc_oa
 
@@ -3011,6 +3361,7 @@ CONTAINS
     !STDALONE       enddo  
 
 !.....allocations dynamiques:
+
       !STDALONE change allocation limits
       !STDALONE allocate (                                                      &
       !STDALONE  var2d_oa(0:imax+1,0:jmax+1     ,nzupd2d_oa)                    &
@@ -3023,17 +3374,19 @@ CONTAINS
       !       horizontaux compatibles avec les boucles croco en "tile-threads"
       !       (double parallelisation possible pour les sous-domaines horizontaux)
       !       c-a-d que var2/3d_oa ont les dimensions des PRIVATE_SCRATCH_ARRAY.       
-      !       Dans sa version non "tile-thread compliant" les variables var3d et var2d
-      !       Actuellement, on a imin,imax=1:Lm, jmin,jmax=1:Mm
+      !       Actuellement, on a imin,imax=Istr-2:Iend+2, jmin,jmax=Jstr-2,Jend+2
+      !       Un ajustement est possible via ip_ran et I_PRI_RANGE, J_PRI_RANGE,..etc 
+      !       (point interieur seulement avec ou sans les bdy points)
+      !       voir online_spectral_diags.F
       !       Le traitement fait par var_space_oa, qui definit le pointeur 
       !       de domaine spatial begvs_oa  
       !       (structure vectoriel qui empile/desempile les analyses OA)
       !       est sensible a la cle cppc MASKING. 
       !       La conversion index de pointeur begsv_oa vers indices de domaine horizontal
       !       se fait via les variables ls2i_oa/l2sj_oa qui a actuellement pour
-      !       domaine d'application {imin:imax, jmin:jmax}.
+      !       domaine d'application {Istr-2:Iend+2, Jstr-2:Jend+2}.
       !       Au final, les points (i,j) mis a jour avec les analyses OA 
-      !       et restitues dans var3d_oa/var2d_oa sont sensibles a la strategie adoptee 
+      !       et restitue dans var3d_oa/var2d_oa sont sensibles a la strategie adoptee 
       !       (bdy, points interieurs, points de frontiere ouverte,...)  
       !       Si var3d_oa, var2d_oa sont uniquement des variables diagnostics
       !       on peut tout de meme souhaiter avoir les analyses aus points frontieres 
@@ -3043,7 +3396,7 @@ CONTAINS
       !       les echanges MPI necessaires sur les ghost points et faire attention
       !       a la compatibilite avec la cle cpp THREE_GHOST_POINTS et les schema d'ordre eleve
       !
-      !allocate (                                                      &
+      !allocate (                                                              &
       ! var2d_oa( imin-1:imax+1, jmin-1:jmax+1, nzupd2d_oa )                   &
       !,var3d_oa( imin-1:imax+1, jmin-1:jmax+1, kmin:kmax, nzupd3d_oa )        &
 
@@ -3060,10 +3413,217 @@ CONTAINS
       return
       end subroutine upd_init_oa
 
-
 !------------------------------------------------------------------------------
 ! PROCEDURE
+!
+!> @note 
+!
+! DESCRIPTION: 
+!
+!> @brief
+!
+!> @details 
+!
+!
+! REVISION HISTORY:
+!
+!> @authors 
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon : 
+!!  - Memory oprimization when tracking isopycnal levels (lev_init_oa,..)
+!!      - ifl_l flag eliminated, replaced by counting analysis of type 20 in nzlevel_oa, 
+!!        and testing if nzlevel_oa>0.
+!!      - enables to diminish the size of the structured type array wlev, now sized 
+!!        to nzlevel_oa intead of nzv_oa (the total number of OA analysis requested 
+!!        in the simulation).
+!!  - stand-alone version : 
+!!      - reading isopycne data in a file not maintained. ut only the possibility
+!!      - isopycne values can be picked along the rhp_t field profile (according to namelist parameters).
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!> @date 2021
+!> @todo
+!! - reading isopycne targets in a parameter file ?
 !------------------------------------------------------------------------------
+      subroutine  lev_init_oa( tile, rhp_t, rhp_t_lbound, rhp_t_ubound )
+
+      use module_tile_oa, only : st, pst
+      use module_oa_variables
+      !use module_oa_time
+      use module_oa_space
+      !use module_oa_periode
+      !use module_oa_stock
+      use module_oa_level
+
+      implicit none
+
+      !> Lower and upper index bounds of the 3-Dimensional density array
+      integer, dimension(3), intent(in) ::  &
+        rhp_t_lbound, rhp_t_ubound
+
+      ! 3-Dimensional density array passed in arguments to the OA module
+      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)) :: &
+        rhp_t  !< Density array at t-grid point
+
+      ! tile number
+      integer, intent(in) :: tile 
+
+      integer                                                         &             
+       i_l                                                            &
+      ,j_l                                                            &
+      ,k_l                                                            &
+      ,ls_l                                                           &
+      ,ls1_l                                                          &
+      ,iv_l                                                           &
+      ,dim_l                                                          &
+      ,izlevel_oa
+
+   !STDALONE   double precision                                                &
+   !STDALONE    val_l(1:kmax+1)
+   !STDALONE
+   !STDALONE   integer ifl_l
+   !STDALONE
+   !STDALONE   character*30 file_l
+
+!.....Counts of the number of requested isopycne analysis
+!     Test nzlevel_oa>0 replaces ifl_l flag
+!     This loop is applied to reduce the size of the wlev structure allocation to nzlevel_oa
+      nzlevel_oa = 0
+      do iv_l = 1 , nzv_oa
+         if (tv_oa(iv_l).eq.20) then
+            nzlevel_oa = nzlevel_oa + 1
+            !ifl_l = 1
+         endif
+      enddo
+
+!.....si variables de type 20:
+
+   !STDALONE if (ifl_l.eq.1) then
+   ! BLXD identical to flag isopycne_analysis (true if at least one variable as type tv_oa(iv_l)==20)
+      
+      isopycne_requested : if ( nzlevel_oa>0 ) then
+
+!.... Pointer to tile structure
+          pst => st(tile)
+
+   !STDALONE The array of structured type wlev is sized to nzlevel_oa intead of
+   !STDALONE of nzv_oa (the total number of OA analysis requested in trhe simulation)
+
+          call allocate_lev_part1_oa
+
+          izlevel_oa = 0
+
+    !STDALONE To read the target density in a file, adpat the following lines to your directories
+    !STDALONE !.....lecture du fichier contenant les caracteristiques des isopycnes
+    !STDALONE !     a suivre:
+    !STDALONE       open(unit=10,file='DATA/isopycnes.in')
+    !STDALONE       file_l ='DATA/'//dom_c//'isopycnes.dat'
+    !STDALONE       open(unit=11,file=file_l)
+    !STDALONE         iv_l = 1
+    !STDALONE         ls_l  =begvs_oa(iv_l)
+    !STDALONE         do ls1_l=begvs3d_oa(ls_l),begvs3d_oa(ls_l+1)-1
+    !STDALONE           read (10,*) val_l(ls1_l-begvs3d_oa(ls_l)+1)
+    !STDALONE           write(11,*) val_l(ls1_l-begvs3d_oa(ls_l)+1)
+    !STDALONE         enddo
+    !STDALONE       close(10)
+    !STDALONE       close(11)
+
+!.....construction de la structure de variables necessaire
+!     au suivi des isopycnes:
+
+
+      variable_loop : do iv_l = 1 , nzv_oa
+
+        if (tv_oa(iv_l).eq.20) then
+
+   !STDALONE allocation is performed earlier with the derived type array wlev which is sized to nzlevel_oa
+   !STDALONE instead of being sized to nzv_oa (the total number of OA analysis requested in trhe simulation)        
+   !STDALONE if (izlevel_oa.eq.0) call allocate_lev_part1_oa
+
+            izlevel_oa            = izlevel_oa + 1
+            lev2v_oa (izlevel_oa) = iv_l
+            v2lev_oa (iv_l)       = izlevel_oa
+            dim_l                 = pst%begvs3d_oa(pst%begvs_oa(iv_l+1)) &
+                                  - pst%begvs3d_oa(pst%begvs_oa(iv_l))
+            call allocate_lev_part2_oa(                               &
+              izlevel_oa                                              &
+             ,iv_l                                                    &
+             ,dim_l )
+  !           ,begvs3d_oa(begvs_oa(iv_l+1))-begvs3d_oa(begvs_oa(iv_l)) )
+            do ls_l = pst%begvs_oa(iv_l),pst%begvs_oa(iv_l+1)-1
+             i_l = pst%l2i_oa(ls_l)
+             j_l = pst%l2j_oa(ls_l)
+             do ls1_l=pst%begvs3d_oa(ls_l),pst%begvs3d_oa(ls_l+1)-1
+              k_l = pst%kmin3d_oa(ls_l) + (ls1_l - pst%begvs3d_oa(ls_l))* dk_oa(iv_l)
+              wlev_oa(izlevel_oa)%rhp(ls1_l - pst%begvs3d_oa(pst%begvs_oa(iv_l)) + 1 ) &
+                  = rhp_t(i_l,j_l,k_l)
+! BLXD TODO optimize successive precision conversion from module_oa_type where rhp and Z are real precision, here real(8)
+              !if(if_print_node) write(io_unit2,*) i_l, j_l, k_l, rhp_t(i_l,j_l,k_l)
+   !STDALONE                                                              = val_l(ls1_l - begvs3d_oa(ls_l)+1)
+             enddo
+            enddo
+         endif
+
+       enddo variable_loop
+
+!.....Specific module_tile_oa pointer nullified
+      pst => null()
+
+
+      endif isopycne_requested
+
+      return
+      end subroutine  lev_init_oa
+
+      subroutine allocate_lev_part1_oa 
+
+      use module_oa_level
+
+      implicit none
+
+      ! BLXD reduced allocated size to nzlevel_oa instead of nzv_oa
+      !      see lev_init_oa modifications.
+      !STDALONE allocate(wlev_oa (nzv_oa))
+      !STDALONE allocate(lev2v_oa(nzv_oa))
+      !STDALONE allocate(v2lev_oa(nzv_oa))
+      allocate(wlev_oa (nzlevel_oa))
+      allocate(lev2v_oa(nzlevel_oa))
+      allocate(v2lev_oa(nzlevel_oa))
+
+      return
+      end subroutine allocate_lev_part1_oa 
+
+      subroutine allocate_lev_part2_oa (l_a,lv_a,dim_a)
+
+      !use module_oa_variables
+      !use module_oa_time
+      !use module_oa_space
+      !use module_oa_periode
+      !use module_oa_stock
+      use module_oa_level
+
+      implicit none
+
+      integer, intent(in) :: dim_a
+      integer, intent(in) :: l_a, lv_a
+
+      !STDANLONE BLXD l_a now ranges from 1 to nzlevel_oa
+      allocate( wlev_oa(l_a)%z  (dim_a) )
+      allocate( wlev_oa(l_a)%rhp(dim_a) )
+      allocate( wlev_oa(l_a)%k  (dim_a) )
+
+!.....History file:
+      call history_oa(1,l_a,lv_a,dim_a,-1, -1)
+
+      wlev_oa(l_a)%k(:) = 0
+      wlev_oa(l_a)%z(:) = 0.
+
+      return
+      end subroutine allocate_lev_part2_oa
+
+
+!----------------------------------------------------------------------
+! PROCEDURE
 !
 !> @note
 !
@@ -3094,41 +3654,36 @@ CONTAINS
 !!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments, cleaning, ivar_m optional attribute
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - doxygen comments, cleaning, intent and optional attributes
+!!  - Croco-OA interface 1st version (2020)
+!!  - Croco Tile-thread compliant version (2021)
 !> @date 2021
+!
 !> @todo BLXD Modify Croco-OnlineA module interface.
 !  - Croco-OnlineA module interface, 1st version, Spring 2020
 !!   Interface = mix between the Stand-alone and Original OnlineA versions 
 !!   => Croco arrays are passed as arguments to the OnlineA routines with 
 !!   reduced dimension range. Check memory duplication.
-!! @todo specific module to set consitent precisions 
+!! @todo BLXD specific module to set consitent precisions 
 !!       with real(KIND=wp)... etc 
 !!       eg, var_oa function defined as real => real(8)
 !!       eg, complex =>
 !!       double precision is an obsolete type TO REPLACE
-!! @todo introduce tiny instead of 1.e-30 ?
+!! @todo BLXD introduce tiny instead of 1.e-30 ?
 !----------------------------------------------------------------------
 
-      subroutine main_oa(  ichoix                     &
+      subroutine main_oa(  tile                       &
+                          ,ichoix                     &
                           ,ivar_m                     &
-                          ,io_unit_oa                 &
-                          ,if_print_node_oa           &
-                          ,mynode_oa                  &
                           ,iic_oa                     &
-                          ,dti                        &
-                          ,nt_max                     &
                           ,imin, imax                 &
                           ,jmin, jmax                 &
                           ,kmin, kmax                 &
-                          ,rhp_t                      &
-                          ,rhp_t_lbound               &
-                          ,rhp_t_ubound               &
-                          ,depth_t                    & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
-                          ,depth_t_lbound             &
-                          ,depth_t_ubound          ) 
+                          ,rhp_t                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
+                          ,depth_t                    ) 
 
 
+      use module_tile_oa, only : pst, st, deallocate_tile_varspace_oa
       use module_oa_variables
       use module_oa_time
       use module_oa_space
@@ -3141,12 +3696,6 @@ CONTAINS
 
       integer, intent(in) :: ichoix
 
-      !> Time integration step
-      double precision, intent(in) :: dti
-
-      !> First and last simulation iteration index
-      integer, intent(in) :: nt_max                                        
-
       !> Current model integration iteration
       integer, intent(in) :: iic_oa 
 
@@ -3154,25 +3703,25 @@ CONTAINS
       integer, intent(in), optional :: ivar_m
      
       !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields can only be annalysed at grid points inside [imin,imax]x[jmin,jmax]x[kmin,kmax]:
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax            &
-      ,kmin, kmax
+      !! Grid index are Roms-Croco tile(-thread) indices.
+      !! If no tile(-thread) grid index are MPI subdomain index
+      !! If no tile(-thread) and no MPI subdomain decomposition => full domain grid range
+      integer, intent(in) ::       &
+             imin, imax            & 
+            ,jmin, jmax            &
+            ,kmin, kmax
 
-      !> Lower and upper index bounds of the 3-Dimensional density array
-      integer, dimension(3), intent(in) :: rhp_t_lbound, rhp_t_ubound
+      !> tile parameter from croco
+      integer, intent(in) :: tile
 
       !> 3-Dimensional density array at t-grid point
-      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)), intent(in) :: &
-        rhp_t
+      double precision, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: rhp_t
+                                                                          
+      !> 3-Dimensional depth array at t-grid point
+      double precision, dimension(imin:imax,jmin:jmax,kmin:kmax), intent(in), target :: depth_t
 
-      !> Lower and upper index bounds of the 3-Dimensional depth array
-      integer, dimension(3), intent(in) :: depth_t_lbound, depth_t_ubound
-
-      !> 3-Dimensional depth array array at t-grid point
-      double precision, dimension(depth_t_lbound(1):depth_t_ubound(1),depth_t_lbound(2):depth_t_ubound(2),depth_t_lbound(3):depth_t_ubound(3)), intent(in) :: &
-        depth_t
+      !> Lower and upper index bounds of the 3-Dimensional density array (see if pst%imin,...)
+      integer, dimension(3)  ::  rhp_t_lbound, rhp_t_ubound
 
       !complex :: psi_oa
       !real    :: psi_p2s_oa
@@ -3201,17 +3750,12 @@ CONTAINS
       complex                                                         &
          psi_m
 
- ! BLXD var_oa precision ?
-      real :: tmp
+! BLXD var_oa function real(4) ?
+      real :: tmpvar
 
-      integer, intent(in) :: io_unit_oa, mynode_oa
-      logical, intent(in) :: if_print_node_oa
+! BLXD introduce tiny instead of 1.e-30
 
       integer :: io_nodoa
-
-      if_print_node = if_print_node_oa
-      nodoa = mynode_oa
-      io_unit = io_unit_oa
 
 !---------------------------------------------------------------------------
 !.....periodes discretisees:
@@ -3227,29 +3771,30 @@ CONTAINS
 
       oa_analysis_requested : if (nzv_oa.ne.0) then
 
+!.....Pointer association to specific module_tile_oa
+      pst => st(tile)
+
 !.....flag variable composite 
       ifl_test_composite = .true.      
 
 !.....test variable
        if (ifl_test_oa==1) then
-        call test_oa( ichoix=1      & ! Initialisation 
-          ,iic_oa=iic_oa  & 
-          ,dti=dti            & 
+        call test_oa( iic_oa=iic_oa  & 
           ,imin=imin, imax=imax     &
           ,jmin=jmin, jmax=jmax     &
           ,kmin=kmin, kmax=kmax )
        endif
 
       !STDALONE if (flag_nrj_oa.eq.1) call nrj_upd_oa(1)
-      if ( isopycne_analysis ) then
-       call lev_upd_oa(       kmin, kmax                                   &
-                             ,rhp_t                                        &
-                             ,rhp_t_lbound                                 &
-                             ,rhp_t_ubound                                 &
-                             ,depth_t                                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
-                             ,depth_t_lbound                               &
-                             ,depth_t_ubound  )
 
+      if ( isopycne_analysis ) then
+        rhp_t_lbound = (/imin,jmin,kmin/)
+        rhp_t_ubound = (/imax,jmax,kmax/)
+        call lev_upd_oa(     tile                                          &
+                             ,rhp_t                                        &
+                             ,depth_t                                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
+                             ,rhp_t_lbound                                 &
+                             ,rhp_t_ubound  )
       endif
 
 
@@ -3261,17 +3806,18 @@ CONTAINS
          endif
 
 !........ce test est utilise pour les appels cibles lors des calculs energetiques:
-         if (ichoix.ge.0.or.ifl_test_composite) then
+         if_energy_calc : if (ichoix.ge.0.or.ifl_test_composite) then
 !---------------------------------------------------------------------------
 !.....periodes discretisees:
 !---------------------------------------------------------------------------
 
-     period_of_analysis_case : if (dori_oa(iv_m).eq.1) then
+     if_discrete_per : if (dori_oa(iv_m).eq.1) then
 
       time_of_analysis_loop : do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
 
+
 !.....test pour le calcul:
-       time_domain_test : if ( iic_oa.ge.kountv_oa(1,lt_m) .and. iic_oa.le.kountv_oa(2,lt_m)                               &
+       tstp_match_convol_window : if ( iic_oa.ge.kountv_oa(1,lt_m) .and. iic_oa.le.kountv_oa(2,lt_m)                               &
         &  .and.               mod( int( (iic_oa-kountv_oa(1,lt_m)), kind=8 ), resv_oa(per_t2p_oa(lt_m)) ).eq.0            &
         &  .and.               ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )                                                 &
                              ) then
@@ -3280,12 +3826,22 @@ CONTAINS
 
 !........allocation if necessary (if variable isn't allocated yet, it is done.., at user-specified kount):
 
+
+
           if (tallocated_oa(lt_m).eq.-1) then
-            call allocate_win_oa ( lt_m, ic_m, iv_m,                                          &
-                                   begvs3d_oa(begvs_oa(iv_m+1)) - begvs3d_oa(begvs_oa(iv_m)), &
-                                   iic_oa )
+#ifdef OA_TRACES
+            if (verbose_oa>=10) then
+            if(if_print_node) write (io_unit,*) 'MAIN_OA : alloc_win_oa',ic_m,iv_m,lt_m,mynode
+            endif
+#endif
+            call allocate_win_oa (                                                             &
+                    lt_m, ic_m, iv_m,                                                          &
+                    pst%begvs3d_oa(pst%begvs_oa(iv_m+1)) - pst%begvs3d_oa(pst%begvs_oa(iv_m)), &
+                    iic_oa )
             !lt_m,ic_m,iv_m,begvs3d_oa(begvs_oa(iv_m+1)) - begvs3d_oa(begvs_oa(iv_m)) )
           endif
+
+
 
 !........precalcul de l'indice temporel prenant en compte la translation (u):
 
@@ -3293,64 +3849,56 @@ CONTAINS
 
 !........precalcul de psi:
 
-          psi_m = psi_oa(                                                   &
-                tpsi_oa(iv_m)                                                    &
-               ,psi_p2s_oa(                                                 &
-                                 tpsi_oa(iv_m)                                   &         
-                                ,perv_oa(1,per_t2p_oa(lt_m)),fb_oa,fc_oa )       &                                     
+          psi_m = psi_oa(                                                     &
+                tpsi_oa(iv_m)                                                 &
+               ,psi_p2s_oa(                                                   &
+                                 tpsi_oa(iv_m)                                &         
+                                ,perv_oa(1,per_t2p_oa(lt_m)),fb_oa,fc_oa )    &                                     
                ,real(kpt_m)* dti                                              &
                ,dti*resv_oa(per_t2p_oa(lt_m))                                 &           
                ,fb_oa,fc_oa  ) 
-#ifdef OA_TRACES
-         if ( ( lt_m==ltrec_oa(iv_m) ) ) then
-         if (iv_m==1) then
-         io_nodoa = 10000+nodoa
-         write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)),  perv_oa(2,per_t2p_oa(lt_m))
-         else if (iv_m==2) then
-         io_nodoa = 20000+nodoa
-         write (io_nodoa,fmt='(i4,3(1x,ES22.15E2))') kpt_m, REAL(DBLE(psi_m)), REAL(DIMAG(psi_m)),  perv_oa(2,per_t2p_oa(lt_m))
-         end if
-         end if
-#endif
+  
 !........boucle spatiale:
 
-           horizontal_space_loop : do ls_m = begvs_oa(iv_m),begvs_oa(iv_m+1)-1
-            i_m = l2i_oa(ls_m)
-            j_m = l2j_oa(ls_m)
 
-            vertical_space_loop : do ls1_m = begvs3d_oa(ls_m),begvs3d_oa(ls_m+1)-1
-            k_m = kmin3d_oa(ls_m) + (ls1_m - begvs3d_oa(ls_m))* dk_oa(iv_m)
-            tmp =  var_oa( tv_oa(iv_m)                                       &
+           horizontal_space_loop : do ls_m = pst%begvs_oa(iv_m),pst%begvs_oa(iv_m+1)-1
+            i_m = pst%l2i_oa(ls_m)
+            j_m = pst%l2j_oa(ls_m)
+
+            vertical_space_loop : do ls1_m = pst%begvs3d_oa(ls_m),pst%begvs3d_oa(ls_m+1)-1
+            k_m = pst%kmin3d_oa(ls_m) + (ls1_m - pst%begvs3d_oa(ls_m))* dk_oa(iv_m)
+            tmpvar =  var_oa( tv_oa(iv_m)                                        &
                                    ,ichoix                                       &
                                    ,i_m                                          &
                                    ,j_m                                          &
                                    ,k_m                                          &
                                    ,iv_m                                         &
-                                   ,ls1_m-begvs3d_oa(begvs_oa(iv_m))+1       ) 
+                                   ,ls1_m-pst%begvs3d_oa(pst%begvs_oa(iv_m))+1       ) 
 
              wf_oa(tallocated_oa(lt_m))%coef (                                   &
-                      ls1_m-begvs3d_oa(begvs_oa(iv_m))+1 )   =                   &
+                      ls1_m-pst%begvs3d_oa(pst%begvs_oa(iv_m))+1 )   =           &
              wf_oa(tallocated_oa(lt_m))%coef (                                   &
-                      ls1_m-begvs3d_oa(begvs_oa(iv_m))+1 )                       &
-                     + conjg(psi_m)                                              &
-                     * tmp                                                       &
-                    /max(perv_oa(2,per_t2p_oa(lt_m)),1.e-30)
+                      ls1_m-pst%begvs3d_oa(pst%begvs_oa(iv_m))+1 )               &
+                     + conjg(psi_m) * tmpvar                                     &
+                     / max(perv_oa(2,per_t2p_oa(lt_m)),1.e-30)
 
             enddo vertical_space_loop
            enddo  horizontal_space_loop
-       endif time_domain_test
+
+
+       endif tstp_match_convol_window
       enddo time_of_analysis_loop
  
 !.....periodes integrees:
 !---------------------------------------------------------------------------
-      elseif (dori_oa(iv_m).eq.2) then period_of_analysis_case
+      elseif (dori_oa(iv_m).eq.2) then if_discrete_per
 !---------------------------------------------------------------------------
 
       time_of_analysis_loop2 : do lt_m  = begvt_oa(iv_m) , begvt_oa(iv_m+1) - 1
 
 !.....test pour le calcul:
 
-       time_domain_test2 : if ( iic_oa.ge.kountv_oa(1,lt_m).and.                                     &
+       tstp_match_convol_window2 : if ( iic_oa.ge.kountv_oa(1,lt_m).and.                                     &
                                iic_oa.le.kountv_oa(2,lt_m).and.                                      &
                                mod( int((iic_oa-kountv_oa(1,lt_m)),kind=8) ,                         &
                                                                  resv_oa(per_t2p_oa(lt_m))).eq.0          &
@@ -3360,9 +3908,12 @@ CONTAINS
 
 !........allocation si necessaire:
 
-          if (tallocated_oa(lt_m).eq.-1) call allocate_win_oa( lt_m, ic_m, iv_m,                                &
-                                                 begvs3d_oa(begvs_oa(iv_m+1)) - begvs3d_oa(begvs_oa(iv_m)),     &
-                                                 iic_oa )
+         if (tallocated_oa(lt_m).eq.-1) then
+            call allocate_win_oa (                                                             &
+                    lt_m, ic_m, iv_m,                                                          &
+                    pst%begvs3d_oa(pst%begvs_oa(iv_m+1)) - pst%begvs3d_oa(pst%begvs_oa(iv_m)), &
+                    iic_oa )
+         endif
 
 !........precalcul de l'indice temporel prenant en compte la translation (u):
 
@@ -3384,37 +3935,38 @@ CONTAINS
                ,fb_oa,fc_oa   ) 
 
 !........boucle spatiale:
-           horizontal_space_loop2 : do ls_m = begvs_oa(iv_m),begvs_oa(iv_m+1)-1
-            i_m = l2i_oa(ls_m)
-            j_m = l2j_oa(ls_m)
+           horizontal_space_loop2 : do ls_m = pst%begvs_oa(iv_m),pst%begvs_oa(iv_m+1)-1
+            i_m = pst%l2i_oa(ls_m)
+            j_m = pst%l2j_oa(ls_m)
 
-            vertical_space_loop2 : do ls1_m = begvs3d_oa(ls_m),begvs3d_oa(ls_m+1)-1
-            k_m = kmin3d_oa(ls_m) + (ls1_m-begvs3d_oa(ls_m))* dk_oa(iv_m)
+            vertical_space_loop2 : do ls1_m = pst%begvs3d_oa(ls_m),pst%begvs3d_oa(ls_m+1)-1
+            k_m = pst%kmin3d_oa(ls_m) + (ls1_m-pst%begvs3d_oa(ls_m))* dk_oa(iv_m)
 
-             wf_oa(tallocated_oa(lt_m))%coef (                                  &
-                      ls1_m-begvs3d_oa(begvs_oa(iv_m))+1 ) =                    &
-             wf_oa(tallocated_oa(lt_m))%coef (                                  &
-                      ls1_m-begvs3d_oa(begvs_oa(iv_m))+1 )                      &
-                     + conjg(psi_m)                                             &
-                     * var_oa( tv_oa(iv_m)                                      &
+            tmpvar = var_oa( tv_oa(iv_m)                                        &
                                    ,ichoix                                      &
                                    ,i_m                                         &
                                    ,j_m                                         &
                                    ,k_m                                         &
                                    ,iv_m                                        &
-                                   ,ls1_m-begvs3d_oa(begvs_oa(iv_m))+1       )  &
-                     /max(perv_oa(2,lp_m),1.e-30)
+                                   ,ls1_m-pst%begvs3d_oa(pst%begvs_oa(iv_m))+1 )
+
+             wf_oa(tallocated_oa(lt_m))%coef (                                  &
+                      ls1_m-pst%begvs3d_oa(pst%begvs_oa(iv_m))+1 ) =            &
+             wf_oa(tallocated_oa(lt_m))%coef (                                  &
+                      ls1_m-pst%begvs3d_oa(pst%begvs_oa(iv_m))+1 )              &
+                     + conjg(psi_m) * tmpvar                                    &
+                     / max(perv_oa(2,lp_m),1.e-30)
 
             enddo vertical_space_loop2
            enddo horizontal_space_loop2
          enddo period_of_analysis_loop2
-       endif time_domain_test2
+       endif tstp_match_convol_window2
 
       enddo time_of_analysis_loop2
-      endif period_of_analysis_case
+      endif if_discrete_per
 
 !.....enddo associe a iv_m et ic_m:
-      endif
+      endif if_energy_calc
       enddo
       enddo
 
@@ -3430,11 +3982,29 @@ CONTAINS
            .and.(ichoix.eq.des_oa(wf_oa(la_m)%variable)                          &
                  .or.des_oa(wf_oa(la_m)%variable).eq.0)                          &
                  ) then                
-            call subsave_oa ( la_m )                           
-            call deallocate_win_oa(wf_oa(la_m)%t_indice)
+
+            lt_m = wf_oa(la_m)%t_indice
+            iv_m = wf_oa(la_m)%variable
+            ic_m = wf_oa(la_m)%config
+#ifdef OA_TRACES
+            if(verbose_oa>=10) then
+            if(if_print_node) write (io_unit,*) 'MAIN_OA : dealloc_win_oa',ic_m,iv_m,lt_m,mynode
+            endif
+#endif
+            call subsave_oa ( tile, la_m )                           
+            call deallocate_win_oa(lt_m)
          endif
          endif
       enddo
+
+!.....Specific module_tile_oa pointer nullified
+      pst => null()
+
+!.....If end of simulation Deallocate deallocate_tile_varspace_oa
+!     consistent with the deallocate_tile_varspace_oa in online_spectral_diags
+!     after the $OMP BARRIER
+      if (iic_oa.eq.nt_max) call deallocate_tile_varspace_oa(tile)
+
 
       endif oa_analysis_requested
 
@@ -3442,21 +4012,16 @@ CONTAINS
       
       end subroutine main_oa
 
-
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------
 ! PROCEDURE
-!------------------------------------------------------------------------------
 !
 !> @note
 !
+! DESCRIPTION: sauvegarde des coefficients qui viennent d'etre calcules.
 !
-! DESCRIPTION: 
+!> @brief test variable is an homogeneous LC of cosine functions
 !
-!> @brief Updates the isopycne localization (closest level and depth).
-!
-!> @details lev_upd_oa calls update_level_oa which searches for current
-!! depth position of the target density (configuration code 20 requested in the OA namelist)
-!! and stores the closest level and depth in the wlev_oa structured type array.
+!> @details
 !
 ! REVISION HISTORY:
 !
@@ -3464,88 +4029,35 @@ CONTAINS
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
 !!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
-!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments, cleaning
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - 2020-2021 Croco version. 
+!!  - 2014 namelists, optimization, Stand-alone version
 !> @date 2021
 !> @todo
-!
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------
 
-      subroutine  lev_upd_oa(                       & 
-       kmin, kmax                                   &
-      ,rhp_t                                        &
-      ,rhp_t_lbound                                 &
-      ,rhp_t_ubound                                 &
-      ,depth_t                                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
-      ,depth_t_lbound                               &
-      ,depth_t_ubound  )
-
+      subroutine subsave_oa( tile, la_s )
+ 
       use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
       use module_oa_stock
-      use module_oa_level
 
       implicit none
 
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields only analysed inside grid point domain [imin,imax]x[jmin,jmax]x[kmin,kmax]:
-      integer, intent(in) :: kmin, kmax
+      integer, intent(in) :: tile, la_s                                   
+      integer ::                                                      &
+            iv_s                                                      &
+           ,lt_s                                                      &
+           ,ic_s                                                       
 
-      !> Lower and upper index bounds of the 3-Dimensional density array
-      integer, dimension(3), intent(in) :: rhp_t_lbound, rhp_t_ubound
-
-      !> 3-Dimensional density array at t-grid point
-      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)), intent(in) :: &
-        rhp_t
-
-      !> Lower and upper index bounds of the 3-Dimensional depth array
-      integer, dimension(3), intent(in) :: depth_t_lbound, depth_t_ubound
-
-      !> 3-Dimensional depth array at t-grid point
-      double precision, dimension(depth_t_lbound(1):depth_t_ubound(1),depth_t_lbound(2):depth_t_ubound(2),depth_t_lbound(3):depth_t_ubound(3)), intent(in) :: &
-        depth_t
-
-
-      integer                                                         &
-       i_l                                                            &
-      ,j_l                                                            &
-      ,k_l                                                            &
-      ,ls_l                                                           &
-      ,ls1_l                                                          &
-      ,iv_l                                                           &
-      ,il_l
-
-      do il_l = 1 , nzlevel_oa
-         iv_l = lev2v_oa(il_l)
-           do ls_l  =begvs_oa(iv_l),begvs_oa(iv_l+1)-1
-            i_l = l2i_oa(ls_l)
-            j_l = l2j_oa(ls_l)
-            do ls1_l=begvs3d_oa(ls_l),begvs3d_oa(ls_l+1)-1
-              k_l = kmin3d_oa(ls_l) + (ls1_l - begvs3d_oa(ls_l))* dk_oa(iv_l)
-              call update_level_oa(                                      &
-                i_l                                                   &
-               ,j_l                                                   &
-               ,wlev_oa(il_l)%rhp(ls1_l-begvs3d_oa(begvs_oa(iv_l))+1) &
-               ,wlev_oa(il_l)%k  (ls1_l-begvs3d_oa(begvs_oa(iv_l))+1) &
-               ,wlev_oa(il_l)%z  (ls1_l-begvs3d_oa(begvs_oa(iv_l))+1) &
-               ,kmin, kmax                                   &
-               ,rhp_t                                        &
-               ,rhp_t_lbound                                 &
-               ,rhp_t_ubound                                 &
-               ,depth_t                                      &
-               ,depth_t_lbound                               &
-               ,depth_t_ubound  )
-
-            enddo
-           enddo
-
-      enddo
+      ic_s = wf_oa(la_s)%config
+      iv_s = wf_oa(la_s)%variable
+      lt_s = wf_oa(la_s)%t_indice
+      
+      if (updv_oa(iv_s).ne.0) then
+       call var_upd_oa ( tile, ic_s,iv_s,lt_s )
+      endif
 
       return
-      end subroutine  lev_upd_oa
+      end subroutine subsave_oa
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -3553,10 +4065,11 @@ CONTAINS
 !
 !> @note
 !
+! DESCRIPTION: 
 !
 ! DESCRIPTION: 
 !
-!> @brief
+!> @brief Updates output arrays var2d, var3d with the analysis when available.
 !
 !> @details 
 !
@@ -3565,192 +4078,361 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments, cleaning
-!!  - update_level_oa :
-!!      - lower/upper k levels set to kmin,kmax instead of 1,kmax+1.
-!!      - when the search fails, extrapolation treatment is removed (requires supplementary arguments).
+!!  - doxygen comments,  cleaning
+!!  - intent in/out specification, changing if statements since swt_wfpf_oa has a single value
 !!  - Croco-OnlineA module interface, 1st version, Spring 2020
 !> @date 2021
-!> @todo update_level_oa
-!! - extrapolation treatment?
+!> @todo
 !------------------------------------------------------------------------------
 
-      subroutine update_level_oa (                                    &
-       i_c                                                            &
-      ,j_c                                                            &
-      ,rh_c                                                           &
-      ,k_c                                                            &
-      ,z_c                                                            &
-      ,kmin, kmax                                   &
-      ,rhp_t                                        &
-      ,rhp_t_lbound                                 &
-      ,rhp_t_ubound                                 &
-      ,depth_t                                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
-      ,depth_t_lbound                               &
-      ,depth_t_ubound  )
+      subroutine var_upd_oa( tile                                     &
+      ,ic_u                                                           &
+      ,iv_u                                                           &
+      ,lt_u                                                           &
+                                )
+
+      use module_tile_oa, only : st, pst
+      use module_oa_variables !updv_oa, kmin3d_oa, begvs3d_oa, begvsoa, l2i_oa, l2j_oa, tupd_oa
+      use module_oa_time
+      use module_oa_space     !tgv3d_oa, dk_oa
+   
+      use module_oa_periode   !swt_wfpf_oa
+      use module_oa_stock     !wf_oa, tallocated_oa
+!      use module_oa_level
+!      use module_oa_upd      !var3d_oa
+!      use scalars, only : iminmpi, jminmpi
+      use module_parameter_oa, only : iminmpi, jminmpi
+
+      implicit none
+
+      integer, intent(in) :: tile, ic_u, iv_u, lt_u 
+
+      integer    ::                                                   &
+       i_u                                                            &
+      ,j_u                                                            &
+      ,k_u                                                            &
+      ,ls_u                                                           &
+      ,ls1_u                                                           
+      
+      integer, pointer :: pla_u => null(), ps1_u => null()
+   
+      integer :: io_nodoa, iu_glob, ju_glob, num
+
+ 
+      variable_commune : if (iv_u.ne.-1.and.updv_oa(iv_u).eq.2) then
+!---------------------------------------------------------------------------
+!.....mise a jour des variables communes:
+!---------------------------------------------------------------------------
+
+!.....History file:
+
+      call history_oa(14,lt_u,iv_u,-1,-1, -1)
+
+!.....Local pointer to module_tile_oa array structure
+       
+      pst => st(tile) 
+
+!.....Loacal pointer with iv_u, lt_u args in
+      pla_u => tallocated_oa(lt_u)
+      ps1_u => pst%begvs3d_oa(pst%begvs_oa(iv_u))
+
+       var_number_of_dimensions : if (tgv3d_oa(tv_oa(iv_u)).eq.3) then                            ! three-dimensional variables
+
+! BLXD WARNING ONLY var3d_oa  swt_wfpf_oa(iv_u)=4 TESTED 
+!.......sortie de la partie reelle du coeff
+        if (swt_wfpf_oa(iv_u).eq.1) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           k_u = pst%kmin3d_oa(ls_u) + (ls1_u-pst%begvs3d_oa(ls_u))* dk_oa(iv_u)
+           !var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = real(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
+           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = real( wf_oa(pla_u)%coef( ls1_u-ps1_u+1 ) )
+          enddo
+         enddo
+        ! BLXD exclusive options if => else if
+        !endif
+
+!.......sortie du coef au carre:
+        else if (swt_wfpf_oa(iv_u).eq.2) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           k_u = pst%kmin3d_oa(ls_u) + (ls1_u-pst%begvs3d_oa(ls_u))* dk_oa(iv_u)
+           !var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )**2
+           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs( wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
+          enddo
+         enddo
+        !endif
+
+!.......sortie du valeur absolue du coef:
+        else if (swt_wfpf_oa(iv_u).eq.3) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           k_u = pst%kmin3d_oa(ls_u) + (ls1_u-pst%begvs3d_oa(ls_u))* dk_oa(iv_u)
+           !var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
+           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs(wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )
+
+          enddo
+         enddo
+        !endif
+
+!.......sortie du coef complexe:
+        else if (swt_wfpf_oa(iv_u).eq.4) then
+
+!            pla_u => tallocated_oa(lt_u)
+!           pla_u => null()
+
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1
+
+
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+
+
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+
+           k_u = pst%kmin3d_oa(ls_u) + (ls1_u-pst%begvs3d_oa(ls_u))* dk_oa(iv_u)
+           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = wf_oa(pla_u)%coef( ls1_u-ps1_u+1 )
+
+#if defined OA_TRACES
+             if_verb3d : if (verbose_oa>=6) then
+                 iu_glob = i_u + iminmpi-1 
+                 ju_glob = j_u + jminmpi-1 
+                 !if ( (lt_u==ltrec_oa(iv_u)) ) then
+# ifdef IGW
+                if ( iu_glob ==itgt_glob .and. (k_u==ktgt) ) then
+# else
+#  ifdef MILES
+                if ( iu_glob==itgt_glob .and. ju_glob==jtgt_glob .and. k_u==ktgt ) then
+#  endif
+# endif
+                     io_nodoa = set_io_nodoa(iv_u,mynode,4,3)! [3/4](odd/even-iv)000+mynode
+                     ! old script iv_u =1 => 30000+mynode iv_u=2 => 40000+mynode
+                     write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
+                         ,REAL(DBLE( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) )),REAL(DIMAG( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) ))
+                end if
+             endif if_verb3d
+#endif
+          enddo
+         enddo
+
+        endif
+
+       else var_number_of_dimensions                                                          ! two-dimensional variables
+
+!.......sortie de la partie reelle du coef
+        if (swt_wfpf_oa(iv_u).eq.1) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           ! BLXD useless
+           !k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
+           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = real(wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
+          enddo
+         enddo
+        ! BLXD exclusive options if => else if
+        !endif
+
+!.......sortie du coef au carre (energy):
+        else if (swt_wfpf_oa(iv_u).eq.2) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           !k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
+           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = abs(wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )**2
+          enddo
+         enddo
+        !endif
+
+!.......sortie de la valeur absolue du coef: 
+        else if (swt_wfpf_oa(iv_u).eq.3) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1  
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           !k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
+           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = abs(wf_oa(pla_u)%coef(ls1_u-ps1_u+1 ) )
+          enddo
+         enddo
+        !endif
+
+!.......sortie du coeff complexe:
+        else if (swt_wfpf_oa(iv_u).eq.4) then
+         do ls_u = pst%begvs_oa(iv_u),pst%begvs_oa(iv_u+1)-1  
+          i_u = pst%l2i_oa(ls_u)
+          j_u = pst%l2j_oa(ls_u)
+          do ls1_u = pst%begvs3d_oa(ls_u),pst%begvs3d_oa(ls_u+1)-1
+           !k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
+           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = (wf_oa(pla_u)%coef (ls1_u-ps1_u+1 ) )
+
+#if defined OA_TRACES
+             if_verb2d : if (verbose_oa>=6) then
+                 iu_glob = i_u + iminmpi-1 
+                 ju_glob = j_u + jminmpi-1 
+                 !if ( (lt_u==ltrec_oa(iv_u)) ) then
+                if ( iu_glob ==itgt_glob .and. (ju_glob==jtgt_glob) ) then
+                     io_nodoa = set_io_nodoa(iv_u,mynode,4,3)! [3/4](odd/even-iv)000+mynode
+                     ! old script iv_u =1 => 30000+mynode iv_u=2 => 40000+mynode
+                     write (io_nodoa,fmt='(i5,i5,2(1x,ES22.15E2))')i_u,j_u &
+                         ,REAL(DBLE( var2d_oa(i_u,j_u,tupd_oa(iv_u)) )),REAL(DIMAG( var2d_oa(i_u,j_u,tupd_oa(iv_u)) ))
+                end if
+             endif if_verb2d
+#endif
+
+          enddo
+         enddo
+        endif
+
+        endif var_number_of_dimensions
+
+!.....Nullify pointer to module_oa_tile struct.
+       
+      pst => null()
+
+!.....Nullify local pointer
+      pla_u => null()
+      ps1_u => null()
+
+      endif variable_commune
+
+      return
+      end subroutine  var_upd_oa
+
+!----------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
+! DESCRIPTION:
+!
+!
+!> @brief Allocates/deallocates array fields of derived type wf_oa
+!
+!> @details  wf_oa stores all the online analysis before dumping them
+!            into var3d_oa, var2d_oa.
+!
+! REVISION HISTORY:
+!
+!> @authors
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - Croco version (2020) added pre-calculated size of wf_oa array
+!!    i.e., max number of convolution window being simultaneously 
+!!    under calculation
+!> @date 2021
+!> @todo BLXD general requirement to organize precision consistency
+!!    eventhough compiling with double prec option
+!!    Module with wp declaration and use of KIND(wp) ?
+!----------------------------------------------------------------------
+
+      subroutine allocate_win_oa (lti_a,lc_a,lv_a,dim_a,iic_oa)
+
+      !use module_oa_time
+      !use module_oa_space
+      !use module_oa_periode
+      use module_oa_stock , only    : wf_oa,           &
+                                      tallocated_oa,   &
+                                      nzw_oa
+
+      use module_oa_time , only : nmsimult_oa   !< Pre calculated size for array wf_oa 
 
 
       implicit none
 
-      !> Vertical grid index range for the analysis of density field passed in argument to the OA module 
-      integer, intent(in) :: kmin, kmax
+      integer, intent(in) :: iic_oa
 
-      !> Lower and upper index bounds of the 3-Dimensional density array
-      integer, dimension(3), intent(in) :: rhp_t_lbound, rhp_t_ubound
+      integer, intent(in) :: &
+        lc_a                 &  !< index related to a specific configuration of analysis 
+       ,lv_a                 &  !< index related to a specific variable to analyse
+       ,lti_a                   !< index related to a specific time of analysis (i.e., time convolution window)
 
-      !> 3-Dimensional density array at t-grid point
-      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)), intent(in) :: &
-        rhp_t
+      integer, intent(in) :: dim_a !< Size of the spatial domain to analyse for variable lv_a 
+      integer l_a
 
-      !> Lower and upper index bounds of the 3-Dimensional depth array
-      integer, dimension(3), intent(in) :: depth_t_lbound, depth_t_ubound
+      ! Shall we keep track of imsimult_oa ?
+      l_a=1
+      do while ( (associated(wf_oa(l_a)%coef)).and.l_a.lt.nmsimult_oa)
+         l_a = l_a + 1
+      enddo
 
-      !> 3-Dimensional depth array at t-grid point
-      double precision, dimension(depth_t_lbound(1):depth_t_ubound(1),depth_t_lbound(2):depth_t_ubound(2),depth_t_lbound(3):depth_t_ubound(3)), intent(in) :: &
-        depth_t
-
-
-      integer                                                         &
-       i_c                                                            &
-      ,j_c                                                            &
-      ,k_c                                                            &
-      ,iflag
-
-      real                                                            &
-       z_c                                                            &
-      ,rh_c                                                           &
-      ,z2_c
-
-      integer                                                         &
-       l_c                                                            &
-      ,dk1_c                                                          &
-      ,dk2_c                                                          &
-      ,nk_c                                                           &
-      ,k2_c
-
-
-!.....diverses initialisations:
-      nk_c = kmax
-      !STDALONE k_c   = min(nk_c,max(1,k_c)) 
-      k_c   = min(nk_c,max(kmin,k_c)) 
-      dk1_c = 0
-      dk2_c = 0
-      l_c   = 0
-      iflag = 0
-      k2_c  = 0
-
-!.....boucle sur l'indice l_c:
-!                              l_c impair: on cherche au dessus,
-!                              l_c pair  : on cherche en dessous.
-!
-!
-!
-! la sortie de la boucle est le point delicat. elle est actuellement
-! basee sur 3 tests:
-!
-!
-! test 1: la boucle est executee au moins une fois,
-! test 2: 1ere partie: la recherche a ete concluante (une profondeur a ete calculee)
-!         2eme partie: on sort des bornes au dessus et au dessous (iflag=2)... abandon
-! test 3: la premiere recherche "en dessous" n'a rien donne et sort des bornes (<1), on cherche au dessus...
-!
-
-      do while (                                                      &
-        ( dk1_c.eq.0 .and. dk2_c.eq.0 ).or.                           &
-!STDALONE        (  (rh_c-rhp_t(i_c,j_c,min(nk_c,max(1,k_c+dk1_c))))*(rh_c-rhp_t(i_c,j_c,min(nk_c,max(1,k_c+dk2_c)))).gt.0   &
-        (  (rh_c-rhp_t(i_c,j_c,min(nk_c,max(kmin,k_c+dk1_c))))*(rh_c-rhp_t(i_c,j_c,min(nk_c,max(kmin,k_c+dk2_c)))).gt.0   &
-         .and.iflag.ne.2                                              &
-         .and.k_c+dk1_c.ge.1                                          &
-         .and.k_c+dk2_c.ge.1                                          &
-         .and.k_c+dk1_c.le.nk_c                                       &
-         .and.k_c+dk1_c.le.nk_c )                                     &
-         .or.                                                         &
-         k_c+dk1_c.lt.1                                               &
-         )
-
-!......incrementation de l_c l'indice de boucle:
-       l_c = l_c + 1
-
-!......calcul des increments verticaux rã©els:
-       if (mod(l_c,2).ne.0) then
-          dk1_c = -l_c/2-1
-          dk2_c = -l_c/2
-       else
-          dk1_c = l_c/2-1
-          dk2_c = l_c/2
-       endif
-
-!......bornes verticales:
-!STDALONE      if (k_c+dk1_c.ge.1.and.k_c+dk2_c.le.nk_c) then
-     if (k_c+dk1_c.ge.kmin.and.k_c+dk2_c.le.nk_c) then
-
-!.........remise a zero de iflag (utilise pour les sorties de domaines):
-          iflag = 0
-
-!........calcul de la profondeur dans le cas ou la densite n'est pas constante.
-     if (rhp_t(i_c,j_c,k_c+dk2_c)-rhp_t(i_c,j_c,k_c+dk1_c).ne.0.) then
-          z2_c = depth_t(i_c,j_c,k_c+dk1_c) +                        &
-          ( depth_t(i_c,j_c,k_c+dk2_c)-depth_t(i_c,j_c,k_c+dk1_c) )  &
-          * ( rh_c                    -rhp_t(i_c,j_c,k_c+dk1_c) )    &  
-          / ( rhp_t(i_c,j_c,k_c+dk2_c)-rhp_t(i_c,j_c,k_c+dk1_c) )     
-     else
-      z2_c=0.
-         endif
-!........calcul du niveau le plus proche (utilise le cas echeant pour demarrer
-!        la recherche au prochain pas de temps).
-         if ( abs(rh_c-rhp_t(i_c,j_c,k_c+dk1_c)).le. abs(rh_c-rhp_t(i_c,j_c,k_c+dk2_c))   ) then
-            k2_c = k_c + dk1_c
-         else 
-            k2_c = k_c + dk2_c
-         endif
-       else
-!.......dans le cas ou l'on sort du domaine (par le haut ou par le bas), 
-!       on increment iflag. lorsque iflag=2, i.e. l'on sort successivement
-!       par le haut et par le bas, on arrete la recherche... pas de solution! 
-        iflag = iflag + 1
-       endif
-!.....sortie de la boucle principale:
-      enddo 
-!.....si l'on a quitte la boucle precedente normalement (i.e. sans etre sorti
-!     du domaine...) on valide la solution z (et l'on conserve le k le plus proche
-!     pour gagner du temps lors de la prochaine recherche). 
-!STDALONE      if (k_c+dk1_c.ge.1.and.k_c+dk2_c.le.nk_c) then
-      if (k_c+dk1_c.ge.kmin.and.k_c+dk2_c.le.nk_c) then
-        z_c = z2_c
-        k_c = k2_c
-      else
-!.......extrapolation eventuelle: attention il s'agit d'une solution tres discutable...
-!       mais qui permet de fournir une solution tres approximative.
-        !STDALONE
-        !TODO extrapolation?
-
-        !if (rh_c.le.rhp_t(i_c,j_c,nk_c).and.rhp_t(i_c,j_c,nk_c-1) -rhp_t(i_c,j_c,nk_c).ne.0.) then
-        ! z_c = min((hssh_w(i_c,j_c,1)-h_w(i_c,j_c))*0. ,                            &
-        !   depth_t(i_c,j_c,nk_c) +                                  &
-        ! ( depth_t(i_c,j_c,nk_c-1)-depth_t(i_c,j_c,nk_c) )         &
-        ! * ( rh_c                  -rhp_t(i_c,j_c,nk_c) )            & 
-        ! / ( rhp_t(i_c,j_c,nk_c-1) -rhp_t(i_c,j_c,nk_c) )            &
-        !          )
-        ! k_c = nk_c
-        !elseif (rhp_t(i_c,j_c,1) -rhp_t(i_c,j_c,2).ne.0.) then
-        ! z_c = max(-h_w(i_c,j_c),                                    &
-        !   depth_t(i_c,j_c,2) +                                     &
-        ! ( depth_t(i_c,j_c,1)-depth_t(i_c,j_c,2) )                 &
-        ! * ( rh_c                  -rhp_t(i_c,j_c,2) )               &
-        ! / ( rhp_t(i_c,j_c,1) -rhp_t(i_c,j_c,2) )                    &
-        !          )
-        ! k_c = 1
-        !else
-          z_c = 0.
-          k_c = 0
-        !endif
+      ! BLXD TODO CLEAN we set nzw_oa to the pre-calc size of wf_oa array, ie nmsimult_oa
+      ! ie, nzw_oa = nmsimult_oa 
+      if (l_a.eq.nzw_oa ) then
+         if(if_print_node) write (io_unit,*) 'Pre-calculated size for wf_oa now reached ',nzw_oa, nmsimult_oa
+      else if (l_a.gt.nzw_oa) then
+         if(if_print_node) write (io_unit,*) 'STOP : above pre-calculated size for wf_oa ',nzw_oa, nmsimult_oa
+         stop
       endif
-            
+
+      if (l_a.eq.nmsimult_oa.and.associated(wf_oa(l_a)%coef) ) then
+         if(if_print_node) write (io_unit,*) 'nmsimult_oa trop petit!', nmsimult_oa
+         stop
+      endif
+
+
+      allocate( wf_oa(l_a)%coef(dim_a) )
+
+!.....History file:
+      call history_oa(2,lc_a,lv_a,l_a,-1,lti_a,iic_oa)
+
+      wf_oa(l_a)%coef(:)               = (0.D0,0.D0) ! #BLDX double prec
+      tallocated_oa(lti_a)             = l_a
+      wf_oa(l_a)%t_indice              = lti_a 
+      wf_oa(l_a)%config                = lc_a 
+      wf_oa(l_a)%variable              = lv_a 
+
       return
-      end subroutine update_level_oa
+      end subroutine allocate_win_oa
+
+
+      subroutine deallocate_win_oa (lt_a)    
+
+      use module_oa_stock , only : wf_oa, tallocated_oa
+      use module_oa_time , only : nmsimult_oa
+
+      implicit none
+
+      integer, intent(in) :: lt_a
+
+      
+!.....History file:
+      call history_oa(3,lt_a,-1,-1,-1, -1)
+
+      deallocate (wf_oa(tallocated_oa(lt_a))%coef )
+
+      nullify( wf_oa(tallocated_oa(lt_a))%coef )
+
+      ! BLXD I put back the line where it was originally  
+      ! changing declaration of dummy arg lt_a with option intent(in)
+      ! Indeed deallocate_win_oa subroutine is called with effecive arg 
+      ! being wf_oa(tallocated_oa(lt_a))%t_indice
+      ! if %t_indice is set to -1 before other instructions
+      ! lt_a is also put to -1 and it is the arg of tallocated array! 
+      
+      wf_oa(tallocated_oa(lt_a))%t_indice   = -1          ! 20070608 moved down a couple of lines..
+      wf_oa(tallocated_oa(lt_a))%config     = -1
+      wf_oa(tallocated_oa(lt_a))%variable   = -1 
+      tallocated_oa(lt_a)                   = -1
+
+!      wf_oa(tallocated_oa(lt_a))%t_indice   = -1
+
+! for some reason:
+! wf_oa(tallocated(lt_a))%t_indice was used in the call to this subroutine
+! as a consequence, if that's changed, the subroutine can't use it any longer??
+! anyhow, by moving this command to the end of the subroutine,
+! the problem seems solved
+      return
+      end subroutine deallocate_win_oa 
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -3768,7 +4450,7 @@ CONTAINS
 ! REVISION HISTORY:
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
 !!  - doxygen comments,  cleaning
@@ -3856,7 +4538,7 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
 !!  - doxygen comments,  cleaning
@@ -3926,7 +4608,7 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
 !!  - doxygen comments,  cleaning
@@ -4022,285 +4704,213 @@ CONTAINS
       return
       end subroutine box_oa      
 
-
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------
 ! PROCEDURE
-!------------------------------------------------------------------------------
 !
 !> @note
 !
-! DESCRIPTION: 
+! DESCRIPTION: fonctions tests pour le developpement 
 !
-!> @brief sauvegarde des coefficients qui viennent d'etre calcules.
+!> @brief test variable is an homogeneous LC of cosine functions
 !
-!> @details 
-!
+!> @details  the test variable is an homogeneous 3D field 
+!! varying as a LC of cosine functions with periods and amplitude
+!! set in the OA namelist 
+!!
 !
 ! REVISION HISTORY:
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
-!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments,  cleaning
-!!  - intent in/out specification, changing if statements since tpsi_p has a single value
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!!  - 2020-2021 Croco version. 
+!!  - 2014 namelists, doxygen comments, Stand-alone version, optimization
 !> @date 2021
 !> @todo
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------
 
-      subroutine subsave_oa( la_s )
- 
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
+      subroutine test_init_oa(    &   
+       imin, imax                 &
+      ,jmin, jmax                 &
+      ,kmin, kmax )
+
+      use module_oa_variables, only : vardp_test_oa
 
       implicit none
-      integer ::                                                      &
-            la_s                                                      &
-           ,iv_s                                                      &
-           ,lt_s                                                      &
-           ,ic_s                                                       
 
-      ic_s = wf_oa(la_s)%config
-      iv_s = wf_oa(la_s)%variable
-      lt_s = wf_oa(la_s)%t_indice
+      ! BLXD TODO check if using tile st(tile)%imin,... indices
+      !> Grid index range for the analysis of fields passed in argument to the OA module 
+      !! Croco tile(-thread) dimensions or MPI subdomain or full domain
+      integer, intent(in) :: &
+       imin, imax            & 
+      ,jmin, jmax            &
+      ,kmin, kmax
       
-      if (updv_oa(iv_s).ne.0) then
-       call var_upd_oa ( ic_s,iv_s,lt_s )
-      endif
+#ifdef OA_TRACES
+      if(if_print_node) write (io_unit,*) '...Allocating vardp_test_oa'
+      if(if_print_node) write (io_unit,*) imin,imax
+      if(if_print_node) write (io_unit,*) jmin,jmax
+      if(if_print_node) write (io_unit,*) kmin,kmax
+#endif
+
+      if ( .not. allocated(vardp_test_oa) ) then
+        allocate (vardp_test_oa(imin:imax,jmin:jmax,kmin:kmax))
+      end if
 
       return
-      end subroutine subsave_oa
+      end subroutine test_init_oa
 
-!------------------------------------------------------------------------------
-! PROCEDURE
-!------------------------------------------------------------------------------
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-! DESCRIPTION: 
-!
-!> @brief Updates output arrays var2d, var3d with the analysis when available.
-!
-!> @details 
-!
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
-!! - B. Lemieux-Dudon
-!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments,  cleaning
-!!  - intent in/out specification, changing if statements since swt_wfpf_oa has a single value
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
-!> @date 2021
-!> @todo
-!------------------------------------------------------------------------------
+      subroutine test_oa(         &   
+!       ichoix                     & 
+       iic_oa                     & 
+!      ,dti                        & 
+      ,imin, imax                 &
+      ,jmin, jmax                 &
+      ,kmin, kmax )
 
-      subroutine var_upd_oa(                                          &
-       ic_u                                                           &
-      ,iv_u                                                           &
-      ,lt_u                                                           &
-                                )
 
-      use module_oa_variables !updv_oa, kmin3d_oa, begvs3d_oa, begvsoa, l2i_oa, l2j_oa, tupd_oa
-      use module_oa_time
-      use module_oa_space     !tgv3d_oa, dk_oa
-   
-      use module_oa_periode   !swt_wfpf_oa
-      use module_oa_stock     !wf_oa, tallocated_oa
-      use module_oa_level
-!      use module_oa_upd      !var3d_oa
-      use scalars, only : iminmpi, jminmpi
+      use module_oa_variables, only : vardp_test_oa
 
       implicit none
- 
-!TODO intent(in)
-      integer                                                         &
-       i_u                                                            &
-      ,j_u                                                            &
-      ,k_u                                                            &
-      ,ic_u                                                           &
-      ,iv_u                                                           &
-      ,ls_u                                                           &
-      ,ls1_u                                                          &
-      ,lt_u
-   
-      integer :: la_u
-      integer :: io_nodoa, iu_glob, ju_glob
- 
-      variable_commune : if (iv_u.ne.-1.and.updv_oa(iv_u).eq.2) then
-!---------------------------------------------------------------------------
-!.....mise a jour des variables communes:
-!---------------------------------------------------------------------------
 
-!.....History file:
+      ! BLXD TODO clean
+      !!> Time integration step
+      !!double precision, intent(in) :: dti
 
-       call history_oa(14,lt_u,iv_u,-1,-1)
+      !> Current model integration iteration
+      integer, intent(in) :: iic_oa 
 
-       var_number_of_dimensions : if (tgv3d_oa(tv_oa(iv_u)).eq.3) then                            ! three-dimensional variables
+      !> Grid index range might be retreived with tile structure st(tile)%imin
+      integer, intent(in) :: &
+       imin, imax            & 
+      ,jmin, jmax            &
+      ,kmin, kmax
 
-       !if ( tupd_oa(iv_u) /= tvar_oa( tc_oa(ic_u), tvc_oa(ic_u), 1 ) ) then
-       ! if(if_print_node) write(io_unit2,*) 'tupd ',tupd_oa(iv_u)
-       ! if(if_print_node) write(io_unit2,*) 'tvar ',tvar_oa( tc_oa(ic_u), tvc_oa(ic_u), 1 )
-       ! if(if_print_node) write(io_unit2,*) 'tc,tvc ',tc_oa(ic_u), tvc_oa(ic_u)
-       !else 
-       ! if(if_print_node) write(io_unit2,*) 'tupd_oa=tvar_oa'
+      double precision  :: time_t, var_t
+      integer           :: i, j, k, iper
+
+       time_t = dti * real(iic_oa)
+     
+       var_t=0.D0 
+       do iper = 1, nper_test
+#ifdef OA_TRACES
+         if(if_print_node) write(io_unit,*) 'OA test function (period,amplitude) ', iic_oa, period_test_oa(iper), amp_test_oa(iper)
+#endif
+         var_t = var_t + amp_test_oa(iper) * cos(2.d0*pi_oa/period_test_oa(iper)*time_t)
+       end do
+
+       ! BLXD removing temporary hardcoded option 
+       !if (nper_test /= -1) then 
+       do k=kmin,kmax
+         do j=jmin,jmax
+           do i=imin,imax !0,imax+1
+            vardp_test_oa(i,j,k) = var_t
+           enddo
+         enddo
+       enddo
        !end if
 
-!.......sortie de la partie reelle du coeff
-        if (swt_wfpf_oa(iv_u).eq.1) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = real(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
-          enddo
-         enddo
-        !endif
-
-!.......sortie du coef au carre:
-        else if (swt_wfpf_oa(iv_u).eq.2) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )**2
-          enddo
-         enddo
-        !endif
-
-!.......sortie du valeur absolue du coef:
-        else if (swt_wfpf_oa(iv_u).eq.3) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = abs(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
-          enddo
-         enddo
-        !endif
-
-! TODO if else if!!!!
-!.......sortie du coef complexe:
-        else if (swt_wfpf_oa(iv_u).eq.4) then
-
-            la_u = tallocated_oa(lt_u)
-
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1
-
-
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-
-
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) = (wf_oa(tallocated_oa(lt_u))%coef(ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
-
-             if_verbose : if (verbose_oa>=6) then
-                 iu_glob = i_u + iminmpi-1 
-                 ju_glob = j_u + jminmpi-1 
-#ifdef OA_TRACES && ( MILES || IGW)
-# ifdef MILES
-                if ( iu_glob ==200 .and. ju_glob ==270 .and. (k_u==20) ) then
-# endif
-# ifdef IGW
-                if ( (iu_glob ==200 .or. iu_glob ==100) .and. (k_u==20) ) then
-# endif
-                !if ( (lt_u==ltrec_oa(iv_u)) ) then
-                     if (iv_u==1) then
-                      io_nodoa = 30000+nodoa
-                      write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
-                         ,REAL(DBLE( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) )),REAL(DIMAG( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) ))
-                     else if (iv_u==2) then
-
-                      io_nodoa = 40000+nodoa
-                      write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
-                         ,REAL(DBLE( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) )),REAL(DIMAG( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) ))
-                     end if
-                end if
-#endif
-             endif if_verbose
-          enddo
-         enddo
-
-        endif
-
-       else var_number_of_dimensions                                                          ! two-dimensional variables
-
-!.......sortie de la partie reelle du coef
-        if (swt_wfpf_oa(iv_u).eq.1) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = real(wf_oa(tallocated_oa(lt_u))%coef(ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
-          enddo
-         enddo
-        endif
-
-!.......sortie du coef au carre (energy):
-        if (swt_wfpf_oa(iv_u).eq.2) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = abs(wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )**2
-          enddo
-         enddo
-        endif
-
-!.......sortie de la valeur absolue du coef: 
-        if (swt_wfpf_oa(iv_u).eq.3) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1  
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = abs(wf_oa(tallocated_oa(lt_u))%coef(ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
-          enddo
-         enddo
-        endif
-
-!.......sortie du coeff complexe:
-        if (swt_wfpf_oa(iv_u).eq.4) then
-         do ls_u = begvs_oa(iv_u),begvs_oa(iv_u+1)-1  
-          i_u = l2i_oa(ls_u)
-          j_u = l2j_oa(ls_u)
-          do ls1_u = begvs3d_oa(ls_u),begvs3d_oa(ls_u+1)-1
-           k_u = kmin3d_oa(ls_u) + (ls1_u-begvs3d_oa(ls_u))* dk_oa(iv_u)
-           var2d_oa(i_u,j_u,tupd_oa(iv_u)) = (wf_oa(tallocated_oa(lt_u))%coef (ls1_u-begvs3d_oa(begvs_oa(iv_u))+1 ) )
-          enddo
-         enddo
-        endif
-
-        endif var_number_of_dimensions
-
-      endif variable_commune
 
       return
-      end subroutine  var_upd_oa
+
+      end subroutine test_oa
+
+!----------------------------------------------------------------------
+! PROCEDURE
+!
+!> @note
+!
+!> @brief Updates the isopycne localization (closest level and depth).
+!
+!> @details lev_upd_oa calls update_level_oa which searches for current
+!! depth position of the target density (configuration code 20 requested in the OA namelist)
+!! and stores the closest level and depth in the wlev_oa structured type array.
+!
+! REVISION HISTORY:
+!
+!> @authors
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Symphonie/NHOMS initial version 2006
+!! - B. Lemieux-Dudon
+!!  - 2020-2021 Croco version. 
+!!  - 2014 namelists, doxygen comments, Stand-alone version, optimization
+!> @date 2021
+!> @todo
+!------------------------------------------------------------------------------
+
+      subroutine  lev_upd_oa( tile                  & 
+      ,rhp_t                                        &
+      ,depth_t                                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
+      ,rhp_t_lbound                                 &
+      ,rhp_t_ubound  )
+
+      use module_tile_oa, only : pst, st
+      use module_oa_space
+      use module_oa_level
+
+      implicit none
+
+      !> Tile index
+      integer, intent(in)  :: tile
+ 
+      !> Lower and upper index bounds of the 3-Dimensional density array
+      integer, dimension(3), intent(in) :: rhp_t_lbound, rhp_t_ubound
+
+      !> 3D depth and density array at t-grid point
+      double precision,                                                                                                  &
+       dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)), &
+        intent(in) :: rhp_t, depth_t
+
+      ! Local indices 
+      integer ::                                                      &
+       i_l                                                            &
+      ,j_l                                                            &
+      ,k_l                                                            &
+      ,ls_l                                                           &
+      ,ls1_l                                                          &
+      ,iv_l                                                           &
+      ,il_l
+
+      integer, pointer :: ps1_l => null()
+
+      pst => st(tile)
+
+      do il_l = 1 , nzlevel_oa
+         iv_l = lev2v_oa(il_l)
+           do ls_l = pst%begvs_oa(iv_l),pst%begvs_oa(iv_l+1)-1
+            i_l = pst%l2i_oa(ls_l)
+            j_l = pst%l2j_oa(ls_l)
+            ps1_l=> pst%begvs3d_oa(pst%begvs_oa(iv_l))
+            do ls1_l = pst%begvs3d_oa(ls_l),pst%begvs3d_oa(ls_l+1)-1
+              k_l = pst%kmin3d_oa(ls_l) + (ls1_l - pst%begvs3d_oa(ls_l))* dk_oa(iv_l)
+              call update_level_oa(                                      &
+                i_l                                                   &
+               ,j_l                                                   &
+               ,wlev_oa(il_l)%rhp(ls1_l-ps1_l+1) &
+               ,wlev_oa(il_l)%k  (ls1_l-ps1_l+1) &
+               ,wlev_oa(il_l)%z  (ls1_l-ps1_l+1) &
+               ,pst%kmin, pst%kmax                           &
+               ,rhp_t                                        &
+               ,depth_t                                      &
+               ,rhp_t_lbound                               &
+               ,rhp_t_ubound  )
+
+            enddo
+           enddo
+
+      enddo
+      ps1_l => null()
+
+      return
+      end subroutine  lev_upd_oa
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
 !------------------------------------------------------------------------------
 !
 !> @note
+!
 !
 ! DESCRIPTION: 
 !
@@ -4313,628 +4923,184 @@ CONTAINS
 !
 !> @authors
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
+!!  - Symphonie/NHOMS initial version 2006
 !! - B. Lemieux-Dudon
 !!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments,  cleaning,
-!!  - intent in/out specification, i,j,k loop order inversion.
+!!  - doxygen comments, cleaning
+!!  - update_level_oa :
+!!      - lower/upper k levels set to kmin,kmax instead of 1,kmax+1.
+!!      - when the search fails, extrapolation treatment is removed (requires supplementary arguments).
 !!  - Croco-OnlineA module interface, 1st version, Spring 2020
 !> @date 2021
-!> @todo
+!> @todo update_level_oa
+!! - extrapolation treatment?
 !------------------------------------------------------------------------------
-! TODO must be called in initial_oa et main_oa if ifl_test_oa == 99      
 
-      subroutine test_oa(         &   
-       ichoix                     & 
-      ,iic_oa                     & 
-      ,dti                        & 
-      ,imin, imax                 &
-      ,jmin, jmax                 &
-      ,kmin, kmax )
+      subroutine update_level_oa (                  &
+       i_c                                          &
+      ,j_c                                          &
+      ,rh_c                                         &
+      ,k_c                                          &
+      ,z_c                                          &
+      ,kmin, kmax                                   &
+      ,rhp_t                                        &
+      ,depth_t                                      & !(-1:imax+2,-1:jmax+2,0:kmax+1) 
+      ,rhp_t_lbound                                 &
+      ,rhp_t_ubound  )
 
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
 
       implicit none
 
-      !> Time integration step
-      double precision, intent(in) :: dti
+      !> Vertical grid index range for the analysis of density field passed in argument to the OA module 
+      integer, intent(in) :: kmin, kmax
 
-      !> Current model integration iteration
-      integer, intent(in) :: iic_oa 
+      !> Lower and upper index bounds of the 3-Dimensional density array
+      integer, dimension(3), intent(in) :: rhp_t_lbound, rhp_t_ubound
 
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields can only be annalysed at grid points inside [imin,imax]x[jmin,jmax]x[kmin,kmax]:
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax            &
-      ,kmin, kmax
+      ! BLXD TODO optimize successive precision conversion from module_oa_type where rhp and Z are real precision, here real(8)
+      !> 3-Dimensional density array at t-grid point
+      double precision, dimension(rhp_t_lbound(1):rhp_t_ubound(1),rhp_t_lbound(2):rhp_t_ubound(2),rhp_t_lbound(3):rhp_t_ubound(3)) &
+                      , intent(in) :: rhp_t, depth_t
 
-      integer, intent(in) ::                                          &
-       ichoix
 
-      integer :: i, j, k, iper
-      double precision                                                &
-       time_t
+      integer                                                         &
+       i_c                                                            &
+      ,j_c                                                            &
+      ,k_c                                                            &
+      ,iflag
 
-      !if(if_print_node) write(io_unit2,*) 'IN TEST_OA ichoix ',ichoix
+      real                                                            &
+       z_c                                                            &
+      ,rh_c                                                           &
+      ,z2_c
 
-      if (ichoix.eq.0) then
-!************************************************************************
-!      initialisations
-!************************************************************************
-        !TODO documenter le choix de config 99 et enlever l'affectation
-        !de ifl_test_oa ici car elle est faite dans le notebook.
-        !ifl_test_oa = 1
-        
-        ! BLXD hardcoded test function
-        
-        if (nper_test == -1) then 
-        
-          call allocate_namelist_test_oa(1) 
-          amp_test_oa(1)    = 0.D0 
-          period_test_oa(1) = 0.D0
-        
-          !call allocate_namelist_test_oa(2) 
-          !period_test_oa(1) = 43200.D0 
-          !period_test_oa(2) = 21600.D0
-          !amp_test_oa(1) = 5.D0 
-          !amp_test_oa(2) = 3.D0
-        
-        end if
-        
-        
-        !useless
-        vardp_test_oa(:,:,:) = 0.D0
-     
-!STDALONE      if (ichoix.eq.1) then
-!ichoix is either 0 or 1 never both
-      else if (ichoix.eq.1) then
+      integer                                                         &
+       l_c                                                            &
+      ,dk1_c                                                          &
+      ,dk2_c                                                          &
+      ,nk_c                                                           &
+      ,k2_c
 
-        !if(if_print_node) write(io_unit,*)'ichoix ',ichoix
-!************************************************************************
-!      mise a jour
-!************************************************************************
-! variable a tester
-       time_t = dti * real(iic_oa)
-      
-        if (nper_test /= -1) then 
-           ! BLXD namelist test function
-           ! test fonction is a LC of nper_test harmonics
-           vardp_test_oa(:,:,:) = 0.D0
 
-           do k=kmin,kmax
-           do j=jmin,jmax
-           do i=imin,imax !0,imax+1
-             do iper=1,nper_test
-                 vardp_test_oa(i,j,k) = vardp_test_oa(i,j,k) + amp_test_oa(iper) * cos(2.d0*pi_oa/period_test_oa(iper)*time_t)
-             enddo
-           enddo
-           enddo
-           enddo
-        else
-           ! BLXD hardcoded test function
-           do k=kmin,kmax
-           do j=jmin,jmax
-           do i=imin,imax !0,imax+1
-                 vardp_test_oa(i,j,k) = amp_test_oa(1) * cos(2.d0*pi_oa/period_test_oa(1)*time_t)
-           enddo
-           enddo
-           enddo
-        end if
+!.....diverses initialisations:
+      nk_c = kmax
+      !STDALONE k_c   = min(nk_c,max(1,k_c)) 
+      k_c   = min(nk_c,max(kmin,k_c)) 
+      dk1_c = 0
+      dk2_c = 0
+      l_c   = 0
+      iflag = 0
+      k2_c  = 0
 
+!.....boucle sur l'indice l_c:
+!                              l_c impair: on cherche au dessus,
+!                              l_c pair  : on cherche en dessous.
+!
+!
+!
+! la sortie de la boucle est le point delicat. elle est actuellement
+! basee sur 3 tests:
+!
+!
+! test 1: la boucle est executee au moins une fois,
+! test 2: 1ere partie: la recherche a ete concluante (une profondeur a ete calculee)
+!         2eme partie: on sort des bornes au dessus et au dessous (iflag=2)... abandon
+! test 3: la premiere recherche "en dessous" n'a rien donne et sort des bornes (<1), on cherche au dessus...
+!
+
+      do while (                                                      &
+        ( dk1_c.eq.0 .and. dk2_c.eq.0 ).or.                           &
+!STDALONE        (  (rh_c-rhp_t(i_c,j_c,min(nk_c,max(1,k_c+dk1_c))))*(rh_c-rhp_t(i_c,j_c,min(nk_c,max(1,k_c+dk2_c)))).gt.0   &
+        (  (rh_c-rhp_t(i_c,j_c,min(nk_c,max(kmin,k_c+dk1_c))))*(rh_c-rhp_t(i_c,j_c,min(nk_c,max(kmin,k_c+dk2_c)))).gt.0   &
+         .and.iflag.ne.2                                              &
+         .and.k_c+dk1_c.ge.1                                          &
+         .and.k_c+dk2_c.ge.1                                          &
+         .and.k_c+dk1_c.le.nk_c                                       &
+         .and.k_c+dk1_c.le.nk_c )                                     &
+         .or.                                                         &
+         k_c+dk1_c.lt.1                                               &
+         )
+
+!......incrementation de l_c l'indice de boucle:
+       l_c = l_c + 1
+
+!......calcul des increments verticaux rã©els:
+       if (mod(l_c,2).ne.0) then
+          dk1_c = -l_c/2-1
+          dk2_c = -l_c/2
+       else
+          dk1_c = l_c/2-1
+          dk2_c = l_c/2
+       endif
+
+!......bornes verticales:
+!STDALONE      if (k_c+dk1_c.ge.1.and.k_c+dk2_c.le.nk_c) then
+     if (k_c+dk1_c.ge.kmin.and.k_c+dk2_c.le.nk_c) then
+
+!.........remise a zero de iflag (utilise pour les sorties de domaines):
+          iflag = 0
+
+!........calcul de la profondeur dans le cas ou la densite n'est pas constante.
+     if (rhp_t(i_c,j_c,k_c+dk2_c)-rhp_t(i_c,j_c,k_c+dk1_c).ne.0.) then
+          z2_c = depth_t(i_c,j_c,k_c+dk1_c) +                        &
+          ( depth_t(i_c,j_c,k_c+dk2_c)-depth_t(i_c,j_c,k_c+dk1_c) )  &
+          * ( rh_c                    -rhp_t(i_c,j_c,k_c+dk1_c) )    &  
+          / ( rhp_t(i_c,j_c,k_c+dk2_c)-rhp_t(i_c,j_c,k_c+dk1_c) )     
+     else
+      z2_c=0.
+         endif
+!........calcul du niveau le plus proche (utilise le cas echeant pour demarrer
+!        la recherche au prochain pas de temps).
+         if ( abs(rh_c-rhp_t(i_c,j_c,k_c+dk1_c)).le. abs(rh_c-rhp_t(i_c,j_c,k_c+dk2_c))   ) then
+            k2_c = k_c + dk1_c
+         else 
+                k2_c = k_c + dk2_c
+         endif
+       else
+!.......dans le cas ou l'on sort du domaine (par le haut ou par le bas), 
+!       on increment iflag. lorsque iflag=2, i.e. l'on sort successivement
+!       par le haut et par le bas, on arrete la recherche... pas de solution! 
+        iflag = iflag + 1
+       endif
+!.....sortie de la boucle principale:
+      enddo 
+!.....si l'on a quitte la boucle precedente normalement (i.e. sans etre sorti
+!     du domaine...) on valide la solution z (et l'on conserve le k le plus proche
+!     pour gagner du temps lors de la prochaine recherche). 
+!STDALONE      if (k_c+dk1_c.ge.1.and.k_c+dk2_c.le.nk_c) then
+      if (k_c+dk1_c.ge.kmin.and.k_c+dk2_c.le.nk_c) then
+        z_c = z2_c
+        k_c = k2_c
+      else
+!.......extrapolation eventuelle: attention il s'agit d'une solution tres discutable...
+!       mais qui permet de fournir une solution tres approximative.
+        !STDALONE
+        !TODO extrapolation?
+
+        !if (rh_c.le.rhp_t(i_c,j_c,nk_c).and.rhp_t(i_c,j_c,nk_c-1) -rhp_t(i_c,j_c,nk_c).ne.0.) then
+        ! z_c = min((hssh_w(i_c,j_c,1)-h_w(i_c,j_c))*0. ,                            &
+        !   depth_t(i_c,j_c,nk_c) +                                  &
+        ! ( depth_t(i_c,j_c,nk_c-1)-depth_t(i_c,j_c,nk_c) )         &
+        ! * ( rh_c                  -rhp_t(i_c,j_c,nk_c) )            & 
+        ! / ( rhp_t(i_c,j_c,nk_c-1) -rhp_t(i_c,j_c,nk_c) )            &
+        !          )
+        ! k_c = nk_c
+        !elseif (rhp_t(i_c,j_c,1) -rhp_t(i_c,j_c,2).ne.0.) then
+        ! z_c = max(-h_w(i_c,j_c),                                    &
+        !   depth_t(i_c,j_c,2) +                                     &
+        ! ( depth_t(i_c,j_c,1)-depth_t(i_c,j_c,2) )                 &
+        ! * ( rh_c                  -rhp_t(i_c,j_c,2) )               &
+        ! / ( rhp_t(i_c,j_c,1) -rhp_t(i_c,j_c,2) )                    &
+        !          )
+        ! k_c = 1
+        !else
+          z_c = 0.
+          k_c = 0
+        !endif
       endif
-
+            
       return
-
-      end subroutine test_oa
-
-!------------------------------------------------------------------------------
-! PROCEDURE
-!------------------------------------------------------------------------------
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-!> @brief Allocates fields of array wf_oa to successively stores all the on-line analysis.
-!
-!> @details wf_oa fields are:
-!
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
-!! - B. Lemieux-Dudon
-!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
-!!  - doxygen comments,  cleaning,
-!!  - intent in/out specification, i,j,k loop order inversion.
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
-!> @date 2021
-!> @todo BLXD general requirement to organize precision consistency
-!!    eventhough compiling with double prec option
-!!    Module with wp declaration and use of KIND(wp) ?
-!------------------------------------------------------------------------------
-
-      subroutine allocate_win_oa (lti_a,lc_a,lv_a,dim_a,iic_oa)
-
-      !use module_oa_time
-      !use module_oa_space
-      !use module_oa_periode
-      use module_oa_stock , only    : wf_oa,           &  !< Array of structured type which successively stores all the on-line analysis
-                                      tallocated_oa,   &  !< Conversion of the specific time of analysis lti_a to the corresponding wf_oa array entry l_a
-                                      nzw_oa
-      use module_oa_variables , only : nmsimult_oa         !< Maximum authorized size for array wf_oa 
-
-
-      implicit none
-
-      integer, intent(in) :: iic_oa
-
-      integer, intent(in) :: &
-        lc_a                 &  !< index related to a specific configuration of analysis 
-       ,lv_a                 &  !< index related to a specific variable to analyse
-       ,lti_a                   !< index related to a specific time of analysis (i.e., time convolution window)
-
-      integer, intent(in) :: dim_a !< Size of the spatial domain to analyse for variable lv_a 
-      integer l_a
-
-      l_a=1
-      do while ( (associated(wf_oa(l_a)%coef)).and.l_a.lt.nmsimult_oa)
-         l_a = l_a + 1
-      enddo
-
-
-      if (l_a.eq.nmsimult_oa.and.associated(wf_oa(l_a)%coef) ) then
-         if(if_print_node) write (io_unit,*) 'nmsimult_oa trop petit!', nmsimult_oa
-         stop
-      endif
-
-
-      allocate( wf_oa(l_a)%coef(dim_a) )
-
-!.....History file:
-      call history_oa(2,lc_a,lv_a,l_a,lti_a,iic_oa)
-
-      wf_oa(l_a)%coef(:)               = (0.D0,0.D0) ! #BLDX double prec
-      tallocated_oa(lti_a)             = l_a
-      wf_oa(l_a)%t_indice              = lti_a 
-      wf_oa(l_a)%config                = lc_a 
-      wf_oa(l_a)%variable              = lv_a 
-
-      return
-      end subroutine allocate_win_oa
-
-!------------------------------------------------------------------------------
-! PROCEDURE
-!------------------------------------------------------------------------------
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-!> @brief Deallocates fields of array wf_oa.
-!
-!> @details
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - Francis Auclair , Jochem Floor, Ivane Pairaud, B. Lemieux-Dudon
-!> @date 2021
-!> @todo
-!------------------------------------------------------------------------------
-
-      subroutine deallocate_win_oa (lt_a)    
-
-      use module_oa_stock , only    : wf_oa,           &  !< Array of structured type which successively stores all the on-line analysis
-                                      tallocated_oa       !< Conversion of the specific time of analysis lti_a to the corresponding wf_oa array entry l_a
-      use module_oa_variables , only : nmsimult_oa        !< Maximum authorized size for array wf_oa 
-      !use module_oa_time
-      !use module_oa_space
-      !use module_oa_periode
-
-      implicit none
-      integer lt_a
-
-      
-!.....History file:
-      call history_oa(3,lt_a,-1,-1,-1)
-
-      deallocate (wf_oa(tallocated_oa(lt_a))%coef )
-
-      nullify( wf_oa(tallocated_oa(lt_a))%coef )
-
-!     wf_oa(tallocated_oa(lt_a))%t_indice   = -1          ! 20070608 moved down a couple of lines..
-      
-      wf_oa(tallocated_oa(lt_a))%config     = -1
-      wf_oa(tallocated_oa(lt_a))%variable   = -1 
-      tallocated_oa(lt_a)                   = -1
-
-
-!      wf_oa(tallocated_oa(lt_a))%t_indice   = -1
-
-! for some reason:
-! wf_oa(tallocated(lt_a))%t_indice was used in the call to this subroutine
-! as a consequence, if that's changed, the subroutine can't use it any longer??
-! anyhow, by moving this command to the end of the subroutine,
-! the problem seems solved
-      return
-      end subroutine deallocate_win_oa 
-
-!------------------------------------------------------------------------------
-! PROCEDURE
-!------------------------------------------------------------------------------
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-!> @brief Handles the dynamical allocation.
-!
-!> @detail Allocation subroutines:
-!! - allocate_namelist_oa / deallocate_namelist_oa : allocation to handle namelists.
-!! - allocate_part1_oa : parameters to define the type of analysis (required to read namelists)
-!!                       parameters for the 2d state vector structure, for the time and period of analysis. 
-!! - allocate_part2_oa : parameters for the 3d state vector structure (and 2d/vector conversion).
-!! - allocate_part3_oa : parameters relative to the time convolution resolution, and time periods to analyse (also reconstruction factor)
-!! - allocate_part4_oa
-!! - allocate_part5_oa
-!! - allocate_lev_part1_oa : array of structured type wlev_oa allocated (for isopycne analysis).
-!! - allocate_lev_part2_oa : fields of array wlev_oa allocation.
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Symphonie/NHOMS initial version (2006)
-!! - B. Lemieux-Dudon
-!!  - namelists, doxygen comments, Stand-alone version, optimization
-!!  - stand alone version
-!!  - wlev_oa array with reduced allocated size to nzlevel_oa instead of nzv_oa (allocate_lev_part1_oa)
-!!  - allocation consitent with imin,imax jmin,jmax and kmin,kmax grid index domain
-!!  - cleaning NHOMS/Symphonie specific variables.
-!> @date 2021
-!> @todo BLXD
-!! - temhat_oa_t, salhat_oa_t,... arrays should be reintroduced to analyse field deviation from their mean.
-!
-!------------------------------------------------------------------------------
-
-      subroutine allocate_namelist_oa
-
-      use module_oa_variables , only : nzc_oa_names, nzc_oa_vartyp
-      use module_oa_periode , only : nzc_oa
-
-      implicit none
-
-          allocate( nzc_oa_names(1:nzc_oa) )
-          allocate( nzc_oa_vartyp(1:nzc_oa) )
-
-      end subroutine allocate_namelist_oa
-
-      subroutine deallocate_namelist_oa
-
-      use module_oa_variables , only : nzc_oa_names, nzc_oa_vartyp
-
-      implicit none
-
-          deallocate( nzc_oa_names )
-          deallocate( nzc_oa_vartyp )
-
-      end subroutine deallocate_namelist_oa
-
-      subroutine allocate_namelist_test_oa(n)
-
-      implicit none
-      integer, intent(in) :: n
-
-          allocate( period_test_oa(1:n) )
-          allocate( amp_test_oa(1:n) )
-
-      end subroutine allocate_namelist_test_oa
-
-      subroutine deallocate_namelist_test_oa
-
-      implicit none
-
-          deallocate( period_test_oa, amp_test_oa )
-
-      end subroutine deallocate_namelist_test_oa
-
-      subroutine allocate_part1_oa( &
-         imin, imax                 &
-        ,jmin, jmax                 &
-        ,kmin, kmax )
-
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-!      use module_oa_upd
-
-      implicit none
-
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax            &
-      ,kmin, kmax
-
-      integer                                                         &
-       l_a
-
-!.....definition de toutes les tailles maximales des differentes structures
-!     (temporelle-spatiale-frequentielle)
-!
-!     module_oa_variables
-!STDALONE calculation only for index range imin,imax jmin,jmax kmin,kmax
-!STDALONE      allocate (vardp_test_oa(0:imax+1,0:jmax+1,0:kmax+1))
-! #BLXD TODO to allocate only if ifl_test_oa=1
-      allocate (vardp_test_oa(imin:imax,jmin:jmax,kmin:kmax))
-
-!STDALONE : kept array in case needed in the STAND ALONE OA version
-!STDALONE calculation only for index range imin,imax jmin,jmax kmin,kmax
-!     allocate (rhphat_oa_t(1:imax,1:jmax,1:kmax))
-!     allocate (temhat_oa_t(1:imax,1:jmax,1:kmax))
-!     allocate (salhat_oa_t(1:imax,1:jmax,1:kmax))       
-
-!.....module_var:
-
-      allocate (                                                      &
-         swt_d_oa(nzv_oa)                                             &   !< caracteristiques spatiales de la variable (voir notebook_oa)
-        ,swt_t_oa(nzv_oa)                                             &   !< caracteristiques temporelles de la variable (voir notebook_oa)          
-        ,tv_oa   (nzv_oa)                                             &   !< code variable associe 
-        ,cnb_oa  (nzv_oa)                                             &   !< call number: position of the call in the baroclinic / barotropic time step.
-! #BLXD tvc_oa should have the size of the # of configuration 
-!        ,tvc_oa  (nzv_oa)                                             &   !< configuration associee a une variable    
-        ,updv_oa (nzv_oa)                                             &   !< flag de remise a jour    
-        ,save_oa (nzv_oa)                                             &   !< flag de sauvegarde
-        ,tupd_oa (nzv_oa)                                             &   !< pour variables communes
-        ,ltrec_oa (nzv_oa)                                            &   !< pour garder le 1er OA record de la simu
-        ,if_first_rec_oa (nzv_oa)                                     &   ! ...
-        !,tvar_oa (200,10,10)                                         &   !STDANDLONE known size, allocated elsewere
-         )
-
-      allocate (                                                      &
-         begvs_oa(nzv_oa+1)                                           &   ! structure 2d du vecteur d etat
-        ,begvt_oa(nzv_oa+1)                                           &   ! structure temporelle du vecteur d etat
-         )
-
-      allocate (                                                      &
-         lat_oa  (2,nzv_oa)                                           &   ! latitude  min, max de la structure 2d du vecteur d etat
-        ,lon_oa  (2,nzv_oa)                                           &   ! longitude  ...
-        ,h_oa    (2,nzv_oa)                                           &   ! profondeur ...  
-        ,k_oa    (2,nzv_oa)                                           &   ! niveaux verticaux min et max de la structure 3d du vecteur d etat
-        ,ptij_oa (2,nzv_oa)                                           &   ! point particulier demande par l utilisateur
-         )
-  
-      allocate (                                                      &
-         dx_oa   (nzv_oa)                                             &   ! resolution horizontale suivant x demandee par l utilisateur
-        ,dy_oa   (nzv_oa)                                             &   ! resolution horizontale suivant y demandee par l utilisateur
-        ,dk_oa   (nzv_oa)                                             &   ! resolution verticale   suivant z demandee par l utilisateur
-         )
- 
-      allocate(                                                       &
-         nzpt_per_oa(nzv_oa)                                          &   ! nombre de points de discretisation par periode
-         )
-
-      allocate (                                                      &
-         kount_user_oa(3,nzv_oa)                                      &   ! description des periodes choisies par l utilisateur
-         )
-
-      allocate (                                                      &
-         t0_oa (nzv_oa)                                               &   ! date de la premiere sortie
-                 )
- 
-      allocate (                                                      &
-         tpsi_oa (nzv_oa)                                             &   ! type d atome utilise
-         )
-
-      allocate (                                                      &
-         swt_wfpf_oa (nzv_oa)                                        &    ! calcul du coef wf ou du spectre pf (choix utilisateur)
-        ,fl_rec_oa   (nzv_oa)                                         &   ! flag de reconstruction
-         )
-
-      allocate (                                                      &
-         dori_oa      (nzv_oa)                                        &   ! configuration frequentielle choisie par l utilisateur
-        ,delta_t_oa   (nzv_oa)                                        &   ! nombre de periodes etudiees
-         )
-
-      allocate (                                                      &
-         per_oa (3,nzv_oa)                                            &   ! preriodes min, max, delta de chaque variable (ou configuration)
-         )
-
-      allocate (                                                      &
-         begvp_oa (nzv_oa+1)                                          &   ! structure frequentielle du vecteur d etat
-         )
-
-      allocate (                                                      &   ! Configuration type index
-         tc_oa (nzc_oa)                                               &
-        ,tvc_oa(nzc_oa)                                               &   ! If several config. of the type is requested
-         )   
-
-      allocate (                                                      &
-         begc_oa (nzc_oa+1)                                           &
-         )   
-
-      return
-      end subroutine allocate_part1_oa
-
-      subroutine allocate_part2_oa( &     
-         imin, imax                 &
-        ,jmin, jmax ) 
-
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-
-      implicit none
-
-      !> Grid index range for the analysis of fields passed in argument to the OA module 
-      !! Fields can only be annalysed at grid points inside [imin,imax]x[jmin,jmax]x[kmin,kmax]:
-      integer, intent(in) :: &
-       imin, imax            & 
-      ,jmin, jmax
-
-      integer                                                         &
-         l_a
-
-      allocate (                                                      &
-         l2i_oa (nzvs_oa)                                             &   ! transformation l --> i
-        ,l2j_oa (nzvs_oa)                                             &   ! transformation l --> j
-         )
-
-      allocate (                                                      &
-         begvs3d_oa(nzvs_oa+1)                                        &   ! structure 3d du vecteur d etat: debut de la colonne pour un point donne
-        ,kmin3d_oa (nzvs_oa+1)                                        &   ! structure 3d du vecteur d etat: premier niveau a considerer     
-         )
- 
-      allocate (                                                      &
-         ij2l_oa ( imin:imax,jmin:jmax,nzv_oa)                        &   ! transformation (i,j) --> l (l=  structure 2d du vecteur d etat)
-         )
-
-      return
-      end subroutine allocate_part2_oa
-
-      subroutine allocate_part3_oa
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-
-      implicit none
-
-      allocate (                                                      &   
-       resv_oa (nzvp_oa)                                              &  ! resolution temporelle pour le calcul de la convolution
-       )
-      allocate (                                                      &  ! periodes associees a la structure vectorielle du vecteur d etat, 
-       perv_oa (2,nzvp_oa)                                            &  ! facteurs de reconstruction associes a l'ondelette
-       )
-
-      return
-      end subroutine allocate_part3_oa
-
-      subroutine allocate_part4_oa
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-
-      implicit none
-
-      allocate (                                                      &
-       kountv_oa (2,nzvt_oa)                                          &  ! calcul des kounts de debut et de fin pour chaque variable (ou configuration)
-       )
-    
-      allocate (                                                      & 
-       tallocated_oa(nzvt_oa)                                         &
-       )
-
-      allocate (                                                      &
-       per_t2p_oa (nzvt_oa)                                           &  ! transformation structure temporelle --> structure frequentielle
-       )
-
-      return
-      end subroutine allocate_part4_oa
-
-
-      subroutine allocate_part5_oa
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-
-      implicit none
-
-      integer                                                         &
-       l_a
-
-
-      allocate (                                                      &
-       wf_oa (nmsimult_oa)                                            &           ! vecteur d etat resultat (w) contenant les analyses
-       )
-
-      do l_a=1,nmsimult_oa
-         nullify(wf_oa(l_a)%coef)
-      enddo
-
-      tallocated_oa(:)   = -1
-      wf_oa(:)%t_indice  = -1
-      wf_oa(:)%config    = -1
-      wf_oa(:)%variable  = -1
-
-
-      return
-      end subroutine allocate_part5_oa
-
-      subroutine allocate_lev_part1_oa 
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-      use module_oa_level
-
-      implicit none
-
-      ! BLXD reduced allocated size to nzlevel_oa instead of nzv_oa
-      !STDALONE Size can be reduced to nzlevel_oa see lev_init_oa modifications.
-      !STDALONE allocate(wlev_oa (nzv_oa))
-      !STDALONE allocate(lev2v_oa(nzv_oa))
-      !STDALONE allocate(v2lev_oa(nzv_oa))
-      allocate(wlev_oa (nzlevel_oa))
-      allocate(lev2v_oa(nzlevel_oa))
-      allocate(v2lev_oa(nzlevel_oa))
-
-      return
-      end subroutine allocate_lev_part1_oa 
-
-      subroutine allocate_lev_part2_oa (l_a,lv_a,dim_a)
-
-      use module_oa_variables
-      use module_oa_time
-      use module_oa_space
-      use module_oa_periode
-      use module_oa_stock
-      use module_oa_level
-
-      implicit none
-
-      integer, intent(in) :: dim_a
-      integer, intent(in) :: l_a, lv_a
-
-      !STDALONE l_a now ranges from 1 to nzlevel_oa
-      allocate( wlev_oa(l_a)%z  (dim_a) )
-      allocate( wlev_oa(l_a)%rhp(dim_a) )
-      allocate( wlev_oa(l_a)%k  (dim_a) )
-
-!.....History file:
-      call history_oa(1,l_a,lv_a,dim_a,-1)
-
-      wlev_oa(l_a)%k(:) = 0
-      wlev_oa(l_a)%z(:) = 0.
-
-      return
-      end subroutine allocate_lev_part2_oa
-
+      end subroutine update_level_oa
 
 !------------------------------------------------------------------------------
 ! PROCEDURE
@@ -4960,9 +5126,10 @@ CONTAINS
 !
 !------------------------------------------------------------------------------
 
-      subroutine history_oa ( ichoix, i1_h, i2_h, i3_h, i4_h &
+      subroutine history_oa ( ichoix, i1_h, i2_h, i3_h, i4_h, tile &
                               ,iic_oa, nt_max )
 
+      use module_tile_oa, only : pst, st
       use module_oa_variables
       use module_oa_time
       use module_oa_space
@@ -4973,6 +5140,7 @@ CONTAINS
 !      use scalars
       implicit none
  
+      integer, intent(in) :: tile
       integer, intent(in) :: ichoix
       integer, intent(in) :: i1_h, i2_h, i3_h, i4_h
 
@@ -5009,7 +5177,7 @@ CONTAINS
 
 !---->Fichier de sortie:
 
-      file_hist = trim(directory_out) // txtslash // 'history_oa.dat'
+      file_hist = trim(directory_out_oa) // txtslash // 'history_oa.dat'
 
       if (ichoix.eq.1) then
 !*******************************************************************************
@@ -5076,7 +5244,7 @@ CONTAINS
        !endif
       endif
 
-      if (ichoix.eq.5) then
+      chx5 : if (ichoix.eq.5) then
 !*******************************************************************************
 ! initial_oa   
 !*******************************************************************************
@@ -5085,6 +5253,9 @@ CONTAINS
 !******************************************************************
        !if (ifl_oa_out.eq.1.or.(ifl_oa_out.eq.2.and.par%rank.eq.0)) then
         !if (ifl_oa_out.eq.1) call sequential_begin()
+
+         pst => st(tile)
+
          open(unit=io_hist,file=trim(file_hist),position='append')   
          loop_config : do ic_o=1,nzc_oa
             write(io_hist,*)
@@ -5094,8 +5265,9 @@ CONTAINS
             write(io_hist,*) '*************************************'
             if (tc_oa(ic_o).ge.100) then
                write (io_hist,*) 'type de configuration:',tc_oa(ic_o)
-               write (io_hist,*) 'WARNING WARNING composite configuration are hardcoded'
-               write (io_hist,*) 'ERROR check/change the configuration code and recompile'
+               write (io_hist,*) 'WARNING ! composite configuration are hardcoded'
+               write (io_hist,*) 'Composite configuration never tested with croco'
+               write (io_hist,*) 'ERROR : check/change the configuration code, remove stop and recompile'
                stop 
             else
                write (io_hist,*) 'type de cfg-variable simple:',tc_oa(ic_o)
@@ -5142,14 +5314,14 @@ CONTAINS
                
                if (tpsi_oa(iv_o).eq.0) then
                   write(io_hist,*) 'dirac'
-               endif
-               if (tpsi_oa(iv_o).eq.1) then
+               !endif
+               else if (tpsi_oa(iv_o).eq.1) then
                   write(io_hist,*) 'ondelette morlet complexe fb_oa,fc_oa: ',fb_oa,fc_oa
-               endif
-               if (tpsi_oa(iv_o).eq.2) then
+               !endif
+               else if (tpsi_oa(iv_o).eq.2) then
                   write(io_hist,*) 'windows fourier'
-               endif
-               if (tpsi_oa(iv_o).eq.3) then
+               !endif
+               else if (tpsi_oa(iv_o).eq.3) then
                   write(io_hist,*) 'transformee de fourier classique'
                endif
 
@@ -5189,7 +5361,7 @@ CONTAINS
                   ! #BLXD Corrected Log. 
                   ! see call var_oa if (   kountv_oa(1,lt_o).ne.-9999.or.kountv_oa(2,lt_o).ne.-9999) then
                   if (   kountv_oa(1,lt_o).ne.-9999.and.kountv_oa(2,lt_o).ne.-9999) then
-                     write(io_hist,*) 'CORR localisation de l''atome n°',lt_o-begvt_oa(iv_o)+1,' (iic_oa) :',kountv_oa(1,lt_o), kountv_oa(2,lt_o)
+                     write(io_hist,*) 'BLXD localisation de l''atome n°',lt_o-begvt_oa(iv_o)+1,' (iic_oa) :',kountv_oa(1,lt_o), kountv_oa(2,lt_o)
                   else
                      write(io_hist,*) 'pas d''analyse pour la localisation n°',lt_o-begvt_oa(iv_o)+1
                   endif
@@ -5203,8 +5375,14 @@ CONTAINS
 
                if (swt_d_oa(iv_o).eq.1.or.swt_d_oa(iv_o).eq.3) then
 #ifdef SPHERICAL
+                  write(io_hist,*) ' BLXD CHECK lon, lat min max'
+         if ( if_sphe_deg2rad ) then
                   write(io_hist,*) 'extraction: lat min,lat max   : ',lat_oa(1,iv_o)*180/pi_oa,lat_oa(2,iv_o)*180/pi_oa
                   write(io_hist,*) '            lon min,lon max   : ',lon_oa(1,iv_o)*180/pi_oa,lon_oa(2,iv_o)*180/pi_oa
+         else
+                  write(io_hist,*) 'extraction: lat min,lat max   : ',lat_oa(1,iv_o),lat_oa(2,iv_o)
+                  write(io_hist,*) '            lon min,lon max   : ',lon_oa(1,iv_o),lon_oa(2,iv_o)
+         endif
 #else
                   write(io_hist,*) 'extraction: lat min,lat max   : ',lat_oa(1,iv_o),lat_oa(2,iv_o)
                   write(io_hist,*) '            lon min,lon max   : ',lon_oa(1,iv_o),lon_oa(2,iv_o)
@@ -5248,19 +5426,24 @@ CONTAINS
          write(io_hist,*) '       des differentes structures'
          write(io_hist,*) '*************************************'
          write(io_hist,*)
-
-         write(io_hist,*) 'allocations simultanees (max) : ',nmsimult_oa
+! #BLXD
+         write(io_hist,*) 'allocations simultanees (max) : ',nmsimult_oa_max
+         write(io_hist,*) 'allocations simultanees (calc): ',nmsimult_oa
          write(io_hist,*) 'structure temporelle          : ',nzvt_oa
-         write(io_hist,*) 'structure spatiale (2d)       : ',nzvs_oa
-         write(io_hist,*) 'structure spatiale (3d)       : ',nzvs3d_oa
+         !write(io_hist,*) 'structure spatiale (2d)       : ',nzvs_oa
+         write(io_hist,*) 'BLXD CHECK tile structure spatiale (2d)       : ',pst%nzvs_oa
+         !write(io_hist,*) 'structure spatiale (3d)       : ',nzvs3d_oa
+         write(io_hist,*) 'BLXD CHECK tile structure spatiale (3d)       : ',pst%nzvs3d_oa
          write(io_hist,*) 'structure frequentielle       : ',nzvp_oa
          close(io_hist)
          !if (ifl_oa_out.eq.1) call sequential_end()
        !endif
-      endif
 
+         pst => null()
 
-      if (ichoix.eq.6) then
+      endif chx5
+
+      chx6 : if (ichoix.eq.6) then
 !*******************************************************************************
 ! initial_oa   
 !*******************************************************************************
@@ -5269,28 +5452,36 @@ CONTAINS
 !******************************************************************
        !if (ifl_oa_out.eq.1.or.(ifl_oa_out.eq.2.and.par%rank.eq.0)) then
         !if (ifl_oa_out.eq.1) call sequential_begin()
+      
+        pst => st(tile)
+
         open(unit=io_hist,file=trim(file_hist),position='append')   
         write (io_hist,*)
         write(io_hist,*) '*************************'
         write (io_hist,*) 'subroutine: allocate::'
         write(io_hist,*) '*************************'
         write (io_hist,*)
+! #BLXD
+        write (io_hist,*) 'nmsimult_oa_max =',nmsimult_oa_max
         write (io_hist,*) 'nmsimult_oa =',nmsimult_oa
+
 ! #BLD
         write (io_hist,*) 'nzw_oa      =',nzw_oa
         write (io_hist,*) 'nzv_oa      =',nzv_oa
-        write (io_hist,*) 'nzvs_oa     =',nzvs_oa
+        write (io_hist,*) 'BLXD nzvs_oa     =',pst%nzvs_oa
         write (io_hist,*) 'nzvt_oa     =',nzvt_oa
         write (io_hist,*) 'nzvp_oa     =',nzvp_oa
-! #BLD typo ?
+! #BLD typo 
 !        write (io_hist,*) 'nzvc_oa     =',nzc_oa
          write (io_hist,*) 'nzvc_oa     =',nzvc_oa
-        write (io_hist,*) 'nzvs3d_oa   =',nzvs3d_oa
+        write (io_hist,*) 'BLXD nzvs3d_oa   =',pst%nzvs3d_oa
         write (io_hist,*)
         close(io_hist)
         !if (ifl_oa_out.eq.1) call sequential_end()
        !endif
-      endif
+        pst => null()
+
+      endif chx6
 
 !STDALONE struct_oa eliminated      if (ichoix.eq.7) then
 !*******************************************************************************
@@ -5481,53 +5672,10 @@ CONTAINS
         return
        end function set_io_nodoa
 
-!------------------------------------------------------------------------------
-! PROCEDURE
-!------------------------------------------------------------------------------
-!
-!> @note
-!
-! DESCRIPTION: 
-!
-!> @brief temporary array needed to store the composite variable value.
-!!
-!> @details Pointers will point to this any3d_oa for composite variable.
-!
-! REVISION HISTORY:
-!
-!> @authors
-!! - B. Lemieux-Dudon
-!> @date 2021 January
-!> @todo
-!! - check if allocation(var3d(ii)%prt(:,:,:)) and initialization could replace any3d_oa.
-!! - check when deallocate any3d_oa
-!------------------------------------------------------------------------------
-
-!   subroutine allocate_anyv3d_oa
-!   
-!   use module_parameter_oa , only  : imax, jmax, kmax  ! ATTENTION: FRANCIS
-!
-!   implicit none
-!   integer :: err
-!
-!   ! check case where n2d, n3d is zero
-!   if (.not. allocated(anyv3d_oa)) then
-!   allocate(anyv3d_oa(0:imax+1,0:jmax+1,0:kmax+1),stat=err)
-!   if (err /= 0) then
-!       write(unit=io_unit2,fmt=*)"allocation error" ; stop 4
-!   end if
-!   end if
-!
-!   end subroutine allocate_anyv3d_oa
-!
-!   subroutine deallocate_anyv3d_oa
-!   if (allocated(anyv3d_oa)) deallocate(anyv3d_oa)
-!   end subroutine deallocate_anyv3d_oa
-
-
-end module module_interface_oa
-
-#else
+      end module module_interface_oa
+ 
+#else /* ONLINE_ANALYSIS */
       module module_interface_oa_empty
       end module
-#endif
+#endif /* ONLINE_ANALYSIS */
+

@@ -46,13 +46,13 @@
            ,lv_v                                                      &
            ,ls1_v                                              ) 
 
-     use module_oa_variables, only : vardp_test_oa
+      use module_oa_variables, only : vardp_test_oa
 ! BLXD 2020 removing useless modules
 !     use module_oa_time
 !     use module_oa_space
 !     use module_oa_periode
 !     use module_oa_stock
-     use module_oa_level
+      use module_oa_level
 ! BLXD 2020 module_oa_upd does not exist anymore
 !     use module_oa_upd
 !     use module_nrj
@@ -62,7 +62,9 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
+#ifdef NBQ
 # include "nbq.h"
+#endif
 
       integer, intent(in) ::                                          &
             cnb_v                                                     &
@@ -106,6 +108,8 @@
 !*********************************************************************
 ! OA test variable
 !*********************************************************************
+      !elseif (ivar_v.eq.98) then
+      !   var_oa = 0.5*vardp_test_oa(i_v,j_v,1)
       elseif (ivar_v.eq.99) then
          var_oa = vardp_test_oa(i_v,j_v,k_v)
 
@@ -124,7 +128,7 @@
       end function var_oa
 
 # else
-     real function var_oa(                                           &
+      real function var_oa(                                           &
             ivar_v                                                    &
            ,cnb_v                                                     &
            ,i_v                                                       &
@@ -133,7 +137,7 @@
            ,lv_v                                                      &
            ,ls1_v                                              ) 
 
-     integer, intent(in) ::                                          &
+      integer, intent(in) ::                                          &
             cnb_v                                                     &
            ,ivar_v                                                    &
            ,i_v                                                       &
