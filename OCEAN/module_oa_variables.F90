@@ -42,7 +42,6 @@
 
 !.....initialisation:
 !STDALONE      integer :: ifl_init_oa = 0                               ! flag pour l'initialisation.
-!Initialisation: call initial_main( list_of_arguments ), call main_oa( list_of_arguments )
 
 !.....variables:
 
@@ -57,7 +56,7 @@
            ,swt_t_oa                                                  & ! caracteristiques temporelles de la variable (voir notebook_wavelet)          
            ,tv_oa                                                     & ! variable symphonie associee         
            ,cnb_oa                                                    & ! call number: position of the call in the baroclinic / barotropic time step.
-           ,tvc_oa                                                    & ! configuration de la variable associee
+           !,tvc_oa                                                    & ! configuration de la variable associee
            ,updv_oa                                                   & ! records 1st temporal OA in simulation 
            ,ltrec_oa                                                  & ! ...
            ,if_first_rec_oa

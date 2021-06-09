@@ -61,6 +61,10 @@
       integer,dimension(:),allocatable::                              &  ! (nmc_oa)
            tc_oa    
 
+! BLXD bug tvc_oa has configuration size
+      integer,dimension(:),allocatable::                              &  ! (nmc_oa)
+           tvc_oa    
+
       integer,dimension(:),allocatable::                              &  !  (nmc_oa+1)
            begc_oa    
 

@@ -673,6 +673,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
 !----------------------------------------------------------------------
+! OA "Stand Alone" module
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS 
+      call croco_oa(0)
+      call output_oa
+#endif
+!
+!----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files
 !----------------------------------------------------------------------
 !
@@ -685,14 +694,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
-#endif
-!
-!----------------------------------------------------------------------
-! OA "Stand Alone" modulus
-!----------------------------------------------------------------------
-!
-#ifdef ONLINE_ANALYSIS 
-      call croco_oa(0)
 #endif
 
 

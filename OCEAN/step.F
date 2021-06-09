@@ -544,7 +544,8 @@ C$OMP MASTER
       nnew=3-nstp
 
 #ifdef ONLINE_ANALYSIS
-      call croco_oa(1)
+       call croco_oa(1)
+       call output_oa
 #endif
 
 !

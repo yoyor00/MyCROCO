@@ -21,7 +21,7 @@
 !      use module_nh 
 !      use module_nbq
 !#endif
-      use module_interface_oa
+      use module_interface_oa, only : init_oa, main_oa
       use scalars
       implicit none
 ! BLXD
@@ -64,6 +64,8 @@
         ,iend_oa                                                      &
         ,jend_oa                                                       
 
+      integer, parameter  :: verbose_oa=5
+
        istr_oa  = 1
        iend_oa  = Lm 
        jstr_oa  = 1
@@ -77,41 +79,42 @@
        dum1_c="INPUT"
        dum2_c="OUTPUT"
 
-#ifndef MASKING2
-       maskr_c = 1.
-       masku_c = 1.
-       maskv_c = 1.
-       maskf_c = 1.
+#ifndef MASKING
+       maskr_c = 1
+       masku_c = 1
+       maskv_c = 1
+       maskf_c = 1
 #else
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          maskr_c(i,j,1:N)  =rmask(i,j)
-          maskf_c(i,j,1:N)  =rmask(i,j)
+          maskr_c(i,j,1:N)  = INT(rmask(i,j))
+          maskf_c(i,j,1:N)  = INT(pmask(i,j))
        enddo
        enddo
 
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          masku_c(i,j,1:N)=umask(i,j)
+          masku_c(i,j,1:N)=INT(umask(i,j))
        enddo
        enddo
 
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          maskv_c(i,j,1:N)=vmask(i,j)
+          maskv_c(i,j,1:N)=INT(vmask(i,j))
        enddo
        enddo
 #endif
 
+! #BLXD - -> +
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          hu_c(i,j)=0.5*(h(i,j)-h(i-1,j))
+          hu_c(i,j)=0.5*(h(i,j)+h(i-1,j))
        enddo
        enddo
 
        do i=istr_oa,iend_oa
        do j=jstr_oa,jend_oa
-          hv_c(i,j)=0.5*(h(i,j)-h(i,j-1))
+          hv_c(i,j)=0.5*(h(i,j)+h(i,j-1))
        enddo
        enddo
 
@@ -133,14 +136,6 @@
 #endif
 
     !    pointer_approach=.false.  & 
-
-#ifdef SPHERICAL
-       write(*,*) lonr(istr_oa,jstr_oa), lonr(iend_oa,jend_oa)
-       write(*,*) latr(istr_oa,jstr_oa), latr(iend_oa,jend_oa)
-#else
-       write(*,*) xr(istr_oa,jstr_oa), xr(iend_oa,jend_oa) 
-       write(*,*) yr(istr_oa,jstr_oa), yr(iend_oa,jend_oa)
-#endif
 
       ! BLXD 2020 kount0 set to nstart-1
       ! check to clean
@@ -232,7 +227,7 @@
       ,mask_t_ubound=(/iend_oa,jend_oa,N/)                   &
       ,mask_f=maskf_c(istr_oa:iend_oa,jstr_oa:jend_oa,1:N) & ! Wrong grid !
       ,mask_f_lbound=(/istr_oa,jstr_oa,1/)                   &
-      ,mask_f_ubound=(/iend_oa,jend_oa,N+1/)                 &
+      ,mask_f_ubound=(/iend_oa,jend_oa,N/)                   &
       ,mask_u=masku_c(istr_oa:iend_oa,jstr_oa:jend_oa,1:N) & 
       ,mask_u_lbound=(/istr_oa,jstr_oa,1/)                   &
       ,mask_u_ubound=(/iend_oa,jend_oa,N/)                   &
