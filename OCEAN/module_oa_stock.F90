@@ -54,9 +54,11 @@
            tpsi_oa                                                       ! type d atome utilise
 
 
+      !> To store the online analysis
       type(type_wf),dimension(:),allocatable::wf_oa
 
-      integer,dimension(:),allocatable::tallocated_oa
+      !> Conversion of the specific time of analysis lti_a to the corresponding wf_oa array entry l_a
+      integer,dimension(:),allocatable,target::tallocated_oa
 
 
       end module module_oa_stock
