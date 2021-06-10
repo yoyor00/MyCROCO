@@ -25,7 +25,14 @@
 ! REVISION HISTORY:
 !
 !> @authors
-!> @date 2015 January
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Initial version
+!! - B. Lemieux-Dudon
+!!  - Namelists (06/2014), Stand-alone version + optimization (01/2015)
+!!  - doxygen comments
+!! - Francis Auclair, B. Lemieux-Dudon, C. Nguyen
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!> @date 2015
 !> @todo
 !
 !------------------------------------------------------------------------------
@@ -47,9 +54,11 @@
            tpsi_oa                                                       ! type d atome utilise
 
 
+      !> To store the online analysis
       type(type_wf),dimension(:),allocatable::wf_oa
 
-      integer,dimension(:),allocatable::tallocated_oa
+      !> Conversion of the specific time of analysis lti_a to the corresponding wf_oa array entry l_a
+      integer,dimension(:),allocatable,target::tallocated_oa
 
 
       end module module_oa_stock

@@ -288,7 +288,7 @@
       !
 # if ! defined XIOS2
       IF ( xios_is_valid_domain     (cdid) ) THEN
-         CALL xios_set_domain_attr( did, ni_glo=ni_glo, nj_glo=nj_glo, 
+         CALL xios_set_domain_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
      &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,  
      &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
      &    data_jbegin=data_jbegin, data_nj=data_nj ,  
@@ -2724,6 +2724,8 @@ C 				  endif
          call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
 !     
 #  endif /* BBL */
+
+
 
 # endif /* SOLVE3D */
   
