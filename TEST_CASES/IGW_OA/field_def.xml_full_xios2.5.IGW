@@ -290,7 +290,6 @@
          <field id="umask_wet" long_name="" unit=""  />
 #endif
      </field_group>
-     </field_group>
 
      <!-- V grid -->
      <field_group id="v" grid_ref="v_2D">

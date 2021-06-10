@@ -430,9 +430,10 @@
       unite_oa      = 1
       if_extend_dom = .false.
       itgt_glob=-999 ; jtgt_glob=-999 ; ktgt=-999
-      ! TODO RM nmsimult_oa_max : should't be useful anymore
       nmsimult_oa_max=500
       if_sphe_deg2rad=.false.
+      nper_test=0
+
 
       ! TODO read verbose_oa, directory_out_oa in namelist, history_oa ?
 
