@@ -313,7 +313,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
       
-#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
@@ -335,7 +335,7 @@ C$OMP END MASTER
         call bulk_flux (tile)   
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
@@ -595,7 +595,7 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
-#elif defined RVTK_DEBUG_PERFRST && defined M3FAST
+#elif ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST ) && defined M3FAST
 # include "nbq.h"
 #endif
 #if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
