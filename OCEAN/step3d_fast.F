@@ -401,7 +401,7 @@ C$    trd=omp_get_thread_num()
         cff3= mybeta
       endif
 !
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef RVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
@@ -1364,7 +1364,7 @@ C$OMP END MASTER
 #  endif 
 # endif
 
-# if defined RVTK_DEBUG && defined NBQ
+# if defined RVTK_DEBUG_ADVANCED && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','u')
@@ -2195,7 +2195,7 @@ C$OMP END MASTER
       enddo
 # endif
 
-# ifdef RVTK_DEBUG
+# ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
@@ -2247,7 +2247,7 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-# ifdef RVTK_DEBUG
+# ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
@@ -3131,7 +3131,7 @@ C$OMP END MASTER
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
-#   ifdef RVTK_DEBUG
+#   ifdef RVTK_DEBUG_ADVANCED
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
 #   endif    
 #  endif /* NBQ_MASS */
@@ -3160,7 +3160,7 @@ C$OMP END MASTER
         enddo
       enddo
             
-# if defined RVTK_DEBUG && defined NBQ
+# if defined RVTK_DEBUG_ADVANCED && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(rho_nbq,'rho_nbq','r')
