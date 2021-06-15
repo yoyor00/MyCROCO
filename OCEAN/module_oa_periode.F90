@@ -28,13 +28,13 @@
 
       module module_oa_periode
 
-      real                                                            & 
+      real ::                                                         & 
            fb_oa                                                      &  !< definition de l''ondelette de morlet complexe
            ,fc_oa                                                        !< par defaut fb_oa=2. et fc_oa=6./3.14159274
       
-      integer                                                         &
-           nzvp_oa                                                    &  ! taille de la structure frequentielle du vecteur d etat
-           ,nzc_oa
+      integer ::                                                      & ! taille de la structure frequentielle du vecteur d etat
+           nzvp_oa                                                    &             
+          ,nzc_oa                                                       ! nombre de configurations
 
       integer,dimension(:),allocatable::                              &  ! (nmv_oa)
            swt_wfpf_oa                                                &  ! calcul du coef wf ou du spectre pf (choix utilisateur)
@@ -61,10 +61,13 @@
       integer,dimension(:),allocatable::                              &  ! (nmc_oa)
            tc_oa    
 
+! BLXD bug tvc_oa has configuration size
+      integer,dimension(:),allocatable::                              &  ! (nmc_oa)
+           tvc_oa    
+
       integer,dimension(:),allocatable::                              &  !  (nmc_oa+1)
            begc_oa    
 
-      
       end module module_oa_periode
 
 #else

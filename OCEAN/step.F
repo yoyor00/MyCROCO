@@ -83,10 +83,10 @@ C$OMP END PARALLEL
        endif 
 #endif /* OA_COUPLING */
 #endif
-#ifdef ONLINE_ANA
+!#ifdef ONLINE_ANALYSIS
 !     if (mynode.eq.0) write(6,*) 'appel',iic,iif
 !     call croco_oa(1)
-#endif
+!#endif
       return
       end
 !
@@ -100,6 +100,9 @@ C$OMP END PARALLEL
 # ifdef XIOS
 # include "zoom.h"
 # endif
+#endif
+#ifdef ONLINE_ANALYSIS
+      use module_interface_oa, only : if_oa
 #endif
       implicit none
 #include "param.h"
@@ -551,9 +554,26 @@ C$OMP MASTER
       nrhs=3
       nnew=3-nstp
 
-#ifdef ONLINE_ANALYSIS
-      call croco_oa(1)
+#ifdef ONLINE_ANALYSIS 
+! BLXD TODO moving OA calls just after the end of diags
+      if ( if_oa.eqv..true. ) then
+C$OMP END MASTER
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=my_first,my_last
+           ! BLXD call croco_oa(0)
+           call online_spectral_diags(tile,1)
+         enddo
+! RM C$OMP BARRIER BLXD threads BARRIER moved at the end of 
+! subroutines init/run_online_spectral_diags_tile
+         call output_oa
+C$OMP MASTER
+      endif
 #endif
+
+! BLXD
+! #ifdef ONLINE_ANALYSIS
+!      call croco_oa(1)
+! #endif
 
 !
 ! Output block: write restart/history files.   

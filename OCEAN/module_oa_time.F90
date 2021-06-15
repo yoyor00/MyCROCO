@@ -49,6 +49,10 @@
       integer*8,dimension(:),allocatable::                            &  ! (nmvp_oa)
            resv_oa                                                       ! resolution spatiale pour le calcul de la convolution
 
+      integer :: nmsimult_oa                                             ! BLXD # of simultaneous conv. windows 
+                                                                         ! dynamically calculated
+      integer :: nmsimult_oa_max                                         ! nombre maximum de fenetres ouvertes simultanement 900000!
+
 
       end module module_oa_time
 

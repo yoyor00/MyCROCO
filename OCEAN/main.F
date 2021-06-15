@@ -31,6 +31,10 @@
           USE pisces_ini     ! PISCES modules
           USE trcini_pisces 
 #endif
+#ifdef ONLINE_ANALYSIS
+          USE module_interface_oa, only : init_parameter_oa
+     &                                   ,if_oa
+#endif
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -171,6 +175,29 @@
 #  endif
 # endif
 #endif
+!
+! Online spectral analysis module 
+! 
+# ifdef ONLINE_ANALYSIS
+      CALL init_parameter_oa(
+     &  io_unit_oa=stdout
+#ifdef MPI
+     & ,if_print_node_oa=(mynode==0)
+#else
+     & ,if_print_node_oa=.true.
+#endif                                             
+#ifdef MPI
+     & ,mynode_oa=mynode
+#else
+     & ,mynode_oa=0
+#endif
+     & ,dti_oa=dt
+     & ,kount0_oa=ntstart-1
+     & ,nt_max_oa=ntimes
+     & ,ntiles=NSUB_X*NSUB_E)
+
+# endif
+!
 !
 !----------------------------------------------------------------------
 !  Create parallel threads; start timers for each thread;
@@ -692,6 +719,25 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
 !----------------------------------------------------------------------
+! OA "Stand Alone" module 
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS 
+      if ( if_oa.eqv..true. ) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+           ! BLXD call croco_oa(0) 
+           call online_spectral_diags(tile,0)
+         enddo
+! BLXD threads BARRIER included in the two possible (init/run_)online_spectral* 
+C$OMP BARRIER
+        ! Moving the 1st OA call before send_xios_diags
+        ! not necessary anymore since OA uses XIOS output_oa
+        call output_oa
+      endif
+#endif
+!
+!----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files
 !----------------------------------------------------------------------
 !
@@ -704,14 +750,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
-#endif
-!
-!----------------------------------------------------------------------
-! OA "Stand Alone" modulus
-!----------------------------------------------------------------------
-!
-#ifdef ONLINE_ANALYSIS 
-      call croco_oa(0)
 #endif
 
 

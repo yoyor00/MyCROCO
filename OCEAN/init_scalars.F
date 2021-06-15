@@ -1,4 +1,4 @@
- ! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
+! $Id: init_scalars.F 1564 2014-06-24 17:39:21Z gcambon $
 !
 !
 !======================================================================
@@ -318,7 +318,11 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
+#ifdef MILES
+      vname(1,indxTime)='ocean_time'
+#else 
       vname(1,indxTime)='scrum_time'
+#endif
       vname(2,indxTime)='time since initialization'
 #ifdef USE_CALENDAR
       vname(3,indxTime)='seconds since 1900-01-01'
