@@ -238,7 +238,7 @@
       integer NP_XI, NP_ETA, NNODES
 # ifdef VILAINE
       parameter (NP_XI=11,  NP_ETA=12,  NNODES=84)
-# elif defined DUNE
+# elif defined DUNE || defined TFLAT2DV
       parameter (NP_XI=3,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
 # elif defined DUNE3D
       parameter (NP_XI=3,  NP_ETA=3,  NNODES=NP_XI*NP_ETA)
