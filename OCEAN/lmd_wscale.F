@@ -101,7 +101,7 @@
      &                                                          wm,ws)
 !
 !-------------------------------------------------------------------
-!  Same routine as lmd_wscale (above), but omputations are on an 
+!  Same routine as lmd_wscale (above), but computations are on an 
 !  extended range of the domain.
 !
 !  This routine computes the turbulent velocity scale for momentum

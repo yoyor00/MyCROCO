@@ -199,9 +199,9 @@
       parameter (indxS=indxV+ntrc_temp+1)
 # endif
 # ifdef PASSIVE_TRACER
-     integer, dimension(ntrc_pas) :: indxTPAS
-      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+1,
-      &  indxV+ntrc_temp+ntrc_salt+ntrc_pas)/)      
+      integer, dimension(ntrc_pas) :: indxTPAS
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+1,
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas)/)      
 # endif
 #endif
 # ifdef BIOLOGY
