@@ -560,7 +560,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
         else
            write(nametrc,'(A,I2)') 'tpas',i
         endif
- CR       write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
+CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
         vname(1,indxTPAS(i))=TRIM(nametrc)
         vname(2,indxTPAS(i))=TRIM(nametrc)//" passive tracer"
         vname(3,indxTPAS(i))='no unit                             '
