@@ -46,7 +46,7 @@
 ! - set_global_definitions.h
 !   with GLOBAL_2D_ARRAY
 !        PRIVATE_SCRATCH_2D_ARRAY... 
-#ifdef ONLINE_ANALYSIS && SOLVE3D
+#if defined ONLINE_ANALYSIS && SOLVE3D
 
       subroutine var3d_oa_out (tile, ic, iv, var3d_re, var3d_im
      &                             , vnam_oa_r, vnam_oa_i)

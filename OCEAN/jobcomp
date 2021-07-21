@@ -68,7 +68,7 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #
 # set XIOS directory if needed
 #
-XIOS_ROOT_DIR=$HOME/xios-1.0
+XIOS_ROOT_DIR=$HOME/xios
 #
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -212,7 +212,7 @@ if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/field_def.xml_full $RUNDIR/field_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/domain_def.xml $RUNDIR/domain_def.xml
-        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
+        #$CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/iodef.xml $RUNDIR/iodef.xml
 fi
 

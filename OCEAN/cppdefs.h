@@ -154,8 +154,7 @@
                       /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
-# undef  BSTRESS_FAST
-# define LIMIT_BSTRESS
+# undef  BSTRESS_FAST                      
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING

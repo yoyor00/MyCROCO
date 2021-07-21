@@ -718,11 +718,7 @@
 #   endif
 
 #  elif defined BIO_NChlPZD
-#   ifdef OXYGEN
-      parameter (itrc_bio=itemp+ntrc_salt+ntrcpas+1)
-#   else
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-#   endif
       parameter (iNO3_=itrc_bio, iChla=iNO3_+1,  
      &           iPhy1=iNO3_+2,
      &           iZoo1=iNO3_+3, 
