@@ -883,12 +883,21 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 !     if(mynode.eq.0) print*,'exe_time =',exe_time
 
 # if defined XIOS
-                               ! MPI finalize done by XIOS
-       call xios_finalize()   ! Even with OASIS, finalize is done by XIOS
+                                ! case XIOS + (OASIS / no OASIS)
+                                !      > MPI finalize done by XIOS
+      call xios_finalize()      !      > if OASIS, finalize is done by XIOS
+                                !      > if AGRIF : done using iom_context_finalize
+                             
+#   if !defined AGRIF  
+      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
+#   endif
 # elif defined OA_COUPLING || defined OW_COUPLING
-       call prism_terminate_proto(ierr)       ! Finalize OASIS3 (without XIOS)# else
+                                          ! case no XIOS + OASIS
+      call prism_terminate_proto(ierr)    !   > Finalize OASIS3 (without XIOS)
+      call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
 # else
-       call MPI_Finalize (ierr)
+                                          ! case no XIOS + no OASIS
+      call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
 # endif     
 #endif
 
