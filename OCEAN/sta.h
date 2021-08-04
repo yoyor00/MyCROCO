@@ -41,7 +41,11 @@
      &        istalon,           istalat,         istadpt,
      &        istatem,           istasal,         istaden, 
      &        istau,             istav,           istaz
+# ifdef MUSTANG
       parameter (NSTAVARS=12+NT-2,
+# else
+      parameter (NSTAVARS=12,
+#endif
      &        istagrd=-1,        istatstr=0,  
      &        istaxgrd=1,        istaygrd=2,      istazgrd=3, 
      &        istalon=4,         istalat=5,       istadpt=6,
@@ -59,7 +63,11 @@
       common /sta_scalars/ staspval, stadeltap2c
 
 # ifdef ALL_SIGMA
+# ifdef MUSTANG
+      real stadata(1:NSTAVARS,Msta), staSigm(1:NSTAVARS,Msta,N)
+# else
       real stadata(1:NSTAVARS,Msta), staSigm(istadpt:istav,Msta,N)
+# endif
 !     common /sta_data/ stadata,stagrd
       common /sta_data/ stadata, staSigm
 # else

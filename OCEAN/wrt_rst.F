@@ -16,6 +16,12 @@
 #if defined FLOATS && defined AGRIF
         USE Agrif_Util
 #endif
+
+#if defined MUSTANG
+      USE comMUSTANG, only: ksmi,ksma,cv_sed,dzs
+#     include "coupler_define_MUSTANG.h"
+#endif
+
 !     implicit none
 #include "param.h"
 #include "scalars.h"
@@ -67,6 +73,12 @@
      &                 1, MPI_COMM_WORLD, status, ierr)
       endif
 #endif
+
+#if defined MUSTANG
+      real workrsed(GLOBAL_2D_ARRAY,ksdmax)
+      real work2d(GLOBAL_2D_ARRAY)
+#endif
+
 !
 ! Create/open restart file; write grid arrays, if so needed.
 !
@@ -228,6 +240,98 @@ CR      write(*,*) 'wrt_rst:  Bed_poros' MYID
 CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 # endif /* SEDIMENT */
+
+#if defined MUSTANG
+
+! ksmi, ksma
+      work2d=ksmi
+      indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+6+1
+      ierr=nf_fwrite(work2d, ncidrst, rstMUS(1),
+     &                                       record, r2dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                         !--> ERROR
+      endif
+
+      work2d=ksma
+      indx=indx+1
+      ierr=nf_fwrite(work2d, ncidrst, rstMUS(2),
+     &                                       record, r2dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                         !--> ERROR
+      endif
+
+! dzs 
+      do k=1,ksdmax
+         workrsed(:,:,k)=dzs(k,:,:)
+      enddo
+      indx=indxT+ntrc_salt+ntrc_substot+4
+      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(3),
+     &                                       record, b3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                         !--> ERROR
+      endif 
+
+! tempsed
+      do k=1,ksdmax
+         workrsed(:,:,k)=cv_sed(-1,k,:,:)
+      enddo
+      indx=indxT+ntrc_salt+ntrc_substot+5
+      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(4),
+     &                                       record, b3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                         !--> ERROR
+      endif
+
+
+
+! salsed
+      do k=1,ksdmax
+         workrsed(:,:,k)=cv_sed(0,k,:,:)
+      enddo
+       indx=indxT+ntrc_salt+ntrc_substot+6
+
+      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(5),
+     &                                       record, b3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                         !--> ERROR
+      endif
+
+
+! cvsed
+
+       do itrc=1,ntrc_subs
+         indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
+         do k=1,ksdmax
+           workrsed(:,:,k)=cv_sed(itrc,k,:,:)
+         enddo
+
+        ierr=nf_fwrite(workrsed, ncidrst, rstMUS(itrc+5),
+     &                                       record, b3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indx))
+          write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+     &                  MYID
+          goto 99                                         !--> ERROR
+        endif
+       enddo
+
+# endif
+
 #endif /* SOLVE3D */
 
 #ifdef MORPHODYN

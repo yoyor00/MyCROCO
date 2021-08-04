@@ -3698,7 +3698,7 @@
    REAL(KIND=rsh)     :: sommud,somsan,diamsan,critstressan,frvolsan,frvolgrv,somgrav,   &
                          somsedsusp,frvolsangrv,frmudsup,frmudcr1,pinterp,cmudr,frgrav
    ! use of the van Rijn relation for erosion flux (only valid if sand only)
-   REAL(KIND=rsh)     :: rossan,xeromud,coef_tmp
+   REAL(KIND=rsh)     :: rossan,xeromud,coef_tmp,rapexpcoef
    REAL(KIND=rsh)     :: E0_sand_loc
 
    !!---------------------------------------------------------------------------
@@ -3871,15 +3871,21 @@
                                                                       !consitent with other experiments from the literature
             coef_tmp=xexp_ero*(frmudcr1-frmudsup) ! Here, frmudcr2 is just a max prescribed for frmudcr1 
                                                     ! but does not constitute a critical mud fraction 
+            ! the correction of F.Ganthy is not done here for version V2. 
+            !  Should we add it to do as in version V1 ?
+            rapexpcoef=EXP(coef_tmp)
 #else
             coef_tmp=xexp_ero*(frmudcr1-frmudsup)/(frmudcr2-frmudcr1) 
+            ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
+            !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
+            rapexpcoef=(EXP(coef_tmp)-1.0_rsh)/(EXP(xexp_ero)-1.0_rsh)
 #endif
             !!! Erodability Parameters 
-            xeros = (E0_sand_loc-E0_mud)*EXP(coef_tmp) + E0_mud       
+            xeros = (E0_sand_loc-E0_mud)*rapexpcoef + E0_mud       
             !!! Critical stress for erosion
-            sed_tocr_mixsed = (critstressan -xeromud) * EXP( coef_tmp ) + xeromud
+            sed_tocr_mixsed = (critstressan -xeromud) * rapexpcoef + xeromud
             !!! Puissance
-            excespowr = (n_eros_sand-n_eros_mud)*EXP( coef_tmp)+ n_eros_mud
+            excespowr = (n_eros_sand-n_eros_mud)*rapexpcoef + n_eros_mud
 
 
           END IF

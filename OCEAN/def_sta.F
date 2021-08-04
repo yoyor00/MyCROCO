@@ -806,12 +806,15 @@
 
 # if defined MPI & !defined PARALLEL_FILES
       else
+
+      if (nstas.gt.0) then
         ierr=nf_open (staname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
      &                'DEF_STA ERROR: ',
      &                'Cannot open file ''', staname(1:lstr), '''.'
      &                 MYID
+       endif
           goto 99                                         !--> ERROR
         endif
 # endif

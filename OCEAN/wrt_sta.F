@@ -193,7 +193,7 @@ c      if (iic.eq.0) then
         do ista=1,nstas
           Tout(ista)=stadata(istaxgrd,ista)
 # ifdef MPI
-     &               +ii*Lm
+     &               +iminmpi-1
 # endif
         enddo
         ierr=nf_put_vara_FTYPE(ncidsta,staXgrd,start,count,
@@ -208,7 +208,7 @@ c      if (iic.eq.0) then
         do ista=1,nstas
           Tout(ista)=stadata(istaygrd,ista)
 # ifdef MPI
-     &               +jj*Mm
+     &               +jminmpi-1
 # endif
         enddo
         ierr=nf_put_vara_FTYPE(ncidsta,staYgrd,start,count,

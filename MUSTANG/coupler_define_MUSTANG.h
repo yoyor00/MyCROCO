@@ -95,6 +95,13 @@
 #  elif defined TFLAT2DV
 #   define SEDNAM  'parasubstance_MUSTANG_Tflat2dv.txt'
 #   define SEDNAMV 'paraMUSTANGV2_Tflat2dv.txt'
+# else
+#   define SEDNAM 'parasubstance_MUSTANG.txt'
+#     ifdef key_MUSTANG_V2
+#     define SEDNAMV 'paraMUSTANGV2.txt'
+#     else
+#     define SEDNAMV 'paraMUSTANGV1.txt'
+#     endif
 #  endif
 # endif
 

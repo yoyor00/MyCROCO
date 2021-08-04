@@ -28,6 +28,9 @@
 #if (defined SEDIMENT && defined USGS) || defined BBL
      &      ,  indxWrk
 #endif
+# ifdef MUSTANG
+     &      ,  indx 
+# endif
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
@@ -151,6 +154,9 @@
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
 #if defined SEDIMENT && defined USGS
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
+#endif
+#ifdef MUSTANG
+        ierr=nf_def_dim (ncid, 's_b',      ksdmax,     b3dgrd(3))
 #endif
 #ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
@@ -484,6 +490,55 @@
         enddo
 #endif /* SEDIMENT */
 
+# ifdef MUSTANG
+
+! ksmi, ksma
+       do itrc=1,2
+       indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+itrc+6
+       lvar=lenstr(vname(1,indx))
+       ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
+     &            NF_FOUT, 3, r2dgrd, rstMUS(itrc)) ! ksmi,ksma
+
+#  ifdef NC4PAR
+       ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
+#  endif
+
+        call nf_add_attribute(ncid, rstMUS(itrc), indx, 5,
+     &         NF_DOUBLE, ierr)
+       enddo
+
+
+! dzs, tempsed, salsed
+      do itrc=1,3
+       indx=indxT+ntrc_salt+ntrc_substot+itrc+3
+       ierr=nf_def_var (ncid, vname(1,indx),
+     &            NF_FOUT, 4, b3dgrd, rstMUS(itrc+2)) ! 3D: dzs,tempsed,salsed
+
+#  ifdef NC4PAR
+       ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
+#  endif
+
+        call nf_add_attribute(ncid, rstMUS(itrc+2), indx, 5,
+     &         NF_DOUBLE, ierr)
+
+      enddo
+
+!cvsed
+       do itrc=1,ntrc_subs
+        indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
+        ierr=nf_def_var (ncid, vname(1,indx),
+     &            NF_FOUT, 4, b3dgrd, rstMUS(itrc+5)) ! 3D: traceurSed
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
+# endif
+
+        call nf_add_attribute(ncid, rstMUS(itrc+5), indx, 5,
+     &         NF_DOUBLE, ierr)
+
+        enddo
+# endif
+
+
 #ifdef MORPHODYN 
         lvar=lenstr(vname(1,indxHm))
         ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
@@ -813,6 +868,51 @@
           endif
         enddo
 #endif /* SEDIMENT */
+
+#ifdef MUSTANG
+! ksmi, ksma
+        do itrc=1,2
+          indx=indxT+ntrc_salt+ntrc_substot+ntrc_substot+itrc+6
+          lvar=lenstr(vname(1,indx))
+          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                                                 rstMUS(itrc))
+          if (ierr. ne. nf_noerr) then
+            write(stdout,1) vname(1,indx)(1:lvar),
+     &                                            rstMUS(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        enddo
+
+! dzs, tempsed, salsed
+       do itrc=1,3
+         indx=indxT+ntrc_salt+ntrc_substot+itrc+3
+          lvar=lenstr(vname(1,indx))
+          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                                                 rstMUS(itrc+2))
+          if (ierr. ne. nf_noerr) then
+            write(stdout,1) vname(1,indx)(1:lvar),
+     &                                            rstMUS(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        enddo
+
+
+! cvsed
+       do itrc=1,ntrc_subs
+          indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
+          lvar=lenstr(vname(1,indx))
+          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
+     &                                                 rstMUS(itrc+5))
+          if (ierr. ne. nf_noerr) then
+            write(stdout,1) vname(1,indx)(1:lvar),
+     &                                            rstMUS(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        enddo
+
+
+# endif
+
 
 #ifdef MORPHODYN
 !

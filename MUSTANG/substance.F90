@@ -858,7 +858,7 @@ CONTAINS
     ! MPI_master_only write(*,*)' indice wrthis tot',wrthis(1:indX+ntrc_substot)
 
 #ifdef PSOURCE_NCFILE_TS
-   DO: isubs=1,ntrc_subs
+   DO isubs=1,ntrc_subs
           indx=indxT+ntrc_salt+isubs
 !          vname(1,indxTsrc+ntrc_salt+isubs)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src         '
 !          vname(2,indxTsrc+ntrc_salt+isubs)='Tracer source concentration     '
@@ -958,7 +958,29 @@ CONTAINS
     ! MPI_master_only  WRITE(*,*)' indice wrthis state variable MUSTANG',isubs,  &
     !             TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))),ivr,indx,irk_fil(isubs),wrthis(indx)
    ENDDO
-#ifdef key_MUSTANG_specif_outputs
+
+   indx=indx+1
+   wrthis(indx)=.FALSE.    ! name_out_sal
+   vname(1,indx)='ksmi'
+   vname(2,indx)=' '
+   vname(3,indx)=' '
+   vname(4,indx)=' '
+   vname(5,indx)=' '
+   vname(6,indx)=' '
+   vname(7,indx)=' '
+
+   indx=indx+1
+   wrthis(indx)=.FALSE.    ! name_out_sal
+   vname(1,indx)='ksma'
+   vname(2,indx)=' '
+   vname(3,indx)=' '
+   vname(4,indx)=' '
+   vname(5,indx)=' '
+   vname(6,indx)=' '
+   vname(7,indx)=' '
+
+
+#ifdef  key_MUSTANG_specif_outputs
 ! seulement variables nv_out3Dnv_specif  et  nv_out3Dk_specif RAF: nv_out2D_specif)
    DO isubs=1,ntrc_subs
       ! 1 : toce_save

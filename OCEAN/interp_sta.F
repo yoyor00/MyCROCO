@@ -25,12 +25,11 @@
       do id=1,nfltmax
         iflt=indx(id)
 
-        k1=int(stainfo(istazgrd,iflt)+0.5)
-        r2=stainfo(istazgrd,iflt)+0.5 - float(k1)
+        k1=int(stainfo(istazgrd,iflt))
+        r2=stainfo(istazgrd,iflt) - float(k1)
         r1=1.-r2
-        k1=max(k1,   1)
         k2=min(k1+1, N)
-
+        
         i1=int(stainfo(istaxgrd,iflt))
         i2=i1+1
         p2=stainfo(istaxgrd,iflt)-float(i1)

@@ -896,7 +896,10 @@
       integer rstT(NT)
 # if defined SEDIMENT && defined USGS
       integer rstSed(NST+2)
-# endif	
+# endif
+# ifdef MUSTANG
+      integer rstMUS(NT+3)
+#endif	
 #endif
 #if defined MORPHODYN
       integer rstHm
@@ -1358,6 +1361,9 @@
      &                         , rstU,    rstV,   rstT
 # if defined SEDIMENT && defined USGS
      &                         , rstSed
+# endif
+# ifdef MUSTANG
+     &                         , rstMUS
 # endif
 #endif
 #ifdef MORPHODYN

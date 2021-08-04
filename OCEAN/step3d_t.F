@@ -226,6 +226,12 @@
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
+
+# if defined MUSTANG && defined key_sand2D
+! Faire somme des FX en k=1
+#endif
+
+
 #  ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i-1,j).eq.1) then
@@ -267,6 +273,11 @@
      &                                                           )
      &                      +dt* flx_s2w_CROCO(i,j,itrc)
      &                       )/(Hz(i,j,k)+flx_w2s_CROCO(i,j,itrc)*dt)
+
+! Warning: not conservative - need to check why it's creating massive negative values every now and then
+# if defined FORCE_POSITIVE_CONC_MUSTANG
+               t(i,j,k,nnew,itrc)=max(0.,t(i,j,k,nnew,itrc))
+# endif
 
                flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
      &               *t(i,j,1,nnew,itrc)*dt

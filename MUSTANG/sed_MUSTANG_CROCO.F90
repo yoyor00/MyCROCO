@@ -142,6 +142,7 @@
  CONTAINS
  
  !!===========================================================================================
+ 
   SUBROUTINE sed_MUSTANG_settlveloc(ifirst,ilast,jfirst,jlast,   &
                      h0fond,rhoref,WATER_CONCENTRATION) !  (t de ocean3d) directement dans les bons ordres de dimensions
 
@@ -430,9 +431,9 @@
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-   USE module_substance, ONLY : bustr,bvstr
+   USE module_substance,ONLY : bustr,bvstr
 # ifdef WAVE_OFFLINE
-   USE module_substance, ONLY : Uwave, Dwave,Pwave
+   USE module_substance,ONLY : Uwave, Dwave,Pwave
 # endif
 
 
@@ -507,8 +508,8 @@
 #  endif
           raphbx(i,j)=ABS(u(i+1,j,1,nrhs))/(ABS(u(i+1,j,1,nrhs))+epsilon_MUSTANG)
 #ifdef key_MUSTANG_tenfonUbar
-          vit2=SQRT(0.0625_rsh*(vbar(i,j,nrhs)+vbar(i+1,j,nrhs)+  &
-                  vbar(i,j-1,nrhs)+vbar(i+1,j-1,nrhs))**2         &
+          vit2=SQRT(0.0625_rsh*(vbar(i,j+1,nrhs)+vbar(i+1,j+1,nrhs)+  &
+                  vbar(i,j,nrhs)+vbar(i+1,j,nrhs))**2         &
                   +ubar(i+1,j,nrhs)**2) *ubar(i+1,j,nrhs)
 #ifdef MPI
           if (float(i +ii*Lm) .GE. 0) then
@@ -522,8 +523,8 @@
           endif
 
 #else
-          vit2=SQRT(0.0625_rsh*(v(i,j,1,nrhs)+v(i+1,j,1,nrhs)+  &
-                  v(i,j-1,1,nrhs)+v(i+1,j-1,1,nrhs))**2         &
+          vit2=SQRT(0.0625_rsh*(v(i,j+1,1,nrhs)+v(i+1,j+1,1,nrhs)+  &
+                  v(i,j,1,nrhs)+v(i+1,j,1,nrhs))**2         &
                   +u(i+1,j,1,nrhs)**2) *u(i+1,j,1,nrhs)   
           frofonx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i+1,j)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
@@ -540,8 +541,8 @@
 #  endif  
           raphby(i,j)=ABS(v(i,j+1,1,nrhs))/(ABS(v(i,j+1,1,nrhs))+epsilon_MUSTANG)
 #ifdef key_MUSTANG_tenfonUbar
-          vit2=SQRT(0.0625_rsh*(ubar(i,j,nrhs)+ubar(i,j+1,nrhs)+  &
-                  ubar(i-1,j+1,nrhs)+ubar(i-1,j,nrhs))**2         &
+          vit2=SQRT(0.0625_rsh*(ubar(i+1,j,nrhs)+ubar(i+1,j+1,nrhs)+  &
+                  ubar(i,j+1,nrhs)+ubar(i,j,nrhs))**2         &
                   +vbar(i,j+1,nrhs)**2) *vbar(i,j+1,nrhs)
 #ifdef MPI
           if (float(j +jj*Mm) .GE. 0) then
@@ -554,8 +555,8 @@
           frofony(i,j)=0.
           endif
 #else
-          vit2=SQRT(0.0625_rsh*(u(i,j,1,nrhs)+u(i,j+1,1,nrhs)+  &
-                  u(i-1,j+1,1,nrhs)+u(i-1,j,1,nrhs))**2         &
+          vit2=SQRT(0.0625_rsh*(u(i+1,j,1,nrhs)+u(i+1,j+1,1,nrhs)+  &
+                  u(i,j+1,1,nrhs)+u(i,j,1,nrhs))**2         &
                   +v(i,j+1,1,nrhs)**2) *v(i,j+1,1,nrhs)
           frofony(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j+1)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
@@ -767,7 +768,7 @@
 
 # include "netcdf.inc"
       real time_scale
-      integer iv,k,itrc,indxWrk
+      integer iv,k,itrc,indWrk
       integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
       start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180,nomcv*8
@@ -775,7 +776,8 @@
       real tmp(GLOBAL_2D_ARRAY)
       real tmp3d(GLOBAL_2D_ARRAY,ksdmin:ksdmax)
 
-
+     tmp(PROC_IN_ARRAY)=0
+     tmp3d(PROC_IN_ARRAY,ksdmin:ksdmax)=0
      z0sed(PROC_IN_ARRAY)=z0seduni
      dzsmax(PROC_IN_ARRAY)=dzsmaxuni
      ksmi(PROC_IN_ARRAY)=ksmiuni
@@ -828,7 +830,7 @@
 ! ksmi, ksma
       ierr=nf_inq_varid (ncid,'ksmi', varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (tmp(PROC_IN_ARRAY), ncid, varid, indx, 0)
+        ierr=nf_fread (tmp, ncid, varid, indx, 0)
         ksmi(PROC_IN_ARRAY)=INT(tmp(PROC_IN_ARRAY))
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) 'ksmi', indx, inised_name(1:lstr)
@@ -855,9 +857,8 @@
 
      WHERE (BATHY_H0(PROC_IN_ARRAY) == -valmanq) ksmi(PROC_IN_ARRAY)=1
      WHERE (BATHY_H0(PROC_IN_ARRAY) == -valmanq) ksma(PROC_IN_ARRAY)=0
-
 !  DZS
-      ierr=nf_inq_varid (ncid,'dzs', varid)
+      ierr=nf_inq_varid (ncid,'DZS', varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
          do k=ksdmin,ksdmax
@@ -865,11 +866,11 @@
          enddo
         
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) 'dzs', indx, inised_name(1:lstr)
+          MPI_master_only write(stdout,2) 'DZS', indx, inised_name(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only  write(stdout,1) 'dzs', inised_name(1:lstr)
+        MPI_master_only  write(stdout,1) 'DZS', inised_name(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -878,15 +879,9 @@
  
       c_sedtot(:,:,:)=0.0_rsh
       do iv=-1,nv_tot 
-
-       IF (iv==-1) THEN
-          nomcv='concTEM'
-       ELSE IF (iv==0) THEN
-          nomcv='concSAL'
-       ELSE
-          WRITE(nomcv,10) iv
-       ENDIF
-   10  FORMAT('concen',i2.2)
+       
+       indWrk=indxT+ntrc_salt+ntrc_substot+iv+4+2
+       nomcv=vname(1,indWrk)
 
        ierr=nf_inq_varid (ncid,nomcv, varid)
        if (ierr .eq. nf_noerr) then
