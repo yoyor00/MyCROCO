@@ -995,12 +995,11 @@ C$OMP BARRIER
         call gls_mixing (tile)
 # endif
 
-# if defined SEDIMENT && defined MUSTANG
+# if defined MUSTANG
         call mustang_update_main (tile)
 # endif
         call step3d_t (tile)
 
-# ifdef SEDIMENT        
 #   ifdef MUSTANG
         call mustang_deposition_main (tile)
 #   endif
@@ -1012,7 +1011,6 @@ C$OMP BARRIER
 #     else
         call sediment (tile)
 #     endif
-#   endif
 # endif
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
