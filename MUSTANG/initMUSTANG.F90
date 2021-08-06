@@ -387,8 +387,8 @@
           ELSE
             poro(:,i,j)=0.0_rsh
 #ifdef key_MUSTANG_V2
-            crel_mud(k,i,j)=0.0_rsh
-            poro_mud(k,i,j)=0.0_rsh
+            crel_mud(:,i,j)=0.0_rsh
+            poro_mud(:,i,j)=0.0_rsh
 #endif 
           ENDIF
         ENDDO

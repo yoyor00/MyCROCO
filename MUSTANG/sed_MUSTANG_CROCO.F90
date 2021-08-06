@@ -771,7 +771,7 @@
       integer iv,k,itrc,indWrk
       integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
       start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*180,nomcv*8
+      character units*180,nomcv*15
       character inised_name*180
       real tmp(GLOBAL_2D_ARRAY)
       real tmp3d(GLOBAL_2D_ARRAY,ksdmin:ksdmax)
