@@ -1343,7 +1343,8 @@
 #else
        DO i=ifirst,ilast
 #endif
-         IF ( h0_out(i,j) .NE. -valmanq .AND. ksma(i,j) > 0 ) mask_h0(i,j)=.FALSE.
+!         IF ( h0_out(i,j) .NE. -valmanq .AND. ksma(i,j) > 0 ) mask_h0(i,j)=.FALSE.
+         IF ( h0_out(i,j) .NE. -valmanq ) mask_h0(i,j)=.FALSE.
        END DO
      END DO  
 
@@ -1381,7 +1382,7 @@
         IF(mask_h0(i,j)) THEN
            var2D_ksma(i,j)=-rg_valmanq_io
            var2D_hsed(i,j)=-rg_valmanq_io
-!           var2D_tenfon(i,j)=-rg_valmanq_io
+           var2D_tenfon(i,j)=-rg_valmanq_io
 #if defined key_MARS && (defined key_wave || defined key_wave_crossshore)
            var2D_tenfonw(i,j)=-rg_valmanq_io
            var2D_tenfonc(i,j)=-rg_valmanq_io
