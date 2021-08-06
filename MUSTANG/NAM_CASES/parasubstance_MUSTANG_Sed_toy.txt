@@ -75,7 +75,6 @@
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
       cini_wat_n(1)=0.0
-      cobc_wat_n(1)=1.
       cini_sed_n(1)=0.0
       cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
