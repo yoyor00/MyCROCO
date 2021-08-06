@@ -67,16 +67,16 @@
       integer status(MPI_STATUS_SIZE), blank
 #endif
 
+#if defined MUSTANG
+      real workrsed(GLOBAL_2D_ARRAY,ksdmax)
+      real work2d(GLOBAL_2D_ARRAY)
+#endif
+
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
      &                 1, MPI_COMM_WORLD, status, ierr)
       endif
-#endif
-
-#if defined MUSTANG
-      real workrsed(GLOBAL_2D_ARRAY,ksdmax)
-      real work2d(GLOBAL_2D_ARRAY)
 #endif
 
 !
