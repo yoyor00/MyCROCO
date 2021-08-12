@@ -740,6 +740,9 @@
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
      &                             NF_FOUT, 4, w3dgrd, vidbvf)
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidbvf,nf_collective)
+#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxbvf))
           ierr=nf_put_att_text (ncid, vidbvf, 'long_name', lvar,
