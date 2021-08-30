@@ -1685,6 +1685,10 @@ C 				  endif
       !
       USE xios     ! XIOS library
       USE xios_module
+
+#if defined MUSTANG
+      USE comMUSTANG, only: nk_nivsed_out
+# endif
       !    
       IMPLICIT NONE
       !
@@ -1694,6 +1698,7 @@ C 				  endif
 # include "scalars.h"
 # include "ncscrum.h"
 # include "mpi_cpl.h"
+
       !
       INTEGER Istr,Iend,Jstr,Jend
       !
@@ -1724,6 +1729,7 @@ C 				  endif
       !!---------------------------------------------------------------------
       !  
 # include "compute_auxiliary_bounds.h"
+
       !
 # ifdef EW_PERIODIC
 #  define IU_RANGE Istr,Iend
@@ -1820,8 +1826,10 @@ C 				  endif
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r )
       CALL iom_set_axis_attr( "s_w"  , sc_w )
-# ifdef SEDIMENT
+# if defined SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
+# elif defined MUSTANG
+       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,nk_nivsed_out) /))
 # else
       ! fake axis to avoid changing xml file 
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
@@ -1936,7 +1944,33 @@ C 				  endif
 #if defined BIOLOGY && defined PISCES
           USE trcwri_pisces
 #endif
+
+#if defined SUBSTANCE
+      USE comsubstance, ONLY : cvfix_wat,nv_adv
+#endif
+#if defined MUSTANG
+      USE comsubstance, ONLY : nv_adv,nvpc,nvp
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
+      USE comMUSTANG, only: nk_nivsed_out,var3D_cvsed,var3D_dzs,
+     &   var3D_TEMP,var3D_SAL
+# ifdef WAVE_OFFLINE
+     &  ,tenfonc, tenfonw   
+# endif
+#if defined key_MUSTANG_specif_outputs
+     &   ,nv_out3Dnv_specif, nv_out2D_specif
+     &   ,varspecif3Dnv_save,varspecif2D_save
+#endif
+#ifdef key_sand2D
+      USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
+      USE substance,    ONLY : l_outsandrouse
+      USE comMUSTANG,   ONLY : sum_tmp,rouse2d
+#endif
+#endif
           IMPLICIT NONE
+
+#if defined MUSTANG
+#     include "coupler_define_MUSTANG.h"
+#endif
 
 # include "param.h"
 # include "ncscrum.h"
@@ -1978,6 +2012,9 @@ C 				  endif
 # include "scalars.h"
 # include "work.h"
 # include "private_scratch.h"
+
+
+
 !
 #ifdef DIAGNOSTICS_EDDY
       real workru(GLOBAL_2D_ARRAY,1:N)
@@ -1997,6 +2034,23 @@ C 				  endif
       real zz(GLOBAL_2D_ARRAY,0:N)
       parameter(stf_cff=86400/0.01)
 !
+#if defined MUSTANG
+      integer  nv_out,indx2
+      logical  maskout_sed(GLOBAL_2D_ARRAY)
+      real var2D_ksma(GLOBAL_2D_ARRAY),
+     &     var2D_eptot(GLOBAL_2D_ARRAY),
+     &     var2D_tenfon(GLOBAL_2D_ARRAY)
+      real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
+     &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
+#if defined key_MUSTANG_specif_outputs
+      real workrsed_nv(GLOBAL_2D_ARRAY),
+     &     workrsed1_nv(GLOBAL_2D_ARRAY)
+#endif
+
+#endif
+
+
+
 # include "compute_auxiliary_bounds.h"
 !
 #  define I_EXT_RANGE Istr-1,Iend+1
@@ -2618,7 +2672,76 @@ C 				  endif
       enddo      
 #   endif
 #  endif /* SEDIMENT */
-     
+
+
+
+# ifdef MUSTANG
+      do itrc=3,NT
+         write(nametrc,'(A,I1)') 'cv_wat_',itrc-2
+#if defined key_sand2D
+           if (itrc>=itsubs1+nv_grav .AND.
+     &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
+           if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
+     &         .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
+            workr=t(:,:,:,nstp,itrc)
+            do j=Jstr,Jend
+              do i=Istr,Iend
+                DO k=1,N
+           IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
+           workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
+     &       (  (z_w(i,j,N)-z_r(i,j,k))
+     &          /(z_r(i,j,k)-z_w(i,j,0))
+     &       ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
+           workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
+           ELSE
+           workr(i,j,k)=0.
+          ENDIF
+          ENDDO
+          enddo
+          enddo
+           else
+            workr=t(:,:,:,nstp,itrc)
+           endif
+           else
+            workr=t(:,:,:,nstp,itrc)
+           endif
+#else
+            workr=t(:,:,:,nstp,itrc)
+#endif
+
+
+         call xios_send_field(TRIM(nametrc),
+     &    workr)
+      enddo
+
+      nv_out=ntrc_subs
+      CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,
+     &       nv_out,h,
+     &       maskout_sed,var2D_ksma,var2D_tenfon,var2D_eptot
+     &      )
+        call xios_send_field("tenfon",var2D_tenfon)
+# ifdef WAVE_OFFLINE
+        call xios_send_field("tenfonc",tenfonc)
+        call xios_send_field("tenfonw",tenfonw)
+# endif
+
+        call xios_send_field("ksma",var2D_ksma)
+        call xios_send_field("eptot",var2D_eptot)
+        do itrc=1,nv_out
+         do k=1,nk_nivsed_out
+           workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+         enddo
+        write(nametrc,'(A,I1)') 'cv_sed_',itrc
+        call xios_send_field(TRIM(nametrc),workrsed)
+        enddo
+
+        do k=1,nk_nivsed_out
+           workrsed(:,:,k)=var3D_dzs(k,:,:)
+        enddo
+        call xios_send_field('dzs',workrsed)
+
+# endif /* MUSTANG */     
+
 #  ifdef BBL
          call xios_send_field("Abed",Abed) 
          call xios_send_field("Hripple",Hripple)

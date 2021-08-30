@@ -237,6 +237,26 @@
          <field id="eflux_sand_2" long_name="erosion flux of Sand No 2" unit="kg/m2"  />
          <!-- END SEDIMENT --> 
 #endif
+#ifdef MUSTANG
+         <!-- MUSTANG --> 
+         <field id="cv_wat_1" long_name="Sediment concentration in the water column" unit="mg/l" grid_ref="rho_3D" />
+         <field id="cv_wat_2" long_name="Sediment concentration in the water column" unit="mg/l" grid_ref="rho_3D"/>
+         <field id="cv_wat_3" long_name="Sediment concentration in the water column" unit="mg/l" grid_ref="rho_3D" />
+         <field id="cv_sed_1" long_name="Sediment concentration in the seabed" unit="mg/l" grid_ref="b_3D"/>
+         <field id="cv_sed_2" long_name="Sediment concentration in the seabed" unit="mg/l" grid_ref="b_3D"/>
+         <field id="cv_sed_3" long_name="Sediment concentration in the seabed" unit="mg/l" grid_ref="b_3D"/>
+         <field id="dzs" long_name="Sediment layer thickness" unit="m" grid_ref="b_3D"/>
+         <field id="tenfon" long_name="Total bottom shear stress" unit="N meter-2"/>
+         <field id="eptot" long_name="Bottom thickness" unit="m"/>
+         <field id="ksma" long_name="Upper sediment layer index" unit="no unit"/>
+#ifdef WAVE_OFFLINE
+         <field id="tenfonc" long_name="Current-induced bottom shear stress" unit="N meter-2"/>
+         <field id="tenfonw" long_name="Wave-induced bottom shear stress" unit="N meter-2"/>
+#ifdef WAVE_OFFLINE
+
+          <!-- END MUSTANG -->
+# endif
+
 #ifdef WET_DRY
          <field id="rmask_wet" long_name="" unit=""  />
 #endif

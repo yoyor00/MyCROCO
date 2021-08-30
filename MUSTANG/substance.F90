@@ -874,7 +874,7 @@ CONTAINS
           vname(5,indxTsrc+isubs+1)='                                '
           vname(6,indxTsrc+isubs+1)='                                '
           vname(7,indxTsrc+isubs+1)='                                '
-     write(*,*)'Traceurs SUBSTANCE:',vname(1,indxTsrc+ntrc_salt+isubs)
+!     write(*,*)'Traceurs SUBSTANCE:',vname(1,indxTsrc+ntrc_salt+isubs)
     enddo
 #endif
 
