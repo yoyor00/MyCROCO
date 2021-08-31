@@ -64,6 +64,7 @@ c         write(*,*) '-||->', (cost-f)/eps
 
          ad_g(:) = 0.
          t1 = xtime()
+         call save_croco_state()
          call cost_fun_b(ad_x, ad_g, icost, costb)
          t2 = xtime()
          ad_adj_time=t2-t1
