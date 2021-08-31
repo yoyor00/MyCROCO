@@ -297,45 +297,56 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adinc.h"
 # include "adparam.h"
 
-      ad_ubar_bck(:,:,:) = ubar(:,:,:)
-      ad_vbar_bck(:,:,:) = vbar(:,:,:)
-      ad_zeta_bck(:,:,:) = zeta(:,:,:)
-      ad_rufrc_bck(:,:) = rufrc(:,:)
-      ad_rvfrc_bck(:,:) = rvfrc(:,:)
-      ad_rufrc_bak_bck(:,:,:) = rufrc_bak(:,:,:)
-      ad_rvfrc_bak_bck(:,:,:) = rvfrc_bak(:,:,:)
-      ad_du_avg1_bck(:,:,:) = du_avg1(:,:,:)
-      ad_dv_avg1_bck(:,:,:) = dv_avg1(:,:,:)
-      ad_zt_avg1_bck(:,:) = zt_avg1(:,:)
-      ad_du_avg2_bck(:,:) = du_avg2(:,:)
-      ad_dv_avg2_bck(:,:) = dv_avg2(:,:)
-      h_bck(:,:) = h(:,:)
-
-      kstp_bck = kstp
-      krhs_bck = krhs
-      knew_bck = knew
-      iic_bck = iic
-      nbstep3d_bck =nbstep3d
-      nnew_bck = nnew
-
-      time_bck = time
-      iif_bck = iif
-      nstp_bck = nstp
-
-
-
-      ad_u_bck(:,:,:,:) = u(:,:,:,:)
-      ad_v_bck(:,:,:,:) = v(:,:,:,:)
-      ad_t_bck(:,:,:,:,:) = t(:,:,:,:,:)
+      CALL PUSHINTEGER4(ad_cost_counter)
+      CALL PUSHREAL8ARRAY(srflx, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(btflx, (lm+padd_x+4)*(mm+padd_e+4)*nt)
+      CALL PUSHREAL8ARRAY(stflx, (lm+padd_x+4)*(mm+padd_e+4)*nt)
+      CALL PUSHREAL8ARRAY(bvstr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(bustr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(svstr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(sustr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(ad_x_rv, n3d*npp)
+      CALL PUSHREAL8ARRAY(ad_x_ru, n3d*npp)
+      CALL PUSHREAL8ARRAY(a3d, n3d*7*npp)
+      CALL PUSHREAL8ARRAY(a2d, n2d*nsa*npp)
+      CALL PUSHREAL8ARRAY(dv_avg2, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(du_avg2, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(dv_avg1, (lm+padd_x+4)*(mm+padd_e+4)*5)
+      CALL PUSHREAL8ARRAY(du_avg1, (lm+padd_x+4)*(mm+padd_e+4)*5)
+      CALL PUSHREAL8ARRAY(zt_avg1, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(rvfrc_bak, (lm+padd_x+4)*(mm+padd_e+4)*2)
+      CALL PUSHREAL8ARRAY(rufrc_bak, (lm+padd_x+4)*(mm+padd_e+4)*2)
+      CALL PUSHREAL8ARRAY(rvfrc, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(rufrc, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(rhos, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(rhoa, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL PUSHREAL8ARRAY(akt, (lm+padd_x+4)*(mm+padd_e+4)*(n+1)*2)
+      CALL PUSHREAL8ARRAY(akv, (lm+padd_x+4)*(mm+padd_e+4)*(n+1))
+      CALL PUSHREAL8ARRAY(rho, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL PUSHREAL8ARRAY(we, (lm+padd_x+4)*(mm+padd_e+4)*(n+1))
+      CALL PUSHREAL8ARRAY(z_r, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL PUSHREAL8ARRAY(hz, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL PUSHREAL8ARRAY(hvom, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL PUSHREAL8ARRAY(huon, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL PUSHREAL8ARRAY(z_w, (lm+padd_x+4)*(mm+padd_e+4)*(n+1))
+      CALL PUSHREAL8ARRAY(hz_bak, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL PUSHREAL8ARRAY(t, (lm+padd_x+4)*(mm+padd_e+4)*n*3*nt)
+      CALL PUSHREAL8ARRAY(v, (lm+padd_x+4)*(mm+padd_e+4)*n*3)
+      CALL PUSHREAL8ARRAY(u, (lm+padd_x+4)*(mm+padd_e+4)*n*3)
+      CALL PUSHREAL8ARRAY(vbar, (lm+padd_x+4)*(mm+padd_e+4)*4)
+      CALL PUSHREAL8ARRAY(ubar, (lm+padd_x+4)*(mm+padd_e+4)*4)
+      CALL PUSHREAL8ARRAY(zeta, (lm+padd_x+4)*(mm+padd_e+4)*4)
+      CALL PUSHINTEGER4(may_day_flag)
+      CALL PUSHBOOLEAN(synchro_flag)
+      CALL PUSHREAL8(rdrg2)
+      CALL PUSHINTEGER4(nnew)
+      CALL PUSHINTEGER4(nrhs)
+      CALL PUSHINTEGER4(nstp)
+      CALL PUSHINTEGER4(knew)
+      CALL PUSHREAL8(time)
+      CALL PUSHREAL8ARRAY(hinv, (lm+padd_x+4)*(mm+padd_e+4))
 
       write(*,*) 'save------'
-      write(*,*) 'knew=',knew
-      write(*,*) 'kstp=',kstp
-      write(*,*) 'krhs=',krhs
-      write(*,*) 'iic=',iic
-      write(*,*) 'nstp=',nstp
-      write(*,*) 'minh',minval(h_bck)
-      write(*,*) 'maxh',maxval(h_bck)
       write(*,*) '----------'
 
       end subroutine save_croco_state
@@ -346,56 +357,56 @@ c      MPI_master_only write(*,*) 'B0##>',ad_g_f
 # include "adparam.h"
       integer ntrds,trd,my_first,my_last,tile,range
 
-#ifdef OPENMP
-      ntrds=omp_get_num_threads()
-      trd=omp_get_thread_num()
-#else
-      ntrds=1
-      trd=0
-#endif
-      range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
-      my_first=trd*range
-      my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
-
-      ubar(:,:,:) = ad_ubar_bck(:,:,:)
-      vbar(:,:,:) = ad_vbar_bck(:,:,:)
-      zeta(:,:,:) = ad_zeta_bck(:,:,:)
-      rufrc(:,:) = ad_rufrc_bck(:,:)
-      rvfrc(:,:) = ad_rvfrc_bck(:,:)
-      rufrc_bak(:,:,:) = ad_rufrc_bak_bck(:,:,:)
-      rvfrc_bak(:,:,:) = ad_rvfrc_bak_bck(:,:,:)
-      du_avg1(:,:,:) = ad_du_avg1_bck(:,:,:)
-      dv_avg1(:,:,:) = ad_dv_avg1_bck(:,:,:)
-      zt_avg1(:,:) = ad_zt_avg1_bck(:,:)
-      du_avg2(:,:) = ad_du_avg2_bck(:,:)
-      dv_avg2(:,:) = ad_dv_avg2_bck(:,:)
-      h(:,:) = h_bck(:,:)
-
-      kstp = kstp_bck
-      krhs = krhs_bck
-      knew = knew_bck
-      iic = iic_bck
-      nbstep3d = nbstep3d_bck
-      nnew = nnew_bck
-
-      time = time_bck
-      iif = iif_bck
-      nstp = nstp_bck
-
-      u(:,:,:,:) = ad_u_bck(:,:,:,:)
-      v(:,:,:,:) = ad_v_bck(:,:,:,:)
-      t(:,:,:,:,:) = ad_t_bck(:,:,:,:,:)
-
-      do tile=my_first,my_last
-         call restore_croco_state_2d(tile)
-      end do
+      CALL POPREAL8ARRAY(hinv, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8(time)
+      CALL POPINTEGER4(knew)
+      CALL POPINTEGER4(nstp)
+      CALL POPINTEGER4(nrhs)
+      CALL POPINTEGER4(nnew)
+      CALL POPREAL8(rdrg2)
+      CALL POPBOOLEAN(synchro_flag)
+      CALL POPINTEGER4(may_day_flag)
+      CALL POPREAL8ARRAY(zeta, (lm+padd_x+4)*(mm+padd_e+4)*4)
+      CALL POPREAL8ARRAY(ubar, (lm+padd_x+4)*(mm+padd_e+4)*4)
+      CALL POPREAL8ARRAY(vbar, (lm+padd_x+4)*(mm+padd_e+4)*4)
+      CALL POPREAL8ARRAY(u, (lm+padd_x+4)*(mm+padd_e+4)*n*3)
+      CALL POPREAL8ARRAY(v, (lm+padd_x+4)*(mm+padd_e+4)*n*3)
+      CALL POPREAL8ARRAY(t, (lm+padd_x+4)*(mm+padd_e+4)*n*3*nt)
+      CALL POPREAL8ARRAY(hz_bak, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL POPREAL8ARRAY(z_w, (lm+padd_x+4)*(mm+padd_e+4)*(n+1))
+      CALL POPREAL8ARRAY(huon, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL POPREAL8ARRAY(hvom, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL POPREAL8ARRAY(hz, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL POPREAL8ARRAY(z_r, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL POPREAL8ARRAY(we, (lm+padd_x+4)*(mm+padd_e+4)*(n+1))
+      CALL POPREAL8ARRAY(rho, (lm+padd_x+4)*(mm+padd_e+4)*n)
+      CALL POPREAL8ARRAY(akv, (lm+padd_x+4)*(mm+padd_e+4)*(n+1))
+      CALL POPREAL8ARRAY(akt, (lm+padd_x+4)*(mm+padd_e+4)*(n+1)*2)
+      CALL POPREAL8ARRAY(rhoa, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(rhos, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(rufrc, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(rvfrc, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(rufrc_bak, (lm+padd_x+4)*(mm+padd_e+4)*2)
+      CALL POPREAL8ARRAY(rvfrc_bak, (lm+padd_x+4)*(mm+padd_e+4)*2)
+      CALL POPREAL8ARRAY(zt_avg1, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(du_avg1, (lm+padd_x+4)*(mm+padd_e+4)*5)
+      CALL POPREAL8ARRAY(dv_avg1, (lm+padd_x+4)*(mm+padd_e+4)*5)
+      CALL POPREAL8ARRAY(du_avg2, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(dv_avg2, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(a2d, n2d*nsa*npp)
+      CALL POPREAL8ARRAY(a3d, n3d*7*npp)
+      CALL POPREAL8ARRAY(ad_x_ru, n3d*npp)
+      CALL POPREAL8ARRAY(ad_x_rv, n3d*npp)
+      CALL POPREAL8ARRAY(sustr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(svstr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(bustr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(bvstr, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPREAL8ARRAY(stflx, (lm+padd_x+4)*(mm+padd_e+4)*nt)
+      CALL POPREAL8ARRAY(btflx, (lm+padd_x+4)*(mm+padd_e+4)*nt)
+      CALL POPREAL8ARRAY(srflx, (lm+padd_x+4)*(mm+padd_e+4))
+      CALL POPINTEGER4(ad_cost_counter)
 
       write(*,*) 'restore+++'
-      write(*,*) 'knew=',knew
-      write(*,*) 'kstp=',kstp
-      write(*,*) 'krhs=',krhs
-      write(*,*) 'iic=',iic
-      write(*,*) 'nstp=',nstp
       write(*,*) '++++++++++'
 
       end subroutine restore_croco_state
@@ -465,7 +476,7 @@ c      call grid_stiffness(tile)
       k=1
 
 c     rdrg2
-      ad_x(1)=1.0D-5
+      ad_x(1)=2.0D-5
 
       ad_array_node_size=1
 
@@ -478,3 +489,15 @@ c     rdrg2
       write(*,*) 'minobs,maxobs',minval(ad_obs),maxval(ad_obs)
 
       end subroutine init_local_arrays_2d_tile
+
+
+      subroutine cost_fun_full_state(ad_x, cost)
+      implicit none
+# include "adinc.h"
+# include "adparam.h"     
+
+      double precision cost
+      
+      call cost_fun(ad_x, cost)
+      
+      end subroutine cost_fun_full_state

@@ -29,9 +29,6 @@ c      end subroutine set_vbc
       
       end subroutine clm_tides
 
-      subroutine pushpointer8(a)
-
-      end subroutine
 
       subroutine cpu_time()
 

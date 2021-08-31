@@ -17,7 +17,7 @@ c     this file is not differentiated
       
 c     perturbated ad_x
       double precision ad_d(1)
-      double precision ad_x_p(ad_array_size/nnodes)
+      double precision ad_x_pe(ad_array_size/nnodes)
 
       double precision control_to_param,rand
       
@@ -29,10 +29,16 @@ c     perturbated ad_x
       call init_control(ad_x,ad_g)
 
       write(*,*) 'start gradient ad_check'
-
+      DO k=1,ad_array_size/nnodes
+        ad_g(k) = 0.d0
+        ad_x(k) = 0.d0
+      ENDDO
+      ad_x(1) = 0.1d-5
+      
 c     1. compute gradient with adjoint
       icost=0
-
+      cost=0
+      costb=1.0
       call save_croco_state()
 c$$$      do k=1,32
 c$$$         do i=0,nfast+2
@@ -64,8 +70,7 @@ c$$$      call restore_croco_state()
       write(*,*) '=========='
       call cost_fun_b(ad_x,ad_g,cost,costb)
       call restore_croco_state()
-
-         
+      write(*,*) '==>adg(1)=',ad_g(1)
 c     2. compute tangent          
       ad_d(1)=0
 
@@ -121,12 +126,12 @@ c     3. finite difference estimation
       do while (ad_eps.gt.1D-10)   
          
          do k=1,ad_array_node_size
-            ad_x_p(k) = ad_x(k)+ad_eps*ad_g(k)
+            ad_x_pe(k) = ad_x(k)+ad_eps*ad_g(k)
          end do
 
          icost=0
          call save_croco_state()
-         call cost_fun(ad_x_p,icost)
+         call cost_fun(ad_x_pe,icost)
          call restore_croco_state()
          cost_p = icost
 
@@ -147,7 +152,7 @@ c     3. finite difference estimation
 
          if (mynode.eq.0) then
             if (abs(cost_p_f - cost_f).gt.1D-48) then
-               ad_check_div=(n_ad_g_f / ((cost_p_f-cost_f)/ad_eps))
+               ad_check_div=(ad_d_f / ((cost_p_f-cost_f)/ad_eps))
             else
                ad_check_div=0
             end if

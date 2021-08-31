@@ -19,7 +19,7 @@ case $1 in
         openblas lapack \
         emacs \
         openjdk coreutils binutils sed grep bash which time patch gdb"
-    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=https://gitlab.inria.fr/bremond/guix.git --branch=check-master-mpich --"
+    guix_cmd="guix time-machine --commit=398ec3c1e265a3f89ed07987f33b264db82e4080 -- time-machine --url=git@github.com:bremond/guix.git --branch=check-master-mpich --"
     exec $guix_cmd environment --root=$pwd/.croco-guix-profile --preserve='OAR*' --pure --ad-hoc $packages -- $0 --env-ok $@
     ;;
 esac
@@ -40,7 +40,7 @@ mkdir -p RunIC
 cd RunIC
 
 # 1. first run with ANA_INITIAL to build obs.nc file
-cp -f ../AD/croco.in.Internal-friction croco.in
+cp -f ../AD/croco.internal-friction-obs.in .
 
 cp -f ../OCEAN/cppdefs.h .
 sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
@@ -49,17 +49,9 @@ sed -i 's/undef[\t ]*INTERNAL/define INTERNAL/' cppdefs.h
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 #sed -i 's/undef[\t ]*TAPENADE/define TAPENADE\n# define AUTOTILING/' cppdefs.h
 ../OCEAN/jobcomp
-#./croco croco.in
-#cp -f internal_his.nc obs.nc
+./croco croco.internal-friction-obs.in
+cp -f internal_his.nc obs.nc
 
-cp Compile/croco_tgt_dbg .
-cp Compile/croco_adj_dbg1 .
-cp Compile/croco_adj_dbg2 .
 # 2. second run with restart and control with obs.nc file
-#DBAD_PHASE=1 ./croco_tgt_dbg croco.in
-#DBAD_PHASE=2 ./croco_tgt_dbg croco.in
-
-(DBAD_PHASE=1 ./croco_adj_dbg2 croco.in) &
-(DBAD_PHASE=2 ./croco_adj_dbg1 croco.in)
-
-
+cp -f ../AD/croco.internal-friction.in .
+./croco_adc croco.internal-friction.in
