@@ -198,12 +198,64 @@ c$$$                  end if
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
+      call init_scalars(ierr)
+
+      do tile=0,NSUB_X*NSUB_E-1
+        call start_timers()
+        call init_arrays (tile)
+      enddo
       do tile=my_first,my_last
          call set_state_2d(tile, ad_x)
       end do
 
-      end subroutine set_state
+c      call check_tab2d(h(:,:),'h initialisation #1','r')
 
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call setup_grid1 (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call setup_grid2 (tile)
+      enddo
+
+      call set_scoord
+      call set_weights
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_depth (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call grid_stiffness (tile)
+      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+c      do tile=0,NSUB_X*NSUB_E-1
+c        call set_depth (tile)
+c      enddo
+
+C$OMP PARALLEL DO PRIVATE(tile)
+c      do tile=0,NSUB_X*NSUB_E-1
+c        call set_HUV (tile)
+# ifdef RESET_RHO0
+c        call reset_rho0 (tile)
+# endif
+c      enddo
+CR      write(*,*)  ' -4' MYID
+C$OMP PARALLEL DO PRIVATE(tile)
+c      do tile=0,NSUB_X*NSUB_E-1
+c         call omega (tile)
+c         call rho_eos (tile)
+c      enddo
+CR      write(*,*)  ' -3' MYID
+
+
+      end subroutine set_state
+      
       subroutine set_state_2d(tile, ad_x)
 
       implicit none
@@ -230,11 +282,36 @@ c      call grid_stiffness(tile)
       character*6 counter_str
 
 #include "compute_extended_bounds.h"
-      k = 1
-      
-      rdrg2 = ad_x(1)
+      k = 2
+
+      depth=2000
+      ridge_width = ad_x(2)*100.0
+      ridge_height = ad_x(1)
+      h_bck(:,:) = h(:,:)
 
       write(*,*) '########',ad_x(1)
+
+      cff1=1./(ridge_width*ridge_width)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          if ((xr(i,j).gt.ridge_width).or.
+     &       (xr(i,j).lt.(-ridge_width))) then
+            cff=0.
+          else
+            cff=1-(xr(i,j)*xr(i,j)*cff1);
+          endif
+          h(i,j)=depth-ridge_height*cff*cff;
+#   ifdef INTERNALSHELF
+          if (xr(i,j).ge.0.) then
+            h(i,j)=depth-ridge_height
+          endif
+#   endif
+c          if (h(i,j).ne.h_bck(i,j)) then
+c             write(*,*) '#######/////', h(i,j) - h_bck(i,j)
+c          endif
+        enddo
+      enddo
+
 
       write(*, *) '**** set_state ****'
 
@@ -271,7 +348,6 @@ c      end do
  900  format(1PE16.9)
  910  format(I2.2,'-',I3.3)
       end subroutine set_state_2d_tile
-
 
       subroutine init_control(ad_x,ad_g)
       implicit none
@@ -476,9 +552,10 @@ c      call grid_stiffness(tile)
       k=1
 
 c     rdrg2
-      ad_x(1)=2.0D-5
+      ad_x(1)=2000
+      ad_x(2)=40.e3/100.0
 
-      ad_array_node_size=1
+      ad_array_node_size=2
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,

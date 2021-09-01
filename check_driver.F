@@ -29,16 +29,10 @@ c     perturbated ad_x
       call init_control(ad_x,ad_g)
 
       write(*,*) 'start gradient ad_check'
-      DO k=1,ad_array_size/nnodes
-        ad_g(k) = 0.d0
-        ad_x(k) = 0.d0
-      ENDDO
-      ad_x(1) = 0.1d-5
       
 c     1. compute gradient with adjoint
       icost=0
       cost=0
-      costb=1.0
       call save_croco_state()
 c$$$      do k=1,32
 c$$$         do i=0,nfast+2

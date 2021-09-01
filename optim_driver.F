@@ -96,7 +96,7 @@ c      MPI_master_only write(*,*) 'B1##>',ad_g_f
 
       dx=1.e-8
       df1=cost
-      epsrel=1.e-5
+      epsrel=1.e-7
       niter=2000
       nsim=2000
       normtype = 'dfn'
@@ -195,14 +195,16 @@ C        get cost & ad_g, the gradient on each proc (& ad_rms)
          call AMPI_Reduce(ad_irms, ad_irms_f, 1, AMPI_ADOUBLE_PRECISION,
      &        MPI_SUM,0,MPI_COMM_WORLD,ierr)
 
-         ad_rms = sqrt(ad_irms_f) / ad_array_node_size_f
+#endif
+#else
+         cost_f = cost
+         ad_irms_f = ad_irms
+#endif
          
          if (mynode.eq.0) then
             cost = cost_f
+            ad_rms = sqrt(ad_irms_f) / ad_array_node_size_f
          end if
-#endif
-#endif
-
 
          if (mynode.eq.0) then
             write (779,*) ad_counter,ad_rms,cost,norm2(ad_g_f),
