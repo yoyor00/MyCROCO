@@ -161,12 +161,12 @@
       parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined DUNE
 # ifdef ANA_DUNE
-      parameter (LLm0=150,  MMm0=1,  N=20)     !  DUNE 2m
+      parameter (LLm0=150,  MMm0=1,    N=20)   !  DUNE 2m
 # else
-      parameter (LLm0=50,   MMm0=1,  N=20)     !  DUNE 2m
+      parameter (LLm0=50,   MMm0=1,    N=20)   !  DUNE 2m
 # endif
 #elif defined SED_TOY
-      parameter (LLm0=4,   MMm0=3,  N=20)     !  DUNE 2m
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -201,7 +201,7 @@
 #  elif defined SEINE 
       parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
 #  elif defined VILAINE
-      parameter (LLm0=180,   MMm0=130,   N=10) ! VILAINE
+      parameter (LLm0=180,  MMm0=130,  N=10)   ! VILAINE
 #  else
       parameter (LLm0=94,   MMm0=81,   N=40)
 #  endif
