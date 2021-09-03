@@ -168,42 +168,14 @@
 #elif defined SED_TOY
       parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
 #elif defined REGIONAL
-#  if   defined USWC0
-      parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
-#  elif defined USWC1
-      parameter (LLm0=60,   MMm0=96,   N=40)   ! US_West grid15 L1
-#  elif defined USWC2
-      parameter (LLm0=60,   MMm0=120,  N=40)   ! US_West grid15 L2
-#  elif defined USWC155
-      parameter (LLm0=83,   MMm0=168,  N=20)   ! US_West USWC155 L1
-#  elif defined CANARY
-!     parameter (LLm0=97,   MMm0=159,  N=32)   ! Canary
-#  elif defined FINISTERE
-      parameter (LLm0=78,   MMm0=100,  N=16)   ! Finistere
-#  elif defined RIA
-      parameter (LLm0=77,   MMm0=96,   N=28)   ! RIA
-#  elif defined PERU
-      parameter (LLm0=39,   MMm0=32,   N=20)   ! Peru test
-#  elif defined SAFE
-      parameter (LLm0=111,  MMm0=96,   N=32)   ! SAFE
-#  elif defined PACIFIC
-      parameter (LLm0=170,  MMm0=60,   N=30)   ! Pacific
-#  elif defined  CORAL
-      parameter (LLm0=81,   MMm0=77,   N=32)   ! CORAL sea
-#  elif defined  BENGUELA_LR
+#  if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
 #  elif defined  BENGUELA_HR
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
 #  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
-#  elif defined MENOR 
-      parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
-#  elif defined SEINE 
-      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
-#  elif defined VILAINE
-      parameter (LLm0=180,  MMm0=130,  N=10)   ! VILAINE
 #  else
-      parameter (LLm0=94,   MMm0=81,   N=40)
+      parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR REGIONAL CONFIG
 #  endif
 #else
       parameter (LLm0=xx, MMm0=xx, N=xx)
@@ -236,7 +208,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
-      parameter (NP_XI=4,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP

@@ -2,27 +2,36 @@ title:
         SANDBAR Example 
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               36000      0.1      10     200
+               36000     0.025      12      100
+time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
+                    1          100           0.0
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
-         0.0d0       5.0d0      2
+           0.         8.        2.
 
 initial: NRREC  filename
           0
                 sandbar_rst.nc
 
 sediments: input file
-           TEST_CASES/sediment_sandbar_1B.in
+           TEST_CASES/sediment_sandbar_1B_nbq.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
-                         20*T          
+                         20*F          
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
-                     10*T
+                     10*F
 
 wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
                       T   T     T     T   T   T   T   T  T    T    T
 
+restart:          NRST, NRPFRST / filename
+                  36000   -1
+                          sandbar_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T     6000       0
+                          sandbar_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   10*T
@@ -32,14 +41,17 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
                           sandbar_avg.nc
 
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen  HEL
-                             F   F     T   T    T    F    F     F       T   T    T     T    T    T    T    T   10*T             
+                             F   F     T   T    F    F    F     F       T   T    T     T    T    T    T    T   10*T             
 gls_history_fields:   Akk Akp  TKE  GLS  Lscale
                        T   T    T     T    T
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   30*T
 auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
-                     F   T     T   T    T    F     F     F      T   T    T     T   T    T     T    T   10*T
+                     F   F     T   T    T    F     F     F      T   T    T     T   T    T     T    T   10*T
+
+gls_averages:   TKE  GLS  Lscale
+                 T     T    T
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        300         0
@@ -66,7 +78,7 @@ rho0:
       1024.4
 
 bottom_drag:     RDRG(m/s),      RDRG2,   Zob [m],  Cdb_min, Cdb_max
-                   0.             0.      5.e-5      1.e-5    1.e-1
+                   0.             0.      5.e-4      1.e-7    1.e-1
 
 gamma2:
                  1.
@@ -75,7 +87,7 @@ lin_EOS_cff:  R0 [86kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/
                30.           0.            0.        0.28                0.
 
 vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
-                   0.       0.
+                   0.       30*0.
 
 sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
                    XXX               XXX
@@ -89,15 +101,14 @@ lateral_visc:   VISC2,    VISC4    [m^2/sec for all]
 tracer_diff2: TNU2(1:NT)           [m^2/sec for all]
               10*0.d0
 
-wkb_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
-                      T   T     F      T     T       T      T     T    T
-
-wave_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
-                      T   T     F      T     T       T      T     T    T
-
-wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
-            0.45      0.0         5.      0.0      0.6   0.4
-
-wkb_roller:  roller_sinb  roller_fraction
-                0.15         1.8 
+diags_eddy:   ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy /filename
+                   F            6000                  0
+                                               sandbar_diags_eddy.nc
+diags_eddy_avg: ldefdiags_eddy_avg  ntsdiags_eddy_avg  nwrtdiags_eddy_avg  nprfdiags_eddy_avg /filename
+                   T                       1               6000                  0
+                                               sandbar_diags_eddy_avg.nc
+diags_eddy_history_fields: diags_eddy
+                            F
+diags_eddy_average_fields: diags_eddy_avg
+                            T
 

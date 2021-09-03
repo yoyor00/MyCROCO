@@ -853,7 +853,7 @@
             fb1=fb2     ! recursive procedure
           enddo
           do k=1,N-1
-            Akb(i,j,k)=0.5*(kb0(k)+kb0(k+1))
+            Akb(i,j,k)=max(0.5*(kb0(k)+kb0(k+1)),0.)
           enddo
           Akb(i,j,0)=0.
           Akb(i,j,N)=max(1.5*kb0(N)-0.5*kb0(N-1),0.)

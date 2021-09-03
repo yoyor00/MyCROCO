@@ -9,9 +9,10 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 
 initial: NRREC  filename
           0
-                sandbar_ini.nc
+                sandbar_rst.nc
+
 sediments: input file
-           sediment_sandbar_1C.in
+           TEST_CASES/sediment_sandbar_1C.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T          

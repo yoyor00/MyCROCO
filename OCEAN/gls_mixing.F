@@ -39,15 +39,17 @@
       trd=omp_get_thread_num()
       
       call gls_mixing_tile ( Istr, Iend, Jstr, Jend,
-     &                    A3d(1, 1,trd), A2d(1, 2,trd), 
-     &                    A2d(1, 3,trd), A2d(1, 4,trd), A2d(1, 5,trd),
-     &                    A2d(1, 6,trd), A2d(1, 7,trd), A2d(1, 8,trd) )
+     &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd), 
+     &                    A2d(1, 2,trd), A2d(1, 3,trd), A2d(1, 4,trd),
+     &                    A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd),
+     &                                                  A2d(1, 8,trd))
       
       RETURN
       END
       SUBROUTINE gls_mixing_tile ( Istr, Iend, Jstr, Jend, 
-     &                             shear2, diss, ustar_sfc_sq, 
-     &                             ustar_bot_sq, DC, FC, CF, RH ) 
+     &                                         tke_new, gls_new,
+     &                               shear2, diss, ustar_sfc_sq, 
+     &                             ustar_bot_sq, DC, FC, CF, RH) 
 
 !
 !======================================================================
@@ -76,6 +78,7 @@
 !   ! 2021 (Marchesiello): MPI bug fixes (advection, wave forcing 
 !                                                       (wkb_wwave.F));
 !      + revision of parameters (background visc) including for SANDBAR
+!      + fix OPENMP parallelization
 !
 !======================================================================
 !
@@ -90,6 +93,8 @@
       INTEGER         ::   imin, imax, jmin, jmax
       INTEGER         ::   ig,    ig1,  ig2
       ! Local arrays
+      REAL            ::  tke_new     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL            ::  gls_new     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  shear2      (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
       REAL            ::  diss        (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
       REAL            ::  ustar_sfc_sq(PRIVATE_2D_SCRATCH_ARRAY      )
@@ -103,9 +108,9 @@
       REAL            ::  invk, invG, Bprod, Sprod, epsilon
       REAL            ::  alpha_n, alpha_m, c_mu, c_mu_prim
       REAL            ::  alpha_n_min, alpha_m_max, cm0inv2, gls
-      REAL            ::  flux_top , flux_bot , lgthsc, L_lim, du,dv,dw
-      REAL            ::  trb_sfc  , trb_bot  , z0_s, z0_b , gls_min
-      REAL            ::  HUon_w   , HVom_w   , trb_min(2), Denom
+      REAL            ::  flux_top, flux_bot, lgthsc, L_lim, du,dv,dw
+      REAL            ::  trb_new, trb_sfc, trb_bot, z0_s, z0_b, gls_min
+      REAL            ::  HUon_w, HVom_w, trb_min(2), Denom
 # ifdef MRL_WCI
       REAL            ::  cmu_fac, cb_wallE, gls_sigp_cb
 # endif
@@ -247,55 +252,86 @@
 # ifdef GLS_HADV_UP1
 #  define FX ustar_sfc_sq      
 #  define FE ustar_bot_sq      
-      DO ig=1,ngls      
-        DO k=1,N-1
-          DO j=jmin,jmax
-            DO i=imin,imax+1
-              HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
+      ig=itke         ! <-- TKE
+      DO k=1,N-1
+        DO j=jmin,jmax
+          DO i=imin,imax+1
+            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
 #  ifdef MASKING
-     &                        *umask(i,j)   
+     &                                   *umask(i,j)   
 #  endif
-              FX(i,j)=
-     &              trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
-     &             +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)   
-            ENDDO
-          ENDDO
-      
-          DO j=jmin,jmax+1
-            DO i=imin,imax  
-              HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
-#  ifdef MASKING
-     &                        *vmask(i,j)           
-#  endif
-              FE(i,j)=
-     &              trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
-     &             +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
-            ENDDO
-          ENDDO
-!
-          DO j=jmin,jmax
-            DO i=imin,imax          
-              cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
-              trb(i,j,k,nnew,ig)= trb(i,j,k,nstp,ig) 
-     &                         -dt*cff*pm(i,j)*pn(i,j)
-     &                           *(  FX(i+1,j)-FX(i,j)
-     &                             + FE(i,j+1)-FE(i,j) ) 
-            ENDDO
+            FX(i,j)=
+     &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
+     &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)   
           ENDDO
         ENDDO
-      ENDDO         
+        DO j=jmin,jmax+1
+          DO i=imin,imax  
+            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
+#  ifdef MASKING
+     &                                   *vmask(i,j)           
+#  endif
+            FE(i,j)=
+     &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
+     &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
+          ENDDO
+        ENDDO
+        DO j=jmin,jmax
+          DO i=imin,imax          
+            cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
+            tke_new(i,j,k)= trb(i,j,k,nstp,ig) 
+     &                     -dt*cff*pm(i,j)*pn(i,j)
+     &                       *(  FX(i+1,j)-FX(i,j)
+     &                         + FE(i,j+1)-FE(i,j) ) 
+          ENDDO
+        ENDDO
+      ENDDO
+!        
+      ig=igls         ! <-- GLS
+      DO k=1,N-1
+        DO j=jmin,jmax
+          DO i=imin,imax+1
+            HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1))
+#  ifdef MASKING
+     &                                   *umask(i,j)   
+#  endif
+            FX(i,j)=
+     &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
+     &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)   
+          ENDDO
+        ENDDO
+        DO j=jmin,jmax+1
+          DO i=imin,imax  
+            HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
+#  ifdef MASKING
+     &                                   *vmask(i,j)           
+#  endif
+            FE(i,j)=
+     &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
+     &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
+          ENDDO
+        ENDDO
+        DO j=jmin,jmax
+          DO i=imin,imax          
+            cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
+            gls_new(i,j,k)= trb(i,j,k,nstp,ig) 
+     &                     -dt*cff*pm(i,j)*pn(i,j)
+     &                       *(  FX(i+1,j)-FX(i,j)
+     &                         + FE(i,j+1)-FE(i,j) ) 
+          ENDDO
+        ENDDO
+      ENDDO
 #  undef FX
 #  undef FE
 # else
-      DO ig=1,ngls      
-        DO k=1,N-1
-          DO j=jmin,jmax
-            DO i=imin,imax  
-              trb(i,j,k,nnew,ig)=trb(i,j,k,nstp,ig)
-            ENDDO
-          ENDDO   
-        ENDDO
-      ENDDO     
+      DO k=1,N-1
+        DO j=jmin,jmax
+          DO i=imin,imax  
+            tke_new(i,j,k)=trb(i,j,k,nstp,itke)
+            gls_new(i,j,k)=trb(i,j,k,nstp,igls)
+          ENDDO
+        ENDDO   
+      ENDDO
 # endif /* GLS_HADV_UP1 */
 !
 !--------------------------------------------------------------------
@@ -303,25 +339,43 @@
 !--------------------------------------------------------------------
 !
 # ifdef GLS_VADV_UP1
-      DO ig=1,ngls      
-        DO j=jmin,jmax
-          DO k=1,N
-            DO i=imin,imax
-              cff=0.5*(We(i,j,k)+We(i,j,k-1))
-              FC(i,k)=trb(i,j,k-1,nstp,ig)*max(cff,0.)
-     &               +trb(i,j,k  ,nstp,ig)*min(cff,0.) 
-            ENDDO
-          ENDDO
-          DO k=1,N-1
-            DO i=imin,imax          
-              cff=2./(Hz(i,j,k)+Hz(i,j,k+1))
-              trb(i,j,k,nnew,ig)= trb(i,j,k,nnew,ig) 
-     &                         -dt*cff*pm(i,j)*pn(i,j)
-     &                            *(FC(i,k+1)-FC(i,k))
-            ENDDO
+      ig=itke         ! <-- TKE 
+      DO j=jmin,jmax
+        DO k=1,N
+          DO i=imin,imax
+            cff=0.5*(We(i,j,k)+We(i,j,k-1))
+            FC(i,k)=trb(i,j,k-1,nstp,ig)*max(cff,0.)
+     &             +trb(i,j,k  ,nstp,ig)*min(cff,0.) 
           ENDDO
         ENDDO
-      ENDDO         
+        DO k=1,N-1
+          DO i=imin,imax          
+            cff=2./(Hz(i,j,k)+Hz(i,j,k+1))
+            tke_new(i,j,k)= tke_new(i,j,k) 
+     &                     -dt*cff*pm(i,j)*pn(i,j)
+     &                        *(FC(i,k+1)-FC(i,k))
+          ENDDO
+        ENDDO
+      ENDDO
+!
+      ig=igls         ! <-- GLS
+      DO j=jmin,jmax
+        DO k=1,N
+          DO i=imin,imax
+            cff=0.5*(We(i,j,k)+We(i,j,k-1))
+            FC(i,k)=trb(i,j,k-1,nstp,ig)*max(cff,0.)
+     &             +trb(i,j,k  ,nstp,ig)*min(cff,0.) 
+          ENDDO
+        ENDDO
+        DO k=1,N-1
+          DO i=imin,imax          
+            cff=2./(Hz(i,j,k)+Hz(i,j,k+1))
+            gls_new(i,j,k)= gls_new(i,j,k) 
+     &                     -dt*cff*pm(i,j)*pn(i,j)
+     &                        *(FC(i,k+1)-FC(i,k))
+          ENDDO
+        ENDDO
+      ENDDO
 # endif /* GLS_VADV_UP1 */
 !
 !--------------------------------------------------------------------
@@ -434,7 +488,7 @@
             ! Production/Dissipation terms and diagonal term
             DO k=1,N-1
                DO i=imin,imax            
-                  ig1   = (igls-ig); ig2 = (ig-itke)           
+                  ig1   = (igls-ig); ig2 = (ig-itke)
                   invk  =     1. / trb( i,j,k,nstp,itke )
                   gls   =          trb( i,j,k,nstp,igls )
                   ! invG = 1 for tke invg=1/psi for gls                     
@@ -449,18 +503,22 @@
      &                                     +  cff3p*MIN(bvf(i,j,k),0.) )
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1))
+                  IF( ig == itke ) THEN
+                    trb_new=tke_new(i,j,k)
+                  ELSE
+                    trb_new=gls_new(i,j,k)
+                  ENDIF
                   IF( (Bprod + Sprod) .gt. 0.) THEN
-                     RH(i,k) = cff*( trb(i,j,k,nnew,ig) 
-     &                                              + dt*(Bprod+Sprod) )
+                     RH(i,k) = cff*( trb_new + dt*(Bprod+Sprod) )
                      DC(i,k) = cff*(1.+dt*cff2*diss(i,k))
      &                                                -FC(i,k)-FC(i,k+1)
-                  ELSE              
-                     RH(i,k) = cff*( trb(i,j,k,nnew,ig) + dt*Sprod  )
+                  ELSE
+                     RH(i,k) = cff*( trb_new + dt*Sprod  )
                      DC(i,k) = cff*(1.+dt*(cff2*diss(i,k)  
      &                              -invG*Bprod)) - FC(i,k) - FC(i,k+1) 
                   ENDIF
                ENDDO
-            ENDDO  
+            ENDDO
             
             ! Boundary conditions
             IF( ig == itke ) THEN
@@ -478,10 +536,10 @@
                   trb_bot = MAX( tke_min, cm0inv2*ustar_bot_sq(i,j) )
                   flux_bot = 0.              
                   ! finalize
-                  RH(  i,1   ) = RH(i,  1) + dt*flux_bot
-                  RH(  i,N-1 ) = RH(i,N-1) + dt*flux_top
-                  trb( i,j,N,nnew,ig ) = trb_sfc
-                  trb( i,j,0,nnew,ig ) = trb_bot
+                  RH(i,1  ) = RH(i,  1) + dt*flux_bot
+                  RH(i,N-1) = RH(i,N-1) + dt*flux_top
+                  tke_new(i,j,N) = trb_sfc
+                  tke_new(i,j,0) = trb_bot
                ENDDO
             ELSE
                DO i=imin,imax
@@ -520,10 +578,10 @@
      &                          *vonKar*OneOverSig(igls)
      &                          *(cff**(rm+0.5))*(lgthsc**rn)
                   ! finalize
-                  RH( i,  1 ) = RH(i,  1) + dt*flux_bot
-                  RH( i,N-1 ) = RH(i,N-1) + dt*flux_top
-                  trb( i,j,N,nnew,ig ) = trb_sfc
-                  trb( i,j,0,nnew,ig ) = trb_bot 
+                  RH(i,  1) = RH(i,  1) + dt*flux_bot
+                  RH(i,N-1) = RH(i,N-1) + dt*flux_top
+                  gls_new(i,j,N) = trb_sfc
+                  gls_new(i,j,0) = trb_bot 
                ENDDO
             ENDIF               
             
@@ -542,16 +600,27 @@
                ENDDO
             ENDDO   
 
-            DO i=imin,imax           
-               trb( i,j,1,nnew,ig ) = MAX( RH(i,1), trb_min(ig) )
-            ENDDO  
-              
-            DO k=2,N-1
-               DO i=imin,imax
+            IF( ig == itke ) THEN
+              DO i=imin,imax           
+                tke_new(i,j,1) = MAX( RH(i,1), trb_min(ig) )
+              ENDDO  
+              DO k=2,N-1
+                DO i=imin,imax
                   RH(i,k) = RH(i,k)-CF(i,k)*RH(i,k-1)
-                  trb( i,j,k,nnew,ig ) = MAX( RH(i,k), trb_min(ig) )
-               ENDDO     
-            ENDDO  
+                  tke_new(i,j,k) = MAX( RH(i,k), trb_min(ig) )
+                ENDDO     
+              ENDDO  
+            ELSE
+              DO i=imin,imax           
+                gls_new(i,j,1) = MAX( RH(i,1), trb_min(ig) )
+              ENDDO  
+              DO k=2,N-1
+                DO i=imin,imax
+                  RH(i,k) = RH(i,k)-CF(i,k)*RH(i,k-1)
+                  gls_new( i,j,k) = MAX( RH(i,k), trb_min(ig) )
+                ENDDO     
+              ENDDO  
+            ENDIF
 
          !--------------------------------------------------
          ENDDO     ! ig loop
@@ -568,6 +637,7 @@
 !
 # ifdef PSI_SMOOTH
       ig = igls
+#  define TRB_NEW gls_new
 #  define FX ustar_sfc_sq      
 #  define FE ustar_bot_sq 
 #  define FE1 shear2       
@@ -577,10 +647,12 @@
 #  undef FX
 #  undef FE      
 #  undef FE1
+#  undef TRB_NEW
 # endif
 
 # ifdef TKE_SMOOTH
         ig = itke
+#  define TRB_NEW tke_new
 #  define FX ustar_sfc_sq      
 #  define FE ustar_bot_sq 
 #  define FE1 shear2       
@@ -590,6 +662,7 @@
 #  undef FX
 #  undef FE      
 #  undef FE1
+#  undef TRB_NEW
 # endif
 
 # undef I_EXT_RANGE

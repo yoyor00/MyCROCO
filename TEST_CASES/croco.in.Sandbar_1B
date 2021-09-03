@@ -9,9 +9,10 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 
 initial: NRREC  filename
           0
-                sandbar_ini.nc
+                sandbar_rst.nc
+
 sediments: input file
-           sediment_sandbar_1B.in
+           TEST_CASES/sediment_sandbar_1B.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T          
@@ -22,13 +23,6 @@ bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
 wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
                       T   T     T     T   T   T   T   T  T    T    T
 
-restart:          NRST, NRPFRST / filename
-                  18000   -1
-                          sandbar_rst.nc
-
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     3000       0
-                          sandbar_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   10*T
