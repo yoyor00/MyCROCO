@@ -17,10 +17,6 @@
 
 # define GLS_HADV_UP1
 # define GLS_VADV_UP1
-# ifdef DUNE
-#   undef GLS_HADV_UP1
-#   undef GLS_VADV_UP1      
-# endif
 
 # ifdef GLS_MIXING_3D
 #  define GLS_SHEAR_3D
@@ -72,15 +68,21 @@
 !                     Technical Report. IFREMER report , 2009   
 !
 ! *** History :
-!      !  2016-11 (F. Lemarié) : original code inspired by the Mars3D 
-!                                implementation by S. Petton, A.-C. Bennis,  
-!                                T. Duhaut, V. Garnier, F. Dumas 
+!   ! 2016-11 (F. Lemarié) : original code inspired by the Mars3D 
+!                            implementation by S. Petton, A.-C. Bennis,  
+!                             T. Duhaut, V. Garnier, F. Dumas 
+!   ! 2020 (Marchesiello, Benshila): added 3D shear + advection
+!                        + wave forcing (Kumar et al COAWST paper 2012)
+!   ! 2021 (Marchesiello): MPI bug fixes (advection, wave forcing 
+!                                                       (wkb_wwave.F));
+!      + revision of parameters (background visc) including for SANDBAR
 !
 !======================================================================
 !
       IMPLICIT NONE
 # include "param.h"
 # include "mixing.h"
+# include "scalars.h"
 
       ! Local integers
       INTEGER         ::   Istr, Iend, Jstr, Jend
@@ -104,27 +106,33 @@
       REAL            ::  flux_top , flux_bot , lgthsc, L_lim, du,dv,dw
       REAL            ::  trb_sfc  , trb_bot  , z0_s, z0_b , gls_min
       REAL            ::  HUon_w   , HVom_w   , trb_min(2), Denom
+# ifdef MRL_WCI
+      REAL            ::  cmu_fac, cb_wallE, gls_sigp_cb
+# endif
       ! Parameter values      
       REAL, PARAMETER ::  eps_min =  1.0E-12 ! min value for dissipation rate
       REAL, PARAMETER ::  tke_min =  1.0E-10 ! min value for TKE
 # ifdef GLS_MIXING_3D
-      REAL, PARAMETER ::  eps     =  1.0E-05 ! min stable stratification
-      REAL, PARAMETER ::  nuws    =  1.0E-06 ! background value for diffusivities 
-      REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background value for viscosities
+      REAL, PARAMETER ::  eps     =  1.0E-10 ! min stable stratification
+      REAL, PARAMETER ::  nuws    =  0.1E-06 ! background diffusivity
+      REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background viscosity
 # else
-      REAL, PARAMETER ::  eps     =  1.0E-14 ! min stable stratification
-      REAL, PARAMETER ::  nuws    =  0.1E-04 ! background value for diffusivities 
-      REAL, PARAMETER ::  nuwm    =  1.0E-04 ! background value for viscosities
+      REAL, PARAMETER ::  eps     =  1.0E-10 ! min stable stratification
+      REAL, PARAMETER ::  nuws    =  0.1E-05 ! background diffusivity
+      REAL, PARAMETER ::  nuwm    =  1.0E-05 ! background viscosity
 # endif      
       REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin 
                                              ! mixing length limitation
-# include "scalars.h"
-      !REAL, PARAMETER ::  chk     =  2.E+05/g ! charnock coefficient (Stacey, 1999)
-      REAL, PARAMETER ::  chk     =  1400./g  ! charnock coefficient
-      !
+      REAL, PARAMETER ::  chk     =  1400./g ! charnock coefficient
+# ifdef SANDBAR
+      REAL, PARAMETER ::  Zosmin  =  1.e-2   ! min surface roughness length
+      REAL, PARAMETER ::  Zobmin  =  5.e-2   ! min bottom  roughness length
+# else
+      REAL, PARAMETER ::  Zosmin  =  1.e-2   ! min surface roughness length
+      REAL, PARAMETER ::  Zobmin  =  1.e-4   ! min bottom  roughness length
+# endif
 # ifdef MRL_WCI
-      REAL :: cmu_fac, cb_wallE, gls_sigp_cb
-      REAL, PARAMETER :: zalp = 0.05     ! fraction of wave energy
+      REAL, PARAMETER ::  zalp    =  0.05    ! fraction of wave energy
 # endif
 
       REAL, PARAMETER :: e1 =  3.0 + 1.*rp / rn
@@ -217,14 +225,14 @@
      &             /(cm0**(4./3.))
       cb_wallE=1.
       gls_sigp_cb=vonKar**2/(cm0**2*beta2*cb_wallE)
-     &            *(rn**2-cff*rn/3.*(4.*rm+1.)
-     &                      +cff**2*rm/9.*(2.+4.*rm))
+     &                 *(rn**2-cff*rn/3.*(4.*rm+1.)
+     &                    +cff**2*rm/9.*(2.+4.*rm))
 # endif
 
       IF (FIRST_TIME_STEP) THEN
         DO k=0,N
-          DO j=jmin,jmax
-            DO i=imin,imax    
+          DO j=jmin-1,jmax+1
+            DO i=imin-1,imax+1    
               trb( i, j, k, nstp, itke ) = trb_min(itke)
               trb( i, j, k, nstp, igls ) = trb_min(igls)
             ENDDO
@@ -254,15 +262,15 @@
           ENDDO
       
           DO j=jmin,jmax+1
-             DO i=imin,imax  
-               HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
+            DO i=imin,imax  
+              HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1))
 #  ifdef MASKING
      &                        *vmask(i,j)           
 #  endif
-               FE(i,j)=
+              FE(i,j)=
      &              trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &             +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
-             ENDDO
+            ENDDO
           ENDDO
 !
           DO j=jmin,jmax
@@ -386,7 +394,7 @@
             ustar_sfc_sq( i, j ) = 
      &                        sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
      &                             +(0.5*(svstr(i,j)+svstr(i,j+1)))**2 )
-            ustar_bot_sq( i, j ) = 
+            ustar_bot_sq( i, j ) =
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
@@ -481,10 +489,7 @@
 # ifdef MRL_WCI
                   z0_s=MAX(0.5*whrm(i,j),0.01)
 # else
-                  z0_s=MAX( 1.e-2 , chk*ustar_sfc_sq(i,j) )   !<-- Charnock
-!                  cff     = 30.*tanh( 0.6 / (28.*sqrt( ustar_sfc_sq(i,j) )) )
-!                  z0_s    = MAX( 1.e-2 , 1.3*( 782.353/g )*ustar_sfc_sq(i,j)
-!     &                                            *(cff**1.5) ) ! Rascle et al., (2008)
+                  z0_s=MAX( Zosmin , chk*ustar_sfc_sq(i,j) )   !<-- Charnock
 # endif
                   cff         = 0.5*( trb( i,j,N-1,nnew,itke )
      &                            +   trb( i,j,N  ,nnew,itke ) )
@@ -505,13 +510,12 @@
      &                                  *   zalp*   wepb(i,j)
 # endif 
                   ! bottom
-                  z0_b        = MAX( Zob(i,j) , 1.E-04 )
+                  z0_b        = MAX( Zob(i,j) , Zobmin )
                   cff         = 0.5*( trb( i,j,  1,nnew,itke )
      &                            +   trb( i,j,  0,nnew,itke ) )
                   lgthsc      = vonKar*(0.5*Hz(i,j,1)+z0_b)
-              !    lgthsc      = vonKar*(z0_b)  !RB
                   trb_bot     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
-     &                                               *(cff**rm)) 
+     &                               *(trb( i,j,0,nnew,itke )**rm)) 
                   flux_bot    =-rn*cm0**(rp+1.)
      &                          *vonKar*OneOverSig(igls)
      &                          *(cff**(rm+0.5))*(lgthsc**rn)

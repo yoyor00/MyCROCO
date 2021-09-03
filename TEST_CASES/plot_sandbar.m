@@ -33,20 +33,26 @@ clear all
 close all
 %================== User defined parameters ===========================
 %
+% --- LIP experiment --- 
+%
+prompt = 'Erosion (1B) or Accretion (1C) LIP experiment? [1B]: ';
+mycase = input(prompt,'s');
+if isempty(mycase)
+    mycase = '1B';
+end
+%
 % --- model params ---
 %
-fname      = 'sandbar_his.nc'; % croco file name
+fname  = 'sandbar_his.nc'; % croco file name
 
-Expname    = '1B';     % LIP experiment : 1B: offshore migration
-                       %                  1C: onshore  migration
-if Expname == '1B',
- morph_fac = 18;       % morphological factor (from sediment.in)
+if mycase == '1B',
+ morph_fac = 18;      % morphological factor (from sediment.in)
 else
  morph_fac = 13; 
 end
 
-morph_cpl  = 1;        % feedback to currents
-makepdf    = 0;        % make pdf file
+morph_cpl  = 1;       % feedback to currents
+makepdf    = 0;       % make pdf file
 %
 %======================================================================
 %
@@ -55,26 +61,40 @@ makepdf    = 0;        % make pdf file
 % ---------------------------------------------------------------------
 %
 yindex = 2; % Mm=1 with NS no-slip conditions
-%
+
 nc=netcdf(fname,'r');
 tindex  =length(nc{'scrum_time'}(:)); % reads last record
-tindex0 =min(tindex,5);               %  2 h
-%
+
+time=morph_fac*nc{'scrum_time'}(:)/3600; % time in hours
+if mycase == '1B',
+ [d,tindex0]=min(abs(time-4));     %  0-8h (1B)
+else
+ [d,tindex0]=min(abs(time-3));     %  0-7h (1C)
+end
+
 % horizontal grid
 hr=squeeze(nc{'h'}(yindex,:));
 xr=squeeze(nc{'x_rho'}(yindex,:));
 hu=0.5*(hr(1:end-1)+hr(2:end));
 xu=0.5*(xr(1:end-1)+xr(2:end));
 L=length(hr);
-%
+
 % new bathy from last record
 if morph_cpl,
  hnew=squeeze(nc{'hmorph'}(tindex,yindex,:));
  h=hnew;
+ h0=squeeze(nc{'hmorph'}(tindex0,yindex,:));
+ if isempty(hnew),
+  h=hr;
+  hnew=hr;
+  h0=hr;
+ end
 else
  h=hr;
+ hnew=hr;
+ h0=hr;
 end
-%
+
 % vertical grid
 N=length(nc('s_rho'));
 theta_s=nc.theta_s(:); 
@@ -129,11 +149,16 @@ sup(hr<0)=sup(hr<0)+hr(hr<0)-Dcrit;
 % --------------------------------------------------------------------
 
 % ... u undertow ...
-zob=1.e-4;zref=0.1; 
+zref=0.1; 
 u0=squeeze(nc{'u'}(tindex0,:,yindex,:));
+hu=0.5*(h0(1:end-1)+h0(2:end));
 L=length(hu);
 hu2d=repmat(hu,[N 1]);
-zzu=hu2d+zru;
+z0=squeeze(nc{'zeta'}(tindex0,yindex,:));
+z0(h0<Dcrit)=z0(h0<Dcrit)-h0(h0<Dcrit); % add land topo
+zr0=squeeze(zlevs(h0,z0,theta_s,theta_b,hc,N,'r',2));
+zru0=0.5*(zr0(:,1:end-1)+zr0(:,2:end));
+zzu=hu2d+zru0;
 for ix=1:L
  nn=min(find(zzu(:,ix)>zref));
  if isempty(nn), nn=N; end
@@ -142,26 +167,18 @@ end
 
 % ... sediment concentration ...                 ---> xr,zr
 C0=2*squeeze(nc{'sand_01'}(tindex0,:,yindex,:));
-zref=0.01;
-L=length(h);
-h2d=repmat(h,[N 1]);
-zz=h2d+zr;
+zref=0.05;
+L=length(h0);
+h2d=repmat(h0,[N 1]);
+zz=h2d+zr0;
 for ix=1:L
  nn=min(find(zz(:,ix)>zref));
  if isempty(nn), nn=N; end
- Cbot(ix)=squeeze(C(nn,ix));
+ Cbot(ix)=squeeze(C0(nn,ix));
 end
 
 % ... hrms ...  
 hrms =squeeze(nc{'hrm'}(tindex0,yindex,:)); % init time
-
-% ... ripple height ...  
-rhgt=squeeze(nc{'Hripple'}(tindex0,yindex,:)); % init time
-% ... ripple length ...  
-rlen=squeeze(nc{'Lripple'}(tindex0,yindex,:)); % init time
-% ... Zb app ...  
-zbapp=squeeze(nc{'Zbapp'}(tindex0,yindex,:)); % init time
-
 close(nc)
 
 zeta(D<Dcrit)=NaN;
@@ -177,48 +194,45 @@ xd=linspace(0,200,64);
 
 % --- LIP-1B bathy at 18h on xd grid ---
 hd1B = -[ ...
--4.0935  -4.0931  -4.0926  -4.0921  -4.0917  -4.0912  -4.0908  -3.9686 ...
--3.8283  -3.6879  -3.5487  -3.4097  -3.2665  -3.1167  -2.9668  -2.8105 ...
--2.6449  -2.5004  -2.4013  -2.3178  -2.2750  -2.2422  -2.2418  -2.2274 ...
--2.1987  -2.1699  -2.1234  -2.0759  -2.0055  -1.9297  -1.8476  -1.7596 ...
--1.7340  -1.7175  -1.6960  -1.6517  -1.6024  -1.5488  -1.4808  -1.4050 ...
--1.2944  -1.1205  -0.8597  -0.8404  -0.9656  -0.9895  -1.0150  -1.0028 ...
--0.9712  -0.8307  -0.5613  -0.4577  -0.4202  -0.4011  -0.3702  -0.3169 ...
--0.2464  -0.1274  -0.0041   0.1719   0.3584   0.6120   0.7816   0.8273];
+-4.0935  -4.0931  -4.0926  -4.0921  -4.0917  -4.0912  -4.0217  -3.9788 ...
+-3.8282  -3.6638  -3.5145  -3.3757  -3.2330  -3.0776  -2.9134  -2.7556 ...
+-2.6207  -2.4878  -2.3855  -2.3182  -2.2756  -2.2480  -2.2272  -2.2064 ...
+-2.1806  -2.1467  -2.1033  -2.0508  -1.9910  -1.9269  -1.8621  -1.8006 ...
+-1.7456  -1.6995  -1.6625  -1.6319  -1.6011  -1.5583  -1.4985  -1.4276 ...
+-1.3233  -1.0958  -0.8628  -0.8772  -0.9906  -1.0213  -1.0502  -1.0420 ...
+-0.9964  -0.8379  -0.5619  -0.4863  -0.4529  -0.4259  -0.3967  -0.3527 ...
+-0.2812  -0.1732  -0.0251   0.1585   0.3641   0.5696   0.7438   0.8490];
+
+x_hrms_d1B=[20  65  100 115 130 138 145 152 160 170];      % --- Hs 8h
+hrms_d1B  =[.85 .80 .72 .65 .58 .52 .39 .36 .36 .25];
+
+x_ubot_d1B= [65   102  115  130  138  145  152  160  170]; % --- Ub 8h
+  ubot_d1B=-[12.3 13.0 12.9 17.2 30.3 30.4 17.4 15.2 13.6];
+
+x_Cbot_d1B= [65  102 115 130 138  145  152  170];          % --- Cb 8h
+  Cbot_d1B= [.40 .23 .32 .77 3.08 1.73 .64  0.87];
 
 % --- LIP-1C bathy at 13h on xd grid ---
 hd1C = -[ ...
--4.1117  -4.1068  -4.1019  -4.0970  -4.0921  -4.0872  -4.0772  -3.9639 ...
--3.8228  -3.6655  -3.5212  -3.3955  -3.2532  -3.0899  -2.9443  -2.8001 ...
--2.6459  -2.4907  -2.3907  -2.3071  -2.2576  -2.2382  -2.2436  -2.1997 ...
--2.1558  -2.1240  -2.0958  -2.0408  -1.9742  -1.9114  -1.8500  -1.7977 ...
--1.7617  -1.7219  -1.6751  -1.6315  -1.5914  -1.5515  -1.5093  -1.4539 ...
--1.3661  -1.2169  -1.0205  -0.8062  -0.7222  -0.9540  -1.0534  -1.0534 ...
--1.0044  -0.8524  -0.5634  -0.5000  -0.4464  -0.3899  -0.3659  -0.3586 ...
--0.2218  -0.2098  -0.1132   0.1382   0.3922   0.6086   0.7579   0.8107];
+-4.0935  -4.0931  -4.0926  -4.0921  -4.0917  -4.0912  -4.0733  -3.9439 ...
+-3.8105  -3.6717  -3.5289  -3.3835  -3.2361  -3.0864  -2.9344  -2.7828 ...
+-2.6401  -2.4939  -2.3813  -2.3146  -2.2765  -2.2534  -2.2351  -2.2143 ...
+-2.1864  -2.1494  -2.1028  -2.0481  -1.9878  -1.9250  -1.8632  -1.8055 ...
+-1.7545  -1.7112  -1.6749  -1.6427  -1.6085  -1.5627  -1.4999  -1.4240 ...
+-1.3120  -1.1622  -0.9755  -0.7739  -0.7177  -1.0002  -1.0464  -1.0356 ...
+-0.9975  -0.8333  -0.5603  -0.4902  -0.4558  -0.4270  -0.4016  -0.3659 ...
+-0.3035  -0.2013  -0.0536   0.1341   0.3454   0.5532   0.7225   0.8159];
 
-% ----------
-
-x_hrms_d1B=[20 65 100 115 130 138 145 152 160 170]; % --- LIP-1B 8hr
-hrms_d1B  =[.85 .8 0.7 0.65 0.6 0.5 0.38 0.35 0.35 0.25];
-
-x_ubot_d1B= [65 102 130 138 145 152 160 170];
-  ubot_d1B=-[13  15  18  30  32  18  18  13];
-
-x_Cbot_d1B= [65 102 130 138 145 152 160 170];
-  Cbot_d1B= [0.3 0.2 0.9  3 1.9 0.8 0.9 0.9];
-% -----------
-
-x_hrms_d1C=[20  40  65 100 115 130 132 138 145 152 160 170]; % --- LIP-1C 7hr
+x_hrms_d1C=[20  40  65 100 115 130 132 138 145 152 160 170]; % --- Hs 7h
 hrms_d1C  =[.4 .41 .43 .44 .43 .43 .46 .43 .35 .33 .32 .22];
 
-x_ubot_d1C= [65 102 115 125 130 134 152 160];
+x_ubot_d1C= [65 102 115 125 130 134 152 160];                % --- Ub 7h
   ubot_d1C=-[ 1  1   1   2   2   3  13  11];
 
-x_Cbot_d1C= [65  102 115 125 130  134 152 160];
+x_Cbot_d1C= [65  102 115 125 130  134 152 160];              % --- Cb 7h
   Cbot_d1C= [0.1 0.1 0.3 0.2 0.35 0.5 0.3 0.8];
 
-if Expname=='1B',
+if mycase=='1B',
  hd=hd1B;
  x_hrms_d=x_hrms_d1B;
  hrms_d=hrms_d1B;
@@ -228,8 +242,7 @@ if Expname=='1B',
  Cbot_d=Cbot_d1B;
 else
  hm=interp1(xr,hr,xd);
- hd=hm+hd1C-hd1B;
- %hd=hd1C;
+ hd=hd1C;
  x_hrms_d=x_hrms_d1C;
  hrms_d=hrms_d1C;
  x_ubot_d=x_ubot_d1C;
@@ -242,7 +255,7 @@ end
 %=============================================================
 %
 figure('Position',[50 50 600 800])
-xmin=20; xmax=190;
+xmin=60; xmax=190;
 %
 % section u ...
 %
@@ -256,10 +269,10 @@ colormap(map);
 contourf(xu2d,zru,u,[cmin:cint:cmax],'linestyle','-'); 
 hold on
 colorbar('h');
-leg(1)=plot(xr,-hr,  'k',  'LineWidth',2);
-leg(2)=plot(xr,-hnew,'k--','LineWidth',3);
-leg(3)=plot(xd,-hd  ,'r--','LineWidth',3);
-plot(xr,zeta,'color','g','LineWidth',3);
+leg(1)=plot(xr,-hr,  'k:','LineWidth',3);
+leg(2)=plot(xr,-hnew,'k', 'LineWidth',3);
+leg(3)=plot(xd,-hd  ,'r', 'LineWidth',3);
+plot(xr,zeta,'color','g', 'LineWidth',3);
 legend(leg(1:3),'Initial','Final Model','Final data', ...
                 'location','southeast');
 ylabel('Depth [m]','Fontsize',15)
@@ -267,7 +280,7 @@ grid on
 axis([xmin xmax zmin zmax])
 caxis([cmin cmax])
 thour=floor(time*24);
-if Expname=='1B',
+if mycase=='1B',
  title(['SANDBAR EROSION   LIP-1B - U at Time ',num2str(thour),' hour'])
 else
  title(['SANDBAR ACCRETION LIP-1C - U at Time ',num2str(thour),' hour'])
@@ -319,78 +332,11 @@ set(gca,'Fontsize',15)
 hold off
 
 if makepdf
- if Expname=='1B',
+ if mycase=='1B',
   export_fig -transparent sandbar_LIP_1B.pdf
  else 
   export_fig -transparent sandbar_LIP_1C.pdf
  end
 end
 
-return
-%
-%==================================================
-
-if Expname=='1B',
-
- i0=[20 31 39 42 44 46 48 51];
- L=length(i0);
-
- figure('position',[100 100 1000 300])
- for i=1:L
-  ii=i0(i);
-  subplot(1,L,i)
-  plot(u(:,ii),zru(:,ii)-zru(1,ii)); axis([-0.4 0 0 2])
-  title(['x=',num2str(round(xu(ii)))])
-  xlabel('U(m/s)')
-  if i==1, ylabel('Depth(m)'); end
-  grid on
- end
- 
- figure('position',[100 100 1000 300])
- for i=1:L
-  ii=i0(i);
-  subplot(1,L,i)
-  plot(C(:,ii),zr(:,ii)-zr(1,ii)); axis([0 3 0 2])
-  title(['x=',num2str(round(xu(ii)))])
-  xlabel('C(m/s)')
-  if i==1, ylabel('Depth(m)'); end
-  grid on
- end
-
-else
-
- i0=[20 31 35 39 41 46 48];
- L=length(i0);
-
- figure('position',[100 100 1000 300])
- for i=1:L
-  ii=i0(i);
-  subplot(1,L,i)
-  plot(u(:,ii),zru(:,ii)-zru(1,ii)); axis([-0.3 0 0 2])
-  title(['x=',num2str(round(xu(ii)))])
-  xlabel('U(m/s)')
-  if i==1, ylabel('Depth(m)'); end
-  grid on
- end
- 
- figure('position',[100 100 1000 300])
- for i=1:L
-  ii=i0(i);
-  subplot(1,L,i)
-  plot(C(:,ii),zr(:,ii)-zr(1,ii)); axis([0 1 0 2])
-  title(['x=',num2str(round(xu(ii)))])
-  xlabel('C(m/s)')
-  if i==1, ylabel('Depth(m)'); end
-  grid on
- end
-
-end
-
-%
-% Ripple plot
-%
-figure;
-plot(xr,100*rhgt,xr,10*rlen,xr,1000*zbapp,xr,-h);
-grid on
-legend('rhgt (cm)','rlen (dm)','zbapp (mm)','bathy (m)')
 

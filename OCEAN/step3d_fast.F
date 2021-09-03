@@ -191,6 +191,10 @@ C$    trd=omp_get_thread_num()
 # ifdef MRL_WCI
       real vstu,ustv,dudx,dvdx,dude,dvde
 # endif
+# ifdef SEDIMENT
+#  include "sediment.h"
+#  include "bbl.h"
+# endif
 # include "mixing.h"
 # include "climat.h"
 # include "scalars.h"
@@ -208,6 +212,9 @@ C$    trd=omp_get_thread_num()
 # endif
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
+# endif
+# ifdef SEDIMENT
+      real Umag,Ucur,Vcur,Utur,znots
 # endif
 
 # include "nbq.h"
@@ -1510,6 +1517,35 @@ C$OMP END MASTER
             enddo
           enddo
         endif
+
+#   ifdef SEDIMENT
+!
+!  Compute skin stress components at rho points
+!  (for the sediment model)
+!
+        do j=Jstr,Jend
+          do i=Istr,Iend
+#    ifdef DUNE
+            znots=Zobt
+#    else
+            znots=Ssize(i,j)/12.
+#    endif
+            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/znots)
+            cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
+            Ucur=0.5*(UBOT(i,j)+UBOT(i+1,j))
+            Vcur=0.5*(VBOT(i,j)+VBOT(i,j+1))
+#     if defined GLS_MIXING && defined SANDBAR
+            Utur=15.*SQRT(trb(i,j,1,nrhs,itke))
+     &                           *exp(-0.01*(xr(i,j)-142.)**2)
+#     else
+            Utur=0.
+#     endif
+            Umag=SQRT(Ucur*Ucur+Vcur*Vcur+Utur*Utur)
+            bustrw(i,j)=cff*Umag*Ucur
+            bvstrw(i,j)=cff*Umag*Vcur
+          enddo
+        enddo
+#   endif /* SEDIMENT */
 
       endif
 #  undef UBOT

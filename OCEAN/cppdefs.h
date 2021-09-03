@@ -17,7 +17,7 @@
 #undef  CANYON          /* Canyon Example */
 #undef  EQUATOR         /* Equator Example  */
 #undef  INNERSHELF      /* Inner Shelf Example */
-#undef  SINGLE_COLUMN   /* 1DV vertical Example */
+#undef  SINGLE_COLUMN   /* 1DV vertical mixing Example */
 #undef  RIVER           /* River run-off Example */
 #undef  OVERFLOW        /* Graviational/Overflow Example */
 #undef  SEAMOUNT        /* Seamount Example */
@@ -40,10 +40,10 @@
 #undef  I_SOLITON       /* Internal Soliton Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
-#undef  DUNE            /* Dune test case Example */ 
-#undef  SED_TOY         /* 1DV vertical Example Dhysed */
-#undef  TFLAT2DV        /* 2DV uncovering sand bar with tide Example  Dhysed */
-#define  REGIONAL       /* REGIONAL Applications */
+#undef  DUNE            /* Dune migration Example */ 
+#undef  SED_TOY         /* 1DV sediment toy Example */
+#undef  TFLAT2DV        /* 2DV tidal flat Example */
+#define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
 /*
@@ -502,13 +502,13 @@
 !
 !                              Seven  sets up are encompassed :
 */
-# define KATO_PHILIPS          /* erosion of a linear stratification by a constant surface wind stress */
-# undef WILLIS_DEARDORFF       /* erosion of a linear stratification by a constant loss of surface buoyancy */
-# undef DIURNAL_CYCLE          /* erosion of a linear stratification by a constant loss of surface buoyancy */
-# undef FORCED_EKBBL           /* forced Ekman bottom boundary layer */
-# undef FORCED_DBLEEK          /* forced Ekman bottom and surface boundary layers */
-# undef FORCED_NONROTBBL       /* non rotating forced bottom boundary layer : Prandt layer  */
-# undef FORCED_OSCNONROTBBL    /* non rotating oscillatory forced bottom boundary layer  */
+# define KATO_PHILIPS        /* erosion of linear strat by constant wind stress */
+# undef  WILLIS_DEARDORFF    /* erosion of linear strat by constant surf buoyancy loss */
+# undef  DIURNAL_CYCLE       /* erosion of linear strat by constant surf buoyancy loss */
+# undef  FORCED_EKBBL        /* forced Ekman bottom boundary layer */
+# undef  FORCED_DBLEEK       /* forced Ekman bottom and surface boundary layers */
+# undef  FORCED_NONROTBBL    /* non rotating forced bottom boundary layer : Prandt layer */
+# undef  FORCED_OSCNONROTBBL /* non rotating oscillatory forced bottom boundary layer */
 # undef  OPENMP
 # undef  MPI
 # define UV_ADV
@@ -526,7 +526,6 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 # undef  RVTK_DEBUG
-
 
 #elif defined INTERNAL
 /*
@@ -732,8 +731,7 @@
 !                       ======= =======
 !
 ! Thacker, W., (1981), Some exact solutions to the nonlinear 
-! shallow-water wave equations. 
-! J. Fluid Mech., 107, 499â508.
+! shallow-water wave equations. J. Fluid Mech., 107, 499-508.
 */
 # undef  OPENMP
 # undef  MPI
@@ -990,9 +988,9 @@
 */
 # define SANDBAR_OFFSHORE /* LIP-1B */
 # undef  SANDBAR_ONSHORE  /* LIP-1C */
-# undef  NBQ  /* wave-resolved model */
 # undef  OPENMP
 # undef  MPI
+# undef  NBQ
 # define SOLVE3D
 # define UV_ADV
 # define NEW_S_COORD
@@ -1007,7 +1005,7 @@
 # define OBC_WEST
 # define SPONGE
 # define WET_DRY
-# ifndef NBQ /* wave-averaged model */
+# ifndef NBQ /* ! NBQ */
 #  define MRL_WCI
 #  ifdef MRL_WCI
 #   define WKB_WWAVE
@@ -1015,28 +1013,21 @@
 #   define WKB_OBC_WEST
 #   define WAVE_ROLLER
 #   define WAVE_FRICTION
+#   define WAVE_BREAK_TG86
 #   define WAVE_BREAK_SWASH
-#   undef  WAVE_STREAMING
+#   define WAVE_STREAMING
 #   undef  WAVE_RAMP
 #  endif
-#  define LMD_MIXING
-#  undef  GLS_MIXING
-#  undef  GLS_KOMEGA
+#  define GLS_MIXING
+#  define GLS_KOMEGA
+#  undef  LMD_MIXING
 #  ifdef LMD_MIXING
 #   define LMD_SKPP
 #   define LMD_BKPP
-#    define LMD_VMIX_SWASH
+#   define LMD_VMIX_SWASH
 #  endif
 #  define BBL
-#  define SEDIMENT
-#  ifdef SEDIMENT
-#   define ANA_SEDIMENT
-#   define TCLIMATOLOGY
-#   define TNUDGING
-#   define ANA_TCLIMA
-#   define MORPHODYN
-#  endif
-# else      /* wave-resolved model */
+# else /* NBQ */
 #  define MPI
 #  define NBQ_PRECISE
 #  define WAVE_MAKER
@@ -1055,14 +1046,21 @@
 #  define AVERAGES
 #  define AVERAGES_K
 #  define DIAGNOSTICS_EDDY
-#  define SEDIMENT
-#  ifdef SEDIMENT
-#   define ANA_SEDIMENT
-#   define TCLIMATOLOGY
-#   define TNUDGING
-#   define ANA_TCLIMA
-#   define MORPHODYN
-#  endif
+# endif /* NBQ */
+# define SEDIMENT
+# ifdef SEDIMENT
+#  define TCLIMATOLOGY
+#  define TNUDGING
+#  define ANA_TCLIMA
+#  define MORPHODYN
+# endif
+# undef  STATIONS
+# ifdef STATIONS
+#  define ALL_SIGMA
+# endif
+# undef  DIAGNOSTICS_TS
+# ifdef DIAGNOSTICS_TS
+#  define DIAGNOSTICS_TS_ADV
 # endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
@@ -1097,7 +1095,6 @@
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
-# define BSTRESS_FAST
 # undef  NBQ
 # ifdef NBQ
 #  define NBQ_PRECISE
@@ -1442,9 +1439,9 @@
 !                       ==== ==== ==== =======
 !
 */
-# undef  ANA_DUNE           /* Analytical test case (Marieu) */
-# undef  DUNE3D             /* 3d example from "Bosse" DHYSED          */
-                            /*      (Only with Mustang sediment model) */
+# undef  ANA_DUNE     /* Analytical test case (Marieu) */
+# undef  DUNE3D       /* 3D example (only with MUSTANG sed model) */
+ 
 # undef  OPENMP
 # undef  MPI
 # define M2FILTER_NONE
@@ -1471,16 +1468,19 @@
 #  define USGS       
 #  undef  MUSTANG
 #  define MORPHODYN
+#  ifdef USGS
+#   undef  BEDLOAD_WENO5          
+#   ifdef ANA_DUNE
+#    define BEDLOAD_MARIEU
+#   else
+#    define BEDLOAD_WULIN
+#    define TAU_CRIT_WULIN
+#   endif
+#  endif
 # endif
 # define GLS_MIXING
-# undef  LMD_MIXING
-# ifdef LMD_MIXING
-#  define LMD_SKPP
-#  define LMD_BKPP
-# endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-
 
 #elif defined SED_TOY
 /*
@@ -1489,7 +1489,6 @@
 */
 # undef  OPENMP
 # undef  MPI
-
 # undef  UV_ADV
 # define NEW_S_COORD
 # undef  UV_COR
@@ -1524,7 +1523,6 @@
 */
 # undef  OPENMP
 # undef  MPI
-
 # undef  NONLIN_EOS
 # define SALINITY
 # define UV_ADV
@@ -1532,6 +1530,7 @@
 # define UV_COR
 # define SOLVE3D
 # define UV_VIS2
+# define GLS_MIXING
 # define ANA_INITIAL
 # define WET_DRY
 # define TS_DIF2
@@ -1565,7 +1564,10 @@
 # ifdef SEDIMENT
 #  define MUSTANG
 # endif
-# define GLS_MIXING
+#  ifdef MUSTANG
+#   define key_sand2D
+#   define SAND2D
+#  endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 

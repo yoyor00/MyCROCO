@@ -53,7 +53,7 @@
 !                     ----------------                            (3)
 !                      1 - 0.1|z|/K00
 !
-! is removed from from (1). [Since (3) is purely a function of z,
+! is removed from (1). [Since (3) is purely a function of z,
 ! it does not contribute to pressure gradient.]  This results in
 !
 !                   rho1 - rho0*[K01+K1*|z|+K2*|z|^2]/[K00-0.1|z|] 
@@ -75,6 +75,7 @@
 !
 ! is stored in a special array.
 !
+!
 ! This splitting allows representation of spatial derivatives (and
 ! also differences) of density as sum of adiabatic derivatives and
 ! compressible part according to 
@@ -88,8 +89,7 @@
 ! so that constraining of adiabatic derivative for monotonicity is
 ! equivalent to enforcement of physically stable stratification.
 ! [This separation and constraining algorithm is subsequently used
-! in computation of pressure gradient within prsgrd32ACx-family
-! schemes.] 
+! in computation of pressure gradient in the prsgrd routine] 
 !
 ! If so prescribed compute the Brunt-Väisäla frequency [1/s^2] at
 ! horizontal RHO-points and vertical W-points,
@@ -101,6 +101,8 @@
 ! where density anomaly difference is computed by adiabatically
 ! rising/lowering the water parcel from RHO point above/below to
 ! the W-point depth at "z_w".
+!
+! [NB: THE CALCULATED RHO HERE IS NOT THE IN-SITU DENSITY (P.M)]
 !
 ! References:
 ! ----------
@@ -181,10 +183,11 @@
             Tt=t(i,j,k,nrhs,itemp)                     !  OF STATE
 #  ifdef SALINITY
             Ts=max(t(i,j,k,nrhs,isalt), 0.)
-#  else
-            Ts=34.5
-#  endif
             sqrtTs=sqrt(Ts)
+#  else
+            Ts=33.64
+            sqrtTs=5.8
+#  endif
             rho1(i,j,k)=( dr00 +Tt*( r01+Tt*( r02+Tt*( r03+Tt*(
      &                                            r04+Tt*r05 ))))
      &                         +Ts*( r10+Tt*( r11+Tt*( r12+Tt*(
@@ -200,7 +203,7 @@
 
 #  ifdef SPLIT_EOS
 #   ifdef DUKO_2001
-            qp1(i,j,k)= 0.1D0*(rho0+rho1(i,j,k))*(K0_Duk-K0)
+            qp1(i,j,k)=0.1*(rho0+rho1(i,j,k))*(K0_Duk-K0)
      &                               /((K00+K0)*(K00+K0_Duk))
 #   else
             qp1(i,j,k)=0.1*(K00*rho1(i,j,k)-rho0*K0)/(K00*(K00+K0))
@@ -242,8 +245,8 @@
             dpth=z_w(i,j,N)-z_w(i,j,k-1)
             K_dw(i,k)=K0+dpth*(K1+K2*dpth)
 #   endif
-          enddo
-        enddo
+          enddo ! i
+        enddo   ! k
 
         cff=g/rho0
         do k=1,N-1
@@ -257,7 +260,7 @@
 
             bvf(i,j,k)=-cff*cff2 / (z_r(i,j,k+1)-z_r(i,j,k))
 #   else
-           cff1=0.1*(z_w(i,j,N)-z_w(i,j,k))
+            cff1=0.1*(z_w(i,j,N)-z_w(i,j,k))
 
             bvf(i,j,k)=-cff*(   (rho1(i,j,k+1)-rho1(i,j,k))
      &                        *(K00+K_dw(i,k+1))*(K00+K_up(i,k))
@@ -327,7 +330,7 @@
 #  ifdef SALINITY
      &                     +Scoef*(t(i,j,k,nrhs,isalt)-S0)
 #  endif
-            rho(i,j,k)=rho1(i,j,k)+1000-rho0
+            rho(i,j,k)=rho1(i,j,k)+1000.-rho0
 #  ifdef MASKING
             rho1(i,j,k)=rho1(i,j,k)*rmask(i,j)
             rho(i,j,k)=rho(i,j,k)*rmask(i,j)
@@ -548,10 +551,11 @@
             Tt=t(i,j,k,1,itemp)
 #   ifdef SALINITY
             Ts=max(t(i,j,k,1,isalt), 0.)
-#   else
-            Ts=34.5
-#   endif
             sqrtTs=sqrt(Ts)
+#   else
+            Ts=33.64
+            sqrtTs=5.8
+#   endif
             rho1(i,j,k)=( dr00 +Tt*( r01+Tt*( r02+Tt*( r03+Tt*(
      &                                            r04+Tt*r05 ))))
      &                         +Ts*( r10+Tt*( r11+Tt*( r12+Tt*(

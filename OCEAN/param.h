@@ -30,6 +30,8 @@
 #endif
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
+#elif defined CHANNEL
+      parameter (LLm0=50,   MMm0=3,   N=20)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
@@ -121,7 +123,13 @@
 #elif defined SHOREFACE
       parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
 #elif defined SANDBAR
-      parameter (LLm0=59,   MMm0=1,    N=10)   !  3 m Sandbar
+# ifndef NBQ
+      parameter (LLm0=100,  MMm0=1,    N=10)   !  3 m Sandbar
+# else
+!     parameter (LLm0=180,  MMm0=1,    N=10)   !  1.0 m Sandbar
+!     parameter (LLm0=360,  MMm0=1,    N=20)   !  0.5 m Sandbar
+      parameter (LLm0=720,  MMm0=1,    N=20)   !  0.25 m Sandbar
+# endif
 #elif defined SWASH
 !     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
@@ -153,20 +161,12 @@
       parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined DUNE
 # ifdef ANA_DUNE
-      parameter (LLm0=150,  MMm0=1,    N=20)   !  2 m resolution
-# elif defined DUNE3D
-      parameter (LLm0=50,   MMm0=50,   N=20)   !  	 
+      parameter (LLm0=150,  MMm0=1,  N=20)     !  DUNE 2m
 # else
-#  ifdef MUSTANG
-      parameter (LLm0=50,   MMm0=3,    N=20)   !  2 m resolution
-#  else
-      parameter (LLm0=50,   MMm0=1,    N=20)   !  2 m resolution
-#  endif
+      parameter (LLm0=50,   MMm0=1,  N=20)     !  DUNE 2m
 # endif
 #elif defined SED_TOY
-      parameter (LLm0=5,    MMm0=5,    N=100)  ! Dhysed test SINGLE_COLUMN_GRADP
-#elif defined TFLAT2DV
-      parameter (LLm0=200,   MMm0=3,   N=10)
+      parameter (LLm0=4,   MMm0=3,  N=20)     !  DUNE 2m
 #elif defined REGIONAL
 #  if   defined USWC0
       parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
@@ -236,15 +236,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
-# ifdef VILAINE
-      parameter (NP_XI=11,  NP_ETA=12,  NNODES=84)
-# elif defined DUNE || defined TFLAT2DV
-      parameter (NP_XI=3,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
-# elif defined DUNE3D
-      parameter (NP_XI=3,  NP_ETA=3,  NNODES=NP_XI*NP_ETA)
-# else
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
-# endif
+      parameter (NP_XI=4,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -252,11 +244,7 @@
 # ifdef AUTOTILING
       common/distrib/NSUB_X, NSUB_E
 # else
-#  if defined DUNE && !defined DUNE3D      
-      parameter (NSUB_X=NPP, NSUB_E=1)
-#  else 
       parameter (NSUB_X=1, NSUB_E=NPP)
-#  endif
 # endif
 #else
       parameter (NPP=1)
@@ -330,8 +318,6 @@
       parameter (D_wetdry=0.01)
 # elif defined SANDBAR
       parameter (D_wetdry=0.1)
-# elif defined TFLAT2DV
-      parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
 # endif
@@ -346,9 +332,6 @@
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
 # else
-# ifdef VILAINE
-      parameter (Msrc=2)        ! ====== == ===== =======
-# endif
       parameter (Msrc=0)        ! ====== == ===== =======
 # endif
 #endif
@@ -486,18 +469,12 @@
 
 /*! === SUBSTANCE ===*/
 !
-# if defined SUBSTANCE && defined MUSTANG
+# ifdef SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
       INTEGER,PARAMETER :: lchain=200
       integer  itsubs1,itsubs2,ntfix
-#  ifdef SED_TOY
-      parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  elif defined TFLAT2DV
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  else
-      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  endif
       parameter (itsubs1= itemp+ntrc_salt+1 )
       parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
 # else
@@ -505,7 +482,7 @@
 # endif /* SUBSTANCE */
 
 !
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 ! NSAND          Number of sand classes
 ! NMUD           Number of mud classes
 ! NGRAV          Number of gravel classes (not implemented...)
@@ -513,14 +490,18 @@
 ! NLAY           Number of layers in sediment bed
 !
       integer NSAND, NMUD, NGRAV, NST, NLAY
-#  ifdef DUNE      
+#  if defined DUNE
+      parameter (NSAND=2, NMUD=0, NGRAV=0)      
 #   ifdef ANA_DUNE
-      parameter (NSAND=1, NMUD=0, NGRAV=0)
+    !  parameter (NST=1)
       parameter (NLAY=11)
 #   else
-      parameter (NSAND=2, NMUD=0, NGRAV=0)
+    !  parameter (NST=2)
       parameter (NLAY=10)
 #   endif
+#  elif defined SED_TOY
+      parameter (NSAND=4, NMUD=15, NGRAV=0) 
+      parameter (NLAY=20)
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)
@@ -549,13 +530,7 @@
    ! vertical dimension (ksdmin:ksdmax) of variables in sediment
    ! (ksdmax=max number of layers)
       integer ksdmin,ksdmax
-# if defined ANA_DUNE || defined key_ANA_bedload
-      parameter (ksdmin=1,ksdmax=11)
-# elif defined TFLAT2DV
-      parameter (ksdmin=1,ksdmax=3)
-# else
       parameter (ksdmin=1,ksdmax=10)
-# endif
 # endif /* MUSTANG */
 
 # if defined BBL && defined AGRIF
@@ -583,10 +558,11 @@
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf
+
 # ifdef BIOLOGY
      &          , itrc_bio
 # endif
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &          , itrc_sed, itrc_sand, itrc_mud, itrc_grav
 # endif
 # ifdef SALINITY
@@ -697,7 +673,7 @@
 #  endif  
 # endif   /* BIOLOGY */
 
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &          ,isand1,imud1,isand2,imud2,igrav1,igrav2
 # endif
 
@@ -951,7 +927,7 @@
 ! === SEDIMENTS ===
 !
 
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
       parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
       parameter (itrc_grav=itrc_mud+NGRAV)

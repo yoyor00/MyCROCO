@@ -114,6 +114,11 @@
       real bedldu(GLOBAL_2D_ARRAY,NST)
       real bedldv(GLOBAL_2D_ARRAY,NST)
       common /sed_bedload/ bedldu, bedldv
+#  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+      real bedload_FX(GLOBAL_2D_ARRAY)
+      real bedload_FE(GLOBAL_2D_ARRAY)
+      common /sed_bedlflx/ bedload_FX,bedload_FE
+#  endif
 # endif
 # ifdef MORPHODYN
       real bed_thick_tot(GLOBAL_2D_ARRAY,2)
@@ -123,6 +128,10 @@
 # ifdef AVERAGES
       real bed_frac_avg(GLOBAL_2D_ARRAY,NLAY,NST)
       common /sediment_frac_avg/ bed_frac_avg
+      real bed_thick_avg(GLOBAL_2D_ARRAY,NLAY)
+      common /sediment_thick_avg/ bed_thick_avg
+      real bed_poros_avg(GLOBAL_2D_ARRAY,NLAY)
+      common /sediment_poros_avg/ bed_poros_avg
 #  ifdef SUSPLOAD
       real settling_flux_avg(GLOBAL_2D_ARRAY,NST)
       real ero_flux_avg(GLOBAL_2D_ARRAY,NST)

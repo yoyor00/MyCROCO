@@ -5,7 +5,7 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                36000      0.1      10     200
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
-         0.0d0       0.0d0      1.e16
+         0.0d0       5.0d0      1.e16
 
 initial: NRREC  filename
           0
@@ -72,7 +72,7 @@ rho0:
       1024.4
 
 bottom_drag:     RDRG(m/s),      RDRG2,   Zob [m],  Cdb_min, Cdb_max
-                   0.             0.      1.e-4      1.e-5    1.e-1
+                   0.             0.      5.e-5      1.e-5    1.e-1
 
 gamma2:
                  1.
@@ -102,8 +102,8 @@ wave_history_fields: swh  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
                       T   T     F      T     T       T      T     T    T
 
 wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
-            0.18       0.0       8.      0.0       0.8    0.45
+            0.18      0.0         8.      0.0       0.6    0.4
 
 wkb_roller:  roller_sinb  roller_fraction
-                0.1          1. 
+                0.15          1.8 
 

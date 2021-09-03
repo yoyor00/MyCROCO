@@ -41,7 +41,7 @@
 ! indxTke         Turbulent kinetic energy
 ! indxGls         Generic length scale
 ! indxLsc         vertical mixing length scale
-! indexHm         time evolving bathymetry
+! indxHm          time evolving bathymetry
 !
 ! indxSSH         observed sea surface height (from climatology)
 ! indxSUSTR,indxSVSTR  surface U-, V-momentum stress (wind forcing)
@@ -145,10 +145,10 @@
 !  indxekfast                    : Fast term
 !
 ! ** DIAGNOSTICS_PV **
-!  indxpvpv                        : Potential vorticity
-!  indxpvpvd                       : Potential vorticity (using alternative formulation)
-!  indxpvTrhs                      : right hand side of tracer equation
-!  indxpvMrhs                      : right hand side of momentum equation
+!  indxpvpv                      : Potential vorticity
+!  indxpvpvd                     : Potential vorticity (using alternative formulation)
+!  indxpvTrhs                    : right hand side of tracer equation
+!  indxpvMrhs                    : right hand side of momentum equation
 !
 !
 ! ** DIAGNOSTICS_EDDY **
@@ -177,7 +177,7 @@
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
-#if defined MORPHODYN
+#ifdef MORPHODYN
       integer indxHm
       parameter (indxHm=5)
 #endif
@@ -297,7 +297,7 @@
 # ifdef DIAGNOSTICS_TS
       integer indxTXadv,indxTYadv,indxTVadv, 
      &        indxTHmix,indxTVmix,indxTForc,indxTrate
-#  if defined DIAGNOSTICS_TS_MLD
+#  ifdef DIAGNOSTICS_TS_MLD
      &      , indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld
@@ -309,7 +309,7 @@
      &           indxTVmix=indxTHmix+NT, 
      &           indxTForc=indxTVmix+NT,
      &           indxTrate=indxTForc+NT
-#  if defined DIAGNOSTICS_TS_MLD
+#  ifdef DIAGNOSTICS_TS_MLD
      &          ,indxTXadv_mld=indxTrate+NT,
      &           indxTYadv_mld=indxTXadv_mld+NT,
      &           indxTVadv_mld=indxTYadv_mld+NT,
@@ -336,14 +336,14 @@
      &           indxMVmix2=indxMVmix+2,
      &           indxMHdiff=indxMVmix2+2,
      &           indxMrate=indxMHdiff+2)
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
       integer indxMBaro
       parameter (indxMBaro=indxMrate+2)
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
       integer indxMfast
       parameter (indxMfast=indxMrate+4)
-# endif
+#  endif
 # endif
 # ifdef DIAGNOSTICS_VRT
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
@@ -361,14 +361,14 @@
      &           indxvrtVmix2=indxvrtrate+1,
      &           indxvrtWind=indxvrtVmix2+1,
      &           indxvrtDrag=indxvrtWind+1)
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
       integer indxvrtBaro
       parameter (indxvrtBaro=indxvrtDrag+1)
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
       integer indxvrtfast
       parameter (indxvrtfast=indxvrtDrag+2)
-# endif
+#  endif
 # endif
 # ifdef DIAGNOSTICS_EK
       integer indxekHadv,indxekHdiff,indxekVadv,indxekCor,
@@ -387,15 +387,15 @@
      &           indxekVmix2=indxekvol+1,
      &           indxekWind=indxekVmix2+1,
      &           indxekDrag=indxekWind+1)
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
       integer indxekBaro
       parameter (indxekBaro=indxekDrag+1)
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
       integer indxekfast
       parameter (indxekfast=indxekDrag+2)
-# endif
-# ifdef DIAGNOSTICS_EK_MLD
+#  endif
+#  ifdef DIAGNOSTICS_EK_MLD
       integer indxekHadv_mld,indxekHdiff_mld,indxekVadv_mld,
      &        indxekCor_mld,indxekPrsgrd_mld,indxekHmix_mld,
      &        indxekVmix_mld,indxekrate_mld,indxekvol_mld,
@@ -412,22 +412,22 @@
      &           indxekVmix2_mld=indxekvol_mld+1,
      &           indxekWind_mld=indxekVmix2_mld+1,
      &           indxekDrag_mld=indxekWind_mld+1)
-# if defined DIAGNOSTICS_BARO
+#   ifdef DIAGNOSTICS_BARO
       integer indxekBaro_mld
       parameter (indxekBaro_mld=indxekDrag_mld+1)
-# endif
-# endif
+#   endif
+#  endif
 # endif
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
       parameter (indxpvTrhs=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
      &                  +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+2)
-# ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_PV_FULL
       integer indxpvpv,indxpvpvd
       parameter (indxpvpv=indxpvMrhs+2,
      &           indxpvpvd=indxpvpv+1)
-# endif
+#  endif
 # endif
 # ifdef DIAGNOSTICS_EDDY
       integer indxeddyzz,indxeddyuu,indxeddyvv,indxeddyuv,indxeddyub,
@@ -472,23 +472,24 @@
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
       parameter (indxO=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
-     &     +ntrc_substot
+     &              +ntrc_substot
 # ifdef MUSTANG
      &              +ntrc_subs+6
-#   ifdef key_MUSTANG_specif_outputs
+#  ifdef key_MUSTANG_specif_outputs
      &              +3*ntrc_subs +2
-#     ifdef key_MUSTANG_V2
+#   ifdef key_MUSTANG_V2
      &              +1*ntrc_subs +12
-#     endif
-#     ifdef key_MUSTANG_bedload
-     &              +4*ntrc_subs +3
-#     endif
 #   endif
+#   ifdef key_MUSTANG_bedload
+     &              +4*ntrc_subs +3
+#   endif
+#  endif
 # endif
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
+
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
       integer indxAOU, indxWIND10
@@ -500,7 +501,7 @@
 #     endif
 #  endif
 # endif
-/*------------------------------------------------------------------------*/
+
 # ifdef SALINITY
       integer indxAks
       parameter (indxAks=indxAkt+4)
@@ -537,6 +538,7 @@
 #  endif
 # endif
 #endif /* BIOLOGY*/
+
 #ifdef SOLVE3D
 # if defined BIOLOGY && !defined PISCES
       parameter (indxHel=indxAkt+12)
@@ -573,7 +575,6 @@
 # else
       parameter (indxSSH=indxVb+1)
 # endif
-
 #endif /* SOLVE3D */
 
 #if defined ANA_VMIX || defined BVF_MIXING \
@@ -587,6 +588,7 @@
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
       integer indxTime2
       parameter (indxTime2=indxSSH+4)
+
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
       parameter (indxShflx=indxSSH+5)
@@ -628,6 +630,7 @@
       parameter (indxVWstr=indxSUSTR+23)
       integer indxBostr
       parameter (indxBostr=indxSUSTR+24)
+
 #ifdef SOLVE3D
 # if defined SEDIMENT && defined USGS
       integer indxSed, indxATHK, indxBTHK, indxBPOR
@@ -666,7 +669,7 @@
 # endif
 # ifdef SST_SKIN
       integer indxSST_skin
-      parameter (indxSST_skin=indxSUSTR+31)
+      parameter (indxSST_skin=indxSUSTR+41)
 # endif 
 #endif /* SOLVE3D */
 
@@ -674,54 +677,56 @@
       integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot, 
      &        indxZbapp, indxBostrw
 # if defined SEDIMENT && defined USGS
-      parameter (indxBBL=indxSUSTR+32+6*NST,
+      parameter (indxBBL=indxSUSTR+42+6*NST,
 # else
-      parameter (indxBBL=indxSUSTR+32, 
+      parameter (indxBBL=indxSUSTR+42, 
 # endif
      &           indxAbed  =indxBBL,    indxHrip  =indxAbed+1,
      &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3, 
      &           indxZbapp =indxAbed+4, indxBostrw=indxAbed+5)
 # ifndef ANA_WWAVE
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
-# ifdef MUSTANG
+#  ifdef MUSTANG
      &          ,indxWWU
-# endif
+#  endif
       parameter (indxWWA=indxAbed+6, indxWWD=indxWWA+1, 
      &           indxWWP=indxWWA+2
-# ifdef MUSTANG
+#  ifdef MUSTANG
      &          ,indxWWU=indxWWA+7 
-# endif
+#  endif
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
 #  endif
-     &                             )                                            
-# endif
+     &                             )
+# endif /* !ANA_WWAVE */
 # ifndef ANA_BSEDIM
 # endif
+
 #else /* BBL */
+
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
 # ifdef MUSTANG
      &          ,indxWWU
 # endif
-      parameter (indxWWA=indxSUSTR+32, indxWWD=indxWWA+1, 
+      parameter (indxWWA=indxSUSTR+42, indxWWD=indxWWA+1, 
      &           indxWWP=indxWWA+2
 # ifdef MUSTANG
      &          ,indxWWU=indxWWA+7
 # endif
-#  ifdef MRL_WCI
+# ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
-#  endif
-     &                             )                                            
+# endif
+     &                             )  
 #endif  /* BBL */
 
 #if defined MRL_WCI || defined OW_COUPLING
       integer indxSUP, indxUST2D,indxVST2D
 # if defined SEDIMENT && defined USGS
-      parameter (indxSUP=indxSUSTR+44+6*NST,
+      parameter (indxSUP=indxSUSTR+54+6*NST,
 # else
-      parameter (indxSUP  =indxSUSTR+44,
+      parameter (indxSUP  =indxSUSTR+54,
 # endif      
      &           indxUST2D =indxSUP+1, indxVST2D=indxSUP+2)
 # ifdef SOLVE3D
@@ -742,7 +747,7 @@
 # endif
       integer indxHRM,indxFRQ,indxWKX,indxWKE,indxEPB
      &       ,indxEPD,indxWAC,indxWAR,indxEPR
-      parameter (indxHRM=indxSUP+30, 
+      parameter (indxHRM=indxSUP+40, 
      &           indxFRQ=indxHRM+1, indxWAC=indxHRM+2,
      &           indxWKX=indxHRM+3, indxWKE=indxHRM+4, 
      &           indxEPB=indxHRM+5, indxEPD=indxHRM+6,
@@ -757,10 +762,12 @@
       parameter (indxTsrc=indxSUSTR+91)
 # endif
 #endif /* PSOURCE_NCFILE */
+
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+92)
 #endif
+
 #ifdef ICE
       integer indxAi
       parameter (indxAi=????)
@@ -899,9 +906,9 @@
 # endif
 # ifdef MUSTANG
       integer rstMUS(NT+3)
-#endif	
+# endif	
 #endif
-#if defined MORPHODYN
+#ifdef MORPHODYN
       integer rstHm
 #endif
 #ifdef BBL
@@ -926,12 +933,12 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# if defined MORPHODYN
+#ifdef MORPHODYN
      &      , hisHm
-# endif
-# ifdef BBL
+#endif
+#ifdef BBL
      &      , hisBBL(6)
-# endif
+#endif
 #ifdef SOLVE3D
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
@@ -967,30 +974,29 @@
       integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
-#   endif   
+#  endif   
 #  ifdef BEDLOAD
      &      +2*NST
-#   endif
+#  endif
 #  if defined MIXED_BED || defined COHESIVE_BED
      &      +1
 #  endif   
      & )
-# endif
+# endif /* SEDIMENT */
 
-
-#  if defined MUSTANG 
+# ifdef MUSTANG 
       integer hisMust(ntrc_subs+6
-# ifdef key_MUSTANG_specif_outputs
-     &   +3*ntrc_subs + 2
-# ifdef key_MUSTANG_V2
-     &   +1*ntrc_subs + 13
-# ifdef key_MUSTANG_bedload
-     &   +4*ntrc_subs + 3
-# endif
-# endif
-# endif
-     & )
-# endif
+#  ifdef key_MUSTANG_specif_outputs
+     &                +3*ntrc_subs + 2
+#   ifdef key_MUSTANG_V2
+     &                +1*ntrc_subs + 13
+#    ifdef key_MUSTANG_bedload
+     &                +4*ntrc_subs + 3
+#    endif
+#   endif
+#  endif
+     &               )
+# endif /* MUSTANG */
 
 # if defined DIAGNOSTICS_TS 
       integer nciddia, nrecdia, nrpfdia
@@ -1011,19 +1017,18 @@
      &      , diaMCor(2), diaMPrsgrd(2), diaMHmix(2)
      &      , diaMHdiff(2)
      &      , diaMVmix(2), diaMVmix2(2), diaMrate(2)
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro(2)
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
      &      , diaMfast(2)
-# endif
+#  endif
 #  ifdef MRL_WCI
      &      , diaMvf(2), diaMbrk(2), diaMStCo(2)
      &      , diaMVvf(2), diaMPrscrt(2), diaMsbk(2)
      &      , diaMbwf(2), diaMfrc(2)
 #  endif
 # endif
-
 # ifdef DIAGNOSTICS_VRT
       integer nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt 
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
@@ -1031,14 +1036,13 @@
      &      , diags_vrtCor(2), diags_vrtPrsgrd(2), diags_vrtHmix(2)
      &      , diags_vrtVmix(2), diags_vrtrate(2)
      &      , diags_vrtVmix2(2), diags_vrtWind(2), diags_vrtDrag(2)
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro(2)
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
      &      , diags_vrtfast(2)
+#  endif
 # endif
-# endif
-
 # ifdef DIAGNOSTICS_EK
       integer nciddiags_ek, nrecdiags_ek, nrpfdiags_ek 
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
@@ -1046,33 +1050,31 @@
      &      , diags_ekCor(2), diags_ekPrsgrd(2), diags_ekHmix(2)
      &      , diags_ekVmix(2), diags_ekrate(2), diags_ekvol(2)
      &      , diags_ekVmix2(2), diags_ekWind(2), diags_ekDrag(2)
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro(2)
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
      &      , diags_ekfast(2)
-# endif
-# ifdef DIAGNOSTICS_EK_MLD
+#  endif
+#  ifdef DIAGNOSTICS_EK_MLD
       integer diags_ekHadv_mld(2), diags_ekHdiff_mld(2)
      &      ,  diags_ekVadv_mld(2), diags_ekCor_mld(2)
      &      , diags_ekPrsgrd_mld(2), diags_ekHmix_mld(2)
      &      , diags_ekVmix_mld(2), diags_ekrate_mld(2)
      &      , diags_ekvol_mld(2), diags_ekVmix2_mld(2)
-# endif
-# if defined DIAGNOSTICS_BARO
+#  endif
+#  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_mld(2)
+#  endif
 # endif
-# endif
-
 # ifdef DIAGNOSTICS_PV
       integer nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
-# ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv(2), diags_pvpvd(2)
-# endif
+#  endif
      &      , diags_pvMrhs(2), diags_pvTrhs(2)
 # endif
-
 # ifdef DIAGNOSTICS_EDDY
       integer nciddiags_eddy, nrecdiags_eddy, nrpfdiags_eddy
      &      , diags_eddyTime, diags_eddyTime2, diags_eddyTstep
@@ -1081,14 +1083,12 @@
      &      , diags_eddyub(2), diags_eddyvb(2), diags_eddywb(2)
      &      , diags_eddyuw(2), diags_eddyvw(2)
 # endif
-
 # ifdef OUTPUTS_SURFACE
       integer ncidsurf, nrecsurf, nrpfsurf 
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft(2), surf_surfs(2),  surf_surfz(2)
      &      , surf_surfu(2), surf_surfv(2)
 # endif
-
 # ifdef DIAGNOSTICS_BIO
       integer nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio
@@ -1096,11 +1096,13 @@
      &      , diabioVSink(NumVSinkTerms)
      &      , diabioGasExc(NumGasExcTerms)
 # endif
+
 #elif defined DIAGNOSTICS_UV && defined MRL_WCI
      &      , diaMvf(2), diaMbrk(2), diaMStCo(2)
      &      , diaMVvf(2), diaMPrscrt(2), diaMsbk(2)
      &      , diaMbwf(2), diaMfrc(2)
 #endif /* SOLVE3D */
+
 #ifdef AVERAGES
       integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
@@ -1109,29 +1111,32 @@
 # ifdef MORPHODYN
      &      , avgHm
 # endif
+
 # ifdef SOLVE3D
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined BVF_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+ || defined GLS_MIXING
      &      , avgbvf
-# endif
-# ifdef GLS_MIXING
-     &      , avgTke, avgGls, avgLsc
-# endif
-# ifdef BIOLOGY
-     &      , avgHel
-#  ifdef BIO_NChlPZD
-     &      , avgChC
-#   ifdef OXYGEN
-     &      , avgU10, avgKvO2, avgO2sat
-#   endif
-#  elif defined BIO_BioEBUS
-      integer avgAOU, avgWIND10
 #  endif
-# endif  /* BIOLOGY */
+#  ifdef GLS_MIXING
+     &      , avgTke, avgGls, avgLsc
+#  endif
+
+#  ifdef BIOLOGY
+     &      , avgHel
+#   ifdef BIO_NChlPZD
+     &      , avgChC
+#    ifdef OXYGEN
+     &      , avgU10, avgKvO2, avgO2sat
+#    endif
+#   elif defined BIO_BioEBUS
+      integer avgAOU, avgWIND10
+#   endif
+#  endif  /* BIOLOGY */
+
       integer avgT(NT)
 #  ifdef BULK_FLUX
       integer avgShflx_rlw
@@ -1140,23 +1145,26 @@
 #  ifdef SST_SKIN
       integer avgSST_skin
 #  endif
+
 #  if defined SEDIMENT && defined USGS
       integer avgSed(1+NST+2
-#  ifdef SUSPLOAD
+#   ifdef SUSPLOAD
      &      +2*NST
 #   endif
-#  ifdef BEDLOAD
+#   ifdef BEDLOAD
      &      +2*NST
 #   endif
-#  if defined MIXED_BED || defined COHESIVE_BED
+#   if defined MIXED_BED || defined COHESIVE_BED
      &      +1
-#  endif   
+#   endif   
      & )
 #  endif
 #  ifdef MUSTANG 
      integer avgMust(ntrc_subs+6)
-# endif
-# endif
+#  endif
+
+# endif /* SOLVE3D */
+
 # ifdef BBL
       integer avgBBL(6)
 # endif
@@ -1170,14 +1178,15 @@
      &        avgCALP, avgKAPS, avgWST
 #  endif
 # endif
+
 # ifdef SOLVE3D
-#  if defined DIAGNOSTICS_TS
+#  ifdef DIAGNOSTICS_TS
       integer nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg(NT), diaTYadv_avg(NT), diaTVadv_avg(NT)
      &      , diaTHmix_avg(NT), diaTVmix_avg(NT)
      &      , diaTForc_avg(NT), diaTrate_avg(NT)
-#   if defined DIAGNOSTICS_TS_MLD
+#   ifdef DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg(NT), diaTYadv_mld_avg(NT)
      &      , diaTVadv_mld_avg(NT)
      &      , diaTHmix_mld_avg(NT), diaTVmix_mld_avg(NT)
@@ -1192,12 +1201,12 @@
      &      , diaMCor_avg(2), diaMPrsgrd_avg(2), diaMHmix_avg(2)
      &      , diaMHdiff_avg(2)
      &      , diaMVmix_avg(2), diaMVmix2_avg(2), diaMrate_avg(2)
-# if defined DIAGNOSTICS_BARO
+#   ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
-# endif
-# if defined M3FAST
+#   endif
+#   ifdef M3FAST
      &      , diaMfast_avg(2)
-# endif
+#   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
        integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg 
@@ -1206,12 +1215,12 @@
      &      , diags_vrtCor_avg(2), diags_vrtPrsgrd_avg(2), diags_vrtHmix_avg(2)
      &      , diags_vrtVmix_avg(2), diags_vrtrate_avg(2)
      &      , diags_vrtVmix2_avg(2), diags_vrtWind_avg(2), diags_vrtDrag_avg(2)
-# if defined DIAGNOSTICS_BARO
+#   ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
-# endif
-# if defined M3FAST
+#   endif
+#   ifdef M3FAST
      &      , diags_vrtfast_avg(2)
-# endif
+#   endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
        integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg 
@@ -1220,29 +1229,29 @@
      &      , diags_ekCor_avg(2), diags_ekPrsgrd_avg(2), diags_ekHmix_avg(2)
      &      , diags_ekVmix_avg(2), diags_ekrate_avg(2), diags_ekvol_avg(2)
      &      , diags_ekVmix2_avg(2), diags_ekWind_avg(2), diags_ekDrag_avg(2)
-# if defined DIAGNOSTICS_BARO
+#   ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
-# endif
-# if defined M3FAST
+#   endif
+#   ifdef M3FAST
      &      , diags_ekfast_avg(2)
-# endif
-#  ifdef DIAGNOSTICS_EK_MLD
+#   endif
+#   ifdef DIAGNOSTICS_EK_MLD
        integer diags_ekHadv_mld_avg(2), diags_ekHdiff_mld_avg(2)
      &      , diags_ekVadv_mld_avg(2), diags_ekCor_mld_avg(2)
      &      , diags_ekPrsgrd_mld_avg(2), diags_ekHmix_mld_avg(2)
      &      , diags_ekVmix_mld_avg(2), diags_ekrate_mld_avg(2)
      &      , diags_ekvol_mld_avg(2), diags_ekVmix2_mld_avg(2)
-#  endif
-# if defined DIAGNOSTICS_BARO
+#   endif
+#   ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_mld_avg(2)
-# endif
+#   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
        integer nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
-#  ifdef DIAGNOSTICS_PV_FULL
+#   ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv_avg(2), diags_pvpvd_avg(2)
-#  endif
+#   endif
      &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(2)
 #  endif
 #  ifdef DIAGNOSTICS_EDDY
@@ -1267,11 +1276,13 @@
      &      , diabioGasExc_avg(NumGasExcTerms)
 #  endif
 # endif /* SOLVE3D */
+
 # ifdef MRL_WCI
      &      , diaMvf_avg(2), diaMbrk_avg(2), diaMStCo_avg(2)
      &      , diaMVvf_avg(2), diaMPrscrt_avg(2), diaMsbk_avg(2)
      &      , diaMbwf_avg(2), diaMfrc_avg(2)
 # endif
+
 #endif /* AVERAGES */
  
 #ifdef SOLVE3D
@@ -1283,7 +1294,7 @@
 #ifdef AVERAGES
      &      , wrtavg(NWRTHIS)
 #endif
-#if defined DIAGNOSTICS_TS 
+#ifdef DIAGNOSTICS_TS 
      &      , wrtdia3D(NT+1)
      &      , wrtdia2D(NT+1)
 # ifdef AVERAGES
@@ -1291,37 +1302,37 @@
      &      , wrtdia2D_avg(NT+1)
 # endif
 #endif
-#if defined DIAGNOSTICS_UV
+#ifdef DIAGNOSTICS_UV
      &      , wrtdiaM(3)
 # ifdef AVERAGES
      &      , wrtdiaM_avg(3)
 # endif
 #endif
-#if defined DIAGNOSTICS_VRT
+#ifdef DIAGNOSTICS_VRT
      &      , wrtdiags_vrt(3)
 # ifdef AVERAGES
      &      , wrtdiags_vrt_avg(3)
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_EK
      &      , wrtdiags_ek(3)
 # ifdef AVERAGES
      &      , wrtdiags_ek_avg(3)
 # endif
 #endif
-#if defined DIAGNOSTICS_PV
+#ifdef DIAGNOSTICS_PV
      &      , wrtdiags_pv(NT+1)
 # ifdef AVERAGES
      &      , wrtdiags_pv_avg(NT+1)
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+#ifdef DIAGNOSTICS_EDDY
      &      , wrtdiags_eddy(3)
 # ifdef AVERAGES
      &      , wrtdiags_eddy_avg(3)
 # endif
 #endif
-#if defined OUTPUTS_SURFACE
+#ifdef OUTPUTS_SURFACE
      &      , wrtsurf(3)
 # ifdef AVERAGES
      &      , wrtsurf_avg(3)
@@ -1341,7 +1352,7 @@
       common/incscrum/
      &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
      &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
-#if defined WAVE_OFFLINE
+#ifdef WAVE_OFFLINE
      &      , ncidwave
 #endif
 #if defined MPI && defined PARALLEL_FILES
@@ -1376,9 +1387,9 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
-# ifdef MORPHODYN
+#ifdef MORPHODYN
      &      , hisHm
-# endif
+#endif
 #ifdef SOLVE3D
      &      , hisU,    hisV,     hisT,    hisR
      &      , hisO,    hisW,     hisVisc, hisDiff
@@ -1395,7 +1406,7 @@
 # ifdef BULK_FLUX
      &      , hisShflx_rlw
      &      , hisShflx_lat, hisShflx_sen
-#  endif
+# endif
 # ifdef SST_SKIN
      &      , hisSST_skin
 # endif
@@ -1420,12 +1431,12 @@
 #ifdef BBL
      &      , hisBBL
 #endif
-#if defined DIAGNOSTICS_TS
+#ifdef DIAGNOSTICS_TS
      &      , nciddia, nrecdia, nrpfdia
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv, diaTYadv, diaTVadv, diaTHmix
      &      , diaTVmix, diaTForc, diaTrate
-# if defined DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld, diaTYadv_mld, diaTVadv_mld, diaTHmix_mld
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
 # endif
@@ -1435,7 +1446,7 @@
      &      , diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
      &      , diaTHmix_avg, diaTVmix_avg, diaTForc_avg
      &      , diaTrate_avg
-#  if defined DIAGNOSTICS_TS_MLD
+#  ifdef DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg, diaTYadv_mld_avg, diaTVadv_mld_avg
      &      , diaTHmix_mld_avg, diaTVmix_mld_avg, diaTForc_mld_avg
      &      , diaTrate_mld_avg, diaTentr_mld_avg
@@ -1448,10 +1459,10 @@
      &      , diaMXadv, diaMYadv, diaMVadv, diaMCor
      &      , diaMPrsgrd, diaMHmix, diaMVmix, diaMVmix2, diaMrate
      &      , diaMHdiff
-# if defined DIAGNOSTICS_BARO
+# ifdef DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
-# if defined M3FAST
+# ifdef M3FAST
      &      , diaMfast
 # endif
 # ifdef MRL_WCI
@@ -1466,12 +1477,12 @@
      &      , diaMCor_avg, diaMPrsgrd_avg, diaMHmix_avg
      &      , diaMHdiff_avg
      &      , diaMVmix_avg, diaMVmix2_avg, diaMrate_avg
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
      &      , diaMfast_avg
-# endif
+#  endif
 #  ifdef MRL_WCI
      &      , diaMvf_avg, diaMbrk_avg, diaMStCo_avg
      &      , diaMVvf_avg, diaMPrscrt_avg, diaMsbk_avg
@@ -1485,10 +1496,10 @@
      &      , diags_vrtXadv, diags_vrtYadv, diags_vrtHdiff, diags_vrtCor
      &      , diags_vrtPrsgrd, diags_vrtHmix, diags_vrtVmix, diags_vrtrate
      &      , diags_vrtVmix2, diags_vrtWind, diags_vrtDrag
-# if defined DIAGNOSTICS_BARO
+# ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro
 # endif
-# if defined M3FAST
+# ifdef M3FAST
      &      , diags_vrtfast
 # endif
 # ifdef AVERAGES
@@ -1498,12 +1509,12 @@
      &      , diags_vrtCor_avg, diags_vrtPrsgrd_avg, diags_vrtHmix_avg
      &      , diags_vrtVmix_avg, diags_vrtrate_avg
      &      , diags_vrtVmix2_avg, diags_vrtWind_avg, diags_vrtDrag_avg
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
      &      , diags_vrtfast_avg
-# endif
+#  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_EK
@@ -1513,10 +1524,10 @@
      &      , diags_ekCor, diags_ekPrsgrd, diags_ekHmix
      &      , diags_ekVmix, diags_ekrate, diags_ekvol
      &      , diags_ekVmix2, diags_ekWind, diags_ekDrag
-# if defined DIAGNOSTICS_BARO
+# ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro
 # endif
-# if defined M3FAST
+# ifdef M3FAST
      &      , diags_ekfast
 # endif
 # ifdef AVERAGES
@@ -1526,32 +1537,32 @@
      &      , diags_ekCor_avg, diags_ekPrsgrd_avg, diags_ekHmix_avg
      &      , diags_ekVmix_avg, diags_ekrate_avg, diags_ekvol_avg
      &      , diags_ekVmix2_avg, diags_ekWind_avg, diags_ekDrag_avg
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg
-# endif
-# if defined M3FAST
+#  endif
+#  ifdef M3FAST
      &      , diags_ekfast_avg
+#  endif
 # endif
-# endif
-#ifdef DIAGNOSTICS_EK_MLD
+# ifdef DIAGNOSTICS_EK_MLD
      &      , diags_ekHadv_mld, diags_ekHdiff_mld,  diags_ekVadv_mld
      &      , diags_ekCor_mld, diags_ekPrsgrd_mld, diags_ekHmix_mld
      &      , diags_ekVmix_mld, diags_ekrate_mld, diags_ekvol_mld
      &      , diags_ekVmix2_mld
-# if defined DIAGNOSTICS_BARO
+#  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_mld
-# endif
-# ifdef AVERAGES
+#  endif
+#  ifdef AVERAGES
      &      , diags_ekHadv_mld_avg, diags_ekHdiff_mld_avg
      &      , diags_ekVadv_mld_avg, diags_ekCor_mld_avg
      &      , diags_ekPrsgrd_mld_avg, diags_ekHmix_mld_avg
      &      , diags_ekVmix_mld_avg, diags_ekrate_mld_avg
      &      , diags_ekvol_mld_avg, diags_ekVmix2_mld_avg
-# if defined DIAGNOSTICS_BARO
+#   ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_mld_avg
+#   endif
+#  endif
 # endif
-# endif
-#endif
 #endif
 #ifdef DIAGNOSTICS_PV
      &      , nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
@@ -1563,9 +1574,9 @@
 # ifdef AVERAGES
      &      , nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
-# ifdef DIAGNOSTICS_PV_FULL
+#  ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv_avg, diags_pvpvd_avg
-# endif
+#  endif
      &      , diags_pvTrhs_avg, diags_pvMrhs_avg
 # endif
 #endif
@@ -1608,7 +1619,8 @@
      &      , diabioVSink_avg
      &      , diabioGasExc_avg
 # endif
-#endif 
+#endif
+
 #ifdef AVERAGES
      &      , ncidavg,  nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
@@ -1622,11 +1634,11 @@
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
      &      , avgHbl,  avgHbbl
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined BVF_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+ || defined GLS_MIXING
      &      , avgbvf
-# endif
+#  endif
 #  ifdef GLS_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
@@ -1651,7 +1663,8 @@
 #  if defined SEDIMENT && defined USGS
      &      , avgSed
 #  endif
-# endif
+# endif /* SOLVE3D */
+
 # ifdef BBL
      &      , avgBBL
 # endif
@@ -1665,12 +1678,13 @@
      &      , avgKVF, avgCALP, avgKAPS, avgWST
 #  endif
 # endif
-#endif
+#endif /* AVERAGES */
+
      &      , wrthis
 #ifdef AVERAGES
      &      , wrtavg
 #endif
-#if defined DIAGNOSTICS_TS
+#ifdef DIAGNOSTICS_TS
      &      , wrtdia3D
      &      , wrtdia2D
 # ifdef AVERAGES
@@ -1678,37 +1692,37 @@
      &      , wrtdia2D_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_UV
+#ifdef DIAGNOSTICS_UV
      &      , wrtdiaM
 # ifdef AVERAGES
      &      , wrtdiaM_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_VRT
+#ifdef DIAGNOSTICS_VRT
      &      , wrtdiags_vrt
 # ifdef AVERAGES
      &      , wrtdiags_vrt_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_EK
      &      , wrtdiags_ek
 # ifdef AVERAGES
      &      , wrtdiags_ek_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_PV
+#ifdef DIAGNOSTICS_PV
      &      , wrtdiags_pv
 # ifdef AVERAGES
      &      , wrtdiags_pv_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+#ifdef DIAGNOSTICS_EDDY
      &      , wrtdiags_eddy
 # ifdef AVERAGES
      &      , wrtdiags_eddy_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE
+#ifdef OUTPUTS_SURFACE
      &      , wrtsurf
 # ifdef AVERAGES
      &      , wrtsurf_avg
@@ -1791,7 +1805,7 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#if defined WAVE_OFFLINE
+#ifdef WAVE_OFFLINE
      &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION
@@ -1801,11 +1815,11 @@
      &                                ,   bioname
 #endif
 #ifdef SEDIMENT
-#  ifdef USGS
+# ifdef USGS
      &                                ,   sedname
-#  elif defined MUSTANG
+# elif defined MUSTANG
      &                 ,   sednam_must,   sednam_vmust
-#  endif
+# endif
 #endif
 
 #ifdef SOLVE3D
@@ -1822,43 +1836,43 @@
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
-#if defined DIAGNOSTICS_TS
+#ifdef DIAGNOSTICS_TS
      &                                ,  dianame
 # ifdef AVERAGES
      &                                ,  dianame_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_UV
+#ifdef DIAGNOSTICS_UV
      &                                ,  dianameM
 # ifdef AVERAGES
      &                                ,  dianameM_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_VRT
+#ifdef DIAGNOSTICS_VRT
      &                                ,  diags_vrtname
 # ifdef AVERAGES
      &                                ,  diags_vrtname_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_EK
      &                                ,  diags_ekname
 # ifdef AVERAGES
      &                                ,  diags_ekname_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_PV
+#ifdef DIAGNOSTICS_PV
      &                                ,  diags_pvname
 # ifdef AVERAGES
      &                                ,  diags_pvname_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+#ifdef DIAGNOSTICS_EDDY
      &                                ,  diags_eddyname
 # ifdef AVERAGES
      &                                ,  diags_eddyname_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE
+#ifdef OUTPUTS_SURFACE
      &                                ,  surfname
 # ifdef AVERAGES
      &                                ,  surfname_avg
@@ -1882,7 +1896,7 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#if defined WAVE_OFFLINE
+#ifdef WAVE_OFFLINE
      &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION

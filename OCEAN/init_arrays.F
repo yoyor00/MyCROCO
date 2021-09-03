@@ -682,7 +682,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* SEDIMENT */
 
-# if defined MUSTANG && defined MORPHODYN
+# ifdef MORPHODYN
       do j=JstrR,JendR
         do i=IstrR,IendR
           dh(i,j)=init
@@ -698,15 +698,8 @@ C$    integer omp_get_thread_num
           Lripple(i,j)=init
           Zbnot(i,j)=init
           Zbapp(i,j)=init
-          Bustrc(i,j)=init
-          Bvstrc(i,j)=init
           Bustrw(i,j)=init
           Bvstrw(i,j)=init
-          Bustrcwmax(i,j)=init
-          Bvstrcwmax(i,j)=init
-# if defined MORPHODYN 
-          dh(i,j)=init
-#endif
         enddo
       enddo
 # endif /* BBL */

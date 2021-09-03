@@ -2,8 +2,8 @@
 ROMS - Sediment - Test
 
 2  Sd(1-NST), CSED, SRHO,  WSED,  ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
-      0.220    0.0  2650.  25.0   6.e-3    0.11   1000   0.5 0.5
-      0.220    0.0  2650.  25.0   6.e-3    0.11   1000   0.5 0.5
+      0.220    0.0  2650.  25.0   1.e-3    0.18   1000    0.5 0.5
+      0.220    0.0  2650.  25.0   1.e-3    0.18   1000    0.5 0.5
 
 3 BTHK(1:NLAY)
       5 5
@@ -18,10 +18,10 @@ ROMS - Sediment - Test
        0.16
 
 7 bedload_coeff 
-       1. 
+       0.5
 
 8 morph_fac
-      18. 
+       18. 
 
 99 END of sediment input data
 

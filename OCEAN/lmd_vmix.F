@@ -538,12 +538,12 @@ C$OMP BARRIER
      &      Kt(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &      Ks(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !
-# undef LMD_VMIX_MIN
+# undef  LMD_VMIX_MIN
 # ifdef LMD_VMIX_MIN
       real  nuwm,nuws,my_Akv_bak,my_Akt_bak,my_Aks_bak
       parameter (
      &     nuwm=1.0e-4,  ! Interior viscosity and diffusivity
-     &     nuws=0.1e-4,  ! due to wave breaking, [m^2/s]
+     &     nuws=1.0e-5,  ! due to wave breaking, [m^2/s]
      &     my_Akv_bak=nuwm,
      &     my_Akt_bak=nuws,
      &     my_Aks_bak=nuwm  )
@@ -572,10 +572,6 @@ C$OMP BARRIER
      &               *.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
      &                                  (z_w(i,j,N)-z_w(i,j,0))))
             Kv(i,j,k)=Kv(i,j,k) + Kv_swash
-!            Kt(i,j,k)=Kt(i,j,k) + 0.1*Kv_swash
-!#  ifdef SALINITY
-!            Ks(i,j,k)=Ks(i,j,k) + 0.1*Kv_swash
-!#  endif
 # endif /* WET_DRY && LMD_VMIX_SWASH */
 !
 !------------------------------------------------

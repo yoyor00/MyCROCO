@@ -37,10 +37,14 @@
 !  - Wiberg & Harris 1994, J. Geophys. Res. 99(C4), 775-789
 !
 ! First Implementation: Meinte Blaas 2002
-! Changes: P. Marchesiello & R. Benshila 2013-2014:
-!  --> WKB wave model; bottom stress stability limit; 2D application
-!          P. Marchesiello 2020: updates with BEDLOAD_VANDERA
-!                                and new SANDBAR test case
+! Changes: 
+!   P. Marchesiello & R. Benshila 2013-2014: WKB wave model; 
+!        bottom stress stability limit; 2D application
+!   P. Marchesiello 2020: updates for BEDLOAD_VANDERA
+!        and new SANDBAR test case
+!   P. Marchesiello 2021: clear separation between form and skin stress 
+! with sediment modeling only using skin stress (no bedload contribution);
+! addition of wave-breaking turbulence effect in skin stress.
 !
 !====================================================================!
       implicit none
@@ -54,13 +58,13 @@
       call bblm_tile (Istr,Iend,Jstr,Jend,
      &                  A2d(1, 1,trd),A2d(1, 2,trd),A2d(1, 3,trd),
      &                  A2d(1, 4,trd),A2d(1, 5,trd),A2d(1, 6,trd),
-     &                  A2d(1, 7,trd),A2d(1, 8,trd),A2d(1, 9,trd))
+     &                                              A2d(1, 7,trd))
       return
       end
 
 !********************************************************************!
       SUBROUTINE bblm_tile (Istr,Iend,Jstr,Jend,Ub,Zr,Ur,Vr,Umag,
-     &                      tauc,tauw,taucw,taucwmax)
+     &                                            taucw,taucwmax)
 !********************************************************************!
 !  output: bu/vstr = tauc = t_cw 
 !     effective wave-averaged bottom stress
@@ -92,32 +96,40 @@
 # if defined M3FAST && defined BSTRESS_FAST
 #  include "nbq.h"
 # endif
+# include "mixing.h"
+# ifdef WKB_WWAVE
+#  include "wkb_wwave.h"
+# endif
+# ifdef SANDBAR
+#  undef  BBL_WAVE_SKEWNESS
+#  define BBL_BREAKING_STIR
+# endif
       logical SAND, SILT
-      integer Iend, Istr, Jend, Jstr, i, ised, j
+      integer Iend, Istr, Jend, Jstr, i, ised, j, k
+      integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
       real    Ab, anglec, anglew, cff, cff1, cff2,
      &        Fwave, Kbh, Kbh2, Kdh, phic, phicw, 
-     &        d50, rhosed, rhow, smgd, osmgd,
+     &        d50, rhosed, rhow, smgd, osmgd, D, mu_w,
      &        tau_cb, tau_ex, tau_bf, tau_up, tau_en,
      &        tau_w, tau_ws, tau_c, tau_cs, tau_cw, tau_cws,
      &        thetw, twopi, Ucur, Vcur, Ubc, visk, 
      &        znots, znot, znota, znot_bl, znot_rip,
-     &        eps, zomin, zomax
-      parameter (Ubc   = 1.e-2,  ! minimum orbital velocity for waves
-     &           eps   = 1.e-10, ! small number to avoid zero division
-     &           zomin = 1.e-5,  ! minimum roughness
-     &           zomax = 3.e-2)  ! maximum roughness
+     &        eps, zomin, zomax, depth, Ut
+      parameter 
+     &       (Ubc   = 1.e-2,  ! minimum orbital velocity for waves
+     &        eps   = 1.e-10, ! small number to avoid zero division
+     &        zomin = 1.e-5,  ! minimum roughness
+     &        zomax = 3.e-2)  ! maximum roughness
 # ifdef Z0_RIP
-      real rhgt, rlen, rhmax, rhmin, rlmin, psi,
-     &     rhbio, rlbio, rhbiomax, rhfac
+      real    rhgt, rlen, rhmax, rhmin, rlmin, psi,
+     &        rhbio, rlbio, rhbiomax, rhfac
       parameter (
-     &       rhmin = 1.e-4,      ! minimum ripple height [m]  
-     &       rlmin = rhmin/0.12, ! minimum ripple length [m]  
-     &       rhbiomax = 6.e-3,   ! maximum biogenic ripple height [m]  
-     &       rhfac = 0.0164)     ! biogenic ripple factor
+     &        rhmin = 1.e-4,      ! minimum ripple height [m]  
+     &        rlmin = rhmin/0.12, ! minimum ripple length [m]  
+     &        rhbiomax = 6.e-3,   ! maximum biogenic ripple height [m]  
+     &        rhfac = 0.0164)     ! biogenic ripple factor
 # endif
-      real        tauc(PRIVATE_2D_SCRATCH_ARRAY),
-     &            tauw(PRIVATE_2D_SCRATCH_ARRAY),
-     &           taucw(PRIVATE_2D_SCRATCH_ARRAY),
+      real       taucw(PRIVATE_2D_SCRATCH_ARRAY),
      &        taucwmax(PRIVATE_2D_SCRATCH_ARRAY),
      &              Ub(PRIVATE_2D_SCRATCH_ARRAY),
      &            Umag(PRIVATE_2D_SCRATCH_ARRAY),
@@ -132,6 +144,11 @@
       parameter (scf1 = 0.5 * 1.39, scf2 = 0.52, 
      &           scf3 = 2.0 - scf2, scf4 = 1.2,
      &           scf5 = 3.2)
+# ifdef BBL_WAVE_SKEWNESS
+      real p1,p2,p3,p4,p5,p6
+      parameter(p1=0.,p2=0.857,p3=-0.471,p4=0.297,p5=0.815,p6=0.672)
+      real Ursell, cff3,cff4,cff5,cff6,cff7
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -154,9 +171,7 @@
 !
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          tauc(i,j)=0.       ! [m^2/s^2]
-          tauw(i,j)=0.
-          taucw(i,j)=0.
+          taucw(i,j)=0.        ! [m^2/s^2]
           taucwmax(i,j)=0.
         enddo
       enddo
@@ -181,14 +196,12 @@
           Ur(i,j)=ubar(i,j,kstp)
           Vr(i,j)=vbar(i,j,kstp)
 # endif
-        enddo
-      enddo
+        ENDDO 
+      ENDDO
 !
 !=======================================================================
-!  Compute bottom stresses.
+!  Compute bottom stresses: start main i,j loop
 !=======================================================================
-!
-! start main j,i loop
 !
       DO j=JstrV-1,Jend
         DO i=IstrU-1,Iend
@@ -215,7 +228,8 @@
 ! wavenumber on shoaling water.
 !
           Fwave=twopi/Pwave(i,j)
-          Kdh=(h(i,j)+z_w(i,j,N))*Fwave*Fwave/g
+          depth=max(eps,h(i,j)+z_w(i,j,N))
+          Kdh=depth*Fwave*Fwave/g
           Kbh2=Kdh*Kdh+Kdh/(1.+Kdh*(K1+Kdh*(K2+Kdh*(K3+Kdh*(K4+
      &                         Kdh*(K5+K6*Kdh))))))
           Kbh = SQRT(Kbh2)
@@ -225,6 +239,41 @@
           Ab=Awave(i,j)/SINH(Kbh) + eps
           Ub(i,j)=Fwave*Ab SWITCH rmask(i,j)
      &                     SWITCH_WET rmask_wet(i,j)
+!
+!  Correction by skewness factor 
+!  (Abreu et al., 2010; Malarkey and Davis, 2012)
+!
+# ifdef BBL_WAVE_SKEWNESS
+          Ursell=1.0607*Awave(i,j)/(depth*kbh2)
+          cff1=exp((p3-log10(Ursell))/p4)
+          cff2=p1+(p2-p1)/(1+cff1)
+          cff3=1.4142*cff2/(sqrt(2.*cff2**2+9.))
+          cff4=-0.5*pi*(1-tanh(p5/Ursell**p6))+0.5*pi
+          cff5=2.*cff3/(cff3**2+1.)
+          cff6=cff5/(1.+sqrt(1.-cff5**2))
+          cff7=cff6*sin(cff4)
+          Ub(i,j)=Ub(i,j)*0.9*(1+cff7)  SWITCH rmask(i,j)
+     &                                  SWITCH_WET rmask_wet(i,j)
+# endif
+!
+! Stirring velocity from wave breaking turbulence 
+!  (Roelvink & Reniers, 1995)
+!
+# if defined MRL_WCI && defined BBL_BREAKING_STIR
+#  if defined WKB_WWAVE && defined WAVE_ROLLER
+          cff=wepr(i,j)+(1-wkb_roller)*wepb(i,j)
+#  elif defined WAVE_ROLLER
+          cff=wepr(i,j)
+#  else
+          cff=wepb(i,j)
+#  endif
+          Ut=cff/(exp(depth/whrm(i,j))-1)
+     &                              SWITCH rmask(i,j)
+     &                              SWITCH_WET rmask_wet(i,j)
+          Ut=500.*Ut  ! * efficient factor
+# else
+          Ut=0.
+# endif
 !
 !  Compute bottom current magnitude at RHO-points.
 !
@@ -269,7 +318,8 @@
 ! Determine grain roughness from sediment size
 !---------------------------------------------------------------------
 !
-          znots = d50/12.0
+          znots = d50/12.
+          znota = znots
 !
 !---------------------------------------------------------------------
 ! Determine critical stresses for ripple formation
@@ -278,11 +328,9 @@
 # ifdef Z0_RIP
 !
 ! Transition to sheet flow (Li & Amos, 2001)
-!
           tau_up = 0.03*smgd*d50**(-0.376)                ! [m^2/s^2]
 !
 ! Break off (Grant & Madsen,1982)
-!
           tau_bf = 0.78*(d50/visk)**0.6*smgd**0.3*tau_cb  ! [m^2/s^2]
 # endif
 !
@@ -295,67 +343,45 @@
           if(Ub(i,j).gt.Ubc) then   !<======
 !
 !---------------------------------------------------------------------
-! Determine skin stresses for pure waves and combined flow (m^2/s^2)
-! using Soulsby approximation of the wave friction factor fw
+! Determine skin shear stress for combined flow [m^2/s^2]
+!
+!  1- Soulsby wave skin stress tau_ws with friction factor fw
+!    (tau_ws = 0.5*fw*Ub**2 with fw=1.39*(znots/Ab)**0.52)
+!  2- Soulsby combined wave-current skin stress tau_cws
+!  3- Soulsby Maximum of combined wave-current skin stress
 !---------------------------------------------------------------------
-
+!
 ! Pure wave skin stress
-!  tau_ws=0.5*fw*Ub**2 with fw=2*scf1*(znots/Ab)**scf2
-            tau_ws = scf1*((znots*Fwave)**scf2)*Ub(i,j)**scf3
+            tau_ws = scf1*((znots*Fwave)**scf2)*(Ub(i,j)+Ut)**scf3
 
 ! current-only skin stress
             cff1 = vonKar/LOG(Zr(i,j)/znots)
-            tau_cs = cff1*cff1*Umag(i,j)*Umag(i,j)     ! [m^2/s^2] 
+            tau_cs = cff1*cff1*Umag(i,j)*Umag(i,j)
 
 !  combined wave-current skin stress 
             tau_cws = tau_cs*(1.+scf4*((tau_ws/(tau_ws+tau_cs))**scf5))
+            taucw(i,j) = tau_cws
 
-!  Maximum of combined wave-current skin stress
-#  ifdef SED_TAUCWMAX
-            tau_cws = SQRT((tau_cws + tau_ws*COS(phicw))**2
-     &                              +(tau_ws*SIN(phicw))**2)
-#  endif
-
-!  Store for sediment model 
-            taucwmax(i,j) = tau_cws      ! [m^2/s^2]
-            tauw(i,j)     = tau_ws
-
-# ifdef Z0_BL
+!  Maximum of combined wave-current skin stress (for sediment model)
+            taucwmax(i,j) = SQRT((tau_cws + tau_ws*COS(phicw))**2
+     &                                    +(tau_ws*SIN(phicw))**2)
+!
 !---------------------------------------------------------------------
-! Compute apparent bedload roughness for ripple predictor (and sediment 
-! resuspension if needed). At high transport stages, friction depends on 
-! thickness of bedload layer (Li & Amos 2001).
+! Compute apparent bedload roughness 
 !---------------------------------------------------------------------
 !
+# ifdef Z0_BL
             tau_ex=max(tau_cws-tau_cb,0.)
             znot_bl=17.4*d50*(tau_ex*osmgd)**0.75
             znot_bl= znots + znot_bl
-!
-!---------------------------------------------------------------------
-!  Compute bedload stress for sediment purpose [m^2/s^2], 
-!  using grain + bedload roughness.
-!---------------------------------------------------------------------
-!
-            cff1=vonKar/LOG(Zr(i,j)/znot_bl)
-            cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
-            tau_c = cff2*Umag(i,j)*Umag(i,j)    
-            tau_w = scf1*((znot_bl*Fwave)**scf2)*(Ub(i,j)**scf3)
-            tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**scf5))
-#  ifdef SED_TAUCWMAX
-            tau_cw = SQRT((tau_cw+tau_w*COS(phicw))**2 +
-     &                           (tau_w*SIN(phicw))**2)
-#  endif
-!
-            taucwmax(i,j) = tau_cw
-            tauw(i,j)     = tau_w
-            tauc(i,j)     = tau_c
-
-#  ifdef Z0_RIP        
+!   
 !---------------------------------------------------------------------
 ! Determine bedform roughness ripple height (m) and ripple length (m) 
 ! for sandy beds. 
 !---------------------------------------------------------------------
 !
+#  ifdef Z0_RIP
+#   undef Z0_RIP_VANDERA
 #   ifdef Z0_RIP_VANDERA
 !  O'Donoghue et al. (2006) - Van der A et al. (2013)
 !
@@ -395,34 +421,31 @@
             endif !d50
 #   endif
 #  endif /* Z0_RIP */
-   
-#  ifdef Z0_BIO
+!
 !---------------------------------------------------------------------
 ! Determine (biogenic) bedform roughness, ripple height (m)
 ! and ripple length (m) for silty beds, using Harris & Wiberg 2001.
 !---------------------------------------------------------------------
 !
-! Use 10 cm default biogenic ripple length rlbio (Wheatcroft 1994) 
-!
+#  ifdef Z0_BIO
             if (d50.lt.0.063e-3) then
-              rlbio = 0.1
+              rlbio = 0.1 ! biogenic ripple length (Wheatcroft 1994)
               thetw = tau_cws*osmgd
               rhbio = (thetw**(-1.67))*rlbio*rhfac
               rhgt = min(rhbio,rhbiomax)
               rlen = rlbio
             endif
 #  endif /* Z0_BIO */
-
-#  if defined Z0_RIP || defined Z0_BIO
+!
 !---------------------------------------------------------------------
 ! Total roughness znota consists of grain-scale roughness +
 ! bedload thickness + sandy ripple-enhanced roughness + silty 
 ! biogenic ripple roughness.
 !---------------------------------------------------------------------
 !
+#  if defined Z0_RIP || defined Z0_BIO
             znot_rip = 0.267*rhgt*rhgt/(max(rlen,rlmin)) ! Nielsen (1992)
             znota = znot_bl + znot_rip
-
 #  endif /* Z0_RIP || Z0_BIO */
 !
 !---------------------------------------------------------------------
@@ -431,20 +454,18 @@
 !
             znota = max(zomin,min(zomax,max(znota,Zob(i,j))))
 !
-# endif /* Z0_BL */
-!
 !---------------------------------------------------------------------
 ! Compute bottom stress components based on total roughness [m/s]^2
 ! and store for use in computing flow drag and eddy diffusivity/viscosity
 !---------------------------------------------------------------------
 !
-            cff1  = vonKar/LOG(Zr(i,j)/znota)
+            cff1 = vonKar/LOG(Zr(i,j)/znota)
             cff2 = MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
             tau_c = cff2*Umag(i,j)*Umag(i,j)  
             tau_w = scf1*((znota*Fwave)**scf2)*(Ub(i,j)**scf3)
-            tau_cw= tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**scf5))
-!
+            tau_cw = tau_c*(1.+scf4*((tau_w/(tau_w+tau_c))**scf5))
             taucw(i,j) = tau_cw
+# endif /* Z0_BL */
 !          
           else ! (Ub < Ubc)  <================
 !
@@ -473,12 +494,12 @@
             cff1=vonKar/LOG(Zr(i,j)/znota)
             cff2=MIN(Cdb_max,MAX(Cdb_min,cff1*cff1))
             tau_c=cff2*Umag(i,j)*Umag(i,j)
-!
-            tauc(i,j)     = tau_c
-            taucw(i,j)    = tau_c
-            taucwmax(i,j) = tau_c
-            tauw(i,j)     = 0.
+            taucw(i,j) = tau_c
 
+            cff1 = vonKar/LOG(Zr(i,j)/znots)
+            tau_cs = cff1*cff1*Umag(i,j)*Umag(i,j)
+            taucwmax(i,j) = tau_cs
+ 
           endif ! (Ub < Ubc)  <================
 !
 !---------------------------------------------------------------------
@@ -489,20 +510,22 @@
          Zbnot(i,j)    = znots         SWITCH rmask(i,j)
          Zbapp(i,j)    = znota         SWITCH rmask(i,j)
 # ifdef Z0_RIP
-          Hripple(i,j) = rhgt          SWITCH rmask(i,j)
-          Lripple(i,j) = rlen          SWITCH rmask(i,j)
+         Hripple(i,j)  = rhgt          SWITCH rmask(i,j)
+         Lripple(i,j)  = rlen          SWITCH rmask(i,j)
 # endif
        enddo
-      enddo  ! end main loop
+      enddo  ! end main loop ==========
 !
-!---------------------------------------------------------------------
+!=======================================================================
+!  Finalize computation and store in global arrays
+!=======================================================================
+!
 !  Compute kinematic bottom stress components (m2/s2) for flow
 !  due to combined current and wind-induced waves.
-!---------------------------------------------------------------------
 !
       do j=Jstr,Jend
         do i=IstrU,Iend
-          cff1=0.5*(taucw(i-1,j)+taucw(i,j))   ! interp at u point
+          cff1=0.5*(taucw(i-1,j)+taucw(i,j))          ! at u point
           anglec=Ur(i,j)/(0.5*(Umag(i-1,j)+Umag(i,j)))
           bustr(i,j)=cff1*anglec SWITCH umask(i,j)
         enddo
@@ -510,35 +533,28 @@
 
       do j=JstrV,Jend
         do i=Istr,Iend
-          cff1=0.5*(taucw(i,j-1)+taucw(i,j))    ! interp at v point
+          cff1=0.5*(taucw(i,j-1)+taucw(i,j))          ! at v point
           anglec=Vr(i,j)/(0.5*(Umag(i,j-1)+Umag(i,j)))
           bvstr(i,j)=cff1*anglec SWITCH vmask(i,j)
         enddo
       enddo
 !
-!  Compute skin stress components at rho points
+!  Compute form and skin stress components at rho points
 !
       do j=Jstr,Jend
         do i=Istr,Iend
           Ucur=0.5*(Ur(i,j)+Ur(i+1,j))
           Vcur=0.5*(Vr(i,j)+Vr(i,j+1))
 !
-          anglec=Ucur/Umag(i,j)
           anglew=cos(Dwave(i,j))
-          bustrc(i,j)=tauc(i,j)*anglec
-          bustrw(i,j)=tauw(i,j)*anglew
-          bustrcwmax(i,j)=taucwmax(i,j)*anglew
+          bustrw(i,j)=taucwmax(i,j)*anglew ! total skin stress
 !          Ubot(i,j)=Ub(i,j)*anglew
 !          Ur(i,j)=Ucur
 !
-          anglec=Vcur/Umag(i,j)
           anglew=sin(Dwave(i,j))
-          bvstrc(i,j)=tauc(i,j)*anglec
-          bvstrw(i,j)=tauw(i,j)*anglew
-          bvstrcwmax(i,j)=taucwmax(i,j)*anglew
+          bvstrw(i,j)=taucwmax(i,j)*anglew
 !          Vbot(i,j)=Ub(i,j)*anglew
 !          Vr(i,j)=Vcur
-!
         enddo
       enddo
 
@@ -587,12 +603,8 @@
         END DO
         !
         DO j=Jstr,Jend
-          bustrc(Iend+1,j)=bustrc(Iend,j)
           bustrw(Iend+1,j)=bustrw(Iend,j)
-          bustrcwmax(Iend+1,j)=bustrcwmax(Iend,j)
-          bvstrc(Iend+1,j)=bvstrc(Iend,j)
           bvstrw(Iend+1,j)=bvstrw(Iend,j)
-          bvstrcwmax(Iend+1,j)=bvstrcwmax(Iend,j)
         END DO
       END IF
       IF (WESTERN_EDGE) THEN
@@ -603,12 +615,8 @@
           bvstr(Istr-1,j)=bvstr(Istr,j)
         END DO
         DO j=Jstr,Jend
-          bustrc(Istr-1,j)=bustrc(Istr,j)
           bustrw(Istr-1,j)=bustrw(Istr,j)
-          bustrcwmax(Istr-1,j)=bustrcwmax(Istr,j)
-          bvstrc(Istr-1,j)=bvstrc(Istr,j)
           bvstrw(Istr-1,j)=bvstrw(Istr,j)
-          bvstrcwmax(Istr-1,j)=bvstrcwmax(Istr,j)
         END DO        
       END IF
 # endif
@@ -621,12 +629,8 @@
           bvstr(i,Jend+1) =bvstr(i,Jend)
         END DO
         DO i=Istr,Iend
-          bustrc(i,Jend+1) =bustrc(i,Jend)
           bustrw(i,Jend+1) =bustrw(i,Jend)
-          bustrcwmax(i,Jend+1) =bustrcwmax(i,Jend)
-          bvstrc(i,Jend+1) =bvstrc(i,Jend)
           bvstrw(i,Jend+1) =bvstrw(i,Jend)
-          bvstrcwmax(i,Jend+1) =bvstrcwmax(i,Jend)
         END DO
       END IF
       IF (SOUTHERN_EDGE) THEN
@@ -637,79 +641,53 @@
           bvstr(i,JstrV-1)=bvstr(i,JstrV)
         END DO
         DO i=Istr,Iend
-          bustrc(i,Jstr-1)=bustrc(i,Jstr)
           bustrw(i,Jstr-1)=bustrw(i,Jstr)
-          bustrcwmax(i,Jstr-1)=bustrcwmax(i,Jstr)
-          bvstrc(i,Jstr-1)=bvstrc(i,Jstr)
           bvstrw(i,Jstr-1)=bvstrw(i,Jstr)
-          bvstrcwmax(i,Jstr-1)=bvstrcwmax(i,Jstr)
         END DO
       END IF
 # endif
 # if !defined EW_PERIODIC && !defined NS_PERIODIC
+      ISTRm=Istr-1
+      ISTRp=Istr+1
+      IENDp=Iend+1
+      JSTRm=Jstr-1
+      JSTRp=Jstr+1
+      JENDp=Jend+1
       IF (SOUTHERN_EDGE.and.WESTERN_EDGE) THEN
-        bustr(Istr,Jstr-1)=0.5*(bustr(Istr+1,Jstr-1)+bustr(Istr,Jstr))
-        bvstr(Istr-1,Jstr)=0.5*(bvstr(Istr,Jstr)+bvstr(Istr-1,Jstr+1))
-        bustrc(Istr-1,Jstr-1)=0.5*(bustrc(Istr,Jstr-1)+bustrc(Istr-1,Jstr))
-        bvstrc(Istr-1,Jstr-1)=0.5*(bvstrc(Istr,Jstr-1)+bvstrc(Istr-1,Jstr))
-        bustrw(Istr-1,Jstr-1)=0.5*(bustrw(Istr,Jstr-1)+bustrw(Istr-1,Jstr))
-        bvstrw(Istr-1,Jstr-1)=0.5*(bvstrw(Istr,Jstr-1)+bvstrw(Istr-1,Jstr))
-        bustrcwmax(Istr-1,Jstr-1)=0.5*(bustrcwmax(Istr,Jstr-1)
-     &   +bustrcwmax(Istr-1,Jstr))
-        bvstrcwmax(Istr-1,Jstr-1)=0.5*(bvstrcwmax(Istr,Jstr-1)
-     &   +bvstrcwmax(Istr-1,Jstr))
-      END IF
+        bustr(Istr,JSTRm)  =0.5*(bustr(ISTRp,JSTRm)+bustr(Istr,Jstr))
+        bvstr(ISTRm,Jstr)  =0.5*(bvstr(Istr,Jstr)+bvstr(ISTRm,JSTRp))
+        bustrw(ISTRm,JSTRm)=0.5*(bustrw(Istr,JSTRm)+bustrw(ISTRm,Jstr))
+        bvstrw(ISTRm,JSTRm)=0.5*(bvstrw(Istr,JSTRm)+bvstrw(ISTRm,Jstr))
+      ENDIF
       IF (SOUTHERN_EDGE.and.EASTERN_EDGE) THEN
-        bustr(Iend+1,Jstr-1)=0.5*(bustr(Iend+1,Jstr)+bustr(Iend,Jstr-1))
-        bvstr(Iend+1,Jstr)=0.5*(bvstr(Iend+1,Jstr+1)+bvstr(Iend,Jstr))
-        bustrc(Iend+1,Jstr-1)=0.5*(bustrc(Iend+1,Jstr)+bustrc(Iend,Jstr-1))
-        bvstrc(Iend+1,Jstr-1)=0.5*(bvstrc(Iend+1,Jstr)+bvstrc(Iend,Jstr-1))
-        bustrw(Iend+1,Jstr-1)=0.5*(bustrw(Iend+1,Jstr)+bustrw(Iend,Jstr-1))
-        bvstrw(Iend+1,Jstr-1)=0.5*(bvstrw(Iend+1,Jstr)+bvstrw(Iend,Jstr-1))
-        bustrcwmax(Iend+1,Jstr-1)=0.5*(bustrcwmax(Iend+1,Jstr)
-     &   +bustrcwmax(Iend,Jstr-1))
-        bvstrcwmax(Iend+1,Jstr-1)=0.5*(bvstrcwmax(Iend+1,Jstr)
-     &   +bvstrcwmax(Iend,Jstr-1))
-      END IF
+        bustr(IENDp,JSTRm) =0.5*(bustr(IENDp,Jstr)+bustr(Iend,JSTRm))
+        bvstr(IENDp,Jstr)  =0.5*(bvstr(IENDp,JSTRp)+bvstr(Iend,Jstr))
+        bustrw(IENDp,JSTRm)=0.5*(bustrw(IENDp,Jstr)+bustrw(Iend,JSTRm))
+        bvstrw(IENDp,JSTRm)=0.5*(bvstrw(IENDp,Jstr)+bvstrw(Iend,JSTRm))
+      ENDIF
       IF (NORTHERN_EDGE.and.WESTERN_EDGE) THEN
-        bustr(Istr,Jend+1)=0.5*(bustr(Istr,Jend)+bustr(Istr+1,Jend+1))
-        bvstr(Istr-1,Jend+1)=0.5*(bvstr(Istr-1,Jend)+bvstr(Istr,Jend+1))
-        bustrc(Istr-1,Jend+1)=0.5*(bustrc(Istr-1,Jend)+bustrc(Istr,Jend+1))
-        bvstrc(Istr-1,Jend+1)=0.5*(bvstrc(Istr-1,Jend)+bvstrc(Istr,Jend+1))
-        bustrw(Istr-1,Jend+1)=0.5*(bustrw(Istr-1,Jend)+bustrw(Istr,Jend+1))
-        bvstrw(Istr-1,Jend+1)=0.5*(bvstrw(Istr-1,Jend)+bvstrw(Istr,Jend+1))
-        bustrcwmax(Istr-1,Jend+1)=0.5*(bustrcwmax(Istr-1,Jend)
-     &   +bustrcwmax(Istr,Jend+1))
-        bvstrcwmax(Istr-1,Jend+1)=0.5*(bvstrcwmax(Istr-1,Jend)
-     &   +bvstrcwmax(Istr,Jend+1))
-      END IF
+        bustr(Istr,JENDp)  =0.5*(bustr(Istr,Jend)+bustr(ISTRp,JENDp))
+        bvstr(ISTRm,JENDp) =0.5*(bvstr(ISTRm,Jend)+bvstr(Istr,JENDp))
+        bustrw(ISTRm,JENDp)=0.5*(bustrw(ISTRm,Jend)+bustrw(Istr,JENDp))
+        bvstrw(ISTRm,JENDp)=0.5*(bvstrw(ISTRm,Jend)+bvstrw(Istr,JENDp))
+      ENDIF
       IF (NORTHERN_EDGE.and.EASTERN_EDGE) THEN
-        bustr(Iend+1,Jend+1)=0.5*(bustr(Iend+1,Jend)+bustr(Iend,Jend+1))
-        bvstr(Iend+1,Jend+1)=0.5*(bvstr(Iend+1,Jend)+bvstr(Iend,Jend+1))
-        bustrc(Iend+1,Jend+1)=0.5*(bustrc(Iend+1,Jend)+bustrc(Iend,Jend+1))
-        bvstrc(Iend+1,Jend+1)=0.5*(bvstrc(Iend+1,Jend)+bvstrc(Iend,Jend+1))
-        bustrw(Iend+1,Jend+1)=0.5*(bustrw(Iend+1,Jend)+bustrw(Iend,Jend+1))
-        bvstrw(Iend+1,Jend+1)=0.5*(bvstrw(Iend+1,Jend)+bvstrw(Iend,Jend+1))
-        bustrcwmax(Iend+1,Jend+1)=0.5*(bustrcwmax(Iend+1,Jend)
-     &   +bustrcwmax(Iend,Jend+1))
-        bvstrcwmax(Iend+1,Jend+1)=0.5*(bvstrcwmax(Iend+1,Jend)
-     &   +bvstrcwmax(Iend,Jend+1))
-      END IF
+        bustr(IENDp,JENDp) =0.5*(bustr(IENDp,Jend)+bustr(Iend,JENDp))
+        bvstr(IENDp,JENDp) =0.5*(bvstr(IENDp,Jend)+bvstr(Iend,JENDp))
+        bustrw(IENDp,JENDp)=0.5*(bustrw(IENDp,Jend)+bustrw(Iend,JENDp))
+        bvstrw(IENDp,JENDp)=0.5*(bvstrw(IENDp,Jend)+bvstrw(Iend,JENDp))
+      ENDIF
 # endif
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Abed(START_2D_ARRAY))
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Hripple(START_2D_ARRAY))
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Lripple(START_2D_ARRAY))
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Zbnot(START_2D_ARRAY))
-!      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,Zbapp(START_2D_ARRAY))
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bustrc(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bvstrc(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bustrw(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bvstrw(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bustrcwmax(START_2D_ARRAY))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,bvstrcwmax(START_2D_ARRAY))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Abed)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Hripple)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Lripple)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zbnot)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zbapp)
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend, bustr)
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend, bvstr)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, bustrw)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, bvstrw)
 # endif
 
 #  if defined M3FAST && defined BSTRESS_FAST
@@ -737,10 +715,10 @@
       parameter(eps=1.e-14)
 !     
       d50_mm=0.001*d50
-      IF(d50_mm.lt.0.22) THEN
+      IF (d50_mm .lt. 0.22) THEN
         m_eta=0.55
         m_lam=0.73
-      ELSEIF(d50_mm.ge.0.22.and.d50_mm.lt.0.30) THEN
+      ELSEIF (d50_mm .ge. 0.22 .and. d50_mm .lt. 0.30) THEN
         m_eta=0.55+(0.45*(d50_mm-0.22)/(0.30-0.22))
         m_lam=0.73+(0.27*(d50_mm-0.22)/(0.30-0.22))
       ELSE
@@ -750,11 +728,11 @@
 ! 
 ! Smooth transition between ripple regime and bed sheet flow regime 
 !
-      IF(psi.le.190.) THEN
+      IF (psi .le. 190.) THEN
         n_eta=1.
-      ELSEIF(psi.gt.190..and.psi.lt.240.) THEN
+      ELSEIF (psi .gt.190. .and. psi .lt. 240.) THEN
         n_eta=0.5*(1.+cos(pi*(psi-190.)/50.))
-      ELSEIF(psi.ge.240.) THEN
+      ELSEIF (psi .ge. 240.) THEN
         n_eta=0.
       ENDIF
       n_lam=n_eta

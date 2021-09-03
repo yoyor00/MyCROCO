@@ -148,13 +148,13 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
      &                   record,v2dvar,type)
       endif
 
-#ifdef MORPHODYN
+# ifdef MORPHODYN
       if (wrtavg(indxHm)) then
          work2d=h_avg
          call fillvalue2d(work2d,ncidavg,avgHm,indxHm,
      &                    record,r2dvar,type)
       endif
-#endif
+# endif
 !     
 !     Write out kinematic bottom stress (N/m2).
 !     
@@ -546,13 +546,13 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 !     
       if (wrtavg(indxBTHK)) then
          worksed_bed=bed_thick_avg
-         call fillvalue3d(worksed_bed,ncidavg,avgSed(1),indxBTHK,
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(2),indxBTHK,
      &        record,b3dvar,type)
       endif
 !
       if (wrtavg(indxBPOR)) then
          worksed_bed=bed_poros_avg
-         call fillvalue3d(worksed_bed,ncidavg,avgSed(1),indxBPOR,
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(3),indxBPOR,
      &        record,b3dvar,type)
       endif
 
@@ -560,7 +560,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBFRA(1)+itrc-1
          if (wrtavg(indxWrk)) then
             worksed_frac=bed_frac_avg(:,:,:,itrc)
-            call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+2),
+            call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+3),
      &           indxWrk,record,b3dvar,type)
          endif
       enddo
@@ -570,7 +570,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxDFLX(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=settling_flux_avg(:,:,itrc)/dt
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -578,7 +578,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxEFLX(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=ero_flux_avg(:,:,itrc)/dt
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+2*NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -588,7 +588,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBDLU(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldu_avg(:,:,itrc)
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+3*NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -596,7 +596,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBDLV(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldv_avg(:,:,itrc)
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+4*NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo

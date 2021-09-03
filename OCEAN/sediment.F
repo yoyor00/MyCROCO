@@ -11,8 +11,11 @@
 ! Transport Model (CSTM) as implemented in ROMS by J. Warner (USGS)
 !
 ! Adapted from John Warner's code to CROCO by R. Benshila, CNRS 2015
-! -- modifs: P. Marchesiello, Dec 2015
-!                             Jun 2020
+! -- modifs: 
+!   P. Marchesiello, Dec 2015
+!                    Jun 2020: Van der A (2013) bedload
+!   P. Marchesiello & G. Morvan, Sep 2021: 5th order interpolation
+!     of bedload fluxes; DUNE test case in common with MUSTANG model
 !
 !======================================================================
 !
@@ -24,14 +27,16 @@
 # else
 #  define bnew nstp      
 # endif
-# if !defined BBL && !defined ANA_DUNE
-#  define BSTRESS_UPWIND
+
+# ifdef BEDLOAD
+#  if !defined SANDBAR && !defined ANA_DUNE 
+#   define BEDLOAD_UP1
+#  endif
+#  if !defined ANA_DUNE 
+#   define BEDLOAD_SLUMP
+#   define BEDLOAD_SHALLOW_LIMIT
+#  endif
 # endif
-# if !defined SANDBAR && !defined ANA_DUNE 
-#  define BEDLOAD_UP1
-# endif
-# undef  BEDLOAD_SLUMP
-# define BEDLOAD_SHALLOW_LIMIT
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
 # undef  NEUMANN
@@ -111,13 +116,11 @@
      &                       A2d(1,1,trd), A2d(1,2,trd), 
      &                       A2d(1,3,trd), A2d(1,4,trd),
      &                       A2d(1,5,trd),
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-      defined BEDLOAD_MARIEU
-     &                       A2d(1,6,trd), A2d(1,7,trd), 
-     &                       A2d(1,8,trd), A2d(1,9,trd)
-#  elif (defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA)
+#  ifdef BEDLOAD_VANDERA
      &                       A2d(1,6,trd), A2d(1,7,trd), 
      &                       A2d(1,8,trd)
+#  else
+     &                       A2d(1,6,trd), A2d(1,7,trd) 
 #  endif
      &                      )
 C$OMP BARRIER
@@ -160,71 +163,56 @@ C$OMP BARRIER
 !======================================================================
 !                                                                      !
 !  This routine computes sediment bedload transport using the Meyer-   !
-!  Peter and Muller (1948) formulation  for unidirectional flow,       !
-!  Soulsby and Damgaard (2005) algorithm that accounts for combined    !
-!  effect of currents and waves, and SANTOSS formulation               !
-!  (Van der A 2013), treating phase-lag and wave asymetry effects      !
-!  in half-cycles (from Warner et al. implementation in COAWST)        !
+!  Peter and Muller (1948) formulation for unidirectional flow,        !
+!  or SANTOSS formulation (Van der A 2013), that accounts for waves by !
+!  treating phase-lag and wave asymetry effects in half-cycles         !
+!  (from Warner et al. implementation in COAWST)                       !
 !                                                                      !
 !  References:                                                         !
-!                                                                      !
-!  Meyer-Peter, E. and R. Muller, 1948: Formulas for bedload transport !
-!    In: Report on the 2nd Meeting International Association Hydraulic !
-!    Research, Stockholm, Sweden, pp 39-64.                            !
-!                                                                      !
-!  Soulsby, R.L. and J.S. Damgaard, 2005: Bedload sediment transport   !
-!    in coastal waters, Coastal Engineering, 52 (8), 673-689.          !
-!                                                                      !
-!  Warner, J.C., C.R. Sherwood, R.P. Signell, C.K. Harris, and H.G.    !
-!    Arango, 2008:  Development of a three-dimensional,  regional,     !
-!    coupled wave, current, and sediment-transport model, Computers    !
-!    & Geosciences, 34, 1284-1306.                                     !
-!                                                                      !
-!  Wu W. & Lin Q., 2014: Nonuniform sediment transport under non-      !
-!    breaking waves and currents. Coastal Engineering, 90, pp 1-11.    !
 !                                                                      !
 !  Van der A, D. A., Ribberink, J. S., van der Werf, J. J.,            !
 !    O’Donoghue, T., Buijsrogge, R. H., and Kranenburg, W. M., 2013:   !
 !    Practical sand transport formula for non-breaking waves and       !
 !    currents. Coastal Engineering, 76, 26-42                          !
 !                                                                      !
+!  Warner, J.C., C.R. Sherwood, R.P. Signell, C.K. Harris, and H.G.    !
+!    Arango, 2008:  Development of a three-dimensional,  regional,     !
+!    coupled wave, current, and sediment-transport model, Computers    !
+!    & Geosciences, 34, 1284-1306.                                     !
+!                                                                      !
+!  Meyer-Peter, E. and R. Muller, 1948: Formulas for bedload transport !
+!    In: Report on the 2nd Meeting International Association Hydraulic !
+!    Research, Stockholm, Sweden, pp 39-64.                            !
+!                                                                      !
+!  Wu W. & Lin Q., 2014: Nonuniform sediment transport under non-      !
+!    breaking waves and currents. Coastal Engineering, 90, pp 1-11.    !
+!                                                                      !
 !======================================================================
 !
       subroutine sed_bedload_tile (Istr, Iend, Jstr, Jend,
      &                             tau_w,FX,FE,FX_r,FE_r
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-      defined BEDLOAD_MARIEU
-     &                            ,tau_wX,tau_wE,angleu,anglev
-#  elif (defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA)
-     &                            ,tau_m,phic,phicw 
+#  ifdef BEDLOAD_VANDERA
+     &                            ,tau_m,phic,phicw
+#  else
+     &                            ,angleu,anglev
 #  endif      
      &                            )
 !
       implicit none
       integer Istr,Iend,Jstr,Jend
-#  ifdef THREE_GHOST_POINTS
-#   define PRIVATE_2D_SCRATCH_ARRAY_COM PRIVATE_2D_SCRATCH_ARRAY_3PTS
+      real  FX(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,FE(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,FX_r(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,FE_r(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,tau_w(PRIVATE_2D_SCRATCH_ARRAY)
+#  ifdef BEDLOAD_VANDERA
+     &     ,tau_m(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,phic(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,phicw(PRIVATE_2D_SCRATCH_ARRAY)
 #  else
-#   define PRIVATE_2D_SCRATCH_ARRAY_COM PRIVATE_2D_SCRATCH_ARRAY
+     &     ,angleu(PRIVATE_2D_SCRATCH_ARRAY)
+     &     ,anglev(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
-      real  FX(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,FE(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,FX_r(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,FE_r(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,tau_w(PRIVATE_2D_SCRATCH_ARRAY_COM)
-#  if defined BEDLOAD_MPM || defined BEDLOAD_WULIN ||\
-      defined BEDLOAD_MARIEU
-     &     ,tau_wX(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,tau_wE(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,angleu(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,anglev(PRIVATE_2D_SCRATCH_ARRAY_COM)
-#  endif
-#  if defined BEDLOAD_SOULSBY || defined BEDLOAD_VANDERA
-     &     ,tau_m(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,phic(PRIVATE_2D_SCRATCH_ARRAY_COM)
-     &     ,phicw(PRIVATE_2D_SCRATCH_ARRAY_COM)
-#  endif
-#  undef PRIVATE_2D_SCRATCH_ARRAY_COM
 !
       integer i, j, k, ised
       real eps, Dstp
@@ -250,12 +238,6 @@ C$OMP BARRIER
       real :: flux5
 #     define FLUX5 flux5
 #  endif
-#  ifdef BEDLOAD_SOULSBY
-      real theta_m, theta_w, w_asym
-      real theta_max, theta_max1, theta_max2
-      real phi_x1, phi_x2, phi_x, phi_y
-      real bedld_x, bedld_y, waven, wavec
-#  endif
 #  ifdef BEDLOAD_VANDERA
       real wavecycle, alphac, alphaw
       real ksd_wbl, ustrc_wbl, thck_wbl, udelta_wbl
@@ -279,9 +261,7 @@ C$OMP BARRIER
       real dsf_calc, w_s_calc, w_sc_calc, theta_cr_calc
 #  endif
 #  ifdef BEDLOAD_SLUMP
-      real slopefac_wet_local, slopefac_dry_local
-      real sedslope_crit_wet, sedslope_crit_dry
-      real slopefac_wet, slopefac_dry
+      real sedslope_crit, slopefac, slopefac_local
 #  endif
 #  include "param.h"
 #  include "scalars.h"
@@ -298,13 +278,12 @@ C$OMP BARRIER
 #  include "compute_auxiliary_bounds.h"
 !
 !-----------------------------------------------------------------------
-! Boundary Indexes in X-direction
+! Set boundary Indices
 !-----------------------------------------------------------------------
 !
-# ifndef THREE_GHOST_POINTS
-#  ifdef EW_PERIODIC
-#   define I_EXT_RANGE Istr-1,Iend+1
-#  else
+# ifdef EW_PERIODIC
+#  define I_EXT_RANGE Istr-1,Iend+1
+# else
       if (WESTERN_EDGE) then
         imin=Istr
       else
@@ -315,40 +294,11 @@ C$OMP BARRIER
       else
         imax=Iend+1
       endif
-#     define I_EXT_RANGE imin,imax
-#  endif
-# else
-#   define I_EXT_RANGE Istr-3,Iend+3
-#   ifdef EW_PERIODIC
-      imin=1
-      imax=LOCALLM+1
-#   else
-#    ifdef MPI
-      if (WESTERN_EDGE) then
-        imin=3
-      else
-        imin=1
-      endif
-      if (EASTERN_EDGE) then
-        imax=Lmmpi-1
-      else
-        imax=Lmmpi+1
-      endif
-#    else
-      imin=3
-      imax=Lm-1 
-#    endif
-#   endif
+#  define I_EXT_RANGE imin,imax
 # endif
-!
-!-----------------------------------------------------------------------
-! Boundary Indexes in Y-direction
-!-----------------------------------------------------------------------
-!
-# ifndef THREE_GHOST_POINTS
-#  ifdef NS_PERIODIC
-#   define J_EXT_RANGE Jstr-1,Jend+1
-#  else
+# ifdef NS_PERIODIC
+#  define J_EXT_RANGE Jstr-1,Jend+1
+# else
       if (SOUTHERN_EDGE) then
         jmin=Jstr
       else
@@ -359,49 +309,16 @@ C$OMP BARRIER
       else
         jmax=Jend+1
       endif
-#     define J_EXT_RANGE jmin,jmax
-#  endif
-# else
-#   define J_EXT_RANGE Jstr-3,Jend+3
-#   ifdef NS_PERIODIC
-      jmin=1
-      jmax=LOCALMM+1
-#   else
-#    ifdef MPI
-      if (SOUTHERN_EDGE) then
-        jmin=3
-      else
-        jmin=1
-      endif
-      if (NORTHERN_EDGE) then
-        jmax=Mmmpi-1
-      else
-        jmax=Mmmpi+1
-      endif
-#    else
-      jmin=3
-      jmax=Mm-1
-#    endif
-#   endif
+#  define J_EXT_RANGE jmin,jmax
+# endif
+
+# if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+#  define FX_r bedload_FX
+#  define FE_r bedload_FE
 # endif
 !
-!------------------------------------------------------------------------
-! Exchange global arrays for Bedload Marieu test case (5th order interp.)
-!------------------------------------------------------------------------
-!
-#  ifdef BEDLOAD_MARIEU
-#   if defined MPI && defined THREE_GHOST_POINTS
-      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                        bustr(START_2D_ARRAY))
-      call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                        om_r)
-      call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                        on_r)
-      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                        ubar(START_2D_ARRAY,knew))
-#   endif
-#  endif
-!
+!-----------------------------------------------------------------------
+! Set parameters
 !-----------------------------------------------------------------------
 !
       twopi=2.*pi
@@ -409,95 +326,29 @@ C$OMP BARRIER
       sqrt2=SQRT(2.)
 !
 #  ifdef BEDLOAD_VANDERA
-        alphac=1.0   ! bedload scale fac for curr contrib
-        alphaw=1.0   ! bedload scale fac for wave contrib
+      alphac=1.0   ! bedload scale fac for curr contrib
+      alphaw=1.0   ! bedload scale fac for wave contrib
 #  endif
 !
 !-----------------------------------------------------------------------
-! Compute maximum bottom stress components at rho points
+! Compute bottom stress components at rho points
+!    tau_m: form stress for flow
+!    tau_w: skin stress for sediments
 !-----------------------------------------------------------------------
 !
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
 #  ifdef BEDLOAD_VANDERA
-#   ifdef BBL
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
-          tau_m(i,j) = SQRT( bustrc(i,j)*bustrc(i,j)+ 
-     &                       bvstrc(i,j)*bvstrc(i,j))
+          tau_m(i,j)=0.5*SQRT( (bustr(i,j)+bustr(i+1,j))**2 
+     &                        +(bvstr(i,j)+bvstr(i,j+1))**2 ) 
+#  endif
+          tau_w(i,j)=SQRT( bustrw(i,j)*bustrw(i,j)
+     &                   + bvstrw(i,j)*bvstrw(i,j) )
         enddo
       enddo
-#   else
-      do j=J_EXT_RANGE
-        do i=I_EXT_RANGE
-          tau_m(i,j) = 0.5*SQRT((bustr(i,j)+bustr(i+1,j))* 
-     &                          (bustr(i,j)+bustr(i+1,j))+ 
-     &                          (bvstr(i,j)+bvstr(i,j+1))* 
-     &                          (bvstr(i,j)+bvstr(i,j+1)))
-        enddo
-      enddo
-#   endif
-!
-#  elif defined BEDLOAD_SOULSBY
-#   ifdef BBL
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
-          tau_w(i,j) = SQRT( bustrw(i,j)*bustrw(i,j)+ 
-     &                       bvstrw(i,j)*bvstrw(i,j))
-          tau_m(i,j) = SQRT( bustrcwmax(i,j)*bustrcwmax(i,j)
-     &                     + bvstrcwmax(i,j)*bvstrcwmax(i,j) )
-        enddo
-      enddo
-#   else
-      do j=J_EXT_RANGE
-        do i=I_EXT_RANGE
-          tau_w(i,j) = 0.
-          tau_m(i,j) = 0.5*SQRT((bustr(i,j)+bustr(i+1,j))* 
-     &                          (bustr(i,j)+bustr(i+1,j))+ 
-     &                          (bvstr(i,j)+bvstr(i,j+1))* 
-     &                          (bvstr(i,j)+bvstr(i,j+1)))
-        enddo
-      enddo
-#   endif
-!
-#  else
-#   ifdef BBL
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
-          tau_w(i,j)=SQRT( bustrcwmax(i,j)*bustrcwmax(i,j)
-     &                   + bvstrcwmax(i,j)*bvstrcwmax(i,j) )
-        enddo
-      enddo
-#   else
-      do j=J_EXT_RANGE
-        do i=I_EXT_RANGE
-#    ifdef BSTRESS_UPWIND
-            cff1=0.5*(1.0+SIGN(1.0,bustr(i+1,j)))
-            cff2=0.5*(1.0-SIGN(1.0,bustr(i+1,j)))
-            cff3=0.5*(1.0+SIGN(1.0,bustr(i  ,j)))
-            cff4=0.5*(1.0-SIGN(1.0,bustr(i  ,j)))
-            tau_wX(i,j)=cff3*(cff1*bustr(i,j)+                          
-     &                  cff2*0.5*(bustr(i,j)+bustr(i+1,j)))+         
-     &                  cff4*(cff2*bustr(i+1,j)+                        
-     &                  cff1*0.5*(bustr(i,j)+bustr(i+1,j)))
-            cff1=0.5*(1.0+SIGN(1.0,bvstr(i,j+1)))
-            cff2=0.5*(1.0-SIGN(1.0,bvstr(i,j+1)))
-            cff3=0.5*(1.0+SIGN(1.0,bvstr(i,j)))
-            cff4=0.5*(1.0-SIGN(1.0,bvstr(i,j)))
-            tau_wE(i,j)=cff3*(cff1*bvstr(i,j)+                          
-     &                  cff2*0.5*(bvstr(i,j)+bvstr(i,j+1)))+         
-     &                  cff4*(cff2*bvstr(i,j+1)+                        
-     &                  cff1*0.5*(bvstr(i,j)+bvstr(i,j+1)))
-#    endif
-            tau_w(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))* 
-     &                          (bustr(i,j)+bustr(i+1,j))+ 
-     &                          (bvstr(i,j)+bvstr(i,j+1))* 
-     &                          (bvstr(i,j)+bvstr(i,j+1)))
-       enddo
-      enddo
-#   endif /* BBL */
-#  endif /* SOULSBY or other */
 !
 !-----------------------------------------------------------------------
-!  Compute angles
+! Compute angles
 !-----------------------------------------------------------------------
 !      
 ! Compute some constant bed slope parameters.
@@ -508,44 +359,41 @@ C$OMP BARRIER
 !
       do j=J_EXT_RANGE
        do i=I_EXT_RANGE
-#  if defined BEDLOAD_VANDERA || defined BEDLOAD_SOULSBY
+          cff1=0.5*(bustr(i,j)+bustr(i+1,j))
+          cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
+#  ifdef BEDLOAD_VANDERA
 !
 ! Compute angle between currents and waves
 ! .. from current direction toward wave vector.
 !
-          if (bustrc(i,j).eq.0.) then
-            phic(i,j)=0.5*pi*SIGN(1.,bvstrc(i,j))
+          if (cff1.eq.0.) then
+            phic(i,j)=0.5*pi*SIGN(1.,cff2)
           else
-            phic(i,j)=ATAN2(bvstrc(i,j),bustrc(i,j))
+            phic(i,j)=ATAN2(cff2,cff1)
           endif
           phicw(i,j)=Dwave(i,j)-phic(i,j)  ! Dwave assumed in CROCO 
                                            ! grid convention
-#   ifdef BEDLOAD_VANDERA
 !
 ! Convert phicw to angle between waves and current
 !  .. from wave direction towards current vector
 !
           phicw(i,j)=twopi-phicw(i,j)
 !
-#   endif
-#  elif !defined BEDLOAD_VANDERA && !defined BEDLOAD_SOULSBY &&\
-        !defined BSTRESS_UPWIND
-          cff1=0.5*(bustr(i,j)+bustr(i+1,j))
-          cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
+#  else 
           Umag=SQRT(cff1*cff1+cff2*cff2)+eps
           angleu(i,j)=cff1/Umag
           anglev(i,j)=cff2/Umag
-#  endif /* BEDLOAD_VANDERA || BEDLOAD_SOULSBY */
+#  endif /* BEDLOAD_VANDERA */
         enddo
       enddo
 !
-      do ised=1,NST   ! ==============
+      do ised=1,NST   ! <============== sed loop
 !
 !-----------------------------------------------------------------------
 ! Compute magnitude of bedload at rho points
 !
-! bedld has dimensions of kg m-1 s-1. 
-! FX_r and FE_r have dimensions of kg.
+!  bedld has dimensions of kg m-1 s-1. 
+!  FX_r and FE_r have dimensions of kg.
 !-----------------------------------------------------------------------
 !
 #  ifdef BEDLOAD_MARIEU
@@ -562,12 +410,12 @@ C$OMP BARRIER
         d90=1.3*d50              ! (m)
 #  endif
 !
-        do j=J_EXT_RANGE
+        do j=J_EXT_RANGE     ! <===== i,j loops
           do i=I_EXT_RANGE
 !
 #  ifdef BEDLOAD_VANDERA
 !
-! ---------  Van der A formulation  -------------
+! -----------------  Van der A formulation  ---------------------
 !
 ! VA-2013 equation 1 is solved:
 ! The transport formula is based on the wave “half-cycle” concept: 
@@ -594,12 +442,12 @@ C$OMP BARRIER
 ! Compute bed wave orbital velocity (m/s) & excursion amplitude
 !
             urms=twopi/Td*Awave(i,j)/(SINH(k_wn*depth)+eps)
-# ifdef MASKING
+#   ifdef MASKING
      &                                          *rmask(i,j)
-# endif
-# ifdef WET_DRY
+#   endif
+#   ifdef WET_DRY
      &                                      *rmask_wet(i,j)
-# endif
+#   endif
             uhat=urms*sqrt2
             ahat=uhat*Td*otwopi
 ! 
@@ -607,33 +455,33 @@ C$OMP BARRIER
 ! at the wave boundary layer
 !
             mag_bstrc=tau_m(i,j)
-#  ifdef MASKING
+#   ifdef MASKING
      &                             *rmask(i,j)
-#  endif
-#  ifdef WET_DRY
+#   endif
+#   ifdef WET_DRY
      &                         *rmask_wet(i,j)
-#  endif
+#   endif
 !
 ! Compute near bottom current at wave boundary layer (wbl)
 ! Use wbl thickness based on Madsen to get near bottom current velocity. 
 ! Make sure that wbl is under total depth and greater than apparent 
 ! roughness.
 !
-# ifdef BEDLOAD_VANDERA_ZEROCURR
+#   ifdef BEDLOAD_VANDERA_ZEROCURR
             udelta_wbl=0.
-# else
-#  ifdef BBL
+#   else
+#    ifdef BBL
             ksd_wbl=30.*Zbapp(i,j)
-#  else
+#    else
             ksd_wbl=30.*Zob(i,j)
-#  endif
+#    endif
             thck_wbl =0.09*ksd_wbl*(ahat/ksd_wbl)**0.82
             !thck_wbl=0.1
             ustrc_wbl=sqrt(mag_bstrc)
             cff1=MAX(MIN(0.9*depth, thck_wbl), 1.1*ksd_wbl)
             cff2=LOG(30.*cff1/ksd_wbl)
             udelta_wbl=(ustrc_wbl/vonKar)*cff2
-# endif
+#   endif
 !
 ! Ruessink et al. provides equations for calculating skewness parameters
 ! Uses Malarkey and Davies equations to get "r" and "phi"
@@ -746,119 +594,17 @@ C$OMP BARRIER
             FE_r(i,j)=(bedld_x*SIN(Dwave(i,j)) +
      &                 bedld_y*COS(Dwave(i,j)))*om_r(i,j)*dt
 !
-#  elif defined BEDLOAD_SOULSBY
+! -----------------  END Van der A formulation  ------------------
 !
-! ---------  Soulsby formulation  -------------
-!
-! Compute wave asymmetry factor, based on Fredosoe and Deigaard.
-! (and the note of Soulsby)
-!
-            Dstp=z_w(i,j,N)+h(i,j)  
-#   ifdef WKB_WWAVE
-            waven=max(wvn(i,j,wnew),eps)
-#   else
-            Fwave=2.*pi/Pwave(i,j)
-            Kdh=Dstp*Fwave*Fwave/g
-            Kbh2=Kdh*Kdh+
-     &      Kdh/(1.+Kdh*(K1+Kdh*(K2+Kdh*(K3+Kdh*(K4+
-     &      Kdh*(K5+K6*Kdh))))))
-            waven = SQRT(Kbh2)/Dstp           
-#   endif
-            wavec=SQRT(g/waven*tanh(waven*Dstp))
-            cff1=MIN(waven*Dstp,kdmax)
-            cff2=MIN(0.375*(2*Awave(i,j)/Dstp)*         
-     &                     ((waven*Dstp)/(SINH(cff1))**3),0.15)
-            w_asym=2.*cff2/(1.+cff2**2.)
-!
-! Compute nondimensional stresses.
-!
-            theta_w=tau_w(i,j)*osmgd+eps
-            theta_m=tau_m(i,j)*osmgd
-            cff1=theta_w*(1.+w_asym)
-            cff2=theta_w*(1.-w_asym)
-            theta_max1=SQRT((theta_m+                       
-     &                       cff1*COS(phicw(i,j)))**2+    
-     &                      (cff1*SIN(phicw(i,j)))**2)
-            theta_max2=SQRT((theta_m+
-     &                       cff2*COS(phicw(i,j)+pi))**2+ 
-     &                      (cff2*SIN(phicw(i,j)+pi))**2)
-            theta_max=MAX(theta_max1,theta_max2)
-!
-! Motion initiation factor.
-!
-#   if defined COHESIVE_BED || defined MIXED_BED
-! Check that both sediment class and bed critical stresses are exceeded
-             cff3=0.5_r8*(1.+SIGN(1.,                            
-     &                   theta_max/                                     
-     &          (max(tau_ce(ised),bed_bctr(i,j,1))*osmgd)-1.))
-
 #  else
-            cff3=0.5*(1.+SIGN(1.,                            
-     &               theta_max/(tau_ce_2d(i,j,ised)*osmgd)-1.))
-#  endif
 !
-! Compute bed loads in parallel and perpendicular direction of currents
-!
-            phi_x1=12.*SQRT(theta_m)*
-     &             MAX((theta_m-tau_ce_2d(i,j,ised)*osmgd),0.)
-            phi_x2=12.*(0.9534+0.1907*COS(2.*phicw(i,j)))* 
-     &                               SQRT(theta_w)*theta_m +
-     &             12.*(0.229*w_asym*theta_w**1.5*COS(phicw(i,j)))
-!            phi_x=MAX(phi_x1,phi_x2) !  <- original
-            if (ABS(phi_x2).gt.phi_x1) then
-              phi_x=phi_x2
-            else
-              phi_x=phi_x1
-            end if
-            bedld_x=phi_x*smgdr*cff3
-!
-            cff5=theta_w**1.5+1.5*(theta_m**1.5)
-            phi_y=12.*0.1907*theta_w*theta_w*
-     &                      (theta_m*SIN(2.0*phicw(i,j)) +
-     &            1.2*w_asym*SIN(phicw(i,j)))/cff5*cff3
-            bedld_y=phi_y*smgdr
-!
-! Partition bedld into xi and eta directions, still at rho points.
-!
-            FX_r(i,j)=(bedld_x*COS(phic(i,j)) -
-     &                 bedld_y*SIN(phic(i,j)))*on_r(i,j)*dt
-            FE_r(i,j)=(bedld_x*SIN(phic(i,j)) +
-     &                 bedld_y*COS(phic(i,j)))*om_r(i,j)*dt
-
-#  elif !defined BEDLOAD_SOULSBY && defined BSTRESS_UPWIND
-!
-! ---------  Meyer-Peter Muller or Wu & Lin  --------------
-!
-! Use partitions of stress from upwind direction, still at rho points.
+! Use simpler formulations with mean stress tau_w at rho points
 !
 #   ifdef BEDLOAD_MPM
-            bedld=8.*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.)**1.5)
-#   elif defined BEDLOAD_WULIN
-            cff=ABS(tau_wX(i,j))/tau_ce_2d(i,j,ised)-1.
-            bedld=0.0053*(MAX(cff,0.)**2.2)
-#   elif defined BEDLOAD_MARIEU
-            bedld=(0.001*ubar(i,j,knew)**3)
-#   endif
-     &                                 *smgdr*SIGN(1.,tau_wX(i,j))
-            FX_r(i,j)=bedld*on_r(i,j)*dt
-#   ifdef BEDLOAD_MPM
-            bedld=8.*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.)**1.5)
-#   elif defined BEDLOAD_WULIN
-            cff=ABS(tau_wE(i,j))/tau_ce_2d(i,j,ised)-1
-            bedld=0.0053*(MAX(cff,0.)**2.2)
-#   elif defined BEDLOAD_MARIEU
-            bedld=0.
-#   endif
-     &                                 *smgdr*SIGN(1.,tau_wE(i,j))
-            FE_r(i,j)=bedld*om_r(i,j)*dt
-
-#  elif !defined BEDLOAD_SOULSBY && !defined BSTRESS_UPWIND
-!
-! Use mean stress tau_w at rho points
-!
-#   ifdef BEDLOAD_MPM
+!   Meyer-Peter & Muller, 1948
             bedld=8.*(MAX((tau_w(i,j)*osmgd-0.047),0.)**1.5)*smgdr
 #   elif defined BEDLOAD_WULIN
+!   Wu & Lin, 2014
             cff=tau_w(i,j)/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr
 #   elif defined BEDLOAD_MARIEU
@@ -871,17 +617,13 @@ C$OMP BARRIER
             FX_r(i,j)=angleu(i,j)*bedld*on_r(i,j)*dt
             FE_r(i,j)=anglev(i,j)*bedld*om_r(i,j)*dt
 
-#  endif /* BEDLOAD_SOULSBY */
+#  endif /* BEDLOAD_VANDERA */
 !
 !-----------------------------------------------------------------------
 ! Correct for along-direction slope. 
 ! Limit slope to 0.9*sed angle.
 !-----------------------------------------------------------------------
 !
-            cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
-            cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
-            cff3=0.5*(1.+SIGN(1.,FE_r(i,j)))
-            cff4=0.5*(1.-SIGN(1.,FE_r(i,j)))
 #  ifdef SLOPE_NEMETH
             dzdx=(h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+       
      &           (h(i-1,j)-h(i  ,j))/om_u(i  ,j)*cff2
@@ -912,6 +654,7 @@ C$OMP BARRIER
 !
             FX_r(i,j)=FX_r(i,j)*a_slopex
             FE_r(i,j)=FE_r(i,j)*a_slopey
+!
 #  endif /* SLOPE_NEMETH */
 !
 !-----------------------------------------------------------------------
@@ -922,9 +665,8 @@ C$OMP BARRIER
             FE_r(i,j)=FE_r(i,j) MORPH_FAC
 !
 !-----------------------------------------------------------------------
-! Apply bedload 
-! transport rate coefficient. Also limit
-! bedload to the fraction of each sediment class.
+! Apply bedload transport rate coefficient. 
+! Also limit bedload to the fraction of each sediment class.
 !-----------------------------------------------------------------------
 !
             FX_r(i,j)=FX_r(i,j)*bedload_coeff*bed_frac(i,j,1,ised)
@@ -955,8 +697,12 @@ C$OMP BARRIER
 #  endif
 !
           enddo ! I_EXT_RANGE
-        enddo  ! J_EXT_RANGE
-
+        enddo  ! J_EXT_RANGE  <===== i,j loops
+!
+!-----------------------------------------------------------------------
+! Apply boundary conditions
+!-----------------------------------------------------------------------
+!
 #  ifndef EW_PERIODIC
         if (WESTERN_EDGE) then
           do j=J_EXT_RANGE
@@ -1018,26 +764,81 @@ C$OMP BARRIER
 !
 !-----------------------------------------------------------------------
 ! Compute face fluxes at u and v points before taking divergence.
+!
+!  --> Extended stencil in case of high-order interpolation.
 !-----------------------------------------------------------------------
 !
-        do j=Jstr,Jend
-           do i=Istr,Iend+1
 #  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
-            cff=SIGN(1.0,FX_r(i  ,j))
-            cff1=0.5*(1.0+SIGN(1.0,FX_r(i  ,j)))
+C$OMP BARRIER
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+        if (IstrU.le.Iend) then
+          call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,FX_r)
+        endif
+        if (JstrV.le.Jend) then
+          call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,FE_r)
+        endif
+#   endif
+
+#   ifdef EW_PERIODIC
+        imin=1
+        imax=LOCALLM+1
+#   else
+#    ifdef MPI
+        if (WESTERN_EDGE) then
+          imin=3
+        else
+          imin=1
+        endif
+        if (EASTERN_EDGE) then
+          imax=Lmmpi-1
+        else
+          imax=Lmmpi+1
+        endif
+#    else
+        imin=3
+        imax=Lm-1 
+#    endif
+#   endif
+#   ifdef NS_PERIODIC
+        jmin=1
+        jmax=LOCALMM+1
+#   else
+#    ifdef MPI
+        if (SOUTHERN_EDGE) then
+          jmin=3
+        else
+          jmin=1
+        endif
+        if (NORTHERN_EDGE) then
+          jmax=Mmmpi-1
+        else
+          jmax=Mmmpi+1
+        endif
+#    else
+        jmin=3
+        jmax=Mm-1
+#    endif
+#   endif
+#  endif /* BEDLOAD_WENO5 || BEDLOAD_UP5 */
+!
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+#  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+            cff=SIGN(1.,FX_r(i,j))
+            cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
             IF ( (( i.lt.imin ) .or. ( i.gt.imax )) 
      &                          .and.( imin.lt.imax ) ) THEN
                FX(i,j)=0.5*(1.+SIGN(1.,FX_r(i-1,j)))*
      &              (cff1*FX_r(i-1,j)+
      &               cff2*0.5*(FX_r(i-1,j)+FX_r(i,j)))+
-     &              0.5*(1.-SIGN(1.,FX_r(i-1,j)))*
+     &                 0.5*(1.-SIGN(1.,FX_r(i-1,j)))*
      &              (cff2*FX_r(i  ,j)+
      &               cff1*0.5*(FX_r(i-1,j)+FX_r(i,j)))
             ELSE
-               FX(i,j)=FLUX5(
-     &                      FX_r(i-3,j),FX_r(i-2,j),FX_r(i-1,j),
-     &                      FX_r(i  ,j),FX_r(i+1,j),FX_r(i+2,j),cff)
+               FX(i,j)=FLUX5(FX_r(i-3,j),FX_r(i-2,j),
+     &                       FX_r(i-1,j),FX_r(i  ,j),
+     &                       FX_r(i+1,j),FX_r(i+2,j),cff)
             ENDIF
 #  elif defined BEDLOAD_UP1
             cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
@@ -1070,25 +871,27 @@ C$OMP BARRIER
         do j=Jstr,Jend+1
           do i=Istr,Iend
 #  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
-            cff=SIGN(1.0,FE_r(i  ,j))
-            cff1=0.5*(1.+SIGN(1.0,FE_r(i  ,j)))
+            cff=SIGN(1.,FE_r(i,j))
+            cff1=0.5*(1.+SIGN(1.,FE_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FE_r(i,j)))
-            IF ( (( j.lt.jmin ) .or. ( j.gt.jmax )).and.( jmin.lt.jmax ) ) THEN
+            IF ( (( j.lt.jmin ) .or. ( j.gt.jmax ))
+     &                          .and.( jmin.lt.jmax ) ) THEN
                FE(i,j)=0.5*(1.+SIGN(1.,FE_r(i,j-1)))*
      &              (cff1*FE_r(i,j-1)+
      &               cff2*0.5*(FE_r(i,j-1)+FE_r(i,j)))+
-     &              0.5*(1.-SIGN(1.,FE_r(i,j-1)))*
+     &                 0.5*(1.-SIGN(1.,FE_r(i,j-1)))*
      &              (cff2*FE_r(i  ,j)+
      &               cff1*0.5*(FE_r(i,j-1)+FE_r(i,j)))
             ELSE
                FE(i,j)=FLUX5(
-     &                      FE_r(i,j-3),FE_r(i,j-2),FE_r(i,j-1),
-     &                      FE_r(i  ,j),FE_r(i,j+1),FE_r(i,j+2),cff)
+     &                      FE_r(i,j-3),FE_r(i,j-2),
+     &                      FE_r(i,j-1),FE_r(i  ,j),
+     &                      FE_r(i,j+1),FE_r(i,j+2),cff)
             ENDIF
 #  elif defined BEDLOAD_UP1
             cff1=0.5*(1.+SIGN(1.,FE_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FE_r(i,j)))
-            FE(i,j)=0.5*(1.+SIGN(1.0,FE_r(i,j-1)))*     
+            FE(i,j)=0.5*(1.+SIGN(1.,FE_r(i,j-1)))*     
      &              (cff1*FE_r(i,j-1)+                      
      &               cff2*0.5*(FE_r(i,j-1)+FE_r(i,j)))+       
      &              0.5*(1.-SIGN(1.,FE_r(i,j-1)))*      
@@ -1112,27 +915,21 @@ C$OMP BARRIER
 #  endif
           enddo
         enddo
+
+#  if defined BEDLOAD_WENO5 || defined BEDLOAD_UP5
+#   undef FX_r
+#   undef FE_r
+#  endif
 !
 #  ifdef BEDLOAD_SLUMP
 !-----------------------------------------------------------------------
-!  Sed slump computation to allow slumping for wet areas everywhere
-!  and at the wet/dry interface.
-!
-!  sedslopes are the critical slopes to allow slumping.
-!  slopefac are the scale factors for sediment movement.
+!  Sed slump computation to allow slumping (from COAWST).
+!     sedslope is the critical slope to allow slumping.
+!     slopefac is the scale factor for sediment movement.
 !-----------------------------------------------------------------------
 !
-        sedslope_crit_wet=0.1  ! Critical wet bed slope for slumping
-        sedslope_crit_dry=0.1  ! Critical dry bed slope for slumping.
-        slopefac_wet=0.1       ! Bedload wet bed slumping factor
-        slopefac_dry=0.1       ! Bedload dry bed slumping factor.
-!
-        cff2=Srho(ised)*(1.-bed_poros(i,j,1))
-        slopefac_dry_local=cff2*dt*slopefac_dry
-        slopefac_wet_local=cff2*dt*slopefac_wet
-!
-        slopefac_wet_local=slopefac_wet_local MORPH_FAC
-        slopefac_dry_local=slopefac_dry_local MORPH_FAC
+        sedslope_crit=0.1  ! Critical bed slope for slumping
+        slopefac=0.1       ! Bedload bed slumping factor
 !
 !  U-direction slumping
 !
@@ -1141,65 +938,29 @@ C$OMP BARRIER
             dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j)
             dzdxdy=sqrt(dzdx**2.+dzdy**2.)
-!  For the wet part
-            cff=ABS(dzdxdy)-sedslope_crit_wet
+            cff=Srho(ised)*(1.-bed_poros(i,j,1))
+            slopefac_local=cff*dt*slopefac MORPH_FAC
+            cff=ABS(dzdxdy)-sedslope_crit
             cff1=(0.5+SIGN(0.5,cff))
             cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
-            cff2=cff*slopefac_wet_local*SIGN(1.,dzdx)
-#   ifdef MASKING
-            cff2=cff2*umask(i,j)
-#   ifdef WET_DRY
-            cff2=cff2*umask_wet(i,j)
-#    endif
-#   endif
-            FX(i,j)=FX(i,j)+cff2
-!  For the dry part
-            cff=ABS(dzdx)-sedslope_crit_dry
-            cff1=(0.5+SIGN(0.5,cff))
-            cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
-            cff2=cff*slopefac_dry_local*SIGN(1.,dzdx)
-#   ifdef MASKING
-            cff2=cff2*umask(i,j)
-#    ifdef WET_DRY
-            cff2=cff2*(1.-umask_wet(i,j))*
-     &               ((1.-umask_wet(i-1,j))*umask_wet(i+1,j)+
-     &                (1.-umask_wet(i+1,j))*umask_wet(i-1,j))
-#    endif
-#   endif
+            cff2=cff*slopefac_local*SIGN(1.,dzdx)
             FX(i,j)=FX(i,j)+cff2
           end do
         end do
+!
+!  V-direction slumping
 !
         do j=Jstr,Jend+1
           do i=Istr,Iend
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j) ! positive is downhill
             dzdx=(h(i,j)-h(i-1,j))/om_u(i,j)
             dzdxdy=sqrt(dzdx**2.+dzdy**2.)
-! For the wet part
-            cff=ABS(dzdxdy)-sedslope_crit_wet
+            cff=Srho(ised)*(1.-bed_poros(i,j,1))
+            slopefac_local=cff*dt*slopefac MORPH_FAC
+            cff=ABS(dzdxdy)-sedslope_crit
             cff1=(0.5+SIGN(0.5,cff))
             cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
-            cff2=cff*slopefac_wet_local*SIGN(1.,dzdy)
-#   ifdef MASKING
-            cff2=cff2*vmask(i,j)
-#    ifdef WET_DRY
-            cff2=cff2*vmask_wet(i,j)
-#    endif
-#   endif
-            FE(i,j)=FE(i,j)+cff2
-! For the dry part
-            cff=ABS(dzdy)-sedslope_crit_dry
-            cff1=(0.5+SIGN(0.5,cff))
-            cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
-            cff2=cff*slopefac_dry_local*SIGN(1.,dzdy)
-#   ifdef MASKING
-            cff2=cff2*vmask(i,j)
-#    ifdef WET_DRY
-            cff2=cff2*(1.-vmask_wet(i,j))*
-     &               ((1.-vmask_wet(i,j-1))*vmask_wet(i,j+1)+
-     &                (1.-vmask_wet(i,j+1))*vmask_wet(i,j-1))
-#    endif
-#   endif
+            cff2=cff*slopefac_local*SIGN(1.,dzdy)
             FE(i,j)=FE(i,j)+cff2
           end do
         end do
@@ -1429,16 +1190,6 @@ C$OMP BARRIER
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#    ifdef THREE_GHOST_POINTS
-         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                 taucb(START_2D_ARRAY))
-         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                 Ssize(START_2D_ARRAY))
-         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                 w_set(START_2D_ARRAY))
-         call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                 Sdens(START_2D_ARRAY))
-#    else
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 taucb(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -1447,7 +1198,6 @@ C$OMP BARRIER
      &                 w_set(START_2D_ARRAY))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 Sdens(START_2D_ARRAY))
-#    endif
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1560,38 +1310,18 @@ C$OMP BARRIER
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       do ised=1,NST
         do k=1,NLAY
-#        ifdef THREE_GHOST_POINTS
-          call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                 bed_mass(START_2D_ARRAY,k,nnew,ised))
-          call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                 bed_frac(START_2D_ARRAY,k,ised))
-#        else
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_mass(START_2D_ARRAY,k,nnew,ised))
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_frac(START_2D_ARRAY,k,ised))         
-#        endif
         enddo 
-#        ifdef THREE_GHOST_POINTS
-          call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
+        call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                 bedldu(START_2D_ARRAY,ised))
-          call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend,
+        call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                 bedldv(START_2D_ARRAY,ised))
-#        else
-          call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                 bedldu(START_2D_ARRAY,ised))
-          call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                 bedldv(START_2D_ARRAY,ised))
-#        endif
       enddo
-
-#     ifdef THREE_GHOST_POINTS
-       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                  bed_thick(START_2D_ARRAY,1))
-#     else
-       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                  bed_thick(START_2D_ARRAY,1))
-#     endif
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_thick(START_2D_ARRAY,1))
 #  endif
 
       return 
@@ -1659,13 +1389,8 @@ C$OMP BARRIER
 !
       do j=Jstr,Jend
         do i=Istr,Iend
-#  ifdef BBL
-          tau_w(i,j)=sqrt( bustrcwmax(i,j)**2
-     &                    +bvstrcwmax(i,j)**2)
-#  else
-          tau_w(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2
-     &                        +(bvstr(i,j)+bvstr(i,j+1))**2)
-#  endif
+          tau_w(i,j)=sqrt(bustrw(i,j)**2
+     &                   +bvstrw(i,j)**2)
 #  ifdef WET_DRY
           tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
 #  endif
@@ -1906,13 +1631,8 @@ C$OMP BARRIER
 !
       do j=Jstr,Jend
         do i=Istr,Iend
-#  ifdef BBL
-          tau_w(i,j)=sqrt( bustrcwmax(i,j)**2
-     &                    +bvstrcwmax(i,j)**2)
-#  else
-          tau_w(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2
-     &                        +(bvstr(i,j)+bvstr(i,j+1))**2)
-#  endif
+          tau_w(i,j)=sqrt(bustrw(i,j)**2
+     &                   +bvstrw(i,j)**2)
 #  ifdef WET_DRY
           tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
 #  endif
@@ -2036,54 +1756,16 @@ C$OMP BARRIER
       real thck_avail,thck_to_add,newlayer_thick
       integer imin,imax,jmin,jmax
       parameter ( eps=1.D-20, newlayer_thick=0.001 )
-
-# ifdef EW_PERIODIC
-#  define I_EXT_RANGE Istr-1,Iend+1
-# else
-      if (WESTERN_EDGE) then
-        imin=Istr
-      else
-        imin=Istr-1
-      endif
-      if (EASTERN_EDGE) then
-        imax=Iend
-      else
-        imax=Iend+1
-      endif
-#  define I_EXT_RANGE imin,imax
-# endif
-# ifdef NS_PERIODIC
-#  define J_EXT_RANGE Jstr-1,Jend+1
-# else
-      if (SOUTHERN_EDGE) then
-        jmin=Jstr
-      else
-        jmin=Jstr-1
-      endif
-      if (NORTHERN_EDGE) then
-        jmax=Jend
-      else
-        jmax=Jend+1
-      endif
-#  define J_EXT_RANGE jmin,jmax
-# endif
 !
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave 
 !  and current interaction
 !-----------------------------------------------------------------------
 !
-# ifdef BBL
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
-          tau_w(i,j)=sqrt( bustrcwmax(i,j)**2
-     &                    +bvstrcwmax(i,j)**2)
-# else
-      do j=J_EXT_RANGE
-        do i=I_EXT_RANGE
-          tau_w(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2
-     &                        +(bvstr(i,j)+bvstr(i,j+1))**2)
-# endif
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          tau_w(i,j)=sqrt(bustrw(i,j)**2
+     &                   +bvstrw(i,j)**2)
 !
 !-----------------------------------------------------------------------
 !  Calculate active layer thickness
@@ -2650,39 +2332,22 @@ C$OMP BARRIER
 ! KLUDGE alert
 ! minlayer_thick = 0.0005
       minlayer_thick = newlayer_thick
-
 !
 !-----------------------------------------------------------------------
 ! Compute sediment bed layer stratigraphy.
 !-----------------------------------------------------------------------
 !
-
 ! why MPM ???
-
 # if defined BEDLOAD_MPM || defined SUSPLOAD
-#  ifdef BBL
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
-          tau_w(i,j)=SQRT(bustrcwmax(i,j)*bustrcwmax(i,j)+              
-     &                    bvstrcwmax(i,j)*bvstrcwmax(i,j))
-#   ifdef WET_DRY
+          tau_w(i,j)=SQRT(bustrw(i,j)**2              
+     &                   +bvstrw(i,j)**2)
+#  ifdef WET_DRY
           tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
-#   endif
-        enddo
-      enddo
-#  else
-       do j=J_EXT_RANGE
-         do i=I_EXT_RANGE
-          tau_w(i,j)=0.5*SQRT((bustr(i,j)+bustr(i+1,j))*             
-     &                           (bustr(i,j)+bustr(i+1,j))+             
-     &                           (bvstr(i,j)+bvstr(i,j+1))*             
-     &                           (bvstr(i,j)+bvstr(i,j+1)))
-#   ifdef WET_DRY
-          tau_w(i,j)=tau_w(i,j)*rmask_wet(i,j)
-#   endif
-        enddo
-      enddo
 #  endif
+        enddo
+      enddo
 # endif
 !
 !-----------------------------------------------------------------------
@@ -5796,8 +5461,8 @@ C$OMP BARRIER
 !
               if (k.eq.1) then       
 #  ifdef BBL
-                ustr2 =sqrt((bustrcwmax(i,j)**2.0+                  
-     &                       bvstrcwmax(i,j)**2.0 ))
+                ustr2 =sqrt((bustrw(i,j)**2                
+     &                      +bvstrw(i,j)**2))
                 effecz = (ustr2**0.5)*Pwave(i,j)*0.5/pi
                 diss = MAX((ustr2**(1.5))/(vonKar*effecz),diss)
 #  else

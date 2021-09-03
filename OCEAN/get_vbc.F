@@ -50,7 +50,7 @@
 ! Initial wave periode, amplitude, direction and dissipation
 !---------------------------------------------------------------
 !
-# if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
+# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
 #  if defined  AGRIF && defined BBL
       if (Agrif_lev_sedim.EQ.0) call get_wwave
 #  else
@@ -190,9 +190,13 @@
 #include "scalars.h"
 #include "climat.h"
 #include "sources.h"
+#include "mixing.h"
 #include "mpi_cpl.h"
+#include "sediment.h"
+#include "bbl.h"
       integer i,j,is, Istr,Iend,Jstr,Jend
-      real cff,cff1
+      integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
+      real cff,cff1, Umag,Ucur,Vcur,Utur,znots
       real wrk(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY)
       real wrk2(PRIVATE_2D_SCRATCH_ARRAY)
@@ -365,8 +369,6 @@
         do i=IstrR,IendR
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
           srflx(i,j)=srflx(i,j)*rmask_wet(i,j)
-!          sustr(i,j)=sustr(i,j)*umask_wet(i,j)
-!          svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
 #   endif
@@ -440,47 +442,46 @@
 !  Set bottom stress using logarithmic or linear 
 !  and/or quadratic formulation. 
 !
+#   define CDRAG wrk
       if (maxval(Zob).ne.0.) then
-        do j=JstrV-1,Jend
+        do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
             cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/Zob(i,j))
-            wrk(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
+            CDRAG(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
           enddo
         enddo
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=0.25*(v(i  ,j,1,nrhs)+v(i  ,j+1,1,nrhs)+
      &                v(i-1,j,1,nrhs)+v(i-1,j+1,1,nrhs))
-            bustr(i,j)=0.5*(wrk(i-1,j)+wrk(i,j))*u(i,j,1,nrhs)*
-     &                 SQRT(u(i,j,1,nrhs)*u(i,j,1,nrhs)+cff*cff)
+            Umag=SQRT(cff*cff+u(i,j,1,nrhs)*u(i,j,1,nrhs))
+            bustr(i,j)=0.5*(CDRAG(i-1,j)+CDRAG(i,j))*Umag*u(i,j,1,nrhs)
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend
-            cff=0.25*(u(i,j  ,1,nrhs)+u(i+1,j,1,nrhs)+
+            cff=0.25*(u(i,j  ,1,nrhs)+u(i+1,j  ,1,nrhs)+
      &                u(i,j-1,1,nrhs)+u(i+1,j-1,1,nrhs))
-            bvstr(i,j)=0.5*(wrk(i,j-1)+wrk(i,j))*v(i,j,1,nrhs)*
-     &                 SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
+            Umag=SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
+            bvstr(i,j)=0.5*(CDRAG(i,j-1)+CDRAG(i,j))*Umag*v(i,j,1,nrhs)
           enddo
         enddo
+#   undef CDRAG
       elseif (rdrg2.gt.0.) then
         do j=JstrV,Jend
           do i=Istr,Iend
-
-            cff=0.25*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs)+v(i-1,j,1,nrhs)+
-     &                                            v(i-1,j+1,1,nrhs))
-            bustr(i,j)=u(i,j,1,nrhs)*(rdrg2*sqrt(
-     &                         u(i,j,1,nrhs)*u(i,j,1,nrhs)+cff*cff
-     &                                                            ))
+            cff=0.25*(v(i  ,j,1,nrhs)+v(i  ,j+1,1,nrhs)+
+     &                v(i-1,j,1,nrhs)+v(i-1,j+1,1,nrhs))
+            Umag=SQRT(cff*cff+u(i,j,1,nrhs)*u(i,j,1,nrhs))
+            bustr(i,j)=rdrg2*Umag*u(i,j,1,nrhs)
           enddo
         enddo
         do j=Jstr,Jend
           do i=IstrU,Iend
-            cff=0.25*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs)+u(i,j-1,1,nrhs)+
-     &                                            u(i+1,j-1,1,nrhs))
-            bvstr(i,j)=v(i,j,1,nrhs)*(rdrg2*sqrt(
-     &                         cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs)
-     &                                                            ))
+            cff=0.25*(u(i,j  ,1,nrhs)+u(i+1,j  ,1,nrhs)+
+     &                u(i,j-1,1,nrhs)+u(i+1,j-1,1,nrhs))
+            Umag=SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
+            bvstr(i,j)=rdrg2*Umag*v(i,j,1,nrhs)
           enddo
         enddo
       else
@@ -496,12 +497,41 @@
         enddo
       endif
 
+#   ifdef SEDIMENT
+!
+!  Compute skin stress components at rho points
+!  (for the sediment model)
+!
+        do j=Jstr,Jend
+          do i=Istr,Iend
+#    ifdef DUNE
+            znots=Zobt
+#    else
+            znots=Ssize(i,j)/12.
+#    endif
+            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/znots)
+            cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
+            Ucur=0.5*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs))
+            Vcur=0.5*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs))
+#     if defined GLS_MIXING && defined SANDBAR
+            Utur=15.*SQRT(trb(i,j,1,nrhs,itke))
+     &                           *exp(-0.01*(xr(i,j)-142.)**2)
+#     else
+            Utur=0.
+#     endif
+            Umag=SQRT(Ucur*Ucur+Vcur*Vcur+Utur*Utur)
+            bustrw(i,j)=cff*Umag*Ucur
+            bvstrw(i,j)=cff*Umag*Vcur
+          enddo
+        enddo
+#   endif /* SEDIMENT */
+
 #   ifdef LIMIT_BSTRESS
 !
 !  From J. Warner's code:
 !  Set limiting factor for bottom stress. The bottom stress is adjusted
-!  to not change the direction of momentum.  It only should slow down
-!  to zero.  The value of 0.75 is arbitrary limitation assigment.
+!  to not change the direction of momentum. It only should slow down
+!  to zero. The value of 0.75 is arbitrary limitation assigment.
 !
       cff=0.75/dt
       do j=Jstr,Jend
@@ -534,6 +564,12 @@
         DO j=JstrV,Jend
           bvstr(Iend+1,j)=bvstr(Iend,j)
         END DO
+#   ifdef SEDIMENT
+        DO j=Jstr,Jend
+          bustrw(Iend+1,j)=bustrw(Iend,j)
+          bvstrw(Iend+1,j)=bvstrw(Iend,j)
+        END DO
+#   endif
       END IF
       IF (WESTERN_EDGE) THEN
         DO j=Jstr,Jend
@@ -542,16 +578,28 @@
         DO j=JstrV,Jend
           bvstr(Istr-1,j)=bvstr(Istr,j)
         END DO
+#   ifdef SEDIMENT
+        DO j=Jstr,Jend
+          bustrw(Istr-1,j)=bustrw(Istr,j)
+          bvstrw(Istr-1,j)=bvstrw(Istr,j)
+        END DO        
+#   endif
       END IF
 #  endif
 #  ifndef NS_PERIODIC
       IF (NORTHERN_EDGE) THEN
         DO i=IstrU,Iend
-          bustr(i,Jend+1)=bustr(i,Jend)
+          bustr(i,Jend+1) =bustr(i,Jend)
         END DO
         DO i=Istr,Iend
-          bvstr(i,Jend+1)=bvstr(i,Jend)
+          bvstr(i,Jend+1) =bvstr(i,Jend)
         END DO
+#   ifdef SEDIMENT
+        DO i=Istr,Iend
+          bustrw(i,Jend+1) =bustrw(i,Jend)
+          bvstrw(i,Jend+1) =bvstrw(i,Jend)
+        END DO
+#   endif
       END IF
       IF (SOUTHERN_EDGE) THEN
         DO i=IstrU,Iend
@@ -560,29 +608,61 @@
         DO i=Istr,Iend
           bvstr(i,JstrV-1)=bvstr(i,JstrV)
         END DO
+#   ifdef SEDIMENT
+        DO i=Istr,Iend
+          bustrw(i,Jstr-1)=bustrw(i,Jstr)
+          bvstrw(i,Jstr-1)=bvstrw(i,Jstr)
+        END DO
+#   endif
       END IF
 #  endif
 #  if !defined EW_PERIODIC && !defined NS_PERIODIC
+      ISTRm=Istr-1
+      ISTRp=Istr+1
+      IENDp=Iend+1
+      JSTRm=Jstr-1
+      JSTRp=Jstr+1
+      JENDp=Jend+1
       IF (SOUTHERN_EDGE.and.WESTERN_EDGE) THEN
-        bustr(Istr,Jstr-1)=0.5*(bustr(Istr+1,Jstr-1)+bustr(Istr,Jstr))
-        bvstr(Istr-1,Jstr)=0.5*(bvstr(Istr,Jstr)+bvstr(Istr-1,Jstr+1))
-      END IF
+        bustr(Istr,JSTRm)  =0.5*(bustr(ISTRp,JSTRm)+bustr(Istr,Jstr))
+        bvstr(ISTRm,Jstr)  =0.5*(bvstr(Istr,Jstr)+bvstr(ISTRm,JSTRp))
+#   ifdef SEDIMENT
+        bustrw(ISTRm,JSTRm)=0.5*(bustrw(Istr,JSTRm)+bustrw(ISTRm,Jstr))
+        bvstrw(ISTRm,JSTRm)=0.5*(bvstrw(Istr,JSTRm)+bvstrw(ISTRm,Jstr))
+#   endif
+      ENDIF
       IF (SOUTHERN_EDGE.and.EASTERN_EDGE) THEN
-        bustr(Iend+1,Jstr-1)=0.5*(bustr(Iend+1,Jstr)+bustr(Iend,Jstr-1))
-        bvstr(Iend+1,Jstr)=0.5*(bvstr(Iend+1,Jstr+1)+bvstr(Iend,Jstr))
-      END IF
+        bustr(IENDp,JSTRm) =0.5*(bustr(IENDp,Jstr)+bustr(Iend,JSTRm))
+        bvstr(IENDp,Jstr)  =0.5*(bvstr(IENDp,JSTRp)+bvstr(Iend,Jstr))
+#   ifdef SEDIMENT
+        bustrw(IENDp,JSTRm)=0.5*(bustrw(IENDp,Jstr)+bustrw(Iend,JSTRm))
+        bvstrw(IENDp,JSTRm)=0.5*(bvstrw(IENDp,Jstr)+bvstrw(Iend,JSTRm))
+#   endif
+      ENDIF
       IF (NORTHERN_EDGE.and.WESTERN_EDGE) THEN
-        bustr(Istr,Jend+1)=0.5*(bustr(Istr,Jend)+bustr(Istr+1,Jend+1))
-        bvstr(Istr-1,Jend+1)=0.5*(bvstr(Istr-1,Jend)+bvstr(Istr,Jend+1))
-      END IF
+        bustr(Istr,JENDp)  =0.5*(bustr(Istr,Jend)+bustr(ISTRp,JENDp))
+        bvstr(ISTRm,JENDp) =0.5*(bvstr(ISTRm,Jend)+bvstr(Istr,JENDp))
+#   ifdef SEDIMENT
+        bustrw(ISTRm,JENDp)=0.5*(bustrw(ISTRm,Jend)+bustrw(Istr,JENDp))
+        bvstrw(ISTRm,JENDp)=0.5*(bvstrw(ISTRm,Jend)+bvstrw(Istr,JENDp))
+#   endif
+      ENDIF
       IF (NORTHERN_EDGE.and.EASTERN_EDGE) THEN
-        bustr(Iend+1,Jend+1)=0.5*(bustr(Iend+1,Jend)+bustr(Iend,Jend+1))
-        bvstr(Iend+1,Jend+1)=0.5*(bvstr(Iend+1,Jend)+bvstr(Iend,Jend+1))
-      END IF
+        bustr(IENDp,JENDp) =0.5*(bustr(IENDp,Jend)+bustr(Iend,JENDp))
+        bvstr(IENDp,JENDp) =0.5*(bvstr(IENDp,Jend)+bvstr(Iend,JENDp))
+#   ifdef SEDIMENT
+        bustrw(IENDp,JENDp)=0.5*(bustrw(IENDp,Jend)+bustrw(Iend,JENDp))
+        bvstrw(IENDp,JENDp)=0.5*(bvstrw(IENDp,Jend)+bvstrw(Iend,JENDp))
+#   endif
+      ENDIF
 #  endif
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend, bustr)
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend, bvstr)
+#   ifdef SEDIMENT
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, bustrw)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, bvstrw)
+#   endif
 #  endif
 # endif /* SOLVE3D */
 #endif /* BBL */
@@ -593,11 +673,11 @@
 
 #ifdef SOLVE3D
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend, sustr)
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend, svstr)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, srflx)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,isalt))
@@ -620,8 +700,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif
 #ifndef OW_COUPLING
-# if (defined MUSTANG || defined BBL || defined MRL_WCI) \
-      && defined WAVE_OFFLINE
+# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
       call set_wwave_tile(Istr,Iend,Jstr,Jend)  
 # endif
 #endif
@@ -629,11 +708,12 @@ C$OMP END MASTER
 #if defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')
-      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v')
-      
-      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
-      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r')
+      call check_tab3d(u(:,:,:,nrhs),'u set_vbc','u')
+      call check_tab3d(v(:,:,:,nrhs),'v set_vbc','v')
+      call check_tab3d(t(:,:,:,nrhs,itemp),'temp set_vbc','r')
+# ifdef SALINITY
+      call check_tab3d(t(:,:,:,nrhs,isalt),'salt set_vbc','r')
+# endif
 C$OMP END MASTER
 #endif
 C$OMP BARRIER
@@ -654,6 +734,5 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif
 
-      
       return
       end

@@ -149,6 +149,7 @@
               nc=nc-1
             endif
           else
+# ifdef SPHERICAL
             mc=mc+1
             if (stax0(i).ge.lonu(1,1) .and. 
      &          stax0(i).lt.lonu(LOCALLM+1,1) .and.
@@ -161,6 +162,7 @@
               mc=mc-1
               nc=nc-1
             endif
+# endif
           endif
       enddo
 !
