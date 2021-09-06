@@ -28,10 +28,9 @@
 #if defined AGRIF
       integer LLmm2, MMmm2
 #endif
+
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
-#elif defined CHANNEL
-      parameter (LLm0=50,   MMm0=3,   N=20)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
@@ -168,15 +167,15 @@
 #elif defined SED_TOY
       parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
 #elif defined REGIONAL
-#  if defined  BENGUELA_LR
+# if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
-#  elif defined  BENGUELA_HR
+# elif defined  BENGUELA_HR
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
-#  elif defined  BENGUELA_VHR
+# elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
-#  else
+# else
       parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR REGIONAL CONFIG
-#  endif
+# endif
 #else
       parameter (LLm0=xx, MMm0=xx, N=xx)
 #endif
@@ -288,7 +287,7 @@
       parameter (D_wetdry=0.001)
 # elif defined THACKER
       parameter (D_wetdry=0.01)
-# elif defined SANDBAR
+# elif defined SANDBAR || defined TFLAT2DV
       parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
@@ -441,12 +440,18 @@
 
 /*! === SUBSTANCE ===*/
 !
-# ifdef SUBSTANCE
+# if defined SUBSTANCE && defined MUSTANG
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
       INTEGER,PARAMETER :: lchain=200
       integer  itsubs1,itsubs2,ntfix
+#  ifdef SED_TOY
+      parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  elif defined TFLAT2DV
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  else
+      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  endif
       parameter (itsubs1= itemp+ntrc_salt+1 )
       parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
 # else
@@ -454,7 +459,7 @@
 # endif /* SUBSTANCE */
 
 !
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
 ! NSAND          Number of sand classes
 ! NMUD           Number of mud classes
 ! NGRAV          Number of gravel classes (not implemented...)
@@ -462,18 +467,14 @@
 ! NLAY           Number of layers in sediment bed
 !
       integer NSAND, NMUD, NGRAV, NST, NLAY
-#  if defined DUNE
-      parameter (NSAND=2, NMUD=0, NGRAV=0)      
+#  ifdef DUNE      
 #   ifdef ANA_DUNE
-    !  parameter (NST=1)
+      parameter (NSAND=1, NMUD=0, NGRAV=0)
       parameter (NLAY=11)
 #   else
-    !  parameter (NST=2)
+      parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=10)
 #   endif
-#  elif defined SED_TOY
-      parameter (NSAND=4, NMUD=15, NGRAV=0) 
-      parameter (NLAY=20)
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)
@@ -497,12 +498,17 @@
       parameter (NTot=NT)
 # endif /* SUBSTANCE */
 
-
 # ifdef MUSTANG 
    ! vertical dimension (ksdmin:ksdmax) of variables in sediment
    ! (ksdmax=max number of layers)
       integer ksdmin,ksdmax
+#  if defined ANA_DUNE || defined key_ANA_bedload
+      parameter (ksdmin=1,ksdmax=11)
+#  elif defined TFLAT2DV
+      parameter (ksdmin=1,ksdmax=3)
+#  else
       parameter (ksdmin=1,ksdmax=10)
+#  endif
 # endif /* MUSTANG */
 
 # if defined BBL && defined AGRIF
@@ -530,11 +536,10 @@
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf
-
 # ifdef BIOLOGY
      &          , itrc_bio
 # endif
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
      &          , itrc_sed, itrc_sand, itrc_mud, itrc_grav
 # endif
 # ifdef SALINITY
@@ -645,7 +650,7 @@
 #  endif  
 # endif   /* BIOLOGY */
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
      &          ,isand1,imud1,isand2,imud2,igrav1,igrav2
 # endif
 
@@ -899,7 +904,7 @@
 ! === SEDIMENTS ===
 !
 
-# ifdef SEDIMENT
+# if defined SEDIMENT && defined USGS
       parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
       parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
       parameter (itrc_grav=itrc_mud+NGRAV)

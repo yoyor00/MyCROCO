@@ -162,7 +162,7 @@ text(120,-3.8,'Analytical', ...
 	      'color','r','fontsize',20)
 hold off
 grid on
-axis([120 240 -7 -3])
+axis([120 200 -7 -3])
 if usgs ~= 1
    title(['ANA-DUNE Test Case  (MUSTANG) - Bed evolution' ])
 else
