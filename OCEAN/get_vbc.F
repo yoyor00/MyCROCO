@@ -497,35 +497,6 @@
         enddo
       endif
 
-#   ifdef SEDIMENT
-!
-!  Compute skin stress components at rho points
-!  (for the sediment model)
-!
-        do j=Jstr,Jend
-          do i=Istr,Iend
-#    ifdef DUNE
-            znots=Zobt
-#    else
-            znots=Ssize(i,j)/12.
-#    endif
-            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/znots)
-            cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
-            Ucur=0.5*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs))
-            Vcur=0.5*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs))
-#     if defined GLS_MIXING && defined SANDBAR
-            Utur=15.*SQRT(trb(i,j,1,nrhs,itke))
-     &                           *exp(-0.01*(xr(i,j)-142.)**2)
-#     else
-            Utur=0.
-#     endif
-            Umag=SQRT(Ucur*Ucur+Vcur*Vcur+Utur*Utur)
-            bustrw(i,j)=cff*Umag*Ucur
-            bvstrw(i,j)=cff*Umag*Vcur
-          enddo
-        enddo
-#   endif /* SEDIMENT */
-
 #   ifdef LIMIT_BSTRESS
 !
 !  From J. Warner's code:
@@ -552,6 +523,35 @@
       enddo
 #   endif
 #  endif /* BSTRESS_FAST */
+
+#  ifdef SEDIMENT
+!
+!  Compute skin stress components at rho points
+!  (for the sediment model)
+!
+        do j=Jstr,Jend
+          do i=Istr,Iend
+#   ifdef DUNE
+            znots=Zobt
+#   else
+            znots=Ssize(i,j)/12.
+#   endif
+            cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/znots)
+            cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
+            Ucur=0.5*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs))
+            Vcur=0.5*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs))
+#   if defined GLS_MIXING && defined SANDBAR
+            Utur=15.*SQRT(trb(i,j,1,nrhs,itke))
+     &                           *exp(-0.01*(xr(i,j)-142.)**2)
+#   else
+            Utur=0.
+#   endif
+            Umag=SQRT(Ucur*Ucur+Vcur*Vcur+Utur*Utur)
+            bustrw(i,j)=cff*Umag*Ucur
+            bvstrw(i,j)=cff*Umag*Vcur
+          enddo
+        enddo
+#  endif /* SEDIMENT */
 
 !
 ! Set boundary conditions
