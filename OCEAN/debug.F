@@ -24,7 +24,7 @@
 !     in case of a mpi run, but it only test the master node 0
           
           integer start_debug,start_debug0,start_debug_read
-          parameter (start_debug0=6)
+          parameter (start_debug0=3)
           parameter (start_debug=start_debug0)
           parameter (start_debug_read=start_debug)
 # endif         
