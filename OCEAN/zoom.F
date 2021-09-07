@@ -369,7 +369,9 @@ C$OMP BARRIER
 C$OMP BARRIER
 # endif
 #endif
-      call get_initial (nrrec, 1)   ! Set initial conditions        
+      call get_initial (nrrec, 1)   ! Set initial conditions       
+      time=start_time
+      tdays=time*sec2day
 !==================================================================
 # else
         call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/)
