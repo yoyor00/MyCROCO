@@ -43,7 +43,8 @@
 
       integer::nzlevel_oa                      
 
-      type(type_level),dimension(:),allocatable::wlev_oa
+      !BLXD_TILE_ISSUE
+      !type(type_level),dimension(:),allocatable::wlev_oa
 
       integer,dimension(:),allocatable::lev2v_oa
       integer,dimension(:),allocatable::v2lev_oa

@@ -29,7 +29,10 @@
       PUBLIC iom_set_file_global_attr_float
       PUBLIC iom_get_file_attr
       PUBLIC set_scalar
-      
+#if defined ONLINE_ANALYSIS
+      PUBLIC set_scalogram_dom
+      PUBLIC set_scalogram_axis
+#endif    
 
       CONTAINS
 
@@ -604,6 +607,187 @@
       CALL iom_set_domain_attr('scalarpoint', lonvalue=zz, latvalue=zz)
       !
       END SUBROUTINE set_scalar
+
+#if defined ONLINE_ANALYSIS
+      SUBROUTINE set_scalogram_axis( cdid
+     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_loc
+     &                         ,sclg_coord1D, isclg_beg
+     &                         ,mynode )
+      !
+      !!----------------------------------------------------------------------
+      !!                     ***  ROUTINE set_scalogram_axis  ***
+      !!
+      !! ** Purpose :   xios axis definition for ONLINE_ANALYSIS scalogram
+      !!
+      !! ** Method  :   XIOS version >= 2.5 
+      !! ** History :   B. Lemieux-Dudon (2021) 
+      !!
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*)      , INTENT(in) ::   cdid
+      !> Module OA variable names but passed as args IN 
+      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo
+      INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
+      INTEGER, INTENT(IN) :: mynode 
+      !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
+      INTEGER, DIMENSION(0:nsclg_loc-1),   INTENT(IN) :: sclg_coord1D
+
+      INTEGER            :: nj, jbeg !i, j, iper, jsclg, 
+      INTEGER            :: dat_nj, dat_jbeg
+      REAL, DIMENSION(:), POINTER :: coord_val
+      REAL, DIMENSION(:), ALLOCATABLE, TARGET :: sclg_coord1D_r
+      INTEGER            :: jsclg
+      !!----------------------------------------------------------------------
+      ! 
+
+# ifndef XIOS2
+      print*,'ERROR OA : in set_scalogram_dom XIOS version>=2.5'
+      stop
+# else
+      if ( .not. allocated(sclg_coord1D_r) ) then 
+        if (nsclg_loc>0) then
+            allocate( sclg_coord1D_r(0:nsclg_loc-1) )
+        else
+            allocate( sclg_coord1D_r(0) )
+        endif
+      endif
+      do jsclg  = 0,nsclg_loc-1
+        if (nsclg_loc>0) then
+         sclg_coord1D_r(jsclg) = REAL(sclg_coord1D(jsclg))
+        endif
+      enddo
+      if ( nsclg_loc > 0 ) then
+                jbeg=isclg_beg
+                nj=size(sclg_coord1D(:))
+                dat_nj=nj
+                dat_jbeg=0
+                coord_val => sclg_coord1D_r(:)
+      else
+                jbeg=0
+      !initially set to nj=1 but nj=0 supported
+                nj=0
+                dat_nj=0
+                dat_jbeg=0
+                coord_val => sclg_coord1D_r(:)
+      endif
+      if ( xios_is_valid_axis     (cdid) ) then
+         CALL xios_set_axis_attr( cdid
+     &     ,n_glo=nsclg_glo
+     &     ,n=nj
+     &     ,begin=jbeg
+     &     ,data_n=dat_nj
+     &     ,data_begin=dat_jbeg
+     &     ,standard_name="scalogram"
+     &     ,long_name="scalogram index"
+     &     ,value=coord_val)
+   
+      else
+        print*,'ERROR OA : not a valid XIOS axis ',cdid
+        stop
+      endif
+      if ( allocated(sclg_coord1D_r) ) deallocate( sclg_coord1D_r )
+# endif
+      !
+      END SUBROUTINE set_scalogram_axis
+#endif  /* ONLINE_ANALYSIS */
+
+#if defined ONLINE_ANALYSIS
+      SUBROUTINE set_scalogram_dom( cdid
+     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_loc, nper_sclg_max
+     &                         ,sclg_coord1D, isclg_beg
+     &                         ,period_coord2D
+     &                         ,mynode )
+      !
+      !!----------------------------------------------------------------------
+      !!                     ***  ROUTINE set_scalogram_dom  ***
+      !!
+      !! ** Purpose :   XIOS domain definition for ONLINE_ANALYSIS scalogram
+      !!
+      !! ** Method  :   XIOS version >= 2.5 
+      !! ** History :   B. Lemieux-Dudon (2021) 
+      !!
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*)      , INTENT(in) ::   cdid
+      !> Module OA variable names but passed as args IN 
+      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo,  nper_sclg_max
+      INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
+      INTEGER, INTENT(IN) :: mynode 
+      !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
+      INTEGER, DIMENSION(0:nsclg_loc-1),   INTENT(IN) :: sclg_coord1D
+      REAL, DIMENSION(nper_sclg_max,nsclg_loc),
+     &                        TARGET,INTENT(IN) :: period_coord2D
+
+      INTEGER            :: nj, jbeg
+      INTEGER            :: dat_nj, dat_jbeg
+      REAL, DIMENSION(:,:), POINTER :: lonval, latval
+      REAL, DIMENSION(:,:), ALLOCATABLE, TARGET :: sclg_coord2D
+      INTEGER            :: iper, jsclg
+      !!----------------------------------------------------------------------
+      ! 
+# ifndef XIOS2
+      print*,'ERROR OA : in set_scalogram_dom XIOS version>=2.5'
+      stop
+# else
+      if ( .not. allocated(sclg_coord2D) ) then 
+        if (nsclg_loc>0) then
+            allocate( sclg_coord2D(nper_sclg_max,0:nsclg_loc-1) )
+        else
+            allocate( sclg_coord2D(nper_sclg_max,0) )
+        endif
+      endif
+      do jsclg  = 0,nsclg_loc-1
+       do iper = 1,nper_sclg_max
+        if (nsclg_loc>0) then
+         sclg_coord2D(iper,jsclg) = REAL(sclg_coord1D(jsclg))
+        endif
+       enddo
+      enddo
+      !zero(nper_sclg_max,1)=0.
+      if ( nsclg_loc > 0 ) then
+                jbeg=isclg_beg
+                nj=size(sclg_coord1D(:))
+                dat_nj=nj
+                dat_jbeg=0
+                lonval => period_coord2D(:,:)
+                latval => sclg_coord2D(:,:)
+      else
+                jbeg=0
+      !initially set 2 nj=1 but nj=0 supported
+                nj=0
+                dat_nj=0
+      !suppose to be nj-1
+                dat_jbeg=0
+                lonval => period_coord2D(:,:)
+                latval => sclg_coord2D(:,:)
+      endif
+      if ( xios_is_valid_domain     (cdid) ) then
+         CALL xios_set_domain_attr( cdid
+     &     ,ni_glo=nper_sclg_max
+     &     ,nj_glo=nsclg_glo
+     &     ,ni=nper_sclg_max
+     &     ,ibegin=0
+     &     ,nj=nj
+     &     ,jbegin=jbeg
+     &     ,data_dim=2
+     &     ,data_ni=nper_sclg_max
+     &     ,data_ibegin=0
+     &     ,data_nj=dat_nj
+     &     ,data_jbegin=dat_jbeg
+     &     ,lon_name="period"
+     &     ,lat_name="scalogram"
+     &     ,lonvalue_2d=lonval
+     &     ,latvalue_2d=latval)
+   
+      else
+        print*,'ERROR OA : not a valid XIOS domain ',cdid
+        stop
+      endif
+      if ( allocated(sclg_coord2D) ) deallocate( sclg_coord2D )
+# endif
+      !
+      END SUBROUTINE set_scalogram_dom
+#endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
 # include "param.h"
@@ -1600,6 +1784,20 @@ C 				  endif
       !
       USE xios     ! XIOS library
       USE xios_module
+#if defined ONLINE_ANALYSIS
+      use module_oa_variables, only : nzv_oa
+      use module_interface_oa, only : nzupd0d_oa, nsclg_loc, isclg_beg
+     &                               ,index_s_cr, per0d_cr
+#ifdef MPI
+     &                               ,index_s_oa, per0d_oa
+#endif
+     &                               ,if_mpi_oa
+     &                               ,scalogram_analysis
+     &                               ,if_record_sclg_ijpoints
+     &                               ,if_xios_dom_grid
+
+      use module_oa_periode,   only : nper_sclg_max
+#endif
       !    
       IMPLICIT NONE
       !
@@ -1721,9 +1919,169 @@ C 				  endif
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
 # endif
 
+#ifdef ONLINE_ANALYSIS
+      oa_wth_sclg : if ( scalogram_analysis ) then
+
+        oa_dom : if ( if_xios_dom_grid ) then
+
+          if ( .not. xios_is_valid_grid("oa_sclg_dgrd") ) then
+            print*,'ERROR OA : oa_sclg_dgrd XIOS INvalid grid'
+            stop
+          endif
+
+          if  (if_record_sclg_ijpoints) then
+
+           if ( .not. xios_is_valid_grid("oa_sclg_grd") ) then
+             print*,'ERROR OA : oa_sclg_grd XIOS INvalid grid'
+             stop
+           endif
+
+          endif
+
+#ifdef MPI
+          distributed_sclg_axis : if ( .not. if_mpi_oa ) then
+
+            CALL set_scalogram_dom( "oa_sclg_dom"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nsclg_loc
+     &                           ,nper_sclg_max
+     &                           ,index_s_oa, isclg_beg
+     &                           ,per0d_oa
+     &                           ,mynode  )
+
+            CALL xios_solve_inheritance()
+
+            ijkscal : if  (if_record_sclg_ijpoints) then
+
+                CALL set_scalogram_axis( "oa_sclg_axis"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nsclg_loc
+     &                           ,index_s_oa, isclg_beg
+     &                           ,mynode  )
+            else ijkscal
+
+             if(xios_is_valid_axis("oa_sclg_axis"))then
+              call xios_set_axis_attr( "oa_sclg_axis"
+     &                                 ,n_glo=1)
+             else
+!$OMP MASTER
+              print*,'WARNING OA : INvalid XIOS axis'
+!$OMP END MASTER
+              !stop
+             endif
+
+            endif ijkscal
+
+          else distributed_sclg_axis  
+
+            CALL set_scalogram_dom( "oa_sclg_dom"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nzupd0d_oa
+     &                           ,nper_sclg_max
+     &                           ,index_s_cr, 0
+     &                           ,per0d_cr
+     &                           ,mynode  )
+
+            CALL xios_solve_inheritance()
+
+            ijkscal2 : if  (if_record_sclg_ijpoints) then
+
+                CALL set_scalogram_axis( "oa_sclg_axis"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nzupd0d_oa
+     &                           ,index_s_cr, 0
+     &                           ,mynode  )
+
+            else ijkscal2
+
+             if(xios_is_valid_axis("oa_sclg_axis"))then
+              call xios_set_axis_attr( "oa_sclg_axis"
+     &                                 ,n_glo=1)
+             else
+!$OMP MASTER
+              print*,'WARNING OA : INvalid XIOS axis'
+!$OMP END MASTER
+              !stop
+             endif
+
+            endif ijkscal2
+
+          endif distributed_sclg_axis  
+
+          CALL xios_solve_inheritance()
+
+#else
+
+          print*,'ERROR OA : XIOS without MPI not tested'
+          print*,'- test => comment stop/compile/restart'
+          stop
+
+
+          CALL set_scalogram_dom( "oa_sclg_dom"
+     &                         ,nzv_oa
+     &                         ,nzupd0d_oa
+     &                         ,nzupd0d_oa
+     &                         ,nper_sclg_max
+     &                         ,index_s_cr, 0
+     &                         ,per0d_cr
+     &                         ,mynode  )
+
+          CALL xios_solve_inheritance()
+
+          ijkscal3 : if  (if_record_sclg_ijpoints) then
+
+            CALL set_scalogram_axis( "oa_sclg_axis"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nzupd0d_oa
+     &                           ,index_s_cr, 0
+     &                           ,mynode  )
+
+
+          else ijkscal3
+
+             if(xios_is_valid_axis("oa_sclg_axis"))then
+              call xios_set_axis_attr( "oa_sclg_axis"
+     &                                 ,n_glo=1)
+             else
+!$OMP MASTER
+              print*,'WARNING OA : INvalid XIOS axis'
+!$OMP END MASTER
+              !stop
+             endif
+
+          endif ijkscal3
+
+          CALL xios_solve_inheritance()
+
+#endif /* MPI */
+
+      !BLXD alternate option to oa_sclg_dom with axis grid 
+        !else oa_dom
+        endif oa_dom
+
+      else oa_wth_sclg
+
+      !BLXD Prevent failure with potential scalogram domain/axis grid
+      !     incompletely def. in xml files
+      null_sclg_dom : if ( xios_is_valid_domain("oa_sclg_dom") ) then
+         CALL xios_set_domain_attr("oa_sclg_dom"
+     &     ,ni_glo=1
+     &     ,nj_glo=1
+     &     )
+
+      endif null_sclg_dom 
+
+      endif oa_wth_sclg
+#endif  /* ONLINE_ANALYSIS */
+
 #ifdef key_pisces
       IF(ALLOCATED(profsed))  CALL iom_set_axis_attr("s_rhoS", profsed)
-# endif
+#endif
       
       ! time axis (for ROMS tools)
 

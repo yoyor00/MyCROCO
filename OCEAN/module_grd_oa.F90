@@ -6,24 +6,27 @@
 !======================================================================
 !
 !> @brief Online Analysis (OA=OnlineAnalysis)
-!! - strucure with temporary pointers pointing to the Croco 
-!!   grid arrays in order to build the spatial structure of
-!!   the OA state vector
+!! - Temporary use of the local derived type and pointers 
+!!   association with the Croco grid arrays in order to  
+!!   build the spatial structure of the OA state vector.
 !
-!! @details Fields of the derived type inherits of pieces 
-!!  of code from the 2006 version.
-!!  More history/info in source module_interface_oa.F90
+!! @details required when applying croco tile(-threads)
+!!  with/without dual OpenMP-MPI parallelization of the horizontal domain.
+!!  Some OA variable/parameters are tile(-threads) dependent,
+!!  especially all variables depending on the ocean domain.
+!!  More comments/info in source module_interface_oa.F90
 !
 !> @authors  
 !! - B. Lemieux-Dudon
 !!  - Croco Tile-thread compliant version (2021). 
 !!  - derived data type for the grid array
+!!  - fields of the local derived type have inherited from older 
+!!    pieces of code of older OA versions
 !! - Francis Auclair , Jochem Floor and Ivane Pairaud:
 !!  - Symphonie/NHOMS initial version (2006)
-!! - More history (authors, comments) in source module_interface_oa.F90
 !> @todo BLXD double precision type is obsolete.
 !!  Module to define precision consistently with Croro grid arrays ?
-!!  
+!
 !  REFERENCE:
 !  
 !======================================================================
@@ -57,12 +60,13 @@
       end type
 
       type(grid_str_oa), allocatable, dimension(:), target  :: grd
-      type(grid_str_oa), pointer :: pg => null()
+      !BLXD_TILE_ISSUE rm pg from list of public module variables add grid_str_oa
+      !type(grid_str_oa), pointer :: pg => null() ! croco tile-thread SHARED mod. var.
 
       private
-      public :: associate_grid_oa_ptr, nullify_grid_oa_ptr, grd, pg       &
-                ,allocate_tile_grid_tmp_str, deallocate_tile_grid_tmp_str &
-                ,get_3D_grid_mask, get_2D_subdomain_minmax
+      public :: associate_grid_oa_ptr, nullify_grid_oa_ptr, grd, grid_str_oa &
+                ,allocate_tile_grid_tmp_str, deallocate_tile_grid_tmp_str    &
+                ,get_3D_grid_mask, get_grid_mask, get_2D_subdomain_minmax
 
       CONTAINS 
 
@@ -106,6 +110,29 @@
 
         return
       end subroutine get_3D_grid_mask
+
+      subroutine get_grid_mask( i,j,k, grd_pt_code, pg, msk_g )
+
+        implicit none
+
+        type(grid_str_oa), intent(in) :: pg
+        integer, intent(in)           :: i,j,k 
+        integer, intent(in)           :: grd_pt_code
+        integer, intent(out)          :: msk_g 
+
+        if (grd_pt_code.eq.1) then
+           msk_g = pg%mask_t(i,j,pg%kmax) 
+        elseif (grd_pt_code.eq.2) then
+           msk_g = pg%mask_u(i,j,pg%kmax) 
+        elseif (grd_pt_code.eq.3) then
+           msk_g = pg%mask_v(i,j,pg%kmax) 
+        else
+           msk_g = pg%mask_f(i,j,pg%kmax) 
+        endif
+
+        return
+      end subroutine get_grid_mask
+
 
       ! BLXD could be modified to meet up fortran 2008 standard
       subroutine allocate_tile_grid_tmp_str( tile_size )
@@ -242,6 +269,8 @@
       grd(tile)%mask_u => null()
       grd(tile)%mask_v => null()
       grd(tile)%mask_f => null()
+
+      !print*,'OA out : associate '
 
       return
       end subroutine nullify_grid_oa_ptr
