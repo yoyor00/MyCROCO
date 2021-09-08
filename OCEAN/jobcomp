@@ -73,10 +73,12 @@ XIOS_ROOT_DIR=$HOME/xios
 #
 # XIOS compiled either or not with oasis
 #-----------------------------------------------------------
-# if XIOS compiled using "--use_oasis oasis3_mct" flag     :    need to define PRISM_ROOT_DIR above and set XIOS_withOASIS=1 below        
-# if XIOS not compiled using "--use_oasis oasis3_mct" flag : no need to define PRISM_ROOT_DIR above and set XIOS_withOASIS=0 below
+# if XIOS not compiled using "--use_oasis oasis3_mct" flag [ default ] : 
+#        => no need to define PRISM_ROOT_DIR above and set XIOS_withOASIS=0 below
+# if XIOS compiled using "--use_oasis oasis3_mct" flag  :    
+#        => need to define PRISM_ROOT_DIR above and set XIOS_withOASIS=1 below        
 #-----------------------------------------------------------
-XIOS_withOASIS=1
+XIOS_withOASIS=0
 
 #
 # END OF USER'S MODIFICATIONS
