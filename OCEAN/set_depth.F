@@ -208,7 +208,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-#  ifdef M3FAST
+#  if defined M3FAST && ! defined EXACT_RESTART
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         do k=1,N,+1
           do j=J_RANGE

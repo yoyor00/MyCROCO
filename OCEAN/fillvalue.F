@@ -41,6 +41,8 @@
 #else
       if (typevar2d.eq.r2dvar) then
          mask2=rmask
+      elseif (typevar2d.eq.p2dvar) then
+         mask2=pmask
       elseif (typevar2d.eq.u2dvar) then
          mask2=umask
       elseif (typevar2d.eq.v2dvar)then
@@ -61,6 +63,18 @@
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
       endif
  !
 # ifdef FILLVAL
@@ -147,7 +161,19 @@
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
-      endif   
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
+      endif
 !     
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
@@ -222,7 +248,23 @@
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
-      endif   
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_diags_pv) then    ! next 4 lines NJAL
+         text='WRT_DIAGS_PV'
+      elseif (typefile ==filetype_diags_pv_avg) then
+         text='WRT_DIAGS_PV_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
+      endif
 !     
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)

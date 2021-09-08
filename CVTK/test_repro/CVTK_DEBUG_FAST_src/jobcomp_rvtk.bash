@@ -160,7 +160,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 #                FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
 #			-fbounds-check -finit-real=nan -finit-integer=8888"
                 FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -fbacktrace \
-			-fbounds-check "
+			-fbounds-check"
 		LDFLAGS1="$LDFLAGS1"
 	fi
 elif [[ $OS == CYGWIN_NT-10.0 ]] ; then  # ======== CYGWIN =======

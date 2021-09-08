@@ -1,6 +1,5 @@
 ! $Id: get_vbc.F 1615 2014-12-17 13:27:07Z rblod $
 !
-!======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -135,12 +134,31 @@
 #  endif /* !BULK_FLUX */
 # endif /* SOLVE3D */
 #endif /* !OA_COUPLING */
-
+!
+!---------------------------------------------------------------
+! Kinematic surface solar shortwave radiation flux [degC m/s].
+!---------------------------------------------------------------
+!
+#if ( defined SOLVE3D && defined TEMPERATURE && defined BHFLUX \
+     && !defined ANA_BTFLUX )
+      call get_btflux (itemp)
+#endif
+!
+!---------------------------------------------------------------
+! Kinematic bottom salt flux [PSU m/s].
+! (Analytical bottom salt flux is usually set to zero.)
+!---------------------------------------------------------------
+!
+#if ( defined SOLVE3D && defined SALINITY && defined BWFLUX \
+     && !defined ANA_BTFLUX )
+      call get_btflux (isalt)
+#endif
+      
       return
       end
-!
+!     
 !====================================================================
-!                   subroutine set_vbc
+!     subroutine set_vbc
 !====================================================================
 !
       subroutine set_vbc (tile)
@@ -532,7 +550,6 @@
       enddo
 #   endif
 #  endif /* BSTRESS_FAST */
-
 !
 ! Set boundary conditions
 !
@@ -610,10 +627,14 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                      btflx(START_2D_ARRAY,itemp))
 #  endif
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                                      stflx(START_2D_ARRAY,isalt))
+     &                                     stflx(START_2D_ARRAY,isalt))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                     btflx(START_2D_ARRAY,isalt))
 #  endif
 # endif
 #endif

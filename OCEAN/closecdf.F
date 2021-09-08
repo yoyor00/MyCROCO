@@ -141,7 +141,7 @@
      &                                                 nrecdiags_pv_avg
 # endif
 #endif /* DIAGNOSTICS_PV */
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &  ,'number of records written into surf  file(s):',
      &                                                     nrecsurf
 # ifdef AVERAGES

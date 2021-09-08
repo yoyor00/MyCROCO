@@ -60,6 +60,9 @@
 #  define vidTVadv diaTVadv
 #  define vidTHmix diaTHmix
 #  define vidTVmix diaTVmix
+#ifdef DIAGNOSTICS_TSVAR
+#  define vidTVmixt diaTVmixt
+#endif
 #  define vidTForc diaTForc
 #  define vidTrate diaTrate
 !
@@ -89,6 +92,9 @@
 #  define vidTVadv diaTVadv_avg
 #  define vidTHmix diaTHmix_avg
 #  define vidTVmix diaTVmix_avg
+#ifdef DIAGNOSTICS_TSVAR
+#  define vidTVmixt diaTVmixt_avg
+#endif
 #  define vidTForc diaTForc_avg
 #  define vidTrate diaTrate_avg
 !
@@ -445,6 +451,36 @@
 
        call nf_add_attribute(ncid,vidTVmix(itrc),indxTVmix+itrc-1,5, 
      &       NF_FOUT, ierr)
+#  ifdef DIAGNOSTICS_TSVAR
+!
+!indxTVmixt
+!
+           lvar=lenstr(vname(1,indxTVmixt+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxTVmixt+itrc-1)(1:lvar),
+     &                            NF_FOUT, 4, r3dgrd, vidTVmixt(itrc))
+#ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTVmixt(itrc),nf_collective)
+#endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxTVmixt+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTVmixt(itrc), 'long_name',
+     &                     lvar, vname(2,indxTVmixt+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxTVmixt+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, vidTVmixt(itrc), 'long_name',
+     &       lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxTVmixt+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTVmixt(itrc), 'units', lvar,
+     &                            vname(3,indxTVmixt+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxTVmixt+itrc-1))
+           ierr=nf_put_att_text (ncid,vidTVmixt(itrc), 'field',
+     &                       lvar, vname(4,indxTVmixt+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidTVmixt(itrc),indxTVmixt+itrc-1,5,
+     &       NF_FOUT, ierr)
+# endif
 !
 ! indxTForc - Solar radiation and nudging body forces
 !
@@ -904,6 +940,19 @@
      &                                         ncname(1:lstr) 
             goto 99                                       !--> ERROR
           endif
+#  ifdef DIAGNOSTICS_TSVAR
+!
+! indxTVmixt
+!
+          lvar=lenstr(vname(1,indxTVmixt+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxTVmixt+itrc-1)(1:lvar),
+     &                                               vidTVmixt(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTVmixt+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  endif
 !
 ! indxTForc
 !
@@ -1089,6 +1138,9 @@
 #undef vidTVadv
 #undef vidTHmix
 #undef vidTVmix
+#ifdef DIAGNOSTICS_TSVAR
+#undef vidTVmixt
+#endif
 #undef vidTForc
 #undef vidTrate
 !

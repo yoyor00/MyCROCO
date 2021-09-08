@@ -162,6 +162,15 @@
            call fillvalue3d(workr,nciddia_avg,diaTVmix_avg(itrc),
      &                      indxTVmix+itrc-1,
      &                      record,r3dvar,type)
+#ifdef DIAGNOSTICS_TSVAR
+!
+! indxTVmixt
+!
+           workr=TVmixt_avg(:,:,:,itrc)
+           call fillvalue3d(workr,nciddia_avg,diaTVmixt_avg(itrc),
+     &                      indxTVmixt+itrc-1,
+     &                      record,r3dvar,type)
+#endif
 !
 ! indxTForc  
 !

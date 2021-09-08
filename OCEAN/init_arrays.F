@@ -80,7 +80,7 @@ C$    integer omp_get_thread_num
 #ifdef SEDIMENT
      &       ,ilay
 #endif
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
      &       ,itide
 #endif
       real init    !!!!  0xFFFA5A5A ==> NaN
@@ -363,16 +363,18 @@ C$    integer omp_get_thread_num
               TXadv(i,j,k,itrc)=init
               TYadv(i,j,k,itrc)=init
               TVadv(i,j,k,itrc)=init
-              THmix(i,j,k,itrc)=init
-              TVmix(i,j,k,itrc)=init
-              TForc(i,j,k,itrc)=init
-              Trate(i,j,k,itrc)=init
+#ifdef DIAGNOSTICS_TSVAR
+              TVmixt(i,j,k,itrc)=init
+#endif
 #  ifdef AVERAGES
               TXadv_avg(i,j,k,itrc)=init
               TYadv_avg(i,j,k,itrc)=init
               TVadv_avg(i,j,k,itrc)=init
               THmix_avg(i,j,k,itrc)=init
               TVmix_avg(i,j,k,itrc)=init
+#ifdef DIAGNOSTICS_TSVAR
+              TVmixt_avg(i,j,k,itrc)=init
+#endif
               TForc_avg(i,j,k,itrc)=init
               Trate_avg(i,j,k,itrc)=init
 #  endif /* AVERAGES*/
@@ -574,16 +576,24 @@ C$    integer omp_get_thread_num
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pv(i,j,k)=init
-            pvd(i,j,k)=init
 #  ifdef AVERAGES
             pv_avg(i,j,k)=init
+#  endif /* AVERAGES */
+          enddo
+        enddo
+      enddo
+      do k=1,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            pvd(i,j,k)=init
+#  ifdef AVERAGES
             pvd_avg(i,j,k)=init
 #  endif /* AVERAGES */
           enddo
         enddo
       enddo
 # endif
-      do itrc=1,NT
+      do itrc=1,NTA
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -803,10 +813,12 @@ C$    integer omp_get_thread_num
             stflxg(i,j,2,itrc)=init
 # endif
             btflx(i,j,itrc)=init
-# ifndef ANA_BTFLUX
+            
+# if BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
 # endif
+            
           enddo
         enddo
       enddo
@@ -927,7 +939,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # if defined PSOURCE_NCFILE
-          do i=1,Msrc
+          do i=1,Nsrc
            qbar(i)=init
            qbarg(i,1)=init
            qbarg(i,2)=init
@@ -1171,7 +1183,7 @@ C$    integer omp_get_thread_num
       endif
 # endif /* OBC_NORTH */
 #endif
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
 !
 ! Initialize array for tidal elevation forcing.
 !

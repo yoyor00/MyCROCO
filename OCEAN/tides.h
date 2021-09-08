@@ -40,7 +40,7 @@
 !** UV_Tphase    Tidal current phase (degrees/360) at RHO-points.    **
 !**                                                                  **
 !**********************************************************************
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
       real Tperiod(Ntides)
       common /tides_Tperiod/ Tperiod
 #endif /* SSH_TIDES || UV_TIDES */

@@ -174,6 +174,13 @@
 !
       dr00=r00-rho0
 !
+
+
+#ifdef RVTK_DEBUG_PERFRST
+      call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
+      call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
+#endif
+
       do j=JstrR,JendR
 
         do k=1,N                                       ! NONLINEAR

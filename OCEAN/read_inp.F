@@ -1,4 +1,4 @@
-! $Id: read_inp.F 1615 2014-12-17 13:27:07Z rblod $
+! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -301,6 +301,26 @@
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 !
+#ifdef XIOS
+!
+! origin_date is the origin date of time axis.
+! It must the same used in croco_tool for input files preprocessing
+! 
+      elseif (keyword(1:kwlen).eq.'origin_date') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,'(A)',err=95) origin_date
+          lstr=lenstr(origin_date)
+          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
+     &    origin_date(1:lstr)
+          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
+      READ(origin_date(1:2),fmt='(i2)') origin_day
+      READ(origin_date(4:5),fmt='(i2)') origin_month
+      READ(origin_date(7:10),fmt='(i4)') origin_year
+      READ(origin_date(12:13),fmt='(i2)') origin_hour
+      READ(origin_date(15:16),fmt='(i2)') origin_minute
+      READ(origin_date(18:19),fmt='(i2)') origin_second
+#endif
 #ifdef START_DATE
 !
 ! Start date
@@ -1185,14 +1205,24 @@ c        close(testunit)
      &                                          ,  dumboolean
 # endif
 # ifdef BULK_FLUX
-     &                                          , wrthis(indxShflx_rlw)
-     &                                          , wrthis(indxShflx_lat)
-     &                                          , wrthis(indxShflx_sen)
+     &                                          ,  wrthis(indxShflx_rlw)
+     &                                          ,  wrthis(indxShflx_lat)
+     &                                          ,  wrthis(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          ,  wrthis(indxBhflx)
+#else
+     &                                          ,  dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          ,  wrthis(indxBwflx)
+#else
+     &                                          ,  dumboolean
+#endif       
 # ifdef MORPHODYN
      &                                          , wrthis(indxHm)
 # else 
@@ -1260,7 +1290,13 @@ c        close(testunit)
      &                                        .or. wrthis(indxShflx_lat)
      &                                        .or. wrthis(indxShflx_sen)
 # endif
-# if defined BIOLOGY && !defined PISCES
+# if defined BHFLUX
+     &                                        .or. wrthis(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrthis(indxBwflx)
+#endif 
+# if defined BIOLOGY &&         !defined PISCES
      &                                        .or. wrthis(indxHel)
 #  ifdef BIO_NChlPZD
      &                                        .or. wrthis(indxChC)
@@ -1360,6 +1396,14 @@ c        close(testunit)
      &  , wrthis(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                          'Short-wave surface radiation'
 # endif
+# ifdef BHFLUX
+     &  , wrthis(indxBhflx), 'write Bhflx [W/m2]', 
+     &                       'Bottom net heat flux'        
+#endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrthis(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Bottom freshwater flux (E-P)'
+# endif        
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -1490,6 +1534,16 @@ c        close(testunit)
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          , wrtavg(indxBhflx)
+#else
+     &                                          , dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          , wrtavg(indxBwflx)
+#else
+     &                                          , dumboolean
+#endif      
 # ifdef MORPHODYN
      &                                          , wrtavg(indxHm)
 # else 
@@ -1555,7 +1609,13 @@ c        close(testunit)
      &                                        .or. wrtavg(indxShflx_rlw)
      &                                        .or. wrtavg(indxShflx_lat)
      &                                        .or. wrtavg(indxShflx_sen)
-#  endif 
+#  endif
+# if defined BHFLUX
+     &                                        .or. wrtavg(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrtavg(indxBwflx)
+#endif 
 #  if defined BIOLOGY && !defined PISCES
      &                                        .or. wrtavg(indxHel)
 #   ifdef BIO_NChlPZD
@@ -1656,9 +1716,16 @@ c        close(testunit)
 #  endif
 #  ifdef TEMPERATURE
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
-     &                      'Short-wave surface radiation.'
-#  endif
-
+     &                          'Short-wave surface radiation.'
+# endif     
+# ifdef BHFLUX
+     &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
+     &       'Bottom net heat flux'        
+# endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Surface freshwater flux (E-P)'
+# endif     
 !
 ! Switches for GLS fields to be saved into history file.
 !
@@ -1933,7 +2000,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_EDDY */
 
 
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 ! Switches for fields to be saved into surface outputs file.
 !
@@ -2668,6 +2735,27 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         enddo
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */
+!
+!
+! Hydrothermal forcing file name. Check its availability.
+!
+#if defined BHFLUX || ( defined BWFLUX && defined SALINITY)
+      elseif (keyword(1:kwlen).eq.'bottom_forcing') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        btfname=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &       'Bottom forcing file:', fname(1:lstr)
+#endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
 ! Online forcing with CFSR
 !

@@ -198,7 +198,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !  Load time invariant SST and dQdSST data.
 !
       if (sst_cycle.lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           if (lsstgrd.eq.1) then
             do j=JstrR,JendR
               do i=IstrR,IendR

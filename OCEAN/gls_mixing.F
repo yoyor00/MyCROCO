@@ -242,7 +242,7 @@
             ENDDO
           ENDDO  
         ENDDO
-      ENDIF 
+      ENDIF
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)

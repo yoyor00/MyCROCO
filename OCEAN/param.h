@@ -217,7 +217,7 @@
 !
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES     
+      integer NP_XI, NP_ETA, NNODES
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
@@ -277,7 +277,7 @@
 ! Tides
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
 # if defined IGW
@@ -398,7 +398,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef SOLVE3D
-      integer   NT, itemp
+      integer   NT, NTA, itemp
       integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
 !
 # ifdef TEMPERATURE 
@@ -408,15 +408,17 @@
       parameter (itemp=0)
       parameter (ntrc_temp=0)
 # endif
-
-
 # ifdef SALINITY 
       parameter (ntrc_salt=1)
 # else
       parameter (ntrc_salt=0)
 # endif
 # ifdef PASSIVE_TRACER
+#  ifdef KH_INST
+      parameter (ntrc_pas=2)
+#  else
       parameter (ntrc_pas=1)
+#  endif
 # else
       parameter (ntrc_pas=0)
 # endif
@@ -471,8 +473,14 @@
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
 !
+! Total number of active tracers
+!
+      parameter (NTA=itemp+ntrc_salt)
+
+!
 ! Total number of tracers
 !
+
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
 
 # if defined BBL && defined AGRIF
@@ -710,11 +718,7 @@
 #   endif
 
 #  elif defined BIO_NChlPZD
-#   ifdef OXYGEN
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-#   else
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-#   endif
       parameter (iNO3_=itrc_bio, iChla=iNO3_+1,  
      &           iPhy1=iNO3_+2,
      &           iZoo1=iNO3_+3, 
@@ -884,9 +888,9 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=15*NT)
+      parameter (ntrc_diats=16*NT)
 #  else
-      parameter (ntrc_diats=7*NT)
+      parameter (ntrc_diats=8*NT)
 #  endif
 # else
       parameter (ntrc_diats=0)
@@ -915,12 +919,12 @@
 # else
       parameter (ntrc_diapv=0)
 # endif
-# ifdef DIAGNOSTICS_EDDY
-      parameter (ntrc_diaeddy=10)
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+      parameter (ntrc_diaeddy=12)
 # else
       parameter (ntrc_diaeddy=0)
 # endif
-# ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       parameter (ntrc_surf=5)
 # else
       parameter (ntrc_surf=0)

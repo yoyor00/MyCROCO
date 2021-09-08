@@ -175,6 +175,13 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
+      
+#if defined RVTK_DEBUG_PERFRST
+       call check_tab3d(Hz(:,:,:),'Hz in prestep3d','r')
+       call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
+       call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
+#endif
+
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend

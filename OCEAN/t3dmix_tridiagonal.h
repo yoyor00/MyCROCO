@@ -75,7 +75,7 @@
 # else
           indx=min(itrc,itemp)
 # endif
-# ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=t(i,j,k,nnew,itrc)
@@ -83,6 +83,7 @@
           enddo
 # endif /* DIAGNOSTICS_TS */
 
+        
 !++
 !++ Explicit vertical Laplacian
 !++
@@ -107,6 +108,9 @@
 ! the implicit vertical diffusion terms at future time step, 
 ! located at horizontal RHO-points and vertical W-points.
 !
+
+
+   
           do i=istr,iend
 # ifdef TS_MIX_IMP
             FC(i,1)=dt*(Akt(i,j,1,indx)+Akz(i,j,1))
@@ -114,6 +118,9 @@
             FC(i,1)=dt* Akt(i,j,1,indx) 
 # endif
      &                               /( z_r(i,j,2)-z_r(i,j,1) )
+     
+     
+     
 # ifdef VADV_ADAPT_IMP            
             BC(i,1)=DC(i,0)*Wi(i,j,1)   
             cff=1./(Hz(i,j,1)      +FC(i,1)+max(BC(i,1),0.))    !<- 1/b(1)
@@ -129,7 +136,6 @@
             DC(i,1)= cff* t(i,j,1,nnew,itrc)
 # endif
           enddo
-          
           
           
           
@@ -185,8 +191,7 @@
      &                        /(Hz(i,j,N)+FC(i,N-1)*(1.-CF(i,N-1)))
 # endif          
         enddo     
-          
-          
+
           
           
           do k=N-1,1,-1
@@ -195,7 +200,50 @@
             enddo
           enddo           !--> discard FC,CF,DC
 
-# ifdef DIAGNOSTICS_TS
+!###########################
+# if defined DIAGNOSTICS_TSVAR
+          do k=1,N-1
+            do i=Istr,Iend
+
+# ifdef TS_MIX_IMP
+            FC(i,k)= (Akt(i,j,k,indx)+Akz(i,j,k))
+# else
+            FC(i,k)=  Akt(i,j,k,indx)
+# endif
+
+            cff1= (TVmix(i,j,k+1,itrc)/ Hz(i,j,k+1)
+     &           - TVmix(i,j,k  ,itrc)/ Hz(i,j,k  ) )
+     &            /( z_r(i,j,k+1) -z_r(i,j,k  ))
+
+        BC(i,k)= 0.25 * (t(i,j,k+1,nstp,itrc) + t(i,j,k+1,nnew,itrc)
+     &                +  t(i,j,k  ,nstp,itrc) + t(i,j,k  ,nnew,itrc)
+     &                ) * cff1
+
+
+            enddo
+          enddo
+          
+          do i=Istr,Iend
+              FC(i,0)= 0.
+              BC(i,0)= 0.
+              FC(i,N)= 1.
+              BC(i,N)= 0.
+          enddo
+          
+          do k=1,N
+            do i=Istr,Iend
+                TVmixt(i,j,k,itrc) =  ( FC(i,k  ) * BC(i,k  )
+     &                                - FC(i,k-1) * BC(i,k-1) )
+     &                                / ( pm(i,j)*pn(i,j) )
+#  ifdef MASKING
+     &                                                 * rmask(i,j)
+#  endif
+             enddo
+           enddo
+# endif
+!###########################
+
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
               TVmix(i,j,k,itrc) = 
@@ -216,7 +264,7 @@
               t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
             enddo
           enddo
-#  ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=0.0

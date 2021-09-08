@@ -33,7 +33,7 @@
 ! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
-      real dt, dtfast, time, time2, time_start, tdays
+      real dt, dtfast, time, time2, time_start, tdays , start_time
 #ifdef USE_CALENDAR
       real time_mars, time_end
       character*19 date, run_end_date, run_start_date
@@ -50,7 +50,8 @@
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
-     &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &     ndtfast, iic, kstp, krhs, knew, next_kstp,
+     &     start_time , 
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
@@ -175,6 +176,9 @@
 #endif
       integer numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
+#ifdef EXACT_RESTART
+     &     ,  forw_start
+#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif
@@ -214,13 +218,13 @@
       integer ntsdiags_pv_avg, nwrtdiags_pv_avg
 #endif
 #endif
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       integer nwrtdiags_eddy
 #ifdef AVERAGES
       integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
 #endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       integer nwrtsurf
 #ifdef AVERAGES
       integer ntssurf_avg, nwrtsurf_avg
@@ -279,13 +283,13 @@
       logical ldefdiags_pv_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
       logical ldefdiags_eddy
 # ifdef AVERAGES
       logical ldefdiags_eddy_avg
 # endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       logical ldefsurf
 # ifdef AVERAGES
       logical ldefsurf_avg
@@ -332,6 +336,9 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
+#ifdef EXACT_RESTART
+     &       , forw_start
+#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif
@@ -396,7 +403,7 @@
      &                      , ntsdiags_pv_avg
 #endif
 #endif
-# ifdef DIAGNOSTICS_EDDY
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                      , ldefdiags_eddy, nwrtdiags_eddy
 #ifdef AVERAGES
      &                      , ldefdiags_eddy_avg
@@ -404,7 +411,7 @@
      &                      , ntsdiags_eddy_avg
 #endif
 #endif
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &                      , ldefsurf, nwrtsurf
 #ifdef AVERAGES
      &                      , ldefsurf_avg
@@ -534,7 +541,7 @@
 
 #ifdef MPI
 !
-! MPI rlated variables
+! MPI related variables
 ! === ====== =========
 !
       logical EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2

@@ -201,7 +201,7 @@ c**        call opencdf (frcname,N)
 ! Time interpolation is not performed in this case.
 !
       if (stf_cycle(itrc).lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           if (lstfgrd(itrc).eq.1) then
             cff=stf_scale(itrc)
             do j=JstrR,JendR

@@ -45,6 +45,14 @@
 # define RVTK_DEBUG_WRITE
 #endif
 
+/* 
+   GILDAS Take care need to use a debug.F specific 
+*/
+
+#if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
+# define RVTK_DEBUG_WRITE
+#endif
+
 /*
     Constant tracer option (for debugging)
 */
@@ -105,7 +113,6 @@
 ======================================================================
 */ 
 #ifdef XIOS
-# define XIOS2
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
 #endif
@@ -688,9 +695,9 @@
 # endif
 #endif
 
-#if defined MRL_WCI || defined OW_COUPLING
-# define WAVE_IO
-#endif
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#  define WAVE_IO
+# endif
 
 /*
 ======================================================================
@@ -724,7 +731,27 @@
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
 #endif
+/*
+======================================================================
+      Bottom forcing:
+      
+      By default:
+         define ANA_BTFLUX : set to zero in analytical.F
+         define ANA_BSFLUX
 
+
+      - define BHFLUX : bottom heat flux, Btflx(i,j,itemp), is read into
+                  the netcdf file croco_btf.nc
+      - define BWFLUX : bottom freshwater flux, Btflx(i,j,isalt), is read
+                   into a netcdf file(croco_btf.nc)
+======================================================================
+*/
+#if !defined ANA_BTFLUX
+#  define BHFLUX
+#endif
+#if !defined ANA_BSFLUX && defined SALINITY
+#  define BWFLUX
+#endif
 /*
 ======================================================================
     Bottom stress option:
@@ -733,6 +760,11 @@
     numerical instability associated with reversing bottom flow
     NOW replaced by BSTRESS_FAST option
 ======================================================================
+*/
+/*
+#ifndef BSTRESS_FAST
+# define  LIMIT_BSTRESS
+#endif
 */
 #ifdef INNERSHELF
 # undef  LIMIT_BSTRESS

@@ -199,8 +199,9 @@
       parameter (indxS=indxV+ntrc_temp+1)
 # endif
 # ifdef PASSIVE_TRACER
-      integer indxTPAS
-      parameter (indxTPAS=indxV+ntrc_temp+ntrc_salt+1)
+      integer, dimension(ntrc_pas) :: indxTPAS
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+1,
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas)/)      
 # endif
 #endif
 # ifdef BIOLOGY
@@ -315,8 +316,11 @@
 # ifdef DIAGNOSTICS_TS
       integer indxTXadv,indxTYadv,indxTVadv, 
      &        indxTHmix,indxTVmix,indxTForc,indxTrate
+# ifdef DIAGNOSTICS_TSVAR
+     &       ,indxTVmixt
+# endif
 #  if defined DIAGNOSTICS_TS_MLD
-     &      , indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
+     &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld
 #  endif
@@ -325,7 +329,12 @@
      &           indxTYadv=indxTXadv+NT,
      &           indxTVadv=indxTYadv+NT,
      &           indxTHmix=indxTVadv+NT,
-     &           indxTVmix=indxTHmix+NT, 
+# ifdef DIAGNOSTICS_TSVAR
+     &           indxTVmixt=indxTHmix+NT,
+     &           indxTVmix=indxTVmixt+NT,
+# else
+     &           indxTVmix=indxTHmix+NT,
+# endif
      &           indxTForc=indxTVmix+NT,
      &           indxTrate=indxTForc+NT
 #  if defined DIAGNOSTICS_TS_MLD
@@ -609,13 +618,54 @@
       parameter (indxbvf=indxSSH+1)
 #endif
 
+#ifdef EXACT_RESTART
+      integer indxrufrc
+      parameter (indxrufrc=indxSSH+2)
+      integer indxrvfrc
+      parameter (indxrvfrc=indxrufrc+1)
+      integer indxSUSTR, indxSVSTR
+# ifdef TS_MIX_ISO_FILT
+      integer indxdRdx,indxdRde
+# endif
+# ifdef M3FAST
+      integer indxru_nbq,indxrv_nbq
+      integer indxru_nbq_avg2,indxrv_nbq_avg2
+      integer indxqdmu_nbq,indxqdmv_nbq
+      parameter (indxru_nbq=indxrvfrc+1,
+     &           indxrv_nbq=indxru_nbq+1,
+     &           indxru_nbq_avg2=indxrv_nbq+1,
+     &           indxrv_nbq_avg2=indxru_nbq_avg2+1,
+     &           indxqdmu_nbq=indxrv_nbq_avg2+1,
+     &           indxqdmv_nbq=indxqdmu_nbq+1)
+#  ifdef TS_MIX_ISO_FILT
+      parameter (indxdRdx=indxqdmv_nbq+1,
+     &           indxdRde=indxdRdx+1)
+      parameter (indxSUSTR=indxdRde+1,
+     &           indxSVSTR=indxdRde+2)
+#  else
+      parameter (indxSUSTR=indxqdmv_nbq+1,
+     &           indxSVSTR=indxqdmv_nbq+2)
+#  endif
+# else
+#  ifdef TS_MIX_ISO_FILT
+      parameter (indxdRdx=indxrvfrc+1,
+     &           indxdRde=indxdRdx+1)
+      parameter (indxSUSTR=indxdRde+1,
+     &           indxSVSTR=indxdRde+2)
+#  else
+      parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
+#  endif
+# endif
+#else     
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
+#endif
+
       integer indxTime2
-      parameter (indxTime2=indxSSH+4)
+      parameter (indxTime2=indxSUSTR+4)
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
-      parameter (indxShflx=indxSSH+5)
+      parameter (indxShflx=indxSUSTR+5)
 # ifdef SALINITY
       integer indxSwflx
       parameter (indxSwflx=indxShflx+1, indxShflx_rsw=indxShflx+2)
@@ -892,15 +942,18 @@
 !   ntww    wind induced wave data in current forcing file.
 !   ntbulkn bulk formula variables in current forcing file.
 !   ntqbar  river runoff in current forcing file.
+!   ntbtf   bottom hydrothermal flux of tracer in current forcing file.
 !
 ! vname    character array for variable names and attributes;
 !=================================================================
 !
-      integer ncidfrc, ncidbulk, ncidclm,  ntsms ,
-     &        ntsrf,  ntssh,  ntsst, ntsss, ntuclm,
-     &        ntbulk, ncidqbar, ntqbar, ntww
+      integer ncidfrc, ncidbulk, ncidclm,  ntsms
+     &     , ncidqbar, ncidbtf
+     &     , ntsrf,  ntssh,  ntsst, ntsss, ntuclm
+     &     , ntbulk, ntqbar, ntww
 #if defined SOLVE3D && defined TRACERS
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
+     &       , ntbtf(NT)
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
@@ -908,9 +961,38 @@
      &                         , rstU,    rstV
 # if defined TRACERS
       integer rstT(NT)
-# endif	
+# endif
+# if defined LMD_SKPP
+      integer rstHbl
+# endif
+# ifdef LMD_BKPP
+      integer rstHbbl
+# endif
+# if defined GLS_MIXING
+      integer rstAkv,rstAkt
+#  if defined SALINITY
+      integer rstAks
+#  endif
+      integer rstTke,rstGls
+# endif
+# ifdef M3FAST
+#  if defined LMD_MIXING || defined GLS_MIXING
+      integer rstBustr, rstBvstr
+#  endif       
+# endif      
 # ifdef SEDIMENT
       integer rstSed(NST+2)
+# endif
+#endif
+#ifdef EXACT_RESTART
+      integer rstrufrc,rstrvfrc
+# ifdef M3FAST
+      integer rstru_nbq,rstrv_nbq
+      integer rstru_nbq_avg2,rstrv_nbq_avg2
+      integer rstqdmu_nbq,rstqdmv_nbq
+# endif  /* M3FAST */
+# ifdef TS_MIX_ISO_FILT
+      integer rstdRdx,rstdRde
 # endif
 #endif
 #ifdef MORPHODYN
@@ -938,7 +1020,7 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
-     &      , hisShflx, hisSwflx, hisShflx_rsw
+     &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -991,6 +1073,9 @@
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv(NT), diaTYadv(NT), diaTVadv(NT)
      &      , diaTHmix(NT), diaTVmix(NT)
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt(NT)
+#  endif
      &      , diaTForc(NT), diaTrate(NT)
 #  if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld(NT), diaTYadv_mld(NT), diaTVadv_mld(NT)
@@ -1169,6 +1254,9 @@
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg(NT), diaTYadv_avg(NT), diaTVadv_avg(NT)
      &      , diaTHmix_avg(NT), diaTVmix_avg(NT)
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt_avg(NT)
+#  endif
      &      , diaTForc_avg(NT), diaTrate_avg(NT)
 #   if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg(NT), diaTYadv_mld_avg(NT)
@@ -1334,8 +1422,10 @@
 #endif
 	
       common/incscrum/
-     &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
-     &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
+     &     ncidfrc, ncidbulk,ncidclm, ncidqbar, ncidbtf
+     &     , ntsms, ntsrf, ntssh, ntsst
+     &     , ntuclm, ntsss, ntbulk, ntqbar, ntww
+     
 #if defined MPI && defined PARALLEL_FILES
 !# ifndef EW_PERIODIC
      &      , xi_rho,  xi_u
@@ -1345,15 +1435,46 @@
 !# endif
 #endif
 #if defined SOLVE3D && defined TRACERS
-     &                        ,  nttclm, ntstf, nttsrc
+     &     ,  nttclm, ntstf, nttsrc, ntbtf
+
 #endif
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
-     &                         , rstU,    rstV
-# if defined TRACERS
-     &                         ,   rstT
+     &                         , rstU,    rstV 
+# ifdef TRACERS
+     & ,   rstT
+# endif     
+# if defined LMD_SKPP 
+     &      , rstHbl
 # endif
+# ifdef LMD_BKPP
+     &      , rstHbbl
+# endif
+# if defined GLS_MIXING
+     &      , rstAkv,rstAkt
+#  if defined SALINITY
+     &      , rstAks
+#  endif
+     &      , rstTke,rstGls
+# endif
+# ifdef M3FAST
+#  if defined GLS_MIXING || defined LMD_MIXING
+     &      , rstBustr,rstBvstr
+#  endif      
+# endif     
+#ifdef EXACT_RESTART
+     &      , rstrufrc,rstrvfrc
+# ifdef M3FAST
+     &      , rstru_nbq,rstrv_nbq
+     &      , rstru_nbq_avg2,rstrv_nbq_avg2
+     &      , rstqdmu_nbq,rstqdmv_nbq
+# endif  /* M3FAST */
+# ifdef TS_MIX_ISO_FILT
+     &      , rstdRdx,rstdRde
+# endif
+#endif
+
 # ifdef SEDIMENT
      &                         , rstSed
 # endif
@@ -1368,7 +1489,8 @@
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
-     &     , hisShflx, hisSwflx, hisShflx_rsw
+     &      , hisShflx, hisSwflx, hisShflx_rsw
+     &      , hisBhflx, hisBwflx
 # ifdef MORPHODYN
      &      , hisHm
 # endif
@@ -1415,6 +1537,9 @@
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv, diaTYadv, diaTVadv, diaTHmix
      &      , diaTVmix, diaTForc, diaTrate
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt
+#  endif
 # if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld, diaTYadv_mld, diaTVadv_mld, diaTHmix_mld
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
@@ -1424,6 +1549,9 @@
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
      &      , diaTHmix_avg, diaTVmix_avg, diaTForc_avg
+#  ifdef DIAGNOSTICS_TSVAR
+     &      , diaTVmixt_avg
+# endif
      &      , diaTrate_avg
 #  if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg, diaTYadv_mld_avg, diaTVadv_mld_avg
