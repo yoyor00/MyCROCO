@@ -238,7 +238,7 @@ fi
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
 PRISM_ROOT_DIR=${CROCO_PRISM_ROOT_DIR-$PRISM_ROOT_DIR}
-if [[ $($CPP1 testkeys.F | grep -i -q oacplisdefined) || ${XIOS_withOASIS} -eq 1 ]]; then
+if [ [ $($CPP1 testkeys.F | grep -i -q oacplisdefined)] || [ ${XIOS_withOASIS} -eq 1 ] ]; then
     echo " => OASIS activated"
     CHAN=MPI1
     LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
