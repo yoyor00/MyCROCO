@@ -95,6 +95,11 @@
       real Akv(GLOBAL_2D_ARRAY,0:N)
       real Akt(GLOBAL_2D_ARRAY,0:N,2)
       common /mixing_Akv/Akv /mixing_Akt/Akt
+# ifdef GLS_MIXING
+      real Akv_old(GLOBAL_2D_ARRAY,0:N)
+      real Akt_old(GLOBAL_2D_ARRAY,0:N)
+      common /mixing_Akvold/Akv_old /mixing_Aktold/Akt_old
+# endif
 # ifdef RANDOM_WALK
       real dAktdz(GLOBAL_2D_ARRAY,0:N)
       common /mixing_dAktdz/dAktdz

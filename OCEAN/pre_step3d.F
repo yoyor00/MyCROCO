@@ -941,6 +941,22 @@
 
 !
 !======================================================================
+! Prepare viscosity/diffusivity array for GLS_MIXING
+! (needed for OPENMP parallelization)
+!======================================================================
+!
+# ifdef GLS_MIXING
+      do k=0,N
+        do j=Jstr-1,Jend+1
+          do i=Istr-1,Iend+1
+            Akv_old(i,j,k)=Akv(i,j,k)
+            Akt_old(i,j,k)=Akt(i,j,k,itemp)
+          enddo
+        enddo
+      enddo
+# endif
+!
+!======================================================================
 ! Prepare to start two-dimensional time stepping:
 ! set the initial values of the fast-time-step free-surface
 ! field to its fast-time-averaged values corresponding

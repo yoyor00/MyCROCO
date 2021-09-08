@@ -476,7 +476,7 @@
             DO k=2,N-1
                DO i=imin,imax
                   FC(i,k)= cff* OneOverSig(ig)* 
-     &                   ( Akv(i,j,k)+Akv(i,j,k-1) ) / Hz(i,j,k)
+     &                   ( Akv_old(i,j,k)+Akv_old(i,j,k-1) ) / Hz(i,j,k)
                ENDDO
             ENDDO
 
@@ -498,9 +498,9 @@
                   cff3m =  ig1+ig2*beta3m  * invk*gls
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
-                  Sprod =  cff1*Akv(i,j,k) * shear2(i,j,k)    
-                  Bprod = -Akt(i,j,k,itemp)*( cff3m*MAX(bvf(i,j,k),0.)
-     &                                     +  cff3p*MIN(bvf(i,j,k),0.) )
+                  Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)    
+                  Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
+     &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1))
                   IF( ig == itke ) THEN
@@ -549,16 +549,13 @@
 # else
                   z0_s=MAX( Zosmin , chk*ustar_sfc_sq(i,j) )   !<-- Charnock
 # endif
-                  cff         = 0.5*( trb( i,j,N-1,nnew,itke )
-     &                            +   trb( i,j,N  ,nnew,itke ) )
-                  lgthsc      = vonKar*(0.5*Hz(i,j,N)+z0_s)
-
-                  trb_sfc     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
-     &                                                 *(cff**rm))
-                  flux_top    = -rn*cm0**(rp+1.)
+                  cff = 0.5*(tke_new(i,j,N-1)+tke_new(i,j,N))
+                  lgthsc = vonKar*(0.5*Hz(i,j,N)+z0_s)
+                  trb_sfc = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
+     &                                              *(cff**rm))
+                  flux_top = -rn*cm0**(rp+1.)
      &                             *vonKar*OneOverSig(igls)
      &                             *(cff**(rm+0.5))*(lgthsc**rn)
-
 # ifdef MRL_WCI
                   flux_top=flux_top - OneOverSig(itke)*OneOverSig(igls)
      &                                  *   cm0**(rp+1.)
@@ -568,13 +565,12 @@
      &                                  *   zalp*   wepb(i,j)
 # endif 
                   ! bottom
-                  z0_b        = MAX( Zob(i,j) , Zobmin )
-                  cff         = 0.5*( trb( i,j,  1,nnew,itke )
-     &                            +   trb( i,j,  0,nnew,itke ) )
-                  lgthsc      = vonKar*(0.5*Hz(i,j,1)+z0_b)
-                  trb_bot     = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
-     &                               *(trb( i,j,0,nnew,itke )**rm)) 
-                  flux_bot    =-rn*cm0**(rp+1.)
+                  z0_b = MAX( Zob(i,j) , Zobmin )
+                  cff = 0.5*(tke_new(i,j,1)+tke_new(i,j,0))
+                  lgthsc = vonKar*(0.5*Hz(i,j,1)+z0_b)
+                  trb_bot = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
+     &                                   *(tke_new(i,j,0)**rm)) 
+                  flux_bot =-rn*cm0**(rp+1.)
      &                          *vonKar*OneOverSig(igls)
      &                          *(cff**(rm+0.5))*(lgthsc**rn)
                   ! finalize
@@ -591,7 +587,6 @@
                CF(i,N-1) = cff*FC(i,N-1)           
                RH(i,N-1) = cff*RH(i,N-1)
             ENDDO   
-                  
             DO k=N-2,1,-1
                DO i=imin,imax      
                   cff     =   1./(DC(i,k)-CF(i,k+1)*FC(i,k+1))      
@@ -599,7 +594,6 @@
                   RH(i,k) = cff*( RH(i,k)-FC(i,k+1)*RH(i,k+1))
                ENDDO
             ENDDO   
-
             IF( ig == itke ) THEN
               DO i=imin,imax           
                 tke_new(i,j,1) = MAX( RH(i,1), trb_min(ig) )
@@ -737,17 +731,17 @@
          ENDDO   
          
          DO i=istr,iend 
-             Akv(i,j,N)  = MAX( 1.5*Akv(i,j,N-1)
-     &                         -0.5*Akv(i,j,N-2), nuwm)          
-             Akv(i,j,0)  = MAX( 1.5*Akv(i,j,  1)
-     &                         -0.5*Akv(i,j,  2), nuwm)
-             Akt(i,j,N,itemp)=  MAX(  1.5*Akt(i,j,N-1,itemp)
-     &                          -0.5*Akt(i,j,N-2,itemp), nuws )
-             Akt(i,j,0,itemp)=  MAX(  1.5*Akt(i,j,  1,itemp)
-     &                          -0.5*Akt(i,j,  2,itemp), nuws )      
+           Akv(i,j,N) = MAX( 1.5*Akv(i,j,N-1)
+     &                      -0.5*Akv(i,j,N-2), nuwm)          
+           Akv(i,j,0) = MAX( 1.5*Akv(i,j,  1)
+     &                      -0.5*Akv(i,j,  2), nuwm)
+           Akt(i,j,N,itemp) = MAX(  1.5*Akt(i,j,N-1,itemp)
+     &                             -0.5*Akt(i,j,N-2,itemp), nuws )
+           Akt(i,j,0,itemp) = MAX(  1.5*Akt(i,j,  1,itemp)
+     &                             -0.5*Akt(i,j,  2,itemp), nuws )
 # ifdef SALINITY
-             Akt(i,j,N,isalt)=Akt(i,j,N,itemp)
-             Akt(i,j,0,isalt)=Akt(i,j,0,itemp)
+           Akt(i,j,N,isalt)=Akt(i,j,N,itemp)
+           Akt(i,j,0,isalt)=Akt(i,j,0,itemp)
 # endif
          ENDDO    
       !--------------------------------------------------        
@@ -763,10 +757,8 @@
       if (WESTERN_EDGE) then
         do j=jstr,jend
           do k=0,N
-            trb(istr-1,j,k,nnew,itke)=
-     &                    trb(istr,j,k,nnew,itke)            
-            trb(istr-1,j,k,nnew,igls)=
-     &                    trb(istr,j,k,nnew,igls)
+            trb(istr-1,j,k,nnew,itke)=trb(istr,j,k,nnew,itke)
+            trb(istr-1,j,k,nnew,igls)=trb(istr,j,k,nnew,igls)
             Akv(istr-1,j,k      )=Akv(istr,j,k      )
             Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
 #  ifdef SALINITY
@@ -778,10 +770,8 @@
       if (EASTERN_EDGE) then
         do j=jstr,jend
           do k=0,N
-            trb(iend+1,j,k,nnew,itke)=
-     &                    trb(iend,j,k,nnew,itke)            
-            trb(iend+1,j,k,nnew,igls)=
-     &                    trb(iend,j,k,nnew,igls)  
+            trb(iend+1,j,k,nnew,itke)=trb(iend,j,k,nnew,itke)
+            trb(iend+1,j,k,nnew,igls)=trb(iend,j,k,nnew,igls)
             Akv(iend+1,j,k      )=Akv(iend,j,k      )
             Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
 #  ifdef SALINITY
@@ -795,10 +785,8 @@
       if (SOUTHERN_EDGE) then
         do i=istr,iend
           do k=0,N
-            trb(i,jstr-1,k,nnew,itke)=
-     &                    trb(i,jstr,k,nnew,itke)            
-            trb(i,jstr-1,k,nnew,igls)=
-     &                    trb(i,jstr,k,nnew,igls)  
+            trb(i,jstr-1,k,nnew,itke)=trb(i,jstr,k,nnew,itke)
+            trb(i,jstr-1,k,nnew,igls)=trb(i,jstr,k,nnew,igls)  
             Akv(i,jstr-1,k      )=Akv(i,jstr,k      )
             Akt(i,jstr-1,k,itemp)=Akt(i,jstr,k,itemp)
 #  ifdef SALINITY
@@ -810,10 +798,8 @@
       if (NORTHERN_EDGE) then
         do i=istr,iend
           do k=0,N
-            trb(i,jend+1,k,nnew,itke)=
-     &                    trb(i,jend,k,nnew,itke)            
-            trb(i,jend+1,k,nnew,igls)=
-     &                    trb(i,jend,k,nnew,igls) 
+            trb(i,jend+1,k,nnew,itke)=trb(i,jend,k,nnew,itke)
+            trb(i,jend+1,k,nnew,igls)=trb(i,jend,k,nnew,igls) 
             Akv(i,jend+1,k)=Akv(i,jend,k)
             Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
 #  ifdef SALINITY
@@ -825,10 +811,8 @@
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
-          trb(istr-1,jstr-1,k,nnew,itke)=
-     &                    trb(istr,jstr,k,nnew,itke)            
-          trb(istr-1,jstr-1,k,nnew,igls)=
-     &                    trb(istr,jstr,k,nnew,igls)  
+          trb(istr-1,jstr-1,k,nnew,itke)=trb(istr,jstr,k,nnew,itke)
+          trb(istr-1,jstr-1,k,nnew,igls)=trb(istr,jstr,k,nnew,igls)
           Akv(istr-1,jstr-1,k      )=Akv(istr,jstr,k      )
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
 #  ifdef SALINITY
@@ -838,10 +822,8 @@
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
-          trb(istr-1,jend+1,k,nnew,itke)=
-     &                    trb(istr,jend,k,nnew,itke)            
-          trb(istr-1,jend+1,k,nnew,igls)=
-     &                    trb(istr,jend,k,nnew,igls) 
+          trb(istr-1,jend+1,k,nnew,itke)=trb(istr,jend,k,nnew,itke)
+          trb(istr-1,jend+1,k,nnew,igls)=trb(istr,jend,k,nnew,igls)
           Akv(istr-1,jend+1,k      )=Akv(istr,jend,k      )
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
 #  ifdef SALINITY
@@ -851,10 +833,8 @@
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
-          trb(iend+1,jstr-1,k,nnew,itke)=
-     &                    trb(iend,jstr,k,nnew,itke)            
-          trb(iend+1,jstr-1,k,nnew,igls)=
-     &                    trb(iend,jstr,k,nnew,igls)
+          trb(iend+1,jstr-1,k,nnew,itke)=trb(iend,jstr,k,nnew,itke)
+          trb(iend+1,jstr-1,k,nnew,igls)=trb(iend,jstr,k,nnew,igls)
           Akv(iend+1,jstr-1,k      )=Akv(iend,jstr,k      )
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
 #  ifdef SALINITY
@@ -864,10 +844,8 @@
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
-          trb(iend+1,jend+1,k,nnew,itke)=
-     &                    trb(iend,jend,k,nnew,itke)            
-          trb(iend+1,jend+1,k,nnew,igls)=
-     &                    trb(iend,jend,k,nnew,igls)
+          trb(iend+1,jend+1,k,nnew,itke)=trb(iend,jend,k,nnew,itke)
+          trb(iend+1,jend+1,k,nnew,igls)=trb(iend,jend,k,nnew,igls)
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
 #  ifdef SALINITY
