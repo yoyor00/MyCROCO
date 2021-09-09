@@ -396,8 +396,11 @@
 
       <variable_group id="parameters" >
 	<variable id="using_server" type="bool">true</variable>
-	<!-- <variable id="using_oasis"  type="bool">true</variable> -->
-        <!-- <variable id="oasis_codes_id" type="string">crocox</variable> -->
+# if defined OA_COUPLING || defined OW_COUPLING 	
+	<variable id="using_oasis"  type="bool">true</variable>
+        <variable id="oasis_codes_id" type="string">crocox</variable>
+	<!-- <variable id="oasis_codes_id" type="string">crocox,wrfexe</variable> -->
+# endif
 	<variable id="info_level" type="int">0</variable>
 	<variable id="print_file" type="bool">false</variable>
       </variable_group>
