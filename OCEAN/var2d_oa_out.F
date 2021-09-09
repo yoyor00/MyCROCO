@@ -256,7 +256,6 @@ C$    trd=omp_get_thread_num()
      &              ,vnamdp='2d_u_',vnams='_real',verbose=verbose_oa)
             vnam_oa_i = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3,a5)'
      &              ,vnamdp='2d_u_',vnams='_imag',verbose=verbose_oa)
-
 ! if_oa_re_im_u_2D 
         else
 
@@ -448,17 +447,11 @@ C$    trd=omp_get_thread_num()
 
 !            write( vnam_oa, fmt='(a5,a5,i3.3,a1,i3.3)') 
 !& tgvnam_oa(tv_oa(iv)),'2d_r_',ic,'_',iv
-
         !tmpfmt=trim(vnamfmt)
         write( tmpvnam, fmt=trim(vnamfmt)) 
      &         tgvnam_oa(tv_oa(iv)),trim(vnamdp),ic,'_',iv,trim(vnams)
        
-        if (verbose >=6 ) then
-!        MPI_master_only write(stdout,fmt='(2(22a))') 
-!    &   vnam_oa_r,vnam_oa_i
-!        MPI_master_only write(stdout,fmt='(17a)') 
-!    &   vnam_oa
-
+        if (verbose >=16 ) then
          MPI_master_only write(stdout,fmt='(a22)') 
      &   tmpvnam
          MPI_master_only write(stdout,fmt='(i3.3)') 

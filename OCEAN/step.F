@@ -563,17 +563,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
            ! BLXD call croco_oa(0)
            call online_spectral_diags(tile,1)
          enddo
-! RM C$OMP BARRIER BLXD threads BARRIER moved at the end of 
-! subroutines init/run_online_spectral_diags_tile
          call output_oa
 C$OMP MASTER
       endif
 #endif
-
-! BLXD
-! #ifdef ONLINE_ANALYSIS
-!      call croco_oa(1)
-! #endif
 
 !
 ! Output block: write restart/history files.   
@@ -1145,8 +1138,6 @@ C$OMP MASTER
 #endif      
 C$OMP END MASTER
 C$OMP BARRIER
-  
+
       return
       end      
-
-      

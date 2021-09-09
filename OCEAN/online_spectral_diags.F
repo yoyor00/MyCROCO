@@ -20,7 +20,7 @@
 !
 !> @authors  
 !! - B. Lemieux-Dudon
-!!  - Croco Tile-thread compliant version (2021) 
+!!  - Twd a Croco Tile(-threads) compliant version (2021) 
 !!    supporting tile-threads and possible dual OpenMP-MPI 
 !!    parallelization of the horizontal domain
 !!     => online_spectral_diags : 
@@ -31,8 +31,9 @@
 !!        and finally send them to XIOS (out of the loop)
 !!  - based on a preliminary Croco-OA interface version : spring 2020.
 !! - More history (authors, comments) in source module_interface_oa.F90
-!> @todo 
-!
+!> @todo BLXD 
+!!  - test with a Croco Tile(-threads) working version
+!!  - isopycnal level tracking not yet tested with Croco-OA (2021)
 !  REFERENCE:
 !  
 !======================================================================
@@ -64,10 +65,14 @@ C$      trd=omp_get_thread_num()
 
         call init_online_spectral_diags_tile (Istr,Iend
      &                                       ,Jstr,Jend
-     &                                       ,tile)
-      endif
+     &                                       ,tile) 
+! No need of any openMP BARRIER since included at the end 
+! of init_online_spectral_diags_tile
 
-      if ( icall==0 .or. icall==1 ) then
+      else if ( icall==1 ) then
+
+      !endif
+      !if ( icall==0 .or. icall==1 ) then
         call run_online_spectral_diags_tile (Istr,Iend,Jstr,Jend,tile)
       end if
       return
@@ -219,6 +224,7 @@ C$      trd=omp_get_thread_num()
      & then
         MPI_master_only write(stdout,*) 
      &   'STOP : inconsistent private scratch size'
+        stop
       endif
         
 #ifndef MASKING
@@ -297,7 +303,7 @@ C$      trd=omp_get_thread_num()
 #endif
 
 ! BLXD GRID OPTION 2
-! the grd structure could eventually be constructed
+! the grd structure could eventually be constructed here
 ! call allocate_tile_grid_tmp_str
 ! using its pointer fields
 ! grd(tile)%lon_t(PRIVATE_2D_SCRATCH_ARRAY) => lonr(PRIVATE_2D_SCRATCH_ARRAY)
@@ -342,10 +348,10 @@ C$      trd=omp_get_thread_num()
      & ,depth_t=z_r   (PRIVATE_2D_SCRATCH_ARRAY,1:N)     
      & )
 
-
-! BLXD This should be either here OR at the end of init_oa
 C$OMP BARRIER
         call deallocate_tile_grid_tmp_str()
+
+!CRBS print*, 'ooo OUT OF init_online_spectral_diags_tile ', mynode !CRBE
 
 ! ------- ------------- ------ ------ - -----
       return 
@@ -376,8 +382,11 @@ C$OMP BARRIER
 !      use module_nh 
 !      use module_nbq
 !#endif
-      use module_interface_oa, only : main_oa
+      use module_interface_oa, only : main_oa, scalogram_analysis
       use module_tile_oa, only : deallocate_tile_space_str
+     &                          ,deallocate_tile_sclg_str
+     &                          ,deallocate_tile_test_str
+      use module_oa_variables, only : test_analysis
 
 ! BLXD WARNING TESTING 
 ! use scalars => i) use param ii) include "scalars.h" 
@@ -419,6 +428,15 @@ C$OMP BARRIER
 !      Tile dimensions are already stored in the module_tile_oa 
 !      see st%imin,st%imax,...
 !      TODO check if removing imin,imax,... arguments 
+
+!$OMP MASTER
+#ifdef OA_TRACES
+         print*,
+     &   'eee ENTERING main_oa iic/node ',iic,mynode
+#endif
+!$OMP END MASTER
+
+
       call main_oa( tile=tile+1
      & ,ichoix=0
      & ,ivar_m=0
@@ -430,16 +448,29 @@ C$OMP BARRIER
      & ,depth_t=z_r(PRIVATE_2D_SCRATCH_ARRAY,1:N)     
      & )
 
+!$OMP MASTER
+#ifdef OA_TRACES
+         print*,
+     &   'ooo OUT OF main_oa iic/node ',iic,mynode
+#endif
+!$OMP END MASTER
+
 ! At the very end icc = ntimes
 ! BLXD omp_barrier should be either here OR at the end of main_oa
 C$OMP BARRIER
 !        WARNING after calls to deallocate_tile_varspace_oa
 !        in module_oa_interface with test on icc_oa as well
-      if ( iic.eq.ntimes ) then
+      if ( iic.eq.(ntimes+1) ) then
+!$OMP MASTER
+#ifdef OA_TRACES
+         print*,'ooo END ONLINE_ANALYSIS icc/node ',iic,mynode
+#endif
+!$OMP END MASTER
          call deallocate_tile_space_str()
+         if (scalogram_analysis) call deallocate_tile_sclg_str()
+         if (test_analysis) call deallocate_tile_test_str()
+         ! BLXD tile_isopycne_str not yet defined
       endif
-! NOT USED YET
-! ALSO check if isopycne_analysis deallocate_tile_isopycne_str !!!
 
 ! ------- ------------- ------ ------ - -----
       return 
