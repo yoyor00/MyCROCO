@@ -52,7 +52,7 @@
       use module_oa_variables,  only : tv_oa     
      & ,tupd_oa, tv_sclg_oa
       use module_oa_periode,    only : begc_oa, tvc_oa, tc_oa
-     & ,nzc_oa, swt_wfpf_oa, nper_sclg_max
+     & ,nzc_oa, swt_wfpf_oa, nper_sclg_max, nper_sclg
       !use module_oa_space,      only : ptij_oa
       use scalars
       implicit none
@@ -137,7 +137,7 @@
         if_imag_part = .true.
 
         if ( v2locsclg(iv)/=-99 ) then
-        loop_per_re_im : do ip=1,nper_sclg_max
+        loop_per_re_im : do ip=1,nper_sclg(iv)
 #ifdef OA_TRACES_XIOS             
             MPI_master_only write(stdout,fmt='(a,2(i3))') 
      &      '...OA-Scalogram Part/ImPart for period ',ip,iv
@@ -166,10 +166,10 @@
         else if_oa_re_im
 
         if ( v2locsclg(iv) /= -99 ) then
-        loop_per : do ip=1,nper_sclg_max
+        loop_per_re : do ip=1,nper_sclg(iv)
                        scal0d_re(ip,v2locsclg(iv)) = 
      &  scal0d_oa(ip, v2locsclg(iv) )
-        enddo loop_per
+        enddo loop_per_re
         endif
 
             ! scal_ + real or imag
@@ -179,7 +179,7 @@
         endif if_oa_re_im
 
         if ( v2locsclg(iv) /= -99 ) then
-        loop_for_per_axis : do ip=1,nper_sclg_max
+        loop_for_per_axis : do ip=1,nper_sclg(iv)
 
                        per0d(ip,v2locsclg(iv)) = 
      &        per0d_oa( ip, v2locsclg(iv) )
@@ -221,7 +221,7 @@
 
         implicit none
         integer, intent(in)    :: verbose
-        if ( verbose >=6 ) then
+        if ( verbose >=15 ) then
             MPI_master_only write(stdout,fmt='(a13,(3(i3.3,1x)))')     
      &     'Cfg-#var-Var ',ic,ivc,iv
         end if
@@ -287,7 +287,7 @@
      &         tgvnam_oa(tv_oa(iv)),trim(vnams)
 
 #ifdef OA_TRACES       
-        if (verbose >=6 ) then
+        if (verbose >=16 ) then
          MPI_master_only write(stdout,fmt='(a9)') 
      &   tmpvnam
          MPI_master_only write(stdout,fmt='(i3.3)') 
@@ -356,7 +356,8 @@
         write( tmpvnam, fmt=trim(vnamfmt)) 
      &         tgvnam_oa(tv_oa(iv)),trim(vnamdp),ic,'_',iv,trim(vnams)
        
-        if (verbose >=6 ) then
+#ifdef OA_TRACES
+        if (verbose >=16 ) then
          MPI_master_only write(stdout,fmt='(a22)') 
      &   tmpvnam
          MPI_master_only write(stdout,fmt='(i3.3)') 
@@ -364,6 +365,7 @@
          MPI_master_only write(stdout,fmt='(3(i3.3,1x))') 
      &   tc_oa(ic), tvc_oa(ic), ivc
         end if
+#endif
 
         get_vnam = tmpvnam 
 

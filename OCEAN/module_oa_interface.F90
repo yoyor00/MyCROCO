@@ -219,6 +219,8 @@
       !> Scalogram analysis (BLXD TODO declared with test_analysis, isopycne_analysis?) 
       logical             :: scalogram_analysis
 
+      real, parameter :: w0c=6.
+
 #ifdef MPI
       !> Analysed 0D fields for scalogram global/local to tile-MPI process scal0d_oa
       complex(8), dimension(:,:), allocatable, target   :: scal0d_oa
@@ -478,7 +480,9 @@
         ! TODO use pi_oa or croco pi parameter
         fb_oa=2.                ! definition de l''ondelette de morlet complexe
         !fc_oa=6./2./3.14159274  ! par defaut fb_oa=2. et fc_oa=6./3.14159274/2.
-        fc_oa=6./2./pi_oa
+        !fc_oa=6./2./pi_oa w0c redef. as module param
+        !fc_oa=6.145/2./pi_oa w0c redef. as module param
+        fc_oa=w0c/2./pi_oa
 
         if(if_print_node) write(io_unit,*) '...OA LOG FILE : Specific analysis config. soon read in namelists '
 
@@ -1648,6 +1652,16 @@
       tgv3d_oa(20) = 3
       tgvnam_oa(20) = 'isplv'
 
+!.....variable scalogram ubar:
+      tgv_oa(56)   = 1 
+      tgv3d_oa(56) = 2
+      tgvnam_oa(56) = 'scal_'
+
+!.....variable scalogram density:
+      tgv_oa(61)   = 1 
+      tgv3d_oa(61) = 3
+      tgvnam_oa(61) = 'scal_'
+
 !.....test variable 2D vardp_test_oa :
       tgv_oa(97)   = 1 
       tgv3d_oa(97) = 2
@@ -2407,7 +2421,11 @@
 
 
       !if (if_mpi_oa) then
-      call MPI_Barrier(comm)
+      call MPI_Barrier(comm,ierr)
+      if (ierr/=0) then
+          print*,'ERROR OA : MPI_Barrier bef. index_s_cr Bcast mynode/ierr ',mynode,ierr
+          stop
+      endif
       ! If global index_s_cr needed
       call MPI_Bcast(index_s_cr,nzupd0d_oa, MPI_INTEGER, comm_size-1, comm, ierr)
       ! isclg_glo = 0
@@ -2908,7 +2926,7 @@
 
       real ::                                                         &   
          p_p                                                          &  !< Time Period, Scale
-        ,t0c,dtc,w0c,dwc                                                 !< Wavelet resolution : Heisenberg parameters
+        ,t0c,dtc,w00c,dwc                                                 !< Wavelet resolution : Heisenberg parameters
 
       logical :: flag_p
 
@@ -2933,7 +2951,8 @@
       ! Set gard-rail 
 
       t0c = 0.
-      w0c = 6.0         
+      ! w0c redefined as module parameter 
+      w00c = 6.0         
       dtc = 1./sqrt(2.) 
       dwc = dtc         
  
@@ -6140,7 +6159,11 @@
 
            endif if_node_root
            
-           call MPI_Barrier(comm)
+           call MPI_Barrier(comm,ierr)
+           if (ierr/=0) then
+               print*,'ERROR OA : MPI_Barrier bef. per/ijkscal Bcast mynode/ierr ',mynode,ierr
+               stop
+           endif
            tag=tupd_oa(iv_m)
            call MPI_Bcast(per0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
                             MPI_DOUBLE_PRECISION, root, comm, ierr)
@@ -6647,7 +6670,11 @@
            endif if_node_correct2
 
            tag=tupd_oa(iv_m)
-           call MPI_Barrier(comm)
+           call MPI_Barrier(comm,ierr)
+           if (ierr/=0) then
+               print*,'ERROR OA : MPI_Barrier bef. scal Bcast mynode ',mynode
+               stop
+           endif
            call MPI_Bcast(scal0d_cr(1:nper_sclg(iv_m),tupd_oa(iv_m)), nper_sclg(iv_m), &
                             MPI_DOUBLE_COMPLEX, root, comm, ierr)
 

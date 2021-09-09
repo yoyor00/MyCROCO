@@ -52,7 +52,7 @@
       use module_oa_variables,  only : tv_oa     
      & ,tupd_oa, tv_sclg_oa
       use module_oa_periode,    only : begc_oa, tvc_oa, tc_oa
-     & ,nzc_oa, swt_wfpf_oa, nper_sclg_max
+     & ,nzc_oa, swt_wfpf_oa, nper_sclg_max, nper_sclg
       !use module_oa_space,      only : ptij_oa
       use scalars
       implicit none
@@ -125,7 +125,7 @@
         ! If one single variable is imag all MUST be
         if_imag_part = .true.
 
-        loop_per_re_im : do ip=1,nper_sclg_max
+        loop_per_re_im : do ip=1,nper_sclg(iv)
 #ifdef OA_TRACES_XIOS             
             MPI_master_only write(stdout,fmt='(a,2(i3))') 
      &      '...OA-Scalogram Part/ImPart for period ',ip,iv
@@ -152,10 +152,10 @@
 
         else if_oa_re_im
 
-        loop_per : do ip=1,nper_sclg_max
+        loop_per_re : do ip=1,nper_sclg(iv)
                        scal0d_re(ip,tupd_oa(iv)) = 
      &  scal0d_cr(ip, tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ))
-        enddo loop_per
+        enddo loop_per_re
 
             ! scal_ + real or imag
             vnam_oa_r = get_vnam_full( vnamfmt='(a5,a4)'
@@ -163,7 +163,7 @@
 
         endif if_oa_re_im
 
-        loop_for_per_axis : do ip=1,nper_sclg_max
+        loop_for_per_axis : do ip=1,nper_sclg(iv)
 
                        per0d(ip,tupd_oa(iv)) = 
      &        per0d_cr( ip, tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ))
@@ -269,8 +269,9 @@
         
         write( tmpvnam, fmt=trim(vnamfmt)) 
      &         tgvnam_oa(tv_oa(iv)),trim(vnams)
-       
-        if (verbose >=6 ) then
+
+#ifdef OA_TRACES       
+        if (verbose >=16 ) then
          MPI_master_only write(stdout,fmt='(a9)') 
      &   tmpvnam
          MPI_master_only write(stdout,fmt='(i3.3)') 
@@ -278,6 +279,7 @@
          MPI_master_only write(stdout,fmt='(3(i3.3,1x))') 
      &   tc_oa(ic), tvc_oa(ic), ivc
         end if
+#endif
 
         get_vnam_full = tmpvnam 
 
@@ -339,7 +341,7 @@
      &         tgvnam_oa(tv_oa(iv)),trim(vnamdp),ic,'_',iv,trim(vnams)
        
 #ifdef OA_TRACES
-        if (verbose >=6 ) then
+        if (verbose >=16 ) then
          MPI_master_only write(stdout,fmt='(a22)') 
      &   tmpvnam
          MPI_master_only write(stdout,fmt='(i3.3)') 

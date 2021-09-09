@@ -117,6 +117,10 @@
          pst => st(tile)
          var_oa = pst%wlev_oa(v2lev_oa(lv_v))%z(ls1_v)
          pst => null()
+      elseif (ivar_v.eq.56) then
+         var_oa = ubar(i_v,j_v,fast_indx_out)
+      elseif (ivar_v.eq.61) then
+         var_oa = rho(i_v,j_v,k_v)
 !*********************************************************************
 ! OA test variable
 !*********************************************************************

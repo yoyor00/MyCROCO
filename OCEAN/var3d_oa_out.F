@@ -452,7 +452,7 @@ C$    trd=omp_get_thread_num()
         write( tmpvnam, fmt=trim(vnamfmt)) 
      &         tgvnam_oa(tv_oa(iv)),trim(vnamdp),ic,'_',iv,trim(vnams)
        
-        if (verbose >=6 ) then
+        if (verbose >=16 ) then
 !        MPI_master_only write(stdout,fmt='(2(22a))') 
 !    &   vnam_oa_r,vnam_oa_i
 !        MPI_master_only write(stdout,fmt='(17a)') 

@@ -175,12 +175,12 @@
               end do
 C$OMP BARRIER
 #ifdef OA_WORK
-              call xios_send_field( trim(vnamr), workre  )
+              call xios_send_field( trim(vnamr), real(workre)  )
 #else
-              call xios_send_field( trim(vnamr), workr   )
+              call xios_send_field( trim(vnamr), real(workr)   )
 #endif
               if ( swt_wfpf_oa(iv)==4 )
-     &          call xios_send_field( trim(vnami), workim )
+     &          call xios_send_field( trim(vnami), real(workim) )
           endif v3d_not_scalogram
 
 #else
@@ -208,10 +208,11 @@ C$OMP BARRIER
               do tile=my_first,my_last
                   call var2d_oa_out(tile,ic,iv,work2d,work2d2,vnamr,vnami)
               end do
+
 C$OMP BARRIER
-              call xios_send_field( trim(vnamr), work2d  )
+              call xios_send_field( trim(vnamr), real(work2d)  )
               if ( swt_wfpf_oa(iv)==4 )
-     &          call xios_send_field( trim(vnami), work2d2 )
+     &          call xios_send_field( trim(vnami), real(work2d2) )
 
           endif v2d_not_scalogram
 
@@ -245,22 +246,21 @@ C$OMP BARRIER
      &            '...OA-Scalogram : send re to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(vvnamr), 
-     &                      ww_re(1:nper_sclg_max, 1:nzupd0d_oa))
+     &                  real(ww_re(1:nper_sclg_max, 1:nzupd0d_oa)))
               if ( if_imag_part ) then
 #ifdef OA_TRACES_XIOS             
                   write(*,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send im to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(vvnami), 
-     &                      ww_im(1:nper_sclg_max, 1:nzupd0d_oa))
+     &                  real(ww_im(1:nper_sclg_max, 1:nzupd0d_oa)))
               endif
 #ifdef OA_TRACES_XIOS             
                   write(*,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send period to XIOS subdom',mynode
 #endif
-              print*,pper(1:nper_sclg_max, 1:nzupd0d_oa),mynode
               call xios_send_field( trim(ppnam),
-     &                      pper(1:nper_sclg_max, 1:nzupd0d_oa))
+     &                  real(pper(1:nper_sclg_max, 1:nzupd0d_oa)))
 !    &                    per0d_cr(1:nper_sclg_max, 1:nzupd0d_oa))
 
               if ( if_record_sclg_ijpoints ) then
@@ -315,7 +315,7 @@ C$OMP BARRIER
      &            '..OA-Scalogram-loc : send re to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(vvnamr), 
-     &                     wl_re(1:nper_sclg_max, isclg:nsclg_loc))
+     &                  real(wl_re(1:nper_sclg_max, isclg:nsclg_loc)))
 
      !CRBS         write(stdout,fmt='(2i,1(ES22.15E2))')mynode,                !CRBE
      !CRBS &                                             isclg,wl_re(1,isclg)  !CRBE
@@ -325,14 +325,14 @@ C$OMP BARRIER
      &            '..OA-Scalogram-loc : send im to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(vvnami), 
-     &                     wl_im(1:nper_sclg_max, isclg:nsclg_loc))
+     &                  real(wl_im(1:nper_sclg_max, isclg:nsclg_loc)))
               endif
 #ifdef OA_TRACES_XIOS             
                   write(*,fmt='(a,1(i5))') 
      &            '..OA-Scalogram : send period to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(ppnam),
-     &                     perl(1:nper_sclg_max, isclg:nsclg_loc))
+     &                  real(perl(1:nper_sclg_max, isclg:nsclg_loc)))
      !&                    per0d_oa(1:nper_sclg_max, isclg:nsclg_loc))
 
               if (if_record_sclg_ijpoints) then
@@ -358,9 +358,9 @@ C$OMP BARRIER
      &            '..OA-Scalogram-loc :send re40 to XIOS subdo',mynode
 #endif
               call xios_send_field( trim(vvnamr), 
-     &                     RESHAPE(
-     &                     wl_re(1:nper_sclg_max, isclg:nsclg_loc)
-     &                    ,(/nper_sclg_max,0/) ) )
+     &                  RESHAPE(
+     &                  real(wl_re(1:nper_sclg_max, isclg:nsclg_loc))
+     &                  ,(/nper_sclg_max,0/) ) )
  !CRBS #ifdef OA_TRACES_XIOS                                                !CRBE 
  !CRBS             write(*,fmt='(2i,1(ES22.15E2))')mynode,             !CRBE
  !CRBS    &                                             isclg,wl_re(1,isclg)!CRBE
@@ -371,9 +371,9 @@ C$OMP BARRIER
      &            '..OA-Scalogram-loc :send im40 to XIOS subdo',mynode
 #endif
               call xios_send_field( trim(vvnami), 
-     &                     RESHAPE(
-     &                     wl_im(1:nper_sclg_max, isclg:nsclg_loc)
-     &                    ,(/nper_sclg_max,0/) ) )
+     &                  RESHAPE(
+     &                  real(wl_im(1:nper_sclg_max, isclg:nsclg_loc))
+     &                  ,(/nper_sclg_max,0/) ) )
 
               endif
 #ifdef OA_TRACES_XIOS             
@@ -381,9 +381,9 @@ C$OMP BARRIER
      &            '..OA-Scalogram :send period40 to XIOS subdo',mynode
 #endif
               call xios_send_field( trim(ppnam),
-     &                     RESHAPE(
-     &                     perl(1:nper_sclg_max, isclg:nsclg_loc)
-     &                    ,(/nper_sclg_max,0/) ) )
+     &                  RESHAPE(
+     &                  real(perl(1:nper_sclg_max, isclg:nsclg_loc))
+     &                  ,(/nper_sclg_max,0/) ) )
 
               if (if_record_sclg_ijpoints) then
 #ifdef OA_TRACES_XIOS             
