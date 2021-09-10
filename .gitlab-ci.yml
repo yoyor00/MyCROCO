@@ -22,20 +22,20 @@ before_script:
   - cd $PERFRSTDIR
   - mkdir -p TESTROOT/REG
     
-reg_run:
-  only:
-    - schedules  
-  script:
-    - cd $CVTKHOME/Scripts_reg
-    - ./create_link_master_reg.sh
-    - cd -
-    - cd $CVTKWORK/REG
+# reg_run:
+#   only:
+#     - schedules  
+#   script:
+#     - cd $CVTKHOME/Scripts_reg
+#     - ./create_link_master_reg.sh
+#     - cd -
+#     - cd $CVTKWORK/REG
     
-#    - ./mk_TESTALL.bash CONFIGURE_REG reg
-#    - ./gather_recap.bash REG > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+#     - ./mk_TESTALL.bash CONFIGURE_REG reg
+#     - ./gather_recap.bash REG > /dev/null 2>&1
+#     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+#     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+#     - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
 
 reg_perfrst:
   only:
@@ -47,7 +47,6 @@ reg_perfrst:
     - cd $PERFRSTWORK/REG
     
     - ./mk_TESTALL.bash CONFIGURE_REG_PERFRST reg
-    
     - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
