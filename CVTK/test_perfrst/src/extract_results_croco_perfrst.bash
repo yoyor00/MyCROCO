@@ -5,6 +5,7 @@ set -u
 
 source CONFIGURE_GLOBAL_PERFRST
 source configure_file
+NBPROCS=4 #! see param.h in croco sources 1x4 for REGIONAL
 
 cd $SUBMIT_DIR
 #echo "    " | tee -a mylog.txt

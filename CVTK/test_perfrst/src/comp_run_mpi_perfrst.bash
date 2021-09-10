@@ -12,6 +12,7 @@ cd $SUBMIT_DIR
 echo "$SUBMIT_DIR"
 
 mkdir CROCO_OUTFILES
+NBPROCS=4 #! see param.h in croco sources 1x4 for REGIONAL
 
 #===================================
 par1='write'
