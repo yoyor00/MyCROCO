@@ -37,8 +37,8 @@
 !! WARNING only var-config type 11 and 99 have been tested
 !------------------------------------------------------------------------------
 
-      real function var_oa(                                           &
-            ivar_v                                                    &
+      real function var_oa(   tile                                    &
+           ,ivar_v                                                    &
            ,cnb_v                                                     &
            ,i_v                                                       &
            ,j_v                                                       &
@@ -46,13 +46,15 @@
            ,lv_v                                                      &
            ,ls1_v                                              ) 
 
-      use module_oa_variables, only : vardp_test_oa
+!BLXD_TILE_ISSUE
+!      use module_oa_variables, only : vardp_test_oa
+      use module_tile_oa, only : st, tile_space_str, sts, tile_test_str 
 ! BLXD 2020 removing useless modules
 !     use module_oa_time
 !     use module_oa_space
 !     use module_oa_periode
 !     use module_oa_stock
-      use module_oa_level
+      use module_oa_level, only : v2lev_oa
 ! BLXD 2020 module_oa_upd does not exist anymore
 !     use module_oa_upd
 !     use module_nrj
@@ -68,6 +70,7 @@
 
       integer, intent(in) ::                                          &
             cnb_v                                                     &
+           ,tile                                                      &
            ,ivar_v                                                    &
            ,i_v                                                       &
            ,j_v                                                       &
@@ -75,9 +78,17 @@
            ,lv_v                                                      &
            ,ls1_v
 
+      ! BLXD_TILE_ISSUE 
+      ! pst declaration moved from module_tile_oa to local subroutien
+      ! => openMP PRIVATE variable with respect to Croco tile-thread loop
+      type(tile_space_str), pointer :: pst => null()
+
+      type(tile_test_str), pointer  :: psts => null()
+
 !*********************************************************************
 ! Calling code "simple" variables
 !*********************************************************************
+
       if (ivar_v.eq.1) then
          var_oa = u(i_v,j_v,k_v,nstp)-ubar(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.2) then
@@ -103,16 +114,30 @@
       elseif (ivar_v.eq.11) then
          var_oa = rho(i_v,j_v,k_v)
       elseif (ivar_v.eq.20) then
-         var_oa = wlev_oa(v2lev_oa(lv_v))%z(ls1_v)
-
+         pst => st(tile)
+         var_oa = pst%wlev_oa(v2lev_oa(lv_v))%z(ls1_v)
+         pst => null()
+      elseif (ivar_v.eq.56) then
+         var_oa = ubar(i_v,j_v,fast_indx_out)
+      elseif (ivar_v.eq.61) then
+         var_oa = rho(i_v,j_v,k_v)
 !*********************************************************************
 ! OA test variable
 !*********************************************************************
-      !elseif (ivar_v.eq.98) then
-      !   var_oa = 0.5*vardp_test_oa(i_v,j_v,1)
+      elseif (ivar_v.eq.97) then
+         psts => sts(tile)
+         ! var_oa = 0.5*vardp_test_oa(i_v,j_v,1) test var2d code 97 + var3d code 99
+         var_oa = psts%vardp_test(i_v,j_v,1)
+         psts => null()
+      elseif (ivar_v.eq.98) then
+         psts => sts(tile)
+         ! var_oa = 0.5*vardp_test_oa(i_v,j_v,1) test var2d code 98 + var3d code 99
+         var_oa = psts%vardp_test(i_v,j_v,k_v)
+         psts => null()
       elseif (ivar_v.eq.99) then
-         var_oa = vardp_test_oa(i_v,j_v,k_v)
-
+         psts => sts(tile)
+         var_oa = psts%vardp_test(i_v,j_v,k_v)
+         psts => null()
 !*********************************************************************
 ! Calling code "mixed" variables (composite)
 !*********************************************************************
@@ -123,6 +148,7 @@
 ! BLXD add a comment to notify termination
          stop
       endif
+
 
       return
       end function var_oa

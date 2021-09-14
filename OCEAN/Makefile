@@ -124,7 +124,9 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
     online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
-    output_oa.F
+    scal0d_oa_out_loc.F scal0d_oa_out_full.F\
+    output_oa.F\
+\
 
 
  SRCS90 = \
@@ -145,11 +147,10 @@ include Makedefs
 	sedrst.F90      sedsfc.F90              sedstp.F90      sedwri.F90\
 	setavg_sed.F90\
 \
-	module_parameter_oa.F90 module_grd_oa.F90 \
+	module_parameter_oa.F90 module_grd_oa.F90\
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
-	module_oa_variables.F90	module_tile_oa.F90\
-    module_oa_type.F90	module_oa_stock.F90 module_oa_level.F90\
-    module_oa_interface.F90 var_oa.F90\
+	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
+    module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 \
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90
 \

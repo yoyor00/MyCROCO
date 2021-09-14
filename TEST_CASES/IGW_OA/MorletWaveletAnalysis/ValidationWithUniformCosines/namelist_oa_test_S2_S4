@@ -74,3 +74,48 @@ nper_test = 2
 period_test_oa = 43200.D0, 21600.D0 
 amp_test_oa = 5.D0, 3.D0
 /
+
+!************************************************************************************************
+!************************************************************************************************
+!                                      bloc oa_checks
+!************************************************************************************************
+!************************************************************************************************
+!
+! directory_out_oa .....   Set the name of the OUTPUT folder
+! verbose_oa ...........   Level of verbosity
+! if_chks ..............   Performs checks for specific configs (requires cpp key OA_TRACES) 
+! [ij]tgt_glob .........   Global horiz-domain indices => Txt file traces for debugging purpuse
+! [k]tgt ...............   Vertical grid index => Txt file traces for debugging purpuse
+!
+!***********************************************************************************************
+&oa_checks
+if_chks       = .true.
+verbose_oa    = 6
+directory_out_oa = "OUTPUT"
+itgt_glob = 200 
+jtgt_glob = 2
+ktgt = 20
+
+/
+!************************************************************************************************
+!************************************************************************************************
+!                                      bloc oa params
+!************************************************************************************************
+!
+! unite_oa ............... Time units : i) hours unite_oa = 3600 ii) seconds unite_oa = 1   
+! msimult_oa_max ......... Not useful anymore (online caclulation of the max # of conv windows)
+!                          Can eventually be used to limit the possible memory of the OA calc.
+! if_sphe_deg2rad ........ Convert or not lon/lat spherical coord. to rad before selecting the
+!                          horiz-domain grid points where to perform OA analyses
+! if_extend_dom .......... Extend to max lat/lon domain (over MPI subdomains if any)
+!                          OBSOLETE DO NOT DECLARE or KEEP TO .false.
+!                           
+!************************************************************************************************
+!***********************************************************************************************
+&oa_params
+
+!if_extend_dom = .false.
+unite_oa = 1
+nmsimult_oa_max = 400
+if_sphe_deg2rad = .false.
+/
