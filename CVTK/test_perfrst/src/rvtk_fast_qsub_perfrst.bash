@@ -63,13 +63,25 @@ for EXAMPLE in $LIST_KEY0 ; do
     \mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 done
 
-# 2- DEFINE THE TYPE OF DEBUG TEST 
+# 2- DEFINE THE TYPE OF DEBUG TEST
+#2.1 RVTK_DEBUG
 sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
 \mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
+#2.2
+# RVTK_DEBUG_PERFRST key
+# => trigger #define EXACT_RESTART
+sed '/'RVTK_DEBUG_PERFRST[[:graph:]]'/! s/'undef\ \ \*RVTK_DEBUG_PERFRST'/'define\ RVTK_DEBUG_PERFRST'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
+mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
+#
+# MPI key
+#
+sed '/'MPI[[:graph:]]'/! s/'undef\ \ \*MPI'/'define\ MPI'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
+mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
+
+#
 # 3- DEFINE THE NAME OF THE CONFIG
-#sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
 sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
 \mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
@@ -87,27 +99,6 @@ do
     sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \ \*$EXAMPLE'/'define\ $EXAMPLE'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
     \mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 done
-#
-#=====================================================================================================
-# Get updated files
-#
-# RVTK_DEBUG key
-#
-sed '/'RVTK_DEBUG[[:graph:]]'/! s/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
-mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
-
-#
-# RVTK_DEBUG_PERFRST key
-#
-sed '/'RVTK_DEBUG_PERFRST[[:graph:]]'/! s/'undef\ \ \*RVTK_DEBUG_PERFRST'/'define\ RVTK_DEBUG_PERFRST'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
-mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
-
-#
-# MPI key
-#
-sed '/'MPI[[:graph:]]'/! s/'undef\ \ \*MPI'/'define\ MPI'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
-mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
-
 #
 # write and read version
 #
