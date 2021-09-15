@@ -271,10 +271,14 @@
 # define AVERAGES_K
 # undef OUTPUTS_SURFACE
 # undef HOURLY_VELOCITIES
-                     /* Parallel reproducibility  */
-# undef  RVTK_DEBUG
                      /* Exact restart */
 # undef EXACT_RESTART
+                     /* Parallel reproducibility  */
+# undef  RVTK_DEBUG
+# if defined RVTK_DEBUG
+! Parallel reproducibility test
+#  undef RVTK_DEBUG_ADVANCED
+# endif
 /*
 !                        Diagnostics 
 !--------------------------------------------

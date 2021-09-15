@@ -2247,13 +2247,13 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-# ifdef RVTK_DEBUG_ADVANCED
-C$OMP BARRIER
-C$OMP MASTER
-      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-C$OMP END MASTER
-# endif  
+!$$$# ifdef RVTK_DEBUG_ADVANCED
+!$$$C$OMP BARRIER
+!$$$C$OMP MASTER
+!$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
+!$$$      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
+!$$$C$OMP END MASTER
+!$$$# endif  
 
 
 # ifdef NBQ
