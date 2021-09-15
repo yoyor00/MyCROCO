@@ -39,7 +39,7 @@ echo 'Sources CVTK tests: '$SOURCE_CVTK
 source configure_file
 
 #
-# Create param.h ans cppdefs.h for SERIAL, OPENMP and MPI
+# Create param.h and cppdefs.h for SERIAL, OPENMP and MPI
 #
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.SERIAL
 ##sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.SERIAL > cppdefs.h.SERIAL.tmp
