@@ -75,17 +75,10 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #
 # set XIOS directory if needed
 #
+# if coupling with OASIS3-MCT is activated :
+# => you need to use XIOS compiled with the "--use_oasis oasis3_mct" flag
+#-----------------------------------------------------------
 XIOS_ROOT_DIR=$HOME/xios
-
-#
-# XIOS compiled either or not with oasis
-#-----------------------------------------------------------
-# if XIOS not compiled using "--use_oasis oasis3_mct" flag [ default ] : 
-#        => no need to define PRISM_ROOT_DIR above and set XIOS_withOASIS=0 below
-# if XIOS compiled using "--use_oasis oasis3_mct" flag  :    
-#        => need to define PRISM_ROOT_DIR above and set XIOS_withOASIS=1 below        
-#-----------------------------------------------------------
-XIOS_withOASIS=0
 
 #
 # END OF USER'S MODIFICATIONS
@@ -248,15 +241,12 @@ fi
 
 #
 # determine if OASIS librairies are required
-#    - for CROCO in case of coupled simulations
-#    - for XIOS if compiled with OASIS [--use_oasis]
 #
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
 PRISM_ROOT_DIR=${CROCO_PRISM_ROOT_DIR-$PRISM_ROOT_DIR}
-if [ $($CPP1 testkeys.F | grep -i -q oacplisdefined) ] || [ ${XIOS_withOASIS} -eq 1 ] ; then
-#if [ [ $($CPP1 testkeys.F | grep -i -q oacplisdefined)] ]; then
-    echo " => OASIS activated for coupling and/or XIOS"
+if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
+    echo " => OASIS activated"
     CHAN=MPI1
     LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
 		${PRISM_ROOT_DIR}/lib/libmct.a  \
