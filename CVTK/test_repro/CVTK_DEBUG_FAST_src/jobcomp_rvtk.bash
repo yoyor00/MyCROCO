@@ -20,7 +20,7 @@
 # Note that environment variables overwrite hard-coded
 # options
 
-set -x
+#set -x
 #
 SCRDIR=$1
 echo 'SRCDIR='$SCRDIR
@@ -254,9 +254,6 @@ fi
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
 PRISM_ROOT_DIR=${CROCO_PRISM_ROOT_DIR-$PRISM_ROOT_DIR}
-echo "AAAAAAAAAAAAAA"
-echo ${XIOS_withOASIS}
-echo "AAAAAAAAAAAAAA"
 if [ $($CPP1 testkeys.F | grep -i -q oacplisdefined) ] || [ ${XIOS_withOASIS} -eq 1 ] ; then
 #if [ [ $($CPP1 testkeys.F | grep -i -q oacplisdefined)] ]; then
     echo " => OASIS activated for coupling and/or XIOS"
