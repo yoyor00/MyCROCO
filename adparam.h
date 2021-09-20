@@ -36,7 +36,7 @@ c     parameter (ad_nt = 2400)
 C     number of obs in observation file
       integer ad_nobs
 #if defined INTERNAL
-      parameter(ad_nobs = 32)
+      parameter(ad_nobs = 31)
 #endif
 
 C     start of assimilation in the obs file

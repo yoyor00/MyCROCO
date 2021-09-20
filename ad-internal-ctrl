@@ -49,6 +49,7 @@ sed -i 's/undef[\t ]*INTERNAL/define INTERNAL/' cppdefs.h
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
 #sed -i 's/undef[\t ]*TAPENADE/define TAPENADE\n# define AUTOTILING/' cppdefs.h
 ../OCEAN/jobcomp
+rm -f obs.dat
 ./croco croco.internal-friction-obs.in
 cp -f internal_his.nc obs.nc
 

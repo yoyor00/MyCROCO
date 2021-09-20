@@ -6,11 +6,12 @@
       integer k,iifroot
 
       write(*,*) 'start ad_step'
-C$XAD BINOMIAL-CKP ad_ns+1 1 1
-      do k=1,ad_ns
+C$XAD BINOMIAL-CKP ad_ns+2 90 1
+      do k=1,ad_ns+1
          do iifroot = 0,nfast+2
             call step()
          end do
+         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
       end do
       write(*,*) 'end ad_step'
 
@@ -147,8 +148,14 @@ c      end do
             do i=Istr,Iend
                if (rmask(i,j).ne.0) then
                   k=k+1
-                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta+1)
+                  delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
                   icost = icost + delta_z*delta_z
+
+                  write(*,*) '=====>',zeta(i,j,knew)
+     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
+     &                 ,ad_obs(i,j,ta+2),ad_obs(i,j,ta+3)
+
+
 c$$$                  write(*,*) 'AAAAA',ad_cost_counter,time,
 c$$$     &                 ad_obs_time(ta),zeta(i,j,knew),
 c$$$     &                 ad_obs(i,j,ta+2),
@@ -255,7 +262,7 @@ CR      write(*,*)  ' -3' MYID
 
 
       end subroutine set_state
-      
+
       subroutine set_state_2d(tile, ad_x)
 
       implicit none
@@ -552,8 +559,8 @@ c      call grid_stiffness(tile)
       k=1
 
 c     rdrg2
-      ad_x(1)=2000
-      ad_x(2)=40.e3/100.0
+      ad_x(1)=1600
+      ad_x(2)=30.e3/100.0
 
       ad_array_node_size=2
 
@@ -571,10 +578,10 @@ c     rdrg2
       subroutine cost_fun_full_state(ad_x, cost)
       implicit none
 # include "adinc.h"
-# include "adparam.h"     
+# include "adparam.h"
 
       double precision cost
-      
+
       call cost_fun(ad_x, cost)
-      
+
       end subroutine cost_fun_full_state
