@@ -208,7 +208,7 @@ all: tools depend $(SBIN) $(SBIN)_adj $(SBIN)_adc
 # Executables files.
 # =========== =====
 #
-$(SBIN): $(OBJS90) $(OBJS) main.o $(MPI_DIR_OBJS)
+$(SBIN): $(OBJS90) $(OBJS) main.o read_obs.o $(MPI_DIR_OBJS)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) #-lampiPlainC
 
 $(SBIN)_adj:  $(ADJ_OBJS) $(OBJS90) $(OBJS) main_adj.o $(MPI_ADJ_OBJS)
@@ -422,6 +422,9 @@ cmaker.f: cmaker.F
 
 cmaker: cmaker.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o $@ $^ $(LCDF) $(LMPI) -lampiPlainC
+
+main.f: main.F
+	$(CPP) -P $(CPPFLAGS) -DGENERATE_OBS $^ | ./mpc > $@
 
 main_tgt.f: main.F
 	$(CPP) -P $(CPPFLAGS) -DTANGENT_CHECK $^ | ./mpc > $@
