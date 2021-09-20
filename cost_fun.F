@@ -234,9 +234,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 
 C$OMP PARALLEL DO PRIVATE(tile)
-c      do tile=0,NSUB_X*NSUB_E-1
-c        call set_depth (tile)
-c      enddo
+      do tile=0,NSUB_X*NSUB_E-1
+        call ana_initial (tile)
+      enddo
 
 C$OMP PARALLEL DO PRIVATE(tile)
 c      do tile=0,NSUB_X*NSUB_E-1
