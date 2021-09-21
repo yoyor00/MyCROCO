@@ -42,21 +42,12 @@ source configure_file
 # Create param.h and cppdefs.h for SERIAL, OPENMP and MPI
 #
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.SERIAL
-##sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.SERIAL > cppdefs.h.SERIAL.tmp
-#sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.SERIAL > cppdefs.h.SERIAL.tmp
-#mv cppdefs.h.SERIAL.tmp cppdefs.h.SERIAL
 \cp ${SOURCE_CROCO}/param.h param.h.SERIAL
 
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.OPENMP
-##sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.OPENMP > cppdefs.h.OPENMP.tmp
-#sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.OPENMP > cppdefs.h.OPENMP.tmp
-#mv cppdefs.h.OPENMP.tmp cppdefs.h.OPENMP
 \cp ${SOURCE_CROCO}/param.h param.h.OPENMP
 
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.MPI
-##sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.MPI > cppdefs.h.MPI.tmp
-#sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.MPI > cppdefs.h.MPI.tmp
-#mv cppdefs.h.MPI.tmp cppdefs.h.MPI
 \cp ${SOURCE_CROCO}/param.h param.h.MPI
 
 
