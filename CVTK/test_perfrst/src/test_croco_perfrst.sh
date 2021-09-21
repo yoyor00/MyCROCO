@@ -23,6 +23,10 @@ SCRIPT_RVTK=rvtk_fast_qsub_perfrst.bash
 echo -e "   - RUN EXACT RESTART TESTS" 
 ./$SCRIPT_RVTK > Recap_${TEST_NAME}.git${numrev}
 
+# Cleaning : remove the binary check_file
+# at the end of the test
+rm -Rf check_file_*
+
 cat mylog.txt
 if [ $? -gt 0 ]; then
     echo "EXITING"
