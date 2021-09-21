@@ -2247,7 +2247,6 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-      
 !$$$# ifdef RVTK_DEBUG_ADVANCED
 !$$$C$OMP BARRIER
 !$$$C$OMP MASTER

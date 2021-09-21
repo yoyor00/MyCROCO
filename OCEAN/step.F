@@ -806,8 +806,8 @@ C$OMP MASTER
 #  ifdef RVTK_DEBUG_ADVANCED
         call check_tab2d(bustr,'bustr step3d_fast','u')
         call check_tab2d(bvstr,'bvstr step3d_fast','v')
-        call check_tab3d(qdmu_nbq,'qdmu_nbq step3d_fast','u')      
-        call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')      
+        !!call check_tab3d(qdmu_nbq,'qdmu_nbq step3d_fast','u')      
+        !!call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')      
 #  endif
 # else
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')

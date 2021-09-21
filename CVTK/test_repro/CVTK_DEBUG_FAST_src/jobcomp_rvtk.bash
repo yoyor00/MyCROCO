@@ -75,7 +75,11 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #
 # set XIOS directory if needed
 #
-XIOS_ROOT_DIR=$HOME/xios-1.0
+# if coupling with OASIS3-MCT is activated :
+# => you need to use XIOS compiled with the "--use_oasis oasis3_mct" flag
+#-----------------------------------------------------------
+XIOS_ROOT_DIR=$HOME/xios
+
 #
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -212,7 +216,10 @@ FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
 CFT1=${CROCO_CFT1-$CFT1}
 
 #
-# determine if XIOS compilation is required
+# - Determine if XIOS librairies is required 
+# - if it is the case :
+#     => if XIOS compiled with oasis, add the OASIS inc. files and librairies
+#     => pre-processing (using cpp) of the xml files required by XIOS 
 #
 unset COMPILEXIOS
 echo "Checking COMPILEXIOS..."
@@ -223,15 +230,17 @@ if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
         LDFLAGS1="$LDFLAGS1 $XIOS_ROOT_DIR/lib/libxios.a  -lstdc++ -lnetcdff"
         CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
         FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
+	
         ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
+	#
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/field_def.xml_full $RUNDIR/field_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/domain_def.xml $RUNDIR/domain_def.xml
-        $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
+        #$CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/file_def.xml $RUNDIR/file_def.xml
         $CPP1 -P -traditional -imacros cppdefs.h  ${ROOT_DIR}/XIOS/iodef.xml $RUNDIR/iodef.xml
 fi
 
 #
-# determine if OASIS compilation is required
+# determine if OASIS librairies are required
 #
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
