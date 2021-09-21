@@ -188,15 +188,14 @@
 #endif                                             
 #ifdef MPI
      & ,mynode_oa=mynode
-     & ,comm_oa=MPI_COMM_WORLD
 #else
      & ,mynode_oa=0
-     & ,comm_oa=0
 #endif
      & ,dti_oa=dt
      & ,kount0_oa=ntstart-1
      & ,nt_max_oa=ntimes
      & ,ntiles=NSUB_X*NSUB_E)
+
 # endif
 !
 !
@@ -534,19 +533,6 @@ CR      write(*,*) ' -2' MYID
 CR      write(*,*) ' -1' MYID 
 !
 !----------------------------------------------------------------------
-! OA "Stand Alone" module : second initialization step (spatial domain)
-!----------------------------------------------------------------------
-!
-#ifdef ONLINE_ANALYSIS 
-      if ( if_oa.eqv..true. ) then
-C$OMP PARALLEL DO PRIVATE(tile)
-         do tile=0,NSUB_X*NSUB_E-1
-           call online_spectral_diags(tile,0)
-         enddo
-      endif
-#endif
-!
-!----------------------------------------------------------------------
 !  Initialize XIOS I/O server
 !----------------------------------------------------------------------
 !
@@ -740,8 +726,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if ( if_oa.eqv..true. ) then
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
-           call online_spectral_diags(tile,1)
+           ! BLXD call croco_oa(0) 
+           call online_spectral_diags(tile,0)
          enddo
+! BLXD threads BARRIER included in the two possible (init/run_)online_spectral* 
+C$OMP BARRIER
+        ! Moving the 1st OA call before send_xios_diags
+        ! not necessary anymore since OA uses XIOS output_oa
         call output_oa
       endif
 #endif
@@ -896,14 +887,15 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
                                 !      > MPI finalize done by XIOS
       call xios_finalize()      !      > if OASIS, finalize is done by XIOS
                                 !      > if AGRIF : done using iom_context_finalize
-                             
-#   if !defined AGRIF  
-      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
+
+#   if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF  
+      call MPI_Finalize (ierr)  !       if No coupling + No AGRIF : MPI_Finalize is needed
 #   endif
+      
 # elif defined OA_COUPLING || defined OW_COUPLING
                                           ! case no XIOS + OASIS
       call prism_terminate_proto(ierr)    !   > Finalize OASIS3 (without XIOS)
-      call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
+!!!!!      call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
 # else
                                           ! case no XIOS + no OASIS
       call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
