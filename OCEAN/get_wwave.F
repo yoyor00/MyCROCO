@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined  WAVE_OFFLINE && ( defined MUSTANG || defined BBL || defined MRL_WCI )
+#if defined  WAVE_OFFLINE && (defined MUSTANG || defined BBL || defined MRL_WCI)
 
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
@@ -30,8 +30,8 @@
 
 
 # ifndef MUSTANG
-        ncidwave=ncidfrc
-        wave_file=frcname
+      ncidwave=ncidfrc
+      wave_file=frcname
 # endif
 
       if (may_day_flag.ne.0) return      !-->  EXIT
@@ -58,7 +58,6 @@
 # ifndef MUSTANG
         ncidfrc=ncidwave
 # endif
-
 
 ! Check if wave amplitude present, and if so, if field or scalar series
       
@@ -221,15 +220,29 @@
         itww=2
         wwv_time(1)=-1.E+20
         wwv_time(2)=-1.E+20
+
+# ifdef MANGAE2500
+! scale factors for MANGAE wave files 
+        wwa_scale=0.002
+        wwd_scale=0.1
+        wwp_scale=0.01
+        wweb_scale=1.
+        wwed_scale=1.
+        wwer_scale=1.
+#  ifdef MUSTANG
+        wwu_scale=0.01
+#  endif
+# else
         wwa_scale=1.
         wwd_scale=deg2rad
         wwp_scale=1.
         wweb_scale=1.
         wwed_scale=1.
         wwer_scale=1.
-# if defined MUSTANG
+#  ifdef MUSTANG
         wwu_scale=1.
-        wwd_scale=1.  !we need direction in degrees in sed_skinstress 
+        wwd_scale=1.  ! direction in deg. in sed_skinstress 
+#  endif
 # endif
      
       endif                   !<-- itww.eq.0 .or. iic.eq.0
@@ -296,9 +309,11 @@
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wind-wave period', ww_rec
         goto 99                                         !--> ERROR
-      endif       
+      endif 
+      
 ! Read orbital velocity
-# if defined MUSTANG
+
+# ifdef MUSTANG
       if (wwugrd.eq.1.) then
         ierr=nf_fread (wwug(START_2D_ARRAY,i), ncidwave, wwu_id,
      &                                           ww_rec, r2dvar)
@@ -312,9 +327,8 @@
       endif
 # endif
 
-
-
 ! Read breaking dissipation
+
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
       if (wwebgrd.eq.1.) then
         ierr=nf_fread (wweb(START_2D_ARRAY,i), ncidwave, wweb_id,
@@ -330,6 +344,7 @@
 # endif
     
 ! Read frictional dissipation
+
 # if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION
       if (wwedgrd.eq.1.) then
         ierr=nf_fread (wwedd(START_2D_ARRAY,i), ncidwave, wwed_id,
@@ -345,6 +360,7 @@
 # endif
    
 ! Read frictional dissipation
+
 # if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER 
       if (wwergrd.eq.1.) then
         ierr=nf_fread (wwer(START_2D_ARRAY,i), ncidwave, wwer_id,
@@ -464,9 +480,9 @@
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
             wwP=wwp_scale*wwpp(itww)
-# if defined MUSTANG
+# ifdef MUSTANG
             wwU=wwu_scale*wwup(itww)
-#endif
+# endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING    
             wwEpb=wweb_scale*wwebp(itww)
 # endif
@@ -486,10 +502,10 @@
 
                 Pwave(i,j)=(wwpgrd)*wwp_scale*wwpg(i,j,itww) +
      &                     (1.-wwpgrd)*wwP
-# if defined MUSTANG
+# ifdef MUSTANG
                 Uwave(i,j)=(wwugrd)*wwu_scale*wwug(i,j,itww) +
      &                     (1.-wwugrd)*wwU
-#endif
+# endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
                 Ebwave(i,j)=(wwebgrd)*wweb_scale*wweb(i,j,itww) +
      &                     (1.-wwebgrd)*wwEpb
@@ -529,12 +545,12 @@
         fac31=fac*fac1
         fac32=fac*fac2
         wwP=fac31*wwpp(it1)+fac32*wwpp(it2)
-# if defined MUSTANG
+# ifdef MUSTANG
         fac=wwu_scale/(fac1+fac2)
         fac71=fac*fac1
         fac72=fac*fac2
         wwU=fac71*wwup(it1)+fac72*wwup(it2)
-#endif
+# endif
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
         fac=wweb_scale/(fac1+fac2)
@@ -564,11 +580,10 @@
 
             Pwave(i,j)=wwpgrd*(fac31*wwpg(i,j,it1)+fac32*wwpg(i,j,it2))
      &                +(1.-wwpgrd)*wwP
-# if defined MUSTANG
+# ifdef MUSTANG
             Uwave(i,j)=wwugrd*(fac71*wwug(i,j,it1)+fac72*wwug(i,j,it2))
      &                +(1.-wwugrd)*wwU
 # endif
-
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
             wepb(i,j)=wwebgrd*(fac41*wweb(i,j,it1)+fac42*wweb(i,j,it2))
      &                +(1.-wwebgrd)*wwEpb
@@ -609,11 +624,11 @@
           Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
 #  ifdef CURVGRID
-# ifdef MUSTANG
-          Dwave(i,j)=Dwave(i,j)-angler(i,j)*180./pi
-# else
+#   ifdef MUSTANG
+          Dwave(i,j)=Dwave(i,j)-angler(i,j)*rad2deg
+#   else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
-# endif
+#   endif
 #  endif
         enddo
       enddo

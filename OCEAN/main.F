@@ -172,7 +172,7 @@
 !
 !  Read sediment initial values and parameters from sediment.in file
 !
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 #  ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call init_sediment
 #  else
@@ -186,7 +186,6 @@
 !  Computing cell surfaces need for MUSTANG and BIOLink
 !
       call substance_read_alloc(may_day_flag,indxT,indxTsrc)
-   !  &                            wrthis(indxT+2:indxT+2+ntrc_substot))
 #endif
 
 #ifdef MUSTANG
@@ -341,8 +340,7 @@ CR      write(*,*) ' -6' MYID
 !  Bottom sediment parameters for BBL or SEDIMENT model
 !----------------------------------------------------------------------
 !
-#if (defined BBL && defined ANA_BSEDIM) || (defined SEDIMENT  &&\
-      defined USGS )
+#if (defined BBL && defined ANA_BSEDIM) || defined SEDIMENT
 !
 !  --- Set analytically ---
 !
@@ -357,7 +355,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif
 # endif
 !
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 #  ifdef AGRIF
         if (Agrif_lev_sedim.EQ.0) call ana_sediment (tile)
 #  else
@@ -377,7 +375,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif
 #endif
 !
-#if defined SEDIMENT && defined USGS && !defined ANA_SEDIMENT
+#if defined SEDIMENT && !defined ANA_SEDIMENT
 # ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call get_sediment
 # else
@@ -797,19 +795,21 @@ CR      write(*,*) '  0' MYID
 #endif
 
       do iicroot=ntstart,ntimes+1
-#ifdef USE_CALENDAR 
-        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        if(time > time_end) goto 99 
-#endif
 
+#ifdef USE_CALENDAR
+        if (mod(iicroot-1,ninfo) .eq. 0) then
+          MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        endif
+        if (time .gt. time_end) goto 99 
+#endif
 
 #ifdef SOLVE3D
-#if !defined AGRIF
+# ifndef AGRIF
         do iifroot = 0,nfast+2
-#else
+# else
         nbtimes = 0
         do while (nbtimes.LE.nbmaxtimes)
-#endif
+# endif
 #endif
 
 #ifdef AGRIF
@@ -830,9 +830,9 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
         call stop_timers()
       enddo
       call closecdf
-# ifdef XIOS
+#ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF 
-# endif
+#endif
 #ifdef AGRIF
 !
 !  Close the netcdf files also for the child grids
@@ -856,13 +856,13 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 
 !     start_time2=PMPI_Wtime()
 !     exe_time = start_time2 - start_time1
-!     if(mynode.eq.0) print*,'exe_time =',exe_time
+!     if (mynode.eq.0) print *,'exe_time =',exe_time
 
 # if defined XIOS
-                               ! MPI finalize done by XIOS
-       call xios_finalize()   ! Even with OASIS, finalize is done by XIOS
+                                         ! MPI finalize done by XIOS
+       call xios_finalize()              ! even with OASIS
 # elif defined OA_COUPLING || defined OW_COUPLING
-       call prism_terminate_proto(ierr)       ! Finalize OASIS3 (without XIOS)# else
+       call prism_terminate_proto(ierr)  ! Finalize OASIS (without XIOS)
 # else
        call MPI_Finalize (ierr)
 # endif     

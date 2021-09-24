@@ -25,12 +25,12 @@
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
-#if (defined SEDIMENT && defined USGS) || defined BBL
+#if defined SEDIMENT || defined BBL
      &      ,  indxWrk
 #endif
-# ifdef MUSTANG
+#ifdef MUSTANG
      &      ,  indx 
-# endif
+#endif
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
@@ -152,7 +152,7 @@
         ierr=nf_def_dim (ncid, 'xi_u',     xi_u,     u2dgrd(1))
         ierr=nf_def_dim (ncid, 'eta_rho',  eta_rho,  r2dgrd(2))
         ierr=nf_def_dim (ncid, 'eta_v',    eta_v,    v2dgrd(2))
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
 #endif
 #ifdef MUSTANG
@@ -228,7 +228,7 @@
 ! Define grid variables.
 ! ------ ---- ----------
 !        
-        if (total_rec.eq.1) then
+        if (total_rec.le.1) then
 # ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd 
      &                   ,r3dgrd, w3dgrd)
@@ -418,7 +418,7 @@
         enddo
 #endif /* SOLVE3D */
 
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 !
 ! Sediment bed thickness
 !
@@ -490,7 +490,7 @@
         enddo
 #endif /* SEDIMENT */
 
-# ifdef MUSTANG
+#ifdef MUSTANG
 
 ! ksmi, ksma
        do itrc=1,2
@@ -499,14 +499,13 @@
        ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
      &            NF_FOUT, 3, r2dgrd, rstMUS(itrc)) ! ksmi,ksma
 
-#  ifdef NC4PAR
+# ifdef NC4PAR
        ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
-#  endif
+# endif
 
         call nf_add_attribute(ncid, rstMUS(itrc), indx, 5,
      &         NF_DOUBLE, ierr)
        enddo
-
 
 ! dzs, tempsed, salsed
       do itrc=1,3
@@ -536,7 +535,7 @@
      &         NF_DOUBLE, ierr)
 
         enddo
-# endif
+#endif
 
 
 #ifdef MORPHODYN 
@@ -834,7 +833,7 @@
         enddo 
 #endif /* SOLVE3D */
 
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 !
 ! Bed thickness
 !
@@ -910,8 +909,7 @@
           endif
         enddo
 
-
-# endif
+#endif
 
 
 #ifdef MORPHODYN
@@ -945,14 +943,14 @@
           write(stdout,1) vname(1,indxLrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-# endif /* BBL */
+#endif /* BBL */
 !
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec 
      &              MYID
 
-#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       else
         ierr=nf_open (rstname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then

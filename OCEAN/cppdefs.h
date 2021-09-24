@@ -85,6 +85,7 @@
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
+# undef  MUSTANG
 # undef  BBL
                       /* dedicated croco.log file */
 # undef  LOGFILE
@@ -318,7 +319,8 @@
    Quasi-monotone lateral advection scheme (WENO5)
    for passive/biology/sediment tracers 
 */
-# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT
+# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
+                                               || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
                       /*   Choice of Biology models   */
@@ -364,11 +366,25 @@
 # endif
                       /*   Sediment dynamics model     */
 # ifdef SEDIMENT
-#  undef  MUSTANG
-#  define USGS
 #  undef  ANA_SPFLUX
 #  undef  ANA_BPFLUX
 # endif
+                      /*   MUSTANG Sediment model     */
+# ifdef MUSTANG
+#  define key_noTSdiss_insed 
+#  define key_nofluxwat_IWS 
+#  define key_sand2D
+#  define MUSTANG_CORFLUX
+#  undef  key_MUSTANG_V2
+#  undef  key_MUSTANG_bedload
+#  undef  MORPHODYN_MUSTANG_byHYDRO
+#  undef  key_tenfon_upwind
+#  undef  WAVE_OFFLINE
+#  undef  BUGJUMP
+#  undef  key_MUSTANG_debug
+#  undef  key_MUSTANG_specif_outputs
+# endif
+
 /*
 !
 !==========================================================
@@ -1464,19 +1480,19 @@
 # define ANA_M2CLIMA
 # define M2CLIMATOLOGY
 # define SEDIMENT
+# undef  MUSTANG
+# define MORPHODYN
 # ifdef SEDIMENT
-#  define USGS       
-#  undef  MUSTANG
-#  define MORPHODYN
-#  ifdef USGS
-#   undef  BEDLOAD_WENO5          
-#   ifdef ANA_DUNE
-#    define BEDLOAD_MARIEU
-#   else
-#    define BEDLOAD_WULIN
-#    define TAU_CRIT_WULIN
-#   endif
+#  undef  BEDLOAD_WENO5
+#  ifdef ANA_DUNE
+#   define BEDLOAD_MARIEU
+#  else
+#   define BEDLOAD_WULIN
+#   define TAU_CRIT_WULIN
 #  endif
+# endif
+# ifdef MUSTANG
+#  define USE_CALENDAR
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
@@ -1506,12 +1522,8 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
-# define SEDIMENT
-# ifdef SEDIMENT
-#  define MUSTANG
-#  undef  MORPHODYN
-#  undef  BBL
-# endif
+# define MUSTANG
+# undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
@@ -1560,14 +1572,10 @@
 #  undef  OBC_TSPECIFIED
 #  define OBC_TUPWIND
 # endif
-# define SEDIMENT
-# ifdef SEDIMENT
-#  define MUSTANG
-# endif
-#  ifdef MUSTANG
+# define MUSTANG
+# ifdef MUSTANG
 #   define key_sand2D
-#   define SAND2D
-#  endif
+# endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 

@@ -36,8 +36,8 @@
 # ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand
 #  ifdef MUSTANG
-      USE comMUSTANG, ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
-      USE comMUSTANG, ONLY : flx_w2s_sum_CROCO,corflux_CROCO
+      USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
+      USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO,corflux_CROCO
 #   ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
 #   endif
@@ -65,11 +65,8 @@
      &       ,is
 # endif
 # ifdef SUBSTANCE
-      integer isouspas,nbsouspas(PRIVATE_1D_SCRATCH_ARRAY)
+      integer isubstep,nbsubstep
       real :: cflm,cfl_loc,dz_cflm,ws_cflm
-#  if !defined TS_MIX_IMP
-      real CD(PRIVATE_1D_SCRATCH_ARRAY,0:N)
-#  endif
 # endif
 # ifdef AGRIF
 #  include "zoom.h"
@@ -262,26 +259,25 @@
           do j=Jstr,Jend
             do i=Istr,Iend
 # if defined MUSTANG && defined key_sand2D
-              if (k.eq.1 .and. l_subs2D(itrc-itsubs1+1)) then
-                t(i,j,k,nnew,itrc)=( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
-     &                        -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                             +FE(i,j+1)-FE(i,j)
-     &                                                              )
-     &                        +dt*flx_s2w_CROCO(i,j,itrc) )
-     &                        /(Hz(i,j,k)+flx_w2s_CROCO(i,j,itrc)*dt)
-                flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
-     &                                       *t(i,j,1,nnew,itrc)*dt
+              if (l_subs2D(itrc-itsubs1+1)) then
+                if (k.eq.1) then
+                  t(i,j,k,nnew,itrc)=( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
+     &                           -dt*pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j)
+     &                                               +FE(i,j+1)-FE(i,j))
+     &                                     +dt* flx_s2w_CROCO(i,j,itrc)
+     &                         )/(Hz(i,j,k)+flx_w2s_CROCO(i,j,itrc)*dt)
+                  flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
+     &                                          *t(i,j,1,nnew,itrc)*dt
+                endif
               else
                 t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                      -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                           +FE(i,j+1)-FE(i,j)
-     &                                                            )
-              endif
+     &                                           +FE(i,j+1)-FE(i,j))
+         endif
 # else
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                    -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                         +FE(i,j+1)-FE(i,j)
-     &                                                          )
+     &                                         +FE(i,j+1)-FE(i,j))
 # endif
             enddo
           enddo                 !-->  discard FX,FE
@@ -488,9 +484,12 @@
 !
 ! Compute vertical mixing (implicit step)
 !
-! if lateral rotated diffusion is chosen, this step is performed
+! If lateral rotated diffusion is chosen, this step is performed
 ! after lateral diffusion to include implicit correction to lateral
 ! diffusion
+!
+! If MUSTANG is used, mixing is done here for all passive tracers
+! but sediment tracers include a settling process with substeps
 !
 !======================================================================
 !
@@ -501,61 +500,84 @@
 #  endif
 
 # ifdef TS_MIX_IMP
-
-#  ifdef MUSTANG
-#   undef TS_MIX_IMP 
-          if (itrc.le.2 .or. itrc.ge.itsubs1+nvp+1) then ! passive tracers only
-#   include "t3dmix_tridiagonal.h"
-          elseif (itrc.ge.itsubs1+nv_grav .and. 
-     &            itrc.le.itsubs1+nvp) then              ! sediment tracers
-#   if defined key_sand2D
-            if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    include "t3dmix_tridiagonal_settling.h"
-            endif
-#   else
-#    include "t3dmix_tridiagonal_settling.h"
-#   endif /* key_sand2D */
-          endif
-#   define TS_MIX_IMP
-#  endif  /* MUSTANG */
-
-#  ifdef BIO_HADV_WENO5
-#   undef TS_MIX_IMP 
-          if (itrc .gt. 2) then   ! for passive tracers only
-#   include "t3dmix_tridiagonal.h"
-#   define TS_MIX_IMP
-          else
-#  endif
+          if (itrc .le. 2) then                  ! active tracers
             do k=1,N
               do i=istr,iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
               enddo
             enddo
-#  ifdef BIO_HADV_WENO5
-          endif
-#  endif
-
+          else                                   ! passive tracers
+!                                                 (sed. and others)
+#  ifdef MUSTANG
+!
+            if (itrc.ge.itsubs1+nv_grav .and. 
+     &          itrc.le.itsubs1+nvp) then        ! sediment tracers
+#   ifdef key_sand2D
+              if (.not.l_subs2D(itrc-itsubs1+1)) then
+#   endif
+#   undef TS_MIX_IMP 
+#   define CD EC
+#   define NBSUBSTEP GC
+#   include "t3dmix_tridiagonal_settling.h"
+#   undef NBSUBSTEP
+#   undef CD
+#   define TS_MIX_IMP
+#   ifdef key_sand2D
+              endif
+#   endif
+            else                                 ! other tracers
+#   undef TS_MIX_IMP
+#   include "t3dmix_tridiagonal.h"
+#   define TS_MIX_IMP
+            endif
+!
+#  else  /* MUSTANG */
+!                                                ! passive tracers
+#   ifdef BIO_HADV_WENO5
+#    undef TS_MIX_IMP 
+#    include "t3dmix_tridiagonal.h"
+#    define TS_MIX_IMP
+#   else
+            do k=1,N
+              do i=istr,iend
+                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
+              enddo
+            enddo
+#   endif /* BIO_HADV_WENO5 */
+#  endif  /* MUSTANG */
+!
+          endif ! itrc <= 2
+!
 # else /* TS_MIX_IMP */
 
-#  if !defined MUSTANG
+#  ifndef MUSTANG
+!                                                ! all tracers
 #   include "t3dmix_tridiagonal.h"
+!
 #  else
-          if (itrc.le.2 .or. itrc.ge.itsubs1+nvp+1 ) then ! passive tracers
-#   include "t3dmix_tridiagonal.h"
-          elseif(itrc.ge.itsubs1+nv_grav .and. 
-     &           itrc.le.itsubs1+nvp) then                ! sediment tracers
-#   if defined key_sand2D
+          if (itrc.ge.itsubs1+nv_grav .and. 
+     &        itrc.le.itsubs1+nvp) then          ! sediment tracers
+#   ifdef key_sand2D
             if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    include "t3dmix_tridiagonal_settling.h"
+#   endif
+#   define CD EC
+#   define NBSUBSTEP GC
+#   include "t3dmix_tridiagonal_settling.h"
+#   undef NBSUBSTEP
+#   undef CD
+#   ifdef key_sand2D
             endif
-#   else
-#    include "t3dmix_tridiagonal_settling.h"
-#   endif /* key_sand2D */
-      endif
+#   endif
+          else                                   ! all other tracers
+#   include "t3dmix_tridiagonal.h"
+          endif
 #  endif /* MUSTANG */
 
 # endif /* TS_MIX_IMP */
 
+!
+!  Test of constant tracers
+!
 # ifdef CONST_TRACERS
           do k=1,N
             do i=Istr,Iend
@@ -573,21 +595,22 @@
           enddo
 #  endif /* DIAGNOSTICS_TS */
 # endif /* CONST_TRACERS */
-        enddo      ! <-- itrc
 
+        enddo      ! <-- itrc
 !
 !----------------------------------------------------------
 ! Compute vertical gradient in vertical T-diffusion 
 ! coefficient for floats random walk.
 !----------------------------------------------------------
 !
-# if defined FLOATS && defined  RANDOM_WALK
+# if defined FLOATS && defined RANDOM_WALK
           do k=1,N
             do i=Istr,Iend
               dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
             enddo
           enddo
 # endif
+
       enddo      ! <-- j
 !
 !======================================================================

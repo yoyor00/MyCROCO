@@ -37,7 +37,7 @@
 #include "diags_pv.h"
 #include "diagnostics.h"
 #include "mpi_cpl.h"
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 # include "sediment.h"
 #endif
 #ifdef BBL
@@ -45,7 +45,7 @@
 #endif
 #ifdef SOLVE3D
       integer tile,itrc,i,j,k,ivar
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &      , indxWrk
 # endif
 # include "work.h"

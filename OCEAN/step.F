@@ -995,22 +995,22 @@ C$OMP BARRIER
         call gls_mixing (tile)
 # endif
 
-# if defined MUSTANG
+# ifdef MUSTANG
         call mustang_update_main (tile)
 # endif
         call step3d_t (tile)
 
-#   ifdef MUSTANG
+# ifdef MUSTANG
         call mustang_deposition_main (tile)
-#   endif
+# endif
 
-#   if defined SEDIMENT && defined USGS
-#     ifdef AGRIF
+# ifdef SEDIMENT
+#  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim)
      &  call sediment (tile)
-#     else
+#  else
         call sediment (tile)
-#     endif
+#  endif
 # endif
 # ifdef AGRIF
         if (.Not.Agrif_Root()) then
@@ -1033,7 +1033,7 @@ C$OMP BARRIER
 
 # ifdef MORPHODYN
       do tile=my_first,my_last
-#  ifdef USGS
+#  ifdef SEDIMENT
 #    ifdef ANA_MORPHODYN
         call ana_morphodyn (tile)
 #    endif

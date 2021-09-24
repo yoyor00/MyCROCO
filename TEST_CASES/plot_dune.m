@@ -26,35 +26,31 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-% choose here if you are using usgs (1) or mustang (0) model output file
-usgs=1
+% Choose usgs (1) or mustang (0) model output file
+usgs=0
 
 fname='dune_his.nc';
 
 j=2;
-tndx=16; % daily outputs
+tndx=30; % daily outputs
 
 %======================================================================
 %
 % Read data
 %
-
 nc=netcdf(fname);
-
-if  usgs == 1 
-   time=nc{'scrum_time'}(:)./86400;
-   tndx=min(tndx,length(time));
-   disp([ 'tndx = ',num2str(tndx), ...
+time=nc{'scrum_time'}(:)./86400;
+tndx=min(tndx,length(time));
+disp([ 'tndx = ',num2str(tndx), ...
        ' - Time = ',num2str(time(tndx)),' days' ])
-end
-   
+
 h=squeeze(nc{'h'}(j,:));
 x=squeeze(nc{'x_rho'}(j,:));
 zeta=squeeze(nc{'zeta'}(tndx,j,:));
 L=length(zeta);
-%
 
 if usgs ~= 1
+    time=time-time(1)+1;
     var_hmorph='Hm';
     hmorph  =squeeze(nc{var_hmorph}(tndx,j,:));
     bedthick=flipud(squeeze(nc{'DZS'}(tndx,:,j,:)));
@@ -110,7 +106,6 @@ hold on;
 line(xr,-hmorph,'color','k','Linewidth',2)
 line(xr,-h,     'color','r','Linewidth',2,'linestyle','--')
 hold off
-%caxis([40 60])
 caxis([20 80])
 colorbar
 %axis([-Inf Inf -8 -1])
@@ -118,10 +113,10 @@ axis([2 98 -8 -1])
 grid on
 if usgs ~= 1
    title(['DUNE/MUSTANG - Fine Sand Fraction - Day ', ...
-        num2str(tndx)])
+         num2str(time(tndx))])
 else
    title(['DUNE/USGS - Fine Sand Fraction  - Day ', ...
-        num2str(tndx)])
+         num2str(time(tndx))])
 end
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');

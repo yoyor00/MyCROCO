@@ -81,31 +81,6 @@
 # define REPFICNAMELIST 'FIC_NAMELIST'
 
 # ifdef key_CROCO
-#  ifdef DUNE
-#   ifdef ANA_DUNE
-#     define SEDNAM  'parasubstance_MUSTANG_Ana_dune.txt'
-#     define SEDNAMV 'paraMUSTANGV2_Ana_dune.txt'
-#   else
-#     define SEDNAM  'parasubstance_MUSTANG_Dune.txt'
-#     define SEDNAMV 'paraMUSTANGV2_Dune.txt'
-#   endif
-#  elif defined SED_TOY
-#   define SEDNAM  'parasubstance_MUSTANG_Sed_toy.txt'
-#   define SEDNAMV 'paraMUSTANGV1_Sed_toy.txt'
-#  elif defined TFLAT2DV
-#   define SEDNAM  'parasubstance_MUSTANG_Tflat2dv.txt'
-#   define SEDNAMV 'paraMUSTANGV2_Tflat2dv.txt'
-# else
-#   define SEDNAM 'parasubstance_MUSTANG.txt'
-#     ifdef key_MUSTANG_V2
-#     define SEDNAMV 'paraMUSTANGV2.txt'
-#     else
-#     define SEDNAMV 'paraMUSTANGV1.txt'
-#     endif
-#  endif
-# endif
-
-# ifdef key_CROCO
 #  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
 #  ifdef MPI
 #   define I_EXT_RANGE Istr-1,Iend+1

@@ -171,14 +171,15 @@
      defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
-      integer numthreads,     ntstart,   ntimes,  ninfo  &
-     &      , nfast,  nrrec,     nrst,    nwrt
+      integer numthreads, ntstart, ntimes, ninfo  &
+     &                 , nfast, nrrec, nrst,nwrt
 #ifdef AVERAGES
-     &                                 , ntsavg,  navg   
+      integer                      ntsavg,  navg
 #endif
 #ifdef BODYFORCE
-     &                      , levbfrc,   levsfrc     
+      integer                   levbfrc, levsfrc
 #endif
+
 #ifdef FLOATS
       integer nflt, nrpfflt
 #endif
@@ -238,7 +239,7 @@
 #ifdef SOLVE3D
       logical got_tini(NT)
 #endif
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
       logical got_inised(3)
 #endif
 #ifdef BBL
@@ -299,23 +300,23 @@
       logical ldefsta
 #endif
 
-      common /scalars_main/  &
-     &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2   &
-     &           , Zobt,       Cdb_min,   Cdb_max    &                       
-     &           , xl, el,    visc2,     visc4,   gamma2 &
+      common /scalars_main/                                        &
+     &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2 &
+     &           , Zobt,       Cdb_min,   Cdb_max                  &                       
+     &           , xl, el,    visc2,     visc4,   gamma2           &
 #ifdef SOLVE3D
-     &           , theta_s,   theta_b,   Tcline,  hc &
-     &           , sc_w,      Cs_w,      sc_r,    Cs_r &
-     &           , rx0,       rx1,       tnu2,    tnu4 & 
+     &           , theta_s,   theta_b,   Tcline,  hc               &
+     &           , sc_w,      Cs_w,      sc_r,    Cs_r             &
+     &           , rx0,       rx1,       tnu2,    tnu4             & 
 # ifndef NONLIN_EOS
-     &                      , R0,T0,S0,  Tcoef,   Scoef & 
+     &                      , R0,T0,S0,  Tcoef,   Scoef            & 
 # endif
-     &                      , weight & 
+     &                      , weight                               & 
 #endif
 #if  defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
      defined M3NUDGING  || defined ZNUDGING
-     &                      , x_sponge,   v_sponge & 
+     &                      , x_sponge,   v_sponge                 & 
 #endif
 #if  defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
@@ -323,12 +324,12 @@
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
      defined WCLIMATOLOGY
-     &                      , tauT_in, tauT_out, tauM_in, tauM_out &
+     &           , tauT_in, tauT_out, tauM_in, tauM_out            &
 #endif
-     &      , numthreads,     ntstart,   ntimes,  ninfo  & 
-     &      , nfast,  nrrec,     nrst,    nwrt           & 
+     &      , numthreads,     ntstart,   ntimes,  ninfo            & 
+     &      , nfast,  nrrec,     nrst,    nwrt                     & 
 #ifdef AVERAGES
-     &                                 , ntsavg,  navg   & 
+     &                                 , ntsavg,  navg             & 
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc    & 
@@ -340,83 +341,83 @@
      &                      , nsta, nrpfsta         &
 #endif
 #ifdef SOLVE3D
-     &                      , got_tini          &
+     &                      , got_tini              &
 #endif
-#if defined SEDIMENT && defined USGS
-     &                      , got_inised          &
+#ifdef SEDIMENT
+     &                      , got_inised            &
 #endif
 #ifdef BBL
-     &                      , got_inibed          &
+     &                      , got_inibed            &
 #endif
 #ifdef FLOATS
-     &                      , ldefflt         &
+     &                      , ldefflt               &
 #endif
 #if defined DIAGNOSTICS_TS
-     &                      , ldefdia, nwrtdia          &
+     &                      , ldefdia, nwrtdia      &
 # ifdef AVERAGES
-     &                      , ldefdia_avg          &
-     &                      , nwrtdia_avg         &
-     &                      , ntsdia_avg         &
+     &                      , ldefdia_avg           &
+     &                      , nwrtdia_avg           &
+     &                      , ntsdia_avg            &
 # endif
 #endif
 #if defined DIAGNOSTICS_UV
-     &                      , ldefdiaM, nwrtdiaM         &
+     &                      , ldefdiaM, nwrtdiaM    &
 # ifdef AVERAGES
-     &                      , ldefdiaM_avg         &
-     &                      , nwrtdiaM_avg         &
-     &                      , ntsdiaM_avg         &
+     &                      , ldefdiaM_avg          &
+     &                      , nwrtdiaM_avg          &
+     &                      , ntsdiaM_avg           &
 # endif
 #endif
 # ifdef DIAGNOSTICS_VRT
-     &                      , ldefdiags_vrt, nwrtdiags_vrt         &
+     &                      , ldefdiags_vrt, nwrtdiags_vrt    &
 #ifdef AVERAGES
-     &                      , ldefdiags_vrt_avg         &
-     &                      , nwrtdiags_vrt_avg         &
+     &                      , ldefdiags_vrt_avg        &
+     &                      , nwrtdiags_vrt_avg        &
      &                      , ntsdiags_vrt_avg         &
 #endif
 #endif
 # ifdef DIAGNOSTICS_EK
-     &                      , ldefdiags_ek, nwrtdiags_ek         &
+     &                      , ldefdiags_ek, nwrtdiags_ek      &
 #ifdef AVERAGES
      &                      , ldefdiags_ek_avg         &
      &                      , nwrtdiags_ek_avg         &
-     &                      , ntsdiags_ek_avg         &
+     &                      , ntsdiags_ek_avg          &
 #endif
 #endif
 # ifdef DIAGNOSTICS_PV
-     &                      , ldefdiags_pv, nwrtdiags_pv         &
+     &                      , ldefdiags_pv, nwrtdiags_pv      &
 #ifdef AVERAGES
      &                      , ldefdiags_pv_avg         &
      &                      , nwrtdiags_pv_avg         &
-     &                      , ntsdiags_pv_avg         &
+     &                      , ntsdiags_pv_avg          &
 #endif
 #endif
 # ifdef DIAGNOSTICS_EDDY
-     &                      , ldefdiags_eddy, nwrtdiags_eddy         &
+     &                      , ldefdiags_eddy, nwrtdiags_eddy  &
 #ifdef AVERAGES
-     &                      , ldefdiags_eddy_avg         &
-     &                      , nwrtdiags_eddy_avg         &
-     &                      , ntsdiags_eddy_avg         &
+     &                      , ldefdiags_eddy_avg       &
+     &                      , nwrtdiags_eddy_avg       &
+     &                      , ntsdiags_eddy_avg        &
 #endif
 #endif
 #ifdef OUTPUTS_SURFACE
-     &                      , ldefsurf, nwrtsurf         &
+     &                      , ldefsurf, nwrtsurf       &
 #ifdef AVERAGES
-     &                      , ldefsurf_avg         &
-     &                      , nwrtsurf_avg         &
-     &                      , ntssurf_avg         &
+     &                      , ldefsurf_avg             &
+     &                      , nwrtsurf_avg             &
+     &                      , ntssurf_avg              &
 #endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-     &                      , ldefdiabio, nwrtdiabio         &
+     &                      , ldefdiabio, nwrtdiabio   &
 # ifdef AVERAGES
-     &                      , ldefdiabio_avg         &
-     &                      , nwrtdiabio_avg         &
-     &                      , ntsdiabio_avg         &
+     &                      , ldefdiabio_avg           &
+     &                      , nwrtdiabio_avg           &
+     &                      , ntsdiabio_avg            &
 # endif
 #endif
 #ifdef STATIONS
-     &                      , ldefsta         &
+     &                      , ldefsta                  &
 #endif
      &                      , ldefhis         
 
@@ -470,16 +471,16 @@
 #endif
 
 #ifdef BIOLOGY
-      common /communicators_i/         &
-            may_day_flag, tile_count, first_time, bc_count         &
+      common /communicators_i/              &
+            may_day_flag, tile_count, first_time, bc_count  &
            , bio_count  
 #else
-      common /communicators_i/         &
+      common /communicators_i/              &
             may_day_flag, tile_count, first_time, bc_count         
 #endif
 
       real hmin, hmax, grdmin, grdmax, Cu_min, Cu_max         
-      common /communicators_r/         &
+      common /communicators_r/              &
           hmin, hmax, grdmin, grdmax, Cu_min, Cu_max
 
 #ifdef SPHERICAL
@@ -490,31 +491,31 @@
 
       real*QUAD Cu_Adv3d,  Cu_W, Cu_Nbq_X, Cu_Nbq_Y, Cu_Nbq_Z
       integer i_cx_max, j_cx_max, k_cx_max
-      common /diag_vars/ Cu_Adv3d,  Cu_W,         &
+      common /diag_vars/ Cu_Adv3d,  Cu_W,    &
              i_cx_max, j_cx_max, k_cx_max
 
-      real*QUAD volume         &
+      real*QUAD volume                &
 #ifdef OBC_VOLCONS
-             , bc_flux, ubar_xs         &
+             , bc_flux, ubar_xs       &
 #endif         
 #ifdef BIOLOGY
-             , global_sum(0:2*NT+1)         &
+             , global_sum(0:2*NT+1)   &
 #endif
 #ifdef RESET_RHO0
-             , avg_vol, avg_rho     &    
+             , avg_vol, avg_rho       &    
 #endif
             , avgke, avgpe, avgkp, bc_crss
 
-      common /communicators_rq/   &
-               volume         &
+      common /communicators_rq/       &
+               volume                 &
 #ifdef OBC_VOLCONS
-             , bc_flux,  ubar_xs         &
+             , bc_flux,  ubar_xs      &
 #endif
 #ifdef BIOLOGY
-             , global_sum         &
+             , global_sum             &
 #endif
 #ifdef RESET_RHO0
-             , avg_vol, avg_rho   &      
+             , avg_vol, avg_rho       &      
 #endif
              , avgke, avgpe, avgkp, bc_crss
 
@@ -538,10 +539,10 @@
       logical EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2
       logical EAST_INTER, WEST_INTER, NORTH_INTER, SOUTH_INTER
       logical CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE
-      integer mynode, mynode2, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE,  &
+      integer mynode, mynode2, ii,jj, p_W,p_E,p_S,p_N, p_SW,p_SE,         &
       p_NW,p_NE,NNODES2
-      common /comm_setup/ mynode, mynode2, ii,jj, p_W,p_E,p_S,p_N,  &
-      p_SW,p_SE, p_NW,p_NE, EAST_INTER, WEST_INTER, NORTH_INTER,  &
+      common /comm_setup/ mynode, mynode2, ii,jj, p_W,p_E,p_S,p_N,        &
+      p_SW,p_SE, p_NW,p_NE, EAST_INTER, WEST_INTER, NORTH_INTER,          &
       SOUTH_INTER, EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2,  &
       CORNER_SW,CORNER_NW,CORNER_NE,CORNER_SE,NNODES2
 
@@ -552,7 +553,7 @@
 ! ======== ==========
 
       real pi, deg2rad, rad2deg
-      parameter (pi=3.14159265358979323846, deg2rad=pi/180.,         &
+      parameter (pi=3.14159265358979323846, deg2rad=pi/180.,        &
      &                                      rad2deg=180./pi)
 !
 ! Earth radius [m]; Earth rotation [rad/s]; Acceleration of gravity [m/s^2];
@@ -560,9 +561,9 @@
 
       real Eradius, Erotation, g, day2sec,sec2day, jul_off,         &
      &     year2day,day2year
-      parameter (Eradius=6371315.0,  Erotation=7.292115090e-5,         &
-                day2sec=86400., sec2day=1./86400.,         &
-                year2day=365.25, day2year=1./365.25,         &
+      parameter (Eradius=6371315.0,  Erotation=7.292115090e-5,      &
+                day2sec=86400., sec2day=1./86400.,                  &
+                year2day=365.25, day2year=1./365.25,                &
                 jul_off=2440000.)
 
 ! Acceleration of gravity (nondimensional for Soliton problem)

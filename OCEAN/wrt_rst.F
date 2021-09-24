@@ -30,7 +30,7 @@
 #include "ocean3d.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 # include "sediment.h"
 #endif
 #ifdef MORPHODYN
@@ -48,9 +48,9 @@
 #ifdef SOLVE3D
      &      , itrc
 #endif
-#  if defined SEDIMENT & defined USGS
+#ifdef SEDIMENT
      &      , indxWrk
-#  endif
+#endif
 #ifdef FLOATS
       integer i, j, startTinfo(3), starttrack(4)
      &  ,countTinfo(3), counttrack(4), level
@@ -200,7 +200,7 @@
         endif
       enddo
 
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 !
 ! Write out sediment bed layer thickness, porosity, volume 
 ! fraction of size class in sediment bed (2+2*NST b3dgrd variables)
@@ -214,7 +214,6 @@
         goto 99                                         !--> ERROR
       endif
 CR      write(*,*) 'wrt_rst:  Bed_thick' MYID
-
       ierr=nf_fwrite(bed_poros, ncidrst, rstSed(2), 
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
@@ -241,7 +240,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 # endif /* SEDIMENT */
 
-#if defined MUSTANG
+# ifdef MUSTANG
 
 ! ksmi, ksma
       work2d=ksmi
@@ -268,7 +267,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 ! dzs 
       do k=1,ksdmax
-         workrsed(:,:,k)=dzs(k,:,:)
+        workrsed(:,:,k)=dzs(k,:,:)
       enddo
       indx=indxT+ntrc_salt+ntrc_substot+4
       ierr=nf_fwrite(workrsed, ncidrst, rstMUS(3),
@@ -282,7 +281,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 ! tempsed
       do k=1,ksdmax
-         workrsed(:,:,k)=cv_sed(-1,k,:,:)
+        workrsed(:,:,k)=cv_sed(-1,k,:,:)
       enddo
       indx=indxT+ntrc_salt+ntrc_substot+5
       ierr=nf_fwrite(workrsed, ncidrst, rstMUS(4),
@@ -293,8 +292,6 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-
-
 
 ! salsed
       do k=1,ksdmax
@@ -311,9 +308,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
         goto 99                                         !--> ERROR
       endif
 
-
 ! cvsed
-
        do itrc=1,ntrc_subs
          indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
          do k=1,ksdmax
@@ -329,8 +324,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           goto 99                                         !--> ERROR
         endif
        enddo
-
-# endif
+# endif /* MUSTANG */
 
 #endif /* SOLVE3D */
 

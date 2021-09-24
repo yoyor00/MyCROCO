@@ -69,9 +69,6 @@
 !       T(N)=D''(N)
 !       T(k)=D''(k)-C''(k)*T(k+1) for k=N-1,1,-1
 !
-
-!
-!
 # ifdef SALINITY
           indx=min(itrc,isalt)
 # else
@@ -100,8 +97,8 @@
           enddo 
 # endif 
 !++
-! debut de la boucle des sous-pas de temps.
-!
+!++ Start sub-timestep loop
+!++
           do i=istr,iend
             cflm=0.
             dz_cflm=Hz(i,j,1)
@@ -119,28 +116,30 @@
                dz_cflm=Hz(i,j,k)
                ws_cflm=MAX(1e-6,ws_part(i,j,k,itrc))
               endif
-            end do
-            nbsouspas(i)=NINT(dt/MIN((dz_cflm/ws_cflm),dt))
-          end do
+            enddo
+            NBSUBSTEP(i,0)=dt/MIN((dz_cflm/ws_cflm),dt)
+          enddo
           
           do i=istr,iend
-            flx_w2s_sum_CROCO(i,j,itrc)=0
-            do isouspas=1,nbsouspas(i)
+
+            flx_w2s_sum_CROCO(i,j,itrc)=0.
+            nbsubstep=NINT(NBSUBSTEP(i,0))
+
+            do isubstep=1,nbsubstep  ! <== SUB TIMESTEP
+
               do k=1,N-1
                 CD(i,k) = -t(i,j,k+1,nnew,itrc)*ws_part(i,j,k,itrc)/
-     &               ( Hz(i,j,k+1)*nbsouspas(i))
-              end do 
-! si le flxs2w est bien en u.m-2.s-1 c'est tout bon pour ce terme.
-! 
-            
-!
-              CD(i,0) = (flx_s2w_CROCO(i,j,itrc) - flx_w2s_CROCO(i,j,itrc)*
-     &                  t(i,j,1,nnew,itrc)/Hz(i,j,1))/nbsouspas(i)
+     &                                       (Hz(i,j,k+1)*nbsubstep)
+              enddo 
+              CD(i,0) = (flx_s2w_CROCO(i,j,itrc) - 
+     &                   flx_w2s_CROCO(i,j,itrc)*t(i,j,1,nnew,itrc)/
+     &                                          Hz(i,j,1))/nbsubstep
               flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_sum_CROCO(i,j,itrc)+
-     &      flx_w2s_CROCO(i,j,itrc)*t(i,j,1,nnew,itrc)*dt/Hz(i,j,1)/nbsouspas(i)
-     !&      flx_w2s_CROCO(i,j,itrc)*t(i,j,1,nnew,itrc)*dt/nbsouspas(i)
+     &                                        flx_w2s_CROCO(i,j,itrc)
+     &                                            *t(i,j,1,nnew,itrc)*
+     &                                        dt/(Hz(i,j,1)*nbsubstep)
               CD(i,N) = 0.
-
+!
 !++
 !++ Implicit Part
 !++
@@ -155,24 +154,21 @@
 # else
               FC(i,1)=dt* Akt(i,j,1,indx) 
 # endif
-     &                               /(( z_r(i,j,2)-z_r(i,j,1) )*nbsouspas(i))
+     &                      /((z_r(i,j,2)-z_r(i,j,1))*nbsubstep)
 # ifdef VADV_ADAPT_IMP            
               BC(i,1)=DC(i,0)*Wi(i,j,1)   
-              cff=1./(Hz(i,j,1)      +FC(i,1)+max(BC(i,1),0.))    !<- 1/b(1)
-              CF(i,1)=cff*(           FC(i,1)-min(BC(i,1),0.))    !<- q(1) = c(1) / b(1)            
+              cff=1./(Hz(i,j,1) +FC(i,1)+max(BC(i,1),0.))    !<- 1/b(1)
+              CF(i,1)=cff*(      FC(i,1)-min(BC(i,1),0.))    !<- q(1) = c(1) / b(1)
 # else
               cff=1./(Hz(i,j,1)+FC(i,1))
               CF(i,1)= cff*FC(i,1)
 # endif            
 
-# if defined TS_MIX_IMP  || defined SUBSTANCE
+# if defined TS_MIX_IMP || defined SUBSTANCE
               DC(i,1)= cff*(t(i,j,1,nnew,itrc)-dt*(CD(i,1)-CD(i,0)))
 # else
               DC(i,1)= cff* t(i,j,1,nnew,itrc)
 # endif
-          
-          
-          
           
               do k=2,N-1,+1
 # ifdef TS_MIX_IMP
@@ -180,7 +176,7 @@
 # else 
               FC(i,k)=dt* Akt(i,j,k,indx) 
 # endif
-     &                              /(( z_r(i,j,k+1)-z_r(i,j,k) )*nbsouspas(i))
+     &                   /((z_r(i,j,k+1)-z_r(i,j,k))*nbsubstep)
      
 # ifdef VADV_ADAPT_IMP     
               BC(i,k)=DC(i,0)*Wi(i,j,k)
@@ -222,10 +218,7 @@
      &                           +FC(i,N-1)*DC(i,N-1) )
      &                        /(Hz(i,j,N)+FC(i,N-1)*(1.-CF(i,N-1)))
 # endif          
-          
-          
-          
-          
+ 
               do k=N-1,1,-1
                 t(i,j,k,nnew,itrc)=DC(i,k)+CF(i,k)*t(i,j,k+1,nnew,itrc)
               enddo           !--> discard FC,CF,DC
@@ -233,14 +226,14 @@
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)*Hz(i,j,k)
               enddo           !--> discard FC,CF,DC
          
-     !
-            end do      ! <---- end loop subtime step
-! fin de la boucle des sous-pas de temps.
+            enddo      ! <== end loop subtime step
+
             do k=1,N
                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)/Hz(i,j,k)
             enddo
-         end do      ! <---- end loop i
-!
+
+          enddo      ! <---- end loop i
+
 # ifdef DIAGNOSTICS_TS
           do k=1,N
             do i=Istr,Iend

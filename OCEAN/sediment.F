@@ -17,10 +17,10 @@
 !   P. Marchesiello & G. Morvan, Sep 2021: 5th order interpolation
 !     of bedload fluxes; DUNE test case in common with MUSTANG model
 !
-!======================================================================
+!=====================================================================
 !
 #include "cppdefs.h"
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 
 # ifdef BEDLOAD /* for bedload scheme */
 #  define bnew nnew
@@ -29,13 +29,25 @@
 # endif
 
 # ifdef BEDLOAD
-#  if !defined SANDBAR && !defined ANA_DUNE 
-#   define BEDLOAD_UP1
+#  ifndef BEDLOAD_VANDERA
+#   define BSTRESS_UPWIND
 #  endif
-#  if !defined ANA_DUNE 
-#   define BEDLOAD_SLUMP
-#   define BEDLOAD_SHALLOW_LIMIT
+#  ifdef ANA_DUNE
+#   undef  BSTRESS_UPWIND
+#   undef  BEDLOAD_SLUMP
+#   undef  BEDLOAD_SHALLOW_LIMIT
 #  endif
+# endif
+
+# ifdef BEDLOAD_VANDERA      /* wave half-cycle concept */
+#  define BEDLOAD_VANDERA_ZEROCURR
+#  ifndef BEDLOAD_VANDERA_ZEROCURR
+#    define BEDLOAD_VANDERA_FD_MADSEN
+#    undef  BEDLOAD_VANDERA_FD_SANTOSS
+#  endif
+#  define BEDLOAD_VANDERA_ASYM_LIMITS
+#  undef  BEDLOAD_VANDERA_SURFACE_WAVE
+#  undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
 # endif
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
@@ -344,6 +356,26 @@ C$OMP BARRIER
 #  endif
           tau_w(i,j)=SQRT( bustrw(i,j)*bustrw(i,j)
      &                   + bvstrw(i,j)*bvstrw(i,j) )
+#  if !defined BEDLOAD_VANDERA && defined BSTRESS_UPWIND
+#   define tau_wX angleu
+#   define tau_wE anglev
+          cff1=0.5*(1.0+SIGN(1.0,bustr(i+1,j)))
+          cff2=0.5*(1.0-SIGN(1.0,bustr(i+1,j)))
+          cff3=0.5*(1.0+SIGN(1.0,bustr(i  ,j)))
+          cff4=0.5*(1.0-SIGN(1.0,bustr(i  ,j)))
+          tau_wX(i,j)=cff3*(cff1*bustr(i,j)+                          
+     &                cff2*0.5*(bustr(i,j)+bustr(i+1,j)))+         
+     &                cff4*(cff2*bustr(i+1,j)+                        
+     &                cff1*0.5*(bustr(i,j)+bustr(i+1,j)))
+          cff1=0.5*(1.0+SIGN(1.0,bvstr(i,j+1)))
+          cff2=0.5*(1.0-SIGN(1.0,bvstr(i,j+1)))
+          cff3=0.5*(1.0+SIGN(1.0,bvstr(i,j)))
+          cff4=0.5*(1.0-SIGN(1.0,bvstr(i,j)))
+          tau_wE(i,j)=cff3*(cff1*bvstr(i,j)+                          
+     &                cff2*0.5*(bvstr(i,j)+bvstr(i,j+1)))+         
+     &                cff4*(cff2*bvstr(i,j+1)+                        
+     &                cff1*0.5*(bvstr(i,j)+bvstr(i,j+1)))
+#  endif
         enddo
       enddo
 !
@@ -359,13 +391,13 @@ C$OMP BARRIER
 !
       do j=J_EXT_RANGE
        do i=I_EXT_RANGE
-          cff1=0.5*(bustr(i,j)+bustr(i+1,j))
-          cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
 #  ifdef BEDLOAD_VANDERA
 !
 ! Compute angle between currents and waves
 ! .. from current direction toward wave vector.
 !
+          cff1=0.5*(bustr(i,j)+bustr(i+1,j))
+          cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
           if (cff1.eq.0.) then
             phic(i,j)=0.5*pi*SIGN(1.,cff2)
           else
@@ -379,7 +411,9 @@ C$OMP BARRIER
 !
           phicw(i,j)=twopi-phicw(i,j)
 !
-#  else 
+#  elif !defined BSTRESS_UPWIND
+          cff1=0.5*(bustr(i,j)+bustr(i+1,j))
+          cff2=0.5*(bvstr(i,j)+bvstr(i,j+1))
           Umag=SQRT(cff1*cff1+cff2*cff2)+eps
           angleu(i,j)=cff1/Umag
           anglev(i,j)=cff2/Umag
@@ -585,9 +619,9 @@ C$OMP BARRIER
             bedld_y=smgdr*( bedld_cy*T_crest+
      &                      bedld_ty*T_trough )/Td
 !
-! Partition bedld into xi and eta directions, still at rho points
+! Partition bedload into xi and eta directions, still at rho points
 ! (FX_r and FE_r have dimensions of kg).
-! bedload is wave aligned (CROCO grid convention)
+! --> project on CROCO grid (bedld is wave-aligned in Van Der A)
 !
             FX_r(i,j)=(bedld_x*COS(Dwave(i,j)) -
      &                 bedld_y*SIN(Dwave(i,j)))*on_r(i,j)*dt
@@ -598,24 +632,55 @@ C$OMP BARRIER
 !
 #  else
 !
-! Use simpler formulations with mean stress tau_w at rho points
+!                    Use simpler formulations
 !
-#   ifdef BEDLOAD_MPM
-!   Meyer-Peter & Muller, 1948
+! -------------  Meyer-Peter Muller or Wu & Lin  -----------------
+!
+#   ifdef BSTRESS_UPWIND
+!
+! Use partitions of stress from upwind direction, still at rho points.
+!
+#    ifdef BEDLOAD_MPM
+            bedld=8.*(MAX((ABS(tau_wX(i,j))*osmgd-0.047),0.)**1.5)
+#    elif defined BEDLOAD_WULIN
+            cff=ABS(tau_wX(i,j))/tau_ce_2d(i,j,ised)-1.
+            bedld=0.0053*(MAX(cff,0.)**2.2)
+#    elif defined BEDLOAD_MARIEU
+            bedld=(0.001*ubar(i,j,knew)**3)
+#    endif
+     &                                 *smgdr*SIGN(1.,tau_wX(i,j))
+            FX_r(i,j)=bedld*on_r(i,j)*dt
+#    ifdef BEDLOAD_MPM
+            bedld=8.*(MAX((ABS(tau_wE(i,j))*osmgd-0.047),0.)**1.5)
+#    elif defined BEDLOAD_WULIN
+            cff=ABS(tau_wE(i,j))/tau_ce_2d(i,j,ised)-1
+            bedld=0.0053*(MAX(cff,0.)**2.2)
+#    elif defined BEDLOAD_MARIEU
+            bedld=0.
+#    endif
+     &                                 *smgdr*SIGN(1.,tau_wE(i,j))
+            FE_r(i,j)=bedld*om_r(i,j)*dt
+#    undef tau_wX
+#    undef tau_wE
+#   else
+!
+! Use mean stress tau_w at rho points
+!
+#    ifdef BEDLOAD_MPM
             bedld=8.*(MAX((tau_w(i,j)*osmgd-0.047),0.)**1.5)*smgdr
-#   elif defined BEDLOAD_WULIN
-!   Wu & Lin, 2014
+#    elif defined BEDLOAD_WULIN
             cff=tau_w(i,j)/tau_ce_2d(i,j,ised)-1.
             bedld=0.0053*(MAX(cff,0.)**2.2)*smgdr
-#   elif defined BEDLOAD_MARIEU
+#    elif defined BEDLOAD_MARIEU
             bedld=(0.001*ubar(i,j,knew)**3)*smgdr
-#   endif
+#    endif
 !
 ! Partition bedld into xi and eta directions, still at rho points.
 ! (FX_r and FE_r have dimensions of kg).
 !
             FX_r(i,j)=angleu(i,j)*bedld*on_r(i,j)*dt
             FE_r(i,j)=anglev(i,j)*bedld*om_r(i,j)*dt
+#   endif /* BSTRESS_UPWIND */
 
 #  endif /* BEDLOAD_VANDERA */
 !
@@ -2154,7 +2219,7 @@ C$OMP BARRIER
      &                 bed_frac(START_2D_ARRAY,k,ised))
           call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_mass(START_2D_ARRAY,k,nnew,ised))
-         enddo 
+        enddo 
       enddo
       do k=1,NLAY
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
@@ -2189,7 +2254,7 @@ C$OMP BARRIER
       if (EASTERN_EDGE) then
         do j=Jstr,Jend
           bed_thick_tot(Iend+1,j,nnew)=bed_thick_tot(Iend,j,nnew)
-         enddo
+        enddo
       endif
       if (WESTERN_EDGE) then
         do j=Jstr,Jend
@@ -3623,12 +3688,9 @@ C$OMP BARRIER
 !
       integer Nclass, i, icard, iunit, lstr, nl
       integer lenstr
-      real rdum
+      real rdum, cff1,cff2
       logical ldum
       parameter (iunit=50)
-#  ifdef TAU_CRIT_WULIN
-      real cff1,cff2
-#  endif
 !
 !---------------------------------------------------------------------
 !  Read in initial float locations.
@@ -3652,7 +3714,7 @@ C$OMP BARRIER
           write(stdout,10) Stitle(1:lstr)
   10      format(1x,'(',a,')',/)
 !
-!  Read in parameteramd initial values per size class.
+!  Read in parameter and initial values per size class.
 !
         elseif (icard.eq.2) then
           i=0
@@ -3665,9 +3727,12 @@ C$OMP BARRIER
 !
 ! Re-compute critical shear stress tau_ce (Wu & Lin, 2014)
 !
-# ifdef TAU_CRIT_WULIN
+# ifdef TAU_CRIT_SHIELDS
            cff1=10*Sd(i)*(g*(Srho(i)/rho0 -1.))**0.33        ! Sd_star (m)
            cff2=0.3/(1.+1.2*cff1)+0.055*(1.-exp(-0.02*cff1)) ! Critical shield
+           tau_ce(i)=cff2*Sd(i)/1000*g*(Srho(i)-rho0)        ! tau_ce (N/m2)
+# elif defined TAU_CRIT_WULIN
+           cff2=0.03                                         ! Critical shield
            tau_ce(i)=cff2*Sd(i)/1000*g*(Srho(i)-rho0)        ! tau_ce (N/m2)
 # endif
      
@@ -3823,7 +3888,7 @@ C$OMP BARRIER
           read(iunit,*,err=60) (mud_frac_eq(nl),nl=1,NMUD)
            do nl=1,NMUD
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      mud_frac_eq(nl), 'mud_frac_eq   Equilibrium fractional class'
+     &      mud_frac_eq(nl),'mud_frac_eq   Equilibrium fractional class'
            enddo
         elseif (icard.eq.19) then
           read(iunit,*,err=60) t_dfloc                     

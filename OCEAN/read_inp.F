@@ -18,7 +18,7 @@
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#if defined SEDIMENT && defined USGS                                        
+#ifdef SEDIMENT                                        
 # include "sediment.h"
 #endif
 #ifdef FLOATS
@@ -37,7 +37,7 @@
 # include "online.h"
 #endif
 #ifdef MPI
-      include 'mpif.h'
+     include 'mpif.h'
 #endif
 #ifdef NBQ
 # include "nbq.h"
@@ -1196,16 +1196,16 @@ c        close(testunit)
 # endif
      &                                          ,  wrthis(indxShflx_rsw)
 # ifdef BULK_FLUX
-     &                                          , wrthis(indxShflx_rlw)
-     &                                          , wrthis(indxShflx_lat)
-     &                                          , wrthis(indxShflx_sen)
+     &                                          ,  wrthis(indxShflx_rlw)
+     &                                          ,  wrthis(indxShflx_lat)
+     &                                          ,  wrthis(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
 # ifdef MORPHODYN
-     &                                          , wrthis(indxHm)
+     &                                          ,  wrthis(indxHm)
 # else 
      &                                          ,  dumboolean
 # endif
@@ -1458,16 +1458,16 @@ c        close(testunit)
 # endif
      &                                          ,  wrtavg(indxShflx_rsw)
 # ifdef BULK_FLUX
-     &                                          , wrtavg(indxShflx_rlw)
-     &                                          , wrtavg(indxShflx_lat)
-     &                                          , wrtavg(indxShflx_sen)
+     &                                          ,  wrtavg(indxShflx_rlw)
+     &                                          ,  wrtavg(indxShflx_lat)
+     &                                          ,  wrtavg(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
 # ifdef MORPHODYN
-     &                                          , wrtavg(indxHm)
+     &                                          ,  wrtavg(indxHm)
 # else 
      &                                          ,  dumboolean
 # endif
@@ -2228,9 +2228,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    Scoef, 'Scoef    Saline contraction coefficient',
      &                                                '(kg/m3/PSU).'
 # endif
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 !
-! Sediments input file name for USGS.
+! Sediments input file name for USGS sediment model.
 !
       elseif (keyword(1:kwlen).eq.'sediments') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -2305,22 +2305,22 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &      wrthis(indxBTCR), 'write bed_tau_crit ',
      &                            'critical stress of bed layer.'
 #   endif
-# elif defined SEDIMENT && defined MUSTANG
+# elif defined MUSTANG
 !
 ! Sediments input file name for Mustang.
 !
       elseif (keyword(1:kwlen).eq.'sediments_mustang') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) sednam_must
-        read(input,'(A)',err=95) sednam_vmust
-        lstr=lenstr(sednam_must)
+        read(input,'(A)',err=95) sedname_subst
+        read(input,'(A)',err=95) sedname_must
+        lstr=lenstr(sedname_subst)
         MPI_master_only write(stdout,'(7x,A,12x,A)')
-     &         'Sediment input file for Mustang:',
-     &          sednam_must(1:lstr)
-        lstr=lenstr(sednam_vmust)
+     &         'Sediment input file for Substance:' ,
+     &          sedname_subst(1:lstr)
+        lstr=lenstr(sedname_must)
         MPI_master_only write(stdout,'(7x,A,2x,A/)')
-     &         'Sediment input file for Mustang (version):',
-     &          sednam_vmust(1:lstr)
+     &         'Sediment input file for Mustang (version):' ,
+     &          sedname_must(1:lstr)
 
 # endif /* SEDIMENT */
 #endif

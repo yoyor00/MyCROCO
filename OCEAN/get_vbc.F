@@ -50,8 +50,8 @@
 ! Initial wave periode, amplitude, direction and dissipation
 !---------------------------------------------------------------
 !
-# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
-#  if defined  AGRIF && defined BBL
+# if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
+#  if defined AGRIF && defined BBL
       if (Agrif_lev_sedim.EQ.0) call get_wwave
 #  else
       call get_wwave
@@ -700,7 +700,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif
 #ifndef OW_COUPLING
-# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
+# if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
       call set_wwave_tile(Istr,Iend,Jstr,Jend)  
 # endif
 #endif

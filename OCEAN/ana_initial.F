@@ -30,16 +30,16 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
-# if defined SUBSTANCE
-      USE comsubstance,  ONLY : cini_wat
-# endif
+#ifdef SUBSTANCE
+      USE comsubstance, ONLY: cini_wat
+#endif
       implicit none
 #include "param.h"
 #include "grid.h"
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "scalars.h"
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 # include "sediment.h"
 #endif
 #ifdef SST_SKIN
@@ -91,9 +91,9 @@
 #endif
 #ifdef TS_HADV_TEST 
       real cff,cff1,cx,cy,cmax,xx,yy
-#  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
-#   include "work.h"
-#  endif      
+# if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+#  include "work.h"
+# endif      
 #endif
 #ifdef DUNE
       real cff, cff2
@@ -225,13 +225,13 @@
         do j=JR_RANGE
           do i=IR_RANGE
 #    if defined DUNE3D && defined MUSTANG
-#      ifdef MPI
+#     ifdef MPI
               cffi=(float(i +ii*Lm))
               cffj=(float(j +jj*Mm))
-#      else
+#     else
               cffi=(float(i))
               cffj=(float(j))
-#      endif
+#     endif
               Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
      &                    (cffj-25.0_rsh)**2.0_rsh )
               ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(2.0_rsh*(Rij))**2.))
@@ -246,7 +246,6 @@
               zeta(i,j,:) = zeta(i,j,1)
           enddo
         enddo
-      
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -318,7 +317,7 @@
           enddo
         enddo
 #  elif defined TS_HADV_TEST
-#    ifdef DIAGONAL_ADV
+#   ifdef DIAGONAL_ADV
         do j=Jstr,Jend
           do k=1,N
             do i=IstrU,Iend
@@ -333,8 +332,8 @@
             enddo
           enddo
         enddo
-#    endif
-#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+#   endif
+#   if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
 
 # define psi work2d
         cff  = - xl / pi
@@ -346,9 +345,9 @@
           enddo
         enddo
 
-#     if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_p2d_tile(Istr,Iend,Jstr,Jend,psi)
-#     endif
+#    endif
 
         cff  = pm(1,1)
         do k=1,N
@@ -701,35 +700,35 @@
 !  Configuration from Pelletier et al.: linear shear within mixed layer 
 !
         htemp0 = 10.
-#    ifdef SALINITY
+#   ifdef SALINITY
         hsalt0 = 10.
-#    endif
+#   endif
         drho   = 1.2    ! Value to be replaced by script (originally 1.2)
 !
         do j=JR_RANGE
           do i=IR_RANGE
-              depth=h(i,j)
-              zr0=-0.5*depth
-              hup0=0.15*depth
+            depth=h(i,j)
+            zr0=-0.5*depth
+            hup0=0.15*depth
 
-              do k=1,N
-                 t(i,j,k,1,itemp) = 13.+ 1.*drho * (
-     &                              0.1*(z_r(1,1,k)-zr0)/depth +
-     &                              dtanh((z_r(1,1,k)-zr0)/htemp0) 
+            do k=1,N
+              t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &                            0.1*(z_r(1,1,k)-zr0)/depth +
+     &                          dtanh((z_r(1,1,k)-zr0)/htemp0) 
      &                                              )  / Tcoef
 !    &            +0.001*
 !!   &                       (tanh(abs(z_r(1,1,k)-zr0)/hup0))*
 !    &                       (1. -tanh((z_r(1,1,k)-zr0)/hup0)**2.)
 !    &                                      *sin(2.*2.*pi/xl*xr(i,j))
 
-                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-#    ifdef SALINITY
-                 t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
      &                             (dtanh((z_r(1,1,k)-zr0)/hsalt0))**2 )
-                 t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
-#    endif
-              enddo
-           enddo
+              t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
+#   endif
+            enddo
+          enddo
         enddo
 
 #  elif defined I_SOLITON
@@ -749,17 +748,17 @@
         amp_exp = 0.0391
         Lt=6.
         do j=JstrR,JendR
-           do i=IstrR,IendR
-              do k=1,N
-                 d(k)=0.5*(rho1_exp+rho2_exp)               
-     &              + 0.5*(rho2_exp-rho1_exp)
-     &                   *tanh(exp(1.)*(-h1_exp 
-     &                          -2.*amp_exp*(xr(i,j)-Lt/2.)/Lt 
-     &                          +abs(z_r(i,j,k)))/(0.015/2.))   ! 0.005=dz_q   
-                 t(i,j,k,1,itemp) = 13. - ( d(k) - R0 )  / Tcoef
-                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-              enddo
-           enddo
+          do i=IstrR,IendR
+            do k=1,N
+              d(k)=0.5*(rho1_exp+rho2_exp)               
+     &           + 0.5*(rho2_exp-rho1_exp)
+     &               *tanh(exp(1.)*(-h1_exp 
+     &                  -2.*amp_exp*(xr(i,j)-Lt/2.)/Lt 
+     &                    +abs(z_r(i,j,k)))/(0.015/2.))   ! 0.005=dz_q   
+              t(i,j,k,1,itemp) = 13. - ( d(k) - R0 )  / Tcoef
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            enddo
+          enddo
         enddo
 #    else
         depth=h(1,1)
@@ -783,11 +782,11 @@
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
-#    ifdef MPI
+#   ifdef MPI
               if (i+iminmpi-1 .LE. LLm/2) then
-#    else
+#   else
               if (i .LE. LLm/2) then
-#    endif            
+#   endif            
                 t(i,j,k,1,itemp)=5/Tcoef
                 t(i,j,k,2,itemp)=5/Tcoef
               else
@@ -801,12 +800,12 @@
 #  elif defined ACOUSTIC 
 
         do j=JstrR,JendR
-           do i=IstrR,IendR
-              do k=1,N
-                 t(i,j,k,1,itemp) = 13./Tcoef
-                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-              enddo
-           enddo
+          do i=IstrR,IendR
+            do k=1,N
+              t(i,j,k,1,itemp) = 13./Tcoef
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            enddo
+          enddo
         enddo
 
 #  elif defined INNERSHELF
@@ -939,7 +938,7 @@
 #   define THKNSS 6.5
 #   define Z1 (-75.)
 #   define STRAT 150.
-             t(i,j,k,1,itemp)=14.+4.*THKNSS*log(
+              t(i,j,k,1,itemp)=14.+4.*THKNSS*log(
      &                        cosh((z_w(i,j,k )-Z0)/THKNSS)
      &                       /cosh((z_w(i,j,k-1)-Z0)/THKNSS)
      &                           )/(z_w(i,j,k)-z_w(i,j,k-1))
@@ -1103,7 +1102,7 @@ C$OMP BARRIER
 !     &           z_r(i,j,k).gt.-1200 ) then
                 t(i,j,k,1,itpas)=1
               else
-                 t(i,j,k,1,itpas)=0
+                t(i,j,k,1,itpas)=0
               endif
 #  elif defined SHOREFACE || defined RIP
             if (h(i,j).lt.2) then
@@ -1120,8 +1119,7 @@ C$OMP BARRIER
 !    &                     )/Scoef      
      &                     )
 !
-                 t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
-
+              t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
               zdye20 = -0.35*depth
               t(i,j,k,1,itpas2) =
 !
@@ -1130,13 +1128,13 @@ C$OMP BARRIER
 !    &                     )/Scoef      
      &                     )
 !
-                 t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
+              t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
 #  elif defined SED_TOY
             if (k.gt.int(N/2)) then
-                t(i,j,k,1,itpas)=1.
-              else
-                t(i,j,k,1,itpas)=0
-              endif
+              t(i,j,k,1,itpas)=1.
+            else
+              t(i,j,k,1,itpas)=0
+            endif
 #  elif defined TFLAT2DV
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
@@ -1173,17 +1171,17 @@ C$OMP BARRIER
                 if (h(i,j).gt.0) then
 ! ---------------- mud+diss case -----------------!
                   if (iv<=itsubs1+1) then
-                     if( i>79.and.i<151) then
-                       t(i,j,k,1,iv)=cini_wat(iv)
-                     else
-                       t(i,j,k,1,iv)=0.
-                     endif
+                    if( i>79.and.i<151) then
+                      t(i,j,k,1,iv)=cini_wat(iv)
+                    else
+                      t(i,j,k,1,iv)=0.
+                    endif
                   else
-                     t(i,j,k,1,iv)=cini_wat(iv)
+                    t(i,j,k,1,iv)=cini_wat(iv)
                   endif
 ! ------------------------------------------------!
                 else
-                     t(i,j,k,1,iv)=0.
+                  t(i,j,k,1,iv)=0.
                 endif
 #  elif defined DUNE && defined MUSTANG
                 t(i,j,k,1,iv)=cini_wat(iv)  
@@ -1196,7 +1194,7 @@ C$OMP BARRIER
                   t(i,j,k,1,iv)=0.
                 endif
 #  endif
-               endif
+              endif
             enddo
           enddo
         enddo
@@ -1207,7 +1205,7 @@ C$OMP BARRIER
 !  Initial conditions for sediment tracer variables.
 !----------------------------------------------------------------------
 !
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       do itrc=1,NST
         iv=itrc_sed+itrc-1 
         do k=1,N
@@ -1247,13 +1245,13 @@ C$OMP BARRIER
             if (.not.got_tini(iNO3_)) then
               temp=t(i,j,k,1,itemp)
                if (temp.lt.8.) then
-                  SiO4=30.
+                 SiO4=30.
                elseif (temp.ge.8. .and. temp.le.11.) then
-                  SiO4=30.-((temp-8.)*(20./3.))
+                 SiO4=30.-((temp-8.)*(20./3.))
                elseif (temp.gt.11. .and. temp.le.13.) then
-                  SiO4=10.-((temp-11.)*(8./2.))
+                 SiO4=10.-((temp-11.)*(8./2.))
                elseif (temp.gt.13. .and. temp.le.16.) then
-                  SiO4=2.-((temp-13.)*(2./3.))
+                 SiO4=2.-((temp-13.)*(2./3.))
                elseif (temp.gt.16.) then
                  SiO4=0.
                endif
@@ -1279,21 +1277,21 @@ C$OMP BARRIER
               t(i,j,k,2,iCAL_)=t(i,j,k,1,iCAL_)
             endif
             if (.not.got_tini(iPO4_))  then
-             temp=t(i,j,k,1,itemp)
-               if (temp.lt.8.) then
-                  SiO4=30.
-               elseif (temp.ge.8. .and. temp.le.11.) then
-                  SiO4=30.-((temp-8.)*(20./3.))
-               elseif (temp.gt.11. .and. temp.le.13.) then
-                  SiO4=10.-((temp-11.)*(8./2.))
-               elseif (temp.gt.13. .and. temp.le.16.) then
-                  SiO4=2.-((temp-13.)*(2./3.))
-               elseif (temp.gt.16.) then
-                 SiO4=0.
-               endif
-               t(i,j,k,1,iPO4_)=(1.67+0.5873*SiO4+0.0144*SiO4**2
+              temp=t(i,j,k,1,itemp)
+              if (temp.lt.8.) then
+                SiO4=30.
+              elseif (temp.ge.8. .and. temp.le.11.) then
+                SiO4=30.-((temp-8.)*(20./3.))
+              elseif (temp.gt.11. .and. temp.le.13.) then
+                SiO4=10.-((temp-11.)*(8./2.))
+              elseif (temp.gt.13. .and. temp.le.16.) then
+                SiO4=2.-((temp-13.)*(2./3.))
+              elseif (temp.gt.16.) then
+                SiO4=0.
+              endif
+              t(i,j,k,1,iPO4_)=(1.67+0.5873*SiO4+0.0144*SiO4**2
      &                               +0.0003099*SiO4**3)/16.
-               t(i,j,k,2,iPO4_)=t(i,j,k,1,iPO4_)
+              t(i,j,k,2,iPO4_)=t(i,j,k,1,iPO4_)
             endif
             if (.not.got_tini(iPOC_))  then
               t(i,j,k,1,iPOC_)=1.e-2
@@ -1367,13 +1365,13 @@ C$OMP BARRIER
               t(i,j,k,1,iNH4_)=1.e-2
               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
-#     if defined key_ligand
+#     ifdef key_ligand
             if (.not.got_tini(iLGW_))  then
               t(i,j,k,1,iLGW_)=1.e-3
               t(i,j,k,2,iLGW_)=t(i,j,k,1,iLGW_)
             endif
 #     endif
-#     if defined key_pisces_quota
+#     ifdef key_pisces_quota
             if (.not.got_tini(iDON_))  then
               t(i,j,k,1,iDON_)=5.
               t(i,j,k,2,iDON_)=t(i,j,k,1,iDON_)
@@ -1437,20 +1435,20 @@ C$OMP BARRIER
 #     endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tini(iChla)) then
-               t(i,j,k,1,iChla)=0.08
-               t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
+              t(i,j,k,1,iChla)=0.08
+              t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
             endif
             if (.not.got_tini(iPhy1)) then
-               t(i,j,k,1,iPhy1)=0.1
-               t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+              t(i,j,k,1,iPhy1)=0.1
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
             endif
             if (.not.got_tini(iZoo1)) then
-               t(i,j,k,1,iZoo1)=0.06
-               t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+              t(i,j,k,1,iZoo1)=0.06
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
             endif
             if (.not.got_tini(iDet1)) then
-               t(i,j,k,1,iDet1)=0.02
-               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+              t(i,j,k,1,iDet1)=0.02
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
 #   ifdef OXYGEN
             if (.not.got_tini(iO2))  then
@@ -1460,69 +1458,69 @@ C$OMP BARRIER
 #   endif
 #  elif defined BIO_N2ChlPZD2
             if (.not.got_tini(iNH4_))  then
-               t(i,j,k,1,iNH4_)=0.1
-               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
+              t(i,j,k,1,iNH4_)=0.1
+              t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
             if (.not.got_tini(iChla)) then
-               t(i,j,k,1,iChla)=0.08
-               t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
+              t(i,j,k,1,iChla)=0.08
+              t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
             endif
             if (.not.got_tini(iPhy1)) then
-               t(i,j,k,1,iPhy1)=0.06
-               t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+              t(i,j,k,1,iPhy1)=0.06
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
             endif
             if (.not.got_tini(iZoo1)) then
-               t(i,j,k,1,iZoo1)=0.04
-               t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+              t(i,j,k,1,iZoo1)=0.04
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
             endif
             if (.not.got_tini(iDet1)) then
-               t(i,j,k,1,iDet1)=0.02
-               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+              t(i,j,k,1,iDet1)=0.02
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
             if (.not.got_tini(iDet2)) then
-               t(i,j,k,1,iDet2)=0.02
-               t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
+              t(i,j,k,1,iDet2)=0.02
+              t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
             endif
 #  elif defined BIO_BioEBUS
             if (.not.got_tini(iNO2_))  then
-               t(i,j,k,1,iNO2_)=0.05*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iNO2_)=t(i,j,k,1,iNO2_)
+              t(i,j,k,1,iNO2_)=0.05*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iNO2_)=t(i,j,k,1,iNO2_)
             endif
             if (.not.got_tini(iNH4_))  then
-               t(i,j,k,1,iNH4_)=0.1*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
+              t(i,j,k,1,iNH4_)=0.1*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
             if (.not.got_tini(iPhy1)) then
-               t(i,j,k,1,iPhy1)=0.04*exp(z_r(i,j,k)/50.) 
-               t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+              t(i,j,k,1,iPhy1)=0.04*exp(z_r(i,j,k)/50.) 
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
             endif
             if (.not.got_tini(iPhy2)) then
-               t(i,j,k,1,iPhy2)=0.06*exp(z_r(i,j,k)/50.) 
-               t(i,j,k,2,iPhy2)=t(i,j,k,1,iPhy2)
+              t(i,j,k,1,iPhy2)=0.06*exp(z_r(i,j,k)/50.) 
+              t(i,j,k,2,iPhy2)=t(i,j,k,1,iPhy2)
             endif
             if (.not.got_tini(iZoo1)) then
-               t(i,j,k,1,iZoo1)=0.04*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+              t(i,j,k,1,iZoo1)=0.04*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
             endif
             if (.not.got_tini(iZoo2)) then
-               t(i,j,k,1,iZoo2)=0.04*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iZoo2)=t(i,j,k,1,iZoo2)
+              t(i,j,k,1,iZoo2)=0.04*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iZoo2)=t(i,j,k,1,iZoo2)
             endif
             if (.not.got_tini(iDet1)) then
-               t(i,j,k,1,iDet1)=0.02
-               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+              t(i,j,k,1,iDet1)=0.02
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
             if (.not.got_tini(iDet2)) then
-               t(i,j,k,1,iDet2)=0.02
-               t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
+              t(i,j,k,1,iDet2)=0.02
+              t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
             endif
             if (.not.got_tini(iDON)) then
-               t(i,j,k,1,iDON)=0.5*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iDON)=t(i,j,k,1,iDON)
+              t(i,j,k,1,iDON)=0.5*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iDON)=t(i,j,k,1,iDON)
             endif
             if (.not.got_tini(iO2)) then
-               t(i,j,k,1,iO2)=250.*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iO2)=t(i,j,k,1,iO2)
+              t(i,j,k,1,iO2)=250.*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iO2)=t(i,j,k,1,iO2)
             endif
 #   ifdef NITROUS_OXIDE
             if (.not.got_tini(iN2O)) then

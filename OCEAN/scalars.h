@@ -238,7 +238,7 @@
 #ifdef SOLVE3D
       logical got_tini(NT)
 #endif
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
       logical got_inised(3)
 #endif
 #ifdef BBL
@@ -342,7 +342,7 @@
 #ifdef SOLVE3D
      &                      , got_tini 
 #endif
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
      &                      , got_inised 
 #endif
 #ifdef BBL

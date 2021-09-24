@@ -36,23 +36,25 @@ fname='Tflat2dv_his.nc';
 idy=3;
 idz=1;
 
-
 nc=netcdf(fname);
 
-
-h=squeeze(nc{'h'}(:,:));
-X=squeeze(nc{'x_rho'}(idy,:));
-T=squeeze(nc{'scrum_time'}(:,:));
+h=squeeze(nc{'h'}(idy,:));
+Dcrit=squeeze(nc{'Dcrit'}(idy,:));
+X=squeeze(nc{'x_rho'}(idy,:))/1000;
+T=squeeze(nc{'scrum_time'}(:,:))/86400;
 %
 sand=squeeze(nc{'SAND'}(:,idz,idy,:));
+zeta=squeeze(nc{'zeta'}(:,idy,:));
 
 close(nc);
+
+D=zeta+repmat(h,size(zeta,1),1);
+sand(D<Dcrit+0.01)=NaN;
 
 %----------------------------------------------------------
 %  Plot Hovmoller
 %----------------------------------------------------------
 figure('Position',[1 1 1000 500])
-
 
 pcolor(X,T,squeeze(sand)), shading flat
 caxis([0 3]);
@@ -66,8 +68,8 @@ newmap(zpos,:) = [1 1 1];
 colormap(newmap);
 
 
-xlabel('X (m)','fontsize',12);
-ylabel('T (s)','fontsize',12);
+xlabel('X (km)','fontsize',12);
+ylabel('T (days)','fontsize',12);
 
 title(['Tide Flat 2DV / Sand hovmoller'],'fontsize',14)
 set(gca,'fontsize',15);

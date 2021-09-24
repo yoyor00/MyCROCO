@@ -14,6 +14,10 @@
 !
 #ifndef CHILD_SPG
       subroutine t3dmix (tile)
+
+# ifdef MUSTANG
+      USE comsubstance, ONLY : nv_grav,nvp
+# endif
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 # include "param.h"
@@ -21,6 +25,11 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       do itrc=1,NTRA_T3DMIX
+
+#  ifdef MUSTANG
+!  With MUSTANG, mixing of sediments is done in step3d_t
+       if (itrc.lt.itsubs1+nv_grav .or. itrc.gt.itsubs1+nvp) then
+#  endif
 
 # ifdef AGRIF
         if (AGRIF_Root()) then
@@ -65,6 +74,10 @@
 #  endif
      &                    )
 # endif   /* AGRIF */
+
+#  ifdef MUSTANG
+       endif
+#  endif
 
       enddo
       return

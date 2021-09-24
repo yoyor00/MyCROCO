@@ -47,7 +47,7 @@
       integer tile, itrc,i,j,k,ivar
 # ifdef SEDIMENT
      &      , indxWrk
-#endif
+# endif
 # include "work.h"
 #endif
 #include "netcdf.inc"

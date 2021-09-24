@@ -10,7 +10,7 @@
 !======================================================================
 !
 
-# define NCJOIN_UCLA
+#define NCJOIN_UCLA
 
 #include "cppdefs.h"
 
@@ -23,11 +23,11 @@
 #include "strings.h"
 #include "grid.h"
 
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 # include "sediment.h"
       character(32) namatt
       integer i,j
-#endif /* FLOATS */
+#endif /* SEDIMENT */
 #ifdef FLOATS
 # include "init_floats.h"
 # include "ncscrum_floats.h"
@@ -112,43 +112,43 @@
 
       if (ncid.eq.ncidrst) then
         ierr=nf_put_att_text (ncid, nf_global, 'type',  17,
-     &                                 'ROMS restart file')
+     &                                 'CROCO restart file')
       elseif (ncid.eq.ncidhis) then
         ierr=nf_put_att_text (ncid, nf_global, 'type',  17,
-     &                                 'ROMS history file')
+     &                                 'CROCO history file')
 #ifdef AVERAGES
       elseif (ncid.eq.ncidavg) then
         ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
-     &                                'ROMS averages file')
+     &                                'CROCO averages file')
 #endif
 #ifdef STATIONS
       elseif (ncid.eq.ncidsta) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 18,
-     &                                'ROMS stations file')
+     &                                'CROCO stations file')
 #endif
 #ifdef FLOATS
       elseif (ncid.eq.ncidflt) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 24,
-     &                          'ROMS floats history file')
+     &                          'CROCO floats history file')
 #endif
 #if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_ADV) 
       elseif (ncid.eq.nciddia) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 51,
-     &     'ROMS DIAGTS history file - flux form for adv. terms')
+     &     'CROCO DIAGTS history file - flux form for adv. terms')
 #ifdef AVERAGES
       elseif (ncid.eq.nciddia_avg) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 51,
-     &     'ROMS DIAGTS average file - flux form for adv. terms')
+     &     'CROCO DIAGTS average file - flux form for adv. terms')
 #endif
 #endif
 #if (defined DIAGNOSTICS_TS && !defined DIAGNOSTICS_TS_ADV) 
       elseif (ncid.eq.nciddia) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 57,
-     &     'ROMS DIAGTS history file - divergence form for adv. terms')
+     &     'CROCO DIAGTS history file - divergence form for adv. terms')
 #ifdef AVERAGES
       elseif (ncid.eq.nciddia_avg) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 57,
-     &     'ROMS DIAGTS average file - divergence form for adv. terms')
+     &     'CROCO DIAGTS average file - divergence form for adv. terms')
 #endif
 #endif
 
@@ -509,7 +509,7 @@
 !
 ! Sediment parameters
 !
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       do i=1, NST
         write(namatt,'(A,I1)') ' sand_',i
         ierr=nf_put_att_FTYPE(ncid,nf_global,'Sd'//TRIM(namatt),

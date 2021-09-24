@@ -58,7 +58,7 @@
 ! indxHi,indxHS   depth of ice cover and depth of snow cover
 ! indxTIsrf       temperature of ice surface
 !
-! ** SEDIMENT **
+! ** SEDIMENT (USGS model) **
 ! indxBSD,indxBSS bottom sediment grain Density and Size 
 !                 to be read from file if(!defined ANA_BSEDIM, 
 !                 && !defined SEDIMENT) 
@@ -276,7 +276,7 @@
 #     endif
 #  endif
 # endif /* BIOLOGY */
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       integer, dimension(NGRAV) :: indxGRAV
      & =(/(iloop,iloop=indxT+ntrc_salt+ntrc_pas+ntrc_bio+1,
      &  indxT+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV)/)
@@ -288,7 +288,7 @@
      &  indxT+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+NSAND+NMUD)/)
 # endif
 
-# if(!defined ANA_BSEDIM  && !defined USGS)
+# if(!defined ANA_BSEDIM  && !defined SEDIMENT)
       integer indxBSD, indxBSS
       parameter (indxBSD=indxT+ntrc_salt+ntrc_pas+ntrc_bio+1,
      &           indxBSS=101)
@@ -474,11 +474,11 @@
       parameter (indxO=indxT+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
      &              +ntrc_substot
 # ifdef MUSTANG
-     &              +ntrc_subs+6
+     &              +ntrc_subs+16
 #  ifdef key_MUSTANG_specif_outputs
      &              +3*ntrc_subs +2
 #   ifdef key_MUSTANG_V2
-     &              +1*ntrc_subs +12
+     &              +1*ntrc_subs +13
 #   endif
 #   ifdef key_MUSTANG_bedload
      &              +4*ntrc_subs +3
@@ -632,7 +632,7 @@
       parameter (indxBostr=indxSUSTR+24)
 
 #ifdef SOLVE3D
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       integer indxSed, indxATHK, indxBTHK, indxBPOR
       parameter (indxATHK=indxSUSTR+27, 
      &           indxSed=indxSUSTR+28,
@@ -676,7 +676,7 @@
 #ifdef BBL
       integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot, 
      &        indxZbapp, indxBostrw
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       parameter (indxBBL=indxSUSTR+42+6*NST,
 # else
       parameter (indxBBL=indxSUSTR+42, 
@@ -723,7 +723,7 @@
 
 #if defined MRL_WCI || defined OW_COUPLING
       integer indxSUP, indxUST2D,indxVST2D
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       parameter (indxSUP=indxSUSTR+54+6*NST,
 # else
       parameter (indxSUP  =indxSUSTR+54,
@@ -901,12 +901,12 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
       integer rstT(NT)
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       integer rstSed(NST+2)
 # endif
 # ifdef MUSTANG
       integer rstMUS(NT+3)
-# endif	
+# endif
 #endif
 #ifdef MORPHODYN
       integer rstHm
@@ -970,7 +970,7 @@
 #  endif
 # endif  /* BIOLOGY */
       integer hisT(NT)
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
@@ -1146,7 +1146,7 @@
       integer avgSST_skin
 #  endif
 
-#  if defined SEDIMENT && defined USGS
+#  ifdef SEDIMENT
       integer avgSed(1+NST+2
 #   ifdef SUSPLOAD
      &      +2*NST
@@ -1160,7 +1160,7 @@
      & )
 #  endif
 #  ifdef MUSTANG 
-     integer avgMust(ntrc_subs+6)
+      integer avgMust(ntrc_subs+6)
 #  endif
 
 # endif /* SOLVE3D */
@@ -1348,7 +1348,7 @@
      &      , wrtdiabioGasExc_avg(NumGasExcTerms+1)
 # endif
 #endif
-	
+
       common/incscrum/
      &        ncidfrc, ncidbulk,ncidclm, ntsms, ntsrf, ntssh, ntsst
      &      , ntuclm, ntsss, ntbulk, ncidqbar, ntqbar, ntww 
@@ -1370,7 +1370,7 @@
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV,   rstT
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &                         , rstSed
 # endif
 # ifdef MUSTANG
@@ -1421,7 +1421,7 @@
      &      , hisAOU, hisWIND10
 #  endif
 # endif  /* BIOLOGY */
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &      , hisSed
 # endif
 # ifdef MUSTANG
@@ -1660,7 +1660,7 @@
 #  ifdef SST_SKIN
      &      , avgSST_skin
 #  endif
-#  if defined SEDIMENT && defined USGS
+#  ifdef SEDIMENT
      &      , avgSed
 #  endif
 # endif /* SOLVE3D */
@@ -1815,11 +1815,9 @@
      &                                ,   bioname
 #endif
 #ifdef SEDIMENT
-# ifdef USGS
      &                                ,   sedname
-# elif defined MUSTANG
-     &                 ,   sednam_must,   sednam_vmust
-# endif
+#elif defined MUSTANG
+     &               ,   sedname_subst,   sedname_must
 #endif
 
 #ifdef SOLVE3D
@@ -1903,11 +1901,9 @@
      &                     ,   aparnam,   assname
 #endif
 #ifdef SEDIMENT
-# ifdef USGS
      &                                ,   sedname
-# elif defined MUSTANG
-     &                 ,   sednam_must,   sednam_vmust
-# endif
+#elif defined MUSTANG
+     &               ,   sedname_subst,   sedname_must
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname

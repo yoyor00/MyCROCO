@@ -191,10 +191,6 @@ C$    trd=omp_get_thread_num()
 # ifdef MRL_WCI
       real vstu,ustv,dudx,dvdx,dude,dvde
 # endif
-# ifdef SEDIMENT
-#  include "sediment.h"
-#  include "bbl.h"
-# endif
 # include "mixing.h"
 # include "climat.h"
 # include "scalars.h"
@@ -213,10 +209,6 @@ C$    trd=omp_get_thread_num()
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
 # endif
-# ifdef SEDIMENT
-      real Umag,Ucur,Vcur,Utur,znots
-# endif
-
 # include "nbq.h"
 !
 # ifdef MASKING

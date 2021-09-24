@@ -26,13 +26,13 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-% choose here if you are using usgs (1) or mustang (0) model output file
+% Choose usgs (1) or mustang (0) model output file
 usgs=1
     
 fname='ana_dune_his.nc';
 
 j=2;
-tndx=2; % half hourly outputs
+tndx=2; % half-hourly outputs
 
 %======================================================================
 

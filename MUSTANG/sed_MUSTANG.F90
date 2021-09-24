@@ -1343,8 +1343,7 @@
 #else
        DO i=ifirst,ilast
 #endif
-!         IF ( h0_out(i,j) .NE. -valmanq .AND. ksma(i,j) > 0 ) mask_h0(i,j)=.FALSE.
-         IF ( h0_out(i,j) .NE. -valmanq ) mask_h0(i,j)=.FALSE.
+         IF ( h0_out(i,j) .NE. -valmanq .AND. ksma(i,j) > 0 ) mask_h0(i,j)=.FALSE.
        END DO
      END DO  
 
@@ -3721,7 +3720,13 @@
    !!! ATTENTION: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
    rossan=ros_sand_homogen
    !!!!!!!!!!!!!!!!!
+#ifdef MANGAE2500    
+! BM MANGAE2500 ! to remove gravel that is declared as sand in our configuration
+   DO iv=isand1+1,isand2
+# else
    DO iv=isand1,isand2
+# endif
+
      somsan=somsan+cv_sed(iv,k,i,j)
      diamsan=diamsan+diam_sed(iv)*cv_sed(iv,k,i,j)
      critstressan=critstressan+stresscri0(iv)*cv_sed(iv,k,i,j)

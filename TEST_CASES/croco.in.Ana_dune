@@ -10,10 +10,9 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 run_start_date:
 01/01/2019 00:00:00
 run_end_date:
-01/01/2019 06:00:00
-
+01/01/2019 02:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-                   0.5       6       6
+	             0.05         4          4
 
 initial: NRREC  filename
           0
@@ -23,7 +22,7 @@ restart:          NRST, NRPFRST / filename
                           ana_dune_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     2000        0
+            T     1800        0
                           ana_dune_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
@@ -36,7 +35,7 @@ gls_history_fields:   TKE  GLS  Lscale
                       T     T    T
 
 sediments: input file  (USGS Sediment model)
-           TEST_CASES/sediment_ana_dune.in
+           sediment_ana_dune.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T
@@ -50,6 +49,9 @@ rho0:
 
 bottom_drag:     RDRG(m/s),      RDRG2,   Zob [m],  Cdb_min, Cdb_max
                  0.0e-04         0.0e-3   0.0001       1.d-4    1.d-1
+
+vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
+                   0.d0    30*0.d0
 
 gamma2:
                  1.

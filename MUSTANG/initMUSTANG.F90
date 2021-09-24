@@ -502,6 +502,9 @@
    CHARACTER(len=lchain) :: filepc
    CHARACTER(len=19)     :: tool_sectodat
    INTEGER               :: iv,ivpc,isubs,IERR_MPI
+#ifdef key_CROCO
+   INTEGER               :: lstr,lenstr
+#endif
    REAL(KIND=rlg)        :: tool_datosec,dtsedc,dtsedd,dtsedb
 
 #ifdef key_MUSTANG_V2
@@ -601,7 +604,8 @@ IF(rw == 'r')THEN
 !==================
 
 #ifdef key_CROCO
-    filepc=REPFICNAMELIST//'/'//SEDNAMV
+    lstr=lenstr(sedname_must)
+    filepc=sedname_must(1:lstr)
 #else
 # ifdef key_MUSTANG_V2
     filepc=REPFICNAMELIST//'/paraMUSTANGV2.txt'

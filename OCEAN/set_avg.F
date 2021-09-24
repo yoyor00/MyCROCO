@@ -177,7 +177,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #ifdef MORPHODYN
-      if (wrtavg(indxHm)) then
+        if (wrtavg(indxHm)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
               h_avg(i,j)=cff*( cff1*h_avg(i,j)
@@ -529,45 +529,45 @@ C$    integer omp_get_thread_num
         endif
 #    ifdef OXYGEN
         if (wrtavg(indxU10)) then
-           do j=JstrR,JendR
-              do i=IstrR,IendR
-                 u10_avg(i,j)=cff*( cff1*u10_avg(i,j)+u10(i,j) )
-              enddo
-           enddo
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              u10_avg(i,j)=cff*( cff1*u10_avg(i,j)+u10(i,j) )
+            enddo
+          enddo
         endif
         if (wrtavg(indxKvO2)) then
-           do j=JstrR,JendR
-              do i=IstrR,IendR
-                 Kv_O2_avg(i,j)=cff*( cff1*Kv_O2_avg(i,j)+Kv_O2(i,j) )
-              enddo
-           enddo
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              Kv_O2_avg(i,j)=cff*( cff1*Kv_O2_avg(i,j)+Kv_O2(i,j) )
+            enddo
+          enddo
         endif
         if (wrtavg(indxO2sat)) then
-           do j=JstrR,JendR
-              do i=IstrR,IendR
-                 O2satu_avg(i,j)=cff*( cff1*O2satu_avg(i,j)
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              O2satu_avg(i,j)=cff*( cff1*O2satu_avg(i,j)
      &                                     +O2satu(i,j) )
-              enddo
-           enddo
+            enddo
+          enddo
         endif
 #    endif /* OXYGEN */
 #   elif defined BIO_BioEBUS
-          if (wrtavg(indxAOU)) then
-            do k=1,N
-              do j=JstrR,JendR
-                do i=IstrR,IendR
-                  AOU_avg(i,j,k)=cff*( cff1*AOU_avg(i,j,k)+AOU(i,j,k) )
-                enddo
+        if (wrtavg(indxAOU)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                AOU_avg(i,j,k)=cff*( cff1*AOU_avg(i,j,k)+AOU(i,j,k) )
               enddo
             enddo
-          endif
-          if (wrtavg(indxWIND10)) then
-              do j=JstrR,JendR
-                do i=IstrR,IendR
-                  wind10_avg(i,j)=cff*( cff1*wind10_avg(i,j)+wind10(i,j) )
-                enddo
-              enddo
-          endif
+          enddo
+        endif
+        if (wrtavg(indxWIND10)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              wind10_avg(i,j)=cff*( cff1*wind10_avg(i,j)+wind10(i,j) )
+            enddo
+          enddo
+        endif
 #   endif
 #  endif /* BIOLOGY */
 #  ifdef SEDIMENT
@@ -587,56 +587,56 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 #   ifdef SUSPLOAD
-      do itrc=1,NST
-         indxWrk=indxDFLX(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                settling_flux_avg(i,j,itrc)=
+        do itrc=1,NST
+          indxWrk=indxDFLX(1)+itrc-1
+!        if (wrtavg(indxWrk)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              settling_flux_avg(i,j,itrc)=
      &                           cff*( cff1*settling_flux_avg(i,j,itrc)
      &                                     +settling_flux(i,j,itrc) )
-              enddo
             enddo
-!         endif
-      enddo
-      do itrc=1,NST
-         indxWrk=indxEFLX(1)+itrc-1
+          enddo
+!        endif
+        enddo
+        do itrc=1,NST
+          indxWrk=indxEFLX(1)+itrc-1
 !         if (wrtavg(indxWrk)) then
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                ero_flux_avg(i,j,itrc)=
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              ero_flux_avg(i,j,itrc)=
      &                           cff*( cff1*ero_flux_avg(i,j,itrc)
      &                                     +ero_flux(i,j,itrc) )
-              enddo
             enddo
+          enddo
 !         endif
-      enddo
+        enddo
 #   endif
 #   ifdef BEDLOAD
-      do itrc=1,NST
-         indxWrk=indxBDLU(1)+itrc-1
-!         if (wrtavg(indxWrk)) then
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                bedldu_avg(i,j,itrc)=
+        do itrc=1,NST
+          indxWrk=indxBDLU(1)+itrc-1
+!        if (wrtavg(indxWrk)) then
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              bedldu_avg(i,j,itrc)=
      &                           cff*( cff1*bedldu_avg(i,j,itrc)
      &                                     +bedldu(i,j,itrc)   )
-              enddo
             enddo
-!         endif
-      enddo
-      do itrc=1,NST
-         indxWrk=indxBDLV(1)+itrc-1
+          enddo
+!        endif
+        enddo
+        do itrc=1,NST
+          indxWrk=indxBDLV(1)+itrc-1
 !         if (wrtavg(indxWrk)) then
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                bedldv_avg(i,j,itrc)=
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              bedldv_avg(i,j,itrc)=
      &                           cff*( cff1*bedldv_avg(i,j,itrc)
      &                                     +bedldv(i,j,itrc)   )
-              enddo
             enddo
+          enddo
 !         endif
-      enddo
+        enddo
 #   endif
 #  endif /* SEDIMENT */
 # endif /* SOLVE3D */

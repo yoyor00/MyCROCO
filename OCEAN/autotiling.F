@@ -44,7 +44,7 @@
 
       integer size_XI,size_ETA,se,sse, sz,ssz
 
-# include "dynderivparam.h"
+#include "dynderivparam.h"
 #ifdef PISCES
 # include "parameter.h"
 #endif

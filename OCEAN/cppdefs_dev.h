@@ -765,107 +765,83 @@
 
 /*
 ======================================================================
-                Sediment dynamics models (USGS/Mustang)
+                Sediment dynamics models (USGS sediment model/Mustang)
 ======================================================================
 */
+
+/*              
+         ===== CROCO-USGS SEDIMENT model =====  
+*/
 #ifdef SEDIMENT
-
-# ifdef MUSTANG
-# elif defined USGS
-# else
-#  define USGS  /* default model */
-# endif
-
+# undef  MUSTANG
 # define SUSPLOAD
 # define BEDLOAD
 # if defined NBQ || defined SED_TOY || defined TFLAT2DV
 #  undef  BEDLOAD
 # endif
+# define ANA_SEDIMENT
 # undef  BED_ARMOR
 # undef  BED_HIDEXP
+# ifdef BEDLOAD
+#  ifdef BEDLOAD_VANDERA       /*  == BEDLOAD scheme ==  */
+#  elif defined BEDLOAD_MPM    /* Meyer-Peter & Muller   */
+#  elif defined BEDLOAD_WULIN  /* Wu & Lin               */
+#  elif defined BEDLOAD_MARIEU /* Marieu                 */
+#  else                        /* --> default scheme:    */
+#   if (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
+        defined ANA_WWAVE    || defined OW_COUPLING)
+#    define BEDLOAD_VANDERA    /* Van der A              */
+#   else
+#    define BEDLOAD_WULIN      /* Wu & Lin               */
+#   endif
+#  endif
+#  ifdef BEDLOAD_UP1           /*   == INTERPOLATION ==  */
+#  elif defined BEDLOAD_UP5    /* upwind 5th order       */
+#  elif defined BEDLOAD_WENO5  /* WENO 5th order         */
+#  else
+#   define BEDLOAD_UP1         /* default: Up-1st order  */
+#  endif
+#  ifdef SLOPE_LESSER          /*  == SLOPE scheme ==    */
+#  elif defined SLOPE_NEMETH   /* Nemeth                 */
+#  elif defined SLOPE_KIRWAN   /* Kirwan                 */
+#  else
+#   define SLOPE_LESSER        /* default: Lesser        */
+#  endif
+# endif /* BEDLOAD */
+# ifdef DUNE
+#  undef SUSPLOAD
+#  ifdef ANA_DUNE
+#   undef  SLOPE_LESSER
+#  endif
+# endif /* DUNE */
+#endif /* SEDIMENT */
+
+/*              
+         ===== MUSTANG SEDIMENT model =====  
+*/
 
 # ifdef MUSTANG
-#  undef  USGS
+#  undef  SEDIMENT
 #  define SUBSTANCE
-#  ifdef SUBSTANCE
-#   define key_noTSdiss_insed
-#   define key_nofluxwat_IWS
-#  endif
-#  define key_MUSTANG_V2
-#  undef  PASSIVE_TRACER
-#  define ANA_PASSIVE
 #  define key_CROCO
-# else
-#   define ANA_SEDIMENT
-# endif
-
-# ifdef BEDLOAD
-#  ifdef USGS
-#   ifdef BEDLOAD_VANDERA       /*  == BEDLOAD scheme ==  */
-#   elif defined BEDLOAD_MPM    /* Meyer-Peter & Muller   */
-#   elif defined BEDLOAD_WULIN  /* Wu & Lin               */
-#   elif defined BEDLOAD_MARIEU /* Marieu                 */
-#   else        /* --> default scheme: */
-#    if (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
-         defined ANA_WWAVE    || defined OW_COUPLING)
-#     define BEDLOAD_VANDERA    /* Van der A              */
-#    else
-#     define BEDLOAD_WULIN      /* Wu & Lin               */
-#    endif
-#   endif
-#   ifdef BEDLOAD_UP1           /*   == INTERPOLATION ==  */
-#   elif defined BEDLOAD_UP5    /* upwind 5th order       */
-#   elif defined BEDLOAD_WENO5  /* WENO 5th order         */
-#   else
-#    define BEDLOAD_UP1         /* default: up 1st order  */
-#   endif
-#   ifdef SLOPE_LESSER          /*  == SLOPE scheme ==    */
-#   elif defined SLOPE_NEMETH   /* Nemeth                 */
-#   elif defined SLOPE_KIRWAN   /* Kirwan                 */
-#   else
-#    define SLOPE_LESSER        /* Default: Lesser        */
-#   endif
-#  endif /* USGS */
+#  define key_noTSdiss_insed
+#  define key_nofluxwat_IWS
+#  undef  PASSIVE_TRACER
 #  ifdef DUNE
-#   undef SUSPLOAD
-#   ifdef USGS               
-#    ifdef ANA_DUNE
-#     undef  SLOPE_LESSER
-#    endif
-#   elif defined MUSTANG
-#    define WET_DRY
-#    define SALINITY
-#    define key_tenfon_upwind
-#    define key_MUSTANG_bedload
-#    define key_MUSTANG_specif_outputs
-#    ifdef DUNE3D
-#     define MUSTANG_CORFLUX
-#    endif
-#    ifdef ANA_DUNE
-#     undef  key_tenfon_upwind
-#     define key_ANA_bedload
-#    endif
-#   endif /* USGS */
-#  endif /* DUNE */
-
-#  ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
-#   define BEDLOAD_VANDERA_ZEROCURR
-#   ifndef BEDLOAD_VANDERA_ZEROCURR
-#     define BEDLOAD_VANDERA_FD_MADSEN
-#     undef  BEDLOAD_VANDERA_FD_SANTOSS
+#   define key_MUSTANG_V2
+#   define key_tenfon_upwind
+#   define key_MUSTANG_bedload
+#   define key_MUSTANG_specif_outputs
+#   ifdef DUNE3D
+#    define MUSTANG_CORFLUX
+#   elif defined ANA_DUNE
+#    define key_ANA_bedload
 #   endif
-#   define BEDLOAD_VANDERA_ASYM_LIMITS
-#   undef  BEDLOAD_VANDERA_SURFACE_WAVE
-#   undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
-#  endif
-
-# else /* ! BEDLOAD */
-
-#  undef key_MUSTANG_bedload
-
-# endif /* BEDLOAD */
-
-#endif /* SEDIMENT */
+#  elif defined TFLAT2DV
+#   define key_MUSTANG_V2
+#   define key_tenfon_upwind
+#  endif /* DUNE | TFLAT2D */
+# endif /* MUSTANG */
 
 
 /* 
@@ -886,11 +862,11 @@
 #ifdef ANA_MORPHODYN
 # define MORPHODYN
 #endif
-#ifdef SEDIMENT
-# undef  ANA_MORPHODYN
-# if defined MORPHODYN && defined MUSTANG
-#   define MORPHODYN_MUSTANG_byHYDRO
-# endif
+#if defined SEDIMENT || defined MUSTANG
+# undef ANA_MORPHODYN
+#endif
+#if defined MORPHODYN && defined MUSTANG
+# define MORPHODYN_MUSTANG_byHYDRO
 #endif
 #if defined MORPHODYN && defined NBQ
 # define NBQ_FREESLIP

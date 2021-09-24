@@ -159,13 +159,13 @@ if [[ $copy_tag == 1 ]] ; then
     cp -Rf $SOURCES_DIR/$DIRO/croco_hindcast.in Misc/
     cp -Rf $SOURCES_DIR/$DIRO/croco_stations.in Misc/
     
-    #PISCES
+    # PISCES
     cp -Rf $SOURCES_DIR/PISCES/*namelist* .
 
-    #MUSTANG
+    # MUSTANG
     cp -Rf $SOURCES_DIR/MUSTANG/NAM_CASES/*txt FIC_NAMELIST/.
 
-	#XIOS
+    # XIOS
     DIRO='XIOS'
     cp -Rf $SOURCES_DIR/$DIRO/iodef.xml .
     cp -Rf $SOURCES_DIR/$DIRO/domain_def.xml .

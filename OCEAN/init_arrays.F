@@ -44,7 +44,7 @@ C$    integer omp_get_thread_num
 #include "climat.h"
 #include "scalars.h"
 #include "tides.h"
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
 # include "sediment.h"
 #endif
 #include "bbl.h"
@@ -79,7 +79,7 @@ C$    integer omp_get_thread_num
      &       ,iflux
 # endif
 #endif
-#if defined SEDIMENT && defined USGS
+#ifdef SEDIMENT
      &       ,ilay
 #endif
 #if defined SSH_TIDES || defined UV_TIDES
@@ -262,14 +262,14 @@ C$    integer omp_get_thread_num
             MCor_avg(i,j,k,2)=init
             MPrsgrd_avg(i,j,k,1)=init
             MPrsgrd_avg(i,j,k,2)=init
-# if defined DIAGNOSTICS_BARO
+#   ifdef DIAGNOSTICS_BARO
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
-#  endif
-# if defined M3FAST
+#   endif
+#   ifdef M3FAST
             Mfast_avg(i,j,k,1)=init
             Mfast_avg(i,j,k,2)=init
-#  endif
+#   endif
             MHmix_avg(i,j,k,1)=init
             MHmix_avg(i,j,k,2)=init
             MVmix_avg(i,j,k,1)=init
@@ -391,7 +391,7 @@ C$    integer omp_get_thread_num
             TForc_mld(i,j,itrc)=init
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
-#  ifdef AVERAGES
+#   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
             TVadv_mld_avg(i,j,itrc)=init
@@ -400,7 +400,7 @@ C$    integer omp_get_thread_num
             TForc_mld_avg(i,j,itrc)=init
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
-#  endif /* AVERAGES*/
+#   endif /* AVERAGES*/
           enddo
         enddo
       enddo
@@ -652,7 +652,7 @@ C$    integer omp_get_thread_num
         enddo
 # endif 
 
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 !
 !  Initialize sediment module arrays.
 !

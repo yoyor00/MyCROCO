@@ -18,6 +18,10 @@
 !
 # ifndef CHILD_SPG
       subroutine t3dmix_spg (tile)
+
+#  if defined MUSTANG && defined key_sand2D
+      USE comsubstance, ONLY : l_subs2D
+# endif
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 #  include "param.h"
@@ -25,6 +29,10 @@
 #  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       do itrc=1,NT
+
+#  if defined MUSTANG && defined key_sand2D
+       if (.not.l_subs2D(itrc-itsubs1+1)) then
+#  endif
 
 #  ifdef AGRIF
         if (AGRIF_Root()) then
@@ -62,6 +70,10 @@
 #   endif
      &                                                              )
 #  endif   /* AGRIF */
+
+#  if defined MUSTANG && defined key_sand2D
+       endif
+#  endif
 
       enddo
       return

@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_EK
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics 
