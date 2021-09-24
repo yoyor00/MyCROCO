@@ -11,7 +11,7 @@ C$XAD BINOMIAL-CKP ad_ns+2 90 1
          do iifroot = 0,nfast+2
             call step()
          end do
-         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
+c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
       end do
       write(*,*) 'end ad_step'
 
@@ -151,9 +151,9 @@ c      end do
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
                   icost = icost + delta_z*delta_z
 
-                  write(*,*) '=====>',zeta(i,j,knew)
-     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
-     &                 ,ad_obs(i,j,ta+2),ad_obs(i,j,ta+3)
+c                  write(*,*) '=====>',zeta(i,j,knew)
+c     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
+c     &                 ,ad_obs(i,j,ta+2),ad_obs(i,j,ta+3)
 
 
 c$$$                  write(*,*) 'AAAAA',ad_cost_counter,time,
@@ -193,6 +193,7 @@ c$$$                  end if
 # include "adinc.h"
 # include "adparam.h"
       integer ntrds,trd,my_first,my_last,tile,subs,range,ierr
+      integer iif_bak
 
 #ifdef OPENMP
       ntrds=omp_get_num_threads()
@@ -230,10 +231,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
       call set_scoord
       call set_weights
 
+c      iif_bak = iif
+c      iif = -1
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
+
+c      iif = iif_bak
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -268,18 +273,84 @@ CR      write(*,*)  ' -3' MYID
       implicit none
 # include "adinc.h"
 # include "adparam.h"
-      integer tile
+      integer tile, iif_bak
 # include "compute_tile_bounds.h"
 
-      call set_state_2d_tile(Istr, Iend, Jstr, Jend, ad_x)
+      call set_state_2d_1_tile(Istr, Iend, Jstr, Jend, ad_x)
 
-c      call set_depth(tile)
+c      iif_bak=iif
+c     iif=-1
+c      call set_scoord
+c      call set_weights
+
+c      call set_depth_bathy_modified(tile)
+c      iif=iif_bak
 
 c      call grid_stiffness(tile)
 
+c      call set_state_2d_2_tile(Istr, Iend, Jstr, Jend, ad_x)
+
       end subroutine set_state_2d
 
-      subroutine set_state_2d_tile(Istr,Iend,Jstr,Jend, ad_x)
+      subroutine set_state_2d_2_tile(Istr,Iend,Jstr,Jend, ad_x)
+      implicit none
+# include "adinc.h"
+# include "adparam.h"
+
+      double precision cff
+      integer Istr,Iend,Jstr,Jend,i,j,k,itrc
+
+      real t_bckp(GLOBAL_2D_ARRAY,N,3,NT)
+#include "compute_auxiliary_bounds.h"
+!
+#if defined EW_PERIODIC && !defined MPI
+# define IR_RANGE Istr,Iend
+# define IU_RANGE Istr,Iend
+#else
+# define IR_RANGE IstrR,IendR
+# define IU_RANGE Istr,IendR
+#endif
+#if defined NS_PERIODIC && !defined MPI
+# define JR_RANGE Jstr,Jend
+# define JV_RANGE Jstr,Jend
+#else
+# define JR_RANGE JstrR,JendR
+# define JV_RANGE Jstr,JendR
+#endif
+
+c     cf ana_initial
+      cff=((2.e-3)**2)/g
+      do k=1,N
+         do j=JR_RANGE
+            do i=IR_RANGE
+               t_bckp(i,j,k,1,itemp)=t(i,j,k,1,itemp)
+               t_bckp(i,j,k,2,itemp)=t(i,j,k,2,itemp)
+               t(i,j,k,1,itemp)=rho0*(1-cff*z_r(i,j,k)) - 1000.
+               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+               if (t_bckp(i,j,k,1,itemp) .ne. t(i,j,k,1,itemp)) then
+                  write(*,*) '!!!!!!',t_bckp(i,j,k,1,itemp),
+     &                 '!=',t(i,j,k,1,itemp)
+               end if
+               if (t_bckp(i,j,k,2,itemp) .ne. t(i,j,k,2,itemp)) then
+                  write(*,*) '!!!!!!',t_bckp(i,j,k,2,itemp),
+     &                 '!=',t(i,j,k,2,itemp)
+               end if
+            enddo
+         enddo
+      enddo
+
+      do itrc=1,NT
+         if (.not.got_tini(itrc)) then
+            call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &           t(START_2D_ARRAY,1,1,itrc))
+            call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &           t(START_2D_ARRAY,1,2,itrc))
+         end if
+      end do
+
+      end subroutine set_state_2d_2_tile
+
+      subroutine set_state_2d_1_tile(Istr,Iend,Jstr,Jend, ad_x)
       implicit none
 # include "adinc.h"
 # include "adparam.h"
@@ -292,11 +363,11 @@ c      call grid_stiffness(tile)
       k = 2
 
       depth=2000
-      ridge_width = ad_x(2)*100.0
+      ridge_width = ad_x(2)*100
       ridge_height = ad_x(1)
       h_bck(:,:) = h(:,:)
 
-      write(*,*) '########',ad_x(1)
+      write(*,*) '########',ad_x(1), ad_x(2)*100
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
@@ -313,9 +384,9 @@ c      call grid_stiffness(tile)
             h(i,j)=depth-ridge_height
           endif
 #   endif
-c          if (h(i,j).ne.h_bck(i,j)) then
-c             write(*,*) '#######/////', h(i,j) - h_bck(i,j)
-c          endif
+          if (h(i,j).ne.h_bck(i,j)) then
+             write(*,*) '#######/////', h(i,j) - h_bck(i,j)
+          endif
         enddo
       enddo
 
@@ -354,7 +425,7 @@ c      end do
       return
  900  format(1PE16.9)
  910  format(I2.2,'-',I3.3)
-      end subroutine set_state_2d_tile
+      end subroutine set_state_2d_1_tile
 
       subroutine init_control(ad_x,ad_g)
       implicit none
@@ -556,11 +627,13 @@ c      call grid_stiffness(tile)
       integer Istr,Iend,Jstr,Jend,i,j,k
 
 # include "compute_extended_bounds.h"
-      k=1
+      k=2
 
-c     rdrg2
-      ad_x(1)=1600
-      ad_x(2)=30.e3/100.0
+c     ridge height
+      ad_x(1)=2000
+
+c     ridge width
+      ad_x(2)=40.e3/100.0
 
       ad_array_node_size=2
 

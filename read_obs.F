@@ -53,7 +53,7 @@ c     this file is not differentiated
          do j=Jstr,Jend
             do i=Istr,Iend
                read(fid) ad_obs(i,j,k-ad_ast+1)
-               write (*,*) 'ad_obs:',i,j,k,ad_obs(i,j,k-ad_ast+1)
+c               write (*,*) 'ad_obs:',i,j,k,ad_obs(i,j,k-ad_ast+1)
             end do
          end do
       end do
@@ -108,7 +108,7 @@ c     this file is not differentiated
       do j=Jstr,Jend
          do i=Istr,Iend
             write(fid) zeta(i,j,knew)
-            write (*,*) 'zeta:',i,j,k,zeta(i,j,knew)
+c            write (*,*) 'zeta:',i,j,k,zeta(i,j,knew)
          end do
       end do
 

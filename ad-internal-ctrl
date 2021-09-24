@@ -5,6 +5,11 @@
 case $1 in
   --env-ok)
     shift;;
+  --fast)
+    shift
+    pwd=`pwd`
+    . $pwd/.croco-guix-profile/etc/profile && $0 --env-ok $@
+    ;;
   *)
     set -x
     # guix environment setup
@@ -47,11 +52,12 @@ sed -i 's/define[\t ]*REGIONAL/undef REGIONAL/' cppdefs.h
 #sed -i 's/define[\t ]*SOLVE3D/undef SOLVE3D/' cppdefs.h
 sed -i 's/undef[\t ]*INTERNAL/define INTERNAL/' cppdefs.h
 sed -i 's/undef[\t ]*TAPENADE/define TAPENADE/' cppdefs.h
+sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
 #sed -i 's/undef[\t ]*TAPENADE/define TAPENADE\n# define AUTOTILING/' cppdefs.h
 ../OCEAN/jobcomp
-rm -f obs.dat
-./croco croco.internal-friction-obs.in
-cp -f internal_his.nc obs.nc
+#rm -f obs.dat
+#./croco croco.internal-friction-obs.in
+#cp -f internal_his.nc obs.nc
 
 # 2. second run with restart and control with obs.nc file
 cp -f ../AD/croco.internal-friction.in .
