@@ -459,7 +459,7 @@
 # endif /* SUBSTANCE */
 
 !
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
 ! NSAND          Number of sand classes
 ! NMUD           Number of mud classes
 ! NGRAV          Number of gravel classes (not implemented...)
@@ -539,7 +539,7 @@
 # ifdef BIOLOGY
      &          , itrc_bio
 # endif
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &          , itrc_sed, itrc_sand, itrc_mud, itrc_grav
 # endif
 # ifdef SALINITY
@@ -650,7 +650,7 @@
 #  endif  
 # endif   /* BIOLOGY */
 
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
      &          ,isand1,imud1,isand2,imud2,igrav1,igrav2
 # endif
 
@@ -904,7 +904,7 @@
 ! === SEDIMENTS ===
 !
 
-# if defined SEDIMENT && defined USGS
+# ifdef SEDIMENT
       parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
       parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
       parameter (itrc_grav=itrc_mud+NGRAV)
