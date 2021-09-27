@@ -37,7 +37,7 @@
 # include "online.h"
 #endif
 #ifdef MPI
-     include 'mpif.h'
+      include 'mpif.h'
 #endif
 #ifdef NBQ
 # include "nbq.h"
