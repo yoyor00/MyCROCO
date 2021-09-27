@@ -14,10 +14,10 @@ mkdir -p $dir_test/Junk
 [[ ! -d  $dir_web ]] && mkdir -p $dir_web
 
 #
-\cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $CVTKHOME/TEST_CASES_CVTK/VHR/
+\cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/
 \cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $CVTKHOME/TEST_CASES_CVTK/VHR/
 
-for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/croco.in)
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/croco.in)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -37,7 +37,7 @@ do
   
 done
 
-for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/croco.in.1)
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.1)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -53,7 +53,7 @@ do
   
 done
 
-for file in $(ls $CVTKHOME/TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in )
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in )
 do 
     #sed '2c 79 137 37 117 3 3 3 3' $file > tmp.txt && \mv tmp.txt $file
     sed "2c $nest_position_reg" $file > tmp.txt && \mv tmp.txt $file
@@ -69,12 +69,12 @@ ln -sf $dir_home/../CONFIGURE_REG $dir_test/
 
 # common scripts and programms
 ln -sf $dir_home/../gather_recap.bash $dir_test/
-ln -sf $dir_home/../gitinfo.sh $dir_test/
+ln -sf $dir_home/../../../common/gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
-ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
-ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CLEANALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CHECKALL.bash $dir_test/
 ln -sf $dir_web $dir_test/
-ln -sf  $dir_home/../print/* $dir_test/
+ln -sf  $dir_home/../../../common/print/* $dir_test/
 
 # ana specific and programms
 ln -sf $dir_home/../mk_TestDIR.bash $dir_test/

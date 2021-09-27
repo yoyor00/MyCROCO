@@ -19,17 +19,17 @@ mkdir -p $dir_test/Junk
 #exit
 
 #
-\cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $PERFRSTHOME/TEST_CASES_CVTK/VHR/
-\cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $PERFRSTHOME/TEST_CASES_CVTK/VHR/
+\cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/
+\cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/
 
-cp $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in.write
-cp $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in.read
+cp $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.write
+cp $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.read
 
 ###################################################
 # croco.in.write
 ###################################################
 
-file=$PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in.write
+file=$PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.write
 
 line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
 [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -68,7 +68,7 @@ line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
 ###################################################
 # croco.in.read
 ###################################################
-file=$PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in.read
+file=$PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.read
 
 line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
 [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -158,12 +158,12 @@ ln -sf $dir_home/../CONFIGURE_REG_PERFRST $dir_test/
 
 # common scripts and programms
 ln -sf $dir_home/../gather_recap_perfrst.bash $dir_test/
-ln -sf $dir_home/../gitinfo.sh $dir_test/
+ln -sf $dir_home/../../../common/gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
-ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
-ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CLEANALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CHECKALL.bash $dir_test/
 ln -sf $dir_web $dir_test/
-ln -sf  $dir_home/../print/* $dir_test/
+ln -sf  $dir_home/../../../common/print/* $dir_test/
 
 # ana specific and programms
 ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
