@@ -15,7 +15,7 @@ mkdir -p $dir_test/Junk
 
 #
 \cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/
-\cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $CVTKHOME/TEST_CASES_CVTK/VHR/
+\cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/
 
 for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/VHR/croco.in)
 do 

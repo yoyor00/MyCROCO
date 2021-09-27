@@ -22,8 +22,8 @@ mkdir -p $dir_test/Junk
 \cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/
 \cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/
 
-cp $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.write
-cp $PERFRSTHOME/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.read
+cp $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.write
+cp $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.read
 
 ###################################################
 # croco.in.write
