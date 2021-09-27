@@ -14,9 +14,9 @@ mkdir -p $dir_test/Junk
 [[ ! -d  $dir_web ]] && mkdir -p $dir_web
 
 #
-\cp -rf $CI_PROJECT_DIR/TEST_CASES/croco.in.Vortex* $CVTKHOME/TEST_CASES_CVTK/.
+\cp -rf $CI_PROJECT_DIR/TEST_CASES/croco.in.Vortex* $CVTKHOME/../../common/TEST_CASES_CVTK/.
 
-for file in $(ls $CVTKHOME/TEST_CASES_CVTK/croco.in.Vortex)
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/croco.in.Vortex)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -31,7 +31,7 @@ do
   [ ! -z $toto ] && sed -e "${line} s/$toto/3/" $file > tmp.txt && \mv tmp.txt $file
 done
 
-for file in $(ls $CVTKHOME/TEST_CASES_CVTK/croco.in.Vortex.1)
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/croco.in.Vortex.1)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -51,12 +51,12 @@ ln -sf $dir_home/../CONFIGURE_VORT $dir_test/
 
 # common scripts and programms
 ln -sf $dir_home/../gather_recap.bash $dir_test/
-ln -sf $dir_home/../gitinfo.sh $dir_test/
+ln -sf $dir_home/../../../common/gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
-ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
-ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CLEANALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CHECKALL.bash $dir_test/
 ln -sf $dir_web $dir_test/
-ln -sf  $dir_home/../print/* $dir_test/
+ln -sf  $dir_home/../../../common/print/* $dir_test/
 
 # ana specific and programms
 ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
