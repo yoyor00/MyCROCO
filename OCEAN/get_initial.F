@@ -903,7 +903,7 @@
         endif
       else
         
-        MPI_master_only write(stdout,5) vname(1,indxBustr)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxBustr)(1:lvar)
      &                                  , ininame(1:lstr)
       endif
 !  
@@ -921,7 +921,7 @@
          endif
        else
          
-         MPI_master_only write(stdout,5)  vname(1,indxBvstr)(1:lvar)
+         MPI_master_only write(stdout,4)  vname(1,indxBvstr)(1:lvar)
      &                        , ininame(1:lstr)
         endif
 #  endif        
