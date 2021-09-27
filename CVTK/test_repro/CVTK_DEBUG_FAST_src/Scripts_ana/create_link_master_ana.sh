@@ -14,7 +14,7 @@ mkdir -p $dir_test/Junk
 [[ ! -d  $dir_web ]] && mkdir -p $dir_web
 
 #
-\cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/TEST_CASES_CVTK/.
+\cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/../../common/TEST_CASES_CVTK/.
 
 for file in $(ls $CVTKHOME/TEST_CASES_CVTK/croco.in*)
 do 
@@ -39,12 +39,12 @@ ln -sf $dir_home/../CONFIGURE_ANA $dir_test/
 
 # common scripts and programms
 ln -sf $dir_home/../gather_recap.bash $dir_test/
-ln -sf $dir_home/../gitinfo.sh $dir_test/
+ln -sf $dir_home/../../../common/gitinfo.sh $dir_test/
 ln -sf $dir_home/../git_process.bash $dir_test/
-ln -sf $dir_home/../mk_CLEANALL.bash $dir_test/
-ln -sf $dir_home/../mk_CHECKALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CLEANALL.bash $dir_test/
+ln -sf $dir_home/../../../commonmk_CHECKALL.bash $dir_test/
 ln -sf $dir_web $dir_test/
-ln -sf $dir_home/../print/* $dir_test/
+ln -sf $dir_home/../../../common/print/* $dir_test/
 
 # ana specific and programms
 ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
