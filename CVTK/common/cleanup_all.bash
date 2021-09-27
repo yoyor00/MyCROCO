@@ -8,9 +8,6 @@
 ##echo $PBS_O_LOGNAME
 ###===================================
 
-#-----------------------
-source CONFIGURE_GLOBAL
-#-----------------------
 #set -x
 
 cd ${TESTROOTDIR}/REG
