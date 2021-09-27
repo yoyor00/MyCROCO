@@ -16,7 +16,7 @@ mkdir -p $dir_test/Junk
 #
 \cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/../../common/TEST_CASES_CVTK/.
 
-for file in $(ls $CVTKHOME/TEST_CASES_CVTK/croco.in*)
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/croco.in*)
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
