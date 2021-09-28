@@ -148,7 +148,7 @@ C$    integer omp_get_thread_num
 #  endif
                      f0=0.
                      beta=0.
-# elif defined I_SOLITON
+# elif defined ISOLITON
                      depth=0.29 ! Horn et al. (2001)
                      f0=0.
                      beta=0.
@@ -288,7 +288,7 @@ C$    integer omp_get_thread_num
                      Length_XI =64.0e+3
 #  endif
                      Length_ETA=Length_ETA_ISO_GRID
-# elif defined I_SOLITON
+# elif defined ISOLITON
                      Length_XI =6.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
@@ -473,7 +473,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
-                   || defined SOLITON || defined I_SOLITON \
+                   || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
                    || defined JET
