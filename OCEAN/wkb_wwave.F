@@ -777,7 +777,6 @@ C$OMP BARRIER
 # if (defined BBL || defined MRL_WCI) && !defined WAVE_OFFLINE
           cosw = inv_k*wkx(i,j,wnew)         ! cos wave direction (xi)
           sinw = inv_k*wke(i,j,wnew)         ! sin wave direction (eta)
-#  ifdef BBL
 !          orbital   = 0.5*frq(i,j,wnew)         ! used in M.Blaas BBL
 !     &        *hrm(i,j,wnew)/max(sinh(khn),eps) ! orbital vel. magnitude
 !          uorb(i,j) = orbital*cosw              ! orbital velocity (xi)
@@ -790,7 +789,6 @@ C$OMP BARRIER
           else
             Dwave(i,j)=(pi/2.0)*SIGN(1.0,sinw)
           endif
-#  endif
 #  ifdef MRL_WCI
           whrm(i,j) = hrm(i,j,wnew)
           wfrq(i,j) = frq(i,j,wnew)

@@ -28,7 +28,7 @@
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#if defined NBQ || defined MORPHODYN
+#ifdef MORPHODYN
 # include "grid.h"
 #endif
 
@@ -310,7 +310,7 @@
         goto 99                                           !--> ERROR
       endif
 
-#ifdef SEDIMENT
+#ifdef MORPHODYN
 !
 ! Time evolving bathymetry (only needed for restart)
 !
