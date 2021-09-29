@@ -37,17 +37,18 @@
 #   undef  BEDLOAD_SLUMP
 #   undef  BEDLOAD_SHALLOW_LIMIT
 #  endif
-# endif
-
-# ifdef BEDLOAD_VANDERA      /* wave half-cycle concept */
-#  define BEDLOAD_VANDERA_ZEROCURR
-#  ifndef BEDLOAD_VANDERA_ZEROCURR
-#    define BEDLOAD_VANDERA_FD_MADSEN
-#    undef  BEDLOAD_VANDERA_FD_SANTOSS
+#  ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
+#   define BEDLOAD_VANDERA_ZEROCURR
+#   ifndef BEDLOAD_VANDERA_ZEROCURR
+#     define BEDLOAD_VANDERA_FD_MADSEN
+#     undef  BEDLOAD_VANDERA_FD_SANTOSS
+#   endif
+#   define BEDLOAD_VANDERA_ASYM_LIMITS
+#   undef  BEDLOAD_VANDERA_SURFACE_WAVE
+#   undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
+#   define BEDLOAD_SLUMP
+#   define BEDLOAD_SHALLOW_LIMIT
 #  endif
-#  define BEDLOAD_VANDERA_ASYM_LIMITS
-#  undef  BEDLOAD_VANDERA_SURFACE_WAVE
-#  undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
 # endif
 !
 # undef  LINEAR_CONTINUATION /* for settling scheme */
@@ -350,7 +351,7 @@ C$OMP BARRIER
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
-#  ifdef BEDLOAD_VANDERA
+#  if defined BEDLOAD_VANDERA && !defined BEDLOAD_VANDERA_ZEROCURR
           tau_m(i,j)=0.5*SQRT( (bustr(i,j)+bustr(i+1,j))**2 
      &                        +(bvstr(i,j)+bvstr(i,j+1))**2 ) 
 #  endif
@@ -488,12 +489,16 @@ C$OMP BARRIER
 ! Magnitude of stress for computing current velocity 
 ! at the wave boundary layer
 !
+#   ifdef BEDLOAD_VANDERA_ZEROCURR
             mag_bstrc=tau_m(i,j)
-#   ifdef MASKING
+#    ifdef MASKING
      &                             *rmask(i,j)
-#   endif
-#   ifdef WET_DRY
+#    endif
+#    ifdef WET_DRY
      &                         *rmask_wet(i,j)
+#    endif
+#   else
+            mag_bstrc=0.
 #   endif
 !
 ! Compute near bottom current at wave boundary layer (wbl)
@@ -3558,7 +3563,8 @@ C$OMP BARRIER
         MPI_master_only write(*,*) ' ised      :',ised
         MPI_master_only write(*,*) ' Sd        :',1.e3*Sd(ised)
         MPI_master_only write(*,*) ' bed_frac  :',bed_frac(25,1,1,ised)
-        MPI_master_only write(*,*) ' tau_ce_2d :',rho0*tau_ce_2d(25,1,ised)
+        MPI_master_only write(*,*) ' tau_ce_2d :',rho0
+     &                                            *tau_ce_2d(25,1,ised)
         MPI_master_only write(*,*) '================================'
       enddo
 #  endif
@@ -3958,6 +3964,7 @@ C$OMP BARRIER
 !   calculations using Van der A's formulations.                       !  
 !                                                                      !
 ! Tarandeep S. Kalra; Chris Sherwood; John C. Warner                   !
+! ... adapted by P. Marchesiello (2021) for CROCO
 !======================================================================!
 !======================================================================!
 !
@@ -3991,59 +3998,35 @@ C$OMP BARRIER
       parameter(eps=1.0E-14)
       real eps_eff, P
       real om_i, theta_diff, theta_ieff, theta_cr
-      real w_s, ws_eta, ws_dsf
-      real w_sc_eta, w_sc_dsf
-      real cff, cff1_eta, cff1_dsf
-      real w_s_calc, w_sc_calc, theta_cr_calc
+      real w_s, what, w_sc, delta
+      real cff, cff1
+      real w_s_calc, what_calc, theta_cr_calc
+!
+! Layer thickness
+!
+      if (eta.gt.0.) then
+        delta=eta   ! For ripple regime
+      else
+        delta=dsf   ! For sheet flow regime
+      endif
 ! 
 ! Find settling velocity based on Soulsby (1997). 
 ! VA2013 Use 0.8*d50 for settling velocity (text under equation 28).
 !
       w_s=w_s_calc(0.8*d50, rhos)
 !
-! VA2013 Equation 29, for crest cycle
+! Correction by vertical advection (Stokes 2nd-order)
+!    wavecycle=+1 => VA2013 Eq 29, for crest cycle
+!    wavecycle=-1 => VA2013 Eq 30, for trough cycle
 !
-      ws_eta=w_sc_calc(Hs, Td, depth, RR, w_s, eta)
-      ws_dsf=w_sc_calc(Hs, Td, depth, RR, w_s, dsf)
-      if(wavecycle.eq.1.) then
-        w_sc_eta=MAX(w_s+ws_eta,0.)
-        w_sc_dsf=MAX(w_s+ws_dsf,0.)
-      endif
+      what=what_calc(Hs, Td, depth, RR, delta)
+      w_sc=MAX(w_s+wavecycle*what,eps)
 !
-! VA2013 Equation 30, for trough cycle
+! VA2013 Eq 27-28, Phase lag parameter
 !
-      if(wavecycle.eq.-1.) then
-!        w_sc_eta=(w_s-ws_eta)
-!        w_sc_dsf=(w_s-ws_dsf)
-        w_sc_eta=MAX(w_s-ws_eta,0.36*w_s)
-        w_sc_dsf=MAX(w_s-ws_dsf,0.36*w_s)
-!        w_sc_eta=MIN(w_s-ws_eta,0.)
-!        w_sc_dsf=MIN(w_s-ws_dsf,0.)
-      endif
-!
-! VA2013 Equation 33, Phase lag parameter
-!
-      cff=1.-(wavecycle*xi*uhat_i/c_w)
-!
-      if( (T_i-T_iu).eq.0. ) then 
-        cff1_eta=0.
-        cff1_dsf=0.
-      else
-        cff1_eta=(1./(2.*(T_i-T_iu)*w_sc_eta))
-        cff1_dsf=(1./(2.*(T_i-T_iu)*w_sc_dsf))
-      endif 
-!
-      if(eta.gt.0.) then
-!
-! For ripple regime 
-!
-        P=alpha_fac*eta*cff*cff1_eta
-      elseif(eta.eq.0.)then
-!
-! For sheet flow regime 
-!
-        P=alpha_fac*dsf*cff*cff1_dsf
-      endif
+      cff=(1.-wavecycle*xi*uhat_i)/c_w
+      cff1=1./MAX(2.*(T_i-T_iu)*w_sc, eps)
+      P=alpha_fac*delta*cff*cff1 
 !
 ! Hiding/exposure correction factor
 !
@@ -4058,26 +4041,20 @@ C$OMP BARRIER
 !
       theta_cr=theta_cr_calc(d50, rhos)
 !
-! Sand load entrained in the flow during each half-cycle
+! VA2013 Eq 2: Sandload entrained during each half-cycle
 !
       theta_diff=MAX((theta_ieff-theta_cr),0.)
       om_i=m_fac*(theta_diff)**n_fac
 !
-! VA2013 Equation 23-26, Sandload entrained during half cycle 
- 
-      if(P.lt.eps) then
- 
-! This is Taran's addition if there are no waves then phase lag=0.0
+! VA2013 Eq 23-26: Sandload transported within the 
+!        half-cycle (om_ii) or in the next (om_iy) 
 ! 
-        om_ii=1. 
-        om_iy=0.
-      elseif(P.gt.eps.and.P.lt.1.) then
+      if (P.lt.1) then
         om_ii=om_i
         om_iy=0.
       else
         om_ii=om_i/P
-        cff=1./P
-        om_iy=om_i*(1.-cff)
+        om_iy=om_i-om_ii
       endif
 !
       return
@@ -4170,7 +4147,7 @@ C$OMP BARRIER
 !
 ! Calculate friction factor fd
 !
-#  if defined BEDLOAD_VANDERA_FD_MADSEN
+#  ifdef BEDLOAD_VANDERA_FD_MADSEN
       fd=fd_calc_madsen(udelta, mag_bstrc)
 #  elif defined BEDLOAD_VANDERA_ZEROCURR
       fd=0.
@@ -4201,8 +4178,12 @@ C$OMP BARRIER
 !
 ! Time-averaged absolute Shields stress - VA2013 Appendix Eq. A.3
 !
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
+        theta_avg=osmgd*0.25*fw*uhat**2
+#  else
         theta_avg=osmgd*(0.50*fd*udelta**2.+
      &                   0.25*fw*uhat**2.)
+#  endif
 !
         if (ABS(theta_avg-theta_avg_old).lt.tol) then
           EXIT
@@ -4213,8 +4194,12 @@ C$OMP BARRIER
 !
 ! Full-cycle current friction factor - VA2013 Eq 20
 !
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
+      fwd=fw
+#  else
       alpha=udelta/(udelta+uhat)
-      fwd=alpha*fd+(1.0-alpha)*fw
+      fwd=alpha*fd+(1.-alpha)*fw
+#  endif
 !
 ! Wave Reynolds stress - VA2013 Eq 22
 ! (contribution associated with progressive surface waves)
@@ -4291,7 +4276,11 @@ C$OMP BARRIER
 ! Wave current friction factor (Madsen and Grant) - VA2013 Eq 18
 ! Different for crest and trough 
 !
-      fwd_i=alpha*fd+(1.0-alpha)*fw_i
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
+      fwd_i=fw_i
+#  else
+      fwd_i=alpha*fd+(1.-alpha)*fw_i
+#  endif
 !
 ! Magnitude of Shields parameter - VA2013 Eq 17
 ! 
@@ -4307,12 +4296,21 @@ C$OMP BARRIER
 ! Get the representative trough half cycle water particle velocity
 ! as well as full cycle orbital velocity and excursion
 !
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
+      ui_rx=ui_r*alphaw
+      ui_ry=0.
+#  else
       ui_rx=udelta*COS(phi_curwave)*alphac+ui_r*alphaw
       ui_ry=udelta*SIN(phi_curwave)*alphac
+#  endif
 !
 ! mag_ui is set to a min value to avoid non-zero division
 !
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
+      mag_ui=MAX( SQRT(ui_rx*ui_rx), eps )
+#  else
       mag_ui=MAX( SQRT(ui_rx*ui_rx+ui_ry*ui_ry), eps )
+#  endif
 !
 ! Magnitude of Shields parameter - VA2013 Eq 17
 ! 
@@ -4322,11 +4320,17 @@ C$OMP BARRIER
 ! rho0 is required for non-dimensionalizing 
 !
       theta_ix=ABS(mag_theta_i)*ui_rx/(mag_ui)+tau_wRe*osmgd/rho0
+#  ifndef BEDLOAD_VANDERA_ZEROCURR
       theta_iy=ABS(mag_theta_i)*ui_ry/(mag_ui)
+#  endif
 !
 ! mag_theta_i is set to a min value to avoid non-zero division
 !
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
       mag_theta_i=MAX( sqrt(theta_ix*theta_ix+theta_iy*theta_iy),eps )
+#  else
+      mag_theta_i=MAX( sqrt(theta_ix*theta_ix),eps )
+#  endif
 !
       return
       end
@@ -4814,18 +4818,18 @@ C$OMP BARRIER
 ! 
 !======================================================================
 !
-      FUNCTION w_sc_calc(Hs, Td, depth, RR, w_s, zws) 
+      FUNCTION what_calc(Hs, Td, depth, RR, zws) 
 ! 
 ! Second order Stokes theory to get vertical velocity of water particle
 ! at a given elevation based on santoss_core.m
 ! 
       implicit none 
-      real w_sc_calc
+      real what_calc
       real eps_inv
       parameter (eps_inv=1.0E14)
       real pi
       parameter (pi=3.14159265358979323846)
-      real Hs, Td, depth, RR, zws, w_s
+      real Hs, Td, depth, RR, zws
       real cff, worb1, worb2, worb 
 !      
       worb1=pi*Hs*zws/(Td*depth)
@@ -4833,7 +4837,7 @@ C$OMP BARRIER
 !
 !  Using the SANTOSS model formulation 
 ! 
-      cff=1./8.
+      cff=0.125
       worb=cff*worb1*SQRT(64.-(-worb1+
      &          SQRT(worb1**2.+32.*
      &               worb2**2.))**2./(worb2**2.))+
@@ -4843,7 +4847,7 @@ C$OMP BARRIER
 ! Prevent worb from going to Infinity when worb2=0.0 
 ! 
       worb=MIN(worb, eps_inv)
-      w_sc_calc=worb
+      what_calc=worb
 !
       return  
       end

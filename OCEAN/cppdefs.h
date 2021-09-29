@@ -987,7 +987,6 @@
 # undef  BBL
 # undef  SEDIMENT
 # ifdef SEDIMENT
-#  define ANA_SEDIMENT
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA
@@ -1186,9 +1185,10 @@
 # endif
 # undef SEDIMENT
 # ifdef SEDIMENT
-#  define ANA_SEDIMENT
-#  undef  ANA_SPFLUX
-#  undef  ANA_BPFLUX
+#  define BBL
+#  define MORPHODYN
+#  define TS_HADV_WENO5
+#  define TS_VADV_WENO5
 # endif
 # undef  DIAGNOSTICS_UV
 # undef  RVTK_DEBUG
