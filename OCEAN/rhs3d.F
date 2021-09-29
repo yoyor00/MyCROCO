@@ -406,14 +406,14 @@
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
-# else
+#  else
             UFx(i,j)=cff*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=cff*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-# endif
+#  endif
           enddo
         enddo
 
-# ifdef CROCO_QH
+#  ifdef CROCO_QH
 !--------------------------------------------------------------------
 !  Compute Non-traditional Coriolis pseudo-force
 !    RU = -e W cos(a) * dV     [m4/s2]
@@ -447,7 +447,7 @@
             VFe(i,j)=VFe(i,j) - cff*sina(i,j)
           enddo
         enddo
-# endif
+#  endif
 
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -456,7 +456,7 @@
      &                         +0.5*(UFe(i,j)+UFe(i-1,j))
 #  endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
               MCor(i,j,k,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)
@@ -465,7 +465,7 @@
      &                        SWITCH umask(i,j)
 #   endif
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkCor(i,j,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
@@ -475,7 +475,7 @@
      &                         +0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.kbl(i,j)) then
                 ekwrkCor_mld(i,j,1)=0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
@@ -484,7 +484,7 @@
      &                         +0.5*(UFx(i,j)+UFx(i-1,j))
      &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-# endif
+#   endif
             endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
@@ -510,7 +510,7 @@
      &                         -0.5*(VFx(i,j)+VFx(i,j-1))
 #  endif
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
             if (nnew.ne.3) then
               MCor(i,j,k,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
      &                        SWITCH vmask(i,j)
@@ -519,7 +519,7 @@
      &                        SWITCH vmask(i,j)
 #   endif
             endif
-# elif defined DIAGNOSTICS_EK
+#  elif defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               if (k.eq.1) then
               ekwrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -529,7 +529,7 @@
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
      &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# if defined DIAGNOSTICS_EK_MLD
+#   if defined DIAGNOSTICS_EK_MLD
               if (k.eq.kbl(i,j)) then
               ekwrkCor_mld(i,j,2)=
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -539,10 +539,10 @@
      &                     -0.5*(VFe(i,j)+VFe(i,j-1))
      &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-# endif
+#   endif
             endif
 #  endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -1658,7 +1658,6 @@
           enddo
         endif
 # endif /* UV_ADV */
-
 !
 !======================================================================
 !
@@ -1693,9 +1692,8 @@
               Mfrc(i,j,k,1) = cff*om_u(i,j)*frc3dx(i,j,k)
 #   endif
             endif
-#  endif
+#  endif /* DIAGNOSTICS_UV */
           enddo
-
 
           do i=istr,iend
             cff  =0.5*om_v(i,j)*(Hz(i,j-1,k)+Hz(i,j,k))
@@ -1703,7 +1701,6 @@
      &                  +ust(i,j-1,k) +ust(i+1,j-1,k) )
             dude =0.5*( u(i  ,j,k,nrhs) -u(i  ,j-1,k,nrhs)
      &                 +u(i+1,j,k,nrhs) -u(i+1,j-1,k,nrhs) )
-ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
             dvde =0.5*( v(i,j+1,k,nrhs) -v(i,j-1,k,nrhs) )
             rv(i,j,k) =rv(i,j,k) + cff
      &                            *(ustv*dude+vst(i,j,k)*dvde)
@@ -1723,12 +1720,10 @@ ccc            dvde =0.5*( v(i,j-1,k,nrhs) -v(i,j+1,k,nrhs) )
               Mfrc(i,j,k,2) = cff*on_v(i,j)*frc3de(i,j,k)
 #   endif
             endif
-#  endif
+#  endif /* DIAGNOSTICS_UV */
          enddo
       enddo
-
 # endif   /* MRL_WCI */
-
 !
 !======================================================================
 !

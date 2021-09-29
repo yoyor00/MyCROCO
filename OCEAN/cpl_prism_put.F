@@ -30,6 +30,7 @@
 # include "ocean3d.h"
 # include "ocean2d.h"
 # include "mpi_cpl.h"
+# include "grid.h"
       
       INTEGER    :: sndtime, i, level, ja
       DOUBLE PRECISION, DIMENSION(Lmmpi,Mmmpi)  :: snd_field 
@@ -90,10 +91,21 @@
       enddo
 
          endif
-      
+         
          if (ssnd_clname(i)=='SRMUOCE'//clevel) then
-            snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
-     &                        +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
+!
+!     Proceed rotation from xi/eta croco_grid coordinate
+!     to East - North coordinate
+!
+           snd_field = (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+     &                       + u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
+     &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
+     &               - (0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+     &                       + v(1:Lmmpi,2:Mmmpi+1,N,nnew)) )
+     &         * sin(angler(1:Lmmpi  ,1:Mmmpi))
+
+!     snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+!     &                        +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
 
       DO ja = 0, nmaxatm
          if ( ssnd_nid(ja,i) /= -1 ) then
@@ -112,8 +124,19 @@
          endif
          
          if (ssnd_clname(i)=='SRMVOCE'//clevel) then
-            snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
-     &                        +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
+!
+!     Proceed rotation from xi/eta croco_grid coordinate
+!     to East - North coordinate
+!
+           snd_field =  (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+     &                      +   u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
+     &         *  sin(angler(1:Lmmpi  ,1:Mmmpi))
+     &               + (0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+     &                       + v(1:Lmmpi,2:Mmmpi+1,N,nnew)) )
+     &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
+
+!     snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+!     &                        +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
 
       DO ja = 0, nmaxatm
          if ( ssnd_nid(ja,i) /= -1 ) then

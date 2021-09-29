@@ -90,6 +90,7 @@
       real nu0c, Cv, Ric, Ri_inv, 
      &     betaT,epssfc,Cstar,Cg,C_Ek
       real ustarb
+      real su_r, sv_r, ustokes
 !======================================================================
       parameter (
      &   Cv=1.8,       ! Ratio of interior Brunt-Vaisala
@@ -172,22 +173,42 @@
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
-          Bo(i,j)=g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j))
-# ifdef SALINITY
-     &                              -beta(i,j)*stflx(i,j,isalt)
+          Bo(i,j)= 0
+# ifdef TEMPERATURE
+     &                 +g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j)))
 # endif
-     &                                                        )
+# ifdef SALINITY
+     &                 -g*beta(i,j)*stflx(i,j,isalt)
+# endif
+# ifdef TEMPERATURE
           Bosol(i,j)=g*alpha(i,j)*srflx(i,j)
-
+# else
+          Bosol(i,j)=0.
+# endif
 # ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
 # else
-          ustar(i,j)=sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                         +(0.5*(svstr(i,j)+svstr(i,j+1)))**2))
+          su_r=0.5*(sustr(i,j)+sustr(i+1,j))
+          sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+          ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
+# endif
+# ifdef LMD_LANGMUIR
+!
+!  Turbulent Langmuir number (McWilliams et al 1997)
+!
+#  ifdef MRL_WCI
+          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
+          ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
+          Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
+#  else
+          Langmuir(i,j)=0.35  ! Liu et al (2014)
+#  endif
 # endif
 
         enddo
-      enddo 
+      enddo
+
+      
 # undef beta
 # undef alpha
 !========================================================================
@@ -221,13 +242,16 @@
           swr_frac(i,j,N)=1.
         enddo
       enddo
+      
 
 !== END ugly piece of code
 !---------------------------------------------------------------     
 
 !======================================================================
       do j=J_EXT_RANGE
-!======================================================================                                       
+!======================================================================
+
+
         do i=I_EXT_RANGE
           my_hbl(i,j)  = hbls(i,j,tind)
           my_kbl(i)    = 0
@@ -253,6 +277,7 @@
           dv(i,0)=dv(i,  1)
         enddo
 
+        
         do k=N,1,-1
           do i=I_EXT_RANGE
             zscale = z_w(i,j,N)-z_w(i,j,k-1)
@@ -306,8 +331,6 @@
 !======================================================================
       enddo  !<-- terminate j-loop
 !======================================================================  
-
-
 
 !================================
 !    HBL Smoothing
@@ -386,8 +409,10 @@
           else
             Av_bl=cff_up*Kv(i,j,k)+cff_dn*Kv(i,j,k-1)
             dAv_bl=cff * (Kv(i,j,k)  -   Kv(i,j,k-1))
+# ifdef TEMPERATURE
             At_bl=cff_up*Kt(i,j,k)+cff_dn*Kt(i,j,k-1)
             dAt_bl=cff * (Kt(i,j,k)  -   Kt(i,j,k-1))
+# endif
 # ifdef SALINITY
             As_bl=cff_up*Ks(i,j,k)+cff_dn*Ks(i,j,k-1)
             dAs_bl=cff * (Ks(i,j,k)  -   Ks(i,j,k-1))
@@ -436,8 +461,10 @@
             Kv(i,j,k)=wm*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gm1(i)+a3*dGm1dS(i) )))
 
+#  ifdef TEMPERATURE
             Kt(i,j,k)=ws*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gt1(i)+a3*dGt1dS(i) )))
+# endif
 # ifdef SALINITY
             Ks(i,j,k)=ws*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gs1(i)+a3*dGs1dS(i) ))) 
@@ -455,7 +482,9 @@
 !
             if (bvf(i,j,k).lt.0.) then
               Kv(i,j,k)=Kv(i,j,k) + nu0c
+#  ifdef TEMPERATURE
               Kt(i,j,k)=Kt(i,j,k) + nu0c
+#  endif
 #  ifdef SALINITY
               Ks(i,j,k)=Ks(i,j,k) + nu0c
 #  endif
@@ -475,7 +504,9 @@
 
             if (bvf(i,j,k).lt.0.) then
               Kv(i,j,k)=Kv(i,j,k) + nu0c
+#  ifdef TEMPERATURE
               Kt(i,j,k)=Kt(i,j,k) + nu0c
+#  endif
 #  ifdef SALINITY
               Ks(i,j,k)=Ks(i,j,k) + nu0c
 #  endif

@@ -120,6 +120,10 @@
 # ifdef LMD_MIXING
       real ustar(GLOBAL_2D_ARRAY) 
       common /lmd_kpp_ustar/ustar
+#  ifdef LMD_LANGMUIR
+      real Langmuir(GLOBAL_2D_ARRAY) 
+      common /lmd_kpp_lang/Langmuir
+#  endif
 #  if defined LMD_SKPP || defined LMD_BKPP
 !
 ! Large/McWilliams/Doney oceanic planetary boundary layer variables.

@@ -36,7 +36,7 @@
 # include "scalars.h"
 
       integer Istr,Iend,Jstr,Jend, i,j
-      real Bfsfc(PRIVATE_2D_SCRATCH_ARRAY),   eps,
+      real Bfsfc(PRIVATE_2D_SCRATCH_ARRAY),   eps,cff,cff1,
      &     sigma(PRIVATE_2D_SCRATCH_ARRAY),   ustar3,   r2,
      &        wm(PRIVATE_2D_SCRATCH_ARRAY),   zetahat,  r3,
      &        ws(PRIVATE_2D_SCRATCH_ARRAY),   zetapar,  r4
@@ -51,7 +51,7 @@
      &    lmd_as=-28.86,  ! Coefficients of flux profile  
      &    lmd_cm=8.360,   ! for momentum and tracers in their 
      &    lmd_cs=98.96)   ! 1/3 power law regime;
-
+  
       do j=Jstr,Jend
         do i=Istr,Iend
           ustar3=ustar(i,j)*ustar(i,j)*ustar(i,j)
@@ -82,6 +82,15 @@
               ws(i,j)=vonKar*(lmd_as*ustar3-lmd_cs*zetahat)**r3
             endif
           endif
+# ifdef LMD_LANGMUIR
+!
+! Enhanced turbulent velocity scale due to Langmuir turbulence
+!
+          cff1=max(eps,Langmuir(i,j))
+          cff=sqrt(1+0.104/cff1**2+0.034/cff1**4)   ! Van Roekel et al. (2012)
+          wm(i,j)=wm(i,j)*cff
+          ws(i,j)=ws(i,j)*cff
+# endif
         enddo       /* !!! This loop wan not pipelined. */
       enddo
       return
@@ -89,12 +98,15 @@
 
 
       subroutine lmd_wscale_ER_tile (Istr,Iend,Jstr,Jend, Bfsfc,sigma,
-     &                                                       wm,ws)
+     &                                                          wm,ws)
 !
 !-------------------------------------------------------------------
+!  Same routine as lmd_wscale (above), but computations are on an 
+!  extended range of the domain.
+!
 !  This routine computes the turbulent velocity scale for momentum
 !  and tracer using a 2D-lookup table as a function of "ustar" and
-!  "zetahat".
+!  "zetahat". 
 !
 !  Input:  Bfsfc   
 !          sigma   boundary layer depth [m].
@@ -113,7 +125,7 @@
 
       integer Istr,Iend,Jstr,Jend, i,j
       integer imin,imax,jmin,jmax
-      real Bfsfc(PRIVATE_2D_SCRATCH_ARRAY),   eps,
+      real Bfsfc(PRIVATE_2D_SCRATCH_ARRAY),   eps,cff,cff1,
      &     sigma(PRIVATE_2D_SCRATCH_ARRAY),   ustar3,   r2,
      &        wm(PRIVATE_2D_SCRATCH_ARRAY),   zetahat,  r3,
      &        ws(PRIVATE_2D_SCRATCH_ARRAY),   zetapar,  r4
@@ -191,6 +203,15 @@
               ws(i,j)=vonKar*(lmd_as*ustar3-lmd_cs*zetahat)**r3
             endif
           endif
+# ifdef LMD_LANGMUIR
+!
+! Enhanced turbulent velocity scale due to Langmuir turbulence
+!
+          cff1=max(eps,Langmuir(i,j))
+          cff=sqrt(1+0.104/cff1**2+0.034/cff1**4)   ! Van Roekel et al. (2012)
+          wm(i,j)=wm(i,j)*cff
+          ws(i,j)=ws(i,j)*cff
+# endif
         enddo       /* !!! This loop wan not pipelined. */
       enddo
       return

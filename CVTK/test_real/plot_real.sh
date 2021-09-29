@@ -14,7 +14,7 @@ done
 b_n=$(basename ${0})
 OPTIND=1
 
-x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE THACKER TANK RIVER'
+
 x_n='BASIN CANYON EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL ISOLITON JET KH_INST OVERFLOW RIP RIVER SANDBAR SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING  VORTEX'
 
 
@@ -46,7 +46,7 @@ LIST_EXAMPLE=$x_n
 ROOTDIR=$x_d
 
 
-NUMBER=${@:-1}
+NUMBER=${@: -1}
 i=0
 for EXAMPLE in $LIST_EXAMPLE
   do 
@@ -62,7 +62,7 @@ for EXAMPLE in $LIST_EXAMPLE
     \rm $(echo $EXAMPLE |tr '[:upper:]' '[:lower:]')*.pdf
     \rm $(echo $EXAMPLE |tr '[:lower:]' '[:upper:]')*.pdf
     FILE1=$( ls *.pdf )
-    matlab -nodesktop  -nosplash -nodisplay -r "addpath ./TEST_CASES; try,${myscript};end;exit" || exit 3
+    matlab -nodesktop  -nosplash -nodisplay -r "addpath ./TEST_CASES; ${myscript};exit"
     FILE2=$( comm -3 <( ls *.pdf ) <( echo "$FILE1" ) )
 
     [[ -z "${FILE2}"  ]] && exit 4

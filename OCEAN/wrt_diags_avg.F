@@ -11,7 +11,6 @@
 !
 #include "cppdefs.h"
 #if defined DIAGNOSTICS_TS && defined AVERAGES
-!
 !---------------------------------------------------------------
 ! Write time-averaged diags flux fields into averages netCDF file
 ! Writes requested model fields at requested levels into
@@ -51,7 +50,7 @@
 # include "work.h"
 #endif
 #include "netcdf.inc"
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR` 
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
      &                 1, MPI_COMM_WORLD, status, ierr) 
@@ -163,6 +162,15 @@
            call fillvalue3d(workr,nciddia_avg,diaTVmix_avg(itrc),
      &                      indxTVmix+itrc-1,
      &                      record,r3dvar,type)
+#ifdef DIAGNOSTICS_TSVAR
+!
+! indxTVmixt
+!
+           workr=TVmixt_avg(:,:,:,itrc)
+           call fillvalue3d(workr,nciddia_avg,diaTVmixt_avg(itrc),
+     &                      indxTVmixt+itrc-1,
+     &                      record,r3dvar,type)
+#endif
 !
 ! indxTForc  
 !

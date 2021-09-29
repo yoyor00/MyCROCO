@@ -45,6 +45,14 @@
 # define RVTK_DEBUG_WRITE
 #endif
 
+/* 
+   GILDAS Take care need to use a debug.F specific 
+*/
+
+#if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
+# define RVTK_DEBUG_WRITE
+#endif
+
 /*
     Constant tracer option (for debugging)
 */
@@ -105,12 +113,8 @@
 ======================================================================
 */ 
 #ifdef XIOS
-# define XIOS2
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define key_iomput
-#else
-# undef key_iomput
 #endif
   
 /*
@@ -472,7 +476,13 @@
    independent from that selected for the two active tracers (TS_HADV)
 */
 #ifdef BIO_HADV_WENO5
-# define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
+#  if defined TEMPERATURE && defined SALINITY       
+#    define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
+#  elif defined TEMPERATURE || defined SALINITY
+#    define NTRA_T3DMIX 1    /* TS_HADV applied over the 2 active tracers */
+#  else
+#    define NTRA_T3DMIX 0    /* TS_HADV applied over the 2 active tracers */
+#  endif
 #else
 # define NTRA_T3DMIX NT   /* TS_HADV applied over all NT tracers       */
 #endif
@@ -635,7 +645,6 @@
 #  define CFB_STRESS
 #  undef  CFB_STRESS2
 #  undef  CFB_WIND
-#  define STFLUX_CFB
 # else
 #  undef  CFB_STRESS
 #  define CFB_STRESS2
@@ -688,9 +697,9 @@
 # endif
 #endif
 
-#if defined MRL_WCI || defined OW_COUPLING
-# define WAVE_IO
-#endif
+# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+#  define WAVE_IO
+# endif
 
 /*
 ======================================================================
@@ -714,11 +723,8 @@
 #ifdef BIOLOGY
 # ifdef PISCES
 #  undef DIURNAL_INPUT_SFLX    /* Under Development */
-#  define key_trc_pisces
-#  define key_passivetrc
 #  ifdef DIAGNOSTICS_BIO
 #   define key_trc_diaadd
-#   define key_trc_dia3d
 #  endif
 # endif
 # ifdef BIO_BioEBUS
@@ -727,7 +733,27 @@
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
 #endif
+/*
+======================================================================
+      Bottom forcing:
+      
+      By default:
+         define ANA_BTFLUX : set to zero in analytical.F
+         define ANA_BSFLUX
 
+
+      - define BHFLUX : bottom heat flux, Btflx(i,j,itemp), is read into
+                  the netcdf file croco_btf.nc
+      - define BWFLUX : bottom freshwater flux, Btflx(i,j,isalt), is read
+                   into a netcdf file(croco_btf.nc)
+======================================================================
+*/
+#if !defined ANA_BTFLUX
+#  define BHFLUX
+#endif
+#if !defined ANA_BSFLUX && defined SALINITY
+#  define BWFLUX
+#endif
 /*
 ======================================================================
     Bottom stress option:
@@ -736,6 +762,11 @@
     numerical instability associated with reversing bottom flow
     NOW replaced by BSTRESS_FAST option
 ======================================================================
+*/
+/*
+#ifndef BSTRESS_FAST
+# define  LIMIT_BSTRESS
+#endif
 */
 #ifdef INNERSHELF
 # undef  LIMIT_BSTRESS
@@ -990,6 +1021,8 @@
 */
 #ifndef SOLVE3D                    
 # undef AVERAGES_K
+# undef TRACERS
+# undef TEMPERATURE
 # undef SALINITY
 # undef NONLIN_EOS
 # undef SPLIT_EOS
@@ -1036,5 +1069,19 @@
 # undef AGRIF_OBC_TSPECIFIED
 # undef SEDIMENT
 # undef BIOLOGY
+#endif
+
+#if !defined NO_TRACER /* then the user implicitly wants to calculate tracers */
+#define TRACERS
+#endif
+
+#if !defined NO_TEMPERATURE /* then the user implicitly wants to calculate temperature */
+#define TEMPERATURE
+#endif
+   
+
+#if defined SALINITY || defined TEMPERATURE || \
+	defined PASSIVE_TRACER || defined SUBSTANCE
+# define TRACERS
 #endif
 

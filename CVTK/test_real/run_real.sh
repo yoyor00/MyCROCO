@@ -1,9 +1,8 @@
 #!/bin/bash
-
 b_n=$(basename ${0})
 OPTIND=1
 
-x_n='BASIN CANYON EQUATOR GRAV_ADJ INNERSHELF OVERFLOW SEAMOUNT SHELFRONT SOLITON UPWELLING VORTEX JET RIP  SHOREFACE SWASH THACKER TANK RIVER'
+x_n='BASIN CANYON EQUATOR GRAV_ADJ IGW INNERSHELF INTERNAL ISOLITON JET KH_INST OVERFLOW RIP RIVER SANDBAR SEAMOUNT SHELFRONT SHOREFACE SOLITON SWASH TANK THACKER UPWELLING  VORTEX'
 x_d=$(dirname $(dirname $PWD))
 x_p="NO"
 x_m="1"
@@ -53,7 +52,7 @@ RUNDIR=$x_r
 \cp ${ROOTDIR}/${RUNDIR}/*.F90 .
 [ -f cppdefs.h ] && \rm cppdefs.h && \cp ${ROOTDIR}/${RUNDIR}/cppdefs.h .
 [ -f param.h ]   && \rm param.h   && cp ${ROOTDIR}/${RUNDIR}/param.h .
-[ -d TESTCASES ] && \rm -rf TESTCASES && \cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
+[ -d TEST_CASES ] && \rm -rf TEST_CASES && \cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
 
 #- undef everything
 sed  '1,/^#if defined REGIONAL/ s/define /undef /g' cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
@@ -65,11 +64,12 @@ sed "s/^#\(.*\)define\(.*\)OPENMP\(.*\)/#undef OPENMP/ " cppdefs.h > tmp.txt && 
 #sed "s/^#\(.*\)define\(.*\)NBQ\(.*\)/#undef NBQ/ " cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 
 #- suppress totally MPI or OPENMP (mandatory)
-sed  "s/^# *undef *MPI// " -e "s/^# *undef *OPENMP// " cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
+sed  -e "s/^#\(.*\)undef\(.*\)MPI$//g" -e "s/^#\(.*\)undef\(.*\)OPENMP$//g" cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 
 #- define MPI if needed
 if [ "$PARALLEL" == "MPI" ]; then
   sed   /"defined\(.*\)${EXAMPLE}"'/a\'$'\n''#define MPI'$'\n' cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
+  sed   /"defined\(.*\)${EXAMPLE}"'/a\'$'\n''#define NC4PAR'$'\n' cppdefs.h > tmp.txt && \mv tmp.txt cppdefs.h 
 fi
 
 #- define OPENMP if need

@@ -212,7 +212,6 @@ CONTAINS
             ENDDO
          ENDDO
 
-!modif SPOUS ASAP DOUX JESUS
          DO jk = 1, N
             DO jj = Jstrp+1, Jendp-1
                DO ji = Istrp+1, Iendp-1
@@ -224,7 +223,6 @@ CONTAINS
                END DO
             END DO
          END DO
-!modif SPOUS ASAP DOUX JESUS
          !
          DO jk = KRANGE
             DO jj = JRANGE

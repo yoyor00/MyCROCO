@@ -39,6 +39,10 @@
           USE initMUSTANG
           USE plug_MUSTANG_CROCO
 #endif
+#ifdef ONLINE_ANALYSIS
+          USE module_interface_oa, only : init_parameter_oa
+     &                                   ,if_oa
+#endif
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -139,7 +143,9 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
+    defined RVTK_DEBUG_PERFRST
+      
       call debug_ini
 #endif
 !
@@ -198,6 +204,30 @@
 # endif
      &           RHOREF)
 #endif
+!
+! Online spectral analysis module 
+! 
+# ifdef ONLINE_ANALYSIS
+      CALL init_parameter_oa(
+     &  io_unit_oa=stdout
+#ifdef MPI
+     & ,if_print_node_oa=(mynode==0)
+#else
+     & ,if_print_node_oa=.true.
+#endif                                             
+#ifdef MPI
+     & ,mynode_oa=mynode
+     & ,comm_oa=MPI_COMM_WORLD
+#else
+     & ,mynode_oa=0
+     & ,comm_oa=0
+#endif
+     & ,dti_oa=dt
+     & ,kount0_oa=ntstart-1
+     & ,nt_max_oa=ntimes
+     & ,ntiles=NSUB_X*NSUB_E)
+# endif
+!
 !
 !----------------------------------------------------------------------
 !  Create parallel threads; start timers for each thread;
@@ -294,14 +324,31 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-#ifndef ANA_INITIAL
-      call get_initial               ! Set initial conditions
-#else
-      if (nrrec.ne.0) then           ! read from NetCDF file
-        call get_initial
-      endif
+
+#ifdef ANA_INITIAL
+      if (nrrec.ne.0) then          ! read from NetCDF file
+#endif
+#ifdef EXACT_RESTART
+          call get_initial (nrrec-1, 2) ! Set initial conditions
+                                    ! in the case of restart run.
+C$OMP BARRIER
+# ifdef SOLVE3D
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_depth (tile)     !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+# endif
 
 #endif
+      call get_initial (nrrec, 1)   ! Set initial conditions
+#ifdef ANA_INITIAL
+      endif
+#endif
+                                ! Set initial model clock: at this
+      time=start_time           ! moment "start_time" (global scalar)
+      tdays=time*sec2day        ! is set by get_initial or analytically
+                                ! --> copy it into threadprivate "time"
+
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
 # ifdef ANA_INITIAL
@@ -528,11 +575,24 @@ CR      write(*,*) ' -2' MYID
 !  Read tidal harmonics from NetCDF file
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
       call get_tides
 #endif
 !
 CR      write(*,*) ' -1' MYID 
+!
+!----------------------------------------------------------------------
+! OA "Stand Alone" module : second initialization step (spatial domain)
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS 
+      if ( if_oa.eqv..true. ) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+           call online_spectral_diags(tile,0)
+         enddo
+      endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize XIOS I/O server
@@ -721,6 +781,20 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
 !----------------------------------------------------------------------
+! OA "Stand Alone" module 
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS 
+      if ( if_oa.eqv..true. ) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+           call online_spectral_diags(tile,1)
+         enddo
+        call output_oa
+      endif
+#endif
+!
+!----------------------------------------------------------------------
 !  Write initial fields into history NetCDF files
 !----------------------------------------------------------------------
 !
@@ -733,14 +807,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
-#endif
-!
-!----------------------------------------------------------------------
-! OA "Stand Alone" modulus
-!----------------------------------------------------------------------
-!
-#ifdef ONLINE_ANALYSIS 
-      call croco_oa(0)
 #endif
 
 #ifdef MUSTANG
@@ -794,7 +860,15 @@ CR      write(*,*) '  0' MYID
       call computenbmaxtimes
 #endif
 
+#ifdef MPI_TIME
+! Start Chrono
+      start_time1=PMPI_Wtime()
+#endif
+
       do iicroot=ntstart,ntimes+1
+#ifdef MPI_TIME
+        start_time1_1=PMPI_Wtime()
+#endif
 
 #ifdef USE_CALENDAR
         if (mod(iicroot-1,ninfo) .eq. 0) then
@@ -821,10 +895,22 @@ CR      write(*,*) '  0' MYID
 #ifdef SOLVE3D
         enddo
 #endif
+#ifdef MPI_TIME
+        start_time1_2=PMPI_Wtime()
+        exe_time_1 = start_time1_2 - start_time1_1
+          if (mynode.eq.0) write(97,*) exe_time_1
+#endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:
+#ifdef MPI_TIME
+      start_time2=PMPI_Wtime()
+      exe_time = start_time2 - start_time1
+      MPI_master_only write(stdout,*) '*******************************'
+      MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
+      MPI_master_only write(stdout,*) '*******************************'
+#endif
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()
@@ -859,12 +945,25 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 !     if (mynode.eq.0) print *,'exe_time =',exe_time
 
 # if defined XIOS
-                                         ! MPI finalize done by XIOS
-       call xios_finalize()              ! even with OASIS
+                                ! case XIOS + (OASIS / no OASIS)
+                                !      > MPI finalize done by XIOS
+      call xios_finalize()      !      > if OASIS, finalize is done by XIOS
+                                !      > if AGRIF : done using iom_context_finalize                            
+!!!#   if !defined AGRIF  
+!!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
+!!!#   endif
+      
+#  if  !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
+       call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
+#  endif
+       
 # elif defined OA_COUPLING || defined OW_COUPLING
-       call prism_terminate_proto(ierr)  ! Finalize OASIS (without XIOS)
+                                          ! case no XIOS + OASIS
+      call prism_terminate_proto(ierr)    !   > Finalize OASIS3 (without XIOS)
+!!!      call MPI_Finalize (ierr)         !   > Finalize CROCO (without XIOS)
 # else
-       call MPI_Finalize (ierr)
+                                          ! case no XIOS + no OASIS
+      call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
 # endif     
 #endif
 

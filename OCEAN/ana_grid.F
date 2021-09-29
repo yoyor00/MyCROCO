@@ -203,7 +203,7 @@ C$    integer omp_get_thread_num
                      f0=0.   
                      beta=0.
 # elif defined SANDBAR
-                     depth=4.1
+                     depth=0.6
                      f0=0.   
                      beta=0.
 # elif defined SWASH

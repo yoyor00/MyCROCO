@@ -28,8 +28,18 @@
 #include "ncscrum.h"
 #include "ocean2d.h"
 #include "ocean3d.h"
+#include "forces.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
+#if defined GLS_MIXING || defined LMD_MIXING
+# include "mixing.h"
+#endif
+#if defined EXACT_RESTART
+# include "coupling.h"
+# if defined M3FAST
+# include "nbq.h"
+# endif
+#endif
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
@@ -44,7 +54,12 @@
 # include "floats.h"
 #endif
       integer ierr, record, lstr, lvar, lenstr
-     &  , start(2), count(2), ibuff(4), nf_fwrite
+     &  , start(2), count(2), nf_fwrite
+#if defined OUTPUTS_SURFACE && ! defined XIOS
+     &   , ibuff(6)
+#else
+     &   , ibuff(4)
+#endif
 #ifdef SOLVE3D
      &      , itrc
 #endif
@@ -116,10 +131,30 @@
       count(2)=1
       ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr
+        MPI_master_only write(stdout,1) 'time_step', record, ierr
      &                   MYID
         goto 99                                           !--> ERROR
       endif
+
+#if defined OUTPUTS_SURFACE && ! defined XIOS
+      count(1)=6
+      ibuff(5)=nrecsurf
+# ifdef AVERAGES
+      ibuff(6)=nrecsurf_avg
+# else
+      ibuff(6)=0
+# endif
+      start(1)=1
+      start(2)=record
+      count(2)=1
+      ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
+      if (ierr .ne. nf_noerr) then
+        MPI_master_only write(stdout,1) 'time_step_surf', record, ierr
+     &                   MYID
+      endif
+#endif
+
+
 !
 ! Time.
 !
@@ -141,6 +176,7 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+
 !
 ! 2D momentum component in XI-direction.
 !
@@ -163,6 +199,7 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+      
 #ifdef SOLVE3D
 !
 ! 3D momentum component in XI-direction.
@@ -189,17 +226,283 @@
 !
 ! Tracer variables.
 !
+#  ifdef TRACERS
       do itrc=1,NT
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indxT+itrc-1))
-          write(stdout,1) vname(1,indxT+itrc-1)(1:lvar), record,
+          lvar=lenstr(vname(1,indxV+itrc))
+          write(stdout,1) vname(1,indxV+itrc)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
       enddo
+# endif
 
+# if defined LMD_MIXING 
+!
+!     Write out depth of planetary boundary layer (m).
+!
+#  ifdef LMD_SKPP
+#   ifdef LMD_SKPP2005
+        ierr=nf_fwrite(hbls(START_2D_ARRAY,3-nstp), ncidrst,
+     &                             rstHbl, record, r2dvar)
+!#   else
+!        ierr=nf_fwrite(hbl(START_2D_ARRAY), ncidrst,
+!     &                             rstHbl, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxHbl))
+          write(stdout,1) vname(1,indxHbl)(1:lvar), record,
+     &         ierr MYID
+          goto 99               !--> ERROR
+        endif
+#   endif /* LMD_SKPP2005  */
+#  endif /* LMD_SKPP  */  
+        
+#  if defined LMD_BKPP
+#   if defined LMD_BKPP2005
+!
+!     Write out depth of bottom planetary boundary layer (m).
+!
+        ierr=nf_fwrite(hbbl(START_2D_ARRAY), ncidrst,
+     &                             rstHbbl, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxHbbl))
+            write(stdout,1) vname(1,indxHbbl)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+#   endif /* LMD_BKPP2005  */
+#  endif /* LMD_BKPP  */         
+# endif /* LMD_MIXING */
+
+# if defined GLS_MIXING
+!
+! Turbulent kinetic energy.
+!
+        ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,itke), ncidrst,
+     &                             rstTke, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxTke))
+          write(stdout,1) vname(1,indxTke)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
+! Generic length scale.
+!
+        ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,igls), ncidrst,
+     &                             rstGls, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxGls))
+          write(stdout,1) vname(1,indxGls)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
+! Vertical viscosity coefficient.
+!
+        ierr=nf_fwrite(Akv(START_2D_ARRAY,0), ncidrst,
+     &                             rstAkv, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkv))
+          write(stdout,1) vname(1,indxAkv)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+!
+! Write out vertical diffusion coefficient for potential temperature.
+!
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,itemp), ncidrst,
+     &                             rstAkt, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAkt))
+          write(stdout,1) vname(1,indxAkt)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif   
+#  ifdef SALINITY
+!
+! Write out vertical diffusion coefficient for potential temperature.
+!
+        ierr=nf_fwrite(Akt(START_2D_ARRAY,0,isalt), ncidrst,
+     &                             rstAks, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxAks))
+          write(stdout,1) vname(1,indxAks)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif       
+#  endif /* SALINITY  */       
+# endif  /* GLS_MIXING  */
+
+# if defined LMD_MIXING
+#  if defined M3FAST
+!
+! Write out bottom stress u component 
+!
+        ierr=nf_fwrite(bustr(START_2D_ARRAY), ncidrst,
+     &                             rstBustr, record, u2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBustr))
+          write(stdout,1) vname(1,indxBustr)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif       
+!
+! Write out bottom stress v component 
+!
+        ierr=nf_fwrite(bvstr(START_2D_ARRAY), ncidrst,
+     &                             rstBvstr, record, v2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBvstr))
+          write(stdout,1) vname(1,indxBvstr)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif       
+#  endif
+# endif
+
+# ifdef EXACT_RESTART
+!
+! Write out forcing for barotropic equations in XI-direction.
+!
+        ierr=nf_fwrite(rufrc_bak(START_2D_ARRAY,3-nstp), ncidrst,
+     &                             rstrufrc, record, u2dvar)
+
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxrufrc))
+            write(stdout,1) vname(1,indxrufrc)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+!
+! Write out forcing for barotropic equations in XI-direction.
+!
+        ierr=nf_fwrite(rvfrc_bak(START_2D_ARRAY,3-nstp), ncidrst,
+     &                             rstrvfrc, record, v2dvar)
+
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxrvfrc))
+            write(stdout,1) vname(1,indxrvfrc)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+          endif
+          
+#  ifdef M3FAST
+!
+! 3D rhs for M3FAST in XI-direction.
+!
+      ierr=nf_fwrite(ru_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstru_nbq,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxru_nbq))
+        write(stdout,1) vname(1,indxru_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D rhs for M3FAST in ETA-direction.
+!
+       ierr=nf_fwrite(rv_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstrv_nbq,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxrv_nbq))
+         write(stdout,1) vname(1,indxrv_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+!
+! 3D rhs for M3FAST in XI-direction.
+!
+      ierr=nf_fwrite(ru_nbq_avg2(START_2D_ARRAY,1),
+     &                               ncidrst, rstru_nbq_avg2,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxru_nbq_avg2))
+        write(stdout,1) vname(1,indxru_nbq_avg2)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D rhs for M3FAST in ETA-direction.
+!
+       ierr=nf_fwrite(rv_nbq_avg2(START_2D_ARRAY,1),
+     &                               ncidrst, rstrv_nbq_avg2,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxrv_nbq_avg2))
+         write(stdout,1) vname(1,indxrv_nbq_avg2)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+!
+! 3D rhs for M3FAST in XI-direction.
+!
+      ierr=nf_fwrite(qdmu_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstqdmu_nbq,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxqdmu_nbq))
+        write(stdout,1) vname(1,indxqdmu_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D rhs for M3FAST in ETA-direction.
+!
+       ierr=nf_fwrite(qdmv_nbq(START_2D_ARRAY,1),
+     &                               ncidrst, rstqdmv_nbq,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxqdmv_nbq))
+         write(stdout,1) vname(1,indxqdmv_nbq)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+
+#  endif  /* M3FAST */
+
+#  ifdef TS_MIX_ISO_FILT
+!
+! density gradients for use in t3dmix
+!
+
+      ierr=nf_fwrite(dRdx(START_2D_ARRAY,1),
+     &                               ncidrst, rstdRdx,
+     &                               record, u3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname(1,indxdRdx))
+        write(stdout,1) vname(1,indxdRdx)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+
+       ierr=nf_fwrite(dRde(START_2D_ARRAY,1),
+     &                               ncidrst, rstdRde,
+     &                               record, v3dvar)
+       if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indxdRde))
+         write(stdout,1) vname(1,indxdRde)(1:lvar),
+     &                  record, ierr
+     &                  MYID
+         goto 99                                           !--> ERROR
+       endif
+       
+#  endif /* TS_MIX_ISO_FILT */
+# endif /* EXACT_RESTART */
+       
 # ifdef SEDIMENT
 !
 ! Write out sediment bed layer thickness, porosity, volume 

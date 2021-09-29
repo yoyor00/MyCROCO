@@ -79,17 +79,17 @@ C$OMP END PARALLEL
 #if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
+         if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
          endif
          oasis_time = oasis_time + dt
        endif 
 #endif /* OA_COUPLING */
 #endif
-#ifdef ONLINE_ANA
+!#ifdef ONLINE_ANALYSIS
 !     if (mynode.eq.0) write(6,*) 'appel',iic,iif
 !     call croco_oa(1)
-#endif
+!#endif
       return
       end
 !
@@ -103,6 +103,9 @@ C$OMP END PARALLEL
 # ifdef XIOS
 # include "zoom.h"
 # endif
+#endif
+#ifdef ONLINE_ANALYSIS
+      use module_interface_oa, only : if_oa
 #endif
       implicit none
 #include "param.h"
@@ -119,6 +122,10 @@ C$OMP END PARALLEL
 #if defined RVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
 # include "forces.h"
 #endif
+#if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
+# include "mixing.h"
+#endif
+
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -221,6 +228,10 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
+#if defined RVTK_DEBUG_PERFRST
+       call check_tab3d(Hz_bak(:,:,:),'Hz_bak beg prestep3d','r')
+#endif
+       
       if (may_day_flag.ne.0) return  !-->  EXIT
 
 #ifdef SOLVE3D
@@ -298,7 +309,7 @@ C$OMP BARRIER
         ENDIF
 #  endif
 # endif
-# if defined SSH_TIDES || defined UV_TIDES
+# if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 #  ifdef AGRIF
         IF (Agrif_Root()) call clm_tides (tile)
 #  else
@@ -308,7 +319,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
       
-#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
@@ -330,7 +341,7 @@ C$OMP END MASTER
         call bulk_flux (tile)   
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
@@ -463,16 +474,16 @@ C$OMP BARRIER
 #  else
         call rhs3d_w_nh (tile)
 #  endif
-# endif
+# endif   
         call pre_step3d (tile)
 # ifdef AGRIF
-        if (.Not.Agrif_Root()) then
-          call uv3dpremix (tile)
-        endif
+      if (.Not.Agrif_Root()) then
+        call uv3dpremix (tile)
+      endif
 # endif
       enddo
 C$OMP BARRIER
-
+      
       do tile=my_first,my_last
 # if defined UV_VIS2 || defined UV_VIS4 
         call uv3dmix (tile)
@@ -495,7 +506,7 @@ C$OMP BARRIER
         call set_diags_pv (tile)
 # endif
 
-# ifdef AVERAGES
+# if defined AVERAGES && ! defined XIOS
         call set_avg (tile)
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg
@@ -535,19 +546,29 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
-#ifdef RVTK_DEBUG
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
+       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
+      call check_tab3d(v(:,:,:,nnew),'v prestep3d','v') 
 #endif
-
+      
       nrhs=3
       nnew=3-nstp
 
-#ifdef ONLINE_ANALYSIS
-      call croco_oa(1)
+#ifdef ONLINE_ANALYSIS 
+! BLXD TODO moving OA calls just after the end of diags
+      if ( if_oa.eqv..true. ) then
+C$OMP END MASTER
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=my_first,my_last
+           ! BLXD call croco_oa(0)
+           call online_spectral_diags(tile,1)
+         enddo
+         call output_oa
+C$OMP MASTER
+      endif
 #endif
 
 !
@@ -579,9 +600,9 @@ C$OMP BARRIER
 #include "scalars.h"
 #include "ncscrum.h"
 #include "ocean2d.h"
-#if defined RVTK_DEBUG && defined MRL_WCI 
-# include "forces.h"
-#endif
+!#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined MRL_WCI
+!# include "forces.h"
+!#endif
 #ifdef FLOATS
 # include "floats.h"
 #endif
@@ -590,6 +611,11 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
+#elif ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST ) && defined M3FAST
+# include "nbq.h"
+#endif
+#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
+# include "forces.h"
 #endif
       integer range
       integer ntrds,trd,
@@ -677,7 +703,7 @@ C$OMP BARRIER
             call set_ssh (tile)
 #  endif
 # endif
-# if  defined Z_FRC_BRY  || defined M2_FRC_BRY
+# if defined Z_FRC_BRY  || defined M2_FRC_BRY
 #  ifdef ANA_BRY
             call ana_bry (tile)
 #  else
@@ -697,7 +723,7 @@ C$OMP BARRIER
 # ifdef BBL
           call bblm (tile)
 # endif
-# if defined SSH_TIDES || defined UV_TIDES
+# if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
 #   ifdef AGRIF
           IF (Agrif_Root()) call clm_tides (tile)
 #   else
@@ -716,7 +742,6 @@ C$OMP MASTER
         call output
 C$OMP END MASTER
 C$OMP BARRIER
-
 #endif  /* !defined SOLVE3D */
 
 #if defined BBL && defined BSTRESS_FAST
@@ -781,6 +806,12 @@ C$OMP MASTER
        call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r')
        call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
        call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+#  ifdef RVTK_DEBUG_ADVANCED
+        call check_tab2d(bustr,'bustr step3d_fast','u')
+        call check_tab2d(bvstr,'bvstr step3d_fast','v')
+        !!call check_tab3d(qdmu_nbq,'qdmu_nbq step3d_fast','u')      
+        !!call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')      
+#  endif
 # else
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
        call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
@@ -820,7 +851,12 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 # include "autotiling.h"
 #endif
-      integer range
+#if defined LMD_MIXING 
+# include "mixing.h"
+#elif defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
+# include "mixing.h"
+#endif
+       integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
       integer i,j,k
@@ -896,7 +932,7 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
-
+   
       do tile=my_first,my_last
         call step3d_uv2 (tile)
 # ifdef DIF_COEF_3D 
@@ -958,6 +994,9 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 # include "autotiling.h"
 #endif
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST )
+# include "mixing.h"
+#endif
       integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
@@ -982,7 +1021,6 @@ C$OMP BARRIER
       range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
-
 C$OMP BARRIER
 
 #ifdef SOLVE3D
@@ -1020,17 +1058,31 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+C$OMP MASTER
+      do itrc=1,NT
+        call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
+      enddo
+#  if defined GLS_MIXING
+        call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
+        call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
+#  endif
+C$OMP END MASTER
+# endif
+      
+# if defined TRACERS 
       do tile=my_first,my_last
-# if defined TS_DIF2 || defined TS_DIF4 
+#  if defined TS_DIF2 || defined TS_DIF4 
         call t3dmix (tile)
-# endif
-# if defined SPONGE_DIF2
+#  endif
+#  if defined SPONGE_DIF2
         call t3dmix_spg (tile)
-# endif
+#  endif
       enddo
 C$OMP BARRIER
 
-
+# endif /* TRACERS */
+      
 # ifdef MORPHODYN
       do tile=my_first,my_last
 #  ifdef SEDIMENT
@@ -1091,6 +1143,18 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
 
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
+        !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
+      enddo
+      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v step3d','v')
+C$OMP END MASTER
+#endif
+
 C$OMP MASTER
 #ifdef AUTOTILING
       call end_timing
@@ -1104,17 +1168,6 @@ C$OMP MASTER
 #endif      
 C$OMP END MASTER
 C$OMP BARRIER
-
-#if defined RVTK_DEBUG && defined SOLVE3D
-C$OMP BARRIER
-C$OMP MASTER
-      do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
-      enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v step3d','v')    
-C$OMP END MASTER      
-#endif
 
       return
       end      

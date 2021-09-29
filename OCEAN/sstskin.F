@@ -68,7 +68,7 @@
       REAL       nu, visc, diff
       PARAMETER (nu=.3, visc=1.e-6, diff=1.4e-7)
       REAL       sw, q, q2, qn, qn1, fs, f1, phi, usw,
-     &           db, zeta, ds,
+     &           db, zeta, zeta2, ds,
      &           cff1, cff2, cff3, cff4, cff5,
      &           tb, dtc, dtw, ts, dtwo, alw
 !
@@ -145,8 +145,16 @@
           endif
           cff2=vonKar*g*alw
           zeta=db*cff2*qn/usw**3         ! db/LMO
+          zeta2=zeta*zeta
           if(zeta.gt.0.) then
-            phi=1.+5.*zeta
+            !phi=1.+5.*zeta              ! similarity function from Z&B-2005
+            phi=1.+(5.*zeta+4.*zeta2)/
+     &             (1.+3.*zeta+0.25*zeta2) ! leveling off in very stable 
+                                           ! conditions (Takaya et al. 2010)
+# ifdef LMD_LANGMUIR
+            usw=usw*max(1.,Langmuir(i,j)**(-0.667)) ! wave enhancement factor 
+                                                    ! (Takaya et al. 2010)
+# endif
           else
             phi=1./sqrt(1.-16.*zeta)
           endif

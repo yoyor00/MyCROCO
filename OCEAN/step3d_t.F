@@ -15,7 +15,9 @@
       subroutine step3d_t (tile)
 !
       implicit none
-      integer tile, trd, omp_get_thread_num
+      integer tile
+# if defined TRACERS      
+      integer trd, omp_get_thread_num
 # include "param.h"
 # include "private_scratch.h"
 # include "ocean3d.h"
@@ -27,9 +29,11 @@
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                                                A3d(1,1,trd))
+# endif /* TRACERS */      
       return
       end
 
+# if defined TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
@@ -153,7 +157,14 @@
         do k=1,N
 
 # ifdef BIO_HADV_WENO5
-          if (itrc .le. 2) then
+#   if defined TEMPERATURE && defined SALINITY
+        if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+          if (itrc .le. 1) then
+#   else 
+          if (itrc .le. 0) then
+#   endif
+                
 # endif
 !
 !----------------------------------------------------------
@@ -256,6 +267,7 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
+
           do j=Jstr,Jend
             do i=Istr,Iend
 # if defined MUSTANG && defined key_sand2D
@@ -281,6 +293,8 @@
 # endif
             enddo
           enddo                 !-->  discard FX,FE
+
+
 
 # if defined AGRIF && defined AGRIF_CONSERV_TRA
           IF (Agrif_Root()) Then
@@ -309,7 +323,66 @@
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
           enddo
         enddo
+        
+        
+
+# if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+
+!----------------------------------------------------------
+! Compute fluxes FX and FE
+!----------------------------------------------------------
+!
+#  undef PREDICTOR
+
+# if  defined TS_HADV_WENO5
+#  define TS_HADV_C6
+#  undef TS_HADV_WENO5
+#  include "compute_horiz_tracer_fluxes.h"
+#  undef TS_HADV_C6
+#  define TS_HADV_WENO5
+
+# elif defined TS_HADV_UP5
+#  define TS_HADV_C6
+#  undef TS_HADV_UP5
+#  include "compute_horiz_tracer_fluxes.h"
+#  undef TS_HADV_C6
+#  define TS_HADV_UP5
+
+# elif defined TS_HADV_UP3
+#  define TS_HADV_C4
+#  undef TS_HADV_UP3
+#  include "compute_horiz_tracer_fluxes.h"
+#  undef TS_HADV_C4
+#  define TS_HADV_UP3
+
+# endif
+!
+        
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              THmix(i,j,k,itrc)=( TXadv(i,j,k,itrc)+TYadv(i,j,k,itrc)
+     &                         +(FX(i+1,j)-FX(i,j))
+     &                         +(FE(i,j+1)-FE(i,j)) ) SWITCH rmask(i,j)
+              TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
+              TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
+          enddo
+        enddo
+        
+# else
+
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              THmix(i,j,k,itrc)=0.
+          enddo
+        enddo
+        
+# endif
+        
 # endif /* DIAGNOSTICS_TS */
+
+
+
+
 
         enddo    !<-- k
       enddo    !<-- itrc
@@ -389,6 +462,7 @@
 # endif
           enddo               !--> discard FC
 
+
 # ifdef DIAGNOSTICS_TS
        do k=1,N 
          do i=Istr,Iend
@@ -423,6 +497,7 @@
 ! the Large et al. 1994 KPP scheme.
 !----------------------------------------------------------
 !
+#  ifdef TEMPERATURE          
           if (itrc.eq.itemp) then
             do k=1,N-1
               do i=Istr,Iend
@@ -436,8 +511,10 @@
 # endif
               enddo
             enddo
+          end if
+#  endif /* TEMPERATURE */            
 # ifdef SALINITY 
-          elseif (itrc.eq.isalt) then
+          if (itrc.eq.isalt) then
             do k=1,N-1
               do i=Istr,Iend
                 FC(i,k)=0.
@@ -448,14 +525,18 @@
 # endif
               enddo
             enddo
-# endif
           endif
+# endif /* SALINITY */
 !
-# ifdef SALINITY 
+
+#  if defined SALINITY || defined TEMPERATURE 
+#   if defined SALINITY && defined TEMPERATURE 
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
-# else
+#   elif defined SALINITY                   
+          if (itrc.eq.isalt) then
+#   elif defined TEMPERATURE 
           if (itrc.eq.itemp) then
-# endif
+#   endif
             do k=1,N
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+FC(i,k )
@@ -466,7 +547,7 @@
 #  ifdef MASKING
      &                                             * rmask(i,j)
 #  endif
-# endif  /* DIAGNOSTICS_TS */
+#  endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
@@ -478,6 +559,8 @@
             enddo
 # endif  /* DIAGNOSTICS_TS */
           endif
+#  endif  /* defined SALINITY || TEMPERATURE  */
+          
 !
 !
 !======================================================================
@@ -500,7 +583,12 @@
 #  endif
 
 # ifdef TS_MIX_IMP
+#  if defined TEMPERATURE && defined SALINITY       
           if (itrc .le. 2) then                  ! active tracers
+#  endif
+#  if defined TEMPERATURE || defined SALINITY       
+          if (itrc .le. 1) then                  ! active tracers
+#  endif
             do k=1,N
               do i=istr,iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
@@ -618,9 +706,11 @@
 !  apply land-sea mask and exchange periodic boundary conditions.
 !======================================================================
 !
+
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
       enddo
+      
 !
 !======================================================================
 !  Compute biological fluxes
@@ -726,7 +816,6 @@
      &                  tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
         endif
 #  endif /* ZONAL_NUDGING */
-
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -788,15 +877,22 @@
 #  endif /* DIAGNOSTICS_TS_ADV */
 !
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
+
 #  ifdef DIAGNOSTICS_TS
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
 #  endif
+              TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-              TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
-              THmix(i,j,k,itrc)=0.
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+
+# if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 && !defined TS_DIF2 && !defined TS_DIF4
+
+# include "finalize_diagnostics_tsadv.h"
+
+# endif
             enddo
           enddo
         enddo
@@ -887,7 +983,11 @@
 #  endif /* DIAGNOSTICS_TS_MLD */
 
 #  ifdef DIAGNOSTICS_DEBUG
-        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
+        if (istr.eq.1 .and. jstr.eq.1
+#   ifdef TEMPERATURE
+     &       .and. itrc.eq.itemp
+#   endif /* TEMPERATURE */
+     &       ) then
           i=5
           j=5
 #   if defined DIAGNOSTICS_TS_MLD
@@ -943,6 +1043,7 @@
             enddo
           enddo
         enddo
+        
 #  undef I_RANGE
 #  undef J_RANGE
 # endif /* MASKING */
@@ -965,6 +1066,7 @@
 
       return
       end
+# endif  /* TRACERS */      
 !
 !======================================================================
 !

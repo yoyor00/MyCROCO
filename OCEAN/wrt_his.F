@@ -35,7 +35,7 @@
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik
-#ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &   , ibuff(6)
 #else
      &   , ibuff(4)
@@ -152,7 +152,8 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
          goto 99                !--> ERROR
       endif
 
-#ifdef OUTPUTS_SURFACE
+
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       count(1)=6
       ibuff(5)=nrecsurf
 # ifdef AVERAGES
@@ -258,6 +259,30 @@ CR        write(*,*) 'wrt_his:' ,work2d(10,2),ncidhis
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  bostr' MYID
       endif
+      
+!
+!     Write out kinematic U-bottom stress (N/m2).
+!
+      if (wrthis(indxBustr)) then
+         work2d=bustr*rho0
+         call fillvalue2d(work2d,ncidhis,hisBustr,indxBustr,
+     &        record,u2dvar,type)
+CR      write(*,*) 'wrt_his:  bustr' MYID
+      endif
+      
+      
+      
+!
+!     Write out kinematic V-bottom stress (N/m2).
+!
+      if (wrthis(indxBvstr)) then
+         work2d=bvstr*rho0
+         call fillvalue2d(work2d,ncidhis,hisBvstr,indxBvstr,
+     &        record,v2dvar,type)
+CR      write(*,*) 'wrt_his:  bvstr' MYID
+      endif
+      
+
 !     
 !--   Atmospheric forcing : no mask, no fill value
 !     
@@ -593,6 +618,33 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
 !     
+!     Tracer variables.
+!     
+#ifdef TRACERS
+      do itrc=1,NT
+         if (wrthis(indxV+itrc)) then
+            workr=t(:,:,:,nstp,itrc)
+#ifdef MASKING
+            if (iic.eq.0) then
+!     We do that because the mask has been applied if iic ==0 !
+               do k=1,N
+                  workr(:,:,k)=workr(:,:,k)
+#ifdef WET_DRY
+     &                         SWITCH rmask_wet(:,:)
+#else
+     &                         SWITCH rmask(:,:)
+#endif
+               enddo
+            endif
+#endif
+            call fillvalue3d(workr,ncidhis,hisT(itrc),
+     &           indxV+itrc,record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtT  ' MYID
+
+      endif   
+      enddo
+#endif /* TRACERS */
+!     
 !     Density anomaly.
 !     
       if (wrthis(indxR)) then
@@ -601,6 +653,20 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
      &        record,r3dvar,type)           
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
+!
+!     Brunt vaisala frequency.
+!
+      if (wrthis(indxbvf)) then
+         work=bvf
+         call fillvalue3d_w(work,ncidhis,hisbvf,indxbvf,
+     &           record,w3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtbvf' MYID
+      endif
+# endif
+
 !     
 !     S-coordinate omega vertical velocity (m/s).
 !     
@@ -668,7 +734,9 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
             do i=1,Lm
               workr(i,j,k)=
 #   ifdef TS_DIF2
-     &               diff2(i,j,itemp)
+#    ifdef TEMPERATURE
+     &                 diff2(i,j,itemp)
+#     endif
 #    ifdef TS_DIF_SMAGO
      &              +diff3d_r(i,j,k)
 #    endif
@@ -700,12 +768,14 @@ CR      write(*,*) 'wrt_his:  wrtAkv' MYID
 !     
 !     Write out vertical diffusion coefficient for potential temperature.
 !     
+# ifdef TEMPERATURE
       if (wrthis(indxAkt)) then
         work=Akt(:,:,:,itemp)
         call fillvalue3d_w(work,ncidhis,hisAkt,indxAkt,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       endif
+# endif
 # ifdef SALINITY
 !     
 !     Write out vertical diffusion coefficient for salinity.
@@ -775,8 +845,9 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
 # endif
 
 !     
-!     Write out total heat flux 
+!     Write out total surface heat flux 
 !     
+#if defined TEMPERATURE 
       if (wrthis(indxShflx)) then
         work2d=stflx(:,:,itemp)*rho0*Cp
      &          SWITCH rmask
@@ -790,9 +861,30 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
         endif
 CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
       endif
-      
-# ifdef SALINITY    
-!     Write out surface salt flux  
+#endif
+
+#ifdef BHFLUX
+!     
+!     Write out bottom heat flux 
+!     
+      if (wrthis(indxBhflx)) then
+        work2d=btflx(:,:,itemp)*rho0*Cp
+     &       SWITCH rmask
+        ierr=nf_fwrite(work2d, ncidhis, hisBhflx, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBhflx))
+          MPI_master_only write(stdout,1)
+     &         vname(1,indxBhflx)(1:lvar), record, ierr
+     &         MYID
+            goto 99             !--> ERROR
+          endif
+CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
+        endif
+#endif
+
+#ifdef SALINITY    
+!     Write out surface salt flux
+!
 !       --> convert [psu.m.s-1] => [cm/days] : 
 !       stf_cff= 86400/0.01 = 1/stf_scale 
 !       After forcing reading (get_stflx.F), multiply by 0.01/86400.
@@ -812,18 +904,48 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
            MPI_master_only write(stdout,1)
      &        vname(1,indxSwflx)(1:lvar), record, ierr
      &           MYID
-          goto 99             !--> ERROR
-        endif
-CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
+
+            goto 99             !--> ERROR
+         endif
+CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
+       endif
+# ifdef BWFLUX
+!     
+!     Write out bottom salt flux
+!
+       
+!       --> convert [psu.m.s-1] => [cm/days] : 
+!       btf_cff= 86400/0.01 = 1/btf_scale 
+!       After forcing reading (get_btflx.F), multiply by 0.01/86400.
+!       Then in get_vbc.F, mult. by salinity t(i,j,1,nstp,isalt)
+!
+      if (wrthis(indxBwflx)) then
+         do j=0,Mm+1
+            do i=0,Lm+1
+               work2d(i,j)=btf_cff*btflx(i,j,isalt)/
+     &              ( max(eps,t(i,j,1,nstp,isalt))) 
+     &              SWITCH rmask(i,j)
+            enddo
+        enddo
+         ierr=nf_fwrite(work2d, ncidhis, hisBwflx, record, r2dvar)
+         if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxBwflx))
+           MPI_master_only write(stdout,1)
+     &        vname(1,indxBwflx)(1:lvar), record, ierr
+     &           MYID
+            goto 99             !--> ERROR
+         endif
+      write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
       endif
-# endif      
+# endif
+#endif      
 !     
 !     Write out surface heat flux component (W/m2)
 !         
       if (wrthis(indxShflx_rsw)) then
-# ifdef BULK_FLUX
-        work2d=shflx_rsw*rho0*Cp
-        ierr=nf_fwrite(work2d, ncidhis, hisShflx_rsw, record,
+# if defined BULK_FLUX && defined TEMPERATURE 
+         work2d=shflx_rsw*rho0*Cp
+         ierr=nf_fwrite(work2d, ncidhis, hisShflx_rsw, record,
      &        r2dvar)
 # else 
         work2d=srflx*rho0*Cp
@@ -838,7 +960,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
           goto 99             !--> ERROR
         endif
       endif
-# ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE 
       if (wrthis(indxShflx_rlw)) then
         work2d=shflx_rlw*rho0*Cp
         ierr=nf_fwrite(work2d, ncidhis, hisShflx_rlw, record,
@@ -881,7 +1003,7 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          endif
       endif
 # endif
-# ifdef SST_SKIN
+# if defined SST_SKIN && defined TEMPERATURE
 !     
 !     Write out skin temperature (degC)
 !     

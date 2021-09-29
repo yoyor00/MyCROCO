@@ -69,7 +69,7 @@
 !  water type to 1 (type I). This variable is used in the computation
 !  of the fraction solar shortwave flux.
 !
-      if (iic.eq.ntstart) then
+      if (FIRST_RST_TIME_STEP) then
         do j=Jstr,Jend
           do i=Istr,Iend
             Jwtype(i,j)=lmd_Jwt
@@ -190,7 +190,7 @@
 !  water type to 1 (type I). This variable is used in the computation
 !  of the fraction solar shortwave flux.
 !
-      if (iic.eq.ntstart) then
+      if (FIRST_RST_TIME_STEP) then
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             Jwtype(i,j)=lmd_Jwt

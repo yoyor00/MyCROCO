@@ -121,9 +121,11 @@
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
+# if defined TRACERS
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
-# ifdef BULK_FLUX
+# endif /* TRACERS */
+# if defined BULK_FLUX && defined TEMPERATURE
       real shflx_rsw(GLOBAL_2D_ARRAY)
       common /frc_shflx_rsw/shflx_rsw
       real shflx_rlw(GLOBAL_2D_ARRAY)
@@ -132,14 +134,15 @@
       common /frc_shflx_lat/shflx_lat
       real shflx_sen(GLOBAL_2D_ARRAY)
       common /frc_shflx_sen/shflx_sen
-# endif
-# ifdef SST_SKIN
+# endif /* BULK_FLUX && TEMPERATURE */
+# if defined SST_SKIN && defined TEMPERATURE
       real sst_skin(GLOBAL_2D_ARRAY)
       common /frc_sst_skin/ sst_skin
       real dT_skin(GLOBAL_2D_ARRAY)
       common /frc_dT_skin/ dT_skin
-# endif
-# if !defined ANA_STFLUX || !defined ANA_SSFLUX
+# endif/* SST_SKIN && TEMPERATURE */
+# if defined TRACERS
+#  if !defined ANA_STFLUX || !defined ANA_SSFLUX
 !
 !  stflxg   Two-time level surface tracer flux grided data.
 !  stflxp   Two-time level surface tracer flux point  data.
@@ -156,7 +159,7 @@
       common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
       common /stfdat3/  stf_tid, stf_id
 #   undef STFLUX_DATA
-# endif /* !ANA_STFLUX || !ANA_SSFLUX */
+#  endif /* !ANA_STFLUX || !ANA_SSFLUX */
 !
 !  BOTTOM TRACER FLUXES:
 !--------------------------------------------------------------------
@@ -166,37 +169,37 @@
 !
       real btflx(GLOBAL_2D_ARRAY,NT)
       common /forces_btflx/btflx
-# ifndef ANA_BTFLUX
-!
+
+#  if defined BHFLUX || defined BWFLUX
 !  btflxg   Two-time level bottom tracer flux grided data.
 !  btflxp   Two-time level bottom tracer flux point data.
 !  tbtflx   Time of bottom tracer flux.
 !
       real btflxg(GLOBAL_2D_ARRAY,2,NT)
       common /btfdat_btflxg/btflxg
-
-      real sclbtf(NT), btf_tstart(NT), btf_tend(NT)
-      real btfclen(NT), tsbtf(NT)
-      real btf_tintrp(2,NT), btflxp(2,NT),  tbtflx(2,NT)
-      integer itbtf(NT), btfid(NT), btftid(NT),tbtfindx(NT)
-      logical lbtfgrd(NT), btfcycle(NT), btf_onerec(NT)
-      common /btfdat1/ sclbtf, btf_tstart, btf_tend, btfclen
-      common /btfdat2/ tsbtf,  btf_tintrp,   btflxp,        tbtflx
-      common /btfdat3/ itbtf,  btfid,        btftid,        tbtfindx
-      common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
-
+      
+      real btflxp(2,NT), btf_time(2,NT)
+      real btf_cycle(NT), btf_scale(NT)
+      integer itbtf(NT), btf_ncycle(NT), btf_rec(NT) 
+      integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
+      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
+      common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
+      common /btfdat3/  btf_tid, btf_id
 #   undef BTFLUX_DATA
-# endif /* !ANA_BTFLUX */
-#ifdef QCORRECTION
+#  endif /*  BHFLUX */
+# endif /* TRACERS */
+
+# if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
+      real dqdt(GLOBAL_2D_ARRAY)
+      common /forces_dqdt/dqdt 
 !
 !  HEAT FLUX CORRECTION
 !--------------------------------------------------------------------
 !  dqdt     Kinematic surface net heat flux sensitivity to SST [m/s].
 !  sst      Current sea surface temperature [degree Celsius].
 !
-      real dqdt(GLOBAL_2D_ARRAY)
       real sst(GLOBAL_2D_ARRAY)
-      common /forces_dqdt/dqdt /forces_sst/sst
+      common /forces_sst/sst
 #  ifndef ANA_SST
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
@@ -222,7 +225,8 @@
 
 #    undef SST_DATA
 #  endif /* !ANA_SST */
-# endif /* QCORRECTION */
+# endif /* QCORRECTION && TEMPERATURE */
+
 # if defined SALINITY && defined SFLX_CORR
 !
 !  SALT FLUX CORRECTION
@@ -275,7 +279,7 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
-#ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE
 !
 !  HEAT FLUX BULK FORMULATION
 !--------------------------------------------------------------------
@@ -419,7 +423,7 @@
       common /bulkdat2_bio/ radswbiop
 # endif
       common /bulkdat2_wspd/ wspdp 
-#endif /* BULK_FLUX */
+# endif /* BULK_FLUX && TEMPERATURE */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
 !--------------------------------------------------------------------

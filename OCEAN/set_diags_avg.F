@@ -109,6 +109,11 @@
                 TVmix_avg(i,j,k,itrc) = cff *
      &                     ( cff1*TVmix_avg(i,j,k,itrc) +
      &                            TVmix(i,j,k,itrc) )
+# ifdef DIAGNOSTICS_TSVAR
+                TVmixt_avg(i,j,k,itrc) = cff *
+     &                     ( cff1*TVmixt_avg(i,j,k,itrc) +
+     &                            TVmixt(i,j,k,itrc) )
+# endif
                 TForc_avg(i,j,k,itrc) = cff *
      &                    ( cff1*TForc_avg(i,j,k,itrc) + 
      &                           TForc(i,j,k,itrc) )

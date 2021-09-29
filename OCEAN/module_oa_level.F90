@@ -17,6 +17,17 @@
 ! REVISION HISTORY:
 !
 !> @authors
+!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
+!!  - Initial version
+!! - B. Lemieux-Dudon : 
+!!  - modification in the tracking of isopycnal levels_:
+!!      - ifl_l flag eliminated, replaced by counting analysis of type 20 in nzlevel_oa, 
+!!        and testing if nzlevel_oa>0.
+!!      - enables to diminish the size of the structured type array wlev, now sized 
+!!        to nzlevel_oa intead of nzv_oa (the total number of OA analysis requested 
+!!        in the simulation).
+!! - Francis Auclair, B. Lemieux-Dudon, C. Nguyen
+!!  - Croco-OnlineA module interface, 1st version, Spring 2020
 !> @date 2015 January
 !> @todo
 !
@@ -30,10 +41,10 @@
 
       use module_oa_type
 
-      integer                                                         &
-           nzlevel_oa                      
+      integer::nzlevel_oa                      
 
-      type(type_level),dimension(:),allocatable::wlev_oa
+      !BLXD_TILE_ISSUE
+      !type(type_level),dimension(:),allocatable::wlev_oa
 
       integer,dimension(:),allocatable::lev2v_oa
       integer,dimension(:),allocatable::v2lev_oa

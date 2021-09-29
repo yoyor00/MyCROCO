@@ -377,6 +377,7 @@ CONTAINS
          END DO
       END DO
       !
+#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN
          ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
          IF( iom_use( "GRAZ2" ) ) THEN
@@ -397,6 +398,7 @@ CONTAINS
          ENDIF
          DEALLOCATE( zw3d )
       ENDIF
+#endif
       !
 #if defined key_trc_diaadd
       DO jk = KRANGE

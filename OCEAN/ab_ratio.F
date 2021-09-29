@@ -65,7 +65,11 @@
 !
       do k=1,N-1
         do i=Istr,Iend
+#  ifdef TEMPERATURE
           Tt=0.5*(t(i,j,k,tind,itemp)+t(i,j,k+1,tind,itemp))
+#  else
+          Tt=25.0                                    !  OF STATE
+#  endif
 #  ifdef SALINITY
           Ts=0.5*(t(i,j,k,tind,isalt)+t(i,j,k+1,tind,isalt))
      &                                                -Smean

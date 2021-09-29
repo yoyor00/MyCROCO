@@ -59,10 +59,10 @@ MPIRUN=$x_s
 RUNDIR=$x_r
     
     
-[ -f cppdefs.h ] && \rm cppdefs.h && \cp ${ROOTDIR}/${RUNDIR}/cppdefs.h .
-[ -f param.h ]    && \rm param.h   && cp ${ROOTDIR}/${RUNDIR}/param.h .
+[ -f cppdefs.h ] && \rm cppdefs.h && \cp ${ROOTDIR}/OCEAN/cppdefs.h .
+[ -f param.h ]    && \rm param.h   && cp ${ROOTDIR}/OCEAN/param.h .
 [ -d TESTCASES ] && \rm -rf TESTCASES 
-cp -r ${ROOTDIR}/${RUNDIR}/TEST_CASES .
+cp -r ${ROOTDIR}/TEST_CASES .
 [ ! -d LOG ] && mkdir LOG
 
 # Number of cases

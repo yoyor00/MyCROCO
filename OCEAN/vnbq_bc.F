@@ -217,7 +217,7 @@
           do i=Istr,Iend                             ! ======== ==== ======
 #   ifdef MRL_WCI
             qdmv_nbq(i,Jstr,k)=-vst(i,Jstr,k)        ! no Lagrangian flux
-                               *0.5*(Hz(i,Jstr  ,k)
+     &                          *0.5*(Hz(i,Jstr  ,k)
      &                              +Hz(i,Jstr-1,k))
 #    ifdef MASKING
      &                         *vmask(i,Jstr)

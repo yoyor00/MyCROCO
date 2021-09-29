@@ -1,0 +1,54 @@
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!  MPP_OPTIMIZ namelist
+! ---------------------------
+!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+!
+!'''''''''''''''''''''''''''''''''''''''''
+!       namspace  spatial indexes
+!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+! jpk     = number of vertical levels (for memory computation)
+! Npts    = number of ghost cells
+!
+&NAMSPACE
+    jpk =30
+    Npts = 2
+    OBC_NORTH = .TRUE.
+    OBC_SOUTH = .FALSE.
+    OBC_EAST  = .FALSE.
+    OBC_WEST  = .TRUE.
+/
+!'''''''''''''''''''''''''''''''''''''
+!      namproc
+!''''''''''''''''''''''''''''''''''''
+!   min_nb_proc_NP_XI = minimum number of proc in XI axis
+!   min_nb_proc_NP_ETA = minimum number of proc in ETA axis
+!   max_number_proc = maximum number of proc
+!
+&NAMPROC
+     min_nb_proc_NP_XI=20
+     min_nb_proc_NP_ETA=20
+     max_number_proc=1000
+/
+'''''''''''''''''''''''''''''''''''''
+!      namlayout (only used in my_layout)
+!''''''''''''''''''''''''''''''''''''
+!   nb_proc_NP_XI  = number of proc in XI axis
+!   nb_proc_NP_ETA =  number of proc in ETA axis
+!
+!
+&NAMLAYOUT
+     nb_proc_NP_XI = 37
+     nb_proc_NP_ETA = 27
+/
+!
+!'''''''''''''''''''''''''''''''''''''''
+!      namfile  of filename
+!,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+! NAMELIST /namfile/ cbathy
+! cbathy = name of the  bathy/mask file(nc)
+! covdta = Root for the overdata file name .
+! Complete name will be {covdta}.{NP_XI}x{NP_ETA}_{NPP}
+&NAMFILE
+     cbathy='gigatl6_grd.nc'
+     covdta = 'GIGATL6'
+/

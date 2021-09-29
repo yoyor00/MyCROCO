@@ -243,7 +243,7 @@
             ENDDO
           ENDDO  
         ENDDO
-      ENDIF 
+      ENDIF
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
@@ -715,12 +715,17 @@
 # ifdef MASKING               
      &                                                 *rmask(i,j)
 # endif               
+# ifdef TEMPERATURE
                Akt(i,j,k,itemp)= MAX( cff*c_mu_prim,nuws )
 # ifdef MASKING    
      &                                                 *rmask(i,j)
+#  endif 
 # endif 
 # ifdef SALINITY
-               Akt(i,j,k,isalt)= Akt(i,j,k,itemp) 
+               Akt(i,j,k,isalt)= MAX( cff*c_mu_prim,nuws )
+#  ifdef MASKING    
+     &                                                 *rmask(i,j)
+#  endif 
 # endif  
                Lscale( i, j , k ) =  cm0 * cm0 * cm0 * cff 
      &                            / sqrt( trb( i,j,k,nnew,itke ) ) 
@@ -735,10 +740,12 @@
      &                      -0.5*Akv(i,j,N-2), nuwm)          
            Akv(i,j,0) = MAX( 1.5*Akv(i,j,  1)
      &                      -0.5*Akv(i,j,  2), nuwm)
+# ifdef TEMPERATURE
            Akt(i,j,N,itemp) = MAX(  1.5*Akt(i,j,N-1,itemp)
      &                             -0.5*Akt(i,j,N-2,itemp), nuws )
            Akt(i,j,0,itemp) = MAX(  1.5*Akt(i,j,  1,itemp)
      &                             -0.5*Akt(i,j,  2,itemp), nuws )
+# endif           
 # ifdef SALINITY
            Akt(i,j,N,isalt)=Akt(i,j,N,itemp)
            Akt(i,j,0,isalt)=Akt(i,j,0,itemp)
@@ -760,7 +767,9 @@
             trb(istr-1,j,k,nnew,itke)=trb(istr,j,k,nnew,itke)
             trb(istr-1,j,k,nnew,igls)=trb(istr,j,k,nnew,igls)
             Akv(istr-1,j,k      )=Akv(istr,j,k      )
+# ifdef TEMPERATURE
             Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(istr-1,j,k,isalt)=Akt(istr,j,k,isalt)
 #  endif
@@ -773,7 +782,9 @@
             trb(iend+1,j,k,nnew,itke)=trb(iend,j,k,nnew,itke)
             trb(iend+1,j,k,nnew,igls)=trb(iend,j,k,nnew,igls)
             Akv(iend+1,j,k      )=Akv(iend,j,k      )
+# ifdef TEMPERATURE
             Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(iend+1,j,k,isalt)=Akt(iend,j,k,isalt)
 #  endif
@@ -788,7 +799,9 @@
             trb(i,jstr-1,k,nnew,itke)=trb(i,jstr,k,nnew,itke)
             trb(i,jstr-1,k,nnew,igls)=trb(i,jstr,k,nnew,igls)  
             Akv(i,jstr-1,k      )=Akv(i,jstr,k      )
+# ifdef TEMPERATURE
             Akt(i,jstr-1,k,itemp)=Akt(i,jstr,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(i,jstr-1,k,isalt)=Akt(i,jstr,k,isalt)
 #  endif
@@ -801,7 +814,9 @@
             trb(i,jend+1,k,nnew,itke)=trb(i,jend,k,nnew,itke)
             trb(i,jend+1,k,nnew,igls)=trb(i,jend,k,nnew,igls) 
             Akv(i,jend+1,k)=Akv(i,jend,k)
+# ifdef TEMPERATURE
             Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(i,jend+1,k,isalt)=Akt(i,jend,k,isalt)
 #  endif
@@ -814,7 +829,9 @@
           trb(istr-1,jstr-1,k,nnew,itke)=trb(istr,jstr,k,nnew,itke)
           trb(istr-1,jstr-1,k,nnew,igls)=trb(istr,jstr,k,nnew,igls)
           Akv(istr-1,jstr-1,k      )=Akv(istr,jstr,k      )
+# ifdef TEMPERATURE
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
+#  endif
 #  ifdef SALINITY
           Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
 #  endif
@@ -825,7 +842,9 @@
           trb(istr-1,jend+1,k,nnew,itke)=trb(istr,jend,k,nnew,itke)
           trb(istr-1,jend+1,k,nnew,igls)=trb(istr,jend,k,nnew,igls)
           Akv(istr-1,jend+1,k      )=Akv(istr,jend,k      )
+# ifdef TEMPERATURE
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
+#  endif
 #  ifdef SALINITY
           Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
 #  endif
@@ -836,7 +855,9 @@
           trb(iend+1,jstr-1,k,nnew,itke)=trb(iend,jstr,k,nnew,itke)
           trb(iend+1,jstr-1,k,nnew,igls)=trb(iend,jstr,k,nnew,igls)
           Akv(iend+1,jstr-1,k      )=Akv(iend,jstr,k      )
+# ifdef TEMPERATURE
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
+#  endif
 #  ifdef SALINITY
           Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
 #  endif
@@ -847,7 +868,9 @@
           trb(iend+1,jend+1,k,nnew,itke)=trb(iend,jend,k,nnew,itke)
           trb(iend+1,jend+1,k,nnew,igls)=trb(iend,jend,k,nnew,igls)
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
+# ifdef TEMPERATURE
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
+#  endif
 #  ifdef SALINITY
           Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
 #  endif
@@ -893,8 +916,10 @@
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        trb(START_2D_ARRAY,0,nnew,igls))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
+# ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        Akt(START_2D_ARRAY,0,itemp))
+#  endif
 #  ifdef SALINITY
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        Akt(START_2D_ARRAY,0,isalt))

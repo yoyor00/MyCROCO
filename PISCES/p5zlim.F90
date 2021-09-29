@@ -427,6 +427,7 @@ CONTAINS
          END DO
       END DO
       !
+#if defined key_iomput
       IF( lk_iomput .AND. knt == nrdttrc ) THEN        ! save output diagnostics
         IF( iom_use( "xfracal" ) ) CALL iom_put( "xfracal", xfracal(:,:,:) * tmask(:,:,:) )  ! euphotic layer deptht
         IF( iom_use( "LNnut"   ) ) CALL iom_put( "LNnut"  , xlimphy(:,:,:) * tmask(:,:,:) )  ! Nutrient limitation term
@@ -439,6 +440,7 @@ CONTAINS
         IF( iom_use( "SIZEP"   ) ) CALL iom_put( "SIZEP"  , sizep(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
         IF( iom_use( "SIZED"   ) ) CALL iom_put( "SIZED"  , sized(:,:,:) * tmask(:,:,:) )  ! Iron limitation term
       ENDIF
+#endif
       !
    END SUBROUTINE p5z_lim
 

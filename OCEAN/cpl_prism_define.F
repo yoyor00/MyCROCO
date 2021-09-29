@@ -129,10 +129,8 @@
       srcv_clname(8) = 'RRMT0M1'//clevel
 !     significant wave height [m]
       srcv_clname(9) = 'RRM__HS'//clevel
-!     cos of mean wave direction []
-      srcv_clname(10) = 'RRMCDIR'//clevel
-!     sin of mean wave direction []
-      srcv_clname(11) = 'RRMSDIR'//clevel
+!     mean wave direction [radian]
+      srcv_clname(10) = 'RRM_DIR'//clevel
 !     bhd: wave induced Bernoulli head pressure [N.m-1]
       srcv_clname(12) = 'RRM_BHD'//clevel
 !     wave_ubr: rms amplitude of orbital bottom velocity of the waves [m.s-1]

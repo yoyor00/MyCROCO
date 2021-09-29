@@ -209,10 +209,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       INTEGER, INTENT(in)  :: kt
       INTEGER  :: ji, jj, jk, jn
-! modif SPOUS ASAP
-      REAL(wp) :: zcoef
-! modif SPOUS ASAP
-      REAL(wp) :: ztra, zmin, zmax, zmean, areatot
+      REAL(wp) :: ztra, zmin, zmax, zmean, areatot, zcoef
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY,jptra)  :: ptra
       REAL(wp), DIMENSION(PRIV_3D_BIOARRAY)        :: zmask, zvol
       !!----------------------------------------------------------------------
@@ -223,22 +220,18 @@ CONTAINS
          WRITE(numout,*) 
       ENDIF
       !
-! modif SPOUS ASAP
 ! to have coherent units when calling tracer_stat
-      if ( kt .eq. nit000 ) then
+      IF( kt .eq. nit000 ) THEN
         zcoef = 1.e-6
-      else
+      ELSE
         zcoef = 1.
-      endif
-! modif SPOUS ASAP
+      ENDIF
+
       DO jn = 1, jptra
          DO jk = KRANGE
             DO jj = JRANGE
                DO ji = IRANGE
-! modif SPOUS ASAP
-!                  ptra(ji,jj,jk,jn) = trb(ji,jj,K,jn)
                   ptra(ji,jj,jk,jn) = trb(ji,jj,K,jn) * zcoef
-! modif SPOUS ASAP
                ENDDO
             ENDDO
          ENDDO

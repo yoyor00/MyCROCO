@@ -37,6 +37,7 @@
 #    endif
 #   endif
 
+
          DO j=jstr-1,jend+1              
             DO i=istr,iend+1          
                FX (i,j  )=( TRB_NEW(i  ,j,k) 
@@ -60,6 +61,8 @@
      &                          -FX(i  ,j)-FX(i+1,j-1))
             ENDDO
          ENDDO
+
+
          DO j=jstr,jend
             DO i=istr,iend+1
               FX(i,j)=FX(i,j  ) 

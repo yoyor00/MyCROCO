@@ -1,6 +1,5 @@
 ! $Id: get_vbc.F 1615 2014-12-17 13:27:07Z rblod $
 !
-!======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -89,14 +88,16 @@
       call get_bulk
 #   endif
 #  elif !defined ANA_STFLUX
+#   if defined TEMPERATURE
       call get_stflux (itemp)
+#   endif
 #  endif
 !
 !---------------------------------------------------------------
 ! Flux correction to surface net heat flux.
 !---------------------------------------------------------------
 !
-#  if defined QCORRECTION && !defined ANA_SST
+#  if defined QCORRECTION && !defined ANA_SST && defined TEMPERATURE
       call get_sst
 #  endif
 !
@@ -126,19 +127,38 @@
 !
 #  ifndef BULK_FLUX
 #   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-#    ifndef ANA_SRFLUX
+#    if !defined ANA_SRFLUX  && defined TEMPERATURE
       call get_srflux
 #    endif
 #   endif
 #  endif /* !BULK_FLUX */
 # endif /* SOLVE3D */
 #endif /* !OA_COUPLING */
-
+!
+!---------------------------------------------------------------
+! Kinematic surface solar shortwave radiation flux [degC m/s].
+!---------------------------------------------------------------
+!
+#if ( defined SOLVE3D && defined TEMPERATURE && defined BHFLUX \
+     && !defined ANA_BTFLUX )
+      call get_btflux (itemp)
+#endif
+!
+!---------------------------------------------------------------
+! Kinematic bottom salt flux [PSU m/s].
+! (Analytical bottom salt flux is usually set to zero.)
+!---------------------------------------------------------------
+!
+#if ( defined SOLVE3D && defined SALINITY && defined BWFLUX \
+     && !defined ANA_BTFLUX )
+      call get_btflux (isalt)
+#endif
+      
       return
       end
-!
+!     
 !====================================================================
-!                   subroutine set_vbc
+!     subroutine set_vbc
 !====================================================================
 !
       subroutine set_vbc (tile)
@@ -231,6 +251,7 @@
 !  --- The Bulk routine is actually called from step.F ---
 !---------------------------------------------------------------
 !
+#  if defined TEMPERATURE
 #  ifdef BULK_FLUX
 #   ifdef ONLINE
       call set_bulk_tile_online (Istr,Iend,Jstr,Jend)
@@ -261,6 +282,7 @@
 #    endif
 #   endif
 #  endif /* BULK_FLUX */
+#  endif /* TEMPERATURE */
 !
 !---------------------------------------------------------------
 ! Simplest sea ice correction to T,S fluxes
@@ -283,7 +305,7 @@
 ! Flux correction to surface net heat flux.
 !---------------------------------------------------------------
 !
-#  ifdef QCORRECTION
+#  if defined QCORRECTION && defined TEMPERATURE
 #   ifdef ANA_SST
       call ana_sst_tile (Istr,Iend,Jstr,Jend)
 #   else
@@ -353,10 +375,12 @@
 ! Diurnal modulation of surface solar shortwave radiation flux
 !---------------------------------------------------------------
 !
+#  ifdef TEMPERATURE
 #  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #   ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 #   endif
+#  endif
 #  endif
 !
 !---------------------------------------------------------------
@@ -367,8 +391,12 @@
 #  ifdef WET_DRY
       do j=JstrR,JendR
         do i=IstrR,IendR
+#   ifdef TEMPERATURE
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
           srflx(i,j)=srflx(i,j)*rmask_wet(i,j)
+#   endif
+!          sustr(i,j)=sustr(i,j)*umask_wet(i,j)
+!          svstr(i,j)=svstr(i,j)*vmask_wet(i,j)
 #   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
 #   endif
@@ -378,22 +406,24 @@
 # endif /* SOLVE3D */
 #endif /* !OA_COUPLING */
 
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRACERS
 !
 !---------------------------------------------------------------
 !  Kinematic bottom temperature (heat) flux [degC m/s].
 !  (Analytical bottom heat flux is usually set to zero.)
 !---------------------------------------------------------------
 !
+# ifdef TEMPERATURE
 # ifdef ANA_BTFLUX
       call ana_btflux_tile (Istr,Iend,Jstr,Jend, itemp) 
 # else
       call set_btflux_tile (Istr,Iend,Jstr,Jend, itemp)
 # endif
+# endif
 !
 !---------------------------------------------------------------
 ! Kinematic bottom salt flux [PSU m/s].
-! (Aanalytical bottom salt flux is usually set to zero.)
+! (Analytical bottom salt flux is usually set to zero.)
 !---------------------------------------------------------------
 !
 # ifdef SALINITY
@@ -552,7 +582,6 @@
           enddo
         enddo
 #  endif /* SEDIMENT */
-
 !
 ! Set boundary conditions
 !
@@ -664,6 +693,7 @@
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, bvstrw)
 #   endif
 #  endif
+
 # endif /* SOLVE3D */
 #endif /* BBL */
 
@@ -673,14 +703,20 @@
 
 #ifdef SOLVE3D
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend, sustr)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend, svstr)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, srflx)
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,sustr(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
+#  ifdef TEMPERATURE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                      btflx(START_2D_ARRAY,itemp))
+#  endif
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                                      stflx(START_2D_ARRAY,isalt))
+     &                                     stflx(START_2D_ARRAY,isalt))
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                                     btflx(START_2D_ARRAY,isalt))
 #  endif
 # endif
 #endif
@@ -708,12 +744,15 @@ C$OMP END MASTER
 #if defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
-      call check_tab3d(u(:,:,:,nrhs),'u set_vbc','u')
-      call check_tab3d(v(:,:,:,nrhs),'v set_vbc','v')
-      call check_tab3d(t(:,:,:,nrhs,itemp),'temp set_vbc','r')
+      call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')
+      call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v')
+      
+# ifdef TEMPERATURE
+      call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
+# endif      
 # ifdef SALINITY
-      call check_tab3d(t(:,:,:,nrhs,isalt),'salt set_vbc','r')
-# endif
+      call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r')
+# endif      
 C$OMP END MASTER
 #endif
 C$OMP BARRIER

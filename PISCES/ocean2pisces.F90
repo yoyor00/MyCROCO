@@ -139,9 +139,6 @@ CONTAINS
       ENDIF
 #if defined key_agrif
       IF( .NOT. Agrif_Root() )   clfile = TRIM(clfile)//'.'//TRIM(Agrif_CFixed())
-! Modif SPOUS ASAP
-!      write(*,*) clfile
-! Modif SPOUS ASAP
       knum=Agrif_Get_Unit()
 #else
       knum=getunit()
@@ -369,7 +366,7 @@ CONTAINS
    SUBROUTINE iom_p1d( cdname, pfield1d )
       CHARACTER(LEN=*)          , INTENT(in) ::   cdname
       REAL,     DIMENSION(:), INTENT(in) ::   pfield1d
-#if defined key_iomput
+#ifdef XIOS
       CALL xios_send_field( cdname, RESHAPE( (/pfield1d/), (/1,1,SIZE(pfield1d)/) ) )
 #else
       IF( .FALSE. )   WRITE(numout,*) cdname, pfield1d   ! useless test to avoid compilation warnings
@@ -379,7 +376,7 @@ CONTAINS
    SUBROUTINE iom_p2d( cdname, pfield2d )
       CHARACTER(LEN=*)            , INTENT(in) ::   cdname
       REAL,     DIMENSION(:,:), INTENT(in) ::   pfield2d
-#if defined key_iomput
+#ifdef XIOS
       CALL xios_send_field(cdname, pfield2d)
 #else
       IF( .FALSE. )   WRITE(numout,*) cdname, pfield2d   ! useless test to avoid compilation warnings
@@ -389,7 +386,7 @@ CONTAINS
    SUBROUTINE iom_p3d( cdname, pfield3d )
       CHARACTER(LEN=*)                , INTENT(in) ::   cdname
       REAL,       DIMENSION(:,:,:), INTENT(in) ::   pfield3d
-#if defined key_iomput 
+#ifdef XIOS
       CALL xios_send_field(cdname, pfield3d)
 #else
       IF( .FALSE. )   WRITE(numout,*) cdname, pfield3d   ! useless test to avoid compilation warnings
@@ -401,7 +398,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       CHARACTER(LEN=*), INTENT(in) ::   cdname
       !!----------------------------------------------------------------------
-#if defined key_iomput
+#ifdef XIOS
       iom_use = xios_field_is_active( cdname )
 #else
       iom_use = .FALSE.

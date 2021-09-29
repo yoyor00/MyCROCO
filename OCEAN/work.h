@@ -24,3 +24,13 @@
 
       real work2d2(GLOBAL_2D_ARRAY)
       common /work2d2/ work2d2
+      
+#if defined DIAGNOSTICS_EDDY && defined XIOS
+      real workru(GLOBAL_2D_ARRAY,1:N)
+      common /work3d_r/ workru
+      real workrv(GLOBAL_2D_ARRAY,1:N)
+      common /work3d_r/ workrv
+#endif
+
+
+

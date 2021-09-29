@@ -127,7 +127,7 @@ CONTAINS
       IF( ierr /= 0 )   CALL ctl_stop( 'STOP in trc_ini_pisces : unable to allocate PISCES arrays' )
 
       IF( ln_ctl )  CALL prt_ctl_trc_ini
-!modif SPOUS ASAP DOUX JESUS
+
       DO jk = KRANGE
          DO jj = JRANGE
             DO ji = IRANGE          ! masked grid volume
@@ -135,7 +135,6 @@ CONTAINS
             END DO
          END DO
       END DO
-!modif SPOUS ASAP DOUX JESUS
       !
       CALL p4z_sms_init   ! Main routine
       !
@@ -152,16 +151,6 @@ CONTAINS
       IF(lwp) write(numout,*) '    Biology time step    rfact2 = ', rfact2
       IF(lwp) WRITE(numout,*)
  
-!modif SPOUS ASAP DOUX JESUS
-      DO jk = KRANGE
-         DO jj = JRANGE
-            DO ji = IRANGE          ! masked grid volume
-               tmask(ji,jj,jk) = tmask_i(ji,jj)
-            END DO
-         END DO
-      END DO
-!modif SPOUS ASAP DOUX JESUS
-
       ! Set biological ratios
       ! ---------------------
       rno3   =   16.   / 122.
@@ -324,9 +313,6 @@ CONTAINS
       !                               ! Open the namelist file
       !                               ! ----------------------
       clname = 'namelist_pisces'
-! Modif ASAP SPOUS
-!      CALL ctl_opn( numnatp_ref, TRIM( clname )//'_ref', 'OLD'    , 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
-!      CALL ctl_opn( numnatp_cfg, TRIM( clname )//'_cfg', 'OLD'    , 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
       CALL ctl_opn( numnatp_ref, TRIM( clname )//'_ref', 'OLD'    , 'FORMATTED', 'SEQUENTIAL', -1, numout, lwp )
       CALL ctl_opn( numnatp_cfg, TRIM( clname )//'_cfg', 'OLD'    , 'FORMATTED', 'SEQUENTIAL', -1, numout, lwp )
 
@@ -338,10 +324,8 @@ CONTAINS
 
       IF(lwp) WRITE(numout,*) 'number of tracer : ', jptra
       DO jn = 1, jptra
-! Modif ASAP SPOUS
          WRITE( ctrcnm(jn),'("TR_",I2)'           ) jn
          WRITE( ctrcnl(jn),'("TRACER NUMBER ",I2)') jn
-! Modif ASAP SPOUS
          ctrcnu(jn) = 'mmole/m3'
       END DO
 

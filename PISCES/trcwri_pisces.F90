@@ -7,12 +7,13 @@ MODULE trcwri_pisces
    !!======================================================================
    !! History :   1.0  !  2009-05 (C. Ethe)  Original code
    !!----------------------------------------------------------------------
-#if defined key_iomput && defined key_pisces 
+#if defined XIOS && defined key_pisces 
    !!----------------------------------------------------------------------
    !! trc_wri_pisces   :  outputs of concentration fields
    !!----------------------------------------------------------------------
    USE sms_pisces  ! PISCES variables
    USE trc         ! passive tracers common variables 
+   USE sedwri
 
    IMPLICIT NONE
    PRIVATE
@@ -35,6 +36,8 @@ CONTAINS
       INTEGER              :: jn
       !!---------------------------------------------------------------------
  
+      IF( ln_sediment )  CALL sed_wri
+
       DO jn = jp_pcs0, jp_pcs1
          cltra = TRIM( ctrcnm(jn) )                  ! short title for tracer
          CALL iom_put( cltra, MAX(0., trn(:,:,:,jn) ) )

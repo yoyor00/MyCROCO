@@ -8,7 +8,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if (defined DIAGNOSTICS_EDDY && defined AVERAGES)
+#if defined DIAGNOSTICS_EDDY && defined AVERAGES  && ! defined XIOS
 
       subroutine set_diags_eddy_avg(tile)
 
@@ -55,6 +55,7 @@
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
+# include "forces.h"
 # include "averages.h"
 # include "diags_eddy.h"
 # include "coupling.h"
@@ -130,7 +131,28 @@
 #  else
               cffb =rho(i,j,k)
 #  endif
-              eddyuu_avg(i,j,k)= cff *
+
+                  if (k.eq.1) then
+                      eddyubu_avg(i,j)= cff *
+     &                           ( cff1*eddyubu_avg(i,j)
+     &                             +cffu * bustr(i,j) )
+                      eddyvbv_avg(i,j)= cff *
+     &                           ( cff1*eddyvbv_avg(i,j)
+     &                             +cffv * bvstr(i,j) )
+                  endif
+
+
+                  if (k.eq.N) then
+                      eddyusu_avg(i,j)= cff *
+     &                           ( cff1*eddyusu_avg(i,j)
+     &                             +cffu * sustr(i,j) )
+                      eddyvsv_avg(i,j)= cff *
+     &                           ( cff1*eddyvsv_avg(i,j)
+     &                             +cffv * svstr(i,j) )
+                  endif
+
+
+                  eddyuu_avg(i,j,k)= cff *
      &                       ( cff1*eddyuu_avg(i,j,k)
      &                         +cffu**2 )
               eddyvv_avg(i,j,k)= cff *

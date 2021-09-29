@@ -99,7 +99,7 @@
 !                   subroutine ana_btflux
 !======================================================================
 !
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRACERS
 # if defined ANA_BTFLUX || defined ANA_BSFLUX || defined ANA_BPFLUX 
       subroutine ana_btflux_tile (Istr,Iend,Jstr,Jend, itrc)
 !
@@ -123,6 +123,7 @@
 !
 #  include "compute_auxiliary_bounds.h"
 !
+#  if defined TEMPERATURE       
       if (itrc.eq.itemp) then
 !
 !----------------------------------------------------------------------
@@ -146,9 +147,10 @@
 #  endif
           enddo
         enddo
-!
+      end if
+#  endif /* TEMPERATURE */        
 #  ifdef SALINITY
-      elseif (itrc.eq.isalt) then
+      if (itrc.eq.isalt) then
 !
 !----------------------------------------------------------------------
 !  Set kinematic bottom salt flux (m/s) at horizontal RHO-points,
@@ -160,8 +162,18 @@
             btflx(i,j,isalt)=0.
           enddo
         enddo
+      end if
 #  endif /* SALINITY */
-      else
+    
+#  if defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+#  endif /* SALINITY && TEMPERATURE*/
+#  if !defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.itemp) then
+#  endif /* !SALINITY && TEMPERATURE*/
+#  if defined SALINITY && !defined TEMPERATURE
+      if (itrc.ne.isalt) then
+#  endif /* SALINITY && !TEMPERATURE*/
 !
 !----------------------------------------------------------------------
 !  Set kinematic surface flux of additional tracers, 
@@ -173,11 +185,13 @@
             btflx(i,j,itrc)=0.
           enddo
         enddo
+#  if defined SALINITY || defined TEMPERATURE
       endif
+#  endif /* SALINITY || TEMPERATURE*/      
       return
       end
 # endif /* ANA_BTFLUX */
-#endif /* SOLVE3D */
+#endif /* SOLVE3D && TRACERS */
 !
 !======================================================================
 !                   subroutine ana_moving_bathy
@@ -358,7 +372,7 @@ C$    integer  trd, omp_get_thread_num
 
       windamp = 0.
 
-# ifdef BASIN
+# if defined BASIN
       cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
       cff2=2.*pi/el
       do j=JstrR,JendR
@@ -806,6 +820,9 @@ C$    integer  trd, omp_get_thread_num
 c
 # include "compute_auxiliary_bounds.h"
 c
+# ifdef TRACERS
+# ifdef TEMPERATURE
+      
       if (itrc.eq.itemp) then
 !
 !  Set kinematic surface heat flux [degC m/s] at horizontal
@@ -822,9 +839,11 @@ c
 #endif
           enddo
         enddo
+      endif
 !
+# endif /* TEMPERATURE */        
 #ifdef SALINITY
-      elseif (itrc.eq.isalt) then
+      if (itrc.eq.isalt) then
 !
 !  Set kinematic surface freshwater flux (m/s) at horizontal
 !  RHO-points, scaling by surface salinity is done in STEP3D.
@@ -834,8 +853,18 @@ c
             stflx(i,j,isalt)=0.
           enddo
         enddo
+      endif
 #endif /* SALINITY */
-      else
+# if defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+# endif /* SALINITY && TEMPERATURE */
+# if !defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.itemp) then
+# endif /* !SALINITY && TEMPERATURE */
+# if defined SALINITY && !defined TEMPERATURE
+      if (itrc.ne.isalt) then
+# endif /* SALINITY && !TEMPERATURE */
+      
 !
 !  Set kinematic surface flux of additional tracers, if any.
 !
@@ -844,7 +873,10 @@ c
             stflx(i,j,itrc)=0.
           enddo
         enddo
+# if defined SALINITY || defined TEMPERATURE
       endif
+# endif /* SALINITY || TEMPERATURE*/
+# endif /* TRACERS */
       return
       end
 #endif /* ANA_STFLUX || ANA_SSFLUX */
@@ -932,7 +964,9 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
+#   ifdef TEMPERATURE          
             tclm(i,j,k,itemp)=t(i,j,k,1,itemp)
+#   endif /* TEMPERATURE */            
 #   ifdef SALINITY
             tclm(i,j,k,isalt)=t(i,j,k,1,isalt)
 #   endif /* SALINITY */
@@ -949,7 +983,11 @@ C$    integer  trd, omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
+#    ifdef TEMPERATURE          
             temp=t(i,j,k,1,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -1059,7 +1097,11 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iOXY_)) tclm(i,j,k,iOXY_)=200.
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
+#    ifdef TEMPERATURE                    
               temp=t(i,j,k,1,itemp)
+#    else
+            temp=25.
+#   endif              
               if (temp.lt.8.) then
                 SiO4=30.
               elseif (temp.ge.8. .and. temp.le.11.) then
@@ -1513,7 +1555,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
-     &     cff1,cff2,Hrms,cfrq,cdir,cw,ch,cr,sbc,dd,cgo,
+     &     cff1,cff2,Hrms,cfrq,cw,ch,cr,sbc,dd,cgo,
      &     dsup,Btg,cosw,sinw,eps,nw,wh
       parameter (eps=1.0e-10)
 # include "param.h"
@@ -1534,9 +1576,9 @@ C$    integer  trd, omp_get_thread_num
 # ifdef SHOREFACE
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Awave(i,j)=0.707    ! wave amplitude (m)
-          Dwave(i,j)=-10.     ! wave direction (deg)
-          Pwave(i,j)=10.      ! wave period (s)
+          Awave(i,j)=0.707           ! wave amplitude (m)
+          Dwave(i,j)=-10.*deg2rad    ! wave direction (rad)
+          Pwave(i,j)=10.             ! wave period (s)
         enddo
       enddo
       wamp = Awave(i,j)
@@ -1557,7 +1599,7 @@ C$    integer  trd, omp_get_thread_num
       cgo=co*0.5*(1.+2.*kh/sinh(2.*kh))
       do j=jstrR,jendR
         do i=istrR,iendR
-          dsup=0.0
+          dsup=0.
           do k=1,4
             dd = h(i,j) + z_w(i,j,N) + dsup
             khd = dd*cfrq*cfrq/g
@@ -1569,13 +1611,13 @@ C$    integer  trd, omp_get_thread_num
             cw=sqrt(g/kw*tanh(kh))
             nw=0.5*(1.+2.*kh/sinh(2.*kh))  ! n=Cg/C
             ks=sqrt(cgo/(2.*nw*cw))        ! shoaling coefficient
-            kr=sqrt(cos(cdir)/cos(cdir))   ! refraction coefficient
-            cosw=cos(cdir)
-            sinw=sin(cdir)
+            kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
+            cosw=cos(wdir)
+            sinw=sin(wdir)
             gamw=0.31
             cff1=gamw*dd
             cff2=2.0*wamp*ks*kr
-            wh = min(cff1,cff2)
+            wh=min(cff1,cff2)
             dsup=-0.125*(wh**2)*kw/sinh(2.*kw*dd) ! wave set-up
           enddo
 !
@@ -1586,7 +1628,7 @@ C$    integer  trd, omp_get_thread_num
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
 #  ifdef WET_DRY
-          if (h(i,j) + z_w(i,j,N).le.Dcrit(i,j)+eps) then
+          if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
@@ -1599,15 +1641,15 @@ C$    integer  trd, omp_get_thread_num
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Awave(i,j)=0.707    ! wave amplitude (m)
-          Dwave(i,j)=-10.     ! wave direction (deg)
-          Pwave(i,j)=10.      ! wave period (s)
+          Awave(i,j)=0.707            ! wave amplitude (m)
+          Dwave(i,j)=-10.*deg2rad     ! wave direction (rad)
+          Pwave(i,j)=10.              ! wave period (s)
         enddo
       enddo
 #  ifdef MRL_WCI
-      Hrms=2*Awave(1,1)          ! offshore RMS wave height (m)
-      cfrq=2.0*pi/Pwave(1,1)     ! peak wave frequency (rad/s)
-      cdir=Dwave(1,1)*deg2rad    ! wave direction rad
+      Hrms=2.*Awave(1,1)         ! offshore RMS wave height (m)
+      cfrq=2.*pi/Pwave(1,1)      ! peak wave frequency (rad/s)
+      wdir=Dwave(1,1)            ! wave direction (rad)
 !
 !  Fill global arrays
 !
@@ -2062,38 +2104,49 @@ C$    integer  trd, omp_get_thread_num
 #  ifdef RIVER
       do k=1,N
         do is=1,Nsrc
+#  if defined TEMPERATURE        
           Tsrc(is,k,itemp)=Tsrc0(is,itemp)
 !          Tsrc(is,k,itemp)=4.+10.*exp(z_r(Isrc(is),Jsrc(is),k)/50.)
+#  endif
+#  if defined SALINITY          
           Tsrc(is,k,isalt)=Tsrc0(is,isalt)
-#   ifdef PASSIVE_TRACER
+#  endif          
+#  ifdef PASSIVE_TRACER
           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
-#   endif
+#  endif
         enddo
       enddo
 #  elif defined REGIONAL
       do k=1,N
-        do is=1,Nsrc
-#   ifdef PSOURCE_NCFILE_TS
-          if (.not.got_tsrc(itemp)) then
-            Tsrc0(is,itemp)=5.
-          endif
-          if (.not.got_tsrc(isalt)) then
-            Tsrc0(is,isalt)=2.
-          endif
-#   endif
-          do itrc=1,NT
-            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
-          enddo
-#   ifdef PASSIVE_TRACER
-#    ifdef PSOURCE_NCFILE_TS
-          if (.not.got_tsrc(itpas)) then
-            Tsrc0(is,itpas)=1.
-          endif
-#    endif
-          Tsrc(is,k,itpas)=Tsrc0(is,itpas)
-#   endif
-        enddo
-      enddo
+         do is=1,Nsrc
+ #  ifdef PSOURCE_NCFILE_TS
+ #   if defined TEMPERATURE
+           if (.not.got_tsrc(itemp)) then
+              Tsrc0(is,itemp)=5.
+           endif
+ #   endif
+ #   if defined SALINITY
+           if (.not.got_tsrc(isalt)) then
+              Tsrc0(is,isalt)=2.
+           endif
+ #   endif
+ #  endif
+
+ # if defined TRACERS
+           do itrc=1,NT
+             Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+           enddo
+ # endif
+ #  ifdef PASSIVE_TRACER
+ #   ifdef PSOURCE_NCFILE_TS
+           if (.not.got_tsrc(itpas)) then
+              Tsrc0(is,itpas)=1.
+           endif
+ #   endif
+           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
+ #  endif
+         enddo
+       enddo
 #  else
       do k=1,N
         do is=1,Nsrc
@@ -2110,7 +2163,11 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do is=1,Nsrc
 !     Fill with analytical value  if not find in netcdf file
+#   ifdef TEMPERATURE        
           temp=Tsrc0(is,itemp)
+#   else
+            temp=25.
+#   endif          
           if (temp.lt.8.) then
             SiO4=30.
           elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2445,7 +2502,7 @@ C$    integer  trd, omp_get_thread_num
 
 #  else
 
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
@@ -2483,7 +2540,7 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef W_FRC_BRY
               wbry_west(j,k)=wz(0,j,k,1)
 #    endif
-#    ifdef T_FRC_BRY
+#    if defined T_FRC_BRY && defined TRACERS
               do itrc=1,NT
                 tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
               enddo
@@ -2574,7 +2631,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
@@ -2601,7 +2658,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined  T_FRC_BRY && defined TRACERS
 #    ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_east(j,k,itrc)=0.
@@ -2667,7 +2724,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
@@ -2694,7 +2751,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_south(i,k)=wz(i,0,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined  T_FRC_BRY && defined TRACERS
 #    ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_south(j,k,itrc)=0.
@@ -2732,7 +2789,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)
@@ -2759,7 +2816,7 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_north(i,k)=wz(i,Jend+1,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined  T_FRC_BRY && defined TRACERS
 #    ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_north(j,k,itrc)=0.
@@ -2856,9 +2913,7 @@ C$    integer  trd, omp_get_thread_num
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
           enddo
-          do j=JV_RANGE 
-            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
-     &                                   *u(1,j,k,nrhs)
+          do j=JV_RANGE
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
@@ -2875,7 +2930,7 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
         do k=1,N
-          do j=JstrR,JendR
+          do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
             vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
@@ -2885,6 +2940,10 @@ C$    integer  trd, omp_get_thread_num
             rnbqbry_east(j,k)=0.
 #  endif
           enddo
+          do j=JV_RANGE
+            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR,j-1,k))
+     &                                         *v(IendR,j,k,nrhs)
+          enddo
         enddo
       endif
 # endif /* OBC_EAST */
@@ -2892,7 +2951,7 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
             unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
@@ -2902,6 +2961,10 @@ C$    integer  trd, omp_get_thread_num
             rnbqbry_south(i,k)=0.
 #  endif
           enddo
+          do i=IU_RANGE
+            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
+     &                                    *u(i,0,k,nrhs)
+          enddo
         enddo
       endif
 # endif /* OBC_SOUTH */
@@ -2909,7 +2972,7 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
             unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
@@ -2918,6 +2981,10 @@ C$    integer  trd, omp_get_thread_num
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #  endif
+          enddo
+          do i=IU_RANGE
+            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
+     &                                          *u(i,JendR,k,nrhs)
           enddo
         enddo
       endif
@@ -2970,7 +3037,11 @@ C$    integer  trd, omp_get_thread_num
       if (WESTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
+#    ifdef TEMPERATURE          
             temp=tbry_west(j,k,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3066,7 +3137,11 @@ C$    integer  trd, omp_get_thread_num
       if (EASTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
+#    ifdef TEMPERATURE          
             temp=tbry_east(j,k,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3162,7 +3237,11 @@ C$    integer  trd, omp_get_thread_num
        if (NORTHERN_EDGE) then
          do k=1,N
            do j=IstrR,IendR
+#    ifdef TEMPERATURE           
              temp=tbry_north(j,k,itemp)
+#    else
+            temp=25.
+#   endif             
              if (temp.lt.8.) then
                SiO4=30.
              elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3258,7 +3337,11 @@ C$    integer  trd, omp_get_thread_num
        if (SOUTHERN_EDGE) then
          do k=1,N
            do j=IstrR,IendR
+#    ifdef TEMPERATURE           
              temp=tbry_south(j,k,itemp)
+#    else
+            temp=25.
+#   endif             
              if (temp.lt.8.) then
                SiO4=30.
              elseif (temp.ge.8. .and. temp.le.11.) then

@@ -237,7 +237,7 @@
 !
 !----------------------------------------------------------------------
 ! OA coupling parametrization for current feedback on wind-stress  
-! (Renault et al., Sc. Reports 2017)
+! (Renault et al., JAMES 2020)
 !----------------------------------------------------------------------
 !
 #ifdef SMFLUX_CFB
@@ -266,7 +266,7 @@
 ! Tides
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
 # if defined IGW
@@ -389,18 +389,28 @@
 !----------------------------------------------------------------------
 !
 #ifdef SOLVE3D
-      integer   NT, itemp, NTot
-      integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
+      integer   NT, NTA, itemp, NTot
+      integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
       integer   ntrc_subs, ntrc_substot
 !
+# ifdef TEMPERATURE 
       parameter (itemp=1)
+      parameter (ntrc_temp=1)
+# else
+      parameter (itemp=0)
+      parameter (ntrc_temp=0)
+# endif
 # ifdef SALINITY 
       parameter (ntrc_salt=1)
 # else
       parameter (ntrc_salt=0)
 # endif
 # ifdef PASSIVE_TRACER
+#  ifdef KH_INST
+      parameter (ntrc_pas=2)
+#  else
       parameter (ntrc_pas=1)
+#  endif
 # else
       parameter (ntrc_pas=0)
 # endif
@@ -484,6 +494,11 @@
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
+!
+! Total number of active tracers
+!
+      parameter (NTA=itemp+ntrc_salt)
+
 !
 ! Total number of tracers
 !
@@ -679,7 +694,11 @@
      &            iBFE_=iDIC_+14, iGOC_=iDIC_+15, iSFE_=iDIC_+16,
      &            iDFE_=iDIC_+17, iDSI_=iDIC_+18, iNFE_=iDIC_+19,
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
-     &            iNH4_=iDIC_+23, iLGW_=iDIC_+24)
+     &            iNH4_=iDIC_+23)
+#    ifdef key_ligand
+      parameter (iLGW_=iDIC_+24)
+#     endif
+#   ifdef key_pisces_quota
 #   ifdef key_ligand
       parameter (iDON_=iDIC_+25, iDOP_=iDIC_+26, iPON_=iDIC_+27,
      &	         iPOP_=iDIC_+28, iNPH_=iDIC_+29, iPPH_=iDIC_+30,
@@ -693,6 +712,7 @@
      &           iNPI_=iDIC_+33, iPPI_=iDIC_+34, iPFE_=iDIC_+35,
      &           iPCH_=iDIC_+36, iGON_=iDIC_+37, iGOP_=iDIC_+38)
 #   endif
+#endif
 #   ifdef key_trc_diaadd
       parameter (Nhi       = 1,
      &            Nco3      = 2,
@@ -740,11 +760,7 @@
 #   endif
 
 #  elif defined BIO_NChlPZD
-#   ifdef OXYGEN
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-#   else
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-#   endif
       parameter (iNO3_=itrc_bio, iChla=iNO3_+1,  
      &           iPhy1=iNO3_+2,
      &           iZoo1=iNO3_+3, 
@@ -919,9 +935,9 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=15*NT)
+      parameter (ntrc_diats=16*NT)
 #  else
-      parameter (ntrc_diats=7*NT)
+      parameter (ntrc_diats=8*NT)
 #  endif
 # else
       parameter (ntrc_diats=0)
@@ -950,12 +966,12 @@
 # else
       parameter (ntrc_diapv=0)
 # endif
-# ifdef DIAGNOSTICS_EDDY
-      parameter (ntrc_diaeddy=10)
+# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+      parameter (ntrc_diaeddy=12)
 # else
       parameter (ntrc_diaeddy=0)
 # endif
-# ifdef OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
       parameter (ntrc_surf=5)
 # else
       parameter (ntrc_surf=0)

@@ -217,6 +217,8 @@ CONTAINS
      ENDIF
 
      ik100 =10
+
+#if defined key_iomput
      IF( lk_iomput ) THEN
        IF( knt == nrdttrc ) THEN
           ALLOCATE( zw2d(PRIV_2D_BIOARRAY), zw3d(PRIV_3D_BIOARRAY) )
@@ -258,6 +260,7 @@ CONTAINS
           DEALLOCATE( zw2d, zw3d )
         ENDIF
       ENDIF
+#endif
       !
 #if defined key_trc_diaadd
       zfact = 1.e3 * rfact2r

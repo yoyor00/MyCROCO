@@ -54,7 +54,7 @@ include Makedefs
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
         w3dbc.F		nbq_bry_store.F\
 \
-	rho_eos.F	ab_ratio.F	alfabeta.F\
+	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
@@ -93,7 +93,7 @@ include Makedefs
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
         clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
-	get_psource.F   get_psource_ts.F\
+	get_psource.F   get_psource_ts.F get_btflux.F\
         cfb_stress.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
@@ -126,6 +126,10 @@ include Makedefs
 \
         module_substance.F  module_MUSTANG.F\
 \
+        online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
+        scal0d_oa_out_loc.F scal0d_oa_out_full.F\
+        output_oa.F
+
 
 
  SRCS90 = \
@@ -145,19 +149,14 @@ include Makedefs
 	sedmbc.F90      sedmodel.F90            sed_oce.F90     sedorg.F90\
 	sedrst.F90      sedsfc.F90              sedstp.F90      sedwri.F90\
 	setavg_sed.F90\
-\
-	module_parameter_oa.F90\
-	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
-	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
-	module_oa_level.F90	module_oa_interface.F90\
-	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
-\
-	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90\
-\
+	module_parameter_oa.F90 module_grd_oa.F90\
+	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
+	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
+        module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
         comsubstance.F90        substance.F90\
-\
         comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-        sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+        sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES

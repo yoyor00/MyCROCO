@@ -19,7 +19,7 @@ sediments: input file
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                            20*F 
 
-bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
+bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostr Bustr Bvstrw
                      F      F       F      T     T     T
 
 wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
@@ -39,13 +39,13 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
-auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
-                             T   F    T   F    T    F   F      F       F   F    F     20*F
+auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
+                             T   F    T   F    T    F   F      F       F   F    F    F     F     20*F
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   30*T
-auxiliary_averages:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
-                       T   F    T   F    T    F   F      F       F   F    F     20*F
+auxiliary_averages:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
+                       T   F    T   F    T    F   F      F       F   F    F    F     F     20*F
 
 diagnosticsM:   ldefdia   nwrtdia    nrpfdia /filename
                    T      300       -1

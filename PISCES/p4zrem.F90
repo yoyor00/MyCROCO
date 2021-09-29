@@ -286,6 +286,8 @@ CONTAINS
          CALL prt_ctl_trc( charout, ltra='tra')
        ENDIF
 
+#if defined key_iomput
+     IF( lk_iomput ) THEN
       IF( knt == nrdttrc ) THEN
           zrfact2 = 1.e3 * rfact2r
           ALLOCATE( zw3d(PRIV_3D_BIOARRAY) )
@@ -310,6 +312,8 @@ CONTAINS
           !
           DEALLOCATE( zw3d )
        ENDIF
+      ENDIF
+#endif
       !
 # if defined key_trc_diaadd
      zrfact2 = 1.e3 * rfact2r

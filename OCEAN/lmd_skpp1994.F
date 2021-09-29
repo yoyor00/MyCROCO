@@ -57,6 +57,8 @@
       real lmd_nubl, lmd_cs, lmd_Cv, Ric, lmd_betaT, lmd_epsilon,
      &     lmd_cekman, lmd_cmonob, lmd_Cstar, lmd_Cg, lmd_nu0c,
      &     ustarb 
+      real su_r, sv_r, ustokes
+!======================================================================
       parameter (
      &   lmd_nubl=0.01,    ! Maximum allowed boundary layer
                            ! viscosity and diffusivity [m^2/s].
@@ -95,7 +97,7 @@
                            ! viscosity and  diffusivity due
                            ! to shear instability, [m^2/s];
      &                                                           )
-
+!======================================================================
 # undef LMD_SKPP_MONOB
 # define HBL_SMOOTH
 
@@ -144,8 +146,21 @@
 # ifdef OA_COUPLING
           ustar(i,j)=sqrt(smstr(i,j))
 # else
-          ustar(i,j)=sqrt(sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                         +(0.5*(svstr(i,j)+svstr(i,j+1)))**2))
+          su_r=0.5*(sustr(i,j)+sustr(i+1,j))
+          sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+          ustar(i,j)=sqrt(sqrt(su_r**2+sv_r**2))
+# endif
+# ifdef LMD_LANGMUIR
+!
+!  Turbulent Langmuir number (McWilliams et al 1997)
+!
+#  ifdef MRL_WCI
+          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
+          ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
+          Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
+#  else
+          Langmuir(i,j)=0.35  ! Liu et al (2014)
+#  endif
 # endif
         enddo
       enddo
@@ -164,12 +179,18 @@
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
+          Bo(i,j)= 0
+# ifdef TEMPERATURE
+     &                 +g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j)))
           Bo(i,j)=g*( alpha(i,j)*(stflx(i,j,itemp)-srflx(i,j))
 # ifdef SALINITY
-     &                              -beta(i,j)*stflx(i,j,isalt)
+     &                 -g*beta(i,j)*stflx(i,j,isalt)
 # endif
-     &                                                        )
+# ifdef TEMPERATURE
           Bosol(i,j)=g*alpha(i,j)*srflx(i,j)
+# else
+          Bosol(i,j)=0.
+# endif
         enddo
       enddo  !--> discard alpha,beta; keep Bo,Bosol to the very end. 
 # undef beta
@@ -235,8 +256,8 @@
           enddo
         enddo       !--> discard Bflux (will be recomputed later)
 
-        call lmd_wscale_ER_tile (Istr,Iend,Jstr,Jend, Bflux,
-     &                                       sigma,wm,ws)
+        call lmd_wscale_ER_tile (Istr,Iend,Jstr,Jend,
+     &                                Bflux,sigma,wm,ws)
 # undef sigma
 # undef wm
 !                               !--> discard sigma, wm (not used)
@@ -493,8 +514,10 @@
 
             dKv_bl=vonKar*ustarb
             Kv_bl=dKv_bl*(zbl-z_w(i,j,0))
+# ifdef TEMPERATURE
             dKt_bl=vonKar*ustarb
             Kt_bl=dKt_bl*(zbl-z_w(i,j,0))
+# endif /* TEMPERATURE */
 # ifdef SALINITY
             dKs_bl=vonKar*ustarb
             Ks_bl=dKs_bl*(zbl-z_w(i,j,0))
@@ -503,8 +526,10 @@
             Kv_bl=cff_up*Kv(i,j,k)+cff_dn*Kv(i,j,k-1)
             dKv_bl=cff*(Kv(i,j,k)-Kv(i,j,k-1))
 
+# ifdef TEMPERATURE
             Kt_bl=cff_up*Kt(i,j,k)+cff_dn*Kt(i,j,k-1)
             dKt_bl=cff*(Kt(i,j,k)-Kt(i,j,k-1))
+# endif /* TEMPERATURE */
 # ifdef SALINITY
             Ks_bl=cff_up*Ks(i,j,k)+cff_dn*Ks(i,j,k-1)
             dKs_bl=cff*(Ks(i,j,k)-Ks(i,j,k-1))
@@ -514,8 +539,10 @@
           Gm1(i,j)=Kv_bl/(hbl(i,j)*wm(i,j)+eps)
           dGm1dS(i,j)=min(0.,-dKv_bl/(wm(i,j)+eps))
 
+# ifdef TEMPERATURE
           Gt1(i,j)=Kt_bl/(hbl(i,j)*ws(i,j)+eps)
           dGt1dS(i,j)=min(0.,-dKt_bl/(ws(i,j)+eps))
+# endif /* TEMPERATURE */
 
 # ifdef SALINITY
           Gs1(i,j)=Ks_bl/(hbl(i,j)*ws(i,j)+eps)
@@ -571,7 +598,9 @@
 !  with interior mixing coefficients.
 !
               Kv(i,j,k)=hbl(i,j)*wm(i,j)*sig*(1.+sig*Gm)
+# ifdef TEMPERATURE
               Kt(i,j,k)=hbl(i,j)*ws(i,j)*sig*(1.+sig*Gt)
+# endif
 # ifdef SALINITY
               Ks(i,j,k)=hbl(i,j)*ws(i,j)*sig*(1.+sig*Gs)
 # endif
@@ -597,8 +626,12 @@
 !
              if (bvf(i,j,k).lt.0.) then
                Kv(i,j,k)=Kv(i,j,k)+lmd_nu0c
+# ifdef TEMPERATURE
                Kt(i,j,k)=Kt(i,j,k)+lmd_nu0c
+# endif
+# ifdef SALINITY
                Ks(i,j,k)=Ks(i,j,k)+lmd_nu0c
+# endif
              endif
 # endif
            endif                !<-- k < kbl(i,j)

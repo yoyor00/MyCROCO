@@ -475,7 +475,7 @@
 ! Time interpolation is not performed in this case.
 !
       if (ww_cycle.lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
         
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
