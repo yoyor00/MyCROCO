@@ -35,11 +35,11 @@ close all
 %
 % --- LIP experiment --- 
 %
-prompt = 'Erosion (1B) or Accretion (1C) LIP experiment? [1B]: ';
-mycase = input(prompt,'s');
-if isempty(mycase)
+%prompt = 'Erosion (1B) or Accretion (1C) LIP experiment? [1B]: ';
+%mycase = input(prompt,'s');
+%if isempty(mycase)
     mycase = '1B';
-end
+%end
 %
 % --- model params ---
 %
