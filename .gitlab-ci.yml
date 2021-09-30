@@ -50,11 +50,10 @@ ana_run:
     - cd $CVTKWORK/KTEST
    
     - ./mk_TESTALL.bash CONFIGURE_ANA ana
-      #- ./gather_recap.bash KTEST > /dev/null 2>&1
-      #- ./gather_recap.bash KTEST > LOG.gather 2>&1
-      #- /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-      #- /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
-      #- /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - ./gather_recap.bash KTEST > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" KTEST_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" KTEST_gather_recap_*_git*' > /dev/null 2>&1
     
   artifacts:
     paths:
