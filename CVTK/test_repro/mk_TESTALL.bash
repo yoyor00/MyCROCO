@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -e
+###DO NOT USE SET -E !
 set -u
 #set -x
 
