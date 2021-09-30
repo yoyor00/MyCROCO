@@ -18,10 +18,10 @@
       integer tile
 # if defined TRACERS      
       integer trd, omp_get_thread_num
-# include "param.h"
-# include "private_scratch.h"
-# include "ocean3d.h"
-# include "compute_tile_bounds.h"
+#  include "param.h"
+#  include "private_scratch.h"
+#  include "ocean3d.h"
+#  include "compute_tile_bounds.h"
 
       trd=omp_get_thread_num()
       call step3d_t_tile (Istr,Iend,Jstr,Jend,
@@ -37,44 +37,44 @@
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
-# ifdef SUBSTANCE
+#  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand
-#  ifdef MUSTANG
+#   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO,corflux_CROCO
-#   ifdef key_sand2D
+#    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
+#    endif
 #   endif
 #  endif
-# endif
 
       implicit none
-# include "param.h"
-# include "grid.h"
-# include "ocean3d.h"
-# include "mixing.h"
-# include "climat.h"
-# include "scalars.h"
-# include "sources.h"
-# include "forces.h"
-# ifdef DIAGNOSTICS_TS
-#  include "diagnostics.h"
-# endif
-# ifdef DIAGNOSTICS_PV
-#  include "diags_pv.h"
-# endif
+#  include "param.h"
+#  include "grid.h"
+#  include "ocean3d.h"
+#  include "mixing.h"
+#  include "climat.h"
+#  include "scalars.h"
+#  include "sources.h"
+#  include "forces.h"
+#  ifdef DIAGNOSTICS_TS
+#   include "diagnostics.h"
+#  endif
+#  ifdef DIAGNOSTICS_PV
+#   include "diags_pv.h"
+#  endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
      &       ,imin,imax,jmin,jmax,iAkt,nadv
-# ifdef PSOURCE
+#  ifdef PSOURCE
      &       ,is
-# endif
-# ifdef SUBSTANCE
+#  endif
+#  ifdef SUBSTANCE
       integer isubstep,nbsubstep
       real :: cflm,cfl_loc,dz_cflm,ws_cflm
-# endif
-# ifdef AGRIF
-#  include "zoom.h"
-# endif
+#  endif
+#  ifdef AGRIF
+#   include "zoom.h"
+#  endif
       real FX(PRIVATE_2D_SCRATCH_ARRAY),
      &     FE(PRIVATE_2D_SCRATCH_ARRAY),   cff,
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY), epsil,
@@ -87,18 +87,18 @@
      &     swdk(PRIVATE_2D_SCRATCH_ARRAY,0:N)
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
-# ifdef TS_VADV_FCT
+#  ifdef TS_VADV_FCT
       real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
-# endif
+#  endif
       parameter (epsil=1.E-16)
 !
-#ifdef MASKING
-# define SWITCH *
-#else
-# define SWITCH !
-#endif
+#  ifdef MASKING
+#   define SWITCH *
+#  else
+#   define SWITCH !
+#  endif
 !
-# if defined TS_HADV_UP5 || defined TS_HADV_C6 || \
+#  if defined TS_HADV_UP5 || defined TS_HADV_C6 || \
      defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
      defined TS_VADV_WENO5
 !
@@ -138,12 +138,12 @@
      &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
      &      -sign(1.,ua)*( 
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
-# endif
-# if  defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
+#  endif
+#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
-# endif
+#  endif
 !
-# include "compute_auxiliary_bounds.h"
+#  include "compute_auxiliary_bounds.h"
 
       nadv = 3   !<-- do not remove: used in compute_tracer_fluxes.h
 !
@@ -156,7 +156,7 @@
       do itrc=1,NT
         do k=1,N
 
-# ifdef BIO_HADV_WENO5
+#  ifdef BIO_HADV_WENO5
 #   if defined TEMPERATURE && defined SALINITY
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
@@ -165,7 +165,7 @@
           if (itrc .le. 0) then
 #   endif
                 
-# endif
+#  endif
 !
 !----------------------------------------------------------
 ! Compute fluxes FX and FE
@@ -179,25 +179,25 @@
 ! WENO5 advection for passive tracers (biology ...)
 !----------------------------------------------------------
 !
-# ifdef BIO_HADV_WENO5
+#  ifdef BIO_HADV_WENO5
           else  !<-- if (itrc .gt. 2)
-#  define FLUX5 flux5_weno
-#  define FLUX3 flux3_weno
-#  define FLUX2 flux1
-#  define UP5_MASKING
+#   define FLUX5 flux5_weno
+#   define FLUX3 flux3_weno
+#   define FLUX2 flux1
+#   define UP5_MASKING
 !
             cdif=1.
-#  include "t3dadv_order5.h"
+#   include "t3dadv_order5.h"
 !
-#  undef FLUX5
-#  undef FLUX3
-#  undef FLUX2
-#  undef UP5_MASKING
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP5_MASKING
           endif
-# endif
+#  endif
 !
 
-# if defined MUSTANG && defined MUSTANG_CORFLUX
+#  if defined MUSTANG && defined MUSTANG_CORFLUX
           if (k.eq.1 .and. 
      &        itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
@@ -212,56 +212,56 @@
               enddo
             enddo
           endif
-# endif 
+#  endif 
 
 !----------------------------------------------------------
 ! Apply point sources for river runoff simulations
 !----------------------------------------------------------
 !
-# ifdef PSOURCE
+#  ifdef PSOURCE
           do is=1,Nsrc
-#  ifdef MPI
+#   ifdef MPI
            i=Isrc_mpi(is,mynode)
            j=Jsrc_mpi(is,mynode)
-#  else
+#   else
             i=Isrc(is)
             j=Jsrc(is)
-#  endif
+#   endif
             if (Istr.le.i .and. i.le.Iend+1
      &                   .and. Jstr.le.j .and. j.le.Jend+1) then
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
 
-#  if defined MUSTANG && defined key_sand2D
+#   if defined MUSTANG && defined key_sand2D
 !     sum FX for k=1
-#  endif
+#   endif
 
-#  ifdef MASKING
+#   ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i-1,j).eq.1) then
                     FX(i,j)=Huon(i,j,k)*t(i-1,j,k,3,itrc)
                   elseif (rmask(i,j).eq.1. .and. rmask(i-1,j).eq.0) then
                     FX(i,j)=Huon(i,j,k)*t(i  ,j,k,3,itrc)
                   endif
-#  endif
+#   endif
                 endif
               else
                 if (Lsrc(is,itrc)) then
                   FE(i,j)=Hvom(i,j,k)*Tsrc(is,k,itrc)
-#  ifdef MASKING
+#   ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i,j-1).eq.1) then
                     FE(i,j)=Hvom(i,j,k)*t(i,j-1,k,3,itrc)
                   elseif (rmask(i,j).eq.1 .and. rmask(i,j-1).eq.0) then
                     FE(i,j)=Hvom(i,j,k)*t(i,j  ,k,3,itrc)
                   endif
-#  endif
+#   endif
                 endif
               endif
             endif
           enddo
-# endif /* PSOURCE */
+#  endif /* PSOURCE */
 !
 !----------------------------------------------------------
 ! Finalize horizontal advection: compute flux divergences
@@ -270,7 +270,7 @@
 
           do j=Jstr,Jend
             do i=Istr,Iend
-# if defined MUSTANG && defined key_sand2D
+#  if defined MUSTANG && defined key_sand2D
               if (l_subs2D(itrc-itsubs1+1)) then
                 if (k.eq.1) then
                   t(i,j,k,nnew,itrc)=( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
@@ -286,17 +286,17 @@
      &                      -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                           +FE(i,j+1)-FE(i,j))
          endif
-# else
+#  else
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                    -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                         +FE(i,j+1)-FE(i,j))
-# endif
+#  endif
             enddo
           enddo                 !-->  discard FX,FE
 
 
 
-# if defined AGRIF && defined AGRIF_CONSERV_TRA
+#  if defined AGRIF && defined AGRIF_CONSERV_TRA
           IF (Agrif_Root()) Then
           MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
      &        dt*FX(IstrR:IendR,JstrR:JendR)
@@ -310,13 +310,13 @@
      &       MYFY(IstrR:IendR,JstrR:JendR,k,itrc)
      &      +dt*FE(IstrR:IendR,JstrR:JendR)
           EndIF
-# endif
+#  endif
 !
 !----------------------------------------------------------
 ! Store diagnostic transport term
 !----------------------------------------------------------
 !
-# ifdef DIAGNOSTICS_TS
+#  ifdef DIAGNOSTICS_TS
           do j=Jstr,Jend
             do i=Istr,Iend 
               TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
@@ -326,36 +326,36 @@
         
         
 
-# if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+#   if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
 
 !----------------------------------------------------------
 ! Compute fluxes FX and FE
 !----------------------------------------------------------
 !
-#  undef PREDICTOR
+#    undef PREDICTOR
 
-# if  defined TS_HADV_WENO5
-#  define TS_HADV_C6
-#  undef TS_HADV_WENO5
-#  include "compute_horiz_tracer_fluxes.h"
-#  undef TS_HADV_C6
-#  define TS_HADV_WENO5
+#    if defined TS_HADV_WENO5
+#     define TS_HADV_C6
+#     undef TS_HADV_WENO5
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef TS_HADV_C6
+#     define TS_HADV_WENO5
 
-# elif defined TS_HADV_UP5
-#  define TS_HADV_C6
-#  undef TS_HADV_UP5
-#  include "compute_horiz_tracer_fluxes.h"
-#  undef TS_HADV_C6
-#  define TS_HADV_UP5
+#    elif defined TS_HADV_UP5
+#     define TS_HADV_C6
+#     undef TS_HADV_UP5
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef TS_HADV_C6
+#     define TS_HADV_UP5
 
-# elif defined TS_HADV_UP3
-#  define TS_HADV_C4
-#  undef TS_HADV_UP3
-#  include "compute_horiz_tracer_fluxes.h"
-#  undef TS_HADV_C4
-#  define TS_HADV_UP3
+#    elif defined TS_HADV_UP3
+#     define TS_HADV_C4
+#     undef TS_HADV_UP3
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef TS_HADV_C4
+#     define TS_HADV_UP3
 
-# endif
+#    endif
 !
         
           do j=Jstr,Jend
@@ -368,7 +368,7 @@
           enddo
         enddo
         
-# else
+#   else
 
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -376,9 +376,9 @@
           enddo
         enddo
         
-# endif
+#   endif
         
-# endif /* DIAGNOSTICS_TS */
+#  endif /* DIAGNOSTICS_TS */
 
 
 
@@ -394,9 +394,9 @@
 ! (swdk is used later in this routine)
 !----------------------------------------------------------
 !
-# if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-#  define wrk1 FX
-#  define wrk2 FE
+#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   define wrk1 FX
+#   define wrk2 FE
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend
@@ -410,9 +410,9 @@
           enddo
         enddo
       enddo
-#  undef wrk1
-#  undef wrk2
-# endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
+#   undef wrk1
+#   undef wrk2
+#  endif /* LMD_SKPP || LMD_BKPP || GLS_MIXING */
 !
 !
 !======================================================================
@@ -428,12 +428,12 @@
 ! Compute vertical fluxes FC
 !----------------------------------------------------------
 !
-# undef PREDICTOR
-# include "compute_vert_tracer_fluxes.h"
+#  undef PREDICTOR
+#  include "compute_vert_tracer_fluxes.h"
 
-# ifdef TS_HADV_TEST
+#  ifdef TS_HADV_TEST
       FC(istr:iend,0:N) = 0.d0
-# endif
+#  endif
 
 !----------------------------------------------------------
 ! Apply flux correction for monotonicity
@@ -449,30 +449,30 @@
 !
           do k=1,N
 
-# if defined MUSTANG && defined key_sand2D
+#  if defined MUSTANG && defined key_sand2D
            if (.not.l_subs2D(itrc-itsubs1+1)) then
-# endif
+#  endif
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)-CF(i,0)*(FC(i,k)
      &                                                      -FC(i,k-1))
             enddo
 
-# if defined MUSTANG && defined key_sand2D
+#  if defined MUSTANG && defined key_sand2D
            endif
-# endif
+#  endif
           enddo               !--> discard FC
 
 
-# ifdef DIAGNOSTICS_TS
+#  ifdef DIAGNOSTICS_TS
        do k=1,N 
          do i=Istr,Iend
            TVadv(i,j,k,itrc) = -(FC(i,k)-FC(i,k-1))
-#  ifdef MASKING
+#   ifdef MASKING
      &         * rmask(i,j)
-#  endif
+#   endif
          enddo
        enddo
-# endif /* DIAGNOSTICS_TS */  
+#  endif /* DIAGNOSTICS_TS */  
 !
 !
 !======================================================================
@@ -502,31 +502,31 @@
             do k=1,N-1
               do i=Istr,Iend
                 FC(i,k)=0.
-# if defined LMD_SKPP || defined LMD_BKPP \
+#   if defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
-#  ifdef LMD_NONLOCAL
+#    ifdef LMD_NONLOCAL
      &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
-#  endif
-# endif
+#    endif
+#   endif
               enddo
             enddo
           end if
 #  endif /* TEMPERATURE */            
-# ifdef SALINITY 
+#  ifdef SALINITY 
           if (itrc.eq.isalt) then
             do k=1,N-1
               do i=Istr,Iend
                 FC(i,k)=0.
-# if defined LMD_SKPP || defined LMD_BKPP
-#  ifdef LMD_NONLOCAL
+#   if defined LMD_SKPP || defined LMD_BKPP
+#    ifdef LMD_NONLOCAL
      &    -dt*ghats(i,j,k)*stflx(i,j,isalt)
-#  endif
-# endif
+#    endif
+#   endif
               enddo
             enddo
           endif
-# endif /* SALINITY */
+#  endif /* SALINITY */
 !
 
 #  if defined SALINITY || defined TEMPERATURE 
@@ -541,23 +541,23 @@
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+FC(i,k )
      &                                               -FC(i,k-1)
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
                 TForc(i,j,k,itrc)=(FC(i,k)-FC(i,k-1))
      &                                    /(dt*pm(i,j)*pn(i,j))
-#  ifdef MASKING
+#    ifdef MASKING
      &                                             * rmask(i,j)
-#  endif
-#  endif  /* DIAGNOSTICS_TS */
+#    endif
+#   endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           else
             do k=1,N
               do i=Istr,Iend
                 TForc(i,j,k,itrc)=0.
               enddo
             enddo
-# endif  /* DIAGNOSTICS_TS */
+#   endif  /* DIAGNOSTICS_TS */
           endif
 #  endif  /* defined SALINITY || TEMPERATURE  */
           
@@ -582,13 +582,12 @@
           enddo
 #  endif
 
-# ifdef TS_MIX_IMP
-#  if defined TEMPERATURE && defined SALINITY       
+#  ifdef TS_MIX_IMP
+#   if defined TEMPERATURE && defined SALINITY       
           if (itrc .le. 2) then                  ! active tracers
-#  endif
-#  if defined TEMPERATURE || defined SALINITY       
+#   elif defined TEMPERATURE || defined SALINITY       
           if (itrc .le. 1) then                  ! active tracers
-#  endif
+#   endif
             do k=1,N
               do i=istr,iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
@@ -596,93 +595,93 @@
             enddo
           else                                   ! passive tracers
 !                                                 (sed. and others)
-#  ifdef MUSTANG
+#   ifdef MUSTANG
 !
             if (itrc.ge.itsubs1+nv_grav .and. 
      &          itrc.le.itsubs1+nvp) then        ! sediment tracers
-#   ifdef key_sand2D
+#    ifdef key_sand2D
               if (.not.l_subs2D(itrc-itsubs1+1)) then
-#   endif
-#   undef TS_MIX_IMP 
-#   define CD EC
-#   define NBSUBSTEP GC
-#   include "t3dmix_tridiagonal_settling.h"
-#   undef NBSUBSTEP
-#   undef CD
-#   define TS_MIX_IMP
-#   ifdef key_sand2D
-              endif
-#   endif
-            else                                 ! other tracers
-#   undef TS_MIX_IMP
-#   include "t3dmix_tridiagonal.h"
-#   define TS_MIX_IMP
-            endif
-!
-#  else  /* MUSTANG */
-!                                                ! passive tracers
-#   ifdef BIO_HADV_WENO5
+#    endif
 #    undef TS_MIX_IMP 
+#    define CD EC
+#    define NBSUBSTEP GC
+#    include "t3dmix_tridiagonal_settling.h"
+#    undef NBSUBSTEP
+#    undef CD
+#    define TS_MIX_IMP
+#    ifdef key_sand2D
+              endif
+#    endif
+            else                                 ! other tracers
+#    undef TS_MIX_IMP
 #    include "t3dmix_tridiagonal.h"
 #    define TS_MIX_IMP
-#   else
+            endif
+!
+#   else  /* MUSTANG */
+!                                                ! passive tracers
+#    ifdef BIO_HADV_WENO5
+#     undef TS_MIX_IMP 
+#     include "t3dmix_tridiagonal.h"
+#     define TS_MIX_IMP
+#    else
             do k=1,N
               do i=istr,iend
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc) / Hz(i,j,k)
               enddo
             enddo
-#   endif /* BIO_HADV_WENO5 */
-#  endif  /* MUSTANG */
+#    endif /* BIO_HADV_WENO5 */
+#   endif  /* MUSTANG */
 !
           endif ! itrc <= 2
 !
-# else /* TS_MIX_IMP */
+#  else /* TS_MIX_IMP */
 
-#  ifndef MUSTANG
+#   ifndef MUSTANG
 !                                                ! all tracers
-#   include "t3dmix_tridiagonal.h"
+#    include "t3dmix_tridiagonal.h"
 !
-#  else
+#   else
           if (itrc.ge.itsubs1+nv_grav .and. 
      &        itrc.le.itsubs1+nvp) then          ! sediment tracers
-#   ifdef key_sand2D
+#    ifdef key_sand2D
             if (.not.l_subs2D(itrc-itsubs1+1)) then
-#   endif
-#   define CD EC
-#   define NBSUBSTEP GC
-#   include "t3dmix_tridiagonal_settling.h"
-#   undef NBSUBSTEP
-#   undef CD
-#   ifdef key_sand2D
+#    endif
+#    define CD EC
+#    define NBSUBSTEP GC
+#    include "t3dmix_tridiagonal_settling.h"
+#    undef NBSUBSTEP
+#    undef CD
+#    ifdef key_sand2D
             endif
-#   endif
+#    endif
           else                                   ! all other tracers
-#   include "t3dmix_tridiagonal.h"
+#    include "t3dmix_tridiagonal.h"
           endif
-#  endif /* MUSTANG */
+#   endif /* MUSTANG */
 
-# endif /* TS_MIX_IMP */
+#  endif /* TS_MIX_IMP */
 
 !
 !  Test of constant tracers
 !
-# ifdef CONST_TRACERS
+#  ifdef CONST_TRACERS
           do k=1,N
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
             enddo
           enddo
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=0.0
-#   ifdef MASKING
+#    ifdef MASKING
      &              * rmask(i,j)
-#   endif
+#    endif
             enddo
           enddo
-#  endif /* DIAGNOSTICS_TS */
-# endif /* CONST_TRACERS */
+#   endif /* DIAGNOSTICS_TS */
+#  endif /* CONST_TRACERS */
 
         enddo      ! <-- itrc
 !
@@ -691,13 +690,13 @@
 ! coefficient for floats random walk.
 !----------------------------------------------------------
 !
-# if defined FLOATS && defined RANDOM_WALK
+#  if defined FLOATS && defined RANDOM_WALK
           do k=1,N
             do i=Istr,Iend
               dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
             enddo
           enddo
-# endif
+#  endif
 
       enddo      ! <-- j
 !
@@ -716,18 +715,18 @@
 !  Compute biological fluxes
 !======================================================================
 !
-# ifdef BIOLOGY
+#  ifdef BIOLOGY
       call biology_tile (Istr,Iend,Jstr,Jend)
-# endif
+#  endif
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix
 !======================================================================
 !
-# if !defined TS_MIX_S && \
+#  if !defined TS_MIX_S && \
       (defined TS_DIF4 || defined TS_DIF2 || defined SPONGE_DIF2)
 
-#  ifdef TS_MIX_GEO
+#   ifdef TS_MIX_GEO
 !
 ! --- Geopotential diffusion: idRz contains idZ values ---
 !
@@ -745,30 +744,30 @@
         enddo
       enddo
 
-#  elif defined TS_MIX_ISO
+#   elif defined TS_MIX_ISO
 !
 !  --- Isopycnal diffusion: idRz is inverse vertical rho gradient ---
 !
       do k=1,N-1
         do j=jstr,jend
           do i=istr,iend
-#   ifdef SPLIT_EOS
+#    ifdef SPLIT_EOS
             dpth=z_w(i,j,N)-0.5*(z_r(i,j,k+1)+z_r(i,j,k))
             dRz =rho1(i,j,k+1)-rho1(i,j,k)
      &          +(qp1(i,j,k+1)- qp1(i,j,k))
      &               *dpth*(1.-2.*qp2*dpth)
-#   else
+#    else
             dRz = rho1(i,j,k+1)-rho1(i,j,k)
-#   endif
+#    endif
             cff  = min( 1./dRz,-1.E-14 )   !  minimum stratification imposed
             cff1 = 1./(z_r(i,j,k+1)-z_r(i,j,k))
-#   ifdef LMD_SKPP2005
+#    ifdef LMD_SKPP2005
             hbltmp=hbls(i,j,3-nstp)
-#   elif defined LMD_SKPP1994 || defined GLS_MIXING
+#    elif defined LMD_SKPP1994 || defined GLS_MIXING
             hbltmp=hbl(i,j)
-#   else
+#    else
             hbltmp=10.
-#   endif
+#    endif
             gama = 1.                                      ! mixing becomes
             sig = (z_w(i,j,N)-z_w(i,j,k))/max(hbltmp,10.)  ! isosigma within  
             if (sig .lt. 1.) gama = sig*sig*(3.-2.*sig)    ! PBL depth (>10m)
@@ -789,14 +788,14 @@
           idRz(i,j,0) = 0.
         enddo
       enddo
-#  endif /* TS_MIX_ISO */
+#   endif /* TS_MIX_ISO */
 !
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (  istr,iend,jstr,jend,
      &                          idRz(START_2D_ARRAY,0)  )
-#  endif
+#   endif
 !
-# endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
+#  endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
 !
       do itrc=1,NT   !<-- itrc
@@ -805,8 +804,8 @@
 !  Compute Nudging terms
 !======================================================================
 !
-# if defined TNUDGING && defined TCLIMATOLOGY
-#  ifdef ZONAL_NUDGING
+#  if defined TNUDGING && defined TCLIMATOLOGY
+#   ifdef ZONAL_NUDGING
         if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
           call zonavg_3d(istr,iend,jstr,jend,
      &                  t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
@@ -815,35 +814,35 @@
           call zonavg_3d(istr,iend,jstr,jend,
      &                  tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
         endif
-#  endif /* ZONAL_NUDGING */
+#   endif /* ZONAL_NUDGING */
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
      &                    +dt*Tnudgcof(i,j,k,itrc)*
-#  ifdef ZONAL_NUDGING
+#   ifdef ZONAL_NUDGING
      &                         (tclmzon(j,k,itrc)-tzon(j,k,itrc))
-#  else
+#   else
      &                         (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
-#  endif /* ZONAL_NUDGING */
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#   endif /* ZONAL_NUDGING */
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
               TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
      &                    +Tnudgcof(i,j,k,itrc)
      &                    *(tclm(i,j,k,itrc)
-#   ifdef ZONAL_NUDGING
+#    ifdef ZONAL_NUDGING
      &                                           -tzon(j,k,itrc))
-#   else
+#    else
      &                                           -t(i,j,k,nnew,itrc))
-#   endif /* ZONAL_NUDGING */
+#    endif /* ZONAL_NUDGING */
      &                    *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
-#   ifdef MASKING
+#    ifdef MASKING
      &                    *rmask(i,j)
-#   endif
-#  endif  /* DIAGNOSTICS_TS */
+#    endif
+#   endif  /* DIAGNOSTICS_TS */
             enddo
           enddo
         enddo
-# endif /* TNUDGING && TCLIMATOLOGY */
+#  endif /* TNUDGING && TCLIMATOLOGY */
 !
 !======================================================================
 ! Compute the tendency term of tracer diagnostics
@@ -862,11 +861,11 @@
               Trate(i,j,k,itrc)=(Hz(i,j,k)*t(i,j,k,nnew,itrc)
      &                          -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                       /(dt*pm(i,j)*pn(i,j))
-#  ifdef MASKING
+#   ifdef MASKING
      &                   *rmask(i,j)
-#  endif
+#   endif
 !
-#  ifdef DIAGNOSTICS_TS_ADV
+#   ifdef DIAGNOSTICS_TS_ADV
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)+
      &           t(i,j,k,3,itrc)*(Huon(i+1,j,k)-Huon(i,j,k))
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)+
@@ -874,25 +873,25 @@
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)-
      &           t(i,j,k,3,itrc)*(Huon(i+1,j,k)-Huon(i,j,k)+
      &                            Hvom(i,j+1,k)-Hvom(i,j,k))
-#  endif /* DIAGNOSTICS_TS_ADV */
+#   endif /* DIAGNOSTICS_TS_ADV */
 !
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
 
-#  ifdef DIAGNOSTICS_TS
+#   ifdef DIAGNOSTICS_TS
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
-#  endif
+#   endif
               TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
 
-# if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 && !defined TS_DIF2 && !defined TS_DIF4
+#   if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 && !defined TS_DIF2 && !defined TS_DIF4
 
-# include "finalize_diagnostics_tsadv.h"
+#    include "finalize_diagnostics_tsadv.h"
 
-# endif
+#   endif
             enddo
           enddo
         enddo
@@ -901,9 +900,9 @@
 ! Compute tracer diagnostics averaged over the MLD
 !----------------------------------------------------------
 !
-#  ifdef DIAGNOSTICS_TS_MLD
-#   define T_mld_nnew FX
-#   define T_mld_nstp FE
+#   ifdef DIAGNOSTICS_TS_MLD
+#    define T_mld_nnew FX
+#    define T_mld_nstp FE
         do j=Jstr,Jend
           do i=Istr,Iend
             TXadv_mld(i,j,itrc)=0.
@@ -920,11 +919,11 @@
         enddo
         do j=Jstr,Jend
           do i=Istr,Iend
-#   ifdef LMD_SKPP
+#    ifdef LMD_SKPP
             kmld=kbl(i,j)
-#   else
+#    else
             kmld=N-5
-#   endif
+#    endif
             do k=N,kmld,-1
               cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
@@ -943,7 +942,7 @@
           enddo
         enddo
 
-#   if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2) \
+#    if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2) \
        || defined DIAGNOSTICS_DEBUG
 !
 ! Compute entrainement/detrainement term.
@@ -952,12 +951,12 @@
 !
         do j=Jstr,Jend
           do i=Istr,Iend
-#    if defined LMD_SKPP || defined GLS_MIXING
+#     if defined LMD_SKPP || defined GLS_MIXING
             if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
             kmld=kbl_nstp(i,j)
-#    else
+#     else
             kmld=N-5
-#    endif
+#     endif
             do k=N,kmld,-1
               cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
@@ -977,20 +976,20 @@
      &                          TForc_mld(i,j,itrc)
           enddo
         enddo
-#   endif /* TS_DIF2 && TS_DIF4 && SPONGE_DIF2 */
-#   undef T_mld_nnew 
-#   undef T_mld_nstp
-#  endif /* DIAGNOSTICS_TS_MLD */
+#    endif /* TS_DIF2 && TS_DIF4 && SPONGE_DIF2 */
+#    undef T_mld_nnew 
+#    undef T_mld_nstp
+#   endif /* DIAGNOSTICS_TS_MLD */
 
-#  ifdef DIAGNOSTICS_DEBUG
+#   ifdef DIAGNOSTICS_DEBUG
         if (istr.eq.1 .and. jstr.eq.1
-#   ifdef TEMPERATURE
+#    ifdef TEMPERATURE
      &       .and. itrc.eq.itemp
-#   endif /* TEMPERATURE */
+#    endif /* TEMPERATURE */
      &       ) then
           i=5
           j=5
-#   if defined DIAGNOSTICS_TS_MLD
+#    if defined DIAGNOSTICS_TS_MLD
           cff=Trate_mld(i,j,itrc)-
      &        TXadv_mld(i,j,itrc)-
      &        TYadv_mld(i,j,itrc)-
@@ -1002,7 +1001,7 @@
              MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &       ' STEP3D_T: T budget closure MLD     :', cff
 !
-#   endif /* DIAGNOSTICS_TS_MLD */
+#    endif /* DIAGNOSTICS_TS_MLD */
           cff=Trate(i,j,N-5,itrc)-
      &        TXadv(i,j,N-5,itrc)-
      &        TYadv(i,j,N-5,itrc)-
@@ -1013,8 +1012,8 @@
             MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &      ' STEP3D_T: T budget closure at k=N-5:', cff
         endif
-#  endif /* DIAGNOSTICS_DEBUG */
-# endif /* DIAGNOSTICS_TS */
+#   endif /* DIAGNOSTICS_DEBUG */
+#  endif /* DIAGNOSTICS_TS */
 !
 !
 !======================================================================
@@ -1025,17 +1024,17 @@
 ! Apply land mask
 !----------------------------------------------------------
 !
-# ifdef MASKING
-#  ifdef EW_PERIODIC
-#   define I_RANGE Istr,Iend
-#  else
-#   define I_RANGE IstrR,IendR
-#  endif
-#  ifdef NS_PERIODIC
-#   define J_RANGE Jstr,Jend
-#  else
-#   define J_RANGE JstrR,JendR
-#  endif
+#  ifdef MASKING
+#   ifdef EW_PERIODIC
+#    define I_RANGE Istr,Iend
+#   else
+#    define I_RANGE IstrR,IendR
+#   endif
+#   ifdef NS_PERIODIC
+#    define J_RANGE Jstr,Jend
+#   else
+#    define J_RANGE JstrR,JendR
+#   endif
         do k=1,N
           do j=J_RANGE
             do i=I_RANGE
@@ -1044,23 +1043,23 @@
           enddo
         enddo
         
-#  undef I_RANGE
-#  undef J_RANGE
-# endif /* MASKING */
+#   undef I_RANGE
+#   undef J_RANGE
+#  endif /* MASKING */
 !
 !----------------------------------------------------------
 ! Exchange periodic boundaries and computational margins.
 !----------------------------------------------------------
 !
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#  ifdef THREE_GHOST_POINTS_TS
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+#   ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
-#  else
+#   else
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
+#   endif
 #  endif
-# endif
 
       enddo   ! <-- itrc
 
