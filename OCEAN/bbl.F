@@ -100,6 +100,10 @@
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
+# ifdef SANDBAR
+#  undef  BBL_WAVE_SKEWNESS
+#  define BBL_BREAKING_STIR
+# endif
       logical SAND, SILT
       integer Iend, Istr, Jend, Jstr, i, ised, j, k
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
@@ -266,7 +270,7 @@
           Ut=cff/(exp(depth/whrm(i,j))-1)
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
-          Ut=500.*Ut  ! * efficiency factor
+          Ut=500.*Ut  ! * efficient factor
 # else
           Ut=0.
 # endif
