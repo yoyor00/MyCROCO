@@ -792,6 +792,10 @@
 #  define Z0_RIP
 # endif
 # undef  Z0_BIO
+# ifdef SEDIMENT
+#  undef  BBL_WAVE_SKEWNESS
+#  define BBL_BREAKING_STIR
+# endif
 #endif
 
 /*
