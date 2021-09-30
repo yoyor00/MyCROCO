@@ -67,7 +67,9 @@ CONTAINS
    LOGICAL                                   :: l_varassoc
    INTEGER                                   :: ivpc,ivp,iv,iv0,indx,ivTS
    INTEGER                                   :: isubs,nballoc,ivr,it,ntypvar
-
+#ifdef key_CROCO
+   INTEGER                                   :: lstr,lenstr
+#endif
 
 !! tableaux (_n) lues pdimensionnes par namelist (par nombre de substance de tel ou tel type) 
 !! tableaux (_r) intermediaires dimensionnes au nombre de substances, sera recopie ensuite dans tableau final dimensionne a NT
@@ -168,7 +170,8 @@ CONTAINS
    !   WRITE(stdout,*) TRIM(name_filesubs)
 #ifdef MUSTANG
 # ifdef key_CROCO
-   OPEN(500,file=REPFICNAMELIST//'/'//SEDNAM,status='old',form='formatted',access='sequential')
+   lstr=lenstr(sedname_subst)
+   OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
 # else
    OPEN(500,file=REPFICNAMELIST//'/parasubstance_MUSTANG.txt',status='old',form='formatted',access='sequential')
 # endif
