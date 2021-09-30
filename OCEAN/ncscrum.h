@@ -514,8 +514,8 @@
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
-      parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
-     &              +ntrc_substot
+      parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio
+     &                      +ntrc_sed+ntrc_substot
 # ifdef MUSTANG
      &              +ntrc_subs+16
 #  ifdef key_MUSTANG_specif_outputs
