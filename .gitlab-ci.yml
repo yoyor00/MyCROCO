@@ -4,8 +4,11 @@
 variables:
   TERM: "xterm-256color"
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro/CVTK_DEBUG_FAST_src"
+  PERFRSTHOME: "$CI_PROJECT_DIR/CVTK/test_perfrst/src"
   DATADIR: "$CI_PROJECT_DIR/.datadir"
+  PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   CVTKWORK: "$CI_PROJECT_DIR/.datawork"
+  PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork"
   CROCO_CI_MPIRUN: "mpirun.openmpi"
   
   
@@ -14,6 +17,10 @@ before_script:
   - mkdir -p $CVTKWORK
   - cd $DATADIR
   - mkdir -p TESTROOT/VORT TESTROOT/KTEST TESTROOT/REG
+  - mkdir -p $PERFRSTDIR
+  - mkdir -p $PERFRSTWORK
+  - cd $PERFRSTDIR
+  - mkdir -p TESTROOT/REG
 
 ana_run:
   #only:
@@ -48,11 +55,7 @@ vort_run:
     - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
 
-  artifacts:
-    paths:
-      - $CVTKWORK/ftp
-    when: always
-    
+   
 reg_run:
   only:
     - schedules  
@@ -67,10 +70,29 @@ reg_run:
     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
-
-
+ 
   artifacts:
     paths:
       - $CVTKWORK/ftp
+    when: always 
+
+reg_perfrst:
+  only:
+    - schedules  
+  script:
+    - cd $PERFRSTHOME/Scripts_reg_perfrst
+    - ./create_link_master_reg_perfrst.sh
+    - cd -
+    - cd $PERFRSTWORK/REG
+    
+    - ./mk_TESTALL.bash CONFIGURE_REG_PERFRST reg
+    - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+
+  artifacts:
+    paths:
+      - $PERFRSTWORK/ftp
     when: always
 

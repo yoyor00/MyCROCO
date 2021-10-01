@@ -35,30 +35,25 @@ echo "=> MPIRUN COMMAND: "$MPIRUN
 #
 SOURCE_CVTK=${SOURCE_CROCO}/../CVTK/test_repro/CVTK_DEBUG_FAST_src
 echo 'Sources CVTK tests: '$SOURCE_CVTK
+
+source configure_file
+
 #
-# Get updated files
+# Create param.h and cppdefs.h for SERIAL, OPENMP and MPI
 #
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.SERIAL
-sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.SERIAL > cppdefs.h.SERIAL.tmp
-mv cppdefs.h.SERIAL.tmp cppdefs.h.SERIAL
 \cp ${SOURCE_CROCO}/param.h param.h.SERIAL
 
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.OPENMP
-sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.OPENMP > cppdefs.h.OPENMP.tmp
-mv cppdefs.h.OPENMP.tmp cppdefs.h.OPENMP
 \cp ${SOURCE_CROCO}/param.h param.h.OPENMP
 
 \cp ${SOURCE_CROCO}/cppdefs.h cppdefs.h.MPI
-sed 's/'undef\ \ \*RVTK_DEBUG'/'define\ RVTK_DEBUG'/' < cppdefs.h.MPI > cppdefs.h.MPI.tmp
-mv cppdefs.h.MPI.tmp cppdefs.h.MPI
 \cp ${SOURCE_CROCO}/param.h param.h.MPI
 
 
 #List of test cases with only one points in one direction
 LIST_2DV_X='GRAV_ADJ IGW INNERSHELF INTERNAL SHOREFACE SWASH THACKER TANK ISOLITON KH_INST SANDBAR'
 LIST_2DV_Y='OVERFLOW SHELFRONT'
-
-source configure_file
 
 Is2DV_X=0
 Is2DV_Y=0
@@ -88,7 +83,6 @@ for par in SERIAL OPENMP MPI ; do
     
     
     # 3- DEFINE THE NAME OF THE CONFIG
-    #sed 's/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     sed '/'${EXAMPLE}[[:graph:]]'/! s/'undef\ \*BENGUELA_LR'/'define\ $CONFIG_NAME'/' < cppdefs.h.$par > cppdefs.h.$par.tmp
     \mv cppdefs.h.$par.tmp cppdefs.h.$par
      

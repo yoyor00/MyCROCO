@@ -277,11 +277,18 @@
 # undef HOURLY_VELOCITIES
                      /* Exact restart */
 # undef EXACT_RESTART
-                     /* Parallel reproducibility  */
-# undef  RVTK_DEBUG
-# if defined RVTK_DEBUG
-! Parallel reproducibility test
+                      /* Parallel reproducibility or restartabilty test */
+# undef RVTK_DEBUG
+# undef RVTK_DEBUG_PERFRST
+# if defined RVTK_DEBUG && !defined RVTK_DEBUG_PERFRST
+!    Parallel reproducibility test
 #  undef RVTK_DEBUG_ADVANCED
+#  define XXXRVTK_DEBUG_READ
+# elif defined RVTK_DEBUG && defined RVTK_DEBUG_PERFRST
+!    Restartability test
+#  define EXACT_RESTART
+#  undef RVTK_DEBUG_ADVANCED
+#  define XXXRVTK_DEBUG_READ
 # endif
 /*
 !                        Diagnostics 
