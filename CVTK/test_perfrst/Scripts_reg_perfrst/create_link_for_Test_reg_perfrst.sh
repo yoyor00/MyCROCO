@@ -1,8 +1,10 @@
 #!/bin/bash
 #echo '============================================================='
-#set -x
-set -e
+
+##set -x
+##set -e
 set -u
+
 echo 'Create the link between TESTROOT . and '$PWD
 
 source ../CONFIGURE_REG_PERFRST
