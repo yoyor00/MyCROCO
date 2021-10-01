@@ -861,12 +861,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           cffi=(float(i       ) )
           cffj=(float(j       ) )
 #    endif 
-         if (xr(i,j).lt.4.0_rsh) then
+         if (xr(i,j).lt.4.) then
           h(i,j)=depth
          else 
-          Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
-     &                (cffj-25.0_rsh)**2.0_rsh )
-          h(i,j)=depth*(1.-0.5*exp(-cff1*(2.0_rsh*(Rij))**2.0))
+          Rij = sqrt( (cffi-28.)**2.+
+     &                (cffj-25.)**2. )
+          h(i,j)=depth*(1.-0.5*exp(-cff1*(2.*(Rij))**2.0))
          endif
 #  else 
          h(i,j)=depth*(1.-0.5*exp(-5.e-3*(2.*(cff-25.))**2))

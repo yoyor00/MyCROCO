@@ -232,9 +232,9 @@
               cffi=(float(i))
               cffj=(float(j))
 #     endif
-              Rij = sqrt( (cffi-28.0_rsh)**2.0_rsh+
-     &                    (cffj-25.0_rsh)**2.0_rsh )
-              ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(2.0_rsh*(Rij))**2.))
+              Rij = sqrt( (cffi-28.)**2.+
+     &                    (cffj-25.)**2. )
+              ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(2.*(Rij))**2.))
 #    else
               ubar(i,j,1) = cff2/(1-
      &               0.5*exp(-cff*(xp(i,j)-0.5*xl)**2))
