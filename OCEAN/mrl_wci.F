@@ -689,9 +689,10 @@
 ! Akw: primary wave-induced additional diffusivity for tracers at w-point
 ! =======================================================================
 !
-#  define WAVE_NONBRK_VMIX_QIAO
+#  ifdef LMD_MIXING
+#   define WAVE_NONBRK_VMIX_QIAO
 !
-#  ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */
+#   ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */
 !
 !  In Uchiyama et al 2010:
 !  Akw = 0.5 d/dt[[A * sinh(k(z+d))/sinh(k*d)]^2]
@@ -711,7 +712,7 @@
           enddo
         enddo
       enddo
-#  elif defined WAVE_NONBRK_VMIX_QIAO
+#   elif defined WAVE_NONBRK_VMIX_QIAO
 !
 !  Qiao et al, JPO 2004:
 !    Akw = alpha * kw * sig * [A * sinh(k(z+d))/sinh(k*d)]^3
@@ -730,7 +731,8 @@
           enddo
         enddo
       enddo
-#  endif
+#   endif
+#  endif /* LMD_MIXING */
 !
 ! Non conservative wave-current interaction variables.
 ! ====================================================
@@ -1110,9 +1112,11 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       call exchange_v3d_tile(istr,iend,jstr,jend,vst)
       call exchange_r3d_tile(istr,iend,jstr,jend,wst)
       call exchange_r3d_tile(istr,iend,jstr,jend,kvf) 
+#   ifdef LMD_MIXING
       call exchange_w3d_tile(istr,iend,jstr,jend,Akb)
       call exchange_w3d_tile(istr,iend,jstr,jend,Akw)
       call exchange_w3d_tile(istr,iend,jstr,jend,E_pre)
+#   endif
 #   ifndef WAVE_SFC_BREAK
       call exchange_u3d_tile (istr,iend,jstr,jend,brk3dx)
       call exchange_v3d_tile (istr,iend,jstr,jend,brk3de)
