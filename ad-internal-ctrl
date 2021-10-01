@@ -62,5 +62,5 @@ cp -f internal_his.nc obs.nc
 
 # 2. second run with restart and control with obs.nc file
 #cp -f ../AD/croco.internal-friction.in .
-#./croco_adc croco.internal-friction.in
-#./croco_adj croco.internal-friction.in
+./croco_adc croco.internal-friction-obs.in
+./croco_adj croco.internal-friction-obs.in

@@ -362,31 +362,9 @@ c     cf ana_initial
 #include "compute_extended_bounds.h"
       k = 2
 
-      depth=2000
-      ridge_width = ad_x(2)*100
-      ridge_height = ad_x(1)
-      h_bck(:,:) = h(:,:)
-
-      write(*,*) '########',ad_x(1), ad_x(2)*100
-
-      cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
-        do i=IstrR,IendR
-          if ((xr(i,j).gt.ridge_width).or.
-     &       (xr(i,j).lt.(-ridge_width))) then
-            cff=0.
-          else
-            cff=1-(xr(i,j)*xr(i,j)*cff1);
-          endif
-          h(i,j)=depth-ridge_height*cff*cff;
-#   ifdef INTERNALSHELF
-          if (xr(i,j).ge.0.) then
-            h(i,j)=depth-ridge_height
-          endif
-#   endif
-          if (h(i,j).ne.h_bck(i,j)) then
-             write(*,*) '#######/////', h(i,j) - h_bck(i,j)
-          endif
+         do i=IstrR,IendR
+            pena_h(i,j)=h(i,j)+ad_x(1)
         enddo
       enddo
 
@@ -627,15 +605,12 @@ c      call grid_stiffness(tile)
       integer Istr,Iend,Jstr,Jend,i,j,k
 
 # include "compute_extended_bounds.h"
-      k=2
+      k=1
 
-c     ridge height
-      ad_x(1)=2000
+c     h penalization
+      ad_x(1)=-10
 
-c     ridge width
-      ad_x(2)=40.e3/100.0
-
-      ad_array_node_size=2
+      ad_array_node_size=1
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,
