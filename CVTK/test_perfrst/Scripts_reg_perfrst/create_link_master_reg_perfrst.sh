@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#set -x
-set -e
+##set -x
+##set -e
 set -u
 
 #echo '============================================================='
@@ -14,29 +14,17 @@ mkdir -p $dir_test/Junk
 [[ ! -d  $dir_web ]] && mkdir -p $dir_web
 
 #
-<<<<<<< HEAD:CVTK/test_perfrst/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 \cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/
 \cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/
 
 cp $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in.write
 cp $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in.read
-=======
-\cp -rf $CI_PROJECT_DIR/OCEAN/croco.in* $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/
-\cp -rf $CI_PROJECT_DIR/OCEAN/AGRIF_FixedGrids.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/
-
-cp $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.write
-cp $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in $PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.read
->>>>>>> 81c8403597e8a58ecee9f8d8c25065d796269d29:CVTK/test_perfrst/src/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 
 ###################################################
 # croco.in.write
 ###################################################
 
-<<<<<<< HEAD:CVTK/test_perfrst/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 file=$PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in.write
-=======
-file=$PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.write
->>>>>>> 81c8403597e8a58ecee9f8d8c25065d796269d29:CVTK/test_perfrst/src/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 
 line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
 [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -75,11 +63,7 @@ line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
 ###################################################
 # croco.in.read
 ###################################################
-<<<<<<< HEAD:CVTK/test_perfrst/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 file=$PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in.read
-=======
-file=$PERFRSTHOME/../../common/TEST_CASES_CVTK/VHR/croco.in.read
->>>>>>> 81c8403597e8a58ecee9f8d8c25065d796269d29:CVTK/test_perfrst/src/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 
 line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
 [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -177,20 +161,7 @@ ln -sf $dir_home/../CONFIGURE_REG_PERFRST $dir_test/
 ln -sf $dir_home/../mk_TestDIR_perfrst.bash $dir_test/
 ln -sf $dir_home/../mk_TESTALL_perfrst.bash $dir_test/
 ln -sf $dir_home/../gather_recap_perfrst.bash $dir_test/
-<<<<<<< HEAD:CVTK/test_perfrst/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 #ln -sf $dir_home/../CONFIGURE_GLOBAL_PERFRST $dir_test/
-=======
-ln -sf $dir_home/../../../common/gitinfo.sh $dir_test/
-ln -sf $dir_home/../git_process.bash $dir_test/
-ln -sf $dir_home/../../../common/mk_CLEANALL.bash $dir_test/
-ln -sf $dir_home/../../../common/mk_CHECKALL.bash $dir_test/
-ln -sf $dir_web $dir_test/
-ln -sf  $dir_home/../../../common/print/* $dir_test/
-
-# ana specific and programms
-ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
-ln -sf $dir_home/../mk_TESTALL.bash $dir_test/
->>>>>>> 81c8403597e8a58ecee9f8d8c25065d796269d29:CVTK/test_perfrst/src/Scripts_reg_perfrst/create_link_master_reg_perfrst.sh
 
 # cleaning
 rm -Rf $dir_test/Configure_Test; 
