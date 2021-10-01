@@ -741,7 +741,7 @@ C$OMP END MASTER
 # endif
 #endif
 
-#if defined RVTK_DEBUG_ADVANCED
+#if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')

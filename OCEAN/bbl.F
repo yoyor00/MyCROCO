@@ -88,9 +88,8 @@
 # include "grid.h"
 # ifdef SOLVE3D
 #  include "ocean3d.h"
-# else
-#  include "ocean2d.h"
 # endif
+# include "ocean2d.h"
 # include "scalars.h"
 # include "sediment.h"
 # if defined M3FAST && defined BSTRESS_FAST
@@ -228,7 +227,7 @@
 ! wavenumber on shoaling water.
 !
           Fwave=twopi/Pwave(i,j)
-          depth=max(eps,h(i,j)+z_w(i,j,N))
+          depth=h(i,j)+zeta(i,j,kstp)
           Kdh=depth*Fwave*Fwave/g
           Kbh2=Kdh*Kdh+Kdh/(1.+Kdh*(K1+Kdh*(K2+Kdh*(K3+Kdh*(K4+
      &                         Kdh*(K5+K6*Kdh))))))
