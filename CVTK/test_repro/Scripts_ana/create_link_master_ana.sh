@@ -16,7 +16,11 @@ mkdir -p $dir_test/Junk
 #
 \cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/../common/TEST_CASES_CVTK/.
 
+<<<<<<< HEAD:CVTK/test_repro/Scripts_ana/create_link_master_ana.sh
 for file in $(ls $CVTKHOME/../common/TEST_CASES_CVTK/croco.in*)
+=======
+for file in $(ls $CVTKHOME/../../common/TEST_CASES_CVTK/croco.in*)
+>>>>>>> 81c8403597e8a58ecee9f8d8c25065d796269d29:CVTK/test_repro/CVTK_DEBUG_FAST_src/Scripts_ana/create_link_master_ana.sh
 do 
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
@@ -44,6 +48,20 @@ ln -sf $CVTKHOME/../common/print/* $dir_test/
 ln -sf $dir_web $dir_test/
 ln -sf $dir_home/Configure_Test_ana $dir_test/
 ln -sf $dir_home/../CONFIGURE_ANA $dir_test/
+<<<<<<< HEAD:CVTK/test_repro/Scripts_ana/create_link_master_ana.sh
+=======
+
+# common scripts and programms
+ln -sf $dir_home/../gather_recap.bash $dir_test/
+ln -sf $dir_home/../../../common/gitinfo.sh $dir_test/
+ln -sf $dir_home/../../../common/git_process.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CLEANALL.bash $dir_test/
+ln -sf $dir_home/../../../common/mk_CHECKALL.bash $dir_test/
+ln -sf $dir_web $dir_test/
+ln -sf $dir_home/../../../common/print/* $dir_test/
+
+# ana specific and programms
+>>>>>>> 81c8403597e8a58ecee9f8d8c25065d796269d29:CVTK/test_repro/CVTK_DEBUG_FAST_src/Scripts_ana/create_link_master_ana.sh
 ln -sf $dir_home/../mk_TestDIR.bash $dir_test/
 ln -sf $dir_home/../mk_TESTALL.bash $dir_test/
 ln -sf $dir_home/../gather_recap.bash $dir_test/
