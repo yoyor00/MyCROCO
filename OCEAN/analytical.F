@@ -2917,12 +2917,12 @@ C$    integer  trd, omp_get_thread_num
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
-#  ifdef NBQ
+#   ifdef NBQ
           do j=IstrR,IendR
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
           enddo
-#  endif
+#   endif
         enddo
       endif
 # endif /* OBC_WEST */
@@ -2933,12 +2933,10 @@ C$    integer  trd, omp_get_thread_num
           do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
-            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                         *v(IendR,j,k,nrhs)
-#  ifdef NBQ
+#   ifdef NBQ
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
-#  endif
+#   endif
           enddo
           do j=JV_RANGE
             vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR,j-1,k))
@@ -2954,12 +2952,10 @@ C$    integer  trd, omp_get_thread_num
           do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
-            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                    *u(i,0,k,nrhs)
-#  ifdef NBQ
+#   ifdef NBQ
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
-#  endif
+#   endif
           enddo
           do i=IU_RANGE
             unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
@@ -2975,12 +2971,10 @@ C$    integer  trd, omp_get_thread_num
           do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
-     &                                          *u(i,JendR,k,nrhs)
-#  ifdef NBQ
+#   ifdef NBQ
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
-#  endif
+#   endif
           enddo
           do i=IU_RANGE
             unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
@@ -2989,7 +2983,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       endif
 # endif /* OBC_NORTH */
-!
+
       return
       end
 #endif /* defined NBQ_FRC_BRY */
