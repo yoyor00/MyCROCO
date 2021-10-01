@@ -1,6 +1,7 @@
 #!/bin/bash
+
 ##set -x
-set -e
+##set -e
 set -u
 
 source CONFIGURE_GLOBAL

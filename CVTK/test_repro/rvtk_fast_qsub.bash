@@ -14,8 +14,8 @@
 # AND AGRIF nesting type (No nesting, Nesting 1-way, Nesting 2-ways) : 
 # VORTEX and REGIONAL
 #--------------------------------------------------------------------
-#set -x
-set -e
+##set -x
+##set -e
 
 echo "=============================================="
 echo "=> CONFIG "$mytest
