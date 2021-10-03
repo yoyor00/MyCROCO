@@ -452,7 +452,7 @@
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
 
         enddo
-#  endif /* TRACERS */
+# endif /* TRACERS */
 
 # if defined TRACERS
         do itrc=1,NT
@@ -971,11 +971,11 @@
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
             Akv_old(i,j,k)=Akv(i,j,k)
-# if defined TEMPERATURE
+#  if defined TEMPERATURE
             Akt_old(i,j,k)=Akt(i,j,k,itemp)
-# elif defined SALINITY
+#  elif defined SALINITY
             Akt_old(i,j,k)=Akt(i,j,k,isalt)
-# endif            
+#  endif            
           enddo
         enddo
       enddo

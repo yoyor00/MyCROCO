@@ -218,12 +218,12 @@
 #ifdef TRACERS
 # ifdef DIAGNOSTICS_TS
       wrtdia3D(NT+1)=.false.
-# ifdef AVERAGES
-      wrtdia3D_avg(NT+1)=.false.
-# endif
-# ifdef DIAGNOSTICS_TS_MLD
-      wrtdia2D(NT+1)=.false.
 #  ifdef AVERAGES
+      wrtdia3D_avg(NT+1)=.false.
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+      wrtdia2D(NT+1)=.false.
+#   ifdef AVERAGES
       wrtdia2D_avg(NT+1)=.false.
 #   endif
 #  endif
@@ -1326,11 +1326,11 @@ c        close(testunit)
 # endif
 # if defined BHFLUX
      &                                        .or. wrthis(indxBhflx)
-#endif
+# endif
 # if defined BWFLUX && defined SALINITY
      &                                        .or. wrthis(indxBwflx)
-#endif 
-# if defined BIOLOGY &&         !defined PISCES
+# endif 
+# if defined BIOLOGY && !defined PISCES
      &                                        .or. wrthis(indxHel)
 #  ifdef BIO_NChlPZD
      &                                        .or. wrthis(indxChC)
@@ -1433,7 +1433,7 @@ c        close(testunit)
 # ifdef BHFLUX
      &  , wrthis(indxBhflx), 'write Bhflx [W/m2]', 
      &                       'Bottom net heat flux'        
-#endif
+# endif
 # if defined BWFLUX && defined SALINITY
      &  , wrthis(indxBwflx), 'write Bwflx [cm/day]', 
      &                       'Bottom freshwater flux (E-P)'
@@ -1469,7 +1469,7 @@ c        close(testunit)
      &                                    ,  wrtavg(indxVb)
 # ifdef SOLVE3D
      &                    ,  wrtavg(indxU),  wrtavg(indxV)
-# ifdef TRACERS
+#  ifdef TRACERS
      &                    , (wrtavg(itrc), itrc=indxV+1,indxV+NT)
 #  endif
 # endif
@@ -1750,7 +1750,7 @@ c        close(testunit)
 #  endif
 #  ifdef TEMPERATURE
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
-     &                          'Short-wave surface radiation.'
+     &                      'Short-wave surface radiation.'
 # endif     
 # ifdef BHFLUX
      &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
@@ -1867,7 +1867,7 @@ c        close(testunit)
      &        'write Avg Hbl Integrated  Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
-#  endif  /* TRACERS */
+#   endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */
 
@@ -2755,7 +2755,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
           read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
-#  if defined SOLVE3D &&  defined TRACERS
+#  if defined SOLVE3D && defined TRACERS
      &                                    ,(Lsrc(is,itrc), itrc=1,NT)
      &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
 #  endif

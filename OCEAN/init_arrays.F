@@ -333,9 +333,9 @@ C$    integer omp_get_thread_num
             do i=IstrR,IendR
               t(i,j,k,1,itrc)=init
               t(i,j,k,2,itrc)=init
-# ifdef AVERAGES
+#  ifdef AVERAGES
               t_avg(i,j,k,itrc)=init
-# endif
+#  endif
             enddo
           enddo
         enddo
@@ -365,18 +365,18 @@ C$    integer omp_get_thread_num
               TXadv(i,j,k,itrc)=init
               TYadv(i,j,k,itrc)=init
               TVadv(i,j,k,itrc)=init
-#ifdef DIAGNOSTICS_TSVAR
+#  ifdef DIAGNOSTICS_TSVAR
               TVmixt(i,j,k,itrc)=init
-#endif
+#  endif
 #  ifdef AVERAGES
               TXadv_avg(i,j,k,itrc)=init
               TYadv_avg(i,j,k,itrc)=init
               TVadv_avg(i,j,k,itrc)=init
               THmix_avg(i,j,k,itrc)=init
               TVmix_avg(i,j,k,itrc)=init
-#ifdef DIAGNOSTICS_TSVAR
+#   ifdef DIAGNOSTICS_TSVAR
               TVmixt_avg(i,j,k,itrc)=init
-#endif
+#   endif
               TForc_avg(i,j,k,itrc)=init
               Trate_avg(i,j,k,itrc)=init
 #  endif /* AVERAGES*/
@@ -406,7 +406,7 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
 
-#  endif /* AVERAGES*/
+#   endif /* AVERAGES*/
           enddo
         enddo
       enddo
@@ -440,7 +440,6 @@ C$    integer omp_get_thread_num
         enddo
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EDDY */
-
 
 # ifdef DIAGNOSTICS_VRT
       do j=jstrR,jendR             ! 3-D primitive
@@ -816,8 +815,7 @@ C$    integer omp_get_thread_num
 # if BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
-# endif
-            
+# endif           
           enddo
         enddo
       enddo
@@ -908,7 +906,7 @@ C$    integer omp_get_thread_num
           wstr_u(i,j)=init
           wstr_v(i,j)=init
 # endif
-# if defined SST_SKIN  && defined TEMPERATURE
+# if defined SST_SKIN && defined TEMPERATURE
           sst_skin=init
 #  ifdef AVERAGES
           sst_skin_avg=init
@@ -1322,16 +1320,16 @@ C$    integer omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 # if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
-#endif
+#  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
 # else
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=init
-#endif
+#  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=init
 #  endif

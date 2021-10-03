@@ -1560,6 +1560,7 @@
 # undef  UV_COR
 # define SOLVE3D
 # undef  NONLIN_EOS
+# define SALINITY
 # undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL

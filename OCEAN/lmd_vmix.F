@@ -484,7 +484,7 @@ C$OMP BARRIER
      &                                (z_w(i,j,k)-z_w(i,j,0))*4.*
      &             (hekman+z_w(i,j,0)-z_w(i,j,k))/(hekman*hekman) ))
              Kv(i,j,k)=Kv(i,j,k)+Kvbotek
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
              Kt(i,j,k)=Kt(i,j,k)+Kvbotek
 #  endif
 #  ifdef SALINITY
@@ -504,19 +504,19 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
           Kv(i,j,N)=Kv(i,j,N-1)
-# ifdef SALINITY
+#  ifdef SALINITY
           Ks(i,j,N)=Ks(i,j,N-1)
-# endif
-# ifdef TEMPERATURE
+#  endif
+#  ifdef TEMPERATURE
           Kt(i,j,N)=Kt(i,j,N-1)
-# endif
+#  endif
           Kv(i,j,0)=Kv(i,j,  1)
 #  ifdef SALINITY
           Ks(i,j,0)=Ks(i,j,  1)
-# endif
-# ifdef TEMPERATURE
+#  endif
+#  ifdef TEMPERATURE
           Kt(i,j,0)=Kt(i,j,  1)
-# endif
+#  endif
         enddo
       enddo
 # endif /* LMD_SKPP || LMD_BKPP */
@@ -584,10 +584,10 @@ C$OMP BARRIER
             Kv(i,j,k)=Kv(i,j,k) + Kv_swash
 !# ifdef TEMPERATURE
 !            Kt(i,j,k)=Kt(i,j,k) + 0.1*Kv_swash
-!#  endif
-!#  ifdef SALINITY
+!# endif
+!# ifdef SALINITY
 !            Ks(i,j,k)=Ks(i,j,k) + 0.1*Kv_swash
-!#  endif
+!# endif
 # endif /* WET_DRY && LMD_VMIX_SWASH */
 !
 !------------------------------------------------
@@ -622,7 +622,7 @@ C$OMP BARRIER
 # ifdef MRL_WCI
           do k=1,N
             Akv(i,j,k)       =Akv(i,j,k)+Akb(i,j,k)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp) =Akt(i,j,k,itemp)+Akb(i,j,k)+Akw(i,j,k)
 #  endif
 #  ifdef SALINITY
@@ -657,9 +657,9 @@ C$OMP BARRIER
         do i=istr,iend
           do k=1,N
             Akv(i,j,k)       =max(Akv(i,j,k)       ,my_Akv_bak)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp) =max(Akt(i,j,k,itemp) ,my_Akt_bak)
-# endif
+#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt) =max(Akt(i,j,k,isalt) ,my_Aks_bak)
 #  endif
@@ -679,7 +679,7 @@ C$OMP BARRIER
         do j=jstr,jend
           do k=k0,N
             Akv(istr-1,j,k)=Akv(istr,j,k)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
 #  endif
 #  ifdef SALINITY
@@ -692,7 +692,7 @@ C$OMP BARRIER
         do j=jstr,jend
           do k=k0,N
             Akv(iend+1,j,k)=Akv(iend,j,k)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
 #  endif
 #  ifdef SALINITY
@@ -720,7 +720,7 @@ C$OMP BARRIER
         do i=istr,iend
           do k=k0,N
             Akv(i,jend+1,k)=Akv(i,jend,k)
-#   ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
 #  endif
 #  ifdef SALINITY
@@ -733,45 +733,45 @@ C$OMP BARRIER
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=k0,N
           Akv(istr-1,jstr-1,k)=Akv(istr,jstr,k)
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=k0,N
           Akv(istr-1,jend+1,k)=Akv(istr,jend,k)
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=k0,N
           Akv(iend+1,jstr-1,k)=Akv(iend,jstr,k)
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=k0,N
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
 #  endif

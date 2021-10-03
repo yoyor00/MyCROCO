@@ -393,8 +393,8 @@
      &                    'Laplacian mixing coefficient for tracers')
       ierr=nf_put_att_text (ncid,nf_global,'tnu2_units',15,
      &                                             'meter2 second-1')
-# endif
-# ifdef TS_DIF4
+#  endif
+#  ifdef TS_DIF4
       ierr=nf_put_att_FTYPE(ncid,nf_global,'tnu4', nf_ftype, 1,tnu4)
       ierr=nf_put_att_text (ncid,nf_global,'tnu4_expl',41,
      &                   'biharmonic mixing coefficient for tracers')

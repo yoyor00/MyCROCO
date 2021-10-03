@@ -1,5 +1,5 @@
 title:
-        Sed_toy (Single Colum GradP / SCM) TEST MODEL
+        Sed_toy (Single Column GradP / SCM) TEST MODEL
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 1000000  1    10     1

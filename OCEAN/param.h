@@ -161,11 +161,15 @@
 #elif defined DUNE
 # ifdef ANA_DUNE
       parameter (LLm0=150,  MMm0=1,    N=20)   !  DUNE 2m
+# elif defined DUNE3D
+      parameter (LLm0=50,   MMm0=50,   N=20)   !
 # else
       parameter (LLm0=50,   MMm0=1,    N=20)   !  DUNE 2m
 # endif
 #elif defined SED_TOY
       parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
+#elif defined TFLAT2DV
+      parameter (LLm0=200,  MMm0=3,    N=10)   !  TFLAT2DV
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -695,24 +699,24 @@
      &            iDFE_=iDIC_+17, iDSI_=iDIC_+18, iNFE_=iDIC_+19,
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
      &            iNH4_=iDIC_+23)
-#    ifdef key_ligand
-      parameter (iLGW_=iDIC_+24)
-#     endif
-#   ifdef key_pisces_quota
 #   ifdef key_ligand
+      parameter (iLGW_=iDIC_+24)
+#   endif
+#   ifdef key_pisces_quota
+#    ifdef key_ligand
       parameter (iDON_=iDIC_+25, iDOP_=iDIC_+26, iPON_=iDIC_+27,
      &	         iPOP_=iDIC_+28, iNPH_=iDIC_+29, iPPH_=iDIC_+30,
      &	         iNDI_=iDIC_+31, iPDI_=iDIC_+32, iPIC_=iDIC_+33,
      &	         iNPI_=iDIC_+34, iPPI_=iDIC_+35, iPFE_=iDIC_+36,
      &	         iPCH_=iDIC_+37, iGON_=iDIC_+38, iGOP_=iDIC_+39)
-#   else
+#    else
       parameter (iDON_=iDIC_+24, iDOP_=iDIC_+25, iPON_=iDIC_+26,
      &           iPOP_=iDIC_+27, iNPH_=iDIC_+28, iPPH_=iDIC_+29,
      &           iNDI_=iDIC_+30, iPDI_=iDIC_+31, iPIC_=iDIC_+32,
      &           iNPI_=iDIC_+33, iPPI_=iDIC_+34, iPFE_=iDIC_+35,
      &           iPCH_=iDIC_+36, iGON_=iDIC_+37, iGOP_=iDIC_+38)
+#    endif
 #   endif
-#endif
 #   ifdef key_trc_diaadd
       parameter (Nhi       = 1,
      &            Nco3      = 2,

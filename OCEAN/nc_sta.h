@@ -45,7 +45,8 @@
 #ifdef SOLVE3D
      &      , staDepth,   staDen
 # ifdef TEMPERATURE
-     &      ,   staTemp
+     &      , staTemp
+# endif
      &      , staDepth,   staDen,   staTemp
 # ifdef SALINITY
      &      , staSal

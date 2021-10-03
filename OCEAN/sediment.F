@@ -39,7 +39,7 @@
 #  endif
 # endif
 
-# ifdef BEDLOAD_VANDERA      /* wave half-cycle concept */
+# ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
 #  define BEDLOAD_VANDERA_ZEROCURR
 #  ifndef BEDLOAD_VANDERA_ZEROCURR
 #    define BEDLOAD_VANDERA_FD_MADSEN

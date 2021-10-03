@@ -519,7 +519,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxV = ',indxV
 !      vname(6,indxV)='x_v y_v                                     '
 #endif
       vname(7,indxV)='                                            '
-#if defined TEMPERATURE                
+#ifdef TEMPERATURE                
 CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(1,indxT)='temp                                        '
       vname(2,indxT)='potential temperature                       '

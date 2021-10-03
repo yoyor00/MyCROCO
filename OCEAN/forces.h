@@ -121,7 +121,7 @@
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
-# if defined TRACERS
+# ifdef TRACERS
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
 # endif /* TRACERS */

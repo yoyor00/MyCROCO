@@ -127,7 +127,7 @@
 !
 #  ifndef BULK_FLUX
 #   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-#    if !defined ANA_SRFLUX  && defined TEMPERATURE
+#    if !defined ANA_SRFLUX && defined TEMPERATURE
       call get_srflux
 #    endif
 #   endif
@@ -251,37 +251,37 @@
 !  --- The Bulk routine is actually called from step.F ---
 !---------------------------------------------------------------
 !
-#  if defined TEMPERATURE
-#  ifdef BULK_FLUX
-#   ifdef ONLINE
+#  ifdef TEMPERATURE
+#   ifdef BULK_FLUX
+#    ifdef ONLINE
       call set_bulk_tile_online (Istr,Iend,Jstr,Jend)
-#   else
+#    else
       call set_bulk_tile (Istr,Iend,Jstr,Jend)
-#   endif
-#  else
+#    endif
+#   else
 !
 !---------------------------------------------------------------
 ! Kinematic surface temperature (heat) flux [degC m/s].
 !---------------------------------------------------------------
 !
-#   ifdef ANA_STFLUX
+#    ifdef ANA_STFLUX
       call ana_stflux_tile (Istr,Iend,Jstr,Jend, itemp)
-#   else
+#    else
       call set_stflux_tile (Istr,Iend,Jstr,Jend, itemp)
-#   endif
+#    endif
 !
 !---------------------------------------------------------------
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-#    ifdef ANA_SRFLUX
+#    if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#     ifdef ANA_SRFLUX
       call ana_srflux_tile (Istr,Iend,Jstr,Jend)
-#    else
+#     else
       call set_srflux_tile (Istr,Iend,Jstr,Jend)
+#     endif
 #    endif
-#   endif
-#  endif /* BULK_FLUX */
+#   endif /* BULK_FLUX */
 #  endif /* TEMPERATURE */
 !
 !---------------------------------------------------------------
@@ -376,11 +376,11 @@
 !---------------------------------------------------------------
 !
 #  ifdef TEMPERATURE
-#  if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
-#   ifdef ANA_DIURNAL_SW
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#    ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
+#    endif
 #   endif
-#  endif
 #  endif
 !
 !---------------------------------------------------------------
@@ -414,11 +414,11 @@
 !---------------------------------------------------------------
 !
 # ifdef TEMPERATURE
-# ifdef ANA_BTFLUX
+#  ifdef ANA_BTFLUX
       call ana_btflux_tile (Istr,Iend,Jstr,Jend, itemp) 
-# else
+#  else
       call set_btflux_tile (Istr,Iend,Jstr,Jend, itemp)
-# endif
+#  endif
 # endif
 !
 !---------------------------------------------------------------
@@ -749,10 +749,10 @@ C$OMP MASTER
       
 # ifdef TEMPERATURE
       call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
-# endif      
+# endif
 # ifdef SALINITY
       call check_tab3d(t(:,:,:,nrhs,isalt),'#end salt in set_vbc','r')
-# endif      
+# endif
 C$OMP END MASTER
 #endif
 C$OMP BARRIER

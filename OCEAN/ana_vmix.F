@@ -68,7 +68,7 @@
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=0.002+0.008*exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
 #  ifdef SALINITY
@@ -84,7 +84,7 @@
             Akv(i,j,k)=0.011*(h(i,j)+z_w(i,j,k))*
      &                 (1.0-(h(i,j)+z_w(i,j,k))/
      &                  (h(i,j)+zeta(i,j,knew)))
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akv(i,j,k)
 #  endif
 #  ifdef SALINITY
@@ -116,7 +116,7 @@
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=Akv_bak
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
 #  ifdef SALINITY
@@ -129,7 +129,7 @@
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
-# ifdef TEMPERATURE
+#  ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,itemp))
 #  endif
