@@ -10,9 +10,11 @@
 !======================================================================
 !
 !
-!====================================================================
-!                         subroutine step
-!====================================================================
+!====================================================================!
+!                                                                    !
+!                         subroutine step                            !
+!                                                                    !
+!====================================================================!
 !
 #include "cppdefs.h"
       subroutine step()
@@ -34,20 +36,19 @@
       nbtimes = nbtimes + 1
 #endif
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef SOLVE3D   
- 
-#if defined OA_COUPLING || defined OW_COUPLING
+#ifdef SOLVE3D
+# if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
-       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
+       if ( (iif .EQ. -1) .and. (oasis_time>=0)
+     &                    .and. (nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
        endif 
-#endif /* OA_COUPLING */
+# endif /* OA_COUPLING */
 
        iif = iif+1
       IF (iif .EQ. 0) then
-#endif      
+#endif  /* SOLVE 3D */
 C$OMP PARALLEL
         call prestep3D_thread()
 C$OMP END PARALLEL
@@ -76,20 +77,17 @@ C$OMP END PARALLEL
         iif = -1
         nbstep3d = nbstep3d + 1
       endif
-#if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3 
-       if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
+       if (iif .EQ. -1) then
+         if (oasis_time .ge. 0 .and. (nbstep3d .lt. ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
          endif
          oasis_time = oasis_time + dt
        endif 
-#endif /* OA_COUPLING */
-#endif
-#ifdef ONLINE_ANA
-!     if (mynode.eq.0) write(6,*) 'appel',iic,iif
-!     call croco_oa(1)
-#endif
+# endif /* OA_COUPLING */
+#endif /* SOLVE3D */
+
       return
       end
 !
@@ -101,7 +99,7 @@ C$OMP END PARALLEL
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
-# include "zoom.h"
+#  include "zoom.h"
 # endif
 #endif
       implicit none
@@ -308,56 +306,28 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
       
-#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
-C$OMP MASTER
-      call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
-      call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
-      call check_tab2d(vwndg(:,:,1),'vwndg1 prestep3d_befbulk','v')
-      call check_tab2d(vwndg(:,:,2),'vwndg2 prestep3d_befbulk','v')
-      call check_tab2d(tair(:,:),'tair prestep3d_befbulk','r')
-      call check_tab2d(rhum(:,:),'rhum prestep3d_befbulk','r')
-      call check_tab2d(prate(:,:),'prate prestep3d_befbulk','r')
-      call check_tab2d(radlw(:,:),'radlw prestep3d_befbulk','r')
-      call check_tab2d(radsw(:,:),'radsw prestep3d_befbulk','r')
-      call check_tab2d(wspd(:,:),'wspd prestep3d_befbulk','r')
-      call check_tab2d(uwnd(:,:),'uwnd prestep3d_befbulk','u')
-      call check_tab2d(vwnd(:,:),'vwnd prestep3d_befbulk','v')      
-C$OMP END MASTER
-# endif
-      
 # ifdef BULK_FLUX
       do tile=my_first,my_last
         call bulk_flux (tile)   
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
-C$OMP MASTER
-      call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
-      call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
-      call check_tab2d(vwndg(:,:,1),'vwndg1 prestep3d_aftbulk','v')
-      call check_tab2d(vwndg(:,:,2),'vwndg2 prestep3d_aftbulk','v')
 
-      call check_tab2d(tair(:,:),'tair prestep3d_aftbulk','r')
-      call check_tab2d(rhum(:,:),'rhum prestep3d_aftbulk','r')
-      call check_tab2d(prate(:,:),'prate prestep3d_aftbulk','r')
-      call check_tab2d(radlw(:,:),'radlw prestep3d_aftbulk','r')
-      call check_tab2d(radsw(:,:),'radsw prestep3d_aftbulk','r')
-      call check_tab2d(wspd(:,:),'wspd prestep3d_aftbulk','r')
-      call check_tab2d(uwnd(:,:),'uwnd prestep3d_aftbulk','u')
-      call check_tab2d(vwnd(:,:),'vwnd prestep3d_aftbulk','v')
+#  ifdef RVTK_DEBUG_ADVANCED
+C$OMP MASTER
+      call check_tab2d(tair(:,:),   'tair   prestep3d','r')
+      call check_tab2d(rhum(:,:),   'rhum   prestep3d','r')
+      call check_tab2d(prate(:,:),  'prate  prestep3d','r')
+      call check_tab2d(radlw(:,:),  'radlw  prestep3d','r')
+      call check_tab2d(radsw(:,:),  'radsw  prestep3d','r')
+      call check_tab2d(wspd(:,:),   'wspd   prestep3d','r')
+      call check_tab2d(uwnd(:,:),   'uwnd   prestep3d','u')
+      call check_tab2d(vwnd(:,:),   'vwnd   prestep3d','v')
+      call check_tab2d(sustr(:,:),  'sustr  prestep3d','u')
+      call check_tab2d(svstr(:,:),  'svstr  prestep3d','v')      
 C$OMP END MASTER
 C$OMP BARRIER
 #  endif
 # endif /* BULK_FLUX */
-      
-C$OMP BARRIER
-# if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
-C$OMP MASTER      
-      call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','u')
-      call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','v')      
-C$OMP END MASTER
-C$OMP BARRIER
-# endif
 
       if (may_day_flag.ne.0) return  !-->  EXIT
 
@@ -397,7 +367,8 @@ C$OMP END SINGLE
 C$OMP BARRIER
       enddo
 #  endif
-      do iif_wave=1,ndtfast         ! WKB ray equation w/ barotropic time stepping
+      do iif_wave=1,ndtfast ! WKB ray equation 
+                            ! w/ barotropic time stepping
 C$OMP SINGLE
         wstp=wnew
         wnew=wstp+1
@@ -415,12 +386,22 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
       enddo
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+
+#  ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
+      call check_tab2d(wkx(:,:,wnew),'wkx in prestep ','r')
+      call check_tab2d(wke(:,:,wnew),'wke in prestep ','r')
+      call check_tab2d(hrm(:,:,wnew),'hrm in prestep ','r')
+      call check_tab2d(frq(:,:,wnew),'frq in prestep ','r')
+      call check_tab2d(wcg(:,:,wnew),'wcg in prestep ','r')
+      call check_tab2d(wsb(:,:,wnew),'wsb in prestep ','r')
+      call check_tab2d(wvn(:,:,wnew),'wvn in prestep ','r')
       call check_tab2d(wac(:,:,wnew),'wac in prestep ','r')
 #   ifdef  WAVE_ROLLER
       call check_tab2d(war(:,:,wnew),'war in prestep ','r')
+      call check_tab2d(wcr(:,:,wnew),'wcr in prestep ','r')
+      call check_tab2d(wsr(:,:,wnew),'wsr in prestep ','r')
 #   endif
 C$OMP END MASTER
 #  endif
@@ -431,10 +412,37 @@ C$OMP END MASTER
         call  mrl_wci (tile)
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+
+#  ifdef RVTK_DEBUG_ADVANCED
 C$OMP MASTER
-      call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
-      call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
+      call check_tab2d(sup,   'sup    in prestep ','r')
+      call check_tab2d(ust2d, 'ust2d  in prestep ','u')
+      call check_tab2d(vst2d, 'vst2d  in prestep ','v')
+      call check_tab2d(brk2dx,'brk2dx in prestep ','u')
+      call check_tab2d(brk2de,'brk2de in prestep ','v')
+      call check_tab2d(frc2dx,'frc2dx in prestep ','u')
+      call check_tab2d(frc2de,'frc2de in prestep ','v')
+      call check_tab2d(wepb,  'wepb   in prestep ','r')
+      call check_tab2d(wepd,  'wepd   in prestep ','r')
+#   ifdef  WAVE_ROLLER
+      call check_tab2d(wepr,  'wepr   in prestep ','r')
+#   endif
+#   ifdef SOLVE3D
+      call check_tab2d(Kapsrf,'Kapsrf in prestep ','r')
+      call check_tab2d(calP,  'calP   in prestep ','r')
+      call check_tab3d(ust,   'ust    in prestep ','u')
+      call check_tab3d(vst,   'vst    in prestep ','v')
+      call check_tab3d(wst,   'wst    in prestep ','r')
+      call check_tab3d(kvf,   'kvf    in prestep ','r')
+#    ifndef WAVE_SFC_BREAK
+      call check_tab3d(brk3dx,'brk3dx in prestep ','u')
+      call check_tab3d(brk3de,'brk3de in prestep ','v')
+#    endif
+#    ifdef WAVE_STREAMING
+      call check_tab3d(frc3dx,'frc3dx in prestep ','u')
+      call check_tab3d(frc3de,'frc3de in prestep ','v')
+#    endif
+#   endif
 C$OMP END MASTER
 #  endif
 # endif
@@ -485,47 +493,46 @@ C$OMP BARRIER
 # endif
 
 !---------------------------
-# if defined DIAGNOSTICS_VRT
+# ifdef DIAGNOSTICS_VRT
         call set_diags_vrt (tile)
 # endif
-# if defined DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_EK
         call set_diags_ek (tile)
 # endif
-# if defined DIAGNOSTICS_PV
+# ifdef DIAGNOSTICS_PV
         call set_diags_pv (tile)
 # endif
-
 # ifdef AVERAGES
         call set_avg (tile)
-#  if defined DIAGNOSTICS_TS
+#  ifdef DIAGNOSTICS_TS
         if (ldefdia_avg
      &      .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1)))
      &      call set_diags_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_UV
+#  ifdef DIAGNOSTICS_UV
         if (ldefdiaM_avg .and. wrtdiaM_avg(3))
      &      call set_diagsM_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_VRT
+#  ifdef DIAGNOSTICS_VRT
         if (ldefdiags_vrt_avg .and. wrtdiags_vrt_avg(indxTime))
      &      call set_diags_vrt_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_EK
         if (ldefdiags_ek_avg .and. wrtdiags_ek_avg(indxTime))
      &      call set_diags_ek_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_PV
+#  ifdef DIAGNOSTICS_PV
         if (ldefdiags_pv_avg .and. wrtdiags_pv_avg(indxTime))
      &      call set_diags_pv_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_EDDY
+#  ifdef DIAGNOSTICS_EDDY
         if (ldefdiags_eddy_avg .and. wrtdiags_eddy_avg(indxTime))
      &      call set_diags_eddy_avg (tile)
 #  endif
 #  ifdef DIAGNOSTICS_BIO
         call set_bio_diags_avg (tile)
 #  endif
-#  if defined OUTPUTS_SURFACE
+#  ifdef OUTPUTS_SURFACE
         if (ldefsurf_avg .and. wrtsurf_avg(indxTime))
      &      call set_surf_avg (tile)
 #  endif
@@ -535,20 +542,20 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
-#ifdef RVTK_DEBUG
+# ifdef RVTK_DEBUG
       do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
+        call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
       call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
-#endif
+# endif
 
       nrhs=3
       nnew=3-nstp
 
-#ifdef ONLINE_ANALYSIS
+# ifdef ONLINE_ANALYSIS
       call croco_oa(1)
-#endif
+# endif
 
 !
 ! Output block: write restart/history files.   
@@ -711,9 +718,12 @@ C$OMP BARRIER
         call hvisc_coef (tile)
 # endif
         enddo
+
 C$OMP BARRIER
 C$OMP MASTER
+
         call output
+
 C$OMP END MASTER
 C$OMP BARRIER
 
@@ -867,13 +877,9 @@ C$OMP BARRIER
 C$OMP BARRIER
 
       do tile=my_first,my_last
-
         call omega (tile)
-
         call rho_eos (tile)
-
       enddo
-
 C$OMP BARRIER
 
       do tile=my_first,my_last
@@ -906,7 +912,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #endif /* SOLVE3D */
-!
+
 #if defined AGRIF && defined AGRIF_2WAY
 !
 ! Update the outer domain after the last child step
@@ -922,7 +928,6 @@ C$OMP END MASTER
 
       return
       end
-      
 !
 !====================================================================
 !                  subroutine step3D_t_thread
@@ -988,22 +993,21 @@ C$OMP BARRIER
 #ifdef SOLVE3D
 
       do tile=my_first,my_last
-
         call omega (tile)
-
 # ifdef GLS_MIXING
         call gls_mixing (tile)
 # endif
-
 # ifdef MUSTANG
         call mustang_update_main (tile)
 # endif
         call step3d_t (tile)
+      enddo
+C$OMP BARRIER
 
+      do tile=my_first,my_last
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
 # endif
-
 # ifdef SEDIMENT
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim)
@@ -1047,8 +1051,7 @@ C$OMP BARRIER
 #  endif
       enddo
 C$OMP BARRIER
-
-# endif
+# endif /* MORPHODYN */
 
 #endif /* SOLVE3D */
 
@@ -1076,7 +1079,7 @@ C$OMP END CRITICAL
         call step_sta (Mcpstr,Mcpend)
       enddo
 #endif /*STATIONS*/
-!
+
 #if defined AGRIF && defined AGRIF_2WAY
 !
 ! Update the outer domain after the last child step

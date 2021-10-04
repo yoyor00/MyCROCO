@@ -489,7 +489,7 @@ C$OMP BARRIER
 ! Magnitude of stress for computing current velocity 
 ! at the wave boundary layer
 !
-#   ifdef BEDLOAD_VANDERA_ZEROCURR
+#   ifndef BEDLOAD_VANDERA_ZEROCURR
             mag_bstrc=tau_m(i,j)
 #    ifdef MASKING
      &                             *rmask(i,j)
@@ -694,26 +694,32 @@ C$OMP BARRIER
 ! Limit slope to 0.9*sed angle.
 !-----------------------------------------------------------------------
 !
+#  if defined SLOPE_NEMETH || defined SLOPE_LESSER
+            cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
+            cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
+#  endif
 #  ifdef SLOPE_NEMETH
             dzdx=(h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+       
      &           (h(i-1,j)-h(i  ,j))/om_u(i  ,j)*cff2
-            dzdy=(h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff3+      
-     &           (h(i,j-1)-h(i,j  ))/on_v(i  ,j)*cff4
-
-            a_slopex=1.7*dzdx
-            a_slopey=1.7*dzdy
+            dzdy=(h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff1+      
+     &           (h(i,j-1)-h(i,j  ))/on_v(i  ,j)*cff2
+            cff=ABS(tau_w(i,j))
+            a_slopex=0.3*cff**0.5*0.002*dzdx+
+     &               0.3*cff**1.5*3.330*dzdx
+            a_slopey=0.3*cff**0.5*0.002*dzdy+
+     &               0.3*cff**1.5*3.330*dzdy
 !
 ! Add contribution of bed slope to bed load transport fluxes.
 !
-            FX_r(i,j)=FX_r(i,j)*(1.+a_slopex)
-            FE_r(i,j)=FE_r(i,j)*(1.+a_slopey)
+            FX_r(i,j)=FX_r(i,j)*+a_slopex
+            FE_r(i,j)=FE_r(i,j)*+a_slopey
 !
 #  elif defined SLOPE_LESSER
             dzdx=MIN(((h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+      
      &                (h(i  ,j)-h(i-1,j))/om_u(i  ,j)*cff2),0.52)* 
      &                SIGN(1.,FX_r(i,j))
-            dzdy=MIN(((h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff3+      
-     &                (h(i,j  )-h(i,j-1))/on_v(i  ,j)*cff4),0.52)* 
+            dzdy=MIN(((h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff1+      
+     &                (h(i,j  )-h(i,j-1))/on_v(i  ,j)*cff2),0.52)* 
      &                SIGN(1.,FE_r(i,j))
             cff=ATAN(dzdx)
             a_slopex=sed_angle/(COS(cff)*(sed_angle-dzdx))
@@ -725,7 +731,7 @@ C$OMP BARRIER
             FX_r(i,j)=FX_r(i,j)*a_slopex
             FE_r(i,j)=FE_r(i,j)*a_slopey
 !
-#  endif /* SLOPE_NEMETH */
+#  endif /* SLOPE_NEMETH || SLOPE_LESSER */
 !
 !-----------------------------------------------------------------------
 ! Apply morphology factor.
@@ -1349,7 +1355,7 @@ C$OMP BARRIER
         bed_frac(Iend+1,Jstr-1,:,:)=
      &  0.5*(bed_frac(Iend,Jstr-1,:,:)
      &      +bed_frac(Iend+1,Jstr,:,:))
-        bed_thick(Iend+1,Jstr-1,:)=
+        bed_thick(Iend+1,Jstr-1,1)=
      &  0.5*(bed_thick(Iend,Jstr-1,1)
      &      +bed_thick(Iend+1,Jstr,1))
       endif
@@ -1371,7 +1377,7 @@ C$OMP BARRIER
         bed_frac(Iend+1,Jend+1,:,:)=
      &   0.5*(bed_Frac(Iend,Jend+1,:,:)
      &       +bed_Frac(Iend+1,Jend,:,:))
-        bed_thick(Iend+1,Jend+1,:)=
+        bed_thick(Iend+1,Jend+1,1)=
      &   0.5*(bed_thick(Iend,Jend+1,1)
      &       +bed_thick(Iend+1,Jend,1))
       endif
@@ -1826,6 +1832,9 @@ C$OMP BARRIER
       real thck_avail,thck_to_add,newlayer_thick
       integer imin,imax,jmin,jmax
       parameter ( eps=1.D-20, newlayer_thick=0.001 )
+
+# include "compute_auxiliary_bounds.h"
+
 !
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave 
@@ -2311,22 +2320,20 @@ C$OMP BARRIER
 !  Store bed evolution
 !-----------------------------------------------------------------------
 !
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
+      do j=JstrR,JendR
+        do i=IstrR,IendR
           dh(i,j)=bed_thick_tot(i,j,nstp)-bed_thick_tot(i,j,nnew)
         enddo
       enddo
 !
 # endif /* MORPHODYN */
 
-# undef I_EXT_RANGE
-# undef J_EXT_RANGE
-
       return
       end
 
-# else
-**********************************************************************
+# else /* !COHESIVE_BED && !MIXED_BED */
+
+!***********************************************************************
       subroutine sed_bed_cohesive_tile (                       
      &                         Istr,Iend,Jstr,Jend,tau_w,dep_mass)
 !***********************************************************************
@@ -3416,19 +3423,25 @@ C$OMP BARRIER
 !  Store bed evolution
 !-----------------------------------------------------------------------
 !
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
+      do j=JstrR,JendR
+        do i=IstrR,IendR
           dh(i,j)=bed_thick_tot(i,j,nstp)-bed_thick_tot(i,j,nnew)
         enddo
       enddo
-# endif
+
+# endif /* MORPHODYN */
+
       return
       end
 
-# endif
+#  undef I_EXT_RANGE
+#  undef J_EXT_RANGE
+
+# endif /* ! COHESIVE_BED && !MIXED_BED */
+!
 !=======================================================================
 !                                                                      !
-!  This routine computed sediment surface layer (sediment-water        !
+!  This routine computes sediment surface layer (sediment-water        !
 !  interface) properties.                                              !
 !                                                                      !
 !  References:                                                         !

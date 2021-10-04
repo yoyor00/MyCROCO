@@ -540,9 +540,11 @@
             cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
             Ucur=0.5*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs))
             Vcur=0.5*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs))
-#   if defined GLS_MIXING && defined SANDBAR
+#   ifdef GLS_MIXING
             Utur=15.*SQRT(trb(i,j,1,nrhs,itke))
+#    ifdef SANDBAR
      &                           *exp(-0.01*(xr(i,j)-142.)**2)
+#    endif
 #   else
             Utur=0.
 #   endif

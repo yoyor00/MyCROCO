@@ -685,6 +685,10 @@ C$    integer omp_get_thread_num
 # ifdef MORPHODYN
       do j=JstrR,JendR
         do i=IstrR,IendR
+#  ifdef SEDIMENT
+          bed_thick_tot(i,j,1)=init
+          bed_thick_tot(i,j,2)=init
+#  endif
           dh(i,j)=init
         enddo
       enddo
