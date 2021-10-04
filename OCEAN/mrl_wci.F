@@ -258,6 +258,13 @@
           fr(i,j)=wfrq(i,j)
           inv_f(i,j)=1./max(fr(i,j),eps)
           khd=Dstp(i,j)*(fr(i,j)**2)*inv_g
+#  ifdef BBL
+! --- copy into arrays for BBL Soulsby parametrization
+          Pwave(i,j) = 2.0*pi*inv_f(i,j)
+          Awave(i,j) = wh(i,j)/2.0
+          Dwave(i,j) = atan2(wdre(i,j),wdrx(i,j))
+#  endif          
+
 #  ifdef KH_SOULSBY
           if (khd.ge.1.) then ! explicit wavenumber estimator
            kh=khd
