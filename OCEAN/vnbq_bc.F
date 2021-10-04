@@ -66,6 +66,9 @@
 # include "climat.h"
 # include "scalars.h"
 # include "boundary.h"
+# ifdef MRL_WCI
+#  include "forces.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    grad(PRIVATE_2D_SCRATCH_ARRAY), cff,eps,cff1,cff2,
      &        cx,cy, dft,dfx,dfy, tau,tau_in,tau_out
