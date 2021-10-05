@@ -142,8 +142,8 @@ C$OMP BARRIER
 #  ifdef SED_FLOCS
       call sed_flocmod_tile (Istr,Iend,Jstr,Jend,             
      &                             A2d(1,1,trd) )
-#  endif
 C$OMP BARRIER
+#  endif
       call sed_settling_tile (Istr,Iend,Jstr,Jend, 
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd),
