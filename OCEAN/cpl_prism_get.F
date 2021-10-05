@@ -39,7 +39,8 @@
       INTEGER    :: iok_srflx, iok_itemp , iok_isalt
       INTEGER    :: iok_wdry                                   ! OW_COUPLING 
       INTEGER    :: iok_wt0m1, iok_whs, iok_wdir               ! OW_COUPLING 
-      INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm      ! OW_COUPLING 
+      INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm      ! OW_COUPLING
+      INTEGER    :: iok_wubrx, iok_wubry 
       INTEGER    :: iok_wtwox, iok_wtwoy, iok_wtaux, iok_wtauy ! OW_COUPLING 
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
       INTEGER    :: level
@@ -47,6 +48,7 @@
 
       real, parameter :: eps=1.e-20
       real,dimension(GLOBAL_2D_ARRAY) :: tab_t_tmp
+      real,dimension(GLOBAL_2D_ARRAY) :: wave_dir 
 #if (!defined OA_GRID_UV)
       real,dimension(GLOBAL_2D_ARRAY) :: tab_u_tmp
       real,dimension(GLOBAL_2D_ARRAY) :: tab_v_tmp
@@ -100,6 +102,8 @@
       iok_wdir = 0
       iok_wbhd = 0
       iok_wubr = 0
+      iok_wubrx = 0
+      iok_wubry = 0
       iok_wfoc = 0
       iok_wlm = 0
       iok_wtwox = 0
@@ -259,7 +263,8 @@
 !     Transmit to CROCO field : wdr then compute wdrx(:,:) + wdre(:,:)
              call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
              wdrx = rmask * cos(tab_t_tmp - angler)
-             wdre = rmask * sin(tab_t_tmp - angler) 
+             wdre = rmask * sin(tab_t_tmp - angler)
+             wave_dir = tab_t_tmp 
            endif
          endif
 !-------------------------------------------------
@@ -275,17 +280,40 @@
 !            endif
          endif
 !-------------------------------------------------
+# ifdef OW_COUPLING_FULL
+!        ORBITAL BOTTOM VELOCITY      
 !        wave_ubr : rms amplitude of orbital bottom velocity of the waves (m/s)
-!        not tested/performed yet
-         if (srcv_clname(i)=='RRM_UBR'//clevel) then
-            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wubr)
-!            if (iok_wubr /= 0)  then
-!!              Transmit to CROCO field : stflx(:,:,itemp)
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
-!            endif
+!!         if (srcv_clname(i)=='RRM_UBR'//clevel) then
+!!            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+!!     &  tab_t_tmp, rcvtime, iok_wubr)
+!!            if (iok_wubr /= 0)  then
+!!!              Transmit to CROCO field : ubr
+!!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+!!               ubr = tab_t_tmp
+!!            endif
+!!         endif
+!        wave_ubrx : x-component rms amplitude of wave orbital bottom velocity(m/s)
+         if (srcv_clname(i)=='RRM_UBRX'//clevel) then
+             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wubrx)
+            if (iok_wubrx /= 0)  then
+!              Transmit to CROCO field : ubr
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ubr = tab_t_tmp
+            endif
          endif
+!        wave_ubry : y-component rms amplitude of wave orbital bottom velocity(m/s)
+         if (srcv_clname(i)=='RRM_UBRX'//clevel) then
+             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wvbry)
+            if (iok_wvbry /= 0)  then
+!              Transmit to CROCO field : vbr
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ubr = sqrt(ubr**2+tab_t_tmp**2)
+            endif
+         endif
+# endif         
+!
 !-------------------------------------------------
 !        wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
 !        not tested/performed yet

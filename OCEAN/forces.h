@@ -486,7 +486,11 @@
       real wwkx(GLOBAL_2D_ARRAY)
       common /forces_wkx/wwkx
       real wwke(GLOBAL_2D_ARRAY)
-      common /forces_wke/wwke
+      common /forces_wke/wwke     
+# if defined OW_COUPLING_FULL
+      real ubr(GLOBAL_2D_ARRAY)
+      common /forces_ubr/ubr
+# endif      
 #endif
 
 #ifdef BBL

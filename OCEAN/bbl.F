@@ -202,7 +202,11 @@
 !  Compute bed wave orbital velocity and excursion amplitude.
 !
           Ab=Awave(i,j)/SINH(Kbh)
+# ifdef OW_COUPLING_FULL
+          Ub(i,j) = ubr(i,j)
+# else          
           Ub(i,j)=Fwave*Ab
+# endif          
 # ifdef MASKING
      &                                   *rmask(i,j)
 # endif

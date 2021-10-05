@@ -146,7 +146,11 @@
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
       srcv_clname(18) = 'RRMTAWX'//clevel   
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(19) = 'RRMTAWY'//clevel   
+      srcv_clname(19) = 'RRMTAWY'//clevel
+!     wave_ubrx: x-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
+      srcv_clname(20) = 'RRMUBRX'//clevel
+!     wave_ubry: y-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
+      srcv_clname(21) = 'RRMUBRY'//clevel
 
       DO ja = 0, nmaxatm
 
