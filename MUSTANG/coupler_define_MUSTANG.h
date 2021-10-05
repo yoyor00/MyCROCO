@@ -100,7 +100,7 @@
 # define JMAX_GRID Mm
 
 # define IMIN_BOUCL 2
-/*# define IMAX_BOUCL 202  cas TFLAT2DV avec LLm0=200 (param.h*/
+/*# define IMAX_BOUCL 202  cas Tidal_Flat avec LLm0=200 (param.h*/
 # define IMAX_BOUCL 52
 # define JMIN_BOUCL 2
 # define JMAX_BOUCL 4

@@ -168,8 +168,8 @@
 # endif
 #elif defined SED_TOY
       parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
-#elif defined TFLAT2DV
-      parameter (LLm0=200,  MMm0=3,    N=10)   !  TFLAT2DV
+#elif defined TIDAL_FLAT
+      parameter (LLm0=200,  MMm0=3,    N=10)   !  TIDAL_FLAT
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -291,7 +291,7 @@
       parameter (D_wetdry=0.001)
 # elif defined THACKER
       parameter (D_wetdry=0.01)
-# elif defined SANDBAR || defined TFLAT2DV
+# elif defined SANDBAR || defined TIDAL_FLAT
       parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
@@ -461,7 +461,7 @@
       integer  itsubs1,itsubs2,ntfix
 #  ifdef SED_TOY
       parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  elif defined TFLAT2DV
+#  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
@@ -523,7 +523,7 @@
       integer ksdmin,ksdmax
 #  if defined ANA_DUNE || defined key_ANA_bedload
       parameter (ksdmin=1,ksdmax=11)
-#  elif defined TFLAT2DV
+#  elif defined TIDAL_FLAT
       parameter (ksdmin=1,ksdmax=3)
 #  else
       parameter (ksdmin=1,ksdmax=10)

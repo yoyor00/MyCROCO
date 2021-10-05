@@ -42,7 +42,7 @@
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
 #undef  DUNE            /* Dune migration Example */ 
 #undef  SED_TOY         /* 1DV sediment toy Example */
-#undef  TFLAT2DV        /* 2DV tidal flat Example */
+#undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 #define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
@@ -1579,10 +1579,10 @@
 # undef  RVTK_DEBUG
 
 
-#elif defined TFLAT2DV
+#elif defined TIDAL_FLAT
 /*
-!                       TFLAT2DV  Example
-!                       ========  =======
+!                       TIDAL_FLAT  Example
+!                       ==========  =======
 */
 # undef  OPENMP
 # undef  MPI
@@ -1628,6 +1628,7 @@
 #   define key_sand2D
 # endif
 # define NO_FRCFILE
+# define ZETA_DRY_IO
 # undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */

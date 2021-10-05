@@ -159,8 +159,8 @@
 # endif
 #elif defined SED_TOY
       fname='TEST_CASES/croco.in.Sed_toy'
-#elif defined TFLAT2DV
-      fname='TEST_CASES/croco.in.Tflat2dv'
+#elif defined TIDAL_FLAT
+      fname='TEST_CASES/croco.in.Tidal_flat'
 #else
       fname='croco.in'
 #endif

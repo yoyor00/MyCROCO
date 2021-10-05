@@ -807,7 +807,7 @@
 # undef  MUSTANG
 # define SUSPLOAD
 # define BEDLOAD
-# if defined NBQ || defined SED_TOY || defined TFLAT2DV
+# if defined NBQ || defined SED_TOY || defined TIDAL_FLAT
 #  undef  BEDLOAD
 # endif
 # define ANA_SEDIMENT
@@ -868,10 +868,10 @@
 #   elif defined ANA_DUNE
 #    define key_ANA_bedload
 #   endif
-#  elif defined TFLAT2DV
+#  elif defined TIDAL_FLAT
 #   define key_MUSTANG_V2
 #   define key_tenfon_upwind
-#  endif /* DUNE | TFLAT2D */
+#  endif /* DUNE | Tidal_Flat */
 # endif /* MUSTANG */
 
 

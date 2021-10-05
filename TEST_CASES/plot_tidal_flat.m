@@ -1,6 +1,6 @@
 %======================================================================
 %
-%     ---               TFLAT2DV Test Case                ---     
+%     ---               Tidal Flat Test Case                ---     
 %
 %
 %  This file is part of CROCOTOOLS
@@ -26,7 +26,7 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-fname='Tflat2dv_his.nc';
+fname='tidal_flat_his.nc';
 
 %======================================================================
 %
@@ -76,7 +76,7 @@ set(gca,'fontsize',15);
 
 set(gcf,'PaperPositionMode','auto');
 
-export_fig -transparent tflat2dv.pdf
+export_fig -transparent tidal_flat.pdf
 
 return
 

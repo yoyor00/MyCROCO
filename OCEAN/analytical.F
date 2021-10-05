@@ -634,7 +634,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
-# elif defined TFLAT2DV && defined ANA_TIDES
+# elif defined TIDAL_FLAT && defined ANA_TIDES
       omega=2.*pi/(12.0*3600)
       ETA0=2.0
       do j=JstrR,JendR
@@ -1343,7 +1343,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TFLAT2DV)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -2510,14 +2510,14 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    if defined TFLAT2DV
+#    if defined TIDAL_FLAT
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
 #    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
-#    ifdef TFLAT2DV
+#    ifdef TIDAL_FLAT
             ubarbry_west(j)=0.
 #    else
             ubarbry_west(j)=ubar(1,j,1)
@@ -2530,7 +2530,7 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
-#     ifdef TFLAT2DV
+#     ifdef TIDAL_FLAT
               ubry_west(j,k)=0.
 #     else
               ubry_west(j,k)=u(1,j,k,1)
@@ -2546,7 +2546,7 @@ C$    integer  trd, omp_get_thread_num
               enddo
 #    endif
 #    ifdef SUBSTANCE
-#     if defined TFLAT2DV
+#     if defined TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
 #     else
@@ -2558,7 +2558,7 @@ C$    integer  trd, omp_get_thread_num
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #    else
-#     ifdef TFLAT2DV
+#     ifdef TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
             tbry_west(j,k,3)=0.   ! tracer Coarse Sand
@@ -2576,7 +2576,7 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    ifdef TFLAT2DV
+#    ifdef TIDAL_FLAT
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
 #    endif
           enddo
@@ -2607,7 +2607,7 @@ C$    integer  trd, omp_get_thread_num
                tbry_west(j,k,itrc)=cobc_wat(itrc)
              enddo
 #     else
-#      ifdef TFLAT2DV
+#      ifdef TIDAL_FLAT
              tbry_west(j,k,1)=10.
              tbry_west(j,k,2)=35.
              tbry_west(j,k,3)=0. ! tracer Coarse Sand

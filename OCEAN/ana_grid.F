@@ -68,7 +68,7 @@ C$    integer omp_get_thread_num
       real cff2
 #   endif
 # endif
-# ifdef TFLAT2DV
+# ifdef TIDAL_FLAT
       real depth_shallow,depth_deep
 # endif
 # ifdef INTERNAL
@@ -242,7 +242,7 @@ C$    integer omp_get_thread_num
                      depth=5.
                      f0=1.E-4
                      beta=0.
-# elif defined TFLAT2DV
+# elif defined TIDAL_FLAT
                      depth_shallow=-4.
                      depth_deep=16.
                      f0=0.
@@ -361,7 +361,7 @@ C$    integer omp_get_thread_num
 # elif defined SED_TOY
                      Length_XI = 10.e+3
                      Length_ETA= 10.e+3
-# elif defined TFLAT2DV
+# elif defined TIDAL_FLAT
                      Length_ETA= 1500.0
                      Length_XI = 100000.0
 # else
@@ -882,7 +882,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
-# elif defined TFLAT2DV
+# elif defined TIDAL_FLAT
       do j=JstrR,JendR
         h(IstrR,j)=depth_deep
         h(IstrR+1,j)=depth_deep
