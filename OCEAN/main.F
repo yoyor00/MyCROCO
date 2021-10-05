@@ -342,6 +342,10 @@ C$OMP BARRIER
 #endif
       call get_initial (nrrec, 1)   ! Set initial conditions
 #ifdef ANA_INITIAL
+      else  ! nrrec.eq.0
+        call cpl_prism_define
+        oasis_time = 0
+        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
       endif
 #endif
                                 ! Set initial model clock: at this
