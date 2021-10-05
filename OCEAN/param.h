@@ -178,10 +178,10 @@
 # elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
 # else
-      parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR REGIONAL CONFIG
+      parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! YOUR REGIONAL CONFIG
 # endif
 #else
-      parameter (LLm0=xx, MMm0=xx, N=xx)
+      parameter (LLm0=xxx, MMm0=xxx, N=xxx)
 #endif
       
 #ifdef AGRIF
