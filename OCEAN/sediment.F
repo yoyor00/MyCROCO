@@ -697,29 +697,28 @@ C$OMP BARRIER
 #  if defined SLOPE_NEMETH || defined SLOPE_LESSER
             cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
             cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
+            cff3=0.5*(1.+SIGN(1.,FE_r(i,j)))
+            cff4=0.5*(1.-SIGN(1.,FE_r(i,j)))
 #  endif
 #  ifdef SLOPE_NEMETH
-            dzdx=(h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+       
-     &           (h(i-1,j)-h(i  ,j))/om_u(i  ,j)*cff2
-            dzdy=(h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff1+      
-     &           (h(i,j-1)-h(i,j  ))/on_v(i  ,j)*cff2
-            cff=ABS(tau_w(i,j))
-            a_slopex=0.3*cff**0.5*0.002*dzdx+
-     &               0.3*cff**1.5*3.330*dzdx
-            a_slopey=0.3*cff**0.5*0.002*dzdy+
-     &               0.3*cff**1.5*3.330*dzdy
+            dzdx=(h(i+1,j)-h(i,j))/om_u(i+1,j)*cff1+       
+     &           (h(i-1,j)-h(i,j))/om_u(i  ,j)*cff2
+            dzdy=(h(i,j+1)-h(i,j))/on_v(i,j+1)*cff3+      
+     &           (h(i,j-1)-h(i,j))/on_v(i  ,j)*cff4
+            a_slopex=1.7*dzdx
+            a_slopey=1.7*dzdy
 !
 ! Add contribution of bed slope to bed load transport fluxes.
 !
-            FX_r(i,j)=FX_r(i,j)*+a_slopex
-            FE_r(i,j)=FE_r(i,j)*+a_slopey
+            FX_r(i,j)=FX_r(i,j)*(1+a_slopex)
+            FE_r(i,j)=FE_r(i,j)*(1+a_slopey)
 !
 #  elif defined SLOPE_LESSER
             dzdx=MIN(((h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+      
      &                (h(i  ,j)-h(i-1,j))/om_u(i  ,j)*cff2),0.52)* 
      &                SIGN(1.,FX_r(i,j))
-            dzdy=MIN(((h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff1+      
-     &                (h(i,j  )-h(i,j-1))/on_v(i  ,j)*cff2),0.52)* 
+            dzdy=MIN(((h(i,j+1)-h(i,j  ))/on_v(i,j+1)*cff3+      
+     &                (h(i,j  )-h(i,j-1))/on_v(i  ,j)*cff4),0.52)* 
      &                SIGN(1.,FE_r(i,j))
             cff=ATAN(dzdx)
             a_slopex=sed_angle/(COS(cff)*(sed_angle-dzdx))
@@ -2312,7 +2311,7 @@ C$OMP BARRIER
 #  endif
 !
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                         bed_thick_tot(START_2D_ARRAY,nnew))
 #  endif
 !
@@ -2326,6 +2325,9 @@ C$OMP BARRIER
         enddo
       enddo
 !
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,dh)
+#  endif
 # endif /* MORPHODYN */
 
       return
