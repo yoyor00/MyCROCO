@@ -2372,7 +2372,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif
 #ifdef SOLVE3D
-# if !defined NONLIN_EOS || defined MUSTANG
+# if !defined NONLIN_EOS
 !
 ! Parameters for linear equations of state.
 !

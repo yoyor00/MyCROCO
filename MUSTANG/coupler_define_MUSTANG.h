@@ -166,8 +166,8 @@
 # define TRANSPORT_TIME_STEP dt /* in MARS : solving equations every half time step (in rlg)*/
 # define CURRENT_TIME time
 # define RHOREF rho0
-# define TEMPREF_LIN T0
-# define SALREF_LIN S0
+# define TEMPREF_LIN 10.0 
+# define SALREF_LIN 35.0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
 # define WAT_SETTL ws_part
