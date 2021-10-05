@@ -526,6 +526,7 @@
 !  2D  |  calP     |  pressure correction term (rho-point)
 !  2D  |  Kapsrf   |  Bernoulli head terrm at the surface (rho-point)
 !  2D  |  ust_ext  |  surface Stokes drift velocity magnitude from input data (coupling or forcing)
+!  2D  |  bhd      |  Bernoulli head term input data (coupling or forcing)
 !--------------------------------------------------------------------
 !  3D  |  brk3dx   |   xi-direciton 3D breaking dissipation (rho)
 !  3D  |  brk3de   |  eta-direction 3D breaking dissipation (rho)
@@ -560,6 +561,10 @@
       real calP(GLOBAL_2D_ARRAY)
       real Kapsrf(GLOBAL_2D_ARRAY)
       common /forces_calP/calP /forces_Kapsrf/Kapsrf
+# ifdef OW_COUPLING_FULL
+      real bhd(GLOBAL_2D_ARRAY)
+      common /forces_bhd/bhd 
+# endif      
 #  ifndef WAVE_SFC_BREAK
       real brk3dx(GLOBAL_2D_ARRAY,N)
       real brk3de(GLOBAL_2D_ARRAY,N)

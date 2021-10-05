@@ -270,20 +270,20 @@
              wave_dir = tab_t_tmp 
            endif
          endif
-!-------------------------------------------------
+!------------------------------------------------- 
+# ifdef OW_COUPLING_FULL         
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
          if (srcv_clname(i)=='RRM_BHD'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wbhd)
-!            if (iok_wbhd /= 0)  then
-!!              Transmit to CROCO field : stflx(:,:,itemp)
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
-!            endif
+            if (iok_wbhd /= 0)  then
+!              Transmit to CROCO field : bhd
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               bhd = tab_t_tmp
+            endif
          endif
 !-------------------------------------------------
-# ifdef OW_COUPLING_FULL
 !        ORBITAL BOTTOM VELOCITY      
 !        wave_ubr : rms amplitude of orbital bottom velocity of the waves (m/s)
 !!         if (srcv_clname(i)=='RRM_UBR'//clevel) then

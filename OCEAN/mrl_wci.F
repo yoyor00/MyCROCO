@@ -615,9 +615,17 @@
 #  define KAPSRF_SAFE
 #  ifdef KAPSRF_SAFE
           Kapsrf(i,j) = ( 0.5*Kapsrf(i,j)  ! time-filter to suppress noises
+#   ifdef OW_COUPLING_FULL
+     &                   +0.5*bhd(i,j) )
+#   else          
      &                   +0.5*cff*act(i,j)*inv_ex(i,j) )
+#   endif          
 #  else
+#   ifdef OW_COUPLING_FULL
+          Kapsrf(i,j) = bhd(i,j)
+#   else          
           Kapsrf(i,j) = cff*act(i,j)*inv_ex(i,j)
+#   endif          
 #  endif
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
