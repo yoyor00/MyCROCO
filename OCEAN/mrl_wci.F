@@ -290,27 +290,31 @@
 #  ifdef WAVE_OFFLINE_BREAKING
           ebrk(i,j)=wramp2*wepb(i,j)                ! ep_b/rho (m3/s3)
 #  else
-#   ifdef WAVE_BREAK_TG86
-          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
-          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
-#   elif defined WAVE_BREAK_TG86A
-          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
-          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
-          ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
-     &                           (1.-(1.+cff1**2)**(-2.5))
-#   elif defined WAVE_BREAK_CT93
-          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
-          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
-          ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
-     &              *( 1.+tanh(8.0*(cff1-1.)) )*
-     &               ( 1.-(1.0+cff1**2)**(-2.5) )
-#   elif defined WAVE_BREAK_R93
-          cff=0.25*g*(wave_btg**3)/(2.*pi)
-          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
-          ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
-     &                          *(1-exp (-cff1**5 ))
-#   endif  
-          ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
+#   ifdef OW_COUPLING_FULL
+          ebrk(i,j)=wramp2*foc(i,j)/rho0 
+#   else          
+#    ifdef WAVE_BREAK_TG86
+           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
+           ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
+#    elif defined WAVE_BREAK_TG86A
+           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
+           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+           ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
+      &                           (1.-(1.+cff1**2)**(-2.5))
+#    elif defined WAVE_BREAK_CT93
+           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
+           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+           ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
+      &              *( 1.+tanh(8.0*(cff1-1.)) )*
+      &               ( 1.-(1.0+cff1**2)**(-2.5) )
+#    elif defined WAVE_BREAK_R93
+           cff=0.25*g*(wave_btg**3)/(2.*pi)
+           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+           ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
+      &                          *(1-exp (-cff1**5 ))
+#    endif  
+           ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
+    #endif       
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER

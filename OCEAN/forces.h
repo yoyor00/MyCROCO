@@ -27,6 +27,9 @@
 #ifdef OW_COUPLING
       real twox(GLOBAL_2D_ARRAY)
       real twoy(GLOBAL_2D_ARRAY)
+# ifdef OW_COUPLING_FULL
+      real foc(GLOBAL_2D_ARRAY) 
+# endif    
       real tawx(GLOBAL_2D_ARRAY)
       real tawy(GLOBAL_2D_ARRAY)
       common /forces_twox/twox /forces_twoy/twoy
