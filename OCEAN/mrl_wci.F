@@ -498,7 +498,11 @@
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
           inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
+#   ifdef OW_COUPLING_FULL
+          ust_ker = ust_ext(i,j)
+#   else          
           ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)
+#   endif
           cff1=0.
           do k=1,N,+1              ! <-- irreversible
             cff2=exp( 2.*kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))

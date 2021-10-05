@@ -40,7 +40,8 @@
       INTEGER    :: iok_wdry                                   ! OW_COUPLING 
       INTEGER    :: iok_wt0m1, iok_whs, iok_wdir               ! OW_COUPLING 
       INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm      ! OW_COUPLING
-      INTEGER    :: iok_wubrx, iok_wubry 
+      INTEGER    :: iok_wubrx, iok_wubry
+      INTEGER    :: iok_wust, iok_wvst
       INTEGER    :: iok_wtwox, iok_wtwoy, iok_wtaux, iok_wtauy ! OW_COUPLING 
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
       INTEGER    :: level
@@ -104,6 +105,8 @@
       iok_wubr = 0
       iok_wubrx = 0
       iok_wubry = 0
+      iok_wust = 0
+      iok_wvst = 0
       iok_wfoc = 0
       iok_wlm = 0
       iok_wtwox = 0
@@ -305,13 +308,37 @@
 !        wave_ubry : y-component rms amplitude of wave orbital bottom velocity(m/s)
          if (srcv_clname(i)=='RRM_UBRX'//clevel) then
              call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wvbry)
-            if (iok_wvbry /= 0)  then
+     &  tab_t_tmp, rcvtime, iok_wubry)
+            if (iok_wubry /= 0)  then
 !              Transmit to CROCO field : vbr
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               ubr = sqrt(ubr**2+tab_t_tmp**2)
+               ubr = rmask * sqrt(ubr**2+tab_t_tmp**2)
             endif
          endif
+!-----------------------------------------------------------------------------------------------------------------         
+!        SURFACE STOKES DRIFT VELOCITY        
+!        wave_ussx : x-component of stokes drift surface velocity
+         if (srcv_clname(i)=='RRMUSSX'//clevel) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wust)
+            if (iok_wust /= 0)  then
+!!              Transmit to CROCO field : ust_ext
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ust_ext = tab_t_tmp
+            endif
+         endif
+!        wave_ussy : y-component of stokes drift surface velocity
+!        not tested/performed yet
+         if (srcv_clname(i)=='RRMUSSY'//clevel) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wvst)
+            if (iok_wvst /= 0)  then
+!!              Transmit to CROCO field : vst_ext
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ust_ext = rmask * sqrt(ust_ext**2 + tab_t_tmp**2)
+            endif
+         endif
+
 # endif         
 !
 !-------------------------------------------------

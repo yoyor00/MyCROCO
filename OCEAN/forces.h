@@ -525,6 +525,7 @@
 !  2D  |  sup      |  quasi-static wave set-up (rho-point)
 !  2D  |  calP     |  pressure correction term (rho-point)
 !  2D  |  Kapsrf   |  Bernoulli head terrm at the surface (rho-point)
+!  2D  |  ust_ext  |  surface Stokes drift velocity magnitude from input data (coupling or forcing)
 !--------------------------------------------------------------------
 !  3D  |  brk3dx   |   xi-direciton 3D breaking dissipation (rho)
 !  3D  |  brk3de   |  eta-direction 3D breaking dissipation (rho)
@@ -551,6 +552,10 @@
       common /forces_ust2d/ust2d /forces_vst2d/vst2d
       common /forces_frc2dx/frc2dx /forces_frc2de/frc2de
       common /forces_sup/sup
+# ifdef OW_COUPLING_FULL
+      real ust_ext(GLOBAL_2D_ARRAY)
+      common /forces_ext_ust/ust_ext
+# endif      
 # ifdef SOLVE3D
       real calP(GLOBAL_2D_ARRAY)
       real Kapsrf(GLOBAL_2D_ARRAY)

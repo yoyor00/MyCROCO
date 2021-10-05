@@ -151,6 +151,10 @@
       srcv_clname(20) = 'RRMUBRX'//clevel
 !     wave_ubry: y-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
       srcv_clname(21) = 'RRMUBRY'//clevel
+!     wave_ussx: x-component of surface Stokes drift velocity [m.s-1]
+      srcv_clname(22) = 'RRMUSSX'//clevel
+!     wave_ussy: y-component of surface Stokes drift velocity [m.s-1]
+      srcv_clname(23) = 'RRMUSSY'//clevel      
 
       DO ja = 0, nmaxatm
 
