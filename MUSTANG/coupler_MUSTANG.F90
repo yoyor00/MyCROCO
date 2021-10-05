@@ -195,8 +195,16 @@
             cw_bottom_MUSTANG(:,i,j)=WATER_CONCENTRATION(:,1,i,j)
 #else
 ! CROCO vecteur au temps 1, 2 ou 3 ????
+# ifdef SALINITY
             sal_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,1,itemp+1)
+# else
+            sal_bottom_MUSTANG(i,j)=35.
+# endif
+# ifdef TEMPERATURE
             temp_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,1,itemp)
+# else
+            temp_bottom_MUSTANG(i,j)=15.
+# endif
             cw_bottom_MUSTANG(1:nv_adv,i,j)=WATER_CONCENTRATION(i,j,1,1,itsubs1:itsubs2)
 #endif
             ! thickness of the bottom water layer or altitude at the top of the bottom layer

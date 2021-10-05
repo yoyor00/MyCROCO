@@ -847,12 +847,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef MPI
-         cff=(float(i +ii*Lm) )
+          cff=(float(i +ii*Lm) )
 #  else  
-         cff=(float(i       ) )
+          cff=(float(i       ) )
 #  endif
 #  ifdef ANA_DUNE
-         h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
+          h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
 #  elif defined DUNE3D
 #    ifdef MPI
           cffi=(float(i +ii*Lm) )
@@ -884,19 +884,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 
 # elif defined TIDAL_FLAT
       do j=JstrR,JendR
-        h(IstrR,j)=depth_deep
-        h(IstrR+1,j)=depth_deep
-        rmask(IstrR,j)=1.0
-        rmask(IstrR+1,j)=1.0
-        do i=IstrR+2,IendR
-          h(i,j)=depth_deep-REAL(i+iminmpi-2)/REAL(LLm)
-     &                 *(depth_deep-depth_shallow)
-          rmask(i,j)=1.0
+        do i=IstrR,IendR
+#  ifdef MPI
+          cff=(float(i +ii*Lm) )
+#  else  
+          cff=(float(i       ) )
+#  endif
+          if (cff.lt.2) then
+            h(i,j)=depth_deep
+          else
+            h(i,j)=depth_deep-(cff-1)/float(LLm+1)
+     &                        *(depth_deep-depth_shallow)
+          endif
         enddo
       enddo
-      rmask(IstrR:IendR,JstrR:1)=0.0
-      rmask(IstrR:IendR,3:JendR)=0.0
-      rmask(IendR-1:IendR,2)=0.0
 
 # else
       do j=JstrR,JendR

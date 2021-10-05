@@ -855,25 +855,11 @@
 #  undef  SEDIMENT
 #  define SUBSTANCE
 #  define key_CROCO
+#  define TEMPERATURE
+#  define SALINITY
 #  define key_noTSdiss_insed
 #  define key_nofluxwat_IWS
-#  undef  PASSIVE_TRACER
-#  ifdef DUNE
-#   define key_MUSTANG_V2
-#   define key_tenfon_upwind
-#   define key_MUSTANG_bedload
-#   define key_MUSTANG_specif_outputs
-#   ifdef DUNE3D
-#    define MUSTANG_CORFLUX
-#   elif defined ANA_DUNE
-#    define key_ANA_bedload
-#   endif
-#  elif defined TIDAL_FLAT
-#   define key_MUSTANG_V2
-#   define key_tenfon_upwind
-#  endif /* DUNE | Tidal_Flat */
 # endif /* MUSTANG */
-
 
 /* 
 ======================================================================

@@ -466,8 +466,8 @@
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  endif
-      parameter (itsubs1= itemp+ntrc_salt+1 )
-      parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
+      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
+      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )
 # else
       parameter (ntrc_subs=0, ntrc_substot=0)
 # endif /* SUBSTANCE */
@@ -508,9 +508,6 @@
 !
 # ifdef SUBSTANCE
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
-      parameter (NTot=NT+ntfix)
-# elif defined MUSTANG
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+2*ntrc_subs)
       parameter (NTot=NT+ntfix)
 # else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
