@@ -2119,32 +2119,32 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined REGIONAL
       do k=1,N
          do is=1,Nsrc
- #  ifdef PSOURCE_NCFILE_TS
- #   ifdef TEMPERATURE
+#  ifdef PSOURCE_NCFILE_TS
+#   ifdef TEMPERATURE
            if (.not.got_tsrc(itemp)) then
               Tsrc0(is,itemp)=5.
            endif
- #   endif
- #   ifdef SALINITY
+#   endif
+#   ifdef SALINITY
            if (.not.got_tsrc(isalt)) then
               Tsrc0(is,isalt)=2.
            endif
- #   endif
- #  endif
+#   endif
+#  endif
 
- # ifdef TRACERS
+# ifdef TRACERS
            do itrc=1,NT
              Tsrc(is,k,itrc)=Tsrc0(is,itrc)
            enddo
- # endif
- #  ifdef PASSIVE_TRACER
- #   ifdef PSOURCE_NCFILE_TS
+# endif
+#  ifdef PASSIVE_TRACER
+#   ifdef PSOURCE_NCFILE_TS
            if (.not.got_tsrc(itpas)) then
               Tsrc0(is,itpas)=1.
            endif
- #   endif
+#   endif
            Tsrc(is,k,itpas)=Tsrc0(is,itpas)
- #  endif
+#  endif
          enddo
        enddo
 #  else
