@@ -1576,8 +1576,8 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-# undef  ROUSE        /* SCG Mustang  */
-# define CONSOL       /* USGS Rachid */
+# define ROUSE        /* SCG Mustang  */
+# undef  CONSOLID     /* USGS Rachid COAST */
 # undef  SETTLE_COL   /* ToDO */
 # undef  FLOCULATION  /* ToDo */
 
@@ -1585,7 +1585,7 @@
 #  define BODYFORCE
 # endif
 
-# ifdef CONSOL
+# ifdef CONSOLID
 #  undef  BBL
 #  define GLS_MIXING
 #  define SED_TOY_BED
@@ -1599,7 +1599,7 @@
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD
-#  ifdef CONSOL
+#  ifdef CONSOLID
 #   undef COHESIVE_BED
 #   if defined SED_TOY_FLOC || defined SED_TOY_BED
 #    define COHESIVE_BED

@@ -247,7 +247,7 @@
           enddo
         enddo
 
-# elif defined SED_TOY && defined CONSOL
+# elif defined SED_TOY && defined CONSOLID
         do j=JR_RANGE
           do i=IR_RANGE
             zeta(i,j,1)=0.
@@ -397,7 +397,7 @@
        enddo
        print*,'CFL_max = ',cmax
 
-#  elif defined SED_TOY && defined CONSOL
+#  elif defined SED_TOY && defined CONSOLID
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1325,7 +1325,7 @@ C$OMP BARRIER
         enddo
       enddo
 
-#  if defined SED_TOY && defined CONSOL
+#  if defined SED_TOY && defined CONSOLID
       do iv=itrc_mud,itrc_mud+NMUD-1
         do k=1,5
           do j=JR_RANGE

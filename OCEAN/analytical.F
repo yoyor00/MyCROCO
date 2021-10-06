@@ -436,20 +436,19 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 
 # elif defined SED_TOY
-      !cff1=0.0001
-      cff1=0.001
-      cff2=1.5
-      cff3=86400.*cff2
-      if (((time.gt.cff3).and.(time.lt.(cff3*2.))).or.  
-     &    ((time.gt.(cff3*3.))))  then
-        cff1=0.0
+      if (tdays.lt.1.5) then
+        cff1=0.0001
+      else if ((tdays.ge.3).and.(tdays.le.4)) then
+        cff1=0.00005
+      else
+        cff1=0.
       endif
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef ROUSE
           sustr(i,j)=0.001875
           !sustr(i,j)=0.001875*cos(2.pi/(12.4*3600.)*time
-#   elif defined CONSOL
+#   elif defined CONSOLID
           sustr(i,j)=cff1
 #   endif
         enddo
@@ -1892,7 +1891,7 @@ C$    integer  trd, omp_get_thread_num
         enddo 
       enddo 
 
-#  ifdef CONSOL
+#  ifdef CONSOLID
       bed_bctr(:,:,:) = 5.2
       bed_bctr(:,:,1) = 0.03
       bed_bctr(:,:,2) = 0.0911460784453711
