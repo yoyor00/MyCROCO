@@ -1915,6 +1915,15 @@ C 				  endif
       CALL set_grid( "psi", xp, yp )
 # endif
 
+# ifdef MASKING
+      CALL set_mask("rho")
+      CALL set_mask("b")
+      CALL set_mask("u")
+      CALL set_mask("v")
+      CALL set_mask("w")
+      CALL set_mask("psi")
+# endif
+ 
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r )
       CALL iom_set_axis_attr( "s_w"  , sc_w )
