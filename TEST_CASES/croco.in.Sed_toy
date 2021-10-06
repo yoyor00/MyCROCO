@@ -38,7 +38,18 @@ bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
 gamma2:
                  1.d0
 
-sediments_mustang: input file
+sediments: input file (USGS Sediment model)
+           TEST_CASES/sediment_sed_toy.in
+
+sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
+                         20000*T
+
+sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
                FIC_NAMELIST/parasubstance_MUSTANG_Sed_toy.txt
                FIC_NAMELIST/paraMUSTANGV1_Sed_toy.txt
 
+gls_history_fields:   TKE  GLS  Lscale
+                      T     T    T
+
+bodyforce:  levsfrc [level], levbfrc [level]
+                 100               1
