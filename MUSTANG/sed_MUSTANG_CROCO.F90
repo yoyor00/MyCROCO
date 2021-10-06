@@ -323,7 +323,7 @@
 #endif
               DO iv=nvpc+1,nvp
                 IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    ! sorbed substances on sands
-                   WAT_SETTL(i,j,k,iv)=WAT_SETTL(i,j,k,irkm_var_assoc(iv))
+                   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=WAT_SETTL(i,j,k,itemp+ntrc_salt+irkm_var_assoc(iv))
                 ENDIF
               ENDDO
               DO iv=nvp+1,nv_adv
@@ -331,7 +331,7 @@
               ENDDO
               
            ENDDO
-           ws3_bottom_MUSTANG(:,i,j)=WAT_SETTL(i,j,1,:)
+           ws3_bottom_MUSTANG(1:nvp,i,j)=WAT_SETTL(i,j,1,itemp+ntrc_salt+1:nvp+itemp+ntrc_salt)
          ELSE
            WAT_SETTL(i,j,:,:)=0.0_rsh
            ws3_bottom_MUSTANG(:,i,j)=0.0_rsh

@@ -111,43 +111,43 @@
       endif
 
       if (ncid.eq.ncidrst) then
-        ierr=nf_put_att_text (ncid, nf_global, 'type',  17,
+        ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
      &                                 'CROCO restart file')
       elseif (ncid.eq.ncidhis) then
-        ierr=nf_put_att_text (ncid, nf_global, 'type',  17,
+        ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
      &                                 'CROCO history file')
 #ifdef AVERAGES
       elseif (ncid.eq.ncidavg) then
-        ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
+        ierr=nf_put_att_text (ncid, nf_global, 'type',  19,
      &                                'CROCO averages file')
 #endif
 #ifdef STATIONS
       elseif (ncid.eq.ncidsta) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 18,
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 19,
      &                                'CROCO stations file')
 #endif
 #ifdef FLOATS
       elseif (ncid.eq.ncidflt) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 24,
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 25,
      &                          'CROCO floats history file')
 #endif
 #if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_ADV) 
       elseif (ncid.eq.nciddia) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 51,
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 52,
      &     'CROCO DIAGTS history file - flux form for adv. terms')
 #ifdef AVERAGES
       elseif (ncid.eq.nciddia_avg) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 51,
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 52,
      &     'CROCO DIAGTS average file - flux form for adv. terms')
 #endif
 #endif
 #if (defined DIAGNOSTICS_TS && !defined DIAGNOSTICS_TS_ADV) 
       elseif (ncid.eq.nciddia) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 57,
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 58,
      &     'CROCO DIAGTS history file - divergence form for adv. terms')
 #ifdef AVERAGES
       elseif (ncid.eq.nciddia_avg) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 57,
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 58,
      &     'CROCO DIAGTS average file - divergence form for adv. terms')
 #endif
 #endif

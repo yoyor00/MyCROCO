@@ -1555,6 +1555,17 @@
 */
 # undef  OPENMP
 # undef  MPI
+
+# define  ROUSE      /* SCG Mustang  */
+# undef CONSOL       /* USGS Rachid */
+# undef  SETTLE_COL  /* ToDO */
+
+# ifdef ROUSE
+#  undef BODYFORCE
+#  define DO_DZDX
+# endif
+
+# undef  NC4PAR
 # undef  UV_ADV
 # define NEW_S_COORD
 # undef  UV_COR
@@ -1573,10 +1584,25 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
-# define MUSTANG
+
+# define SEDIMENT
+# undef MUSTANG
+# ifdef SEDIMENT /* CONSOL */
+#  ifdef CONSOL
+#   define GLS_MIXING
+#   define MIXED_BED
+#   define SED_TAU_CD_CONST
+#   define SED_FLOCS
+#   define FLOC_TURB_DISS
+#   define CYCLE_WIND
+#   define BED_BOTTOM_INIT
+#  endif
+# endif
+# endif
 # undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+
 
 
 #elif defined TIDAL_FLAT

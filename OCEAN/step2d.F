@@ -623,7 +623,7 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
           rubar(i,j)=cff*on_u(i,j)*(
-#ifdef SED_TOY
+#if defined SED_TOY && defined DO_DZDX
      &      -(h(i-1,j)+h(i,j))*gdzetadx*cos(2.*pi*omga*time)/g*om_u(i,j)
 #else
      &                         (h(i-1,j)+h(i,j))*(rzeta(i-1,j)

@@ -306,7 +306,7 @@ c********************************************************************
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*(
-# ifdef SED_TOY
+# if defined SED_TOY && defined DO_DZDX
      &     -gdzetadx*cos(2.*pi*omga*time)*om_u(i,j)
 # else
      &                                             P(i-1,j,k)-P(i,j,k)

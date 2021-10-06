@@ -427,6 +427,20 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=cff1*wcos*windamp
         enddo
       enddo
+# elif defined CYCLE_WIND
+      cff1=0.0001
+      if (time.gt.3000.) then
+        cff1=0.0
+      endif
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+# ifndef DO_DZDX        
+           sustr(i,j)=-gdzetadx*cos(2.*pi*omga*time)*om_u(i,j)*h(i,j)
+# else
+           sustr(i,j)=0 ! cff1
+# endif
+        enddo
+      enddo
 #  else
       do j=JstrR,JendR
         do i=IstrR,IendR

@@ -167,7 +167,11 @@
       parameter (LLm0=50,   MMm0=1,    N=20)   !  DUNE 2m
 # endif
 #elif defined SED_TOY
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
+# ifndef CONSOL
+      parameter (LLm0=5,    MMm0=5,    N=100)  !  SED_TOY
+# else
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  Sed toy Consolidation
+# endif
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   !  TIDAL_FLAT
 #elif defined REGIONAL
@@ -489,6 +493,9 @@
       parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=10)
 #   endif
+#  elif defined CONSOL
+      parameter (NSAND=4, NMUD=15, NGRAV=0)
+      parameter (NLAY=20)
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)
