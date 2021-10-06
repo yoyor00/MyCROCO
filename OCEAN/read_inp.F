@@ -2701,10 +2701,10 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                    (Lsrc(is,itrc), itrc=1,30)
+     &                                    (Lsrc(is,itrc), itrc=1,NT)
 #  else
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                     (Lsrc(is,itrc), itrc=1,30),
+     &                                     (Lsrc(is,itrc), itrc=1,NT),
 #   ifdef TRACERS
      &                                     (Tsrc0(is,itrc), itrc=1,NT)
 #   endif /* TRACERS */
