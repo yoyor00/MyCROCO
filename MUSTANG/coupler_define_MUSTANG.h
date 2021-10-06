@@ -82,13 +82,6 @@
 
 # ifdef key_CROCO
 #  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
-#  ifdef MPI
-#   define I_EXT_RANGE Istr-1,Iend+1
-#   define J_EXT_RANGE Jstr-1,Jend+1
-#  else
-#   define I_EXT_RANGE Istr,Iend
-#   define J_EXT_RANGE Jstr,Jend
-#  endif
 # endif
 
 !/* Spatial Grid limits definition  of loops
