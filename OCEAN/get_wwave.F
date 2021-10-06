@@ -475,7 +475,7 @@
 ! Time interpolation is not performed in this case.
 !
       if (ww_cycle.lt.0.) then
-        if (FIRST_RST_TIME_STEP) then
+        if (FIRST_TIME_STEP) then
         
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
@@ -641,13 +641,14 @@
 !   for other muddy areas (still needs work).
 !--------------------------------------------------------------------
 !
-# if !defined SHOREFACE || defined MEKONG
+# if !defined MRL_WCI || defined MEKONG
       do j=jstrR,jendR
         do i=istrR,iendR
+          Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
 #  ifdef MEKONG
+!
 ! First estimate wavenumber
 !
-          Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
           hrms=2*Awave(i,j)
           cfrq=2.0*pi/max(Pwave(i,j),0.1D0)
           khd=Dstp*cfrq*cfrq/g
@@ -656,7 +657,7 @@
      &                  +khd*(0.0632098765 + khd*(0.0217540484
      &                                  +khd*0.0065407983)))))) )
           kw=kh/Dstp
-
+!
 ! Strong mudbank dissipation formulation: frequency and depth-dependent 
 ! dissipation rate is a function akin to that proposed by Bretschneider 
 ! and Reid (1954) and Grosskopf (1980): longer and higher waves are more 
@@ -664,16 +665,15 @@
 !
           Awave(i,j)=Awave(i,j)*
      &                (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2 
-#  endif /* MEKONG */
-
-#  ifndef SHOREFACE
+#  else
+!
 ! Simulate surf-zone dissipation due to depth-induced wave breaking
 !
           Awave(i,j)=min(0.2*Dstp, Awave(i,j))
-#  endif /* SHOREFACE */
+#  endif
         enddo
       enddo
-# endif /* !SHOREFACE || MEKONG */
+# endif /* !MRL_WCI || MEKONG */
 !
 !--------------------------------------------------------------------
 ! Compute variables for wave-current interactions (mrl_wci routine)
