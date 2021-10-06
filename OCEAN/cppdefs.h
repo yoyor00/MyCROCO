@@ -1598,7 +1598,6 @@
 #   define BED_BOTTOM_INIT
 #  endif
 # endif
-# endif
 # undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
