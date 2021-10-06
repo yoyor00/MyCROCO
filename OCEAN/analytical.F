@@ -248,8 +248,8 @@ C$    integer  trd, omp_get_thread_num
       cff1=1.e-3*sin(2.*pi/10.05*time)
       do j=JstrR,JendR
         do i=IstrR,IendR
-          dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2) 
-     &                   - h(i,j)
+          dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2)
+     &                                           - h(i,j)
         enddo
       enddo
 # else
