@@ -485,7 +485,7 @@
                                      !defined WKB_WWAVE && \
                                      !defined OW_COUPLING) \
           || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_EP   && \
+                                   !defined BULK_FLUX   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
                                    !defined OA_COUPLING) \
@@ -495,7 +495,7 @@
                                    !defined OA_COUPLING && \
                                    defined SOLVE3D) \
           || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_EP && \
+                                   !defined BULK_FLUX && \
                                    !defined OA_COUPLING && \
                                     defined SOLVE3D) \
           || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
@@ -503,9 +503,7 @@
                                    defined SOLVE3D) \
           || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
-          || (defined BULK_FLUX  && \
-                                      (!defined BULK_SMFLUX || \
-                                       !defined BULK_EP) )\
+          || ( defined BULK_FLUX    && !defined SALINITY ) \
           || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
 !
 !

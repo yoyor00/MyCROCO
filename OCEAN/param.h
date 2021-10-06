@@ -178,10 +178,10 @@
 # elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
 # else
-      parameter (LLm0=xx, MMm0=xx, N=xx)   ! YOUR REGIONAL CONFIG
+      parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR REGIONAL CONFIG
 # endif
 #else
-      parameter (LLm0=xxx, MMm0=xxx, N=xxx)
+      parameter (LLm0=xx, MMm0=xx, N=xx)
 #endif
       
 #ifdef AGRIF
@@ -211,7 +211,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -244,19 +244,8 @@
 ! (Renault et al., JAMES 2020)
 !----------------------------------------------------------------------
 !
-#ifdef SMFLUX_CFB
-      ! wind correction: Ua-(1-sw)*Uo
-      ! ifndef CFB_WIND, this is only used to correct heat flux (bulk_flux)
-      real swparam
-      parameter (swparam=0.3)
-# ifdef CFB_STRESS
-      ! wind-stress correction using wind speed:  rho0*sustr + s_tau*Uo
-      !   s_tau = cfb_slope * wspd + cfb_offset [N.m^-3.s]
-      !  (recommendended and default if BULK_FLUX - needs wspd data)
-      real cfb_slope, cfb_offset
-      parameter (cfb_slope=-0.0029)
-      parameter (cfb_offset=0.008)
-# elif defined CFB_STRESS2
+#ifdef CFB
+# if defined CFB_STRESS2
       ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
       !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
       ! (use if wspd data not available, e.g. not BULK_FLUX)

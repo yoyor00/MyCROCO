@@ -173,11 +173,8 @@
 ! bulk forcing parameters
 !
           srf_scale=1./(rho0*Cp)
-# ifdef BULK_EP
+# ifdef SALINITY
           stf_scale(isalt)=0.01/86400.
-# endif
-# if (defined BULK_SMFLUX &&  !defined BULK_SM_UPDATE)
-          sms_scale=1./rho0
 # endif
 !
 ! Leap parameter initialisation for time interpolation
@@ -463,7 +460,7 @@
 ! === ==== ======= === ==== == ======= ======== 
 !
           if (blkvar_id.eq.nblkvrs) then
-            MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)') 
+            MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
      &              'ONLINE_BULK --',
      &              'Read CFSR for time =', daycfsr  
           endif

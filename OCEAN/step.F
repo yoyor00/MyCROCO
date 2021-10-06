@@ -372,21 +372,6 @@ C$OMP BARRIER
 
       if (may_day_flag.ne.0) return  !-->  EXIT
 
-#  if defined SMFLUX_CFB && !defined CFB_WIND
-!
-! Apply correction to surface momentum flux due to current feedback
-!
-#   ifdef CFB_STRESS2
-      do tile=my_tile_range
-        call cfb_stress_cor (tile) ! compute wind stress magnitude
-      enddo
-C$OMP BARRIER
-#   endif
-      do tile=my_tile_range
-        call cfb_stress (tile)
-      enddo
-#  endif
-
 # if defined WKB_WWAVE && !defined WKB_STEADY
       wkb_agrif_done=.FALSE.
 #  ifdef MRL_CEW
