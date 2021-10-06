@@ -627,7 +627,7 @@ C$OMP CRITICAL (rho_cr_rgn)
 
       endif  ! <-- tile_count.eq.nsubs
 
-      rho0 = nint(rho0*1.d6,kind=8)/1.d6 ! round rho0 to 6 digits
+      rho0 = nint(rho0*1.d2,kind=8)/1.d2 ! round rho0 to 6 digits
 
 !
 C$OMP END CRITICAL (rho_cr_rgn)
