@@ -19,7 +19,6 @@
       PUBLIC   mustang_deposition_main
       PUBLIC   mustang_init_sediment_main
       PUBLIC   mustang_morpho_main
-      PUBLIC   mustang_update_dh
 
 CONTAINS
 
