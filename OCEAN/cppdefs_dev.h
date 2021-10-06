@@ -257,7 +257,8 @@
 #if defined SOLVE3D
 # define VAR_RHO_2D
 # if !defined NONLIN_EOS && !defined INNERSHELF \
-                         && !defined MOVING_BATHY
+                         && !defined MOVING_BATHY \
+                         && !defined SANDBAR
 #  define RESET_RHO0
 # endif
 #endif
