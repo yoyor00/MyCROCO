@@ -135,6 +135,22 @@
 
 /*
 ======================================================================
+   Set default flags for computing temperature
+======================================================================
+*/
+#if !defined NO_TRACER 
+# define TRACERS            /* Compute at least one tracer */
+#endif
+#if !defined NO_TEMPERATURE /* Compute temperature */
+# define TEMPERATURE
+#endif
+#if defined SALINITY       || defined TEMPERATURE || \
+    defined PASSIVE_TRACER || defined SUBSTANCE
+# define TRACERS
+#endif
+
+/*
+======================================================================
    Activate NBQ choices for non-hydrostatic simulations
 ======================================================================
 */
@@ -1057,17 +1073,4 @@
 # undef BIOLOGY
 #endif
 
-#if !defined NO_TRACER /* then the user implicitly wants to calculate tracers */
-#define TRACERS
-#endif
-
-#if !defined NO_TEMPERATURE /* then the user implicitly wants to calculate temperature */
-#define TEMPERATURE
-#endif
-   
-
-#if defined SALINITY || defined TEMPERATURE || \
-	defined PASSIVE_TRACER || defined SUBSTANCE
-# define TRACERS
-#endif
 
