@@ -2319,8 +2319,8 @@ C$OMP BARRIER
 !  Store bed evolution
 !-----------------------------------------------------------------------
 !
-      do j=Jstr-1,Jend+1
-        do i=Istr-1,Iend+1
+      do j=JstrR,JendR
+        do i=IstrR,IendR
           dh(i,j)=bed_thick_tot(i,j,nstp)-bed_thick_tot(i,j,nnew)
         enddo
       enddo
