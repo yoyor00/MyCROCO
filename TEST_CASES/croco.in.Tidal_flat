@@ -29,7 +29,7 @@ gls_history_fields:   TKE  GLS  Lscale
 
 sediments_mustang: input file
                FIC_NAMELIST/parasubstance_MUSTANG_Tidal_flat.txt
-               FIC_NAMELIST/paraMUSTANGV2_Tidal_flat.txt
+               FIC_NAMELIST/paraMUSTANGV1_Tidal_flat.txt
 
 rho0:
       1025.d0
