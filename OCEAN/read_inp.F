@@ -158,7 +158,13 @@
       fname='TEST_CASES/croco.in.Dune'
 # endif
 #elif defined SED_TOY
+# ifdef SED_TOY_FLOC
+      fname='TEST_CASES/croco.in.Sed_toy_floc'
+# elif defined SED_TOY_BED
+      fname='TEST_CASES/croco.in.Sed_toy_bed'
+# else
       fname='TEST_CASES/croco.in.Sed_toy'
+# endif
 #elif defined TIDAL_FLAT
       fname='TEST_CASES/croco.in.Tidal_flat'
 #else

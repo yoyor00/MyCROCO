@@ -268,7 +268,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -359,7 +359,7 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j
       real Ewind, Nwind, dircoef, windamp, wcos,wsin
-      real cff1, cff2
+      real cff1, cff2, cff3
 !     data windamp /0./ 
       data Ewind, Nwind, dircoef /0., 0., 0./
 !     save windamp
@@ -427,20 +427,6 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=cff1*wcos*windamp
         enddo
       enddo
-# elif defined CYCLE_WIND
-      cff1=0.0001
-      if (time.gt.3000.) then
-        cff1=0.0
-      endif
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-# ifndef DO_DZDX        
-           sustr(i,j)=-gdzetadx*cos(2.*pi*omga*time)*om_u(i,j)*h(i,j)
-# else
-           sustr(i,j)=0 ! cff1
-# endif
-        enddo
-      enddo
 #  else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -448,6 +434,27 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
+
+# elif defined SED_TOY
+      !cff1=0.0001
+      cff1=0.001
+      cff2=1.5
+      cff3=86400.*cff2
+      if (((time.gt.cff3).and.(time.lt.(cff3*2.))).or.  
+     &    ((time.gt.(cff3*3.))))  then
+        cff1=0.0
+      endif
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#   ifdef ROUSE
+          sustr(i,j)=0.001875
+          !sustr(i,j)=0.001875*cos(2.pi/(12.4*3600.)*time
+#   elif defined CONSOL
+          sustr(i,j)=cff1
+#   endif
+        enddo
+      enddo
+    
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1884,6 +1891,14 @@ C$    integer  trd, omp_get_thread_num
 !ALA          bed_bctr(i,j,NLAY)= tcr_max
         enddo 
       enddo 
+
+#  ifdef CONSOL
+      bed_bctr(:,:,:) = 5.2
+      bed_bctr(:,:,1) = 0.03
+      bed_bctr(:,:,2) = 0.0911460784453711
+      bed_bctr(:,:,3) = 0.918694902789539
+      bed_bctr(:,:,4) = 3.54929559677213
+#  endif 
 
 # endif
 

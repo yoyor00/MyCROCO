@@ -246,6 +246,19 @@
               zeta(i,j,:) = zeta(i,j,1)
           enddo
         enddo
+
+# elif defined SED_TOY && defined CONSOL
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=0.
+            zeta(i,j,2)=0.
+            ubar(i,j,1)=1.
+            vbar(i,j,1)=0.
+            ubar(i,j,2)=ubar(i,j,1)
+            vbar(i,j,2)=0.
+          enddo
+        enddo
+
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -383,6 +396,18 @@
          enddo
        enddo
        print*,'CFL_max = ',cmax
+
+#  elif defined SED_TOY && defined CONSOL
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              u(i,j,k,1)=1.
+              u(i,j,k,2)=u(i,j,k,1)
+              v(i,j,k,1)=0.
+              v(i,j,k,2)=v(i,j,k,1)
+            enddo
+          enddo
+        enddo
 
 #  elif defined KH_INST
 !
@@ -1299,6 +1324,22 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+
+#  if defined SED_TOY && defined CONSOL
+      do iv=itrc_mud,itrc_mud+NMUD-1
+        do k=1,5
+          do j=JR_RANGE
+            do i=IR_RANGE
+              if (.not.got_tini(iv)) then
+                t(i,j,k,1,iv)=1./7.5
+                t(i,j,k,2,iv)=t(i,j,k,1,iv)
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+
+#  endif
 # endif
 !
 !----------------------------------------------------------------------

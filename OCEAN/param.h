@@ -167,10 +167,10 @@
       parameter (LLm0=50,   MMm0=1,    N=20)   !  DUNE 2m
 # endif
 #elif defined SED_TOY
-# ifndef CONSOL
-      parameter (LLm0=5,    MMm0=5,    N=100)  !  SED_TOY
+# ifdef CONSOL
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY (consolidation)
 # else
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  Sed toy Consolidation
+      parameter (LLm0=5     MMm0=5     N=100)  !  Sed toy
 # endif
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   !  TIDAL_FLAT
