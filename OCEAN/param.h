@@ -211,7 +211,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
-      parameter (NP_XI=1,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #elif defined OPENMP
@@ -238,22 +238,6 @@
       integer NWEIGHT
       parameter (NWEIGHT=1000)
 
-!
-!----------------------------------------------------------------------
-! OA coupling parametrization for current feedback on wind-stress  
-! (Renault et al., JAMES 2020)
-!----------------------------------------------------------------------
-!
-#ifdef CFB
-# if defined CFB_STRESS2
-      ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
-      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
-      ! (use if wspd data not available, e.g. not BULK_FLUX)
-      real cfb_slope2, cfb_offset2
-      parameter (cfb_slope2=-0.100)
-      parameter (cfb_offset2=0.001)
-# endif
-#endif
 !
 !----------------------------------------------------------------------
 ! Tides

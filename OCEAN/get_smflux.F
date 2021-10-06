@@ -179,7 +179,7 @@ c**        call opencdf (frcname,N)
       real cff, cff1, cff2, ustress, vstress
 # ifdef CFB
       real stau
-      parameter (stau=0.01)
+      parameter (stau=-0.01)
 # endif
 # include "param.h"
 # ifdef SMFLUX_CURVGRID
