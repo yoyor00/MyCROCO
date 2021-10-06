@@ -263,9 +263,14 @@
           Pwave(i,j) = 2.0*pi*inv_f(i,j)
           Awave(i,j) = wh(i,j)/2.0
           Dwave(i,j) = atan2(wdre(i,j),wdrx(i,j))
-#  endif          
+#  endif  
 
-#  ifdef KH_SOULSBY
+#  ifdef OW_COUPLING_FULL
+          kw(i,j) =2.0*pi/max(wlm(i,j),eps)
+          kD(i,j) =kw(i,j)*Dstp(i,j)
+#  else          
+
+#   ifdef KH_SOULSBY
           if (khd.ge.1.) then ! explicit wavenumber estimator
            kh=khd
           else
@@ -275,14 +280,15 @@
             cff = tanh(kh)
             kh = kh-(kh*cff-khd)/max(cff+kh*(1.0-cff**2),eps)
           enddo
-#  elif defined KH_HUNT
+#   elif defined KH_HUNT
           kh = sqrt( khd*khd + khd/(1.0 + khd*(0.6666666666
      &               +khd*(0.3555555555 + khd*(0.1608465608
      &               +khd*(0.0632098765 + khd*(0.0217540484
      &                            +khd*0.0065407983)))))) )
-#  endif
+#   endif
           kD(i,j) =kh
           kw(i,j) =kh*inv_d(i,j)
+#  endif          
 !
 ! --- Wave breaking ---
 !   use wave_btg, wave_gam local parameters (as in WKB model)
@@ -314,7 +320,7 @@
       &                          *(1-exp (-cff1**5 ))
 #    endif  
            ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
-    #endif       
+#   endif       
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER

@@ -328,7 +328,6 @@
             endif
          endif
 !        wave_ussy : y-component of stokes drift surface velocity
-!        not tested/performed yet
          if (srcv_clname(i)=='RRMUSSY'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wvst)
@@ -341,29 +340,27 @@
 !
 !-------------------------------------------------
 !        wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
-!        not tested/performed yet
          if (srcv_clname(i)=='RRM_FOC'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wfoc)
             if (iok_wfoc /= 0)  then
-!              Transmit to CROCO field : stflx(:,:,itemp)
+!              Transmit to CROCO field : foc
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                foc = rmask * tab_t_tmp
             endif
          endif
-# endif         
 !-------------------------------------------------
 !        wave_wlm : mean length wave (m)
-!        not tested/performed yet
          if (srcv_clname(i)=='RRM__LM'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wlm)
-!            if (iok_wlm /= 0)  then
-!!              Transmit to CROCO field : stflx(:,:,itemp)
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
-!            endif
+            if (iok_wlm /= 0)  then
+!              Transmit to CROCO field : wlm
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               wlm = tab_t_tmp
+            endif
          endif
+# endif         
 !-------------------------------------------------
 !        wave_twox : x-component of the wave-to-ocean momentum flux (twox in m2.s-2)
          if (srcv_clname(i)=='RRMTWOX'//clevel) then

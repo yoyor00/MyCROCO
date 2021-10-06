@@ -479,6 +479,7 @@
 ! whrm | MRL     | (RMS) wave height (twice the wave amplitude) [m]
 ! wepb | MRL     | breaking dissipation rate (\epsilon_b term) [m3/s3]
 ! wepd | MRL     | frictional dissipation rate (\epsilon_d term) [m3/s3]
+! wlm  | MRL     | mean length wave from input data (coupling or forcing)
 ! wepr | ROLLER  | roller dissipation rate (\epsilon_r term) [m3/s3]
 ! wbst | MRL/BKPP| frictional dissipation stress (e_d k/sigma) [m2/s2]
 !--------------------------------------------------------------------
@@ -511,6 +512,10 @@
       common /forces_whrm/whrm /forces_wepb/wepb 
      &       /forces_wdrx/wdrx /forces_wdre/wdre
      &       /forces_wepd/wepd
+# ifdef OW_COUPLING_FULL
+      real wlm(GLOBAL_2D_ARRAY)
+      common /forces_wlm/wlm
+# endif    
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
