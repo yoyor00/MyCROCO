@@ -713,7 +713,8 @@
 # endif
 #endif
 
-# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+# if defined WKB_WWAVE || defined OW_COUPLING \
+		       || (defined WAVE_OFFLINE && defined MRL_WCI)
 #  define WAVE_IO
 # endif
 
