@@ -23,7 +23,7 @@
 :    nv_sorb : number of particulate susbtances sorbed on an other particule
 :
  &nmlnbvar
-    nv_dis=1
+    nv_dis=0
     nv_ncp=0
     nv_fix=0
     nv_bent=0 
