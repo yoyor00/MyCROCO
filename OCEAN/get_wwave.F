@@ -224,7 +224,7 @@
 # ifdef MANGAE2500
 ! scale factors for MANGAE wave files 
         wwa_scale=0.002
-        wwd_scale=0.1
+        wwd_scale=0.1*deg2rad !converting to radian and imposing scale factor
         wwp_scale=0.01
         wweb_scale=1.
         wwed_scale=1.
@@ -241,7 +241,6 @@
         wwer_scale=1.
 #  ifdef MUSTANG
         wwu_scale=1.
-        wwd_scale=1.  ! direction in deg. in sed_skinstress 
 #  endif
 # endif
      

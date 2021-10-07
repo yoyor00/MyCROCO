@@ -657,7 +657,7 @@
                 ! calculating the direction of the current relative to the north
                   alpha=ACOS(vbar(i,j,nrhs)/courant)   ! en radians
                 ! calculation of wave orientation relative to north
-                  beta=Dwave(i,j)*pi/180   ! en radians
+                  beta=Dwave(i,j)   ! beta and Dwave in radians
                 ! calculation of cos(alpha-beta) and sin(alpha-beta)
                   cosamb=ABS(COS(alpha-beta))
                   sinamb=ABS(SIN(alpha-beta))
