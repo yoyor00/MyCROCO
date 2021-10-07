@@ -71,6 +71,9 @@
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
+# if defined OA_COUPLING
+#  undef XIOS_ATM
+# endif                      
 # undef  OW_COUPLING
                       /* Wave-current interactions */
 # undef  MRL_WCI
@@ -92,6 +95,9 @@
 # undef  LOGFILE
                       /* Calendar */
 # undef START_DATE
+# if defined XIOS
+#   define START_DATE
+# endif
 # undef USE_CALENDAR 
 /*!
 !-------------------------------------------------
