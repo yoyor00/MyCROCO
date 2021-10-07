@@ -296,7 +296,7 @@
 !!            endif
 !!         endif
 !        wave_ubrx : x-component rms amplitude of wave orbital bottom velocity(m/s)
-         if (srcv_clname(i)=='RRM_UBRX'//clevel) then
+         if (srcv_clname(i)=='RRMUBRX'//clevel) then
              call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wubrx)
             if (iok_wubrx /= 0)  then
@@ -306,7 +306,7 @@
             endif
          endif
 !        wave_ubry : y-component rms amplitude of wave orbital bottom velocity(m/s)
-         if (srcv_clname(i)=='RRM_UBRX'//clevel) then
+         if (srcv_clname(i)=='RRMUBRY'//clevel) then
              call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wubry)
             if (iok_wubry /= 0)  then
