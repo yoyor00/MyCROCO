@@ -829,6 +829,8 @@ CR      write(*,*) '  0' MYID
         do iifroot = 0,nfast+2
 #else
         nbtimes = 0
+        nbmaxprttime = ntimes+1
+        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
 #endif
 #endif

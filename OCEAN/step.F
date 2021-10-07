@@ -39,6 +39,12 @@
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
+#ifdef AGRIF
+       else if ((.not.agrif_root()).and.(iif==-1).and.
+     &          (oasis_time>=0).and.(nbtimes<=Agrif_MaxLevel()+1).and.
+     &          (nbprttime<nbmaxprttime)) then
+         call cpl_prism_get (oasis_time)
+#endif
        endif 
 #endif /* OA_COUPLING */
 
@@ -78,6 +84,12 @@ C$OMP END PARALLEL
        if (iif==-1) then
          if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
+#ifdef AGRIF
+         else if (oasis_time>=0.and.(.not.agrif_root()).and.
+     &           ((nbtimes>nbmaxtimes+1-Agrif_MaxLevel())).and.
+     &           (nbprttime<nbmaxprttime) ) then
+           call cpl_prism_put (oasis_time)
+#endif
          endif
          oasis_time = oasis_time + dt
        endif 

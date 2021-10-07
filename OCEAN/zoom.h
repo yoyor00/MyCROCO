@@ -335,8 +335,9 @@
       integer :: grids_at_level(0:20,0:100)
       integer :: parent_grid(0:20)
       integer :: coeff_ref_time(0:20)
-      integer :: nbtimes, nbmaxtimes
+      integer :: nbtimes, nbmaxtimes,nbmaxprttime, nbprttime
       common/rootintegrate/nbtimes, nbmaxtimes,
+     &    nbmaxprttime, nbprttime,
      &    iind,sortedint,whichstep,
      &    grids_at_level,parent_grid,coeff_ref_time
 !$AGRIF_END_DO_NOT_TREAT
