@@ -1553,26 +1553,14 @@
 !                       SED TOY (1D Single Column GradP example)
 !                       === === === ====== ====== ===== ========
 */
-# undef  OPENMP
-# undef  MPI
+# undef  ROUSE         /* SCG Mustang  */
+# define CONSOLID      /* USGS Rachid COAST */
+# undef  SETTLE_COL    /* ToDO */
+# undef  FLOCULATION   /* ToDo */
 
-# define  ROUSE      /* SCG Mustang  */
-# undef CONSOL       /* USGS Rachid */
-# undef  SETTLE_COL  /* ToDO */
-
-# ifdef ROUSE
-#  undef BODYFORCE
-#  define DO_DZDX
-# endif
-
-# undef  NC4PAR
-# undef  UV_ADV
 # define NEW_S_COORD
-# undef  UV_COR
 # define SOLVE3D
-# undef  NONLIN_EOS
 # define SALINITY
-# undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_VMIX
@@ -1584,25 +1572,43 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
-
+# ifdef ROUSE
+#  define BODYFORCE
+# endif
+# ifdef CONSOLID
+#  undef  BBL
+#  undef  ANA_VMIX
+#  define GLS_MIXING
+#  define SED_TOY_BED
+#  undef  SED_TOY_FLOC
+# endif
 # define SEDIMENT
-# undef MUSTANG
-# ifdef SEDIMENT /* CONSOL */
-#  ifdef CONSOL
-#   define GLS_MIXING
-#   define MIXED_BED
-#   define SED_TAU_CD_CONST
-#   define SED_FLOCS
-#   define FLOC_TURB_DISS
-#   define CYCLE_WIND
-#   define BED_BOTTOM_INIT
+# undef  MUSTANG
+# undef  MORPHODYN
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  undef  BEDLOAD
+#  ifdef CONSOLID
+#   undef COHESIVE_BED
+#   if defined SED_TOY_FLOC || defined SED_TOY_BED
+#    define COHESIVE_BED
+#    undef  MIXED_BED
+#   endif
+#   undef SED_FLOCS
+#   ifdef SED_TOY_FLOC
+#    define SED_FLOCS
+#   endif
+#   ifdef SED_FLOCS
+#    undef  FLOC_TURB_DISS
+#    define FLOC_BBL_DISS
+#    define SED_DEFLOC
+#    define SED_TAU_CD_CONST
+#    undef  SED_TAU_CD_LIN
+#   endif  /* SED_FLOC */
 #  endif
 # endif
-# undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-
-
 
 #elif defined TIDAL_FLAT
 /*
