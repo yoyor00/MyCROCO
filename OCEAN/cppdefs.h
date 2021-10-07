@@ -394,8 +394,6 @@
 # endif
                       /*   MUSTANG Sediment model     */
 # ifdef MUSTANG
-#  define key_noTSdiss_insed 
-#  define key_nofluxwat_IWS 
 #  define key_sand2D
 #  define MUSTANG_CORFLUX
 #  undef  key_MUSTANG_V2
@@ -1542,7 +1540,9 @@
 #  endif
 # endif
 # ifdef MUSTANG
-#  define USE_CALENDAR
+#  define key_MUSTANG_V2
+#  define key_MUSTANG_bedload
+#  define key_tenfon_upwind
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
@@ -1555,6 +1555,15 @@
 */
 # undef  OPENMP
 # undef  MPI
+
+# define  ROUSE      /* SCG Mustang  */
+# undef CONSOL       /* USGS Rachid */
+# undef  SETTLE_COL  /* ToDO */
+
+# ifdef ROUSE
+#  undef BODYFORCE
+#  define DO_DZDX
+# endif
 
 # undef  NC4PAR
 # undef  UV_ADV
@@ -1576,52 +1585,23 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-# define ROUSE        /* SCG Mustang  */
-# undef  CONSOLID     /* USGS Rachid COAST */
-# undef  SETTLE_COL   /* ToDO */
-# undef  FLOCULATION  /* ToDo */
-
-# ifdef ROUSE
-#  define BODYFORCE
-# endif
-
-# ifdef CONSOLID
-#  undef  BBL
-#  define GLS_MIXING
-#  define SED_TOY_BED
-#  undef  SED_TOY_FLOC
-#  define UV_ADV 
-#  define UV_COR
-# endif
-
 # define SEDIMENT
 # undef MUSTANG
-# ifdef SEDIMENT
-#  define SUSPLOAD
-#  undef  BEDLOAD
-#  ifdef CONSOLID
-#   undef COHESIVE_BED
-#   if defined SED_TOY_FLOC || defined SED_TOY_BED
-#    define COHESIVE_BED
-#    undef  MIXED_BED
-#   endif
-#   undef SED_FLOCS
-#   ifdef SED_TOY_FLOC
-#    define SED_FLOCS
-#   endif
-#   ifdef SED_FLOCS
-#    undef  FLOC_TURB_DISS
-#    define FLOC_BBL_DISS
-#    define SED_DEFLOC
-#    define SED_TAU_CD_CONST
-#    undef  SED_TAU_CD_LIN
-#   endif  /* SED_FLOC */
+# ifdef SEDIMENT /* CONSOL */
+#  ifdef CONSOL
+#   define GLS_MIXING
+#   define MIXED_BED
+#   define SED_TAU_CD_CONST
+#   define SED_FLOCS
+#   define FLOC_TURB_DISS
+#   define CYCLE_WIND
+#   define BED_BOTTOM_INIT
 #  endif
-
 # endif
 # undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+
 
 
 #elif defined TIDAL_FLAT
@@ -1632,9 +1612,13 @@
 # undef  OPENMP
 # undef  MPI
 # undef  NONLIN_EOS
+# define NEW_S_COORD
 # define SALINITY
 # define UV_ADV
-# define NEW_S_COORD
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
 # define UV_COR
 # define SOLVE3D
 # define UV_VIS2
@@ -1643,9 +1627,6 @@
 # define WET_DRY
 # define TS_DIF2
 # define SPONGE
-# undef  ANA_VMIX
-# undef  PSOURCE
-# define MASKING
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -1664,16 +1645,14 @@
 #  define M2_FRC_BRY
 #  undef  M3_FRC_BRY
 #  define T_FRC_BRY
-#  undef  OBC_TORLANSKI
-#  undef  OBC_TSPECIFIED
-#  define OBC_TUPWIND
 # endif
 # define MUSTANG
 # ifdef MUSTANG
-#   define key_sand2D
+#  define key_sand2D
+#  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
-# define ZETA_DRY_IO
+# undef  ZETA_DRY_IO
 # undef  RVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */

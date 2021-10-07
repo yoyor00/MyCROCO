@@ -872,6 +872,7 @@
 #  undef  SEDIMENT
 #  define SUBSTANCE
 #  define key_CROCO
+#  define USE_CALENDAR
 #  define TEMPERATURE
 #  define SALINITY
 #  define key_noTSdiss_insed

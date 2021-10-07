@@ -931,12 +931,16 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # ifdef MASKING
+      do j=JstrR,JendR             ! Set mask to all-water status
+        do i=IstrR,IendR
+          rmask(i,j)=1.
+        enddo
+      enddo
 #  ifdef RIVER
-      do j=JstrR,JendR             ! Set mask to all-water status,
-        do i=IstrR,IendR           ! then mask out 8-point wide strip
-          rmask(i,j)=1.            ! of land on the west, and finally
-        enddo                      ! carve two 1-point wide channels
-      enddo                        ! through that strip.
+!
+! Mask out 8-point wide strip of land on the west, and 
+! carve two 1-point wide channels through that strip.
+
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           do i=IstrR,8
@@ -968,8 +972,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       endif ! WESTERN_EDGE
-#  endif
-# endif
+#  endif /* RIVER */
+# endif /* MASKING */
 !
 #else
       subroutine ana_grid_empty

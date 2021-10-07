@@ -1,10 +1,18 @@
 title:
         Tide Flat 2DV TEST MODEL
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                17280      15   5     1
+                8640      15       5       100
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      500.0d0
+
+run_start_date:
+01/01/2019 00:00:00
+run_end_date:
+03/01/2019 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                     0.25           24         24
 
 initial: NRREC  filename
           0 
@@ -15,7 +23,7 @@ restart:          NRST, NRPFRST / filename
                           tidal_flat_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      40     0
+            T     100     0
                           tidal_flat_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
