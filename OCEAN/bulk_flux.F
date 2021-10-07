@@ -262,8 +262,8 @@
             ENDIF
 !++ Estimate Monin-Obukhov similarity scales (ECUME_v0 formulation)
             Wstar(1:mb) = SQRT(Cdn(1:mb))*deltau10n(1:mb)
-            Tstar       = Chn/SQRT(Cdn)*deltat10n
-            Qstar       = Cen/SQRT(Cdn)*deltaq10n
+            Tstar       = Chn/SQRT(Cdn(mb))*deltat10n
+            Qstar       = Cen/SQRT(Cdn(mb))*deltaq10n
 #else
             DO m=1,mb
               cff    = deltau10n(m)*deltau10n(m)
