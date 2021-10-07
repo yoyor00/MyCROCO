@@ -266,7 +266,8 @@
 #  endif  
 
 #  ifdef OW_COUPLING_FULL
-          kw(i,j) =2.0*pi/max(wlm(i,j),eps)
+          kw(i,j) =2.0*pi/max(wlm(i,j),0.1)
+          !kw(i,j) =2.0*pi/max(wlm(i,j),eps)
           kD(i,j) =kw(i,j)*Dstp(i,j)
 #  else          
 
