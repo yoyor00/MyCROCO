@@ -177,7 +177,7 @@ c**        call opencdf (frcname,N)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1, cff2, ustress, vstress
-# ifdef CFB
+# ifdef SFLUX_CFB
       real stau
       parameter (stau=-0.01)
 # endif
@@ -292,7 +292,7 @@ c**        call opencdf (frcname,N)
           enddo
 # endif /* SMFLUX_CURVGRID */
         endif 
-#  if defined CFB && !defined BULK_FLUX 
+#  if defined SFLUX_CFB && !defined BULK_FLUX 
 !
         do j=JstrR,JendR
           do i=Istr,IendR

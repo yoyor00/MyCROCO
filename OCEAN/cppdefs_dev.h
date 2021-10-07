@@ -75,7 +75,7 @@
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  CFB
+# undef  SFLUX_CFB
 #endif
 
 /* 
@@ -650,7 +650,7 @@
     Current feedback option
 ======================================================================
 */
-#ifdef CFB
+#ifdef SFLUX_CFB
 # ifdef BULK_FLUX
 #  define CFB_STRESS
 #  define CFB_WIND_TRA
@@ -1041,7 +1041,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
-# undef CFB                     
+# undef SFLUX_CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH

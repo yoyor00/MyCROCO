@@ -893,7 +893,7 @@ C$    integer omp_get_thread_num
           shflx_sen_avg(i,j)=init
 #  endif
 # endif /* BULK_FLUX */
-# if defined CFB && defined CFB_STRESS && !defined BULK_FLUX 
+# if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
           wspd(i,j)=init
           wspdg(i,j,1)=init
           wspdg(i,j,2)=init

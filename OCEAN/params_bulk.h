@@ -110,7 +110,7 @@
      &                 + coeft4*utt**4                      )
       parameter(ordoq = coefq0 + coefq1*utq + coefq2*utq**2 )
 #endif
-#ifdef CFB
+#ifdef SFLUX_CFB
 # ifdef CFB_WIND_TRA
       ! wind correction: Ua-(1-sw)*Uo
       ! this is only used to correct heat flux (bulk_flux)

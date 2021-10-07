@@ -55,7 +55,7 @@
       common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
       common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
 
-# if defined CFB && !defined BULK_FLUX
+# if defined SFLUX_CFB && !defined BULK_FLUX
       real wspdg(GLOBAL_2D_ARRAY,2)
       common /smsdat_wspdg/wspdg
       real    wspdp(2)
