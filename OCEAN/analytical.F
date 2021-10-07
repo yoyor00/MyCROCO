@@ -437,9 +437,9 @@ C$    integer  trd, omp_get_thread_num
 
 # elif defined SED_TOY
       if (tdays.lt.1.5) then
-        cff1=0.0001
-      else if ((tdays.ge.3).and.(tdays.le.4)) then
-        cff1=0.00005
+        cff1=0.001
+      else if ((tdays.ge.3).and.(tdays.le.4.)) then
+        cff1=0.0005
       else
         cff1=0.
       endif
@@ -450,6 +450,8 @@ C$    integer  trd, omp_get_thread_num
           !sustr(i,j)=0.001875*cos(2.pi/(12.4*3600.)*time
 #   elif defined CONSOLID
           sustr(i,j)=cff1
+#   else
+          sustr(i,j)=0.0
 #   endif
         enddo
       enddo

@@ -168,7 +168,7 @@
 # endif
 #elif defined SED_TOY
 # ifdef CONSOLID
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  Sed toy CONSOL
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  Rachid Sed toy CONSOL
 # else
       parameter (LLm0=5,    MMm0=5,    N=100)  !  SED_TOY
 # endif
@@ -464,7 +464,7 @@
       INTEGER,PARAMETER :: lchain=200
       integer  itsubs1,itsubs2,ntfix
 #  ifdef SED_TOY
-      parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+      parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
@@ -494,8 +494,16 @@
       parameter (NLAY=10)
 #   endif
 #  elif defined SED_TOY
+#   ifdef CONSOLID  /*  SED_TOY_FLOC */
       parameter (NSAND=4, NMUD=15, NGRAV=0)
       parameter (NLAY=20)
+#   elif defined SED_TOY_BED
+	  parameter (NSAND=2, NMUD=2, NGRAV=0)
+      parameter (NLAY=41)
+#   elif defined ROUSE 
+      parameter (NSAND=0, NMUD=6, NGRAV=0)
+      parameter (NLAY=20)
+#   endif
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)

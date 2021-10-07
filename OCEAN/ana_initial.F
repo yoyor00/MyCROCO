@@ -252,7 +252,7 @@
           do i=IR_RANGE
             zeta(i,j,1)=0.
             zeta(i,j,2)=0.
-            ubar(i,j,1)=1.
+            ubar(i,j,1)=0.
             vbar(i,j,1)=0.
             ubar(i,j,2)=ubar(i,j,1)
             vbar(i,j,2)=0.
@@ -401,7 +401,7 @@
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              u(i,j,k,1)=1.
+              u(i,j,k,1)=0.
               u(i,j,k,2)=u(i,j,k,1)
               v(i,j,k,1)=0.
               v(i,j,k,2)=v(i,j,k,1)

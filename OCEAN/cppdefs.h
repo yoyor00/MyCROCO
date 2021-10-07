@@ -1553,14 +1553,20 @@
 !                       SED TOY (1D Single Column GradP example)
 !                       === === === ====== ====== ===== ========
 */
-# undef  ROUSE         /* SCG Mustang  */
-# define CONSOLID      /* USGS Rachid COAST */
-# undef  SETTLE_COL    /* ToDO */
-# undef  FLOCULATION   /* ToDo */
+# define ROUSE        /* SCG Mustang  */
+# undef  CONSOLID     /* USGS */
+# undef  SETTLE_COL   /* ToDO */
+# undef  FLOCULATION  /* ToDo */
 
+# undef  OPENMP
+# undef  MPI
+# undef  UV_ADV
 # define NEW_S_COORD
+# undef  UV_COR
 # define SOLVE3D
+# undef  NONLIN_EOS
 # define SALINITY
+# undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_VMIX
@@ -1572,9 +1578,11 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
+
 # ifdef ROUSE
 #  define BODYFORCE
 # endif
+
 # ifdef CONSOLID
 #  undef  BBL
 #  undef  ANA_VMIX
@@ -1582,9 +1590,9 @@
 #  define SED_TOY_BED
 #  undef  SED_TOY_FLOC
 # endif
+
 # define SEDIMENT
-# undef  MUSTANG
-# undef  MORPHODYN
+# undef MUSTANG
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD
@@ -1607,6 +1615,7 @@
 #   endif  /* SED_FLOC */
 #  endif
 # endif
+# undef  MORPHODYN
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
