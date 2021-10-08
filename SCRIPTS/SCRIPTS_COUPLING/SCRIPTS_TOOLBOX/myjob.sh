@@ -21,6 +21,7 @@ export projectid=""
 export YEAR_BEGIN_EXP=2005
 export MONTH_BEGIN_EXP=1
 export DAY_BEGIN_EXP=1
+
 # Duration of the Experiment
 export EXP_DUR_MTH=$(( 3 * 1 ))
 export EXP_DUR_DAY=0
@@ -29,6 +30,7 @@ export EXP_DUR_DAY=0
 export YEAR_BEGIN_JOB=2005
 export MONTH_BEGIN_JOB=1
 export DAY_BEGIN_JOB=1
+
 # Duration of each Job
 export JOB_DUR_MTH=1
 export JOB_DUR_DAY=0

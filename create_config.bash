@@ -377,6 +377,8 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "oce" ]] || [[ ${models[@]}
             printf "export RUNtype=aw\n#\n" >> mynamelist.sh
         elif [[ ${models[@]} =~ "toy" ]]; then
             printf "export RUNtype=Put the type here (ow/oa/aw/owa)\n#\n" >> mynamelist.sh
+        else 
+            printf "export RUNtype=frc\n#\n" >> mynamelist.sh
         fi
     else
         printf "export RUNtype=frc\n#\n" >> mynamelist.sh
@@ -414,6 +416,13 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "oce" ]] || [[ ${models[@]}
     for k in ${models[@]} ; do
         [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
     done
+
+    if [[ ${models[@]} =~ "toy" ]] && [[ ${models[@]} =~ "cpl" ]] ; then
+        sed -e "s/export namcouplename=.*/export namcouplename=namcouple.base.\${RUNtype}\${istoy}/g" \
+        mynamelist.sh > mynamelist1.sh
+        mv mynamelist1.sh mynamelist.sh
+        chmod 755 mynamelist.sh
+    fi
 
     sed -e "s|export CEXPER=.*|export CEXPER=${MY_CONFIG_NAME}_exp1|g" \
         mynamelist.sh > mynamelist1.sh

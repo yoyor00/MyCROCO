@@ -1,6 +1,6 @@
 #!/bin/bash  
 
-source ../myenv_mypath.sh
+source ./myenv_mypath.sh
 set -u
 umask 022
 
