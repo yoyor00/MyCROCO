@@ -159,9 +159,13 @@
 # endif
 #elif defined SED_TOY
 # ifdef SED_TOY_FLOC
-      fname='TEST_CASES/croco.in.Sed_toy_floc'
-# elif defined SED_TOY_BED
-      fname='TEST_CASES/croco.in.Sed_toy_bed'
+      fname='TEST_CASES/croco.in.Sed_toy_floculation'
+# elif defined CONSOLID
+      fname='TEST_CASES/croco.in.Sed_toy_consolid'
+# elif defined ROUSE
+      fname='TEST_CASES/croco.in.Sed_toy_rouse'
+# elif defined SETTLE_COL
+      fname='TEST_CASES/croco.in.Sed_toy_settle_col'
 # else
       fname='TEST_CASES/croco.in.Sed_toy'
 # endif
