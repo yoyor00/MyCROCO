@@ -1553,16 +1553,14 @@
 !                       SED TOY (1D Single Column GradP example)
 !                       === === === ====== ====== ===== ========
 */
-# define ROUSE        /* SCG Mustang  */
+# define ROUSE        /* SCG Mustang */
 # undef  CONSOLID     /* USGS */
 # undef  SETTLE_COL   /* ToDO */
 # undef  FLOCULATION  /* ToDo */
 
 # undef  OPENMP
 # undef  MPI
-# undef  UV_ADV
 # define NEW_S_COORD
-# undef  UV_COR
 # define SOLVE3D
 # undef  NONLIN_EOS
 # define SALINITY

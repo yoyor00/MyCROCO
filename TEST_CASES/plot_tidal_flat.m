@@ -26,7 +26,7 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-fname='Tidal_flat_his.nc';
+fname='tidal_flat_his.nc';
 
 %======================================================================
 %

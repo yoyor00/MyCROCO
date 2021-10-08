@@ -168,9 +168,9 @@
 # endif
 #elif defined SED_TOY
 # ifdef CONSOLID
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  Rachid Sed toy CONSOL
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  Sed toy Consolidation
 # else
-      parameter (LLm0=5,    MMm0=5,    N=100)  !  SED_TOY
+      parameter (LLm0=5,    MMm0=5,    N=100)  !  Sed toy Rouse
 # endif
 #elif defined TIDAL_FLAT
       parameter (LLm0=200,  MMm0=3,    N=10)   !  TIDAL_FLAT
@@ -494,14 +494,14 @@
       parameter (NLAY=10)
 #   endif
 #  elif defined SED_TOY
-#   ifdef CONSOLID  /*  SED_TOY_FLOC */
-      parameter (NSAND=4, NMUD=15, NGRAV=0)
-      parameter (NLAY=20)
-#   elif defined SED_TOY_BED
-	  parameter (NSAND=2, NMUD=2, NGRAV=0)
+#   ifdef CONSOLID
+      parameter (NSAND=2, NMUD=2, NGRAV=0)
       parameter (NLAY=41)
 #   elif defined ROUSE 
       parameter (NSAND=0, NMUD=6, NGRAV=0)
+      parameter (NLAY=20)
+#   elif defined SED_TOY_FLOC
+      parameter (NSAND=4, NMUD=15, NGRAV=0)
       parameter (NLAY=20)
 #   endif
 #  else

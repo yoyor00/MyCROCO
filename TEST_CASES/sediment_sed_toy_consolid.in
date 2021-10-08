@@ -1,35 +1,20 @@
 1  Stitle (a80)
-CROCO - SED_TOY - Test
+ROMS - SED_TOY - Test
 
-2  Sd(1-NST), CSED,  SRHO,       WSED,       ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
-    0.0300      0.   2650.       0.4722      5.E-04  0.0854   60.   20*0.016 
-    0.0625      0.   2650.       2.0421      5.E-04  0.1244   60.   20*0.1766 
-    0.1250      0.   2650.       7.9478      5.E-04  0.1601   60.   20*0.7136 
-    0.2500      0.   2650.       26.9607     5.E-04  0.1980   60.   20*0.0938 
-    2.0000E-02  0.   1.3500E+03  7.0850E-02  5.E-04  0.03     60.   20*0.
-    2.7225E-02  0.   1.2638E+03  9.6443E-02  5.E-04  0.03     60.   20*0.
-    3.7059E-02  0.   1.2004E+03  1.3128E-01  5.E-04  0.03     60.   20*0.
-    5.0446E-02  0.   1.1539E+03  1.7871E-01  5.E-04  0.03     60.   20*0.
-    6.8669E-02  0.   1.1197E+03  2.4326E-01  5.E-04  0.03     60.   20*0.
-    9.3475E-02  0.   1.0945E+03  3.3114E-01  5.E-04  0.03     60.   20*0.
-    1.2724E-01  0.   1.0761E+03  4.5075E-01  5.E-04  0.03     60.   20*0.
-    1.7320E-01  0.   1.0625E+03  6.1358E-01  5.E-04  0.03     60.   20*0.
-    2.3577E-01  0.   1.0526E+03  8.3522E-01  5.E-04  0.03     60.   20*0.
-    3.2094E-01  0.   1.0453E+03  1.1369E+00  5.E-04  0.03     60.   20*0.
-    4.3688E-01  0.   1.0399E+03  1.5476E+00  5.E-04  0.03     60.   20*0.
-    5.9469E-01  0.   1.0359E+03  2.1067E+00  5.E-04  0.03     60.   20*0.
-    8.0952E-01  0.   1.0330E+03  2.8677E+00  5.E-04  0.03     60.   20*0.
-    1.1019E+00  0.   1.0309E+03  3.9036E+00  5.E-04  0.03     60.   20*0.
-    1.5000E+00  0.   1.0293E+03  5.3137E+00  5.E-04  0.03     60.   20*0.
-
+2  Sd(1-NST), CSED,  SRHO,   WSED,    ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
+      0.0625    0.0   2650.   2.     0.0005     0.1     0.1   41*0.25 
+      0.140     0.0   2650.   8.     0.0005     0.1     0.1   41*0.25 
+      0.004     0.    2650.    0.1    0.006     0.05    0.1   41*0.25 
+      0.030     0.    2650.    0.6    0.006   0.05    0.1     41*0.25 
+ 
 3 BTHK(1:NLAY)
-      17*0.001 2*0.401 1.201
+      41*0.001
             
 4 BPOR(1:NLAY)
-      20*0.5
+      41*0.5
 
 5 Hrip             
-       17*0.001  0.401  0.401  1.201
+       0.01
 
 6 Lrip
        0.1  
@@ -40,41 +25,22 @@ CROCO - SED_TOY - Test
 8 morph_fac
       1. 
 
-9  transC
-      0.03
-
-10  transN
-      0.2      
-
 11  tcr_min
-      0.03
+      0.030
 
 12  tcr_max
-      5.5
+      1.5
 
 13  tcr_slp
-      0.3
+      2.0
 
-14  tcr_off 
-      1.
+14  tcr_off 3.40d0
+      3.40d0
 
-15  tcr_tim
-      28800.
-
-16  L_ADS  L_ASH  L_COLLFRAG  L_TESTCASE
-     F       T         F           F
-
-17  F_DP0      F_NF    F_DMAX     F_NB_FRAG    F_ALPHA   F_BETA  F_ATER   F_ERO_FAC F_ERO_NBFRAG  F_COLLFRAGPARAM  F_CLIM    F_ERO_IV
-    0.000004    2.     0.0015        2.          0.35     0.15    0.         0.        2.             0.01          0.001        1
-
-18  MUD_FRAC_EQ [1:NMUD]    
-    0.10  0.20  0.40  0.20  0.10  0.0  0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-
-19  MUD_T_DFLOC
-    200.
+15 tcr_tim
+      28800.0d0
 
 99 END of sediment input data
-
 
 !
 !=====================================================================
@@ -170,56 +136,3 @@ CROCO - SED_TOY - Test
 
    tcr_tim  Tau_crit consolidation rate
 
-*** Card 16 :
-
-   booleans for flocculation
-
-   L_ADS           Boolean set to .true. if differential settling aggregation
-  
-   L_ASH           Boolean set to .true. if shear aggregation
- 
-   L_COLLFRAG      Boolean set to .true. if collision-induced fragmentation enable
-
-   L_TESTCASE      If .TRUE. sets G(t) to values from Verney et al., 2011 lab experiment
-
-*** Card 17 :
-
-   flocculation Sediment Parameters.
- 
-   F_DP0           Primary particle size (m), typically 4e-6 m
- 
-   F_NF            Floc fractal dimension, typically ranging from 1.6 to 2.6
- 
-   F_DMAX          Maximum diameter (m)
- 
-   F_NB_FRAG       Number of fragments by shear erosion. If binary/ternary : 2.
- 
-   F_ALPHA         Flocculation efficiency, ranging from 0. to 1.
-  
-   F_BETA          Shear fragmentation rate
- 
-   F_ATER          For ternary breakup, use 0.5, for binary : 0. (a boolean could be better)
- 
-   F_ERO_FAC       Fraction of the shear fragmentation term transfered to shear erosion.
-                    Ranging from 0. (no erosion) to 1. (all erosion)
- 
-   F_ERO_NBFRAG    Number of fragments induced by shear erosion.
- 
- 
-   F_COLLFRAGPARAM Fragmentation rate for collision-induced breakup
- 
-   F_CLIM          Min concentration below which flocculation processes are not calculated
-
-   F_ERO_IV        Fragment size class (could be changed to a particle
-                   size or a particle distribution (INTEGER)
- 
-** Card 18
- 
-   Flocculation Decomposition in Bed Sediment Parameters
-   Only #ifdef DEFLOC
- 
-   MUD_FRAC_EQ      Equilibrium fractional class distribution (they should add up to 1).
-                    There is no check for that, [1:NMUD] values expected.
-** Card 19
- 
-   MUD_T_DFLOC      Time scale of flocculation decomposition in bed

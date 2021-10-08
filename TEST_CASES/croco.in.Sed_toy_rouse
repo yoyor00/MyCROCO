@@ -7,6 +7,13 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      200000.0d0
 
+run_start_date:
+01/01/2019 00:00:00
+run_end_date:
+20/01/2019 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                     24         24         24
+
 initial: NRREC  filename
           0
                           fileini
