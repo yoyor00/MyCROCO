@@ -46,7 +46,7 @@ if [ ${USE_CPL} -ge 1 ]; then
   fi
 fi
 
-. ${SCRIPTDIR}/ROUTINES/caltools.sh
+. ${SCRIPTDIR}/caltools.sh
 
 #-------------------------------------------------------------------------------
 # create job and submit it
