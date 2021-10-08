@@ -292,7 +292,7 @@ if [[ ${models[@]} =~ "toy" ]] ; then
 fi
 
 # Coupling scripts
-if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "oce" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]} =~ "atm" ]] || [[ ${models[@]} =~ "toy" ]] ; then
+if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]} =~ "atm" ]] || [[ ${models[@]} =~ "toy" ]] ; then
     echo 'Copy scripts for coupled runs'
     echo '-----------------------------'
     [ -d $MY_CONFIG_HOME/ROUTINES ] && \rm -Rf $MY_CONFIG_HOME/ROUTINES

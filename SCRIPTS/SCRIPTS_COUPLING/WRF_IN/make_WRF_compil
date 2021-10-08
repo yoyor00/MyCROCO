@@ -32,7 +32,7 @@
 #=======================  USER CHANGES  ==================================
 #=========================================================================
 
-source ../myenv_mypath
+source ../myenv_mypath.sh
 
 # number of CPUs used for WRF compilation
 export J='-j 8'
