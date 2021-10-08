@@ -694,6 +694,12 @@ C$OMP BARRIER
 ! Limit slope to 0.9*sed angle.
 !-----------------------------------------------------------------------
 !
+#  if defined SLOPE_NEMETH || defined SLOPE_LESSER
+            cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
+            cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
+            cff3=0.5*(1.+SIGN(1.,FE_r(i,j)))
+            cff4=0.5*(1.-SIGN(1.,FE_r(i,j)))
+#  endif
 #  ifdef SLOPE_NEMETH
             dzdx=(h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+       
      &           (h(i-1,j)-h(i  ,j))/om_u(i  ,j)*cff2
@@ -725,7 +731,7 @@ C$OMP BARRIER
             FX_r(i,j)=FX_r(i,j)*a_slopex
             FE_r(i,j)=FE_r(i,j)*a_slopey
 !
-#  endif /* SLOPE_NEMETH */
+#  endif /* SLOPE_NEMETH || SLOPE_LESSER */
 !
 !-----------------------------------------------------------------------
 ! Apply morphology factor.
