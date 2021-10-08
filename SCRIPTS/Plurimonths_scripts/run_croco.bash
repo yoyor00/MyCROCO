@@ -10,7 +10,7 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`
+INPUTDIR=`pwd`/CROCO_IN
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
