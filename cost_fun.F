@@ -41,7 +41,7 @@ c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
 
       do ta=1,ad_nt
          call ad_step()
-         call cost_fun_step(ad_x,icost,ta,3)
+         call cost_fun_step(ad_x,icost,ta*2,3)
          write(*,*) '==icost3==>',icost
 c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       end do
@@ -360,15 +360,30 @@ c     cf ana_initial
       character*6 counter_str
 
 #include "compute_extended_bounds.h"
-      k = 2
 
+      depth=2000
+      ridge_width = ad_x(2)*100
+      ridge_height = ad_x(1)
+
+      cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
-         do i=IstrR,IendR
-            pena_h(i,j)=h(i,j)+ad_x(1)
+        do i=IstrR,IendR
+          if ((xr(i,j).gt.ridge_width).or.
+     &       (xr(i,j).lt.(-ridge_width))) then
+            cff=0.
+          else
+            cff=1-(xr(i,j)*xr(i,j)*cff1);
+          endif
+          pena_h(i,j)=depth-ridge_height*cff*cff;
+#   ifdef INTERNALSHELF
+          if (xr(i,j).ge.0.) then
+            pena_h(i,j)=depth-ridge_height
+          endif
+#   endif
         enddo
       enddo
 
-
+      k=2
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
@@ -603,14 +618,38 @@ c      call grid_stiffness(tile)
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j,k
+      double precision ridge_width, ridge_height,depth,cff1,cff
 
 # include "compute_extended_bounds.h"
-      k=1
 
-c     h penalization
-      ad_x(1)=-10
+      ad_x(1) = 1600
+      ad_x(2) = 30e3 / 100.
+      ad_array_node_size=2
 
-      ad_array_node_size=1
+      write(*,*) '########',ad_x(1), ad_x(2)*100
+
+c set a lower depth
+      depth=2000
+      ridge_width = 30e3
+      ridge_height = 1600
+
+      cff1=1./(ridge_width*ridge_width)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          if ((xr(i,j).gt.ridge_width).or.
+     &       (xr(i,j).lt.(-ridge_width))) then
+            cff=0.
+          else
+            cff=1-(xr(i,j)*xr(i,j)*cff1);
+          endif
+          h(i,j)=depth-ridge_height*cff*cff;
+#   ifdef INTERNALSHELF
+          if (xr(i,j).ge.0.) then
+            h(i,j)=depth-ridge_height
+          endif
+#   endif
+        enddo
+      enddo
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,

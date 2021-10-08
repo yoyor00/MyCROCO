@@ -41,6 +41,15 @@ else
   mpirun_cmd="mpirun -n $nbcores"
 fi
 
+for d in AD /opt /usr/local $HOME/ $HOME/src $HOME/Download; do
+    if [ -f ${d}/tapenade_3.16/bin/tapenade ]; then
+      echo found tapenade in ${d}
+      export TAPENADE=${d}/tapenade_3.16/bin/tapenade
+      break
+    fi
+done
+
+
 mkdir -p RunIC
 cd RunIC
 
@@ -56,10 +65,19 @@ sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdef
 sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
 #sed -i 's/undef[\t ]*TAPENADE/define TAPENADE\n# define AUTOTILING/' cppdefs.h
 ../OCEAN/jobcomp
+cd Compile
+make croco && mv croco ..
+cd ..
 rm -f obs.dat
 ./croco croco.internal-friction-obs.in
 
 # 2. second run with obs.dat file
-#cp -f ../AD/croco.internal-friction.in .
-./croco_adc croco.internal-friction-obs.in
+sed -i 's/undef[\t ]*BATHY_MAY_BE_MODIFIED/define BATHY_MAY_BE_MODIFIED/' cppdefs.h
+sed -i 's/undef[\t ]*PENALIZATION/define PENALIZATION/' cppdefs.h
+../OCEAN/jobcomp
+cd Compile
+make croco_adj && mv croco_adj ..
+cd ..
+
+#./croco_adc croco.internal-friction-obs.in
 ./croco_adj croco.internal-friction-obs.in
