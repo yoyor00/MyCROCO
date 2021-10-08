@@ -2325,9 +2325,6 @@ C$OMP BARRIER
 !
 # endif /* MORPHODYN */
 
-# undef I_EXT_RANGE
-# undef J_EXT_RANGE
-
       return
       end
 
@@ -2371,38 +2368,6 @@ C$OMP BARRIER
 # endif
 # if defined SED_FLOCS && defined SED_DEFLOC
       real masseq(NMUD)
-# endif
-
-
-# ifdef EW_PERIODIC
-#  define I_EXT_RANGE Istr-1,Iend+1
-# else
-      if (WESTERN_EDGE) then
-        imin=Istr
-      else
-        imin=Istr-1
-      endif
-      if (EASTERN_EDGE) then
-        imax=Iend
-      else
-        imax=Iend+1
-      endif
-#  define I_EXT_RANGE imin,imax
-# endif
-# ifdef NS_PERIODIC
-#  define J_EXT_RANGE Jstr-1,Jend+1
-# else
-      if (SOUTHERN_EDGE) then
-        jmin=Jstr
-      else
-        jmin=Jstr-1
-      endif
-      if (NORTHERN_EDGE) then
-        jmax=Jend
-      else
-        jmax=Jend+1
-      endif
-#  define J_EXT_RANGE jmin,jmax
 # endif
 
 ! KLUDGE alert
