@@ -1355,7 +1355,7 @@ C$OMP BARRIER
         bed_frac(Iend+1,Jstr-1,:,:)=
      &  0.5*(bed_frac(Iend,Jstr-1,:,:)
      &      +bed_frac(Iend+1,Jstr,:,:))
-        bed_thick(Iend+1,Jstr-1,:)=
+        bed_thick(Iend+1,Jstr-1,1)=
      &  0.5*(bed_thick(Iend,Jstr-1,1)
      &      +bed_thick(Iend+1,Jstr,1))
       endif
@@ -1377,7 +1377,7 @@ C$OMP BARRIER
         bed_frac(Iend+1,Jend+1,:,:)=
      &   0.5*(bed_Frac(Iend,Jend+1,:,:)
      &       +bed_Frac(Iend+1,Jend,:,:))
-        bed_thick(Iend+1,Jend+1,:)=
+        bed_thick(Iend+1,Jend+1,1)=
      &   0.5*(bed_thick(Iend,Jend+1,1)
      &       +bed_thick(Iend+1,Jend,1))
       endif
