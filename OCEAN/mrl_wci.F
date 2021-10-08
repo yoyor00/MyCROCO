@@ -307,18 +307,18 @@
            cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
            cff1=wh(i,j)/(wave_gam*Dstp(i,j))
            ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
-      &                           (1.-(1.+cff1**2)**(-2.5))
+     &                           (1.-(1.+cff1**2)**(-2.5))
 #    elif defined WAVE_BREAK_CT93
            cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
            cff1=wh(i,j)/(wave_gam*Dstp(i,j))
            ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
-      &              *( 1.+tanh(8.0*(cff1-1.)) )*
-      &               ( 1.-(1.0+cff1**2)**(-2.5) )
+     &              *( 1.+tanh(8.0*(cff1-1.)) )*
+     &               ( 1.-(1.0+cff1**2)**(-2.5) )
 #    elif defined WAVE_BREAK_R93
            cff=0.25*g*(wave_btg**3)/(2.*pi)
            cff1=wh(i,j)/(wave_gam*Dstp(i,j))
            ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
-      &                          *(1-exp (-cff1**5 ))
+     &                          *(1-exp (-cff1**5 ))
 #    endif  
            ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
 #   endif       
