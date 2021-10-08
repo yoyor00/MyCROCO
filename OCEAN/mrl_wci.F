@@ -112,7 +112,8 @@
      &        ,zob_my(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 # if defined WAVE_BREAK_BJ78
-     &        ,Q0,Qb,HmaxBJ      
+     &        ,Q0,Qb,HmaxBJ     
+# endif      
 # ifdef SOLVE3D
       integer  k,kk 
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
