@@ -218,7 +218,7 @@ if [[ ${models[@]} =~ "oce" ]] ; then
     fi
     # MUSTANG
     if [[ ${models[@]} =~ "mustang" ]] ; then
-      mkdir -p $MY_CONFIG_HOME/croco_in/FIC_NAMELIST
+      mkdir -p $MY_CONFIG_HOME/CROCO_IN/FIC_NAMELIST
       cp -f $SOURCES_DIR/MUSTANG/NAM_CASES/*txt $MY_CONFIG_HOME/CROCO_IN/FIC_NAMELIST/.
     fi
     # OANALYSIS
@@ -402,10 +402,10 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
     cat ./namelist_rundir.sh >> mynamelist.sh
 
     for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [ ${models[$k]} == "oce" ] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/croco_in\n" >> mynamelist.sh
+        [ ${models[$k]} == "oce" ] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
         [ ${models[$k]} == "atm" ] && printf "export ATM_EXE_DIR=\n" >> mynamelist.sh
         [ ${models[$k]} == "wav" ] && printf "export WAV_EXE_DIR=\n" >> mynamelist.sh
-        [ ${models[$k]} == "toy" ] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/toy_in\n" >> mynamelist.sh
+        [ ${models[$k]} == "toy" ] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
         [ ${models[$k]} == "xios" ] && printf "export XIOS_EXE_DIR=\n" >> mynamelist.sh
     done
 

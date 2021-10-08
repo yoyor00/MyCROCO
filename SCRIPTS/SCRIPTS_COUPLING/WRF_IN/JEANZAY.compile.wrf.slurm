@@ -8,5 +8,5 @@
 #SBATCH -A yourproject
 
 cd ${SLURM_SUBMIT_DIR}
-
+source ../myenv_mypath.sh
 ./make_WRF_compil

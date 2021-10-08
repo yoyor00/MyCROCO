@@ -32,17 +32,17 @@
 #=======================  USER CHANGES  ==================================
 #=========================================================================
 
-source ../myenv_mypath.sh
+#source ../myenv_mypath.sh
 
 # number of CPUs used for WRF compilation
 export J='-j 8'
 
 # environment variables for WRF
 # --------------------------
-export NETCDF=$(nf-config --prefix)
+#export NETCDF=$(nf-config --prefix)
 #export NETCDF=$(nc-config --prefix)
-export NETCDF4=1
-export WRFIO_NCD_LARGE_FILE_SUPPORT=1
+#export NETCDF4=1
+#export WRFIO_NCD_LARGE_FILE_SUPPORT=1
 
 # define your cases to be compiled
 my_compil_cases=(uncoupled \

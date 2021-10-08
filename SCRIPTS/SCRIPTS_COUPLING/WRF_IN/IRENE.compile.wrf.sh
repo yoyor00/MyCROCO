@@ -13,5 +13,5 @@
 
 umask 022
 cd ${BRIDGE_MSUB_PWD}
-
+source ../myenv_mypath.sh
 ./make_WRF_compil
