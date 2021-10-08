@@ -328,7 +328,7 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "oce" ]] || [[ ${models[@]}
     # add sections for each model
     for k in `seq 0 $(( ${#models[@]} - 1))` ; do
         [ ${models[$k]} == "cpl" ] && printf "export CPL=\"\"\n" >> tmppath
-        [ ${models[$k]} == "oce" ] && printf "export OCE=\"${croco}/croco/OCEAN\"\n" >> tmppath
+        [ ${models[$k]} == "oce" ] && printf "export OCE=\"${CROCO_DIR}/croco/OCEAN\"\n" >> tmppath
         [ ${models[$k]} == "atm" ] && printf "export ATM=\"\"\n" >> tmppath
         [ ${models[$k]} == "wav" ] && printf "export WAV=\"\"\n" >> tmppath
         [ ${models[$k]} == "toy" ] && printf "export TOY=\"\"\n" >> tmppath
