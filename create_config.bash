@@ -17,7 +17,7 @@ export MACHINE="Linux"
 # CROCO parent directory 
 # (where croco_tools directory and croco source directory can be found)
 # -----------------
-export CROCO_DIR=~/croco
+export CROCO_DIR=${HOME}/croco
 
 # Configuration name
 # ------------------
@@ -25,8 +25,8 @@ export MY_CONFIG_NAME=BENGUELA
 
 # Home and Work configuration directories
 # ---------------------------------------
-export MY_CONFIG_HOME=~/CONFIGS/${MY_CONFIG_NAME}
-export MY_CONFIG_WORK=~/CONFIGS/${MY_CONFIG_NAME}
+export MY_CONFIG_HOME=${HOME}/CONFIGS/${MY_CONFIG_NAME}
+export MY_CONFIG_WORK=${HOME}/CONFIGS/${MY_CONFIG_NAME}
 
 # Options of your configuration
 # Known options: 
