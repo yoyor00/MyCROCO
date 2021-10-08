@@ -28,7 +28,7 @@ printf "%-15s : %-80s\n\n" "JOBDIR" "${JOBDIR_ROOT}"
 printf "%-15s : %-80s\n" "ATM_INPUTDIR" "${ATM_FILES_DIR}"
 printf "%-15s : %-80s\n" "OCE_INPUTDIR" "${OCE_FILES_DIR}"
 printf "%-15s : %-80s\n" "WAV_INPUTDIR" "${WAV_FILES_DIR}"
-printf "%-15s : %-80s\n" "CPL_INPUTDIR" "${CPL_FILES_DIR}"
+printf "%-15s : %-80s\n" "CPL_INPUTDIR" "${CPL_NAM_DIR}"
 printf "%-15s : %-80s\n" "OUTPUTDIR_ROOT" "${OUTPUTDIR_ROOT}"
 printf "%-15s : %-80s\n" "RESTDIR_ROOT" "${RESTDIR_ROOT}"
 

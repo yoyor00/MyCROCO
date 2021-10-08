@@ -1,4 +1,4 @@
-. ${SCRIPTDIR}/ROUTINES/caltools.sh
+. ${SCRIPTDIR}/caltools.sh
 ##
 
 ## -------------------------- #

@@ -72,7 +72,7 @@ ncks -O -v ${wrflon},${wrflat},${wrfmask} -d Time,0 $gridfile ${mytmpgrd}
 
 # Put them on the stag grid
 echo '---> Put them on the stag grid' 
-./to_wrf_stag_grid.sh ${mytmpgrd} ${mytmpgrd}
+. ${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh ${mytmpgrd} ${mytmpgrd}
 
 # remove time dimension
 echo '---> Remove time dimension...'

@@ -24,7 +24,7 @@ set -ue
 #   it with ". caltools.sh" instruction. If we directly call "caltools.sh",
 #   we will not have the functions back
 #
-. ${SCRIPTDIR}/ROUTINES/caltools.sh
+. ${SCRIPTDIR}/caltools.sh
 #
 ##
 ##======================================================================

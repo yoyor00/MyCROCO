@@ -11,14 +11,14 @@ export CALTYPE=greg
 
 function valid_date 
 {
-jd=$( ${SCRIPTDIR}/ROUTINES/julday.sh $1 $2 $3 $CALTYPE )
-${SCRIPTDIR}/ROUTINES/caldat.sh $jd $CALTYPE 
+jd=$( ${SCRIPTDIR}/julday.sh $1 $2 $3 $CALTYPE )
+${SCRIPTDIR}/caldat.sh $jd $CALTYPE 
 }
 
 function makedate
 { 
-jd=$( ${SCRIPTDIR}/ROUTINES/julday.sh $1 $2 $3 $CALTYPE )
-mdy=$( ${SCRIPTDIR}/ROUTINES/caldat.sh $jd $CALTYPE )
+jd=$( ${SCRIPTDIR}/julday.sh $1 $2 $3 $CALTYPE )
+mdy=$( ${SCRIPTDIR}/caldat.sh $jd $CALTYPE )
 m=$( echo $mdy | cut -d " " -f 1 )
 d=$( echo $mdy | cut -d " " -f 2 )
 y=$( echo $mdy | cut -d " " -f 3 )
@@ -44,7 +44,7 @@ export DATE_BEGIN_EXP=$( makedate $MONTH_BEGIN_EXP $DAY_BEGIN_EXP $YEAR_BEGIN_EX
 ##------------------------------------------------------------------------------
 ## Date of the beginning of the experiment (in julian calendar (in days)):
 ##------------------------------------------------------------------------------
-export JDAY_BEGIN_EXP=$( ${SCRIPTDIR}/ROUTINES/julday.sh ${MONTH_BEGIN_EXP} ${DAY_BEGIN_EXP} ${YEAR_BEGIN_EXP} $CALTYPE )
+export JDAY_BEGIN_EXP=$( ${SCRIPTDIR}/julday.sh ${MONTH_BEGIN_EXP} ${DAY_BEGIN_EXP} ${YEAR_BEGIN_EXP} $CALTYPE )
 
 ##------------------------------------------------------------------------------
 # Date of the end of the experiment (in $CALTYPE calendar):
@@ -68,7 +68,7 @@ export DATE_BEGIN_JOB=$( makedate $MONTH_BEGIN_JOB $DAY_BEGIN_JOB $YEAR_BEGIN_JO
 ##------------------------------------------------------------------------------
 ## julian date of the beginning of the job
 ##------------------------------------------------------------------------------
-export JDAY_BEGIN_JOB=$( ${SCRIPTDIR}/ROUTINES/julday.sh ${MONTH_BEGIN_JOB} ${DAY_BEGIN_JOB} ${YEAR_BEGIN_JOB} $CALTYPE )
+export JDAY_BEGIN_JOB=$( ${SCRIPTDIR}/julday.sh ${MONTH_BEGIN_JOB} ${DAY_BEGIN_JOB} ${YEAR_BEGIN_JOB} $CALTYPE )
 
 ##------------------------------------------------------------------------------
 # estimation of the job duration and the end of the job in agreement with 
@@ -81,7 +81,7 @@ export MONTH_END_JOB=$( echo $mdy | cut -d " " -f 1 )
 export DAY_END_JOB=$(   echo $mdy | cut -d " " -f 2 )
 export YEAR_END_JOB=$(  echo $mdy | cut -d " " -f 3 )
 # julian date of the end of the job
-JDAY_END_JOB=$( ${SCRIPTDIR}/ROUTINES/julday.sh ${MONTH_END_JOB} ${DAY_END_JOB} ${YEAR_END_JOB} $CALTYPE )
+JDAY_END_JOB=$( ${SCRIPTDIR}/julday.sh ${MONTH_END_JOB} ${DAY_END_JOB} ${YEAR_END_JOB} $CALTYPE )
 # total job duration
 export TOTAL_JOB_DUR=$(( $JDAY_END_JOB - JDAY_BEGIN_JOB + 1 ))
 
@@ -104,7 +104,7 @@ fi
 # define dates for next job...
 ##------------------------------------------------------------------------------
     JDAY_BEGIN_JOBp1=$(( ${JDAY_END_JOB} + 1 ))
-    mdy=$( ${SCRIPTDIR}/ROUTINES/caldat.sh ${JDAY_BEGIN_JOBp1} ${CALTYPE} )
+    mdy=$( ${SCRIPTDIR}/caldat.sh ${JDAY_BEGIN_JOBp1} ${CALTYPE} )
     MONTH_BEGIN_JOBp1=$( echo ${mdy} | cut -d " " -f 1 )
     DAY_BEGIN_JOBp1=$(   echo ${mdy} | cut -d " " -f 2 )
     YEAR_BEGIN_JOBp1=$(  echo ${mdy} | cut -d " " -f 3 )

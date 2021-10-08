@@ -74,7 +74,7 @@ export SERIAL_LAUNCH_WAV="$MPI_LAUNCH -n 1 " # serial launch for WW3 prepro: get
 #  Calendar computation
 #-------------------------------------------------------------------------------
 cd ${SCRIPTDIR}
-   . ./ROUTINES/caltools.sh
+   . ./caltools.sh
 cd -
 
 #-------------------------------------------------------------------------------

@@ -135,7 +135,7 @@ case $caltype in
 	;;
     greg)
 	[ $jy -eq 0 ] && echo "there is no year zero in Calendar" && exit
-	julday=`${SCRIPTDIR}/ROUTINES/julday.sh $1 $2 $3 julian`
+	julday=`${SCRIPTDIR}/julday.sh $1 $2 $3 julian`
 	igreg=$(( 15+31*(10+12*1582) ))
 	if [ $(( $id + 31*($mm + 12 * $iyyy) )) -ge $igreg ]
 	    then
@@ -152,7 +152,7 @@ case $caltype in
 	;;
     progreg)
 	[ $jy -eq 0 ] && echo "there is no year zero in Calendar" && exit
-	julday=`${SCRIPTDIR}/ROUTINES/julday.sh $1 $2 $3 julian`
+	julday=`${SCRIPTDIR}/julday.sh $1 $2 $3 julian`
 	[ $jy -lt 0 ] && jy=$(( $jy + 1 ))
 	[ $mm -le 2 ] && jy=$(( $jy - 1 ))
 	

@@ -32,7 +32,7 @@
 #=======================  USER CHANGES  ==================================
 #=========================================================================
 
-source ../run_env
+source ../myenv_mypath
 
 # number of CPUs used for WRF compilation
 export J='-j 8'
@@ -46,7 +46,7 @@ export WRFIO_NCD_LARGE_FILE_SUPPORT=1
 
 # define your cases to be compiled
 my_compil_cases=(uncoupled \
-                 coupled)
+                 coupled) # av: uncoupled / uncoupled_xios / coupled /coupled_xios
 # Note that you need to create configure.wrf.$mycase before running this script
 # Go in your $wrf directory and execute ./configure, choose settings:
 #      your machine architecture + dmpar
@@ -64,7 +64,7 @@ my_compil_cases=(uncoupled \
 
 
 # Enter model sources directory
-cd $wrf
+cd $ATM
 
 # Count number of cases to compile
 NB_cases=${#my_compil_cases[@]}
@@ -75,9 +75,11 @@ for k in `seq 0 $(( ${NB_cases} - 1))` ; do
     mycase=${my_compil_cases[$k]}
 
     # Check if configure.wrf.$mycase file is available
-    if [ ! -e configure.wrf.$mycase ]; then
-        echo 'ERROR configure.wrf.'$mycase' file does not exist. Create it before running compilation'
+    if [ ! -e ${CHOME}/WRF_IN/CONFIGURE_WRF/${MACHINE}/configure.wrf.$mycase ]; then
+        echo 'ERROR configure.wrf.'$mycase' file does not exist in ${CHOME}/WRF_IN/CONFIGURE_WRF/${MACHINE} . Create it before running compilation'
         exit 1
+    else 
+        cp ${CHOME}/WRF_IN/CONFIGURE_WRF/${MACHINE}/configure.wrf.$mycase ${ATM}
     fi
 
     ./clean -a

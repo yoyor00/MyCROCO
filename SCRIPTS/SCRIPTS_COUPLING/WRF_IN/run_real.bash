@@ -89,7 +89,7 @@ nudge_end_h=144
 source ../myenv_mypath.sh
 #
 # Metgrid outputs path
-export O_DATAROOT="$WRF_FILES_DIR/WPS_DATA"
+export O_DATAROOT="${ATM_FILES_DIR}/WPS_DATA"
 #
 # real exe path
 export REAL_EXE_DIR="${ATM}/exe_uncoupled"
@@ -110,12 +110,16 @@ else
 fi
 # MPI launch commands
 # ------------------
-# for JEAN-ZAY ----------
-#export myMPI="srun -n $NBPROCS "
-# for NEA ----------
-#export myMPI="mpirun -np $NBPROCS "
-# for DATARMOR ----------
-export myMPI="$MPI_LAUNCH -np $NBPROCS "
+if [ ${MACHINE} == "JEANZAY" ]; then
+    export myMPI="srun -n $NBPROCS "
+elif [ ${MACHINE} == "DATARMOR" ]; then
+    export myMPI="$MPI_LAUNCH -np $NBPROCS "
+elif [ ${MACHINE} == "IRENE" ]; then
+    export myMPI="ccc_mprun -n $NBPROCS "
+else
+    echo "Define how to run the job in run_wps.bash"
+    exit
+fi
 #
 cp inputs_wrf/namelist.input.base.complete ${REAL_WORK_DIR}/.
 # MPI parameters

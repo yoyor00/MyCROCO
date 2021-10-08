@@ -14,10 +14,10 @@ for nn in $( seq 0 ${AGRIFZ} ); do
 done
 
 # Get boundary foring
-. ${SCRIPTDIR}/ROUTINES/oce_getbry.sh
+. ${SCRIPTDIR}/oce_getbry.sh
 
 # Get surface forcing if needed
-[ ${surfrc_flag} == "TRUE" ] && . ${SCRIPTDIR}/ROUTINES/oce_getfrc.sh
+[ ${surfrc_flag} == "TRUE" ] && . ${SCRIPTDIR}/oce_getfrc.sh
 
 # Get tide forcing if any
 for nn in $( seq 0 ${AGRIFZ} ); do

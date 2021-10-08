@@ -28,7 +28,7 @@ else
 fi
 
 
-cd ${SCRIPTDIR}/ROUTINES
+cd ${SCRIPTDIR}/
 
 newsdate=$( makedate $MONTH_BEGIN_JOBp1 $DAY_BEGIN_JOBp1 $YEAR_BEGIN_JOBp1 )
 newedate=${newsdate}
@@ -59,7 +59,7 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
         newjobname="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"
         ${QSUB} -N ${newjobname} ${launchcmd} ${future_job} 
         launchcmd="-W depend=afterany:$( echo $( qselect -N ${newjobname}) | cut -c 1-7 )"
-        cd ${SCRIPTDIR}/ROUTINES
+        cd ${SCRIPTDIR}/
 #
     elif [ ${MACHINE} == "IRENE" ] ; then
         # 
@@ -81,7 +81,7 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
         cnt=$(( ${cnt} + 1 ))
         ${QSUB} -a ${prejobid} ${future_job} 
         prejobname="${newjobname}"
-        cd ${SCRIPTDIR}/ROUTINES
+        cd ${SCRIPTDIR}/
 #
     elif [ ${MACHINE} == "JEANZAY" ] ; then
 	newjobname="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"

@@ -40,9 +40,9 @@ source ../myenv_mypath.sh
 export WWATCH3_ENV=${CHOME}/wwatch3.env
 # define your compilers
 export WWATCH3_F77=ifort
-export WWATCH3_CC=icc
+export WWATCH3_CC=${CC}
 # define your netcdf format
-export WWATCH3_NETCDF=NC4
+export WWATCH3_NETCDF=${WWATCH3_NETCDF}
 # define your ww3 source model
 export WWATCH3_DIR=$WAV
 # define your ww3 temporary directory for compilation

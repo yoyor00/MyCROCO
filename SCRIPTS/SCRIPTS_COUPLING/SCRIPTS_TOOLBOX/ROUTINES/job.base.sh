@@ -24,7 +24,7 @@ if [ ${LOADL_STEP_NAME} == "get_file" ] || [ ${LOADL_STEP_NAME} == "XXX" ]; then
         mkdir -p ${JOBDIR}
 
 # some printings
-. ${SCRIPTDIR}/ROUTINES/common_printing.sh
+. ${SCRIPTDIR}/common_printing.sh
 
 cd ${EXEDIR} 
 
@@ -34,16 +34,16 @@ cd ${EXEDIR}
         printf "\n ************* EXECUTABLE files *****************\n"
             if [ ${USE_OCE}  -eq 1 ]; then
                 if [ ${ONLINE_COMP} -eq 1 ]; then
-                    . ${SCRIPTDIR}/ROUTINES/oce_compile.sh 
+                    . ${SCRIPTDIR}/oce_compile.sh 
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
                     [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
                 fi
-                . ${SCRIPTDIR}/ROUTINES/getversion.sh ${OCE}
+                . ${SCRIPTDIR}/getversion.sh ${OCE}
             fi
 #	    [ ${USE_OCE}  -eq 1 ] && cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-	    [ ${USE_ATM}  -eq 1 ] && { cpfile ${ATM_EXE_DIR}/wrf.exe wrfexe ; . ${SCRIPTDIR}/ROUTINES/getversion.sh ${ATM} ; }
-	    [ ${USE_WAV}  -eq 1 ] && { cp ${WAV_EXE_DIR}/ww3_* . && mv ww3_shel wwatch ; . ${SCRIPTDIR}/ROUTINES/getversion.sh ${WAV} ;}
+	    [ ${USE_ATM}  -eq 1 ] && { cpfile ${ATM_EXE_DIR}/wrf.exe wrfexe ; . ${SCRIPTDIR}/getversion.sh ${ATM} ; }
+	    [ ${USE_WAV}  -eq 1 ] && { cp ${WAV_EXE_DIR}/ww3_* . && mv ww3_shel wwatch ; . ${SCRIPTDIR}/getversion.sh ${WAV} ;}
 	    [ ${USE_XIOS} -ge 1 ] && cpfile ${XIOS_EXE_DIR}/xios_server.exe .
             # If toy is used #
             if [ ${USE_TOY}  -ge 1 ]; then
@@ -67,40 +67,40 @@ cd ${EXEDIR}
         RESTDIR_IN=${RESTDIR_ROOT}/${DATE_END_JOBm1}
 
         [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN CONFIGURATION, OBC, BLK... files *****************\n" 
-        [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/oce_getfile.sh ; }
+        [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_getfile.sh ; }
 
         [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN RESTART files *****************\n" |tee ls_l/oce_getrst.txt
         [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/getrst_oce.txt \n"
-        [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/oce_getrst.sh ; } >> ls_l/oce_getrst.txt
+        [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_getrst.sh ; } >> ls_l/oce_getrst.txt
 
         [ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE CONFIGURATION LOWINPUT, BDY... files *****************\n" 
-        [ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/atm_getfile.sh ; }
+        [ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_getfile.sh ; }
 
 	[ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE RESTART files *****************\n" |tee ls_l/atm_getrst.txt
 	[ ${USE_ATM} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/atm_getrst.txt \n"
-	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/atm_getrst.sh ; } >> ls_l/atm_getrst.txt
+	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_getrst.sh ; } >> ls_l/atm_getrst.txt
 
         [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE CONFIGURATION files *****************\n"
-        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/wav_getfile.sh ; }
+        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getfile.sh ; }
 
         [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE RESTART files *****************\n" |tee ls_l/wav_getrst.txt
         [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/getrst_ww3.txt \n"
-        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/wav_getrst.sh ; } >> ls_l/wav_getrst.txt
+        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getrst.sh ; } >> ls_l/wav_getrst.txt
 
 	[ ${USE_CPL} -ge 1 ] && printf "\n ************* get OA3MCT RESTART files *****************\n"
-	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/ROUTINES/cpl_getrst.sh ; }
+	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_getrst.sh ; }
 
         [ ${USE_TOY} -ge 1 ] && printf "\n ************* get TOY CONFIGURATION files *****************\n"
-        [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/ROUTINES/toy_getfile.sh ; }
+        [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_getfile.sh ; }
 
 
 # make the namelists from the namelist.base files
         printf "\n ************* make namelist files from namelist base files *****************\n"
-	[ ${USE_OCE} -eq 1 ] && ${SCRIPTDIR}/ROUTINES/oce_nam.sh
-	[ ${USE_ATM} -eq 1 ] && ${SCRIPTDIR}/ROUTINES/atm_nam.sh
+	[ ${USE_OCE} -eq 1 ] && ${SCRIPTDIR}/oce_nam.sh
+	[ ${USE_ATM} -eq 1 ] && ${SCRIPTDIR}/atm_nam.sh
         [ ${USE_WAV} -eq 1 ] && echo "No namelist for WAV"
-        [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/ROUTINES/toy_nam.sh ; }
-	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/ROUTINES/cpl_nam.sh ; }
+        [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_nam.sh ; }
+	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_nam.sh ; }
         printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
 
 fi # Step1
@@ -123,7 +123,7 @@ cd ${EXEDIR}
 #        echo "${EXEC} > out_run.txt 2>&1" 
 #              ${EXEC} > out_run.txt 2>&1
         printf "\n ***************** make app.conf file for Multiple Program Multiple Data *****************\n"
-        [ -f ${SCRIPTDIR}/ROUTINES/MACHINE/${MACHINE}/launch_${MACHINE}.sh ] && { . ${SCRIPTDIR}/ROUTINES/MACHINE/${MACHINE}/launch_${MACHINE}.sh ; } || { printf "\n Please create a file launch_${MACHINE}.sh \n" ; exit 0 ; }
+        [ -f ${SCRIPTDIR}/MACHINE/${MACHINE}/launch_${MACHINE}.sh ] && { . ${SCRIPTDIR}/MACHINE/${MACHINE}/launch_${MACHINE}.sh ; } || { printf "\n Please create a file launch_${MACHINE}.sh \n" ; exit 0 ; }
 
 	echo "launch run: $MPI_LAUNCH ${MPI_ext} app.conf " #${run_cmd} #$app.conf
 
@@ -170,18 +170,18 @@ cd ${EXEDIR}
         printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
         [ ${USE_OCE} -eq 1 ] && printf "\n ************* put OCEAN OUTPUT/RESTART files *****************\n" |tee ls_l/oce_putfile.txt
         [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/oce_putfile.txt \n" 
-        [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/oce_putfile.sh ; } >> ls_l/oce_putfile.txt
+        [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_putfile.sh ; } >> ls_l/oce_putfile.txt
 
         [ ${USE_ATM} -eq 1 ] && printf "\n ************* put ATMOSPHERE OUTPUT/RESTART files *****************\n" |tee ls_l/atm_putfile.txt
         [ ${USE_ATM} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/atm_putfile.txt \n"
-        [ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/atm_putfile.sh ; } >> ls_l/atm_putfile.txt
-       
+        [ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_putfile.sh ; } >> ls_l/atm_putfile.txt
+      
         [ ${USE_WAV} -eq 1 ] && printf "\n ************* put WAVE OUTPUT/RESTART files *****************\n" |tee ls_l/wav_putfile.txt
         [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/wav_putfile.txt \n"
-        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/ROUTINES/wav_putfile.sh ; } >> ls_l/wav_putfile.txt
+        [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_putfile.sh ; } >> ls_l/wav_putfile.txt
 
         [ ${USE_CPL} -ge 1 ] && printf "\n ************* put OA3MCT OUTPUT/RESTART files *****************\n" 
-        [ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/ROUTINES/cpl_putfile.sh ; }
+        [ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_putfile.sh ; }
 
 #-------------------------------------------------------------------------------
 #  save output control ascii files in jobs directory
