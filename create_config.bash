@@ -304,7 +304,7 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "oce" ]] || [[ ${models[@]}
     [[ ${models[@]} =~ "oce" ]] && printf "export NP_OCEX=2 \nexport NP_OCEY=2\n" >> myjob.tmp
     [[ ${models[@]} =~ "wav" ]] && printf "export NP_WAV=14 \n" >> myjob.tmp
     [[ ${models[@]} =~ "atm" ]] && printf "export NP_ATM=12 \n" >> myjob.tmp
-    [[ ${models[@]} =~ "toy" ]] && printf "export NP_ATM=2 \n" >> myjob.tmp
+    [[ ${models[@]} =~ "toy" ]] && printf "export NP_TOY=2 \n" >> myjob.tmp
     [[ ${models[@]} =~ "xios" ]] && printf "export NP_XIOS_ATM=1\nexport NP_XIOS_OCE=1\n" >> myjob.tmp
 
     if [[ ${models[@]} =~ "atm" ]] ; then
