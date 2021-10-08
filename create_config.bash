@@ -12,21 +12,21 @@
 # Machine you are working on
 # Known machines: Linux DATARMOR IRENE JEANZAY
 # ---------------------------------------------
-export MACHINE="DATARMOR"
+export MACHINE="Linux"
 
 # CROCO parent directory 
 # (where croco_tools directory and croco source directory can be found)
 # -----------------
-export CROCO_DIR=~/MODEL_git/croco
+export CROCO_DIR=~/croco
 
 # Configuration name
 # ------------------
-export MY_CONFIG_NAME=BENGUELA_test
+export MY_CONFIG_NAME=BENGUELA
 
 # Home and Work configuration directories
 # ---------------------------------------
-export MY_CONFIG_HOME=${PWD}/${MY_CONFIG_NAME}
-export MY_CONFIG_WORK=${PWD}/${MY_CONFIG_NAME}
+export MY_CONFIG_HOME=~/CONFIGS/${MY_CONFIG_NAME}
+export MY_CONFIG_WORK=~/CONFIGS/${MY_CONFIG_NAME}
 
 # Options of your configuration
 # Known options: 
@@ -43,7 +43,7 @@ export MY_CONFIG_WORK=${PWD}/${MY_CONFIG_NAME}
 # cpl        : for coupling with OASIS
 # atm wav toy: other models for coupling
 # -----------------------------------------------------
-models=("cpl" "oce" "atm" "wav" )
+models=( "oce" "inter" )
 
 # END USER MODIFICATIONS
 #==========================================================================================
