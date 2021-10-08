@@ -100,9 +100,9 @@
 :  WARNING if several sands: start with the coarser sands and continue more and more finely
 :
  &nmlsands
-    name_var_n(1)='GRAV'
-      long_name_var_n(1)='GRAV'
-      standard_name_var_n(1)='GRAV'
+    name_var_n(1)=''
+      long_name_var_n(1)=''
+      standard_name_var_n(1)=''
       unit_var_n(1)='kg.m-3'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
@@ -118,24 +118,7 @@
       diam_n(1)=0.0006
       l_sand2D_n(1)=.FALSE.
       l_outsandrouse_n(1)=.FALSE. 
-    name_var_n(2)='SAND'
-      long_name_var_n(2)='SAND'
-      standard_name_var_n(2)='SAND'
-      unit_var_n(2)='kg.m-3'
-      flx_atm_n(2)=0.0
-      cv_rain_n(2)=0.0
-      cini_wat_n(2)=0.5
-      cini_sed_n(2)=0.
-      cini_air_n(2)=0.0
-      l_out_subs_n(2)=.TRUE.
-      l_bedload_n(2)=.TRUE.
-      init_cv_name_n(2)='SAND'
-      obc_cv_name_n(2)='SAND'
-      tocd_n(2)=1000.
-      ros_n(2)=2600.0
-      diam_n(2)=0.000255
-      l_sand2D_n(2)=.FALSE.
-      l_outsandrouse_n(2)=.FALSE.  /
+       /
     
 : nmlmuds : Caracterisation des substances de type VASE (utilise seulement si  key_sed_MUSTANG)
 :            : Characterization of MUD substances (used only if defined key_sed_MUSTANG)
@@ -294,9 +277,9 @@
 :    ws_hind_para_n(1:2,num substance) : 2 additional parameters 
 :
  &nmlpartnc
-    name_var_n(1)='MES'
-      long_name_var_n(1)='MES'
-      standard_name_var_n(1)='MES'
+    name_var_n(1)=''
+      long_name_var_n(1)=''
+      standard_name_var_n(1)=''
       unit_var_n(1)='g.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
