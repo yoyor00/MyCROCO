@@ -34,10 +34,17 @@ cd ${EXEDIR}
         printf "\n ************* EXECUTABLE files *****************\n"
             if [ ${USE_OCE}  -eq 1 ]; then
                 if [ ${ONLINE_COMP} -eq 1 ]; then
-                    . ${SCRIPTDIR}/oce_compile.sh 
+                    if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then 
+                        . ${SCRIPTDIR}/oce_compile.sh 
+                        [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${JOBDIR_ROOT}/COMP_CROCO/*.xml ${XIOS_NAM_DIR}/ ;}
+                    else
+                        cp ${JOBDIR_ROOT}/COMP_CROCO/croco.${RUNtype} crocox
+                    fi
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-                    [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
+                    if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+                        [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
+                    fi
                 fi
                 . ${SCRIPTDIR}/getversion.sh ${OCE}
             fi
@@ -226,14 +233,14 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
         sed -e "s/YEAR_BEGIN_JOB=.*/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOBp1}/" \
             -e "s/MONTH_BEGIN_JOB=.*/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOBp1}/" \
             -e "s/DAY_BEGIN_JOB=.*/DAY_BEGIN_JOB=${DAY_BEGIN_JOBp1}/" \
-                ${SCRIPTDIR}/myjob.sh > tata.sh
-        mvfile2 ${SCRIPTDIR}/myjob.sh ${JOBDIR}
-        mvfile tata.sh ${SCRIPTDIR}/myjob.sh
-        chmod 755   ${SCRIPTDIR}/myjob.sh
+                ${SCRIPTDIR}/../myjob.sh > tata.sh
+        mvfile2 ${SCRIPTDIR}/../myjob.sh ${JOBDIR}
+        mvfile tata.sh ${SCRIPTDIR}/../myjob.sh
+        chmod 755   ${SCRIPTDIR}/../myjob.sh
 
 	if [ ${DATE_END_JOB} -ne ${DATE_END_EXP} ]
 	then
-        cd ${SCRIPTDIR}
+        cd ${SCRIPTDIR}/..
         chmod 755 submitjob.sh
         ./submitjob.sh
     else
