@@ -331,7 +331,7 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
         [ ${models[$k]} == "oce" ] && printf "export OCE=\"${CROCO_DIR}/croco/OCEAN\"\n" >> tmppath
         [ ${models[$k]} == "atm" ] && printf "export ATM=\"\"\n" >> tmppath
         [ ${models[$k]} == "wav" ] && printf "export WAV=\"\"\n" >> tmppath
-        [ ${models[$k]} == "toy" ] && printf "export TOY=\"\"\n" >> tmppath
+        [ ${models[$k]} == "toy" ] && printf "export TOY=\"${CHOME}/TOY_IN\"\n" >> tmppath
         [ ${models[$k]} == "xios" ] && printf "export XIOS=\"\"\n" >> tmppath
     done
     for k in ${models[@]} ; do

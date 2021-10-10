@@ -78,7 +78,7 @@ if [ $model == wrf ] ; then
     
     # Put it on the stag grid
     echo '---> Put it on the stag grid' 
-    . ${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh ${filetmp} ${filetmp}
+    ${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh ${filetmp} ${filetmp}
  
     # remove time dimension
     echo '---> Remove time dimension...'

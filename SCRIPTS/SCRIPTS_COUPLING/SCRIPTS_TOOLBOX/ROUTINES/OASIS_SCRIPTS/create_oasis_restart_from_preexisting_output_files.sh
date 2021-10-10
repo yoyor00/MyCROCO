@@ -147,12 +147,12 @@ for k in `seq 0 $(( ${lengthvar} - 1))` ; do
 
     # Extract or compute var
     echo '---> Extract or compute '$var
-    . ${SCRIPTDIR}/OASIS_SCRIPTS/from_${model}.sh $filein $filetmp $timerange $gridlevels
+    ${SCRIPTDIR}/OASIS_SCRIPTS/from_${model}.sh $filein $filetmp $timerange $gridlevels
 
     if [ $model == wrf ] ; then
         # Put them on the stag grid
         echo '---> Put them on the stag grid' 
-        . ${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh $filetmp $filetmp
+        ${SCRIPTDIR}/OASIS_SCRIPTS/to_wrf_stag_grid.sh $filetmp $filetmp
     fi
 
     # Remove time dimension
