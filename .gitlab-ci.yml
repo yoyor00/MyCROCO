@@ -1,6 +1,5 @@
 # ci croco
 # check this file with: https://gitlab.inria.fr/ci/lint
-
 variables:
   TERM: "xterm-256color"
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro"
@@ -73,6 +72,10 @@ vort_run:
     - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
 
+  artifacts:
+    paths:
+       - $CVTKWORK/ftp
+    when: always
    
 reg_run:
   only:
@@ -85,32 +88,31 @@ reg_run:
     
     - ./mk_TESTALL.bash CONFIGURE_REG reg
     - ./gather_recap.bash REG > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
  
   artifacts:
     paths:
       - $CVTKWORK/ftp
     when: always 
 
-reg_perfrst:
-  only:
-    - schedules  
-  script:
-    - cd $PERFRSTHOME/Scripts_reg_perfrst
-    - ./create_link_master_reg_perfrst.sh
-    - cd -
-    - cd $PERFRSTWORK/REG
+# reg_perfrst:
+#   only:
+#     - schedules  
+#   script:
+#     - cd $PERFRSTHOME/Scripts_reg_perfrst
+#     - ./create_link_master_reg_perfrst.sh
+#     - cd -
+#     - cd $PERFRSTWORK/REG
     
-    - ./mk_TESTALL_perfrst.bash CONFIGURE_REG_PERFRST reg
-    - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+#     - ./mk_TESTALL_perfrst.bash CONFIGURE_REG_PERFRST reg
+#     - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
+#     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+#     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+#     - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
 
-  artifacts:
-    paths:
-      - $PERFRSTWORK/ftp
-    when: always
-
+#   artifacts:
+#     paths:
+#       - $PERFRSTWORK/ftp
+#     when: always
