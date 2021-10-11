@@ -2026,14 +2026,14 @@
      &                             nf_collective)
 #   endif
           lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
+     &                                 lvar,vname(2,indx)(1:lvar))
           lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
+     &                                 lvar,vname(3,indx)(1:lvar))
           lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
+     &                                 lvar,vname(4,indx)(1:lvar))
             call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx,5,
      &                 NF_FOUT, ierr)
           enddo
@@ -2048,14 +2048,14 @@
      &                           nf_collective)
 #   endif
           lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
           lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
           lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
           call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5,
      &              NF_FOUT, ierr)
         enddo
