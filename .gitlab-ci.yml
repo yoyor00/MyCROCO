@@ -73,6 +73,10 @@ vort_run:
     - /bin/sh -c '! grep -i "Execution failure" VORT_gather_recap_*_git*' > /dev/null 2>&1
     - /bin/sh -c '! grep -i "Parallel reproducibility failed" VORT_gather_recap_*_git*' > /dev/null 2>&1
 
+  artifacts:
+    paths:
+      - $CVTKWORK/ftp
+    when: always
    
 reg_run:
   only:
