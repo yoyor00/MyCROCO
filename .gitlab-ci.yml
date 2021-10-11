@@ -85,9 +85,9 @@ reg_run:
     
     - ./mk_TESTALL.bash CONFIGURE_REG reg
     - ./gather_recap.bash REG > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" REG_gather_recap_*_git*' > /dev/null 2>&1
  
   artifacts:
     paths:
