@@ -94,23 +94,23 @@ reg_run:
       - $CVTKWORK/ftp
     when: always 
 
-# reg_perfrst:
-#   only:
-#     - schedules  
-#   script:
-#     - cd $PERFRSTHOME/Scripts_reg_perfrst
-#     - ./create_link_master_reg_perfrst.sh
-#     - cd -
-#     - cd $PERFRSTWORK/REG
-    
-#     - ./mk_TESTALL_perfrst.bash CONFIGURE_REG_PERFRST reg
-#     - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
-#     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
-#     - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
+ reg_perfrst:
+   only:
+     - schedules  
+   script:
+     - cd $PERFRSTHOME/Scripts_reg_perfrst
+     - ./create_link_master_reg_perfrst.sh
+     - cd -
+     - cd $PERFRSTWORK/REG
+   
+     - ./mk_TESTALL_perfrst.bash CONFIGURE_REG_PERFRST reg
+     - ./gather_recap_perfrst.bash REG > /dev/null 2>&1
+     - /bin/sh -c '! grep -i "Compilation failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+     - /bin/sh -c '! grep -i "Execution failure" REG_gather_recap_*_git*' > /dev/null 2>&1
+     - /bin/sh -c '! grep -i "Restartabilty failed" REG_gather_recap_*_git*' > /dev/null 2>&1
 
-#   artifacts:
-#     paths:
-#       - $PERFRSTWORK/ftp
-#     when: always
+   artifacts:
+     paths:
+       - $PERFRSTWORK/ftp
+     when: always
 
