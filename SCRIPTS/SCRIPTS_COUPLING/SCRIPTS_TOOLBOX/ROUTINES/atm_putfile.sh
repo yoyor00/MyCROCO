@@ -5,7 +5,7 @@
 
 if [ ${USE_XIOS_ATM} -eq 1 ] ; then
     for file in ${ATM_XIOS_NAME}; do
-        mv ${file}* ${OUTPUTDIR}/${file}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
+        mvfile2 ${file}* ${OUTPUTDIR}/${file}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
     done
 else
     module load $ncomod

@@ -38,8 +38,8 @@ for nn in $( seq 0 ${AGRIFZ} )
 do
     if [ ${nn} -gt 0 ];    then
 	namfile=croco.in.${nn}
-	cp ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
-        cp ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
+	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
+        cpfile ${OCE_NAM_DIR}/AGRIF_FixedGrids.in ./
 	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
     else
 	namfile=croco.in

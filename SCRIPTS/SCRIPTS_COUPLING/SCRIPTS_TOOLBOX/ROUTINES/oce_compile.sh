@@ -130,6 +130,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 
     chmod 755 jobcomp
     time ./jobcomp >& log.compil
+    [ "$?" -eq "2" ] && { printf "ERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
     mv croco croco.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox

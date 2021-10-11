@@ -36,14 +36,13 @@ cd ${EXEDIR}
                 if [ ${ONLINE_COMP} -eq 1 ]; then
                     if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then 
                         . ${SCRIPTDIR}/oce_compile.sh 
-                        [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${JOBDIR_ROOT}/COMP_CROCO/*.xml ${XIOS_NAM_DIR}/ ;}
                     else
-                        cp ${JOBDIR_ROOT}/COMP_CROCO/croco.${RUNtype} crocox
+                        cpfile ${JOBDIR_ROOT}/COMP_CROCO/croco.${RUNtype} crocox
                     fi
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
                     if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-                        [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
+                        [ ${USE_XIOS_OCE} -eq 1 ] && { cpfile ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
                     fi
                 fi
                 . ${SCRIPTDIR}/getversion.sh ${OCE}
@@ -135,7 +134,9 @@ cd ${EXEDIR}
 	echo "launch run: $MPI_LAUNCH ${MPI_ext} app.conf " #${run_cmd} #$app.conf
 
 ##### RUN ######
-time $MPI_LAUNCH ${MPI_ext} app.conf > out_run.txt 2>&1
+time $MPI_LAUNCH ${MPI_ext} app.conf >& out_run.txt 
+[ "$?" -eq "2" ] && { printf "ERROR during the RUN.\n Please check le log.files in ${EXEDIR} (out_run.txt, croco.log,...)"; exit ; }
+
 #${run_cmd} #app.conf
 ################
 #        fi
