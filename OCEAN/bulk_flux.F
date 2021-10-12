@@ -403,7 +403,7 @@
           ELSE
             idx = 1
           ENDIF
-          chi   = CWage * ( wspd0 / Wstar )   ! Wave age
+          chi   = CWage * ( wspd0 / Wstar(1) )   ! Wave age
           IF(idx==1) chi = wspd0
           cff   = wspd0 * wspd0
           aa    =     Awasp(0,idx) + Awasp(1,idx)*wspd0
@@ -418,10 +418,10 @@
           IF(charn > Charn1) charn = Charn1
 #  else
           charn = 0.011
-          IF     ( wspd0 > 18.0 ) then
+          IF     ( delW(1) > 18.0 ) then
             charn = 0.018
-          ELSEIF ( wspd0 > 10.0 ) then
-            charn = 0.011+0.125*(0.018-0.011)*(wspd0-10.)
+          ELSEIF ( delW(1) > 10.0 ) then
+            charn = 0.011+0.125*(0.018-0.011)*(delW(1)-10.)
           ENDIF
 #  endif
 !
@@ -432,7 +432,7 @@
           DO Iter=1,IterFl
 !----------------------
             DO m=1,mb
-!++ Inverse of roughness length
+!++  Inverse of roughness length
               iZoW    = g*Wstar(m) / ( charn*Wstar(m)*Wstar(m)*Wstar(m)
      &                                 +0.11*g*VisAir )
 !++  Inverse of thermal roughness length
