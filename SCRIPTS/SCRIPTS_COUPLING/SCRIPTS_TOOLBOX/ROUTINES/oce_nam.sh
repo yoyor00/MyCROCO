@@ -68,6 +68,7 @@ do
     printf "Computing the origin_date from start_date and scrum_time"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
+    cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
     scrumt=$( ncdump -v scrum_time ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
 
     scrumtindays=$(( $scrumt/86400))
@@ -82,7 +83,7 @@ do
 sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
     -e "s/<oce_nrst>/${OCE_NTIMES}/g"   -e "s/<oce_nhis>/${oce_nhis}/g" -e "s/<oce_navg>/${oce_navg}/g"     \
     -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"             -e "s/<mo1>/${MONTH_BEGIN_JOB}/g"           \
-    -e "s/<dstart>/${DAY_BEGIN_JOB}/g"  -e "s/<mstart>/${MONTH_BEGIN_JOB}/g" -e "s/<ystart>/${YEAR_BEGIN_JOB}/g" \
+    -e "s/<dstart>/${cur_D}/g"  -e "s/<mstart>/${cur_M}/g" -e "s/<ystart>/${cur_Y}/g" \
     -e "s/<dorig>/${or_D}/g"  -e "s/<morig>/${or_M}/g" -e "s/<yorig>/${or_Y}/g" \
     -e "s/<yr2>/${end_Y}/g"             -e "s/<mo2>/${end_M}/g"           \
     ${namfile} > namelist.tmp
