@@ -323,7 +323,7 @@
 #endif
               DO iv=nvpc+1,nvp
                 IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    ! sorbed substances on sands
-                   WAT_SETTL(i,j,k,iv)=WAT_SETTL(i,j,k,irkm_var_assoc(iv))
+                   WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=WAT_SETTL(i,j,k,itemp+ntrc_salt+irkm_var_assoc(iv))
                 ENDIF
               ENDDO
               DO iv=nvp+1,nv_adv
@@ -331,7 +331,7 @@
               ENDDO
               
            ENDDO
-           ws3_bottom_MUSTANG(:,i,j)=WAT_SETTL(i,j,1,:)
+           ws3_bottom_MUSTANG(1:nvp,i,j)=WAT_SETTL(i,j,1,itemp+ntrc_salt+1:nvp+itemp+ntrc_salt)
          ELSE
            WAT_SETTL(i,j,:,:)=0.0_rsh
            ws3_bottom_MUSTANG(:,i,j)=0.0_rsh
@@ -657,7 +657,7 @@
                 ! calculating the direction of the current relative to the north
                   alpha=ACOS(vbar(i,j,nrhs)/courant)   ! en radians
                 ! calculation of wave orientation relative to north
-                  beta=Dwave(i,j)*pi/180   ! en radians
+                  beta=Dwave(i,j)   ! beta and Dwave in radians
                 ! calculation of cos(alpha-beta) and sin(alpha-beta)
                   cosamb=ABS(COS(alpha-beta))
                   sinamb=ABS(SIN(alpha-beta))

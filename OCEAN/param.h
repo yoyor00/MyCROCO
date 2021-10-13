@@ -167,9 +167,13 @@
       parameter (LLm0=50,   MMm0=1,    N=20)   !  DUNE 2m
 # endif
 #elif defined SED_TOY
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  SED_TOY
-#elif defined TFLAT2DV
-      parameter (LLm0=200,  MMm0=3,    N=10)   !  TFLAT2DV
+# ifdef CONSOLID
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  Sed toy Consolidation
+# else
+      parameter (LLm0=5,    MMm0=5,    N=100)  !  Sed toy Rouse
+# endif
+#elif defined TIDAL_FLAT
+      parameter (LLm0=200,  MMm0=3,    N=10)   !  TIDAL_FLAT
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -291,7 +295,7 @@
       parameter (D_wetdry=0.001)
 # elif defined THACKER
       parameter (D_wetdry=0.01)
-# elif defined SANDBAR || defined TFLAT2DV
+# elif defined SANDBAR || defined TIDAL_FLAT
       parameter (D_wetdry=0.1)
 # else
       parameter (D_wetdry=0.2)
@@ -460,14 +464,14 @@
       INTEGER,PARAMETER :: lchain=200
       integer  itsubs1,itsubs2,ntfix
 #  ifdef SED_TOY
-      parameter (ntrc_subs=7 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  elif defined TFLAT2DV
+      parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  elif defined TIDAL_FLAT
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  endif
-      parameter (itsubs1= itemp+ntrc_salt+1 )
-      parameter (itsubs2= itemp+ntrc_salt+ntrc_subs )
+      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
+      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )
 # else
       parameter (ntrc_subs=0, ntrc_substot=0)
 # endif /* SUBSTANCE */
@@ -489,6 +493,17 @@
       parameter (NSAND=2, NMUD=0, NGRAV=0)
       parameter (NLAY=10)
 #   endif
+#  elif defined SED_TOY
+#   ifdef CONSOLID
+      parameter (NSAND=2, NMUD=2, NGRAV=0)
+      parameter (NLAY=41)
+#   elif defined ROUSE 
+      parameter (NSAND=0, NMUD=6, NGRAV=0)
+      parameter (NLAY=20)
+#   elif defined SED_TOY_FLOC
+      parameter (NSAND=4, NMUD=15, NGRAV=0)
+      parameter (NLAY=20)
+#   endif
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0) 
       parameter (NLAY=1)
@@ -509,9 +524,6 @@
 # ifdef SUBSTANCE
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
       parameter (NTot=NT+ntfix)
-# elif defined MUSTANG
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+2*ntrc_subs)
-      parameter (NTot=NT+ntfix)
 # else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
       parameter (NTot=NT)
@@ -523,7 +535,7 @@
       integer ksdmin,ksdmax
 #  if defined ANA_DUNE || defined key_ANA_bedload
       parameter (ksdmin=1,ksdmax=11)
-#  elif defined TFLAT2DV
+#  elif defined TIDAL_FLAT
       parameter (ksdmin=1,ksdmax=3)
 #  else
       parameter (ksdmin=1,ksdmax=10)

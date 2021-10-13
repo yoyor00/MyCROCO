@@ -1966,6 +1966,15 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
 #  endif
+          lvar=lenstr(vname(2,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc), 'long_name', lvar,
+     &                                  vname(2,indx)(1:lvar))
+          lvar=lenstr(vname(3,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc), 'units',     lvar,
+     &                                  vname(3,indx)(1:lvar))
+          lvar=lenstr(vname(4,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc), 'field',     lvar,
+     &                                  vname(4,indx)(1:lvar))
           call nf_add_attribute(ncid,vidM(itrc),indx,5, NF_FOUT, ierr)
         enddo
 !
@@ -1976,6 +1985,15 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
 #  endif
+          lvar=lenstr(vname(2,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'long_name', lvar,
+     &                                  vname(2,indx)(1:lvar))
+          lvar=lenstr(vname(3,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'units',     lvar,
+     &                                  vname(3,indx)(1:lvar))
+          lvar=lenstr(vname(4,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'field',     lvar,
+     &                                  vname(4,indx)(1:lvar))
         enddo
         do itrc=1,ntrc_subs
           indx=indxT+ntrc_salt+ntrc_substot+itrc+6
@@ -1984,6 +2002,15 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
 #  endif
+          lvar=lenstr(vname(2,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'long_name', lvar,
+     &                                  vname(2,indx)(1:lvar))
+          lvar=lenstr(vname(3,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'units',     lvar,
+     &                                  vname(3,indx)(1:lvar))
+          lvar=lenstr(vname(4,indx))
+          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'field',     lvar,
+     &                                  vname(4,indx)(1:lvar))
           call nf_add_attribute(ncid,vidM(itrc+6),indx, 5, NF_FOUT,ierr)
         enddo
 #  ifdef key_MUSTANG_specif_outputs
@@ -1998,6 +2025,15 @@
             ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),
      &                             nf_collective)
 #   endif
+          lvar=lenstr(vname(2,indx))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
+     &                                 lvar,vname(2,indx)(1:lvar))
+          lvar=lenstr(vname(3,indx))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
+     &                                 lvar,vname(3,indx)(1:lvar))
+          lvar=lenstr(vname(4,indx))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
+     &                                 lvar,vname(4,indx)(1:lvar))
             call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx,5,
      &                 NF_FOUT, ierr)
           enddo
@@ -2011,6 +2047,15 @@
           ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),
      &                           nf_collective)
 #   endif
+          lvar=lenstr(vname(2,indx))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
+     &                                  lvar,vname(2,indx)(1:lvar))
+          lvar=lenstr(vname(3,indx))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
+     &                                  lvar,vname(3,indx)(1:lvar))
+          lvar=lenstr(vname(4,indx))
+          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
+     &                                  lvar,vname(4,indx)(1:lvar))
           call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5,
      &              NF_FOUT, ierr)
         enddo

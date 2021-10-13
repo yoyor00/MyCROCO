@@ -1,6 +1,6 @@
 %======================================================================
 %
-%     ---               TFLAT2DV Test Case                ---     
+%     ---               Sed toy consolid Test Case                ---     
 %
 %
 %  This file is part of CROCOTOOLS
@@ -26,57 +26,66 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-fname='Tflat2dv_his.nc';
+fname='sed_toy_consolid_his.nc';
 
 %======================================================================
 %
 % Read data
 %
 
-idy=3;
+idy=1;
 idz=1;
+depth=20;
 
 nc=netcdf(fname);
 
-h=squeeze(nc{'h'}(idy,:));
-Dcrit=squeeze(nc{'Dcrit'}(idy,:));
-X=squeeze(nc{'x_rho'}(idy,:))/1000;
+h=squeeze(nc{'h'}(idy,idz));
 T=squeeze(nc{'scrum_time'}(:,:))/86400;
-%
-sand=squeeze(nc{'SAND'}(:,idz,idy,:));
-zeta=squeeze(nc{'zeta'}(:,idy,:));
+
+bostr=squeeze(nc{'bostr'}(:,idy,idz));
+ALT=squeeze(nc{'act_thick'}(:,idy,idz));
+
+s1=squeeze(nc{'sand_01'}(:,idy,idz));
+s2=squeeze(nc{'sand_02'}(:,idy,idz));
+
+m1=squeeze(nc{'mud_01'}(:,idy,idz));
+m2=squeeze(nc{'mud_02'}(:,idy,idz));
+
+sand1=s1*depth;
+sand2=s2*depth;
+mud1=m1*depth;
+mud2=m2*depth;
 
 close(nc);
 
-D=zeta+repmat(h,size(zeta,1),1);
-sand(D<Dcrit+0.01)=NaN;
 
 %----------------------------------------------------------
-%  Plot Hovmoller
+%  Plot 
 %----------------------------------------------------------
-figure('Position',[1 1 1000 500])
+figure('Position',[1 1 800 800])
 
-pcolor(X,T,squeeze(sand)), shading flat
-caxis([0 3]);
-%cbr=colorbar('fontsize',13);
-c=colorbar();
-set(c, 'YLim', [0 3]);
-newmap = jet(64);
-ncol = size(newmap,1);          
-zpos = 1 + floor(ncol);    
-newmap(zpos,:) = [1 1 1];       
-colormap(newmap);
+subplot(2,1,1)
+% bostr
+plot(T,bostr,'linewidth',1)
+ylabel('Bottom stress (Pa)','fontsize',12);
+title(['Double resuspension experiment'],'fontsize',14)
+hold off
+grid on
 
-
-xlabel('X (km)','fontsize',12);
-ylabel('T (days)','fontsize',12);
-
-title(['Tide Flat 2DV / Sand hovmoller'],'fontsize',14)
-set(gca,'fontsize',15);
+subplot(2,1,2)
+% AL thickness
+plot(T,ALT*100,'linewidth',1)
+xlabel('Time (days)','fontsize',12);
+ylabel('Active Layer thickness (cm)','fontsize',12);
+hold off
+grid on
 
 set(gcf,'PaperPositionMode','auto');
 
-export_fig -transparent tflat2dv.pdf
+export_fig -transparent sed_toy_consolid.pdf
+
+
+
 
 return
 

@@ -37,7 +37,7 @@
 : Namelist for each type of substance 
 :-----------------------------------------------------------------------------
 
-:----- ------------------------------------------------------------------------
+:-----------------------------------------------------------------------------
 :
 : nmlpartnc : NON constitutive substances with NOT defined key_sed_MUSTANG
 :-----------------------------------------------------------------------------
@@ -65,7 +65,6 @@
 :    tocd_n() : critical stress of deposition
 :    ros_n()  : density of particle
 :    diam_n() : diameter of particles
-
 :   
  &nmlgravels
     name_var_n(1)=''
@@ -84,8 +83,8 @@
       tocd_n(1)=0.0
       ros_n(1)=0.0
       diam_n(1)=0.0 /
-
-:: nmlsands : Caracterisation des substances de type SABLE (utilise seulement si  key_sed_MUSTANG)
+:-----------------------------------------------------------------------------
+: nmlsands : Caracterisation des substances de type SABLE (utilise seulement si  key_sed_MUSTANG)
 :            : Characterization of SAND substances (used only if defined key_sed_MUSTANG)
 :    si nv_sand = 0 la namelist n est pas lue
 :    If nv_sand = 0 this namelist is not read
@@ -136,7 +135,7 @@
       diam_n(2)=0.0001
       l_sand2D_n(2)=.FALSE.
       l_outsandrouse_n(2)=.FALSE.  /
-    
+:-----------------------------------------------------------------------------    
 : nmlmuds : Caracterisation des substances de type VASE (utilise seulement si  key_sed_MUSTANG)
 :            : Characterization of MUD substances (used only if defined key_sed_MUSTANG)
 :    si nv_mud = 0 la namelist n est pas lue
@@ -174,7 +173,7 @@
       ws_hind_opt_n(1)=0
       ws_hind_para_n(1,1)=0.0 ,  ws_hind_para_n(2,1)=0.0 /
  
-:----- ------------------------------------------------------------------------
+:-----------------------------------------------------------------------------
 : nmlpartnc : NON constitutive substances with defined key_MUSTANG
 :-----------------------------------------------------------------------------
 :    cini_sed_n() : initial concentration in sediment (quantity/kg of dry sediment )
@@ -209,7 +208,7 @@
       ws_free_para_n(1,1)=0.003,  ws_free_para_n(2,1)=0.79,  ws_free_para_n(3,1)=0.3,  ws_free_para_n(4,1)=0.18
       ws_hind_opt_n(1)=0
       ws_hind_para_n(1,1)=0.0 , ws_hind_para_n(2,1)=0.0 /
-
+:-----------------------------------------------------------------------------
 : nmlpartsorb : SORBED SUBSTANCES  IF key_MUSTANG
 :-----------------------------------------------------------------------------
 :    tocd_n() : critical stress of deposition
@@ -232,8 +231,8 @@
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='none'
       obc_cv_name_n(1)='none' /
-
- : nmlvardiss : DISSOLVED SUBSTANCES
+:-----------------------------------------------------------------------------
+: nmlvardiss : DISSOLVED SUBSTANCES
 :    name_var_n() : name of variable
 :    long_name_var_n() : long name of variable
 :    standard_name_var_n() : standard name of variable
@@ -262,11 +261,10 @@
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='testdiss'
       obc_cv_name_n(1)='testdiss' /
-
- : nmlvarfix : FIXED SUBSTANCES (not advected)
+:-----------------------------------------------------------------------------
+: nmlvarfix : FIXED SUBSTANCES (not advected)
 :-----------------------------------------------------------------------------
 :     
-
  &nmlvarfix
     name_var_fix(1)=''
        long_name_var_fix(1)=''
@@ -276,7 +274,7 @@
        l_out_subs_fix(1)=.TRUE.
        init_cv_name_fix(1)='none'  /
 
-
-  : nmlbent : used only if defined key_benthic 
+:-----------------------------------------------------------------------------
+: nmlbent : used only if defined key_benthic 
 :-----------------------------------------------------------------------------
 : & nmlvarbent
