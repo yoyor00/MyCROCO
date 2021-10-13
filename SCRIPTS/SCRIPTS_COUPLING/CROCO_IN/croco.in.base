@@ -2,6 +2,10 @@ title:
         <title>
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
            <ocentimes>  <ocedt> <ocendtfast> 1
+start_date:
+<dstart>-<mstart>-<ystart> 00:00:00
+origin_date:
+<dorig>-<morig>-<yorig> 00:00:00
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0      2.0d0      200.0d0
 grid:  filename
