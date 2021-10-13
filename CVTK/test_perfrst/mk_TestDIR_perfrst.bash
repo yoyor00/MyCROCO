@@ -1,7 +1,9 @@
 #!/bin/bash
-#set -x
-set -e
-#set -u
+
+##set -x
+##set -e
+###DO NOT USE SET -E !
+##set -u
 
 # $1 => CONFIGURE_ANA or CONFIGURE_VORT
 # $2 => vort ou reg
