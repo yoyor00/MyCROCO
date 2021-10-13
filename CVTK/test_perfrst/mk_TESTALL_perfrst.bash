@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -e
-#set -u
-#set -x
+##set -e
+##set -u
+##set -x
 
 source CONFIGURE_GLOBAL_PERFRST
 

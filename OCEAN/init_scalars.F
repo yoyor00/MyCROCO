@@ -312,7 +312,7 @@ C$OMP END PARALLEL
       vname(:,:)='  '
 
 
-!#define CR
+#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
 #ifdef MILES
       vname(1,indxTime)='ocean_time'
@@ -1803,7 +1803,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxGls =',indxGls
      &                                         // '_at_w_location '
       vname(6,indxGls)='lat_rho lon_rho                           '
       vname(7,indxGls)='                                          '
-CR      write(stdout,'(1x,A,I3)') 'indxLscale =',indxLscale   
+CR      write(stdout,'(1x,A,I3)') 'indxLsc =',indxLscale   
       vname(1,indxLsc)='Lscale                                    '
       vname(2,indxLsc)='vertical mixing turbulent length scale    '
       vname(3,indxLsc)='meter                                     '
