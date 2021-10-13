@@ -702,7 +702,7 @@
 # endif
 # if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
       integer indxWSPD
-      parameter (indxWSPD=indxSUSTR+200)
+      parameter (indxWSPD=indxSUSTR+300)
 # endif
 #endif /* SOLVE3D */
 
