@@ -629,7 +629,7 @@
 
 #ifdef EXACT_RESTART
       integer indxrufrc
-      parameter (indxrufrc=indxSSH+200)
+      parameter (indxrufrc=indxSSH+300)
       integer indxrvfrc
       parameter (indxrvfrc=indxrufrc+1)
       integer indxSUSTR, indxSVSTR
@@ -702,7 +702,7 @@
 # endif
 # if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
       integer indxWSPD
-      parameter (indxWSPD=indxSUSTR+300)
+      parameter (indxWSPD=indxSUSTR+200)
 # endif
 #endif /* SOLVE3D */
 
