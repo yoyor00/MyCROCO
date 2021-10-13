@@ -1,5 +1,6 @@
 #!/bin/bash
 
+module load $ncomod
 
 for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
     if [ ${JOB_DUR_MTH} -eq 1 ]; then
@@ -80,4 +81,4 @@ if [ ${JOB_DUR_MTH} -eq 0 ] ; then
     ln -sf ${OCE_FILES_DIR}/croco_${bry_ext}_Y${cur_Y}M${cur_M}.nc croco_bry.nc
 fi	
 
-
+module unload $ncomod

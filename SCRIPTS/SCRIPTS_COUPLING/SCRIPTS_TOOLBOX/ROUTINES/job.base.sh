@@ -42,7 +42,7 @@ cd ${EXEDIR}
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
                     if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-                        [ ${USE_XIOS_OCE} -eq 1 ] && { cpfile ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
+                        [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
                     fi
                 fi
                 . ${SCRIPTDIR}/getversion.sh ${OCE}
