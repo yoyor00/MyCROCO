@@ -12,8 +12,9 @@
 #---------------------------------------------------------------------
 # Script to Run PERFRST DEBUG procedure managing
 #--------------------------------------------------------------------
-#set -x
-set -e
+##set -x
+##set -e
+###DO NOT USE SET -E !
 
 echo "=============================================="
 echo "=> CONFIG "$mytest
@@ -115,22 +116,23 @@ echo 'START TESTING ...             '
 
 SUCCESS=0
 SUCCESS_COMP=0
-SUCCESS_EXEC=0
-SUCCESS_RESTART=0
+SUCCESS_EXEC_WRITE=0
+SUCCESS_RESTART_READ=0
 if [ ! -f ${TEST_NAME}_steps ]; then 
     echo 'Y' > ${TEST_NAME}_steps
     echo 'Y' >> ${TEST_NAME}_steps
     echo 'Y' >> ${TEST_NAME}_steps
 fi
 
-##########################################
 #  WRITE case compilation and run
 [ -e  cppdefs.h.OK ] && \rm cppdefs.h.OK
 
-
-#Fqsub_mpi_perfrst
+##########################################
 ./comp_run_mpi_perfrst.bash
 myreturn=$?
+echo "myreturn is $myreturn"
+echo $myreturn
+
 SUCCESS=$(($SUCCESS+$myreturn))
 
 if [ "$myreturn" -eq 1 ]; then
