@@ -98,6 +98,7 @@
       REAL            ::  flux_top , flux_bot , lgthsc, L_lim, du,dv,dw
       REAL            ::  trb_sfc  , trb_bot  , z0_s, z0_b , gls_min
       REAL            ::  HUon_w   , HVom_w   , trb_min(2), Denom
+      REAL            ::  su_r,sv_r
       ! Parameter values      
       REAL, PARAMETER ::  eps_min =  1.0E-12 ! min value for dissipation rate
       REAL, PARAMETER ::  tke_min =  1.0E-06 ! min value for TKE
@@ -395,9 +396,13 @@
 !
       DO j=jmin,jmax
          DO i=imin,imax 
-            ustar_sfc_sq( i, j ) = 
-     &                        sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                             +(0.5*(svstr(i,j)+svstr(i,j+1)))**2 )
+# ifdef OA_COUPLING
+            ustar_sfc_sq(i,j)=smstr(i,j)
+# else
+            su_r=0.5*(sustr(i,j)+sustr(i+1,j))
+            sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+            ustar_sfc_sq( i, j ) = sqrt(su_r**2+sv_r**2)
+# endif
             ustar_bot_sq( i, j ) = 
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
