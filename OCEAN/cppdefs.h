@@ -412,6 +412,200 @@
 #  undef  key_MUSTANG_specif_outputs
 # endif
 
+#elif defined COASTAL
+/*
+!====================================================================
+!               COASTAL (realistic) Configurations
+!==================================================================== 
+!
+!----------------------
+! BASIC OPTIONS
+!----------------------
+!
+*/
+                      /* Configuration Name */
+# define VILAINE
+# undef MPI_TIME
+                      /* Parallelization */
+# undef  OPENMP
+# define MPI
+                      /* I/O server */
+# undef  XIOS
+                      /* Open Boundary Conditions */
+# define  TIDES
+# undef   OBC_EAST
+# define  OBC_WEST
+# undef  OBC_NORTH
+# define   OBC_SOUTH
+                      /* Applications */
+# undef  BIOLOGY
+# undef  FLOATS
+# undef  STATIONS
+# undef  PASSIVE_TRACER
+# undef  SEDIMENT
+# undef  BBL
+# define MUSTANG
+                      /* dedicated croco.log file */
+# undef  LOGFILE
+                      /* Calendar */
+# undef START_DATE
+# define USE_CALENDAR 
+/*!
+!-------------------------------------------------
+! PRE-SELECTED OPTIONS
+!
+! ADVANCED OPTIONS ARE IN CPPDEFS_DEV.H
+!-------------------------------------------------
+*/
+                      /* Parallelization */
+# ifdef MPI
+#  undef  PARALLEL_FILES
+#  define  NC4PAR
+#  undef  MPI_NOLAND
+# endif
+# undef  AUTOTILING
+                      /* Grid configuration */
+# define CURVGRID
+# define SPHERICAL
+# define MASKING
+# define WET_DRY
+# define NEW_S_COORD
+                      /* Model dynamics */
+# define SOLVE3D
+# define UV_COR
+# define UV_ADV
+                      /* Equation of State */
+# define SALINITY
+# define NONLIN_EOS
+                      /* Lateral Momentum Advection (default UP3) */
+# undef UV_HADV_UP3
+# undef  UV_HADV_UP5
+# define  UV_HADV_WENO5
+# define UV_VADV_WENO5
+                      /* Lateral Explicit Momentum Mixing */
+# define   UV_VIS2
+# ifdef UV_VIS2
+#  define UV_VIS_SMAGO
+# endif
+                      /* Vertical Momentum Advection  */
+# undef UV_VADV_SPLINES
+# define  UV_VADV_WENO5
+# undef  UV_VADV_TVD
+                      /* Lateral Tracer Advection (default UP3) */
+# undef  TS_HADV_UP3
+# undef TS_HADV_RSUP3
+# undef  TS_HADV_UP5
+# define TS_HADV_WENO5
+                      /* Lateral Explicit Tracer Mixing */
+# define  TS_DIF2
+# undef  TS_DIF4
+# undef  TS_MIX_S
+                      /* Vertical Tracer Advection  */
+# undef  TS_VADV_SPLINES
+# undef TS_VADV_AKIMA
+# define  TS_VADV_WENO5
+                      /* Sponge layers for UV and TS */
+# define SPONGE
+                      /* Semi-implicit Vertical Tracer/Mom Advection */
+# undef  VADV_ADAPT_IMP
+                      /* Bottom friction in fast 3D step */
+# define LIMIT_BSTRESS
+                      /* Vertical Mixing */
+# define GLS_MIXING
+                      /* Surface Forcing */
+# define BULK_FLUX
+# ifdef BULK_FLUX
+#  define BULK_FAIRALL
+#  undef BULK_LW
+#  undef BULK_EP
+#  define BULK_SMFLUX
+#  undef  SST_SKIN
+#  undef  ANA_DIURNAL_SW
+#  define  ONLINE
+#  ifdef ONLINE 
+#   define AROME
+#   undef  ERA_ECMWF
+#  endif
+#  define READ_PATM
+#  ifdef READ_PATM 
+#   define OBC_PATM
+#  endif
+# else
+#  undef QCORRECTION
+#  undef SFLX_CORR
+#  undef  SFLX_CORR_COEF
+#  undef ANA_DIURNAL_SW
+# endif
+# define ANA_SSFLUX   /* surface salinity */
+# define ANA_STFLUX   /* surface temperature */
+                      /* Lateral Forcing */
+# define ANA_INITIAL
+# undef ANA_BRY
+# define FRC_BRY
+# ifdef FRC_BRY
+#  define Z_FRC_BRY
+#  define M2_FRC_BRY
+#  undef M3_FRC_BRY
+#  define T_FRC_BRY
+# endif
+                      /* Bottom Forcing */
+# define ANA_BSFLUX
+# define ANA_BTFLUX
+                      /* Point Sources - Rivers */
+# define PSOURCE
+# define PSOURCE_NCFILE
+# ifdef PSOURCE_NCFILE                    
+#   define PSOURCE_NCFILE_TS
+# endif
+                      /* Open Boundary Conditions */
+# ifdef TIDES
+#  define M2FILTER_NONE
+#  define SSH_TIDES
+#  define UV_TIDES
+#  undef POT_TIDES
+#  define  TIDES_MAS
+#  ifndef UV_TIDES
+#   define OBC_REDUCED_PHYSICS
+#  endif
+#  define TIDERAMP
+# endif
+# define OBC_M2CHARACT
+# define OBC_M3ORLANSKI
+# define OBC_TORLANSKI
+                      /* Input/Output */
+# undef AVERAGES
+# undef AVERAGES_K
+# undef OUTPUTS_SURFACE
+# undef HOURLY_VELOCITIES
+                     /* Exact restart */
+# undef EXACT_RESTART
+/*
+!           Applications:
+!---------------------------------
+! Biology, floats, Stations, 
+! Passive tracer, Sediments, BBL
+!---------------------------------
+!
+   Quasi-monotone lateral advection scheme (WENO5)
+   for passive/biology/sediment tracers 
+*/
+# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
+                                               || defined MUSTANG
+#  define BIO_HADV_WENO5
+# endif
+                      /*   MUSTANG Sediment model     */
+# ifdef MUSTANG
+#  define key_sand2D
+#  define MUSTANG_CORFLUX
+#  undef  key_MUSTANG_V2
+#  undef  key_MUSTANG_bedload
+#  undef  MORPHODYN_MUSTANG_byHYDRO
+#  undef  key_tenfon_upwind
+#  define  WAVE_OFFLINE
+#  undef  BUGJUMP
+#  undef  key_MUSTANG_debug
+#  undef  key_MUSTANG_specif_outputs
+# endif
 /*
 !
 !==========================================================

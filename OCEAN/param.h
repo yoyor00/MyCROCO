@@ -184,6 +184,12 @@
 # else
       parameter (LLm0=xx, MMm0=xx, N=xx)   ! YOUR REGIONAL CONFIG
 # endif
+#elif defined COASTAL 
+# if defined VILAINE
+      parameter (LLm0=180,   MMm0=130,   N=10) ! VILAINE
+# else
+      parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
+# endif
 #else
       parameter (LLm0=xxx, MMm0=xxx, N=xxx)
 #endif
@@ -310,7 +316,9 @@
       integer Msrc               ! Number of point sources
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
-# else
+# elif defined VILAINE
+      parameter (Msrc=2)        ! ====== == ===== =======
+# else 
       parameter (Msrc=0)        ! ====== == ===== =======
 # endif
 #endif
@@ -466,6 +474,8 @@
 #  ifdef SED_TOY
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  elif defined TIDAL_FLAT
+      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#  elif defined VILAINE 
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
