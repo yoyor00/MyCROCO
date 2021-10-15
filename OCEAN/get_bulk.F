@@ -444,14 +444,28 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 # include "compute_extended_bounds.h"
 !
-# ifdef MPI
-       imax=IendR+1
-       jmax=JendR+1
+!
+! Extended range is needed for KPP
+!
+# ifdef EW_PERIODIC
+      imax=Iend+2
 # else
-       imax=min(IendR+1,Lm+1)
-       jmax=min(JendR+1,Mm+1)
+      if (EASTERN_EDGE) then
+        imax=Iend+1
+      else
+        imax=Iend+2
+      endif
 # endif
-
+# ifdef NS_PERIODIC
+      jmax=Jend+2
+# else
+      if (NORTHERN_EDGE) then
+        jmax=Jend+1
+      else
+        jmax=Jend+2
+      endif
+# endif
+!
       it1=3-itbulk
       it2=itbulk
       cff=time+0.5*dt
