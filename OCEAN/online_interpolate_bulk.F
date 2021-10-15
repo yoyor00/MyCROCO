@@ -30,13 +30,13 @@
 !------------------------------------------------------------------------------
 !  This subfunction complete the call to the interpolation and the recalculation 
 !  of the forcing fields to generate the roms bulk forcing (tairg, rhumg, prateg,
-!  radlwg, radswg, wspdg, uwndg, vwndg) on the current tile. 
+!  radlwg, radswg, uwndg, vwndg) on the current tile. 
 !------------------------------------------------------------------------------
 !  The main steps of this interpolation and recalculation are:
 !  - Interpolation from the varref matrix of the dum_array matrix on the 
 !  simulation domain for the blkvar_id variable.
 !  - Recalculation of the roms bulk forcings (tairg, rhumg, prateg, radlwg, 
-!  radswg, wspdg, uwndg, vwndg) from the interpolated dum_array fields.
+!  radswg, uwndg, vwndg) from the interpolated dum_array fields.
 
 !  INPUTS
 !  NXref (Vertical size of the input matrix used for the interpolation)
@@ -50,7 +50,7 @@
 !
 !  OUTPUTS
 !  dum_array (interpolated forcing fields)
-!  tairg, rhumg, prateg, radlwg, radswg, wspdg, uwndg, vwndg (recalculated roms 
+!  tairg, rhumg, prateg, radlwg, radswg, uwndg, vwndg (recalculated roms 
 !                                                             bulk forcings)
       implicit none
 # include "param.h"

@@ -56,12 +56,12 @@
       common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
 
 # if defined SFLUX_CFB && !defined BULK_FLUX
-      real wspdg(GLOBAL_2D_ARRAY,2)
-      common /smsdat_wspdg/wspdg
-      real    wspdp(2)
-      common /smsdat2_wspd/ wspdp
       real wspd(GLOBAL_2D_ARRAY)
       common /smsdat_wspd/ wspd
+# endif
+# ifdef SFLUX_CFB
+      real wspd_cfb(GLOBAL_2D_ARRAY)
+      common /smsdat_wspd_cfb/ wspd_cfb
 # endif
       integer lwgrd, wid
       common /smsdat5/ lwgrd, wid
@@ -324,7 +324,6 @@
       real prateg(GLOBAL_2D_ARRAY,2)
       real radlwg(GLOBAL_2D_ARRAY,2)
       real radswg(GLOBAL_2D_ARRAY,2)
-      real wspdg(GLOBAL_2D_ARRAY,2)
 # ifdef READ_PATM
       real patmg(GLOBAL_2D_ARRAY,2)
 # endif
@@ -345,7 +344,6 @@
       common /bulkdat_prateg/prateg 
       common /bulkdat_radlwg/radlwg 
       common /bulkdat_radswg/radswg 
-      common /bulkdat_wspdg/wspdg 
 # ifdef READ_PATM
       common /bulkdat_patmg/patmg 
 # endif
@@ -356,7 +354,6 @@
 # endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-      real    wspdp(2)
 # ifdef READ_PATM
       real patmp(2)
 # endif
@@ -367,7 +364,6 @@
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
       integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-      integer wspd_id,lwspdgrd
 # ifdef READ_PATM
       integer patm_id,lpatmgrd
 #endif
@@ -389,7 +385,6 @@
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat1_bio/ radswbio_id,lradswbiogrd
 # endif
-      common /bulkdat1_wspd/ wspd_id,lwspdgrd
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
       common /bulkdat2_tim/ bulk_time, bulk_cycle
@@ -400,7 +395,6 @@
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat2_bio/ radswbiop
 # endif
-      common /bulkdat2_wspd/ wspdp 
 # endif /* BULK_FLUX && TEMPERATURE */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.

@@ -866,8 +866,6 @@ C$    integer omp_get_thread_num
           prateg (i,j,2)=init
           radlwg (i,j,2)=init
           radswg (i,j,2)=init
-          wspdg(i,j,1)=init
-          wspdg(i,j,2)=init
           uwndg(i,j,1)=init
           vwndg(i,j,1)=init
           uwndg(i,j,2)=init
@@ -895,8 +893,9 @@ C$    integer omp_get_thread_num
 # endif /* BULK_FLUX */
 # if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
           wspd(i,j)=init
-          wspdg(i,j,1)=init
-          wspdg(i,j,2)=init
+# endif
+# ifdef SFLUX_CFB
+          wspd_cfb(i,j)=init
 # endif
 # if defined SST_SKIN && defined TEMPERATURE
           sst_skin=init

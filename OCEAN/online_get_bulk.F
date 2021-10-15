@@ -27,7 +27,7 @@
 !  This subfunction enables the online extraction of data from a forcing netcdf 
 !  NCEP/CFSR dataset. It complete the extraction with a spatial interpolation and 
 !  a recalculation of the forcing fields to generate the bulk forcing (tairg, 
-!  rhumg, prateg, radlwg, radswg, wspdg, uwndg, vwndg) on the simulation domain.
+!  rhumg, prateg, radlwg, radswg, uwndg, vwndg) on the simulation domain.
 !------------------------------------------------------------------------------
 !  The main steps of this extraction are:
 !  - Opening of the relevant NCEP/CFSR netcdf file used for the forcing of the 
@@ -37,7 +37,7 @@
 !  - Interpolation of this extracted dataset on the grid of the model (in serial 
 !    as well as parallel).
 !  - Transformation of the various interpolated dataset into roms bulk forcings:
-!    tairg; rhumg; prateg; radlwg; radswg; wspdg; uwndg; vwndg.
+!    tairg; rhumg; prateg; radlwg; radswg; uwndg; vwndg.
 !
 !  In this subroutine the aformentioned steps are completed for every bulk forcing 
 !  bulkfilename(X) and are repeated when necessary during the time evolution of 
@@ -412,7 +412,7 @@
 !============== == === ====== ====== == === ===== =====
 ! Interpolation on the simulation grid of the forcings and computation 
 ! of the roms bulk forcings tairg; rhumg; prateg; radlwg; radswg; 
-! wspdg; uwndg; vwndg.
+! uwndg; vwndg.
 !
 !
 !-----C$OMP PARALLEL DO PRIVATE(tile)

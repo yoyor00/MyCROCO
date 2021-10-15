@@ -51,23 +51,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
 
-        lvar=lenstr(vname(1,indxWSPD))
-        ierr=nf_inq_varid (ncidbulk, vname(1,indxWSPD)(1:lvar), wspd_id)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidbulk, wspd_id, i) 
-          if (ierr. eq. nf_noerr) then
-            if (i.gt.1) then
-              lwspdgrd=1
-            else
-              lwspdgrd=0
-            endif
-          endif
-        endif
-        if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWSPD)(1:lvar), bulkname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
         lvar=lenstr(vname(1,indxTAIR))
         ierr=nf_inq_varid (ncidbulk, vname(1,indxTAIR)(1:lvar),tair_id)
         if (ierr .eq. nf_noerr) then
@@ -195,6 +178,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
 # endif /* SALINITY */
+
         lvar=lenstr(vname(1,indxUWND))
         ierr=nf_inq_varid (ncidbulk,vname(1,indxUWND)(1:lvar),uwnd_id)
         if (ierr .eq. nf_noerr) then
@@ -272,19 +256,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         bulk_time(i)=cff*day2sec+bulk_cycle*bulk_ncycle
         if (bulk_time(itbulk).eq.-1.E+20) 
      &          bulk_time(itbulk)=bulk_time(i)
-!
-! wspd
-!
-        if (lwspdgrd.eq.1) then
-          ierr=nf_fread (wspdg(START_2D_ARRAY,i), ncidbulk, wspd_id,
-     &                                           bulk_rec, r2dvar)
-        else
-          ierr=nf_get_var1_FTYPE (ncidbulk, wspd_id, bulk_rec, wspdp(i))
-        endif
-        if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'WSPD', bulk_rec
-          goto 99                                         !--> ERROR
-        endif
 !
 ! tair
 !
@@ -453,18 +424,33 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # include "forces.h"
 # include "scalars.h"
 # include "grid.h"
+# ifdef SFLUX_CFB
+#  include "ocean3d.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
+      integer imax,jmax
       real cff,cff1,cff2, cff3,cff4
 # ifdef SALINITY
       real cff5,cff6
 # endif
-      real val1,val2,val3,val4,val5,val6,val7,val8,val9
+      real val1,val2,val3,val4,val5,val6,val7,val8
+# ifdef SFLUX_CFB
+      real uwnd_r, vwnd_r
+# endif
 # ifdef DIURNAL_INPUT_SRFLX
-      real val55
+      real val44
 # endif /* DIURNAL_INPUT_SRFLX */
 !
 # include "compute_extended_bounds.h"
 !
+# ifdef MPI
+       imax=IendR+1
+       jmax=JendR+1
+# else
+       imax=min(IendR+1,Lm+1)
+       jmax=min(JendR+1,Mm+1)
+# endif
+
       it1=3-itbulk
       it2=itbulk
       cff=time+0.5*dt
@@ -481,14 +467,11 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           if (ltairgrd.eq.1) then
             do j=JstrR,JendR
               do i=IstrR,IendR
-                wspd(i,j)=wspdg(i,j,itbulk)
                 tair(i,j)=tairg(i,j,itbulk)
                 rhum(i,j)=rhumg(i,j,itbulk)
                 radlw(i,j)=srf_scale*radlwg(i,j,itbulk)
                 radsw(i,j)=srf_scale*radswg(i,j,itbulk)
                 srflx(i,j)=radsw(i,j)
-                uwnd(i,j)=uwndg(i,j,itbulk)
-                vwnd(i,j)=vwndg(i,j,itbulk)
 # ifdef READ_PATM
                 patm2d(i,j)=patmg(i,j,itbulk)
 # endif
@@ -499,49 +482,142 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifdef SALINITY
                 prate(i,j)=stf_scale(isalt)*prateg(i,j,itbulk)
 # endif
+              enddo
+            enddo
+
+            do j=JstrR,JendR
+              do i=IstrR,imax
                 uwnd(i,j)=uwndg(i,j,itbulk)
+              enddo
+            enddo
+            do j=JstrR,jmax
+              do i=IstrR,IendR+1
                 vwnd(i,j)=vwndg(i,j,itbulk)
               enddo
             enddo
-          
+            do j=JstrR,min(JendR,Mm)
+              do i=IstrR,min(IendR,Lm)
+                wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &                         0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
+# ifdef SFLUX_CFB
+                cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+                uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+     &                   - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+     &                   )
+                vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+     &                   - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &                   )
+                wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+# endif     
+              enddo
+            enddo
+# ifndef EW_PERIODIC
+            if (WESTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd(Istr-1,j)=wspd(Istr,j)
+#  ifdef SFLUX_CFB  
+                wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
+#  endif                 
+              enddo
+            endif
+            if (EASTERN_EDGE) then
+              do j=Jstr,Jend
+                wspd(Iend+1,j)=wspd(Iend,j)
+#  ifdef SFLUX_CFB
+                wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)       
+#  endif            
+              enddo
+            endif
+# endif
+# ifndef NS_PERIODIC
+            if (SOUTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd(i,Jstr-1)=wspd(i,Jstr)
+#  ifdef SFLUX_CFB 
+                wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
+#  endif                  
+              enddo
+            endif
+            if (NORTHERN_EDGE) then
+              do i=Istr,Iend
+                wspd(i,Jend+1)=wspd(i,Jend)
+#  ifdef SFLUX_CFB 
+                wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
+#  endif                  
+              enddo
+            endif
+#  ifndef EW_PERIODIC
+            if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
+#   ifdef SFLUX_CFB 
+              wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
+#   endif                
+            endif
+            if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
+#   ifdef SFLUX_CFB  
+              wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
+#   endif               
+            endif
+            if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+              wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
+#   ifdef SFLUX_CFB 
+              wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
+#   endif                
+            endif
+            if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+              wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
+#   ifdef SFLUX_CFB 
+              wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
+#   endif                
+            endif
+#  endif
+# endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                             wspd(START_2D_ARRAY))
+#  ifdef SFLUX_CFB 
+            call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                             wspd_cfb(START_2D_ARRAY))
+#  endif      
+# endif
           else
             
-            val1=wspdp(itbulk)
-            val2=tairp(itbulk)
-            val3=rhump(itbulk)
-            val4=srf_scale*radlwp(itbulk)
-            val5=srf_scale*radswp(itbulk)
+            val1=tairp(itbulk)
+            val2=rhump(itbulk)
+            val3=srf_scale*radlwp(itbulk)
+            val4=srf_scale*radswp(itbulk)
 # ifdef DIURNAL_INPUT_SRFLX
-            val55=srf_scale*radswbiop(itbulk)
+            val44=srf_scale*radswbiop(itbulk)
 # endif /* DIURNAL_INPUT_SRFLX */
 # ifdef SALINITY
-            val6=stf_scale(isalt)*pratep(itbulk)
+            val5=stf_scale(isalt)*pratep(itbulk)
 # endif
-            val7=uwndp(itbulk)
-            val8=vwndp(itbulk)
+            val6=uwndp(itbulk)
+            val7=vwndp(itbulk)
 # ifdef READ_PATM
-            val9=patmp(itbulk)
+            val8=patmp(itbulk)
 # endif
             do j=JstrR,JendR
               do i=IstrR,IendR
-                wspd(i,j)=val1
-                tair(i,j)=val2
-                rhum(i,j)=val3
-                radlw(i,j)=val4
-                radsw(i,j)=val5
-                srflx(i,j)=val5
+                tair(i,j)=val1
+                rhum(i,j)=val2
+                radlw(i,j)=val3
+                radsw(i,j)=val4
+                srflx(i,j)=val4
 # ifdef READ_PATM
-                patm2d(i,j)=val9
+                patm2d(i,j)=val8
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
-                radswbio(i,j)=val55
-                srflxbio(i,j)=val55
+                radswbio(i,j)=val44
+                srflxbio(i,j)=val44
 # endif /* DIURNAL_INPUT_SRFLX */
 # ifdef SALINITY
-                prate(i,j)=val6
+                prate(i,j)=val5
 # endif
-                uwnd(i,j)=val7
-                vwnd(i,j)=val8
+                uwnd(i,j)=val6
+                vwnd(i,j)=val7
+                wspd(i,j) = SQRT(uwnd(i,j)**2.0+vwnd(i,j)**2.0)
               enddo
             enddo
           endif
@@ -577,7 +653,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           
           do j=JstrR,JendR
             do i=IstrR,IendR
-              wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
               tair(i,j)=cff1*tairg(i,j,it1)+cff2*tairg(i,j,it2)
               rhum(i,j)=cff1*rhumg(i,j,it1)+cff2*rhumg(i,j,it2)
               radlw(i,j)=cff3*radlwg(i,j,it1)+cff4*radlwg(i,j,it2)
@@ -594,53 +669,155 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifdef SALINITY
               prate(i,j)=cff5*prateg(i,j,it1)+cff6*prateg(i,j,it2)
 # endif
+            enddo
+          enddo
+
+          do j=JstrR,JendR
+            do i=IstrR,imax
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
+            enddo
+          enddo
+          do j=JstrR,jmax
+            do i=IstrR,IendR+1
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
             enddo
           enddo
-          
+          do j=JstrR,min(JendR,Mm)
+            do i=IstrR,min(IendR,Lm)
+              wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
+     &                       0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
+# ifdef SFLUX_CFB
+              cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
+              uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
+     &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
+     &                   )
+              vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
+     &                 - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs))
+     &                   )
+              wspd_cfb(i,j) = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
+# endif
+            enddo
+          enddo
+# ifndef EW_PERIODIC
+          if (WESTERN_EDGE) then
+            do j=Jstr,Jend
+              wspd(Istr-1,j)=wspd(Istr,j)
+#  ifdef SFLUX_CFB
+              wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
+#  endif
+            enddo
+          endif
+          if (EASTERN_EDGE) then
+            do j=Jstr,Jend
+              wspd(Iend+1,j)=wspd(Iend,j)
+#  ifdef SFLUX_CFB
+              wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
+#  endif
+            enddo
+          endif
+# endif
+# ifndef NS_PERIODIC
+          if (SOUTHERN_EDGE) then
+            do i=Istr,Iend
+              wspd(i,Jstr-1)=wspd(i,Jstr)
+#  ifdef SFLUX_CFB
+              wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
+#  endif
+            enddo
+          endif
+          if (NORTHERN_EDGE) then
+            do i=Istr,Iend
+              wspd(i,Jend+1)=wspd(i,Jend)
+#  ifdef SFLUX_CFB
+              wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
+#  endif 
+            enddo
+          endif
+#  ifndef EW_PERIODIC
+          if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+            wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
+#   ifdef SFLUX_CFB
+            wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
+#   endif
+          endif
+          if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+            wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
+#   ifdef SFLUX_CFB
+            wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)   
+#   endif          
+          endif
+          if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+            wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
+#   ifdef SFLUX_CFB 
+            wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
+#   endif            
+          endif
+          if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+            wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
+#   ifdef SFLUX_CFB 
+            wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
+#   endif           
+          endif
+#  endif
+# endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                           wspd(START_2D_ARRAY))
+#  ifdef SFLUX_CFB 
+          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                           wspd_cfb(START_2D_ARRAY)) 
+#  endif    
+# endif
+
         else
           
-          val1=cff1*wspdp(it1)+cff2*wspdp(it2)
-          val2=cff1*tairp(it1)+cff2*tairp(it2)
-          val3=cff1*rhump(it1)+cff2*rhump(it2)
-          val4=cff3*radlwp(it1)+cff4*radlwp(it2)
-          val5=cff3*radswp(it1)+cff4*radswp(it2)
+          val1=cff1*tairp(it1)+cff2*tairp(it2)
+          val2=cff1*rhump(it1)+cff2*rhump(it2)
+          val3=cff3*radlwp(it1)+cff4*radlwp(it2)
+          val4=cff3*radswp(it1)+cff4*radswp(it2)
 # ifdef DIURNAL_INPUT_SRFLX
-          val55=cff3*radswbiop(it1)+cff4*radswbiop(it2)
+          val44=cff3*radswbiop(it1)+cff4*radswbiop(it2)
 # endif /* DIURNAL_INPUT_SRFLX */
 # ifdef SALINITY
-          val6=cff5*pratep(it1)+cff6*pratep(it2)
+          val5=cff5*pratep(it1)+cff6*pratep(it2)
 # endif
-          val7=cff1*uwndp(it1)+cff2*uwndp(it2)
-          val8=cff1*vwndp(it1)+cff2*vwndp(it2)
+          val6=cff1*uwndp(it1)+cff2*uwndp(it2)
+          val7=cff1*vwndp(it1)+cff2*vwndp(it2)
 # ifdef READ_PATM
-          val9=cff1*patmp(it1)+cff2*patmp(it2)
+          val8=cff1*patmp(it1)+cff2*patmp(it2)
 # endif
           
           do j=JstrR,JendR
             do i=IstrR,IendR
-              wspd(i,j)=val1
-              tair(i,j)=val2
-              rhum(i,j)=val3
-              radlw(i,j)=val4
-              radsw(i,j)=val5
-              srflx(i,j)=val5
+              tair(i,j)=val1
+              rhum(i,j)=val2
+              radlw(i,j)=val3
+              radsw(i,j)=val4
+              srflx(i,j)=val4
 # ifdef DIURNAL_INPUT_SRFLX
-              radswbio(i,j)=val55
-              srflxbio(i,j)=val55
+              radswbio(i,j)=val44
+              srflxbio(i,j)=val44
 # endif /* DIURNAL_INPUT_SRFLX */
 # ifdef SALINITY
-              prate(i,j)=val6
+              prate(i,j)=val5
 # endif
-              uwnd(i,j)=val7
-              vwnd(i,j)=val8
+              uwnd(i,j)=val6
+              vwnd(i,j)=val7
 # ifdef READ_PATM
-             patm2d(i,j)=val9
+              patm2d(i,j)=val8
 # endif
+              wspd(i,j)=sqrt(uwnd(i,j)**2.0+vwnd(i,j)**2.0)
             enddo
           enddo
         endif
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                           wspd(START_2D_ARRAY))
+#  ifdef SFLUX_CFB 
+          call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
+     &                           wspd_cfb(START_2D_ARRAY)) 
+#  endif              
+# endif
 !     
 !     Unable to set-up SST and dQdSST:
 !     Complain about the error and signal to quit.      

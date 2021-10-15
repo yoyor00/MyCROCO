@@ -60,8 +60,7 @@
       REAL           :: psi_u(2), ZoLu(2) , psi_t, ZoLt    , patm
       REAL           :: hfsen, hflat, hflw , upvel   , evap
 # ifdef SFLUX_CFB
-      REAL           :: uwnd_r,vwnd_r
-      REAL           :: wspd_cfb
+      REAL           :: wspd0_cfb
 # endif
 # ifdef ECUMEv0
       REAL            :: Cdn(2), Chn, Cen
@@ -148,22 +147,11 @@
 !======================================================================
 ! Initialization of bulk quantities (common to all bulk algorithms)
 !======================================================================
-          wspd0    = SQRT ( 0.5*(uwnd(i+1,j)+uwnd(i,j))*
-     &                      0.5*(uwnd(i+1,j)+uwnd(i,j))+
-     &                      0.5*(vwnd(i,j+1)+vwnd(i,j))*
-     &                      0.5*(vwnd(i,j+1)+vwnd(i,j))
-     &                    )
-          wspd0    = MAX ( wspd0 , 0.1 * MIN(10., blk_ZW) )
+          wspd0     = wspd(i,j)
+          wspd0     = MAX ( wspd0 , 0.1 * MIN(10., blk_ZW) )
 #if defined CFB_WIND_TRA
-          cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
-          uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
-     &             - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs)) 
-     &                   )
-          vwnd_r   = 0.5*( vwnd(i,j+1)+vwnd(i,j)
-     &             - cff*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs)) 
-     &                   )
-          wspd_cfb = SQRT( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
-          wspd_cfb = MAX ( wspd_cfb , 0.1 * MIN(10., blk_ZW) )
+          wspd0_cfb = wspd_cfb(i,j)
+          wspd0_cfb = MAX ( wspd0_cfb , 0.1 * MIN(10., blk_ZW) )
 #endif
           TairC = tair(i,j)
           TairK = TairC + CtoK
@@ -192,12 +180,12 @@
 #ifdef GUSTINESS
           delW(1) = SQRT(wspd0*wspd0+0.25)
 #  ifdef CFB_WIND_TRA
-          delW(2) = SQRT(wspd_cfb*wspd_cfb+0.25)
+          delW(2) = SQRT(wspd0_cfb*wspd0_cfb+0.25)
 #  endif
 #else
           delW(1) = wspd0
 #  ifdef CFB_WIND_TRA
-          delW(2) = wspd_cfb
+          delW(2) = wspd0_cfb
 #  endif
 #endif
           delQ = Q-Qsea
@@ -318,7 +306,7 @@
 #  ifdef CFB_WIND_TRA
             Bf       = MAX(0.0,-g/TairK*Wstar(2)*Tvstar)
             cff2     = blk_beta*blk_beta*(Bf*blk_Zabl)**(2./3.)
-            delW (2) = SQRT(wspd_cfb*wspd_cfb+cff2)
+            delW (2) = SQRT(wspd0_cfb*wspd0_cfb+cff2)
             ddelW(2) = SIGN(MAX(ABS(delW(2)),10.0*dWstar0),delW(2))
 #  endif
 #endif
@@ -478,13 +466,13 @@
               else
                 cff=0.2
               endif
-              delW(2)  = SQRT(wspd_cfb*wspd_cfb+cff*cff)            
+              delW(2)  = SQRT(wspd0_cfb*wspd0_cfb+cff*cff)            
 #  endif
 
 # else
             delW(1)  = wspd0
 #  ifdef CFB_WIND_TRA
-            delW(2)  = wspd_cfb
+            delW(2)  = wspd0_cfb
 #  endif
 # endif
             ddelW = delW

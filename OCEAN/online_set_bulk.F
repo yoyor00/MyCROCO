@@ -26,16 +26,16 @@
       subroutine set_bulk_tile_online (Istr,Iend,Jstr,Jend)
 !------------------------------------------------------------------------------
 !  This subfunction enables the time interpolation of the roms bulk forcings 
-!  (tair, rhum, prate, radlw, radsw, wspd, uwnd, vwnd) on the simulation domain
+!  (tair, rhum, prate, radlw, radsw, uwnd, vwnd) on the simulation domain
 !  for the ongoing tile.
 !------------------------------------------------------------------------------
 !  The steps in this interpolation is:
-!  - Determination of forcings (tair, rhum, prate, radlw, radsw, wspd, uwnd, 
+!  - Determination of forcings (tair, rhum, prate, radlw, radsw, uwnd, 
 !  vwnd) at the first time step of the simulation from the known (tairg, rhumg, 
-!  prateg, radlwg, radswg, wspdg, uwndg, vwndg) fields.
-!  - Time interpolation of the forcings (tair, rhum, prate, radlw, radsw, wspd, 
+!  prateg, radlwg, radswg, uwndg, vwndg) fields.
+!  - Time interpolation of the forcings (tair, rhum, prate, radlw, radsw,  
 !  uwnd, vwnd) at cff from two known spatially interpolated fields (tairg,rhumg,
-!  prateg, radlwg, radswg, wspdg, uwndg, vwndg) at cff1 and cff2.
+!  prateg, radlwg, radswg, uwndg, vwndg) at cff1 and cff2.
 !
 !  In this subroutine the aformentioned steps are completed for every bulk 
 !  forcing iterating on the various blkvar_id.
@@ -138,7 +138,6 @@
         elseif (blkvar_id.eq.9) then
           do j=JstrR,JendR
             do i=IstrR,IendR
-              wspd(i,j)=cff1*wspdg(i,j,it1)+cff2*wspdg(i,j,it2)
               uwnd(i,j)=cff1*uwndg(i,j,it1)+cff2*uwndg(i,j,it2)
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
             enddo
