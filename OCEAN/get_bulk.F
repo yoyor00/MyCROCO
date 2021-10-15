@@ -426,6 +426,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # include "grid.h"
 # ifdef SFLUX_CFB
 #  include "ocean3d.h"
+#  include "params_bulk.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       integer imax,jmax
