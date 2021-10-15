@@ -158,9 +158,19 @@
       fname='TEST_CASES/croco.in.Dune'
 # endif
 #elif defined SED_TOY
+# ifdef SED_TOY_FLOC
+      fname='TEST_CASES/croco.in.Sed_toy_floculation'
+# elif defined CONSOLID
+      fname='TEST_CASES/croco.in.Sed_toy_consolid'
+# elif defined ROUSE
+      fname='TEST_CASES/croco.in.Sed_toy_rouse'
+# elif defined SETTLE_COL
+      fname='TEST_CASES/croco.in.Sed_toy_settle_col'
+# else
       fname='TEST_CASES/croco.in.Sed_toy'
-#elif defined TFLAT2DV
-      fname='TEST_CASES/croco.in.Tflat2dv'
+# endif
+#elif defined TIDAL_FLAT
+      fname='TEST_CASES/croco.in.Tidal_flat'
 #else
       fname='croco.in'
 #endif
@@ -2372,7 +2382,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif
 #ifdef SOLVE3D
-# if !defined NONLIN_EOS || defined MUSTANG
+# if !defined NONLIN_EOS
 !
 ! Parameters for linear equations of state.
 !
@@ -2701,10 +2711,10 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                    (Lsrc(is,itrc), itrc=1,30)
+     &                                    (Lsrc(is,itrc), itrc=1,NT)
 #  else
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                     (Lsrc(is,itrc), itrc=1,30),
+     &                                     (Lsrc(is,itrc), itrc=1,NT),
 #   ifdef TRACERS
      &                                     (Tsrc0(is,itrc), itrc=1,NT)
 #   endif /* TRACERS */

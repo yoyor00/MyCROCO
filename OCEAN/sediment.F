@@ -694,6 +694,12 @@ C$OMP BARRIER
 ! Limit slope to 0.9*sed angle.
 !-----------------------------------------------------------------------
 !
+#  if defined SLOPE_NEMETH || defined SLOPE_LESSER
+            cff1=0.5*(1.+SIGN(1.,FX_r(i,j)))
+            cff2=0.5*(1.-SIGN(1.,FX_r(i,j)))
+            cff3=0.5*(1.+SIGN(1.,FE_r(i,j)))
+            cff4=0.5*(1.-SIGN(1.,FE_r(i,j)))
+#  endif
 #  ifdef SLOPE_NEMETH
             dzdx=(h(i+1,j)-h(i  ,j))/om_u(i+1,j)*cff1+       
      &           (h(i-1,j)-h(i  ,j))/om_u(i  ,j)*cff2
@@ -725,7 +731,7 @@ C$OMP BARRIER
             FX_r(i,j)=FX_r(i,j)*a_slopex
             FE_r(i,j)=FE_r(i,j)*a_slopey
 !
-#  endif /* SLOPE_NEMETH */
+#  endif /* SLOPE_NEMETH || SLOPE_LESSER */
 !
 !-----------------------------------------------------------------------
 ! Apply morphology factor.
@@ -1349,7 +1355,7 @@ C$OMP BARRIER
         bed_frac(Iend+1,Jstr-1,:,:)=
      &  0.5*(bed_frac(Iend,Jstr-1,:,:)
      &      +bed_frac(Iend+1,Jstr,:,:))
-        bed_thick(Iend+1,Jstr-1,:)=
+        bed_thick(Iend+1,Jstr-1,1)=
      &  0.5*(bed_thick(Iend,Jstr-1,1)
      &      +bed_thick(Iend+1,Jstr,1))
       endif
@@ -1371,7 +1377,7 @@ C$OMP BARRIER
         bed_frac(Iend+1,Jend+1,:,:)=
      &   0.5*(bed_Frac(Iend,Jend+1,:,:)
      &       +bed_Frac(Iend+1,Jend,:,:))
-        bed_thick(Iend+1,Jend+1,:)=
+        bed_thick(Iend+1,Jend+1,1)=
      &   0.5*(bed_thick(Iend,Jend+1,1)
      &       +bed_thick(Iend+1,Jend,1))
       endif
@@ -2319,9 +2325,6 @@ C$OMP BARRIER
 !
 # endif /* MORPHODYN */
 
-# undef I_EXT_RANGE
-# undef J_EXT_RANGE
-
       return
       end
 
@@ -2365,38 +2368,6 @@ C$OMP BARRIER
 # endif
 # if defined SED_FLOCS && defined SED_DEFLOC
       real masseq(NMUD)
-# endif
-
-
-# ifdef EW_PERIODIC
-#  define I_EXT_RANGE Istr-1,Iend+1
-# else
-      if (WESTERN_EDGE) then
-        imin=Istr
-      else
-        imin=Istr-1
-      endif
-      if (EASTERN_EDGE) then
-        imax=Iend
-      else
-        imax=Iend+1
-      endif
-#  define I_EXT_RANGE imin,imax
-# endif
-# ifdef NS_PERIODIC
-#  define J_EXT_RANGE Jstr-1,Jend+1
-# else
-      if (SOUTHERN_EDGE) then
-        jmin=Jstr
-      else
-        jmin=Jstr-1
-      endif
-      if (NORTHERN_EDGE) then
-        jmax=Jend
-      else
-        jmax=Jend+1
-      endif
-#  define J_EXT_RANGE jmin,jmax
 # endif
 
 ! KLUDGE alert

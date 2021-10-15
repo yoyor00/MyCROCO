@@ -164,7 +164,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           do j=Jstr,Jend
             if (u(Istr+1,j,k,nstp).lt.0.) then
               t(Istr-1,j,k,indx,itrc)=t(Istr,j,k,indx,itrc)
-#   ifdef TFLAT2DV
+#   ifdef T_FRC_BRY
               t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
 #   endif
             else

@@ -246,6 +246,19 @@
               zeta(i,j,:) = zeta(i,j,1)
           enddo
         enddo
+
+# elif defined SED_TOY && defined CONSOLID
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=0.
+            zeta(i,j,2)=0.
+            ubar(i,j,1)=0.
+            vbar(i,j,1)=0.
+            ubar(i,j,2)=ubar(i,j,1)
+            vbar(i,j,2)=0.
+          enddo
+        enddo
+
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -383,6 +396,18 @@
          enddo
        enddo
        print*,'CFL_max = ',cmax
+
+#  elif defined SED_TOY && defined CONSOLID
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              u(i,j,k,1)=0.
+              u(i,j,k,2)=u(i,j,k,1)
+              v(i,j,k,1)=0.
+              v(i,j,k,2)=v(i,j,k,1)
+            enddo
+          enddo
+        enddo
 
 #  elif defined KH_INST
 !
@@ -1097,7 +1122,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
-#   elif defined TFLAT2DV
+#   elif defined TIDAL_FLAT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1215,7 +1240,7 @@ C$OMP BARRIER
             else
               t(i,j,k,1,itpas)=0
             endif
-#  elif defined TFLAT2DV
+#  elif defined TIDAL_FLAT
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
@@ -1247,7 +1272,7 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined TFLAT2DV
+#  elif defined TIDAL_FLAT
                 if (h(i,j).gt.0) then
 ! ---------------- mud+diss case -----------------!
                   if (iv<=itsubs1+1) then
@@ -1299,6 +1324,22 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+
+#  if defined SED_TOY && defined CONSOLID
+      do iv=itrc_mud,itrc_mud+NMUD-1
+        do k=1,5
+          do j=JR_RANGE
+            do i=IR_RANGE
+              if (.not.got_tini(iv)) then
+                t(i,j,k,1,iv)=1./7.5
+                t(i,j,k,2,iv)=t(i,j,k,1,iv)
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+
+#  endif
 # endif
 !
 !----------------------------------------------------------------------

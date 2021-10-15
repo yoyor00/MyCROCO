@@ -981,7 +981,6 @@ C$OMP END MASTER
       use Agrif_Util
 #endif
 #ifdef MUSTANG
-      use plug_MUSTANG_CROCO, only: mustang_update_dh
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
@@ -1098,17 +1097,14 @@ C$OMP BARRIER
 # ifdef MORPHODYN
       do tile=my_first,my_last
 #  ifdef SEDIMENT
-#    ifdef ANA_MORPHODYN
+#   ifdef ANA_MORPHODYN
         call ana_morphodyn (tile)
-#    endif
-#  elif defined MUSTANG && defined SUBSTANCE
+#   endif
+#  elif defined MUSTANG
         IF_MUSTANG_MORPHO_CPL
      &  call mustang_morpho_main (tile)
 #  endif
         call set_depth_morphodyn (tile)
-#  if defined MUSTANG && defined SUBSTANCE
-        call mustang_update_dh (tile)
-#  endif
       enddo
 C$OMP BARRIER
 

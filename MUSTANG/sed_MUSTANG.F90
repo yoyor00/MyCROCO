@@ -3720,13 +3720,11 @@
    !!! ATTENTION: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
    rossan=ros_sand_homogen
    !!!!!!!!!!!!!!!!!
-#ifdef MANGAE2500    
-! BM MANGAE2500 ! to remove gravel that is declared as sand in our configuration
-   DO iv=isand1+1,isand2
-# else
-   DO iv=isand1,isand2
-# endif
-
+    
+   DO iv=isand1,isand2    
+     IF (diam_sed(iv).LT.0.002) THEN   ! to remove gravels that are declared as sand 
+                                       ! in our configuration before computing mean parameters
+                                       !(i.e. gravels are not working and are declared as sands in Mustang V1)
      somsan=somsan+cv_sed(iv,k,i,j)
      diamsan=diamsan+diam_sed(iv)*cv_sed(iv,k,i,j)
      critstressan=critstressan+stresscri0(iv)*cv_sed(iv,k,i,j)
@@ -3735,6 +3733,7 @@
 #ifdef key_MUSTANG_V2
      E0_sand_loc=E0_sand_loc+E0_sand(iv)*cv_sed(iv,k,i,j)
 #endif
+     ENDIF
    ENDDO
    somsedsusp=sommud+somsan
    IF(somsedsusp.LE.0.0_rsh)THEN

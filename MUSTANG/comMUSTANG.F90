@@ -96,8 +96,11 @@
    LOGICAL,PUBLIC            :: l_transfer2hydro_dhsed,l_z0hydro_coupl_init,l_z0hydro_coupl
    LOGICAL,PUBLIC            :: l_dredging,l_MF_dhsed,l_bathy_actu,l_out_subs_diag_sed
    INTEGER,PUBLIC            :: choice_flxdiss_diffsed,ero_option,E0_sand_option,nv_use,nlayer_surf_sed
+
+! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
+   INTEGER,PUBLIC            :: tau_cri_option,tau_cri_mud_option_eroindep
 #ifdef key_MUSTANG_V2
-   INTEGER,PUBLIC            :: tau_cri_option,tau_cri_mud_option_eroindep,poro_option
+   INTEGER,PUBLIC            :: poro_option
 #endif
    CHARACTER(len=19),PUBLIC  :: date_start_dyninsed,date_start_morpho
    
@@ -135,9 +138,11 @@
    INTEGER       ,DIMENSION(:)      ,ALLOCATABLE        :: D0_funcT_opt
    REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE        :: D0_m0,D0_m1
 
+! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
+   REAL(KIND=rsh),PUBLIC     :: k1HW97,k2HW97,E0_mud_para_indep,fusion_para_activlayer
 #ifdef key_MUSTANG_V2
-   REAL(KIND=rsh),PUBLIC     :: Awooster,Bwooster,Bmax_wu,k1HW97,k2HW97,E0_mud_para_indep,     &
-                                fusion_para_activlayer,poro_min,alphabs,alphabn
+   REAL(KIND=rsh),PUBLIC     :: Awooster,Bwooster,Bmax_wu,     &
+                                poro_min,alphabs,alphabn
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC   :: sigmapsg,stateconsol,permeab,E0_sand
 #endif
                                                       
@@ -207,10 +212,12 @@
     ! relatif to initialization
    ! ---------------------------------------------------------------------------
    LOGICAL,PUBLIC          :: l_repsed,l_unised,l_z0seduni,l_initsed_vardiss,l_dzsmaxuni,l_init_hsed
+! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
+   LOGICAL,PUBLIC          :: l_peph_suspension,l_dzsminuni
+   LOGICAL,PUBLIC          :: l_eroindep_noncoh,l_eroindep_mud,l_xexp_ero_cst
 #ifdef key_MUSTANG_V2
-   LOGICAL,PUBLIC          :: l_peph_suspension,l_peph_bedload,l_dzsminuni
-   LOGICAL,PUBLIC          :: l_slope_effect_bedload,l_xexp_ero_cst,l_fsusp
-   LOGICAL,PUBLIC          :: l_eroindep_noncoh,l_eroindep_mud
+   LOGICAL,PUBLIC          :: l_peph_bedload
+   LOGICAL,PUBLIC          :: l_slope_effect_bedload,l_fsusp
    REAL(KIND=rsh),PUBLIC   :: coeff_dzsmin
 #ifdef key_MUSTANG_debug
    LOGICAL, PUBLIC         :: l_debug_effdep,l_debug_erosion
@@ -225,13 +232,15 @@
    REAL(KIND=rsh),PUBLIC   :: z0seduni,z0sedmud,z0sedbedrock
    REAL(KIND=rsh),PUBLIC   :: dzsmax_bottom
    REAL(KIND=rsh),PUBLIC,DIMENSION(:),ALLOCATABLE    :: cini_sed,cv_sedini
+
+! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
+   REAL(KIND=rsh),PUBLIC                                    :: dzsminuni,poro_mud_ini
 #ifdef key_MUSTANG_V2
    LOGICAL,DIMENSION(:,:),ALLOCATABLE,PUBLIC :: l_isitcohesive
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE,PUBLIC           :: psi_sed
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,    PUBLIC   :: poro_mud
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,    PUBLIC   :: crel_mud
-   REAL(KIND=rsh),PUBLIC                                    :: dzsminuni,poro_mud_ini,       &
-                                                               hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
+   REAL(KIND=rsh),PUBLIC                                    :: hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
 #endif
 
 
@@ -270,11 +279,13 @@
 
    LOGICAL,PUBLIC          :: l_outsed_flx_WS_all,l_outsed_toce,l_outsed_frmudsup
    LOGICAL,PUBLIC          :: l_outsed_dzs_ksmax
-#ifdef key_MUSTANG_V2
+! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
    LOGICAL,PUBLIC          :: l_outsed_flx_Bload_all,l_outsed_bil_Bload_all,l_outsed_fsusp
    LOGICAL,PUBLIC          :: l_outsed_activlayer,l_outsed_surf,l_outsed_peph,l_outsed_eroiter
    LOGICAL,PUBLIC          :: l_outsed_z0sed,l_outsed_flx_WS_int,l_outsed_flx_Bload_int
+!
    LOGICAL,PUBLIC          :: l_outsed_bil_Bload_int
+#ifdef key_MUSTANG_V2
 #ifdef key_MUSTANG_bedload
 !  bedload (charriage)
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC  :: flx_bx,flx_by

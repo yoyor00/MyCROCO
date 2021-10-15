@@ -706,6 +706,10 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           dh(i,j)=init
+#  ifdef SEDIMENT
+          bed_thick_tot(i,j,1)=init
+          bed_thick_tot(i,j,2)=init
+#  endif
         enddo
       enddo
 # endif

@@ -26,7 +26,7 @@ clear all
 close all
 %================== User defined parameters ===========================
 
-fname='sed_toy_his.nc';
+fname='sed_toy_rouse_his.nc';
 
 %======================================================================
 %
@@ -124,7 +124,7 @@ for isand=1:nsand
 	grid on
     xlabel('C/C[k=1]','fontsize',12)
 	if isand == 1
-	   ylabel('hauteur d eau [m]','fontsize',12)
+	   ylabel('Water level [m]','fontsize',12)
 	end
     title(['WS=',num2str(ws(isand)),' m/s'])
     xlim([0 1])

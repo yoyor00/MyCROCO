@@ -123,8 +123,8 @@
       REAL, PARAMETER ::  nuwm    =  1.0E-06 ! background viscosity
 # else
       REAL, PARAMETER ::  eps     =  1.0E-14 ! min stable stratification
-      REAL, PARAMETER ::  nuws    =  0.1E-04 ! background diffusivity
-      REAL, PARAMETER ::  nuwm    =  1.0E-04 ! background viscosity
+      REAL, PARAMETER ::  nuws    =  0.1E-05 ! background diffusivity
+      REAL, PARAMETER ::  nuwm    =  1.0E-05 ! background viscosity
 # endif      
       REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin 
                                              ! mixing length limitation

@@ -1,10 +1,18 @@
 title:
         Tide Flat 2DV TEST MODEL
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                17280      15   5     1
+                8640      15       5       100
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      500.0d0
+
+run_start_date:
+01/01/2019 00:00:00
+run_end_date:
+03/01/2019 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                     0.25           24         24
 
 initial: NRREC  filename
           0 
@@ -12,11 +20,11 @@ initial: NRREC  filename
 
 restart:          NRST, NRPFRST / filename
                    720000    -1
-                          Tflat2dv_rst.nc
+                          tidal_flat_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      40     0
-                          Tflat2dv_his.nc
+            T     100     0
+                          tidal_flat_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
@@ -28,8 +36,8 @@ gls_history_fields:   TKE  GLS  Lscale
                        F     F    F
 
 sediments_mustang: input file
-               FIC_NAMELIST/parasubstance_MUSTANG_Tflat2dv.txt
-               FIC_NAMELIST/paraMUSTANGV2_Tflat2dv.txt
+               FIC_NAMELIST/parasubstance_MUSTANG_Tidal_flat.txt
+               FIC_NAMELIST/paraMUSTANGV1_Tidal_flat.txt
 
 rho0:
       1025.d0
