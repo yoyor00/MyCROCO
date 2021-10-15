@@ -37,8 +37,9 @@ if [ ${USE_ATM} == 1 ]; then
 #
         dimx=$( ncdump -h  $file  | grep "west_east_stag =" | cut -d ' ' -f 3)
         dimy=$( ncdump -h  $file  | grep "south_north_stag =" | cut -d ' ' -f 3)
-    
-        sed -e "s/${searchf[0]}/${DT_ATM}/g"   -e "s/${searchf[1]}/${dimx}/g"   -e "s/${searchf[2]}/${dimy}/g" \
+        coef=$( ncdump -h  $file  | grep "PARENT_GRID_RATIO =" | cut -d ' ' -f 3)        
+
+        sed -e "s|${searchf[0]}|$(( ${DT_ATM} / ${coef} ))|g"   -e "s/${searchf[1]}/${dimx}/g"   -e "s/${searchf[2]}/${dimy}/g" \
         ./namcouple>tmp$$
         mv tmp$$ namcouple
     done

@@ -64,12 +64,11 @@ for dom in $wrfcpldom ; do
     chmod 755 namelist.input
 done
 
-numextmod=""
-for dom in `seq 1 $NB_dom`; do
-    numextmod="$numextmod 1,"
-done
-sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
-
+#numextmod=""
+#for dom in `seq 1 $NB_dom`; do
+#    numextmod="$numextmod 1,"
+#done
+#sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
 
 
 if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
@@ -77,12 +76,16 @@ if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
     for dom in `seq 1 $NB_dom`; do
         cplwavdom="$cplwavdom 5,"
     done
-    sed -e "s/isftcflx                            = 0,/isftcflx                            = $cplwavdom/g"
+    sed -e "s/isftcflx                            = 0,/isftcflx                            = $cplwavdom/g" \
+    ./namelist.input > ./namelist.input.tmp
+    mv namelist.input.tmp namelist.input
 fi
 
-if [ ${USE_OCE} -eq 1 ]; then
-   
-
-
-fi
+sed -e "s/<xdim_d.*>/1/g"  -e "s/<ydim_d.*>/1/g"\
+    -e "s/<dx_d.*>/1/g"  -e "s/<dy_d.*>/1/g" \
+    -e "s/<i_str_d.*>/1/g"  -e "s/<j_str_d.*>/1/g" \
+    -e "s/<coef_d.*>/1/g"  -e "s/<coef_d.*>/1/g" \
+./namelist.input > ./namelist.input.tmp
+mv namelist.input.tmp namelist.input
+chmod 755 namelist.input
 
