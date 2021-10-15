@@ -18,7 +18,7 @@ then
  for file in $filelist
   do
    echo "ln -sf ${ATM_FILES_DIR}${file}_${YEAR_BEGIN_JOB}_${mm}_${YEAR_END_JOB}_${me} ./$file"
-   lnfile -sf ${ATM_FILES_DIR}/${file}_${YEAR_BEGIN_JOB}_${mm}_${YEAR_END_JOB}_${me} ./$file
+   ln -sf ${ATM_FILES_DIR}/${file}_${YEAR_BEGIN_JOB}_${mm}_${YEAR_END_JOB}_${me} ./$file
   done
 
   for dom in $wrfcpldom ; do

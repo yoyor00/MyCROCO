@@ -327,12 +327,12 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
 
     # add sections for each model
     for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [ ${models[$k]} == "cpl" ] && printf "export CPL=\"\"\n" >> tmppath
-        [ ${models[$k]} == "oce" ] && printf "export OCE=\"${CROCO_DIR}/croco/OCEAN\"\n" >> tmppath
-        [ ${models[$k]} == "atm" ] && printf "export ATM=\"\"\n" >> tmppath
-        [ ${models[$k]} == "wav" ] && printf "export WAV=\"\"\n" >> tmppath
-        [ ${models[$k]} == "toy" ] && printf "export TOY=\"${CHOME}/TOY_IN\"\n" >> tmppath
-        [ ${models[$k]} == "xios" ] && printf "export XIOS=\"\"\n" >> tmppath
+        [[ ${models[$k]} == "cpl" ]] && printf "export CPL=\"\"\n" >> tmppath
+        [[ ${models[$k]} == "oce" ]] && printf "export OCE=\"${CROCO_DIR}/croco/OCEAN\"\n" >> tmppath
+        [[ ${models[$k]} == "atm" ]] && printf "export ATM=\"\"\n" >> tmppath
+        [[ ${models[$k]} == "wav" ]] && printf "export WAV=\"\"\n" >> tmppath
+        [[ ${models[$k]} == "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
+        [[ ${models[$k]} == "xios" ]] && printf "export XIOS=\"\"\n" >> tmppath
     done
     for k in ${models[@]} ; do
         [ -f path_${k}.sh ] && cat ./path_${k}.sh >> tmppath
@@ -351,8 +351,8 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
     [ -d ${MY_CONFIG_HOME}/ROUTINES/MACHINE/${MACHINE} ] && cd ${MY_CONFIG_HOME}/ROUTINES/MACHINE/${MACHINE} || { echo "No environement for ${MACHINE} in ${MY_CONFIG_HOME}/SCRIPT_CPL/ROUTINES/MACHINE/${MACHINE}"; exit ;}
     cp myenv.${MACHINE} tmpenv
     for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [ ${models[$k]} == "atm" ] && cat ./myenv.${MACHINE}.wrf >> tmpenv 
-        [ ${models[$k]} == "wav" ] && cat ./myenv.${MACHINE}.ww3 >> tmpenv
+        [[ ${models[$k]} == "atm" ]] && cat ./myenv.${MACHINE}.wrf >> tmpenv 
+        [[ ${models[$k]} == "wav" ]] && cat ./myenv.${MACHINE}.ww3 >> tmpenv
     done
     mv tmpenv ${MY_CONFIG_HOME}/
     cd ${MY_CONFIG_HOME}
@@ -402,11 +402,11 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
     cat ./namelist_rundir.sh >> mynamelist.sh
 
     for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [ ${models[$k]} == "oce" ] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
-        [ ${models[$k]} == "atm" ] && printf "export ATM_EXE_DIR=\n" >> mynamelist.sh
-        [ ${models[$k]} == "wav" ] && printf "export WAV_EXE_DIR=\n" >> mynamelist.sh
-        [ ${models[$k]} == "toy" ] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
-        [ ${models[$k]} == "xios" ] && printf "export XIOS_EXE_DIR=\n" >> mynamelist.sh
+        [[ ${models[$k]} == "oce" ]] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
+        [[ ${models[$k]} == "atm" ]] && printf "export ATM_EXE_DIR=\n" >> mynamelist.sh
+        [[ ${models[$k]} == "wav" ]] && printf "export WAV_EXE_DIR=\n" >> mynamelist.sh
+        [[ ${models[$k]} == "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
+        [[ ${models[$k]} == "xios" ]] && printf "export XIOS_EXE_DIR=\n" >> mynamelist.sh
     done
 
     printf "#-------------------------------------------------------------------------------\n" >> mynamelist.sh
