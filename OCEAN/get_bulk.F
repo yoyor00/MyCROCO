@@ -485,14 +485,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # endif
               enddo
             enddo
-
+            
             do j=JstrR,JendR
               do i=IstrR,imax
                 uwnd(i,j)=uwndg(i,j,itbulk)
               enddo
             enddo
             do j=JstrR,jmax
-              do i=IstrR,IendR+1
+              do i=IstrR,IendR
                 vwnd(i,j)=vwndg(i,j,itbulk)
               enddo
             enddo
@@ -679,7 +679,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             enddo
           enddo
           do j=JstrR,jmax
-            do i=IstrR,IendR+1
+            do i=IstrR,IendR
               vwnd(i,j)=cff1*vwndg(i,j,it1)+cff2*vwndg(i,j,it2)
             enddo
           enddo

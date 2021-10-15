@@ -59,7 +59,7 @@
       REAL           :: Wstar(2), Tstar, Qstar, Wstar0  , Tstar0, Qstar0
       REAL           :: psi_u(2), ZoLu(2) , psi_t, ZoLt    , patm
       REAL           :: hfsen, hflat, hflw , upvel   , evap
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
       REAL           :: wspd0_cfb
 # endif
 # ifdef ECUMEv0
