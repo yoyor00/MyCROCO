@@ -12,7 +12,7 @@ set -ue
 ##
 #
 
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
   rst="false"
 else
   rst="true"
@@ -34,7 +34,7 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
 for dom in $wrfcpldom ; do
-    if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+    if [[ ${RESTART_fLAG} == "FALSE" ]]; then
         file="wrfinput_${dom}"
     else
         file="wrfrst_${dom}*"

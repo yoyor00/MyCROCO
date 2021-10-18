@@ -2,7 +2,7 @@
 #                                                                      Restart
 #-------------------------------------------------------------------------------
 
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
     echo 'WW3 pre-processing before run:'
  # WW3 grid 

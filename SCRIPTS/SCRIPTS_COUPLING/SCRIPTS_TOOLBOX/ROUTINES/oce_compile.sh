@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+if [[ ${RESTART_FLAG} == "FALSE" ]] || [[ ! -f "${OCE_EXE_DIR}/croco.${RUNtype}" ]]; then
 
 #-------------------------------------------------------------------------------
 #   Get files

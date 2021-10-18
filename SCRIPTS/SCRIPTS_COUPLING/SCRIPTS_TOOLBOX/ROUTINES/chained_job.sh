@@ -51,6 +51,7 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
     sed -e "s/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOB}/YEAR_BEGIN_JOB=${years}/" \
         -e "s/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOB}/MONTH_BEGIN_JOB=${months}/" \
         -e "s/DAY_BEGIN_JOB=${DAY_BEGIN_JOB}/DAY_BEGIN_JOB=${days}/" \
+        -e "s/export CHAINED_JOB=.*/export CHAINED_JOB=\"False\"/" \
         ${jobname} > ${future_job}
 
     chmod 755 ${future_job}

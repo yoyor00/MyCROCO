@@ -103,8 +103,8 @@ if [ "${SCRIPT_DEBUG}" == "TRUE" ] ; then
    printf "\n\n\n\n  SCRIPT_DEBUG=${SCRIPT_DEBUG}  Mode script debug => Pas de soumission en queue\n\n\n\n"
 else 
     if [ ${CHAINED_JOB} == "TRUE" ]; then
-        [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ] && . ${SCRIPTDIR}/chained_job.sh
-
+#        [[ ${RESTART_FLAG} == "FALSE" ]] && . ${SCRIPTDIR}/chained_job.sh
+        . ${SCRIPTDIR}/chained_job.sh
     else
        ${QSUB} ${jobname}
     fi 

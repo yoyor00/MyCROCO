@@ -1,12 +1,8 @@
 #-------------------------------------------------------------------------------
 #                                                                      Restart
 #-------------------------------------------------------------------------------
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]
+if [[ ${RESTART_FLAG} == "FALSE" ]]
 then
-    [ ${MONTH_BEGIN_JOB} -le 9 ] && mm=0${MONTH_BEGIN_JOB} || mm=${MONTH_BEGIN_JOB}
-    [ ${DAY_BEGIN_JOB}   -le 9 ] && dd=0${DAY_BEGIN_JOB}   || dd=${DAY_BEGIN_JOB}
-
- me=$( printf "%02d"  ${MONTH_END_EXP} )
 
  filelist='wrfinput_d01' 
  if [ $NB_dom -ge 2 ] ; then

@@ -2,7 +2,7 @@
 #                                                                      Restart
 #-------------------------------------------------------------------------------
 
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     for nn in $( seq 0 ${AGRIFZ} ); do

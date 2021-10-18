@@ -23,7 +23,7 @@ sed -e "s/<runtime>/$(( ${TOTAL_JOB_DUR} * 86400 ))/g" \
 if [ ${USE_ATM} == 1 ]; then
     for dom in $wrfcpldom ; do
 #
-        if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+        if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             file="wrfinput_${dom}"
         else
             file="wrfrst_${dom}*"
