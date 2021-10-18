@@ -34,11 +34,7 @@ cd ${EXEDIR}
         printf "\n ************* EXECUTABLE files *****************\n"
             if [ ${USE_OCE}  -eq 1 ]; then
                 if [ ${ONLINE_COMP} -eq 1 ]; then
-                    if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then 
-                        . ${SCRIPTDIR}/oce_compile.sh 
-                    else
-                        cpfile ${JOBDIR_ROOT}/COMP_CROCO/croco.${RUNtype} crocox
-                    fi
+                    . ${SCRIPTDIR}/oce_compile.sh 
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
                     if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then

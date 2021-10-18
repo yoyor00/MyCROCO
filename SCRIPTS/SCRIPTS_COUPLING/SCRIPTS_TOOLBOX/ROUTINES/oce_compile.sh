@@ -5,20 +5,12 @@ if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
 #   Get files
 #-------------------------------------------------------------------------------
 
-#    CROCOSRC=/ccc/work/cont005/ra0542/massons/now/models/croco
-    cd ${JOBDIR_ROOT}
     printf "\n\n CROCO online compilation is on \n\n" 
-#    rsync -a ${OCE}/OCEAN/ OCEAN/
-    [ ! -d COMP_CROCO ] && rm -rf COMP_CROCO
-    mkdir COMP_CROCO
-    rsync -a ${OCE}/param.h   COMP_CROCO/.
-    rsync -a ${OCE}/cppdefs.h COMP_CROCO/.
-    rsync -a ${OCE}/jobcomp   COMP_CROCO/.
 
 #-------------------------------------------------------------------------------
 #   sed on files
 #-------------------------------------------------------------------------------
-    cd COMP_CROCO
+    cd ${OCE_EXE_DIR}
     # Option of compilation
 #    sed -e "s/-O3 /-O3 -xAVX /" jobcomp > tmp$$i
 sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
@@ -55,6 +47,13 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
             sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
             printf "\n Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
+            if [ $USE_ATM -eq 1 ] && [ ${USE_XIOS_ATM} -eq 1 ]; then
+                sed -e "s/# *undef XIOS_ATM/#  define XIOS_ATM/g" cppdefs.h > tmp$$
+                mv tmp$$ cppdefs.h
+            else
+                sed -e "s/# *define XIOS_ATM/#  undef XIOS_ATM/g" cppdefs.h > tmp$$
+                mv tmp$$ cppdefs.h
+            fi
 	else
             sed -e "s/#  *define  *OA_COUPLING/# undef OA_COUPLING/g" cppdefs.h > tmp$$
 	    mv tmp$$ cppdefs.h
@@ -79,9 +78,13 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	    cppdefs.h > tmp$$
             printf "\n Online bulk activated with ${frc_ext}\n"
             mv tmp$$ cppdefs.h
-        else 
+        elif [ ${interponline} == 0 ]; then
+            sed -e "s/#  *define  *ONLINE/#  undef ONLINE/g" cppdefs.h > tmp$$
+            mv tmp$$ cppdefs.h
             printf "\n Bulk activated\n"
         fi
+    elif [[ ${surfrc_flag} == "TRUE" && ${frc_ext} == *'frc'* ]]; then
+        sed -e "s/#  *define  *BULK_FLUX/# undef BULK_FLUX/g"  cppdefs.h > tmp$$
     fi
 
     if [[ ${bry_ext} == *'bry'* ]]; then
@@ -91,6 +94,9 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         printf "\n Lateral forcing is BRY\n"
         mv tmp$$ cppdefs.h
     else
+        sed -e "s/#  *undef  *CLIMATOLOGY/# define CLIMATOLOGY/g" \
+            -e "s/#  *define *FRC_BRY/# undef FRC_BRY/g" \
+        cppdefs.h > tmp$$
         printf "\n Lateral forcing is CLM\n"
     fi
 #
@@ -98,21 +104,21 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	sed -e "s/#  *undef  *TIDES/# define TIDES/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
         printf "\n Tides are taken into account\n"
+    else
+        sed -e "s/#  *define  *TIDES/# undef TIDES/g" cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
     fi
 #
     if [ ${USE_XIOS_OCE} -eq 1 ]; then
 	sed -e "s/#  *undef  *XIOS/# define XIOS/g" cppdefs.h > tmp$$
     	mv tmp$$ cppdefs.h
-        if [ ${USE_CPL} ] ;then
-            sed -e "s/XIOS_withOASIS=.*/XIOS_withOASIS=1/g" cppdefs.h > tmp$$
-            mv tmp$$ cppdefs.h
-        else
-            sed -e "s/XIOS_withOASIS=.*/XIOS_withOASIS=0/g" cppdefs.h > tmp$$
-            mv tmp$$ cppdefs.h
-        fi
         printf "\n Output will be handled by XIOS\n"
+    else
+        sed -e "s/#  *define  *XIOS/# undef XIOS/g" cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
     fi
 #
+
     if [ $AGRIFZ -eq 0 ]; then
         sed -e "s/#  *define  *AGRIF/# undef AGRIF/g" cppdefs.h > tmp$$
         sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 8/g" jobcomp > tmp2$$
@@ -138,7 +144,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     cd ${EXEDIR}
 else
     
-    rsync -av ${JOBDIR_ROOT}/COMP_CROCO/croco.${RUNtype} crocox
+    cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
 
 fi
 

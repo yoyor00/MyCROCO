@@ -19,7 +19,7 @@ me=$(printf "%02d"  ${MONTH_END_EXP} )
 #-------------------------------------------------------------------------------
 #                                                          BDY
 #-------------------------------------------------------------------------------
-${io_getfile} ${ATM_FILES_DIR}/wrfbdy_d01_${YEAR_BEGIN_EXP}_${ms}_${YEAR_BEGIN_EXP}_${me} wrfbdy_d01  # maybe put month and day of simu istead
+${io_getfile} ${ATM_FILES_DIR}/wrfbdy_d01 wrfbdy_d01  # maybe put month and day of simu istead
 
 #-------------------------------------------------------------------------------
 #                                            Forcing fields (interannual case)
@@ -34,5 +34,5 @@ filelist='wrflowinp_d01'
 
 for file in ${filelist}
  do
-    ${io_getfile} ${ATM_FILES_DIR}/${file}_${YEAR_BEGIN_EXP}_${ms}_${YEAR_END_EXP}_${me} ${file}  # add loop for d02 and d03
+    ${io_getfile} ${ATM_FILES_DIR}/${file} ${file}  # add loop for d02 and d03
  done

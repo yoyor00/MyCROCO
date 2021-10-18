@@ -299,14 +299,14 @@ sed -e "s/<yr1>/$start_y/g"   -e "s/<yr2>/$end_y/g"  \
  if [ -e wrfinput_d01 -a -e wrfbdy_d01 -a -e wrflowinp_d01 ] ; then
   echo "SUCCESS d01"
   # Create output data directory if needed
-  if ! [ -e ${REAL_OUT_DIR}/${start_y} ] ; then
-   mkdir ${REAL_OUT_DIR}/${start_y}
+  if ! [ -e ${REAL_OUT_DIR}/ ] ; then
+   mkdir ${REAL_OUT_DIR}/
   fi 
-  mv -f wrfinput_d01 ${REAL_OUT_DIR}/${start_y}/wrfinput_d01_${start_y}_${start_m}_${end_y}_${end_m}
-  mv -f wrfbdy_d01 ${REAL_OUT_DIR}/${start_y}/wrfbdy_d01_${start_y}_${start_m}_${end_y}_${end_m}
-  mv -f wrflowinp_d01 ${REAL_OUT_DIR}/${start_y}/wrflowinp_d01_${start_y}_${start_m}_${end_y}_${end_m}
+  mv -f wrfinput_d01 ${REAL_OUT_DIR}/
+  mv -f wrfbdy_d01 ${REAL_OUT_DIR}/
+  mv -f wrflowinp_d01 ${REAL_OUT_DIR}/
   if  [ $switch_fdda -ne 0 ]; then
-    mv -f wrffdda_d01 ${REAL_OUT_DIR}/${start_y}/wrffdda_d01_${start_y}_${start_m}_${end_y}_${end_m}
+    mv -f wrffdda_d01 ${REAL_OUT_DIR}/
   fi  
  else
   echo "REAL ERROR d01"
@@ -314,15 +314,15 @@ sed -e "s/<yr1>/$start_y/g"   -e "s/<yr2>/$end_y/g"  \
 
  if [ $max_domains -ge 2 -a -e wrfinput_d02 -a -e wrflowinp_d02 ] ; then
   echo "SUCCESS d02"
-  mv -f wrfinput_d02 ${REAL_OUT_DIR}/${start_y}/wrfinput_d02_${start_y}_${start_m}_${end_y}_${end_m}
-  mv -f wrflowinp_d02 ${REAL_OUT_DIR}/${start_y}/wrflowinp_d02_${start_y}_${start_m}_${end_y}_${end_m}
+  mv -f wrfinput_d02 ${REAL_OUT_DIR}/
+  mv -f wrflowinp_d02 ${REAL_OUT_DIR}/
  else
   echo "REAL ERROR or NON-EXISTENT d02"
  fi
  if [ $max_domains -eq 3 -a -e wrfinput_d03 -a -e wrflowinp_d03 ] ; then
   echo "SUCCESS d03"
-  mv -f wrfinput_d03 ${REAL_OUT_DIR}/${start_y}/wrfinput_d03_${start_y}_${start_m}_${end_y}_${end_m}
-  mv -f wrflowinp_d03 ${REAL_OUT_DIR}/${start_y}/wrflowinp_d03_${start_y}_${start_m}_${end_y}_${end_m}
+  mv -f wrfinput_d03 ${REAL_OUT_DIR}/
+  mv -f wrflowinp_d03 ${REAL_OUT_DIR}/
  else
   echo "REAL ERROR or NON-EXISTENT d03"
  fi
