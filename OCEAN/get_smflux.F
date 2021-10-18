@@ -180,6 +180,7 @@ c**        call opencdf (frcname,N)
 # ifdef SFLUX_CFB
       real stau
       parameter (stau=-0.01)
+#  include "ocean3d.h"
 # endif
 # include "param.h"
 # ifdef SMFLUX_CURVGRID
