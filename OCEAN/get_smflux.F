@@ -177,17 +177,17 @@ c**        call opencdf (frcname,N)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1, cff2, ustress, vstress
-# ifdef SFLUX_CFB
-      real stau
-      parameter (stau=-0.01)
-#  include "ocean3d.h"
-# endif
 # include "param.h"
 # ifdef SMFLUX_CURVGRID
 #  include "grid.h"
 # endif
 # include "forces.h"
 # include "scalars.h"
+# ifdef SFLUX_CFB
+      real stau
+      parameter (stau=-0.01)
+#  include "ocean3d.h"
+# endif
 !
 # include "compute_extended_bounds.h"
 !
