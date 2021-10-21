@@ -93,7 +93,11 @@
 #  endif
 #  ifdef OBC_M2CHARACT
 #   define OBC_COM_M2CHARACT
-#   define OBC_COM_ZCHAPMAN
+#   ifdef OBC_ZSPECIFIED
+#    define OBC_COM_ZSPECIFIED
+#   else
+#    define OBC_COM_ZCHAPMAN
+#   endif
 #  endif
 #  ifdef OBC_WSPECIFIED
 #   define OBC_COM_WSPECIFIED

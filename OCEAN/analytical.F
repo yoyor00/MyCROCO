@@ -248,8 +248,8 @@ C$    integer  trd, omp_get_thread_num
       cff1=1.e-3*sin(2.*pi/10.05*time)
       do j=JstrR,JendR
         do i=IstrR,IendR
-          dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2) 
-     &                   - h(i,j)
+          dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2)
+     &                                           - h(i,j)
         enddo
       enddo
 # else
@@ -268,7 +268,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -359,7 +359,7 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j
       real Ewind, Nwind, dircoef, windamp, wcos,wsin
-      real cff1, cff2
+      real cff1, cff2, cff3
 !     data windamp /0./ 
       data Ewind, Nwind, dircoef /0., 0., 0./
 !     save windamp
@@ -434,6 +434,28 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
+
+# elif defined SED_TOY
+      if (tdays.lt.1.5) then
+        cff1=0.001
+      else if ((tdays.ge.3).and.(tdays.le.4.)) then
+        cff1=0.0005
+      else
+        cff1=0.
+      endif
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#   ifdef ROUSE
+          sustr(i,j)=0.001875
+          !sustr(i,j)=0.001875*cos(2.pi/(12.4*3600.)*time
+#   elif defined CONSOLID
+          sustr(i,j)=cff1
+#   else
+          sustr(i,j)=0.0
+#   endif
+        enddo
+      enddo
+    
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -634,7 +656,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
-# elif defined TFLAT2DV && defined ANA_TIDES
+# elif defined TIDAL_FLAT && defined ANA_TIDES
       omega=2.*pi/(12.0*3600)
       ETA0=2.0
       do j=JstrR,JendR
@@ -1343,7 +1365,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TFLAT2DV)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1871,6 +1893,14 @@ C$    integer  trd, omp_get_thread_num
         enddo 
       enddo 
 
+#  ifdef CONSOLID
+      bed_bctr(:,:,:) = 5.2
+      bed_bctr(:,:,1) = 0.03
+      bed_bctr(:,:,2) = 0.0911460784453711
+      bed_bctr(:,:,3) = 0.918694902789539
+      bed_bctr(:,:,4) = 3.54929559677213
+#  endif 
+
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -2119,32 +2149,32 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined REGIONAL
       do k=1,N
          do is=1,Nsrc
- #  ifdef PSOURCE_NCFILE_TS
- #   ifdef TEMPERATURE
+#  ifdef PSOURCE_NCFILE_TS
+#   ifdef TEMPERATURE
            if (.not.got_tsrc(itemp)) then
               Tsrc0(is,itemp)=5.
            endif
- #   endif
- #   ifdef SALINITY
+#   endif
+#   ifdef SALINITY
            if (.not.got_tsrc(isalt)) then
               Tsrc0(is,isalt)=2.
            endif
- #   endif
- #  endif
+#   endif
+#  endif
 
- # ifdef TRACERS
+# ifdef TRACERS
            do itrc=1,NT
              Tsrc(is,k,itrc)=Tsrc0(is,itrc)
            enddo
- # endif
- #  ifdef PASSIVE_TRACER
- #   ifdef PSOURCE_NCFILE_TS
+# endif
+#  ifdef PASSIVE_TRACER
+#   ifdef PSOURCE_NCFILE_TS
            if (.not.got_tsrc(itpas)) then
               Tsrc0(is,itpas)=1.
            endif
- #   endif
+#   endif
            Tsrc(is,k,itpas)=Tsrc0(is,itpas)
- #  endif
+#  endif
          enddo
        enddo
 #  else
@@ -2510,14 +2540,14 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    if defined TFLAT2DV
+#    if defined TIDAL_FLAT
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
 #    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
-#    ifdef TFLAT2DV
+#    ifdef TIDAL_FLAT
             ubarbry_west(j)=0.
 #    else
             ubarbry_west(j)=ubar(1,j,1)
@@ -2530,7 +2560,7 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
-#     ifdef TFLAT2DV
+#     ifdef TIDAL_FLAT
               ubry_west(j,k)=0.
 #     else
               ubry_west(j,k)=u(1,j,k,1)
@@ -2546,7 +2576,7 @@ C$    integer  trd, omp_get_thread_num
               enddo
 #    endif
 #    ifdef SUBSTANCE
-#     if defined TFLAT2DV
+#     if defined TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
 #     else
@@ -2558,7 +2588,7 @@ C$    integer  trd, omp_get_thread_num
               tbry_west(j,k,itrc)=cobc_wat(itrc)
             enddo
 #    else
-#     ifdef TFLAT2DV
+#     ifdef TIDAL_FLAT
             tbry_west(j,k,1)=10.
             tbry_west(j,k,2)=35.5
             tbry_west(j,k,3)=0.   ! tracer Coarse Sand
@@ -2576,7 +2606,7 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    ifdef TFLAT2DV
+#    ifdef TIDAL_FLAT
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
 #    endif
           enddo
@@ -2607,7 +2637,7 @@ C$    integer  trd, omp_get_thread_num
                tbry_west(j,k,itrc)=cobc_wat(itrc)
              enddo
 #     else
-#      ifdef TFLAT2DV
+#      ifdef TIDAL_FLAT
              tbry_west(j,k,1)=10.
              tbry_west(j,k,2)=35.
              tbry_west(j,k,3)=0. ! tracer Coarse Sand

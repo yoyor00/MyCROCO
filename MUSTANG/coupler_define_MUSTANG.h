@@ -82,13 +82,6 @@
 
 # ifdef key_CROCO
 #  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
-#  ifdef MPI
-#   define I_EXT_RANGE Istr-1,Iend+1
-#   define J_EXT_RANGE Jstr-1,Jend+1
-#  else
-#   define I_EXT_RANGE Istr,Iend
-#   define J_EXT_RANGE Jstr,Jend
-#  endif
 # endif
 
 !/* Spatial Grid limits definition  of loops
@@ -100,7 +93,7 @@
 # define JMAX_GRID Mm
 
 # define IMIN_BOUCL 2
-/*# define IMAX_BOUCL 202  cas TFLAT2DV avec LLm0=200 (param.h*/
+/*# define IMAX_BOUCL 202  cas Tidal_Flat avec LLm0=200 (param.h*/
 # define IMAX_BOUCL 52
 # define JMIN_BOUCL 2
 # define JMAX_BOUCL 4
@@ -166,8 +159,8 @@
 # define TRANSPORT_TIME_STEP dt /* in MARS : solving equations every half time step (in rlg)*/
 # define CURRENT_TIME time
 # define RHOREF rho0
-# define TEMPREF_LIN T0
-# define SALREF_LIN S0
+# define TEMPREF_LIN 10.0 
+# define SALREF_LIN 35.0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
 # define WAT_SETTL ws_part

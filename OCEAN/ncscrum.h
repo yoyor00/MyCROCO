@@ -624,7 +624,7 @@
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
       integer indxbvf
-      parameter (indxbvf=indxSSH+100)
+      parameter (indxbvf=indxSSH+1)
 #endif
 
 #ifdef EXACT_RESTART

@@ -135,6 +135,22 @@
 
 /*
 ======================================================================
+   Set default flags for computing temperature
+======================================================================
+*/
+#if !defined NO_TRACER 
+# define TRACERS            /* Compute at least one tracer */
+#endif
+#if !defined NO_TEMPERATURE /* Compute temperature */
+# define TEMPERATURE
+#endif
+#if defined SALINITY       || defined TEMPERATURE || \
+    defined PASSIVE_TRACER || defined SUBSTANCE
+# define TRACERS
+#endif
+
+/*
+======================================================================
    Activate NBQ choices for non-hydrostatic simulations
 ======================================================================
 */
@@ -705,7 +721,8 @@
 # endif
 #endif
 
-# if defined WKB_WWAVE || defined OW_COUPLING || defined WAVE_OFFLINE
+# if defined WKB_WWAVE || defined OW_COUPLING \
+		       || (defined WAVE_OFFLINE && defined MRL_WCI)
 #  define WAVE_IO
 # endif
 
@@ -815,7 +832,7 @@
 # undef  MUSTANG
 # define SUSPLOAD
 # define BEDLOAD
-# if defined NBQ || defined SED_TOY || defined TFLAT2DV
+# if defined NBQ || defined SED_TOY || defined TIDAL_FLAT
 #  undef  BEDLOAD
 # endif
 # define ANA_SEDIMENT
@@ -863,25 +880,12 @@
 #  undef  SEDIMENT
 #  define SUBSTANCE
 #  define key_CROCO
+#  define USE_CALENDAR
+#  define TEMPERATURE
+#  define SALINITY
 #  define key_noTSdiss_insed
 #  define key_nofluxwat_IWS
-#  undef  PASSIVE_TRACER
-#  ifdef DUNE
-#   define key_MUSTANG_V2
-#   define key_tenfon_upwind
-#   define key_MUSTANG_bedload
-#   define key_MUSTANG_specif_outputs
-#   ifdef DUNE3D
-#    define MUSTANG_CORFLUX
-#   elif defined ANA_DUNE
-#    define key_ANA_bedload
-#   endif
-#  elif defined TFLAT2DV
-#   define key_MUSTANG_V2
-#   define key_tenfon_upwind
-#  endif /* DUNE | TFLAT2D */
 # endif /* MUSTANG */
-
 
 /* 
 ======================================================================

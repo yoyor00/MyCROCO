@@ -17,7 +17,8 @@ mkdir -p $dir_test/Junk
 \cp -rf $CI_PROJECT_DIR/TEST_CASES/* $CVTKHOME/../common/TEST_CASES_CVTK/.
 
 for file in $(ls $CVTKHOME/../common/TEST_CASES_CVTK/croco.in*)
-do 
+do
+
   line=$(($(grep -n 'history:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $2}')
   [ ! -z $toto ] && sed -e "${line} s/$toto/6/" $file > tmp.txt && \mv tmp.txt $file
@@ -28,7 +29,24 @@ do
 
   line=$(($(grep -n 'time_stepping:' $file  |  awk -F ':' '{print $1}') +1))
   [ ! -z $line ] && toto=$(sed -n ${line}p   $file   | awk '{print $1}')
+  [ ! -z $line ] && mydt=$(sed -n ${line}p   $file   | awk '{print $2}')
   [ ! -z $toto ] && sed -e "${line} s/$toto/6/" $file > tmp.txt && \mv tmp.txt $file
+
+  nb_sec=$( echo $mydt*6|bc )
+
+  line=$(($(grep -n 'run_start_date:' $file  |  awk -F ':' '{print $1}') +1))
+  [ ! -z $line ] && start_date=$(sed -n ${line}p   $file)
+
+  nb_sec2=$(echo $nb_sec | awk '{print ($0-int($0)>0)?int($0)+1:int($0)}') # arrondi a l'entier sup
+  nb_sec3=$(( nb_sec2 ))
+  nb_sec4=$(printf %02d $nb_sec3)
+  new_end_date=$( echo  $start_date |cut -c1-17 )$nb_sec4
+			       
+  line=$(($(grep -n 'run_end_date:' $file  |  awk -F ':' '{print $1}') +1))
+  [ ! -z $line ] && end_date=$(sed -n ${line}p   $file)
+  [ ! -z $toto ] && sed -e "${line} s%${end_date}%${new_end_date}%g" $file > tmp.txt && \mv tmp.txt $file
+    
+  
 done
  
 # CI common scripts and programms

@@ -203,7 +203,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !
       if (wrthis(indxZ)) then
         work2d=zeta(:,:,fast_indx_out)
-#if defined WET_DRY && !defined TFLAT2DV  
+#if defined WET_DRY && ! defined ZETA_DRY_IO 
         do j=0,Mm
           do i=0,Lm
             if (h(i,j) .le. Dcrit(i,j)) then

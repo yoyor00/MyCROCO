@@ -500,6 +500,7 @@
    !! * Local declarations
    LOGICAL               :: l_varassoc
    CHARACTER(len=lchain) :: filepc
+   CHARACTER(len=lchain) :: filepc_user
    CHARACTER(len=19)     :: tool_sectodat
    INTEGER               :: iv,ivpc,isubs,IERR_MPI
 #ifdef key_CROCO
@@ -507,14 +508,13 @@
 #endif
    REAL(KIND=rlg)        :: tool_datosec,dtsedc,dtsedd,dtsedb
 
-#ifdef key_MUSTANG_V2
    NAMELIST/namsedim_init/ l_repsed,filrepsed,l_unised,fileinised,          &
                        date_start_morpho,date_start_dyninsed,               &
                        l_z0seduni,z0seduni,z0sedmud,z0sedbedrock,hseduni,   &
                        cseduni,ksmiuni,ksmauni,sini_sed,tini_sed,           &
                        l_init_hsed,csed_mud_ini,l_initsed_vardiss,poro_mud_ini
    NAMELIST/namsedim_layer/ l_dzsminuni,dzsminuni,l_dzsmaxuni,dzsmaxuni,dzsmax_bottom,  &
-                       nlayer_surf_sed,k1HW97,k2HW97,fusion_para_activlayer
+                       dzsmin,nlayer_surf_sed,k1HW97,k2HW97,fusion_para_activlayer
    NAMELIST/namsedim_erosion/ activlayer,frmudcr2,coef_frmudcr1,         &
                        x1toce_mud,x2toce_mud,E0_sand_option,E0_sand_para,&
                        n_eros_sand,E0_mud,n_eros_mud,ero_option,xexp_ero,&
@@ -522,22 +522,12 @@
                        tau_cri_option,tau_cri_mud_option_eroindep,       &
                        l_peph_suspension,l_xexp_ero_cst,l_eroindep_mud,  &
                        l_eroindep_noncoh,E0_mud_para_indep
+#ifdef key_MUSTANG_V2
    NAMELIST/namsedim_poro/poro_option,poro_min,Awooster,Bwooster,Bmax_wu 
    NAMELIST/namsedim_bedload/ l_peph_bedload,l_slope_effect_bedload,     &
                               alphabs,alphabn,hmin_bedload,l_fsusp
-#else
-   NAMELIST/namsedim_init/ l_repsed,filrepsed,l_unised,fileinised,          &
-                       date_start_morpho,date_start_dyninsed,               &
-                       l_z0seduni,z0seduni,z0sedmud,z0sedbedrock,hseduni,   &
-                       cseduni,ksmiuni,ksmauni,sini_sed,tini_sed,           &
-                       l_init_hsed,csed_mud_ini,l_initsed_vardiss
-   NAMELIST/namsedim_layer/ dzsmin,l_dzsmaxuni,dzsmaxuni,dzsmax_bottom,  &
-                       nlayer_surf_sed
-   NAMELIST/namsedim_erosion/ activlayer,frmudcr2,coef_frmudcr1,         &
-                       x1toce_mud,x2toce_mud,E0_sand_option,E0_sand_para,&
-                       n_eros_sand,E0_mud,n_eros_mud,ero_option,xexp_ero,&
-                       corfluer1,corfluer2,htncrit_eros,E0_sand_Cst
 #endif
+
    NAMELIST/namsedim_bottomstress/ l_fricwave,fricwav,                   &
                                    l_z0hydro_coupl_init,l_z0hydro_coupl, &
                                    coef_z0_coupl,z0_hydro_mud,z0_hydro_bed
@@ -556,7 +546,7 @@
    NAMELIST/namsedim_morpho/l_morphocoupl,l_morphomesh,MF,l_bathy_smoothing, &
                             l_dredging,l_MF_dhsed,l_bathy_actu,dt_morpho, &
                             l_transfer2hydro_dhsed                                  
-#ifdef key_MUSTANG_V2
+
    NAMELIST/namsedoutput/ name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tenfon,      &
                           name_out_tenfonc,name_out_tenfonw,choice_nivsed_out,            &
                           riog_valid_min_hsed,riog_valid_max_hsed,                        &
@@ -569,19 +559,11 @@
                           l_outsed_bil_Bload_all,l_outsed_fsusp,l_outsed_dzs_ksmax,      &
                           l_outsed_peph,l_outsed_eroiter,l_outsed_z0sed,                  &
                           l_outsed_flx_WS_int,l_outsed_flx_Bload_int,l_outsed_bil_Bload_int
+#ifdef key_MUSTANG_V2
 #ifdef key_MUSTANG_debug
    NAMELIST/namsedim_debug/ l_debug_effdep,lon_debug,lat_debug, l_debug_erosion,          &
                               i_MUSTANG_debug,j_MUSTANG_debug ,date_start_debug
 #endif
-#else
-   NAMELIST/namsedoutput/ name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tenfon,      &
-                          name_out_tenfonc,name_out_tenfonw,choice_nivsed_out,            &
-                          riog_valid_min_hsed,riog_valid_max_hsed,l_outsed_poro,          &
-                          riog_valid_min_nbniv,riog_valid_max_nbniv,riog_valid_min_dzs,   &
-                          riog_valid_max_dzs,riog_valid_min_tenfon,riog_valid_max_tenfon, &
-                          nk_nivsed_out,ep_nivsed_out,epmax_nivsed_out,l_outsed_saltemp,  &
-                          l_outsed_toce,l_outsed_frmudsup,l_outsed_dzs_ksmax,             &
-                          l_outsed_flx_WS_all                     
 #endif
 
 #ifdef key_MUSTANG_flocmod
@@ -605,7 +587,8 @@ IF(rw == 'r')THEN
 
 #ifdef key_CROCO
     lstr=lenstr(sedname_must)
-    filepc=sedname_must(1:lstr)
+    filepc_user=sedname_must(1:lstr)
+    filepc=REPFICNAMELIST//'/paraMUSTANG_default.txt'
 #else
 # ifdef key_MUSTANG_V2
     filepc=REPFICNAMELIST//'/paraMUSTANGV2.txt'
@@ -613,7 +596,15 @@ IF(rw == 'r')THEN
     filepc=REPFICNAMELIST//'/paraMUSTANGV1.txt'
 # endif
 #endif
+
     OPEN(50,file=filepc,status='old',form='formatted',access='sequential')
+    OPEN(51,file=filepc_user,status='old',form='formatted',access='sequential')
+
+    MPI_master_only write(*,*) '*****************************************************'
+    MPI_master_only write(*,*) 'READING DEFAULT AND USER-DEFINED  MUSTANG input file'
+    MPI_master_only write(*,*) filepc,' AND ',filepc_user
+    MPI_master_only write(*,*) '*****************************************************'
+
     READ(50,namsedim_init)
     READ(50,namsedim_layer)
     READ(50,namsedim_bottomstress)
@@ -631,6 +622,26 @@ IF(rw == 'r')THEN
 #if ! defined key_noTSdiss_insed
     READ(50,namtempsed)
 #endif
+
+
+    READ(51,namsedim_init)
+    READ(51,namsedim_layer)
+    READ(51,namsedim_bottomstress)
+    READ(51,namsedim_deposition)
+    READ(51,namsedim_erosion)
+#ifdef key_MUSTANG_V2
+    READ(51,namsedim_poro)
+    READ(51,namsedim_bedload)
+#endif
+    READ(51,namsedim_lateral_erosion)
+    READ(51,namsedim_consolidation)
+    READ(51,namsedim_diffusion)
+    READ(51,namsedim_bioturb)
+    READ(51,namsedim_morpho)
+#if ! defined key_noTSdiss_insed
+    READ(51,namtempsed)
+#endif
+
 
     xsigma1sg=xsigma1/GRAVITY
     IF(csed_mud_ini==0.0_rsh)csed_mud_ini=cfreshmud
@@ -705,6 +716,16 @@ IF(rw == 'r')THEN
     READ(50,namsedim_debug)
     t_start_debug=tool_datosec(date_start_debug)
 #endif
+
+    READ(51,namsedoutput)
+#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
+    READ(51,namsedim_debug)
+    t_start_debug=tool_datosec(date_start_debug)
+#endif
+
+
+
+
     ! conversion of thickness reading in mm to m for computation
     epmax_nivsed_out=epmax_nivsed_out/1000.0_rsh
     ep_nivsed_out(:)= ep_nivsed_out(:)/1000.0_rsh
@@ -717,8 +738,11 @@ IF(rw == 'r')THEN
     !filepc='./paraflocmod.txt'
     !OPEN(50,file=filepc,status='old',form='formatted',access='sequential')
     READ(50,namflocmod)
+    READ(51,namflocmod)
+
 #endif
-    CLOSE(50)                                  
+    CLOSE(50)
+    CLOSE(51)                                  
        MPI_master_only write(*,*) 'initEND0 dt_consolid=',dt_consolid
 
 ELSE

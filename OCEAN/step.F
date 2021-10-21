@@ -42,6 +42,12 @@
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
+#ifdef AGRIF
+       else if ((.not.agrif_root()).and.(iif==-1).and.
+     &          (oasis_time>=0).and.(nbtimes<=Agrif_MaxLevel()+1).and.
+     &          (nbprttime<nbmaxprttime)) then
+         call cpl_prism_get (oasis_time)
+#endif
        endif 
 #endif /* OA_COUPLING */
 
@@ -81,6 +87,12 @@ C$OMP END PARALLEL
        if (iif==-1) then
          if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
+#ifdef AGRIF
+         else if (oasis_time>=0.and.(.not.agrif_root()).and.
+     &           ((nbtimes>nbmaxtimes+1-Agrif_MaxLevel())).and.
+     &           (nbprttime<nbmaxprttime) ) then
+           call cpl_prism_put (oasis_time)
+#endif
          endif
          oasis_time = oasis_time + dt
        endif 
@@ -954,7 +966,6 @@ C$OMP END MASTER
       use Agrif_Util
 #endif
 #ifdef MUSTANG
-      use plug_MUSTANG_CROCO, only: mustang_update_dh
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
@@ -1071,17 +1082,14 @@ C$OMP BARRIER
 # ifdef MORPHODYN
       do tile=my_first,my_last
 #  ifdef SEDIMENT
-#    ifdef ANA_MORPHODYN
+#   ifdef ANA_MORPHODYN
         call ana_morphodyn (tile)
-#    endif
-#  elif defined MUSTANG && defined SUBSTANCE
+#   endif
+#  elif defined MUSTANG
         IF_MUSTANG_MORPHO_CPL
      &  call mustang_morpho_main (tile)
 #  endif
         call set_depth_morphodyn (tile)
-#  if defined MUSTANG && defined SUBSTANCE
-        call mustang_update_dh (tile)
-#  endif
       enddo
 C$OMP BARRIER
 

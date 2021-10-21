@@ -68,7 +68,7 @@ C$    integer omp_get_thread_num
       real cff2
 #   endif
 # endif
-# ifdef TFLAT2DV
+# ifdef TIDAL_FLAT
       real depth_shallow,depth_deep
 # endif
 # ifdef INTERNAL
@@ -239,10 +239,15 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined SED_TOY
+#  ifdef CONSOLID
+                     depth=20.
+                     f0=0.0
+#  else
                      depth=5.
                      f0=1.E-4
+#  endif
                      beta=0.
-# elif defined TFLAT2DV
+# elif defined TIDAL_FLAT
                      depth_shallow=-4.
                      depth_deep=16.
                      f0=0.
@@ -359,9 +364,14 @@ C$    integer omp_get_thread_num
                      Length_ETA=Length_ETA_ISO_GRID
 #  endif
 # elif defined SED_TOY
+#  ifdef CONSOLID
+                     Length_XI =40.0
+                     Length_ETA=30.0
+#  else
                      Length_XI = 10.e+3
                      Length_ETA= 10.e+3
-# elif defined TFLAT2DV
+#  endif
+# elif defined TIDAL_FLAT
                      Length_ETA= 1500.0
                      Length_XI = 100000.0
 # else
@@ -847,12 +857,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef MPI
-         cff=(float(i +ii*Lm) )
+          cff=(float(i +ii*Lm) )
 #  else  
-         cff=(float(i       ) )
+          cff=(float(i       ) )
 #  endif
 #  ifdef ANA_DUNE
-         h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
+          h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
 #  elif defined DUNE3D
 #    ifdef MPI
           cffi=(float(i +ii*Lm) )
@@ -882,21 +892,22 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
-# elif defined TFLAT2DV
+# elif defined TIDAL_FLAT
       do j=JstrR,JendR
-        h(IstrR,j)=depth_deep
-        h(IstrR+1,j)=depth_deep
-        rmask(IstrR,j)=1.0
-        rmask(IstrR+1,j)=1.0
-        do i=IstrR+2,IendR
-          h(i,j)=depth_deep-REAL(i+iminmpi-2)/REAL(LLm)
-     &                 *(depth_deep-depth_shallow)
-          rmask(i,j)=1.0
+        do i=IstrR,IendR
+#  ifdef MPI
+          cff=(float(i +ii*Lm) )
+#  else  
+          cff=(float(i       ) )
+#  endif
+          if (cff.lt.2) then
+            h(i,j)=depth_deep
+          else
+            h(i,j)=depth_deep-(cff-1)/float(LLm+1)
+     &                        *(depth_deep-depth_shallow)
+          endif
         enddo
       enddo
-      rmask(IstrR:IendR,JstrR:1)=0.0
-      rmask(IstrR:IendR,3:JendR)=0.0
-      rmask(IendR-1:IendR,2)=0.0
 
 # else
       do j=JstrR,JendR
@@ -920,12 +931,16 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # ifdef MASKING
+      do j=JstrR,JendR             ! Set mask to all-water status
+        do i=IstrR,IendR
+          rmask(i,j)=1.
+        enddo
+      enddo
 #  ifdef RIVER
-      do j=JstrR,JendR             ! Set mask to all-water status,
-        do i=IstrR,IendR           ! then mask out 8-point wide strip
-          rmask(i,j)=1.            ! of land on the west, and finally
-        enddo                      ! carve two 1-point wide channels
-      enddo                        ! through that strip.
+!
+! Mask out 8-point wide strip of land on the west, and 
+! carve two 1-point wide channels through that strip.
+
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           do i=IstrR,8
@@ -957,8 +972,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       endif ! WESTERN_EDGE
-#  endif
-# endif
+#  endif /* RIVER */
+# endif /* MASKING */
 !
 #else
       subroutine ana_grid_empty

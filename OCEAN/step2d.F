@@ -623,54 +623,46 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
           rubar(i,j)=cff*on_u(i,j)*(
-#ifdef SED_TOY
-     &      -(h(i-1,j)+h(i,j))*gdzetadx*cos(2.*pi*omga*time)/g*om_u(i,j)
-#else
      &                         (h(i-1,j)+h(i,j))*(rzeta(i-1,j)
      &                        -rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
-#  if defined VAR_RHO_2D && defined SOLVE3D
+#if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i-1,j)-rhoA(i,j))
      &                                      *(zwrk(i-1,j)-zwrk(i,j)))
-#  endif
-#  ifdef MRL_WCI
+#endif
+#ifdef MRL_WCI
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                       *( sup(i,j)-sup(i-1,j) )
-#  endif
-#  if defined POT_TIDES && !defined SOLVE3D
+#endif
+#if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i-1,j) )
-#  endif
-#  if defined READ_PATM && !defined SOLVE3D
+#endif
+#if defined READ_PATM && !defined SOLVE3D
      &                  + ( h(i-1,j)+h(i,j)+rzeta(i-1,j)+rzeta(i,j) )
      &                                   *( patm2d(i,j)-patm2d(i-1,j) )
-#  endif
 #endif
      &                                                              )
 ! 
           rvbar(i,j)=cff*om_v(i,j)*(
-#ifdef SED_TOY
-     &      -(h(i,j-1)+h(i,j))*gdzetady*cos(2.*pi*omga*time)/g*on_v(i,j)
-#else
      &            (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
      &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
-#  if defined VAR_RHO_2D && defined SOLVE3D
+#if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
      &                        +0.333333333333*(rhoA(i,j-1)-rhoA(i,j))
      &                                      *(zwrk(i,j-1)-zwrk(i,j)))
-#  endif
-#  ifdef MRL_WCI
+#endif
+#ifdef MRL_WCI
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                       *( sup(i,j)-sup(i,j-1) )
-#  endif
-#  if defined POT_TIDES && !defined SOLVE3D
+#endif
+#if defined POT_TIDES && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( Ptide(i,j)-Ptide(i,j-1) )
-#  endif
-#  if defined READ_PATM && !defined SOLVE3D
+#endif
+#if defined READ_PATM && !defined SOLVE3D
      &                  + ( h(i,j-1)+h(i,j)+rzeta(i,j-1)+rzeta(i,j) )
      &                                   *( patm2d(i,j)-patm2d(i,j-1) )
-#  endif
 #endif
      &                                                              )
         enddo
