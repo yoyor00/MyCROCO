@@ -59,7 +59,7 @@
       real wspd(GLOBAL_2D_ARRAY)
       common /smsdat_wspd/ wspd
 # endif
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
       real wspd_cfb(GLOBAL_2D_ARRAY)
       common /smsdat_wspd_cfb/ wspd_cfb
 # endif
