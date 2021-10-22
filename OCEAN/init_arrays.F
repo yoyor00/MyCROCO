@@ -898,7 +898,7 @@ C$    integer omp_get_thread_num
 # if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
           wspd(i,j)=init
 # endif
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
           wspd_cfb(i,j)=init
 # endif
 # if defined SST_SKIN && defined TEMPERATURE

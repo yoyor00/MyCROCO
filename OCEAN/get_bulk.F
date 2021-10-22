@@ -424,7 +424,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # include "forces.h"
 # include "scalars.h"
 # include "grid.h"
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
 #  include "ocean3d.h"
 #  include "params_bulk.h"
 # endif
@@ -435,7 +435,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       real cff5,cff6
 # endif
       real val1,val2,val3,val4,val5,val6,val7,val8
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
       real uwnd_r, vwnd_r
 # endif
 # ifdef DIURNAL_INPUT_SRFLX
@@ -514,7 +514,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
               do i=IstrR,min(IendR,Lm)
                 wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
      &                         0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
                 cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
                 uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
      &                   - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
@@ -530,7 +530,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             if (WESTERN_EDGE) then
               do j=Jstr,Jend
                 wspd(Istr-1,j)=wspd(Istr,j)
-#  ifdef SFLUX_CFB  
+#  ifdef CFB_WIND_TRA
                 wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
 #  endif                 
               enddo
@@ -538,7 +538,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             if (EASTERN_EDGE) then
               do j=Jstr,Jend
                 wspd(Iend+1,j)=wspd(Iend,j)
-#  ifdef SFLUX_CFB
+#  ifdef CFB_WIND_TRA
                 wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)       
 #  endif            
               enddo
@@ -548,7 +548,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             if (SOUTHERN_EDGE) then
               do i=Istr,Iend
                 wspd(i,Jstr-1)=wspd(i,Jstr)
-#  ifdef SFLUX_CFB 
+#  ifdef CFB_WIND_TRA 
                 wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
 #  endif                  
               enddo
@@ -556,7 +556,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             if (NORTHERN_EDGE) then
               do i=Istr,Iend
                 wspd(i,Jend+1)=wspd(i,Jend)
-#  ifdef SFLUX_CFB 
+#  ifdef CFB_WIND_TRA 
                 wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
 #  endif                  
               enddo
@@ -564,25 +564,25 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 #  ifndef EW_PERIODIC
             if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
               wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
-#   ifdef SFLUX_CFB 
+#   ifdef CFB_WIND_TRA 
               wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
 #   endif                
             endif
             if (WESTERN_EDGE .and. NORTHERN_EDGE) then
               wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
-#   ifdef SFLUX_CFB  
+#   ifdef CFB_WIND_TRA  
               wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)
 #   endif               
             endif
             if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
               wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
-#   ifdef SFLUX_CFB 
+#   ifdef CFB_WIND_TRA 
               wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
 #   endif                
             endif
             if (EASTERN_EDGE .and. NORTHERN_EDGE) then
               wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
-#   ifdef SFLUX_CFB 
+#   ifdef CFB_WIND_TRA 
               wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
 #   endif                
             endif
@@ -591,7 +591,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                             wspd(START_2D_ARRAY))
-#  ifdef SFLUX_CFB 
+#  ifdef CFB_WIND_TRA 
             call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                             wspd_cfb(START_2D_ARRAY))
 #  endif      
@@ -701,7 +701,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             do i=IstrR,min(IendR,Lm)
               wspd(i,j)=sqrt(0.25*(uwnd(i,j)+uwnd(i+1,j))**2+
      &                       0.25*(vwnd(i,j)+vwnd(i,j+1))**2)
-# ifdef SFLUX_CFB
+# ifdef CFB_WIND_TRA
               cff      = 1.-swparam    ! current-wind coupling parameter: Ua => Ua-(1-sw)Uo
               uwnd_r   = 0.5*( uwnd(i+1,j)+uwnd(i,j)
      &                 - cff*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs))
@@ -717,7 +717,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           if (WESTERN_EDGE) then
             do j=Jstr,Jend
               wspd(Istr-1,j)=wspd(Istr,j)
-#  ifdef SFLUX_CFB
+#  ifdef CFB_WIND_TRA
               wspd_cfb(Istr-1,j)=wspd_cfb(Istr,j)
 #  endif
             enddo
@@ -725,7 +725,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           if (EASTERN_EDGE) then
             do j=Jstr,Jend
               wspd(Iend+1,j)=wspd(Iend,j)
-#  ifdef SFLUX_CFB
+#  ifdef CFB_WIND_TRA
               wspd_cfb(Iend+1,j)=wspd_cfb(Iend,j)
 #  endif
             enddo
@@ -735,7 +735,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           if (SOUTHERN_EDGE) then
             do i=Istr,Iend
               wspd(i,Jstr-1)=wspd(i,Jstr)
-#  ifdef SFLUX_CFB
+#  ifdef CFB_WIND_TRA
               wspd_cfb(i,Jstr-1)=wspd_cfb(i,Jstr)
 #  endif
             enddo
@@ -743,7 +743,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           if (NORTHERN_EDGE) then
             do i=Istr,Iend
               wspd(i,Jend+1)=wspd(i,Jend)
-#  ifdef SFLUX_CFB
+#  ifdef CFB_WIND_TRA
               wspd_cfb(i,Jend+1)=wspd_cfb(i,Jend)
 #  endif 
             enddo
@@ -751,25 +751,25 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 #  ifndef EW_PERIODIC
           if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
             wspd(Istr-1,Jstr-1)=wspd(Istr,Jstr)
-#   ifdef SFLUX_CFB
+#   ifdef CFB_WIND_TRA
             wspd_cfb(Istr-1,Jstr-1)=wspd_cfb(Istr,Jstr)
 #   endif
           endif
           if (WESTERN_EDGE .and. NORTHERN_EDGE) then
             wspd(Istr-1,Jend+1)=wspd(Istr,Jend)
-#   ifdef SFLUX_CFB
+#   ifdef CFB_WIND_TRA
             wspd_cfb(Istr-1,Jend+1)=wspd_cfb(Istr,Jend)   
 #   endif          
           endif
           if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
             wspd(Iend+1,Jstr-1)=wspd(Iend,Jstr)
-#   ifdef SFLUX_CFB 
+#   ifdef CFB_WIND_TRA 
             wspd_cfb(Iend+1,Jstr-1)=wspd_cfb(Iend,Jstr)
 #   endif            
           endif
           if (EASTERN_EDGE .and. NORTHERN_EDGE) then
             wspd(Iend+1,Jend+1)=wspd(Iend,Jend)
-#   ifdef SFLUX_CFB 
+#   ifdef CFB_WIND_TRA 
             wspd_cfb(Iend+1,Jend+1)=wspd_cfb(Iend,Jend)
 #   endif           
           endif
@@ -778,7 +778,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd(START_2D_ARRAY))
-#  ifdef SFLUX_CFB 
+#  ifdef CFB_WIND_TRA 
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd_cfb(START_2D_ARRAY)) 
 #  endif    
@@ -828,7 +828,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd(START_2D_ARRAY))
-#  ifdef SFLUX_CFB 
+#  ifdef CFB_WIND_TRA 
           call exchange_r2d_tile(Istr,Iend,Jstr,Jend,
      &                           wspd_cfb(START_2D_ARRAY)) 
 #  endif              

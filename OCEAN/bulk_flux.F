@@ -149,7 +149,7 @@
 !======================================================================
           wspd0     = wspd(i,j)
           wspd0     = MAX ( wspd0 , 0.1 * MIN(10., blk_ZW) )
-#if defined CFB_WIND_TRA
+#ifdef CFB_WIND_TRA
           wspd0_cfb = wspd_cfb(i,j)
           wspd0_cfb = MAX ( wspd0_cfb , 0.1 * MIN(10., blk_ZW) )
 #endif
