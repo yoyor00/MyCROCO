@@ -180,12 +180,20 @@
 #  undef  LMD_LANGMUIR
 # endif
                       /* Surface Forcing */
+/*
+! Bulk algorithms (options)
+! - ECUMEv0 (possibility to add GUSTINESS effects)
+! - ECUMEv6 (possibility to add GUSTINESS effects)
+! - COARE3p0 (possibility to compute Charnock coefficient via WASP)
+! Warning: WASP can not be combined with ECUME algorithms
+*/
 # undef BULK_FLUX
 # ifdef BULK_FLUX
-#  define BULK_FAIRALL
+#  undef  ECUMEv0
+#  undef  ECUMEv6
+#  undef  WASP
+#  define GUSTINESS
 #  define BULK_LW
-#  define BULK_EP
-#  define BULK_SMFLUX
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
@@ -203,7 +211,7 @@
 #  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# undef  SMFLUX_CFB
+# undef  SFLUX_CFB
 # undef  SEA_ICE_NOFLUX
                       /* Wave-current interactions */
 # ifdef OW_COUPLING

@@ -55,19 +55,13 @@
       common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
       common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
 
-# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
-      real wspdg(GLOBAL_2D_ARRAY,2)
-      common /smsdat_wspdg/wspdg
-      real    wspdp(2)
-      common /smsdat2_wspd/ wspdp
+# if defined SFLUX_CFB && !defined BULK_FLUX
       real wspd(GLOBAL_2D_ARRAY)
       common /smsdat_wspd/ wspd
 # endif
-# if defined SMFLUX_CFB && defined CFB_STRESS2
-      real wstr_u(GLOBAL_2D_ARRAY)
-      real wstr_v(GLOBAL_2D_ARRAY)
-      common /smsdat_wstr_u/ wstr_u
-      common /smsdat_wstr_v/ wstr_v
+# ifdef SFLUX_CFB
+      real wspd_cfb(GLOBAL_2D_ARRAY)
+      common /smsdat_wspd_cfb/ wspd_cfb
 # endif
       integer lwgrd, wid
       common /smsdat5/ lwgrd, wid
@@ -297,10 +291,8 @@
       parameter(paref=101325) 
 #  endif
 # endif
-# ifdef BULK_SM_UPDATE
       real uwnd(GLOBAL_2D_ARRAY)
       real vwnd(GLOBAL_2D_ARRAY)
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       real radswbio(GLOBAL_2D_ARRAY)
 # endif
@@ -314,10 +306,8 @@
 # ifdef READ_PATM
       common /bulk_patm/ patm2d
 # endif
-# ifdef BULK_SM_UPDATE
       common /bulk_uwnd/ uwnd 
       common /bulk_vwnd/ vwnd
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulk_radswbio/ radswbio
 # endif
@@ -327,11 +317,9 @@
       real prateg(GLOBAL_2D_ARRAY,2)
       real radlwg(GLOBAL_2D_ARRAY,2)
       real radswg(GLOBAL_2D_ARRAY,2)
-      real wspdg(GLOBAL_2D_ARRAY,2)
 # ifdef READ_PATM
       real patmg(GLOBAL_2D_ARRAY,2)
 # endif
-# ifdef BULK_SM_UPDATE
 # ifdef ONLINE
       ! these 2 variables are used only in the initialisation stage
       ! with the ONLINE interpolation to correct a bug [to be improved]
@@ -340,7 +328,6 @@
 # endif
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
@@ -350,39 +337,30 @@
       common /bulkdat_prateg/prateg 
       common /bulkdat_radlwg/radlwg 
       common /bulkdat_radswg/radswg 
-      common /bulkdat_wspdg/wspdg 
 # ifdef READ_PATM
       common /bulkdat_patmg/patmg 
 # endif
-# ifdef BULK_SM_UPDATE 
       common /bulk_uwndg/uwndg 
       common /bulk_vwndg/vwndg 
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat_radswbiog/radswbiog
 # endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-      real    wspdp(2)
 # ifdef READ_PATM
       real patmp(2)
 # endif
-# ifdef BULK_SM_UPDATE
       real    uwndp(2),vwndp(2)
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       real    radswbiop(2)
 # endif
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
       integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-      integer wspd_id,lwspdgrd
 # ifdef READ_PATM
       integer patm_id,lpatmgrd
 #endif
-# ifdef BULK_SM_UPDATE
       integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       integer radswbio_id,lradswbiogrd
 # endif
@@ -396,26 +374,20 @@
 # ifdef READ_PATM
       common /bulkdat1_patm/ patm_id,lpatmgrd
 #endif
-# ifdef BULK_SM_UPDATE
       common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat1_bio/ radswbio_id,lradswbiogrd
 # endif
-      common /bulkdat1_wspd/ wspd_id,lwspdgrd
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
       common /bulkdat2_tim/ bulk_time, bulk_cycle
 # ifdef READ_PATM
       common /bulkdat2_patm/ patmp
 # endif
-# ifdef BULK_SM_UPDATE
       common /bulkdat2_wnd/ uwndp,vwndp
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat2_bio/ radswbiop
 # endif
-      common /bulkdat2_wspd/ wspdp 
 # endif /* BULK_FLUX && TEMPERATURE */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.

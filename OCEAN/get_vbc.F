@@ -67,7 +67,6 @@
 !
 # ifndef ANA_SMFLUX
 #  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined BULK_FLUX && !defined BULK_SMFLUX) \
          || (defined OW_COUPLING && !defined WAVE_SMFLUX)
       call get_smflux
 #  endif
@@ -79,7 +78,7 @@
 ! Kinematic surface temperature (heat) flux [degC m/s].
 !---------------------------------------------------------------
 !
-#  if defined BULK_FLUX && !defined ANA_BULK
+#  ifdef BULK_FLUX
 #   ifdef ONLINE
       ! Load data for ONLINE bulk forcing
       call get_bulk_online
@@ -105,11 +104,11 @@
 ! Kinematic surface freshwater flux (E-P) flux [PSU m/s].
 !---------------------------------------------------------------
 !
-#  ifndef BULK_EP
+#  ifndef BULK_FLUX
 #   if defined SALINITY && !defined ANA_SSFLUX
-      call get_stflux (isalt)
+       call get_stflux (isalt)
 #   endif
-#  endif /* NON BULK_EP */
+#  endif
 !
 !---------------------------------------------------------------
 ! Flux correction to surface salt flux.
@@ -123,12 +122,10 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-! If BULK_FLUX is defined, radsw copies to srflx in get_bulk
-!
 #  ifndef BULK_FLUX
 #   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #    if !defined ANA_SRFLUX && defined TEMPERATURE
-      call get_srflux
+       call get_srflux
 #    endif
 #   endif
 #  endif /* !BULK_FLUX */
@@ -234,7 +231,6 @@
       call ana_smflux_tile (Istr,Iend,Jstr,Jend)
 # else
 #  if (!defined BULK_FLUX && !defined OW_COUPLING) \
-         || (defined BULK_FLUX && !defined BULK_SMFLUX) \
          || (defined OW_COUPLING && !defined WAVE_SMFLUX)
       call set_smflux_tile (Istr,Iend,Jstr,Jend)
 #  endif
@@ -328,7 +324,7 @@
 ! Kinematic surface freshwater flux (E-P) flux [PSU m/s].
 !---------------------------------------------------------------
 !
-#  if defined SALINITY && !defined BULK_EP
+#  if defined SALINITY && !defined BULK_FLUX
 #   ifdef ANA_SSFLUX
       call ana_stflux_tile (Istr,Iend,Jstr,Jend, isalt)
 #   else
@@ -342,7 +338,7 @@
           stflx(i,j,isalt)=stflx(i,j,isalt)*t(i,j,N,nrhs,isalt)
         enddo
       enddo
-#  endif /* !BULK_EP */
+#  endif
 !
 !--------------------------------------------------------------
 ! Flux correction to surface salt flux.

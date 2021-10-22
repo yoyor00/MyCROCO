@@ -250,33 +250,6 @@
 
 !
 !----------------------------------------------------------------------
-! OA coupling parametrization for current feedback on wind-stress  
-! (Renault et al., JAMES 2020)
-!----------------------------------------------------------------------
-!
-#ifdef SMFLUX_CFB
-      ! wind correction: Ua-(1-sw)*Uo
-      ! ifndef CFB_WIND, this is only used to correct heat flux (bulk_flux)
-      real swparam
-      parameter (swparam=0.3)
-# ifdef CFB_STRESS
-      ! wind-stress correction using wind speed:  rho0*sustr + s_tau*Uo
-      !   s_tau = cfb_slope * wspd + cfb_offset [N.m^-3.s]
-      !  (recommendended and default if BULK_FLUX - needs wspd data)
-      real cfb_slope, cfb_offset
-      parameter (cfb_slope=-0.0029)
-      parameter (cfb_offset=0.008)
-# elif defined CFB_STRESS2
-      ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
-      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
-      ! (use if wspd data not available, e.g. not BULK_FLUX)
-      real cfb_slope2, cfb_offset2
-      parameter (cfb_slope2=-0.100)
-      parameter (cfb_offset2=0.001)
-# endif
-#endif
-!
-!----------------------------------------------------------------------
 ! Tides
 !----------------------------------------------------------------------
 !

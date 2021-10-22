@@ -75,7 +75,7 @@
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  SMFLUX_CFB
+# undef  SFLUX_CFB
 #endif
 
 /* 
@@ -641,13 +641,23 @@
 ======================================================================
     Bulk flux option
 ======================================================================
+! Bulk algorithms (options)
+! - ECUMEv0 (possibility to add GUSTINESS effects)
+! - ECUMEv6 (possibility to add GUSTINESS effects)
+! - COARE3p0 (possibility to compute Charnock coefficient via WASP)
+! Warning: WASP can not be combined with ECUME algorithms
+!
 */
 #ifdef BULK_FLUX
-# ifdef BULK_SMFLUX     
-#  define BULK_SM_UPDATE /* ON: Compute wind stress via bulk_flux */
-# endif
 # ifdef ONLINE
 #  define CUBIC_INTERP
+# endif
+# ifdef ECUMEv0
+#  define GUSTINESS
+# elif defined ECUMEv6
+#  define GUSTINESS
+# elif defined WASP
+#  define GUSTINESS
 # endif
 #endif
 
@@ -656,15 +666,13 @@
     Current feedback option
 ======================================================================
 */
-#ifdef SMFLUX_CFB
+#ifdef SFLUX_CFB
 # ifdef BULK_FLUX
 #  define CFB_STRESS
-#  undef  CFB_STRESS2
-#  undef  CFB_WIND
+#  define CFB_WIND_TRA
 # else
 #  undef  CFB_STRESS
-#  define CFB_STRESS2
-#  undef  CFB_WIND
+#  undef  CFB_WIND_TRA
 # endif
 #endif
 
@@ -1037,7 +1045,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
-# undef SMFLUX_CFB                     
+# undef SFLUX_CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH
