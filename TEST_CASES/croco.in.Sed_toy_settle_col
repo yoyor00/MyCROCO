@@ -52,8 +52,8 @@ sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20000*T
 
 sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
-               FIC_NAMELIST/parasubstance_MUSTANG_Sed_toy.txt
-               FIC_NAMELIST/paraMUSTANGV1_Sed_toy.txt
+               MUSTANG_NAMELIST/parasubstance_MUSTANG_Sed_toy.txt
+               MUSTANG_NAMELIST/paraMUSTANGV1_Sed_toy.txt
 
 gls_history_fields:   TKE  GLS  Lscale
                       T     T    T
