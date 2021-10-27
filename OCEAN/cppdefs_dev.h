@@ -879,13 +879,15 @@
 # ifdef MUSTANG
 #  undef  SEDIMENT
 #  define SUBSTANCE
-#  define key_CROCO
 #  define USE_CALENDAR
 #  define TEMPERATURE
 #  define SALINITY
 #  define key_noTSdiss_insed
 #  define key_nofluxwat_IWS
 # endif /* MUSTANG */
+# ifdef SUBSTANCE
+#  define key_CROCO
+# endif
 
 /* 
 ======================================================================

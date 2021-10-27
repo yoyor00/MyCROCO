@@ -439,7 +439,7 @@
 
 /*! === SUBSTANCE ===*/
 !
-# if defined SUBSTANCE && defined MUSTANG
+# if defined SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
       INTEGER,PARAMETER :: lchain=200
@@ -451,7 +451,7 @@
 #  elif defined VILAINE 
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
-      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+      parameter (ntrc_subs=1 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  endif
       parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
       parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )

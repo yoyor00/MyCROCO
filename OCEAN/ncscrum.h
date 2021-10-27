@@ -2026,6 +2026,9 @@
 #elif defined MUSTANG
      &               ,   sedname_subst,   sedname_must
 #endif
+#if defined SUBSTANCE && !defined MUSTANG
+     &               ,    subsname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 500)
@@ -2116,6 +2119,9 @@
      &                                ,   sedname
 #elif defined MUSTANG
      &               ,   sedname_subst,   sedname_must
+#endif
+#if defined SUBSTANCE && !defined MUSTANG
+     &               ,    subsname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname
