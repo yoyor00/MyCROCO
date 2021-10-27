@@ -43,6 +43,7 @@
 #undef  DUNE            /* Dune migration Example */ 
 #undef  SED_TOY         /* 1DV sediment toy Example */
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
+#undef  COASTAL         /* COASTAL Applications */
 #define REGIONAL        /* REGIONAL Applications */
 
 #if defined REGIONAL
@@ -523,10 +524,11 @@
                       /* Surface Forcing */
 # define BULK_FLUX
 # ifdef BULK_FLUX
-#  define BULK_FAIRALL
+#  undef  ECUMEv0
+#  undef  ECUMEv6
+#  undef  WASP
+#  define GUSTINESS
 #  undef BULK_LW
-#  undef BULK_EP
-#  define BULK_SMFLUX
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  define  ONLINE
@@ -544,7 +546,7 @@
 #  undef  SFLX_CORR_COEF
 #  undef ANA_DIURNAL_SW
 # endif
-# define ANA_SSFLUX   /* surface salinity */
+# undef ANA_SSFLUX   /* surface salinity */
 # define ANA_STFLUX   /* surface temperature */
                       /* Lateral Forcing */
 # define ANA_INITIAL
