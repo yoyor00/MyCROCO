@@ -2494,6 +2494,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 
 # endif /* SEDIMENT */
 #endif
+#if defined SUBSTANCE && !defined MUSTANG
+      elseif (keyword(1:kwlen).eq.'substance') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) subsname
+        lstr=lenstr(subsname)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Substance:' ,
+     &          subsname(1:lstr)
+#endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
