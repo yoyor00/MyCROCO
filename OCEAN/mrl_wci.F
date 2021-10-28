@@ -132,7 +132,11 @@
 !
 # ifndef WKB_WWAVE
       real wave_gam,wave_btg,wave_roller      ! parameters for offline
-      parameter (wave_gam=0.4, wave_btg=0.8)  ! wave forcing 
+#  ifdef WAVE_BREAK_BJ78
+      parameter (wave_gam=0.73, wave_btg=1.0)
+#  else      
+      parameter (wave_gam=0.4, wave_btg=0.8)  ! wave forcing
+#  endif      
 #  ifdef WAVE_ROLLER
       parameter (wave_roller=1.0)
 #  else
@@ -323,33 +327,37 @@
            ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
      &                          *(1-exp (-cff1**5 ))
 #    elif defined WAVE_BREAK_BJ78
-           HmaxBJ=wave_gam/kw(i,j)*tanh(kw(i,j)*Dstp(i,j))
-           cff1=wh(i,j)/HmaxBJ !=beta_BJ
-           if (cff1.le.0.2) then !Qb
-             Q0 = 0.0
-             Qb = 0.0
-             ebrk(i,j)=wave_btg/4.0*g*HmaxBJ**2/(2.0*pi)*Qb
-           elseif ((cff1.gt.0.2).and.(cff1.le.0.5)) then
-             Q0 = 0.0
-             Qb = Q0-cff1**2*((Q0-exp((Q0-1.0)/cff1**2))/
-     &                          (cff1**2-exp((Q0-1.0)/cff1**2)))
-             do k=1,3
-                Qb = exp((Qb-1)/cff1**2)
-             enddo
-             ebrk(i,j)=wave_btg/4.0*g*HmaxBJ**2/(2.0*pi)*Qb
-           elseif ((cff1.gt.0.5).and.(cff1.lt.1.0)) then
-             Q0 = (2.0*cff1-1)**2
-             Qb = Q0-cff1**2*((Q0-exp((Q0-1.0)/cff1**2))/
-     &                          (cff1**2-exp((Q0-1.0)/cff1**2)))
-             do k=1,3
-                Qb = exp((Qb-1)/cff1**2)
-             enddo
-             ebrk(i,j)=wave_btg/4.0*g*HmaxBJ**2/(2.0*pi)*Qb
+           HmaxBJ=wave_gam/max(kw(i,j),eps)*tanh(kw(i,j)*Dstp(i,j))
+           if (HmaxBJ.gt.eps) then
+             cff1=wh(i,j)/HmaxBJ !=beta_BJ
            else
-             Q0 = 1.0
-             Qb = 1.0-10.0**-5
-             ebrk(i,j)=wave_btg/4.0*g*HmaxBJ**2/(2.0*pi)*cff1**4
-           endif !Qb
+             cff1=0.0
+           endif
+           if (cff1.le.0.5) then
+             Q0 = 0.0
+           elseif(cff1.le.1.0) then
+             Q0 = (2.0*cff1-1.0)**2
+           endif
+           if(cff1.le.0.2) then
+             Qb = 0.0
+           elseif(cff1.lt.1.0) then
+             cff = exp((Q0-1.0)/cff1**2)
+             Qb = Q0-cff1**2*(Q0-cff)/(cff1**2-cff)
+             do k=1,3
+               Qb = exp((Qb-1.0)/cff1**2)
+             enddo
+           else
+             Qb = 1.0-eps
+           endif
+           if( (cff1**2.gt.eps) .and. (abs(cff1**2-Qb).gt.eps) ) then
+             if(cff1**2.lt.1.0) then
+               ebrk(i,j) = 0.25*wave_btg*g*Qb*HmaxBJ**2/(2.0*pi)
+             else
+               ebrk(i,j) = 0.25*wave_btg*g*cff1**4*HmaxBJ**2/(2.0*pi)
+             endif  
+           else
+             ebrk(i,j) = 0.0
+           endif  
 #    endif  
            ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
 #   endif       
