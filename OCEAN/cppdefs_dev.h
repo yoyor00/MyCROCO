@@ -115,6 +115,10 @@
 #ifdef XIOS
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
+# define START_DATE
+# ifdef OA_COUPLING
+#  undef XIOS_ATM
+# endif
 #endif
   
 /*
@@ -830,11 +834,6 @@
 */
 #ifdef SEDIMENT
 # undef  MUSTANG
-# define SUSPLOAD
-# define BEDLOAD
-# if defined NBQ || defined SED_TOY || defined TIDAL_FLAT
-#  undef  BEDLOAD
-# endif
 # define ANA_SEDIMENT
 # undef  BED_ARMOR
 # undef  BED_HIDEXP
@@ -865,9 +864,8 @@
 #  endif
 # endif /* BEDLOAD */
 # ifdef DUNE
-#  undef SUSPLOAD
 #  ifdef ANA_DUNE
-#   undef  SLOPE_LESSER
+#   undef SLOPE_LESSER
 #  endif
 # endif /* DUNE */
 #endif /* SEDIMENT */
