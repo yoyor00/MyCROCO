@@ -160,11 +160,8 @@
 #   if defined TEMPERATURE && defined SALINITY
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
-          if (itrc .le. 1) then
-#   else 
-          if (itrc .le. 0) then
+        if (itrc .eq. 1) then
 #   endif
-                
 #  endif
 !
 !----------------------------------------------------------
