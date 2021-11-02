@@ -13,6 +13,9 @@
    This is "cppdefs.h": MODEL CONFIGURATION FILE
    ==== == ============ ===== ============= ====
 */
+/* 
+        SELECT ACADEMIC TEST CASES 
+*/
 #undef  BASIN           /* Basin Example */
 #undef  CANYON          /* Canyon Example */
 #undef  EQUATOR         /* Equator Example  */
@@ -43,8 +46,13 @@
 #undef  DUNE            /* Dune migration Example */ 
 #undef  SED_TOY         /* 1DV sediment toy Example */
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
+/* 
+        ... OR REALISTIC CONFIGURATIONS
+*/
 #undef  COASTAL         /* COASTAL Applications */
 #define REGIONAL        /* REGIONAL Applications */
+
+
 
 #if defined REGIONAL
 /*
@@ -59,22 +67,17 @@
 */
                       /* Configuration Name */
 # define BENGUELA_LR
-# undef MPI_TIME
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI
-                      /* I/O server */
-# undef  XIOS
                       /* Non-hydrostatic option */
 # undef  NBQ
+# undef  CROCO_QH
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
-# if defined OA_COUPLING
-#  undef XIOS_ATM
-# endif                      
 # undef  OW_COUPLING
                       /* Wave-current interactions */
 # undef  MRL_WCI
@@ -92,14 +95,13 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
-                      /* dedicated croco.log file */
-# undef  LOGFILE
+                      /* I/O server */
+# undef  XIOS
                       /* Calendar */
 # undef START_DATE
-# if defined XIOS
-#   define START_DATE
-# endif
 # undef USE_CALENDAR 
+                      /* dedicated croco.log file */
+# undef  LOGFILE
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -112,6 +114,7 @@
 #  undef  PARALLEL_FILES
 #  undef  NC4PAR
 #  undef  MPI_NOLAND
+#  undef  MPI_TIME
 # endif
 # undef  AUTOTILING
                       /* Non-hydrostatic options */
@@ -128,7 +131,6 @@
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
-# undef CROCO_QH
 # define UV_ADV
                       /* Equation of State */
 # define SALINITY
@@ -143,7 +145,7 @@
 # ifdef UV_VIS2
 #  define UV_VIS_SMAGO
 # endif
-                      /* Vertical Momentum Advection  */
+                      /* Vertical Momentum Advection */
 # define UV_VADV_SPLINES
 # undef  UV_VADV_WENO5
 # undef  UV_VADV_TVD
@@ -165,7 +167,8 @@
                       /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
-# undef  BSTRESS_FAST                      
+# define LIMIT_BSTRESS
+# undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
@@ -288,8 +291,8 @@
                       /* Input/Output */
 # define AVERAGES
 # define AVERAGES_K
-# undef OUTPUTS_SURFACE
-# undef HOURLY_VELOCITIES
+# undef  OUTPUTS_SURFACE
+# undef  HOURLY_VELOCITIES
                      /* Exact restart */
 # undef EXACT_RESTART
                       /* Parallel reproducibility or restartabilty test */
@@ -317,8 +320,8 @@
 */
 # undef DO_NOT_OVERWRITE
 
-# undef  DIAGNOSTICS_TS
-# undef  DIAGNOSTICS_UV
+# undef DIAGNOSTICS_TS
+# undef DIAGNOSTICS_UV
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
@@ -344,7 +347,7 @@
 #  define DIAGNOSTICS_PV
 # endif
 
-# undef  DIAGNOSTICS_EDDY
+# undef DIAGNOSTICS_EDDY
 
 # undef TENDENCY
 # ifdef TENDENCY
@@ -402,23 +405,21 @@
 # ifdef STATIONS
 #  define ALL_SIGMA
 # endif
-                      /*   Sediment dynamics model     */
+                      /*   USGS Sediment model     */
 # ifdef SEDIMENT
-#  undef  ANA_SPFLUX
-#  undef  ANA_BPFLUX
+#  define SUSPLOAD
+#  define BEDLOAD
+#  define MORPHODYN
 # endif
                       /*   MUSTANG Sediment model     */
 # ifdef MUSTANG
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
-#  undef  MORPHODYN_MUSTANG_byHYDRO
+#  undef  MORPHODYN
+#  define key_sand2D
+#  define MUSTANG_CORFLUX
 #  undef  key_tenfon_upwind
 #  undef  WAVE_OFFLINE
-#  undef  BUGJUMP
-#  undef  key_MUSTANG_debug
-#  undef  key_MUSTANG_specif_outputs
 # endif
 
 #elif defined COASTAL
@@ -434,18 +435,15 @@
 */
                       /* Configuration Name */
 # define VILAINE
-# undef MPI_TIME
                       /* Parallelization */
 # undef  OPENMP
-# define MPI
-                      /* I/O server */
-# undef  XIOS
+# undef  MPI
                       /* Open Boundary Conditions */
-# define  TIDES
-# undef   OBC_EAST
-# define  OBC_WEST
+# define TIDES
+# undef  OBC_EAST
+# define OBC_WEST
 # undef  OBC_NORTH
-# define   OBC_SOUTH
+# define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
 # undef  FLOATS
@@ -454,11 +452,13 @@
 # undef  SEDIMENT
 # undef  BBL
 # define MUSTANG
+                      /* I/O server */
+# undef  XIOS
+                      /* Calendar */
+# undef  START_DATE
+# define USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
-                      /* Calendar */
-# undef START_DATE
-# define USE_CALENDAR 
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -468,12 +468,18 @@
 */
                       /* Parallelization */
 # ifdef MPI
-#  undef  PARALLEL_FILES
-#  define  NC4PAR
+#  define NC4PAR
 #  undef  MPI_NOLAND
+#  undef  MPI_TIME
 # endif
 # undef  AUTOTILING
+                      /* Non-hydrostatic options */
+# ifdef NBQ
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+# endif
                       /* Grid configuration */
+# define ANA_INITIAL
 # define CURVGRID
 # define SPHERICAL
 # define MASKING
@@ -487,38 +493,32 @@
 # define SALINITY
 # define NONLIN_EOS
                       /* Lateral Momentum Advection (default UP3) */
-# undef UV_HADV_UP3
-# undef  UV_HADV_UP5
-# define  UV_HADV_WENO5
-# define UV_VADV_WENO5
+# undef  UV_HADV_UP3
+# define UV_HADV_WENO5
                       /* Lateral Explicit Momentum Mixing */
-# define   UV_VIS2
+# define UV_VIS2
 # ifdef UV_VIS2
 #  define UV_VIS_SMAGO
 # endif
                       /* Vertical Momentum Advection  */
-# undef UV_VADV_SPLINES
-# define  UV_VADV_WENO5
-# undef  UV_VADV_TVD
+# undef  UV_VADV_SPLINES
+# define UV_VADV_WENO5
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
-# undef TS_HADV_RSUP3
-# undef  TS_HADV_UP5
 # define TS_HADV_WENO5
                       /* Lateral Explicit Tracer Mixing */
-# define  TS_DIF2
-# undef  TS_DIF4
-# undef  TS_MIX_S
+# define TS_DIF2
+# define TS_MIX_S
                       /* Vertical Tracer Advection  */
 # undef  TS_VADV_SPLINES
-# undef TS_VADV_AKIMA
-# define  TS_VADV_WENO5
+# define TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
 # define LIMIT_BSTRESS
+# undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # define GLS_MIXING
                       /* Surface Forcing */
@@ -528,10 +528,10 @@
 #  undef  ECUMEv6
 #  undef  WASP
 #  define GUSTINESS
-#  undef BULK_LW
+#  undef  BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
-#  define  ONLINE
+#  define ONLINE
 #  ifdef ONLINE 
 #   define AROME
 #   undef  ERA_ECMWF
@@ -546,16 +546,15 @@
 #  undef  SFLX_CORR_COEF
 #  undef ANA_DIURNAL_SW
 # endif
-# undef ANA_SSFLUX   /* surface salinity */
-# define ANA_STFLUX   /* surface temperature */
+# undef  ANA_SSFLUX
+# define ANA_STFLUX
                       /* Lateral Forcing */
-# define ANA_INITIAL
-# undef ANA_BRY
+# undef  ANA_BRY
 # define FRC_BRY
 # ifdef FRC_BRY
 #  define Z_FRC_BRY
 #  define M2_FRC_BRY
-#  undef M3_FRC_BRY
+#  undef  M3_FRC_BRY
 #  define T_FRC_BRY
 # endif
                       /* Bottom Forcing */
@@ -572,8 +571,8 @@
 #  define M2FILTER_NONE
 #  define SSH_TIDES
 #  define UV_TIDES
-#  undef POT_TIDES
-#  define  TIDES_MAS
+#  undef  POT_TIDES
+#  define TIDES_MAS
 #  ifndef UV_TIDES
 #   define OBC_REDUCED_PHYSICS
 #  endif
@@ -583,12 +582,10 @@
 # define OBC_M3ORLANSKI
 # define OBC_TORLANSKI
                       /* Input/Output */
-# undef AVERAGES
-# undef AVERAGES_K
-# undef OUTPUTS_SURFACE
-# undef HOURLY_VELOCITIES
-                     /* Exact restart */
-# undef EXACT_RESTART
+# undef  AVERAGES
+# undef  AVERAGES_K
+# undef  OUTPUTS_SURFACE
+# undef  HOURLY_VELOCITIES
 /*
 !           Applications:
 !---------------------------------
@@ -603,17 +600,21 @@
                                                || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
+                      /*     USGS Sediment model     */
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  define BEDLOAD
+#  define MORPHODYN
+# endif
                       /*   MUSTANG Sediment model     */
 # ifdef MUSTANG
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
-#  undef  MORPHODYN_MUSTANG_byHYDRO
+#  undef  MORPHODYN
+#  define key_sand2D
+#  define MUSTANG_CORFLUX
 #  undef  key_tenfon_upwind
-#  define  WAVE_OFFLINE
-#  undef  BUGJUMP
-#  undef  key_MUSTANG_debug
+#  define WAVE_OFFLINE
 #  undef  key_MUSTANG_specif_outputs
 # endif
 /*
@@ -1219,7 +1220,8 @@
 # undef  BBL
 # undef  SEDIMENT
 # ifdef SEDIMENT
-#  define ANA_SEDIMENT
+#  define SUSPLOAD
+#  define BEDLOAD
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA
@@ -1297,10 +1299,12 @@
 # endif /* NBQ */
 # define SEDIMENT
 # ifdef SEDIMENT
+#  define SUSPLOAD
+#  define BEDLOAD
+#  define MORPHODYN
 #  define TCLIMATOLOGY
 #  define TNUDGING
 #  define ANA_TCLIMA
-#  define MORPHODYN
 # endif
 # undef  STATIONS
 # ifdef STATIONS
@@ -1418,9 +1422,9 @@
 # endif
 # undef SEDIMENT
 # ifdef SEDIMENT
-#  define ANA_SEDIMENT
-#  undef  ANA_SPFLUX
-#  undef  ANA_BPFLUX
+#  define SUSPLOAD
+#  define BEDLOAD
+#  undef  MORPHODYN
 # endif
 # undef  DIAGNOSTICS_UV
 # undef  RVTK_DEBUG
@@ -1741,6 +1745,8 @@
 # undef  MUSTANG
 # define MORPHODYN
 # ifdef SEDIMENT
+#  undef  SUSPLOAD
+#  define BEDLOAD
 #  undef  BEDLOAD_WENO5
 #  ifdef ANA_DUNE
 #   define BEDLOAD_MARIEU
@@ -1800,7 +1806,7 @@
 # endif
 
 # define SEDIMENT
-# undef MUSTANG
+# undef  MUSTANG
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD
@@ -1869,7 +1875,12 @@
 #  undef  M3_FRC_BRY
 #  define T_FRC_BRY
 # endif
+# undef  SEDIMENT
 # define MUSTANG
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  undef  BEDLOAD
+# endif
 # ifdef MUSTANG
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
