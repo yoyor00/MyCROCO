@@ -296,7 +296,8 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
     echo 'Copy scripts for coupled runs'
     echo '-----------------------------'
     [ -d $MY_CONFIG_HOME/ROUTINES ] && \rm -Rf $MY_CONFIG_HOME/ROUTINES
-    cp -Rf $SOURCES_DIR/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/* $MY_CONFIG_HOME/
+    cp -Rf $SOURCES_DIR/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
+    cp -Rf $SOURCES_DIR/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/ $MY_CONFIG_HOME/ROUTINES
 
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/
