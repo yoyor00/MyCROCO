@@ -46,6 +46,10 @@ MPIRUN=$x_s
 RUNDIR=$x_r
 #MPIRUN="mpirun --mca btl self,sm"
 
+cd  ${ROOTDIR}
+./create_config.bash -f -n Run -o all
+cd -
+
 [ ! -f  jobcomp ] && \cp ${ROOTDIR}/${RUNDIR}/jobcomp .
 \cp ${ROOTDIR}/${RUNDIR}/*.h .
 \cp ${ROOTDIR}/${RUNDIR}/*.F .

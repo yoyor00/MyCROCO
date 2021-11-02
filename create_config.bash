@@ -207,7 +207,11 @@ if [[ ${models[@]} =~ "oce" ]] ; then
     # CROCO general
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CONFIG_HOME/CROCO_IN/.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CONFIG_HOME/CROCO_IN/.
-    cp -f ${CROCO_DIR}/OCEAN/jobcomp $MY_CONFIG_HOME/CROCO_IN/.
+
+     PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
+     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CONFIG_HOME/CROCO_IN/jobcomp
+     chmod +x $MY_CONFIG_HOME/CROCO_IN/jobcomp
+
     cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CONFIG_HOME/CROCO_IN/.
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CONFIG_HOME/CROCO_IN/.
     # TEST_CASES
@@ -313,7 +317,8 @@ if [[ ${models[@]} =~ "cpl" ]] || [[ ${models[@]} =~ "wav" ]] || [[ ${models[@]}
     echo 'Copy scripts for coupled runs'
     echo '-----------------------------'
     [ -d $MY_CONFIG_HOME/ROUTINES ] && \rm -Rf $MY_CONFIG_HOME/ROUTINES
-    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/* $MY_CONFIG_HOME/
+    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
+    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/ $MY_CONFIG_HOME/ROUTINES
 
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/

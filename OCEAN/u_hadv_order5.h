@@ -27,7 +27,7 @@
 #  endif
 #  ifdef EW_PERIODIC
           imin=0
-          imax=LOCALLM+1
+          imax=LOCALLM
 #  else
 #   ifdef MPI
           if (WEST_INTER) then
@@ -36,7 +36,7 @@
             imin=3
           endif
           if (EAST_INTER) then
-            imax=Lmmpi+1
+            imax=Lmmpi
           else
             imax=Lmmpi-2
           endif
@@ -55,7 +55,7 @@
             IF ( j.ge.jmin .and. j.le.jmax ) THEN ! use full stencil
                                                   !
               DO i = IstrU,Iend
-                if ( i.ge.imin .and. i.le.imax ) then
+                if ( i.ge.imin+1 .and. i.le.imax ) then
                   vel = flux6(Hvom(i-3,j,k),Hvom(i-2,j,k),Hvom(i-1,j,k),
      &                        Hvom(i  ,j,k),Hvom(i+1,j,k),Hvom(i+2,j,k),1.)
                 else

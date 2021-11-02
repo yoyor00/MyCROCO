@@ -62,17 +62,15 @@
 !CSDISTRIBUTE_RESHAPE ekWind_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekDrag_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekDrag_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       real ekBaro_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekBaro_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
       real ekfast_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekfast_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
-# endif
-
-
+#  endif
+# endif /* AVERAGES */
 
       common /diag_ekHadv/ekHadv   
      &       /diag_ekHdiff/ekHdiff
@@ -107,16 +105,15 @@
      &       /diag_ekVmix2_avg/ekVmix2_avg
      &       /diag_ekWind_avg/ekWind_avg
      &       /diag_ekDrag_avg/ekDrag_avg
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro_avg/ekBaro_avg
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
      &       /diag_ekfast_avg/ekfast_avg
-# endif
+#  endif
+# endif  /* AVERAGES */   
 
-# endif      
-
-#ifdef DIAGNOSTICS_EK_MLD
+# ifdef DIAGNOSTICS_EK_MLD
       real ekHadv_mld(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekHadv_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekHdiff_mld(GLOBAL_2D_ARRAY)
@@ -137,13 +134,12 @@
 !CSDISTRIBUTE_RESHAPE ekvol_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekVmix2_mld(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekVmix2_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       real ekBaro_mld(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekBaro_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
+#  endif
 
-
-# ifdef AVERAGES
+#  ifdef AVERAGES
       real ekHadv_mld_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekHadv_mld_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekHdiff_mld_avg(GLOBAL_2D_ARRAY)
@@ -164,12 +160,11 @@
 !CSDISTRIBUTE_RESHAPE ekvol_mld_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekVmix2_mld_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekVmix2_mld_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# if defined DIAGNOSTICS_BARO
+#   if defined DIAGNOSTICS_BARO
       real ekBaro_mld_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE ekBaro_mld_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
-# endif
-
+#   endif
+#  endif /* AVERAGES */
 
       common /diag_ekHadv_mld/ekHadv_mld
      &       /diag_ekHdiff_mld/ekHdiff_mld
@@ -181,10 +176,10 @@
      &       /diag_ekrate_mld/ekrate_mld
      &       /diag_ekvol_mld/ekvol_mld
      &       /diag_ekVmix2_mld/ekVmix2_mld
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro_mld/ekBaro_mld
-# endif
-# ifdef AVERAGES
+#  endif
+#  ifdef AVERAGES
       common /diag_ekHadv_mld_avg/ekHadv_mld_avg
      &       /diag_ekHdiff_mld_avg/ekHdiff_mld_avg
      &       /diag_ekVadv_mld_avg/ekVadv_mld_avg     
@@ -195,12 +190,11 @@
      &       /diag_ekrate_mld_avg/ekrate_mld_avg
      &       /diag_ekvol_mld_avg/ekvol_mld_avg
      &       /diag_ekVmix2_mld_avg/ekVmix2_mld_avg
-# if defined DIAGNOSTICS_BARO
+#   if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro_mld_avg/ekBaro_mld_avg
-# endif
-# endif
-
-# endif   
+#   endif
+#  endif
+# endif  /* DIAGNOSTICS_EK_MLD */
 
 
       real ekwrkHadv(GLOBAL_2D_ARRAY,2)
@@ -254,7 +248,6 @@
      &       /diag_ekwrkfast/ekwrkfast
 # endif
 # ifdef DIAGNOSTICS_EK_MLD
-
       real ekwrkHadv_mld(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkHadv_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekwrkHdiff_mld(GLOBAL_2D_ARRAY,2)
@@ -275,10 +268,10 @@
 !CSDISTRIBUTE_RESHAPE ekwrkvol_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekwrkVmix2_mld(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkVmix2_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       real ekwrkBaro_mld(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkBaro_mld(BLOCK_PATTERN,*) BLOCK_CLAUSE
-# endif
+#  endif
 
       common /diag_ekwrkHadv_mld/ekwrkHadv_mld
      &       /diag_ekwrkHdiff_mld/ekwrkHdiff_mld
@@ -290,13 +283,12 @@
      &       /diag_ekwrkrate_mld/ekwrkrate_mld
      &       /diag_ekwrkvol_mld/ekwrkvol_mld
      &       /diag_ekwrkVmix2_mld/ekwrkVmix2_mld
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &       /diag_ekwrkBaro_mld/ekwrkBaro_mld
-# endif
-# endif 
+#  endif
+# endif /* DIAGNOSTICS_EK_MLD */
 
 # if defined DIAGNOSTICS_EK_FULL && ! defined DIAGNOSTICS_UV
-
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)
       real MHdiff(GLOBAL_2D_ARRAY,N,2)
@@ -306,12 +298,12 @@
       real MHmix(GLOBAL_2D_ARRAY,N,2,2)
       real MVmix(GLOBAL_2D_ARRAY,N,2)
       real Mbody(GLOBAL_2D_ARRAY,N,2)
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
       real MBaro(GLOBAL_2D_ARRAY,N,2)
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
       real Mfast(GLOBAL_2D_ARRAY,N,2)
-# endif
+#  endif
 
       common /diag_MXadv/MXadv
      &       /diag_MYadv/MYadv
@@ -322,12 +314,12 @@
      &       /diag_MHmix/MHmix
      &       /diag_MVmix/MVmix
      &       /diag_Mbody/Mbody
-# if defined DIAGNOSTICS_BARO
+#  if defined DIAGNOSTICS_BARO
      &       /diag_MBaro/MBaro
-# endif
-# if defined M3FAST
+#  endif
+#  if defined M3FAST
      &       /diag_Mfast/Mfast
-# endif
+#  endif
 # endif /* DIAGNOSTICS_EK_FULL */
 
 # endif /* DIAGNOSTICS_EK */
