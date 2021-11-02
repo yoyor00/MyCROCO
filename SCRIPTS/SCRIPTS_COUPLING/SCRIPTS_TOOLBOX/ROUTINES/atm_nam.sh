@@ -64,11 +64,9 @@ for dom in $wrfcpldom ; do
     chmod 755 namelist.input
 done
 
-#numextmod=""
-#for dom in `seq 1 $NB_dom`; do
-#    numextmod="$numextmod 1,"
-#done
-#sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
+
+numextmod=$( echo "$wrfcpldom" | wc -w )
+sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
 
 
 if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
