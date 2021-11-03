@@ -16,7 +16,7 @@
 !
       implicit none
       integer tile
-# if defined TRACERS      
+# ifdef TRACERS      
       integer trd, omp_get_thread_num
 #  include "param.h"
 #  include "private_scratch.h"
@@ -33,7 +33,7 @@
       return
       end
 
-# if defined TRACERS
+# ifdef TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
@@ -47,7 +47,6 @@
 #    endif
 #   endif
 #  endif
-
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -170,7 +169,6 @@
 !
 #  undef PREDICTOR
 #  include "compute_horiz_tracer_fluxes.h"
-
 !
 !----------------------------------------------------------
 ! WENO5 advection for passive tracers (biology ...)
@@ -193,7 +191,6 @@
           endif
 #  endif
 !
-
 #  if defined MUSTANG && defined MUSTANG_CORFLUX
           if (k.eq.1 .and. 
      &        itrc.ge.itsubs1+nv_grav .and.
@@ -210,7 +207,7 @@
             enddo
           endif
 #  endif 
-
+!
 !----------------------------------------------------------
 ! Apply point sources for river runoff simulations
 !----------------------------------------------------------
@@ -229,11 +226,9 @@
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
-
 #   if defined MUSTANG && defined key_sand2D
-!     sum FX for k=1
+!     To do: sum FX for k=1
 #   endif
-
 #   ifdef MASKING
                 else
                   if (rmask(i,j).eq.0 .and. rmask(i-1,j).eq.1) then
@@ -264,49 +259,48 @@
 ! Finalize horizontal advection: compute flux divergences
 !----------------------------------------------------------
 !
-
           do j=Jstr,Jend
             do i=Istr,Iend
-#  if defined MUSTANG && defined key_sand2D
-              if (l_subs2D(itrc-itsubs1+1)) then
-                if (k.eq.1) then
-                  t(i,j,k,nnew,itrc)=( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
-     &                           -dt*pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j)
-     &                                               +FE(i,j+1)-FE(i,j))
-     &                                     +dt* flx_s2w_CROCO(i,j,itrc)
-     &                         )/(Hz(i,j,k)+flx_w2s_CROCO(i,j,itrc)*dt)
-                  flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
-     &                                          *t(i,j,1,nnew,itrc)*dt
-                endif
-              else
-                t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
-     &                      -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                           +FE(i,j+1)-FE(i,j))
-         endif
-#  else
+#  if !(defined MUSTANG && defined key_sand2D)
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                    -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                         +FE(i,j+1)-FE(i,j))
+#  else
+              if (l_subs2D(itrc-itsubs1+1)) then
+                if (k.eq.1) then
+                  t(i,j,k,nnew,itrc)=
+     &                         ( Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
+     &                     -dt*pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j)
+     &                                         +FE(i,j+1)-FE(i,j))
+     &                               +dt*flx_s2w_CROCO(i,j,itrc) )
+     &                     /(Hz(i,j,k)+dt*flx_w2s_CROCO(i,j,itrc))
+                  flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
+     &                                         *dt*t(i,j,1,nnew,itrc)
+                endif
+              else
+                t(i,j,k,nnew,itrc)=
+     &                           Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
+     &                    -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                         +FE(i,j+1)-FE(i,j))
+              endif
 #  endif
             enddo
           enddo                 !-->  discard FX,FE
 
-
-
 #  if defined AGRIF && defined AGRIF_CONSERV_TRA
-          IF (Agrif_Root()) Then
-          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
+          if (Agrif_Root()) then
+            MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
      &        dt*FX(IstrR:IendR,JstrR:JendR)
-          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
+            MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
      &        dt*FE(IstrR:IendR,JstrR:JendR)
-          Else
-          MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
+          else
+            MYFX(IstrR:IendR,JstrR:JendR,k,itrc)=
      &       MYFX(IstrR:IendR,JstrR:JendR,k,itrc)
      &       +dt*FX(IstrR:IendR,JstrR:JendR)
-          MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
+            MYFY(IstrR:IendR,JstrR:JendR,k,itrc)=
      &       MYFY(IstrR:IendR,JstrR:JendR,k,itrc)
      &      +dt*FE(IstrR:IendR,JstrR:JendR)
-          EndIF
+          endif
 #  endif
 !
 !----------------------------------------------------------
@@ -320,70 +314,56 @@
               TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
           enddo
         enddo
-        
-        
-
+!
 #   if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
-
-!----------------------------------------------------------
-! Compute fluxes FX and FE
-!----------------------------------------------------------
+!
+! Compute centered scheme fluxes FX and FE to separate
+! advection and diffusion parts of the transport term
 !
 #    undef PREDICTOR
 
 #    if defined TS_HADV_WENO5
 #     define TS_HADV_C6
-#     undef TS_HADV_WENO5
+#     undef  TS_HADV_WENO5
 #     include "compute_horiz_tracer_fluxes.h"
-#     undef TS_HADV_C6
+#     undef  TS_HADV_C6
 #     define TS_HADV_WENO5
 
 #    elif defined TS_HADV_UP5
 #     define TS_HADV_C6
-#     undef TS_HADV_UP5
+#     undef  TS_HADV_UP5
 #     include "compute_horiz_tracer_fluxes.h"
-#     undef TS_HADV_C6
+#     undef  TS_HADV_C6
 #     define TS_HADV_UP5
 
 #    elif defined TS_HADV_UP3
 #     define TS_HADV_C4
-#     undef TS_HADV_UP3
+#     undef  TS_HADV_UP3
 #     include "compute_horiz_tracer_fluxes.h"
-#     undef TS_HADV_C4
+#     undef  TS_HADV_C4
 #     define TS_HADV_UP3
 
 #    endif
-!
-        
-          do j=Jstr,Jend
-            do i=Istr,Iend
+        do j=Jstr,Jend
+          do i=Istr,Iend
               THmix(i,j,k,itrc)=( TXadv(i,j,k,itrc)+TYadv(i,j,k,itrc)
-     &                         +(FX(i+1,j)-FX(i,j))
-     &                         +(FE(i,j+1)-FE(i,j)) ) SWITCH rmask(i,j)
-              TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j)) SWITCH rmask(i,j)
-              TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j)) SWITCH rmask(i,j)
+     &                          +(FX(i+1,j)-FX(i,j))
+     &                          +(FE(i,j+1)-FE(i,j)) ) SWITCH rmask(i,j)
+              TXadv(i,j,k,itrc)=-(FX(i+1,j)-FX(i,j))   SWITCH rmask(i,j)
+              TYadv(i,j,k,itrc)=-(FE(i,j+1)-FE(i,j))   SWITCH rmask(i,j)
           enddo
         enddo
-        
 #   else
-
-          do j=Jstr,Jend
-            do i=Istr,Iend
+        do j=Jstr,Jend
+          do i=Istr,Iend
               THmix(i,j,k,itrc)=0.
           enddo
         enddo
-        
 #   endif
-        
 #  endif /* DIAGNOSTICS_TS */
-
-
-
-
 
         enddo    !<-- k
       enddo    !<-- itrc
-
 !
 !----------------------------------------------------------
 ! Compute fraction of the solar shortwave flux "swdk"
@@ -429,7 +409,7 @@
 #  include "compute_vert_tracer_fluxes.h"
 
 #  ifdef TS_HADV_TEST
-      FC(istr:iend,0:N) = 0.d0
+      FC(Istr:Iend,0:N) = 0.0
 #  endif
 
 !----------------------------------------------------------
@@ -444,32 +424,26 @@
 ! Apply vertical advective flux divergence
 !----------------------------------------------------------
 !
-          do k=1,N
-
 #  if defined MUSTANG && defined key_sand2D
-           if (.not.l_subs2D(itrc-itsubs1+1)) then
+          if (.not.l_subs2D(itrc-itsubs1+1)) then
 #  endif
-            do i=Istr,Iend
-              t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)-CF(i,0)*(FC(i,k)
-     &                                                      -FC(i,k-1))
-            enddo
-
-#  if defined MUSTANG && defined key_sand2D
-           endif
-#  endif
-          enddo               !--> discard FC
-
-
+            do k=1,N
+              do i=Istr,Iend
+                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
+     &                             -CF(i,0)*(FC(i,k)-FC(i,k-1))
+              enddo
+            enddo               !--> discard FC
 #  ifdef DIAGNOSTICS_TS
-       do k=1,N 
-         do i=Istr,Iend
-           TVadv(i,j,k,itrc) = -(FC(i,k)-FC(i,k-1))
-#   ifdef MASKING
-     &         * rmask(i,j)
-#   endif
-         enddo
-       enddo
-#  endif /* DIAGNOSTICS_TS */  
+            do k=1,N 
+              do i=Istr,Iend
+                TVadv(i,j,k,itrc) = -(FC(i,k)-FC(i,k-1))
+     &                                 SWITCH rmask(i,j)
+              enddo
+            enddo
+#  endif /* DIAGNOSTICS_TS */
+#  if defined MUSTANG && defined key_sand2D
+          endif
+#  endif
 !
 !
 !======================================================================
@@ -500,7 +474,7 @@
               do i=Istr,Iend
                 FC(i,k)=0.
 #   if defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+                        || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
 #    ifdef LMD_NONLOCAL
      &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
@@ -508,7 +482,7 @@
 #   endif
               enddo
             enddo
-          end if
+          endif
 #  endif /* TEMPERATURE */            
 #  ifdef SALINITY 
           if (itrc.eq.isalt) then
@@ -525,7 +499,6 @@
           endif
 #  endif /* SALINITY */
 !
-
 #  if defined SALINITY || defined TEMPERATURE 
 #   if defined SALINITY && defined TEMPERATURE 
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
@@ -541,9 +514,7 @@
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
                 TForc(i,j,k,itrc)=(FC(i,k)-FC(i,k-1))
      &                                    /(dt*pm(i,j)*pn(i,j))
-#    ifdef MASKING
-     &                                             * rmask(i,j)
-#    endif
+     &                                        SWITCH rmask(i,j)
 #   endif  /* DIAGNOSTICS_TS */
               enddo
             enddo
@@ -557,7 +528,6 @@
 #   endif  /* DIAGNOSTICS_TS */
           endif
 #  endif  /* defined SALINITY || TEMPERATURE  */
-          
 !
 !
 !======================================================================
@@ -688,11 +658,11 @@
 !----------------------------------------------------------
 !
 #  if defined FLOATS && defined RANDOM_WALK
-          do k=1,N
-            do i=Istr,Iend
-              dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
-            enddo
+        do k=1,N
+          do i=Istr,Iend
+            dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
           enddo
+        enddo
 #  endif
 
       enddo      ! <-- j
@@ -702,11 +672,9 @@
 !  apply land-sea mask and exchange periodic boundary conditions.
 !======================================================================
 !
-
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
       enddo
-      
 !
 !======================================================================
 !  Compute biological fluxes
@@ -805,36 +773,34 @@
 #   ifdef ZONAL_NUDGING
         if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
           call zonavg_3d(istr,iend,jstr,jend,
-     &                  t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
+     &               t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
         endif
         if (iic.eq.ntstart) then
           call zonavg_3d(istr,iend,jstr,jend,
-     &                  tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
+     &              tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
         endif
 #   endif /* ZONAL_NUDGING */
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
-     &                    +dt*Tnudgcof(i,j,k,itrc)*
+     &                                   +dt*Tnudgcof(i,j,k,itrc)*
 #   ifdef ZONAL_NUDGING
-     &                         (tclmzon(j,k,itrc)-tzon(j,k,itrc))
+     &                          (tclmzon(j,k,itrc)-tzon(j,k,itrc))
 #   else
-     &                         (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
+     &                       (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
 #   endif /* ZONAL_NUDGING */
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
               TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
-     &                    +Tnudgcof(i,j,k,itrc)
-     &                    *(tclm(i,j,k,itrc)
+     &                                       +Tnudgcof(i,j,k,itrc)
+     &                                          *(tclm(i,j,k,itrc)
 #    ifdef ZONAL_NUDGING
-     &                                           -tzon(j,k,itrc))
+     &                                            -tzon(j,k,itrc))
 #    else
-     &                                           -t(i,j,k,nnew,itrc))
+     &                                        -t(i,j,k,nnew,itrc))
 #    endif /* ZONAL_NUDGING */
-     &                    *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
-#    ifdef MASKING
-     &                    *rmask(i,j)
-#    endif
+     &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
+     &                                           SWITCH rmask(i,j)
 #   endif  /* DIAGNOSTICS_TS */
             enddo
           enddo
@@ -858,9 +824,7 @@
               Trate(i,j,k,itrc)=(Hz(i,j,k)*t(i,j,k,nnew,itrc)
      &                          -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                       /(dt*pm(i,j)*pn(i,j))
-#   ifdef MASKING
-     &                   *rmask(i,j)
-#   endif
+     &                                           SWITCH rmask(i,j)
 !
 #   ifdef DIAGNOSTICS_TS_ADV
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)+
@@ -873,7 +837,6 @@
 #   endif /* DIAGNOSTICS_TS_ADV */
 !
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
-
 #   ifdef DIAGNOSTICS_TS
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
@@ -884,10 +847,9 @@
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
 
-#   if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 && !defined TS_DIF2 && !defined TS_DIF4
-
+#   if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 \
+             && !defined TS_DIF2 && !defined TS_DIF4
 #    include "finalize_diagnostics_tsadv.h"
-
 #   endif
             enddo
           enddo
@@ -1131,23 +1093,22 @@
 ! other coefficients
       cff1=13./12.
       cff2=1./6.
-
 !
       if (ua .ge. 0.) then        ! Take upstream stencils for stability
 !
 ! === Reconstruction at u_i-1/2 using LEFT stencils ===
 !
 ! Nonlinear Smoothness Indicators
-        IS0 = cff1*(q_im3 - 2.*q_im2 + q_im1)**2
-     &                        + 0.25*(q_im3 - 4.*q_im2 + 3*q_im1)**2
-        IS1 = cff1*(q_im2 - 2.*q_im1 + q_i)**2
-     &                        + 0.25*(q_im2 - q_i)**2
-        IS2 = cff1*(q_im1 - 2.*q_i + q_ip1)**2
-     &                        + 0.25*(3.*q_im1 - 4.*q_i + q_ip1)**2
+        IS0 = cff1*(q_im3 - 2.*q_im2 +   q_im1)**2
+     &      + 0.25*(q_im3 - 4.*q_im2 + 3*q_im1)**2
+        IS1 = cff1*(q_im2 - 2.*q_im1 +   q_i  )**2
+     &      + 0.25*(q_im2            -   q_i  )**2
+        IS2 = cff1*(q_im1 - 2.*q_i   +   q_ip1)**2
+     &   + 0.25*(3.*q_im1 - 4.*q_i   +   q_ip1)**2
 #  ifdef WENO_Z
 ! Non-normalized stencil weights
 ! with parameter T5 of new smoothness indicator
-        T5 = abs(IS2-IS0)
+        T5  = abs(IS2-IS0)
         a0  = d0*(1+T5/(Eps+IS0))
         a1  = d1*(1+T5/(Eps+IS1))
         a2  = d2*(1+T5/(Eps+IS2))
@@ -1162,26 +1123,26 @@
         w2  = a2/(a0+a1+a2)
 ! Polynomials
         p0  = cff2*(2.*q_im3 - 7.*q_im2 + 11.*q_im1)
-        p1  = cff2*(-q_im2   + 5.*q_im1 + 2.*q_i)
-        p2  = cff2*(2.*q_im1 + 5.*q_i   - q_ip1)
+        p1  = cff2*(  -q_im2 + 5.*q_im1 +  2.*q_i  )
+        p2  = cff2*(2.*q_im1 + 5.*q_i   -     q_ip1)
 ! Combination
-        flux5_weno = w0*p0 + w1*p1 +w2*p2
+        flux5_weno = w0*p0 + w1*p1 + w2*p2
 
       else
 !
 ! === Reconstruction at u_i-1/2 using RIGHT stencils ===
 !
 ! Nonlinear Smoothness Indicators
-        IS0 = cff1*(q_ip2 - 2.*q_ip1 + q_i)**2
-     &                         + 0.25*(q_ip2 -4.*q_ip1 + 3*q_i)**2
-        IS1 = cff1*(q_ip1 - 2.*q_i + q_im1)**2
-     &                         + 0.25*(q_ip1-q_im1)**2
-        IS2 = cff1*(q_i   - 2.*q_im1 + q_im2)**2
-     &                         + 0.25*(3.*q_i -4.*q_im1 + q_im2)**2
+        IS0 = cff1*(q_ip2 - 2.*q_ip1 +   q_i  )**2
+     &      + 0.25*(q_ip2 - 4.*q_ip1 + 3*q_i  )**2  
+        IS1 = cff1*(q_ip1 - 2.*q_i   +   q_im1)**2
+     &      + 0.25*(q_ip1            -   q_im1)**2
+        IS2 = cff1*(q_i   - 2.*q_im1 +   q_im2)**2
+     &   + 0.25*(3.*q_i   - 4.*q_im1 +   q_im2)**2
 #  ifdef WENO_Z
 ! Non-normalized stencil weights
 ! with parameter T5 of new smoothness indicator
-        T5 = abs(IS2-IS0)
+        T5  = abs(IS2-IS0)
         a0  = d0*(1+T5/(Eps+IS0))
         a1  = d1*(1+T5/(Eps+IS1))
         a2  = d2*(1+T5/(Eps+IS2))
@@ -1195,11 +1156,11 @@
         w1  = a1/(a0+a1+a2)
         w2  = a2/(a0+a1+a2)
 ! Polynomials
-        p0  = cff2*(2.*q_ip2 - 7.*q_ip1 + 11.*q_i)
-        p1  = cff2*(-q_ip1   + 5.*q_i   + 2.*q_im1)
-        p2  = cff2*(2.*q_i   + 5.*q_im1 - q_im2)
+        p0  = cff2*(2.*q_ip2 - 7.*q_ip1 + 11.*q_i  )
+        p1  = cff2*(  -q_ip1 + 5.*q_i   +  2.*q_im1)
+        p2  = cff2*(2.*q_i   + 5.*q_im1 -     q_im2)
 ! Combination
-        flux5_weno = w0*p0 + w1*p1 +w2*p2
+        flux5_weno = w0*p0 + w1*p1 + w2*p2
 
       endif
 
