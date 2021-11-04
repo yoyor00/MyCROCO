@@ -48,11 +48,11 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
             printf "\n Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
             if [ $USE_ATM -eq 1 ] && [ ${USE_XIOS_ATM} -eq 1 ]; then
-                sed -e "s/# *undef XIOS_ATM/#  define XIOS_ATM/g" cppdefs.h > tmp$$
-                mv tmp$$ cppdefs.h
+                sed -e "s/# *undef XIOS_ATM/#  define XIOS_ATM/g" cppdefs_dev.h > tmp$$
+                mv tmp$$ cppdefs_dev.h
             else
-                sed -e "s/# *define XIOS_ATM/#  undef XIOS_ATM/g" cppdefs.h > tmp$$
-                mv tmp$$ cppdefs.h
+                sed -e "s/# *define XIOS_ATM/#  undef XIOS_ATM/g" cppdefs_dev.h > tmp$$
+                mv tmp$$ cppdefs_dev.h
             fi
 	else
             sed -e "s/#  *define  *OA_COUPLING/# undef OA_COUPLING/g" cppdefs.h > tmp$$

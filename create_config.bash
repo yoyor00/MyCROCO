@@ -206,6 +206,7 @@ if [[ ${models[@]} =~ "oce" ]] ; then
     mkdir -p $MY_CONFIG_WORK/CROCO_FILES
     # CROCO general
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CONFIG_HOME/CROCO_IN/.
+    cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CONFIG_HOME/CROCO_IN/.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CONFIG_HOME/CROCO_IN/.
 
      PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
