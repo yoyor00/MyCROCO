@@ -17,8 +17,8 @@
 #   define FLUX3 flux4
 #   define FLUX2 flux2
 #   undef  UP5_MASKING
-          cdif=1.
 #  endif
+          cdif=1.
 #  include "t3dadv_order5.h"
 #  undef FLUX5
 #  undef FLUX3
