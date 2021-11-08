@@ -2,7 +2,7 @@
 #                                                                      Restart
 #-------------------------------------------------------------------------------
 
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
     module load $ncomod
 #
@@ -49,7 +49,7 @@ if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
 else   
 
     if [ ${USE_ATM} -eq 1 ]; then
-        for dom in `seq 1 $wrfcpldom`; do
+        for dom in $wrfcpldom; do
             if [ $dom == "d01" ]; then
                 cpfile ${RESTDIR_IN}/atm_${CEXPER}_${DATE_END_JOBm1}.nc atm.nc
             else

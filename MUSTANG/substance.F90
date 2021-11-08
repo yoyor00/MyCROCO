@@ -18,7 +18,7 @@ MODULE substance
    USE comsubstance
 
 
-# define REPFICNAMELIST 'FIC_NAMELIST'
+# define REPFICNAMELIST 'NAM_CASES'
 
    IMPLICIT NONE
    PRIVATE
@@ -175,8 +175,15 @@ CONTAINS
 # else
    OPEN(500,file=REPFICNAMELIST//'/parasubstance_MUSTANG.txt',status='old',form='formatted',access='sequential')
 # endif
-#else
+! only substance
+#else 
+# ifdef key_CROCO
+   lstr=lenstr(subsname)
+   MPI_master_only  WRITE(stdout,*),'SUBS:',subsname(1:lstr)
+   OPEN(500,file=subsname(1:lstr),status='old',form='formatted',access='sequential')
+# else
    OPEN(500,file=REPFICNAMELIST//'/parasubstance.txt',status='old',form='formatted',access='sequential')
+# endif
    nv_grav=0
    nv_sand=0
    nv_mud=0

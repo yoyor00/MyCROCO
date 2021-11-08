@@ -30,13 +30,13 @@
 !------------------------------------------------------------------------------
 !  This subfunction complete the call to the interpolation and the recalculation 
 !  of the forcing fields to generate the roms bulk forcing (tairg, rhumg, prateg,
-!  radlwg, radswg, wspdg, uwndg, vwndg) on the current tile. 
+!  radlwg, radswg, uwndg, vwndg) on the current tile. 
 !------------------------------------------------------------------------------
 !  The main steps of this interpolation and recalculation are:
 !  - Interpolation from the varref matrix of the dum_array matrix on the 
 !  simulation domain for the blkvar_id variable.
 !  - Recalculation of the roms bulk forcings (tairg, rhumg, prateg, radlwg, 
-!  radswg, wspdg, uwndg, vwndg) from the interpolated dum_array fields.
+!  radswg, uwndg, vwndg) from the interpolated dum_array fields.
 
 !  INPUTS
 !  NXref (Vertical size of the input matrix used for the interpolation)
@@ -50,7 +50,7 @@
 !
 !  OUTPUTS
 !  dum_array (interpolated forcing fields)
-!  tairg, rhumg, prateg, radlwg, radswg, wspdg, uwndg, vwndg (recalculated roms 
+!  tairg, rhumg, prateg, radlwg, radswg, uwndg, vwndg (recalculated roms 
 !                                                             bulk forcings)
       implicit none
 # include "param.h"
@@ -231,17 +231,13 @@
 ! 8 process uwnd
 ! U-component_of_wind
 !
-# ifdef BULK_SM_UPDATE
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
      &                lonr(GLOBAL_2D_ARRAY), 
      &                latr(GLOBAL_2D_ARRAY),
      &                uwndg_norot(GLOBAL_2D_ARRAY,iblkrec))
-
-# else
-       USE_BULK_SM_UPDATE !
-# endif
+!
       elseif (blkvar_id.eq.9) then
 !
 ! 9 process vwnd
@@ -249,7 +245,6 @@
 !
 ! + rotates the wind and put it at u- and v- points
 !
-# ifdef BULK_SM_UPDATE
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
@@ -259,11 +254,6 @@
      
         do j=J_RANGE
           do i=I_RANGE
-#  ifndef CFB_WIND
-            wspdg(i,j,iblkrec)= sqrt(uwndg_norot(i,j,iblkrec)
-     &                              *uwndg_norot(i,j,iblkrec)
-     &                        +vwndg(i,j,iblkrec)*vwndg(i,j,iblkrec))
-#  endif
 #  ifdef CURVGRID
             blk_dum1(i,j)=uwndg_norot(i,j,iblkrec)*COS(angler(i,j))+
      &                    vwndg(i,j,iblkrec)*SIN(angler(i,j))
@@ -304,16 +294,8 @@
 
 	call exchange_v2d_tile(1,Lm,1,Mm,
      &                         vwndg(START_2D_ARRAY,iblkrec))
-#   ifndef CFB_WIND
-	call exchange_r2d_tile(1,Lm,1,Mm,
-     &                         wspdg(START_2D_ARRAY,iblkrec))
-#   endif
 #  endif
 
-
-# else
-      USE_BULK_SM_UPDATE !
-# endif
       elseif (blkvar_id.eq.10) then
 # ifdef READ_PATM
 ! 10 process sea surface pressure

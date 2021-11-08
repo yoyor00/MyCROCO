@@ -101,8 +101,8 @@ station_fields:  Grdvar Temp Salt Rho Vel
                    T     T    T    T   T
 
 sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
-               NAM_CASES/parasubstance_MUSTANG_vilaine.txt
-               NAM_CASES/paraMUSTANGV1_vilaine.txt
+               MUSTANG_NAMELIST/parasubstance_MUSTANG_vilaine.txt
+               MUSTANG_NAMELIST/paraMUSTANGV1_vilaine.txt
 
 psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
             2

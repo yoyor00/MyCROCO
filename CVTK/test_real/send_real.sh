@@ -6,7 +6,7 @@ branch=$(git branch -a |grep '*' | awk -F ' ' '{print $2}')
 
 
 #RCP="benshila@legos.obs-mip.fr,patrick.marchesiello@ird.fr,gildas.cambon@ird.fr"
-RCP="benshila@legos.obs-mip.fr"
+RCP="benshila@legos.obs-mip.fr,patrick.marchesiello@ird.fr,gildas.cambon@ird.fr"
 
 cat <<EOF > msg.txt
 Tests results for $(date +%Y-%m-%d) (right) compared to $(date -d "-1 days" +%Y-%m-%d) (left) for branch ${branch}.

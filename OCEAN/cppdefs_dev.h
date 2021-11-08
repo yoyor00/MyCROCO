@@ -75,7 +75,7 @@
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  SMFLUX_CFB
+# undef  SFLUX_CFB
 #endif
 
 /* 
@@ -115,6 +115,10 @@
 #ifdef XIOS
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
+# define START_DATE
+# ifdef OA_COUPLING
+#  undef XIOS_ATM
+# endif
 #endif
   
 /*
@@ -641,13 +645,23 @@
 ======================================================================
     Bulk flux option
 ======================================================================
+! Bulk algorithms (options)
+! - ECUMEv0 (possibility to add GUSTINESS effects)
+! - ECUMEv6 (possibility to add GUSTINESS effects)
+! - COARE3p0 (possibility to compute Charnock coefficient via WASP)
+! Warning: WASP can not be combined with ECUME algorithms
+!
 */
 #ifdef BULK_FLUX
-# ifdef BULK_SMFLUX     
-#  define BULK_SM_UPDATE /* ON: Compute wind stress via bulk_flux */
-# endif
 # ifdef ONLINE
 #  define CUBIC_INTERP
+# endif
+# ifdef ECUMEv0
+#  define GUSTINESS
+# elif defined ECUMEv6
+#  define GUSTINESS
+# elif defined WASP
+#  define GUSTINESS
 # endif
 #endif
 
@@ -656,15 +670,13 @@
     Current feedback option
 ======================================================================
 */
-#ifdef SMFLUX_CFB
+#ifdef SFLUX_CFB
 # ifdef BULK_FLUX
 #  define CFB_STRESS
-#  undef  CFB_STRESS2
-#  undef  CFB_WIND
+#  define CFB_WIND_TRA
 # else
 #  undef  CFB_STRESS
-#  define CFB_STRESS2
-#  undef  CFB_WIND
+#  undef  CFB_WIND_TRA
 # endif
 #endif
 
@@ -822,11 +834,6 @@
 */
 #ifdef SEDIMENT
 # undef  MUSTANG
-# define SUSPLOAD
-# define BEDLOAD
-# if defined NBQ || defined SED_TOY || defined TIDAL_FLAT
-#  undef  BEDLOAD
-# endif
 # define ANA_SEDIMENT
 # undef  BED_ARMOR
 # undef  BED_HIDEXP
@@ -857,9 +864,8 @@
 #  endif
 # endif /* BEDLOAD */
 # ifdef DUNE
-#  undef SUSPLOAD
 #  ifdef ANA_DUNE
-#   undef  SLOPE_LESSER
+#   undef SLOPE_LESSER
 #  endif
 # endif /* DUNE */
 #endif /* SEDIMENT */
@@ -871,13 +877,15 @@
 # ifdef MUSTANG
 #  undef  SEDIMENT
 #  define SUBSTANCE
-#  define key_CROCO
 #  define USE_CALENDAR
 #  define TEMPERATURE
 #  define SALINITY
 #  define key_noTSdiss_insed
 #  define key_nofluxwat_IWS
 # endif /* MUSTANG */
+# ifdef SUBSTANCE
+#  define key_CROCO
+# endif
 
 /* 
 ======================================================================
@@ -1037,7 +1045,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
-# undef SMFLUX_CFB                     
+# undef SFLUX_CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH

@@ -495,7 +495,7 @@
                                      !defined WKB_WWAVE && \
                                      !defined OW_COUPLING) \
           || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_EP   && \
+                                   !defined BULK_FLUX   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
                                    !defined OA_COUPLING) \
@@ -505,7 +505,7 @@
                                    !defined OA_COUPLING && \
                                    defined SOLVE3D) \
           || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_EP && \
+                                   !defined BULK_FLUX && \
                                    !defined OA_COUPLING && \
                                     defined SOLVE3D) \
           || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
@@ -513,9 +513,7 @@
                                    defined SOLVE3D) \
           || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
-          || (defined BULK_FLUX  && \
-                                      (!defined BULK_SMFLUX || \
-                                       !defined BULK_EP) )\
+          || ( defined BULK_FLUX    && !defined SALINITY ) \
           || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
 !
 !
@@ -2495,6 +2493,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          sedname_must(1:lstr)
 
 # endif /* SEDIMENT */
+#endif
+#if defined SUBSTANCE && !defined MUSTANG
+      elseif (keyword(1:kwlen).eq.'substance') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) subsname
+        lstr=lenstr(subsname)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Substance:' ,
+     &          subsname(1:lstr)
 #endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then

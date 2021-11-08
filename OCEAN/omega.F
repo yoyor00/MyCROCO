@@ -214,9 +214,9 @@
         do k=0,N
           do j=Jstr,Jend
             We(0,j,k)=We(1,j,k)
-#ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
             Wi(0,j,k)=Wi(1,j,k)
-#endif
+#  endif
           enddo
         enddo
       endif
@@ -224,9 +224,9 @@
         do k=0,N
           do j=Jstr,Jend
             We(LOCALLM+1,j,k)=We(LOCALLM,j,k)
-#ifdef VADV_ADAPT_IMP            
+#  ifdef VADV_ADAPT_IMP            
             Wi(LOCALLM+1,j,k)=Wi(LOCALLM,j,k)            
-#endif            
+#  endif            
           enddo
         enddo
       endif
@@ -236,9 +236,9 @@
         do k=0,N
           do i=Istr,Iend
             We(i,0,k)=We(i,1,k)
-#ifdef VADV_ADAPT_IMP            
+#  ifdef VADV_ADAPT_IMP            
             Wi(i,0,k)=Wi(i,1,k)            
-#endif             
+#  endif             
           enddo
         enddo
       endif
@@ -246,9 +246,9 @@
         do k=0,N
           do i=Istr,Iend
             We(i,LOCALMM+1,k)=We(i,LOCALMM,k)
-#ifdef VADV_ADAPT_IMP 
+#  ifdef VADV_ADAPT_IMP 
             Wi(i,LOCALMM+1,k)=Wi(i,LOCALMM,k)
-#endif 
+#  endif 
           enddo
         enddo
       endif
@@ -256,43 +256,52 @@
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           We(0,0,k)=We(1,1,k)
-#ifdef VADV_ADAPT_IMP           
+#  ifdef VADV_ADAPT_IMP           
           Wi(0,0,k)=Wi(1,1,k)
-#endif           
+#  endif           
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           We(0,LOCALMM+1,k)=We(1,LOCALMM,k)
-#ifdef VADV_ADAPT_IMP   
+#  ifdef VADV_ADAPT_IMP   
           Wi(0,LOCALMM+1,k)=Wi(1,LOCALMM,k)        
-#endif           
+#  endif           
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=0,N
           We(LOCALLM+1,0,k)=We(LOCALLM,1,k)
-#ifdef VADV_ADAPT_IMP 
+#  ifdef VADV_ADAPT_IMP 
           Wi(LOCALLM+1,0,k)=Wi(LOCALLM,1,k)
-#endif 
+#  endif 
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=0,N
           We(LOCALLM+1,LOCALMM+1,k)=We(LOCALLM,LOCALMM,k)
-#ifdef VADV_ADAPT_IMP           
+#  ifdef VADV_ADAPT_IMP           
           Wi(LOCALLM+1,LOCALMM+1,k)=Wi(LOCALLM,LOCALMM,k)
-#endif          
+#  endif          
         enddo
       endif
 #  endif
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
+#  ifdef THREE_GHOST_POINTS_UV
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 
+     &                             We(START_2D_ARRAY,0))
+#   ifdef VADV_ADAPT_IMP       
+      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 
+     &                             Wi(START_2D_ARRAY,0))
+#   endif
+#  else
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, We(START_2D_ARRAY,0))
-#ifdef VADV_ADAPT_IMP       
+#   ifdef VADV_ADAPT_IMP       
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Wi(START_2D_ARRAY,0))
-#endif      
+#   endif
+#  endif   
 # endif
       return
       end

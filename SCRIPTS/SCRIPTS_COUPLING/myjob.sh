@@ -16,24 +16,22 @@ export projectid=""
 #-------------------------------------------------------------------------------
 # Your run can be divided into several jobs (e.g.: 1 year run into 12 jobs of 1 month)
 
-# Full Experiment 
-# Start of Experiment
-export YEAR_BEGIN_EXP=2005
-export MONTH_BEGIN_EXP=1
-export DAY_BEGIN_EXP=1
-
-# Duration of the Experiment
-export EXP_DUR_MTH=$(( 3 * 1 ))
-export EXP_DUR_DAY=0
-
 # Start date of the first Job
 export YEAR_BEGIN_JOB=2005
 export MONTH_BEGIN_JOB=1
 export DAY_BEGIN_JOB=1
 
+# End date of the Experience
+export YEAR_END_EXP=2005
+export MONTH_END_EXP=1
+export DAY_END_EXP=1
+
 # Duration of each Job
 export JOB_DUR_MTH=1
 export JOB_DUR_DAY=0
+
+# Do we start from a restart?
+export RESTART_FLAG="FALSE"
 
 #-------------------------------------------------------------------------------
 # Job submission type

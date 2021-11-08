@@ -37,7 +37,7 @@ cd ${EXEDIR}
                     . ${SCRIPTDIR}/oce_compile.sh 
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-                    if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+                    if [[ ${RESTART_FLAG} == "FALSE" ]]; then
                         [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
                     fi
                 fi
@@ -230,6 +230,8 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
         sed -e "s/YEAR_BEGIN_JOB=.*/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOBp1}/" \
             -e "s/MONTH_BEGIN_JOB=.*/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOBp1}/" \
             -e "s/DAY_BEGIN_JOB=.*/DAY_BEGIN_JOB=${DAY_BEGIN_JOBp1}/" \
+            -e "s/RESTART_FLAG=.*/RESTART_FLAG=\"TRUE\"/" \
+            -e "s/CHAINED_JOB=.*/CHAINED_JOB=\"FALSE\"/" \
                 ${SCRIPTDIR}/../myjob.sh > tata.sh
         mvfile2 ${SCRIPTDIR}/../myjob.sh ${JOBDIR}
         mvfile tata.sh ${SCRIPTDIR}/../myjob.sh

@@ -78,7 +78,7 @@
 !/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !/*         Directory where are namelists files
 !/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-# define REPFICNAMELIST 'FIC_NAMELIST'
+# define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
 # ifdef key_CROCO
 #  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 

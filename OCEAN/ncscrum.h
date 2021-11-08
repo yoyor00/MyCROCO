@@ -700,10 +700,6 @@
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
 # endif
-# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
-      integer indxWSPD
-      parameter (indxWSPD=indxSUSTR+200)
-# endif
 #endif /* SOLVE3D */
 
       integer indxWstr
@@ -2030,6 +2026,9 @@
 #elif defined MUSTANG
      &               ,   sedname_subst,   sedname_must
 #endif
+#if defined SUBSTANCE && !defined MUSTANG
+     &               ,    subsname
+#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 500)
@@ -2120,6 +2119,9 @@
      &                                ,   sedname
 #elif defined MUSTANG
      &               ,   sedname_subst,   sedname_must
+#endif
+#if defined SUBSTANCE && !defined MUSTANG
+     &               ,    subsname
 #endif
 #ifdef BIOLOGY
      &                                ,   bioname

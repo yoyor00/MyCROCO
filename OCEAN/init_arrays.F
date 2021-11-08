@@ -854,10 +854,8 @@ C$    integer omp_get_thread_num
           radlw (i,j)=init
           radsw (i,j)=init
           wspd(i,j)=init
-#  ifdef BULK_SM_UPDATE
           uwnd(i,j)=init
           vwnd(i,j)=init
-#  endif
 # ifdef DIURNAL_INPUT_SRFLX
           radswbio (i,j)=init
 # endif
@@ -872,9 +870,6 @@ C$    integer omp_get_thread_num
           prateg (i,j,2)=init
           radlwg (i,j,2)=init
           radswg (i,j,2)=init
-          wspdg(i,j,1)=init
-          wspdg(i,j,2)=init
-# ifdef BULK_SM_UPDATE
           uwndg(i,j,1)=init
           vwndg(i,j,1)=init
           uwndg(i,j,2)=init
@@ -885,7 +880,6 @@ C$    integer omp_get_thread_num
           radswg_down(i,j,1)=init
           radswg_down(i,j,2)=init
 #  endif
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
           radswbiog (i,j,1)=init
           radswbiog (i,j,2)=init
@@ -901,14 +895,11 @@ C$    integer omp_get_thread_num
           shflx_sen_avg(i,j)=init
 #  endif
 # endif /* BULK_FLUX */
-# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
+# if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
           wspd(i,j)=init
-          wspdg(i,j,1)=init
-          wspdg(i,j,2)=init
 # endif
-# if defined SMFLUX_CFB && defined CFB_STRESS2 
-          wstr_u(i,j)=init
-          wstr_v(i,j)=init
+# ifdef CFB_WIND_TRA
+          wspd_cfb(i,j)=init
 # endif
 # if defined SST_SKIN && defined TEMPERATURE
           sst_skin=init

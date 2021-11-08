@@ -12,7 +12,7 @@ set -ue
 ##
 #
 
-if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
   rst="false"
 else
   rst="true"
@@ -34,7 +34,7 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
 for dom in $wrfcpldom ; do
-    if [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
+    if [[ ${RESTART_fLAG} == "FALSE" ]]; then
         file="wrfinput_${dom}"
     else
         file="wrfrst_${dom}*"
@@ -64,11 +64,9 @@ for dom in $wrfcpldom ; do
     chmod 755 namelist.input
 done
 
-#numextmod=""
-#for dom in `seq 1 $NB_dom`; do
-#    numextmod="$numextmod 1,"
-#done
-#sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
+
+numextmod=$( echo "$wrfcpldom" | wc -w )
+sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
 
 
 if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then

@@ -4,16 +4,22 @@
 !
 !----------------------------------------------------------
 ! Sixth order advection scheme [PREDICTOR]
+!  ... except for WENO5
 !----------------------------------------------------------
 !
-#  define FLUX5 flux6
-#  define FLUX3 flux4
-#  define FLUX2 flux2
-#  undef  UP5_MASKING
-!
-            cdif=0.
+#  ifdef TS_HADV_WENO5
+#   define FLUX5 flux5_weno
+#   define FLUX3 flux3_weno
+#   define FLUX2 flux1
+#   define UP5_MASKING
+#  else
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux2
+#   undef  UP5_MASKING
+#  endif
+          cdif=1.
 #  include "t3dadv_order5.h"
-!
 #  undef FLUX5
 #  undef FLUX3
 #  undef FLUX2
@@ -39,10 +45,8 @@
 #   define FLUX2 flux1
 #   define UP5_MASKING
 #  endif
-!
-            cdif=1. 
+          cdif=1. 
 #  include "t3dadv_order5.h"
-!
 #  undef FLUX5
 #  undef FLUX3
 #  undef FLUX2
