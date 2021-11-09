@@ -51,26 +51,35 @@ LIST_OPTIONS=$(cat << EOF
                         # sediment    : inputs for sediment
                         # mustang     : mustang model
                        	#   
-                        # -- External codes and toolbox => oce-prod is needed
+                        # -- External codes and toolbox => oce-prod
 			# xios        : xios server
                         # cpl         : for coupling with OASIS                                    
                         # atm wav toy : other models for coupling
 			# 			
-			# -- All options : => consider oce-prod on						
+			# -- All options : => oce-prod 						
                         # all              
 EOF
 )
 
-models=( oce test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
+models_incroco=( oce-dev test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
+models_external=( xios cpl atm wav toy )
 # example for couple model
 # models=( oce cpl wav atm toy )
 
 # END USER MODIFICATIONS
 #==========================================================================================
 
-allmodels=( oce test_cases agrif inter forc pisces sediment mustang oanalysis xios prepro cpl wav atm toy )
+# some check
+if [[ ${models[@]} =~ "oce-dev" ]] ; then
+    echo "oce-dev is defined. all-in architecture and no external codes considered"
+    models_external=( )
+elif [[ ${models[@]} =~ "oce-prod" ]] ; then
+    echo "oce-prod is defined. architecture for production and/or coupled run"
+    echo "External codes may be considered"
+fi
 
-#some check
+allmodels_incroco=( oce-prod test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
+allmodels_external=( xios cpl wav atm toy )
 
 
 x_f=0
