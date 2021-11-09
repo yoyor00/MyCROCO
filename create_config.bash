@@ -4,8 +4,8 @@
 # Update : Apr. 2020
 # G. Cambon : Sept. 2016
 #
-set -x
-
+#set -x
+#set -e
 #==========================================================================================
 # BEGIN USER MODIFICATIONS
 
@@ -35,51 +35,66 @@ MY_CONFIG_WORK=${CROCO_DIR}
 # Options of your configuration
 # Known options: 
 LIST_OPTIONS=$(cat << EOF	
-         		# -- CROCO built-in codes and toolboxes --
-                        # oce-prod    : croco : architecture for production and/or coupled run
-                                        => creation of a CROCO_IN dir.
-			or 
-                        # oce-dev     : croco :  all-in architecture, for pure croco and/or dev.                                                
-                        # ===
-                        # prepro      : for getting scripts for CROCO preprocessing
+         		#%%%% CROCO built-in codes and toolboxes --
+			#			
+                        # -- IMPORTANT : type of CONFIGS architecture 
+			#
+			# oce-dev     : croco :  all-in architecture, for forced croco and/or dev.  
+                        #                => "classic" architecture
+      			# OR 
+			#					
+			# oce-prod    : croco : architecture for production and/or coupled run
+                        #                 => creation of a CROCO_IN dir.                      
+                        #
+			# --- CROCO built-in scripts and toolboxes
+			# prepro      : for getting scripts for CROCO preprocessing
                         # inter       : for running interannual runs
                         # forc        : for using forecast scripts
-                        # test_cases  : for running test cases 
-                        # ==
-                        # pisces      : pisces inputs
+                        # test_cases  : for running test cases
+ 			# xios        : xios server xml file
+			#			  
+                        # --- CROCO built-in codes 
+			# pisces      : pisces inputs
                         # agrif       : inputs for nests
                         # sediment    : inputs for sediment
                         # mustang     : mustang model
-                       	# xios        : xios server
-                        # -- External codes and toolbox => oce-prod
+                       	# xios        : xios server xml file
+			#			
+                        #%%%%% External codes and toolbox => oce-prod needed
                         # cpl         : for coupling with OASIS                                    
-                        # atm wav toy : other models for coupling
-			# 			
-			# -- All options : => oce-prod 						
-                        # all              
+                        # atm wav toy : other models for coupling (wrf, ww3, oasis, toy)
+			#
+			#			 			
+			#%%%% All options : 			
+                        # all-dev OR all-prod for CROCO built-in codes 
+			#			
+			# all                 for external codes (wrf, ww3, oasis, toy)
+                                                                   => oce-prod needed
 EOF
-)
+	    )
 
 models_incroco=( oce-dev test_cases agrif xios inter forc pisces sediment mustang oanalysis prepro )
-models_external=( cpl atm wav toy )
-# example for couple model
-# models=( oce cpl wav atm toy )
+
+#models_incroco=( oce-prod test_cases agrif xios inter forc pisces sediment mustang oanalysis prepro )
+#models_external=( cpl atm wav toy )
+
+# example for coupled model
+# models_incroco=( oce-prod cpl wav atm toy )
+# models_external=( cpl atm wav toy )
+
+# example for oce-dev all
+# models_incroco=( all-dev )
+
+# example for oce-prod all + all other external
+# models_incroco=( all-prod )
+# models_external=( all )
 
 # END USER MODIFICATIONS
 #==========================================================================================
 
-# some check
-if [[ ${models_incroco[@]} =~ "oce-dev" ]] ; then
-    echo "oce-dev is defined. all-in architecture and no external codes considered"
-    models_external=( )
-elif [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
-    echo "oce-prod is defined. architecture for production and/or coupled run"
-    echo "External codes may be considered"
-fi
-
-allmodels_incroco=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
+allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
+allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
 allmodels_external=( cpl wav atm toy )
-
 
 x_f=0
 
@@ -126,11 +141,22 @@ MY_CONFIG_WORK=${x_d-$MY_CONFIG_WORK}/${MY_CONFIG_NAME}
 models_incroco=( ${x_o[@]-${models_incroco[@]}} )
 models_external=( ${x_o[@]-${models_external[@]}} )
 
-if [ "$models_incroco" == "all" ]; then
-    models_incroco=${allmodels_incroco[@]}
+if [ "$models_incroco" == "all-dev" ]; then
+    models_incroco=${allmodels_incroco_dev[@]}
+elif [ "$models_incroco" == "all-prod" ]; then
+    models_incroco=${allmodels_incroco_prod[@]}
 fi
 if [ "$models_external" == "all" ]; then
     models_external=${allmodels_external[@]}
+fi
+
+# some check
+if [[ ${models_incroco[@]} =~ "oce-dev" ]] ; then
+    echo "oce-dev is defined. all-in architecture and no external codes considered"
+    models_external=( )
+elif [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
+    echo "oce-prod is defined. architecture for production and/or coupled run"
+    echo "External codes may be considered"
 fi
 
 echo ""
@@ -232,24 +258,23 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
 	# Create directories
 	mkdir -p $MY_CONFIG_HOME/CROCO_IN
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
-	
-	$MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
-	$MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
+	MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
+	MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
 	
     elif [[ ${models_incroco[@]} =~ "oce-dev" ]] ; then
 	# Create directories
+	mkdir -p $MY_CONFIG_HOME
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
-	
-	$MY_CROCO_DIR=$MY_CONFIG_HOME
-	$MY_XIOS_DIR=$MY_CONFIG_HOME
+	MY_CROCO_DIR=$MY_CONFIG_HOME/
+	MY_XIOS_DIR=$MY_CONFIG_HOME/
     fi
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
     
      PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
-     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIRjobcomp
-     chmod +x $MY_CROCO_DIRjobcomp
+     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
+     chmod +x $MY_CROCO_DIR/jobcomp
 
     cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
@@ -280,8 +305,8 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
     fi
     # MUSTANG
     if [[ ${models_incroco[@]} =~ "mustang" ]] ; then
-      mkdir -p $MY_CROCO_DIRFIC_NAMELIST
-      cp -f ${CROCO_DIR}/MUSTANG/NAM_CASES/*txt $MY_CROCO_DIRFIC_NAMELIST/.
+      mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
+      cp -f ${CROCO_DIR}/MUSTANG/NAM_CASES/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
     fi
     # OANALYSIS
     if [[ ${models_incroco[@]} =~ "oanalysis" ]] ; then
@@ -289,7 +314,7 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
     fi
    # XIOS
     if [[ ${models_incroco[@]} =~ "xios" ]] ; then
-     mkdir -p $MY_CONFIG_HOME/XIOS_IN
+     mkdir -p $MY_XIOS_DIR
      cp -Rf ${CROCO_DIR}/XIOS/*.xml* $MY_XIOS_DIR.
      cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_XIOS_DIR.
      cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_XIOS_DIR.
