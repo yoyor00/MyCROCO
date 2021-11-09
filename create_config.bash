@@ -4,7 +4,7 @@
 # Update : Apr. 2020
 # G. Cambon : Sept. 2016
 #
-#set -x
+set -x
 
 #==========================================================================================
 # BEGIN USER MODIFICATIONS
@@ -128,17 +128,20 @@ models_external=( ${x_o[@]-${models_external[@]}} )
 
 if [ "$models_incroco" == "all" ]; then
     models_incroco=${allmodels_incroco[@]}
+fi
+if [ "$models_external" == "all" ]; then
     models_external=${allmodels_external[@]}
 fi
 
 echo ""
 echo "Your choices :"
-echo " - CROCO_DIR       : ${CROCO_DIR}"
-echo " - TOOLS_DIR       : ${TOOLS_DIR}"
-echo " - CONFIG_HOME_DIR : ${MY_CONFIG_HOME%$MY_CONFIG_NAME}"
-echo " - CONFIG_WORK_DIR : ${MY_CONFIG_WORK%$MY_CONFIG_NAME}"
-echo " - CONFIG_NAME     : ${MY_CONFIG_NAME}"
-echo " - OPTIONS         : ${models[@]}"
+echo " - CROCO_DIR        : ${CROCO_DIR}"
+echo " - TOOLS_DIR        : ${TOOLS_DIR}"
+echo " - CONFIG_HOME_DIR  : ${MY_CONFIG_HOME%$MY_CONFIG_NAME}"
+echo " - CONFIG_WORK_DIR  : ${MY_CONFIG_WORK%$MY_CONFIG_NAME}"
+echo " - CONFIG_NAME      : ${MY_CONFIG_NAME}"
+echo " - OPTIONS_INCROCO  : ${models_incroco[@]}"
+echo " - OPTIONS_EXTERNAL : ${models_external[@]}"
 
 if [ $x_f -eq 0 ]; then
 echo -n " Do you want to proceed ? [Y/n] "
@@ -221,7 +224,7 @@ fi
 
 cp create_config.bash $MY_CONFIG_HOME/create_config.bash.bck
 
-if [[ ${models[@]} =~ "oce" ]] ; then
+if [[ ${models_incroco[@]} =~ "oce-dev" ]] -o [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
     echo 'Copy CROCO useful scripts and input files'
     echo '-----------------------------------------'
     # CROCO general
@@ -243,7 +246,7 @@ if [[ ${models[@]} =~ "oce" ]] ; then
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
-
+    
      PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
      sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIRjobcomp
      chmod +x $MY_CROCO_DIRjobcomp
