@@ -224,7 +224,7 @@ fi
 
 cp create_config.bash $MY_CONFIG_HOME/create_config.bash.bck
 
-if [[ ${models_incroco[@]} =~ "oce-dev" ]] -o [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
+if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
     echo 'Copy CROCO useful scripts and input files'
     echo '-----------------------------------------'
     # CROCO general
