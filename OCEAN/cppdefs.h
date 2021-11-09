@@ -181,18 +181,23 @@
 # endif
                       /* Surface Forcing */
 /*
+!
 ! Bulk algorithms (options)
-! - ECUMEv0 (possibility to add GUSTINESS effects)
-! - ECUMEv6 (possibility to add GUSTINESS effects)
-! - COARE3p0 (possibility to compute Charnock coefficient via WASP)
-! Warning: WASP can not be combined with ECUME algorithms
+! by default COARE3p0 parametrization is used with GUSTINESS effects
+!
+! To change bulk parametrization you have to define one the following cpp keys (not additional) :
+! - define BULK_ECUMEV0 : used of ECUME_v0 parametrization
+! - define BULK_ECUMEV6 : used of ECUME_v6 parametrization
+! - define BULK_WASP    : used of WASP parametrization
+! Warning : it is possible to add GUSTINESS effects for all parametrizations by defining BULK_GUSTINESS cpp key
+!
 */
 # undef BULK_FLUX
 # ifdef BULK_FLUX
-#  undef  ECUMEv0
-#  undef  ECUMEv6
-#  undef  WASP
-#  define GUSTINESS
+#  undef  BULK_ECUMEV0
+#  undef  BULK_ECUMEV6
+#  undef  BULK_WASP
+#  define BULK_GUSTINESS
 #  define BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW

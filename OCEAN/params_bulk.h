@@ -31,7 +31,7 @@
 #ifndef READ_PATM
       PARAMETER (psurf=100000.0)
 #endif
-#ifdef WASP
+#ifdef BULK_WASP
       REAL            ::  Awasp(0:3,4)
       REAL            ::  Bwasp(0:3,4)
       PARAMETER( Awasp = reshape((/  0.7    , 0.      , 0.      , 0.        ,
@@ -49,7 +49,7 @@
       REAL, PARAMETER :: Charn1   = 0.1
       REAL, PARAMETER :: Charn2   = 0.002
 #endif
-#ifdef ECUMEv0
+#ifdef BULK_ECUMEV0
       real utu1,utu2,utt,utq1,utq2
       parameter(utu1=16.8,utu2=50.0)
       parameter(utt =33.0)
@@ -77,7 +77,7 @@
       real Cen0
       parameter (Cen0  = 1.7232E-03)
 #endif
-#ifdef ECUMEv6
+#ifdef BULK_ECUMEV6
       real coefu0,coefu1,coefu2,coefu3,coefu4,coefu5
       parameter (coefu0= 1.00E-03);      parameter (coefu3= 2.32E-04)
       parameter (coefu1= 3.66E-02);      parameter (coefu4=-7.02E-06)

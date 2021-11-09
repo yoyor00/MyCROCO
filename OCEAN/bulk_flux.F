@@ -62,13 +62,13 @@
 # ifdef CFB_WIND_TRA
       REAL           :: wspd0_cfb
 # endif
-# ifdef ECUMEv0
+# ifdef BULK_ECUMEV0
       REAL            :: Cdn(2), Chn, Cen
 # endif
-# ifdef ECUMEv6
+# ifdef BULK_ECUMEV6
       REAL            :: partn, parqn
 # endif
-# ifdef WASP
+# ifdef BULK_WASP
       INTEGER         :: idx
       REAL            :: chi,aa,bb
 # endif
@@ -77,7 +77,7 @@
       REAL, PARAMETER ::  blk_ZT =  10.0
       REAL, PARAMETER ::  blk_ZToZW = blk_ZT/blk_ZW
       REAL            ::  logus10,logts10
-# if defined ECUMEv0 || defined ECUMEv6
+# if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
       PARAMETER ( logus10   = LOG(blk_ZW/10.0) )
       PARAMETER ( logts10   = LOG(blk_ZT/10.0) )
       REAL           :: bulk_psiu_ecume, bulk_psit_ecume
@@ -177,7 +177,7 @@
 !++  Specific humidity at saturation
           Qsea   = qsat(TseaK,psurf,0.98)
 !++  Air-sea gradients delW, delT, delQ through the interface
-#ifdef GUSTINESS
+#ifdef BULK_GUSTINESS
           delW(1) = SQRT(wspd0*wspd0+0.25)
 #  ifdef CFB_WIND_TRA
           delW(2) = SQRT(wspd0_cfb*wspd0_cfb+0.25)
@@ -192,7 +192,7 @@
           cff  = CtoK*(iexna-iexns)
           delT = TairC*iexna - TseaC*iexns + cff
 
-# if defined ECUMEv0 || defined ECUMEv6
+# if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
 !
 !======================================================================
 !   @@@@@@@@@@  @@@@@@@@@@  @@      @@  @@@    @@@  @@@@@@@@@@
@@ -215,7 +215,7 @@
 !----------------------
           DO Iter=1,IterFl
 !----------------------
-#ifdef ECUMEv0
+#ifdef BULK_ECUMEV0
             DO m=1,mb
               cff    = deltau10n(m)*deltau10n(m)
 !++  Neutral coefficient for wind speed cdn (ECUME_v0 formulation)
@@ -296,7 +296,7 @@
 !++  Modified to include convective form following Fairall (unpublished)
             psi_t = bulk_psit_ecume ( ZoLt )
 !
-#ifdef GUSTINESS
+#ifdef BULK_GUSTINESS
 !++ Add gustiness contribution to wind speed in unstable conditions
             Tvstar   = Tstar*(1.0+cpvir*Q)+cpvir*TairK*Qstar
             Bf       = MAX(0.0,-g/TairK*Wstar(1)*Tvstar)
@@ -381,7 +381,7 @@
           Tstar     = delT*cff
           Qstar     = delQ*cff
 !++  Compute Charnock coefficient
-#  ifdef WASP
+#  ifdef BULK_WASP
           IF ( wspd0 >= 7.0 .AND. wspd0 < 23.0 ) then
             idx = 2
           ELSEIF ( wspd0 >= 23.0 .AND. wspd0 < 25.0 ) then
@@ -424,7 +424,7 @@
               iZoW    = g*Wstar(m) / ( charn*Wstar(m)*Wstar(m)*Wstar(m)
      &                                 +0.11*g*VisAir )
 !++  Inverse of thermal roughness length
-#  ifdef WASP
+#  ifdef BULK_WASP
               iZoT    = EXP(vonKar*vonKar/(Ch10*LOG(blk_ZW*iZoW)) )/
      &                      blk_ZW
 #  else
@@ -450,8 +450,8 @@
   
             Tstar   = delT*vonKar/(logts10-psi_t)
             Qstar   = delQ*vonKar/(logts10-psi_t)
-!++  Add GUSTINESS
-# ifdef GUSTINESS
+!++  Add BULK_GUSTINESS
+# ifdef BULK_GUSTINESS
               Bf=-g/TairK*Wstar(1)*(Tstar+cpvir*TairK*Qstar)
               if (Bf.gt.0.0) then
                 cff=blk_beta*(Bf*blk_Zabl)**r3
@@ -688,7 +688,7 @@
       return
       END FUNCTION qsat
 
-# if defined ECUMEv0 || defined ECUMEv6
+# if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
 !=======================================================================
 !    Ecume stability function for velocity
 !=======================================================================
