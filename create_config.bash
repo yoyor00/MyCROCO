@@ -62,14 +62,15 @@ LIST_OPTIONS=$(cat << EOF
 			#			
                         #%%%%% External codes and toolbox => oce-prod needed
                         # cpl         : for coupling with OASIS                                    
-                        # atm wav toy : other models for coupling (wrf, ww3, oasis, toy)
+                        # atm wav toy : other models for coupling (atm, wav, cpl, toy)
 			#
 			#			 			
 			#%%%% All options : 			
                         # all-dev OR all-prod for CROCO built-in codes 
 			#			
-			# all                 for external codes (wrf, ww3, oasis, toy)
-                                                                   => oce-prod needed
+			# all                 for external codes (atm, wav, cpl, toy)
+                        #                                           => oce-prod needed
+			#%%%%    
 EOF
 	    )
 
