@@ -34,20 +34,30 @@ MY_CONFIG_WORK=${CROCO_DIR}
 
 # Options of your configuration
 # Known options: 
-LIST_OPTIONS=$(cat << EOF
-                        # all         : everything  
-                        # oce         : croco
+LIST_OPTIONS=$(cat << EOF	
+         		# -- CROCO built-in codes and toolboxes --
+                        # oce-prod    : croco : architecture for production and/or coupled run
+                                        => creation of a CROCO_IN dir.
+			or 
+                        # oce-dev     : croco :  all-in architecture, for pure croco and/or dev.                                                
+                        # ===
                         # prepro      : for getting scripts for CROCO preprocessing
                         # inter       : for running interannual runs
                         # forc        : for using forecast scripts
                         # test_cases  : for running test cases 
+                        # ==
                         # pisces      : pisces inputs
                         # agrif       : inputs for nests
                         # sediment    : inputs for sediment
                         # mustang     : mustang model
-                        # xios        : xios server
-                        # cpl         : for coupling with OASIS
+                       	#   
+                        # -- External codes and toolbox => oce-prod is needed
+			# xios        : xios server
+                        # cpl         : for coupling with OASIS                                    
                         # atm wav toy : other models for coupling
+			# 			
+			# -- All options : => consider oce-prod on						
+                        # all              
 EOF
 )
 
@@ -59,6 +69,9 @@ models=( oce test_cases agrif inter forc pisces sediment mustang oanalysis prepr
 #==========================================================================================
 
 allmodels=( oce test_cases agrif inter forc pisces sediment mustang oanalysis xios prepro cpl wav atm toy )
+
+#some check
+
 
 x_f=0
 
@@ -201,67 +214,79 @@ cp create_config.bash $MY_CONFIG_HOME/create_config.bash.bck
 if [[ ${models[@]} =~ "oce" ]] ; then
     echo 'Copy CROCO useful scripts and input files'
     echo '-----------------------------------------'
-    # Create directories
-    mkdir -p $MY_CONFIG_HOME/CROCO_IN
-    mkdir -p $MY_CONFIG_WORK/CROCO_FILES
     # CROCO general
-    cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CONFIG_HOME/CROCO_IN/.
-    cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CONFIG_HOME/CROCO_IN/.
-    cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CONFIG_HOME/CROCO_IN/.
+    if [[ ${models[@]} =~ "oce-prod" ]] ; then
+	# Create directories
+	mkdir -p $MY_CONFIG_HOME/CROCO_IN
+	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
+	
+	$MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
+	$MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
+	
+    elif [[ ${models[@]} =~ "oce-dev" ]] ; then
+	# Create directories
+	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
+	
+	$MY_CROCO_DIR=$MY_CONFIG_HOME
+	$MY_XIOS_DIR=$MY_CONFIG_HOME
+    fi
+    cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
 
      PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
-     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CONFIG_HOME/CROCO_IN/jobcomp
-     chmod +x $MY_CONFIG_HOME/CROCO_IN/jobcomp
+     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIRjobcomp
+     chmod +x $MY_CROCO_DIRjobcomp
 
-    cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CONFIG_HOME/CROCO_IN/.
-    cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CONFIG_HOME/CROCO_IN/.
+    cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
     if [[ ${models[@]} =~ "test_cases" ]] ; then
-      cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CONFIG_HOME/CROCO_IN/.
+      cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
     if [[ ${models[@]} =~ "agrif" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CONFIG_HOME/CROCO_IN/.
+      cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
     fi
     # INTER
     if [[ ${models[@]} =~ "inter" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/croco_inter.in $MY_CONFIG_HOME/CROCO_IN/.
+      cp -f ${CROCO_DIR}/OCEAN/croco_inter.in $MY_CROCO_DIR.
     fi
     # FORECAST
     if [[ ${models[@]} =~ "forc" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CONFIG_HOME/CROCO_IN/.
-      cp -f ${CROCO_DIR}/OCEAN/croco_hindcast.in $MY_CONFIG_HOME/CROCO_IN/.
+      cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
+      cp -f ${CROCO_DIR}/OCEAN/croco_hindcast.in $MY_CROCO_DIR.
     fi
     # PISCES
     if [[ ${models[@]} =~ "pisces" ]] ; then
-      cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CONFIG_HOME/CROCO_IN/.
+      cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
     fi
     # SEDIMENT
     if [[ ${models[@]} =~ "sediment" ]] ; then
-      cp -f ${CROCO_DIR}/OCEAN/sediment.in $MY_CONFIG_HOME/CROCO_IN/.
+      cp -f ${CROCO_DIR}/OCEAN/sediment.in $MY_CROCO_DIR.
     fi
     # MUSTANG
     if [[ ${models[@]} =~ "mustang" ]] ; then
-      mkdir -p $MY_CONFIG_HOME/CROCO_IN/FIC_NAMELIST
-      cp -f ${CROCO_DIR}/MUSTANG/NAM_CASES/*txt $MY_CONFIG_HOME/CROCO_IN/FIC_NAMELIST/.
+      mkdir -p $MY_CROCO_DIRFIC_NAMELIST
+      cp -f ${CROCO_DIR}/MUSTANG/NAM_CASES/*txt $MY_CROCO_DIRFIC_NAMELIST/.
     fi
     # OANALYSIS
     if [[ ${models[@]} =~ "oanalysis" ]] ; then
-       cp -Rf ${CROCO_DIR}/SCRIPTS/NAMELIST_OANALYSIS $MY_CONFIG_HOME/CROCO_IN/.
+       cp -Rf ${CROCO_DIR}/SCRIPTS/NAMELIST_OANALYSIS $MY_CROCO_DIR.
     fi
    # XIOS
     if [[ ${models[@]} =~ "xios" ]] ; then
      mkdir -p $MY_CONFIG_HOME/XIOS_IN
-     cp -Rf ${CROCO_DIR}/XIOS/*.xml* $MY_CONFIG_HOME/XIOS_IN/.
-     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_CONFIG_HOME/XIOS_IN/.
-     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CONFIG_HOME/XIOS_IN/.
+     cp -Rf ${CROCO_DIR}/XIOS/*.xml* $MY_XIOS_DIR.
+     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_XIOS_DIR.
+     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_XIOS_DIR.
     fi
     # PREPROCESSING
     if [[ ${models[@]} =~ "prepro" ]] ; then
-       cp -Rf $TOOLS_DIR/start.m $MY_CONFIG_HOME/CROCO_IN/.
-       cp -Rf $TOOLS_DIR/oct_start.m $MY_CONFIG_HOME/CROCO_IN/.
-       cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CONFIG_HOME/CROCO_IN/.
-       cp -Rf $TOOLS_DIR/Town/town.dat $MY_CONFIG_HOME/CROCO_IN/.
+       cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
+       cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
+       cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
+       cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${models[@]} =~ "inter" ]] ; then
