@@ -341,10 +341,10 @@ if [[ ${models_external[@]} =~ "cpl" ]] ; then
     echo '-----------------------------------------'
     mkdir -p $MY_CONFIG_HOME/OASIS_IN
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/OASIS_IN/* $MY_CONFIG_HOME/OASIS_IN/.
-    if [[ ${models[@]} =~ "oce" ]] ; then
+    if [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
       cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CONFIG_HOME/CROCO_IN/.
     fi
-    if [[ ${models[@]} =~ "prepro" ]] ; then
+    if [[ ${models_incroco[@]} =~ "prepro" ]] ; then
       mkdir -p $MY_CONFIG_HOME/PREPRO
       cp -r $TOOLS_DIR/Coupling_tools/* $MY_CONFIG_HOME/PREPRO/.
     fi
