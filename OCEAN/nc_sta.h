@@ -47,7 +47,6 @@
 # ifdef TEMPERATURE
      &      , staTemp
 # endif
-     &      , staDepth,   staDen,   staTemp
 # ifdef SALINITY
      &      , staSal
 # endif
