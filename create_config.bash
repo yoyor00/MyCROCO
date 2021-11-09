@@ -388,13 +388,13 @@ if [[ ${models_external[@]} =~ "cpl" ]] || [[ ${models_external[@]} =~ "wav" ]] 
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/
     [ -f myjob.tmp ] && rm -Rf myjob.tmp
-    [[ ${models_external[@]} =~ "oce" ]] && printf "export NP_OCEX=2 \nexport NP_OCEY=2\n" >> myjob.tmp
+    [[ ${models_incroco[@]} =~ "oce-prod" ]] && printf "export NP_OCEX=2 \nexport NP_OCEY=2\n" >> myjob.tmp
     [[ ${models_external[@]} =~ "wav" ]] && printf "export NP_WAV=14 \n" >> myjob.tmp
     [[ ${models_external[@]} =~ "atm" ]] && printf "export NP_ATM=12 \n" >> myjob.tmp
     [[ ${models_external[@]} =~ "toy" ]] && printf "export NP_TOY=2 \n" >> myjob.tmp
-    [[ ${models_external[@]} =~ "xios" ]] && printf "export NP_XIOS_ATM=1\nexport NP_XIOS_OCE=1\n" >> myjob.tmp
+    [[ ${models_incroco[@]} =~ "xios" ]] && printf "export NP_XIOS_ATM=1\nexport NP_XIOS_OCE=1\n" >> myjob.tmp
 
-    if [[ ${model_externals[@]} =~ "atm" ]] ; then
+    if [[ ${models_external[@]} =~ "atm" ]] ; then
         printf "\n# additional MPI Settings for ATM (WRF)\n" >> myjob.tmp
         printf "export atm_nprocX=-1      # -1 for automatic settings\n" >> myjob.tmp
         printf "export atm_nprocY=-1      # -1 for automatic settings\n" >> myjob.tmp
@@ -413,17 +413,19 @@ if [[ ${models_external[@]} =~ "cpl" ]] || [[ ${models_external[@]} =~ "wav" ]] 
     cat ./path_base.sh >> tmppath
 
     # add sections for each model
-    for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [[ ${models_external[$k]} == "cpl" ]] && printf "export CPL=\"\"\n" >> tmppath
-        [[ ${models_external[$k]} == "oce" ]] && printf "export OCE=\"${CROCO_DIR}/OCEAN\"\n" >> tmppath
-        [[ ${models_external[$k]} == "atm" ]] && printf "export ATM=\"\"\n" >> tmppath
-        [[ ${models_external[$k]} == "wav" ]] && printf "export WAV=\"\"\n" >> tmppath
-        [[ ${models_external[$k]} == "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
-        [[ ${models_external[$k]} == "xios" ]] && printf "export XIOS=\"\"\n" >> tmppath
-    done
-    for k in ${models[@]} ; do
-        [ -f path_${k}.sh ] && cat ./path_${k}.sh >> tmppath
-    done
+    [[ ${models_external[@]} =~ "cpl" ]] && printf "export CPL=\"\"\n" >> tmppath
+    [[ ${models_incroco[@]} =~ "oce-prod" ]] && printf "export OCE=\"${CROCO_DIR}/OCEAN\"\n" >> tmppath
+    [[ ${models_external[@]} =~ "atm" ]] && printf "export ATM=\"\"\n" >> tmppath
+    [[ ${models_external[@]} =~ "wav" ]] && printf "export WAV=\"\"\n" >> tmppath
+    [[ ${models_external[@]} =~ "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
+    [[ ${models_incroco[@]} =~ "xios" ]] && printf "export XIOS=\"\"\n" >> tmppath
+
+    [[ ${models_external[@]} =~ "cpl" ]] && cat ./path_cpl.sh >> tmppath
+    [[ ${models_incroco[@]} =~ "oce-prod" ]] && cat ./path_oce.sh >> tmppath
+    [[ ${models_external[@]} =~ "atm" ]] && cat ./path_atm.sh >> tmppath
+    [[ ${models_external[@]} =~ "wav" ]] && cat ./path_wav.sh >> tmppath
+    [[ ${models_external[@]} =~ "toy" ]] && cat ./path_toy.sh >> tmppath
+    [[ ${models_incroco[@]} =~ "xios" ]] && cat ./path_xios.sh>> tmppath
 
     # replace environment variables in path file
     sed -e "s|export MACHINE=.*|export MACHINE=\"${MACHINE}\"|g" \
@@ -437,10 +439,10 @@ if [[ ${models_external[@]} =~ "cpl" ]] || [[ ${models_external[@]} =~ "wav" ]] 
     # Create the env file
     [ -d ${MY_CONFIG_HOME}/ROUTINES/MACHINE/${MACHINE} ] && cd ${MY_CONFIG_HOME}/ROUTINES/MACHINE/${MACHINE} || { echo "No environement for ${MACHINE} in ${MY_CONFIG_HOME}/SCRIPT_CPL/ROUTINES/MACHINE/${MACHINE}"; exit ;}
     cp myenv.${MACHINE} tmpenv
-    for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [[ ${models_external[$k]} == "atm" ]] && cat ./myenv.${MACHINE}.wrf >> tmpenv 
-        [[ ${models_external[$k]} == "wav" ]] && cat ./myenv.${MACHINE}.ww3 >> tmpenv
-    done
+
+    [[ ${models_external[@]} =~ "atm" ]] && cat ./myenv.${MACHINE}.wrf >> tmpenv 
+    [[ ${models_external[@]} =~ "wav" ]] && cat ./myenv.${MACHINE}.ww3 >> tmpenv
+
     mv tmpenv ${MY_CONFIG_HOME}/
     cd ${MY_CONFIG_HOME}
 
@@ -456,13 +458,13 @@ if [[ ${models_external[@]} =~ "cpl" ]] || [[ ${models_external[@]} =~ "wav" ]] 
     if [[ ${models_external[@]} =~ "cpl" ]]; then
         if [[ ${models_incroco[@]} =~ "oce-prod" ]] && [[ ${models_external[@]} =~ "wav" ]] && [[ ${models_external[@]} =~ "atm" ]] ; then
             printf "export RUNtype=owa\n#\n" >> mynamelist.sh
-        elif [[ ${models_incroco[@]} =~ "oce-prod" ]] && [[ ${models_external[[@]} =~ "wav" ]] ; then
+        elif [[ ${models_incroco[@]} =~ "oce-prod" ]] && [[ ${models_external[@]} =~ "wav" ]] ; then
             printf "export RUNtype=ow\n#\n" >> mynamelist.sh
-        elif [[ ${models_incroco[@]} =~ "oce-prod" ]] && [[ ${models_external[[@]} =~ "atm" ]]; then
+        elif [[ ${models_incroco[@]} =~ "oce-prod" ]] && [[ ${models_external[@]} =~ "atm" ]]; then
             printf "export RUNtype=oa\n#\n" >> mynamelist.sh
-        elif [[ ${models_external[[@]} =~ "wav" ]] && [[ ${models_external[[@]} =~ "atm" ]]; then
+        elif [[ ${models_external[@]} =~ "wav" ]] && [[ ${models_external[@]} =~ "atm" ]]; then
             printf "export RUNtype=aw\n#\n" >> mynamelist.sh
-        elif [[ ${models_external[[@]} =~ "toy" ]]; then
+        elif [[ ${models_external[@]} =~ "toy" ]]; then
             printf "export RUNtype=Put the type here (ow/oa/aw/owa)\n#\n" >> mynamelist.sh
         else 
             printf "export RUNtype=frc\n#\n" >> mynamelist.sh
@@ -473,11 +475,11 @@ if [[ ${models_external[@]} =~ "cpl" ]] || [[ ${models_external[@]} =~ "wav" ]] 
 
     if [[ ${models_external[@]} =~ "atm" ]]; then
         printf "export USE_ATM=1\n" >> mynamelist.sh
-        [[ ${models_external[@]} =~ "xios" ]] && printf "export USE_XIOS_ATM=0\n" >> mynamelist.sh
+        [[ ${models_incroco[@]} =~ "xios" ]] && printf "export USE_XIOS_ATM=0\n" >> mynamelist.sh
     fi
     if [[ ${models_incroco[@]} =~ "oce-prod" ]]; then
         printf "export USE_OCE=1\n" >> mynamelist.sh
-        [[ ${models_external[@]} =~ "xios" ]] && printf "export USE_XIOS_OCE=0\n" >> mynamelist.sh
+        [[ ${models_incroco[@]} =~ "xios" ]] && printf "export USE_XIOS_OCE=0\n" >> mynamelist.sh
     fi
     if [[ ${models_external[@]} =~ "wav" ]]; then
         printf "export USE_WAV=1\n" >> mynamelist.sh
@@ -488,24 +490,22 @@ if [[ ${models_external[@]} =~ "cpl" ]] || [[ ${models_external[@]} =~ "wav" ]] 
 
     cat ./namelist_rundir.sh >> mynamelist.sh
 
-    for k in `seq 0 $(( ${#models[@]} - 1))` ; do
-        [[ ${models_incroco[$k]} == "oce-prod" ]] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
-        [[ ${models_external[$k]} == "atm" ]] && printf "export ATM_EXE_DIR=\n" >> mynamelist.sh
-        [[ ${models_external[$k]} == "wav" ]] && printf "export WAV_EXE_DIR=\n" >> mynamelist.sh
-        [[ ${models_external[$k]} == "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
-        [[ ${models_external[$k]} == "xios" ]] && printf "export XIOS_EXE_DIR=\n" >> mynamelist.sh
-    done
+    [[ ${models_incroco[@]} =~ "oce-prod" ]] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
+    [[ ${models_external[@]} =~ "atm" ]] && printf "export ATM_EXE_DIR=\n" >> mynamelist.sh
+    [[ ${models_external[@]} =~ "wav" ]] && printf "export WAV_EXE_DIR=\n" >> mynamelist.sh
+    [[ ${models_external[@]} =~ "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
+    [[ ${models_incroco[@]} =~ "xios" ]] && printf "export XIOS_EXE_DIR=\n" >> mynamelist.sh
 
     printf "#-------------------------------------------------------------------------------\n" >> mynamelist.sh
     printf "# Model settings\n" >> mynamelist.sh
     printf "# ------------------------------------------------------------------------------\n" >> mynamelist.sh
 
-    for k in ${models_incroco[@]} ; do
-        [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
-    done
+
+    [[ ${models_incroco[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
     for k in ${models_external[@]} ; do
         [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
     done
+    [[ ${models_incroco[@]} =~ "xios" ]] && cat ./namelist_xios.sh >> mynamelist.sh
 
     if [[ ${models_external[@]} =~ "toy" ]] && [[ ${models_external[@]} =~ "cpl" ]] ; then
         sed -e "s/export namcouplename=.*/export namcouplename=namcouple.base.\${RUNtype}\${istoy}/g" \
