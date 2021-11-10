@@ -346,7 +346,7 @@
             if (iok_wfoc /= 0)  then
 !              Transmit to CROCO field : foc
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               foc = rmask * tab_t_tmp
+               foc = rmask * max(tab_t_tmp,0.)
             endif
          endif
 !-------------------------------------------------
