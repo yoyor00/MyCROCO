@@ -499,8 +499,12 @@
                   cff3p =  ig1+ig2*beta3p  * invk*gls
                   ! Shear and buoyancy production
                   Sprod =  cff1*Akv_old(i,j,k) * shear2(i,j,k)    
+# if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
+# else
+                  Bprod = 0.
+# endif
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1))
                   IF( ig == itke ) THEN
