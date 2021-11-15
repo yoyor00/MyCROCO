@@ -13,9 +13,6 @@ echo 'link wrf data files'
 echo "ln -sf ${ATM_EXE_DIR}/../data/* ."
 ln -sf ${ATM_EXE_DIR}/../data/* .
 
-ms=$( printf "%02d"  ${MONTH_BEGIN_EXP} )
-me=$(printf "%02d"  ${MONTH_END_EXP} )
-
 #-------------------------------------------------------------------------------
 #                                                          BDY
 #-------------------------------------------------------------------------------

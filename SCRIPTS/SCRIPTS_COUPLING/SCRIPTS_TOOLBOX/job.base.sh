@@ -98,8 +98,8 @@ cd ${EXEDIR}
 
 # make the namelists from the namelist.base files
         printf "\n ************* make namelist files from namelist base files *****************\n"
-	[ ${USE_OCE} -eq 1 ] && ${SCRIPTDIR}/oce_nam.sh
-	[ ${USE_ATM} -eq 1 ] && ${SCRIPTDIR}/atm_nam.sh
+	[ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_nam.sh ; }
+	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_nam.sh ; }
         [ ${USE_WAV} -eq 1 ] && echo "No namelist for WAV"
         [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_nam.sh ; }
 	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_nam.sh ; }
@@ -230,6 +230,7 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
         sed -e "s/YEAR_BEGIN_JOB=.*/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOBp1}/" \
             -e "s/MONTH_BEGIN_JOB=.*/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOBp1}/" \
             -e "s/DAY_BEGIN_JOB=.*/DAY_BEGIN_JOB=${DAY_BEGIN_JOBp1}/" \
+            -e "s/NBJOB=.*/NBJOB=$(( ${NBJOB} - 1 ))/" \
             -e "s/RESTART_FLAG=.*/RESTART_FLAG=\"TRUE\"/" \
             -e "s/CHAINED_JOB=.*/CHAINED_JOB=\"FALSE\"/" \
                 ${SCRIPTDIR}/../myjob.sh > tata.sh

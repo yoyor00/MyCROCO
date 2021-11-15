@@ -120,10 +120,19 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 #
 
     if [ $AGRIFZ -eq 0 ]; then
-        sed -e "s/#  *define  *AGRIF/# undef AGRIF/g" cppdefs.h > tmp$$
+        sed -e "s/#  *define  *AGRIF/# undef AGRIF/g" \
+            -e "s/#  *define   *AGRIF_2WAY/# undef AGRIF_2WAY/g" \
+            cppdefs.h > tmp$$
         sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 8/g" jobcomp > tmp2$$
+        
     else
         sed -e "s/#  *undef  *AGRIF/# define AGRIF/g" cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
+        if [[ ${AGRIF_2WAY} == "TRUE" ]]; then
+            sed -e "s/#  *undef  *AGRIF_2WAY/# define AGRIF_2WAY/g" cppdefs.h > tmp$$
+        else
+            sed -e "s/#  *define  *AGRIF_2WAY/# undef AGRIF_2WAY/g" cppdefs.h > tmp$$
+	fi
         sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 1/g" jobcomp > tmp2$$
     fi
 #

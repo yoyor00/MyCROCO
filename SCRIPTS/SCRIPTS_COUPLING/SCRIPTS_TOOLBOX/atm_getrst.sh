@@ -19,14 +19,14 @@ then
 
   for dom in $wrfcpldom ; do
      if [[ ${dom} == "d01" ]]; then
-         echo 'set CPLMASK to 1 in coupled domain '$dom
-         echo "ncap2 -O -s "CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom"
+         echo "set CPLMASK to 1 in coupled domain $dom"
+         echo "ncap2 -O -s \"CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom"
          module load $ncomod
          ncap2 -O -s "CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom
          module unload $ncomod
      else
          module load $ncomod
-         echo 'set CPLMASK to 1 in coupled domain '$dom
+         echo "set CPLMASK to 1 in coupled domain $dom"
          num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
          echo "Increase size of mum_ext_model by one for ${dom} (in case some domains already exist)"
          ncpdq -O -v CPLMASK -a num_ext_model_couple_dom_stag,Time wrfinput_d01 tmp.nc 
@@ -46,8 +46,9 @@ then
 	 latmax=$( ncdump -v latmax tmp.nc  | grep "latmax =" | cut -d ' ' -f 4)
          rm -rf tmp.nc
 	 printf "Limits for domain ${dom} are:\n Lon min:$lonmin \n Lat min:$latmin \n Lon max:$lonmax \n Lat max:$latmax \n"
-         ncap2 -F -O -s "var_tmp=CPLMASK(:,0,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(:,${num_ext_mod},:,:)=var_tmp" wrfinput_d01 wrfinput_d01.tmp
-	 ncks -O -v var_tmp -x wrfinput_d01.tmp wrfinput_d01         
+         ncap2 -F -O -s "var_tmp=CPLMASK(:,1,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(:,${num_ext_mod},:,:)=var_tmp" wrfinput_d01 wrfinput_d01.tmp
+	 ncks -O -v var_tmp -x wrfinput_d01.tmp wrfinput_d01
+         rm -rf wrfinput_d01.tmp 
          module unload $ncomod
      fi
 

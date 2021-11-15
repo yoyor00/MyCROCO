@@ -13,7 +13,7 @@ export DT_ATM=100 #100   # 100 90 75 72 60 45
 # domains
 export NB_dom=1 # Number of coupled domains
 export wrfcpldom='d01'
-
+export nestfeedback="TRUE" # 1 way (FALSE) or 2 Way (TRUE) nesting
 # Boundaries interval 
 export interval_seconds=21600 # interval ( in sec ) of the latteral input
 export auxinput4_interval=360 # interval ( in min ) of bottom input

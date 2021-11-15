@@ -23,9 +23,9 @@ if [ ${USE_OCE} -eq 1 ]; then
 fi
 [ ${USE_WAV} -eq 1 ] && ${io_putfile} wav.nc ${RESTDIR_OUT}/wav_${CEXPER}_${DATE_END_JOB}.nc
 
-[[ ${USE_ATM} -eq 1 && ${USE_OCE} -eq 1 ]] && cp *atmt_to_ocnt* ${RESTDIR_OUT}/. && cp *ocnt_to_atmt* ${RESTDIR_OUT}/. 
-[[ ${USE_ATM} -eq 1 && ${USE_WAV} -eq 1 ]] && cp *atmt_to_ww3t* ${RESTDIR_OUT}/. && cp *ww3t_to_atmt* ${RESTDIR_OUT}/.
-[[ ${USE_OCE} -eq 1 && ${USE_WAV} -eq 1 ]] && cp *ocn*_to_ww3t* ${RESTDIR_OUT}/. && cp *ww3t_to_ocnt* ${RESTDIR_OUT}/. 
+[[ ${USE_ATM} -eq 1 && ${USE_OCE} -eq 1 ]] && cp *atmt*_to_ocnt* ${RESTDIR_OUT}/. && cp *ocnt*_to_atmt* ${RESTDIR_OUT}/. 
+[[ ${USE_ATM} -eq 1 && ${USE_WAV} -eq 1 ]] && cp *atmt*_to_ww3t* ${RESTDIR_OUT}/. && cp *ww3t_to_atmt* ${RESTDIR_OUT}/.
+[[ ${USE_OCE} -eq 1 && ${USE_WAV} -eq 1 ]] && cp *ocnt*_to_ww3t* ${RESTDIR_OUT}/. && cp *ww3t_to_ocnt* ${RESTDIR_OUT}/. 
 
 if [ ${USE_TOY} -ge 1 ] ; then
     for k in `seq 0 $(( ${nbtoy} - 1 ))`; do

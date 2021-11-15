@@ -1,5 +1,5 @@
 #!/bin/ksh
-set -ue
+#set -ue
 #set -vx
 #
 . ${SCRIPTDIR}/caltools.sh
@@ -34,7 +34,7 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
 for dom in $wrfcpldom ; do
-    if [[ ${RESTART_fLAG} == "FALSE" ]]; then
+    if [[ ${RESTART_FLAG} == "FALSE" ]]; then
         file="wrfinput_${dom}"
     else
         file="wrfrst_${dom}*"
@@ -64,10 +64,16 @@ for dom in $wrfcpldom ; do
     chmod 755 namelist.input
 done
 
-
+if [[ ${nestfeedback} == "FALSE" ]]; then
+    sed -e "s/feedback                            = 1,/feedback                            = 0,/g" \
+    ./namelist.input > ./namelist.input.tmp
+    mv namelist.input.tmp namelist.input
+fi
+   
 numextmod=$( echo "$wrfcpldom" | wc -w )
-sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g"
-
+sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g" \
+./namelist.input > ./namelist.input.tmp
+mv namelist.input.tmp namelist.input
 
 if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
     cplwavdom=""

@@ -49,7 +49,7 @@ echo $( printf "%02d:%02d:%02d\n" $h $m $s )
 ##------------------------------------------------------------------------------
 # Date of the end of the experiment (in $CALTYPE calendar):
 ##------------------------------------------------------------------------------
-mdy=$( valid_date $MONTH_END_EXP  $(( $DAY_END_EXP - 1 )) $YEAR_END_EXP )
+mdy=$( valid_date  $(( $MONTH_BEGIN_JOB + $NBJOB * $JOB_DUR_MTH )) $(( $DAY_BEGIN_JOB + $NBJOB * $JOB_DUR_DAY - 1 )) $YEAR_BEGIN_JOB )
 export MONTH_END_EXP=$( echo $mdy | cut -d " " -f 1 )
 export DAY_END_EXP=$(   echo $mdy | cut -d " " -f 2 )
 export YEAR_END_EXP=$(  echo $mdy | cut -d " " -f 3 )
@@ -115,9 +115,7 @@ done
 ##------------------------------------------------------------------------------
 # date of the end of the job
 ##------------------------------------------------------------------------------
-
 export DATE_END_JOB=$( makedate $MONTH_END_JOB $DAY_END_JOB $YEAR_END_JOB )
-
 if [ $DATE_END_JOB -lt $DATE_BEGIN_JOB ] 
     then
     echo "ERROR: DATE_END_JOB ($DATE_END_JOB) must be larger than DATE_BEGIN_JOB ($DATE_BEGIN_JOB)... We stop..." 

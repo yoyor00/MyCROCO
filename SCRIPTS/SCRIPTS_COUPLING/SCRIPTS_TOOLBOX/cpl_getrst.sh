@@ -8,7 +8,8 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 #
     if [ ${USE_ATM} -eq 1 ] ; then
         for dom in $wrfcpldom ; do
-            varlist="WRF_${dom}_EXT_d01_SURF_NET_SOLAR WRF_${dom}_EXT_d01_EVAP-PRECIP WRF_${dom}_EXT_d01_SURF_NET_NON-SOLAR WRF_${dom}_EXT_d01_TAUX WRF_${dom}_EXT_d01_TAUY WRF_${dom}_EXT_d01_TAUMOD WRF_${dom}_EXT_d01_WND_U_01 WRF_${dom}_EXT_d01_WND_V_01"
+#            varlist="WRF_${dom}_EXT_d01_SURF_NET_SOLAR WRF_${dom}_EXT_d01_EVAP-PRECIP WRF_${dom}_EXT_d01_SURF_NET_NON-SOLAR WRF_${dom}_EXT_d01_TAUX WRF_${dom}_EXT_d01_TAUY WRF_${dom}_EXT_d01_TAUMOD WRF_${dom}_EXT_d01_WND_U_01 WRF_${dom}_EXT_d01_WND_V_01"
+	    varlist="WRF_${dom}_EXT_${dom}_SURF_NET_SOLAR WRF_${dom}_EXT_${dom}_EVAP-PRECIP WRF_${dom}_EXT_${dom}_SURF_NET_NON-SOLAR WRF_${dom}_EXT_${dom}_TAUX WRF_${dom}_EXT_${dom}_TAUY WRF_${dom}_EXT_${dom}_TAUMOD WRF_${dom}_EXT_${dom}_WND_U_${dom} WRF_${dom}_EXT_d01_WND_V_${dom} "
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}
             if [ ${dom} == "d01" ]; then
                 . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${dom} atm.nc wrf "${varlist}"
