@@ -39,7 +39,7 @@
 !  sustrg |  Two-time level gridded data for XI- and ETA-componets
 !  svstrg |  of kinematic surface momentum flux (wind stess).
 !
-!  sustrp |  Two-time level point data for XI- and ETA-componets 
+!  sustrp |  Two-time level point data for XI- and ETA-componets
 !  svstrp |  of kinematic surface momentum flux (wind stess).
 !
       real sustrg(GLOBAL_2D_ARRAY,2)
@@ -47,8 +47,8 @@
       common /smsdat_sustrg/sustrg /smsdat_svstrg/svstrg
 
       real    sustrp(2), svstrp(2), sms_time(2)
-      real    sms_cycle, sms_scale 
-      integer itsms, sms_ncycle, sms_rec, lsusgrd  
+      real    sms_cycle, sms_scale
+      integer itsms, sms_ncycle, sms_rec, lsusgrd
       integer lsvsgrd,sms_tid, susid, svsid
       common /smsdat1/ sustrp, svstrp, sms_time
       common /smsdat2/ sms_cycle, sms_scale
@@ -79,10 +79,10 @@
 !
 !  tbms      Time of surface momentum stresses.
 !
-!  bustrg |  Two-time level gridded data for XI- and ETA-componets 
+!  bustrg |  Two-time level gridded data for XI- and ETA-componets
 !  bvstrg |  of kinematic bottom momentum flux.
 !
-!  bustrp |  Two-time level point data for XI- and ETA-componets   
+!  bustrp |  Two-time level point data for XI- and ETA-componets
 !  bvstrp |  of kinematic bottom momentum flux.
 !
       real bustrg(GLOBAL_2D_ARRAY,2)
@@ -102,7 +102,7 @@
 #endif /* !ANA_BMFLUX */
 #ifdef SOLVE3D
 !
-!  SURFACE TRACER FLUXES: 
+!  SURFACE TRACER FLUXES:
 !--------------------------------------------------------------------
 !  stflx   Kinematic surface fluxes of tracer type variables at
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
@@ -140,7 +140,7 @@
 
       real stflxp(2,NT), stf_time(2,NT)
       real stf_cycle(NT), stf_scale(NT)
-      integer itstf(NT), stf_ncycle(NT), stf_rec(NT) 
+      integer itstf(NT), stf_ncycle(NT), stf_rec(NT)
       integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
       common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
       common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
@@ -164,10 +164,10 @@
 !
       real btflxg(GLOBAL_2D_ARRAY,2,NT)
       common /btfdat_btflxg/btflxg
-      
+
       real btflxp(2,NT), btf_time(2,NT)
       real btf_cycle(NT), btf_scale(NT)
-      integer itbtf(NT), btf_ncycle(NT), btf_rec(NT) 
+      integer itbtf(NT), btf_ncycle(NT), btf_rec(NT)
       integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
       common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
       common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
@@ -178,7 +178,7 @@
 
 # if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
       real dqdt(GLOBAL_2D_ARRAY)
-      common /forces_dqdt/dqdt 
+      common /forces_dqdt/dqdt
 !
 !  HEAT FLUX CORRECTION
 !--------------------------------------------------------------------
@@ -224,7 +224,7 @@
       common /forces_sss/sss
 #  if !defined QCORRECTION
       real dqdt(GLOBAL_2D_ARRAY)
-      common /forces_dqdt/dqdt 
+      common /forces_dqdt/dqdt
 #  endif
 # ifdef SFLX_CORR_COEF
 ! value of nudging for surface salinity correction (in days)
@@ -234,7 +234,7 @@
 #  ifndef ANA_SSS
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
-!  sssg  |  Two-time-level grided data for 
+!  sssg  |  Two-time-level grided data for
 !              sea surface salinity [PSU].
 !  dqdtp |  Two-time-level point data for net surface heat flux
 !  sssp  |  Two-time-level point data for
@@ -288,7 +288,7 @@
       real patm2d(GLOBAL_2D_ARRAY)
 #  ifdef OBC_PATM
       real paref
-      parameter(paref=101325) 
+      parameter(paref=101325)
 #  endif
 # endif
       real uwnd(GLOBAL_2D_ARRAY)
@@ -298,15 +298,15 @@
 # endif
 
       common /bulk_tair/ tair
-      common /bulk_rhum/ rhum 
+      common /bulk_rhum/ rhum
       common /bulk_prate/ prate
-      common /bulk_radlw/ radlw 
+      common /bulk_radlw/ radlw
       common /bulk_radsw/ radsw
       common /bulk_wspd/ wspd
 # ifdef READ_PATM
       common /bulk_patm/ patm2d
 # endif
-      common /bulk_uwnd/ uwnd 
+      common /bulk_uwnd/ uwnd
       common /bulk_vwnd/ vwnd
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulk_radswbio/ radswbio
@@ -332,16 +332,16 @@
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
 
-      common /bulkdat_tairg/tairg 
-      common /bulkdat_rhumg/rhumg 
-      common /bulkdat_prateg/prateg 
-      common /bulkdat_radlwg/radlwg 
-      common /bulkdat_radswg/radswg 
+      common /bulkdat_tairg/tairg
+      common /bulkdat_rhumg/rhumg
+      common /bulkdat_prateg/prateg
+      common /bulkdat_radlwg/radlwg
+      common /bulkdat_radswg/radswg
 # ifdef READ_PATM
-      common /bulkdat_patmg/patmg 
+      common /bulkdat_patmg/patmg
 # endif
-      common /bulk_uwndg/uwndg 
-      common /bulk_vwndg/vwndg 
+      common /bulk_uwndg/uwndg
+      common /bulk_vwndg/vwndg
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat_radswbiog/radswbiog
 # endif
@@ -409,7 +409,7 @@
 # endif
 # ifndef ANA_SRFLUX
 !
-!  srflxg | Two-time-level grided and point data for surface 
+!  srflxg | Two-time-level grided and point data for surface
 !  srflxp |      solar shortwave radiation flux grided data.
 !  tsrflx   Time of solar shortwave radiation flux.
 !
@@ -419,7 +419,7 @@
       real srflxp(2),srf_time(2)
       real srf_cycle, srf_scale
       integer itsrf, srf_ncycle, srf_rec
-      integer lsrfgrd, srf_tid, srf_id 
+      integer lsrfgrd, srf_tid, srf_id
       common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
       common /srfdat2/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
 
@@ -452,7 +452,7 @@
 ! wbst | MRL/BKPP| frictional dissipation stress (e_d k/sigma) [m2/s2]
 !--------------------------------------------------------------------
 
-#if defined BBL || defined MRL_WCI || defined OW_COUPLING 
+#if defined BBL || defined MRL_WCI || defined OW_COUPLING
       real wfrq(GLOBAL_2D_ARRAY)
       common /forces_wfrq/wfrq
       real wwkx(GLOBAL_2D_ARRAY)
@@ -473,7 +473,7 @@
       real wepd(GLOBAL_2D_ARRAY)
       real wdrx(GLOBAL_2D_ARRAY)
       real wdre(GLOBAL_2D_ARRAY)
-      common /forces_whrm/whrm /forces_wepb/wepb 
+      common /forces_whrm/whrm /forces_wepb/wepb
      &       /forces_wdrx/wdrx /forces_wdre/wdre
      &       /forces_wepd/wepd
 # ifdef WAVE_ROLLER
@@ -541,13 +541,13 @@
       real Akw(GLOBAL_2D_ARRAY,0:N)
       real E_pre(GLOBAL_2D_ARRAY,0:N)
       common /forces_stokes/ust, vst, wst
-      common /forces_kvf/kvf /forces_Akb/Akb /forces_Akw/Akw 
+      common /forces_kvf/kvf /forces_Akb/Akb /forces_Akw/Akw
       common /forces_E_pre/E_pre
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
 #if defined BBL || defined MRL_WCI \
-     ||  (defined MUSTANG && defined WAVE_OFFLINE) 
+     ||  (defined MUSTANG && defined WAVE_OFFLINE)
 !--------------------------------------------------------------------
 ! Awave  | for present time   | wave amplitude [m]
 !                             | significant wave height [m] (MUSTANG)
@@ -586,7 +586,7 @@
 #  ifdef MUSTANG
       real Uwave(GLOBAL_2D_ARRAY)
 !--------------------------------------------------------------------
-! Uwave  | for present time   | wave orbital bottom valocity [m/s] 
+! Uwave  | for present time   | wave orbital bottom valocity [m/s]
 !--------------------------------------------------------------------
       common /bbl_Uwave/Uwave
       real wwug(GLOBAL_2D_ARRAY,2)
@@ -595,7 +595,7 @@
       common /wwf_wwag/wwag /wwf_wwdg/wwdg /wwf_wwpg/wwpg
       real wwfrq(GLOBAL_2D_ARRAY)
       common /wwf_wwfrq/wwfrq
-#  ifdef BBL_OFFLINE 
+#  ifdef BBL_OFFLINE
       real wwub(GLOBAL_2D_ARRAY,2)
       common /wwf_wwub/wwub
       real wwuob(GLOBAL_2D_ARRAY,2)
@@ -627,7 +627,7 @@
       real    wwup(2),wwugrd,wwu_scale
 #  endif
       integer ww_ncycle, ww_rec, itww
-      integer ww_file_id, ww_tid  
+      integer ww_file_id, ww_tid
       integer wwa_id, wwp_id, wwd_id
 #  ifdef MUSTANG
       integer wwu_id
@@ -674,5 +674,3 @@
 # endif
       common /wave_maker_pha/ wpha_bry
 #endif
-
-

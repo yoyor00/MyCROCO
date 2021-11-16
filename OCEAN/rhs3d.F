@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -71,13 +71,13 @@
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
-     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,      
+     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
      &   wrk1(PRIVATE_2D_SCRATCH_ARRAY),     curvX,
      &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),     curvE,
      &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma 
+     &    VFe(PRIVATE_2D_SCRATCH_ARRAY),    gamma
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -93,9 +93,9 @@
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
-! used in UP5 and C6 advection schemes (and order degradation near 
-! land masks). cdiff is part of laplacian diffusion in flux1 (used 
-! near mask): 
+! used in UP5 and C6 advection schemes (and order degradation near
+! land masks). cdiff is part of laplacian diffusion in flux1 (used
+! near mask):
 !    0 --> flux1=flux2 (second order C2 advection scheme)
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
@@ -114,7 +114,7 @@
       flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
      &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
 
-      flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
+      flux4(q_im2, q_im1, q_i, q_ip1, ua) =
      &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
 
       flux3(q_im2, q_im1, q_i, q_ip1, ua) =
@@ -128,7 +128,7 @@
 
       flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
      &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
-     &      -sign(1.,ua)*( 
+     &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 # endif
 # if  defined UV_HADV_WENO5 || defined UV_VADV_WENO5
@@ -378,7 +378,7 @@
 !
 !====================================================================
 !
-!  Add in Coriolis, Stokes-Coriolis and curvilinear transformation 
+!  Add in Coriolis, Stokes-Coriolis and curvilinear transformation
 !  terms, if any.
 !
 !====================================================================
@@ -392,7 +392,7 @@
 #  if (defined CURVGRID && defined UV_ADV)
      &             +0.5*( (v(i,j,k,nrhs)+v(i,j+1,k,nrhs))*dndx(i,j)
      &                   -(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))*dmde(i,j))
-#  endif 
+#  endif
      &                                                             )
 #  ifdef MRL_WCI
 #    if defined CURVGRID && defined UV_ADV
@@ -402,7 +402,7 @@
 #    else
             cff1 = 0.0
 #    endif
-            UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))  
+            UFx(i,j)=(cff+cff1)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
             VFe(i,j)=(cff+cff1)*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
             UFe(i,j)=cff*(vst(i,j,k)+vst(i,j+1,k))
             VFx(i,j)=cff*(ust(i,j,k)+ust(i+1,j,k))
@@ -423,8 +423,8 @@
 !  If NBQ --> done in fast mode
 !--------------------------------------------------------------------
 !
-! Add to We contributions due to (quasi-)horizontal motions 
-! along S=const surfaces 
+! Add to We contributions due to (quasi-)horizontal motions
+! along S=const surfaces
 !
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend+1
@@ -493,7 +493,7 @@
                 wrkCor(i,j,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)
               else
-                wrkCor(i,j,1) = wrkCor(i,j,1) 
+                wrkCor(i,j,1) = wrkCor(i,j,1)
      &                        + 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)
 
@@ -548,7 +548,7 @@
                 wrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
      &                        SWITCH vmask(i,j)
               else
-                wrkCor(i,j,2) = wrkCor(i,j,2) 
+                wrkCor(i,j,2) = wrkCor(i,j,2)
      &                        -0.5*(VFe(i,j)+VFe(i,j-1))
      &                        SWITCH vmask(i,j)
               endif
@@ -602,7 +602,7 @@
 #    define FLUX3 flux4
 #    define FLUX2 flux2
 #    undef  UP5_MASKING
-          cdif=0. 
+          cdif=0.
 #    include "u_hadv_order5.h"
 #    include "v_hadv_order5.h"
 #    undef FLUX5
@@ -651,7 +651,7 @@
         endif
 #   endif /* WENO5 */
 
-#  elif defined UV_HADV_UP3 || defined UV_HADV_C4 
+#  elif defined UV_HADV_UP3 || defined UV_HADV_C4
 !
 !----------------------------------------------------------
 ! Fourth or Third order advection scheme (default)
@@ -697,7 +697,7 @@
           enddo
         endif
         if (EASTERN_EDGE) then
-#    ifdef MPI        
+#    ifdef MPI
           do j=Jstr,Jend
             uxx(Lmmpi+1,j)=uxx(Lmmpi,j)
             Huxx(Lmmpi+1,j)=Huxx(Lmmpi,j)
@@ -707,7 +707,7 @@
             uxx(Lm+1,j)=uxx(Lm,j)
             Huxx(Lm+1,j)=Huxx(Lm,j)
           enddo
-#    endif          
+#    endif
         endif
 #   endif
 
@@ -744,7 +744,7 @@
 #   undef uxx
 #   define vee wrk1
 #   define Hvee wrk2
-      
+
 #   ifdef NS_PERIODIC
 #    define JV_EXT_RANGE JstrV-1,Jend+1
 #   else
@@ -787,12 +787,12 @@
             vee(i,Mmmpi+1)=vee(i,Mmmpi)
             Hvee(i,Mmmpi+1)=Hvee(i,Mmmpi)
           enddo
-#    else        
+#    else
           do i=Istr,Iend
             vee(i,Mm+1)=vee(i,Mm)
             Hvee(i,Mm+1)=Hvee(i,Mm)
           enddo
-#    endif          
+#    endif
         endif
 #   endif
         do j=JstrV-1,Jend
@@ -867,11 +867,11 @@
           do i=IstrU,Iend
             uee(i,Mmmpi+1)=uee(i,Mmmpi)
           enddo
-#    else        
+#    else
           do i=IstrU,Iend
             uee(i,Mm+1)=uee(i,Mm)
           enddo
-#    endif          
+#    endif
         endif
 #   endif
         do j=Jstr,Jend+1
@@ -913,7 +913,7 @@
 #   define vxx wrk1
 #   define Huee wrk2
 
-#   ifdef EW_PERIODIC 
+#   ifdef EW_PERIODIC
 #    define IV_EXT_RANGE Istr-1,Iend+1
 #   else
 #    ifdef MPI
@@ -951,13 +951,13 @@
           do j=JstrV,Jend
             vxx(Lmmpi+1,j)=vxx(Lmmpi,j)
           enddo
-#    else        
+#    else
           do j=JstrV,Jend
             vxx(Lm+1,j)=vxx(Lm,j)
           enddo
-#    endif          
+#    endif
         endif
-        
+
 #   endif
         do j=JstrV-1,Jend
           do i=Istr,Iend+1
@@ -1238,7 +1238,7 @@
 !----------------------------------------------------------
 !  U-component VERTICAL ADVECTION:
 !
-!  Construct conservative parabolic splines for the 
+!  Construct conservative parabolic splines for the
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
@@ -1270,7 +1270,7 @@
           enddo
         enddo               !--> discard FC
 !
-! Compute vertical advective fluxes 
+! Compute vertical advective fluxes
 ! FC=W*[spline-interpolated velocity]
 !
         do k=1,N-1
@@ -1292,7 +1292,7 @@
                               || defined UV_VADV_C6
 !
 !----------------------------------------------------------
-! Compute vertical advective fluxes 
+! Compute vertical advective fluxes
 ! using 5th-order WENO scheme
 !----------------------------------------------------------
 !
@@ -1363,10 +1363,10 @@
             cff = 0.5 *(We(i,j,k)+We(i-1,j,k) )
             cu = cff*pm_u(i,j)*pn_u(i,j)
      &           * cdt*2/(-z_r(i  ,j,k)+z_r(i  ,j,k+1)
-     &                    -z_r(i-1,j,k)+z_r(i-1,j,k+1))      
-            rrp= (u(i,j,kp2,nstp) -u(i,j,kp1,nstp)) 
-            rr = (u(i,j,kp1,nstp) -u(i,j,k  ,nstp)) 
-            rrm= (u(i,j,k  ,nstp) -u(i,j,km1,nstp))                 
+     &                    -z_r(i-1,j,k)+z_r(i-1,j,k+1))
+            rrp= (u(i,j,kp2,nstp) -u(i,j,kp1,nstp))
+            rr = (u(i,j,kp1,nstp) -u(i,j,k  ,nstp))
+            rrm= (u(i,j,k  ,nstp) -u(i,j,km1,nstp))
             cff1=0.5*( cff*(u(i,j,k,nstp)+u(i,j,kp1,nstp))
      &                                      -abs(cff)*rr )
             Cr=limiter(cu,FC(i,k),cff1,rrm,rr,rrp)
@@ -1415,7 +1415,7 @@
 #    if defined DIAGNOSTICS_EK_MLD
               ekwrkVadv_mld(i,j,1) = 0
 #    endif
-             enddo         
+             enddo
             endif
 #  endif
 
@@ -1449,7 +1449,7 @@
 !----------------------------------------------------------
 !  V-component VERTICAL ADVECTION:
 !
-!  Construct conservative parabolic splines for the 
+!  Construct conservative parabolic splines for the
 !  vertical derivatives "CF" of u-momentum.
 !----------------------------------------------------------
 !
@@ -1460,8 +1460,8 @@
             do i=Istr,Iend
               DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
      &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
-            enddo             
-          enddo             
+            enddo
+          enddo
           do i=Istr,Iend    ! Construct parabolic splines: here
             FC(i,0)=0.      ! CF is the set off vertical derivatives
             CF(i,0)=0.      ! of the velocity field v(:,:,:,nrhs),
@@ -1505,7 +1505,7 @@
                               || defined UV_VADV_UP5
 !
 !----------------------------------------------------------
-! Compute vertical advective fluxes 
+! Compute vertical advective fluxes
 ! using 5th-order WENO scheme
 !----------------------------------------------------------
 !
@@ -1575,16 +1575,16 @@
               cff = 0.5*(We(i,j,k)+We(i,j-1,k))
               cu = cff*pm_v(i,j)*pn_v(i,j)
      &             * cdt*2/(-z_r(i,j  ,k)+z_r(i,j  ,k+1)
-     &                      -z_r(i,j-1,k)+z_r(i,j-1,k+1))      
-              rrp= v(i,j,kp2,nstp)-v(i,j,kp1,nstp) 
-              rr = v(i,j,kp1,nstp)-v(i,j,k  ,nstp) 
-              rrm= v(i,j,k  ,nstp)-v(i,j,km1,nstp)                    
+     &                      -z_r(i,j-1,k)+z_r(i,j-1,k+1))
+              rrp= v(i,j,kp2,nstp)-v(i,j,kp1,nstp)
+              rr = v(i,j,kp1,nstp)-v(i,j,k  ,nstp)
+              rrm= v(i,j,k  ,nstp)-v(i,j,km1,nstp)
               cff1=0.5*( cff*(v(i,j,k,nstp)+v(i,j,kp1,nstp))
      &                                        -abs(cff)*rr )
               Cr=limiter(cu,FC(i,k),cff1,rrm,rr,rrp)
               FC(i,k) = cff1*(1-cr) + Cr*FC(i,k)
             enddo
-          enddo         
+          enddo
 #   endif
 
 #  else
@@ -1626,7 +1626,7 @@
 #    if defined DIAGNOSTICS_EK_MLD
               ekwrkVadv_mld(i,j,2) = 0
 #    endif
-             enddo         
+             enddo
             endif
 #  endif
           do k=1,N
@@ -1786,8 +1786,8 @@
 !=======================================================================
 !
 # if defined UV_VADV_TVD || defined UV_HADV_TVD
- 
-      function limiter(nu,hf,lf,rrm,rr,rrp)      
+
+      function limiter(nu,hf,lf,rrm,rr,rrp)
       implicit none
       real    :: cff,limiter,Rj,nu,hf,lf,rrm,rr,rrp
 !
@@ -1829,4 +1829,3 @@
       subroutine rhs3d_empty
       end
 #endif /* SOLVE3D */
-

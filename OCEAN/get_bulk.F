@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -243,7 +243,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
   1   i=3-itbulk
        cff=time+0.5*dt
-        if (bulk_time(i).le.cff .and. cff.lt.bulk_time(itbulk)) 
+        if (bulk_time(i).le.cff .and. cff.lt.bulk_time(itbulk))
      &            return
         ierr=advance_cycle (bulk_cycle,ntbulk,bulk_ncycle,bulk_rec)
         if (ierr .ne. 0) goto 7                           !--> ERROR
@@ -254,7 +254,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
         bulk_time(i)=cff*day2sec+bulk_cycle*bulk_ncycle
-        if (bulk_time(itbulk).eq.-1.E+20) 
+        if (bulk_time(itbulk).eq.-1.E+20)
      &          bulk_time(itbulk)=bulk_time(i)
 !
 ! tair
@@ -381,9 +381,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
        itbulk=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_BULK   --',
-     &              'Read fields for bulk formula   for time =', cff 
+     &              'Read fields for bulk formula   for time =', cff
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -473,7 +473,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       cff2=cff-bulk_time(it1)
 !
 !----------------------------------------------------------------------
-!  Load time invariant 
+!  Load time invariant
 !----------------------------------------------------------------------
 !
       if (bulk_cycle.lt.0.) then
@@ -640,16 +640,16 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !     
 !----------------------------------------------------------------------
 !     Time interpolation
-!     
+!
 !     Time-interpolate SST and dQdSST from grided or point data.
-!     Check that for the next time step [when time=time+dt] time+dt 
+!     Check that for the next time step [when time=time+dt] time+dt
 !     is still between wspd_time(it1) and wspd_time(it2); and if not,
 !     set synchro_flag top signal that the new forcing data should be
 !     read from the netCDF input file (master thread only).
 !----------------------------------------------------------------------
-!     
+!
       elseif (cff1.ge.0. .and. cff2.ge.0.) then
-        
+
         if (ZEROTH_TILE .and. cff1.lt.dt) synchro_flag=.TRUE.
         !note cff order maters
         cff=srf_scale/(cff1+cff2)
@@ -663,9 +663,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         cff=1./(cff1+cff2)
         cff1=cff1*cff
         cff2=cff2*cff
-        
+
         if (ltairgrd.eq.1) then
-          
+
           do j=JstrR,JendR
             do i=IstrR,IendR
               tair(i,j)=cff1*tairg(i,j,it1)+cff2*tairg(i,j,it2)
@@ -801,7 +801,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # ifdef READ_PATM
           val8=cff1*patmp(it1)+cff2*patmp(it2)
 # endif
-          
+
           do j=JstrR,JendR
             do i=IstrR,IendR
               tair(i,j)=val1
@@ -835,8 +835,8 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # endif
 !     
 !     Unable to set-up SST and dQdSST:
-!     Complain about the error and signal to quit.      
-!     
+!     Complain about the error and signal to quit.
+!
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'bulk_time',tdays,bulk_time(it2)*sec2day
@@ -853,4 +853,3 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       return
       end
 #endif /* BULK_FLUX */
-      

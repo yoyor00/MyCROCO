@@ -19,7 +19,7 @@
 !
 !=================================================================================
 !  This subroutine computes vertical mixing coefficients for momentum
-!  and tracers at the surface using a K-Profile Parameterization with a 
+!  and tracers at the surface using a K-Profile Parameterization with a
 !  non-local transport term defined throughout the surface boundary layer.
 !
 !  hbl is defined as the first non-zero depth at which Cr(z) = 0, with
@@ -87,7 +87,7 @@
 # define tind nstp
       real zeta_m, a_m, c_m, zeta_s, a_s,c_s,r2,r3,r4
       real a1,a2,a3
-      real nu0c, Cv, Ric, Ri_inv, 
+      real nu0c, Cv, Ric, Ri_inv,
      &     betaT,epssfc,Cstar,Cg,C_Ek
       real ustarb
       real su_r, sv_r, ustokes
@@ -103,16 +103,16 @@
      &   Ric=0.45,
 #endif
      &   Ri_inv=1./Ric,
-     &   betaT=-0.2,   ! Ratio of entrainment flux to 
+     &   betaT=-0.2,   ! Ratio of entrainment flux to
                        !       to surface buoyancy flux.
      &   epssfc=0.1,   ! Nondimensional extent of the
                        !                surface layer.
-     &   Cstar=10.,    ! Proportionality coefficient 
+     &   Cstar=10.,    ! Proportionality coefficient
                        ! parameterizing nonlocal transport.
      &   nu0c=0.1,     ! Maximum interior convective
                        ! viscosity and  diffusivity due
-                       ! to shear instability, [m^2/s];     
-     &   C_Ek=258.,    ! constant for computating stabilization term 
+                       ! to shear instability, [m^2/s];
+     &   C_Ek=258.,    ! constant for computating stabilization term
                        ! due to Coriolis force (Ekman depth limit).
      &   zeta_m=-0.2,  ! Maximum stability parameters "zeta"
      &   a_m=1.257,    ! value of the 1/3 power law regime of
@@ -152,11 +152,11 @@
         jmax=Jend+1
       endif
 #  define J_EXT_RANGE jmin,jmax
-# endif      
+# endif
 !======================================================================
 !  Initialize parameters
 !
-      Cg=Cstar*vonKar*(c_s*vonKar*epssfc)**r3      
+      Cg=Cstar*vonKar*(c_s*vonKar*epssfc)**r3
       Vtc= Cv * sqrt(-betaT/(c_s*epssfc)) / (Ric*vonKar**2)
 
 !  Compute thermal expansion coefficient "alpha" [kg/m^3/decC] and
@@ -197,7 +197,7 @@
 !  Turbulent Langmuir number (McWilliams et al 1997)
 !
 #  ifdef MRL_WCI
-          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
+          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned
           ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
           Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
 #  else
@@ -208,17 +208,17 @@
         enddo
       enddo
 
-      
+
 # undef beta
 # undef alpha
 !========================================================================
 ! Compute fraction of the solar shortwave flux "swr_frac"
 ! penetrating to grid level depth (at vertical w-points).
 !
-!?? Because swr_frac is also computed in step3d_t.F this could be defined 
+!?? Because swr_frac is also computed in step3d_t.F this could be defined
 !?? as a 3D global variable
 !
-!== BEGIN ugly piece of code 
+!== BEGIN ugly piece of code
 
 #  define wrk1 wrk3
 #  define wrk2 my_hbl
@@ -242,10 +242,10 @@
           swr_frac(i,j,N)=1.
         enddo
       enddo
-      
+
 
 !== END ugly piece of code
-!---------------------------------------------------------------     
+!---------------------------------------------------------------
 
 !======================================================================
       do j=J_EXT_RANGE
@@ -256,11 +256,11 @@
           my_hbl(i,j)  = hbls(i,j,tind)
           my_kbl(i)    = 0
           FC(i,N)      = 0.
-          Cr(i,N)      = 0. 
+          Cr(i,N)      = 0.
           Cr(i,0)      = 0.
         enddo
 #  define du wrk1
-#  define dv wrk2 
+#  define dv wrk2
         do k=1,N-1
          do i=I_EXT_RANGE
           cff=1./(Hz(i,j,k)+Hz(i,j,k+1))
@@ -277,13 +277,13 @@
           dv(i,0)=dv(i,  1)
         enddo
 
-        
+
         do k=N,1,-1
           do i=I_EXT_RANGE
             zscale = z_w(i,j,N)-z_w(i,j,k-1)
             Kern   = zscale/(zscale+epssfc*my_hbl(i,j))
-            Bfsfc  = Bo(i,j) +Bosol(i,j)*(1.-swr_frac(i,j,k-1)) 
-#include "lmd_wscale_ws_only.h" 
+            Bfsfc  = Bo(i,j) +Bosol(i,j)*(1.-swr_frac(i,j,k-1))
+#include "lmd_wscale_ws_only.h"
 !===================================================
 !++  harmonic averaging to compute bvf at rho points
 !===================================================
@@ -301,14 +301,14 @@
      &               + dv(i,k)**2 + dv(i,k-1)**2 )
      &       + 0.25 *( du(i,k-1)*du(i,k)
      &               + dv(i,k-1)*dv(i,k) )
-     &       - Ri_inv*( cff + 
+     &       - Ri_inv*( cff +
      &              0.25*(bvf(i,j,k)+bvf(i,j,k-1)) )
      &       - C_Ek*f(i,j)*f(i,j) )
 
             Vtsq=Vtc*ws*sqrt(max(0., bvf(i,j,k-1)))
 
             Cr(i,k-1)=FC(i,k-1) +Vtsq
-            if (my_kbl(i).eq.0 .and. Cr(i,k-1).lt.0.) 
+            if (my_kbl(i).eq.0 .and. Cr(i,k-1).lt.0.)
      &                          my_kbl(i)=k
           enddo
         enddo
@@ -330,7 +330,7 @@
         enddo
 !======================================================================
       enddo  !<-- terminate j-loop
-!======================================================================  
+!======================================================================
 
 !================================
 !    HBL Smoothing
@@ -347,9 +347,9 @@
 #  undef J_EXT_RANGE
 
 
-!====================================================================== 
+!======================================================================
       do j=Jstr,Jend
-!====================================================================== 
+!======================================================================
         do i=istr,iend
           kbl(i,j)=N             !<-- initialize search
         enddo
@@ -362,7 +362,7 @@
             if (z_w(i,j,k) .gt. z_w(i,j,N)-my_hbl(i,j)) kbl(i,j)=k
           enddo
         enddo
-        
+
         do i=istr,iend
           k=kbl(i,j)
           z_bl=z_w(i,j,N)-my_hbl(i,j)
@@ -435,9 +435,9 @@
 ! Compute turbulent velocity scales at vertical W-points.
 !
         do i=istr,iend
-          
+
           khbl=kbl(i,j)
-          
+
           do k=N-1,khbl,-1                   !-- in the mixed layer
             Bfsfc=Bfsfc_bl(i)
             zscale=z_w(i,j,N)-z_w(i,j,k)
@@ -457,7 +457,7 @@
             else
               cff=0.D0
             endif
-            
+
             Kv(i,j,k)=wm*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
      &               a1+a2*Gm1(i)+a3*dGm1dS(i) )))
 
@@ -467,7 +467,7 @@
 # endif
 # ifdef SALINITY
             Ks(i,j,k)=ws*my_hbl(i,j)*( cff + sigma*( 1.+sigma*(
-     &               a1+a2*Gs1(i)+a3*dGs1dS(i) ))) 
+     &               a1+a2*Gs1(i)+a3*dGs1dS(i) )))
 # endif
 # ifdef LMD_NONLOCAL
             if (Bfsfc .lt. 0.) then
@@ -491,11 +491,11 @@
             endif
 # endif
           enddo
-          
+
           do k=khbl-1,1,-1                    !-- below mixed layer
 # ifdef LMD_NONLOCAL
             ghats(i,j,k)=0.
-# endif 
+# endif
 
 # if  defined LMD_CONVEC && !defined LMD_BKPP
 !
@@ -513,7 +513,7 @@
             endif
 # endif
           enddo
-        
+
         enddo
       enddo    !<-- j-loop
 
@@ -532,46 +532,46 @@
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=jstr,jend
-          hbls(istr-1,j,3-nstp)=hbls(istr,j,3-nstp)     
-          kbl (istr-1,j)       =kbl(istr,j)               
+          hbls(istr-1,j,3-nstp)=hbls(istr,j,3-nstp)
+          kbl (istr-1,j)       =kbl(istr,j)
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=jstr,jend
-          hbls(iend+1,j,3-nstp)=hbls(iend,j,3-nstp)     
-          kbl(iend+1,j)=kbl(iend,j)                  
+          hbls(iend+1,j,3-nstp)=hbls(iend,j,3-nstp)
+          kbl(iend+1,j)=kbl(iend,j)
         enddo
       endif
 # endif
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=istr,iend
-          hbls(i,jstr-1,3-nstp)=hbls(i,jstr,3-nstp)   
-          kbl(i,jstr-1)=kbl(i,jstr)                   
+          hbls(i,jstr-1,3-nstp)=hbls(i,jstr,3-nstp)
+          kbl(i,jstr-1)=kbl(i,jstr)
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=istr,iend
-          hbls(i,jend+1,3-nstp)=hbls(i,jend,3-nstp) 
-          kbl(i,jend+1)=kbl(i,jend)                              
+          hbls(i,jend+1,3-nstp)=hbls(i,jend,3-nstp)
+          kbl(i,jend+1)=kbl(i,jend)
         enddo
       endif
 #  ifndef EW_PERIODIC
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         hbls(istr-1,jstr-1,3-nstp)=hbls(istr,jstr,3-nstp)
-        kbl(istr-1,jstr-1)=kbl(istr,jstr)        
+        kbl(istr-1,jstr-1)=kbl(istr,jstr)
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         hbls(istr-1,jend+1,3-nstp)=hbls(istr,jend,3-nstp)
-        kbl(istr-1,jend+1)=kbl(istr,jend)        
+        kbl(istr-1,jend+1)=kbl(istr,jend)
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         hbls(iend+1,jstr-1,3-nstp)=hbls(iend,jstr,3-nstp)
-        kbl(iend+1,jstr-1)=kbl(iend,jstr)        
+        kbl(iend+1,jstr-1)=kbl(iend,jstr)
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         hbls(iend+1,jend+1,3-nstp)=hbls(iend,jend,3-nstp)
-        kbl(iend+1,jend+1)=kbl(iend,jend)        
+        kbl(iend+1,jend+1)=kbl(iend,jend)
       endif
 #  endif
 # endif
