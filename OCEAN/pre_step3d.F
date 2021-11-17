@@ -283,8 +283,8 @@
 !
 # ifdef BIO_HADV_WENO5
           else  ! if (itrc .gt. 2)
-#  define FLUX5 flux5_weno5
-#  define FLUX3 flux3_weno5
+#  define FLUX5 flux5_weno
+#  define FLUX3 flux3_weno
 #  define FLUX2 flux1
 #  define UP5_MASKING
 !
