@@ -24,7 +24,7 @@ TOOLS_DIR=$(cd $(dirname "$0")/../croco_tools; pwd)
 
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=BENGUELA
+MY_CONFIG_NAME=Run
 
 # Home and Work configuration directories
 # ---------------------------------------
@@ -214,18 +214,20 @@ fi
 if [ ! -d $MY_CONFIG_HOME ]; then 
     mkdir -p $MY_CONFIG_HOME
 else
-    echo 'Already a configuration exists ...'
-    echo 'You should check the configuration directory ' $MY_CONFIG_HOME
-    echo -n " Do you want to proceed anyway (risk of overwriting) ? [N/y] "
-    read answer
-    answer=`echo $answer | sed 's/^[nN].*$/n/'`
-    if [  -z "$answer" -o "x$answer" = "xn" ]; then
-        echo " Exiting..."
-        echo "  "
-        exit
-    else
-        echo " Proceed..."
-        echo "  "
+    if [[ $x_f -eq 0 ]]; then
+        echo 'Already a configuration exists ...'
+        echo 'You should check the configuration directory ' $MY_CONFIG_HOME
+        echo -n " Do you want to proceed anyway (risk of overwriting) ? [N/y] "
+        read answer
+        answer=`echo $answer | sed 's/^[nN].*$/n/'`
+        if [  -z "$answer" -o "x$answer" = "xn" ]; then
+            echo " Exiting..."
+            echo "  "
+            exit
+        else
+            echo " Proceed..."
+            echo "  "
+        fi
     fi
 fi
 
@@ -273,9 +275,9 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
     
-     PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
-     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
-     chmod +x $MY_CROCO_DIR/jobcomp
+    PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
+    sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
+    chmod +x $MY_CROCO_DIR/jobcomp
 
     cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
