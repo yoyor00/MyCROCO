@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -128,7 +128,7 @@ C$    integer omp_get_thread_num
       ilc=1+iic-ntstart   ! number of time step since restart
 !
 
-      if (ilc.gt.ntsavg) then 
+      if (ilc.gt.ntsavg) then
 
         if (mod(ilc-ntsavg,navg).eq.1) then
           cff =1.0
@@ -274,7 +274,7 @@ C$    integer omp_get_thread_num
             enddo
           endif
         enddo
-# endif    
+# endif
         if (wrtavg(indxR)) then
           do k=1,N
             do j=JstrR,JendR
@@ -305,7 +305,7 @@ C$    integer omp_get_thread_num
      &                                 +We(i,j,k)*pm(i,j)*pn(i,j)
 # ifdef VADV_ADAPT_IMP
      &                                 +Wi(i,j,k)*pm(i,j)*pn(i,j)
-# endif      
+# endif
      &                                                          )
               enddo
             enddo
@@ -340,7 +340,7 @@ C$    integer omp_get_thread_num
 #  else
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbl(i,j))
-# endif     
+# endif
             enddo
           enddo
         endif
@@ -360,7 +360,7 @@ C$    integer omp_get_thread_num
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k) 
+                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k)
      &                                  +trb(i,j,k,nstp,itke))
               enddo
             enddo
@@ -710,9 +710,9 @@ C$    integer omp_get_thread_num
             do i=istrR,iendR
 #  ifdef WKB_WWAVE
               wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+frq(i,j,iout) )
-#  else  
+#  else
               wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+wfrq(i,j) )
-#  endif  
+#  endif
             enddo
           enddo
         endif
@@ -730,7 +730,7 @@ C$    integer omp_get_thread_num
             do i=istrR,iendR
 #  ifdef WKB_WWAVE
               wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wkx(i,j,iout) )
-#  else 
+#  else
               wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wwkx(i,j) )
 #  endif
             enddo
@@ -888,4 +888,3 @@ C$    integer omp_get_thread_num
       subroutine set_avg_empty
       end
 #endif /* AVERAGES */
-

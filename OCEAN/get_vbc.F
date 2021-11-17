@@ -1,10 +1,10 @@
 ! $Id: get_vbc.F 1615 2014-12-17 13:27:07Z rblod $
 !
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -24,7 +24,7 @@
 !   srflxg    kinematic surface shortwave solar radiation flux
 !                 [degC m/s].
 !   stflxg    kinematic surface flux of tracer type variables
-!                 [temperature: degC m/s; salinity: PSU m/s].   
+!                 [temperature: degC m/s; salinity: PSU m/s].
 !-------------------------------------------------------------------
 !
       implicit none
@@ -37,7 +37,7 @@
 !---------------------------------------------------------------
 !
 #ifdef PSOURCE_NCFILE
-        call get_psource      
+        call get_psource
 # ifdef PSOURCE_NCFILE_TS
         call get_psource_ts
 # endif
@@ -150,10 +150,10 @@
      && !defined ANA_BTFLUX )
       call get_btflux (isalt)
 #endif
-      
+
       return
       end
-!     
+!
 !====================================================================
 !     subroutine set_vbc
 !====================================================================
@@ -162,11 +162,11 @@
       implicit none
 #include "param.h"
 #include "private_scratch.h"
-      integer tile, trd, omp_get_thread_num 
+      integer tile, trd, omp_get_thread_num
 #include "compute_tile_bounds.h"
 !
       trd=omp_get_thread_num()
-      call set_vbc_tile (Istr,Iend,Jstr,Jend, 
+      call set_vbc_tile (Istr,Iend,Jstr,Jend,
      &         A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd))
       return
       end
@@ -175,7 +175,7 @@
 !
 !----------------------------------------------------------------
 !
-!  This subroutine sets the vertical boundary conditions for 
+!  This subroutine sets the vertical boundary conditions for
 !  momentum and tracers.
 !
 !  On Output:  stored in common blocks (see include file forces.h)
@@ -328,7 +328,7 @@
 #   ifdef ANA_SSFLUX
       call ana_stflux_tile (Istr,Iend,Jstr,Jend, isalt)
 #   else
-      call set_stflux_tile (Istr,Iend,Jstr,Jend, isalt) 
+      call set_stflux_tile (Istr,Iend,Jstr,Jend, isalt)
 #   endif
 !
 ! Multiply flux by surface salinity.
@@ -348,7 +348,7 @@
 #   ifdef ANA_SSS
       call ana_sss_tile (Istr,Iend,Jstr,Jend)
 #   else
-      call set_sss_tile (Istr,Iend,Jstr,Jend) 
+      call set_sss_tile (Istr,Iend,Jstr,Jend)
 #   endif
 #   ifndef BULK_FLUX
 !
@@ -411,7 +411,7 @@
 !
 # ifdef TEMPERATURE
 #  ifdef ANA_BTFLUX
-      call ana_btflux_tile (Istr,Iend,Jstr,Jend, itemp) 
+      call ana_btflux_tile (Istr,Iend,Jstr,Jend, itemp)
 #  else
       call set_btflux_tile (Istr,Iend,Jstr,Jend, itemp)
 #  endif
@@ -465,8 +465,8 @@
 !
 #  else
 !
-!  Set bottom stress using logarithmic or linear 
-!  and/or quadratic formulation. 
+!  Set bottom stress using logarithmic or linear
+!  and/or quadratic formulation.
 !
 #   define CDRAG wrk
       if (maxval(Zob).ne.0.) then
@@ -534,7 +534,7 @@
       do j=Jstr,Jend
         do i=IstrU,Iend
           cff1=cff*0.5*(Hz(i-1,j,1)+Hz(i,j,1))
-          bustr(i,j)=SIGN(1.D0, bustr(i,j))* 
+          bustr(i,j)=SIGN(1.D0, bustr(i,j))*
      &               MIN(ABS(bustr(i,j)),
      &                   ABS(u(i,j,1,nrhs))*cff1)
         enddo
@@ -607,7 +607,7 @@
         DO j=Jstr,Jend
           bustrw(Istr-1,j)=bustrw(Istr,j)
           bvstrw(Istr-1,j)=bvstrw(Istr,j)
-        END DO        
+        END DO
 #   endif
       END IF
 #  endif
@@ -717,12 +717,12 @@
 # endif
 #endif
 #ifdef PSOURCE_NCFILE
-      call set_psource_tile(Istr,Iend,Jstr,Jend)  
+      call set_psource_tile(Istr,Iend,Jstr,Jend)
       do is=1,Nsrc
         Qbar(is)=qbardir(is)*Qbar(is)
       enddo
 # ifdef PSOURCE_NCFILE_TS
-      call set_psource_ts_tile(Istr,Iend,Jstr,Jend)  
+      call set_psource_ts_tile(Istr,Iend,Jstr,Jend)
 # endif
 #endif
 #if defined PSOURCE && defined ANA_PSOURCE
@@ -733,7 +733,7 @@ C$OMP END MASTER
 #endif
 #ifndef OW_COUPLING
 # if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
-      call set_wwave_tile(Istr,Iend,Jstr,Jend)  
+      call set_wwave_tile(Istr,Iend,Jstr,Jend)
 # endif
 #endif
 
@@ -742,7 +742,7 @@ C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u')
       call check_tab3d(v(:,:,:,nrhs),'#end v in set_vbc','v')
-      
+
 # ifdef TEMPERATURE
       call check_tab3d(t(:,:,:,nrhs,itemp),'#end temp in set_vbc','r')
 # endif

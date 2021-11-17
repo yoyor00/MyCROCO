@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -42,8 +42,8 @@
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  ISOLITON        /* Internal Soliton Example */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
-#undef  TS_HADV_TEST    /* Horizontal tracer advection Example */ 
-#undef  DUNE            /* Dune migration Example */ 
+#undef  TS_HADV_TEST    /* Horizontal tracer advection Example */
+#undef  DUNE            /* Dune migration Example */
 #undef  SED_TOY         /* 1DV sediment toy Example */
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 /* 
@@ -58,7 +58,7 @@
 /*
 !====================================================================
 !               REGIONAL (realistic) Configurations
-!==================================================================== 
+!====================================================================
 !
 !----------------------
 ! BASIC OPTIONS
@@ -98,10 +98,13 @@
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
-# undef START_DATE
 # undef USE_CALENDAR 
                       /* dedicated croco.log file */
 # undef  LOGFILE
+# undef START_DATE
+# if defined XIOS
+#   define START_DATE
+# endif
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -185,28 +188,33 @@
 # endif
                       /* Surface Forcing */
 /*
+!
 ! Bulk algorithms (options)
-! - ECUMEv0 (possibility to add GUSTINESS effects)
-! - ECUMEv6 (possibility to add GUSTINESS effects)
-! - COARE3p0 (possibility to compute Charnock coefficient via WASP)
-! Warning: WASP can not be combined with ECUME algorithms
+! by default COARE3p0 parametrization is used with GUSTINESS effects
+!
+! To change bulk parametrization you have to define one the following cpp keys (not additional) :
+! - define BULK_ECUMEV0 : used of ECUME_v0 parametrization
+! - define BULK_ECUMEV6 : used of ECUME_v6 parametrization
+! - define BULK_WASP    : used of WASP parametrization
+! Warning : it is possible to add GUSTINESS effects for all parametrizations by defining BULK_GUSTINESS cpp key
+!
 */
 # undef BULK_FLUX
 # ifdef BULK_FLUX
-#  undef  ECUMEv0
-#  undef  ECUMEv6
-#  undef  WASP
-#  define GUSTINESS
+#  undef  BULK_ECUMEV0
+#  undef  BULK_ECUMEV6
+#  undef  BULK_WASP
+#  define BULK_GUSTINESS
 #  define BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
-#  ifdef ONLINE 
+#  ifdef ONLINE
 #   undef  AROME
 #   undef  ERA_ECMWF
 #  endif
 #  undef READ_PATM
-#  ifdef READ_PATM 
+#  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
 # else
@@ -267,7 +275,7 @@
                       /* Point Sources - Rivers */
 # undef PSOURCE
 # undef PSOURCE_NCFILE
-# ifdef PSOURCE_NCFILE                    
+# ifdef PSOURCE_NCFILE
 #  undef PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
@@ -309,10 +317,10 @@
 #  define XXXRVTK_DEBUG_READ
 # endif
 /*
-!                        Diagnostics 
+!                        Diagnostics
 !--------------------------------------------
 ! 3D Tracer & momentum balance
-! 2D Mixing layer balance 
+! 2D Mixing layer balance
 ! Depth-mean vorticity and energy balance
 ! Eddy terms
 !--------------------------------------------
@@ -356,12 +364,12 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations, 
+! Biology, floats, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
    Quasi-monotone lateral advection scheme (WENO5)
-   for passive/biology/sediment tracers 
+   for passive/biology/sediment tracers
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                                                || defined MUSTANG
@@ -781,7 +789,7 @@
 !                       ======== ==== =======
 !
 ! Di Lorenzo, E, W.R. Young and S.L. Smith, 2006, Numerical and anlytical estimates of M2
-! tidal conversion at steep oceanic ridges, J. Phys. Oceanogr., 36, 1072-1084.  
+! tidal conversion at steep oceanic ridges, J. Phys. Oceanogr., 36, 1072-1084.
 */
 # undef  OPENMP
 # undef  MPI
@@ -823,8 +831,8 @@
 !                  COMODO Internal Tide Example
 !                  ====== ======== ==== =======
 !
-! Pichon, A., 2007: Tests academiques de maree, Rapport interne n 21 du 19 octobre 2007, 
-! Service Hydrographique et Oceanographique de la Marine. 
+! Pichon, A., 2007: Tests academiques de maree, Rapport interne n 21 du 19 octobre 2007,
+! Service Hydrographique et Oceanographique de la Marine.
 */
 
 # define EXPERIMENT3
@@ -836,7 +844,7 @@
 # define TIDERAMP
 # define SSH_TIDES
 # define UV_TIDES
-# define SOLVE3D 
+# define SOLVE3D
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
@@ -979,7 +987,7 @@
 !                       Thacker Example
 !                       ======= =======
 !
-! Thacker, W., (1981), Some exact solutions to the nonlinear 
+! Thacker, W., (1981), Some exact solutions to the nonlinear
 ! shallow-water wave equations. J. Fluid Mech., 107, 499-508.
 */
 # undef  OPENMP
@@ -1020,7 +1028,7 @@
 # define ANA_BTFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-                      
+
 /*
 !                       Plume Example
 !                       ===== =======
@@ -1164,14 +1172,14 @@
 #   define ANA_TCLIMA
 #  endif
 # endif
-# define LMD_MIXING 
+# define LMD_MIXING
 # ifdef  LMD_MIXING
 #  undef  ANA_VMIX
 #  define ANA_SRFLUX
 #  undef  LMD_KPP
 #  define LMD_RIMIX
 #  define LMD_CONVEC
-# endif 
+# endif
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
@@ -1180,8 +1188,8 @@
 !                       PLANAR BEACH Example
 !                       ====== ===== =======
 !
-!   Uchiyama, Y., McWilliams, J.C. and Shchepetkin, A.F. (2010): 
-!      Wave-current interaction in an oceanic circulation model with a 
+!   Uchiyama, Y., McWilliams, J.C. and Shchepetkin, A.F. (2010):
+!      Wave-current interaction in an oceanic circulation model with a
 !      vortex force formalism: Application to the surf zone.
 !      Ocean Modelling Vol. 34:1-2, pp.16-35.
 */
@@ -1233,7 +1241,7 @@
 !                       SANDBAR Example
 !                       ======= =======
 !
-!   Roelvink, J. A. and Reniers, A. (1995). Lip 11d delta flume experiments 
+!   Roelvink, J. A. and Reniers, A. (1995). Lip 11d delta flume experiments
 !   – data report. Technical report, Delft, The Netherlands, Delft Hydraulics
 */
 # define SANDBAR_OFFSHORE /* LIP-1B */
@@ -1322,17 +1330,17 @@
 !                       Rip Current Example
 !                       === ======= =======
 !
-!   Weir, B., Uchiyama, Y.. (2010): 
-!      A vortex force analysis of the interaction of rip 
+!   Weir, B., Uchiyama, Y.. (2010):
+!      A vortex force analysis of the interaction of rip
 !      currents and surface gravity wave
 !      JGR Vol. 116
 !
 !  Default is idealized Duck Beach with 3D topography
 !  RIP_TOPO_2D: Logshore uniform topography
 !  BISCA: realistic case with Input files
-!  GRANDPOPO: idealized Grand Popo Beach in Benin, 
+!  GRANDPOPO: idealized Grand Popo Beach in Benin,
 !              longshore uniform
-!  WAVE_MAKER & NBQ : wave resolving simulation 
+!  WAVE_MAKER & NBQ : wave resolving simulation
 !                     rather than wave-averaged (#undef MRL_WCI)
 */
 # undef  BISCA
@@ -1357,7 +1365,7 @@
 #  define UV_VADV_WENO5
 #  define W_HADV_WENO5
 #  define W_VADV_WENO5
-#  define GLS_MIXING_3D 
+#  define GLS_MIXING_3D
 #  undef  ANA_TIDES
 #  undef  MRL_WCI
 #  define OBC_SPECIFIED_WEST
@@ -1449,7 +1457,7 @@
 # define UV_VADV_WENO5
 # define W_HADV_WENO5
 # define W_VADV_WENO5
-# define GLS_MIXING_3D 
+# define GLS_MIXING_3D
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1496,14 +1504,14 @@
 # define ANA_STFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-                      
+
 #elif defined MOVING_BATHY
 /*
 !                       Moving Bathy Example
 !                       ====== ===== =======
 !
-!  Auclair et al., Ocean Mod. 2014: Implementation of a time-dependent 
-!     bathymetry in a free-surface ocean model: Application to internal 
+!  Auclair et al., Ocean Mod. 2014: Implementation of a time-dependent
+!     bathymetry in a free-surface ocean model: Application to internal
 !     wave generation
 !
 */
@@ -1556,10 +1564,10 @@
 # define ANA_STFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
-      
-#elif defined ACOUSTIC 
+
+#elif defined ACOUSTIC
 /*
-!                       ACOUSTIC WAVE TESTCASE 
+!                       ACOUSTIC WAVE TESTCASE
 !                       ======== ==== ========
 */
 # undef  MPI
@@ -1588,7 +1596,7 @@
 # undef  OPENMP
 # undef  MPI
 # undef  NBQ
-# undef  XIOS 
+# undef  XIOS
 # define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1610,15 +1618,15 @@
 !                       ============= ========== =======
 !
 !  Internal soliton case ISOLITON (non-hydrostatic) is setup from:
-!  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
-!  The degeneration of large-scale interfacial gravity waves in lakes. 
-!  J. Fluid Mech., 434:181-207. 
+!  Horn, D.A., J. Imberger, & G.N. Ivey, (2001).
+!  The degeneration of large-scale interfacial gravity waves in lakes.
+!  J. Fluid Mech., 434:181-207.
 !
 */
 # undef  OPENMP
 # undef  MPI
 # define NBQ
-# undef  XIOS 
+# undef  XIOS
 # define UV_VIS2
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1634,7 +1642,7 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-#elif defined KH_INST 
+#elif defined KH_INST
 /*
 !                       Kelvin-Helmholtz Instability Example
 !                       ================ =========== =======
@@ -1675,7 +1683,7 @@
 
 #elif defined TS_HADV_TEST
 /*
-!                       Horizontal TRACER ADVECTION EXAMPLE 
+!                       Horizontal TRACER ADVECTION EXAMPLE
 !                       ========== ====== ========= =======
 !
 */
@@ -1719,7 +1727,7 @@
 */
 # undef  ANA_DUNE     /* Analytical test case (Marieu) */
 # undef  DUNE3D       /* 3D example (only with MUSTANG sed model) */
- 
+
 # undef  OPENMP
 # undef  MPI
 # define M2FILTER_NONE
@@ -1893,4 +1901,3 @@
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"
-

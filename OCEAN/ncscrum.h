@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -62,14 +62,14 @@
 ! indxTIsrf       temperature of ice surface
 !
 ! ** SEDIMENT (USGS model) **
-! indxBSD,indxBSS bottom sediment grain Density and Size 
-!                 to be read from file if(!defined ANA_BSEDIM, 
-!                 && !defined SEDIMENT) 
+! indxBSD,indxBSS bottom sediment grain Density and Size
+!                 to be read from file if(!defined ANA_BSEDIM,
+!                 && !defined SEDIMENT)
 !
-! indxBTHK,       sediment bed thickness, porosity, size class fractions 
+! indxBTHK,       sediment bed thickness, porosity, size class fractions
 ! indxBPOR,indxBFRA
 !
-! ** WAVE input data to be read from file if !defined WKB_WWAVE or OW_COUPLING 
+! ** WAVE input data to be read from file if !defined WKB_WWAVE or OW_COUPLING
 ! indxWWA          wind induced wave Amplitude
 ! indxWWD          wind induced wave Direction
 ! indxWWP          wind induced wave Period
@@ -85,14 +85,14 @@
 ! indxEPR          wave roller dissipation
 !
 ! ** MRL_WCI **
-! indxSUP          wave set-up 
+! indxSUP          wave set-up
 ! indxUST2D        vertically integrated stokes velocity in xi  direction
-! indxVST2D        vertically integrated stokes velocity in eta direction 
+! indxVST2D        vertically integrated stokes velocity in eta direction
 ! indxUST          stokes velocity in xi  direction
-! indxVST          stokes velocity in eta direction 
-! indxWST          vertical stokes velocity 
+! indxVST          stokes velocity in eta direction
+! indxWST          vertical stokes velocity
 ! indxAkb          eddy viscosity  due to wave breaking
-! indxAkw          eddy difusivity due to wave breaking  
+! indxAkw          eddy difusivity due to wave breaking
 ! indxKVF          vortex force
 ! indxCALP         surface pressure correction
 ! indxKAPS         Bernoulli head
@@ -158,8 +158,8 @@
 !
 !=======================================================================
 ! Output file codes
-      integer filetype_his, filetype_avg 
-     &       ,filetype_dia, filetype_dia_avg 
+      integer filetype_his, filetype_avg
+     &       ,filetype_dia, filetype_dia_avg
      &       ,filetype_diaM, filetype_diaM_avg
      &       ,filetype_diags_vrt, filetype_diags_vrt_avg
      &       ,filetype_diags_ek, filetype_diags_ek_avg
@@ -167,7 +167,7 @@
      &       ,filetype_diags_eddy_avg
      &       ,filetype_surf, filetype_surf_avg
      &       ,filetype_diabio, filetype_diabio_avg
-      parameter (filetype_his=1, filetype_avg=2, 
+      parameter (filetype_his=1, filetype_avg=2,
      &           filetype_dia=3, filetype_dia_avg=4,
      &           filetype_diaM=5, filetype_diaM_avg=6,
      &           filetype_diags_vrt=7, filetype_diags_vrt_avg=8,
@@ -201,7 +201,7 @@
 # ifdef PASSIVE_TRACER
       integer, dimension(ntrc_pas) :: indxTPAS
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+1,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas)/)      
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas)/)
 # endif
 #endif
 # ifdef BIOLOGY
@@ -280,16 +280,16 @@
       integer indxNO3, indxNO2, indxNH4,
      &        indxPhy1, indxPhy2, indxZoo1, indxZoo2,
      &        indxDet1, indxDet2, indxDON, indxO2
-      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1, 
-     &           indxNO2 =indxNO3+1,      
-     &           indxNH4 =indxNO3+2, 
+      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
+     &           indxNO2 =indxNO3+1,
+     &           indxNH4 =indxNO3+2,
      &           indxPhy1=indxNO3+3, indxPhy2=indxNO3+4,
      &           indxZoo1=indxNO3+5, indxZoo2=indxNO3+6,
      &           indxDet1=indxNO3+7, indxDet2=indxNO3+8,
      &           indxDON =indxNO3+9, indxO2  =indxNO3+10)
-#     ifdef NITROUS_OXIDE 
+#     ifdef NITROUS_OXIDE
       integer indxN2O
-      parameter (indxN2O=indxNO3+11)      
+      parameter (indxN2O=indxNO3+11)
 #     endif
 #  endif
 # endif /* BIOLOGY */
@@ -297,7 +297,7 @@
       integer, dimension(NGRAV) ::  indxGRAV
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1,
      &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV)/)
-      integer, dimension(NSAND) :: indxSAND 
+      integer, dimension(NSAND) :: indxSAND
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1+
      &	NGRAV,
      &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+NSAND)/)
@@ -314,7 +314,7 @@
 # endif
 
 # ifdef DIAGNOSTICS_TS
-      integer indxTXadv,indxTYadv,indxTVadv, 
+      integer indxTXadv,indxTYadv,indxTVadv,
      &        indxTHmix,indxTVmix,indxTForc,indxTrate
 # ifdef DIAGNOSTICS_TSVAR
      &       ,indxTVmixt
@@ -345,7 +345,7 @@
      &           indxTVmix_mld=indxTHmix_mld+NT,
      &           indxTForc_mld=indxTVmix_mld+NT,
      &           indxTrate_mld=indxTForc_mld+NT,
-     &           indxTentr_mld=indxTrate_mld+NT  
+     &           indxTentr_mld=indxTrate_mld+NT
 #  endif
      &                                         )
 # endif
@@ -361,7 +361,7 @@
      &           indxMCor=indxMVadv+2,
      &           indxMPrsgrd=indxMCor+2,
      &           indxMHmix=indxMPrsgrd+2,
-     &           indxMVmix=indxMHmix+2, 
+     &           indxMVmix=indxMHmix+2,
      &           indxMVmix2=indxMVmix+2,
      &           indxMHdiff=indxMVmix2+2,
      &           indxMrate=indxMHdiff+2)
@@ -386,7 +386,7 @@
      &           indxvrtCor=indxvrtHdiff+1,
      &           indxvrtPrsgrd=indxvrtCor+1,
      &           indxvrtHmix=indxvrtPrsgrd+1,
-     &           indxvrtVmix=indxvrtHmix+1, 
+     &           indxvrtVmix=indxvrtHmix+1,
      &           indxvrtrate=indxvrtVmix+1,
      &           indxvrtVmix2=indxvrtrate+1,
      &           indxvrtWind=indxvrtVmix2+1,
@@ -408,11 +408,11 @@
      &           ntrc_bio+ntrc_sed+
      &           ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
      &           indxekHdiff=indxekHadv+1,
-     &           indxekVadv=indxekHdiff+1,     
+     &           indxekVadv=indxekHdiff+1,
      &           indxekCor=indxekVadv+1,
      &           indxekPrsgrd=indxekCor+1,
      &           indxekHmix=indxekPrsgrd+1,
-     &           indxekVmix=indxekHmix+1, 
+     &           indxekVmix=indxekHmix+1,
      &           indxekrate=indxekVmix+1,
      &           indxekvol=indxekrate+1,
      &           indxekVmix2=indxekvol+1,
@@ -498,7 +498,7 @@
      &           indxsurfv=indxsurfu+1)
 # endif
 # if defined BIOLOGY && defined DIAGNOSTICS_BIO
-      integer indxbioFlux, indxbioVSink  
+      integer indxbioFlux, indxbioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
      &        , indxGasExcFlux
 #  endif
@@ -537,10 +537,10 @@
 #  ifdef BIO_BioEBUS
       integer indxAOU, indxWIND10
       parameter (indxAOU=indxAkv+ntrc_temp+1,
-     &           indxWIND10=indxAkv+ntrc_temp+2)      
+     &           indxWIND10=indxAkv+ntrc_temp+2)
 #     ifdef CARBON
       integer indxpCO2
-      parameter (indxpCO2=indxAkv+ntrc_temp+3)       
+      parameter (indxpCO2=indxAkv+ntrc_temp+3)
 #     endif
 #  endif
 # endif
@@ -665,7 +665,7 @@
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
 #  endif
 # endif
-#else     
+#else
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
 #endif
@@ -696,7 +696,7 @@
      &           indxRADSW=indxSST+7, indxPRATE=indxSST+8,
      &           indxUWND=indxSST+9,  indxVWND=indxSST+10,
      &           indxPATM=indxSST+11)
-      integer indxShflx_rlw,indxShflx_lat,indxShflx_sen 
+      integer indxShflx_rlw,indxShflx_lat,indxShflx_sen
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
 # endif
@@ -743,37 +743,37 @@
       integer indxBTCR
 #   if defined BEDLOAD && defined SUSPLOAD
       parameter (indxBTCR=indxSed+1+5*NST+1)
-#   else      
+#   else
       parameter (indxBTCR=indxSed+1+3*NST+1)
-#   endif      
+#   endif
 #  endif
 # endif
 # if defined SST_SKIN && defined TEMPERATURE
       integer indxSST_skin
       parameter (indxSST_skin=indxSUSTR+41)
-# endif 
+# endif
 #endif /* SOLVE3D */
 
 #ifdef BBL
-      integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot, 
+      integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot,
      &        indxZbapp, indxBostrw
 # ifdef SEDIMENT
       parameter (indxBBL=indxSUSTR+42+6*NST,
 # else
-      parameter (indxBBL=indxSUSTR+42, 
+      parameter (indxBBL=indxSUSTR+42,
 # endif
      &           indxAbed  =indxBBL,    indxHrip  =indxAbed+1,
-     &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3, 
+     &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3,
      &           indxZbapp =indxAbed+4, indxBostrw=indxAbed+5)
 # ifndef ANA_WWAVE
       integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
 #  ifdef MUSTANG
      &          ,indxWWU
 #  endif
-      parameter (indxWWA=indxAbed+6, indxWWD=indxWWA+1, 
+      parameter (indxWWA=indxAbed+6, indxWWD=indxWWA+1,
      &           indxWWP=indxWWA+2
 #  ifdef MUSTANG
-     &          ,indxWWU=indxWWA+7 
+     &          ,indxWWU=indxWWA+7
 #  endif
 #  ifdef MRL_WCI
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
@@ -790,7 +790,7 @@
 # ifdef MUSTANG
      &          ,indxWWU
 # endif
-      parameter (indxWWA=indxSUSTR+42, indxWWD=indxWWA+1, 
+      parameter (indxWWA=indxSUSTR+42, indxWWD=indxWWA+1,
      &           indxWWP=indxWWA+2
 # ifdef MUSTANG
      &          ,indxWWU=indxWWA+7
@@ -799,7 +799,7 @@
      &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
      &           indxWER=indxWWA+5
 # endif
-     &                             )  
+     &                             )
 #endif  /* BBL */
 
 #if defined MRL_WCI || defined OW_COUPLING
@@ -808,7 +808,7 @@
       parameter (indxSUP=indxSUSTR+54+6*NST,
 # else
       parameter (indxSUP  =indxSUSTR+54,
-# endif      
+# endif
      &           indxUST2D =indxSUP+1, indxVST2D=indxSUP+2)
 # ifdef SOLVE3D
       integer indxUST,indxVST,indxWST,indxAkb,indxAkw,indxKVF,
@@ -820,17 +820,17 @@
 # endif
 # ifdef DIAGNOSTICS_UV
       integer indxMvf,indxMbrk,indxMStCo,indxMVvf,
-     &        indxMPrscrt,indxMsbk,indxMbwf,indxMfrc 
+     &        indxMPrscrt,indxMsbk,indxMbwf,indxMfrc
       parameter (indxMvf=indxKAPS+1,indxMbrk=indxMvf+2,
      &           indxMStCo=indxMvf+4,indxMVvf=indxMvf+6,
      &           indxMPrscrt=indxMvf+8,indxMsbk=indxMvf+10,
-     &           indxMbwf=indxMvf+12,indxMfrc=indxMvf+14) 
+     &           indxMbwf=indxMvf+12,indxMfrc=indxMvf+14)
 # endif
       integer indxHRM,indxFRQ,indxWKX,indxWKE,indxEPB
      &       ,indxEPD,indxWAC,indxWAR,indxEPR
-      parameter (indxHRM=indxSUP+40, 
+      parameter (indxHRM=indxSUP+40,
      &           indxFRQ=indxHRM+1, indxWAC=indxHRM+2,
-     &           indxWKX=indxHRM+3, indxWKE=indxHRM+4, 
+     &           indxWKX=indxHRM+3, indxWKE=indxHRM+4,
      &           indxEPB=indxHRM+5, indxEPD=indxHRM+6,
      &           indxWAR=indxHRM+7, indxEPR=indxHRM+8 )
 #endif  /* MRL_WCI */
@@ -886,21 +886,21 @@
      & pw3dvar=11, b3dvar=12)
 
 !            Horizontal array dimensions in netCDF files.
-! xi_rho     WARNING!!! In MPI code in the case of PARALLEL_FILES 
+! xi_rho     WARNING!!! In MPI code in the case of PARALLEL_FILES
 ! xi_u       _and_ NON-Periodicity in either XI- or ETA-direction,
 ! eta_rho    these depend on corresonding MPI-node indices ii,jj
 ! eta_v      and therefore become live variables, which are placed
 !            into common block below rather than defined here as
-!            parameters. 
+!            parameters.
 !
-! Note (P. Marchesiello): 
-!   the remark above is now extended to periodic conditions, i.e., 
-!   if PARALLEL_FILES is defined, netCDF files array dimensions are 
-!   always set in MPI-Setup and depend on MPI-nodes. After rejoining 
+! Note (P. Marchesiello):
+!   the remark above is now extended to periodic conditions, i.e.,
+!   if PARALLEL_FILES is defined, netCDF files array dimensions are
+!   always set in MPI-Setup and depend on MPI-nodes. After rejoining
 !   the parallel files (ncjoin), the resulting global netCDF file has
 !   the same dimension as it would have if PARALLEL_FILES was undefined.
 !
-      integer xi_rho,xi_u, eta_rho,eta_v    
+      integer xi_rho,xi_u, eta_rho,eta_v
 #ifndef AGRIF
 # if defined MPI && defined PARALLEL_FILES
 !#  ifdef EW_PERIODIC
@@ -940,7 +940,7 @@
 !                    _clm           climatology
 !                    _qbar          river runoff
 !                    _btf           hydrothermal flux
-!     
+!
 ! endings refer to:  ___Time  time [in seconds]
 !                    ___Tstep time step numbers and record numbers
 !   all objects      ___Z     free-surface
@@ -982,7 +982,7 @@
      &     , ncidqbar, ncidbtf
      &     , ntsrf,  ntssh,  ntsst, ntsss, ntuclm
      &     , ntbulk, ntqbar, ntww
-#if defined WAVE_OFFLINE 
+#if defined WAVE_OFFLINE
       integer ncidwave
 #endif
 
@@ -1013,8 +1013,8 @@
 # ifdef M3FAST
 #  if defined LMD_MIXING || defined GLS_MIXING
       integer rstBustr, rstBvstr
-#  endif       
-# endif      
+#  endif
+# endif
 # ifdef SEDIMENT
       integer rstSed(NST+2)
 # endif
@@ -1091,7 +1091,7 @@
 #   ifdef OXYGEN
      &      , hisU10, hisKvO2, hisO2sat
 #   endif
-#  elif defined BIO_BioEBUS 
+#  elif defined BIO_BioEBUS
       integer hisAOU, hisWIND10
 #  endif
 # endif  /* BIOLOGY */
@@ -1100,17 +1100,17 @@
       integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
      &      +2*NST
-#  endif   
+#  endif
 #  ifdef BEDLOAD
      &      +2*NST
 #  endif
 #  if defined MIXED_BED || defined COHESIVE_BED
      &      +1
-#  endif   
+#  endif
      & )
 # endif /* SEDIMENT */
 
-# ifdef MUSTANG 
+# ifdef MUSTANG
       integer hisMust(ntrc_subs+6
 #  ifdef key_MUSTANG_specif_outputs
      &                +3*ntrc_subs + 2
@@ -1124,7 +1124,7 @@
      &               )
 # endif /* MUSTANG */
 
-# if defined DIAGNOSTICS_TS 
+# if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv(NT), diaTYadv(NT), diaTVadv(NT)
@@ -1159,7 +1159,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_VRT
-      integer nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt 
+      integer nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
      &      , diags_vrtXadv(2), diags_vrtYadv(2), diags_vrtHdiff(2)
      &      , diags_vrtCor(2), diags_vrtPrsgrd(2), diags_vrtHmix(2)
@@ -1173,7 +1173,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_EK
-      integer nciddiags_ek, nrecdiags_ek, nrpfdiags_ek 
+      integer nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv(2), diags_ekHdiff(2),  diags_ekVadv(2)
      &      , diags_ekCor(2), diags_ekPrsgrd(2), diags_ekHmix(2)
@@ -1293,10 +1293,10 @@
 #   endif
 #   if defined MIXED_BED || defined COHESIVE_BED
      &      +1
-#   endif   
+#   endif
      & )
 #  endif
-#  ifdef MUSTANG 
+#  ifdef MUSTANG
       integer avgMust(ntrc_subs+6)
 #  endif
 
@@ -1348,7 +1348,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
-       integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg 
+       integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
      &      , diags_vrtXadv_avg(2), diags_vrtYadv_avg(2), diags_vrtHdiff_avg(2)
      &      , diags_vrtCor_avg(2), diags_vrtPrsgrd_avg(2), diags_vrtHmix_avg(2)
@@ -1362,7 +1362,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
-       integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg 
+       integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
      &      , diags_ekHadv_avg(2), diags_ekHdiff_avg(2), diags_ekVadv_avg(2)
      &      , diags_ekCor_avg(2), diags_ekPrsgrd_avg(2), diags_ekHmix_avg(2)
@@ -1426,7 +1426,7 @@
 # endif
 
 #endif /* AVERAGES */
- 
+
 #ifdef SOLVE3D
 # define NWRTHIS 500+NT
 #else
@@ -1436,7 +1436,7 @@
 #ifdef AVERAGES
      &      , wrtavg(NWRTHIS)
 #endif
-#ifdef DIAGNOSTICS_TS 
+#ifdef DIAGNOSTICS_TS
      &      , wrtdia3D(NT+1)
      &      , wrtdia2D(NT+1)
 # ifdef AVERAGES
@@ -1498,7 +1498,7 @@
 #ifdef WAVE_OFFLINE
      &      , ncidwave
 #endif
-     
+
 #if defined MPI && defined PARALLEL_FILES
 !# ifndef EW_PERIODIC
      &      , xi_rho,  xi_u
@@ -1514,11 +1514,11 @@
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
-     &                         , rstU,    rstV 
+     &                         , rstU,    rstV
 # ifdef TRACERS
      & ,   rstT
-# endif     
-# if defined LMD_SKPP 
+# endif
+# if defined LMD_SKPP
      &      , rstHbl
 # endif
 # ifdef LMD_BKPP
@@ -1534,8 +1534,8 @@
 # ifdef M3FAST
 #  if defined GLS_MIXING || defined LMD_MIXING
      &      , rstBustr,rstBvstr
-#  endif      
-# endif     
+#  endif
+# endif
 #ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
 # ifdef M3FAST
@@ -1806,7 +1806,7 @@
      &      , diabioGasExc
 # ifdef AVERAGES
      &      , nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
-     &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg 
+     &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
      &      , diabioFlux_avg
      &      , diabioVSink_avg
      &      , diabioGasExc_avg
@@ -1847,7 +1847,7 @@
 #    ifdef OXYGEN
      &      , avgU10, avgKvO2, avgO2sat
 #    endif
-#   elif defined BIO_BioEBUS 
+#   elif defined BIO_BioEBUS
      &      , avgAOU, avgWIND10
 #   endif
 #  endif  /* BIOLOGY */
@@ -1952,7 +1952,7 @@
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
-#ifdef DIAGNOSTICS_TS 
+#ifdef DIAGNOSTICS_TS
      &                                ,  dianame
 # ifdef AVERAGES
      &                                ,  dianame_avg
@@ -2006,7 +2006,7 @@
  || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
      &                                ,   clmname
 #endif
-#ifdef FRC_BRY 
+#ifdef FRC_BRY
      &                                ,   bry_file
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
@@ -2037,7 +2037,7 @@
 #endif
 
       common /cncscrum/   date_str,   title,  start_date
-     &         ,   origin_date, start_date_run 
+     &         ,   origin_date, start_date_run
      &         ,   ininame,  grdname, hisname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
@@ -2127,4 +2127,3 @@
      &                                ,   bioname
 #endif
      &                                ,   vname
-

@@ -2,14 +2,14 @@
 #
 #======================================================================
 # CROCO is a branch of ROMS developped at IRD and INRIA, in France
-# The two other branches from UCLA (Shchepetkin et al) 
+# The two other branches from UCLA (Shchepetkin et al)
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # CROCO specific routines (nesting) are under CeCILL-C license.
-# 
+#
 # CROCO website : http://www.croco-ocean.org
 #======================================================================
 #
-# Universal machine independent makefile for ROMS model 
+# Universal machine independent makefile for ROMS model
 #
 #======================================================================
 # Set machine dependent definitions and rules.
@@ -23,8 +23,8 @@ include Makedefs
 # blanc lines:
 #   1) main driving part;		 2) 2D time stepping engine;
 #   3) 3D time stepping engine;		 4) non-hydrostatic engine
-#   5) sea-water EOS;			 6) vertical mixing schemes;    
-#   7) on-fly model diagnostics;	 8) netCDF I/O routines;	   
+#   5) sea-water EOS;			 6) vertical mixing schemes;
+#   7) on-fly model diagnostics;	 8) netCDF I/O routines;
 #   9) main forcing;			10) Wave forcing routines;
 #  11) Online surface forcing;		12) Floats routines;
 #  13) Station diagnostics;		14) biology/sediment routines;
@@ -192,8 +192,8 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJS90) $(OBJS) 
-	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
+$(SBIN):   $(OBJS90) $(OBJS)
+	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
 	 mv a.out $(SBIN)
 
 #
@@ -207,25 +207,25 @@ mpc: mpc.F
 	$(CPP) -P $(CPPFLAGS) mpc.F > mpc_.f
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o mpc mpc_.f
 
-cross_matrix: mpc cross_matrix.F 
+cross_matrix: mpc cross_matrix.F
 	$(CPP) -P $(CPPFLAGS) cross_matrix.F | ./mpc > cross_matrix_.f
 	$(CFT) -c $(FFLAGS) cross_matrix_.f -o cross_matrix.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cross_matrix cross_matrix.o
 
-cppcheck:  mpc cppcheck.F 
+cppcheck:  mpc cppcheck.F
 	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
 	$(CFT) -c $(FFLAGS) cppcheck_.f -o cppcheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
 
-srcscheck: mpc srcscheck.F 
+srcscheck: mpc srcscheck.F
 	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
 	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
 
-checkkwds: mpc checkkwds.F 
+checkkwds: mpc checkkwds.F
 	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
-	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o	
+	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
 	rm -f setup_kwds.F
 
@@ -294,5 +294,3 @@ my_barrier.o: my_barrier.f
 #
 
 -include Make.depend
-
-

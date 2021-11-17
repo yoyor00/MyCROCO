@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,7 +13,7 @@
 #ifndef ANA_SMFLUX
                               ! Read point or grided surface momentum
       subroutine get_smflux   ! flux (wind stress) at the appropriate
-                              ! time from forcing netCDF file. 
+                              ! time from forcing netCDF file.
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -38,7 +38,7 @@ c**        call opencdf (frcname,N)
 !
         if (ncidfrc.eq.-1) then
           ierr=nf_open (frcname(1:lstr), nf_nowrite, ncidfrc)
-          if (ierr .ne. nf_noerr) goto 4                 !--> ERROR 
+          if (ierr .ne. nf_noerr) goto 4                 !--> ERROR
         endif
 
         ierr=nf_inq_varid (ncidfrc, 'sms_time', sms_tid)
@@ -106,14 +106,14 @@ c**        call opencdf (frcname,N)
 ! data.
 !
   1   i=3-itsms
-       cff=time+0.5*dt  
+       cff=time+0.5*dt
         if (sms_time(i).le.cff .and. cff.lt.sms_time(itsms)) return
         ierr=advance_cycle (sms_cycle, ntsms, sms_ncycle, sms_rec)
         if (ierr.ne.0) goto 7                           !--> ERROR
 
         ierr=nf_get_var1_FTYPE(ncidfrc, sms_tid, sms_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'sms_time', sms_rec 
+          write(stdout,6) 'sms_time', sms_rec
           goto 99                                         !--> ERROR
         endif
         sms_time(i)=cff*day2sec+sms_cycle*sms_ncycle
@@ -126,7 +126,7 @@ c**        call opencdf (frcname,N)
           ierr=nf_get_var1_FTYPE(ncidfrc,susid,sms_rec,sustrp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'sustr', sms_rec 
+          write(stdout,6) 'sustr', sms_rec
           goto 99                                         !--> ERROR
         endif
 
@@ -137,12 +137,12 @@ c**        call opencdf (frcname,N)
           ierr=nf_get_var1_FTYPE(ncidfrc,svsid,sms_rec,svstrp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'svstr', sms_rec 
+          write(stdout,6) 'svstr', sms_rec
           goto 99                                         !--> ERROR
         endif
 
        itsms=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SMFLUX --',
      &              'Read surface momentum stresses for time =', cff
 #ifdef MPI
@@ -151,7 +151,7 @@ c**        call opencdf (frcname,N)
       if (ntsms.gt.1) goto 1
       if (ntsms.eq.1) return
 !
-! Sort out error messages: The following portion of the code is 
+! Sort out error messages: The following portion of the code is
 !===== === ===== ========= not accessed unless something goes wrong.
 !
   3   format(/,' GET_SMFLUX - unable to find forcing variable: ',A,
@@ -169,7 +169,7 @@ c**        call opencdf (frcname,N)
      &       1x,'in forcing netCDF file: ',a, /,14x,'TDAYS = ',
      &       g12.4,2x,'last available SMS_TIME = ',g12.4)
  99   may_day_flag=2
-      return  
+      return
       end
 
       subroutine set_smflux_tile (Istr,Iend,Jstr,Jend)
@@ -292,8 +292,8 @@ c**        call opencdf (frcname,N)
             enddo
           enddo
 # endif /* SMFLUX_CURVGRID */
-        endif 
-#  if defined SFLUX_CFB && !defined BULK_FLUX 
+        endif
+#  if defined SFLUX_CFB && !defined BULK_FLUX
 !
         do j=JstrR,JendR
           do i=Istr,IendR
@@ -314,12 +314,12 @@ c**        call opencdf (frcname,N)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'sms_time', tdays, sms_time(it1)*sec2day,
-     &                                       sms_time(it2)*sec2day 
+     &                                       sms_time(it2)*sec2day
   1       format(/,' SET_SMFLUX_TILE - current model time',
      &           1x,'exceeds ending value for variable: ',a,/,
      &           14x,'TDAYS = ',g12.4,2x,'SMS_TSTART = ',g12.4,2x,
      &                                        'SMS_TEND = ',g12.4)
-          may_day_flag=2 
+          may_day_flag=2
         endif
       endif
       return

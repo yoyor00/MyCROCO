@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -82,7 +82,7 @@ C$    integer omp_get_thread_num
 #ifdef SEDIMENT
      &       ,ilay
 #endif
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
      &       ,itide
 #endif
       real init    !!!!  0xFFFA5A5A ==> NaN
@@ -113,16 +113,16 @@ C$    integer omp_get_thread_num
           vbar(i,j,3)=init
           vbar(i,j,4)=init
 #ifdef AVERAGES
-          zeta_avg(i,j)=init 
+          zeta_avg(i,j)=init
           ubar_avg(i,j)=init
           vbar_avg(i,j)=init
 #endif
 #ifdef MRL_WCI
-          sup(i,j)=init 
+          sup(i,j)=init
           ust2d(i,j)=init
           vst2d(i,j)=init
 # ifdef AVERAGES
-          sup_avg(i,j)=init 
+          sup_avg(i,j)=init
           ust2d_avg(i,j)=init
           vst2d_avg(i,j)=init
 # endif
@@ -159,7 +159,7 @@ C$    integer omp_get_thread_num
 #endif
         enddo
       enddo
-           
+
 #ifdef SOLVE3D
 !
 !  Initialize 3-D primitive variables.
@@ -250,7 +250,7 @@ C$    integer omp_get_thread_num
             Mbwf(i,j,k,2)=init
             Mfrc(i,j,k,1)=init
             Mfrc(i,j,k,2)=init
-#  endif             
+#  endif
 #  ifdef AVERAGES
             MXadv_avg(i,j,k,1)=init
             MXadv_avg(i,j,k,2)=init
@@ -297,7 +297,7 @@ C$    integer omp_get_thread_num
             Mbwf_avg(i,j,k,2)=init
             Mfrc_avg(i,j,k,1)=init
             Mfrc_avg(i,j,k,2)=init
-#   endif             
+#   endif
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_UV */
           enddo
@@ -325,7 +325,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-# ifdef TRACERS      
+# ifdef TRACERS
       do itrc=1,NT
         got_tini(itrc)=.false.
         do k=1,N
@@ -444,7 +444,7 @@ C$    integer omp_get_thread_num
 # ifdef DIAGNOSTICS_VRT
       do j=jstrR,jendR             ! 3-D primitive
         do i=istrR,iendR           ! variables.
-          vrtXadv(i,j)=init 
+          vrtXadv(i,j)=init
           vrtYadv(i,j)=init
           vrtHdiff(i,j)=init
           vrtCor(i,j)=init
@@ -487,9 +487,9 @@ C$    integer omp_get_thread_num
 # ifdef DIAGNOSTICS_EK
       do j=jstrR,jendR             ! 3-D primitive
         do i=istrR,iendR           ! variables.
-          ekHadv(i,j)=init 
+          ekHadv(i,j)=init
           ekHdiff(i,j)=init
-          ekVadv(i,j)=init            
+          ekVadv(i,j)=init
           ekCor(i,j)=init
           ekPrsgrd(i,j)=init
           ekHmix(i,j)=init
@@ -508,7 +508,7 @@ C$    integer omp_get_thread_num
 #  ifdef AVERAGES
           ekHadv_avg(i,j)=init
           ekHdiff_avg(i,j)=init
-          ekVadv_avg(i,j)=init           
+          ekVadv_avg(i,j)=init
           ekCor_avg(i,j)=init
           ekPrsgrd_avg(i,j)=init
           ekHmix_avg(i,j)=init
@@ -527,9 +527,9 @@ C$    integer omp_get_thread_num
 #  endif /* AVERAGES */
 
 #  ifdef DIAGNOSTICS_EK_MLD
-          ekHadv_mld(i,j)=init 
+          ekHadv_mld(i,j)=init
           ekHdiff_mld(i,j)=init
-          ekVadv_mld(i,j)=init            
+          ekVadv_mld(i,j)=init
           ekCor_mld(i,j)=init
           ekPrsgrd_mld(i,j)=init
           ekHmix_mld(i,j)=init
@@ -546,7 +546,7 @@ C$    integer omp_get_thread_num
 #   ifdef AVERAGES
           ekHadv_mld_avg(i,j)=init
           ekHdiff_mld_avg(i,j)=init
-          ekVadv_mld_avg(i,j)=init           
+          ekVadv_mld_avg(i,j)=init
           ekCor_mld_avg(i,j)=init
           ekPrsgrd_mld_avg(i,j)=init
           ekHmix_mld_avg(i,j)=init
@@ -639,12 +639,12 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS 
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
         do j=JstrR,JendR
           do i=IstrR,IendR
             do iflux=1,NumGasExcTerms
               GasExcFlux(i,j,iflux)= init
-            enddo        
+            enddo
           enddo
         enddo
 #  endif
@@ -656,21 +656,21 @@ C$    integer omp_get_thread_num
                wind10(i,j) =init
 #   ifdef AVERAGES
                wind10_avg(i,j) =init
-#   endif     	    
+#   endif
             enddo
           enddo
 
-        do k=1,N  
+        do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
                AOU(i,j,k) =init
 #   ifdef AVERAGES
                AOU_avg(i,j,k) =init
-#   endif 
+#   endif
             enddo
           enddo
         enddo
-# endif 
+# endif
 
 # ifdef SEDIMENT
 !
@@ -731,12 +731,12 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            Akb(i,j,k)=init 
-            Akw(i,j,k)=init 
+            Akb(i,j,k)=init
+            Akw(i,j,k)=init
             E_pre(i,j,k)=init
 # ifdef AVERAGES
-            Akb_avg(i,j,k)=init 
-            Akw_avg(i,j,k)=init 
+            Akb_avg(i,j,k)=init
+            Akw_avg(i,j,k)=init
 # endif
           enddo
         enddo
@@ -753,11 +753,11 @@ C$    integer omp_get_thread_num
       enddo
       do j=JstrR,JendR
         do i=IstrR,IendR
-          calP(i,j)=init 
-          Kapsrf(i,j)=init 
+          calP(i,j)=init
+          Kapsrf(i,j)=init
 # ifdef AVERAGES
-          calP_avg(i,j)=init 
-          Kaps_avg(i,j)=init 
+          calP_avg(i,j)=init
+          Kaps_avg(i,j)=init
 # endif
           enddo
         enddo
@@ -815,11 +815,11 @@ C$    integer omp_get_thread_num
             stflxg(i,j,2,itrc)=init
 # endif
             btflx(i,j,itrc)=init
-            
+
 # if BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
-# endif           
+# endif
           enddo
         enddo
       enddo
@@ -835,7 +835,7 @@ C$    integer omp_get_thread_num
           dqdtg(i,j,2)=init
           sstg (i,j,2)=init
 #  endif /* TEMPERATURE QCORRECTION */
-#  if defined SALINITY && defined SFLX_CORR 
+#  if defined SALINITY && defined SFLX_CORR
           sss (i,j)=init
 #    ifndef ANA_SSS
           sssg (i,j,1)=init
@@ -844,7 +844,7 @@ C$    integer omp_get_thread_num
 #  endif
 # endif
 !
-# if defined BULK_FLUX && defined TEMPERATURE          
+# if defined BULK_FLUX && defined TEMPERATURE
 #  if defined READ_PATM && defined OBC_PATM
           patm2d(i,j)=paref
 # endif
@@ -895,7 +895,7 @@ C$    integer omp_get_thread_num
           shflx_sen_avg(i,j)=init
 #  endif
 # endif /* BULK_FLUX */
-# if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
+# if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
           wspd(i,j)=init
 # endif
 # ifdef CFB_WIND_TRA
@@ -968,7 +968,7 @@ C$    integer omp_get_thread_num
       enddo
 #endif
 #ifdef SOLVE3D
-# if defined TNUDGING && defined TCLIMATOLOGY && defined TRACERS 
+# if defined TNUDGING && defined TCLIMATOLOGY && defined TRACERS
 
       do itrc=1,NT
         do k=1,N
@@ -980,7 +980,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# if (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)) && defined TRACERS 
+# if (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)) && defined TRACERS
 
       do itrc=1,NT
         do k=1,N
@@ -992,7 +992,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS 
+# if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
       do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
@@ -1075,7 +1075,7 @@ C$    integer omp_get_thread_num
             ubry_west(j,k)=init
             vbry_west(j,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRACERS 
+#   if defined T_FRC_BRY && defined TRACERS
             do itrc=1,NT
               tbry_west(j,k,itrc)=init
             enddo
@@ -1179,7 +1179,7 @@ C$    integer omp_get_thread_num
       endif
 # endif /* OBC_NORTH */
 #endif
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES 
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 !
 ! Initialize array for tidal elevation forcing.
 !
@@ -1236,7 +1236,7 @@ C$    integer omp_get_thread_num
         enddo
 #endif
 #if defined TS_DIF2 || defined SPONGE_DIF2
-# if defined TRACERS        
+# if defined TRACERS
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -1249,10 +1249,10 @@ C$    integer omp_get_thread_num
               diff2_sponge(i,j)=init
             enddo
           enddo
-# endif          
+# endif
 #endif
 #ifdef TS_DIF4
-# if defined TRACERS          
+# if defined TRACERS
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -1278,7 +1278,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-# endif        
+# endif
 #endif
 #ifdef TS_MIX_ISO
         do k=1,N-1
@@ -1349,11 +1349,11 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef LMD_SKPP2005
-          hbls(i,j,1)=init          
-          hbls(i,j,2)=init 
-#  else        
+          hbls(i,j,1)=init
+          hbls(i,j,2)=init
+#  else
           hbl(i,j)=init
-#  endif         
+#  endif
           kbl(i,j)=init
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
@@ -1407,8 +1407,8 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            trb(i,j,k,nstp,itke)=init 
-            trb(i,j,k,nstp,igls)=init        
+            trb(i,j,k,nstp,itke)=init
+            trb(i,j,k,nstp,igls)=init
             Lscale(i,j,k)=init
           enddo
         enddo

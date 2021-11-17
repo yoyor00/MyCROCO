@@ -2,16 +2,16 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
                                ! Writes requested model
-      subroutine wrt_his       ! fields at requested levels 
+      subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat,nv_adv
@@ -25,7 +25,7 @@
      &                        ,nv_out3Dnv_specif, nv_out2D_specif
      &                        ,varspecif3Dnv_save,varspecif2D_save
 # endif
-# ifdef key_sand2D  
+# ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
       USE substance,    ONLY : l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp,rouse2d
@@ -98,8 +98,8 @@
 
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
-        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 
-     &                 1, MPI_COMM_WORLD, status, ierr) 
+        call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &                 1, MPI_COMM_WORLD, status, ierr)
       endif
 #endif
 !
@@ -108,23 +108,23 @@
       call def_his (ncidhis, nrechis, ierr)
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(hisname)
-!                                          !!! WARNING: Once time  
-! Set record within the file.              !!! stepping has been 
+!                                          !!! WARNING: Once time
+! Set record within the file.              !!! stepping has been
 !                                          !!! started, it is assumed
       nrechis=max(1,nrechis)               !!! that global history
       if (nrpfhis.eq.0) then               !!! record index is
-        record=nrechis                     !!! advanced by main.  
+        record=nrechis                     !!! advanced by main.
       else
         record=1+mod(nrechis-1, nrpfhis)
       endif
 
 
-#undef CR 
-CR      write(*,*) 'wrt_his: Entry  ' MYID 
-!     
+#undef CR
+CR      write(*,*) 'wrt_his: Entry  ' MYID
+!
 !     Write out evolving model variables:
 !     ----- --- -------- ----- ----------
-!     
+!
 !     Time step number and record numbers.
 !
       type=filetype_his
@@ -173,9 +173,9 @@ CR      write(*,*) 'wrt_his: Entry  ' MYID
 #endif
 
 CR      write(*,*) 'wrt_his:  time  ' MYID
-!     
+!
 !     Time
-!     
+!
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -184,10 +184,10 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
      &        MYID
         goto 99                !--> ERROR
       endif
-      
-!     
+
+!
 !     Time2
-!     
+!
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
@@ -197,7 +197,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
         goto 99                !--> ERROR
       endif
 CR      write(*,*) 'wrt_his:  time  ' MYID
-!     
+!
 !     Barotropic mode variables: free-surface and 2D momentum
 !     components in XI-,ETA-directions.
 !
@@ -215,25 +215,25 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
         call fillvalue2d(work2d,ncidhis,hisZ,indxZ,
      &        record,r2dvar,type)
       endif
-!     
-      if (wrthis(indxUb)) then  
+!
+      if (wrthis(indxUb)) then
         work2d(:,:)=ubar(:,:,fast_indx_out)
         call fillvalue2d(work2d,ncidhis,hisUb,indxUb,
      &        record,u2dvar,type)
 CR      write(*,*) 'wrt_his: wrtUBAR' MYID
       endif
-!     
+!
       if (wrthis(indxVb)) then
         work2d(:,:)=vbar(:,:,fast_indx_out)
         call fillvalue2d(work2d,ncidhis,hisVb,indxVb,
      &        record,v2dvar,type)
 CR           write(*,*) 'wrt_his: wrtVBAR' MYID
-      endif    
+      endif
 
 #ifdef MORPHODYN
-!     
+!
 !     Write out time evolving bathymetry
-CR        write(*,*) 'wrt_his: wrtHm' 
+CR        write(*,*) 'wrt_his: wrtHm'
 CR        write(*,*) 'wrt_his:',wrthis(indxHm),indxHm
 CR        write(*,*) 'wrt_his:' ,work2d(10,2),ncidhis
 
@@ -244,9 +244,9 @@ CR        write(*,*) 'wrt_his:' ,work2d(10,2),ncidhis
       endif
 #endif
 
-!     
+!
 !     Write out kinematic bottom stress (N/m2).
-!     
+!
       if (wrthis(indxBostr)) then
         do j=0,Mm
           do i=0,Lm
@@ -259,7 +259,7 @@ CR        write(*,*) 'wrt_his:' ,work2d(10,2),ncidhis
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  bostr' MYID
       endif
-      
+
 !
 !     Write out kinematic U-bottom stress (N/m2).
 !
@@ -269,9 +269,9 @@ CR      write(*,*) 'wrt_his:  bostr' MYID
      &        record,u2dvar,type)
 CR      write(*,*) 'wrt_his:  bustr' MYID
       endif
-      
-      
-      
+
+
+
 !
 !     Write out kinematic V-bottom stress (N/m2).
 !
@@ -283,12 +283,13 @@ CR      write(*,*) 'wrt_his:  bvstr' MYID
       endif
       
 
-!     
+
+!
 !--   Atmospheric forcing : no mask, no fill value
-!     
-!     
+!
+!
 !     Write out kinematic surface stress (N/m2).
-!     
+!
       if (wrthis(indxWstr)) then
         do j=1,Mm
           do i=1,Lm
@@ -312,9 +313,9 @@ CR      write(*,*) 'wrt_his:  bvstr' MYID
         endif
 CR      write(*,*) 'wrt_his:  Wstr' MYID
       endif
-!     
+!
 !     Write out kinematic U surface stress component (N/m2).
-!     
+!
       if (wrthis(indxUWstr)) then
         work2d=sustr*rho0
         ierr=nf_fwrite(work2d, ncidhis, hisUWstr, record, u2dvar)
@@ -327,9 +328,9 @@ CR      write(*,*) 'wrt_his:  Wstr' MYID
         endif
 CR      write(*,*) 'wrt_his:  UWstr' MYID
       endif
-!     
+!
 !     Write out kinematic V surface stress component (N/m2).
-!     
+!
       if (wrthis(indxVWstr)) then
         work2d=svstr*rho0
         ierr=nf_fwrite(work2d,ncidhis,hisVWstr,record,v2dvar)
@@ -460,8 +461,8 @@ CR      write(*,*) 'wrt_his:  wrtEpr' MYID
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
-#ifdef MRL_WCI 
-!      
+#ifdef MRL_WCI
+!
 !  Add output variables linked to MRL_WCI
 !
       if (wrthis(indxSUP)) then
@@ -539,7 +540,7 @@ CR      write(*,*) 'wrt_his:  wrtVst' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtWst' MYID
       endif
-!Mixing coeff 
+!Mixing coeff
       if (wrthis(indxAkb)) then
         ierr=nf_fwrite (Akb, ncidhis, hisAkb, record, w3dvar)
         if (ierr .ne. nf_noerr) then
@@ -562,7 +563,7 @@ CR      write(*,*) 'wrt_his:  wrtAkb' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtAkw' MYID
       endif
-!Vortex force 
+!Vortex force
       if (wrthis(indxKVF)) then
         ierr=nf_fwrite (kvf, ncidhis, hisKVF, record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -574,7 +575,7 @@ CR      write(*,*) 'wrt_his:  wrtAkw' MYID
         endif
 CR      write(*,*) 'wrt_his:  wrtKvf' MYID
       endif
-!Bernouilli head 
+!Bernouilli head
       if (wrthis(indxCALP)) then
         ierr=nf_fwrite (calP, ncidhis, hisCALP, record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -599,27 +600,27 @@ CR      write(*,*) 'wrt_his:  wrtKaps' MYID
       endif
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
-!     
+!
 #ifdef SOLVE3D
-!     
+!
 !     3D momentum components in XI- and ETA-directions.
-!     
+!
       if (wrthis(indxU)) then
         workr=u(:,:,:,nstp)
         call fillvalue3d(workr,ncidhis,hisU,indxU,
-     &        record,u3dvar,type)   
+     &        record,u3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtU  ' MYID
       endif
-!     
+!
       if (wrthis(indxV)) then
         workr=v(:,:,:,nstp)
         call fillvalue3d(workr,ncidhis,hisV,indxV,
-     &        record,v3dvar,type)   
+     &        record,v3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
-!     
+!
 !     Tracer variables.
-!     
+!
 #ifdef TRACERS
       do itrc=1,NT
          if (wrthis(indxV+itrc)) then
@@ -641,16 +642,16 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
      &           indxV+itrc,record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
-      endif   
+      endif
       enddo
 #endif /* TRACERS */
-!     
+!
 !     Density anomaly.
-!     
+!
       if (wrthis(indxR)) then
         workr=rho+rho0-1000.
         call fillvalue3d(workr,ncidhis,hisR,indxR,
-     &        record,r3dvar,type)           
+     &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
 # if defined ANA_VMIX || defined BVF_MIXING \
@@ -667,9 +668,9 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
       endif
 # endif
 
-!     
+!
 !     S-coordinate omega vertical velocity (m/s).
-!     
+!
       if (wrthis(indxO)) then
         do k=0,N
           do j=0,Mm+1
@@ -677,7 +678,7 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
               work(i,j,k)= ( We(i,j,k)
 #ifdef VADV_ADAPT_IMP
      &                   +   Wi(i,j,k)
-#endif                  
+#endif
      &                              ) *pm(i,j)*pn(i,j)
 !#ifdef NBQ_MASS
 !     &                            /rho_nbq_avg1(i,j,k)
@@ -689,9 +690,9 @@ CR      write(*,*) 'wrt_his:  wrtbvf' MYID
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtO  ' MYID
       endif
-!     
+!
 !     Write out true vertical velocity (m/s).
-!     
+!
       if (wrthis(indxW)) then
 #ifdef NBQ
         do k=0,N
@@ -704,18 +705,18 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
         call fillvalue3d(work,ncidhis,hisW,indxW,record,w3dvar,type)
 #else
         do tile=0,NSUB_X*NSUB_E-1
-          call Wvlcty (tile, workr) 
+          call Wvlcty (tile, workr)
         enddo
         call fillvalue3d(workr,ncidhis,hisW,indxW,record,r3dvar,type)
 #endif
-         
+
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
       endif
-!     
+!
 #  ifdef VIS_COEF_3D
-!     
+!
 !     Write out Horizontal viscosity coefficient.
-!     
+!
       if (wrthis(indxVisc)) then
         workr=visc3d_r
         call fillvalue3d(workr,ncidhis,hisVisc,indxVisc,
@@ -723,11 +724,11 @@ CR      write(*,*) 'wrt_his:  wrtW  ' MYID
 CR      write(*,*) 'wrt_his:  wrtVisc' MYID
       endif
 #  endif
-!     
+!
 #  ifdef DIF_COEF_3D
-!     
+!
 !     Write out Horizontal Diffusivity coefficient.
-!     
+!
       if (wrthis(indxDiff)) then
         do k=1,N
           do j=1,Mm
@@ -756,18 +757,18 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
       endif
 CR      write(*,*) 'wrt_his:  wrtDiff' MYID
 #  endif
-!     
+!
 !     Write out vertical viscosity coefficient.
-!     
+!
       if (wrthis(indxAkv)) then
         work=Akv
         call fillvalue3d_w(work,ncidhis,hisAkv,indxAkv,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtAkv' MYID
       endif
-!     
+!
 !     Write out vertical diffusion coefficient for potential temperature.
-!     
+!
 # ifdef TEMPERATURE
       if (wrthis(indxAkt)) then
         work=Akt(:,:,:,itemp)
@@ -777,9 +778,9 @@ CR      write(*,*) 'wrt_his:  wrtAkt' MYID
       endif
 # endif
 # ifdef SALINITY
-!     
+!
 !     Write out vertical diffusion coefficient for salinity.
-!     
+!
       if (wrthis(indxAks)) then
         work=Akt(:,:,:,isalt)
         call fillvalue3d_w(work,ncidhis,hisAks,indxAks,
@@ -789,9 +790,9 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
 # endif
 
 # if defined LMD_SKPP || defined GLS_MIXING
-!     
+!
 !     Write out depth of planetary boundary layer (m).
-!     
+!
       if (wrthis(indxHbl)) then
 #  ifdef LMD_SKPP2005
         work2d=hbls(:,:,nstp)
@@ -804,9 +805,9 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
       endif
 # endif
 # ifdef LMD_BKPP
-!     
+!
 !     Write out depth of bottom planetary boundary layer (m).
-!     
+!
       if (wrthis(indxHbbl)) then
         work2d=hbbl
         call fillvalue2d(work2d,ncidhis,hisHbbl,indxHbbl,
@@ -815,27 +816,27 @@ CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
 # ifdef GLS_MIXING
-!     
+!
 !     Write out turbulent kinetic energy.
-!     
+!
       if (wrthis(indxTke)) then
-        work=trb(:,:,:,nstp,itke)       
+        work=trb(:,:,:,nstp,itke)
         call fillvalue3d_w(work,ncidhis,hisTke,indxTke,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
       endif
-!     
+!
 !     Write out generic length scale
-!     
+!
       if (wrthis(indxGls)) then
-        work=trb(:,:,:,nstp,igls) 
+        work=trb(:,:,:,nstp,igls)
         call fillvalue3d_w(work,ncidhis,hisGls,indxGls,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
-!     
+!
 !     Write out vertical mixing length scale
-!     
+!
       if (wrthis(indxLsc)) then
         work=Lscale
         call fillvalue3d_w(work,ncidhis,hisLsc,indxLsc,
@@ -844,10 +845,10 @@ CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
 # endif
 
-!     
-!     Write out total surface heat flux 
-!     
-#if defined TEMPERATURE 
+!
+!     Write out total surface heat flux
+!
+#if defined TEMPERATURE
       if (wrthis(indxShflx)) then
         work2d=stflx(:,:,itemp)*rho0*Cp
      &          SWITCH rmask
@@ -864,9 +865,9 @@ CR      write(*,*) 'wrt_his:  stflx(:,:,itemp)' MYID
 #endif
 
 #ifdef BHFLUX
-!     
-!     Write out bottom heat flux 
-!     
+!
+!     Write out bottom heat flux
+!
       if (wrthis(indxBhflx)) then
         work2d=btflx(:,:,itemp)*rho0*Cp
      &       SWITCH rmask
@@ -882,11 +883,11 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
         endif
 #endif
 
-#ifdef SALINITY    
+#ifdef SALINITY
 !     Write out surface salt flux
 !
-!       --> convert [psu.m.s-1] => [cm/days] : 
-!       stf_cff= 86400/0.01 = 1/stf_scale 
+!       --> convert [psu.m.s-1] => [cm/days] :
+!       stf_cff= 86400/0.01 = 1/stf_scale
 !       After forcing reading (get_stflx.F), multiply by 0.01/86400.
 !       Then in get_vbc.F, mult. by salinity t(i,j,N,nstp,isalt)
 !
@@ -894,7 +895,7 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
         do j=0,Mm+1
           do i=0,Lm+1
             work2d(i,j)=stf_cff*stflx(i,j,isalt)/
-     &              ( max(eps,t(i,j,N,nstp,isalt))) 
+     &              ( max(eps,t(i,j,N,nstp,isalt)))
      &              SWITCH rmask(i,j)
           enddo
         enddo
@@ -910,12 +911,12 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
 CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
        endif
 # ifdef BWFLUX
-!     
+!
 !     Write out bottom salt flux
 !
-       
-!       --> convert [psu.m.s-1] => [cm/days] : 
-!       btf_cff= 86400/0.01 = 1/btf_scale 
+
+!       --> convert [psu.m.s-1] => [cm/days] :
+!       btf_cff= 86400/0.01 = 1/btf_scale
 !       After forcing reading (get_btflx.F), multiply by 0.01/86400.
 !       Then in get_vbc.F, mult. by salinity t(i,j,1,nstp,isalt)
 !
@@ -923,7 +924,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          do j=0,Mm+1
             do i=0,Lm+1
                work2d(i,j)=btf_cff*btflx(i,j,isalt)/
-     &              ( max(eps,t(i,j,1,nstp,isalt))) 
+     &              ( max(eps,t(i,j,1,nstp,isalt)))
      &              SWITCH rmask(i,j)
             enddo
         enddo
@@ -938,29 +939,29 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       write(*,*) 'wrt_his:  btflx(:,:,isalt)' MYID
       endif
 # endif
-#endif      
-!     
+#endif
+!
 !     Write out surface heat flux component (W/m2)
-!         
+!
       if (wrthis(indxShflx_rsw)) then
-# if defined BULK_FLUX && defined TEMPERATURE 
+# if defined BULK_FLUX && defined TEMPERATURE
          work2d=shflx_rsw*rho0*Cp
          ierr=nf_fwrite(work2d, ncidhis, hisShflx_rsw, record,
      &        r2dvar)
-# else 
+# else
         work2d=srflx*rho0*Cp
         ierr=nf_fwrite(work2d, ncidhis, hisShflx_rsw, record, r2dvar)
 # endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxShflx_rsw))
           MPI_master_only write(stdout,1)
-     &        vname(1,indxShflx_rsw)(1:lvar), 
+     &        vname(1,indxShflx_rsw)(1:lvar),
      &           record, ierr
      &           MYID
           goto 99             !--> ERROR
         endif
       endif
-# if defined BULK_FLUX && defined TEMPERATURE 
+# if defined BULK_FLUX && defined TEMPERATURE
       if (wrthis(indxShflx_rlw)) then
         work2d=shflx_rlw*rho0*Cp
         ierr=nf_fwrite(work2d, ncidhis, hisShflx_rlw, record,
@@ -968,7 +969,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxShflx_rlw))
            MPI_master_only write(stdout,1)
-     &        vname(1,indxShflx_rlw)(1:lvar), 
+     &        vname(1,indxShflx_rlw)(1:lvar),
      &           record, ierr
      &           MYID
           goto 99             !--> ERROR
@@ -982,7 +983,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxShflx_lat))
            MPI_master_only write(stdout,1)
-     &        vname(1,indxShflx_lat)(1:lvar), 
+     &        vname(1,indxShflx_lat)(1:lvar),
      &           record, ierr
      &           MYID
           goto 99             !--> ERROR
@@ -996,7 +997,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
          if (ierr .ne. nf_noerr) then
            lvar=lenstr(vname(1,indxShflx_sen))
            MPI_master_only write(stdout,1)
-     &        vname(1,indxShflx_sen)(1:lvar), 
+     &        vname(1,indxShflx_sen)(1:lvar),
      &           record, ierr
      &           MYID
             goto 99             !--> ERROR
@@ -1004,28 +1005,28 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       endif
 # endif
 # if defined SST_SKIN && defined TEMPERATURE
-!     
+!
 !     Write out skin temperature (degC)
-!     
+!
       if (wrthis(indxT)) then
         work2d=sst_skin
         call fillvalue2d(work2d,ncidhis,hisSST_skin,indxSST_skin,
      &        record,r2dvar,type)
       endif
 # endif
-!     
+!
 # if defined BIOLOGY && !defined PISCES
-!     
+!
 !     Write out depth of the euphotic layer (m).
-!     
+!
       if (wrthis(indxHel)) then
         work2d=hel
         call fillvalue2d(work2d,ncidhis,hisHel,indxHel,
      &        record,r2dvar,type)
       endif
-!     
+!
 !     Write out depth of the euphotic layer (m).
-!     
+!
 #  if (defined BIO_NChlPZD ||  defined BIO_N2ChlPZD2)
       if (wrthis(indxChC)) then
         workr=theta
@@ -1038,20 +1039,20 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         call fillvalue2d(work2d,ncidhis,hisU10,indxU10,
      &        record,r2dvar,type)
       endif
-!     
+!
       if (wrthis(indxKvO2)) then
         work2d=Kv_O2
         call fillvalue2d(work2d,ncidhis,hisKvO2,indxKvO2,
      &        record,r2dvar,type)
       endif
-!     
+!
       if (wrthis(indxO2sat)) then
         work2d=O2satu
         call fillvalue2d(work2d,ncidhis,hisO2sat,indxO2sat,
      &        record,r2dvar,type)
       endif
 #   endif /* OXYGEN */
-#  elif defined BIO_BioEBUS 
+#  elif defined BIO_BioEBUS
       if (wrthis(indxAOU)) then
         workr=AOU
         call fillvalue3d(workr,ncidhis,hisAOU,indxAOU,
@@ -1064,12 +1065,12 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
       endif
 #  endif
 # endif /* BIOLOGY */
-!     
+!
 # ifdef SEDIMENT
-!     
-!     Write out sediment bed layer thickness, porosity, volume 
+!
+!     Write out sediment bed layer thickness, porosity, volume
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
-!     
+!
       if (wrthis(indxATHK)) then
         work2d=bot_thick
         call fillvalue2d(work2d,ncidhis,hisSed(1),indxATHK,
@@ -1081,13 +1082,13 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
         call fillvalue3d(worksed_bed,ncidhis,hisSed(2),indxBTHK,
      &        record,b3dvar,type)
       endif
-     
+
       if (wrthis(indxBPOR)) then
         worksed_bed=bed_poros
         call fillvalue3d(worksed_bed,ncidhis,hisSed(3),indxBPOR,
      &        record,b3dvar,type)
       endif
-     
+
       do itrc=1,NST
         indxWrk=indxBFRA(1)+itrc-1
         if (wrthis(indxWrk)) then
@@ -1154,7 +1155,7 @@ CR         write(*,*) 'wrt_his:  stflx(:,:,isalt)' MYID
 #  endif
 
 # endif /* SEDIMENT */
-!     
+!
 # ifdef BBL
       if (wrthis(indxAbed)) then
         work2d=Abed
@@ -1203,7 +1204,7 @@ CR        write(*,*) 'wrt_his:  Zbapp' MYID
      &        record,r2dvar,type)
 CR        write(*,*) 'wrt_his:  bostrw' MYID
       endif
-!     
+!
 # endif /* BBL */
 
 !
@@ -1355,14 +1356,14 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
  1    format(/1x,'WRT_HIS ERROR while writing variable ''', A,
      &     ''' into history file.', /11x, 'Time record:',
      &     I6,3x,'netCDF error code',i4,3x,a,i4)
-      goto 100 
+      goto 100
  99   may_day_flag=3
  100  continue
 
-!     
+!
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
-!     
+!
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close (ncidhis)
       if (nrpfhis.gt.0 .and. record.ge.nrpfhis) ncidhis=-1
@@ -1375,12 +1376,12 @@ CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
       endif
 #endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_HIS -- wrote ',
      &       'history fields into time record =', record, '/',
      &        nrechis  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)') 
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &        'WRT_HIS ERROR: Cannot ',
      &        'synchronize/close history netCDF file.'
         may_day_flag=3

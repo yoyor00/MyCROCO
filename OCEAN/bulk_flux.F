@@ -62,13 +62,13 @@
 # ifdef CFB_WIND_TRA
       REAL           :: wspd0_cfb
 # endif
-# ifdef ECUMEv0
+# ifdef BULK_ECUMEV0
       REAL            :: Cdn(2), Chn, Cen
 # endif
-# ifdef ECUMEv6
+# ifdef BULK_ECUMEV6
       REAL            :: partn, parqn
 # endif
-# ifdef WASP
+# ifdef BULK_WASP
       INTEGER         :: idx
       REAL            :: chi,aa,bb
 # endif
@@ -77,7 +77,7 @@
       REAL, PARAMETER ::  blk_ZT =  10.0
       REAL, PARAMETER ::  blk_ZToZW = blk_ZT/blk_ZW
       REAL            ::  logus10,logts10
-# if defined ECUMEv0 || defined ECUMEv6
+# if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
       PARAMETER ( logus10   = LOG(blk_ZW/10.0) )
       PARAMETER ( logts10   = LOG(blk_ZT/10.0) )
       REAL           :: bulk_psiu_ecume, bulk_psit_ecume
@@ -177,7 +177,7 @@
 !++  Specific humidity at saturation
           Qsea   = qsat(TseaK,psurf,0.98)
 !++  Air-sea gradients delW, delT, delQ through the interface
-#ifdef GUSTINESS
+#ifdef BULK_GUSTINESS
           delW(1) = SQRT(wspd0*wspd0+0.25)
 #  ifdef CFB_WIND_TRA
           delW(2) = SQRT(wspd0_cfb*wspd0_cfb+0.25)
@@ -192,7 +192,7 @@
           cff  = CtoK*(iexna-iexns)
           delT = TairC*iexna - TseaC*iexns + cff
 
-# if defined ECUMEv0 || defined ECUMEv6
+# if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
 !
 !======================================================================
 !   @@@@@@@@@@  @@@@@@@@@@  @@      @@  @@@    @@@  @@@@@@@@@@
@@ -215,12 +215,12 @@
 !----------------------
           DO Iter=1,IterFl
 !----------------------
-#ifdef ECUMEv0
+#ifdef BULK_ECUMEV0
             DO m=1,mb
               cff    = deltau10n(m)*deltau10n(m)
 !++  Neutral coefficient for wind speed cdn (ECUME_v0 formulation)
               IF ( deltau10n(m) <= utu1 ) THEN
-                Cdn(m) = coefu10+coefu11*deltau10n(m) + 
+                Cdn(m) = coefu10+coefu11*deltau10n(m) +
      &                   (coefu12+coefu13*deltau10n(m))*cff
               ELSEIF ( deltau10n(m) <= utu2 ) THEN
                 Cdn(m) = coefu20+coefu21*deltau10n(m)
@@ -240,7 +240,7 @@
             ENDIF
 !++ Neutral coefficient for humidity cen (ECUME_v0 formulation)
             IF ( deltau10n(mb) <= utq1 ) THEN
-              Cen = coefq10+coefq11*deltau10n(mb) 
+              Cen = coefq10+coefq11*deltau10n(mb)
      &            + (coefq12+coefq13*deltau10n(mb))*cff
      &            + (coefq14                      )* cff* cff
             ELSEIF ( deltau10n(mb) <= utq2 ) then
@@ -296,7 +296,7 @@
 !++  Modified to include convective form following Fairall (unpublished)
             psi_t = bulk_psit_ecume ( ZoLt )
 !
-#ifdef GUSTINESS
+#ifdef BULK_GUSTINESS
 !++ Add gustiness contribution to wind speed in unstable conditions
             Tvstar   = Tstar*(1.0+cpvir*Q)+cpvir*TairK*Qstar
             Bf       = MAX(0.0,-g/TairK*Wstar(1)*Tvstar)
@@ -330,7 +330,7 @@
 !======================================================================
 !   @@@@@@@@@@   @@@@@@@@@@   @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
 !   @@          @@        @@  @@      @@  @@      @@  @@
-!   @@          @@        @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@ 
+!   @@          @@        @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@
 !   @@          @@        @@  @@      @@  @@    @@    @@
 !   @@@@@@@@@@   @@@@@@@@@@   @@      @@  @@      @@  @@@@@@@@@@
 !
@@ -340,7 +340,7 @@
 !                               @@
 !                             @@
 !
-!           @@      @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@  
+!           @@      @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
 !           @@      @@  @@      @@  @@          @@      @@
 !           @@  @@  @@  @@@@@@@@@@  @@@@@@@@@@  @@@@@@@@@@
 !            @@ @@ @@   @@      @@          @@  @@
@@ -354,14 +354,14 @@
           Ch10   = 0.00115                                                ! 10m exchange coefficient for heat
           Ribcu  = -    blk_ZW / ( blk_Zabl * 0.004 * blk_beta**3 )
           DO m=1,mb
-            iZo10  = g*Wstar(m) / 
+            iZo10  = g*Wstar(m) /
      &               (charn*Wstar(m)*Wstar(m)*Wstar(m)+0.11*g*VisAir)    ! inverse of roughness length
-            iZoT10 = 0.1 * exp(vonKar*vonKar / 
+            iZoT10 = 0.1 * exp(vonKar*vonKar /
      &                     ( Ch10*LOG( 10.0*iZo10 ) ) ) ! inverse of thermal roughness length
 !++ Obukhovs stability param. z/l
             CC     = LOG( blk_ZW*iZo10 )*LOG( blk_ZW*iZo10 )/
      &               LOG( blk_ZT*iZoT10 )
-            Ri     =  g * blk_ZW * ( delT+cpvir*TairK*delQ )/ 
+            Ri     =  g * blk_ZW * ( delT+cpvir*TairK*delQ )/
      &                             ( TairK*delW(m)*delW(m) )
             IF ( Ri < 0.0 ) THEN
               ZoLu(m)=CC*Ri/(1.0+Ri/Ribcu)       ! Unstable
@@ -381,7 +381,7 @@
           Tstar     = delT*cff
           Qstar     = delQ*cff
 !++  Compute Charnock coefficient
-#  ifdef WASP
+#  ifdef BULK_WASP
           IF ( wspd0 >= 7.0 .AND. wspd0 < 23.0 ) then
             idx = 2
           ELSEIF ( wspd0 >= 23.0 .AND. wspd0 < 25.0 ) then
@@ -424,7 +424,7 @@
               iZoW    = g*Wstar(m) / ( charn*Wstar(m)*Wstar(m)*Wstar(m)
      &                                 +0.11*g*VisAir )
 !++  Inverse of thermal roughness length
-#  ifdef WASP
+#  ifdef BULK_WASP
               iZoT    = EXP(vonKar*vonKar/(Ch10*LOG(blk_ZW*iZoW)) )/
      &                      blk_ZW
 #  else
@@ -441,17 +441,17 @@
               Wstar(m)   = delW(m)*vonKar/(logus10-psi_u(m))
             ENDDO
 
-            ZoLt    = ZoLu(mb)*blk_ZToZW
+            ZoLt      = ZoLu(mb)*blk_ZToZW
             psi_t     = bulk_psit_coare ( ZoLt )
 
 !++  Compute Monin-Obukhov similarity scales
 
-            logts10 = LOG(blk_ZT*iZoT)
-  
-            Tstar   = delT*vonKar/(logts10-psi_t)
-            Qstar   = delQ*vonKar/(logts10-psi_t)
-!++  Add GUSTINESS
-# ifdef GUSTINESS
+            logts10   = LOG(blk_ZT*iZoT)
+            cff       = vonKar/(logts10-psi_t)
+            Tstar     = delT*cff
+            Qstar     = delQ*cff
+!++  Add BULK_GUSTINESS
+# ifdef BULK_GUSTINESS
               Bf=-g/TairK*Wstar(1)*(Tstar+cpvir*TairK*Qstar)
               if (Bf.gt.0.0) then
                 cff=blk_beta*(Bf*blk_Zabl)**r3
@@ -466,7 +466,7 @@
               else
                 cff=0.2
               endif
-              delW(2)  = SQRT(wspd0_cfb*wspd0_cfb+cff*cff)            
+              delW(2)  = SQRT(wspd0_cfb*wspd0_cfb+cff*cff)
 #  endif
 
 # else
@@ -535,9 +535,9 @@
           aer(i,j)  = rhoAir*delW(1)
           Cd        = (Wstar(1)/ddelW(1))**2
           cer(i,j)  = Cd
-#ifdef CFB_STRESS
+# ifdef CFB_STRESS
           stau(i,j) = cfb_slope * delW(1) + cfb_offset
-#endif
+# endif
 !++  Store fluxes for diagnostics, when storing in netCDF file, multiplied by rho0.Cp to get W/m2
           shflx_rsw(i,j)=srflx(i,j)
           shflx_lat(i,j)=hflat
@@ -596,7 +596,7 @@
           cff2=0.5*(aer(i,j-1)+aer(i,j))
           svstr(i,j)=( cff*cff2*vwnd(i,j)
 #ifdef CFB_STRESS
-     &   + 0.5*(stau(i,j)+stau(i,j-1))*v(i,j,N,nrhs)    
+     &   + 0.5*(stau(i,j)+stau(i,j-1))*v(i,j,N,nrhs)
 #endif
      &                                        )*rho0i
 #  ifdef MASKING
@@ -688,7 +688,7 @@
       return
       END FUNCTION qsat
 
-# if defined ECUMEv0 || defined ECUMEv6
+# if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
 !=======================================================================
 !    Ecume stability function for velocity
 !=======================================================================

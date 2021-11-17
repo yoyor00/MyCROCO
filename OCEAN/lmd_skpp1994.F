@@ -2,16 +2,16 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-#include "cppdefs.h" 
+#include "cppdefs.h"
 
-#if defined LMD_SKPP   
+#if defined LMD_SKPP
       subroutine lmd_skpp_tile (Istr,Iend,Jstr,Jend, Kv,Kt,Ks,
      &                                my_hbl, Bo,Bosol, Bflux,
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
@@ -56,13 +56,13 @@
       parameter (eps=1.E-20)
       real lmd_nubl, lmd_cs, lmd_Cv, Ric, lmd_betaT, lmd_epsilon,
      &     lmd_cekman, lmd_cmonob, lmd_Cstar, lmd_Cg, lmd_nu0c,
-     &     ustarb 
+     &     ustarb
       real su_r, sv_r, ustokes
 !======================================================================
       parameter (
      &   lmd_nubl=0.01,    ! Maximum allowed boundary layer
                            ! viscosity and diffusivity [m^2/s].
-                           !                       
+                           !
      &   lmd_cs=98.96,     ! see parameter associated with turbulent
                            !     velocity scales in lmd_wscale.F
                            !
@@ -78,7 +78,7 @@
 !#else
 !     &   Ric=0.45,
 !#endif
-     &   lmd_betaT=-0.2,   ! Ratio of entrainment flux to 
+     &   lmd_betaT=-0.2,   ! Ratio of entrainment flux to
                            !       to surface buoyancy flux.
                            !
      &   lmd_epsilon=0.1,  ! Nondimensional extent of the
@@ -90,7 +90,7 @@
      &   lmd_cmonob=1.,    ! Constant used in the computaion
                            ! Monin-Obukhov depth.
                            !
-     &   lmd_Cstar=10.,    ! Proportionality coefficient 
+     &   lmd_Cstar=10.,    ! Proportionality coefficient
                            ! parameterizing nonlocal transport.
                            !
      &   lmd_nu0c=0.1      ! Maximum interior convective
@@ -155,7 +155,7 @@
 !  Turbulent Langmuir number (McWilliams et al 1997)
 !
 #  ifdef MRL_WCI
-          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned 
+          cff=1. !COS(Dwave(i,j)-ATAN2(sv_r,su_r)) ! wind-aligned
           ustokes=(wfrq(i,j)**3)*(Awave(i,j)**2)/g *cff
           Langmuir(i,j)=sqrt(ustar(i,j)/max(eps,ustokes))
 #  else
@@ -192,7 +192,7 @@
           Bosol(i,j)=0.
 # endif
         enddo
-      enddo  !--> discard alpha,beta; keep Bo,Bosol to the very end. 
+      enddo  !--> discard alpha,beta; keep Bo,Bosol to the very end.
 # undef beta
 # undef alpha
 !
@@ -262,7 +262,7 @@
 # undef wm
 !                               !--> discard sigma, wm (not used)
 !
-!  Compute bulk Richardson number "Rib" 
+!  Compute bulk Richardson number "Rib"
 !---------------------------------------
 !
 !                  [Br - B(d)] * d
@@ -343,7 +343,7 @@
             my_hbl(i,j)=min(my_hbl(i,j),hekman)
 # ifdef LMD_SKPP_MONOB
             hmonob=lmd_cmonob*ustar(i,j)*ustar(i,j)*ustar(i,j)
-     &                                    /(vonKar*Bflux(i,j)) 
+     &                                    /(vonKar*Bflux(i,j))
             my_hbl(i,j)=min(my_hbl(i,j),hmonob)
 # endif
           endif
