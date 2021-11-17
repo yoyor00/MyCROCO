@@ -111,6 +111,7 @@
       REAL            ::  flux_top, flux_bot, lgthsc, L_lim, du,dv,dw
       REAL            ::  trb_new, trb_sfc, trb_bot, z0_s, z0_b, gls_min
       REAL            ::  HUon_w, HVom_w, trb_min(2), Denom
+      REAL            ::  su_r,sv_r
 # ifdef MRL_WCI
       REAL            ::  cmu_fac, cb_wallE, gls_sigp_cb
 # endif
@@ -445,10 +446,14 @@
 !
       DO j=jmin,jmax
          DO i=imin,imax 
-            ustar_sfc_sq( i, j ) = 
-     &                        sqrt( (0.5*(sustr(i,j)+sustr(i+1,j)))**2
-     &                             +(0.5*(svstr(i,j)+svstr(i,j+1)))**2 )
-            ustar_bot_sq( i, j ) =
+# ifdef OA_COUPLING
+            ustar_sfc_sq(i,j)=smstr(i,j)
+# else
+            su_r=0.5*(sustr(i,j)+sustr(i+1,j))
+            sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
+            ustar_sfc_sq( i, j ) = sqrt(su_r**2+sv_r**2)
+# endif
+            ustar_bot_sq( i, j ) = 
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
