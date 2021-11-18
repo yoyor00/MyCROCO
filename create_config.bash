@@ -251,7 +251,7 @@ if [ "$MY_CONFIG_WORK" != "$MY_CONFIG_HOME" ]; then
     fi
 fi
 
-cp create_config.bash $MY_CONFIG_HOME/create_config.bash.bck
+cp $0 $MY_CONFIG_HOME/create_config.bash.bck
 
 if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-prod" ]] ; then
     echo 'Copy CROCO useful scripts and input files'
