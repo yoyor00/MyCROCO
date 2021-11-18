@@ -261,6 +261,7 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
 	# Create directories
 	mkdir -p $MY_CONFIG_HOME/CROCO_IN
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
+	mkdir -p $MY_CONFIG_WORK/DATA
 	MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
 	MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
 	
@@ -268,6 +269,7 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
 	# Create directories
 	mkdir -p $MY_CONFIG_HOME
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
+	mkdir -p $MY_CONFIG_WORK/DATA
 	MY_CROCO_DIR=$MY_CONFIG_HOME/
 	MY_XIOS_DIR=$MY_CONFIG_HOME/
     fi
