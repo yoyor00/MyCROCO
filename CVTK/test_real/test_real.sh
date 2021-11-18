@@ -58,6 +58,7 @@ MAX_PROC=$x_m
 MPIRUN=$x_s
 RUNDIR=$x_r
     
+[ ! -d ${ROOTDIR}/${RUNDIR} ] && ../../create_config.bash -f -n $RUNDIR
     
 [ -f cppdefs.h ] && \rm cppdefs.h && \cp ${ROOTDIR}/OCEAN/cppdefs.h .
 [ -f param.h ]    && \rm param.h   && cp ${ROOTDIR}/OCEAN/param.h .
