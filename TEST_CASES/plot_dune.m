@@ -27,7 +27,7 @@ close all
 %================== User defined parameters ===========================
 
 % Choose usgs (1) or mustang (0) model output file
-usgs=0
+usgs=1
 
 fname='dune_his.nc';
 

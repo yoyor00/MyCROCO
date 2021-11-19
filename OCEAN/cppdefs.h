@@ -941,7 +941,7 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-# elif defined SHELFRONT
+#elif defined SHELFRONT
 /*
 !                       Shelf Front Example
 !                       ===== ===== =======
@@ -1008,7 +1008,7 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-# elif defined OVERFLOW
+#elif defined OVERFLOW
 /*
 !                       Gravitational/Overflow Example
 !                       ====================== =======

@@ -27,6 +27,7 @@ close all
 %================== User defined parameters ===========================
 
 fname='tidal_flat_his.nc';
+makepdf   = 0;                     % make pdf file
 
 %======================================================================
 %
@@ -92,7 +93,10 @@ title(['Tidal Flat / Sand hovmoller'],'fontsize',14)
 
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
+
+if makepdf
 export_fig -transparent tidal_flat.pdf
+end
 
 return
 
