@@ -128,10 +128,6 @@ C$    integer omp_get_thread_num
                      depth=4000.
                      f0=1.E-4
                      beta=0.
-# elif defined PLUME
-                     depth=1300.
-                     beta=0.
-                     f0=0.5E-4 
 # elif defined EQUATOR
                      depth=5000.
                      f0=0.

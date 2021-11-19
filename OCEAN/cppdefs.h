@@ -1029,44 +1029,6 @@
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
 
-/*
-!                       Plume Example
-!                       ===== =======
-*/
-#elif defined PLUME
-# undef  OPENMP
-# undef  MPI
-# define NEW_S_COORD
-# define ANA_GRID
-# define ANA_INITIAL
-# define ANA_SMFLUX
-# define ANA_STFLUX
-# define ANA_SSFLUX
-# define ANA_SRFLUX
-# define ANA_BSFLUX
-# define ANA_BTFLUX
-# define SOLVE3D
-# define UV_COR
-# define UV_ADV
-# define SALINITY
-# define NONLIN_EOS
-# define SPLIT_EOS
-# define TS_HADV_UP3
-# define SPONGE
-# undef  LMD_MIXING
-# define GLS_MIXING
-# ifdef LMD_MIXING
-#  define LMD_SKPP
-#  define LMD_BKPP
-#  define LMD_RIMIX
-#  define LMD_CONVEC
-#  undef  LMD_DDMIX
-#  define LMD_NONLOCAL
-#  undef  MLCONVEC
-# endif
-# define NO_FRCFILE
-# undef  RVTK_DEBUG
-
 #elif defined UPWELLING
 /*
 !                       Upwelling Example

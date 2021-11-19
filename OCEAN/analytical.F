@@ -117,9 +117,6 @@
 #  include "forces.h"
 #  include "scalars.h"
       integer itrc, Istr,Iend,Jstr,Jend, i,j
-#  if defined PLUME 
-      real rr
-#  endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -132,13 +129,7 @@
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
-            btflx(i,j,itemp)=0.
-#  ifdef PLUME 
-            rr = sqrt((xr(i,j)-0.5*xl)**2+(yr(i,j)-0.5*el)**2)
-            if (rr.le.2.5e3) then
-              btflx(i,j,itemp)=0.001
-            endif
-#  elif defined SINGLE_COLUMN 
+#  if defined SINGLE_COLUMN 
 #   ifdef KATO_PHILIPS
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
 #   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
