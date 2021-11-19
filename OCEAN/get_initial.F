@@ -29,13 +29,9 @@
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#ifdef MORPHODYN
+#if defined NBQ || defined MORPHODYN
 # include "grid.h"
 #endif
-
-!======================================================
-! Look for Hbl, Akt, Akv, ... (J. Gula)
-!======================================================
 # include "mixing.h"
 
 # if defined EXACT_RESTART
@@ -805,25 +801,6 @@
      &                                  , ininame(1:lstr)          
       endif
       
-!
-!  vertical mixing length scale.
-!
-        lvar=lenstr(vname(1,indxLsc))
-        ierr=nf_inq_varid (ncid, vname(1,indxLsc)(1:lvar),
-     &                                                    varid)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (Lscale(START_2D_ARRAY,0), ncid,
-     &                                    varid, record, w3dvar)
-          if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxLsc)(1:lvar)
-     &                , record, ininame(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        else
-          
-        MPI_master_only write(stdout,3) vname(1,indxLsc)(1:lvar)
-     &                                  , ininame(1:lstr)          
-        endif
 !
 !  vertical viscosity coefficient
 !
