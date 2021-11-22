@@ -49,6 +49,8 @@ echo $( printf "%02d:%02d:%02d\n" $h $m $s )
 ##------------------------------------------------------------------------------
 # Date of the end of the experiment (in $CALTYPE calendar):
 ##------------------------------------------------------------------------------
+#mdy=$( valid_date $MONTH_END_EXP $(( $DAY_BEGIN_EXP + $EXP_DUR_DAY - 1 )) $YEAR_BEGIN_EXP )
+#mdy=$( valid_date $MONTH_END_EXP  $(( $DAY_END_EXP - 1 )) $YEAR_END_EXP )
 mdy=$( valid_date  $(( $MONTH_BEGIN_JOB + $NBJOB * $JOB_DUR_MTH )) $(( $DAY_BEGIN_JOB + $NBJOB * $JOB_DUR_DAY - 1 )) $YEAR_BEGIN_JOB )
 export MONTH_END_EXP=$( echo $mdy | cut -d " " -f 1 )
 export DAY_END_EXP=$(   echo $mdy | cut -d " " -f 2 )

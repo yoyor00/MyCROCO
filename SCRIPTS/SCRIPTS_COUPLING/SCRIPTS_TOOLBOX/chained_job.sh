@@ -35,7 +35,7 @@ newedate=${newsdate}
 months=$MONTH_BEGIN_JOBp1
 days=$DAY_BEGIN_JOBp1
 years=$YEAR_BEGIN_JOBp1
-
+jobleft=$NBJOB
 while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
     #
     mdy=$( valid_date $(( $months + $JOB_DUR_MTH )) $(( $days + $JOB_DUR_DAY - 1 )) $years )
@@ -43,6 +43,7 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
     daye=$( echo $mdy | cut -d " " -f 2 )
     yeare=$( echo $mdy | cut -d " " -f 3 )
     newedate=$( makedate $monthe $daye $yeare )   
+    jobleft=$(( $jobleft - 1))
     #
     future_date="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"   
     future_job="job_${future_date}${sub_ext}"
@@ -51,7 +52,9 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
     sed -e "s/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOB}/YEAR_BEGIN_JOB=${years}/" \
         -e "s/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOB}/MONTH_BEGIN_JOB=${months}/" \
         -e "s/DAY_BEGIN_JOB=${DAY_BEGIN_JOB}/DAY_BEGIN_JOB=${days}/" \
-        -e "s/export CHAINED_JOB=.*/export CHAINED_JOB=\"False\"/" \
+        -e "s/NBJOB=.*/NBJOB=${jobleft}/" \
+        -e "s/RESTART_FLAG=.*/RESTART_FLAG=\"TRUE\"/" \
+        -e "s/export CHAINED_JOB=.*/export CHAINED_JOB=\"FALSE\"/" \
         ${jobname} > ${future_job}
 
     chmod 755 ${future_job}
