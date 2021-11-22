@@ -1442,6 +1442,9 @@ C$OMP BARRIER
 #  ifndef BBL
 #   include "forces.h"
 #  endif
+#  ifdef DIAGNOSTICS_TS
+#   include "diagnostics.h"
+#  endif
 !
       integer Istr,Iend,Jstr,Jend
       real Hz_inv(PRIVATE_1D_SCRATCH_ARRAY,N),  
@@ -1649,9 +1652,43 @@ C$OMP BARRIER
      &                                       *sed_sponge(i,j)
 #  endif
           enddo   
-        enddo   
-      enddo     ! j   lood    
+!
+!  Diagnostics for settling: use TForc array
+!
+#  ifdef DIAGNOSTICS_TS
+          do k=1,N 
+            do i=Istr,Iend
+              TForc(i,j,k,indx)=(FC(i,k)-FC(i,k-1))/dt
+#   ifdef MASKING
+     &                                    * rmask(i,j)
+#   endif
+            enddo
+          enddo
+#  endif /* DIAGNOSTICS_TS */
 
+        enddo   ! ised loop
+      enddo     ! j loop
+
+!
+!  Update Trate diagnostics
+!
+#  ifdef DIAGNOSTICS_TS
+      do ised=1,NST
+        indx=itrc_sed+ised-1  
+        do k=1,N
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              Trate(i,j,k,indx)=(Hz(i,j,k)*t(i,j,k,nnew,indx)
+     &                          -Hz_bak(i,j,k)*t(i,j,k,nstp,indx))
+     &                                                         /dt
+#   ifdef MASKING
+     &                                                 *rmask(i,j)
+#   endif
+            enddo
+          enddo
+        enddo
+      enddo
+#  endif /* DIAGNOSTICS_TS */
 !
 !  Exchange for output purpose
 !
@@ -1689,6 +1726,9 @@ C$OMP BARRIER
 #  include "ocean3d.h"
 #  include "scalars.h"
 #  include "mixing.h"
+#  ifdef DIAGNOSTICS_TS
+#   include "diagnostics.h"
+#  endif
       integer Istr,Iend,Jstr,Jend
       integer i,j,ised,ised0
       integer indx
@@ -1776,8 +1816,38 @@ C$OMP BARRIER
             settling_flux(i,j,ised)=cff5
 #  endif
           enddo  ! i loop
+
+!
+!  Update erosion/settling diagnostics (bottom level only)
+!
+#  ifdef DIAGNOSTICS_TS
+          do i=Istr,Iend
+            TForc(i,j,1,indx) = TForc(i,j,1,indx) +
+     &                          ero_flux(i,j,ised)/dt
+#   ifdef MASKING
+     &                                   * rmask(i,j)
+#   endif
+          enddo
+#  endif /* DIAGNOSTICS_TS */
+
         enddo    ! ised loop 
-      enddo      ! j loop 
+      enddo      ! j loop
+
+!
+!  Update Trate diagnostics (bottom level only)
+!
+#  ifdef DIAGNOSTICS_TS
+      do ised=1,NST
+        indx=itrc_sed+ised-1  
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            Trate(i,j,1,indx)=(Hz(i,j,1)*t(i,j,1,nnew,indx)
+     &                        -Hz_bak(i,j,1)*t(i,j,1,nstp,indx))
+     &                                                       /dt
+#   ifdef MASKING
+     &                                               *rmask(i,j)
+#   endif
+#  endif /* DIAGNOSTICS_TS */
 !
 !  Exchange for output purpose
 !
