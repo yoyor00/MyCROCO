@@ -92,8 +92,9 @@
 
          endif
          
-         if (ssnd_clname(i)=='SRMUOCE'//clevel) then
+         if (ssnd_clname(i)=='SRMEOCE'//clevel) then
 !
+!     Send eastward component of current
 !     Proceed rotation from xi/eta croco_grid coordinate
 !     to East - North coordinate
 !
@@ -103,9 +104,6 @@
      &               - (0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
      &                       + v(1:Lmmpi,2:Mmmpi+1,N,nnew)) )
      &         * sin(angler(1:Lmmpi  ,1:Mmmpi))
-
-!     snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
-!     &                        +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
 
       DO ja = 0, nmaxatm
          if ( ssnd_nid(ja,i) /= -1 ) then
@@ -123,8 +121,9 @@
 
          endif
          
-         if (ssnd_clname(i)=='SRMVOCE'//clevel) then
+         if (ssnd_clname(i)=='SRMNOCE'//clevel) then
 !
+!     Send northward component of current
 !     Proceed rotation from xi/eta croco_grid coordinate
 !     to East - North coordinate
 !
@@ -134,9 +133,6 @@
      &               + (0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
      &                       + v(1:Lmmpi,2:Mmmpi+1,N,nnew)) )
      &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
-
-!     snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
-!     &                        +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
 
       DO ja = 0, nmaxatm
          if ( ssnd_nid(ja,i) /= -1 ) then
@@ -153,6 +149,53 @@
       enddo
 
          endif
+
+        if (ssnd_clname(i)=='SRMUOCE'//clevel) then
+
+!     Send u component of current at rho point 
+
+     snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+     &                        +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
+
+      DO ja = 0, nmaxatm
+         if ( ssnd_nid(ja,i) /= -1 ) then
+            call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &        snd_field, comp_ierror)
+            if ( (comp_ierror == OASIS_Sent   ) .or.
+     &           (comp_ierror == OASIS_ToRest ) .or.
+     &           (comp_ierror == OASIS_SentOut) .or.
+     &           (comp_ierror == OASIS_ToRestOut) ) then
+           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     & ssnd_clname(i),' sent at time ',sndtime
+            endif
+         endif
+      enddo
+
+         endif
+
+         if (ssnd_clname(i)=='SRMNOCE'//clevel) then
+
+!     Send v component of current at rho point
+
+     snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+     &                        +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
+
+      DO ja = 0, nmaxatm
+         if ( ssnd_nid(ja,i) /= -1 ) then
+            call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &        snd_field, comp_ierror)
+            if ( (comp_ierror == OASIS_Sent   ) .or.
+     &           (comp_ierror == OASIS_ToRest ) .or.
+     &           (comp_ierror == OASIS_SentOut) .or.
+     &           (comp_ierror == OASIS_ToRestOut) ) then
+           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     & ssnd_clname(i),' sent at time ',sndtime
+            endif
+         endif
+      enddo
+
+         endif
+
       END DO
 #else 
 !---------------------------------------------------------------------------------------
