@@ -372,7 +372,7 @@
 # ifdef Z0_BL
             tau_ex=max(tau_cws-tau_cb,0.)
             znot_bl=17.4*d50*(tau_ex*osmgd)**0.75
-            znot_bl= znots + znot_bl
+            znota = znots + znot_bl
 !   
 !---------------------------------------------------------------------
 ! Determine bedform roughness ripple height (m) and ripple length (m) 
@@ -444,7 +444,7 @@
 !
 #  if defined Z0_RIP || defined Z0_BIO
             znot_rip = 0.267*rhgt*rhgt/(max(rlen,rlmin)) ! Nielsen (1992)
-            znota = znot_bl + znot_rip
+            znota = znota + znot_rip
 #  endif /* Z0_RIP || Z0_BIO */
 !
 !---------------------------------------------------------------------
