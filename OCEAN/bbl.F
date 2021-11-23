@@ -293,7 +293,7 @@
 ! using Soulsby approximation of the wave friction factor
 !  fw = 2*scf1*(znotc/Ab)**scf2;  tauw = fw*Ub^2/2
  
-            tau_w = scf1*((znotc*Fwave/Ub(i,j))**scf2)*(Ub(i,j)**scf3)
+            tau_w = scf1*((znotc*Fwave)**scf2)*(Ub(i,j)**scf3)
  
 !  combined wave-current skin stress 
             tau_cw= tau_cs*
@@ -307,7 +307,7 @@
             taucwmax(i,j)=tau_cws
             tauw(i,j)=tau_w                       
 !  combined wave-current stress using znot
-            tau_w = scf1*((znot*Fwave/Ub(i,j))**scf2)*(Ub(i,j)**scf3)
+            tau_w = scf1*((znot*Fwave)**scf2)*(Ub(i,j)**scf3)
     
 !  combined wave-current stress 
             tau_cw= tauc(i,j)*
