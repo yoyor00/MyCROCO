@@ -40,8 +40,8 @@
       INTEGER    :: iok_wdry 
       INTEGER    :: iok_wt0m1, iok_whs, iok_wdir
       INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm 
-      INTEGER    :: iok_wutwo, iok_wvtwo, iok_wetwo, iok_wntwo
-      INTEGER    :: iok_wutaw, iok_wvtaw, iok_wetaw, iok_wntaw 
+      INTEGER    :: iok_utwo, iok_vtwo, iok_etwo, iok_ntwo
+      INTEGER    :: iok_utaw, iok_vtaw, iok_etaw, iok_ntaw 
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
       INTEGER    :: level
       CHARACTER*1 clevel
@@ -50,6 +50,10 @@
       real,dimension(GLOBAL_2D_ARRAY) :: tab_t_tmp
       real,dimension(GLOBAL_2D_ARRAY) :: etau
       real,dimension(GLOBAL_2D_ARRAY) :: ntau
+      real,dimension(GLOBAL_2D_ARRAY) :: etaw
+      real,dimension(GLOBAL_2D_ARRAY) :: ntaw
+      real,dimension(GLOBAL_2D_ARRAY) :: etwo
+      real,dimension(GLOBAL_2D_ARRAY) :: ntwo
 # if (!defined OA_GRID_UV)
       real,dimension(GLOBAL_2D_ARRAY) :: tab_u_tmp
       real,dimension(GLOBAL_2D_ARRAY) :: tab_v_tmp
@@ -105,12 +109,14 @@
       iok_wubr = 0
       iok_wfoc = 0
       iok_wlm = 0
-      iok_wutwo = 0
-      iok_wvtwo = 0
-      iok_wetwo = 0
-      iok_wntwo = 0
-      iok_wutaw = 0
-      iok_wvtaw = 0
+      iok_utwo = 0
+      iok_vtwo = 0
+      iok_etwo = 0
+      iok_ntwo = 0
+      iok_utaw = 0
+      iok_vtaw = 0
+      iok_etaw = 0
+      iok_ntaw = 0
 !
       DO i = 1, nmaxfld
 # ifdef OA_COUPLING
@@ -344,8 +350,8 @@
 !        U component of the wave-to-ocean momentum flux (in m2.s-2) - temporary twox
          if (srcv_clname(i)=='RRMUTWO'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wutwo)
-            if (iok_wutwo /= 0) then
+     &  tab_t_tmp, rcvtime, iok_utwo)
+            if (iok_utwo /= 0) then
 #  if (!defined OA_GRID_UV)  
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
@@ -364,8 +370,8 @@
 !        V component of the wave-to-ocean momentum flux (in m2.s-2) - temporary twoy
          if (srcv_clname(i)=='RRMVTWO'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wvtwo)
-            if (iok_wvtwo /= 0) then
+     &  tab_t_tmp, rcvtime, iok_vtwo)
+            if (iok_vtwo /= 0) then
 #  if (!defined OA_GRID_UV) 
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
@@ -414,8 +420,8 @@
 !        U component of atmosphere-to-wave stress (in m2.s-2) - temporary tawx
          if (srcv_clname(i)=='RRMUTAW'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wutaw)
-            if (iok_wutaw /= 0) then
+     &  tab_t_tmp, rcvtime, iok_utaw)
+            if (iok_utaw /= 0) then
 #  if (!defined OA_GRID_UV)  
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
@@ -434,8 +440,8 @@
 !        V component of atmosphere-to-wave stress (in m2.s-2) - temporary tawy
          if (srcv_clname(i)=='RRMVTAW'//clevel) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wvtaw)
-            if (iok_wvtaw /= 0) then
+     &  tab_t_tmp, rcvtime, iok_vtaw)
+            if (iok_vtaw /= 0) then
 #  if (!defined OA_GRID_UV) 
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
 !              Interpolate grid T --> U
@@ -519,6 +525,7 @@
 #  else
          case not coded...
 #  endif
+      endif
 ! 
       IF  (iok_taum == 0 .and. iok_utau /= 0 .and. iok_vtau /= 0) THEN
 !-------------------------------------------------

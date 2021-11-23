@@ -53,51 +53,95 @@
 !!$      endif
 !      
       DO i = 1, nmaxfld
-      
+!-------------------------------------------------
+!        SST       
          if (ssnd_clname(i)=='SRMSSTV'//clevel) then
             snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15    
 
-      DO ja = 0, nmaxatm
-         if ( ssnd_nid(ja,i) /= -1 ) then
-            call prism_put_proto(ssnd_nid(ja,i), sndtime, 
-     &        snd_field, comp_ierror)
-            if ( (comp_ierror == OASIS_Sent   ) .or.
-     &           (comp_ierror == OASIS_ToRest ) .or.
-     &           (comp_ierror == OASIS_SentOut) .or.
-     &           (comp_ierror == OASIS_ToRestOut) ) then
-           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
-         endif  
-      enddo
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime, 
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                ssnd_clname(i),' sent at time ',sndtime
+                  endif
+               endif  
+            enddo
          
          endif
-
+!-------------------------------------------------
+!        SSH       
          if (ssnd_clname(i)=='SRMSSHV'//clevel) then
             snd_field = zeta(1:Lmmpi,1:Mmmpi,nnew)
-            	
-      DO ja = 0, nmaxatm
-         if ( ssnd_nid(ja,i) /= -1 ) then             
-            call prism_put_proto(ssnd_nid(ja,i), sndtime,
-     &        snd_field, comp_ierror)
-                 if ( (comp_ierror == OASIS_Sent   ) .or.
-     &           (comp_ierror == OASIS_ToRest ) .or.
-     &           (comp_ierror == OASIS_SentOut) .or.
-     &           (comp_ierror == OASIS_ToRestOut) ) then
-           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
-         endif
-      enddo
+
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                ssnd_clname(i),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
 
          endif
+!-------------------------------------------------
+!        U component of ocean surface current
+!          at rho point
+        if (ssnd_clname(i)=='SRMUOCE'//clevel) then
+           snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+     &                       +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
+
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                ssnd_clname(i),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
+
+         endif
+!-------------------------------------------------
+!        V component of ocean surface current
+!          at rho point
+         if (ssnd_clname(i)=='SRMVOCE'//clevel) then
+           snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+     &                       +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
+
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                ssnd_clname(i),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
          
+         endif
+!-------------------------------------------------
+!        Eastward component of ocean surface current
+!         proceed rotation from xi/eta croco_grid coordinate
+!         to East - North coordinate
          if (ssnd_clname(i)=='SRMEOCE'//clevel) then
-!
-!     Send eastward component of current
-!     Proceed rotation from xi/eta croco_grid coordinate
-!     to East - North coordinate
-!
            snd_field = (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                       + u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
      &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
@@ -105,28 +149,26 @@
      &                       + v(1:Lmmpi,2:Mmmpi+1,N,nnew)) )
      &         * sin(angler(1:Lmmpi  ,1:Mmmpi))
 
-      DO ja = 0, nmaxatm
-         if ( ssnd_nid(ja,i) /= -1 ) then
-            call prism_put_proto(ssnd_nid(ja,i), sndtime, 
-     &        snd_field, comp_ierror)
-            if ( (comp_ierror == OASIS_Sent   ) .or.
-     &           (comp_ierror == OASIS_ToRest ) .or.
-     &           (comp_ierror == OASIS_SentOut) .or.
-     &           (comp_ierror == OASIS_ToRestOut) ) then
-           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
-         endif
-      enddo
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                ssnd_clname(i),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
 
          endif
-         
+!-------------------------------------------------
+!        Northward component of ocean surface current
+!         proceed rotation from xi/eta croco_grid coordinate
+!         to East - North coordinate
          if (ssnd_clname(i)=='SRMNOCE'//clevel) then
-!
-!     Send northward component of current
-!     Proceed rotation from xi/eta croco_grid coordinate
-!     to East - North coordinate
-!
            snd_field =  (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                      +   u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
      &         *  sin(angler(1:Lmmpi  ,1:Mmmpi))
@@ -134,68 +176,22 @@
      &                       + v(1:Lmmpi,2:Mmmpi+1,N,nnew)) )
      &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
 
-      DO ja = 0, nmaxatm
-         if ( ssnd_nid(ja,i) /= -1 ) then
-            call prism_put_proto(ssnd_nid(ja,i), sndtime, 
-     &        snd_field, comp_ierror)
-            if ( (comp_ierror == OASIS_Sent   ) .or.
-     &           (comp_ierror == OASIS_ToRest ) .or.
-     &           (comp_ierror == OASIS_SentOut) .or.
-     &           (comp_ierror == OASIS_ToRestOut) ) then
-           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
-         endif
-      enddo
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                ssnd_clname(i),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
 
          endif
-
-        if (ssnd_clname(i)=='SRMUOCE'//clevel) then
-
-!     Send u component of current at rho point 
-
-     snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
-     &                        +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
-
-      DO ja = 0, nmaxatm
-         if ( ssnd_nid(ja,i) /= -1 ) then
-            call prism_put_proto(ssnd_nid(ja,i), sndtime,
-     &        snd_field, comp_ierror)
-            if ( (comp_ierror == OASIS_Sent   ) .or.
-     &           (comp_ierror == OASIS_ToRest ) .or.
-     &           (comp_ierror == OASIS_SentOut) .or.
-     &           (comp_ierror == OASIS_ToRestOut) ) then
-           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
-         endif
-      enddo
-
-         endif
-
-         if (ssnd_clname(i)=='SRMNOCE'//clevel) then
-
-!     Send v component of current at rho point
-
-     snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
-     &                        +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
-
-      DO ja = 0, nmaxatm
-         if ( ssnd_nid(ja,i) /= -1 ) then
-            call prism_put_proto(ssnd_nid(ja,i), sndtime,
-     &        snd_field, comp_ierror)
-            if ( (comp_ierror == OASIS_Sent   ) .or.
-     &           (comp_ierror == OASIS_ToRest ) .or.
-     &           (comp_ierror == OASIS_SentOut) .or.
-     &           (comp_ierror == OASIS_ToRestOut) ) then
-           MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     & ssnd_clname(i),' sent at time ',sndtime
-            endif
-         endif
-      enddo
-
-         endif
-
+!
       END DO
 #else 
 !---------------------------------------------------------------------------------------
