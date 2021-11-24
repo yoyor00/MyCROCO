@@ -55,7 +55,7 @@ LIST_OPTIONS=$(cat << EOF
  xios       : xios server and xml files
 
  # -- CROCO built-in scripts and toolboxes -- # 
- prepro : for getting scripts for CROCO preprocessing
+ prepro     : for getting scripts for CROCO preprocessing
  inter      : for running interannual runs           ( cpl can not be defined) 
  forc       : for using forecast scripts
  test_cases : for running test cases 
@@ -77,7 +77,7 @@ EOF
 
 allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
 allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
-allmodels_cpl=( oce-prod xios test_cases agrif forc pisces sediment mustang oanalysis prepro cpl wav atm toy )
+allmodels_cpl=( oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro cpl wav atm toy )
 
 x_f=0
 
@@ -273,7 +273,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
       cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
     fi
     # INTER
-    if [[ ${options[@]} =~ "inter" ]] || ! [[ ${options[@]} =~ "cpl" ]] ; then
+    if [[ ${options[@]} =~ "inter" ]] ; then
       cp -f ${CROCO_DIR}/OCEAN/croco_inter.in $MY_CROCO_DIR.
     fi
     # FORECAST
@@ -313,7 +313,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
        cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
     fi
     # SCRIPTS FOR RUNNING
-    if [[ ${options[@]} =~ "inter" ]] || ! [[ ${options[@]} =~ "cpl" ]] ; then
+    if [[ ${options[@]} =~ "inter" ]] ; then
        cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
     fi
 fi
@@ -489,7 +489,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
     for k in ${options[@]} ; do
         if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
-        [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
+           [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
         fi
     done
     [[ ${options[@]} =~ "xios" ]] && cat ./namelist_xios.sh >> mynamelist.sh
