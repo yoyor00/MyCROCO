@@ -236,13 +236,17 @@
 !  Compute bed wave orbital velocity and excursion amplitude.
 !
           Ab=Awave(i,j)/SINH(Kbh) + eps
+# ifdef OW_COUPLING_FULL
+          Ub(i,j) = ubr(i,j) SWITCH rmask(i,j)
+     &                       SWITCH_WET rmask_wet(i,j)     
+# else          
           Ub(i,j)=Fwave*Ab SWITCH rmask(i,j)
      &                     SWITCH_WET rmask_wet(i,j)
 !
 !  Correction by skewness factor 
 !  (Abreu et al., 2010; Malarkey and Davis, 2012)
 !
-# ifdef BBL_WAVE_SKEWNESS
+#  ifdef BBL_WAVE_SKEWNESS
           Ursell=1.0607*Awave(i,j)/(depth*kbh2)
           cff1=exp((p3-log10(Ursell))/p4)
           cff2=p1+(p2-p1)/(1+cff1)
@@ -253,6 +257,7 @@
           cff7=cff6*sin(cff4)
           Ub(i,j)=Ub(i,j)*0.9*(1+cff7)  SWITCH rmask(i,j)
      &                                  SWITCH_WET rmask_wet(i,j)
+#  endif
 # endif
 !
 ! Stirring velocity from wave breaking turbulence 
