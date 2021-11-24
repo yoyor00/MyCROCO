@@ -105,6 +105,10 @@
       ssnd_clname(3) = 'SRMUOCE'//clevel
 !     VOCE
       ssnd_clname(4) = 'SRMVOCE'//clevel
+!     EOCE
+      ssnd_clname(5) = 'SRMEOCE'//clevel
+!     NOCE
+      ssnd_clname(6) = 'SRMNOCE'//clevel
 
 !------------------------------------------------------------------
 !     Received
@@ -115,38 +119,49 @@
       srcv_clname(2) = 'RRMSRFL'//clevel
 !     total non-solar heat flux [W/m2]
       srcv_clname(3) = 'RRMSTFL'//clevel
-!     zonal wind tress [N/m2]
-      srcv_clname(4) = 'RRMTAUX'//clevel
-!     meridional wind tress [N/m2]
-      srcv_clname(5) = 'RRMTAUY'//clevel
-!     wind tress module [N/m2]
+!     u component of wind stress [N/m2]
+      srcv_clname(4) = 'RRMUTAU'//clevel
+!     v component of wind stress [N/m2]
+      srcv_clname(5) = 'RRMVTAU'//clevel
+!     wind stress module [N/m2]
       srcv_clname(6) = 'RRMTAUM'//clevel
-
+!     zonal wind tress [N/m2]
+      srcv_clname(7) = 'RRMETAU'//clevel
+!     meridional wind tress [N/m2]
+      srcv_clname(8) = 'RRMNTAU'//clevel
 
 !     mask to manage wet-drying[]
-      srcv_clname(7) = 'RRM_DRY'//clevel
+      srcv_clname(9) = 'RRM_DRY'//clevel
 !     mean Wave Period [s]
-      srcv_clname(8) = 'RRMT0M1'//clevel
+      srcv_clname(10) = 'RRMT0M1'//clevel
 !     significant wave height [m]
-      srcv_clname(9) = 'RRM__HS'//clevel
+      srcv_clname(11) = 'RRM__HS'//clevel
 !     mean wave direction [radian]
-      srcv_clname(10) = 'RRM_DIR'//clevel
+      srcv_clname(12) = 'RRM_DIR'//clevel
 !     bhd: wave induced Bernoulli head pressure [N.m-1]
-      srcv_clname(12) = 'RRM_BHD'//clevel
+      srcv_clname(13) = 'RRM_BHD'//clevel
 !     wave_ubr: rms amplitude of orbital bottom velocity of the waves [m.s-1]
-      srcv_clname(13) = 'RRM_UBR'//clevel
+      srcv_clname(14) = 'RRM_UBR'//clevel
 !     wave_phioc :  wave to ocean TKE flux  [W.m-2]
-      srcv_clname(14) = 'RRM_FOC'//clevel
+      srcv_clname(15) = 'RRM_FOC'//clevel
 !     wave_wlm :  wave mean wave length  [m]
-      srcv_clname(15) = 'RRM__LM'//clevel      
+      srcv_clname(16) = 'RRM__LM'//clevel      
 !     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(16) = 'RRMTWOX'//clevel   
+      srcv_clname(17) = 'RRMUTWO'//clevel   
 !     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(17) = 'RRMTWOY'//clevel   
+      srcv_clname(18) = 'RRMVTWO'//clevel   
+!     wave_tauox: eastward-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(19) = 'RRMETWO'//clevel  
+!     wave_tauoy: northward-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(20) = 'RRMNTWO'//clevel
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(18) = 'RRMTAWX'//clevel   
+      srcv_clname(21) = 'RRMUTAW'//clevel   
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(19) = 'RRMTAWY'//clevel   
+      srcv_clname(22) = 'RRMVTAW'//clevel  
+!     wave_tauwx: Net wave-supported stress, eastward-component [m2.s-2]
+      srcv_clname(21) = 'RRMETAW'//clevel   
+!     wave_tauwy: Net wave-supported stress, northward-component [m2.s-2]
+      srcv_clname(22) = 'RRMNTAW'//clevel 
 
       DO ja = 0, nmaxatm
 
