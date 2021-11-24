@@ -622,16 +622,16 @@ c      call grid_stiffness(tile)
 
 # include "compute_extended_bounds.h"
 
-      ad_x(1) = 1600
-      ad_x(2) = 30e3 / 100.
+      ad_x(1) = 1700
+      ad_x(2) = 35e3 / 100.
       ad_array_node_size=2
 
       write(*,*) '########',ad_x(1), ad_x(2)*100
 
 c set a lower depth
       depth=2000
-      ridge_width = 30e3
-      ridge_height = 1600
+      ridge_width = 29e3
+      ridge_height = 1550
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
