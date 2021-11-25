@@ -26,7 +26,8 @@
       real delta_lon, delta_lat
       integer ncid, varid, nf_fread
       INTEGER    :: level
-      CHARACTER*1 clevel
+      CHARACTER*2 clevel
+      CHARACTER*9 rclevel
       CHARACTER*5 catm
       character fname*64
 #include "netcdf.inc"
@@ -89,79 +90,84 @@
       srcv_clname(:) = 'not defined' 
 #ifdef AGRIF
       level=Agrif_Fixed()
+      write(clevel,'(a,i1.1)') "_", level
+      write(rclevel,'(a,i1.1)') "_CPLMASK", level
 #else
       level=0
+      write(clevel,*) '  '
+      write(rclevel,*) "         "
 #endif
-      write(clevel,'(i1.1)') level
 
 !------------------------------------------------------------------
 !     Sent
 !------------------------------------------------------------------
 !     SST
-      ssnd_clname(1) = 'SRMSSTV'//clevel
+      ssnd_clname(1) = 'CROCO_SSTV'//trim(clevel)
 !     SSH
-      ssnd_clname(2) = 'SRMSSHV'//clevel
+      ssnd_clname(2) = 'CROCO_SSHV'//trim(clevel)
 !     UOCE
-      ssnd_clname(3) = 'SRMUOCE'//clevel
+      ssnd_clname(3) = 'CROCO_UOCE'//trim(clevel)
 !     VOCE
-      ssnd_clname(4) = 'SRMVOCE'//clevel
+      ssnd_clname(4) = 'CROCO_VOCE'//trim(clevel)
 !     EOCE
-      ssnd_clname(5) = 'SRMEOCE'//clevel
+      ssnd_clname(5) = 'CROCO_EOCE'//trim(clevel)
 !     NOCE
-      ssnd_clname(6) = 'SRMNOCE'//clevel
+      ssnd_clname(6) = 'CROCO_NOCE'//trim(clevel)
 
 !------------------------------------------------------------------
 !     Received
 !------------------------------------------------------------------
 !     Evaporation-Precipitation [kg/m^2/s]
-      srcv_clname(1) = 'RRMEVPR'//clevel
+      srcv_clname(1) = 'CROCO_EVPR'//trim(rclevel)
 !     net surface SW radiation [W/m2]
-      srcv_clname(2) = 'RRMSRFL'//clevel
+      srcv_clname(2) = 'CROCO_SRFL'//trim(rclevel)
 !     total non-solar heat flux [W/m2]
-      srcv_clname(3) = 'RRMSTFL'//clevel
+      srcv_clname(3) = 'CROCO_STFL'//trim(rclevel)
 !     u component of wind stress [N/m2]
-      srcv_clname(4) = 'RRMUTAU'//clevel
+      srcv_clname(4) = 'CROCO_UTAU'//trim(rclevel)
 !     v component of wind stress [N/m2]
-      srcv_clname(5) = 'RRMVTAU'//clevel
+      srcv_clname(5) = 'CROCO_VTAU'//trim(rclevel)
 !     wind stress module [N/m2]
-      srcv_clname(6) = 'RRMTAUM'//clevel
+      srcv_clname(6) = 'CROCO_TAUM'//trim(rclevel)
 !     zonal wind tress [N/m2]
-      srcv_clname(7) = 'RRMETAU'//clevel
+      srcv_clname(7) = 'CROCO_ETAU'//trim(rclevel)
 !     meridional wind tress [N/m2]
-      srcv_clname(8) = 'RRMNTAU'//clevel
+      srcv_clname(8) = 'CROCO_NTAU'//trim(rclevel)
+!     Surface pressure [Pa]
+      srcv_clname(9) = 'CROCO_PSFC'//trim(rclevel)
 
 !     mask to manage wet-drying[]
-      srcv_clname(9) = 'RRM_DRY'//clevel
+      srcv_clname(10) = 'CROCO_DRY'//trim(rclevel)
 !     mean Wave Period [s]
-      srcv_clname(10) = 'RRMT0M1'//clevel
+      srcv_clname(11) = 'CROCO_T0M1'//trim(rclevel)
 !     significant wave height [m]
-      srcv_clname(11) = 'RRM__HS'//clevel
+      srcv_clname(12) = 'CROCO_HS'//trim(rclevel)
 !     mean wave direction [radian]
-      srcv_clname(12) = 'RRM_DIR'//clevel
+      srcv_clname(13) = 'CROCO_DIR'//trim(rclevel)
 !     bhd: wave induced Bernoulli head pressure [N.m-1]
-      srcv_clname(13) = 'RRM_BHD'//clevel
+      srcv_clname(14) = 'CROCO_BHD'//trim(rclevel)
 !     wave_ubr: rms amplitude of orbital bottom velocity of the waves [m.s-1]
-      srcv_clname(14) = 'RRM_UBR'//clevel
+      srcv_clname(15) = 'CROCO_UBR'//trim(rclevel)
 !     wave_phioc :  wave to ocean TKE flux  [W.m-2]
-      srcv_clname(15) = 'RRM_FOC'//clevel
+      srcv_clname(16) = 'CROCO_FOC'//trim(rclevel)
 !     wave_wlm :  wave mean wave length  [m]
-      srcv_clname(16) = 'RRM__LM'//clevel      
+      srcv_clname(17) = 'CROCO_LM'//trim(rclevel)   
 !     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(17) = 'RRMUTWO'//clevel   
+      srcv_clname(18) = 'CROCO_UTWO'//trim(rclevel)  
 !     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(18) = 'RRMVTWO'//clevel   
+      srcv_clname(19) = 'CROCO_VTWO'//trim(rclevel)  
 !     wave_tauox: eastward-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(19) = 'RRMETWO'//clevel  
+      srcv_clname(20) = 'CROCO_ETWO'//trim(rclevel) 
 !     wave_tauoy: northward-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(20) = 'RRMNTWO'//clevel
+      srcv_clname(21) = 'CROCO_NTWO'//trim(rclevel)
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(21) = 'RRMUTAW'//clevel   
+      srcv_clname(22) = 'CROCO_UTAW'//trim(rclevel)  
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(22) = 'RRMVTAW'//clevel  
+      srcv_clname(23) = 'CROCO_VTAW'//trim(rclevel) 
 !     wave_tauwx: Net wave-supported stress, eastward-component [m2.s-2]
-      srcv_clname(21) = 'RRMETAW'//clevel   
+      srcv_clname(24) = 'CROCO_ETAW'//trim(rclevel)   
 !     wave_tauwy: Net wave-supported stress, northward-component [m2.s-2]
-      srcv_clname(22) = 'RRMNTAW'//clevel 
+      srcv_clname(25) = 'CROCO_NTAW'//trim(rclevel)
 
       DO ja = 0, nmaxatm
 

@@ -55,7 +55,7 @@
       DO i = 1, nmaxfld
 !-------------------------------------------------
 !        SST       
-         if (ssnd_clname(i)=='SRMSSTV'//clevel) then
+         if (ssnd_clname(i)=='CROCO_SSTV'//clevel) then
             snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15    
 
             DO ja = 0, nmaxatm
@@ -75,7 +75,7 @@
          endif
 !-------------------------------------------------
 !        SSH       
-         if (ssnd_clname(i)=='SRMSSHV'//clevel) then
+         if (ssnd_clname(i)=='CROCO_SSHV'//clevel) then
             snd_field = zeta(1:Lmmpi,1:Mmmpi,nnew)
 
             DO ja = 0, nmaxatm
@@ -96,7 +96,7 @@
 !-------------------------------------------------
 !        U component of ocean surface current
 !          at rho point
-        if (ssnd_clname(i)=='SRMUOCE'//clevel) then
+        if (ssnd_clname(i)=='CROCO_UOCE'//clevel) then
            snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                       +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
 
@@ -118,7 +118,7 @@
 !-------------------------------------------------
 !        V component of ocean surface current
 !          at rho point
-         if (ssnd_clname(i)=='SRMVOCE'//clevel) then
+         if (ssnd_clname(i)=='CROCO_VOCE'//clevel) then
            snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
      &                       +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
 
@@ -141,7 +141,7 @@
 !        Eastward component of ocean surface current
 !         proceed rotation from xi/eta croco_grid coordinate
 !         to East - North coordinate
-         if (ssnd_clname(i)=='SRMEOCE'//clevel) then
+         if (ssnd_clname(i)=='CROCO_EOCE'//clevel) then
            snd_field = (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                       + u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
      &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
@@ -168,7 +168,7 @@
 !        Northward component of ocean surface current
 !         proceed rotation from xi/eta croco_grid coordinate
 !         to East - North coordinate
-         if (ssnd_clname(i)=='SRMNOCE'//clevel) then
+         if (ssnd_clname(i)=='CROCO_NOCE'//clevel) then
            snd_field =  (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                      +   u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
      &         *  sin(angler(1:Lmmpi  ,1:Mmmpi))
