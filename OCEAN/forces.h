@@ -23,7 +23,16 @@
 #ifdef OA_COUPLING
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
+#  ifdef READ_PATM
+      real patm2d(GLOBAL_2D_ARRAY)
+      common /forces_patm/ patm2d
+#    ifdef OBC_PATM
+      real paref
+      parameter(paref=101325)
+#    endif
+#  endif
 #endif
+
 #ifdef OW_COUPLING
       real twox(GLOBAL_2D_ARRAY)
       real twoy(GLOBAL_2D_ARRAY)
