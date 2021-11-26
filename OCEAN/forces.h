@@ -36,10 +36,8 @@
 #ifdef OW_COUPLING
       real twox(GLOBAL_2D_ARRAY)
       real twoy(GLOBAL_2D_ARRAY)
-# ifdef OW_COUPLING_FULL
       real foc(GLOBAL_2D_ARRAY)
       common /forces_foc/foc
-# endif    
       real tawx(GLOBAL_2D_ARRAY)
       real tawy(GLOBAL_2D_ARRAY)
       common /forces_twox/twox /forces_twoy/twoy
@@ -473,10 +471,8 @@
       common /forces_wkx/wwkx
       real wwke(GLOBAL_2D_ARRAY)
       common /forces_wke/wwke     
-# if defined OW_COUPLING_FULL
       real ubr(GLOBAL_2D_ARRAY)
       common /forces_ubr/ubr
-# endif      
 #endif
 
 #ifdef BBL
@@ -494,10 +490,8 @@
       common /forces_whrm/whrm /forces_wepb/wepb
      &       /forces_wdrx/wdrx /forces_wdre/wdre
      &       /forces_wepd/wepd
-# ifdef OW_COUPLING_FULL
       real wlm(GLOBAL_2D_ARRAY)
       common /forces_wlm/wlm
-# endif    
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
@@ -543,18 +537,14 @@
       common /forces_ust2d/ust2d /forces_vst2d/vst2d
       common /forces_frc2dx/frc2dx /forces_frc2de/frc2de
       common /forces_sup/sup
-# ifdef OW_COUPLING_FULL
       real ust_ext(GLOBAL_2D_ARRAY)
       common /forces_ext_ust/ust_ext
-# endif      
 # ifdef SOLVE3D
       real calP(GLOBAL_2D_ARRAY)
       real Kapsrf(GLOBAL_2D_ARRAY)
       common /forces_calP/calP /forces_Kapsrf/Kapsrf
-# ifdef OW_COUPLING_FULL
       real bhd(GLOBAL_2D_ARRAY)
       common /forces_bhd/bhd 
-# endif      
 #  ifndef WAVE_SFC_BREAK
       real brk3dx(GLOBAL_2D_ARRAY,N)
       real brk3de(GLOBAL_2D_ARRAY,N)
