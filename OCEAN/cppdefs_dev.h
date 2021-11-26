@@ -699,6 +699,7 @@
 # elif defined WAVE_BREAK_TG86
 # elif defined WAVE_BREAK_TG86A
 # elif defined WAVE_BREAK_R93
+# elif defined WAVE_BREAK_BJ78
 # else
 #  define WAVE_BREAK_CT93 /* defaults */
 # endif

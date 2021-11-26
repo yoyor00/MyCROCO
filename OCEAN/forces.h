@@ -36,6 +36,10 @@
 #ifdef OW_COUPLING
       real twox(GLOBAL_2D_ARRAY)
       real twoy(GLOBAL_2D_ARRAY)
+# ifdef OW_COUPLING_FULL
+      real foc(GLOBAL_2D_ARRAY)
+      common /forces_foc/foc
+# endif    
       real tawx(GLOBAL_2D_ARRAY)
       real tawy(GLOBAL_2D_ARRAY)
       common /forces_twox/twox /forces_twoy/twoy
@@ -457,6 +461,7 @@
 ! whrm | MRL     | (RMS) wave height (twice the wave amplitude) [m]
 ! wepb | MRL     | breaking dissipation rate (\epsilon_b term) [m3/s3]
 ! wepd | MRL     | frictional dissipation rate (\epsilon_d term) [m3/s3]
+! wlm  | MRL     | mean length wave from input data (coupling or forcing)
 ! wepr | ROLLER  | roller dissipation rate (\epsilon_r term) [m3/s3]
 ! wbst | MRL/BKPP| frictional dissipation stress (e_d k/sigma) [m2/s2]
 !--------------------------------------------------------------------
@@ -467,7 +472,11 @@
       real wwkx(GLOBAL_2D_ARRAY)
       common /forces_wkx/wwkx
       real wwke(GLOBAL_2D_ARRAY)
-      common /forces_wke/wwke
+      common /forces_wke/wwke     
+# if defined OW_COUPLING_FULL
+      real ubr(GLOBAL_2D_ARRAY)
+      common /forces_ubr/ubr
+# endif      
 #endif
 
 #ifdef BBL
@@ -485,6 +494,10 @@
       common /forces_whrm/whrm /forces_wepb/wepb
      &       /forces_wdrx/wdrx /forces_wdre/wdre
      &       /forces_wepd/wepd
+# ifdef OW_COUPLING_FULL
+      real wlm(GLOBAL_2D_ARRAY)
+      common /forces_wlm/wlm
+# endif    
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
@@ -502,6 +515,8 @@
 !  2D  |  sup      |  quasi-static wave set-up (rho-point)
 !  2D  |  calP     |  pressure correction term (rho-point)
 !  2D  |  Kapsrf   |  Bernoulli head terrm at the surface (rho-point)
+!  2D  |  ust_ext  |  surface Stokes drift velocity magnitude from input data (coupling or forcing)
+!  2D  |  bhd      |  Bernoulli head term input data (coupling or forcing)
 !--------------------------------------------------------------------
 !  3D  |  brk3dx   |   xi-direciton 3D breaking dissipation (rho)
 !  3D  |  brk3de   |  eta-direction 3D breaking dissipation (rho)
@@ -528,10 +543,18 @@
       common /forces_ust2d/ust2d /forces_vst2d/vst2d
       common /forces_frc2dx/frc2dx /forces_frc2de/frc2de
       common /forces_sup/sup
+# ifdef OW_COUPLING_FULL
+      real ust_ext(GLOBAL_2D_ARRAY)
+      common /forces_ext_ust/ust_ext
+# endif      
 # ifdef SOLVE3D
       real calP(GLOBAL_2D_ARRAY)
       real Kapsrf(GLOBAL_2D_ARRAY)
       common /forces_calP/calP /forces_Kapsrf/Kapsrf
+# ifdef OW_COUPLING_FULL
+      real bhd(GLOBAL_2D_ARRAY)
+      common /forces_bhd/bhd 
+# endif      
 #  ifndef WAVE_SFC_BREAK
       real brk3dx(GLOBAL_2D_ARRAY,N)
       real brk3de(GLOBAL_2D_ARRAY,N)

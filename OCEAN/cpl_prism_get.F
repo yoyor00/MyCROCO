@@ -40,7 +40,9 @@
       INTEGER    :: iok_psfc
       INTEGER    :: iok_wdry 
       INTEGER    :: iok_wt0m1, iok_whs, iok_wdir
-      INTEGER    :: iok_wbhd, iok_wubr, iok_wfoc, iok_wlm 
+      INTEGER    :: iok_wbhd, iok_wfoc, iok_wlm
+      INTEGER    :: iok_wubrx, iok_wubry
+      INTEGER    :: iok_wust, iok_wvst 
       INTEGER    :: iok_utwo, iok_vtwo, iok_etwo, iok_ntwo
       INTEGER    :: iok_utaw, iok_vtaw, iok_etaw, iok_ntaw 
       INTEGER    :: imin_halo, imax_halo, jmin_halo, jmax_halo
@@ -110,7 +112,10 @@
       iok_whs = 0
       iok_wdir = 0
       iok_wbhd = 0
-      iok_wubr = 0
+      iok_wubrx = 0
+      iok_wubry = 0
+      iok_wust = 0
+      iok_wvst = 0
       iok_wfoc = 0
       iok_wlm = 0
       iok_utwo = 0
@@ -318,48 +323,81 @@
            if (iok_wdir /= 0)  then
              call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
              wdrx = rmask * cos(tab_t_tmp - angler)
-             wdre = rmask * sin(tab_t_tmp - angler) 
+             wdre = rmask * sin(tab_t_tmp - angler)
            endif
          endif
-!-------------------------------------------------
+!------------------------------------------------- 
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
          if (srcv_clname(i)=='CROCO_BHD'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wbhd)
-!            if (iok_wbhd /= 0)  then
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!            endif
-         endif
-!-------------------------------------------------
-!        wave_ubr : rms amplitude of orbital bottom velocity of the waves (m/s)
-!        not tested/performed yet
-         if (srcv_clname(i)=='CROCO_UBR'//trim(rclevel)) then
-            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
-     &  tab_t_tmp, rcvtime, iok_wubr)
-!            if (iok_wubr /= 0)  then
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!            endif
+            if (iok_wbhd /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               bhd = rmask * tab_t_tmp
+            endif
          endif
 !-------------------------------------------------
 !        wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
-!        not tested/performed yet
          if (srcv_clname(i)=='CROCO_FOC'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wfoc)
-!            if (iok_wfoc /= 0)  then
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!            endif
+            if (iok_wfoc /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               foc = rmask * max(tab_t_tmp,0.)
+            endif
          endif
 !-------------------------------------------------
 !        wave_wlm : mean length wave (m)
-!        not tested/performed yet
          if (srcv_clname(i)=='CROCO_LM'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wlm)
-!            if (iok_wlm /= 0)  then
-!               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!            endif
+            if (iok_wlm /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               wlm = rmask * tab_t_tmp
+            endif
+         endif
+!
+!  -- Vector variables converted to modules  --
+!--------------------------------------------------
+!        ORBITAL BOTTOM VELOCITY      
+!        wave_ubrx : x-component rms amplitude of wave orbital bottom velocity(m/s)
+         if (srcv_clname(i)=='CROCO_UBRX'//trim(rclevel)) then
+             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wubrx)
+            if (iok_wubrx /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ubr = tab_t_tmp
+            endif
+         endif
+!        wave_ubry : y-component rms amplitude of wave orbital bottom velocity(m/s)
+         if (srcv_clname(i)=='CROCO_UBRY'//trim(rclevel)) then
+             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wubry)
+            if (iok_wubry /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ubr = rmask * sqrt(ubr**2+tab_t_tmp**2)
+            endif
+         endif
+!-----------------------------------------------------------------------------------------------------------------         
+!        SURFACE STOKES DRIFT VELOCITY        
+!        wave_ussx : x-component of stokes drift surface velocity
+         if (srcv_clname(i)=='CROCO_USSX'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wust)
+            if (iok_wust /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ust_ext = tab_t_tmp
+            endif
+         endif
+!        wave_ussy : y-component of stokes drift surface velocity
+         if (srcv_clname(i)=='CROCO_USSY'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_wvst)
+            if (iok_wvst /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               ust_ext = rmask * sqrt(ust_ext**2 + tab_t_tmp**2)
+            endif
          endif
 !
 !  -- Vector variables --

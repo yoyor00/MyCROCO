@@ -146,28 +146,34 @@
       srcv_clname(13) = 'CROCO_DIR'//trim(rclevel)
 !     bhd: wave induced Bernoulli head pressure [N.m-1]
       srcv_clname(14) = 'CROCO_BHD'//trim(rclevel)
-!     wave_ubr: rms amplitude of orbital bottom velocity of the waves [m.s-1]
-      srcv_clname(15) = 'CROCO_UBR'//trim(rclevel)
 !     wave_phioc :  wave to ocean TKE flux  [W.m-2]
-      srcv_clname(16) = 'CROCO_FOC'//trim(rclevel)
+      srcv_clname(15) = 'CROCO_FOC'//trim(rclevel)
 !     wave_wlm :  wave mean wave length  [m]
-      srcv_clname(17) = 'CROCO_LM'//trim(rclevel)   
+      srcv_clname(16) = 'CROCO_LM'//trim(rclevel)   
+!     wave_ubrx: x-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
+      srcv_clname(17) = 'CROCO_UBRX'//trim(rclevel)
+!     wave_ubry: y-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
+      srcv_clname(18) = 'CROCO_UBRY'//trim(rclevel)
+!     wave_ussx: x-component of surface Stokes drift velocity [m.s-1]
+      srcv_clname(19) = 'CROCO_USSX'//trim(rclevel)
+!     wave_ussy: y-component of surface Stokes drift velocity [m.s-1]
+      srcv_clname(20) = 'CROCO_USSY'//trim(rclevel)
 !     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(18) = 'CROCO_UTWO'//trim(rclevel)  
+      srcv_clname(21) = 'CROCO_UTWO'//trim(rclevel)  
 !     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(19) = 'CROCO_VTWO'//trim(rclevel)  
+      srcv_clname(22) = 'CROCO_VTWO'//trim(rclevel)  
 !     wave_tauox: eastward-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(20) = 'CROCO_ETWO'//trim(rclevel) 
+      srcv_clname(23) = 'CROCO_ETWO'//trim(rclevel) 
 !     wave_tauoy: northward-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(21) = 'CROCO_NTWO'//trim(rclevel)
+      srcv_clname(24) = 'CROCO_NTWO'//trim(rclevel)
 !     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(22) = 'CROCO_UTAW'//trim(rclevel)  
+      srcv_clname(25) = 'CROCO_UTAW'//trim(rclevel)  
 !     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(23) = 'CROCO_VTAW'//trim(rclevel) 
+      srcv_clname(26) = 'CROCO_VTAW'//trim(rclevel) 
 !     wave_tauwx: Net wave-supported stress, eastward-component [m2.s-2]
-      srcv_clname(24) = 'CROCO_ETAW'//trim(rclevel)   
+      srcv_clname(27) = 'CROCO_ETAW'//trim(rclevel)   
 !     wave_tauwy: Net wave-supported stress, northward-component [m2.s-2]
-      srcv_clname(25) = 'CROCO_NTAW'//trim(rclevel)
+      srcv_clname(28) = 'CROCO_NTAW'//trim(rclevel)
 
       DO ja = 0, nmaxatm
 

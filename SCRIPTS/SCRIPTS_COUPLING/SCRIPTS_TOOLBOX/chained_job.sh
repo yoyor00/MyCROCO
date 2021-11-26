@@ -52,8 +52,8 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
     sed -e "s/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOB}/YEAR_BEGIN_JOB=${years}/" \
         -e "s/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOB}/MONTH_BEGIN_JOB=${months}/" \
         -e "s/DAY_BEGIN_JOB=${DAY_BEGIN_JOB}/DAY_BEGIN_JOB=${days}/" \
-        -e "s/NBJOB=.*/NBJOB=${jobleft}/" \
-        -e "s/RESTART_FLAG=.*/RESTART_FLAG=\"TRUE\"/" \
+        -e "s/export NBJOB=.*/export NBJOB=${jobleft}/" \
+        -e "s/export RESTART_FLAG=.*/export RESTART_FLAG=\"TRUE\"/" \
         -e "s/export CHAINED_JOB=.*/export CHAINED_JOB=\"FALSE\"/" \
         ${jobname} > ${future_job}
 
