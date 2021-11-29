@@ -398,12 +398,12 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     cat ./path_base.sh >> tmppath
 
     # add sections for each model
-    [[ ${options[@]} =~ "cpl" ]] && printf "export CPL=\"\"\n" >> tmppath
+    [[ ${options[@]} =~ "cpl" ]] && printf "export CPL=\"\${CHOME}/OASIS/compile_oasis3\"\n" >> tmppath
     [[ ${options[@]} =~ "oce-prod" ]] && printf "export OCE=\"${CROCO_DIR}/OCEAN\"\n" >> tmppath
-    [[ ${options[@]} =~ "atm" ]] && printf "export ATM=\"\"\n" >> tmppath
-    [[ ${options[@]} =~ "wav" ]] && printf "export WAV=\"\"\n" >> tmppath
+    [[ ${options[@]} =~ "atm" ]] && printf "export ATM=\"\${CHOME}/WRF\"\n" >> tmppath
+    [[ ${options[@]} =~ "wav" ]] && printf "export WAV=\"\${CHOME}/WW3/model\"\n" >> tmppath
     [[ ${options[@]} =~ "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
-    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\"\n" >> tmppath
+    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\${CHOME}/XIOS\"\n" >> tmppath
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./path_cpl.sh >> tmppath
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./path_oce.sh >> tmppath
@@ -476,10 +476,10 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     cat ./namelist_rundir.sh >> mynamelist.sh
 
     [[ ${options[@]} =~ "oce-prod" ]] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "atm" ]] && printf "export ATM_EXE_DIR=\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "wav" ]] && printf "export WAV_EXE_DIR=\n" >> mynamelist.sh
+    [[ ${options[@]} =~ "atm" ]] && printf "export ATM_EXE_DIR=\${ATM}/exe_coupled\n" >> mynamelist.sh
+    [[ ${options[@]} =~ "wav" ]] && printf "export WAV_EXE_DIR=\${WAV}/exe_\n" >> mynamelist.sh
     [[ ${options[@]} =~ "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS_EXE_DIR=\n" >> mynamelist.sh
+    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS_EXE_DIR=\${XIOS}/bin\n" >> mynamelist.sh
 
     printf "#-------------------------------------------------------------------------------\n" >> mynamelist.sh
     printf "# Model settings\n" >> mynamelist.sh
@@ -507,5 +507,26 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     mv mynamelist1.sh mynamelist.sh
     chmod 755 mynamelist.sh
     mv mynamelist.sh ../../.
+
+    # Edit jobcomp in CROCO_IN
+    if [[ ${options[@]} =~ "oce-prod" ]]; then
+        cd ${MY_CONFIG_HOME}/CROCO_IN
+	sed -e "s|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${CROCO_DIR}/OCEAN|g" \
+	    -e "s|FC=.*|FC=\${FC}|" \
+	    -e "s|MPIF90=.*|MPIF90=\${MPIF90}|" \
+	    jobcomp > jobcomp.tmp
+	mv jobcomp.tmp jobcomp
+	if [[ ${options[@]} =~ "cpl" ]]; then
+	    sed -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|" \
+		jobcomp > jobcomp.tmp
+            mv jobcomp.tmp jobcomp
+	fi
+        if [[ ${options[@]} =~ "xios" ]]; then
+            sed -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|" \
+                jobcomp > jobcomp.tmp
+            mv jobcomp.tmp jobcomp
+        fi
+	chmod 755 jobcomp
+    fi
 fi
 

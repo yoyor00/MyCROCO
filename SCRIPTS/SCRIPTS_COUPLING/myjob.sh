@@ -92,7 +92,10 @@ export io_putfile="mvfile"
 #-------------------------------------------------------------------------------
 #  Which Computer?
 #-------------------------------------------------------------------------------
-if [ ${MACHINE} == "IRENE" ]; then
+if [ ${MACHINE} == "Linux" ]; then
+   export QSUB="./"
+   export COMPUTER="Linux"
+elif [ ${MACHINE} == "IRENE" ]; then
    export QSUB="ccc_msub -m work,store,scratch"
    export COMPUTER="IRENE"
 elif [ ${MACHINE} == "JEANZAY" ]; then

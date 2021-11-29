@@ -22,6 +22,7 @@ export ncomod='nco'
 # -- Environment variables
 
 export FC=ifort
+export F77=ifort
 export MPIF90=mpiifort
 export CC=icc
 

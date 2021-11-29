@@ -121,7 +121,7 @@ else
     exit
 fi
 #
-cp inputs_wrf/namelist.input.base.complete ${REAL_WORK_DIR}/.
+cp namelist.input.base.complete ${REAL_WORK_DIR}/.
 # MPI parameters
 nprocX=-1
 nprocY=-1

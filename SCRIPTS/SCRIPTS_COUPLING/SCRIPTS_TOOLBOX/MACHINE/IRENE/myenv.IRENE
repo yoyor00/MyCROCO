@@ -30,5 +30,6 @@ export ncomod='nco/4.6.0'
 
 export CC=mpicc
 export FC=ifort
+export F77=ifort
 export MPIF90=mpif90
 
