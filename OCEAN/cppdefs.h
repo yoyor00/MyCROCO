@@ -98,13 +98,10 @@
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
-# undef USE_CALENDAR 
+# undef  USE_CALENDAR 
                       /* dedicated croco.log file */
 # undef  LOGFILE
-# undef START_DATE
-# if defined XIOS
-#   define START_DATE
-# endif
+# undef  START_DATE
 /*!
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
@@ -188,16 +185,15 @@
 # endif
                       /* Surface Forcing */
 /*
+! Bulk flux algorithms (options)
+! by default : COARE3p0 paramet with GUSTINESS effects
 !
-! Bulk algorithms (options)
-! by default COARE3p0 parametrization is used with GUSTINESS effects
-!
-! To change bulk parametrization you have to define one the following cpp keys (not additional) :
-! - define BULK_ECUMEV0 : used of ECUME_v0 parametrization
-! - define BULK_ECUMEV6 : used of ECUME_v6 parametrization
-! - define BULK_WASP    : used of WASP parametrization
-! Warning : it is possible to add GUSTINESS effects for all parametrizations by defining BULK_GUSTINESS cpp key
-!
+! To change bulk param, define one the following keys (exclusive) :
+! - define BULK_ECUMEV0 : ECUME_v0 param
+! - define BULK_ECUMEV6 : ECUME_v6 param
+! - define BULK_WASP    : WASP param
+! Note : gustiness effects can be added for all params
+!        by defining BULK_GUSTINESS
 */
 # undef BULK_FLUX
 # ifdef BULK_FLUX
@@ -213,7 +209,7 @@
 #   undef  AROME
 #   undef  ERA_ECMWF
 #  endif
-#  undef READ_PATM
+#  undef  READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
@@ -549,10 +545,10 @@
 #   define OBC_PATM
 #  endif
 # else
-#  undef QCORRECTION
-#  undef SFLX_CORR
+#  undef  QCORRECTION
+#  undef  SFLX_CORR
 #  undef  SFLX_CORR_COEF
-#  undef ANA_DIURNAL_SW
+#  undef  ANA_DIURNAL_SW
 # endif
 # undef  ANA_SSFLUX
 # define ANA_STFLUX

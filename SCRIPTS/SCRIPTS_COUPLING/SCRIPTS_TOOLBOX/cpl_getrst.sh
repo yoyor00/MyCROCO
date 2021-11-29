@@ -7,26 +7,45 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     module load $ncomod
 #
     if [ ${USE_ATM} -eq 1 ] ; then
-        for dom in $wrfcpldom ; do
-#            varlist="WRF_${dom}_EXT_d01_SURF_NET_SOLAR WRF_${dom}_EXT_d01_EVAP-PRECIP WRF_${dom}_EXT_d01_SURF_NET_NON-SOLAR WRF_${dom}_EXT_d01_TAUX WRF_${dom}_EXT_d01_TAUY WRF_${dom}_EXT_d01_TAUMOD WRF_${dom}_EXT_d01_WND_U_01 WRF_${dom}_EXT_d01_WND_V_01"
-	    varlist="WRF_${dom}_EXT_${dom}_SURF_NET_SOLAR WRF_${dom}_EXT_${dom}_EVAP-PRECIP WRF_${dom}_EXT_${dom}_SURF_NET_NON-SOLAR WRF_${dom}_EXT_${dom}_TAUX WRF_${dom}_EXT_${dom}_TAUY WRF_${dom}_EXT_${dom}_TAUMOD WRF_${dom}_EXT_${dom}_WND_U_${dom} WRF_${dom}_EXT_d01_WND_V_${dom} "
-            echo 'create restart file for oasis from calm conditions for variables:'${varlist}
-            if [ ${dom} == "d01" ]; then
-                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${dom} atm.nc wrf "${varlist}"
+        maxatmdom=$( echo $wrfcpldom | wc -w )
+        ocemaxdom=0
+        for domatm in $wrfcpldom ; do
+            if [[ ${onlinecplmask} == "TRUE" ]]; then
+                [[ $(( $AGRIFZ +1 )) > $maxatmdom ]] && { loopoce=`seq 0 $AGRIFZ` ;} || { loopoce=`seq 0 $(( $maxatmdom - 1 ))` ;}
+            else
+                loopoce=`seq 0 $(( $maxatmdom - 1 ))`
+            fi
+         
+            for ocedom in $loopoce; do
+                domoce="d0$(( ${ocedom} + 1 ))"
+	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUX WRF_${domatm}_EXT_${domoce}_TAUY WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_WND_U_01 WRF_${domatm}_EXT_${domoce}_WND_V_01 "
+            done
+            
+            echo 'create restart file for oasis from calm conditions for variables:'${varlist} 
+            if [ ${domatm} == "d01" ]; then
+                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm.nc wrf "${varlist}"
             else 
-                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${dom} atm${dom}.nc wrf "${varlist}"
+                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm${domatm}.nc wrf "${varlist}"
             fi
         done
     fi
 #
     if [ ${USE_OCE} -eq 1 ] ; then
-        for nn in $( seq 0 ${AGRIFZ} ); do
+        for nn in `seq 0 ${AGRIFZ}`; do
+            varlist=""
             if [ ${nn} -gt 0 ]; then
                 agrif_ext=".${nn}"
             else
                 agrif_ext=""
             fi
-            varlist="SRMSSTV${nn} SRMSSHV${nn} SRMVOCE${nn} SRMUOCE${nn}"
+            if [[ $( echo "$wrfcpldom" | wc -w ) > 1 ]] ; then
+                for atmdom in $wrfcpldom ; do
+                    mm=$( echo $atmdom | cut -c 3 )
+                    varlist="${varlist}SRMSSTV${nn}_atm${mm} SRMSSHV${nn}_atm${mm} SRMVOCE${nn}_atm${mm} SRMUOCE${nn}_atm${mm} "
+                done
+            else
+                varlist="${varlist}SRMSSTV${nn} SRMSSHV${nn} SRMVOCE${nn} SRMUOCE${nn} "
+            fi
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh croco_grd.nc${agrif_ext} oce.nc${agrif_ext} croco "${varlist}"
         done

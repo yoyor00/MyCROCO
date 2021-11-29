@@ -413,12 +413,11 @@ C$    integer omp_get_thread_num
 #  endif /*DIAGNOSTICS_TS_MLD*/
 # endif /*DIAGNOSTICS_TS*/
 
-
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #  ifdef AVERAGES
-        do k=1,N
-          do j=JstrR,JendR
-           do i=IstrR,IendR
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
             eddyuu_avg(i,j,k)=init
             eddyvv_avg(i,j,k)=init
             eddyuv_avg(i,j,k)=init
@@ -427,17 +426,18 @@ C$    integer omp_get_thread_num
             eddywb_avg(i,j,k)=init
             eddyuw_avg(i,j,k)=init
             eddyvw_avg(i,j,k)=init
-            if (k .eq. N) then
-             eddyusu_avg(i,j)=init
-             eddyugsu_avg(i,j)=init
-             eddyvsv_avg(i,j)=init
-             eddyvgsv_avg(i,j)=init
-             eddyubu_avg(i,j)=init
-             eddyvbv_avg(i,j)=init
-            endif
-           enddo
           enddo
         enddo
+      enddo
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          eddyzz_avg(i,j)=init
+          eddyusu_avg(i,j)=init
+          eddyvsv_avg(i,j)=init
+          eddyubu_avg(i,j)=init
+          eddyvbv_avg(i,j)=init
+        enddo
+      enddo
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EDDY */
 

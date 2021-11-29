@@ -132,27 +132,25 @@
               cffb =rho(i,j,k)
 #  endif
 
-                  if (k.eq.1) then
-                      eddyubu_avg(i,j)= cff *
+              if (k.eq.1) then
+                eddyubu_avg(i,j)= cff *
      &                           ( cff1*eddyubu_avg(i,j)
      &                             +cffu * bustr(i,j) )
-                      eddyvbv_avg(i,j)= cff *
+                eddyvbv_avg(i,j)= cff *
      &                           ( cff1*eddyvbv_avg(i,j)
      &                             +cffv * bvstr(i,j) )
-                  endif
+              endif
 
-
-                  if (k.eq.N) then
-                      eddyusu_avg(i,j)= cff *
+              if (k.eq.N) then
+                eddyusu_avg(i,j)= cff *
      &                           ( cff1*eddyusu_avg(i,j)
      &                             +cffu * sustr(i,j) )
-                      eddyvsv_avg(i,j)= cff *
+                eddyvsv_avg(i,j)= cff *
      &                           ( cff1*eddyvsv_avg(i,j)
      &                             +cffv * svstr(i,j) )
-                  endif
+              endif
 
-
-                  eddyuu_avg(i,j,k)= cff *
+              eddyuu_avg(i,j,k)= cff *
      &                       ( cff1*eddyuu_avg(i,j,k)
      &                         +cffu**2 )
               eddyvv_avg(i,j,k)= cff *

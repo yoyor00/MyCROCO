@@ -16,44 +16,73 @@ then
    echo "ln -sf ${ATM_FILES_DIR}${file} ./$file"
    ln -sf ${ATM_FILES_DIR}/${file} ./$file
   done
+  
+  if [[ ${onlinecplmask} == "TRUE" ]]; then
+      echo "EDITING CPLMASK ONLINE"  
+      for dom in $wrfcpldom ; do
+          if [[ ${dom} == "d01" ]]; then
+              echo "set CPLMASK to 1 in coupled domain $dom"
+              echo "ncap2 -O -s \"CPLMASK(:,0,:,:)= LU_INDEX == 17\" ./wrfinput_$dom ./wrfinput_$dom"
+              module load $ncomod
+              ncap2 -O -s "CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom
+              if [[ $(echo ${wrfcpldom} | wc -w) == 1 && $AGRIFZ > 0 ]]; then
+                  ncpdq -O -d num_ext_model_couple_dom_stag,0 -v CPLMASK,LU_INDEX -a num_ext_model_couple_dom_stag,Time wrfinput_$dom tmp.nc
+                  for nn in `seq 1 $AGRIFZ`; do
+                      [[ ${nn} -gt 0 ]] && agrif_ext=".${nn}" || agrif_ext=""
+                      ncap2 -O -v -s 'latmin=lat_rho.min();latmax=lat_rho.max();lonmin=lon_rho.min();lonmax=lon_rho.max()' ${OCE_FILES_DIR}/croco_grd.nc${agrif_ext} tmp.nc.1
+                      lonmin=$( ncdump -v lonmin tmp.nc.1  | grep "lonmin =" | cut -d ' ' -f 4)
+                      latmin=$( ncdump -v latmin tmp.nc.1 | grep "latmin =" | cut -d ' ' -f 4)
+                      lonmax=$( ncdump -v lonmax tmp.nc.1  | grep "lonmax =" | cut -d ' ' -f 4)
+                      latmax=$( ncdump -v latmax tmp.nc.1  | grep "latmax =" | cut -d ' ' -f 4)
+                      \rm tmp.nc.1
 
-  for dom in $wrfcpldom ; do
-     if [[ ${dom} == "d01" ]]; then
-         echo "set CPLMASK to 1 in coupled domain $dom"
-         echo "ncap2 -O -s \"CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom"
-         module load $ncomod
-         ncap2 -O -s "CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom
-         module unload $ncomod
-     else
-         module load $ncomod
-         echo "set CPLMASK to 1 in coupled domain $dom"
-         num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
-         echo "Increase size of mum_ext_model by one for ${dom} (in case some domains already exist)"
-         ncpdq -O -v CPLMASK -a num_ext_model_couple_dom_stag,Time wrfinput_d01 tmp.nc 
-         cp tmp.nc tmp2.nc
-         ncrcat -O tmp.nc tmp2.nc tmp2.nc 
-         ncpdq -O -a Time,num_ext_model_couple_dom_stag tmp2.nc tmp2.nc 
-         ncks -A wrfinput_d01 tmp2.nc
-         mv tmp2.nc wrfinput_d01
-         rm -rf tmp.nc
-         num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
-         
-         echo "Find limits for domain $dom"
-         ncap2 -O -v -s 'latmin=XLAT.min();latmax=XLAT.max();lonmin=XLONG.min();lonmax=XLONG.max()' wrfinput_${dom} tmp.nc
-	 lonmin=$( ncdump -v lonmin tmp.nc  | grep "lonmin =" | cut -d ' ' -f 4)
-         latmin=$( ncdump -v latmin tmp.nc  | grep "latmin =" | cut -d ' ' -f 4)
-	 lonmax=$( ncdump -v lonmax tmp.nc  | grep "lonmax =" | cut -d ' ' -f 4)
-	 latmax=$( ncdump -v latmax tmp.nc  | grep "latmax =" | cut -d ' ' -f 4)
-         rm -rf tmp.nc
-	 printf "Limits for domain ${dom} are:\n Lon min:$lonmin \n Lat min:$latmin \n Lon max:$lonmax \n Lat max:$latmax \n"
-         ncap2 -F -O -s "var_tmp=CPLMASK(:,1,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(:,${num_ext_mod},:,:)=var_tmp" wrfinput_d01 wrfinput_d01.tmp
-	 ncks -O -v var_tmp -x wrfinput_d01.tmp wrfinput_d01
-         rm -rf wrfinput_d01.tmp 
-         module unload $ncomod
-     fi
-
-   done
-
+                      ncap2 -O -F -s "CPLMASK(1,:,:,:)= LU_INDEX==17" tmp.nc tmp.nc.1
+                      ncap2 -O -F -s "var_tmp=CPLMASK(1,:,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(1,:,:,:)=var_tmp" tmp.nc.1 tmp.nc.1
+                      ncks -O -v var_tmp -x tmp.nc.1 tmp.nc.1
+                      [[ ! -f tmp.nc.2 ]] && { ncap2 -O -F -s "CPLMASK(1,:,:,:)= LU_INDEX==17" tmp.nc tmp.nc.2 ; }
+                      ncrcat -O tmp.nc.2 tmp.nc.1 tmp.nc.2
+                      num_ext_mod=$( ncdump -h tmp.nc.2 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 6| cut -c 2)
+                      for pp in `seq 1 $(( $num_ext_mod - 1 ))`; do
+                          ncap2 -O -F -s "var_tmp=CPLMASK($pp,1,:,:); where( XLAT > $latmin && XLONG > $lonmin && XLAT < $latmax && XLONG < $lonmax ) var_tmp=0; CPLMASK($pp,1,:,:)=var_tmp" tmp.nc.2 tmp.nc.2
+                          ncks -O -v var_tmp -x tmp.nc.2 tmp.nc.2
+                      done
+                  done
+              ncpdq -O -a Time,num_ext_model_couple_dom_stag tmp.nc.2 tmp.nc.2
+              ncks -A -v CPLMASK -x wrfinput_$dom tmp.nc.2
+              mv tmp.nc.2 wrfinput_$dom
+              rm -rf tmp.nc tmp.nc.1
+              fi
+          module unload $ncomod
+          else
+              module load $ncomod
+              echo "set CPLMASK to 1 in coupled domain $dom"
+              num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
+              echo "Increase size of mum_ext_model by one for ${dom} (in case some domains already exist)"
+              ncpdq -O -v CPLMASK -a num_ext_model_couple_dom_stag,Time wrfinput_d01 tmp.nc 
+              ncpdq -O -d num_ext_model_couple_dom_stag,0 -v CPLMASK -a num_ext_model_couple_dom_stag,Time wrfinput_d01 tmp2.nc
+              ncrcat -O tmp.nc tmp2.nc tmp2.nc 
+              ncpdq -O -a Time,num_ext_model_couple_dom_stag tmp2.nc tmp2.nc 
+              ncks -A wrfinput_d01 tmp2.nc
+              mv tmp2.nc wrfinput_d01
+              rm -rf tmp.nc
+              num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
+              echo "Find limits for domain $dom"
+              ncap2 -O -v -s 'latmin=XLAT.min();latmax=XLAT.max();lonmin=XLONG.min();lonmax=XLONG.max()' wrfinput_${dom} tmp.nc
+              lonmin=$( ncdump -v lonmin tmp.nc  | grep "lonmin =" | cut -d ' ' -f 4)
+              latmin=$( ncdump -v latmin tmp.nc  | grep "latmin =" | cut -d ' ' -f 4)
+              lonmax=$( ncdump -v lonmax tmp.nc  | grep "lonmax =" | cut -d ' ' -f 4)
+              latmax=$( ncdump -v latmax tmp.nc  | grep "latmax =" | cut -d ' ' -f 4)
+              rm -rf tmp.nc
+              printf "Limits for domain ${dom} are:\n Lon min:$lonmin \n Lat min:$latmin \n Lon max:$lonmax \n Lat max:$latmax \n"
+              ncap2 -F -O -s "var_tmp=CPLMASK(:,1,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(:,${num_ext_mod},:,:)=var_tmp" wrfinput_d01 wrfinput_d01.tmp
+              if [[  ${nestfeedback} == "TRUE" ]]; then
+                  ncap2 -F -O -s "var_tmp=CPLMASK(:,1,:,:); where( XLAT > $latmin && XLONG > $lonmin && XLAT < $latmax && XLONG < $lonmax ) var_tmp=0; CPLMASK(:,1,:,:)=var_tmp" wrfinput_d01.tmp wrfinput_d01.tmp
+              fi
+              ncks -O -v var_tmp -x wrfinput_d01.tmp wrfinput_d01
+              rm -rf wrfinput_d01.tmp 
+              module unload $ncomod
+          fi
+      done
 else
     touch ls_l/getfile_atm_restarts.txt
     for file in `${MACHINE_STOCKAGE} ls ${RESTDIR_IN}/wrfrst_d0?_*`

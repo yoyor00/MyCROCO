@@ -70,8 +70,13 @@ if [[ ${nestfeedback} == "FALSE" ]]; then
     mv namelist.input.tmp namelist.input
 fi
    
-numextmod=$( echo "$wrfcpldom" | wc -w )
-sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            =$numextmod/g" \
+maxatmdom=$( echo "$wrfcpldom" | wc -w )
+if [[ $maxatmdom == 1 && $AGRIFZ > 1 ]];then 
+    numextmod=$(( $AGRIFZ + 1 ))
+else
+    [[ $maxatmdom > $(( $AGRIFZ +1 )) ]] && { numextmod=$maxatmdom ;} || { numextmod=$(( $AGRIFZ + 1 )) ;}
+fi
+sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            = $numextmod,/g" \
 ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
 

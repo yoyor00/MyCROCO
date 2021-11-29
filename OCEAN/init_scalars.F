@@ -138,19 +138,19 @@ C$OMP END PARALLEL
 #ifdef AVERAGES
       nrecavg=0
 #endif
-#if defined DIAGNOSTICS_TS
+#ifdef DIAGNOSTICS_TS
       nrecdia=0
 # ifdef AVERAGES
       nrecdia_avg=0
 # endif
 #endif
-#if defined DIAGNOSTICS_UV
+#ifdef DIAGNOSTICS_UV
       nrecdiaM=0
 # ifdef AVERAGES
       nrecdiaM_avg=0
 # endif
 #endif
-#if defined DIAGNOSTICS_BIO
+#ifdef DIAGNOSTICS_BIO
       nrecdiabio=0
 # ifdef AVERAGES
       nrecdiabio_avg=0
@@ -224,7 +224,6 @@ C$OMP END PARALLEL
       nciddiaM_avg=-1
 # endif
 #endif
-
 #ifdef DIAGNOSTICS_VRT
       nciddiags_vrt=-1
       nrecdiags_vrt=0
@@ -232,8 +231,7 @@ C$OMP END PARALLEL
       nciddiags_vrt_avg=-1
       nrecdiags_vrt_avg=0
 # endif
-# endif
-
+#endif
 #ifdef DIAGNOSTICS_EK
       nciddiags_ek=-1
       nrecdiags_ek=0
@@ -241,8 +239,7 @@ C$OMP END PARALLEL
       nciddiags_ek_avg=-1
       nrecdiags_ek_avg=0
 # endif
-# endif
-
+#endif
 #ifdef DIAGNOSTICS_PV
       nciddiags_pv=-1
       nrecdiags_pv=0
@@ -250,26 +247,23 @@ C$OMP END PARALLEL
       nciddiags_pv_avg=-1
       nrecdiags_pv_avg=0
 # endif
-# endif
-
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#endif
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
       nciddiags_eddy=-1
       nrecdiags_eddy=0
 # ifdef AVERAGES
       nciddiags_eddy_avg=-1
       nrecdiags_eddy_avg=0
 # endif
-# endif
-
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#endif
+#if defined OUTPUTS_SURFACE && ! defined XIOS
       ncidsurf=-1
       nrecsurf=0
-# ifdef AVERAGES
+#ifdef AVERAGES
       ncidsurf_avg=-1
       nrecsurf_avg=0
 # endif
-# endif
-
+#endif
 #ifdef DIAGNOSTICS_BIO
       nciddiabio=-1
 # ifdef AVERAGES
@@ -397,7 +391,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxVb = ',indxVb
       vname(7,indxVb)='                                           '
       vname(11,indxVb)=' '
 
-#if defined MORPHODYN && defined SEDIMENT
+#ifdef MORPHODYN
 CR      write(stdout,'(1x,A,I3)') 'indxHm =',indxHm
       vname(1,indxHm)='hmorph                                     '
       vname(2,indxHm)='moving bathymetry                          '
@@ -3455,6 +3449,17 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvMrhs+itrc-1)
 #endif  /* DIAGNOSTICS_PV */
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
+CR       write(stdout,'(1x,A,I3)') 'indxeddyzz = ',indxeddyzz
+       write(vname1,*) 'zz                                  '
+       vname(1,indxeddyzz)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxeddyzz)
+       vname(2,indxeddyzz)='zz                              '
+       write(vname3,*) 'meter2                              '
+       vname(3,indxeddyzz)=vname3
+       vname(4,indxeddyzz)='                                '
+       vname(5,indxeddyzz)='                                '
+       vname(7,indxeddyzz)='                                '
+
 CR       write(stdout,'(1x,A,I3)') 'indxeddyuu = ',indxeddyuu
        write(vname1,*) 'uu                                        '
        vname(1,indxeddyuu)=vname1
@@ -3587,30 +3592,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxeddyvsv)
        vname(4,indxeddyvsv)='                               '
        vname(5,indxeddyvsv)='                               '
        vname(7,indxeddyvsv)='                               '
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyugsu = ',indxeddyugsu
-       write(vname1,*) 'ugsustr                              '
-       vname(1,indxeddyugsu)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyugsu)
-       vname(2,indxeddyugsu)='ugsustr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyugsu)=vname3
-       vname(4,indxeddyugsu)='                               '
-       vname(5,indxeddyugsu)='                               '
-       vname(7,indxeddyugsu)='                               '
-
-CR       write(stdout,'(1x,A,I3)') 'indxeddyvgsv = ',indxeddyvgsv
-       write(vname1,*) 'vgsvstr                              '
-       vname(1,indxeddyvgsv)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxeddyvgsv)
-       vname(2,indxeddyvgsv)='vgsvstr                         '
-       write(vname3,*) 'meter3 second-3                     '
-       vname(3,indxeddyvgsv)=vname3
-       vname(4,indxeddyvgsv)='                               '
-       vname(5,indxeddyvgsv)='                               '
-       vname(7,indxeddyvgsv)='                               '
 #endif  /* DIAGNOSTICS_EDDY */
-
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS
 

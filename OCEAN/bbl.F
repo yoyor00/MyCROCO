@@ -236,13 +236,17 @@
 !  Compute bed wave orbital velocity and excursion amplitude.
 !
           Ab=Awave(i,j)/SINH(Kbh) + eps
+# ifdef OW_COUPLING_FULL
+          Ub(i,j) = ubr(i,j) SWITCH rmask(i,j)
+     &                       SWITCH_WET rmask_wet(i,j)     
+# else          
           Ub(i,j)=Fwave*Ab SWITCH rmask(i,j)
      &                     SWITCH_WET rmask_wet(i,j)
 !
 !  Correction by skewness factor 
 !  (Abreu et al., 2010; Malarkey and Davis, 2012)
 !
-# ifdef BBL_WAVE_SKEWNESS
+#  ifdef BBL_WAVE_SKEWNESS
           Ursell=1.0607*Awave(i,j)/(depth*kbh2)
           cff1=exp((p3-log10(Ursell))/p4)
           cff2=p1+(p2-p1)/(1+cff1)
@@ -253,6 +257,7 @@
           cff7=cff6*sin(cff4)
           Ub(i,j)=Ub(i,j)*0.9*(1+cff7)  SWITCH rmask(i,j)
      &                                  SWITCH_WET rmask_wet(i,j)
+#  endif
 # endif
 !
 ! Stirring velocity from wave breaking turbulence 
@@ -372,7 +377,7 @@
 # ifdef Z0_BL
             tau_ex=max(tau_cws-tau_cb,0.)
             znot_bl=17.4*d50*(tau_ex*osmgd)**0.75
-            znot_bl= znots + znot_bl
+            znota = znots + znot_bl
 !   
 !---------------------------------------------------------------------
 ! Determine bedform roughness ripple height (m) and ripple length (m) 
@@ -444,7 +449,7 @@
 !
 #  if defined Z0_RIP || defined Z0_BIO
             znot_rip = 0.267*rhgt*rhgt/(max(rlen,rlmin)) ! Nielsen (1992)
-            znota = znot_bl + znot_rip
+            znota = znota + znot_rip
 #  endif /* Z0_RIP || Z0_BIO */
 !
 !---------------------------------------------------------------------
