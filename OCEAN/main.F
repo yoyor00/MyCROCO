@@ -324,28 +324,28 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-
 #ifdef ANA_INITIAL
-      if (nrrec.ne.0) then          ! read from NetCDF file
+      if (nrrec.ne.0) then            ! read from NetCDF file
 #endif
 #ifdef EXACT_RESTART
-          call get_initial (nrrec-1, 2) ! Set initial conditions
-                                    ! in the case of restart run.
+        call get_initial (nrrec-1, 2) ! Set initial conditions
+                                      ! in case of restart
 C$OMP BARRIER
 # ifdef SOLVE3D
         do tile=0,NSUB_X*NSUB_E-1
-          call set_depth (tile)     !<-- needed to initialize Hz_bak
+          call set_depth (tile)       !<-- needed to initialize Hz_bak
         enddo
 C$OMP BARRIER
 # endif
-
 #endif
-      call get_initial (nrrec, 1)   ! Set initial conditions
+        call get_initial (nrrec, 1)   ! Set initial conditions
 #ifdef ANA_INITIAL
       else  ! nrrec.eq.0
+# if defined OA_COUPLING || defined OW_COUPLING
         call cpl_prism_define
         oasis_time = 0
         MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+# endif
       endif
 #endif
                                 ! Set initial model clock: at this
