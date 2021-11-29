@@ -125,7 +125,7 @@ if [[ -d MUSTANG_NAMELIST ]]; then
         echo "  Mustang namelist directory MUSTANG_NAMELIST exists"
 else
         mkdir -p $RUNDIR/MUSTANG_NAMELIST
-        \cp -rf ${ROOT_DIR}/MUSTANG/NAM_CASES/*txt $RUNDIR/MUSTANG_NAMELIST/.
+        \cp -rf ${ROOT_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $RUNDIR/MUSTANG_NAMELIST/.
         echo "  file para*txt copied from source directory"
 fi
 
