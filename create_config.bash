@@ -398,12 +398,12 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     cat ./path_base.sh >> tmppath
 
     # add sections for each model
-    [[ ${options[@]} =~ "cpl" ]] && printf "export CPL=\"\${CHOME}/OASIS/compile_oasis3\"\n" >> tmppath
+    [[ ${options[@]} =~ "cpl" ]] && printf "export CPL=\"\${HOME}/OASIS/compile_oasis3\"\n" >> tmppath
     [[ ${options[@]} =~ "oce-prod" ]] && printf "export OCE=\"${CROCO_DIR}/OCEAN\"\n" >> tmppath
-    [[ ${options[@]} =~ "atm" ]] && printf "export ATM=\"\${CHOME}/WRF\"\n" >> tmppath
-    [[ ${options[@]} =~ "wav" ]] && printf "export WAV=\"\${CHOME}/WW3/model\"\n" >> tmppath
-    [[ ${options[@]} =~ "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
-    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\${CHOME}/XIOS\"\n" >> tmppath
+    [[ ${options[@]} =~ "atm" ]] && printf "export ATM=\"\${HOME}/WRF\"\n" >> tmppath
+    [[ ${options[@]} =~ "wav" ]] && printf "export WAV=\"\${HOME}/WW3/model\"\n" >> tmppath
+    [[ ${options[@]} =~ "toy" ]] && printf "export TOY=\"\${HOME}/TOY_IN\"\n" >> tmppath
+    [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\${HOME}/XIOS\"\n" >> tmppath
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./path_cpl.sh >> tmppath
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./path_oce.sh >> tmppath

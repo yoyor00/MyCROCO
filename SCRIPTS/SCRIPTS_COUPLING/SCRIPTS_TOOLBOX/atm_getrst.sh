@@ -83,6 +83,7 @@ then
               module unload $ncomod
           fi
       done
+  fi
 else
     touch ls_l/getfile_atm_restarts.txt
     for file in `${MACHINE_STOCKAGE} ls ${RESTDIR_IN}/wrfrst_d0?_*`

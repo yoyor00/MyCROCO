@@ -106,7 +106,7 @@ else
 #        [[ ${RESTART_FLAG} == "FALSE" ]] && . ${SCRIPTDIR}/chained_job.sh
         . ${SCRIPTDIR}/chained_job.sh
     else
-       ${QSUB} ${jobname}
+       ${QSUB}${jobname}
     fi 
 #
     if [ "${MODE_TEST}" != "" ] ; then

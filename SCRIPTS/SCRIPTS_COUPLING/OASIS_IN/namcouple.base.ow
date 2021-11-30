@@ -151,7 +151,7 @@
 #~~~~~~~~~~~
 # SSH : sea surface height (m)
 #~~~~~~~~~~~
-SRMSSHV0 WW3__SSH 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_SSH WW3__SSH 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnt ww3t LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -160,7 +160,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : sea surface zonal currents (m.s-1)
 #~~~~~~~~~~~
-SRMUOCE0 WW3_OSSU 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_UOCE WW3_OSSU 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnu ww3t LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -170,7 +170,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # VOCE : sea surface meridional currents (m.s-1)
 #~~~~~~~~~~~
 #
-SRMVOCE0 WW3_OSSV 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_VOCE WW3_OSSV 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnv ww3t LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -183,7 +183,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # T0M1 / ww_tmn : mean period (s)
 #~~~~~~~~~~~
-WW3_T0M1 RRMT0M10 1 <cpldt> 1 wav.nc EXPORTED
+WW3_T0M1 CROCO_T0M1 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -192,7 +192,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # HS / ww_hs : HS significant wave height (m) 
 #~~~~~~~~~~~
-WW3__OHS RRM__HS0 1 <cpldt> 1 wav.nc EXPORTED
+WW3__OHS CROCO_HS 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -201,7 +201,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # THM / ww_thm : mean direction  
 #~~~~~~~~~~~
-WW3__DIR RRM_DIR0 1 <cpldt> 1 wav.nc EXPORTED
+WW3__DIR CROCO_DIR 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR

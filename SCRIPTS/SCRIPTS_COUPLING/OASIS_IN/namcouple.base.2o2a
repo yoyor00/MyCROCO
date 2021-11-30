@@ -10,7 +10,7 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 27
+ 30
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
@@ -151,19 +151,19 @@
 #~~~~~~~~~~~
 # TAUX : zonal stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUX RRMTAUX0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUX CROCO_UTAU_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUX RRMTAUX0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUX CROCO_UTAU_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUX RRMTAUX1_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUX CROCO_UTAU_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -172,19 +172,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUY : meridional stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUY RRMTAUY0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUY CROCO_VTAU_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUY RRMTAUY0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUY CROCO_VTAU_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUY RRMTAUY1_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUY CROCO_VTAUY_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -193,19 +193,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUMOD : stress module (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUMOD RRMTAUM0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUMOD CROCO_TAUM_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUMOD RRMTAUM0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUMOD CROCO_TAUM_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUMOD RRMTAUM1_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUMOD CROCO_TAUM_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -214,19 +214,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # EVAP-PRECIP : E-P flux (kg.m-2.s-1)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_EVAP-PRECIP RRMEVPR0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_EVAP-PRECIP CROCO_EVPR_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_EVAP-PRECIP RRMEVPR0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_EVAP-PRECIP CROCO_EVPR_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_EVAP-PRECIP RRMEVPR1_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_EVAP-PRECIP CROCO_EVPR_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -235,19 +235,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_SOLAR RRMSRFL0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_SOLAR CROCO_SRFL_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_SURF_NET_SOLAR RRMSRFL0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_SURF_NET_SOLAR CROCO_SRFL_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_SURF_NET_SOLAR RRMSRFL1_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_SURF_NET_SOLAR CROCO_SRFL_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -256,24 +256,44 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_NON-SOLAR RRMSTFL0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR CROCO_STFL_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_SURF_NET_NON-SOLAR RRMSTFL0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_SURF_NET_NON-SOLAR CROCO_STFL_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_SURF_NET_NON-SOLAR RRMSTFL1_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_SURF_NET_NON-SOLAR CROCO_STFL_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_PSFC CROCO_PSFC_CPLMASK0_atm1 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+WRF_d02_EXT_d02_PSFC CROCO_PSFC_CPLMASK0_atm2 1 <cpldt> 1 atmd02.nc EXPORTED
+<atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+WRF_d02_EXT_d02_PSFC CROCO_PSFC_CPLMASK1_atm1 1 <cpldt> 1 atmd02.nc EXPORTED
+<atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
 #
 #                     ------------------------------------
 #                       CROCO (crocox) ==> WRF (wrfexe)
@@ -282,19 +302,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SST (K)
 #~~~~~~~~~~~
-SRMSSTV0_atm1 WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_SST0 WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt0 atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-SRMSSTV1_atm2 WRF_d01_EXT_d02_SST 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_SST1 WRF_d01_EXT_d02_SST 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnx> <atmny> ocnt1 atmt LAG=<ocedt1>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-SRMSSTV1_atm2 WRF_d02_EXT_d02_SST 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_SST1 WRF_d02_EXT_d02_SST 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt1 atmtd02 LAG=<ocedt1>
 R  0  R  0
 SCRIPR
@@ -302,19 +322,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-SRMUOCE0_atm1 WRF_d01_EXT_d01_UOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_UOCE0 WRF_d01_EXT_d01_UOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt0 atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-SRMUOCE1_atm2 WRF_d01_EXT_d02_UOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_UOCE1 WRF_d01_EXT_d02_UOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnx> <atmny> ocnt1 atmt LAG=<ocedt1>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-SRMUOCE1_atm2 WRF_d02_EXT_d02_UOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_UOCE1 WRF_d02_EXT_d02_UOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt1 atmtd02 LAG=<ocedt1>
 R  0  R  0
 SCRIPR
@@ -323,19 +343,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # VOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
-SRMVOCE0_atm1 WRF_d01_EXT_d01_VOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_VOCE0 WRF_d01_EXT_d01_VOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt0 atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-SRMVOCE1_atm2 WRF_d01_EXT_d02_VOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_VOCE1 WRF_d01_EXT_d02_VOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnx> <atmny> ocnt1 atmt LAG=<ocedt1>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-SRMVOCE1_atm2 WRF_d02_EXT_d02_VOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_VOCE1 WRF_d02_EXT_d02_VOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnxd02> <atmnyd02> ocnt1 atmtd02 LAG=<ocedt1>
 R  0  R  0
 SCRIPR

@@ -10,7 +10,7 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 22
+ 23
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
@@ -185,7 +185,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SSH : sea surface height (m)
 #~~~~~~~~~~~
-SRMSSHV0 WW3__SSH 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_SSH WW3__SSH 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnt ww3t LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -194,7 +194,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : sea surface zonal currents (m.s-1)
 #~~~~~~~~~~~
-SRMUOCE0 WW3_OSSU 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_UOCE WW3_OSSU 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnu ww3t LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -204,7 +204,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # VOCE : sea surface meridional currents (m.s-1)
 #~~~~~~~~~~~
 #
-SRMVOCE0 WW3_OSSV 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_VOCE WW3_OSSV 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnv ww3t LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -217,7 +217,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # T0M1 / ww_tmn : mean period (s)
 #~~~~~~~~~~~
-WW3_T0M1 RRMT0M10 1 <cpldt> 1 wav.nc EXPORTED
+WW3_T0M1 CROCO_T0M1 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -226,7 +226,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # HS / ww_hs : HS significant wave height (m) 
 #~~~~~~~~~~~
-WW3__OHS RRM__HS0 1 <cpldt> 1 wav.nc EXPORTED
+WW3__OHS CROCO_HS 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -235,7 +235,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # THM / ww_thm : mean direction  
 #~~~~~~~~~~~
-WW3__DIR RRM_DIR0 1 <cpldt> 1 wav.nc EXPORTED
+WW3__DIR CROCO_DIR 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -245,7 +245,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # Atm to waves zonal stress computed in WW3 (N.m-2)  
 #~~~~~~~~~~~
 #
-WW3_TAWX RRMTAWX0 1 <cpldt> 1 wav.nc EXPORTED
+WW3_TAWX CROCO_UTAW 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -255,7 +255,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # Atm to waves meridional stress computed in WW3 (N.m-2)  
 #~~~~~~~~~~~
 #
-WW3_TAWY RRMTAWY0 1 <cpldt> 1 wav.nc EXPORTED
+WW3_TAWY CROCO_VTAW 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -265,7 +265,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # Waves to ocean zonal stress computed in WW3 (N.m-2)  
 #~~~~~~~~~~~
 #
-WW3_TWOX RRMTWOX0 1 <cpldt> 1 wav.nc EXPORTED
+WW3_TWOX CROCO_UTWO 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -275,7 +275,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # Waves to ocean meridional stress computed in WW3 (N.m-2) 
 #~~~~~~~~~~~
 #
-WW3_TWOY RRMTWOY0 1 <cpldt> 1 wav.nc EXPORTED
+WW3_TWOY CROCO_VTWO 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t ocnt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -288,7 +288,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUX : zonal stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUX RRMTAUX0 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUX CROCO_UTAU 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -297,7 +297,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUY : meridional stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUY RRMTAUY0 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUY CROCO_VTAU 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -306,7 +306,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUMOD : stress module (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUMOD RRMTAUM0 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUMOD CROCO_TAUM 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -315,7 +315,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # EVAP-PRECIP : E-P flux (kg.m-2.s-1)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_EVAP-PRECIP RRMEVPR0 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_EVAP-PRECIP CROCO_EVPR 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -324,7 +324,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_SOLAR RRMSRFL0 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_SOLAR CROCO_SRFL 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -333,7 +333,16 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_NON-SOLAR RRMSTFL0 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR CROCO_STFL 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_PSFC CROCO_PSFC 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -346,7 +355,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SST (K)
 #~~~~~~~~~~~
-SRMSSTV0 WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_SST WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -355,7 +364,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-SRMUOCE0 WRF_d01_EXT_d01_UOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_UOCE WRF_d01_EXT_d01_UOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -364,7 +373,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # VOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
-SRMVOCE0 WRF_d01_EXT_d01_VOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_VOCE WRF_d01_EXT_d01_VOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR

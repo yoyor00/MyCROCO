@@ -10,7 +10,7 @@
 #
 # NFIELDS: total number of fields being exchanged
  $NFIELDS
- 22
+ 23
 #########################################################################
 # NBMODEL: number of models and their names (6 characters) 
  $NBMODEL
@@ -217,7 +217,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # THM / ww_thm : cos of mean direction  
 #~~~~~~~~~~~
-TOY__DIR TOY_CDIR 1 <cpldt> 1 wav.nc EXPORTED
+TOY__DIR TOY_ODIR 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> toywt toyot LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -316,6 +316,15 @@ DISTWGT LR SCALAR LATLON 1 4
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
 WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYSTFLO 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_PSFC TOYPSFCO 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyot  LAG=<atmdt>
 R  0  R  0
 SCRIPR

@@ -217,7 +217,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # THM / ww_thm : cos of mean direction  
 #~~~~~~~~~~~
-WW3__DIR TOY_CDIR 1 <cpldt> 1 wav.nc EXPORTED
+WW3__DIR TOY_ODIR 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t toyot LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -316,6 +316,15 @@ DISTWGT LR SCALAR LATLON 1 4
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
 TOYSTFLX TOYSTFLO 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> toyat toyot  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+TOY_PSFC TOYPSFCO 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> toyat toyot  LAG=<atmdt>
 R  0  R  0
 SCRIPR

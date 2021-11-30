@@ -233,18 +233,9 @@ SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
-# COS(THM) / ww_thm : cos of mean direction  
+# THM / ww_thm : mean direction  
 #~~~~~~~~~~~
-WW3_CDIR TOY_CDIR 1 <cpldt> 1 wav.nc EXPORTED
-<wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
-R  0  R  0
-SCRIPR
-DISTWGT LR SCALAR LATLON 1 4
-#
-#~~~~~~~~~~~
-# SIN(THM) / ww_thm : sin of mean direction  
-#~~~~~~~~~~~
-WW3_SDIR TOY_SDIR 1 <cpldt> 1 wav.nc EXPORTED
+WW3__DIR TOY__DIR 1 <cpldt> 1 wav.nc EXPORTED
 <wavnx> <wavny> <ocenx> <oceny> ww3t toyt LAG=<wavdt>
 R  0  R  0
 SCRIPR
@@ -343,6 +334,15 @@ DISTWGT LR SCALAR LATLON 1 4
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
 WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYSTFLX 1 <cpldt> 1 atm.nc EXPORTED
+<atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
+R  0  R  0
+SCRIPR
+DISTWGT LR SCALAR LATLON 1 4
+#
+#~~~~~~~~~~~
+# INTERFACE ATMOSPHERIC PRESSURE  (Pa)
+#~~~~~~~~~~~
+WRF_d01_EXT_d01_PSFC TOY_PSFC 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
