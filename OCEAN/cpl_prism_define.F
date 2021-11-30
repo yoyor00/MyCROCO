@@ -102,9 +102,9 @@
 !     Sent
 !------------------------------------------------------------------
 !     SST
-      ssnd_clname(1) = 'CROCO_SSTV'//trim(clevel)
+      ssnd_clname(1) = 'CROCO_SST'//trim(clevel)
 !     SSH
-      ssnd_clname(2) = 'CROCO_SSHV'//trim(clevel)
+      ssnd_clname(2) = 'CROCO_SSH'//trim(clevel)
 !     UOCE
       ssnd_clname(3) = 'CROCO_UOCE'//trim(clevel)
 !     VOCE

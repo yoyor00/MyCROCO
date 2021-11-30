@@ -43,7 +43,7 @@
       integer umask_inv(GLOBAL_2D_ARRAY)
       integer vmask_inv(GLOBAL_2D_ARRAY)
       integer j,i, level
-      CHARACTER*1 clevel
+      CHARACTER*2 clevel
 !
 !
 !     !-------------------------------------------------------------------
@@ -56,10 +56,10 @@
 !     !--------------------------------------------------------------------
 # ifdef AGRIF
       level=Agrif_Fixed()
-      write(clevel,'(i1.1)') level
+      write(clevel,'(a,i1.1)') "_", level
 # else
       level=0
-      write(clevel,*) ' '
+      write(clevel,*) "  "
 # endif
 !------------------------------------------------------------------
 !     Set the CROCO grid definition to PRISM system
