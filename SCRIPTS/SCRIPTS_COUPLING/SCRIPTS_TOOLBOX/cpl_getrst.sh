@@ -38,7 +38,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             else
                 agrif_ext=""
             fi
-	    [[ ${AGRIFZ} > 0 ]] && { mm=${nn} ;}|| { mm="" ;}
+	    [[ ${AGRIFZ} > 0 ]] && { mm="_${nn}" ;}|| { mm="" ;}
             varlist="${varlist}CROCO_SST${mm} CROCO_SSH${mm} CROCO_VOCE${mm} CROCO_UOCE${mm} "
 
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}

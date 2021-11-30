@@ -260,13 +260,13 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SST (K)
 #~~~~~~~~~~~
-CROCO_SST0 WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_SST_0 WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt0 atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-CROCO_SST1 WRF_d01_EXT_d02_SST 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_SST_1 WRF_d01_EXT_d02_SST 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnx> <atmny> ocnt1 atmt LAG=<ocedt1>
 R  0  R  0
 SCRIPR
@@ -275,13 +275,13 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-CROCO_UOCE0 WRF_d01_EXT_d01_UOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_UOCE_0 WRF_d01_EXT_d01_UOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt0 atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-CROCO_UOCE1 WRF_d01_EXT_d02_UOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_UOCE_1 WRF_d01_EXT_d02_UOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnx> <atmny> ocnt1 atmt LAG=<ocedt1>
 R  0  R  0
 SCRIPR
@@ -290,13 +290,13 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # VOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
-CROCO_VOCE0 WRF_d01_EXT_d01_VOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_VOCE_0 WRF_d01_EXT_d01_VOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt0 atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-CROCO_VOCE1 WRF_d01_EXT_d02_VOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
+CROCO_VOCE_1 WRF_d01_EXT_d02_VOCE 1 <cpldt> 1 oce.nc.1 EXPORTED
 <ocenx1> <oceny1> <atmnx> <atmny> ocnt1 atmt LAG=<ocedt1>
 R  0  R  0
 SCRIPR

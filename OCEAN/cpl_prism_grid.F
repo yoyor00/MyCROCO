@@ -59,7 +59,7 @@
       write(clevel,'(a,i1.1)') "_", level
 # else
       level=0
-      write(clevel,*) "  "
+      write(clevel,'(a)') "  "
 # endif
 !------------------------------------------------------------------
 !     Set the CROCO grid definition to PRISM system

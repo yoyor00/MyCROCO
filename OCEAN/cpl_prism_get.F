@@ -67,7 +67,7 @@
       write(rclevel,'(a,i1.1)') "_CPLMASK", level
 # else
       level=0
-      write(rclevel,*) "         "
+      write(rclevel,'(a)') '         '
 # endif
 
 !      
