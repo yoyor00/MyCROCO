@@ -235,13 +235,12 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined SED_TOY
-#  ifdef CONSOLID
-                     depth=20.
-                     f0=0.0
-#  else
+#  ifdef SED_TOY_ROUSE
                      depth=5.
-                     f0=1.E-4
+#  else
+                     depth=20.
 #  endif
+                     f0=0.0
                      beta=0.
 # elif defined TIDAL_FLAT
                      depth_shallow=-4.
@@ -360,12 +359,12 @@ C$    integer omp_get_thread_num
                      Length_ETA=Length_ETA_ISO_GRID
 #  endif
 # elif defined SED_TOY
-#  ifdef CONSOLID
-                     Length_XI =40.0
-                     Length_ETA=30.0
-#  else
+#  ifdef SED_TOY_ROUSE
                      Length_XI = 10.e+3
                      Length_ETA= 10.e+3
+#  else
+                     Length_XI =40.0
+                     Length_ETA=30.0
 #  endif
 # elif defined TIDAL_FLAT
                      Length_ETA= 1500.0

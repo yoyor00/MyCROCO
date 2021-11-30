@@ -1684,7 +1684,7 @@
 !
 */
 # undef  ANA_DUNE     /* Analytical test case (Marieu) */
-# undef  DUNE3D       /* 3D example (only with MUSTANG sed model) */
+# undef  DUNE3D       /* 3D Dune example */
 
 # undef  OPENMP
 # undef  MPI
@@ -1732,13 +1732,14 @@
 
 #elif defined SED_TOY
 /*
-!                       SED TOY (1D Single Column GradP example)
-!                       === === === ====== ====== ===== ========
-*/
-# define ROUSE
-# undef  CONSOLID
-# undef  SETTLE_COL   /* ToDO */
-# undef  FLOCULATION  /* ToDo */
+!                       SED TOY (1D Single Column example)
+!                       === === === ====== ====== ========
+!
+*/                            /* Choose an experiment :               */
+# define SED_TOY_ROUSE        /*   Rouse                              */
+# undef  SED_TOY_CONSOLID     /*   Consolidation                      */
+# undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */
+# undef  SED_TOY_FLOC         /*   Flocculation                       */
 
 # undef  OPENMP
 # undef  MPI
@@ -1749,7 +1750,6 @@
 # undef  UV_VIS2
 # define ANA_GRID
 # define ANA_INITIAL
-# define ANA_VMIX
 # define ANA_SMFLUX
 # define ANA_SRFLUX
 # define ANA_STFLUX
@@ -1759,16 +1759,9 @@
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-# ifdef ROUSE
+# ifdef SED_TOY_ROUSE
+#  define ANA_VMIX
 #  define BODYFORCE
-# endif
-
-# ifdef CONSOLID
-#  undef  BBL
-#  undef  ANA_VMIX
-#  define GLS_MIXING
-#  define SED_TOY_BED
-#  undef  SED_TOY_FLOC
 # endif
 
 # define SEDIMENT
@@ -1776,24 +1769,27 @@
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD
-#  ifdef CONSOLID
-#   undef COHESIVE_BED
-#   if defined SED_TOY_FLOC || defined SED_TOY_BED
-#    define COHESIVE_BED
-#    undef  MIXED_BED
-#   endif
-#   undef SED_FLOCS
-#   ifdef SED_TOY_FLOC
-#    define SED_FLOCS
-#   endif
-#   ifdef SED_FLOCS
-#    undef  FLOC_TURB_DISS
-#    define FLOC_BBL_DISS
-#    define SED_DEFLOC
-#    define SED_TAU_CD_CONST
-#    undef  SED_TAU_CD_LIN
-#   endif  /* SED_FLOC */
+
+#  ifdef SED_TOY_ROUSE
+#   define SED_TAU_CD_CONST
 #  endif
+
+#  if defined SED_TOY_FLOC || defined SED_TOY_CONSOLID || \
+	defined SED_TOY_RESUSP
+#   undef  BBL
+#   define GLS_MIXING
+#   define GLS_KOMEGA
+#   define MIXED_BED
+#   undef  COHESIVE_BED
+#  endif
+
+#  ifdef SED_TOY_FLOC
+#   undef  FLOC_TURB_DISS
+#   define FLOC_BBL_DISS
+#   define SED_FLOCS
+#   define SED_DEFLOC
+#  endif
+
 # endif
 # undef  MORPHODYN
 # define NO_FRCFILE

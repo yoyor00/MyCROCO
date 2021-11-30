@@ -2,7 +2,7 @@ title:
         Dune Test case
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               1728000    1        20      1
+               172800    1        20      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0       10000
@@ -10,7 +10,7 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 run_start_date:
 01/01/2019 00:00:00
 run_end_date:
-20/01/2019 00:00:00
+03/01/2019 00:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                      24         24         24
 
@@ -18,7 +18,7 @@ initial: NRREC  filename
           0
 
 restart:          NRST, NRPFRST / filename
-                  1728000   0
+                  172800   0
                           dune_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename

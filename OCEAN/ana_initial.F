@@ -224,7 +224,7 @@
 #    endif
         do j=JR_RANGE
           do i=IR_RANGE
-#    if defined DUNE3D && defined MUSTANG
+#    if defined DUNE3D
 #     ifdef MPI
               cffi=(float(i +ii*Lm))
               cffj=(float(j +jj*Mm))
@@ -247,7 +247,8 @@
           enddo
         enddo
 
-# elif defined SED_TOY && defined CONSOLID
+# elif defined SED_TOY && ( defined SED_TOY_RESUSP || \
+                            defined SED_TOY_CONSOLID )
         do j=JR_RANGE
           do i=IR_RANGE
             zeta(i,j,1)=0.
@@ -397,7 +398,8 @@
        enddo
        print*,'CFL_max = ',cmax
 
-#  elif defined SED_TOY && defined CONSOLID
+#  elif defined SED_TOY && ( defined SED_TOY_RESUSP || \
+                             defined SED_TOY_CONSOLID )
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1308,14 +1310,16 @@ C$OMP BARRIER
         enddo
       enddo
 
-#  if defined SED_TOY && defined CONSOLID
+#  if defined SED_TOY && ( defined SED_TOY_RESUSP || \
+                           defined SED_TOY_CONSOLID )
       do iv=itrc_mud,itrc_mud+NMUD-1
         do k=1,5
           do j=JR_RANGE
             do i=IR_RANGE
               if (.not.got_tini(iv)) then
-                t(i,j,k,1,iv)=1./7.5
-                t(i,j,k,2,iv)=t(i,j,k,1,iv)
+!                t(i,j,k,1,iv)=1./7.5
+                 t(i,j,k,1,iv)=0
+                 t(i,j,k,2,iv)=t(i,j,k,1,iv)
               endif
             enddo
           enddo

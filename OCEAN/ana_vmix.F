@@ -93,7 +93,7 @@
           enddo
         enddo
       enddo
-# elif defined SED_TOY && defined ROUSE
+# elif defined SED_TOY && defined SED_TOY_ROUSE
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend

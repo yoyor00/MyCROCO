@@ -1,7 +1,7 @@
 title:
-        SED TOY Mixed bed Consolidation TEST MODEL
+        SED TOY Mixed bed (erosion and sediment resuspension) TEST MODEL
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                1728000      2.      20      40
+                216000      2.      20      40
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            1.0         0.8       0.
@@ -9,7 +9,7 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 run_start_date:
 01/01/2019 00:00:00
 run_end_date:
-10/02/2019 00:00:00
+05/01/2019 00:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                      1         1         24
 
@@ -18,17 +18,17 @@ initial: NRREC  filename
                           fileini
 
 restart:          NRST, NRPFRST / filename
-                   1728000    -1
-                          sed_toy_consolid_rst.nc
+                   216000    -1
+                          sed_toy_resusp_rst.nc
 
                                                     
 history: LDEFHIS, NWRT, NRPFHIS / filename
             T      3600     0
-                          sed_toy_consolid_his.nc
+                          sed_toy_resusp_his.nc
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      3600     0
-                          sed_toy_consolid_avg.nc
+                          sed_toy_resusp_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
@@ -63,7 +63,7 @@ gamma2:
                  1.d0
 
 sediments: input file
-               TEST_CASES/sediment_sed_toy_consolid.in
+               TEST_CASES/sediment_sed_toy_resusp.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20000*T 

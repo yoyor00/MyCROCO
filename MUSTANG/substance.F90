@@ -18,7 +18,7 @@ MODULE substance
    USE comsubstance
 
 
-# define REPFICNAMELIST 'NAM_CASES'
+# define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
    IMPLICIT NONE
    PRIVATE

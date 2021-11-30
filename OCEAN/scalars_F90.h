@@ -156,7 +156,6 @@
       real R0,T0,S0, Tcoef, Scoef
 # endif
       real weight(6,0:NWEIGHT)
-
 #endif
 #if  defined SPONGE || \
      defined TNUDGING   || defined M2NUDGING  || \
@@ -195,35 +194,35 @@
       integer ntsdiaM_avg, nwrtdiaM_avg
 # endif
 #endif
-# ifdef DIAGNOSTICS_VRT
+#ifdef DIAGNOSTICS_VRT
       integer nwrtdiags_vrt
-#ifdef AVERAGES
+# ifdef AVERAGES
       integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
+# endif
 #endif
-#endif
-# ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_EK
       integer nwrtdiags_ek
-#ifdef AVERAGES
+# ifdef AVERAGES
       integer ntsdiags_ek_avg, nwrtdiags_ek_avg
+# endif
 #endif
-#endif
-# ifdef DIAGNOSTICS_PV
+#ifdef DIAGNOSTICS_PV
       integer nwrtdiags_pv
-#ifdef AVERAGES
+# ifdef AVERAGES
       integer ntsdiags_pv_avg, nwrtdiags_pv_avg
+# endif
 #endif
-#endif
-# ifdef DIAGNOSTICS_EDDY
+#ifdef DIAGNOSTICS_EDDY
       integer nwrtdiags_eddy
-#ifdef AVERAGES
+# ifdef AVERAGES
       integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
-#endif
+# endif
 #endif
 #ifdef OUTPUTS_SURFACE
       integer nwrtsurf
-#ifdef AVERAGES
+# ifdef AVERAGES
       integer ntssurf_avg, nwrtsurf_avg
-#endif
+# endif
 #endif
 #ifdef DIAGNOSTICS_BIO
       integer nwrtdiabio
@@ -368,45 +367,45 @@
      &                      , ntsdiaM_avg           &
 # endif
 #endif
-# ifdef DIAGNOSTICS_VRT
+#ifdef DIAGNOSTICS_VRT
      &                      , ldefdiags_vrt, nwrtdiags_vrt    &
-#ifdef AVERAGES
+# ifdef AVERAGES
      &                      , ldefdiags_vrt_avg        &
      &                      , nwrtdiags_vrt_avg        &
      &                      , ntsdiags_vrt_avg         &
+# endif
 #endif
-#endif
-# ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_EK
      &                      , ldefdiags_ek, nwrtdiags_ek      &
-#ifdef AVERAGES
+# ifdef AVERAGES
      &                      , ldefdiags_ek_avg         &
      &                      , nwrtdiags_ek_avg         &
      &                      , ntsdiags_ek_avg          &
+# endif
 #endif
-#endif
-# ifdef DIAGNOSTICS_PV
+#ifdef DIAGNOSTICS_PV
      &                      , ldefdiags_pv, nwrtdiags_pv      &
-#ifdef AVERAGES
+# ifdef AVERAGES
      &                      , ldefdiags_pv_avg         &
      &                      , nwrtdiags_pv_avg         &
      &                      , ntsdiags_pv_avg          &
+# endif
 #endif
-#endif
-# ifdef DIAGNOSTICS_EDDY
+#ifdef DIAGNOSTICS_EDDY
      &                      , ldefdiags_eddy, nwrtdiags_eddy  &
-#ifdef AVERAGES
+# ifdef AVERAGES
      &                      , ldefdiags_eddy_avg       &
      &                      , nwrtdiags_eddy_avg       &
      &                      , ntsdiags_eddy_avg        &
-#endif
+# endif
 #endif
 #ifdef OUTPUTS_SURFACE
      &                      , ldefsurf, nwrtsurf       &
-#ifdef AVERAGES
+# ifdef AVERAGES
      &                      , ldefsurf_avg             &
      &                      , nwrtsurf_avg             &
      &                      , ntssurf_avg              &
-#endif
+# endif
 #endif
 #ifdef DIAGNOSTICS_BIO
      &                      , ldefdiabio, nwrtdiabio   &
@@ -421,11 +420,11 @@
 #endif
      &                      , ldefhis         
 
-# if defined SOLVE3D  && !defined LMD_MIXING
+#if defined SOLVE3D && !defined LMD_MIXING
       real Akv_bak
       real Akt_bak(NT)
       common /scalars_akt/ Akv_bak, Akt_bak 
-# endif
+#endif
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable

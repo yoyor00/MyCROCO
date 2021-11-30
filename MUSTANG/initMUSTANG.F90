@@ -602,7 +602,7 @@ IF(rw == 'r')THEN
 
     MPI_master_only write(*,*) '*****************************************************'
     MPI_master_only write(*,*) 'READING DEFAULT AND USER-DEFINED  MUSTANG input file'
-    MPI_master_only write(*,*) filepc,' AND ',filepc_user
+    MPI_master_only write(*,*) TRIM(filepc),' AND ',TRIM(filepc_user)
     MPI_master_only write(*,*) '*****************************************************'
 
     READ(50,namsedim_init)

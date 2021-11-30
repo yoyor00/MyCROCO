@@ -157,20 +157,20 @@
       parameter (LLm0=100,  MMm0=100,  N=50)
 #elif defined DUNE
 # ifdef ANA_DUNE
-      parameter (LLm0=150,  MMm0=1,    N=20)   !  DUNE 2m
+      parameter (LLm0=150,  MMm0=1,    N=20)   !  2 m resolution
 # elif defined DUNE3D
-      parameter (LLm0=50,   MMm0=50,   N=20)   !
+      parameter (LLm0=50,   MMm0=50,   N=20)   !  2 m resolution
 # else
-      parameter (LLm0=50,   MMm0=1,    N=20)   !  DUNE 2m
+      parameter (LLm0=50,   MMm0=1,    N=20)   !  2 m resolution
 # endif
 #elif defined SED_TOY
-# ifdef CONSOLID
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  Sed toy Consolidation
+# ifdef SED_TOY_ROUSE
+      parameter (LLm0=5,    MMm0=5,    N=100)  !  5 cm resolution
 # else
-      parameter (LLm0=5,    MMm0=5,    N=100)  !  Sed toy Rouse
+      parameter (LLm0=4,    MMm0=3,    N=20)   !  1 m resolution
 # endif
 #elif defined TIDAL_FLAT
-      parameter (LLm0=200,  MMm0=3,    N=10)   !  TIDAL_FLAT
+      parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
 #elif defined REGIONAL
 # if defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
@@ -179,16 +179,16 @@
 # elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
 # else
-      parameter (LLm0=xx, MMm0=xx, N=xx)   ! YOUR REGIONAL CONFIG
+      parameter (LLm0=xxx,  MMm0=xxx,  N=xxx)  ! YOUR REGIONAL CONFIG
 # endif
 #elif defined COASTAL 
 # if defined VILAINE
-      parameter (LLm0=180,   MMm0=130,   N=10) ! VILAINE
+      parameter (LLm0=180,  MMm0=130,  N=10)   ! VILAINE
 # else
       parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
 # endif
 #else
-      parameter (LLm0=xxx, MMm0=xxx, N=xxx)
+      parameter (LLm0=xxx,  MMm0=xxx,  N=xxx)
 #endif
 
 #ifdef AGRIF
@@ -448,7 +448,7 @@
 #  elif defined VILAINE 
       parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  else
-      parameter (ntrc_subs=1 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  endif
       parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
       parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )
@@ -474,15 +474,15 @@
       parameter (NLAY=10)
 #   endif
 #  elif defined SED_TOY
-#   ifdef CONSOLID
+#   if defined SED_TOY_RESUSP || defined SED_TOY_CONSOLID
       parameter (NSAND=2, NMUD=2, NGRAV=0)
       parameter (NLAY=41)
-#   elif defined ROUSE 
-      parameter (NSAND=0, NMUD=6, NGRAV=0)
-      parameter (NLAY=20)
 #   elif defined SED_TOY_FLOC
       parameter (NSAND=4, NMUD=15, NGRAV=0)
       parameter (NLAY=20)
+#   elif defined SED_TOY_ROUSE 
+      parameter (NSAND=0, NMUD=6, NGRAV=0)
+      parameter (NLAY=1)
 #   endif
 #  else
       parameter (NSAND=2, NMUD=0, NGRAV=0)

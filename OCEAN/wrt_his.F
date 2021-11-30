@@ -233,14 +233,12 @@ CR           write(*,*) 'wrt_his: wrtVBAR' MYID
 #ifdef MORPHODYN
 !
 !     Write out time evolving bathymetry
-CR        write(*,*) 'wrt_his: wrtHm'
-CR        write(*,*) 'wrt_his:',wrthis(indxHm),indxHm
-CR        write(*,*) 'wrt_his:' ,work2d(10,2),ncidhis
-
+!
       if (wrthis(indxHm)) then
         work2d(:,:)=h(:,:)
         call fillvalue2d(work2d,ncidhis,hisHm,indxHm,
      &        record,r2dvar,type)
+CR      write(*,*) 'wrt_his: wrtHm' MYID
       endif
 #endif
 

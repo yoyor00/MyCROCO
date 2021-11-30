@@ -1793,8 +1793,8 @@ C$OMP BARRIER
 #  endif
 # if defined SED_TAU_CD_LIN
              if (tau_w(i,j).LE.tau_cd(ised).AND.                      
-     &                       tau_cd(ised,ng).GT.0.0) then
-                cff5=(1.0-tau_w(i,j)/tau_cd(ised)*cff5
+     &                       tau_cd(ised).GT.0.0) then
+                cff5=(1.0-tau_w(i,j)/tau_cd(ised))*cff5
              endif
 # endif            
             ero_flux(i,j,ised)=                                     
@@ -2422,7 +2422,6 @@ C$OMP BARRIER
       integer imin,imax,jmin,jmax
       real add,newlayer_thick
 
-!     parameter (eps = 1.0E-14,newlayer_thick=0.001)
 !     parameter (eps = 1.0E-14,newlayer_thick=0.0005) !BEDTOY
       parameter (eps = 1.0E-14,newlayer_thick=0.001)
 
@@ -3854,7 +3853,7 @@ C$OMP BARRIER
         elseif (icard.eq.10) then
           read(iunit,*,err=60) transN                     
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      transN, 'transC   Non cohesive transition.'
+     &      transN, 'transN   Non cohesive transition.'
 # else
         elseif (icard.eq.9) then
           read(iunit,*,err=60) rdum                     
@@ -3892,13 +3891,15 @@ C$OMP BARRIER
         elseif (icard.eq.16) then
           read(iunit,*,err=60) l_ADS,l_ASH,l_COLLFRAG,l_testcase
             MPI_master_only write(stdout,'(L10,2x,A)')
-     &      l_ADS, 'l_ADS   Mud consomidation rate.'
+     &      l_ADS, 'l_ADS   Mud differential settling.'
             MPI_master_only write(stdout,'(L10,2x,A)')
-     &      l_ASH, 'l_ASH   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(L10,2x,A)')
-     &      l_COLLFRAG, 'l_COLLFRAG   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(L10,2x,A)')
-     &      l_testcase, 'l_testcase   Mud consomidation rate.'
+     &      l_ASH, 'l_ASH   Mud shear aggregation.'
+            MPI_master_only write(stdout,'(L10,2x,A,1x,A)')
+     &      l_COLLFRAG, 'l_COLLFRAG   Mud collision-induced',
+     &                   'fragmentation.'
+            MPI_master_only write(stdout,'(L10,2x,A,1x,A)')
+     &      l_testcase, 'l_testcase   Mud boolean for values', 
+     &                  'from Verney et al.'
 
         elseif (icard.eq.17) then
           read(iunit,*,err=60) f_dp0  ,f_nf   ,f_dmax,f_nb_frag,
@@ -3906,29 +3907,34 @@ C$OMP BARRIER
      &                         f_ero_nbfrag,f_collfragparam,
      &                         f_clim,f_ero_iv                       
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_dp0, 'f_dp0   Mud consomidation rate.'
+     &      f_dp0, 'f_dp0   Mud Primary particle size(m).'
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_nf, 'f_nf   Mud consomidation rate.'
+     &      f_nf, 'f_nf   Mud floc fractal dimension.'
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_dmax, 'f_dmax   Mud consomidation rate.'
+     &      f_dmax, 'f_dmax   Mud maximum diameter.'
+            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+     &      f_nb_frag, 'f_nb_frag   Mud Number of fragments by shear',
+     &                             'erosion.'
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_nb_frag, 'f_nb_frag   Mud consomidation rate.'
+     &      f_alpha, 'f_alpha   Mud flocculation efficiency.'
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_alpha, 'f_alpha   Mud consomidation rate.'
+     &      f_beta, 'f_beta   Mud shear fragmentation rate.'
             MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_beta, 'f_beta   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_ater, 'f_ater   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_ero_frac, 'f_ero_frac   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_ero_nbfrag, 'f_ero_nbfrag   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_collfragparam, 'f_collfragparam   Mud consomidation rate.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
-     &      f_clim, 'f_clim   Mud consomidation rate.'
+     &      f_ater, 'f_ater   Mud ternary breakup.'
+            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+     &      f_ero_frac, 'f_ero_frac   Mud fraction of shear',
+     &             'fragmentation term transfered to shear erosion.'
+            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+     &      f_ero_nbfrag, 'f_ero_nbfrag   Mud Number of fragments',
+     &             'induced by shear erosion.'
+            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+     &      f_collfragparam, 'f_collfragparam   Mud Fragmentation rate',
+     &             'for collision-induced breakup.'
+            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+     &      f_clim, 'f_clim   Mud Min concentration below which',
+     &           'flocculation processes are not calc..'
             MPI_master_only write(stdout,'(I10,2x,A)')
-     &      f_ero_iv, 'f_ero_iv   Mud consomidation rate.'
+     &      f_ero_iv, 'f_ero_iv   Mud Fragment size class.'
 
 #  ifdef SED_DEFLOC
         elseif (icard.eq.18) then
@@ -3988,7 +3994,7 @@ C$OMP BARRIER
 
 
        do i=1,NST
-       tau_ce_2d(:,:,i)=tau_ce(i)
+         tau_ce_2d(:,:,i)=tau_ce(i)
        enddo
 # ifdef SED_FLOCS
        call initialize_sedflocs
@@ -5578,7 +5584,7 @@ C$OMP BARRIER
 #  else
                 ustr2 =sqrt((bustr(i,j)**2.0+bvstr(i,j)**2.0 ))
                 diss = MAX((ustr2**(1.5))/(vonKar*                  
-     &                       (z_r(i,j,1)-zw(i,j,0))),diss)
+     &                       (z_r(i,j,1)-z_w(i,j,0))),diss)
 #  endif
               endif
 # else 

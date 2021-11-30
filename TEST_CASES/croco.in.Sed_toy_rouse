@@ -1,8 +1,8 @@
 title:
-        Sed_toy (Single Column GradP / SCM) TEST MODEL
+        Sed_toy rouse experiment (Single Column GradP / SCM) TEST MODEL
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               15000     2       10     1
+               21600     2       10     1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      200000.0d0
@@ -10,25 +10,25 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 run_start_date:
 01/01/2019 00:00:00
 run_end_date:
-20/01/2019 00:00:00
+01/01/2019 12:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-                     24         24         24
+                     1         1         12
 
 initial: NRREC  filename
           0
                           fileini
 restart:          NRST, NRPFRST / filename
-                   15000    -1
+                   21600    -1
                           sed_toy_rouse_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T      160     0
+            T      1800     0
                           sed_toy_rouse_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T   30*T
 
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen  HEL
-                             F   F     F   T    T    F    F     F       T   F    F     F    T    T    T    T   10*T             
+                             F   F     F   T    T    F     F    F       20*T             
 
 rho0:
       1025.d0

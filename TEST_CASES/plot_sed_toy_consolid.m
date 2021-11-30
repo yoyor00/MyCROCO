@@ -34,27 +34,57 @@ fname='sed_toy_consolid_his.nc';
 %
 
 idy=1;
-idz=1;
-depth=20;
+idx=1;
+depth=20; % 20m water column depth
+beddepth=0.041; %  4cm sediment depth
+srho=2650; % rho sediment classes
+nl=41; % 41 sediment layer
+a=1; % to compute The equilibrium bulk critical stress for the erosion profile
+slope=2;
+offset=3.4;
+masslayer0=0;
 
+days=[0.5 2 32 38];
+tplot=[7 25 385 457]; % record to plot
+ntplot=size(tplot,2);
+
+%
 nc=netcdf(fname);
 
-h=squeeze(nc{'h'}(idy,idz));
+h=squeeze(nc{'h'}(idy,idx));
+bostr=squeeze(nc{'bostr'}(:,idy,idx));
+
 T=squeeze(nc{'scrum_time'}(:,:))/86400;
+[nt,t0]=size(T);
 
-bostr=squeeze(nc{'bostr'}(:,idy,idz));
-ALT=squeeze(nc{'act_thick'}(:,idy,idz));
+zbed=zeros(nl,4);
+taucb=zeros(nl,4);
+bedtaucrit=zeros(nl,4);
+for it0 =1:ntplot
+  itime=tplot(it0);
+  bedthick=squeeze(nc{'bed_thick'}(itime,:,idy,idx));
+  NL=size(bedthick,1);
+  fracs1=squeeze(nc{'bed_frac_sand_01'}(itime,:,idy,idx));
+  fracs2=squeeze(nc{'bed_frac_sand_02'}(itime,:,idy,idx));
+  fracm1=squeeze(nc{'bed_frac_mud_01'}(itime,:,idy,idx));
+  fracm2=squeeze(nc{'bed_frac_mud_02'}(itime,:,idy,idx));
 
-s1=squeeze(nc{'sand_01'}(:,idy,idz));
-s2=squeeze(nc{'sand_02'}(:,idy,idz));
+  %The instantaneous profile of bulk critical stress for erosion
+  bedtaucrit(:,it0)=squeeze(nc{'bed_tau_crit'}(itime,:,idy,idx));
 
-m1=squeeze(nc{'mud_01'}(:,idy,idz));
-m2=squeeze(nc{'mud_02'}(:,idy,idz));
+  %The equilibrium bulk critical stress for the erosion profile
+  masslayer=zeros(nl,1);
+  for k = 1:nl;
+    masslayer(k)=srho*fracs1(k)*bedthick(k)+srho*fracs2(k)*bedthick(k)+srho*fracm1(k)*bedthick(k)+srho*fracm2(k)*bedthick(k);
+  end
 
-sand1=s1*depth;
-sand2=s2*depth;
-mud1=m1*depth;
-mud2=m2*depth;
+  massdepth=[masslayer0;cumsum(masslayer(2:end))];
+  taucb(:,it0)=a*exp( (log(massdepth) - offset )/slope);
+
+  zbed0=[-beddepth;-beddepth+cumsum(flipud(bedthick(2:end,:)),1)];
+  zbed(:,it0)=flipud(zbed0)*100; %cm
+
+end
 
 close(nc);
 
@@ -62,29 +92,48 @@ close(nc);
 %----------------------------------------------------------
 %  Plot 
 %----------------------------------------------------------
-figure('Position',[1 1 800 800])
+figure('Position',[1 1 1100 800])
 
-subplot(2,1,1)
+
+subplot(2,4,[1 2 3 4])
+
+
 % bostr
 plot(T,bostr,'linewidth',1)
+title('Sequence of depth-limited erosion, deposition, and compaction')
 ylabel('Bottom stress (Pa)','fontsize',12);
-title(['Double resuspension experiment'],'fontsize',14)
-hold off
+xlabel('Days');
+hold on
+plot(T(tplot),bostr(tplot),'r*');
 grid on
 
-subplot(2,1,2)
-% AL thickness
-plot(T,ALT*100,'linewidth',1)
-xlabel('Time (days)','fontsize',12);
-ylabel('Active Layer thickness (cm)','fontsize',12);
-hold off
-grid on
+for it0 =1:ntplot
+  itime=tplot(it0);
+
+  subplot(2,4,it0+4)
+
+  % zbed vs bed_tau_crit
+  % to plot The critical stress for the erosion profile
+  plot(squeeze(bedtaucrit(:,it0)),zbed(:,it0))
+  hold on
+
+  % to plot The equilibrium bulk critical stress for the erosion profile
+  plot(squeeze(taucb(:,it0)),zbed(:,it0))
+  xlim([0 1.5])
+  ylim([-2.5 0])
+  if it0==1
+    ylabel(sprintf('Z(cm) vs \n Critical shear stress for erosion (N/m2)'),'fontsize',12);
+  end
+  xlabel([num2str(days(it0)),' days']);
+
+  yline(zbed(:,it0),'--')
+  hold off
+  grid on
+end
 
 set(gcf,'PaperPositionMode','auto');
 
 export_fig -transparent sed_toy_consolid.pdf
-
-
 
 
 return

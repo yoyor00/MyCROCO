@@ -1,5 +1,5 @@
 1  Stitle (a80)
-CROCO - SED_TOY - Test
+CROCO - SED_TOY (flocculation) - Test
 
 2  Sd(1-NST), CSED,  SRHO,       WSED,       ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
     0.0300      0.   2650.       0.4722      5.E-04  0.0854   60.   20*0.016 
@@ -21,6 +21,7 @@ CROCO - SED_TOY - Test
     8.0952E-01  0.   1.0330E+03  2.8677E+00  5.E-04  0.03     60.   20*0.
     1.1019E+00  0.   1.0309E+03  3.9036E+00  5.E-04  0.03     60.   20*0.
     1.5000E+00  0.   1.0293E+03  5.3137E+00  5.E-04  0.03     60.   20*0.
+
 
 3 BTHK(1:NLAY)
       17*0.001 2*0.401 1.201

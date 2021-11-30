@@ -1,11 +1,11 @@
 1  Stitle (a80)
-ROMS - SED_TOY (consolidation) - Test
+ROMS - SED_TOY (resuspension) - Test
 
 2  Sd(1-NST), CSED,  SRHO,   WSED,    ERATE,  TAU_CE, TAU_CD, BED_FRAC(1:NLAY)
       0.0625    0.   2650.    2.     0.0015      0.1     0.1    41*0.25
       0.140     0.   2650.    8.     0.0015      0.1     0.1    41*0.25
-      0.004     0.   2650.    0.1    0.0005      0.05      0.1    41*0.25
-      0.030     0.   2650.    0.6    0.0005      0.05      0.1    41*0.25
+      0.004     0.   2650.    0.1    0.0005      0.05    0.1    41*0.25
+      0.030     0.   2650.    0.6    0.0005      0.05    0.1    41*0.25
 
 3 BTHK(1:NLAY)
       41*0.001
@@ -26,10 +26,10 @@ ROMS - SED_TOY (consolidation) - Test
       1. 
 
 9 transC
-      0.03  
+     0.03
  
 10 transN
-      0.2
+     0.1
 
 11  tcr_min
       0.030

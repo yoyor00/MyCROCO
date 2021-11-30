@@ -43,13 +43,15 @@ h=squeeze(nc{'h'}(idy,:));
 Dcrit=squeeze(nc{'Dcrit'}(idy,:));
 X=squeeze(nc{'x_rho'}(idy,:))/1000;
 T=squeeze(nc{'scrum_time'}(:,:))/86400;
-
 sand=squeeze(nc{'SAND'}(:,idz,idy,:));
 zeta=squeeze(nc{'zeta'}(:,idy,:));
 ubar=u2rho_2d(squeeze(nc{'ubar'}(:,idy,:)));
 
 close(nc);
 
+
+T1=T(1);
+T=T-T1;
 D=zeta+repmat(h,size(zeta,1),1);
 sand(D<Dcrit+0.01)=NaN;
 zeta(D<Dcrit+0.01)=NaN;
@@ -71,32 +73,29 @@ ncol = size(newmap,1);
 zpos = 1 + floor(ncol);    
 newmap(zpos,:) = [1 1 1];       
 colormap(newmap);
-xlabel('X [km]','fontsize',12);
-ylabel('Time [days]','fontsize',12);
-title(['Tidal Flat / Ubar hovmoller'],'fontsize',14)
-
+xlabel('X (km)','fontsize',12);
+ylabel('Time (days)','fontsize',12);
+title(['Tidal Flat / Ubar (m/s) hovmoller'],'fontsize',14)
+set(gca,'fontsize',15);
 
 subplot(2,1,2)
 pcolor(X,T,sand), shading flat
 caxis([0 1]);
 %cbr=colorbar('fontsize',13);
 c=colorbar();
-set(c, 'YLim', [0 3]);
+set(c, 'YLim', [0 1]);
 newmap = jet(64);
 ncol = size(newmap,1);          
 zpos = 1 + floor(ncol);    
 newmap(zpos,:) = [1 1 1];       
 colormap(newmap);
 xlabel('X (km)','fontsize',12);
-ylabel('T (days)','fontsize',12);
-title(['Tidal Flat / Sand hovmoller'],'fontsize',14)
-
+ylabel('Time (days)','fontsize',12);
+title(['Tidal Flat / Sand concentration (Kg/m3) hovmoller'],'fontsize',14)
 set(gca,'fontsize',15);
-set(gcf,'PaperPositionMode','auto');
 
-if makepdf
+set(gcf,'PaperPositionMode','auto');
 export_fig -transparent tidal_flat.pdf
-end
 
 return
 

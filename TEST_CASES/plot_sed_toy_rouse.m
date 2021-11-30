@@ -1,6 +1,6 @@
 %======================================================================
 %
-%     ---               Sed_toy Test Case                ---     
+%     ---               Sed_toy Rouse Test Case                ---     
 %
 %
 %  This file is part of CROCOTOOLS
@@ -27,6 +27,9 @@ close all
 %================== User defined parameters ===========================
 
 fname='sed_toy_rouse_his.nc';
+% Choose usgs (1) or mustang (0) sediment model output file
+usgs=1
+
 
 %======================================================================
 %
@@ -37,7 +40,7 @@ fname='sed_toy_rouse_his.nc';
 dt=1  ; nz=100 ; it=1;
 
 % filter
-nt1=171 ; idy=4 ; idx=4;
+nt1=12 ; idy=4 ; idx=4;
 
 nc=netcdf(fname);
 
@@ -46,7 +49,13 @@ x=squeeze(nc{'x_rho'}(:,:));
 y=squeeze(nc{'y_rho'}(:,:));
 zeta=squeeze(nc{'zeta'}(nt1,idy,idx));
 L=length(zeta);
-tenfon=squeeze(nc{'TENFON'}(nt1,idy,idx));
+if usgs == 1
+  model='Usgs';
+  tenfon=squeeze(nc{'bostr'}(nt1,idy,idx));
+else
+  model='Mustang';
+  tenfon=squeeze(nc{'TENFON'}(nt1,idy,idx));
+end
 u=squeeze(nc{'u'}(nt1,:,idy,idx));
 N=size(u,1);
 %
@@ -63,9 +72,13 @@ zu=0.5*(zr(1:end-1)+zr(2:end));
 h=depth+zeta;
 z=-zr;
 
-% Constant values
-ws=[0.001, 0.01, 0.02, 0.04, 0.08, 0.1];
-sandstr=["SED1", "SED2", "SED3", "SED4", "SED5", "SED6"];
+% Constant values 
+ws=[0.001, 0.01, 0.02, 0.04, 0.08, 0.1]; % setling velocity (m/s)
+if usgs == 1
+  sandstr=["mud_01", "mud_02", "mud_03", "mud_04", "mud_05", "mud_06"];
+else
+  sandstr=["SED1", "SED2", "SED3", "SED4", "SED5", "SED6"];
+end
 rho=1030.; % 1025 ds croco.in
 vk=0.41;
 vk_hydro=0.41;
@@ -131,7 +144,7 @@ for isand=1:nsand
 	hold off
 end
 
-legend('MUSTANG','Rouse')
+legend(model,'Rouse')
 set(gcf,'PaperPositionMode','auto');
 set(gcf,'Name',title0)
 

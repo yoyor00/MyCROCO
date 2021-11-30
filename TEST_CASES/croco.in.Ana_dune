@@ -35,7 +35,7 @@ gls_history_fields:   TKE  GLS  Lscale
                       T     T    T
 
 sediments: input file  (USGS Sediment model)
-           sediment_ana_dune.in
+           TEST_CASES/sediment_ana_dune.in
 
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T

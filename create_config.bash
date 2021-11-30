@@ -311,7 +311,7 @@ if [[ ${models_incroco[@]} =~ "oce-dev" ]] || [[ ${models_incroco[@]} =~ "oce-pr
     # MUSTANG
     if [[ ${models_incroco[@]} =~ "mustang" ]] ; then
       mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
-      cp -f ${CROCO_DIR}/MUSTANG/NAM_CASES/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
+      cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
     fi
     # OANALYSIS
     if [[ ${models_incroco[@]} =~ "oanalysis" ]] ; then

@@ -158,16 +158,14 @@
       fname='TEST_CASES/croco.in.Dune'
 # endif
 #elif defined SED_TOY
-# ifdef SED_TOY_FLOC
-      fname='TEST_CASES/croco.in.Sed_toy_floculation'
-# elif defined CONSOLID
+# ifdef SED_TOY_RESUSP
+      fname='TEST_CASES/croco.in.Sed_toy_resusp'
+# elif defined SED_TOY_CONSOLID
       fname='TEST_CASES/croco.in.Sed_toy_consolid'
-# elif defined ROUSE
+# elif defined SED_TOY_FLOC
+      fname='TEST_CASES/croco.in.Sed_toy_floc'
+# elif defined SED_TOY_ROUSE
       fname='TEST_CASES/croco.in.Sed_toy_rouse'
-# elif defined SETTLE_COL
-      fname='TEST_CASES/croco.in.Sed_toy_settle_col'
-# else
-      fname='TEST_CASES/croco.in.Sed_toy'
 # endif
 #elif defined TIDAL_FLAT
       fname='TEST_CASES/croco.in.Tidal_flat'
@@ -2484,7 +2482,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         read(input,'(A)',err=95) sedname_subst
         read(input,'(A)',err=95) sedname_must
         lstr=lenstr(sedname_subst)
-        MPI_master_only write(stdout,'(7x,A,12x,A)')
+        MPI_master_only write(stdout,'(7x,A,10x,A)')
      &         'Sediment input file for Substance:' ,
      &          sedname_subst(1:lstr)
         lstr=lenstr(sedname_must)

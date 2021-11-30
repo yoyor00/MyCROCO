@@ -26,14 +26,17 @@ clear all
 close all
 %================== User defined parameters ===========================
 
+% Choose usgs (1) or mustang (0) model output file
+usgs=1
+
 fname='dune3d_his.nc';
-tdays=10; 
+tdays=2; 
 
 %======================================================================
 %
 % Read data
 %
-tndx=tdays*24+1; % because of hourly data
+tndx=tdays+1; 
 
 nc=netcdf(fname);
 
@@ -41,9 +44,19 @@ h=squeeze(nc{'h'}(:,:));
 X=squeeze(nc{'x_rho'}(:,:));
 Y=squeeze(nc{'y_rho'}(:,:));
 %
-var_hmorph='Hm';
-hmorph0  =squeeze(nc{var_hmorph}(1,:,:));
-hmorph   =squeeze(nc{var_hmorph}(tndx,:,:));
+
+if usgs ~= 1
+    model='MUSTANG';
+    var_hmorph='Hm';
+    hmorph0  =squeeze(nc{var_hmorph}(1,:,:));
+    hmorph   =squeeze(nc{var_hmorph}(tndx,:,:));
+else
+    model='USGS';
+    var_hmorph='hmorph';
+    hmorph0  =squeeze(nc{var_hmorph}(1,:,:));
+    hmorph  =squeeze(nc{var_hmorph}(tndx,:,:));
+end
+
 close(nc);
 
 %----------------------------------------------------------
@@ -84,15 +97,20 @@ hold on
 [C,h]=contour(X,Y,-squeeze(hmorph(:,:)),[-3.8:0.4:-2],'k');
 v = [-3.8:0.4:-2];
 clabel(C,h,v,'FontSize',7,'Color','red');
-
 %grid on
-title(['Hm (t= t0 + ',num2str(tdays),' days)'],'fontsize',14)
+
+title(['Hm (t= t0 + ',num2str(tdays),' days) / ', model],'fontsize',14)
 
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
 hold off
 
-export_fig -transparent dune3d_mustang.pdf
+if usgs ~= 1
+ export_fig -transparent dune3d_mustang.pdf
+else
+ export_fig -transparent dune3d_usgs.pdf
+end
+
 
 return
 

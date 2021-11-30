@@ -32,7 +32,7 @@ usgs=1
 fname='dune_his.nc';
 
 j=2;
-tndx=30; % daily outputs
+tndx=3; % daily outputs
 
 %======================================================================
 %
@@ -129,8 +129,9 @@ close(nc)
 subplot(2,1,2)
 line(xr,-hmorph( 1,:),'color','k','Linewidth',2)
 hold on
-for n=1:5
- it=(2^(n-1));
+%for n=1:5
+for n=1:2
+it=(2^(n-1));
  if it<=tndx
   line(xr,-hmorph(it,:),'color','k','Linewidth',2)
  end
@@ -138,7 +139,8 @@ end
 hold off
 grid on
 axis([-1 101 -4.5 -1.5])
-title(['DUNE Test Case - Bed evolution: 0 2 4 8 16 days'])
+%title(['DUNE Test Case - Bed evolution: 0 2 4 8 16 days'])
+title(['DUNE Test Case - Bed evolution: 0 2 days'])
 set(gca,'fontsize',15);
 set(gcf,'PaperPositionMode','auto');
 if usgs ~= 1
