@@ -12,17 +12,20 @@ export NETCDF_CONFIG0=nf-config
 export NETCDF=$( $NETCDF_CONFIG0 --prefix )
 export NETCDF_CONFIG=$NETCDF/bin/nf-config
 export NETCDF_LIBDIR=$NETCDF/lib
-export NETCDF_LIBDIR=$NETCDF/include
+export NETCDF_INCDIR=$NETCDF/include
 
 # -- Option for job launching
 export MPI_LAUNCH=srun
 export MPI_ext="--multi-prog"
 export ncomod='nco'
 
-# -- Environment variables
-
+#----------------------------------------------------------------
+# Environment variables related to compilers
+#----------------------------------------------------------------
+export CC=icc
 export FC=ifort
 export F77=ifort
-export MPIF90=mpiifort
-export CC=icc
+export F90=ifort
+export MPIF90=mpifort
+export MPICC=mpicc
 
