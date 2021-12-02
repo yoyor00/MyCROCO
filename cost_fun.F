@@ -6,7 +6,7 @@
       integer k,iifroot
 
       write(*,*) 'start ad_step'
-C$XAD BINOMIAL-CKP ad_ns+2 90 1
+C$AD BINOMIAL-CKP ad_ns+2 90 1
       do k=1,ad_ns+1
          do iifroot = 0,nfast+2
             call step()
@@ -41,7 +41,7 @@ c         write (*,*) 'k,iifroot,kstp,knew:',k,iifroot,kstp,knew
 
       do ta=1,ad_nt
          call ad_step()
-         call cost_fun_step(ad_x,icost,ta*2,3)
+         call cost_fun_step(ad_x,icost,ta*10,3)
          write(*,*) '==icost3==>',icost
 c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
       end do
@@ -361,29 +361,14 @@ c     cf ana_initial
 
 #include "compute_extended_bounds.h"
 
-      depth=2000
-      ridge_width = ad_x(2)*100
-      ridge_height = ad_x(1)
-
-      cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
-        do i=IstrR,IendR
-          if ((xr(i,j).gt.ridge_width).or.
-     &       (xr(i,j).lt.(-ridge_width))) then
-            cff=0.
-          else
-            cff=1-(xr(i,j)*xr(i,j)*cff1);
-          endif
-          pena_h(i,j)=depth-ridge_height*cff*cff;
-#   ifdef INTERNALSHELF
-          if (xr(i,j).ge.0.) then
-            pena_h(i,j)=depth-ridge_height
-          endif
-#   endif
+         k = 1
+         do i=IstrR,IendR
+            pena_h(i,j)= ad_x(k)
+            k=k+1
         enddo
       enddo
 
-      k=2
       write(*, *) '**** set_state ****'
 
 #ifdef MPI
@@ -401,17 +386,13 @@ c     cf ana_initial
       write(*,*) 'Jstr,Jend',Jstr,Jend
 
       write(counter_str, 910) mynode,ad_counter
-      open(unit=99,file='z0b.'//counter_str)
+      open(unit=99,file='pena_h.'//counter_str)
       write(99, *) Iend-Istr+1,Jend-Jstr+1,0
-c      do j=Jstr,Jend
-c         do i=Istr,Iend
-#ifdef SPHERICAL
-c            write(99, *) lonr(i,j),latr(i,j),h(i,j)
-#else
-c            write(99, *) xr(i,j),yr(i,j),h(i,j)
-#endif
-c         end do
-c      end do
+      do j=Jstr,Jend
+         do i=Istr,Iend
+            write(99, *) i,j,h(i,j),pena_h(i,j)
+         end do
+      end do
       close(99)
 
 
@@ -618,23 +599,18 @@ c      call grid_stiffness(tile)
 # include "adparam.h"
 
       integer Istr,Iend,Jstr,Jend,i,j,k
-      double precision ridge_width, ridge_height,depth,cff1,cff
+      double precision ridge_width, ridge_height,depth,cff1,cff,rnd
 
 # include "compute_extended_bounds.h"
 
-      ad_x(1) = 1700
-      ad_x(2) = 35e3 / 100.
-      ad_array_node_size=2
-
-      write(*,*) '########',ad_x(1), ad_x(2)*100
-
 c set a lower depth
       depth=2000
-      ridge_width = 29e3
-      ridge_height = 1550
+      ridge_width = 29.8e3
+      ridge_height = 1500
 
       cff1=1./(ridge_width*ridge_width)
       do j=JstrR,JendR
+        k=1
         do i=IstrR,IendR
           if ((xr(i,j).gt.ridge_width).or.
      &       (xr(i,j).lt.(-ridge_width))) then
@@ -648,8 +624,28 @@ c set a lower depth
             h(i,j)=depth-ridge_height
           endif
 #   endif
-        enddo
+       enddo
       enddo
+
+
+      ridge_width = 32e3
+      ridge_height = 1650
+
+      cff1=1./(ridge_width*ridge_width)
+      j=JstrR
+      k=1
+      do i=IstrR,IendR
+         if ((xr(i,j).gt.ridge_width).or.
+     &        (xr(i,j).lt.(-ridge_width))) then
+            cff=0.
+         else
+            cff=1-(xr(i,j)*xr(i,j)*cff1);
+         endif
+         ad_x(k) = depth-ridge_height*cff*cff - 100;
+         k=k+1
+      enddo
+
+      ad_array_node_size=k
 
       write(*,*) 'node,array_node_size, add_array_size/nnodes:',mynode,
      &     ad_array_node_size,

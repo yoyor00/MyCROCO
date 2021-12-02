@@ -19,7 +19,7 @@ C     number of steps between cost function computations
 #elif defined AD_ATLN
       parameter (ad_ns = 180)
 #elif defined INTERNAL
-      parameter (ad_ns = 64)
+      parameter (ad_ns = 320)
 #endif
 
 C     number of cost function computations
