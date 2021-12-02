@@ -33,7 +33,8 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/<nbmetsoil>/4/g" \
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
-for dom in $wrfcpldom ; do
+for domnb in `seq 1 $NB_dom` ; do
+    dom="d$( printf "%02d" ${domnb})"
     if [[ ${RESTART_FLAG} == "FALSE" ]]; then
         file="wrfinput_${dom}"
     else
