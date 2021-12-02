@@ -55,41 +55,51 @@
 # line 5: parameters for each transformation
 #
 # See the correspondances between variables in models and in OASIS:
-# Note: for CROCO and WRF nesting capability is useable in coupled 
-#       mode. For CROCO the domain in defined by the last number 
-#       of coupled field name. For WRF, WRF domain is defined by
-#       the number after WRF_d, and the domain of the coupled model
-#       (CROCO for example) is given by EXT_d in coupled field name 
+# Note: for CROCO and WRF  nesting capability is usable in coupled 
+#       mode. For  CROCO, the domain  of  the  sent  variables  is 
+#       defined  by the last number of coupled field name; for the
+#       received  variable  the  CROCO  domain  is  defined by the
+#       associated CPLMASK ( CROCO_VAR_CPLMASK* ),  and the domain
+#       of  the  coupled model by the extension _EXT. For WRF, WRF
+#       domain  is  defined  by  the  number  after WRF_d, and the
+#       domain of the coupled model (CROCO for example)  is  given
+#       by EXT_d in coupled field name 
 #
 # |--------------------------------------------------------------|
 # | Possibly sent fields by CROCO:                 CROCO | OASIS |
 # |--------------------------------------------------------------|
-# |     t(:,:,N,nnew,itemp)  |    SRMSSTV0                       |
-# |                   zeta   |    SRMSSHV0                       |
-# |     u,v (at rho points)  |    SRMUOCE0 SRMVOCE0              |
+# |     t(:,:,N,nnew,itemp)  |    CROCO_SST                      |
+# |                   zeta   |    CROCO_SSH                      |
+# |     u,v (at rho points)  |    CROCO_UOCE CROCO_VOCE          |
 # |     u,v (at rho points)                                      |
-# | in E/N dir(rotated grids)|    SRMEOCE0 SRMNOCE0              |
+# | in E/N dir(rotated grids)|    CROCO_EOCE CROCO_NOCE          |
 # |--------------------------------------------------------------|
 # | Possibly received fields by CROCO:            CROCO | OASIS  |
 # |--------------------------------------------------------------|
-# |                  srflx   |    RRMSRFL0                       |
-# |       stflx(:,:,isalt)   |    RRMEVPR0                       |
-# |      stflx(,:,:,itemp)   |    RRMSTFL0                       |
-# |                  sustr   |    RRMTAUX0  RRMTAUE0             |
-# |                  svstr   |    RRMTAUY0  RRMTAUN0             |
-# |                  smstr   |    RRMTAUM0                       |
-# |                  whrm    |    RRM__HS0                       |
-# |                  wfrq    |    RRMT0M10                       |
-# |                  wdrx    |    RRMCDIR0                       |
-# |                  wdre    |    RRMSDIR0                       |
-# |            wdrx, wdre    |    RRM_DIR0                       |
+# |                  srflx   |    CROCO_SRFL                     |
+# |       stflx(:,:,isalt)   |    CROCO_EVPR                     |
+# |      stflx(,:,:,itemp)   |    CROCO_STFL                     |
+# |                  sustr   |    CROCO_UTAU  CROCO_ETAU         |
+# |                  svstr   |    CROCO_VTAU  CROCO_NTAU         |
+# |                  smstr   |    CROCO_TAUM                     |
+# |                patm2d    |    CROCO_PSFC                     |
+# |                  whrm    |    CROCO_HS                       |
+# |                  wfrq    |    CROCO_T0M1                     |
+# |             wdrx,wdre    |    CROCO_DIR                      |
+# |                   foc    |    CROCO_FOC                      |
+# |                   wlm    |    CROCO_LM                       |
+# |                   ubr    |    CROCO_UBRX  CROCO_UBRY         |
+# |               ust_ext    |    CROCO_USSX  CROCO_USSY         |
+# |             twox,twoy    |    CROCO_UTWO  CROCO_VTWO         |
+# |             etwo,ntwo    |    CROCO_ETWO  CROCO_NTWO         |
+# |             tawx,tawy    |    CROCO_UTAW  CROCO_VTAW         |
+# |             etaw,ntaw    |    CROCO_ETAW  CROCO_NTAW         |
 # |--------------------------------------------------------------|
 # | Possibly sent fields by WW3:                    WW3 | OASIS  |
 # |--------------------------------------------------------------|
 # |            not defined   |    WW3_ODRY                       |
 # |                   T0M1   |    WW3_T0M1                       |
 # |                     HS   |    WW3__OHS WW3__AHS              |
-# |                    DIR   |    WW3_CDIR WW3_SDIR              |
 # |                    THM   |    WW3__DIR                       |
 # |                    TAW   |    WW3_TAWX WW3_TAWY              |
 # |                    TWO   |    WW3_TWOX WW3_TWOY              |
@@ -98,7 +108,7 @@
 # |                    FOC   |    WW3__FOC                       |
 # |                     LM   |    WW3___LM                       |
 # |                    CUR   |    WW3_WSSU WW3_WSSV              |
-# |                    CHA   |    WW3_ACHA WW3_OCHA              |
+# |                   ACHA   |    WW3_ACHA                       |
 # |                     FP   |    WW3___FP                       |
 # |--------------------------------------------------------------|
 # | Possibly received fields by WW3:                WW3 | OASIS  |
@@ -133,6 +143,7 @@
 # |               v_vo   |    WRF_d01_EXT_d01_WND_V_01           |
 # | cosa*u_uo - sina*v_vo|    WRF_d01_EXT_d01_WND_E_01           |
 # | cosa*v_vo - sina*u_uo|    WRF_d01_EXT_d01_WND_N_01           |
+# |               psfc   |    WRF_d01_EXT_d01_PSFC               |
 # |--------------------------------------------------------------|
 # | Possibly received fields by WRF:                WRF | OASIS  |
 # |--------------------------------------------------------------|
@@ -160,7 +171,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : sea surface zonal currents (m.s-1)
 #~~~~~~~~~~~
-CROCO_UOCE TOY_UOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_EOCE TOY_UOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnu toyt LAG=<ocedt>
 R  0  R  0
 SCRIPR
@@ -170,7 +181,7 @@ DISTWGT LR SCALAR LATLON 1 4
 # VOCE : sea surface meridional currents (m.s-1)
 #~~~~~~~~~~~
 #
-CROCO_VOCE TOY_VOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_NOCE TOY_VOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <wavnx> <wavny> ocnv toyt LAG=<ocedt>
 R  0  R  0
 SCRIPR

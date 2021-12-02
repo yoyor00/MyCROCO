@@ -18,7 +18,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
          
             for ocedom in $loopoce; do
                 domoce="d0$(( ${ocedom} + 1 ))"
-	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUX WRF_${domatm}_EXT_${domoce}_TAUY WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WND_U_01 WRF_${domatm}_EXT_${domoce}_WND_V_01 "
+	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
             done
             
             echo 'create restart file for oasis from calm conditions for variables:'${varlist} 
@@ -39,7 +39,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
                 agrif_ext=""
             fi
 	    [[ ${AGRIFZ} > 0 ]] && { mm="_${nn}" ;}|| { mm="" ;}
-            varlist="${varlist}CROCO_SST${mm} CROCO_SSH${mm} CROCO_VOCE${mm} CROCO_UOCE${mm} "
+            varlist="${varlist}CROCO_SST${mm} CROCO_SSH${mm} CROCO_NOCE${mm} CROCO_EOCE${mm} "
 
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh croco_grd.nc${agrif_ext} oce.nc${agrif_ext} croco "${varlist}"

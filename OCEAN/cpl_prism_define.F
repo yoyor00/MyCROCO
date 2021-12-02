@@ -178,7 +178,7 @@
       DO ja = 0, nmaxatm
 
          IF ( ja == 0 ) THEN   ;   catm = ""
-         ELSE                  ;   WRITE(catm,'(a,i1.1)') "_atm", ja
+         ELSE                  ;   WRITE(catm,'(a,i1.1)') "_EXT", ja
          ENDIF
 !     
 !     ... Announce sent variables.
