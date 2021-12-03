@@ -67,7 +67,7 @@ LIST_OPTIONS=$(cat << EOF
  # -- All options :
  # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro)
  # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif forc pisces sediment mustang oanalysis prepro cpl wav atm toy)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro cpl wav atm toy)
 
 EOF
 	    )
@@ -332,6 +332,10 @@ if [[ ${options[@]} =~ "cpl" ]] ; then
     if [[ ${options[@]} =~ "prepro" ]] ; then
       mkdir -p $MY_CONFIG_HOME/PREPRO
       cp -r $TOOLS_DIR/Coupling_tools/* $MY_CONFIG_HOME/PREPRO/.
+      mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+      mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+      mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+      mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
     fi
 fi
 
@@ -366,9 +370,10 @@ fi
 if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
     echo 'Copy scripts for coupled runs'
     echo '-----------------------------'
-    [ -d $MY_CONFIG_HOME/ROUTINES ] && \rm -Rf $MY_CONFIG_HOME/ROUTINES
+    [ -d $MY_CONFIG_HOME/SCRIPTS_TOOLBOX ] && \rm -Rf $MY_CONFIG_HOME/SCRIPTS_TOOLBOX
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
-    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/ $MY_CONFIG_HOME/ROUTINES
+    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/ $MY_CONFIG_HOME/SCRIPTS_TOOLBOX
+    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/README* $MY_CONFIG_HOME/
 
     # Edit myjob.sh to add CPU lines for each model
     cd $MY_CONFIG_HOME/
@@ -394,7 +399,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     rm -Rf myjob.tmp
 
     # Create the path file
-    cd $MY_CONFIG_HOME/ROUTINES/PATHS
+    cd $MY_CONFIG_HOME/SCRIPTS_TOOLBOX/PATHS
     cat ./path_base.sh >> tmppath
 
     # add sections for each model
@@ -402,7 +407,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     [[ ${options[@]} =~ "oce-prod" ]] && printf "export OCE=\"${CROCO_DIR}/OCEAN\"\n" >> tmppath
     [[ ${options[@]} =~ "atm" ]] && printf "export ATM=\"\${HOME}/WRF\"\n" >> tmppath
     [[ ${options[@]} =~ "wav" ]] && printf "export WAV=\"\${HOME}/WW3/model\"\n" >> tmppath
-    [[ ${options[@]} =~ "toy" ]] && printf "export TOY=\"\${HOME}/TOY_IN\"\n" >> tmppath
+    [[ ${options[@]} =~ "toy" ]] && printf "export TOY=\"\${CHOME}/TOY_IN\"\n" >> tmppath
     [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\${HOME}/XIOS\"\n" >> tmppath
 
     [[ ${options[@]} =~ "cpl" ]] && cat ./path_cpl.sh >> tmppath
@@ -422,7 +427,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     mv tmppath ${MY_CONFIG_HOME}/
 
     # Create the env file
-    [ -d ${MY_CONFIG_HOME}/ROUTINES/MACHINE/${MACHINE} ] && cd ${MY_CONFIG_HOME}/ROUTINES/MACHINE/${MACHINE} || { echo "No environement for ${MACHINE} in ${MY_CONFIG_HOME}/SCRIPT_CPL/ROUTINES/MACHINE/${MACHINE}"; exit ;}
+    [ -d ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/MACHINE/${MACHINE} ] && cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/MACHINE/${MACHINE} || { echo "No environement for ${MACHINE} in ${MY_CONFIG_HOME}/SCRIPT_CPL/SCRIPTS_TOOLBOX/MACHINE/${MACHINE}"; exit ;}
     cp myenv.${MACHINE} tmpenv
 
     [[ ${options[@]} =~ "atm" ]] && cat ./myenv.${MACHINE}.wrf >> tmpenv 
@@ -437,7 +442,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     rm -rf tmppath tmpenv
 
     # Create the namelist file
-    cd ${MY_CONFIG_HOME}/ROUTINES/NAMELISTS
+    cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/NAMELISTS
     cp namelist_head.sh mynamelist.sh
 
     if [[ ${options[@]} =~ "cpl" ]]; then

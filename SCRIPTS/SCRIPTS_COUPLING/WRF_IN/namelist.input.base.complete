@@ -48,7 +48,11 @@
  e_sn                                = <ydim_d01>,<ydim_d02>,<ydim_d03>,
  e_vert                              = <nbvertlev>,<nbvertlev>,<nbvertlev>,
  p_top_requested                     = <ptop>,
- eta_levels                          = <eta_lev>,
+ auto_levels_opt                     = 2
+ max_dz                              = 1000.
+ dzbot                               = 20.
+ dzstretch_s                         = 1.3
+ dzstretch_u                         = 1.1
  num_metgrid_levels                  = <nbmetlev>,
  num_metgrid_soil_levels             = <nbmetsoil>,
  dx                                  = <dx_d01>,<dx_d02>,<dx_d03>,
