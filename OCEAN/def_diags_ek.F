@@ -270,7 +270,7 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, 
      &           vname(1,indxTime)(1:lvar),
-     &                            NF_REAL, 1, timedim, vidTime)
+     &                            NF_DOUBLE, 1, timedim, vidTime)
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
@@ -302,14 +302,14 @@
 
         call nf_add_attribute(ncid, 
      &           vidTime, indxTime, 5, 
-     &       NF_REAL, ierr)
+     &       NF_FOUT, ierr)
 !
 ! Time2.
 !
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, 
      &           vname(1,indxTime2)(1:lvar),
-     &                            NF_REAL, 1, timedim, vidTime2)
+     &                            NF_DOUBLE, 1, timedim, vidTime2)
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
@@ -341,7 +341,7 @@
 
         call nf_add_attribute(ncid, 
      &           vidTime2, indxTime2, 5, 
-     &       NF_REAL, ierr)
+     &       NF_FOUT, ierr)
 
 ! Energy diagnostics variables.
 ! -------- ----------- --------
@@ -359,7 +359,7 @@
           lvar=lenstr(vname(1,indxekHadv+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekHadv+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekHadv(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHadv(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekHadv+itrc-1)
 # else
@@ -381,7 +381,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekHadv(itrc),
      &                       indxekHadv+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -390,7 +390,7 @@
           lvar=lenstr(vname(1,indxekHdiff+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekHdiff+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekHdiff(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHdiff(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekHdiff+itrc-1)
 # else
@@ -413,7 +413,7 @@
         call nf_add_attribute(ncid, 
      &           viddiags_ekHdiff(itrc),
      &                       indxekHdiff+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -422,7 +422,7 @@
           lvar=lenstr(vname(1,indxekVadv+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekVadv+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekVadv(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVadv(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekVadv+itrc-1)
 # else
@@ -445,7 +445,7 @@
         call nf_add_attribute(ncid, 
      &                          viddiags_ekVadv(itrc),
      &                       indxekVadv+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 !------------------------------
 !
 ! indxekCor
@@ -453,7 +453,7 @@
           lvar=lenstr(vname(1,indxekCor+itrc-1))
           ierr=nf_def_var (ncid, 
      &                          vname(1,indxekCor+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekCor(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekCor(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekCor+itrc-1)
 # else
@@ -475,7 +475,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekCor(itrc),
      &                       indxekCor+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -483,7 +483,7 @@
 !          
           lvar=lenstr(vname(1,indxekPrsgrd+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekPrsgrd+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekPrsgrd(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekPrsgrd(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekPrsgrd+itrc-1)
 # else
@@ -504,7 +504,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekPrsgrd(itrc),
      &                       indxekPrsgrd+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -512,7 +512,7 @@
 !          
           lvar=lenstr(vname(1,indxekHmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekHmix+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekHmix(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHmix(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekHmix+itrc-1)
 # else
@@ -533,7 +533,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekHmix(itrc),
      &                      indxekHmix+itrc-1,
-     &                        5, NF_REAL, ierr)
+     &                        5, NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -541,7 +541,7 @@
 !          
           lvar=lenstr(vname(1,indxekVmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekVmix+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekVmix(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVmix(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekVmix+itrc-1)
 # else
@@ -562,7 +562,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekVmix(itrc),
      &                       indxekVmix+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -570,7 +570,7 @@
 !          
           lvar=lenstr(vname(1,indxekrate+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekrate+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekrate(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekrate(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekrate+itrc-1)
 # else
@@ -590,7 +590,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekrate(itrc),
      &                       indxekrate+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -598,7 +598,7 @@
 !          
           lvar=lenstr(vname(1,indxekvol+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekvol+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekvol(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekvol(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekvol+itrc-1)
 # else
@@ -618,14 +618,14 @@
 
         call nf_add_attribute(ncid, viddiags_ekvol(itrc),
      &                       indxekvol+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 !------------------------------
 !
 ! indxekVmix2
 !          
           lvar=lenstr(vname(1,indxekVmix2+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekVmix2+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekVmix2(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVmix2(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekVmix2+itrc-1)
 # else
@@ -646,7 +646,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekVmix2(itrc),
      &                       indxekVmix2+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 !
 
 
@@ -656,7 +656,7 @@
 !          
           lvar=lenstr(vname(1,indxekWind+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekWind+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekWind(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekWind(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekWind+itrc-1)
 # else
@@ -677,7 +677,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekWind(itrc),
      &                       indxekWind+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 
 !------------------------------
@@ -686,7 +686,7 @@
 !          
           lvar=lenstr(vname(1,indxekDrag+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekDrag+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekDrag(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekDrag(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekDrag+itrc-1)
 # else
@@ -707,7 +707,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekWind(itrc),
      &                       indxekDrag+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 # if defined DIAGNOSTICS_BARO
 !------------------------------
 !
@@ -715,7 +715,7 @@
 !
           lvar=lenstr(vname(1,indxekBaro+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekBaro+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekBaro(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekBaro(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekBaro+itrc-1)
 # else
@@ -736,7 +736,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekBaro(itrc),
      &                       indxekBaro+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 # endif
 
 # if defined M3FAST
@@ -746,7 +746,7 @@
 !
           lvar=lenstr(vname(1,indxekfast+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekfast+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekfast(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekfast(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekfast+itrc-1)
 # else
@@ -767,7 +767,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekfast(itrc),
      &                       indxekfast+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 # endif
 
 # ifdef DIAGNOSTICS_EK_MLD
@@ -779,7 +779,7 @@
 !          
           lvar=lenstr(vname(1,indxekHadv_mld+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekHadv_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekHadv_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHadv_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekHadv_mld+itrc-1)
 # else
@@ -799,7 +799,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekHadv_mld(itrc),
      &                       indxekHadv_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -808,7 +808,7 @@
           lvar=lenstr(vname(1,indxekHdiff_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &                     vname(1,indxekHdiff_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekHdiff_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHdiff_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekHdiff_mld+itrc-1)
 # else
@@ -834,7 +834,7 @@
         call nf_add_attribute(ncid, 
      &                     viddiags_ekHdiff_mld(itrc),
      &                       indxekHdiff_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -843,7 +843,7 @@
           lvar=lenstr(vname(1,indxekVadv_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekVadv_mld+itrc-1)(1:lvar),
-     &           NF_REAL, 3, r2dgrd, viddiags_ekVadv_mld(itrc))
+     &           NF_FOUT, 3, r2dgrd, viddiags_ekVadv_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekVadv_mld+itrc-1)
 # else
@@ -867,14 +867,14 @@
 
         call nf_add_attribute(ncid, viddiags_ekVadv_mld(itrc),
      &                       indxekVadv_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 !------------------------------
 !
 ! indxekCor_mld
 !          
           lvar=lenstr(vname(1,indxekCor_mld+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekCor_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekCor_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekCor_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekCor_mld+itrc-1)
 # else
@@ -899,7 +899,7 @@
         call nf_add_attribute(ncid, 
      &           viddiags_ekCor_mld(itrc),
      &                       indxekCor_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -908,7 +908,7 @@
           lvar=lenstr(vname(1,indxekPrsgrd_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekPrsgrd_mld+itrc-1)(1:lvar),
-     &                   NF_REAL, 3, r2dgrd, viddiags_ekPrsgrd_mld(itrc))
+     &                   NF_FOUT, 3, r2dgrd, viddiags_ekPrsgrd_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekPrsgrd_mld+itrc-1)
 # else
@@ -933,7 +933,7 @@
         call nf_add_attribute(ncid, 
      &           viddiags_ekPrsgrd_mld(itrc),
      &                       indxekPrsgrd_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -942,7 +942,7 @@
           lvar=lenstr(vname(1,indxekHmix_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekHmix_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekHmix_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHmix_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekHmix_mld+itrc-1)
 # else
@@ -966,7 +966,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekHmix_mld(itrc),
      &                      indxekHmix_mld+itrc-1,
-     &                        5, NF_REAL, ierr)
+     &                        5, NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -975,7 +975,7 @@
           lvar=lenstr(vname(1,indxekVmix_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekVmix_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekVmix_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVmix_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekVmix_mld+itrc-1)
 # else
@@ -999,7 +999,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekVmix_mld(itrc),
      &                       indxekVmix_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -1008,7 +1008,7 @@
           lvar=lenstr(vname(1,indxekrate_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekrate_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekrate_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekrate_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekrate_mld+itrc-1)
 # else
@@ -1032,7 +1032,7 @@
 
         call nf_add_attribute(ncid, viddiags_ekrate_mld(itrc),
      &                       indxekrate_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 
 !------------------------------
 !
@@ -1041,7 +1041,7 @@
           lvar=lenstr(vname(1,indxekvol_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekvol_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekvol_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekvol_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekvol_mld+itrc-1)
 # else
@@ -1066,7 +1066,7 @@
         call nf_add_attribute(ncid, 
      &           viddiags_ekvol_mld(itrc),
      &                       indxekvol_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 !------------------------------
 !
 ! indxekVmix2_mld
@@ -1074,7 +1074,7 @@
           lvar=lenstr(vname(1,indxekVmix2_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekVmix2_mld+itrc-1)(1:lvar),
-     &                     NF_REAL, 3, r2dgrd, viddiags_ekVmix2_mld(itrc))
+     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVmix2_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekVmix2_mld+itrc-1)
 # else
@@ -1099,7 +1099,7 @@
         call nf_add_attribute(ncid, 
      &           viddiags_ekVmix2_mld(itrc),
      &                       indxekVmix2_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 !
 # if defined DIAGNOSTICS_BARO
 
@@ -1110,7 +1110,7 @@
           lvar=lenstr(vname(1,indxekBaro_mld+itrc-1))
           ierr=nf_def_var (ncid, 
      &           vname(1,indxekBaro_mld+itrc-1)(1:lvar),
-     &                   NF_REAL, 3, r2dgrd, viddiags_ekBaro_mld(itrc))
+     &                   NF_FOUT, 3, r2dgrd, viddiags_ekBaro_mld(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxekBaro_mld+itrc-1)
 # else
@@ -1135,7 +1135,7 @@
         call nf_add_attribute(ncid, 
      &           viddiags_ekBaro_mld(itrc),
      &                       indxekBaro_mld+itrc-1, 5,
-     &                        NF_REAL, ierr)
+     &                        NF_FOUT, ierr)
 # endif
 # endif
 

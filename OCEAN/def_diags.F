@@ -239,7 +239,7 @@
 !
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
-     &                            NF_FOUT, 1, timedim, vidTime)
+     &                            NF_DOUBLE, 1, timedim, vidTime)
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 #endif
@@ -274,7 +274,7 @@
 !
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_FOUT, 1, timedim, vidTime2)
+     &                            NF_DOUBLE, 1, timedim, vidTime2)
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
 #endif
