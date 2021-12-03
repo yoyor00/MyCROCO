@@ -105,7 +105,7 @@ c         call cost_fun_step(ad_x,icost,ta*ad_ns,2)
 
       integer ta,mode
       integer Istr,Iend,Jstr,Jend,i,j,k
-      double precision delta_z, delta_h, icost
+      double precision delta_z, delta_h, dpena, icost
 
 c      do j=Jstr,Jend
 c         do i=Istr,Iend
@@ -149,7 +149,8 @@ c      end do
                if (rmask(i,j).ne.0) then
                   k=k+1
                   delta_z = zeta(i,j,knew) - ad_obs(i,j,ta)
-                  icost = icost + delta_z*delta_z
+                  dpena = (pena_h(i,j) - pena_h(i-1,j)) / om_u(i,j)
+                  icost = icost + delta_z*delta_z + 1.0D-5*dpena*dpena
 
 c                  write(*,*) '=====>',zeta(i,j,knew)
 c     &                 ,ad_obs(i,j,ta-1),ad_obs(i,j,ta),ad_obs(i,j,ta+1)
