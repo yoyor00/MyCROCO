@@ -21,6 +21,11 @@ export auxinput4_interval=360 # interval ( in min ) of bottom input
 export ptop=5000
 export nbmetsoil=4
 export nbmetlevel=38
+# fdda options
+switch_fdda=0
+nudge_coef=0.0003
+nudge_interval_m=360
+nudge_end_h=144
 
 # output settings
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
