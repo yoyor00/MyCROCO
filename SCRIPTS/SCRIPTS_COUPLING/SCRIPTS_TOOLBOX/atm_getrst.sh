@@ -11,10 +11,12 @@ then
    filelist="$filelist wrfinput_d03"
   fi
  fi
+ cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+ cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
  for file in $filelist
   do
-   echo "ln -sf ${ATM_FILES_DIR}${file} ./$file"
-   ln -sf ${ATM_FILES_DIR}/${file} ./$file
+   echo "ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file"
+   ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file
   done
   
   if [[ ${onlinecplmask} == "TRUE" ]]; then

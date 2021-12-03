@@ -89,14 +89,19 @@ caltype=${4:?Undefined calendar type}
 # remove heading 0 in input parameters?
 function rmhd0 {
     in=$1
+    [[ $( echo $in | cut -b 1 ) == "-" ]] && { neg=1 ;} || { neg=0 ;}
     if [ $(( $in )) -eq 0 ]
 	then
 	in=0
     else
-	while [ `echo $in | cut -b 1` -eq 0 ]
+	while [[ $( echo $in | cut -b 1 ) -eq 0 || $( echo $in | cut -b 1 ) == "-" ]]
 	  do
 	  in=`echo $in | cut -b 2-`
 	done
+    fi
+    if [[ $neg == 1 ]]
+        then
+        in=$(( $in * -1 ))
     fi
     echo $in
 }

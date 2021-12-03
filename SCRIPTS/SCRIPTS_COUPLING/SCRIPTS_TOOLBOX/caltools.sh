@@ -44,7 +44,7 @@ echo $( printf "%02d:%02d:%02d\n" $h $m $s )
 ##------------------------------------------------------------------------------
 ## Date of the beginning of the experiment (in julian calendar (in days)):
 ##------------------------------------------------------------------------------
-#export JDAY_BEGIN_EXP=$( ${SCRIPTDIR}/julday.sh ${MONTH_BEGIN_EXP} ${DAY_BEGIN_EXP} ${YEAR_BEGIN_EXP} $CALTYPE )
+export JDAY_BEGIN_EXP=$( ${SCRIPTDIR}/julday.sh ${MONTH_BEGIN_JOB} ${DAY_BEGIN_JOB} ${YEAR_BEGIN_JOB} $CALTYPE )
 
 ##------------------------------------------------------------------------------
 # Date of the end of the experiment (in $CALTYPE calendar):

@@ -16,8 +16,25 @@ ln -sf ${ATM_EXE_DIR}/../data/* .
 #-------------------------------------------------------------------------------
 #                                                          BDY
 #-------------------------------------------------------------------------------
-${io_getfile} ${ATM_FILES_DIR}/wrfbdy_d01 wrfbdy_d01  # maybe put month and day of simu istead
-
+if [[ ${JOB_DUR_MTH} <= 1 ]]; then
+    cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+    ${io_getfile} ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} wrfbdy_d01
+else
+    module load ${nco}
+    for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
+        mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
+        cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+        cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+        if [[ $i == 0 ]]; then
+            ncrcat ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} wrfbdy_d01
+        else
+            ncrcat  wrfbdy_d01 ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M}
+        fi
+    done
+    module unload ${nco}
+fi
+    
 #-------------------------------------------------------------------------------
 #                                            Forcing fields (interannual case)
 #-------------------------------------------------------------------------------
@@ -29,7 +46,23 @@ filelist='wrflowinp_d01'
   fi
  fi
 
-for file in ${filelist}
- do
-    ${io_getfile} ${ATM_FILES_DIR}/${file} ${file}  # add loop for d02 and d03
- done
+for file in ${filelist}; do
+    if [[ ${JOB_DUR_MTH} <= 1 ]]; then
+        cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+        cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+        ${io_getfile} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file} 
+    else
+        module load ${nco}
+        for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
+            mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
+            cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+            cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+            if [[ $i == 0 ]]; then
+                ncrcat ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
+            else
+                ncrcat  ${file} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M}
+            fi
+        done
+        module unload ${nco}
+    fi
+done
