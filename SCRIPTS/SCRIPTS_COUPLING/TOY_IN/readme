@@ -6,7 +6,7 @@
 Compile the toy model
 ---------------------
 
- First source your run_env script
+ First source your myenv_mypath.sh script
  And eventually edit Makefile for your compiler settings
  Then:
  make clean > toy_clean.out

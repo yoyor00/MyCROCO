@@ -18,10 +18,10 @@ export AGRIFZ=0
 export AGRIF_2WAY="TRUE"
 # forcing files
 export ini_ext='ini_SODA' # ini extension file (ini_SODA,...)
-export bry_ext='bry_SODA' # bry extension file (bry_SODA,...)
+export bry_ext='bry_SODA' # bry extension file (clm,bry_SODA,...)
 export surfrc_flag="TRUE" # Flag if surface forcing is needed (FALSE if cpl)
 export interponline=0 # switch (1=on, 0=off) for online surface interpolation
-export frc_ext='blk_CFSR' # surface forcing extension(blk_CFSR, frc_CFSR,...). If interponline=1 just precise the type (ECMWF, CFSR,AROME,...)
+export frc_ext='blk_CFSR' # surface forcing extension(blk_CFSR, frc_CFSR,...). If interponline=1 just precise the type (ECMWF, CFSR,...), if AROME, precise the begining of the file name ***_Yxxx_Mxx (go check oce_getfrc for more intel)
 export tide_flag="FALSE" # the forcing extension must be blk_??? otherwise tide forcing overwrites it 
 
 # output settings

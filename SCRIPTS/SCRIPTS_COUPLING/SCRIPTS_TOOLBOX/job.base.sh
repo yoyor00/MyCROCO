@@ -26,7 +26,10 @@ if [ ${LOADL_STEP_NAME} == "get_file" ] || [ ${LOADL_STEP_NAME} == "XXX" ]; then
 # some printings
 . ${SCRIPTDIR}/common_printing.sh
 
-cd ${EXEDIR} 
+cd ${EXEDIR}
+
+# Copy job in EXEDIR
+cp ${JOBDIR_ROOT}/${jobname} ./
 
 #        printf "\n ************* SCRIPT files *****************\n"
 #        for file in ${SCRIPTDIR}/*.sh ; do cpfile ${file} . ; done; chmod 755 *.sh
@@ -131,7 +134,7 @@ cd ${EXEDIR}
 
 ##### RUN ######
 time $MPI_LAUNCH ${MPI_ext} app.conf >& out_run.txt 
-[ "$?" -eq "2" ] && { printf "ERROR during the RUN.\n Please check le log.files in ${EXEDIR} (out_run.txt, croco.log,...)"; exit ; }
+[ "$?" -gt "0" ] && { printf "ERROR during the RUN.\n Please check le log.files in ${EXEDIR} (out_run.txt, croco.log,...)"; exit ; }
 
 #${run_cmd} #app.conf
 ################
@@ -216,6 +219,7 @@ cd ${EXEDIR}
         else
             FILES_JOB="${FILES_JOB} ${ROOT_NAME_1}.jobid_*.txt ${ROOT_NAME_1}.o*"
         fi
+        
         cd ${JOBDIR_ROOT}; for file in ${FILES_JOB}; do mvfile2 ${file} ${JOBDIR}; done;  cd -; echo "";
 #
 #  mv output files in output
@@ -226,7 +230,7 @@ cd ${EXEDIR}
 #-------------------------------------------------------------------------------
         printf "\n *************  run the next job  *****************\n"
 
-if [ "${MODE_TEST}" == "" ] ; then      #  en production  
+if [ "${MODE_TEST}" == "" ] ; then      #  en production
         sed -e "s/YEAR_BEGIN_JOB=.*/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOBp1}/" \
             -e "s/MONTH_BEGIN_JOB=.*/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOBp1}/" \
             -e "s/DAY_BEGIN_JOB=.*/DAY_BEGIN_JOB=${DAY_BEGIN_JOBp1}/" \

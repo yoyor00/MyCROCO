@@ -42,6 +42,9 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         param.h > tmp$$ 
    mv tmp$$ param.h
 #
+    sed -e "s/# undef  LOGFILE/# define  LOGFILE/g" cppdefs.h > tmp$$
+    mv tmp$$ cppdefs.h
+#
     if [ $USE_CPL -ge 1 ]; then
         if [ $USE_ATM -eq 1 ] || [ $USE_TOYATM -eq 1 ]; then 
             sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
