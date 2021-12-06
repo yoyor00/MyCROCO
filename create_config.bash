@@ -330,7 +330,7 @@ if [[ ${options[@]} =~ "cpl" ]] ; then
       cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CONFIG_HOME/CROCO_IN/.
     fi
     if [[ ${options[@]} =~ "prepro" ]] ; then
-      mkdir -p $MY_CONFIG_HOME/PREPRO
+      mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
       cp -r $TOOLS_DIR/Coupling_tools/* $MY_CONFIG_HOME/PREPRO/.
       mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
       mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.

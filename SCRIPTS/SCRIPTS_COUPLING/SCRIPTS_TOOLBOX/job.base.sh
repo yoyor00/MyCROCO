@@ -40,7 +40,8 @@ cp ${JOBDIR_ROOT}/${jobname} ./
                     . ${SCRIPTDIR}/oce_compile.sh 
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-                    if [[ ${RESTART_FLAG} == "FALSE" ]]; then
+                    #if [[ ${RESTART_FLAG} == "FALSE" ]]; then
+		    if [[ -d "ls -A ${XIOS_NAM_DIR}" ]] ; then
                         [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
                     fi
                 fi
