@@ -18,6 +18,14 @@ export onlinecplmask="TRUE" # Build default mask (depending on the nb of atm and
 # Boundaries interval 
 export interval_seconds=21600 # interval ( in sec ) of the latteral input
 export auxinput4_interval=360 # interval ( in min ) of bottom input
+export ptop=5000
+export nbmetsoil=4
+export nbmetlevel=38
+# fdda options
+switch_fdda=0
+nudge_coef=0.0003
+nudge_interval_m=360
+nudge_end_h=144
 
 # output settings
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

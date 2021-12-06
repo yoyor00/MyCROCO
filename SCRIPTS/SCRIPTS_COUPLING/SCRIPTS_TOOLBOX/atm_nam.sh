@@ -30,7 +30,10 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/time_step                           =.*/time_step                           =${DT_ATM} ,/g" \
     -e "s/<max_domains>/${NB_dom}/g" \
     -e "s/<interval_s>/${interval_seconds}/g"  -e "s/<sst_int_m>/${auxinput4_interval}/g" \
-    -e "s/<nbmetsoil>/4/g" \
+    -e "s/<ptop>/${ptop}/g"        \
+    -e "s/<nbmetlev>/${nbmetlevel}/g"     -e "s/<nbmetsoil>/${nbmetsoil}/g"  \
+    -e "s/<nudge_d01>/${switch_fdda}/g"             -e "s/<nudge_coef>/${nudge_coef}/g" \
+    -e "s/<nudge_end_h>/${nudge_end_h}/g" -e "s/<nudge_int_m>/${nudge_interval_m}/g"\
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
 for domnb in `seq 1 $NB_dom` ; do

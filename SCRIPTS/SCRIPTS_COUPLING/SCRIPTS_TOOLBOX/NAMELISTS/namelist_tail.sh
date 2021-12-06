@@ -38,6 +38,8 @@ export nbtoy=${#toytype[@]}
 export model_to_toy=()
 export toynamelist=()
 export DT_TOY=()
+if [[ ${USE_TOY} -ge 1 ]]; then
+[[ ${USE_TOY} != $nbtoy ]] && { echo "There is an incoherence between the number of USE_TOY_* activated and the number of arguement in toytype. Make Sure they are coherent." ; exit;}
 for k in `seq 0 $(( ${nbtoy} - 1))` ; do
     [ ${toytype[$k]} == "oce" ] && model_to_toy+=("croco")
     [ ${toytype[$k]} == "atm" ] && model_to_toy+=("wrf")
@@ -65,5 +67,6 @@ for k in `seq 0 $(( ${nbtoy} - 1))` ; do
         DT_TOY+=("${tsp}")
     fi
 done
+fi
 ######
 
