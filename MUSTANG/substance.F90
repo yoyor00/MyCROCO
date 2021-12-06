@@ -969,26 +969,6 @@ CONTAINS
     !             TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))),ivr,indx,irk_fil(isubs),wrthis(indx)
    ENDDO
 
-   indx=indx+1
-   wrthis(indx)=.FALSE.
-   vname(1,indx)='ksmi'
-   vname(2,indx)='lower sediment layer index'
-   vname(3,indx)='no units'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-
-   indx=indx+1
-   wrthis(indx)=.FALSE.
-   vname(1,indx)='ksma'
-   vname(2,indx)='upper sediment layer index'
-   vname(3,indx)='no units'
-   vname(4,indx)=' '
-   vname(5,indx)=' '
-   vname(6,indx)=' '
-   vname(7,indx)=' '
-
 
 #ifdef  key_MUSTANG_specif_outputs
 ! seulement variables nv_out3Dnv_specif  et  nv_out3Dk_specif RAF: nv_out2D_specif)
@@ -1103,7 +1083,7 @@ ENDDO
 #ifdef key_MUSTANG_V2
       ! 3 : dzs_aclay_comp_save
      indx=indx+1
-     wrthis(indx)=.FALSE.
+     wrthis(indx)=.TRUE.
      vname(1,indx)='dzs_aclay_comp_save'
      vname(2,indx)='Theoretical active layer thickness Harris and Wiberg 1997'
      vname(3,indx)='meter'
@@ -1113,7 +1093,7 @@ ENDDO
      vname(7,indx)=' '
       ! 4 : dzs_aclay_kept_save
      indx=indx+1
-     wrthis(indx)=.FALSE. 
+     wrthis(indx)=.TRUE. 
      vname(1,indx)='dzs_aclay_kept_save'
      vname(2,indx)='Active layer thickness in the model'
      vname(3,indx)='meter'
@@ -1123,7 +1103,7 @@ ENDDO
      vname(7,indx)=' '
       ! 5 : tero_noncoh (cumulated time (in hours) elapsed in non cohesive regime)
      indx=indx+1
-     wrthis(indx)=.FALSE.
+     wrthis(indx)=.TRUE.
      vname(1,indx)='tero_noncoh'
      vname(2,indx)='time elapsed in the non-cohesive erosion regime'
      vname(3,indx)='hours'
@@ -1133,7 +1113,7 @@ ENDDO
      vname(7,indx)=' '
       ! 6 : tero_coh (cumulated time (in hours) elapsed in cohesive regime)
      indx=indx+1
-     wrthis(indx)=.FALSE.
+     wrthis(indx)=.TRUE.
      vname(1,indx)='tero_coh'
      vname(2,indx)='time elapsed in the cohesive erosion regime'
      vname(3,indx)='hours'
@@ -1143,7 +1123,7 @@ ENDDO
      vname(7,indx)=' '
       ! 7 : pct_iter_noncoh
      indx=indx+1
-     wrthis(indx)=.FALSE.
+     wrthis(indx)=.TRUE.
      vname(1,indx)='pct_iter_noncoh'
      vname(2,indx)='part of erosion iterations in the non-cohesive regime'
      vname(3,indx)='percent'
@@ -1153,7 +1133,7 @@ ENDDO
      vname(7,indx)=' '
       ! 8 : pct_iter_coh
      indx=indx+1
-     wrthis(indx)=.FALSE.
+     wrthis(indx)=.TRUE.
      vname(1,indx)='pct_iter_coh'
      vname(2,indx)='part of erosion iterations in the cohesive regime'
      vname(3,indx)='percent'
@@ -1163,7 +1143,7 @@ ENDDO
      vname(7,indx)=' '
       ! 9 : niter_ero
      indx=indx+1
-     wrthis(indx)=.FALSE.
+     wrthis(indx)=.TRUE.
      vname(1,indx)='niter_ero'
      vname(2,indx)='Number of iterations in sed_erosion during time step'
      vname(3,indx)='no units'

@@ -302,23 +302,23 @@
 :  l_outsed_surf         : true if output mesh surfaces
 :------------------------------------------------------------------------------
 &namsedoutput
-   l_outsed_saltemp =.FALSE.     ! true if output Salinity and Temperature in sediment
-   l_outsed_poro  = .FALSE. 
-   l_outsed_activlayer  =.FALSE.     ! V2 only 
-   l_outsed_surf =.FALSE.            ! V2 only
-   l_outsed_flx_Bload_all=.FALSE.     ! V2 only
-   l_outsed_flx_WS_all=.FALSE.
-   l_outsed_toce=.FALSE.
-   l_outsed_frmudsup=.FALSE.
-   l_outsed_bil_Bload_all=.FALSE.    ! V2 only
-   l_outsed_fsusp=.FALSE.            ! V2 only
-   l_outsed_dzs_ksmax=.FALSE.
-   l_outsed_peph=.FALSE.             ! V2 only
-   l_outsed_eroiter=.FALSE.          ! V2 only
-   l_outsed_z0sed=.FALSE.            ! V2 only
-   l_outsed_flx_WS_int=.FALSE.       ! V2 only
-   l_outsed_flx_Bload_int=.FALSE.    ! V2 only
-   l_outsed_bil_Bload_int=.FALSE.    ! V2 only
+   l_outsed_saltemp =.TRUE.     ! true if output Salinity and Temperature in sediment
+   l_outsed_poro  = .TRUE. 
+   l_outsed_activlayer  =.TRUE.     ! V2 only 
+   l_outsed_surf =.TRUE.            ! V2 only
+   l_outsed_flx_Bload_all=.TRUE.     ! V2 only
+   l_outsed_flx_WS_all=.TRUE.
+   l_outsed_toce=.TRUE.
+   l_outsed_frmudsup=.TRUE.
+   l_outsed_bil_Bload_all=.TRUE.    ! V2 only
+   l_outsed_fsusp=.TRUE.            ! V2 only
+   l_outsed_dzs_ksmax=.TRUE.
+   l_outsed_peph=.TRUE.             ! V2 only
+   l_outsed_eroiter=.TRUE.          ! V2 only
+   l_outsed_z0sed=.TRUE.            ! V2 only
+   l_outsed_flx_WS_int=.TRUE.       ! V2 only
+   l_outsed_flx_Bload_int=.TRUE.    ! V2 only
+   l_outsed_bil_Bload_int=.TRUE.    ! V2 only
    name_out_hsed='HSED'         ! name of variable saved in sediment output file
    name_out_nbniv='NBNIV'
    name_out_dzs='DZS'
