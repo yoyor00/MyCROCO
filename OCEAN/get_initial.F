@@ -527,7 +527,7 @@
       lvar=lenstr(vname(1,indxHm))
       ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (h, ncid, varid, indx, r2dvar)
+        ierr=nf_fread (h, ncid, varid, record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHm)(1:lvar)
      &                                      ,indx,ininame(1:lstr)
@@ -550,10 +550,10 @@
       ierr=nf_inq_varid (ncid, vname(1,indxHrip)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (Hripple, ncid, varid,
-     &                                        indx, r2dvar)
+     &                                     record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHrip)(1:lvar)
-     &                                , indx, ininame(1:lstr)
+     &                                , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
@@ -569,10 +569,10 @@
       ierr=nf_inq_varid (ncid, vname(1,indxLrip)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (Lripple, ncid, varid,
-     &                                        indx, r2dvar)
+     &                                     record , r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxLrip)(1:lvar)
-     &                                , indx, ininame(1:lstr)
+     &                                , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
