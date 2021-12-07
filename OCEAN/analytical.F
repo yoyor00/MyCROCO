@@ -2778,10 +2778,10 @@ C$    integer  trd, omp_get_thread_num
 #   if defined T_FRC_BRY && defined TRACERS
 #    ifdef SUBSTANCE
               do itrc=1,itsubs1-1
-                tbry_south(j,k,itrc)=0.
+                tbry_south(i,k,itrc)=0.
               enddo
               do itrc=itsubs1,NT
-                tbry_south(j,k,itrc)=cobc_wat(itrc)
+                tbry_south(i,k,itrc)=cobc_wat(itrc)
               enddo
 #    else
               do itrc=1,NT
@@ -2843,10 +2843,10 @@ C$    integer  trd, omp_get_thread_num
 #   if defined T_FRC_BRY && defined TRACERS
 #    ifdef SUBSTANCE
               do itrc=1,itsubs1-1
-                tbry_north(j,k,itrc)=0.
+                tbry_north(i,k,itrc)=0.
               enddo
               do itrc=itsubs1,NT
-                tbry_north(j,k,itrc)=cobc_wat(itrc)
+                tbry_north(i,k,itrc)=cobc_wat(itrc)
               enddo
 #    else
               do itrc=1,NT
