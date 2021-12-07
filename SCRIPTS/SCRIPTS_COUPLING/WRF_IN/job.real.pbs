@@ -5,4 +5,4 @@ cd $PBS_O_WORKDIR
 
 source /usr/share/Modules/3.2.10/init/bash
 
-./run_real.bash configure.namelist.wps_BENGUELA 20
+./run_real.bash configure.namelist.real_CONFIG 20
