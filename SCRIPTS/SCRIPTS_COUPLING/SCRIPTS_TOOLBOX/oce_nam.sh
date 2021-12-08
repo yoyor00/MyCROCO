@@ -79,10 +79,15 @@ do
     or_D=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 2) )
 
 # find vertical streching values
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     ts=$(ncdump -v theta_s croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     tb=$(ncdump -v theta_b croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
     hc=$(ncdump -v hc croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-
+else
+    ts=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_s = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+    tb=$(ncdump -h croco_ini.nc${agrif_ext}| grep "theta_b = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+    hc=$(ncdump -h croco_ini.nc${agrif_ext}| grep "hc = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+fi
 
 sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
     -e "s/<theta_s>/${ts}/g" -e "s/<theta_b>/${tb}/g" -e "s/<hc>/${hc}/g" \

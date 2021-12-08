@@ -13,7 +13,7 @@
 # 
 # Dependence : 
 #  - need namelist.input.base
-#  - read "configure.namelist.wps_CONFIG" defining basic domain and 
+#  - read "configure.namelist.real_CONFIG" defining basic domain and 
 #    run parameters
 #  - Vtable : Vtable.AMIP or Vtable.GFS
 #  - Vtable : Vtable.SSTROMS     

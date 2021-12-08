@@ -7,7 +7,7 @@ start_date:
 origin_date:
 <dorig>-<morig>-<yorig> 00:00:00
 S-coord: THETA_S,   THETA_B,    Hc (m)
-           <theta_s>      <thera_b>      <hc>
+           <theta_s>      <theta_b>      <hc>
 grid:  filename
                           ./croco_grd.nc
 forcing: filename
