@@ -28,7 +28,7 @@ if [[ ${USE_ATM} == 1 ]]; then
     if [[ -f "${OCE_FILES_DIR}/coupling_masks*.nc" ]]; then
         cp ${OCE_FILES_DIR}/coupling_masks*.nc .
     elif [[ $( echo "$wrfcpldom" | wc -w ) >1 ]]; then
-        module load ${nco}
+        module load ${ncomod}
         for nn in `seq 0 $AGRIFZ`; do
             if [ ${nn} -gt 0 ]; then
                 agrif_ext=".${nn}"
@@ -68,7 +68,7 @@ if [[ ${USE_ATM} == 1 ]]; then
                 done
             done
         done
-        module unload ${nco}
+        module unload ${ncomod}
     fi
 fi
 

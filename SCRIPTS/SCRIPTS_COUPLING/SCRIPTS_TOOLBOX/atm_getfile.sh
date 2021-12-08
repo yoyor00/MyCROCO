@@ -21,7 +21,7 @@ if [[ ${JOB_DUR_MTH} <= 1 ]]; then
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     ${io_getfile} ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} wrfbdy_d01
 else
-    module load ${nco}
+    module load ${ncomod}
     for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
         mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
         cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
@@ -32,7 +32,7 @@ else
             ncrcat  wrfbdy_d01 ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M}
         fi
     done
-    module unload ${nco}
+    module unload ${ncomod}
 fi
     
 #-------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ for file in ${filelist}; do
         cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
         ${io_getfile} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file} 
     else
-        module load ${nco}
+        module load ${ncomod}
         for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
             mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
             cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
@@ -63,6 +63,6 @@ for file in ${filelist}; do
                 ncrcat  ${file} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M}
             fi
         done
-        module unload ${nco}
+        module unload ${ncomod}
     fi
 done
