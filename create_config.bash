@@ -517,7 +517,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
 	sed -e "s|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${CROCO_DIR}/OCEAN|g" \
-	    -e "s|FC=.*|FC=\${FC}|" \
+	    -e "s|FC=gfortran|FC=\${FC}|" \
 	    -e "s|MPIF90=.*|MPIF90=\${MPIF90}|" \
 	    jobcomp > jobcomp.tmp
 	mv jobcomp.tmp jobcomp
