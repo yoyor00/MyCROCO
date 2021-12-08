@@ -4067,7 +4067,7 @@
             flx_w2s_loca(:)=0.0_rsh
             frdep(:)=0.0_rsh
             frac_sed_depa(:)=0.0_rsh
-
+            flx_bedload_in(:)=0.0_rsh
 
 #ifdef key_MUSTANG_debug
                IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
