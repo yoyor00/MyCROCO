@@ -2015,6 +2015,7 @@
         enddo
 #  ifdef key_MUSTANG_specif_outputs
         ik=0
+        indx=indx+2 !ksmi,ksma
         do itrc=1,ntrc_subs
           do itrv=1,nv_out3Dnv_specif
             ik=ik+1
