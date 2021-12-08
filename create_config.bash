@@ -445,22 +445,23 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
     cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/NAMELISTS
     cp namelist_head.sh mynamelist.sh
 
+    message=" # Kind of run launched. Summaries which models are used oce=o/wav=w/atm=a. If only one model put frc"
     if [[ ${options[@]} =~ "cpl" ]]; then
         if [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]] ; then
-            printf "export RUNtype=owa\n#\n" >> mynamelist.sh
+            printf "export RUNtype=owa${message}\n#\n" >> mynamelist.sh
         elif [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] ; then
-            printf "export RUNtype=ow\n#\n" >> mynamelist.sh
+            printf "export RUNtype=ow${message}\n#\n" >> mynamelist.sh
         elif [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "atm" ]]; then
-            printf "export RUNtype=oa\n#\n" >> mynamelist.sh
+            printf "export RUNtype=oa${message}\n#\n" >> mynamelist.sh
         elif [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]]; then
-            printf "export RUNtype=aw\n#\n" >> mynamelist.sh
+            printf "export RUNtype=aw${message}\n#\n" >> mynamelist.sh
         elif [[ ${options[@]} =~ "toy" ]]; then
-            printf "export RUNtype=Put the type here (ow/oa/aw/owa)\n#\n" >> mynamelist.sh
+            printf "export RUNtype=Put the type here (ow/oa/aw/owa)${message}\n#\n" >> mynamelist.sh
         else 
-            printf "export RUNtype=frc\n#\n" >> mynamelist.sh
+            printf "export RUNtype=frc${message}\n#\n" >> mynamelist.sh
         fi
     else
-        printf "export RUNtype=frc\n#\n" >> mynamelist.sh
+        printf "export RUNtype=frc${message}\n#\n" >> mynamelist.sh
     fi
 
     if [[ ${options[@]} =~ "atm" ]]; then
@@ -506,7 +507,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
         chmod 755 mynamelist.sh
     fi
 
-    sed -e "s|export CEXPER=.*|export CEXPER=${MY_CONFIG_NAME}_exp1|g" \
+    sed -e "s|export CEXPER=BENGUELA|export CEXPER=${MY_CONFIG_NAME}_exp1|" \
         mynamelist.sh > mynamelist1.sh
 
     mv mynamelist1.sh mynamelist.sh

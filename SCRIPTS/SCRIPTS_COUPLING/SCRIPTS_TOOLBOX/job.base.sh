@@ -11,7 +11,7 @@
 #===============================================================================
 if [ ${LOADL_STEP_NAME} == "get_file" ] || [ ${LOADL_STEP_NAME} == "XXX" ]; then
         
-        #  attention si modif de ces variables, modif dans les 3 steps du job.base.sh
+        #  Careful if modification in these vars, modif in boit 3 steps of the job job.base.sh
         export JOBDIR="${JOBDIR_ROOT}/${ROOT_NAME_2}"
         export EXEDIR="${EXEDIR_ROOT}/${ROOT_NAME_2}"
 
@@ -76,7 +76,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
         [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_getfile.sh ; }
 
         [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN RESTART files *****************\n" |tee ls_l/oce_getrst.txt
-        [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/getrst_oce.txt \n"
+        [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/oce_getrst.txt \n"
         [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_getrst.sh ; } >> ls_l/oce_getrst.txt
 
         [ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE CONFIGURATION LOWINPUT, BDY... files *****************\n" 
@@ -90,7 +90,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
         [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getfile.sh ; }
 
         [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE RESTART files *****************\n" |tee ls_l/wav_getrst.txt
-        [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/getrst_ww3.txt \n"
+        [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/wav_getrst.txt \n"
         [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getrst.sh ; } >> ls_l/wav_getrst.txt
 
 	[ ${USE_CPL} -ge 1 ] && printf "\n ************* get OA3MCT RESTART files *****************\n"
@@ -124,10 +124,7 @@ cd ${EXEDIR}
         printf "\n see ls -l in ${EXEDIR}/ls_l/ls_pre_exe.txt\n"
         printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
         printf "\n---------------  start   ---------------\n"
-
-#       time -p ./nemo.exe > out_run.txt 2>&1
-#        echo "${EXEC} > out_run.txt 2>&1" 
-#              ${EXEC} > out_run.txt 2>&1
+#      
         printf "\n ***************** make app.conf file for Multiple Program Multiple Data *****************\n"
         [ -f ${SCRIPTDIR}/MACHINE/${MACHINE}/launch_${MACHINE}.sh ] && { . ${SCRIPTDIR}/MACHINE/${MACHINE}/launch_${MACHINE}.sh ; } || { printf "\n Please create a file launch_${MACHINE}.sh \n" ; exit 0 ; }
 
@@ -136,8 +133,6 @@ cd ${EXEDIR}
 ##### RUN ######
 time $MPI_LAUNCH ${MPI_ext} app.conf >& out_run.txt 
 [ "$?" -gt "0" ] && { printf "ERROR during the RUN.\n Please check le log.files in ${EXEDIR} (out_run.txt, croco.log,...)"; exit ; }
-
-#${run_cmd} #app.conf
 ################
 #        fi
 #	time ccc_mprun -f app.conf > out_run.txt 2>&1
@@ -254,7 +249,7 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
 	fi
 
 else # en test
-        printf "\n\n\n\n  MODE_TEST=${MODE_TEST}  Mode test et non production => Pas d'enchainement de jobs.\n\n\n\n"
+        printf "\n\n\n\n  MODE_TEST=${MODE_TEST}  Test mode and non production => No job chaining.\n\n\n\n"
 fi
 
 fi # Step3

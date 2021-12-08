@@ -2,7 +2,7 @@
 
 module load $ncomod
 
-if [[ ${bry_ext} == "*clm*" ]]; then
+if [[ ${bry_ext} == *'clm'* ]]; then
     ln -sf ${OCE_FILES_DIR}/croco_${bry_ext}.nc croco_clm.nc
 else
   for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do

@@ -116,6 +116,14 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	sed -e "s/#  *undef  *XIOS/# define XIOS/g" cppdefs.h > tmp$$
     	mv tmp$$ cppdefs.h
         printf "\n Output will be handled by XIOS\n"
+        if [ ${USE_XIOS_ATM} -eq 1 ]; then
+            sed -e "s/#  *undef  *XIOS_ATM/# define XIOS_ATM/g" cppdefs_dev.h > tmp$$
+            mv tmp$$ cppdefs_dev.h
+            printf "\n XIOS for ATM is also on\n"
+        else
+            sed -e "s/#  *define  *XIOS_ATM/# undef XIOS_ATM/g" cppdefs_dev.h > tmp$$
+            mv tmp$$ cppdefs_dev.h
+        fi
     else
         sed -e "s/#  *define  *XIOS/# undef XIOS/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h

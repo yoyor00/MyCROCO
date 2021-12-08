@@ -4,10 +4,13 @@
 # namelist [Info: grid size is directly read in oce_compile.sh and cpl_nam.sh ]
 
 # Online Compilation
+# Creates croco executable depending on this namelist. 
+#     In cppdef.h options that can be edit are OA_COUPLING/OW_COUPLING/BULK_FLUX/ONLINE/CLIMATOLOGY/FRC_BRY/TIDES/XIOS/AGRIF/AGRIF_2WAY
+#     In param.h modify the size grid, edit the number of proc in x and y direction with intel given in myjob.sh
 export ONLINE_COMP=0
 
 # Time steps
-export DT_OCE=1200
+export DT_OCE=600
 export NDTFAST=60
 
 # Parameter 
