@@ -259,7 +259,7 @@ SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
 WRF_d01_EXT_d02_PSFC CROCO_PSFC_CPLMASK1_EXT1 1 <cpldt> 1 atm.nc EXPORTED
-<atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt  LAG=<atmdt>
+<atmnx> <atmny> <ocenx> <oceny> atmt ocnt  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
