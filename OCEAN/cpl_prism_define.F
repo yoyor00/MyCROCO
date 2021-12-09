@@ -242,7 +242,7 @@
 
       cplmsk(:,:,0) = 1.            ! default use, no coupling mask
       cplmsk(:,:,1:nmaxatm) = 0.    ! default definition when using coupling mask
-      fname = 'coupling_masks'//clevel//'.nc'
+      fname = 'coupling_masks'//trim(clevel)//'.nc'
 # if defined MPI && defined PARALLEL_FILES
       ierr=0
       call insert_node (fname, len_trim(fname), mynode, NNODES, ierr)
@@ -250,7 +250,7 @@
       ierr=nf_open(trim(fname), nf_nowrite, ncid)
       if (ierr == NF_NOERR) then
           MPI_master_only write(*,*) 
-     &    'CPL-CROCO: open coupling_masks'//clevel//'.nc ok'
+     &    'CPL-CROCO: open coupling_masks'//trim(clevel)//'.nc ok'
           DO ja = 1, nmaxatm
              WRITE(catm,'(a,i1.1)') "_atm", ja
              ierr=nf_inq_varid (ncid, 'cplmsk'//catm, varid)
@@ -265,7 +265,7 @@
           ierr=nf_close(ncid)
        else
           MPI_master_only write(*,*) 
-     &         'CPL-CROCO: coupling_masks'//clevel//'.nc not found'
+     &        'CPL-CROCO: coupling_masks'//trim(clevel)//'.nc not found'
        endif
 
 

@@ -162,19 +162,19 @@
 #~~~~~~~~~~~
 # TAUX : zonal stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUX CROCO_UTAU_CPLMASK0_EXT1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUE CROCO_ETAU_CPLMASK0_EXT1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUX CROCO_UTAU_CPLMASK0_EXT2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUE CROCO_ETAU_CPLMASK0_EXT2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUX CROCO_UTAU_CPLMASK1_EXT1 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUE CROCO_ETAU_CPLMASK1_EXT1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
@@ -183,19 +183,19 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # TAUY : meridional stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUY CROCO_VTAU_CPLMASK0_EXT1 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUN CROCO_NTAU_CPLMASK0_EXT1 1 <cpldt> 1 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUY CROCO_VTAU_CPLMASK0_EXT2 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUN CROCO_NTAU_CPLMASK0_EXT2 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx> <oceny> atmtd02 ocnt0  LAG=<atmdt>
 R  0  R  0
 SCRIPR
 DISTWGT LR SCALAR LATLON 1 4
 #
-WRF_d02_EXT_d02_TAUY CROCO_VTAUY_CPLMASK1_EXT1 1 <cpldt> 1 atmd02.nc EXPORTED
+WRF_d02_EXT_d02_TAUN CROCO_NTAU_CPLMASK1_EXT1 1 <cpldt> 1 atmd02.nc EXPORTED
 <atmnxd02> <atmnyd02> <ocenx1> <oceny1> atmtd02 ocnt1  LAG=<atmdt>
 R  0  R  0
 SCRIPR
