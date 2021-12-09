@@ -14,7 +14,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] || [[ ! -f "${OCE_EXE_DIR}/croco.${RUNtype}"
     # Option of compilation
 #    sed -e "s/-O3 /-O3 -xAVX /" jobcomp > tmp$$i
 sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
-    -e "s|FC=.*|FC=${FC}|g" \
+    -e "s|FC=gfortran|FC=${FC}|g" \
     -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
     -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR="${CPL}"|g" \
     -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|g" \
