@@ -1222,8 +1222,18 @@ ENDDO
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
+     ! 15 : z0hydro non nul only if l_z0hydro_coupl=True 
+     indx=indx+1
+     wrthis(indx)=.TRUE.
+     vname(1,indx)='z0hydro'
+     vname(2,indx)='hydrodynamic roughness length'
+     vname(3,indx)='m'
+     vname(4,indx)=' '
+     vname(5,indx)=' '
+     vname(6,indx)=' '
+     vname(7,indx)=' '
 #ifdef key_MUSTANG_bedload
-      ! 15 : flx_bx_int
+      ! 16 : flx_bx_int
      indx=indx+1
      wrthis(indx)=.TRUE.
      vname(1,indx)='flx_bx_int'
@@ -1233,7 +1243,7 @@ ENDDO
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
-      ! 16 : flx_by_int
+      ! 17 : flx_by_int
      indx=indx+1
      wrthis(indx)=.TRUE.
      vname(1,indx)='flx_by_int'
@@ -1243,7 +1253,7 @@ ENDDO
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
-      ! 17 : bil_bedload_int
+      ! 18 : bil_bedload_int
      indx=indx+1
      wrthis(indx)=.TRUE.
      vname(1,indx)='bil_bedload_int'

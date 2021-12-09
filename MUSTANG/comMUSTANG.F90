@@ -639,9 +639,9 @@
       ! 15: z0hydro (if l_z0hydro_coupl)
 #ifdef key_MUSTANG_bedload
     nv_out2D_specif=nv_out2D_specif+3
-      ! 15 : flx_bx_int
-      ! 16 : flx_by_int
-      ! 17 : bil_bedload_int
+      ! 16 : flx_bx_int
+      ! 17 : flx_by_int
+      ! 18 : bil_bedload_int
 #endif
 !   end version MUSTANG V2
 #endif

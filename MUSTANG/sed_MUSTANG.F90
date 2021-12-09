@@ -4117,7 +4117,7 @@
             
 #ifdef key_MUSTANG_specif_outputs
             !bil_bedload_int
-            varspecif2D_save(17,i,j)=SUM(varspecif3Dnv_save(7,ibedload1:ibedload2,i,j))
+            varspecif2D_save(18,i,j)=SUM(varspecif3Dnv_save(7,ibedload1:ibedload2,i,j))
 #endif
 #endif
            
@@ -9867,11 +9867,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
         END IF
 #endif
 
-#if defined key_MUSTANG_specif_outputs        
-     ! flx_bx_int and flx_by_int
-     varspecif2D_save(15,i,j)=varspecif2D_save(15,i,j)+flx_bxij(iv) !pour ecriture en sortie
-     varspecif2D_save(16,i,j)=varspecif2D_save(16,i,j)+flx_byij(iv) !pour ecriture en sortie
-#endif
 
      IF (l_slope_effect_bedload) THEN
             
@@ -9920,6 +9915,12 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
 
      flx_bxij(iv)=MF*fwet(i,j)*flx_bxij(iv)
      flx_byij(iv)=MF*fwet(i,j)*flx_byij(iv)
+
+#if defined key_MUSTANG_specif_outputs        
+     ! flx_bx_int and flx_by_int
+     varspecif2D_save(16,i,j)=varspecif2D_save(16,i,j)+flx_bxij(iv) !pour ecriture en sortie
+     varspecif2D_save(17,i,j)=varspecif2D_save(17,i,j)+flx_byij(iv) !pour ecriture en sortie
+#endif
 
 #ifdef key_MUSTANG_debug
         IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
