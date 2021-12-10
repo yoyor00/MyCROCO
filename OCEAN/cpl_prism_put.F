@@ -56,7 +56,7 @@
       DO i = 1, nmaxfld
 !-------------------------------------------------
 !        SST       
-         if (ssnd_clname(i)=='CROCO_SST'//trim(clevel)) then
+         if (trim(ssnd_clname(i))=='CROCO_SST'//trim(clevel)) then
             snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15    
 
             DO ja = 0, nmaxatm
@@ -68,7 +68,7 @@
      &                 (comp_ierror == OASIS_SentOut) .or.
      &                 (comp_ierror == OASIS_ToRestOut) ) then
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     &                ssnd_clname(i),' sent at time ',sndtime
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
                endif  
             enddo
@@ -76,7 +76,7 @@
          endif
 !-------------------------------------------------
 !        SSH       
-         if (ssnd_clname(i)=='CROCO_SSH'//trim(clevel)) then
+         if (trim(ssnd_clname(i))=='CROCO_SSH'//trim(clevel)) then
             snd_field = zeta(1:Lmmpi,1:Mmmpi,nnew)
 
             DO ja = 0, nmaxatm
@@ -88,7 +88,7 @@
      &                 (comp_ierror == OASIS_SentOut) .or.
      &                 (comp_ierror == OASIS_ToRestOut) ) then
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     &                ssnd_clname(i),' sent at time ',sndtime
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
                endif
             enddo
@@ -97,7 +97,7 @@
 !-------------------------------------------------
 !        U component of ocean surface current
 !          at rho point
-        if (ssnd_clname(i)=='CROCO_UOCE'//trim(clevel)) then
+        if (trim(ssnd_clname(i))=='CROCO_UOCE'//trim(clevel)) then
            snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                       +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
 
@@ -110,7 +110,7 @@
      &                 (comp_ierror == OASIS_SentOut) .or.
      &                 (comp_ierror == OASIS_ToRestOut) ) then
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     &                ssnd_clname(i),' sent at time ',sndtime
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
                endif
             enddo
@@ -119,7 +119,7 @@
 !-------------------------------------------------
 !        V component of ocean surface current
 !          at rho point
-         if (ssnd_clname(i)=='CROCO_VOCE'//trim(clevel)) then
+         if (trim(ssnd_clname(i))=='CROCO_VOCE'//trim(clevel)) then
            snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
      &                       +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
 
@@ -132,7 +132,7 @@
      &                 (comp_ierror == OASIS_SentOut) .or.
      &                 (comp_ierror == OASIS_ToRestOut) ) then
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     &                ssnd_clname(i),' sent at time ',sndtime
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
                endif
             enddo
@@ -142,7 +142,7 @@
 !        Eastward component of ocean surface current
 !         proceed rotation from xi/eta croco_grid coordinate
 !         to East - North coordinate
-         if (ssnd_clname(i)=='CROCO_EOCE'//trim(clevel)) then
+         if (trim(ssnd_clname(i))=='CROCO_EOCE'//trim(clevel)) then
            snd_field = (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                       + u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
      &         * cos(angler(1:Lmmpi  ,1:Mmmpi))
@@ -159,7 +159,7 @@
      &                 (comp_ierror == OASIS_SentOut) .or.
      &                 (comp_ierror == OASIS_ToRestOut) ) then
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     &                ssnd_clname(i),' sent at time ',sndtime
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
                endif
             enddo
@@ -169,7 +169,7 @@
 !        Northward component of ocean surface current
 !         proceed rotation from xi/eta croco_grid coordinate
 !         to East - North coordinate
-         if (ssnd_clname(i)=='CROCO_NOCE'//trim(clevel)) then
+         if (trim(ssnd_clname(i))=='CROCO_NOCE'//trim(clevel)) then
            snd_field =  (0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
      &                      +   u(2:Lmmpi+1,1:Mmmpi,N,nnew)) )
      &         *  sin(angler(1:Lmmpi  ,1:Mmmpi))
@@ -186,7 +186,7 @@
      &                 (comp_ierror == OASIS_SentOut) .or.
      &                 (comp_ierror == OASIS_ToRestOut) ) then
                      MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
-     &                ssnd_clname(i),' sent at time ',sndtime
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
                   endif
                endif
             enddo

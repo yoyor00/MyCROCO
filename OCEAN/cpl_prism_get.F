@@ -136,7 +136,7 @@
 !  -- Scalar variables --
 !--------------------------------------------------
 !        Solar radiation flux - srflx
-         if (srcv_clname(i)=='CROCO_SRFL'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_SRFL'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_srflx) 
             if (iok_srflx /= 0) then
@@ -146,7 +146,7 @@
          end if  
 !-------------------------------------------------
 !        Non-solar heat flux - stflx(:,:,itemp)
-         if (srcv_clname(i)=='CROCO_STFL'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_STFL'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_itemp) 
             if (iok_itemp /= 0)  then
@@ -158,7 +158,7 @@
 !        Evaporation - precipitation flux - stflx(:,:,isalt)
 !        Changing Unit from [kg/m^2/s] (<--> [mm/s]) to [PSU m/s]  --> coeff= 1/1000.
 #  ifdef SALINITY
-         if (srcv_clname(i)=='CROCO_EVPR'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_EVPR'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_isalt)
             if (iok_isalt /= 0) then
@@ -169,7 +169,7 @@
 #  endif
 !-------------------------------------------------
 !        Module of wind stress - smstr
-         if (srcv_clname(i)=='CROCO_TAUM'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_TAUM'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_taum)
             if (iok_taum /= 0) then
@@ -184,7 +184,7 @@
 !-------------------------------------------------
 !        Surface pressure [Pa] - patm2d
 #  ifdef READ_PATM
-         if (srcv_clname(i)=='CROCO_PSFC'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_PSFC'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_psfc)
             if (iok_psfc /= 0) then
@@ -198,7 +198,7 @@
 !  -- Vector variables --
 !--------------------------------------------------
 !        U component of wind stress - sustr
-         if (srcv_clname(i)=='CROCO_UTAU'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_UTAU'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_utau) 
             if (iok_utau /= 0) then  
@@ -220,7 +220,7 @@
          end if
 !-------------------------------------------------
 !        V component of wind stress - svstr
-         if (srcv_clname(i)=='CROCO_VTAU'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_VTAU'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_vtau) 
             if (iok_vtau /= 0) then 
@@ -242,7 +242,7 @@
          end if
 !-------------------------------------------------
 !        Eastward component of wind stress - temporary etau
-         if (srcv_clname(i)=='CROCO_ETAU'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_ETAU'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_etau)
             if (iok_etau /= 0) then
@@ -257,7 +257,7 @@
          end if
 !-------------------------------------------------
 !        Northward component of wind stress - temporary ntau
-         if (srcv_clname(i)=='CROCO_NTAU'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_NTAU'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_ntau)
             if (iok_ntau /= 0) then
@@ -281,7 +281,7 @@
 !--------------------------------------------------
 !        mask to manage wet-drying
 !        not tested/performed yet
-         if (srcv_clname(i)=='CROCO_DRY'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_DRY'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wdry)
 !            if (iok_wdry /= 0)  then
@@ -290,7 +290,7 @@
          end if
 !-------------------------------------------------
 !        Significant wave height (m) --> wave hrm - whrm
-         if (srcv_clname(i)=='CROCO_HS'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_HS'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_whs)
             if (iok_whs /= 0)  then
@@ -300,7 +300,7 @@
          end if
 !-------------------------------------------------
 !        Wave mean period (s) --> wave freq - wfrq
-         if (srcv_clname(i)=='CROCO_T0M1'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_T0M1'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wt0m1)
             if (iok_wt0m1 /= 0)  then
@@ -317,7 +317,7 @@
 !        Wave mean direction (deg) 
 !            + then we apply croco grid rotation (-angler)
 !              and projection on xi/eta trigo croco_grid - wdrx, wdre
-         if (srcv_clname(i)=='CROCO_DIR'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_DIR'//trim(rclevel)) then
            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &          tab_t_tmp, rcvtime, iok_wdir)
            if (iok_wdir /= 0)  then
@@ -329,7 +329,7 @@
 !------------------------------------------------- 
 !        wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
 !        not tested/performed yet
-         if (srcv_clname(i)=='CROCO_BHD'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_BHD'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wbhd)
             if (iok_wbhd /= 0)  then
@@ -339,7 +339,7 @@
          endif
 !-------------------------------------------------
 !        wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
-         if (srcv_clname(i)=='CROCO_FOC'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_FOC'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wfoc)
             if (iok_wfoc /= 0)  then
@@ -349,7 +349,7 @@
          endif
 !-------------------------------------------------
 !        wave_wlm : mean length wave (m)
-         if (srcv_clname(i)=='CROCO_LM'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_LM'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wlm)
             if (iok_wlm /= 0)  then
@@ -362,7 +362,7 @@
 !--------------------------------------------------
 !        ORBITAL BOTTOM VELOCITY      
 !        wave_ubrx : x-component rms amplitude of wave orbital bottom velocity(m/s)
-         if (srcv_clname(i)=='CROCO_UBRX'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_UBRX'//trim(rclevel)) then
              call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wubrx)
             if (iok_wubrx /= 0)  then
@@ -371,7 +371,7 @@
             endif
          endif
 !        wave_ubry : y-component rms amplitude of wave orbital bottom velocity(m/s)
-         if (srcv_clname(i)=='CROCO_UBRY'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_UBRY'//trim(rclevel)) then
              call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wubry)
             if (iok_wubry /= 0)  then
@@ -382,7 +382,7 @@
 !-----------------------------------------------------------------------------------------------------------------         
 !        SURFACE STOKES DRIFT VELOCITY        
 !        wave_ussx : x-component of stokes drift surface velocity
-         if (srcv_clname(i)=='CROCO_USSX'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_USSX'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wust)
             if (iok_wust /= 0)  then
@@ -391,7 +391,7 @@
             endif
          endif
 !        wave_ussy : y-component of stokes drift surface velocity
-         if (srcv_clname(i)=='CROCO_USSY'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_USSY'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_wvst)
             if (iok_wvst /= 0)  then
@@ -403,7 +403,7 @@
 !  -- Vector variables --
 !--------------------------------------------------
 !        U component of the wave-to-ocean momentum flux (in m2.s-2) - temporary twox
-         if (srcv_clname(i)=='CROCO_UTWO'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_UTWO'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_utwo)
             if (iok_utwo /= 0) then
@@ -423,7 +423,7 @@
          endif
 !-------------------------------------------------
 !        V component of the wave-to-ocean momentum flux (in m2.s-2) - temporary twoy
-         if (srcv_clname(i)=='CROCO_VTWO'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_VTWO'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_vtwo)
             if (iok_vtwo /= 0) then
@@ -443,7 +443,7 @@
          endif
 !-------------------------------------------------
 !        Eastward component of the wave-to-ocean momentum flux (in m2.s-2) - temporary etwo
-         if (srcv_clname(i)=='CROCO_ETWO'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_ETWO'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_etwo)
             if (iok_etwo /= 0) then
@@ -458,7 +458,7 @@
          end if
 !-------------------------------------------------
 !        Northward component of the wave-to-ocean momentum flux (in m2.s-2) - temporary ntwo
-         if (srcv_clname(i)=='CROCO_NTWO'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_NTWO'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_ntwo)
             if (iok_ntwo /= 0) then
@@ -473,7 +473,7 @@
          end if
 !-------------------------------------------------
 !        U component of atmosphere-to-wave stress (in m2.s-2) - temporary tawx
-         if (srcv_clname(i)=='CROCO_UTAW'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_UTAW'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_utaw)
             if (iok_utaw /= 0) then
@@ -493,7 +493,7 @@
          endif
 !-------------------------------------------------
 !        V component of atmosphere-to-wave stress (in m2.s-2) - temporary tawy
-         if (srcv_clname(i)=='CROCO_VTAW'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_VTAW'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_vtaw)
             if (iok_vtaw /= 0) then
@@ -513,7 +513,7 @@
          endif
 !-------------------------------------------------
 !        Eastward component of atmosphere-to-wave stress (in m2.s-2) - temporary etaw
-         if (srcv_clname(i)=='CROCO_ETAW'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_ETAW'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_etaw)
             if (iok_etaw /= 0) then
@@ -528,7 +528,7 @@
          end if
 !-------------------------------------------------
 !        Northward component of atmosphere-to-wave stress (in m2.s-2) - temporary ntaw
-         if (srcv_clname(i)=='CROCO_NTAW'//trim(rclevel)) then
+         if (trim(srcv_clname(i))=='CROCO_NTAW'//trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
      &  tab_t_tmp, rcvtime, iok_ntaw)
             if (iok_ntaw /= 0) then

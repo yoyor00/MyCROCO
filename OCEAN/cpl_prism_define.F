@@ -184,7 +184,7 @@
 !     ... Announce sent variables.
       DO ji = 1, nmaxfld
           CALL prism_def_var_proto ( ssnd_nid(ja,ji),
-     &       ssnd_clname(ji)//trim(catm),
+     &       trim(ssnd_clname(ji))//trim(catm),
      &       oasis_part_id, oasis_var_nodims,
      &       PRISM_Out, oasis_var_shape,
      &       oasis_var_type, comp_ierror)
@@ -194,7 +194,7 @@
           ELSE
              IF ( ssnd_nid(ja,ji) /= -1 ) THEN
                 MPI_master_only write(*,*) 
-     & 'CPL-CROCO: sent ',ssnd_clname(ji)//trim(catm),ssnd_nid(ja,ji)
+     & 'CPL-CROCO: sent ',trim(ssnd_clname(ji))//trim(catm),ssnd_nid(ja,ji)
              ENDIF
           ENDIF
       END DO
@@ -202,17 +202,17 @@
 !     ... Announce received variables.
       DO ji = 1, nmaxfld
          CALL prism_def_var_proto ( srcv_nid(ja,ji),
-     &       srcv_clname(ji)//trim(catm),
+     &       trim(srcv_clname(ji))//trim(catm),
      &       oasis_part_id, oasis_var_nodims, 
      &       PRISM_In, oasis_var_shape, 
      &       oasis_var_type, comp_ierror)
           IF ( comp_ierror /= PRISM_Ok ) THEN
              CALL prism_abort_proto( srcv_nid(ja,ji),'cpl_prism_define',
-     &        'Failure in prism_def_var: '//srcv_clname(ji)//trim(catm))
+     &        'Failure in prism_def_var: '//trim(srcv_clname(ji))//trim(catm))
           ELSE
              IF ( srcv_nid(ja,ji) /= -1 ) THEN
                 MPI_master_only write(*,*) 
-     & 'CPL-CROCO: received ',srcv_clname(ji)//trim(catm),srcv_nid(ja,ji)
+     & 'CPL-CROCO: received ',trim(srcv_clname(ji))//trim(catm),srcv_nid(ja,ji)
              ENDIF
           ENDIF
       END DO

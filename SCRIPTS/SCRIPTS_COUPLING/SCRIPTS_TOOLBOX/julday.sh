@@ -94,7 +94,7 @@ function rmhd0 {
 	then
 	in=0
     else
-	while [[ $( echo $in | cut -b 1 ) -eq 0 || $( echo $in | cut -b 1 ) == "-" ]]
+	while [[ $( echo $in | cut -b 1 ) == "-" || $( echo $in | cut -b 1 ) -eq 0 ]]
 	  do
 	  in=`echo $in | cut -b 2-`
 	done
