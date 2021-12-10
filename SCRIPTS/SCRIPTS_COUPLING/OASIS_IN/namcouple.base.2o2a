@@ -82,7 +82,7 @@
 # |                  sustr   |    CROCO_UTAU  CROCO_ETAU         |
 # |                  svstr   |    CROCO_VTAU  CROCO_NTAU         |
 # |                  smstr   |    CROCO_TAUM                     |
-# |                pEXT2d    |    CROCO_PSFC                     |
+# |                patm2d    |    CROCO_PSFC                     |
 # |                  whrm    |    CROCO_HS                       |
 # |                  wfrq    |    CROCO_T0M1                     |
 # |             wdrx,wdre    |    CROCO_DIR                      |
