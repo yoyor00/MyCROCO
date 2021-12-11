@@ -42,17 +42,20 @@ if [[ ${USE_ATM} == 1 ]]; then
                 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
                     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
                     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
-                    filefrom="${ATM_FILES_DIR}/wrfinput_d0"
                 else
-                    cur_Y=$( echo DATE_END_JOBm1 | cut -c 1-4 )
-                    cur_M=$( echo DATE_END_JOBm1 | cut -c 5-6 )
-                    filefrom="${RESTDIR_IN}/wrfrst_d0"
+                    cur_Y=$( echo $DATE_END_JOBm1 | cut -c 1-4 )
+                    cur_M=$( echo $DATE_END_JOBm1 | cut -c 5-6 )
                 fi
                 maxdom=$( echo "$wrfcpldom" | wc -w )
                 dom=$( echo "$atmdom" | cut -c 3 )
                 ncap2 -A -v -s "cplmask${dom}=mask_rho*0+1" croco_grd.nc${agrif_ext} coupling_masks${nn}.nc
                 for sdloop in `seq 1 $maxdom`; do
-                    ncap2 -O -v -s 'latmin=XLAT.min();latmax=XLAT.max();lonmin=XLONG.min();lonmax=XLONG.max()' ${filefrom}${sdloop}_${cur_Y}_${cur_M}* tmp.nc
+                    if [[ ${RESTART_FLAG} == "FALSE" ]]; then
+                        filefrom="${ATM_FILES_DIR}/wrfinput_d0${sdloop}_${cur_Y}_${cur_M}"
+                    else
+                        filefrom="${RESTDIR_IN}/wrfrst_d0${sdloop}_${cur_Y}-${cur_M}"
+                    fi
+                    ncap2 -O -v -s 'latmin=XLAT.min();latmax=XLAT.max();lonmin=XLONG.min();lonmax=XLONG.max()' ${filefrom}* tmp.nc
                     lonmin=$( ncdump -v lonmin tmp.nc  | grep "lonmin =" | cut -d ' ' -f 4)
                     latmin=$( ncdump -v latmin tmp.nc  | grep "latmin =" | cut -d ' ' -f 4)
                     lonmax=$( ncdump -v lonmax tmp.nc  | grep "lonmax =" | cut -d ' ' -f 4)
