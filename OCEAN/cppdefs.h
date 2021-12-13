@@ -98,11 +98,10 @@
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
-# undef  USE_CALENDAR 
+# undef  USE_CALENDAR  
                       /* dedicated croco.log file */
 # undef  LOGFILE
-# undef  START_DATE
-/*!
+/*    
 !-------------------------------------------------
 ! PRE-SELECTED OPTIONS
 !
