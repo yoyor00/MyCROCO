@@ -3720,11 +3720,15 @@
    !!! ATTENTION: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
    rossan=ros_sand_homogen
    !!!!!!!!!!!!!!!!!
-    
-   DO iv=isand1,isand2    
+
+#if ! defined key_MUSTANG_V2
+   DO iv=isand1,isand2   
      IF (diam_sed(iv).LT.0.002) THEN   ! to remove gravels that are declared as sand 
-                                       ! in our configuration before computing mean parameters
+                                       ! in our configuration before computing mean parameters 
                                        !(i.e. gravels are not working and are declared as sands in Mustang V1)
+#else
+   DO iv=igrav1,isand2
+#endif
      somsan=somsan+cv_sed(iv,k,i,j)
      diamsan=diamsan+diam_sed(iv)*cv_sed(iv,k,i,j)
      critstressan=critstressan+stresscri0(iv)*cv_sed(iv,k,i,j)
@@ -3733,7 +3737,9 @@
 #ifdef key_MUSTANG_V2
      E0_sand_loc=E0_sand_loc+E0_sand(iv)*cv_sed(iv,k,i,j)
 #endif
+#if ! defined key_MUSTANG_V2
      ENDIF
+#endif
    ENDDO
    somsedsusp=sommud+somsan
    IF(somsedsusp.LE.0.0_rsh)THEN
@@ -4067,7 +4073,7 @@
             flx_w2s_loca(:)=0.0_rsh
             frdep(:)=0.0_rsh
             frac_sed_depa(:)=0.0_rsh
-
+            flx_bedload_in(:)=0.0_rsh
 
 #ifdef key_MUSTANG_debug
                IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
@@ -4117,7 +4123,7 @@
             
 #ifdef key_MUSTANG_specif_outputs
             !bil_bedload_int
-            varspecif2D_save(17,i,j)=SUM(varspecif3Dnv_save(7,ibedload1:ibedload2,i,j))
+            varspecif2D_save(18,i,j)=SUM(varspecif3Dnv_save(7,ibedload1:ibedload2,i,j))
 #endif
 #endif
            
@@ -7854,7 +7860,8 @@
    IF (dzs(ksmax,i,j) .GE. dzs_activelayer_comp) l_stop_fusion_in_activelayer=.TRUE.
 
      ! --> Criterion (2) : ne devrait on pas prendre en compte le gravier ?? 
-
+   ! FD+PLH 202112 Attention: critère frmudcr_fusion calculé à partir de la couche active (i.e. ksmax)
+   !   
    frmudcr_fusion=MIN(fusion_para_activlayer*coef_frmudcr1*diamgravsan,frmudcr2)
    l_ksmaxm1_cohesive=isitcohesive(cv_sed(:,ksmax-1,i,j),frmudcr_fusion) 
             ! return l_ksmaxm1_cohesive=.TRUE. if frmud(ksmax-1) >= frmudcr_fusion
@@ -9867,11 +9874,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
         END IF
 #endif
 
-#if defined key_MUSTANG_specif_outputs        
-     ! flx_bx_int and flx_by_int
-     varspecif2D_save(15,i,j)=varspecif2D_save(15,i,j)+flx_bxij(iv) !pour ecriture en sortie
-     varspecif2D_save(16,i,j)=varspecif2D_save(16,i,j)+flx_byij(iv) !pour ecriture en sortie
-#endif
 
      IF (l_slope_effect_bedload) THEN
             
@@ -9920,6 +9922,12 @@ SUBROUTINE MUSTANGV2_eval_bedload(i,j,ksmax,flx_bxij,flx_byij,   &
 
      flx_bxij(iv)=MF*fwet(i,j)*flx_bxij(iv)
      flx_byij(iv)=MF*fwet(i,j)*flx_byij(iv)
+
+#if defined key_MUSTANG_specif_outputs        
+     ! flx_bx_int and flx_by_int
+     varspecif2D_save(16,i,j)=varspecif2D_save(16,i,j)+flx_bxij(iv) !pour ecriture en sortie
+     varspecif2D_save(17,i,j)=varspecif2D_save(17,i,j)+flx_byij(iv) !pour ecriture en sortie
+#endif
 
 #ifdef key_MUSTANG_debug
         IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN

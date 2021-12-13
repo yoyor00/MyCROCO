@@ -508,13 +508,16 @@ C$OMP BARRIER
 !
 #   ifdef BEDLOAD_VANDERA_ZEROCURR
             udelta_wbl=0.
+            ksd_wbl=0.
+            thck_wbl=0.
+            ustrc_wbl=0.
 #   else
 #    ifdef BBL
             ksd_wbl=30.*Zbapp(i,j)
 #    else
             ksd_wbl=30.*Zob(i,j)
 #    endif
-            thck_wbl =0.09*ksd_wbl*(ahat/ksd_wbl)**0.82
+            thck_wbl=0.09*ksd_wbl*(ahat/ksd_wbl)**0.82
             !thck_wbl=0.1
             ustrc_wbl=sqrt(mag_bstrc)
             cff1=MAX(MIN(0.9*depth, thck_wbl), 1.1*ksd_wbl)
@@ -4243,6 +4246,7 @@ C$OMP BARRIER
 !
 #  ifdef BEDLOAD_VANDERA_ZEROCURR
       fwd=fw
+      alpha=0.
 #  else
       alpha=udelta/(udelta+uhat)
       fwd=alpha*fd+(1.-alpha)*fw
@@ -4367,7 +4371,9 @@ C$OMP BARRIER
 ! rho0 is required for non-dimensionalizing 
 !
       theta_ix=ABS(mag_theta_i)*ui_rx/(mag_ui)+tau_wRe*osmgd/rho0
-#  ifndef BEDLOAD_VANDERA_ZEROCURR
+#  ifdef BEDLOAD_VANDERA_ZEROCURR
+      theta_iy=0.
+#  else
       theta_iy=ABS(mag_theta_i)*ui_ry/(mag_ui)
 #  endif
 !

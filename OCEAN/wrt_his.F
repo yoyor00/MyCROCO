@@ -1289,7 +1289,7 @@ CR      write(*,*) 'wrt_his var2D_tenfon'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_dzs(k,:,:)
         enddo
-        call fillvalue3d(workrsed,ncidhis,hisMust(4),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(4),indx,
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var2D_dzs'   MYID
       endif
@@ -1298,7 +1298,7 @@ CR      write(*,*) 'wrt_his var2D_dzs'   MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_TEMP(k,:,:)
         enddo
-        call fillvalue3d(workrsed,ncidhis,hisMust(5),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(5),indx,
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
       endif
@@ -1307,7 +1307,7 @@ CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_SAL(k,:,:)
         enddo
-        call fillvalue3d(workrsed,ncidhis,hisMust(6),indx,
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(6),indx,
      &                   record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_SAL'  MYID
       endif
@@ -1319,7 +1319,7 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
             workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
           enddo
           workrsed1=workrsed(:,:,:)
-          call fillvalue3d(workrsed1,ncidhis,hisMust(itrc+6),
+          call fillvalue3d_must(workrsed1,ncidhis,hisMust(itrc+6),
      &                     indx,record,b3dvar,type)
 CR        write(*,*) 'wrt_his var3D_cvsed'  MYID
         endif

@@ -969,6 +969,27 @@ CONTAINS
     !             TRIM(ADJUSTL(ADJUSTR(name_var(irk_fil(isubs)))),ivr,indx,irk_fil(isubs),wrthis(indx)
    ENDDO
 
+   indx=indx+1
+   wrthis(indx)=.FALSE.
+   vname(1,indx)='ksmi'
+   vname(2,indx)='lower sediment layer index'
+   vname(3,indx)='no units'
+   vname(4,indx)=' '
+   vname(5,indx)=' '
+   vname(6,indx)=' '
+   vname(7,indx)=' '
+
+   indx=indx+1
+   wrthis(indx)=.FALSE.
+   vname(1,indx)='ksma'
+   vname(2,indx)='upper sediment layer index'
+   vname(3,indx)='no units'
+   vname(4,indx)=' '
+   vname(5,indx)=' '
+   vname(6,indx)=' '
+   vname(7,indx)=' '
+
+
 
 #ifdef  key_MUSTANG_specif_outputs
 ! seulement variables nv_out3Dnv_specif  et  nv_out3Dk_specif RAF: nv_out2D_specif)
@@ -1201,8 +1222,18 @@ ENDDO
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
+     ! 15 : z0hydro non nul only if l_z0hydro_coupl=True 
+     indx=indx+1
+     wrthis(indx)=.TRUE.
+     vname(1,indx)='z0hydro'
+     vname(2,indx)='hydrodynamic roughness length'
+     vname(3,indx)='m'
+     vname(4,indx)=' '
+     vname(5,indx)=' '
+     vname(6,indx)=' '
+     vname(7,indx)=' '
 #ifdef key_MUSTANG_bedload
-      ! 15 : flx_bx_int
+      ! 16 : flx_bx_int
      indx=indx+1
      wrthis(indx)=.TRUE.
      vname(1,indx)='flx_bx_int'
@@ -1212,7 +1243,7 @@ ENDDO
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
-      ! 16 : flx_by_int
+      ! 17 : flx_by_int
      indx=indx+1
      wrthis(indx)=.TRUE.
      vname(1,indx)='flx_by_int'
@@ -1222,7 +1253,7 @@ ENDDO
      vname(5,indx)=' '
      vname(6,indx)=' '
      vname(7,indx)=' '
-      ! 17 : bil_bedload_int
+      ! 18 : bil_bedload_int
      indx=indx+1
      wrthis(indx)=.TRUE.
      vname(1,indx)='bil_bedload_int'
