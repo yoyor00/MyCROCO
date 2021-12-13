@@ -12,7 +12,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] || [[ ! -f "${OCE_EXE_DIR}/croco.${RUNtype}"
 #-------------------------------------------------------------------------------
     cd ${OCE_EXE_DIR}
     # Option of compilation
-#    sed -e "s/-O3 /-O3 -xAVX /" jobcomp > tmp$$i
+#    sed -e "s/-O3 /-O3 -xAVX /" jobcomp > tmp$$
 sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     -e "s|FC=gfortran|FC=${FC}|g" \
     -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
@@ -28,9 +28,11 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         ./cppdefs.h > tmp$$
     mv tmp$$ cppdefs.h
     printf "\n\nReading grid size in ${OCE_FILES_DIR}/croco_grd.nc \n\n"
+    cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     dimx=$( ncdump -h  ${OCE_FILES_DIR}/croco_grd.nc  | grep "xi_rho =" | cut -d ' ' -f 3)
     dimy=$( ncdump -h  ${OCE_FILES_DIR}/croco_grd.nc | grep "eta_rho =" | cut -d ' ' -f 3)
-    dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}*.nc | grep "s_rho =" | cut -d ' ' -f 3)
+    dimz=$( ncdump -h  ${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc | grep "s_rho =" | cut -d ' ' -f 3)
     printf "\nGrid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
     #add new line for new conf in param.h
     sed -e "s/(LLm0=xx, MMm0=xx, N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
@@ -156,7 +158,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 
     chmod 755 jobcomp
     time ./jobcomp >& log.compil
-    [ "$?" -eq "2" ] && { printf "ERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
+    [ "$?" -gt "0" ] && { printf "\nERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
     mv croco croco.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox

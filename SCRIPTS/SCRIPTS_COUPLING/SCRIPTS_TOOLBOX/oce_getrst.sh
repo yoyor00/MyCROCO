@@ -38,37 +38,37 @@ if [[ ${USE_ATM} == 1 ]]; then
             [ -f coupling_masks${nn}.nc ] && rm -rf coupling_masks${nn}.nc
             echo "Creating coupling mask for CROCO"
             ncks -v lon_rho,lat_rho croco_grd.nc${agrif_ext} coupling_masks${nn}.nc
-            for atmdom in $wrfcpldom; do
+            ncap2 -A -v -s "cplmask1=mask_rho*0+1" croco_grd.nc${agrif_ext} coupling_masks${nn}.nc
+            maxdom=$( echo "$wrfcpldom" | wc -w )
+            cnt=0
+            Alevel=$(( $nn +1 ))
+            while [ ${Alevel} -le ${maxdom} ]; do
+                cnt=$(( $cnt +1 ))
+                ncap2 -A -v -s "cplmask${cnt}=mask_rho*0+1" croco_grd.nc${agrif_ext} coupling_masks${nn}.nc
                 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
                     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
-                    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
+                    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+                    filefrom="${ATM_FILES_DIR}/wrfinput_d$( printf "%02d" ${Alevel})_${cur_Y}_${cur_M}"
                 else
                     cur_Y=$( echo $DATE_END_JOBm1 | cut -c 1-4 )
                     cur_M=$( echo $DATE_END_JOBm1 | cut -c 5-6 )
+                    filefrom="${RESTDIR_IN}/wrfrst_d0$( printf "%02d" ${Alevel})_${cur_Y}-${cur_M}"
                 fi
-                maxdom=$( echo "$wrfcpldom" | wc -w )
-                dom=$( echo "$atmdom" | cut -c 3 )
-                ncap2 -A -v -s "cplmask${dom}=mask_rho*0+1" croco_grd.nc${agrif_ext} coupling_masks${nn}.nc
-                for sdloop in `seq 1 $maxdom`; do
-                    if [[ ${RESTART_FLAG} == "FALSE" ]]; then
-                        filefrom="${ATM_FILES_DIR}/wrfinput_d0${sdloop}_${cur_Y}_${cur_M}"
-                    else
-                        filefrom="${RESTDIR_IN}/wrfrst_d0${sdloop}_${cur_Y}-${cur_M}"
+                ncap2 -O -v -s 'latmin=XLAT.min();latmax=XLAT.max();lonmin=XLONG.min();lonmax=XLONG.max()' ${filefrom}* tmp.nc
+                lonmin=$( ncdump -v lonmin tmp.nc  | grep "lonmin =" | cut -d ' ' -f 4)
+                latmin=$( ncdump -v latmin tmp.nc  | grep "latmin =" | cut -d ' ' -f 4)
+                lonmax=$( ncdump -v lonmax tmp.nc  | grep "lonmax =" | cut -d ' ' -f 4)
+                latmax=$( ncdump -v latmax tmp.nc  | grep "latmax =" | cut -d ' ' -f 4)
+                \rm tmp.nc
+                for index in `seq 1 $cnt` ; do
+                    if [[ $(( $index + $nn )) -lt $Alevel ]]; then
+                        ncap2 -O -s "var_tmp=cplmask${index}; where( lat_rho > $latmin && lon_rho > $lonmin && lat_rho < $latmax && lon_rho < $lonmax ) var_tmp=0; cplmask${index}=var_tmp" coupling_masks${nn}.nc coupling_masks${nn}.nc
+                    elif [[ $(( $index + $nn )) -eq $Alevel ]]; then
+                        ncap2 -O -s "var_tmp=cplmask${index}; where( lat_rho < $latmin || lon_rho < $lonmin || lat_rho > $latmax || lon_rho > $lonmax ) var_tmp=0; cplmask${index}=var_tmp" coupling_masks${nn}.nc coupling_masks${nn}.nc
                     fi
-                    ncap2 -O -v -s 'latmin=XLAT.min();latmax=XLAT.max();lonmin=XLONG.min();lonmax=XLONG.max()' ${filefrom}* tmp.nc
-                    lonmin=$( ncdump -v lonmin tmp.nc  | grep "lonmin =" | cut -d ' ' -f 4)
-                    latmin=$( ncdump -v latmin tmp.nc  | grep "latmin =" | cut -d ' ' -f 4)
-                    lonmax=$( ncdump -v lonmax tmp.nc  | grep "lonmax =" | cut -d ' ' -f 4)
-                    latmax=$( ncdump -v latmax tmp.nc  | grep "latmax =" | cut -d ' ' -f 4)
-                    \rm tmp.nc
-                    if [[ $sdloop > $dom ]]; then
-                        ncap2 -O -s "var_tmp=cplmask${dom}; where( lat_rho > $latmin && lon_rho > $lonmin && lat_rho < $latmax && lon_rho < $lonmax ) var_tmp=0; cplmask${dom}=var_tmp" coupling_masks${nn}.nc coupling_masks${nn}.nc
-                    elif [[ $sdloop -le $dom ]]; then
-                        ncap2 -O -s "var_tmp=cplmask${dom}; where( lat_rho < $latmin || lon_rho < $lonmin || lat_rho > $latmax || lon_rho > $lonmax ) var_tmp=0; cplmask${dom}=var_tmp" coupling_masks${nn}.nc coupling_masks${nn}.nc
-                    fi
-
-                    ncks -O -v var_tmp -x coupling_masks${nn}.nc coupling_masks${nn}.nc
                 done
+                ncks -O -v var_tmp -x coupling_masks${nn}.nc coupling_masks${nn}.nc
+                Alevel=$(( ${Alevel} +1 ))
             done
         done
         module unload ${ncomod}

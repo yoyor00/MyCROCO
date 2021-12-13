@@ -14,7 +14,7 @@ export DT_ATM=100 #100   # 100 90 75 72 60 45
 export NB_dom=1 # Number of coupled domains
 export wrfcpldom='d01'
 export nestfeedback="TRUE" # 1 way (FALSE) or 2 Way (TRUE) nesting
-export onlinecplmask="TRUE" # Build default mask (depending on the nb of atm and oce domains)
+export onlinecplmask="TRUE" # Erase existing CPLMASK and build default mask (depending on the nb of atm and oce domains)
 # Boundaries interval 
 export interval_seconds=21600 # interval ( in sec ) of the latteral input
 export auxinput4_interval=360 # interval ( in min ) of bottom input

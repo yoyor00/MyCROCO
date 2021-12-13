@@ -32,7 +32,7 @@ export tide_flag="FALSE" # the forcing extension must be blk_??? otherwise tide 
 #                                          WARNING                                       ! 
 # When XIOS is activated the following values (for the model) are not taken into account !
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-export oce_nhis=18     # history output interval (in number of timesteps) 
-export oce_navg=18     # average output interval (in number of timesteps) 
+export oce_his_sec=3600     # history output interval (in number of second) 
+export oce_avg_sec=3600     # average output interval (in number of second) 
 
 
