@@ -3720,11 +3720,15 @@
    !!! ATTENTION: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
    rossan=ros_sand_homogen
    !!!!!!!!!!!!!!!!!
-    
-   DO iv=isand1,isand2    
+
+#if ! defined key_MUSTANG_V2
+   DO iv=isand1,isand2   
      IF (diam_sed(iv).LT.0.002) THEN   ! to remove gravels that are declared as sand 
-                                       ! in our configuration before computing mean parameters
+                                       ! in our configuration before computing mean parameters 
                                        !(i.e. gravels are not working and are declared as sands in Mustang V1)
+#else
+   DO iv=igrav1,isand2
+#endif
      somsan=somsan+cv_sed(iv,k,i,j)
      diamsan=diamsan+diam_sed(iv)*cv_sed(iv,k,i,j)
      critstressan=critstressan+stresscri0(iv)*cv_sed(iv,k,i,j)
@@ -3733,7 +3737,9 @@
 #ifdef key_MUSTANG_V2
      E0_sand_loc=E0_sand_loc+E0_sand(iv)*cv_sed(iv,k,i,j)
 #endif
+#if ! defined key_MUSTANG_V2
      ENDIF
+#endif
    ENDDO
    somsedsusp=sommud+somsan
    IF(somsedsusp.LE.0.0_rsh)THEN
@@ -7854,7 +7860,8 @@
    IF (dzs(ksmax,i,j) .GE. dzs_activelayer_comp) l_stop_fusion_in_activelayer=.TRUE.
 
      ! --> Criterion (2) : ne devrait on pas prendre en compte le gravier ?? 
-
+   ! FD+PLH 202112 Attention: critère frmudcr_fusion calculé à partir de la couche active (i.e. ksmax)
+   !   
    frmudcr_fusion=MIN(fusion_para_activlayer*coef_frmudcr1*diamgravsan,frmudcr2)
    l_ksmaxm1_cohesive=isitcohesive(cv_sed(:,ksmax-1,i,j),frmudcr_fusion) 
             ! return l_ksmaxm1_cohesive=.TRUE. if frmud(ksmax-1) >= frmudcr_fusion
