@@ -60,7 +60,6 @@ auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Bvf Visc3d Diff3d HBL HBBL Bost
 gls_averages:   TKE  GLS  Lscale
                  T     T    T
 
-
 rho0:
       1025.d0
 
