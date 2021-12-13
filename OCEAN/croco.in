@@ -16,9 +16,9 @@ start_date:
 01/01/2005 00:00:00
 origin_date:
 01/01/1950 00:00:00
-
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    1       6       12
+
 grid:  filename
     CROCO_FILES/croco_grd.nc
 forcing: filename

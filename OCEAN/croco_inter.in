@@ -4,6 +4,7 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                NUMTIMES     TIMESTEP    NFAST     1
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0
+
 run_start_date:
 XXXXXXX
 run_end_date: 
@@ -16,9 +17,9 @@ start_date:
 xx/xx/xxxx xx:xx:xx
 origin_date:
 xx/xx/xxxx xx:xx:xx
-
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    XX       XX       XX
+
 grid:  filename
                           croco_grd.nc
 forcing: filename
