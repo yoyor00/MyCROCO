@@ -37,7 +37,7 @@ if [ ${interponline} -eq 1 ]; then
 
         mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
         cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-        cur_M=$( printf "%01d\n"  $( echo $mdy | cut -d " " -f 1) )
+        cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
   
         for varname in ${vnames} ; do
             [[ ! -f "${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc" ]] && { echo "File ${varname}_Y${cur_Y}M${cur_M}.nc is missing for online interpolation, we stop..." ; exit ;}
@@ -47,7 +47,7 @@ if [ ${interponline} -eq 1 ]; then
     if [ ${JOB_DUR_MTH} -eq 0 ] ; then
         mdy=$( valid_date $(( $MONTH_BEGIN_JOB + 1 )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
         cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-        cur_M=$( printf "%01d\n"  $( echo $mdy | cut -d " " -f 1) )
+        cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
         for varname in ${vnames} ; do
             ${io_getfile} ${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc ./
         done

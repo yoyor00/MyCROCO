@@ -62,7 +62,7 @@ do
 
     mdy=$( valid_date $(( $MONTH_END_JOB + 1 )) $DAY_END_JOB $YEAR_END_JOB )
     end_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-    end_M=$( printf "%01d\n"  $( echo $mdy | cut -d " " -f 1) )
+    end_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
 #
 
     printf "Computing the origin_date from start_date and scrum_time\n"
