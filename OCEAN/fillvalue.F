@@ -178,10 +178,7 @@
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
       mask = (work2d_tmp.eq.mask2)
-      print*,'fillval',spval
         do k=1,N
-      print*,'minmax',minval(work3D_tmp(:,:,k))
-          print*,'index-',k
           WHERE (mask.eqv.mask_val)
             work3d_tmp(:,:,k) = spval
           END WHERE
@@ -281,10 +278,7 @@
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
       mask = (work2d_tmp.eq.mask2)
-      print*,'fillval',spval
         do k=1,nk_nivsed_out
-      print*,'minmax',minval(work3D_tmp(:,:,k))
-          print*,'index-',k
           WHERE (mask.eqv.mask_val)
             work3d_tmp(:,:,k) = spval
           END WHERE

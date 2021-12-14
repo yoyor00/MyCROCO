@@ -1011,8 +1011,9 @@
 
    Set land mask value to _FillValue
 */ 
-#undef  FILLVAL
-
+#ifndef FILLVAL
+# undef  FILLVAL
+#endif
 /* 
   Write start_date information in netCDF output
   (in roms.in, add the keyword start_date:

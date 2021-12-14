@@ -457,6 +457,9 @@
 # define MUSTANG
                       /* I/O server */
 # undef  XIOS
+                     /* Custion IO */
+# define ZETA_DRY_IO
+# define FILLVAL
                       /* Calendar */
 # undef  START_DATE
 # define USE_CALENDAR
@@ -600,7 +603,7 @@
    for passive/biology/sediment tracers 
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
-                                               || defined MUSTANG
+                            || SUBSTANCE       || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
                       /*     USGS Sediment model     */
