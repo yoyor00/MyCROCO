@@ -710,7 +710,7 @@
 #  undef  WKB_TIME_FILTER
 # endif
 # define WKB_ADD_DIFF
-# undef  WKB_ADD_DIFFRACTION
+# define WKB_ADD_DIFFRACTION
 # undef  WKB_NUDGING
 # ifndef WAVE_OFFLINE
 #  undef WKB_NUDGING

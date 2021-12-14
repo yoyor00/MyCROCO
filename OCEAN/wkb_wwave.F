@@ -576,7 +576,7 @@ C$OMP BARRIER
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
 # if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
-          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
+          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-5.)))   ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
           cffX=20.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
           cffE=20.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))

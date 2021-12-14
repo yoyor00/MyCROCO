@@ -554,7 +554,7 @@
                DO i=imin,imax
                   ! surface
 # ifdef MRL_WCI
-                  z0_s=MAX(0.5*whrm(i,j),0.01)
+                  z0_s=MAX( Zosmin , 0.5*whrm(i,j) )
 # else
                   z0_s=MAX( Zosmin , chk*ustar_sfc_sq(i,j) )   !<-- Charnock
 # endif
@@ -574,7 +574,11 @@
      &                                  *   zalp*   wepb(i,j)
 # endif
                   ! bottom
+#  ifdef BBL
+                  z0_b = MAX( Zbapp(i,j) , Zobmin )
+#  else
                   z0_b = MAX( Zob(i,j) , Zobmin )
+#  endif
                   cff = 0.5*(tke_new(i,j,1)+tke_new(i,j,0))
                   lgthsc = vonKar*(0.5*Hz(i,j,1)+z0_b)
                   trb_bot = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
@@ -720,7 +724,12 @@
                !
                ! Finalize the computation of Akv and Akt
                cff = trb( i,j,k,nnew,itke )**2 / epsilon
-               Akv(i,j,k      )= MAX( cff*c_mu , nuwm )
+               Akv(i,j,k) = MAX( cff*c_mu , nuwm )
+# if defined WET_DRY && defined MRL_WCI
+               Akv(i,j,k) = ( Akv(i,j,k) +
+     &               0.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*  ! swash zone
+     &                                 (z_w(i,j,N)-z_w(i,j,0)))) )
+# endif
 # ifdef MASKING
      &                                                 *rmask(i,j)
 # endif
