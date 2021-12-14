@@ -161,6 +161,9 @@
 # include "forces.h"
 # include "grid.h"
 # include "averages.h"
+# ifdef BBL
+#  include "bbl.h"
+# endif
 !
 !--------------------------------------------------------------------
 ! Compute extended bounds (necessary because of
