@@ -6,14 +6,14 @@
 #
 # --------------------------------------------------
 #
-# Run : ./run_real.bash configure.namelist.real_CONFIG NBPROCS
+# Run : ./run_real.bash configure.namelist.real NBPROCS
 #
 # Usage : 
 #  - multiple nested domains (3 max currently)
 # 
 # Dependence : 
 #  - need namelist.input.base
-#  - read "configure.namelist.real_CONFIG" defining basic domain and 
+#  - read "configure.namelist.real" defining basic domain and 
 #    run parameters
 #  - Vtable : Vtable.AMIP or Vtable.GFS
 #  - Vtable : Vtable.SSTROMS     
