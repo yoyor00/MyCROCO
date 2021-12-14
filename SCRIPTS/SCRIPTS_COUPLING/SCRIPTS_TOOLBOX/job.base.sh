@@ -11,7 +11,7 @@
 #===============================================================================
 if [ ${LOADL_STEP_NAME} == "get_file" ] || [ ${LOADL_STEP_NAME} == "XXX" ]; then
         
-        #  Careful if modification in these vars, modif in boit 3 steps of the job job.base.sh
+        #  Careful if modification in these vars, modif in the 3 steps of the job job.base.sh
         export JOBDIR="${JOBDIR_ROOT}/${ROOT_NAME_2}"
         export EXEDIR="${EXEDIR_ROOT}/${ROOT_NAME_2}"
 
@@ -31,10 +31,10 @@ cd ${EXEDIR}
 # Copy job in EXEDIR
 cp ${JOBDIR_ROOT}/${jobname} ./
 
-#        printf "\n ************* SCRIPT files *****************\n"
+#        printf "\n ************* SCRIPT files *****************\n\n"
 #        for file in ${SCRIPTDIR}/*.sh ; do cpfile ${file} . ; done; chmod 755 *.sh
 
-        printf "\n ************* EXECUTABLE files *****************\n"
+        printf "\n ************* EXECUTABLE files *****************\n\n"
             if [ ${USE_OCE}  -eq 1 ]; then
                 if [ ${ONLINE_COMP} -eq 1 ]; then
                     . ${SCRIPTDIR}/oce_compile.sh 
@@ -63,7 +63,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
 	    fi
 	    ##
 
-        printf "\n ************* PARAMETER files *****************\n"
+        printf "\n ************* PARAMETER files *****************\n\n"
 # if xios
         [ ${USE_XIOS} -ge 1 ] && {  for file in ${FILIN_XIOS}; do cpfile ${XIOS_NAM_DIR}/${file} . ; done; echo ""; }
 
@@ -72,36 +72,36 @@ cp ${JOBDIR_ROOT}/${jobname} ./
         DATE_END_JOBm1=$( makedate $MONTH_BEGIN_JOB $(( $DAY_BEGIN_JOB - 1 )) $YEAR_BEGIN_JOB )
         RESTDIR_IN=${RESTDIR_ROOT}/${DATE_END_JOBm1}
 
-        [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN CONFIGURATION, OBC, BLK... files *****************\n" 
+        [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN CONFIGURATION, OBC, BLK... files *****************\n\n" 
         [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_getfile.sh ; }
 
-        [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN RESTART files *****************\n" |tee ls_l/oce_getrst.txt
+        [ ${USE_OCE} -eq 1 ] && printf "\n ************* get OCEAN RESTART files *****************\n\n" |tee ls_l/oce_getrst.txt
         [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/oce_getrst.txt \n"
         [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_getrst.sh ; } >> ls_l/oce_getrst.txt
 
-        [ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE CONFIGURATION LOWINPUT, BDY... files *****************\n" 
+        [ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE CONFIGURATION LOWINPUT, BDY... files *****************\n\n" 
         [ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_getfile.sh ; }
 
-	[ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE RESTART files *****************\n" |tee ls_l/atm_getrst.txt
+	[ ${USE_ATM} -eq 1 ] && printf "\n ************* get ATMOSPHERE RESTART files *****************\n\n" |tee ls_l/atm_getrst.txt
 	[ ${USE_ATM} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/atm_getrst.txt \n"
 	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_getrst.sh ; } >> ls_l/atm_getrst.txt
 
-        [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE CONFIGURATION files *****************\n"
+        [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE CONFIGURATION files *****************\n\n"
         [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getfile.sh ; }
 
-        [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE RESTART files *****************\n" |tee ls_l/wav_getrst.txt
+        [ ${USE_WAV} -eq 1 ] && printf "\n ************* get WAVE RESTART files *****************\n\n" |tee ls_l/wav_getrst.txt
         [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/wav_getrst.txt \n"
         [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_getrst.sh ; } >> ls_l/wav_getrst.txt
 
-	[ ${USE_CPL} -ge 1 ] && printf "\n ************* get OA3MCT RESTART files *****************\n"
+	[ ${USE_CPL} -ge 1 ] && printf "\n ************* get OA3MCT RESTART files *****************\n\n"
 	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_getrst.sh ; }
 
-        [ ${USE_TOY} -ge 1 ] && printf "\n ************* get TOY CONFIGURATION files *****************\n"
+        [ ${USE_TOY} -ge 1 ] && printf "\n ************* get TOY CONFIGURATION files *****************\n\n"
         [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_getfile.sh ; }
 
 
 # make the namelists from the namelist.base files
-        printf "\n ************* make namelist files from namelist base files *****************\n"
+        printf "\n ************* make namelist files from namelist base files *****************\n\n"
 	[ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_nam.sh ; }
 	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_nam.sh ; }
         [ ${USE_WAV} -eq 1 ] && echo "No namelist for WAV"
@@ -125,7 +125,7 @@ cd ${EXEDIR}
         printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
         printf "\n---------------  start   ---------------\n"
 #      
-        printf "\n ***************** make app.conf file for Multiple Program Multiple Data *****************\n"
+        printf "\n ***************** make app.conf file for Multiple Program Multiple Data *****************\n\n"
         [ -f ${SCRIPTDIR}/MACHINE/${MACHINE}/launch_${MACHINE}.sh ] && { . ${SCRIPTDIR}/MACHINE/${MACHINE}/launch_${MACHINE}.sh ; } || { printf "\n Please create a file launch_${MACHINE}.sh \n" ; exit 0 ; }
 
 	echo "launch run: $MPI_LAUNCH ${MPI_ext} app.conf " #${run_cmd} #$app.conf
@@ -171,26 +171,26 @@ if [ ${LOADL_STEP_NAME} == "put_file" ] || [ "${LOADL_STEP_NAME}" == "XXX" ] ; t
 
 cd ${EXEDIR} 
         printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
-        [ ${USE_OCE} -eq 1 ] && printf "\n ************* put OCEAN OUTPUT/RESTART files *****************\n" |tee ls_l/oce_putfile.txt
+        [ ${USE_OCE} -eq 1 ] && printf "\n ************* put OCEAN OUTPUT/RESTART files *****************\n\n" |tee ls_l/oce_putfile.txt
         [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/oce_putfile.txt \n" 
         [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_putfile.sh ; } >> ls_l/oce_putfile.txt
 
-        [ ${USE_ATM} -eq 1 ] && printf "\n ************* put ATMOSPHERE OUTPUT/RESTART files *****************\n" |tee ls_l/atm_putfile.txt
+        [ ${USE_ATM} -eq 1 ] && printf "\n ************* put ATMOSPHERE OUTPUT/RESTART files *****************\n\n" |tee ls_l/atm_putfile.txt
         [ ${USE_ATM} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/atm_putfile.txt \n"
         [ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_putfile.sh ; } >> ls_l/atm_putfile.txt
       
-        [ ${USE_WAV} -eq 1 ] && printf "\n ************* put WAVE OUTPUT/RESTART files *****************\n" |tee ls_l/wav_putfile.txt
+        [ ${USE_WAV} -eq 1 ] && printf "\n ************* put WAVE OUTPUT/RESTART files *****************\n\n" |tee ls_l/wav_putfile.txt
         [ ${USE_WAV} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/wav_putfile.txt \n"
         [ ${USE_WAV} -eq 1 ] && { . ${SCRIPTDIR}/wav_putfile.sh ; } >> ls_l/wav_putfile.txt
 
-        [ ${USE_CPL} -ge 1 ] && printf "\n ************* put OA3MCT OUTPUT/RESTART files *****************\n" 
+        [ ${USE_CPL} -ge 1 ] && printf "\n ************* put OA3MCT OUTPUT/RESTART files *****************\n\n" 
         [ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_putfile.sh ; }
 
 #-------------------------------------------------------------------------------
 #  save output control ascii files in jobs directory
 #-------------------------------------------------------------------------------
 
-        printf "\n ************* save ascii job files in ${JOBDIR} *****************\n" 
+        printf "\n ************* save ascii job files in ${JOBDIR} *****************\n\n" 
 # if ocean
         FILES_OCE="layout.dat ocean.output* namelist out_run.txt *time.step solver.stat* croco.log"        
         [ ${USE_OCE} -eq 1 ] && {  for file in ${FILES_OCE}; do cpfile2 ${file} ${JOBDIR}; done; echo ""; }
@@ -224,7 +224,7 @@ cd ${EXEDIR}
 #-------------------------------------------------------------------------------
 #  NEXT job!
 #-------------------------------------------------------------------------------
-        printf "\n *************  run the next job  *****************\n"
+        printf "\n *************  run the next job  *****************\n\n"
 
 if [ "${MODE_TEST}" == "" ] ; then      #  en production
         sed -e "s/YEAR_BEGIN_JOB=.*/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOBp1}/" \

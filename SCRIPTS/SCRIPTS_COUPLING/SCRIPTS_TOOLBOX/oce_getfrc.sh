@@ -6,7 +6,7 @@ if [ ${interponline} -eq 1 ]; then
     if [ ${frc_ext} == "ECMWF" ]; then
         vnames='T2M SSTK U10M V10M Q STR STRD SSR TP EWSS NSSS'
     elif [ ${frc_ext} == "AROME" ]; then
-        vnames=${frc_ect}
+        vnames=${frc_ext}
     else
         vnames='Temperature_height_above_ground Specific_humidity Precipitation_rate Downward_Short-Wave_Rad_Flux_surface Upward_Short-Wave_Rad_Flux_surface Downward_Long-Wave_Rad_Flux Upward_Long-Wave_Rad_Flux_surface U-component_of_wind V-component_of_wind'
     fi
