@@ -25,7 +25,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     # MPI and Grid size
     sed -e "s/# define BENGUELA_LR/# define ${CEXPER}/g" \
         -e "s/# undef  MPI/# define  MPI/g" \
-        ./cppdefs.h > tmp$$
+        ./cppdefs.h.base > tmp$$
     mv tmp$$ cppdefs.h
     printf "\n\nReading grid size in ${OCE_FILES_DIR}/croco_grd.nc \n\n"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
@@ -36,7 +36,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     printf "\nGrid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
     #add new line for new conf in param.h
     sed -e "s/(LLm0=xx, MMm0=xx, N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
-        param.h > tmp$$
+        param.h.base > tmp$$
     mv tmp$$ param.h
     # update necessary things
     sed -e "s/NP_XI *= *[0-9]* *,/NP_XI=${NP_OCEX},/g" \
@@ -49,7 +49,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 #
     if [ $USE_CPL -ge 1 ]; then
         if [ $USE_ATM -eq 1 ] || [ $USE_TOYATM -eq 1 ]; then 
-            sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
+            sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h.base > tmp$$
             printf "\n Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
             if [ $USE_ATM -eq 1 ] && [ ${USE_XIOS_ATM} -eq 1 ]; then
