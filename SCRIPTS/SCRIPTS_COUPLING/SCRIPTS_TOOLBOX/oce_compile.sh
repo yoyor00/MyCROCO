@@ -160,6 +160,8 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     time ./jobcomp >& log.compil
     [ "$?" -gt "0" ] && { printf "\nERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
     mv croco croco.${RUNtype}
+    cp cppdefs.h cppdefs.h.${RUNtype}
+    cp param.h param.h.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox
     [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
