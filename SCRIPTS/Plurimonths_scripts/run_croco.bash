@@ -80,7 +80,8 @@ NY_END=10
 NM_START=1
 NM_END=12
 #
-#  Exact restart - EXACT_RST=0 --> Exact restart OFF
+# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%01d"
 #                - EXACT_RST=1 --> Exact restart ON
 EXACT_RST=0
 #
@@ -146,7 +147,7 @@ if [[ $RSTFLAG != 0 ]]; then
 	    NM=12 
 	    NY=$((NY - 1))
 	fi
-	TIME=Y${NY}M${NM}
+	TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
     fi
     RSTFILE=${MODEL}_rst_${TIME}.nc
 fi
