@@ -29,7 +29,7 @@ else
         if [[ $i == 0 ]]; then
             ncrcat ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} wrfbdy_d01
         else
-            [[ ! -f ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} ]] && { echo "Missing ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} to built atm bdy file."; exit ;} 
+            [[ ! -f ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} ]] && { echo "Missing ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} to build atm bdy file."; exit ;} 
             ncrcat -O wrfbdy_d01 ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} wrfbdy_d01
         fi
     done
