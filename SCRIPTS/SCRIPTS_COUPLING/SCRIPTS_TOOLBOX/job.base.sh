@@ -104,7 +104,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
         printf "\n ************* make namelist files from namelist base files *****************\n\n"
 	[ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_nam.sh ; }
 	[ ${USE_ATM} -eq 1 ] && { . ${SCRIPTDIR}/atm_nam.sh ; }
-        [ ${USE_WAV} -eq 1 ] && echo "No namelist for WAV"
+        #[ ${USE_WAV} -eq 1 ] && echo "No namelist for WAV"
         [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_nam.sh ; }
 	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_nam.sh ; }
         printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
