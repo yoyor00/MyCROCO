@@ -25,9 +25,9 @@ if [ ${interponline} -eq 1 ]; then
     tstartinsec=$( echo $( ncdump -v scrum_time ${filefrom} | grep 'scrum_time =' | cut -d '=' -f 2| cut -d ' ' -f 2 ))
     tstartinsec=$(( ${tstartinsec} + 0.5 * ${DT_OCE})) # =0.5*dt like in croco 
     # Find first time value in forcing file
-    fieldname=( echo "$vnames" | awk '{print $1}' )
+    fieldname=$( echo "$vnames" | awk '{print $1}' )
     ncdump -v time "${OCE_FILES_ONLINEDIR}/$fieldname_Y${cur_Y}M${cur_M}.nc" | grep -n 'time =' > tmp$$
-    tstartfrc=$(( $( sed -n -e "3 p" text | cut -d '=' -f 2 | cut -d ',' -f 1 ) * 86400 ))
+    tstartfrc=$(( $( sed -n -e "3 p" tmp$$ | cut -d '=' -f 2 | cut -d ',' -f 1 ) * 86400 ))
     rm -rf tmp$$
     [[${tstartinsec} -le ${tstartfrc} ]] && { echo "Previous month is needed!"; loopstrt=-1 ;} || { loopstrt=0 ;}      
 #
