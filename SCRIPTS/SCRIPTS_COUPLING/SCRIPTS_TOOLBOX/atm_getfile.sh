@@ -16,7 +16,7 @@ ln -sf ${ATM_EXE_DIR}/../data/* .
 #-------------------------------------------------------------------------------
 #                                                          BDY
 #-------------------------------------------------------------------------------
-if [[ ${JOB_DUR_MTH} -lt 1 ]]; then
+if [[ ${JOB_DUR_MTH} -le 1 ]]; then
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     ${io_getfile} ${ATM_FILES_DIR}/wrfbdy_d01_${cur_Y}_${cur_M} wrfbdy_d01
