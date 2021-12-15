@@ -282,17 +282,13 @@ done
 for yy in `seq $start_y $end_y`; do
     [[ $yy == $start_y ]] && { mstart=$start_m ;} || { mstart=1 ;}
     [[ $yy == $end_y ]] && { mend=$end_m ;} || { mend=12 ;}
-    [[ $(($yy % 4)) -eq 0  && ( $(($yy % 100)) -ne 0  ||  $(($yy % 400)) -eq 0 )]] && { leapyear=1 ;} || { leapyear=0 ;}
-    for mm in `seq $mstart $mend`; do
-        [[ ${lmonth[@]} =~ $mm ]] && { maxendday=31 ;} || { maxendday=30 ;} 
-        [[ $mm == 2 && $leapyear == 1 ]] && { maxendday=29 ;}
-        [[ $mm == 2 && $leapyear == 0 ]] && { maxendday=28 ;}
 
-        [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ; shour=$start_h;} || { sday=1 ; shour=00;}
-        [[ $yy == $end_y && $mm == $end_m ]] && { eday=$end_d ; ehour=$end_h ;} || { eday=$maxendday ; ehour=24;}
+    for mm in `seq $mstart $mend`; do      
+        [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ; shour=$start_h;} || { sday=01 ; shour=00;}
+        [[ $yy == $end_y && $mm == $end_m ]] && { emth=$mm ; eday=$end_d ; ehour=$end_h ;} || { emth=$(( $mm + 1 )) ; eday=01 ; ehour=00;}
          
         sed -e "s/<yr1>/$yy/g"   -e "s/<yr2>/$yy/g"  \
-            -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$mm/g"  \
+            -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$emth/g"  \
             -e "s/<dy1>/$sday/g"   -e "s/<dy2>/$eday/g"  \
             -e "s/<hr1>/$shour/g"   -e "s/<hr2>/$ehour/g"  \
             -e "s/<rst>/$rst/g"                    -e "s/<rst_int_h>/$rst_interval_h/g"   \
