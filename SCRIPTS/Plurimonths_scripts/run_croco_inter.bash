@@ -97,6 +97,9 @@ NY_END=2000
 NM_START=1
 NM_END=3
 #
+# Set month format at 1 or 2 digits (for input and output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%01d"
+#
 # Number of year that are considered to be part of the spin-up (i.e. 365 days per year)
 NY_SPIN=0
 #
@@ -155,7 +158,7 @@ if [[ $RSTFLAG != 0 ]]; then
       NM=12
       NY=$((NY - 1))
     fi
-    TIME=Y${NY}M${NM}
+    TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
   fi
   RSTFILE=${MODEL}_rst_${TIME}
 fi
@@ -163,7 +166,7 @@ fi
 if [[ $TIME_SCHED == 0 ]]; then
   TIME=Y${NY_START}
 else
-  TIME=Y${NY_START}M${NM_START}
+  TIME=Y${NY_START}M$( printf ${MTH_FORMAT} ${NM_START})
 fi
 #
 # Get the code

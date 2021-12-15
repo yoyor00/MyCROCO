@@ -96,6 +96,8 @@ mytmp=$mydir/from_wrf_tmp.nc
       varin=HFX,LH,GLW,SST
     elif [ $var == ${gridlevels}_EVAP-PRECIP ] ; then
       varin=QFX,RAINC,RAINNC,XTIME
+    elif [ $var == ${gridlevels}_PSFC ] ; then
+      varin=PSFC
     else
       echo 'ERROR: '$var' variable not implemented yet'
       echo 'Exit...'

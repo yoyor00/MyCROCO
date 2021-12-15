@@ -6,22 +6,27 @@ module load netcdf-c/4.7.4-mpi
 module load netcdf-fortran/4.5.3-mpi
 module load hdf5/1.12.0-mpi
 module load git
+module load nco
 # -- for NETCDF
 # --> 
 export NETCDF_CONFIG0=nf-config
 export NETCDF=$( $NETCDF_CONFIG0 --prefix )
 export NETCDF_CONFIG=$NETCDF/bin/nf-config
 export NETCDF_LIBDIR=$NETCDF/lib
-export NETCDF_LIBDIR=$NETCDF/include
+export NETCDF_INCDIR=$NETCDF/include
 
 # -- Option for job launching
 export MPI_LAUNCH=srun
 export MPI_ext="--multi-prog"
 export ncomod='nco'
 
-# -- Environment variables
-
-export FC=ifort
-export MPIF90=mpiifort
+#----------------------------------------------------------------
+# Environment variables related to compilers
+#----------------------------------------------------------------
 export CC=icc
+export FC=ifort
+export F77=ifort
+export F90=ifort
+export MPIF90=mpiifort
+export MPICC=mpiicc
 

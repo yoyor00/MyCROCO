@@ -9,9 +9,9 @@ umask 022
 #-------------------------------------------------------------------------------
 #cat mypath.sh >> mynamelist.tmp
 cat mynamelist.sh > mynamelist.tmp
-cat ./ROUTINES/NAMELISTS/namelist_tail.sh >> mynamelist.tmp
+cat ./SCRIPTS_TOOLBOX/NAMELISTS/namelist_tail.sh >> mynamelist.tmp
 cat myjob.sh >> mynamelist.tmp
-cat ./ROUTINES/common_definitions.sh >> mynamelist.tmp
+cat ./SCRIPTS_TOOLBOX/common_definitions.sh >> mynamelist.tmp
 
 . ./mynamelist.tmp
 
@@ -75,8 +75,8 @@ sed -e "/< insert here variables definitions >/r mynamelist.tmp" \
     -e "s/<nmpi>/${totalcore}/g" \
     -e "s/<projectid>/${projectid}/g" \
     -e "s/<timedur>/${timedur}/g" \
-    ./ROUTINES/MACHINE/${MACHINE}/header.${COMPUTER} > HEADER_tmp
-    cat HEADER_tmp ./ROUTINES/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
+    ./SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/header.${COMPUTER} > HEADER_tmp
+    cat HEADER_tmp ./SCRIPTS_TOOLBOX/job.base.sh >  ${JOBDIR_ROOT}/${jobname}
     \rm HEADER_tmp
     \rm ./mynamelist.tmp
 
@@ -106,7 +106,7 @@ else
 #        [[ ${RESTART_FLAG} == "FALSE" ]] && . ${SCRIPTDIR}/chained_job.sh
         . ${SCRIPTDIR}/chained_job.sh
     else
-       ${QSUB} ${jobname}
+       ${QSUB}${jobname}
     fi 
 #
     if [ "${MODE_TEST}" != "" ] ; then

@@ -18,7 +18,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
          
             for ocedom in $loopoce; do
                 domoce="d0$(( ${ocedom} + 1 ))"
-	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUX WRF_${domatm}_EXT_${domoce}_TAUY WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_WND_U_01 WRF_${domatm}_EXT_${domoce}_WND_V_01 "
+	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
             done
             
             echo 'create restart file for oasis from calm conditions for variables:'${varlist} 
@@ -38,14 +38,9 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             else
                 agrif_ext=""
             fi
-            if [[ $( echo "$wrfcpldom" | wc -w ) > 1 ]] ; then
-                for atmdom in $wrfcpldom ; do
-                    mm=$( echo $atmdom | cut -c 3 )
-                    varlist="${varlist}SRMSSTV${nn}_atm${mm} SRMSSHV${nn}_atm${mm} SRMVOCE${nn}_atm${mm} SRMUOCE${nn}_atm${mm} "
-                done
-            else
-                varlist="${varlist}SRMSSTV${nn} SRMSSHV${nn} SRMVOCE${nn} SRMUOCE${nn} "
-            fi
+	    [[ ${AGRIFZ} > 0 ]] && { mm="_${nn}" ;}|| { mm="" ;}
+            varlist="${varlist}CROCO_SST${mm} CROCO_SSH${mm} CROCO_NOCE${mm} CROCO_EOCE${mm} "
+
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh croco_grd.nc${agrif_ext} oce.nc${agrif_ext} croco "${varlist}"
         done
@@ -58,7 +53,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     fi
 #
     if [ ${USE_TOY} -ge 1 ] ; then
-        varlist='TOY_V_01 TOY_U_01 TOY_TAUX TOY_TAUY TOY_TAUM TOYSRFLX TOYSTFLX TOY__EMP TOY_UOCE TOY_VOCE TOY__SST TOY__SSH TOY_T0M1 TOY___HS TOY__DIR TOY_TWOX TOY_TWOY TOY_TAWX TOY_TAWY TOY__CHA'
+        varlist='TOY_V_01 TOY_U_01 TOY_TAUX TOY_TAUY TOY_TAUM TOYSRFLX TOYSTFLX TOY__EMP TOY_UOCE TOY_VOCE TOY_PSFC TOY__SST TOY__SSH TOY_T0M1 TOY___HS TOY__DIR TOY_TWOX TOY_TWOY TOY_TAWX TOY_TAWY TOY__CHA'
         echo 'create restart file for oasis from calm conditions for variables:'${varlist}
         for k in `seq 0 $(( ${nbtoy} - 1 ))`; do
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${toyfile[$k]} ${toytype[$k]}.nc ${model_to_toy[$k]} "$varlist"

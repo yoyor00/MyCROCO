@@ -3080,12 +3080,12 @@ C 				  endif
      &                             +bvstrw**2)
      &                                   *rho0
          call xios_send_field("bostrw",work2d)
-         call xios_send_field("bustrc",bustrc*rho0)
-         call xios_send_field("bvstrc",bvstrc*rho0)
+!         call xios_send_field("bustrc",bustrc*rho0)
+!         call xios_send_field("bvstrc",bvstrc*rho0)
          call xios_send_field("bustrw",bustrw*rho0)
          call xios_send_field("bvstrw",bvstrw*rho0)
-         call xios_send_field("bustrcwmax",bustrcwmax*rho0)
-         call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
+!         call xios_send_field("bustrcwmax",bustrcwmax*rho0)
+!         call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
 !     
 #  endif /* BBL */
 

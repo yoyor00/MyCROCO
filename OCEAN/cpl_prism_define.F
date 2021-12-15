@@ -26,7 +26,8 @@
       real delta_lon, delta_lat
       integer ncid, varid, nf_fread
       INTEGER    :: level
-      CHARACTER*1 clevel
+      CHARACTER*2 clevel
+      CHARACTER*9 rclevel
       CHARACTER*5 catm
       character fname*64
 #include "netcdf.inc"
@@ -89,83 +90,101 @@
       srcv_clname(:) = 'not defined' 
 #ifdef AGRIF
       level=Agrif_Fixed()
+      write(clevel,'(a,i1.1)') "_", level
+      write(rclevel,'(a,i1.1)') "_CPLMASK", level
 #else
       level=0
+      write(clevel,'(a)') '  '
+      write(rclevel,'(a)') '         '
 #endif
-      write(clevel,'(i1.1)') level
 
 !------------------------------------------------------------------
 !     Sent
 !------------------------------------------------------------------
 !     SST
-      ssnd_clname(1) = 'SRMSSTV'//clevel
+      ssnd_clname(1) = 'CROCO_SST'//trim(clevel)
 !     SSH
-      ssnd_clname(2) = 'SRMSSHV'//clevel
+      ssnd_clname(2) = 'CROCO_SSH'//trim(clevel)
 !     UOCE
-      ssnd_clname(3) = 'SRMUOCE'//clevel
+      ssnd_clname(3) = 'CROCO_UOCE'//trim(clevel)
 !     VOCE
-      ssnd_clname(4) = 'SRMVOCE'//clevel
+      ssnd_clname(4) = 'CROCO_VOCE'//trim(clevel)
+!     EOCE
+      ssnd_clname(5) = 'CROCO_EOCE'//trim(clevel)
+!     NOCE
+      ssnd_clname(6) = 'CROCO_NOCE'//trim(clevel)
 
 !------------------------------------------------------------------
 !     Received
 !------------------------------------------------------------------
 !     Evaporation-Precipitation [kg/m^2/s]
-      srcv_clname(1) = 'RRMEVPR'//clevel
+      srcv_clname(1) = 'CROCO_EVPR'//trim(rclevel)
 !     net surface SW radiation [W/m2]
-      srcv_clname(2) = 'RRMSRFL'//clevel
+      srcv_clname(2) = 'CROCO_SRFL'//trim(rclevel)
 !     total non-solar heat flux [W/m2]
-      srcv_clname(3) = 'RRMSTFL'//clevel
+      srcv_clname(3) = 'CROCO_STFL'//trim(rclevel)
+!     u component of wind stress [N/m2]
+      srcv_clname(4) = 'CROCO_UTAU'//trim(rclevel)
+!     v component of wind stress [N/m2]
+      srcv_clname(5) = 'CROCO_VTAU'//trim(rclevel)
+!     wind stress module [N/m2]
+      srcv_clname(6) = 'CROCO_TAUM'//trim(rclevel)
 !     zonal wind tress [N/m2]
-      srcv_clname(4) = 'RRMTAUX'//clevel
+      srcv_clname(7) = 'CROCO_ETAU'//trim(rclevel)
 !     meridional wind tress [N/m2]
-      srcv_clname(5) = 'RRMTAUY'//clevel
-!     wind tress module [N/m2]
-      srcv_clname(6) = 'RRMTAUM'//clevel
-
+      srcv_clname(8) = 'CROCO_NTAU'//trim(rclevel)
+!     Surface pressure [Pa]
+      srcv_clname(9) = 'CROCO_PSFC'//trim(rclevel)
 
 !     mask to manage wet-drying[]
-      srcv_clname(7) = 'RRM_DRY'//clevel
+      srcv_clname(10) = 'CROCO_DRY'//trim(rclevel)
 !     mean Wave Period [s]
-      srcv_clname(8) = 'RRMT0M1'//clevel
+      srcv_clname(11) = 'CROCO_T0M1'//trim(rclevel)
 !     significant wave height [m]
-      srcv_clname(9) = 'RRM__HS'//clevel
+      srcv_clname(12) = 'CROCO_HS'//trim(rclevel)
 !     mean wave direction [radian]
-      srcv_clname(10) = 'RRM_DIR'//clevel
+      srcv_clname(13) = 'CROCO_DIR'//trim(rclevel)
 !     bhd: wave induced Bernoulli head pressure [N.m-1]
-      srcv_clname(12) = 'RRM_BHD'//clevel
-!     wave_ubr: rms amplitude of orbital bottom velocity of the waves [m.s-1]
-      srcv_clname(13) = 'RRM_UBR'//clevel
+      srcv_clname(14) = 'CROCO_BHD'//trim(rclevel)
 !     wave_phioc :  wave to ocean TKE flux  [W.m-2]
-      srcv_clname(14) = 'RRM_FOC'//clevel
+      srcv_clname(15) = 'CROCO_FOC'//trim(rclevel)
 !     wave_wlm :  wave mean wave length  [m]
-      srcv_clname(15) = 'RRM__LM'//clevel      
-!     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(16) = 'RRMTWOX'//clevel   
-!     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
-      srcv_clname(17) = 'RRMTWOY'//clevel   
-!     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
-      srcv_clname(18) = 'RRMTAWX'//clevel   
-!     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
-      srcv_clname(19) = 'RRMTAWY'//clevel
+      srcv_clname(16) = 'CROCO_LM'//trim(rclevel)   
 !     wave_ubrx: x-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
-      srcv_clname(20) = 'RRMUBRX'//clevel
+      srcv_clname(17) = 'CROCO_UBRX'//trim(rclevel)
 !     wave_ubry: y-component rms amplitude of orbital bottom velocity of the waves [m.s-1]
-      srcv_clname(21) = 'RRMUBRY'//clevel
+      srcv_clname(18) = 'CROCO_UBRY'//trim(rclevel)
 !     wave_ussx: x-component of surface Stokes drift velocity [m.s-1]
-      srcv_clname(22) = 'RRMUSSX'//clevel
+      srcv_clname(19) = 'CROCO_USSX'//trim(rclevel)
 !     wave_ussy: y-component of surface Stokes drift velocity [m.s-1]
-      srcv_clname(23) = 'RRMUSSY'//clevel      
+      srcv_clname(20) = 'CROCO_USSY'//trim(rclevel)
+!     wave_tauox: x-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(21) = 'CROCO_UTWO'//trim(rclevel)  
+!     wave_tauoy: y-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(22) = 'CROCO_VTWO'//trim(rclevel)  
+!     wave_tauox: eastward-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(23) = 'CROCO_ETWO'//trim(rclevel) 
+!     wave_tauoy: northward-component of the wave-ocean momentum flux [m2.s-2]
+      srcv_clname(24) = 'CROCO_NTWO'//trim(rclevel)
+!     wave_tauwx: Net wave-supported stress, x-component [m2.s-2]
+      srcv_clname(25) = 'CROCO_UTAW'//trim(rclevel)  
+!     wave_tauwy: Net wave-supported stress, y-component [m2.s-2]
+      srcv_clname(26) = 'CROCO_VTAW'//trim(rclevel) 
+!     wave_tauwx: Net wave-supported stress, eastward-component [m2.s-2]
+      srcv_clname(27) = 'CROCO_ETAW'//trim(rclevel)   
+!     wave_tauwy: Net wave-supported stress, northward-component [m2.s-2]
+      srcv_clname(28) = 'CROCO_NTAW'//trim(rclevel)
 
       DO ja = 0, nmaxatm
 
          IF ( ja == 0 ) THEN   ;   catm = ""
-         ELSE                  ;   WRITE(catm,'(a,i1.1)') "_atm", ja
+         ELSE                  ;   WRITE(catm,'(a,i1.1)') "_EXT", ja
          ENDIF
 !     
 !     ... Announce sent variables.
       DO ji = 1, nmaxfld
           CALL prism_def_var_proto ( ssnd_nid(ja,ji),
-     &       ssnd_clname(ji)//trim(catm),
+     &       trim(ssnd_clname(ji))//trim(catm),
      &       oasis_part_id, oasis_var_nodims,
      &       PRISM_Out, oasis_var_shape,
      &       oasis_var_type, comp_ierror)
@@ -175,7 +194,7 @@
           ELSE
              IF ( ssnd_nid(ja,ji) /= -1 ) THEN
                 MPI_master_only write(*,*) 
-     & 'CPL-CROCO: sent ',ssnd_clname(ji)//trim(catm),ssnd_nid(ja,ji)
+     & 'CPL-CROCO: sent ',trim(ssnd_clname(ji))//trim(catm),ssnd_nid(ja,ji)
              ENDIF
           ENDIF
       END DO
@@ -183,17 +202,17 @@
 !     ... Announce received variables.
       DO ji = 1, nmaxfld
          CALL prism_def_var_proto ( srcv_nid(ja,ji),
-     &       srcv_clname(ji)//trim(catm),
+     &       trim(srcv_clname(ji))//trim(catm),
      &       oasis_part_id, oasis_var_nodims, 
      &       PRISM_In, oasis_var_shape, 
      &       oasis_var_type, comp_ierror)
           IF ( comp_ierror /= PRISM_Ok ) THEN
              CALL prism_abort_proto( srcv_nid(ja,ji),'cpl_prism_define',
-     &        'Failure in prism_def_var: '//srcv_clname(ji)//trim(catm))
+     &        'Failure in prism_def_var: '//trim(srcv_clname(ji))//trim(catm))
           ELSE
              IF ( srcv_nid(ja,ji) /= -1 ) THEN
                 MPI_master_only write(*,*) 
-     & 'CPL-CROCO: received ',srcv_clname(ji)//trim(catm),srcv_nid(ja,ji)
+     & 'CPL-CROCO: received ',trim(srcv_clname(ji))//trim(catm),srcv_nid(ja,ji)
              ENDIF
           ENDIF
       END DO
@@ -223,7 +242,7 @@
 
       cplmsk(:,:,0) = 1.            ! default use, no coupling mask
       cplmsk(:,:,1:nmaxatm) = 0.    ! default definition when using coupling mask
-      fname = 'coupling_masks'//clevel//'.nc'
+      fname = 'coupling_masks'//trim(clevel)//'.nc'
 # if defined MPI && defined PARALLEL_FILES
       ierr=0
       call insert_node (fname, len_trim(fname), mynode, NNODES, ierr)
@@ -231,7 +250,7 @@
       ierr=nf_open(trim(fname), nf_nowrite, ncid)
       if (ierr == NF_NOERR) then
           MPI_master_only write(*,*) 
-     &    'CPL-CROCO: open coupling_masks'//clevel//'.nc ok'
+     &    'CPL-CROCO: open coupling_masks'//trim(clevel)//'.nc ok'
           DO ja = 1, nmaxatm
              WRITE(catm,'(a,i1.1)') "_atm", ja
              ierr=nf_inq_varid (ncid, 'cplmsk'//catm, varid)
@@ -246,7 +265,7 @@
           ierr=nf_close(ncid)
        else
           MPI_master_only write(*,*) 
-     &         'CPL-CROCO: coupling_masks'//clevel//'.nc not found'
+     &        'CPL-CROCO: coupling_masks'//trim(clevel)//'.nc not found'
        endif
 
 

@@ -91,7 +91,8 @@ if [ $model == wrf ] ; then
             ${gridlevels}_V_01 \
             ${gridlevels}_SURF_NET_SOLAR \
             ${gridlevels}_SURF_NET_NON-SOLAR \
-            ${gridlevels}_EVAP-PRECIP)
+            ${gridlevels}_EVAP-PRECIP \
+	    ${gridlevels}_PSFC)
 
     dimtime=Time
 
@@ -108,7 +109,8 @@ if [ $model == wrf ] ; then
                  TOY_V_01 \
                  TOYSRFLX \
                  TOYSTFLX \
-                 TOY__EMP)
+                 TOY__EMP \
+		 TOY_PSFC)
 
 elif  [ $model == croco ] ; then
     echo '==================================='
@@ -117,13 +119,13 @@ elif  [ $model == croco ] ; then
 
     if [ -z $gridlevels ] ; then
       echo 'Default grid level is assumed: 0 for parent...'
-      gridlevels='0'
+      gridlevels=''
     fi
 
-    varlist=(SRMUOCE${gridlevels} \
-            SRMVOCE${gridlevels} \
-            SRMSSTV${gridlevels} \
-            SRMSSHV${gridlevels})
+    varlist=(CROCO_UOCE${gridlevels} \
+            CROCO_VOCE${gridlevels} \
+            CROCO_SSTV${gridlevels} \
+            CROCO_SHV${gridlevels})
 
     dimtime=time
 

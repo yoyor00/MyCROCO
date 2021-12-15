@@ -117,12 +117,12 @@
     <field id="Zbnot" long_name="Physical hydraulic bottom roughness" unit="m" />
     <field id="Zbapp" long_name="Apparent hydraulic bottom roughness" unit="m" />
     <field id="bostrw" long_name="Wave-induced kinematic bottom stress" unit="N/m2" />
-    <field id="bustrc" long_name="Courant only bottom stress in xi direction" unit="N" />
+    <!-- <field id="bustrc" long_name="Courant only bottom stress in xi direction" unit="N" /> -->
     <field id="bustrw" long_name="Wave only bottom stress in xi direction" unit="N" />
-    <field id="bustrcwmax" long_name="Critical bottom stress in xi direction" unit="N" />
-    <field id="bvstrc" long_name="Courant only bottom stress in eta direction" unit="N" />
+    <!-- <field id="bustrcwmax" long_name="Critical bottom stress in xi direction" unit="N" /> -->
+    <!-- <field id="bvstrc" long_name="Courant only bottom stress in eta direction" unit="N" /> -->
     <field id="bvstrw" long_name="Wave only bottom stress in eta direction" unit="N" />
-    <field id="bvstrcwmax" long_name="Critical bottom stress in eta direction" unit="N" />
+    <!-- <field id="bvstrcwmax" long_name="Critical bottom stress in eta direction" unit="N" /> -->
  <!-- END BBL -->
 #endif
 #ifdef MRL_WCI         
@@ -342,7 +342,7 @@
       <field id="bustr" long_name="bottom  u-momentum stress" unit="N/m2" />
       <field id="u" long_name="u-momentum component" unit="meter second-1" grid_ref="u_3D"/>
       <field id="u_surf" long_name="u-momentum component" unit="meter second-1" />
-      <field id="uwnd" long_name="surface u-momentum wind" unit="-" />
+      <field id="uwnd" long_name="surface u-momentum wind" unit="meter second-1" />
 #ifdef MASKING
       <field id="mask_u" long_name="land/sea mask along u points" unit="--" />
 #endif
@@ -374,7 +374,7 @@
       <field id="bvstr" long_name="bottom  v-momentum stress" unit="N/m2" />
       <field id="v" long_name="v-momentum component" unit="meter second-1" grid_ref="v_3D"/>
       <field id="v_surf" long_name="v-momentum component" unit="meter second-1" />
-      <field id="vwnd" long_name="surface v-momentum wind" unit="-" />
+      <field id="vwnd" long_name="surface v-momentum wind" unit="meter second-1" />
 #ifdef MASKING
        <field id="mask_v" long_name="land/sea mask along v points" unit="--" />
 #endif

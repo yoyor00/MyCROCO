@@ -7,7 +7,7 @@ start_date:
 origin_date:
 <dorig>-<morig>-<yorig> 00:00:00
 S-coord: THETA_S,   THETA_B,    Hc (m)
-           7.0d0      2.0d0      200.0d0
+           <theta_s>      <theta_b>      <hc>
 grid:  filename
                           ./croco_grd.nc
 forcing: filename
@@ -186,5 +186,5 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
                         35  13  1  -1   30*T   20.0  15.0
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
-           <yr1>   <mo1>      4          <yr2>    <mo2>
+           <yr1>   <mo1>      <rpd>          <yr2>    <mo2>
           ./

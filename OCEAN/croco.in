@@ -35,9 +35,6 @@ initial: NRREC / filename
 restart:          NRST, NRPFRST / filename
                    720    -1
     CROCO_FILES/croco_rst.nc
-
-bhflux_ncfile: filename
-    CROCO_FILES/croco_bhf.nc
     
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T      72     0
