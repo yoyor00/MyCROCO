@@ -16,6 +16,9 @@ export wavnx=41 ; export wavny=42
 export forcin=() # forcing file(s) list (leave empty if none)
 export forcww3=() # name of ww3_prnc.inp extension/input file
 
+#boundary files
+export bouncin= # prefix for boundary files (leave empty is none)
+
 # output settings
 export flagout="TRUE" # Keep (TRUE) or not (FALSE) ww3 full output binary file (out_grd.ww3)
 export wav_int=21600            # output interval (s)

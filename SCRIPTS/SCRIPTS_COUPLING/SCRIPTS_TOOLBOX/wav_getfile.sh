@@ -43,4 +43,13 @@ for k in `seq 0 $(( ${lengthforc} - 1))` ; do
     cpfile ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]} ./
  done
 
+if [ ! -z $bouncin ]; then
+    echo "link ww3 boundary files"
+    echo "ln -sf ${WAV_FILES_DIR}/$bouncin* ./"
+    ${io_getfile} ${WAV_FILES_DIR}/$bouncin* ./
+
+    echo "cp -f ${WAV_NAM_DIR}/ww3_bounc.inp ./"
+    cpfile ${WAV_NAM_DIR}/ww3_bounc.inp ./
+fi
+
 cp ${WAV_FILES_DIR}/*.inp ./.
