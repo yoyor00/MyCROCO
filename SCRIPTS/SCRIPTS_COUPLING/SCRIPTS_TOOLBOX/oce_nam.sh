@@ -110,6 +110,7 @@ if [[ ${interponline} -eq 1 ]]; then
     rpd=$(( ${recpmth} / ${dayinmth}  ))
 else
     rpd=4
+fi
 #
 sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
     -e "s/<theta_s>/${ts}/g" -e "s/<theta_b>/${tb}/g" -e "s/<hc>/${hc}/g" \
