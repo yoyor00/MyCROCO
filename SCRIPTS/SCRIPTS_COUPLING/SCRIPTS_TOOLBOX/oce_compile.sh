@@ -25,7 +25,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     # MPI and Grid size
     sed -e "s/# define BENGUELA_LR/# define ${CEXPER}/g" \
         -e "s/# undef  MPI/# define  MPI/g" \
-        ./cppdefs.h > tmp$$
+        ./cppdefs.h.base > tmp$$
     mv tmp$$ cppdefs.h
     printf "\n\nReading grid size in ${OCE_FILES_DIR}/croco_grd.nc \n\n"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
@@ -36,7 +36,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     printf "\nGrid size is (in Lx X Ly X Nz ) : ${dimx}X${dimy}X${dimz}\n"
     #add new line for new conf in param.h
     sed -e "s/(LLm0=xx, MMm0=xx, N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
-        param.h > tmp$$
+        param.h.base > tmp$$
     mv tmp$$ param.h
     # update necessary things
     sed -e "s/NP_XI *= *[0-9]* *,/NP_XI=${NP_OCEX},/g" \
@@ -160,6 +160,8 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     time ./jobcomp >& log.compil
     [ "$?" -gt "0" ] && { printf "\nERROR while compiling CROCO.\n Please check ${PWD}/log.compil"; exit ; }
     mv croco croco.${RUNtype}
+    cp cppdefs.h cppdefs.h.${RUNtype}
+    cp param.h param.h.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox
     [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}

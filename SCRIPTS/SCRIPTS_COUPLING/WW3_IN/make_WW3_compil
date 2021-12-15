@@ -65,15 +65,13 @@ mycompil=Intel
 
 # define your switch extension to be used for compilation 
 # (see what is available in $ww3/bin or create one)
-# (some examples are given in $WW3_IN_DIR/inputs_ww3/)
-#my_switches=(frc_BENGUELA \
-#	     ow_BENGUELA \
-#	     aw_BENGUELA \
-#	     owa_BENGUELA)
-my_switches=(frc_BENGUELA \
-             ow_BENGUELA)
-# flag to copy switches if you have defined them on your local ww3_in/inputs_ww3 directory
-flag_copy_switches=0
+# (some examples are given in $WAV_NAM_DIR)
+my_switches=(frc \
+	     ow \
+	     aw \
+	     owa)
+# flag to copy switches if you have defined them on your local WAV_NAM_DIR directory
+flag_copy_switches=1
 
 # define the ww3 programs you want to compile 
 # make_MPI will compile all programs...
@@ -116,7 +114,7 @@ for k in `seq 0 $(( ${NB_switches} - 1))` ; do
 
     # Copy switch files if necessary
     if [ $flag_copy_switches == 1 ]; then
-        cp -f $WW3_IN_DIR/inputs_ww3/switch_$MYSWITCH .
+        cp -f $WAV_NAM_DIR/switch_$MYSWITCH .
     fi
     # Check if switch file is available
     if [ ! -e switch_$MYSWITCH ]; then

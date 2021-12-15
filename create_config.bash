@@ -311,6 +311,16 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
        cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
        cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
        cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
+# Edit start.m
+       sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
+           -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
+           ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
+       mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
+# Edit crocotools_param.h
+       sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
+           -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_HOME}/\';|g" \
+           ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
+       mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
@@ -534,5 +544,8 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
         fi
 	chmod 755 jobcomp
     fi
+    # 
+    cp -f ${MY_CROCO_DIR}/cppdefs.h ${MY_CROCO_DIR}/cppdefs.h.base
+    cp -f ${MY_CROCO_DIR}/param.h ${MY_CROCO_DIR}/param.h.base
 fi
 

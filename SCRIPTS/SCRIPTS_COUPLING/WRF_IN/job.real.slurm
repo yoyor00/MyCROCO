@@ -14,5 +14,5 @@ cd ${SLURM_SUBMIT_DIR}
 umask 022
 set -u
 
-./run_real.bash configure.namelist.real_CONFIG 8
+./run_real.bash configure.namelist.real 8
 

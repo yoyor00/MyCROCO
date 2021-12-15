@@ -16,6 +16,7 @@ sed -e "s/<wavdt>/${DT_WAV}/g" \
     -e "s/<wavdtPRO>/${DT_WW_PRO}/g"  -e "s/<wavdtREF>/${DT_WW_REF}/g"  -e "s/<wavdtSRC>/${DT_WW_SRC}/g"  \
     -e "s/<wavnx>/${wavnx}/g"   -e "s/<wavny>/${wavny}/g"  \
     -e "s/<hmin>/${hmin}/g" \
+    -e "s/<CEXPER>/${CEXPER}/g" \
     ${WAV_NAM_DIR}/ww3_grid.inp.base > ./ww3_grid.inp
 
  ## - Fill ww3_ounf.inp file -##

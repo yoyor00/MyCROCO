@@ -288,7 +288,7 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-CROCO_EOCE0 WRF_d01_EXT_d01_EOCE 1 <cpldt> 1 oce.nc EXPORTED
+CROCO_EOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 1 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> ocnt atmt LAG=<ocedt>
 R  0  R  0
 SCRIPR

@@ -4,4 +4,4 @@
 ############################ USER CHANGES ######################################
 ################################################################################
 #
-export CEXPER=BENGUELA  # Name of the experiment you are about to lauch
+export CEXPER=BENGUELA  # (max 30. CHAR) Name of the experiment you are about to lauch

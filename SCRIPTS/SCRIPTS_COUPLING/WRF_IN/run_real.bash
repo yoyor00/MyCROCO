@@ -6,14 +6,14 @@
 #
 # --------------------------------------------------
 #
-# Run : ./run_real.bash configure.namelist.real_CONFIG NBPROCS
+# Run : ./run_real.bash configure.namelist.real NBPROCS
 #
 # Usage : 
 #  - multiple nested domains (3 max currently)
 # 
 # Dependence : 
 #  - need namelist.input.base
-#  - read "configure.namelist.real_CONFIG" defining basic domain and 
+#  - read "configure.namelist.real" defining basic domain and 
 #    run parameters
 #  - Vtable : Vtable.AMIP or Vtable.GFS
 #  - Vtable : Vtable.SSTROMS     
@@ -270,6 +270,15 @@ sed -e "s/<interval_s>/${interval_s}/g"         \
     echo "   Then create namelist.input adding run, time and output settings     "
     echo " "
     lmonth=( 1 3 5 7 8 10 12 )
+
+# Remove heading 0 
+while [ `echo ${start_m} | cut -b 1` -eq 0 ]; do
+        start_m=`echo ${start_m} | cut -b 2-`
+done
+while [ `echo ${end_m} | cut -b 1` -eq 0 ]; do
+        end_m=`echo ${end_m} | cut -b 2-`
+done
+#
 for yy in `seq $start_y $end_y`; do
     [[ $yy == $start_y ]] && { mstart=$start_m ;} || { mstart=1 ;}
     [[ $yy == $end_y ]] && { mend=$end_m ;} || { mend=12 ;}
@@ -279,13 +288,13 @@ for yy in `seq $start_y $end_y`; do
         [[ $mm == 2 && $leapyear == 1 ]] && { maxendday=29 ;}
         [[ $mm == 2 && $leapyear == 0 ]] && { maxendday=28 ;}
 
-        [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ;} || { sday=1 ;}
-        [[ $yy == $end_y && $mm == $end_m ]] && { eday=$end_d ;} || { eday=$maxendday ;}
+        [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ; shour=$start_h;} || { sday=1 ; shour=00;}
+        [[ $yy == $end_y && $mm == $end_m ]] && { eday=$end_d ; ehour=$end_h ;} || { eday=$maxendday ; ehour=24;}
          
         sed -e "s/<yr1>/$yy/g"   -e "s/<yr2>/$yy/g"  \
             -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$mm/g"  \
             -e "s/<dy1>/$sday/g"   -e "s/<dy2>/$eday/g"  \
-            -e "s/<hr1>/00/g"   -e "s/<hr2>/24/g"  \
+            -e "s/<hr1>/$shour/g"   -e "s/<hr2>/$ehour/g"  \
             -e "s/<rst>/$rst/g"                    -e "s/<rst_int_h>/$rst_interval_h/g"   \
             -e "s/<his_int_h>/${his_interval_h}/g" -e "s/<his_nb_out>/${his_frames}/g"    \
             -e " s/<xtrm_int_m>/${diag_int_m}/g"    -e "s/<xtrm_nb_out>/${diag_frames}/g"  \
