@@ -2,7 +2,6 @@ title:
         Benguela LR Hindcast
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 240       720      60      1
-
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1         1000         0.01
 S-coord: THETA_S,   THETA_B,    Hc (m)
@@ -45,14 +44,14 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    40*T
-auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen Bhfl Bwfl HEL
+auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                              F   F     T   F    T    F   F    F       F       T   T    T     F      F     T    T    T    T    T   10*T
 gls_history_fields:   TKE  GLS  Lscale
                       T    T    T
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   40*T
-auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Bvf Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen Bhfl Bwfl HEL
+auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Bvf Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                      F   T     T   F    T    F    F    F     F      T   T    T     F     F     T   T    T     T    T   10*T
 gls_averages:   TKE  GLS  Lscale
                 T    T    T
