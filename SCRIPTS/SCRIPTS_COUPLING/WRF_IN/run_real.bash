@@ -286,6 +286,10 @@ for yy in `seq $start_y $end_y`; do
     for mm in `seq $mstart $mend`; do      
         [[ $yy == $start_y && $mm == $start_m ]] && { sday=$start_d ; shour=$start_h;} || { sday=01 ; shour=00;}
         [[ $yy == $end_y && $mm == $end_m ]] && { emth=$mm ; eday=$end_d ; ehour=$end_h ;} || { emth=$(( $mm + 1 )) ; eday=01 ; ehour=00;}
+
+        if [ $yy == $end_y ] && [ $mm == $end_m ] && [ $eday == $sday ] && [ $ehour == $shour ] ; then
+                exit
+        fi
          
         sed -e "s/<yr1>/$yy/g"   -e "s/<yr2>/$yy/g"  \
             -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$emth/g"  \

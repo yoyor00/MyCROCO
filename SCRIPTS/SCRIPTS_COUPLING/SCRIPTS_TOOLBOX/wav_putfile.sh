@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------
 
 year=$( printf "%04d"   ${YEAR_BEGIN_JOB} )
-month$( printf "%02d"  ${MONTH_BEGIN_JOB} )
+month=$( printf "%02d"  ${MONTH_BEGIN_JOB} )
 
 
 # WW3 format to netcdf
