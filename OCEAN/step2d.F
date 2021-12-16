@@ -1176,11 +1176,11 @@ C$OMP BARRIER
 #ifdef MRL_WCI
       do j=Jstr,Jend
         do i=IstrU,Iend
-          vstu = 0.25*( vst2d(i,j) + vst2d(i,j+1)
+          vstu = 0.25*( vst2d(i  ,j)+vst2d(i  ,j+1)
      &                 +vst2d(i-1,j)+vst2d(i-1,j+1) )
-          dudx = 0.5*( urhs(i+1,j)-urhs(i-1,j) )
-          dvdx = 0.5*( vrhs(i,j) - vrhs(i-1,j)
-     &                 +vrhs(i,j+1) - vrhs(i-1,j+1) )
+          dudx = 0.50*( urhs(i+1,j)-urhs(i-1,j  ) )
+          dvdx = 0.50*( vrhs(i  ,j)-vrhs(i-1,j  )
+     &                 +vrhs(i,j+1)-vrhs(i-1,j+1) )
           rubar(i,j) = rubar(i,j) + 0.5*on_u(i,j)*
      &                      ( Drhs(i-1,j)+Drhs(i,j) )
      &               *( ust2d(i,j)*dudx + vstu*dvdx )
@@ -1189,11 +1189,11 @@ C$OMP BARRIER
 
       do j=JstrV,Jend
         do i=Istr,Iend
-          ustv = 0.25*( ust2d(i,j) + ust2d(i+1,j)
+          ustv = 0.25*( ust2d(i,j  )+ust2d(i+1,j)
      &                 +ust2d(i,j-1)+ust2d(i+1,j-1) )
-          dude = 0.5*( urhs(i,j) - urhs(i,j-1)
-     &                 +urhs(i+1,j) - urhs(i+1,j-1) )
-          dvde = 0.5*( vrhs(i,j+1)-vrhs(i,j-1) )
+          dude = 0.50*( urhs(i  ,j)-urhs(i  ,j-1)
+     &                 +urhs(i+1,j)-urhs(i+1,j-1) )
+          dvde = 0.50*( vrhs(i,j+1)-vrhs(i  ,j-1) )
           rvbar(i,j) = rvbar(i,j) + 0.5*om_v(i,j)*
      &                      ( Drhs(i,j-1)+Drhs(i,j) )
      &               *( ustv*dude + vst2d(i,j)*dvde )
@@ -1375,6 +1375,9 @@ C$OMP BARRIER
           DUnew=DUnew*umask_wet(i,j)
 #endif
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
+#ifdef MRL_WCI
+          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+#endif
 #ifdef SOLVE3D
           DU_avg1(i,j,nnew)=DU_avg1(i,j,nnew) +cff1*on_u(i,j)*( DUnew
 # ifdef MRL_WCI
@@ -1415,6 +1418,9 @@ C$OMP BARRIER
           DVnew=DVnew*vmask_wet(i,j)
 #endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
+#ifdef MRL_WCI
+          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+#endif
 #ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
 # ifdef MRL_WCI

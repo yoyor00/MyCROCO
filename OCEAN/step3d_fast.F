@@ -2053,8 +2053,6 @@ C$OMP END MASTER
 
 # else /* NBQ */
 
-
-
 !
 !********************************************************************
 !
@@ -2114,9 +2112,6 @@ C$OMP END MASTER
 
 # endif /* NBQ */
 
-
-
-
 !
 !-----------------------------------------------------------------------
 ! Apply point sources for river runoff simulations
@@ -2168,9 +2163,9 @@ C$OMP END MASTER
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DU_nbq(i,j)=DU_nbq(i,j)*umask_wet(i,j)
-!#  ifdef MRL_WCI
-!          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
-!#  endif
+#  ifdef MRL_WCI
+          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+#  endif
           do k=1,N
             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
           enddo
@@ -2183,9 +2178,9 @@ C$OMP END MASTER
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DV_nbq(i,j)=DV_nbq(i,j)*vmask_wet(i,j)
-!#  ifdef MRL_WCI
-!          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
-!#  endif
+#  ifdef MRL_WCI
+          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+#  endif
           do k=1,N
             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
           enddo
