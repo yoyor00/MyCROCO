@@ -318,7 +318,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
        mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
 # Edit crocotools_param.h
        sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
-           -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_HOME}/\';|g" \
+           -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
            ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
        mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
     fi
@@ -493,7 +493,7 @@ if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[
 
     [[ ${options[@]} =~ "oce-prod" ]] && printf "export OCE_EXE_DIR=${MY_CONFIG_HOME}/CROCO_IN\n" >> mynamelist.sh
     [[ ${options[@]} =~ "atm" ]] && printf "export ATM_EXE_DIR=\${ATM}/exe_coupled\n" >> mynamelist.sh
-    [[ ${options[@]} =~ "wav" ]] && printf "export WAV_EXE_DIR=\${WAV}/exe_\n" >> mynamelist.sh
+    [[ ${options[@]} =~ "wav" ]] && printf "export WAV_EXE_DIR=\${WAV}/exe_\${RUNtype}\n" >> mynamelist.sh
     [[ ${options[@]} =~ "toy" ]] && printf "export TOY_EXE_DIR=${MY_CONFIG_HOME}/TOY_IN\n" >> mynamelist.sh
     [[ ${options[@]} =~ "xios" ]] && printf "export XIOS_EXE_DIR=\${XIOS}/bin\n" >> mynamelist.sh
 

@@ -148,9 +148,9 @@ wave_history_fields: hrm  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
 wave_average_fields: hrm  frq  action  k_xi  k_eta  eps_b  eps_d Erol eps_r
                      T    T    T       T     T      20*F
 wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
-                      20*F
+                      20*T
 wci_average_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
-                      20*F
+                      20*T
 
 sediments: input file
            sediment.in
