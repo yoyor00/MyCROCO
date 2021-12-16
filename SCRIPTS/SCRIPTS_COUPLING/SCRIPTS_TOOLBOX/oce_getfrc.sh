@@ -46,11 +46,11 @@ if [ ${interponline} -eq 1 ]; then
     done
 
 # Check if next month is need when job duration is smaller than a month
-    mdy=$( valid_date MONTH_END_JOB $(( DAY_END_JOB +1 )) YEAR_END_JOB )
+    mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} +1 )) ${YEAR_END_JOB} )
     LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
     if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${MONTH_BEG_JOB} ]]; then
-        mdy=$( valid_date $(( $MONTH_BEGIN_JOB + 1 )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
+        mdy=$( valid_date $(( ${MONTH_BEGIN_JOB} + 1 )) ${DAY_BEGIN_JOB} ${YEAR_BEGIN_JOB} )
         cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
         cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
         for varname in ${vnames} ; do
