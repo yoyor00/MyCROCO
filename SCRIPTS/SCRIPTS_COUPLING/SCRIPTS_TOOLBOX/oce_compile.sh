@@ -96,7 +96,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
         sed -e "s/#  *define  *BULK_FLUX/# undef BULK_FLUX/g"  cppdefs.h > tmp$$
     fi
 
-    if [[ ${bry_ext} == *'bry'* ]]; then
+    if [[ ${bdy_ext} == *'bry'* ]]; then
         sed -e "s/#  *define  *CLIMATOLOGY/# undef CLIMATOLOGY/g" \
 	    -e "s/#  *undef *FRC_BRY/# define FRC_BRY/g" \
 	cppdefs.h > tmp$$

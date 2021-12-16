@@ -21,7 +21,7 @@ export AGRIFZ=0
 export AGRIF_2WAY="FALSE"
 # forcing files
 export ini_ext='ini_SODA' # ini extension file (ini_SODA,...)
-export bry_ext='bry_SODA' # bry extension file (clm,bry_SODA,...)
+export bdy_ext='bry_SODA' # bry extension file (clm_SODA,bry_SODA,...)
 export surfrc_flag="TRUE" # Flag if surface forcing is needed (FALSE if coupling with the atmosphere, TRUE otherwise)
 export interponline=0 # switch (1=on, 0=off) for online surface interpolation. Only works with MONTHLY input files!
 export frc_ext='blk_CFSR' # surface forcing extension(blk_CFSR, frc_CFSR,...). If interponline=1 just precise the type (AROME, ECMWF, CFSR,...).

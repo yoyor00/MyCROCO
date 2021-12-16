@@ -59,10 +59,14 @@ do
 # change some namelist values
 #-------
 # Change in endding date for online interpolation
+    mdy=$( valid_date MONTH_END_JOB $(( DAY_END_JOB +1 )) YEAR_END_JOB )
+    LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
-    mdy=$( valid_date $(( $MONTH_END_JOB + 1 )) $DAY_END_JOB $YEAR_END_JOB )
-    end_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-    end_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+    if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${MONTH_BEG_JOB} ]]; then
+        mdy=$( valid_date $(( $MONTH_END_JOB + 1 )) $DAY_END_JOB $YEAR_END_JOB )
+        end_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+	end_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+    fi
 #
 
     printf "Computing the origin_date from start_date and scrum_time\n"
