@@ -23,13 +23,14 @@ if [ ${interponline} -eq 1 ]; then
     fi
     # scrum_time of ini file
     tstartinsec=$( echo $( ncdump -v scrum_time ${filefrom} | grep 'scrum_time =' | cut -d '=' -f 2| cut -d ' ' -f 2 ))
-    tstartinsec=$(( ${tstartinsec} + ${DT_OCE}/2)) # =0.5*dt like in croco 
+    tstartinsec=`echo "scale=2; ${tstartinsec} + ${DT_OCE}*0.5" | bc ` # =0.5*dt like in croco 
     # Find first time value in forcing file
     fieldname=$( echo "$vnames" | awk '{print $1}' )
     ncdump -v time "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -n 'time =' > tmp$$
-    tstartfrc=$(( $( sed -n -e "3 p" tmp$$ | cut -d '=' -f 2 | cut -d ',' -f 1 ) * 86400 ))
+    ns=$( ncdump -v time ${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc | grep -c 'time =' )
+    tstartfrc=`echo "scale=2; $( sed -n -e "${ns} p" tmp$$ | cut -d '=' -f 2 | cut -d ',' -f 1 ) * 86400" | bc`
     rm -rf tmp$$
-    [[ ${tstartinsec} -le ${tstartfrc} ]] && { echo "Previous month is needed!"; loopstrt=-1 ;} || { loopstrt=0 ;}      
+    [[ $( echo "${tstartinsec}<=${tstartfrc}" | bc )>0 ]] && { echo "Previous month is needed!"; loopstrt=-1 ;} || { loopstrt=0 ;}      
 #
     for i in `seq ${loopstrt} $(( ${JOB_DUR_MTH} ))`; do
         [ ${i} -eq -1 ] && printf "Adding link to the previous month (for temporal interpolation)\n"
