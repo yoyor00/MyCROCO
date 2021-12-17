@@ -661,6 +661,7 @@
 #ifdef BULK_FLUX
 # ifdef ONLINE
 #  define CUBIC_INTERP
+#  undef  BULK_MONTH_1DIGIT
 # endif
 # ifdef BULK_ECUMEV0
 #  define BULK_GUSTINESS

@@ -64,7 +64,11 @@
         ! Filename
         bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))//
      &  blk_vname(1,bvar)(1:lenstr(blk_vname(1,bvar)))//
+# if defined BULK_MONTH_1DIGIT
      &  '_Y'//bulkyear//'M'//bulkmonth1//'.nc'
+# else
+     &  '_Y'//bulkyear//'M0'//bulkmonth1//'.nc'
+# endif
       else
         ! Variable to add the mont in the name (month>10)
         write(unit=bulkmonth2,fmt='(I2)') bulkmonthnum(bvar) 
