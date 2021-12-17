@@ -108,19 +108,19 @@ if [[ ${interponline} -eq 1 ]]; then
     [[ ${localmth} == 2 && $leapyear == 0 ]] && { dayinmth=28 ;}
     if [[ ${frc_ext} == "ECMWF" ]]; then
         fieldname='T2M'
-        online_frc=./
+        online_frc="./"
     elif [[ ${frc_ext} == "AROME" ]];then
         fieldname='AROME'
         online_frc=${fieldname}_Y${cur_Y}M${cur_M}.nc
     else
         fieldname='Temperature_height_above_ground'
-        online_frc=./
+        online_frc="./"
     fi
     recpmth=$( ncdump -h "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -m 1 'time =' | cut -d '=' -f 2 | cut -d ";" -f 1 )
     if [ $recpmth == 'UNLIMITED' ] ; then
         recpmth=$( ncdump -h "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -m 1 'time =' | cut -d '=' -f 2 | cut -d "(" -f 2 | cut -d "c" -f 1 )
     fi
-    echo $recpmth
+    #echo $recpmth
     rpd=$(( ${recpmth} / ${dayinmth}  ))
 else
     rpd=4
@@ -130,7 +130,7 @@ sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<oce
     -e "s/<theta_s>/${ts}/g" -e "s/<theta_b>/${tb}/g" -e "s/<hc>/${hc}/g" \
     -e "s/<oce_nrst>/${OCE_NTIMES}/g" \
     -e "s|<oce_nhis>|$(( ${oce_his_sec}/ ${DT_OCE_2} ))|g" -e "s|<oce_navg>|$(( ${oce_avg_sec}/${DT_OCE_2} ))|g" \
-    -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${MONTH_BEGIN_JOB}/g" -e "s/<rpd>/${rpd}/g" -e "s/<online_frc>/${online_frc}/g" \
+    -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${MONTH_BEGIN_JOB}/g" -e "s/<rpd>/${rpd}/g" -e "s|<online_frc>|${online_frc}|g" \
     -e "s/<dstart>/${cur_D}/g"  -e "s/<mstart>/${cur_M}/g" -e "s/<ystart>/${cur_Y}/g" \
     -e "s/<dorig>/${or_D}/g"  -e "s/<morig>/${or_M}/g" -e "s/<yorig>/${or_Y}/g" \
     -e "s/<yr2>/${end_Y}/g"             -e "s/<mo2>/${end_M}/g"           \
