@@ -5,11 +5,9 @@ module load $ncomod
 if [[ ${bdy_ext} == *'clm'* ]]; then
     bryfile="croco_clm.nc"
     timevar="tclm_time"
-    vartopass=20 # Nb of var to pass to arrive on 2-3d var. Need to be done online...
 else
     bryfile="croco_bry.nc"
     timevar="bry_time"
-    vartopass=21
 fi
 
 for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
@@ -52,7 +50,20 @@ for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
 
       string=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep double )
       ns=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep -c double )
-
+# Find how many var to pass before arriving on 2-3d var
+      echo "$( ncdump -h ${OCE_FILES_DIR}/croco_${bry_ext}_Y${cur_Y}M${cur_M}.nc  | grep double )"  > text.tmp
+      cnt=0
+      while [[ $cnt -le $ns ]]; do
+          cnt=$(( $cnt +1 ))
+          line=$( sed -n "${cnt}p" text.tmp )
+          tmpval=$( echo "$line" | grep ',' | wc -l )
+          if [[ ${tmpval} -gt 0 ]]; then
+              break
+          fi
+      done
+      rm -rf text.tmp
+      vartopass=$(( $cnt - 1 ))
+#
       for j in `seq ${vartopass} $ns`; do
           if [ ${j} -eq ${vartopass} ] ; then
               var=${timevar}
