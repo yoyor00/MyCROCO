@@ -660,8 +660,11 @@
 */
 #ifdef BULK_FLUX
 # ifdef ONLINE
-#  define CUBIC_INTERP
-#  undef  BULK_MONTH_1DIGIT
+#  define CUBIC_INTERP  
+#  ifdef BULK_MONTH_1DIGIT   /* Check if options are defined in cppdefs.h */
+#  else
+#   undef BULK_MONTH_1DIGIT
+#  endif
 # endif
 # ifdef BULK_ECUMEV0
 #  define BULK_GUSTINESS
