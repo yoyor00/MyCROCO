@@ -27,6 +27,7 @@ for nn in $( seq 0 ${AGRIFZ} ); do
         agrif_ext=""
     fi
     [ ${tide_flag} == "TRUE" ] && ${io_getfile} ${OCE_FILES_DIR}/croco_frc.nc${agrif_ext} ./ 
+    [ ${river_flag} == "TRUE" ] && ${io_getfile} ${OCE_FILES_DIR}/croco_runoff.nc${agrif_ext} ./
 done
 
           
