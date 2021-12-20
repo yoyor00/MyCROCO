@@ -127,12 +127,14 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     if [ ${river_flag} == "TRUE" ]; then
         sed -e "s/#  *undef  *PSOURCE/# define PSOURCE/g" \
             -e "s/#  *undef  *PSOURCE_NCFILE/# define PSOURCE_NCFILE/g" \
+            -e "s/#  *undef *PSOURCE_NCFILE_TS/#  define PSOURCE_NCFILE_TS/g" \
             cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
         printf "\n Tides are taken into account\n"
     else
         sed -e "s/#  *define  *PSOURCE/# undef PSOURCE/g"\
             -e "s/#  *define  *PSOURCE_NCFILE/# undef PSOURCE_NCFILE/g" \
+            -e "s/#  *define  *PSOURCE_NCFILE_TS/#  undef PSOURCE_NCFILE_TS/g" \
              cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
     fi
