@@ -106,24 +106,28 @@ if [[ ${interponline} -eq 1 ]]; then
     [[ ${lmonth[@]} =~ ${localmth} ]] && { dayinmth=31 ;} || { dayinmth=30 ;}
     [[ ${localmth} == 2 && $leapyear == 1 ]] && { dayinmth=29 ;}
     [[ ${localmth} == 2 && $leapyear == 0 ]] && { dayinmth=28 ;}
-    if [[ ${frc_ext} == "ECMWF" ]]; then
-        fieldname='T2M'
-        online_frc="./"
-    elif [[ ${frc_ext} == "AROME" ]];then
+
+    if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]];then
         fieldname='AROME'
-        online_frc=${fieldname}_Y${cur_Y}M${cur_M}.nc
-    else
-        fieldname='Temperature_height_above_ground'
-        online_frc="./"
+        online_frc=${frc_ext}
+        echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.in if not)"
+        rpd=24
+    else 
+        if [[ ${frc_ext} == "ECMWF" ]]; then
+            fieldname='T2M'
+            online_frc="./"
+        else
+            fieldname='Temperature_height_above_ground'
+            online_frc="./"
+        fi
+        recpmth=$( ncdump -h "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -m 1 'time =' | cut -d '=' -f 2 | cut -d ";" -f 1 )
+        if [ $recpmth == 'UNLIMITED' ] ; then
+            recpmth=$( ncdump -h "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -m 1 'time =' | cut -d '=' -f 2 | cut -d "(" -f 2 | cut -d "c" -f 1 )
+        fi
+            rpd=$(( ${recpmth} / ${dayinmth}  ))
     fi
-    recpmth=$( ncdump -h "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -m 1 'time =' | cut -d '=' -f 2 | cut -d ";" -f 1 )
-    if [ $recpmth == 'UNLIMITED' ] ; then
-        recpmth=$( ncdump -h "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -m 1 'time =' | cut -d '=' -f 2 | cut -d "(" -f 2 | cut -d "c" -f 1 )
-    fi
-    #echo $recpmth
-    rpd=$(( ${recpmth} / ${dayinmth}  ))
 else
-    rpd=4
+            rpd=4
 fi
 #
 sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
