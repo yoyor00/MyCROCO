@@ -51,7 +51,7 @@ for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
       string=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep double )
       ns=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep -c double )
 # Find how many var to pass before arriving on 2-3d var
-      echo "$( ncdump -h ${OCE_FILES_DIR}/croco_${bry_ext}_Y${cur_Y}M${cur_M}.nc  | grep double )"  > text.tmp
+      echo "$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc  | grep double )"  > text.tmp
       cnt=0
       while [[ $cnt -le $ns ]]; do
           cnt=$(( $cnt +1 ))

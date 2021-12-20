@@ -186,4 +186,4 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
            <yr1>   <mo1>      <rpd>          <yr2>    <mo2>
-          ./<online_frc>
+           <online_frc>

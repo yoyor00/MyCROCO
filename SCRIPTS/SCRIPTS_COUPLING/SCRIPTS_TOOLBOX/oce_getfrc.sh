@@ -2,60 +2,63 @@
 
 #
 if [ ${interponline} -eq 1 ]; then 
-
-    if [ ${frc_ext} == "ECMWF" ]; then
-        vnames='T2M SSTK U10M V10M Q STR STRD SSR TP EWSS NSSS'
-    elif [ ${frc_ext} == "AROME" ]; then
-        vnames='AROME'
+    if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]]; then
+        vnames="${frc_ext}"
+        ${io_getfile} ${OCE_FILES_ONLINEDIR}/${frc_ext} .
     else
-        vnames='Temperature_height_above_ground Specific_humidity Precipitation_rate Downward_Short-Wave_Rad_Flux_surface Upward_Short-Wave_Rad_Flux_surface Downward_Long-Wave_Rad_Flux Upward_Long-Wave_Rad_Flux_surface U-component_of_wind V-component_of_wind'
-    fi
+        if [ ${frc_ext} == "ECMWF" ]; then
+            vnames='T2M SSTK U10M V10M Q STR STRD SSR TP EWSS NSSS'
+        else
+            vnames='Temperature_height_above_ground Specific_humidity Precipitation_rate Downward_Short-Wave_Rad_Flux_surface Upward_Short-Wave_Rad_Flux_surface Downward_Long-Wave_Rad_Flux Upward_Long-Wave_Rad_Flux_surface U-component_of_wind V-component_of_wind'
+        fi
 #    
-    printf "Creating link to data for the job duration\n"
+        printf "Creating link to data for the job duration\n"
 #          
-    echo "Checking if Previous month is needed"
-    cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
-    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
-    if [[ ${RESTART_FLAG} == "FALSE" ]]; then
-        filefrom="${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc"
-    else
-        filefrom="${RESTDIR_IN}/croco_rst_${DATE_END_JOBm1}.nc"
-    fi
-    # scrum_time of ini file
-    tstartinsec=$( echo $( ncdump -v scrum_time ${filefrom} | grep 'scrum_time =' | cut -d '=' -f 2| cut -d ' ' -f 2 ))
-    tstartinsec=$(( ${tstartinsec} + ${DT_OCE}/2)) # =0.5*dt like in croco 
-    # Find first time value in forcing file
-    fieldname=$( echo "$vnames" | awk '{print $1}' )
-    ncdump -v time "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -n 'time =' > tmp$$
-    tstartfrc=$(( $( sed -n -e "3 p" tmp$$ | cut -d '=' -f 2 | cut -d ',' -f 1 ) * 86400 ))
-    rm -rf tmp$$
-    [[ ${tstartinsec} -le ${tstartfrc} ]] && { echo "Previous month is needed!"; loopstrt=-1 ;} || { loopstrt=0 ;}      
+        echo "Checking if Previous month is needed"
+        cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+        cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+        if [[ ${RESTART_FLAG} == "FALSE" ]]; then
+            filefrom="${OCE_FILES_DIR}/croco_${ini_ext}_Y${cur_Y}M${cur_M}.nc"
+        else
+            filefrom="${RESTDIR_IN}/croco_rst_${DATE_END_JOBm1}.nc"
+        fi
+        # scrum_time of ini file
+        tstartinsec=$( echo $( ncdump -v scrum_time ${filefrom} | grep 'scrum_time =' | cut -d '=' -f 2| cut -d ' ' -f 2 ))
+        tstartinsec=`echo "scale=2; ${tstartinsec} + ${DT_OCE}*0.5" | bc ` # =0.5*dt like in croco 
+        # Find first time value in forcing file
+        fieldname=$( echo "$vnames" | awk '{print $1}' )
+        ncdump -v time "${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc" | grep -n 'time =' > tmp$$
+        ns=$( ncdump -v time ${OCE_FILES_ONLINEDIR}/${fieldname}_Y${cur_Y}M${cur_M}.nc | grep -c 'time =' )
+        tstartfrc=`echo "scale=2; $( sed -n -e "${ns} p" tmp$$ | cut -d '=' -f 2 | cut -d ',' -f 1 ) * 86400" | bc`
+        rm -rf tmp$$
+        [[ $( echo "${tstartinsec}<=${tstartfrc}" | bc )>0 ]] && { echo "Previous month is needed!"; loopstrt=-1 ;} || { loopstrt=0 ;}      
 #
-    for i in `seq ${loopstrt} $(( ${JOB_DUR_MTH} ))`; do
-        [ ${i} -eq -1 ] && printf "Adding link to the previous month (for temporal interpolation)\n"
-        [ ${i} -eq ${JOB_DUR_MTH} ] && printf "Adding link to the following month (for temporal interpolation)\n"
+        for i in `seq ${loopstrt} $(( ${JOB_DUR_MTH} ))`; do
+            [ ${i} -eq -1 ] && printf "Adding link to the previous month (for temporal interpolation)\n"
+            [ ${i} -eq ${JOB_DUR_MTH} ] && printf "Adding link to the following month (for temporal interpolation)\n"
+ 
+            mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
+            cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+            cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
 
-        mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
-        cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-        cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
-
-        for varname in ${vnames} ; do
-            [[ ! -f "${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc" ]] && { echo "File ${varname}_Y${cur_Y}M${cur_M}.nc is missing for online interpolation, we stop..." ; exit ;}
-            ${io_getfile} ${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc ./
+            for varname in ${vnames} ; do
+                [[ ! -f "${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc" ]] && { echo "File ${varname}_Y${cur_Y}M${cur_M}.nc is missing for online interpolation, we stop..." ; exit ;}
+                ${io_getfile} ${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc ./
+            done
         done
-    done
 
-# Check if next month is need when job duration is smaller than a month
-    mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} +1 )) ${YEAR_END_JOB} )
-    LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
+    # Check if next month is need when job duration is smaller than a month
+        mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} +1 )) ${YEAR_END_JOB} )
+        LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
-    if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${MONTH_BEG_JOB} ]]; then
-        mdy=$( valid_date $(( ${MONTH_BEGIN_JOB} + 1 )) ${DAY_BEGIN_JOB} ${YEAR_BEGIN_JOB} )
-        cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-        cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
-        for varname in ${vnames} ; do
-            ${io_getfile} ${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc ./
-        done
+        if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${MONTH_BEG_JOB} ]]; then
+            mdy=$( valid_date $(( ${MONTH_BEGIN_JOB} + 1 )) ${DAY_BEGIN_JOB} ${YEAR_BEGIN_JOB} )
+            cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+            cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+            for varname in ${vnames} ; do
+                ${io_getfile} ${OCE_FILES_ONLINEDIR}/${varname}_Y${cur_Y}M${cur_M}.nc ./
+            done
+        fi
     fi
 #
 else

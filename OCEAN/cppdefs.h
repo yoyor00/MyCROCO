@@ -310,6 +310,11 @@
 #  define EXACT_RESTART
 #  undef RVTK_DEBUG_ADVANCED
 #  define XXXRVTK_DEBUG_READ
+#  define BULK_MONTH_1DIGIT                      
+# endif
+!    RVTK test (Restartability or Parallel reproducibility)                
+# if defined RVTK_DEBUG && defined BULK_FLUX && defined ONLINE
+#  define BULK_MONTH_1DIGIT
 # endif
 /*
 !                        Diagnostics
