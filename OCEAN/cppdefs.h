@@ -1314,7 +1314,7 @@
 # ifdef GRANDPOPO
 #  define RIP_TOPO_2D
 # endif
-# undef ANA_TIDES
+# undef  ANA_TIDES
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
@@ -1357,6 +1357,7 @@
 #  define WAVE_ROLLER
 #  define WAVE_FRICTION
 #  define WAVE_STREAMING
+#  define WAVE_BREAK_SWASH
 #  define MRL_CEW
 #  ifdef RIP_TOPO_2D
 #   define WAVE_RAMP
