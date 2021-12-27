@@ -603,7 +603,7 @@
    for passive/biology/sediment tracers 
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
-                            || SUBSTANCE       || defined MUSTANG
+                            || defined SUBSTANCE || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
                       /*     USGS Sediment model     */
