@@ -264,14 +264,16 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
-
-!$$$      start_date_run = tool_sectodat(start_time+origin_date_in_sec)
-!$$$      READ(start_date_run(1:2),fmt='(i2)') start_day
-!$$$      READ(start_date_run(4:5),fmt='(i2)') start_month
-!$$$      READ(start_date_run(7:10),fmt='(i4)') start_year
-!$$$      READ(start_date_run(12:13),fmt='(i2)') start_hour
-!$$$      READ(start_date_run(15:16),fmt='(i2)') start_minute
-!$$$      READ(start_date_run(18:19),fmt='(i2)') start_second
+      
+#if defined XIOS && defined START_DATE
+      start_date_run = tool_sectodat(start_time+origin_date_in_sec)
+      READ(start_date_run(1:2),fmt='(i2)') start_day
+      READ(start_date_run(4:5),fmt='(i2)') start_month
+      READ(start_date_run(7:10),fmt='(i4)') start_year
+      READ(start_date_run(12:13),fmt='(i2)') start_hour
+      READ(start_date_run(15:16),fmt='(i2)') start_minute
+      READ(start_date_run(18:19),fmt='(i2)') start_second
+# endif
 
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then
