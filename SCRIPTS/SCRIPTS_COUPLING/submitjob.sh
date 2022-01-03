@@ -52,7 +52,15 @@ fi
 # create job and submit it
 #-------------------------------------------------------------------------------
 
-[ ${USE_OCE}  -eq 1 ] && TOTOCE=$(( $NP_OCEX * $NP_OCEY )) || TOTOCE=0
+if [ ${USE_OCE}  -eq 1 ]; then
+    if [[ ${MPI_NOLAND} == "TRUE" ]]; then
+        TOTOCE=${MY_NODES}
+    else
+        TOTOCE=$(( $NP_OCEX * $NP_OCEY )) 
+   fi
+else
+    TOTOCE=0
+fi
 [ ${USE_ATM}  -eq 1 ] && TOTATM=$NP_ATM  || TOTATM=0
 [ ${USE_WAV}  -eq 1 ] && TOTWAV=$NP_WAV  || TOTWAV=0
 [ ${USE_TOY}  -eq 1 ] && { for k in `seq 0 $(( ${nbtoy} - 1))`; do TOTTOY+=$NP_TOY ; done;}  || TOTTOY=0

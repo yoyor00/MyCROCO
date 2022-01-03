@@ -19,6 +19,11 @@ export hmin=75; # minimum water depth in CROCO, delimiting coastline in WW3
 # domains
 export AGRIFZ=0
 export AGRIF_2WAY="FALSE"
+
+# MPI_NOLAND
+export MPI_NOLAND="FALSE"
+export MY_NODES=18 # ONLY if MPI_NOLAND is "TRUE". It replaces NP_OCEX*NP_OCEY
+
 # forcing files
 export ini_ext='ini_SODA' # ini extension file (ini_SODA,...)
 export bdy_ext='bry_SODA' # bry extension file (clm_SODA,bry_SODA,...)

@@ -9,7 +9,11 @@ if [ ${USE_ATM} -eq 1 ]; then
 fi
 
 if [ ${USE_OCE} -eq 1 ]; then
-    echo "$(( ${NP_OCEX} * ${NP_OCEY} )) ./crocox croco.in" >> app.conf
+    if [[ ${MPI_NOLAND} == "TRUE" ]]; then
+        echo "${MY_NODES} ./crocox croco.in" >> app.conf
+    else
+        echo "$(( ${NP_OCEX} * ${NP_OCEY} )) ./crocox croco.in" >> app.conf
+    fi
     if [ ${USE_XIOS_OCE} -eq 1 ]; then
         echo "${NP_XIOS_OCE} ./xios_server.exe" >> app.conf
     fi

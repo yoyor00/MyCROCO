@@ -42,7 +42,15 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     sed -e "s/NP_XI *= *[0-9]* *,/NP_XI=${NP_OCEX},/g" \
         -e "s/NP_ETA *= *[0-9]* *,/NP_ETA=${NP_OCEY},/g" \
         param.h > tmp$$ 
-   mv tmp$$ param.h
+    mv tmp$$ param.h
+    if [[ ${MPI_NOLAND} == "TRUE" ]];
+      sed -e "s|NNODES=NP_XI\*NP_ETA|NNODES=${MY_NODES}|g" \
+          param.h > tmp$
+      mv tmp$$ param.h 
+
+      sed -e "s/# *undef  MPI_NOLAND/# define MPI_NOLAND/g" cppdefs.h > tmp$$
+      mv tmp$$ cppdefs.h
+    fi
 #
     sed -e "s/# undef  LOGFILE/# define  LOGFILE/g" cppdefs.h > tmp$$
     mv tmp$$ cppdefs.h
