@@ -62,6 +62,10 @@ sst_interval_m=360
 #
 #    nbvertlevel           : number of vertical levels
 #    nbmetlevel            : number of boundary data levels
+#
+#  Physics
+#    isftcflx              : Cd formulation for tropical storm application
+#                            default 0 / wave cpl 5  ( cf README)
 #-------------------------------------------------------------------------
 #
 dt=150
@@ -69,6 +73,7 @@ nbvertlevel=60
 nbmetlevel=38
 nbmetsoil=4
 ptop=5000
+isftcflx=0
 #
 # Parent domain (d01)
 dx=30

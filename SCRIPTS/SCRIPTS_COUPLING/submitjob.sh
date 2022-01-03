@@ -21,9 +21,9 @@ cd ${JOBDIR_ROOT}
 ls ${jobname}  > /dev/null  2>&1 
 if [ "$?" -eq "0" ] ; then
    if [ ${CHAINED_JOB} == "FALSE" ]; then 
-       printf "\n\n\n\n  Un fichier ${jobname} existe deja  dans  ${JOBDIR_ROOT} \n             => exit. \n\n  Nettoyer et relancer\n\n\n\n"; exit
+       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
    elif [ ${CHAINED_JOB} == "TRUE" ] && [ ${DATE_BEGIN_JOB} -eq ${DATE_BEGIN_EXP} ]; then
-       printf "\n\n\n\n  Un fichier ${jobname} existe deja  dans  ${JOBDIR_ROOT} \n             => exit. \n\n  Nettoyer et relancer\n\n\n\n"; exit
+       printf "\n\n\n\n  A ${jobname} file already exists in  ${JOBDIR_ROOT} \n             => exit. \n\n  Clean up and restart\n\n\n\n"; exit
    fi
       
 fi
@@ -100,7 +100,7 @@ printf "  RESTDIR_OUT: ${RESTDIR_ROOT}\n"
 printf "  JOBDIR: ${JOBDIR_ROOT}\n"  
 
 if [ "${SCRIPT_DEBUG}" == "TRUE" ] ; then
-   printf "\n\n\n\n  SCRIPT_DEBUG=${SCRIPT_DEBUG}  Mode script debug => Pas de soumission en queue\n\n\n\n"
+   printf "\n\n\n\n  SCRIPT_DEBUG=${SCRIPT_DEBUG}  Script debug mode => No submission in the queue\n\n\n\n"
 else 
     if [ ${CHAINED_JOB} == "TRUE" ]; then
 #        [[ ${RESTART_FLAG} == "FALSE" ]] && . ${SCRIPTDIR}/chained_job.sh
@@ -110,7 +110,7 @@ else
     fi 
 #
     if [ "${MODE_TEST}" != "" ] ; then
-        printf "\n\n\n\n  MODE_TEST=${MODE_TEST}  Mode test et non production => Pas d'enchainement de jobs.\n\n\n\n"
+        printf "\n\n\n\n  MODE_TEST=${MODE_TEST}  Test mode and non production => No job chaining.\n\n\n\n"
     fi
 fi
 

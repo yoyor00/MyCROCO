@@ -18,7 +18,7 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
     -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR="${CPL}"|g" \
     -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|g" \
-    -e "s|-O3|-O3|g" \
+    -e "s|-O3|-O2|g" \
     ./jobcomp > tmp$$
     mv tmp$$ jobcomp
 

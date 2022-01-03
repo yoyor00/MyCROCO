@@ -21,10 +21,12 @@ export auxinput4_interval=360 # interval ( in min ) of bottom input
 export nbmetsoil=4
 export nbmetlevel=38
 # fdda options
-switch_fdda=0
-nudge_coef=0.0003
-nudge_interval_m=360
-nudge_end_h=144
+export switch_fdda=0
+export nudge_coef=0.0003
+export nudge_interval_m=360
+export nudge_end_h=144
+# physics
+export isftcflx=0 # Cd formulation for tropical storm application (default 0, wave cpl =5)
 
 # output settings
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

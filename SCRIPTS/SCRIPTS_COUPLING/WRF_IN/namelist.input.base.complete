@@ -100,7 +100,7 @@
  tmn_update                          = 0,
  lagday                              = 150,
  sst_skin                            = 0,
- isftcflx                            = 0,
+ isftcflx                            = <isftcflx>,
  prec_acc_dt                         = 360.,360.,
  /
 

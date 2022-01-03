@@ -262,8 +262,9 @@ sed -e "s/<interval_s>/${interval_s}/g"         \
     -e "s/<i_str_d02>/${i_str_d02}/g"     -e "s/<i_str_d03>/${i_str_d03}/g"                                \
     -e "s/<j_str_d02>/${j_str_d02}/g"     -e "s/<j_str_d03>/${j_str_d03}/g"                                \
     -e "s/<coef_d02>/${refine_d02}/g"     -e "s/<coef_d03>/${refine_d03}/g"                                \
-    -e "s/<nudge_d01>/${nudge}/g"             -e "s/<nudge_coef>/${nudge_coef}/g"                              \
+    -e "s/<nudge_d01>/${nudge}/g"         -e "s/<nudge_coef>/${nudge_coef}/g"                              \
     -e "s/<nudge_end_h>/${nudge_end_h}/g" -e "s/<nudge_int_m>/${nudge_interval_m}/g"                       \
+    -e "s/<isftcflx>/${isftcflx}/g" \
     namelist.input.base.complete > namelist.input.prep.${domain_name}
  
     echo " "
