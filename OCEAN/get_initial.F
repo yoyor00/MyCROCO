@@ -273,7 +273,7 @@
       READ(start_date_run(12:13),fmt='(i2)') start_hour
       READ(start_date_run(15:16),fmt='(i2)') start_minute
       READ(start_date_run(18:19),fmt='(i2)') start_second
-# endif
+#endif
 
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then
