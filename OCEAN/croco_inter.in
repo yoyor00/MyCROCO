@@ -73,7 +73,7 @@ vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
                    0.d0    30*0.d0
 
 bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
-                 3.0d-04      0.d-3    0.d-3     1.d-4    1.d-1 
+                 0.0d-04      0.d-3    1.d-2     1.d-4    1.d-1 
 
 gamma2:
                  1.d0
@@ -268,8 +268,8 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
                                   croco_runoff.nc
                  2
-                         24  35  0  -1   30*T   20.0  15.0
-                         35  13  1  -1   30*T   20.0  15.0
+                         24  35  0  -1   T T   20.0  15.0
+                         35  13  1  -1   T T   20.0  15.0
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
            NYONLINE   NMONLINE      4             2011     3
