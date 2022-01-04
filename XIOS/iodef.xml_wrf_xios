@@ -17,13 +17,6 @@
 
       <variable_group id="parameters" >
         <variable id="using_server" type="bool">true</variable>
-#if defined OA_COUPLING && defined XIOS_ATM
-        <variable id="using_oasis"  type="bool">true</variable>
-	<variable id="oasis_codes_id" type="string">crocox,wrfexe</variable>
-#elif defined OA_COUPLING && !defined XIOS_ATM
-        <variable id="using_oasis"  type="bool">true</variable>
-        <variable id="oasis_codes_id" type="string">crocox</variable>
-#endif
         <variable id="info_level" type="int">0</variable>
         <variable id="print_file" type="bool">false</variable>
       </variable_group>
@@ -31,13 +24,10 @@
   </context>
 
   <!-- =========================================================================================================== -->
-  <!-- CROCO (and WRF) context                                                                                     -->
+  <!-- CROCO and/or WRF context                                                                                     -->
   <!-- The files context_croco.xml and context_wrf.xml are included here.                                          -->
   <!-- This file needs to exist during run time.                                                                   -->
   <!-- =========================================================================================================== -->
-#if defined OA_COUPLING && defined XIOS_ATM
   <context id="wrf_d01"  src="./context_wrf.xml"/>
-#endif
-  <context id="crocox"  src="./context_croco.xml"/>
 
 </simulation>
