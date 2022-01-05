@@ -388,7 +388,7 @@ if [[ ${options[@]} =~ "xios" ]] ; then
             $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh > $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
         chmod 755 $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
         if [[ ${options[@]} =~ "atm" ]]; then
-            sed -e "s|set -e|\set -e \n\n###### USER DEFINITION ######\nOCE_XIOS=\"TRUE\"\nATM_XIOS=\"TRUE\"\n##### END USER DEFINITION #####|" \
+            sed -e "s|set -e|\set -e \n\n###### USER DEFINITION ######\nOCE_XIOS=\"TRUE\"\nATM_XIOS=\"TRUE\"\nUSE_OASIS=\"TRUE\"\n##### END USER DEFINITION #####|" \
                 $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp > $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
              rm -f $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
         fi

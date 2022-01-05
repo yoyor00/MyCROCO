@@ -87,11 +87,15 @@ fi
 ## copy the various iodef.xml*, 
 if [[ -z ${OCE_XIOS+x} ]] && [[ -z ${ATM_XIOS+x} ]]; then
     \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_croco_xios $XIOS_NAM_DIR/iodef.xml
-elif [[ ${OCE_XIOS} == "TRUE" ]] && [[ ${ATM_XIOS} == "FALSE" ]]; then
-    \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_croco_xios_wrf_noxios $XIOS_NAM_DIR/iodef.xml
-elif [[ ${OCE_XIOS} == "FALSE" ]] && [[ ${ATM_XIOS} == "TRUE" ]]; then
+elif [[ ${OCE_XIOS} == "TRUE" ]] && [[ ${ATM_XIOS} == "FALSE" ]] && [[ ${USE_OASIS} == "FALSE" ]]; then
+    \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_croco_xios $XIOS_NAM_DIR/iodef.xml
+elif [[ ${OCE_XIOS} == "FALSE" ]] && [[ ${ATM_XIOS} == "TRUE" ]] && [[ ${USE_OASIS} == "FALSE" ]]; then
+    \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_wrf_xios $XIOS_NAM_DIR/iodef.xml
+elif [[ ${OCE_XIOS} == "FALSE" ]] && [[ ${ATM_XIOS} == "TRUE" ]] && [[ ${USE_OASIS} == "TRUE" ]]; then
     \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_croco_noxios_wrf_xios $XIOS_NAM_DIR/iodef.xml
-elif [[ ${OCE_XIOS} == "TRUE" ]] && [[ ${ATM_XIOS} == "TRUE" ]]; then
+elif [[ ${OCE_XIOS} == "TRUE" ]] && [[ ${ATM_XIOS} == "FALSE" ]] && [[ ${USE_OASIS} == "TRUE" ]]; then
+    \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_croco_xios_wrf_noxios $XIOS_NAM_DIR/iodef.xml
+elif [[ ${OCE_XIOS} == "TRUE" ]] && [[ ${ATM_XIOS} == "TRUE" ]] && [[ ${USE_OASIS} == "TRUE" ]]; then
     \cp -f  ${ROOT_DIR}/XIOS/iodef.xml_croco_xios_wrf_xios $XIOS_NAM_DIR/iodef.xml
 else
     echo "ERROR: iodef.xml for your case not found"

@@ -40,10 +40,6 @@ cp ${JOBDIR_ROOT}/${jobname} ./
                     . ${SCRIPTDIR}/oce_compile.sh 
                 else
                     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-                    #if [[ ${RESTART_FLAG} == "FALSE" ]]; then
-		    if [[ -d "ls -A ${XIOS_NAM_DIR}" ]] ; then
-                        [ ${USE_XIOS_OCE} -eq 1 ] && { cp ${OCE_EXE_DIR}/*.xml ${XIOS_NAM_DIR}/ ;}
-                    fi
                 fi
                 . ${SCRIPTDIR}/getversion.sh ${OCE}
             fi
@@ -65,7 +61,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
 
         printf "\n ************* PARAMETER files *****************\n\n"
 # if xios
-        [ ${USE_XIOS} -ge 1 ] && {  for file in ${FILIN_XIOS}; do cpfile ${XIOS_NAM_DIR}/${file} . ; done; echo ""; }
+        [ ${USE_XIOS} -ge 1 ] && {  cp ${XIOS_NAM_DIR}/*.xml . ; echo ""; }
 
 # ocean/atmosphere input files (configuration, forcing, obc, levitus/restart...)
 
