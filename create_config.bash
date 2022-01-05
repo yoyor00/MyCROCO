@@ -534,7 +534,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
 
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
     for k in ${options[@]} ; do
-        if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
+        if [[ ${options[k]} =~ "cpl" ]] || [[ ${options[k]} =~ "wav" ]] || [[ ${options[k]} =~ "atm" ]] || [[ ${options[k]} =~ "toy" ]] ; then
            [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
         fi
     done
