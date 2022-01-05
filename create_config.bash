@@ -110,7 +110,7 @@ EOF
     exit 0;;
     ('f')  x_f=1;;
     ('d')  x_d=${OPTARG};;
-    ('w')  x_d=${OPTARG};;
+    ('w')  x_w=${OPTARG};;
     ('s')  x_s=${OPTARG};;
     ('t')  x_t=${OPTARG};;
     ('n')  x_n=${OPTARG};;
@@ -123,7 +123,7 @@ CROCO_DIR="${x_s-$CROCO_DIR}"
 TOOLS_DIR="${x_t-$TOOLS_DIR}"
 MY_CONFIG_NAME=${x_n-$MY_CONFIG_NAME}
 MY_CONFIG_HOME=${x_d-$MY_CONFIG_HOME}/${MY_CONFIG_NAME}
-MY_CONFIG_WORK=${x_d-$MY_CONFIG_WORK}/${MY_CONFIG_NAME}
+MY_CONFIG_WORK=${x_w-$MY_CONFIG_WORK}/${MY_CONFIG_NAME}
 options=( ${x_o[@]-${options[@]}} )
 
 if [ "$options" == "all-dev" ]; then
