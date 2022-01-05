@@ -262,7 +262,11 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
     chmod +x $MY_CROCO_DIR/jobcomp
 
-    cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
+    if [[ ${options[@]} =~ "oce-prod" ]]; then
+        cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.        
+    else
+        cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
+    fi
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
     if [[ ${options[@]} =~ "test_cases" ]] ; then
@@ -300,10 +304,9 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
    # XIOS
     if [[ ${options[@]} =~ "xios" ]] ; then
-     mkdir -p $MY_XIOS_DIR
-     cp -Rf ${CROCO_DIR}/XIOS/*.xml* $MY_XIOS_DIR.
-     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_XIOS_DIR.
-     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_XIOS_DIR.
+     cp -Rf ${CROCO_DIR}/XIOS/process_xios_xml.sh $MY_CROCO_DIR.
+#     cp -Rf ${CROCO_DIR}/XIOS/xios_launch.file $MY_CROCO_DIR.
+#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
     fi
     # PREPROCESSING
     if [[ ${options[@]} =~ "prepro" ]] ; then
@@ -336,17 +339,15 @@ if [[ ${options[@]} =~ "cpl" ]] ; then
     echo '-----------------------------------------'
     mkdir -p $MY_CONFIG_HOME/OASIS_IN
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/OASIS_IN/* $MY_CONFIG_HOME/OASIS_IN/.
-    if [[ ${options[@]} =~ "oce-prod" ]] ; then
-      cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CONFIG_HOME/CROCO_IN/.
-    fi
-    if [[ ${options[@]} =~ "prepro" ]] ; then
-      mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
-      cp -r $TOOLS_DIR/Coupling_tools/* $MY_CONFIG_HOME/PREPRO/.
-      mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-      mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-      mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-      mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
-    fi
+fi
+
+if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
+    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
+    cp -r $TOOLS_DIR/Coupling_tools/* $MY_CONFIG_HOME/PREPRO/.
+    mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
+    mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
 fi
 
 # WW3
@@ -376,9 +377,38 @@ if [[ ${options[@]} =~ "toy" ]] ; then
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/TOY_IN/* $MY_CONFIG_HOME/TOY_IN/.
 fi
 
+
+if [[ ${options[@]} =~ "xios" ]] ; then
+    if [[ ${options[@]} =~ "oce-prod" ]]; then
+        mkdir -p  $MY_CONFIG_HOME/PREPRO/XIOS
+        mv $MY_CROCO_DIR/process_xios_xml.sh $MY_CONFIG_HOME/PREPRO/XIOS
+        sed -e "s|XIOS_NAM_DIR=.*|\source ../../myenv_mypath.sh|g" \
+            -e "s|ROOT_DIR=.*|ROOT_DIR=\${OCE}/..|g" \
+            -e "s|RUNDIR=.*|RUNDIR=$( echo ${MY_CROCO_DIR%?})|g" \
+            $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh > $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
+        chmod 755 $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
+        if [[ ${options[@]} =~ "atm" ]]; then
+            sed -e "s|set -e|\set -e \n\n###### USER DEFINITION ######\nOCE_XIOS=\"TRUE\"\nATM_XIOS=\"TRUE\"\n##### END USER DEFINITION #####|" \
+                $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp > $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
+             rm -f $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp
+        fi
+        [[ -f $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp ]] && mv $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.tmp $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
+        chmod 755 $MY_CONFIG_HOME/PREPRO/XIOS/process_xios_xml.sh
+    elif [[ ${options[@]} =~ "oce-dev" ]]; then
+        sed -e "s|XIOS_NAM_DIR=.*|XIOS_NAM_DIR=$( echo ${MY_XIOS_DIR%?} )|g"\
+            -e "s|ROOT_DIR=.*|ROOT_DIR=${CROCO_DIR}|g" \
+            -e "s|RUNDIR=.*|RUNDIR=$( echo ${MY_CROCO_DIR%?})|g" \
+            $MY_CROCO_DIR/process_xios_xml.sh > $MY_CROCO_DIR/process_xios_xml.tmp
+        mv $MY_CROCO_DIR/process_xios_xml.tmp $MY_CROCO_DIR/process_xios_xml.sh
+        chmod 755 $MY_CROCO_DIR/process_xios_xml.sh
+    fi
+fi
+
+
 # Coupling scripts
-if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
-    echo 'Copy scripts for coupled runs'
+#if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
+if [[ ${options[@]} =~ "oce-prod" ]] ; then
+    echo 'Copy scripts production runs'
     echo '-----------------------------'
     [ -d $MY_CONFIG_HOME/SCRIPTS_TOOLBOX ] && \rm -Rf $MY_CONFIG_HOME/SCRIPTS_TOOLBOX
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/

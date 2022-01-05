@@ -198,12 +198,12 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     cp param.h param.h.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox
-    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
+#    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
     cd ${EXEDIR}
 else
     
     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
+#    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
 
 fi
 
