@@ -280,7 +280,7 @@ while [[ $NY != $NY_END ]]; do
 	if [[ $TIME_SCHED == 0 ]]; then
 	    TIME=Y${NY}
 	else
-	    TIME=Y${NY}M${NM}
+	    TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
 	fi
 	
 	#
@@ -301,8 +301,6 @@ while [[ $NY != $NY_END ]]; do
 	#
 	sed -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
 	#
-	#end GC
-	
 	#
 	#  COMPUTE
 	#

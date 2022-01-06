@@ -532,12 +532,11 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     printf "# ------------------------------------------------------------------------------\n" >> mynamelist.sh
 
 
+    [[ ${options[@]} =~ "cpl" ]] && cat ./namelist_cpl.sh >> mynamelist.sh
     [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
-    for k in ${options[@]} ; do
-        if [[ ${options[k]} =~ "cpl" ]] || [[ ${options[k]} =~ "wav" ]] || [[ ${options[k]} =~ "atm" ]] || [[ ${options[k]} =~ "toy" ]] ; then
-           [ -f namelist_${k}.sh ] && cat ./namelist_${k}.sh >> mynamelist.sh
-        fi
-    done
+    [[ ${options[@]} =~ "atm" ]] && cat ./namelist_atm.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "wav" ]] && cat ./namelist_wav.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "toy" ]] && cat ./namelist_toy.sh >> mynamelist.sh
     [[ ${options[@]} =~ "xios" ]] && cat ./namelist_xios.sh >> mynamelist.sh
 
     if [[ ${options[@]} =~ "toy" ]] && [[ ${options[@]} =~ "cpl" ]] ; then

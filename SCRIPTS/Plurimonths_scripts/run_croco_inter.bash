@@ -233,8 +233,8 @@ while [ $NY != $NY_END ]; do
       TIME=Y${NY}
       echo "Computing YEAR $NY"
     else
-      TIME=Y${NY}M${NM}
-      echo "Computing YEAR $NY MONTH $NM"
+	TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
+	echo "Computing YEAR $NY MONTH $( printf ${MTH_FORMAT} ${NM})"
     fi
 #
 # Get forcing and clim for this time

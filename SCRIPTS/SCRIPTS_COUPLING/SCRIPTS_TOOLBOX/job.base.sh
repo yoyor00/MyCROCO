@@ -61,7 +61,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
 
         printf "\n ************* PARAMETER files *****************\n\n"
 # if xios
-        [[ ${ONLINE_XML} == "TRUE" ]] && { . ./xios_process.sh ;}       
+	[[ ${ONLINE_XML} == "TRUE" ]] && { . ${SCRIPTDIR}/xios_process.sh ;}
         [ ${USE_XIOS} -ge 1 ] && {  cp ${XIOS_NAM_DIR}/*.xml . ; echo ""; }
 
 # ocean/atmosphere input files (configuration, forcing, obc, levitus/restart...)
