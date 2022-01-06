@@ -31,7 +31,7 @@ export surfrc_flag="TRUE" # Flag if surface forcing is needed (FALSE if coupling
 export interponline=0 # switch (1=on, 0=off) for online surface interpolation. Only works with MONTHLY input files!
 export frc_ext='blk_CFSR' # surface forcing extension(blk_CFSR, frc_CFSR,...). If interponline=1 precise the type (ECMWF, CFSR,...). If AROME/ARPEGE, specifies the file name AROME_*.nc (Inthis case, by default we define 24 records per days)
 export tide_flag="FALSE" # the forcing extension must be blk_??? otherwise tide forcing overwrites it 
-export river_flag="TRUE"
+export river_flag="FALSE"
 
 # output settings
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

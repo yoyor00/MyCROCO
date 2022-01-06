@@ -85,11 +85,12 @@ sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom     
 ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
 
+sed -e "s/<isftcflx>/${isftcflx}/g" \
+    ./namelist.input > ./namelist.input.tmp
+mv namelist.input.tmp namelist.input
+
 if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
     [[ ${isftcflx} -ne 5 ]] && { echo "ERROR... Atm parameter (in namelist.input) isftcflx need to be 5 when coupling with WAV..." ; exit ; }
-    sed -e "s/<isftcflx>/${isftcflx}/g" \
-    ./namelist.input > ./namelist.input.tmp
-    mv namelist.input.tmp namelist.input
 fi
 
 sed -e "s/<xdim_d.*>/1/g"  -e "s/<ydim_d.*>/1/g"\

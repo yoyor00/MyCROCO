@@ -36,16 +36,14 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
      fi
  # WW3 bounc
 
-if [ ! -z $bouncin ]; then
-    echo "${SERIAL_LAUNCH_WAV}ww3_bounc &> bounc.out"
-    ${SERIAL_LAUNCH_WAV}ww3_bounc &> bounc.out
-
-    if [ ! -e nest.ww3 ]; then
-        echo 'ERROR when running ww3_bounc, nest.ww3 does not exist'
-        exit 1
+    if [ ! -z $bouncin ]; then
+        echo "${SERIAL_LAUNCH_WAV}ww3_bounc &> bounc.out"
+        ${SERIAL_LAUNCH_WAV}ww3_bounc &> bounc.out
+        if [ ! -e nest.ww3 ]; then
+            echo 'ERROR when running ww3_bounc, nest.ww3 does not exist'
+            exit 1
+        fi
     fi
-fi
-
 
 else
    
@@ -80,10 +78,4 @@ else
     fi
 fi
 
-
-
-
-
-
-fi
 
