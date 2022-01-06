@@ -237,17 +237,6 @@
      &                 *(rn**2-cff*rn/3.*(4.*rm+1.)
      &                    +cff**2*rm/9.*(2.+4.*rm))
 # endif
-
-      IF (FIRST_TIME_STEP) THEN
-        DO k=0,N
-          DO j=jmin-1,jmax+1
-            DO i=imin-1,imax+1
-              trb( i, j, k, nstp, itke ) = trb_min(itke)
-              trb( i, j, k, nstp, igls ) = trb_min(igls)
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDIF
 !
 !--------------------------------------------------------------------
 ! Horizontal advection (first-order upwind)
@@ -728,11 +717,6 @@
                ! Finalize the computation of Akv and Akt
                cff = trb( i,j,k,nnew,itke )**2 / epsilon
                Akv(i,j,k) = MAX( cff*c_mu , nuwm )
-# if defined WET_DRY && defined MRL_WCI
-               Akv(i,j,k) = ( Akv(i,j,k) +
-     &               0.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*  ! swash zone
-     &                                 (z_w(i,j,N)-z_w(i,j,0)))) )
-# endif
 # ifdef MASKING
      &                                                 *rmask(i,j)
 # endif
