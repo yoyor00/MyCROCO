@@ -3,15 +3,10 @@
 XIOS_NAM_DIR=
 ROOT_DIR=
 RUNDIR=`pwd`
+CPP1="cpp -traditional"
 
-set -x
+#set -x
 set -e
-
-if [[ $FC == ifort ]] ; then
-    CPP1="cpp -traditional -DLinux -DIfort"
-elif [[ $FC == gfortran ]] ; then
-    CPP1="cpp -traditional -DLinux"
-fi
 
 DATE=`date "+%Y%m%d-%H:%M:%S"`
 OLD="old_${DATE}"
