@@ -46,7 +46,7 @@
 #endif
 
 /* 
-   GILDAS Take care need to use a debug.F specific 
+   Take care need to use a debug.F specific 
 */
 
 #if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
@@ -1006,6 +1006,10 @@
 # endif
 
 #endif /* AGRIF */
+
+#if defined AGRIF && defined EXACT_RESTART
+#error "AGRIF with EXACT_RESTART is not yet implemented"
+#endif
 
 /*
 ======================================================================
