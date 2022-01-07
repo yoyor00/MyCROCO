@@ -335,16 +335,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 !
 !----------------------------------------------------------------------
-!  Initialize XIOS I/O server
-!----------------------------------------------------------------------
-!
-# ifdef XIOS
-      do tile=0,NSUB_X*NSUB_E-1
-        call  init_xios(tile)
-      enddo
-# endif
-!
-!----------------------------------------------------------------------
 !  Set initial conditions for momentum and tracer variables
 !----------------------------------------------------------------------
 !
@@ -694,6 +684,16 @@ CR      write(*,*) ' -2' MYID
 !  Read surface forcing from NetCDF file
 !
       call get_vbc
+!
+!----------------------------------------------------------------------
+!  Initialize XIOS I/O server
+!----------------------------------------------------------------------
+!
+# ifdef XIOS
+      do tile=0,NSUB_X*NSUB_E-1
+        call  init_xios(tile)
+      enddo
+# endif
 !
 !----------------------------------------------------------------------
 !  WKB surface wave model:
