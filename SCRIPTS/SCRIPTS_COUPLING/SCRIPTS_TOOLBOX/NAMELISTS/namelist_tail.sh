@@ -12,6 +12,7 @@
 [[ -z ${USE_TOYOCE+x} ]] && export USE_TOYOCE=0
 [[ -z ${USE_TOYWAV+x} ]] && export USE_TOYWAV=0
 [[ -z ${istoy+x} ]] && export istoy=""
+[[ -z ${ONLINE_XML+x} ]] && export ONLINE_XML="FALSE"
 
 
 if [ ${USE_ATM} == 0 ]; then
