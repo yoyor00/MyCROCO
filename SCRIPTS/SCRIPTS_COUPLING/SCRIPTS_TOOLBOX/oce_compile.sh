@@ -16,11 +16,18 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] || [[ ! -f "${OCE_EXE_DIR}/croco.${RUNtype}"
 sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     -e "s|FC=gfortran|FC=${FC}|g" \
     -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
-    -e "s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR="${CPL}"|g" \
-    -e "s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|g" \
     -e "s|-O3|-O2|g" \
     ./jobcomp > tmp$$
     mv tmp$$ jobcomp
+    #
+    line=$(grep -n -m1 'PRISM_ROOT_DIR=' jobcomp | cut -d: -f1)
+    sed "${line} s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=${CPL}|" ./jobcomp > tmp$$
+    mv tmp$$ jobcomp
+    #
+    line=$(grep -n -m1 'XIOS_ROOT_DIR=' jobcomp | cut -d: -f1)
+    sed "${line} s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|" ./jobcomp > tmp$$
+    mv tmp$$ jobcomp
+    ####
 
     # MPI and Grid size
     sed -e "s/# define BENGUELA_LR/# define ${CEXPER}/g" \
@@ -60,13 +67,6 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
             sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
             printf "\n Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
-            if [ $USE_ATM -eq 1 ] && [ ${USE_XIOS_ATM} -eq 1 ]; then
-                sed -e "s/# *undef XIOS_ATM/#  define XIOS_ATM/g" cppdefs_dev.h > tmp$$
-                mv tmp$$ cppdefs_dev.h
-            else
-                sed -e "s/# *define XIOS_ATM/#  undef XIOS_ATM/g" cppdefs_dev.h > tmp$$
-                mv tmp$$ cppdefs_dev.h
-            fi
 	else
             sed -e "s/#  *define  *OA_COUPLING/# undef OA_COUPLING/g" cppdefs.h > tmp$$
 	    mv tmp$$ cppdefs.h
@@ -198,37 +198,12 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
     cp param.h param.h.${RUNtype}
 # save exe for next jobs
     rsync -av croco.${RUNtype} ${EXEDIR}/crocox
-    if [[ ${USE_XIOS} -ge 1 ]]; then
-        cd ${OCE_EXE_DIR}/../PREPRO/XIOS
-        if [[ ${USE_XIOS_OCE} == 1 ]]; then
-            sed -e "s/OCE_XIOS=.*/OCE_XIOS=\"TRUE\"/g" process_xios_xml.sh > process_xios_xml.tmp
-        else
-            sed -e "s/OCE_XIOS=.*/OCE_XIOS=\"FALSE\"/g" process_xios_xml.sh > process_xios_xml.tmp
-        fi
-        mv process_xios_xml.tmp process_xios_xml.sh
-        chmod 755 process_xios_xml.sh
-        if [[ ${USE_CPL} -ge 1 ]]; then
-            sed -e "s/USE_OASIS=.*/USE_OASIS=\"TRUE\"/g" process_xios_xml.sh > process_xios_xml.tmp
-        else
-            sed -e "s/USE_OASIS=.*/USE_OASIS=\"FALSE\"/g" process_xios_xml.sh > process_xios_xml.tmp
-        fi      
-        mv process_xios_xml.tmp process_xios_xml.sh
-        chmod 755 process_xios_xml.sh
-        if [[ ${USE_XIOS_ATM} == 1 ]]; then
-            sed -e "s/ATM_XIOS=.*/ATM_XIOS=\"TRUE\"/g" process_xios_xml.sh > process_xios_xml.tmp
-        else
-            sed -e "s/ATM_XIOS=.*/ATM_XIOS=\"FALSE\"/g" process_xios_xml.sh > process_xios_xml.tmp
-        fi
-        mv process_xios_xml.tmp process_xios_xml.sh
-        chmod 755 process_xios_xml.sh
-        ./process_xios_xml.sh >& log.process_xml
-    fi
-#    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
+    #    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
     cd ${EXEDIR}
 else
     
     cpfile ${OCE_EXE_DIR}/croco.${RUNtype} crocox
-#    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
-
+    #    [[ ${USE_XIOS_OCE} == 1 && -d "ls -A ${XIOS_NAM_DIR}" ]] && { cp *.xml ${XIOS_NAM_DIR}/ ;}
+    
 fi
 
