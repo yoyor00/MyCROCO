@@ -24,10 +24,17 @@
   </context>
 
   <!-- =========================================================================================================== -->
-  <!-- CROCO and/or WRF context                                                                                     -->
+  <!-- CROCO and/or WRF context                                                                                    -->
   <!-- The files context_croco.xml and context_wrf.xml are included here.                                          -->
   <!-- This file needs to exist during run time.                                                                   -->
+  <!-- With AGRIF you need to add as many context as the number of zoom, with context name crocox.1, crocox.2 etc  -->
+  <!-- and copy/modify context_croco.xml for each zoom, and adapt the name of the context crocox.1, crocox.2       -->
+  <!-- see commented example below                                                                                 -->
   <!-- =========================================================================================================== -->
   <context id="crocox"  src="./context_croco.xml"/>
+
+  <!-- Example for AGRIF with one zoom
+  <context id="crocox.1"  src="./context_croco.xml.1"/>
+  -->
 
 </simulation>
