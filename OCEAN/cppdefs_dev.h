@@ -1011,6 +1011,11 @@
 #error "AGRIF with EXACT_RESTART is not yet implemented"
 #endif
 
+#if defined AGRIF && defined XIOS && \
+      ( defined OA_COUPLING || defined OW_COUPLING )
+#error "AGRIF + XIOS + OASIS coupling is not yet implemented"
+#endif     
+
 /*
 ======================================================================
                             Standard I/O
