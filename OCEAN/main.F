@@ -39,6 +39,11 @@
           USE initMUSTANG
           USE plug_MUSTANG_CROCO
 #endif
+#ifdef BIOLink
+          USE coupleur_BIOLink , ONLY : BIOLink_initialization
+          USE coupleur_BIOLink , ONLY : BIOLink_init
+          integer :: icall = 0
+#endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
      &                                   ,if_oa
@@ -92,6 +97,10 @@
 ! Initial values of NSUB_X, NSUB_E
       NSUB_X = 1
       NSUB_E = NPP
+#endif
+#if defined MUSTANG || defined BIOLink
+       integer :: Istr2, Jstr2, Iend2, Jend2
+       integer :: chunk_size_X,chunk_size_E,margin_X,margin_E
 #endif
 !
 #include "dynderivparam.h"
@@ -187,6 +196,9 @@
 # endif
 #endif
 
+#ifdef BIOLink
+      CALL BIOLink_initialization(icall)
+#endif
 #ifdef SUBSTANCE
 !
 !  Computing cell surfaces need for MUSTANG and BIOLink
@@ -203,6 +215,9 @@
      &           TRANSPORT_TIME_STEP,
 # endif
      &           RHOREF)
+#endif
+#ifdef BIOLink
+       CALL BIOLink_initialization(1)
 #endif
 !
 ! Online spectral analysis module
@@ -446,6 +461,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # ifdef SUBSTANCE
       call substance_surfcell
 # endif
+
+#ifdef BIOLink
+      CALL BIOLink_init(Istr2,Iend2,Jstr2,Jend2)
+#endif 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call MUSTANG_init_sediment_main (tile)

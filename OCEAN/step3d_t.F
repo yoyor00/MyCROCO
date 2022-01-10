@@ -47,6 +47,10 @@
 #    endif
 #   endif
 #  endif
+
+#  ifdef BIOLink
+       USE coupleur_BIOLink, ONLY : BIOLink_update
+#  endif
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -682,6 +686,10 @@
 !
 #  ifdef BIOLOGY
       call biology_tile (Istr,Iend,Jstr,Jend)
+#  endif
+
+#  ifdef BIOLink
+       call BIOLink_update(Istr,Iend,Jstr,Jend)
 #  endif
 !
 !======================================================================

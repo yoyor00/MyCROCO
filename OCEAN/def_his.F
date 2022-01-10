@@ -659,7 +659,7 @@
 !-----------------------------------------------------------------------
 !
 # ifdef TRACERS
-        do itrc=1,NT
+        do itrc=1,NTot
           if (wrt(indxV+itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
             ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
@@ -2613,7 +2613,7 @@
 ! Tracer variables.
 !
 # ifdef TRACERS
-        do itrc=1,NT
+        do itrc=1,NTot
           if (wrt(indxV+itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
             ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),

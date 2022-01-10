@@ -178,6 +178,10 @@
       elseif (may_day_flag.eq.77) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: READ parasubstance.txt'
+      elseif (may_day_flag.eq.78) then
+        MPI_master_only write(stdout,'(/1x,A/,A/)')
+     &           'ERROR: READ parasubstance.txt',
+     &  ' - no associated particulate variable for a sorbed substance'
 #endif
       endif
 

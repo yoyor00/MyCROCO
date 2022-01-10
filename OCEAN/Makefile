@@ -123,7 +123,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-        module_substance.F  module_MUSTANG.F\
+        module_substance.F  module_BIOLink.F module_MUSTANG.F\
 \
         online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
         scal0d_oa_out_loc.F scal0d_oa_out_full.F\
@@ -154,6 +154,8 @@ include Makedefs
         module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
         comsubstance.F90        substance.F90\
+        bloom_initdefine.F90 bloom.F90\
+        tooljulien.F90 comBIOLink.F90 coupleur_BIOLink.F90 \
         comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
         sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 
