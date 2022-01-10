@@ -987,15 +987,15 @@
 #endif
 
 #if defined SOLVE3D && defined TRACERS
-      integer nttclm(NT), ntstf(NT), nttsrc(NT)
-     &       , ntbtf(NT)
+      integer nttclm(NTot), ntstf(NTot), nttsrc(NTot)
+     &       , ntbtf(NTot)
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef SOLVE3D
      &                         , rstU,    rstV
 # if defined TRACERS
-      integer rstT(NT)
+      integer rstT(NTot)
 # endif
 # if defined LMD_SKPP
       integer rstHbl
@@ -1095,7 +1095,7 @@
       integer hisAOU, hisWIND10
 #  endif
 # endif  /* BIOLOGY */
-      integer hisT(NT)
+      integer hisT(NTot)
 # ifdef SEDIMENT
       integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
@@ -1272,7 +1272,7 @@
 #  endif
 # endif  /* BIOLOGY */
 # if defined TRACERS
-      integer avgT(NT)
+      integer avgT(NTot)
 # endif
 #  ifdef BULK_FLUX
       integer avgShflx_rlw
