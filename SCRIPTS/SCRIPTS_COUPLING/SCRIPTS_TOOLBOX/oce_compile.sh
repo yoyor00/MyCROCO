@@ -90,13 +90,20 @@ sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
 	sed -e "s/#  *undef  *BULK_FLUX/# define BULK_FLUX/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
         if [ ${interponline} == 1 ]; then
-            if [[ ${frc_ext} -eq *'AROME'* || ${frc_ext} -eq *'ARPEGE'* ]]; then
-                sed -e "s/#  *undef  *ONLINE/# define ONLINE/g" \
-		    -e "s/#  *undef  *AROME/# define AROME/g" \
-   	            cppdefs.h > tmp$$
-            else 
-                sed -e "s/#  *undef  *ONLINE/# define ONLINE/g" \
-                    -e "s/#  *undef  *AROME/# define AROME/g" \
+            sed -e "s/#  *undef  *ONLINE/# define ONLINE/g" cppdefs.h > tmp$$
+            mv tmp$$ cppdefs.h
+            if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]]; then
+                sed -e "s/#  *undef  *AROME/# define AROME/g" \
+                    cppdefs.h > tmp$$
+            else
+                sed -e "s/#  *define  *AROME/# undef  AROME/g" \
+                    cppdefs.h > tmp$$
+            fi
+            if [[ ${frc_ext} == *'ECMWF'* ]]; then
+                sed -e "s/#  *undef  *ECMWF/# define ECMWF/g" \
+                    cppdefs.h > tmp$$
+            else
+                sed -e "s/#  *define  *ECMWF/# undef  ECMWF/g" \
                     cppdefs.h > tmp$$
             fi
             printf "\n Online bulk activated with ${frc_ext}\n"
