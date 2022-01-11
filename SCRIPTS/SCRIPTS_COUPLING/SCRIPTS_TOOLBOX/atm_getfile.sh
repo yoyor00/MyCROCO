@@ -59,11 +59,11 @@ for file in ${filelist}; do
             cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
             cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
             if [[ $i == 0 ]]; then
-                ncrcat -O -F -d Time,1,-1 ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
+                ncrcat -O -F -d Time,1,-2 ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
             elif [[ $i == ${JOB_DUR_MTH} ]]; then
                 ncrcat  -O ${file} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
             else
-                ncrcat -O -F -d Time,1,-1 ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}.tmp
+                ncrcat -O -F -d Time,1,-2 ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}.tmp
                 ncrcat -O ${file} ${file}.tmp ${file}
                 rm -rf ${file}.tmp
             fi

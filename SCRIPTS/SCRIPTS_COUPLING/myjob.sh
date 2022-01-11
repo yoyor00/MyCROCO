@@ -101,13 +101,16 @@ elif [ ${MACHINE} == "IRENE" ]; then
 elif [ ${MACHINE} == "JEANZAY" ]; then
    export QSUB="sbatch "
    export COMPUTER="JEANZAY"
+elif [ ${MACHINE} == "LEFTRARU" ]; then
+   export QSUB="sbatch "
+   export COMPUTER="LEFTRARU"
 elif [ ${MACHINE} == "DATARMOR" ]; then
    export QSUB="qsub "
    export COMPUTER="DATARMOR"
    export jobname="job_${ROOT_NAME_1}.pbs"
 else
    printf "\n\n Machine unknown  => EXIT \n\n"
-   printf "To define your Machine:\n - Define your environement in ./SCRIPTS_TOOLBOX/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}";  exit;
+   printf "To define your Machine:\n - Define your environement in ./SCRIPTS_TOOLBOX/MACHINE \n - Prepare your header \n - Prepare a launch_${MACHINE}\n - Add your machine in myjob.sh";  exit;
 fi
 
 echo ${COMPUTER}

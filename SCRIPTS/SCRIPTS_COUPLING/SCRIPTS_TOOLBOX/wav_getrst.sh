@@ -17,7 +17,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
     for  k in `seq 0 $(( ${lengthforc} - 1))` ; do
         echo "ln -sf ww3_prnc.inp.${forcww3[$k]} ww3_prnc.inp"
-        ${io_getfile} ww3_prnc.inp.${forcww3[$k]}                          ww3_prnc.inp
+        ${io_getfile} ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]}                          ww3_prnc.inp
 
         echo "${SERIAL_LAUNCH_WAV}ww3_prnc &> prnc.${forcww3[$k]}.out"
         ${SERIAL_LAUNCH_WAV}ww3_prnc &> prnc.${forcww3[$k]}.out
@@ -47,11 +47,18 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
 else
    
+    rstfile='mod_def.ww3 restart.ww3'
+
+    for file in ${rstfile} ; do
+        echo ${RESTDIR_IN}/${file}_${DATE_END_JOBm1}
+        cpfile ${RESTDIR_IN}/${file}_${DATE_END_JOBm1} ./${file}
+    done
+
     # WW3 prnc
 
     for  k in `seq 0 $(( ${lengthforc} - 1))` ; do
         echo "ln -sf ww3_prnc.inp.${forcww3[$k]} ww3_prnc.inp"
-        ${io_getfile} ww3_prnc.inp.${forcww3[$k]}                          ww3_prnc.inp
+        ${io_getfile} ${WAV_NAM_DIR}/ww3_prnc.inp.${forcww3[$k]}                          ww3_prnc.inp
 
         echo "${SERIAL_LAUNCH_WAV}ww3_prnc &> prnc.${forcww3[$k]}.out"
         ${SERIAL_LAUNCH_WAV}ww3_prnc &> prnc.${forcww3[$k]}.out
@@ -61,11 +68,6 @@ else
         fi
     done
 
-    rstfile='mod_def.ww3 restart.ww3'
-   
-    for file in ${rstfile} ; do
-        cpfile ${RESTDIR_IN}/${file}_${DATE_END_JOBm1} ./${file}
-    done
     # WW3 bounc
 
     if [ ! -z $bouncin ]; then
