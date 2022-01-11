@@ -50,11 +50,11 @@ if [ ${USE_TOY} -ge 1 ]; then
     fi
     if [ ${nbtoy} -eq 1 ]; then
         mod_Str=$mystartproc"-"$myendproc
-        echo "-n ${mod_Str} ./toyexe" >> app.conf
+        echo "${mod_Str} ./toyexe" >> app.conf
      else
         for k in `seq 0 $(( ${nbtoy} - 1 ))`; do
             mod_Str=$mystartproc"-"$myendproc
-            echo "-n ${mod_Str} ./toy${toytype[$k]}" >> app.conf
+            echo "${mod_Str} ./toy${toytype[$k]}" >> app.conf
             mystartproc=$(( ${myendproc} + 1 ))
             myendproc=$(( ${mystartproc} + ${NP_TOY} - 1 ))
         done
