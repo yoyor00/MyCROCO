@@ -69,6 +69,9 @@
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
+#ifdef PSOURCE_MASS
+      integer is,iis,jjs
+#endif
 # include "param.h"
 
 # include "nbq.h" 
@@ -89,6 +92,9 @@
 # include "grid.h"
 # include "ocean3d.h"
 # include "scalars.h"
+#ifdef PSOURCE_MASS
+# include "sources.h"
+#endif
 !
 # ifdef MPI
 #  define LOCALLM Lmmpi
@@ -147,6 +153,48 @@
 # endif
           enddo
         enddo
+!
+!---------------------------------------------------------
+!  Apply mass point sources (volume vertical influx) 
+!
+!  Overwrite W(Isrc,Jsrc,k) with the same divergence of Huon,Hvom as
+!  above but add in point source Qsrc(k) and reaccumulate the vertical
+!  sum to obtain the correct net Qbar given in user input - J. Levin
+!  (Jupiter Intelligence Inc.) and J. Wilkin
+!
+!---------------------------------------------------------
+#ifdef PSOURCE_MASS
+# ifdef PSOURCE
+      do is=1,Nsrc
+#  ifdef MPI
+        iis=Isrc_mpi(is,mynode)
+        jjs=Jsrc_mpi(is,mynode)
+#  else
+        iis=Isrc(is)
+        jjs=Jsrc(is)
+#  endif
+        if (IstrR.le.iis .and. iis.le.IendR .and.
+     &      JstrR.le.jjs .and. jjs.le.JendR .and.
+     &      jjs.eq.j) then
+          if (Dsrc(is).eq.2) then
+            do k=1,N
+!          if (is==2 .and. k==1)
+!     &     write(100,*)'omega W',We(iis,jjs,k)
+              We(iis,jjs,k)=We(iis,jjs,k-1)-                           
+     &                   (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
+     &                    Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
+     &                       -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
+     &                                  *om_r(iis,jjs)*on_r(iis,jjs)
+     &                       + Qsrc(is,k)
+
+!         if (is==2 .and. k==1)
+!    &     write(100,*)'omega W +Qsrc',We(iis,jjs,k),Qsrc(is,k)
+            enddo 
+          endif
+        endif
+      enddo
+# endif
+#endif
 !
 !---------------------------------------------------------
 !  Subtract vertical velocities of moving S-coordinate 
