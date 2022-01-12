@@ -558,6 +558,28 @@ C$OMP END MASTER
 C$OMP BARRIER
 #endif
 
+!-----------------------------------------------------------------------
+! Apply mass point sources (volume vertical influx) 
+!-----------------------------------------------------------------------
+!
+#ifdef PSOURCE_MASS
+      do is=1,Nsrc
+#  ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#  else
+        i=Isrc(is)
+        j=Jsrc(is)
+#  endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          if (Dsrc(is).eq.2) then
+            zeta(i,j,knew)=zeta(i,j,knew)+ 
+     &      Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
+          endif
+        endif
+      enddo
+#endif
 
 !
 !-----------------------------------------------------------------------
@@ -1696,7 +1718,7 @@ C$OMP BARRIER
 # ifdef SOLVE3D
             DU_avg1(i,j,nnew)=Qbar(is)
 # endif
-          else
+          elseif (Dsrc(is).eq.1) then
             vbar(i,j,knew)=2.*Qbar(is)/( om_v(i,j)
      &                       *(Dnew(i,j-1)+Dnew(i,j)) )
 # ifdef SOLVE3D

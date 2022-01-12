@@ -325,7 +325,7 @@
                   endif
 #  endif
                 endif
-              else
+              elseif(Dsrc(is).eq.1) then
                 if (Lsrc(is,itrc)) then
                   FE(i,j)=Hvom(i,j,k)*Tsrc(is,k,itrc)
 #  ifdef MASKING
@@ -372,7 +372,39 @@
         enddo   ! <-- k
       enddo       ! <-- itrc
 # endif /* TRACERS */
-
+!
+!----------------------------------------------------------
+! Add tracer divergence due to cell-centered point sources
+!----------------------------------------------------------
+!
+#if defined TRACERS && defined PSOURCE_MASS
+        do itrc=1,NT
+          do is=1,Nsrc
+#   ifdef MPI
+           i=Isrc_mpi(is,mynode)
+           j=Jsrc_mpi(is,mynode)
+#   else
+           i=Isrc(is)
+           j=Jsrc(is)
+#   endif
+           if (Istr.le.i .and. i.le.Iend+1
+     &        .and. Jstr.le.j .and. j.le.Jend+1) then
+             cff1=dt*pm(i,j)*pn(i,j)
+             if (Dsrc(is).eq.2) then
+              do k=1,N 
+                if (Lsrc(is,itrc)) then
+                  cff2=Tsrc(is,k,itrc)
+                else
+                  cff2=t(i,j,k,nstp,itrc)
+                endif
+                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+
+     &           cff1*Qsrc(is,k)*cff2
+              enddo
+             endif
+           endif
+          enddo ! source
+        enddo ! itrc
+# endif /* TRACERS */
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
 ! continuity equation (the same for all tracers): DC=1/Hz_half_new,
