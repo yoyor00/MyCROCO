@@ -1456,7 +1456,7 @@
 # undef  MPI
 # define NBQ
 # ifdef NBQ
-#  undef  NBQ_PRECISE
+#  define NBQ_PRECISE
 # endif
 # define M2FILTER_NONE
 # define SOLVE3D
