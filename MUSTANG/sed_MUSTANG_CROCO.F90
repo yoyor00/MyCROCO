@@ -503,8 +503,8 @@
 #  ifdef BBL
       do j=jfirst,jlast
         do i=ifirst,ilast
-          tenfon(i,j)=sqrt( bustrcwmax(i,j)**2 &
-                        +bvstrcwmax(i,j)**2)*RHOREF
+          tenfon(i,j)=sqrt( bustrw(i,j)**2 &
+                        +bvstrw(i,j)**2)*RHOREF
 #  ifdef WET_DRY AND MASKING
           tenfon(i,j)=tenfonc(i,j)*rmask_wet(i,j)
 #  endif
@@ -534,11 +534,11 @@
       DO j=jfirst,jlast
         DO i=ifirst-1,ilast
 #  endif
-          raphbx(i,j)=ABS(u(i+1,j,1,nrhs))/(ABS(u(i+1,j,1,nrhs))+epsilon_MUSTANG)
+          raphbx(i,j)=ABS(u(i+1,j,1,nnew))/(ABS(u(i+1,j,1,nnew))+epsilon_MUSTANG)
 #ifdef key_MUSTANG_tenfonUbar
-          vit2=SQRT(0.0625_rsh*(vbar(i,j+1,nrhs)+vbar(i+1,j+1,nrhs)+  &
-                  vbar(i,j,nrhs)+vbar(i+1,j,nrhs))**2         &
-                  +ubar(i+1,j,nrhs)**2) *ubar(i+1,j,nrhs)
+          vit2=SQRT(0.0625_rsh*(vbar(i,j+1,nnew)+vbar(i+1,j+1,nnew)+  &
+                  vbar(i,j,nnew)+vbar(i+1,j,nnew))**2         &
+                  +ubar(i+1,j,nnew)**2) *ubar(i+1,j,nnew)
 #ifdef MPI
           if (float(i +ii*Lm) .GE. 0) then
 #else
@@ -551,9 +551,9 @@
           endif
 
 #else
-          vit2=SQRT(0.0625_rsh*(v(i,j+1,1,nrhs)+v(i+1,j+1,1,nrhs)+  &
-                  v(i,j,1,nrhs)+v(i+1,j,1,nrhs))**2         &
-                  +u(i+1,j,1,nrhs)**2) *u(i+1,j,1,nrhs)   
+          vit2=SQRT(0.0625_rsh*(v(i,j+1,1,nnew)+v(i+1,j+1,1,nnew)+  &
+                  v(i,j,1,nnew)+v(i+1,j,1,nnew))**2         &
+                  +u(i+1,j,1,nnew)**2) *u(i+1,j,1,nnew)   
           frofonx(i,j)=0.16_rsh*(LOG(0.5*(Zr(i+1,j)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
 
@@ -567,11 +567,11 @@
       DO j=jfirst-1,jlast
         DO i=ifirst,ilast
 #  endif  
-          raphby(i,j)=ABS(v(i,j+1,1,nrhs))/(ABS(v(i,j+1,1,nrhs))+epsilon_MUSTANG)
+          raphby(i,j)=ABS(v(i,j+1,1,nnew))/(ABS(v(i,j+1,1,nnew))+epsilon_MUSTANG)
 #ifdef key_MUSTANG_tenfonUbar
-          vit2=SQRT(0.0625_rsh*(ubar(i+1,j,nrhs)+ubar(i+1,j+1,nrhs)+  &
-                  ubar(i,j+1,nrhs)+ubar(i,j,nrhs))**2         &
-                  +vbar(i,j+1,nrhs)**2) *vbar(i,j+1,nrhs)
+          vit2=SQRT(0.0625_rsh*(ubar(i+1,j,nnew)+ubar(i+1,j+1,nnew)+  &
+                  ubar(i,j+1,nnew)+ubar(i,j,nnew))**2         &
+                  +vbar(i,j+1,nnew)**2) *vbar(i,j+1,nnew)
 #ifdef MPI
           if (float(j +jj*Mm) .GE. 0) then
 #else
@@ -583,9 +583,9 @@
           frofony(i,j)=0.
           endif
 #else
-          vit2=SQRT(0.0625_rsh*(u(i+1,j,1,nrhs)+u(i+1,j+1,1,nrhs)+  &
-                  u(i,j+1,1,nrhs)+u(i,j,1,nrhs))**2         &
-                  +v(i,j+1,1,nrhs)**2) *v(i,j+1,1,nrhs)
+          vit2=SQRT(0.0625_rsh*(u(i+1,j,1,nnew)+u(i+1,j+1,1,nnew)+  &
+                  u(i,j+1,1,nnew)+u(i,j,1,nnew))**2         &
+                  +v(i,j+1,1,nnew)**2) *v(i,j+1,1,nnew)
           frofony(i,j)=0.16_rsh*(LOG(0.5*(Zr(i,j+1)+Zr(i,j))/   &
                   z0sed(i,j)))**(-2)*vit2
 #endif
@@ -642,7 +642,7 @@
             tenfonw(i,j)=min(8.0_rsh,tenfonw(i,j))  !limitation sur tenfonw, FG(21/07/2015)
 
 !            IF (l_wave_rdir ) THEN
-               courant=SQRT(ubar(i,j,nrhs)**2+vbar(i,j,nrhs)**2)
+               courant=SQRT(ubar(i,j,nnew)**2+vbar(i,j,nnew)**2)
                IF(tenfonc(i,j) > 0.0_rsh .AND. tenfonw(i,j) > 0.0_rsh .AND. courant> 0.0_rsh) THEN
 
                 ! calculation of shear stress with the formula of Soulsby (1995)
@@ -655,7 +655,7 @@
                 ! calculating the difference in angle between the direction of the waves and the current
                 ! ---------------------------------------------------------------------------
                 ! calculating the direction of the current relative to the north
-                  alpha=ACOS(vbar(i,j,nrhs)/courant)   ! en radians
+                  alpha=ACOS(vbar(i,j,nnew)/courant)   ! en radians
                 ! calculation of wave orientation relative to north
                   beta=Dwave(i,j)   ! beta and Dwave in radians
                 ! calculation of cos(alpha-beta) and sin(alpha-beta)
