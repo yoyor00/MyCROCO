@@ -513,7 +513,7 @@
 #  endif
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
-      integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
+      integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
       parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
 # ifdef MUSTANG
@@ -531,8 +531,11 @@
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
-     &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
-
+     &           indxDiff=indxO+4,indxAkv=indxO+5)
+# ifdef TEMPERATURE
+      integer indxAkt
+      parameter (indxAkt=indxO+6)
+# endif
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
       integer indxAOU, indxWIND10
