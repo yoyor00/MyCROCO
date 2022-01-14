@@ -62,7 +62,7 @@ CONTAINS         ! Write model prognostic
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       IF (mynode > 0) THEN
          call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, & 
-     &       1, MPI_COMM_WORLD, status, ierr)
+              &       1, MPI_COMM_WORLD, status, ierr)
       ENDIF
 #endif
 !
@@ -594,7 +594,7 @@ CONTAINS         ! Write model prognostic
       integer  :: itrc
       integer  :: ji, jj, jk, jn
       integer  :: ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,    &
-      &        start(2), count(2), ibuff(6), nf_fread, checkdims
+           start(2), count(2), ibuff(6), nf_fread, checkdims
       character :: units*180
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: trcsedtmp
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: zdta
