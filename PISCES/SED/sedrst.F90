@@ -325,12 +325,12 @@ CONTAINS         ! Write model prognostic
         csize = xi_rho*eta_rho/NNODES
         WRITE(stdout,*)'CREATE RST NC4 PARALLEL FILE'
         ierr  = nf_create_par(cn_sedrst_out(1:lstr),cmode,
-        &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
+      &          MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
 
         IF (ierr .NE. nf_noerr) THEN
            WRITE(stdout,'(/3(1x,A)/)') 'ERROR in DEF_RST_SED: Cannot',
-        &             'create restart NetCDF file:', TRIM(cn_sedrst_out)
+      &              'create restart NetCDF file:', TRIM(cn_sedrst_out)
            GOTO 99                                         !--> ERROR
         ENDIF
         IF (nrpfrst == 0) total_rec = 0
