@@ -39,7 +39,7 @@ CONTAINS         ! Write model prognostic
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   
-     &     , start(2), count(2), ibuff(4), nf_fwrite, itrc  
+      &     , start(2), count(2), ibuff(4), nf_fwrite, itrc  
       INTEGER :: ji, jj, jk, jn
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: trcsedtmp, trcsedi
       REAL(wp), DIMENSION(jpoce,jpksed)   :: zdta
@@ -61,7 +61,7 @@ CONTAINS         ! Write model prognostic
 
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       IF (mynode > 0) THEN
-         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, & 
      &       1, MPI_COMM_WORLD, status, ierr)
       ENDIF
 #endif
