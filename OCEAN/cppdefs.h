@@ -393,7 +393,7 @@
 #   define NITROUS_OXIDE
 #  endif
                       /*   Biology diagnostics    */
-#  define DIAGNOSTICS_BIO
+#  undef DIAGNOSTICS_BIO
 #  if defined DIAGNOSTICS_BIO && defined PISCES
 #   define key_trc_diaadd
 #   define key_trc_dia3d
