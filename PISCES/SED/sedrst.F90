@@ -329,7 +329,7 @@ CONTAINS         ! Write model prognostic
 #endif
 
         IF (ierr .NE. nf_noerr) THEN
-           WRITE(stdout,'(/3(1x,A)/)') 'ERROR in DEF_RST_SED: Cannot',
+           WRITE(stdout,'(/3(1x,A)/)') 'ERROR in DEF_RST_SED: Cannot', & 
      &         'create restart NetCDF file:', TRIM(cn_sedrst_out)
            GOTO 99                                         !--> ERROR
         ENDIF
