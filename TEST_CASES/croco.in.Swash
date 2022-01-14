@@ -1,7 +1,7 @@
 title:
 	Swash Example
 time_stepping: NTIMES   dt[sec]       NDTFAST  NINFO
-               106700   0.0019532775    15      200
+               106700   0.0019532775    22      200
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                     1          1500           0.
 
@@ -23,13 +23,13 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  F    F
-auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
-                             F   F    T   T    F    F   T      F       F   F    T     20*F   
+auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
+                             F   F    T   T    F    F   T      F       F   F    T    F     F      20*F   
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  F   30*F
-auxiliary_averages: rho Omega  W  Akv  Akt  Aks  BVF Visc3d Diff3d HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
-                     F   F     T   T    F    F    F    T      F     F   F    T     20*F
+auxiliary_averages: rho Omega  W  Akv  Akt  Aks  BVF Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
+                     F   F     T   T    F    F    F    T      F     F   F    T     T    T     20*F
 
 gls_history_fields:   TKE  GLS  Lscale
                        T     F    T

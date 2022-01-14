@@ -37,7 +37,7 @@
 !
 ! This safety  mechanism works as fillows: "setup_kwds" is called
 ! in the beginning of "read_inp" (before reading the startup file)
-! and crates a character string which contains the set of keywords
+! and creates a character string which contains the set of keywords
 ! required by the model (depending on CPP-switches); then, every
 ! time when a keyword-block in identified and read from the startup
 ! file, call to "cancel_kwd" is made to remove (blank out) that

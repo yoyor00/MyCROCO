@@ -90,6 +90,7 @@
 # include "wkb_wwave.h"
 # include "forces.h"
 # ifdef BBL
+#  include "bbl.h"
 #  include "coupling.h"
 # endif
 # include "boundary.h"
@@ -191,10 +192,14 @@
 # endif
 # ifdef WAVE_FRICTION
       cfrc = 0.5/sqrt(pi)
-      if (Zobt.gt.0.) then                     ! default Zob for wave
-        do j=jstr-1,jend+1                     ! dissipation or streaming
+      if (Zobt.gt.0.) then          ! roughness used for wave
+        do j=jstr-1,jend+1          ! dissipation or streaming
           do i=istr-1,iend+1      
+#  ifdef BBL
+            Zob_my(i,j)=Zbapp(i,j)
+#  else
             Zob_my(i,j)=Zob(i,j)
+#  endif
           enddo
         enddo                         
       else
@@ -477,7 +482,7 @@
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            wcg(START_2D_ARRAY,k))
           call exchange_r2d_tile (istr,iend,jstr,jend,
-     &                        wsb(START_2D_ARRAY,k))
+     &                            wsb(START_2D_ARRAY,k))
           call exchange_r2d_tile (istr,iend,jstr,jend,
      &                            wvn(START_2D_ARRAY,k))
 #   ifdef WAVE_ROLLER
@@ -571,7 +576,7 @@ C$OMP BARRIER
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
 # if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
-          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
+          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-5.)))   ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
           cffX=20.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
           cffE=20.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
@@ -614,10 +619,6 @@ C$OMP BARRIER
           wkx(i,j,wnew)=wkx(i,j,wnew)*rmask(i,j)
           wke(i,j,wnew)=wke(i,j,wnew)*rmask(i,j)
 # endif
-!# ifdef WET_DRY
-!          wkx(i,j,wnew)=wkx(i,j,wnew)*rmask_wet(i,j) ! unstable
-!          wke(i,j,wnew)=wke(i,j,wnew)*rmask_wet(i,j)
-!# endif
         enddo
       enddo                ! <-- discard kvx,kue
 # undef kvx
@@ -667,9 +668,9 @@ C$OMP BARRIER
 # ifdef MASKING
           wac(i,j,wnew)=wac(i,j,wnew)*rmask(i,j)
 # endif
-!# ifdef WET_DRY
-!          wac(i,j,wnew)=wac(i,j,wnew)*rmask_wet(i,j) ! unstable
-!# endif
+# ifdef WET_DRY
+          wac(i,j,wnew)=wac(i,j,wnew)*rmask_wet(i,j)
+# endif
         enddo
       enddo           ! <--- discard acx,ace
 !
@@ -705,19 +706,19 @@ C$OMP BARRIER
         do i=istr,iend
           war(i,j,wnew) =war(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &               *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
-# ifdef WKB_ADD_DIFFXXX
+#  ifdef WKB_ADD_DIFFXXX
      &                           -on_r(i,j)*(war(i+1,j,wprv)
      &                         -2.*war(i,j,wprv)+war(i-1,j,wprv))
      &                           -om_r(i,j)*(war(i,j+1,wprv)
      &                         -2.*war(i,j,wprv)+war(i,j-1,wprv))
-# endif
+#  endif
      &                )-wkb_roller*wsb(i,j,wstp)+wsr(i,j,wstp) )
 #  ifdef MASKING
           war(i,j,wnew) = war(i,j,wnew)*rmask(i,j)
 #  endif
-!#  ifdef WET_DRY
-!          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j) ! unstable
-!#  endif
+#  ifdef WET_DRY
+          war(i,j,wnew) =war(i,j,wnew)*rmask_wet(i,j)
+#  endif
         enddo
       enddo           ! <--- discard acx,ace
 # endif    /* WAVE_ROLLER */
@@ -760,10 +761,9 @@ C$OMP BARRIER
      &                               *(1 -exp (-cff1**5 ) )
 # endif
 # if defined WET_DRY && defined WAVE_BREAK_SWASH
-!  Add dissipation near wet-dry interface (e.g., swash zone; SANDBAR case)
-          wsb(i,j,wnew)=wsb(i,j,wnew)*(1.+2.*
-     &                  (1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
-     &                                 (z_w(i,j,N)-z_w(i,j,0)))) )
+!  Add dissipation near shoreline (e.g., SANDBAR case)
+          wsb(i,j,wnew)=wsb(i,j,wnew)*
+     &                  max(1.,(0.5/(Dstp(i,j)-Dcrit(i,j)+eps)**0.2))
 # endif
 # ifdef WAVE_ROLLER
           wcr(i,j,wnew) = frq(i,j,wnew)*(inv_k**2)   ! c/k
@@ -771,12 +771,10 @@ C$OMP BARRIER
      &                    *wvn(i,j,wnew)/max(frq(i,j,wnew)**2,eps)
 # endif
 # if (defined BBL || defined MRL_WCI) && !defined WAVE_OFFLINE
-          cosw = inv_k*wkx(i,j,wnew)            ! cosine wave direction (xi)
-          sinw = inv_k*wke(i,j,wnew)            ! sine wave direction (eta)
-#  ifdef BBL
-!          wfrq(i,j) = frq(i,j,wnew)             ! used in M.Blaas BBL
-!          orbital   = 0.5*wfrq(i,j)
-!     &        *hrm(i,j,wnew)/max(sinh(khn),eps) ! orbital velocity magnitude
+          cosw = inv_k*wkx(i,j,wnew)         ! cos wave direction (xi)
+          sinw = inv_k*wke(i,j,wnew)         ! sin wave direction (eta)
+!          orbital   = 0.5*frq(i,j,wnew)         ! used in M.Blaas BBL
+!     &        *hrm(i,j,wnew)/max(sinh(khn),eps) ! orbital vel. magnitude
 !          uorb(i,j) = orbital*cosw              ! orbital velocity (xi)
 !          vorb(i,j) = orbital*sinw              ! orbital velocity (eta)
           inv_f= 1.0/max(frq(i,j,wnew),eps)
@@ -787,15 +785,14 @@ C$OMP BARRIER
           else
             Dwave(i,j)=(pi/2.0)*SIGN(1.0,sinw)
           endif
-#  endif
 #  ifdef MRL_WCI
           whrm(i,j) = hrm(i,j,wnew)
           wfrq(i,j) = frq(i,j,wnew)
-          wdrx(i,j) = cosw                      ! cosine wave direction (xi)
-          wdre(i,j) = sinw                      ! sine wave direction (eta)
+          wdrx(i,j) = cosw                  ! cos wave direction (xi)
+          wdre(i,j) = sinw                  ! sin wave direction (eta)
 #  else
-          wwkx(i,j)=wkx(i,j,wnew)               ! wavenumber components
-          wwke(i,j)=wke(i,j,wnew)               ! for output
+          wwkx(i,j)=wkx(i,j,wnew)           ! wavenumber components
+          wwke(i,j)=wke(i,j,wnew)           ! for output
 #  endif
 # endif
 # ifdef WAVE_FRICTION
@@ -841,16 +838,17 @@ C$OMP BARRIER
      &                        wfc(START_2D_ARRAY,wnew))
 #  endif
 #  ifdef BBL
-!      call exchange_r2d_tile (istr,iend,jstr,jend,wfrq(START_2D_ARRAY))
-!      call exchange_r2d_tile (istr,iend,jstr,jend,uorb(START_2D_ARRAY))
-!      call exchange_r2d_tile (istr,iend,jstr,jend,vorb(START_2D_ARRAY))
-      call exchange_r2d_tile (istr,iend,jstr,jend,Awave(START_2D_ARRAY))
-      call exchange_r2d_tile (istr,iend,jstr,jend,Pwave(START_2D_ARRAY))
-      call exchange_r2d_tile (istr,iend,jstr,jend,Dwave(START_2D_ARRAY))
+!      call exchange_r2d_tile (istr,iend,jstr,jend, uorb)
+!      call exchange_r2d_tile (istr,iend,jstr,jend, vorb)
+      call exchange_r2d_tile (istr,iend,jstr,jend, Awave)
+      call exchange_r2d_tile (istr,iend,jstr,jend, Pwave)
+      call exchange_r2d_tile (istr,iend,jstr,jend, Dwave)
 #  endif
 #  ifdef MRL_WCI
-      call exchange_r2d_tile (istr,iend,jstr,jend,wdrx(START_2D_ARRAY))
-      call exchange_r2d_tile (istr,iend,jstr,jend,wdre(START_2D_ARRAY))
+      call exchange_r2d_tile (istr,iend,jstr,jend, whrm)
+      call exchange_r2d_tile (istr,iend,jstr,jend, wfrq)
+      call exchange_r2d_tile (istr,iend,jstr,jend, wdrx)
+      call exchange_r2d_tile (istr,iend,jstr,jend, wdre)
 #  endif
 # endif
 

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -14,22 +14,34 @@
       program main
 !
 !======================================================================
-!                                                                      
+!
 !                     OCEAN MODEL MAIN DRIVER
 !
-!    Advances forward the equations for all nested grids, if any.             
-!                                                                     
+!    Advances forward the equations for all nested grids, if any.
+!
 !======================================================================
 !
 #if defined OA_COUPLING || defined OW_COUPLING
-         USE mod_prism
+          USE mod_prism
 #endif
 #ifdef XIOS
-          USE xios          ! XIOS module
+          USE xios           ! XIOS module
 #endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
-          USE trcini_pisces 
+          USE trcini_pisces
+#endif
+#ifdef SUBSTANCE
+          USE substance , ONLY : substance_read_alloc
+          USE substance , ONLY : substance_surfcell
+#endif
+#ifdef MUSTANG
+          USE initMUSTANG
+          USE plug_MUSTANG_CROCO
+#endif
+#ifdef ONLINE_ANALYSIS
+          USE module_interface_oa, only : init_parameter_oa
+     &                                   ,if_oa
 #endif
 !     implicit none
       integer tile, subs, trd, ierr
@@ -50,12 +62,12 @@
 # include "nc_sta.h"
 #endif
 #ifdef AGRIF
-      Type(Agrif_pgrid),pointer  :: parcours     
-#endif 
+      Type(Agrif_pgrid),pointer  :: parcours
+#endif
 #ifdef MPI
       include 'mpif.h'
 !     real*8 start_time2, start_time1, exe_time
-#endif 
+#endif
       integer :: iifroot, iicroot
 #ifdef WKB_WWAVE
       integer winterp
@@ -63,7 +75,7 @@
 #ifdef AGRIF
       integer size_XI,size_ETA,se,sse, sz,ssz
       external :: step
-# include "zoom.h"      
+# include "zoom.h"
 # include "dynparam.h"
 #endif
 #ifdef WKB_WWAVE
@@ -72,7 +84,10 @@
 #ifdef USE_CALENDAR
       character*19 :: tool_sectodat
 #endif
-     
+#ifdef MUSTANG
+# include "coupler_define_MUSTANG.h"
+# include "ocean3d.h"
+#endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
       NSUB_X = 1
@@ -83,13 +98,13 @@
 !
 !----------------------------------------------------------------------
 !  Initialize communicators and subgrids decomposition:
-!  MPI parallelization, XIOS server, OASIS coupling, AGRIF nesting, 
+!  MPI parallelization, XIOS server, OASIS coupling, AGRIF nesting,
 !----------------------------------------------------------------------
 !
 #ifdef MPI
 # if (!defined AGRIF && !defined OA_COUPLING && !defined OW_COUPLING)
       call MPI_Init (ierr)
-# endif   
+# endif
 !
 !  XIOS, OASIS and AGRIF: split MPI communicator
 !  (XIOS with OASIS is not done yet)
@@ -128,7 +143,9 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
+    defined RVTK_DEBUG_PERFRST
+
       call debug_ini
 #endif
 !
@@ -155,7 +172,7 @@
 !  PISCES biogeochemeical model parameters
 !
 # if defined BIOLOGY && defined PISCES
-      CALL trc_nam_pisces
+      call trc_nam_pisces
 # endif
 !
 !
@@ -169,6 +186,48 @@
 #  endif
 # endif
 #endif
+
+#ifdef SUBSTANCE
+!
+!  Computing cell surfaces need for MUSTANG and BIOLink
+!
+      call substance_read_alloc(may_day_flag,indxT,indxTsrc)
+#endif
+
+#ifdef MUSTANG
+!
+!  General initialization for MUSTANG ( parameters ..)
+!
+      call MUSTANG_initialization(
+# ifdef key_MUSTANG_flocmod
+     &           TRANSPORT_TIME_STEP,
+# endif
+     &           RHOREF)
+#endif
+!
+! Online spectral analysis module
+!
+# ifdef ONLINE_ANALYSIS
+      CALL init_parameter_oa(
+     &  io_unit_oa=stdout
+#ifdef MPI
+     & ,if_print_node_oa=(mynode==0)
+#else
+     & ,if_print_node_oa=.true.
+#endif
+#ifdef MPI
+     & ,mynode_oa=mynode
+     & ,comm_oa=MPI_COMM_WORLD
+#else
+     & ,mynode_oa=0
+     & ,comm_oa=0
+#endif
+     & ,dti_oa=dt
+     & ,kount0_oa=ntstart-1
+     & ,nt_max_oa=ntimes
+     & ,ntiles=NSUB_X*NSUB_E)
+# endif
+!
 !
 !----------------------------------------------------------------------
 !  Create parallel threads; start timers for each thread;
@@ -179,8 +238,8 @@
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call start_timers()
-        call init_arrays (tile) 
-      enddo 
+        call init_arrays (tile)
+      enddo
 CR      write(*,*) '-11' MYID
 !
 !----------------------------------------------------------------------
@@ -191,9 +250,9 @@ CR      write(*,*) '-11' MYID
 !
 !  Set grid analytically
 !
-C$OMP PARALLEL DO PRIVATE(tile) 
+C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call ana_grid (tile) 
+        call ana_grid (tile)
       enddo
 # if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
@@ -203,7 +262,7 @@ C$OMP END MASTER
 # endif
 #else
 !
-!  Read grid from GRID NetCDF file 
+!  Read grid from GRID NetCDF file
 !
       call get_grid
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
@@ -212,7 +271,7 @@ C$OMP END MASTER
 !  Compute various metric term combinations.
 !
 C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1      
+      do tile=0,NSUB_X*NSUB_E-1
         call setup_grid1 (tile)
       enddo
 CR      write(*,*) '-10' MYID
@@ -224,8 +283,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 CR      write(*,*) ' -9' MYID
 !
 !----------------------------------------------------------------------
-!  Setup vertical grid variables setup vertical S-coordinates 
-!  and fast-time averaging for coupling of 
+!  Setup vertical grid variables setup vertical S-coordinates
+!  and fast-time averaging for coupling of
 !  split-explicit baroropic mode.
 !----------------------------------------------------------------------
 !
@@ -238,11 +297,11 @@ CR      write(*,*) ' -9' MYID
 !  Set fast-time averaging for coupling of split-explicit baroropic mode.
 !
 
-      call set_weights 
-CR      write(*,*) ' -8' MYID 
+      call set_weights
+CR      write(*,*) ' -8' MYID
 !
 !  Create three-dimensional S-coordinate system,
-!  which may be needed by ana_initial 
+!  which may be needed by ana_initial
 !  (here it is assumed that free surface zeta=0).
 !
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -265,20 +324,41 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-#ifndef ANA_INITIAL
-      call get_initial               ! Set initial conditions
-#else
-      if (nrrec.ne.0) then           ! read from NetCDF file
-        call get_initial
-      endif
-
+#ifdef ANA_INITIAL
+      if (nrrec.ne.0) then            ! read from NetCDF file
 #endif
+#ifdef EXACT_RESTART
+        call get_initial (nrrec-1, 2) ! Set initial conditions
+                                      ! in case of restart
+C$OMP BARRIER
+# ifdef SOLVE3D
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_depth (tile)       !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+# endif
+#endif
+        call get_initial (nrrec, 1)   ! Set initial conditions
+#ifdef ANA_INITIAL
+      else  ! nrrec.eq.0
+# if defined OA_COUPLING || defined OW_COUPLING
+        call cpl_prism_define
+        oasis_time = 0
+        MPI_master_only write(*,*)'CPL-ROMS: OASIS_TIME',oasis_time
+# endif
+      endif
+#endif
+                                ! Set initial model clock: at this
+      time=start_time           ! moment "start_time" (global scalar)
+      tdays=time*sec2day        ! is set by get_initial or analytically
+                                ! --> copy it into threadprivate "time"
+
 #ifdef USE_CALENDAR
       ! compute start time and ntimes
-#ifdef ANA_INITIAL
+# ifdef ANA_INITIAL
       ! if no initial file set start_date from croco.in
       if (nrrec.eq.0) time=tool_datosec(run_start_date)
-#endif
+# endif
       time_end=tool_datosec(run_end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
@@ -304,7 +384,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call  pisces_ini_tile (tile)
       enddo
 #endif
-CR      write(*,*) ' -6' MYID 
+CR      write(*,*) ' -6' MYID
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
 !----------------------------------------------------------------------
@@ -353,6 +433,25 @@ C$OMP PARALLEL DO PRIVATE(tile)
       call get_sediment
 # endif
 #endif
+
+!
+!----------------------------------------------------------------------
+!  MUSTANG : initialization sediment concentrations
+!----------------------------------------------------------------------
+!
+#ifdef MUSTANG
+!----------------------------------------------------------------------
+!  computing cell surfaces need for MUSTANG and BIOLink
+!----------------------------------------------------------------------
+# ifdef SUBSTANCE
+      call substance_surfcell
+# endif
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call MUSTANG_init_sediment_main (tile)
+      enddo
+CR      write(*,*)  ' -5' MYID0
+#endif
 !
 !----------------------------------------------------------------------
 !  Finalize grid setup
@@ -362,7 +461,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  zeta is also corrected here for Wetting/Drying
 !  in both 2D and 3D cases
 !
-#if defined  SOLVE3D || defined WET_DRY
+#if defined SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
@@ -404,7 +503,7 @@ CR      write(*,*)  ' -2' MYID
 #endif
 !
 !----------------------------------------------------------------------
-!  Set nudging coefficients 
+!  Set nudging coefficients
 !  for sea surface height, momentum and tracers
 !----------------------------------------------------------------------
 !
@@ -435,7 +534,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #if defined FRC_BRY && !defined ANA_BRY
       call get_bry
-# ifdef BIOLOGY 
+# ifdef BIOLOGY
       call get_bry_bio
 # endif
 #endif
@@ -468,7 +567,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 #endif
 !
-CR      write(*,*) ' -2' MYID 
+CR      write(*,*) ' -2' MYID
 !
 !----------------------------------------------------------------------
 !  Read surface forcing from NetCDF file
@@ -480,11 +579,24 @@ CR      write(*,*) ' -2' MYID
 !  Read tidal harmonics from NetCDF file
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
       call get_tides
 #endif
 !
-CR      write(*,*) ' -1' MYID 
+CR      write(*,*) ' -1' MYID
+!
+!----------------------------------------------------------------------
+! OA "Stand Alone" module : second initialization step (spatial domain)
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS
+      if ( if_oa.eqv..true. ) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+           call online_spectral_diags(tile,0)
+         enddo
+      endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize XIOS I/O server
@@ -501,14 +613,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !----------------------------------------------------------------------
 !  Initialization for Lagrangian floats
-! 
+!
 !  It is done here and not in init_scalars since it must be done only
 !  once (whether child levels exist or not)
 !----------------------------------------------------------------------
 !
 #ifdef FLOATS
-      nrecflt=0 
-      ncidflt=-1 
+      nrecflt=0
+      ncidflt=-1
       flopspval=1.E15  ! spval is the nodata flag for float variables
       deltac2p=2.3     ! distance from the boundary at which a float
                        ! is transferred from child to parent
@@ -562,7 +674,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !  WKB surface wave model:
 !
-!  initialization and spinup to equilibrium 
+!  initialization and spinup to equilibrium
 !----------------------------------------------------------------------
 !
 #ifdef WKB_WWAVE
@@ -650,7 +762,7 @@ C$OMP END MASTER
 #ifdef M3FAST
 # ifdef NBQ_MASS
 !
-! Re-evaluate Hz and Huon,Hvom using 
+! Re-evaluate Hz and Huon,Hvom using
 ! previously computed density rho
 !
 C$OMP PARALLEL DO PRIVATE(tile)
@@ -669,7 +781,21 @@ C$OMP PARALLEL DO PRIVATE(tile)
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile)
-      enddo     
+      enddo
+#endif
+!
+!----------------------------------------------------------------------
+! OA "Stand Alone" module
+!----------------------------------------------------------------------
+!
+#ifdef ONLINE_ANALYSIS
+      if ( if_oa.eqv..true. ) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=0,NSUB_X*NSUB_E-1
+           call online_spectral_diags(tile,1)
+         enddo
+        call output_oa
+      endif
 #endif
 !
 !----------------------------------------------------------------------
@@ -686,15 +812,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
 #endif
-!
-!----------------------------------------------------------------------
-! OA "Stand Alone" modulus
-!----------------------------------------------------------------------
-!
-#ifdef ONLINE_ANALYSIS 
-      call croco_oa(0)
-#endif
 
+#ifdef MUSTANG
+      call MUSTANG_compatibility(vname,indxT,ntrc_salt)
+#endif
 
 CR      write(*,*) '  0' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
@@ -714,11 +835,11 @@ CR      write(*,*) '  0' MYID
 !
 !
 #undef CR
-      MPI_master_only write(stdout,'(/1x,A27/)') 
+      MPI_master_only write(stdout,'(/1x,A27/)')
      &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
-#ifdef USE_CALENDAR 
+#ifdef USE_CALENDAR
       time_mars=time
       time_end=tool_datosec(run_end_date)
 #endif
@@ -730,7 +851,7 @@ CR      write(*,*) '  0' MYID
 #endif
 ! XIOS )
 
-#ifdef SOLVE3D      
+#ifdef SOLVE3D
       iif = -1
       nbstep3d = 0
 #endif
@@ -743,20 +864,32 @@ CR      write(*,*) '  0' MYID
       call computenbmaxtimes
 #endif
 
-      do iicroot=ntstart,ntimes+1
-#ifdef USE_CALENDAR 
-        MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
-        if(time > time_end) goto 99 
+#ifdef MPI_TIME
+! Start Chrono
+      start_time1=PMPI_Wtime()
 #endif
 
+      do iicroot=ntstart,ntimes+1
+#ifdef MPI_TIME
+        start_time1_1=PMPI_Wtime()
+#endif
+
+#ifdef USE_CALENDAR
+        if (mod(iicroot-1,ninfo) .eq. 0) then
+          MPI_master_only write(*,'(a)') tool_sectodat(time_mars)
+        endif
+        if (time .gt. time_end) goto 99
+#endif
 
 #ifdef SOLVE3D
-#if !defined AGRIF
+# ifndef AGRIF
         do iifroot = 0,nfast+2
-#else
+# else
         nbtimes = 0
+        nbmaxprttime = ntimes+1
+        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
-#endif
+# endif
 #endif
 
 #ifdef AGRIF
@@ -768,18 +901,30 @@ CR      write(*,*) '  0' MYID
 #ifdef SOLVE3D
         enddo
 #endif
+#ifdef MPI_TIME
+        start_time1_2=PMPI_Wtime()
+        exe_time_1 = start_time1_2 - start_time1_1
+          if (mynode.eq.0) write(97,*) exe_time_1
+#endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
 
   99  continue                             ! SHUTDOWN:
-C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and 
+#ifdef MPI_TIME
+      start_time2=PMPI_Wtime()
+      exe_time = start_time2 - start_time1
+      MPI_master_only write(stdout,*) '*******************************'
+      MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
+      MPI_master_only write(stdout,*) '*******************************'
+#endif
+C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()
       enddo
       call closecdf
-# ifdef XIOS
-      call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF 
-# endif
+#ifdef XIOS
+      call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
+#endif
 #ifdef AGRIF
 !
 !  Close the netcdf files also for the child grids
@@ -789,9 +934,9 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
         Call Agrif_Instance(parcours % gr)
         call closecdf
 # ifdef XIOS
-        call iom_context_finalize( "crocox") ! needed for XIOS+AGRIF 
+        call iom_context_finalize( "crocox") ! needed for XIOS+AGRIF
 # endif
-        parcours => parcours % next             
+        parcours => parcours % next
       enddo
 #endif
 
@@ -803,18 +948,30 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 
 !     start_time2=PMPI_Wtime()
 !     exe_time = start_time2 - start_time1
-!     if(mynode.eq.0) print*,'exe_time =',exe_time
+!     if (mynode.eq.0) print *,'exe_time =',exe_time
 
 # if defined XIOS
-                               ! MPI finalize done by XIOS
-       call xios_finalize()   ! Even with OASIS, finalize is done by XIOS
+                                ! case XIOS + (OASIS / no OASIS)
+                                !      > MPI finalize done by XIOS
+      call xios_finalize()      !      > if OASIS, finalize is done by XIOS
+                                !      > if AGRIF : done using iom_context_finalize
+!!!#   if !defined AGRIF
+!!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
+!!!#   endif
+
+#  if  !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
+       call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
+#  endif
+
 # elif defined OA_COUPLING || defined OW_COUPLING
-       call prism_terminate_proto(ierr)       ! Finalize OASIS3 (without XIOS)# else
+                                          ! case no XIOS + OASIS
+      call prism_terminate_proto(ierr)    !   > Finalize OASIS3 (without XIOS)
+!!!      call MPI_Finalize (ierr)         !   > Finalize CROCO (without XIOS)
 # else
-       call MPI_Finalize (ierr)
-# endif     
+                                          ! case no XIOS + no OASIS
+      call MPI_Finalize (ierr)            !   > Finalize CROCO (without XIOS)
+# endif
 #endif
 
       stop
       end
-

@@ -224,7 +224,7 @@ c**   enddo
 !
       open (unit=iout,file='check_switches1.F',form='formatted')
       write(iout,'(A/)')  '#include "cppdefs.h"'
-      write(iout,'(/6x,A/)') 'subroutine check_switches1 (iout2,ierr)'
+      write(iout,'(/6x,A/)') 'subroutine check_switches1 (ierr)'
       write(iout,'(4(A,1x,A/),A,14x,A/A,1x,A,3x,A/A,14x,A/A,22x,A)')
      &  '!!!!!! WARNING: THIS IS A MACHINE GENERATED',
      &                                   'CODE, DO NOT EDIT! !!!!!!',
@@ -243,10 +243,10 @@ c**   enddo
      &  '!!!!!! Number of Configuration Choices:',nexample, '!!!!!!',
      &  '!!!!!! Total number of CPP-switches:', nswitches,  '!!!!!!'
       write(iout,'(2(/6x,A), 5(/A) /6x,A /5x,A1,6x,A, 5(/6x,A))')
-     &  'implicit none',        'integer iout2, ierr, is,ie, iexample', 
+     &  'implicit none',        'integer ierr, is,ie, iexample', 
      &  '#include "param.h"',   '#include "strings.h"', 
      &  '#ifdef MPI',           '# include "scalars.h"',    '#endif',
-     &  'MPI_master_only write(iout2,''(/1x,A/)'')',       '&',
+     &  'MPI_master_only write(stdout,''(/1x,A/)'')',       '&',
      &  '''Activated C-preprocessing Options:''',
      &  'do is=1,max_opt_size', '  Coptions(is:is)='' ''',  'enddo',
      &                                       'iexample=0',  'is=1'
@@ -255,7 +255,7 @@ c**   enddo
         write(iout,'(A,1x,A)') '#ifdef', switch(i)(1:ln)
         if (i.le.nexample) write(iout,'(6x,A)') 'iexample=iexample+1'
         write(iout,'(6x,A,1x,A1,A,A1)')
-     &         'MPI_master_only write(iout2,''(10x,A)'')',
+     &         'MPI_master_only write(stdout,''(10x,A)'')',
      &                       '''', switch(i)(1:ln), ''''
         write(iout,'(6x,A7,I2/6x,A/6x,A,A,A1/6x,A/6x,A/A)')
      &       'ie=is +', ln-1, 'if (ie.ge.max_opt_size) goto 99', 
@@ -263,17 +263,17 @@ c**   enddo
      &       'Coptions(ie+1:ie+1)='' ''', 'is=ie+2', '#endif'
       enddo
       write(iout,'(6x,A/6x,A/8x,A/5x,A1,1x,A/8x,A/6x,A)')
-     &     'MPI_master_only write(iout2,''(/)'')',
+     &     'MPI_master_only write(stdout,''(/)'')',
      &     'if (iexample.eq.0) then',
-     &     'MPI_master_only write(iout2,''(1x,A)'')', '&',
+     &     'MPI_master_only write(stdout,''(1x,A)'')', '&',
      &   '''ERROR in "cppdefs.h": no configuration is specified.''',
      &     'ierr=ierr+1',  'elseif (iexample.gt.1) then'
       write(iout,'(8x,A/5x,A1,1x,A/8x,A/6x,A/6x,A)')
-     &     'MPI_master_only write(iout2,''(1x,A)'')', '&',
+     &     'MPI_master_only write(stdout,''(1x,A)'')', '&',
      &   '''ERROR: more than one configuration in "cppdefs.h".''',
      &     'ierr=ierr+1', 'endif', 'return'
       write(iout,'(2x,A/5x,A1,2x,A,1x,A/5x,A1,2x,A,1x,A)')
-     &   '99  MPI_master_only write(iout2,''(/1x,A,A/14x,A)'')',
+     &   '99  MPI_master_only write(stdout,''(/1x,A,A/14x,A)'')',
      &   '&', '''CHECKDEFS -- ERROR: Unsufficient size of string',
      &     'Coptions'',', '&', '''in file "strings.h".'',',
      &                   '''Increase the size it and recompile.''' 

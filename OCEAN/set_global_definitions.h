@@ -30,7 +30,8 @@
  two ghost zones is then exchanged by message passing. 
 */
 #if defined TS_HADV_UP5   || defined TS_HADV_C6 || \
-    defined TS_HADV_WENO5 || defined BIO_HADV_WENO5
+    defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+    defined BEDLOAD_UP5   || defined BEDLOAD_WENO5
 # define THREE_GHOST_POINTS
 # define THREE_GHOST_POINTS_TS
 #endif
@@ -61,7 +62,6 @@
 #    define START_1D_ARRAYETA -2
 #   else
 #    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
-#    define START_2D_ARRAY -2,0
 #    define START_2D_ARRAY -2,0
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_1D_ARRAYETA 0
@@ -189,7 +189,7 @@
 #define ZEROTH_TILE Istr+Jstr.eq.2
 
 /*
-  Occasinally a subroutine designed to process a tile may be called
+  Occasionally a subroutine designed to process a tile may be called
  to process the whole domain. If it is necessary to distinguish
  whether it is being called for the whole domain (SINGLE_TILE_MODE)
  or a tile. This switch is the same for MPI/nonMPI code.
@@ -201,10 +201,25 @@
 # define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lm+Mm-2
 #endif
 
-/*
-  Define time indices logic
-*/
-#define FIRST_TIME_STEP iic.eq.ntstart
+
+/* Normally initial condition exists only as a single time record
+ at given time.  This requires the use of a two-time-level scheme
+ "forw_start" to start time stepping (in our case a RK2 --- forward
+ Euler + trapezoidal correction is used for the initial step). If
+ the run is interrupted and restarted from a single record, the use
+ of forward step causes differences between the results obtained by
+ a continuous run.  Macro EXACT_RESTART activates the option of
+ saving two consecutive time steps into restart file allowing exact
+ restart. */
+
+#ifdef EXACT_RESTART
+# define FIRST_TIME_STEP iic.eq.forw_start
+#else
+# define FIRST_TIME_STEP iic.eq.ntstart
+#endif
+#define FIRST_RST_TIME_STEP iic.eq.ntstart
+/* First time step after initialisation, always equal to iic.eq.ntstart
+   no dependence to EXACT_ or SOFT_RESTART */
 #ifdef SOLVE3D
 # define FIRST_2D_STEP iif.eq.1
 # define LAST_2D_STEP iif.eq.nfast

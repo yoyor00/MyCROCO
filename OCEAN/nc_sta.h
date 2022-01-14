@@ -43,9 +43,15 @@
      &      , staX,       staY
 #endif
 #ifdef SOLVE3D
-     &      , staDepth,   staDen,   staTemp
+     &      , staDepth,   staDen
+# ifdef TEMPERATURE
+     &      , staTemp
+# endif
 # ifdef SALINITY
      &      , staSal
+# endif
+# ifdef MUSTANG
+     &      , staMUS(NT-2)
 # endif
 #endif
       logical wrtsta(stafield)
@@ -60,10 +66,17 @@
      &      , staX,       staY
 #endif
 #ifdef SOLVE3D
-     &      , staDepth,   staDen,   staTemp
+     &      , staDepth,   staDen
+# ifdef TEMPERATURE
+     &      ,   staTemp
+# endif
 # ifdef SALINITY
      &      , staSal
 # endif
+# ifdef MUSTANG
+     &      , staMUS
+# endif
+
 #endif
      &      , wrtsta
 

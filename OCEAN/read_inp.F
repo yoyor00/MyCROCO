@@ -1,4 +1,4 @@
-! $Id: read_inp.F 1615 2014-12-17 13:27:07Z rblod $
+! read_inp.F 1615 2014-12-17 13:27:07Z rblod $
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
@@ -19,7 +19,9 @@
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#include "sediment.h"
+#ifdef SEDIMENT                                        
+# include "sediment.h"
+#endif
 #ifdef FLOATS
 # include "ncscrum_floats.h"
 #endif
@@ -79,7 +81,7 @@
 # else
       fname='TEST_CASES/croco.in.Grav_adj'
 # endif
-#elif defined I_SOLITON
+#elif defined ISOLITON
       fname='TEST_CASES/croco.in.Isoliton'
 #elif defined INNERSHELF
       fname='TEST_CASES/croco.in.Innershelf'
@@ -147,6 +149,26 @@
 # elif defined SOLID_BODY_PER
       fname='TEST_CASES/croco.in.TS_adv_rep'
 # endif
+#elif defined DUNE
+# ifdef DUNE3D
+      fname='TEST_CASES/croco.in.Dune3d'
+# elif defined ANA_DUNE
+      fname='TEST_CASES/croco.in.Ana_dune'
+# else
+      fname='TEST_CASES/croco.in.Dune'
+# endif
+#elif defined SED_TOY
+# ifdef SED_TOY_RESUSP
+      fname='TEST_CASES/croco.in.Sed_toy_resusp'
+# elif defined SED_TOY_CONSOLID
+      fname='TEST_CASES/croco.in.Sed_toy_consolid'
+# elif defined SED_TOY_FLOC
+      fname='TEST_CASES/croco.in.Sed_toy_floc'
+# elif defined SED_TOY_ROUSE
+      fname='TEST_CASES/croco.in.Sed_toy_rouse'
+# endif
+#elif defined TIDAL_FLAT
+      fname='TEST_CASES/croco.in.Tidal_flat'
 #else
       fname='croco.in'
 #endif
@@ -201,15 +223,17 @@
       wrtavg(indxTime)=.false.
 #endif
 
-#ifdef DIAGNOSTICS_TS
+#ifdef TRACERS
+# ifdef DIAGNOSTICS_TS
       wrtdia3D(NT+1)=.false.
-# ifdef AVERAGES
-      wrtdia3D_avg(NT+1)=.false.
-# endif
-# ifdef DIAGNOSTICS_TS_MLD
-      wrtdia2D(NT+1)=.false.
 #  ifdef AVERAGES
+      wrtdia3D_avg(NT+1)=.false.
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+      wrtdia2D(NT+1)=.false.
+#   ifdef AVERAGES
       wrtdia2D_avg(NT+1)=.false.
+#   endif
 #  endif
 # endif
 #endif
@@ -231,7 +255,7 @@
       wrtdiags_ek_avg(3)=.false.
 #endif
 #endif
-#ifdef DIAGNOSTICS_PV
+#if defined DIAGNOSTICS_PV && defined TRACERS
       wrtdiags_pv(NT+1)=.false.
 #ifdef AVERAGES
       wrtdiags_pv_avg(NT+1)=.false.
@@ -299,6 +323,26 @@
         lstr=lenstr(title)
         MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 !
+#ifdef XIOS
+!
+! origin_date is the origin date of time axis.
+! It must the same used in croco_tool for input files preprocessing
+! 
+      elseif (keyword(1:kwlen).eq.'origin_date') then
+          call cancel_kwd (keyword(1:kwlen), ierr)
+          read(input,'(A)',err=95) origin_date
+          lstr=lenstr(origin_date)
+          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &    'Origin date of time axis (dd/mm/yy hh:mm:ss) :',
+     &    origin_date(1:lstr)
+          origin_date_in_sec=tool_datosec(origin_date(1:lstr))
+      READ(origin_date(1:2),fmt='(i2)') origin_day
+      READ(origin_date(4:5),fmt='(i2)') origin_month
+      READ(origin_date(7:10),fmt='(i4)') origin_year
+      READ(origin_date(12:13),fmt='(i2)') origin_hour
+      READ(origin_date(15:16),fmt='(i2)') origin_minute
+      READ(origin_date(18:19),fmt='(i2)') origin_second
+#endif
 #ifdef START_DATE
 !
 ! Start date
@@ -449,7 +493,7 @@
                                      !defined WKB_WWAVE && \
                                      !defined OW_COUPLING) \
           || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_EP   && \
+                                   !defined BULK_FLUX   && \
                                    !defined OA_COUPLING) \
           || (defined QCORRECTION && !defined ANA_SST   && \
                                    !defined OA_COUPLING) \
@@ -459,7 +503,7 @@
                                    !defined OA_COUPLING && \
                                    defined SOLVE3D) \
           || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_EP && \
+                                   !defined BULK_FLUX && \
                                    !defined OA_COUPLING && \
                                     defined SOLVE3D) \
           || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
@@ -467,10 +511,8 @@
                                    defined SOLVE3D) \
           || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
                                    !defined OA_COUPLING) \
-          || (defined BULK_FLUX  && \
-                                      (!defined BULK_SMFLUX || \
-                                       !defined BULK_EP)) \
-        )
+          || ( defined BULK_FLUX    && !defined SALINITY ) \
+          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
 !
 !
 ! Forcing file name. Check its availability.
@@ -488,6 +530,26 @@
         MPI_master_only write(stdout,'(2x,A,2x,A)')
      &             'Forcing Data File:', frcname(1:lstr)
 #endif  /* !defined NO_FRCFILE */
+
+!
+
+# if defined WAVE_OFFLINE && defined MUSTANG
+! Forcing file name. Check its availability.
+!
+      elseif (keyword(1:kwlen).eq.'wave_offline') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        wave_file=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &             'Wave Data File:', wave_file(1:lstr)
+#endif  /* !defined WAVE_OFFLINE */
+
 !
 ! Biology forcing: iron dust deposition. 
 !
@@ -1078,7 +1140,9 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
-     &                    , (wrthis(itrc), itrc=indxT,indxT+NT-1) 
+# ifdef TRACERS
+     &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT) 
+# endif
 #endif
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
 #ifdef SOLVE3D
@@ -1094,12 +1158,14 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
+# ifdef TRACERS
         do itrc=1,NT
-          if (wrthis(indxT+itrc-1)) wrthis(indxTime)=.true.
+          if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
-     &                     wrthis(indxT+itrc-1), 'write T(', itrc,
+     &                     wrthis(indxV+itrc), 'write T(', itrc,
      &                              ')  Tracer of index', itrc,'.'
         enddo
+# endif
 #endif
 
 #if !defined SOLVE3D && defined RIP
@@ -1120,7 +1186,11 @@ c        close(testunit)
      &                                          ,  wrthis(indxO)
      &                                          ,  wrthis(indxW)
      &                                          ,  wrthis(indxAkv)
+# ifdef TEMPERATURE
      &                                          ,  wrthis(indxAkt)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrthis(indxAks)
 # else 
@@ -1159,24 +1229,42 @@ c        close(testunit)
      &                                          ,  wrthis(indxWstr)
      &                                          ,  wrthis(indxUWstr)
      &                                          ,  wrthis(indxVWstr)
+# ifdef TEMPERATURE
      &                                          ,  wrthis(indxShflx)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrthis(indxSwflx)
 # else 
      &                                          ,  dumboolean
 # endif
+# ifdef TEMPERATURE
      &                                          ,  wrthis(indxShflx_rsw)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef BULK_FLUX
-     &                                          , wrthis(indxShflx_rlw)
-     &                                          , wrthis(indxShflx_lat)
-     &                                          , wrthis(indxShflx_sen)
+     &                                          ,  wrthis(indxShflx_rlw)
+     &                                          ,  wrthis(indxShflx_lat)
+     &                                          ,  wrthis(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          ,  wrthis(indxBhflx)
+#else
+     &                                          ,  dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          ,  wrthis(indxBwflx)
+#else
+     &                                          ,  dumboolean
+#endif       
 # ifdef MORPHODYN
-     &                                          , wrthis(indxHm)
+     &                                          ,  wrthis(indxHm)
 # else 
      &                                          ,  dumboolean
 # endif
@@ -1199,7 +1287,9 @@ c        close(testunit)
      &                                        .or. wrthis(indxO) 
      &                                        .or. wrthis(indxW)
      &                                        .or. wrthis(indxAkv)
+# ifdef TEMPERATURE
      &                                        .or. wrthis(indxAkt)
+# endif
 # ifdef SALINITY
      &                                        .or. wrthis(indxAks)
 # endif
@@ -1226,16 +1316,26 @@ c        close(testunit)
      &                                        .or. wrthis(indxWstr)
      &                                        .or. wrthis(indxUWstr)
      &                                        .or. wrthis(indxVWstr)
+# ifdef TEMPERATURE
      &                                        .or. wrthis(indxShflx)
+# endif
 # ifdef SALINITY
      &                                        .or. wrthis(indxSwflx)
 # endif
+# ifdef TEMPERATURE
      &                                        .or. wrthis(indxShflx_rsw)
+# endif
 # if defined BULK_FLUX
      &                                        .or. wrthis(indxShflx_rlw)
      &                                        .or. wrthis(indxShflx_lat)
      &                                        .or. wrthis(indxShflx_sen)
 # endif
+# if defined BHFLUX
+     &                                        .or. wrthis(indxBhflx)
+# endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrthis(indxBwflx)
+# endif 
 # if defined BIOLOGY && !defined PISCES
      &                                        .or. wrthis(indxHel)
 #  ifdef BIO_NChlPZD
@@ -1258,8 +1358,10 @@ c        close(testunit)
      &  , wrthis(indxO),    'write Omega', 'Omega vertical velocity.'
      &  , wrthis(indxW),    'write W    ', 'True vertical velocity.'
      &  , wrthis(indxAkv),  'write Akv  ', 'Vertical viscosity.'
+# ifdef TEMPERATURE
      &  , wrthis(indxAkt),  'write Akt  ',
      &                      'Vertical diffusivity for temperature.'
+# endif
 # ifdef SALINITY
      &  , wrthis(indxAks),  'write Aks  ',
      &                      'Vertical diffusivity for salinity.'
@@ -1293,7 +1395,7 @@ c        close(testunit)
      &                                 'Sensible heat flux'
 # endif
 # ifdef MORPHODYN
-     &  , wrthis(indxHm), 'write Hm [m]',
+     &  , wrthis(indxHm),   'write Hm [m]',
      &                                 'Time evolving bathymetry'
 # endif 
 # if defined BIOLOGY && !defined PISCES
@@ -1322,14 +1424,26 @@ c        close(testunit)
      &  , wrthis(indxWstr),  'write Wstress', 'Wind Stress.'
      &  , wrthis(indxUWstr), 'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrthis(indxVWstr), 'write V-Wstress comp.', 'V-Wind Stress.'
+# ifdef TEMPERATURE
      &  , wrthis(indxShflx), 'write Shflx [W/m2]', 
      &                       'Surface net heat flux'
+# endif
 # ifdef SALINITY
      &  , wrthis(indxSwflx), 'write Swflx [cm/day]', 
      &                       'Surface freshwater flux (E-P)'
 # endif
+# ifdef TEMPERATURE
      &  , wrthis(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                          'Short-wave surface radiation'
+# endif
+# ifdef BHFLUX
+     &  , wrthis(indxBhflx), 'write Bhflx [W/m2]', 
+     &                       'Bottom net heat flux'        
+# endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrthis(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Bottom freshwater flux (E-P)'
+# endif        
 
 !
 ! Switches for GLS fields to be saved into history file.
@@ -1361,7 +1475,9 @@ c        close(testunit)
      &                                    ,  wrtavg(indxVb)
 # ifdef SOLVE3D
      &                    ,  wrtavg(indxU),  wrtavg(indxV)
-     &                    , (wrtavg(itrc), itrc=indxT,indxT+NT-1)
+#  ifdef TRACERS
+     &                    , (wrtavg(itrc), itrc=indxV+1,indxV+NT)
+#  endif
 # endif
         if ( wrtavg(indxZ) .or. wrtavg(indxUb) .or. wrtavg(indxVb)
 # ifdef SOLVE3D
@@ -1377,18 +1493,25 @@ c        close(testunit)
 # ifdef SOLVE3D
      &  , wrtavg(indxU),  'write U    ', '3D U-momentum component.'
      &  , wrtavg(indxV),  'write V    ', '3D V-momentum component.'
-        do itrc=1,NT
-          if (wrtavg(indxT+itrc-1)) wrtavg(indxTime)=.true.
+#  ifdef TRACERS
+         do itrc=1,NT
+          if (wrtavg(indxV+itrc)) wrtavg(indxTime)=.true.
           MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
-     &                      wrtavg(indxT+itrc-1), 'write T(',
+     &                      wrtavg(indxV+itrc), 'write T(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
         enddo
+#  endif
 
       elseif (keyword(1:kwlen).eq.'auxiliary_averages') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wrtavg(indxR), wrtavg(indxO)
-     &        ,  wrtavg(indxW),  wrtavg(indxAkv),  wrtavg(indxAkt)
+     &        ,  wrtavg(indxW),  wrtavg(indxAkv)
+# ifdef TEMPERATURE
+     &                                          ,  wrtavg(indxAkt)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrtavg(indxAks)
 # else 
@@ -1427,24 +1550,42 @@ c        close(testunit)
      &                                          ,  wrtavg(indxWstr)
      &                                          ,  wrtavg(indxUWstr)
      &                                          ,  wrtavg(indxVWstr)
+# ifdef TEMPERATURE
      &                                          ,  wrtavg(indxShflx)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef SALINITY
      &                                          ,  wrtavg(indxSwflx)
 # else 
      &                                          ,  dumboolean
 # endif
+# ifdef TEMPERATURE
      &                                          ,  wrtavg(indxShflx_rsw)
+# else 
+     &                                          ,  dumboolean
+# endif
 # ifdef BULK_FLUX
-     &                                          , wrtavg(indxShflx_rlw)
-     &                                          , wrtavg(indxShflx_lat)
-     &                                          , wrtavg(indxShflx_sen)
+     &                                          ,  wrtavg(indxShflx_rlw)
+     &                                          ,  wrtavg(indxShflx_lat)
+     &                                          ,  wrtavg(indxShflx_sen)
 # else 
      &                                          ,  dumboolean
      &                                          ,  dumboolean
      &                                          ,  dumboolean
 # endif
+#ifdef BHFLUX
+     &                                          , wrtavg(indxBhflx)
+#else
+     &                                          , dumboolean
+#endif
+#if defined BWFLUX && defined SALINITY 
+     &                                          , wrtavg(indxBwflx)
+#else
+     &                                          , dumboolean
+#endif      
 # ifdef MORPHODYN
-     &                                          , wrtavg(indxHm)
+     &                                          ,  wrtavg(indxHm)
 # else 
      &                                          ,  dumboolean
 # endif
@@ -1464,7 +1605,10 @@ c        close(testunit)
 # endif
 
         if ( wrtavg(indxR) .or. wrtavg(indxO) .or. wrtavg(indxW)
-     &                   .or. wrtavg(indxAkv) .or. wrtavg(indxAkt)
+     &                   .or. wrtavg(indxAkv) 
+#  ifdef TEMPERATURE
+     &                                        .or. wrtavg(indxAkt)
+#  endif
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxAks)
 #  endif
@@ -1491,17 +1635,27 @@ c        close(testunit)
      &                                        .or. wrtavg(indxWstr)
      &                                        .or. wrtavg(indxUWstr)
      &                                        .or. wrtavg(indxVWstr)
+#  ifdef TEMPERATURE
      &                                        .or. wrtavg(indxShflx)
+#  endif
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxSwflx)
 #  endif
+#  ifdef TEMPERATURE
      &                                        .or. wrtavg(indxShflx_rsw)
+#  endif
      &     
 #  ifdef BULK_FLUX
      &                                        .or. wrtavg(indxShflx_rlw)
      &                                        .or. wrtavg(indxShflx_lat)
      &                                        .or. wrtavg(indxShflx_sen)
-#  endif 
+#  endif
+# if defined BHFLUX
+     &                                        .or. wrtavg(indxBhflx)
+#endif
+# if defined BWFLUX && defined SALINITY
+     &                                        .or. wrtavg(indxBwflx)
+#endif 
 #  if defined BIOLOGY && !defined PISCES
      &                                        .or. wrtavg(indxHel)
 #   ifdef BIO_NChlPZD
@@ -1525,8 +1679,10 @@ c        close(testunit)
      &  , wrtavg(indxO),    'write Omega', 'Omega vertical velocity.'
      &  , wrtavg(indxW),    'write W    ', 'True vertical velocity.'
      &  , wrtavg(indxAkv),  'write Akv  ', 'Vertical viscosity'
+#  ifdef TEMPERATURE
      &  , wrtavg(indxAkt),  'write Akt  ',
      &                      'Vertical diffusivity for temperature.'
+#  endif
 #  ifdef SALINITY
      &  , wrtavg(indxAks),  'write Aks  ',
      &                         'Vertical diffusivity for salinity.'
@@ -1590,15 +1746,26 @@ c        close(testunit)
      &  , wrtavg(indxWstr), 'write Wstr', 'Wind Stress.'
      &  , wrtavg(indxUWstr),'write U-Wstress comp.', 'U-Wind Stress.'
      &  , wrtavg(indxVWstr),'write V-Wstress comp.', 'V-Wind Stress.'
+#  ifdef TEMPERATURE
      &  , wrtavg(indxShflx),'write Shflx [W/m2]', 
      &                      'Surface net heat flux.'
+#  endif
 #  ifdef SALINITY
      &  , wrtavg(indxSwflx),'write Swflx [cm/day]', 
      &                      'Surface freshwater flux (E-P)'
 #  endif
+#  ifdef TEMPERATURE
      &  , wrtavg(indxShflx_rsw),'write Shflx_rsw [W/m2]', 
      &                      'Short-wave surface radiation.'
-
+# endif     
+# ifdef BHFLUX
+     &  , wrtavg(indxBhflx), 'write Bhflx [W/m2]', 
+     &       'Bottom net heat flux'        
+# endif
+# if defined BWFLUX && defined SALINITY
+     &  , wrtavg(indxBwflx), 'write Bwflx [cm/day]', 
+     &                       'Surface freshwater flux (E-P)'
+# endif     
 !
 ! Switches for GLS fields to be saved into history file.
 !
@@ -1652,6 +1819,7 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'diag3D_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef TRACERS
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
@@ -1660,9 +1828,11 @@ c        close(testunit)
      &        'write Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+# endif  /* TRACERS */
 # ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95)  (wrtdia2D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia2D(itrc)) wrtdia2D(NT+1)=.true.
@@ -1671,6 +1841,7 @@ c        close(testunit)
      &        'write Hbl Integrated Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
 # ifdef AVERAGES
@@ -1679,6 +1850,7 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'diag3D_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
@@ -1687,10 +1859,12 @@ c        close(testunit)
      &        'write Avg Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#  endif  /* TRACERS */
 !
 #  ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#   ifdef TRACERS
         read(input,*,err=95) (wrtdia2D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia2D_avg(itrc)) wrtdia2D_avg(NT+1)=.true.
@@ -1699,6 +1873,7 @@ c        close(testunit)
      &        'write Avg Hbl Integrated  Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#   endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */
 
@@ -1808,6 +1983,7 @@ c        close(testunit)
 !!          wrtdiags_pv=.true.
       elseif (keyword(1:kwlen).eq.'diags_pv_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+# ifdef TRACERS
         read(input,*,err=95)  (wrtdiags_pv(itrc), itrc=1,NT)
          do itrc=1,NT
            if (wrtdiags_pv(itrc)) wrtdiags_pv(3)=.true.
@@ -1815,11 +1991,13 @@ c        close(testunit)
      &         wrtdiags_pv(itrc),
      &         'write potential vorticity terms '
         enddo
+# endif /* TRACERS  */
 
 # ifdef AVERAGES
 !!         wrtdiags_pv_avg=.true.
       elseif (keyword(1:kwlen).eq.'diags_pv_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (wrtdiags_pv_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdiags_pv_avg(itrc)) wrtdiags_pv_avg(3)=.true.
@@ -1827,6 +2005,7 @@ c        close(testunit)
      &        wrtdiags_pv_avg(itrc),
      &         'write potential vorticity terms '
        enddo
+#  endif /* TRACERS  */
 # endif /* AVERAGES  */
 #endif /*DIAGNOSTICS_PV */
 
@@ -1843,7 +2022,7 @@ c        close(testunit)
            if (wrtdiags_eddy(itrc)) wrtdiags_eddy(3)=.true.
            MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_eddy(itrc),
-     &         'write potential vorticity terms '
+     &         'write Reynolds stress terms '
         enddo
 
 # ifdef AVERAGES
@@ -1855,13 +2034,13 @@ c        close(testunit)
           if (wrtdiags_eddy_avg(itrc)) wrtdiags_eddy_avg(3)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiags_eddy_avg(itrc),
-     &         'write potential vorticity terms '
+     &         'write Reynolds stress terms '
        enddo
 # endif /* AVERAGES  */
 #endif /*DIAGNOSTICS_EDDY */
 
 
-#if defined OUTPUTS_SURFACE
+#if defined OUTPUTS_SURFACE && ! defined XIOS
 !
 ! Switches for fields to be saved into surface outputs file.
 !
@@ -2051,7 +2230,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
      &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
      &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &      Zobt, 'Zobt      Bottom roughness for logarithmic law (m).',
+     &     Zobt, 'Zobt     Bottom roughness for logarithmic law (m).',
      &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
      &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
 !
@@ -2070,12 +2249,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'tracer_diff2') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (tnu2(itrc),itrc=1,NT)
         do itrc=1,NT
           MPI_master_only write(stdout,7) tnu2(itrc), itrc, itrc
    7      format(1pe10.3,'  tnu2(',i2,')  Horizontal Laplacian '
      &     ,'mixing coefficient (m2/s)',/,32x,'for tracer ',i2,'.')
         enddo
+#  endif /* TRACERS */
 # endif
 # ifdef TS_DIF4
 !
@@ -2083,12 +2264,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'tracer_diff4') then
         call cancel_kwd (keyword(1:kwlen), ierr)
+#  ifdef TRACERS
         read(input,*,err=95) (tnu4(itrc),itrc=1,NT)
         do itrc=1,NT
           MPI_master_only write(stdout,8) tnu4(itrc), itrc, itrc
    8      format(1pe10.3,'  tnu4(',i2,')  Horizontal biharmonic'
      &    ,' mixing coefficient [m4/s]',/,32x,'for tracer ',i2,'.')
         enddo
+#  endif /* TRACERS */
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
@@ -2098,10 +2281,13 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'vertical_mixing') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
+#  ifdef TRACERS
+         read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
+#  endif /* TRACERS */
         MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'
+#  ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &           '(1pe10.3,2x,A,I2,A,1x,A/32x,A,I2,A)')
@@ -2109,6 +2295,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &           'Background vertical mixing coefficient, m2/s,',
      &                                  'for tracer ', itrc, '.' 
         enddo
+#  endif /* TRACERS */
 # endif
 # ifdef BODYFORCE
       elseif (keyword(1:kwlen).eq.'bodyforce') then
@@ -2191,7 +2378,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif
 #ifdef SOLVE3D
-# ifndef NONLIN_EOS
+# if !defined NONLIN_EOS
 !
 ! Parameters for linear equations of state.
 !
@@ -2211,41 +2398,44 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 # ifdef SEDIMENT
 !
-! Sediments input file name.
+! Sediments input file name for USGS sediment model.
 !
       elseif (keyword(1:kwlen).eq.'sediments') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) sedname
-        lstr=lenstr(sedname)
-    
+        
         MPI_master_only write(stdout,
      &              '(/9x,A,2x,A)')
      &        'Sediment input file:',sedname
-
       elseif (keyword(1:kwlen).eq.'sediment_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) 
-     &                   (wrthis(itrc), itrc=indxSed,indxSed+NST+1
-#  ifdef SUSPLOAD
+     &                   (wrthis(itrc), itrc=indxSed-1,indxSed+NST+1
+#   ifdef SUSPLOAD
      &                                       +2*NST
-#  endif
-#  ifdef BEDLOAD
+#   endif
+#   ifdef BEDLOAD
      &                                       +2*NST 
-#  endif     
+#   endif     
+#   if defined MIXED_BED || defined COHESIVE_BED
+     &                                       + 1
+#   endif     
      &  ) 
-#  ifdef AVERAGES
+#   ifdef AVERAGES
         do itrc=indxSed,indxSed+NST+1
-#  ifdef SUSPLOAD
+#   ifdef SUSPLOAD
      &                                       +2*NST
-#  endif
-#  ifdef BEDLOAD
+#   endif
+#   ifdef BEDLOAD
      &                                       +2*NST 
-#  endif     
-          wrtavg(itrc)=wrthis(itrc)
+#   endif
+         wrtavg(itrc)=wrthis(itrc)
         enddo
-#  endif
-        MPI_master_only write(stdout,'(2(/6x,L1,2x,A,1x,A))')
-     &    wrthis(indxBTHK), 'write bed_thick ', 
+#   endif
+        MPI_master_only write(stdout,'(3(/6x,L1,2x,A,1x,A))')
+     &    wrthis(indxATHK), 'write act_thick ', 
+     &                            'thickness of active bed layer.'
+     &  , wrthis(indxBTHK), 'write bed_thick ', 
      &                            'thickness of sediment bed layer.'
      &  , wrthis(indxBPOR), 'write bed_poros ', 
      &                             'porosity of sediment bed layer.'
@@ -2254,19 +2444,19 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxBFRA(itrc)), 'write bed_frac(',itrc,
      &                   ') Sediment fraction of index ',itrc,'.'
         enddo
-#  ifdef SUSPLOAD
+#   ifdef SUSPLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
-     &          wrthis(indxDFLX(itrc)), 'write erosion flux(',itrc,
+     &          wrthis(indxDFLX(itrc)), 'write deposition flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
-     &          wrthis(indxEFLX(itrc)), 'write deposition flux(',itrc,
+     &          wrthis(indxEFLX(itrc)), 'write erosion flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
-#  endif
-#  ifdef BEDLOAD
+#   endif
+#   ifdef BEDLOAD
         do itrc=1,NST
             MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxBDLU(itrc)), 'write xi-bedload flux(',itrc,
@@ -2277,8 +2467,39 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &          wrthis(indxBDLU(itrc)), 'write eta-bedload flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
-#  endif
+#   endif
+#   if defined MIXED_BED || defined COHESIVE_BED
+        MPI_master_only write(stdout,'(6x,L1,2x,A,1x,A)')
+     &      wrthis(indxBTCR), 'write bed_tau_crit ',
+     &                            'critical stress of bed layer.'
+#   endif
+# elif defined MUSTANG
+!
+! Sediments input file name for Mustang.
+!
+      elseif (keyword(1:kwlen).eq.'sediments_mustang') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) sedname_subst
+        read(input,'(A)',err=95) sedname_must
+        lstr=lenstr(sedname_subst)
+        MPI_master_only write(stdout,'(7x,A,10x,A)')
+     &         'Sediment input file for Substance:' ,
+     &          sedname_subst(1:lstr)
+        lstr=lenstr(sedname_must)
+        MPI_master_only write(stdout,'(7x,A,2x,A/)')
+     &         'Sediment input file for Mustang (version):' ,
+     &          sedname_must(1:lstr)
+
 # endif /* SEDIMENT */
+#endif
+#if defined SUBSTANCE && !defined MUSTANG
+      elseif (keyword(1:kwlen).eq.'substance') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) subsname
+        lstr=lenstr(subsname)
+        MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Substance:' ,
+     &          subsname(1:lstr)
 #endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
@@ -2428,7 +2649,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
-#ifdef WKB_WWAVE
+#if defined WKB_WWAVE
 !
 ! WKB primary waves and empirical breaking model parameters
 !
@@ -2495,11 +2716,13 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                    (Lsrc(is,itrc), itrc=1,30)
+     &                                    (Lsrc(is,itrc), itrc=1,NT)
 #  else
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                     (Lsrc(is,itrc), itrc=1,30),
+     &                                     (Lsrc(is,itrc), itrc=1,NT),
+#   ifdef TRACERS
      &                                     (Tsrc0(is,itrc), itrc=1,NT)
+#   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */ 
 
         MPI_master_only write(stdout,'(3(/6x,i6,2x,A),(/6x,F6.0,2x,A))')
@@ -2518,19 +2741,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           Jsrc_mpi(is,mynode)=-1
         endif
 #  endif
+#  ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &         '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
      &         Lsrc(is,itrc), 'write Lsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
         enddo
+#  endif /* TRACERS */
 #  ifndef PSOURCE_NCFILE_TS
+#   ifdef TRACERS
         do itrc=1,NT
           MPI_master_only write(stdout,
      &         '(6x,1pe10.3,2x,A,I2,A,2x,A,I2,A)')
      &         Tsrc0(is,itrc), 'write Tsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
         enddo
+#   endif /* TRACERS */
 #  endif
       enddo
 # else   
@@ -2543,7 +2770,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
           read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
-#  ifdef SOLVE3D
+#  if defined SOLVE3D && defined TRACERS
      &                                    ,(Lsrc(is,itrc), itrc=1,NT)
      &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
 #  endif
@@ -2565,7 +2792,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
            Jsrc_mpi(is,mynode)=-1
           endif
 #  endif
-#  ifdef SOLVE3D
+#  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT
             MPI_master_only write(stdout,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
@@ -2582,6 +2809,27 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         enddo
 # endif   /*  define PSOURCE_NCFILE  */
 #endif /* ANA_PSOURCE */
+!
+!
+! Hydrothermal forcing file name. Check its availability.
+!
+#if defined BHFLUX || ( defined BWFLUX && defined SALINITY)
+      elseif (keyword(1:kwlen).eq.'bottom_forcing') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES && defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+# if defined MPI && defined PARALLEL_FILES && !defined MPI_NOLAND
+        call insert_node (fname, lstr, mynode, NNODES, ierr)
+# endif
+        open (testunit, file=fname(1:lstr), status='old', err=97)
+        close(testunit)
+        btfname=fname(1:lstr)
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &       'Bottom forcing file:', fname(1:lstr)
+#endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
 ! Online forcing with CFSR
 !
@@ -2639,7 +2887,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 ! Check CPP-switches for consistency. This operation is split into
 ! two stages because the first subroutine, "check_switches1", is
 ! generated by special program cppcheck (file cppcheck.F) by
-! examining and documention all available switches in cppdefs.h.
+! examining and documentation all available switches in cppdefs.h.
 ! This subroutine creates log of all switches defined in "cppdefs.h",
 ! as well as traps multiply defined global configurations (project
 ! switches, such as REGIONAL, etc).

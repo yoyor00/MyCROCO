@@ -22,8 +22,8 @@ else
   echo "unkbown operating system" 1>&2
 fi
 #
-export TOOLSDIR=$HOME/croco_tools/Forecast_tools
-export RUNDIR=${HOME}/croco_tools/Run
+export TOOLSDIR=$HOME/croco/croco_tools/Forecast_tools
+export RUNDIR=${PWD} 
 export MATLAB=/usr/local/bin/matlab
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/loaddap-3.5.2/lib
 
@@ -70,7 +70,7 @@ export ONERUN=1
 #=======================================================================
 #
 export SCRATCHDIR=${RUNDIR}/SCRATCH
-export INPUTDIR=${RUNDIR}
+export INPUTDIR=${RUNDIR}/CROCO_IN
 export MSSDIR=${RUNDIR}/CROCO_FILES
 export MSSOUT=${RUNDIR}/FORECAST
 #
@@ -204,8 +204,8 @@ else
   if [ $ITERATION = 1 ] ; then
     echo 'ITERATION ITERATION'
     $LN -sf $TOOLSDIR/iteration.m iteration.m
-    $LN -sf $RUNDIR/start.m start.m
-    $LN -sf $RUNDIR/crocotools_param.m crocotools_param.m
+    $LN -sf $TOOLSDIR/../start.m start.m
+    $LN -sf $TOOLSDIR/../crocotools_param.m crocotools_param.m
     $MATLAB  -nodisplay < iteration.m > iteration.out
     rm -f iteration.m start.m crocotools_param.m
   fi

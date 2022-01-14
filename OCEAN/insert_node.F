@@ -76,7 +76,17 @@
         else
           leading_dots=.false.
         endif
-      enddo                              ! Determine whether the
+      enddo
+
+      !RB bug : very ugly fix here for AGRIF compatibility
+      !         we shall not count the last dot nc.GRIDNUMBER
+      !         but we cannot use Agrif_Root since insert_node
+      !         is used by ncjoin and partit so we assume files
+      !         ending by nc.? are zoom files
+      !         it won't work for more than 9 child ...
+      if(name(lstr-3:lstr-1) .eq. 'nc.') ndots=ndots-1
+
+                                         ! Determine whether the
                                          ! name has suffix: the last
       lsffx=0                            ! segment of the name is
       if (ndots.gt.0) then               ! considered to be a suffix,

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -24,30 +24,30 @@ C$    integer omp_get_thread_num
 #include "compute_tile_bounds.h"
       trd=0
 C$    trd=omp_get_thread_num()
-      
+
       call step2D_FB_tile ( Istr,Iend,Jstr,Jend, A2d(1,1,trd)
      &                    , A2d(1, 2,trd), A2d(1, 3,trd), A2d(1, 4,trd)
      &                    , A2d(1, 5,trd), A2d(1, 6,trd), A2d(1, 7,trd)
-     &                    , A2d(1, 8,trd), A2d(1, 9,trd) 
+     &                    , A2d(1, 8,trd), A2d(1, 9,trd)
 #ifdef M2_HADV_UP3
-     &                    , A2d(1,10,trd), A2d(1,11,trd) 
+     &                    , A2d(1,10,trd), A2d(1,11,trd)
 #else
-     &                    , A2d(1,10,trd), A2d(1,11,trd) 
-     &                    , A2d(1,12,trd), A2d(1,13,trd)     
+     &                    , A2d(1,10,trd), A2d(1,11,trd)
+     &                    , A2d(1,12,trd), A2d(1,13,trd)
 #endif
      &                    )
 
       return
       end
- 
+
       subroutine step2D_FB_tile (Istr,Iend,Jstr,Jend, zeta_new,
-     &                           Dnew,rubar,rvbar, 
+     &                           Dnew,rubar,rvbar,
      &                           Drhs, UFx,UFe,
      &                           VFx,VFe
 #ifdef M2_HADV_UP3
      &                          ,wrk1,wrk2
-#else                           
-     &                          ,urhs,vrhs 
+#else
+     &                          ,urhs,vrhs
      &                          ,DUon,DVom
 #endif
      &                          )
@@ -60,13 +60,13 @@ C$    trd=omp_get_thread_num()
 ! with baroclinic mode.
 !
 ! Forward-Backward schemes for coupled equations (here free-surface zeta
-! and 2D momentum ubar and vbar) are stable for longer time-steps 
-! (alpha_max>1) than synchronous schemes while only needing evaluation 
-! of each r.h.s. term ones. Rather than the original Euler FB schemes, 
-! a generalized FB scheme with an AB3-AM4 step is used here for its added 
-! robustness (for Coriolis and advection terms). It is a combination of 
-! AB3-like step for zeta and AM4-like step for ubar and vbar but with 
-! coefficients chosen for maximum stability (e.g. beta=5/12 in original 
+! and 2D momentum ubar and vbar) are stable for longer time-steps
+! (alpha_max>1) than synchronous schemes while only needing evaluation
+! of each r.h.s. term ones. Rather than the original Euler FB schemes,
+! a generalized FB scheme with an AB3-AM4 step is used here for its added
+! robustness (for Coriolis and advection terms). It is a combination of
+! AB3-like step for zeta and AM4-like step for ubar and vbar but with
+! coefficients chosen for maximum stability (e.g. beta=5/12 in original
 ! AB3 is replaced by 0.281105):
 !
 ! AB3 Forward step:
@@ -77,24 +77,24 @@ C$    trd=omp_get_thread_num()
 !
 ! AM4 Backward step:
 ! -----------------
-! zetarhs = (1/2+gamma+2*epsilon) * zeta(n+1) + 
+! zetarhs = (1/2+gamma+2*epsilon) * zeta(n+1) +
 !           (1/2-2*gamma-3*epsilon) * zeta(n) +
 !           gamma * zeta(n-1) + epsilon * zeta(n-2)
 ! ubar(n+1) = ubar(n) + RUBAR(zetarhs,ubarrhs,vbarrhs)
 ! vbar(n+1) = vbar(n) + RVBAR(zetarhs,ubarrhs,vbarrhs)
 !
-! beta=0.281105   gamma=0.0880    epsilon=0.013 
+! beta=0.281105   gamma=0.0880    epsilon=0.013
 !
-! Note that the first 2D step is performed with the original Euler FB 
-! scheme and the second 2D step with a AB2-AM3 FB scheme with coefficients 
+! Note that the first 2D step is performed with the original Euler FB
+! scheme and the second 2D step with a AB2-AM3 FB scheme with coefficients
 ! again chosen for maximum stability.
 !
 ! Reference:
 ! ---------
-! Shchepetkin, A.F., and J.C. McWilliams, 2009: Computational kernel 
-! algorithms for fine-scale, multiprocess, longtime oceanic simulations. 
-! Pp. 119–182 in Handbook of Numerical Analysis: Computational Methods 
-! for the Atmosphere and Oceans. R.M. Teman and J.J. Tribbia, eds, 
+! Shchepetkin, A.F., and J.C. McWilliams, 2009: Computational kernel
+! algorithms for fine-scale, multiprocess, longtime oceanic simulations.
+! Pp. 119–182 in Handbook of Numerical Analysis: Computational Methods
+! for the Atmosphere and Oceans. R.M. Teman and J.J. Tribbia, eds,
 ! Elsevier Science.
 !
 !======================================================================
@@ -126,7 +126,7 @@ C$    trd=omp_get_thread_num()
       real     curvX,curvE,cffE,cffX, gamma
       parameter (gamma = -0.25)
 #else
-      real     urhs(PRIVATE_2D_SCRATCH_ARRAY),  
+      real     urhs(PRIVATE_2D_SCRATCH_ARRAY),
      &         vrhs(PRIVATE_2D_SCRATCH_ARRAY),
      &         DUon(PRIVATE_2D_SCRATCH_ARRAY),
      &         DVom(PRIVATE_2D_SCRATCH_ARRAY)
@@ -174,7 +174,7 @@ C$    trd=omp_get_thread_num()
 #else
 # define LOCALLM Lm
 # define LOCALMM Mm
-#endif   
+#endif
 #include "compute_auxiliary_bounds.h"
 !
 !======================================================================
@@ -212,7 +212,7 @@ C$    trd=omp_get_thread_num()
         kbak=kstp-1
         if (kbak.lt.1) kbak=4
         kold=kbak
-        cff1=1.                  ! Logically AB2-AM3 forward-backward 
+        cff1=1.                  ! Logically AB2-AM3 forward-backward
         cff2=0.                  ! scheme with coefficients chosen for
         cff3=0.                  ! maximum stability ... (see below)
       else
@@ -294,7 +294,7 @@ C$    trd=omp_get_thread_num()
 ! Apply point sources for river runoff simulations
 !
 #ifdef PSOURCE
-      do is=1,Nsrc 
+      do is=1,Nsrc
 # ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
@@ -340,15 +340,15 @@ C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step2d #1','r')
        call check_tab2d(ubar(:,:,kstp),'ubar step2d #1','u')
        call check_tab2d(vbar(:,:,kstp),'vbar step2d #1','v')
-C$OMP END MASTER       
-#endif    
+C$OMP END MASTER
+#endif
 !
 !-----------------------------------------------------------------------
 ! Advance free-surface:   Compute zeta_new, which is at new time
 !-------- ---- --------   step, and interpolate half-step backward
 ! for the subsequent computation of barotropic pressure-gradient
-! terms. It should be noted that because Forward Euler step is used 
-! to update zeta during the first barotropic step, the pressure term  
+! terms. It should be noted that because Forward Euler step is used
+! to update zeta during the first barotropic step, the pressure term
 ! must be computed via Backward step to keep it numerically stable.
 ! However, this would interfere with the computation of forcing terms
 ! "rufrc,rvfrc" because computation of pressure gradient in 3D mode
@@ -390,7 +390,7 @@ C$OMP END MASTER
         cff3=0.013
 #endif
       endif
- 
+
 #define zwrk UFx
 #define rzeta  UFe
 #define rzeta2  VFe
@@ -486,31 +486,31 @@ C$OMP END MASTER
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dnew(i,j)=zeta_new(i,j)+h(i,j)
-          zeta(i,j,knew)=zeta_new(i,j) 
+          zeta(i,j,knew)=zeta_new(i,j)
         enddo
-      enddo 
+      enddo
 !
 !-----------------------------------------------------------------------
 ! Load rhs values into additional AGRIF shared array for nesting
 !-----------------------------------------------------------------------
-! 
+!
 #ifdef AGRIF
       if (FIRST_2D_STEP) then
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
-            Zt_avg3(i,j,0)=zeta(i,j,kstp)       
+            Zt_avg3(i,j,0)=zeta(i,j,kstp)
           enddo
-        enddo 
+        enddo
         do j=JstrR,JendR
           do i=Istr,IendR
           du_avg3(i,j,0)  = DUon(i,j)
           enddo
-        enddo 
+        enddo
         do j=Jstr,JendR
           do i=IstrR,IendR
           dv_avg3(i,j,0)  = DVom(i,j)
           enddo
-        enddo 
+        enddo
       endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -529,10 +529,10 @@ C$OMP MASTER
        call check_tab2d(Zt_avg3(:,:,0),'Zt_avg3 (index 0) step2d','r')
        call check_tab2d(DU_avg3(:,:,0),'DU_avg3 (index 0) step2d','u')
        call check_tab2d(DV_avg3(:,:,0),'DV_avg3 (index 0) step2d','v')
-C$OMP END MASTER  
+C$OMP END MASTER
        endif
-# endif  
-#endif /* AGRIF */         
+# endif
+#endif /* AGRIF */
 !
 !-----------------------------------------------------------------------
 ! Debug zeta
@@ -542,8 +542,8 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,knew),'zeta step2d #2','rint')
-C$OMP END MASTER       
-#endif       
+C$OMP END MASTER
+#endif
 !
 !-----------------------------------------------------------------------
 ! Compute wet/dry masks
@@ -554,7 +554,7 @@ C$OMP END MASTER
       call wetdry_tile (Istr,Iend,Jstr,Jend)
 !RB this barrier seems to have a benefic effect
 ! in some cases with wetdry but not sure it is
-! the proper fix      
+! the proper fix
 C$OMP BARRIER
 #endif
 
@@ -587,7 +587,7 @@ C$OMP BARRIER
             DU_avg2(i,j)=cff2*DUon(i,j)
             DV_avg2(i,j)=cff2*DVom(i,j)
           enddo
-        enddo 
+        enddo
       else
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -622,7 +622,8 @@ C$OMP BARRIER
       cff=0.5*g
       do j=Jstr,Jend
         do i=Istr,Iend
-          rubar(i,j)=cff*on_u(i,j)*( (h(i-1,j)+h(i,j))*(rzeta(i-1,j)
+          rubar(i,j)=cff*on_u(i,j)*(
+     &                         (h(i-1,j)+h(i,j))*(rzeta(i-1,j)
      &                        -rzeta(i,j)) +rzeta2(i-1,j)-rzeta2(i,j)
 #if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i-1,j)-h(i,j))*( rzetaSA(i-1,j)+rzetaSA(i,j)
@@ -643,7 +644,8 @@ C$OMP BARRIER
 #endif
      &                                                              )
 ! 
-          rvbar(i,j)=cff*om_v(i,j)*( (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
+          rvbar(i,j)=cff*om_v(i,j)*(
+     &            (h(i,j-1)+h(i,j))*(rzeta(i,j-1)
      &                        -rzeta(i,j)) +rzeta2(i,j-1)-rzeta2(i,j)
 #if defined VAR_RHO_2D && defined SOLVE3D
      &              +(h(i,j-1)-h(i,j))*( rzetaSA(i,j-1)+rzetaSA(i,j)
@@ -675,7 +677,7 @@ C$OMP BARRIER
 ! Compute horizontal advection terms for momentum equations (2D only)
 !-------- ---------- --------- ----- --- -------- --------- --- -----
 ! NOTE: mathematically necessary (minimal) index ranges for momentum-
-! flux components are 
+! flux components are
 !
 !      UFx(IstrU-1:Iend,Jstr:Jend)   VFx(Istr:Iend+1,JstrV:Jend)
 !      UFe(IstrU:Iend,Jstr:Jend+1)   VFe(Istr,Iend,JstrV-1,Jend)
@@ -684,7 +686,7 @@ C$OMP BARRIER
 ! unified by suppressing U,V-suffices in order to allow fusion of the
 ! consecutive loops. This leads to slight increase of the redundant
 ! computations near western and southern boundaries in non-periodic
-! directions. 
+! directions.
 !========================================================================
 !
 #ifdef UV_ADV
@@ -737,7 +739,7 @@ C$OMP BARRIER
         enddo
       enddo !--> discard UFx,VFe,UFe,VFx, DUon,DVom
 
-# else   
+# else
 !-----------------------------------------------------------------------
 !  UP3 (QUICK) spatial advection scheme as in 3D part
 !
@@ -781,7 +783,7 @@ C$OMP BARRIER
           enddo
         endif
         if (EASTERN_EDGE) then
-#   ifdef MPI        
+#   ifdef MPI
           do j=Jstr,Jend
             uxx(Lmmpi+1,j)=uxx(Lmmpi,j)
             Huxx(Lmmpi+1,j)=Huxx(Lmmpi,j)
@@ -791,7 +793,7 @@ C$OMP BARRIER
             uxx(Lm+1,j)=uxx(Lm,j)
             Huxx(Lm+1,j)=Huxx(Lm,j)
           enddo
-#   endif          
+#   endif
         endif
 #  endif
 
@@ -811,7 +813,7 @@ C$OMP BARRIER
 #  undef uxx
 #  define vee wrk1
 #  define Hvee wrk2
-      
+
 #  ifdef NS_PERIODIC
 #   define JV_EXT_RANGE JstrV-1,Jend+1
 #  else
@@ -852,12 +854,12 @@ C$OMP BARRIER
             vee(i,Mmmpi+1)=vee(i,Mmmpi)
             Hvee(i,Mmmpi+1)=Hvee(i,Mmmpi)
           enddo
-#   else        
+#   else
           do i=Istr,Iend
             vee(i,Mm+1)=vee(i,Mm)
             Hvee(i,Mm+1)=Hvee(i,Mm)
           enddo
-#   endif          
+#   endif
         endif
 #  endif
         do j=JstrV-1,Jend
@@ -914,11 +916,11 @@ C$OMP BARRIER
           do i=IstrU,Iend
             uee(i,Mmmpi+1)=uee(i,Mmmpi)
           enddo
-#   else        
+#   else
           do i=IstrU,Iend
             uee(i,Mm+1)=uee(i,Mm)
           enddo
-#   endif          
+#   endif
         endif
 #  endif
         do j=Jstr,Jend+1
@@ -944,7 +946,7 @@ C$OMP BARRIER
 #  define vxx wrk1
 #  define Huee wrk2
 
-#  ifdef EW_PERIODIC 
+#  ifdef EW_PERIODIC
 #   define IV_EXT_RANGE Istr-1,Iend+1
 #  else
 #   ifdef MPI
@@ -981,13 +983,13 @@ C$OMP BARRIER
           do j=JstrV,Jend
             vxx(Lmmpi+1,j)=vxx(Lmmpi,j)
           enddo
-#   else        
+#   else
           do j=JstrV,Jend
             vxx(Lm+1,j)=vxx(Lm,j)
           enddo
-#   endif          
+#   endif
         endif
-        
+
 #  endif
         do j=JstrV-1,Jend
           do i=Istr,Iend+1
@@ -1135,7 +1137,7 @@ C$OMP BARRIER
           do i=IstrU,Iend
             cff=0.25*( vbar(i  ,j,kstp)+vbar(i  ,j+1,kstp)
      &                +vbar(i-1,j,kstp)+vbar(i-1,j+1,kstp))
- 
+
             rubar(i,j)=rubar(i,j) - ubar(i,j,kstp)*( rdrg+rdrg2
      &              *sqrt(ubar(i,j,kstp)*ubar(i,j,kstp)+cff*cff)
      &                               )*om_u(i,j)*on_u(i,j)
@@ -1145,7 +1147,7 @@ C$OMP BARRIER
           do i=Istr,Iend
             cff=0.25*( ubar(i,j  ,kstp)+ubar(i+1,j  ,kstp)
      &                +ubar(i,j-1,kstp)+ubar(i+1,j-1,kstp))
- 
+
             rvbar(i,j)=rvbar(i,j) - vbar(i,j,kstp)*( rdrg+rdrg2
      &              *sqrt(cff*cff+vbar(i,j,kstp)*vbar(i,j,kstp))
      &                               )*om_v(i,j)*on_v(i,j)
@@ -1174,11 +1176,11 @@ C$OMP BARRIER
 #ifdef MRL_WCI
       do j=Jstr,Jend
         do i=IstrU,Iend
-          vstu = 0.25*( vst2d(i,j) + vst2d(i,j+1)
+          vstu = 0.25*( vst2d(i  ,j)+vst2d(i  ,j+1)
      &                 +vst2d(i-1,j)+vst2d(i-1,j+1) )
-          dudx = 0.5*( urhs(i+1,j)-urhs(i-1,j) )
-          dvdx = 0.5*( vrhs(i,j) - vrhs(i-1,j)
-     &                 +vrhs(i,j+1) - vrhs(i-1,j+1) )
+          dudx = 0.50*( urhs(i+1,j)-urhs(i-1,j  ) )
+          dvdx = 0.50*( vrhs(i  ,j)-vrhs(i-1,j  )
+     &                 +vrhs(i,j+1)-vrhs(i-1,j+1) )
           rubar(i,j) = rubar(i,j) + 0.5*on_u(i,j)*
      &                      ( Drhs(i-1,j)+Drhs(i,j) )
      &               *( ust2d(i,j)*dudx + vstu*dvdx )
@@ -1187,11 +1189,11 @@ C$OMP BARRIER
 
       do j=JstrV,Jend
         do i=Istr,Iend
-          ustv = 0.25*( ust2d(i,j) + ust2d(i+1,j)
+          ustv = 0.25*( ust2d(i,j  )+ust2d(i+1,j)
      &                 +ust2d(i,j-1)+ust2d(i+1,j-1) )
-          dude = 0.5*( urhs(i,j) - urhs(i,j-1)
-     &                 +urhs(i+1,j) - urhs(i+1,j-1) )
-          dvde = 0.5*( vrhs(i,j+1)-vrhs(i,j-1) )
+          dude = 0.50*( urhs(i  ,j)-urhs(i  ,j-1)
+     &                 +urhs(i+1,j)-urhs(i+1,j-1) )
+          dvde = 0.50*( vrhs(i,j+1)-vrhs(i  ,j-1) )
           rvbar(i,j) = rvbar(i,j) + 0.5*om_v(i,j)*
      &                      ( Drhs(i,j-1)+Drhs(i,j) )
      &               *( ustv*dude + vst2d(i,j)*dvde )
@@ -1320,20 +1322,20 @@ C$OMP BARRIER
 #endif /* SOLVE3D */
 !
 !-----------------------------------------------------------------------
-! Perform time step for the 2D momentum equations. 
+! Perform time step for the 2D momentum equations.
 !
-! Also compute fast-time averaged barotropic mass fluxes. 
-! Doing so on the fly yields a more computationally dense code and 
-! eliminates repeated multiplication by Dnew (since mass fluxes are 
-! actually available as volatile variables DUnew,DVnew at this moment. 
-! However, as a result of this arrangement, a special code is needed 
-! to compute fast-time averages along the physical boundaries, which is 
+! Also compute fast-time averaged barotropic mass fluxes.
+! Doing so on the fly yields a more computationally dense code and
+! eliminates repeated multiplication by Dnew (since mass fluxes are
+! actually available as volatile variables DUnew,DVnew at this moment.
+! However, as a result of this arrangement, a special code is needed
+! to compute fast-time averages along the physical boundaries, which is
 ! done below.
 !-----------------------------------------------------------------------
 !
 
 #define Dstp DUon
- 
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dstp(i,j)=zeta(i,j,kstp)+h(i,j)
@@ -1371,6 +1373,9 @@ C$OMP BARRIER
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DUnew=DUnew*umask_wet(i,j)
+# ifdef MRL_WCI
+          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+# endif
 #endif
           ubar(i,j,knew)=DUnew/(Dnew(i,j)+Dnew(i-1,j))
 #ifdef SOLVE3D
@@ -1385,7 +1390,7 @@ C$OMP BARRIER
 #endif
         enddo
       enddo
-         
+
       do j=JstrV,Jend
         do i=Istr,Iend
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
@@ -1411,6 +1416,9 @@ C$OMP BARRIER
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                        +cff2_WD*(1.-cff1_WD)
           DVnew=DVnew*vmask_wet(i,j)
+# ifdef MRL_WCI
+          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+# endif
 #endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
 #ifdef SOLVE3D
@@ -1453,14 +1461,14 @@ C$OMP BARRIER
 
       do j=Jstr,Jend
         do i=IstrU,Iend
-# ifdef ZONAL_NUDGING        
+# ifdef ZONAL_NUDGING
           DUnew = dtfast*M2nudgcof(i,j)*(ubclmzon(j)-ubzon(j))
-# else          
+# else
           DUnew = dtfast*M2nudgcof(i,j)*(ubclm(i,j)-ubar(i,j,knew))
 # endif
 # ifdef MASKING
      &                 * umask(i,j)
-# endif 
+# endif
 # ifdef WET_DRY
      &                 * umask_wet(i,j)
 # endif
@@ -1473,14 +1481,14 @@ C$OMP BARRIER
       enddo
       do j=JstrV,Jend
         do i=Istr,Iend
-# if defined ZONAL_NUDGING  
-          DVnew = dtfast*M2nudgcof(i,j)*(vbclmzon(j)-vbzon(j)) 
+# if defined ZONAL_NUDGING
+          DVnew = dtfast*M2nudgcof(i,j)*(vbclmzon(j)-vbzon(j))
 # else
-          DVnew = dtfast*M2nudgcof(i,j)*(vbclm(i,j)-vbar(i,j,knew))    
-# endif      
+          DVnew = dtfast*M2nudgcof(i,j)*(vbclm(i,j)-vbar(i,j,knew))
+# endif
 # ifdef MASKING
      &                 * vmask(i,j)
-# endif 
+# endif
 # ifdef WET_DRY
      &                 * vmask_wet(i,j)
 # endif
@@ -1535,14 +1543,14 @@ C$OMP BARRIER
 
         enddo
       enddo
-#endif     
+#endif
 !
 !-----------------------------------------------------------------------
 ! Set boundary conditions and compute integral mass flux accross
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
-      call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx) 
+      call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
 
 #ifdef OBC_VOLCONS
@@ -1601,7 +1609,7 @@ C$OMP BARRIER
      &                                              )*om_v(Istr-1,j)
         enddo
       endif
-        
+
       if (EASTERN_EDGE) then
         do j=JstrR,JendR
           DU_avg1(Iend+1,j,nnew)=DU_avg1(Iend+1,j,nnew)
@@ -1664,7 +1672,7 @@ C$OMP BARRIER
      &                                               )*om_v(i,Jend+1)
         enddo
       endif
-# endif 
+# endif
 #endif
 !
 !-----------------------------------------------------------------------
@@ -1672,7 +1680,7 @@ C$OMP BARRIER
 !-----------------------------------------------------------------------
 !
 #ifdef PSOURCE
-      do is=1,Nsrc 
+      do is=1,Nsrc
 # ifdef MPI
         i=Isrc_mpi(is,mynode)
         j=Jsrc_mpi(is,mynode)
@@ -1735,8 +1743,8 @@ C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u')
        call check_tab2d(vbar(:,:,knew),'vbar step2d #2','v')
-C$OMP END MASTER       
-#endif   
+C$OMP END MASTER
+#endif
 !
 !-----------------------------------------------------------------------
 !  Apply conservation requirements for nesting
@@ -1748,20 +1756,20 @@ C$OMP END MASTER
           do i=Istr-1,Iend+1
             Zt_avg3(i,j,iif)=zeta(i,j,knew)
           enddo
-        enddo 
+        enddo
         do j=JstrR,JendR
           do i=Istr,IendR
             DU_avg3(i,j,iif) = 0.5*(h(i,j)+zeta(i,j,knew)+
      &          h(i-1,j)+zeta(i-1,j,knew)) *on_u(i,j)*ubar(i,j,knew)
           enddo
-        enddo 
+        enddo
         do j=Jstr,JendR
           do i=IstrR,IendR
             DV_avg3(i,j,iif) = 0.5*(h(i,j)+zeta(i,j,knew)+
      &          h(i,j-1)+zeta(i,j-1,knew)) *om_v(i,j)*vbar(i,j,knew)
           enddo
         enddo
- 
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        Zt_avg3(START_2D_ARRAY,iif))
@@ -1777,8 +1785,8 @@ C$OMP MASTER
        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r')
        call check_tab2d(DU_avg3(:,:,iif),'DU_avg3 step2d','u')
        call check_tab2d(DV_avg3(:,:,iif),'DV_avg3 step2d','v')
-C$OMP END MASTER       
-# endif   
+C$OMP END MASTER
+# endif
       endif
 # ifdef AGRIF_CONSERV_VOL
        if (iif == nfast) then
@@ -1797,7 +1805,7 @@ C$OMP END MASTER
              DU_avg1(i,j,4) = DU_avg1(i,j,4) + DU_avg1(i,j,5)
              DV_avg1(i,j,4) = DV_avg1(i,j,4) + DV_avg1(i,j,5)
            enddo
-         enddo       
+         enddo
        endif
        endif
 # endif
@@ -1815,7 +1823,7 @@ C$OMP END MASTER
           cff2=vbar(i,j,knew)
           cff=max(abs(cff1),abs(cff2))
           IF (cff.GE.VMAX .or. cff1.ne.cff1 .or. cff2.ne.cff2) THEN
-            IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN 
+            IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN
               VMAX=cff
             ELSE
               VMAX=666.
@@ -1845,15 +1853,15 @@ C$OMP END MASTER
           write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'
         else
-          write(stdout,'(A,F10.2)') 
+          write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =',VMAX
         endif
-        write(stdout,'(A,2I6)')  
+        write(stdout,'(A,2I6)')
      &                                       '  IMAX JMAX  =',imax,jmax
 #if defined MPI
-        write(stdout,'(A,I6)')  
+        write(stdout,'(A,I6)')
      &                                       '  NODE  =',mynode
-        write(stdout,'(A,2I6)')  
+        write(stdout,'(A,2I6)')
      &       '  IMAX JMAX  =',imax-iminmpi+1,jmax-jminmpi+1
 #endif
 #ifdef SOLVE3D

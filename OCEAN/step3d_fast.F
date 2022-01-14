@@ -129,12 +129,11 @@ C$    trd=omp_get_thread_num()
 # else
       real,parameter :: thetaimp_nbq = 1.
 # endif
-
-# if defined TANK || defined SWASH
-      real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
-# else
-      real,parameter :: gammau=1.0    ! 1.0 --> second-order
-# endif
+!
+! Parameters for NBQ pressure gradient scheme
+!
+      real,parameter :: gammau=1.0  ! 1.0  --> second-order
+                                    ! 0.45 --> increased stability range
       real,parameter :: gammau_2=(1./3.)*(1.-gammau)
 
       real
@@ -209,7 +208,6 @@ C$    trd=omp_get_thread_num()
 # ifdef WET_DRY
       real cff1_WD,cff2_WD
 # endif
-
 # include "nbq.h"
 !
 # ifdef MASKING
@@ -362,6 +360,8 @@ C$    trd=omp_get_thread_num()
 #  endif
       endif    ! FIRST_FAST_STEP
 # endif
+
+
 !
 !=====================================================================
 ! AB3 Forward Step: compute total depth of water column and vertically
@@ -399,7 +399,7 @@ C$    trd=omp_get_thread_num()
         cff3= mybeta
       endif
 !
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef RVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r')
@@ -425,6 +425,7 @@ C$OMP END MASTER
 # endif /* NBQ_MASS */
         enddo
       enddo
+      
 !
 ! Depth-average ubar velocity at m+1/2
 !
@@ -713,6 +714,8 @@ C$OMP END MASTER
       enddo
 #  undef zab3
 
+
+
 # else /* NBQ */
 !
 !********************************************************************
@@ -756,6 +759,8 @@ C$OMP END MASTER
 #  endif
         enddo
       enddo
+      
+
 # endif /* NBQ */
 !
 !-----------------------------------------------------------------------
@@ -1357,7 +1362,7 @@ C$OMP END MASTER
 #  endif 
 # endif
 
-# if defined RVTK_DEBUG && defined NBQ
+# if defined RVTK_DEBUG_ADVANCED && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','u')
@@ -1475,6 +1480,7 @@ C$OMP END MASTER
      &                   SQRT(VBOT(i,j)*VBOT(i,j)+cff*cff)
             enddo
           enddo
+          
         elseif (rdrg2.gt.0.) then
           do j=JstrV-1,Jend+1
             do i=IstrU-1,Iend+1
@@ -1510,6 +1516,69 @@ C$OMP END MASTER
             enddo
           enddo
         endif
+
+!
+! Set boundary conditions
+!
+#  ifndef EW_PERIODIC
+      IF (EASTERN_EDGE) THEN
+        DO j=Jstr,Jend
+          bustr(Iend+1,j)=bustr(Iend,j)
+        END DO
+        DO j=JstrV,Jend
+          bvstr(Iend+1,j)=bvstr(Iend,j)
+        END DO
+      END IF
+      IF (WESTERN_EDGE) THEN
+        DO j=Jstr,Jend
+          bustr(IstrU-1,j)=bustr(IstrU,j)
+        END DO
+        DO j=JstrV,Jend
+          bvstr(Istr-1,j)=bvstr(Istr,j)
+        END DO
+      END IF
+#  endif
+#  ifndef NS_PERIODIC
+      IF (NORTHERN_EDGE) THEN
+        DO i=IstrU,Iend
+          bustr(i,Jend+1)=bustr(i,Jend)
+        END DO
+        DO i=Istr,Iend
+          bvstr(i,Jend+1)=bvstr(i,Jend)
+        END DO
+      END IF
+      IF (SOUTHERN_EDGE) THEN
+        DO i=IstrU,Iend
+          bustr(i,Jstr-1)=bustr(i,Jstr)
+        END DO
+        DO i=Istr,Iend
+          bvstr(i,JstrV-1)=bvstr(i,JstrV)
+        END DO
+      END IF
+#  endif
+#  if !defined EW_PERIODIC && !defined NS_PERIODIC
+      IF (SOUTHERN_EDGE.and.WESTERN_EDGE) THEN
+        bustr(Istr,Jstr-1)=0.5*(bustr(Istr+1,Jstr-1)+bustr(Istr,Jstr))
+        bvstr(Istr-1,Jstr)=0.5*(bvstr(Istr,Jstr)+bvstr(Istr-1,Jstr+1))
+      END IF
+      IF (SOUTHERN_EDGE.and.EASTERN_EDGE) THEN
+        bustr(Iend+1,Jstr-1)=0.5*(bustr(Iend+1,Jstr)+bustr(Iend,Jstr-1))
+        bvstr(Iend+1,Jstr)=0.5*(bvstr(Iend+1,Jstr+1)+bvstr(Iend,Jstr))
+      END IF
+      IF (NORTHERN_EDGE.and.WESTERN_EDGE) THEN
+        bustr(Istr,Jend+1)=0.5*(bustr(Istr,Jend)+bustr(Istr+1,Jend+1))
+        bvstr(Istr-1,Jend+1)=0.5*(bvstr(Istr-1,Jend)+bvstr(Istr,Jend+1))
+      END IF
+      IF (NORTHERN_EDGE.and.EASTERN_EDGE) THEN
+        bustr(Iend+1,Jend+1)=0.5*(bustr(Iend+1,Jend)+bustr(Iend,Jend+1))
+        bvstr(Iend+1,Jend+1)=0.5*(bvstr(Iend+1,Jend)+bvstr(Iend,Jend+1))
+      END IF
+#  endif
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,bustr(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,bvstr(START_2D_ARRAY))
+#  endif
+
 
       endif
 #  undef UBOT
@@ -1982,6 +2051,7 @@ C$OMP END MASTER
       enddo   !<-- k=0,N   
 
 # else /* NBQ */
+
 !
 !********************************************************************
 !
@@ -2039,7 +2109,8 @@ C$OMP END MASTER
         enddo
       endif
 
-# endif /* NBQ */ 
+# endif /* NBQ */
+
 !
 !-----------------------------------------------------------------------
 ! Apply point sources for river runoff simulations
@@ -2091,9 +2162,9 @@ C$OMP END MASTER
           umask_wet(i,j)=0.5*umask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DU_nbq(i,j)=DU_nbq(i,j)*umask_wet(i,j)
-!#  ifdef MRL_WCI
-!          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
-!#  endif
+#  ifdef MRL_WCI
+          ust2d(i,j)=ust2d(i,j)*umask_wet(i,j)
+#  endif
           do k=1,N
             qdmu_nbq(i,j,k)=qdmu_nbq(i,j,k)*umask_wet(i,j)
           enddo
@@ -2106,9 +2177,9 @@ C$OMP END MASTER
           vmask_wet(i,j)=0.5*vmask_wet(i,j)*cff1_WD
      &                         +cff2_WD*(1.-cff1_WD)
           DV_nbq(i,j)=DV_nbq(i,j)*vmask_wet(i,j)
-!#  ifdef MRL_WCI
-!          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
-!#  endif
+#  ifdef MRL_WCI
+          vst2d(i,j)=vst2d(i,j)*vmask_wet(i,j)
+#  endif
           do k=1,N
             qdmv_nbq(i,j,k)=qdmv_nbq(i,j,k)*vmask_wet(i,j)
           enddo
@@ -2116,7 +2187,7 @@ C$OMP END MASTER
       enddo
 # endif
 
-# ifdef RVTK_DEBUG
+# ifdef RVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(qdmu_nbq,'qdmu_nbqint','uint')
@@ -2168,13 +2239,13 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-# ifdef RVTK_DEBUG
-C$OMP BARRIER
-C$OMP MASTER
-      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-C$OMP END MASTER
-# endif  
+!$$$# ifdef RVTK_DEBUG_ADVANCED
+!$$$C$OMP BARRIER
+!$$$C$OMP MASTER
+!$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
+!$$$      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
+!$$$C$OMP END MASTER
+!$$$# endif  
 
 
 # ifdef NBQ
@@ -3052,7 +3123,7 @@ C$OMP END MASTER
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
-#   ifdef RVTK_DEBUG
+#   ifdef RVTK_DEBUG_ADVANCED
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
 #   endif    
 #  endif /* NBQ_MASS */
@@ -3081,7 +3152,7 @@ C$OMP END MASTER
         enddo
       enddo
             
-# if defined RVTK_DEBUG && defined NBQ
+# if defined RVTK_DEBUG_ADVANCED && defined NBQ
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(rho_nbq,'rho_nbq','r')
@@ -3720,6 +3791,8 @@ C$OMP END MASTER
      &                                                          - h(i,j)
           enddo
         enddo
+        
+
 !
 !-----------------------------------------------------------------------
 !  Set masking for zeta, including wet/dry conditions
@@ -4060,7 +4133,9 @@ C$OMP END MASTER
         write(stdout,'(A,2I6/)')
      &                                       '  IINT IFAST  =',iic,iif
 
-        call wrt_his   ! get output during blow-up
+!     GC quik fix Comment this because it blocks the correct mpi_abort
+!     croco do not hang out  
+!!      call wrt_his            ! get output during blow-up
 
         may_day_flag=1
 # ifdef MPI

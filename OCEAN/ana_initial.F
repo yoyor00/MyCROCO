@@ -30,6 +30,9 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#ifdef SUBSTANCE
+      USE comsubstance, ONLY: cini_wat
+#endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -43,6 +46,9 @@
 # include "forces.h"
 #endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
+#if defined SUBSTANCE || defined SEDIMENT
+      integer :: iv
+#endif
 #ifdef SOLITON
       real fac, x,y, x0,y0, cff1,cff2,cff3
 #endif
@@ -78,16 +84,22 @@
       real zdye10,zdye20
       real hu0,hup0,htemp0,hsalt0,eps3D
 #endif
-#ifdef I_SOLITON
+#ifdef ISOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
       real d(0:N)
 #endif
 #ifdef TS_HADV_TEST 
       real cff,cff1,cx,cy,cmax,xx,yy
-#  if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+# if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
 #  include "work.h"
-#  endif      
+# endif      
+#endif
+#ifdef DUNE
+      real cff, cff2
+# ifdef DUNE3D
+      real Rij,cffi,cffj
+# endif
 #endif
 #ifdef JET
       integer istr1,iend1,jstr1,jend1  
@@ -202,6 +214,52 @@
             vbar(i,j,2)=vbar(i,j,1)
           enddo
         enddo
+
+# elif defined DUNE
+        cff=0.5*(1./10)**2
+#    ifdef ANA_DUNE
+        cff2=1.67
+#    else
+        cff2=0.58
+#    endif
+        do j=JR_RANGE
+          do i=IR_RANGE
+#    if defined DUNE3D
+#     ifdef MPI
+              cffi=(float(i +ii*Lm))
+              cffj=(float(j +jj*Mm))
+#     else
+              cffi=(float(i))
+              cffj=(float(j))
+#     endif
+              Rij = sqrt( (cffi-28.)**2.+
+     &                    (cffj-25.)**2. )
+              ubar(i,j,1)=cff2/(1-0.5*exp(-cff*(2.*(Rij))**2.))
+#    else
+              ubar(i,j,1) = cff2/(1-
+     &               0.5*exp(-cff*(xp(i,j)-0.5*xl)**2))
+#    endif
+              ubar(i,j,:) = ubar(i,j,1)
+              vbar(i,j,1) = 0.
+              vbar(i,j,:) = vbar(i,j,1)
+              zeta(i,j,1)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+              zeta(i,j,:) = zeta(i,j,1)
+          enddo
+        enddo
+
+# elif defined SED_TOY && ( defined SED_TOY_RESUSP || \
+                            defined SED_TOY_CONSOLID )
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=0.
+            zeta(i,j,2)=0.
+            ubar(i,j,1)=0.
+            vbar(i,j,1)=0.
+            ubar(i,j,2)=ubar(i,j,1)
+            vbar(i,j,2)=0.
+          enddo
+        enddo
+
 # else
         do j=JR_RANGE
           do i=IR_RANGE
@@ -273,7 +331,7 @@
           enddo
         enddo
 #  elif defined TS_HADV_TEST
-#    ifdef DIAGONAL_ADV
+#   ifdef DIAGONAL_ADV
         do j=Jstr,Jend
           do k=1,N
             do i=IstrU,Iend
@@ -288,8 +346,8 @@
             enddo
           enddo
         enddo
-#    endif
-#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
+#   endif
+#   if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
 
 # define psi work2d
         cff  = - xl / pi
@@ -301,9 +359,9 @@
           enddo
         enddo
 
-#     if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#    if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
         call exchange_p2d_tile(Istr,Iend,Jstr,Jend,psi)
-#     endif
+#    endif
 
         cff  = pm(1,1)
         do k=1,N
@@ -339,6 +397,19 @@
          enddo
        enddo
        print*,'CFL_max = ',cmax
+
+#  elif defined SED_TOY && ( defined SED_TOY_RESUSP || \
+                             defined SED_TOY_CONSOLID )
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              u(i,j,k,1)=0.
+              u(i,j,k,2)=u(i,j,k,1)
+              v(i,j,k,1)=0.
+              v(i,j,k,2)=v(i,j,k,1)
+            enddo
+          enddo
+        enddo
 
 #  elif defined KH_INST
 !
@@ -473,9 +544,11 @@
 !
       if (nrrec.eq.0) then
 !
-#  ifdef BASIN
+#  ifdef TRACERS
+#   ifdef BASIN
         cff1=(44.690/39.382)**2
         cff2=cff1*(rho0*800./g)*(5.0e-5/((42.689/44.690)**2))
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -485,7 +558,9 @@
              enddo
           enddo
         enddo
-#  elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+#    endif /* TEMPERATURE */
+#   elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -494,7 +569,9 @@
              enddo
           enddo
         enddo
-#  elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+#    endif /* TEMPERATURE */
+#   elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -503,7 +580,9 @@
              enddo
           enddo
         enddo
-#  elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#    endif /* TEMPERATURE */
+#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#    ifdef TEMPERATURE        
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -513,38 +592,44 @@
              enddo
           enddo
         enddo
-#  elif defined TS_HADV_TEST && defined DIAGONAL_ADV
+#    endif /* TEMPERATURE */
+#   elif defined TS_HADV_TEST && defined DIAGONAL_ADV
         cff = 1./(50.*50.)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=exp( -cff * ( (xr(i,j)-0.25*xl)**2
      &                                   +   (yr(i,j)-0.25*el)**2 ) )
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
-#  elif defined TS_HADV_TEST && ( defined SOLID_BODY_ROT || defined SOLID_BODY_PER )
+#   elif defined TS_HADV_TEST && ( defined SOLID_BODY_ROT || defined SOLID_BODY_PER )
         cff = 1./(50.*50.)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=exp( -cff * ( (xr(i,j)-0.25*xl)**2
      &                                   +   (yr(i,j)-0.25*el)**2 ) )
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=1.0    !<-- test constancy preservation
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#  endif
+#    endif
             enddo
           enddo
         enddo
-#  elif defined CANYON
-#   ifdef CANYON_STRAT
+#   elif defined CANYON
+#    ifdef CANYON_STRAT
+#     ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -554,7 +639,9 @@
             enddo
           enddo
         enddo
-#   else
+#     endif /* TEMPERATURE */
+#    else
+#     ifdef TEMPERATURE        
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -563,22 +650,39 @@
             enddo
           enddo
         enddo
-#   endif
-#  elif defined SHOREFACE || defined RIP
+#     endif /* TEMPERATURE */
+#    endif
+#   elif defined SHOREFACE || defined RIP
         do k=1,N
           do j=jstrR,jendR
             do i=istrR,iendR
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=18.0
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=32.0
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined SWASH
+#   elif defined SWASH
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=20.
+!              t(i,j,k,1,itemp)=20.-(zeta(i,j,1)-z_r(i,j,k))
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+            enddo
+          enddo
+        enddo
+
+#   elif defined THACKER
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -588,34 +692,10 @@
             enddo
           enddo
         enddo
+#    endif /* TEMPERATURE */
 
-#  elif defined PLUME
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=min(3.+46.*exp(z_r(i,j,k)/250.),28.)
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
-              t(i,j,k,1,isalt)=34.54+3.5*exp(z_r(i,j,k)/250.)
-     &         * sin(-z_r(i,j,k)/(1-z_r(i,j,k)/6000.)*2.*3.14/1000.)
-              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
-            enddo
-          enddo
-        enddo
-
-#  elif defined THACKER
-        do k=1,N
-          do j=JR_RANGE
-            do i=IR_RANGE
-              t(i,j,k,1,itemp)=20.
-!              t(i,j,k,1,itemp)=20.-(zeta(i,j,1)-z_r(i,j,k))
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-            enddo
-          enddo
-        enddo
-
-#  elif defined TANK
+#   elif defined TANK
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -624,8 +704,10 @@
             enddo
           enddo
         enddo
-#  elif defined MOVING_BATHY
+#    endif /* TEMPERATURE */
+#   elif defined MOVING_BATHY
         cff=((0.92461)**2)/g
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -634,61 +716,68 @@
             enddo
           enddo
         enddo
-#  elif defined EQUATOR
+#    endif /* TEMPERATURE */
+#   elif defined EQUATOR
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=10.0
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=35.0
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined KH_INST
+#   elif defined KH_INST
 !
 ! Traditional KH instability: 
 !
 !  Configuration from Pelletier et al.: linear shear within mixed layer 
 !
+#    ifdef TEMPERATURE
         htemp0 = 10.
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */        
+#    ifdef SALINITY
         hsalt0 = 10.
-#   endif
+#    endif
         drho   = 1.2    ! Value to be replaced by script (originally 1.2)
 !
         do j=JR_RANGE
           do i=IR_RANGE
-              depth=h(i,j)
-              zr0=-0.5*depth
-              hup0=0.15*depth
+            depth=h(i,j)
+            zr0=-0.5*depth
+            hup0=0.15*depth
 
-              do k=1,N
-                 t(i,j,k,1,itemp) = 13.+ 1.*drho * (
-     &                              0.1*(z_r(1,1,k)-zr0)/depth +
-     &                              dtanh((z_r(1,1,k)-zr0)/htemp0) 
+            do k=1,N
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &                            0.1*(z_r(1,1,k)-zr0)/depth +
+     &                          dtanh((z_r(1,1,k)-zr0)/htemp0) 
      &                                              )  / Tcoef
 !    &            +0.001*
 !!   &                       (tanh(abs(z_r(1,1,k)-zr0)/hup0))*
 !    &                       (1. -tanh((z_r(1,1,k)-zr0)/hup0)**2.)
 !    &                                      *sin(2.*2.*pi/xl*xr(i,j))
 
-                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+#    endif              
 #    ifdef SALINITY
-                 t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
+              t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
      &                             (dtanh((z_r(1,1,k)-zr0)/hsalt0))**2 )
-                 t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
+              t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
 #    endif
-              enddo
-           enddo
+            enddo
+          enddo
         enddo
 
-#  elif defined I_SOLITON
-#   define HORN_PROFILE
-#   ifdef HORN_PROFILE
+#   elif defined ISOLITON
+#    define HORN_PROFILE
+#    ifdef HORN_PROFILE
 !
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001). 
 !  The degeneration of large-scale interfacial gravity waves in lakes. 
@@ -702,24 +791,27 @@
         h1_exp = 0.7 * h(1,1)
         amp_exp = 0.0391
         Lt=6.
+#     ifdef TEMPERATURE
         do j=JstrR,JendR
-           do i=IstrR,IendR
-              do k=1,N
-                 d(k)=0.5*(rho1_exp+rho2_exp)               
-     &              + 0.5*(rho2_exp-rho1_exp)
-     &                   *tanh(exp(1.)*(-h1_exp 
-     &                          -2.*amp_exp*(xr(i,j)-Lt/2.)/Lt 
-     &                          +abs(z_r(i,j,k)))/(0.015/2.))   ! 0.005=dz_q   
-                 t(i,j,k,1,itemp) = 13. - ( d(k) - R0 )  / Tcoef
-                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-              enddo
-           enddo
+          do i=IstrR,IendR
+            do k=1,N
+              d(k)=0.5*(rho1_exp+rho2_exp)               
+     &           + 0.5*(rho2_exp-rho1_exp)
+     &               *tanh(exp(1.)*(-h1_exp 
+     &                  -2.*amp_exp*(xr(i,j)-Lt/2.)/Lt 
+     &                    +abs(z_r(i,j,k)))/(0.015/2.))   ! 0.005=dz_q   
+              t(i,j,k,1,itemp) = 13. - ( d(k) - R0 )  / Tcoef
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            enddo
+          enddo
         enddo
+#     endif /* TEMPERATURE */
 #    else
         depth=h(1,1)
         gam=0.9
         del=0.3
         dz=2*(z_r(1,1,2)-z_r(1,1,1));
+#     ifdef TEMPERATURE
         do j=JstrR,JendR
           do i=IstrR,IendR
             zint=depth*(del-1)+gam*del*depth*(2*xr(i,j)/xl - 1)
@@ -731,17 +823,19 @@
             enddo
           enddo
         enddo
+#     endif /* TEMPERATURE */
 #    endif /* HORN_PROFILE */ 
 
-#  elif defined GRAV_ADJ
+#   elif defined GRAV_ADJ
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
-#    ifdef MPI
+#     ifdef MPI
               if (i+iminmpi-1 .LE. LLm/2) then
-#    else
+#     else
               if (i .LE. LLm/2) then
-#    endif            
+#     endif            
                 t(i,j,k,1,itemp)=5/Tcoef
                 t(i,j,k,2,itemp)=5/Tcoef
               else
@@ -751,50 +845,60 @@
             enddo
           enddo
         enddo
+#    endif /* TEMPERATURE */
 
-#  elif defined ACOUSTIC 
+#   elif defined ACOUSTIC 
+#    ifdef TEMPERATURE
 
         do j=JstrR,JendR
-           do i=IstrR,IendR
-              do k=1,N
-                 t(i,j,k,1,itemp) = 13./Tcoef
-                 t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-              enddo
-           enddo
+          do i=IstrR,IendR
+            do k=1,N
+              t(i,j,k,1,itemp) = 13./Tcoef
+              t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+            enddo
+          enddo
         enddo
+#    endif /* TEMPERATURE */
 
-#  elif defined INNERSHELF
+#   elif defined INNERSHELF
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-#   ifdef INNERSHELF_EKMAN
+#    ifdef INNERSHELF_EKMAN
+#     ifdef TEMPERATURE
               t(i,j,k,1,itemp)=15.
-#   else
-#    define Z0 (-80.)
-#    define THKNSS 50.
-#    define Z1 0.
-#    define STRAT 1000.
+#     endif /* TEMPERATURE */              
+#    else
+#     define Z0 (-80.)
+#     define THKNSS 50.
+#     define Z1 0.
+#     define STRAT 1000.
+#     ifdef TEMPERATURE
               t(i,j,k,1,itemp)=14.+5.*THKNSS*log(
      &                         cosh((z_w(i,j,k  )-Z0)/THKNSS)
      &                        /cosh((z_w(i,j,k-1)-Z0)/THKNSS)
      &                            )/(z_w(i,j,k)-z_w(i,j,k-1))
      &               +((z_w(i,j,k)+z_w(i,j,k-1))/2.-Z1)/STRAT
-#    undef Z0
-#    undef THKNSS
-#    undef Z1
-#    undef STRAT
-#   endif
+#     endif /* TEMPERATURE */
+#     undef Z0
+#     undef THKNSS
+#     undef Z1
+#     undef STRAT
+#    endif
+#    ifdef TEMPERATURE
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined  INTERNAL
+#   elif defined INTERNAL
         cff=((2.e-3)**2)/g
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -803,15 +907,16 @@
             enddo
           enddo
         enddo
+#    endif /* TEMPERATURE */
 
-#  elif defined IGW
+#   elif defined IGW
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
               depth = -z_r(i,j,k)         
-#   ifdef EXPERIMENT1
+#    ifdef EXPERIMENT1
               if(depth.le.50.) then
                 sig = 25.0  
               elseif( depth.gt.50. .and. depth.le.60.) then
@@ -820,24 +925,33 @@
               else
                 sig = 26.2 + rhom*(depth-50.)*cff
               endif
+#     ifdef TEMPERATURE
               t(i,j,k,1,itemp)=(R0-sig)/Tcoef
-#   elif defined EXPERIMENT2	    
+#     endif /* TEMPERATURE */
+#    elif defined EXPERIMENT2	    
               if (depth.le.50.) then
                sig = 25.8
               else
                sig = 27.0
               endif
+#     ifdef TEMPERATURE
               t(i,j,k,1,itemp)=(R0-sig)/Tcoef
-#   else /* default EXPERIMENT3 */
+#     endif /* TEMPERATURE */
+#    else /* default EXPERIMENT3 */
               sig = 26.2 + rhom*(depth-50.)*cff
+#     ifdef TEMPERATURE
               t(i,j,k,1,itemp)=(R0-sig)/Tcoef
-#   endif
+#     endif /* TEMPERATURE */
+#    endif
+#     ifdef TEMPERATURE
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#     endif /* TEMPERATURE */
             enddo
           enddo
         enddo
 
-#  elif defined OVERFLOW
+#   elif defined OVERFLOW
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -846,110 +960,113 @@
             enddo
           enddo
         enddo
+#    endif /* TEMPERATURE */
 
-#   elif defined  RIVER
+#   elif defined RIVER
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=10.  !4.+10.*exp(z_r(i,j,k)/50.)
-              t(i,j,k,1,isalt)=36.
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=36.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined SEAMOUNT
+#   elif defined SEAMOUNT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=5.*15.*exp(z_r(i,j,k)/100.)
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined SHELFRONT
+#   elif defined SHELFRONT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
+#    ifdef TEMPERATURE
               t(i,j,k,1,itemp)=T0+2.5*tanh((yr(i,j)-50000.0)/20000.0)
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=S0  +  tanh((yr(i,j)-50000.0)/20000.0)
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif 
             enddo
           enddo
         enddo
 
-#  elif  defined SED_TEST2 
-        do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              t(i,j,k,1,itemp)=20.0
-              t(i,j,k,1,isalt)=0.0
-              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-            enddo
-          enddo
-        enddo
-
-#  elif defined UPWELLING
+#   elif defined UPWELLING
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-#   define Z0 (-35.)
-#   define THKNSS 6.5
-#   define Z1 (-75.)
-#   define STRAT 150.
+#    define Z0 (-35.)
+#    define THKNSS 6.5
+#    define Z1 (-75.)
+#    define STRAT 150.
+#    ifdef TEMPERATURE
              t(i,j,k,1,itemp)=14.+4.*THKNSS*log(
      &                        cosh((z_w(i,j,k )-Z0)/THKNSS)
      &                       /cosh((z_w(i,j,k-1)-Z0)/THKNSS)
      &                           )/(z_w(i,j,k)-z_w(i,j,k-1))
      &             +((z_w(i,j,k)+z_w(i,j,k-1))/2.-Z1)/STRAT
-#   undef Z0
-#   undef THKNSS
-#   undef Z1
-#   undef STRAT
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    undef Z0
+#    undef THKNSS
+#    undef Z1
+#    undef STRAT
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined REGIONAL
+#   elif defined REGIONAL
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-#   define Z0 (-80.)
-#   define THKNSS 50.
-#   define Z1 0.
-#   define STRAT 1000.
+#    define Z0 (-80.)
+#    define THKNSS 50.
+#    define Z1 0.
+#    define STRAT 1000.
+#    ifdef TEMPERATURE
              t(i,j,k,1,itemp)=14.+5.*THKNSS*log(
      &                        cosh((z_w(i,j,k )-Z0)/THKNSS)
      &                       /cosh((z_w(i,j,k-1)-Z0)/THKNSS)
      &                           )/(z_w(i,j,k)-z_w(i,j,k-1))
      &              +((z_w(i,j,k)+z_w(i,j,k-1))/2.-Z1)/STRAT
-#   undef Z0
-#   undef THKNSS
-#   undef Z1
-#   undef STRAT
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-#   ifdef SALINITY
+#    endif /* TEMPERATURE */
+#    undef Z0
+#    undef THKNSS
+#    undef Z1
+#    undef STRAT
+#    ifdef SALINITY
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-#   endif
+#    endif
             enddo
           enddo
         enddo
 
-#  elif defined JET
+#   elif defined JET
 !
 ! Compute analytical t and geostrophically adjusted 
 ! zeta,ub,vb,u,v fields with no zonal perturbation first
@@ -959,7 +1076,6 @@
 !
       endif  ! nrrec.eq.0.
 !
-
 ! This is a quick fix to get the initialisation reproducible 
 ! (and right...) with OpenMP or tiling. This initialisation is performed
 ! on the whole domain (or MPI subdomain). 
@@ -967,11 +1083,11 @@
 ! re-written to make it properly
 !  
 #ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
 #else
-#define LOCALLM Lm
-#define LOCALMM Mm
+# define LOCALLM Lm
+# define LOCALMM Mm
 #endif
 C$OMP MASTER
       Istr1=1
@@ -990,21 +1106,73 @@ C$OMP MASTER
         call ana_jet_tile (Istr1,Iend1,Jstr1,Jend1,1)
 C$OMP END MASTER
 C$OMP BARRIER
-#  else
+
+#   elif defined TIDAL_FLAT
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
-              t(i,j,k,1,itemp)=20.
-              t(i,j,k,2,itemp)=20.
-#   ifdef SALINITY
-              t(i,j,k,1,isalt)=35.
-              t(i,j,k,2,isalt)=35.
-#   endif
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=35.5
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
             enddo
           enddo
         enddo
-#  endif
+
+#   elif defined DUNE
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif  
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=0.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
+
+#   elif defined SED_TOY
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=10.
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=0.
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif
+            enddo
+          enddo
+        enddo
+
+#   else
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=20.
+              t(i,j,k,2,itemp)=20.
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=35.
+              t(i,j,k,2,isalt)=35.
+#    endif
+            enddo
+          enddo
+        enddo
+#   endif
 !
+#  endif /*TRACERS */        
       endif   !  nrrec.eq.0.
 !
 # endif /*SOLVE3D */
@@ -1016,7 +1184,7 @@ C$OMP BARRIER
 !  Initial conditions for passive tracer
 !--------------------------------------------------------------------
 !
-# ifdef PASSIVE_TRACER 
+# ifdef PASSIVE_TRACER
       do k=1,N
         do j=JR_RANGE
           do i=IR_RANGE
@@ -1027,7 +1195,7 @@ C$OMP BARRIER
 !     &           z_r(i,j,k).gt.-1200 ) then
                 t(i,j,k,1,itpas)=1
               else
-                 t(i,j,k,1,itpas)=0
+                t(i,j,k,1,itpas)=0
               endif
 #  elif defined SHOREFACE || defined RIP
             if (h(i,j).lt.2) then
@@ -1038,24 +1206,31 @@ C$OMP BARRIER
             t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
 #  elif defined KH_INST
               zdye10 = -0.65*depth
-              t(i,j,k,1,itpas1) =
+              t(i,j,k,1,itpas) =
      &            + 35 +0.05* drho* (
      &              1. - (dtanh( (z_r(1,1,k)-zdye10)/hsalt0 ) )**2.
-!    &                     )/Scoef      
      &                     )
 !
-                 t(i,j,k,2,itpas1) = t(i,j,k,1,itpas1)
+              t(i,j,k,2,itpas) = t(i,j,k,1,itpas)
 
               zdye20 = -0.35*depth
-              t(i,j,k,1,itpas2) =
-!
+              t(i,j,k,1,itpas+1) =
      &            + 35 +0.05* drho* (
      &              1. - (dtanh( (z_r(1,1,k)-zdye20)/hsalt0 ) )**2.
-!    &                     )/Scoef      
-     &                     )
-!
-                 t(i,j,k,2,itpas2) = t(i,j,k,1,itpas2)
-
+     &                     )!
+              t(i,j,k,2,itpas+1) = t(i,j,k,1,itpas+1)
+#  elif defined SED_TOY
+            if (k.gt.int(N/2)) then
+              t(i,j,k,1,itpas)=1.
+            else
+              t(i,j,k,1,itpas)=0
+            endif
+#  elif defined TIDAL_FLAT
+            if (k.gt.int(N/2)) then
+              t(i,j,k,1,itpas)=1.
+            else
+              t(i,j,k,1,itpas)=0
+            endif
 #  else
             if (h(i,j).lt.300) then
               t(i,j,k,1,itpas)=1.
@@ -1067,40 +1242,106 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
-# endif /*PASSIVE_TRACER */
+# endif /* PASSIVE_TRACER */
 !
+!
+!--------------------------------------------------------------------
+!  Initial conditions for tracer-Substance
+!--------------------------------------------------------------------
+!
+# ifdef SUBSTANCE 
+      do k=1,N
+        do j=JR_RANGE
+          do i=IR_RANGE
+            do iv=itsubs1,itsubs2
+              if (.not.got_tini(iv)) then
+#  if defined REGIONAL && !defined ANA_PSOURCE
+                t(i,j,k,1,iv)=cini_wat(iv)
+#  elif defined TIDAL_FLAT
+                if (h(i,j).gt.0) then
+! ---------------- mud+diss case -----------------!
+                  if (iv<=itsubs1+1) then
+                    if( i>79.and.i<151) then
+                      t(i,j,k,1,iv)=cini_wat(iv)
+                    else
+                      t(i,j,k,1,iv)=0.
+                    endif
+                  else
+                    t(i,j,k,1,iv)=cini_wat(iv)
+                  endif
+! ------------------------------------------------!
+                else
+                  t(i,j,k,1,iv)=0.
+                endif
+#  elif defined DUNE && defined MUSTANG
+                t(i,j,k,1,iv)=cini_wat(iv)  
+#  elif defined SED_TOY
+                t(i,j,k,1,iv)=cini_wat(iv)
+#  else
+                if (h(i,j).lt.300) then
+                  t(i,j,k,1,iv)=cini_wat(iv)
+                else
+                  t(i,j,k,1,iv)=0.
+                endif
+#  endif
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+# endif /*SUBSTANCE */
+
 !----------------------------------------------------------------------
 !  Initial conditions for sediment tracer variables.
 !----------------------------------------------------------------------
 !
 # ifdef SEDIMENT
-      do k=1,N
-        do j=JR_RANGE
-          do i=IR_RANGE
-            if (.not.got_tini(isand)) then
-              t(i,j,k,1,isand)=Csed(1)
-              t(i,j,k,2,isand)=t(i,j,k,1,isand)
-            endif
-            if (.not.got_tini(isilt)) then
-              t(i,j,k,1,isilt)=Csed(2)
-              t(i,j,k,2,isilt)=t(i,j,k,1,isilt)
-            endif
+      do itrc=1,NST
+        iv=itrc_sed+itrc-1 
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              if (.not.got_tini(iv)) then
+                t(i,j,k,1,iv)=Csed(itrc)
+                t(i,j,k,2,iv)=t(i,j,k,1,iv)
+              endif
+            enddo
           enddo
         enddo
       enddo
+
+#  if defined SED_TOY && ( defined SED_TOY_RESUSP || \
+                           defined SED_TOY_CONSOLID )
+      do iv=itrc_mud,itrc_mud+NMUD-1
+        do k=1,5
+          do j=JR_RANGE
+            do i=IR_RANGE
+              if (.not.got_tini(iv)) then
+!                t(i,j,k,1,iv)=1./7.5
+                 t(i,j,k,1,iv)=0
+                 t(i,j,k,2,iv)=t(i,j,k,1,iv)
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+
 #  endif
+# endif
 !
 !----------------------------------------------------------------------
 !  Initial conditions for skin temperature
 !----------------------------------------------------------------------
 !
 # ifdef SST_SKIN
+#  ifdef TEMPERATURE
       do j=JR_RANGE
         do i=IR_RANGE
           sst_skin(i,j)=t(i,j,N,1,itemp)
           dT_skin(i,j)=0.
         enddo
       enddo
+#  endif /* TEMPERATURE */
 # endif
 !
 !--------------------------------------------------------------------
@@ -1112,15 +1353,19 @@ C$OMP BARRIER
         do j=JR_RANGE
           do i=IR_RANGE
             if (.not.got_tini(iNO3_)) then
+#  ifdef TEMPERATURE
               temp=t(i,j,k,1,itemp)
+#  else
+              temp=25.
+#  endif /* TEMPERATURE */
                if (temp.lt.8.) then
-                  SiO4=30.
+                 SiO4=30.
                elseif (temp.ge.8. .and. temp.le.11.) then
-                  SiO4=30.-((temp-8.)*(20./3.))
+                 SiO4=30.-((temp-8.)*(20./3.))
                elseif (temp.gt.11. .and. temp.le.13.) then
-                  SiO4=10.-((temp-11.)*(8./2.))
+                 SiO4=10.-((temp-11.)*(8./2.))
                elseif (temp.gt.13. .and. temp.le.16.) then
-                  SiO4=2.-((temp-13.)*(2./3.))
+                 SiO4=2.-((temp-13.)*(2./3.))
                elseif (temp.gt.16.) then
                  SiO4=0.
                endif
@@ -1146,21 +1391,25 @@ C$OMP BARRIER
               t(i,j,k,2,iCAL_)=t(i,j,k,1,iCAL_)
             endif
             if (.not.got_tini(iPO4_))  then
-             temp=t(i,j,k,1,itemp)
-               if (temp.lt.8.) then
-                  SiO4=30.
-               elseif (temp.ge.8. .and. temp.le.11.) then
-                  SiO4=30.-((temp-8.)*(20./3.))
-               elseif (temp.gt.11. .and. temp.le.13.) then
-                  SiO4=10.-((temp-11.)*(8./2.))
-               elseif (temp.gt.13. .and. temp.le.16.) then
-                  SiO4=2.-((temp-13.)*(2./3.))
-               elseif (temp.gt.16.) then
-                 SiO4=0.
-               endif
-               t(i,j,k,1,iPO4_)=(1.67+0.5873*SiO4+0.0144*SiO4**2
+#   ifdef TEMPERATURE
+              temp=t(i,j,k,1,itemp)
+#   else
+              temp=25.
+#   endif /* TEMPERATURE */
+              if (temp.lt.8.) then
+                SiO4=30.
+              elseif (temp.ge.8. .and. temp.le.11.) then
+                SiO4=30.-((temp-8.)*(20./3.))
+              elseif (temp.gt.11. .and. temp.le.13.) then
+                SiO4=10.-((temp-11.)*(8./2.))
+              elseif (temp.gt.13. .and. temp.le.16.) then
+                SiO4=2.-((temp-13.)*(2./3.))
+              elseif (temp.gt.16.) then
+                SiO4=0.
+              endif
+              t(i,j,k,1,iPO4_)=(1.67+0.5873*SiO4+0.0144*SiO4**2
      &                               +0.0003099*SiO4**3)/16.
-               t(i,j,k,2,iPO4_)=t(i,j,k,1,iPO4_)
+              t(i,j,k,2,iPO4_)=t(i,j,k,1,iPO4_)
             endif
             if (.not.got_tini(iPOC_))  then
               t(i,j,k,1,iPOC_)=1.e-2
@@ -1234,13 +1483,13 @@ C$OMP BARRIER
               t(i,j,k,1,iNH4_)=1.e-2
               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
-#     if defined key_ligand
+#     ifdef key_ligand
             if (.not.got_tini(iLGW_))  then
               t(i,j,k,1,iLGW_)=1.e-3
               t(i,j,k,2,iLGW_)=t(i,j,k,1,iLGW_)
             endif
 #     endif
-#     if defined key_pisces_quota
+#     ifdef key_pisces_quota
             if (.not.got_tini(iDON_))  then
               t(i,j,k,1,iDON_)=5.
               t(i,j,k,2,iDON_)=t(i,j,k,1,iDON_)
@@ -1304,20 +1553,20 @@ C$OMP BARRIER
 #     endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tini(iChla)) then
-               t(i,j,k,1,iChla)=0.08
-               t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
+              t(i,j,k,1,iChla)=0.08
+              t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
             endif
             if (.not.got_tini(iPhy1)) then
-               t(i,j,k,1,iPhy1)=0.1
-               t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+              t(i,j,k,1,iPhy1)=0.1
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
             endif
             if (.not.got_tini(iZoo1)) then
-               t(i,j,k,1,iZoo1)=0.06
-               t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+              t(i,j,k,1,iZoo1)=0.06
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
             endif
             if (.not.got_tini(iDet1)) then
-               t(i,j,k,1,iDet1)=0.02
-               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+              t(i,j,k,1,iDet1)=0.02
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
 #   ifdef OXYGEN
             if (.not.got_tini(iO2))  then
@@ -1327,69 +1576,69 @@ C$OMP BARRIER
 #   endif
 #  elif defined BIO_N2ChlPZD2
             if (.not.got_tini(iNH4_))  then
-               t(i,j,k,1,iNH4_)=0.1
-               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
+              t(i,j,k,1,iNH4_)=0.1
+              t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
             if (.not.got_tini(iChla)) then
-               t(i,j,k,1,iChla)=0.08
-               t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
+              t(i,j,k,1,iChla)=0.08
+              t(i,j,k,2,iChla)=t(i,j,k,1,iChla)
             endif
             if (.not.got_tini(iPhy1)) then
-               t(i,j,k,1,iPhy1)=0.06
-               t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+              t(i,j,k,1,iPhy1)=0.06
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
             endif
             if (.not.got_tini(iZoo1)) then
-               t(i,j,k,1,iZoo1)=0.04
-               t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+              t(i,j,k,1,iZoo1)=0.04
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
             endif
             if (.not.got_tini(iDet1)) then
-               t(i,j,k,1,iDet1)=0.02
-               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+              t(i,j,k,1,iDet1)=0.02
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
             if (.not.got_tini(iDet2)) then
-               t(i,j,k,1,iDet2)=0.02
-               t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
+              t(i,j,k,1,iDet2)=0.02
+              t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
             endif
 #  elif defined BIO_BioEBUS
             if (.not.got_tini(iNO2_))  then
-               t(i,j,k,1,iNO2_)=0.05*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iNO2_)=t(i,j,k,1,iNO2_)
+              t(i,j,k,1,iNO2_)=0.05*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iNO2_)=t(i,j,k,1,iNO2_)
             endif
             if (.not.got_tini(iNH4_))  then
-               t(i,j,k,1,iNH4_)=0.1*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
+              t(i,j,k,1,iNH4_)=0.1*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iNH4_)=t(i,j,k,1,iNH4_)
             endif
             if (.not.got_tini(iPhy1)) then
-               t(i,j,k,1,iPhy1)=0.04*exp(z_r(i,j,k)/50.) 
-               t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+              t(i,j,k,1,iPhy1)=0.04*exp(z_r(i,j,k)/50.) 
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
             endif
             if (.not.got_tini(iPhy2)) then
-               t(i,j,k,1,iPhy2)=0.06*exp(z_r(i,j,k)/50.) 
-               t(i,j,k,2,iPhy2)=t(i,j,k,1,iPhy2)
+              t(i,j,k,1,iPhy2)=0.06*exp(z_r(i,j,k)/50.) 
+              t(i,j,k,2,iPhy2)=t(i,j,k,1,iPhy2)
             endif
             if (.not.got_tini(iZoo1)) then
-               t(i,j,k,1,iZoo1)=0.04*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+              t(i,j,k,1,iZoo1)=0.04*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
             endif
             if (.not.got_tini(iZoo2)) then
-               t(i,j,k,1,iZoo2)=0.04*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iZoo2)=t(i,j,k,1,iZoo2)
+              t(i,j,k,1,iZoo2)=0.04*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iZoo2)=t(i,j,k,1,iZoo2)
             endif
             if (.not.got_tini(iDet1)) then
-               t(i,j,k,1,iDet1)=0.02
-               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+              t(i,j,k,1,iDet1)=0.02
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
             if (.not.got_tini(iDet2)) then
-               t(i,j,k,1,iDet2)=0.02
-               t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
+              t(i,j,k,1,iDet2)=0.02
+              t(i,j,k,2,iDet2)=t(i,j,k,1,iDet2)
             endif
             if (.not.got_tini(iDON)) then
-               t(i,j,k,1,iDON)=0.5*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iDON)=t(i,j,k,1,iDON)
+              t(i,j,k,1,iDON)=0.5*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iDON)=t(i,j,k,1,iDON)
             endif
             if (.not.got_tini(iO2)) then
-               t(i,j,k,1,iO2)=250.*exp(z_r(i,j,k)/100.) 
-               t(i,j,k,2,iO2)=t(i,j,k,1,iO2)
+              t(i,j,k,1,iO2)=250.*exp(z_r(i,j,k)/100.) 
+              t(i,j,k,2,iO2)=t(i,j,k,1,iO2)
             endif
 #   ifdef NITROUS_OXIDE
             if (.not.got_tini(iN2O)) then
@@ -1473,21 +1722,23 @@ C$OMP BARRIER
 #  endif /* SOLVE3D */
 # endif /* ANA_INITIAL */
 # ifdef SOLVE3D
+#  ifdef TRACERS
       do itrc=1,NT
         if (.not.got_tini(itrc)) then
-#  ifdef THREE_GHOST_POINTS_TS
+#   ifdef THREE_GHOST_POINTS_TS
           call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                                 t(START_2D_ARRAY,1,1,itrc))
           call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                                 t(START_2D_ARRAY,1,2,itrc))
-#  else
+#   else
           call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                            t(START_2D_ARRAY,1,1,itrc))
           call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                            t(START_2D_ARRAY,1,2,itrc))
-#  endif
+#   endif
         endif
       enddo
+#  endif /* TRACERS */
 # endif
 #endif
 #undef IR_RANGE

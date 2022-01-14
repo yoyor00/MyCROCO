@@ -2,7 +2,7 @@ title:
 	Gravitational Adjustment Example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                1000     0.02     20      100 
+                1000     0.01     35      100 
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                     1          10           1.e-2 
@@ -19,14 +19,14 @@ restart:          NRST, NRPFRST / filename
                           gravadj_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      20        0 
+            T      40        0 
                           gravadj_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                          T   T    T     T   T   T F 
 
-auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
-                             F   F    T   F    F    F   F      F       F   F    F     20*F
+auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
+                             F   F    T   F    F    F   F      F       F   F    F     F    F     20*F
 
 rho0:
       1000.

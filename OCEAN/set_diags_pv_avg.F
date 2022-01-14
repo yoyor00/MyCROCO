@@ -71,8 +71,8 @@
           cff1=0.0
           if (ZEROTH_TILE) then
             timediags_pv_avg=time
-      MPI_master_only write(*,*) 'started averaging pv',iic,
-     &                     ntsdiags_pv_avg,nwrtdiags_pv_avg
+!             MPI_master_only write(*,*) 'started averaging pv',iic,
+!     &                             ntsdiags_pv_avg,nwrtdiags_pv_avg
           endif
         elseif (mod(ilc-ntsdiags_pv_avg,nwrtdiags_pv_avg).gt.1) then
           cff =1.0
@@ -85,8 +85,8 @@
           cff1=1.0
           if (ZEROTH_TILE) then
             timediags_pv_avg=cff*(timediags_pv_avg+time)
-            MPI_master_only write(*,*) 'finished averaging pv',
-     &                 iic,ntsdiags_pv_avg,nwrtdiags_pv_avg
+!            MPI_master_only write(*,*) 'finished averaging pv',
+!     &                 iic,ntsdiags_pv_avg,nwrtdiags_pv_avg
           endif
         endif
 
@@ -102,7 +102,7 @@
           enddo
         enddo
 
-        do itrc=1,NT
+        do itrc=1,NTA
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR 

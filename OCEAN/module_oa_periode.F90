@@ -28,13 +28,13 @@
 
       module module_oa_periode
 
-      real                                                            & 
+      real ::                                                         & 
            fb_oa                                                      &  !< definition de l''ondelette de morlet complexe
            ,fc_oa                                                        !< par defaut fb_oa=2. et fc_oa=6./3.14159274
-      
-      integer                                                         &
-           nzvp_oa                                                    &  ! taille de la structure frequentielle du vecteur d etat
-           ,nzc_oa
+                                                                         !< BLXD 2. * pi * fc_oa = 6.
+      integer ::                                                      & ! taille de la structure frequentielle du vecteur d etat
+           nzvp_oa                                                    &             
+          ,nzc_oa                                                       ! nombre de configurations
 
       integer,dimension(:),allocatable::                              &  ! (nmv_oa)
            swt_wfpf_oa                                                &  ! calcul du coef wf ou du spectre pf (choix utilisateur)
@@ -56,15 +56,59 @@
            begvp_oa                                                      ! struture frequentielle du vecteur d etat
 
       real,dimension(:,:),allocatable::                               &  ! (2,nmvp_oa)
-           perv_oa                                                       ! periodes associees a la structure vectorielle du vecteur d etat, facteurs de reconstruction associes a l'ondelette
+           perv_oa                                                       ! facteurs de reconstruction associes a l'ondelette
+
+      integer,dimension(:,:),allocatable::                            &
+         if_last_per_oa                                               &
+        ,if_first_per_oa
+      integer,dimension(:,:),allocatable::                            &
+         lper_fst_oa                                                  &
+        ,lper_lst_oa
+
+      integer,dimension(:),allocatable::                              &
+         nper_sclg
+
+      real*8,dimension(:),allocatable::                               &  ! (2,nmvp_oa)
+           t0, dt0, sq_dt0           
+                                                       !
+      real,dimension(:),allocatable::                                 &  ! (2,nmvp_oa)
+           w0, dw0, sq_dw0
+
+      real,dimension(:),allocatable::                                 &  ! (2,nmvp_oa)
+           psi_norm_l2, ft_psi_norm_l2        
+
+      real*8,dimension(:),allocatable::                               &  ! (2,nmvp_oa)
+           t0_bis, dt0_bis           
+                                                       !
+      real,dimension(:),allocatable::                                 &  ! (2,nmvp_oa)
+           w0_apx,dw0_apx           
+
+      real,dimension(:),allocatable::                                 &  ! (2,nmvp_oa)
+           psi_norm_l2_bis           
+
+      real*8,dimension(:),allocatable::                               &  ! (2,nmvp_oa)
+           t0_theo           
+
+
+      !real*8,dimension(:),allocatable::                               &  ! (2,nmvp_oa)
+      !     dt0_theo           
+                                                       !
+      !real,dimension(:),allocatable::                                 &  ! (2,nmvp_oa)
+      !     w0_theo,dw0_theo           
 
       integer,dimension(:),allocatable::                              &  ! (nmc_oa)
            tc_oa    
 
+! BLXD bug tvc_oa has configuration size
+      integer,dimension(:),allocatable::                              &  ! (nmc_oa)
+           tvc_oa    
+
       integer,dimension(:),allocatable::                              &  !  (nmc_oa+1)
            begc_oa    
 
-      
+      integer                                   :: nper_sclg_max
+      !integer, parameter                       :: nper_sclg_max_croco = 100
+
       end module module_oa_periode
 
 #else

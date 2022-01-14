@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -25,31 +25,40 @@
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "mpi_cpl.h"
-       
+#ifdef MUSTANG
+# include "coupler_define_MUSTANG.h"
+#endif
+
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
       nbtimes = nbtimes + 1
 #endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef SOLVE3D   
- 
+#ifdef SOLVE3D
+
 #if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3 
+!--Get phase of OASIS3
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
 !         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
+#ifdef AGRIF
+       else if ((.not.agrif_root()).and.(iif==-1).and.
+     &          (oasis_time>=0).and.(nbtimes<=Agrif_MaxLevel()+1).and.
+     &          (nbprttime<nbmaxprttime)) then
+         call cpl_prism_get (oasis_time)
+#endif
        endif 
 #endif /* OA_COUPLING */
 
        iif = iif+1
       IF (iif .EQ. 0) then
-#endif      
+#endif
 C$OMP PARALLEL
         call prestep3D_thread()
 C$OMP END PARALLEL
-#ifdef SOLVE3D 
-      endif       
+#ifdef SOLVE3D
+      endif
       IF ((iif.GT.0).AND.(iif.LT.(nfast+1))) THEN
 #endif
 C$OMP PARALLEL
@@ -58,14 +67,14 @@ C$OMP END PARALLEL
 #ifdef SOLVE3D
       ENDIF
       IF (iif .EQ. (nfast+1)) then
-#endif      
+#endif
 C$OMP PARALLEL
         call step3D_uv_thread()
 C$OMP END PARALLEL
 #ifdef SOLVE3D
       endif
       IF (iif .EQ. (nfast + 2)) then
-#endif      
+#endif
 C$OMP PARALLEL
         call step3D_t_thread()
 C$OMP END PARALLEL
@@ -74,19 +83,25 @@ C$OMP END PARALLEL
         nbstep3d = nbstep3d + 1
       endif
 #if defined OA_COUPLING || defined OW_COUPLING
-!--Get phase of OASIS3 
+!--Get phase of OASIS3
        if (iif==-1) then
-         if (oasis_time>=0.and.(nbstep3d<ntimes-ntstart+1)) then
+         if (oasis_time>=0.and.(nbstep3d<=ntimes-ntstart+1)) then
            call cpl_prism_put (oasis_time)
+#ifdef AGRIF
+         else if (oasis_time>=0.and.(.not.agrif_root()).and.
+     &           ((nbtimes>nbmaxtimes+1-Agrif_MaxLevel())).and.
+     &           (nbprttime<nbmaxprttime) ) then
+           call cpl_prism_put (oasis_time)
+#endif
          endif
          oasis_time = oasis_time + dt
-       endif 
+       endif
 #endif /* OA_COUPLING */
 #endif
-#ifdef ONLINE_ANA
+!#ifdef ONLINE_ANALYSIS
 !     if (mynode.eq.0) write(6,*) 'appel',iic,iif
 !     call croco_oa(1)
-#endif
+!#endif
       return
       end
 !
@@ -101,6 +116,9 @@ C$OMP END PARALLEL
 # include "zoom.h"
 # endif
 #endif
+#ifdef ONLINE_ANALYSIS
+      use module_interface_oa, only : if_oa
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -113,9 +131,13 @@ C$OMP END PARALLEL
 #endif
 #include "ocean2d.h"
 #include "ocean3d.h"
-#if defined RVTK_DEBUG && ( defined  BULK_FLUX || defined MRL_WCI )
+#if defined RVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
 # include "forces.h"
 #endif
+#if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
+# include "mixing.h"
+#endif
+
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -129,14 +151,14 @@ C$OMP END PARALLEL
       integer itrc
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
-      integer omp_get_num_threads, omp_get_thread_num 
+      integer omp_get_num_threads, omp_get_thread_num
 
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -218,6 +240,10 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
+#if defined RVTK_DEBUG_PERFRST
+       call check_tab3d(Hz_bak(:,:,:),'Hz_bak beg prestep3d','r')
+#endif
+
       if (may_day_flag.ne.0) return  !-->  EXIT
 
 #ifdef SOLVE3D
@@ -260,7 +286,7 @@ C$OMP BARRIER
 #  endif
 # endif
 # if defined WKB_WWAVE && !defined ANA_BRY_WKB
-          call set_bry_wkb (tile)  
+          call set_bry_wkb (tile)
 # endif
 
 # ifdef NBQCLIMATOLOGY
@@ -286,7 +312,7 @@ C$OMP BARRIER
 C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
-# if defined  BBL && !defined M3FAST 
+# if defined  BBL && !defined M3FAST
 #   ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
 #   endif
@@ -295,7 +321,7 @@ C$OMP BARRIER
         ENDIF
 #  endif
 # endif
-# if defined SSH_TIDES || defined UV_TIDES
+# if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 #  ifdef AGRIF
         IF (Agrif_Root()) call clm_tides (tile)
 #  else
@@ -305,48 +331,58 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+C$OMP MASTER
+      call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
+      call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_befbulk','u')
+      call check_tab2d(vwndg(:,:,1),'vwndg1 prestep3d_befbulk','v')
+      call check_tab2d(vwndg(:,:,2),'vwndg2 prestep3d_befbulk','v')
+      call check_tab2d(tair(:,:),'tair prestep3d_befbulk','r')
+      call check_tab2d(rhum(:,:),'rhum prestep3d_befbulk','r')
+      call check_tab2d(prate(:,:),'prate prestep3d_befbulk','r')
+      call check_tab2d(radlw(:,:),'radlw prestep3d_befbulk','r')
+      call check_tab2d(radsw(:,:),'radsw prestep3d_befbulk','r')
+      call check_tab2d(wspd(:,:),'wspd prestep3d_befbulk','r')
+      call check_tab2d(uwnd(:,:),'uwnd prestep3d_befbulk','u')
+      call check_tab2d(vwnd(:,:),'vwnd prestep3d_befbulk','v')
+C$OMP END MASTER
+# endif
+
 # ifdef BULK_FLUX
       do tile=my_first,my_last
         call bulk_flux (tile)   
       enddo
 C$OMP BARRIER
-#  ifdef RVTK_DEBUG
+#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
-      call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d','u')
-      call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d','u')
-      call check_tab2d(vwndg(:,:,1),'vwndg1 prestep3d','v')
-      call check_tab2d(vwndg(:,:,2),'vwndg2 prestep3d','v')
-      call check_tab2d(sustr(:,:),'sustr prestep3d','u')
-      call check_tab2d(svstr(:,:),'sustr prestep3d','v')
-      call check_tab2d(tair(:,:),'tair prestep3d','r')
-      call check_tab2d(rhum(:,:),'rhum prestep3d','r')
-      call check_tab2d(prate(:,:),'prate prestep3d','r')
-      call check_tab2d(radlw(:,:),'radlw prestep3d','r')
-      call check_tab2d(radsw(:,:),'radsw prestep3d','r')
-      call check_tab2d(wspd(:,:),'wspd prestep3d','r')
-      call check_tab2d(uwnd(:,:),'uwnd prestep3d','r')
-      call check_tab2d(vwnd(:,:),'vwnd prestep3d','r')
+      call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
+      call check_tab2d(uwndg(:,:,2),'uwndg2 prestep3d_aftbulk','u')
+      call check_tab2d(vwndg(:,:,1),'vwndg1 prestep3d_aftbulk','v')
+      call check_tab2d(vwndg(:,:,2),'vwndg2 prestep3d_aftbulk','v')
+
+      call check_tab2d(tair(:,:),'tair prestep3d_aftbulk','r')
+      call check_tab2d(rhum(:,:),'rhum prestep3d_aftbulk','r')
+      call check_tab2d(prate(:,:),'prate prestep3d_aftbulk','r')
+      call check_tab2d(radlw(:,:),'radlw prestep3d_aftbulk','r')
+      call check_tab2d(radsw(:,:),'radsw prestep3d_aftbulk','r')
+      call check_tab2d(wspd(:,:),'wspd prestep3d_aftbulk','r')
+      call check_tab2d(uwnd(:,:),'uwnd prestep3d_aftbulk','u')
+      call check_tab2d(vwnd(:,:),'vwnd prestep3d_aftbulk','v')
 C$OMP END MASTER
 C$OMP BARRIER
 #  endif
 # endif /* BULK_FLUX */
 
-      if (may_day_flag.ne.0) return  !-->  EXIT
-
-#  if defined SMFLUX_CFB && !defined CFB_WIND
-!
-! Apply correction to surface momentum flux due to current feedback
-!
-#   ifdef CFB_STRESS2
-      do tile=my_tile_range
-        call cfb_stress_cor (tile) ! compute wind stress magnitude
-      enddo
 C$OMP BARRIER
-#   endif
-      do tile=my_tile_range
-        call cfb_stress (tile)
-      enddo
-#  endif
+# if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+C$OMP MASTER      
+      call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','u')
+      call check_tab2d(svstr(:,:),'svstr prestep3d_aftbulk','v')
+C$OMP END MASTER
+C$OMP BARRIER
+# endif
+
+      if (may_day_flag.ne.0) return  !-->  EXIT
 
 # if defined WKB_WWAVE && !defined WKB_STEADY
       wkb_agrif_done=.FALSE.
@@ -398,7 +434,7 @@ C$OMP END MASTER
 #  endif
 # endif
 
-# ifdef MRL_WCI 
+# ifdef MRL_WCI
       do tile=my_tile_range
         call  mrl_wci (tile)
       enddo
@@ -438,15 +474,15 @@ C$OMP BARRIER
 # endif
         call pre_step3d (tile)
 # ifdef AGRIF
-        if (.Not.Agrif_Root()) then
-          call uv3dpremix (tile)
-        endif
+      if (.Not.Agrif_Root()) then
+        call uv3dpremix (tile)
+      endif
 # endif
       enddo
 C$OMP BARRIER
 
       do tile=my_first,my_last
-# if defined UV_VIS2 || defined UV_VIS4 
+# if defined UV_VIS2 || defined UV_VIS4
         call uv3dmix (tile)
 # endif
 # if defined SPONGE_VIS2 && !defined UV_VIS2
@@ -467,7 +503,7 @@ C$OMP BARRIER
         call set_diags_pv (tile)
 # endif
 
-# ifdef AVERAGES
+# if defined AVERAGES && ! defined XIOS
         call set_avg (tile)
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg
@@ -507,9 +543,9 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
-#ifdef RVTK_DEBUG
+#if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
+       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r')
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u')
       call check_tab3d(v(:,:,:,nnew),'v prestep3d','v')
@@ -519,11 +555,21 @@ C$OMP MASTER
       nnew=3-nstp
 
 #ifdef ONLINE_ANALYSIS
-      call croco_oa(1)
+! BLXD TODO moving OA calls just after the end of diags
+      if ( if_oa.eqv..true. ) then
+C$OMP END MASTER
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=my_first,my_last
+           ! BLXD call croco_oa(0)
+           call online_spectral_diags(tile,1)
+         enddo
+         call output_oa
+C$OMP MASTER
+      endif
 #endif
 
 !
-! Output block: write restart/history files.   
+! Output block: write restart/history files.
 !
       call output
 
@@ -551,9 +597,9 @@ C$OMP BARRIER
 #include "scalars.h"
 #include "ncscrum.h"
 #include "ocean2d.h"
-#if defined RVTK_DEBUG && defined MRL_WCI 
-# include "forces.h"
-#endif
+!#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined MRL_WCI
+!# include "forces.h"
+!#endif
 #ifdef FLOATS
 # include "floats.h"
 #endif
@@ -562,20 +608,25 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
+#elif ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST ) && defined M3FAST
+# include "nbq.h"
 #endif
-       integer range
+#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
+# include "forces.h"
+#endif
+      integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
-      integer omp_get_num_threads, omp_get_thread_num 
+      integer omp_get_num_threads, omp_get_thread_num
 
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -649,7 +700,7 @@ C$OMP BARRIER
             call set_ssh (tile)
 #  endif
 # endif
-# if  defined Z_FRC_BRY  || defined M2_FRC_BRY
+# if defined Z_FRC_BRY  || defined M2_FRC_BRY
 #  ifdef ANA_BRY
             call ana_bry (tile)
 #  else
@@ -669,7 +720,7 @@ C$OMP BARRIER
 # ifdef BBL
           call bblm (tile)
 # endif
-# if defined SSH_TIDES || defined UV_TIDES
+# if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 #   ifdef AGRIF
           IF (Agrif_Root()) call clm_tides (tile)
 #   else
@@ -688,7 +739,6 @@ C$OMP MASTER
         call output
 C$OMP END MASTER
 C$OMP BARRIER
-
 #endif  /* !defined SOLVE3D */
 
 #if defined BBL && defined BSTRESS_FAST
@@ -705,7 +755,7 @@ C$OMP BARRIER
                   ! Nevertheless, it makes sense,
                   ! since mpc will reverse one of
                   ! these loops to make zig-zag
-                  ! tile-processing sequence.               
+                  ! tile-processing sequence.
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
 #ifdef M3FAST
@@ -720,7 +770,7 @@ C$OMP BARRIER
 # endif
 #else
             call     step2d (tile)
-#endif            
+#endif
           enddo
         else
           do tile=my_first,my_last
@@ -736,7 +786,7 @@ C$OMP BARRIER
 # endif
 #else
             call     step2d (tile)
-#endif            
+#endif
           enddo
         endif
 
@@ -753,12 +803,18 @@ C$OMP MASTER
        call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r')
        call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u')
        call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v')
+#  ifdef RVTK_DEBUG_ADVANCED
+        call check_tab2d(bustr,'bustr step3d_fast','u')
+        call check_tab2d(bvstr,'bvstr step3d_fast','v')
+        !!call check_tab3d(qdmu_nbq,'qdmu_nbq step3d_fast','u')
+        !!call check_tab3d(qdmv_nbq,'qdmv_nbq step3d_fast','v')
+#  endif
 # else
        call check_tab2d(zeta(:,:,knew),'zeta step2d','r')
        call check_tab2d(ubar(:,:,knew),'ubar step2d','u')
        call check_tab2d(vbar(:,:,knew),'vbar step2d','v')
 # endif
-C$OMP END MASTER       
+C$OMP END MASTER
 #endif
 
       return
@@ -767,7 +823,7 @@ C$OMP END MASTER
 !====================================================================
 !                  subroutine step3D_uv_thread
 !====================================================================
-!      
+!
       subroutine step3D_uv_thread()
 #ifdef AGRIF
       use Agrif_Util
@@ -790,7 +846,12 @@ C$OMP END MASTER
 #include "ocean2d.h"
 #include "coupling.h"
 #ifdef AUTOTILING
-#include "autotiling.h"
+# include "autotiling.h"
+#endif
+#if defined LMD_MIXING
+# include "mixing.h"
+#elif defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
+# include "mixing.h"
 #endif
        integer range
       integer ntrds,trd,
@@ -798,16 +859,16 @@ C$OMP END MASTER
       integer i,j,k
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
-      integer omp_get_num_threads, omp_get_thread_num 
+      integer omp_get_num_threads, omp_get_thread_num
       integer itrc
-      
+
       real t1,t2,t3
 
       ntrds=omp_get_num_threads()
@@ -871,7 +932,7 @@ C$OMP BARRIER
 
       do tile=my_first,my_last
         call step3d_uv2 (tile)
-# ifdef DIF_COEF_3D 
+# ifdef DIF_COEF_3D
         call hdiff_coef (tile)
 # endif
       enddo
@@ -884,7 +945,7 @@ C$OMP BARRIER
 ! Update the outer domain after the last child step
 ! in case of 2-way nesting.
 !
-C$OMP BARRIER 
+C$OMP BARRIER
 C$OMP MASTER
       if (.Not.Agrif_Root()) then
         call Agrif_update_uv_np1
@@ -894,15 +955,22 @@ C$OMP END MASTER
 
       return
       end
-      
+
 !
 !====================================================================
 !                  subroutine step3D_t_thread
 !====================================================================
-!      
+!
       subroutine step3D_t_thread()
 #ifdef AGRIF
       use Agrif_Util
+#endif
+#ifdef MUSTANG
+      use plug_MUSTANG_CROCO, only: mustang_update_main
+      use plug_MUSTANG_CROCO, only: mustang_deposition_main
+      use plug_MUSTANG_CROCO, only: mustang_morpho_main
+      use comMUSTANG , only : l_morphocoupl,t_morpho
+# include "coupler_define_MUSTANG.h"
 #endif
       implicit none
 #include "param.h"
@@ -920,24 +988,27 @@ C$OMP END MASTER
 #include "coupling.h"
 #include "grid.h"
 #ifdef AUTOTILING
-#include "autotiling.h"
+# include "autotiling.h"
 #endif
-       integer range
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST )
+# include "mixing.h"
+#endif
+      integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
 #ifdef FLOATS
-       integer chunk_size_flt, Lstr,Lend, flt_str
-       common /floats_step/ flt_str
+      integer chunk_size_flt, Lstr,Lend, flt_str
+      common /floats_step/ flt_str
 #endif
 #ifdef STATIONS
-       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
-       common /sta_step/ sta_str
+      integer chunk_size_sta, Mcpstr,Mcpend, sta_str
+      common /sta_step/ sta_str
 #endif
-      integer omp_get_num_threads, omp_get_thread_num 
+      integer omp_get_num_threads, omp_get_thread_num
       integer itrc
-      
+
       real t1,t2,t3
 
       ntrds=omp_get_num_threads()
@@ -946,7 +1017,6 @@ C$OMP BARRIER
       range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
-
 C$OMP BARRIER
 
 #ifdef SOLVE3D
@@ -958,7 +1028,16 @@ C$OMP BARRIER
 # ifdef GLS_MIXING
         call gls_mixing (tile)
 # endif
+
+# ifdef MUSTANG
+        call mustang_update_main (tile)
+# endif
         call step3d_t (tile)
+
+# ifdef MUSTANG
+        call mustang_deposition_main (tile)
+# endif
+
 # ifdef SEDIMENT
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim)
@@ -975,31 +1054,52 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+C$OMP MASTER
+      do itrc=1,NT
+        call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
+      enddo
+#  if defined GLS_MIXING
+        call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
+        call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
+#  endif
+C$OMP END MASTER
+# endif
+
+# if defined TRACERS
       do tile=my_first,my_last
-# if defined TS_DIF2 || defined TS_DIF4 
+#  if defined TS_DIF2 || defined TS_DIF4
         call t3dmix (tile)
-# endif
-# if defined SPONGE_DIF2
+#  endif
+#  if defined SPONGE_DIF2
         call t3dmix_spg (tile)
-# endif
+#  endif
       enddo
 C$OMP BARRIER
 
+# endif /* TRACERS */
+
 # ifdef MORPHODYN
       do tile=my_first,my_last
-#  ifdef ANA_MORPHODYN
+#  ifdef SEDIMENT
+#   ifdef ANA_MORPHODYN
         call ana_morphodyn (tile)
+#   endif
+#  elif defined MUSTANG
+        IF_MUSTANG_MORPHO_CPL
+     &  call mustang_morpho_main (tile)
 #  endif
         call set_depth_morphodyn (tile)
       enddo
 C$OMP BARRIER
+
 # endif
 
 #endif /* SOLVE3D */
 
 #ifdef FLOATS
       chunk_size_flt=32
-      do while (flt_str.lt.nfloats) 
+      do while (flt_str.lt.nfloats)
 C$OMP CRITICAL
         Lstr=flt_str+1
         flt_str=Lstr+chunk_size_flt-1
@@ -1027,7 +1127,7 @@ C$OMP END CRITICAL
 ! Update the outer domain after the last child step
 ! in case of 2-way nesting.
 !
-C$OMP BARRIER 
+C$OMP BARRIER
 C$OMP MASTER
       if ((.Not.Agrif_Root()).and.
      &    (nbcoarse == Agrif_Irhot())) then
@@ -1035,6 +1135,18 @@ C$OMP MASTER
       endif
 C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
+
+#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
+C$OMP BARRIER
+C$OMP MASTER
+      do itrc=1,NT
+        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
+        !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
+      enddo
+      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
+      call check_tab3d(v(:,:,:,nnew),'v step3d','v')
+C$OMP END MASTER
+#endif
 
 C$OMP MASTER
 #ifdef AUTOTILING
@@ -1044,22 +1156,11 @@ C$OMP MASTER
 
       iic=iic + 1
 
-#ifdef AGRIF      
+#ifdef AGRIF
       nbcoarse = 1 + mod(nbcoarse, Agrif_IRhot())
-#endif      
+#endif
 C$OMP END MASTER
 C$OMP BARRIER
 
-#if defined RVTK_DEBUG && defined SOLVE3D
-C$OMP BARRIER
-C$OMP MASTER
-      do itrc=1,NT
-      call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r')
-      enddo
-      call check_tab3d(u(:,:,:,nnew),'u step3d','u')
-      call check_tab3d(v(:,:,:,nnew),'v step3d','v')    
-C$OMP END MASTER      
-#endif
-
       return
-      end      
+      end

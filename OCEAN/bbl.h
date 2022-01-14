@@ -30,10 +30,10 @@
 ** Vbed         Wind-induced, bed wave orbital V-velocity (m/s).    **
 ** Zbnot        Physical hydraulic bottom roughness  (m)            **
 ** Zbapp        Total apparent hydraulic bottom roughness (m).      **
-** bustrw       Kinematic bottom stress (m2/s2) due to wind-induced **
-**                waves the XI-direction at horizontal U-points.    **
-** bvstrw       Kinematic bottom stress (m2/s2) due to wind-induced **
-**                waves the ETA-direction at horizontal V-points.   **
+** bustrw       Kinematic bottom skin stress (m2/s2) in the         **
+**                XI-direction at horizontal Rho-points.            **
+** bvstrw       Kinematic bottom skin stress (m2/s2) in the         **
+**                ETA-direction at horizontal Rho-points.           **
 **********************************************************************
 */
 
@@ -64,22 +64,9 @@
       real Zbapp(GLOBAL_2D_ARRAY)
       common /bbl_Zbapp/ Zbapp
 
-      real bustrc(GLOBAL_2D_ARRAY)
-      common /bbl_bustrc/ bustrc
-
-      real bvstrc(GLOBAL_2D_ARRAY)
-      common /bbl_bvstrc/ bvstrc
-
       real bustrw(GLOBAL_2D_ARRAY)
       common /bbl_bustrw/ bustrw
 
       real bvstrw(GLOBAL_2D_ARRAY)
       common /bbl_bvstrw/ bvstrw
-      
-      real bustrcwmax(GLOBAL_2D_ARRAY)
-      common /bbl_bustrcwmax/ bustrcwmax
-
-      real bvstrcwmax(GLOBAL_2D_ARRAY)
-      common /bbl_bvstrcwmax/ bvstrcwmax
-
 #endif

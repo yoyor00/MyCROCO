@@ -380,7 +380,7 @@ C$OMP BARRIER
           enddo
         enddo
 
-# ifdef LMD_DDMIX
+# if defined LMD_DDMIX && defined TEMPERATURE && defined SALINITY
 !
 ! Compute double-diffusive mixing.
 !-----------------------------------------
@@ -462,7 +462,7 @@ C$OMP BARRIER
             Ks(i,j,k)=Ks(i,j,k)+nu_dds
           enddo
         enddo
-# endif /* LMD_DDMIX */
+# endif /* LMD_DDMIX && TEMPERATURE && SALINITY */
       enddo     ! <-- k
 
 # if defined LMD_BOTEK && !defined LMD_BKPP
@@ -484,7 +484,9 @@ C$OMP BARRIER
      &                                (z_w(i,j,k)-z_w(i,j,0))*4.*
      &             (hekman+z_w(i,j,0)-z_w(i,j,k))/(hekman*hekman) ))
              Kv(i,j,k)=Kv(i,j,k)+Kvbotek
+#  ifdef TEMPERATURE
              Kt(i,j,k)=Kt(i,j,k)+Kvbotek
+#  endif
 #  ifdef SALINITY
              Ks(i,j,k)=Ks(i,j,k)+Kvbotek
 #  endif
@@ -502,11 +504,19 @@ C$OMP BARRIER
       do j=Jstr,Jend
         do i=Istr,Iend
           Kv(i,j,N)=Kv(i,j,N-1)
+#  ifdef SALINITY
           Ks(i,j,N)=Ks(i,j,N-1)
+#  endif
+#  ifdef TEMPERATURE
           Kt(i,j,N)=Kt(i,j,N-1)
+#  endif
           Kv(i,j,0)=Kv(i,j,  1)
+#  ifdef SALINITY
           Ks(i,j,0)=Ks(i,j,  1)
+#  endif
+#  ifdef TEMPERATURE
           Kt(i,j,0)=Kt(i,j,  1)
+#  endif
         enddo
       enddo
 # endif /* LMD_SKPP || LMD_BKPP */
@@ -538,12 +548,12 @@ C$OMP BARRIER
      &      Kt(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &      Ks(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !
-# undef LMD_VMIX_MIN
+# undef  LMD_VMIX_MIN
 # ifdef LMD_VMIX_MIN
       real  nuwm,nuws,my_Akv_bak,my_Akt_bak,my_Aks_bak
       parameter (
      &     nuwm=1.0e-4,  ! Interior viscosity and diffusivity
-     &     nuws=0.1e-4,  ! due to wave breaking, [m^2/s]
+     &     nuws=1.0e-5,  ! due to wave breaking, [m^2/s]
      &     my_Akv_bak=nuwm,
      &     my_Akt_bak=nuws,
      &     my_Aks_bak=nuwm  )
@@ -572,10 +582,12 @@ C$OMP BARRIER
      &               *.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
      &                                  (z_w(i,j,N)-z_w(i,j,0))))
             Kv(i,j,k)=Kv(i,j,k) + Kv_swash
+!# ifdef TEMPERATURE
 !            Kt(i,j,k)=Kt(i,j,k) + 0.1*Kv_swash
-!#  ifdef SALINITY
+!# endif
+!# ifdef SALINITY
 !            Ks(i,j,k)=Ks(i,j,k) + 0.1*Kv_swash
-!#  endif
+!# endif
 # endif /* WET_DRY && LMD_VMIX_SWASH */
 !
 !------------------------------------------------
@@ -583,7 +595,9 @@ C$OMP BARRIER
 !------------------------------------------------
 !
             Akv(i,j,k)       =Kv(i,j,k) SWITCH rmask(i,j)
+# ifdef TEMPERATURE
             Akt(i,j,k,itemp) =Kt(i,j,k) SWITCH rmask(i,j)
+# endif
 # ifdef SALINITY
             Akt(i,j,k,isalt) =Ks(i,j,k) SWITCH rmask(i,j)
 # endif
@@ -594,7 +608,9 @@ C$OMP BARRIER
 !------------------------------------------------
 !
           Akv(i,j,N)       =max(1.5*Kv(i,j,N-1)-0.5*Kv(i,j,N-2),0.)
+# ifdef TEMPERATURE
           Akt(i,j,N,itemp) =max(1.5*Kt(i,j,N-1)-0.5*Kt(i,j,N-2),0.)
+# endif
 # ifdef SALINITY
           Akt(i,j,N,isalt) =max(1.5*Ks(i,j,N-1)-0.5*Ks(i,j,N-2),0.)
 # endif
@@ -606,7 +622,9 @@ C$OMP BARRIER
 # ifdef MRL_WCI
           do k=1,N
             Akv(i,j,k)       =Akv(i,j,k)+Akb(i,j,k)
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp) =Akt(i,j,k,itemp)+Akb(i,j,k)+Akw(i,j,k)
+#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt) =Akt(i,j,k,isalt)+Akb(i,j,k)+Akw(i,j,k)
 #  endif
@@ -618,12 +636,17 @@ C$OMP BARRIER
 !------------------------------------------------
 !
           Akv(i,j,0)       =0.
+# ifdef TEMPERATURE
           Akt(i,j,0,itemp) =0.
+# endif
 # ifdef SALINITY
           Akt(i,j,0,isalt) =0.
 # endif
         enddo
       enddo
+
+
+      
 !
 !------------------------------------------------
 !  Apply background small viscosity
@@ -634,7 +657,9 @@ C$OMP BARRIER
         do i=istr,iend
           do k=1,N
             Akv(i,j,k)       =max(Akv(i,j,k)       ,my_Akv_bak)
+#  ifdef TEMPERATURE
             Akt(i,j,k,itemp) =max(Akt(i,j,k,itemp) ,my_Akt_bak)
+#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt) =max(Akt(i,j,k,isalt) ,my_Aks_bak)
 #  endif
@@ -654,7 +679,9 @@ C$OMP BARRIER
         do j=jstr,jend
           do k=k0,N
             Akv(istr-1,j,k)=Akv(istr,j,k)
+#  ifdef TEMPERATURE
             Akt(istr-1,j,k,itemp)=Akt(istr,j,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(istr-1,j,k,isalt)=Akt(istr,j,k,isalt)
 #  endif
@@ -665,7 +692,9 @@ C$OMP BARRIER
         do j=jstr,jend
           do k=k0,N
             Akv(iend+1,j,k)=Akv(iend,j,k)
+#  ifdef TEMPERATURE
             Akt(iend+1,j,k,itemp)=Akt(iend,j,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(iend+1,j,k,isalt)=Akt(iend,j,k,isalt)
 #  endif
@@ -678,7 +707,9 @@ C$OMP BARRIER
         do i=istr,iend
           do k=k0,N
             Akv(i,jstr-1,k)=Akv(i,jstr,k)
+#  ifdef TEMPERATURE
             Akt(i,jstr-1,k,itemp)=Akt(i,jstr,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(i,jstr-1,k,isalt)=Akt(i,jstr,k,isalt)
 #  endif
@@ -689,7 +720,9 @@ C$OMP BARRIER
         do i=istr,iend
           do k=k0,N
             Akv(i,jend+1,k)=Akv(i,jend,k)
+#  ifdef TEMPERATURE
             Akt(i,jend+1,k,itemp)=Akt(i,jend,k,itemp)
+#  endif
 #  ifdef SALINITY
             Akt(i,jend+1,k,isalt)=Akt(i,jend,k,isalt)
 #  endif
@@ -700,37 +733,45 @@ C$OMP BARRIER
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=k0,N
           Akv(istr-1,jstr-1,k)=Akv(istr,jstr,k)
+#   ifdef TEMPERATURE
           Akt(istr-1,jstr-1,k,itemp)=Akt(istr,jstr,k,itemp)
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jstr-1,k,isalt)=Akt(istr,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
         do k=k0,N
           Akv(istr-1,jend+1,k)=Akv(istr,jend,k)
+#   ifdef TEMPERATURE
           Akt(istr-1,jend+1,k,itemp)=Akt(istr,jend,k,itemp)
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(istr-1,jend+1,k,isalt)=Akt(istr,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
         do k=k0,N
           Akv(iend+1,jstr-1,k)=Akv(iend,jstr,k)
+#   ifdef TEMPERATURE
           Akt(iend+1,jstr-1,k,itemp)=Akt(iend,jstr,k,itemp)
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jstr-1,k,isalt)=Akt(iend,jstr,k,isalt)
-#  endif
+#   endif
         enddo
       endif
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         do k=k0,N
           Akv(iend+1,jend+1,k)=Akv(iend,jend,k)
+#   ifdef TEMPERATURE
           Akt(iend+1,jend+1,k,itemp)=Akt(iend,jend,k,itemp)
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
           Akt(iend+1,jend+1,k,isalt)=Akt(iend,jend,k,isalt)
-#  endif
+#   endif
         enddo
       endif
 #  endif
@@ -738,8 +779,10 @@ C$OMP BARRIER
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (istr,iend,jstr,jend, Akv)
+#  ifdef TEMPERATURE
       call exchange_w3d_tile (istr,iend,jstr,jend,
      &                        Akt(START_2D_ARRAY,0,itemp))
+#  endif
 #  ifdef SALINITY
       call exchange_w3d_tile (istr,iend,jstr,jend,
      &                        Akt(START_2D_ARRAY,0,isalt))

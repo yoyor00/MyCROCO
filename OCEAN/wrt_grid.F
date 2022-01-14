@@ -32,7 +32,7 @@
 #include "grid.h"
 #include "netcdf.inc"
 #ifdef SOLVE3D
-#include "ocean3d.h"
+# include "ocean3d.h"
 #endif
 !
 !# include "compute_auxiliary_bounds.h"
@@ -89,15 +89,15 @@
       ierr=nf_inq_varid (ncid, 's_rho', varid)
       ierr=nf_put_var_FTYPE(ncid, varid, sc_r)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 's_rho', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 's_rho', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
 
       ierr=nf_inq_varid (ncid, 's_w', varid)
       ierr=nf_put_var_FTYPE(ncid, varid, sc_w)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 's_w', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 's_w', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
 
 !
@@ -107,29 +107,29 @@
       ierr=nf_inq_varid (ncid, 'Cs_r', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_r)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 'Cs_r', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 'Cs_r', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
 !
       ierr=nf_inq_varid (ncid, 'Cs_w', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_w)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 'Cs_w', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 'Cs_w', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
 !
       ierr=nf_inq_varid (ncid, 'sc_r', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,sc_r)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 's_r', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 's_r', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
 !
       ierr=nf_inq_varid (ncid, 'sc_w', varid)
       ierr=nf_put_var_FTYPE(ncid, varid,sc_w)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 's_w', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 's_w', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
 !
       ierr=nf_inq_varid (ncid, 'hc', varid)
@@ -263,26 +263,26 @@
       ierr=nf_inq_varid (ncid, 'xi_rho', varid)
       ierr=nf_fwrite_x (ncid, varid, r2dvar)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 'xi_rho', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 'xi_rho', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
       ierr=nf_inq_varid (ncid, 'eta_rho', varid)
       ierr=nf_fwrite_y (ncid, varid, r2dvar)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 'eta_rho', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 'eta_rho', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif
       ierr=nf_inq_varid (ncid, 'xi_u', varid)
       ierr=nf_fwrite_x (ncid, varid, u2dvar)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 'xi_u', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 'xi_u', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif 
       ierr=nf_inq_varid (ncid, 'eta_v', varid)
       ierr=nf_fwrite_y (ncid, varid, v2dvar)
       if (ierr.ne.nf_noerr) then
-         write(stdout,2) 'eta_v', ncname(1:lstr)
-         goto 99                !--> ERROR
+        write(stdout,2) 'eta_v', ncname(1:lstr)
+        goto 99                !--> ERROR
       endif   
 
       MPI_master_only write(stdout,'(6x,4A,2x,A,I4)') 

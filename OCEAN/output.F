@@ -60,8 +60,12 @@
 !
 ! Conditions for writing output
 !
-      if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0 .or.
-     &         (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
+      
+      if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
+#ifdef EXACT_RESTART
+     &                    .or.      mod(ilc,nrst).eq.0
+#endif
+     &     .or. (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
 #ifdef AVERAGES
      &    .or. (mod(ilc-ntsavg,navg).eq.0 .and. wrtavg(indxTime))
 #endif
@@ -154,7 +158,11 @@
 !
 ! Get record number
 !
-        if (mod(ilc-1,nrst).eq.0) nrecrst=nrecrst+1
+        if (mod(ilc-1,nrst).eq.0
+#ifdef EXACT_RESTART
+     &                      .or. mod(ilc,nrst).eq.0
+#endif
+     &                      )     nrecrst=nrecrst+1
         if (mod(ilc-1,nwrt).eq.0) nrechis=nrechis+1
 #ifdef AVERAGES
         if (mod(ilc-1,navg).eq.0) nrecavg=nrecavg+1
@@ -243,7 +251,11 @@
 !        write(*,*) "wrtdiaM ",wrtdiaM
 !        write(*,*) "wrtdiaM_avg ",wrtdiaM_avg
 !
-        if (mod(ilc-1,nrst).eq.0) call wrt_rst
+        if (mod(ilc-1,nrst).eq.0
+#ifdef EXACT_RESTART
+     &       .or. mod(ilc,nrst).eq.0
+#endif
+     &       ) call wrt_rst
 #ifndef XIOS
         if (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime)) call wrt_his
 #  ifdef AVERAGES

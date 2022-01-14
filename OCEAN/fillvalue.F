@@ -41,6 +41,8 @@
 #else
       if (typevar2d.eq.r2dvar) then
          mask2=rmask
+      elseif (typevar2d.eq.p2dvar) then
+         mask2=pmask
       elseif (typevar2d.eq.u2dvar) then
          mask2=umask
       elseif (typevar2d.eq.v2dvar)then
@@ -61,6 +63,18 @@
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
       endif
  !
 # ifdef FILLVAL
@@ -147,7 +161,19 @@
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
-      endif   
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
+      endif
 !     
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)
@@ -177,6 +203,107 @@
       
       return
       end
+!====================================================================
+#ifdef MUSTANG      
+      subroutine fillvalue3d_must(work3d_tmp,ncid,vid,indx,
+     &                       record,typevar3d,typefile)
+      USE comMUSTANG,   ONLY : nk_nivsed_out 
+      implicit none
+
+#include "param.h"
+!     Declaration
+      real work3d_tmp(GLOBAL_2D_ARRAY,nk_nivsed_out)
+      real work2d_tmp(GLOBAL_2D_ARRAY)
+      integer ierr, record, lstr, lvar, lenstr,
+     &     nf_fwrite, typevar3d, vid, ncid, indx, k, typefile
+      logical mask(GLOBAL_2D_ARRAY)
+      real mask2(GLOBAL_2D_ARRAY)
+      character*20 text
+!     Include the common      
+#include "scalars.h"
+#include "ncscrum.h"
+#include "grid.h"
+#include "netcdf.inc"
+!   
+#ifdef MASKING
+#ifdef WET_DRY
+      if (typevar3d.eq.r3dvar) then
+         mask2=rmask_wet
+      elseif (typevar3d.eq.w3dvar) then
+         mask2=rmask_wet
+      elseif (typevar3d.eq.u3dvar) then
+         mask2=umask_wet
+      elseif (typevar3d.eq.v3dvar) then
+         mask2=vmask_wet
+      endif   
+#else
+      if (typevar3d.eq.r3dvar) then
+         mask2=rmask
+      elseif (typevar3d.eq.w3dvar) then
+         mask2=rmask
+      elseif (typevar3d.eq.u3dvar) then
+         mask2=umask
+      elseif (typevar3d.eq.v3dvar) then
+         mask2=vmask
+      endif   
+
+#endif
+!
+      if (typefile ==filetype_his) then
+         text='WRT_HIS'
+      elseif (typefile ==filetype_avg) then
+         text='WRT_AVG'
+      elseif (typefile ==filetype_dia) then
+         text='WRT_DIA'
+      elseif (typefile ==filetype_dia_avg) then
+         text='WRT_DIA_AVG'
+      elseif (typefile ==filetype_diaM) then
+         text='WRT_DIAM'
+      elseif (typefile ==filetype_diaM_avg) then
+         text='WRT_DIAM_AVG'
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
+      endif
+!     
+# ifdef FILLVAL
+      work2d_tmp = work3d_tmp(:,:,1)
+      mask = (work2d_tmp.eq.mask2)
+        do k=1,nk_nivsed_out
+          WHERE (mask.eqv.mask_val)
+            work3d_tmp(:,:,k) = spval
+          END WHERE
+      enddo
+# endif
+#endif
+      ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
+      if (ierr .ne. nf_noerr) then
+         lvar=lenstr(vname(1,indx))
+         write(stdout,1) TRIM(text), vname(1,indx)(1:lvar), record, ierr
+     &        MYID
+         goto 99                !--> ERROR
+      endif
+
+  1    format(/1x, A,' ERROR while writing variable ''', A,
+     &     ''' into history file.', /11x, 'Time record:',
+     &     I6,3x,'netCDF error code',i4,3x,a,i4)   
+
+      goto 100 
+ 99   may_day_flag=3
+ 100  continue      
+      
+      return
+      end
+#endif
 
 !====================================================================
 
@@ -222,7 +349,23 @@
          text='WRT_DIAM'
       elseif (typefile ==filetype_diaM_avg) then
          text='WRT_DIAM_AVG'
-      endif   
+      elseif (typefile ==filetype_diags_vrt) then
+         text='WRT_DIAGS_VRT'
+      elseif (typefile ==filetype_diags_vrt_avg) then
+         text='WRT_DIAGS_VRT_AVG'
+      elseif (typefile ==filetype_diags_ek) then
+         text='WRT_DIAGS_EK'
+      elseif (typefile ==filetype_diags_ek_avg) then
+         text='WRT_DIAGS_EK_AVG'
+      elseif (typefile ==filetype_diags_pv) then    ! next 4 lines NJAL
+         text='WRT_DIAGS_PV'
+      elseif (typefile ==filetype_diags_pv_avg) then
+         text='WRT_DIAGS_PV_AVG'
+      elseif (typefile ==filetype_surf) then
+         text='WRT_SURF'
+      elseif (typefile ==filetype_surf_avg) then
+         text='WRT_SURF_AVG'
+      endif
 !     
 # ifdef FILLVAL
       work2d_tmp = work3d_tmp(:,:,1)

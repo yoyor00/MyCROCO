@@ -86,8 +86,8 @@
           cff1=0.0
           if (ZEROTH_TILE) then
             timediaM_avg=time
-      MPI_master_only write(*,*) 'started averaging M',
-     &                    iic,ntsdiaM_avg,nwrtdiaM_avg
+!            MPI_master_only write(*,*) 'started averaging M',
+!     &                          iic,ntsdiaM_avg,nwrtdiaM_avg
           endif
         elseif (mod(ilc-ntsdiaM_avg,navg).gt.1) then
           cff =1.0
@@ -100,8 +100,8 @@
           cff1=1.0
           if (ZEROTH_TILE) then
             timediaM_avg=cff*(timediaM_avg+time)
-            MPI_master_only write(*,*) 'finished averaging M',
-     &                    iic,ntsdiaM_avg,nwrtdiaM_avg
+!            MPI_master_only write(*,*) 'finished averaging M',
+!     &                    iic,ntsdiaM_avg,nwrtdiaM_avg
           endif
         endif
 

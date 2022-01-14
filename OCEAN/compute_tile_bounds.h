@@ -25,11 +25,11 @@
       integer Istr,Iend,Jstr,Jend, i_X,j_E
  
 #ifdef MPI
-#define LOCALLM Lmmpi
-#define LOCALMM Mmmpi
+# define LOCALLM Lmmpi
+# define LOCALMM Mmmpi
 #else
-#define LOCALLM Lm
-#define LOCALMM Mm
+# define LOCALLM Lm
+# define LOCALMM Mm
 #endif        
       chunk_size_X=(LOCALLM+NSUB_X-1)/NSUB_X
       margin_X=(NSUB_X*chunk_size_X-LOCALLM)/2
@@ -63,4 +63,3 @@ C$      if (trd.gt.0) return !--> just return, if not master thread
 #ifdef  ALLOW_SINGLE_BLOCK_MODE
       endif
 #endif
-

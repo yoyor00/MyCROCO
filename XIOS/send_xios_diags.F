@@ -29,7 +29,10 @@
       PUBLIC iom_set_file_global_attr_float
       PUBLIC iom_get_file_attr
       PUBLIC set_scalar
-      
+#if defined ONLINE_ANALYSIS
+      PUBLIC set_scalogram_dom
+      PUBLIC set_scalogram_axis
+#endif    
 
       CONTAINS
 
@@ -143,13 +146,8 @@
 # endif
 
       ! notes iminmpi, jminmpi are computed in MPI_Setup.F
-# if ! defined XIOS2
-      CALL iom_set_domain_attr(TRIM(cdgrd),ni_glo=nx_glo, nj_glo=ny_glo,
-     &     ibegin=istart, ni=ni,jbegin=jstart,nj=nj)
-# else
       CALL iom_set_domain_attr(TRIM(cdgrd),ni_glo=nx_glo, nj_glo=ny_glo,
      &     ibegin=istart-1, ni=ni,jbegin=jstart-1,nj=nj)
-# endif
       ! to do: below should have be rewritten to match all configs (periodic, number of ghost points, ...)
       ! see set_global_definitions.h
       CALL iom_set_domain_attr(TRIM(cdgrd),data_dim=2,
@@ -279,39 +277,9 @@
       REAL, DIMENSION(:)   , OPTIONAL, INTENT(in) :: lonvalue, latvalue
       REAL, DIMENSION(:,:) , OPTIONAL, INTENT(in) :: bounds_lon, 
      &                                               bounds_lat, area
-# if ! defined XIOS2
-      LOGICAL,  DIMENSION(:,:) , OPTIONAL, INTENT(in) ::   mask
-# else
       LOGICAL,  DIMENSION(:) , OPTIONAL, INTENT(in) ::   mask
-# endif
       !!----------------------------------------------------------------------
       !
-# if ! defined XIOS2
-      IF ( xios_is_valid_domain     (cdid) ) THEN
-         CALL xios_set_domain_attr( did, ni_glo=ni_glo, nj_glo=nj_glo, 
-     &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,  
-     &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
-     &    data_jbegin=data_jbegin, data_nj=data_nj ,  
-     &    zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
-     &    zoom_ni=zoom_ni, zoom_nj=zoom_nj,                       
-     &    lonvalue=lonvalue, latvalue=latvalue, mask=mask,
-     &    nvertex=nvertex, bounds_lon=bounds_lon,                 
-     &    bounds_lat=bounds_lat)!RB, area=area )
-      ENDIF
-      IF ( xios_is_valid_domaingroup(cdid) ) THEN
-         CALL xios_set_domaingroup_attr(cdid, ni_glo=ni_glo,
-     &    nj_glo=nj_glo, ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
-     &    data_dim=data_dim, data_ibegin=data_ibegin, data_ni=data_ni, 
-     &    data_jbegin=data_jbegin, data_nj=data_nj ,   
-     &    zoom_ibegin=zoom_ibegin, zoom_jbegin=zoom_jbegin, 
-     &    zoom_ni=zoom_ni, zoom_nj=zoom_nj,                       
-     &    lonvalue=lonvalue, latvalue=latvalue, mask=mask, 
-     &    nvertex=nvertex, bounds_lon=bounds_lon,                  
-     &    bounds_lat=bounds_lat)!RB, area=area )
-      ENDIF
-
-# else
-
       IF ( xios_is_valid_domain(cdid) ) THEN
          CALL xios_set_domain_attr( cdid, ni_glo=ni_glo, nj_glo=nj_glo, 
      &    ibegin=ibegin, jbegin=jbegin, ni=ni, nj=nj,
@@ -331,13 +299,11 @@
      &    nvertex=nvertex, bounds_lon_1D=bounds_lon,                  
      &    bounds_lat_1D=bounds_lat, area=area, type='curvilinear')
       ENDIF
-# endif
       !
       CALL xios_solve_inheritance()
       ! 
       END SUBROUTINE iom_set_domain_attr
 
-# if defined XIOS2
       SUBROUTINE iom_set_zoom_domain_attr( cdid, ibegin, jbegin, ni, nj)
       CHARACTER(LEN=*)          , INTENT(in) ::   cdid
       INTEGER         , OPTIONAL, INTENT(in) ::   ibegin, jbegin, ni, nj
@@ -347,8 +313,6 @@
      &                                  jbegin=jbegin-1, ni=ni, nj=nj)
       ENDIF
       END SUBROUTINE iom_set_zoom_domain_attr
-# endif
-
       
       SUBROUTINE iom_set_axis_attr( cdid, paxis,bounds )
       !!----------------------------------------------------------------------
@@ -369,15 +333,6 @@
       !!----------------------------------------------------------------------
       !
       IF ( PRESENT(paxis) ) THEN
-# if ! defined XIOS2
-      IF ( xios_is_valid_axis (cdid) ) then
-       CALL xios_set_axis_attr(cdid, size=size(paxis),value=paxis )
-      ENDIF
-      !
-      IF ( xios_is_valid_axisgroup(cdid) ) then
-       CALL xios_set_axisgroup_attr(cdid, size=size(paxis),value=paxis )
-      ENDIF
-# else
       IF ( xios_is_valid_axis (cdid) ) then
        CALL xios_set_axis_attr(cdid,n_glo=SIZE(paxis), value=paxis )
       ENDIF
@@ -385,7 +340,6 @@
       IF ( xios_is_valid_axisgroup(cdid) ) then
        CALL xios_set_axisgroup_attr(cdid, n_glo=SIZE(paxis),value=paxis)
       ENDIF
-# endif
       !
       ENDIF
       IF ( xios_is_valid_axis     (cdid) )  then 
@@ -416,13 +370,8 @@
       TYPE(xios_file) :: file_hdl
       TYPE(xios_variable) :: var_hdl
       LOGICAL ok
-# if ! defined XIOS2
-      CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   freq_op
-      CHARACTER(LEN=*),OPTIONAL , INTENT(in) ::   freq_offset
-# else
       TYPE(xios_duration),OPTIONAL , INTENT(in) ::   freq_op
       TYPE(xios_duration),OPTIONAL , INTENT(in) ::   freq_offset
-# endif      
       !!----------------------------------------------------------------------
       !
       IF ( xios_is_valid_field     (cdid) ) 
@@ -597,22 +546,14 @@
      &   cdid
       CHARACTER(LEN=*),OPTIONAL , INTENT(out) :: 
      &   name, name_suffix
-# if ! defined XIOS2
-      CHARACTER(LEN=*),OPTIONAL , INTENT(out) ::    output_freq
-# else
       TYPE(xios_duration)   ,OPTIONAL , INTENT(out) :: output_freq
-# endif 
       LOGICAL                                 :: 
      &   llexist1,llexist2,llexist3
       !---------------------------------------------------------------------
       !
       IF(PRESENT(name       )) name = ''          ! default values
       IF(PRESENT(name_suffix)) name_suffix = ''
-# if ! defined XIOS2
-      IF(PRESENT(output_freq)) output_freq = ''
-# else
       IF(PRESENT(output_freq)) output_freq = xios_duration(0,0,0,0,0,0)
-# endif
        IF ( xios_is_valid_file     (cdid) ) THEN
          CALL xios_solve_inheritance()
          CALL xios_is_defined_file_attr   
@@ -658,19 +599,195 @@
       REAL, DIMENSION(1) ::   zz = 1.
       !!----------------------------------------------------------------------
       ! 
-# if ! defined XIOS2
-      CALL iom_set_domain_attr('scalarpoint', ni_glo=NNODES, nj_glo=1, 
-     &                         ibegin=mynode+1, jbegin=1, ni=1, nj=1)
-# else
       CALL iom_set_domain_attr('scalarpoint', ni_glo=NNODES, nj_glo=1,
      &                         ibegin=mynode, jbegin=0, ni=1, nj=1)
-# endif
       CALL iom_set_domain_attr('scalarpoint', data_dim=2, data_ibegin=1,
      &                         data_ni=1, data_jbegin=1, data_nj=1)
       zz = REAL(mynode+1)
       CALL iom_set_domain_attr('scalarpoint', lonvalue=zz, latvalue=zz)
       !
       END SUBROUTINE set_scalar
+
+#if defined ONLINE_ANALYSIS
+      SUBROUTINE set_scalogram_axis( cdid
+     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_loc
+     &                         ,sclg_coord1D, isclg_beg
+     &                         ,mynode )
+      !
+      !!----------------------------------------------------------------------
+      !!                     ***  ROUTINE set_scalogram_axis  ***
+      !!
+      !! ** Purpose :   xios axis definition for ONLINE_ANALYSIS scalogram
+      !!
+      !! ** Method  :   XIOS version >= 2.5 
+      !! ** History :   B. Lemieux-Dudon (2021) 
+      !!
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*)      , INTENT(in) ::   cdid
+      !> Module OA variable names but passed as args IN 
+      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo
+      INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
+      INTEGER, INTENT(IN) :: mynode 
+      !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
+      INTEGER, DIMENSION(0:nsclg_loc-1),   INTENT(IN) :: sclg_coord1D
+
+      INTEGER            :: nj, jbeg !i, j, iper, jsclg, 
+      INTEGER            :: dat_nj, dat_jbeg
+      REAL, DIMENSION(:), POINTER :: coord_val
+      REAL, DIMENSION(:), ALLOCATABLE, TARGET :: sclg_coord1D_r
+      INTEGER            :: jsclg
+      !!----------------------------------------------------------------------
+      ! 
+
+# ifndef XIOS2
+      print*,'ERROR OA : in set_scalogram_dom XIOS version>=2.5'
+      stop
+# else
+      if ( .not. allocated(sclg_coord1D_r) ) then 
+        if (nsclg_loc>0) then
+            allocate( sclg_coord1D_r(0:nsclg_loc-1) )
+        else
+            allocate( sclg_coord1D_r(0) )
+        endif
+      endif
+      do jsclg  = 0,nsclg_loc-1
+        if (nsclg_loc>0) then
+         sclg_coord1D_r(jsclg) = REAL(sclg_coord1D(jsclg))
+        endif
+      enddo
+      if ( nsclg_loc > 0 ) then
+                jbeg=isclg_beg
+                nj=size(sclg_coord1D(:))
+                dat_nj=nj
+                dat_jbeg=0
+                coord_val => sclg_coord1D_r(:)
+      else
+                jbeg=0
+      !initially set to nj=1 but nj=0 supported
+                nj=0
+                dat_nj=0
+                dat_jbeg=0
+                coord_val => sclg_coord1D_r(:)
+      endif
+      if ( xios_is_valid_axis     (cdid) ) then
+         CALL xios_set_axis_attr( cdid
+     &     ,n_glo=nsclg_glo
+     &     ,n=nj
+     &     ,begin=jbeg
+     &     ,data_n=dat_nj
+     &     ,data_begin=dat_jbeg
+     &     ,standard_name="scalogram"
+     &     ,long_name="scalogram index"
+     &     ,value=coord_val)
+   
+      else
+        print*,'ERROR OA : not a valid XIOS axis ',cdid
+        stop
+      endif
+      if ( allocated(sclg_coord1D_r) ) deallocate( sclg_coord1D_r )
+# endif
+      !
+      END SUBROUTINE set_scalogram_axis
+#endif  /* ONLINE_ANALYSIS */
+
+#if defined ONLINE_ANALYSIS
+      SUBROUTINE set_scalogram_dom( cdid
+     &                         ,nzv_oa, nsclg_glo
+     &                         ,nsclg_loc, nper_sclg_max
+     &                         ,sclg_coord1D, isclg_beg
+     &                         ,period_coord2D
+     &                         ,mynode )
+      !
+      !!----------------------------------------------------------------------
+      !!                     ***  ROUTINE set_scalogram_dom  ***
+      !!
+      !! ** Purpose :   XIOS domain definition for ONLINE_ANALYSIS scalogram
+      !!
+      !! ** Method  :   XIOS version >= 2.5 
+      !! ** History :   B. Lemieux-Dudon (2021) 
+      !!
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*)      , INTENT(in) ::   cdid
+      !> Module OA variable names but passed as args IN 
+      INTEGER, INTENT(IN) :: nzv_oa, nsclg_glo,  nper_sclg_max
+      INTEGER, INTENT(IN) :: nsclg_loc, isclg_beg
+      INTEGER, INTENT(IN) :: mynode 
+      !> Local MPI process/global scalogram indices index_s_oa/index_s_cr
+      INTEGER, DIMENSION(0:nsclg_loc-1),   INTENT(IN) :: sclg_coord1D
+      REAL, DIMENSION(nper_sclg_max,nsclg_loc),
+     &                        TARGET,INTENT(IN) :: period_coord2D
+
+      INTEGER            :: nj, jbeg
+      INTEGER            :: dat_nj, dat_jbeg
+      REAL, DIMENSION(:,:), POINTER :: lonval, latval
+      REAL, DIMENSION(:,:), ALLOCATABLE, TARGET :: sclg_coord2D
+      INTEGER            :: iper, jsclg
+      !!----------------------------------------------------------------------
+      ! 
+# ifndef XIOS2
+      print*,'ERROR OA : in set_scalogram_dom XIOS version>=2.5'
+      stop
+# else
+      if ( .not. allocated(sclg_coord2D) ) then 
+        if (nsclg_loc>0) then
+            allocate( sclg_coord2D(nper_sclg_max,0:nsclg_loc-1) )
+        else
+            allocate( sclg_coord2D(nper_sclg_max,0) )
+        endif
+      endif
+      do jsclg  = 0,nsclg_loc-1
+       do iper = 1,nper_sclg_max
+        if (nsclg_loc>0) then
+         sclg_coord2D(iper,jsclg) = REAL(sclg_coord1D(jsclg))
+        endif
+       enddo
+      enddo
+      !zero(nper_sclg_max,1)=0.
+      if ( nsclg_loc > 0 ) then
+                jbeg=isclg_beg
+                nj=size(sclg_coord1D(:))
+                dat_nj=nj
+                dat_jbeg=0
+                lonval => period_coord2D(:,:)
+                latval => sclg_coord2D(:,:)
+      else
+                jbeg=0
+      !initially set 2 nj=1 but nj=0 supported
+                nj=0
+                dat_nj=0
+      !suppose to be nj-1
+                dat_jbeg=0
+                lonval => period_coord2D(:,:)
+                latval => sclg_coord2D(:,:)
+      endif
+      if ( xios_is_valid_domain     (cdid) ) then
+         CALL xios_set_domain_attr( cdid
+     &     ,ni_glo=nper_sclg_max
+     &     ,nj_glo=nsclg_glo
+     &     ,ni=nper_sclg_max
+     &     ,ibegin=0
+     &     ,nj=nj
+     &     ,jbegin=jbeg
+     &     ,data_dim=2
+     &     ,data_ni=nper_sclg_max
+     &     ,data_ibegin=0
+     &     ,data_nj=dat_nj
+     &     ,data_jbegin=dat_jbeg
+     &     ,lon_name="period"
+     &     ,lat_name="scalogram"
+     &     ,lonvalue_2d=lonval
+     &     ,latvalue_2d=latval)
+   
+      else
+        print*,'ERROR OA : not a valid XIOS domain ',cdid
+        stop
+      endif
+      if ( allocated(sclg_coord2D) ) deallocate( sclg_coord2D )
+# endif
+      !
+      END SUBROUTINE set_scalogram_dom
+#endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
 # include "param.h"
@@ -1192,9 +1309,7 @@ C 				  endif
       INTEGER            ::   iyear, imonth, iday, isec
       REAL               ::   zsec, jday0,rvalue
       LOGICAL            ::   llexist
-# if  defined XIOS2
       TYPE(xios_duration)   ::   output_freq
-# endif     
       !!----------------------------------------------------------------------
       !
 # ifdef START_DATE
@@ -1210,13 +1325,8 @@ C 				  endif
 # endif
       DO jn = 1,2
 
-# if ! defined XIOS2
-         IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
-     &           = clname, output_freq = clfreq )
-# else
          IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
      &           = clname, output_freq = output_freq )
-# endif
          IF( jn == 2 )   CALL iom_get_file_attr( cdid, 
      &                                           name_suffix = clname )
 
@@ -1231,20 +1341,6 @@ C 				  endif
      &               INDEX(clname,'@EXPNAME@')
             END DO
 
-# if ! defined XIOS2
-            idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
-            DO WHILE ( idx /= 0 ) 
-               IF ( TRIM(clfreq) /= '' ) THEN
-                  itrlen = LEN_TRIM(clfreq)
-                  IF ( clfreq(itrlen-1:itrlen) == 'mo' ) THEN
-                  clfreq = clfreq(1:itrlen-1)
-                  ENDIF
-                  clname = clname(1:idx-1)//TRIM(clfreq)
-     &                    //clname(idx+6:LEN_TRIM(clname))
-               ENDIF
-               idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
-            END DO
-# else
             idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
             DO WHILE ( idx /= 0 )
               IF ( output_freq%timestep /= 0) THEN
@@ -1279,7 +1375,7 @@ C 				  endif
      &        clname(idx+6:LEN_TRIM(clname))
               idx = INDEX(clname,'@freq@') + INDEX(clname,'@FREQ@')
             END DO
-# endif
+
             idx = INDEX(clname,'@startdate@') + 
      &            INDEX(clname,'@STARTDATE@')
             DO WHILE ( idx /= 0 ) 
@@ -1688,6 +1784,24 @@ C 				  endif
       !
       USE xios     ! XIOS library
       USE xios_module
+
+#if defined MUSTANG
+      USE comMUSTANG, only: nk_nivsed_out
+# endif
+#if defined ONLINE_ANALYSIS
+      use module_oa_variables, only : nzv_oa
+      use module_interface_oa, only : nzupd0d_oa, nsclg_loc, isclg_beg
+     &                               ,index_s_cr, per0d_cr
+#ifdef MPI
+     &                               ,index_s_oa, per0d_oa
+#endif
+     &                               ,if_mpi_oa
+     &                               ,scalogram_analysis
+     &                               ,if_record_sclg_ijpoints
+     &                               ,if_xios_dom_grid
+
+      use module_oa_periode,   only : nper_sclg_max
+#endif
       !    
       IMPLICIT NONE
       !
@@ -1697,18 +1811,15 @@ C 				  endif
 # include "scalars.h"
 # include "ncscrum.h"
 # include "mpi_cpl.h"
+
       !
       INTEGER Istr,Iend,Jstr,Jend
       !
       INTEGER tile,ji
       INTEGER ilocal_comm
-# if !  defined XIOS2
-      TYPE(xios_time) :: dtime  = xios_time(0, 0, 0, 0, 0, 0)
-# else
       TYPE(xios_duration) :: dtime    = xios_duration(0,
      &  0, 0, 0, 0, 0)
-!      TYPE(xios_date)     :: start_date
-# endif     
+      TYPE(xios_date)      :: time_origin
       TYPE(xios_context) :: ctx_hdl
       TYPE(xios_field) :: field_hdl
       TYPE(xios_fieldgroup) :: fieldgroup_hdl
@@ -1727,6 +1838,7 @@ C 				  endif
       !!---------------------------------------------------------------------
       !  
 # include "compute_auxiliary_bounds.h"
+
       !
 # ifdef EW_PERIODIC
 #  define IU_RANGE Istr,Iend
@@ -1758,10 +1870,6 @@ C 				  endif
       CALL iom_swap( cdname )
 
       ! calendar parameters
-# if ! defined XIOS2	  
-      CALL xios_set_context_attr(TRIM(clname), calendar_type= 
-     &      "Gregorian")
-# endif
 
 # ifdef START_DATE
       ! start_date with format dd-mm-yyyy
@@ -1775,23 +1883,19 @@ C 				  endif
       cldate = tool_sectodat(time)
       CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
 # else
-      iday=1
-      imonth=1       
-      iyear=1
+      iday=start_day
+      imonth=start_month       
+      iyear=start_year
       ihour=0
       iminute=0
       isec=0
 # endif
-# if ! defined XIOS2
-      WRITE(cldate,"(i4.4,'-',i2.2,'-',i2.2,' 00:00:00')")
-     & iyear,imonth,iday
-      CALL xios_set_context_attr(TRIM(clname), 
-     &        start_date=cldate )
-# else
       CALL xios_define_calendar( TYPE = "Gregorian", 
-     & time_origin = xios_date(1979,01,01,00,00,00),
-     & start_date = xios_date(iyear,imonth,iday,ihour,iminute,isec))
-#endif
+     &      start_date  = xios_date(start_year,start_month,start_day,
+     &                    start_hour,start_minute,start_second),
+     &      time_origin = xios_date(origin_year,origin_month,origin_day,
+     &                    origin_hour,origin_minute,origin_second))
+
       ! horizontal grid definition
       CALL set_scalar
 
@@ -1823,16 +1927,178 @@ C 				  endif
       ! vertical grid definition
       CALL iom_set_axis_attr( "s_rho", sc_r )
       CALL iom_set_axis_attr( "s_w"  , sc_w )
-# ifdef SEDIMENT
+# if defined SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
+# elif defined MUSTANG
+       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,nk_nivsed_out) /))
 # else
       ! fake axis to avoid changing xml file 
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
 # endif
 
+#ifdef ONLINE_ANALYSIS
+      oa_wth_sclg : if ( scalogram_analysis ) then
+
+        oa_dom : if ( if_xios_dom_grid ) then
+
+          if ( .not. xios_is_valid_grid("oa_sclg_dgrd") ) then
+            print*,'ERROR OA : oa_sclg_dgrd XIOS INvalid grid'
+            stop
+          endif
+
+          if  (if_record_sclg_ijpoints) then
+
+           if ( .not. xios_is_valid_grid("oa_sclg_grd") ) then
+             print*,'ERROR OA : oa_sclg_grd XIOS INvalid grid'
+             stop
+           endif
+
+          endif
+
+#ifdef MPI
+          distributed_sclg_axis : if ( .not. if_mpi_oa ) then
+
+            CALL set_scalogram_dom( "oa_sclg_dom"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nsclg_loc
+     &                           ,nper_sclg_max
+     &                           ,index_s_oa, isclg_beg
+     &                           ,per0d_oa
+     &                           ,mynode  )
+
+            CALL xios_solve_inheritance()
+
+            ijkscal : if  (if_record_sclg_ijpoints) then
+
+                CALL set_scalogram_axis( "oa_sclg_axis"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nsclg_loc
+     &                           ,index_s_oa, isclg_beg
+     &                           ,mynode  )
+            else ijkscal
+
+             if(xios_is_valid_axis("oa_sclg_axis"))then
+              call xios_set_axis_attr( "oa_sclg_axis"
+     &                                 ,n_glo=1)
+             else
+!$OMP MASTER
+              print*,'WARNING OA : INvalid XIOS axis'
+!$OMP END MASTER
+              !stop
+             endif
+
+            endif ijkscal
+
+          else distributed_sclg_axis  
+
+            CALL set_scalogram_dom( "oa_sclg_dom"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nzupd0d_oa
+     &                           ,nper_sclg_max
+     &                           ,index_s_cr, 0
+     &                           ,per0d_cr
+     &                           ,mynode  )
+
+            CALL xios_solve_inheritance()
+
+            ijkscal2 : if  (if_record_sclg_ijpoints) then
+
+                CALL set_scalogram_axis( "oa_sclg_axis"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nzupd0d_oa
+     &                           ,index_s_cr, 0
+     &                           ,mynode  )
+
+            else ijkscal2
+
+             if(xios_is_valid_axis("oa_sclg_axis"))then
+              call xios_set_axis_attr( "oa_sclg_axis"
+     &                                 ,n_glo=1)
+             else
+!$OMP MASTER
+              print*,'WARNING OA : INvalid XIOS axis'
+!$OMP END MASTER
+              !stop
+             endif
+
+            endif ijkscal2
+
+          endif distributed_sclg_axis  
+
+          CALL xios_solve_inheritance()
+
+#else
+
+          print*,'ERROR OA : XIOS without MPI not tested'
+          print*,'- test => comment stop/compile/restart'
+          stop
+
+
+          CALL set_scalogram_dom( "oa_sclg_dom"
+     &                         ,nzv_oa
+     &                         ,nzupd0d_oa
+     &                         ,nzupd0d_oa
+     &                         ,nper_sclg_max
+     &                         ,index_s_cr, 0
+     &                         ,per0d_cr
+     &                         ,mynode  )
+
+          CALL xios_solve_inheritance()
+
+          ijkscal3 : if  (if_record_sclg_ijpoints) then
+
+            CALL set_scalogram_axis( "oa_sclg_axis"
+     &                           ,nzv_oa
+     &                           ,nzupd0d_oa
+     &                           ,nzupd0d_oa
+     &                           ,index_s_cr, 0
+     &                           ,mynode  )
+
+
+          else ijkscal3
+
+             if(xios_is_valid_axis("oa_sclg_axis"))then
+              call xios_set_axis_attr( "oa_sclg_axis"
+     &                                 ,n_glo=1)
+             else
+!$OMP MASTER
+              print*,'WARNING OA : INvalid XIOS axis'
+!$OMP END MASTER
+              !stop
+             endif
+
+          endif ijkscal3
+
+          CALL xios_solve_inheritance()
+
+#endif /* MPI */
+
+      !BLXD alternate option to oa_sclg_dom with axis grid 
+        !else oa_dom
+        endif oa_dom
+
+      else oa_wth_sclg
+
+      !BLXD Prevent failure with potential scalogram domain/axis grid
+      !     incompletely def. in xml files
+      null_sclg_dom : if ( xios_is_valid_domain("oa_sclg_dom") ) then
+         CALL xios_set_domain_attr("oa_sclg_dom"
+     &     ,ni_glo=1
+     &     ,nj_glo=1
+     &     )
+
+      endif null_sclg_dom 
+
+      endif oa_wth_sclg
+#endif  /* ONLINE_ANALYSIS */
+
 #ifdef key_pisces
       IF(ALLOCATED(profsed))  CALL iom_set_axis_attr("s_rhoS", profsed)
-# endif
+#endif
       
       ! time axis (for ROMS tools)
 
@@ -1943,7 +2209,33 @@ C 				  endif
 #if defined BIOLOGY && defined PISCES
           USE trcwri_pisces
 #endif
+
+#if defined SUBSTANCE
+      USE comsubstance, ONLY : cvfix_wat,nv_adv
+#endif
+#if defined MUSTANG
+      USE comsubstance, ONLY : nv_adv,nvpc,nvp
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
+      USE comMUSTANG, only: nk_nivsed_out,var3D_cvsed,var3D_dzs,
+     &   var3D_TEMP,var3D_SAL
+# ifdef WAVE_OFFLINE
+     &  ,tenfonc, tenfonw   
+# endif
+#if defined key_MUSTANG_specif_outputs
+     &   ,nv_out3Dnv_specif, nv_out2D_specif
+     &   ,varspecif3Dnv_save,varspecif2D_save
+#endif
+#ifdef key_sand2D
+      USE comsubstance, ONLY : l_subs2D,nv_grav,nv_sand
+      USE substance,    ONLY : l_outsandrouse
+      USE comMUSTANG,   ONLY : sum_tmp,rouse2d
+#endif
+#endif
           IMPLICIT NONE
+
+#if defined MUSTANG
+#     include "coupler_define_MUSTANG.h"
+#endif
 
 # include "param.h"
 # include "ncscrum.h"
@@ -1985,6 +2277,9 @@ C 				  endif
 # include "scalars.h"
 # include "work.h"
 # include "private_scratch.h"
+
+
+
 !
 #ifdef DIAGNOSTICS_EDDY
       real workru(GLOBAL_2D_ARRAY,1:N)
@@ -2016,9 +2311,25 @@ C 				  endif
       real eps
       parameter (eps=1.D-20)
       real stf_cff
-      real zz(GLOBAL_2D_ARRAY,0:N)
       parameter(stf_cff=86400/0.01)
 !
+#if defined MUSTANG
+      integer  nv_out,indx2
+      logical  maskout_sed(GLOBAL_2D_ARRAY)
+      real var2D_ksma(GLOBAL_2D_ARRAY),
+     &     var2D_eptot(GLOBAL_2D_ARRAY),
+     &     var2D_tenfon(GLOBAL_2D_ARRAY)
+      real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
+     &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
+#if defined key_MUSTANG_specif_outputs
+      real workrsed_nv(GLOBAL_2D_ARRAY),
+     &     workrsed1_nv(GLOBAL_2D_ARRAY)
+#endif
+
+#endif
+
+
+
 # include "compute_auxiliary_bounds.h"
 !
 #  define I_EXT_RANGE Istr-1,Iend+1
@@ -2042,8 +2353,10 @@ C 				  endif
 
 
        ilc=1+iic-ntstart   ! number of time step since restart
-       ! Must be > 1 to get 'once' variables 
-       call xios_update_calendar(max(ilc-1,1))
+       ! To be conform with clasic (no xios) croco file first 
+       ! time step must be writen
+       if (ilc == 0) ilc=1
+       call xios_update_calendar(ilc)
 
        call xios_send_field("time",time)
 
@@ -2057,38 +2370,6 @@ C 				  endif
 ! S-coordinate independent variables "sc_w", "sc_r" and stretching
 ! curves "Cs_w", "Cs_r" at W- and RHO-points.
 !
-!
-! Ugly fix to write scalars until XIOS 2.0
-!
-# if ! defined XIOS2
-      do k=1,N
-      zz(:,:,k)=Cs_r(k)
-      end do
-      call xios_send_field("Cs_r",zz(:,:,1:N) )
-      do k=0,N
-      zz(:,:,k)=Cs_w(k)
-      end do
-      call xios_send_field("Cs_w",zz)
-      do k=1,N
-      zz(:,:,k)=sc_r(k)
-      end do
-      call xios_send_field("sc_r",zz(:,:,1:N) )
-      do k=0,N
-      zz(:,:,k)=sc_w(k)
-      end do
-      call xios_send_field("sc_w",zz)
-      zz(:,:,1)=hc
-      call xios_send_field("hc",zz(:,:,1))
-      zz(:,:,1)=theta_s
-      call xios_send_field("theta_s",zz(:,:,1))
-      zz(:,:,1)=theta_b
-      call xios_send_field("theta_b",zz(:,:,1))
-      zz(:,:,1)=Tcline
-      call xios_send_field("Tcline",zz(:,:,1))
-      zz(:,:,1)=REAL(Vtransform)
-      call xios_send_field("Vtransform",zz(:,:,1))
-# else
-! Beautiful  way to write scalars with XIOS-2.x
       call xios_send_field("Cs_r",Cs_r(1:N))
       call xios_send_field("Cs_w",Cs_w(0:N))
       call xios_send_field("sc_r",sc_r(1:N))
@@ -2098,7 +2379,6 @@ C 				  endif
       call xios_send_field("theta_b",theta_b)
       call xios_send_field("Tcline",Tcline)
       call xios_send_field("Vtransform",REAL(Vtransform))
-# endif
 
       call xios_send_field("levels_rho",z_r(:,:,:))
       call xios_send_field("levels_w"  ,z_w(:,:,:))
@@ -2247,9 +2527,7 @@ C 				  endif
       call xios_send_field("v",v(:,:,:,nstp)) 
       call xios_send_field("u_surf",u(:,:,N,nstp)) 
       call xios_send_field("v_surf",v(:,:,N,nstp)) 
-# ifdef NBQ
-      call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
-#   else
+# ifdef TEMPERATURE
       call xios_send_field("temp",t(:,:,:,nstp,itemp)) 
       call xios_send_field("temp_surf",t(:,:,N,nstp,itemp)) 
 # endif
@@ -2264,8 +2542,8 @@ C 				  endif
       call xios_send_field("rho",rho)
 
 # if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
+|| defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+|| defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       call xios_send_field("bvf",bvf)
 # endif
 
@@ -2390,8 +2668,10 @@ C 				  endif
 #  endif
 
       call xios_send_field("AKv",Akv)
+#  ifdef TEMPERATURE
       work=Akt(:,:,:,itemp)
       call xios_send_field("AKt",work)
+#  endif
 #  ifdef SALINITY      
       work=Akt(:,:,:,isalt)
       call xios_send_field("AKs",work)
@@ -2415,14 +2695,16 @@ C 				  endif
       call xios_send_field("hbbl",work2d)
 #  endif
 #  ifdef GLS_MIXING
-!      call xios_send_field("tke",tke(:,:,:,nstp))
-!      call xios_send_field("gls",gls(:,:,:,nstp))
+      call xios_send_field("tke",trb(:,:,:,nstp,itke))
+      call xios_send_field("gls",trb(:,:,:,nstp,igls))
       call xios_send_field("Lscale",Lscale)
 #  endif
 
+#  ifdef TEMPERATURE
       work2d=stflx(:,:,itemp)*rho0*Cp
      &       SWITCH rmask
       call xios_send_field("shflx",work2d)
+#  endif      
 #  ifdef SALINITY    
          do j=0,Mm+1
             do i=0,Lm+1
@@ -2519,12 +2801,14 @@ C 				  endif
 
 #  ifdef DIAGNOSTICS_TS
          itrc=1
+#  ifdef TEMPERATURE
           call xios_send_field("T_rate", Trate(:,:,:,itrc))
           call xios_send_field("T_adv", TXadv(:,:,:,itrc)
      &           + TYadv(:,:,:,itrc) + TVadv(:,:,:,itrc))
           call xios_send_field("T_Hmix",THmix(:,:,:,itrc))
           call xios_send_field("T_Vmix",TVmix(:,:,:,itrc))
           call xios_send_field("T_Forc",TForc(:,:,:,itrc))
+#  endif          
 #  ifdef SALINITY
         itrc = 2
           call xios_send_field("S_rate", Trate(:,:,:,itrc))
@@ -2581,9 +2865,20 @@ C 				  endif
 #  endif
 
 
-
-
-
+# ifdef DIAGNOSTICS_PV
+          call xios_send_field("u_rhs", Mrhs(:,:,:,1))
+          call xios_send_field("v_rhs", Mrhs(:,:,:,2))
+# ifdef TEMPERATURE          
+          call xios_send_field("T_rhs", Trhs(:,:,:,1))
+#  endif
+#  ifdef SALINITY
+          call xios_send_field("S_rhs", Trhs(:,:,:,2))
+#  endif
+# ifdef DIAGNOSTICS_PV_FULL
+          call xios_send_field("u_vmix_trans", pv(:,:,:))
+          call xios_send_field("v_vmix_trans", pvd(:,:,:))
+#  endif
+#  endif
 
 #  if defined BIOLOGY
 #   if defined PISCES
@@ -2704,7 +2999,76 @@ C 				  endif
       enddo      
 #   endif
 #  endif /* SEDIMENT */
-     
+
+
+
+# ifdef MUSTANG
+      do itrc=3,NT
+         write(nametrc,'(A,I1)') 'cv_wat_',itrc-2
+#if defined key_sand2D
+           if (itrc>=itsubs1+nv_grav .AND.
+     &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
+           if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
+     &         .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
+            workr=t(:,:,:,nstp,itrc)
+            do j=Jstr,Jend
+              do i=Istr,Iend
+                DO k=1,N
+           IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
+           workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
+     &       (  (z_w(i,j,N)-z_r(i,j,k))
+     &          /(z_r(i,j,k)-z_w(i,j,0))
+     &       ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
+           workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
+           ELSE
+           workr(i,j,k)=0.
+          ENDIF
+          ENDDO
+          enddo
+          enddo
+           else
+            workr=t(:,:,:,nstp,itrc)
+           endif
+           else
+            workr=t(:,:,:,nstp,itrc)
+           endif
+#else
+            workr=t(:,:,:,nstp,itrc)
+#endif
+
+
+         call xios_send_field(TRIM(nametrc),
+     &    workr)
+      enddo
+
+      nv_out=ntrc_subs
+      CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,
+     &       nv_out,h,
+     &       maskout_sed,var2D_ksma,var2D_tenfon,var2D_eptot
+     &      )
+        call xios_send_field("tenfon",var2D_tenfon)
+# ifdef WAVE_OFFLINE
+        call xios_send_field("tenfonc",tenfonc)
+        call xios_send_field("tenfonw",tenfonw)
+# endif
+
+        call xios_send_field("ksma",var2D_ksma)
+        call xios_send_field("eptot",var2D_eptot)
+        do itrc=1,nv_out
+         do k=1,nk_nivsed_out
+           workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+         enddo
+        write(nametrc,'(A,I1)') 'cv_sed_',itrc
+        call xios_send_field(TRIM(nametrc),workrsed)
+        enddo
+
+        do k=1,nk_nivsed_out
+           workrsed(:,:,k)=var3D_dzs(k,:,:)
+        enddo
+        call xios_send_field('dzs',workrsed)
+
+# endif /* MUSTANG */     
+
 #  ifdef BBL
          call xios_send_field("Abed",Abed) 
          call xios_send_field("Hripple",Hripple)
@@ -2716,14 +3080,16 @@ C 				  endif
      &                             +bvstrw**2)
      &                                   *rho0
          call xios_send_field("bostrw",work2d)
-         call xios_send_field("bustrc",bustrc*rho0)
-         call xios_send_field("bvstrc",bvstrc*rho0)
+!         call xios_send_field("bustrc",bustrc*rho0)
+!         call xios_send_field("bvstrc",bvstrc*rho0)
          call xios_send_field("bustrw",bustrw*rho0)
          call xios_send_field("bvstrw",bvstrw*rho0)
-         call xios_send_field("bustrcwmax",bustrcwmax*rho0)
-         call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
+!         call xios_send_field("bustrcwmax",bustrcwmax*rho0)
+!         call xios_send_field("bvstrcwmax",bvstrcwmax*rho0)
 !     
 #  endif /* BBL */
+
+
 
 # endif /* SOLVE3D */
   

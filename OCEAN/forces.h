@@ -23,10 +23,21 @@
 #ifdef OA_COUPLING
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
+#  ifdef READ_PATM
+      real patm2d(GLOBAL_2D_ARRAY)
+      common /forces_patm/ patm2d
+#    ifdef OBC_PATM
+      real paref
+      parameter(paref=101325)
+#    endif
+#  endif
 #endif
+
 #ifdef OW_COUPLING
       real twox(GLOBAL_2D_ARRAY)
       real twoy(GLOBAL_2D_ARRAY)
+      real foc(GLOBAL_2D_ARRAY)
+      common /forces_foc/foc
       real tawx(GLOBAL_2D_ARRAY)
       real tawy(GLOBAL_2D_ARRAY)
       common /forces_twox/twox /forces_twoy/twoy
@@ -39,7 +50,7 @@
 !  sustrg |  Two-time level gridded data for XI- and ETA-componets
 !  svstrg |  of kinematic surface momentum flux (wind stess).
 !
-!  sustrp |  Two-time level point data for XI- and ETA-componets 
+!  sustrp |  Two-time level point data for XI- and ETA-componets
 !  svstrp |  of kinematic surface momentum flux (wind stess).
 !
       real sustrg(GLOBAL_2D_ARRAY,2)
@@ -47,37 +58,31 @@
       common /smsdat_sustrg/sustrg /smsdat_svstrg/svstrg
 
       real    sustrp(2), svstrp(2), sms_time(2)
-      real    sms_cycle, sms_scale 
-      integer itsms, sms_ncycle, sms_rec, lsusgrd  
+      real    sms_cycle, sms_scale
+      integer itsms, sms_ncycle, sms_rec, lsusgrd
       integer lsvsgrd,sms_tid, susid, svsid
       common /smsdat1/ sustrp, svstrp, sms_time
       common /smsdat2/ sms_cycle, sms_scale
       common /smsdat3/ itsms, sms_ncycle, sms_rec, lsusgrd
       common /smsdat4/ lsvsgrd,sms_tid, susid, svsid
 
-# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
-      real wspdg(GLOBAL_2D_ARRAY,2)
-      common /smsdat_wspdg/wspdg
-      real    wspdp(2)
-      common /smsdat2_wspd/ wspdp
+# if defined SFLUX_CFB && !defined BULK_FLUX
       real wspd(GLOBAL_2D_ARRAY)
       common /smsdat_wspd/ wspd
 # endif
-# if defined SMFLUX_CFB && defined CFB_STRESS2
-      real wstr_u(GLOBAL_2D_ARRAY)
-      real wstr_v(GLOBAL_2D_ARRAY)
-      common /smsdat_wstr_u/ wstr_u
-      common /smsdat_wstr_v/ wstr_v
+# ifdef CFB_WIND_TRA
+      real wspd_cfb(GLOBAL_2D_ARRAY)
+      common /smsdat_wspd_cfb/ wspd_cfb
 # endif
       integer lwgrd, wid
       common /smsdat5/ lwgrd, wid
 #endif /* !ANA_SMFLUX */
+
 !
 !  BOTTOM MOMENTUM FLUX:
 !--------------------------------------------------------------------
 !  bustr |  XI- and ETA-components of kinematic bottom momentum flux
 !  bvstr |  (drag) defined at horizontal U- and V-points [m^2/s^2].
-!
       real bustr(GLOBAL_2D_ARRAY)
       real bvstr(GLOBAL_2D_ARRAY)
       common /forces_bustr/bustr /forces_bvstr/bvstr
@@ -85,10 +90,10 @@
 !
 !  tbms      Time of surface momentum stresses.
 !
-!  bustrg |  Two-time level gridded data for XI- and ETA-componets 
+!  bustrg |  Two-time level gridded data for XI- and ETA-componets
 !  bvstrg |  of kinematic bottom momentum flux.
 !
-!  bustrp |  Two-time level point data for XI- and ETA-componets   
+!  bustrp |  Two-time level point data for XI- and ETA-componets
 !  bvstrp |  of kinematic bottom momentum flux.
 !
       real bustrg(GLOBAL_2D_ARRAY,2)
@@ -108,15 +113,17 @@
 #endif /* !ANA_BMFLUX */
 #ifdef SOLVE3D
 !
-!  SURFACE TRACER FLUXES: 
+!  SURFACE TRACER FLUXES:
 !--------------------------------------------------------------------
 !  stflx   Kinematic surface fluxes of tracer type variables at
 !          horizontal RHO-points. Physical dimensions [degC m/s] -
 !          temperature; [PSU m/s] - salinity.
 !
+# ifdef TRACERS
       real stflx(GLOBAL_2D_ARRAY,NT)
       common /forces_stflx/stflx
-# ifdef BULK_FLUX
+# endif /* TRACERS */
+# if defined BULK_FLUX && defined TEMPERATURE
       real shflx_rsw(GLOBAL_2D_ARRAY)
       common /frc_shflx_rsw/shflx_rsw
       real shflx_rlw(GLOBAL_2D_ARRAY)
@@ -125,14 +132,15 @@
       common /frc_shflx_lat/shflx_lat
       real shflx_sen(GLOBAL_2D_ARRAY)
       common /frc_shflx_sen/shflx_sen
-# endif
-# ifdef SST_SKIN
+# endif /* BULK_FLUX && TEMPERATURE */
+# if defined SST_SKIN && defined TEMPERATURE
       real sst_skin(GLOBAL_2D_ARRAY)
       common /frc_sst_skin/ sst_skin
       real dT_skin(GLOBAL_2D_ARRAY)
       common /frc_dT_skin/ dT_skin
-# endif
-# if !defined ANA_STFLUX || !defined ANA_SSFLUX
+# endif/* SST_SKIN && TEMPERATURE */
+# if defined TRACERS
+#  if !defined ANA_STFLUX || !defined ANA_SSFLUX
 !
 !  stflxg   Two-time level surface tracer flux grided data.
 !  stflxp   Two-time level surface tracer flux point  data.
@@ -143,13 +151,13 @@
 
       real stflxp(2,NT), stf_time(2,NT)
       real stf_cycle(NT), stf_scale(NT)
-      integer itstf(NT), stf_ncycle(NT), stf_rec(NT) 
+      integer itstf(NT), stf_ncycle(NT), stf_rec(NT)
       integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
       common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
       common /stfdat2/ itstf, stf_ncycle, stf_rec, lstfgrd
       common /stfdat3/  stf_tid, stf_id
 #   undef STFLUX_DATA
-# endif /* !ANA_STFLUX || !ANA_SSFLUX */
+#  endif /* !ANA_STFLUX || !ANA_SSFLUX */
 !
 !  BOTTOM TRACER FLUXES:
 !--------------------------------------------------------------------
@@ -159,8 +167,8 @@
 !
       real btflx(GLOBAL_2D_ARRAY,NT)
       common /forces_btflx/btflx
-# ifndef ANA_BTFLUX
-!
+
+#  if defined BHFLUX || defined BWFLUX
 !  btflxg   Two-time level bottom tracer flux grided data.
 !  btflxp   Two-time level bottom tracer flux point data.
 !  tbtflx   Time of bottom tracer flux.
@@ -168,28 +176,28 @@
       real btflxg(GLOBAL_2D_ARRAY,2,NT)
       common /btfdat_btflxg/btflxg
 
-      real sclbtf(NT), btf_tstart(NT), btf_tend(NT)
-      real btfclen(NT), tsbtf(NT)
-      real btf_tintrp(2,NT), btflxp(2,NT),  tbtflx(2,NT)
-      integer itbtf(NT), btfid(NT), btftid(NT),tbtfindx(NT)
-      logical lbtfgrd(NT), btfcycle(NT), btf_onerec(NT)
-      common /btfdat1/ sclbtf, btf_tstart, btf_tend, btfclen
-      common /btfdat2/ tsbtf,  btf_tintrp,   btflxp,        tbtflx
-      common /btfdat3/ itbtf,  btfid,        btftid,        tbtfindx
-      common /btfdat4/ lbtfgrd, btfcycle,    btf_onerec
-
+      real btflxp(2,NT), btf_time(2,NT)
+      real btf_cycle(NT), btf_scale(NT)
+      integer itbtf(NT), btf_ncycle(NT), btf_rec(NT)
+      integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
+      common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale
+      common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
+      common /btfdat3/  btf_tid, btf_id
 #   undef BTFLUX_DATA
-# endif /* !ANA_BTFLUX */
-#ifdef QCORRECTION
+#  endif /*  BHFLUX */
+# endif /* TRACERS */
+
+# if defined QCORRECTION && (defined TEMPERATURE || defined SALINITY)
+      real dqdt(GLOBAL_2D_ARRAY)
+      common /forces_dqdt/dqdt
 !
 !  HEAT FLUX CORRECTION
 !--------------------------------------------------------------------
 !  dqdt     Kinematic surface net heat flux sensitivity to SST [m/s].
 !  sst      Current sea surface temperature [degree Celsius].
 !
-      real dqdt(GLOBAL_2D_ARRAY)
       real sst(GLOBAL_2D_ARRAY)
-      common /forces_dqdt/dqdt /forces_sst/sst
+      common /forces_sst/sst
 #  ifndef ANA_SST
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
@@ -215,7 +223,8 @@
 
 #    undef SST_DATA
 #  endif /* !ANA_SST */
-# endif /* QCORRECTION */
+# endif /* QCORRECTION && TEMPERATURE */
+
 # if defined SALINITY && defined SFLX_CORR
 !
 !  SALT FLUX CORRECTION
@@ -226,7 +235,7 @@
       common /forces_sss/sss
 #  if !defined QCORRECTION
       real dqdt(GLOBAL_2D_ARRAY)
-      common /forces_dqdt/dqdt 
+      common /forces_dqdt/dqdt
 #  endif
 # ifdef SFLX_CORR_COEF
 ! value of nudging for surface salinity correction (in days)
@@ -236,7 +245,7 @@
 #  ifndef ANA_SSS
 !
 !  dqdtg |  Two-time-level grided data for net surface heat flux
-!  sssg  |  Two-time-level grided data for 
+!  sssg  |  Two-time-level grided data for
 !              sea surface salinity [PSU].
 !  dqdtp |  Two-time-level point data for net surface heat flux
 !  sssp  |  Two-time-level point data for
@@ -268,7 +277,7 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
-#ifdef BULK_FLUX
+# if defined BULK_FLUX && defined TEMPERATURE
 !
 !  HEAT FLUX BULK FORMULATION
 !--------------------------------------------------------------------
@@ -290,30 +299,26 @@
       real patm2d(GLOBAL_2D_ARRAY)
 #  ifdef OBC_PATM
       real paref
-      parameter(paref=101325) 
+      parameter(paref=101325)
 #  endif
 # endif
-# ifdef BULK_SM_UPDATE
       real uwnd(GLOBAL_2D_ARRAY)
       real vwnd(GLOBAL_2D_ARRAY)
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       real radswbio(GLOBAL_2D_ARRAY)
 # endif
 
       common /bulk_tair/ tair
-      common /bulk_rhum/ rhum 
+      common /bulk_rhum/ rhum
       common /bulk_prate/ prate
-      common /bulk_radlw/ radlw 
+      common /bulk_radlw/ radlw
       common /bulk_radsw/ radsw
       common /bulk_wspd/ wspd
 # ifdef READ_PATM
       common /bulk_patm/ patm2d
 # endif
-# ifdef BULK_SM_UPDATE
-      common /bulk_uwnd/ uwnd 
+      common /bulk_uwnd/ uwnd
       common /bulk_vwnd/ vwnd
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulk_radswbio/ radswbio
 # endif
@@ -323,56 +328,50 @@
       real prateg(GLOBAL_2D_ARRAY,2)
       real radlwg(GLOBAL_2D_ARRAY,2)
       real radswg(GLOBAL_2D_ARRAY,2)
-      real wspdg(GLOBAL_2D_ARRAY,2)
 # ifdef READ_PATM
       real patmg(GLOBAL_2D_ARRAY,2)
 # endif
-# ifdef BULK_SM_UPDATE
+# ifdef ONLINE
+      ! these 2 variables are used only in the initialisation stage
+      ! with the ONLINE interpolation to correct a bug [to be improved]
+      real uwndg_norot(GLOBAL_2D_ARRAY,2)
+      real radswg_down(GLOBAL_2D_ARRAY,2)
+# endif
       real uwndg(GLOBAL_2D_ARRAY,2)
       real vwndg(GLOBAL_2D_ARRAY,2)
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       real radswbiog(GLOBAL_2D_ARRAY,2)
 # endif
 
-      common /bulkdat_tairg/tairg 
-      common /bulkdat_rhumg/rhumg 
-      common /bulkdat_prateg/prateg 
-      common /bulkdat_radlwg/radlwg 
-      common /bulkdat_radswg/radswg 
-      common /bulkdat_wspdg/wspdg 
+      common /bulkdat_tairg/tairg
+      common /bulkdat_rhumg/rhumg
+      common /bulkdat_prateg/prateg
+      common /bulkdat_radlwg/radlwg
+      common /bulkdat_radswg/radswg
 # ifdef READ_PATM
-      common /bulkdat_patmg/patmg 
+      common /bulkdat_patmg/patmg
 # endif
-# ifdef BULK_SM_UPDATE 
-      common /bulk_uwndg/uwndg 
-      common /bulk_vwndg/vwndg 
-# endif
+      common /bulk_uwndg/uwndg
+      common /bulk_vwndg/vwndg
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat_radswbiog/radswbiog
 # endif
 
       real    tairp(2),rhump(2),pratep(2),radlwp(2),radswp(2)
-      real    wspdp(2)
 # ifdef READ_PATM
       real patmp(2)
 # endif
-# ifdef BULK_SM_UPDATE
       real    uwndp(2),vwndp(2)
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       real    radswbiop(2)
 # endif
       real    bulk_time(2), bulk_cycle
       integer tair_id,rhum_id,prate_id,radlw_id,radsw_id
       integer ltairgrd,lrhumgrd,lprategrd,lradlwgrd,lradswgrd
-      integer wspd_id,lwspdgrd
 # ifdef READ_PATM
       integer patm_id,lpatmgrd
 #endif
-# ifdef BULK_SM_UPDATE
       integer uwnd_id,vwnd_id,luwndgrd,lvwndgrd
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       integer radswbio_id,lradswbiogrd
 # endif
@@ -386,27 +385,21 @@
 # ifdef READ_PATM
       common /bulkdat1_patm/ patm_id,lpatmgrd
 #endif
-# ifdef BULK_SM_UPDATE
       common /bulkdat1_wnd/ uwnd_id,vwnd_id,luwndgrd,lvwndgrd
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat1_bio/ radswbio_id,lradswbiogrd
 # endif
-      common /bulkdat1_wspd/ wspd_id,lwspdgrd
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
       common /bulkdat2_tim/ bulk_time, bulk_cycle
 # ifdef READ_PATM
       common /bulkdat2_patm/ patmp
 # endif
-# ifdef BULK_SM_UPDATE
       common /bulkdat2_wnd/ uwndp,vwndp
-# endif
 # ifdef DIURNAL_INPUT_SRFLX
       common /bulkdat2_bio/ radswbiop
 # endif
-      common /bulkdat2_wspd/ wspdp 
-#endif /* BULK_FLUX */
+# endif /* BULK_FLUX && TEMPERATURE */
 !
 !  SOLAR SHORT WAVE RADIATION FLUX.
 !--------------------------------------------------------------------
@@ -427,7 +420,7 @@
 # endif
 # ifndef ANA_SRFLUX
 !
-!  srflxg | Two-time-level grided and point data for surface 
+!  srflxg | Two-time-level grided and point data for surface
 !  srflxp |      solar shortwave radiation flux grided data.
 !  tsrflx   Time of solar shortwave radiation flux.
 !
@@ -437,7 +430,7 @@
       real srflxp(2),srf_time(2)
       real srf_cycle, srf_scale
       integer itsrf, srf_ncycle, srf_rec
-      integer lsrfgrd, srf_tid, srf_id 
+      integer lsrfgrd, srf_tid, srf_id
       common /srfdat1/ srflxp, srf_time, srf_cycle, srf_scale
       common /srfdat2/ itsrf,srf_ncycle,srf_rec,lsrfgrd,srf_tid,srf_id
 
@@ -466,17 +459,20 @@
 ! whrm | MRL     | (RMS) wave height (twice the wave amplitude) [m]
 ! wepb | MRL     | breaking dissipation rate (\epsilon_b term) [m3/s3]
 ! wepd | MRL     | frictional dissipation rate (\epsilon_d term) [m3/s3]
+! wlm  | MRL     | mean length wave from input data (coupling or forcing)
 ! wepr | ROLLER  | roller dissipation rate (\epsilon_r term) [m3/s3]
 ! wbst | MRL/BKPP| frictional dissipation stress (e_d k/sigma) [m2/s2]
 !--------------------------------------------------------------------
 
-#if defined BBL || defined MRL_WCI || defined OW_COUPLING 
+#if defined BBL || defined MRL_WCI || defined OW_COUPLING
       real wfrq(GLOBAL_2D_ARRAY)
       common /forces_wfrq/wfrq
       real wwkx(GLOBAL_2D_ARRAY)
       common /forces_wkx/wwkx
       real wwke(GLOBAL_2D_ARRAY)
-      common /forces_wke/wwke
+      common /forces_wke/wwke     
+      real ubr(GLOBAL_2D_ARRAY)
+      common /forces_ubr/ubr
 #endif
 
 #ifdef BBL
@@ -491,9 +487,11 @@
       real wepd(GLOBAL_2D_ARRAY)
       real wdrx(GLOBAL_2D_ARRAY)
       real wdre(GLOBAL_2D_ARRAY)
-      common /forces_whrm/whrm /forces_wepb/wepb 
+      common /forces_whrm/whrm /forces_wepb/wepb
      &       /forces_wdrx/wdrx /forces_wdre/wdre
      &       /forces_wepd/wepd
+      real wlm(GLOBAL_2D_ARRAY)
+      common /forces_wlm/wlm
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
@@ -511,6 +509,8 @@
 !  2D  |  sup      |  quasi-static wave set-up (rho-point)
 !  2D  |  calP     |  pressure correction term (rho-point)
 !  2D  |  Kapsrf   |  Bernoulli head terrm at the surface (rho-point)
+!  2D  |  ust_ext  |  surface Stokes drift velocity magnitude from input data (coupling or forcing)
+!  2D  |  bhd      |  Bernoulli head term input data (coupling or forcing)
 !--------------------------------------------------------------------
 !  3D  |  brk3dx   |   xi-direciton 3D breaking dissipation (rho)
 !  3D  |  brk3de   |  eta-direction 3D breaking dissipation (rho)
@@ -537,10 +537,14 @@
       common /forces_ust2d/ust2d /forces_vst2d/vst2d
       common /forces_frc2dx/frc2dx /forces_frc2de/frc2de
       common /forces_sup/sup
+      real ust_ext(GLOBAL_2D_ARRAY)
+      common /forces_ext_ust/ust_ext
 # ifdef SOLVE3D
       real calP(GLOBAL_2D_ARRAY)
       real Kapsrf(GLOBAL_2D_ARRAY)
       common /forces_calP/calP /forces_Kapsrf/Kapsrf
+      real bhd(GLOBAL_2D_ARRAY)
+      common /forces_bhd/bhd 
 #  ifndef WAVE_SFC_BREAK
       real brk3dx(GLOBAL_2D_ARRAY,N)
       real brk3de(GLOBAL_2D_ARRAY,N)
@@ -559,14 +563,16 @@
       real Akw(GLOBAL_2D_ARRAY,0:N)
       real E_pre(GLOBAL_2D_ARRAY,0:N)
       common /forces_stokes/ust, vst, wst
-      common /forces_kvf/kvf /forces_Akb/Akb /forces_Akw/Akw 
+      common /forces_kvf/kvf /forces_Akb/Akb /forces_Akw/Akw
       common /forces_E_pre/E_pre
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
-#if defined BBL || defined MRL_WCI 
+#if defined BBL || defined MRL_WCI \
+     ||  (defined MUSTANG && defined WAVE_OFFLINE)
 !--------------------------------------------------------------------
 ! Awave  | for present time   | wave amplitude [m]
+!                             | significant wave height [m] (MUSTANG)
 ! Pwave  | for present time   | wave direction [radians]
 ! Dwave  | for present time   | wave period [s]
 !--------------------------------------------------------------------
@@ -599,10 +605,19 @@
       real wwag(GLOBAL_2D_ARRAY,2)
       real wwdg(GLOBAL_2D_ARRAY,2)
       real wwpg(GLOBAL_2D_ARRAY,2)
+#  ifdef MUSTANG
+      real Uwave(GLOBAL_2D_ARRAY)
+!--------------------------------------------------------------------
+! Uwave  | for present time   | wave orbital bottom valocity [m/s]
+!--------------------------------------------------------------------
+      common /bbl_Uwave/Uwave
+      real wwug(GLOBAL_2D_ARRAY,2)
+      common /wwf_wwug/wwug
+#  endif
       common /wwf_wwag/wwag /wwf_wwdg/wwdg /wwf_wwpg/wwpg
       real wwfrq(GLOBAL_2D_ARRAY)
       common /wwf_wwfrq/wwfrq
-#  ifdef BBL_OFFLINE 
+#  ifdef BBL_OFFLINE
       real wwub(GLOBAL_2D_ARRAY,2)
       common /wwf_wwub/wwub
       real wwuob(GLOBAL_2D_ARRAY,2)
@@ -623,38 +638,47 @@
       common /wwf_wwer/wwer
 #   endif
 #  endif /* MRL_WCI */
-      real    ww_cycle,wwv_time(2),
-     &        wwap(2),wwdp(2),wwpp(2),
-     &        wwebp(2),wwedp(2),wwerp(2),
-     &        wwa_scale,wwd_scale,wwp_scale,
-     &        wweb_scale,wwed_scale,wwer_scale,
-     &        wwagrd,wwdgrd,wwpgrd,
-     &        wwebgrd,wwedgrd,wwergrd
-      integer ww_ncycle, ww_rec, itww,
-     &        ww_file_id, ww_tid,  
-     &        wwa_id, wwp_id, wwd_id
-#   ifdef MRL_WCI
-     &       ,wweb_id, wwed_id, wwer_id
-#   endif
-#   ifdef BBL
-     &       ,wwu_id
-#   endif
-      common /wwdat/ ww_cycle, wwv_time,
-     &       wwap,wwdp,wwpp,
-     &       wwebp,wwedp,wwerp,
-     &       wwa_scale,wwd_scale,wwp_scale,
-     &       wweb_scale,wwed_scale,wwer_scale,
-     &       wwagrd,wwdgrd,wwpgrd, 
-     &       wwebgrd,wwedgrd,wwergrd,
-     &       ww_ncycle,ww_rec,itww,
-     &       ww_file_id,ww_tid, 
-     &       wwa_id, wwp_id, wwd_id
-#   ifdef MRL_WCI
-     &       ,wweb_id, wwed_id, wwer_id
-#   endif
-#   ifdef BBL
-     &       ,wwu_id
-#   endif
+      real    ww_cycle,wwv_time(2)
+      real    wwap(2),wwdp(2),wwpp(2)
+      real    wwebp(2),wwedp(2),wwerp(2)
+      real    wwa_scale,wwd_scale,wwp_scale
+      real    wweb_scale,wwed_scale,wwer_scale
+      real    wwagrd,wwdgrd,wwpgrd
+      real    wwebgrd,wwedgrd,wwergrd
+#  ifdef MUSTANG
+      real    wwup(2),wwugrd,wwu_scale
+#  endif
+      integer ww_ncycle, ww_rec, itww
+      integer ww_file_id, ww_tid
+      integer wwa_id, wwp_id, wwd_id
+#  ifdef MUSTANG
+      integer wwu_id
+#  endif
+#  ifdef MRL_WCI
+      integer wweb_id, wwed_id, wwer_id
+#  endif
+#  ifdef BBL
+      integer wwu_id
+#  endif
+      common /wwdat/ ww_cycle, wwv_time
+      common /wwdat/ wwap,wwdp,wwpp
+      common /wwdat/ wwebp,wwedp,wwerp
+      common /wwdat/ wwa_scale,wwd_scale,wwp_scale
+      common /wwdat/ wweb_scale,wwed_scale,wwer_scale
+      common /wwdat/ wwagrd,wwdgrd,wwpgrd
+      common /wwdat/ wwebgrd,wwedgrd,wwergrd
+      common /wwdat/ ww_ncycle,ww_rec,itww
+      common /wwdat/ ww_file_id,ww_tid
+      common /wwdat/ wwa_id, wwp_id, wwd_id
+#  ifdef MUSTANG
+      common /wwdat/ wwu_id,wwugrd,wwu_scale,wwup
+#  endif
+#  ifdef MRL_WCI
+      common /wwdat/ wweb_id, wwed_id, wwer_id
+#  endif
+#  ifdef BBL
+      common /wwdat/ wwu_id
+#  endif
 # endif /* WAVE_OFFLINE */
 #endif /* BBL || MRL_WCI */
 
@@ -663,8 +687,8 @@
       parameter (Nfrq=320, Ndir=50)
       real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
       real wd_bry(Ndir), wa_bry_d(Ndir)
-      common /wave_maker/ wf_bry, wk_bry, wa_bry,
-     &                    wd_bry, wa_bry_d
+      common /wave_maker/ wf_bry, wk_bry, wa_bry
+      common /wave_maker/ wd_bry, wa_bry_d
 # ifdef WAVE_MAKER_DSPREAD
       real wpha_bry(Nfrq,Ndir)
 # else
@@ -672,5 +696,3 @@
 # endif
       common /wave_maker_pha/ wpha_bry
 #endif
-
-

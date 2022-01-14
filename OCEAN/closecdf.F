@@ -141,7 +141,7 @@
      &                                                 nrecdiags_pv_avg
 # endif
 #endif /* DIAGNOSTICS_PV */
-#if defined OUTPUTS_SURFACE
+# if defined OUTPUTS_SURFACE && ! defined XIOS
      &  ,'number of records written into surf  file(s):',
      &                                                     nrecsurf
 # ifdef AVERAGES
@@ -174,6 +174,11 @@
       elseif (may_day_flag.eq.7) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: KPP algoritm failure'
+#ifdef SUBSTANCE
+      elseif (may_day_flag.eq.77) then
+        MPI_master_only write(stdout,'(/1x,A/)')
+     &           'ERROR: READ parasubstance.txt'
+#endif
       endif
 
       return

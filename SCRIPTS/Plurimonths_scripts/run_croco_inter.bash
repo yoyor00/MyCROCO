@@ -11,7 +11,7 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`
+INPUTDIR=`pwd`/CROCO_IN
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
@@ -97,13 +97,20 @@ NY_END=2000
 NM_START=1
 NM_END=3
 #
+# Set month format at 1 or 2 digits (for input and output files): "%01d" = 1 digit/ "%02d" = 2 digit  
+MTH_FORMAT="%01d"
+#
 # Number of year that are considered to be part of the spin-up (i.e. 365 days per year)
 NY_SPIN=0
 #
 #  Restart file - RSTFLAG=0 --> No Restart
 #		  RSTFLAG=1 --> Restart
 #
-RSTFLAG=0
+RSTFLAG=0     
+#
+#  Exact restart - EXACT_RST=0 --> Exact restart OFF
+#                - EXACT_RST=1 --> Exact restart ON
+EXACT_RST=0
 #
 #  Time Schedule  -  TIME_SCHED=0 --> yearly files
 #                    TIME_SCHED=1 --> monthly files
@@ -151,7 +158,7 @@ if [[ $RSTFLAG != 0 ]]; then
       NM=12
       NY=$((NY - 1))
     fi
-    TIME=Y${NY}M${NM}
+    TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
   fi
   RSTFILE=${MODEL}_rst_${TIME}
 fi
@@ -159,7 +166,7 @@ fi
 if [[ $TIME_SCHED == 0 ]]; then
   TIME=Y${NY_START}
 else
-  TIME=Y${NY_START}M${NM_START}
+  TIME=Y${NY_START}M$( printf ${MTH_FORMAT} ${NM_START})
 fi
 #
 # Get the code
@@ -226,8 +233,8 @@ while [ $NY != $NY_END ]; do
       TIME=Y${NY}
       echo "Computing YEAR $NY"
     else
-      TIME=Y${NY}M${NM}
-      echo "Computing YEAR $NY MONTH $NM"
+	TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
+	echo "Computing YEAR $NY MONTH $( printf ${MTH_FORMAT} ${NM})"
     fi
 #
 # Get forcing and clim for this time
@@ -334,6 +341,21 @@ while [ $NY != $NY_END ]; do
 	else
 	    NUMRST=$NUMTIMES
 	fi
+
+	if [[ $EXACT_RST == 1 ]]; then
+	    echo "Exact restart defined"
+	    if [[ $NY == $NY_START && $NM == $NM_START ]]; then
+		NUMRECINI=1
+		echo "set NUMRECINI = $NUMRECINI"
+	    else
+		NUMRECINI=2
+		echo "set NUMRECINI = $NUMRECINI"
+	    fi
+	else  # no exact restart
+	    echo "No exact restart"
+	    NUMRECINI=1
+	    echo "set NUMRECINI = $NUMRECINI"
+	fi
 	
 	echo " "
 	echo "Writing in ${MODEL}_inter.in${ENDF}"
@@ -343,6 +365,7 @@ while [ $NY != $NY_END ]; do
 	echo "USING NUMAVG   = $NUMAVG"
 	echo "USING NUMHIS   = $NUMHIS"
 	echo "USING NUMRST   = $NUMRST"
+	echo "USING NUMRECINI = $NUMRECINI"
 	
 	if [ ! -f ${MODEL}_inter.in${ENDF} ]; then
 	    echo "=="
@@ -352,6 +375,7 @@ while [ $NY != $NY_END ]; do
 	fi
 	sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
 	    -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' \
+	    -e 's/NUMRECINI/'$NUMRECINI'/' \
 	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
 	
 	LEVEL=$((LEVEL + 1))

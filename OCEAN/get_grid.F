@@ -23,6 +23,7 @@
 # include "grid.h"
 # include "netcdf.inc"
 # ifdef MPI
+      include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -337,7 +338,7 @@
       ! write(stdout,*)'zob',
      !&  minval(zob),maxval(zob),minloc(zob),maxloc(zob)
        zob(:,:)=max(zob(:,:),1e-7)
-       zob_temp=max(zob(:,:))
+       zob_temp=maxval(zob)
 #ifdef MPI
           if (NNODES.gt.1) then         ! Perform global max
             call MPI_allreduce(zob_temp,zobt,1,

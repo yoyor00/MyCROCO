@@ -2,23 +2,23 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al) 
+! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
+!
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef AVERAGES
-                                     ! Write time-averaged 
+                                     ! Write time-averaged
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
 !     implicit none
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), ibuff(4), nf_fwrite, type
 # ifdef SOLVE3D
-     &            , itrc         
+     &            , itrc
 #  ifdef SEDIMENT
      &            , indxWrk
 #  endif
@@ -69,9 +69,9 @@
       else
         record=1+mod(nrecavg-1, nrpfavg)
       endif
-      
-!#define CR  
-CR      write(*,*) 'wrt_avg: Entry  ' MYID       
+
+!#define CR
+CR      write(*,*) 'wrt_avg: Entry  ' MYID
 !
 ! Write out time-averaged variables:
 ! ----- --- ------------- ----------
@@ -95,9 +95,9 @@ CR      write(*,*) 'wrt_avg: Entry  ' MYID
          goto 99                !--> ERROR
       endif
 CR      write(*,*) 'wrt_avg:  time  ' MYID
-!     
+!
 !     Averaged time
-!     
+!
       ierr=nf_put_var1_FTYPE (ncidavg, avgTime, record, time_avg)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime))
@@ -105,9 +105,9 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
      &        MYID
          goto 99                !--> ERROR
       endif
-!     
+!
 !     Averaged time2
-!     
+!
       ierr=nf_put_var1_FTYPE (ncidavg, avgTime2, record, time_avg)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime2))
@@ -117,10 +117,10 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       endif
 CR      write(*,*) 'wrt_avg:  time  ' MYID
 
-!     
+!
 !     Barotropic mode variables: free-surface and 2D momentum
 !     components in XI-,ETA-directions.
-!     
+!
       if (wrtavg(indxZ)) then
          work2d=zeta_avg
 # ifdef WET_DRY
@@ -147,20 +147,50 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
          call fillvalue2d(work2d,ncidavg,avgVb,indxVb,
      &                   record,v2dvar,type)
       endif
-!     
+
+# ifdef MORPHODYN
+      if (wrtavg(indxHm)) then
+         work2d=h_avg
+         call fillvalue2d(work2d,ncidavg,avgHm,indxHm,
+     &                    record,r2dvar,type)
+      endif
+# endif
+!
 !     Write out kinematic bottom stress (N/m2).
-!     
+!
       if (wrtavg(indxBostr)) then
          work2d=bostr_avg
          call fillvalue2d(work2d,ncidavg,avgBostr,indxBostr,
      &        record,r2dvar,type)
       endif
-!     
+
+!
+!     Write out kinematic U  bottom stress (N/m2).
+!
+      if (wrtavg(indxBustr)) then
+         work2d=bustr_avg
+         call fillvalue2d(work2d,ncidavg,avgBustr,indxBustr,
+     &        record,u2dvar,type)
+      endif
+
+
+!
+!     Write out kinematic V  bottom stress (N/m2).
+!
+      if (wrtavg(indxBvstr)) then
+         work2d=bvstr_avg
+         call fillvalue2d(work2d,ncidavg,avgBvstr,indxBvstr,
+     &        record,v2dvar,type)
+      endif
+
+
+
+!
 !--   Atmospheric forcing : no mask, no fill value
-!     
-!     
+!
+!
 !     Write out kinematic surface stress (N/m2).
-!     
+!
       if (wrtavg(indxWstr)) then
          ierr=nf_fwrite(wstr_avg, ncidavg, avgWstr, record, r2dvar)
          if (ierr .ne. nf_noerr) then
@@ -171,12 +201,12 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
          endif
 CR      write(*,*) 'wrt_avg:  Wstr' MYID
       endif
-!     
+!
 !     Write out kinematic U surface stress component (N/m2).
-!     
+!
       if (wrtavg(indxUWstr)) then
          ierr=nf_fwrite(sustr_avg, ncidavg, avgUWstr, record, u2dvar)
-         if (ierr .ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxUWstr))
             write(stdout,1) vname(1,indxUWstr)(1:lvar), record, ierr
      &           MYID
@@ -184,9 +214,9 @@ CR      write(*,*) 'wrt_avg:  Wstr' MYID
          endif
 CR      write(*,*) 'wrt_avg: UWstr' MYID
       endif
-!     
+!
 !     Write out kinematic V surface stress component (N/m2).
-!     
+!
       if (wrtavg(indxVWstr)) then
          ierr=nf_fwrite(svstr_avg, ncidavg, avgVWstr, record, v2dvar)
          if (ierr .ne. nf_noerr) then
@@ -197,41 +227,43 @@ CR      write(*,*) 'wrt_avg: UWstr' MYID
          endif
 CR      write(*,*) 'wrt_avg: VWstr' MYID
       endif
-!        
+!
 !--
-!     
+!
 # ifdef SOLVE3D
-!     
+!
 !     3D momentum components in XI- and ETA-directions.
-!     
+!
       if (wrtavg(indxU)) then
          workr=u_avg
-         call fillvalue3d(workr,ncidavg,avgU,indxU,record,u3dvar,type)   
+         call fillvalue3d(workr,ncidavg,avgU,indxU,record,u3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtU' MYID
       endif
-!     
+!
       if (wrtavg(indxV)) then
          workr=v_avg
-         call fillvalue3d(workr,ncidavg,avgV,indxV,record,v3dvar,type)   
+         call fillvalue3d(workr,ncidavg,avgV,indxV,record,v3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtV' MYID
       endif
-!     
+!
 !     Tracer variables.
-!     
+!
+#  ifdef TRACERS
       do itrc=1,NT
-         if (wrtavg(indxT+itrc-1)) then
+         if (wrtavg(indxV+itrc)) then
             workr=t_avg(:,:,:,itrc)
-            call fillvalue3d(workr,ncidavg,avgT(itrc),indxT+itrc-1,
-     &           record,r3dvar,type)           
+            call fillvalue3d(workr,ncidavg,avgT(itrc),indxV+itrc,
+     &           record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
       enddo
-!     
+# endif
+!
 !     Density anomaly.
-!     
+!
       if (wrtavg(indxR)) then
          workr=rho_avg+rho0-1000.
-         call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type) 
+         call fillvalue3d(workr,ncidavg,avgR,indxR,record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
 # if defined ANA_VMIX || defined BVF_MIXING \
@@ -247,17 +279,17 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
 CR      write(*,*) 'wrt_avg:  wrtbvf' MYID
       endif
 # endif
-!     
+!
 !     Write out S-coordinate omega vertical velocity (m/s).
-!     
+!
       if (wrtavg(indxO)) then
          work=omega_avg
-         call fillvalue3d_w(work,ncidavg,avgO,indxO,record,w3dvar,type) 
+         call fillvalue3d_w(work,ncidavg,avgO,indxO,record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
       endif
-!     
+!
 !     Write out true vertical velocity (m/s).
-!     
+!
       if (wrtavg(indxW)) then
 # ifdef NBQ
          work=w_avg
@@ -267,24 +299,24 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
          call fillvalue3d(workr,ncidavg,avgW,indxW,record,r3dvar,type)
 # endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
-      endif   
-!     
-#  ifdef SST_SKIN
-!     
+      endif
+!
+#  if defined SST_SKIN && defined TEMPERATURE
+!
 !     Write out skin temperature (degC)
-!     
+!
       if (wrtavg(indxT)) then
          work2d=sst_skin_avg
          call fillvalue2d(work2d,ncidavg,avgSST_skin,indxSST_skin,
      &                    record,r2dvar,type)
       endif
-#  endif 
+#  endif
 !
-!     
+!
 #  ifdef VIS_COEF_3D
-!     
+!
 !     Write out Horizontal viscosity coefficient.
-!     
+!
       if (wrtavg(indxVisc)) then
          workr=visc3d_avg
          call fillvalue3d(workr,ncidavg,avgVisc,indxVisc,
@@ -293,9 +325,9 @@ CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
       endif
 #  endif
 #  ifdef DIF_COEF_3D
-!     
+!
 !     Write out Horizontal diffusivity coefficient.
-!     
+!
       if (wrtavg(indxDiff)) then
          workr=diff3d_avg
          call fillvalue3d(workr,ncidavg,avgDiff,indxDiff,
@@ -304,28 +336,30 @@ CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
       endif
 #  endif
 #  ifdef AVERAGES_K
-!     
+!
 !     Write out vertical viscosity coefficient.
-!     
+!
       if (wrtavg(indxAkv)) then
          work=Akv_avg
          call fillvalue3d_w(work,ncidavg,avgAkv,indxAkv,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
       endif
-!     
+!
 !     Write out vertical diffusion coefficient for potential temperature.
-!     
+!
+#    ifdef TEMPERATURE
       if (wrtavg(indxAkt)) then
          work=Akt_avg(:,:,:,itemp)
          call fillvalue3d_w(work,ncidavg,avgAkt,indxAkt,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       endif
+#    endif /* TEMPERATURE */
 #    ifdef SALINITY
-!     
+!
 !     Write out vertical diffusion coefficient for salinity.
-!     
+!
       if (wrtavg(indxAks)) then
          work=Akt_avg(:,:,:,isalt)
          call fillvalue3d_w(work,ncidavg,avgAks,indxAks,
@@ -336,9 +370,9 @@ CR       write(*,*) 'wrt_avg:  wrtAks' MYID
 #  endif  /* AVERAGES_K */
 
 #  if defined LMD_SKPP || defined GLS_MIXING
-!     
+!
 !     Write out depth of planetary boundary layer (m).
-!     
+!
       if (wrtavg(indxHbl)) then
          work2d=hbl_avg
          call fillvalue2d(work2d,ncidavg,avgHbl,indxHbl,
@@ -347,9 +381,9 @@ CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
       endif
 #  endif
 #  ifdef LMD_BKPP
-!     
+!
 !     Write out depth of planetary boundary layer (m).
-!     
+!
       if (wrtavg(indxHbbl)) then
          work2d=hbbl_avg
          call fillvalue2d(work2d,ncidavg,avgHbbl,indxHbbl,
@@ -359,27 +393,27 @@ CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 # endif
 
 # ifdef GLS_MIXING
-!     
+!
 !     Write out turbulent kinetic energy.
-!     
+!
       if (wrtavg(indxTke)) then
          work=tke_avg
          call fillvalue3d_w(work,ncidavg,avgTke,indxTke,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtTke' MYID
       endif
-!     
+!
 !     Write out generic length scale
-!     
+!
       if (wrtavg(indxGls)) then
          work=gls_avg
          call fillvalue3d_w(work,ncidavg,avgGls,indxGls,
      &        record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtGls' MYID
       endif
-!     
+!
 !     Write out vertical mixing length scale
-!     
+!
       if (wrtavg(indxLsc)) then
          work=Lscale_avg
          call fillvalue3d_w(work,ncidavg,avgLsc,indxLsc,
@@ -388,14 +422,15 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
 #  endif
 
-!     
+#    ifdef TEMPERATURE
+!
 !     Write out total heat flux [W/m2]
-!     
+!
       if (wrtavg(indxShflx)) then
          work2d=stflx_avg(:,:,itemp)
      &          SWITCH rmask
 !
-!        Mult by mask to avoid erroneous data 
+!        Mult by mask to avoid erroneous data
 !        over land if Qcorrection cppkeys applied
 !
          ierr=nf_fwrite(work2d, ncidavg, avgShflx, record, r2dvar)
@@ -406,17 +441,40 @@ CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
             goto 99             !--> ERROR
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
+       endif
+# endif
+#  ifdef BHFLUX
+!
+!     Write out bottom heat flux
+!
+      if (wrtavg(indxBhflx)) then
+        work2d=btflx_avg(:,:,itemp)
+     &         SWITCH rmask
+!
+!     Mult by mask to avoid erroneous data
+!     over land if Qcorrection cppkeys applied
+!
+        ierr=nf_fwrite(work2d, ncidavg, avgBhflx, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxBhflx))
+          write(stdout,1) vname(1,indxBhflx)(1:lvar), record, ierr
+     &         MYID
+          goto 99               !--> ERROR
+        endif
+CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID
       endif
-#  ifdef SALINITY      
+#  endif
+#  ifdef SALINITY
+!
 !     Write out surface E-P flux [cm/d]
-!     
+!
       if (wrtavg(indxSwflx)) then
          work2d=stflx_avg(:,:,isalt)
-     &         SWITCH rmask  
+     &         SWITCH rmask
 !
-!        Mult by mask to avoid erroneous data over land 
-!        if SFlux cppkeys correction applied and also 
-!        to remove enormous wrong value diciding by eps.    
+!        Mult by mask to avoid erroneous data over land
+!        if SFlux cppkeys correction applied and also
+!        to remove enormous wrong value diciding by eps.
 !
          ierr=nf_fwrite(work2d, ncidavg, avgSwflx, record, r2dvar)
          if (ierr .ne. nf_noerr) then
@@ -426,16 +484,38 @@ CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
             goto 99             !--> ERROR
          endif
 CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
-      endif
+       endif
+#   ifdef BWFLUX
+!
+!     Write out bottom fresh water flux [cm/d]
+!
+      if (wrtavg(indxBwflx)) then
+         work2d=btflx_avg(:,:,isalt)
+     &         SWITCH rmask
+!
+!        Mult by mask to avoid erroneous data over land
+!        if SFlux cppkeys correction applied and also
+!        to remove enormous wrong value diciding by eps.
+!
+         ierr=nf_fwrite(work2d, ncidavg, avgBwflx, record, r2dvar)
+         if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxBwflx))
+            write(stdout,1) vname(1,indxBwflx)(1:lvar), record, ierr
+     &           MYID
+            goto 99             !--> ERROR
+         endif
+CR      write(*,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
+       endif
+#   endif
 #  endif
 !     Write out solar radiation flux [W/m2]
-!     
+!
       if (wrtavg(indxShflx_rsw)) then
 #  ifdef BULK_FLUX
-         ierr=nf_fwrite(shflx_rsw_avg, ncidavg, avgShflx_rsw, 
+         ierr=nf_fwrite(shflx_rsw_avg, ncidavg, avgShflx_rsw,
      &                  record, r2dvar)
 #  else
-         ierr=nf_fwrite(srflx_avg, ncidavg, avgShflx_rsw, 
+         ierr=nf_fwrite(srflx_avg, ncidavg, avgShflx_rsw,
      &                  record, r2dvar)
 #  endif
          if (ierr .ne. nf_noerr) then
@@ -457,7 +537,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
             goto 99             !--> ERROR
          endif
       endif
-      
+
       if (wrtavg(indxShflx_lat)) then
          ierr=nf_fwrite(shflx_lat_avg, ncidavg, avgShflx_lat, record,
      &        r2dvar)
@@ -468,7 +548,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
             goto 99             !--> ERROR
          endif
       endif
-      
+
       if (wrtavg(indxShflx_sen)) then
          ierr=nf_fwrite(shflx_sen_avg, ncidavg, avgShflx_sen, record,
      &        r2dvar)
@@ -482,17 +562,17 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
 #  endif
 
 #  if defined BIOLOGY && !defined PISCES
-!     
+!
 !     Write out depth of the euphotic layer (m).
-!     
+!
       if (wrtavg(indxHel)) then
          work2d=hel_avg
          call fillvalue2d(work2d,ncidavg,avgHel,indxHel,
      &        record,r2dvar,type)
       endif
-!     
+!
 !     Write out Chlorophyll to Carbon ratio (m).
-!     
+!
 #   ifdef BIO_NChlPZD
       if (wrtavg(indxChC)) then
          workr=theta_avg
@@ -516,8 +596,8 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
      &        record,r2dvar,type)
       endif
 #     endif /* OXYGEN */
-!     
-#   elif defined BIO_BioEBUS  
+!
+#   elif defined BIO_BioEBUS
       if (wrtavg(indxAOU)) then
          workr=AOU_avg
          call fillvalue3d(workr,ncidavg,avgAOU,indxAOU,
@@ -528,23 +608,23 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          call fillvalue2d(work2d,ncidavg,avgwind10,indxWIND10,
      &        record,r2dvar,type)
       endif
-#   endif 
+#   endif
 #  endif /* BIOLOGY */
 !
 #  ifdef SEDIMENT
-!     
-!     Write out sediment bed layer thickness, porosity, volume 
+!
+!     Write out sediment bed layer thickness, porosity, volume
 !     fraction of size class in sediment bed (2+2*NST b3dgrd variables)
-!     
+!
       if (wrtavg(indxBTHK)) then
          worksed_bed=bed_thick_avg
-         call fillvalue3d(worksed_bed,ncidavg,avgSed(1),indxBTHK,
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(2),indxBTHK,
      &        record,b3dvar,type)
       endif
 !
       if (wrtavg(indxBPOR)) then
          worksed_bed=bed_poros_avg
-         call fillvalue3d(worksed_bed,ncidavg,avgSed(1),indxBPOR,
+         call fillvalue3d(worksed_bed,ncidavg,avgSed(3),indxBPOR,
      &        record,b3dvar,type)
       endif
 
@@ -552,7 +632,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBFRA(1)+itrc-1
          if (wrtavg(indxWrk)) then
             worksed_frac=bed_frac_avg(:,:,:,itrc)
-            call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+2),
+            call fillvalue3d(worksed_frac,ncidavg,avgSed(itrc+3),
      &           indxWrk,record,b3dvar,type)
          endif
       enddo
@@ -562,7 +642,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxDFLX(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=settling_flux_avg(:,:,itrc)/dt
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -570,7 +650,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxEFLX(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=ero_flux_avg(:,:,itrc)/dt
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+2*NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+2*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -580,7 +660,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBDLU(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldu_avg(:,:,itrc)
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+3*NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+3*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -588,7 +668,7 @@ CR      write(*,*) 'wrt_avg:  srflx' MYID
          indxWrk=indxBDLV(1)+itrc-1
          if (wrtavg(indxWrk)) then
             work2d=bedldv_avg(:,:,itrc)
-            call fillvalue2d(work2d,ncidavg,avgSed(itrc+2+4*NST),
+            call fillvalue2d(work2d,ncidavg,avgSed(itrc+3+4*NST),
      &           indxWrk,record,r2dvar,type)
          endif
       enddo
@@ -838,10 +918,10 @@ CR      write(*,*) 'wrt_avg:  wrtKaps' MYID
  99   may_day_flag=3
  100  continue
 
-!     
+!
 !     Synchronize netCDF file to disk to allow other processes
 !     to access data immediately after it is written.
-!     
+!
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       ierr=nf_close(ncidavg)
       if (nrpfavg.gt.0 .and. record.ge.nrpfavg) ncidavg=-1
@@ -854,12 +934,12 @@ CR      write(*,*) 'wrt_avg:  wrtKaps' MYID
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-      MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 
+      MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &        'WRT_AVG -- wrote ',
      &        'averaged fields into time record =', record, '/',
      &        nrecavg  MYID
       else
-       MPI_master_only write(stdout,'(/1x,2A/)') 
+       MPI_master_only write(stdout,'(/1x,2A/)')
      &        'WRT_AVG ERROR: Cannot ',
      &        'synchronize/close averages netCDF file.'
          may_day_flag=3

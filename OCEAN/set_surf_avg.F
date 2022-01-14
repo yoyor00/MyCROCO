@@ -1,5 +1,6 @@
 #include "cppdefs.h"
-#if (defined OUTPUTS_SURFACE && defined AVERAGES)
+#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
+
  
       subroutine set_surf_avg (tile)
       implicit none
@@ -65,8 +66,8 @@
 
           if (ZEROTH_TILE) then
             timesurf_avg=time
-      MPI_master_only write(*,*) 'started averaging surf',iic,
-     &                       ntssurf_avg,nwrtsurf_avg
+!            MPI_master_only write(*,*) 'started averaging surf',iic,
+!     &                                      ntssurf_avg,nwrtsurf_avg
           endif
 
 
@@ -140,9 +141,9 @@
 
           cff=1./float(nwrtsurf_avg)
           if (ZEROTH_TILE) then
-                        timesurf_avg=cff*(timesurf_avg+time)
-      MPI_master_only write(*,*) 'finish aver. surf',iic,
-     &                       ntssurf_avg,nwrtsurf_avg
+            timesurf_avg=cff*(timesurf_avg+time)
+!            MPI_master_only write(*,*) 'finish aver. surf',iic,
+!     &                                 ntssurf_avg,nwrtsurf_avg
           endif
 
 

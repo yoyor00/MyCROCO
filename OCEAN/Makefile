@@ -2,14 +2,14 @@
 #
 #======================================================================
 # CROCO is a branch of ROMS developped at IRD and INRIA, in France
-# The two other branches from UCLA (Shchepetkin et al) 
+# The two other branches from UCLA (Shchepetkin et al)
 # and Rutgers University (Arango et al) are under MIT/X style license.
 # CROCO specific routines (nesting) are under CeCILL-C license.
-# 
+#
 # CROCO website : http://www.croco-ocean.org
 #======================================================================
 #
-# Universal machine independent makefile for ROMS model 
+# Universal machine independent makefile for ROMS model
 #
 #======================================================================
 # Set machine dependent definitions and rules.
@@ -23,8 +23,8 @@ include Makedefs
 # blanc lines:
 #   1) main driving part;		 2) 2D time stepping engine;
 #   3) 3D time stepping engine;		 4) non-hydrostatic engine
-#   5) sea-water EOS;			 6) vertical mixing schemes;    
-#   7) on-fly model diagnostics;	 8) netCDF I/O routines;	   
+#   5) sea-water EOS;			 6) vertical mixing schemes;
+#   7) on-fly model diagnostics;	 8) netCDF I/O routines;
 #   9) main forcing;			10) Wave forcing routines;
 #  11) Online surface forcing;		12) Floats routines;
 #  13) Station diagnostics;		14) biology/sediment routines;
@@ -54,7 +54,7 @@ include Makedefs
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\
         w3dbc.F		nbq_bry_store.F\
 \
-	rho_eos.F	ab_ratio.F	alfabeta.F\
+	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
@@ -93,8 +93,7 @@ include Makedefs
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
         clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
-	get_psource.F   get_psource_ts.F\
-        cfb_stress.F\
+	get_psource.F   get_psource_ts.F get_btflux.F\
 \
 	mrl_wci.F  	wkb_wwave.F 	wkbbc.F		get_bry_wkb.F\
 \
@@ -123,10 +122,17 @@ include Makedefs
 \
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
+\
+        module_substance.F  module_MUSTANG.F\
+\
+        online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
+        scal0d_oa_out_loc.F scal0d_oa_out_full.F\
+        output_oa.F
+
 
 
  SRCS90 = \
-	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
+        par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
@@ -142,15 +148,14 @@ include Makedefs
 	sedmbc.F90      sedmodel.F90            sed_oce.F90     sedorg.F90\
 	sedrst.F90      sedsfc.F90              sedstp.F90      sedwri.F90\
 	setavg_sed.F90\
-\
-	module_parameter_oa.F90\
-	module_oa_time.F90	module_oa_space.F90	module_oa_periode.F90\
-	module_oa_variables.F90	module_oa_type.F90	module_oa_stock.F90\
-	module_oa_level.F90	module_oa_interface.F90\
-	module_oa_upd.F90	croco_oa.F90		var_oa.F90\
-\
-	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90
-\
+	module_parameter_oa.F90 module_grd_oa.F90\
+	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
+	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
+        module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
+        comsubstance.F90        substance.F90\
+        comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+        sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
@@ -187,8 +192,8 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJS90) $(OBJS) 
-	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
+$(SBIN):   $(OBJS90) $(OBJS)
+	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
 	 mv a.out $(SBIN)
 
 #
@@ -202,25 +207,25 @@ mpc: mpc.F
 	$(CPP) -P $(CPPFLAGS) mpc.F > mpc_.f
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o mpc mpc_.f
 
-cross_matrix: mpc cross_matrix.F 
+cross_matrix: mpc cross_matrix.F
 	$(CPP) -P $(CPPFLAGS) cross_matrix.F | ./mpc > cross_matrix_.f
 	$(CFT) -c $(FFLAGS) cross_matrix_.f -o cross_matrix.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cross_matrix cross_matrix.o
 
-cppcheck:  mpc cppcheck.F 
+cppcheck:  mpc cppcheck.F
 	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
 	$(CFT) -c $(FFLAGS) cppcheck_.f -o cppcheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
 
-srcscheck: mpc srcscheck.F 
+srcscheck: mpc srcscheck.F
 	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
 	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
 
-checkkwds: mpc checkkwds.F 
+checkkwds: mpc checkkwds.F
 	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
-	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o	
+	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
 	rm -f setup_kwds.F
 
@@ -253,7 +258,7 @@ ncrename: ncrename.F lenstr.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
 
 depend: checkdefs cross_matrix
-	./cross_matrix  *.F90 *.F 
+	./cross_matrix  *.F90 *.F
 
 mymodules: $(MOBJS) $(AMROBJS)
 #
@@ -289,5 +294,3 @@ my_barrier.o: my_barrier.f
 #
 
 -include Make.depend
-
-

@@ -43,6 +43,10 @@
       logical newf
       character*65 vinfo
       real Tout(Msta)
+
+# ifdef MUSTANG
+      integer itrc
+# endif
 # ifdef ALL_SIGMA
       integer k, startN(3), countN(3)
       real ToutN(N,Msta)
@@ -189,7 +193,7 @@ c      if (iic.eq.0) then
         do ista=1,nstas
           Tout(ista)=stadata(istaxgrd,ista)
 # ifdef MPI
-     &               +ii*Lm
+     &               +iminmpi-1
 # endif
         enddo
         ierr=nf_put_vara_FTYPE(ncidsta,staXgrd,start,count,
@@ -204,7 +208,7 @@ c      if (iic.eq.0) then
         do ista=1,nstas
           Tout(ista)=stadata(istaygrd,ista)
 # ifdef MPI
-     &               +jj*Mm
+     &               +jminmpi-1
 # endif
         enddo
         ierr=nf_put_vara_FTYPE(ncidsta,staYgrd,start,count,
@@ -326,6 +330,38 @@ c      endif ! iic=0
         endif
       endif
 #  endif /* SALINITY */
+
+#  ifdef MUSTANG
+!
+! suspended sediment at station position
+!
+#   ifdef ALL_SIGMA
+       do itrc=3,NT
+        do ista=1,nstas
+          do k=1,N
+           ToutN(k,ista)=staSigm(12+itrc-2,ista,k)
+          enddo
+        enddo
+        ierr=nf_put_vara_FTYPE(ncidsta,staMUS(itrc-2),startN,countN,
+     &                         ToutN)
+#   else
+        do ista=1,nstas
+          Tout(ista)=stadata(12+itrc-2,ista)
+        enddo
+        ierr=nf_put_vara_FTYPE(ncidsta,staMUS(itrc-2),start,count,
+     &                         Tout)
+#   endif
+        if (ierr .ne. nf_noerr) then
+          vinfo='MUSTANG var.'
+          lvar=lenstr(vinfo)
+          write(stdout,1) vinfo(1:lvar), record, ierr,
+     &                    nf_strerror(ierr) MYID
+          goto 99                                           !--> ERROR
+        endif
+       enddo ! itrc
+#  endif /* MUSTANG */
+
+
 !
 ! density at station position
 !

@@ -99,7 +99,7 @@
 !                   subroutine ana_btflux
 !======================================================================
 !
-#ifdef SOLVE3D
+#if defined SOLVE3D && defined TRACERS
 # if defined ANA_BTFLUX || defined ANA_BSFLUX || defined ANA_BPFLUX 
       subroutine ana_btflux_tile (Istr,Iend,Jstr,Jend, itrc)
 !
@@ -117,12 +117,10 @@
 #  include "forces.h"
 #  include "scalars.h"
       integer itrc, Istr,Iend,Jstr,Jend, i,j
-# if defined PLUME 
-      real rr
-# endif
 !
 #  include "compute_auxiliary_bounds.h"
 !
+#  ifdef TEMPERATURE       
       if (itrc.eq.itemp) then
 !
 !----------------------------------------------------------------------
@@ -131,24 +129,19 @@
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
-            btflx(i,j,itemp)=0.
-# if defined PLUME 
-            rr = sqrt((xr(i,j)-0.5*xl)**2+(yr(i,j)-0.5*el)**2)
-            if (rr.le.2.5e3) then
-              btflx(i,j,itemp)=0.001
-            endif
-# elif defined SINGLE_COLUMN 
-#  if defined KATO_PHILIPS
+#  if defined SINGLE_COLUMN 
+#   ifdef KATO_PHILIPS
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
-#  elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
+#   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
+#   endif
 #  endif
-# endif
           enddo
         enddo
-!
+      endif
+#  endif /* TEMPERATURE */        
 #  ifdef SALINITY
-      elseif (itrc.eq.isalt) then
+      if (itrc.eq.isalt) then
 !
 !----------------------------------------------------------------------
 !  Set kinematic bottom salt flux (m/s) at horizontal RHO-points,
@@ -160,8 +153,18 @@
             btflx(i,j,isalt)=0.
           enddo
         enddo
+      endif
 #  endif /* SALINITY */
-      else
+    
+#  if defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+#  endif /* SALINITY && TEMPERATURE*/
+#  if !defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.itemp) then
+#  endif /* !SALINITY && TEMPERATURE*/
+#  if defined SALINITY && !defined TEMPERATURE
+      if (itrc.ne.isalt) then
+#  endif /* SALINITY && !TEMPERATURE*/
 !
 !----------------------------------------------------------------------
 !  Set kinematic surface flux of additional tracers, 
@@ -173,11 +176,13 @@
             btflx(i,j,itrc)=0.
           enddo
         enddo
+#  if defined SALINITY || defined TEMPERATURE
       endif
+#  endif /* SALINITY || TEMPERATURE*/      
       return
       end
 # endif /* ANA_BTFLUX */
-#endif /* SOLVE3D */
+#endif /* SOLVE3D && TRACERS */
 !
 !======================================================================
 !                   subroutine ana_moving_bathy
@@ -188,9 +193,9 @@
       implicit none
 # include "param.h"
       integer tile
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef  ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
-#endif
+# endif
 # include "compute_tile_bounds.h"
       call ana_morphodyn_tile (Istr,Iend,Jstr,Jend)
       return
@@ -214,7 +219,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
-# if defined SEAMOUNT 
+# ifdef SEAMOUNT 
       cff=(1./50.e3)**2
       cff1=0.5*xl+time*1.
       ! 0.1m/s translation
@@ -230,16 +235,16 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # elif defined MOVING_BATHY
-       cff=1./(0.03686)**2
-       cff1=1.e-3*sin(2.*pi/10.05*time)
-       do j=JstrR,JendR
-         do i=IstrR,IendR
-           dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2) 
-     &                   - h(i,j)
-         enddo
-       enddo
+      cff=1./(0.03686)**2
+      cff1=1.e-3*sin(2.*pi/10.05*time)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2)
+     &                                           - h(i,j)
+        enddo
+      enddo
 # else
-        dh(:,:) =??? 
+      dh(:,:) =??? 
 # endif
       return
       end
@@ -254,7 +259,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -277,7 +282,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_extended_bounds.h"
 !
-# if defined SED_TEST2 || defined REGIONAL
+# ifdef REGIONAL
 !
 ! taucb=critical threshold stress for initiation of motion 
 ! (=bedload for coarse grains). 
@@ -299,24 +304,24 @@ C$    integer  trd, omp_get_thread_num
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Ssize(i,j)=1.5e-4  ! d50 [m]
-          Sdens(i,j)=2650.0  ! rho sediment [kg/m^3]
-          taucb(i,j)=0.16    ! critical bedload stress [N/m^2]
-          w_set(i,j)=0.013   ! analytical settling velocity [m/s]
-          Hripple(i,j)=0.01   ! analytical initial ripple height [m]
-          Lripple(i,j)=0.10   ! analytical initial ripple length [m]
+          Ssize(i,j)=1.5e-4     ! d50 [m]
+          Sdens(i,j)=2650.0     ! rho sediment [kg/m^3]
+          taucb(i,j)=0.16/rho0  ! critical bedload stress [m^2/s^2]
+          w_set(i,j)=0.013      ! analytical settling velocity [m/s]
+          Hripple(i,j)=0.01     ! analytical initial ripple height [m]
+          Lripple(i,j)=0.10     ! analytical initial ripple length [m]
         enddo
       enddo
 # else
       !ANA_BSEDIM: no values provided for SSIZE and SDENS.
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Ssize(i,j)=1.5e-4  ! d50 [m]
-          Sdens(i,j)=2650.0  ! rho sediment [kg/m^3]
-          taucb(i,j)=0.16    ! critical bedload stress [N/m^2]
-          w_set(i,j)=0.013   ! analytical settling velocity [m/s]
-          Hripple(i,j)=0.01   ! analytical initial ripple height [m]
-          Lripple(i,j)=0.10   ! analytical initial ripple length [m]
+          Ssize(i,j)=1.5e-4     ! d50 [m]
+          Sdens(i,j)=2650.0     ! rho sediment [kg/m^3]
+          taucb(i,j)=0.16/rho0  ! critical bedload stress [m^2/s^2]
+          w_set(i,j)=0.013      ! analytical settling velocity [m/s]
+          Hripple(i,j)=0.01     ! analytical initial ripple height [m]
+          Lripple(i,j)=0.10     ! analytical initial ripple length [m]
         enddo
       enddo
 # endif
@@ -345,12 +350,12 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j
       real Ewind, Nwind, dircoef, windamp, wcos,wsin
-      real cff1, cff2
+      real cff1, cff2, cff3
 !     data windamp /0./ 
       data Ewind, Nwind, dircoef /0., 0., 0./
 !     save windamp
 !
-#include "compute_extended_bounds.h"
+# include "compute_extended_bounds.h"
 !
 !  Set kinematic surface momentum flux (wind stress) component in the
 !  XI-direction (m^2/s^2) at horizontal U-points.
@@ -364,7 +369,7 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
-       enddo
+        enddo
       enddo
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
       do j=JstrR,JendR
@@ -373,7 +378,6 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
-
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=-(0.0025)**2
@@ -392,14 +396,6 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-0.05/rho0
         enddo
       enddo
-# elif defined SED_TEST2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          windamp=0.5+
-     &            0.5*TANH((time-user(9))/user(10))
-          sustr(i,j)=windamp*user(1)
-        enddo
-      enddo
 # elif defined UPWELLING
       if (tdays.le.2.) then
         windamp=-0.1*sin(pi*tdays/4.)/rho0
@@ -412,7 +408,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # elif defined SHOREFACE
-#  if !defined MRL_WCI
+#  ifndef MRL_WCI
       windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
       wcos = cos(10.0/180.0*pi)
       do j=jstr-1,jend+1
@@ -429,6 +425,31 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
+
+# elif defined SED_TOY
+#  ifdef SED_TOY_ROUSE
+      cff1=0.001875
+#  else
+#   if defined SED_TOY_RESUSP || defined SED_TOY_FLOC
+      if (tdays.lt.1.8) then
+        cff1=0.001
+      else if ((tdays.ge.3).and.(tdays.le.4.)) then
+        cff1=0.0005
+#   elif defined SED_TOY_CONSOLID
+      if ((tdays.ge.0.7).and.((tdays.le.37.))) then
+        cff1=0.001
+#   endif
+      else
+        cff1=0.
+      endif
+#  endif
+
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=cff1
+        enddo
+      enddo
+    
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -440,22 +461,14 @@ C$    integer  trd, omp_get_thread_num
 !  Set kinematic surface momentum flux (wind stress) component in the
 !  ETA-direction (m^2/s^2) at horizontal V-points.
 !
-# if defined SED_TEST2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          windamp=0.5+
-     &            0.5*TANH((time-user(9))/user(10))
-          svstr(i,j)= windamp*user(2)
-        enddo
-      enddo
-# elif defined INNERSHELF
+# ifdef INNERSHELF
       do j=JstrR,JendR
         do i=IstrR,IendR
           svstr(i,j)=0.07/rho0
         enddo
       enddo
 # elif defined SHOREFACE 
-#  if !defined MRL_WCI
+#  ifndef MRL_WCI
       windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
       wsin = sin(10.0/180.0*pi)
       do j=jstr-1,jend+1
@@ -511,12 +524,12 @@ C$    integer  trd, omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
           srflx(i,j)=264.91/(rho0*Cp)
-# ifdef DIURNAL_INPUT_SRFLX
+#  ifdef DIURNAL_INPUT_SRFLX
           srflxbio(i,j)=srflx(i,j)
-# endif
-# ifdef DIURNAL_CYCLE
+#  endif
+#  ifdef DIURNAL_CYCLE
           srflx(i,j)=srflx(i,j)*max(cos(2.*pi*(time/86400.-0.5)),0.)
-# endif
+#  endif
         enddo
       enddo
 # else
@@ -546,7 +559,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -587,7 +600,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Set sea surface height (meters).
 !
-# if defined JET
+# ifdef JET
 !
 !    --> climatology computed in ana_initial
 !
@@ -637,6 +650,15 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
+# elif defined TIDAL_FLAT && defined ANA_TIDES
+      omega=2.*pi/(12.0*3600)
+      ETA0=2.0
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j)=ETA0*sin(omega*time)
+        enddo
+      enddo
+
 # elif defined INTERNAL || defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
@@ -648,6 +670,12 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
+# elif defined DUNE
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -700,13 +728,13 @@ C$    integer  trd, omp_get_thread_num
 # include "forces.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# if defined EQUATOR
+# ifdef EQUATOR
       real y1,y2,sst1,sst2
 # endif
 !
 # include "compute_auxiliary_bounds.h"
 !
-# if defined EQUATOR
+# ifdef EQUATOR
 ! SST = 25C and lineraly decreases to 10C 1200km from the Equator.
       y1=1200.E+3
       y2=1500.E+3
@@ -808,6 +836,9 @@ C$    integer  trd, omp_get_thread_num
 c
 # include "compute_auxiliary_bounds.h"
 c
+# ifdef TRACERS
+# ifdef TEMPERATURE
+      
       if (itrc.eq.itemp) then
 !
 !  Set kinematic surface heat flux [degC m/s] at horizontal
@@ -824,9 +855,11 @@ c
 #endif
           enddo
         enddo
+      endif
 !
+# endif /* TEMPERATURE */        
 #ifdef SALINITY
-      elseif (itrc.eq.isalt) then
+      if (itrc.eq.isalt) then
 !
 !  Set kinematic surface freshwater flux (m/s) at horizontal
 !  RHO-points, scaling by surface salinity is done in STEP3D.
@@ -836,8 +869,18 @@ c
             stflx(i,j,isalt)=0.
           enddo
         enddo
+      endif
 #endif /* SALINITY */
-      else
+# if defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.isalt.and.itrc.ne.itemp) then
+# endif /* SALINITY && TEMPERATURE */
+# if !defined SALINITY && defined TEMPERATURE
+      if (itrc.ne.itemp) then
+# endif /* !SALINITY && TEMPERATURE */
+# if defined SALINITY && !defined TEMPERATURE
+      if (itrc.ne.isalt) then
+# endif /* SALINITY && !TEMPERATURE */
+      
 !
 !  Set kinematic surface flux of additional tracers, if any.
 !
@@ -846,7 +889,10 @@ c
             stflx(i,j,itrc)=0.
           enddo
         enddo
+# if defined SALINITY || defined TEMPERATURE
       endif
+# endif /* SALINITY || TEMPERATURE*/
+# endif /* TRACERS */
       return
       end
 #endif /* ANA_STFLUX || ANA_SSFLUX */
@@ -855,12 +901,12 @@ c
 !                   subroutine ana_tclima
 !======================================================================
 !
-#if defined TCLIMATOLOGY
+#ifdef TCLIMATOLOGY
       subroutine ana_tclima (tile)
       implicit none
 # include"param.h"
       integer tile
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+#ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 #endif
 #include "compute_tile_bounds.h"
@@ -873,6 +919,9 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical ACTIVE (T&S) tracer climatology fields.
 !----------------------------------------------------------------------
 !
+# ifdef SUBSTANCE
+      USE comsubstance, ONLY: cobc_wat
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -882,9 +931,12 @@ C$    integer  trd, omp_get_thread_num
 # include "sediment.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    cff,cff1
-# if defined IGW
+# ifdef IGW
       real    sig,rhom,depth
 # endif  
+# if defined SUBSTANCE || defined SEDIMENT
+      integer iv
+# endif 
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -928,10 +980,12 @@ C$    integer  trd, omp_get_thread_num
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
+#   ifdef TEMPERATURE          
             tclm(i,j,k,itemp)=t(i,j,k,1,itemp)
-#  ifdef SALINITY
+#   endif /* TEMPERATURE */            
+#   ifdef SALINITY
             tclm(i,j,k,isalt)=t(i,j,k,1,isalt)
-#  endif /* SALINITY */
+#   endif /* SALINITY */
           enddo
         enddo
       enddo
@@ -945,15 +999,19 @@ C$    integer  trd, omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
+#    ifdef TEMPERATURE          
             temp=t(i,j,k,1,itemp)
+#    else
+            temp=25.
+#   endif            
             if (temp.lt.8.) then
-               SiO4=30.
+              SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
-               SiO4=30.-((temp-8.)*(20./3.))
+              SiO4=30.-((temp-8.)*(20./3.))
             elseif (temp.gt.11. .and. temp.le.13.) then
-                SiO4=10.-((temp-11.)*(8./2.))
+              SiO4=10.-((temp-11.)*(8./2.))
             elseif (temp.gt.13. .and. temp.le.16.) then
-               SiO4=2.-((temp-13.)*(2./3.))
+              SiO4=2.-((temp-13.)*(2./3.))
             elseif (temp.gt.16.) then
               SiO4=0.
             endif
@@ -983,10 +1041,10 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iNCH_)=1.e-2*12./55.
             tclm(i,j,k,iDCH_)=1.e-2*12./55.
             tclm(i,j,k,iNH4_)=1.e-2
-#      if defined key_ligand
+#    ifdef key_ligand
             tclm(i,j,k,iLGW_)=1.e-3
-#      endif
-#      if defined key_pisces_quota
+#    endif
+#    ifdef key_pisces_quota
             tclm(i,j,k,iDON_)=5.
             tclm(i,j,k,iDOP_)=5.
             tclm(i,j,k,iPON_)=1.e-2
@@ -1002,7 +1060,7 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iPCH_)=1.e-2*12./55.
             tclm(i,j,k,iGON_)=1.e-2
             tclm(i,j,k,iGOP_)=1.e-2
-#      endif
+#    endif
 #   elif defined BIO_NChlPZD
             tclm(i,j,k,iChla)=0.08
             tclm(i,j,k,iPhy1)=0.1
@@ -1025,24 +1083,24 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iDet1)=0.02
             tclm(i,j,k,iDet2)=0.02
             tclm(i,j,k,iDON) =0.5*exp(z_r(i,j,k)/100.) 
-#     ifdef NITROUS_OXIDE
+#    ifdef NITROUS_OXIDE
             tclm(i,j,k,iN2O)=-(0.008*exp(z_r(i,j,k)/100.)-0.01)
             if (tclm(i,j,k,iN2O).lt.0.) then
               tclm(i,j,k,iN2O)=0.
             endif
-#     endif
+#    endif
 #   endif
 #  else
             if (.not.got_tclm(iNO3_)) then
               temp=t(i,j,k,1,itemp)
               if (temp.lt.8.) then
-                 SiO4=30.
+                SiO4=30.
               elseif (temp.ge.8. .and. temp.le.11.) then
-                 SiO4=30.-((temp-8.)*(20./3.))
+                SiO4=30.-((temp-8.)*(20./3.))
               elseif (temp.gt.11. .and. temp.le.13.) then
-                 SiO4=10.-((temp-11.)*(8./2.))
+                SiO4=10.-((temp-11.)*(8./2.))
               elseif (temp.gt.13. .and. temp.le.16.) then
-                 SiO4=2.-((temp-13.)*(2./3.))
+                SiO4=2.-((temp-13.)*(2./3.))
               elseif (temp.gt.16.) then
                 SiO4=0.
               endif
@@ -1055,15 +1113,19 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iOXY_)) tclm(i,j,k,iOXY_)=200.
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
+#    ifdef TEMPERATURE                    
               temp=t(i,j,k,1,itemp)
+#    else
+            temp=25.
+#    endif              
               if (temp.lt.8.) then
-                 SiO4=30.
+                SiO4=30.
               elseif (temp.ge.8. .and. temp.le.11.) then
-                 SiO4=30.-((temp-8.)*(20./3.))
+                SiO4=30.-((temp-8.)*(20./3.))
               elseif (temp.gt.11. .and. temp.le.13.) then
-                 SiO4=10.-((temp-11.)*(8./2.))
+                SiO4=10.-((temp-11.)*(8./2.))
               elseif (temp.gt.13. .and. temp.le.16.) then
-                 SiO4=2.-((temp-13.)*(2./3.))
+                SiO4=2.-((temp-13.)*(2./3.))
               elseif (temp.gt.16.) then
                 SiO4=0.
               endif
@@ -1088,10 +1150,10 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iNCH_)) tclm(i,j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tclm(iDCH_)) tclm(i,j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tclm(iNH4_)) tclm(i,j,k,iNH4_)=0.01
-#      if defined key_ligand
+#    ifdef key_ligand
             if (.not.got_tclm(iLGW_)) tclm(i,j,k,iLGW_)=1.e-3
-#      endif
-#      if defined key_pisces_quota
+#    endif
+#    ifdef key_pisces_quota
             if (.not.got_tclm(iDON_)) tclm(i,j,k,iDON_)=5.
             if (.not.got_tclm(iDOP_)) tclm(i,j,k,iDOP_)=5.
             if (.not.got_tclm(iPON_)) tclm(i,j,k,iPON_)=0.01
@@ -1107,7 +1169,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iPCH_)) tclm(i,j,k,iPCH_)=0.01*12./55.
             if (.not.got_tclm(iGON_)) tclm(i,j,k,iGON_)=0.01
             if (.not.got_tclm(iGOP_)) tclm(i,j,k,iGOP_)=0.01
-#      endif
+#    endif
 #   elif defined BIO_NChlPZD
             if (.not.got_tclm(iChla)) tclm(i,j,k,iChla)=0.08
             if (.not.got_tclm(iPhy1)) tclm(i,j,k,iPhy1)=0.1
@@ -1141,22 +1203,22 @@ C$    integer  trd, omp_get_thread_num
      &                                  exp(z_r(i,j,k)/100.)
             if (.not.got_tclm(iO2)) tclm(i,j,k,iO2)=250.*
      &                                  exp(z_r(i,j,k)/100.)
-#      ifdef CARBON	
+#    ifdef CARBON	
             if (.not.got_tclm(iTCO2)) tclm(i,j,k,iTCO2)=2100.
             if (.not.got_tclm(iTALK)) tclm(i,j,k,iTALK)=2300.   
-#      endif	    	    	       	    	    	    
-#      ifdef NITROUS_OXIDE
+#    endif	    	    	       	    	    	    
+#    ifdef NITROUS_OXIDE
             if (.not.got_tclm(iN2O)) then 
-               tclm(i,j,k,iN2O)=-(0.008*exp(z_r(i,j,k)/100.)-0.01)
+              tclm(i,j,k,iN2O)=-(0.008*exp(z_r(i,j,k)/100.)-0.01)
 !	       tclm(i,j,k,iN2O)=-(0.01*exp(z_r(i,j,k)/100.)-0.01)
-               if (tclm(i,j,k,iN2O).lt.0.) then
-                 tclm(i,j,k,iN2O)=0.
-               endif
+              if (tclm(i,j,k,iN2O).lt.0.) then
+                tclm(i,j,k,iN2O)=0.
+              endif
             endif    
-#      endif
-#      ifdef HYDROGEN_SULFIDE
+#    endif
+#    ifdef HYDROGEN_SULFIDE
             if (.not.got_tclm(iH2S)) tclm(i,j,k,iH2S)=0.
-#      endif	    	        	    
+#    endif	    	        	    
 #   endif 
 #  endif /* ANA_TCLIMA */
           enddo
@@ -1167,20 +1229,19 @@ C$    integer  trd, omp_get_thread_num
 # endif /* BIOLOGY */
 
 # ifdef SEDIMENT
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+      do itrc=1,NST
+        iv=itrc_sed+itrc-1
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
 #  ifdef ANA_TCLIMA
-            tclm(i,j,k,isand)=0. !Csed(1)
-            tclm(i,j,k,isilt)=0. !Csed(2)
+              tclm(i,j,k,iv)=0.   !Csed(itrc)
 #  else   
-            if (.not.got_tclm(isand)) then
-              tclm(i,j,k,isand)=0. !Csed(1)
-            endif
-            if (.not.got_tclm(isilt)) then
-              tclm(i,j,k,isilt)=0. !Csed(2)
-            endif
+              if (.not.got_tclm(iv)) then
+                tclm(i,j,k,iv)=0. !Csed(itrc)
+              endif
 #  endif
+            enddo
           enddo
         enddo
       enddo
@@ -1197,6 +1258,24 @@ C$    integer  trd, omp_get_thread_num
               tclm(i,j,k,itpas)=0.0
             endif
 #  endif
+          enddo
+        enddo
+      enddo
+# endif
+
+# ifdef SUBSTANCE
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            do iv=itsubs1,itsubs2
+#  ifdef ANA_TCLIMA
+              tclm(i,j,k,iv)=cobc_wat(iv)
+#  else
+              if (.not.got_tclm(iv)) then
+                tclm(i,j,k,iv)=cobc_wat(iv)
+              endif
+#  endif
+            enddo
           enddo
         enddo
       enddo
@@ -1234,9 +1313,9 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-#ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
-#endif
+# endif
 # include "compute_tile_bounds.h"
       call ana_uclima_tile   (Istr,Iend,Jstr,Jend)
       return
@@ -1280,7 +1359,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1299,6 +1378,17 @@ C$    integer  trd, omp_get_thread_num
 !
 !       --> climatology computed in ana_initial
 !
+#  elif defined DUNE
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#   ifdef ANA_DUNE
+          ubclm(i,j)=1.67
+#   else
+          ubclm(i,j)=0.58
+#   endif
+          vbclm(i,j)=0.
+        enddo
+      enddo
 #  else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1314,7 +1404,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # if defined ANA_M3CLIMA && defined M3CLIMATOLOGY && defined SOLVE3D
-#  if defined JET
+#  ifdef JET
 !
 !       --> climatology computed in ana_initial
 !
@@ -1350,7 +1440,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -1441,10 +1531,10 @@ C$    integer  trd, omp_get_thread_num
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
-#   ifdef NBQ
+#  ifdef NBQ
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  wnbqclm)
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  rnbqclm)
-#   endif
+#  endif
 # endif
 # undef IU_RANGE
 # undef JU_RANGE
@@ -1452,18 +1542,18 @@ C$    integer  trd, omp_get_thread_num
 # undef JV_RANGE
       return
       end
-#endif /*  NBQCLIMATOLOGY */
+#endif /* NBQCLIMATOLOGY */
 !
 !======================================================================
 !                   subroutine ana_wwave
 !======================================================================
 !
-#if defined ANA_WWAVE
+#ifdef ANA_WWAVE
       subroutine ana_wwave (tile)
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -1499,16 +1589,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set wind induced wave amplitude (m), direction (radians) and
 !  period (s) at RHO-points.
 !
-# if defined SED_TEST2
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          Awave(i,j)=1.0
-          Dwave(i,j)=270.*deg2rad
-          Pwave(i,j)=10.
-        enddo
-      enddo
-
-# elif defined SHOREFACE
+# ifdef SHOREFACE
       do j=JstrR,JendR
         do i=IstrR,IendR
           Awave(i,j)=0.707           ! wave amplitude (m)
@@ -1516,14 +1597,15 @@ C$    integer  trd, omp_get_thread_num
           Pwave(i,j)=10.             ! wave period (s)
         enddo
       enddo
-      wamp=Awave(1,1)
-      wdir=Dwave(1,1)
-      wprd=Pwave(1,1)
-      cfrq=2.*pi/wprd     ! peak wave frequency (rad/s)
-      ho=h(1,1)           ! offshore depth
-#   ifdef OBC_EAST
+      wamp = Awave(i,j)
+      wdir = Dwave(i,j)
+      wprd = Pwave(i,j)
+      cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
+      cdir = wdir*deg2rad   ! wave direction (rad)
+      ho=h(1,1)             ! offshore depth
+#  ifdef OBC_EAST
       ho=h(LLm,1)
-#   endif
+#  endif
       khd = ho*cfrq*cfrq/g
       kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
      &               +khd*(0.3555555555 + khd*(0.1608465608
@@ -1591,20 +1673,20 @@ C$    integer  trd, omp_get_thread_num
         do i=istr-1,iend+1
           whrm(i,j)=Hrms
           wfrq(i,j)=cfrq
-          wdrx(i,j)=cos(wdir)
-          wdre(i,j)=sin(wdir)
-        enddo
-      enddo
+          wdrx(i,j)=cos(cdir)
+          wdre(i,j)=sin(cdir)
 #   ifdef WET_DRY
-          if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
+          if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
             wfrq(i,j)=0.
             wdrx(i,j)=0.
             wdre(i,j)=0.
           endif
 #   endif
-#  endif
-# endif
+        enddo
+      enddo
+#  endif /* MRL_WCI */
+# endif /* SHOREFACE or else */
       return
       end
 #endif /* ANA_WWAVE */
@@ -1618,7 +1700,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -1646,8 +1728,11 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "sediment.h"
 # include "bbl.h"
-      real    cff1,cff2,cff3,cff4
-      integer Istr,Iend,Jstr,Jend, i,j, ilay, ised
+      real    cff1,cff2,cff3,cff4,cff5
+      integer Istr,Iend,Jstr,Jend, i,j, k,ilay, ised
+      real bmz(NLAY)
+      real alpha, bzactv, frt, tcb_top, tcb_bot
+      real tcr(NLAY) 
 !
 # undef DEBUG 
 # ifdef DEBUG
@@ -1656,6 +1741,8 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # include "compute_extended_bounds.h"
+
+         
 
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1672,7 +1759,9 @@ C$    integer  trd, omp_get_thread_num
               enddo
             endif
             bed_age(i,j,ilay)=time
-            bot_thick(i,j) = 0.003
+!            bot_thick(i,j) = 0.003
+            bot_thick(i,j) = 0.00
+
             do ised=1,NST
               bed_mass(i,j,ilay,1,ised)=
      &                     bed_thick(i,j,ilay)*
@@ -1696,9 +1785,16 @@ C$    integer  trd, omp_get_thread_num
             cff4=cff4*Srho(ised)**bed_frac(i,j,1,ised)
           enddo
           taucb(i,j)=cff1                ! [m2/s2]
-          Ssize(i,j)=MIN(cff2,Zob(i,j))
+          Ssize(i,j)=cff2
           w_set(i,j)=cff3                ! [m/s]
           Sdens(i,j)=MAX(cff4,1050.)
+!          cff5=0
+!          do ilay=1,NLAY
+!            do ised=1,2
+!              cff5 = cff5 + bed_mass(i,j,ilay,1,ised)
+!            enddo 
+!            bed_bctr(i,j,ilay) = exp ( (log(cff5) - tcr_off ) /tcr_slp   ) 
+!          enddo
 # ifdef DEBUG
           if(j.eq.jck.and.i.eq.ick) then
             write(6,*) '********** ANA_SEDIMENT ***********'
@@ -1726,6 +1822,81 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
+# if defined COHESIVE_BED || defined MIXED_BED
+       
+      do j=JstrR,JendR         
+        do i=IstrR,IendR
+          bed_bctr(i,j,1) =  0.1
+      !
+!  Key to this algorithm: "mass available depth" (mad) [kg/m2]
+!  present tau crit profile (tcp)
+!  representative tau crit profile (tcr)          
+!  Compute depth and mass depth of sediment column
+!  Compute cumulative depth
+!  Compute mass depth
+          bmz(1) = 0.0
+          do ised=1,NST
+            bmz(1) = bmz(1)+bed_mass(i,j,1,1,ised)
+          enddo
+          do k=2,NLAY
+            bmz(k) = bmz(k-1)
+            do ised=1,NST
+              bmz(k)=bmz(k)+bed_mass(i,j,k,1,ised)
+            enddo
+          enddo
+
+!  Calculate representative critical shear stress profile
+!  Note that the values are for the TOP of the layer...we
+!  assume the bottom of the bottom layer has tcr = tcr_max
+          tcr(1) =  0.1
+          do k=2,NLAY
+            tcr(k) = tcr_min
+            if (bmz(k-1).GT.1.e-14) then
+!               tcr(k) = exp((log(bmz(k-1))-                            &
+!     &               bottom(i,j,idoff))/                                &
+!     &               bottom(i,j,idslp))
+              tcr(k) = exp((log(bmz(k-1))-                            
+     &                      tcr_off)/                                 
+     &                      tcr_slp)
+            endif
+          !   tcr(k) = MIN( MAX( tcr(k), tcr_min), tcr_max )
+          enddo
+!          ks=Ksed-2
+!          do k=NLAY,NLAY-ks,-1
+!             taucb(i,j,k)=tcr(k)
+!          enddo
+!  Relax tau crit profile taucb(i,j,k) 
+!  towards representative profile tcr...100 x slower for "swelling"
+!  than consolidation
+!  TODO - make the factor an input parameter
+!           if( bed_bctr(i,j,1).LE.tcr(1)) then
+!             alpha = MIN(dt/bottom(i,j,idtim),1.0)
+!             alpha = MIN(dt/tcr_tim,1.0)
+!           else
+!             alpha = MIN(dt/(100.0*bottom(i,j,idtim)),1.0)
+!             alpha = MIN(dt/(100.0*tcr_tim),1.0)
+!           endif
+          do k=1,NLAY
+!            bed_bctr(i,j,k)=bed_bctr(i,j,k)+                         
+! &            alpha*(tcr(k)-bed_bctr(i,j,k))
+            bed_bctr(i,j,k)=                                          
+     &          MIN( MAX( tcr(k), tcr_min), tcr_max )
+          enddo
+!ALA    Enforce last layer = tcr_max
+!ALA          bed_bctr(i,j,NLAY)= tcr_max
+        enddo 
+      enddo 
+
+#  if defined SED_TOY_RESUSP || defined SED_TOY_CONSOLID
+      bed_bctr(:,:,:) = 5.2
+      bed_bctr(:,:,1) = 0.03
+      bed_bctr(:,:,2) = 0.0911460784453711
+      bed_bctr(:,:,3) = 0.918694902789539
+      bed_bctr(:,:,4) = 3.54929559677213
+#  endif 
+
+# endif
+
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       do ised=1,NST
         do ilay=1,NLAY
@@ -1744,6 +1915,10 @@ C$    integer  trd, omp_get_thread_num
      &                 bed_thick(START_2D_ARRAY,ilay))
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bed_age(START_2D_ARRAY,ilay))
+#  if defined COHESIVE_BED || defined MIXED_BED
+         call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                 bed_bctr(START_2D_ARRAY,ilay))
+#  endif
       enddo
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 bot_thick(START_2D_ARRAY))
@@ -1762,7 +1937,6 @@ C$    integer  trd, omp_get_thread_num
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                 Sdens(START_2D_ARRAY))
 # endif
-
       return
       end
 #endif /* SEDIMENT */
@@ -1805,13 +1979,13 @@ C$    integer  trd, omp_get_thread_num
         enddo
 #  elif defined EXP_SHAPE
         do is=1,Nsrc
-#  ifdef MPI
+#   ifdef MPI
           i=Isrc_mpi(is,mynode)
           j=Jsrc_mpi(is,mynode)
-#  else
+#   else
           i=Isrc(is)
           j=Jsrc(is)
-#  endif
+#   endif
           Hs=h(i,j)                    ! Exponential vertical distribution
           cff=5.                       ! Hs/z0  (z0 surface layer depth)
           cff1=cff/(1-exp(-cff))
@@ -1871,11 +2045,11 @@ C$    integer  trd, omp_get_thread_num
           enddo
           do k=1,N
             if (cff2 .gt. 0.0) then
-             Qshape(is,k)=Qshape(is,k)/cff2
+              Qshape(is,k)=Qshape(is,k)/cff2
             endif
           enddo
         enddo
-# endif
+#  endif
 
 # else
 #  define CST_SHAPE
@@ -1951,42 +2125,53 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
 # ifdef SOLVE3D
-# ifdef RIVER
+#  ifdef RIVER
       do k=1,N
         do is=1,Nsrc
+#   ifdef TEMPERATURE        
           Tsrc(is,k,itemp)=Tsrc0(is,itemp)
 !          Tsrc(is,k,itemp)=4.+10.*exp(z_r(Isrc(is),Jsrc(is),k)/50.)
+#   endif
+#   ifdef SALINITY          
           Tsrc(is,k,isalt)=Tsrc0(is,isalt)
-#  ifdef PASSIVE_TRACER
+#   endif          
+#   ifdef PASSIVE_TRACER
           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
-#  endif
+#   endif
         enddo
       enddo
-# elif defined REGIONAL
+#  elif defined REGIONAL
       do k=1,N
-        do is=1,Nsrc
+         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
-          if (.not.got_tsrc(itemp)) then
-             Tsrc0(is,itemp)=5.
-          endif
-          if (.not.got_tsrc(isalt)) then
-             Tsrc0(is,isalt)=2.
-          endif
+#   ifdef TEMPERATURE
+           if (.not.got_tsrc(itemp)) then
+              Tsrc0(is,itemp)=5.
+           endif
+#   endif
+#   ifdef SALINITY
+           if (.not.got_tsrc(isalt)) then
+              Tsrc0(is,isalt)=2.
+           endif
+#   endif
 #  endif
-          do itrc=1,NT
-            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
-          enddo
+
+# ifdef TRACERS
+           do itrc=1,NT
+             Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+           enddo
+# endif
 #  ifdef PASSIVE_TRACER
 #   ifdef PSOURCE_NCFILE_TS
-          if (.not.got_tsrc(itpas)) then
-             Tsrc0(is,itpas)=1.
-          endif
+           if (.not.got_tsrc(itpas)) then
+              Tsrc0(is,itpas)=1.
+           endif
 #   endif
-          Tsrc(is,k,itpas)=Tsrc0(is,itpas)
+           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
 #  endif
-        enddo
-      enddo
-# else
+         enddo
+       enddo
+#  else
       do k=1,N
         do is=1,Nsrc
           do itrc=1,NT
@@ -1994,15 +2179,19 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
-# endif /* RIVER */
+#  endif /* RIVER */
 !
 !  Set-up biology tracer (tracer units) point Sources/Sinks.
 !
-# ifdef BIOLOGY
+#  ifdef BIOLOGY
       do k=1,N
         do is=1,Nsrc
 !     Fill with analytical value  if not find in netcdf file
+#   ifdef TEMPERATURE        
           temp=Tsrc0(is,itemp)
+#   else
+          temp=25.
+#   endif          
           if (temp.lt.8.) then
             SiO4=30.
           elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2016,15 +2205,15 @@ C$    integer  trd, omp_get_thread_num
           endif
           xno3=1.67+0.5873*SiO4+0.0144*SiO4**2
      &         +0.0003099*SiO4**3
-#  ifdef PSOURCE_NCFILE_TS
+#   ifdef PSOURCE_NCFILE_TS
           if(.not.got_tsrc(iNO3_)) then 
             Tsrc0(is,iNO3_)=xno3
           endif
-#  endif
+#   endif
           Tsrc(is,k,iNO3_)=Tsrc0(is,iNO3_)
 
-#  ifdef PISCES
-#   ifdef PSOURCE_NCFILE_TS
+#   ifdef PISCES
+#    ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iCAL_)) then 
             Tsrc0(is,iCAL_)=0.01   
           endif
@@ -2070,12 +2259,12 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iNH4_)) then
             Tsrc0(is,iNH4_)=1.e-2
           endif
-#      if defined key_ligand
+#     ifdef key_ligand
           if (.not.got_tsrc(iLGW_)) then
             Tsrc0(is,iLGW_)=1.e-3
           endif
-#      endif
-#      if defined key_pisces_quota
+#     endif
+#     ifdef key_pisces_quota
 !          if (.not.got_tsrc(iDON_)) then
 !            Tsrc0(is,iDON_)=5.
 !          endif
@@ -2121,8 +2310,8 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iGOP_)) then
             Tsrc0(is,iGOP_)=1.e-2
           endif
-#      endif
-#   endif   /* PSOURCE_NCFILE_TS */  
+#     endif
+#    endif   /* PSOURCE_NCFILE_TS */  
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
           Tsrc(is,k,iPHY_)=Tsrc0(is,iPHY_)
@@ -2138,10 +2327,10 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iNCH_)=Tsrc0(is,iNCH_)
           Tsrc(is,k,iDCH_)=Tsrc0(is,iDCH_)
           Tsrc(is,k,iNH4_)=Tsrc0(is,iNH4_)
-#     if defined key_ligand
+#    ifdef key_ligand
           Tsrc(is,k,iLGW_)=Tsrc0(is,iLGW_)
-#     endif
-#     if defined key_pisces_quota
+#    endif
+#    ifdef key_pisces_quota
 !          Tsrc(is,k,iDON_)=Tsrc0(is,iDON_)
 !          Tsrc(is,k,iDOP_)=Tsrc0(is,iDOP_)
           Tsrc(is,k,iPON_)=Tsrc0(is,iPON_)
@@ -2157,9 +2346,9 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iPCH_)=Tsrc0(is,iPCH_)
           Tsrc(is,k,iGON_)=Tsrc0(is,iGON_)
           Tsrc(is,k,iGOP_)=Tsrc0(is,iGOP_)
-#     endif
-#  elif defined BIO_NChlPZD
-#   ifdef PSOURCE_NCFILE_TS
+#    endif
+#   elif defined BIO_NChlPZD
+#    ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iChla)) then
             Tsrc0(is,iChla)=0.08  
           endif
@@ -2172,14 +2361,14 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDet1)) then
             Tsrc0(is,iDet1)=0.02
           endif
-#   endif   /* PSOURCE_NCFILE_TS    */        
+#    endif   /* PSOURCE_NCFILE_TS    */        
           Tsrc(is,k,iChla)=Tsrc0(is,iChla)
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)
           Tsrc(is,k,iZoo1)=Tsrc0(is,iZoo1)
           Tsrc(is,k,iDet1)=Tsrc0(is,iDet1)
           
-#  elif defined BIO_N2ChlPZD2
-#   ifdef PSOURCE_NCFILE_TS
+#   elif defined BIO_N2ChlPZD2
+#    ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iNH4_)) then
             Tsrc0(is,iNH4_)=0.1  
           endif
@@ -2201,7 +2390,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDet2)) then
             Tsrc0(is,iDet2)=0.02
           endif
-#   endif
+#    endif
           Tsrc(is,k,iNH4_)= Tsrc0(is,iNH4_)
           Tsrc(is,k,iChla)=Tsrc0(is,iChla)
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)
@@ -2209,9 +2398,9 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iDet1)=Tsrc0(is,iDet1)
           Tsrc(is,k,iDet2)=Tsrc0(is,iDet2)
 !----------------------------------------------------------------------
-#  elif defined BIO_BioEBUS
+#   elif defined BIO_BioEBUS
           zsrc=z_r(Isrc(is),Jsrc(is),k)
-#   ifdef PSOURCE_NCFILE_TS
+#    ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iNO2_)) then
             Tsrc0(is,iNO2_)=  0.05
           endif
@@ -2239,12 +2428,12 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iDON)) then
             Tsrc0(is,iDON)= 0.5
           endif
-#    ifdef NITROUS_OXIDE
+#     ifdef NITROUS_OXIDE
           if (.not.got_tsrc(iN2O)) then
             Tsrc0(is,iN2O)= 0.002 ! not used ...
           endif
-#    endif 
-#   endif  /* PSOURCE_NCFILE_TS  */
+#     endif 
+#    endif  /* PSOURCE_NCFILE_TS  */
           Tsrc(is,k,iNO2_)= Tsrc0(is,iNO2_)*exp(zsrc/100.)
           Tsrc(is,k,iNH4_)= Tsrc0(is,iNH4_)*exp(zsrc/100.)
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)*exp(zsrc/50.)
@@ -2256,11 +2445,11 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iDON)=Tsrc0(is,iDON)*exp(zsrc/100.)
           Tsrc(is,k,iN2O)=-(0.008*exp(zsrc/100.)-0.01)
           if (Tsrc(is,k,iN2O).lt.0.) Tsrc(is,k,iN2O)=0.
-#  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS*/
+#   endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS*/
 !----------------------------------------------------------------------
         enddo
       enddo
-# endif /* BIOLOGY */
+#  endif /* BIOLOGY */
 # endif /* SOLVE3D */
       return
       end
@@ -2275,7 +2464,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -2289,6 +2478,9 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
+# ifdef SUBSTANCE
+      USE comsubstance, ONLY: cobc_wat
+# endif
       implicit none          
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
@@ -2324,17 +2516,17 @@ C$    integer  trd, omp_get_thread_num
 !
 !  --- Surface wave maker on western boundary ---
 !
-#    include "wave_maker.h"
+#   include "wave_maker.h"
 
 #  elif defined WAVE_MAKER_INTERNAL
 !
 !  --- Internal wave maker on western boundary ---
 !
-#    include "wave_maker_internal.h"
+#   include "wave_maker_internal.h"
 
 #  else
 
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_west(j)=zeta(0,j,1)
@@ -2342,11 +2534,18 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
+#    if defined TIDAL_FLAT
+            zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+#    endif
           enddo
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
+#    ifdef TIDAL_FLAT
+            ubarbry_west(j)=0.
+#    else
             ubarbry_west(j)=ubar(1,j,1)
+#    endif
             vbarbry_west(j)=vbar(0,j,1)
           enddo
 #   endif
@@ -2355,16 +2554,41 @@ C$    integer  trd, omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
+#     ifdef TIDAL_FLAT
+              ubry_west(j,k)=0.
+#     else
               ubry_west(j,k)=u(1,j,k,1)
+#     endif
               vbry_west(j,k)=v(0,j,k,1)
 #    endif
 #    ifdef W_FRC_BRY
               wbry_west(j,k)=wz(0,j,k,1)
 #    endif
-#    ifdef T_FRC_BRY
+#    if defined T_FRC_BRY && defined TRACERS
               do itrc=1,NT
                 tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
               enddo
+#    endif
+#    ifdef SUBSTANCE
+#     if defined TIDAL_FLAT
+            tbry_west(j,k,1)=10.
+            tbry_west(j,k,2)=35.5
+#     else
+            do itrc=1,itsubs1-1
+              tbry_west(j,k,itrc)=0.
+            enddo
+#     endif
+            do itrc=itsubs1,NT
+              tbry_west(j,k,itrc)=cobc_wat(itrc)
+            enddo
+#    else
+#     ifdef TIDAL_FLAT
+            tbry_west(j,k,1)=10.
+            tbry_west(j,k,2)=35.5
+            tbry_west(j,k,3)=0.   ! tracer Coarse Sand
+            tbry_west(j,k,4)=0.   ! tracer Fine Sand
+            tbry_west(j,k,5)=0.02 ! tracer Mud
+#     endif
 #    endif
             enddo
           enddo
@@ -2372,9 +2596,12 @@ C$    integer  trd, omp_get_thread_num
         else 
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
-            zetabry_west(j)=0.0
+            zetabry_west(j)=0.0  
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
+#    endif
+#    ifdef TIDAL_FLAT
+            zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
 #    endif
           enddo
 #   endif
@@ -2384,6 +2611,43 @@ C$    integer  trd, omp_get_thread_num
             vbarbry_west(j)=0.0
           enddo
 #   endif
+#   if defined SOLVE3D && \
+     (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+          do k=1,N
+            do j=JstrR,JendR
+#    ifdef M3_FRC_BRY
+              ubry_west(j,k)=0.0
+              vbry_west(j,k)=0.0
+#    endif
+#    ifdef W_FRC_BRY
+              wbry_west(j,k)=wz(0,j,k,1)
+#    endif
+#    ifdef T_FRC_BRY
+#     ifdef SUBSTANCE
+             do itrc=1,itsubs1-1
+               tbry_west(j,k,itrc)=0.
+             enddo
+             do itrc=itsubs1,NT
+               tbry_west(j,k,itrc)=cobc_wat(itrc)
+             enddo
+#     else
+#      ifdef TIDAL_FLAT
+             tbry_west(j,k,1)=10.
+             tbry_west(j,k,2)=35.
+             tbry_west(j,k,3)=0. ! tracer Coarse Sand
+             tbry_west(j,k,4)=0. ! tracer Fine Sand
+             tbry_west(j,k,5)=0. ! tracer Mud
+#      else
+             do itrc=1,NT
+               tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
+             enddo
+#      endif
+#     endif
+#    endif
+            enddo
+          enddo
+#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
+
         endif
 #  endif /* WAVE_MAKER */
       endif
@@ -2391,7 +2655,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do j=JstrR,JendR
             zetabry_east(j)=zeta(Iend+1,j,1)
@@ -2418,10 +2682,19 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #   endif
-#   ifdef T_FRC_BRY
+#   if defined T_FRC_BRY && defined TRACERS
+#    ifdef SUBSTANCE
+              do itrc=1,itsubs1-1
+                tbry_east(j,k,itrc)=0.
+              enddo
+              do itrc=itsubs1,NT
+                tbry_east(j,k,itrc)=cobc_wat(itrc)
+              enddo
+#    else
               do itrc=1,NT
                 tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
               enddo
+#    endif
 #   endif
             enddo
           enddo
@@ -2437,17 +2710,45 @@ C$    integer  trd, omp_get_thread_num
 #  endif
 #  ifdef M2_FRC_BRY
           do j=JstrR,JendR
-            ubarbry_east(j)=0.0
-            vbarbry_east(j)=0.0
+            ubarbry_east(j)=0.
+            vbarbry_east(j)=0.
           enddo
 #  endif
+#  if defined SOLVE3D && \
+     (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+          do k=1,N
+            do j=JstrR,JendR
+#   ifdef M3_FRC_BRY
+              ubry_east(j,k)=0.0
+              vbry_east(j,k)=0.0
+#   endif
+#   ifdef W_FRC_BRY
+              wbry_east(j,k)=wz(Iend+1,j,k,1)
+#   endif
+#   ifdef T_FRC_BRY
+#    ifdef SUBSTANCE
+              do itrc=1,itsubs1-1
+                tbry_east(j,k,itrc)=0.
+              enddo
+              do itrc=itsubs1,NT
+                tbry_east(j,k,itrc)=cobc_wat(itrc)
+              enddo
+#    else
+              do itrc=1,NT
+                tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
+              enddo
+#    endif
+#   endif
+            enddo
+          enddo
+#  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         endif
       endif
 # endif /* OBC_EAST */
 !
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_south(i)=zeta(i,0,1)
@@ -2474,10 +2775,19 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_south(i,k)=wz(i,0,k,1)
 #   endif
-#   ifdef T_FRC_BRY
-              do itrc=1,NT
-                tbry_south(i,k,itrc)=t(i,0,k,1,itrc)
+#   if defined T_FRC_BRY && defined TRACERS
+#    ifdef SUBSTANCE
+              do itrc=1,itsubs1-1
+                tbry_south(i,k,itrc)=0.
               enddo
+              do itrc=itsubs1,NT
+                tbry_south(i,k,itrc)=cobc_wat(itrc)
+              enddo
+#    else
+              do itrc=1,NT
+                tbry_south(i,k,itrc)= t(i,0,k,1,itrc)  ! =0.??
+              enddo
+#    endif
 #   endif
             enddo
           enddo
@@ -2503,7 +2813,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 #  ifdef Z_FRC_BRY
           do i=IstrR,IendR
             zetabry_north(i)=zeta(i,Jend+1,1)
@@ -2530,10 +2840,19 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef W_FRC_BRY
               wbry_north(i,k)=wz(i,Jend+1,k,1)
 #   endif
-#   ifdef T_FRC_BRY
-              do itrc=1,NT
-                tbry_north(i,k,itrc)=t(i,Jend+1,k,1,itrc)
+#   if defined T_FRC_BRY && defined TRACERS
+#    ifdef SUBSTANCE
+              do itrc=1,itsubs1-1
+                tbry_north(i,k,itrc)=0.
               enddo
+              do itrc=itsubs1,NT
+                tbry_north(i,k,itrc)=cobc_wat(itrc)
+              enddo
+#    else
+              do itrc=1,NT
+                tbry_north(i,k,itrc)=t(i,Jend+1,k,1,itrc) ! =0.??
+              enddo
+#    endif
 #   endif
             enddo
           enddo
@@ -2570,7 +2889,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
 # include "param.h"
       integer tile
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -2618,9 +2937,7 @@ C$    integer  trd, omp_get_thread_num
             unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
      &                                   *u(1,j,k,nrhs)
           enddo
-          do j=JV_RANGE 
-            unbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(1,j,k))
-     &                                   *u(1,j,k,nrhs)
+          do j=JV_RANGE
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
@@ -2637,15 +2954,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_EAST
       if (EASTERN_EDGE) then
         do k=1,N
-          do j=JstrR,JendR
+          do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
-            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j-1,k))
-     &                                         *v(IendR,j,k,nrhs)
 #   ifdef NBQ
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
 #   endif
+          enddo
+          do j=JV_RANGE
+            vnbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR,j-1,k))
+     &                                         *v(IendR,j,k,nrhs)
           enddo
         enddo
       endif
@@ -2654,15 +2973,17 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
-            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
-     &                                    *u(i,0,k,nrhs)
 #   ifdef NBQ
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
 #   endif
+          enddo
+          do i=IU_RANGE
+            unbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i-1,0,k))
+     &                                    *u(i,0,k,nrhs)
           enddo
         enddo
       endif
@@ -2671,20 +2992,22 @@ C$    integer  trd, omp_get_thread_num
 # ifdef OBC_NORTH
       if (NORTHERN_EDGE) then
         do k=1,N
-          do i=IstrR,IendR
+          do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
-     &                                          *u(i,JendR,k,nrhs)
 #   ifdef NBQ
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #   endif
           enddo
+          do i=IU_RANGE
+            unbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i-1,JendR,k))
+     &                                          *u(i,JendR,k,nrhs)
+          enddo
         enddo
       endif
 # endif /* OBC_NORTH */
-!
+
       return
       end
 #endif /* defined NBQ_FRC_BRY */
@@ -2703,7 +3026,7 @@ C$    integer  trd, omp_get_thread_num
       implicit none
       integer tile
 # include "param.h"
-# ifdef  ALLOW_SINGLE_BLOCK_MODE
+# ifdef ALLOW_SINGLE_BLOCK_MODE
 C$    integer  trd, omp_get_thread_num
 # endif
 # include "compute_tile_bounds.h"
@@ -2732,7 +3055,11 @@ C$    integer  trd, omp_get_thread_num
       if (WESTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
+#  ifdef TEMPERATURE          
             temp=tbry_west(j,k,itemp)
+#  else
+            temp=25.
+#  endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2763,10 +3090,10 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iNCH_)) tbry_west(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_west(j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tbry(iNH4_)) tbry_west(j,k,iNH4_)=1.e-2
-#     if defined key_ligand
+#   ifdef key_ligand
             if (.not.got_tbry(iLGW_)) tbry_west(j,k,iLGW_)=1.e-3
-#     endif
-#     if defined key_pisces_quota
+#   endif
+#   ifdef key_pisces_quota
 !            if (.not.got_tbry(iDON_)) tbry_west(j,k,iDON_)=5.
 !            if (.not.got_tbry(iDOP_)) tbry_west(j,k,iDOP_)=5.
             if (.not.got_tbry(iPON_)) tbry_west(j,k,iPON_)=1.e-2
@@ -2782,7 +3109,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iPCH_)) tbry_west(j,k,iPCH_)=1.e-2*12./55.
             if (.not.got_tbry(iGON_)) tbry_west(j,k,iGON_)=1.e-2
             if (.not.got_tbry(iGOP_)) tbry_west(j,k,iGOP_)=1.e-2
-#     endif
+#   endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tbry(iChla)) tbry_west(j,k,iChla)=0.08  
             if (.not.got_tbry(iPhy1)) tbry_west(j,k,iPhy1)=0.1
@@ -2828,7 +3155,11 @@ C$    integer  trd, omp_get_thread_num
       if (EASTERN_EDGE) then
         do k=1,N
           do j=JstrR,JendR
+#  ifdef TEMPERATURE          
             temp=tbry_east(j,k,itemp)
+#  else
+            temp=25.
+#  endif            
             if (temp.lt.8.) then
               SiO4=30.
             elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2859,10 +3190,10 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iNCH_)) tbry_east(j,k,iNCH_)=1.e-2*12./55.
             if (.not.got_tbry(iDCH_)) tbry_east(j,k,iDCH_)=1.e-2*12./55.
             if (.not.got_tbry(iNH4_)) tbry_east(j,k,iNH4_)=1.e-2
-#     if defined key_ligand
+#   ifdef key_ligand
             if (.not.got_tbry(iLGW_)) tbry_east(j,k,iLGW_)=1.e-3
-#     endif
-#     if defined key_pisces_quota
+#   endif
+#   ifdef key_pisces_quota
 !            if (.not.got_tbry(iDON_)) tbry_east(j,k,iDON_)=5.
 !            if (.not.got_tbry(iDOP_)) tbry_east(j,k,iDOP_)=5.
             if (.not.got_tbry(iPON_)) tbry_east(j,k,iPON_)=1.e-2
@@ -2878,7 +3209,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iPCH_)) tbry_east(j,k,iPCH_)=1.e-2*12./55.
             if (.not.got_tbry(iGON_)) tbry_east(j,k,iGON_)=1.e-2
             if (.not.got_tbry(iGOP_)) tbry_east(j,k,iGOP_)=1.e-2
-#     endif
+#   endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tbry(iChla)) tbry_east(j,k,iChla)=0.08   
             if (.not.got_tbry(iPhy1)) tbry_east(j,k,iPhy1)=0.1
@@ -2917,14 +3248,18 @@ C$    integer  trd, omp_get_thread_num
 #  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
            enddo
          enddo
-      endif
+       endif
 # endif /* OBC_EAST */   
 !
 # ifdef OBC_NORTH
        if (NORTHERN_EDGE) then
          do k=1,N
            do j=IstrR,IendR
+#  ifdef TEMPERATURE           
              temp=tbry_north(j,k,itemp)
+#  else
+             temp=25.
+#  endif             
              if (temp.lt.8.) then
                SiO4=30.
              elseif (temp.ge.8. .and. temp.le.11.) then
@@ -2955,10 +3290,10 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
              if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
              if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
-#     if defined key_ligand
+#   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_north(j,k,iLGW_)=1.e-3
-#     endif
-#     if defined key_pisces_quota
+#   endif
+#   ifdef key_pisces_quota
 !             if (.not.got_tbry(iDON_)) tbry_north(j,k,iDON_)=5.
 !             if (.not.got_tbry(iDOP_)) tbry_north(j,k,iDOP_)=5.
              if (.not.got_tbry(iPON_)) tbry_north(j,k,iPON_)=1.e-2
@@ -2974,7 +3309,7 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iPCH_)) tbry_north(j,k,iPCH_)=1.e-2*12./55.
              if (.not.got_tbry(iGON_)) tbry_north(j,k,iGON_)=1.e-2
              if (.not.got_tbry(iGOP_)) tbry_north(j,k,iGOP_)=1.e-2
-#     endif
+#   endif
 #  elif defined BIO_NChlPZD
              if (.not.got_tbry(iChla)) tbry_north(j,k,iChla)=0.08   
              if (.not.got_tbry(iPhy1)) tbry_north(j,k,iPhy1)=0.1
@@ -3013,14 +3348,18 @@ C$    integer  trd, omp_get_thread_num
 #  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
            enddo
          enddo
-      endif
+       endif
 # endif /* OBC_NORTH */   
 
 # ifdef OBC_SOUTH
        if (SOUTHERN_EDGE) then
          do k=1,N
            do j=IstrR,IendR
+#  ifdef TEMPERATURE           
              temp=tbry_south(j,k,itemp)
+#  else
+             temp=25.
+#  endif             
              if (temp.lt.8.) then
                SiO4=30.
              elseif (temp.ge.8. .and. temp.le.11.) then
@@ -3053,10 +3392,10 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=
      &                                                    1.e-2*12./55.
              if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
-#     if defined key_ligand
+#   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_south(j,k,iLGW_)=1.e-3
-#     endif
-#     if defined key_pisces_quota
+#   endif
+#   ifdef key_pisces_quota
              if (.not.got_tbry(iPON_)) tbry_south(j,k,iPON_)=1.e-2
              if (.not.got_tbry(iPOP_)) tbry_south(j,k,iPOP_)=1.e-2
              if (.not.got_tbry(iNPH_)) tbry_south(j,k,iNPH_)=1.e-2
@@ -3070,7 +3409,7 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iPCH_)) tbry_south(j,k,iPCH_)=1.e-2*12./55.
              if (.not.got_tbry(iGON_)) tbry_south(j,k,iGON_)=1.e-2
              if (.not.got_tbry(iGOP_)) tbry_south(j,k,iGOP_)=1.e-2
-#     endif
+#   endif
 #  elif defined BIO_NChlPZD
              if (.not.got_tbry(iChla)) tbry_south(j,k,iChla)=0.08   
              if (.not.got_tbry(iPhy1)) tbry_south(j,k,iPhy1)=0.1
@@ -3104,14 +3443,14 @@ C$    integer  trd, omp_get_thread_num
 #   ifdef NITROUS_OXIDE
             if (.not.got_tbry(iN2O)) tbry_south(j,k,iN2O)=-(0.008*
      &                              exp(zbry/100.)-0.01)
-             if (tbry_south(j,k,iN2O).lt.0.) then
-               tbry_south(j,k,iN2O)=0.  
-             endif
+              if (tbry_south(j,k,iN2O).lt.0.) then
+                tbry_south(j,k,iN2O)=0.  
+              endif
 #   endif
 #  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
            enddo
          enddo
-      endif
+       endif
 # endif /* OBC_SOUTH */   
       return
       end
