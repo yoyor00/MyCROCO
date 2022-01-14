@@ -880,15 +880,14 @@ c**           endif
         endif
         ltrg=lenstr(nctargname)
  
-
-!        j=0
-!        do i=1,ltrg
-!          if (nctargname(i:i).eq.'/') j=i+1
-!        enddo
-!        if (j.gt.0) then
-!          nctargname=nctargname(j:ltrg)
-!          ltrg=ltrg-j+1
-!        endif
+        j=0
+        do i=1,ltrg
+          if (nctargname(i:i).eq.'/') j=i+1
+        enddo
+        if (j.gt.0) then
+          nctargname=nctargname(j:ltrg)
+          ltrg=ltrg-j+1
+        endif
  
 !--> create...
  
@@ -1574,24 +1573,19 @@ c**           endif
                     net_gray_clk=net_gray_clk+inc_clk
 # endif
                     if (vartype(i) .eq. nf_char) then
-                      call assembly_text (char(int(buff)), count, 
-     &                                 char(int(bfr_out)),
+                      call assembly_text (buff, count, bfr_out,
      &                                 start1,count1, vdims(i))
                     elseif (vartype(i) .eq. nf_byte) then
-                      call assembly_byte (int(buff,kind=1), count, 
-     &                                 int(bfr_out,kind=1),
+                      call assembly_byte (buff, count, bfr_out,
      &                                 start1,count1, vdims(i))
                     elseif (vartype(i) .eq. nf_short) then
-                      call assembly_int2 (int(buff,kind=2), count, 
-     &                                    int(bfr_out,kind=2),
+                      call assembly_int2 (buff, count, bfr_out,
      &                                 start1,count1, vdims(i))
                     elseif (vartype(i) .eq. nf_int) then
-                      call assembly_int  (int(buff,kind=4), count, 
-     &                                    int(bfr_out,kind=4),
+                      call assembly_int  (buff, count, bfr_out,
      &                                 start1,count1, vdims(i))
                     elseif (vartype(i) .eq. nf_float) then
-                      call assembly_real (real(buff,kind=4), count, 
-     &                                    real(bfr_out,kind=4),
+                      call assembly_real (buff, count, bfr_out,
      &                                 start1,count1, vdims(i))
                     elseif (vartype(i) .eq. nf_double) then
                       call assembly_double (buff,count,bfr_out,

@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined  WAVE_OFFLINE && (defined MUSTANG || defined BBL || defined MRL_WCI)
+#if defined  WAVE_OFFLINE && ( defined BBL || defined MRL_WCI )
 
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
@@ -28,43 +28,33 @@
 !================  variables and dimensions. Check for consistency.
 !
 
-
-# ifndef MUSTANG
-      ncidwave=ncidfrc
-      wave_file=frcname
-# endif
-
       if (may_day_flag.ne.0) return      !-->  EXIT
       if (itww.eq.0 .or. iic.eq.0) then
-        lstr=lenstr(wave_file)
+        lstr=lenstr(frcname)
         if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! If not opened yet, open forcing NetCDF file for reading.
 ! Find and save IDs for relevant variables, determine whether
 ! wind wave data are field or scalar values. 
 !
-
-        if (ncidwave.eq.-1) then
-          ierr=nf_open(wave_file(1:lstr), nf_nowrite, ncidwave)
+        if (ncidfrc.eq.-1) then
+          ierr=nf_open(frcname(1:lstr), nf_nowrite, ncidfrc)
           if (ierr .ne. nf_noerr) goto 4                !--> ERROR 
         endif
+      
 
-        ierr=nf_inq_varid (ncidwave, 'wwv_time', ww_tid)
+        ierr=nf_inq_varid (ncidfrc, 'wwv_time', ww_tid)
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) 'wwv_time', wave_file(1:lstr)
+          write(stdout,3) 'wwv_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-
-# ifndef MUSTANG
-        ncidfrc=ncidwave
-# endif
 
 ! Check if wave amplitude present, and if so, if field or scalar series
       
         lvar=lenstr(vname(1,indxWWA))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWWA)(1:lvar),wwa_id)
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWWA)(1:lvar),wwa_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wwa_id, i)
+          ierr=nf_inq_varndims (ncidfrc, wwa_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               wwagrd=1.
@@ -74,16 +64,17 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWWA)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWA)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+
 
 ! Check if wave direction present, and if so, if field or scalar series
 
         lvar=lenstr(vname(1,indxWWD))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWWD)(1:lvar),wwd_id)
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWWD)(1:lvar),wwd_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wwd_id, i)
+          ierr=nf_inq_varndims (ncidfrc, wwd_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               wwdgrd=1.
@@ -93,7 +84,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWWD)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWD)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -101,9 +92,9 @@
 ! Check if wave period present, and if so, if field or scalar series
       
         lvar=lenstr(vname(1,indxWWP))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWWP)(1:lvar),wwp_id)
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWWP)(1:lvar),wwp_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wwp_id, i)
+          ierr=nf_inq_varndims (ncidfrc, wwp_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               wwpgrd=1.
@@ -113,39 +104,18 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWWP)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWP)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
-# if defined MUSTANG
-! Check if wave orbital velocity present, and if so, if field or scalar series
-
-        lvar=lenstr(vname(1,indxWWU))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWWU)(1:lvar),wwu_id)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wwu_id, i)
-          if (ierr. eq. nf_noerr) then
-            if (i.gt.1) then
-              wwugrd=1.
-            else
-              wwugrd=0.
-            endif
-          endif
-        endif
-        if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWWU)(1:lvar),wave_file(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-# endif
 
 ! Check if breaking dissipation present, and if so, if field or scalar series
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING   
         lvar=lenstr(vname(1,indxWEB))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWEB)(1:lvar),wweb_id)
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWEB)(1:lvar),wweb_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wweb_id, i)
+          ierr=nf_inq_varndims (ncidfrc, wweb_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               wwebgrd=1.
@@ -155,7 +125,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWEB)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWEB)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -164,9 +134,9 @@
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION  
         lvar=lenstr(vname(1,indxWED))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWED)(1:lvar),wwed_id)
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWED)(1:lvar),wwed_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wwed_id, i)
+          ierr=nf_inq_varndims (ncidfrc, wwed_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               wwedgrd=1.
@@ -176,7 +146,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWED)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWED)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -185,9 +155,9 @@
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER
         lvar=lenstr(vname(1,indxWER))
-        ierr=nf_inq_varid (ncidwave,vname(1,indxWER)(1:lvar),wwer_id)
+        ierr=nf_inq_varid (ncidfrc,vname(1,indxWER)(1:lvar),wwer_id)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_inq_varndims (ncidwave, wwer_id, i)
+          ierr=nf_inq_varndims (ncidfrc, wwer_id, i)
           if (ierr. eq. nf_noerr) then
             if (i.gt.1) then
               wwergrd=1.
@@ -197,7 +167,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxWER)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWER)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -213,36 +183,19 @@
 ! convert wave direction from degrees to radians;
 ! no conversion for amplitude and period.
 !
-        call set_cycle (ncidwave,   ww_tid,    ntww,
+        call set_cycle (ncidfrc,   ww_tid,    ntww,
      &                  ww_cycle, ww_ncycle, ww_rec)
         if (may_day_flag.ne.0) return    !-->  EXIT
       
         itww=2
         wwv_time(1)=-1.E+20
         wwv_time(2)=-1.E+20
-
-# ifdef MANGAE2500
-! scale factors for MANGAE wave files 
-        wwa_scale=0.002
-        wwd_scale=0.1*deg2rad !converting to radian and imposing scale factor
-        wwp_scale=0.01
-        wweb_scale=1.
-        wwed_scale=1.
-        wwer_scale=1.
-#  ifdef MUSTANG
-        wwu_scale=0.01
-#  endif
-# else
         wwa_scale=1.
         wwd_scale=deg2rad
         wwp_scale=1.
         wweb_scale=1.
         wwed_scale=1.
         wwer_scale=1.
-#  ifdef MUSTANG
-        wwu_scale=1.
-#  endif
-# endif
      
       endif                   !<-- itww.eq.0 .or. iic.eq.0
 
@@ -260,7 +213,7 @@
       ierr=advance_cycle (ww_cycle, ntww, ww_ncycle, ww_rec)
       if (ierr.ne.0) goto 7                           !--> ERROR
 
-      ierr=nf_get_var1_FTYPE(ncidwave, ww_tid, ww_rec, cff)
+      ierr=nf_get_var1_FTYPE(ncidfrc, ww_tid, ww_rec, cff)
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wwv_time', ww_rec 
         goto 99                                         !--> ERROR
@@ -271,10 +224,10 @@
 ! Read wave amplitude
 
       if (wwagrd.eq.1.) then
-        ierr=nf_fread (wwag(START_2D_ARRAY,i), ncidwave, wwa_id,
+        ierr=nf_fread (wwag(START_2D_ARRAY,i), ncidfrc, wwa_id,
      &                                           ww_rec, r2dvar)
       else
-        ierr=nf_get_var1_FTYPE (ncidwave,wwa_id,ww_rec,wwap(i))
+        ierr=nf_get_var1_FTYPE (ncidfrc,wwa_id,ww_rec,wwap(i))
       endif
 
       if (ierr .ne. nf_noerr) then
@@ -285,10 +238,10 @@
 ! Read wave direction
 
       if (wwdgrd.eq.1.) then
-        ierr=nf_fread (wwdg(START_2D_ARRAY,i), ncidwave, wwd_id,
+        ierr=nf_fread (wwdg(START_2D_ARRAY,i), ncidfrc, wwd_id,
      &                                           ww_rec, r2dvar)
       else
-        ierr=nf_get_var1_FTYPE (ncidwave,wwd_id,ww_rec,wwdp(i))
+        ierr=nf_get_var1_FTYPE (ncidfrc,wwd_id,ww_rec,wwdp(i))
       endif
 
       if (ierr .ne. nf_noerr) then
@@ -299,41 +252,24 @@
 ! Read wave period
 
       if (wwpgrd.eq.1.) then
-        ierr=nf_fread (wwpg(START_2D_ARRAY,i), ncidwave, wwp_id,
+        ierr=nf_fread (wwpg(START_2D_ARRAY,i), ncidfrc, wwp_id,
      &                                           ww_rec, r2dvar)
       else
-        ierr=nf_get_var1_FTYPE (ncidwave,wwp_id,ww_rec,wwpp(i))
+        ierr=nf_get_var1_FTYPE (ncidfrc,wwp_id,ww_rec,wwpp(i))
       endif
 
       if (ierr .ne. nf_noerr) then
         write(stdout,6) 'wind-wave period', ww_rec
         goto 99                                         !--> ERROR
-      endif 
-      
-! Read orbital velocity
-
-# ifdef MUSTANG
-      if (wwugrd.eq.1.) then
-        ierr=nf_fread (wwug(START_2D_ARRAY,i), ncidwave, wwu_id,
-     &                                           ww_rec, r2dvar)
-      else
-        ierr=nf_get_var1_FTYPE (ncidwave,wwu_id,ww_rec,wwup(i))
-      endif
-
-      if (ierr .ne. nf_noerr) then
-        write(stdout,6) 'wave orbital velocity', ww_rec
-        goto 99                                         !--> ERROR
-      endif
-# endif
+      endif       
 
 ! Read breaking dissipation
-
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
       if (wwebgrd.eq.1.) then
-        ierr=nf_fread (wweb(START_2D_ARRAY,i), ncidwave, wweb_id,
+        ierr=nf_fread (wweb(START_2D_ARRAY,i), ncidfrc, wweb_id,
      &                                           ww_rec, r2dvar)
       else
-        ierr=nf_get_var1_FTYPE (ncidwave,wweb_id,ww_rec,wwebp(i))
+        ierr=nf_get_var1_FTYPE (ncidfrc,wweb_id,ww_rec,wwebp(i))
       endif
 
       if (ierr .ne. nf_noerr) then
@@ -343,13 +279,12 @@
 # endif
     
 ! Read frictional dissipation
-
 # if defined MRL_WCI && defined WAVE_OFFLINE_FRICTION
       if (wwedgrd.eq.1.) then
-        ierr=nf_fread (wwedd(START_2D_ARRAY,i), ncidwave, wwed_id,
+        ierr=nf_fread (wwedd(START_2D_ARRAY,i), ncidfrc, wwed_id,
      &                                           ww_rec, r2dvar)
       else
-        ierr=nf_get_var1_FTYPE (ncidwave,wwed_id,ww_rec,wwedp(i))
+        ierr=nf_get_var1_FTYPE (ncidfrc,wwed_id,ww_rec,wwedp(i))
       endif
 
       if (ierr .ne. nf_noerr) then
@@ -359,13 +294,12 @@
 # endif
    
 ! Read frictional dissipation
-
 # if defined MRL_WCI && defined WAVE_OFFLINE_ROLLER 
       if (wwergrd.eq.1.) then
-        ierr=nf_fread (wwer(START_2D_ARRAY,i), ncidwave, wwer_id,
+        ierr=nf_fread (wwer(START_2D_ARRAY,i), ncidfrc, wwer_id,
      &                                           ww_rec, r2dvar)
       else
-        ierr=nf_get_var1_FTYPE (ncidwave,wwer_id,ww_rec,wwerp(i))
+        ierr=nf_get_var1_FTYPE (ncidfrc,wwer_id,ww_rec,wwerp(i))
       endif
 
       if (ierr .ne. nf_noerr) then
@@ -376,8 +310,8 @@
 
   
       itww=i
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
-     &  'GET_WWAVE --','Read wind wave input data for time =', cff
+      write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 'GET_WWAVE --',
+     &              'Read wind wave input data for time =', cff
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -390,14 +324,14 @@
 !
   3   format(/,' GET_WWAVE - unable to find forcing variable: ',a,
      &                          /,15x,'in forcing NetCDF file: ',a)
-  4   write(stdout,5) wave_file(1:lstr)
+  4   write(stdout,5) frcname(1:lstr)
   5   format(/,' GET_WWAVE - unable to open forcing NetCDF file:',
      &                                                        1x,a)
       goto 99
 
   6   format(/,' GET_WWAVE - error while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(stdout,8) ww_rec, ntww, wave_file(1:lstr), tdays,
+  7   write(stdout,8) ww_rec, ntww, frcname(1:lstr), tdays,
      &                                wwv_time(itww)*sec2day
   8   format(/,' GET_WWAVE - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
@@ -437,9 +371,6 @@
       real    fac,fac1,fac2,fac11,fac12,fac21,fac22,fac31,fac32,
      &                      fac41,fac42,fac51,fac52,fac61,fac62,
      &        wwA, wwD, wwP, wwe, Dstp,cfrq,hrms
-# ifdef MUSTANG
-     &       , wwU, fac71, fac72
-# endif
       real    cff,cff1,cff2, kh,khd,kw, eps, wramp,m2p,isr2 
 # ifdef BBL_OFFLINE
      &                                            , ab, orb_vel
@@ -479,9 +410,6 @@
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
             wwP=wwp_scale*wwpp(itww)
-# ifdef MUSTANG
-            wwU=wwu_scale*wwup(itww)
-# endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING    
             wwEpb=wweb_scale*wwebp(itww)
 # endif
@@ -496,15 +424,12 @@
               do i=IstrR,IendR
                 Awave(i,j)=(wwagrd)*wwa_scale*wwag(i,j,itww) +
      &                     (1.-wwagrd)*wwA
+     
                 Dwave(i,j)=(wwdgrd)*wwd_scale*wwdg(i,j,itww) +
      &                     (1.-wwdgrd)*wwD 
 
                 Pwave(i,j)=(wwpgrd)*wwp_scale*wwpg(i,j,itww) +
      &                     (1.-wwpgrd)*wwP
-# ifdef MUSTANG
-                Uwave(i,j)=(wwugrd)*wwu_scale*wwug(i,j,itww) +
-     &                     (1.-wwugrd)*wwU
-# endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
                 Ebwave(i,j)=(wwebgrd)*wweb_scale*wweb(i,j,itww) +
      &                     (1.-wwebgrd)*wwEpb
@@ -544,12 +469,6 @@
         fac31=fac*fac1
         fac32=fac*fac2
         wwP=fac31*wwpp(it1)+fac32*wwpp(it2)
-# ifdef MUSTANG
-        fac=wwu_scale/(fac1+fac2)
-        fac71=fac*fac1
-        fac72=fac*fac2
-        wwU=fac71*wwup(it1)+fac72*wwup(it2)
-# endif
 
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
         fac=wweb_scale/(fac1+fac2)
@@ -574,15 +493,12 @@
           do i=IstrR,IendR
             Awave(i,j)=wwagrd*(fac11*wwag(i,j,it1)+fac12*wwag(i,j,it2))
      &                +(1.-wwagrd)*wwA
+     
             Dwave(i,j)=wwdgrd*(fac21*wwdg(i,j,it1)+fac22*wwdg(i,j,it2))
      &                +(1.-wwdgrd)*wwD 
 
             Pwave(i,j)=wwpgrd*(fac31*wwpg(i,j,it1)+fac32*wwpg(i,j,it2))
      &                +(1.-wwpgrd)*wwP
-# ifdef MUSTANG
-            Uwave(i,j)=wwugrd*(fac71*wwug(i,j,it1)+fac72*wwug(i,j,it2))
-     &                +(1.-wwugrd)*wwU
-# endif
 # if defined MRL_WCI && defined WAVE_OFFLINE_BREAKING
             wepb(i,j)=wwebgrd*(fac41*wweb(i,j,it1)+fac42*wweb(i,j,it2))
      &                +(1.-wwebgrd)*wwEpb
@@ -618,16 +534,12 @@
 # if defined CURVGRID || !defined SHOREFACE
       do j=jstrR,jendR
         do i=istrR,iendR
-#  if !defined SHOREFACE && !defined MUSTANG 
+#  ifndef SHOREFACE
 !         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
           Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
 #  ifdef CURVGRID
-#   ifdef MUSTANG
-          Dwave(i,j)=Dwave(i,j)-angler(i,j)*rad2deg
-#   else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
-#   endif
 #  endif
         enddo
       enddo
@@ -640,14 +552,13 @@
 !   for other muddy areas (still needs work).
 !--------------------------------------------------------------------
 !
-# if !defined MRL_WCI || defined MEKONG
+# if !defined SHOREFACE || defined MEKONG
       do j=jstrR,jendR
         do i=istrR,iendR
-          Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
 #  ifdef MEKONG
-!
 ! First estimate wavenumber
 !
+          Dstp=max(h(i,j)+z_w(i,j,N),1.e-3)
           hrms=2*Awave(i,j)
           cfrq=2.0*pi/max(Pwave(i,j),0.1D0)
           khd=Dstp*cfrq*cfrq/g
@@ -656,7 +567,7 @@
      &                  +khd*(0.0632098765 + khd*(0.0217540484
      &                                  +khd*0.0065407983)))))) )
           kw=kh/Dstp
-!
+
 ! Strong mudbank dissipation formulation: frequency and depth-dependent 
 ! dissipation rate is a function akin to that proposed by Bretschneider 
 ! and Reid (1954) and Grosskopf (1980): longer and higher waves are more 
@@ -664,15 +575,16 @@
 !
           Awave(i,j)=Awave(i,j)*
      &                (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2 
-#  else
-!
+#  endif /* MEKONG */
+
+#  ifndef SHOREFACE
 ! Simulate surf-zone dissipation due to depth-induced wave breaking
 !
           Awave(i,j)=min(0.2*Dstp, Awave(i,j))
-#  endif
+#  endif /* SHOREFACE */
         enddo
       enddo
-# endif /* !MRL_WCI || MEKONG */
+# endif /* !SHOREFACE || MEKONG */
 !
 !--------------------------------------------------------------------
 ! Compute variables for wave-current interactions (mrl_wci routine)

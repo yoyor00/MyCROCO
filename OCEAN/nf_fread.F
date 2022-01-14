@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -23,26 +23,19 @@
 !                             which is to be read or written.
 !            ncid    NetCDF ID of in the file.
 !            varid   variable ID of that variable in NetCDF file.
-!            record  record number.
+!            record  record number. 
 !            type    type of the grid (RHO-, U, V, W, PSI etc.)
 !
 ! Because significant portion of the code calculates starting and
 ! stopping indices for the subarray (which are exactly the same for
 ! both read and write operations) the code has been unified to
-! guarantee that both functions are exactly adjoint.
-!
-#if defined MUSTANG
-      USE comMUSTANG, only: nk_nivsed_out
-#endif
+! guarantee that both functions are exactly adjoint. 
+!            
       implicit none
 #include "param.h"
-#if defined MUSTANG
-      real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
-#else
       real A(GLOBAL_2D_ARRAY,N+1)
-#endif
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
-     &      , varid, record, horiz_type, jmin, jmax,  count(4)
+     &      , varid, record, horiz_type, jmin, jmax,  count(4) 
      &      , i,j,k, shift,  ierr
 #include "buffer.h"
 #if defined MPI
@@ -50,10 +43,10 @@
 #endif
 #include "netcdf.inc"
                                       ! Decode grid type into
-      vert_type=type/4                ! vertical and horizontal
-      horiz_type=type-4*vert_type     ! grid types, then calculate
+      vert_type=type/4                ! vertical and horizontal 
+      horiz_type=type-4*vert_type     ! grid types, then calculate 
       jmin=horiz_type/2               ! starting indices indices
-      imin=horiz_type-2*jmin          ! in horizontal directions.
+      imin=horiz_type-2*jmin          ! in horizontal directions. 
 
       start(1)=1
       start(2)=1
@@ -63,12 +56,12 @@
         start(2)=1+(Agrif_iy()-1)*Agrif_irhoy()
       endif
 #endif
-
+     
 #ifdef MPI
-
+   
 # ifdef PARALLEL_FILES
 !#  ifdef EW_PERIODIC
-!      imin=1
+!      imin=1 
 !      imax=Lm
 !#  else
       if (ii.gt.0) imin=1
@@ -79,7 +72,7 @@
       endif
 !#  endif
 !#  ifdef NS_PERIODIC
-!      jmin=1
+!      jmin=1  
 !      jmax=Mm
 !#  else
       if (jj.gt.0) jmin=1
@@ -107,24 +100,24 @@
         jmax=Mmmpi+1
       else
         jmax=Mmmpi
-      endif
+      endif     
 # endif
 #else
       imax=Lm+1
       jmax=Mm+1
 #endif
-
-
-!! If MPI domain voisin is set to null we have to expand
-!! the zone read in netcdf file.
-
+    
+        
+!! If MPI domain voisin is set to null we have to expand 
+!! the zone read in netcdf file. 
+      
       count(1)=imax-imin+1
       count(2)=jmax-jmin+1
 
 c**   write(stdout,'(1x,A,i4,1x,A,i2,2(3x,A,I2,2x,A,I3,2x,A,I3))')
 c**  &      'NF_READ/WRITE: mynode=',mynode,'horiz_grid',horiz_type,
 c**  &                         'ii=',ii, 'imin=',imin, 'imax=',imax,
-C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
+C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax 
 
 
       if (vert_type.eq.0) then    ! Sort out vertical grids.
@@ -147,26 +140,19 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         start(3)=1
         start(4)=record
 #endif
-#ifdef MUSTANG
-      elseif (vert_type.eq.3) then
-        count(3)=nk_nivsed_out
-        count(4)=1                !--> 3D BED-grid
-        start(3)=1
-        start(4)=record
-#endif
       else
 #ifndef WRITER
-        write(*,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',
-     &                'illegal grid type', type
+        write(*,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',  
+     &                    'illegal grid type', type
         nf_fread=nf_noerr+1
 #else
         write(*,'(/1x,2A,I4/)') 'NF_FWRITE ERROR: ',
-     &                'illegal grid type', type
+     &                    'illegal grid type', type
         nf_fwrite=nf_noerr+1
 #endif
         return
       endif
-
+      
 !
 ! Read/Write array from the disk.
 !===== ===== ===== ==== === =====
@@ -231,15 +217,15 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         call exchange_r3d_tile (1,LOCALLM,1,LOCALMM, A)
 #   endif
       elseif (horiz_type.eq.1 .and. vert_type.eq.1) then
-#  ifdef THREE_GHOST_POINTS_UV
+#  ifdef THREE_GHOST_POINTS_UV   
         call exchange_u3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#  else
+#  else  
         call exchange_u3d_tile (1,LOCALLM,1,LOCALMM, A)
 #  endif
       elseif (horiz_type.eq.2 .and. vert_type.eq.1) then
-#  ifdef THREE_GHOST_3pts_POINTS_UV
+#  ifdef THREE_GHOST_3pts_POINTS_UV 
         call exchange_v3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#  else
+#  else       
         call exchange_v3d_tile (1,LOCALLM,1,LOCALMM, A)
 #  endif
       elseif (horiz_type.eq.3 .and. vert_type.eq.1) then

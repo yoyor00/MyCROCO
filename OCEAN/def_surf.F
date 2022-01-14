@@ -12,7 +12,7 @@
 #ifndef AVRH
 # include "cppdefs.h"
 #endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#ifdef OUTPUTS_SURFACE
 
 #ifndef AVRH
       subroutine def_surf (ncid, total_rec, ierr)
@@ -214,7 +214,7 @@
 !
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime)
+     &                            NF_REAL, 1, timedim, vidTime)
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime))
@@ -240,13 +240,13 @@
      &                                vname(4,indxTime)(1:lvar))
 
         call nf_add_attribute(ncid, vidTime, indxTime, 5, 
-     &       NF_FOUT, ierr)
+     &       NF_REAL, ierr)
 !
 ! Time2.
 !
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
+     &                            NF_REAL, 1, timedim, vidTime2)
 !
 #ifndef AVRH
         lvar=lenstr(vname(2,indxTime2))
@@ -272,7 +272,7 @@
      &                                vname(4,indxTime2)(1:lvar))
 
         call nf_add_attribute(ncid, vidTime2, indxTime2, 5, 
-     &       NF_FOUT, ierr)
+     &       NF_REAL, ierr)
 
 ! surface variables.
 ! -------- ----------- --------
@@ -289,7 +289,7 @@
 !          
           lvar=lenstr(vname(1,indxsurft+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurft+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, vidsurft(itrc))
+     &                     NF_REAL, 3, r2dgrd, vidsurft(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxsurft+itrc-1)
 # else
@@ -308,7 +308,7 @@
 
         call nf_add_attribute(ncid, vidsurft(itrc),
      &                       indxsurft+itrc-1, 5,
-     &                        NF_FOUT, ierr)
+     &                        NF_REAL, ierr)
 
 
 !------------------------------
@@ -317,7 +317,7 @@
 !          
           lvar=lenstr(vname(1,indxsurfs+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfs+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, vidsurfs(itrc))
+     &                     NF_REAL, 3, r2dgrd, vidsurfs(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxsurfs+itrc-1)
 # else
@@ -336,7 +336,7 @@
 
         call nf_add_attribute(ncid, vidsurfs(itrc),
      &                       indxsurfs+itrc-1, 5,
-     &                        NF_FOUT, ierr)
+     &                        NF_REAL, ierr)
 
 !------------------------------
 !
@@ -344,7 +344,7 @@
 !          
           lvar=lenstr(vname(1,indxsurfz+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfz+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, vidsurfz(itrc))
+     &                     NF_REAL, 3, r2dgrd, vidsurfz(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxsurfz+itrc-1)
 # else
@@ -363,7 +363,7 @@
 
         call nf_add_attribute(ncid, vidsurfz(itrc),
      &                       indxsurfz+itrc-1, 5,
-     &                        NF_FOUT, ierr)
+     &                        NF_REAL, ierr)
 
 !------------------------------
 !          !
@@ -371,7 +371,7 @@
 !          
           lvar=lenstr(vname(1,indxsurfu+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfu+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, u2dgrd, vidsurfu(itrc))
+     &                     NF_REAL, 3, u2dgrd, vidsurfu(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxsurfu+itrc-1)
 # else
@@ -390,7 +390,7 @@
 
         call nf_add_attribute(ncid, vidsurfu(itrc),
      &                       indxsurfu+itrc-1, 5,
-     &                        NF_FOUT, ierr)
+     &                        NF_REAL, ierr)
 
 !------------------------------
 !          !
@@ -398,7 +398,7 @@
 !          
           lvar=lenstr(vname(1,indxsurfv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxsurfv+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, v2dgrd, vidsurfv(itrc))
+     &                     NF_REAL, 3, v2dgrd, vidsurfv(itrc))
 # ifdef AVRH
           text='averaged '/ /vname(2,indxsurfv+itrc-1)
 # else
@@ -417,7 +417,7 @@
 
         call nf_add_attribute(ncid, vidsurfv(itrc),
      &                       indxsurfv+itrc-1, 5,
-     &                        NF_FOUT, ierr)
+     &                        NF_REAL, ierr)
 
 !------------------------------
 

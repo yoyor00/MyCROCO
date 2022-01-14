@@ -58,19 +58,9 @@ C$    integer omp_get_thread_num
 # include "grid.h"
 # include "scalars.h"
 !
-      real Length_XI, Length_ETA, depth, f0, beta, 
-     &     cff, y, x0, y0, dx, dy, NSUB
+      real Length_XI,Length_ETA, depth, f0,beta, 
+     &     cff,y, x0,y0,dx,dy, NSUB
 !
-# ifdef DUNE 
-#   ifdef DUNE3D
-      real Rij,cffi,cffj,cff1
-#   elif defined ANA_DUNE
-      real cff2
-#   endif
-# endif
-# ifdef TIDAL_FLAT
-      real depth_shallow,depth_deep
-# endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
 # endif
@@ -78,7 +68,7 @@ C$    integer omp_get_thread_num
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
 # ifdef SANDBAR
-      real p1,p2,p3,p4,p5,p6,p7,xx
+      real p1,p2,p3,p4
 # endif
 # ifdef RIVER
       integer is,i0,j0
@@ -128,6 +118,10 @@ C$    integer omp_get_thread_num
                      depth=4000.
                      f0=1.E-4
                      beta=0.
+# elif defined PLUME
+                     depth=1300.
+                     beta=0.
+                     f0=0.5E-4 
 # elif defined EQUATOR
                      depth=5000.
                      f0=0.
@@ -144,7 +138,7 @@ C$    integer omp_get_thread_num
 #  endif
                      f0=0.
                      beta=0.
-# elif defined ISOLITON
+# elif defined I_SOLITON
                      depth=0.29 ! Horn et al. (2001)
                      f0=0.
                      beta=0.
@@ -186,6 +180,10 @@ C$    integer omp_get_thread_num
                      depth=150.
                      f0=-8.26E-5
                      beta=0.
+# elif defined SED_TEST2
+                     depth=10.0    
+                     f0=1.E-4
+                     beta=0.
 # elif defined RIVER
                      depth=150.
                      f0=8.26E-5
@@ -199,7 +197,7 @@ C$    integer omp_get_thread_num
                      f0=0.   
                      beta=0.
 # elif defined SANDBAR
-                     depth=4.1
+                     depth=0.6
                      f0=0.   
                      beta=0.
 # elif defined SWASH
@@ -224,27 +222,6 @@ C$    integer omp_get_thread_num
                      beta=0.
 # elif defined MOVING_BATHY
                      depth=0.394
-                     f0=0.
-                     beta=0.
-# elif defined DUNE
-#  ifdef ANA_DUNE
-                     depth=6.                 
-#  else
-                     depth=4.
-#  endif
-                     f0=0.
-                     beta=0.
-# elif defined SED_TOY
-#  ifdef SED_TOY_ROUSE
-                     depth=5.
-#  else
-                     depth=20.
-#  endif
-                     f0=0.0
-                     beta=0.
-# elif defined TIDAL_FLAT
-                     depth_shallow=-4.
-                     depth_deep=16.
                      f0=0.
                      beta=0.
 # else
@@ -288,7 +265,7 @@ C$    integer omp_get_thread_num
                      Length_XI =64.0e+3
 #  endif
                      Length_ETA=Length_ETA_ISO_GRID
-# elif defined ISOLITON
+# elif defined I_SOLITON
                      Length_XI =6.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
@@ -315,6 +292,9 @@ C$    integer omp_get_thread_num
 # elif defined UPWELLING
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
+# elif defined SED_TEST2
+                     Length_XI =25000.0
+                     Length_ETA= 2500.0
 # elif defined RIVER
                      Length_ETA=80.e+3
                      Length_XI =Length_XI_ISO_GRID
@@ -325,7 +305,7 @@ C$    integer omp_get_thread_num
                      Length_XI =1180.0 
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SANDBAR
-                     Length_XI =200.
+                     Length_XI =32.0 
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined SWASH
                      Length_XI =110.0 
@@ -347,28 +327,6 @@ C$    integer omp_get_thread_num
 # elif defined MOVING_BATHY
                      Length_XI =4.0
                      Length_ETA=Length_ETA_ISO_GRID
-# elif defined DUNE
-#  ifdef ANA_DUNE
-                     Length_XI = 300.0
-#  else
-                     Length_XI = 100.0
-#  endif
-#  ifdef MUSTANG
-                     Length_ETA=Length_XI
-#  else                     
-                     Length_ETA=Length_ETA_ISO_GRID
-#  endif
-# elif defined SED_TOY
-#  ifdef SED_TOY_ROUSE
-                     Length_XI = 10.e+3
-                     Length_ETA= 10.e+3
-#  else
-                     Length_XI =40.0
-                     Length_ETA=30.0
-#  endif
-# elif defined TIDAL_FLAT
-                     Length_ETA= 1500.0
-                     Length_XI = 100000.0
 # else
                      Length_XI =???
                      Length_ETA=??? 
@@ -419,7 +377,7 @@ CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
 CR     &                                'x0=',x0, 'y0=',y0, mynode
 !
 !----------------------------------------------------------------------
-! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
+! Setup rectangulag grid:  coordinates (XI,ETA) at PSI- and RHO-points.
 !----------------------------------------------------------------------
 !
       do j=JstrR,JendR
@@ -478,7 +436,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
-                   || defined SOLITON || defined ISOLITON \
+                   || defined SOLITON || defined I_SOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
                    || defined JET
@@ -561,6 +519,17 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
+# elif defined SED_TEST2
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          val1=user(3)            !ocean-side depth
+          val2=user(4)            !nearshore depth
+          val3=user(5)/3.0        ! ~ width of slope
+          h(i,j)=0.5*(val1+
+     &     (val1-val2)*TANH((7000.0-xr(i,j))/val3))  
+        enddo
+      enddo
+
 # elif defined UPWELLING
       do j=JstrR,JendR
 #  ifdef MPI
@@ -632,119 +601,20 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  else
           cff=(float(i       ) )
 #  endif
-#  ifdef SANDBAR_OFFSHORE
-! Roelvink & Reniers 1995: LIP-1B
-          xx=xr(i,j)
-          if (xx.lt.19) then
-            h(i,j)=-depth
-          elseif (xx.lt.52) then
-            p1=+1.520229705740388e-08
-            p2=-3.423212989640106e-06
-            p3=+3.159005532947043e-04
-            p4=-1.526398548035649e-02
-            p5=+4.066341504316825e-01
-            p6=-5.608106604351117e+00
-            p7=+2.702732753680607e+01
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          elseif (xx.lt.120) then
-            p1=-4.642289413679605e-11
-            p2=+2.870629635648417e-08
-            p3=-7.130431368316412e-06
-            p4=+9.126154058771732e-04
-            p5=-6.357269253701968e-02
-            p6=+2.303201222063785e+00
-            p7=-3.657085297281925e+01
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          elseif (xx.lt.140) then
-            p1=+3.099533433018596e-08
-            p2=-2.425187846848144e-05
-            p3=+7.897142871067360e-03
-            p4=-1.369896736259833e+00
-            p5=+1.335157006848632e+02
-            p6=-6.932492254089954e+03
-            p7=+1.498142545396247e+05
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          elseif (xx.lt.160) then
-            p1=-2.524608914887271e-08
-            p2=+2.387297325503284e-05
-            p3=-9.398023259277126e-03
-            p4=+1.971403061349242e+00
-            p5=-2.323952920877027e+02
-            p6=+1.459649630832179e+04
-            p7=-3.816025205750951e+05
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          else
-            p1=+3.693458909496914e-09
-            p2=-4.051059061933883e-06
-            p3=+1.847329725370577e-03
-            p4=-4.483034673182216e-01
-            p5=+6.106360892732523e+01
-            p6=-4.426507173590056e+03
-            p7=+1.334155898180324e+05
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          endif
-#  elif defined SANDBAR_ONSHORE
-! Roelvink & Reniers 1995: LIP-1C
-          xx=xr(i,j)
-          if (xx.lt.19) then
-            h(i,j)=-depth
-          elseif (xx.lt.52) then
-            p1=-1.550500196449383e-09
-            p2=+3.095246505454406e-07
-            p3=-2.524513106364847e-05
-            p4=+1.072358697579965e-03
-            p5=-2.475915084067423e-02
-            p6=+3.341039769921187e-01
-            p7=-6.243997999730277e+00
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          elseif (xx.lt.120) then
-            p1=+2.879040803660182e-11
-            p2=-3.112995372255505e-09
-            p3=-2.128994193906542e-06
-            p4=+5.806818410041643e-04
-            p5=-5.889240225358890e-02
-            p6=+2.719179108579184e+00
-            p7=-5.021582880671649e+01
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          elseif (xx.lt.140) then
-            p1=+6.722443006700593e-07
-            p2=-5.191501807411085e-04
-            p3=+1.669215462536683e-01
-            p4=-2.860227732993812e+01
-            p5=+2.754780791103959e+03
-            p6=-1.414013613750512e+05
-            p7=+3.022008907301721e+06
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          elseif (xx.lt.160) then
-            p1=-3.300743083271716e-07
-            p2=+2.941386493481447e-04
-            p3=-1.091628962526408e-01
-            p4=+2.159706871907915e+01
-            p5=-2.402365333342808e+03
-            p6=+1.424582143575532e+05
-            p7=-3.518304916201898e+06
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          else
-            p1=+3.341378689344706e-09
-            p2=-3.683115456141188e-06
-            p3=+1.686167358885289e-03
-            p4=-4.104224500606568e-01
-            p5=+5.602413257412504e+01
-            p6=-4.066824640330583e+03
-            p7=+1.226609757884486e+05
-            h(i,j) = p1*xx**6 + p2*xx**5 + p3*xx**4 +
-     &               p4*xx**3 + p5*xx**2 + p6*xx    + p7
-          endif
-#  endif
+!
+! Grasso et al. 2009
+!          p1 = -6.953e-05
+!          p2 =  0.003705 
+!          p3 = -0.06435
+!          p4 =  0.5716
+!
+! Roelvink & Stive 1989
+          p1 =  -6.228e-06
+          p2 =   0.0004507
+          p3 =     0.01459
+          p4 =     -0.6769
+!
+          h(i,j) = p1*xr(i,j)**3 + p2*xr(i,j)**2 + p3*xr(i,j) + p4
           h(i,j) = min(-h(i,j),depth)
         enddo
       enddo
@@ -842,68 +712,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           h(i,j)=depth-0.1*exp(-cff*xr(i,j)**2)
         enddo
       enddo
-
-# elif defined DUNE
-#  ifdef ANA_DUNE
-      cff2=0.01
-#  elif defined DUNE3D
-      cff1=0.5*(1./10)**2
-#  endif
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-#  ifdef MPI
-          cff=(float(i +ii*Lm) )
-#  else  
-          cff=(float(i       ) )
-#  endif
-#  ifdef ANA_DUNE
-          h(i,j)=depth-2.*exp(-cff2*(xr(i,j)-0.5*xl)**2)
-#  elif defined DUNE3D
-#    ifdef MPI
-          cffi=(float(i +ii*Lm) )
-          cffj=(float(j +jj*Mm) )
-#    else   
-          cffi=(float(i       ) )
-          cffj=(float(j       ) )
-#    endif 
-         if (xr(i,j).lt.4.) then
-          h(i,j)=depth
-         else 
-          Rij = sqrt( (cffi-28.)**2.+
-     &                (cffj-25.)**2. )
-          h(i,j)=depth*(1.-0.5*exp(-cff1*(2.*(Rij))**2.0))
-         endif
-#  else 
-         h(i,j)=depth*(1.-0.5*exp(-5.e-3*(2.*(cff-25.))**2))
-#  endif
-        enddo
-      enddo
-
-# elif defined SED_TOY
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          h(i,j)=depth
-!          rmask(i,j)=1.0
-        enddo
-      enddo
-
-# elif defined TIDAL_FLAT
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-#  ifdef MPI
-          cff=(float(i +ii*Lm) )
-#  else  
-          cff=(float(i       ) )
-#  endif
-          if (cff.lt.2) then
-            h(i,j)=depth_deep
-          else
-            h(i,j)=depth_deep-(cff-1)/float(LLm+1)
-     &                        *(depth_deep-depth_shallow)
-          endif
-        enddo
-      enddo
-
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -926,16 +734,12 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 !
 # ifdef MASKING
-      do j=JstrR,JendR             ! Set mask to all-water status
-        do i=IstrR,IendR
-          rmask(i,j)=1.
-        enddo
-      enddo
 #  ifdef RIVER
-!
-! Mask out 8-point wide strip of land on the west, and 
-! carve two 1-point wide channels through that strip.
-
+      do j=JstrR,JendR             ! Set mask to all-water status,
+        do i=IstrR,IendR           ! then mask out 8-point wide strip
+          rmask(i,j)=1.            ! of land on the west, and finally
+        enddo                      ! carve two 1-point wide channels
+      enddo                        ! through that strip.
       if (WESTERN_EDGE) then
         do j=JstrR,JendR
           do i=IstrR,8
@@ -967,8 +771,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
           endif
         enddo
       endif ! WESTERN_EDGE
-#  endif /* RIVER */
-# endif /* MASKING */
+#  endif
+# endif
 !
 #else
       subroutine ana_grid_empty

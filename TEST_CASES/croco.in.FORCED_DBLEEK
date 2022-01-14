@@ -29,15 +29,15 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
-auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen  HEL
-                             30*F
+auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen  HEL
+                             F   F     F   F    F    F    F     F       F   F    F     F    F    F    F    F   10*F             
 gls_history_fields:   TKE  GLS  Lscale
                       F     F    F
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
                    T    T    T    T  T   30*T
-auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
-                     F   T     T   T    T    F     F     F      T   T    T      T    T     T   T    T     T    T   10*T
+auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Visc3d Diff3d HBL HBBL Bostr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
+                     F   T     T   T    T    F     F     F      T   T    T     T   T    T     T    T   10*T
 gls_averages:   Akk Akp  TKE  GLS  Lscale
                   T   T    T     T    T
 rho0:
@@ -139,7 +139,7 @@ sediments: input file
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20*T 
 
-bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostr Bustr Bvstrw
+bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
 
 floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname

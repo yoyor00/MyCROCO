@@ -158,12 +158,20 @@
      &                      indxeddyvsv,
      &                      record,v2dvar,type)
 
+
 !---------------------------------------------------------------
-! indxeddyzz
+! indxeddyugsu
 !
-        call fillvalue2d(eddyzz_avg,nciddiags_eddy_avg,diags_eddyzz_avg(1),
-     &                      indxeddyzz,
-     &                      record,r2dvar,type)
+        call fillvalue2d(eddyugsu_avg,nciddiags_eddy_avg,diags_eddyugsu_avg(1),
+     &                      indxeddyugsu,
+     &                      record,u2dvar,type)
+
+!---------------------------------------------------------------
+! indxeddyvgsv
+!
+        call fillvalue2d(eddyvgsv_avg,nciddiags_eddy_avg,diags_eddyvgsv_avg(1),
+     &                      indxeddyvgsv,
+     &                      record,v2dvar,type)
 
 !---------------------------------------------------------------
 ! indxeddyuu

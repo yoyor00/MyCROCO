@@ -45,14 +45,6 @@
 # define RVTK_DEBUG_WRITE
 #endif
 
-/* 
-   Take care need to use a debug.F specific 
-*/
-
-#if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
-# define RVTK_DEBUG_WRITE
-#endif
-
 /*
     Constant tracer option (for debugging)
 */
@@ -70,14 +62,12 @@
 # undef  OPENMP
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define READ_PATM
-# define OBC_PATM
 # undef  OA_GRID_UV
 # undef  BULK_FLUX
 # undef  QCORRECTION
 # undef  SFLX_CORR
 # undef  ANA_DIURNAL_SW
-# undef  SFLUX_CFB
+# undef  SMFLUX_CFB
 #endif
 
 /* 
@@ -115,9 +105,9 @@
 ======================================================================
 */ 
 #ifdef XIOS
+# define XIOS2
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define START_DATE
 #endif
   
 /*
@@ -134,22 +124,6 @@
 # define  M2FILTER_POWER
 # undef  M2FILTER_COSINE
 # undef  M2FILTER_FLAT
-#endif
-
-/*
-======================================================================
-   Set default flags for computing temperature
-======================================================================
-*/
-#if !defined NO_TRACER 
-# define TRACERS            /* Compute at least one tracer */
-#endif
-#if !defined NO_TEMPERATURE /* Compute temperature */
-# define TEMPERATURE
-#endif
-#if defined SALINITY       || defined TEMPERATURE || \
-    defined PASSIVE_TRACER || defined SUBSTANCE
-# define TRACERS
 #endif
 
 /*
@@ -431,7 +405,6 @@
 # undef  TS_HADV_RSUP3  /* Rotated-Split UP3  lateral advection */
 # undef  TS_HADV_RSUP5  /* Pseudo R-Split UP5 lateral advection */
 #endif
-
 /* 
   Options for split-rotated advection-diffusion schemes
 */
@@ -495,13 +468,7 @@
    independent from that selected for the two active tracers (TS_HADV)
 */
 #ifdef BIO_HADV_WENO5
-#  if defined TEMPERATURE && defined SALINITY       
-#    define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
-#  elif defined TEMPERATURE || defined SALINITY
-#    define NTRA_T3DMIX 1    /* TS_HADV applied over the 2 active tracers */
-#  else
-#    define NTRA_T3DMIX 0    /* TS_HADV applied over the 2 active tracers */
-#  endif
+# define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
 #else
 # define NTRA_T3DMIX NT   /* TS_HADV applied over all NT tracers       */
 #endif
@@ -531,7 +498,6 @@
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
 #endif
-
 /*
 ======================================================================
    SPONGE:  
@@ -544,7 +510,7 @@
 # endif
 # define SPONGE_DIF2
 # define SPONGE_VIS2
-# if defined SEDIMENT
+# ifdef SEDIMENT
 #  define SPONGE_SED
 # endif
 #endif
@@ -644,31 +610,13 @@
 ======================================================================
     Bulk flux option
 ======================================================================
-!
-! Bulk algorithms (options)
-! by default COARE3p0 parametrization is used with GUSTINESS effects
-!
-! To change bulk parametrization you have to define one the following cpp keys (not additional) :
-! - define BULK_ECUMEV0 : used of ECUME_v0 parametrization
-! - define BULK_ECUMEV6 : used of ECUME_v6 parametrization
-! - define BULK_WASP    : used of WASP parametrization
-! Warning : it is possible to add GUSTINESS effects for all parametrizations by defining BULK_GUSTINESS cpp key
-!
 */
 #ifdef BULK_FLUX
-# ifdef ONLINE
-#  define CUBIC_INTERP  
-#  ifdef BULK_MONTH_1DIGIT   /* Check if options are defined in cppdefs.h */
-#  else
-#   undef BULK_MONTH_1DIGIT
-#  endif
+# ifdef BULK_SMFLUX     
+#  define BULK_SM_UPDATE /* ON: Compute wind stress via bulk_flux */
 # endif
-# ifdef BULK_ECUMEV0
-#  define BULK_GUSTINESS
-# elif defined BULK_ECUMEV6
-#  define BULK_GUSTINESS
-# elif defined BULK_WASP
-#  define BULK_GUSTINESS
+# ifdef ONLINE
+#  define CUBIC_INTERP
 # endif
 #endif
 
@@ -677,13 +625,15 @@
     Current feedback option
 ======================================================================
 */
-#ifdef SFLUX_CFB
+#ifdef SMFLUX_CFB
 # ifdef BULK_FLUX
 #  define CFB_STRESS
-#  define CFB_WIND_TRA
+#  undef  CFB_STRESS2
+#  undef  CFB_WIND
 # else
 #  undef  CFB_STRESS
-#  undef  CFB_WIND_TRA
+#  define CFB_STRESS2
+#  undef  CFB_WIND
 # endif
 #endif
 
@@ -700,7 +650,6 @@
 # elif defined WAVE_BREAK_TG86
 # elif defined WAVE_BREAK_TG86A
 # elif defined WAVE_BREAK_R93
-# elif defined WAVE_BREAK_BJ78
 # else
 #  define WAVE_BREAK_CT93 /* defaults */
 # endif
@@ -713,7 +662,7 @@
 #  undef  WKB_TIME_FILTER
 # endif
 # define WKB_ADD_DIFF
-# define WKB_ADD_DIFFRACTION
+# undef  WKB_ADD_DIFFRACTION
 # undef  WKB_NUDGING
 # ifndef WAVE_OFFLINE
 #  undef WKB_NUDGING
@@ -733,10 +682,9 @@
 # endif
 #endif
 
-# if defined WKB_WWAVE || defined OW_COUPLING \
-		       || (defined WAVE_OFFLINE && defined MRL_WCI)
-#  define WAVE_IO
-# endif
+#if defined MRL_WCI || defined OW_COUPLING
+# define WAVE_IO
+#endif
 
 /*
 ======================================================================
@@ -770,27 +718,7 @@
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
 #endif
-/*
-======================================================================
-      Bottom forcing:
-      
-      By default:
-         define ANA_BTFLUX : set to zero in analytical.F
-         define ANA_BSFLUX
 
-
-      - define BHFLUX : bottom heat flux, Btflx(i,j,itemp), is read into
-                  the netcdf file croco_btf.nc
-      - define BWFLUX : bottom freshwater flux, Btflx(i,j,isalt), is read
-                   into a netcdf file(croco_btf.nc)
-======================================================================
-*/
-#if !defined ANA_BTFLUX
-#  define BHFLUX
-#endif
-#if !defined ANA_BSFLUX && defined SALINITY
-#  define BWFLUX
-#endif
 /*
 ======================================================================
     Bottom stress option:
@@ -799,11 +727,6 @@
     numerical instability associated with reversing bottom flow
     NOW replaced by BSTRESS_FAST option
 ======================================================================
-*/
-/*
-#ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
-#endif
 */
 #ifdef INNERSHELF
 # undef  LIMIT_BSTRESS
@@ -833,67 +756,25 @@
 
 /*
 ======================================================================
-                Sediment dynamics models (USGS sediment model/Mustang)
+                Sediment dynamics models
 ======================================================================
 */
-
-/*              
-         ===== CROCO-USGS SEDIMENT model =====  
-*/
 #ifdef SEDIMENT
-# undef  MUSTANG
-# define ANA_SEDIMENT
-# undef  BED_ARMOR
-# undef  BED_HIDEXP
+# define SUSPLOAD
+# define BEDLOAD
 # ifdef BEDLOAD
-#  ifdef BEDLOAD_VANDERA       /*  == BEDLOAD scheme ==  */
-#  elif defined BEDLOAD_MPM    /* Meyer-Peter & Muller   */
-#  elif defined BEDLOAD_WULIN  /* Wu & Lin               */
-#  elif defined BEDLOAD_MARIEU /* Marieu                 */
-#  else                        /* --> default scheme:    */
-#   if (defined WAVE_OFFLINE || defined WKB_WWAVE ||\
-        defined ANA_WWAVE    || defined OW_COUPLING)
-#    define BEDLOAD_VANDERA    /* Van der A              */
-#   else
-#    define BEDLOAD_WULIN      /* Wu & Lin               */
-#   endif
-#  endif
-#  ifdef BEDLOAD_UP1           /*   == INTERPOLATION ==  */
-#  elif defined BEDLOAD_UP5    /* upwind 5th order       */
-#  elif defined BEDLOAD_WENO5  /* WENO 5th order         */
+#  undef  SLOPE_NEMETH
+#  define SLOPE_LESSER
+#  if (defined WAVE_OFFLINE || defined WKB_WWAVE || defined ANA_WWAVE\
+                            || defined OW_COUPLING)
+#   define BEDLOAD_SOULSBY
+#   define Z0_BL  /* Mandatory with BEDLOAD_SOULSBY */
+#   define Z0_RIP
 #  else
-#   define BEDLOAD_UP1         /* default: Up-1st order  */
+#   define BEDLOAD_MPM
 #  endif
-#  ifdef SLOPE_LESSER          /*  == SLOPE scheme ==    */
-#  elif defined SLOPE_NEMETH   /* Nemeth                 */
-#  elif defined SLOPE_KIRWAN   /* Kirwan                 */
-#  else
-#   define SLOPE_LESSER        /* default: Lesser        */
-#  endif
-# endif /* BEDLOAD */
-# ifdef DUNE
-#  ifdef ANA_DUNE
-#   undef SLOPE_LESSER
-#  endif
-# endif /* DUNE */
-#endif /* SEDIMENT */
-
-/*              
-         ===== MUSTANG SEDIMENT model =====  
-*/
-
-# ifdef MUSTANG
-#  undef  SEDIMENT
-#  define SUBSTANCE
-#  define USE_CALENDAR
-#  define TEMPERATURE
-#  define SALINITY
-#  define key_noTSdiss_insed
-#  define key_nofluxwat_IWS
-# endif /* MUSTANG */
-# ifdef SUBSTANCE
-#  define key_CROCO
 # endif
+#endif /* SEDIMENT */
 
 /* 
 ======================================================================
@@ -913,11 +794,8 @@
 #ifdef ANA_MORPHODYN
 # define MORPHODYN
 #endif
-#if defined SEDIMENT || defined MUSTANG
-# undef ANA_MORPHODYN
-#endif
-#if defined MORPHODYN && defined MUSTANG
-# define MORPHODYN_MUSTANG_byHYDRO
+#ifdef SEDIMENT
+# undef  ANA_MORPHODYN
 #endif
 #if defined MORPHODYN && defined NBQ
 # define NBQ_FREESLIP
@@ -1007,15 +885,6 @@
 
 #endif /* AGRIF */
 
-#if defined AGRIF && defined EXACT_RESTART
-#error "AGRIF with EXACT_RESTART is not yet implemented"
-#endif
-
-#if defined AGRIF && defined XIOS && \
-      ( defined OA_COUPLING || defined OW_COUPLING )
-#error "AGRIF + XIOS + OASIS coupling is not yet implemented"
-#endif     
-
 /*
 ======================================================================
                             Standard I/O
@@ -1023,9 +892,8 @@
 
    Set land mask value to _FillValue
 */ 
-#ifndef FILLVAL
-# undef  FILLVAL
-#endif
+#undef  FILLVAL
+
 /* 
   Write start_date information in netCDF output
   (in roms.in, add the keyword start_date:
@@ -1038,9 +906,9 @@
   nf_clobber (classic), nf_64bit_offset (large files) or nf_netcdf4
 */ 
 #ifdef NC4PAR
-# define NF_CLOBBER nf_mpiio 
+#define NF_CLOBBER nf_mpiio 
 #else
-# define NF_CLOBBER nf_64bit_offset
+#define NF_CLOBBER nf_64bit_offset
 #endif
 /*
 ======================================================================
@@ -1051,8 +919,6 @@
 */
 #ifndef SOLVE3D                    
 # undef AVERAGES_K
-# undef TRACERS
-# undef TEMPERATURE
 # undef SALINITY
 # undef NONLIN_EOS
 # undef SPLIT_EOS
@@ -1063,7 +929,7 @@
 # undef ANA_SSFLUX
 # undef ANA_SRFLUX
 # undef BULK_FLUX
-# undef SFLUX_CFB                     
+# undef SMFLUX_CFB                     
 # undef TS_DIF2
 # undef TS_DIF4
 # undef CLIMAT_TS_MIXH
@@ -1100,5 +966,4 @@
 # undef SEDIMENT
 # undef BIOLOGY
 #endif
-
 

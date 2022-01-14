@@ -28,19 +28,12 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real cff, kappustr
-# ifdef SED_TOY
-      real ustar0
-# endif
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
 # include "mixing.h"
 # include "scalars.h"
 # ifdef MRL_WCI
-#  include "ocean2d.h"
-#  include "forces.h"
-# endif
-# ifdef SED_TOY
 #  include "ocean2d.h"
 #  include "forces.h"
 # endif
@@ -56,9 +49,25 @@
      &                      exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
      &                     +exp(cff*(z_w(i,j,0)-z_w(i,j,k)))
      &                                                     )
-#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
-#  endif
+          enddo
+        enddo
+      enddo
+# elif defined SED_TEST2
+!--------------------------------------------------------------------
+! parabolic profile with kappa u* = 0.009 m/s; i.e. u* = 0.0225 m/s
+! NB! typical for flow of constant depth
+! doesn't make sense on slope-shelf geometry
+!--------------------------------------------------------------------
+      kappustr = 0.009
+      do k=1,N-1
+        do j=Jstr,Jend
+           do i=Istr,Iend
+              Akv(i,j,k)=kappustr*(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))*
+     &                (1.0-(h(i,j)+zeta(i,j,knew)+z_w(i,j,k))/
+     &                (h(i,j)+zeta(i,j,knew)))
+              Akt(i,j,k,itemp)=Akt_bak(itemp)
+              Akt(i,j,k,isalt)=Akv(i,j,k)
           enddo
         enddo
       enddo
@@ -68,9 +77,7 @@
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=0.002+0.008*exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
-#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
-#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
@@ -84,29 +91,9 @@
             Akv(i,j,k)=0.011*(h(i,j)+z_w(i,j,k))*
      &                 (1.0-(h(i,j)+z_w(i,j,k))/
      &                  (h(i,j)+zeta(i,j,knew)))
-#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akv(i,j,k)
-#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akv(i,j,k)
-#  endif
-          enddo
-        enddo
-      enddo
-# elif defined SED_TOY && defined SED_TOY_ROUSE
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
-              ustar0=sqrt(
-     &                  sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
-     &                       +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2  )
-     &                 )
-              Akv(i,j,k)=0.41*ustar0 *(h(i,j)+z_w(i,j,k))*
-     &                (1.0-(h(i,j)+z_w(i,j,k))/
-     &                (h(i,j)+zeta(i,j,knew)))
-              Akt(i,j,k,itemp)=Akv(i,j,k)
-#  ifdef SALINITY
-              Akt(i,j,k,isalt)=Akv(i,j,k)
 #  endif
           enddo
         enddo
@@ -116,9 +103,7 @@
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=Akv_bak
-#  ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
-#  endif
 #  ifdef SALINITY
             Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
@@ -129,10 +114,8 @@
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
-#  ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,itemp))
-#  endif
 #  ifdef SALINITY
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,isalt))

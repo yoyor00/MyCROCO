@@ -432,9 +432,7 @@
         do j=jstr,jend
           do i=istr,iend
             cff1=pm(i,j)*pn(i,j)
-            cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
-     &                       +FX(i+1,j)-FX(i,j)
+            THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
      &                       +FE(i,j+1)-FE(i,j)
 #  ifdef MASKING
      &                                        * rmask(i,j)
@@ -450,17 +448,8 @@
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
 ! of diag terms are: (unit of tracers)* s-1.
 !
-
-            cff=cff1/Hz(i,j,k)
-
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
-            Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-            
-# if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
-
-# include "finalize_diagnostics_tsadv.h"
-
-# endif
+            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
+            Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
           enddo
         enddo
 # endif /* DIAGNOSTICS_TS */

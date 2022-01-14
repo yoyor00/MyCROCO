@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined SPONGE_DIF2 && defined TRACERS
+#if defined SOLVE3D && defined SPONGE_DIF2
 !
 # ifdef TCLIMATOLOGY
 #  define CLIMAT_TS_SPONGE
@@ -18,10 +18,6 @@
 !
 # ifndef CHILD_SPG
       subroutine t3dmix_spg (tile)
-
-#  if defined MUSTANG && defined key_sand2D
-      USE comsubstance, ONLY : l_subs2D
-# endif
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 #  include "param.h"
@@ -29,10 +25,6 @@
 #  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       do itrc=1,NT
-
-#  if defined MUSTANG && defined key_sand2D
-       if (.not.l_subs2D(itrc-itsubs1+1)) then
-#  endif
 
 #  ifdef AGRIF
         if (AGRIF_Root()) then
@@ -70,10 +62,6 @@
 #   endif
      &                                                              )
 #  endif   /* AGRIF */
-
-#  if defined MUSTANG && defined key_sand2D
-       endif
-#  endif
 
       enddo
       return
@@ -238,9 +226,6 @@
       jmax=jend+1
 # endif
 
-   
-   
-   
 # ifdef TS_MIX_S
 !==================================================================
 !
@@ -340,9 +325,6 @@
           diff3v(i,j)=0.5*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
         enddo
       enddo
-      
-
-     
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
 !==========================================================
@@ -377,7 +359,6 @@
           enddo
         endif
  
-
         if (k.eq.0 .or. k.eq.N) then
 !========================================================
 ! Set bottom and top boundary condition  (FC = 0).
@@ -446,7 +427,7 @@
             enddo
           enddo
 
-          
+
           if (k.lt.N) then
 !========================================================
 ! Compute the vertical component
@@ -507,12 +488,10 @@
             enddo
           endif  ! <-- k.lt.N
 
-
 !++========================================================
 !++ Perform time stepping
 !++========================================================
 
-        
           do j=jstr,jend
             do i=istr,iend
 #  ifdef TS_SPONGE_IMP
@@ -529,10 +508,8 @@
 #  endif
             enddo
           enddo
-          
 
-
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#  ifdef DIAGNOSTICS_TS
 !
 ! Tracer diagnostics
 !
@@ -561,15 +538,13 @@
 #   ifdef SALINITY
         indx=min(itrc,isalt)
 #   else
-#    ifdef TEMPERATURE
         indx=min(itrc,itemp)
-#    endif
 #   endif
 !
 !  Initialize TVmix diag computation: 
 !  --> use Trate which needs recomputing anyway
 !
-#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#   ifdef DIAGNOSTICS_TS
           do k=1,N
             do i=Istr,Iend
                Trate(i,j,k,itrc)=t(i,j,k,nnew,itrc)
@@ -628,7 +603,6 @@
         enddo           !--> discard FC,CF,DC
 #   undef FC 
 
-
 #   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
 !  Add TVmix correction term to previous TVmix computation
@@ -654,7 +628,6 @@
 #  undef LT
 #  undef GT
 # endif /* TS_MIX_S */
-
 !
 !=================================================================
 !
@@ -685,27 +658,16 @@
      &                      -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                              /(dt*cff1)
      &                                       SWITCH rmask(i,j)
-
 !
 ! Divide all diagnostic terms by the cell volume
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
 ! of diag terms are: (unit of tracers)* s-1.
 !
-
-              cff=cff1/Hz(i,j,k)
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
+              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
 # ifdef TS_SPONGE_IMP
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
+              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff1/Hz(i,j,k)
 # endif
-
-
-# ifdef DIAGNOSTICS_TSVAR
-
-# include "finalize_diagnostics_tsadv.h"
-
-# endif
-
             enddo
           enddo
         enddo
@@ -776,11 +738,7 @@
 !  DEBUG DIAGS
 !
 #  ifdef DIAGNOSTICS_DEBUG
-#   ifdef TEMPERATURE 
        if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
-#   else
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.1) then
-#   endif /* TEMPERATURE */
          i=5
          j=5
 #   if defined DIAGNOSTICS_TS_MLD
@@ -820,7 +778,7 @@
             enddo
           enddo
         enddo
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#  ifdef DIAGNOSTICS_TS
         do k=1,N
           do j=jstr,jend
             do i=Istr,Iend

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -56,7 +56,7 @@
 ! (e.g., Richtmeyer annd  Morton,  1967).
 ! The implicit vertical viscosity/diffusion terms are discretized
 ! using implicit backward time step.
-!--------------------------------------------------------------------
+!-------------------------------------------------------------------- 
 !
       implicit none
 # include "param.h"
@@ -91,9 +91,6 @@
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
      &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
-# ifdef DIAGNOSTICS_PV
-      real cff1 , cff2
-# endif
 # ifdef VADV_ADAPT_IMP
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
@@ -111,7 +108,7 @@
 #  define SWITCH !
 # endif
 # ifdef TS_MIX_ISO_FILT
-      if (FIRST_TIME_STEP) then
+      if (iic.eq.ntstart) then
        cfilt=1.                 ! exponential
       else                      ! time smoothing
        cfilt=csmooth            ! coefficient
@@ -128,35 +125,10 @@
 ! Also compute the main diagonal matrix coeddicient BC.
 !--------------------------------------------------------------------
 !
-
-!###########################
-# if defined DIAGNOSTICS_DISS
-        do k=1,N
-          do j=JstrR,JendR
-                Mrhs(Istr,j,k,1) =  0.
-                Mrhs(IendR,j,k,1)=  0.
-          enddo
-          do i=Istr,IendR
-                Mrhs(i,JstrR,k,1) =  0.
-                Mrhs(i,JendR,k,1)=  0.
-          enddo
-          do j=Jstr,JendR
-                Mrhs(IstrR,j,k,2) =  0.
-                Mrhs(IendR,j,k,2)=  0.
-          enddo
-          do i=IstrR,IendR
-                Mrhs(i,Jstr,k,2) =  0.
-                Mrhs(i,JendR,k,2)=  0.
-          enddo
-        enddo
-# endif
-!###########################
-
-
       do j=Jstr,Jend
 !
 ! The vertical viscosity term is not added as an explicit divergence term
-! like the other terms due to the semi-implicit backward Euler scheme.
+! like the other terms due to the semi-implicit backward Euler scheme. 
 ! We store first u(i,j,k,nnew) ...
 !
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
@@ -288,7 +260,7 @@
 # endif
             cff=1./(BC(i,k)-aa*CF(i,k-1))        !<-- p    = 1/(b(k)-a(k)*q(k))
             CF(i,k)=cff*cc
-            DC(i,k)=cff*(DC(i,k)-aa*DC(i,k-1))
+            DC(i,k)=cff*(DC(i,k)-aa*DC(i,k-1))          
           enddo
         enddo
         do i=IstrU,Iend
@@ -317,62 +289,10 @@
           DC(i,0)=(DC(i,0)*on_u(i,j)-DU_avg1(i,j,nnew))
      &                             /(CF(i,0)*on_u(i,j))
         enddo
-
-
-
-
 !###########################
         do k=1,N
           do i=IstrU,Iend
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
-          enddo
-        enddo        !--> discard DC,CF(:,0)
-!###########################
-
-!###########################
-# if defined DIAGNOSTICS_DISS
-! Compute the transport part of ke_vmix : d/dz[ Akv u du/dz]
-! ------- ------------- ------ ------ - -----
-      do k=1,N-1
-        do i=IstrU,Iend
-
-            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
-
-            cff1= 2.* (2.*MVmix(i,j,k+1,1) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
-     &               - 2.*MVmix(i,j,k,1) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
-     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
-     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
-
-            BC(i,k)= 0.25 * (u(i,j,k+1,nrhs) + u(i,j,k+1,nnew)
-     &                     + u(i,j,k  ,nrhs) + u(i,j,k  ,nnew)) * cff1
-
-         enddo
-       enddo
-
-      do i=IstrU,Iend
-          FC(i,0)= 0.
-          BC(i,0)= 0.
-          FC(i,N)= 1.
-          BC(i,N)= 0.
-!          BC(i,N)= 0.5 * (u(i,j,k,nrhs)+u(i,j,k,nnew)) * sustr(i,j)
-      enddo
-
-      do k=1,N
-        do i=IstrU,Iend
-            Mrhs(i,j,k,1) =  ( FC(i,k  ) * BC(i,k  )
-     &                       - FC(i,k-1) * BC(i,k-1) )
-     &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
-         enddo
-       enddo
-! ------- ------------- ------ ------ - -----
-
-# endif
-
-
-
-!###########################
-        do k=1,N
-          do i=IstrU,Iend
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MVmix(i,j,k,1)=-( MVmix(i,j,k,1) - u(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
@@ -398,8 +318,6 @@
 # endif
           enddo
         enddo        !--> discard DC,CF(:,0)
-
-
 # if defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV
         do i=IstrU,Iend
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
@@ -460,10 +378,6 @@
           enddo
         enddo        !--> discard DC,CF(:,0)
 # endif
-
-
-
-
 !
 !--------------------------------------------------------------------
 ! Time step momentum equation in the ETA-direction.
@@ -479,7 +393,7 @@
         if (j.ge.JstrV) then
 !
 ! The vertical viscosity term is not added as an explicit divergence term
-! like the other terms due to the semi-implicit backward Euler scheme.
+! like the other terms due to the semi-implicit backward Euler scheme. 
 ! We store first v(i,j,k,nnew) ...
 !
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
@@ -572,7 +486,7 @@
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_EK */
           enddo
-# endif /* BODYFORCE */
+# endif /* BODYFORCE */        
 !
 ! Resolve the tri-diagonal system. Also perform coupling between the
 ! barotropic and baroclinic modes (similarly to the XI-component, see
@@ -627,62 +541,10 @@
             DC(i,0)=(DC(i,0)*om_v(i,j)-DV_avg1(i,j,nnew))
      &                               /(CF(i,0)*om_v(i,j))
           enddo
-
-
-
 !###########################
           do k=1,N
             do i=Istr,Iend
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
-          enddo
-        enddo        !--> discard DC,CF(:,0)
-!###########################
-
-!###########################
-# if defined DIAGNOSTICS_DISS
-! Compute the transport part of ke_vmix : d/dz[ Akv v dv/dz]
-
-! ------- ------------- ------ ------ - -----
-      do k=1,N-1
-        do i=Istr,Iend
-
-            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i,j-1,k))
-
-            cff1= 2.* (2.*MVmix(i,j,k+1,2)/(Hz(i,j,k+1)+Hz(i,j-1,k+1))
-     &               - 2.*MVmix(i,j,k  ,2)/(Hz(i,j,k  )+Hz(i,j-1,k  )) )
-     &                 /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
-     &                   -z_r(i,j,k  )-z_r(i,j-1,k  ))
-
-            BC(i,k)= 0.25 * (v(i,j,k+1,nrhs) + v(i,j,k+1,nnew)
-     &                     + v(i,j,k  ,nrhs) + v(i,j,k  ,nnew)) * cff1
-
-         enddo
-       enddo
-
-      do i=Istr,Iend
-          FC(i,0)= 0.
-          BC(i,0)= 0.
-          FC(i,N)= 1.
-          BC(i,N)= 0.
-!          BC(i,N)= 0.5 * (v(i,j,k,nrhs)+v(i,j,k,nnew)) * svstr(i,j)
-      enddo
-
-      do k=1,N
-        do i=Istr,Iend
-            Mrhs(i,j,k,2) =  ( FC(i,k  ) * BC(i,k  )
-     &                       - FC(i,k-1) * BC(i,k-1) )
-     &                *  om_v(i,j)*on_v(i,j) SWITCH vmask(i,j)
-         enddo
-       enddo
-! ------- ------------- ------ ------ - -----
-
-# endif
-
-
-
-!###########################
-          do k=1,N
-            do i=Istr,Iend
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
      &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
@@ -853,8 +715,6 @@
           enddo
         enddo
 # endif /* DIAGNOSTICS_EK */
-
-
 !
 !--------------------------------------------------------------------
 !  Compute wet/dry masks for total velocity
@@ -868,10 +728,8 @@
 ! Set PHYSICAL lateral boundary conditions.
 !--------------------------------------------------------------------
 !
-      call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+      call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)   
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
-
-
 !
 !
 !--------------------------------------------------------------------
@@ -883,9 +741,9 @@
 ! dimensional submodel. After that compute mass fluxes through grid
 ! box faces.
 !
-! Meaning of scratch variables below:
+! Meaning of scratch variables below: 
 !
-! DC(i,k) [where k=1,N]  height of grid box for U- or V-cell.
+! DC(i,k) [where k=1,N]  height of grid box for U- or V-cell. 
 ! DC(i,0) total depth of water column at horizontal U- or V-points.
 ! CF(i,0) vertically integrated mass flux/error/correction for
 !                       the new time step velocity u,v(:,:,:,nnew)
@@ -899,7 +757,7 @@
 ! time step.
 !
 ! Explanation of horizontal loop indices: in the case of periodic
-! boundaries (in either direction) the coupling and computation of
+! boundaries (in either direction) the coupling and computation of 
 ! mass fluxes Huon,Hvom is performed within the internal range of
 ! indices (excluding ghost zones), after that the ghost points for
 ! the newly computed arrays are exchanged; in the case of nonperiodic
@@ -927,7 +785,7 @@
 !  Couple XI-component of velocity
 !--------------------------------------------------
 !
-      do j=JU_RANGE
+      do j=JU_RANGE 
         do i=IU_RANGE
           DC(i,0)=0.
           CF(i,0)=0.
@@ -960,7 +818,7 @@
         enddo
         do k=N,1,-1
           do i=IU_RANGE
-            u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
+            u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0)) 
 # ifdef MASKING
      &                                *umask(i,j)
 #  ifdef MRL_WCI
@@ -977,7 +835,7 @@
 !--# define TR
 # ifdef TR
 #  ifdef MRL_WCI
-            FC(i,k)=DC(i,k)*(0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+            FC(i,k)=DC(i,k)*(0.5*(u(i,j,k,nstp)+u(i,j,k,nnew)) 
      &                                            +ust(i,j,k))
 #  else
             FC(i,k)=0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))*DC(i,k)
@@ -987,7 +845,7 @@
 #  define DELTA 0.75
 #  ifdef MRL_WCI
             FC(i,k)=DELTA*Huon(i,j,k) +
-     &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew)
+     &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew) 
      &                                        +2.0*ust(i,j,k))
 #  else
             FC(i,k)=DELTA*Huon(i,j,k) +
@@ -1041,16 +899,11 @@
         do i=IU_RANGE
           dRdx(i,j,N)=0.  ! no rotation at surface level
         enddo
-
 !
 !  Smooth vertically at interior points.
 !
 #  ifdef TS_MIX_ISO_FILT
-# ifdef EXACT_RESTART
-      if (mod(iic-1,ismooth).eq.0) then
-# else
       if (mod(iic-ntstart,ismooth).eq.0) then
-# endif
         do k=N-1,2,-1
           do i=IU_RANGE
             dRdx(i,j,k)=0.05*dRdx(i,j,k-1)+
@@ -1063,8 +916,6 @@
         enddo
       endif
 #  endif /* TS_MIX_ISO_FILT */
-
-
 !
 # endif /* TS_DIF2 || TS_DIF4 || SPONGE_DIF2 */
 !
@@ -1105,7 +956,7 @@
           enddo
           do k=N,1,-1
             do i=IV_RANGE
-              v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
+              v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0)) 
 # ifdef MASKING
      &                                  *vmask(i,j)
 #  ifdef MRL_WCI
@@ -1124,7 +975,7 @@
               FC(i,k)=DC(i,k)*(0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
      &                                              +vst(i,j,k))
 #  else
-              FC(i,k)=0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))*DC(i,k)
+              FC(i,k)=0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))*DC(i,k) 
 #  endif
 # else
 #  ifdef MRL_WCI
@@ -1187,11 +1038,7 @@
 !  Smooth vertically at interior points.
 !
 #  ifdef TS_MIX_ISO_FILT
-# ifdef EXACT_RESTART
-      if (mod(iic-1,ismooth).eq.0) then
-# else
       if (mod(iic-ntstart,ismooth).eq.0) then
-# endif
         do k=N-1,2,-1
           do i=IV_RANGE
             dRde(i,j,k)=0.05*dRde(i,j,k-1)+
@@ -1210,11 +1057,10 @@
 !
         endif  !<-- j.ge.Jstr
       enddo    !<-- j loop
-
 !
 !--------------------------------------------------------------------
 !
-# if defined TS_HADV_TEST
+# if defined TS_HADV_TEST 
 #  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
      do k=1,N
         do j=jstrR,jendR
@@ -1279,10 +1125,10 @@
 !--------------------------------------------------------------------
 ! Apply mass point sources
 !--------------------------------------------------------------------
-!
+! 
 ! This is done after the coupling is performed (for now) to avoid
 ! having (u,v) and (Huon,Hvom) affected by masked values or
-! variables not containing mass point sources info during the
+! variables not containing mass point sources info during the 
 ! coupling process (P. Marchesiello, 17 Jun 2004).
 !
 # ifdef PSOURCE
@@ -1345,7 +1191,7 @@
           do i=IU_RANGE
             u(i,j,k,nnew)=u(i,j,k,nnew)+dt*M3nudgcof(i,j)*
 #  ifdef ZONAL_NUDGING
-     &                           (uclmzon(j,k)-uzon(j,k))
+     &                           (uclmzon(j,k)-uzon(j,k))     
 #  else
      &                           (uclm(i,j,k)-u(i,j,k,nnew))
 #  endif /* ZONAL_NUDGING */
@@ -1363,7 +1209,7 @@
           do i=IV_RANGE
             v(i,j,k,nnew)=v(i,j,k,nnew)+dt*M3nudgcof(i,j)*
 #  ifdef ZONAL_NUDGING
-     &                            (vclmzon(j,k)-vzon(j,k))
+     &                            (vclmzon(j,k)-vzon(j,k))     
 #  else
      &                            (vclm(i,j,k)-v(i,j,k,nnew))
 #  endif
@@ -1498,7 +1344,7 @@
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
      &                                       *om_u(i,j)*on_u(i,j)/dt
             do k=2,N
-                wrkrate(i,j,1) = wrkrate(i,j,1) +
+                wrkrate(i,j,1) = wrkrate(i,j,1) + 
      &           ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
      &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
      &                                       *om_u(i,j)*on_u(i,j)/dt
@@ -1513,7 +1359,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             cff=0.5*(pn(i,j)+pn(i-1,j))
-
+            
             wrkXadv(i,j,1)=wrkXadv(i,j,1)*cff
             wrkYadv(i,j,1)=wrkYadv(i,j,1)*cff
             wrkHdiff(i,j,1)=wrkHdiff(i,j,1)*cff
@@ -1824,7 +1670,7 @@
 
         do j=JU_RANGE
           do i=IU_RANGE
-
+    
             ekwrkrate(i,j,1) = 0.
             ekwrkvol(i,j,1) = 0.
 
@@ -2018,18 +1864,12 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
-
-
-
 #if defined DIAGNOSTICS_PV
 ! Add non conservative terms to rhs.
 
           do k=1,N
             do j=JU_RANGE
               do i=IU_RANGE
-# if defined DIAGNOSTICS_PV_FULL
-                pv(i,j,k) = Mrhs(i,j,k,1)
-# endif
                 Mrhs(i,j,k,1) = (MVmix2(i,j,k,1)
      &                            + MVmix(i,j,k,1)
 # if defined DIAGNOSTICS_BARO
@@ -2039,13 +1879,10 @@
      &                            + Mfast(i,j,k,1)
 # endif
      &                            + MHmix(i,j,k,1,3-nstp)
-     &                            + MHdiff(i,j,k,1) )
+     &                            + MHdiff(i,j,k,1))
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
      &        * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
-# if ! defined DIAGNOSTICS_PV_FULL
-     &                            - Mrhs(i,j,k,1)
-# endif
 # endif
               enddo
             enddo
@@ -2054,9 +1891,6 @@
           do k=1,N
             do j=JV_RANGE
               do i=IV_RANGE
-# if defined DIAGNOSTICS_PV_FULL
-                pvd(i,j,k) = Mrhs(i,j,k,2)
-# endif
                 Mrhs(i,j,k,2) = (MVmix2(i,j,k,2)
      &                            + MVmix(i,j,k,2)
 # if defined DIAGNOSTICS_BARO
@@ -2070,9 +1904,6 @@
 # if defined DIAGNOSTICS_DISS
      &        * (Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
      &        * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
-# if ! defined DIAGNOSTICS_PV_FULL
-     &                            - Mrhs(i,j,k,2)
-# endif
 # endif
               enddo
             enddo
@@ -2099,11 +1930,11 @@
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                        v(START_2D_ARRAY,1,nnew))
+     &                        v(START_2D_ARRAY,1,nnew)) 
 #  endif
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend, 
      &                        Huon(START_2D_ARRAY,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend, 
      &                        Hvom(START_2D_ARRAY,1))
 
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
@@ -2316,14 +2147,14 @@
 # endif
 
 
-# if defined DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_EK  
 
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkHadv(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkHdiff(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
-     &                                 ekwrkVadv(START_2D_ARRAY,1))
+     &                                 ekwrkVadv(START_2D_ARRAY,1))     
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkPrsgrd(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -2355,7 +2186,7 @@
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkHdiff(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
-     &                                 ekwrkVadv(START_2D_ARRAY,2))
+     &                                 ekwrkVadv(START_2D_ARRAY,2))     
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkPrsgrd(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
@@ -2434,11 +2265,11 @@
 
 
 
-# endif
+# endif 
       return
       end
 #else
-      subroutine step3d_uv_empty
+      subroutine step3d_uv_empty 
       return
       end
 #endif /* SOLVE3D */

@@ -40,19 +40,13 @@
       implicit none
 # include "param.h"
 # include "online.h"
-# include "ncscrum.h"
       integer, intent(in) :: bvar
       character bulkyear*4, bulkmonth1*1, bulkmonth2*2
       integer lenstr
       ! If first iteration, Y and M from roms.in file
       if(itbulkO(bvar).eq.0) then
-# if defined XIOS
-        bulkyearnum(bvar)=start_year
-        bulkmonthnum(bvar)=start_month
-# else
         bulkyearnum(bvar)=yearnum
         bulkmonthnum(bvar)=monthnum
-# endif
       endif
 
       ! Variable to add the year in the name
@@ -64,11 +58,7 @@
         ! Filename
         bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))//
      &  blk_vname(1,bvar)(1:lenstr(blk_vname(1,bvar)))//
-# if defined BULK_MONTH_1DIGIT
      &  '_Y'//bulkyear//'M'//bulkmonth1//'.nc'
-# else
-     &  '_Y'//bulkyear//'M0'//bulkmonth1//'.nc'
-# endif
       else
         ! Variable to add the mont in the name (month>10)
         write(unit=bulkmonth2,fmt='(I2)') bulkmonthnum(bvar) 

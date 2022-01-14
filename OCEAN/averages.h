@@ -21,10 +21,6 @@
      &       /avg_vbar/vbar_avg
       real bostr_avg(GLOBAL_2D_ARRAY)
       common /avg_bostr/bostr_avg
-      real bustr_avg(GLOBAL_2D_ARRAY)
-      common /avg_bustr/bustr_avg
-      real bvstr_avg(GLOBAL_2D_ARRAY)
-      common /avg_bvstr/bvstr_avg
       real wstr_avg(GLOBAL_2D_ARRAY)
       common /avg_wstr/wstr_avg
       real sustr_avg(GLOBAL_2D_ARRAY)
@@ -33,10 +29,6 @@
       common /avg_svstr/svstr_avg
       real srflx_avg(GLOBAL_2D_ARRAY)
       common /avg_srflx/srflx_avg
-# ifdef MORPHODYN
-      real h_avg(GLOBAL_2D_ARRAY)
-      common /avg_h/h_avg
-# endif
 # ifdef SOLVE3D
       real u_avg(GLOBAL_2D_ARRAY,N)
       real v_avg(GLOBAL_2D_ARRAY,N)
@@ -63,8 +55,6 @@
      &       /avg_w/w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
-      real btflx_avg(GLOBAL_2D_ARRAY,NT)
-      common /avg_btflx/btflx_avg
 #  if defined LMD_SKPP || defined GLS_MIXING
       real hbl_avg(GLOBAL_2D_ARRAY)
       common /avg_hbl/hbl_avg

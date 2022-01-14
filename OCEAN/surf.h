@@ -2,8 +2,7 @@
 !  ==== == ======= ==== ==========
 !
 
-#if defined OUTPUTS_SURFACE && defined AVERAGES && ! defined XIOS
-
+#if defined OUTPUTS_SURFACE && defined AVERAGES
       real timesurf_avg
       real surft_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE surft(BLOCK_PATTERN,*) BLOCK_CLAUSE

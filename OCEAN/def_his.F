@@ -2,16 +2,16 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
 # include "cppdefs.h"
-!
+
       subroutine def_his (ncid, total_rec, ierr)
 #else
       subroutine def_avg (ncid, total_rec, ierr)
@@ -35,10 +35,6 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
-#ifdef MUSTANG
-      USE comMUSTANG, ONLY :nk_nivsed_out, nv_out3Dnv_specif,
-     &                      nv_out2D_specif, nv_out3Dk_specif
-#endif
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -51,13 +47,10 @@
      &      , indxWrk
 #endif
 #ifdef SOLVE3D
-     &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4), w3dgrd(4), itrc,itrv
+     &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4), w3dgrd(4), itrc
 #endif
-#ifdef MRL_WCI
+#if defined MRL_WCI
      &      , iwkb
-#endif
-#ifdef MUSTANG
-     &      , indx,ik
 #endif
 
 #include "param.h"
@@ -84,7 +77,11 @@
 # define vidV hisV
 # define vidT hisT
 # define vidR hisR
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
 # define vidbvf hisbvf
+#endif
 # define vidO hisO
 # define vidW hisW
 # define vidVisc hisVisc
@@ -97,31 +94,42 @@
 # define vidTke hisTke
 # define vidGls hisGls
 # define vidLsc hisLsc
-# define vidHm hisHm
-# define vidWAVE hisWAVE
-# define vidSUP hisSUP
-# define vidUST2D hisUST2D
-# define vidVST2D hisVST2D
-# define vidUST hisUST
-# define vidVST hisVST
-# define vidWST hisWST
-# define vidAkb hisAkb
-# define vidAkw hisAkw
-# define vidKVF hisKVF
-# define vidCALP hisCALP
-# define vidKAPS hisKAPS
-# define vidHel hisHel
-# define vidChC hisChC
-# define vidU10 hisU10
-# define vidKvO2 hisKvO2
-# define vidO2sat hisO2sat
-# define vidAOU hisAOU
-# define vidwind10 hiswind10
+# ifdef MORPHODYN
+#  define vidHm hisHm
+# endif
+# ifdef WAVE_IO
+#  define vidWAVE hisWAVE
+# endif
+# if defined MRL_WCI
+#  define vidSUP hisSUP
+#  define vidUST2D hisUST2D
+#  define vidVST2D hisVST2D
+#  define vidUST hisUST
+#  define vidVST hisVST
+#  define vidWST hisWST
+#  define vidAkb hisAkb
+#  define vidAkw hisAkw
+#  define vidKVF hisKVF
+#  define vidCALP hisCALP
+#  define vidKAPS hisKAPS
+# endif
+# ifdef BIOLOGY
+#  define vidHel hisHel
+#  ifdef BIO_NChlPZD
+#   define vidChC hisChC
+#   ifdef OXYGEN
+#     define vidU10 hisU10
+#     define vidKvO2 hisKvO2
+#     define vidO2sat hisO2sat
+#   endif
+#  elif defined BIO_BioEBUS 
+#   define vidAOU hisAOU 		
+#   define vidwind10 hiswind10 	
+#  endif
+# endif  /* BIOLOGY */
 # define vidSed hisSed
 # define vidBBL hisBBL
 # define vidBostr hisBostr
-# define vidBustr hisBustr
-# define vidBvstr hisBvstr
 # define vidWstr hisWstr
 # define vidUWstr hisUWstr
 # define vidVWstr hisVWstr
@@ -135,16 +143,9 @@
 #  define vidShflx_lat hisShflx_lat
 #  define vidShflx_sen hisShflx_sen
 # endif
-#if defined TEMPERATURE && defined BHFLUX
-# define vidBhflx hisBhflx
-#endif
-# if defined SALINITY && defined BWFLUX
-#  define vidBwflx hisBwflx
-# endif
 # ifdef SST_SKIN
 #  define vidSST_skin hisSST_skin
 # endif
-# define vidM hisMust
 
 #else
 
@@ -161,7 +162,11 @@
 # define vidV avgV
 # define vidT avgT
 # define vidR avgR
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
 # define vidbvf avgbvf
+#endif
 # define vidO avgO
 # define vidW avgW
 # define vidVisc avgVisc
@@ -174,56 +179,61 @@
 # define vidTke avgTke
 # define vidGls avgGls
 # define vidLsc avgLsc
-# define vidHel avgHel
-# define vidChC avgChC
-# define vidU10 avgU10
-# define vidKvO2 avgKvO2
-# define vidO2sat avgO2sat
-# define vidAOU avgAOU
-# define vidwind10 avgwind10
+# if defined BIOLOGY & !defined PISCES
+#  define vidHel avgHel
+#  ifdef BIO_NChlPZD
+#   define vidChC avgChC
+#   ifdef OXYGEN
+#    define vidU10 avgU10
+#    define vidKvO2 avgKvO2
+#    define vidO2sat avgO2sat
+#   endif
+#  elif defined BIO_BioEBUS
+#   define vidAOU avgAOU		
+#   define vidwind10 avgwind10	
+#  endif
+# endif  /* BIOLOGY */
 # define vidSed avgSed
 # define vidBBL avgBBL
 # define vidBostr avgBostr
-# define vidBustr avgBustr
-# define vidBvstr avgBvstr
 # define vidWstr avgWstr
 # define vidUWstr avgUWstr
 # define vidVWstr avgVWstr
-# define vidHm avgHm
-# define vidWAVE avgWAVE
-# define vidSUP avgSUP
-# define vidUST2D avgUST2D
-# define vidVST2D avgVST2D
-# define vidUST avgUST
-# define vidWST avgWST
-# define vidVST avgVST
-# define vidAkb avgAkb
-# define vidAkw avgAkw
-# define vidKVF avgKVF
-# define vidCALP avgCALP
-# define vidKAPS avgKAPS
+# ifdef MORPHODYN
+#  define vidHm avgHm
+# endif
+# ifdef WAVE_IO
+#  define vidWAVE avgWAVE
+# endif
+# if defined MRL_WCI
+#  define vidSUP avgSUP
+#  define vidUST2D avgUST2D
+#  define vidVST2D avgVST2D
+#  define vidUST avgUST
+#  define vidWST avgWST
+#  define vidVST avgVST
+#  define vidAkb avgAkb
+#  define vidAkw avgAkw
+#  define vidKVF avgKVF
+#  define vidCALP avgCALP
+#  define vidKAPS avgKAPS
+# endif
 # define vidShflx avgShflx
-# define vidSwflx avgSwflx
+#ifdef SALINITY
+#  define vidSwflx avgSwflx
+#endif
 # define vidShflx_rsw avgShflx_rsw
 # if defined BULK_FLUX
 #  define vidShflx_rlw avgShflx_rlw
 #  define vidShflx_lat avgShflx_lat
 #  define vidShflx_sen avgShflx_sen
 # endif
-#ifdef BHFLUX
-# define vidBhflx avgBhflx
-#endif
-#if defined BWFLUX && defined SALINITY
-# define vidBwflx avgBwflx
-#endif
 # ifdef SST_SKIN
 #  define vidSST_skin avgSST_skin
 # endif
-
-# define vidM avgMust
 #endif
 !
-! Put time record index into file name. In  the case when model
+! Put time record index into file name. In  the case when model 
 ! output is to be arranged into sequence of named files, the naming
 ! convention is as follows: 'his_root.INDEX.[MPI_node.]nc', where
 ! INDEX is an integer number such that (i) it is divisible by the
@@ -260,7 +270,7 @@
 !        .... already known (MPI single file output only).
 !     endif
 !
-! which is designed to implement flexible opening policy:
+! which is designed to implement flexible opening policy: 
 ! if ldefhis=.true., it forces creation of a new file [if the
 ! file already exists, it will be overwritten]; on the other hand,
 ! ldefhis=.false., it is assumed that the file already exists and
@@ -298,8 +308,7 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        MPI_master_only write(stdout,*)
-     &       'CREATE HIS/AVG NC4 PARALLEL FILE'
+        MPI_master_only write(stdout,*)'CREATE HIS/AVG NC4 PARALLEL FILE'        
         ierr=nf_create_par(ncname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
@@ -309,7 +318,7 @@
      &           'Cannot create netCDF file:', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-        if (rec_per_file.eq.0) total_rec=0
+        if (rec_per_file.eq.0) total_rec=0  
 !
 ! Put global attributes.
 ! --- ------ -----------
@@ -326,15 +335,12 @@
 #ifdef SEDIMENT
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
 #endif
-#ifdef  MUSTANG
-        ierr=nf_def_dim (ncid, 's_b',      nk_nivsed_out,  b3dgrd(3))
-#endif
 #ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
 #endif
         ierr=nf_def_dim (ncid, 'time', nf_unlimited, timedim)
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+#ifdef OUTPUTS_SURFACE
         ierr=nf_def_dim (ncid, 'auxil',    6,        auxil(1))
 #else
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
@@ -348,7 +354,7 @@
 
         v2dgrd(1)=r2dgrd(1)         ! 2D VBAR-type
         v2dgrd(3)=timedim
-
+        
         b3dgrd(1)=r2dgrd(1)         !
         b3dgrd(2)=r2dgrd(2)         ! 3D BED-type
         b3dgrd(4)=timedim           !
@@ -378,14 +384,14 @@
 ! Define grid variables.
 ! ------ ---- ----------
 !
-        if (total_rec.le.1) then
+      if (total_rec.le.1) then
 # ifdef SOLVE3D
-          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                                  ,r3dgrd, w3dgrd)
+         call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd 
+     &                   ,r3dgrd, w3dgrd)
 # else
-          call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
 # endif
-        endif
+      endif
 #endif
 
 !
@@ -428,9 +434,9 @@
         ierr=nf_put_att_text (ncid, vidTime, 'field',  lvar,
      &                                vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime, indxTime, 5,
+        call nf_add_attribute(ncid, vidTime, indxTime, 5, 
      &       NF_FOUT, ierr)
-
+        
 !
 ! Time2.
 !
@@ -457,19 +463,17 @@
         ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
      &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, indxTime2, 5,
+        call nf_add_attribute(ncid, vidTime2, indxTime2, 5, 
      &       NF_FOUT, ierr)
 
-!=======================================================================
+!===============================================================
 !
 ! Define primary variables
 !
-!=======================================================================
+!===============================================================
 
 !
-!-----------------------------------------------------------------------
 ! Free-surface.
-!-----------------------------------------------------------------------
 !
         if (wrt(indxZ)) then
           lvar=lenstr(vname(1,indxZ))
@@ -495,14 +499,11 @@
           ierr=nf_put_att_text (ncid, vidZ, 'field',     lvar,
      &                                  vname(4,indxZ)(1:lvar))
 
-          call nf_add_attribute(ncid, vidZ, indxZ, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidZ, indxZ, 5, NF_FOUT, ierr)
 
-        endif
+       endif
 !
-!-----------------------------------------------------------------------
 ! 2D momenta in XI- and ETA-directions.
-!-----------------------------------------------------------------------
 !
         if (wrt(indxUb)) then
           lvar=lenstr(vname(1,indxUb))
@@ -529,6 +530,7 @@
      &                                  vname(4,indxUb)(1:lvar))
 
           call nf_add_attribute(ncid, vidUb, indxUb, 5, NF_FOUT, ierr)
+
         endif
 
         if (wrt(indxVb)) then
@@ -555,23 +557,15 @@
           ierr=nf_put_att_text (ncid, vidVb, 'field',     lvar,
      &                                  vname(4,indxVb)(1:lvar))
 
-          call nf_add_attribute(ncid, vidVb, indxVb, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidVb, indxVb, 5, NF_FOUT, ierr)
+
         endif
 
-#ifdef MORPHODYN
-!
-!-----------------------------------------------------------------------
-!  Time-dependent bathymetry
-!-----------------------------------------------------------------------
-!
+#ifdef MORPHODYN 
         if (wrt(indxHm)) then
           lvar=lenstr(vname(1,indxHm))
           ierr=nf_def_var (ncid, vname(1,indxHm)(1:lvar),
      &                              NF_FOUT, 3, r2dgrd, vidHm)
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidHm,nf_collective)
-# endif
 #ifndef AVRH
           lvar=lenstr(vname(2,indxHm))
           ierr=nf_put_att_text (ncid, vidHm, 'long_name', lvar,
@@ -589,24 +583,22 @@
           ierr=nf_put_att_text (ncid, vidHm, 'field',     lvar,
      &                                  vname(4,indxHm)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHm, indxHm, 5, NF_FOUT,
-     &         ierr)
+          call nf_add_attribute(ncid, vidHm, indxHm, 5, NF_FOUT, ierr)
+
         endif
-#endif /* MORPHODYN */
+#endif 
 
 #ifdef SOLVE3D
 !
-!-----------------------------------------------------------------------
 ! 3D momenta in XI- and ETA-directions.
-!-----------------------------------------------------------------------
 !
         if (wrt(indxU)) then
           lvar=lenstr(vname(1,indxU))
-          ierr=nf_def_var (ncid, vname(1,indxU)(1:lvar),
+          ierr=nf_def_var (ncid, vname(1,indxU)(1:lvar), 
      &                             NF_FOUT, 4, u3dgrd, vidU)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidU,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxU))
           ierr=nf_put_att_text (ncid, vidU, 'long_name', lvar,
@@ -625,15 +617,16 @@
      &                                  vname(4,indxU)(1:lvar))
 
           call nf_add_attribute(ncid, vidU, indxU, 5, NF_FOUT, ierr)
+
         endif
 
         if (wrt(indxV)) then
           lvar=lenstr(vname(1,indxV))
-          ierr=nf_def_var (ncid, vname(1,indxV)(1:lvar),
+          ierr=nf_def_var (ncid, vname(1,indxV)(1:lvar), 
      &                             NF_FOUT, 4, v3dgrd, vidV)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidV,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxV))
           ierr=nf_put_att_text (ncid, vidV, 'long_name', lvar,
@@ -652,55 +645,51 @@
      &                                  vname(4,indxV)(1:lvar))
 
           call nf_add_attribute(ncid, vidV, indxV, 5, NF_FOUT, ierr)
+
         endif
 !
-!-----------------------------------------------------------------------
 ! Tracer variables.
-!-----------------------------------------------------------------------
 !
-# ifdef TRACERS
         do itrc=1,NT
-          if (wrt(indxV+itrc)) then
-            lvar=lenstr(vname(1,indxV+itrc))
-            ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
+          if (wrt(indxT+itrc-1)) then
+            lvar=lenstr(vname(1,indxT+itrc-1))
+            ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidT(itrc))
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidT(itrc),nf_collective)
-#endif
+# endif
 # ifndef AVRH
-            lvar=lenstr(vname(2,indxV+itrc))
+            lvar=lenstr(vname(2,indxT+itrc-1))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'long_name',
-     &                         lvar, vname(2,indxV+itrc)(1:lvar))
+     &                         lvar, vname(2,indxT+itrc-1)(1:lvar))
 # else
-            text='averaged '/ /vname(2,indxV+itrc)
+            text='averaged '/ /vname(2,indxT+itrc-1)
             lvar=lenstr(text)
             ierr=nf_put_att_text (ncid, vidT(itrc), 'long_name',
      &                                          lvar, text(1:lvar))
 # endif
-            lvar=lenstr(vname(3,indxV+itrc))
+            lvar=lenstr(vname(3,indxT+itrc-1))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'units', lvar,
-     &                               vname(3,indxV+itrc)(1:lvar))
-            lvar=lenstr(vname(4,indxV+itrc))
+     &                               vname(3,indxT+itrc-1)(1:lvar))
+            lvar=lenstr(vname(4,indxT+itrc-1))
             ierr=nf_put_att_text (ncid, vidT(itrc), 'field', lvar,
-     &                               vname(4,indxV+itrc)(1:lvar))
+     &                               vname(4,indxT+itrc-1)(1:lvar))
 
-            call nf_add_attribute(ncid,vidT(itrc),indxV+itrc,5,
+            call nf_add_attribute(ncid,vidT(itrc),indxT+itrc-1,5,
      &           NF_FOUT, ierr)
-          endif
-        enddo
-# endif
+
+            endif
+      enddo
 !
-!-----------------------------------------------------------------------
 ! Density anomaly.
-!-----------------------------------------------------------------------
 !
         if (wrt(indxR)) then
           lvar=lenstr(vname(1,indxR))
-          ierr=nf_def_var (ncid, vname(1,indxR)(1:lvar),
+          ierr=nf_def_var (ncid, vname(1,indxR)(1:lvar), 
      &                             NF_FOUT, 4, r3dgrd, vidR)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidR,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxR))
           ierr=nf_put_att_text (ncid, vidR, 'long_name', lvar,
@@ -719,22 +708,19 @@
      &                                  vname(4,indxR)(1:lvar))
 
           call nf_add_attribute(ncid, vidR, indxR, 5, NF_FOUT, ierr)
+
         endif
-!
-!-----------------------------------------------------------------------
-! Brunt Vaisala Frequency.
-!-----------------------------------------------------------------------
-!
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
+!----------------------------------------------------------------------------
+!
+! Brunt Vaisala Frequency.
+!
         if (wrt(indxbvf)) then
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
      &                             NF_FOUT, 4, w3dgrd, vidbvf)
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidbvf,nf_collective)
-#endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxbvf))
           ierr=nf_put_att_text (ncid, vidbvf, 'long_name', lvar,
@@ -753,49 +739,47 @@
      &                                  vname(4,indxbvf)(1:lvar))
 
           call nf_add_attribute(ncid, vidbvf, indxbvf, 5, NF_FOUT, ierr)
+
         endif
 # endif
-!
-!-----------------------------------------------------------------------
-! BIO_BioEBUS : AOU and pCO2
-!-----------------------------------------------------------------------
+!----------------------------------------------------------------------------
+! AOU and pCO2
 !
 # if defined BIOLOGY && defined BIO_BioEBUS
         if (wrt(indxAOU)) then
           lvar=lenstr(vname(1,indxAOU))
-          ierr=nf_def_var (ncid, vname(1,indxAOU)(1:lvar),
+          ierr=nf_def_var (ncid, vname(1,indxAOU)(1:lvar), 
      &                           NF_FOUT, 4, r3dgrd, vidAOU)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAOU,nf_collective)
-#endif
-#   ifndef AVRH
+#  endif
+#  ifndef AVRH
           lvar=lenstr(vname(2,indxAOU))
           ierr=nf_put_att_text (ncid, vidAOU, 'long_name',lvar,
      &                                vname(2,indxAOU)(1:lvar))
-#   else
+#  else
           text='averaged '/ /vname(2,indxAOU)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidAOU, 'long_name',lvar,
      &                                          text(1:lvar))
-#   endif
+#  endif
           lvar=lenstr(vname(3,indxAOU))
           ierr=nf_put_att_text (ncid, vidAOU, 'units',lvar,
      &                                vname(3,indxAOU)(1:lvar))
           lvar=lenstr(vname(4,indxAOU))
           ierr=nf_put_att_text (ncid, vidAOU, 'field',lvar,
      &                                vname(4,indxAOU)(1:lvar))
-
-          call nf_add_attribute(ncid, vidAOU, indxAOU, 5,
+          call nf_add_attribute(ncid, vidAOU, indxAOU, 5, 
      &    NF_FOUT, ierr)
         endif
 
         if (wrt(indxWIND10)) then
           lvar=lenstr(vname(1,indxWIND10))
-          ierr=nf_def_var (ncid, vname(1,indxWIND10)(1:lvar),
+          ierr=nf_def_var (ncid, vname(1,indxWIND10)(1:lvar), 
      &                         NF_FOUT, 3, r2dgrd, vidwind10)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidwind10,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWIND10))
           ierr=nf_put_att_text (ncid,vidwind10,'long_name',lvar,
@@ -812,23 +796,22 @@
           lvar=lenstr(vname(4,indxWIND10))
           ierr=nf_put_att_text (ncid,vidwind10,'field',lvar,
      &                              vname(4,indxWIND10)(1:lvar))
-
-          call nf_add_attribute(ncid, vidwind10, indxWIND10, 5,
+          call nf_add_attribute(ncid, vidwind10, indxWIND10, 5, 
      &    NF_FOUT, ierr)
         endif
-# endif /* BIO_BioEBUS */
+
+# endif
+!--------------------------------------------------------------------------- 
 !
-!-----------------------------------------------------------------------
 ! S-coordinate "omega" vertical velocity.
-!-----------------------------------------------------------------------
 !
         if (wrt(indxO)) then
           lvar=lenstr(vname(1,indxO))
           ierr=nf_def_var (ncid, vname(1,indxO)(1:lvar),
      &                             NF_FOUT, 4, w3dgrd, vidO)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidO,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxO))
           ierr=nf_put_att_text (ncid, vidO, 'long_name', lvar,
@@ -847,11 +830,10 @@
      &                                  vname(4,indxO)(1:lvar))
 
           call nf_add_attribute(ncid, vidO, indxO, 5, NF_FOUT, ierr)
+
         endif
 !
-!-----------------------------------------------------------------------
 ! True vertical velocity.
-!-----------------------------------------------------------------------
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
@@ -883,90 +865,38 @@
      &                                  vname(4,indxW)(1:lvar))
 
           call nf_add_attribute(ncid, vidW, indxW, 5, NF_FOUT, ierr)
+
         endif
 #endif /* SOLVE3D */
 
 !================================================================
-!
+! 
 ! Define secondary variables
 !
 !================================================================
+
         if (wrt(indxBostr)) then
           lvar=lenstr(vname(1,indxBostr))
           ierr=nf_def_var (ncid, vname(1,indxBostr)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidBostr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidBostr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxBostr))
           ierr=nf_put_att_text (ncid, vidBostr, 'long_name', lvar,
      &                                 vname(2,indxBostr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxBostr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidBostr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxBostr))
           ierr=nf_put_att_text (ncid, vidBostr, 'units',     lvar,
      &                                 vname(3,indxBostr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidBostr,indxBostr,5,
-     &                          NF_FOUT, ierr)
-        endif
-
-
-
-        if (wrt(indxBustr)) then
-          lvar=lenstr(vname(1,indxBustr))
-          ierr=nf_def_var (ncid, vname(1,indxBustr)(1:lvar),
-     &                             NF_FOUT, 3, u2dgrd, vidBustr)
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidBustr,nf_collective)
-#endif
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxBustr))
-          ierr=nf_put_att_text (ncid, vidBustr, 'long_name', lvar,
-     &                                 vname(2,indxBustr)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxBustr)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidBustr, 'long_name', lvar,
-     &                                               text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxBustr))
-          ierr=nf_put_att_text (ncid, vidBustr, 'units',     lvar,
-     &                                 vname(3,indxBustr)(1:lvar))
-
-          call nf_add_attribute(ncid, vidBustr,indxBustr,5,
-     &                          NF_FOUT, ierr)
-
-        endif
-
-
-        if (wrt(indxBvstr)) then
-          lvar=lenstr(vname(1,indxBvstr))
-          ierr=nf_def_var (ncid, vname(1,indxBvstr)(1:lvar),
-     &                             NF_FOUT, 3, v2dgrd, vidBvstr)
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidBvstr,nf_collective)
-#endif
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxBvstr))
-          ierr=nf_put_att_text (ncid, vidBvstr, 'long_name', lvar,
-     &                                 vname(2,indxBvstr)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxBvstr)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidBvstr, 'long_name', lvar,
-     &                                               text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxBvstr))
-          ierr=nf_put_att_text (ncid, vidBvstr, 'units',     lvar,
-     &                                 vname(3,indxBvstr)(1:lvar))
-
-          call nf_add_attribute(ncid, vidBvstr,indxBvstr,5,
+          call nf_add_attribute(ncid, vidBostr,indxBostr,5, 
      &                          NF_FOUT, ierr)
 
         endif
@@ -975,75 +905,78 @@
           lvar=lenstr(vname(1,indxWstr))
           ierr=nf_def_var (ncid, vname(1,indxWstr)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidWstr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidWstr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxWstr))
           ierr=nf_put_att_text (ncid, vidWstr, 'long_name', lvar,
      &                                 vname(2,indxWstr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxWstr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidWstr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxWstr))
           ierr=nf_put_att_text (ncid, vidWstr, 'units',     lvar,
      &                                 vname(3,indxWstr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidWstr, indxWstr, 5,
+          call nf_add_attribute(ncid, vidWstr, indxWstr, 5, 
      &                          NF_FOUT, ierr)
+
         endif
 !
         if (wrt(indxUWstr)) then
           lvar=lenstr(vname(1,indxUWstr))
           ierr=nf_def_var (ncid, vname(1,indxUWstr)(1:lvar),
      &                             NF_FOUT, 3, u2dgrd, vidUWstr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUWstr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxUWstr))
           ierr=nf_put_att_text (ncid, vidUWstr, 'long_name', lvar,
      &                                 vname(2,indxUWstr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxUWstr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidUWstr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxUWstr))
           ierr=nf_put_att_text (ncid, vidUWstr, 'units',     lvar,
      &                                 vname(3,indxUWstr)(1:lvar))
-
-          call nf_add_attribute(ncid, vidUWstr, indxUWstr, 5,
+            
+          call nf_add_attribute(ncid, vidUWstr, indxUWstr, 5, 
      &                          NF_FOUT, ierr)
+
         endif
 !
         if (wrt(indxVWstr)) then
           lvar=lenstr(vname(1,indxVWstr))
           ierr=nf_def_var (ncid, vname(1,indxVWstr)(1:lvar),
      &                             NF_FOUT, 3, v2dgrd, vidVWstr)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVWstr,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxVWstr))
           ierr=nf_put_att_text (ncid, vidVWstr, 'long_name', lvar,
      &                                 vname(2,indxVWstr)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxVWstr)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidVWstr, 'long_name', lvar,
      &                                               text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxVWstr))
           ierr=nf_put_att_text (ncid, vidVWstr, 'units',     lvar,
      &                                 vname(3,indxVWstr)(1:lvar))
 
-          call nf_add_attribute(ncid, vidVWstr, indxVWstr, 5,
+          call nf_add_attribute(ncid, vidVWstr, indxVWstr, 5, 
      &                          NF_FOUT, ierr)
+
         endif
 
 #ifdef SOLVE3D
@@ -1055,9 +988,9 @@
           lvar=lenstr(vname(1,indxVisc))
           ierr=nf_def_var (ncid, vname(1,indxVisc)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidVisc)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVisc,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxVisc))
           ierr=nf_put_att_text (ncid, vidVisc, 'long_name', lvar,
@@ -1074,9 +1007,10 @@
           lvar=lenstr(vname(4,indxVisc))
           ierr=nf_put_att_text (ncid, vidVisc, 'field',     lvar,
      &                                  vname(4,indxVisc)(1:lvar))
-
-          call nf_add_attribute(ncid, vidVisc, indxVisc, 5,
+           
+          call nf_add_attribute(ncid, vidVisc, indxVisc, 5, 
      &                          NF_FOUT, ierr)
+
         endif
 # endif
 # ifdef DIF_COEF_3D
@@ -1087,9 +1021,9 @@
           lvar=lenstr(vname(1,indxDiff))
           ierr=nf_def_var (ncid, vname(1,indxDiff)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidDiff)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidDiff,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxDiff))
           ierr=nf_put_att_text (ncid, vidDiff, 'long_name', lvar,
@@ -1106,18 +1040,19 @@
 
           call nf_add_attribute(ncid, vidDiff, indxDiff, 5,
      &                          NF_FOUT, ierr)
-        endif
+
+       endif
 # endif
-!
+!     
 !     Vertical viscosity coefficient.
 !
         if (wrt(indxAkv)) then
           lvar=lenstr(vname(1,indxAkv))
           ierr=nf_def_var (ncid, vname(1,indxAkv)(1:lvar),
      &                             NF_FOUT, 4, w3dgrd, vidAkv)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkv,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxAkv))
           ierr=nf_put_att_text (ncid, vidAkv, 'long_name', lvar,
@@ -1135,20 +1070,20 @@
           ierr=nf_put_att_text (ncid, vidAkv, 'field',     lvar,
      &                                  vname(4,indxAkv)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAkv, indxAkv, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidAkv, indxAkv, 5, NF_FOUT, 
      &                                                          ierr)
+
         endif
 !
 ! Vertical diffusion coefficient for potential temperature.
 !
-# ifdef TEMPERATURE
         if (wrt(indxAkt)) then
           lvar=lenstr(vname(1,indxAkt))
           ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidAkt)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkt,nf_collective)
-#endif
+# endif
 # ifndef AVRH
           lvar=lenstr(vname(2,indxAkt))
           ierr=nf_put_att_text (ncid, vidAkt, 'long_name', lvar,
@@ -1166,10 +1101,10 @@
           ierr=nf_put_att_text (ncid, vidAkt, 'field',     lvar,
      &                                  vname(4,indxAkt)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAkt, indxAkt, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidAkt, indxAkt, 5, NF_FOUT, 
      &                                                           ierr)
+
         endif
-# endif
 # ifdef SALINITY
 !
 ! Vertical diffusion coefficient for salinity.
@@ -1178,9 +1113,9 @@
           lvar=lenstr(vname(1,indxAks))
           ierr=nf_def_var (ncid, vname(1,indxAks)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidAks)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAks,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxAks))
           ierr=nf_put_att_text (ncid, vidAks, 'long_name', lvar,
@@ -1198,8 +1133,9 @@
           ierr=nf_put_att_text (ncid, vidAks, 'field',     lvar,
      &                                  vname(4,indxAks)(1:lvar))
 
-          call nf_add_attribute(ncid, vidAks, indxAks, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidAks, indxAks, 5, NF_FOUT, 
      &                                                           ierr)
+
         endif
 # endif
 
@@ -1212,9 +1148,9 @@
           lvar=lenstr(vname(1,indxHbl))
           ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidHbl)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHbl,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxHbl))
           ierr=nf_put_att_text (ncid, vidHbl, 'long_name', lvar,
@@ -1232,8 +1168,9 @@
           ierr=nf_put_att_text (ncid, vidHbl, 'field',     lvar,
      &                                  vname(4,indxHbl)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHbl, indxHbl, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidHbl, indxHbl, 5, NF_FOUT, 
      &                                                            ierr)
+
         endif
 # endif
 # ifdef LMD_BKPP
@@ -1244,9 +1181,9 @@
           lvar=lenstr(vname(1,indxHbbl))
           ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidHbbl)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHbbl,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxHbbl))
           ierr=nf_put_att_text (ncid, vidHbbl, 'long_name', lvar,
@@ -1264,8 +1201,9 @@
           ierr=nf_put_att_text (ncid, vidHbbl, 'field',     lvar,
      &                                  vname(4,indxHbbl)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHbbl, indxHbbl, 5,
-     &                          NF_FOUT, ierr)
+
+          call nf_add_attribute(ncid, vidHbbl, indxHbbl, 5, 
+     &                          NF_FOUT, ierr) 
         endif
 # endif
 
@@ -1277,9 +1215,9 @@
           lvar=lenstr(vname(1,indxTke))
           ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidTke)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTke,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxTke))
           ierr=nf_put_att_text (ncid, vidTke, 'long_name', lvar,
@@ -1297,8 +1235,9 @@
           ierr=nf_put_att_text (ncid, vidTke, 'field',     lvar,
      &                                  vname(4,indxTke)(1:lvar))
 
-          call nf_add_attribute(ncid, vidTke, indxTke, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidTke, indxTke, 5, NF_FOUT, 
      &                                                            ierr)
+
         endif
 !
 ! Generic Length Scale.
@@ -1307,9 +1246,9 @@
           lvar=lenstr(vname(1,indxGls))
           ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidGls)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidGls,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxGls))
           ierr=nf_put_att_text (ncid, vidGls, 'long_name', lvar,
@@ -1327,8 +1266,9 @@
           ierr=nf_put_att_text (ncid, vidGls, 'field',     lvar,
      &                                  vname(4,indxGls)(1:lvar))
 
-          call nf_add_attribute(ncid, vidGls, indxGls, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidGls, indxGls, 5, NF_FOUT, 
      &                                                            ierr)
+
         endif
 !
 ! Vertical mixing turbulent length scale.
@@ -1337,9 +1277,9 @@
           lvar=lenstr(vname(1,indxLsc))
           ierr=nf_def_var (ncid, vname(1,indxLsc)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidLsc)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidLsc,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxLsc))
           ierr=nf_put_att_text (ncid, vidLsc, 'long_name', lvar,
@@ -1357,22 +1297,22 @@
           ierr=nf_put_att_text (ncid, vidLsc, 'field',     lvar,
      &                                  vname(4,indxLsc)(1:lvar))
 
-          call nf_add_attribute(ncid, vidLsc, indxLsc, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidLsc, indxLsc, 5, NF_FOUT, 
      &                                                             ierr)
+
         endif
 # endif /* GLS_MIXING */
 
 !
 ! Shflx [W/m2]
 !
-# ifdef TEMPERATURE
         if (wrt(indxShflx)) then
           lvar=lenstr(vname(1,indxShflx))
           ierr=nf_def_var (ncid, vname(1,indxShflx)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidShflx)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxShflx))
           ierr=nf_put_att_text (ncid, vidShflx, 'long_name', lvar,
@@ -1387,10 +1327,10 @@
           ierr=nf_put_att_text (ncid, vidShflx, 'units',     lvar,
      &                                 vname(3,indxShflx)(1:lvar))
 
-          call nf_add_attribute(ncid, vidShflx, indxShflx, 5,
+          call nf_add_attribute(ncid, vidShflx, indxShflx, 5, 
      &                          NF_FOUT, ierr)
+
         endif
-# endif
 !
 ! Swflx [cm/day]
 !
@@ -1399,9 +1339,9 @@
           lvar=lenstr(vname(1,indxSwflx))
           ierr=nf_def_var (ncid, vname(1,indxSwflx)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidSwflx)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSwflx,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxSwflx))
           ierr=nf_put_att_text (ncid, vidSwflx, 'long_name', lvar,
@@ -1415,69 +1355,8 @@
           lvar=lenstr(vname(3,indxSwflx))
           ierr=nf_put_att_text (ncid, vidSwflx, 'units',     lvar,
      &                                 vname(3,indxSwflx)(1:lvar))
-
-          call nf_add_attribute(ncid, vidSwflx, indxSwflx, 5,
-     &                          NF_FOUT, ierr)
-        endif
-# endif
-
-# if defined BHFLUX && defined TEMPERATURE
-!
-! Bhflx [W/m2]
-!
-        if (wrt(indxBhflx)) then
-          lvar=lenstr(vname(1,indxBhflx))
-          ierr=nf_def_var (ncid, vname(1,indxBhflx)(1:lvar),
-     &                             NF_FOUT, 3, r2dgrd, vidBhflx)
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidBhflx,nf_collective)
-#endif
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxBhflx))
-          ierr=nf_put_att_text (ncid, vidBhflx, 'long_name', lvar,
-     &                                 vname(2,indxBhflx)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxBhflx)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidBhflx, 'long_name', lvar,
-     &                                               text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxBhflx))
-          ierr=nf_put_att_text (ncid, vidBhflx, 'units',     lvar,
-     &                                 vname(3,indxBhflx)(1:lvar))
-
-          call nf_add_attribute(ncid, vidBhflx, indxBhflx, 5,
-     &                          NF_FOUT, ierr)
-
-        endif
-# endif
-
-# if defined BWFLUX && defined SALINITY
-!
-! Bwflx [cm/day]
-!
-        if (wrt(indxBwflx)) then
-          lvar=lenstr(vname(1,indxBwflx))
-          ierr=nf_def_var (ncid, vname(1,indxBwflx)(1:lvar),
-     &                             NF_FOUT, 3, r2dgrd, vidBwflx)
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidBwflx,nf_collective)
-#endif
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxBwflx))
-          ierr=nf_put_att_text (ncid, vidBwflx, 'long_name', lvar,
-     &                                 vname(2,indxBwflx)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxBwflx)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidBwflx, 'long_name', lvar,
-     &                                               text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxBwflx))
-          ierr=nf_put_att_text (ncid, vidBwflx, 'units',     lvar,
-     &                                 vname(3,indxBwflx)(1:lvar))
-
-          call nf_add_attribute(ncid, vidBwflx, indxBwflx, 5,
+            
+          call nf_add_attribute(ncid, vidSwflx, indxSwflx, 5, 
      &                          NF_FOUT, ierr)
 
         endif
@@ -1485,63 +1364,61 @@
 !
 ! Short wave Shflx_rsw [W/m2]
 !
-# ifdef TEMPERATURE
       if (wrt(indxShflx_rsw)) then
         lvar=lenstr(vname(1,indxShflx_rsw))
         ierr=nf_def_var (ncid, vname(1,indxShflx_rsw)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_rsw)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_rsw,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
-          lvar=lenstr(vname(2,indxShflx_rsw))
-          ierr=nf_put_att_text (ncid, vidShflx_rsw, 'long_name', lvar,
-     &                                 vname(2,indxShflx_rsw)(1:lvar))
+        lvar=lenstr(vname(2,indxShflx_rsw))
+        ierr=nf_put_att_text (ncid, vidShflx_rsw, 'long_name', lvar,
+     &                               vname(2,indxShflx_rsw)(1:lvar))
 #  else
-          text='averaged '/ /vname(2,indxShflx_rsw)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidShflx_rsw, 'long_name', lvar,
+        text='averaged '/ /vname(2,indxShflx_rsw)
+        lvar=lenstr(text)
+        ierr=nf_put_att_text (ncid, vidShflx_rsw, 'long_name', lvar,
      &                                               text(1:lvar))
 #  endif
-          lvar=lenstr(vname(3,indxShflx_rsw))
-          ierr=nf_put_att_text (ncid, vidShflx_rsw, 'units',     lvar,
-     &                                 vname(3,indxShflx_rsw)(1:lvar))
-
-        call nf_add_attribute(ncid, vidShflx_rsw, indxShflx_rsw,5,
-     &                                                   NF_FOUT, ierr)
+        lvar=lenstr(vname(3,indxShflx_rsw))
+        ierr=nf_put_att_text (ncid, vidShflx_rsw, 'units',     lvar,
+     &                               vname(3,indxShflx_rsw)(1:lvar))
+        
+        call nf_add_attribute(ncid, vidShflx_rsw, indxShflx_rsw,5, 
+     &                                                   NF_FOUT, ierr)   
 
       endif
-# endif
 
-
-# if defined BULK_FLUX && defined TEMPERATURE
+# ifdef BULK_FLUX
 !
 ! Long wave Shflx [W/m2]
 !
-        if (wrt(indxShflx_rlw)) then
-          lvar=lenstr(vname(1,indxShflx_rlw))
-          ierr=nf_def_var (ncid, vname(1,indxShflx_rlw)(1:lvar),
+      if (wrt(indxShflx_rlw)) then
+        lvar=lenstr(vname(1,indxShflx_rlw))
+        ierr=nf_def_var (ncid, vname(1,indxShflx_rlw)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_rlw)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_rlw,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
-          lvar=lenstr(vname(2,indxShflx_rlw))
-          ierr=nf_put_att_text (ncid, vidShflx_rlw, 'long_name', lvar,
+        lvar=lenstr(vname(2,indxShflx_rlw))
+        ierr=nf_put_att_text (ncid, vidShflx_rlw, 'long_name', lvar,
      &                               vname(2,indxShflx_rlw)(1:lvar))
 #  else
-          text='averaged '/ /vname(2,indxShflx_rlw)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidShflx_rlw, 'long_name', lvar,
+        text='averaged '/ /vname(2,indxShflx_rlw)
+        lvar=lenstr(text) 
+        ierr=nf_put_att_text (ncid, vidShflx_rlw, 'long_name', lvar,
      &                                             text(1:lvar))
 #  endif
-          lvar=lenstr(vname(3,indxShflx_rlw))
-          ierr=nf_put_att_text (ncid, vidShflx_rlw, 'units',     lvar,
+        lvar=lenstr(vname(3,indxShflx_rlw))
+        ierr=nf_put_att_text (ncid, vidShflx_rlw, 'units',     lvar,
      &                               vname(3,indxShflx_rlw)(1:lvar))
 
-          call nf_add_attribute(ncid, vidShflx_rlw, indxShflx_rlw,5,
-     &         NF_FOUT, ierr)
-        endif
+        call nf_add_attribute(ncid, vidShflx_rlw, indxShflx_rlw,5, 
+     &       NF_FOUT, ierr) 
+      
+      endif
 !
 ! Latent Shflx [W/m2]
 !
@@ -1549,26 +1426,27 @@
         lvar=lenstr(vname(1,indxShflx_lat))
         ierr=nf_def_var (ncid, vname(1,indxShflx_lat)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_lat)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_lat,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
-          lvar=lenstr(vname(2,indxShflx_lat))
-          ierr=nf_put_att_text (ncid, vidShflx_lat, 'long_name', lvar,
+        lvar=lenstr(vname(2,indxShflx_lat))
+        ierr=nf_put_att_text (ncid, vidShflx_lat, 'long_name', lvar,
      &                               vname(2,indxShflx_lat)(1:lvar))
 #  else
-          text='averaged '/ /vname(2,indxShflx_lat)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidShflx_lat, 'long_name', lvar,
-     &                                               text(1:lvar))
+        text='averaged '/ /vname(2,indxShflx_lat)
+        lvar=lenstr(text)
+        ierr=nf_put_att_text (ncid, vidShflx_lat, 'long_name', lvar,
+     &                                             text(1:lvar))
 #  endif
-          lvar=lenstr(vname(3,indxShflx_lat))
-          ierr=nf_put_att_text (ncid, vidShflx_lat, 'units',     lvar,
-     &                                 vname(3,indxShflx_lat)(1:lvar))
-
-          call nf_add_attribute(ncid, vidShflx_lat, indxShflx_lat, 5,
-     &         NF_FOUT, ierr)
-        endif
+        lvar=lenstr(vname(3,indxShflx_lat))
+        ierr=nf_put_att_text (ncid, vidShflx_lat, 'units',     lvar,
+     &                               vname(3,indxShflx_lat)(1:lvar))
+        
+        call nf_add_attribute(ncid, vidShflx_lat, indxShflx_lat, 5, 
+     &       NF_FOUT, ierr) 
+      
+      endif
 !
 ! Sensible Shflx [W/m2]
 !
@@ -1576,28 +1454,28 @@
         lvar=lenstr(vname(1,indxShflx_sen))
         ierr=nf_def_var (ncid, vname(1,indxShflx_sen)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidShflx_sen)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidShflx_sen,nf_collective)
-#endif
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxShflx_sen))
-          ierr=nf_put_att_text (ncid, vidShflx_sen, 'long_name', lvar,
-     &                                 vname(2,indxShflx_sen)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxShflx_sen)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidShflx_sen, 'long_name', lvar,
-     &                                               text(1:lvar))
 #  endif
-          lvar=lenstr(vname(3,indxShflx_sen))
-          ierr=nf_put_att_text (ncid, vidShflx_sen, 'units',     lvar,
-     &                                 vname(3,indxShflx_sen)(1:lvar))
+#  ifndef AVRH
+        lvar=lenstr(vname(2,indxShflx_sen))
+        ierr=nf_put_att_text (ncid, vidShflx_sen, 'long_name', lvar,
+     &                               vname(2,indxShflx_sen)(1:lvar))
+#  else
+        text='averaged '/ /vname(2,indxShflx_sen)
+        lvar=lenstr(text)
+        ierr=nf_put_att_text (ncid, vidShflx_sen, 'long_name', lvar,
+     &                                             text(1:lvar))
+#  endif
+        lvar=lenstr(vname(3,indxShflx_sen))
+        ierr=nf_put_att_text (ncid, vidShflx_sen, 'units',     lvar,
+     &                               vname(3,indxShflx_sen)(1:lvar))
 
-        call nf_add_attribute(ncid, vidShflx_sen, indxShflx_sen, 5,
+        call nf_add_attribute(ncid, vidShflx_sen, indxShflx_sen, 5, 
      &       NF_FOUT, ierr)
-
+        
       endif
-# endif  /* BULK_FLUX && TEMPERATURE  */
+# endif  /* BULK_FLUX */
 
 # if defined BIOLOGY & !defined PISCES
 !
@@ -1607,13 +1485,13 @@
           lvar=lenstr(vname(1,indxHel))
           ierr=nf_def_var (ncid, vname(1,indxHel)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidHel)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidHel,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxHel))
           ierr=nf_put_att_text (ncid, vidHel, 'long_name', lvar,
-     &                                vname(2,indxHel)(1:lvar))
+     &                                  vname(2,indxHel)(1:lvar))
 #  else
           text='averaged '/ /vname(2,indxHel)
           lvar=lenstr(text)
@@ -1627,8 +1505,10 @@
           ierr=nf_put_att_text (ncid, vidHel, 'field',     lvar,
      &                                  vname(4,indxHel)(1:lvar))
 
-          call nf_add_attribute(ncid, vidHel, indxHel, 5, NF_FOUT,
-     &                                                           ierr)
+
+          call nf_add_attribute(ncid, vidHel, indxHel, 5, NF_FOUT, 
+     &                                                             ierr)
+ 
         endif
 !
 ! Chlorophyll/Carbon ratio
@@ -1638,9 +1518,9 @@
           lvar=lenstr(vname(1,indxChC))
           ierr=nf_def_var (ncid, vname(1,indxChC)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidChC)
-#ifdef NC4PAR
+#   ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidChC,nf_collective)
-#endif
+#   endif
 #   ifndef AVRH
           lvar=lenstr(vname(2,indxChC))
           ierr=nf_put_att_text (ncid, vidChC, 'long_name', lvar,
@@ -1658,9 +1538,10 @@
           ierr=nf_put_att_text (ncid, vidChC, 'field',     lvar,
      &                                  vname(4,indxChC)(1:lvar))
 
-          call nf_add_attribute(ncid, vidChC, indxChC, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidChC, indxChC, 5, NF_FOUT, 
      &                                                            ierr)
-        endif
+
+       endif
 #   ifdef OXYGEN
 !
 ! Wind speed at 10 m
@@ -1669,19 +1550,19 @@
           lvar=lenstr(vname(1,indxU10))
           ierr=nf_def_var (ncid, vname(1,indxU10)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidU10)
-#ifdef NC4PAR
+#    ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidU10,nf_collective)
-#endif
-#  ifndef AVRH
+#    endif
+#    ifndef AVRH
           lvar=lenstr(vname(2,indxU10))
           ierr=nf_put_att_text (ncid, vidU10, 'long_name', lvar,
      &                                  vname(2,indxU10)(1:lvar))
-#  else
+#    else
           text='averaged '/ /vname(2,indxU10)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidU10, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+#    endif
           lvar=lenstr(vname(3,indxU10))
           ierr=nf_put_att_text (ncid, vidU10, 'units',     lvar,
      &                                  vname(3,indxU10)(1:lvar))
@@ -1689,9 +1570,10 @@
           ierr=nf_put_att_text (ncid, vidU10, 'field',     lvar,
      &                                  vname(4,indxU10)(1:lvar))
 
-          call nf_add_attribute(ncid, vidU10, indxU10, 5, NF_FOUT,
+          call nf_add_attribute(ncid, vidU10, indxU10, 5, NF_FOUT, 
      &                                                            ierr)
-        endif
+
+       endif
 !
 ! Gas exchange coefficient of O2
 !
@@ -1699,19 +1581,19 @@
           lvar=lenstr(vname(1,indxKvO2))
           ierr=nf_def_var (ncid, vname(1,indxKvO2)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidKvO2)
-#ifdef NC4PAR
+#    ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidKvO2,nf_collective)
-#endif
-#  ifndef AVRH
+#    endif
+#    ifndef AVRH
           lvar=lenstr(vname(2,indxKvO2))
           ierr=nf_put_att_text (ncid, vidKvO2, 'long_name', lvar,
      &                                  vname(2,indxKvO2)(1:lvar))
-#  else
+#    else
           text='averaged '/ /vname(2,indxKvO2)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidKvO2, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+#    endif
           lvar=lenstr(vname(3,indxKvO2))
           ierr=nf_put_att_text (ncid, vidKvO2, 'units',     lvar,
      &                                  vname(3,indxKvO2)(1:lvar))
@@ -1719,9 +1601,10 @@
           ierr=nf_put_att_text (ncid, vidKvO2, 'field',     lvar,
      &                                  vname(4,indxKvO2)(1:lvar))
 
-          call nf_add_attribute(ncid, vidKvO2, indxKvO2, 5,
+          call nf_add_attribute(ncid, vidKvO2, indxKvO2, 5, 
      &         NF_FOUT, ierr)
-        endif
+
+       endif
 !
 ! Saturation concentration of O2
 !
@@ -1729,19 +1612,19 @@
           lvar=lenstr(vname(1,indxO2sat))
           ierr=nf_def_var (ncid, vname(1,indxO2sat)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidO2sat)
-#ifdef NC4PAR
+#    ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidO2sat,nf_collective)
-#endif
-#  ifndef AVRH
+#    endif
+#    ifndef AVRH
           lvar=lenstr(vname(2,indxO2sat))
           ierr=nf_put_att_text (ncid, vidO2sat, 'long_name', lvar,
      &                                  vname(2,indxO2sat)(1:lvar))
-#  else
+#    else
           text='averaged '/ /vname(2,indxO2sat)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidO2sat, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+#    endif
           lvar=lenstr(vname(3,indxO2sat))
           ierr=nf_put_att_text (ncid, vidO2sat, 'units',     lvar,
      &                                  vname(3,indxO2sat)(1:lvar))
@@ -1749,9 +1632,10 @@
           ierr=nf_put_att_text (ncid, vidO2sat, 'field',     lvar,
      &                                  vname(4,indxO2sat)(1:lvar))
 
-          call nf_add_attribute(ncid, vidO2sat, indxO2sat, 5,
+          call nf_add_attribute(ncid, vidO2sat, indxO2sat, 5, 
      &         NF_FOUT, ierr)
-        endif
+
+       endif
 #   endif /* OXYGEN */
 #  endif
 # endif
@@ -1762,65 +1646,37 @@
 ! bed_poros  Bed porosity (-)
 ! bed_frac_sand/silt
 !           volume fraction of size class ised in each bed layer (-)
-! dflx_ ; e_flx_
+! dflx_ ; e_flx_   
 !            Deposition/Erosion fluxes
 ! bdlu_ ; bdlv_
 !
-        indxWrk=indxSed-1
-        if (wrt(indxWrk)) then
+        do itrc=1,2+NST
+         indxWrk=indxSed+itrc-1
+         if (wrt(indxWrk)) then
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                                NF_FOUT, 3, r2dgrd, vidSed(1))
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidSed(1),nf_collective)
-#endif
-#ifndef AVRH
-          lvar=lenstr(vname(2,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(1), 'long_name', lvar,
-     &                                  vname(2,indxWrk)(1:lvar))
-#else
-          text='averaged '/ /vname(2,indxWrk)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidSed(1), 'long_name', lvar,
-     &                                            text(1:lvar))
-#endif
-          lvar=lenstr(vname(3,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(1), 'units',     lvar,
-     &                                  vname(3,indxWrk)(1:lvar))
-          lvar=lenstr(vname(4,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(1), 'field',     lvar,
-     &                                  vname(4,indxWrk)(1:lvar))
-
-          call nf_add_attribute(ncid, vidSed(1), indxWrk, 5, NF_FOUT,
-     &         ierr)
-        endif
-!
-        do itrc=1,2+NST
-          indxWrk=indxSed+itrc-1
-          if (wrt(indxWrk)) then
-            lvar=lenstr(vname(1,indxWrk))
-            ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                             NF_FOUT, 4, b3dgrd, vidSed(itrc+1))
+     &                             NF_FOUT, 4, b3dgrd, vidSed(itrc))
 #  ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidSed(itrc+1),nf_collective)
+          ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
 #  endif
 #  ifndef AVRH
-            lvar=lenstr(vname(2,indxWrk))
-            ierr=nf_put_att_text (ncid,vidSed(itrc+1),'long_name', lvar,
-     &                                    vname(2,indxWrk)(1:lvar))
+          lvar=lenstr(vname(2,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
+     &                                  vname(2,indxWrk)(1:lvar))
 #  else
-            text='averaged '/ /vname(2,indxWrk)
-            lvar=lenstr(text)
-            ierr=nf_put_att_text (ncid,vidSed(itrc+1),'long_name', lvar,
-     &                                                text(1:lvar))
+          text='averaged '/ /vname(2,indxWrk)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
+     &                                              text(1:lvar))
 #  endif
-            lvar=lenstr(vname(3,indxWrk))
-            ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',   lvar,
-     &                                    vname(3,indxWrk)(1:lvar))
+          lvar=lenstr(vname(3,indxWrk))
+          ierr=nf_put_att_text (ncid, vidSed(itrc), 'units',     lvar,
+     &                                  vname(3,indxWrk)(1:lvar))
 
-            call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5,
-     &                                                   NF_FOUT, ierr)
-          endif
+          call nf_add_attribute(ncid, vidSed(itrc), indxWrk, 5, 
+     &                                                 NF_FOUT, ierr)
+
+         endif
         enddo
 
         do itrc=2+NST+1,2+NST
@@ -1829,239 +1685,104 @@
 #  endif
 #  ifdef BEDLOAD
      &                 +2*NST
-#  endif
-          indxWrk=indxSed+itrc-1
-          if (wrt(indxWrk)) then
-            lvar=lenstr(vname(1,indxWrk))
-            ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                             NF_FOUT, 3, r2dgrd, vidSed(itrc+1))
-#  ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidSed(itrc+1),nf_collective)
-#  endif
-#  ifndef AVRH
-            lvar=lenstr(vname(2,indxWrk))
-            ierr=nf_put_att_text (ncid,vidSed(itrc+1),'long_name', lvar,
-     &                                    vname(2,indxWrk)(1:lvar))
-#  else
-            text='averaged '/ /vname(2,indxWrk)
-            lvar=lenstr(text)
-            ierr=nf_put_att_text (ncid,vidSed(itrc+1),'long_name', lvar,
-     &                                                text(1:lvar))
-#  endif
-            lvar=lenstr(vname(3,indxWrk))
-            ierr=nf_put_att_text (ncid,vidSed(itrc+1),'units',     lvar,
-     &                                    vname(3,indxWrk)(1:lvar))
-
-            call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5,
-     &                                                 NF_FOUT, ierr)
-          endif
-        enddo
-!
-#  if defined MIXED_BED || defined COHESIVE_BED
-        indxWrk=indxBTCR
-        if (wrt(indxWrk)) then
+#  endif                         
+         indxWrk=indxSed+itrc-1
+         if (wrt(indxWrk)) then
           lvar=lenstr(vname(1,indxWrk))
           ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                             NF_FOUT, 4, b3dgrd, vidSed(itrc+1))
-#   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidSed(itrc+1),nf_collective)
-#   endif
-#   ifndef AVRH
+     &                             NF_FOUT, 3, r2dgrd, vidSed(itrc))
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidSed(itrc),nf_collective)
+#  endif
+#  ifndef AVRH
           lvar=lenstr(vname(2,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
      &                                  vname(2,indxWrk)(1:lvar))
-#   else
+#  else
           text='averaged '/ /vname(2,indxWrk)
           lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc), 'long_name', lvar,
      &                                              text(1:lvar))
-#   endif
+#  endif
           lvar=lenstr(vname(3,indxWrk))
-          ierr=nf_put_att_text (ncid, vidSed(itrc+1), 'units',     lvar,
+          ierr=nf_put_att_text (ncid, vidSed(itrc), 'units',     lvar,
      &                                  vname(3,indxWrk)(1:lvar))
 
-          call nf_add_attribute(ncid, vidSed(itrc+1), indxWrk, 5,
+          call nf_add_attribute(ncid, vidSed(itrc), indxWrk, 5, 
      &                                                 NF_FOUT, ierr)
-        endif
-#  endif
+         endif
+        enddo
 !
 # endif /* SEDIMENT */
 
 # if defined BBL && !defined AVRH
 !
-! Abed       Wind-induced, bed wave excursion amplitude (m)
-! Hripple    Bed ripple height (m)
-! Lripple    Bed ripple length (m)
+! Abed       Wind-induced, bed wave excursion amplitude (m)  
+! Hripple    Bed ripple height (m)                           
+! Lripple    Bed ripple length (m)                             
 ! Zbnot      Physical hydraulic bottom roughness (grain roughness) (m)
-! Zbapp      Effective apparent hydraulic bottom roughness
-! bostrw     Wave-induced kinematic bottom stress (N/m2)
+! Zbapp      Effective apparent hydraulic bottom roughness         
+! bostrw     Wave-induced kinematic bottom stress (N/m2)   
 !
         do itrc=1,6
-          indxWrk=indxBBL+itrc-1
-          if (wrt(indxWrk)) then
-            lvar=lenstr(vname(1,indxWrk))
-            ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
-     &                               NF_FOUT, 3, r2dgrd, vidBBL(itrc))
+         indxWrk=indxBBL+itrc-1
+         if (wrt(indxWrk)) then
+          lvar=lenstr(vname(1,indxWrk))
+          ierr=nf_def_var (ncid, vname(1,indxWrk)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidBBL(itrc))
 #  ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidBBL(itrc),nf_collective)
+          ierr=nf_var_par_access(ncid,vidBBL(itrc),nf_collective)
 #  endif
 #  ifndef AVRH
-            lvar=lenstr(vname(2,indxWrk))
-            ierr=nf_put_att_text (ncid, vidBBL(itrc), 'long_name', lvar,
-     &                                    vname(2,indxWrk)(1:lvar))
+          lvar=lenstr(vname(2,indxWrk))
+          ierr=nf_put_att_text (ncid, vidBBL(itrc), 'long_name', lvar,
+     &                                  vname(2,indxWrk)(1:lvar))
 #  else
-            text='averaged '/ /vname(2,indxWrk)
-            lvar=lenstr(text)
-            ierr=nf_put_att_text (ncid, vidBBL(itrc), 'long_name', lvar,
-     &                                                text(1:lvar))
+          text='averaged '/ /vname(2,indxWrk)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidBBL(itrc), 'long_name', lvar,
+     &                                              text(1:lvar))
 #  endif
-            lvar=lenstr(vname(3,indxWrk))
-            ierr=nf_put_att_text (ncid, vidBBL(itrc), 'units',     lvar,
-     &                                    vname(3,indxWrk)(1:lvar))
+          lvar=lenstr(vname(3,indxWrk))
+          ierr=nf_put_att_text (ncid, vidBBL(itrc), 'units',     lvar,
+     &                                  vname(3,indxWrk)(1:lvar))
 
-            call nf_add_attribute(ncid, vidBBL(itrc), indxWrk, 5,
-     &           NF_FOUT, ierr)
-          endif
+          call nf_add_attribute(ncid, vidBBL(itrc), indxWrk, 5, 
+     &         NF_FOUT, ierr)
+          
+         endif
         enddo
 # endif /* BBL */
-# if defined SST_SKIN && defined TEMPERATURE
-! Skin temperature
-        if (wrt(indxT)) then
-          lvar=lenstr(vname(1,indxSST_skin))
-          ierr=nf_def_var (ncid, vname(1,indxSST_skin)(1:lvar),
-     &                           NF_FOUT, 3, r2dgrd, vidSST_skin)
-#ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidSST_skin,nf_collective)
-#endif
-#  ifndef AVRH
-          lvar=lenstr(vname(2,indxSST_skin))
-          ierr=nf_put_att_text (ncid, vidSST_skin, 'long_name', lvar,
-     &                                 vname(2,indxSST_skin)(1:lvar))
-#  else
-          text='averaged '/ /vname(2,indxSST_skin)
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidSST_skin, 'long_name', lvar,
-     &                                                 text(1:lvar))
-#  endif
-          lvar=lenstr(vname(3,indxSST_skin))
-          ierr=nf_put_att_text (ncid, vidSST_skin, 'units',     lvar,
-     &                                 vname(3,indxSST_skin)(1:lvar))
-          lvar=lenstr(vname(5,indxSST_skin))
 
-          call nf_add_attribute(ncid, vidSST_skin, indxSST_skin,5,
-     &         NF_FOUT , ierr)
-        endif
+# ifdef SST_SKIN
+! Skin temperature
+      if (wrt(indxT)) then
+        lvar=lenstr(vname(1,indxSST_skin))
+        ierr=nf_def_var (ncid, vname(1,indxSST_skin)(1:lvar),
+     &                           NF_FOUT, 3, r2dgrd, vidSST_skin)
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidSST_skin,nf_collective)
+#  endif
+#  ifndef AVRH
+        lvar=lenstr(vname(2,indxSST_skin))
+        ierr=nf_put_att_text (ncid, vidSST_skin, 'long_name', lvar,
+     &                               vname(2,indxSST_skin)(1:lvar))
+#  else
+        text='averaged '/ /vname(2,indxSST_skin)
+        lvar=lenstr(text)
+        ierr=nf_put_att_text (ncid, vidSST_skin, 'long_name', lvar,
+     &                                               text(1:lvar))
+#  endif
+        lvar=lenstr(vname(3,indxSST_skin))
+        ierr=nf_put_att_text (ncid, vidSST_skin, 'units',     lvar,
+     &                               vname(3,indxSST_skin)(1:lvar))
+        lvar=lenstr(vname(5,indxSST_skin))
+        
+        call nf_add_attribute(ncid, vidSST_skin, indxSST_skin,5, 
+     &       NF_FOUT , ierr)   
+
+      endif
 # endif /* SST_SKIN */
-!
-!-----------------------------------------------------------------------
-!  MUSTANG sediment model output
-!-----------------------------------------------------------------------
-!
-# ifdef MUSTANG
-        do itrc=1,3
-          indx=indxT+ntrc_salt+ntrc_substot+itrc
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &             NF_FOUT, 3, r2dgrd, vidM(itrc))  ! 2D: ksmax,Eptot,Tenfon
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(itrc),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(itrc),indx,5, NF_FOUT, ierr)
-        enddo
-!
-        do itrc=1,3
-          indx=indxT+ntrc_salt+ntrc_substot+itrc+3
-          ierr=nf_def_var (ncid, vname(1,indx),
-     &               NF_FOUT, 4, b3dgrd, vidM(itrc+3)) ! 3D: dzs,tempsed,salsed
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(itrc+3),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+3), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
-        enddo
-        do itrc=1,ntrc_subs
-          indx=indxT+ntrc_salt+ntrc_substot+itrc+6
-          ierr=nf_def_var (ncid, vname(1,indx),
-     &               NF_FOUT, 4, b3dgrd, vidM(itrc+6)) ! 3D: traceurSed
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(itrc+6),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'long_name', lvar,
-     &                                  vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'units',     lvar,
-     &                                  vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(itrc+6), 'field',     lvar,
-     &                                  vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(itrc+6),indx, 5, NF_FOUT,ierr)
-        enddo
-#  ifdef key_MUSTANG_specif_outputs
-        ik=0
-        indx=indx+2 !ksmi,ksma
-        do itrc=1,ntrc_subs
-          do itrv=1,nv_out3Dnv_specif
-            ik=ik+1
-            indx=indx+1
-            ierr=nf_def_var (ncid, vname(1,indx),
-     &                 NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
-#   ifdef NC4PAR
-            ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),
-     &                             nf_collective)
-#   endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
-     &                                 lvar,vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
-     &                                 lvar,vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
-     &                                 lvar,vname(4,indx)(1:lvar))
-            call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx,5,
-     &                 NF_FOUT, ierr)
-          enddo
-        enddo
-        do itrv=1,nv_out2D_specif
-          ik=ik+1
-          indx=indx+1
-          ierr=nf_def_var (ncid, vname(1,indx),
-     &              NF_FOUT, 3, r2dgrd, vidM(ik+6+ntrc_subs))  ! 3D: traceurSe
-#   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidM(ik+6+ntrc_subs),
-     &                           nf_collective)
-#   endif
-          lvar=lenstr(vname(2,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'long_name',
-     &                                  lvar,vname(2,indx)(1:lvar))
-          lvar=lenstr(vname(3,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'units',
-     &                                  lvar,vname(3,indx)(1:lvar))
-          lvar=lenstr(vname(4,indx))
-          ierr=nf_put_att_text (ncid, vidM(ik+6+ntrc_subs), 'field',
-     &                                  lvar,vname(4,indx)(1:lvar))
-          call nf_add_attribute(ncid,vidM(ik+6+ntrc_subs),indx, 5,
-     &              NF_FOUT, ierr)
-        enddo
-#  endif
-# endif /* MUSTANG */
 !
 #endif /* SOLVE3D */
 
@@ -2077,18 +1798,18 @@
 # endif
           if (wrt(indxHRM+iwkb-1)) then
             lvar=lenstr(vname(1,indxHRM+iwkb-1))
-            ierr=nf_def_var (ncid, vname(1,indxHRM+iwkb-1)(1:lvar),
+            ierr=nf_def_var (ncid, vname(1,indxHRM+iwkb-1)(1:lvar), 
      &                            NF_FOUT, 3, r2dgrd, vidWAVE(iwkb))
-#ifdef NC4PAR
+# ifdef NC4PAR
             ierr=nf_var_par_access(ncid,vidWAVE(iwkb),nf_collective)
-#endif
+# endif
 # ifdef AVRH
             text='averaged '/ /vname(2,indxHRM+iwkb-1)
 # else
             text=vname(2,indxHRM+iwkb-1)
 # endif
             lvar=lenstr(text)
-            ierr=nf_put_att_text (ncid, vidWAVE(iwkb), 'long_name',
+            ierr=nf_put_att_text (ncid, vidWAVE(iwkb), 'long_name', 
      &                                         lvar, text(1:lvar))
             lvar=lenstr(vname(3,indxHRM+iwkb-1))
             ierr=nf_put_att_text (ncid, vidWAVE(iwkb), 'units', lvar,
@@ -2096,7 +1817,7 @@
           endif
         enddo
 #endif /* WAVE_IO */
-!
+
 #ifdef MRL_WCI
 !
 ! Wave-current interaction diagnostic variables.
@@ -2108,20 +1829,20 @@
           lvar=lenstr(vname(1,indxSUP))
           ierr=nf_def_var (ncid, vname(1,indxSUP)(1:lvar), NF_FOUT,
      &                                           3, r2dgrd, vidSUP)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidSUP,nf_collective)
-#endif
+# endif
 
-#  ifndef AVRH
+# ifndef AVRH
           lvar=lenstr(vname(2,indxSUP))
           ierr=nf_put_att_text (ncid, vidSUP, 'long_name', lvar,
      &                                  vname(2,indxSUP)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxSUP)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidSUP, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxSUP))
           ierr=nf_put_att_text (ncid, vidSUP, 'units',     lvar,
      &                                 vname(3,indxSUP)(1:lvar))
@@ -2133,41 +1854,41 @@
           lvar=lenstr(vname(1,indxUST2D))
           ierr=nf_def_var (ncid, vname(1,indxUST2D)(1:lvar), NF_FOUT,
      &                                           3, u2dgrd, vidUST2D)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUST2D,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxUST2D))
           ierr=nf_put_att_text (ncid, vidUST2D, 'long_name', lvar,
      &                                  vname(2,indxUST2D)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxUST2D)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidUST2D, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxUST2D))
           ierr=nf_put_att_text (ncid, vidUST2D, 'units',     lvar,
      &                                 vname(3,indxUST2D)(1:lvar))
         endif
-!
+
         if (wrt(indxVST2D)) then
           lvar=lenstr(vname(1,indxVST2D))
           ierr=nf_def_var (ncid, vname(1,indxVST2D)(1:lvar), NF_FOUT,
      &                                           3, v2dgrd, vidVST2D)
-#ifdef NC4PAR
+# ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVST2D,nf_collective)
-#endif
-#  ifndef AVRH
+# endif
+# ifndef AVRH
           lvar=lenstr(vname(2,indxVST2D))
           ierr=nf_put_att_text (ncid, vidVST2D, 'long_name', lvar,
      &                                  vname(2,indxVST2D)(1:lvar))
-#  else
+# else
           text='averaged '/ /vname(2,indxVST2D)
           lvar=lenstr(text)
           ierr=nf_put_att_text (ncid, vidVST2D, 'long_name', lvar,
      &                                              text(1:lvar))
-#  endif
+# endif
           lvar=lenstr(vname(3,indxVST2D))
           ierr=nf_put_att_text (ncid, vidVST2D, 'units',     lvar,
      &                                  vname(3,indxVST2D)(1:lvar))
@@ -2180,9 +1901,9 @@
           lvar=lenstr(vname(1,indxUST))
           ierr=nf_def_var (ncid, vname(1,indxUST)(1:lvar), NF_FOUT,
      &                                           4, u3dgrd, vidUST)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidUST,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxUST))
           ierr=nf_put_att_text (ncid, vidUST, 'long_name', lvar,
@@ -2197,14 +1918,14 @@
           ierr=nf_put_att_text (ncid, vidUST, 'units',     lvar,
      &                                 vname(3,indxUST)(1:lvar))
         endif
-!
+
         if (wrt(indxVST)) then
           lvar=lenstr(vname(1,indxVST))
           ierr=nf_def_var (ncid, vname(1,indxVST)(1:lvar), NF_FOUT,
      &                                           4, v3dgrd, vidVST)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidVST,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxVST))
           ierr=nf_put_att_text (ncid, vidVST, 'long_name', lvar,
@@ -2226,9 +1947,9 @@
           lvar=lenstr(vname(1,indxWST))
           ierr=nf_def_var (ncid, vname(1,indxWST)(1:lvar), NF_FOUT,
      &                                           4, r3dgrd, vidWST)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidWST,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxWST))
           ierr=nf_put_att_text (ncid, vidWST, 'long_name', lvar,
@@ -2251,9 +1972,9 @@
           lvar=lenstr(vname(1,indxAkb))
           ierr=nf_def_var (ncid, vname(1,indxAkb)(1:lvar), NF_FOUT,
      &                                           4, w3dgrd, vidAkb)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkb,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxAkb))
           ierr=nf_put_att_text (ncid, vidAkb, 'long_name', lvar,
@@ -2275,9 +1996,9 @@
           lvar=lenstr(vname(1,indxAkw))
           ierr=nf_def_var (ncid, vname(1,indxAkw)(1:lvar), NF_FOUT,
      &                                           4, w3dgrd, vidAkw)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidAkw,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxAkw))
           ierr=nf_put_att_text (ncid, vidAkw, 'long_name', lvar,
@@ -2299,9 +2020,9 @@
           lvar=lenstr(vname(1,indxKVF))
           ierr=nf_def_var (ncid, vname(1,indxKVF)(1:lvar), NF_FOUT,
      &                                           4, r3dgrd, vidKVF)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidKVF,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxKVF))
           ierr=nf_put_att_text (ncid, vidKVF, 'long_name', lvar,
@@ -2323,9 +2044,9 @@
           lvar=lenstr(vname(1,indxCALP))
           ierr=nf_def_var (ncid, vname(1,indxCALP)(1:lvar), NF_FOUT,
      &                                           3, r2dgrd, vidCALP)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidCALP,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxCALP))
           ierr=nf_put_att_text (ncid, vidCALP, 'long_name', lvar,
@@ -2347,9 +2068,9 @@
           lvar=lenstr(vname(1,indxKAPS))
           ierr=nf_def_var (ncid, vname(1,indxKAPS)(1:lvar), NF_FOUT,
      &                                           3, r2dgrd, vidKAPS)
-#ifdef NC4PAR
+#  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidKAPS,nf_collective)
-#endif
+#  endif
 #  ifndef AVRH
           lvar=lenstr(vname(2,indxKAPS))
           ierr=nf_put_att_text (ncid, vidKAPS, 'long_name', lvar,
@@ -2381,7 +2102,7 @@
 ! Open an existing file and prepare for appending data.
 ! ==== == ======== ==== === ======= === ========= =====
 ! Inquire about the dimensions and variables. Check for
-! consistency with model dimensions. In the case when file
+! consistency with model dimensions. In the case when file 
 ! is rejected (whether it cannot be opened, or something
 ! is wrong with its dimensions) create a new file.
 !
@@ -2393,11 +2114,11 @@
 #ifndef NC4PAR
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
 #else
-        ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
+        ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio), 
      &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 #endif
         if (ierr. eq. nf_noerr) then
-          ierr=checkdims (ncid, ncname, lstr, rec)
+          ierr=checkdims (ncid, ncname, lstr, rec) 
           if (ierr .eq. nf_noerr) then
             if (rec_per_file.eq.0) then
               ierr=rec+1 - total_rec
@@ -2421,7 +2142,7 @@
             ierr=nf_noerr
           endif
         endif
-!
+
         if (ierr. ne. nf_noerr) then
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
           if (mynode.eq.0) then
@@ -2457,7 +2178,7 @@
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),vidTime)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
+          goto 99                                         !--> ERROR 
         endif
 !
 ! Time2.
@@ -2466,7 +2187,7 @@
         ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
         if (ierr .ne. nf_noerr) then
           write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
+          goto 99                                         !--> ERROR 
         endif
 !
 ! Free-surface.
@@ -2499,6 +2220,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
+
 !
 ! time evolving bathymetry
 !
@@ -2520,35 +2242,7 @@
           ierr=nf_inq_varid (ncid,vname(1,indxBostr)(1:lvar),
      &                                                   vidBostr)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxBostr)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-
-
-!
-! bustr     Kinematic U bottom stress (N/m2)
-!
-        if (wrt(indxBustr)) then
-          lvar=lenstr(vname(1,indxBustr))
-          ierr=nf_inq_varid (ncid,vname(1,indxBustr)(1:lvar),
-     &                                                   vidBustr)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxBustr)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-
-
-!
-! bvstr     Kinematic V bottom stress (N/m2)
-!
-        if (wrt(indxBvstr)) then
-          lvar=lenstr(vname(1,indxBvstr))
-          ierr=nf_inq_varid (ncid,vname(1,indxBvstr)(1:lvar),
-     &                                                   vidBvstr)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxBvstr)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxBostr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2560,7 +2254,7 @@
           ierr=nf_inq_varid (ncid,vname(1,indxWstr)(1:lvar),
      &                                                   vidWstr)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxWstr)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxWstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2572,7 +2266,7 @@
           ierr=nf_inq_varid (ncid,vname(1,indxUWstr)(1:lvar),
      &                                                   vidUWstr)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxUWstr)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxUWstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2584,7 +2278,7 @@
           ierr=nf_inq_varid (ncid,vname(1,indxVWstr)(1:lvar),
      &                                                   vidVWstr)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxVWstr)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxVWstr)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2600,7 +2294,7 @@
             goto 99                                       !--> ERROR
           endif
         endif
-!
+
         if (wrt(indxV)) then
           lvar=lenstr(vname(1,indxV))
           ierr=nf_inq_varid (ncid, vname(1,indxV)(1:lvar), vidV)
@@ -2612,20 +2306,18 @@
 !
 ! Tracer variables.
 !
-# ifdef TRACERS
         do itrc=1,NT
-          if (wrt(indxV+itrc)) then
-            lvar=lenstr(vname(1,indxV+itrc))
-            ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
+          if (wrt(indxT+itrc-1)) then
+            lvar=lenstr(vname(1,indxT+itrc-1))
+            ierr=nf_inq_varid (ncid, vname(1,indxT+itrc-1)(1:lvar),
      &                                                 vidT(itrc))
             if (ierr .ne. nf_noerr) then
-              write(stdout,1) vname(1,indxV+itrc)(1:lvar),
-     &                                       ncname(1:lstr)
+              write(stdout,1) vname(1,indxT+itrc-1)(1:lvar),
+     &                                       ncname(1:lstr) 
               goto 99                                     !--> ERROR
             endif
           endif
         enddo
-# endif
 !
 ! Density anomaly.
 !
@@ -2659,7 +2351,7 @@
 #  if defined BIOLOGY && defined BIO_BioEBUS
         if (wrt(indxAOU)) then
           lvar=lenstr(vname(1,indxAOU))
-          ierr=nf_inq_varid (ncid, vname(1,indxAOU)(1:lvar),
+          ierr=nf_inq_varid (ncid, vname(1,indxAOU)(1:lvar), 
      &                                               vidAOU)
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxAOU)(1:lvar), ncname(1:lstr)
@@ -2668,14 +2360,14 @@
         endif
         if (wrt(indxWIND10)) then
           lvar=lenstr(vname(1,indxWIND10))
-          ierr=nf_inq_varid (ncid, vname(1,indxWIND10)(1:lvar),
+          ierr=nf_inq_varid (ncid, vname(1,indxWIND10)(1:lvar), 
      &                                             vidwind10)
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxWIND10)(1:lvar),ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
-#  endif
+#  endif 
 !
 ! S-coordinate "omega" vertical velocity.
 !
@@ -2738,7 +2430,6 @@
 !
 ! Vertical diffusion coefficient for potential temperature.
 !
-# ifdef TEMPERATURE
         if (wrt(indxAkt)) then
           lvar=lenstr(vname(1,indxAkt))
           ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), vidAkt)
@@ -2747,7 +2438,6 @@
             goto 99                                       !--> ERROR
           endif
         endif
-# endif
 
 # ifdef SALINITY
 !
@@ -2772,7 +2462,7 @@
           lvar=lenstr(vname(1,indxHbl))
           ierr=nf_inq_varid (ncid,vname(1,indxHbl)(1:lvar), vidHbl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxHbl)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxHbl)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2785,7 +2475,7 @@
           lvar=lenstr(vname(1,indxHbbl))
           ierr=nf_inq_varid (ncid,vname(1,indxHbbl)(1:lvar), vidHbbl)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxHbbl)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxHbbl)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2804,7 +2494,7 @@
           endif
         endif
 !
-! Generic Length Scale.
+! Generic Length Scale. 
 !
         if (wrt(indxGls)) then
           lvar=lenstr(vname(1,indxGls))
@@ -2815,7 +2505,7 @@
           endif
         endif
 !
-! Turbulent Length Scale.
+! Turbulent Length Scale. 
 !
         if (wrt(indxLsc)) then
           lvar=lenstr(vname(1,indxLsc))
@@ -2830,32 +2520,15 @@
 !
 ! Shflx     Surface net heat flux [W/m2]
 !
-# ifdef TEMPERATURE
         if (wrt(indxShflx)) then
           lvar=lenstr(vname(1,indxShflx))
           ierr=nf_inq_varid (ncid,vname(1,indxShflx)(1:lvar),
      &                                                   vidShflx)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxShflx)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxShflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
-#  ifdef BHFLUX
-!
-! Bhflx     Bottom net heat flux [W/m2]
-!
-        if (wrt(indxBhflx)) then
-          lvar=lenstr(vname(1,indxBhflx))
-          ierr=nf_inq_varid (ncid,vname(1,indxBhflx)(1:lvar),
-     &                                                   vidBhflx)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxBhflx)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-#  endif
-# endif
-
 #ifdef SALINITY
 !
 ! Swflx    E-P flux [cm/day]
@@ -2865,73 +2538,57 @@
           ierr=nf_inq_varid (ncid,vname(1,indxSwflx)(1:lvar),
      &                                                   vidSwflx)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxSwflx)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxSwflx)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
-# ifdef BWFLUX
-!
-! Bwflx    Freshwater at bottom flux [cm/day]
-!
-        if (wrt(indxBwflx)) then
-          lvar=lenstr(vname(1,indxBwflx))
-          ierr=nf_inq_varid (ncid,vname(1,indxBwflx)(1:lvar),
-     &                                                   vidBwflx)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxBwflx)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        endif
-# endif
 #endif
 !
 ! Shflx     Surface shortwave radiation [W/m2]
 !
-# ifdef TEMPERATURE
         if (wrt(indxShflx_rsw)) then
-          lvar=lenstr(vname(1,indxShflx_rsw))
-          ierr=nf_inq_varid (ncid,vname(1,indxShflx_rsw)(1:lvar),
-     &                                                vidShflx_rsw)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxShflx_rsw)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
+         lvar=lenstr(vname(1,indxShflx_rsw))
+         ierr=nf_inq_varid (ncid,vname(1,indxShflx_rsw)(1:lvar),
+     &                                               vidShflx_rsw)
+         if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxShflx_rsw)(1:lvar), ncname(1:lstr)
+          goto 99                                       !--> ERROR
+         endif
         endif
-#endif
-# if defined BULK_FLUX && defined TEMPERATURE
+# ifdef BULK_FLUX
 !
         if (wrt(indxShflx_rlw)) then
-          lvar=lenstr(vname(1,indxShflx_rlw))
-          ierr=nf_inq_varid (ncid,vname(1,indxShflx_rlw)(1:lvar),
+         lvar=lenstr(vname(1,indxShflx_rlw))
+         ierr=nf_inq_varid (ncid,vname(1,indxShflx_rlw)(1:lvar),
      &                                               vidShflx_rlw)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxShflx_rlw)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
+         if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxShflx_rlw)(1:lvar), ncname(1:lstr)
+          goto 99                                       !--> ERROR
+         endif
         endif
 !
         if (wrt(indxShflx_lat)) then
-          lvar=lenstr(vname(1,indxShflx_lat))
-          ierr=nf_inq_varid (ncid,vname(1,indxShflx_lat)(1:lvar),
+         lvar=lenstr(vname(1,indxShflx_lat))
+         ierr=nf_inq_varid (ncid,vname(1,indxShflx_lat)(1:lvar),
      &                                               vidShflx_lat)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxShflx_lat)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
+         if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxShflx_lat)(1:lvar), ncname(1:lstr)
+          goto 99                                       !--> ERROR
+         endif
         endif
 !
         if (wrt(indxShflx_sen)) then
-          lvar=lenstr(vname(1,indxShflx_sen))
-          ierr=nf_inq_varid (ncid,vname(1,indxShflx_sen)(1:lvar),
+         lvar=lenstr(vname(1,indxShflx_sen))
+         ierr=nf_inq_varid (ncid,vname(1,indxShflx_sen)(1:lvar),
      &                                               vidShflx_sen)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxShflx_sen)(1:lvar), ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
+         if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxShflx_sen)(1:lvar), ncname(1:lstr)
+          goto 99                                       !--> ERROR
+         endif
         endif
 !
 # endif
-!
+
 # if defined BIOLOGY & !defined PISCES
 !
 ! Depth of the euphotic layer.
@@ -2940,7 +2597,7 @@
           lvar=lenstr(vname(1,indxHel))
           ierr=nf_inq_varid (ncid,vname(1,indxHel)(1:lvar), vidHel)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxHel)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxHel)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2952,7 +2609,7 @@
           lvar=lenstr(vname(1,indxChC))
           ierr=nf_inq_varid (ncid,vname(1,indxChC)(1:lvar), vidChC)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxChC)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxChC)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2963,7 +2620,7 @@
           lvar=lenstr(vname(1,indxU10))
           ierr=nf_inq_varid (ncid,vname(1,indxU10)(1:lvar), vidU10)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxU10)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxU10)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2973,7 +2630,7 @@
           lvar=lenstr(vname(1,indxKvO2))
           ierr=nf_inq_varid (ncid,vname(1,indxKvO2)(1:lvar), vidKvO2)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxKvO2)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxKvO2)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -2983,68 +2640,61 @@
           lvar=lenstr(vname(1,indxO2sat))
           ierr=nf_inq_varid (ncid,vname(1,indxO2sat)(1:lvar), vidO2sat)
           if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxO2sat)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxO2sat)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
 #   endif /* OXYGEN */
 #  endif
 # endif
-!
-!-----------------------------------------------------------------------
-!  USGS sediment model output
-!-----------------------------------------------------------------------
-!
+
 # ifdef SEDIMENT
 !
-! Sediment bed layer thickness, porosity, volume fraction of
+! Sediment bed layer thickness, porosity, volume fraction of 
 ! size class ised in sediment layer, bed fluxes (2+5*NST r2dgrd variables)
 !
-        do itrc=1,3+  NST
+        do itrc=1,2+  NST
 #  ifdef SUSPLOAD
      &             +2*NST
 #  endif
 #  ifdef BEDLOAD
      &             +2*NST
-#  endif
-#  if defined MIXED_BED || defined COHESIVE_BED
-     &             +1
-#  endif
-          indxWrk=indxSed+itrc-2
-          if (wrt(indxWrk)) then
-            lvar=lenstr(vname(1,indxWrk))
-            ierr=nf_inq_varid (ncid,vname(1,indxWrk)(1:lvar),
+#  endif                         
+         indxWrk=indxSed+itrc-1
+         if (wrt(indxWrk)) then
+           lvar=lenstr(vname(1,indxWrk))
+           ierr=nf_inq_varid (ncid,vname(1,indxWrk)(1:lvar), 
      &                                                vidSed(itrc))
-            if (ierr .ne. nf_noerr) then
-              write(stdout,1) vname(1,indxWrk)(1:lvar), ncname(1:lstr)
-              goto 99                                       !--> ERROR
-            endif
+           if (ierr .ne. nf_noerr) then
+           write(stdout,1) vname(1,indxWrk)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
           endif
+         endif
         enddo
-# endif /* SEDIMENT */
+# endif /*SEDIMENT */
 # ifdef BBL
 !
-! Abed       Wind-induced, bed wave excursion amplitude (m)
-! Hripple    Bed ripple height (m)
-! Lripple    Bed ripple length (m)
-! Zbnot      Physical hydraulic bottom roughness (grain roughness) (m)
-! Zbapp      Effective apparent hydraulic bottom roughness
-! bostrw     Wave-induced kinematic bottom stress (N/m2)
+! Abed       Wind-induced, bed wave excursion amplitude (m)  
+! Hripple    Bed ripple height (m)                           
+! Lripple    Bed ripple length (m)                             
+! Zbnot      Physical hydraulic bottom roughness (grain roughness) (m)                 
+! Zbapp      Effective apparent hydraulic bottom roughness         
+! bostrw     Wave-induced kinematic bottom stress (N/m2)    
 !
         do itrc=1,6
-          indxWrk=indxBBL+itrc-1
-          if (wrt(indxWrk)) then
-            lvar=lenstr(vname(1,indxWrk))
-            ierr=nf_inq_varid (ncid,vname(1,indxWrk)(1:lvar),
+         indxWrk=indxBBL+itrc-1
+         if (wrt(indxWrk)) then
+          lvar=lenstr(vname(1,indxWrk))
+          ierr=nf_inq_varid (ncid,vname(1,indxWrk)(1:lvar), 
      &                                                vidBBL(itrc))
-            if (ierr .ne. nf_noerr) then
-              write(stdout,1) vname(1,indxWrk)(1:lvar), ncname(1:lstr)
-              goto 99                                       !--> ERROR
-            endif
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxWrk)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
           endif
+         endif
         enddo
 # endif /* BBL */
-# if defined SST_SKIN && defined TEMPERATURE
+# ifdef SST_SKIN
 !
 ! sst_skin     surface skin temperature (degC)
 !
@@ -3053,51 +2703,14 @@
          ierr=nf_inq_varid (ncid,vname(1,indxSST_skin)(1:lvar),
      &                                               vidSST_skin)
          if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxSST_skin)(1:lvar), ncname(1:lstr)
-           goto 99                                       !--> ERROR
+          write(stdout,1) vname(1,indxSST_skin)(1:lvar), ncname(1:lstr)
+          goto 99                                       !--> ERROR
          endif
        endif
-# endif /* SST_SKIN */
-!
-# ifdef MUSTANG
-      do itrc=1,3
-        indx=indxT+ntrc_salt+ntrc_substot+itrc
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc)) ! 2D: ksmax,Eptot,Tenfon
-      enddo
-      do itrc=1,3
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+3                 ! 3D: dzs,tempsed,salsed
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+3))
-      enddo
-      do itrc=1,ntrc_subs
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),vidM(itrc+6))
-      enddo
-#  ifdef key_MUSTANG_specif_outputs
-      ik=0
-      do itrc=1,ntrc_subs
-        do itrv=1,nv_out3Dnv_specif
-          ik=ik+1
-          indx=indx+1
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                             vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
-        enddo
-      enddo
-      do itrv=1,nv_out2D_specif
-        ik=ik+1
-        indx=indx+1
-        lvar=lenstr(vname(1,indx))
-        ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                           vidM(ik+6+ntrc_subs))   ! 3D: traceurSe
-      enddo
-#  endif
-# endif /* MUSTANG */
-!
+# endif
+
 #endif /* SOLVE3D */
-!
+
 #ifdef WAVE_IO
 !
 ! Wave action density, wavenumber in XI/ETA directions
@@ -3109,10 +2722,10 @@
 # endif
           if (wrt(indxHRM+iwkb-1)) then
             lvar=lenstr(vname(1,indxHRM+iwkb-1))
-            ierr=nf_inq_varid (ncid, vname(1,indxHRM+iwkb-1)(1:lvar),
+            ierr=nf_inq_varid (ncid, vname(1,indxHRM+iwkb-1)(1:lvar), 
      &                                                  vidWAVE(iwkb))
             if (ierr .ne. nf_noerr) then
-              write(stdout,1) vname(1,indxHRM+iwkb-1)(1:lvar),
+              write(stdout,1) vname(1,indxHRM+iwkb-1)(1:lvar), 
      &                                                 ncname(1:lstr)
               goto 99                                     !--> ERROR
             endif
@@ -3241,7 +2854,7 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
      &                     'DEF_HIS/AVG -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
@@ -3250,19 +2863,19 @@
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
+          MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)') 
      &                'DEF_HIS/AVG ERROR: ',
      &                'Cannot open file ''', ncname(1:lstr), '''.'
      &                 MYID
           goto 99                                         !--> ERROR
         endif
 #endif
-      endif             !<--  create_new_file
-
+      endif             !<--  create_new_file  
+      
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
-        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_HIS/AVG ERROR: Cannot ',
-     &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
+        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_HIS/AVG ERROR: Cannot ', 
+     &    'switch to ''nf_nofill'' more; netCDF error code =', ierr 
       endif
    1  format(/1x,'DEF_HIS/AVG ERROR: Cannot find variable ''',
      &                   A, ''' in netCDF file ''', A, '''.'/)
@@ -3280,7 +2893,7 @@
 
 #undef ncname
 #undef rec_per_file
-#undef wrt
+#undef wrt 
 #undef vidTime
 #undef vidTime2
 #undef vidTstep
@@ -3291,7 +2904,11 @@
 #undef vidV
 #undef vidT
 #undef vidR
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING
 #undef vidbvf
+#endif
 #undef vidO
 #undef vidW
 #undef vidW
@@ -3305,50 +2922,56 @@
 #undef vidTke
 #undef vidGls
 #undef vidLsc
-#undef vidHel
-#undef vidChC
-#undef vidU10
-#undef vidKvO2
-#undef vidO2sat
-#undef vidAOU
-#undef vidwind10
+#if defined BIOLOGY & !defined PISCES 
+# undef vidHel
+# ifdef BIO_NChlPZD
+#  undef vidChC
+#  ifdef OXYGEN
+#   undef vidU10
+#   undef vidKvO2
+#   undef vidO2sat
+#  endif
+# elif defined BIO_BioEBUS
+#  undef vidAOU 
+#  undef vidwind10	
+# endif
+#endif  /* BIOLOGY */
 #undef vidSed
 #undef vidBBL
 #undef vidBostr
-#undef vidBustr
-#undef vidBvstr
 #undef vidWstr
 #undef vidUWstr
 #undef vidVWstr
 #undef vidShflx
-#undef vidSwflx
+#ifdef SALINITY
+# undef vidSwflx
+#endif
 #undef vidShflx_rsw
 #if defined BULK_FLUX
 # undef vidShflx_rlw
 # undef vidShflx_lat
 # undef vidShflx_sen
 #endif
-#if defined BHFLUX && defined TEMPERATURE
-# undef vidBhflx
-#endif
-#if defined BWFLUX & defined SALINITY
-#  undef vidBwflx
-#endif
 #undef vidSST_skin
-#undef vidWAVE
-#undef vidSUP
-#undef vidUST2D
-#undef vidVST2D
-#undef vidUST
-#undef vidVST
-#undef vidWST
-#undef vidAkb
-#undef vidAkw
-#undef vidKVF
-#undef vidCALP
-#undef vidKAPS
-#undef vidHm
-#undef vidM
+#ifdef WAVE_IO
+# undef vidWAVE
+#endif
+#ifdef MRL_WCI
+# undef vidSUP
+# undef vidUST2D
+# undef vidVST2D
+# undef vidUST
+# undef vidVST
+# undef vidWST
+# undef vidAkb
+# undef vidAkw
+# undef vidKVF
+# undef vidCALP
+# undef vidKAPS
+# ifdef MORPHODYN
+#  undef vidHm
+# endif
+#endif
 
 #ifdef AVERAGES
 # ifndef AVRH

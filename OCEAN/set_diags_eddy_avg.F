@@ -8,7 +8,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EDDY && defined AVERAGES  && ! defined XIOS
+#if (defined DIAGNOSTICS_EDDY && defined AVERAGES)
 
       subroutine set_diags_eddy_avg(tile)
 
@@ -55,10 +55,8 @@
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
-# include "forces.h"
 # include "averages.h"
 # include "diags_eddy.h"
-# include "coupling.h"
 !
 # include "work.h"
 # include "private_scratch.h"
@@ -76,9 +74,9 @@
 !###############################################
 
        ! Compute true vertical velocity (m/s).
-        trd=omp_get_thread_num()
-        call Wvlcty_tile (Istr,Iend,Jstr,Jend, workr, A2d(1,1,trd),
-     &                                  A2d(1,1,trd), A2d(1,2,trd))
+      trd=omp_get_thread_num()
+      call Wvlcty_tile (Istr,Iend,Jstr,Jend, workr, A2d(1,1,trd),
+     &                               A2d(1,1,trd), A2d(1,2,trd))
 
 !###############################################
 
@@ -87,8 +85,8 @@
           cff1=0.0
           if (ZEROTH_TILE) then
             timediags_eddy_avg=time
-!            MPI_master_only write(*,*) 'started averaging eddy',iic,
-!     &                  ntsdiags_eddy_avg,nwrtdiags_eddy_avg
+      MPI_master_only write(*,*) 'started averaging eddy',iic,
+     &                  ntsdiags_eddy_avg,nwrtdiags_eddy_avg
           endif
         elseif (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).gt.1) then
           cff =1.0
@@ -101,83 +99,58 @@
           cff1=1.0
           if (ZEROTH_TILE) then
             timediags_eddy_avg=cff*(timediags_eddy_avg+time)
-!            MPI_master_only write(*,*) 'finished averaging eddy',
-!     &                  iic,ntsdiags_eddy_avg,nwrtdiags_eddy_avg
+            MPI_master_only write(*,*) 'finished averaging eddy',
+     &                  iic,ntsdiags_eddy_avg,nwrtdiags_eddy_avg
           endif
         endif
 
 !###############################################
           
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            eddyzz_avg(i,j)= cff *
-     &                       ( cff1*eddyzz_avg(i,j)
-     &                                +Zt_avg1(i,j)**2 )
-          enddo
-        enddo
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
 
-        do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
 
-              GRho=-1*g/rho0
+                  GRho=-1*g/rho0
 
-              cffu = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
-              cffv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
+                  cffu = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
+                  cffv = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
 
 #  ifdef SPLIT_EOS
-              cffb =rho1(i,j,k)+qp1(i,j,k)
+                  cffb =rho1(i,j,k)+qp1(i,j,k)
      &                          *(z_w(i,j,N)-z_r(i,j,k))
 #  else
-              cffb =rho(i,j,k)
+                  cffb =rho(i,j,k)
 #  endif
-
-              if (k.eq.1) then
-                eddyubu_avg(i,j)= cff *
-     &                           ( cff1*eddyubu_avg(i,j)
-     &                             +cffu * bustr(i,j) )
-                eddyvbv_avg(i,j)= cff *
-     &                           ( cff1*eddyvbv_avg(i,j)
-     &                             +cffv * bvstr(i,j) )
-              endif
-
-              if (k.eq.N) then
-                eddyusu_avg(i,j)= cff *
-     &                           ( cff1*eddyusu_avg(i,j)
-     &                             +cffu * sustr(i,j) )
-                eddyvsv_avg(i,j)= cff *
-     &                           ( cff1*eddyvsv_avg(i,j)
-     &                             +cffv * svstr(i,j) )
-              endif
-
-              eddyuu_avg(i,j,k)= cff *
+                  eddyuu_avg(i,j,k)= cff *
      &                       ( cff1*eddyuu_avg(i,j,k)
      &                         +cffu**2 )
-              eddyvv_avg(i,j,k)= cff *
+                  eddyvv_avg(i,j,k)= cff *
      &                       ( cff1*eddyvv_avg(i,j,k)
      &                         +cffv**2 )
-              eddyuv_avg(i,j,k)= cff *
+                  eddyuv_avg(i,j,k)= cff *
      &                       ( cff1*eddyuv_avg(i,j,k)
      &                         +cffu*cffv )
-              eddyub_avg(i,j,k)= cff *
+                  eddyub_avg(i,j,k)= cff *
      &                       ( cff1*eddyub_avg(i,j,k)
      &                     +GRho*cffu*cffb )
-              eddyvb_avg(i,j,k)= cff *
+                  eddyvb_avg(i,j,k)= cff *
      &                       ( cff1*eddyvb_avg(i,j,k)
      &                     +GRho*cffv*cffb )
-              eddywb_avg(i,j,k)= cff *
+                  eddywb_avg(i,j,k)= cff *
      &                       ( cff1*eddywb_avg(i,j,k)
      &                     +GRho*workr(i,j,k)*cffb )
-              eddyuw_avg(i,j,k)= cff *
+                  eddyuw_avg(i,j,k)= cff *
      &                       ( cff1*eddyuw_avg(i,j,k)
      &                          +workr(i,j,k)*cffu )
-              eddyvw_avg(i,j,k)= cff *
+                  eddyvw_avg(i,j,k)= cff *
      &                       ( cff1*eddyvw_avg(i,j,k)
      &                          +workr(i,j,k)*cffv )
 
+                enddo
+              enddo
             enddo
-          enddo
-        enddo
+
 
       endif
 

@@ -1,78 +1,77 @@
 #   ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=J_EXT_RANGE
-          TRB_NEW(Istr-1,j,k)=TRB_NEW(Istr,j,k)
+          trb(Istr-1,j,k,nnew,ig)=trb(Istr,j,k,nnew,ig)
         enddo
       endif
       if (EASTERN_EDGE) then
         do j=J_EXT_RANGE
-          TRB_NEW(Iend+1,j,k)=TRB_NEW(Iend,j,k)
+          trb(Iend+1,j,k,nnew,ig)=trb(Iend,j,k,nnew,ig)
         enddo
       endif
 #   endif
 #   ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do i=I_EXT_RANGE
-          TRB_NEW(i,Jstr-1,k)=TRB_NEW(i,Jstr,k)
+          trb(i,Jstr-1,k,nnew,ig)=trb(i,Jstr,k,nnew,ig)
         enddo
       endif
       if (NORTHERN_EDGE) then
         do i=I_EXT_RANGE
-          TRB_NEW(i,Jend+1,k)=TRB_NEW(i,Jend,k)
+          trb(i,Jend+1,k,nnew,ig)=trb(i,Jend,k,nnew,ig)
         enddo
       endif
 #    ifndef EW_PERIODIC
       if (WESTERN_EDGE.and.SOUTHERN_EDGE) then
-        TRB_NEW(Istr-1,Jstr-1,k)=TRB_NEW(Istr,Jstr,k)
+        trb(Istr-1,Jstr-1,k,nnew,ig)=trb(Istr,Jstr,k,nnew,ig)
       endif
       if (WESTERN_EDGE.and.NORTHERN_EDGE) then
-        TRB_NEW(Istr-1,Jend+1,k)=TRB_NEW(Istr,Jend,k)
+        trb(Istr-1,Jend+1,k,nnew,ig)=trb(Istr,Jend,k,nnew,ig)
       endif
       if (EASTERN_EDGE.and.SOUTHERN_EDGE) then
-        TRB_NEW(Iend+1,Jstr-1,k)=TRB_NEW(Iend,Jstr,k)
+        trb(Iend+1,Jstr-1,k,nnew,ig)=trb(Iend,Jstr,k,nnew,ig)
       endif
       if (EASTERN_EDGE.and.NORTHERN_EDGE) then
-        TRB_NEW(Iend+1,Jend+1,k)=TRB_NEW(Iend,Jend,k)
+        trb(Iend+1,Jend+1,k,nnew,ig)=trb(Iend,Jend,k,nnew,ig)
       endif
 #    endif
 #   endif
 
          DO j=jstr-1,jend+1              
             DO i=istr,iend+1          
-               FX (i,j  )=( TRB_NEW(i  ,j,k) 
-     &                   -  TRB_NEW(i-1,j,k) ) 
+               FX (i,j  )=( trb(i  ,j,k,nnew,ig) 
+     &                   -  trb(i-1,j,k,nnew,ig) ) 
 #  ifdef MASKING
-     &                             *umask(i,j)  
+     &                                 *umask(i,j)  
 #  endif
             ENDDO                    
          ENDDO
          DO j=jstr,jend+1                 
             DO i=istr-1,iend+1
-               FE1(i,j,0)=( TRB_NEW(i,j  ,k) 
-     &                    - TRB_NEW(i,j-1,k) ) 
+               FE1(i,j,0)=( trb(i,j  ,k,nnew,ig) 
+     &                    - trb(i,j-1,k,nnew,ig) ) 
 #  ifdef MASKING
-     &                             *vmask(i,j)
+     &                                 *vmask(i,j)
 #  endif
             ENDDO
             DO i=istr,iend
               FE(i,j)=FE1(i,j,0) 
-     &                + smth_a*( FX(i+1,j)+FX(i  ,j-1)
-     &                          -FX(i  ,j)-FX(i+1,j-1))
+     &         +  smth_a*( FX(i+1,j)+FX(i  ,j-1)
+     &                 -FX(i  ,j)-FX(i+1,j-1))
             ENDDO
          ENDDO
-
          DO j=jstr,jend
             DO i=istr,iend+1
               FX(i,j)=FX(i,j  ) 
-     &                + smth_a*( FE1(i,j+1,0)+FE1(i-1,j  ,0)
-     &                          -FE1(i,j  ,0)-FE1(i-1,j+1,0))
+     &         + smth_a*( FE1(i,j+1,0)+FE1(i-1,j  ,0)
+     &                -FE1(i,j  ,0)-FE1(i-1,j+1,0))
             ENDDO
             DO i=istr,iend
-               trb(i,j,k,nnew,ig)=TRB_NEW(i,j,k) 
-     &                        + smth_b*( FX(i+1,j)-FX(i,j)
-     &                                  +FE(i,j+1)-FE(i,j) )
+               trb(i,j,k,nnew,ig)=trb(i,j,k,nnew,ig) 
+     &         + smth_b*( FX(i+1,j)-FX(i,j)
+     &                 +FE(i,j+1)-FE(i,j) )
 #  ifdef MASKING
-     &                                               *rmask(i,j)
+     &                            *rmask(i,j)
 #  endif
             ENDDO
          ENDDO              !--> discard FX,FE,FE1

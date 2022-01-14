@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -20,7 +20,7 @@
 ! Lm,Mm    Number of the internal points [see above] of array
 !          covering a Message Passing subdomain. In the case when
 !          no Message Passing partitioning is used, these two are
-!          the same as LLm,MMm.
+!          the same as LLm,MMm. 
 !
 ! N        Number of vertical levels.
 !
@@ -28,14 +28,13 @@
 #if defined AGRIF
       integer LLmm2, MMmm2
 #endif
-
 #if defined BASIN
       parameter (LLm0=60,   MMm0=50,   N=10)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
 #elif defined EQUATOR
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
-#elif defined KH_INST
+#elif defined KH_INST 
 # ifndef KH_INSTY
 #  ifdef KH_INST3D
       parameter (LLm0=256,  MMm0=32,  N=256)   !   1 m resolution
@@ -45,8 +44,8 @@
 # else
       parameter (LLm0=1,    MMm0=256, N=256)
 # endif
-#elif defined ACOUSTIC
-      parameter (LLm0=64,   MMm0=1,    N=64)
+#elif defined ACOUSTIC 
+      parameter (LLm0=64,   MMm0=1,    N=64)  
 #elif defined GRAV_ADJ
 # ifdef NBQ
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
@@ -56,7 +55,7 @@
       parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
 !     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
-#elif defined ISOLITON
+#elif defined I_SOLITON
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
@@ -66,7 +65,7 @@
 !     parameter (LLm0=1600, MMm0=3,    N=40)   ! .75 km resolution
 #elif defined IGW
 # ifndef NBQ
-!      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution
+!      parameter (LLm0=878, MMm0=3,    N=80)   !   1 km resolution  
        parameter (LLm0=878, MMm0=3,    N=40)
 !      parameter (LLm0=878, MMm0=3,    N=20)
 # else
@@ -75,20 +74,23 @@
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
 #elif defined TS_HADV_TEST
-      parameter (LLm0=100,  MMm0=100,  N=5)
+      parameter (LLm0=100,  MMm0=100,  N=5) 
 #elif defined SINGLE_COLUMN
-# ifdef KATO_PHILIPS
+# ifdef KATO_PHILIPS 
       parameter (LLm0=5 ,   MMm0=5,    N=100)
 # elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \
     || defined FORCED_OSCNONROTBBL
       parameter (LLm0=5 ,   MMm0=5,    N=50)
 # elif defined FORCED_EKBBL
       parameter (LLm0=5 ,   MMm0=5,    N=40)
-# elif defined FORCED_DBLEEK
+# elif defined FORCED_DBLEEK 
       parameter (LLm0=5 ,   MMm0=5,    N=25)
 # elif defined DIURNAL_CYCLE
       parameter (LLm0=5 ,   MMm0=5,    N=150)
 # endif
+#elif defined PLUME
+      parameter (LLm0=200,  MMm0=200,  N=100)        
+!     parameter (LLm0=80,   MMm0=80,   N=100) 
 #elif defined RIVER
       parameter (LLm0=40,   MMm0=80,   N=20)
 #elif defined SEAMOUNT
@@ -119,13 +121,7 @@
 #elif defined SHOREFACE
       parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach
 #elif defined SANDBAR
-# ifndef NBQ
-      parameter (LLm0=100,  MMm0=1,    N=10)   !  3 m Sandbar
-# else
-!     parameter (LLm0=180,  MMm0=1,    N=10)   !  1.0 m Sandbar
-!     parameter (LLm0=360,  MMm0=1,    N=20)   !  0.5 m Sandbar
-      parameter (LLm0=720,  MMm0=1,    N=20)   !  0.25 m Sandbar
-# endif
+      parameter (LLm0=59,   MMm0=1,    N=20)   ! 50 cm
 #elif defined SWASH
 !     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
@@ -133,7 +129,7 @@
 # ifdef BISCA
       parameter (LLm0= 86,  MMm0=92,   N=20)   ! 10 m Bisca Rip
 # else
-!     parameter (LLm0=256,  MMm0=256,  N=20)   !  3 m resolution
+!     parameter (LLm0=256,  MMm0=256,  N=20)   !  3 m resolution 
 !     parameter (LLm0= 96,  MMm0= 96,  N=20)   !  8 m resolution
       parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution
 # endif
@@ -155,42 +151,46 @@
 !     parameter (LLm0=4000, MMm0=1,    N=400)  !  1 mm resolution
 #elif defined CALDEIRA
       parameter (LLm0=100,  MMm0=100,  N=50)
-#elif defined DUNE
-# ifdef ANA_DUNE
-      parameter (LLm0=150,  MMm0=1,    N=20)   !  2 m resolution
-# elif defined DUNE3D
-      parameter (LLm0=50,   MMm0=50,   N=20)   !  2 m resolution
-# else
-      parameter (LLm0=50,   MMm0=1,    N=20)   !  2 m resolution
-# endif
-#elif defined SED_TOY
-# ifdef SED_TOY_ROUSE
-      parameter (LLm0=5,    MMm0=5,    N=100)  !  5 cm resolution
-# else
-      parameter (LLm0=4,    MMm0=3,    N=20)   !  1 m resolution
-# endif
-#elif defined TIDAL_FLAT
-      parameter (LLm0=200,  MMm0=3,    N=10)   ! TIDAL_FLAT
 #elif defined REGIONAL
-# if defined  BENGUELA_LR
+#  if   defined USWC0
+      parameter (LLm0=62,   MMm0=126,  N=40)   ! US_West grid15 L0
+#  elif defined USWC1
+      parameter (LLm0=60,   MMm0=96,   N=40)   ! US_West grid15 L1
+#  elif defined USWC2
+      parameter (LLm0=60,   MMm0=120,  N=40)   ! US_West grid15 L2
+#  elif defined USWC155
+      parameter (LLm0=83,   MMm0=168,  N=20)   ! US_West USWC155 L1
+#  elif defined CANARY
+!     parameter (LLm0=97,   MMm0=159,  N=32)   ! Canary
+#  elif defined FINISTERE
+      parameter (LLm0=78,   MMm0=100,  N=16)   ! Finistere
+#  elif defined RIA
+      parameter (LLm0=77,   MMm0=96,   N=28)   ! RIA
+#  elif defined PERU
+      parameter (LLm0=39,   MMm0=32,   N=20)   ! Peru test
+#  elif defined SAFE
+      parameter (LLm0=111,  MMm0=96,   N=32)   ! SAFE
+#  elif defined PACIFIC
+      parameter (LLm0=170,  MMm0=60,   N=30)   ! Pacific
+#  elif defined  CORAL
+      parameter (LLm0=81,   MMm0=77,   N=32)   ! CORAL sea
+#  elif defined  BENGUELA_LR
       parameter (LLm0=41,   MMm0=42,   N=32)   ! BENGUELA_LR
-# elif defined  BENGUELA_HR
+#  elif defined  BENGUELA_HR
       parameter (LLm0=83,   MMm0=85,   N=32)   ! BENGUELA_HR
-# elif defined  BENGUELA_VHR
+#  elif defined  BENGUELA_VHR
       parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR
-# else
-      parameter (LLm0=xx, MMm0=xx, N=xx)  ! YOUR REGIONAL CONFIG
-# endif
-#elif defined COASTAL 
-# if defined VILAINE
-      parameter (LLm0=180,  MMm0=130,  N=10)   ! VILAINE
-# else
-      parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
-# endif
+#  elif defined MENOR 
+      parameter (LLm0=1059, MMm0=447,  N=40)   ! MENOR
+#  elif defined SEINE 
+      parameter (LLm0=411,  MMm0=181,  N=20)   ! SEINE 
+#  else
+      parameter (LLm0=94,   MMm0=81,   N=40)
+#  endif
 #else
-      parameter (LLm0=xxx,  MMm0=xxx,  N=xxx)
+      parameter (LLm0=xx, MMm0=xx, N=xx)
 #endif
-
+      
 #ifdef AGRIF
       common /scrum_physical_grid/ LLm,Lm,LLmm2,MMm,Mm,MMmm2
 #else
@@ -217,7 +217,7 @@
 !
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES
+      integer NP_XI, NP_ETA, NNODES     
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
@@ -247,10 +247,37 @@
 
 !
 !----------------------------------------------------------------------
+! OA coupling parametrization for current feedback on wind-stress  
+! (Renault et al., JAMES 2020)
+!----------------------------------------------------------------------
+!
+#ifdef SMFLUX_CFB
+      ! wind correction: Ua-(1-sw)*Uo
+      ! ifndef CFB_WIND, this is only used to correct heat flux (bulk_flux)
+      real swparam
+      parameter (swparam=0.3)
+# ifdef CFB_STRESS
+      ! wind-stress correction using wind speed:  rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope * wspd + cfb_offset [N.m^-3.s]
+      !  (recommendended and default if BULK_FLUX - needs wspd data)
+      real cfb_slope, cfb_offset
+      parameter (cfb_slope=-0.0029)
+      parameter (cfb_offset=0.008)
+# elif defined CFB_STRESS2
+      ! wind-stress correction using wind stress: rho0*sustr + s_tau*Uo
+      !   s_tau = cfb_slope2 * rho0*wstr + cfb_offset2 [N.m^-3.s]
+      ! (use if wspd data not available, e.g. not BULK_FLUX)
+      real cfb_slope2, cfb_offset2
+      parameter (cfb_slope2=-0.100)
+      parameter (cfb_offset2=0.001)
+# endif
+#endif
+!
+!----------------------------------------------------------------------
 ! Tides
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+#if defined SSH_TIDES || defined UV_TIDES
       integer Ntides             ! Number of tides
                                  ! ====== == =====
 # if defined IGW
@@ -267,12 +294,10 @@
 #ifdef WET_DRY
       real D_wetdry             ! Critical Depth for Drying cells
                                 ! ======== ===== === ====== =====
-# if defined SWASH
-      parameter (D_wetdry=0.001)
-# elif defined THACKER
+# if defined THACKER || defined SANDBAR
       parameter (D_wetdry=0.01)
-# elif defined SANDBAR || defined TIDAL_FLAT
-      parameter (D_wetdry=0.1)
+# elif defined SWASH
+      parameter (D_wetdry=0.001)
 # else
       parameter (D_wetdry=0.2)
 # endif
@@ -286,10 +311,8 @@
       integer Msrc               ! Number of point sources
 # ifdef RIVER
       parameter (Msrc=2)         ! ====== == ===== =======
-# elif defined VILAINE
-      parameter (Msrc=2)        ! ====== == ===== =======
-# else 
-      parameter (Msrc=0)        ! ====== == ===== =======
+# else
+      parameter (Msrc=100)        ! ====== == ===== =======
 # endif
 #endif
 #ifdef FLOATS
@@ -313,7 +336,7 @@
       common/scrum_deriv_param/padd_X,padd_E
 #endif
 #ifdef LOGFILE
-      common /stdout/stdout
+      common /stdout/stdout 
 #else
       parameter (stdout=6)
 #endif
@@ -362,8 +385,8 @@
 !----------------------------------------------------------------------
 !
 #ifdef NEW_S_COORD
-      real Vtransform
-      parameter (Vtransform=2)
+      real Vtransform          
+      parameter (Vtransform=2) 
 #else
       real Vtransform
       parameter (Vtransform=1)
@@ -371,32 +394,21 @@
 
 !
 !----------------------------------------------------------------------
-! Number of tracers
+! Number of tracers 
 !----------------------------------------------------------------------
 !
 #ifdef SOLVE3D
-      integer   NT, NTA, itemp, NTot
-      integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed
-      integer   ntrc_subs, ntrc_substot
+      integer   NT, itemp
+      integer   ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed 
 !
-# ifdef TEMPERATURE
       parameter (itemp=1)
-      parameter (ntrc_temp=1)
-# else
-      parameter (itemp=0)
-      parameter (ntrc_temp=0)
-# endif
-# ifdef SALINITY
+# ifdef SALINITY 
       parameter (ntrc_salt=1)
 # else
       parameter (ntrc_salt=0)
 # endif
 # ifdef PASSIVE_TRACER
-#  ifdef KH_INST
-      parameter (ntrc_pas=2)
-#  else
       parameter (ntrc_pas=1)
-#  endif
 # else
       parameter (ntrc_pas=0)
 # endif
@@ -423,104 +435,37 @@
 #   endif
 #  elif defined BIO_N2ChlPZD2
       parameter (ntrc_bio=7)
-#  elif defined BIO_BioEBUS
+#  elif defined BIO_BioEBUS 
 #   ifdef NITROUS_OXIDE
       parameter (ntrc_bio=12)
 #   else
       parameter (ntrc_bio=11)
-#   endif
-#  endif
+#   endif  
+#  endif 
 # else
       parameter (ntrc_bio=0)
 # endif /* BIOLOGY */
-
-/*! === SUBSTANCE ===*/
-!
-# if defined SUBSTANCE
-! ntrc_subs : number of advected substances (not fixed, neither benthic)
-      INTEGER,PARAMETER :: riosh=8,riolg=8,rlg=8,rsh=8
-      INTEGER,PARAMETER :: lchain=200
-      integer  itsubs1,itsubs2,ntfix
-#  ifdef SED_TOY
-      parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  elif defined TIDAL_FLAT
-      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  elif defined VILAINE 
-      parameter (ntrc_subs=3 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  else
-      parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
-#  endif
-      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
-      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )
-# else
-      parameter (ntrc_subs=0, ntrc_substot=0)
-# endif /* SUBSTANCE */
-
 !
 # ifdef SEDIMENT
+! NGRAV          Number of gravel classes
 ! NSAND          Number of sand classes
-! NMUD           Number of mud classes
-! NGRAV          Number of gravel classes (not implemented...)
+! NMUD           Number of mud classes  
 ! NST            Number of sediment (tracer) size classes
 ! NLAY           Number of layers in sediment bed
 !
-      integer NSAND, NMUD, NGRAV, NST, NLAY
-#  ifdef DUNE
-#   ifdef ANA_DUNE
-      parameter (NSAND=1, NMUD=0, NGRAV=0)
-      parameter (NLAY=11)
-#   else
-      parameter (NSAND=2, NMUD=0, NGRAV=0)
-      parameter (NLAY=10)
-#   endif
-#  elif defined SED_TOY
-#   if defined SED_TOY_RESUSP || defined SED_TOY_CONSOLID
-      parameter (NSAND=2, NMUD=2, NGRAV=0)
-      parameter (NLAY=41)
-#   elif defined SED_TOY_FLOC
-      parameter (NSAND=4, NMUD=15, NGRAV=0)
-      parameter (NLAY=20)
-#   elif defined SED_TOY_ROUSE 
-      parameter (NSAND=0, NMUD=6, NGRAV=0)
+      integer    NGRAV, NSAND, NMUD, NST, NLAY
+      parameter (NGRAV=0, NSAND=2, NMUD=0) 
+!      parameter (NST=NGRAV+NSAND+NMUD) ! robustness?
+      parameter (NST=2)  ! NST=NGRAV+NSAND+NMUD
       parameter (NLAY=1)
-#   endif
-#  else
-      parameter (NSAND=2, NMUD=0, NGRAV=0)
-      parameter (NLAY=1)
-#  endif
-      parameter (NST=NSAND+NMUD+NGRAV)
       parameter (ntrc_sed=NST)
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
 !
-! Total number of active tracers
-!
-      parameter (NTA=itemp+ntrc_salt)
-
-!
 ! Total number of tracers
 !
-# ifdef SUBSTANCE
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
-      parameter (NTot=NT+ntfix)
-# else
       parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
-      parameter (NTot=NT)
-# endif /* SUBSTANCE */
-
-# ifdef MUSTANG
-   ! vertical dimension (ksdmin:ksdmax) of variables in sediment
-   ! (ksdmax=max number of layers)
-      integer ksdmin,ksdmax
-#  if defined ANA_DUNE || defined key_ANA_bedload
-      parameter (ksdmin=1,ksdmax=11)
-#  elif defined TIDAL_FLAT
-      parameter (ksdmin=1,ksdmax=3)
-#  else
-      parameter (ksdmin=1,ksdmax=10)
-#  endif
-# endif /* MUSTANG */
 
 # if defined BBL && defined AGRIF
       integer Agrif_lev_sedim
@@ -533,7 +478,7 @@
       integer itke
       parameter(itke=1)
       integer igls
-      parameter(igls=2)
+      parameter(igls=2)     
 # endif
 
 #endif /* SOLVE3D */
@@ -547,11 +492,12 @@
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf
+
 # ifdef BIOLOGY
      &          , itrc_bio
 # endif
 # ifdef SEDIMENT
-     &          , itrc_sed, itrc_sand, itrc_mud, itrc_grav
+     &          , itrc_sed
 # endif
 # ifdef SALINITY
      &          , isalt
@@ -600,8 +546,8 @@
 #   ifdef OXYGEN
      &          , OGain_NewProd, OLoss_Zmetab
      &          , OLoss_ReminD, NumFluxTermsO, OFlux_GasExc
-     &          , NumGasExcTerms, NumFluxTerms
-#   else
+     &          , NumGasExcTerms, NumFluxTerms  
+#   else 
      &          , NumGasExcTerms
      &          , NumFluxTerms
 #   endif
@@ -612,10 +558,10 @@
      &          , iDet1, iDet2
      &          , NFlux_NewProd
      &          , NFlux_RegProd
-     &          , NFlux_Nitrific
+     &          , NFlux_Nitrific 
      &          , NFlux_Grazing
      &          , NFlux_SlopFeed
-     &          , NFlux_Pmort
+     &          , NFlux_Pmort 
      &          , NFlux_Zmetab
      &          , NFlux_Zmort
      &          , NFlux_ReminD1, NFlux_ReminD2
@@ -630,7 +576,7 @@
      &          , iDet1, iDet2, iDON, iO2
 #    ifdef NITROUS_OXIDE
      &          , iN2O
-#    endif
+#    endif 
      &          , NFlux_lightlimitP1, NFlux_lightlimitP2
      &          , NFlux_templimitP1, NFlux_templimitP2
      &          , NFlux_NO3limitP1, NFlux_NO2limitP1
@@ -654,22 +600,22 @@
      &          , NFlux_NH4anammox, O2Flux_GasExc, NumFluxTermsN
 #    ifdef NITROUS_OXIDE
      &          , NFlux_paramN2O, N2OFlux_GasExc
-#    endif
+#    endif 
      &          , NumFluxTerms, NumGasExcTerms
      &          , NFlux_VSinkP2, NFlux_VSinkD1
      &          , NFlux_VSinkD2, NumVSinkTerms
-#  endif
+#  endif  
 # endif   /* BIOLOGY */
 
 # ifdef SEDIMENT
-     &          ,isand1,imud1,isand2,imud2,igrav1,igrav2
+     &          , isand, isilt
 # endif
 
 !
 ! ================  Parameters  =====================
 !
 
-# ifdef SALINITY
+# ifdef SALINITY 
       parameter (isalt=itemp+1)
 # endif
 # ifdef PASSIVE_TRACER
@@ -691,24 +637,24 @@
      &            iDFE_=iDIC_+17, iDSI_=iDIC_+18, iNFE_=iDIC_+19,
      &            iNCH_=iDIC_+20, iDCH_=iDIC_+21, iNO3_=iDIC_+22,
      &            iNH4_=iDIC_+23)
-#   ifdef key_ligand
-      parameter (iLGW_=iDIC_+24)
-#   endif
-#   ifdef key_pisces_quota
 #    ifdef key_ligand
+      parameter (iLGW_=iDIC_+24)
+#     endif
+#   ifdef key_pisces_quota
+#   ifdef key_ligand
       parameter (iDON_=iDIC_+25, iDOP_=iDIC_+26, iPON_=iDIC_+27,
      &	         iPOP_=iDIC_+28, iNPH_=iDIC_+29, iPPH_=iDIC_+30,
      &	         iNDI_=iDIC_+31, iPDI_=iDIC_+32, iPIC_=iDIC_+33,
      &	         iNPI_=iDIC_+34, iPPI_=iDIC_+35, iPFE_=iDIC_+36,
      &	         iPCH_=iDIC_+37, iGON_=iDIC_+38, iGOP_=iDIC_+39)
-#    else
+#   else
       parameter (iDON_=iDIC_+24, iDOP_=iDIC_+25, iPON_=iDIC_+26,
      &           iPOP_=iDIC_+27, iNPH_=iDIC_+28, iPPH_=iDIC_+29,
      &           iNDI_=iDIC_+30, iPDI_=iDIC_+31, iPIC_=iDIC_+32,
      &           iNPI_=iDIC_+33, iPPI_=iDIC_+34, iPFE_=iDIC_+35,
      &           iPCH_=iDIC_+36, iGON_=iDIC_+37, iGOP_=iDIC_+38)
-#    endif
 #   endif
+#endif
 #   ifdef key_trc_diaadd
       parameter (Nhi       = 1,
      &            Nco3      = 2,
@@ -756,10 +702,14 @@
 #   endif
 
 #  elif defined BIO_NChlPZD
+#   ifdef OXYGEN
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-      parameter (iNO3_=itrc_bio, iChla=iNO3_+1,
+#   else
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+#   endif
+      parameter (iNO3_=itrc_bio, iChla=iNO3_+1,  
      &           iPhy1=iNO3_+2,
-     &           iZoo1=iNO3_+3,
+     &           iZoo1=iNO3_+3, 
      &           iDet1=iNO3_+4)
 #   ifdef OXYGEN
       parameter (iO2=iNO3_+5)
@@ -773,7 +723,7 @@
      &           NFlux_ReminD   = 7,
      &           NumFluxTermsN  = 7,
 #   ifdef OXYGEN
-     &           OGain_NewProd  = 8,
+     &           OGain_NewProd  = 8, 
      &           OLoss_Zmetab   = 9,
      &           OLoss_ReminD   = 10,
      &           NumFluxTermsO  = 3,
@@ -790,7 +740,7 @@
 
 #  elif defined BIO_N2ChlPZD2
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-      parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,
+      parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,   
      &           iPhy1=iNO3_+3,
      &           iZoo1=iNO3_+4,
      &           iDet1=iNO3_+5, iDet2=iNO3_+6)
@@ -814,13 +764,13 @@
      &           NFlux_VSinkD2  = 3,
      &           NumVSinkTerms  = 3)
 
-#  elif defined BIO_BioEBUS
+#  elif defined BIO_BioEBUS 
 #   ifdef NITROUS_OXIDE
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
 #   else
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
-#   endif
-
+#   endif  
+    
       parameter (iNO3_=itrc_bio, iNO2_=iNO3_+1, iNH4_=iNO3_+2,
      &           iPhy1=iNO3_+3,  iPhy2=iNO3_+4,
      &           iZoo1=iNO3_+5,  iZoo2=iNO3_+6,
@@ -830,7 +780,7 @@
 #   ifdef NITROUS_OXIDE
       parameter (iN2O=iNO3_+11)
 #   endif
-
+  
       parameter(  NFlux_lightlimitP1=1
      &          , NFlux_lightlimitP2=2
      &          , NFlux_templimitP1=3
@@ -861,7 +811,7 @@
      &          , NFlux_Z2metab=28
      &          , NFlux_Z2mort=29
      &          , NFlux_HydrolD1=30
-     &          , NFlux_ReminOxyD1=31
+     &          , NFlux_ReminOxyD1=31 			
      &          , NFlux_Denitr1D1=32
      &          , NFlux_Denitr2D1=33
      &          , NFlux_HydrolD2=34
@@ -873,12 +823,12 @@
      &          , NFlux_Denitr2DON=40
      &          , NFlux_NO2anammox=41
      &          , NFlux_NH4anammox=42
-#   ifdef NITROUS_OXIDE
+#   ifdef NITROUS_OXIDE     
      &          , NFlux_paramN2O=43
      &          , NumFluxTermsN=NFlux_paramN2O
-#   else
+#   else 
      &          , NumFluxTermsN=NFlux_NH4anammox
-#   endif
+#   endif      
      &          , NumFluxTerms=NumFluxTermsN
      &          , O2Flux_GasExc=1
 #   ifdef NITROUS_OXIDE
@@ -918,12 +868,7 @@
 
 # ifdef SEDIMENT
       parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
-      parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
-      parameter (itrc_grav=itrc_mud+NGRAV)
-      parameter (isand1=1,imud1=isand1+NSAND)
-      parameter (igrav1=imud1+NMUD)
-      parameter (isand2=isand1+NSAND-1,imud2=imud1+NMUD-1)
-      parameter (igrav2=igrav1+NGRAV-1)
+      parameter (isand=itrc_sed, isilt=isand+1)
 # endif
 
 !
@@ -931,9 +876,9 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=16*NT)
+      parameter (ntrc_diats=15*NT)
 #  else
-      parameter (ntrc_diats=8*NT)
+      parameter (ntrc_diats=7*NT)
 #  endif
 # else
       parameter (ntrc_diats=0)
@@ -962,12 +907,12 @@
 # else
       parameter (ntrc_diapv=0)
 # endif
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      parameter (ntrc_diaeddy=12)
+# ifdef DIAGNOSTICS_EDDY
+      parameter (ntrc_diaeddy=10)
 # else
       parameter (ntrc_diaeddy=0)
 # endif
-# if defined OUTPUTS_SURFACE && ! defined XIOS
+# ifdef OUTPUTS_SURFACE
       parameter (ntrc_surf=5)
 # else
       parameter (ntrc_surf=0)
@@ -976,7 +921,7 @@
 
 !
 !----------------------------------------------------------------------
-! Max time increment for computing bottom stress at the 3D fast time
+! Max time increment for computing bottom stress at the 3D fast time 
 ! steps
 !----------------------------------------------------------------------
 !
@@ -984,3 +929,4 @@
       integer inc_faststep_max
       parameter(inc_faststep_max = 10)
 #endif
+

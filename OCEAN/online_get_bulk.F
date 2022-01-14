@@ -27,7 +27,7 @@
 !  This subfunction enables the online extraction of data from a forcing netcdf 
 !  NCEP/CFSR dataset. It complete the extraction with a spatial interpolation and 
 !  a recalculation of the forcing fields to generate the bulk forcing (tairg, 
-!  rhumg, prateg, radlwg, radswg, uwndg, vwndg) on the simulation domain.
+!  rhumg, prateg, radlwg, radswg, wspdg, uwndg, vwndg) on the simulation domain.
 !------------------------------------------------------------------------------
 !  The main steps of this extraction are:
 !  - Opening of the relevant NCEP/CFSR netcdf file used for the forcing of the 
@@ -37,7 +37,7 @@
 !  - Interpolation of this extracted dataset on the grid of the model (in serial 
 !    as well as parallel).
 !  - Transformation of the various interpolated dataset into roms bulk forcings:
-!    tairg; rhumg; prateg; radlwg; radswg; uwndg; vwndg.
+!    tairg; rhumg; prateg; radlwg; radswg; wspdg; uwndg; vwndg.
 !
 !  In this subroutine the aformentioned steps are completed for every bulk forcing 
 !  bulkfilename(X) and are repeated when necessary during the time evolution of 
@@ -173,8 +173,11 @@
 ! bulk forcing parameters
 !
           srf_scale=1./(rho0*Cp)
-# ifdef SALINITY
+# ifdef BULK_EP
           stf_scale(isalt)=0.01/86400.
+# endif
+# if (defined BULK_SMFLUX &&  !defined BULK_SM_UPDATE)
+          sms_scale=1./rho0
 # endif
 !
 ! Leap parameter initialisation for time interpolation
@@ -412,7 +415,7 @@
 !============== == === ====== ====== == === ===== =====
 ! Interpolation on the simulation grid of the forcings and computation 
 ! of the roms bulk forcings tairg; rhumg; prateg; radlwg; radswg; 
-! uwndg; vwndg.
+! wspdg; uwndg; vwndg.
 !
 !
 !-----C$OMP PARALLEL DO PRIVATE(tile)
@@ -460,7 +463,7 @@
 ! === ==== ======= === ==== == ======= ======== 
 !
           if (blkvar_id.eq.nblkvrs) then
-            MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)') 
+            MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)') 
      &              'ONLINE_BULK --',
      &              'Read CFSR for time =', daycfsr  
           endif

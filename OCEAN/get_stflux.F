@@ -10,8 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && (!defined ANA_STFLUX || !defined ANA_SSFLUX) \
-  && (defined TEMPERATURE || defined SALINITY)
+#if defined SOLVE3D && (!defined ANA_STFLUX || !defined ANA_SSFLUX)
 
                                     ! Read point or grided surface 
       subroutine get_stflux (itrc)  ! flux for tracer variables itrc
@@ -44,24 +43,21 @@ c**        call opencdf (frcname,N)
           if (ierr .ne. nf_noerr) goto 4
         endif
 
-# ifdef TEMPERATURE
         if (itrc.eq.itemp) then
           ierr=nf_inq_varid (ncidfrc, 'shf_time', stf_tid(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,3) 'shf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-        endif
-# endif
 # ifdef SALINITY
-        if (itrc.eq.isalt) then
+        elseif (itrc.eq.isalt) then
           ierr=nf_inq_varid (ncidfrc, 'swf_time', stf_tid(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,3) 'swf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-        endif
 # endif
+        endif
         lvar=lenstr(vname(1,indxShflx+itrc-1))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxShflx+itrc-1),
      &                                          stf_id(itrc))
@@ -100,9 +96,7 @@ c**        call opencdf (frcname,N)
 !     Heat  flux - convert from [Watts/m^2] to [Celsius m/s]
 !     Fresh Water flux - convert from [cm/day] to [PSU m/s]
 !
-# ifdef TEMPERATURE
         stf_scale(itemp)=1./(rho0*Cp)
-# endif
 # ifdef SALINITY
         stf_scale(isalt)=0.01/86400.
 # endif
@@ -201,7 +195,7 @@ c**        call opencdf (frcname,N)
 ! Time interpolation is not performed in this case.
 !
       if (stf_cycle(itrc).lt.0.) then
-        if (FIRST_RST_TIME_STEP) then
+        if (FIRST_TIME_STEP) then
           if (lstfgrd(itrc).eq.1) then
             cff=stf_scale(itrc)
             do j=JstrR,JendR

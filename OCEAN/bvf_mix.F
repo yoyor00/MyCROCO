@@ -45,27 +45,20 @@
             Akv(i,j,k)=Akv_bak
             if (bvf(i,j,k).lt.0.) then
               Akv(i,j,k)=bvf_nu0c
-# ifdef TEMPERATURE
               Akt(i,j,k,itemp)=bvf_nu0c
-# endif
 # ifdef SALINITY
               Akt(i,j,k,isalt)=bvf_nu0c
 # endif
             elseif (bvf(i,j,k).eq.0.) then
               Akv(i,j,k)=Akv_bak
-# ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
-# endif
 # ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
 # endif
             else
               cff=bvf_nu0/sqrt(bvf(i,j,k))
-              Akv(i,j,k)=min(bvf_numax,max(bvf_numin,cff))
-# ifdef TEMPERATURE
               Akt(i,j,k,itemp)=min(bvf_numax,max(bvf_numin,cff))
               Akv(i,j,k)=Akt(i,j,k,itemp)
-# endif
 # ifdef SALINITY
               Akt(i,j,k,isalt)=Akt(i,j,k,itemp)
 # endif
@@ -76,14 +69,10 @@
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)
-#  ifdef TEMPERATURE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,itemp))
-#  endif
-#  ifdef SALINITY
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                     Akt(START_2D_ARRAY,0,isalt))
-#  endif
 # endif
 #else
       subroutine bvf_mix_empty

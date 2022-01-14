@@ -162,15 +162,6 @@
            call fillvalue3d(workr,nciddia,diaTVmix(itrc),
      &                      indxTVmix+itrc-1,
      &                      record,r3dvar,type)
-#  ifdef DIAGNOSTICS_TSVAR
-!
-! indxTVmixt
-!
-           workr=TVmixt(:,:,:,itrc)
-           call fillvalue3d(workr,nciddia,diaTVmixt(itrc),
-     &                      indxTVmixt+itrc-1,
-     &                      record,r3dvar,type)
-# endif
 !
 ! indxTForc 
 !

@@ -16,15 +16,10 @@
 !
 ! REVISION HISTORY:
 !
-!> @authors 
-!! - Francis Auclair , Jochem Floor and Ivane Pairaud:
-!!  - Initial version
-!! - Francis Auclair, B. Lemieux-Dudon, C. Nguyen
-!!  - Croco-OnlineA module interface, 1st version, Spring 2020
+!> @authors
+!> @date 2015 January
+!> @todo
 !
-!> @date 2015
-!> @todo BLXD
-!  organize consistent calc. with double precision complex (ifort, gfortran, -r8, croco preproc.)
 !------------------------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !     equipe d'oceanographie cotiere du laboratoire d'aerologie
@@ -46,7 +41,7 @@
       type type_wf
 
       integer config,variable,t_indice
-      complex(8),dimension(:),pointer::coef 
+      complex,dimension(:),pointer::coef
 
       end type type_wf
 

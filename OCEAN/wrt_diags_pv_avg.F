@@ -138,16 +138,16 @@
 # if defined DIAGNOSTICS_PV_FULL
 
 
-         call fillvalue3d(pv_avg,nciddiags_pv_avg,
+         call fillvalue3d_w(pv_avg,nciddiags_pv_avg,
      &                      diags_pvpv_avg(itrc),
      &                      indxpvpv,
-     &                      record,u3dvar,type)
+     &                      record,pw3dvar,type)
 
 
-         call fillvalue3d(pvd_avg,nciddiags_pv_avg,
+         call fillvalue3d_w(pvd_avg,nciddiags_pv_avg,
      &                      diags_pvpvd_avg(itrc),
      &                      indxpvpvd,
-     &                      record,v3dvar,type)
+     &                      record,pw3dvar,type)
 
 !---------------------------------------------------------------
 # endif
@@ -174,7 +174,7 @@
 
 !---------------------------------------------------------------
 
-        do itrc=1,NTA
+        do itrc=1,NT
           if (wrtdiags_pv_avg(itrc)) then
 
 !

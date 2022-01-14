@@ -7,7 +7,7 @@
 !
 #  ifdef NS_PERIODIC
           jmin=0
-          jmax=LOCALMM
+          jmax=LOCALMM+1
 #  else
 #   ifdef MPI
           if (SOUTH_INTER) then
@@ -16,7 +16,7 @@
             jmin=3
           endif
           if (NORTH_INTER) then
-            jmax=Mmmpi
+            jmax=Mmmpi+1
           else
             jmax=Mmmpi-2
           endif
@@ -159,7 +159,7 @@
             IF ( i.ge.imin .and. i.le.imax ) THEN ! use full stencil
                                                   !
               DO j = JstrV,Jend
-                if ( j.ge.jmin+1 .and. j.le.jmax ) then
+                if ( j.ge.jmin .and. j.le.jmax ) then
                   vel = flux6(Huon(i,j-3,k),Huon(i,j-2,k),Huon(i,j-1,k),
      &                        Huon(i,j  ,k),Huon(i,j+1,k),Huon(i,j+2,k),1.)
                 else

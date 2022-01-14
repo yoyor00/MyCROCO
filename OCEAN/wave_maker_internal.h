@@ -95,7 +95,7 @@
 !--------------------------------------------------------------------
 !
 #   ifdef T_FRC_BRY
-        if (FIRST_RST_TIME_STEP) then
+        if (FIRST_TIME_STEP) then
           do k=1,N
             do j=JstrR,JendR
               do itrc=1,NT

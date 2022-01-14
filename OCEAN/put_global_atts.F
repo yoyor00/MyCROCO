@@ -10,7 +10,7 @@
 !======================================================================
 !
 
-#define NCJOIN_UCLA
+# define NCJOIN_UCLA
 
 #include "cppdefs.h"
 
@@ -27,7 +27,7 @@
 # include "sediment.h"
       character(32) namatt
       integer i,j
-#endif /* SEDIMENT */
+#endif /* FLOATS */
 #ifdef FLOATS
 # include "init_floats.h"
 # include "ncscrum_floats.h"
@@ -111,44 +111,44 @@
       endif
 
       if (ncid.eq.ncidrst) then
-        ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
-     &                                 'CROCO restart file')
+        ierr=nf_put_att_text (ncid, nf_global, 'type',  17,
+     &                                 'ROMS restart file')
       elseif (ncid.eq.ncidhis) then
-        ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
-     &                                 'CROCO history file')
+        ierr=nf_put_att_text (ncid, nf_global, 'type',  17,
+     &                                 'ROMS history file')
 #ifdef AVERAGES
       elseif (ncid.eq.ncidavg) then
-        ierr=nf_put_att_text (ncid, nf_global, 'type',  19,
-     &                                'CROCO averages file')
+        ierr=nf_put_att_text (ncid, nf_global, 'type',  18,
+     &                                'ROMS averages file')
 #endif
 #ifdef STATIONS
       elseif (ncid.eq.ncidsta) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 19,
-     &                                'CROCO stations file')
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 18,
+     &                                'ROMS stations file')
 #endif
 #ifdef FLOATS
       elseif (ncid.eq.ncidflt) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 25,
-     &                          'CROCO floats history file')
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 24,
+     &                          'ROMS floats history file')
 #endif
 #if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_ADV) 
       elseif (ncid.eq.nciddia) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 52,
-     &     'CROCO DIAGTS history file - flux form for adv. terms')
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 51,
+     &     'ROMS DIAGTS history file - flux form for adv. terms')
 #ifdef AVERAGES
       elseif (ncid.eq.nciddia_avg) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 52,
-     &     'CROCO DIAGTS average file - flux form for adv. terms')
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 51,
+     &     'ROMS DIAGTS average file - flux form for adv. terms')
 #endif
 #endif
 #if (defined DIAGNOSTICS_TS && !defined DIAGNOSTICS_TS_ADV) 
       elseif (ncid.eq.nciddia) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 58,
-     &     'CROCO DIAGTS history file - divergence form for adv. terms')
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 57,
+     &     'ROMS DIAGTS history file - divergence form for adv. terms')
 #ifdef AVERAGES
       elseif (ncid.eq.nciddia_avg) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 58,
-     &     'CROCO DIAGTS average file - divergence form for adv. terms')
+        ierr=nf_put_att_text(ncid,  nf_global, 'type', 57,
+     &     'ROMS DIAGTS average file - divergence form for adv. terms')
 #endif
 #endif
 
@@ -271,9 +271,8 @@
       ierr=nf_put_att_text(ncid, nf_global, 'ini_file',lvar,
      &                                       ininame(1:lvar))
 #endif
-#if (defined TEMPERATURE && !defined ANA_SMFLUX) \
- || (defined TEMPERATURE && !defined ANA_STFLUX) \
- || (defined TEMPERATURE && !defined ANA_BTFLUX) \
+#if !defined ANA_SMFLUX || !defined ANA_STFLUX \
+ || !defined ANA_BTFLUX \
  || (defined BBL && !defined ANA_BSEDIM)  \
  || (defined BBL && !defined ANA_WWAVE)   \
  || (defined SALINITY && !defined ANA_SSFLUX)  \
@@ -386,21 +385,19 @@
      &                                             'meter4 second-1')
 #endif
 #ifdef SOLVE3D
-# ifdef TRACERS
-#  ifdef TS_DIF2
+# ifdef TS_DIF2
       ierr=nf_put_att_FTYPE(ncid,nf_global,'tnu2',nf_ftype, 1,tnu2)
       ierr=nf_put_att_text (ncid,nf_global,'tnu2_expl',40,
      &                    'Laplacian mixing coefficient for tracers')
       ierr=nf_put_att_text (ncid,nf_global,'tnu2_units',15,
      &                                             'meter2 second-1')
-#  endif
-#  ifdef TS_DIF4
+# endif
+# ifdef TS_DIF4
       ierr=nf_put_att_FTYPE(ncid,nf_global,'tnu4', nf_ftype, 1,tnu4)
       ierr=nf_put_att_text (ncid,nf_global,'tnu4_expl',41,
      &                   'biharmonic mixing coefficient for tracers')
       ierr=nf_put_att_text (ncid,nf_global,'units',15,
      &                                             'meter4 second-1')
-#  endif
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING
 !
@@ -412,14 +409,13 @@
      &         'background vertical mixing coefficient for momentum')
       ierr=nf_put_att_text (ncid,nf_global,'Akv_bak_units',15,
      &                                             'meter2 second-1')
-#  if defined SALINITY || defined TEMPERATURE
+
       ierr=nf_put_att_FTYPE(ncid,nf_global,'Akt_bak',nf_ftype, NT,
      &                                                       Akt_bak)
       ierr=nf_put_att_text (ncid,nf_global,'Akt_bak_expl', 50,
      &          'background vertical mixing coefficient for tracers')
       ierr=nf_put_att_text (ncid,nf_global,'Akt_bak_units', 15,
      &                                             'meter2 second-1')
-#  endif
 # endif
 #endif
 !

@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -128,7 +128,7 @@ C$    integer omp_get_thread_num
       ilc=1+iic-ntstart   ! number of time step since restart
 !
 
-      if (ilc.gt.ntsavg) then
+      if (ilc.gt.ntsavg) then 
 
         if (mod(ilc-ntsavg,navg).eq.1) then
           cff =1.0
@@ -176,16 +176,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#ifdef MORPHODYN
-        if (wrtavg(indxHm)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              h_avg(i,j)=cff*( cff1*h_avg(i,j)
-     &                                 +h(i,j))
-            enddo
-          enddo
-        endif
-#endif
         if (wrtavg(indxBostr)) then
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -193,22 +183,6 @@ C$    integer omp_get_thread_num
      &                         0.5*sqrt((bustr(i,j)+bustr(i+1,j))**2
      &                                 +(bvstr(i,j)+bvstr(i,j+1))**2)
      &                                                          *rho0)
-            enddo
-          enddo
-        endif
-        if (wrtavg(indxBustr)) then
-          do j=Jstr,Jend
-            do i=Istr,Iend
-              bustr_avg(i,j)=cff*( cff1*bustr_avg(i,j)+
-     &                                  bustr(i,j)*rho0)
-            enddo
-          enddo
-        endif
-        if (wrtavg(indxBvstr)) then
-          do j=Jstr,Jend
-            do i=Istr,Iend
-              bvstr_avg(i,j)=cff*( cff1*bvstr_avg(i,j)+
-     &                                  bvstr(i,j)*rho0)
             enddo
           enddo
         endif
@@ -261,9 +235,8 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-# ifdef TRACERS
         do itrc=1,NT
-          if (wrtavg(indxV+itrc)) then
+          if (wrtavg(indxT+itrc-1)) then
             do k=1,N
               do j=JstrR,JendR
                 do i=IstrR,IendR
@@ -274,7 +247,6 @@ C$    integer omp_get_thread_num
             enddo
           endif
         enddo
-# endif
         if (wrtavg(indxR)) then
           do k=1,N
             do j=JstrR,JendR
@@ -305,7 +277,7 @@ C$    integer omp_get_thread_num
      &                                 +We(i,j,k)*pm(i,j)*pn(i,j)
 # ifdef VADV_ADAPT_IMP
      &                                 +Wi(i,j,k)*pm(i,j)*pn(i,j)
-# endif
+# endif      
      &                                                          )
               enddo
             enddo
@@ -340,7 +312,7 @@ C$    integer omp_get_thread_num
 #  else
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbl(i,j))
-# endif
+# endif     
             enddo
           enddo
         endif
@@ -360,7 +332,7 @@ C$    integer omp_get_thread_num
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k)
+                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k) 
      &                                  +trb(i,j,k,nstp,itke))
               enddo
             enddo
@@ -387,7 +359,6 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-# ifdef TEMPERATURE
         if (wrtavg(indxShflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -396,20 +367,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  ifdef BHFLX
-        if (wrtavg(indxBhflx)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              btflx_avg(i,j,itemp)=cff*(cff1*btflx_avg(i,j,itemp)+
-     &                                       btflx(i,j,itemp)*(rho0*Cp))
-            enddo
-          enddo
-        endif
-# endif
-#  endif
-
-
-# ifdef SALINITY
+#ifdef SALINITY
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -419,17 +377,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  ifdef BWFLUX
-        if (wrtavg(indxBwflx)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              btflx_avg(i,j,isalt)=cff*(cff1*btflx_avg(i,j,isalt)+
-     &                               stf_cff*btflx(i,j,isalt) /
-     &               ( max(eps,t(i,j,1,nstp,isalt)) ) )
-            enddo
-          enddo
-        endif
-#  endif
 #endif
         if (wrtavg(indxShflx_rsw)) then
           do j=JstrR,JendR
@@ -444,7 +391,7 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  if defined BULK_FLUX && defined TEMPERATURE
+#  ifdef BULK_FLUX
         if (wrtavg(indxShflx_rlw)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -470,7 +417,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-#  if defined SST_SKIN && defined TEMPERATURE
+#  ifdef SST_SKIN
         if (wrtavg(indxT)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -497,18 +444,14 @@ C$    integer omp_get_thread_num
           do k=1,N
             do j=Jstr,Jend
               do i=Istr,Iend
-                diff3d_avg(i,j,k)=cff*(cff1*diff3d_avg(i,j,k)
+                diff3d_avg(i,j,k)=cff*(cff1*diff3d_avg(i,j,k)+
 #   ifdef TS_DIF2
-#    ifdef TEMPERATURE
-     &                      +diff2(i,j,itemp)
-#    endif
+     &                      diff2(i,j,itemp)
 #    ifdef TS_DIF_SMAGO
      &                     +diff3d_r(i,j,k)
 #    endif
 #   elif defined TS_DIF4
-#    ifdef TEMPERATURE
-     &                     + diff4(i,j,itemp)
-#    endif
+     &                      diff4(i,j,itemp)
 #    ifdef TS_DIF_SMAGO
      &                     +diff3d_r(i,j,k)*om_r(i,j)*on_r(i,j)
 #    endif
@@ -531,7 +474,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#    ifdef TEMPERATURE
         if (wrtavg(indxAkt)) then
           do k=0,N
             do j=JstrR,JendR
@@ -542,7 +484,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#   endif
 #   ifdef SALINITY
         if (wrtavg(indxAks)) then
           do k=0,N
@@ -578,45 +519,45 @@ C$    integer omp_get_thread_num
         endif
 #    ifdef OXYGEN
         if (wrtavg(indxU10)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              u10_avg(i,j)=cff*( cff1*u10_avg(i,j)+u10(i,j) )
-            enddo
-          enddo
+           do j=JstrR,JendR
+              do i=IstrR,IendR
+                 u10_avg(i,j)=cff*( cff1*u10_avg(i,j)+u10(i,j) )
+              enddo
+           enddo
         endif
         if (wrtavg(indxKvO2)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              Kv_O2_avg(i,j)=cff*( cff1*Kv_O2_avg(i,j)+Kv_O2(i,j) )
-            enddo
-          enddo
+           do j=JstrR,JendR
+              do i=IstrR,IendR
+                 Kv_O2_avg(i,j)=cff*( cff1*Kv_O2_avg(i,j)+Kv_O2(i,j) )
+              enddo
+           enddo
         endif
         if (wrtavg(indxO2sat)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              O2satu_avg(i,j)=cff*( cff1*O2satu_avg(i,j)
+           do j=JstrR,JendR
+              do i=IstrR,IendR
+                 O2satu_avg(i,j)=cff*( cff1*O2satu_avg(i,j)
      &                                     +O2satu(i,j) )
-            enddo
-          enddo
+              enddo
+           enddo
         endif
 #    endif /* OXYGEN */
 #   elif defined BIO_BioEBUS
-        if (wrtavg(indxAOU)) then
-          do k=1,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                AOU_avg(i,j,k)=cff*( cff1*AOU_avg(i,j,k)+AOU(i,j,k) )
+          if (wrtavg(indxAOU)) then
+            do k=1,N
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  AOU_avg(i,j,k)=cff*( cff1*AOU_avg(i,j,k)+AOU(i,j,k) )
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        if (wrtavg(indxWIND10)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              wind10_avg(i,j)=cff*( cff1*wind10_avg(i,j)+wind10(i,j) )
-            enddo
-          enddo
-        endif
+          endif
+          if (wrtavg(indxWIND10)) then
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  wind10_avg(i,j)=cff*( cff1*wind10_avg(i,j)+wind10(i,j) )
+                enddo
+              enddo
+          endif
 #   endif
 #  endif /* BIOLOGY */
 #  ifdef SEDIMENT
@@ -636,56 +577,56 @@ C$    integer omp_get_thread_num
           enddo
         enddo
 #   ifdef SUSPLOAD
-        do itrc=1,NST
-          indxWrk=indxDFLX(1)+itrc-1
-!        if (wrtavg(indxWrk)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              settling_flux_avg(i,j,itrc)=
+      do itrc=1,NST
+         indxWrk=indxDFLX(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                settling_flux_avg(i,j,itrc)=
      &                           cff*( cff1*settling_flux_avg(i,j,itrc)
      &                                     +settling_flux(i,j,itrc) )
+              enddo
             enddo
-          enddo
-!        endif
-        enddo
-        do itrc=1,NST
-          indxWrk=indxEFLX(1)+itrc-1
+!         endif
+      enddo
+      do itrc=1,NST
+         indxWrk=indxEFLX(1)+itrc-1
 !         if (wrtavg(indxWrk)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              ero_flux_avg(i,j,itrc)=
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                ero_flux_avg(i,j,itrc)=
      &                           cff*( cff1*ero_flux_avg(i,j,itrc)
      &                                     +ero_flux(i,j,itrc) )
+              enddo
             enddo
-          enddo
 !         endif
-        enddo
+      enddo
 #   endif
 #   ifdef BEDLOAD
-        do itrc=1,NST
-          indxWrk=indxBDLU(1)+itrc-1
-!        if (wrtavg(indxWrk)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              bedldu_avg(i,j,itrc)=
+      do itrc=1,NST
+         indxWrk=indxBDLU(1)+itrc-1
+!         if (wrtavg(indxWrk)) then
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                bedldu_avg(i,j,itrc)=
      &                           cff*( cff1*bedldu_avg(i,j,itrc)
      &                                     +bedldu(i,j,itrc)   )
+              enddo
             enddo
-          enddo
-!        endif
-        enddo
-        do itrc=1,NST
-          indxWrk=indxBDLV(1)+itrc-1
+!         endif
+      enddo
+      do itrc=1,NST
+         indxWrk=indxBDLV(1)+itrc-1
 !         if (wrtavg(indxWrk)) then
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              bedldv_avg(i,j,itrc)=
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                bedldv_avg(i,j,itrc)=
      &                           cff*( cff1*bedldv_avg(i,j,itrc)
      &                                     +bedldv(i,j,itrc)   )
+              enddo
             enddo
-          enddo
 !         endif
-        enddo
+      enddo
 #   endif
 #  endif /* SEDIMENT */
 # endif /* SOLVE3D */
@@ -710,9 +651,9 @@ C$    integer omp_get_thread_num
             do i=istrR,iendR
 #  ifdef WKB_WWAVE
               wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+frq(i,j,iout) )
-#  else
+#  else  
               wfrq_avg(i,j) = cff*( cff1*wfrq_avg(i,j)+wfrq(i,j) )
-#  endif
+#  endif  
             enddo
           enddo
         endif
@@ -730,7 +671,7 @@ C$    integer omp_get_thread_num
             do i=istrR,iendR
 #  ifdef WKB_WWAVE
               wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wkx(i,j,iout) )
-#  else
+#  else 
               wkx_avg(i,j) = cff*( cff1*wkx_avg(i,j)+wwkx(i,j) )
 #  endif
             enddo
@@ -888,3 +829,4 @@ C$    integer omp_get_thread_num
       subroutine set_avg_empty
       end
 #endif /* AVERAGES */
+

@@ -38,7 +38,7 @@ close all
 fname     = 'thacker_his.nc';      % croco file name
 x0        = 101;                   % x and y origins
 y0        = 2;                     %
-makemovie = 0;                     % make movie using QTWriter
+makemovie = 1;                     % make movie using QTWriter
 makepdf   = 0;                     % make pdf file
 %
 %======================================================================
