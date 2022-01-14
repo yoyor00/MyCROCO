@@ -38,7 +38,7 @@ CONTAINS         ! Write model prognostic
                                   ! netCDF file.
 # include "netcdf.inc"
 
-      INTEGER :: ierr, record, lstr, lvar, lenstr   
+      INTEGER :: ierr, record, lstr, lvar, lenstr &   
       &     , start(2), count(2), ibuff(4), nf_fwrite, itrc  
       INTEGER :: ji, jj, jk, jn
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: trcsedtmp, trcsedi
