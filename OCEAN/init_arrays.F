@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -44,9 +44,7 @@ C$    integer omp_get_thread_num
 #include "climat.h"
 #include "scalars.h"
 #include "tides.h"
-#ifdef SEDIMENT
-# include "sediment.h"
-#endif
+#include "sediment.h"
 #include "bbl.h"
 #include "diagnostics.h"
 #include "boundary.h"
@@ -82,7 +80,7 @@ C$    integer omp_get_thread_num
 #ifdef SEDIMENT
      &       ,ilay
 #endif
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+#if defined SSH_TIDES || defined UV_TIDES
      &       ,itide
 #endif
       real init    !!!!  0xFFFA5A5A ==> NaN
@@ -113,16 +111,16 @@ C$    integer omp_get_thread_num
           vbar(i,j,3)=init
           vbar(i,j,4)=init
 #ifdef AVERAGES
-          zeta_avg(i,j)=init
+          zeta_avg(i,j)=init 
           ubar_avg(i,j)=init
           vbar_avg(i,j)=init
 #endif
 #ifdef MRL_WCI
-          sup(i,j)=init
+          sup(i,j)=init 
           ust2d(i,j)=init
           vst2d(i,j)=init
 # ifdef AVERAGES
-          sup_avg(i,j)=init
+          sup_avg(i,j)=init 
           ust2d_avg(i,j)=init
           vst2d_avg(i,j)=init
 # endif
@@ -159,7 +157,7 @@ C$    integer omp_get_thread_num
 #endif
         enddo
       enddo
-
+           
 #ifdef SOLVE3D
 !
 !  Initialize 3-D primitive variables.
@@ -250,7 +248,7 @@ C$    integer omp_get_thread_num
             Mbwf(i,j,k,2)=init
             Mfrc(i,j,k,1)=init
             Mfrc(i,j,k,2)=init
-#  endif
+#  endif             
 #  ifdef AVERAGES
             MXadv_avg(i,j,k,1)=init
             MXadv_avg(i,j,k,2)=init
@@ -262,14 +260,14 @@ C$    integer omp_get_thread_num
             MCor_avg(i,j,k,2)=init
             MPrsgrd_avg(i,j,k,1)=init
             MPrsgrd_avg(i,j,k,2)=init
-#   ifdef DIAGNOSTICS_BARO
+# if defined DIAGNOSTICS_BARO
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
-#   endif
-#   ifdef M3FAST
+#  endif
+# if defined M3FAST
             Mfast_avg(i,j,k,1)=init
             Mfast_avg(i,j,k,2)=init
-#   endif
+#  endif
             MHmix_avg(i,j,k,1)=init
             MHmix_avg(i,j,k,2)=init
             MVmix_avg(i,j,k,1)=init
@@ -297,7 +295,7 @@ C$    integer omp_get_thread_num
             Mbwf_avg(i,j,k,2)=init
             Mfrc_avg(i,j,k,1)=init
             Mfrc_avg(i,j,k,2)=init
-#   endif
+#   endif             
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_UV */
           enddo
@@ -324,8 +322,6 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-
-# ifdef TRACERS
       do itrc=1,NT
         got_tini(itrc)=.false.
         do k=1,N
@@ -333,14 +329,13 @@ C$    integer omp_get_thread_num
             do i=IstrR,IendR
               t(i,j,k,1,itrc)=init
               t(i,j,k,2,itrc)=init
-#  ifdef AVERAGES
+# ifdef AVERAGES
               t_avg(i,j,k,itrc)=init
-#  endif
+# endif
             enddo
           enddo
         enddo
       enddo
-# endif /* TRACERS */
 
 # if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
       do itrc=1,NT
@@ -365,18 +360,16 @@ C$    integer omp_get_thread_num
               TXadv(i,j,k,itrc)=init
               TYadv(i,j,k,itrc)=init
               TVadv(i,j,k,itrc)=init
-#  ifdef DIAGNOSTICS_TSVAR
-              TVmixt(i,j,k,itrc)=init
-#  endif
+              THmix(i,j,k,itrc)=init
+              TVmix(i,j,k,itrc)=init
+              TForc(i,j,k,itrc)=init
+              Trate(i,j,k,itrc)=init
 #  ifdef AVERAGES
               TXadv_avg(i,j,k,itrc)=init
               TYadv_avg(i,j,k,itrc)=init
               TVadv_avg(i,j,k,itrc)=init
               THmix_avg(i,j,k,itrc)=init
               TVmix_avg(i,j,k,itrc)=init
-#   ifdef DIAGNOSTICS_TSVAR
-              TVmixt_avg(i,j,k,itrc)=init
-#   endif
               TForc_avg(i,j,k,itrc)=init
               Trate_avg(i,j,k,itrc)=init
 #  endif /* AVERAGES*/
@@ -384,7 +377,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#  if defined DIAGNOSTICS_TS_MLD  && defined TRACERS
+#  ifdef DIAGNOSTICS_TS_MLD
       do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -396,7 +389,7 @@ C$    integer omp_get_thread_num
             TForc_mld(i,j,itrc)=init
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
-#   ifdef AVERAGES
+#  ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
             TVadv_mld_avg(i,j,itrc)=init
@@ -405,19 +398,19 @@ C$    integer omp_get_thread_num
             TForc_mld_avg(i,j,itrc)=init
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
-
-#   endif /* AVERAGES*/
+#  endif /* AVERAGES*/
           enddo
         enddo
       enddo
 #  endif /*DIAGNOSTICS_TS_MLD*/
 # endif /*DIAGNOSTICS_TS*/
 
+
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
 #  ifdef AVERAGES
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+        do k=1,N
+          do j=JstrR,JendR
+           do i=IstrR,IendR
             eddyuu_avg(i,j,k)=init
             eddyvv_avg(i,j,k)=init
             eddyuv_avg(i,j,k)=init
@@ -426,170 +419,168 @@ C$    integer omp_get_thread_num
             eddywb_avg(i,j,k)=init
             eddyuw_avg(i,j,k)=init
             eddyvw_avg(i,j,k)=init
+            if (k .eq. N) then
+             eddyusu_avg(i,j)=init
+             eddyugsu_avg(i,j)=init
+             eddyvsv_avg(i,j)=init
+             eddyvgsv_avg(i,j)=init
+             eddyubu_avg(i,j)=init
+             eddyvbv_avg(i,j)=init
+            endif
+           enddo
           enddo
         enddo
-      enddo
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          eddyzz_avg(i,j)=init
-          eddyusu_avg(i,j)=init
-          eddyvsv_avg(i,j)=init
-          eddyubu_avg(i,j)=init
-          eddyvbv_avg(i,j)=init
-        enddo
-      enddo
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_EDDY */
 
+
+
+
 # ifdef DIAGNOSTICS_VRT
-      do j=jstrR,jendR             ! 3-D primitive
-        do i=istrR,iendR           ! variables.
-          vrtXadv(i,j)=init
-          vrtYadv(i,j)=init
-          vrtHdiff(i,j)=init
-          vrtCor(i,j)=init
-          vrtPrsgrd(i,j)=init
-          vrtHmix(i,j)=init
-          vrtVmix(i,j)=init
-          vrtrate(i,j)=init
-          vrtVmix2(i,j)=init
-          vrtWind(i,j)=init
-          vrtDrag(i,j)=init
-#  if defined DIAGNOSTICS_BARO
-          vrtBaro(i,j)=init
-#  endif
-#  if defined M3FAST
-          vrtfast(i,j)=init
-#  endif
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+
+            vrtXadv(i,j)=init 
+            vrtYadv(i,j)=init
+            vrtHdiff(i,j)=init
+            vrtCor(i,j)=init
+            vrtPrsgrd(i,j)=init
+            vrtHmix(i,j)=init
+            vrtVmix(i,j)=init
+            vrtrate(i,j)=init
+            vrtVmix2(i,j)=init
+            vrtWind(i,j)=init
+            vrtDrag(i,j)=init
+# if defined DIAGNOSTICS_BARO
+            vrtBaro(i,j)=init
+# endif
+# if defined M3FAST
+            vrtfast(i,j)=init
+# endif
 #  ifdef AVERAGES
-          vrtXadv_avg(i,j)=init
-          vrtYadv_avg(i,j)=init
-          vrtHdiff_avg(i,j)=init
-          vrtCor_avg(i,j)=init
-          vrtPrsgrd_avg(i,j)=init
-          vrtHmix_avg(i,j)=init
-          vrtVmix_avg(i,j)=init
-          vrtrate_avg(i,j)=init
-          vrtVmix2_avg(i,j)=init
-          vrtWind_avg(i,j)=init
-          vrtDrag_avg(i,j)=init
-#   if defined DIAGNOSTICS_BARO
-          vrtBaro_avg(i,j)=init
-#   endif
-#   if defined M3FAST
-          vrtfast_avg(i,j)=init
-#   endif
+            vrtXadv_avg(i,j)=init
+            vrtYadv_avg(i,j)=init
+            vrtHdiff_avg(i,j)=init
+            vrtCor_avg(i,j)=init
+            vrtPrsgrd_avg(i,j)=init
+            vrtHmix_avg(i,j)=init
+            vrtVmix_avg(i,j)=init
+            vrtrate_avg(i,j)=init
+            vrtVmix2_avg(i,j)=init
+            vrtWind_avg(i,j)=init
+            vrtDrag_avg(i,j)=init
+# if defined DIAGNOSTICS_BARO
+            vrtBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            vrtfast_avg(i,j)=init
+# endif
 #  endif /* AVERAGES */
+          enddo
         enddo
-      enddo
 # endif /* DIAGNOSTICS_VRT */
 
+
 # ifdef DIAGNOSTICS_EK
-      do j=jstrR,jendR             ! 3-D primitive
-        do i=istrR,iendR           ! variables.
-          ekHadv(i,j)=init
-          ekHdiff(i,j)=init
-          ekVadv(i,j)=init
-          ekCor(i,j)=init
-          ekPrsgrd(i,j)=init
-          ekHmix(i,j)=init
-          ekVmix(i,j)=init
-          ekrate(i,j)=init
-          ekvol(i,j)=init
-          ekVmix2(i,j)=init
-          ekWind(i,j)=init
-          ekDrag(i,j)=init
-#  if defined DIAGNOSTICS_BARO
-          ekBaro(i,j)=init
-#  endif
-#  if defined M3FAST
-          ekfast(i,j)=init
-#  endif
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+
+            ekHadv(i,j)=init 
+            ekHdiff(i,j)=init
+            ekVadv(i,j)=init            
+            ekCor(i,j)=init
+            ekPrsgrd(i,j)=init
+            ekHmix(i,j)=init
+            ekVmix(i,j)=init
+            ekrate(i,j)=init
+            ekvol(i,j)=init
+            ekVmix2(i,j)=init
+            ekWind(i,j)=init
+            ekDrag(i,j)=init
+# if defined DIAGNOSTICS_BARO
+            ekBaro(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast(i,j)=init
+# endif
 #  ifdef AVERAGES
-          ekHadv_avg(i,j)=init
-          ekHdiff_avg(i,j)=init
-          ekVadv_avg(i,j)=init
-          ekCor_avg(i,j)=init
-          ekPrsgrd_avg(i,j)=init
-          ekHmix_avg(i,j)=init
-          ekVmix_avg(i,j)=init
-          ekrate_avg(i,j)=init
-          ekvol_avg(i,j)=init
-          ekVmix2_avg(i,j)=init
-          ekWind_avg(i,j)=init
-          ekDrag_avg(i,j)=init
-#   ifdef DIAGNOSTICS_BARO
-          ekBaro_avg(i,j)=init
-#   endif
-#   if defined M3FAST
-          ekfast_avg(i,j)=init
-#   endif
+            ekHadv_avg(i,j)=init
+            ekHdiff_avg(i,j)=init
+            ekVadv_avg(i,j)=init           
+            ekCor_avg(i,j)=init
+            ekPrsgrd_avg(i,j)=init
+            ekHmix_avg(i,j)=init
+            ekVmix_avg(i,j)=init
+            ekrate_avg(i,j)=init
+            ekvol_avg(i,j)=init
+            ekVmix2_avg(i,j)=init
+            ekWind_avg(i,j)=init
+            ekDrag_avg(i,j)=init
+# if defined DIAGNOSTICS_BARO
+            ekBaro_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_avg(i,j)=init
+# endif
 #  endif /* AVERAGES */
 
-#  ifdef DIAGNOSTICS_EK_MLD
-          ekHadv_mld(i,j)=init
-          ekHdiff_mld(i,j)=init
-          ekVadv_mld(i,j)=init
-          ekCor_mld(i,j)=init
-          ekPrsgrd_mld(i,j)=init
-          ekHmix_mld(i,j)=init
-          ekVmix_mld(i,j)=init
-          ekrate_mld(i,j)=init
-          ekvol_mld(i,j)=init
-          ekVmix2_mld(i,j)=init
-#   if defined DIAGNOSTICS_BARO
-          ekBaro_mld(i,j)=init
-#   endif
-#   if defined M3FAST
-          ekfast_mld(i,j)=init
-#   endif
-#   ifdef AVERAGES
-          ekHadv_mld_avg(i,j)=init
-          ekHdiff_mld_avg(i,j)=init
-          ekVadv_mld_avg(i,j)=init
-          ekCor_mld_avg(i,j)=init
-          ekPrsgrd_mld_avg(i,j)=init
-          ekHmix_mld_avg(i,j)=init
-          ekVmix_mld_avg(i,j)=init
-          ekrate_mld_avg(i,j)=init
-          ekvol_mld_avg(i,j)=init
-          ekVmix2_mld_avg(i,j)=init
-#    ifdef DIAGNOSTICS_BARO
-          ekBaro_mld_avg(i,j)=init
-#    endif
-#    if defined M3FAST
-          ekfast_mld_avg(i,j)=init
-#    endif
-#   endif /* AVERAGES */
-#  endif /* DIAGNOSTICS_EK_MLD */
+# ifdef DIAGNOSTICS_EK_MLD
+            ekHadv_mld(i,j)=init 
+            ekHdiff_mld(i,j)=init
+            ekVadv_mld(i,j)=init            
+            ekCor_mld(i,j)=init
+            ekPrsgrd_mld(i,j)=init
+            ekHmix_mld(i,j)=init
+            ekVmix_mld(i,j)=init
+            ekrate_mld(i,j)=init
+            ekvol_mld(i,j)=init
+            ekVmix2_mld(i,j)=init
+# if defined DIAGNOSTICS_BARO
+            ekBaro_mld(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_mld(i,j)=init
+# endif
+#  ifdef AVERAGES
+            ekHadv_mld_avg(i,j)=init
+            ekHdiff_mld_avg(i,j)=init
+            ekVadv_mld_avg(i,j)=init           
+            ekCor_mld_avg(i,j)=init
+            ekPrsgrd_mld_avg(i,j)=init
+            ekHmix_mld_avg(i,j)=init
+            ekVmix_mld_avg(i,j)=init
+            ekrate_mld_avg(i,j)=init
+            ekvol_mld_avg(i,j)=init
+            ekVmix2_mld_avg(i,j)=init
+# if defined DIAGNOSTICS_BARO
+            ekBaro_mld_avg(i,j)=init
+# endif
+# if defined M3FAST
+            ekfast_mld_avg(i,j)=init
+# endif
+#  endif /* AVERAGES */
+# endif /* DIAGNOSTICS_EK */
+
+          enddo
         enddo
-      enddo
 # endif /* DIAGNOSTICS_EK */
 
 # ifdef DIAGNOSTICS_PV
-#  if defined DIAGNOSTICS_PV_FULL
+# if defined DIAGNOSTICS_PV_FULL
       do k=1,N
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
             pv(i,j,k)=init
+            pvd(i,j,k)=init
 #  ifdef AVERAGES
             pv_avg(i,j,k)=init
+            pvd_avg(i,j,k)=init
 #  endif /* AVERAGES */
           enddo
         enddo
       enddo
-      do k=1,N
-        do j=jstrR,jendR             ! 3-D primitive
-          do i=istrR,iendR           ! variables.
-            pvd(i,j,k)=init
-#  ifdef AVERAGES
-            pvd_avg(i,j,k)=init
-#   endif /* AVERAGES */
-          enddo
-        enddo
-      enddo
 # endif
-      do itrc=1,NTA
+      do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -601,6 +592,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+
       do itrc=1,2
         do k=1,N
           do j=JstrR,JendR
@@ -613,6 +605,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+
 # endif /* DIAGNOSTICS_PV */
 
 # ifdef DIAGNOSTICS_BIO
@@ -639,12 +632,12 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS 
         do j=JstrR,JendR
           do i=IstrR,IendR
             do iflux=1,NumGasExcTerms
               GasExcFlux(i,j,iflux)= init
-            enddo
+            enddo        
           enddo
         enddo
 #  endif
@@ -656,21 +649,21 @@ C$    integer omp_get_thread_num
                wind10(i,j) =init
 #   ifdef AVERAGES
                wind10_avg(i,j) =init
-#   endif
+#   endif     	    
             enddo
           enddo
 
-        do k=1,N
+        do k=1,N  
           do j=JstrR,JendR
             do i=IstrR,IendR
                AOU(i,j,k) =init
 #   ifdef AVERAGES
                AOU_avg(i,j,k) =init
-#   endif
+#   endif 
             enddo
           enddo
         enddo
-# endif
+# endif 
 
 # ifdef SEDIMENT
 !
@@ -679,15 +672,12 @@ C$    integer omp_get_thread_num
       got_inised(1:3)=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
-          Ssize(i,j)=init
-          Sdens(i,j)=init
-          taucb(i,j)=init
-          w_set(i,j)=init
-          Hripple(i,j)=init
-          Lripple(i,j)=init
-          do ised=1,NST
-            tau_ce_2d(i,j,ised)=tau_ce(ised)
-          enddo
+           Ssize(i,j)=init
+           Sdens(i,j)=init
+           taucb(i,j)=init
+           w_set(i,j)=init
+           Hripple(i,j)=init
+           Lripple(i,j)=init
           do ilay=1,NLAY
             bed_thick(i,j,ilay)=init
             bed_poros(i,j,ilay)=init
@@ -701,20 +691,8 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif /* SEDIMENT */
-
-# ifdef MORPHODYN
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          dh(i,j)=init
-#  ifdef SEDIMENT
-          bed_thick_tot(i,j,1)=init
-          bed_thick_tot(i,j,2)=init
-#  endif
-        enddo
-      enddo
-# endif
-
 # ifdef BBL
+      got_inibed(1:2)=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
           Abed(i,j)=init
@@ -722,8 +700,15 @@ C$    integer omp_get_thread_num
           Lripple(i,j)=init
           Zbnot(i,j)=init
           Zbapp(i,j)=init
+          Bustrc(i,j)=init
+          Bvstrc(i,j)=init
           Bustrw(i,j)=init
           Bvstrw(i,j)=init
+          Bustrcwmax(i,j)=init
+          Bvstrcwmax(i,j)=init
+#ifdef MORPHODYN 
+          dh(i,j)=init
+#endif
         enddo
       enddo
 # endif /* BBL */
@@ -731,12 +716,12 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            Akb(i,j,k)=init
-            Akw(i,j,k)=init
+            Akb(i,j,k)=init 
+            Akw(i,j,k)=init 
             E_pre(i,j,k)=init
 # ifdef AVERAGES
-            Akb_avg(i,j,k)=init
-            Akw_avg(i,j,k)=init
+            Akb_avg(i,j,k)=init 
+            Akw_avg(i,j,k)=init 
 # endif
           enddo
         enddo
@@ -753,11 +738,11 @@ C$    integer omp_get_thread_num
       enddo
       do j=JstrR,JendR
         do i=IstrR,IendR
-          calP(i,j)=init
-          Kapsrf(i,j)=init
+          calP(i,j)=init 
+          Kapsrf(i,j)=init 
 # ifdef AVERAGES
-          calP_avg(i,j)=init
-          Kaps_avg(i,j)=init
+          calP_avg(i,j)=init 
+          Kaps_avg(i,j)=init 
 # endif
           enddo
         enddo
@@ -772,9 +757,6 @@ C$    integer omp_get_thread_num
           svstr(i,j)=init
 # ifdef OA_COUPLING
           smstr(i,j)=init
-#  if defined READ_PATM && defined OBC_PATM
-          patm2d(i,j)=paref
-# endif
 # endif
 # ifdef OW_COUPLING
           twox(i,j)=init
@@ -805,7 +787,6 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 #ifdef SOLVE3D
-# if defined TRACERS
       do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -818,18 +799,16 @@ C$    integer omp_get_thread_num
             stflxg(i,j,2,itrc)=init
 # endif
             btflx(i,j,itrc)=init
-
-# if BHFLUX || defined BWFLUX
+# ifndef ANA_BTFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
 # endif
           enddo
         enddo
       enddo
-#endif /* TRACERS */
       do j=JstrR,JendR
         do i=IstrR,IendR
-# if defined TEMPERATURE && defined QCORRECTION
+# ifdef QCORRECTION
           dqdt(i,j)=init
           sst (i,j)=init
 #  ifndef ANA_SST
@@ -837,8 +816,8 @@ C$    integer omp_get_thread_num
           sstg (i,j,1)=init
           dqdtg(i,j,2)=init
           sstg (i,j,2)=init
-#  endif /* TEMPERATURE QCORRECTION */
-#  if defined SALINITY && defined SFLX_CORR
+#  endif
+#  if defined SALINITY && defined SFLX_CORR 
           sss (i,j)=init
 #    ifndef ANA_SSS
           sssg (i,j,1)=init
@@ -847,7 +826,7 @@ C$    integer omp_get_thread_num
 #  endif
 # endif
 !
-# if defined BULK_FLUX && defined TEMPERATURE
+# ifdef BULK_FLUX
 #  if defined READ_PATM && defined OBC_PATM
           patm2d(i,j)=paref
 # endif
@@ -857,8 +836,10 @@ C$    integer omp_get_thread_num
           radlw (i,j)=init
           radsw (i,j)=init
           wspd(i,j)=init
+#  ifdef BULK_SM_UPDATE
           uwnd(i,j)=init
           vwnd(i,j)=init
+#  endif
 # ifdef DIURNAL_INPUT_SRFLX
           radswbio (i,j)=init
 # endif
@@ -873,15 +854,13 @@ C$    integer omp_get_thread_num
           prateg (i,j,2)=init
           radlwg (i,j,2)=init
           radswg (i,j,2)=init
+          wspdg(i,j,1)=init
+          wspdg(i,j,2)=init
+#  ifdef BULK_SM_UPDATE
           uwndg(i,j,1)=init
           vwndg(i,j,1)=init
           uwndg(i,j,2)=init
           vwndg(i,j,2)=init
-#  ifdef ONLINE
-          uwndg_norot(i,j,1)=init
-          uwndg_norot(i,j,2)=init
-          radswg_down(i,j,1)=init
-          radswg_down(i,j,2)=init
 #  endif
 # ifdef DIURNAL_INPUT_SRFLX
           radswbiog (i,j,1)=init
@@ -898,13 +877,16 @@ C$    integer omp_get_thread_num
           shflx_sen_avg(i,j)=init
 #  endif
 # endif /* BULK_FLUX */
-# if defined SFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX
+# if defined SMFLUX_CFB && defined CFB_STRESS && !defined BULK_FLUX 
           wspd(i,j)=init
+          wspdg(i,j,1)=init
+          wspdg(i,j,2)=init
 # endif
-# ifdef CFB_WIND_TRA
-          wspd_cfb(i,j)=init
+# if defined SMFLUX_CFB && defined CFB_STRESS2 
+          wstr_u(i,j)=init
+          wstr_v(i,j)=init
 # endif
-# if defined SST_SKIN && defined TEMPERATURE
+# ifdef SST_SKIN
           sst_skin=init
 #  ifdef AVERAGES
           sst_skin_avg=init
@@ -919,17 +901,13 @@ C$    integer omp_get_thread_num
           srflxg(i,j,1)=init
           srflxg(i,j,2)=init
 # endif
-# if (defined MUSTANG || defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
+# if (defined BBL || defined MRL_WCI) && defined WAVE_OFFLINE
           wwag(i,j,1)=init
           wwdg(i,j,1)=init
           wwpg(i,j,1)=init
           wwag(i,j,2)=init
           wwdg(i,j,2)=init
           wwpg(i,j,2)=init
-# ifdef MUSTANG
-          wwug(i,j,1)=init
-          wwug(i,j,2)=init
-#endif
 #  ifdef WAVE_OFFLINE_BREAKING
           wweb(i,j,1)=init
           wweb(i,j,2)=init
@@ -938,7 +916,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # if defined PSOURCE_NCFILE
-          do i=1,Nsrc
+          do i=1,Msrc
            qbar(i)=init
            qbarg(i,1)=init
            qbarg(i,2)=init
@@ -971,8 +949,7 @@ C$    integer omp_get_thread_num
       enddo
 #endif
 #ifdef SOLVE3D
-# if defined TNUDGING && defined TCLIMATOLOGY && defined TRACERS
-
+# if defined TNUDGING && defined TCLIMATOLOGY
       do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
@@ -983,8 +960,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# if (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)) && defined TRACERS
-
+# if defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)
       do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
@@ -995,7 +971,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 # endif
-# if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
+# if defined TCLIMATOLOGY && !defined ANA_TCLIMA
       do itrc=1,NT
         do k=1,N
           do j=JstrR,JendR
@@ -1052,7 +1028,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 #endif
-#if (defined T_FRC_BRY && defined TRACERS) || defined M2_FRC_BRY || \
+#if defined T_FRC_BRY || defined M2_FRC_BRY || \
       defined M3_FRC_BRY || defined Z_FRC_BRY
 !
 ! Initialize boundary arrays (see "boundary.h").
@@ -1070,15 +1046,14 @@ C$    integer omp_get_thread_num
           vbarbry_west(j)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
-
+#  if defined SOLVE3D && (defined M3_FRC_BRY || defined T_FRC_BRY)
         do k=1,N
           do j=JstrR,JendR
 #   ifdef M3_FRC_BRY
             ubry_west(j,k)=init
             vbry_west(j,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRACERS
+#   ifdef T_FRC_BRY
             do itrc=1,NT
               tbry_west(j,k,itrc)=init
             enddo
@@ -1102,14 +1077,14 @@ C$    integer omp_get_thread_num
           vbarbry_east(j)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || defined T_FRC_BRY)
         do k=1,N
           do j=JstrR,JendR
 #   ifdef M3_FRC_BRY
             ubry_east(j,k)=init
             vbry_east(j,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRACERS
+#   ifdef T_FRC_BRY
             do itrc=1,NT
               tbry_east(j,k,itrc)=init
             enddo
@@ -1133,14 +1108,14 @@ C$    integer omp_get_thread_num
           vbarbry_south(i)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || defined T_FRC_BRY)
         do k=1,N
           do i=IstrR,IendR
 #   ifdef M3_FRC_BRY
             ubry_south(i,k)=init
             vbry_south(i,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRACERS
+#   ifdef T_FRC_BRY
             do itrc=1,NT
               tbry_south(i,k,itrc)=init
             enddo
@@ -1164,14 +1139,14 @@ C$    integer omp_get_thread_num
           vbarbry_north(i)=init
         enddo
 #  endif
-#  if defined SOLVE3D && (defined M3_FRC_BRY || (defined T_FRC_BRY && defined TRACERS))
+#  if defined SOLVE3D && (defined M3_FRC_BRY || defined T_FRC_BRY)
         do k=1,N
           do i=IstrR,IendR
 #   ifdef M3_FRC_BRY
             ubry_north(i,k)=init
             vbry_north(i,k)=init
 #   endif
-#   if defined T_FRC_BRY && defined TRACERS
+#   ifdef T_FRC_BRY
             do itrc=1,NT
               tbry_north(i,k,itrc)=init
             enddo
@@ -1182,7 +1157,7 @@ C$    integer omp_get_thread_num
       endif
 # endif /* OBC_NORTH */
 #endif
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+#if defined SSH_TIDES || defined UV_TIDES
 !
 ! Initialize array for tidal elevation forcing.
 !
@@ -1239,7 +1214,6 @@ C$    integer omp_get_thread_num
         enddo
 #endif
 #if defined TS_DIF2 || defined SPONGE_DIF2
-# if defined TRACERS
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -1252,10 +1226,8 @@ C$    integer omp_get_thread_num
               diff2_sponge(i,j)=init
             enddo
           enddo
-# endif
 #endif
 #ifdef TS_DIF4
-# if defined TRACERS
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR
@@ -1281,7 +1253,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-# endif
 #endif
 #ifdef TS_MIX_ISO
         do k=1,N-1
@@ -1318,16 +1289,12 @@ C$    integer omp_get_thread_num
         do j=JstrR,JendR
           do i=IstrR,IendR
 # if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
-#  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
-#  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
 # else
-#  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=init
-#  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=init
 #  endif
@@ -1352,11 +1319,11 @@ C$    integer omp_get_thread_num
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef LMD_SKPP2005
-          hbls(i,j,1)=init
-          hbls(i,j,2)=init
-#  else
+          hbls(i,j,1)=init          
+          hbls(i,j,2)=init 
+#  else        
           hbl(i,j)=init
-#  endif
+#  endif         
           kbl(i,j)=init
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
@@ -1410,8 +1377,8 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-            trb(i,j,k,nstp,itke)=init
-            trb(i,j,k,nstp,igls)=init
+            trb(i,j,k,nstp,itke)=init 
+            trb(i,j,k,nstp,igls)=init        
             Lscale(i,j,k)=init
           enddo
         enddo

@@ -46,16 +46,8 @@
       integer,dimension(:,:),allocatable::                            &  ! (2,nmvt_oa)
            kountv_oa                                                     ! calcul des kounts de debut et de fin pour chaque variable (ou configuration)
 
-      integer*8,dimension(:),allocatable::                            &  ! (nmvp_oa) BLXD spatial => temporel
-           resv_oa                                                       ! resolution temporel pour le calcul de la convolution
-
-      !> Conversion of the specific time of analysis lti_a to the corresponding entry of the wf_oa array
-      integer,dimension(:),allocatable,target::tallocated_oa
-
-      !> BLXD TODO move to module_tile_oa
-      integer :: nmsimult_oa                                             ! BLXD # of simultaneous conv. windows 
-                                                                         ! dynamically calculated
-      integer :: nmsimult_oa_max                                         ! nombre maximum de fenetres ouvertes simultanement 900000!
+      integer*8,dimension(:),allocatable::                            &  ! (nmvp_oa)
+           resv_oa                                                       ! resolution spatiale pour le calcul de la convolution
 
 
       end module module_oa_time

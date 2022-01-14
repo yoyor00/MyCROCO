@@ -211,7 +211,7 @@
 !  Load time invariant SSS data.
 !
       if (sss_cycle.lt.0.) then
-        if (FIRST_RST_TIME_STEP) then
+        if (FIRST_TIME_STEP) then
           if (lsssgrd.eq.1) then
             do j=JstrR,JendR
               do i=IstrR,IendR

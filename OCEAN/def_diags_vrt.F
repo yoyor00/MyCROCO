@@ -253,7 +253,7 @@
 !
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_def_var (ncid, vname(1,indxTime)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime)
+     &                            NF_REAL, 1, timedim, vidTime)
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 #endif
@@ -282,13 +282,13 @@
      &                                vname(4,indxTime)(1:lvar))
 
         call nf_add_attribute(ncid, vidTime, indxTime, 5, 
-     &       NF_FOUT, ierr)
+     &       NF_REAL, ierr)
 !
 ! Time2.
 !
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
+     &                            NF_REAL, 1, timedim, vidTime2)
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
 #endif
@@ -317,7 +317,7 @@
      &                                vname(4,indxTime2)(1:lvar))
 
         call nf_add_attribute(ncid, vidTime2, indxTime2, 5, 
-     &       NF_FOUT, ierr)
+     &       NF_REAL, ierr)
 
 ! Momentum diagnostics variables.
 ! -------- ----------- --------
@@ -333,7 +333,7 @@
 !          
           lvar=lenstr(vname(1,indxvrtXadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtXadv+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtXadv(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtXadv(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtXadv(itrc),nf_collective)
 #endif
@@ -354,14 +354,14 @@
      &                      lvar, vname(4,indxvrtXadv+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtXadv(itrc), 
-     &         indxvrtXadv+itrc-1, 5, NF_FOUT, ierr)
+     &         indxvrtXadv+itrc-1, 5, NF_REAL, ierr)
 !------------------------------
 !
 ! indxvrtYadv
 !          
           lvar=lenstr(vname(1,indxvrtYadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtYadv+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtYadv(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtYadv(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtYadv(itrc),nf_collective)
 #endif
@@ -382,14 +382,14 @@
      &                      lvar, vname(4,indxvrtYadv+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtYadv(itrc), 
-     &        indxvrtYadv+itrc-1, 5, NF_FOUT, ierr)
+     &        indxvrtYadv+itrc-1, 5, NF_REAL, ierr)
 !------------------------------
 !
 ! indxvrtHdiff
 !          
           lvar=lenstr(vname(1,indxvrtHdiff+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtHdiff+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtHdiff(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtHdiff(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtHdiff(itrc),nf_collective)
 #endif
@@ -410,13 +410,13 @@
      &                      lvar, vname(4,indxvrtHdiff+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtHdiff(itrc), 
-     &            indxvrtHdiff+itrc-1, 5,NF_FOUT, ierr)
+     &            indxvrtHdiff+itrc-1, 5,NF_REAL, ierr)
 !------------------------------!
 ! indxvrtCor
 !          
           lvar=lenstr(vname(1,indxvrtCor+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtCor+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtCor(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtCor(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtCor(itrc),nf_collective)
 #endif
@@ -437,7 +437,7 @@
      &                      lvar, vname(4,indxvrtCor+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtCor(itrc), 
-     &            indxvrtCor+itrc-1, 5, NF_FOUT, ierr)
+     &            indxvrtCor+itrc-1, 5, NF_REAL, ierr)
 
 !------------------------------
 !
@@ -445,7 +445,7 @@
 !          
           lvar=lenstr(vname(1,indxvrtPrsgrd+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtPrsgrd+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtPrsgrd(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtPrsgrd(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtPrsgrd(itrc),nf_collective)
 #endif
@@ -466,14 +466,14 @@
      &                      lvar, vname(4,indxvrtPrsgrd+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtPrsgrd(itrc), 
-     &           indxvrtPrsgrd+itrc-1, 5,NF_FOUT, ierr)
+     &           indxvrtPrsgrd+itrc-1, 5,NF_REAL, ierr)
 !------------------------------
 !
 ! indxvrtHmix
 !          
           lvar=lenstr(vname(1,indxvrtHmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtHmix+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtHmix(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtHmix(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtHmix(itrc),nf_collective)
 #endif
@@ -494,14 +494,14 @@
      &                      lvar, vname(4,indxvrtHmix+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtHmix(itrc),
-     &            indxvrtHmix+itrc-1,5, NF_FOUT, ierr)
+     &            indxvrtHmix+itrc-1,5, NF_REAL, ierr)
 !------------------------------
 !
 ! indxvrtVmix
 !          
           lvar=lenstr(vname(1,indxvrtVmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtVmix+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtVmix(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtVmix(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtVmix(itrc),nf_collective)
 #endif
@@ -522,14 +522,14 @@
      &                      lvar, vname(4,indxvrtVmix+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtVmix(itrc), 
-     &            indxvrtVmix+itrc-1, 5,NF_FOUT, ierr)
+     &            indxvrtVmix+itrc-1, 5,NF_REAL, ierr)
 !------------------------------
 !
 ! indxvrtrate
 !          
           lvar=lenstr(vname(1,indxvrtrate+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtrate+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtrate(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtrate(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtrate(itrc),nf_collective)
 #endif
@@ -550,7 +550,7 @@
      &                      lvar, vname(4,indxvrtrate+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtrate(itrc), 
-     &             indxvrtrate+itrc-1, 5,NF_FOUT, ierr)
+     &             indxvrtrate+itrc-1, 5,NF_REAL, ierr)
 
 !------------------------------
 !
@@ -558,7 +558,7 @@
 !          
           lvar=lenstr(vname(1,indxvrtVmix2+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtVmix2+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtVmix2(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtVmix2(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtVmix2(itrc),nf_collective)
 #endif
@@ -579,7 +579,7 @@
      &                    lvar, vname(4,indxvrtVmix2+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtVmix2(itrc), 
-     &               indxvrtVmix2+itrc-1, 5,NF_FOUT, ierr)
+     &               indxvrtVmix2+itrc-1, 5,NF_REAL, ierr)
 !
 
 
@@ -589,7 +589,7 @@
 !          
           lvar=lenstr(vname(1,indxvrtWind+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtWind+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtWind(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtWind(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtWind(itrc),nf_collective)
 #endif
@@ -610,7 +610,7 @@
      &                    lvar, vname(4,indxvrtWind+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtWind(itrc), 
-     &           indxvrtWind+itrc-1, 5,NF_FOUT, ierr)
+     &           indxvrtWind+itrc-1, 5,NF_REAL, ierr)
 
 !------------------------------
 !
@@ -618,7 +618,7 @@
 !          
           lvar=lenstr(vname(1,indxvrtDrag+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtDrag+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtDrag(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtDrag(itrc))
 #ifdef NC4PAR
           ierr=nf_var_par_access(ncid,viddiags_vrtDrag(itrc),nf_collective)
 #endif
@@ -639,7 +639,7 @@
      &                    lvar, vname(4,indxvrtDrag+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtWind(itrc), 
-     &              indxvrtDrag+itrc-1, 5, NF_FOUT, ierr)
+     &              indxvrtDrag+itrc-1, 5, NF_REAL, ierr)
         endif
 # if defined DIAGNOSTICS_BARO
 !------------------------------
@@ -648,7 +648,7 @@
 !
           lvar=lenstr(vname(1,indxvrtBaro+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtBaro+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtBaro(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtBaro(itrc))
 #ifdef NC4PAR
            ierr=nf_var_par_access(ncid,viddiags_vrtBaro(itrc),nf_collective)
 #endif
@@ -669,7 +669,7 @@
      &                      lvar, vname(4,indxvrtBaro+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtBaro(itrc),
-     &           indxvrtBaro+itrc-1, 5,NF_FOUT, ierr)
+     &           indxvrtBaro+itrc-1, 5,NF_REAL, ierr)
 # endif
 
 # if defined M3FAST
@@ -679,7 +679,7 @@
 !
           lvar=lenstr(vname(1,indxvrtfast+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxvrtfast+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, p2dgrd, viddiags_vrtfast(itrc))
+     &                     NF_REAL, 3, p2dgrd, viddiags_vrtfast(itrc))
 #ifdef NC4PAR
            ierr=nf_var_par_access(ncid,viddiags_vrtfast(itrc),nf_collective)
 #endif
@@ -700,7 +700,7 @@
      &                      lvar, vname(4,indxvrtfast+itrc-1)(1:lvar))
 
         call nf_add_attribute(ncid, viddiags_vrtfast(itrc),
-     &           indxvrtfast+itrc-1, 5,NF_FOUT, ierr)
+     &           indxvrtfast+itrc-1, 5,NF_REAL, ierr)
 # endif
 
 !

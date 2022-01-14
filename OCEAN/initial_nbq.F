@@ -209,11 +209,6 @@
 !  NBQ Momentum initialization
 !----------------------------------------------------------------------
 !
-#ifndef EXACT_RESTART
-
-! Note that if EXACT_RESTART CPP-switch is defined
-! qdmu_nbq is read from rst file
-
         do k=1,N
           do j=Jstr-1,Jend+1
             do i=Istr,Iend+1
@@ -229,7 +224,6 @@
             enddo
           enddo
         enddo
-#endif
 
 # ifdef NBQ
         do k=1,N-1

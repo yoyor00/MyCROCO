@@ -13,9 +13,6 @@
 #include "cppdefs.h"
 #if defined OA_COUPLING || defined OW_COUPLING
       USE mod_prism             ! OASIS3 prism module
-# ifdef AGRIF
-      use Agrif_Util
-# endif
       IMPLICIT NONE
       include 'mpif.h'
       
@@ -42,8 +39,7 @@
       integer rmask_inv(GLOBAL_2D_ARRAY)
       integer umask_inv(GLOBAL_2D_ARRAY)
       integer vmask_inv(GLOBAL_2D_ARRAY)
-      integer j,i, level
-      CHARACTER*2 clevel
+      integer j,i
 !
 !
 !     !-------------------------------------------------------------------
@@ -54,13 +50,7 @@
 !     !
 !     ! ** Method  :   OASIS3 MPI communication
 !     !--------------------------------------------------------------------
-# ifdef AGRIF
-      level=Agrif_Fixed()
-      write(clevel,'(a,i1.1)') "_", level
-# else
-      level=0
-      write(clevel,'(a)') "  "
-# endif
+
 !------------------------------------------------------------------
 !     Set the CROCO grid definition to PRISM system
 !------------------------------------------------------------------
@@ -72,15 +62,15 @@
 ! Model grid longitudes and latitudes
 !------------------------------------------------------------------
 !     -- t-grid --
-      CALL prism_write_grid('ocnt'//trim(clevel),LLm,MMm,
+      CALL prism_write_grid('ocnt',LLm,MMm,
      &           lonr(1:Lmmpi,1:Mmmpi),latr(1:Lmmpi,1:Mmmpi),
      &           id_partition)
 !     -- u-grid --
-      CALL prism_write_grid('ocnu'//trim(clevel),LLm,MMm,
+      CALL prism_write_grid('ocnu',LLm,MMm,
      &           lonu(1:Lmmpi,1:Mmmpi),latu(1:Lmmpi,1:Mmmpi),
      &           id_partition)
 !     -- v-grid --
-      CALL prism_write_grid('ocnv'//trim(clevel),LLm,MMm,
+      CALL prism_write_grid('ocnv',LLm,MMm,
      &           lonv(1:Lmmpi,1:Mmmpi),latv(1:Lmmpi,1:Mmmpi),
      &           id_partition)
 
@@ -143,15 +133,15 @@
         ENDDO
       ENDDO
 !
-      CALL prism_write_corner('ocnt'//trim(clevel), LLm, MMm, 4,
+      CALL prism_write_corner('ocnt', LLm, MMm, 4,
      &             clonr(1:Lmmpi,1:Mmmpi,:), clatr(1:Lmmpi,1:Mmmpi,:),
      &             id_partition)
 !
-      CALL prism_write_corner('ocnu'//trim(clevel), LLm, MMm, 4,
+      CALL prism_write_corner('ocnu', LLm, MMm, 4,
      &             clonu(1:Lmmpi,1:Mmmpi,:), clatu(1:Lmmpi,1:Mmmpi,:),
      &             id_partition)
 !
-      CALL prism_write_corner('ocnv'//trim(clevel), LLm, MMm, 4,
+      CALL prism_write_corner('ocnv', LLm, MMm, 4,
      &             clonv(1:Lmmpi,1:Mmmpi,:), clatv(1:Lmmpi,1:Mmmpi,:),
      &             id_partition)
 !
@@ -166,15 +156,15 @@
         ENDDO
       ENDDO
 !
-      CALL prism_write_area('ocnt'//trim(clevel), LLm, MMm,
+      CALL prism_write_area('ocnt', LLm, MMm,
      &                         arear(1:Lmmpi,1:Mmmpi),
      &                         id_partition)
 
-      CALL prism_write_area('ocnu'//trim(clevel), LLm, MMm,
+      CALL prism_write_area('ocnu', LLm, MMm,
      &                         areau(1:Lmmpi,1:Mmmpi),
      &                         id_partition)
 
-      CALL prism_write_area('ocnv'//trim(clevel), LLm, MMm,
+      CALL prism_write_area('ocnv', LLm, MMm,
      &                         areav(1:Lmmpi,1:Mmmpi),
      &                         id_partition)
 
@@ -192,17 +182,17 @@
       ENDDO
 
 !     -- t-grid --
-      CALL prism_write_mask('ocnt'//trim(clevel), LLm, MMm,
+      CALL prism_write_mask('ocnt', LLm, MMm,
      &                     rmask_inv(1:Lmmpi,1:Mmmpi),
      &                     id_partition)
 
 !     -- u-grid --
-      CALL prism_write_mask('ocnu'//trim(clevel), LLm, MMm,
+      CALL prism_write_mask('ocnu', LLm, MMm,
      &                     umask_inv(1:Lmmpi,1:Mmmpi),
      &                     id_partition)
 
 !     -- v-grid --
-      CALL prism_write_mask('ocnv'//trim(clevel), LLm, MMm,
+      CALL prism_write_mask('ocnv', LLm, MMm,
      &                     vmask_inv(1:Lmmpi,1:Mmmpi),
      &                     id_partition)
       

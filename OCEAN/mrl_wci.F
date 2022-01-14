@@ -110,10 +110,7 @@
      &           erol(PRIVATE_2D_SCRATCH_ARRAY)
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) || defined WAVE_STREAMING
      &        ,zob_my(PRIVATE_2D_SCRATCH_ARRAY)
-# endif
-# if defined WAVE_BREAK_BJ78
-     &        ,Q0,Qb,HmaxBJ     
-# endif      
+# endif 
 # ifdef SOLVE3D
       integer  k,kk 
       real     wrk1(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -132,11 +129,7 @@
 !
 # ifndef WKB_WWAVE
       real wave_gam,wave_btg,wave_roller      ! parameters for offline
-#  ifdef WAVE_BREAK_BJ78
-      parameter (wave_gam=0.73, wave_btg=1.0)
-#  else      
-      parameter (wave_gam=0.4, wave_btg=0.8)  ! wave forcing
-#  endif      
+      parameter (wave_gam=0.4, wave_btg=0.8)  ! wave forcing 
 #  ifdef WAVE_ROLLER
       parameter (wave_roller=1.0)
 #  else
@@ -265,20 +258,7 @@
           fr(i,j)=wfrq(i,j)
           inv_f(i,j)=1./max(fr(i,j),eps)
           khd=Dstp(i,j)*(fr(i,j)**2)*inv_g
-#  ifdef BBL
-! --- copy into arrays for BBL Soulsby parametrization
-          Pwave(i,j) = 2.0*pi*inv_f(i,j)
-          Awave(i,j) = wh(i,j)/2.0
-          Dwave(i,j) = atan2(wdre(i,j),wdrx(i,j))
-#  endif  
-
-#  ifdef OW_COUPLING_FULL
-          kw(i,j) =2.0*pi/max(wlm(i,j),0.1)
-          !kw(i,j) =2.0*pi/max(wlm(i,j),eps)
-          kD(i,j) =kw(i,j)*Dstp(i,j)
-#  else          
-
-#   ifdef KH_SOULSBY
+#  ifdef KH_SOULSBY
           if (khd.ge.1.) then ! explicit wavenumber estimator
            kh=khd
           else
@@ -288,15 +268,14 @@
             cff = tanh(kh)
             kh = kh-(kh*cff-khd)/max(cff+kh*(1.0-cff**2),eps)
           enddo
-#   elif defined KH_HUNT
+#  elif defined KH_HUNT
           kh = sqrt( khd*khd + khd/(1.0 + khd*(0.6666666666
      &               +khd*(0.3555555555 + khd*(0.1608465608
      &               +khd*(0.0632098765 + khd*(0.0217540484
      &                            +khd*0.0065407983)))))) )
-#   endif
+#  endif
           kD(i,j) =kh
           kw(i,j) =kh*inv_d(i,j)
-#  endif          
 !
 ! --- Wave breaking ---
 !   use wave_btg, wave_gam local parameters (as in WKB model)
@@ -304,63 +283,27 @@
 #  ifdef WAVE_OFFLINE_BREAKING
           ebrk(i,j)=wramp2*wepb(i,j)                ! ep_b/rho (m3/s3)
 #  else
-#   ifdef OW_COUPLING_FULL
-          ebrk(i,j)=wramp2*foc(i,j)/rho0 
-#   else          
-#    ifdef WAVE_BREAK_TG86
-           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
-           ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
-#    elif defined WAVE_BREAK_TG86A
-           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
-           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
-           ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
+#   ifdef WAVE_BREAK_TG86
+          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
+          ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
+#   elif defined WAVE_BREAK_TG86A
+          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
+          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+          ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
      &                           (1.-(1.+cff1**2)**(-2.5))
-#    elif defined WAVE_BREAK_CT93
-           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
-           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
-           ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
+#   elif defined WAVE_BREAK_CT93
+          cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
+          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+          ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
      &              *( 1.+tanh(8.0*(cff1-1.)) )*
      &               ( 1.-(1.0+cff1**2)**(-2.5) )
-#    elif defined WAVE_BREAK_R93
-           cff=0.25*g*(wave_btg**3)/(2.*pi)
-           cff1=wh(i,j)/(wave_gam*Dstp(i,j))
-           ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
+#   elif defined WAVE_BREAK_R93
+          cff=0.25*g*(wave_btg**3)/(2.*pi)
+          cff1=wh(i,j)/(wave_gam*Dstp(i,j))
+          ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
      &                          *(1-exp (-cff1**5 ))
-#    elif defined WAVE_BREAK_BJ78
-           HmaxBJ=wave_gam/max(kw(i,j),eps)*tanh(kw(i,j)*Dstp(i,j))
-           if (HmaxBJ.gt.eps) then
-             cff1=wh(i,j)/HmaxBJ !=beta_BJ
-           else
-             cff1=0.0
-           endif
-           if (cff1.le.0.5) then
-             Q0 = 0.0
-           elseif(cff1.le.1.0) then
-             Q0 = (2.0*cff1-1.0)**2
-           endif
-           if(cff1.le.0.2) then
-             Qb = 0.0
-           elseif(cff1.lt.1.0) then
-             cff = exp((Q0-1.0)/cff1**2)
-             Qb = Q0-cff1**2*(Q0-cff)/(cff1**2-cff)
-             do k=1,3
-               Qb = exp((Qb-1.0)/cff1**2)
-             enddo
-           else
-             Qb = 1.0-eps
-           endif
-           if( (cff1**2.gt.eps) .and. (abs(cff1**2-Qb).gt.eps) ) then
-             if(cff1**2.lt.1.0) then
-               ebrk(i,j) = 0.25*wave_btg*g*Qb*HmaxBJ**2/(2.0*pi)
-             else
-               ebrk(i,j) = 0.25*wave_btg*g*cff1**4*HmaxBJ**2/(2.0*pi)
-             endif  
-           else
-             ebrk(i,j) = 0.0
-           endif  
-#    endif  
-           ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
-#   endif       
+#   endif  
+          ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
 #  endif
 !
 #  ifdef WAVE_OFFLINE_ROLLER
@@ -547,13 +490,8 @@
 !
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
-#   ifdef OW_COUPLING_FULL
-          inv_ex(i,j)=1.0/max(2.0*kw(i,j)*(1.0+exp(-4.0*kD(i,j))),eps)
-          ust_ker = ust_ext(i,j)*inv_ex(i,j)
-#   else  
-          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)        
+          inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
           ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)
-#   endif
           cff1=0.
           do k=1,N,+1              ! <-- irreversible
             cff2=exp( 2.*kw(i,j)*(z_w(i,j,k)+h(i,j)-Dstp(i,j)))
@@ -665,17 +603,9 @@
 #  define KAPSRF_SAFE
 #  ifdef KAPSRF_SAFE
           Kapsrf(i,j) = ( 0.5*Kapsrf(i,j)  ! time-filter to suppress noises
-#   ifdef OW_COUPLING_FULL
-     &                   +0.5*bhd(i,j) )
-#   else          
      &                   +0.5*cff*act(i,j)*inv_ex(i,j) )
-#   endif          
 #  else
-#   ifdef OW_COUPLING_FULL
-          Kapsrf(i,j) = bhd(i,j)
-#   else          
           Kapsrf(i,j) = cff*act(i,j)*inv_ex(i,j)
-#   endif          
 #  endif
      &                            SWITCH rmask(i,j)
      &                            SWITCH_WET rmask_wet(i,j)
@@ -759,10 +689,9 @@
 ! Akw: primary wave-induced additional diffusivity for tracers at w-point
 ! =======================================================================
 !
-#  ifdef LMD_MIXING
-#   define WAVE_NONBRK_VMIX_QIAO
+#  define WAVE_NONBRK_VMIX_QIAO
 !
-#   ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */
+#  ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */
 !
 !  In Uchiyama et al 2010:
 !  Akw = 0.5 d/dt[[A * sinh(k(z+d))/sinh(k*d)]^2]
@@ -782,7 +711,7 @@
           enddo
         enddo
       enddo
-#   elif defined WAVE_NONBRK_VMIX_QIAO
+#  elif defined WAVE_NONBRK_VMIX_QIAO
 !
 !  Qiao et al, JPO 2004:
 !    Akw = alpha * kw * sig * [A * sinh(k(z+d))/sinh(k*d)]^3
@@ -801,8 +730,7 @@
           enddo
         enddo
       enddo
-#   endif
-#  endif /* LMD_MIXING */
+#  endif
 !
 ! Non conservative wave-current interaction variables.
 ! ====================================================
@@ -925,7 +853,7 @@
             fb1=fb2     ! recursive procedure
           enddo
           do k=1,N-1
-            Akb(i,j,k)=max(0.5*(kb0(k)+kb0(k+1)),0.)
+            Akb(i,j,k)=0.5*(kb0(k)+kb0(k+1))
           enddo
           Akb(i,j,0)=0.
           Akb(i,j,N)=max(1.5*kb0(N)-0.5*kb0(N-1),0.)
@@ -1182,11 +1110,9 @@ c           ubry_east(j,k)=-ust(iendR,j,k)
       call exchange_v3d_tile(istr,iend,jstr,jend,vst)
       call exchange_r3d_tile(istr,iend,jstr,jend,wst)
       call exchange_r3d_tile(istr,iend,jstr,jend,kvf) 
-#   ifdef LMD_MIXING
       call exchange_w3d_tile(istr,iend,jstr,jend,Akb)
       call exchange_w3d_tile(istr,iend,jstr,jend,Akw)
       call exchange_w3d_tile(istr,iend,jstr,jend,E_pre)
-#   endif
 #   ifndef WAVE_SFC_BREAK
       call exchange_u3d_tile (istr,iend,jstr,jend,brk3dx)
       call exchange_v3d_tile (istr,iend,jstr,jend,brk3de)

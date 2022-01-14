@@ -33,7 +33,7 @@
 ! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
-      real dt, dtfast, time, time2, time_start, tdays, start_time
+      real dt, dtfast, time, time2, time_start, tdays
 #ifdef USE_CALENDAR
       real time_mars, time_end
       character*19 date, run_end_date, run_start_date
@@ -50,8 +50,7 @@
 #endif
       logical PREDICTOR_2D_STEP
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays, 
-     &     ndtfast, iic, kstp, krhs, knew, next_kstp,
-     &     start_time,
+     &                       ndtfast, iic, kstp, krhs, knew, next_kstp,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
@@ -152,10 +151,8 @@
       real  theta_s,   theta_b,   Tcline,  hc
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
       real  rx0, rx1
-# ifdef TRACERS
       real  tnu2(NT),tnu4(NT)
-# endif
-# if !defined NONLIN_EOS || defined MUSTANG
+# ifndef NONLIN_EOS
       real R0,T0,S0, Tcoef, Scoef
 # endif
       real weight(6,0:NWEIGHT)
@@ -176,9 +173,6 @@
 #endif
       integer numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
-#ifdef EXACT_RESTART
-     &     ,  forw_start
-#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif
@@ -200,35 +194,35 @@
       integer ntsdiaM_avg, nwrtdiaM_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_VRT
+# ifdef DIAGNOSTICS_VRT
       integer nwrtdiags_vrt
-# ifdef AVERAGES
+#ifdef AVERAGES
       integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
-# endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#endif
+# ifdef DIAGNOSTICS_EK
       integer nwrtdiags_ek
-# ifdef AVERAGES
+#ifdef AVERAGES
       integer ntsdiags_ek_avg, nwrtdiags_ek_avg
-# endif
 #endif
-#ifdef DIAGNOSTICS_PV
+#endif
+# ifdef DIAGNOSTICS_PV
       integer nwrtdiags_pv
-# ifdef AVERAGES
+#ifdef AVERAGES
       integer ntsdiags_pv_avg, nwrtdiags_pv_avg
-# endif
 #endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#endif
+# ifdef DIAGNOSTICS_EDDY
       integer nwrtdiags_eddy
-# ifdef AVERAGES
+#ifdef AVERAGES
       integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
-# endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#endif
+#ifdef OUTPUTS_SURFACE
       integer nwrtsurf
-# ifdef AVERAGES
+#ifdef AVERAGES
       integer ntssurf_avg, nwrtsurf_avg
-# endif
+#endif
 #endif
 #ifdef DIAGNOSTICS_BIO
       integer nwrtdiabio
@@ -241,7 +235,7 @@
 #endif
 
       logical ldefhis
-#if defined SOLVE3D && defined TRACERS
+#ifdef SOLVE3D
       logical got_tini(NT)
 #endif
 #ifdef SEDIMENT
@@ -283,13 +277,13 @@
       logical ldefdiags_pv_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#if defined DIAGNOSTICS_EDDY
       logical ldefdiags_eddy
 # ifdef AVERAGES
       logical ldefdiags_eddy_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#ifdef OUTPUTS_SURFACE
       logical ldefsurf
 # ifdef AVERAGES
       logical ldefsurf_avg
@@ -312,10 +306,7 @@
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
-     &           , rx0,       rx1
-# ifdef TRACERS
-     &           ,       tnu2,    tnu4
-# endif
+     &           , rx0,       rx1,       tnu2,    tnu4
 # ifndef NONLIN_EOS
      &                      , R0,T0,S0,  Tcoef,   Scoef
 # endif
@@ -336,9 +327,6 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
-#ifdef EXACT_RESTART
-     &       , forw_start
-#endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif
@@ -351,7 +339,7 @@
 #ifdef STATIONS
      &                      , nsta, nrpfsta
 #endif
-#if defined SOLVE3D && defined TRACERS
+#ifdef SOLVE3D
      &                      , got_tini 
 #endif
 #ifdef SEDIMENT
@@ -379,45 +367,45 @@
      &                      , ntsdiaM_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_VRT
+# ifdef DIAGNOSTICS_VRT
      &                      , ldefdiags_vrt, nwrtdiags_vrt
-# ifdef AVERAGES
+#ifdef AVERAGES
      &                      , ldefdiags_vrt_avg
      &                      , nwrtdiags_vrt_avg
      &                      , ntsdiags_vrt_avg
-# endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#endif
+# ifdef DIAGNOSTICS_EK
      &                      , ldefdiags_ek, nwrtdiags_ek
-# ifdef AVERAGES
+#ifdef AVERAGES
      &                      , ldefdiags_ek_avg
      &                      , nwrtdiags_ek_avg
      &                      , ntsdiags_ek_avg
-# endif
 #endif
-#ifdef DIAGNOSTICS_PV
+#endif
+# ifdef DIAGNOSTICS_PV
      &                      , ldefdiags_pv, nwrtdiags_pv
-# ifdef AVERAGES
+#ifdef AVERAGES
      &                      , ldefdiags_pv_avg
      &                      , nwrtdiags_pv_avg
      &                      , ntsdiags_pv_avg
-# endif
 #endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+#endif
+# ifdef DIAGNOSTICS_EDDY
      &                      , ldefdiags_eddy, nwrtdiags_eddy
-# ifdef AVERAGES
+#ifdef AVERAGES
      &                      , ldefdiags_eddy_avg
      &                      , nwrtdiags_eddy_avg
      &                      , ntsdiags_eddy_avg
-# endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
+#endif
+#ifdef OUTPUTS_SURFACE
      &                      , ldefsurf, nwrtsurf
-# ifdef AVERAGES
+#ifdef AVERAGES
      &                      , ldefsurf_avg
      &                      , nwrtsurf_avg
      &                      , ntssurf_avg
-# endif
+#endif
 #endif
 #ifdef DIAGNOSTICS_BIO
      &                      , ldefdiabio, nwrtdiabio
@@ -434,11 +422,8 @@
 
 # if defined SOLVE3D  && !defined LMD_MIXING
       real Akv_bak
-      common /scalars_akv/ Akv_bak
-#  ifdef TRACERS
       real Akt_bak(NT)
-      common /scalars_akt/ Akt_bak 
-#  endif
+      common /scalars_akt/ Akv_bak, Akt_bak 
 # endif
 !
 !-----------------------------------------------------------------------
@@ -508,7 +493,7 @@
 #ifdef OBC_VOLCONS
      &        , bc_flux, ubar_xs
 #endif
-#if defined BIOLOGY && defined TRACERS
+#ifdef BIOLOGY
      &        , global_sum(0:2*NT+1)
 #endif
 #ifdef RESET_RHO0
@@ -541,7 +526,7 @@
 
 #ifdef MPI
 !
-! MPI related variables
+! MPI rlated variables
 ! === ====== =========
 !
       logical EAST_INTER2, WEST_INTER2, NORTH_INTER2, SOUTH_INTER2
@@ -594,6 +579,6 @@
 !   FillValue (Needed if the FILLVAL key is defined)
 !   (See fillvalue.F subroutine)
       real spval
-      parameter (spval=-999.0)
+      parameter (spval=0.0)
       logical mask_val
       parameter (mask_val = .true.)

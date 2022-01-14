@@ -30,7 +30,7 @@
       real Qshape(Msrc,N)
       common /source_Qshape/ Qshape
 
-# if defined TRACERS
+# ifdef SOLVE3D
       real Tsrc(Msrc,N,NT)
       common /source_Tsrc/ Tsrc
 
@@ -56,10 +56,8 @@
       integer Jsrc(Msrc)
       common /source_Jsrc/ Jsrc
 
-# if defined TRACERS
-      logical Lsrc(Msrc,NT)
+      logical Lsrc(Msrc,30)
       common /source_Lsrc/ Lsrc
-# endif
 
 #ifdef PSOURCE_NCFILE
 !
@@ -78,7 +76,7 @@
       real qbardir(Msrc)
       common /source_qbardir/ qbardir
 
-# if defined PSOURCE_NCFILE_TS && defined TRACERS
+# ifdef PSOURCE_NCFILE_TS
       real tsrcg(Msrc,2,NT)
       common /tsrcdat_tsrcg/tsrcg
       real    tsrc_time(2,NT)

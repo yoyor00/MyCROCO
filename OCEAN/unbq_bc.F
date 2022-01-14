@@ -216,7 +216,7 @@
           do j=jstr,jend                              ! ======= ==== ======
 #   ifdef MRL_WCI
             qdmu_nbq(Istr,j,k)=-ust(Istr,j,k)         ! no Lagrangian flux
-     &                          *0.5*(Hz(Istr  ,j,k)
+                               *0.5*(Hz(Istr  ,j,k)
      &                              +Hz(Istr-1,j,k))
 #    ifdef MASKING
      &                       *umask(Istr,j)

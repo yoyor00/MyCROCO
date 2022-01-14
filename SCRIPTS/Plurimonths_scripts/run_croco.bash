@@ -10,7 +10,7 @@ MODEL=croco
 SCRATCHDIR=`pwd`/SCRATCH
 
 # Input directory where the croco_inter.in input file is located
-INPUTDIR=`pwd`/CROCO_IN
+INPUTDIR=`pwd`
 
 # AGRIF input file which defines the position of child grids
 AGRIF_FILE=AGRIF_FixedGrids.in
@@ -80,11 +80,6 @@ NY_END=10
 NM_START=1
 NM_END=12
 #
-# Set month format at 1 or 2 digits (for output files): "%01d" = 1 digit/ "%02d" = 2 digit  
-MTH_FORMAT="%01d"
-#                - EXACT_RST=1 --> Exact restart ON
-EXACT_RST=0
-#
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
@@ -118,22 +113,6 @@ if [[ $NY_START == 1 && $NM_START == 1 ]]; then
 else
     RSTFLAG=1
 fi
-#  Exact restart 
-if [[ $EXACT_RST == 1 ]]; then
-    echo "Exact restart defined"
-    if [[ $NY == $NY_START && $NM == $NM_START ]]; then
-	NUMRECINI=1
-	echo "set NUMRECINI = $NUMRECINI"
-    else  # no exact restart
-	NUMRECINI=2
-	echo "set NUMRECINI = $NUMRECINI"
-    fi
-else
-    echo "No exact restart"
-    NUMRECINI=1
-    echo "set NUMRECINI = $NUMRECINI"
-fi
-
 #
 if [[ $RSTFLAG != 0 ]]; then
     NY=$NY_START
@@ -147,7 +126,7 @@ if [[ $RSTFLAG != 0 ]]; then
 	    NM=12 
 	    NY=$((NY - 1))
 	fi
-	TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
+	TIME=Y${NY}M${NM}
     fi
     RSTFILE=${MODEL}_rst_${TIME}.nc
 fi
@@ -247,8 +226,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     fi
     sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
 	-e 's/NUMAVG/'$NUMAVG'/' \
-	-e 's/NUMHIS/'$NUMHIS'/' \
-	-e 's/NUMRST/'$NUMRST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_inter.in${ENDF}.tmp1
+	-e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}.in${ENDF}
     
     LEVEL=$((LEVEL + 1))
 done
@@ -280,27 +258,9 @@ while [[ $NY != $NY_END ]]; do
 	if [[ $TIME_SCHED == 0 ]]; then
 	    TIME=Y${NY}
 	else
-	    TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
+	    TIME=Y${NY}M${NM}
 	fi
 	
-	#
-	if [[ $EXACT_RST == 1 ]]; then
-	    echo "Exact restart defined"
-	    if [[ $NY == $NY_START && $NM == $NM_START ]]; then
-		NUMRECINI=1
-		echo "set NUMRECINI = $NUMRECINI"
-	    else  # no exact restart
-		NUMRECINI=2
-		echo "set NUMRECINI = $NUMRECINI"
-	    fi
-	else
-	    echo "No exact restart"
-	    NUMRECINI=1
-	    echo "set NUMRECINI = $NUMRECINI"
-	fi
-	#
-	sed -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
-	#
 	#
 	#  COMPUTE
 	#

@@ -28,13 +28,10 @@
 #if defined SEDIMENT || defined BBL
      &      ,  indxWrk
 #endif
-#ifdef MUSTANG
-     &      ,  indx 
-#endif
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
       CHARACTER (len=19)    :: cdate,tool_sectodat
 #endif
 #ifdef FLOATS
@@ -55,6 +52,7 @@
 # include "mpi_cpl.h"
       include 'mpif.h'
 #endif
+
 !
 ! Put time record index into file name. In  the case when model
 ! output is to be arranged into sequence of named files, the naming
@@ -72,7 +70,7 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
+# ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
@@ -80,7 +78,7 @@
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if 
-#endif
+# endif
         if (ierr .ne. 0) goto 99
       endif
 !
@@ -127,8 +125,7 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        MPI_master_only
-     &       write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
+        write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
         ierr=nf_create_par(rstname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
@@ -155,19 +152,12 @@
 #ifdef SEDIMENT
         ierr=nf_def_dim (ncid, 's_b',      NLAY,     b3dgrd(3))
 #endif
-#ifdef MUSTANG
-        ierr=nf_def_dim (ncid, 's_b',      ksdmax,     b3dgrd(3))
-#endif
 #ifdef SOLVE3D
         ierr=nf_def_dim (ncid, 's_rho',    N,        r3dgrd(3))
         ierr=nf_def_dim (ncid, 's_w',      N+1,      w3dgrd(3))
 #endif
         ierr=nf_def_dim (ncid, 'time', nf_unlimited, timedim)
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-        ierr=nf_def_dim (ncid, 'auxil',    6,        auxil(1))
-#else
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
-#endif
         auxil(2)=timedim
 
         r2dgrd(3)=timedim           ! Free surface
@@ -232,7 +222,7 @@
 ! Define grid variables.
 ! ------ ---- ----------
 !        
-        if (total_rec.le.1) then
+        if (total_rec.eq.1) then
 # ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd 
      &                   ,r3dgrd, w3dgrd)
@@ -355,7 +345,6 @@
         
        call nf_add_attribute(ncid, rstVb, indxVb, 5, NF_DOUBLE, ierr)
 
-
 #ifdef SOLVE3D
 !
 ! 3D momenta in XI- and ETA-directions.
@@ -394,464 +383,33 @@
         ierr=nf_put_att_text (ncid, rstV, 'field',     lvar,
      &                                  vname(4,indxV)(1:lvar))
 
-        call nf_add_attribute(ncid, rstV, indxV, 5, NF_DOUBLE, ierr)
+        call nf_add_attribute(ncid, rstV, indxVb, 5, NF_DOUBLE, ierr)
 
 !
 ! Tracer variables.
 !
-# if defined TRACERS
         do itrc=1,NT
-          lvar=lenstr(vname(1,indxV+itrc))
-          ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
+          lvar=lenstr(vname(1,indxT+itrc-1))
+          ierr=nf_def_var (ncid, vname(1,indxT+itrc-1)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
-#  ifdef NC4PAR
+# ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indxV+itrc))
-          ierr=nf_put_att_text (ncid, rstT(itrc), 'long_name',
-     &                     lvar,   vname(2,indxV+itrc)(1:lvar))
-          lvar=lenstr(vname(3,indxV+itrc))
-          ierr=nf_put_att_text (ncid, rstT(itrc), 'units', lvar,
-     &         vname(3,indxV+itrc)(1:lvar))
-          lvar=lenstr(vname(4,indxV+itrc))
-          ierr=nf_put_att_text (ncid, rstT(itrc), 'field', lvar,
-     &         vname(4,indxV+itrc)(1:lvar))
-
-          call nf_add_attribute(ncid, rstT(itrc), indxV+itrc, 5, 
-     &         NF_DOUBLE,ierr)          
-        enddo
 # endif
-        
-# if defined LMD_MIXING 
-!
-! Depth of planetary boundary layer.
-!     
-#  if defined LMD_SKPP
-        lvar=lenstr(vname(1,indxHbl))
-        ierr=nf_def_var (ncid, vname(1,indxHbl)(1:lvar),
-     &       NF_DOUBLE, 3, r2dgrd, rstHbl)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstHbl,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxHbl))
-        ierr=nf_put_att_text (ncid, rstHbl, 'long_name',
-     &       lvar,   vname(2,indxHbl)(1:lvar))
-        lvar=lenstr(vname(3,indxHbl))
-        ierr=nf_put_att_text (ncid, rstHbl, 'units', lvar,
-     &       vname(3,indxHbl)(1:lvar))
-        lvar=lenstr(vname(4,indxHbl))
-        ierr=nf_put_att_text (ncid, rstHbl, 'field', lvar,
-     &       vname(4,indxHbl)(1:lvar))
-        
-        call nf_add_attribute(ncid, rstHbl, indxHbl, 5,
-     &       NF_DOUBLE,ierr)
-#  endif        
+          lvar=lenstr(vname(2,indxT+itrc-1))
+          ierr=nf_put_att_text (ncid, rstT(itrc), 'long_name',
+     &                     lvar,   vname(2,indxT+itrc-1)(1:lvar))
+          lvar=lenstr(vname(3,indxT+itrc-1))
+          ierr=nf_put_att_text (ncid, rstT(itrc), 'units', lvar,
+     &         vname(3,indxT+itrc-1)(1:lvar))
+          lvar=lenstr(vname(4,indxT+itrc-1))
+          ierr=nf_put_att_text (ncid, rstT(itrc), 'field', lvar,
+     &         vname(4,indxT+itrc-1)(1:lvar))
 
-#  ifdef LMD_BKPP
-!
-! Depth of bottom planetary boundary layer.
-!        
-        lvar=lenstr(vname(1,indxHbbl))
-        ierr=nf_def_var (ncid, vname(1,indxHbbl)(1:lvar),
-     &       NF_DOUBLE, 3, r2dgrd, rstHbbl)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstHbbl,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxHbbl))
-        ierr=nf_put_att_text (ncid, rstHbbl, 'long_name',
-     &       lvar,   vname(2,indxHbbl)(1:lvar))
-        lvar=lenstr(vname(3,indxHbbl))
-        ierr=nf_put_att_text (ncid, rstHbbl, 'units', lvar,
-     &       vname(3,indxHbbl)(1:lvar))
-        lvar=lenstr(vname(4,indxHbbl))
-        ierr=nf_put_att_text (ncid, rstHbbl, 'field', lvar,
-     &       vname(4,indxHbbl)(1:lvar))
-        
-        call nf_add_attribute(ncid, rstHbbl, indxHbbl, 5,
-     &       NF_DOUBLE,ierr)
-        
-#  endif /*  LMD_BKPP  */ 
-# endif /* LMD_MIXING */
-
-# if defined GLS_MIXING
-!
-! Turbulent kinetic energy.
-!
-          lvar=lenstr(vname(1,indxTke))
-          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
-     &         NF_DOUBLE, 4, w3dgrd, rstTke)
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstTke,nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indxTke))
-          ierr=nf_put_att_text (ncid, rstTke, 'long_name',
-     &                     lvar,   vname(2,indxTke)(1:lvar))
-          lvar=lenstr(vname(3,indxTke))
-          ierr=nf_put_att_text (ncid, rstTke, 'units', lvar,
-     &         vname(3,indxTke)(1:lvar))
-          lvar=lenstr(vname(4,indxTke))
-          ierr=nf_put_att_text (ncid, rstTke, 'field', lvar,
-     &         vname(4,indxTke)(1:lvar))
-
-          call nf_add_attribute(ncid, rstTke, indxTke, 5,
+          call nf_add_attribute(ncid, rstT(itrc), indxT+itrc-1, 5, 
      &         NF_DOUBLE,ierr)
 
-!
-! Generic length scale.
-!
-          lvar=lenstr(vname(1,indxGls))
-          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
-     &         NF_DOUBLE, 4, w3dgrd, rstGls)
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstGls,nf_collective)
-#  endif
-          lvar=lenstr(vname(2,indxGls))
-          ierr=nf_put_att_text (ncid, rstGls, 'long_name',
-     &                     lvar,   vname(2,indxGls)(1:lvar))
-          lvar=lenstr(vname(3,indxGls))
-          ierr=nf_put_att_text (ncid, rstGls, 'units', lvar,
-     &         vname(3,indxGls)(1:lvar))
-          lvar=lenstr(vname(4,indxGls))
-          ierr=nf_put_att_text (ncid, rstGls, 'field', lvar,
-     &         vname(4,indxGls)(1:lvar))
-
-          call nf_add_attribute(ncid, rstGls, indxGls, 5,
-     &         NF_DOUBLE,ierr)
-
-!
-! Vertical viscosity coefficient.
-!
-
-        lvar=lenstr(vname(1,indxAkv))
-        ierr=nf_def_var (ncid, vname(1,indxAkv)(1:lvar),
-     &       NF_DOUBLE, 4, w3dgrd, rstAkv)
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstAkv,nf_collective)
-#  endif
-        lvar=lenstr(vname(2,indxAkv))
-        ierr=nf_put_att_text (ncid, rstAkv, 'long_name',
-     &       lvar,   vname(2,indxAkv)(1:lvar))
-        lvar=lenstr(vname(3,indxAkv))
-        ierr=nf_put_att_text (ncid, rstAkv, 'units', lvar,
-     &       vname(3,indxAkv)(1:lvar))
-        lvar=lenstr(vname(4,indxAkv))
-        ierr=nf_put_att_text (ncid, rstAkv, 'field', lvar,
-     &       vname(4,indxAkv)(1:lvar))
-        
-        call nf_add_attribute(ncid, rstAkv, indxAkv, 5,
-     &       NF_DOUBLE,ierr)
-
-#  ifdef TEMPERATURE        
-!     
-! Vertical diffusion coefficient for potential temperature.
-!     
-        
-        lvar=lenstr(vname(1,indxAkt))
-        ierr=nf_def_var (ncid, vname(1,indxAkt)(1:lvar),
-     &       NF_DOUBLE, 4, w3dgrd, rstAkt)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstAkt,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxAkt))
-        ierr=nf_put_att_text (ncid, rstAkt, 'long_name',
-     &       lvar,   vname(2,indxAkt)(1:lvar))
-        lvar=lenstr(vname(3,indxAkt))
-        ierr=nf_put_att_text (ncid, rstAkt, 'units', lvar,
-     &       vname(3,indxAkt)(1:lvar))
-        lvar=lenstr(vname(4,indxAkt))
-        ierr=nf_put_att_text (ncid, rstAkt, 'field', lvar,
-     &       vname(4,indxAkt)(1:lvar))
-        
-        call nf_add_attribute(ncid, rstAkt, indxAkt, 5,
-     &       NF_DOUBLE,ierr)
-#  endif /* TEMPERATURE  */       
-
-#  ifdef SALINITY
-!
-! Vertical diffusion coefficient for salinity.
-!
-
-          lvar=lenstr(vname(1,indxAks))
-          ierr=nf_def_var (ncid, vname(1,indxAks)(1:lvar),
-     &         NF_DOUBLE, 4, w3dgrd, rstAks)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstAks,nf_collective)
-#   endif
-          lvar=lenstr(vname(2,indxAks))
-          ierr=nf_put_att_text (ncid, rstAks, 'long_name',
-     &                     lvar,   vname(2,indxAks)(1:lvar))
-          lvar=lenstr(vname(3,indxAks))
-          ierr=nf_put_att_text (ncid, rstAks, 'units', lvar,
-     &         vname(3,indxAks)(1:lvar))
-          lvar=lenstr(vname(4,indxAks))
-          ierr=nf_put_att_text (ncid, rstAks, 'field', lvar,
-     &         vname(4,indxAks)(1:lvar))
-
-          call nf_add_attribute(ncid, rstAks, indxAks, 5,
-     &         NF_DOUBLE,ierr)
-#  endif /* SALINITY  */
-# endif /* GLS_MIXING */
           
-# if defined LMD_MIXING
-#  ifdef M3FAST
-!
-!  Bottom stress u component 
-!        
-        lvar=lenstr(vname(1,indxBustr))
-        ierr=nf_def_var (ncid, vname(1,indxBustr)(1:lvar),
-     &       NF_DOUBLE, 3, u2dgrd, rstBustr)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstBustr,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxBustr))
-        ierr=nf_put_att_text (ncid, rstBustr, 'long_name',
-     &       lvar,   vname(2,indxBustr)(1:lvar))
-        lvar=lenstr(vname(3,indxBustr))
-        ierr=nf_put_att_text (ncid, rstBustr, 'units', lvar,
-     &       vname(3,indxBustr)(1:lvar))
-        lvar=lenstr(vname(4,indxBustr))
-        ierr=nf_put_att_text (ncid, rstBustr, 'field', lvar,
-     &       vname(4,indxBustr)(1:lvar))
-        
-        call nf_add_attribute(ncid, rstBustr, indxBustr, 5,
-     &       NF_DOUBLE,ierr)
-!
-!  Bottom stress v component 
-!        
-        lvar=lenstr(vname(1,indxBvstr))
-        ierr=nf_def_var (ncid, vname(1,indxBvstr)(1:lvar),
-     &       NF_DOUBLE, 3, v2dgrd, rstBvstr)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstBvstr,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxBvstr))
-        ierr=nf_put_att_text (ncid, rstBvstr, 'long_name',
-     &       lvar,   vname(2,indxBvstr)(1:lvar))
-        lvar=lenstr(vname(3,indxBvstr))
-        ierr=nf_put_att_text (ncid, rstBvstr, 'units', lvar,
-     &       vname(3,indxBvstr)(1:lvar))
-        lvar=lenstr(vname(4,indxBvstr))
-        ierr=nf_put_att_text (ncid, rstBvstr, 'field', lvar,
-     &       vname(4,indxBvstr)(1:lvar))
-        
-        call nf_add_attribute(ncid, rstBvstr, indxBvstr, 5,
-     &       NF_DOUBLE,ierr)
-#  endif /* M3FAST */
-# endif /* LMD_MIXING */
-
-# ifdef EXACT_RESTART
-!
-! Forcing for barotropic equations in XI-direction.
-!
-        lvar=lenstr(vname(1,indxrufrc))
-        ierr=nf_def_var (ncid, vname(1,indxrufrc)(1:lvar),
-     &                         NF_DOUBLE, 3, u2dgrd, rstrufrc)
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstrufrc,nf_collective)
-#  endif
-        lvar=lenstr(vname(2,indxrufrc))
-        ierr=nf_put_att_text (ncid, rstrufrc, 'long_name', lvar,
-     &                         vname(2,indxrufrc)(1:lvar))
-        lvar=lenstr(vname(3,indxrufrc))
-        ierr=nf_put_att_text (ncid, rstrufrc, 'units', lvar,
-     &                         vname(3,indxrufrc)(1:lvar))
-        lvar=lenstr(vname(4,indxrufrc))
-        ierr=nf_put_att_text (ncid, rstrufrc, 'field', lvar,
-     &                         vname(4,indxrufrc)(1:lvar))
-      call nf_add_attribute(ncid, rstrufrc,
-     &                         indxrufrc, 5, NF_DOUBLE, ierr)
-!
-! Forcing for barotropic equations in ETA-direction.
-!
-        lvar=lenstr(vname(1,indxrvfrc))
-        ierr=nf_def_var (ncid, vname(1,indxrvfrc)(1:lvar),
-     &                         NF_DOUBLE, 3, v2dgrd, rstrvfrc)
-#  ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstrvfrc,nf_collective)
-#  endif
-        lvar=lenstr(vname(2,indxrvfrc))
-        ierr=nf_put_att_text (ncid, rstrvfrc, 'long_name', lvar,
-     &                         vname(2,indxrvfrc)(1:lvar))
-        lvar=lenstr(vname(3,indxrvfrc))
-        ierr=nf_put_att_text (ncid, rstrvfrc, 'units', lvar,
-     &                         vname(3,indxrvfrc)(1:lvar))
-        lvar=lenstr(vname(4,indxrvfrc))
-        ierr=nf_put_att_text (ncid, rstrvfrc, 'field', lvar,
-     &                         vname(4,indxrvfrc)(1:lvar))
-      call nf_add_attribute(ncid, rstrvfrc,
-     &                         indxrvfrc, 5, NF_DOUBLE, ierr)
-
-#  ifdef M3FAST
-!
-! 3D rhs for M3FAST in XI- and ETA-directions.
-!
-        lvar=lenstr(vname(1,indxru_nbq))
-        ierr=nf_def_var (ncid, vname(1,indxru_nbq)(1:lvar),
-     &                              NF_DOUBLE, 4, u3dgrd, rstru_nbq)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstru_nbq,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxru_nbq))
-        ierr=nf_put_att_text (ncid, rstru_nbq, 'long_name', lvar,
-     &                                  vname(2,indxru_nbq)(1:lvar))
-        lvar=lenstr(vname(3,indxru_nbq))
-        ierr=nf_put_att_text (ncid, rstru_nbq, 'units',     lvar,
-     &                                  vname(3,indxru_nbq)(1:lvar))
-        lvar=lenstr(vname(4,indxru_nbq))
-        ierr=nf_put_att_text (ncid, rstru_nbq, 'field',     lvar,
-     &                                  vname(4,indxru_nbq)(1:lvar))
-
-        call nf_add_attribute(ncid, rstru_nbq, indxru_nbq,
-     &                                   5, NF_DOUBLE, ierr)
-
-        lvar=lenstr(vname(1,indxrv_nbq))
-        ierr=nf_def_var (ncid, vname(1,indxrv_nbq)(1:lvar),
-     &                              NF_DOUBLE, 4, v3dgrd, rstrv_nbq)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstrv_nbq,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxrv_nbq))
-        ierr=nf_put_att_text (ncid, rstrv_nbq, 'long_name', lvar,
-     &                                  vname(2,indxrv_nbq)(1:lvar))
-        lvar=lenstr(vname(3,indxrv_nbq))
-        ierr=nf_put_att_text (ncid, rstrv_nbq, 'units',     lvar,
-     &                                  vname(3,indxrv_nbq)(1:lvar))
-        lvar=lenstr(vname(4,indxrv_nbq))
-        ierr=nf_put_att_text (ncid, rstrv_nbq, 'field',     lvar,
-     &                                  vname(4,indxrv_nbq)(1:lvar))
-
-        call nf_add_attribute(ncid, rstrv_nbq, indxrv_nbq,
-     &                                   5, NF_DOUBLE, ierr)
-
-!
-! 3D rhs for M3FAST in XI- and ETA-directions.
-!
-        lvar=lenstr(vname(1,indxru_nbq_avg2))
-        ierr=nf_def_var (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
-     &                    NF_DOUBLE, 4, u3dgrd, rstru_nbq_avg2)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstru_nbq_avg2,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxru_nbq_avg2))
-        ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'long_name',
-     &                      lvar, vname(2,indxru_nbq_avg2)(1:lvar))
-        lvar=lenstr(vname(3,indxru_nbq_avg2))
-        ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'units', lvar,
-     &                       vname(3,indxru_nbq_avg2)(1:lvar))
-        lvar=lenstr(vname(4,indxru_nbq_avg2))
-        ierr=nf_put_att_text (ncid, rstru_nbq_avg2, 'field', lvar,
-     &                       vname(4,indxru_nbq_avg2)(1:lvar))
-
-        call nf_add_attribute(ncid, rstru_nbq_avg2, indxru_nbq_avg2,
-     &                                   5, NF_DOUBLE, ierr)
-
-        lvar=lenstr(vname(1,indxrv_nbq_avg2))
-        ierr=nf_def_var (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
-     &                    NF_DOUBLE, 4, v3dgrd, rstrv_nbq_avg2)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstrv_nbq_avg2,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxrv_nbq_avg2))
-        ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'long_name',
-     &                      lvar, vname(2,indxrv_nbq_avg2)(1:lvar))
-        lvar=lenstr(vname(3,indxrv_nbq_avg2))
-        ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'units',  lvar,
-     &                       vname(3,indxrv_nbq_avg2)(1:lvar))
-        lvar=lenstr(vname(4,indxrv_nbq_avg2))
-        ierr=nf_put_att_text (ncid, rstrv_nbq_avg2, 'field',  lvar,
-     &                       vname(4,indxrv_nbq_avg2)(1:lvar))
-
-        call nf_add_attribute(ncid, rstrv_nbq_avg2, indxrv_nbq_avg2,
-     &                                   5, NF_DOUBLE, ierr)
-
-!
-! 3D rhs for M3FAST in XI- and ETA-directions.
-!
-        lvar=lenstr(vname(1,indxqdmu_nbq))
-        ierr=nf_def_var (ncid, vname(1,indxqdmu_nbq)(1:lvar),
-     &                    NF_DOUBLE, 4, u3dgrd, rstqdmu_nbq)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstqdmu_nbq,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxqdmu_nbq))
-        ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'long_name',
-     &                      lvar, vname(2,indxqdmu_nbq)(1:lvar))
-        lvar=lenstr(vname(3,indxqdmu_nbq))
-        ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'units', lvar,
-     &                       vname(3,indxqdmu_nbq)(1:lvar))
-        lvar=lenstr(vname(4,indxqdmu_nbq))
-        ierr=nf_put_att_text (ncid, rstqdmu_nbq, 'field', lvar,
-     &                       vname(4,indxqdmu_nbq)(1:lvar))
-
-        call nf_add_attribute(ncid, rstqdmu_nbq, indxqdmu_nbq,
-     &                                   5, NF_DOUBLE, ierr)
-
-        lvar=lenstr(vname(1,indxqdmv_nbq))
-        ierr=nf_def_var (ncid, vname(1,indxqdmv_nbq)(1:lvar),
-     &                    NF_DOUBLE, 4, v3dgrd, rstqdmv_nbq)
-#   ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
-#   endif
-        lvar=lenstr(vname(2,indxqdmv_nbq))
-        ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'long_name',
-     &                      lvar, vname(2,indxqdmv_nbq)(1:lvar))
-        lvar=lenstr(vname(3,indxqdmv_nbq))
-        ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'units',  lvar,
-     &                       vname(3,indxqdmv_nbq)(1:lvar))
-        lvar=lenstr(vname(4,indxqdmv_nbq))
-        ierr=nf_put_att_text (ncid, rstqdmv_nbq, 'field',  lvar,
-     &                       vname(4,indxqdmv_nbq)(1:lvar))
-
-        call nf_add_attribute(ncid, rstqdmv_nbq, indxqdmv_nbq,
-     &                                   5, NF_DOUBLE, ierr)
-#  endif  /* M3FAST */
-
-#  ifdef TRACERS
-#   ifdef TS_MIX_ISO_FILT
-!
-! density gradients for use in t3dmix
-!
-        lvar=lenstr(vname(1,indxdRdx))
-        ierr=nf_def_var (ncid, vname(1,indxdRdx)(1:lvar),
-     &                    NF_DOUBLE, 4, u3dgrd, rstdRdx)
-#    ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstdRdx,nf_collective)
-#    endif
-        lvar=lenstr(vname(2,indxdRdx))
-        ierr=nf_put_att_text (ncid, rstdRdx, 'long_name',
-     &                      lvar, vname(2,indxdRdx)(1:lvar))
-        lvar=lenstr(vname(3,indxdRdx))
-        ierr=nf_put_att_text (ncid, rstdRdx, 'units', lvar,
-     &                       vname(3,indxdRdx)(1:lvar))
-        lvar=lenstr(vname(4,indxdRdx))
-        ierr=nf_put_att_text (ncid, rstdRdx, 'field', lvar,
-     &                       vname(4,indxdRdx)(1:lvar))
-
-        call nf_add_attribute(ncid, rstdRdx, indxdRdx,
-     &                                   5, NF_DOUBLE, ierr)
-
-        lvar=lenstr(vname(1,indxdRde))
-        ierr=nf_def_var (ncid, vname(1,indxdRde)(1:lvar),
-     &                    NF_DOUBLE, 4, v3dgrd, rstdRde)
-#    ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstdRde,nf_collective)
-#    endif
-        lvar=lenstr(vname(2,indxdRde))
-        ierr=nf_put_att_text (ncid, rstdRde, 'long_name',
-     &                      lvar, vname(2,indxdRde)(1:lvar))
-        lvar=lenstr(vname(3,indxdRde))
-        ierr=nf_put_att_text (ncid, rstdRde, 'units',  lvar,
-     &                       vname(3,indxdRde)(1:lvar))
-        lvar=lenstr(vname(4,indxdRde))
-        ierr=nf_put_att_text (ncid, rstdRde, 'field',  lvar,
-     &                       vname(4,indxdRde)(1:lvar))
-
-        call nf_add_attribute(ncid, rstdRde, indxdRde,
-     &                                   5, NF_DOUBLE, ierr)
-
-#   endif /* TS_MIX_ISO_FILT */
-#  endif /* TRACERS */
-# endif  /* EXACT_RESTART */
+        enddo
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -925,54 +483,6 @@
 
         enddo
 #endif /* SEDIMENT */
-
-#ifdef MUSTANG
-
-! ksmi, ksma
-       do itrc=1,2
-       indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+itrc+6
-       lvar=lenstr(vname(1,indx))
-       ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &            NF_FOUT, 3, r2dgrd, rstMUS(itrc)) ! ksmi,ksma
-
-# ifdef NC4PAR
-       ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
-# endif
-
-        call nf_add_attribute(ncid, rstMUS(itrc), indx, 5,
-     &         NF_DOUBLE, ierr)
-       enddo
-
-! dzs, tempsed, salsed
-      do itrc=1,3
-       indx=indxT+ntrc_salt+ntrc_substot+itrc+3
-       ierr=nf_def_var (ncid, vname(1,indx),
-     &            NF_FOUT, 4, b3dgrd, rstMUS(itrc+2)) ! 3D: dzs,tempsed,salsed
-
-#  ifdef NC4PAR
-       ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
-#  endif
-
-        call nf_add_attribute(ncid, rstMUS(itrc+2), indx, 5,
-     &         NF_DOUBLE, ierr)
-
-      enddo
-
-!cvsed
-       do itrc=1,ntrc_subs
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
-        ierr=nf_def_var (ncid, vname(1,indx),
-     &            NF_FOUT, 4, b3dgrd, rstMUS(itrc+5)) ! 3D: traceurSed
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
-# endif
-
-        call nf_add_attribute(ncid, rstMUS(itrc+5), indx, 5,
-     &         NF_DOUBLE, ierr)
-
-        enddo
-#endif
-
 
 #ifdef MORPHODYN 
         lvar=lenstr(vname(1,indxHm))
@@ -1113,7 +623,7 @@
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
@@ -1257,241 +767,16 @@
 !
 ! Tracer variables.
 !
-# if defined TRACERS
         do itrc=1,NT
-          lvar=lenstr(vname(1,indxV+itrc))
-          ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
+          lvar=lenstr(vname(1,indxT+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxT+itrc-1)(1:lvar),
      &                                                rstT(itrc))
           if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indxV+itrc)(1:lvar),
+            write(stdout,1) vname(1,indxT+itrc-1)(1:lvar),
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         enddo 
-# endif
-
-# if defined LMD_MIXING 
-!
-! Depth of planetary boundary layer.
-!
-#  ifdef LMD_SKPP
-          lvar=lenstr(vname(1,indxHbl))
-          ierr=nf_inq_varid (ncid,vname(1,indxHbl)(1:lvar), rstHbl)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-#  endif
-          
-#  ifdef LMD_BKPP
-!
-! Depth of bottom planetary boundary layer.
-!
-          lvar=lenstr(vname(1,indxHbbl))
-          ierr=nf_inq_varid (ncid,vname(1,indxHbbl)(1:lvar), rstHbbl)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxHbbl)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-#  endif /*  LMD_BKPP  */
-# endif /* LMD_MIXING */
-
-# if defined GLS_MIXING
-!
-! Turbulent kinetic energy.
-!
-          lvar=lenstr(vname(1,indxTke))
-          ierr=nf_inq_varid (ncid,vname(1,indxTke)(1:lvar), rstTke)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTke)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-!
-! Generic length scale.
-!
-          lvar=lenstr(vname(1,indxGls))
-          ierr=nf_inq_varid (ncid,vname(1,indxGls)(1:lvar), rstGls)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-!
-! Vertical viscosity coefficient.
-!
-          lvar=lenstr(vname(1,indxAkv))
-          ierr=nf_inq_varid (ncid,vname(1,indxAkv)(1:lvar), rstAkv)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-
-#  ifdef TEMPERATURE
-
-!
-! Vertical diffusion coefficient for potential temperature.
-!
-          lvar=lenstr(vname(1,indxAkt))
-          ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), rstAkt)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-#  endif
-          
-#  ifdef SALINITY
-!
-! Vertical diffusion coefficient for salinity.
-!
-          lvar=lenstr(vname(1,indxAks))
-          ierr=nf_inq_varid (ncid,vname(1,indxAks)(1:lvar), rstAks)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-#  endif /* SALINITY  */
-# endif /* GLS_MIXING */
-
-
-# ifdef M3FAST
-#  if defined LMD_MIXING
-!
-! Bottom stress u component
-!
-          lvar=lenstr(vname(1,indxBustr))
-          ierr=nf_inq_varid (ncid,vname(1,indxBustr)(1:lvar), rstBustr)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxBustr)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-!
-! Bottom stress v component
-!
-          lvar=lenstr(vname(1,indxBvstr))
-          ierr=nf_inq_varid (ncid,vname(1,indxBvstr)(1:lvar), rstBvstr)
-          if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxBvstr)(1:lvar), rstname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-#  endif
-# endif
-                    
-# ifdef EXACT_RESTART
-!
-! Forcing for barotropic equations in XI-direction.
-!
-        lvar=lenstr(vname(1,indxrufrc))
-        ierr=nf_inq_varid (ncid, vname(1,indxrufrc)(1:lvar), rstrufrc)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxrufrc)(1:lvar), rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-!
-! Forcing for barotropic equations in XI-direction.
-!
-        lvar=lenstr(vname(1,indxrvfrc))
-        ierr=nf_inq_varid (ncid, vname(1,indxrvfrc)(1:lvar), rstrvfrc)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxrvfrc)(1:lvar), rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-        
-#  ifdef M3FAST
-        
-!
-! 3D rhs for M3FAST in XI- and ETA-directions.
-!
-
-        lvar=lenstr(vname(1,indxru_nbq))
-        ierr=nf_inq_varid (ncid, vname(1,indxru_nbq)(1:lvar),
-     &                                                 rstru_nbq)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxru_nbq)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-        lvar=lenstr(vname(1,indxrv_nbq))
-        ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq)(1:lvar),
-     &                                                 rstrv_nbq)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxrv_nbq)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-!
-! 3D rhs for M3FAST in XI- and ETA-directions.
-!
-
-        lvar=lenstr(vname(1,indxru_nbq_avg2))
-        ierr=nf_inq_varid (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
-     &                                            rstru_nbq_avg2)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxru_nbq_avg2)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-        lvar=lenstr(vname(1,indxrv_nbq_avg2))
-        ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
-     &                                            rstrv_nbq_avg2)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxrv_nbq_avg2)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-        
-!
-! 3D rhs for M3FAST in XI- and ETA-directions.
-!
-
-        lvar=lenstr(vname(1,indxqdmu_nbq))
-        ierr=nf_inq_varid (ncid, vname(1,indxqdmu_nbq)(1:lvar),
-     &                                            rstqdmu_nbq)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxqdmu_nbq)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-        lvar=lenstr(vname(1,indxqdmv_nbq))
-        ierr=nf_inq_varid (ncid, vname(1,indxqdmv_nbq)(1:lvar),
-     &                                            rstqdmv_nbq)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxqdmv_nbq)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-       
-#  endif  /* M3FAST */
-
-#  ifdef TRACERS
-#   ifdef TS_MIX_ISO_FILT
-!
-! density gradients for use in t3dmix
-!
-
-        lvar=lenstr(vname(1,indxdRdx))
-        ierr=nf_inq_varid (ncid, vname(1,indxdRdx)(1:lvar),
-     &                                            rstdRdx)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxdRdx)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-        lvar=lenstr(vname(1,indxdRde))
-        ierr=nf_inq_varid (ncid, vname(1,indxdRde)(1:lvar),
-     &                                            rstdRde)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxdRde)(1:lvar),
-     &                                                 rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-
-#   endif /* TS_MIX_ISO_FILT */
-#  endif /* TRACERS */
-# endif /* EXACT_RESTART */
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -1529,50 +814,6 @@
         enddo
 #endif /* SEDIMENT */
 
-#ifdef MUSTANG
-! ksmi, ksma
-        do itrc=1,2
-          indx=indxT+ntrc_salt+ntrc_substot+ntrc_substot+itrc+6
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                                                 rstMUS(itrc))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indx)(1:lvar),
-     &                                            rstMUS(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        enddo
-
-! dzs, tempsed, salsed
-       do itrc=1,3
-         indx=indxT+ntrc_salt+ntrc_substot+itrc+3
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                                                 rstMUS(itrc+2))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indx)(1:lvar),
-     &                                            rstMUS(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        enddo
-
-
-! cvsed
-       do itrc=1,ntrc_subs
-          indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                                                 rstMUS(itrc+5))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indx)(1:lvar),
-     &                                            rstMUS(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-        enddo
-
-#endif
-
-
 #ifdef MORPHODYN
 !
 ! Time evolving bathymetry
@@ -1596,7 +837,7 @@
           goto 99                                         !--> ERROR
         endif
 !
-! Bed ripple lengths
+! Bed ripple length
 !
         lvar=lenstr(vname(1,indxLrip))
         ierr=nf_inq_varid (ncid, vname(1,indxLrip)(1:lvar), rstBBL(2))
@@ -1604,14 +845,14 @@
           write(stdout,1) vname(1,indxLrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-#endif /* BBL */
+# endif /* BBL */
 !
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)') 
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec 
      &              MYID
 
-#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+#if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       else
         ierr=nf_open (rstname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then

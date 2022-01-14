@@ -125,8 +125,8 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined TS_HADV_UP5 || defined TS_HADV_C6 \
-      || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 \
+# if defined TS_HADV_UP5 ||  defined TS_HADV_C6 \
+      || defined TS_HADV_WENO5 ||  defined BIO_HADV_WENO5 \
       || defined TS_VADV_WENO5
 
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
@@ -137,29 +137,27 @@
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
-      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff)
-     &                          - 0.5*cdiff*sign(1.,ua)*(q_i - q_im1)
+      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
+     &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
 
       flux4(q_im2, q_im1, q_i, q_ip1, ua) = 
-     &                     ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.
+     &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
 
       flux3(q_im2, q_im1, q_i, q_ip1, ua) =
-     &                            flux4(q_im2, q_im1, q_i, q_ip1, ua)
-     &           + sign(1.,ua)*((q_ip1 - q_im2)-3.*(q_i - q_im1))/12.
+     &      flux4(q_im2, q_im1, q_i, q_ip1, ua) +
+     &      sign(1.,ua)*((q_ip1 -
+     &      q_im2)-3.*(q_i-q_im1))/12.0
 
       flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
-     &                       ( 37.*(q_i + q_im1) - 8.*(q_ip1 + q_im2)
-     &                                        + (q_ip2 + q_im3) )/60.
+     &      ( 37.*(q_i+q_im1) - 8.*(q_ip1+q_im2)
+     &      +(q_ip2+q_im3) )/60.0
 
       flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
-     &              flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
-     &             - sign(1.,ua)*( (q_ip2 - q_im3)-5.*(q_ip1 - q_im2)
-     &                                      + 10.*(q_i - q_im1) )/60.
+     &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+     &      -sign(1.,ua)*( 
+     &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
 
 # endif
-#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
-#  endif
 !
 !--------------------------------------------------------------------
 !
@@ -177,13 +175,6 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
-      
-#if defined RVTK_DEBUG_PERFRST
-       call check_tab3d(Hz(:,:,:),'Hz in prestep3d','r')
-       call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
-       call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
-#endif
-
       do k=1,N
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
@@ -256,16 +247,11 @@
 !
 !======================================================================
 !
-# ifdef TRACERS
       do itrc=1,NT
         do k=1,N
 
 # ifdef BIO_HADV_WENO5
-#  if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then
-#  elif defined TEMPERATURE || defined SALINITY
-          if (itrc .le. 1) then
-#  endif
 # endif
 !
 !----------------------------------------------------------
@@ -278,17 +264,17 @@
 
 !
 !----------------------------------------------------------
-! WENO5 advection for passive tracers (biology ...)
+! C6 advection for passive tracers (biology ...)
 !----------------------------------------------------------
 !
 # ifdef BIO_HADV_WENO5
           else  ! if (itrc .gt. 2)
-#  define FLUX5 flux5_weno
-#  define FLUX3 flux3_weno
-#  define FLUX2 flux1
-#  define UP5_MASKING
+#  define FLUX5 flux6
+#  define FLUX3 flux4
+#  define FLUX2 flux2
+#  undef  UP5_MASKING
 !
-            cdif=1.
+            cdif=0.
 #  include "t3dadv_order5.h"
 !
 #  undef FLUX5
@@ -371,7 +357,6 @@
 
         enddo   ! <-- k
       enddo       ! <-- itrc
-# endif /* TRACERS */
 
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
@@ -441,7 +426,6 @@
 # endif
 
       do j=Jstr,Jend
-# ifdef TRACERS
 
         do i=Istr,Iend
 # ifndef VADV_ADAPT_IMP 
@@ -452,20 +436,14 @@
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
 
         enddo
-# endif /* TRACERS */
-
-# if defined TRACERS
+        
         do itrc=1,NT
 !
 !----------------------------------------------------------------------
 ! Compute vertical fluxes FC
 !----------------------------------------------------------------------
 !
-# ifdef TS_VADV_WENO5
-#  undef PREDICTOR
-# else
-#  define PREDICTOR
-# endif
+# define PREDICTOR
 # include "compute_vert_tracer_fluxes.h"
 # undef PREDICTOR
 !
@@ -510,7 +488,6 @@
 # endif          
 !
         enddo   !<-- itrc  !--> discard DC
-# endif /* TRACERS */
 !
 !======================================================================
 !
@@ -896,7 +873,6 @@
 ! Set PHYSICAL lateral boundary conditions for tracers.
 !======================================================================
 !
-# if defined TRACERS
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -909,7 +885,6 @@
 #  endif
 # endif
       enddo
-# endif
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
@@ -964,26 +939,6 @@
 #  endif
 # endif
 
-!
-!======================================================================
-! Prepare viscosity/diffusivity array for GLS_MIXING
-! (needed for OPENMP parallelization)
-!======================================================================
-!
-# ifdef GLS_MIXING
-      do k=0,N
-        do j=Jstr-1,Jend+1
-          do i=Istr-1,Iend+1
-            Akv_old(i,j,k)=Akv(i,j,k)
-#  if defined TEMPERATURE
-            Akt_old(i,j,k)=Akt(i,j,k,itemp)
-#  elif defined SALINITY
-            Akt_old(i,j,k)=Akt(i,j,k,isalt)
-#  endif            
-          enddo
-        enddo
-      enddo
-# endif
 !
 !======================================================================
 ! Prepare to start two-dimensional time stepping:

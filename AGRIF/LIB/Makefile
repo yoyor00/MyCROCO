@@ -34,7 +34,7 @@ conv: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o ./$@
 
 %.o: %.c
-	$(CC) -Wno-implicit-function-declaration $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 main.o : main.c
 fortran.o : fortran.c	

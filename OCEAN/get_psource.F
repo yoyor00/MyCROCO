@@ -184,7 +184,7 @@ CR      write(*,*)'Enter set_psource_tile...'
 !  Load time invariant QBAR data.
 !
       if (qbar_cycle.lt.0.) then
-        if (FIRST_RST_TIME_STEP) then
+        if (FIRST_TIME_STEP) then
           do i=1,Nsrc
             Qbar(i)=qbarg(i,itqbar)
           enddo

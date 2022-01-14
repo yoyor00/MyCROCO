@@ -136,11 +136,11 @@
           stainfo(istagrd,i)=FLOAT(STgrd(i)) ! each station belongs 
           if (stacoor(i).eq.0) then          ! to this grid initially
 # ifdef MPI
-            stax0(i)=stax0(i)-iminmpi+1
-            stay0(i)=stay0(i)-jminmpi+1
+            stax0(i)=stax0(i)-ii*Lm
+            stay0(i)=stay0(i)-jj*Mm
 # endif
-            if (stax0(i).ge.1 .and. stax0(i).lt.LOCALLM+1 .and.
-     &          stay0(i).ge.1 .and. stay0(i).lt.LOCALMM+1) then
+            if (stax0(i).ge.0 .and. stax0(i).lt.LOCALLM+1 .and.
+     &          stay0(i).ge.0 .and. stay0(i).lt.LOCALMM+1) then
               stainfo(istaxgrd,nc)=MIN(MAX(0.5,stax0(i)),
      &                                     FLOAT(LOCALLM)+0.5)
               stainfo(istaygrd,nc)=MIN(MAX(0.5,stay0(i)),
@@ -149,7 +149,6 @@
               nc=nc-1
             endif
           else
-# ifdef SPHERICAL
             mc=mc+1
             if (stax0(i).ge.lonu(1,1) .and. 
      &          stax0(i).lt.lonu(LOCALLM+1,1) .and.
@@ -162,7 +161,6 @@
               mc=mc-1
               nc=nc-1
             endif
-# endif
           endif
       enddo
 !

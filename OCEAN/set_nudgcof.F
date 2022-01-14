@@ -128,7 +128,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-# if defined TNUDGING && defined TEMPERATURE
+# ifdef TNUDGING
           Tnudgcof(i,j,N,itemp)=tauT_out*wrk(i,j)
 # endif
 # ifdef ZNUDGING
@@ -148,20 +148,12 @@
 !
 !  Apply nudging to other tracers and vertical levels
 !
-# if defined TNUDGING && defined TRACERS
+# ifdef TNUDGING
       do itrc=1,NT       ! includes BIOLOGY variables
         do k=1,N
           do j=JstrR,JendR
             do i=IstrR,IendR
-#   ifdef TEMPERATURE 
               Tnudgcof(i,j,k,itrc)=Tnudgcof(i,j,N,itemp)
-#   else
-#    ifdef SALINITY
-              Tnudgcof(i,j,k,itrc)=Tnudgcof(i,j,N,isalt)
-#   else
-              Tnudgcof(i,j,k,itrc)=Tnudgcof(i,j,N,1)
-#    endif
-#   endif
             enddo
           enddo
         enddo
@@ -171,13 +163,11 @@
 ! Interior nudging
 !
 # ifdef ROBUST_DIAG
-#  if defined TNUDGING  && defined TRACERS
+#  ifdef TNUDGING 
       do k=1,N 
         do j=JstrR,JendR
           do i=IstrR,IendR
-#   ifdef TEMPERATURE
             Tnudgcof(i,j,k,itemp)=tauT_out
-#   endif
 #   ifdef SALINITY
             Tnudgcof(i,j,k,isalt)=tauT_out
 #   endif
@@ -235,7 +225,7 @@
       enddo
 #  endif /* UV_VIS2 || UV_VIS4 || SPONGE_VIS2 */
 
-#  if (defined TS_DIF2 || defined TS_DIF4 || defined SPONGE_DIF2) && defined TRACERS
+#  if defined TS_DIF2 || defined TS_DIF4 || defined SPONGE_DIF2
 !
 !  Add Diffusivity for all tracers
 !
@@ -270,14 +260,9 @@
           dr=sqrt(dx**2+dy**2)
           if (dr .lt. rsponge) then
             do k=1,N
-#   ifdef TEMPERATURE
               Tnudgcof(i,j,k,itemp)=.5*cff*(cos(pi*dr/rsponge)+1)
      &                    *(-atan((z_r(i,j,k)+750.)*2.e-2)/pi+.5)
-#   endif
-#   ifdef SALINITY
-             Tnudgcof(i,j,k,isalt)=.5*cff*(cos(pi*dr/rsponge)+1)
-     &                    *(-atan((z_r(i,j,k)+750.)*2.e-2)/pi+.5)
-#   endif
+              Tnudgcof(i,j,k,isalt)=Tnudgcof(i,j,k,itemp)
             enddo
           endif
         enddo

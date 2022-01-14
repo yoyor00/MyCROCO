@@ -198,7 +198,6 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
      &                            istatem, nfltmax, indx)
            endif
 
-
 #  ifdef SALINITY
            if (wrtsta(indxstaSalt)) then
              itrc=2
@@ -206,15 +205,6 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
      &                             istasal, nfltmax, indx)
            endif
 #  endif
-
-# ifdef MUSTANG
-            do itrc=3,NT
-             call interp_r3d_sta (t(START_2D_ARRAY,1,nnew,itrc),
-     &                             12+itrc-2, nfltmax, indx)
-            enddo
-# endif
-
-
 #  ifdef ALL_SIGMA
            do iflt=Lstr,Lend
             staSigm(istadpt,iflt,k)=stadata(istadpt,iflt)
@@ -233,12 +223,6 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
               staSigm(istasal,iflt,k)=stadata(istasal,iflt)
             endif
 #   endif
-
-# ifdef MUSTANG
-              do itrc=3,NT
-              staSigm(12+itrc-2,iflt,k)=stadata(12+itrc-2,iflt)
-              enddo
-# endif 
            enddo
 c           write(*,*), 'sigma ', stainfo(istazgrd,1), 
 c     &      'depth', staSigm(istadpt,1,k), ' temp ',

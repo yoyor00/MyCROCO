@@ -12,7 +12,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# if defined SOLVE3D && defined TRACERS
+# ifdef SOLVE3D
       subroutine t3dbc_tile(Istr,Iend,Jstr,Jend,indx,itrc,grad)
 #  ifdef AGRIF      
       use Agrif_Util
@@ -37,7 +37,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 # endif /* SOLVE3D */
 #else
-# if defined SOLVE3D && defined TRACERS
+# ifdef SOLVE3D
 !
 ! CHILD
 !
@@ -48,7 +48,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 # endif /* SOLVE3D */
 #endif /* CHILD */
-# if defined SOLVE3D && defined TRACERS
+#ifdef SOLVE3D
 !
 ! Common Code
 !
@@ -164,9 +164,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           do j=Jstr,Jend
             if (u(Istr+1,j,k,nstp).lt.0.) then
               t(Istr-1,j,k,indx,itrc)=t(Istr,j,k,indx,itrc)
-#   ifdef T_FRC_BRY
-              t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
-#   endif
             else
 #   ifdef T_FRC_BRY
               t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)

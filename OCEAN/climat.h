@@ -56,11 +56,11 @@
    ttclm      time of read in climatology for tracer type variables.
 */
 #ifdef SOLVE3D
-# if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
+# if defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY)
       real tclm(GLOBAL_2D_ARRAY,N,NT)
       common /climat_tclm/tclm
 # endif
-# if defined TRACERS && defined TCLIMATOLOGY
+# ifdef TCLIMATOLOGY
 #  ifdef TNUDGING
       real Tnudgcof(GLOBAL_2D_ARRAY,N,NT)
       common /climat_Tnudgcof/Tnudgcof
@@ -152,28 +152,26 @@
      &     ubzon(GLOBAL_1D_ETA), 
      &     vbzon(GLOBAL_1D_ETA),
      &     uzon(GLOBAL_1D_ETA,N), 
-     &     vzon(GLOBAL_1D_ETA,N)
+     &     vzon(GLOBAL_1D_ETA,N), 
+     &     tzon(GLOBAL_1D_ETA,N,NT)
       common /climat_zetazon/zetazon
       common /climat_ubzon/ubzon
       common /climat_vbzon/vbzon
       common /climat_uzon/uzon
       common /climat_vzon/vzon
+      common /climat_tzon/tzon
       real sshzon(GLOBAL_1D_ETA), 
      &     ubclmzon(GLOBAL_1D_ETA), 
      &     vbclmzon(GLOBAL_1D_ETA),
      &     uclmzon(GLOBAL_1D_ETA,N), 
-     &     vclmzon(GLOBAL_1D_ETA,N)
+     &     vclmzon(GLOBAL_1D_ETA,N), 
+     &     tclmzon(GLOBAL_1D_ETA,N,NT)
       common /climat_sshzon/sshzon
       common /climat_ubclmzon/ubclmzon
       common /climat_vbclmzon/vbclmzon
       common /climat_uclmzon/uclmzon
       common /climat_vclmzon/vclmzon
-# ifdef TRACERS
-      real tzon(GLOBAL_1D_ETA,N,NT)
-      common /climat_tzon/tzon
-      real tclmzon(GLOBAL_1D_ETA,N,NT)
       common /climat_tclmzon/tclmzon
-# endif
 # undef GLOBAL_1D_ETA
 #endif
 

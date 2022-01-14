@@ -26,7 +26,7 @@
       INTEGER, PARAMETER ::   nmaxfld = 60 ! Maximum number of coupling fields
       INTEGER, PARAMETER ::   nmaxatm =  5 ! Maximum number of atmospheric models
 
-      CHARACTER(len = 64), DIMENSION(nmaxfld) :: srcv_clname, ssnd_clname   ! Coupling fields 
+      CHARACTER(len = 8), DIMENSION(nmaxfld) :: srcv_clname, ssnd_clname   ! Coupling fields 
       INTEGER, DIMENSION(0:nmaxatm, nmaxfld) :: srcv_nid   , ssnd_nid
       common /exchange_fields_oasis3/ srcv_clname,ssnd_clname,
      &                                srcv_nid   ,ssnd_nid

@@ -64,8 +64,8 @@
 
           if (ZEROTH_TILE) then
             timediags_ek_avg=time
-!            MPI_master_only write(*,*) 'started averaging ek',iic,
-!     &                            ntsdiags_ek_avg,nwrtdiags_ek_avg
+      MPI_master_only write(*,*) 'started averaging ek',iic,
+     &                       ntsdiags_ek_avg,nwrtdiags_ek_avg
           endif
 
 
@@ -267,9 +267,9 @@
 
           cff=1./float(nwrtdiags_ek_avg)
           if (ZEROTH_TILE) then
-            timediags_ek_avg=cff*(timediags_ek_avg+time)
-!            MPI_master_only write(*,*) 'finish aver. ek',iic,
-!     &                       ntsdiags_ek_avg,nwrtdiags_ek_avg
+                        timediags_ek_avg=cff*(timediags_ek_avg+time)
+      MPI_master_only write(*,*) 'finish aver. ek',iic,
+     &                       ntsdiags_ek_avg,nwrtdiags_ek_avg
           endif
 
 

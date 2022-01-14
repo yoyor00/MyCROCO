@@ -2,10 +2,10 @@
 !
 !======================================================================
 ! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
+! The two other branches from UCLA (Shchepetkin et al) 
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
-!
+! 
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
@@ -13,11 +13,11 @@
 !
 # include "cppdefs.h"
       subroutine u2dbc_tile(Istr,Iend,Jstr,Jend,grad)
-# ifdef AGRIF
+# ifdef AGRIF      
       use AGRIF_Util
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
-
+      
       if (AGRIF_Root()) then
         call u2dbc_parent_tile(Istr,Iend,Jstr,Jend,grad)
       else
@@ -58,7 +58,7 @@
 #include "private_scratch.h"
       integer trd
 C$    integer omp_get_thread_num
-#endif
+#endif       
       real    eps,cff, cx,cy,
      &        dft,dfx,dfy, tau,tau_in,tau_out,hx,zx
 #ifdef OBC_REDUCED_PHYSICS
@@ -78,7 +78,7 @@ C$    integer omp_get_thread_num
 #include "zoom.h"
 #ifdef NBQ
 # include "nbq.h"
-#endif
+#endif 
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -96,7 +96,7 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dETA(1,5+3*NWEIGHT)
      &                    ,A1dETA(1,6+4*NWEIGHT)
      &                    ,A1dETA(1,7+5*NWEIGHT)
-     &                    ,A1dETA(1,8+5*NWEIGHT)
+     &                    ,A1dETA(1,8+5*NWEIGHT)     
      &                    ,A1dXI(1,5+3*NWEIGHT)
      &                    ,A1dXI(1,6+4*NWEIGHT)
      &                    ,A1dXI(1,7+5*NWEIGHT)
@@ -114,7 +114,7 @@ C$    trd=omp_get_thread_num()
       tau_out=dtfast*tauM_out
 #endif
 !
-#if defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST  || defined OBC_COM_M2CHARACT_WEST
+#ifdef OBC_COM_M2CHARACT
       grad = 1.
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -135,7 +135,7 @@ C$    trd=omp_get_thread_num()
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
         grad(Iend+1,Jend) = 0.5
       endif
-# endif
+# endif      
 #endif
 
 !
@@ -143,7 +143,7 @@ C$    trd=omp_get_thread_num()
 !                            WESTERN BC
 !====================================================================
 #ifndef EW_COM_PERIODIC
-      if (WESTERN_EDGE) then
+      if (WESTERN_EDGE) then                
 # ifdef OBC_COM_WEST
 #  ifdef OBC_COM_M2ORLANSKI
 !                                           Western edge radiation BC
@@ -161,7 +161,7 @@ C$    trd=omp_get_thread_num()
         do j=Jstr,Jend
           dft=ubar(Istr+1,j,kstp)-ubar(Istr+1,j,knew)
           dfx=ubar(Istr+1,j,knew)-ubar(Istr+2,j,knew)
-
+ 
           if (dfx*dft .lt. 0.) then
             dft=0.                       ! <-- cancel cx, if inflow
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
@@ -170,13 +170,13 @@ C$    trd=omp_get_thread_num()
             tau=tau_out
 #   endif
           endif
-
+ 
           if (dft*(grad(Istr+1,j)+grad(Istr+1,j+1)) .gt. 0.) then
             dfy=grad(Istr+1,j  )
           else
             dfy=grad(Istr+1,j+1)
           endif
-
+ 
 #   ifdef OBC_COM_RAD_NORMAL
           dfy=0.
 #   endif
@@ -187,7 +187,7 @@ C$    trd=omp_get_thread_num()
 #   else
           cy=min(cff,max(dft*dfy,-cff))
 #   endif
-
+ 
           ubar(Istr,j,knew)=( cff*ubar(Istr  ,j,kstp)
      &                        +cx*ubar(Istr+1,j,knew)
      &                     -max(cy,0.)*grad(Istr,j  )
@@ -265,7 +265,7 @@ C$    trd=omp_get_thread_num()
           ubar(Istr,j,knew)=ubar(Istr,j,knew)*umask(Istr,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_WEST
+#  elif defined OBC_COM_M2SPECIFIED
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
         do j=Jstr,Jend
@@ -317,7 +317,7 @@ C$    trd=omp_get_thread_num()
 !                                           ======= ==== ========= ==
         do j=Jstr,Jend+1
           grad(Iend  ,j)=(ubar(Iend  ,j,kstp)-ubar(Iend  ,j-1,kstp))
-#   ifdef MASKING
+#   ifdef MASKING 
      &                                                *pmask(Iend,j)
 #   endif
           grad(Iend+1,j)=(ubar(Iend+1,j,kstp)-ubar(Iend+1,j-1,kstp))
@@ -328,7 +328,7 @@ C$    trd=omp_get_thread_num()
         do j=Jstr,Jend
           dft=ubar(Iend,j,kstp)-ubar(Iend  ,j,knew)
           dfx=ubar(Iend,j,knew)-ubar(Iend-1,j,knew)
-
+ 
           if (dfx*dft .lt. 0.) then
             dft=0.                       ! <-- cancel cx, if inflow
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
@@ -337,13 +337,13 @@ C$    trd=omp_get_thread_num()
             tau=tau_out
 #   endif
           endif
-
+ 
           if (dft*(grad(Iend,j)+grad(Iend,j+1)) .gt. 0.) then
             dfy=grad(Iend,j)
           else
             dfy=grad(Iend,j+1)
           endif
-
+ 
 #   ifdef OBC_COM_RAD_NORMAL
           dfy=0.
 #   endif
@@ -354,7 +354,7 @@ C$    trd=omp_get_thread_num()
 #   else
           cy=min(cff,max(dft*dfy,-cff))
 #   endif
-
+ 
           ubar(Iend+1,j,knew)=( cff*ubar(Iend+1,j,kstp)
      &                          +cx*ubar(Iend  ,j,knew)
      &                     -max(cy,0.)*grad(Iend+1,j  )
@@ -372,7 +372,7 @@ C$    trd=omp_get_thread_num()
           ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
 #   endif
         enddo
-#  elif defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST
+#  elif defined OBC_COM_M2CHARACT
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
         do j=Jstr,Jend
@@ -474,7 +474,7 @@ C$    trd=omp_get_thread_num()
       endif         !<-- EASTERN_EDGE
 
 #endif              /* !EW_COM_PERIODIC */
-
+ 
 
 #ifndef NS_COM_PERIODIC
 !
@@ -489,7 +489,7 @@ C$    trd=omp_get_thread_num()
         do i=IstrU,Iend
 #   ifdef M2_FRC_BRY
           ubar(i,Jstr-1,knew)=ubarbry_south(i)
-#   else
+#   else 
           ubar(i,Jstr-1,knew)=ubclm(i,Jstr-1)
 #   endif
 #   ifdef MASKING
@@ -506,7 +506,7 @@ C$    trd=omp_get_thread_num()
         do i=IstrU,Iend
           dft=ubar(i,Jstr,kstp)-ubar(i,Jstr  ,knew)
           dfx=ubar(i,Jstr,knew)-ubar(i,Jstr+1,knew)
-
+ 
           if (dfx*dft .lt. 0.) then
             dft=0.                        ! <-- cancel cx, if inflow
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
@@ -515,13 +515,13 @@ C$    trd=omp_get_thread_num()
             tau=tau_out
 #   endif
           endif
-
+ 
           if (dft*(grad(i-1,Jstr)+grad(i,Jstr)) .gt. 0.) then
             dfy=grad(i-1,Jstr)
           else
             dfy=grad(i  ,Jstr)
           endif
-
+ 
 #   ifdef OBC_COM_RAD_NORMAL
           dfy=0.
 #   endif
@@ -532,7 +532,7 @@ C$    trd=omp_get_thread_num()
 #   else
           cy=min(cff,max(dft*dfy,-cff))
 #   endif
-
+ 
           ubar(i,Jstr-1,knew)=( cff*ubar(i,Jstr-1,kstp)
      &                          +cx*ubar(i,Jstr  ,knew)
      &                     -max(cy,0.)*grad(i-1,Jstr-1)
@@ -558,7 +558,7 @@ C$    trd=omp_get_thread_num()
      &                    h(i  ,Jstr-1)+zeta(i  ,Jstr-1,kstp)))
           cx=dtfast*0.5*cff*(pn(i-1,Jstr-1)+pn(i,Jstr-1))
           ubar(i,Jstr-1,knew)=(ubar(i,Jstr-1,kstp)
-     &                     +cx*ubar(i,Jstr  ,knew) )/(1.+cx)
+     &                     +cx*ubar(i,Jstr  ,knew) )/(1.+cx)     
 #   ifdef MASKING
      &                         *umask(i,Jstr-1)
 #   endif
@@ -635,7 +635,7 @@ C$    trd=omp_get_thread_num()
         do i=IstrU,Iend
           dft=ubar(i,Jend,kstp)-ubar(i,Jend  ,knew)
           dfx=ubar(i,Jend,knew)-ubar(i,Jend-1,knew)
-
+ 
           if (dfx*dft .lt. 0.) then
             dft=0.                        ! <-- cancel cx, if inflow
 #   if defined M2_FRC_BRY || defined M2CLIMATOLOGY
@@ -644,13 +644,13 @@ C$    trd=omp_get_thread_num()
             tau=tau_out
 #   endif
           endif
-
+ 
           if (dft*(grad(i-1,Jend)+grad(i,Jend)) .gt. 0.) then
             dfy=grad(i-1,Jend)
           else
             dfy=grad(i  ,Jend)
           endif
-
+ 
 #   ifdef OBC_COM_RAD_NORMAL
           dfy=0.
 #   endif
@@ -661,7 +661,7 @@ C$    trd=omp_get_thread_num()
 #   else
           cy=min(cff,max(dft*dfy,-cff))
 #   endif
-
+ 
           ubar(i,Jend+1,knew)=( cff*ubar(i,Jend+1,kstp)
      &                          +cx*ubar(i,Jend  ,knew)
      &                     -max(cy,0.)*grad(i-1,Jend+1)
@@ -737,11 +737,11 @@ C$    trd=omp_get_thread_num()
 # endif               /* OBC_COM_NORTH */
       endif          !<-- NORTHERN_EDGE
 #endif                /* !NS_COM_PERIODIC */
-
+ 
 !=======================================================================
                            ! Corners between adjacent open boundaries
                            ! ======= ======= ======== ==== ==========
-
+ 
 #if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
         ubar(Istr,Jstr-1,knew)=0.5*( ubar(Istr+1,Jstr-1,knew)
@@ -963,3 +963,4 @@ C$    trd=omp_get_thread_num()
 # endif
 # undef CHILD
 #endif  /* !CHILD */
+ 
