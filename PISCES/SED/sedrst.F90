@@ -38,8 +38,8 @@ CONTAINS         ! Write model prognostic
                                   ! netCDF file.
 # include "netcdf.inc"
 
-      INTEGER :: ierr, record, lstr, lvar, lenstr   &
-      &  , start(2), count(2), ibuff(4), nf_fwrite, itrc  
+      INTEGER :: ierr, record, lstr, lvar, lenstr   
+     &     , start(2), count(2), ibuff(4), nf_fwrite, itrc  
       INTEGER :: ji, jj, jk, jn
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:,:) :: trcsedtmp, trcsedi
       REAL(wp), DIMENSION(jpoce,jpksed)   :: zdta
@@ -61,8 +61,8 @@ CONTAINS         ! Write model prognostic
 
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       IF (mynode > 0) THEN
-         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,       &
-         &                 1, MPI_COMM_WORLD, status, ierr)
+         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,
+     &       1, MPI_COMM_WORLD, status, ierr)
       ENDIF
 #endif
 !
@@ -124,12 +124,12 @@ CONTAINS         ! Write model prognostic
 !      ! Back to 2D geometry
       DO jn = 1, jpsol
          CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,jn) , iarroce(1:jpoce), &
-         &                       solcp(1:jpoce,1:jpksed,jn ) )
+     &       solcp(1:jpoce,1:jpksed,jn ) )
       END DO
 !
       DO jn = 1, jpwat
          CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,jpsol+jn) , iarroce(1:jpoce), &
-         &                       pwcp(1:jpoce,1:jpksed,jn  )  )
+     &       pwcp(1:jpoce,1:jpksed,jn  )  )
       END DO
 !
       DO itrc = 1, jptrased
@@ -144,7 +144,7 @@ CONTAINS         ! Write model prognostic
 
       DO itrc = 1, jptrased
          ierr = nf_fwrite(trcsedtmp(START_2D_ARRAY,1,itrc), ncidrstsed,   &
-         &                             rstsed(itrc), record, r3dsed)
+     &       rstsed(itrc), record, r3dsed)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) TRIM(sedtrcd(itrc)), record, ierr
           GOTO 99                                         !--> ERROR
@@ -169,19 +169,19 @@ CONTAINS         ! Write model prognostic
       ENDDO
 
       CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,1)  , iarroce(1:jpoce), &
-      &                   zdta(1:jpoce,1:jpksed)  )
+     &     zdta(1:jpoce,1:jpksed)  )
 
       CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,2)  , iarroce(1:jpoce), &
-      &                   co3por(1:jpoce,1:jpksed)  )
+     &     co3por(1:jpoce,1:jpksed)  )
 
       CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,3)  , iarroce(1:jpoce), &
-      &                   db(1:jpoce,1:jpksed)  )
-
+     &     db(1:jpoce,1:jpksed)  )
+      
       CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,4)  , iarroce(1:jpoce), &
-      &                   irrig(1:jpoce,1:jpksed)  )
+     &     irrig(1:jpoce,1:jpksed)  )
 
       CALL unpack_arr( jpoce, trcsedi(PRIV_2D_BIOARRAY,1:jpksed,5)  , iarroce(1:jpoce), &
-      &                   sedligand(1:jpoce,1:jpksed)  )
+     &     sedligand(1:jpoce,1:jpksed)  )
 
       DO itrc = 1, 5
          DO jk = 1, jpksed
@@ -195,7 +195,7 @@ CONTAINS         ! Write model prognostic
 
       DO itrc = 1, 5
          ierr=nf_fwrite(trcsedtmp(START_2D_ARRAY,1,itrc), ncidrstsed,   &
-         &                             rstadd(itrc), record, r3dsed)
+     &       rstadd(itrc), record, r3dsed)
          IF (ierr .NE. nf_noerr) THEN
             WRITE(stdout,1) TRIM(sname(itrc,1)), record, ierr
             GOTO 99                                         !--> ERROR
@@ -206,8 +206,8 @@ CONTAINS         ! Write model prognostic
 
 
   1   FORMAT(/1x, 'SED_RST_WRI ERROR while writing variable ''', A,   &
-       &           ''' into restart file.', /11x, 'Time record:', &
-       &               i6, 3x, 'netCDF error code', i4, 3x, A,i4) 
+     &     ''' into restart file.', /11x, 'Time record:', &
+     &     i6, 3x, 'netCDF error code', i4, 3x, A,i4) 
       GOTO 100 
   99  may_day_flag=3
  100  CONTINUE
@@ -229,13 +229,13 @@ CONTAINS         ! Write model prognostic
 #endif
       IF (ierr == nf_noerr) THEN
          MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')    & 
-         &            'WRT_RST_SED -- wrote ',                          &
-         &            'restart fields into time record =', record, '/',  &
-         &             nrecrst  
+     &       'WRT_RST_SED -- wrote ',                          &
+     &       'restart fields into time record =', record, '/',  &
+     &       nrecrst  
       ELSE
          MPI_master_only  write(stdout,'(/1x,2A/)')     & 
-         &             'WRT_RST_SED ERROR: Cannot ',        &
-         &             'synchronize/close restart netCDF file.'
+     &       'WRT_RST_SED ERROR: Cannot ',        &
+     &       'synchronize/close restart netCDF file.'
          may_day_flag = 3
       ENDIF
 
@@ -253,11 +253,11 @@ CONTAINS         ! Write model prognostic
 
       logical :: create_new_file
       integer :: ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim    &
-      &      , r2dgrd(3),  auxil(2),  checkdims                           &
+     &     , r2dgrd(3),  auxil(2),  checkdims                           &
 #ifdef NC4PAR
-      &      , csize,cmode           &
+     &     , csize,cmode           &
 #endif
-      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
+     &     , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
       CHARACTER(len=20) :: cltra
 
 !
@@ -325,12 +325,12 @@ CONTAINS         ! Write model prognostic
         csize = xi_rho*eta_rho/NNODES
         WRITE(stdout,*)'CREATE RST NC4 PARALLEL FILE'
         ierr  = nf_create_par(cn_sedrst_out(1:lstr),cmode,
-      &          MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
+     &       MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
 
         IF (ierr .NE. nf_noerr) THEN
            WRITE(stdout,'(/3(1x,A)/)') 'ERROR in DEF_RST_SED: Cannot',
-      &              'create restart NetCDF file:', TRIM(cn_sedrst_out)
+     &         'create restart NetCDF file:', TRIM(cn_sedrst_out)
            GOTO 99                                         !--> ERROR
         ENDIF
         IF (nrpfrst == 0) total_rec = 0
@@ -362,30 +362,30 @@ CONTAINS         ! Write model prognostic
 ! Time step number and time record numbers:
 !
         ierr = nf_def_var (ncid, 'time_step', nf_int, 2, auxil,     &
-        &       rstTstep)
+     &       rstTstep)
 #ifdef NC4PAR
         ierr = nf_var_par_access(ncid,rstTstep,nf_collective)
 #endif
         ierr = nf_put_att_text (ncid, rstTstep, 'long_name', 48,    &
-        &       'time step and record numbers from initialization')
+     &       'time step and record numbers from initialization')
 !
 ! Time.
 !
         lvar = lenstr(vname(1,indxTime))
         ierr = nf_def_var (ncid, vname(1,indxTime)(1:lvar),           &
-        &                              NF_DOUBLE, 1, timedim, rstTime)
+     &       NF_DOUBLE, 1, timedim, rstTime)
 #ifdef NC4PAR
         ierr = nf_var_par_access(ncid,rstTime,nf_collective)
 #endif
         lvar = lenstr(vname(2,indxTime))
         ierr = nf_put_att_text (ncid, rstTime, 'long_name', lvar,     &
-        &                                  vname(2,indxTime)(1:lvar))
+     &       vname(2,indxTime)(1:lvar))
         lvar = lenstr(vname(3,indxTime))
         ierr = nf_put_att_text (ncid, rstTime, 'units',     lvar,     &
-        &                                  vname(3,indxTime)(1:lvar))
+     &       vname(3,indxTime)(1:lvar))
         lvar = lenstr (vname(4,indxTime))
         ierr = nf_put_att_text(ncid, rstTime, 'field',     lvar,      &
-        &                                  vname(4,indxTime)(1:lvar))
+     &       vname(4,indxTime)(1:lvar))
 
         CALL nf_add_attribute(ncid, rstTime, indxTime, 5, NF_DOUBLE, ierr)
 !
