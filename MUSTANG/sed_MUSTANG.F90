@@ -3797,7 +3797,7 @@
               E0_sand_loc = E0_sand_Cst
           ELSE IF(E0_sand_option == 1 .AND. rossan.GT.1000_rsh) THEN
             ! E0_sand calculated from the formulea of Van Rijn (1984)
-              E0_sand_loc=0.000005_rsh*rossan*((rossan/1000.0_rsh-1.0_rsh)*9.81*diamsan)**0.5_rsh &
+              E0_sand_loc=0.00033_rsh*rossan*((rossan/1000.0_rsh-1.0_rsh)*9.81*diamsan)**0.5_rsh &
                      *(diamsan*((rossan/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
           ENDIF
           E0_sand_loc = E0_sand_para*E0_sand_loc
@@ -3838,7 +3838,7 @@
               E0_sand_loc = E0_sand_Cst
           ELSE IF(E0_sand_option == 1 .AND. rossan.GT.1000_rsh) THEN
             ! E0_sand calculated from the formulea of Van Rijn (1984)
-              E0_sand_loc=0.000005_rsh*rossan*((rossan/1000.0_rsh-1.0_rsh)*9.81*diamsan)**0.5_rsh &
+              E0_sand_loc=0.00033_rsh*rossan*((rossan/1000.0_rsh-1.0_rsh)*9.81*diamsan)**0.5_rsh &
                      *(diamsan*((rossan/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
           ENDIF
           E0_sand_loc = E0_sand_para*E0_sand_loc
