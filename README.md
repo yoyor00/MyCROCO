@@ -1,53 +1,79 @@
-# Online Analysis Module
-## Spectral and Wavelet analysis 
-### Objective : implement an efficient interface between Croco and the Online Analysis Module.
-**Authors** B. Lemieux-Dudon, F. Auclair and C. Nguyen
+CROCO v1.2
+-----------
+Released date : 18 January 2022
 
-The Online Analysis module enables to perform online Wavelet and spectral analysis targetting specific simulated ocean fields.
-A preliminary version of this interface was set up in Spring/Summer 2020 for the Croco ocean model.
+Previous release : CROCO v1.1 (October 2019)
 
-This preliminary version of the Online Analysis - Croco interface provides appropriate results when applied to the two Test Cases :
-1. A uniform field varyrying as a linear combination of cosine functions, e.g.,
-F(i,j,k,t) = 5 cos( W<sub>S2</sub> t ) + 3 cos( W<sub>S4</sub> t )
-
-[Validation slides](TEST_CASES/IGW_OA/MorletWaveletAnalysis/OnlineAnalysis_Croco_Interface_validation.pdf) ( right-click, 'Save link as...' on the name )
-
-2. The IGW academic test case with a continental slope at its Eastern boundary and with a pseudo-S2 (12h) tidal forcing at its Western boundary.
-
-![IGW Internal Tides - Online Analysis of rho with Morlet S2+S4](TEST_CASES/IGW_OA/MorletWaveletAnalysis/IGW_tidal_forcing_S2/IGW_S2_rho_oa_MorletS2S4_200-240.gif)
-
-<!-- [![IGW Internal Tides](https://img.youtube.com/vi/AB84oYuNDKA/0.jpg)](https://www.youtube.com/watch?v=AB84oYuNDKA) -->
-<!-- [![IGW Internal Tides](https://img.youtube.com/vi/tsKXy_j93yA/0.jpg)](https://www.youtube.com/watch?v=tsKXy_j93yA) -->
-<!--
-[![IGW Internal Tides - Full Online Analysis of rho with Morlet S2+S4 16 days (youtube video) ]()](https://www.youtube.com/watch?v=tsKXy_j93yA)
--->
-- IGW Internal Tides - Full Online Analysis of rho with Morlet S2+S4 16 days (youtube video) : https://www.youtube.com/watch?v=tsKXy_j93yA
-- Plots were done installing and modifying the pyroms tools for Croco : https://github.com/ESMG/pyroms.
-
-**Current status**
-
-1. Part of the Online Analysis are now operational within the Croco model but some options still need to be tested.
-So far :
-- only the online Wavelet transform with the Morlet atom was fully tested. 
-- The Croco code and Online Analysis module were compiled with the intel compilers (18.0.2) only.
-- The IGW test case ran over 16 days performing Morlet S2 and S4 Online Analysis every 1h or every 600s using 8 MPI subdomains.
-- The simulation fields and the Online Analysed fields have been output using XIOS2 with a modified version of send_xios_diags.F routine and properly parametrized xml files. 
-
-2. The test case is now working (see bug corrected in croco_oa and comments related to the stand-alone Online Analysis code where rhp_t argument is only used for tracking isopycnal movement).
+Reminders:
+==========
+CROCO sources and CROCO_TOOLS (the follow-on of ROMS_TOOLS) are now distributed separately (for croco_tools releases, see associated tab at  [https://www.croco-ocean.org/download/croco-project](https://www.croco-ocean.org/download/croco-project) ). 
+**ROMS_AGRIF  is not maintained anymore**  and we strongly encourage ROMS_AGRIF users to switch  to CROCO. CROCO version available directly from the git repository is an **unstable** development  version. **Standard users should use the stable one downloaded from the web site**. 
 
 
-**The preliminary version of the Online Analysis - Croco interface must be improved to solve several issues.**
+# New in CROCO v1.2
 
-The interface is currently based :
-1. on calls to the subroutine croco_oa within the main.F and step.F Croco subroutines (calls are performed at the initialization step - 3D now - and at subsequent 3D time steps). The croco_oa.F90 routine includes several Croco header files (grid.h, ocean2d/3d.h,...) so that the horizontal domain and vertical grid variables and parameters (lon-lat geographical or curvilinear coordinates, ocean thickness, sub-domain indices,...) can be passed as arguments to the Stand-alone Online Analysis subroutines init_oa and main_oa.
-2. Within the Stand Alone module, the calculation of the correlation product between the atom function (e.g., Fourier, Wavelet,...) and the requested ocean field (see the user namelist and requested variable-configuration-analysis) is performed thanks to the var_oa external real function which returns the value of the Croco ocean field at a given location (possibly at each time step). Indeed, the var_oa external real function also includes several Croco header files (grid.h, ocean2d/3d.h,...) since most of the Croco ocean fields are not passed as arguments to the Stand-alone OA code.
-3. Finally, the Online Analysis data is output using the XIOS2 facility (few changes were implemented in the send send_xios_diags.F routine with the use of specific Online Analysis modules).
+## Environment
 
-The current interface involve the duplication of the Croco arrays in memory (see the Stand-alone algo. with Croco arrays passed as arguments to init_oa and main_oa with reduced dimensions).
+The whole structure of the repository has been updated, please read carefully. It comes with a new set of scripts to help to launch production simulations. See <https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.02.contents.html> for details.
 
-**TODO**
-- Improve the current Croco - Online Analysis Interface to solve the memory issue and to conform with some Croco pre-requisite (double OpenMPI - OpenMP paralelization, shared header files, the way to handle precision with source pre-processing ) :
-  -- the objective is to replace croco_oa by a "loop on tile" construct specific to Croco with dedicated modules for the Croco to OA interface and OA to Croco-XIOS2 interface.
-- A check regarding the treatment of the precision of complex numbers (intel/gnu compilation flag -r8, croco mpc.F preproc applied to F90 sources, F90 fixed format sources or not).
-- Tests must be conducted with GNU compilers (at this stage only only Intel compilers were tested).
-- Tests must be conducted with mask options,...etc.
+- create_config.bash: script to create a configuration environment. 2 typical modes are proposed: all-dev for the usual ("all-in") architecture for forced CROCO runs and/or dev, and all-prod/all-prod-cpl for production run architecture and coupling with external models
+- SCRIPTS/ directory: where scripts for running croco in production mode are provided
+- croco input and output files for interannual simulations can now be named systematically with 2 digits for month: croco_..._Y????M??.nc instead of croco_..._Y????M?.nc (the old option is however still available)
+- croco/XIOS/process_xios_xml.sh : stand-alone cpp-process of the XIOS xml files. It is now separated from the jobcomp script. It is deployed in _Run/_ in all-dev setup, and in _CONFIGS/PREPRO/XIOS/_ in all-prod setup
+
+## Air-sea interactions
+
+_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.forcing.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.forcing.html)
+
+- 1D Atmospheric Boundary Layer model (ABL)
+- Updated Bulks
+- Updated current feedback
+
+## Coupling
+
+_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.coupling.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.coupling.html) and [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.html)
+
+- SCRIPTS/SCRIPTS_COUPLING: new coupling toolbox for running CROCO interannual simulations coupled with atmosphere and wave models. For more details see <https://croco-ocean.gitlabpages.inria.fr/croco_doc/tutos/tutos.16.coupling.workflow.html>
+- Now manage nesting in the ocean and in the atmosphere
+- Additional wave parameters can now be exchanged
+
+## Sediment
+
+_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.modules.sediment.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.modules.sediment.html)
+
+- MUSTANG sediment model : MUSTANG is a sediment model developed at Ifremer and proposed in addition to the existing one from USGS
+- Bedload : improvement of robustness and new parametrization available
+- Cohesive bed : introduction of bed stratigraphy with cohesive or mixed cohesive/non-cohesive case
+
+## Numerics
+
+_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.numerics.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.numerics.html)
+
+- quasi-hydro CROCO_QH : a quasi-hydrostatic option (non-traditional Coriolis terms)
+- MORPHODYN correction : improvement of robustness for morphodynamics
+- NO_TEMPERATURE and NO_TRACERS option : use only salinity as active tracer, run in fully homogeneous mode
+
+## New Configurations
+
+_full description :_ [_https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.test_cases.html_](https://croco-ocean.gitlabpages.inria.fr/croco_doc/model/model.test_cases.html)
+
+- 3 new test cases for sediment processes (can be used with USGS or MUSTANG sediment model)
+  * TIDAL_FLAT : a 2DV tidal flat with sediment mixture
+  * SED_TOY : a single column case
+  * DUNE : migration of a dune with different sand classes
+- 1 new realistic configuration COASTAL : a coastal configuration with a finer resolution than BENGUELA and corresponding/different settings (rivers, GLS mixing ...)
+
+## Miscellaneous
+
+- Multiple passive tracers : the number of passive tracers is now a parameter up to 100
+- XIOS : former XIOS2 option is now the only option
+- Restart
+- NC4 for all diagnostics : all diagnostics are compatible with NetCDF4 parallel writing
+- NO_LAND and PARALLEL_FILES compatibility
+- EXACT_RESTART : bit to bit restartability
+
+## Detail list of CPP keys
+
+Suppressed keys : ''ANA_BPFLUX', 'ANA_SPFLUX', 'BEDLOAD_SOULSBY', 'BULK_EP', 'BULK_FAIRALL', 'BULK_SMFLUX', 'BULK_SM_UPDATE', 'CFB_STRESS2', 'CFB_WIND', 'MLCONVEC', 'PLUME', 'SMFLUX_CFB', 'STFLUX_CFB', 'WAVE_BODY_STREAMING', 'XIOS2'
+
+New keys (extented version...) : 'ANA_DUNE', 'ANA_MORPHODYN', 'BEDLOAD_MARIEU', 'BEDLOAD_UP1', 'BEDLOAD_UP5', 'BEDLOAD_VANDERA', 'BEDLOAD_WENO5', 'BEDLOAD_WULIN', 'BED_ARMOR', 'BED_HIDEXP', **~~'BHFLUX'~~,** 'BULK_ECUMEV0', 'BULK_ECUMEV6', 'BULK_GUSTINESS', 'BULK_WASP', **~~'~~** 'CFB_WIND_TRA', 'COASTAL', 'COHESIVE_BED', 'CROCO_QH', 'DIAGNOSTICS_BARO', 'DIAGNOSTICS_TSVAR', 'DO_NOT_OVERWRITE', 'DUNE', 'DUNE3D', 'ECUMEv0', 'ECUMEv6', 'EXACT_RESTART', 'FLOC_BBL_DISS', 'FLOC_TURB_DISS', 'GUSTINESS', 'HOURLY_VELOCITIES', 'ISOLITON', 'LMD_LANGMUIR', 'M3FAST_REINIT', 'MIXED_BED', 'MORPHODYN_MUSTANG_byHYDRO', 'MPI_TIME', 'MUSTANG', 'MUSTANG_CORFLUX', 'NO_TEMPERATURE', 'NO_TRACER', 'RVTK_DEBUG', 'RVTK_DEBUG_ADVANCED', 'RVTK_DEBUG_PERFRST', 'SANDBAR_OFFSHORE', 'SANDBAR_ONSHORE', 'SED_DEFLOC', 'SED_FLOCS', 'SED_TAU_CD_CONST', 'SED_TOY', 'SED_TOY_CONSOLID', 'SED_TOY_FLOC', 'SED_TOY_RESUSP', 'SED_TOY_ROUSE', 'SFLUX_CFB', 'SLOPE_KIRWAN', 'START_DATE', 'STOKES_DRIFT', 'SUBSTANCE', 'TAU_CRIT_WULIN', 'TEMPERATURE', 'TIDAL_FLAT', 'TRACERS', 'VILAINE', 'WASP', 'WAVE_BREAK_BJ78', 'ZETA_DRY_IO', 'key_CROCO', 'key_MUSTANG_V2', 'key_MUSTANG_bedload', 'key_MUSTANG_specif_outputs', 'key_noTSdiss_insed', 'key_nofluxwat_IWS', 'key_sand2D', 'key_tenfon_upwind'
