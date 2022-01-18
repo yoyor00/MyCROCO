@@ -20,12 +20,20 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
                 domoce="d0$(( ${ocedom} + 1 ))"
 	        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
             done
-            
-            echo 'create restart file for oasis from calm conditions for variables:'${varlist} 
-            if [ ${domatm} == "d01" ]; then
-                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm.nc wrf "${varlist}"
-            else 
-                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm${domatm}.nc wrf "${varlist}"
+            if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${atm_rst_file} ]]; then
+                echo "create atmosphere restart file for oasis from preexisting file ${atm_rst_file}"        
+                if [ ${domatm} == "d01" ]; then
+                    . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${ATM_FILES_DIR}/${atm_rst_file}" atm.nc wrf "WRF_${domatm}_EXT_${domoce}"
+                else
+                    . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${ATM_FILES_DIR}/${atm_rst_file}" atm${domatm}.nc wrf "WRF_${domatm}_EXT_${domoce}"
+                fi
+            else
+                echo 'create restart file for oasis from calm conditions for variables:'${varlist} 
+                if [ ${domatm} == "d01" ]; then
+                    . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm.nc wrf "${varlist}"
+                else 
+                    . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh wrfinput_${domatm} atm${domatm}.nc wrf "${varlist}"
+                fi
             fi
         done
     fi
@@ -40,16 +48,26 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             fi
 	    [[ ${AGRIFZ} > 0 ]] && { mm="_${nn}" ;}|| { mm="" ;}
             varlist="${varlist}CROCO_SST${mm} CROCO_SSH${mm} CROCO_NOCE${mm} CROCO_EOCE${mm} "
-
-            echo 'create restart file for oasis from calm conditions for variables:'${varlist}
-            . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh croco_grd.nc${agrif_ext} oce.nc${agrif_ext} croco "${varlist}"
+            
+            if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${oce_rst_file} ]]; then
+                echo "create ocean restart file for oasis from preexisting file ${oce_rst_file}${agrif_ext}"
+                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${OCE_FILES_DIR}/${oce_rst_file}${agrif_ext}" oce.nc${agrif_ext} croco ${mm}
+            else
+                echo 'create restart file for oasis from calm conditions for variables:'${varlist}
+                . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh croco_grd.nc${agrif_ext} oce.nc${agrif_ext} croco "${varlist}"
+            fi            
         done
     fi
 #
     if [ ${USE_WAV} -eq 1 ] ; then
         varlist='WW3_T0M1 WW3__OHS WW3__DIR WW3_ACHA WW3_TAWX WW3_TAWY WW3_TWOX WW3_TWOY'
-        echo 'create restart file for oasis from calm conditions for variables:'${varlist}
-        . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${wavfile} wav.nc ww3 "${varlist}"
+        if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${wav_rst_file} ]]; then
+            echo "create wave restart file for oasis from preexisting file ${wav_rst_file}"
+            . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${WAV_FILES_DIR}/${wav_rst_file}" wav.nc ww3
+        else
+            echo 'create restart file for oasis from calm conditions for variables:'${varlist}
+            . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${wavfile} wav.nc ww3 "${varlist}"
+        fi
     fi
 #
     if [ ${USE_TOY} -ge 1 ] ; then

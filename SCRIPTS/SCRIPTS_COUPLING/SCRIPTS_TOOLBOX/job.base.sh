@@ -96,7 +96,6 @@ cp ${JOBDIR_ROOT}/${jobname} ./
         [ ${USE_TOY} -ge 1 ] && printf "\n ************* get TOY CONFIGURATION files *****************\n\n"
         [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_getfile.sh ; }
 
-
 # make the namelists from the namelist.base files
         printf "\n ************* make namelist files from namelist base files *****************\n\n"
 	[ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_nam.sh ; }
