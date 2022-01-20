@@ -40,10 +40,13 @@ fi
 #                                            Forcing fields (interannual case)
 #-------------------------------------------------------------------------------
 filelist='wrflowinp_d01'
+[[ ${switch_fdda} == 1 && "$( echo ${nudgedom} | cut -d ' ' -f 1)" == 1 ]] && { filelist="$filelist wrffdda_d01" ;}
  if [ $NB_dom -ge 2 ] ; then
   filelist="$filelist wrflowinp_d02"
+  [[ "$( echo ${nudgedom} | wc -w )" -ge 2 && "$( echo ${nudgedom} | cut -d ' ' -f 2)" == 1 ]] && { filelist="$filelist wrffdda_d02" ;}
   if [ $NB_dom -eq 3 ] ; then
    filelist="$filelist wrflowinp_d03"
+   [[ "$( echo ${nudgedom} | wc -w )" -ge 3 && "$( echo ${nudgedom} | cut -d ' ' -f 3)" == 1 ]] && { filelist="$filelist wrffdda_d03" ;}
   fi
  fi
 

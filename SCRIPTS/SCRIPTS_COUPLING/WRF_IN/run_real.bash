@@ -77,10 +77,10 @@ rst_interval_h=24
 # SWITCH fdda # 1 : grid nudging ; 2 : spectral nudging ; 0 : no nudging
 switch_fdda=0
 #
-nudge=$switch_fdda
-nudge_coef=0.0003
-nudge_interval_m=360
-nudge_end_h=144
+nudgedom="1"  # "1" is for the parent. For Parent+ nest "1 1", etc...
+nudge_coef="0.0003" # Same than for nudgedom. Also need to have the same dimension
+nudge_interval_m="360"
+nudge_end_h="144"
 
 #
 #
@@ -262,10 +262,42 @@ sed -e "s/<interval_s>/${interval_s}/g"         \
     -e "s/<i_str_d02>/${i_str_d02}/g"     -e "s/<i_str_d03>/${i_str_d03}/g"                                \
     -e "s/<j_str_d02>/${j_str_d02}/g"     -e "s/<j_str_d03>/${j_str_d03}/g"                                \
     -e "s/<coef_d02>/${refine_d02}/g"     -e "s/<coef_d03>/${refine_d03}/g"                                \
-    -e "s/<nudge_d01>/${nudge}/g"         -e "s/<nudge_coef>/${nudge_coef}/g"                              \
-    -e "s/<nudge_end_h>/${nudge_end_h}/g" -e "s/<nudge_int_m>/${nudge_interval_m}/g"                       \
     -e "s/<isftcflx>/${isftcflx}/g" \
     namelist.input.base.complete > namelist.input.prep.${domain_name}
+
+# Handle fdda for different domains
+if [[ ${switch_fdda} == 1 ]]; then
+    nbdom=$( echo "${nudgedom}" | wc -w)
+    [[ ${nbdom} >  $( echo "${nudge_coef}" | wc -w) ]] && { echo "Missing values in nudge_coef for nest, we stop..."; exit ;}
+    [[ ${nbdom} >  $( echo "${nudge_interval_m}" | wc -w) ]] && { echo "Missing values in nudge_interval_m for nest, we stop..."; exit ;}
+    [[ ${nbdom} >  $( echo "${nudge_end_h}" | wc -w) ]] && { echo "Missing values in nudge_end_h for nest, we stop..."; exit ;}
+
+    for lvl in `seq 1 ${nbdom}`; do
+        dom=$(printf "d%02d" ${lvl})
+        sed -e "s/<nudge_${dom}>/$( echo "${nudgedom}" | cut -d " " -f $(( ${lvl})) )/g"                 \
+            -e "s/<nudge_coef_${dom}>/$( echo "${nudge_coef}" | cut -d " " -f $(( ${lvl})) )/g"       \
+            -e "s/<nudge_end_h_${dom}>/$( echo "${nudge_end_h}" | cut -d " " -f $(( ${lvl})) )/g"      \
+            -e "s/<nudge_int_m_${dom}>/$( echo "${nudge_interval_m}" | cut -d " " -f $(( ${lvl})) )/g" \
+            namelist.input.prep.${domain_name} > namelist.tmp
+            mv namelist.tmp namelist.input.prep.${domain_name}
+   done
+
+    sed -e "s/<nudge_d.*>/0/g" \
+        -e "s/<nudge_coef_d.*>/0/g" \
+        -e "s/<nudge_end_h_d.*>/0/g" \
+        -e "s/<nudge_int_m_d.*>/0/g" \
+        namelist.input.prep.${domain_name} > namelist.tmp
+    mv namelist.tmp namelist.input.prep.${domain_name}
+    chmod 755 namelist.input.prep.${domain_name}
+else
+    sed -e "s/<nudge_d.*>/0/g" \
+        -e "s/<nudge_coef_d.*>/0/g" \
+        -e "s/<nudge_end_h_d.*>/0/g" \
+        -e "s/<nudge_int_m_d.*>/0/g" \
+        namelist.input.prep.${domain_name} > namelist.tmp
+    mv namelist.tmp namelist.input.prep.${domain_name}
+    chmod 755 namelist.input.prep.${domain_name}
+fi  
  
     echo " "
     echo "   Then create namelist.input adding run, time and output settings     "

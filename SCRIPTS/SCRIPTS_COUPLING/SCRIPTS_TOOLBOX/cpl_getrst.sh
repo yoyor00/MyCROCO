@@ -66,6 +66,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${WAV_FILES_DIR}/${wav_rst_file}" wav.nc ww3
         else
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}
+            [[ ! -f ${wavfile} ]] && {echo "${wavfile} is not there to create oasis restart file, we stop..."; exit ;}
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${wavfile} wav.nc ww3 "${varlist}"
         fi
     fi

@@ -21,10 +21,11 @@ export auxinput4_interval=360 # interval ( in min ) of bottom input
 export nbmetsoil=4
 export nbmetlevel=38
 # fdda options
-export switch_fdda=0
-export nudge_coef=0.0003
-export nudge_interval_m=360
-export nudge_end_h=144
+export switch_fdda=0 # To activate fdda
+export nudgedom="1" # Select on which domain you want to activate fdda. If parent + nest "1 1"
+export nudge_coef="0.0003" # nudge coef. Need to be the same size than nudge
+export nudge_interval_m="360"
+export nudge_end_h="144"
 # physics
 export isftcflx=0 # Cd formulation for tropical storm application (default 0, wave cpl =5)
 

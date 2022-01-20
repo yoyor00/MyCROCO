@@ -31,8 +31,6 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/<max_domains>/${NB_dom}/g" \
     -e "s/<interval_s>/${interval_seconds}/g"  -e "s/<sst_int_m>/${auxinput4_interval}/g" \
     -e "s/<nbmetlev>/${nbmetlevel}/g"     -e "s/<nbmetsoil>/${nbmetsoil}/g"  \
-    -e "s/<nudge_d01>/${switch_fdda}/g"             -e "s/<nudge_coef>/${nudge_coef}/g" \
-    -e "s/<nudge_end_h>/${nudge_end_h}/g" -e "s/<nudge_int_m>/${nudge_interval_m}/g"\
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
 for domnb in `seq 1 $NB_dom` ; do
@@ -68,13 +66,46 @@ for domnb in `seq 1 $NB_dom` ; do
         mv namelist.input.tmp namelist.input
     chmod 755 namelist.input
 done
+#
+if [[ ${switch_fdda} == 1 ]]; then
+    nbdom=$( echo "${nudgedom}" | wc -w)
+    [[ ${nbdom} >  $( echo "${nudge_coef}" | wc -w) ]] && { echo "Missing values in nudge_coef for nest, we stop..."; exit ;}
+    [[ ${nbdom} >  $( echo "${nudge_interval_m}" | wc -w) ]] && { echo "Missing values in nudge_interval_m for nest, we stop..."; exit ;}
+    [[ ${nbdom} >  $( echo "${nudge_end_h}" | wc -w) ]] && { echo "Missing values in nudge_end_h for nest, we stop..."; exit ;}
 
+    for lvl in `seq 1 ${nbdom}`; do
+        dom=$(printf "d%02d" ${lvl})
+        sed -e "s/<nudge_${dom}>/$( echo "${nudgedom}" | cut -d " " -f $(( ${lvl})) )/g"                 \
+            -e "s/<nudge_coef_${dom}>/$( echo "${nudge_coef}" | cut -d " " -f $(( ${lvl})) )/g"       \
+            -e "s/<nudge_end_h_${dom}>/$( echo "${nudge_end_h}" | cut -d " " -f $(( ${lvl})) )/g"      \
+            -e "s/<nudge_int_m_${dom}>/$( echo "${nudge_interval_m}" | cut -d " " -f $(( ${lvl})) )/g" \
+            namelist.input > namelist.tmp
+            mv namelist.tmp namelist.input
+   done
+
+    sed -e "s/<nudge_d.*>/0/g" \
+        -e "s/<nudge_coef_d.*>/0/g" \
+        -e "s/<nudge_end_h_d.*>/0/g" \
+        -e "s/<nudge_int_m_d.*>/0/g" \
+        namelist.input > namelist.tmp
+    mv namelist.tmp namelist.input
+    chmod 755 namelist.input
+else
+    sed -e "s/<nudge_d.*>/0/g" \
+        -e "s/<nudge_coef_d.*>/0/g" \
+        -e "s/<nudge_end_h_d.*>/0/g" \
+        -e "s/<nudge_int_m_d.*>/0/g" \
+        namelist.input.prep> namelist.tmp
+    mv namelist.tmp namelist.input
+    chmod 755 namelist.input
+fi
+#
 if [[ ${nestfeedback} == "FALSE" ]]; then
     sed -e "s/feedback                            = 1,/feedback                            = 0,/g" \
     ./namelist.input > ./namelist.input.tmp
     mv namelist.input.tmp namelist.input
 fi
-   
+#   
 maxatmdom=$( echo "$wrfcpldom" | wc -w )
 if [[ $maxatmdom == 1 && $AGRIFZ > 1 ]];then 
     numextmod=$(( $AGRIFZ + 1 ))
@@ -84,7 +115,7 @@ fi
 sed -e "s/num_ext_model_couple_dom            = 1,/num_ext_model_couple_dom            = $numextmod,/g" \
 ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
-
+#
 sed -e "s/<isftcflx>/${isftcflx}/g" \
     ./namelist.input > ./namelist.input.tmp
 mv namelist.input.tmp namelist.input
@@ -92,7 +123,7 @@ mv namelist.input.tmp namelist.input
 if [ $USE_WAV -eq 1 ] || [ $USE_TOYWAV -eq 1 ]; then
     [[ ${isftcflx} -ne 5 ]] && { echo "ERROR... Atm parameter (in namelist.input) isftcflx need to be 5 when coupling with WAV..." ; exit ; }
 fi
-
+#
 sed -e "s/<xdim_d.*>/1/g"  -e "s/<ydim_d.*>/1/g"\
     -e "s/<dx_d.*>/1/g"  -e "s/<dy_d.*>/1/g" \
     -e "s/<i_str_d.*>/1/g"  -e "s/<j_str_d.*>/1/g" \
