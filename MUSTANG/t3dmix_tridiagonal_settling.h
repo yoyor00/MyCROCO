@@ -123,7 +123,7 @@
           do i=istr,iend
 
             flx_w2s_sum_CROCO(i,j,itrc)=0.
-            nbsubstep=NINT(NBSUBSTEP(i,0))
+            nbsubstep=CEILING(NBSUBSTEP(i,0))
 
             do isubstep=1,nbsubstep  ! <== SUB TIMESTEP
 

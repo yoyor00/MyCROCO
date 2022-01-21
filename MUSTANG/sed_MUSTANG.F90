@@ -50,11 +50,10 @@
 
 
    !&E==========================================================================
-   !&E                   ***  MODULE  sed_MUSTANG (option mixsed) ***
+   !&E                   ***  MODULE  sed_MUSTANG  ***
    !&E
    !&E
    !&E ** Purpose : concerns subroutines related to sediment dynamics 
-   !&E              [ONLY option key_mixsed in MUSTANG (implicitly)]
    !&E 
    !&E ** Description :
    !&E     subroutine MUSTANG_update      ! updates forcings and remoddeling sediment  
@@ -428,10 +427,7 @@
     CALL sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref,BATHY_H0,WATER_ELEVATION)
 #else
             !! To Program
-!    CALL sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref)
-#ifndef BUGJUMP
     CALL sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref)
-#endif
 #endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1468,12 +1464,8 @@
      DO l = 1,nv_out
          unitmudbinv=1._rsh/unit_modif_mudbio_N2dw(irk_fil(l))
          var3D_cvsed(:,:,:,l)=0.0_rsh
-#ifndef BUGJUMP
          CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,l,unitmudbinv,mask_h0,  &
                                         cv_sed(l,:,:,:),var3D_cvsed(:,:,:,l))
-#else
-         var3D_cvsed(:,:,:,l)=cv_sed(l,:,:,:)
-#endif
      ENDDO
 
 #ifdef key_BLOOM_insed
@@ -1507,12 +1499,8 @@
      DO l = 1,nv_out3Dk_specif
          unitmudbinv=1._rsh
          var3D_specifout(:,:,:,l)=0.0_rsh
-#ifndef BUGJUMP
          CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,0,unitmudbinv,mask_h0,  &
                                         varspecif3Dk_save(l,:,:,:),var3D_specifout(:,:,:,l))
-#else
-         var3D_specifout(:,:,:,l)=varspecif3Dk_save(l,:,:,:)
-#endif
      ENDDO
 #endif
 
@@ -10683,8 +10671,7 @@ END SUBROUTINE MUSTANGV2_eval_bedload
  !!==============================================================================
 #endif
 
- 
-#endif
+#endif  !end if define MUSTANG
 
 END MODULE sed_MUSTANG
 
