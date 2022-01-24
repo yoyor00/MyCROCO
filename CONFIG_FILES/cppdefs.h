@@ -587,6 +587,12 @@
 # define OBC_M2CHARACT
 # define OBC_M3ORLANSKI
 # define OBC_TORLANSKI
+# undef NETCDF_BRY_SUBSTANCE
+# define OBC_SUBSTANCE_NEUMANN
+
+                    /* Exact restart */
+# undef EXACT_RESTART
+
                       /* Input/Output */
 # undef  AVERAGES
 # undef  AVERAGES_K
