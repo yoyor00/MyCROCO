@@ -400,7 +400,7 @@
 ! Tracer variables.
 !
 # if defined TRACERS
-        do itrc=1,NT
+        do itrc=1,NTot
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
@@ -517,6 +517,31 @@
 
           call nf_add_attribute(ncid, rstGls, indxGls, 5,
      &         NF_DOUBLE,ierr)
+!
+! Vertical length scale.
+!
+          lvar=lenstr(vname(1,indxLsc))
+          ierr=nf_def_var (ncid, vname(1,indxLsc)(1:lvar),
+     &         NF_DOUBLE, 4, w3dgrd, rstLsc)
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstLsc,nf_collective)
+#  endif
+          lvar=lenstr(vname(2,indxLsc))
+          ierr=nf_put_att_text (ncid, rstLsc, 'long_name',
+     &                     lvar,   vname(2,indxLsc)(1:lvar))
+
+          lvar=lenstr(vname(3,indxLsc))
+          ierr=nf_put_att_text (ncid, rstLsc, 'units', lvar,
+     &         vname(3,indxLsc)(1:lvar))
+
+          lvar=lenstr(vname(4,indxLsc))
+          ierr=nf_put_att_text (ncid, rstLsc, 'field', lvar,
+     &         vname(4,indxLsc)(1:lvar))
+
+          call nf_add_attribute(ncid, rstLsc, indxLsc, 5,
+     &         NF_DOUBLE,ierr)
+
+
 
 !
 ! Vertical viscosity coefficient.
