@@ -23,6 +23,9 @@
       real cff
       integer  lstr,lvar,lenstr, ierr, ierr_all, itrc
       integer  nf_read_bry_EW, nf_read_bry_NS 
+#  if defined NETCDF_BRY_SUBSTANCE
+      character*60 vname1
+#  endif
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF
@@ -82,6 +85,18 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_west'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=isalt+1,NT
+             write(vname1,*) trim(vname(1,indxV+itrc)),'_west'
+             lvar=lenstr(vname1)
+             ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_west_id(itrc))
+             if (ierr.ne.nf_noerr) then
+                 write(stdout,1) vname1(1:lvar)
+             endif
+             ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -120,6 +135,18 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_east'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=isalt+1,NT
+             write(vname1,*) trim(vname(1,indxV+itrc)),'_east'
+             lvar=lenstr(vname1)
+             ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_east_id(itrc))
+             if (ierr.ne.nf_noerr) then
+                 write(stdout,1) vname1(1:lvar)
+             endif
+             ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -158,6 +185,18 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_south'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=isalt+1,NT
+             write(vname1,*) trim(vname(1,indxV+itrc)),'_south'
+             lvar=lenstr(vname1)
+             ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_south_id(itrc))
+             if (ierr.ne.nf_noerr) then
+                 write(stdout,1) vname1(1:lvar)
+             endif
+             ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -196,6 +235,18 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_north'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=isalt+1,NT
+             write(vname1,*) trim(vname(1,indxV+itrc)),'_north'
+             lvar=lenstr(vname1)
+             ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_north_id(itrc))
+             if (ierr.ne.nf_noerr) then
+                 write(stdout,1) vname1(1:lvar)
+             endif
+             ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -263,6 +314,16 @@
               if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_west'
               ierr_all=ierr_all+ierr
             enddo
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=ntrc_salt+1,NT 
+             ierr=nf_read_bry_EW (tbry_west_dt(START_1D_ARRAYETA,1
+     &            ,itbry,itrc),bry_id,tbry_west_id(itrc),  bry_rec,
+     &            r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_west'
+              ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -303,6 +364,17 @@
               if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_east'
               ierr_all=ierr_all+ierr
             enddo
+
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=ntrc_salt+1,NT 
+             ierr=nf_read_bry_EW (tbry_east_dt(START_1D_ARRAYETA,1
+     &            ,itbry,itrc),bry_id,tbry_east_id(itrc),  bry_rec,
+     &            r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_east'
+              ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -344,6 +416,17 @@
               if (ierr.ne.nf_noerr) write(stdout,2) 'trc_south'
               ierr_all=ierr_all+ierr
             enddo
+
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=ntrc_salt+1,NT 
+             ierr=nf_read_bry_NS (tbry_south_dt(START_1D_ARRAYXI,1
+     &            ,itbry,itrc),bry_id,tbry_south_id(itrc),  bry_rec,
+     &            r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_south'
+              ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -384,6 +467,17 @@
               if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_north'
               ierr_all=ierr_all+ierr
             enddo
+
+#    ifdef NETCDF_BRY_SUBSTANCE 
+          do itrc=ntrc_salt+1,NT 
+             ierr=nf_read_bry_NS (tbry_north_dt(START_1D_ARRAYXI,1
+     &            ,itbry,itrc),bry_id,tbry_north_id(itrc),  bry_rec,
+     &            r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_north'
+              ierr_all=ierr_all+ierr
+          enddo
+#    endif
+
 #   endif
 #  endif
 # endif
@@ -500,6 +594,18 @@
               enddo
             enddo
           enddo
+#    ifdef NETCDF_BRY_SUBSTANCE
+          do itrc=1+ntrc_salt,NT
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,itrc)=cff1*tbry_west_dt(j,k,it1,itrc)
+     &                             +cff2*tbry_west_dt(j,k,it2,itrc)
+              enddo
+            enddo
+          enddo
+
+#    endif
+
 #   endif
 #  endif
         endif
@@ -547,6 +653,18 @@
               enddo
             enddo
           enddo
+#    ifdef NETCDF_BRY_SUBSTANCE
+          do itrc=1+ntrc_salt,NT
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_east(j,k,itrc)=cff1*tbry_east_dt(j,k,it1,itrc)
+     &                             +cff2*tbry_east_dt(j,k,it2,itrc)
+              enddo
+            enddo
+          enddo
+
+#    endif
+
 #   endif
 #  endif
         endif
@@ -594,6 +712,17 @@
               enddo
             enddo
           enddo
+#    ifdef NETCDF_BRY_SUBSTANCE
+          do itrc=1+ntrc_salt,NT
+            do k=1,N
+              do i=IstrR,IendR
+                tbry_south(i,k,itrc)=cff1*tbry_south_dt(i,k,it1,itrc)
+     &                             +cff2*tbry_south_dt(i,k,it2,itrc)
+              enddo
+            enddo
+          enddo
+#    endif
+
 #   endif
 #  endif
         endif
@@ -641,6 +770,17 @@
               enddo
             enddo
           enddo
+#    ifdef NETCDF_BRY_SUBSTANCE
+          do itrc=1+ntrc_salt,NT
+            do k=1,N
+              do i=IstrR,IendR
+                tbry_north(i,k,itrc)=cff1*tbry_north_dt(i,k,it1,itrc)
+     &                             +cff2*tbry_north_dt(i,k,it2,itrc)
+              enddo
+            enddo
+          enddo
+#    endif
+
 #   endif
 #  endif
         endif
