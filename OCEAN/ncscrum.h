@@ -1008,7 +1008,7 @@
 #  if defined SALINITY
       integer rstAks
 #  endif
-      integer rstTke,rstGls
+      integer rstTke,rstGls,rstLsc
 # endif
 # ifdef M3FAST
 #  if defined LMD_MIXING || defined GLS_MIXING
@@ -1527,7 +1527,7 @@
 #  if defined SALINITY
      &      , rstAks
 #  endif
-     &      , rstTke,rstGls
+     &      , rstTke,rstGls,rstLsc
 # endif
 # ifdef M3FAST
 #  if defined GLS_MIXING || defined LMD_MIXING

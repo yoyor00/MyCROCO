@@ -36,7 +36,8 @@
      &        varid,    trecord,         irec,    nvatts,   latt, 
      &                  ntime,           i,ierr,ierr0,nvdims,ldim,
      &                                   size,    vdims(5), lenstr 
-      character*16 varname, dimname, attname
+      character*16 attname
+      character*64 varname,dimname
 
 #include "param.h"
 #include "scalars.h"

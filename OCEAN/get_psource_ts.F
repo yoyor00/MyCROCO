@@ -28,7 +28,7 @@
      &     itrc
       integer s(2),c(2)
 # if defined SUBSTANCE
-      character*20 nametrc
+      character*60 nametrc
       character*60 vname1
 # endif
 !     #define CR
