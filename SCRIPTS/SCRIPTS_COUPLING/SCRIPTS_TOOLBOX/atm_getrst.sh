@@ -22,11 +22,12 @@ then
   if [[ ${onlinecplmask} == "TRUE" ]]; then
       echo "EDITING CPLMASK ONLINE"  
       for dom in $wrfcpldom ; do
+          LU_IND=$( echo "$( ncdump -h ${file} )" | grep "ISWATER =" | cut -d "=" -f 2 | cut -d ";" -f 1)
           if [[ ${dom} == "d01" ]]; then
               echo "set CPLMASK to 1 in coupled domain $dom"
-              echo "ncap2 -O -s \"CPLMASK(:,0,:,:)= LU_INDEX == 17\" ./wrfinput_$dom ./wrfinput_$dom"
+              echo "ncap2 -O -s \"CPLMASK(:,0,:,:)= LU_INDEX == ${LU_IND}\" ./wrfinput_$dom ./wrfinput_$dom"
               module load $ncomod
-              ncap2 -O -s "CPLMASK(:,0,:,:)= LU_INDEX == 17" ./wrfinput_$dom ./wrfinput_$dom
+              ncap2 -O -s "CPLMASK(:,0,:,:)= LU_INDEX == ${LU_IND}" ./wrfinput_$dom ./wrfinput_$dom
               if [[ $(echo ${wrfcpldom} | wc -w) == 1 && $AGRIFZ > 0 ]]; then
                   ncpdq -O -d num_ext_model_couple_dom_stag,0 -v CPLMASK,LU_INDEX -a num_ext_model_couple_dom_stag,Time wrfinput_$dom tmp.nc
                   for nn in `seq 1 $AGRIFZ`; do
@@ -38,10 +39,10 @@ then
                       latmax=$( ncdump -v latmax tmp.nc.1  | grep "latmax =" | cut -d ' ' -f 4)
                       \rm tmp.nc.1
 
-                      ncap2 -O -F -s "CPLMASK(1,:,:,:)= LU_INDEX==17" tmp.nc tmp.nc.1
+                      ncap2 -O -F -s "CPLMASK(1,:,:,:)= LU_INDEX==${LU_IND}" tmp.nc tmp.nc.1
                       ncap2 -O -F -s "var_tmp=CPLMASK(1,:,:,:); where( XLAT < $latmin || XLONG < $lonmin || XLAT > $latmax || XLONG > $lonmax ) var_tmp=0; CPLMASK(1,:,:,:)=var_tmp" tmp.nc.1 tmp.nc.1
                       ncks -O -v var_tmp -x tmp.nc.1 tmp.nc.1
-                      [[ ! -f tmp.nc.2 ]] && { ncap2 -O -F -s "CPLMASK(1,:,:,:)= LU_INDEX==17" tmp.nc tmp.nc.2 ; }
+                      [[ ! -f tmp.nc.2 ]] && { ncap2 -O -F -s "CPLMASK(1,:,:,:)= LU_INDEX==${LU_IND}" tmp.nc tmp.nc.2 ; }
                       ncrcat -O tmp.nc.2 tmp.nc.1 tmp.nc.2
                       num_ext_mod=$( ncdump -h tmp.nc.2 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 6| cut -c 2)
                       for pp in `seq 1 $(( $num_ext_mod - 1 ))`; do

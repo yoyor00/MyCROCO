@@ -68,7 +68,12 @@ fi
 [ ${USE_XIOS_OCE} -eq 1 ] && TOTXIO=$(( ${TOTXIO} + ${NP_XIOS_OCE} ))
 totalcore=$(( $TOTOCE + $TOTATM + $TOTWAV + $TOTTOY + $TOTXIO ))
 
-[ ${COMPUTER} == "DATARMOR" ] && nbnode=$(( $totalcore /29 +1)) || nbnode=0
+if [[ ${COMPUTER} == "DATARMOR" ]]; then
+    nbnode=$(( $totalcore /29 +1))
+    [[ ${totalcore} -ge 28 ]] && totalcore=28
+else
+     nbnode=0
+fi
 
 
 if [ ${MACHINE} == "IRENE" ]; then

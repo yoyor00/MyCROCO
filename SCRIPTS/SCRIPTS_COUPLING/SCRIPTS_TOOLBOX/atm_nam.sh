@@ -14,14 +14,40 @@
 
 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
   rst="false"
+  file="wrfinput_d01"
 else
   rst="true"
+  file="wrfrst_d01_*"
 fi
+
+# look for starting hour in input file
+echo "In atm_nam"
+module load ${ncomod}
+if [[ ${RESTART_FLAG} == "FALSE" ]]; then
+    YY=$( printf "%04d" ${YEAR_BEGIN_JOB} )
+    MM=$( printf "%02d" ${MONTH_BEGIN_JOB} )
+    DD=$( printf "%02d" ${DAY_BEGIN_JOB} )
+    echo "${YY}-${MM}-${DD}"
+    file="wrfinput_d01"
+    fulldate=$( echo "$( ncdump -v Times ${file} )" | grep -m 1 "${YY}-${MM}-${DD}" | cut -d '=' -f 2)
+    echo $fulldate
+    hh=$( echo "${fulldate}" | cut -d '_' -f 2 | cut -d ':' -f 1 )
+    echo $hh
+else
+    YY=$( printf "%04d" ${YEAR_BEGIN_JOB} )
+    MM=$( printf "%02d" ${MONTH_BEGIN_JOB} )
+    DD=$( printf "%02d" ${DAY_BEGIN_JOB} )
+    file="wrfrst_d01_*"
+    fulldate=$( echo "$( ncdump -v Times ${file} )" | grep -m 2 "${YY}-${MM}-${DD}" | cut -d '{' -f 2 | cut -d '"' -f 2 )
+    hh=$( echo "${fulldate}" | cut -d '_' -f 2 | cut -d ':' -f 1 )
+fi
+module unload ${ncomod}
+#
 
 sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/<mo1>/${MONTH_BEGIN_JOB}/g"   -e "s/<mo2>/${MONTH_END_JOB}/g"  \
     -e "s/<dy1>/${DAY_BEGIN_JOB}/g"   -e "s/<dy2>/${DAY_END_JOB}/g"  \
-    -e "s/<hr1>/0/g"   -e "s/<hr2>/24/g"  \
+    -e "s/<hr1>/${hh}/g"   -e "s/<hr2>/24/g"  \
     -e "s/<rst>/$rst/g"              -e "s/<rst_int_h>/$(( ${TOTAL_JOB_DUR} * 24 ))/g"            \
     -e "s/<his_int_h>/${atm_his_h}/g"         -e "s/<his_nb_out>/${atm_his_frames}/g"    \
     -e "s/<xtrm_int_m>/${atm_diag_int_m}/g"   -e "s/<xtrm_nb_out>/${atm_diag_frames}/g"  \

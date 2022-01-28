@@ -5,7 +5,7 @@
 export atmnamelist=namelist.input.base.complete
 
 # Time steps
-export DT_ATM=150
+export DT_ATM=100
 
 # Grid size
 #[ Grid size should be already put in the namelist. When coupled it is directly read in cpl_nam.sh ]

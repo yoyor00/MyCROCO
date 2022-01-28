@@ -10,94 +10,74 @@ else
     timevar="bry_time"
 fi
 
-for i in `seq 0 $(( ${JOB_DUR_MTH}-1 ))`; do
-  if [ ${JOB_DUR_MTH} -eq 1 ]; then
-      cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
-      cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
-      ln -sf ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
-  elif [ ${i} -eq 0 ]; then
-      cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
-      cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
-
-      varlist='spherical Vtransform Vstretching tstart theta_s theta_b Tcline hc sc_r sc_w Cs_r Cs_w' # One dimension stuffs that don't change 
-      for varn in ${varlist} ; do
-          ncks -A -v ${varn} ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
-      done
-      string=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep double )
-      ns=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep -c double )
-
-      for j in `seq ${vartopass} $ns`; do
-          if [ ${j} -eq ${vartopass} ] ; then
-              var=${timevar}
-              dimt=${timevar}
-          else
-              end=$( echo $string | cut -d';' -f ${j})
-              var1=$( echo $end | cut -d'(' -f 1)
-              var=$(echo $var1 | cut -d' ' -f 2)
-              dimt1=$( echo $end | cut -d'(' -f 2)
-              dimt=$(echo $dimt1 | cut -d',' -f 1)
-          fi
-
-          ncks -O -F -v ${var} -d $dimt,1,2 ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc out_${var}_${i}.nc
-          ncks -O --mk_rec_dmn $dimt out_${var}_${i}.nc out_${var}.nc
-          \rm -f out_${var}_${i}.nc
-      done
-
-  else
-      mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) $DAY_BEGIN_JOB $YEAR_BEGIN_JOB )
-      cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-      cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
-
-      string=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep double )
-      ns=$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc | grep -c double )
-# Find how many var to pass before arriving on 2-3d var
-      echo "$( ncdump -h ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc  | grep double )"  > text.tmp
-      cnt=0
-      while [[ $cnt -le $ns ]]; do
-          cnt=$(( $cnt +1 ))
-          line=$( sed -n "${cnt}p" text.tmp )
-          tmpval=$( echo "$line" | grep ',' | wc -l )
-          if [[ ${tmpval} -gt 0 ]]; then
-              break
-          fi
-      done
-      rm -rf text.tmp
-      vartopass=$(( $cnt - 1 ))
+# put 1-d stuff inside bdy file
+varlist="spherical,Vtransform,Vstretching,tstart,tend,theta_s,theta_b,Tcline,hc,sc_r,sc_w,Cs_r,Cs_w"
+ncks -A -v "${varlist}"  ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
 #
-      for j in `seq ${vartopass} $ns`; do
-          if [ ${j} -eq ${vartopass} ] ; then
-              var=${timevar}
-              dimt=${timevar}
-          else
-              end=$( echo $string | cut -d';' -f ${j})
-              var1=$( echo $end | cut -d'(' -f 1)
-              var=$(echo $var1 | cut -d' ' -f 2)
-              dimt1=$( echo $end | cut -d'(' -f 2)
-              dimt=$(echo $dimt1 | cut -d',' -f 1)
-          fi
+options=("temp" "salt" "v2d" "v3d"  "zeta")
+varlist="ssh tclm sclm uclm vclm temp salt v3d v2d zeta"
+[[ ${bdy_ext} == *'bry'* ]] && varlist="bry ${varlist}"
 
-          if [ $i -eq $(( ${JOB_DUR_MTH}-1 )) ]; then
-              ncks -O -F -v ${var} -d $dimt,2,3 ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc out_${var}_${i}.nc
-              ncrcat -O out_${var}.nc out_${var}_${i}.nc out_${var}.nc
-              \rm -f out_${var}_${i}.nc
-              ncks -O --fix_rec_dmn $dimt out_${var}.nc out_${var}.nc
-              ncks -A out_${var}.nc ${bryfile} ; \rm -f out_${var}.nc
-              [ ${j} -eq 21 ] && ncks -A -v tend ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
+# check if job remains in the same month or not
+cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
+LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
-          else
-              ncks -O -F -v ${var} -d $dimt,2 ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc out_${var}_${i}.nc
-              ncrcat -O out_${var}.nc out_${var}_${i}.nc out_${var}.nc
-              \rm -f out_${var}_${i}.nc
-          fi
-      done
-  fi
-done
 
-if [ ${JOB_DUR_MTH} -eq 0 ] ; then
-  printf "Job duration is less than a month ---> Using netcdf of the current month\n"
-  cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
-  cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )    
-  ln -sf ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
+if [[ ${JOB_DUR_MTH} -eq 1 || ${LOCAL_MTH_END} -eq ${cur_M} ]]; then # Case 1 month or less
+    echo "Job is one month long or less ---> Using netcdf of the current month"
+    cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+    ln -sf ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc ${bryfile}
+else   
+    if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${cur_M} ]]; then
+        echo "Job is less than a month BUT overlaps on next month ---> Concat netcdf of current and following month"
+        nbloop=1
+    else
+        echo "Job is longer than one month ---> Concat netcdf of needed month"
+        nbloop=$(( ${JOB_DUR_MTH}-1 ))     
+    fi
+    for i in `seq 0 $nbloop`; do
+        mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) 1 $YEAR_BEGIN_JOB )
+        cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+        cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+
+        if [[ $i == 0 ]]; then
+            tstart=1; tend=-2
+        elif [[ $i == $nbloop ]]; then
+            tstart=2; tend=""
+        else
+            tstart=2; tend=2
+        fi
+
+        for var in ${varlist}; do
+            if [[ ${options[@]} =~ "$var" ]]; then
+                extract=""
+                for card in north south east west ;do
+                    if [[ ${var} == "v2d" ]];then
+                        extract="${extract}ubar_${card},vbar_${card},";
+                    elif [[ ${var} == "v3d" ]];then
+                        extract="${extract}u_${card},v_${card},";
+                    else
+                        extract="${extract}${var}_${card},"
+                    fi
+                done
+                cnt=$( echo ${extract} | sed -e 's|\(.\)|\1\n|g' | grep ',' | wc -l )
+                extract=$( echo "${extract}" | cut -d ',' -f -"${cnt}" )
+            else
+                extract="${var}_time"
+            fi
+            if [[ $i > 0 ]]; then
+                ncks --mk_rec_dmn "${var}_time" -F -O -d "${var}_time",${tstart},${tend} -v "${extract}" ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc tmp_${var}.nc
+                ncks -O --mk_rec_dmn "${var}_time" ${bryfile} ${bryfile}
+                ncrcat -A ${bryfile} tmp_${var}.nc ${bryfile}
+                ncks -O --fix_rec_dmn "${var}_time" ${bryfile} ${bryfile}
+            else
+                ncks -F -O -d "${var}_time",${tstart},${tend} -v "${extract}" ${OCE_FILES_DIR}/croco_${bdy_ext}_Y${cur_Y}M${cur_M}.nc tmp_${var}.nc
+                ncks -A -v "${extract}" tmp_${var}.nc ${bryfile}
+            fi
+            \rm tmp_${var}.nc
+        done
+    done
 fi
-
 module unload $ncomod
