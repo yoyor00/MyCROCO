@@ -162,64 +162,71 @@
 #~~~~~~~~~~~
 # TAUX : zonal stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUE TOY_TAUX 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUE TOY_TAUX 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # TAUY : meridional stress (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUN TOY_TAUY 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUN TOY_TAUY 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # TAUMOD : stress module (N.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_TAUMOD TOY_TAUM 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_TAUMOD TOY_TAUM 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # EVAP-PRECIP : E-P flux (kg.m-2.s-1)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_EVAP-PRECIP TOY__EMP 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_EVAP-PRECIP TOY__EMP 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # NET SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_SOLAR TOYSRFLX 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_SOLAR TOYSRFLX 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # NET NON-SOLAR FLUX (W.m-2)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYSTFLX 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_SURF_NET_NON-SOLAR TOYSTFLX 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # INTERFACE ATMOSPHERIC PRESSURE  (Pa)
 #~~~~~~~~~~~
-WRF_d01_EXT_d01_PSFC TOY_PSFC 1 <cpldt> 1 atm.nc EXPORTED
+WRF_d01_EXT_d01_PSFC TOY_PSFC 1 <cpldt> 2 atm.nc EXPORTED
 <atmnx> <atmny> <ocenx> <oceny> atmt toyt  LAG=<atmdt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #                     ------------------------------------
@@ -229,28 +236,31 @@ DISTWGT LR SCALAR LATLON 1 4
 #~~~~~~~~~~~
 # SST (K)
 #~~~~~~~~~~~
-TOY__SST WRF_d01_EXT_d01_SST 1 <cpldt> 1 oce.nc EXPORTED
+TOY__SST WRF_d01_EXT_d01_SST 1 <cpldt> 2 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> toyt atmt LAG=<ocedt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # UOCE : zonal current (m.s-1)
 #~~~~~~~~~~~
-TOY_UOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 1 oce.nc EXPORTED
+TOY_UOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 2 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> toyt atmt LAG=<ocedt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 #~~~~~~~~~~~
 # VOCE : meridonal current (m.s-1)
 #~~~~~~~~~~~
-TOY_VOCE WRF_d01_EXT_d01_NOCE 1 <cpldt> 1 oce.nc EXPORTED
+TOY_VOCE WRF_d01_EXT_d01_NOCE 1 <cpldt> 2 oce.nc EXPORTED
 <ocenx> <oceny> <atmnx> <atmny> toyt atmt LAG=<ocedt>
 R  0  R  0
-SCRIPR
+LOCTRANS SCRIPR
+AVERAGE
 DISTWGT LR SCALAR LATLON 1 4
 #
 ###########################################################################
