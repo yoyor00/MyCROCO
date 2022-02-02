@@ -1235,6 +1235,17 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
               enddo
             endif
           endif
+# else
+          do k=1,N
+            workr(:,:,k)=workr(:,:,k) 
+#  ifdef WET_DRY
+     &                SWITCH rmask_wet(:,:)
+#  else
+     &                SWITCH rmask(:,:)
+#  endif
+          enddo
+# endif
+
 # endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),
      &                     indxT+itrc-1,record,r3dvar,type)
@@ -1249,6 +1260,14 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
       do itrc=1,ntfix
         if (wrthis(indxT+NT+itrc-1)) then
           workr=cvfix_wat(:,:,:,itrc)
+          do k=1,N
+            workr(:,:,k)=workr(:,:,k) 
+#  ifdef WET_DRY
+     &                SWITCH rmask_wet(:,:)
+#  else
+     &                SWITCH rmask(:,:)
+#  endif
+          enddo
           call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
      &                     indxT+NT+itrc-1,record,r3dvar,type)
 CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
