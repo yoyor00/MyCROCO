@@ -8,7 +8,6 @@
 !This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
 !computer program whose purpose is to perform sediment transport process 
 !modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
 !
 !This software is governed by the CeCILL-C license under French law and
 !abiding by the rules of distribution of free software. You can use, 
@@ -44,7 +43,6 @@
                      MODULE comMUSTANG
 !
 !---------------------------------------------------------------------------
-  
 
 #ifdef MUSTANG
 
@@ -65,13 +63,11 @@
    !&E
    !&E==========================================================================
 
-
    !! * Modules used
    USE module_MUSTANG
 
    IMPLICIT NONE
-   
-!!#include "coupleur_dimhydro_MUSTANG.h"
+
 #include "coupler_define_MUSTANG.h"
 
   !! * Accessibility
@@ -81,7 +77,7 @@
    
    !! * Shared or public variables for MUSTANG (common at all threads) but spatialized 
 
-   REAL(kind=rlg)  ,PARAMETER :: epsi30_MUSTANG=1.e-30 , epsdep_MUSTANG = 1.e-14, epsilon_MUSTANG=1.e-09 
+   REAL(kind=rlg)  ,PARAMETER :: epsi30_MUSTANG=1.e-30 , epsilon_MUSTANG=1.e-09 
 
    REAL(KIND=rlg),PUBLIC   :: tstart_dyninsed,  &   ! time beginning consolidation/diffusion/bioturbation/morphodynamic
                               tstart_morpho,    &   ! time beginning consolidation/diffusion/bioturbation/morphodynamic
@@ -209,7 +205,7 @@
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: flx_s2w,flx_w2s,flx_w2s_sum
 
    ! ---------------------------------------------------------------------------
-    ! relatif to initialization
+   ! Initialization
    ! ---------------------------------------------------------------------------
    LOGICAL,PUBLIC          :: l_repsed,l_unised,l_z0seduni,l_initsed_vardiss,l_dzsmaxuni,l_init_hsed
 ! used only if key_MUSTANG_V2 but need to be declared  for MUSTANG input file
@@ -243,9 +239,8 @@
    REAL(KIND=rsh),PUBLIC                                    :: hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
 #endif
 
-
    ! ---------------------------------------------------------------------------
-   ! relatif to sedim output
+   ! Sedim output
    ! ---------------------------------------------------------------------------
    LOGICAL,PUBLIC                               :: l_outsed_saltemp,l_outsed_poro
    CHARACTER(len=lchain),PUBLIC   :: name_out_hsed,name_out_nbniv,name_out_dzs,name_out_tenfon,&
@@ -287,7 +282,7 @@
    LOGICAL,PUBLIC          :: l_outsed_bil_Bload_int
 #ifdef key_MUSTANG_V2
 #ifdef key_MUSTANG_bedload
-!  bedload (charriage)
+!  bedload 
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC  :: flx_bx,flx_by
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC    :: slope_dhdx,slope_dhdy
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC    :: sedimask_h0plusxe
@@ -338,7 +333,7 @@
    REAL(KIND=rsh),PUBLIC                            :: alb,emissivity_sed
  
 #if ! defined key_noTSdiss_insed
- ! relatif to Temperature in sediment 
+ ! Temperature in sediment 
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: phitemp_s,phitemp_sout
    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE,PUBLIC :: cp_s,mu_tempsedsurf,poro_sedsurf
    REAL(KIND=rsh),PUBLIC                            :: mu_tempsed1,mu_tempsed2,mu_tempsed3,  &
@@ -354,8 +349,6 @@
  !  not used in MARS because same variable (name and dimensions) in MUSTANG and  in hydro modele
  !  (ksdmin and ksdmax defined in parameters in MARS)
  !-------------------------------------------------------------------
-   ! a eliminer pour CROCO
-   ! INTEGER, PARAMETER,PUBLIC :: ksdmin=1,ksdmax=100
    
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: EROS_FLUX_s2w , SETTL_FLUX_w2s ,SETTL_FLUXSUM_w2s
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE,PUBLIC :: CORFLUX_SAND,CORFLUY_SAND 
@@ -407,9 +400,6 @@
 #endif
 
 #else
-   ! if module substance is installed in hydro modele
-   !USE comsubstance, ONLY : nv_tot,nv_adv,nv_state,nvp,nv_mud,           &
-   !                              irk_fil,irkm_var_assoc,unit_modif_mudbio_N2dw
    USE comsubstance
 #endif
 
@@ -662,11 +652,11 @@
    l_isitcohesive(PROC_IN_ARRAY)=.FALSE.
  
 #ifdef key_MUSTANG_bedload
-   ALLOCATE( flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)) ! attention /Baptiste : m1p1 sur les 2 indices au lieu d1
-   ALLOCATE( flx_by(1:nvp,PROC_IN_ARRAY_m1p1)) ! attention /Baptiste : m1p1 sur les 2 indices au lieu d1
+   ALLOCATE( flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+   ALLOCATE( flx_by(1:nvp,PROC_IN_ARRAY_m1p1)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
    ALLOCATE( slope_dhdx(PROC_IN_ARRAY))
    ALLOCATE( slope_dhdy(PROC_IN_ARRAY))
-   ALLOCATE( sedimask_h0plusxe(PROC_IN_ARRAY_m1p1)) ! attention /Baptiste : m1p1 sur les 2 indices au lieu d1
+   ALLOCATE( sedimask_h0plusxe(PROC_IN_ARRAY_m1p1)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
 
    flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)=0.0_rsh 
    flx_by(1:nvp,PROC_IN_ARRAY_m1p1)=0.0_rsh
@@ -709,7 +699,7 @@
    ALLOCATE(phieau_s2w_corjp1(PROC_IN_ARRAY_m1p1))
 #endif
    
-! relatif to initialization
+! Initialization
    ALLOCATE(cini_sed(nv_state))
    
 #ifdef key_MARS
@@ -752,7 +742,7 @@
 !  option morpho
 !!!!!!!!!!!!!!!!!!!!
    IF(l_morphocoupl) THEN
-!! ATTENTION : no hx, hy in other model than MARS 
+!! Warning : no hx, hy in other model than MARS 
 #ifdef key_MARS
        ALLOCATE(hsed0(PROC_IN_ARRAY))
        ALLOCATE(hsed_previous(PROC_IN_ARRAY))

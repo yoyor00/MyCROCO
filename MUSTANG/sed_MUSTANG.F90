@@ -8,7 +8,6 @@
 !This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
 !computer program whose purpose is to perform sediment transport process 
 !modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
 !
 !This software is governed by the CeCILL-C license under French law and
 !abiding by the rules of distribution of free software. You can use, 
@@ -47,7 +46,6 @@
 #include "cppdefs.h"
 
 #if defined MUSTANG 
-
 
    !&E==========================================================================
    !&E                   ***  MODULE  sed_MUSTANG  ***
@@ -2060,7 +2058,6 @@
                           *tocd(ivp)/tocdpe
          ENDIF
          depo=flx_w2s(ivp,i,j)*cw_bottom_MUSTANG(ivp,i,j)
-         IF(depo.LE.epsdep_MUSTANG)flx_w2s(ivp,i,j)=0.0_rsh
        ENDDO
 #ifdef key_Pconstitonly_insed
        DO ivp=nvpc+1,nvp
@@ -2080,8 +2077,6 @@
          depo=flx_w2s(ivp,i,j)*cw_bottom_MUSTANG(ivp,i,j)
          IF(irkm_var_assoc(ivp) > 0 ) THEN
           IF (flx_w2s(irkm_var_assoc(ivp),i,j)==0.0_rsh) flx_w2s(ivp,i,j)=0.0_rsh
-         ELSE
-          IF(depo.LE.epsdep_MUSTANG)flx_w2s(ivp,i,j)=0.0_rsh
          END IF
        ENDDO
 #endif
