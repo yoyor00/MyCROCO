@@ -7,7 +7,6 @@
 !This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
 !computer program whose purpose is to perform sediment transport process 
 !modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
 !
 !This software is governed by the CeCILL-C license under French law and
 !abiding by the rules of distribution of free software. You can use, 
@@ -42,7 +41,6 @@
                      MODULE sed_MUSTANG_CROCO
 !
 !---------------------------------------------------------------------------
-   
 
 #include "cppdefs.h"
 #if defined MUSTANG 
@@ -412,7 +410,6 @@
             gradvit(k,i,j)=sqrt(ustarbot(i,j)**3._rsh/0.4_rsh/htot(i,j)/(nuw+epsilon_MUSTANG )*dist_surf_on_bottom) 
            END DO
 
-           !  To Program
            ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
            !  if  turbulence dissipation rate has not been already evaluated: 
            ! use empirical formula from   Nezu and Nakawaga (1993)
@@ -500,22 +497,19 @@
 !  and current interaction
 !-----------------------------------------------------------------------
 !
-#  ifdef BBL
+#  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
       do j=jfirst,jlast
         do i=ifirst,ilast
           tenfon(i,j)=sqrt( bustrw(i,j)**2 &
                         +bvstrw(i,j)**2)*RHOREF
 #  ifdef WET_DRY AND MASKING
-          tenfon(i,j)=tenfonc(i,j)*rmask_wet(i,j)
+          tenfon(i,j)=tenfon(i,j)*rmask_wet(i,j)
 #  endif
         enddo
       enddo
 
-#  else
-!     write(*,*) ' ATTENTION calcul tenfon si pas (BBL + key_MUSTANG) ???'
-!          tenfon(i,j)=0.5*sqrt( (bustr(i,j)+bustr(i+1,j))**2 &
-!                        +(bvstr(i,j)+bvstr(i,j+2))**2)*RHOREF
-# ifdef MUSTANG
+#  else /* else on #ifdef BBL */
+
 # ifdef MPI
       DO j=jfirst-2,jlast+1
         DO i=ifirst-2,ilast+1
@@ -641,66 +635,46 @@
             !tenfon(i,j)=SQRT(tenfonw(i,j)**2+tenfonc(i,j)**2)
             tenfonw(i,j)=min(8.0_rsh,tenfonw(i,j))  !limitation sur tenfonw, FG(21/07/2015)
 
-!            IF (l_wave_rdir ) THEN
-               courant=SQRT(ubar(i,j,nnew)**2+vbar(i,j,nnew)**2)
-               IF(tenfonc(i,j) > 0.0_rsh .AND. tenfonw(i,j) > 0.0_rsh .AND. courant> 0.0_rsh) THEN
+            courant=SQRT(ubar(i,j,nnew)**2+vbar(i,j,nnew)**2)
+            IF(tenfonc(i,j) > 0.0_rsh .AND. tenfonw(i,j) > 0.0_rsh .AND. courant> 0.0_rsh) THEN
 
-                ! calculation of shear stress with the formula of Soulsby (1995)
-                ! ======================================================
-                ! calculation of  tenfonc (courrent) influenced by the waves
-                ! ----------------------------------------------------
-                  tenfonc(i,j)=tenfonc(i,j)*(1+(1.2*(tenfonw(i,j)/(tenfonw(i,j)+tenfonc(i,j)))**3.2))
-                  !tenfonc(i,j)=min(10.0_rsh,tenfonc(i,j))  !limitation on tenfonc, FG(21/07/2015)
+            ! calculation of shear stress with the formula of Soulsby (1995)
+            ! ======================================================
+            ! calculation of  tenfonc (courrent) influenced by the waves
+            ! ----------------------------------------------------
+              tenfonc(i,j)=tenfonc(i,j)*(1+(1.2*(tenfonw(i,j)/(tenfonw(i,j)+tenfonc(i,j)))**3.2))
+              !tenfonc(i,j)=min(10.0_rsh,tenfonc(i,j))  !limitation on tenfonc, FG(21/07/2015)
 
-                ! calculating the difference in angle between the direction of the waves and the current
-                ! ---------------------------------------------------------------------------
-                ! calculating the direction of the current relative to the north
-                  alpha=ACOS(vbar(i,j,nnew)/courant)   ! en radians
-                ! calculation of wave orientation relative to north
-                  beta=Dwave(i,j)   ! beta and Dwave in radians
-                ! calculation of cos(alpha-beta) and sin(alpha-beta)
-                  cosamb=ABS(COS(alpha-beta))
-                  sinamb=ABS(SIN(alpha-beta))
+            ! calculating the difference in angle between the direction of the waves and the current
+            ! ---------------------------------------------------------------------------
+            ! calculating the direction of the current relative to the north
+              alpha=ACOS(vbar(i,j,nnew)/courant)   ! en radians
+            ! calculation of wave orientation relative to north
+              beta=Dwave(i,j)   ! beta and Dwave in radians
+            ! calculation of cos(alpha-beta) and sin(alpha-beta)
+              cosamb=ABS(COS(alpha-beta))
+              sinamb=ABS(SIN(alpha-beta))
 
-                ! calculation of tenfon (waves + current)
-                ! -----------------------------------
-                  tenfon(i,j)=SQRT((tenfonc(i,j)+tenfonw(i,j)*cosamb)**2 +(tenfonw(i,j)*sinamb)**2)
+            ! calculation of tenfon (waves + current)
+            ! -----------------------------------
+              tenfon(i,j)=SQRT((tenfonc(i,j)+tenfonw(i,j)*cosamb)**2 +(tenfonw(i,j)*sinamb)**2)
 
-              ELSE
-                 tenfon(i,j)=tenfonw(i,j)+tenfonc(i,j)
-              ENDIF
-! REMOVE COMMENT IF NO WAVE DIRECTION
-!            ELSE
-!
-!            ! tenfon calculation with the arithmetic average of tw, tc (maximizes tenfon, max=25N/m2)
-!            ! =======================================================================
-!               tenfon(i,j)=tenfonw(i,j)+tenfonc(i,j)
-!
-!            ! tenfon calculation with the quadratic mean of tw,tc (minimizes tenfon, max=18N/m2)
-!            ! =======================================================================
-!            !   tenfon(i,j)=SQRT(tenfonw(i,j)**2+tenfonc(i,j)**2)
-!            ENDIF
+          ELSE
+              tenfon(i,j)=tenfonw(i,j)+tenfonc(i,j)
+          ENDIF
+
 
 # else
           tenfon(i,j)=tenfonc(i,j)
 # endif
-!         if (i==25 .AND. j==3) then
-!             write(*,*) 'tenfon(i,j)',rho(i,j,1),rho0
-!         endif
-!  RAJOUTER VAGUES 
 
-# if defined WET_DRY && defined MASKING
+# if defined WET_DRY && defined MASKING 
           tenfon(i,j)=tenfon(i,j)*rmask_wet(i,j)
 #  endif
         enddo
       enddo
-!# if !defined MPI
-!      tenfonc(ifirst,:)=tenfonc(ifirst+1,:)
-!      tenfonc(ilast,:)=tenfonc(ilast-1,:)
-!#  endif
 
-#  endif
-#  endif
+#  endif  /* end of #ifdef BBL */
 
   END SUBROUTINE sed_skinstress
    !!==============================================================================
