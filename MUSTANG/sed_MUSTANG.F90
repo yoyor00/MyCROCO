@@ -3525,8 +3525,8 @@
           !        pas encore fait
           ! ----------------------------------------------------------
           IF(ero > 0.0_rsh) THEN
-            DO WHILE(ksmax.GT.ksmi(i,j))
-              IF(dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid))THEN
+            DO WHILE (ksmax.GT.ksmi(i,j) .AND. &
+              (dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid)))
                 ksmaxa=ksmax
                 dzsa=dzs(ksmax,i,j)
                 dzsam1=dzs(ksmax-1,i,j)
@@ -3562,9 +3562,7 @@
                                     cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
                 ENDDO
 #endif
-              
-              ENDDO ! end of do while (ksmax.GT.ksmi(i,j))
-            ENDIF
+            ENDDO ! end of do while (ksmax.GT.ksmi(i,j))
 
            IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
               IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
@@ -4838,8 +4836,6 @@
 
             ENDIF  ! test  (fludep < 0 no deposition)
 
-        51  CONTINUE
-
             ! updating ksma ( ksmax can be modified in the routine)
             ksma(i,j)=ksmax
             dzs(ksma(i,j)+1:ksdmax,i,j)=0.0_rsh
@@ -5597,9 +5593,6 @@
               varspecif3Dk_save(1,k,i,j)=poro(k,i,j)  
             ENDDO
 #endif
-
-            
-        51  CONTINUE
 
             ! updating ksma ( ksmax can be modified in the routine)
             ksma(i,j)=ksmax
@@ -10575,7 +10568,7 @@ END SUBROUTINE MUSTANGV2_eval_bedload
  !!==============================================================================
 #endif
 
-#endif  !end if define MUSTANG
+#endif  /* end if define MUSTANG */
 
 END MODULE sed_MUSTANG
 
