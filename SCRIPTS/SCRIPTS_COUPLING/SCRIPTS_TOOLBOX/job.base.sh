@@ -3,7 +3,7 @@
 
         DATE1=`date "+%Y%m%d-%H:%M:%S"`
         OLD="old_${DATE1}"
-        printf "\n date_chris : ${DATE1}\n"
+        printf "\n date : ${DATE1}\n"
 
 
 #===============================================================================
@@ -103,7 +103,7 @@ cp ${JOBDIR_ROOT}/${jobname} ./
         #[ ${USE_WAV} -eq 1 ] && echo "No namelist for WAV"
         [ ${USE_TOY} -ge 1 ] && { . ${SCRIPTDIR}/toy_nam.sh ; }
 	[ ${USE_CPL} -ge 1 ] && { . ${SCRIPTDIR}/cpl_nam.sh ; }
-        printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
+        printf "\n date : `date "+%Y%m%d-%H:%M:%S"`\n"
 
 fi # Step1
 #===============================================================================
@@ -118,7 +118,7 @@ cd ${EXEDIR}
 
 #       ls -l > ls_l/ls_pre_exe.txt
         printf "\n see ls -l in ${EXEDIR}/ls_l/ls_pre_exe.txt\n"
-        printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
+        printf "\n date : `date "+%Y%m%d-%H:%M:%S"`\n"
         printf "\n---------------  start   ---------------\n"
 #      
         printf "\n ***************** make app.conf file for Multiple Program Multiple Data *****************\n\n"
@@ -138,7 +138,7 @@ time $MPI_LAUNCH ${MPI_ext} app.conf >& out_run.txt
 
         [ -f time.step ] && printf "\n  time.step: `cat time.step` \n"
         printf "\n---------------   end    ---------------\n"
-        printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
+        printf "\n date : `date "+%Y%m%d-%H:%M:%S"`\n"
         printf "\n see ls -l in ${EXEDIR}/ls_l/ls_post_exe.txt\n"
         ls -l > ls_l/ls_post_exe.txt
  
@@ -166,7 +166,7 @@ if [ ${LOADL_STEP_NAME} == "put_file" ] || [ "${LOADL_STEP_NAME}" == "XXX" ] ; t
         ${MACHINE_STOCKAGE} mkdir -p ${RESTDIR_OUT}
 
 cd ${EXEDIR} 
-        printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
+        printf "\n date : `date "+%Y%m%d-%H:%M:%S"`\n"
         [ ${USE_OCE} -eq 1 ] && printf "\n ************* put OCEAN OUTPUT/RESTART files *****************\n\n" |tee ls_l/oce_putfile.txt
         [ ${USE_OCE} -eq 1 ] && printf "    see listing in ${EXEDIR}/ls_l/oce_putfile.txt \n" 
         [ ${USE_OCE} -eq 1 ] && { . ${SCRIPTDIR}/oce_putfile.sh ; } >> ls_l/oce_putfile.txt
@@ -215,7 +215,7 @@ cd ${EXEDIR}
         cd ${JOBDIR_ROOT}; for file in ${FILES_JOB}; do mvfile2 ${file} ${JOBDIR}; done;  cd -; echo "";
 #
 #  mv output files in output
-        printf "\n date_chris : `date "+%Y%m%d-%H:%M:%S"`\n"
+        printf "\n date : `date "+%Y%m%d-%H:%M:%S"`\n"
 
 #-------------------------------------------------------------------------------
 #  NEXT job!

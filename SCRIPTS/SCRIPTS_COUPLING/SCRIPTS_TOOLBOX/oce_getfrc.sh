@@ -48,7 +48,10 @@ if [ ${interponline} -eq 1 ]; then
         done
 
     # Check if next month is need when job duration is smaller than a month
-        cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+        cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+        while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+            cur_M=`echo ${cur_M} | cut -b 2-`
+        done
         mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} +1 )) ${YEAR_END_JOB} )
         LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
@@ -79,7 +82,10 @@ else
         fi
 
         # check if job remains in the same month or not
-        cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+        cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+        while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+            cur_M=`echo ${cur_M} | cut -b 2-`
+        done
         mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
         LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 

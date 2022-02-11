@@ -20,7 +20,10 @@ module load ${ncomod}
 
 
 # check if job remains in the same month or not
-cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+    cur_M=`echo ${cur_M} | cut -b 2-`
+done
 mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
 LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
@@ -69,7 +72,10 @@ module load ${ncomod}
 
 for file in ${filelist}; do
     # check if job remains in the same month or not
-    cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+    cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+    while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+        cur_M=`echo ${cur_M} | cut -b 2-`
+    done
     mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
     LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
     if [[ ${JOB_DUR_MTH} -eq 1 || ${LOCAL_MTH_END} -eq ${cur_M} ]]; then # Case 1 month or less
@@ -123,7 +129,10 @@ if [[ ${switch_fdda} == 1 ]]; then
 
     for file in ${filelist}; do
         # check if job remains in the same month or not
-        cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+        cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+        while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+           cur_M=`echo ${cur_M} | cut -b 2-`
+        done
         mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
         LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
         if [[ ${JOB_DUR_MTH} -eq 1 || ${LOCAL_MTH_END} -eq ${cur_M} ]]; then # Case 1 month or less
@@ -140,18 +149,17 @@ if [[ ${switch_fdda} == 1 ]]; then
                 echo "Job is longer than one month ---> Concat netcdf of needed month"
                nbloop=$(( ${JOB_DUR_MTH}-1 ))
             fi
-#            for i in `seq 0 $nbloop`; do
-#                mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) 1 $YEAR_BEGIN_JOB )
-#                cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
-#                cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
-#                [[ ! -f ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ]] && { echo "Missing ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} to build atm fdda file."; exit ;}
-#                if [[ $i == 0 ]]; then
-#                    ncrcat ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
-#                else
-#                    ncrcat -O ${file} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
-#                fi
-#            done
-            ln -sf ${ATM_FILES_DIR}/${file} ${file}
+            for i in `seq 0 $nbloop`; do
+                mdy=$( valid_date $(( $MONTH_BEGIN_JOB + $i )) 1 $YEAR_BEGIN_JOB )
+                cur_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
+                cur_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+                [[ ! -f ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ]] && { echo "Missing ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} to build atm fdda file."; exit ;}
+                if [[ $i == 0 ]]; then
+                    ncrcat ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
+                else
+                    ncrcat -O ${file} ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ${file}
+                fi
+            done
         fi
     done
     module unload ${ncomod}

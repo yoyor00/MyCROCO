@@ -35,7 +35,10 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"
 echo 'link ww3 input files and copy associated settings files'
 lengthforc=${#forcww3[@]}
 
-cur_M=$( printf "%01d" $( echo $DATE_BEGIN_JOB | cut -c 5-6 ))
+cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
+while [[ `echo ${cur_M} | cut -b 1` -eq 0 ]]; do
+    cur_M=`echo ${cur_M} | cut -b 2-`
+done
 mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
 LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
