@@ -8281,11 +8281,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
    !!!!!!! SANDY SEDIMENTS        !!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#if defined key_MUSTANG_bedload
-   DO iv=isand1,ibedload2
-#else
    DO iv=isand1,isand2
-#endif
 #ifdef key_MUSTANG_debug
      IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
        print *,'      iv=',iv
@@ -8324,7 +8320,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
        !      bedload & suspension are accounted for
        ! Attention tenfon suspension = tenfon bedload while different in Wu and Lin
 
-       IF (l_fsusp) THEN
+       IF (l_fsusp .and. iv.le.ibedload2) THEN
          courant=SQRT(COURANTU_ij**2+COURANTV_ij**2) 
          fsusp= (0.0000262_rsh*((courant/ws_sand(iv))**1.74_rsh)) /  &
                 ( (0.0000262_rsh*((courant/ws_sand(iv))**1.74_rsh))  &
@@ -8356,63 +8352,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
 
    END DO
 
-#ifdef key_MUSTANG_bedload
-   DO iv=ibedload2+1,isand2
-
-     !print *,'passe ici ?'
-
-#ifdef key_MUSTANG_debug
-     IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-       print *,'      iv=',iv
-     END IF
-#endif
-     ! Verifier si isand2=ibedload2, quon ne passe pas ici
-     IF (ibedload2==isand2) print *,' in sed_comp_eros_flx_indep, bug !'
-
-     !!! Critical shear stress toce in N/m2
-     IF (l_peph_suspension) THEN
-       ph=0.0_rsh
-       pe=0.0_rsh
-       ! Hindering / exposure coefficients for sediment class iv, ph and pe, respectively
-       DO jiv=1,isand2
-         ph=ph+(diam_sed(jiv)/(diam_sed(jiv)+diam_sed(iv)))* &
-                       ( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_MUSTANG,c_sedtot(ksmax,i,j))) )
-         pe=pe+(diam_sed(iv) /(diam_sed(jiv)+diam_sed(iv)))*  &
-                       ( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_MUSTANG,c_sedtot(ksmax,i,j))) )
-       END DO
-       pephm_fcor=(pe/ph)**(-m)
-#if defined key_MUSTANG_specif_outputs               
-       varspecif3Dnv_save(4,iv,i,j)=pephm_fcor
-#endif
-       toce_loc(iv)=stresscri0(iv)*pephm_fcor
-     ELSE
-       toce_loc(iv)=stresscri0(iv)
-     END IF
-     
-#if defined key_MUSTANG_specif_outputs        
-     varspecif3Dnv_save(1,iv,i,j)=toce_loc(iv)  ! toce_save
-#endif
-     
-     IF (tenfon(i,j) .GT. toce_loc(iv)) THEN
-
-       sed_eros_flx_class_by_class(iv)=MF*fwet(i,j)*frac_sed(iv)*E0_sand_loc(iv)  &
-                      *((tenfon(i,j)/toce_loc(iv))-1.0_rsh)**n_eros_sand
-
-#ifdef key_MUSTANG_debug
-       IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-         print *,'       EROSION of iv !'
-         IF (l_peph_suspension) print *,'       - pe/ph=',pe,' / ',ph
-         print *,'       - toce(iv)=',toce_loc(iv)
-         print *,'       - sed_eros_flx_class_by_class(iv)=',sed_eros_flx_class_by_class(iv)
-       END IF
-
-#endif
-     END IF
-
-   END DO
-#endif
-
-       
+      
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!! MUDDY SEDIMENTS    !!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
