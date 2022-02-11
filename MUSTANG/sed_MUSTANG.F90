@@ -2353,7 +2353,7 @@
    INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
    REAL(KIND=rsh) ::  dt1,toce,cvolgrv,csanmud,phieau_ero_ij,             &
                       erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,  &
-                      cvolp,volerod,profsed,poroa,poroam1,dflusve,        &
+                      cvolp,volerod,poroa,poroam1,dflusve,        &
                       xeros,sed_tocr_mixsed,sed_eros_flx,excespowr, &
                       heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron
    REAL(KIND=rsh) :: diamgravsan,somgravsan,frmudcr1,cv_sed_tot,dzs_activelayer_ij, &
@@ -2374,7 +2374,7 @@
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,iv,ksmax,ksup,ksmaxa,isplit        &
 !$OMP ,dt1,toce,cvolgrv,csanmud,erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w       &
-!$OMP ,cvolp,volerod,profsed,poroa,poroam1,dflusve, xeros,sed_tocr_mixsed   &
+!$OMP ,cvolp,volerod,poroa,poroam1,dflusve, xeros,sed_tocr_mixsed   &
 !$OMP ,diamgravsan,somgravsan,frmudcr1,cv_sed_tot,dzs_activelayer_ij        &
 !$OMP ,niter_ero_noncoh,niter_ero_coh,isthere_erosion                       &
 !$OMP ,dt_ero_max,dts2,mass_tot,cvolgrvsan,sommud,dzs_ini,poro_ini          &
@@ -3076,7 +3076,6 @@
 #endif                
 
                    IF (ksmax .GT. ksmi(i,j)) THEN
-                    !print *,'profsed.LE.activlayer.AND.k.GE.ksmi(i,j)'
                     dt1=dt1*(1.0_rsh-erodab/erosi) !  erosi=MF*dt1*ero
                     !print *,' !!!!!! =======> Il reste du temps dt1=dt1-erodab/ero=',dt1,' ==> CONTINUE EROSION'
                     GOTO 2
@@ -3226,7 +3225,7 @@
    INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
    REAL(KIND=rsh) ::  dt1,toce,cvolgrv,csanmud,phieau_ero_ij,                  &
                       erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,       &
-                      cvolp,volerod,profsed,poroa,poroam1,dflusve,      &
+                      cvolp,volerod,poroa,poroam1,dflusve,      &
                       xeros,sed_tocr_mixsed,sed_eros_flx,excespowr,dzpoi,      &
                       heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron
 ! because of lateral erosion, it is necessary to keep in memory the accumulated eroded fluxes
@@ -3237,7 +3236,7 @@
 
 !$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,iv,ksmax,ksup,ksmaxa,phieau_ero_ij,flx_s2w_eroij &
 !$OMP ,dt1,toce,cvolgrv,csanmud,erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w         &
-!$OMP ,cvolp,volerod,profsed,poroa,poroam1,dflusve, xeros,sed_tocr_mixsed,isplit          &
+!$OMP ,cvolp,volerod,poroa,poroam1,dflusve, xeros,sed_tocr_mixsed,isplit          &
 !$OMP ,sed_eros_flx,excespowr,dzpoi,heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron)
 !!!$OMP SINGLE
       DO j=jfirst,jlast
@@ -3506,16 +3505,12 @@
                 ENDIF
 #endif
 
-                ! test on active layer...
-                profsed=0.0_rsh
-                DO ksup=k,ksmax
-                  profsed=profsed+dzs(ksup,i,j)
-                ENDDO
+
                 k=k-1
-                IF(profsed.LE.activlayer.AND.k.GE.ksmi(i,j))THEN
+                IF(k.GE.ksmi(i,j))THEN
                   dt1=dt1-erodab/(MF*ero)
                   GOTO 2
-                ENDIF ! end test activlayer
+                ENDIF
                 phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
                 flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
@@ -3530,7 +3525,7 @@
           !        pas encore fait
           ! ----------------------------------------------------------
           IF(ero > 0.0_rsh) THEN
- 1000       IF(ksmax.GT.ksmi(i,j))THEN
+            DO WHILE(ksmax.GT.ksmi(i,j))
               IF(dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid))THEN
                 ksmaxa=ksmax
                 dzsa=dzs(ksmax,i,j)
@@ -3568,8 +3563,7 @@
                 ENDDO
 #endif
               
-                GOTO 1000
-              ENDIF
+              ENDDO ! end of do while (ksmax.GT.ksmi(i,j))
             ENDIF
 
            IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
@@ -4844,18 +4838,6 @@
 
             ENDIF  ! test  (fludep < 0 no deposition)
 
-
-           ! DO k=ksmi(i,j),ksmax
-           !   IF(poro(k,i,j).GE.0.9999_rsh)THEN
-           !    !WRITE(*,*)'a la fin de depeff, a',t,'  en kij:',k,i,j
-           !    !DO kl=ksmax,ksmi(i,j),-1
-           !      !WRITE(*,555)kl,dzs(kl,i,j),c_sedtot(kl,i,j),poro(kl,i,j)
-           !      !555 FORMAT('k=',i3,'  dzs ',g8.2,'  csed ',g8.2,'  poro ',g8.2)
-           !    !ENDDO
-           !    GOTO 51
-           !   ENDIF
-           ! ENDDO
-
         51  CONTINUE
 
             ! updating ksma ( ksmax can be modified in the routine)
@@ -5608,19 +5590,6 @@
 
 
             ENDIF
-
-            !GOTO 51
-            ! control writing :            
-            !DO k=ksmi(i,j),ksmax
-            !  IF(poro(k,i,j).GE.0.9999_rsh)THEN
-            !    !WRITE(*,*)'a la fin de effdep, a',t,'  en kij:',k,i,j
-            !    !DO kl=ksmax,ksmi(i,j),-1
-            !      !WRITE(*,555)kl,dzs(kl,i,j),c_sedtot(kl,i,j),poro(kl,i,j)
-            !      !555 FORMAT('k=',i3,'  dzs ',g8.2,'  csed ',g8.2,'  poro ',g8.2)
-            !    !ENDDO
-            !    GOTO 51
-            !  ENDIF
-            !ENDDO
 
               !!! : check  porosity (output)
 #ifdef key_MUSTANG_specif_outputs
