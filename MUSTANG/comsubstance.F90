@@ -73,12 +73,12 @@
 
 #ifdef MUSTANG
       REAL(KIND=rsh),DIMENSION(:,:)    ,ALLOCATABLE :: ws_free_para, ws_hind_para
-      INTEGER,DIMENSION(:)   ,ALLOCATABLE :: ws_free_opt,ws_hind_opt
+      INTEGER,DIMENSION(:)   ,ALLOCATABLE :: ws_free_opt, ws_hind_opt
       REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE :: tocd      
       REAL(KIND=rsh), DIMENSION(:)     ,ALLOCATABLE :: cini_sed_r
-      REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE :: diam_sed,ros
+      REAL(KIND=rsh),DIMENSION(:)      ,ALLOCATABLE :: diam_sed, ros
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-   INTEGER                          :: ibedload1,ibedload2
+   INTEGER                          :: ibedload1, ibedload2
 #endif
 #endif
 

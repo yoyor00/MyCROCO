@@ -8,7 +8,6 @@
 !This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
 !computer program whose purpose is to perform sediment transport process 
 !modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
 !
 !This software is governed by the CeCILL-C license under French law and
 !abiding by the rules of distribution of free software. You can use, 

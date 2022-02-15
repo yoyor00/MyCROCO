@@ -7,7 +7,7 @@
       USE module_MUSTANG
       USE sed_MUSTANG, ONLY : MUSTANG_update, MUSTANG_deposition
       USE sed_MUSTANG, ONLY : MUSTANG_morpho
-      USE initMUSTANG, ONLY : MUSTANG_init_sediment
+      USE initMUSTANG, ONLY : MUSTANG_init_sediment, MUSTANG_initialization
 
 # include "coupler_define_MUSTANG.h"
 
@@ -41,7 +41,6 @@ CONTAINS
                    RHOREF,SALREF_LIN,TEMPREF_LIN,&
                    TRANSPORT_TIME_STEP)
       end subroutine
-
 !
 !-----------------------------------------------------------------------
 !
@@ -64,18 +63,22 @@ CONTAINS
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
+
+!
+!  General initialization for MUSTANG ( parameters ..)
+!
+      call MUSTANG_initialization(  &
+# ifdef key_MUSTANG_flocmod
+               TRANSPORT_TIME_STEP, &
+# endif
+               RHOREF)
+
+
       CALL MUSTANG_init_sediment (Istr,Iend,Jstr,Jend,   &
-                   0,WATER_ELEVATION,                    &
+                   WATER_ELEVATION,                    &
 # if (defined key_oasis && defined key_oasis_croco_ww3) || defined MORPHODYN
                    DHSED,                                &
 # endif
-!# if defined key_MUSTANG_debug && defined SPHERICAL
-!     &            LATITUDE,LONGITUDE,
-!# endif  
-!# if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-!     &            CELL_DX,CELL_DY,
-!# endif 
-                   vname,indxT,ntrc_salt,                &
                    RESIDUAL_THICKNESS_WAT,Z0HYDRO,       &
                    WATER_CONCENTRATION)
       end subroutine

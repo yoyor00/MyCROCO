@@ -1,4 +1,4 @@
-!***************************************************************************
+/***************************************************************************
 !***************************************************************************
 !Copyright or (c) or Copr. : IFREMER
 !contributor(s) : IFREMER/DYNECO/DHYSED
@@ -8,7 +8,6 @@
 !This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
 !computer program whose purpose is to perform sediment transport process 
 !modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
 !
 !This software is governed by the CeCILL-C license under French law and
 !abiding by the rules of distribution of free software. You can use, 
@@ -37,11 +36,11 @@
 !knowledge of the CeCILL license and that you accept its terms.
 !***************************************************************************
 !***************************************************************************
-
+*/
 #include "cppdefs.h"
 
 #if defined MUSTANG
-
+/*
    !&E==========================================================================
    !&E                   ***  coupler_define_MUSTANG  ***
    !&E
@@ -57,10 +56,10 @@
    !&E                                    coupling with any hydro model 
    !&E
    !&E==========================================================================
-
+*/
 # define sed_MUSTANG_HOST sed_MUSTANG_CROCO
 
-!/* some specific commands used in MARS are to be commented out automatically 
+/* some specific commands used in MARS are to be commented out automatically 
 !   for another hydro model (we use  define)
 !   + There may be other definitions to add in order to replace compatible 
 !      terms with the hydro coupled model.
@@ -69,13 +68,13 @@
 # define IF_MPI !if
 # define ENDIF_MPI !endif
 # define PRINT_DBG !print
-!/*CROCO */
+/*CROCO */
 # define iscreenlog stdout
 # define ierrorlog stdout
 # define iwarnlog stdout
 # define NAME_SUBS vname(1,indxT+ntrc_salt+isubs)
 
-!/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !/*         Directory where are namelists files
 !/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
@@ -84,7 +83,7 @@
 #  define IF_MUSTANG_MORPHO_CPL if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) 
 # endif
 
-!/* Spatial Grid limits definition  of loops
+/* Spatial Grid limits definition  of loops
 !/*   inside the domain - except meshes at open boundaries
 !*/
 # define IMIN_GRID 1
@@ -121,7 +120,7 @@
 # define ARRAY_CELL_SURF GLOBAL_2D_ARRAY
 # define ARRAY_CELL_DX GLOBAL_2D_ARRAY
 # define ARRAY_CELL_DY GLOBAL_2D_ARRAY
-!/* dimensions of variables in hydro modele !*/
+/* dimensions of variables in hydro modele !*/
 # define ARRAY_WAT_SETTL GLOBAL_2D_ARRAY,N,itsubs1:itsubs2
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
 !# define ARRAY_TEMPSAL GLOBAL_2D_ARRAY,N 
@@ -137,7 +136,7 @@
 #define  ARRAY_h0_bedrock GLOBAL_2D_ARRAY
 
 
-!/* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
+/* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
 # define NUMBER_PI pi
 # define NB_LAYER_WAT N
@@ -175,7 +174,7 @@
 # define WAT_CONC_ALLMUD_ijk t(i,j,k,2+imud1:nvpc) /* water concentration in hydro model (for all mud) ATTENTION order of indices */
 #endif
 
-!/* surface elevation (i,j) et courants pouvant avoir un nombre different de dimension 
+/* surface elevation (i,j) et courants pouvant avoir un nombre different de dimension 
 !*/
 # define SURF_ELEVATION_ij WATER_ELEVATION(i,j,3) 
 # define COURANTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
@@ -192,7 +191,7 @@
 # define COURANTU_ijm1   BAROTROP_VELOCITY_U(i+1,j-1,3) 
 
 
-!/* name of fluxes exchange between MUSTANG and hydro model 
+/* name of fluxes exchange between MUSTANG and hydro model 
 !*/
 # define EROS_FLUX_s2w flx_s2w_CROCO /* Erosion flux from sediment to water  */
 
@@ -216,7 +215,6 @@
 # define WATER_FLUX_INPUT_BOTCELL phieau_CROCO(:,:,1) /* Flux d eau apporte dans la maille de fond in hydro model (=phieau in MARS) */
 
 
-
 /* Lateral Erosion
 !   in neighboring cells (could depend on grid architecture) 
 !*/
@@ -234,14 +232,8 @@
 # define U_NEAR_N (COURANTU_im1jp1 + COURANTU_ijp1)
 # define U_NEAR_S (COURANTU_im1jm1 + COURANTU_ijm1)
 
-!/* sliding proces of fluid mud
+/* sliding proces of fluid mud
 !   slope of the bottom in the neighboring cells (could depend on grid architecture)
-!*/
-!/*
-# define SLOPE_W ((h0(i-1,j)-h0(i,j))/dx(i,j))
-# define SLOPE_E ((h0(i+1,j)-h0(i,j))/dx(i,j))
-# define SLOPE_N ((h0(i,j+1)-h0(i,j))/dy(i,j))
-# define SLOPE_S ((h0(i,j-1)-h0(i,j))/dy(i,j))
 !*/
 # define SLOPE_W ((BATHY_H0(i-1,j)-BATHY_H0(i,j))/CELL_DX(i,j))
 # define SLOPE_E ((BATHY_H0(i+1,j)-BATHY_H0(i,j))/CELL_DX(i,j))

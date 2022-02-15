@@ -8,7 +8,6 @@
 !This software (MUSTANG, MUd and Sand TrAnsport modelliNG) is a Fortran F90 
 !computer program whose purpose is to perform sediment transport process 
 !modelling coupled to hydrodynamic models.
-!Full details can be obtained on https://wwz.ifremer.fr/dyneco/MUSTANG
 !
 !This software is governed by the CeCILL-C license under French law and
 !abiding by the rules of distribution of free software. You can use, 
@@ -43,7 +42,6 @@
                      MODULE initMUSTANG
 !
 !---------------------------------------------------------------------------
-   
 
 #include "cppdefs.h"
 
@@ -128,15 +126,8 @@
 
    !! * Accessibility
    ! functions & routines of this module, called outside :
-   PUBLIC MUSTANG_initialization,MUSTANG_init_sediment,MUSTANG_morphoinit
-   PUBLIC MUSTANG_compatibility,MUSTANG_param,MUSTANG_init_ws_sand
-   PUBLIC MUSTANG_init_hsed,MUSTANG_sedinit,MUSTANG_init_output
-#ifdef key_MUSTANG_flocmod
-   PUBLIC flocmod_kernels
-#endif
-#ifdef key_MUSTANG_V2
-   PUBLIC MUSTANGV2_non_cohesive_behaviour
-#endif
+   PUBLIC MUSTANG_initialization
+   PUBLIC MUSTANG_init_sediment
 
    PRIVATE
 
@@ -160,7 +151,6 @@
    !&E 
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
 
    !! * Arguments
    REAL(KIND=rsh),INTENT(IN)          :: RHOREF
@@ -192,7 +182,7 @@
 #endif
     
 #if ! defined key_MARS
-    CALL MUSTANG_param('w')
+    CALL MUSTANG_param('w')  
 #endif
 
     PRINT_DBG*, 'END MUSTANG_initialization'
@@ -200,14 +190,11 @@
   END SUBROUTINE MUSTANG_initialization
   
  !!===========================================================================================
-   SUBROUTINE MUSTANG_init_sediment(ifirst,ilast,jfirst,jlast,iappel,  &
+   SUBROUTINE MUSTANG_init_sediment(ifirst,ilast,jfirst,jlast,  &
            WATER_ELEVATION,                                   &
-#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
+#if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN  
            dhsed,                                                      &
 #endif
-!#ifdef key_CROCO
-           vname,indxT,ntrc_salt,                                      &
-!#endif
            h0fond,z0hydro,WATER_CONCENTRATION )
  
    !&E--------------------------------------------------------------------------
@@ -246,15 +233,11 @@
 #endif
 
    !! * Arguments 
-   INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast,iappel
+   INTEGER, INTENT(IN)                    :: ifirst,ilast,jfirst,jlast
    REAL(KIND=rsh),INTENT(IN)              :: h0fond
    REAL(KIND=rsh),DIMENSION(ARRAY_Z0HYDRO),INTENT(INOUT)        :: z0hydro                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
-!#ifdef key_CROCO
-   INTEGER, INTENT(IN)                    :: indxT,ntrc_salt
-   character*75 ,DIMENSION(20,500), INTENT(IN)  :: vname
-!#endif
 #if (defined key_oasis && defined key_oasis_mars_ww3) || defined MORPHODYN_MUSTANG_byHYDRO  
    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
 #endif
@@ -417,8 +400,6 @@
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
       CALL MUSTANG_init_output
 
-     ! writing sediment  parameters   
-     ! CALL MUSTANG_param('w')
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ! verification of CPP keys for compatiblity
@@ -426,9 +407,7 @@
 #ifdef key_MARS
    IF(.NOT. l_testcase) THEN
 #endif
-    !  CALL MUSTANG_compatibility
-!! for CROCO :
-     CALL MUSTANG_compatibility(vname,indxT,ntrc_salt)
+     CALL MUSTANG_compatibility()
 #ifdef key_MARS
    ENDIF
 #endif
@@ -484,7 +463,6 @@
    !&E
    !&E
    !&E ** Called by :  MUSTANG_initialization
-   !&E                 (or in MARS by init)
    !&E
    !&E ** External calls : tool_datosec(), tool_sectodat()
    !&E
@@ -824,7 +802,7 @@ ENDIF
 
   !!===========================================================================
  
-   SUBROUTINE MUSTANG_compatibility(vname,indxT,ntrc_salt)
+   SUBROUTINE MUSTANG_compatibility()
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANG_compatibility  ***
@@ -845,11 +823,6 @@ ENDIF
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
-
-   !! * Arguments
-   INTEGER, INTENT(IN)               :: indxT,ntrc_salt
-   character*75 ,DIMENSION(20,500), INTENT(IN)  :: vname
    
    !! * Local declarations
    INTEGER               :: iv,ivpc,isubs,IERR_MPI,iv2
@@ -1034,7 +1007,6 @@ ENDIF
    !&E           in CROCO : module_MUSTANG.F (include..)
    !&E
    !&E ** Called by :  MUSTANG_initialization
-   !&E                (in MARS by cas_init_sedim (if testcase))
    !&E 
    !&E ** External calls : 
    !&E
@@ -1946,8 +1918,7 @@ ENDIF
    !&E           in MARS : coupleur_dimhydro.h (USE ..)
    !&E           in CROCO : module_MUSTANG.F (include..)
    !&E
-   !&E ** Called by :  sed_init, sed_init_fromfile and cas_init_sedim (if testcase)
-   !&E 
+   !&E ** Called by :  MUSTANG_initialization
    !&E ** External calls : 
    !&E
    !&E ** Reference :
@@ -1997,7 +1968,7 @@ ENDIF
         E0_sand(iv)=E0_sand_Cst   ! read in paraMUSTANGV2.txt
       ELSE IF(E0_sand_option == 1 .AND. ros(iv) .GT. 1000_rsh) THEN
         ! E0_sand computed from the formulation of Van Rijn (1984)
-        E0_sand(iv)=0.000005_rsh*ros(iv)*((ros(iv)/1000.0_rsh-1.0_rsh)*9.81*diam_sed(iv))**0.5_rsh*(diam_sed(iv)  &
+        E0_sand(iv)=0.00033_rsh*ros(iv)*((ros(iv)/1000.0_rsh-1.0_rsh)*9.81*diam_sed(iv))**0.5_rsh*(diam_sed(iv)  &
           &   *((ros(iv)/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
       ELSE IF (E0_sand_option == 2) THEN
         ! E0_sand computed as a function of mean sand diameter (expression deduced from erodimetry experiments)
@@ -2042,8 +2013,7 @@ ENDIF
    !&E           in MARS : coupleur_dimhydro.h (USE ..)
    !&E           in CROCO : module_MUSTANG.F (include..)
    !&E
-   !&E ** Called by :  MUSTANG_init_sediment
-   !&E                 (by main in MARS if testcase)
+   !&E ** Called by :  MUSTANG_initialization
    !&E 
    !&E ** External calls : 
    !&E
@@ -2099,7 +2069,7 @@ ENDIF
   !&E
   !&E ** Description :
   !&E
-  !&E ** Called by : dyn3dxtlscoef, dyn3dytlscoef, turbk, turbpsi
+  !&E ** Called by : flocmod_init
   !&E
   !&E ** External calls : 
   !&E
