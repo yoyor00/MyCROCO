@@ -156,7 +156,7 @@
      ! (thicklayerW - htot, BIO_SINKSOURCES, PAR_ATTENUATED_RAD
      ! EXTINCTION_RAD, PAR_top_layer_ave,light_integ
      !----------------------------------------------------------------
-     CALL BIOLink_alloc(nv_state)
+     CALL BIOLink_alloc()
        
   ! identification of variable numbers or specific allocation 
   !!!!!    To Program BIO    !!!!!!!!!
