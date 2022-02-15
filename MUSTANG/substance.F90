@@ -17,6 +17,14 @@ MODULE substance
    USE module_substance
    USE comsubstance
 
+# if defined BIOLink
+   USE comBIOLink
+# endif
+#if defined MUSTANG && ! defined key_noTSdiss_insed
+      USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1
+#endif
+
+
 
 # define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
@@ -58,7 +66,13 @@ CONTAINS
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
       !
-   
+ 
+#if defined BLOOM
+# if defined key_N_tracer || key_P_tracer
+    USE bloom_initdefine , ONLY : bloom_create_vartracer
+# endif
+#endif
+ 
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
    INTEGER,INTENT(IN)                        ::  indxT,indxTsrc
@@ -67,6 +81,7 @@ CONTAINS
    LOGICAL                                   :: l_varassoc
    INTEGER                                   :: ivpc,ivp,iv,iv0,indx,ivTS
    INTEGER                                   :: isubs,nballoc,ivr,it,ntypvar
+CHARACTER(LEN=80)                         :: para_file
 #ifdef key_CROCO
    INTEGER                                   :: lstr,lenstr
 #endif
@@ -92,8 +107,14 @@ CONTAINS
    REAL(KIND=rsh), DIMENSION(4,ntrc_subs)     :: ws_free_para_r
    REAL(KIND=rsh), DIMENSION(2,ntrc_subs)     :: ws_hind_para_r 
    INTEGER, DIMENSION(ntrc_subs)              :: ws_hind_opt_r,ws_free_opt_r 
+# if ! defined key_noTSdiss_insed
+      INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r,D0_m0_r,D0_m1_r
+# endif
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
    LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n,l_outsandrouse_n,l_bedload_n
+   INTEGER, DIMENSION(:),ALLOCATABLE          :: D0_funcT_opt_n
+   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
+
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n,ws_hind_opt_n
    REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n,ws_hind_para_n
@@ -131,6 +152,7 @@ CONTAINS
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       D0_funcT_opt_n,D0_m0_n,D0_m1_n,                       &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #else     
    NAMELIST/nmlnbvar/ nv_dis,nv_ncp,nv_bent,nv_fix,nv_sorb                 
@@ -168,40 +190,51 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) ' '
    !   WRITE(stdout,*) 'namelist file defining simulated substances (other than temperature and salinity) :'
    !   WRITE(stdout,*) TRIM(name_filesubs)
+
 #ifdef MUSTANG
-# ifdef key_CROCO
-   lstr=lenstr(sedname_subst)
-   OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
+# ifdef BLOOM
+   para_file = REPFICNAMELIST//'/parasubstance_MUSTANGBLOOM.txt'
+   OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
+   MPI_master_only   PRINT*,'Ouverture de parasubstance_MUSTANGBLOOM.txt dans',REPFICNAMELIST
 # else
-   OPEN(500,file=REPFICNAMELIST//'/parasubstance_MUSTANG.txt',status='old',form='formatted',access='sequential')
+   para_file = REPFICNAMELIST//'/parasubstance_MUSTANG.txt'
+   OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
+   MPI_master_only   PRINT*,'OUVERTURE de parasubstance_MUSTANG.txt dans', REPFICNAMELIST
+
 # endif
 ! only substance
 #else 
-# ifdef key_CROCO
-   lstr=lenstr(subsname)
-   MPI_master_only  WRITE(stdout,*),'SUBS:',subsname(1:lstr)
-   OPEN(500,file=subsname(1:lstr),status='old',form='formatted',access='sequential')
+
+# ifdef BLOOM
+   para_file = REPFICNAMELIST//'/parasubstance_BLOOM.txt'
+   OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
+   MPI_master_only   PRINT*, 'OUVERTURE de parasubstance_BLOOM.txt dans',REPFICNAMELIST
 # else
-   OPEN(500,file=REPFICNAMELIST//'/parasubstance.txt',status='old',form='formatted',access='sequential')
+   para_file = REPFICNAMELIST//'/parasubstance.txt'
+   OPEN(500,file=para_file,status='old',form='formatted',access='sequential')
+   MPI_master_only  PRINT*,'OUVERTURE de parasubstance.txt dans',REPFICNAMELIST
+
 # endif
    nv_grav=0
    nv_sand=0
    nv_mud=0
 #endif
    READ(500,nmlnbvar)
-
-#ifdef MUSTANG
+#if !defined PEPTIC && ! defined key_N_tracer && ! defined key_P_tracer
+#if defined MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
-     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
+     MPI_master_only  WRITE(stdout,*) para_file,' is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'  nv_dis read in parasubstance.txt ',nv_dis
-     MPI_master_only  WRITE(stdout,*)'+ nv_ncp read in parasubstance.txt ',nv_ncp
-     MPI_master_only  WRITE(stdout,*)'+ nv_grav read in parasubstance.txt ',nv_grav
-     MPI_master_only  WRITE(stdout,*)'+ nv_sand read in parasubstance.txt ',nv_sand
-     MPI_master_only  WRITE(stdout,*)'+ nv_mud read in parasubstance.txt ',nv_mud
-     MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
+     MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
+     MPI_master_only  WRITE(stdout,*)'+ nv_ncp ',nv_ncp
+     MPI_master_only  WRITE(stdout,*)'+ nv_grav ',nv_grav
+     MPI_master_only  WRITE(stdout,*)'+ nv_sand ',nv_sand
+     MPI_master_only  WRITE(stdout,*)'+ nv_mud ',nv_mud
+     MPI_master_only  WRITE(stdout,*)'+ nv_sorb ',nv_sorb
+     MPI_master_only  WRITE(stdout,*)'in read ',para_file   
+
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -209,12 +242,14 @@ CONTAINS
 #else
    IF(nv_dis+nv_ncp+nv_sorb .NE. ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
-     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
+     MPI_master_only  WRITE(stdout,*)para_file,' is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'  nv_dis read in parasubstance.txt ',nv_dis
-     MPI_master_only  WRITE(stdout,*)'+ nv_ncp read in parasubstance.txt ',nv_ncp
-     MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
+     MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
+     MPI_master_only  WRITE(stdout,*)'+ nv_ncp ',nv_ncp
+     MPI_master_only  WRITE(stdout,*)'+ nv_sorb ',nv_sorb
+     MPI_master_only  WRITE(stdout,*)'read in ',para_file
+
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -224,14 +259,17 @@ CONTAINS
  
    IF(nv_fix .NE. ntfix) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the number of FIXED substances read from the file'
-     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntfix parameter'
+     MPI_master_only  WRITE(stdout,*) para_file,' is DIFFERENT from the ntfix parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntfix in param.h = ',ntfix
-     MPI_master_only  WRITE(stdout,*)'  nv_fix read in parasubstance.txt ',nv_fix
+     MPI_master_only  WRITE(stdout,*)' nv_fix ',nv_fix
+     MPI_master_only  WRITE(stdout,*)' read in ',para_file
+
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
    END IF
+#endif
    ivTS=itsubs1-1
    ivp=0
    iv=0
@@ -408,10 +446,27 @@ CONTAINS
    !-------------------------------------------
    IF(nv_dis > 0) THEN
     CALL ALLOC_DEFVAR(nv_dis)   
+#ifdef MUSTANG
+      ALLOCATE(D0_funcT_opt_n(nv_dis))
+      ALLOCATE(D0_m0_n(nv_dis))
+      ALLOCATE(D0_m1_n(nv_dis))
+#endif
+
     READ(500,nmlvardiss)
     iv0=iv   
     CALL DEFVAR_DEALLOC(nv_dis,iv)   
     itypv_r(iv0+1:iv)=6
+#if defined MUSTANG
+# if ! defined key_noTSdiss_insed
+      DO ivr=1,nv_dis
+       D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
+       D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
+       D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
+      ENDDO
+# endif
+      DEALLOCATE(D0_funcT_opt_n,D0_m0_n,D0_m1_n)
+#endif
+
    ENDIF
    !MPI_master_only write(*,*)'number substance after part+sorb+diss',iv
 
@@ -582,10 +637,12 @@ CONTAINS
 
    IF (nv_adv /= ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
-     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
+     MPI_master_only  WRITE(stdout,*)para_file,' is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'nv_adv read in parasubstance.txt ',nv_adv
+     MPI_master_only  WRITE(stdout,*)'nv_adv',nv_adv
+     MPI_master_only  WRITE(stdout,*)'read in',para_file
+
      MPI_master_only  WRITE(stdout,*)'The simulation is stopped'
      may_day_flag=77
      goto 99
@@ -646,6 +703,12 @@ CONTAINS
       tocd(:)=0.0
       ros(:)=0.0
       diam_sed(:)=0.0
+# if ! defined key_noTSdiss_insed
+      ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
+      ALLOCATE(D0_m0(nvp+1:nv_tot))
+      ALLOCATE(D0_m1(nvp+1:nv_tot))
+# endif 
+
 #else
       ALLOCATE(ws_free_min(nvp)) 
       ALLOCATE(ws_free_max(nvp)) 
@@ -701,7 +764,7 @@ CONTAINS
        MPI_master_only   WRITE(stdout,*)' '
        MPI_master_only   WRITE(stdout,*)'the SORB variable :',name_var(irk_fil(isubs))
        MPI_master_only   WRITE(stdout,*)'does not have associated constitutive part. variable'
-!       MPI_master_only   WRITE(stdout,*)'See parasubstance_MUSTANG.txt to give exactly the name of the constitutive associated variable'
+       MPI_master_only   WRITE(stdout,*)'See ',para_file,' to give exactly the name of the constitutive associated variable'
        MPI_master_only   WRITE(stdout,*)'otherwise, it is not a SORB variable, but a NoCP variable '
        may_day_flag=78
        goto 99
@@ -728,7 +791,7 @@ CONTAINS
        MPI_master_only   WRITE(stdout,*)' '
        MPI_master_only   WRITE(stdout,*)'the SORB variable :',name_var(irk_fil(isubs))
        MPI_master_only   WRITE(stdout,*)'does not have associated particulate variable'
-       MPI_master_only   WRITE(stdout,*)'See parasubstance.txt to give exactly the name of the associated variable'
+       MPI_master_only   WRITE(stdout,*)'See ',para_file,' to give exactly the name of the associated variable'
        MPI_master_only   WRITE(stdout,*)'otherwise, it is not a SORB variable, but a NoCP variable '
        may_day_flag=78
        goto 99
@@ -1289,6 +1352,14 @@ ENDDO
      tocd(iv)=tocd_r(irk_fil(iv))
      ros(iv)=ros_r(irk_fil(iv))
    END DO
+# if ! defined key_noTSdiss_insed
+      DO iv=nvp+1,nvp+nv_dis
+       D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
+       D0_m0(iv)=D0_m0_r(iv)
+       D0_m1(iv)=D0_m1_r(iv)
+      ENDDO
+# endif
+
 #ifdef key_sand2D
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.

@@ -320,8 +320,9 @@
 #endif
 
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
-   USE reactionsinsed,  ONLY : reactions_in_sed
-   USE bioloinit,     ONLY : p_txfiltbenthmax
+   USE bloom,  ONLY : bloom_reactions_in_sed
+   USE comBIOLink,     ONLY : p_txfiltbenthmax
+
 #if defined key_MARS && defined key_MPI_2D
    USE sed_MUSTANG_MARS,    ONLY :  sed_exchange_cvwat_MARS
 #endif
@@ -569,7 +570,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! BIO PROCESSES in SEDIMENT                                        !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL reactions_in_sed(ifirst,ilast,jfirst,jlast,BATHY_H0,h0fond,dt_true,dtinv)
+    CALL bloom_reactions_in_sed(ifirst,ilast,jfirst,jlast,dt_true) 
+
+
 #if defined key_MARS && defined key_MPI_2D
     IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
      CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
@@ -1312,7 +1315,7 @@
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #ifdef key_BLOOM_insed
-   USE bioloinit,  ONLY :  ndiag_tot,ndiag_3d_sed,diag_3d_sed,diag_2d_sed,ndiag_1d,ndiag_2d,ndiag_2d_sed
+   USE comBIOLink,  ONLY :  ndiag_tot,ndiag_3d_sed,diag_3d_sed,diag_2d_sed,ndiag_1d,ndiag_2d,ndiag_2d_sed
 #endif
 
    !! * Arguments

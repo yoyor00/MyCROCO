@@ -1513,8 +1513,9 @@ ENDIF
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-#if defined key_BLOOM_insed
-   USE bioloinit,  ONLY : ndiag_tot,ndiag_3d_sed,ndiag_2d_sed,ndiag_1d,ndiag_2d
+
+#if defined BLOOM && defined key_BLOOM_insed
+   USE comBIOLink , ONLY : ndiag_tot,ndiag_3d_sed,ndiag_2d_sed,ndiag_1d,ndiag_2d
 #endif
 
    !! * Arguments

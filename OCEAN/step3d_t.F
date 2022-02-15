@@ -38,7 +38,7 @@
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk)
 
 #  ifdef SUBSTANCE
-      USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand
+      USE comsubstance, ONLY : nv_grav,nvp,ws_part,nv_sand,cvfix_wat
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO,corfluy_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO,corflux_CROCO
@@ -150,6 +150,21 @@
 
       nadv = 3   !<-- do not remove: used in compute_tracer_fluxes.h
 !
+!=======================================================================
+! I begin with the exception for the fixed tracers
+!=======================================================================
+!
+
+#  if defined SUBSTANCE
+      do itrc=1,ntfix
+         do i=Istr,Iend+1
+           do j=Jstr,Jend
+             cvfix_wat(i,j,nnew,itrc) = 0.
+           enddo
+         enddo
+      enddo
+#  endif
+
 !======================================================================
 !
 !  Compute horizontal advection
@@ -164,6 +179,8 @@
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
         if (itrc .eq. 1) then
+#   else 
+          if (itrc.le.0) then
 #   endif
 #  endif
 !
