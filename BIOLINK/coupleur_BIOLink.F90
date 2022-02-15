@@ -12,83 +12,129 @@
    !&E======================================================================
    !&E                   ***  MODULE  BIOLink  ***
    !&E
-   !&E ** Purpose : concerns coupling Biogeochemical ocean/coastal/sediment model BIOLink with hydro code
-   !&E Ocean dynamics Bio :  Initializations, reading of files *.dat (rivers, discharges, bio variables...)
+   !&E ** Purpose : concerns coupling Biogeochemical ocean/coastal/sediment 
+   !&E              model BIOLink with hydro code
+   !&E Ocean dynamics Bio :  Initializations, reading of files *.dat 
+   !&E                       (rivers, discharges, bio variables...)
    !&E                       + update sources and sinks terms
    !&E
    !&E ** Description :
-   !&E     subroutine BIOLink_initialization   ! initialization of BIOLink  - routine called by main
-   !&E     subroutine BIOLink_init             ! specifics initializations of BIO modules  - routine called by main 
-   !&E     subroutine BIOLink_update           ! evaluation of sinks and sources terms  - routine called by step 
+   !&E     subroutine BIOLink_initialization   ! initialization of BIOLink  - 
+   !&E                                          routine called by main
    !&E
-   !&E     subroutine BIOLink_read_vardiag     ! reading diagnostics variables - called by BIOLink_initialization
-   !&E     subroutine BIOLink_water_column     ! evaluation of total water height and vertical meshes thickness - called by BIOLink_update
-   !&E     subroutine BIOLink_convarray        ! conversion of 3D or 4D array from hydro model to BIOLink - called by BIOLink_update
-   !&E     subroutine BIOLink_sinking_rate     ! update and limiting sinking rate for each variables - called by BIOLink_update
-   !&E     subroutine BIOLink_eval_PAR         ! evaluation of solar radiation extinction, attenuation and PAR - called by BIOLink_update
+   !&E     subroutine BIOLink_init             ! specifics initializations of 
+   !&E                                          BIO modules  - routine called 
+   !&E                                          by main 
+   !&E                                                                        
+   !&E     subroutine BIOLink_update           ! evaluation of sinks and sources 
+   !&E                                          terms  - routine called by step
+   !&E                
+   !&E     subroutine BIOLink_read_vardiag     ! reading diagnostics variables - 
+   !&E                                          called by BIOLink_initialization
    !&E
-   !&E     subroutine BIOLink2hydro            !  conversion array BIOLink   to hydro host model 
-   !&E     subroutine BIOLink_updateconc_BIO   !  change tracers-substances concentrations if needed
-   !&E     subroutine BIOLink_substance        ! definition number et type of variables (if key_nosubstmodule )
-
-   !&E     subroutine BIOLink_SPMsat_file       ! special reading SPM satellite file for key_messat
-
-   !&E ** Purpose :  
-
+   !&E     subroutine BIOLink_water_column     ! evaluation of total water height and 
+   !&E                                          vertical meshes thickness - 
+   !&E                                          called by BIOLink_update
    !&E
+   !&E     subroutine BIOLink_convarray        ! conversion of 3D or 4D array from 
+   !&E                                           hydro model to BIOLink - 
+   !&E                                           called by BIOLink_update
    !&E
-
+   !&E     subroutine BIOLink_sinking_rate     ! update and limiting sinking rate 
+   !&E                                           for each variables - called by 
+   !&E                                           BIOLink_update
+   !&E
+   !&E     subroutine BIOLink_eval_PAR         ! evaluation of solar radiation 
+   !&E                                          extinction, attenuation and PAR - 
+   !&E                                          called by BIOLink_update
+   !&E
+   !&E     subroutine BIOLink2hydro            !  conversion array BIOLink   
+   !&E                                               to hydro host model 
+   !&E
+   !&E     subroutine BIOLink_updateconc_BIO   !  change tracers-substances 
+   !&E                                            concentrations if needed
+   !&E
+   !&E     subroutine BIOLink_substance        ! definition number et type of 
+   !&E                                           variables (if key_nosubstmodule)
+   !&E
+   !&E     subroutine BIOLink_SPMsat_file       ! special reading SPM satellite file 
+   !&E                                               for key_messat
    !&E
    !&E   History :
    !&E    !  2019-08 (B. Thouvenin) issued from bloom and peptic for portability adaptation
    !&E
-   !&E===================================================================================================================
+   !&E=========================================================================================
 
-#include "coupleur_define_BIOLink.h"
+!*****************************************************************************************!
+!                                                                                         !
+!                                      Interface                                          !
+!                                                                                         !
+!*****************************************************************************************!
+
+#include "coupleur_define_BIOLink.h" ! Equivalence of names between the hydro and the different
+                                     ! Tracer and biological model. Also contains a function
+                                     ! For the allocation of the main tables
 
 #ifdef key_MARS
 #include "coupleur_dimhydro_BIOLink.h"
    USE sflxatm,      ONLY : rad
 #else
-   USE module_BIOLink
-   USE comsubstance
-#endif
-   USE comBIOLink
+   USE module_BIOLink ! script that groups all the files of BIOLink together and allows the 
+                      ! access to their functions/subroutines/variables
+   USE comsubstance   ! Access to the functions/variables of SUBSTANCE ( from the MUSTANG
+                      ! sediment model)
+#endif /* key_MARS */
+
+   USE comBIOLink     ! Common variables of the BIOLink coupler
+
 #if defined MUSTANG
-   USE comMUSTANG ,  ONLY : htot
-#endif
+   USE comMUSTANG ,  ONLY : htot ! Height of the water column
+#endif /*MUSTANG*/
+
 #if defined ECO3M   
-   USE COUPLEUR_PHY_BIO
-#endif
+   USE COUPLEUR_PHY_BIO ! Internal functions of coupling of ECO3M
+#endif /* ECO3M */
 
  
    IMPLICIT NONE
-
-   !! * Interface
   
-   
-   !! * Accessibility
+!*****************************************************************************************!
+!                                                                                         !
+!                                  Accessibility                                          !
+!                                                                                         !
+!*****************************************************************************************!
 
-   ! functions & routines of this module, called outside :
-    PUBLIC BIOLink_initialization,BIOLink_init                ! initialization of BIOLink  - routines called by main.F90
-    PUBLIC BIOLink_update                                     ! routine called by step.F90
-    PUBLIC BIOLink_read_vardiag
+     !====================================================================
+     ! Internal BIOLink functions and routines
+     !====================================================================
+
+    PUBLIC BIOLink_initialization ! initialization of BIOLink  
+                                  ! - called by main
+ 
+    PUBLIC BIOLink_init           ! Initialization of some of BIOLink tables 
+                                  ! - called by main
+                                                                           
+    PUBLIC BIOLink_update         ! Update of BIOLink and biology model variables
+                                  ! - called by main
+
+    PUBLIC BIOLink_read_vardiag   ! Reading of diagnostic variables
 
 
 #ifdef key_MARS
-    PUBLIC BIOLink_exchgMPI_cvwat
+    PUBLIC BIOLink_exchgMPI_cvwat ! I do not know
 #endif
+
 #if defined key_nosubstmodule
-    PUBLIC BIOLink_substance
+    PUBLIC BIOLink_substance      ! Declaration of the characteristics of the tracers
+                                  ! If the module substance is not declared
 #endif
 
-   PRIVATE
-#if ! defined key_MARS
-   !! * Shared or public module variables (variables used by MUSTANG but issued from hydro model or substances module  )
-   !! * for MARS_MODEL, these variables are stored in comvar.. or comsubstance which are not the same for other model
+!*****************************************************************************************!
+!                                                                                         !
+!                         Routines and functions                                          !
+!                                                                                         !
+!*****************************************************************************************!
 
-#endif
- 
  CONTAINS
 
   !!======================================================================
@@ -97,7 +143,7 @@
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_initialization  ***
   !&E
-  !&E ** Purpose : intialization of  module  BIOLink
+  !&E ** Purpose : intialization of module BIOLink
   !&E
   !&E ** Description :
   !&E
@@ -111,100 +157,123 @@
   !&E       !  2019-08  (B.Thouvenin)  creation 
   !&E
   !&E---------------------------------------------------------------------
-  !! * Modules used
+
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
 #if defined PEPTIC
   USE peptic_initdefine, ONLY : peptic_param,peptic_alloc_var
+  ! Functions for the reading of parameter files and allocation of variables
+  ! of the PEPTIC biological model
 #elif defined BLOOM
   USE bloom_initdefine, ONLY : bloom_param,bloom_init_iv
+  ! Function for the reading of parameter files and allocation of variables
+  ! of the BLOOM biological model
 #elif defined METeOR
   USE meteor_initdefine, ONLY : meteor_param
+  ! Function for the reading of parameter files of METeOR contaminant model
 #endif
 
-  !! * Arguments
-  INTEGER, INTENT(IN) :: icall
-   
-  !! * Local declarations
+     !====================================================================
+     ! External arguments
+     !====================================================================
+
+  INTEGER, INTENT(IN) :: icall ! To differentiate the two calls to the function
+                               ! The first call reads the parameter files
+                               ! and the second initialize the tracer/biological
+                               ! model 
+
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+  
   INTEGER               :: isubs
-  !REAL(KIND=rlg)        :: tool_datosec
    
-   ! reading namelist in parapetic.txt or parabloom.txt
-   ! in MARS already called in init.F90 (or in some test case)
-   !!!!!    To Program BIO    !!!!!!!!!
-   !----------------------------------------------------------------
-
-   IF (icall==0) THEN
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
+ 
+   IF (icall==0) THEN ! First call of the function, we read the parameter
+                      ! files
 
 #if ! defined key_MARS
-#if defined PEPTIC
+#  if defined PEPTIC
     CALL peptic_param('r')
-#elif defined BLOOM
+
+#  elif defined BLOOM
     CALL bloom_param('r')
-#elif defined METeOR
+
+#  elif defined METeOR
     CALL meteor_param('r')
-#endif
-#endif
 
-   ELSE
+#  endif /* PEPTIC/BLOOM/METeOR */
+#endif /* key_MARS */
+
+   ELSE ! Second call of the function, now we initialize the variable of the 
+        ! Biology/Tracer models
+
 #if ! defined key_MARS
-     ! in MARS : TIME_BEGIN = tdeb known and declared by hydro model
-     ! in CROCO : TIME_BEGIN ???   => TIME_BEGIN is declared in BIOLink
-     TIME_BEGIN=CURRENT_TIME  
 
-     ! in MARS already called in subreaddat
+     TIME_BEGIN=CURRENT_TIME ! Time begin is the beginning time for BIOLink and 
+                             ! biological/tracer models, while current time
+                             ! is the time from the hydro model
 
-     ! allocation of sources and sinks terms  common for modules ECO
-     ! (thicklayerW - htot, BIO_SINKSOURCES, PAR_ATTENUATED_RAD
-     ! EXTINCTION_RAD, PAR_top_layer_ave,light_integ
-     !----------------------------------------------------------------
-     CALL BIOLink_alloc()
+     CALL BIOLink_alloc() ! Allocation of the variables used by BLOOM :
+                          ! Source and sink terms,
+                          ! Height of the water column
+                          ! and light attenuations related variables
        
-  ! identification of variable numbers or specific allocation 
-  !!!!!    To Program BIO    !!!!!!!!!
-  !  ----------------------------------------------------------
-#ifdef BLOOM
-     DO isubs=1,nv_adv
+
+! Initialization of the tracer/fixed variables in biological/tracer models
+! with their names and characteristics
+
+#  ifdef BLOOM 
+     DO isubs=1,nv_adv ! Counter for tracer variables
        CALL bloom_init_iv(isubs,standard_name_var(isubs),1)
      END DO
-     DO isubs=nv_adv+1,nv_adv+nv_fix
+
+     DO isubs=nv_adv+1,nv_adv+nv_fix !Counter for fixed variables
        CALL bloom_init_iv(isubs,standard_name_var_fix(isubs-nv_adv),2)
      END DO
-#ifdef key_benthic
-     DO isubs=nv_adv+nv_fix+nv_bent
+
+#    ifdef key_benthic
+     DO isubs=nv_adv+nv_fix+nv_bent ! Counter for benthic variables
        CALL bloom_init_iv(isubs,standard_name_var_bent(isubs-nv_adv-nv_fix),3)
      END DO
-#endif
-#endif
-#if defined PEPTIC
-     CALL peptic_alloc_var
-#endif
-#if defined ECO3M
-     CALL ALLOC_VAR_Eco3M
-     nbcallbio = -1
+#    endif /* key_benthic */
+#  endif /* BLOOM */
+
+#  if defined PEPTIC
+     CALL peptic_alloc_var ! For PEPTIC all the variables 
+                           ! are declared in the same function
+#  endif /* PEPTIC */
+
+#  if defined ECO3M 
+     CALL ALLOC_VAR_Eco3M ! 
+     nbcallbio = -1 ! Internal variable of ECO3M
      CALL main_bio(0.0)
-#endif
+#  endif /* ECO3M */
   
-  ! writing BIO used parameters  (To Program BIO )
-  !-----------------------------------------------
-#if defined PEPTIC
+  ! Writing of the biological parameters used in an external file
+#  if defined PEPTIC
      CALL peptic_param('w')
-#elif defined BLOOM
+#  elif defined BLOOM
      CALL bloom_param('w')
-#elif defined METeOR
+#  elif defined METeOR
      CALL meteor_param('w')
-#endif
+#  endif /* PEPTIC/BLOOM/METeOR */
 
 #endif /* ! defined key_MARS */
 
-  ! reading bio diagnostics variables - 
-  !  allocation et reperage pour BLOOM
-  !-----------------------------------------------
+  ! Allocation of diagnostic variables for BLOOM
 #if defined BLOOM
      CALL BIOLink_read_vardiag
-#endif
+#endif /* BLOOM */
 
-   ENDIF  ! /* icall */
+   ENDIF ! /* icall parameter */
 
-   PRINT_DBG*, 'END BIOLink_initialization'
+   MPI_master_only PRINT*, 'END of BIOLink_initialization'
 
 
   END SUBROUTINE BIOLink_initialization
