@@ -28,38 +28,165 @@
 
       IMPLICIT NONE
 
+     !*************************************************************************!
+     !*************************************************************************!
+     !*************** BIOLink tracer and time variables ***********************!
+     !*********************** and subroutines *********************************!
+     !*************************************************************************!
+     
+     !====================================================================
+     ! Public subroutines
+     !====================================================================
 
-      !---------------------------------------------------------------
-      !   Declarations of public subroutines and variables from the 
-      !   Program itself.
-      !---------------------------------------------------------------
-
-      ! Public subroutines
       PUBLIC BIOLink_alloc ! Subroutines for allocating the space of variables in BIOLink
-  
-      ! Public variables
+
+     !====================================================================
+     ! Local variables of BIOLink
+     !====================================================================
+
+      REAL(kind=rsh)  ,PARAMETER                :: epsilon_BIOLink=1.e-10
+      ! Variable for the comparison of float internal to BIOLink
+      CHARACTER(LEN=lchain)                      :: suffix_fileres
+      ! File for ?
+ 
+     !=====================================================================
+     !  Time-related variables: Timesteps and dates
+     !=====================================================================
+
       INTEGER,PUBLIC        ::  ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK,  &
                                 iheure_BIOLINK,iminu_BIOLINK,isec_BIOLINK, &
                                 jjulien_BIOLINK ! Variables used in the BLOOM module that 
                                                 ! Relies on julian days
 
-      
       REAL(KIND=rlg),PUBLIC                     :: t_bio,BIO_TIME_STEP,DT_CONSERV_BIOLINK
       !Time and time steps variables used in the biological models 
-      LOGICAL, PUBLIC                           :: l_bioretro_extinct,l_waterdensity_known
-      ! Boolean variable for the activation of some subroutines of BIOLink
+      REAL(KIND=rlg)                             :: ECO_TIME_STEP,TIME_START_ECO 
+      ! Timestep of the hydrodynamical model
+      REAL(KIND=rlg)                             :: TIME_BEGIN  
+      ! Date of the start of the model run
+      
+     !===================================================================
+     ! Positive concentrations for tracer variables
+     !===================================================================
+
+#  if !defined ECO3M 
+      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: WATCONCPOS 
+      ! Concentration in the water column, the order is the one of BIOLink for the storage 
+      ! which means (species_index,vertical_direction,zonal_direction,meridional_direction)
+#  endif /* ECO3M */
+
+     !===================================================================
+     ! Positive concentrations for fixed variables
+     !===================================================================
+
+      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: FIXCONCPOS  
+      ! Concentration of fixed variables, the order is the one of BIOLink for the storage
+
+     !===================================================================
+     ! Positive concentrations for benthic variables
+     !===================================================================
+
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: BENTCONCPOS 
+      ! Concentration of benthic variables, the order is the one of BIOLink for the storage
+
+     !===================================================================
+     ! Sources and sink terms for tracer variables
+     !===================================================================
+      
+      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: BIO_SINKSOURCES 
+      ! For the variables in the water column
+
+     !===================================================================
+     ! Sources and sink terms for fixed variables
+     !===================================================================
+
+      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: BIO_SKSC_FIX 
+      ! For the fixed variables
+
+     !=====================================================================
+     !  Booleans for the activation of helping functions
+     !=====================================================================   
+      
+      LOGICAL, PUBLIC                           :: l_bioretro_extinct
+      ! For the light attenuation (PAR) routines
+      LOGICAL, PUBLIC                           :: l_waterdensity_known
+      ! For the computation of water density if it is not provided
+      ! by the hydrodynamic model
+      LOGICAL,ALLOCATABLE,DIMENSION(:),PUBLIC :: l_diagBIOLink_out
+      ! Booleans for the writing in external file of diagnostic variables of BIOLink
+     
+     !=====================================================================
+     !  Variables related to the verification of the conservation routine
+     !=====================================================================     
+
       INTEGER, PUBLIC                           :: IVERIF_BIOLINK,JVERIF_BIOLINK
       ! Counter variables for the verification loops
-      
+
 #  if defined key_BIOLink_verif_conserv 
       INTEGER, PUBLIC , PARAMETER               :: iscreenlog_conserv=66
       ! Printing variable for the verification of conservativity
 #  endif /* key_BIOLink_verif_conserv */
  
+     
+     !*************************************************************************!
+     !*************************************************************************!
+     !****************** Variables for the biological or **********************!
+     !*********************** chemical model **********************************!
+     !*************************************************************************!
+     !*************************************************************************!
+     
+     !=====================================================================
+     !  Mystery variables
+     !=====================================================================  
 
-   ! ----------------------------------------------------------------------------
-   ! Variables used for the diagnostic of the biological models
-   ! ----------------------------------------------------------------------------
+      INTEGER,ALLOCATABLE,DIMENSION(:),PUBLIC :: idimv_r
+      ! I am clueless about this variable
+
+     !=====================================================================
+     !  Internal variables of the biological models
+     !=====================================================================  
+
+#  if defined BLOOM
+#include "combloom.h"
+
+#  elif defined PEPTIC
+#include "compeptic.h"
+
+#  elif defined METeOR 
+#include "commeteor.h"
+
+#  endif /* Biological models */
+
+     !=====================================================================
+     !  General diagnostic variables 
+     !=====================================================================  
+
+      CHARACTER(LEN=lchain)                      :: filevardiag
+      ! File for the diagnostic variables
+      LOGICAL               :: l_out_subs_diag 
+      ! Boolean for the use of diagnostic variables
+#  ifdef MUSTANG
+      LOGICAL               :: l_out_subs_diag_sed
+      ! Boolean for the use of diagnostics in the sediment
+#  endif MUSTANG
+
+      INTEGER,ALLOCATABLE,DIMENSION(:),PUBLIC :: irk_diag ! (reading order)
+      ! Table for the reading order of diagnostic variables. This will help when 
+      ! interacting with the hydro model which may have a different order for 
+      ! Saving them as tracers.
+
+      CHARACTER(LEN=lchain),ALLOCATABLE,DIMENSION(:),PUBLIC :: name_vardiag,         &
+                                                               long_name_vardiag,    &
+                                                               standard_name_vardiag,&
+                                                               unit_vardiag
+      ! names, attributes and units of diagnostic variables
+ 
+      REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:),PUBLIC :: valid_min_vardiag, valid_max_vardiag
+      ! Numerical attributes of diagnostic variables
+
+     !=====================================================================
+     !  Number of diagnostic variables and storage tables
+     !=====================================================================
 
       INTEGER, PUBLIC :: ndiag_1d, ndiag_2d, ndiag_2d_sed, ndiag_3d, ndiag_3d_wat, &
                          ndiag_3d_sed, ndiag_tot
@@ -70,9 +197,6 @@
                          ! 3d (horizontal dimensions, vertical dimension), 
                          ! total number of diagnostics
 
-      LOGICAL               :: l_out_subs_diag 
-      ! Boolean for the use of diagnostic variables
-
       REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:)      ,PUBLIC :: diag_1d     
       !Table for storing diagnostics variables of dimensions (index of var, time)
       REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:,:,:)  ,PUBLIC :: diag_2d     
@@ -82,8 +206,6 @@
       !(index of var, vertical dimension, horizontal dimensions)
 
 #  ifdef MUSTANG
-      LOGICAL               :: l_out_subs_diag_sed
-      ! Boolean for the use of diagnostics in the sediment
       REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:,:,:,:),PUBLIC :: diag_3d_sed
       !Table for storing diagnostics variables of dimensions 
       ! (index of var, horizontal dimensions, vertical dimension)
@@ -92,93 +214,110 @@
       ! (index of var, horizontal dimensions)
 #  endif /* MUSTANG */
 
-
-      INTEGER,ALLOCATABLE,DIMENSION(:),PUBLIC :: idimv_r
-      ! I am clueless about this variable
-      LOGICAL,ALLOCATABLE,DIMENSION(:),PUBLIC :: l_diagBIOLink_out
-      ! Booleans for the writing in external file of diagnostic variables of BIOLink
-      
-      CHARACTER(LEN=lchain),ALLOCATABLE,DIMENSION(:),PUBLIC :: name_vardiag,         &
-                                                               long_name_vardiag,    &
-                                                               standard_name_vardiag,&
-                                                               unit_vardiag
-      ! names, attributes and units of diagnostic variables
-           
-      REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:),PUBLIC :: valid_min_vardiag, valid_max_vardiag
-      ! Numerical attributes of diagnostic variables
-
-      INTEGER,ALLOCATABLE,DIMENSION(:),PUBLIC :: irk_diag ! (reading order)
-      ! Table for the reading order of diagnostic variables. This will help when 
-      ! interacting with the hydro model which may have a different order for 
-      ! Saving them as tracers.
-      
-
-
-
-      !---------------------------------------------------------------
-      !   Declarations of variables in case of missing values or 
-      !   for the comparison of floats (epsilon). Those are normally
-      !   Declared in MUSTANG. 
-      !---------------------------------------------------------------
+     !=====================================================================
+     !  Variables that apparently are declared in MUSTANG,
+     !  I really should investigate on those
+     !=====================================================================
 
 #  if ! defined MUSTANG
-
       LOGICAL :: l_testcase=.FALSE.
       REAL(kind=rsh)  ,PARAMETER :: valmanq=999.0
       REAL(kind=riosh),PARAMETER :: rg_valmanq_io=999.0
       REAL(kind=rlg)  ,PARAMETER :: epsilon=0.00000001
 #  endif /* MUSTANG */
 
-  
-      !---------------------------------------------------------------
-      !   Private part of the program, declaration of local variables     
-      !---------------------------------------------------------------
-      
-      REAL(kind=rsh)  ,PARAMETER                :: epsilon_BIOLink=1.e-10
-      ! Variable for the comparison of float internal to BIOLink
-      REAL(KIND=rlg)                             :: ECO_TIME_STEP,TIME_START_ECO 
-      ! Timestep of the hydrodynamical model
-      REAL(KIND=rlg)                             :: TIME_BEGIN  
-      ! Date of the start of the model run
-      CHARACTER(LEN=lchain)                      :: suffix_fileres,filevardiag
-      ! File names for the diagnostic variables
-      
-      !---------------------------------------------------------------
-      !   Private part of the program, declaration of local tables
-      !   before their allocations     
-      !---------------------------------------------------------------
-      
-      !***********************************************************************
-      ! Those are the most important tables of BIOLink, the ones that make   !
-      ! The link between the hydro model and the biological model through    !
-      ! Sources and sink terms that are computed in the bio model and        !
-      ! Transferred to the hydro model                                       !
-      !**********************************************************************!
-      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: BIO_SINKSOURCES 
-      ! For the variables in the water column
-      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: BIO_SKSC_FIX 
-      ! For the fixed variables
+ 
+     !*************************************************************************!
+     !*************************************************************************!
+     !******************** Variables from the hydro model *********************!
+     !*************************************************************************!
+     !*************************************************************************!
 
-      !---------------------------------------------------------------
-      !  Variables related to light availability     
-      !---------------------------------------------------------------
-                                      
+     !=====================================================================
+     !  Height of the water column variables
+     !=====================================================================
+
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE  :: THICKLAYERWC,THICKLAYERWW 
+      ! Thickness of the water column (?) and of the wave layer (?), I am not sure
+#  if ! defined MUSTANG
+      REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: TOTAL_WATER_HEIGHT 
+      ! Total water height of the column
+#  endif /* MUSTANG */
+
+     !=====================================================================
+     !  Bottom current variables
+     !=====================================================================
+
+#  if defined BLOOM && defined key_benthos
+      REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: BOTTCURRENTBIO 
+      ! Current in the bottom layer
+#  endif /* BLOOM && key_benthos */
+
+     !=====================================================================
+     !  Temperature and salinity variables
+     !=====================================================================
+
+      REAL(kind=rsh),ALLOCATABLE,DIMENSION(:,:,:)               :: SAL_BIOLink,TEMP_BIOLink
+      ! Salinity and temperature in the water column
+
+     !*************************************************************************!
+     !*************************************************************************!
+     !*************** Variables for the model helping routines ****************!
+     !********************* Or sediment model *********************************!
+     !*************************************************************************!
+     !*************************************************************************!
+
+     !=====================================================================
+     !  Sinking velocity of tracers
+     !=====================================================================
+
+      REAL(kind=rsh),ALLOCATABLE,DIMENSION(:,:,:,:)             :: WS_BIOLink 
+      ! Settling velocities, it depends on particles density and vertical currents
+
+     !=====================================================================
+     !  Radiation variables
+     !=====================================================================
+
+     ! Photosynthetic available radiations
+
 #  if defined  BIOLink_PAR_eval
       REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: PAR_top_layer
       ! Photosynthetic Available Radiation in the top layer
       REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: PAR_avg_layer_phyto 
       ! Photosynthetic Available Radiation in a lyaer concerned with phytoplankton,
       ! I am not sure
-      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EXTINCTION_RAD
-      ! Coefficient of light extinction of the water column, I am not sure
-      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: BIOLink_chloro
-      ! Chlorophyll in the water column, I am not sure
 #    if defined PEPTIC
       REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: PAR_top_layer_day 
       ! Photosynthetic Available Radiation in the top layer per day 
 !      REAL(KIND=rsh),DIMENSION(:,:)  ,ALLOCATABLE :: light_ave_daily,light_integ
       ! Light averaged per day and total light ( per day ? I am not sure)
 #    endif /* PEPTIC */
+#  endif /* BIOLink_PAR_eval */
+     
+     ! Extinction and attenuation
+
+#  if defined  BIOLink_PAR_eval
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: EXTINCTION_RAD
+      ! Coefficient of light extinction of the water column, I am not sure
+#  endif /* BIOLink_PAR_eval */
+
+#  ifdef BLOOM
+      REAL(KIND=rsh),DIMENSION(:,:,:,:,:)  ,ALLOCATABLE :: extinction_tab
+      ! Table of light extinction, but I do not entirely understand the dimensions
+      REAL(KIND=rsh),DIMENSION(:,:,:)  ,ALLOCATABLE :: extinction_ave4d,extinction_aveh
+      ! Extinction averaged on four days and per hour
+      REAL(KIND=rsh)                                :: t_cum_extinctionh
+      ! Extinction cumulated on time
+#  endif /* BLOOM */
+
+     ! Variables that affect the extinction
+
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: SPMTOT_MGL
+      ! Concentration of suspended matter
+
+#  if defined  BIOLink_PAR_eval
+      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: BIOLink_chloro
+      ! Chlorophyll in the water column, I am not sure
 #  endif /* BIOLink_PAR_eval */
 
 #  ifdef BLOOM
@@ -199,25 +338,9 @@
 #    endif /* key_psnz */
 #  endif /* BLOOM */
 
-   ! ----------------------------------------------------------------------------
-   ! Variables relative to light penetration
-   ! ----------------------------------------------------------------------------
-
-      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: SPMTOT_MGL
-      ! Concentration of suspended matter
-
-#  ifdef BLOOM
-      REAL(KIND=rsh),DIMENSION(:,:,:,:,:)  ,ALLOCATABLE :: extinction_tab
-      ! Table of light extinction, but I do not entirely understand the dimensions
-      REAL(KIND=rsh),DIMENSION(:,:,:)  ,ALLOCATABLE :: extinction_ave4d,extinction_aveh
-      ! Extinction averaged on four days and per hour
-      REAL(KIND=rsh)                                :: t_cum_extinctionh
-      ! Extinction cumulated on time
-#  endif /* BLOOM */
-
-   ! ----------------------------------------------------------------------------
-   ! Subsection dedicated to the estimation of the suspended matter via satellite
-   ! ----------------------------------------------------------------------------
+     !=====================================================================
+     !  Estimation of the suspended matter via satellite
+     !=====================================================================
 
 #  ifdef key_messat
       CHARACTER(LEN=lchain)                       :: filemessat_clim,filemessat_obs
@@ -231,7 +354,7 @@
       REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: messat
       ! Concentration of suspended matter observed by satellite
       REAL(KIND=rlg),DIMENSION(1:51)              :: t_clim_messat
-      ! Time of the satellite observations, why 51 though ?
+      ! Time of the satellite observations, it is one per week I guess
       REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: messat_obs
       ! Observation of suspended matter via satellite ?
       REAL(KIND=rlg),DIMENSION(:),ALLOCATABLE      :: t_obs_messat
@@ -240,72 +363,21 @@
       ! Path to the file of observations measurements ?
 #  endif /* key_messat */
 
+     !=====================================================================
+     !  Wind variables
+     !=====================================================================
 
-
-      !---------------------------------------------------------------
-      !  Variables related to the water thickness    
-      !---------------------------------------------------------------
-
-      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE  :: THICKLAYERWC,THICKLAYERWW 
-      ! Thickness of the water column (?) and of the wave layer (?), I am not sure
-#  if ! defined MUSTANG
-      REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: TOTAL_WATER_HEIGHT 
-      ! Total water height of the column
-#  endif /* MUSTANG */
-
-
-      !---------------------------------------------------------------
-      ! Variables related to the concentrations of chemical/biological
-      ! Species in the water column     
-      !---------------------------------------------------------------
-
-#  if !defined ECO3M 
-      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: WATCONCPOS 
-      ! Concentration in the water column, the order is the one of BIOLink for the storage 
-      ! which means (species_index,vertical_direction,zonal_direction,meridional_direction)
-#  endif /* ECO3M */
-
-      REAL(KIND=rsh),DIMENSION(:,:,:,:),ALLOCATABLE :: FIXCONCPOS  
-      ! Concentration of fixed variables, the order is the one of BIOLink for the storage
-      REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE :: BENTCONCPOS 
-      ! Concentration of benthic variables, the order is the one of BIOLink for the storage
-
-      !---------------------------------------------------------------
-      ! Variables related to physico-chemical conditions (temperature
-      ! ,salinity,etc...)  
-      !---------------------------------------------------------------
-
-
-#  if defined BLOOM && defined key_benthos
-      REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: BOTTCURRENTBIO 
-      ! Current in the bottom layer
-#  endif /* BLOOM && key_benthos */
-  
-      REAL(kind=rsh),ALLOCATABLE,DIMENSION(:,:,:)               :: SAL_BIOLink,TEMP_BIOLink
-      ! Salinity and temperature in the water column
-      REAL(kind=rsh),ALLOCATABLE,DIMENSION(:,:,:,:)             :: WS_BIOLink 
-      ! Settling velocities, it depends on particles density and vertical currents
 #  if ! defined BULK_FLUX
       REAL(kind=rsh),ALLOCATABLE,DIMENSION(:,:)                :: WIND_SPEED 
       ! Wind velocity
 #  endif /* BULK_FLUX */
 
+     !*************************************************************************!
+     !*************************************************************************!
+     !************************** Subroutines **********************************!
+     !*************************************************************************!
+     !*************************************************************************!
 
-   ! ----------------------------------------------------------------------------
-   ! Internal variables of the biological model used, those are stored in 
-   ! external files.
-   ! ----------------------------------------------------------------------------
-
-#  if defined BLOOM
-#include "combloom.h"
-
-#  elif defined PEPTIC
-#include "compeptic.h"
-
-#  elif defined METeOR 
-#include "commeteor.h"
-
-#  endif /* Biological models */
 
 CONTAINS
 
@@ -337,50 +409,125 @@ CONTAINS
   !&E
   !&E ** History : Not sure. Probably created by B. Thouvenin.
   !&E
-  !&E---------------------------------------------------------------------
+  !&E---------------------------------------------------------------------      
 
+     !*************************************************************************!
+     !*************************************************************************!
+     !****************** Variables for the biological or **********************!
+     !*********************** chemical model **********************************!
+     !*************************************************************************!
+     !*************************************************************************!
 
-   !---------------------------------------------------------------------
-   ! Here we are going to group the allocation and initialization 
-   ! As it will make the code clearer. But it could be even easier
-   ! To produce two subroutines, one for the allocation and one for the 
-   ! Initialization
-   !---------------------------------------------------------------------
-  
+     !===================================================================
+     ! Table of positive concentrations for tracer variables
+     !===================================================================
 
-   !---------------------------------------------------------------------
-   ! Allocation of tables related to the height of the water column
-   !---------------------------------------------------------------------
+#  if ! defined ECO3M  
+      ALLOCATE(WATCONCPOS(nv_adv,NB_LAYER_WAT,PROC_IN_ARRAY))
+      WATCONCPOS(:,:,:,:)=0.0_rsh
+#  endif /* ECO3M */
+
+     !===================================================================
+     ! Table of positive concentrations for fixed variables
+     !===================================================================
+
+      ALLOCATE(FIXCONCPOS(nv_fix,NB_LAYER_WAT,PROC_IN_ARRAY))
+      FIXCONCPOS(:,:,:,:)=0.0_rsh
+
+      ALLOCATE( BIO_SKSC_FIX (ARRAY_FIXED_SKSC))
+      BIO_SKSC_FIX (:,:,:,:)=0.0_rsh
+
+     !===================================================================
+     ! Table of positive concentrations for benthic variables
+     !===================================================================
+
+#  ifdef key_benthic
+      ALLOCATE(BENTCONCPOS(nv_bent,PROC_IN_ARRAY))
+      BENTCONCPOS(:,:,:,:)=0.0_rsh
+#  endif /* key_benthic */ 
+
+     !===================================================================
+     ! Table of source and sink terms for tracer variables
+     !===================================================================
+
+      ALLOCATE( BIO_SINKSOURCES(ARRAY_SINKSOURCES))
+      BIO_SINKSOURCES(:,:,:,:)=0.0_rsh
+
+     !===================================================================
+     ! Table of sink and source terms for fixed variables
+     !===================================================================
+
+      ALLOCATE( BIO_SKSC_FIX (ARRAY_FIXED_SKSC))
+      BIO_SKSC_FIX (:,:,:,:)=0.0_rsh
+
+     !*************************************************************************!
+     !*************************************************************************!
+     !******************** Variables from the hydro model *********************!
+     !*************************************************************************!
+     !*************************************************************************! 
+
+     !====================================================================
+     ! Height of the water column tables
+     !====================================================================
 
 #  if ! defined MUSTANG
         ALLOCATE( TOTAL_WATER_HEIGHT(PROC_IN_ARRAY_m2p2))
 #  endif /* MUSTANG */
         
         ALLOCATE( THICKLAYERWC(NB_LAYER_WAT,PROC_IN_ARRAY))
-        ALLOCATE( THICKLAYERWW(NB_LAYER_WAT,PROC_IN_ARRAY))
-        ALLOCATE( SPMTOT_MGL(NB_LAYER_WAT,PROC_IN_ARRAY))
-        
-   !---------------------------------------------------------------------
-   ! Initialization of the table of water height to dummy values
-   !---------------------------------------------------------------------
         THICKLAYERWC(:,:,:)=0.0_rsh
+        
+        ALLOCATE( THICKLAYERWW(NB_LAYER_WAT,PROC_IN_ARRAY))
         THICKLAYERWW(:,:,:)=0.0_rsh
-        SPMTOT_MGL(:,:,:)=0.0_rsh
 
-   !---------------------------------------------------------------------
-   ! Allocation of tables related to Photosynthetic Available Radiation
-   ! And light penetration/absorption
-   !---------------------------------------------------------------------
+     !=====================================================================
+     !  Temperature and salinity variables
+     !=====================================================================
+
+      ALLOCATE( TEMP_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
+      TEMP_BIOLink(:,:,:)=0.0_rsh
+
+      ALLOCATE( SAL_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
+      SAL_BIOLink(:,:,:)=0.0_rsh
+
+     !=====================================================================
+     !  Bottom current variables
+     !=====================================================================
+
+#  if defined BLOOM && defined key_benthos
+      ALLOCATE(BOTTCURRENTBIO(PROC_IN_ARRAY)) 
+#  endif /* BLOOM && key_benthos */
+
+
+     !*************************************************************************!
+     !*************************************************************************!
+     !*************** Tables for the model helping routines ****************!
+     !********************* Or sediment model *********************************!
+     !*************************************************************************!
+     !*************************************************************************!
+
+     !=====================================================================
+     !  Sinking velocity of tracers tables
+     !=====================================================================
+
+      ALLOCATE( WS_BIOLink(NB_LAYER_WAT,nv_adv,PROC_IN_ARRAY))
+      WS_BIOLink(:,:,:,:)=0.0_rsh
+
+     !=====================================================================
+     !  Radiation tables
+     !=====================================================================
+
+     ! Photosynthetic available radiations
 
 #  if defined  BIOLink_PAR_eval
-
-      ALLOCATE( EXTINCTION_RAD(NB_LAYER_WAT,PROC_IN_ARRAY) )
       ALLOCATE( PAR_top_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
-      ALLOCATE( BIOLink_chloro(NB_LAYER_WAT,PROC_IN_ARRAY) )  
+      PAR_top_layer(:,:,:)=0.0_rsh
 
 #    if defined PEPTIC
       ALLOCATE( PAR_avg_layer_phyto(1,NB_LAYER_WAT,PROC_IN_ARRAY) )
+      PAR_top_layer_day(:,:,:)=0.0_rsh
       ALLOCATE( PAR_top_layer_day(NB_LAYER_WAT,PROC_IN_ARRAY))
+      PAR_avg_layer_phyto(1,:,:,:)=0.0_rsh
 
 #    elif defined METeOR
       ALLOCATE( Flimrad_layer(0:NB_LAYER_WAT,PROC_IN_ARRAY) )
@@ -388,165 +535,82 @@ CONTAINS
 #    endif /* PEPTIC/METEOR */
 #  endif /* BIOLink_PAR_eval */
 
+     ! Extinction and attenuation
+
+#  if defined  BIOLink_PAR_eval
+      ALLOCATE( EXTINCTION_RAD(NB_LAYER_WAT,PROC_IN_ARRAY) )
+      EXTINCTION_RAD(:,:,:)=0.0_rsh
+#  endif /* BIOLink_PAR_eval */
+
 #  if defined BLOOM
       ALLOCATE(extinction_ave4d(NB_LAYER_WAT,PROC_IN_ARRAY))
-      ALLOCATE(extinction_aveh(NB_LAYER_WAT,PROC_IN_ARRAY))
-      ALLOCATE(extinction_tab(4,24,NB_LAYER_WAT,PROC_IN_ARRAY))
-      
-      ALLOCATE( effetlumiere_day_diat(NB_LAYER_WAT,PROC_IN_ARRAY) )
-      ALLOCATE( effetlumiere_day_dino(NB_LAYER_WAT,PROC_IN_ARRAY) )
-      ALLOCATE( effetlumiere_day_nano(NB_LAYER_WAT,PROC_IN_ARRAY) )
-      
-#    ifdef key_karenia
-      ALLOCATE( effetlumiere_day_karenia(NB_LAYER_WAT,PROC_IN_ARRAY) )
-#    endif /* key_karenia */
-
-#    ifdef key_psnz
-      ALLOCATE( effetlumiere_day_psnz(NB_LAYER_WAT,PROC_IN_ARRAY) )
-#    endif /* key_psnz */
-
-#    ifdef key_phaeocystis
-      ALLOCATE( effetlumiere_day_phaeocystis(NB_LAYER_WAT,PROC_IN_ARRAY) )
-#    endif /* key_phaeocystis */
-#  endif /* BLOOM */
-
-
-   !---------------------------------------------------------------------
-   ! Initialization of tables related to the height of the water column
-   ! to dummy values. Some tables do are allocated but not initialized
-   ! because they are initialized directly in the code they belong to
-   !---------------------------------------------------------------------
-#  if defined BIOLink_PAR_eval
-      EXTINCTION_RAD(:,:,:)=0.0_rsh
-      PAR_top_layer(:,:,:)=0.0_rsh
-      BIOLink_chloro(:,:,:)=0.0_rsh
-
-#    if defined PEPTIC
-      PAR_top_layer_day(:,:,:)=0.0_rsh
-      PAR_avg_layer_phyto(1,:,:,:)=0.0_rsh
-#    endif /* PEPTIC */
-
-#  endif /* BIOLink_PAR_EVAL */
-
-#  ifdef BLOOM
       extinction_ave4d(:,:,:)=0.0_rsh
+      ALLOCATE(extinction_aveh(NB_LAYER_WAT,PROC_IN_ARRAY))
       extinction_aveh(:,:,:)=0.0_rsh
+      ALLOCATE(extinction_tab(4,24,NB_LAYER_WAT,PROC_IN_ARRAY))
       extinction_tab(:,:,:,:,:)=0.0_rsh
       t_cum_extinctionh=0.0_rsh
       ihour_previous=0
 
-      !ALLOCATE(phytomoy(PROC_IN_ARRAY))
-      !ALLOCATE(phytocarre(PROC_IN_ARRAY))
-      !phytomoy(:,:)=0.0_rsh
-      
+#  endif /* BLOOM */
+
+     ! Variables that affect the extinction
+ 
+      ALLOCATE( SPMTOT_MGL(NB_LAYER_WAT,PROC_IN_ARRAY))
+      SPMTOT_MGL(:,:,:)=0.0_rsh
+
+#  if defined  BIOLink_PAR_eval
+      ALLOCATE( BIOLink_chloro(NB_LAYER_WAT,PROC_IN_ARRAY) )  
+      BIOLink_chloro(:,:,:)=0.0_rsh
+#  endif /* BIOLink_PAR_eval */
+
+#  if defined BLOOM
+
+      ALLOCATE( effetlumiere_day_diat(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_diat(:,:,:)=0.0_rsh
+      ALLOCATE( effetlumiere_day_dino(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_dino(:,:,:)=0.0_rsh
+      ALLOCATE( effetlumiere_day_nano(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_nano(:,:,:)=0.0_rsh
 
 #    ifdef key_karenia
+      ALLOCATE( effetlumiere_day_karenia(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_karenia(:,:,:)=0.0_rsh
 #    endif /* key_karenia */
 
 #    ifdef key_psnz
+      ALLOCATE( effetlumiere_day_psnz(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_psnz(:,:,:)=0.0_rsh
 #    endif /* key_psnz */
 
 #    ifdef key_phaeocystis
+      ALLOCATE( effetlumiere_day_phaeocystis(NB_LAYER_WAT,PROC_IN_ARRAY) )
       effetlumiere_day_phaeocystis(:,:,:)=0.0_rsh
 #    endif /* key_phaeocystis */
+
 #  endif /* BLOOM */
 
-
-   !---------------------------------------------------------------------
-   ! Allocation of tables related to physico-chemical conditions
-   !---------------------------------------------------------------------
-
-      ALLOCATE( TEMP_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
-      ALLOCATE( SAL_BIOLink(NB_LAYER_WAT,PROC_IN_ARRAY))
-      ALLOCATE( WS_BIOLink(NB_LAYER_WAT,nv_adv,PROC_IN_ARRAY))
-      ALLOCATE( BIO_SKSC_FIX (ARRAY_FIXED_SKSC))
-
-#  if defined BLOOM && defined key_benthos
-
-      ALLOCATE(BOTTCURRENTBIO(PROC_IN_ARRAY)) 
-
-#  endif /* BLOOM && key_benthos */
-
+     !=====================================================================
+     !  Wind variables
+     !=====================================================================
 
 #  if ! defined BULK_FLUX
       ALLOCATE( WIND_SPEED(PROC_IN_ARRAY))
-#  endif /* BULK_FLUX */
-
-
-   !---------------------------------------------------------------------
-   ! Initialization of tables related to physico-chemical conditions
-   ! To dummy values
-   !---------------------------------------------------------------------
-
-      TEMP_BIOLink(:,:,:)=0.0_rsh
-      SAL_BIOLink(:,:,:)=0.0_rsh
-      WS_BIOLink(:,:,:,:)=0.0_rsh
-      BIO_SKSC_FIX (:,:,:,:)=0.0_rsh
-
-#  if ! defined BULK_FLUX
       WIND_SPEED(:,:)=0.0_rsh
 #  endif /* BULK_FLUX */
 
-   !---------------------------------------------------------------------
-   ! Allocation of tables related to the concentration of tracers
-   ! and the sink/source terms. The exception for ECO3M are because the 
-   ! Allocation and initialization are internal for this model.
-   !---------------------------------------------------------------------
+     !=====================================================================
+     !  Estimation of the suspended matter via satellite
+     !=====================================================================
 
-      ALLOCATE( BIO_SINKSOURCES(ARRAY_SINKSOURCES) )
-      ALLOCATE(FIXCONCPOS(nv_fix,NB_LAYER_WAT,PROC_IN_ARRAY))
-
-#  if ! defined ECO3M  
-      ALLOCATE(WATCONCPOS(nv_adv,NB_LAYER_WAT,PROC_IN_ARRAY))
-#  endif /* ECO3M */
-
-#  ifdef key_benthic
-      ALLOCATE(BENTCONCPOS(nv_bent,PROC_IN_ARRAY))
-#  endif /* key_benthic */
-
-   !---------------------------------------------------------------------
-   ! Initialization of tables related to the concentration of tracers
-   ! and the sink/source terms to dummy values
-   !---------------------------------------------------------------------
-    
-      BIO_SINKSOURCES(:,:,:,:)=0.0_rsh
-      FIXCONCPOS(:,:,:,:)=0.0_rsh
-
-#  if ! defined ECO3M  
-      WATCONCPOS(:,:,:,:)=0.0_rsh
-#  endif /* ECO3M */
-
-#  ifdef key_benthic
-      BENTCONCPOS(:,:,:,:)=0.0_rsh
-#  endif /* key_benthic */
-
-   !---------------------------------------------------------------------
-   ! Allocation of the table related to suspended matter measured by
-   ! satellite
-   !---------------------------------------------------------------------
-  
 #  ifdef key_messat
       ALLOCATE(messat(PROC_IN_ARRAY,51))
-#  endif /* key_messat */
-
-   !---------------------------------------------------------------------
-   ! Initialization of the table related to suspended matter measured by
-   ! satellite to dummy value
-   !---------------------------------------------------------------------
-  
-#  ifdef key_messat
       messat(:,:,:)=0.0_rsh
 #  endif /* key_messat */
 
-   !---------------------------------------------------------------------
-   ! Allocation of the tables related to oysters
-   !---------------------------------------------------------------------
-
+     !=====================================================================
+     !  Oyster related variables
+     !=====================================================================
 
 #  if defined BLOOM
 #    ifdef key_oyster_SFG
@@ -556,21 +620,12 @@ CONTAINS
 
 #    if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
       ALLOCATE(nbhuitre(PROC_IN_ARRAY))
-      ALLOCATE(hautable(PROC_IN_ARRAY))
-#    endif /* key_oyster_benthos */
-#  endif /* BLOOM */
-
-   !---------------------------------------------------------------------
-   ! Initialization of the tables related to oysters to dummy values
-   !---------------------------------------------------------------------
-
-
-#  if defined BLOOM
-#    if defined key_oyster_benthos || defined key_oyster_DEB || defined key_oyster_SFG
       hautable(:,:)=0.0_rsh
+      ALLOCATE(hautable(PROC_IN_ARRAY))
       nbhuitre(:,:)=0.0_rsh
 #    endif /* key_oyster_benthos */
 #  endif /* BLOOM */
+
 
 END SUBROUTINE  BIOLink_alloc
 
