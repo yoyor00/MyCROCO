@@ -815,7 +815,7 @@
             IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
                kmaxmod=1
             ELSE
- :diff              kmaxmod=NB_LAYER_WAT
+               kmaxmod=NB_LAYER_WAT
             ENDIF
 
             IF(TOTAL_WATER_HEIGHT(i,j) < hm ) THEN
