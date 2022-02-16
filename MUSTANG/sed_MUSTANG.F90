@@ -88,6 +88,7 @@
    !&E     subroutine MUSTANGV2_eval_dissvar_IWSflux            ! dissolved variables in interstitial waters and fluxes at interface water-sed
    !&E     FUNCTION isitcohesive                ! function which return TRUE if sediment is cohesif (.F. if not)
    !&E     FUNCTION dzsminvar                   ! function which return dzsmin
+   !&E     FUNCTION MUSTANG_E0sand              ! function to compute E0 sand
 
    !&E
    !&E  ---for module floculation ----
@@ -227,8 +228,8 @@
    !! * Accessibility
 
    ! functions & routines of this module, called outside :
-   PUBLIC MUSTANG_update,MUSTANG_deposition,MUSTANG_morpho,sed_MUSTANG_outres
-   PUBLIC sed_MUSTANG_comp_z0hydro
+   PUBLIC MUSTANG_update, MUSTANG_deposition, MUSTANG_morpho, sed_MUSTANG_outres
+   PUBLIC sed_MUSTANG_comp_z0hydro, MUSTANG_E0sand
 #if defined key_MUSTANG_V2
    PUBLIC MUSTANGV2_comp_poro_mixsed
 #endif
@@ -3671,7 +3672,8 @@
    !! * Local declarations
    INTEGER            :: iv
    REAL(KIND=rsh)     :: sommud,somsan,diamsan,critstressan,frvolsan,frvolgrv,somgrav,   &
-                         somsedsusp,frvolsangrv,frmudsup,frmudcr1,pinterp,cmudr,frgrav
+                         somsedsusp,frvolsangrv,frmudsup,frmudcr1,pinterp,cmudr,frgrav, &
+                         diamsanstar, wssand
    ! use of the van Rijn relation for erosion flux (only valid if sand only)
    REAL(KIND=rsh)     :: rossan,xeromud,coef_tmp,rapexpcoef
    REAL(KIND=rsh)     :: E0_sand_loc
@@ -3765,17 +3767,11 @@
        !************************************!
 #if ! defined key_MUSTANG_V2
 !  version V1
-          IF (E0_sand_option == 2) THEN
-            ! E0_sand calculated by erodimetric formulation according to the average diameter of the sands
-              E0_sand_loc = critstressan**n_eros_sand * MIN(0.27,1000*diamsan-0.01)
-          ELSE IF(E0_sand_option == 0) THEN    !utilisation de E0_sand_para lu dans paraMUSTANG
-              E0_sand_loc = E0_sand_Cst
-          ELSE IF(E0_sand_option == 1 .AND. rossan.GT.1000_rsh) THEN
-            ! E0_sand calculated from the formulea of Van Rijn (1984)
-              E0_sand_loc=0.00033_rsh*rossan*((rossan/1000.0_rsh-1.0_rsh)*9.81*diamsan)**0.5_rsh &
-                     *(diamsan*((rossan/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
-          ENDIF
-          E0_sand_loc = E0_sand_para*E0_sand_loc
+          !!!!! TODO pass rhoref?? here rhoref=1000.
+          diamsanstar=diamsan * 10000.0_rsh * (GRAVITY * (rossan / 1000. - 1.0_rsh))**0.33_rsh
+          ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
+          wssand=.000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
+          E0_sand_loc = MUSTANG_E0sand(diamsan, critstressan, rossan, wssand) 
 #endif          
           IF (ero_option == 0) THEN
 #ifdef key_MUSTANG_V2
@@ -3806,17 +3802,11 @@
 #endif
 #if ! defined key_MUSTANG_V2
 !  version V1
-          IF (E0_sand_option == 2) THEN
-            ! E0_sand calculated by erodimetric formulation according to the average diameter of the sands
-              E0_sand_loc = critstressan**n_eros_sand * MIN(0.27,1000*diamsan-0.01)
-          ELSE IF(E0_sand_option == 0) THEN    !use of E0_sand_para read in paraMUSTANG
-              E0_sand_loc = E0_sand_Cst
-          ELSE IF(E0_sand_option == 1 .AND. rossan.GT.1000_rsh) THEN
-            ! E0_sand calculated from the formulea of Van Rijn (1984)
-              E0_sand_loc=0.00033_rsh*rossan*((rossan/1000.0_rsh-1.0_rsh)*9.81*diamsan)**0.5_rsh &
-                     *(diamsan*((rossan/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
-          ENDIF
-          E0_sand_loc = E0_sand_para*E0_sand_loc
+          !!!!! TODO pass rhoref?? here rhoref=1000.
+          diamsanstar=diamsan * 10000.0_rsh * (GRAVITY * (rossan / 1000. - 1.0_rsh))**0.33_rsh
+          ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
+          wssand=.000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
+          E0_sand_loc = MUSTANG_E0sand(diamsan, critstressan, rossan, wssand) 
 #endif
           pinterp=(frmudcr2-frmudsup)/(frmudcr2-frmudcr1)
 
@@ -10511,6 +10501,45 @@ END SUBROUTINE MUSTANGV2_eval_bedload
 !!===========================================================================  
 #endif  
 !!===========================================================================
+real function MUSTANG_E0sand(diamsan, taucr, rossan, ws_sand)
+! Compute the sand erosion constant in kg.m-2.s-1 
+! given e0_sand_option. 
+! * If e0_sand_option = 0 :  use of  e0_sand read in namelist
+! * If e0_sand_option = 1 : sand erosion constant computed from Van Rijn (1984) 
+!                           formulation
+! * If e0_sand_option = 2 : sand erosion constant computed by an erodimetry 
+!                           formulation (function of mean sand diameter)
+! * If e0_sand_option = 3 : sand erosion constant computed in order to use a 
+!                           pick-up function for the erosion fluxe. The volumetric 
+!                           concentration at reference level aref is from  
+!                           Wu and Lin (2014) eq.34.
+!
+implicit none
+real, intent(in) :: diamsan ! sediment diameter (m)
+real, intent(in) :: taucr   ! critical shear stress (N.m-2)
+real, intent(in) :: rossan  ! sediment density (kg/m3)
+real, intent(in) :: ws_sand ! sediment settling velocity (m/s)
+! SOURCE
+real             :: diamsan_star, ws_diamsan
+
+if (E0_sand_option==0) then !use of E0_sand read in namelist (E0_sand_para read in paraMUSTANG)
+  MUSTANG_E0sand = E0_sand_Cst
+elseif (E0_sand_option == 1 .and. rossan.gt.1000_rsh) then
+  ! E0_sand computed from Van Rijn (1984) formulation
+  MUSTANG_E0sand = 0.00033_rsh * rossan*((rossan / 1000.0_rsh - 1.0_rsh) * 9.81 * diamsan)**0.5_rsh &
+    * (diamsan * ((rossan / 1000.0_rsh - 1) * 9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
+elseif (E0_sand_option == 2) then
+  ! E0_sand computed by an erodimetry formulation (function of mean sand diameter)
+  MUSTANG_E0sand = taucr**n_eros_sand * min(0.27, 1000. * diamsan - 0.01)
+elseif (E0_sand_option == 3) then
+  ! E0_sand computed from WU and Lin (2014) concentration at reference level and Van Rijn pick-up function
+  MUSTANG_E0sand = ws_sand * rossan * 0.0032 * diamsan / aref_sand 
+endif
+
+MUSTANG_E0sand = E0_sand_para * MUSTANG_E0sand
+
+end function ! MUSTANG_E0sand
+
 #if defined key_MUSTANG_V2
  !!==============================================================================
    FUNCTION isitcohesive(cvsed_sup_i_j, criterion_cohesive)
@@ -10520,8 +10549,6 @@ END SUBROUTINE MUSTANGV2_eval_bedload
    !&E--------------------------------------------------------------------------
 
    !! * Modules used
-
-      !renvoie vrai si le sediment superficiel est cohesif, faux sinon
 
       LOGICAL :: isitcohesive
       REAL(KIND=rsh),DIMENSION(-1:nv_tot)::cvsed_sup_i_j

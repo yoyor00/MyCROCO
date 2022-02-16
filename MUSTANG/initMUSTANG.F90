@@ -90,6 +90,7 @@
    USE comMUSTANG
 
    USE sed_MUSTANG_CROCO,  ONLY : sedinit_fromfile
+   USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
 
 #ifdef key_MARS
    USE sed_MUSTANG_MARS,  ONLY : sedinit_fromfile,bathy_actu_fromfile
@@ -1963,25 +1964,10 @@ ENDIF
     ENDDO
 
     DO iv=isand1,isand2
-      ! Erodibility parameter in erosion law (kg/m2/s)
-      IF (E0_sand_option == 0) THEN
-        E0_sand(iv)=E0_sand_Cst   ! read in paraMUSTANGV2.txt
-      ELSE IF(E0_sand_option == 1 .AND. ros(iv) .GT. 1000_rsh) THEN
-        ! E0_sand computed from the formulation of Van Rijn (1984)
-        E0_sand(iv)=0.00033_rsh*ros(iv)*((ros(iv)/1000.0_rsh-1.0_rsh)*9.81*diam_sed(iv))**0.5_rsh*(diam_sed(iv)  &
-          &   *((ros(iv)/1000.0_rsh-1)*9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
-      ELSE IF (E0_sand_option == 2) THEN
-        ! E0_sand computed as a function of mean sand diameter (expression deduced from erodimetry experiments)
-        E0_sand(iv)=(stresscri0(iv)**n_eros_sand)* MIN(0.27,1000*diam_sed(iv)-0.01)
-      ELSE IF (E0_sand_option == 3) THEN
-        ! E0_sand computed from the formulation of Wu and Lin (2014)
-        E0_sand(iv)=ws_sand(iv)*ros(iv)*0.0032_rsh*(diam_sed(iv)/aref_sand)
-      ENDIF
-      E0_sand(iv) = E0_sand_para*E0_sand(iv)
-   ENDDO
+      E0_sand(iv) = MUSTANG_E0sand(diam_sed(iv), stresscri0(iv), ros(iv), ws_sand(iv))
+    ENDDO
 
-
-     DO iv=imud1,imud2
+    DO iv=imud1,imud2
       rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
     ENDDO
     ! homogeneous sand density
