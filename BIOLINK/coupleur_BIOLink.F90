@@ -143,19 +143,26 @@
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_initialization  ***
   !&E
-  !&E ** Purpose : intialization of module BIOLink
+  !&E ** Purpose : intialization of the biological/tracer model
   !&E
-  !&E ** Description :
+  !&E ** Description : Works in two calls. The first call, with the 
+  !&E                  icall = 1 reads the parameter files of the different
+  !&E                  models. The second calls use internal functions of 
+  !&E                  those models to initialize their variables
   !&E
-  !&E ** Called by : init
+  !&E ** Called by : main.F90
   !&E
-  !&E ** External calls :
+  !&E ** External calls : peptic_param,peptic_alloc_var 
+  !&E                     from peptic_initdefine, 
+  !&E                     bloom_param,bloom_init_iv 
+  !&E                     from peptic_initdefine or 
+  !&E                     meteor_param from meteor_initdefine
   !&E
-  !&E ** Reference :
+  !&E ** Reference : I do not know
   !&E
   !&E ** History :
-  !&E       !  2019-08  (B.Thouvenin)  creation 
-  !&E
+  !&E       !  2019-08  (B.Thouvenin) :  creation 
+  !&E       !  2022-02  (G. Koenig)   : Commenting 
   !&E---------------------------------------------------------------------
 
      !====================================================================
@@ -278,65 +285,88 @@
 
   END SUBROUTINE BIOLink_initialization
 
-  !!======================================================================
- 
-   SUBROUTINE BIOLink_init(ifirst,ilast,jfirst,jlast)
+  SUBROUTINE BIOLink_init(ifirst,ilast,jfirst,jlast)
 
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_init  ***
   !&E
-  !&E ** Purpose : Local initialisations, reading of special files
+  !&E ** Purpose : Initialization of tables of variables in biological 
+  !&E              models and of table for the helping functions 
   !&E
-  !&E ** Description :
+  !&E ** Description : First it sets the time at the initial time of 
+  !&E                  the hydro model + one slow time step, then it
+  !&E                  initializes the settling velocities and the
+  !&E                  conservation log file. Then it uses biological/
+  !&E                  tracer routines to initialize the table of those
+  !&E                  models and finally it initializes the tables of 
+  !&E                  the helping functions.
   !&E
   !&E ** Called by : main
   !&E
-  !&E ** External calls :
+  !&E ** External calls : bloom_userinit of bloom_initdefine,
+  !&E                     bloom_wavefile_MANGAbio from bloom,
+  !&E                     meteor_read_react from meteor_initdefine
   !&E
-  !&E ** Reference :
+  !&E ** Reference : I do not know
   !&E
   !&E ** History :
-  !&E       !  2015-07  
+  !&E       !  2015-07  : Creation by B. Thouvenin I guess 
+  !&E       !  2022-02  : Commenting (G. Koenig)
   !&E
   !&E---------------------------------------------------------------------
-  !! * Modules used
+
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
 #if defined BLOOM
-   USE bloom_initdefine, ONLY : bloom_userinit
-#if defined key_MANGAbio && defined key_MANGAbiovague
-   USE bloom,            ONLY : bloom_wavefile_MANGAbio
-#endif
-#endif
+   USE bloom_initdefine, ONLY : bloom_userinit ! Initialization of the tables
+                                               ! used to store variables of BLOOM
+#  if defined key_MANGAbio && defined key_MANGAbiovague
+   USE bloom,            ONLY : bloom_wavefile_MANGAbio ! Reading of a file
+                                                        ! With orbital velocity of 
+                                                        ! Waves for the Manche/Golfe de 
+                                                        ! Gascogne model
+#  endif /* key_MANGAbio && key_MANGAbiovague */
+#endif /* BLOOM */
+
 #if defined METeOR
-   USE meteor_initdefine, ONLY : meteor_read_react
-#endif
+   USE meteor_initdefine, ONLY : meteor_read_react      ! I do not know
+#endif /* METeOR */
 
   IMPLICIT NONE
 
+     !====================================================================
+     ! External arguments
+     !====================================================================
+
+
   !! * Arguments
-   INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast   !,NB_LAYER_WAT
+   INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast ! Horizontal indexes for 
+                                                     ! the navigation in the 
+                                                     ! table.
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+                                                              
+  INTEGER               :: i,j,k,iv ! Counter variables
+  CHARACTER(LEN=lchain) :: logfilename ! Name of the file to write the log
 
-  !! * Local declarations
-  !REAL(KIND=rlg)        :: tool_datosec
-  INTEGER               :: i,j,k,iv
-  CHARACTER(LEN=lchain) :: logfilename
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
-
-  !!----------------------------------------------------------------------
-  !! * Executable part
-
-  ! locating the start time of the calculation of bio sources and sinks
-  !---------------------------------------------------------------
 #ifdef key_MARS
-   t_bio=MAX(CURRENT_TIME,tdebsubs)!!+TRANSPORT_TIME_STEP
+   t_bio=MAX(CURRENT_TIME,tdebsubs) 
 #else
-   t_bio=CURRENT_TIME+TRANSPORT_TIME_STEP
-#endif
+   t_bio=CURRENT_TIME+TRANSPORT_TIME_STEP ! The biology time steps is updated 
+                                          ! From the hydrodynamical model 
+                                          ! With a transport time step
+#endif /* key_MARS */
 
 #if ! defined MUSTANG
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!! initialization of sinking_rate 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!$OMP DO SCHEDULE(RUNTIME)
+     ! Initialization of the sinking rate for all the tracers at all depth and position
+     ! The initialization is taken at the mean between the maximum and minimum sinking depth
      DO j=jfirst,jlast
       DO i=ifirst,ilast
         DO iv=1,nvp
@@ -346,49 +376,40 @@
           ENDDO
         END DO
       END DO
-!$OMP ENDDO
-#endif
+#endif /* MUSTANG */
 
 #if defined BIOLink_verif_conserv 
-!  ouverture du fichier log pour test sur conservativite
-   !---------------------------------------------------------------
+! Definition of the name for the conservation file
      logfilename='conservBIOLink_'//TRIM(suffix_fileres)//'.log'
-     !IF_AGRIF (.NOT. agrif_root()) logfilename= 'conservBIOLink_'//TRIM(suffix_fileres)//'_'//TRIM(Agrif_Cfixed())//'.log'
+! I think iscreenlog_conserv is initialized at 66 and never changed
+! So this should always happen
+! Opening of the log file to test the conservativity
      IF (iscreenlog_conserv/=6) OPEN(unit=iscreenlog_conserv,file=logfilename)
-#endif
-   
-  ! specifiques Initializations (To Program BIO)
-  !--------------------------------------------
+#endif /* BIOLink_verif_conserv */
 
 #if defined BLOOM
-   !CALL bloom_userinit(ifirst,ilast,jfirst,jlast,WATER_CONCENTRATION, &
-   !                        BATHY_H0,NB_LAYER_WAT,CURRENT_TIME)
+    ! Initialization of tables in the biological/tracer models
    CALL bloom_userinit(ifirst,ilast,jfirst,jlast)
-#endif
-#if defined PEPTIC
-   !CALL peptic_iniFrac_plkt ! not operational
-#endif
-
-#if defined METeOR
+#elif defined METeOR
     ! reading reactions between contaminant species
     CALL meteor_read_react
-#endif
+#endif /* BLOOM/METeOR */
 
-   ! Read special files (To Pogram BIO)
-   !-----------------------------------
 
 #if defined key_MANGAbio && defined key_MANGAbiovague
-   ! initialization ubr et hs
+   ! Initialization of wave orbital velocities
    ubr_vague(:,:,:)=0.0_rsh
    vbr_vague(:,:,:)=0.0_rsh
    hs_vague(:,:,:)=0.0_rsh
    DO j=jfirst,jlast
-#ifdef key_MARS
+#  ifdef key_MARS
      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
+#  else
      DO i=ifirst,ilast
-#endif
+#  endif /* key_MARS */
        IF (BATHY_H0(i,j) .EQ. -valmanq) THEN
+         ! Initialization to NaN value in case of land
+         ! grid
          ubr_vague(i,j,:)=valmanq
          vbr_vague(i,j,:)=valmanq
          hs_vague(i,j,:)=valmanq
@@ -399,18 +420,18 @@
    !!! fichier climato des vitesses orbitales de vague
    !!! routine dans le coupleur (dependant du code)
    CALL bloom_wavefile_MANGAbio(ifirst,ilast,jfirst,jlast,0)
-#endif
+#endif /* key_MANGAbio && key_MANGAbiovague */
 
 
 #if defined key_messat
-   ! initialization satellite MES
+   ! initialization of the suspended matter measured by satellite
    messat(:,:,:)=0.0_rsh
    DO j=jfirst,jlast
-#ifdef key_MARS
+#  ifdef key_MARS
      DO i=MAX0(ifirst,ig(j)+1),MIN0(ilast,id(j)-1)
-#else
+#  else
      DO i=ifirst,ilast
-#endif
+#  endif /* key_MARS */
        IF (BATHY_H0(i,j) .EQ. -valmanq) THEN
          messat(i,j,:)=valmanq
        END IF
@@ -431,7 +452,7 @@
    !----------------------------------------
    CALL BIOLink_SPMsat_file(ifirst,ilast,jfirst,jlast,0)
 
-#endif
+#endif /* key_messat */
 
   END SUBROUTINE BIOLink_init
 
@@ -445,120 +466,133 @@
   !&E---------------------------------------------------------------------
   !&E                 ***  ROUTINE BIOLink_update  ***
   !&E
-  !&E ** Purpose : update  at each time step 
+  !&E ** Purpose : Update of the BIOLink concentration, sources and sinks
+  !&E              and helping variables (settling velocities, number of 
+  !&E              oyster, etc...) at each time step.
   !&E
-  !&E            ******* ATTENTION  we are in a session OMP  **************
-  !&E
-  !&E ** Description :
+  !&E ** Description : 
   !&E
   !&E ** Called by : init
   !&E
-  !&E ** External calls :
+  !&E ** External calls : peptic_sksc_wat, peptic_SPMtot_Chla from peptic
+  !&E                     bloom_sksc_wat, bloom_eval_diag2d, 
+  !&E                     bloom_SPMtot_Chla and bloom_extinction_avg
+  !&E                     from bloom 
+  !&E                     bloom_wavefile_MANGAbio from bloom
+  !&E                     COUPLEUR_PHY_BIO from ECO3M
+  !&E                     meteor_sksc_wat, meteor_reac_equi from METeOR
+  !&E                     meteor_sksc_wat, meteor_reac_equi from comvars2d
   !&E
-  !&E ** Reference :
+  !&E ** Reference : There is first an evaluation to know if the time step 
+  !&E                the hydrodynamic model has evolved enough. If yes,
+  !&E                there is an update of the biological time, concentration
+  !&E                , height of the water column and helping variables. 
+  !&E                And finally sometimes we reinitialize the oysters.
   !&E
   !&E ** History :
   !&E       !  2019-08  (B.Thouvenin)  creation 
-  !&E
+  !&E       !  2022-02  (G. Koenig) Commenting
   !&E---------------------------------------------------------------------
-   !! * Modules used
+     !====================================================================
+     ! Routines from external models
+     !====================================================================
+
 #if defined PEPTIC
   USE peptic,            ONLY : peptic_sksc_wat, peptic_SPMtot_Chla
+                                ! Computation of source and sink terms in 
+                                ! the water column and the total concentration
+                                ! Of suspended matter and chlorophyll A
 #elif defined BLOOM
   USE bloom,            ONLY : bloom_sksc_wat,bloom_eval_diag2d, bloom_SPMtot_Chla, &
                                bloom_extinction_avg
-#if defined key_MANGAbio && defined key_MANGAbiovague
+                               ! Computation of source and sink terms, diagnostic 2D
+                               ! Concentration of total suspended particulate matter 
+                               ! and average extinction of light
+
+#  if defined key_MANGAbio && defined key_MANGAbiovague
   USE bloom,            ONLY : bloom_wavefile_MANGAbio
-#endif
+                               ! Reading of the orbital velocity of waves in an external
+                               ! file
+#  endif /* key_MANGAbio && key_MANGAbiovague */
+
 #elif defined ECO3M
-  USE COUPLEUR_PHY_BIO
-#endif
-#if defined key_MARS 
-#if defined key_turbclim && defined key_daily_climato_kpar
-    USE comvars2d,     ONLY : mes_sat
-#endif   
+  USE COUPLEUR_PHY_BIO   ! Internal coupleur of ECO3M
+
 #elif defined METeOR
   USE meteor,          ONLY : meteor_sksc_wat,meteor_reac_equi
-#else
+                              ! Sources and sink terms and
+                              ! Equilibrium reactions 
+#endif /* PEPTIC/BLOOM/ECO3M/METeOR */
 
-#endif   
-   !! * Declaration Subroutine
+#if defined key_MARS 
+#  if defined key_turbclim && defined key_daily_climato_kpar
+    USE comvars2d,     ONLY : mes_sat ! I have no idea
+#  endif /* key_MARS */     
 
-   !! * Arguments
+     !====================================================================
+     ! External arguments
+     !====================================================================
+
    INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast
 #if defined key_MARS && (defined key_oyster_SFG || defined key_oyster_DEB)
    REAL(KIND=rsh),DIMENSION(ARRAY_CELL_SURF),INTENT(IN)          :: CELL_SURF
-#endif
+#endif /* key_MARS && (key_oyster_SFG || key_oyster_DEB )
    
-   !! * Local declarations
-   REAL(KIND=rlg)         :: dt_bio_cor
-   INTEGER                :: i,j,k,kmaxmod,iv,itend,tool_julien
-   CHARACTER(LEN=19)        :: tool_sectodat,cdate
-   REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY)   :: forcSPM
+     !====================================================================
+     ! Local declarations of variables
+     !====================================================================
+   REAL(KIND=rlg)         :: dt_bio_cor ! Timestep for biology models
+   INTEGER                :: i,j,k,iv ! Counter variables
+   INTEGER                :: kmaxmod,itend ! Index of termination for
+                                                       ! vertical and time loops
+   INTEGER                :: tooljulien ! Function to determine the julian day
+   CHARACTER(LEN=19)      :: tool_sectodat,cdate ! Function to change the second to date
+   REAL(KIND=rsh), DIMENSION(PROC_IN_ARRAY)   :: forcSPM ! Something related to 
+                                                         ! suspended particulate matter
 #if defined key_MANGAbio && defined key_MANGAbiovague
-   REAL(KIND=rsh), DIMENSION(NB_LAYER_WAT,PROC_IN_ARRAY)  :: forcSPMk
+   REAL(KIND=rsh), DIMENSION(NB_LAYER_WAT,PROC_IN_ARRAY)  :: forcSPMk ! Something related
+                                                                      ! to suspended particulate
+                                                                      ! Matter with a vertical
+                                                                      ! Dimension
 #endif 
+     !====================================================================
+     ! Execution of the function
+     !====================================================================
 
-    itend=0
-   IF(CURRENT_TIME .GE. t_bio) THEN
-   
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!!!! EVALUATION of sinks and sources from bio reactions   !!!!!!
-      !!!!  UPDATE ALL ECO_TIME_STEP                             !!!!!!
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!$OMP SINGLE
+   itend=0 ! Initialization of the end time counter
+   IF(CURRENT_TIME .GE. t_bio) THEN ! Updating of variables
+      
+      ! updating of time steps
       dt_bio_cor=MAX(ECO_TIME_STEP,TRANSPORT_TIME_STEP)
       BIO_TIME_STEP=dt_bio_cor+(CURRENT_TIME-t_bio)
-!$OMP END SINGLE
 
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!!  time tracking (day, month, year, Julian day, etc.)
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ! Conversion of time to date for some routines in biological models
       cdate = tool_sectodat(CURRENT_TIME)
       CALL tool_decompdate(cdate,ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK, &
                            iheure_BIOLINK,iminu_BIOLINK,isec_BIOLINK) 
-      jjulien_BIOLINK=tool_julien(ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK)-tool_julien(1,1,ian_BIOLINK)+1
+      jjulien_BIOLINK=tool_julien(ijour_BIOLINK,imois_BIOLINK,ian_BIOLINK)&
+                      - tool_julien(1,1,ian_BIOLINK)+1
 
-
-      
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! coupleur BIOLink : evaluation of total water height and vertical meshes thickness
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ! Evaluation of the height of the water column
       CALL BIOLink_water_column(ifirst,ilast,jfirst,jlast)
       
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !!  Conversion array in the index order of BIOLink   ==>temp, sal, ws3
-     !!      and keep only positive water concentration ==> cvadv_wat_pos
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ! Conversion of the arrays in the order of BIOLink
       CALL BIOLink_convarray(ifirst,ilast,jfirst,jlast     &
 #if defined key_nosubstmodule
                   ,WAT_SETTL                                     &
-#endif
+#endif /* key_nosubstmodule */
 #ifdef key_MARS
                   ,TEMPERATURE_MOD,SALINITY_MOD                  &
-#endif
+#endif /* key_MARS */
                   )     
-
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      !!! limitation of the sinking speed and actualization of the sink speed for plankton
-      !!
-      !!! module BLOOM  : sinking_rate evaluated during Sources and sinks terms evaluation  
-      !!!                 because needed of some terms calculated localy (bloom_settling)
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ! Evaluation and limitation of the sinking rate 
       CALL BIOLink_sinking_rate(ifirst,ilast,jfirst,jlast)
 
 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !  specific initializations
-    !   To Program BIO
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ! Reinitialization of the number of oyster for the 1rst january of each year
 #if defined BLOOM && defined key_oyster_DEB
-! Reinitialisation des huitres au 1er janvier de chaque annee.
-!$OMP DO SCHEDULE(RUNTIME) PRIVATE(i,j,k,kmaxmod)
      DO j=jfirst,jlast
       DO i=ifirst,ilast
-
         IF ((imois_BIOLINK.eq.1).and.(ijour_BIOLINK.eq.1).and.(iheure_BIOLINK.eq.0)) THEN
           IF (nbhuitre(i,j).ne.0.0_rsh) THEN
              k=1
@@ -572,11 +606,9 @@
         ENDIF
 ! Mortalite huitres par cohortes
         nbhuitre(i,j)=nbhuitre(i,j)-txmorthuitco1(imois_BIOLINK)*nbhuitre(i,j)*BIO_TIME_STEP/86400.
-
       ENDDO
      ENDDO
-!$OMP END DO
-#endif  
+#endif /* BLOOM && key_oyster_DEB */
 
 #if defined BIOLink_PAR_eval
       !!=================================================================================

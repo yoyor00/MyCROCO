@@ -61,12 +61,13 @@
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'positive',
      &        lvar, text(1:lvar))
+
       endif
       text=vname(i+5,indx)
       lvar=lenstr(text)
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'time_origin',
-     &        lvar, text(1:lvar))
+     &        lvar, text(1:lvar)) 
       endif
 
       text=vname(i+6,indx)
@@ -74,12 +75,14 @@
       if (LEN_TRIM(text).gt.0) then
          ierr=nf_put_att_text (ncid, vid, 'calendar',
      &        lvar, text(1:lvar))
+
       endif
 #ifdef FILLVAL
       text=vname(i+3,indx)
-      if (TRIM(text) /= '.NO.') then
+      if (TRIM(text) /= '.NO.' .and. LEN_TRIM(text).gt.0) then
       ierr= nf_put_att_FTYPE (ncid, vid,'_FillValue', nf_type,
-     &     1, spval)
+     &     1, spval) 
+
       endif
 #endif      
       return
