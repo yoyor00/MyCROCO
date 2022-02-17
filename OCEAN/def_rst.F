@@ -402,8 +402,10 @@
 # if defined TRACERS
         do itrc=1,NTot
           lvar=lenstr(vname(1,indxV+itrc))
+
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
+
 #  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
@@ -416,7 +418,6 @@
           lvar=lenstr(vname(4,indxV+itrc))
           ierr=nf_put_att_text (ncid, rstT(itrc), 'field', lvar,
      &         vname(4,indxV+itrc)(1:lvar))
-
           call nf_add_attribute(ncid, rstT(itrc), indxV+itrc, 5, 
      &         NF_DOUBLE,ierr)          
         enddo
@@ -529,19 +530,14 @@
           lvar=lenstr(vname(2,indxLsc))
           ierr=nf_put_att_text (ncid, rstLsc, 'long_name',
      &                     lvar,   vname(2,indxLsc)(1:lvar))
-
           lvar=lenstr(vname(3,indxLsc))
           ierr=nf_put_att_text (ncid, rstLsc, 'units', lvar,
      &         vname(3,indxLsc)(1:lvar))
-
           lvar=lenstr(vname(4,indxLsc))
           ierr=nf_put_att_text (ncid, rstLsc, 'field', lvar,
      &         vname(4,indxLsc)(1:lvar))
-
           call nf_add_attribute(ncid, rstLsc, indxLsc, 5,
      &         NF_DOUBLE,ierr)
-
-
 
 !
 ! Vertical viscosity coefficient.
@@ -883,6 +879,7 @@
 !
 ! Sediment bed thickness
 !
+
         lvar=lenstr(vname(1,indxBTHK))
         ierr=nf_def_var (ncid, vname(1,indxBTHK)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(1))
@@ -905,6 +902,7 @@
 !
 ! Sediment bed porosity
 !
+
         lvar=lenstr(vname(1,indxBPOR))
         ierr=nf_def_var (ncid, vname(1,indxBPOR)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(2))
@@ -980,7 +978,6 @@
 
         call nf_add_attribute(ncid, rstMUS(itrc+2), indx, 5,
      &         NF_DOUBLE, ierr)
-
       enddo
 
 !cvsed
@@ -994,7 +991,6 @@
 
         call nf_add_attribute(ncid, rstMUS(itrc+5), indx, 5,
      &         NF_DOUBLE, ierr)
-
         enddo
 #endif
 
@@ -1283,7 +1279,7 @@
 ! Tracer variables.
 !
 # if defined TRACERS
-        do itrc=1,NT
+        do itrc=1,NTot
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
@@ -1340,6 +1336,17 @@
           write(stdout,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+
+!
+! Vertical length scale
+!
+          lvar=lenstr(vname(1,indxLsc))
+          ierr=nf_inq_varid (ncid,vname(1,indxLsc)(1:lvar), rstLsc)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxLsc)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+
 !
 ! Vertical viscosity coefficient.
 !
