@@ -26,7 +26,7 @@ then
               echo "set CPLMASK to 1 in coupled domain $dom"
               echo "ncap2 -O -s \"CPLMASK(:,0,:,:)=(LANDMASK+LAKEMASK-1)*(-1)\" ./wrfinput_$dom ./wrfinput_$dom"
               module load $ncomod
-              ncap2 -O -s "CPLMASK(:,0,:,:)=(LANDMASK-1)*(-1)" ./wrfinput_$dom ./wrfinput_$dom
+              ncap2 -O -s "CPLMASK(:,0,:,:)=(LANDMASK+LAKEMASK-1)*(-1)" ./wrfinput_$dom ./wrfinput_$dom
               if [[ $(echo ${wrfcpldom} | wc -w) == 1 && $AGRIFZ > 0 ]]; then
                   ncpdq -O -d num_ext_model_couple_dom_stag,0 -v CPLMASK -a num_ext_model_couple_dom_stag,Time wrfinput_$dom tmp.nc
                   for nn in `seq 1 $AGRIFZ`; do

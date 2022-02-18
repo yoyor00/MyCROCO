@@ -10,6 +10,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
         maxatmdom=$( echo $wrfcpldom | wc -w )
         ocemaxdom=0
         for domatm in $wrfcpldom ; do
+            varlist=""
             if [[ ${onlinecplmask} == "TRUE" ]]; then
                 [[ $(( $AGRIFZ +1 )) > $maxatmdom ]] && { loopoce=`seq 0 $AGRIFZ` ;} || { loopoce=`seq 0 $(( $maxatmdom - 1 ))` ;}
             else
@@ -46,7 +47,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             else
                 agrif_ext=""
             fi
-	    [[ ${AGRIFZ} > 0 ]] && { mm="_${nn}" ;}|| { mm="" ;}
+	    [[ ${AGRIFZ} > 0 ]] && { mm="_${nn}" ;} || { mm="" ;}
             varlist="${varlist}CROCO_SST${mm} CROCO_SSH${mm} CROCO_NOCE${mm} CROCO_EOCE${mm} "
             
             if [[ ${CPL_restart} == "TRUE" ]] && [[ ! -z ${oce_rst_file} ]]; then
@@ -66,7 +67,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_preexisting_output_files.sh "${WAV_FILES_DIR}/${wav_rst_file}" wav.nc ww3
         else
             echo 'create restart file for oasis from calm conditions for variables:'${varlist}
-            [[ ! -f ${wavfile} ]] && {echo "${wavfile} is not there to create oasis restart file, we stop..."; exit ;}
+            [[ ! -f ${wavfile} ]] && { echo "${wavfile} is not there to create oasis restart file, we stop..." ; exit ;}
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${wavfile} wav.nc ww3 "${varlist}"
         fi
     fi
