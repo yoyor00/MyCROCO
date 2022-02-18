@@ -73,7 +73,7 @@
    !&E     !  2009-03  (Pierre Le Hir, Florence Cayocca)
    !&E     !  2010-06  (F. Cayocca, V. Garnier) MPI
    !&E     !  2010-07  (B. Thouvenin) taking into account of non constitutive particulate variables
-   !&E     !  2011-01 (R. Ramel Alyotech) Ionc library in fortran 90/95, netcdf4 and MPI
+   !&E     !  2011-01  (R. Ramel Alyotech) Ionc library in fortran 90/95, netcdf4 and MPI
    !&E     !  2011-02  (B. Thouvenin) * unique dynamical allocation of raphbx, raphby, frofonx, frofony
    !&E                                * get restart file at a different date
    !&E                                * evolution of diffusion/consolidation
@@ -84,10 +84,10 @@
    !&E     !  2013-01 (F. Grasso) change the fill_value for sed conc, sal and temp (-rg_valmanq_io)
    !&E     !  2013-01 (F. Grasso) limitation of tenfon tot (<6 N.m-2)
    !&E     !  2014    (B. Thouvenin)  Evolutions, introduction of key_sand2D, introduction of initial adjustment of the sediment height 
-   !&E     !  2014-05  (F. Grasso)    Modifications on consolidation subroutines based on "Grasso et al. (Ocean Dynynamics, 2014)"
+   !&E     !  2014-05 (F. Grasso)    Modifications on consolidation subroutines based on "Grasso et al. (Ocean Dynynamics, 2014)"
    !&E                                * subroutine sed_consolid_mixsed
    !&E                                * subroutine sed_constitutivrel
-   !&E     !  2014-05  (F. Cayocca) Update and modifs some names
+   !&E     !  2014-05 (F. Cayocca) Update and modifs some names
    !&E                                * sand/mud erosion laws
    !&E                                * morpho module
    !&E     ! 2014-05  (R. Verney)  : Modification of settling velocities laws and formulations
@@ -123,17 +123,14 @@
    IMPLICIT NONE
 
    !! * Accessibility
-
-   ! functions & routines of this module, called outside :
-   ! PUBLIC functions                                ! none ?
-!  les routines pas encore programmes pour CROCO sont mises sous cle key_MARS
+   !! **TODO** Code and clean subroutine not yet integrated (key_MARS) !  les routines pas encore programmes pour CROCO sont mises sous cle key_MARS  
 #ifdef key_MARS
-   PUBLIC sed_obc_corflu, sedinit_fromfile
-   PUBLIC sed_skinstress,sed_outsaverestart,sed_exchange_s2w_MARS,sed_exchange_w2s_MARS
+   PUBLIC sed_obc_corflu, bathy_actu_fromfile
+   PUBLIC sed_outsaverestart,sed_exchange_s2w_MARS,sed_exchange_w2s_MARS
 #endif
-   PUBLIC sedinit_fromfile,sed_skinstress,sed_gradvit,sed_MUSTANG_settlveloc
+   PUBLIC sedinit_fromfile, sed_skinstress, sed_gradvit, sed_MUSTANG_settlveloc
 # ifdef key_MUSTANG_bedload
-   PUBLIC sed_bottom_slope_bedload_CROCO
+   PUBLIC sed_bottom_slope
 # endif
 
    PRIVATE
@@ -143,9 +140,8 @@
  
  !!===========================================================================================
  
-  SUBROUTINE sed_MUSTANG_settlveloc(ifirst,ilast,jfirst,jlast,   &
-                     h0fond,rhoref,WATER_CONCENTRATION) !  (t de ocean3d) directement dans les bons ordres de dimensions
-
+  SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
+                     h0fond, WATER_CONCENTRATION) 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_settlveloc  ***
    !&E
@@ -154,14 +150,13 @@
    !&E ** Description : use arguments and common variable 
    !&E  arguments IN : 
    !&E         h0fond, : RESIDUAL_THICKNESS_WAT (m) 
-   !&E         rhoref : RHOREF
-   !&E         WATER_CONCENTRATION=t : WATER_CONCENTRATION directement de CROCO
-   !&E         GRAVITY :
+   !&E         WATER_CONCENTRATION=t : WATER_CONCENTRATION 
    !&E  arguments OUT:
    !&E         WAT_SETTL: settling velocities for CROCO
    !&E         ws3_bottom_MUSTANG: WAT_SETTL_MUSTANG in  bottom cell
    !&E
    !&E  need to be know by hydrodynamic code:
+   !&E          GRAVITY
    !&E         kmax=NB_LAYER_WAT  : connu via coupleur_dimhydro_MUSTANG.h
    !&E          
    !&E  need to be know by code treated substance (if not ==> coupler_MUSTANG.F90)
@@ -187,28 +182,24 @@
    !&E       !  2014-05  (R. Verney) modifying available settling velocity formulations
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-!!#include "ocean3d.h"
 
    !! * Arguments
-   INTEGER, INTENT(IN)                               :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)                         :: h0fond,rhoref
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)  :: WATER_CONCENTRATION  ! CROCO : directement mis t    
-
+   INTEGER, INTENT(IN)                               :: ifirst, ilast, jfirst, jlast
+   REAL(KIND=rsh), INTENT(IN)                         :: h0fond
+   REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN)  :: WATER_CONCENTRATION  ! CROCO : directly t 
    
    !! * Local declarations
-   INTEGER                            :: iv,k,ivpc,i,j
-   REAL(KIND=rsh)                     :: cmes,phi,phiv,De
-   REAL(KIND=rsh),PARAMETER           :: nuw=0.00000102_rsh
+   INTEGER                            :: iv, k, ivpc, i, j
+   REAL(KIND=rsh)                     :: cmes, phi, phiv, De
+   REAL(KIND=rsh), PARAMETER           :: nuw = 0.00000102_rsh
 
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-
 !$OMP DO SCHEDULE(RUNTIME) private(j,i,k,ivpc,iv,phi &
 !$OMP& ,cmes,De,phiv)  
-      DO j=jfirst,jlast
-      DO i=ifirst,ilast
+      DO j = jfirst, jlast
+      DO i = ifirst, ilast
            
          IF(htot(i,j) > h0fond)  THEN
            DO k=1,NB_LAYER_WAT
@@ -274,7 +265,7 @@
                   IF (De.GT.sqrt(nuw/gradvit(k,i,j))) THEN 
                     De=sqrt(nuw/gradvit(k,i,j)) ! in case of large C/low G limit floc size to kolmogorov microscale
                   ENDIF
-                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=(ros(iv)-rhoref)*GRAVITY/(18._rsh*rhoref*nuw)  &
+                  WAT_SETTL(i,j,k,itemp+ntrc_salt+iv)=(ros(iv)-RHOREF)*GRAVITY/(18._rsh*RHOREF*nuw)  &
                                 *ws_free_para(1,iv)**(3._rsh-ws_free_para(4,iv))  &
                                 *De**(ws_free_para(4,iv)-1._rsh)
                 
@@ -346,7 +337,7 @@
 
 !!===========================================================================================
 
-  SUBROUTINE sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond,rhoref)
+  SUBROUTINE sed_gradvit(ifirst,ilast,jfirst,jlast,h0fond)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_gradvit  ***
@@ -378,7 +369,7 @@
 
    !! * Arguments (Private variables for OMP because locales variables)
    INTEGER, INTENT(IN)                        :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),INTENT(IN)                  :: h0fond,rhoref
+   REAL(KIND=rsh),INTENT(IN)                  :: h0fond
 
    !! * Local declarations
    INTEGER                            :: i,j,k
@@ -438,7 +429,7 @@
    !&E
    !&E ** Description :  bottom shear stress related to current and also to waves
    !&E            to be programmed from hydrodynamic variables
-   !&E                   rhoref,  hx, hy, ssh, h0fond, u,uz, v, vz, hminfrot,hmaxfrot,
+   !&E                   RHOREF,  hx, hy, ssh, h0fond, u,uz, v, vz, hminfrot,hmaxfrot,
    !&E         using some parameters and variables of MUSTANG :
    !&E                    z0sed,  htncrit
    !&E               and Wave coupling
@@ -458,9 +449,9 @@
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-   USE module_substance,ONLY : bustr,bvstr
+   USE module_substance, ONLY : bustr, bvstr
 # ifdef WAVE_OFFLINE
-   USE module_substance,ONLY : Uwave, Dwave,Pwave
+   USE module_substance, ONLY : Uwave, Dwave, Pwave
 # endif
 
 
@@ -681,62 +672,43 @@
   END SUBROUTINE sed_skinstress
    !!==============================================================================
 #ifdef key_MUSTANG_bedload
-  SUBROUTINE sed_bottom_slope_bedload_CROCO(ifirst,ilast,jfirst,jlast,   &
-                                              BATHY_H0,CELL_DX,CELL_DY)
+  SUBROUTINE sed_bottom_slope(ifirst, ilast, jfirst, jlast, bathy)
    !&E--------------------------------------------------------------------------                         
-   !&E                 ***  ROUTINE sed_bottom_slope_bedload_CROCO  ***
+   !&E                 ***  ROUTINE sed_bottom_slope  ***
    !&E
-   !&E ** Purpose : evaluation of bottom slope for bedload
+   !&E ** Purpose : evaluation of bottom slope
    !&E
-   !&E ** Description : depend on host model grid
+   !&E ** Description : depend on host model grid, compute slope_dhdx and 
+   !&E    slope_dhdy from bathy of neigbour cells if they are not masked
    !&E
-   !&E ** Called by :  MUSTANG_morpho
+   !&E ** Called by :  
    !&E
    !&E ** External calls :
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2020-01  (B. Thouvenin)
-   !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
    !! * Arguments
-   INTEGER, INTENT(IN)                                     :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)     :: BATHY_H0
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_DX),INTENT(IN)      :: CELL_DX
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_DY),INTENT(IN)      :: CELL_DY
-
+   INTEGER, INTENT(IN)                                  :: ifirst, ilast, jfirst, jlast
+   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: bathy  ! bathymetry (m)
 
    !! * Local declarations
-   INTEGER          :: i,j
-  !!--------------------------------------------------------------------------
-   !! * Executable part
+   INTEGER          :: i, j
 
-
-!$OMP DO SCHEDULE(static) PRIVATE(i,j)
-      DO j=jfirst,jlast
-#ifdef key_MARS
-        DO i=MAX0(ifirst,ig(j)),MIN0(ilast,id(j))
-#else
-        DO i=ifirst,ilast
-#endif
-          IF (BATHY_H0(i+1,j).LE. -valmanq .OR. BATHY_H0(i-1,j).LE. -valmanq) then
-             slope_dhdx(i,j)=0.0_rsh
+      DO j = jfirst, jlast
+        DO i = ifirst, ilast
+          IF (bathy(i+1, j).LE. -valmanq .OR. bathy(i-1, j).LE. -valmanq) then
+             slope_dhdx(i, j) = 0.0_rsh
           ELSE
-             slope_dhdx(i,j)=-1.0_rsh*(-BATHY_H0(i+1,j)+BATHY_H0(i-1,j))/(2.0_rsh*CELL_DX(i,j))
+             slope_dhdx(i, j) = -1.0_rsh*(-bathy(i+1, j)+bathy(i-1, j)) / (2.0_rsh * CELL_DX(i, j))
           ENDIF
-          IF (BATHY_H0(i,j+1).LE. -valmanq .OR. BATHY_H0(i,j-1).LE. -valmanq) then
-             slope_dhdy(i,j)=0.0_rsh
+          IF (bathy(i, j+1).LE. -valmanq .OR. bathy(i, j-1).LE. -valmanq) then
+             slope_dhdy(i, j) = 0.0_rsh
           ELSE
-             slope_dhdy(i,j)=-1.0_rsh*(-BATHY_H0(i,j+1)+BATHY_H0(i,j-1))/(2.0_rsh*CELL_DY(i,j))
+             slope_dhdy(i, j) = -1.0_rsh*(-bathy(i, j+1)+bathy(i, j-1)) / (2.0_rsh * CELL_DY(i, j))
           ENDIF
         ENDDO
       ENDDO
-!$OMP END DO
 
-  END SUBROUTINE sed_bottom_slope_bedload_CROCO
+  END SUBROUTINE sed_bottom_slope
 #endif
 
     !!==============================================================================
@@ -1749,8 +1721,6 @@ OMPMPI flush(flx_bx,flx_by)
 #endif
 
  !=========================================================================== 
-
-
 
 #endif
 

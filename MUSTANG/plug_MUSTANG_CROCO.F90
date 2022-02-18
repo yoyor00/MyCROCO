@@ -38,7 +38,7 @@ CONTAINS
                    BAROTROP_VELOCITY_U,          &
                    BAROTROP_VELOCITY_V,          &
 # endif
-                   RHOREF,SALREF_LIN,TEMPREF_LIN,&
+                   SALREF_LIN,TEMPREF_LIN,&
                    TRANSPORT_TIME_STEP)
       end subroutine
 !
@@ -71,7 +71,7 @@ CONTAINS
 # ifdef key_MUSTANG_flocmod
                TRANSPORT_TIME_STEP, &
 # endif
-               RHOREF)
+               )
 
 
       CALL MUSTANG_init_sediment (Istr,Iend,Jstr,Jend,   &

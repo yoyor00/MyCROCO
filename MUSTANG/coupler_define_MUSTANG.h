@@ -91,12 +91,6 @@
 # define JMIN_GRID 1
 # define JMAX_GRID Mm
 
-# define IMIN_BOUCL 2
-/*# define IMAX_BOUCL 202  cas Tidal_Flat avec LLm0=200 (param.h*/
-# define IMAX_BOUCL 52
-# define JMIN_BOUCL 2
-# define JMAX_BOUCL 4
-
 !/* dimensions table definition 
 !*/
 # define PROC_IN_ARRAY       GLOBAL_2D_ARRAY   
@@ -151,7 +145,6 @@
 # define CELL_DX om_r
 # define CELL_DY on_r
 # define CELL_SURF surf_cell
-/*# define CELL_SURF cell_surf_MUSTANG*/
 # define BAROTROP_VELOCITY_U ubar
 # define BAROTROP_VELOCITY_V vbar
 # define TIME_STEP dt   /* in MARS :  time step declared in rlg and therefore also in MUSTANG */
@@ -174,8 +167,7 @@
 # define WAT_CONC_ALLMUD_ijk t(i,j,k,2+imud1:nvpc) /* water concentration in hydro model (for all mud) ATTENTION order of indices */
 #endif
 
-/* surface elevation (i,j) et courants pouvant avoir un nombre different de dimension 
-!*/
+/* surface elevation (i,j) and current could have different dimensions*/
 # define SURF_ELEVATION_ij WATER_ELEVATION(i,j,3) 
 # define COURANTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
 # define COURANTV_ij BAROTROP_VELOCITY_V(i,j+1,3) 

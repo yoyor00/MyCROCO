@@ -62,14 +62,10 @@
    !&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not from file
    !&E
    !&E     subroutine MUSTANG_init_hsed      ! initialize the sediment thickness function sediment parameters (MUSTANG_mixsed)
-   !&E     subroutine MUSTANG_init_ws_sand   ! initialize the settling velocity of sand variables and number of sub time step
+   !&E     subroutine MUSTANG_init_param   ! initialize the settling velocity of sand variables and erosion parameters
    !&E     subroutine MUSTANG_init_output    ! initialize dimensions of output tables
    !&E     subroutine MUSTANG_morphoinit     ! initialize 
    !&E     subroutine MUSTANG_morphoinit_mesh     ! initialize 
-   !&E
-   !&E   for option MUSTANG_V2 
-   !&E    subroutine MUSTANGV2_non_cohesive_behaviour  ! initialize non cohesive parameters
-
    !&E
    !&E   If key_MUSTANG_flocmod (floculation module, Verney et all, 2011):
    !&E     subroutine flocmod_init           ! initialize flocs characteristics
@@ -88,12 +84,11 @@
 #include "coupler_define_MUSTANG.h"
 
    USE comMUSTANG
-
-   USE sed_MUSTANG_CROCO,  ONLY : sedinit_fromfile
+   USE sed_MUSTANG_HOST,  ONLY : sedinit_fromfile
    USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
 
 #ifdef key_MARS
-   USE sed_MUSTANG_MARS,  ONLY : sedinit_fromfile,bathy_actu_fromfile
+   USE sed_MUSTANG_MARS,  ONLY : bathy_actu_fromfile
 #if defined  key_MPI_2D 
    USE sed_MUSTANG_MARS,  ONLY :  sed_exchange_hxe_MARS
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload && defined key_MPI_2D
@@ -127,8 +122,7 @@
    IMPLICIT NONE
 
    !! * Accessibility
-   ! functions & routines of this module, called outside :
-   PUBLIC MUSTANG_initialization
+   PUBLIC MUSTANG_initialization !**TODO** regroup these two routines ??
    PUBLIC MUSTANG_init_sediment
 
    PRIVATE
@@ -140,7 +134,7 @@
 #ifdef key_MUSTANG_flocmod
                  TRANSPORT_TIME_STEP,                               &
 #endif
-                 RHOREF)
+                 )
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANG_initialization  ***
@@ -155,7 +149,6 @@
    !! * Modules used
 
    !! * Arguments
-   REAL(KIND=rsh),INTENT(IN)          :: RHOREF
 #ifdef key_MUSTANG_flocmod
    REAL(KIND=rlg),INTENT(IN)          :: TRANSPORT_TIME_STEP    
 #endif 
@@ -170,13 +163,9 @@
     CALL MUSTANG_param('r')
 #endif
     CALL MUSTANG_alloc
-#if defined key_MUSTANG_V2
-    CALL MUSTANGV2_non_cohesive_behaviour(RHOREF)
-#else
-    CALL MUSTANG_init_ws_sand(RHOREF)
-#endif
+    CALL MUSTANG_init_param()
 #ifdef key_MUSTANG_flocmod
-    CALL flocmod_init(RHOREF,TRANSPORT_TIME_STEP)
+    CALL flocmod_init(TRANSPORT_TIME_STEP)
 #endif
 #if ! defined key_noTSdiss_insed
     cp_s(:,:)=cp_suni
@@ -229,7 +218,7 @@
 #if defined key_MARS
    USE sed_MUSTANG_MARS,  ONLY : sed_bottom_slope_bedload_MARS
 #else
-   !USE sed_MUSTANG_HOST,  ONLY : sed_bottom_slope_bedload_HOST
+   USE sed_MUSTANG_HOST,  ONLY : sed_bottom_slope
 #endif
 #endif
 #endif
@@ -286,21 +275,7 @@
 #ifdef key_MARS
       CALL sed_bottom_slope_bedload_MARS(ifirst,ilast,jfirst,jlast,BATHY_H0,CELL_DX,CELL_DY)
 #else
-     ! To Program
-      DO j=jfirst,jlast
-        DO i=ifirst,ilast
-          IF (BATHY_H0(i+1,j).LE. -valmanq .OR. BATHY_H0(i-1,j).LE. -valmanq) then
-             slope_dhdx(i,j)=0.0_rsh
-          ELSE
-             slope_dhdx(i,j)=-1.0_rsh*(-BATHY_H0(i+1,j)+BATHY_H0(i-1,j))/(2.0_rsh*CELL_DX(i,j))
-          ENDIF
-          IF (BATHY_H0(i,j+1).LE. -valmanq .OR. BATHY_H0(i,j-1).LE. -valmanq) then
-             slope_dhdy(i,j)=0.0_rsh
-          ELSE
-             slope_dhdy(i,j)=-1.0_rsh*(-BATHY_H0(i,j+1)+BATHY_H0(i,j-1))/(2.0_rsh*CELL_DY(i,j))
-          ENDIF
-        ENDDO
-      ENDDO
+      CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
 #endif
 #endif
 
@@ -994,67 +969,81 @@ ENDIF
  
    !!===========================================================================
  
-  SUBROUTINE MUSTANG_init_ws_sand(rhoref)
+  SUBROUTINE MUSTANG_init_param()
  
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_init_ws_sand  ***
+   !&E                 ***  ROUTINE MUSTANG_init_ero_param  ***
    !&E
    !&E ** Purpose : initialize sand settlings velocities 
-   !&E               and number of sub time step (for MARS)
    !&E
    !&E ** Description : 
+   !&E    - compute for each sand and gravel (for 1 to isand2)  
+   !&E       * diamstar
+   !&E       * ws_sand
+   !&E       * tetacri0
+   !&E       * stresscri0
+   !&E       * xnielsen
+   !&E       * psi_sed (in V2)
+   !&E    - compute for each sand (for isand1 to isand2) 
+   !&E       * E0_sand (in V2)
+   !&E    - compute for each gravel, dans and mud (for 1 to imud2) 
+   !&E       * rosmrowsros
+   !&E    - ros_sand_homogen = ros(isand1) if there is sand (isand1 > 0)
    !&E
-   !&E ** Note : GRAVITY must be known as a parameters transmtted by coupleur 
-   !&E           in MARS : coupleur_dimhydro.h (USE ..)
-   !&E           in CROCO : module_MUSTANG.F (include..)
+   !&E ** Note : GRAVITY and RHOREF must be known 
    !&E
    !&E ** Called by :  MUSTANG_initialization
    !&E 
    !&E ** External calls : 
    !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2015-04  (B. Thouvenin) extracted from sed_init et sed_initfromfile in sedim.F90
-   !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-   !! * Arguments
-   REAL(KIND=rsh),INTENT(IN)          ::   rhoref
 
    !! * Local declarations
-   INTEGER        :: iv,ivg                
+   INTEGER        :: iv 
+   REAL(KIND=rsh),PARAMETER :: shield_cri_wu = 0.03_rsh          
 
    !!--------------------------------------------------------------------------
    !! * Executable part
 
 ! valable aussi pour les graviers ???
-    DO iv=1,isand2
+    DO iv = 1, isand2
 
-      ! here, for simplification, water density = rhoref 
+      ! here, for simplification, water density = RHOREF 
       ! here, for simplification, viscosity = 1.e-6 constant
       ! 10000 = (1/viscosite**2)**(1/3)
-      rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
-      diamstar(iv)=diam_sed(iv)*10000.0_rsh*(GRAVITY*(ros(iv)/rhoref-1.0_rsh))**0.33_rsh
+      rosmrowsros(iv) = (ros(iv) - RHOREF) / ros(iv)
+      diamstar(iv) = diam_sed(iv) * 10000.0_rsh * (GRAVITY * (ros(iv) / RHOREF - 1.0_rsh))**0.33_rsh
       ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
       ws_sand(iv)=.000001_rsh*((107.33_rsh+1.049_rsh*diamstar(iv)**3)**0.5_rsh-10.36_rsh)/diam_sed(iv)
-      tetacri0(iv)=0.3_rsh/(1.0_rsh+1.2_rsh*diamstar(iv))+0.055_rsh*(1.0_rsh-EXP(-0.02_rsh*diamstar(iv)))
-      stresscri0(iv)=tetacri0(iv)*GRAVITY*(ros(iv)-rhoref)*diam_sed(iv)
-      xnielsen(iv)=12.0_rsh*1000.0_rsh/GRAVITY/(1.0_rsh-rhoref/ros(iv))
-    ENDDO
+      xnielsen(iv)=12.0_rsh*1000.0_rsh/GRAVITY/(1.0_rsh-RHOREF/ros(iv))
+
+       ! Critical shear stress in erosion law (N/m2)
+      IF (tau_cri_option == 0) THEN
+        tetacri0(iv)=0.3_rsh/(1.0_rsh+1.2_rsh*diamstar(iv))+0.055_rsh*(1.0_rsh-EXP(-0.02_rsh*diamstar(iv)))
+        stresscri0(iv)=tetacri0(iv)*GRAVITY*(ros(iv)-RHOREF)*diam_sed(iv)
+      ELSE IF (tau_cri_option == 1) THEN ! Wu and Lin (2014)
+        stresscri0(iv)=GRAVITY*(ros(iv)-RHOREF)*diam_sed(iv)*shield_cri_wu
+      END IF
+
+#ifdef key_MUSTANG_V2
+      psi_sed(iv)=LOG(diam_sed(iv)*1000.0_rsh)/LOG(2.0_rsh)
+      IF (iv .ge. isand1) THEN
+            E0_sand(iv) = MUSTANG_E0sand(diam_sed(iv), stresscri0(iv), ros(iv), ws_sand(iv))
+      ENDIF
+#endif
+    ENDDO ! iv = 1, isand2
+
     DO iv=imud1,imud2
-      rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
+      rosmrowsros(iv)=(ros(iv)-RHOREF)/ros(iv)
     ENDDO
+
     ! homogeneous sand density
     IF (isand1 > 0) THEN
        iv=isand1
        ros_sand_homogen=ros(iv)
     ENDIF
 
-    PRINT_DBG*, 'END MUSTANG_INIT_WS_SAND'
-
-  END SUBROUTINE MUSTANG_init_ws_sand
+  END SUBROUTINE MUSTANG_init_param
 
    !!===========================================================================
 !
@@ -1903,87 +1892,7 @@ ENDIF
   PRINT_DBG*, 'END MUSTANG_morphoinit_mesh'
   
   END SUBROUTINE MUSTANG_morphoinit_mesh
-   !!===========================================================================   
-
-#ifdef key_MUSTANG_V2
- SUBROUTINE MUSTANGV2_non_cohesive_behaviour(rhoref)
-
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANGV2_non_cohesive_behaviour  ***
-   !&E
-   !&E ** Purpose : initialize non cohesive settlings velocities, erosion parameters
-   !&E              and number of sub time step
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E ** Note : GRAVITY must be known as a parameters transmtted by coupleur 
-   !&E           in MARS : coupleur_dimhydro.h (USE ..)
-   !&E           in CROCO : module_MUSTANG.F (include..)
-   !&E
-   !&E ** Called by :  MUSTANG_initialization
-   !&E ** External calls : 
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2015-04  (B. Thouvenin) extracted from sed_init et sed_initfromfile in sedim.F90
-   !&E       !  2018-01  (B. Mengual, P. Le Hir) Name changed (sed_init_ws_sand before)
-   !&E       !                                   Integration of toce/E0_sand computations
-   !&E       !                                   E0_sand(iv) becomes PUBLIC and is used in sed_comp_tocr_mixsed
-   !&E       !                                                                             sed_comp_eros_flx_indep
-   !&E
-   !&E--------------------------------------------------------------------------
-   !! * Modules used
-  !! * Arguments
-   REAL(KIND=rsh),INTENT(IN)                           :: rhoref
-
-   !! * Local declarations
-   INTEGER        :: iv,ivg
-   REAL(KIND=rsh),PARAMETER :: shield_cri_wu=0.03_rsh
-
-   !!--------------------------------------------------------------------------
-   !! * Executable part
-
-! valable aussi pour les graviers ???
-    DO iv = 1, isand2
-      ! here, for simplification, water density = 1000. kg/m3 
-      rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
-      psi_sed(iv)=LOG(diam_sed(iv)*1000.0_rsh)/LOG(2.0_rsh)
-      diamstar(iv)=diam_sed(iv)*10000.0_rsh*(GRAVITY*(ros(iv)/rhoref-1.0_rsh))**0.33_rsh
-      ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
-      ws_sand(iv)=.000001_rsh*((107.33_rsh+1.049_rsh*diamstar(iv)**3)**0.5_rsh-10.36_rsh)/diam_sed(iv)
-
-      xnielsen(iv)=12.0_rsh*1000.0_rsh/GRAVITY/(1.0_rsh-rhoref/ros(iv))
-
-      ! Critical shear stress in erosion law (N/m2)
-      IF (tau_cri_option == 0) THEN
-        tetacri0(iv)=0.3_rsh/(1.0_rsh+1.2_rsh*diamstar(iv))+0.055_rsh*(1.0_rsh-EXP(-0.02_rsh*diamstar(iv)))
-        stresscri0(iv)=tetacri0(iv)*GRAVITY*(ros(iv)-rhoref)*diam_sed(iv)
-      ELSE IF (tau_cri_option == 1) THEN ! Wu and Lin (2014)
-        stresscri0(iv)=GRAVITY*(ros(iv)-rhoref)*diam_sed(iv)*shield_cri_wu
-      END IF
-    ENDDO
-
-    DO iv = isand1, isand2
-      E0_sand(iv) = MUSTANG_E0sand(diam_sed(iv), stresscri0(iv), ros(iv), ws_sand(iv))
-    ENDDO
-
-    DO iv = imud1, imud2
-      rosmrowsros(iv)=(ros(iv)-rhoref)/ros(iv)
-    ENDDO
-    ! homogeneous sand density
-    IF (isand1 > 0) THEN
-       iv=isand1
-       ros_sand_homogen=ros(iv)
-    ENDIF
-
-
-    PRINT_DBG*, 'FIN MUSTANGV2_NON_COHESIVE_BEHAVIOUR'
-
-  END SUBROUTINE MUSTANGV2_non_cohesive_behaviour
-!  end version MUSTANG V2
-#endif
-   !!===========================================================================   
+   !!===========================================================================  
 
 SUBROUTINE MUSTANG_alloc(l_filesubs)
  
@@ -2482,7 +2391,7 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
 #ifdef key_MUSTANG_flocmod
    !!===========================================================================
 
-   SUBROUTINE flocmod_init(RHOREF,TRANSPORT_TIME_STEP)
+   SUBROUTINE flocmod_init(TRANSPORT_TIME_STEP)
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE flocmod_init  ***
    !&E
@@ -2511,8 +2420,7 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
    !! * Modules used
 
    !! * Arguments
-   REAL(KIND=rlg),INTENT(IN)          :: TRANSPORT_TIME_STEP  
-   REAL(KIND=rsh),INTENT(IN)          :: rhoref
+   REAL(KIND=rlg),INTENT(IN)          :: TRANSPORT_TIME_STEP 
 
    !! * Local declarations
                      
@@ -2523,17 +2431,17 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
    
     f_diam(1:nv_mud)=diam_sed(imud1:nvpc) ! floc size from variable.dat
     f_vol(1:nv_mud)=NUMBER_PI/6._rsh*(f_diam(1:nv_mud))**3
-    f_rho(1:nv_mud)=rhoref+(ros(1:nv_mud)-rhoref)*(f_dp0/f_diam(1:nv_mud))**(3._rsh-f_nf)
-    f_mass(1:nv_mud)=f_vol(1:nv_mud)*(f_rho(1:nv_mud)-rhoref)
+    f_rho(1:nv_mud)=RHOREF+(ros(1:nv_mud)-RHOREF)*(f_dp0/f_diam(1:nv_mud))**(3._rsh-f_nf)
+    f_mass(1:nv_mud)=f_vol(1:nv_mud)*(f_rho(1:nv_mud)-RHOREF)
     f_mass(nv_mud+1)=f_mass(nv_mud)*2_rsh+1._rsh  
     IF (f_diam(1).eq.f_dp0)  THEN
       f_mass(1)=f_vol(1)*ros(1)
     ENDIF
-    f_ws(1:nv_mud)=GRAVITY*(f_rho(1:nv_mud)-rhoref)*f_diam(1:nv_mud)**2._rsh/(18._rsh*0.001_rsh)
+    f_ws(1:nv_mud)=GRAVITY*(f_rho(1:nv_mud)-RHOREF)*f_diam(1:nv_mud)**2._rsh/(18._rsh*0.001_rsh)
     f_dtmin(1:NB_LAYER_WAT,PROC_IN_ARRAY)=REAL(TRANSPORT_TIME_STEP,rsh)
 
     ! kernels computation
-    CALL flocmod_kernels(rhoref)    
+    CALL flocmod_kernels()    
  
     PRINT_DBG*, 'END flocmod_init'
 
@@ -2541,7 +2449,7 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   
    !!===========================================================================
    
-  SUBROUTINE flocmod_kernels(rhoref)
+  SUBROUTINE flocmod_kernels()
 
   !&E--------------------------------------------------------------------------
   !&E                 ***  flocmod_kernels  ***
@@ -2560,9 +2468,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
-  !! * Modules used
-
-   REAL(KIND=rsh),INTENT(IN)          :: rhoref
 
   !! * Local declarations
 
@@ -2801,9 +2706,6 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
   !&E     ! 2013-09 (Romaric Verney)
   !&E
   !&E--------------------------------------------------------------------------
-  !! * Modules used
-  
-   !REAL(KIND=rsh),INTENT(IN)          :: rhoref
 
 
   !! * Local declarations
@@ -2819,8 +2721,8 @@ SUBROUTINE MUSTANG_alloc(l_filesubs)
       f_coll_prob_sh(iv1,iv2)=1._rsh/6._rsh*(f_diam(iv1)+f_diam(iv2))**3._rsh
       
       !f_coll_prob_ds(iv1,iv2)=0.25_rsh*NUMBER_PI*(f_diam(iv1)+f_diam(iv2))**2._rsh &
-                       !*GRAVITY/mu*abs((f_rho(iv1)-rhoref)*f_diam(iv1)**2._rsh &
-                       !-(f_rho(iv2)-rhoref)*f_diam(iv2)**2._rsh)
+                       !*GRAVITY/mu*abs((f_rho(iv1)-RHOREF)*f_diam(iv1)**2._rsh &
+                       !-(f_rho(iv2)-RHOREF)*f_diam(iv2)**2._rsh)
       f_coll_prob_ds(iv1,iv2)=0.25_rsh*NUMBER_PI*(f_diam(iv1)+f_diam(iv2))**2._rsh &
                        * ABS(f_ws(iv1)-f_ws(iv2))
       

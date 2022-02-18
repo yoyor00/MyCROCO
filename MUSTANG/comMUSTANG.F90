@@ -227,7 +227,7 @@
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE       :: psi_sed
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: poro_mud
    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: crel_mud
-   REAL(KIND=rsh)                                    :: hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
+   REAL(KIND=rsh)                                :: hmin_bedload ! out of key_sedim_bedload because in paraMUSTANGV2.txt
 #endif
 
    ! ---------------------------------------------------------------------------

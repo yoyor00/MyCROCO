@@ -119,7 +119,7 @@
                          !     E0_sand_option= 0 E0_sand= E0_sand_Cst read in this namelist 
                          !     E0_sand_option= 1 E0_sand evaluated with Van Rijn (1984) formulation 
                          !     E0_sand_option= 2 E0_sand evaluated with erodimetry formulation (min(0.27,1000*d50-0.01)*toce**n_eros_sand)
-                         !     V2 only : E0_sand_option= 3  then E0_sand evaluated with Wu and Lin (2014) formulation
+                         !     E0_sand_option= 3  then E0_sand evaluated with Wu and Lin (2014) formulation
    E0_sand_Cst=0.00594   !0.0002 Constant erosion flux for sand (used if E0_sand_option= 0) 
    E0_sand_para=1        ! coefficient used to modulate erosion flux for sand   (=1 if no correction )
    n_eros_sand=1.5       ! parameters for erosion flux for sand (E0_sand*corfluero*(tenfo/toce-1.)**n_eros_sand )
@@ -137,7 +137,7 @@
    corfluer1=0.01         ! correction factors for erosion flux computations : Increases the erosion flow when the concentration of mud in the sediment is low (mud cream)
    corfluer2=350.        ! corfluero=1.+corfluer1*MAX(0.0_rsh,corfluer2-csed_tot_surface) typically, increase erosion flow if Crelmud <350 g/L  
    htncrit_eros=0.0      ! critical water height so as to prevent erosion under a given threshold (the threshold value is different for flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
-   tau_cri_option=1      !  V2 only : 0: Shields ; 1: Wu and Lin (2014)
+   tau_cri_option=1      ! 0: Shields ; 1: Wu and Lin (2014)
    tau_cri_mud_option_eroindep=1 !  V2 only : 0: x1toce_mud*cmudr**x2toce_mud
                                  !  1: toce_meansan if somsan>eps (else->case0)
                                  !  2: minval(toce_sand*cvsed/cvsed+eps) if >0 (else->case0)
